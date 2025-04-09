@@ -10,14 +10,14 @@ function scrollTabFocusedElIntoView() {
     const { target: element } = e;
     const rect = element.getBoundingClientRect();
     const viewportHeight = window.innerHeight;
-    const centerX = rect.left + rect.width / 2;
     const outsideViewport = rect.top < 0 || rect.bottom > viewportHeight;
 
     if (outsideViewport) {
-      element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      element.scrollIntoView({ behavior: 'instant', block: 'center' });
       return;
     }
 
+    const centerX = rect.left + rect.width / 2;
     const bottomPointY = rect.bottom - rect.height * 0.05;
 
     const elFromPointTop = document.elementFromPoint(centerX, rect.top);
@@ -26,7 +26,7 @@ function scrollTabFocusedElIntoView() {
     if (shouldntScroll(element, elFromPointTop)
     && shouldntScroll(element, elFromPointBottom)) return;
 
-    element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    element.scrollIntoView({ behavior: 'instant', block: 'center' });
   });
 }
 

@@ -682,10 +682,6 @@ div[class*='-up'] .con-block.has-bg.no-spacing { padding: 0; }
     local('TrebuchetMS');
 }
 
-html:focus-within {
-  scroll-behavior: smooth;
-}
-
 body:has(footer:focus-within) #onetrust-consent-sdk:not(:has(#ot-cookie-button.show)) {
   position: sticky;
   bottom: 0;
