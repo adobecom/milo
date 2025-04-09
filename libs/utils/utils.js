@@ -216,7 +216,9 @@ export function getLanguage(languages, locales, pathname = window.location.pathn
   const language = languages[languageString];
   if (language && region && language.regions) {
     const [matchingRegion] = language.regions.filter((r) => r.region === region);
-    language.region = matchingRegion;
+    language.region = matchingRegion.region;
+    if (matchingRegion.ietf)language.ietf = matchingRegion.ietf;
+    if (matchingRegion.tk) language.tk = matchingRegion.tk;
     regionPath = matchingRegion ? `/${region}` : '';
   }
 
@@ -228,6 +230,7 @@ export function getLanguage(languages, locales, pathname = window.location.pathn
     return locale;
   }
 
+  if (!language.ietf) language.ietf = `${languageString}${language.region ? `_${language.region.toUpperCase()}` : ''}`;
   language.language = languageString;
   language.prefix = `/${languageString}${regionPath}`;
   return language;
@@ -430,11 +433,6 @@ function getExtension(path) {
   return pageName.includes('.') ? pageName.split('.').pop() : '';
 }
 
-function mapPrefixToLocale(currentPrefix) {
-  const mapped = localeToLanguageMap?.find((m) => `/${m.languagePath}` === currentPrefix);
-  return mapped ? `/${mapped.locale}` : currentPrefix;
-}
-
 export function localizeLink(
   href,
   originHostName = window.location.hostname,
@@ -466,15 +464,15 @@ export function localizeLink(
     const site = siteLanguages?.find((s) => s.domainMatches.some((d) => url.hostname.includes(d)));
 
     if (!locale.language && site && localeToLanguageMap) {
-      const siteLanguage = localeToLanguageMap?.find((m) => `/${m.locale}` === prefix);
-      const language = site.languages.find((l) => `${l}` === siteLanguage.languagePath); // ch_de
+      const siteLanguage = localeToLanguageMap?.find((m) => `${m.locale === '' ? '' : '/'}${m.locale}` === prefix);
+      const language = site.languages.find((l) => `${l}` === siteLanguage.languagePath);
       if (language) {
-        prefix = `${language !== '' ? '/' : ''}${language}`;
+        prefix = `${language === '' ? '' : '/'}${language}`;
       }
     } else if (locale.language) {
-      const siteHasLanguage = site?.languages.some((l) => `/${l}` === prefix);
-      if (!relative && !siteHasLanguage) {
-        prefix = mapPrefixToLocale(prefix);
+      if (!relative && !site?.languages.some((l) => `${l === 'en' ? '' : '/'}${l === 'en' ? '' : l}` === prefix)) {
+        const mapped = localeToLanguageMap?.find((m) => `/${m.languagePath}` === prefix);
+        prefix = mapped ? `${mapped.locale === '' ? '' : '/'}${mapped.locale}` : prefix;
       }
     }
     const urlPath = `${prefix}${path}${url.search}${hash}`;

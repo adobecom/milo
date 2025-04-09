@@ -56,8 +56,8 @@ const config = {
       tk: 'hah7vzn.css',
       languageBased: false,
       regions: [
-        { region: 'us', ietf: 'en-US', tk: 'hah7vzn.css' },
-        { region: 'gb', ietf: 'en-GB', tk: 'hah7vzn.css' },
+        { region: 'us', tk: 'hah7vzn.css' },
+        { region: 'gb', tk: 'hah7vzn.css' },
         { region: 'apac', ietf: 'en', tk: 'hah7vzn.css' },
       ],
     },
@@ -65,8 +65,8 @@ const config = {
       ietf: 'de',
       tk: 'hah7vzn.css',
       regions: [
-        { region: 'ch', ietf: 'de-CH', tk: 'hah7vzn.css' },
-        { region: 'de', ietf: 'de-DE', tk: 'hah7vzn.css' },
+        { region: 'ch', tk: 'hah7vzn.css' },
+        { region: 'de', tk: 'hah7vzn.css' },
       ],
     },
   },
