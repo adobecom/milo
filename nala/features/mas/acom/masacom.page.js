@@ -119,7 +119,7 @@ export default class MasAcom {
 
   getCardBadge(id) {
     const card = this.getCard(id);
-    return card.locator('.plans-badge');
+    return card.locator('merch-badge');
   }
 
   getCardTitle(id) {
