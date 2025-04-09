@@ -92,4 +92,19 @@ describe('notification', async () => {
       expect(close.closest('.notification').style.display).to.equal('none');
     });
   });
+
+  describe('split notifications', () => {
+    let splits;
+    beforeEach(() => {
+      splits = [...notifs].filter((e) => e.classList.contains('split'));
+    });
+    it('has stacked item list added', () => {
+      const stacks = splits[0].querySelectorAll('.split-list-item').length;
+      expect(stacks).to.equal(2);
+    });
+    it('closes the notification', () => {
+      splits[0].querySelector('a[href*="#_evt-close"]').dispatchEvent(new MouseEvent('click'));
+      expect(splits[0].closest('.section').classList.contains('close-sticky-section')).to.be.true;
+    });
+  });
 });
