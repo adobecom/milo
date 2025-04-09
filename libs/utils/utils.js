@@ -1286,8 +1286,9 @@ async function loadPostLCP(config) {
     import('../features/personalization/personalization.js')
       .then(({ addMepAnalytics }) => addMepAnalytics(config, header));
   }
-  // load privacy if quick-link is present
-  if (document.querySelector('.quick-link')) {
+  // load privacy here if quick-link is present in first section
+  const quickLink = document.querySelector('div.section')?.querySelector('.quick-link');
+  if (quickLink) {
     import('../scripts/delayed.js').then(({ loadPrivacy }) => {
       loadPrivacy(getConfig, loadScript);
     });
