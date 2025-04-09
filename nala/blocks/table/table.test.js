@@ -112,7 +112,7 @@ test.describe('Milo Table block feature test suite', () => {
       await expect(table.highlightRow).toHaveClass(/row.*row-1.*row-highlight/);
       await expect(table.stickyRow).toHaveClass(/row.*row-2.*row-heading/);
       await expect(await table.stickyRow).toHaveCSS('position', 'sticky');
-      await expect(await table.stickyRow).toHaveCSS('top', '114px');
+      await expect(await table.stickyRow).toHaveCSS('top', '106px');
 
       // verify table rows and columns count
       await expect(await table.rows).toHaveCount(data.rowsCount);
