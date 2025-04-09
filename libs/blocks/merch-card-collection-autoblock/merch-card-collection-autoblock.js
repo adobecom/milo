@@ -1,5 +1,5 @@
 import { createTag, getConfig } from '../../utils/utils.js';
-import { initService } from '../merch/merch.js';
+import { initService, getOptions, MEP_SELECTOR, overrideOptions } from '../merch/merch.js';
 import '../../deps/mas/merch-card-collection.js';
 import '../../deps/mas/merch-card.js';
 
@@ -11,18 +11,6 @@ function getTimeoutPromise() {
   return new Promise((resolve) => {
     setTimeout(() => resolve(false), COLLECTION_AUTOBLOCK_TIMEOUT);
   });
-}
-
-export function getOptions(el) {
-  const { hash } = new URL(el.href);
-  const hashValue = hash.startsWith('#') ? hash.substring(1) : hash;
-  const searchParams = new URLSearchParams(hashValue);
-  const options = {};
-  for (const [key, value] of searchParams.entries()) {
-    if (key === 'sidenav') options[key] = value === 'true';
-    else if (key === 'fragment' || key === 'query') options.fragment = value;
-  }
-  return options;
 }
 
 async function loadDependencies(options) {
@@ -118,7 +106,21 @@ export async function checkReady(masElement) {
 
 export async function createCollection(el, options) {
   const aemFragment = createTag('aem-fragment', { fragment: options.fragment });
-  const collection = createTag('merch-card-collection', null, aemFragment);
+
+  // Get MEP overrides if available
+  const { mep } = getConfig();
+  const mepFragments = mep?.inBlock?.[MEP_SELECTOR]?.fragments || {};
+
+  // Create attributes object only if we have fragments
+  let attributes;
+  if (Object.keys(mepFragments).length > 0) {
+    const overrides = Object.entries(mepFragments)
+      .map(([fragment, data]) => `${fragment}:${data.content}`)
+      .join(',');
+    attributes = { overrides };
+  }
+
+  const collection = createTag('merch-card-collection', attributes, aemFragment);
   let container = collection;
 
   if (options.sidenav) {
@@ -152,8 +154,9 @@ export async function createCollection(el, options) {
 }
 
 export default async function init(el) {
-  const options = { ...DEFAULT_OPTIONS, ...getOptions(el) };
+  let options = { ...DEFAULT_OPTIONS, ...getOptions(el) };
   if (!options.fragment) return;
+  options = overrideOptions(options.fragment, options);
   await loadDependencies(options);
   await createCollection(el, options);
 }

@@ -93,9 +93,19 @@ const searcher = (elements, { search }) => {
 
 export class MerchCardCollection extends LitElement {
     static properties = {
+        displayResult: { type: Boolean, attribute: 'display-result' },
         filter: { type: String, attribute: 'filter', reflect: true },
         filtered: { type: String, attribute: 'filtered' }, // freeze filter
+        hasMore: { type: Boolean },
+        limit: { type: Number, attribute: 'limit' },
+        overrides : { type: String },
+        page: { type: Number, attribute: 'page', reflect: true },
+        resultCount: {
+          type: Number,
+        },
         search: { type: String, attribute: 'search', reflect: true },
+        sidenav: { type: Object },
+        singleApp: { type: String, attribute: 'single-app', reflect: true },
         sort: {
             type: String,
             attribute: 'sort',
@@ -103,16 +113,9 @@ export class MerchCardCollection extends LitElement {
             reflect: true,
         },
         types: { type: String, attribute: 'types', reflect: true },
-        limit: { type: Number, attribute: 'limit' },
-        page: { type: Number, attribute: 'page', reflect: true },
-        singleApp: { type: String, attribute: 'single-app', reflect: true },
-        hasMore: { type: Boolean },
-        displayResult: { type: Boolean, attribute: 'display-result' },
-        resultCount: {
-            type: Number,
-        },
-        sidenav: { type: Object },
     };
+
+    #overrideMap = {};
 
     mobileAndTablet = new MatchMediaController(this, TABLET_DOWN);
 
@@ -223,6 +226,16 @@ export class MerchCardCollection extends LitElement {
         });
     }
 
+    buildOverrideMap() {
+      this.#overrideMap = {};
+      this.overrides?.split(',').forEach((token) => {
+        const [ key, value ] = token?.split(':');
+        if (key && value) {
+          this.#overrideMap[key] = value;
+        }
+      });
+    }
+
     connectedCallback() {
         super.connectedCallback();
         if (this.filtered) {
@@ -232,6 +245,7 @@ export class MerchCardCollection extends LitElement {
             this.startDeeplink();
         }
         this.sidenav = document.querySelector('merch-sidenav');
+        this.buildOverrideMap();
         this.hydrate();
     }
 
@@ -252,7 +266,7 @@ export class MerchCardCollection extends LitElement {
             resolveHydration = resolve;
         });
 
-        function normalizePayload(fragment) {
+        function normalizePayload(fragment, overrideMap) {
             const payload = { cards: [], hierarchy: [], placeholders: fragment.placeholders };
 
             function traverseReferencesTree(root, references) {
@@ -266,7 +280,7 @@ export class MerchCardCollection extends LitElement {
                     const collection = {
                         label: fields.label,
                         icon: fields.icon,
-                        cards: fields.cards,
+                        cards: fields.cards.map(cardId => overrideMap[cardId] || cardId),
                         collections: []
                     };
                     root.push(collection);
@@ -284,18 +298,20 @@ export class MerchCardCollection extends LitElement {
             aemFragment.remove();
         });
         aemFragment.addEventListener(EVENT_AEM_LOAD, async (event) => {
-            this.data = normalizePayload(event.detail);
+            this.data = normalizePayload(event.detail, this.#overrideMap);
             const { cards, hierarchy } = this.data;
             aemFragment.cache.add(...cards);
             for (const fragment of cards) {
                 const merchCard = document.createElement('merch-card');
+                const fragmentId = this.#overrideMap[fragment.id] || fragment.id;
+
                 merchCard.setAttribute('consonant', '');
                 merchCard.setAttribute('style', '');
                 merchCard.filters = {};
 
                 function populateFilters(level) {
                     for (const node of level) {
-                        const index = node.cards.indexOf(fragment.id);
+                        const index = node.cards.indexOf(fragmentId);
                         if (index === -1) continue;
                         const name = node.label.toLowerCase();
                         merchCard.filters[name] = { order: index + 1, size: fragment.fields.size };
@@ -304,8 +320,8 @@ export class MerchCardCollection extends LitElement {
                 }
                 populateFilters(hierarchy);
 
-                const mcAemFragment = document.createElement('aem-fragment');
-                mcAemFragment.setAttribute('fragment', fragment.id);
+                const mcAemFragment = document.createElement('aem-fragment');                
+                mcAemFragment.setAttribute('fragment', fragmentId);
                 merchCard.append(mcAemFragment);
 
                 this.append(merchCard);

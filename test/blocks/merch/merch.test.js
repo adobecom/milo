@@ -20,6 +20,7 @@ import merch, {
   getCheckoutAction,
   PRICE_TEMPLATE_REGULAR,
   getMasBase,
+  getOptions,
   appendTabName,
   appendExtraOptions,
   getMiloLocaleSettings,
@@ -869,6 +870,25 @@ describe('Merch Block', () => {
         const wcsLocale = getMiloLocaleSettings({ prefix }).locale;
         expect(wcsLocale).to.be.equal(expectedLocale);
       });
+    });
+  });
+  describe('getOptions method', () => {
+    it('gets fragment id', () => {
+      const a = document.createElement('a');
+      a.setAttribute('href', 'https://mas.adobe.com/studio.html#content-type=merch-card-collection&path=acom&fragment=07b8be51-492a-4814-9953-a657fd3d9f67');
+      expect(getOptions(a).fragment).to.equal('07b8be51-492a-4814-9953-a657fd3d9f67');
+    });
+
+    it('gets fragment id from query', () => {
+      const a = document.createElement('a');
+      a.setAttribute('href', 'https://mas.adobe.com/studio.html#content-type=merch-card-collection&path=acom&query=07b8be51-492a-4814-9953-a657fd3d9f67');
+      expect(getOptions(a).fragment).to.equal('07b8be51-492a-4814-9953-a657fd3d9f67');
+    });
+
+    it('handles missing fragment id', () => {
+      const a = document.createElement('a');
+      a.setAttribute('href', 'https://mas.adobe.com/studio.html#content-type=merch-card-collection&path=acom');
+      expect(getOptions(a).fragment).to.be.undefined;
     });
   });
 });
