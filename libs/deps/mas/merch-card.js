@@ -974,11 +974,17 @@ merch-card .footer-row-cell:nth-child(8) {
 :root {
     --consonant-merch-card-plans-width: 300px;
     --consonant-merch-card-plans-icon-size: 40px;
+    --consonant-merch-card-plans-students-width: 568px;
 }
 
 merch-card[variant="plans"] {
     --consonant-merch-card-callout-icon-size: 18px;
     width: var(--consonant-merch-card-plans-width);
+}
+
+merch-card[variant="plans"][size="students"] {
+    min-height: unset;
+    width: var(--consonant-merch-card-plans-students-width);
 }
 
 merch-card[variant="plans"] [slot="icons"] {
@@ -1067,6 +1073,12 @@ merch-card[variant="plans"] [slot="footer"] a {
 
 /* Mobile */
 @media screen and ${G} {
+    merch-card[variant="plans"][size="students"] {
+        min-width: var(--consonant-merch-card-plans-width);
+        max-width: var(--consonant-merch-card-plans-students-width);
+        width: 100%;
+    }
+
     merch-whats-included merch-mnemonic-list,
     merch-whats-included [slot="heading"] {
         width: 100%;
@@ -1119,7 +1131,7 @@ merch-card[variant="plans"]:not([size]) {
         grid-template-columns: repeat(4, var(--consonant-merch-card-plans-width));
     }
 }
-`;var Ut={title:{tag:"p",slot:"heading-xs"},prices:{tag:"p",slot:"heading-m"},promoText:{tag:"p",slot:"promo-text"},description:{tag:"div",slot:"body-xs"},mnemonics:{size:"l"},callout:{tag:"div",slot:"callout-content"},quantitySelect:{tag:"div",slot:"quantity-select"},stockOffer:!0,secureLabel:!0,badge:{tag:"div",slot:"badge"},allowedBadgeColors:["spectrum-yellow-300-plans","spectrum-gray-300-plans","spectrum-gray-700-plans","spectrum-green-900-plans"],allowedBorderColors:["spectrum-yellow-300-plans","spectrum-gray-300-plans"],borderColor:{attribute:"border-color"},size:["wide","super-wide"],whatsIncluded:{tag:"div",slot:"whats-included"},ctas:{slot:"footer",size:"m"},style:"consonant"},xe=class extends S{constructor(t){super(t),this.adaptForMobile=this.adaptForMobile.bind(this)}get aemFragmentMapping(){return Ut}getGlobalCSS(){return cn}adaptForMobile(){if(!this.card.closest("merch-card-collection,overlay-trigger")){this.card.removeAttribute("size");return}let t=this.card.shadowRoot,r=t.querySelector("footer"),n=this.card.getAttribute("size"),o=t.querySelector("footer #stock-checkbox"),a=t.querySelector(".body #stock-checkbox"),i=t.querySelector(".body");if(!n){r.classList.remove("wide-footer"),o&&o.remove();return}let s=pe();if(r&&r.classList.toggle("wide-footer",!s),s&&o){a?o.remove():i.appendChild(o);return}!s&&a&&(o?a.remove():r.prepend(a))}postCardUpdateHook(){this.adaptForMobile(),this.adjustTitleWidth()}get stockCheckbox(){return this.card.checkboxLabel?ln`<label id="stock-checkbox">
+`;var Ut={title:{tag:"p",slot:"heading-xs"},prices:{tag:"p",slot:"heading-m"},promoText:{tag:"p",slot:"promo-text"},description:{tag:"div",slot:"body-xs"},mnemonics:{size:"l"},callout:{tag:"div",slot:"callout-content"},quantitySelect:{tag:"div",slot:"quantity-select"},stockOffer:!0,secureLabel:!0,badge:{tag:"div",slot:"badge"},allowedBadgeColors:["spectrum-yellow-300-plans","spectrum-gray-300-plans","spectrum-gray-700-plans","spectrum-green-900-plans"],allowedBorderColors:["spectrum-yellow-300-plans","spectrum-gray-300-plans"],borderColor:{attribute:"border-color"},size:["wide","super-wide","students"],whatsIncluded:{tag:"div",slot:"whats-included"},ctas:{slot:"footer",size:"m"},style:"consonant"},xe=class extends S{constructor(t){super(t),this.adaptForMobile=this.adaptForMobile.bind(this)}get aemFragmentMapping(){return Ut}getGlobalCSS(){return cn}adaptForMobile(){let t=this.card.getAttribute("size");if(t==="students")return;if(!this.card.closest("merch-card-collection,overlay-trigger")){this.card.removeAttribute("size");return}let r=this.card.shadowRoot,n=r.querySelector("footer"),o=r.querySelector("footer #stock-checkbox"),a=r.querySelector(".body #stock-checkbox"),i=r.querySelector(".body");if(!t){n.classList.remove("wide-footer"),o&&o.remove();return}let s=pe();if(n&&n.classList.toggle("wide-footer",!s),s&&o){a?o.remove():i.appendChild(o);return}!s&&a&&(o?a.remove():n.prepend(a))}postCardUpdateHook(){this.adaptForMobile(),this.adjustTitleWidth()}get stockCheckbox(){return this.card.checkboxLabel?ln`<label id="stock-checkbox">
                 <input type="checkbox" @change=${this.card.toggleStockOffer}></input>
                 <span></span>
                 ${this.card.checkboxLabel}
