@@ -1500,7 +1500,7 @@ main > .section[class*='-up'] > .content {
 
 @media (min-width: 900px) {
   .section.sticky-top {
-    top: 64px;
+    top: var(--global-height-nav); /* header-height-change */
   }
 }
 

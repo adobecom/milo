@@ -28,7 +28,7 @@ header nav ul li > a:any-link {
   flex-direction: column;
   text-transform: uppercase;
   font-size: 16px;
-  line-height: 64px;
+  line-height: var(--global-height-nav); /* header-height-change */
   padding: 0 10px;
   color: #ff1693;
 }

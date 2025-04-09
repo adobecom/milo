@@ -911,7 +911,7 @@ header .app-launcher {
     grid-template-areas: 'main'
                          'breadcrumbs';
     background: var(--color-white);
-    min-height: 63px;
+    min-height: var(--feds-height-nav); /* header-height-change */
     border-bottom: 1px solid #EAEAEA;
   }
 
@@ -920,7 +920,7 @@ header .app-launcher {
     grid-area: main;
     grid-template-areas: 'brand navlist profile logo';
     grid-template-columns: auto 1fr auto auto auto;
-    grid-template-rows: 63px;
+    grid-template-rows: var(--feds-height-nav); /* header-height-change */
     margin: 0 auto;
   }
 
@@ -1088,7 +1088,7 @@ header .app-launcher {
   .gnav-navitem.has-menu.is-open .gnav-navitem-menu,
   .gnav-profile.gnav-navitem.has-menu.is-open .gnav-navitem-menu {
     position: fixed;
-    margin-top: 64px;
+    margin-top: var(--global-height-nav); /* header-height-change */
     padding: 0;
     z-index: 1;
   }
@@ -1150,7 +1150,7 @@ header .app-launcher {
 
   .gnav-wrapper .breadcrumbs {
     display: block;
-    margin-top: 63px;
+    margin-top: var(--feds-height-nav); /* header-height-change */
     grid-area: breadcrumbs;
     border-top: 1px solid #EAEAEA;
     border-bottom: none;
@@ -1204,8 +1204,8 @@ header .app-launcher {
     position: fixed;
     left: 0;
     right: 0;
-    top: 63px;
-    max-height: calc(100% - 63px);
+    top: var(--feds-height-nav); /* header-height-change */
+    max-height: calc(100% - var(--feds-height-nav)); /* header-height-change */
     overflow: scroll;
     display: block;
     z-index: 1;

@@ -43,7 +43,7 @@
 }
  
 header.global-navigation, header.global-navigation.feds--dark {
-  height: 64px;
+  height: var(--global-height-nav); /* header-height-change */
   visibility: hidden;
 }
 

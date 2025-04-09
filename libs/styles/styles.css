@@ -979,7 +979,7 @@ a.static:active  {
   }
 
   header.gnav ~ main {
-    margin-top: 64px;
+    margin-top: var(--global-height-nav); /* header-height-change */
   }
 
   header.gnav.has-breadcrumbs {
