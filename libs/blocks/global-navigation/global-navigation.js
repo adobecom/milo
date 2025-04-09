@@ -1283,7 +1283,7 @@ class Gnav {
             const popup = dropdownTrigger.nextElementSibling;
             // document.body.style.top should always be set
             // at this point by calling disableMobileScroll
-            if (popup) {
+            if (popup && this.isLocalNav()) {
               this.updatePopupPosition(popup);
             }
             makeTabActive(popup);
