@@ -155,6 +155,23 @@ describe('Checkbox Area Component', () => {
     expect(groups[0].classList.contains('selected')).to.be.false;
   });
 
+  it('handles tab switching correctly', async () => {
+    const tabs = checkboxComponent.querySelectorAll('.checkbox-tab');
+    const secondTab = tabs[1]; // Translated tab
+
+    // Click second tab
+    secondTab.click();
+
+    // Check tab selection
+    expect(secondTab.classList.contains('selected')).to.be.true;
+    expect(tabs[0].classList.contains('selected')).to.be.false;
+
+    // Check group visibility
+    const groups = checkboxComponent.querySelectorAll('.checkbox-grouping');
+    expect(groups[1].classList.contains('selected')).to.be.true;
+    expect(groups[0].classList.contains('selected')).to.be.false;
+  });
+
   it('handles select all functionality correctly', async () => {
     const selectButton = checkboxComponent.querySelector('.select');
     const firstGroup = checkboxComponent.querySelector('.checkbox-grouping.selected');
@@ -174,6 +191,47 @@ describe('Checkbox Area Component', () => {
     checkboxes.forEach((checkbox) => {
       expect(checkbox.checked).to.be.false;
     });
+    expect(selectButton.textContent).to.equal('select all');
+  });
+
+  it('unchecks all checkboxes when switching tabs', async () => {
+    const selectButton = checkboxComponent.querySelector('.select');
+    const tabs = checkboxComponent.querySelectorAll('.checkbox-tab');
+    const firstTab = tabs[0];  // English tab
+    const secondTab = tabs[1]; // Translated tab
+
+    // Select all checkboxes in first tab
+    selectButton.click();
+    const firstGroupCheckboxes = checkboxComponent.querySelector('.checkbox-grouping.selected')
+      .querySelectorAll('input[type="checkbox"]');
+    firstGroupCheckboxes.forEach(checkbox => {
+      expect(checkbox.checked).to.be.true;
+    });
+
+    // Switch to second tab
+    secondTab.click();
+
+    // Verify tab selection
+    expect(secondTab.classList.contains('selected')).to.be.true;
+    expect(firstTab.classList.contains('selected')).to.be.false;
+
+    // Verify group visibility
+    const groups = checkboxComponent.querySelectorAll('.checkbox-grouping');
+    expect(groups[1].classList.contains('selected')).to.be.true;
+    expect(groups[0].classList.contains('selected')).to.be.false;
+
+    // Verify all checkboxes in first tab are now unchecked
+    firstGroupCheckboxes.forEach(checkbox => {
+      expect(checkbox.checked).to.be.false;
+    });
+
+    // Verify all checkboxes in second tab are unchecked
+    const secondGroupCheckboxes = groups[1].querySelectorAll('input[type="checkbox"]');
+    secondGroupCheckboxes.forEach(checkbox => {
+      expect(checkbox.checked).to.be.false;
+    });
+
+    // Verify select button text is reset
     expect(selectButton.textContent).to.equal('select all');
   });
 });
