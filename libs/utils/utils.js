@@ -233,7 +233,7 @@ export function getLanguage(languages, locales, pathname = window.location.pathn
 
   if (!language.ietf) language.ietf = `${languageString}${language.region ? `_${language.region.toUpperCase()}` : ''}`;
   language.language = languageString;
-  language.prefix = `/${languageString}${regionPath}`;
+  language.prefix = `${languageString === 'en' && !regionPath ? '' : '/'}${languageString}${regionPath}`;
   return language;
 }
 
