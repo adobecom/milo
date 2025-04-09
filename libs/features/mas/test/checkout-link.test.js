@@ -209,6 +209,15 @@ describe('class "CheckoutLink"', () => {
         );
     });
 
+    it('sets # as href when modal option is true', async () => {
+        await initMasCommerceService();
+        const checkoutLink = mockCheckoutLink('abm', {
+            modal: 'true'
+        });
+        await checkoutLink.onceSettled();
+        expect(checkoutLink.getAttribute('href')).to.equal('#');
+    });
+
     describe('property "isCheckoutLink"', () => {
         it('returns true', async () => {
             await initMasCommerceService();
@@ -284,27 +293,35 @@ describe('class "CheckoutLink"', () => {
             await checkoutLink.onceSettled();
         });
 
-        describe('setModalType', () => {
-            it('handles all valid modal types', () => {
-                const modalTypes = ['twp', 'd2p', 'crm'];
-                
-                modalTypes.forEach(type => {
-                    const url = `https://commerce.adobe.com/store/checkout?modal=${type}`;
-                    const modalType = checkoutLink.setModalType(checkoutLink, url);
+        it('sets the opens3in1Modal property', () => {
+          checkoutLink.setAttribute('data-modal', 'crm');
+          expect(checkoutLink.opens3in1Modal).to.be.true;
+        })
 
-                    expect(modalType).to.equal(type);
-                    expect(checkoutLink.getAttribute('data-modal-type')).to.equal(type);
-                });
-            });
+        it('does not set the opens3in1Modal property if the modal is not a 3-in-1 modal', () => {
+          checkoutLink.setAttribute('data-modal', 'true');
+          expect(checkoutLink.opens3in1Modal).to.be.false;
+        })
 
-            it('does not set modal type for invalid modal parameter', () => {
-                const url = 'https://commerce.adobe.com/store/checkout?modal=invalid';
-                const modalType = checkoutLink.setModalType(checkoutLink, url);
-
-                expect(modalType).to.be.undefined;
-                expect(checkoutLink.getAttribute('data-modal-type')).to.be.null;
-            });
+        it('sets opens3in1Modal to false when mas-ff-3in1 meta tag is set to off', () => {
+            const meta = document.createElement('meta');
+            meta.setAttribute('name', 'mas-ff-3in1');
+            meta.setAttribute('content', 'off');
+            document.head.appendChild(meta);
+            checkoutLink.setAttribute('data-modal', 'twp');
+            expect(checkoutLink.opens3in1Modal).to.be.false;
+            document.head.removeChild(meta);
         });
+
+        it('sets opens3in1Modal to false when mas-ff-3in1 meta tag is present, but not set to off', () => {
+          const meta = document.createElement('meta');
+          meta.setAttribute('name', 'mas-ff-3in1');
+          meta.setAttribute('content', 'on');
+          document.head.appendChild(meta);
+          checkoutLink.setAttribute('data-modal', 'twp');
+          expect(checkoutLink.opens3in1Modal).to.be.true;
+          document.head.removeChild(meta);
+      });
     });
 
     describe('logged-in features', () => {
