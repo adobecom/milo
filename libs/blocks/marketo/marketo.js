@@ -32,6 +32,7 @@ const MUNCHKIN_ID = 'marketo munckin';
 const SUCCESS_TYPE = 'form.success.type';
 const SUCCESS_CONTENT = 'form.success.content';
 const SUCCESS_SECTION = 'form.success.section';
+const SUCCESS_HIDE_SECTION = 'form.success.hide section';
 const FORM_MAP = {
   'success-type': SUCCESS_TYPE,
   'destination-type': SUCCESS_TYPE,
@@ -98,7 +99,7 @@ export const setPreferences = (formData) => {
   Object.entries(formData).forEach(([key, value]) => setPreference(key, value));
 };
 
-const showSuccessSection = (formData) => {
+const toggleSuccessSection = (formData) => {
   const show = async (sections) => {
     sections.forEach((section) => section.classList.remove('hide-block'));
     await new Promise((resolve) => { setTimeout(resolve, 300); });
@@ -107,22 +108,39 @@ const showSuccessSection = (formData) => {
     const offsetPosition = targetPosition + window.scrollY - pageTop;
     window.scrollTo(0, offsetPosition);
   };
-  const successClass = formData[SUCCESS_SECTION]?.toLowerCase().replaceAll(' ', '-');
-  if (!successClass) {
+
+  const hide = async (sections) => {
+    sections.forEach((section) => section.classList.add('hide-block'));
+    await new Promise((resolve) => { setTimeout(resolve, 300); });
+  };
+
+  const showClass = formData[SUCCESS_SECTION]?.toLowerCase().replaceAll(' ', '-');
+  const hideClass = formData[SUCCESS_HIDE_SECTION]?.toLowerCase().replaceAll(' ', '-');
+  if (!showClass) {
     window.lana?.log('Error showing Marketo success section', { tags: 'warn,marketo' });
     return;
   }
 
-  let successSections = document.querySelectorAll(`.section.${successClass}`);
+  let successSections = document.querySelectorAll(`.section.${showClass}`);
+  let hideSections = document.querySelectorAll(`.section.${hideClass}`);
+
   show(successSections);
+  hide(hideSections);
+
   document.addEventListener(
     MILO_EVENTS.DEFERRED,
     () => {
-      successSections = document.querySelectorAll(`.section.${successClass}`);
+      successSections = document.querySelectorAll(`.section.${showClass}`);
+      hideSections = document.querySelectorAll(`.section.${hideClass}`);
       show(successSections);
+      hide(hideSections);
       /* c8 ignore next 3 */
-      if (!document.querySelector(`.section.${successClass}`)) {
-        window.lana?.log(`Error showing Marketo success section ${successClass}`, { tags: 'warn,marketo' });
+      if (!document.querySelector(`.section.${showClass}`)) {
+        window.lana?.log(`Error showing Marketo success section ${showClass}`, { tags: 'warn,marketo' });
+      }
+
+      if (!document.querySelector(`.section.${hideClass}`)) {
+        window.lana?.log(`Error hiding Marketo success section ${hideClass}`, { tags: 'warn,marketo' });
       }
     },
     false,
@@ -146,7 +164,7 @@ export const formSuccess = (formEl, formData) => {
   }
 
   if (formData?.[SUCCESS_TYPE] !== 'section') return true;
-  showSuccessSection(formData);
+  toggleSuccessSection(formData);
   setPreference(SUCCESS_TYPE, 'message');
   return false;
 };
@@ -236,7 +254,7 @@ export default function init(el) {
 
   if (formData[SUCCESS_TYPE] === 'section' && ungated) {
     el.classList.add('hide-block');
-    showSuccessSection(formData);
+    toggleSuccessSection(formData);
     return;
   }
 
