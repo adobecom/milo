@@ -380,6 +380,9 @@ const decorateMenu = (config) => logErrorFor(async () => {
     await decorateColumns({ content: config.item, separatorTagName: 'H2' });
   }
 
+  await new Promise((resolve) => setTimeout(resolve, 5000));
+  // Remove the loading state created in delayDropdownDecoration
+  config.template?.querySelector('.feds-popup.loading')?.remove();
   config.template?.append(menuTemplate);
 }, 'Decorate menu failed', 'gnav-menu', 'info');
 

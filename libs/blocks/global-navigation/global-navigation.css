@@ -1368,3 +1368,83 @@ html:has(body.disable-ios-scroll) { /* this class is only added on iOS */
   position: relative;
   display: block;
 }
+
+/*
+ *
+ *
+ * Skeleton Loader
+ *
+ *
+ */
+
+.feds-popup.loading .feds-promo,
+.feds-popup.loading .first-headline-one,
+.feds-popup.loading .first-headline-two,
+.feds-popup.loading .feds-navLink-content .feds-navLink-title,
+.feds-popup.loading .feds-navLink-content .feds-navLink-description, 
+.feds-popup.loading .feds-cta-wrapper,
+.feds-popup.loading .feds-menu-headline:not(:has(div)),
+.feds-popup.loading .feds-crossCloudMenu-item .feds-navLink {
+  border-radius: 2px;
+  opacity: 0.4;
+  background: linear-gradient(270deg, #D3D3D3, #EAEAEA, #D3D3D3);
+  background-size: 200% 200%;
+  animation: shimmer 0.6s infinite alternate linear;
+  animation-direction: alternate;
+}
+
+.feds-popup.loading .feds-promo {
+  height: 318px;
+  width: 260px;
+}
+
+.feds-popup.loading .first-headline-one {
+  height: 14px;
+  width: 172px;
+}
+
+.feds-popup.loading .first-headline-two {
+  height: 25px;
+  width: 242px;
+  margin-top: 5px;
+}
+
+.feds-popup.loading .feds-navLink-content .feds-navLink-title {
+  height: 14px;
+  width: 85px;
+}
+
+.feds-popup.loading .feds-navLink-content .feds-navLink-description {
+  height: 14px;
+  width: 161px;
+  margin-top: 5px;
+}
+
+.feds-popup.loading .feds-cta-wrapper {
+  height: 25px;
+  width: 181px;
+  padding: 0;
+  margin: 60px 32px 6px 32px;
+}
+
+.feds-popup.loading .feds-menu-headline:not(:has(div)) {
+  height: 14px;
+  width: 86px;
+  padding: 0;
+}
+
+.feds-popup.loading .feds-crossCloudMenu-item .feds-navLink {
+  height: 14px;
+  width: 84px;
+  padding: 0px;
+  margin: 0px 28px;
+}
+
+@keyframes shimmer {
+  from {
+    background-position: 0% 100%;
+  }
+  to {
+    background-position: 100% 0%;
+  }
+}
