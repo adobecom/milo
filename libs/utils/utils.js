@@ -115,8 +115,8 @@ const AUTO_BLOCKS = [
   { merch: '/miniplans' },
   { 'merch-card-collection-autoblock': 'mas.adobe.com/studio.html#content-type=merch-card-collection', styles: false },
   { 'merch-card-autoblock': 'mas.adobe.com/studio.html', styles: false },
-  { m7: '/creativecloud/business-plans.html', styles: false },
-  { m7: '/creativecloud/education-plans.html', styles: false },
+  { m7: '/creativecloud/business-plans', styles: false },
+  { m7: '/creativecloud/education-plans', styles: false },
 ];
 const DO_NOT_INLINE = [
   'accordion',
