@@ -1,7 +1,10 @@
 :root {
   --modal-focus-color: #109cde;
   --modal-max-height: calc((100vh - 6px) - 2em);
-  --modal-max-width-tablet: 80vw;
+  --modal-z-index: 102;
+  --modal-z-index-curtain: 101;
+  --jarvis-z-index-override: 100;
+  --tall-video-padding: var(--spacing-xl);
 }
 
 .dialog-modal {
@@ -20,7 +23,7 @@
   user-select: text;
   visibility: visible;
   overflow: auto;
-  z-index: 102;
+  z-index: var(--modal-z-index);
 }
 
 .dialog-modal.upgrade-flow-modal,
@@ -107,7 +110,7 @@
   bottom: 0;
   left: 0;
   background: rgb(50 50 50 / 80%);
-  z-index: 101;
+  z-index: var(--modal-z-index-curtain);
 }
 
 .dialog-modal button.dialog-close {
@@ -241,13 +244,14 @@
 .dialog-modal.tall-video .milo-video {
   aspect-ratio: var(--aspect-ratio-tall);
   height: auto;
+  max-height: calc(var(--modal-max-height) - 2 * var(--tall-video-padding));
   padding-bottom: 0;
   min-width: 90vw;
 }
 
 @media (min-width: 600px) {
   .dialog-modal {
-    max-width: var(--modal-max-width-tablet);
+    max-width: 80vw;
     width: fit-content;
   }
 
@@ -259,11 +263,18 @@
     min-width: 80vw;
   }
 
+  .dialog-modal .milo-video {
+    padding-bottom: 0;
+    height: auto;
+    aspect-ratio: var(--aspect-ratio-wide);
+    max-height: var(--modal-max-height);
+  }
+
   .dialog-modal.tall-video {
     --modal-width-var: 50vw;
 
     max-width: var(--modal-width-var);
-    padding: var(--spacing-xl);
+    padding: var(--tall-video-padding);
   }
 
   .dialog-modal.tall-video .milo-video {
@@ -286,10 +297,10 @@
   }
 }
 
-@media (min-width: 900px) and (min-height: 431px)  and (orientation: landscape) {
+@media (min-width: 600px) and (min-height: 431px)  and (orientation: landscape) {
   .dialog-modal.tall-video,
   .dialog-modal.tall-video .milo-video {
-    --modal-width-var: 25vw;
+    --modal-width-var: 35vw;
   }
 }
 
@@ -409,12 +420,6 @@
   .dialog-modal.tall-video,
   .dialog-modal.tall-video .milo-video {
     --modal-width-var: 25vw;
-
-    max-height: 1200px;
-  }
-
-  .dialog-modal.tall-video .milo-video {
-    height: 100%;
   }
 }
 
@@ -443,5 +448,5 @@
 }
 
 body:has(.dialog-modal) #adbMsgClientWrapper #adbmsgContainer #adbmsgCta {
-  z-index: 99;
+  z-index: var(--jarvis-z-index-override);
 }
