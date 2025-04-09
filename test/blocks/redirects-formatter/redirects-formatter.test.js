@@ -10,7 +10,7 @@ const {
   SELECT_ALL_REGIONS,
   DESELECT_ALL_REGIONS,
   NO_LOCALE_ERROR,
-} = await import('../../../blocks/redirects-formatter/redirects-formatter.js');
+} = await import('../../../libs/blocks/redirects-formatter/redirects-formatter.js');
 const { htmlIncluded, htmlExcluded, externalUrls, mixedSpaceTabUrls } = await import('./mocks/textAreaValues.js');
 
 describe('Redirects Formatter', () => {
