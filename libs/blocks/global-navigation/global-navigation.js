@@ -1117,11 +1117,15 @@ class Gnav {
   updatePopupPosition = (activePopup) => {
     const popup = activePopup || this.elements.mainNav.querySelector('.feds-navItem--section.feds-dropdown--active .feds-popup');
     if (!popup) return;
-    const yOffset = window.scrollY || Math.abs(parseInt(document.body.style.top, 10)) || 0;
+    const hasPromo = this.block.classList.contains('has-promo');
     const promoHeight = this.elements.aside?.clientHeight;
-    const navOffset = this.block.classList.contains('has-promo')
-      ? `var(--feds-height-nav) - ${promoHeight}px`
-      : 'var(--feds-height-nav)';
+
+    if (!this.isLocalNav() && hasPromo) {
+      popup.style.top = `calc(0px - var(--feds-height-nav) - ${promoHeight}px)`;
+      return;
+    }
+    const yOffset = window.scrollY || Math.abs(parseInt(document.body.style.top, 10)) || 0;
+    const navOffset = hasPromo ? `var(--feds-height-nav) - ${promoHeight}px` : 'var(--feds-height-nav)';
     popup.removeAttribute('style');
     popup.style.top = `calc(${yOffset}px - ${navOffset} - 2px)`;
     const { isPresent, isSticky, height } = getBranchBannerInfo();
@@ -1283,7 +1287,7 @@ class Gnav {
             const popup = dropdownTrigger.nextElementSibling;
             // document.body.style.top should always be set
             // at this point by calling disableMobileScroll
-            if (popup && this.isLocalNav()) {
+            if (popup) {
               this.updatePopupPosition(popup);
             }
             makeTabActive(popup);
