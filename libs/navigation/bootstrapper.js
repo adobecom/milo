@@ -1,10 +1,15 @@
 /* eslint import/no-relative-packages: 0 */
 export default async function bootstrapBlock(initBlock, blockConfig) {
-  const { name, targetEl, layout, noBorder, jarvis } = blockConfig;
+  const { name, targetEl, layout, noBorder, jarvis, useCompactGnav } = blockConfig;
   const { getConfig, createTag, loadScript } = await import('../utils/utils.js');
 
   const setNavLayout = () => {
     const element = document.querySelector(targetEl);
+    if (useCompactGnav) {
+      document.documentElement.style.setProperty('--global-height-nav', '56px');
+      document.documentElement.style.setProperty('--feds-height-nav', '55px');
+    }
+
     if (layout === 'fullWidth') {
       element.classList.add('feds--full-width');
     }
