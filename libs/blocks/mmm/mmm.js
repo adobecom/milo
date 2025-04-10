@@ -52,7 +52,7 @@ const getInitialValues = () => {
   return getLocalStorageFilter();
 };
 
-const SEARCH_INITIAL_VALUES = getInitialValues() ?? {
+const SEARCH_INITIAL_VALUES = () => getInitialValues() ?? {
   lastSeenManifest: isReport ? LAST_SEEN_OPTIONS.week.key : LAST_SEEN_OPTIONS.threeMonths.key,
   pageNum: 1,
   subdomain: SUBDOMAIN_OPTIONS.www.key,
@@ -253,7 +253,7 @@ function createDropdowns(data) {
     Object.keys(options).forEach((option) => {
       const optionEl = createTag('option', { value: option }, options[option]);
       select.append(optionEl);
-      const startingVal = SEARCH_INITIAL_VALUES[key];
+      const startingVal = SEARCH_INITIAL_VALUES()[key];
       if (startingVal === option) optionEl.setAttribute('selected', 'selected');
     });
     select.addEventListener('change', () => filterPageList());
@@ -280,7 +280,7 @@ function createSearchField() {
   );
   searchContainer.append(searchForm);
   const searchField = searchForm.querySelector('textarea');
-  searchField.value = SEARCH_INITIAL_VALUES.filter || '';
+  searchField.value = SEARCH_INITIAL_VALUES().filter || '';
 
   searchField.addEventListener('keyup', debounce((event) => filterPageList(null, null, event)));
   searchField.addEventListener('change', debounce((event) => filterPageList(null, null, event)));
@@ -299,7 +299,7 @@ function createLastSeenManifestAndDomainDD() {
       <label for="mmm-lastSeenManifest">Manifests ${isReport ? 'not ' : ''}seen in the last:</label>
       <select id="mmm-lastSeenManifest" type="text" name="mmm-lastSeenManifest" class="text-field-input">
         ${Object.keys(LAST_SEEN_OPTIONS).map((key) => `
-          <option value="${LAST_SEEN_OPTIONS[key].key}" ${SEARCH_INITIAL_VALUES.lastSeenManifest === LAST_SEEN_OPTIONS[key].key ? 'selected' : ''}>${LAST_SEEN_OPTIONS[key].value}</option>
+          <option value="${LAST_SEEN_OPTIONS[key].key}" ${SEARCH_INITIAL_VALUES().lastSeenManifest === LAST_SEEN_OPTIONS[key].key ? 'selected' : ''}>${LAST_SEEN_OPTIONS[key].value}</option>
         `)}
       </select>
     </div>
@@ -307,7 +307,7 @@ function createLastSeenManifestAndDomainDD() {
       <label for="mmm-subdomain">Subdomain:</label>
       <select id="mmm-subdomain" type="text" name="mmm-subdomain" class="text-field-input">
         ${Object.keys(SUBDOMAIN_OPTIONS).map((key) => `
-          <option value="${SUBDOMAIN_OPTIONS[key].key}" ${SEARCH_INITIAL_VALUES.subdomain === SUBDOMAIN_OPTIONS[key].key ? 'selected' : ''}>${SUBDOMAIN_OPTIONS[key].value}</option>
+          <option value="${SUBDOMAIN_OPTIONS[key].key}" ${SEARCH_INITIAL_VALUES().subdomain === SUBDOMAIN_OPTIONS[key].key ? 'selected' : ''}>${SUBDOMAIN_OPTIONS[key].value}</option>
         `)}
       </select>
     </div>
@@ -474,7 +474,7 @@ async function createPageList(el, search) {
     DATA_TYPE.JSON,
     {
       method: 'POST',
-      body: JSON.stringify(search ?? SEARCH_INITIAL_VALUES),
+      body: JSON.stringify(search ?? SEARCH_INITIAL_VALUES()),
     },
   );
   if (isReport) {
