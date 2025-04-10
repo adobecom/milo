@@ -460,7 +460,7 @@ export function localizeLink(
     if (isLocalizedLink) return processedHref;
 
     let { prefix } = locale;
-    const site = siteLanguages?.find((s) => s.pathMatches.some((d) => isPathMatch(url.href, d)));
+    const site = siteLanguages?.find((s) => s.pathMatches.some((d) => isPathMatch(d, url.href)));
 
     // On a locale based site, but target url has language based paths
     if (!locale.language && site && localeToLanguageMap) {
@@ -1585,7 +1585,7 @@ export async function loadArea(area = document) {
     appendSuffixToTitles();
   }
   const config = getConfig();
-  if ((!localeToLanguageMap && !siteLanguages) && (config.languages || hasLanguageLinks(area))) {
+  if (!localeToLanguageMap && !siteLanguages && (config.languages || hasLanguageLinks(area))) {
     await loadLanguageConfig();
   }
 
