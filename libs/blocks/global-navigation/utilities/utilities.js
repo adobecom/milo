@@ -656,6 +656,24 @@ export const [branchBannerLoadCheck, getBranchBannerInfo] = (() => {
   ];
 })();
 
+const getBrandImage = (image, brandImageOnly) => {
+  const brandIcons =  isDarkMode() ? darkIcons : icons;
+  // Return the default Adobe logo if an image is not available
+  if (!image) return brandImageOnly ? brandIcons.brand : brandIcons.company;
+
+  // Try to decorate image as PNG, JPG or JPEG
+  const imgText = image?.textContent || '';
+  const [source, alt] = imgText.split('|');
+  if (source.trim().length) {
+    const img = toFragment`<img src="${source.trim()}" />`;
+    if (alt) img.alt = alt.trim();
+    return img;
+  }
+
+  // Return the default Adobe logo if the image could not be decorated
+  return brandImageOnly ? brandIcons.brand : brandIcons.company;
+};
+
 export const decorateGenericLogo = ({ rawBlock, classPrefix, includeLabel = true, analyticsValue } = {}) => {
   if (!rawBlock) return '';
 
