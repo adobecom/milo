@@ -667,7 +667,7 @@ body.preflight-assets-analysis {
 
 picture:has(.picture-meta) {
   position: relative;
-  display: block;
+  display: block !important;
 }
 
 .picture-meta {
