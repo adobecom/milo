@@ -4,11 +4,11 @@ export default async function bootstrapBlock(initBlock, blockConfig) {
   const { getConfig, createTag, loadScript } = await import('../utils/utils.js');
 
   const setNavLayout = () => {
-    const element = document.querySelector(targetEl);
-    if (useCompactGnav) {
-      document.documentElement.style.setProperty('--global-height-nav', '56px');
-      document.documentElement.style.setProperty('--feds-height-nav', '55px');
-    }
+    const element = document.querySelector(targetEl);      
+    const gnavHeight = useCompactGnav ? '56px' : '64px';
+    const navWrapperHeight = useCompactGnav ? '55px' : '63px';
+    document.documentElement.style.setProperty('--global-height-nav', gnavHeight);
+    document.documentElement.style.setProperty('--feds-height-nav', navWrapperHeight);
 
     if (layout === 'fullWidth') {
       element.classList.add('feds--full-width');
