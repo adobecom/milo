@@ -224,6 +224,15 @@ header.new-nav.feds--dark .feds-nav > section.feds-navItem > .feds-popup .top-ba
   .feds--dark .feds-promo-link:hover {
     color: var(--feds-color-link--hover);
   }
+  /* This is to fix the Dark theme on Adobe Home
+   * Currently bacom doesn't have a dark theme
+   * so we have no designs for the gradient on
+   * dark theme.So for now we're making the
+   * background transparent
+   */
+  .feds-navLink--gray-gradient {
+    background: transparent;
+  }
 }
 
 @media (min-width: 1200px) {
