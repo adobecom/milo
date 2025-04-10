@@ -4,6 +4,7 @@ import {
 import { replaceKey } from '../../features/placeholders.js';
 
 export const CHECKOUT_LINK_CONFIG_PATH = '/commerce/checkout-link.json'; // relative to libs.
+export const CHECKOUT_LINK_SANDBOX_CONFIG_PATH = '/commerce/checkout-link-sandbox.json'; // relative to libs.
 
 export const PRICE_TEMPLATE_DISCOUNT = 'discount';
 export const PRICE_TEMPLATE_OPTICAL = 'optical';
@@ -104,7 +105,7 @@ const GeoMap = {
   in_en: 'IN_en',
   in_hi: 'IN_hi',
   id_en: 'ID_en',
-  id_id: 'ID_in',
+  id_id: 'ID_id',
   nz: 'NZ_en',
   sa_ar: 'SA_ar',
   sa_en: 'SA_en',
@@ -280,9 +281,13 @@ export async function fetchEntitlements() {
   return fetchEntitlements.promise;
 }
 
-export async function fetchCheckoutLinkConfigs(base = '') {
+export async function fetchCheckoutLinkConfigs(base = '', env = '') {
+  const params = new URLSearchParams(window.location.search);
+  const path = params.get('checkout-link-sandbox') === 'on' && env !== 'prod'
+    ? `${base}${CHECKOUT_LINK_SANDBOX_CONFIG_PATH}`
+    : `${base}${CHECKOUT_LINK_CONFIG_PATH}`;
   fetchCheckoutLinkConfigs.promise = fetchCheckoutLinkConfigs.promise
-    ?? fetch(`${base}${CHECKOUT_LINK_CONFIG_PATH}`).catch((e) => {
+    ?? fetch(path).catch((e) => {
       log?.error('Failed to fetch checkout link configs', e);
     }).then((mappings) => {
       if (!mappings?.ok) return { data: [] };
@@ -293,11 +298,12 @@ export async function fetchCheckoutLinkConfigs(base = '') {
 
 export async function getCheckoutLinkConfig(productFamily, productCode, paCode) {
   let { base } = getConfig();
+  const { env } = getConfig();
   if (/\.page$/.test(document.location.origin)) {
     /* c8 ignore next 2 */
     base = base.replace('.live', '.page');
   }
-  const checkoutLinkConfigs = await fetchCheckoutLinkConfigs(base);
+  const checkoutLinkConfigs = await fetchCheckoutLinkConfigs(base, env);
   if (!checkoutLinkConfigs.data.length) return undefined;
   const { locale: { region } } = getConfig();
 
@@ -684,6 +690,7 @@ export async function getPriceContext(el, params) {
   const displayRecurrence = params.get('term');
   const displayTax = params.get('tax');
   const forceTaxExclusive = params.get('exclusive');
+  const alternativePrice = params.get('alt');
   // The PRICE_TEMPLATE_MAPPING supports legacy OST links
   const template = PRICE_TEMPLATE_MAPPING.get(params.get('type')) ?? PRICE_TEMPLATE_REGULAR;
   return {
@@ -693,6 +700,7 @@ export async function getPriceContext(el, params) {
     displayRecurrence,
     displayTax,
     forceTaxExclusive,
+    alternativePrice,
     template,
   };
 }
@@ -731,7 +739,10 @@ export async function buildCta(el, params) {
   }
 
   // Adding aria-label for checkout-link using productFamily and customerSegment as placeholder key.
-  if (!cta.getAttribute('aria-label')) {
+  if (el.ariaLabel) {
+    // If Milo aria-label available from sharepoint doc, just use it.
+    cta.setAttribute('aria-label', el.ariaLabel);
+  } else if (!cta.ariaLabel) {
     cta.onceSettled().finally(async () => {
       const productFamily = cta.value[0]?.productArrangement?.productFamily;
       const marketSegment = cta.value[0]?.marketSegments[0];

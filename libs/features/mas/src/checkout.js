@@ -85,7 +85,7 @@ export function Checkout({ providers, settings }) {
      * @param {*} options
      * @returns a checkout URL
      */
-    function buildCheckoutURL(offers, options) {
+    function buildCheckoutURL(offers, options, modalType) {
       /* c8 ignore next 3 */
         if (!Array.isArray(offers) || !offers.length || !options) {
             return '';
@@ -101,7 +101,7 @@ export function Checkout({ providers, settings }) {
             quantity,
             ...rest
         } = collectCheckoutOptions(options);
-        const context = window.frameElement ? 'if' : 'fp';
+        const context = window.frameElement || modalType ? 'if' : 'fp';
         const data = {
             checkoutPromoCode,
             clientId,
@@ -118,9 +118,11 @@ export function Checkout({ providers, settings }) {
             const [{ offerId, offerType, productArrangementCode }] = offers;
             const {
                 marketSegments: [marketSegment],
+                customerSegment,
             } = offers[0];
             Object.assign(data, {
                 marketSegment,
+                customerSegment,
                 offerType,
                 productArrangementCode,
             });
@@ -138,7 +140,7 @@ export function Checkout({ providers, settings }) {
                 })),
             );
         }
-        return buildCheckoutUrl(data);
+        return buildCheckoutUrl(data, modalType);
     }
 
     const { createCheckoutLink } = CheckoutLink;

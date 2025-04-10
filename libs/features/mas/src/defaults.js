@@ -22,9 +22,8 @@ export const Defaults = Object.freeze({
     modal: false,
     promotionCode: '',
     quantity: 1,
+    alternativePrice: false,
     wcsApiKey: 'wcms-commerce-ims-ro-user-milo',
-    wcsBufferDelay: 1,
     wcsURL: 'https://www.adobe.com/web_commerce_artifact',
     landscape: Landscape.PUBLISHED,
-    wcsBufferLimit: 1,
 });

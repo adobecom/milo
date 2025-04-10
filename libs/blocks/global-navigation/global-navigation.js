@@ -295,7 +295,9 @@ const closeOnClickOutside = (e, isLocalNav, navWrapper) => {
     .find((openItem) => openItem.parentElement.contains(e.target));
 
   if (!isClickedElemOpen) {
-    closeAllDropdowns();
+    const animatedElement = isLocalNav ? document.querySelector('header.new-nav + .feds-localnav .feds-localnav-items') : undefined;
+    const animationType = isLocalNav ? 'transition' : undefined;
+    closeAllDropdowns({ animatedElement, animationType });
   }
 };
 
@@ -429,6 +431,7 @@ class Gnav {
         ${getMetadata('product-entry-cta')?.toLowerCase() === 'on' ? this.decorateProductEntryCTA() : ''}
         ${getConfig().searchEnabled === 'on' ? toFragment`<div class="feds-client-search"></div>` : ''}
         ${this.useUniversalNav ? this.blocks.universalNav : ''}
+        ${getConfig().selfIntegrateUnav ? toFragment`<div class="feds-client-unav"></div>` : ''}
         ${(!this.useUniversalNav && this.blocks.profile.rawElem) ? this.blocks.profile.decoratedElem : ''}
         ${this.decorateLogo()}
       </nav>
@@ -486,8 +489,15 @@ class Gnav {
       localNav.querySelector('.feds-localnav-title').setAttribute('daa-ll', `${title}_localNav|${isActive ? 'close' : 'open'}`);
     });
 
-    localNav.querySelector('.feds-localnav-curtain').addEventListener('click', (e) => {
-      trigger({ element: e.currentTarget, event: e, type: 'localNav-curtain' });
+    const curtain = localNav.querySelector('.feds-localnav-curtain');
+    curtain.addEventListener('click', (e) => {
+      trigger({
+        element: e.currentTarget,
+        event: e,
+        type: 'localNav-curtain',
+        animatedElement: itemWrapper,
+        animationType: 'transition',
+      });
     });
     const promo = document.querySelector('.feds-promo-aside-wrapper');
     if (promo) localNav.classList.add('has-promo');
@@ -498,8 +508,17 @@ class Gnav {
       // note: ios safari changes between -0.34375, 0, and 0.328125
       return rect.top === 0;
     };
-    window.addEventListener('scroll', () => {
+    window.addEventListener('scroll', (e) => {
       const classList = this.elements.localNav?.classList;
+      if (classList.contains('feds-localnav--active')) {
+        trigger({
+          element: curtain,
+          event: e,
+          type: 'localNav-curtain',
+          animatedElement: itemWrapper,
+          animationType: 'transition',
+        });
+      }
       if (isAtTop()) {
         if (!classList?.contains('is-sticky')) {
           classList?.add('is-sticky');

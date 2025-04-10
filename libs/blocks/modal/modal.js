@@ -211,6 +211,7 @@ export async function getModal(details, custom) {
       with the `commerce-frame` or `dynamic-height` classes */
       iframe.style.height = '100%';
     }
+    if (!custom?.closeEvent) dialog.addEventListener('iframe:modal:closed', () => closeModal(dialog));
   }
 
   return dialog;
