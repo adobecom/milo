@@ -7,6 +7,7 @@ export const API_URLS = {
   pageList: `${API_DOMAIN}/get-pages`,
   pageDetails: `${API_DOMAIN}/get-page?id=`,
   save: `${API_DOMAIN}/save-mep-call`,
+  report: `${API_DOMAIN}/get-report`,
 };
 
 function updatePreviewButton(popup, pageId) {
