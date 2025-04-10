@@ -36,7 +36,6 @@
 .susi-product-title {
   display: inline-block;
   color: #222;
-  font-family: "Adobe Clean";
   font-size: 18px;
   font-style: normal;
   font-weight: 700;
@@ -44,7 +43,6 @@
 
 .login-title {
   color: #000;
-  font-family: "Adobe Clean";
   font-size: 22px;
   font-style: normal;
   font-weight: 900;
@@ -64,7 +62,6 @@
   justify-items: center;
   color: #222;
   font-size: 14px;
-  font-family: "Adobe Clean";
   font-style: normal;
   font-weight: 700;
   line-height: 25px;
@@ -127,7 +124,6 @@ susi-sentry-light {
   .login-description {
     display: block;
     color: #222;
-    font-family: "Adobe Clean";
     font-size: 16px;
     font-style: normal;
     font-weight: 400;
@@ -163,7 +159,6 @@ susi-sentry-light {
   .susi-product-title {
     display: inline-block;
     color: #222;
-    font-family: "Adobe Clean";
     font-size: 30px;
     font-style: normal;
     font-weight: 700;
@@ -173,7 +168,6 @@ susi-sentry-light {
   
   .susi-product-tagline {
     color: #222;
-    font-family: "Adobe Clean";
     font-style: normal;
     font-weight: 700;
     font-size: 22px;

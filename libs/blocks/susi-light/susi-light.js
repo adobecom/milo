@@ -76,11 +76,9 @@ export class SusiLight {
     this.createProductInfo(loginProduct);
     const loginTitle = createTag('div', { class: 'login-title' }, this.children[1]?.textContent);
     const loginDesc = createTag('div', { class: 'login-description' }, this.children[2]?.textContent);
+    const susiElement = this.createSusiElement();
 
-    susiWrapper.appendChild(loginProduct);
-    susiWrapper.appendChild(loginTitle);
-    susiWrapper.appendChild(loginDesc);
-    susiWrapper.appendChild(this.createSusiElement());
+    [loginProduct, loginTitle, loginDesc, susiElement].forEach((el) => susiWrapper.appendChild(el));
 
     loginContainer.appendChild(susiWrapper);
     const guestFooter = createTag('div', { class: 'guest-footer' }, this.children[4]);
