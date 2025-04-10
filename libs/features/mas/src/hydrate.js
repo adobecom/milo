@@ -188,7 +188,7 @@ export function processStockOffersAndSecureLabel(fields, merchCard, aemFragmentM
     merchCard.setAttribute('checkbox-label', settings.stockCheckboxLabel);
     merchCard.setAttribute('stock-offer-osis', settings.stockOfferOsis);
   }
-  if (settings.secureLabel && aemFragmentMapping.secureLabel) {
+  if (settings?.secureLabel && aemFragmentMapping?.secureLabel) {
     merchCard.setAttribute('secure-label', settings.secureLabel);
   }
 }
