@@ -3,8 +3,8 @@ import { sizeStyles, styles } from './merch-card.css.js';
 import './merch-icon.js';
 import {
     getVariantLayout,
-    variantFragmentMappings,
     registerVariant,
+    getFragmentMapping,
 } from './variants/variants.js';
 
 import './global.css.js';
@@ -149,9 +149,7 @@ export class MerchCard extends LitElement {
         this.handleAemFragmentEvents = this.handleAemFragmentEvents.bind(this);
     }
 
-    static getFragmentMapping(variant) {
-        return variantFragmentMappings[variant];
-    }
+    static getFragmentMapping = getFragmentMapping;
 
     firstUpdated() {
         this.variantLayout = getVariantLayout(this, false);
