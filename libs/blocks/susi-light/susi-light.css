@@ -93,6 +93,7 @@ susi-sentry-light {
   width: 348px;
   height: 466px;
   overflow: scroll;
+  scrollbar-width: none;
 }
 
 @media (min-width: 900px) {

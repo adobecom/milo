@@ -41,8 +41,7 @@ export class SusiLight {
     const loginContainer = this.createLoginContainer();
     const productInfo = this.createProductInfoElement();
 
-    this.el.appendChild(loginContainer);
-    this.el.appendChild(productInfo);
+    this.el.append(loginContainer, productInfo);
   };
 
   handleViewportChange = () => this.setBackground();
@@ -77,12 +76,10 @@ export class SusiLight {
     const loginTitle = createTag('div', { class: 'login-title' }, this.children[1]?.textContent);
     const loginDesc = createTag('div', { class: 'login-description' }, this.children[2]?.textContent);
     const susiElement = this.createSusiElement();
-
-    [loginProduct, loginTitle, loginDesc, susiElement].forEach((el) => susiWrapper.appendChild(el));
-
-    loginContainer.appendChild(susiWrapper);
     const guestFooter = createTag('div', { class: 'guest-footer' }, this.children[4]);
-    loginContainer.appendChild(guestFooter);
+
+    susiWrapper.append(loginProduct, loginTitle, loginDesc, susiElement);
+    loginContainer.append(susiWrapper, guestFooter);
 
     return loginContainer;
   };
@@ -93,8 +90,7 @@ export class SusiLight {
     const title = createTag('span', { class: 'susi-product-title' }, titleText);
     const logoURL = prodInfo[0]?.querySelector('img')?.getAttribute('src') || '';
     const logo = createTag('img', { class: 'susi-product-logo', src: logoURL, alt: `${titleText}-logo` });
-    product.appendChild(logo);
-    product.appendChild(title);
+    product.append(logo, title);
     return product;
   };
 
@@ -103,27 +99,27 @@ export class SusiLight {
     const productInfo = createTag('div', { class: 'susi-product-info' });
     const tagline = createTag('div', { class: 'susi-product-tagline' }, prodInfo[2].textContent);
     const product = createTag('div', { class: 'susi-product' });
-    productInfo.appendChild(this.createProductInfo(product));
-    productInfo.appendChild(tagline);
+    productInfo.append(this.createProductInfo(product), tagline);
     return productInfo;
   };
 
+  parseBgImg = () => {
+    const backgroundElement = this.children[0];
+
+    const href = backgroundElement?.querySelector('a')?.getAttribute('href');
+    if (href) return `url(${href})`;
+    const src = backgroundElement?.querySelector('img')?.getAttribute('src');
+    if (src) return `url${href})`;
+
+    const text = backgroundElement?.textContent?.trim();
+    const gradientPattern = /^(repeating?-)?(linear|radial|conic)-gradient\(.+\)$/;
+    if (gradientPattern.test(text)) return text;
+
+    return null;
+  };
+
   setBackground = () => {
-    let bgImg = null;
-    try {
-      const href = this.children[0]?.querySelector('a')?.getAttribute('href');
-      const src = this.children[0]?.querySelector('img')?.getAttribute('src');
-      bgImg = href || src;
-      if (bgImg) {
-        bgImg = `url(${bgImg})`;
-      } else {
-        const text = this.children[0]?.textContent?.trim();
-        const gradientPattern = /^(repeating?-)?(linear|radial|conic)-gradient\(.+\)$/;
-        if (gradientPattern.test(text)) bgImg = text;
-      }
-    } catch (e) {
-      window.lana?.log(`Product Login pages: unable to load background: ${bgImg}`);
-    }
+    const bgImg = this.parseBgImg();
     if (this.isDesktop.matches && bgImg) this.el.style.backgroundImage = bgImg;
     else this.el.style.removeProperty('background-image');
   };
