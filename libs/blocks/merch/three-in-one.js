@@ -119,7 +119,7 @@ export const handleTimeoutError = () => {
   }
 };
 
-export async function createContent(iframeUrl) {
+export function createContent(iframeUrl) {
   const content = createTag('div', { class: 'milo-iframe' });
   content.innerHTML = `<sp-theme system="light" color="light" scale="medium" dir="ltr">
   <sp-progress-circle label="progress circle" indeterminate="" size="l" dir="ltr" role="progressbar" aria-label="progress circle"></sp-progress-circle>
@@ -134,7 +134,7 @@ export default async function openThreeInOneModal(el) {
   const id = el?.getAttribute('data-modal-id');
   if (!modalType || !iframeUrl) return undefined;
   const { getModal } = await import('../modal/modal.js');
-  const content = await createContent(iframeUrl);
+  const content = createContent(iframeUrl);
   const timeoutId = setTimeout(handleTimeoutError, 15000);
   const clearTimeoutOnClose = () => {
     clearTimeout(timeoutId);
