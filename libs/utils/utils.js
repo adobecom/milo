@@ -158,6 +158,7 @@ const LANGUAGE_BASED_PATHS = [
   // don't add milo too. It's a special case because of tools, merch, etc.
   'news.adobe.com',
 ];
+const DEFAULT_LANG = 'en';
 export const SLD = PAGE_URL.hostname.includes('.aem.') ? 'aem' : 'hlx';
 
 const PROMO_PARAM = 'promo';
@@ -227,13 +228,13 @@ export function getLanguage(languages, locales, pathname = window.location.pathn
   // when removing this, account for the root /en/ not existing and instead being just /
   if (!language || (language.languageBased === false && !language.region)) {
     const locale = getLocale(locales, pathname);
-    if (locale.prefix === '') locale.language = 'en';
+    if (locale.prefix === '') locale.language = DEFAULT_LANG;
     return locale;
   }
 
   if (!language.ietf) language.ietf = `${languageString}${language.region ? `_${language.region.toUpperCase()}` : ''}`;
   language.language = languageString;
-  language.prefix = `${languageString === 'en' && !regionPath ? '' : '/'}${languageString}${regionPath}`;
+  language.prefix = `${languageString === DEFAULT_LANG && !regionPath ? '' : '/'}${languageString}${regionPath}`;
   return language;
 }
 
@@ -275,13 +276,8 @@ export const [setConfig, updateConfig, getConfig] = (() => {
       config = { env: getEnv(conf), ...conf };
       config.codeRoot = conf.codeRoot ? `${origin}${conf.codeRoot}` : origin;
       config.base = config.miloLibs || config.codeRoot;
-      if (conf.languages) {
-        config.locale = pathname
-          ? getLanguage(conf.languages, conf.locales, pathname)
-          : getLanguage(conf.languages, conf.locales);
-      } else {
-        config.locale = pathname ? getLocale(conf.locales, pathname) : getLocale(conf.locales);
-      }
+      config.locale = conf.languages
+        ? getLanguage(conf.languages, conf.locales, pathname) : getLocale(conf.locales, pathname);
       config.autoBlocks = conf.autoBlocks ? [...AUTO_BLOCKS, ...conf.autoBlocks] : AUTO_BLOCKS;
       config.signInContext = conf.signInContext || {};
       config.doNotInline = conf.doNotInline
@@ -351,19 +347,21 @@ export const getFederatedUrl = (url = '') => {
   return url;
 };
 
-export function hasLanguageLinks(container, paths = LANGUAGE_BASED_PATHS) {
-  if (!container) return false;
-  const links = container.querySelectorAll('a');
+function isPathMatch(path, href) {
+  if (path.includes('*')) {
+    const regex = new RegExp(path.replace(/\*/g, '[a-zA-Z]{1}'));
+    return regex.test(href);
+  }
+  return href.includes(path);
+}
+
+export function hasLanguageLinks(area, paths = LANGUAGE_BASED_PATHS) {
+  if (!area) return false;
+  const links = area.querySelectorAll('a');
   return Array.from(links).some((link) => {
     const { href } = link;
     if (!href) return false;
-    return paths.some((path) => {
-      if (path.includes('*')) {
-        const regex = new RegExp(path.replace(/\*/g, '[a-zA-Z]{1}'));
-        return regex.test(href);
-      }
-      return href.includes(path);
-    });
+    return paths.some((path) => isPathMatch(path, href));
   });
 }
 
@@ -377,7 +375,7 @@ export async function loadLanguageConfig() {
     localeToLanguageMap = configJson['locale-to-language-map']?.data;
     siteLanguages = configJson['site-languages']?.data?.map((site) => ({
       ...site,
-      domainMatches: parseList(site.domainMatches),
+      pathMatches: parseList(site.pathMatches),
       languages: parseList(site.languages),
     }));
   } catch (e) {
@@ -462,19 +460,19 @@ export function localizeLink(
     if (isLocalizedLink) return processedHref;
 
     let { prefix } = locale;
-    const site = siteLanguages?.find((s) => s.domainMatches.some((d) => url.hostname.includes(d)));
+    const site = siteLanguages?.find((s) => s.pathMatches.some((d) => isPathMatch(url.href, d)));
 
+    // On a locale based site, but target url has language based paths
     if (!locale.language && site && localeToLanguageMap) {
-      const siteLanguage = localeToLanguageMap?.find((m) => `${m.locale === '' ? '' : '/'}${m.locale}` === prefix);
-      const language = site.languages.find((l) => `${l}` === siteLanguage.languagePath);
-      if (language) {
-        prefix = `${language === '' ? '' : '/'}${language}`;
+      const mappedLanguageFromPrefix = localeToLanguageMap?.find((m) => `${m.locale === '' ? '' : '/'}${m.locale}` === prefix);
+      const languageInUseBySite = site.languages.find((l) => `${l}` === mappedLanguageFromPrefix.languagePath);
+      if (languageInUseBySite) {
+        prefix = languageInUseBySite === DEFAULT_LANG ? '' : `/${languageInUseBySite}`;
       }
-    } else if (locale.language) {
-      if (!relative && !site?.languages.some((l) => `${l === 'en' ? '' : '/'}${l === 'en' ? '' : l}` === prefix)) {
-        const mapped = localeToLanguageMap?.find((m) => `/${m.languagePath}` === prefix);
-        prefix = mapped ? `${mapped.locale === '' ? '' : '/'}${mapped.locale}` : prefix;
-      }
+    } else if (locale.language && !relative && !site?.languages.some((l) => (l === DEFAULT_LANG ? '' : `/${l}`) === prefix)) {
+      // On a language based site like news but target url is not language based and needs a locale
+      const mappedLocaleFromLanguage = localeToLanguageMap?.find((m) => `/${m.languagePath}` === prefix);
+      prefix = mappedLocaleFromLanguage ? `${mappedLocaleFromLanguage.locale === '' ? '' : '/'}${mappedLocaleFromLanguage.locale}` : prefix;
     }
     const urlPath = `${prefix}${path}${url.search}${hash}`;
     return relative ? urlPath : `${url.origin}${urlPath}`;
