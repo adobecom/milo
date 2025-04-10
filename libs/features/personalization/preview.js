@@ -185,7 +185,7 @@ function getManifestListDomAndParameter(mepConfig) {
       manifestParameter.push(`${editUrl}--default`);
     }
     options += `<option name="${editPath}${pageId}" value="default" 
-    id="${editPath}${pageId}--default" data-manifest="${editPath}" ${isSelected}>Default (control)</option>`;
+    id="${editPath}${pageId}--default" data-manifest="${editPath}" ${isSelected} title="Default (control)">Default (control)</option>`;
     isSelected = '';
     variantNamesArray.forEach((variant) => {
       isSelected = '';
@@ -194,7 +194,7 @@ function getManifestListDomAndParameter(mepConfig) {
         manifestParameter.push(`${manifestPath}--${variant}`);
       }
       options += `<option name="${editPath}${pageId}" value="${variant}" 
-      id="${editPath}${pageId}--${variant}" data-manifest="${editPath}" ${isSelected}>${variant}</option>`;
+      id="${editPath}${pageId}--${variant}" data-manifest="${editPath}" ${isSelected} title="${variant}">${variant}</option>`;
     });
     manifestList += `<div class="mep-section" title="Manifest location: ${editUrl}&#013;Analytics manifest name: ${analyticsTitle || 'N/A for this manifest type'}">
       <div class="mep-manifest-info">  
@@ -249,6 +249,10 @@ function addMepPopupListeners(popup, pageId) {
 function formatManifestText(count) {
   return count > 1 ? 'Manifests' : 'Manifest';
 }
+function setTargetOnText(target, page) {
+  if (target === undefined) return page.target;
+  return target === 'postlcp' ? 'on post LCP' : target;
+}
 export function getMepPopup(mepConfig, isMmm = false) {
   const { page } = mepConfig;
   const pageId = page?.pageId ? `-${page.pageId}` : '';
@@ -270,7 +274,16 @@ export function getMepPopup(mepConfig, isMmm = false) {
   const mepPopupBody = createTag('div', { class: 'mep-popup-body' });
   const mepManifestList = createTag('div', { class: 'mep-manifest-list' });
 
-  const targetOnText = page.target === 'postlcp' ? 'on post LCP' : page.target;
+  const config = getConfig();
+  const targetMapping = {
+    postlcp: 'postlcp',
+    true: 'on',
+    false: 'off',
+  };
+  const targetEnabled = targetMapping[config.mep?.targetEnabled];
+  const mepTarget = isMmm ? page.target : targetEnabled;
+  const targetOnText = setTargetOnText(mepTarget, page);
+
   mepPageInfo.innerHTML = `
     <h6 class="mep-manifest-page-info-title">Page Info</h6>
     <div class="mep-columns">
