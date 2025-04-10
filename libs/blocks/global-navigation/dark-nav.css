@@ -156,10 +156,7 @@ header.new-nav.feds--dark .feds-nav > section.feds-navItem > .feds-popup .top-ba
   color: var(--feds-color-adobeBrand);
 }
 
-header.global-navigation.feds--dark {
-  background-color: var(--feds-background-nav--desktop);
-}
-
+header.global-navigation.feds--dark,
 .feds--dark .feds-topnav-wrapper {
   background-color: var(--feds-background-nav--desktop);
 }
