@@ -686,6 +686,7 @@ picture:has(.picture-meta) {
   line-height: 1.2;
   z-index: 9;
   opacity: 0.7;
+  height: auto !important;
 }
 
 .picture-meta.no-picture-tag {
@@ -702,7 +703,7 @@ img:hover ~ .picture-meta {
 }
 
 .picture-meta > div {
-  padding: 5px;
+  padding: 5px !important;
   border-radius: 6px;
 }
 
