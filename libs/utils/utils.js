@@ -224,9 +224,9 @@ export function getLanguage(languages, locales, pathname = window.location.pathn
     regionPath = matchingRegion ? `/${region}` : '';
   }
 
-  // if no language, allow for support of locale based routing still
-  // when removing this, account for the root /en/ not existing and instead being just /
-  if (!language || (language.languageBased === false && !language.region)) {
+  const isLegacyLocaleRoutingMode = !language
+      || (language.languageBased === false && !language.region);
+  if (isLegacyLocaleRoutingMode) {
     const locale = getLocale(locales, pathname);
     if (locale.prefix === '') locale.language = DEFAULT_LANG;
     return locale;
@@ -432,6 +432,27 @@ function getExtension(path) {
   return pageName.includes('.') ? pageName.split('.').pop() : '';
 }
 
+function getPrefixBySite(locale, url, relative) {
+  let { prefix } = locale;
+  const site = siteLanguages?.find((s) => s.pathMatches.some((d) => isPathMatch(d, url.href)));
+
+  const localeSiteWithLanguageTarget = !locale.language && site && localeToLanguageMap;
+  const languageSiteWithLocaleTarget = locale.language && !relative && !site?.languages.some((l) => (l === DEFAULT_LANG ? '' : `/${l}`) === prefix);
+  if (localeSiteWithLanguageTarget) {
+    const mappedLanguageFromPrefix = localeToLanguageMap?.find((m) => `${m.locale === '' ? '' : '/'}${m.locale}` === prefix);
+    const languageInUseBySite = site.languages.find((l) => `${l}` === mappedLanguageFromPrefix.languagePath);
+    if (languageInUseBySite) {
+      prefix = languageInUseBySite === DEFAULT_LANG ? '' : `/${languageInUseBySite}`;
+    }
+  }
+  if (languageSiteWithLocaleTarget) {
+    const mappedLocaleFromLanguage = localeToLanguageMap?.find((m) => `/${m.languagePath}` === prefix);
+    prefix = mappedLocaleFromLanguage ? `${mappedLocaleFromLanguage.locale === '' ? '' : '/'}${mappedLocaleFromLanguage.locale}` : prefix;
+  }
+
+  return prefix;
+}
+
 export function localizeLink(
   href,
   originHostName = window.location.hostname,
@@ -459,21 +480,7 @@ export function localizeLink(
         || path.endsWith(`/${loc}`))));
     if (isLocalizedLink) return processedHref;
 
-    let { prefix } = locale;
-    const site = siteLanguages?.find((s) => s.pathMatches.some((d) => isPathMatch(d, url.href)));
-
-    // On a locale based site, but target url has language based paths
-    if (!locale.language && site && localeToLanguageMap) {
-      const mappedLanguageFromPrefix = localeToLanguageMap?.find((m) => `${m.locale === '' ? '' : '/'}${m.locale}` === prefix);
-      const languageInUseBySite = site.languages.find((l) => `${l}` === mappedLanguageFromPrefix.languagePath);
-      if (languageInUseBySite) {
-        prefix = languageInUseBySite === DEFAULT_LANG ? '' : `/${languageInUseBySite}`;
-      }
-    } else if (locale.language && !relative && !site?.languages.some((l) => (l === DEFAULT_LANG ? '' : `/${l}`) === prefix)) {
-      // On a language based site like news but target url is not language based and needs a locale
-      const mappedLocaleFromLanguage = localeToLanguageMap?.find((m) => `/${m.languagePath}` === prefix);
-      prefix = mappedLocaleFromLanguage ? `${mappedLocaleFromLanguage.locale === '' ? '' : '/'}${mappedLocaleFromLanguage.locale}` : prefix;
-    }
+    const prefix = getPrefixBySite(locale, url, relative);
     const urlPath = `${prefix}${path}${url.search}${hash}`;
     return relative ? urlPath : `${url.origin}${urlPath}`;
   } catch (error) {

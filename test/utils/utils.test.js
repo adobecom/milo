@@ -1227,6 +1227,18 @@ describe('Utils', () => {
         expect(result).to.equal('/ch_de/path');
       });
 
+      it('set correct prefix for US site with only language', async () => {
+        utils.setConfig({
+          pathname: '/',
+          languages: { en: { tk: 'hah7vzn.css' } },
+        });
+        const href = '/path';
+        const result = utils.localizeLink(href);
+        expect(utils.getConfig().locale.prefix).to.equal('');
+        expect(utils.getConfig().locale.language).to.equal('en');
+        expect(result).to.equal('/path');
+      });
+
       it('skips language logic on localhost', () => {
         utils.setConfig({
           ...baseConfig,
