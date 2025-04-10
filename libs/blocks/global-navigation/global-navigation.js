@@ -90,7 +90,6 @@ const getMessageEventListener = () => {
 };
 
 export const CONFIG = {
-  icons: isDarkMode() ? darkIcons : icons,
   delays: {
     mainNavDropdowns: 800,
     loadDelayed: 3000,
@@ -269,23 +268,6 @@ const setupKeyboardNav = async (newMobileWithLnav) => {
   });
 };
 
-const getBrandImage = (image, brandImageOnly) => {
-  // Return the default Adobe logo if an image is not available
-  if (!image) return brandImageOnly ? CONFIG.icons.brand : CONFIG.icons.company;
-
-  // Try to decorate image as PNG, JPG or JPEG
-  const imgText = image?.textContent || '';
-  const [source, alt] = imgText.split('|');
-  if (source.trim().length) {
-    const img = toFragment`<img src="${source.trim()}" />`;
-    if (alt) img.alt = alt.trim();
-    return img;
-  }
-
-  // Return the default Adobe logo if the image could not be decorated
-  return brandImageOnly ? CONFIG.icons.brand : CONFIG.icons.company;
-};
-
 const closeOnClickOutside = (e, isLocalNav, navWrapper) => {
   if (isLocalNav && navWrapper.classList.contains('feds-nav-wrapper--expanded')) return;
   const newMobileNav = getMetadata('mobile-gnav-v2') !== 'false';
@@ -336,7 +318,7 @@ class Gnav {
         rawElem: this.content.querySelector('.profile'),
         decoratedElem: toFragment`<div data-cs-mask class="feds-profile"></div>`,
       },
-      search: { config: { icon: CONFIG.icons.search } },
+      search: { config: { icon: isDarkMode() ? darkIcons.search : icons.search } },
       breadcrumbs: { wrapper: '' },
     };
 

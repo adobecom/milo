@@ -656,6 +656,24 @@ export const [branchBannerLoadCheck, getBranchBannerInfo] = (() => {
   ];
 })();
 
+const getBrandImage = (image, brandImageOnly) => {
+  const brandIcons =  isDarkMode() ? darkIcons : icons;
+  // Return the default Adobe logo if an image is not available
+  if (!image) return brandImageOnly ? brandIcons.brand : brandIcons.company;
+
+  // Try to decorate image as PNG, JPG or JPEG
+  const imgText = image?.textContent || '';
+  const [source, alt] = imgText.split('|');
+  if (source.trim().length) {
+    const img = toFragment`<img src="${source.trim()}" />`;
+    if (alt) img.alt = alt.trim();
+    return img;
+  }
+
+  // Return the default Adobe logo if the image could not be decorated
+  return brandImageOnly ? brandIcons.brand : brandIcons.company;
+};
+
 export const decorateGenericLogo = ({ rawBlock, classPrefix, includeLabel = true, analyticsValue } = {}) => {
   if (!rawBlock) return '';
 
@@ -664,8 +682,6 @@ export const decorateGenericLogo = ({ rawBlock, classPrefix, includeLabel = true
   const blockLinks = [...rawBlock.querySelectorAll('a')];
   const link = blockLinks.find((blockLink) => !imgRegex.test(blockLink.href)
     && !imgRegex.test(blockLink.textContent));
-
-  if (!link) return '';
 
   // Check which elements should be rendered
   const isBrandImage = rawBlock.matches(selectors.brandImageOnly);
@@ -696,6 +712,13 @@ export const decorateGenericLogo = ({ rawBlock, classPrefix, includeLabel = true
   const imageEl = renderImage
     ? toFragment`<span class="${classPrefix}-image${brandImageClass}">${getImageEl()}</span>`
     : '';
+
+  if (!link) {
+    return toFragment`
+      <a class="${classPrefix}" daa-ll="${analyticsValue}">
+        ${imageEl}
+      </a>`;
+    }
 
   // Create label element
   const labelEl = renderLabel

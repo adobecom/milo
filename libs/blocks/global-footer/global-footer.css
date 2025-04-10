@@ -257,8 +257,14 @@ span.feds-footer-privacyLink-divider {
 
 .footer-logo {
   padding: 0 var(--feds-gutter-footer);
-  margin-bottom: -16px;
 }
+
+.footer-logo-image img,
+.footer-logo-image svg,
+.footer-logo-image picture { 
+  width: 45px;
+}
+
 
 @media (min-width: 600px) {
   dialog.feds-dialog {
