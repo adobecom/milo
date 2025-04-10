@@ -513,7 +513,6 @@ const getFilterArray = async (state, country, lang, strs) => {
 };
 
 export function getCountryAndLang({ autoCountryLang, country, language }) {
-  console.log(country);
   const locales = getMetadata('caas-locales') || '';
   if (autoCountryLang) {
     const prefix = pageConfigHelper()?.locale?.prefix?.replace('/', '') || '';

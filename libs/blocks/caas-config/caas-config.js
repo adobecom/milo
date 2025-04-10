@@ -345,8 +345,6 @@ const BasicsPanel = ({ tagsData }) => {
     delete countryTags['caas:country/gr_en'];
   }
 
-  countryTags['caas:country/xx'] = 'All';
-
   const countryLangOptions = html`
     <${Select} options=${languageTags} prop="language" label="Language" />  
     <${Select} prop="country" options=${countryTags} label="Country(s)" />`;
