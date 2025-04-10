@@ -89,8 +89,8 @@ export class MasCommerceService extends HTMLElement {
         log.debug('Activating:', config);
 
         // Fetch price literals
-        const literals = { price: {} };
-        literals.price = getPriceLiterals(settings);
+        const price = getPriceLiterals(settings);
+        const literals = { price };
         // Create checkout/price options providers registry
         const providers = {
             checkout: new Set(),

@@ -8,7 +8,6 @@ import {
     STATE_PENDING,
     STATE_RESOLVED,
 } from './constants.js';
-import { ignore } from '@dexter/tacocat-core';
 import { setImmediate, getService } from './utilities.js';
 import { Log } from './log.js';
 import { MasError } from './mas-error.js';
@@ -28,7 +27,6 @@ export class MasElement {
     #service;
     changes = new Map();
     connected = false;
-    dispose = ignore;
     error = undefined;
     log = undefined;
     options = undefined;
@@ -108,8 +106,6 @@ export class MasElement {
             this.connected = false;
             this.log?.debug('Disconnected:', { element: this.wrapperElement });
         }
-        this.dispose();
-        this.dispose = ignore;
     }
 
     /**

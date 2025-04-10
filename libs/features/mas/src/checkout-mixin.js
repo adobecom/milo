@@ -1,4 +1,3 @@
-import { ignore } from '@dexter/tacocat-core';
 import {
     createMasElement,
     updateMasElement,
@@ -111,7 +110,7 @@ export function CheckoutMixin(Base) {
             if (!this.dataset.imsCountry) {
                 service.imsCountryPromise.then((countryCode) => {
                     if (countryCode) this.dataset.imsCountry = countryCode;
-                }, ignore);
+                });
             }
             overrides.imsCountry = null;
             const options = service.collectCheckoutOptions(overrides, this);

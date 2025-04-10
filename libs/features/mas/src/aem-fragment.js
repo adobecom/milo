@@ -110,7 +110,7 @@ export class AemFragment extends HTMLElement {
             this.#fail({ message: 'Missing fragment id' });
             return;
         }
-        this.activate();
+        this.refresh(false);
     }
 
     /**
@@ -156,11 +156,6 @@ export class AemFragment extends HTMLElement {
                 ...this.#service.duration,
             });
         }
-    }
-
-    async activate() {
-        const flushCache = !this.#author;
-        this.refresh(flushCache);
     }
 
     async refresh(flushCache = true) {

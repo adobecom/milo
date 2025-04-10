@@ -10,7 +10,6 @@ import { toOfferSelectorIds, toQuantity } from './utilities.js';
  * generate Checkout configuration
  */
 export function Checkout({ providers, settings }) {
-    // Memoize settings for frequently used values
     const {
         checkoutClientId,
         checkoutWorkflow: defaultWorkflow,
@@ -24,7 +23,6 @@ export function Checkout({ providers, settings }) {
     } = settings;
 
     function collectCheckoutOptions(overrides, placeholder) {
-        // Use nullish coalescing for simpler defaults
         const placeholderData = placeholder?.dataset ?? {};
         
         const {
@@ -155,7 +153,6 @@ export function Checkout({ providers, settings }) {
         return buildCheckoutUrl(data, modalType);
     }
 
-    // Destructure only once
     const { createCheckoutLink } = CheckoutLink;
     
     return {
