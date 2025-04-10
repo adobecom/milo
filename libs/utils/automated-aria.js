@@ -1,26 +1,29 @@
 import { getConfig, getFederatedContentRoot } from './utils.js';
 
-export const getTextBeforeHeader = (block) => {
-  if (!block) return '';
-
+const h1h2Regex = /^h[1-2]$/i;
+const traverseForTextBeforeHeader = (node, regex) => {
+  if (regex.test(node.tagName)) {
+    return { text: '', foundHeader: true };
+  }
+  if (node.nodeType === Node.TEXT_NODE) {
+    return { text: node.nodeValue, foundHeader: false };
+  }
   let text = '';
   let foundHeader = false;
-
-  const traverse = (node) => {
-    if (foundHeader) return;
-
-    if (node.nodeType === Node.ELEMENT_NODE) {
-      if (/^h[1-2]$/i.test(node.tagName)) {
-        foundHeader = true;
-        return;
-      }
-      node.childNodes.forEach(traverse);
-    } else if (node.nodeType === Node.TEXT_NODE) {
-      text += node.nodeValue;
+  for (const child of node.childNodes) {
+    const result = traverseForTextBeforeHeader(child, regex);
+    text += result.text;
+    if (result.foundHeader) {
+      foundHeader = true;
+      break;
     }
-  };
+  }
+  return { text, foundHeader };
+};
 
-  traverse(block);
+export const getTextBeforeHeader = (block) => {
+  if (!block) return '';
+  const { text, foundHeader } = traverseForTextBeforeHeader(block, h1h2Regex);
   return foundHeader ? text.trim() : '';
 };
 
@@ -30,79 +33,99 @@ export const getProduct = (text, productNames) => {
   return productNames.find(({ us }) => normalizedText.includes(us.toLowerCase()))?.us || '';
 };
 
-// Helper to extract prefix or suffix from class name parts
-const getPatternPart = (parts, usePrefix) => (usePrefix ? parts[0] : parts[parts.length - 1]);
+function addClassPartToSet(className, parts, extractPrefix) {
+  const segments = className.split('-');
+  if (segments.length > 1) {
+    const partIndex = extractPrefix ? 0 : segments.length - 1;
+    parts.add(segments[partIndex]);
+  }
+}
 
-// Helper to check if two divs share a common class pattern
-const divsSharePattern = (div1, div2, hasCommonPrefix, hasCommonSuffix) => {
-  const div1Classes = Array.from(div1.classList);
-  const div2Classes = Array.from(div2.classList);
-  return div1Classes.some((cn1) => div2Classes.some((cn2) => {
-    const parts1 = cn1.split('-');
-    const parts2 = cn2.split('-');
-    const hasPrefixMatch = hasCommonPrefix && parts1[0] === parts2[0];
-    // eslint-disable-next-line max-len
-    const hasSuffixMatch = hasCommonSuffix && parts1[parts1.length - 1] === parts2[parts2.length - 1];
-    return parts1.length > 1 && parts2.length > 1 && (hasPrefixMatch || hasSuffixMatch);
-  }));
+// Extracts either prefixes or suffixes from a div's class names into a Set
+const extractClassParts = (div, extractPrefix) => {
+  const classNames = Array.from(div.classList);
+  const parts = new Set();
+  for (const className of classNames) {
+    addClassPartToSet(className, parts, extractPrefix);
+  }
+  return parts;
 };
 
-// Helper to check if divs have a common pattern (prefix or suffix)
-const hasCommonPattern = (divs, usePrefix) => {
-  const checkFn = (parts) => getPatternPart(parts, usePrefix);
-  const classNames = divs.flatMap((div) => Array.from(div.classList));
-  const patterns = new Set(classNames
-    .map((cn) => cn.split('-'))
-    .filter((parts) => parts.length > 1)
-    .map(checkFn));
-  return patterns.size > 0 && divs.some((div1) => divs
-    .some((div2) => div1 !== div2 && divsSharePattern(div1, div2, usePrefix, !usePrefix)));
-};
-
-// Helper to process nested containers recursively
-const processNestedContainers = (patternDivs, findBlockContainersFn) => {
-  const deepestContainers = [];
-  patternDivs.forEach((div) => {
-    const nested = findBlockContainersFn(div);
-    if (nested.length === 1 && nested[0] === div) {
-      deepestContainers.push(div);
-    } else if (nested.length > 1) {
-      deepestContainers.push(...nested);
-      deepestContainers.push(div); // Add the parent last
+function mapPartToIndices(parts, partToDivIndices, index) {
+  parts.forEach((part) => {
+    if (!partToDivIndices.has(part)) {
+      partToDivIndices.set(part, new Set());
     }
+    partToDivIndices.get(part).add(index);
   });
+}
+
+// Helper function to map class parts to the divs that have them
+const mapPartsToDivIndices = (divs, extractPrefix) => {
+  const partToDivIndices = new Map();
+  divs.forEach((div, index) => {
+    const parts = extractClassParts(div, extractPrefix);
+    mapPartToIndices(parts, partToDivIndices, index);
+  });
+  return partToDivIndices;
+};
+
+// Main function to check for shared class patterns
+const hasSharedClassPattern = (divs, { extractPrefix = false } = {}) => {
+  if (divs.length < 2) return false; // Need at least 2 divs to share anything
+  const partToDivIndices = mapPartsToDivIndices(divs, extractPrefix);
+  return Array.from(partToDivIndices.values()).some((divIndices) => divIndices.size > 1);
+};
+
+function addDeepestContainers(div, findRepeatingContainers, deepestContainers) {
+  const nestedContainers = findRepeatingContainers(div);
+  if (nestedContainers.length === 1 && nestedContainers[0] === div) {
+    deepestContainers.push(div);
+  } else if (nestedContainers.length > 1) {
+    deepestContainers.push(...nestedContainers, div);
+  }
+}
+
+// Processes nested divs to find the deepest repeating containers
+const findDeepestRepeatingContainers = (repeatingDivs, findRepeatingContainers) => {
+  const deepestContainers = [];
+  for (const div of repeatingDivs) {
+    addDeepestContainers(div, findRepeatingContainers, deepestContainers);
+  }
   return deepestContainers;
 };
 
-// Identifies container divs within a block that share a common class pattern
-// and appear multiple times at the same DOM level.
+const findRepeatingSiblings = (divs) => divs.filter(
+  (div) => divs.some((otherDiv) => div !== otherDiv && (
+    hasSharedClassPattern([div, otherDiv], true)
+      || hasSharedClassPattern([div, otherDiv], false)
+  )),
+);
+
+// Finds divs that repeat with a shared class pattern at the same DOM level
 // Containers must be siblings with a shared prefix (e.g., 'card-')
 // or suffix (e.g., '-item') and occur more than once.
-export const findBlockContainers = (container) => {
-  // Get all direct child divs of the container
-  const directDivs = Array.from(container.children).filter((el) => el.tagName === 'DIV');
-  if (!directDivs.length) return [container];
+export const findBlockContainers = (parentContainer) => {
+  const childDivs = Array.from(parentContainer.children).filter((element) => element.tagName === 'DIV');
+  if (childDivs.length === 0) return [parentContainer];
 
-  // Filter divs that share a common pattern (prefix or suffix)
-  const patternDivs = directDivs.filter((div) => directDivs.some((otherDiv) => div !== otherDiv && (
-    hasCommonPattern([div, otherDiv], true) // has common prefix
-        || hasCommonPattern([div, otherDiv], false) // has common suffix
-  )));
+  const repeatingSiblingDivs = findRepeatingSiblings(childDivs);
 
-  // Require at least two matching siblings to qualify as containers
-  if (patternDivs.length > 1) {
-    const deepestContainers = processNestedContainers(patternDivs, findBlockContainers);
-    // Return containers only if multiple found, otherwise fallback to [container]
-    return deepestContainers.length > 1 ? deepestContainers : [container];
+  if (repeatingSiblingDivs.length > 1) {
+    const deepestContainers = findDeepestRepeatingContainers(
+      repeatingSiblingDivs,
+      findBlockContainers,
+    );
+    return deepestContainers.length > 1 ? deepestContainers : [parentContainer];
   }
 
-  // Recurse into child divs, but only keep results with multiple containers
-  const nestedResults = directDivs
+  const nestedRepeatingContainers = childDivs
     .map((div) => findBlockContainers(div))
-    .filter((results) => results.length > 1);
-  // If exactly one valid set of repeating containers is found, use it;
-  // otherwise, return [container]
-  return nestedResults.length === 1 && nestedResults[0].length > 1 ? nestedResults[0] : [container];
+    .filter((containers) => containers.length > 1);
+
+  return nestedRepeatingContainers.length === 1 && nestedRepeatingContainers[0].length > 1
+    ? nestedRepeatingContainers[0]
+    : [parentContainer];
 };
 
 // Retrieves all h1-h6 headers within container.
@@ -116,7 +139,7 @@ const getHeadersOutsideContainers = (block, containers) => {
 };
 
 // Helper to assign ARIA label based on product or header
-const assignAriaLabel = (
+const tryAssignAriaLabel = (
   cta,
   headers,
   productNames,
@@ -125,7 +148,7 @@ const assignAriaLabel = (
   textBeforeHeader,
 ) => {
   // Filter out all headers of a level if there are multiple of that level
-  const filteredHeaders = headers.filter((header) => {
+  const singleOccurrenceHeaders = headers.filter((header) => {
     const level = header.tagName.toLowerCase();
     return headers.filter((h) => h.tagName.toLowerCase() === level).length === 1;
   });
@@ -133,7 +156,7 @@ const assignAriaLabel = (
   const buttonText = cta.textContent.trim().toLowerCase();
   const productInCTA = cta.classList.contains('modal') ? ''
     : getProduct(cta.href.replace('-', ' '), productNames);
-  const allContent = [...filteredHeaders, textBeforeHeader].filter(Boolean);
+  const allContent = [...singleOccurrenceHeaders, textBeforeHeader].filter(Boolean);
 
   if (textsToAddProductNames.includes(buttonText)) {
     const productHeader = allContent.find((header) => {
@@ -170,7 +193,7 @@ export const addAriaLabelToCTA = (cta, productNames, textsToAddProductNames, tex
 
   // Try to assign label from containers first
   for (const container of ctaContainers) {
-    if (isInContainer && assignAriaLabel(
+    if (isInContainer && tryAssignAriaLabel(
       cta,
       getHeaders(container),
       productNames,
@@ -181,7 +204,7 @@ export const addAriaLabelToCTA = (cta, productNames, textsToAddProductNames, tex
   }
 
   const uncontainedHeaders = getHeadersOutsideContainers(block, containers);
-  if (uncontainedHeaders.length && assignAriaLabel(
+  if (uncontainedHeaders.length && tryAssignAriaLabel(
     cta,
     uncontainedHeaders,
     productNames,
@@ -191,7 +214,7 @@ export const addAriaLabelToCTA = (cta, productNames, textsToAddProductNames, tex
     return;
   }
   const textBeforeHeader = getTextBeforeHeader(block);
-  assignAriaLabel(
+  tryAssignAriaLabel(
     cta,
     getHeaders(block),
     productNames,
@@ -207,7 +230,10 @@ export const addAriaLabelToCTA = (cta, productNames, textsToAddProductNames, tex
  */
 export default async function addAriaLabels() {
   const selector = getConfig().ariaLabelCTASelector || '.con-button:not([aria-label])';
-  const ctas = document.body.querySelectorAll(selector);
+  const ctas = [...document.body.querySelectorAll(selector)].filter((button) => {
+    const ariaLabel = button.getAttribute('aria-label');
+    return ariaLabel !== '';
+  });
   if (!ctas.length) return;
 
   const logError = (msg, error) => window.lana.log(`${msg}: ${error}`, { tags: 'aria' });
