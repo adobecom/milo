@@ -97,8 +97,8 @@ const findDeepestRepeatingContainers = (repeatingDivs, findRepeatingContainers) 
 
 const findRepeatingSiblings = (divs) => divs.filter(
   (div) => divs.some((otherDiv) => div !== otherDiv && (
-    hasSharedClassPattern([div, otherDiv], true)
-      || hasSharedClassPattern([div, otherDiv], false)
+    hasSharedClassPattern([div, otherDiv], { extractPrefix: true })
+      || hasSharedClassPattern([div, otherDiv], { extractPrefix: false })
   )),
 );
 
