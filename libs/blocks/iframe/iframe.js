@@ -34,7 +34,9 @@ export function handleIFrameEvents({ data }) {
 }
 
 export default function init(el) {
-  const linkHref = el.href ?? el.querySelector('a')?.href;
+  const anchor = el.querySelector('a');
+  const ariaLabel = anchor?.getAttribute('aria-label');
+  const linkHref = el.href ?? anchor?.href;
   el.classList.remove('iframe');
   const classes = [...el.classList].join(' ');
 
@@ -47,6 +49,15 @@ export default function init(el) {
 
   const iframe = createTag('iframe', { src: linkHref, allowfullscreen: true });
   const embed = createTag('div', { class: `milo-iframe ${classes}` }, iframe);
+
+  iframe.onload = () => {
+    if (new URL(iframe.src).origin !== window.location.origin) {
+      iframe.title = ariaLabel || '';
+      return;
+    }
+
+    iframe.title = ariaLabel || iframe.contentWindow.document.querySelector('h1, h2, h3, h4, h5, h6')?.textContent;
+  };
 
   el.insertAdjacentElement('afterend', embed);
   el.remove();
