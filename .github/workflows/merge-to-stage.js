@@ -153,7 +153,7 @@ const getStageToMainPR = () => github.rest.pulls
   .list({ owner, repo, state: 'open', base: PROD })
   .then(({ data } = {}) => data.find(({ title } = {}) => title === PR_TITLE))
   .then((pr) => pr && addLabels({ pr, github, owner, repo }))
-  .then((pr) => pr && addFiles({ pr, github, owner, repo }))
+  .then((pr) => pr && addFiles({ pr, github, owner, repo }));
 
 const openStageToMainPR = async () => {
   const { data: comparisonData } = await github.rest.repos.compareCommits({
@@ -215,6 +215,24 @@ const main = async (params) => {
     const stageToMainPR = await getStageToMainPR();
     console.log('has Stage to Main PR:', !!stageToMainPR);
     if (stageToMainPR) body = stageToMainPR.body;
+
+    const { data: comparisonData } = await github.rest.repos.compareCommits({
+      owner,
+      repo,
+      base: PROD,
+      head: STAGE,
+    });
+    for (const commit of comparisonData.commits) {
+      const { data: pullRequestData } = await github.rest.repos.listPullRequestsAssociatedWithCommit({
+        owner,
+        repo,
+        commit_sha: commit.sha,
+      });
+      for (const pr of pullRequestData) {
+        if (!body.includes(pr.html_url)) body = `- ${pr.html_url}\n${body}`;
+      }
+    }
+
     existingPRCount = body.match(/https:\/\/github\.com\/adobecom\/milo\/pull\/\d+/g)?.length || 0;
     console.log(`Number of PRs already in the batch: ${existingPRCount}`);
 
