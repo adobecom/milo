@@ -156,16 +156,13 @@ header.new-nav.feds--dark .feds-nav > section.feds-navItem > .feds-popup .top-ba
   color: var(--feds-color-adobeBrand);
 }
 
+header.global-navigation.feds--dark,
+.feds--dark .feds-topnav-wrapper {
+  background-color: var(--feds-background-nav--desktop);
+}
+
 /* Desktop styles */
 @media (min-width: 900px) {
-  header.global-navigation.feds--dark {
-    background-color: var(--feds-background-nav--desktop);
-  }
-  
-  .feds--dark .feds-topnav-wrapper {
-    background-color: var(--feds-background-nav--desktop);
-  }
-  
   /* Popup */
   .feds--dark .feds-popup {
     background-color: var(--feds-background-popup);

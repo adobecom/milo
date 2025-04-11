@@ -302,6 +302,46 @@ dd .mep-popup-header .mep-close {
   box-sizing: border-box;
 }
 
+.mmm-report {
+  border: 1px solid #ddd;
+}
+
+.mmm-report-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: 600;
+  background-color: #eee;
+}
+
+.mmm-report-header span {
+  border: 1px solid #ddd;
+  flex-basis: 25%;
+  display: flex;
+  justify-content: center;
+}
+
+.mmm-report-body {
+  display: flex;
+  flex-direction: column;
+}
+
+.mmm-report-row {
+  display: flex;
+  justify-content: space-between;
+}
+
+.mmm-report-row span a {
+  text-decoration: none;
+  color: #4285f4;
+}
+.mmm-report-row span {
+  border: 1px solid #ddd;
+  flex: 1 1 0;
+  width: 0;
+  padding: .5rem;
+}
+
 .loading {
   width: 100px;
   margin: 0 auto;

@@ -25,6 +25,22 @@ async function loadJsonAndSetResponse(jsonPath) {
   setFetchResponse(json);
 }
 
+describe('MMM - Targer Cleanup Report', () => {
+  before(async () => {
+    await loadJsonAndSetResponse('./mocks/get-report.json');
+    document.body.innerHTML = await readFile({ path: './mocks/bodyReport.html' });
+    const module = await import('../../../libs/blocks/mmm/mmm.js');
+    await module.default(document.querySelector('.mmm'));
+  });
+
+  it('should load report page', async () => {
+    expect(document.querySelector('.mmm-report')).to.exist;
+    expect(document.querySelector('#mmm-pagination')).to.exist;
+    expect(document.querySelector('#mmm-search-filter')).to.exist;
+    expect(document.querySelector('#mmm-lastSeenManifest')).to.exist;
+  });
+});
+
 describe('MMM', () => {
   before(async () => {
     await loadJsonAndSetResponse('./mocks/get-pages.json');

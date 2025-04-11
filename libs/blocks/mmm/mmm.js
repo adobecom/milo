@@ -6,6 +6,7 @@ const SEARCH_CRITERIA_CHANGE_EVENT = 'mmm-search-change';
 let cachedSearchCriteria = '';
 export const DEBOUNCE_TIME = 800;
 export const MMM_LOCAL_STORAGE_KEY = 'mmm_filter_settings';
+export const MMM_REPORT_LOCAL_STORAGE_KEY = 'mmm_report_filter_settings';
 const SEARCH_CONTAINER = '.mmm-search-container';
 const LAST_SEEN_OPTIONS = {
   day: { value: 'Day', key: 'day' },
@@ -22,13 +23,19 @@ const SUBDOMAIN_OPTIONS = {
   all: { value: 'all', key: 'all' },
 };
 
+let isReport = false;
+
 export const getLocalStorageFilter = () => {
-  const cookie = localStorage.getItem(MMM_LOCAL_STORAGE_KEY);
+  const cookie = localStorage.getItem(isReport
+    ? MMM_REPORT_LOCAL_STORAGE_KEY
+    : MMM_LOCAL_STORAGE_KEY);
   return cookie ? JSON.parse(cookie) : null;
 };
 
 const setLocalStorageFilter = (obj) => {
-  localStorage.setItem(MMM_LOCAL_STORAGE_KEY, JSON.stringify(obj));
+  localStorage.setItem(isReport
+    ? MMM_REPORT_LOCAL_STORAGE_KEY
+    : MMM_LOCAL_STORAGE_KEY, JSON.stringify(obj));
 };
 
 const getInitialValues = () => {
@@ -45,8 +52,8 @@ const getInitialValues = () => {
   return getLocalStorageFilter();
 };
 
-const SEARCH_INITIAL_VALUES = getInitialValues() ?? {
-  lastSeenManifest: LAST_SEEN_OPTIONS.threeMonths.key,
+const SEARCH_INITIAL_VALUES = () => getInitialValues() ?? {
+  lastSeenManifest: isReport ? LAST_SEEN_OPTIONS.week.key : LAST_SEEN_OPTIONS.threeMonths.key,
   pageNum: 1,
   subdomain: SUBDOMAIN_OPTIONS.www.key,
   perPage: 25,
@@ -146,7 +153,12 @@ function filterPageList(pageNum, perPage, event) {
   // assemble event details object with all filter criterias
   const detail = {};
   Object.keys(searchValues).forEach((key) => {
-    detail[key] = searchValues[key].value;
+    let { value } = searchValues[key];
+    if (value.replace) {
+      value = value.replace(',', '');
+      value = value.replace(/\n/g, ',\n');
+    }
+    detail[key] = value;
   });
   // This event triggers an API call with most recent search criteria and a forces a re-render
   if (!activeSearchWithShortKeyword) {
@@ -241,7 +253,7 @@ function createDropdowns(data) {
     Object.keys(options).forEach((option) => {
       const optionEl = createTag('option', { value: option }, options[option]);
       select.append(optionEl);
-      const startingVal = SEARCH_INITIAL_VALUES[key];
+      const startingVal = SEARCH_INITIAL_VALUES()[key];
       if (startingVal === option) optionEl.setAttribute('selected', 'selected');
     });
     select.addEventListener('change', () => filterPageList());
@@ -268,7 +280,7 @@ function createSearchField() {
   );
   searchContainer.append(searchForm);
   const searchField = searchForm.querySelector('textarea');
-  searchField.value = SEARCH_INITIAL_VALUES.filter || '';
+  searchField.value = SEARCH_INITIAL_VALUES().filter || '';
 
   searchField.addEventListener('keyup', debounce((event) => filterPageList(null, null, event)));
   searchField.addEventListener('change', debounce((event) => filterPageList(null, null, event)));
@@ -284,22 +296,22 @@ function createLastSeenManifestAndDomainDD() {
     'div',
     { id: 'mmm-dropdown-container', class: 'mmm-form-container' },
     `<div>
-      <label for="mmm-lastSeenManifest">Manifests seen in the last:</label>
+      <label for="mmm-lastSeenManifest">Manifests ${isReport ? 'not ' : ''}seen in the last:</label>
       <select id="mmm-lastSeenManifest" type="text" name="mmm-lastSeenManifest" class="text-field-input">
         ${Object.keys(LAST_SEEN_OPTIONS).map((key) => `
-          <option value="${LAST_SEEN_OPTIONS[key].key}" ${SEARCH_INITIAL_VALUES.lastSeenManifest === LAST_SEEN_OPTIONS[key].key ? 'selected' : ''}>${LAST_SEEN_OPTIONS[key].value}</option>
+          <option value="${LAST_SEEN_OPTIONS[key].key}" ${SEARCH_INITIAL_VALUES().lastSeenManifest === LAST_SEEN_OPTIONS[key].key ? 'selected' : ''}>${LAST_SEEN_OPTIONS[key].value}</option>
         `)}
       </select>
     </div>
-    <div>
+    ${!isReport ? `<div>
       <label for="mmm-subdomain">Subdomain:</label>
       <select id="mmm-subdomain" type="text" name="mmm-subdomain" class="text-field-input">
         ${Object.keys(SUBDOMAIN_OPTIONS).map((key) => `
-          <option value="${SUBDOMAIN_OPTIONS[key].key}" ${SEARCH_INITIAL_VALUES.subdomain === SUBDOMAIN_OPTIONS[key].key ? 'selected' : ''}>${SUBDOMAIN_OPTIONS[key].value}</option>
+          <option value="${SUBDOMAIN_OPTIONS[key].key}" ${SEARCH_INITIAL_VALUES().subdomain === SUBDOMAIN_OPTIONS[key].key ? 'selected' : ''}>${SUBDOMAIN_OPTIONS[key].value}</option>
         `)}
       </select>
     </div>
-    `,
+    ` : ''}`,
   );
   dd.addEventListener('change', () => filterPageList());
   searchContainer.append(dd);
@@ -416,6 +428,35 @@ function handlePaginationClicks() {
   });
 }
 
+function getDate(inputDate) {
+  const date = inputDate || new Date();
+  const dateOptions = { year: 'numeric', month: 'short', day: 'numeric' };
+  return new Date(date).toLocaleDateString('en-US', dateOptions);
+}
+function createReport(el, data) {
+  const { result } = data;
+  el.innerHTML = `
+    <div class="mmm-report">
+      <div class="mmm-report-header">
+        <span>URL</span>
+        <span>Target Status</span>
+        <span>Target Seen</span>
+        <span>Page Last Seen</span>
+      </div>
+      <div class="mmm-report-body">
+        ${result.map((item) => `
+          <div class="mmm-report-row">
+            <span><a href="${item.url}?mep" target="_blank">${item.url}</a></span>
+            <span>${item.target}</span>
+            <span>${getDate(item.aLastSeen)}</span>
+            <span>${getDate(item.pLastSeen)}</span>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `;
+}
+
 async function createPageList(el, search) {
   const paginationEl = document.querySelector('.mmm-pagination');
   paginationEl?.classList.add('mmm-hide');
@@ -426,16 +467,21 @@ async function createPageList(el, search) {
     role: 'presentation',
   });
   mmmElContainer.append(mmmEl);
-  const url = API_URLS.pageList;
+
+  const url = isReport ? API_URLS.report : API_URLS.pageList;
   const response = await fetchData(
     url,
     DATA_TYPE.JSON,
     {
       method: 'POST',
-      body: JSON.stringify(search ?? SEARCH_INITIAL_VALUES),
+      body: JSON.stringify(search ?? SEARCH_INITIAL_VALUES()),
     },
   );
-  response.result?.map((page) => createButtonDetailsPair(mmmEl, page));
+  if (isReport) {
+    createReport(mmmEl, response);
+  } else {
+    response.result?.map((page) => createButtonDetailsPair(mmmEl, page));
+  }
   const section = createTag('div', { id: 'mep-section', class: 'section' });
   const main = document.querySelector('main');
   el.replaceWith(mmmElContainer);
@@ -470,6 +516,7 @@ function subscribeToSearchCriteriaChanges() {
 }
 
 export default async function init(el) {
+  isReport = el.classList.contains('target-cleanup');
   await createPageList(el);
   createForm(el);
   subscribeToSearchCriteriaChanges();

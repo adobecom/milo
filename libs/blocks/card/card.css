@@ -3,6 +3,15 @@
   line-height: 1.375rem;
 }
 
+.card.consonant-OneHalfCard {
+  min-height: 448px;
+  height: unset;
+}
+
+.card .consonant-OneHalfCard-title, .card .consonant-OneHalfCard-text {
+  max-height: unset;
+}
+
 .card hr {
   background-color: #E1E1E1;
   border: none;
