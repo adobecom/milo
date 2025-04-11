@@ -111,7 +111,7 @@ function extractQuantitySelect(el, merchCard) {
     quantitySelectConfig.remove();
     [attributes.min, attributes.max, attributes.step, attributes['default-value'], attributes['max-input']] = values;
   }
-  if (!attributes.min || !attributes.max) {
+  if (!attributes.min || !attributes.max || !attributes.step) {
     return null;
   }
   import('../../deps/mas/merch-quantity-select.js');
