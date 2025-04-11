@@ -67,7 +67,7 @@ export function processMnemonics(fields, merchCard, mnemonicsConfig) {
 }
 
 function processBadge(fields, merchCard, mapping) {
-    if (fields.variant === 'plans') {
+    if (fields.variant === 'plans' || fields.variant === 'plans-edu') {
         // for back-compatibility
         if (fields.badge?.length && !fields.badge?.startsWith('<merch-badge')) {
             fields.badge = `<merch-badge variant="${fields.variant}" background-color="${DEFAULT_PLANS_BADGE_COLOR}">${fields.badge}</merch-badge>`;
@@ -467,6 +467,7 @@ export async function hydrate(fragment, merchCard) {
     merchCard.classList.remove('wide-strip');
     merchCard.classList.remove('thin-strip');
     merchCard.removeAttribute(ANALYTICS_SECTION_ATTR);
+    if (variant === 'plans') merchCard.removeAttribute('segment');
 
     merchCard.variant = variant;
     await merchCard.updateComplete;
