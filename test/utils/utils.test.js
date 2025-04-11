@@ -519,7 +519,6 @@ describe('Utils', () => {
         config.pathname = path;
         utils.setConfig(config);
       }
-
       it('Same domain link is relative and localized', () => {
         expect(utils.localizeLink('https://main--milo--adobecom.hlx.page/gnav/solutions', 'main--milo--adobecom.hlx.page')).to.equal('/be_fr/gnav/solutions');
       });
@@ -1070,6 +1069,276 @@ describe('Utils', () => {
       autoBlocks.forEach(([block, url, isValid]) => {
         const isValidAutoBlock = utils.isTrustedAutoBlock(block, new URL(url));
         expect(isValidAutoBlock).to.be[isValid];
+      });
+    });
+  });
+
+  describe('Localization Logic', () => {
+    // Base config with common properties
+    const baseConfig = {
+      locales: { '': { ietf: 'en-US', tk: 'hah7vzn.css' } },
+      prodDomains: ['news.adobe.com'],
+      contentRoot: '/root',
+    };
+
+    // --- Tests for localizeLink ---
+    describe('localizeLink', () => {
+      it('uses locale prefix when no language-based logic applies', () => {
+        utils.setConfig({
+          ...baseConfig,
+          pathname: '/de/',
+          locales: {
+            ...baseConfig.locales,
+            de: { ietf: 'de-DE', tk: 'hah7vzn.css' },
+          },
+        });
+        const href = 'https://examplesite.com/path';
+        const result = utils.localizeLink(href, 'examplesite.com');
+        expect(utils.getConfig().locale.prefix).to.equal('/de');
+        expect(result).to.equal('/de/path');
+      });
+
+      it('adjusts prefix to locale when no site match', () => {
+        utils.setConfig({
+          ...baseConfig,
+          pathname: '/ch_de/',
+          languages: {
+            de: {
+              ietf: 'de',
+              tk: 'hah7vzn.css',
+              regions: [{ region: 'ch', ietf: 'de-CH', tk: 'hah7vzn.css' }],
+            },
+          },
+          locales: {
+            ...baseConfig.locales,
+            ch_de: { ietf: 'ch-DE', tk: 'hah7vzn.css' },
+          },
+        });
+        const href = 'https://othersite.com/path';
+        const result = utils.localizeLink(href, 'othersite.com');
+        expect(utils.getConfig().locale.prefix).to.equal('/ch_de');
+        expect(utils.getConfig().locale.language).to.be.undefined;
+        expect(result).to.equal('/ch_de/path');
+      });
+
+      it('keeps language-based prefix when site matches and language is valid', async () => {
+        const mockConfig = {
+          'locale-to-language-map': { data: [] },
+          'site-languages': {
+            data: [
+              {
+                domainMatches: 'news.adobe.com\n--news--adobecom.',
+                languages: 'en\nen/gb\nde',
+              },
+            ],
+          },
+        };
+        window.fetch = async () => ({
+          ok: true,
+          json: () => Promise.resolve(mockConfig),
+        });
+        utils.setConfig({
+          ...baseConfig,
+          pathname: '/en/gb/',
+          languages: {
+            en: {
+              ietf: 'en',
+              tk: 'hah7vzn.css',
+              regions: [{ region: 'gb', ietf: 'en-GB', tk: 'hah7vzn.css' }],
+            },
+          },
+        });
+        await utils.loadLanguageConfig();
+        const href = 'https://news.adobe.com/path';
+        const result = utils.localizeLink(href, 'news.adobe.com');
+        expect(utils.getConfig().locale.prefix).to.equal('/en/gb');
+        expect(utils.getConfig().locale.language).to.equal('en');
+        expect(result).to.equal('/en/gb/path');
+      });
+
+      it('maps to locale prefix when site matches but language is invalid', async () => {
+        const mockConfig = {
+          'locale-to-language-map': { data: [{ locale: 'ch_de', languagePath: 'de/ch' }] },
+          'site-languages': {
+            data: [
+              {
+                domainMatches: 'news.adobe.com\n--news--adobecom.',
+                languages: 'en\nfr',
+              },
+            ],
+          },
+        };
+        window.fetch = async () => ({
+          ok: true,
+          json: () => Promise.resolve(mockConfig),
+        });
+        utils.setConfig({
+          ...baseConfig,
+          pathname: '/de/ch/',
+          languages: {
+            de: {
+              ietf: 'de',
+              tk: 'hah7vzn.css',
+              regions: [{ region: 'ch', ietf: 'de-CH', tk: 'hah7vzn.css' }],
+            },
+          },
+          locales: {
+            ...baseConfig.locales,
+            ch_de: { ietf: 'de-CH', tk: 'hah7vzn.css' },
+          },
+        });
+        await utils.loadLanguageConfig();
+        const href = 'https://news.adobe.com/path';
+        const result = utils.localizeLink(href);
+        expect(utils.getConfig().locale.prefix).to.equal('/de/ch');
+        expect(utils.getConfig().locale.language).to.equal('de');
+        expect(result).to.equal('https://news.adobe.com/ch_de/path');
+      });
+
+      it('uses locale prefix for non-language-based when site matches but no language', async () => {
+        const mockConfig = {
+          'locale-to-language-map': { data: [{ locale: 'ch_de', languagePath: 'de/ch' }] },
+          'site-languages': {
+            data: [
+              {
+                domainMatches: 'news.adobe.com\n--news--adobecom.',
+                languages: 'en\nfr',
+              },
+            ],
+          },
+        };
+        window.fetch = async () => ({
+          ok: true,
+          json: () => Promise.resolve(mockConfig),
+        });
+        utils.setConfig({
+          ...baseConfig,
+          pathname: '/ch_de/',
+          locales: {
+            ...baseConfig.locales,
+            ch_de: { ietf: 'de-CH', tk: 'hah7vzn.css' },
+          },
+        });
+        await utils.loadLanguageConfig();
+        const href = 'https://news.adobe.com/path';
+        const result = utils.localizeLink(href, 'news.adobe.com');
+        expect(utils.getConfig().locale.prefix).to.equal('/ch_de');
+        expect(utils.getConfig().locale.language).to.be.undefined;
+        expect(result).to.equal('/ch_de/path');
+      });
+
+      it('set correct prefix for US site with only language', async () => {
+        utils.setConfig({
+          pathname: '/',
+          languages: { en: { tk: 'hah7vzn.css' } },
+        });
+        const href = '/path';
+        const result = utils.localizeLink(href);
+        expect(utils.getConfig().locale.prefix).to.equal('');
+        expect(utils.getConfig().locale.language).to.equal('en');
+        expect(result).to.equal('/path');
+      });
+
+      it('skips language logic on localhost', () => {
+        utils.setConfig({
+          ...baseConfig,
+          pathname: '/de/ch/',
+          languages: {
+            de: {
+              ietf: 'de',
+              tk: 'hah7vzn.css',
+              regions: [{ region: 'ch', ietf: 'de-CH', tk: 'hah7vzn.css' }],
+            },
+          },
+          locales: {
+            ...baseConfig.locales,
+            ch_de: { ietf: 'de-CH', tk: 'hah7vzn.css' },
+          },
+        });
+        const href = 'http://localhost/path';
+        const result = utils.localizeLink(href);
+        expect(utils.getConfig().locale.prefix).to.equal('/de/ch');
+        expect(utils.getConfig().locale.language).to.equal('de');
+        expect(result).to.equal('/de/ch/path');
+      });
+    });
+
+    // --- Tests for hasLanguageLinks ---
+    describe('hasLanguageLinks', () => {
+      const testPaths = [
+        'news.adobe.com',
+        'adobe.com/express/',
+        'adobe.com/**/express/',
+        'adobe.com/**_**/express/',
+      ];
+
+      it('should return true for news.adobe.com links', () => {
+        const link = createTag('a', { href: 'https://news.adobe.com/some/path' });
+        const area = createTag('div', {}, link);
+        expect(utils.hasLanguageLinks(area, testPaths)).to.be.true;
+      });
+
+      it('should return true for express links without locale', () => {
+        const link = createTag('a', { href: 'https://adobe.com/express/' });
+        const area = createTag('div', {}, link);
+        expect(utils.hasLanguageLinks(area, testPaths)).to.be.true;
+      });
+
+      it('should return true for express links with two-letter locale', () => {
+        const link = createTag('a', { href: 'https://adobe.com/de/express/' });
+        const area = createTag('div', {}, link);
+        expect(utils.hasLanguageLinks(area, testPaths)).to.be.true;
+      });
+
+      it('should return true for express links with locale_region', () => {
+        const link = createTag('a', { href: 'https://adobe.com/de_de/express/' });
+        const area = createTag('div', {}, link);
+        expect(utils.hasLanguageLinks(area, testPaths)).to.be.true;
+      });
+
+      it('should return true for express links with uppercase locale', () => {
+        const link = createTag('a', { href: 'https://adobe.com/DE/express/' });
+        const area = createTag('div', {}, link);
+        expect(utils.hasLanguageLinks(area, testPaths)).to.be.true;
+      });
+
+      it('should return true for express links with uppercase locale_region', () => {
+        const link = createTag('a', { href: 'https://adobe.com/DE_DE/express/' });
+        const area = createTag('div', {}, link);
+        expect(utils.hasLanguageLinks(area, testPaths)).to.be.true;
+      });
+
+      it('should return false for non-matching express links', () => {
+        const link = createTag('a', { href: 'https://adobe.com/other/express/' });
+        const area = createTag('div', {}, link);
+        expect(utils.hasLanguageLinks(area, testPaths)).to.be.false;
+      });
+
+      it('should return false for express links with invalid locale format', () => {
+        const link = createTag('a', { href: 'https://adobe.com/123/express/' });
+        const area = createTag('div', {}, link);
+        expect(utils.hasLanguageLinks(area, testPaths)).to.be.false;
+      });
+
+      it('should return false for non-matching domains', () => {
+        const link = createTag('a', { href: 'https://example.com/express/' });
+        const area = createTag('div', {}, link);
+        expect(utils.hasLanguageLinks(area, testPaths)).to.be.false;
+      });
+
+      it('should handle multiple links and return true if any match', () => {
+        const area = createTag('div', {}, [
+          createTag('a', { href: 'https://example.com/' }),
+          createTag('a', { href: 'https://adobe.com/de/express/' }),
+          createTag('a', { href: 'https://other.com/' }),
+        ]);
+        expect(utils.hasLanguageLinks(area, testPaths)).to.be.true;
+      });
+
+      it('should use default LANGUAGE_BASED_PATHS when no paths provided', () => {
+        const link = createTag('a', { href: 'https://news.adobe.com/some/path' });
+        const area = createTag('div', {}, link);
+        expect(utils.hasLanguageLinks(area)).to.be.true;
       });
     });
   });

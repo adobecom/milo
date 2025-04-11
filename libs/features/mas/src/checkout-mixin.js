@@ -79,7 +79,7 @@ export function CheckoutMixin(Base) {
             return this.masElement.options;
         }
 
-        get opens3in1Modal() {
+        get isOpen3in1Modal() {
           const masFF3in1 = document.querySelector('meta[name=mas-ff-3in1]');
           return Object.values(MODAL_TYPE_3_IN_1).includes(this.getAttribute('data-modal')) && (!masFF3in1 || masFF3in1.content !== 'off');
         }
