@@ -154,10 +154,18 @@ const TARGET_TIMEOUT_MS = 4000;
 const LANGSTORE = 'langstore';
 const PREVIEW = 'target-preview';
 const PAGE_URL = new URL(window.location.href);
+const LANGUAGE_BASED_PATHS = [
+  // don't add milo too. It's a special case because of tools, merch, etc.
+  'news.adobe.com',
+];
+const DEFAULT_LANG = 'en';
 export const SLD = PAGE_URL.hostname.includes('.aem.') ? 'aem' : 'hlx';
 
 const PROMO_PARAM = 'promo';
 let isMartechLoaded = false;
+
+let localeToLanguageMap;
+let siteLanguages;
 
 export function getEnv(conf) {
   const { host } = window.location;
@@ -200,6 +208,36 @@ export function getLocale(locales, pathname = window.location.pathname) {
   return locale;
 }
 
+export function getLanguage(languages, locales, pathname = window.location.pathname) {
+  const split = pathname.split('/');
+  const locOffset = [LANGSTORE, PREVIEW].includes(split[1]) ? 1 : 0;
+  const languageString = split[locOffset + 1];
+  const region = split[locOffset + 2];
+  let regionPath = '';
+
+  const language = languages[languageString];
+  if (language && region && language.regions) {
+    const [matchingRegion] = language.regions.filter((r) => r.region === region);
+    language.region = matchingRegion.region;
+    if (matchingRegion.ietf)language.ietf = matchingRegion.ietf;
+    if (matchingRegion.tk) language.tk = matchingRegion.tk;
+    regionPath = matchingRegion ? `/${region}` : '';
+  }
+
+  const isLegacyLocaleRoutingMode = !language
+      || (language.languageBased === false && !language.region);
+  if (isLegacyLocaleRoutingMode) {
+    const locale = getLocale(locales, pathname);
+    if (locale.prefix === '') locale.language = DEFAULT_LANG;
+    return locale;
+  }
+
+  if (!language.ietf) language.ietf = `${languageString}${language.region ? `_${language.region.toUpperCase()}` : ''}`;
+  language.language = languageString;
+  language.prefix = `${languageString === DEFAULT_LANG && !regionPath ? '' : '/'}${languageString}${regionPath}`;
+  return language;
+}
+
 export function getMetadata(name, doc = document) {
   const attr = name && name.includes(':') ? 'property' : 'name';
   const meta = doc.head.querySelector(`meta[${attr}="${name}"]`);
@@ -238,7 +276,8 @@ export const [setConfig, updateConfig, getConfig] = (() => {
       config = { env: getEnv(conf), ...conf };
       config.codeRoot = conf.codeRoot ? `${origin}${conf.codeRoot}` : origin;
       config.base = config.miloLibs || config.codeRoot;
-      config.locale = pathname ? getLocale(conf.locales, pathname) : getLocale(conf.locales);
+      config.locale = conf.languages
+        ? getLanguage(conf.languages, conf.locales, pathname) : getLocale(conf.locales, pathname);
       config.autoBlocks = conf.autoBlocks ? [...AUTO_BLOCKS, ...conf.autoBlocks] : AUTO_BLOCKS;
       config.signInContext = conf.signInContext || {};
       config.doNotInline = conf.doNotInline
@@ -308,6 +347,42 @@ export const getFederatedUrl = (url = '') => {
   return url;
 };
 
+function isPathMatch(path, href) {
+  if (path.includes('*')) {
+    const regex = new RegExp(path.replace(/\*/g, '[a-zA-Z]{1}'));
+    return regex.test(href);
+  }
+  return href.includes(path);
+}
+
+export function hasLanguageLinks(area, paths = LANGUAGE_BASED_PATHS) {
+  if (!area) return false;
+  const links = area.querySelectorAll('a');
+  return Array.from(links).some((link) => {
+    const { href } = link;
+    if (!href) return false;
+    return paths.some((path) => isPathMatch(path, href));
+  });
+}
+
+export async function loadLanguageConfig() {
+  const parseList = (str) => str.split(/[\n,]+/).map((t) => t.trim()).filter(Boolean);
+  try {
+    const response = await fetch(`${getFederatedContentRoot()}/federal/assets/data/languages-config.json`);
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const configJson = await response.json();
+
+    localeToLanguageMap = configJson['locale-to-language-map']?.data;
+    siteLanguages = configJson['site-languages']?.data?.map((site) => ({
+      ...site,
+      pathMatches: parseList(site.pathMatches),
+      languages: parseList(site.languages),
+    }));
+  } catch (e) {
+    window.lana?.log('Failed to load language-config.json:', e);
+  }
+}
+
 let fedsPlaceholderConfig;
 export const getFedsPlaceholderConfig = ({ useCache = true } = {}) => {
   if (useCache && fedsPlaceholderConfig) return fedsPlaceholderConfig;
@@ -357,6 +432,27 @@ function getExtension(path) {
   return pageName.includes('.') ? pageName.split('.').pop() : '';
 }
 
+function getPrefixBySite(locale, url, relative) {
+  let { prefix } = locale;
+  const site = siteLanguages?.find((s) => s.pathMatches.some((d) => isPathMatch(d, url.href)));
+
+  const localeSiteWithLanguageTarget = !locale.language && site && localeToLanguageMap;
+  const languageSiteWithLocaleTarget = locale.language && !relative && !site?.languages.some((l) => (l === DEFAULT_LANG ? '' : `/${l}`) === prefix);
+  if (localeSiteWithLanguageTarget) {
+    const mappedLanguageFromPrefix = localeToLanguageMap?.find((m) => `${m.locale === '' ? '' : '/'}${m.locale}` === prefix);
+    const languageInUseBySite = site.languages.find((l) => `${l}` === mappedLanguageFromPrefix.languagePath);
+    if (languageInUseBySite) {
+      prefix = languageInUseBySite === DEFAULT_LANG ? '' : `/${languageInUseBySite}`;
+    }
+  }
+  if (languageSiteWithLocaleTarget) {
+    const mappedLocaleFromLanguage = localeToLanguageMap?.find((m) => `/${m.languagePath}` === prefix);
+    prefix = mappedLocaleFromLanguage ? `${mappedLocaleFromLanguage.locale === '' ? '' : '/'}${mappedLocaleFromLanguage.locale}` : prefix;
+  }
+
+  return prefix;
+}
+
 export function localizeLink(
   href,
   originHostName = window.location.hostname,
@@ -372,17 +468,20 @@ export function localizeLink(
     const extension = getExtension(path);
     const allowedExts = ['', 'html', 'json'];
     if (!allowedExts.includes(extension)) return processedHref;
-    const { locale, locales, prodDomains } = getConfig();
-    if (!locale || !locales) return processedHref;
+    const { locale, locales, languages, prodDomains } = getConfig();
+    if (!locale || !(locales || languages)) return processedHref;
     const isLocalizable = relative || (prodDomains && prodDomains.includes(url.hostname))
       || overrideDomain;
     if (!isLocalizable) return processedHref;
     const isLocalizedLink = path.startsWith(`/${LANGSTORE}`)
       || path.startsWith(`/${PREVIEW}`)
-      || Object.keys(locales).some((loc) => loc !== '' && (path.startsWith(`/${loc}/`)
-        || path.endsWith(`/${loc}`)));
+      || (languages && Object.keys(languages).some((lang) => lang !== '' && (path.startsWith(`/${lang}/`))))
+      || (locales && Object.keys(locales).some((loc) => loc !== '' && (path.startsWith(`/${loc}/`)
+        || path.endsWith(`/${loc}`))));
     if (isLocalizedLink) return processedHref;
-    const urlPath = `${locale.prefix}${path}${url.search}${hash}`;
+
+    const prefix = getPrefixBySite(locale, url, relative);
+    const urlPath = `${prefix}${path}${url.search}${hash}`;
     return relative ? urlPath : `${url.origin}${urlPath}`;
   } catch (error) {
     return href;
@@ -1493,6 +1592,9 @@ export async function loadArea(area = document) {
     appendSuffixToTitles();
   }
   const config = getConfig();
+  if (!localeToLanguageMap && !siteLanguages && (config.languages || hasLanguageLinks(area))) {
+    await loadLanguageConfig();
+  }
 
   if (isDoc) {
     decorateDocumentExtras();
