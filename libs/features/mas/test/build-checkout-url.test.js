@@ -81,9 +81,11 @@ describe('buildCheckoutUrl', () => {
       clientId: 'testClient',
       country: 'US',
       items: [{ quantity: 1 }],
+      customerSegment: 'INDIVIDUAL',
+      marketSegment: 'EDU',
+      modal: 'crm',
     };
-    const url = buildCheckoutUrl(checkoutData, 'crm');
-    
+    const url = buildCheckoutUrl(checkoutData);
     const parsedUrl = new URL(url);
     expect(parsedUrl.searchParams.get('af')).to.equal('uc_segmentation_hide_tabs,uc_new_user_iframe,uc_new_system_close');
     expect(parsedUrl.searchParams.get('cli')).to.equal('creative');
@@ -96,9 +98,11 @@ describe('buildCheckoutUrl', () => {
       clientId: 'testClient',
       country: 'US',
       items: [{ quantity: 1 }],
+      customerSegment: 'INDIVIDUAL',
+      marketSegment: 'EDU',
+      modal: 'twp',
     };
-    const url = buildCheckoutUrl(checkoutData, 'twp');
-    
+    const url = buildCheckoutUrl(checkoutData);
     const parsedUrl = new URL(url);
     expect(parsedUrl.searchParams.get('af')).to.equal('uc_new_user_iframe,uc_new_system_close');
     expect(parsedUrl.searchParams.get('cli')).to.equal('mini_plans');
@@ -111,9 +115,11 @@ describe('buildCheckoutUrl', () => {
       clientId: 'testClient',
       country: 'US',
       items: [{ quantity: 1 }],
+      customerSegment: 'INDIVIDUAL',
+      marketSegment: 'EDU',
+      modal: 'd2p',
     };
-    const url = buildCheckoutUrl(checkoutData, 'd2p');
-    
+    const url = buildCheckoutUrl(checkoutData);
     const parsedUrl = new URL(url);
     expect(parsedUrl.searchParams.get('af')).to.equal('uc_new_user_iframe,uc_new_system_close');
     expect(parsedUrl.searchParams.get('cli')).to.equal('mini_plans');
@@ -127,10 +133,10 @@ describe('buildCheckoutUrl', () => {
       country: 'US',
       items: [{ quantity: 1 }],
       customerSegment: 'INDIVIDUAL',
-      marketSegment: 'EDU'
+      marketSegment: 'EDU',
+      modal: 'twp',
     };
-    const url = buildCheckoutUrl(checkoutData, 'twp');
-    
+    const url = buildCheckoutUrl(checkoutData);    
     const parsedUrl = new URL(url);
     expect(parsedUrl.searchParams.get('ms')).to.equal('e');
   });
@@ -143,10 +149,10 @@ describe('buildCheckoutUrl', () => {
       country: 'US',
       items: [{ quantity: 1 }],
       customerSegment: 'TEAM',
-      marketSegment: 'COM'
+      marketSegment: 'COM',
+      modal: 'twp',
     };
-    const url = buildCheckoutUrl(checkoutData, 'twp');
-    
+    const url = buildCheckoutUrl(checkoutData);
     const parsedUrl = new URL(url);
     expect(parsedUrl.searchParams.get('cs')).to.equal('t');
   });

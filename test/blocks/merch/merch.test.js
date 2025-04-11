@@ -503,7 +503,7 @@ describe('Merch Block', () => {
         checkoutLink.setAttribute('daa-ll', 'Free trial-1--');
         checkoutLink.setAttribute('data-modal-id', 'mini-plans-web-cta-photoshop-card');
         checkoutLink.setAttribute('data-modal-type', 'twp');
-        Object.defineProperty(checkoutLink, 'opens3in1Modal', { get: () => true });
+        Object.defineProperty(checkoutLink, 'isOpen3in1Modal', { get: () => true });
         await openModal(new CustomEvent('test'), 'https://www.adobe.com/mini-plans/creativecloud.html?mid=ft&web=1', 'TRIAL', 'try-photoshop', {}, checkoutLink);
         const threeInOneModal = document.querySelector('.dialog-modal.three-in-one');
         expect(threeInOneModal).to.exist;

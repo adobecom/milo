@@ -77,8 +77,8 @@ export const handle3in1IFrameEvents = ({ data: msgData }) => {
   if (!threeInOne) return;
   switch (subType) {
     case MSG_SUBTYPE.AppLoaded:
-      iframe?.classList.remove('loading');
       iframe?.setAttribute('data-pageloaded', 'true');
+      iframe?.classList.remove('loading');
       threeInOne.querySelector('sp-theme')?.remove();
       if (closeBtn) {
         closeBtn.setAttribute('aria-hidden', 'true');
@@ -102,41 +102,47 @@ export const handle3in1IFrameEvents = ({ data: msgData }) => {
 };
 
 export const handleTimeoutError = () => {
-  const threeInOne = document.querySelector('.three-in-one');
-  const miloIframe = threeInOne?.querySelector('.milo-iframe');
-  const iframe = threeInOne?.querySelector('iframe');
-  const theme = threeInOne?.querySelector('sp-theme');
-  if (!miloIframe || !iframe || iframe.getAttribute('data-pageloaded') || !theme) return;
+  const modal = document.querySelector('.three-in-one');
+  const miloIframe = modal?.querySelector('.milo-iframe');
+  const iframe = modal?.querySelector('iframe');
+  const theme = modal?.querySelector('sp-theme');
+  if (iframe?.getAttribute('data-pageloaded') || !miloIframe || !iframe || !theme) return;
   const wasReloaded = iframe.getAttribute('data-wasreloaded') === 'true';
 
   showErrorMsg({ iframe, miloIframe, showBtn: !wasReloaded, theme, handleTimeoutError });
 
   if (wasReloaded) {
     setTimeout(() => {
-      threeInOne?.dispatchEvent(new Event('closeModal'));
+      modal?.dispatchEvent(new Event('closeModal'));
       window.removeEventListener('message', handle3in1IFrameEvents);
     }, 5000);
   }
 };
 
-export async function createContent(iframeUrl, modalType) {
+export function createContent(iframeUrl) {
   const content = createTag('div', { class: 'milo-iframe' });
   content.innerHTML = `<sp-theme system="light" color="light" scale="medium" dir="ltr">
   <sp-progress-circle label="progress circle" indeterminate="" size="l" dir="ltr" role="progressbar" aria-label="progress circle"></sp-progress-circle>
   </sp-theme>
-  <iframe src="${iframeUrl}" title="${modalType === 'crm' ? 'Single App' : modalType}" frameborder="0" marginwidth="0" marginheight="0" allowfullscreen="true" loading="lazy" class="loading" style="height: 100%;"></iframe>`;
+  <iframe src="${iframeUrl}" frameborder="0" marginwidth="0" marginheight="0" allowfullscreen="true" loading="lazy" class="loading" style="height: 100%;"></iframe>`;
   return content;
 }
 
 export default async function openThreeInOneModal(el) {
   const iframeUrl = el?.href;
-  const modalType = el?.getAttribute('data-modal-type');
+  const modalType = el?.getAttribute('data-modal');
+  const id = el?.getAttribute('data-modal-id');
   if (!modalType || !iframeUrl) return undefined;
   const { getModal } = await import('../modal/modal.js');
-  const content = await createContent(iframeUrl, modalType);
-  setTimeout(handleTimeoutError, 15000);
+  const content = createContent(iframeUrl);
+  const timeoutId = setTimeout(handleTimeoutError, 15000);
+  const clearTimeoutOnClose = () => {
+    clearTimeout(timeoutId);
+    window.removeEventListener('milo:modal:closed', clearTimeoutOnClose);
+  };
+  window.addEventListener('milo:modal:closed', clearTimeoutOnClose);
   return getModal(null, {
-    id: 'three-in-one',
+    id,
     content,
     closeEvent: 'closeModal',
     class: 'three-in-one',
