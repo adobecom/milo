@@ -96,12 +96,6 @@ merch-card[variant="plans"] [slot="footer"] a {
 
 /* Mobile */
 @media screen and ${MOBILE_LANDSCAPE} {
-    merch-card[variant="plans"][size="students"] {
-        min-width: var(--consonant-merch-card-plans-width);
-        max-width: var(--consonant-merch-card-plans-students-width);
-        width: 100%;
-    }
-
     merch-whats-included merch-mnemonic-list,
     merch-whats-included [slot="heading"] {
         width: 100%;
