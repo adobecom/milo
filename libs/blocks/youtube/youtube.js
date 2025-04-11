@@ -1,5 +1,5 @@
 // part of the code is an optimized version of lite-youtube-embed -> https://github.com/paulirish/lite-youtube-embed
-import { createIntersectionObserver, createTag, isInTextNode, loadLink } from '../../utils/utils.js';
+import { createIntersectionObserver, createTag, isInTextNode, loadLink, setDialogAndIframeTitle } from '../../utils/utils.js';
 
 class LiteYTEmbed extends HTMLElement {
   connectedCallback() {
@@ -23,7 +23,8 @@ class LiteYTEmbed extends HTMLElement {
     try {
       const response = await fetch(`https://www.youtube.com/oembed?url=http://www.youtube.com/watch?v=${this.videoId}&format=json`);
       const data = await response.json();
-      if (data.title && this.iframeEl) this.iframeEl.title = data.title;
+
+      setDialogAndIframeTitle({ element: this.iframeEl, title: data.title });
     } catch (error) {
       window.lana.log('Error fetching YouTube video title', { error });
     }

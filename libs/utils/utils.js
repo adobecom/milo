@@ -763,6 +763,13 @@ export function decorateImageLinks(el) {
   });
 }
 
+export const setDialogAndIframeTitle = ({ element, title }) => {
+  const dialogModal = element.closest('.dialog-modal');
+
+  if (element && title) element.title = title;
+  if (dialogModal && title) dialogModal.title = title;
+};
+
 export function isTrustedAutoBlock(autoBlock, url) {
   if (!url.href.includes(autoBlock)) return false;
   const urlHostname = url.hostname.replace('www.', '');
