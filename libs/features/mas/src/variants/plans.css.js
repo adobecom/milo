@@ -3,17 +3,11 @@ export const CSS = `
 :root {
     --consonant-merch-card-plans-width: 300px;
     --consonant-merch-card-plans-icon-size: 40px;
-    --consonant-merch-card-plans-students-width: 568px;
 }
 
 merch-card[variant="plans"] {
     --consonant-merch-card-callout-icon-size: 18px;
     width: var(--consonant-merch-card-plans-width);
-}
-
-merch-card[variant="plans"][size="students"] {
-    min-height: unset;
-    width: var(--consonant-merch-card-plans-students-width);
 }
 
 merch-card[variant="plans"] [slot="icons"] {

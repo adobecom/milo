@@ -3,6 +3,7 @@ import { Image } from './image.js';
 import { InlineHeading } from './inline-heading.js';
 import { MiniCompareChart } from './mini-compare-chart.js';
 import { Plans, PLANS_AEM_FRAGMENT_MAPPING } from './plans.js';
+import { PlansEdu, PLANS_EDU_AEM_FRAGMENT_MAPPING } from './plans-edu.js';
 import { Product } from './product.js';
 import { Segment } from './segment.js';
 import {
@@ -29,6 +30,8 @@ const getVariantLayout = (card, mustMatch = false) => {
             return new MiniCompareChart(card);
         case 'plans':
             return new Plans(card);
+        case 'plans-edu':
+            return new PlansEdu(card);
         case 'product':
             return new Product(card);
         case 'segment':
@@ -54,6 +57,7 @@ export const variantFragmentMappings = {
     'inline-heading': null,
     'mini-compare-chart': null,
     plans: PLANS_AEM_FRAGMENT_MAPPING,
+    'plans-edu': PLANS_EDU_AEM_FRAGMENT_MAPPING,
     product: null,
     segment: null,
     'special-offers': SPECIAL_OFFERS_AEM_FRAGMENT_MAPPING,
@@ -69,6 +73,7 @@ const getVariantStyles = () => {
     styles.push(MiniCompareChart.variantStyle);
     styles.push(Product.variantStyle);
     styles.push(Plans.variantStyle);
+    styles.push(PlansEdu.variantStyle);
     styles.push(Segment.variantStyle);
     styles.push(SpecialOffer.variantStyle);
     styles.push(TWP.variantStyle);

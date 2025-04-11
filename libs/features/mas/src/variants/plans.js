@@ -17,7 +17,7 @@ export const PLANS_AEM_FRAGMENT_MAPPING = {
   allowedBadgeColors: ['spectrum-yellow-300-plans', 'spectrum-gray-300-plans', 'spectrum-gray-700-plans', 'spectrum-green-900-plans'],
   allowedBorderColors: ['spectrum-yellow-300-plans', 'spectrum-gray-300-plans'],
   borderColor: { attribute: 'border-color' },
-  size: ['wide', 'super-wide', 'students'],
+  size: ['wide', 'super-wide'],
   whatsIncluded: { tag: 'div', slot: 'whats-included' },
   ctas: { slot: 'footer', size: 'm' },
   style: 'consonant'
@@ -39,11 +39,6 @@ export class Plans extends VariantLayout {
   }
 
   adaptForMobile() {
-    const size = this.card.getAttribute('size');
-    if (size === 'students') {
-      return;
-    }
-
     if (!this.card.closest('merch-card-collection,overlay-trigger')) {
       this.card.removeAttribute('size');
       return;
@@ -51,6 +46,7 @@ export class Plans extends VariantLayout {
 
     const shadowRoot = this.card.shadowRoot;
     const footer = shadowRoot.querySelector('footer');
+    const size = this.card.getAttribute('size');
     const stockInFooter = shadowRoot.querySelector('footer #stock-checkbox');
     const stockInBody = shadowRoot.querySelector('.body #stock-checkbox');
     const body = shadowRoot.querySelector('.body');
