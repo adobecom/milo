@@ -668,6 +668,7 @@ body.preflight-assets-analysis {
 picture:has(.picture-meta) {
   position: relative;
   display: block;
+  height: 100%;
 }
 
 .picture-meta {
@@ -686,6 +687,11 @@ picture:has(.picture-meta) {
   line-height: 1.2;
   z-index: 9;
   opacity: 0.7;
+}
+
+.text.center .picture-meta {
+  left: 50%;
+  transform: translateX(-50%);
 }
 
 .picture-meta.no-picture-tag {

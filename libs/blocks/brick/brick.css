@@ -67,7 +67,7 @@
   align-items: flex-start;
 }
 
-.brick .background div,
+.brick .background div:not([class^="picture-meta"]),
 .brick .background p,
 .brick .background picture {
   height: 100%;
@@ -98,12 +98,12 @@
   margin: 0;
 }
 
-.brick .foreground div > .video-container {
-  margin: 0;
-}
-
 .brick .foreground div > * {
   margin-top: var(--spacing-xs);
+}
+
+.brick .foreground div > :is(.video-container, picture, [class^="picture-meta"]) {
+  margin: 0;
 }
 
 .brick .foreground .brick-text *:first-child,
@@ -338,12 +338,11 @@
 
   .brick.split.row .foreground .brick-media img,
   .brick.split.row .foreground .brick-media video {
-    width: 50%;
+    width: 100%;
     height: 100%;
     object-fit: cover;
     padding: 0;
     margin: 0;
-    position: absolute;
   }
 
   .brick.split.row .foreground .brick-media .video-container img,
