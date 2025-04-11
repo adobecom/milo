@@ -204,13 +204,13 @@ export async function getModal(details, custom) {
   if (iframe) {
     iframe.onload = () => {
       try {
-        if (iframe.contentWindow.location.origin !== window.location.origin) {
+        if (new URL(iframe.src).origin !== window.location.origin) {
           return;
         }
 
         const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
-        const iframeHeading = iframeDoc.querySelector('h1, h2, h3, h4, h5, h6');
-        if (iframeHeading) dialog.setAttribute('aria-label', iframeHeading.textContent.trim());
+        const iframeHeading = iframeDoc.querySelector('h1, h2, h3, h4, h5, h6')?.textContent.trim();
+        if (iframeHeading) dialog.setAttribute('aria-label', iframeHeading);
       } catch (e) {
         // Cross-origin iframe, can't access content
       }
