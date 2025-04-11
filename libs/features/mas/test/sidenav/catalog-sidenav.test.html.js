@@ -60,6 +60,7 @@ runTests(async () => {
     if (shouldSkipTests === 'true') {
         return;
     }
+    await import('../../src/mas.js');
 
     beforeEach(() => {
         window.location.hash = '';

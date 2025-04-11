@@ -1,4 +1,4 @@
-import { useService as getService } from "./utilities.js";
+import { getService } from './utils.js';
 
 function getPromoTermsUrl(env) {
     const host = env === 'PRODUCTION' ? 'www.adobe.com' : 'www.stage.adobe.com';

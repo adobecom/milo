@@ -1,5 +1,5 @@
-import { VariantLayout } from "./variant-layout"
 import { html, css } from 'lit';
+import { VariantLayout } from "./variant-layout.js"
 import { CSS } from './segment.css.js';
 
 export class Segment extends VariantLayout {

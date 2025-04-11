@@ -219,21 +219,18 @@
     Buy now
 <span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
 <span class="hljs-tag">&lt;<span class="hljs-name">script</span> <span class="hljs-attr">type</span>=<span class="hljs-string">&quot;module&quot;</span>&gt;</span><span class="language-javascript">
-    <span class="hljs-variable language_">document</span>
-        .<span class="hljs-title function_">getElementById</span>(<span class="hljs-string">&#x27;co1&#x27;</span>)
-        .<span class="hljs-title function_">onceSettled</span>()
-        .<span class="hljs-title function_">then</span>(<span class="hljs-function">(<span class="hljs-params">el</span>) =&gt;</span> {
-            <span class="hljs-variable language_">document</span>.<span class="hljs-title function_">getElementById</span>(<span class="hljs-string">&#x27;coValue&#x27;</span>).<span class="hljs-property">innerHTML</span> = <span class="hljs-title class_">JSON</span>.<span class="hljs-title function_">stringify</span>(
-                el.<span class="hljs-property">value</span>,
-                <span class="hljs-literal">null</span>,
-                <span class="hljs-string">&#x27;\t&#x27;</span>,
-            );
-            <span class="hljs-variable language_">document</span>.<span class="hljs-title function_">getElementById</span>(<span class="hljs-string">&#x27;coOptions&#x27;</span>).<span class="hljs-property">innerHTML</span> = <span class="hljs-title class_">JSON</span>.<span class="hljs-title function_">stringify</span>(
-                el.<span class="hljs-property">options</span>,
-                <span class="hljs-literal">null</span>,
-                <span class="hljs-string">&#x27;\t&#x27;</span>,
-            );
-        });
+    <span class="hljs-title function_">onceEvent</span>(<span class="hljs-variable language_">document</span>.<span class="hljs-title function_">getElementById</span>(<span class="hljs-string">&#x27;co1&#x27;</span>), <span class="hljs-string">&#x27;mas:resolved&#x27;</span>, <span class="hljs-function">(<span class="hljs-params">{ target }</span>) =&gt;</span> {
+        <span class="hljs-variable language_">document</span>.<span class="hljs-title function_">getElementById</span>(<span class="hljs-string">&#x27;coValue&#x27;</span>).<span class="hljs-property">innerHTML</span> = <span class="hljs-title class_">JSON</span>.<span class="hljs-title function_">stringify</span>(
+            target.<span class="hljs-property">value</span>,
+            <span class="hljs-literal">null</span>,
+            <span class="hljs-string">&#x27;\t&#x27;</span>,
+        );
+        <span class="hljs-variable language_">document</span>.<span class="hljs-title function_">getElementById</span>(<span class="hljs-string">&#x27;coOptions&#x27;</span>).<span class="hljs-property">innerHTML</span> = <span class="hljs-title class_">JSON</span>.<span class="hljs-title function_">stringify</span>(
+            target.<span class="hljs-property">options</span>,
+            <span class="hljs-literal">null</span>,
+            <span class="hljs-string">&#x27;\t&#x27;</span>,
+        );
+    });
 </span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span>
 </code></pre>
 <h4 id="value-property" tabindex="-1">value property <a class="header-anchor" href="#value-property" href="#value-property" title="Permalink to this heading">#</a></h4>
