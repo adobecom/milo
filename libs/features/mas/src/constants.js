@@ -124,9 +124,6 @@ export const Landscape = {
 
 export const HEADER_X_REQUEST_ID = 'X-Request-Id';
 
-export const MAS_COMMERCE_SERVICE_INIT_TIME_MEASURE_NAME =
-    'mas-commerce-service:initTime';
-
 export const CheckoutWorkflowStep = Object.freeze({
     CHECKOUT: 'checkout',
     CHECKOUT_EMAIL: 'checkout/email',

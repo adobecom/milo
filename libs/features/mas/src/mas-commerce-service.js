@@ -15,11 +15,12 @@ export const TAG_NAME_SERVICE = 'mas-commerce-service';
 const MARK_START = 'mas:start';
 const MARK_READY = 'mas:ready';
 
+export const MEASURE_INIT_TIME = 'mas-commerce-service:initTime';
+
 /**
  * web component to provide commerce and fragment service to consumers.
  */
 export class MasCommerceService extends HTMLElement {
-
     #initDuration;
 
     lastLoggingTime = 0;
@@ -141,7 +142,7 @@ export class MasCommerceService extends HTMLElement {
         });
         performance.mark(MARK_READY);
         this.#initDuration = performance.measure(
-            Constants.MAS_COMMERCE_SERVICE_INIT_TIME_MEASURE_NAME,
+            MEASURE_INIT_TIME,
             MARK_START,
             MARK_READY,
         )?.duration;
@@ -180,8 +181,7 @@ export class MasCommerceService extends HTMLElement {
 
     get duration() {
         return {
-            [Constants.MAS_COMMERCE_SERVICE_INIT_TIME_MEASURE_NAME]:
-                this.#initDuration,
+            [MEASURE_INIT_TIME]: this.#initDuration,
         };
     }
 

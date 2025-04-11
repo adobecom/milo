@@ -1,4 +1,4 @@
-import { EVENT_TYPE_READY, MAS_COMMERCE_SERVICE_INIT_TIME_MEASURE_NAME } from './constants.js';
+import { EVENT_TYPE_READY } from './constants.js';
 
 const MAS_COMMERCE_SERVICE = 'mas-commerce-service';
 
