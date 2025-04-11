@@ -219,9 +219,9 @@ export function getLanguage(languages, locales, pathname = window.location.pathn
   const language = languages[languageString];
   if (language && region && language.regions) {
     const [matchingRegion] = language.regions.filter((r) => r.region === region);
-    language.region = matchingRegion.region;
-    if (matchingRegion.ietf)language.ietf = matchingRegion.ietf;
-    if (matchingRegion.tk) language.tk = matchingRegion.tk;
+    if (matchingRegion?.region) language.region = matchingRegion.region;
+    if (matchingRegion?.ietf) language.ietf = matchingRegion.ietf;
+    if (matchingRegion?.tk) language.tk = matchingRegion.tk;
     regionPath = matchingRegion ? `/${region}` : '';
   }
 
