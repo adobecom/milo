@@ -47,7 +47,7 @@ export class Catalog extends VariantLayout {
                         tabindex="0"
                         aria-expanded="false"
                         role="button"
-                    >Action Menu</div>
+                    >${this.card.actionMenuLabel} - ${this.card.title}</div>
                 </div>
                 <slot
                     name="action-menu-content"
