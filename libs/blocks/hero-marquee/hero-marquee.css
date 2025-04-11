@@ -405,10 +405,6 @@ html[dir="rtl"] .hero-marquee li.icon-item span.icon {
     flex-direction: row;
   }
 
-  .hero-marquee.media-cover picture {
-    display: unset;
-  }
-
   .hero-marquee.media-cover.has-bg .asset {
     display: initial;
   }
