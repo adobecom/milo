@@ -88,26 +88,34 @@ export async function loadMnemonicList(foreground) {
   }
 }
 
-function extractQuantitySelect(el) {
-  // if unsorted list has only one child & it's an ul, it's the quantity select config
-  const quantitySelectConfig = [...el.querySelectorAll('ul')]
-    .find((ul) => ul.children.length === 1);
-  const configMarkup = quantitySelectConfig?.querySelector('ul');
-  if (!configMarkup) return null;
-  const config = configMarkup.children;
-  if (config.length !== 2) return null;
+function extractQuantitySelect(el, merchCard) {
   const attributes = {};
-  attributes.title = config[0].textContent.trim();
-  const values = config[1].textContent.split(',')
-    .map((value) => value.trim())
-    .filter((value) => /^\d*$/.test(value))
-    .map((value) => (value === '' ? undefined : Number(value)));
-  quantitySelectConfig.remove();
-  if (![3, 4, 5].includes(values.length)) return null;
+  const quantitySelectLink = merchCard?.querySelector('a[href*="#qs"]');
+  if (quantitySelectLink) {
+    const str = quantitySelectLink.getAttribute('href');
+    attributes.title = quantitySelectLink.textContent.trim();
+    const regex = /min=(\d+)&max=(\d+)&step=(\d+)&default=(\d+)&max-input=(\d+)/;
+    [, attributes.min, attributes.max, attributes.step, attributes['default-value'], attributes['max-input']] = str.match(regex);
+    quantitySelectLink.parentElement.remove();
+  } else { // todo: old approach, remove once backwards compatibility is no longer required
+    const quantitySelectConfig = [...el.querySelectorAll('ul')]
+      .find((ul) => ul.querySelector('li')?.innerText?.includes('Quantity'));
+    const configMarkup = quantitySelectConfig?.querySelector('ul');
+    if (configMarkup?.children?.length !== 2) return null;
+    const config = configMarkup.children;
+    attributes.title = config[0].textContent.trim();
+    const values = config[1].textContent.split(',')
+      .map((value) => value.trim())
+      .filter((value) => /^\d*$/.test(value))
+      .map((value) => (value === '' ? undefined : Number(value)));
+    quantitySelectConfig.remove();
+    [attributes.min, attributes.max, attributes.step, attributes['default-value'], attributes['max-input']] = values;
+  }
+  if (!attributes.min || !attributes.max) {
+    return null;
+  }
   import('../../deps/mas/merch-quantity-select.js');
-  [attributes.min, attributes.max, attributes.step, attributes['default-value'], attributes['max-input']] = values;
-  const quantitySelect = createTag('merch-quantity-select', attributes);
-  return quantitySelect;
+  return createTag('merch-quantity-select', attributes);
 }
 
 const parseTwpContent = async (el, merchCard) => {
@@ -269,10 +277,10 @@ const parseContent = async (el, merchCard) => {
     }
     if (isParagraphTag(tagName)) {
       bodySlot.append(element);
-      merchCard.append(bodySlot);
     }
     if (mnemonicList) bodySlot.append(mnemonicList);
   });
+  merchCard.append(bodySlot);
 
   if (merchCard.variant === MINI_COMPARE_CHART && merchCard.childNodes[1]) {
     merchCard.insertBefore(bodySlot, merchCard.childNodes[1]);
@@ -703,7 +711,7 @@ export default async function init(el) {
     merchCard.appendChild(footer);
 
     if (MULTI_OFFER_CARDS.includes(cardType)) {
-      const quantitySelect = extractQuantitySelect(el);
+      const quantitySelect = extractQuantitySelect(el, merchCard);
       const offerSelection = el.querySelector('ul');
       if (merchCard.variant === MINI_COMPARE_CHART) {
         const miniCompareOffers = createTag('div', { slot: 'offers' });
