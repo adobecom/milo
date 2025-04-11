@@ -263,6 +263,14 @@
   margin-inline-start: 24px;
 }
 
+.tabs.quiet:is(.no-top-border, .no-border) div[role="tablist"], 
+.tabs.quiet:is(.no-top-border, .no-border) .paddle,
+.tabs.quiet:is(.no-bottom-border, .no-border) .tab-content {
+  border-bottom: none;
+  box-shadow: none;
+  background: none;
+}
+
 .tabs.quiet .tabList {
   padding-bottom: 1px;
 }
@@ -476,6 +484,8 @@
   outline: revert;
   outline-offset: revert;
   margin-inline-start: revert;
+  color: inherit;
+  text-shadow: revert;
 }
 
 /* Section Metadata */

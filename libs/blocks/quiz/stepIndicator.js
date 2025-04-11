@@ -4,12 +4,10 @@ function StepIndicator({
   currentStep,
   totalSteps,
   prevStepIndicator = [],
-  bottom = false,
-  top = false,
 }) {
   const step = currentStep < totalSteps ? currentStep + 1 : currentStep;
   const quizSteps = html`
-    <div class="quiz-step-container${totalSteps > 3 ? ' wide' : ''}${top ? ' top' : ''}${bottom ? ' bottom' : ''}">
+    <div class="quiz-step-container${totalSteps > 3 ? ' wide' : ''}" role="list">
       ${Array.from({ length: totalSteps }).map((_, index) => {
     let className;
     switch (true) {
@@ -24,7 +22,8 @@ function StepIndicator({
     }
     return html`<div class="quiz-step ${className}"
       aria-current="${index === currentStep ? 'step' : null}"
-      aria-label="${index === currentStep ? `Step ${step} of ${totalSteps}` : null}"></div>`;
+      aria-label="${index === currentStep ? `Step ${step} of ${totalSteps}` : null}"
+      role="listitem"></div>`;
   })}
     </div>
   `;

@@ -156,16 +156,13 @@ header.new-nav.feds--dark .feds-nav > section.feds-navItem > .feds-popup .top-ba
   color: var(--feds-color-adobeBrand);
 }
 
+header.global-navigation.feds--dark,
+.feds--dark .feds-topnav-wrapper {
+  background-color: var(--feds-background-nav--desktop);
+}
+
 /* Desktop styles */
 @media (min-width: 900px) {
-  header.global-navigation.feds--dark {
-    background-color: var(--feds-background-nav--desktop);
-  }
-  
-  .feds--dark .feds-topnav-wrapper {
-    background-color: var(--feds-background-nav--desktop);
-  }
-  
   /* Popup */
   .feds--dark .feds-popup {
     background-color: var(--feds-background-popup);
@@ -223,6 +220,15 @@ header.new-nav.feds--dark .feds-nav > section.feds-navItem > .feds-popup .top-ba
 
   .feds--dark .feds-promo-link:hover {
     color: var(--feds-color-link--hover);
+  }
+  /* This is to fix the Dark theme on Adobe Home
+   * Currently bacom doesn't have a dark theme
+   * so we have no designs for the gradient on
+   * dark theme.So for now we're making the
+   * background transparent
+   */
+  .feds-navLink--gray-gradient {
+    background: transparent;
   }
 }
 

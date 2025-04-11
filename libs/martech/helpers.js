@@ -294,8 +294,8 @@ function createRequestPayload({ updatedContext, pageName, locale, env, hitType }
     }
     xdm.implementationDetails = {
       name: 'https://ns.adobe.com/experience/alloy/reactor',
-      version: '1.0',
-      environment: 'serverapi',
+      version: '2.0',
+      environment: 'browser',
     };
   }
 
