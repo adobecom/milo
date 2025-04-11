@@ -1022,6 +1022,30 @@ class Gnav {
     if (!decorate) return this.elements.aside;
     this.elements.aside = await decorate({ headerElem: this.block, fedsPromoWrapper, promoPath });
     fedsPromoWrapper.append(this.elements.aside);
+
+    const updateLayout = () => {
+      const promoHeight = `${this.elements.aside.clientHeight}px`;
+      const header = document.querySelector('header');
+      const localNav = document.querySelector('.feds-localnav');
+
+      fedsPromoWrapper.style.height = promoHeight;
+      header.style.top = promoHeight;
+
+      if (!isDesktop.matches && localNav) {
+        header.style.top = 0;
+        localNav.style.top = promoHeight;
+      }
+    };
+
+    if (this.elements.aside.clientHeight > fedsPromoWrapper.clientHeight) {
+      lanaLog({ message: 'Promo height is more than expected, potential CLS', tags: 'gnav-promo', errorType: 'info' });
+      updateLayout();
+
+      this.promoResizeObserver?.disconnect();
+      this.promoResizeObserver = new ResizeObserver(updateLayout);
+      this.promoResizeObserver.observe(this.elements.aside);
+    }
+
     return this.elements.aside;
   };
 
@@ -1093,10 +1117,15 @@ class Gnav {
   updatePopupPosition = (activePopup) => {
     const popup = activePopup || this.elements.mainNav.querySelector('.feds-navItem--section.feds-dropdown--active .feds-popup');
     if (!popup) return;
+    const hasPromo = this.block.classList.contains('has-promo');
+    const promoHeight = this.elements.aside?.clientHeight;
+
+    if (!this.isLocalNav()) {
+      if (hasPromo) popup.style.top = `calc(0px - var(--feds-height-nav) - ${promoHeight}px)`;
+      return;
+    }
     const yOffset = window.scrollY || Math.abs(parseInt(document.body.style.top, 10)) || 0;
-    const navOffset = this.block.classList.contains('has-promo')
-      ? 'var(--feds-height-nav) - var(--global-height-navPromo)'
-      : 'var(--feds-height-nav)';
+    const navOffset = hasPromo ? `var(--feds-height-nav) - ${promoHeight}px` : 'var(--feds-height-nav)';
     popup.removeAttribute('style');
     popup.style.top = `calc(${yOffset}px - ${navOffset} - 2px)`;
     const { isPresent, isSticky, height } = getBranchBannerInfo();
@@ -1258,7 +1287,7 @@ class Gnav {
             const popup = dropdownTrigger.nextElementSibling;
             // document.body.style.top should always be set
             // at this point by calling disableMobileScroll
-            if (popup && this.isLocalNav()) {
+            if (popup) {
               this.updatePopupPosition(popup);
             }
             makeTabActive(popup);

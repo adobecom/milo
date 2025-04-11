@@ -696,6 +696,10 @@
     border-top-left-radius: 0;
     border-top-right-radius: var(--border-radius);
   }
+
+  .table .hide-mobile {
+    display: none !important;
+  }
 }
 
 /* Start mobile styles */
