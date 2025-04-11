@@ -89,8 +89,9 @@ export async function loadMnemonicList(foreground) {
 }
 
 function extractQuantitySelect(el) {
+  // if unsorted list has only one child & it's an ul, it's the quantity select config
   const quantitySelectConfig = [...el.querySelectorAll('ul')]
-    .find((ul) => ul.querySelector('li')?.innerText?.includes('Quantity'));
+    .find((ul) => ul.children.length === 1);
   const configMarkup = quantitySelectConfig?.querySelector('ul');
   if (!configMarkup) return null;
   const config = configMarkup.children;
