@@ -20,7 +20,7 @@ export function findDetails(hash, el) {
   const id = hash.replace('#', '');
   const a = el || document.querySelector(`a[data-modal-hash="${hash}"]`);
   const path = a?.dataset.modalPath || localizeLink(getMetadata(`-${id}`));
-  const ariaLabel = a?.getAttribute('aria-label');
+  const ariaLabel = a?.getAttribute('aria-label') || document.querySelector(`a[data-modal-id="${id}"]`)?.getAttribute('aria-label');
   return {
     id,
     path,
@@ -213,6 +213,12 @@ export async function getModal(details, custom) {
     if (dialog.classList.contains('commerce-frame') || dialog.classList.contains('dynamic-height')) {
       const { default: enableCommerceFrameFeatures } = await import('./modal.merch.js');
       await enableCommerceFrameFeatures({ dialog, iframe });
+
+      if (!details?.title) {
+        const commerceDetails = findDetails(window.location.hash, null);
+        const commerceFrameTitle = commerceDetails?.title ? commerceDetails.title : null;
+        if (commerceFrameTitle) iframe.setAttribute('title', commerceFrameTitle);
+      }
     } else {
       /* Initially iframe height is set to 0% in CSS for the height auto adjustment feature.
       The height auto adjustment feature is applicable only to dialogs
