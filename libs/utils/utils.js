@@ -1290,26 +1290,6 @@ export function enablePersonalizationV2() {
   return !!enablePersV2 && isSignedOut();
 }
 
-function normCountry(country) {
-  return (country.toLowerCase() === 'uk' ? 'gb' : country.toLowerCase()).split('_')[0];
-}
-export async function determineUserCountry(config) {
-  const urlParams = new URLSearchParams(window.location.search);
-  const country = urlParams.get('country') || (document.cookie.split('; ').find((row) => row.startsWith('international='))?.split('=')[1]);
-  config.mep = config.mep || {};
-  if (country) {
-    config.mep.countryChoice = normCountry(country);
-  }
-  const akamaiCode = urlParams.get('akamaiLocale')?.toLowerCase() || sessionStorage.getItem('akamai');
-  if (akamaiCode) {
-    config.mep.countryIP = normCountry(akamaiCode);
-  } else {
-    const { getAkamaiCode } = await import('../features/georoutingv2/georoutingv2.js');
-    config.mep.countryIPPromise = getAkamaiCode(true);
-  }
-  config.mep.geoLocation = true;
-}
-
 async function checkForPageMods() {
   const {
     mep: mepParam,
@@ -1318,6 +1298,8 @@ async function checkForPageMods() {
     martech,
   } = Object.fromEntries(PAGE_URL.searchParams);
   let targetInteractionPromise = null;
+  let countryIPPromise = null;
+
   let calculatedTimeout = null;
   if (mepParam === 'off') return;
   const pzn = getMepEnablement('personalization');
@@ -1331,8 +1313,12 @@ async function checkForPageMods() {
     || mepHighlight || mepButton || mepParam === '' || xlg || ajo)) return;
 
   if (mepgeolocation) {
-    const config = getConfig();
-    determineUserCountry(config);
+    const urlParams = new URLSearchParams(window.location.search);
+    const akamaiCode = urlParams.get('akamaiLocale')?.toLowerCase() || sessionStorage.getItem('akamai');
+    if (!akamaiCode) {
+      const { getAkamaiCode } = await import('../features/georoutingv2/georoutingv2.js');
+      countryIPPromise = getAkamaiCode(true);
+    }
   }
   const enablePersV2 = enablePersonalizationV2();
   const hybridPersEnabled = getMepEnablement('hybrid-pers');
@@ -1375,6 +1361,8 @@ async function checkForPageMods() {
     promo,
     target,
     ajo,
+    countryIPPromise,
+    mepgeolocation,
     targetInteractionPromise,
     calculatedTimeout,
     enablePersV2,

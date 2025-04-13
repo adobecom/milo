@@ -858,7 +858,20 @@ export const getEntitlements = async (data) => {
   });
 };
 
+function normCountry(country) {
+  return (country.toLowerCase() === 'uk' ? 'gb' : country.toLowerCase()).split('_')[0];
+}
 async function setMepCountry(config) {
+  const urlParams = new URLSearchParams(window.location.search);
+  const country = urlParams.get('country') || (document.cookie.split('; ').find((row) => row.startsWith('international='))?.split('=')[1]);
+  const akamaiCode = urlParams.get('akamaiLocale')?.toLowerCase() || sessionStorage.getItem('akamai');
+  config.mep = config.mep || {};
+  if (country) {
+    config.mep.countryChoice = normCountry(country);
+  }
+  if (akamaiCode) {
+    config.mep.countryIP = normCountry(akamaiCode);
+  }
   if (!config.mep.countryChoice && config.mep.countryIP) {
     config.mep.countryChoice = config.mep.countryIP;
   } else if (!config.mep.countryIP && config.mep.countryIPPromise) {
@@ -1387,29 +1400,18 @@ const awaitMartech = () => new Promise((resolve) => {
   window.addEventListener(MARTECH_RETURNED_EVENT, listener, { once: true });
 });
 
-const getUserCountry = (config) => {
-  const { mep } = config;
-  return mep?.geoLocation ? {
-    countryChoice: mep?.countryChoice,
-    countryIP: mep?.countryIP,
-    countryIPPromise: mep?.countryIPPromise,
-    geoLocation: mep?.geoLocation,
-  } : {};
-};
-
 export async function init(enablements = {}) {
   let manifests = [];
   const {
     mepParam, mepHighlight, mepButton, pzn, promo, enablePersV2, hybridPersEnabled,
-    target, ajo, targetInteractionPromise, calculatedTimeout, postLCP,
+    target, ajo, countryIPPromise, mepgeolocation, targetInteractionPromise, calculatedTimeout,
+    postLCP,
   } = enablements;
   const config = getConfig();
-  const userCountry = getUserCountry(config);
   if (postLCP) {
     isPostLCP = true;
   } else {
     config.mep = {
-      ...userCountry,
       updateFragDataProps,
       preview: (mepButton !== 'off'
         && (config.env?.name !== 'prod' || mepParam || mepParam === '' || mepButton)),
@@ -1420,6 +1422,9 @@ export async function init(enablements = {}) {
       experiments: [],
       prefix: config.locale?.prefix.split('/')[1]?.toLowerCase() || US_GEO,
       enablePersV2,
+      countryIPPromise,
+      geoLocation: mepgeolocation,
+      targetInteractionPromise,
       hybridPersEnabled,
     };
 
