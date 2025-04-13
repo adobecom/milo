@@ -5,15 +5,22 @@ import { getConfig } from '../../../libs/utils/utils.js';
 import { init } from '../../../libs/features/personalization/personalization.js';
 import mepSettings from './mepGeolocationSettings.js';
 
-const getFetchPromise = (data, type = 'json') => new Promise((resolve) => {
-  resolve({
+const setFetchResponse = async (manifestPath) => {
+  const manifestJson = JSON.parse(await readFile({ path: manifestPath }));
+  window.fetch = stub().returns(Promise.resolve({
     ok: true,
-    [type]: () => data,
-  });
-});
+    json: () => manifestJson,
+  }));
+};
 
-const setFetchResponse = (data, type = 'json') => {
-  window.fetch = stub().returns(getFetchPromise(data, type));
+const setupEnvironment = async ({ sessionKey, sessionValue, cookieKey, cookieValue }) => {
+  if (sessionKey && sessionValue) {
+    sessionStorage.setItem(sessionKey, sessionValue);
+  }
+  if (cookieKey && cookieValue) {
+    document.cookie = `${cookieKey}=${cookieValue}`;
+  }
+  document.body.innerHTML = await readFile({ path: './mocks/personalization.html' });
 };
 
 describe('mepGeolocation', () => {
@@ -24,56 +31,53 @@ describe('mepGeolocation', () => {
     document.body.innerHTML = await readFile({ path: './mocks/personalization.html' });
   });
 
+  afterEach(() => {
+    sessionStorage.clear();
+    document.cookie = 'international=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+  });
+
   it('matches userIP(de) when countryIP is set to de', async () => {
-    sessionStorage.setItem('akamai', 'de');
-    const manifestJson = JSON.parse(await readFile({ path: './mocks/manifestMEPCountryIP.json' }));
-    setFetchResponse(manifestJson);
+    await setupEnvironment({ sessionKey: 'akamai', sessionValue: 'de' });
+    await setFetchResponse('./mocks/manifestMEPCountryIP.json');
     expect(document.querySelector('.how-to')).to.not.be.null;
     await init(mepSettings);
     expect(document.querySelector('.how-to')).to.be.null;
-    sessionStorage.removeItem('akamai');
   });
 
   it('does not match userIP(de) when countryIP is not set to de', async () => {
-    const manifestJson = JSON.parse(await readFile({ path: './mocks/manifestMEPCountryIP.json' }));
-    setFetchResponse(manifestJson);
+    await setFetchResponse('./mocks/manifestMEPCountryIP.json');
     expect(document.querySelector('.how-to')).to.not.be.null;
     await init(mepSettings);
     expect(document.querySelector('.how-to')).to.not.be.null;
   });
 
   it('matches userIP(jp, sg) when countryIP is set to sg or jp', async () => {
-    sessionStorage.setItem('akamai', 'sg');
-    const manifestJson = JSON.parse(await readFile({ path: './mocks/manifestMEPCountryIP.json' }));
-    setFetchResponse(manifestJson);
+    await setupEnvironment({ sessionKey: 'akamai', sessionValue: 'sg' });
+    await setFetchResponse('./mocks/manifestMEPCountryIP.json');
     expect(document.querySelector('.how-to')).to.not.be.null;
     await init(mepSettings);
     expect(document.querySelector('.how-to')).to.be.null;
-    sessionStorage.removeItem('akamai');
   });
 
   it('matches userChoice(de) when countryChoice is set to de', async () => {
-    document.cookie = 'international=DE';
-    const manifestJson = JSON.parse(await readFile({ path: './mocks/manifestMEPCountryChoice.json' }));
-    setFetchResponse(manifestJson);
+    await setupEnvironment({ cookieKey: 'international', cookieValue: 'DE' });
+    await setFetchResponse('./mocks/manifestMEPCountryChoice.json');
     expect(document.querySelector('.how-to')).to.not.be.null;
     await init(mepSettings);
     expect(document.querySelector('.how-to')).to.be.null;
   });
 
   it('does not match userChoice(de) when countryChoice is not set to de', async () => {
-    document.cookie = 'international=FR';
-    const manifestJson = JSON.parse(await readFile({ path: './mocks/manifestMEPCountryChoice.json' }));
-    setFetchResponse(manifestJson);
+    await setupEnvironment({ cookieKey: 'international', cookieValue: 'FR' });
+    await setFetchResponse('./mocks/manifestMEPCountryChoice.json');
     expect(document.querySelector('.how-to')).to.not.be.null;
     await init(mepSettings);
-    expect(document.querySelector('.how-to')).to.be.not.be.null;
+    expect(document.querySelector('.how-to')).to.not.be.null;
   });
 
   it('matches userChoice(jp, sg) when countryChoice is set to sg or jp', async () => {
-    document.cookie = 'international=JP';
-    const manifestJson = JSON.parse(await readFile({ path: './mocks/manifestMEPCountryChoice.json' }));
-    setFetchResponse(manifestJson);
+    await setupEnvironment({ cookieKey: 'international', cookieValue: 'JP' });
+    await setFetchResponse('./mocks/manifestMEPCountryChoice.json');
     expect(document.querySelector('.how-to')).to.not.be.null;
     await init(mepSettings);
     expect(document.querySelector('.how-to')).to.be.null;
