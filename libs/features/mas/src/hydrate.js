@@ -440,7 +440,6 @@ export function cleanup(merchCard, variant) {
   ANALYTICS_SECTION_ATTR,
   ];
   attributesToRemove.forEach(attr => merchCard.removeAttribute(attr));
-  if (variant === 'plans') merchCard.removeAttribute('segment');
   const classesToRemove = ['wide-strip', 'thin-strip'];
   merchCard.classList.remove(...classesToRemove);
 }
