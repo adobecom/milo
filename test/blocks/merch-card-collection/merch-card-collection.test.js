@@ -1,6 +1,9 @@
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
 import { setConfig } from '../../../libs/utils/utils.js';
+import '../../../libs/deps/mas/commerce.js';
+
+document.head.appendChild(document.createElement('mas-commerce-service'));
 
 // eslint-disable-next-line no-promise-executor-return
 const delay = (ms = 100) => new Promise((resolve) => setTimeout(resolve, ms));

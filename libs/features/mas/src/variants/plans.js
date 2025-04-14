@@ -83,7 +83,15 @@ export class Plans extends VariantLayout {
         : '';
   }
 
+  adaptPlansEduCard() {
+    if (this.card.variant === 'plans-edu') {
+      this.card.setAttribute('segment', 'students');
+      this.card.setAttribute('variant', 'plans');
+    }
+  }
+
   connectedCallbackHook() {
+    this.adaptPlansEduCard();
     const match = matchMobile();
     if (match?.addEventListener) match.addEventListener('change', this.adaptForMobile);
   }

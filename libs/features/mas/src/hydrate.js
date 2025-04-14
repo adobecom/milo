@@ -445,6 +445,9 @@ export function cleanup(merchCard) {
 }
 
 export async function hydrate(fragment, merchCard) {
+    console.log('HYDRATE');
+    console.log(fragment);
+    console.log(merchCard);
     const { id, fields } = fragment;
     const { variant } = fields;
     if (!variant) throw new Error (`hydrate: no variant found in payload ${id}`);
