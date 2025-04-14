@@ -11,7 +11,7 @@
   position: fixed;
   max-width: 115px;
   height: 32px;
-  z-index: 2;
+  z-index: 5;
   top: 40px;
   right: 32px;
   bottom: auto;
