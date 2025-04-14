@@ -9,18 +9,25 @@ import { TAG_NAME_SERVICE } from '../src/mas-commerce-service.js';
 use(chaiAsPromised);
 
 use((chai) => {
-    const parser = new DOMParser();
-    const root = document.createElement('div');
     function normalise(val) {
-        root.innerHTML = parser.parseFromString(val, 'text/html');
-        return root.innerHTML
+        return String(val)
             .trim()
-            .replace(/>\s*</g, '><')
-            .replace(/>\s*/g, '>')
-            .replace(/\s*</g, '<')
-            .replace(/"\s*>/g, '">')
-            .replace(/"\s*\/>/g, '/>')
-            .replace(/\s+/g, ' ');
+            // Remove trailing semicolons
+            .replace(/;$/, '')
+            // Normalize HTML entities in attributes
+            .replace(/&quot;/g, '"')
+            // Normalize whitespace between tags
+            .replace(/>\s+</g, '><')
+            // Normalize whitespace before closing angle brackets
+            .replace(/\s+>/g, '>')
+            // Normalize whitespace after opening angle brackets
+            .replace(/\s+</g, '<')
+            // Normalize whitespace after closing angle brackets
+            .replace(/>\s+/g, '>')
+            // Normalize single quotes to double quotes in attributes
+            .replace(/='([^']*)'/g, '="$1"')
+            // Normalize extra spaces to single space
+            .replace(/\s{2,}/g, ' ');
     }
 
     chai.Assertion.addMethod('html', function assertHtml(snapshot) {

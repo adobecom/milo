@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Merch Card CCD SliceWeb Component demo page</title>
+    <script>
+        window.process = {
+            env: {},
+        };
+    </script>
+    <style>
+        main {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            flex-direction: column;
+            padding-top: 80px;
+        }
+
+    </style>
+</head>
+
+<body>
+
+      <script type="module">
+import { runTests } from '@web/test-runner-mocha';
+import { appendMiloStyles } from './utils.js';
+import { mockIms } from './mocks/ims.js';
+import { withWcs } from './mocks/wcs.js';
+import '../src/mas.js';
+
+runTests(async () => {
+    appendMiloStyles();
+    mockIms();
+    mockLana();
+    await mockFetch(withWcs);
+    describe('merch-card web component with plans variant', () => {
+      it('should render', () => {
+        const merchCard = document.querySelector('merch-card');
+        expect(merchCard).to.exist;
+      });
+    });
+});
+
+      </script>
+    <template id="acrobatPro">
+      <merch-card
+      slot="trigger"
+      id="e87d6836-3a0f-4fee-8b26-d31a4ce53412"
+      filters=""
+      types=""
+      aria-describedby="sp-overlay-helper-cdc00e72"
+      variant="plans"
+      consonant="true"
+      checkbox-label="Add a 30-day free trial of Adobe Stock.*"
+      stock-offer-osis=""
+      secure-label="Secure transaction"
+      stock-offer-osis="stock-puf-mult,stock-abm-mult,stock-m2m-mult"
+    >
+      <merch-icon
+        slot="icons"
+        src="https://www.adobe.com/content/dam/shared/images/product-icons/svg/acrobat.svg"
+        loading="lazy"
+        size="l"
+        alt="Lightroom"
+        href="https://www.adobe.com/products/catalog.html"
+      ></merch-icon>
+      <p slot="heading-xs">Acrobat Pro</p>
+      <p slot="heading-m">
+        <span
+          is="inline-price"
+          data-template="price"
+          data-wcs-osi="MzCpF9nUi8rEzyW-9slEUwtRenS69PRW5fp84a93uK4"
+        ></span>
+      </p>
+      <div slot="body-xs">
+        <p>
+          Edit and organize photos. Save&nbsp;25% for the first 6 months.&nbsp;Ends
+          Feb 26.&nbsp;<a
+            href="https://www.adobe.com/offer-terms/ccpp-1tb-terms.html"
+            target="_blank"
+            >See terms.</a
+          ><br /><a
+            href="https://www.adobe.com/creativecloud/photography/compare-plans.html"
+            >Compare photography plans</a
+          ><br /><a
+            class="modal-Link"
+            href="https://www.adobe.com/plans-fragments/modals/individual/modals-content-rich/photography1tb/master.html"
+            target="_blank"
+            >See all plans &amp; pricing details</a
+          >
+        </p>
+      </div>
+      <div slot="footer">
+        <a
+          is="checkout-link"
+          data-wcs-osi="MzCpF9nUi8rEzyW-9slEUwtRenS69PRW5fp84a93uK4"
+          data-template="checkoutUrl"
+          data-analytics-id="buy-now"
+          class="con-button blue"
+          >Buy now</a
+        >
+      </div></merch-card
+    >
+    </template>
+</main>
+</body>
+</html>

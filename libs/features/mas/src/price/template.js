@@ -34,6 +34,7 @@ export const defaultLiterals = {
         '{taxTerm, select, GST {incl. GST} VAT {incl. VAT} TAX {incl. tax} IVA {incl. IVA} SST {incl. SST} KDV {incl. KDV} other {}}',
     alternativePriceAriaLabel: 'Alternatively at',
     strikethroughAriaLabel: 'Regularly at',
+    planTypeLabel: '{planType, select, ABM {Annual, paid monthly.} other {}}',
 };
 
 const log = createLog('ConsonantTemplates/price');
@@ -57,6 +58,7 @@ const cssClassNames = {
     recurrence: 'price-recurrence',
     taxInclusivity: 'price-tax-inclusivity',
     unitType: 'price-unit-type',
+    planType: 'price-plan-type',
 };
 const literalKeys = {
     perUnitLabel: 'perUnitLabel',
@@ -66,7 +68,8 @@ const literalKeys = {
     taxExclusiveLabel: 'taxExclusiveLabel',
     taxInclusiveLabel: 'taxInclusiveLabel',
     strikethroughAriaLabel: 'strikethroughAriaLabel',
-    alternativePriceAriaLabel: 'alternativePriceAriaLabel'
+    alternativePriceAriaLabel: 'alternativePriceAriaLabel',
+    planTypeLabel: 'planTypeLabel',
 };
 const WCS_TAX_DISPLAY_EXCLUSIVE = 'TAX_EXCLUSIVE';
 
@@ -114,6 +117,7 @@ function renderContainer(
         recurrenceLabel,
         perUnitLabel,
         taxInclusivityLabel,
+        planTypeLabel,
     },
     attributes = {},
 ) {
@@ -127,8 +131,10 @@ function renderContainer(
     );
 
     let markup = '';
-    if (accessibleLabel) markup = `<sr-only class="strikethrough-aria-label">${accessibleLabel}</sr-only>`;
-    else if (altAccessibleLabel) markup = `<sr-only class="alt-aria-label">${altAccessibleLabel}</sr-only>`;
+    if (accessibleLabel)
+        markup = `<sr-only class="strikethrough-aria-label">${accessibleLabel}</sr-only>`;
+    else if (altAccessibleLabel)
+        markup = `<sr-only class="alt-aria-label">${altAccessibleLabel}</sr-only>`;
     if (isCurrencyFirst) markup += currencyMarkup + currencySpaceMarkup;
     markup += renderSpan(cssClassNames.integer, integer);
     markup += renderSpan(cssClassNames.decimalsDelimiter, decimalsDelimiter);
@@ -141,6 +147,9 @@ function renderContainer(
         taxInclusivityLabel,
         true,
     );
+    if (planTypeLabel) {
+        markup += renderSpan(cssClassNames.planType, planTypeLabel, null, true);
+    }
 
     return renderSpan(cssClass, markup, {
         ...attributes,
@@ -167,6 +176,7 @@ const createPriceTemplate =
             displayRecurrence = true,
             displayPerUnit = false,
             displayTax = false,
+            displayPlanType = false,
             language,
             literals: priceLiterals = {},
             quantity = 1,
@@ -179,6 +189,7 @@ const createPriceTemplate =
             priceWithoutDiscount,
             taxDisplay,
             taxTerm,
+            planType,
             term,
             usePrecision,
             promotion,
@@ -247,7 +258,8 @@ const createPriceTemplate =
             usePrecision,
         });
 
-        let accessibleLabel = '', altAccessibleLabel = '';
+        let accessibleLabel = '';
+        let altAccessibleLabel = '';
 
         let recurrenceLabel = '';
         if (toBoolean(displayRecurrence) && recurrenceTerm) {
@@ -264,6 +276,9 @@ const createPriceTemplate =
         }
 
         let taxInclusivityLabel = '';
+        if (country === 'US' && language === 'en') {
+            displayTax = false;
+        }
         if (toBoolean(displayTax) && taxTerm) {
             taxInclusivityLabel = formatLiteral(
                 taxDisplay === WCS_TAX_DISPLAY_EXCLUSIVE
@@ -271,6 +286,13 @@ const createPriceTemplate =
                     : literalKeys.taxInclusiveLabel,
                 { taxTerm },
             );
+        }
+
+        let planTypeLabel = '';
+        if (toBoolean(displayPlanType) && planType) {
+            planTypeLabel = formatLiteral(literalKeys.planTypeLabel, {
+                planType,
+            });
         }
 
         if (displayStrikethrough) {
@@ -315,6 +337,7 @@ const createPriceTemplate =
                     recurrenceLabel,
                     perUnitLabel,
                     taxInclusivityLabel,
+                    planTypeLabel,
                 },
                 attributes,
             );
@@ -343,6 +366,7 @@ const createPriceTemplate =
             recurrenceLabel,
             perUnitLabel,
             taxInclusivityLabel,
+            planTypeLabel,
         );
         const content = unformattedPrice.join('');
         return renderSpan(cssClass, content, attributes);
@@ -391,6 +415,7 @@ const createPromoPriceWithAnnualTemplate =
         const ctxStAnnual = {
             ...context,
             displayTax: false,
+            displayPlanType: false,
             displayPerUnit: false,
         };
         const displayOldPrice =
@@ -422,6 +447,7 @@ const createPriceWithAnnualTemplate = () => (context, value, attributes) => {
     const ctxAnnual = {
         ...context,
         displayTax: false,
+        displayPlanType: false,
         displayPerUnit: false,
     };
     return `${createPriceTemplate({ isAlternativePrice: context.displayOldPrice })(context, value, attributes)}${renderSpan(cssClassNames.containerAnnualPrefix, '&nbsp;(')}${createPriceTemplate(

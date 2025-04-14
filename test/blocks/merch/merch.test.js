@@ -224,6 +224,12 @@ describe('Merch Block', () => {
       await validatePriceSpan('.merch.price.tax', { displayTax: 'true' });
     });
 
+  });
+
+  it('renders merch link to price with planType text', async () => {
+    await validatePriceSpan('.merch.price.planType', { displayPlanType: 'true' });
+  });
+
     it('renders merch link to price with term, seat and tax', async () => {
       await validatePriceSpan('.merch.price.seat.tax', { displayTax: 'true' });
     });
