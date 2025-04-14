@@ -320,6 +320,9 @@ export const loadAnalyticsAndInteractionData = async (
   // Get timezone offset for the user's location
   const timezoneOffset = CURRENT_DATE.getTimezoneOffset();
   
+  // Set hybridPers flag 
+    window.hybridPers = true;
+
   // Define the hit type (either page view or proposition fetch)
   const hitType = 'pageView';
 
