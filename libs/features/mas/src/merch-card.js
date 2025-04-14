@@ -207,7 +207,14 @@ export class MerchCard extends LitElement {
     }
 
     get computedBorderStyle() {
-        if (!['twp', 'ccd-slice', 'ccd-suggested'].includes(this.variant)) {
+        if (
+            ![
+                'twp',
+                'ccd-slice',
+                'ccd-suggested',
+                'ah-promoted-plans',
+            ].includes(this.variant)
+        ) {
             return `1px solid ${
                 this.borderColor ? this.borderColor : this.badgeBackgroundColor
             }`;
@@ -313,8 +320,11 @@ export class MerchCard extends LitElement {
 
     connectedCallback() {
         super.connectedCallback();
-        this.id ??= this.querySelector('aem-fragment')?.getAttribute('fragment');
-        performance.mark(`${MARK_MERCH_CARD_PREFIX}${this.id}${MARK_START_SUFFIX}`);
+        this.id ??=
+            this.querySelector('aem-fragment')?.getAttribute('fragment');
+        performance.mark(
+            `${MARK_MERCH_CARD_PREFIX}${this.id}${MARK_START_SUFFIX}`,
+        );
         this.addEventListener(
             EVENT_MERCH_QUANTITY_SELECTOR_CHANGE,
             this.handleQuantitySelection,
@@ -369,8 +379,8 @@ export class MerchCard extends LitElement {
             if (e.target.nodeName === 'AEM-FRAGMENT') {
                 const fragment = e.detail;
                 hydrate(fragment, this)
-                  .then(() => this.checkReady())
-                  .catch((e) => this.log?.error(e));
+                    .then(() => this.checkReady())
+                    .catch((e) => this.log?.error(e));
             }
         }
     }
@@ -393,15 +403,19 @@ export class MerchCard extends LitElement {
             setTimeout(() => resolve('timeout'), MERCH_CARD_LOAD_TIMEOUT),
         );
         if (this.aemFragment) {
-          const result = await Promise.race([this.aemFragment.updateComplete, timeoutPromise]);
-          if (result === false) {
-            const errorMessage = result === 'timeout' 
-              ? `AEM fragment was not resolved within ${MERCH_CARD_LOAD_TIMEOUT} timeout`
-              : 'AEM fragment cannot be loaded';
-              this.#fail(errorMessage, {}, false);
-              return;
-          }
-      }
+            const result = await Promise.race([
+                this.aemFragment.updateComplete,
+                timeoutPromise,
+            ]);
+            if (result === false) {
+                const errorMessage =
+                    result === 'timeout'
+                        ? `AEM fragment was not resolved within ${MERCH_CARD_LOAD_TIMEOUT} timeout`
+                        : 'AEM fragment cannot be loaded';
+                this.#fail(errorMessage, {}, false);
+                return;
+            }
+        }
         const masElements = [...this.querySelectorAll(SELECTOR_MAS_ELEMENT)];
         masElements.push(
             ...[...this.querySelectorAll(SELECTOR_MAS_SP_BUTTON)].map(
@@ -424,13 +438,13 @@ export class MerchCard extends LitElement {
                 `${MARK_MERCH_CARD_PREFIX}${this.id}${MARK_READY_SUFFIX}`,
             );
             if (!this.readyEventDispatched) {
-              this.readyEventDispatched = true;
-              this.dispatchEvent(
-                new CustomEvent(EVENT_MAS_READY, {
-                    bubbles: true,
-                    composed: true,
-                }),
-              );
+                this.readyEventDispatched = true;
+                this.dispatchEvent(
+                    new CustomEvent(EVENT_MAS_READY, {
+                        bubbles: true,
+                        composed: true,
+                    }),
+                );
             }
             return this;
         } else {
