@@ -89,6 +89,17 @@ function wrapCopy(foreground) {
 function addCloseAction(el, btn) {
   btn.addEventListener('click', (e) => {
     if (btn.nodeName === 'A') e.preventDefault();
+
+    const liveRegion = createTag('div', {
+      class: 'visibility-hidden',
+      'aria-live': 'assertive',
+      'aria-atomic': 'true',
+      role: 'status',
+      tabindex: '-1',
+    });
+    liveRegion.textContent = 'Banner closed';
+    el.closest('.section')?.appendChild(liveRegion);
+    liveRegion.focus();
     el.style.display = 'none';
     el.closest('.section')?.classList.add('close-sticky-section');
     if (el.classList.contains('focus')) {
@@ -96,11 +107,15 @@ function addCloseAction(el, btn) {
       el.closest('.section').querySelector('.notification-curtain').remove();
     }
     document.dispatchEvent(new CustomEvent('milo:sticky:closed'));
+
+    setTimeout(() => {
+      if (liveRegion) liveRegion.remove();
+    }, 2500);
   });
 }
 
 function decorateClose(el) {
-  const btn = createTag('button', { 'aria-label': 'close', class: 'close' }, closeSvg);
+  const btn = createTag('button', { 'aria-label': 'Close Promo Banner', class: 'close' }, closeSvg);
   addCloseAction(el, btn);
   el.appendChild(btn);
 }
@@ -221,6 +236,8 @@ async function decorateLayout(el) {
 
 export default async function init(el) {
   el.classList.add('con-block');
+  el.setAttribute('aria-label', 'Promo Banner');
+  el.setAttribute('role', 'region');
   const { fontSizes, options } = getBlockData(el);
   const blockText = await decorateLayout(el);
   decorateBlockText(blockText, fontSizes);
