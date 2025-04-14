@@ -187,5 +187,13 @@ export class Plans extends VariantLayout {
         line-height: 21px;
         padding: 2px 10px 3px;
     }
+    
+    :host([variant='plans'][segment='students']) {
+        min-height: unset;
+    }
+    
+    :host([variant='plans'][segment='students']) .body {
+        max-width: none;
+    }    
   `;
 }

@@ -3,11 +3,16 @@ export const CSS = `
 :root {
     --consonant-merch-card-plans-width: 300px;
     --consonant-merch-card-plans-icon-size: 40px;
+    --consonant-merch-card-plans-edu-width: 568px;
 }
 
 merch-card[variant="plans"] {
     --consonant-merch-card-callout-icon-size: 18px;
     width: var(--consonant-merch-card-plans-width);
+}
+
+merch-card[variant="plans"][segment="students"] {
+    width: var(--consonant-merch-card-plans-edu-width);
 }
 
 merch-card[variant="plans"] [slot="icons"] {
@@ -98,6 +103,12 @@ merch-card[variant="plans"] [slot="footer"] a {
 @media screen and ${MOBILE_LANDSCAPE} {
     merch-whats-included merch-mnemonic-list,
     merch-whats-included [slot="heading"] {
+        width: 100%;
+    }
+
+    merch-card[variant="plans"][segment="students"] {
+        min-width: var(--consonant-merch-card-plans-width);
+        max-width: var(--consonant-merch-card-plans-edu-width);
         width: 100%;
     }
 }

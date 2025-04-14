@@ -421,7 +421,7 @@ export function updateLinksCSS(merchCard) {
     });
 }
 
-export function cleanup(merchCard) {
+export function cleanup(merchCard, variant) {
   // remove all previous slotted content except the default slot
   merchCard.querySelectorAll('[slot]').forEach((el) => {
     el.remove();
@@ -440,6 +440,7 @@ export function cleanup(merchCard) {
   ANALYTICS_SECTION_ATTR,
   ];
   attributesToRemove.forEach(attr => merchCard.removeAttribute(attr));
+  if (variant === 'plans') merchCard.removeAttribute('segment');
   const classesToRemove = ['wide-strip', 'thin-strip'];
   merchCard.classList.remove(...classesToRemove);
 }
@@ -457,21 +458,8 @@ export async function hydrate(fragment, merchCard) {
       stockOfferOsis: '',
       secureLabel: 'Secure transaction' // to be {{secure-transaction}}
     };
-    cleanup(merchCard);
+    cleanup(merchCard, variant);
     merchCard.id ??= fragment.id;
-
-
-    merchCard.removeAttribute('background-image');
-    merchCard.removeAttribute('background-color');
-    merchCard.removeAttribute('badge-background-color');
-    merchCard.removeAttribute('badge-color');
-    merchCard.removeAttribute('badge-text');
-    merchCard.removeAttribute('size');
-    merchCard.classList.remove('wide-strip');
-    merchCard.classList.remove('thin-strip');
-    merchCard.removeAttribute(ANALYTICS_SECTION_ATTR);
-    if (variant === 'plans') merchCard.removeAttribute('segment');
-
     merchCard.variant = variant;
     await merchCard.updateComplete;
 
