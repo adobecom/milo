@@ -30,6 +30,13 @@
   background: var(--color-white);
 }
 
+.notification.ace1068 .action-area,
+.notification.ace1068 .con-button {
+  margin: auto;
+  width: 100%;
+  max-width: 328px;
+}
+
 .notification.ribbon {
   min-block-size: var(--min-block-size-ribbon);
 }

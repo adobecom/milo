@@ -15,7 +15,7 @@
 */
 
 import { decorateBlockText, decorateBlockBg, decorateTextOverrides, decorateMultiViewport, loadCDT } from '../../../utils/decorate.js';
-import { createTag, getConfig, loadStyle, getMetadata } from '../../../utils/utils.js';
+import { createTag, getConfig, loadStyle } from '../../../utils/utils.js';
 
 const { miloLibs, codeRoot } = getConfig();
 const base = miloLibs || codeRoot;
@@ -56,13 +56,35 @@ const closeSvg = `<svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" wid
 
 let iconographyLoaded = false;
 
-function hideAtSelector(el) {
-  const sectionMetadata = el.querySelector('.section-metadata');
-  
-  if (!sectionMetadata) return null;
+export const getMetadata = (el) => [...el.childNodes].reduce((rdx, row) => {
+  if (row.children) {
+    const key = row.children[0].textContent.trim().toLowerCase();
+    const content = row.children[1];
+    const text = content.textContent.trim().toLowerCase();
+    if (key && content) rdx[key] = { content, text };
+  }
+  return rdx;
+}, {});
+
+function setHideAtObserver(el) {
+  const sectionMetadata = el.closest('.section')?.querySelector('.section-metadata');
+  if (!sectionMetadata) return;
+
   const metadata = getMetadata(sectionMetadata);
-  console.log(metadata);
-  return metadata;
+  const selector = metadata['hide-at-intersection']?.text;
+  if (!selector) return;
+
+  const target = document.querySelector('.ace1068');
+  const trigger = document.querySelector(selector);
+  if (!target || !trigger) return;
+
+  const handleScroll = () => {
+    const { top } = trigger.getBoundingClientRect();
+    target.style.display = top < window.innerHeight ? 'none' : 'block';
+  };
+
+  window.addEventListener('scroll', handleScroll);
+  handleScroll();
 }
 
 function getOpts(el) {
@@ -220,6 +242,6 @@ export default async function init(el) {
     wrapCopy(blockText);
     decorateMultiViewport(el);
   }
-  console.log(el);
-  hideAtSelector(el);
+
+  setHideAtObserver(el);
 }
