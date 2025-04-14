@@ -7,6 +7,7 @@ export const API_URLS = {
   pageList: `${API_DOMAIN}/get-pages`,
   pageDetails: `${API_DOMAIN}/get-page?id=`,
   save: `${API_DOMAIN}/save-mep-call`,
+  report: `${API_DOMAIN}/get-report`,
 };
 
 function updatePreviewButton(popup, pageId) {
@@ -185,7 +186,7 @@ function getManifestListDomAndParameter(mepConfig) {
       manifestParameter.push(`${editUrl}--default`);
     }
     options += `<option name="${editPath}${pageId}" value="default" 
-    id="${editPath}${pageId}--default" data-manifest="${editPath}" ${isSelected}>Default (control)</option>`;
+    id="${editPath}${pageId}--default" data-manifest="${editPath}" ${isSelected} title="Default (control)">Default (control)</option>`;
     isSelected = '';
     variantNamesArray.forEach((variant) => {
       isSelected = '';
@@ -194,7 +195,7 @@ function getManifestListDomAndParameter(mepConfig) {
         manifestParameter.push(`${manifestPath}--${variant}`);
       }
       options += `<option name="${editPath}${pageId}" value="${variant}" 
-      id="${editPath}${pageId}--${variant}" data-manifest="${editPath}" ${isSelected}>${variant}</option>`;
+      id="${editPath}${pageId}--${variant}" data-manifest="${editPath}" ${isSelected} title="${variant}">${variant}</option>`;
     });
     manifestList += `<div class="mep-section" title="Manifest location: ${editUrl}&#013;Analytics manifest name: ${analyticsTitle || 'N/A for this manifest type'}">
       <div class="mep-manifest-info">  
