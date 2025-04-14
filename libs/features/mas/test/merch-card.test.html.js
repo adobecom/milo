@@ -45,7 +45,7 @@ runTests(async () => {
                 ),
             ).to.exist;
         });
-        it('should have stock trial checkbox', async () => {
+        it.only('should have stock trial checkbox', async () => {
             const plansCard = document.querySelector(
                 'merch-card[variant="plans"]',
             );

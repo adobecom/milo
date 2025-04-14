@@ -142,13 +142,27 @@ function renderContainer(
     if (!isCurrencyFirst) markup += currencySpaceMarkup + currencyMarkup;
     markup += renderSpan(cssClassNames.recurrence, recurrenceLabel, null, true);
     markup += renderSpan(cssClassNames.unitType, perUnitLabel, null, true);
-    markup += renderSpan(
-        cssClassNames.taxInclusivity,
-        taxInclusivityLabel,
-        true,
-    );
+    if (!planTypeLabel) {
+        markup += renderSpan(
+            cssClassNames.taxInclusivity,
+            taxInclusivityLabel,
+            true,
+        );
+    }
     if (planTypeLabel) {
-        markup += renderSpan(cssClassNames.planType, planTypeLabel, null, true);
+        markup = `${markup}<span class="price-sub-text">`;
+        markup += renderSpan(
+            cssClassNames.taxInclusivity,
+            taxInclusivityLabel,
+            true,
+        );
+        if (taxInclusivityLabel && planTypeLabel) {
+            markup += '. ';
+        }
+        if (planTypeLabel) {
+            markup += renderSpan(cssClassNames.planType, planTypeLabel, null);
+        }
+        markup += '</span>';
     }
 
     return renderSpan(cssClass, markup, {

@@ -1511,6 +1511,7 @@ merch-card[variant="special-offers"] span[is="inline-price"][data-template="stri
     --consonant-merch-card-heading-color: var(--spectrum-gray-800, var(--merch-color-grey-80));
     --consonant-merch-card-heading-xs-color: var(--consonant-merch-card-heading-color);
     --consonant-merch-card-price-color: #222222;
+    --consonant-merch-card-price-sub-text-color: #2C2C2C;
     --consonant-merch-card-heading-xxxs-color: #131313;
     --consonant-merch-card-body-xxs-color: #292929;
 
@@ -1611,6 +1612,20 @@ merch-card p, merch-card h3, merch-card h4 {
 
 merch-card span[is='inline-price'] {
     display: inline-block;
+}
+
+merch-card span.price-sub-text {
+    display: inline-block;
+    color: var(--consonant-merch-card-price-sub-text-color);
+    font-family: var(--Font-adobe-clean, "Adobe Clean");
+    font-size: 14px;
+    font-style: italic;
+    font-weight: 400;
+    line-height: 21px;
+}
+
+merch-card span.price-sub-text .price-tax-inclusivity::before {
+  content: initial;
 }
 
 merch-card [slot^='heading-'] {

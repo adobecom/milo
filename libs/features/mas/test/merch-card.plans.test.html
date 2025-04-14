@@ -1,110 +1,110 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>Merch Card Plans variant test page</title>
+        <link
+            rel="stylesheet"
+            href="http://localhost:2023/__wds-outside-root__/2/styles/styles.css"
+        />
+        <style>
+            main {
+                display: flex;
+                align-items: center;
+                gap: 20px;
+                flex-direction: column;
+                padding-top: 80px;
+            }
+        </style>
+    </head>
 
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Merch Card CCD SliceWeb Component demo page</title>
-    <script>
-        window.process = {
-            env: {},
-        };
-    </script>
-    <style>
-        main {
-            display: flex;
-            align-items: center;
-            gap: 20px;
-            flex-direction: column;
-            padding-top: 80px;
-        }
+    <body>
+        <main></main>
+        <template id="photoshop">
+            <mas-commerce-service
+                env="stage"
+                country="CA"
+                language="en"
+            ></mas-commerce-service>
+            <merch-card
+                variant="plans"
+                consonant="true"
+                checkbox-label="Add a 30-day free trial of Adobe Stock.*"
+                stock-offer-osis="stock-puf,stock-abm,stock-m2m"
+                secure-label="Secure transaction"
+            >
+                <merch-icon
+                    slot="icons"
+                    src="/test/mocks/img/photoshop.svg"
+                    loading="lazy"
+                    size="l"
+                    alt="Lightroom"
+                ></merch-icon>
+                <p slot="heading-xs">Photoshop</p>
+                <p slot="heading-m">
+                    <span
+                        is="inline-price"
+                        data-template="price"
+                        data-wcs-osi="caA1xn6EL4pK93bWjM8flffQpfEL-bnvtoQKQAvkx574M"
+                        data-display-tax="true"
+                        data-display-plan-type="true"
+                        ><span class="price"
+                            ><span class="price-currency-symbol">US$</span
+                            ><span class="price-currency-space disabled"></span
+                            ><span class="price-integer">22</span
+                            ><span class="price-decimals-delimiter">.</span
+                            ><span class="price-decimals">99</span
+                            ><span class="price-recurrence">/mo</span
+                            ><span class="price-unit-type disabled"></span
+                            ><span
+                                class="price-tax-inclusivity disabled"
+                            ></span></span
+                    ></span>
+                </p>
+                <div slot="body-xs">
+                    <p>
+                        Create beautiful graphics, photos, and art on desktop,
+                        web, and iPad. Comes with Adobe Fresco for drawing and
+                        painting.
+                    </p>
+                </div>
+                <div slot="footer">
+                    <a
+                        is="checkout-link"
+                        data-checkout-workflow-step="commitment"
+                        data-wcs-osi="caA1xn6EL4pK93bWjM8flffQpfEL-bnvtoQKQAvkx574M"
+                        data-template="checkoutUrl"
+                        data-analytics-id="buy-now"
+                        class="con-button blue"
+                        >Buy now</a
+                    >
+                </div></merch-card
+            >
+        </template>
+        <script type="module">
+            import { runTests } from '@web/test-runner-mocha';
+            import { expect } from '@esm-bundle/chai';
+            import { mockFetch } from './mocks/fetch.js';
+            import { mockIms } from './mocks/ims.js';
+            import { withWcs } from './mocks/wcs.js';
+            import { getTemplateContent } from './utils.js';
+            import '../src/mas.js';
 
-    </style>
-</head>
+            runTests(async () => {
+                mockIms();
+                await mockFetch(withWcs);
+                const main = document.querySelector('main');
 
-<body>
-
-      <script type="module">
-import { runTests } from '@web/test-runner-mocha';
-import { appendMiloStyles } from './utils.js';
-import { mockIms } from './mocks/ims.js';
-import { withWcs } from './mocks/wcs.js';
-import '../src/mas.js';
-
-runTests(async () => {
-    appendMiloStyles();
-    mockIms();
-    mockLana();
-    await mockFetch(withWcs);
-    describe('merch-card web component with plans variant', () => {
-      it('should render', () => {
-        const merchCard = document.querySelector('merch-card');
-        expect(merchCard).to.exist;
-      });
-    });
-});
-
-      </script>
-    <template id="acrobatPro">
-      <merch-card
-      slot="trigger"
-      id="e87d6836-3a0f-4fee-8b26-d31a4ce53412"
-      filters=""
-      types=""
-      aria-describedby="sp-overlay-helper-cdc00e72"
-      variant="plans"
-      consonant="true"
-      checkbox-label="Add a 30-day free trial of Adobe Stock.*"
-      stock-offer-osis=""
-      secure-label="Secure transaction"
-      stock-offer-osis="stock-puf-mult,stock-abm-mult,stock-m2m-mult"
-    >
-      <merch-icon
-        slot="icons"
-        src="https://www.adobe.com/content/dam/shared/images/product-icons/svg/acrobat.svg"
-        loading="lazy"
-        size="l"
-        alt="Lightroom"
-        href="https://www.adobe.com/products/catalog.html"
-      ></merch-icon>
-      <p slot="heading-xs">Acrobat Pro</p>
-      <p slot="heading-m">
-        <span
-          is="inline-price"
-          data-template="price"
-          data-wcs-osi="MzCpF9nUi8rEzyW-9slEUwtRenS69PRW5fp84a93uK4"
-        ></span>
-      </p>
-      <div slot="body-xs">
-        <p>
-          Edit and organize photos. Save&nbsp;25% for the first 6 months.&nbsp;Ends
-          Feb 26.&nbsp;<a
-            href="https://www.adobe.com/offer-terms/ccpp-1tb-terms.html"
-            target="_blank"
-            >See terms.</a
-          ><br /><a
-            href="https://www.adobe.com/creativecloud/photography/compare-plans.html"
-            >Compare photography plans</a
-          ><br /><a
-            class="modal-Link"
-            href="https://www.adobe.com/plans-fragments/modals/individual/modals-content-rich/photography1tb/master.html"
-            target="_blank"
-            >See all plans &amp; pricing details</a
-          >
-        </p>
-      </div>
-      <div slot="footer">
-        <a
-          is="checkout-link"
-          data-wcs-osi="MzCpF9nUi8rEzyW-9slEUwtRenS69PRW5fp84a93uK4"
-          data-template="checkoutUrl"
-          data-analytics-id="buy-now"
-          class="con-button blue"
-          >Buy now</a
-        >
-      </div></merch-card
-    >
-    </template>
-</main>
-</body>
+                describe('merch-card web component with plans variant', () => {
+                    it('should render tax text & plans type under price', () => {
+                        const [masCommerceService, photoshop] =
+                            getTemplateContent('photoshop');
+                        main.append(masCommerceService, photoshop);
+                        expect(photoshop).to.exist;
+                    });
+                });
+            });
+        </script>
+    </body>
 </html>

@@ -5,7 +5,7 @@ import { getSettings } from '../src/settings.js';
 
 import { mockFetch } from './mocks/fetch.js';
 import { mockLana, unmockLana } from './mocks/lana.js';
-import * as snapshots from './price/__snapshots__/index.snapshot.js';
+import * as snapshots from './price/__snapshots__/price.snapshots.js';
 import { withWcs } from './mocks/wcs.js';
 import {
     initMasCommerceService,
@@ -30,7 +30,6 @@ function mockInlinePrice(id, wcsOsi = '', options = {}) {
 }
 
 afterEach(() => {
-    document.body.innerHTML = '';
     removeMasCommerceService();
     unmockLana();
 });

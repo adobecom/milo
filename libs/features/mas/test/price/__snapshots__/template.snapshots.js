@@ -7,8 +7,10 @@ export const createPriceTemplate2 = `
   ><span class="price-currency-symbol">€</span
   ><span class="price-recurrence disabled"></span
   ><span class="price-unit-type disabled"></span
-  ><span class="price-tax-inclusivity">incl. VAT</span
-  ><span class="price-plan-type">Annuel, facturé mensuellement</span></span
+  ><span class="price-sub-text"
+    ><span class="price-tax-inclusivity">incl. VAT</span>.
+    <span class="price-plan-type">Annuel, facturé mensuellement</span></span
+  ></span
 >
 `;
 
@@ -21,8 +23,10 @@ export const createPriceTemplate3 = `
   ><span class="price-decimals">01</span
   ><span class="price-recurrence disabled"></span
   ><span class="price-unit-type disabled"></span
-  ><span class="price-tax-inclusivity disabled"></span
-  ><span class="price-plan-type">Annual, paid monthly.</span></span
+  ><span class="price-sub-text"
+    ><span class="price-tax-inclusivity disabled"></span
+    ><span class="price-plan-type">Annual, paid monthly.</span></span
+  ></span
 >
 `;
 
