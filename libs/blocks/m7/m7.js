@@ -16,7 +16,9 @@ export async function generateM7Link(href) {
 
   const imsCountry = await getImsCountry();
   const { locale } = getConfig();
-  const country = imsCountry || getMiloLocaleSettings(locale).country || 'US';
+  const localeSettings = getMiloLocaleSettings(locale);
+  const country = imsCountry || localeSettings.country || 'US';
+  const { language } = localeSettings;
 
   const m7link = new URL('https://commerce.adobe.com/store/segmentation?cli=creative&cs=t');
   m7link.searchParams.append('co', country);
@@ -24,6 +26,7 @@ export async function generateM7Link(href) {
   if (href.includes('/creativecloud/education-plans')) {
     m7link.searchParams.append('ms', 'EDU');
   }
+  if (locale?.prefix?.includes('_') && language) m7link.searchParams.set('lang', language);
   return m7link.toString();
 }
 

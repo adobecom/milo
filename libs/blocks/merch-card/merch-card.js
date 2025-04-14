@@ -632,6 +632,8 @@ export default async function init(el) {
     ? getActionMenuContent(el)
     : null;
   if (actionMenuContent) {
+    const { replaceKey } = await import('../../features/placeholders.js');
+    await replaceKey('action-menu', getConfig()).then((key) => merchCard.setAttribute('action-menu-label', key));
     merchCard.setAttribute('action-menu', true);
     merchCard.append(
       createTag(
