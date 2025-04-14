@@ -2,7 +2,7 @@ import { html, render, signal } from '../../deps/htm-preact.js';
 import { createTag, getConfig } from '../../utils/utils.js';
 import General from './panels/general.js';
 import SEO from './panels/seo.js';
-import Accessibility from './panels/accessibility.js';
+import Accessibility from './accessibility/accessibility.js';
 import Martech from './panels/martech.js';
 import Performance from './panels/performance.js';
 import Assets from './panels/assets.js';
