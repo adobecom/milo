@@ -533,6 +533,7 @@ const isProdModal = (url) => {
 };
 
 export async function getModalAction(offers, options, el) {
+  if (!options.modal) return undefined;
   const [{
     offerType,
     productArrangementCode,
