@@ -53,6 +53,12 @@
   flex-direction: column;
 }
 
+/* Additional nesting is needed for specificity */
+.feds-footer-wrapper .feds-menu-content .feds-navLink {
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
 /* Featured products */
 .feds-featuredProducts {
   display: none;
@@ -100,7 +106,6 @@
   color: var(--feds-color-link);
   border-color: var(--feds-color-link);
   fill: var(--feds-color-link);
-  font-weight: var(--s2-regular-font-weight);
 }
 
 .feds-regionPicker:hover {
@@ -224,7 +229,6 @@
   display: flex;
   flex-wrap: wrap;
   margin: 0;
-  font-size: 11px;
 }
 
 .feds-footer-privacyLink {
@@ -234,7 +238,6 @@
   color: var(--feds-color-link);
   fill: var(--feds-color-link);
   vertical-align: bottom;
-  font-weight: var( --s2-regular-font-weight);
 }
 
 span.feds-footer-privacyLink-divider {
