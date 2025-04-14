@@ -805,16 +805,13 @@ header.new-nav .feds-nav-wrapper {
   visibility: hidden;
 }
 
-header.new-nav .feds-nav-wrapper:not(:has(.feds-dropdown--active)) {
+header.new-nav .feds-nav-wrapper:not(:has(.feds-dropdown--active)),
+header.new-nav.global-navigation:has(.feds-dropdown--active) {
   overflow-x: clip;
 }
 
 header.new-nav .feds-nav-wrapper:not(.feds-nav-wrapper--expanded) {
   position: fixed;
-}
-
-header.new-nav.global-navigation:has(.feds-dropdown--active) {
-  overflow-x: clip;
 }
 
 header.new-nav.global-navigation:has(.feds-nav-wrapper--expanded):not(:has(.feds-dropdown--active)) .feds-utilities{
