@@ -81,7 +81,7 @@ describe('function "createPriceTemplate"', () => {
         });
     });
 
-    it('displays annual price with tax and planType texts', () => {
+    it('displays annual price with tax and plan type texts', () => {
         const template = createPriceTemplate();
         renderAndComparePrice(
             'createPriceTemplate2',
@@ -110,7 +110,7 @@ describe('function "createPriceTemplate"', () => {
         );
     });
 
-    it('displays annual price with planType text and hides tax text when country is US and language is en', () => {
+    it('displays annual price with plan type text and hides tax text when country is US and language is en', () => {
         const template = createPriceTemplate();
         renderAndComparePrice(
             'createPriceTemplate3',
