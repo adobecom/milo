@@ -16,11 +16,21 @@ const LAST_SEEN_OPTIONS = {
   year: { value: 'Year', key: 'year' },
   all: { value: 'All', key: 'all' },
 };
-
 const SUBDOMAIN_OPTIONS = {
   www: { value: 'www', key: 'www' },
   business: { value: 'business', key: 'business' },
   all: { value: 'all', key: 'all' },
+};
+const TARGETSETTING_OPTIONS = {
+  on: { label: 'On', value: 'on' },
+  off: { label: 'Off', value: 'off' },
+};
+const MANIFESTSRC_OPTIONS = {
+  promo: { label: 'Promo', value: 'promo' },
+  target: { label: 'Target', value: 'target' },
+  ajo: { label: 'AJO', value: 'ajo' },
+  postLCP: { label: 'Post LCP', value: 'postLCP' },
+  personalization: { label: 'Personalization', value: 'pzn' },
 };
 
 export const getLocalStorageFilter = () => {
@@ -43,6 +53,7 @@ const getInitialValues = () => {
     });
     return values;
   }
+  console.log(['localstorage filter', getLocalStorageFilter()]);
   return getLocalStorageFilter();
 };
 
@@ -51,6 +62,9 @@ const SEARCH_INITIAL_VALUES = getInitialValues() ?? {
   pageNum: 1,
   subdomain: SUBDOMAIN_OPTIONS.www.key,
   perPage: 25,
+  // added
+  targetSettings: 'on, off',
+  manifestSrc: 'pzn, promo, target, ajo, postLCP',
 };
 
 async function toggleDrawer(target, dd, pageId) {
@@ -129,8 +143,8 @@ function filterPageList(pageNum, perPage, event) {
   const shareUrl = new URL(`${window.location.origin}${window.location.pathname}`);
   const searchValues = {};
   const activeSearchWithShortKeyword = event?.target?.value && event.target.value.length < 2;
-
-  document.querySelector(SEARCH_CONTAINER).querySelectorAll('input, select, textarea').forEach((field) => {
+  // handle dropdowns and text area
+  document.querySelector(SEARCH_CONTAINER).querySelectorAll('select, textarea').forEach((field) => {
     const id = field.getAttribute('id').split('-').pop();
     const { value, tagName } = field;
     searchValues[id] = {
@@ -139,7 +153,22 @@ function filterPageList(pageNum, perPage, event) {
     };
     if (value) shareUrl.searchParams.set(id, value);
   });
-
+  // handle grouped checkboxes into single object value
+  const checkedBoxes = {};
+  document.querySelector(SEARCH_CONTAINER).querySelectorAll('fieldset input[type="checkbox"]:checked').forEach((checkedBox) => {
+    const fieldset = checkedBox.closest('fieldset').getAttribute('id').split('-')[1];
+    const { value } = checkedBox;
+    if (fieldset in checkedBoxes) {
+      checkedBoxes[fieldset].value.push(value);
+    } else checkedBoxes[fieldset] = { value: [value] };
+  });
+  if (Object.entries(checkedBoxes).length) {
+    Object.keys(checkedBoxes).forEach((key) => {
+      const fieldsetValue = checkedBoxes[key].value.join((', '));
+      searchValues[key] = { value: fieldsetValue }; // no need for tagName
+      shareUrl.searchParams.set(key, fieldsetValue);
+    });
+  }
   // add pageNum and perPage to args for api call
   searchValues.pageNum = { value: pageNum || 1, tagName: 'A' };
   searchValues.perPage = { value: perPage || 25, tagName: 'SELECT' };
@@ -149,6 +178,8 @@ function filterPageList(pageNum, perPage, event) {
   Object.keys(searchValues).forEach((key) => {
     detail[key] = searchValues[key].value;
   });
+  window?.console.log(['searchValues:', searchValues]);
+  window?.console.log(['shareUrl.href:', shareUrl.href]);
   // This event triggers an API call with most recent search criteria and a forces a re-render
   if (!activeSearchWithShortKeyword) {
     setLocalStorageFilter(detail);
@@ -263,8 +294,8 @@ function createSearchField() {
     'div',
     { id: 'mmm-search-filter-container', class: 'mmm-form-container' },
     `<div>
-      <label for="mmm-search-filter">Filter:</label>
-      <textarea id="mmm-search-filter" type="text" name="mmm-search-filter" class="text-field-input" placeholder="Search for the full or partial: page URL, manifest URL, manifest experience name or Target activity name"></textarea>
+      <label for="mmm-search-filter">Filter (search for the full or partial PROD page URL, manifest URL, manifest experience name or Target activity name):</label>
+      <textarea id="mmm-search-filter" type="text" name="mmm-search-filter" class="text-field-input" placeholder="www.adobe.com/creativecloud.html\ntest_campaign4/test-campaign4-business.json\nDC1031"></textarea>
     </div>`,
   );
   searchContainer.append(searchForm);
@@ -306,12 +337,65 @@ function createLastSeenManifestAndDomainDD() {
   searchContainer.append(dd);
 }
 
+function createCheckBoxFilterGroup(checkBoxId, legendLabel, optionsObj, allSelected = true) {
+  const initValues = SEARCH_INITIAL_VALUES;
+  const checkBoxLegend = createTag('legend', { id: `mmm-checkbox-${checkBoxId}-legend` }, legendLabel);
+  const checkBoxFieldset = createTag('fieldset', { id: `mmm-${checkBoxId}-fieldset` }, checkBoxLegend);
+
+  // helper function only ran during filter build. consider moving to outter lex scope
+  function createCheckBox(groupName, checkboxLabel, checkboxValue) {
+    const initValueCheck = SEARCH_INITIAL_VALUES?.[groupName]?.split(', ').includes(checkboxValue);
+    const checkDiv = createTag('div', { class: 'mmm-checkbox-option' });
+    const checkLabel = createTag('label', { for: `mmm-${groupName}-${checkboxValue}` }, checkboxLabel);
+    const checkBox = createTag('input', {
+      type: 'checkbox',
+      id: `mmm-${groupName}-${checkboxValue}`,
+      name: groupName,
+      value: checkboxValue,
+      class: 'mmm-checkbox',
+      // if all values in group are unselected, then all checkboxes will be selected on refresh
+      ...(initValueCheck || !initValues?.[groupName] ? { checked: 'true' } : {}),
+    });
+    checkDiv.append(checkBox, checkLabel);
+    return checkDiv;
+  }
+
+  Object.keys(optionsObj).forEach((key) => {
+    const checkDiv = createCheckBox(
+      checkBoxId,
+      optionsObj[key].label,
+      optionsObj[key].value,
+    );
+    checkBoxFieldset.append(checkDiv);
+  });
+  const checkboxContainer = createTag('div', { id: `mmm-${checkBoxId}-container`, class: 'mmm-form-container' }, checkBoxFieldset);
+  return checkboxContainer;
+}
+
+function createTargetAndManifestSrcFilter() {
+  const filterConfigs = [
+    { name: 'targetSetting', label: "Page's Target Setting:", options: TARGETSETTING_OPTIONS },
+    { name: 'manifestSrc', label: 'Manifest Source:', options: MANIFESTSRC_OPTIONS },
+  ];
+  const searchContainer = document.querySelector(SEARCH_CONTAINER);
+  const checkBoxFilterContainer = createTag('div', { id: 'mmm-checkbox-filter-container', class: 'mmm-form-container' });
+  filterConfigs.forEach(({ name, label, options }) => {
+    const filterGroup = createCheckBoxFilterGroup(name, label, options);
+    checkBoxFilterContainer.append(filterGroup);
+  });
+  searchContainer.append(checkBoxFilterContainer);
+  document.querySelectorAll('#mmm-checkbox-filter-container fieldset').forEach((fieldset) => {
+    fieldset.addEventListener('change', () => filterPageList());
+  });
+}
+
 async function createForm(el) {
   const data = parseData(el);
   const searchContainer = createTag('div', { class: SEARCH_CONTAINER.slice(1) });
   document.querySelector('.mmm-container').parentNode.prepend(searchContainer);
   createDropdowns(data);
   createLastSeenManifestAndDomainDD();
+  createTargetAndManifestSrcFilter();
   createSearchField();
 }
 
@@ -456,7 +540,6 @@ async function createPageList(el, search) {
  * The search criteria change event is fired inside filterPageList()
  */
 function subscribeToSearchCriteriaChanges() {
-  console.log('running branch: mmm-newfilters');
   document.addEventListener(SEARCH_CRITERIA_CHANGE_EVENT, (el) => {
     // clear url of search params (if user came from a share link)
     if (document.location.search) {
@@ -472,6 +555,7 @@ function subscribeToSearchCriteriaChanges() {
 }
 
 export default async function init(el) {
+  window?.console?.log('running branch: mmm-newfilters');
   await createPageList(el);
   createForm(el);
   subscribeToSearchCriteriaChanges();

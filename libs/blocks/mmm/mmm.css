@@ -266,13 +266,17 @@ dd .mep-popup-header .mep-close {
 }
 .mmm-search-container {
   margin-top: var(--spacing-m);
+  max-width: 1200px;
+  margin: auto;
 }
 .mmm-form-container {
   display: flex;
-  justify-content: center;
+  /* justify-content: center; */
+  justify-content: flex-start;
   gap: var(--spacing-s);
   margin: 0 auto;
-  width: 700px;
+  /* width: 700px;  */
+  width: 100%;
   flex-flow: row nowrap;
   max-width: 80vw;
   position: relative;
@@ -280,7 +284,7 @@ dd .mep-popup-header .mep-close {
 .mmm-form-container > div {
   flex: 1;
 }
-.mmm-form-container label {
+.mmm-form-container label, .mmm-form-container legend {
   margin-top: var(--spacing-xxs);
   margin-right: var(--spacing-xxs);
   display: block;
@@ -570,6 +574,61 @@ main > .section > .inline-wrapper > .share-mmm.inline {
 
 #pagination-arrows a.disabled svg {
   opacity: .4;
+}
+
+/* checkboxes */
+#mmm-targetSetting-fieldset, #mmm-manifestSrc-fieldset {
+  border: none;
+}
+.mmm-checkbox-option, #mmm-targetSetting-fieldset, #mmm-manifestSrc-fieldset {
+  display: flex;
+  align-items: baseline;
+}
+
+.mmm-checkbox-option input[type="checkbox"] {
+  margin-right: var(--spacing-xxs);
+  cursor: pointer;
+  width: 15px;
+}
+
+#mmm-checkbox-filter-container {
+  margin-top: var(--spacing-m);
+  flex-wrap: wrap;
+}
+
+@media screen and (min-width: 1200px) {
+  .mmm-search-container {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    position: relative;
+    max-width: var(--grid-container-width);
+  }
+  #mmm-dropdown-container {
+    max-width: 48%
+  }
+  .share-mmm {
+    position: absolute !important;
+    right: -115% !important;
+  }
+
+  #mmm-targetSetting-container, {
+    justify-content: flex-start;
+  }
+
+  #mmm-targetSetting-fieldset, #mmm-manifestSrc-fieldset {
+    padding: 0 !important;
+  }
+  #mmm-dropdown-container {
+    margin-left: 0;
+  }
+  #mmm-checkbox-filter-container {
+    width: 50%;
+    margin: var(--spacing-m) 0 var(--spacing-xs) 0;
+  }
+  #mmm-manifestSrc-container, #mmm-targetSetting-container {
+    max-width: 50%;
+  }
 }
 
 
