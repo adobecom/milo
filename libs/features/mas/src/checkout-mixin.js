@@ -191,9 +191,9 @@ export function CheckoutMixin(Base) {
             }
             if (offers.length) {
                 if (this.masElement.toggleResolved(version, offers, options)) {
-                    const url = service.buildCheckoutURL(offers, options);
                     if (!this.classList.contains(CLASS_NAME_DOWNLOAD) && !this.classList.contains(CLASS_NAME_UPGRADE)) {
-                      options.modal === 'true' ? this.setCheckoutUrl('#') : this.setCheckoutUrl(url);
+                      const url = service.buildCheckoutURL(offers, options);
+                      this.setCheckoutUrl(options.modal === 'true' ? '#' : url);
                     }
                     return true;
                 }
