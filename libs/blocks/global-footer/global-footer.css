@@ -260,6 +260,13 @@ span.feds-footer-privacyLink-divider {
   margin-bottom: -16px;
 }
 
+.footer-logo-image img,
+.footer-logo-image svg,
+.footer-logo-image picture { 
+  width: 29px;
+}
+
+
 @media (min-width: 600px) {
   dialog.feds-dialog {
     max-width: 80vw;
