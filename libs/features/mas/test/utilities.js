@@ -1,12 +1,13 @@
 import chaiAsPromised from '@esm-bundle/chai-as-promised';
 import { expect, use } from '@esm-bundle/chai';
 import sinon from 'sinon';
+import priceLiteralsJson from '../price-literals.json' with { type: 'json' };
+import { equalsCaseInsensitive } from '@dexter/tacocat-core';
 
-import { equalsCaseInsensitive } from '../src/external.js';
-
-import { TAG_NAME_SERVICE } from '../src/mas-commerce-service.js';
+const TAG_NAME_SERVICE = 'mas-commerce-service';
 
 use(chaiAsPromised);
+window.masPriceLiterals = priceLiteralsJson.data;
 
 use((chai) => {
     function normalise(val) {
@@ -43,7 +44,7 @@ use((chai) => {
     });
 });
 
-const initMasCommerceService = async (attributes, checkoutAction) => {
+const initMasCommerceService = (attributes, checkoutAction) => {
     const el = document.createElement(TAG_NAME_SERVICE);
     if (attributes) {
         Object.keys(attributes).forEach((key) => {
@@ -54,12 +55,11 @@ const initMasCommerceService = async (attributes, checkoutAction) => {
         el.registerCheckoutAction(checkoutAction);
     }
     document.head.appendChild(el);
-    await el.readyPromise;
     return el;
 };
 
-const disableMasCommerceService = () => {
+const removeMasCommerceService = () => {
     document.querySelector(TAG_NAME_SERVICE)?.remove();
 };
 
-export { expect, sinon, initMasCommerceService, disableMasCommerceService };
+export { expect, sinon, initMasCommerceService, removeMasCommerceService };

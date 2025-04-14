@@ -6,14 +6,14 @@ import { mockFetch } from './mocks/fetch.js';
 
 import './utils.js';
 import { withWcs } from './mocks/wcs.js';
-import mas from './mas.js';
+import '../src/mas.js';
 
 const shouldSkipTests = sessionStorage.getItem('skipTests') ?? false;
 
 runTests(async () => {
     mockLana();
     await mockFetch(withWcs);
-    await mas();
+
     if (shouldSkipTests !== 'true') {
         describe('plans-modal web component', () => {
             it('should fail', async () => {

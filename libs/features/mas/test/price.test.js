@@ -10,9 +10,10 @@ import { withWcs } from './mocks/wcs.js';
 import {
     initMasCommerceService,
     expect,
-    disableMasCommerceService,
+    removeMasCommerceService,
 } from './utilities.js';
 import { MasError } from '../src/mas-error.js';
+import '../src/mas.js';
 
 /**
  * @param {string} wcsOsi
@@ -29,7 +30,8 @@ function mockInlinePrice(id, wcsOsi = '', options = {}) {
 }
 
 afterEach(() => {
-    disableMasCommerceService();
+    document.body.innerHTML = '';
+    removeMasCommerceService();
     unmockLana();
 });
 
@@ -138,7 +140,7 @@ describe('class "InlinePrice"', () => {
     });
 
     it('overrides price literals', async () => {
-        const commerce = await initMasCommerceService();
+        const commerce = initMasCommerceService();
         const disposer = commerce.providers.price((element, options) => {
             options.literals = {
                 recurrenceLabel: 'every month',
@@ -267,7 +269,7 @@ describe('class "InlinePrice"', () => {
 
     describe('method "updateOptions"', () => {
         it('updates element data attributes', async () => {
-            await initMasCommerceService();
+            initMasCommerceService();
             const inlinePrice = InlinePrice.createInlinePrice({
                 template: 'price',
                 wcsOsi: 'abm',
@@ -691,7 +693,7 @@ describe('class "InlinePrice"', () => {
         });
 
         it('renders price with tax info for AE, default tax value', async () => {
-            await initMasCommerceService();
+            initMasCommerceService();
             const inlinePrice = mockInlinePrice('abm-team-gov');
             inlinePrice.removeAttribute('data-display-tax');
             inlinePrice.dataset.country = 'AE';
@@ -719,7 +721,7 @@ describe('commerce service', () => {
     ];
     describe('function "buildPriceHTML"', () => {
         it('returns empty string if no offers provided', async () => {
-            const { buildPriceHTML } = await initMasCommerceService();
+            const { buildPriceHTML } = initMasCommerceService();
             expect(buildPriceHTML([])).to.be.empty;
         });
     });

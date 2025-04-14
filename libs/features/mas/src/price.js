@@ -9,11 +9,15 @@ import {
     pricePromoWithAnnual,
     priceAlternative,
     priceOpticalAlternative,
+} from './price/index.js';
+
+import { discount } from './discount/index.js';
+
+import {
     omitProperties,
-    toBoolean,
-    discount,
     computePromoStatus,
-} from './external.js';
+    toBoolean,
+} from '@dexter/tacocat-core';
 import { InlinePrice } from './inline-price.js';
 import { toOfferSelectorIds, toQuantity } from './utilities.js';
 
@@ -93,11 +97,17 @@ export function Price({ literals, providers, settings }) {
                 method = priceAnnual;
                 break;
             default:
-                if (options.template === 'optical' && options.alternativePrice) {
+                if (
+                    options.template === 'optical' &&
+                    options.alternativePrice
+                ) {
                     method = priceOpticalAlternative;
                 } else if (options.template === 'optical') {
                     method = priceOptical;
-                } else if (options.country === 'AU' && offers[0].planType === 'ABM') {
+                } else if (
+                    options.country === 'AU' &&
+                    offers[0].planType === 'ABM'
+                ) {
                     method = options.promotionCode
                         ? pricePromoWithAnnual
                         : priceWithAnnual;
@@ -119,7 +129,7 @@ export function Price({ literals, providers, settings }) {
         return method(context, offer);
     }
 
-     const createInlinePrice = InlinePrice.createInlinePrice;
+    const createInlinePrice = InlinePrice.createInlinePrice;
 
     return {
         InlinePrice,

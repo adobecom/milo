@@ -1,6 +1,6 @@
-import { Env } from '../src/external.js';
 import { Landscape, WCS_PROD_URL, WCS_STAGE_URL } from '../src/constants.js';
 import { Defaults } from '../src/defaults.js';
+import { Env } from '../src/constants.js';
 import { getSettings } from '../src/settings.js';
 
 import { expect } from './utilities.js';
