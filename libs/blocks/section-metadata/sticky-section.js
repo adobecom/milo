@@ -19,7 +19,9 @@ function promoIntersectObserve(el, stickySectionEl, options = {}) {
       const abovePromoStart = (entry.target === stickySectionEl && entry.isIntersecting)
         || stickySectionEl?.getBoundingClientRect().y > 0;
 
-      el.classList.toggle('hide-sticky-section', abovePromoStart);
+      if (entry.target !== document.querySelector('footer')) {
+        el.classList.toggle('hide-sticky-section', abovePromoStart);
+      }
     });
   }, options);
   return io;
