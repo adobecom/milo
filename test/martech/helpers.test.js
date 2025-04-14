@@ -26,7 +26,6 @@ describe('loadAnalyticsAndInteractionData', () => {
       locale: { ietf: 'en-US', prefix: 'us' },
       env: 'prod',
       calculatedTimeout: 10000,
-      hybridPersEnabled: false,
     });
 
     expect(result).to.deep.equal({
@@ -63,7 +62,6 @@ describe('loadAnalyticsAndInteractionData', () => {
       locale: { ietf: 'en-US', prefix: 'us' },
       env: 'prod',
       calculatedTimeout: 10000,
-      hybridPersEnabled: true,
     });
 
     expect(result.result.propositions).to.have.lengthOf(1);
@@ -76,7 +74,6 @@ describe('loadAnalyticsAndInteractionData', () => {
         locale: { ietf: 'en-US', prefix: 'us' },
         env: 'prod',
         calculatedTimeout: 10000,
-        hybridPersEnabled: false,
       });
     } catch (err) {
       expect(err.message).to.equal('Consent Cookie doesnt allow interact');
@@ -91,7 +88,6 @@ describe('loadAnalyticsAndInteractionData', () => {
         locale: { ietf: 'en-US', prefix: 'us' },
         env: 'prod',
         calculatedTimeout: 10000,
-        hybridPersEnabled: false,
       });
     } catch (err) {
       expect(err.message).to.equal('Error: Network error');
@@ -108,7 +104,6 @@ describe('loadAnalyticsAndInteractionData', () => {
         locale: { ietf: 'en-US', prefix: 'us' },
         env: 'prod',
         calculatedTimeout: 1000,
-        hybridPersEnabled: false,
       });
     } catch (err) {
       expect(err.message).to.equal('Error: Request timed out');
@@ -126,7 +121,6 @@ describe('loadAnalyticsAndInteractionData', () => {
         locale: { ietf: 'en-US', prefix: 'us' },
         env: 'prod',
         calculatedTimeout: 10000,
-        hybridPersEnabled: false,
       });
     } catch (err) {
       expect(err.message).to.be.string;
@@ -138,7 +132,6 @@ describe('loadAnalyticsAndInteractionData', () => {
       locale: { ietf: 'en-US', prefix: 'us' },
       env: 'dev',
       calculatedTimeout: 10000,
-      hybridPersEnabled: false,
     });
 
     expect(result.result.propositions).to.have.lengthOf(1);
@@ -149,7 +142,6 @@ describe('loadAnalyticsAndInteractionData', () => {
       locale: { ietf: 'en-US', prefix: 'us' },
       env: 'prod',
       calculatedTimeout: 10000,
-      hybridPersEnabled: false,
     });
 
     expect(result.result.propositions).to.have.lengthOf(1);
@@ -168,7 +160,6 @@ describe('loadAnalyticsAndInteractionData', () => {
       locale: { ietf: 'en-US', prefix: 'us' },
       env: 'prod',
       calculatedTimeout: 10000,
-      hybridPersEnabled: false,
     });
 
     expect(result.result.propositions).to.have.lengthOf(1);
@@ -225,7 +216,6 @@ describe('loadAnalyticsAndInteractionData', () => {
       locale: { ietf: 'en-US', prefix: 'us' },
       env: 'prod',
       calculatedTimeout: 10000,
-      hybridPersEnabled: false,
     });
 
     expect(result.result.propositions).to.have.lengthOf(2);
@@ -241,7 +231,6 @@ describe('loadAnalyticsAndInteractionData', () => {
         locale: { ietf: 'en-US', prefix: 'us' },
         env: 'prod',
         calculatedTimeout: 10000,
-        hybridPersEnabled: false,
       });
 
       expect.fail('Error: Failed to fetch interact call');
@@ -273,7 +262,6 @@ describe('loadAnalyticsAndInteractionData', () => {
         locale: { ietf: 'en-US', prefix: 'us' },
         env: 'prod',
         calculatedTimeout: 10000,
-        hybridPersEnabled: false,
       });
     } catch (err) {
       expect(err.message).to.equal('Error: No propositions found');
@@ -324,7 +312,6 @@ describe('loadAnalyticsAndInteractionData', () => {
         locale: { ietf: 'en-US', prefix: 'us' },
         env: 'prod',
         calculatedTimeout: 10000,
-        hybridPersEnabled: false,
       });
     } catch (err) {
       expect(err.message).to.equal('Error: No propositions found');
@@ -339,7 +326,6 @@ describe('loadAnalyticsAndInteractionData', () => {
         locale: { ietf: 'en-US', prefix: 'us' },
         env: 'prod',
         calculatedTimeout: 1000,
-        hybridPersEnabled: false,
       });
     } catch (err) {
       expect(err.message).to.equal('Consent Cookie doesnt allow interact');

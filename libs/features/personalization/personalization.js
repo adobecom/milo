@@ -1217,13 +1217,11 @@ async function updateManifestsAndPropositions(
   });
   config.mep.targetAjoManifests = targetAjoManifests;
   if (config.mep.enablePersV2) {
-    if (!config.mep.hybridPersEnabled) {
-      window.addEventListener('alloy_sendEvent', () => {
-        if (targetAjoPropositions?.length && window._satellite) {
-          window._satellite.track('propositionDisplay', targetAjoPropositions);
-        }
-      }, { once: true });
-    }
+    window.addEventListener('alloy_sendEvent', () => {
+      if (targetAjoPropositions?.length && window._satellite) {
+        window._satellite.track('propositionDisplay', targetAjoPropositions);
+      }
+    }, { once: true });
   } else if (targetAjoPropositions?.length && window._satellite) {
     window._satellite.track('propositionDisplay', targetAjoPropositions);
   }
@@ -1346,7 +1344,7 @@ const awaitMartech = () => new Promise((resolve) => {
 export async function init(enablements = {}) {
   let manifests = [];
   const {
-    mepParam, mepHighlight, mepButton, pzn, promo, enablePersV2, hybridPersEnabled,
+    mepParam, mepHighlight, mepButton, pzn, promo, enablePersV2,
     target, ajo, targetInteractionPromise, calculatedTimeout, postLCP,
   } = enablements;
   const config = getConfig();
@@ -1364,7 +1362,6 @@ export async function init(enablements = {}) {
       experiments: [],
       prefix: config.locale?.prefix.split('/')[1]?.toLowerCase() || US_GEO,
       enablePersV2,
-      hybridPersEnabled,
     };
 
     manifests = manifests.concat(await combineMepSources(pzn, promo, mepParam));

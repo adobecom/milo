@@ -265,7 +265,6 @@ The `loadAnalyticsAndInteractionData` function is an asynchronous method designe
 - **`locale`** (`object`): Locale configuration object, typically containing language and region.
 - **`env`** (`string`): The environment setting, such as development, staging, or production.
 - **`calculatedTimeout`** (`number`): The timeout duration for the fetch request in milliseconds.
-- **`hybridPersEnabled`** (`boolean`): A flag indicating if hybrid personalization is enabled or not.
 
 ### **Logic Overview:**
 1. **Consent Check:**
@@ -307,7 +306,7 @@ The `loadAnalyticsAndInteractionData` function is an asynchronous method designe
 
 ```javascript
 export const loadAnalyticsAndInteractionData = async (
-  { locale, env, calculatedTimeout, hybridPersEnabled },
+  { locale, env, calculatedTimeout },
 ) => {
   // Consent check: If tracking is not allowed, return an empty object
   const value = getCookie('kndctr_9E1005A551ED61CA0A490D45_AdobeOrg_consent');
@@ -321,14 +320,9 @@ export const loadAnalyticsAndInteractionData = async (
 
   // Get timezone offset for the user's location
   const timezoneOffset = CURRENT_DATE.getTimezoneOffset();
-
-  // Set hybridPers flag if hybrid personalization is enabled
-  if (hybridPersEnabled) {
-    window.hybridPers = true;
-  }
   
   // Define the hit type (either page view or proposition fetch)
-  const hitType = hybridPersEnabled ? 'pageView' : 'propositionFetch';
+  const hitType = 'pageView';
 
   // Get the page name for analytics based on the locale
   const pageName = getPageNameForAnalytics({ locale });
@@ -385,26 +379,25 @@ export const loadAnalyticsAndInteractionData = async (
     // Extract personalization decisions
     const resultPayload = getPayloadsByType(targetRespJson, 'personalization:decisions');
 
-    if (hybridPersEnabled) {
-      // Filter and send propositions if hybrid personalization is enabled
-      const filteredPayload = filterPropositionInJson(resultPayload);
-      if (filteredPayload.length) {
-        sendPropositionDisplayRequest(filteredPayload, env, requestPayload);
-      }
-
-      // Prepare Alloy data (for analytics and personalization activation)
-      const alloyData = {
-        destinations: getPayloadsByType(targetRespJson, 'activation:pull'),
-        propositions: resultPayload,
-        inferences: getPayloadsByType(targetRespJson, 'rtml:inferences'),
-        decisions: [],
-      };
-
-      // Dispatch Alloy event for integration with other systems
-      window.dispatchEvent(new CustomEvent('alloy_sendEvent', { detail: alloyData }));
-      setWindowAlloy(alloyData);
-      setTTMetaAndAlloyTarget(resultPayload);
+    // Filter and send propositions if hybrid personalization is enabled
+    const filteredPayload = filterPropositionInJson(resultPayload);
+    if (filteredPayload.length) {
+      sendPropositionDisplayRequest(filteredPayload, env, requestPayload);
     }
+
+    // Prepare Alloy data (for analytics and personalization activation)
+    const alloyData = {
+      destinations: getPayloadsByType(targetRespJson, 'activation:pull'),
+      propositions: resultPayload,
+      inferences: getPayloadsByType(targetRespJson, 'rtml:inferences'),
+      decisions: [],
+    };
+
+    // Dispatch Alloy event for integration with other systems
+    window.dispatchEvent(new CustomEvent('alloy_sendEvent', { detail: alloyData }));
+    setWindowAlloy(alloyData);
+    setTTMetaAndAlloyTarget(resultPayload);
+  
 
     // Update cookies for tracking and personalization
     updateAMCVCookie(ECID);
