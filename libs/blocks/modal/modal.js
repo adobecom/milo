@@ -202,19 +202,6 @@ export async function getModal(details, custom) {
 
   const iframe = dialog.querySelector('iframe');
   if (iframe) {
-    iframe.onload = () => {
-      try {
-        if (new URL(iframe.src).origin !== window.location.origin) {
-          return;
-        }
-
-        const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
-        const iframeHeading = iframeDoc.querySelector('h1, h2, h3, h4, h5, h6')?.textContent.trim();
-        if (iframeHeading) dialog.setAttribute('aria-label', iframeHeading);
-      } catch (e) {
-        // Cross-origin iframe, can't access content
-      }
-    };
     if (dialog.classList.contains('commerce-frame') || dialog.classList.contains('dynamic-height')) {
       const { default: enableCommerceFrameFeatures } = await import('./modal.merch.js');
       await enableCommerceFrameFeatures({ dialog, iframe });
