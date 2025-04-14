@@ -60,6 +60,7 @@ export const CSS = `
     merch-card[variant="ah-promoted-plans"] [slot="cta"] .spectrum-Link {
         font-size: var(--consonant-merch-card-body-xxs-font-size);
         line-height: var(--consonant-merch-card-body-xxs-line-height);
+        color: var(--consonant-merch-card-body-xxs-color);
     }
 
     merch-card[variant="ah-promoted-plans"] [slot="cta"] button[is="checkout-button"] {
