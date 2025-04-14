@@ -694,6 +694,24 @@ picture:has(.picture-meta) {
   transform: translateX(-50%);
 }
 
+.brick .background .picture-meta > div {
+  height: unset;
+  padding: unset;
+  margin: unset;
+}
+
+.brick .foreground div > :is(.video-container, picture, [class^="picture-meta"]) {
+  margin: 0;
+}
+
+.brick.split.row .foreground .brick-media picture:has(.picture-meta) img {
+  width: 100%;
+}
+
+.hero-marquee.media-cover picture:has(.picture-meta) {
+  display: block;
+}
+
 .picture-meta.no-picture-tag {
   position: relative;
   top: unset;
@@ -707,7 +725,8 @@ img:hover ~ .picture-meta {
   z-index: 19;
 }
 
-.picture-meta > div {
+.picture-meta > div,
+.brick .background .picture-meta > div {
   padding: 5px;
   border-radius: 6px;
 }
