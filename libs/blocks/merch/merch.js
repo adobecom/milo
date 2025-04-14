@@ -105,7 +105,7 @@ const GeoMap = {
   in_en: 'IN_en',
   in_hi: 'IN_hi',
   id_en: 'ID_en',
-  id_id: 'ID_in',
+  id_id: 'ID_id',
   nz: 'NZ_en',
   sa_ar: 'SA_ar',
   sa_en: 'SA_en',
