@@ -259,7 +259,7 @@ export const getUpdatedContext = () => ({
 ## **`loadAnalyticsAndInteractionData` Function**
 
 **Description:**
-The `loadAnalyticsAndInteractionData` function is an asynchronous method designed to load analytics and interaction data, making necessary API calls and processing the response. It handles user consent checks, retrieves context data, constructs requests, and processes responses related to page views and propositions. Additionally, it interacts with personalization and activation systems based on the environment and hybrid personalization status.
+The `loadAnalyticsAndInteractionData` function is an asynchronous method designed to load analytics and interaction data, making necessary API calls and processing the response. It handles user consent checks, retrieves context data, constructs requests, and processes responses related to page views and propositions. Additionally, it interacts with personalization and activation systems based on the environment.
 
 ### **Parameters:**
 - **`locale`** (`object`): Locale configuration object, typically containing language and region.
@@ -273,7 +273,6 @@ The `loadAnalyticsAndInteractionData` function is an asynchronous method designe
 
 2. **Contextual Setup:**
    - The function then calculates the current date and time in ISO format and retrieves the user's timezone offset.
-   - If hybrid personalization is enabled, it flags this by setting `window.hybridPers` to `true` and determines the appropriate `hitType` ('pageView' or 'propositionFetch').
 
 3. **Analytics and Request Data:**
    - The function generates a page name using `getPageNameForAnalytics`, passing the locale.
@@ -290,7 +289,7 @@ The `loadAnalyticsAndInteractionData` function is an asynchronous method designe
 6. **Handling Responses:**
    - The function extracts the ECID from the API response, which is used for tracking.
    - It looks for specific payload keys (like `KNDCTR_COOKIE_KEYS[0]` and `KNDCTR_COOKIE_KEYS[1]`) and extracts personalization data if present.
-   - If hybrid personalization is enabled, the function processes the personalization payloads, sending requests for propositions and activating personalization.
+   - The function processes the personalization payloads, sending requests for propositions and activating personalization.
 
 7. **Final Updates and Cookies:**
    - The ECID is updated in the AMC cookie, and other marketing-related cookies are updated with the extracted data.
@@ -379,7 +378,7 @@ export const loadAnalyticsAndInteractionData = async (
     // Extract personalization decisions
     const resultPayload = getPayloadsByType(targetRespJson, 'personalization:decisions');
 
-    // Filter and send propositions if hybrid personalization is enabled
+    // Filter and send propositions if personalization-v2 is enabled
     const filteredPayload = filterPropositionInJson(resultPayload);
     if (filteredPayload.length) {
       sendPropositionDisplayRequest(filteredPayload, env, requestPayload);
@@ -432,7 +431,7 @@ export const loadAnalyticsAndInteractionData = async (
 ### **Returns:**
 - **`Object`:** 
   - If the operation succeeds, it returns an object containing:
-    - `type`: The type of request (either `pageView` or `propositionFetch`).
+    - `type`: The type of request (`pageView`).
     - `result`: An object containing the `propositions` found from the response.
   - If the operation fails or no propositions are found, it returns an empty object.
 

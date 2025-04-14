@@ -21,20 +21,7 @@ describe('loadAnalyticsAndInteractionData', () => {
     delete window.fetch;
   });
 
-  it('should fetch and return the proposition data without hybrid pers', async () => {
-    const result = await loadAnalyticsAndInteractionData({
-      locale: { ietf: 'en-US', prefix: 'us' },
-      env: 'prod',
-      calculatedTimeout: 10000,
-    });
-
-    expect(result).to.deep.equal({
-      type: 'propositionFetch',
-      result: { propositions: [{ decisionId: '1', proposition: 'Test Proposition' }] },
-    });
-  });
-
-  it('should fetch and return the proposition data with hybrid', async () => {
+  it('should fetch and return the proposition data', async () => {
     window.fetch = () => Promise.resolve({
       ok: true,
       json: () => Promise.resolve({
