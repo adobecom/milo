@@ -27,7 +27,6 @@ const TEAM_MENTIONS = [
   '@adobecom/miq-sot',
 ];
 const SLACK = {
-  merge: ({ html_url, number, title, prefix = '' }) => `:merged: PR merged to stage: ${prefix} <${html_url}|${number}: ${title}>.`,
   openedSyncPr: ({ html_url, number }) => `:fast_forward: Created <${html_url}|Stage to Main PR ${number}>`,
 };
 
@@ -143,14 +142,6 @@ const merge = async ({ prs, type }) => {
       console.log(`Current number of PRs merged: ${existingPRCount}`);
       const prefix = type === LABELS.zeroImpact ? ' [ZERO IMPACT]' : '';
       body = `-${prefix} ${html_url}\n${body}`;
-      await slackNotification(
-        SLACK.merge({
-          html_url,
-          number,
-          title,
-          prefix,
-        }),
-      ).catch(console.error);
       await new Promise((resolve) => setTimeout(resolve, 5000));
     } catch (error) {
       commentOnPR(`Error merging ${number}: ${title} ${error.message}`, number);

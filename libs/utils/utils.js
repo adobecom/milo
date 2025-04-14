@@ -49,11 +49,12 @@ const MILO_BLOCKS = [
   'marquee',
   'marquee-anchors',
   'martech-metadata',
-  'mas-autoblock',
   'media',
   'merch',
   'merch-card',
+  'merch-card-autoblock',
   'merch-card-collection',
+  'merch-card-collection-autoblock',
   'merch-offers',
   'mmm',
   'mnemonic-list',
@@ -95,25 +96,26 @@ const MILO_BLOCKS = [
 ];
 const AUTO_BLOCKS = [
   { adobetv: 'tv.adobe.com' },
-  { gist: 'https://gist.github.com' },
+  { gist: 'gist.github.com' },
   { caas: '/tools/caas' },
   { faas: '/tools/faas' },
   { fragment: '/fragments/', styles: false },
-  { instagram: 'https://www.instagram.com' },
-  { slideshare: 'https://www.slideshare.net', styles: false },
-  { tiktok: 'https://www.tiktok.com', styles: false },
-  { twitter: 'https://twitter.com' },
-  { vimeo: 'https://vimeo.com' },
-  { vimeo: 'https://player.vimeo.com' },
-  { youtube: 'https://www.youtube.com' },
-  { youtube: 'https://youtu.be' },
+  { instagram: 'instagram.com' },
+  { slideshare: 'slideshare.net', styles: false },
+  { tiktok: 'tiktok.com', styles: false },
+  { twitter: 'twitter.com' },
+  { vimeo: 'vimeo.com' },
+  { vimeo: 'player.vimeo.com' },
+  { youtube: 'youtube.com' },
+  { youtube: 'youtu.be' },
   { 'pdf-viewer': '.pdf', styles: false },
   { video: '.mp4' },
   { merch: '/tools/ost?' },
   { merch: '/miniplans' },
-  { 'mas-autoblock': 'mas.adobe.com/studio', styles: false },
-  { m7: '/creativecloud/business-plans.html', styles: false },
-  { m7: '/creativecloud/education-plans.html', styles: false },
+  { 'merch-card-collection-autoblock': 'mas.adobe.com/studio.html#content-type=merch-card-collection', styles: false },
+  { 'merch-card-autoblock': 'mas.adobe.com/studio.html', styles: false },
+  { m7: '/creativecloud/business-plans', styles: false },
+  { m7: '/creativecloud/education-plans', styles: false },
 ];
 const DO_NOT_INLINE = [
   'accordion',
@@ -152,10 +154,18 @@ const TARGET_TIMEOUT_MS = 4000;
 const LANGSTORE = 'langstore';
 const PREVIEW = 'target-preview';
 const PAGE_URL = new URL(window.location.href);
+const LANGUAGE_BASED_PATHS = [
+  // don't add milo too. It's a special case because of tools, merch, etc.
+  'news.adobe.com',
+];
+const DEFAULT_LANG = 'en';
 export const SLD = PAGE_URL.hostname.includes('.aem.') ? 'aem' : 'hlx';
 
 const PROMO_PARAM = 'promo';
 let isMartechLoaded = false;
+
+let localeToLanguageMap;
+let siteLanguages;
 
 export function getEnv(conf) {
   const { host } = window.location;
@@ -198,6 +208,36 @@ export function getLocale(locales, pathname = window.location.pathname) {
   return locale;
 }
 
+export function getLanguage(languages, locales, pathname = window.location.pathname) {
+  const split = pathname.split('/');
+  const locOffset = [LANGSTORE, PREVIEW].includes(split[1]) ? 1 : 0;
+  const languageString = split[locOffset + 1];
+  const region = split[locOffset + 2];
+  let regionPath = '';
+
+  const language = languages[languageString];
+  if (language && region && language.regions) {
+    const [matchingRegion] = language.regions.filter((r) => r.region === region);
+    if (matchingRegion?.region) language.region = matchingRegion.region;
+    if (matchingRegion?.ietf) language.ietf = matchingRegion.ietf;
+    if (matchingRegion?.tk) language.tk = matchingRegion.tk;
+    regionPath = matchingRegion ? `/${region}` : '';
+  }
+
+  const isLegacyLocaleRoutingMode = !language
+      || (language.languageBased === false && !language.region);
+  if (isLegacyLocaleRoutingMode) {
+    const locale = getLocale(locales, pathname);
+    if (locale.prefix === '') locale.language = DEFAULT_LANG;
+    return locale;
+  }
+
+  if (!language.ietf) language.ietf = `${languageString}${language.region ? `_${language.region.toUpperCase()}` : ''}`;
+  language.language = languageString;
+  language.prefix = `${languageString === DEFAULT_LANG && !regionPath ? '' : '/'}${languageString}${regionPath}`;
+  return language;
+}
+
 export function getMetadata(name, doc = document) {
   const attr = name && name.includes(':') ? 'property' : 'name';
   const meta = doc.head.querySelector(`meta[${attr}="${name}"]`);
@@ -236,7 +276,8 @@ export const [setConfig, updateConfig, getConfig] = (() => {
       config = { env: getEnv(conf), ...conf };
       config.codeRoot = conf.codeRoot ? `${origin}${conf.codeRoot}` : origin;
       config.base = config.miloLibs || config.codeRoot;
-      config.locale = pathname ? getLocale(conf.locales, pathname) : getLocale(conf.locales);
+      config.locale = conf.languages
+        ? getLanguage(conf.languages, conf.locales, pathname) : getLocale(conf.locales, pathname);
       config.autoBlocks = conf.autoBlocks ? [...AUTO_BLOCKS, ...conf.autoBlocks] : AUTO_BLOCKS;
       config.signInContext = conf.signInContext || {};
       config.doNotInline = conf.doNotInline
@@ -306,6 +347,42 @@ export const getFederatedUrl = (url = '') => {
   return url;
 };
 
+function isPathMatch(path, href) {
+  if (path.includes('*')) {
+    const regex = new RegExp(path.replace(/\*/g, '[a-zA-Z]{1}'));
+    return regex.test(href);
+  }
+  return href.includes(path);
+}
+
+export function hasLanguageLinks(area, paths = LANGUAGE_BASED_PATHS) {
+  if (!area) return false;
+  const links = area.querySelectorAll('a');
+  return Array.from(links).some((link) => {
+    const { href } = link;
+    if (!href) return false;
+    return paths.some((path) => isPathMatch(path, href));
+  });
+}
+
+export async function loadLanguageConfig() {
+  const parseList = (str) => str.split(/[\n,]+/).map((t) => t.trim()).filter(Boolean);
+  try {
+    const response = await fetch(`${getFederatedContentRoot()}/federal/assets/data/languages-config.json`);
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const configJson = await response.json();
+
+    localeToLanguageMap = configJson['locale-to-language-map']?.data;
+    siteLanguages = configJson['site-languages']?.data?.map((site) => ({
+      ...site,
+      pathMatches: parseList(site.pathMatches),
+      languages: parseList(site.languages),
+    }));
+  } catch (e) {
+    window.lana?.log('Failed to load language-config.json:', e);
+  }
+}
+
 let fedsPlaceholderConfig;
 export const getFedsPlaceholderConfig = ({ useCache = true } = {}) => {
   if (useCache && fedsPlaceholderConfig) return fedsPlaceholderConfig;
@@ -355,6 +432,27 @@ function getExtension(path) {
   return pageName.includes('.') ? pageName.split('.').pop() : '';
 }
 
+function getPrefixBySite(locale, url, relative) {
+  let { prefix } = locale;
+  const site = siteLanguages?.find((s) => s.pathMatches.some((d) => isPathMatch(d, url.href)));
+
+  const localeSiteWithLanguageTarget = !locale.language && site && localeToLanguageMap;
+  const languageSiteWithLocaleTarget = locale.language && !relative && !site?.languages.some((l) => (l === DEFAULT_LANG ? '' : `/${l}`) === prefix);
+  if (localeSiteWithLanguageTarget) {
+    const mappedLanguageFromPrefix = localeToLanguageMap?.find((m) => `${m.locale === '' ? '' : '/'}${m.locale}` === prefix);
+    const languageInUseBySite = site.languages.find((l) => `${l}` === mappedLanguageFromPrefix.languagePath);
+    if (languageInUseBySite) {
+      prefix = languageInUseBySite === DEFAULT_LANG ? '' : `/${languageInUseBySite}`;
+    }
+  }
+  if (languageSiteWithLocaleTarget) {
+    const mappedLocaleFromLanguage = localeToLanguageMap?.find((m) => `/${m.languagePath}` === prefix);
+    prefix = mappedLocaleFromLanguage ? `${mappedLocaleFromLanguage.locale === '' ? '' : '/'}${mappedLocaleFromLanguage.locale}` : prefix;
+  }
+
+  return prefix;
+}
+
 export function localizeLink(
   href,
   originHostName = window.location.hostname,
@@ -370,17 +468,20 @@ export function localizeLink(
     const extension = getExtension(path);
     const allowedExts = ['', 'html', 'json'];
     if (!allowedExts.includes(extension)) return processedHref;
-    const { locale, locales, prodDomains } = getConfig();
-    if (!locale || !locales) return processedHref;
+    const { locale, locales, languages, prodDomains } = getConfig();
+    if (!locale || !(locales || languages)) return processedHref;
     const isLocalizable = relative || (prodDomains && prodDomains.includes(url.hostname))
       || overrideDomain;
     if (!isLocalizable) return processedHref;
     const isLocalizedLink = path.startsWith(`/${LANGSTORE}`)
       || path.startsWith(`/${PREVIEW}`)
-      || Object.keys(locales).some((loc) => loc !== '' && (path.startsWith(`/${loc}/`)
-        || path.endsWith(`/${loc}`)));
+      || (languages && Object.keys(languages).some((lang) => lang !== '' && (path.startsWith(`/${lang}/`))))
+      || (locales && Object.keys(locales).some((loc) => loc !== '' && (path.startsWith(`/${loc}/`)
+        || path.endsWith(`/${loc}`))));
     if (isLocalizedLink) return processedHref;
-    const urlPath = `${locale.prefix}${path}${url.search}${hash}`;
+
+    const prefix = getPrefixBySite(locale, url, relative);
+    const urlPath = `${prefix}${path}${url.search}${hash}`;
     return relative ? urlPath : `${url.origin}${urlPath}`;
   } catch (error) {
     return href;
@@ -637,9 +738,20 @@ export function decorateImageLinks(el) {
   });
 }
 
+export function isTrustedAutoBlock(autoBlock, url) {
+  if (!url.href.includes(autoBlock)) return false;
+  const urlHostname = url.hostname.replace('www.', '');
+  const locationHostname = window.location.hostname.replace('www.', '');
+  return urlHostname === locationHostname
+    || urlHostname.endsWith('.adobe.com')
+    || urlHostname === 'adobe.com'
+    || urlHostname === autoBlock
+    || !!urlHostname.match(/\.(hlx|aem)\.(page|live)$/)
+    || (autoBlock === '.pdf' && url.pathname.endsWith(autoBlock));
+}
+
 export function decorateAutoBlock(a) {
   const config = getConfig();
-  const { hostname } = window.location;
   let url;
   try {
     url = new URL(a.href);
@@ -648,14 +760,9 @@ export function decorateAutoBlock(a) {
     return false;
   }
 
-  const href = hostname === url.hostname
-    ? `${url.pathname}${url.search}${url.hash}`
-    : a.href;
-
   return config.autoBlocks.find((candidate) => {
     const key = Object.keys(candidate)[0];
-    const match = href.includes(candidate[key]);
-    if (!match) return false;
+    if (!isTrustedAutoBlock(candidate[key], url)) return false;
 
     if (key === 'pdf-viewer' && !a.textContent.includes('.pdf')) {
       a.target = '_blank';
@@ -927,9 +1034,14 @@ const findReplaceableNodes = (area) => {
     let matchFound = false;
     if (node.nodeType === Node.TEXT_NODE) {
       matchFound = regex.test(node.nodeValue);
-    } else if (node.nodeType === Node.ELEMENT_NODE && node.hasAttribute('href')) {
-      const hrefValue = node.getAttribute('href');
-      matchFound = regex.test(hrefValue);
+    } else if (node.nodeType === Node.ELEMENT_NODE) {
+      const { attributes } = node;
+      for (let i = 0; i < attributes.length; i += 1) {
+        const { value: attrValue } = attributes[i];
+        if (regex.test(attrValue)) {
+          matchFound = true;
+        }
+      }
     }
     if (matchFound) {
       nodes.push(node);
@@ -1480,6 +1592,9 @@ export async function loadArea(area = document) {
     appendSuffixToTitles();
   }
   const config = getConfig();
+  if (!localeToLanguageMap && !siteLanguages && (config.languages || hasLanguageLinks(area))) {
+    await loadLanguageConfig();
+  }
 
   if (isDoc) {
     decorateDocumentExtras();
