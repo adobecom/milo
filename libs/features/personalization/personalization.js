@@ -1372,6 +1372,11 @@ export const combineMepSources = async (
     persManifests = persManifests.concat(rocPersManifest);
   }
 
+export const combineMepSources = async (persEnabled, promoEnabled, mepParam, mepPl) => {
+  let persManifests = [];
+
+  if (persEnabled) persManifests = createPersManifests(persEnabled, 'pzn');
+  if (mepPl) persManifests = persManifests.concat(createPersManifests(mepPl, 'mepPl'));
   if (promoEnabled) {
     const { default: getPromoManifests } = await import('./promo-utils.js');
     persManifests = persManifests.concat(getPromoManifests(promoEnabled, PAGE_URL.searchParams));
@@ -1534,7 +1539,7 @@ const awaitMartech = () => new Promise((resolve) => {
 export async function init(enablements = {}) {
   let manifests = [];
   const {
-    mepParam, mepHighlight, mepButton, pzn, pznroc, promo, enablePersV2,
+    mepParam, mepHighlight, mepButton, pzn, pznroc, mepPl, promo, enablePersV2,
     target, ajo, countryIPPromise, mepgeolocation, targetInteractionPromise, calculatedTimeout,
     postLCP, promises,
   } = enablements;
@@ -1560,7 +1565,7 @@ export async function init(enablements = {}) {
       promises,
     };
 
-    manifests = manifests.concat(await combineMepSources(pzn, pznroc, promo, mepParam));
+    manifests = manifests.concat(await combineMepSources(pzn, pznroc, promo, mepParam, mepPl));
     manifests?.forEach((manifest) => {
       if (manifest.disabled) return;
       const normalizedURL = normalizePath(manifest.manifestPath);
