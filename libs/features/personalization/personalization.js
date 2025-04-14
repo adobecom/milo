@@ -1229,16 +1229,21 @@ export async function applyPers({ manifests }) {
   config.mep.martech = `|${pznVariants.join('--')}|${pznManifests.join('--')}`;
 }
 
-export const combineMepSources = async (persEnabled, promoEnabled, mepParam) => {
+function createPersManifests(persEnabled, source) {
+  return persEnabled.toLowerCase()
+    .split(/,|(\s+)|(\\n)/g)
+    .filter((path) => path?.trim())
+    .map((manifestPath) => ({
+      manifestPath: source === 'mepPl' ? localizeLink(manifestPath) : manifestPath,
+      source: [source],
+    }));
+}
+
+export const combineMepSources = async (persEnabled, promoEnabled, mepParam, mepPl) => {
   let persManifests = [];
 
-  if (persEnabled) {
-    persManifests = persEnabled.toLowerCase()
-      .split(/,|(\s+)|(\\n)/g)
-      .filter((path) => path?.trim())
-      .map((manifestPath) => ({ manifestPath, source: ['pzn'] }));
-  }
-
+  if (persEnabled) persManifests = createPersManifests(persEnabled, 'pzn');
+  if (mepPl) persManifests = persManifests.concat(createPersManifests(mepPl, 'mepPl'));
   if (promoEnabled) {
     const { default: getPromoManifests } = await import('./promo-utils.js');
     persManifests = persManifests.concat(getPromoManifests(promoEnabled, PAGE_URL.searchParams));
@@ -1403,7 +1408,7 @@ const awaitMartech = () => new Promise((resolve) => {
 export async function init(enablements = {}) {
   let manifests = [];
   const {
-    mepParam, mepHighlight, mepButton, pzn, promo, enablePersV2, hybridPersEnabled,
+    mepParam, mepHighlight, mepButton, pzn, mepPl, promo, enablePersV2, hybridPersEnabled,
     target, ajo, countryIPPromise, mepgeolocation, targetInteractionPromise, calculatedTimeout,
     postLCP,
   } = enablements;
@@ -1428,7 +1433,7 @@ export async function init(enablements = {}) {
       hybridPersEnabled,
     };
 
-    manifests = manifests.concat(await combineMepSources(pzn, promo, mepParam));
+    manifests = manifests.concat(await combineMepSources(pzn, promo, mepParam, mepPl));
     manifests?.forEach((manifest) => {
       if (manifest.disabled) return;
       const normalizedURL = normalizePath(manifest.manifestPath);
