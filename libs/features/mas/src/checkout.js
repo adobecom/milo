@@ -5,6 +5,7 @@ import { CheckoutWorkflow, CheckoutWorkflowStep } from './constants.js';
 import { buildCheckoutUrl } from './buildCheckoutUrl.js';
 import { Defaults } from './defaults.js';
 import { toOfferSelectorIds, toQuantity } from './utilities.js';
+import { MODAL_TYPE_3_IN_1 } from './constants.js';
 
 /**
  * generate Checkout configuration
@@ -71,7 +72,7 @@ export function Checkout({ providers, settings }) {
             language,
             entitlement: toBoolean(entitlement),
             upgrade: toBoolean(upgrade),
-            modal: toBoolean(modal),
+            modal,
             perpetual: toBoolean(perpetual),
             promotionCode: computePromoStatus(promotionCode).effectivePromoCode,
             wcsOsi: toOfferSelectorIds(wcsOsi),
@@ -92,7 +93,7 @@ export function Checkout({ providers, settings }) {
      * @returns a checkout URL
      */
     function buildCheckoutURL(offers, options, modalType) {
-        // Fast-path for empty offers
+      /* c8 ignore next 3 */
         if (!Array.isArray(offers) || !offers.length || !options) {
             return '';
         }
@@ -107,11 +108,7 @@ export function Checkout({ providers, settings }) {
             quantity,
             ...rest
         } = collectCheckoutOptions(options);
-        
-        // Determine context only once
-        const context = window.frameElement || modalType ? 'if' : 'fp';
-        
-        // Create data object with defaults to avoid repetition
+        const context = window.frameElement || Object.values(MODAL_TYPE_3_IN_1).includes(options.modal) ? 'if' : 'fp';
         const data = {
             checkoutPromoCode,
             clientId,
