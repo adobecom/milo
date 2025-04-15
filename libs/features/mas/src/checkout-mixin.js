@@ -26,6 +26,7 @@ export function createCheckoutElement(Class, options = {}, innerHTML = '') {
         quantity,
         wcsOsi,
         extraOptions,
+        analyticsId,
     } = service.collectCheckoutOptions(options);
 
     const element = createMasElement(Class, {
@@ -40,6 +41,7 @@ export function createCheckoutElement(Class, options = {}, innerHTML = '') {
         quantity,
         wcsOsi,
         extraOptions,
+        analyticsId,
     });
     if (innerHTML)
         element.innerHTML = `<span style="pointer-events: none;">${innerHTML}</span>`;
