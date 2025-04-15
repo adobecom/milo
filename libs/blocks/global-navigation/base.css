@@ -61,6 +61,14 @@
   flex-shrink: 0;
 }
 
+.feds-popup .has-subheader .feds-navLink:not(.feds-navLink--header) {
+  padding: 12px 24px;
+}
+
+header.new-nav .feds-nav > section.feds-navItem > .feds-popup .has-subheader .feds-navLink:not(.feds-navLink--header) .feds-navLink-title {
+  font-weight: 500;
+}
+
 .feds-navLink:hover,
 .feds-navLink:focus {
   color: var(--feds-color-link--hover);
