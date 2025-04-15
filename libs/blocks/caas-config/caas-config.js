@@ -349,8 +349,8 @@ const BasicsPanel = ({ tagsData }) => {
   const sortedCountries = Object.fromEntries(Object.entries(countryTags).sort());
 
   const countryLangOptions = html`
-    <${Select} options=${sortedLanguages} prop="language" label="Language" />  
-    <${Select} options=${sortedCountries} prop="country" label="Country(s)" />`;
+  <${Select} options=${sortedCountries} prop="country" label="Country" sort />
+  <${Select} options=${sortedLanguages} prop="language" label="Language" sort />`;
 
   const partialLoadOptions = html`
     <${Input} label="Partial Load Count" prop="partialLoadCount" type="number" />`;
