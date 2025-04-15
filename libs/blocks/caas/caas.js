@@ -76,8 +76,17 @@ const loadCaas = async (a) => {
   initCaas(state, caasStrs, block);
 };
 
+function isSearchBot() {
+  const botPatterns = [
+    'googlebot'
+  ];
+  return botPatterns.some(pattern => 
+    navigator.userAgent.toLowerCase().includes(pattern)
+  );
+}
+
 export default async function init(link) {
-  if (link.textContent.includes('no-lazy')) {
+  if (link.textContent.includes('no-lazy') || isSearchBot()) {
     loadCaas(link);
   } else {
     createIntersectionObserver({
