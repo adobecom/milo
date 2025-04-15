@@ -8,9 +8,6 @@ const pass = 'green';
 const fail = 'red';
 const limbo = 'orange';
 
-// eslint-disable-next-line prefer-const
-let linksChecked = false;
-
 const h1Result = signal({ icon: DEF_ICON, title: 'H1 count', description: DEF_DESC });
 const titleResult = signal({ icon: DEF_ICON, title: 'Title size', description: DEF_DESC });
 const canonResult = signal({ icon: DEF_ICON, title: 'Canonical', description: DEF_DESC });
@@ -91,17 +88,17 @@ async function getResults() {
     linksResult,
   ];
 
-  const checks = runChecks(linksChecked.value?.status === STATUS.EMPTY);
+  const checks = runChecks(window.location.pathname);
 
   // Update UI as each check resolves
   const icons = [];
   const checkPromises = [];
   checks.forEach((resultOrPromise, index) => {
     const signalResult = signals[index];
-    const promise = Promise.resolve(resultOrPromise) // Handles both cases
+    const promise = Promise.resolve(resultOrPromise)
       .then((result) => {
-        const icon = toUIFormat(result, signalResult); // Update UI immediately
-        icons[index] = icon; // Store icon for later
+        const icon = toUIFormat(result, signalResult);
+        icons[index] = icon;
       })
       .catch((error) => {
         console.error(`Check failed: ${signalResult.value.title}`, error);
@@ -162,7 +159,7 @@ export default function SEO() {
           <th>Located in</th>
           <th>Status</th>
         </tr>
-        ${linksResult.value.details.badLinks.value.map((link, idx) => html`
+        ${linksResult.value.details.badLinks.map((link, idx) => html`
           <tr>
             <td>${idx + 1}.</td>
             <td><a href='${link?.liveHref}' target='_blank'>${link?.liveHref}</a></td>
