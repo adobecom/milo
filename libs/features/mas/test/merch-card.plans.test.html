@@ -82,26 +82,46 @@
                 </div></merch-card
             >
         </template>
+        <template id="fragment-photography-plans">
+            <mas-commerce-service env="stage"></mas-commerce-service>
+            <merch-card>
+                <aem-fragment fragment="fragment-photography-plans"> </aem-fragment>
+            </merch-card>
+        </template>
         <script type="module">
             import { runTests } from '@web/test-runner-mocha';
             import { expect } from '@esm-bundle/chai';
             import { mockFetch } from './mocks/fetch.js';
             import { mockIms } from './mocks/ims.js';
             import { withWcs } from './mocks/wcs.js';
+            import { withAem } from './mocks/aem.js';
             import { getTemplateContent } from './utils.js';
             import '../src/mas.js';
 
             runTests(async () => {
                 mockIms();
-                await mockFetch(withWcs);
+                await mockFetch(withWcs, withAem);
                 const main = document.querySelector('main');
 
                 describe('merch-card web component with plans variant', () => {
+                    beforeEach(() => {
+                        main.innerHTML = '';
+                    });
                     it('should render tax text & plans type under price', () => {
                         const [masCommerceService, photoshop] =
                             getTemplateContent('photoshop');
                         main.append(masCommerceService, photoshop);
                         expect(photoshop).to.exist;
+                    });
+
+                    it.only('should apply settings from fragment to price', async () => {
+                        const [masCommerceService, ccAllApps] =
+                            getTemplateContent('fragment-photography-plans');
+                        main.append(masCommerceService, ccAllApps);
+                        await ccAllApps.updateComplete;
+                        const price = ccAllApps.querySelector('inline-price');
+                        expect(price).to.exist;
+                        expect(price.options.displayPlanType).to.be.true;
                     });
                 });
             });
