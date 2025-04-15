@@ -1,6 +1,4 @@
-import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
-import sinon from 'sinon';
 import { createGroupings, createAllRegionGroup, createCheckboxArea } from '../../../libs/blocks/redirects-formatter/utils/checkboxes.js';
 
 describe('Checkbox Formatting', () => {
@@ -80,7 +78,7 @@ const testData = [
     'Tier 2': 'se',
     'Tier 3': 'mx',
     'Tier 4': 'be_en',
-  }
+  },
 ];
 
 describe('Checkbox Area Component', () => {
@@ -204,7 +202,7 @@ describe('Checkbox Area Component', () => {
     selectButton.click();
     const firstGroupCheckboxes = checkboxComponent.querySelector('.checkbox-grouping.selected')
       .querySelectorAll('input[type="checkbox"]');
-    firstGroupCheckboxes.forEach(checkbox => {
+    firstGroupCheckboxes.forEach((checkbox) => {
       expect(checkbox.checked).to.be.true;
     });
 
@@ -221,13 +219,13 @@ describe('Checkbox Area Component', () => {
     expect(groups[0].classList.contains('selected')).to.be.false;
 
     // Verify all checkboxes in first tab are now unchecked
-    firstGroupCheckboxes.forEach(checkbox => {
+    firstGroupCheckboxes.forEach((checkbox) => {
       expect(checkbox.checked).to.be.false;
     });
 
     // Verify all checkboxes in second tab are unchecked
     const secondGroupCheckboxes = groups[1].querySelectorAll('input[type="checkbox"]');
-    secondGroupCheckboxes.forEach(checkbox => {
+    secondGroupCheckboxes.forEach((checkbox) => {
       expect(checkbox.checked).to.be.false;
     });
 
