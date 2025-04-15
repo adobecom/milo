@@ -362,7 +362,7 @@ const BasicsPanel = ({ tagsData }) => {
     <${DropdownSelect} options=${defaultOptions.source} prop="source" label="Source" />
     <${Input} label="Results Per Page" prop="resultsPerPage" type="number" />
     <${Input} label="Total Cards to Show" prop="totalCardsToShow" type="number" />
-    <${Input} label="Auto detect language & country" prop="autoCountryLang" type="checkbox" />
+    <${Input} label="Auto detect country & lang" prop="autoCountryLang" type="checkbox" />
     ${!state.autoCountryLang && countryLangOptions}
   <${Input} label="Partial Load Enabled" prop="partialLoadEnabled" options="${defaultOptions.partialLoadEnabled}" type="checkbox"  />
     ${state.partialLoadEnabled && partialLoadOptions}
