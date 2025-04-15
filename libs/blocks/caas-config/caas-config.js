@@ -344,7 +344,7 @@ const BasicsPanel = ({ tagsData }) => {
     countryTags['caas:country/gr'] = countryTags['caas:country/gr_en'];
     delete countryTags['caas:country/gr_en'];
   }
-  
+
   const sortedLanguages = Object.fromEntries(Object.entries(languageTags).sort());
   const sortedCountries = Object.fromEntries(Object.entries(countryTags).sort());
 
