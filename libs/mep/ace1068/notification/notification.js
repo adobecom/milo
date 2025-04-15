@@ -71,16 +71,12 @@ function setHideAtObserver(el) {
   if (!sectionMetadata) return;
 
   const metadata = getMetadata(sectionMetadata);
-  const selector = metadata['hide-at-intersection']?.text;
-  if (!selector) return;
-
-  const target = document.querySelector('.ace1068');
-  const trigger = document.querySelector(selector);
-  if (!target || !trigger) return;
+  const selector = metadata?.['hide-at-intersection']?.text;
+  const trigger = selector && document.querySelector(selector);
+  if (!trigger) return;
 
   const handleScroll = () => {
-    const { top } = trigger.getBoundingClientRect();
-    target.style.display = top < window.innerHeight ? 'none' : 'block';
+    el.style.display = trigger.getBoundingClientRect().top < window.innerHeight ? 'none' : 'block';
   };
 
   window.addEventListener('scroll', handleScroll);
@@ -243,5 +239,5 @@ export default async function init(el) {
     decorateMultiViewport(el);
   }
 
-  setHideAtObserver(el);
+  if (el.classList.contains('.ace1068')) setHideAtObserver(el);
 }

@@ -30,9 +30,12 @@
   background: var(--color-white);
 }
 
+.notification.ace1068 .foreground {
+  align-items: center;
+}
+
 .notification.ace1068 .action-area,
 .notification.ace1068 .con-button {
-  margin: auto;
   width: 100%;
   max-width: 328px;
 }
