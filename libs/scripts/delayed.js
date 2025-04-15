@@ -25,13 +25,14 @@ export const loadJarvisChat = async (getConfig, getMetadata, loadScript, loadSty
 };
 
 export const loadDelist = async (getConfig, loadStyle) => {
-  const { env, miloLibs, codeRoot } = getConfig();
+  const { env, miloLibs, codeRoot, locale } = getConfig();
+  if (env.name === 'prod') return;
+
   const base = miloLibs || codeRoot;
-  console.log('config', env.name);
-  if (env.name !== 'prod') {
-    loadStyle(`${base}/styles/delist.css`);
-    import('../utils/delist.js');
-  }
+  loadStyle(`${base}/styles/delist.css`);
+
+  const { default: delist } = await import('../utils/delist.js');
+  delist(locale);
 };
 
 export const loadPrivacy = async (getConfig, loadScript) => {
