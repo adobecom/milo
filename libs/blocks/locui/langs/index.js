@@ -3,7 +3,7 @@ import { languages, polling, isLOCV3RolloutFlow } from '../utils/state.js';
 import { getModal } from '../../modal/modal.js';
 import Modal from './modal.js';
 import { createTag } from '../../../utils/utils.js';
-import { getLocV3CreateUrl } from '../actions/index.js';
+import { getLocV3CreateUrl, cancelLocProject } from '../actions/index.js';
 
 export function showUrls(item, prefix) {
   const div = createTag('div');
@@ -76,4 +76,8 @@ export function handleRollout(item, idx) {
   } else {
     rollout(item, idx);
   }
+}
+
+export function handleCancel(language, languageCode) {
+  cancelLocProject({ language, languageCode });
 }

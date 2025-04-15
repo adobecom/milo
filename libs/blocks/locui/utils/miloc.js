@@ -164,25 +164,29 @@ export async function startProject({ skipSync }) {
   return resp.status;
 }
 
-export async function cancelProject() {
-  allowSyncToLangstore.value = false;
-  allowSendForLoc.value = false;
-  allowCancelProject.value = false;
+export async function cancelProject(languageCode = '', language = '') {
+  const isProjectCancel = !languageCode;
+  if (isProjectCancel) {
+    allowSyncToLangstore.value = false;
+    allowSendForLoc.value = false;
+    allowCancelProject.value = false;
+  }
   let url = await getMilocUrl();
-  setStatus('service', 'info', 'Cancelling project');
+  const messageSuffix = languageCode ? `language ${language}` : 'project';
+  setStatus('service', 'info', `Cancelling ${messageSuffix}`);
   const opts = { method: 'POST', headers: { 'User-Token': accessToken.value } };
-  url = `${url}cancel-project?project=${heading.value.projectId}`;
+  url = `${url}cancel-project?project=${heading.value.projectId}&languageCode=${languageCode}`;
   const resp = await fetch(url, opts);
-  if (resp.status === 200) setExcelStatus('Project cancelled', '');
+  if (resp.status === 200) setExcelStatus(`Cancelled ${messageSuffix}`, '');
   if (resp.status === 500) {
     const json = await resp.json();
-    setStatus('service', 'error', 'Cancelling project', json.error);
+    setStatus('service', 'error', `Cancelling ${messageSuffix}`, json.error);
     return resp.status;
   }
   if (resp.status === UNAUTHORIZED) {
-    showAuthError('cancel project');
+    showAuthError('cancel language/project');
   } else {
-    setStatus('service', 'info', 'Successfully Cancelled Project', null, 5000);
+    setStatus('service', 'info', `Successfully cancelled ${messageSuffix}`, null, 5000);
   }
   return resp.status;
 }

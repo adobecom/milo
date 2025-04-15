@@ -1,6 +1,13 @@
 import { html } from '../../../deps/htm-preact.js';
 import { languages } from '../utils/state.js';
-import { getSkippedFileWarnings, showLangErrors, showSkippedFiles, showUrls, handleRollout } from './index.js';
+import {
+  getSkippedFileWarnings,
+  showLangErrors,
+  showSkippedFiles,
+  showUrls,
+  handleRollout,
+  handleCancel,
+} from './index.js';
 
 function getPrettyStatus({ status, queued } = {}) {
   switch (status) {
@@ -26,14 +33,18 @@ function Badge(props) {
 function langActionProps(lang) {
   let showAction = ['translated', 'completed', 'error'].includes(lang.status);
   let actionType = lang.status === 'completed' ? 'Re-rollout' : 'Rollout';
+  const isCancelled = lang.status === 'cancelled';
   const hasError = lang.status === 'error';
   if (showAction && lang.rolloutQueued) {
     showAction = !hasError;
   }
-  if (hasError) {
+
+  if (!isCancelled && hasError) {
     actionType = 'Retry';
   }
-  return [showAction, actionType];
+
+  const showCancel = !isCancelled && lang.status && !showAction;
+  return [showAction, showCancel, actionType];
 }
 
 function Language({ item, idx }) {
@@ -47,7 +58,12 @@ function Language({ item, idx }) {
     handleRollout(item, idx);
   };
 
-  const [showAction, actionType] = langActionProps(item);
+  const onCancel = (e) => {
+    e.stopPropagation();
+    handleCancel(item.Language, item.code);
+  };
+
+  const [showAction, showCancel, actionType] = langActionProps(item);
   const skipped = getSkippedFileWarnings(item);
 
   return html`
@@ -62,9 +78,10 @@ function Language({ item, idx }) {
           <p class=locui-project-label>Items</p>
           <h3 class=locui-subproject-name>${item.size}</h3>
         </div>
-        ${item.done > 0 && html`
+        ${(item.done > 0 || item.status === 'cancelled') && html`
         <div>
           <p class=locui-project-label>${item.statusText}</p>
+          ${item.status !== 'cancelled' && html`
           <div class=locui-project-name-totals>
             <h3 class=locui-subproject-name>${item.done}</h3>
             ${item.total > 0 && html`
@@ -72,6 +89,7 @@ function Language({ item, idx }) {
               <h4 class=locui-subproject-name>${item.total}</h3>
             `}
           </div>
+          `}
         </div>
         `}
       </div>
@@ -96,6 +114,13 @@ function Language({ item, idx }) {
         <div class=locui-subproject-action-area>
           <button class="locui-urls-heading-action ${item.status}" onClick=${(e) => onRollout(e)}>
             ${actionType}
+          </button>
+        </div>
+      `}
+      ${showCancel && html`
+        <div class=locui-subproject-action-area>
+          <button class="locui-urls-heading-action cancel" onClick=${(e) => onCancel(e)}>
+            Cancel
           </button>
         </div>
       `}

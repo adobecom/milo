@@ -117,19 +117,20 @@ function SyncLangStoreModal() {
   `;
 }
 
-function ConfirmCancelModal() {
+function ConfirmCancelModal({ options = {} }) {
+  const cancelMsg = options.language ? `${options.language} language of this` : 'this';
   return html`
     <div class=locui-modal-container>
       <div class=locui-modal-content>
         <h2 class=locui-modal-title>
-          Are you sure you want to cancel this project?
+          Are you sure you want to cancel ${cancelMsg} project?
         </h2>
         <div class=locui-sync-modal-content>
           <strong>There is no turning back.</strong> <i>You will no longer be able to make updates.</i>
           <div class=locui-sync-actions>
             <button 
               class=locui-urls-heading-action
-              onClick=${() => { cancelProject(); closeActionModal(); }}>Yes, cancel this project
+              onClick=${() => { cancelProject(options.languageCode, options.language); closeActionModal(); }}>Yes, cancel this project
             </button>
             <button 
               class="locui-urls-heading-action cancel"
@@ -142,14 +143,14 @@ function ConfirmCancelModal() {
   `;
 }
 
-function Modal({ type }) {
+function Modal({ type, options }) {
   if (type === 'cancel') {
-    return html`<${ConfirmCancelModal} />`;
+    return html`<${ConfirmCancelModal} options=${options}/>`;
   }
   return html`<${SyncLangStoreModal} />`;
 }
 
-export default function renderModal(el, type = 'sync') {
-  render(html`<${Modal} type=${type} />`, el);
+export default function renderModal(el, type = 'sync', options = {}) {
+  render(html`<${Modal} type=${type} options=${options}/>`, el);
   return el;
 }
