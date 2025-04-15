@@ -46,12 +46,7 @@ function registerPriceOptionsProvider(masCommerceService) {
     masCommerceService.providers.price((element, options) => {
         const card = element.closest(MERCH_CARD);
         if (!card) return options;
-        let { displayPlanType } = options;
-        displayPlanType ??= card.settings?.displayPlanType;
-        return {
-            ...options,
-            displayPlanType,
-        };
+        options.displayPlanType = card.settings?.displayPlanType;
     });
 }
 

@@ -39,7 +39,7 @@
         },
         "showStockCheckbox": true,
         "ctas": {
-            "value": "<p><a data-wcs-osi=\"abm\" data-template=\"checkoutUrl\" data-analytics-id=\"buy-now\">Buy now</a></p>",
+            "value": "<p><a is=\"checkout-link\" data-wcs-osi=\"abm\" data-template=\"checkoutUrl\" data-analytics-id=\"buy-now\">Buy now</a></p>",
             "mimeType": "text/html"
         },
         "tags": [],
@@ -50,7 +50,7 @@
     "settings": {
         "displayPlanType": true,
         "stockCheckboxLabel": "Add a 30-day free trial of Adobe Stock.*",
-        "stockOfferOsis": "puf,abm,m2m",
+        "stockOfferOsis": "stock-puf,stock-abm,stock-m2m",
         "secureLabel": "Secure transaction"
     }
 }

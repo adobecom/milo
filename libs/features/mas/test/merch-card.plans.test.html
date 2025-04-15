@@ -95,7 +95,7 @@
             import { mockIms } from './mocks/ims.js';
             import { withWcs } from './mocks/wcs.js';
             import { withAem } from './mocks/aem.js';
-            import { getTemplateContent } from './utils.js';
+            import { getTemplateContent, oneEvent } from './utils.js';
             import '../src/mas.js';
 
             runTests(async () => {
@@ -118,9 +118,8 @@
                         const [masCommerceService, ccAllApps] =
                             getTemplateContent('fragment-photography-plans');
                         main.append(masCommerceService, ccAllApps);
-                        await ccAllApps.updateComplete;
-                        const price = ccAllApps.querySelector('inline-price');
-                        expect(price).to.exist;
+                        await oneEvent(ccAllApps, 'mas:ready');
+                        const [price] = ccAllApps.prices;
                         expect(price.options.displayPlanType).to.be.true;
                     });
                 });

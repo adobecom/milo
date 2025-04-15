@@ -483,6 +483,9 @@ describe('hydrate', () => {
                 ctas: '<a is="checkout-link" data-wcs-osi="abm" class="accent" data-analytics-id="buy-now">Click me</a>',
                 tags: ['mas:term/montly', 'mas:product_code/ccsn'],
             },
+            settings: {
+                secureLabel: 'Secure Label',
+            },
         };
         merchCard.variantLayout = {
             aemFragmentMapping: CCD_SLICE_AEM_FRAGMENT_MAPPING,
