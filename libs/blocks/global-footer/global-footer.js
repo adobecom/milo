@@ -402,7 +402,6 @@ class Footer {
     return decorateGenericLogo({
       classPrefix: 'footer-logo',
       includeLabel: false,
-      analyticsValue: 'Logo',
       rawBlock: this.body.querySelector('.adobe-logo'),
     })
   }

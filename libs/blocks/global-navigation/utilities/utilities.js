@@ -683,8 +683,6 @@ export const decorateGenericLogo = ({ rawBlock, classPrefix, includeLabel = true
   const link = blockLinks.find((blockLink) => !imgRegex.test(blockLink.href)
     && !imgRegex.test(blockLink.textContent));
 
-  if (!link) return '';
-
   // Check which elements should be rendered
   const isBrandImage = rawBlock.matches(selectors.brandImageOnly);
   const renderImage = !rawBlock.matches('.no-logo');
@@ -714,6 +712,13 @@ export const decorateGenericLogo = ({ rawBlock, classPrefix, includeLabel = true
   const imageEl = renderImage
     ? toFragment`<span class="${classPrefix}-image${brandImageClass}">${getImageEl()}</span>`
     : '';
+
+  if (!link) {
+    return toFragment`
+      <a class="${classPrefix}" daa-ll="${analyticsValue}">
+        ${imageEl}
+      </a>`;
+    }
 
   // Create label element
   const labelEl = renderLabel
