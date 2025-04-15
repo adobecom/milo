@@ -1022,7 +1022,20 @@ export async function getManifestConfig(info = {}, variantOverride = false) {
   }
 
   const persData = data?.experiences?.data || data?.data || data;
-  if (!persData) return null;
+  const isMepPlaceholder = source?.[0] === 'mepPl';
+  if (!persData || (isMepPlaceholder && !persData.length)) return null;
+  if (isMepPlaceholder) {
+    const manifestConfig = {};
+    manifestConfig.placeholderData = persData;
+    manifestConfig.name = name;
+    manifestConfig.manifest = manifestPath;
+    manifestConfig.manifestUrl = manifestUrl;
+    manifestConfig.source = source;
+    manifestConfig.selectedVariantName = 'all';
+    manifestConfig.variantNames = ['all'];
+    manifestConfig.executionOrder = '1-0';
+    return manifestConfig;
+  }
   const infoTab = manifestInfo || data?.info?.data;
   const infoObj = infoTab?.reduce((acc, item) => {
     acc[item.key] = item.value;
@@ -1141,6 +1154,11 @@ export function cleanAndSortManifestList(manifests, config = getConfig()) {
     try {
       if (!manifest?.manifest) return;
       if (!manifest.manifestPath) manifest.manifestPath = normalizePath(manifest.manifest);
+      if (manifest?.source?.[0] === 'mepPl') {
+        parsePlaceholders(manifest.placeholderData, getConfig());
+        manifestObj[manifest.manifestPath] = manifest;
+        return;
+      }
       if (manifest.source && !manifest.source.includes('target')) manifest.manifest = normalizePath(manifest.manifest);
       if (manifest.manifestPath in manifestObj) {
         let fullManifest = manifestObj[manifest.manifestPath];
