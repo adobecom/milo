@@ -1,9 +1,8 @@
-import { createCheckboxArea} from './utils/checkboxes.js';
+import { createCheckboxArea } from './utils/checkboxes.js';
+import { createRedirectsArea } from './utils/redirect-inputs.js';
 
 export const NO_LOCALE_ERROR = 'No locales selected from list';
-const INPUT_LABEL_TEXT = 'Paste source and destination URLs here:';
 const OUTPUT_LABEL_TEXT = 'Localized results appear here:';
-const PROCESS_TEXT = 'Process redirects';
 const COPY_TO_CLIPBOARD = 'Copy to clipboard';
 const INSTRUCTIONS_TEXT = 'Select the locales you require by checking the checkboxes. Paste URLs copied from an excel sheet'
   + ' into the first input. Press "Process Redirects" to generate localized URLs to paste into redirects.xlsx. To copy your URLS,'
@@ -88,33 +87,29 @@ export default async function init(el) {
   const checkBoxes = await createCheckboxArea(data);
 
   // Text input area
-  const inputAreaContainer = createTag('section', { class: 'input-container' });
-  const textAreaInput = createTag('textarea', { class: 'redirects-text-area', id: 'redirects-input', name: 'redirects-input' });
-  const taiLabel = createTag('label', { class: 'io-label', for: 'redirects-input' }, INPUT_LABEL_TEXT);
-  const submitButton = createTag('button', { class: 'process-redirects' }, PROCESS_TEXT);
-  inputAreaContainer.append(taiLabel, submitButton, textAreaInput);
+  const singleInputArea = createRedirectsArea();
 
   // Text output Area
-  const outputAreaContainer = createTag('section', { class: 'output-container' });
   const textAreaOutput = createTag('textarea', { class: 'redirects-text-area', id: 'redirects-output', name: 'redirects-output', readonly: true });
   const taoLabel = createTag('label', { class: 'io-label', for: 'redirects-output' }, OUTPUT_LABEL_TEXT);
   const copyButton = createTag('button', { class: 'copy' }, COPY_TO_CLIPBOARD);
-  outputAreaContainer.append(taoLabel, copyButton, textAreaOutput);
+  const outputUiWrapper = createTag('div', {}, [taoLabel, copyButton]);
+  const outputAreaContainer = createTag('section', { class: 'output-container' }, [outputUiWrapper, textAreaOutput]);
 
-  submitButton.addEventListener('click', () => {
-    const locales = [...document.querySelectorAll("[type='checkbox']")].reduce((rdx, cb) => {
-      if (cb.checked) {
-        rdx.push(cb.id);
-      }
-      return rdx;
-    }, []);
+  // submitButton.addEventListener('click', () => {
+  //   const locales = [...document.querySelectorAll("[type='checkbox']")].reduce((rdx, cb) => {
+  //     if (cb.checked) {
+  //       rdx.push(cb.id);
+  //     }
+  //     return rdx;
+  //   }, []);
 
-    const parsedInput = parseUrlString(textAreaInput.value);
-    const redirList = generateRedirectList(parsedInput, locales);
-    const outputString = stringifyListForExcel(redirList);
+  //   const parsedInput = parseUrlString(textAreaInput.value);
+  //   const redirList = generateRedirectList(parsedInput, locales);
+  //   const outputString = stringifyListForExcel(redirList);
 
-    textAreaOutput.value = outputString;
-  });
+  //   textAreaOutput.value = outputString;
+  // });
 
   copyButton.addEventListener('click', () => {
     if (!navigator?.clipboard) return;
@@ -135,6 +130,6 @@ export default async function init(el) {
     );
   });
 
-  redirectsContainer.append(checkBoxes, inputAreaContainer, outputAreaContainer);
+  redirectsContainer.append(checkBoxes, singleInputArea, outputAreaContainer);
   el.append(header, instructions, errorSection, redirectsContainer);
 }

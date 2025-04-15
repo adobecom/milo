@@ -89,7 +89,7 @@ section .checkboxes-container {
 
 .select-all-container {
   display: flex;
-  justify-content: center;
+  justify-content: flex-end;
   border-left: 2px solid black;
   margin: 20px;
   width: 20%;
@@ -117,12 +117,6 @@ section .checkboxes-container {
   display: none;
 }
 
-.redirects-container {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  margin-bottom: 20px;
-}
-
 .redirects-container section textarea {
   grid-column: 1/3;
 }
@@ -140,4 +134,70 @@ section .checkboxes-container {
 
 .error-border {
   border: 1px solid red;
+}
+
+.single-redirects-container .redirect-input-row {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  width: 100%;
+  margin: 20px 0;
+}
+
+.single-redirects-container .redirect-input-row:nth-child(odd) {
+  background-color: #efefef;
+}
+
+.single-redirects-container .redirect-input-row label {
+  padding-right: 20px;
+  margin: 20px 0;
+}
+
+.single-redirects-container .redirect-input-row label:last-of-type {
+  margin-left: 40px;
+}
+
+.redirect-tabs {
+  display: flex;
+  margin: 20px 0;
+}
+
+.redirect-tabs button {
+  margin: 0 20px;
+}
+
+.redirect-tabs .process-redirects {
+  margin: 0 20px 0 auto;
+}
+
+.bulk-redirects-container { 
+  display: grid;
+  margin-top: 20px;
+}
+
+.bulk-redirects-container textarea {
+  margin-top: 20px;
+}
+
+.redirects-ui-area {
+  min-height: 260px;
+}
+
+.redirects-ui-area section:not(.selected) {
+  display: none;
+}
+
+.output-container > div {
+  display: flex;
+  justify-content: space-between;
+  margin: 40px 0;
+}
+
+.output-container button {
+  margin-right: 20px;
+}
+
+.output-container textarea {
+  width: 100%;
+  padding: 0;
 }
