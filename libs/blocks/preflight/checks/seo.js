@@ -4,23 +4,7 @@ import getServiceConfig from '../../../utils/service-config.js';
 const KNOWN_BAD_URLS = ['news.adobe.com'];
 const SPIDY_URL_FALLBACK = 'https://spidy.corp.adobe.com';
 
-// function checkH1s() {
-//   const h1s = document.querySelectorAll('h1');
-//   const result = { ...h1Result.value };
-//   if (h1s.length === 1) {
-//     result.icon = pass;
-//     result.description = 'Only one H1 on the page.';
-//   } else {
-//     result.icon = fail;
-//     if (h1s.length > 1) {
-//       result.description = 'Reason: More than one H1 on the page.';
-//     } else {
-//       result.description = 'Reason: No H1 on the page.';
-//     }
-//   }
-//   h1Result.value = result;
-//   return result.icon;
-// }
+const linksCache = new Map();
 
 export function checkH1s() {
   const h1s = document.querySelectorAll('h1');
@@ -45,23 +29,6 @@ export function checkH1s() {
   };
 }
 
-// async function checkTitle() {
-//   const titleSize = document.title.replace(/\s/g, '').length;
-//   const result = { ...titleResult.value };
-//   if (titleSize < 15) {
-//     result.icon = fail;
-//     result.description = 'Reason: Title size is too short.';
-//   } else if (titleSize > 70) {
-//     result.icon = fail;
-//     result.description = 'Reason: Title size is too long.';
-//   } else {
-//     result.icon = pass;
-//     result.description = 'Title size is good.';
-//   }
-//   titleResult.value = result;
-//   return result.icon;
-// }
-
 export function checkTitle() {
   const titleSize = document.title.replace(/\s/g, '').length;
   let status;
@@ -84,38 +51,6 @@ export function checkTitle() {
     description,
   };
 }
-
-// async function checkCanon() {
-//   const result = { ...canonResult.value };
-//   const canon = document.querySelector("link[rel='canonical']");
-//   if (!canon) {
-//     result.icon = pass;
-//     result.description = 'Canonical is self-referencing.';
-//   } else {
-//     const { href } = canon;
-//     try {
-//       const resp = await fetch(href, { method: 'HEAD' });
-//       if (!resp.ok) {
-//         result.icon = fail;
-//         result.description = 'Reason: Error with canonical reference.';
-//       }
-//       if (resp.ok) {
-//         if (resp.status >= 300 && resp.status <= 308) {
-//           result.icon = fail;
-//           result.description = 'Reason: Canonical reference redirects.';
-//         } else {
-//           result.icon = pass;
-//           result.description = 'Canonical referenced is valid.';
-//         }
-//       }
-//     } catch (e) {
-//       result.icon = limbo;
-//       result.description = 'Canonical cannot be crawled.';
-//     }
-//   }
-//   canonResult.value = result;
-//   return result.icon;
-// }
 
 export async function checkCanon() {
   const canon = document.querySelector("link[rel='canonical']");
@@ -281,14 +216,12 @@ function compareResults(result, link) {
   return true;
 }
 
-export async function checkLinks(linksChecked) {
-  // Do not re-check if the page has already been checked
-  if (linksChecked) {
+export async function checkLinks(urlHash) {
+  if (urlHash && linksCache.has(urlHash)) {
+    const cachedResult = linksCache.get(urlHash);
     return {
-      title: SEO_TITLES.Links,
-      status: STATUS.EMPTY,
-      description: 'Links check skipped as already performed.',
-      details: { badLinks: [] },
+      ...cachedResult,
+      details: { ...cachedResult.details, linksChecked: true },
     };
   }
 
@@ -356,15 +289,21 @@ export async function checkLinks(linksChecked) {
     : 'Links are valid.';
 
   // Build the result display object
-  return {
+  const result = {
     title: SEO_TITLES.Links,
     status,
     description,
-    details: { badLinks, linksChecked: true },
+    details: { badLinks },
   };
+
+  if (urlHash) {
+    linksCache.set(urlHash, result);
+  }
+
+  return result;
 }
 
-export function runChecks(linksChecked = false) {
+export function runChecks(url) {
   return [
     checkH1s(),
     checkTitle(),
@@ -372,6 +311,6 @@ export function runChecks(linksChecked = false) {
     checkDescription(),
     checkBody(),
     checkLorem(),
-    checkLinks(linksChecked),
+    checkLinks(url),
   ];
 }
