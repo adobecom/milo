@@ -344,10 +344,13 @@ const BasicsPanel = ({ tagsData }) => {
     countryTags['caas:country/gr'] = countryTags['caas:country/gr_en'];
     delete countryTags['caas:country/gr_en'];
   }
+  
+  const sortedLanguages = Object.fromEntries(Object.entries(languageTags).sort());
+  const sortedCountries = Object.fromEntries(Object.entries(countryTags).sort());
 
   const countryLangOptions = html`
-    <${Select} options=${languageTags} prop="language" label="Language" />  
-    <${Select} prop="country" options=${countryTags} label="Country(s)" />`;
+    <${Select} options=${sortedLanguages} prop="language" label="Language" />  
+    <${Select} prop="country" options=${sortedCountries} label="Country(s)" />`;
 
   const partialLoadOptions = html`
     <${Input} label="Partial Load Count" prop="partialLoadCount" type="number" />`;
