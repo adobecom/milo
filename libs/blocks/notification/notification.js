@@ -109,7 +109,11 @@ function addCloseAction(el, btn) {
     document.dispatchEvent(new CustomEvent('milo:sticky:closed'));
 
     setTimeout(() => {
-      if (liveRegion) liveRegion.remove();
+      const focusableElements = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
+      const allFocusable = [...document.querySelectorAll(focusableElements)];
+      const nextFocusable = allFocusable[allFocusable.indexOf(btn) + 1];
+      liveRegion?.remove();
+      if (nextFocusable) nextFocusable.focus();
     }, 2500);
   });
 }
