@@ -67,11 +67,17 @@ function changeTabs(e) {
   }
   const parent = target.parentNode;
   const content = parent.parentNode.parentNode.lastElementChild;
-  const targetContent = content.querySelector(`#${target.getAttribute('aria-controls')}`);
   const tabsBlock = target.closest('.tabs');
   const blockId = tabsBlock.id;
   const isRadio = target.getAttribute('role') === 'radio';
   const attributeName = isRadio ? 'aria-checked' : 'aria-selected';
+
+  let targetContent;
+  if (isRadio) {
+    targetContent = content.querySelector(`#${target.getAttribute('data-control-id')}`);
+  } else {
+    targetContent = content.querySelector(`#${target.getAttribute('aria-controls')}`);
+  }
 
   parent
     .querySelectorAll(`[${attributeName}="true"][data-block-id="${blockId}"]`)
@@ -87,7 +93,7 @@ function changeTabs(e) {
   }
   scrollTabIntoView(target);
   content
-    .querySelectorAll(`[role="tabpanel"][data-block-id="${blockId}"]`)
+    .querySelectorAll(`.tabpanel[data-block-id="${blockId}"]`)
     .forEach((p) => p.setAttribute('hidden', true));
   targetContent.removeAttribute('hidden');
   if (tabsBlock.classList.contains('stacked-mobile')) scrollStackedMobile(targetContent);
@@ -278,23 +284,25 @@ const init = (block) => {
   const tabListContainer = tabList.querySelector(':scope > div');
   tabListContainer.classList.add('tab-list-container');
   const tabListLabel = config.pretext;
-  tabList.setAttribute('aria-label', tabListLabel);
+  if (tabListLabel)tabList.setAttribute('aria-label', tabListLabel);
+
   const tabListItems = rows[0].querySelectorAll(':scope li');
   if (tabListItems) {
     const pillVariant = [...block.classList].find((variant) => variant.includes('pill'));
     const btnClass = pillVariant ? handlePillSize(pillVariant) : 'heading-xs';
     tabListItems.forEach((item, i) => {
       const tabName = config.id ? i + 1 : getStringKeyName(item.textContent);
+      const controlId = `tab-panel-${tabId}-${tabName}`;
       const tabBtnAttributes = {
         role: isRadio ? 'radio' : 'tab',
         class: btnClass,
         id: `tab-${tabId}-${tabName}`,
         tabindex: '0',
         [isRadio ? 'aria-checked' : 'aria-selected']: (i === 0) ? 'true' : 'false',
-        'aria-controls': `tab-panel-${tabId}-${tabName}`,
         'data-block-id': `tabs-${tabId}`,
         'daa-state': 'true',
         'daa-ll': `tab-${tabId}-${tabName}`,
+        ...(isRadio ? { 'data-control-id': controlId } : { 'aria-controls': controlId }),
       };
       const tabBtn = createTag('button', tabBtnAttributes);
       tabBtn.innerText = item.textContent;
@@ -302,7 +310,7 @@ const init = (block) => {
 
       const tabContentAttributes = {
         id: `tab-panel-${tabId}-${tabName}`,
-        role: 'tabpanel',
+        ...(isRadio ? { } : { role: 'tabpanel' }),
         class: 'tabpanel',
         'aria-labelledby': `tab-${tabId}-${tabName}`,
         'data-block-id': `tabs-${tabId}`,
