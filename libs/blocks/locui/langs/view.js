@@ -81,7 +81,7 @@ function Language({ item, idx }) {
         ${(item.done > 0 || item.status === 'cancelled') && html`
         <div>
           <p class=locui-project-label>${item.statusText}</p>
-          ${item.status !== 'cancelled' && html`
+          ${item.done > 0 && html`
           <div class=locui-project-name-totals>
             <h3 class=locui-subproject-name>${item.done}</h3>
             ${item.total > 0 && html`
