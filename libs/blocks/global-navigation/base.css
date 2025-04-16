@@ -126,11 +126,11 @@ header.new-nav .feds-nav > section.feds-navItem > .feds-popup .has-subheader .fe
 
 .feds-navLink--gray-gradient {
   display: none;
+  background: #eaeaea;
 }
 
 .global-navigation.new-nav .feds-navLink--gray-gradient {
   display: block;
-  background: #eaeaea;
 }
 
 .feds-navLink-image,
