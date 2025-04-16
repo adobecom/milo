@@ -694,6 +694,7 @@ picture:has(.picture-meta) {
   transform: translateX(-50%);
 }
 
+.brick .background .picture-meta,
 .brick .background .picture-meta > div {
   height: unset;
   padding: unset;
@@ -706,6 +707,17 @@ picture:has(.picture-meta) {
 
 .brick.split.row .foreground .brick-media picture:has(.picture-meta) img {
   width: 100%;
+}
+
+.brick:has(.background) .foreground .icon-area .picture-meta {
+  top: unset;
+  bottom: -5px;
+}
+
+.brick .icon-stack-area .picture-meta {
+  flex-direction: row;
+  width: max-content;
+  column-gap: 5px;
 }
 
 .hero-marquee.media-cover picture:has(.picture-meta) {
