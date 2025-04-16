@@ -195,7 +195,7 @@ describe('Checkbox Area Component', () => {
   it('unchecks all checkboxes when switching tabs', async () => {
     const selectButton = checkboxComponent.querySelector('.select');
     const tabs = checkboxComponent.querySelectorAll('.checkbox-tab');
-    const firstTab = tabs[0];  // English tab
+    const firstTab = tabs[0]; // English tab
     const secondTab = tabs[1]; // Translated tab
 
     // Select all checkboxes in first tab
