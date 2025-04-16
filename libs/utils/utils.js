@@ -1463,6 +1463,7 @@ export async function loadDeferred(area, blocks, config) {
     const { default: loadDNStatus } = await import('../features/dynamic-navigation/status.js');
     loadDNStatus();
   }
+  console.log('Done loading the deferred');
 }
 
 function initSidekick() {
@@ -1597,6 +1598,7 @@ async function processSection(section, config, isDoc) {
 }
 
 export async function loadArea(area = document) {
+  console.log('We are loading the area');
   const isDoc = area === document;
 
   if (isDoc) {
@@ -1633,6 +1635,7 @@ export async function loadArea(area = document) {
   if (isDoc) await documentPostSectionLoading(config);
 
   await loadDeferred(area, areaBlocks, config);
+  console.log('Done loading the area');
 }
 
 export const utf8ToB64 = (str) => window.btoa(unescape(encodeURIComponent(str)));
