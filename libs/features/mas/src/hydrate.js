@@ -185,10 +185,10 @@ export function processDescription(fields, merchCard, mapping) {
 export function processStockOffersAndSecureLabel(fields, merchCard, aemFragmentMapping, settings) {
   // for Stock Checkbox, presence flag is set on the card, label and osi for an offer are set in settings
   if (fields.showStockCheckbox && aemFragmentMapping.stockOffer) {
-    merchCard.setAttribute('checkbox-label', settings.stockCheckboxLabel);
-    merchCard.setAttribute('stock-offer-osis', settings.stockOfferOsis);
+    merchCard.setAttribute('checkbox-label', settings?.stockCheckboxLabel ? settings.stockCheckboxLabel : '');
+    merchCard.setAttribute('stock-offer-osis', settings?.stockOfferOsis ? settings.stockOfferOsis : '');
   }
-  if (settings.secureLabel && aemFragmentMapping.secureLabel) {
+  if (settings?.secureLabel && aemFragmentMapping?.secureLabel) {
     merchCard.setAttribute('secure-label', settings.secureLabel);
   }
 }
@@ -445,15 +445,9 @@ export function cleanup(merchCard) {
 }
 
 export async function hydrate(fragment, merchCard) {
-    const { id, fields } = fragment;
+    const { id, fields, settings } = fragment;
     const { variant } = fields;
     if (!variant) throw new Error (`hydrate: no variant found in payload ${id}`);
-    // temporary hardcode for plans. this data will be coming from settings (MWPW-166756)
-    const settings = {
-      stockCheckboxLabel: 'Add a 30-day free trial of Adobe Stock.*', // to be {{stock-checkbox-label}}
-      stockOfferOsis: '',
-      secureLabel: 'Secure transaction' // to be {{secure-transaction}}
-    };
     cleanup(merchCard);
     merchCard.id ??= fragment.id;
 
