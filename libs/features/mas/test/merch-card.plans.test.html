@@ -108,7 +108,7 @@
                     beforeEach(() => {
                         main.innerHTML = '';
                     });
-                    it('should render tax text & plans type under price', () => {
+                    it.only('should render tax text & plans type under price', () => {
                         const [masCommerceService, photoshop] =
                             getTemplateContent('photoshop');
                         main.append(masCommerceService, photoshop);

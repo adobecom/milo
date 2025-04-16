@@ -91,7 +91,7 @@ styles.innerHTML = `
     --consonant-merch-card-heading-color: var(--spectrum-gray-800, var(--merch-color-grey-80));
     --consonant-merch-card-heading-xs-color: var(--consonant-merch-card-heading-color);
     --consonant-merch-card-price-color: #222222;
-    --consonant-merch-card-price-sub-text-color: #2C2C2C;
+    --consonant-merch-card-price-sub-text-color: var(--merch-color-grey-80);
     --consonant-merch-card-heading-xxxs-color: #131313;
     --consonant-merch-card-body-xxs-color: #292929;
 
