@@ -10,7 +10,7 @@ const tabColor = {};
 const linkedTabs = {};
 
 const isTabInTabListView = (tab) => {
-  const tabList = tab.closest('[role="tablist"]');
+  const tabList = tab.closest('[role="tablist"], [role="radiogroup"]');
   const tabRect = tab.getBoundingClientRect();
   const tabListRect = tabList.getBoundingClientRect();
 
@@ -70,15 +70,18 @@ function changeTabs(e) {
   const targetContent = content.querySelector(`#${target.getAttribute('aria-controls')}`);
   const tabsBlock = target.closest('.tabs');
   const blockId = tabsBlock.id;
+  const isRadio = target.getAttribute('role') === 'radio';
+  const attributeName = isRadio ? 'aria-checked' : 'aria-selected';
+
   parent
-    .querySelectorAll(`[aria-selected="true"][data-block-id="${blockId}"]`)
+    .querySelectorAll(`[${attributeName}="true"][data-block-id="${blockId}"]`)
     .forEach((t) => {
-      t.setAttribute('aria-selected', false);
+      t.setAttribute(attributeName, false);
       if (Object.keys(tabColor).length) {
         t.removeAttribute('style', 'backgroundColor');
       }
     });
-  target.setAttribute('aria-selected', true);
+  target.setAttribute(attributeName, true);
   if (tabColor[targetId]) {
     target.style.backgroundColor = tabColor[targetId];
   }
@@ -119,7 +122,7 @@ function configTabs(config, rootElem) {
 
 function initTabs(elm, config, rootElem) {
   const tabs = elm.querySelectorAll('[role="tab"], [role="radio"]');
-  const tabLists = elm.querySelectorAll('[role="tablist"]');
+  const tabLists = elm.querySelectorAll('[role="tablist"], [role="radiogroup"]');
   let tabFocus = 0;
 
   tabLists.forEach((tabList) => {
@@ -267,10 +270,11 @@ const init = (block) => {
   const tabContent = createTag('div', { class: 'tab-content' }, tabContentContainer);
   block.append(tabContent);
 
+  const isRadio = block.classList.contains('radio');
   // Tab List
   const tabList = rows[0];
   tabList.classList.add('tabList');
-  tabList.setAttribute('role', 'tablist');
+  tabList.setAttribute('role', isRadio ? 'radiogroup' : 'tablist');
   const tabListContainer = tabList.querySelector(':scope > div');
   tabListContainer.classList.add('tab-list-container');
   const tabListLabel = config.pretext;
@@ -282,11 +286,11 @@ const init = (block) => {
     tabListItems.forEach((item, i) => {
       const tabName = config.id ? i + 1 : getStringKeyName(item.textContent);
       const tabBtnAttributes = {
-        role: block.classList.contains('radio') ? 'radio' : 'tab',
+        role: isRadio ? 'radio' : 'tab',
         class: btnClass,
         id: `tab-${tabId}-${tabName}`,
         tabindex: '0',
-        'aria-selected': (i === 0) ? 'true' : 'false',
+        [isRadio ? 'aria-checked' : 'aria-selected']: (i === 0) ? 'true' : 'false',
         'aria-controls': `tab-panel-${tabId}-${tabName}`,
         'data-block-id': `tabs-${tabId}`,
         'daa-state': 'true',
@@ -317,7 +321,7 @@ const init = (block) => {
   const paddleRight = createTag('button', { class: 'paddle paddle-right', disabled: '', 'aria-hidden': true, 'aria-label': 'Scroll tabs to right' }, PADDLE);
   tabList.insertAdjacentElement('afterend', paddleRight);
   block.prepend(paddleLeft);
-  initPaddles(tabList, paddleLeft, paddleRight, block.classList.contains('radio'));
+  initPaddles(tabList, paddleLeft, paddleRight, isRadio);
 
   // Tab Sections
   const allSections = Array.from(rootElem.querySelectorAll('div.section'));
