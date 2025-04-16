@@ -340,7 +340,7 @@
   display: none;
 }
 
-.visibility-hidden {
+.notification-visibility-hidden {
   position: absolute;
   width: 0;
   height: 0;

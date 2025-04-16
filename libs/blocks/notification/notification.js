@@ -91,7 +91,7 @@ function addCloseAction(el, btn) {
     if (btn.nodeName === 'A') e.preventDefault();
 
     const liveRegion = createTag('div', {
-      class: 'visibility-hidden',
+      class: 'notification-visibility-hidden',
       'aria-live': 'assertive',
       'aria-atomic': 'true',
       role: 'status',
