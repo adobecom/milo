@@ -188,7 +188,7 @@ export function processStockOffersAndSecureLabel(fields, merchCard, aemFragmentM
     merchCard.setAttribute('checkbox-label', settings.stockCheckboxLabel);
     merchCard.setAttribute('stock-offer-osis', settings.stockOfferOsis);
   }
-  if (settings.secureLabel && aemFragmentMapping.secureLabel) {
+  if (fields.showSecureLabel && settings.secureLabel && aemFragmentMapping.secureLabel) {
     merchCard.setAttribute('secure-label', settings.secureLabel);
   }
 }
@@ -456,6 +456,8 @@ export async function hydrate(fragment, merchCard) {
     };
     cleanup(merchCard);
     merchCard.id ??= fragment.id;
+
+    if (id === 'a8bc3d90-ff5f-4beb-8e23-04e4d22ac37e') console.log(fields);
 
 
     merchCard.removeAttribute('background-image');
