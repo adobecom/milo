@@ -24,13 +24,13 @@ const SUBDOMAIN_OPTIONS = {
 const TARGETSETTING_OPTIONS = {
   on: { label: 'On', value: 'on' },
   off: { label: 'Off', value: 'off' },
+  postLCP: { label: 'Post LCP', value: 'postLCP' },
 };
 const MANIFESTSRC_OPTIONS = {
+  personalization: { label: 'Personalization', value: 'pzn' },
   promo: { label: 'Promo', value: 'promo' },
   target: { label: 'Target', value: 'target' },
   ajo: { label: 'AJO', value: 'ajo' },
-  postLCP: { label: 'Post LCP', value: 'postLCP' },
-  personalization: { label: 'Personalization', value: 'pzn' },
 };
 
 export const getLocalStorageFilter = () => {
@@ -294,8 +294,8 @@ function createSearchField() {
     'div',
     { id: 'mmm-search-filter-container', class: 'mmm-form-container' },
     `<div>
-      <label for="mmm-search-filter">Filter (search for the full or partial PROD page URL, manifest URL, manifest experience name or Target activity name):</label>
-      <textarea id="mmm-search-filter" type="text" name="mmm-search-filter" class="text-field-input" placeholder="www.adobe.com/creativecloud.html\ntest_campaign4/test-campaign4-business.json\nDC1031"></textarea>
+      <label for="mmm-search-filter">Filter: search for a full or partial page URL (production only), manifest URL, manifest experience name or Target activity name:</label>
+      <textarea id="mmm-search-filter" type="text" name="mmm-search-filter" class="text-field-input" placeholder="https://www.adobe.com/creativecloud.html\n/test_campaign4/test-campaign4-business.json\nDC1031"></textarea>
     </div>`,
   );
   searchContainer.append(searchForm);

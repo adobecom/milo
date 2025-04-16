@@ -293,7 +293,7 @@ dd .mep-popup-header .mep-close {
 .mmm-form-container textarea {
   padding: 1rem;
   width: 95%;
-  min-height: 2rem;
+  min-height: 3rem;
   resize: vertical;
   overflow: auto;
 }
