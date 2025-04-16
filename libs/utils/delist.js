@@ -15,36 +15,28 @@ async function getJson(url) {
   }
 }
 
-export default async function delist(locale) {
-  const url = `${locale.contentRoot}/docs/library/blocks/block-notifications.json`;
+export default async function delist(base) {
+  const url = `${base}/block-notifications.json`;
   const json = await getJson(url);
-  const blocks = [];
-  const tags = [];
-  const urls = [];
+  if (!json) return;
 
-  json.data.forEach((item) => {
-    blocks.push(`.${item.name}`);
-    tags.push(item.tag);
-    urls.push(item.url);
-  });
-
-  const arraysObject = { blocks, tags, urls };
-  const blockNotification = document.querySelectorAll(arraysObject.blocks);
-
-  blockNotification.forEach((block, idx) => {
-    const tagText = arraysObject.tags[idx] || 'delisted';
-    const alertDOM = document.createElement('div');
-
-    block.classList.add('block-alert');
-    alertDOM.textContent = tagText;
-    if (arraysObject.urls[idx]) {
-      const alertLink = document.createElement('a');
-      alertLink.href = arraysObject.urls[idx];
-      alertLink.target = '_blank';
-      alertLink.innerHTML = INFO_ICON;
-      alertDOM.appendChild(alertLink);
-    }
-    alertDOM.classList.add('alert-tag');
-    block.appendChild(alertDOM);
+  const { data } = json;
+  data.forEach((item) => {
+    const foundBlocks = document.querySelectorAll(`.${item.name}`);
+    foundBlocks.forEach((block) => {
+      block.classList.add('block-alert');
+      const alertLabel = document.createElement('div');
+      alertLabel.classList.add('alert-label');
+      alertLabel.textContent = item.label || 'delisted';
+      if (item.documentation) {
+        const alertLink = document.createElement('a');
+        alertLink.href = item.documentation;
+        alertLink.target = '_blank';
+        alertLink.title = `View ${item.name} ${alertLabel.textContent} documentation`;
+        alertLink.innerHTML = INFO_ICON;
+        alertLabel.appendChild(alertLink);
+      }
+      block.appendChild(alertLabel);
+    });
   });
 }
