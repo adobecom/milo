@@ -1598,44 +1598,46 @@ async function processSection(section, config, isDoc) {
 }
 
 export async function loadArea(area = document) {
-  console.log('We are loading the area');
   const isDoc = area === document;
+  console.log('We are NOT loading the area');
 
-  if (isDoc) {
-    await checkForPageMods();
-    appendHtmlToCanonicalUrl();
-    appendSuffixToTitles();
-  }
-  const config = getConfig();
-  if (!localeToLanguageMap && !siteLanguages && (config.languages || hasLanguageLinks(area))) {
-    await loadLanguageConfig();
-  }
+  // TODO: check if we're already loaded
 
-  if (isDoc) {
-    decorateDocumentExtras();
-  }
+  // if (isDoc) {
+  //   await checkForPageMods();
+  //   appendHtmlToCanonicalUrl();
+  //   appendSuffixToTitles();
+  // }
+  // const config = getConfig();
+  // if (!localeToLanguageMap && !siteLanguages && (config.languages || hasLanguageLinks(area))) {
+  //   await loadLanguageConfig();
+  // }
 
-  const sections = decorateSections(area, isDoc);
+  // if (isDoc) {
+  //   decorateDocumentExtras();
+  // }
 
-  const areaBlocks = [];
-  for (const section of sections) {
-    const sectionBlocks = await processSection(section, config, isDoc);
-    areaBlocks.push(...sectionBlocks);
+  // const sections = decorateSections(area, isDoc);
 
-    areaBlocks.forEach((block) => {
-      if (!block.className.includes('metadata')) block.dataset.block = '';
-    });
-  }
+  // const areaBlocks = [];
+  // for (const section of sections) {
+  //   const sectionBlocks = await processSection(section, config, isDoc);
+  //   areaBlocks.push(...sectionBlocks);
 
-  const currentHash = window.location.hash;
-  if (currentHash) {
-    scrollToHashedElement(currentHash);
-  }
+  //   areaBlocks.forEach((block) => {
+  //     if (!block.className.includes('metadata')) block.dataset.block = '';
+  //   });
+  // }
 
-  if (isDoc) await documentPostSectionLoading(config);
+  // const currentHash = window.location.hash;
+  // if (currentHash) {
+  //   scrollToHashedElement(currentHash);
+  // }
 
-  await loadDeferred(area, areaBlocks, config);
-  console.log('Done loading the area');
+  // if (isDoc) await documentPostSectionLoading(config);
+
+  // await loadDeferred(area, areaBlocks, config);
+  // console.log('Done loading the area');
 }
 
 export const utf8ToB64 = (str) => window.btoa(unescape(encodeURIComponent(str)));
