@@ -46,7 +46,8 @@ function createBulkRedirectsArea() {
 }
 
 export function createRedirectsArea() {
-  const singleTab = createTag('button', { class: 'single-tab selected', 'data-toggles-content': 'single-redirects-container' }, 'Single Redirects');
+  const selectedClassName = 'selected';
+  const singleTab = createTag('button', { class: `single-tab ${selectedClassName}`, 'data-toggles-content': 'single-redirects-container' }, 'Single Redirects');
   const bulkTab = createTag('button', { class: 'bulk-tab', 'data-toggles-content': 'bulk-redirects-container' }, 'Bulk Redirects');
   const submitButton = createTag('button', { class: 'process-redirects' }, PROCESS_TEXT);
   const tabsHolder = createTag('div', { class: 'redirect-tabs' }, [singleTab, bulkTab, submitButton]);
@@ -59,12 +60,12 @@ export function createRedirectsArea() {
   tabsHolder.querySelectorAll('button:not(.process-redirects)').forEach((button) => {
     button.addEventListener('click', (e) => {
       const currentButton = e.currentTarget;
-      tabsHolder.querySelector('.selected').classList.remove('selected');
-      currentButton.classList.add('selected');
+      tabsHolder.querySelector(`.${selectedClassName}`).classList.remove(selectedClassName);
+      currentButton.classList.add(selectedClassName);
       const areaToShowClass = currentButton.dataset.togglesContent;
 
-      uiArea.querySelector('section.selected').classList.remove('selected');
-      uiArea.querySelector(`.${areaToShowClass}`).classList.add('selected');
+      uiArea.querySelector(`section.${selectedClassName}`).classList.remove(selectedClassName);
+      uiArea.querySelector(`.${areaToShowClass}`).classList.add(selectedClassName);
     });
   });
 
