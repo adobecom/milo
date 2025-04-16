@@ -76,6 +76,8 @@ function setHideAtObserver(el) {
   if (!trigger) return;
 
   const handleScroll = () => {
+    // const parentElement = el.closest('.section');
+    // parentElement.classList.toggle('hide-sticky-section', trigger.getBoundingClientRect().top < window.innerHeight);
     el.style.display = trigger.getBoundingClientRect().top < window.innerHeight ? 'none' : 'block';
   };
 
@@ -239,5 +241,5 @@ export default async function init(el) {
     decorateMultiViewport(el);
   }
 
-  if (el.classList.contains('.ace1068')) setHideAtObserver(el);
+  if (el.classList.contains('ace1068')) setHideAtObserver(el);
 }
