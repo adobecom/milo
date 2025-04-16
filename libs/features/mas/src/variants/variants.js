@@ -43,7 +43,7 @@ registerVariant(
     MiniCompareChart.variantStyle,
 );
 registerVariant('plans', Plans, PLANS_AEM_FRAGMENT_MAPPING, Plans.variantStyle);
-registerVariant('plans-edu', Plans, PLANS_AEM_FRAGMENT_MAPPING, Plans.variantStyle);
+registerVariant('plans-students', Plans, PLANS_AEM_FRAGMENT_MAPPING, Plans.variantStyle);
 registerVariant('product', Product, null, Product.variantStyle);
 registerVariant('segment', Segment, null, Segment.variantStyle);
 registerVariant(

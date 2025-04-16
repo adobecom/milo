@@ -3,7 +3,7 @@ export const CSS = `
 :root {
     --consonant-merch-card-plans-width: 300px;
     --consonant-merch-card-plans-icon-size: 40px;
-    --consonant-merch-card-plans-edu-width: 568px;
+    --consonant-merch-card-plans-students-width: 568px;
 }
 
 merch-card[variant^="plans"] {
@@ -11,8 +11,8 @@ merch-card[variant^="plans"] {
     width: var(--consonant-merch-card-plans-width);
 }
 
-merch-card[variant="plans-edu"] {
-    width: var(--consonant-merch-card-plans-edu-width);
+merch-card[variant="plans-students"] {
+    width: var(--consonant-merch-card-plans-students-width);
 }
 
 merch-card[variant^="plans"] [slot="icons"] {
@@ -106,9 +106,9 @@ merch-card[variant^="plans"] [slot="footer"] a {
         width: 100%;
     }
 
-    merch-card[variant="plans-edu"] {
+    merch-card[variant="plans-students"] {
         min-width: var(--consonant-merch-card-plans-width);
-        max-width: var(--consonant-merch-card-plans-edu-width);
+        max-width: var(--consonant-merch-card-plans-students-width);
         width: 100%;
     }
 }

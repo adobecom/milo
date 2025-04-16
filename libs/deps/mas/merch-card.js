@@ -974,7 +974,7 @@ merch-card .footer-row-cell:nth-child(8) {
 :root {
     --consonant-merch-card-plans-width: 300px;
     --consonant-merch-card-plans-icon-size: 40px;
-    --consonant-merch-card-plans-edu-width: 568px;
+    --consonant-merch-card-plans-students-width: 568px;
 }
 
 merch-card[variant^="plans"] {
@@ -982,8 +982,8 @@ merch-card[variant^="plans"] {
     width: var(--consonant-merch-card-plans-width);
 }
 
-merch-card[variant="plans-edu"] {
-    width: var(--consonant-merch-card-plans-edu-width);
+merch-card[variant="plans-students"] {
+    width: var(--consonant-merch-card-plans-students-width);
 }
 
 merch-card[variant^="plans"] [slot="icons"] {
@@ -1077,9 +1077,9 @@ merch-card[variant^="plans"] [slot="footer"] a {
         width: 100%;
     }
 
-    merch-card[variant="plans-edu"] {
+    merch-card[variant="plans-students"] {
         min-width: var(--consonant-merch-card-plans-width);
-        max-width: var(--consonant-merch-card-plans-edu-width);
+        max-width: var(--consonant-merch-card-plans-students-width);
         width: 100%;
     }
 }
@@ -1217,11 +1217,11 @@ merch-card[variant^="plans"]:not([size]) {
         padding: 2px 10px 3px;
     }
     
-    :host([variant='plans-edu']) {
+    :host([variant='plans-students']) {
         min-height: unset;
     }
     
-    :host([variant='plans-edu']) .body {
+    :host([variant='plans-students']) .body {
         max-width: none;
     }    
   `);import{html as Lt,css as $e}from"../lit-all.min.js";var he=`
@@ -1439,7 +1439,7 @@ merch-card[variant="special-offers"] span[is="inline-price"][data-template="stri
         :host([variant='special-offers'].center) {
             text-align: center;
         }
-    `);var Ot=new Map,v=(o,e,t=null,r=null)=>{Ot.set(o,{class:e,fragmentMapping:t,style:r})};v("catalog",G,_t,G.variantStyle);v("image",bt);v("inline-heading",vt);v("mini-compare-chart",Y,null,Y.variantStyle);v("plans",L,yt,L.variantStyle);v("plans-edu",L,yt,L.variantStyle);v("product",P,null,P.variantStyle);v("segment",j,null,j.variantStyle);v("special-offers",K,zt,K.variantStyle);var $t=(o,e=!1)=>{let t=Ot.get(o.variant);if(!t)return e?void 0:new P(o);let{class:r,style:a}=t;if(a){let n=new CSSStyleSheet;n.replaceSync(a.cssText),o.shadowRoot.adoptedStyleSheets.push(n)}return new r(o)};function ge(o){return Ot.get(o)?.fragmentMapping}var ue=document.createElement("style");ue.innerHTML=`
+    `);var Ot=new Map,v=(o,e,t=null,r=null)=>{Ot.set(o,{class:e,fragmentMapping:t,style:r})};v("catalog",G,_t,G.variantStyle);v("image",bt);v("inline-heading",vt);v("mini-compare-chart",Y,null,Y.variantStyle);v("plans",L,yt,L.variantStyle);v("plans-students",L,yt,L.variantStyle);v("product",P,null,P.variantStyle);v("segment",j,null,j.variantStyle);v("special-offers",K,zt,K.variantStyle);var $t=(o,e=!1)=>{let t=Ot.get(o.variant);if(!t)return e?void 0:new P(o);let{class:r,style:a}=t;if(a){let n=new CSSStyleSheet;n.replaceSync(a.cssText),o.shadowRoot.adoptedStyleSheets.push(n)}return new r(o)};function ge(o){return Ot.get(o)?.fragmentMapping}var ue=document.createElement("style");ue.innerHTML=`
 :root {
     --consonant-merch-card-detail-font-size: 12px;
     --consonant-merch-card-detail-font-weight: 500;

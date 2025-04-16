@@ -180,11 +180,11 @@ export class Plans extends VariantLayout {
         padding: 2px 10px 3px;
     }
     
-    :host([variant='plans-edu']) {
+    :host([variant='plans-students']) {
         min-height: unset;
     }
     
-    :host([variant='plans-edu']) .body {
+    :host([variant='plans-students']) .body {
         max-width: none;
     }    
   `;
