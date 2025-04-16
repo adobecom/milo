@@ -281,8 +281,10 @@ export default async function init(el) {
 
   // in case of search literals being fragments, data is marked with a data-path attribute,
   // and shallower
-  const literalsEl = el.lastElementChild?.firstElementChild?.getAttribute('data-path') !== null
-    ? el.lastElementChild : el.lastElementChild?.firstElementChild;
+  let literalsEl = el.lastElementChild;
+  if (el.lastElementChild?.firstElementChild?.getAttribute('data-path')) {
+    literalsEl = el.lastElementChild.querySelector('p').parentElement;
+  }
   // parse literals
   const literalSlots = [];
   if (literalsEl && FILTER_REGEX.test(literalsEl.querySelector('u')?.innerText)) {
