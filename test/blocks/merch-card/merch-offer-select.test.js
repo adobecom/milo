@@ -155,6 +155,27 @@ describe('Merch quantity select', () => {
   });
 });
 
+describe('Merch quantity select: link approach', () => {
+  before(async () => {
+    mockIms();
+    await mockFetch();
+    await initService(true);
+    document.body.innerHTML = await readMockText('/test/blocks/merch-card/mocks/selection-cards.html');
+  });
+
+  after(() => {
+    unmockIms();
+    unmockFetch();
+  });
+
+  it('Should render quantity select with link approach', async () => {
+    const merchCard = await initCard(document.querySelector('.quantity-select-link-approach'));
+    await delay(200);
+    const quantitySelect = merchCard.querySelector('merch-quantity-select');
+    expect(quantitySelect).to.exist;
+  });
+});
+
 describe('Merch quantity select: twp', () => {
   before(async () => {
     mockIms();
