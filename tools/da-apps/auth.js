@@ -2,6 +2,7 @@ const ORG_MAP = {
   'da-bacom': 'DA BACOM',
   'da-bacom-blog': 'DA BACOM BLOG',
   'da-cc-sandbox': 'DA BACOM',
+  'da-gwp-playground': 'DA GWP PLAYGROUND',
 };
 
 (async function init() {
