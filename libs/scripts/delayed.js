@@ -108,6 +108,17 @@ export const addRUMCampaignTrackingParameters = ({ sampleRUM }) => {
   });
 };
 
+export const loadPreflightResults = async () => {
+  const sk = document.querySelector('aem-sidekick, helix-sidekick');
+  if (!sk) return;
+
+  const { getPreflightResults } = await import('../blocks/preflight/checks/preflightApi.js');
+  await getPreflightResults();
+
+  const { default: showPreflightNotification } = await import('../utils/preflight-notification.js');
+  await showPreflightNotification();
+};
+
 /**
  * Executes everything that happens a lot later, without impacting the user experience.
  */
@@ -132,6 +143,7 @@ const loadDelayed = ([
     } else {
       resolve(null);
     }
+    loadPreflightResults();
     import('../utils/samplerum.js').then(({ sampleRUM }) => {
       sampleRUM();
       addRUMCampaignTrackingParameters({ sampleRUM });
