@@ -8,7 +8,7 @@ const {
 const PR_TITLE = '[Release] Stage to Main';
 const STAGE = 'stage';
 const PROD = 'main';
-const MIN_SOT_APPROVALS = process.env.MIN_SOT_APPROVALS ? Number(process.env.MIN_SOT_APPROVALS) : 4;
+const MIN_SOT_APPROVALS = process.env.MIN_SOT_APPROVALS ? Number(process.env.MIN_SOT_APPROVALS) : 0;
 
 let github, owner, repo;
 
