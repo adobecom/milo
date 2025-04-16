@@ -9,10 +9,6 @@
   overflow: hidden;
 }
 
-.feds-promo-aside-wrapper .aside.promobar {
-  min-height: 100%;
-}
-
 .dark .aside,
 .aside.dark {
   color: var(--color-white);
