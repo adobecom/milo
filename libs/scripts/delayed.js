@@ -36,7 +36,7 @@ export const loadPrivacy = async (getConfig, loadScript) => {
 
   const otDomainId = ids?.[Object.keys(ids)
     .find((domainId) => window.location.host.includes(domainId))]
-      ?? (privacyId || acom);
+      ?? privacyId ?? acom;
   window.fedsConfig = {
     privacy: { otDomainId },
     documentLanguage: true,
