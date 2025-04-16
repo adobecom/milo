@@ -4,10 +4,10 @@ const INPUT_LABEL_TEXT = 'Paste source and destination URLs here:';
 const PROCESS_TEXT = 'Process redirects';
 
 function createSingleInputRow(id) {
-  const fromLabel = createTag('label', { class: 'redirect-from', for: `redirect-from-${id}` }, 'Source URL');
-  const fromInput = createTag('input', { class: 'redirect-from', type: 'text', id: `redirect-from-${id}`, name: `redirect-from-${id}` });
-  const toLabel = createTag('label', { class: 'redirect-to', for: `redirect-to-${id}` }, 'Destination URL');
-  const toInput = createTag('input', { class: 'redirect-to', type: 'text', id: `redirect-to-${id}`, name: `redirect-to-${id}` });
+  const fromLabel = createTag('label', { for: `source-${id}` }, 'Source URL');
+  const fromInput = createTag('input', { class: 'source', type: 'text', id: `source-${id}`, name: `source-${id}` });
+  const toLabel = createTag('label', { for: `destination-${id}` }, 'Destination URL');
+  const toInput = createTag('input', { class: 'destination', type: 'text', id: `destination-${id}`, name: `destination-${id}` });
   const removeInputButton = createTag('button', { class: 'remove-input', 'data-input-id': id }, '-');
 
   const inputContainer = createTag('div', { class: 'input-container' }, [fromLabel, fromInput, toLabel, toInput]);
@@ -56,7 +56,7 @@ export function createRedirectsArea() {
 
   const uiArea = createTag('div', { class: 'redirects-ui-area' }, [singleInputArea, bulkRedirectArea]);
 
-  tabsHolder.querySelectorAll('button').forEach((button) => {
+  tabsHolder.querySelectorAll('button:not(.process-redirects)').forEach((button) => {
     button.addEventListener('click', (e) => {
       const currentButton = e.currentTarget;
       tabsHolder.querySelector('.selected').classList.remove('selected');

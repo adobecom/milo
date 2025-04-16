@@ -1,0 +1,73 @@
+export function getLocalesFromUi(nodeList) {
+  return [...nodeList].reduce((rdx, cb) => {
+    if (cb.checked) {
+      rdx.push(cb.id);
+    }
+    return rdx;
+  }, []);
+}
+
+// create a function to replace any space, tab, or newline with a space
+function createPairsFromTextaArea(textaAreaValue) {
+  const whitespace = /\s+/;
+  const allSourceDestinationValues = textaAreaValue.split(whitespace);
+  const pairs = [];
+  for (let i = 0; i < allSourceDestinationValues.length; i += 2) {
+    pairs.push({
+      source: allSourceDestinationValues[i]?.trim(),
+      destination: allSourceDestinationValues[i + 1]?.trim(),
+    });
+  }
+  return pairs;
+};
+
+function createPairsFromNodeList(nodeList, sourceSelector, destinationSelector) {
+  return [...nodeList].reduce((rdx, container) => {
+    const source = container.querySelector(sourceSelector);
+    const destination = container.querySelector(destinationSelector);
+    rdx.push({
+      source: source?.value.trim(),
+      destination: destination?.value.trim(),
+    });
+    return rdx;
+  }, []);
+}
+
+export function createRedirectsList(inputArea) {
+  const isTextArea = inputArea.querySelector('textarea');
+  if (isTextArea) return createPairsFromTextaArea(isTextArea.value);
+  return createPairsFromNodeList(inputArea.querySelectorAll('.input-container'), '.source', '.destination');
+}
+
+function isFullyQualifiedUrl(inputValue) {
+  try {
+    const url = new URL(inputValue);
+    return url;
+  } catch (e) {
+    return false;
+  }
+}
+
+export function processRedirects(redirectList, locales, errorCallback) {
+  return redirectList.reduce((rdx, urlPair) => {
+    locales.forEach((locale) => {
+      const source = isFullyQualifiedUrl(urlPair.source);
+      const destination = isFullyQualifiedUrl(urlPair.destination);
+
+      if (!source || !destination) {
+        errorCallback();
+      }
+
+      const sourcePath = source.pathname?.split('.html')[0] || '/';
+      const destinationPath = () => {
+        const excludeHTMLPaths = ['/blog', '.html'];
+        if (!destination.origin.endsWith('.adobe.com') || excludeHTMLPaths.some((p) => destination.pathname.includes(p)) || destination.pathname === '/') {
+          return destination.pathname;
+        }
+        return `${destination.pathname}.html`;
+      };
+      rdx.push([`/${locale}${sourcePath}`, `${destination.origin}/${locale}${destinationPath()}`]);
+    });
+    return rdx;
+  }, []);
+}

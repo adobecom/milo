@@ -1,4 +1,5 @@
 import { createCheckboxArea } from './utils/checkboxes.js';
+import { createRedirectsList, getLocalesFromUi, processRedirects } from './utils/process-redirects.js';
 import { createRedirectsArea } from './utils/redirect-inputs.js';
 
 export const NO_LOCALE_ERROR = 'No locales selected from list';
@@ -26,43 +27,6 @@ function handleError(e, eSection) {
   }, 2000);
   errorElem.innerText = e;
   eSection.classList.add('error-border');
-}
-
-export function generateRedirectList(urls, locales) {
-  const inputSection = document.querySelector('.redirects-text-area');
-  const checkboxSection = document.querySelector('.checkbox-container');
-  const errorMessage = 'Invalid URL. URLs must start with "https://" e.g: "https://business.adobe.com"';
-
-  return urls.reduce((rdx, urlPair) => {
-    if (!locales.length) handleError(NO_LOCALE_ERROR, checkboxSection);
-
-    locales.forEach((locale) => {
-      let from;
-      let to;
-      try {
-        from = new URL(urlPair[0]);
-      } catch (e) {
-        handleError(errorMessage, inputSection);
-        return;
-      }
-      try {
-        to = new URL(urlPair[1]);
-      } catch (e) {
-        handleError(errorMessage, inputSection);
-        return;
-      }
-      const fromPath = from.pathname.split('.html')[0];
-      const toPath = () => {
-        const excludeHTMLPaths = ['/blog', '.html'];
-        if (!to.origin.endsWith('.adobe.com') || excludeHTMLPaths.some((p) => to.pathname.includes(p)) || to.pathname === '/') {
-          return to.pathname;
-        }
-        return `${to.pathname}.html`;
-      };
-      rdx.push([`/${locale}${fromPath}`, `${to.origin}/${locale}${toPath()}`]);
-    });
-    return rdx;
-  }, []);
 }
 
 export function stringifyListForExcel(urls) {
@@ -96,20 +60,35 @@ export default async function init(el) {
   const outputUiWrapper = createTag('div', {}, [taoLabel, copyButton]);
   const outputAreaContainer = createTag('section', { class: 'output-container' }, [outputUiWrapper, textAreaOutput]);
 
-  // submitButton.addEventListener('click', () => {
-  //   const locales = [...document.querySelectorAll("[type='checkbox']")].reduce((rdx, cb) => {
-  //     if (cb.checked) {
-  //       rdx.push(cb.id);
-  //     }
-  //     return rdx;
-  //   }, []);
+  // Create the DOM
+  redirectsContainer.append(checkBoxes, singleInputArea, outputAreaContainer);
+  el.append(header, instructions, errorSection, redirectsContainer);
 
-  //   const parsedInput = parseUrlString(textAreaInput.value);
-  //   const redirList = generateRedirectList(parsedInput, locales);
-  //   const outputString = stringifyListForExcel(redirList);
+  document.querySelector('.process-redirects').addEventListener('click', () => {
+    const checkboxesList = checkBoxes.querySelectorAll('input[type="checkbox"]');
+    const locales = getLocalesFromUi(checkboxesList);
+    const activeInput = document.querySelector('.redirects-ui-area .selected');
+    const redirectsList = createRedirectsList(activeInput);
+    console.log(redirectsList);
 
-  //   textAreaOutput.value = outputString;
-  // });
+    if (!locales.length) {
+      handleError(NO_LOCALE_ERROR, checkBoxes);
+      return;
+    }
+
+    if (redirectsList[0]?.source === '') {
+      handleError('Input is empty', activeInput);
+      return;
+    }
+
+    const processedList = processRedirects(redirectsList, locales, () => {
+      const message = 'Please use full urls in the inputs: https://www.adobe.com/x/y/z';
+      handleError(message, activeInput);
+    });
+    const outputString = stringifyListForExcel(processedList);
+
+    textAreaOutput.value = outputString;
+  });
 
   copyButton.addEventListener('click', () => {
     if (!navigator?.clipboard) return;
@@ -129,7 +108,4 @@ export default async function init(el) {
       },
     );
   });
-
-  redirectsContainer.append(checkBoxes, singleInputArea, outputAreaContainer);
-  el.append(header, instructions, errorSection, redirectsContainer);
 }
