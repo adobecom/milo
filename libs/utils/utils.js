@@ -1298,6 +1298,8 @@ async function checkForPageMods() {
     martech,
   } = Object.fromEntries(PAGE_URL.searchParams);
   let targetInteractionPromise = null;
+  let countryIPPromise = null;
+
   let calculatedTimeout = null;
   if (mepParam === 'off') return;
   const pzn = getMepEnablement('personalization');
@@ -1305,10 +1307,19 @@ async function checkForPageMods() {
   const target = martech === 'off' ? false : getMepEnablement('target');
   const xlg = martech === 'off' ? false : getMepEnablement('xlg');
   const ajo = martech === 'off' ? false : getMepEnablement('ajo');
+  const mepgeolocation = martech === 'off' ? false : getMepEnablement('mepgeolocation');
 
   if (!(pzn || target || promo || mepParam
     || mepHighlight || mepButton || mepParam === '' || xlg || ajo)) return;
 
+  if (mepgeolocation) {
+    const urlParams = new URLSearchParams(window.location.search);
+    const akamaiCode = urlParams.get('akamaiLocale')?.toLowerCase() || sessionStorage.getItem('akamai');
+    if (!akamaiCode) {
+      const { getAkamaiCode } = await import('../features/georoutingv2/georoutingv2.js');
+      countryIPPromise = getAkamaiCode(true);
+    }
+  }
   const enablePersV2 = enablePersonalizationV2();
   const hybridPersEnabled = getMepEnablement('hybrid-pers');
   if ((target || xlg) && enablePersV2) {
@@ -1350,6 +1361,8 @@ async function checkForPageMods() {
     promo,
     target,
     ajo,
+    countryIPPromise,
+    mepgeolocation,
     targetInteractionPromise,
     calculatedTimeout,
     enablePersV2,
