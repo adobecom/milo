@@ -1621,7 +1621,7 @@ function initSidekick() {
     const { default: init } = await import('./sidekick.js');
     const { getPreflightResults } = await import('../blocks/preflight/checks/preflightApi.js');
     init({ createTag, loadBlock, loadScript, loadStyle });
-    getPreflightResults(window.location.href, document);
+    getPreflightResults();
   };
 
   if (document.querySelector('aem-sidekick, helix-sidekick')) {
