@@ -448,21 +448,9 @@ export async function hydrate(fragment, merchCard) {
     const { id, fields, settings } = fragment;
     const { variant } = fields;
     if (!variant) throw new Error (`hydrate: no variant found in payload ${id}`);
-    merchCard.settings = settings;
     cleanup(merchCard);
+    merchCard.settings = settings;
     merchCard.id ??= fragment.id;
-
-
-    merchCard.removeAttribute('background-image');
-    merchCard.removeAttribute('background-color');
-    merchCard.removeAttribute('badge-background-color');
-    merchCard.removeAttribute('badge-color');
-    merchCard.removeAttribute('badge-text');
-    merchCard.removeAttribute('size');
-    merchCard.classList.remove('wide-strip');
-    merchCard.classList.remove('thin-strip');
-    merchCard.removeAttribute(ANALYTICS_SECTION_ATTR);
-
     merchCard.variant = variant;
     await merchCard.updateComplete;
 

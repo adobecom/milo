@@ -204,6 +204,10 @@ merch-card span.price-sub-text {
     line-height: 21px;
 }
 
+merch-card span.price-sub-text::first-letter {
+    text-transform: uppercase;
+}
+
 merch-card span.price-sub-text .price-tax-inclusivity::before {
   content: initial;
 }

@@ -85,7 +85,8 @@
         <template id="fragment-photography-plans">
             <mas-commerce-service env="stage"></mas-commerce-service>
             <merch-card>
-                <aem-fragment fragment="fragment-photography-plans"> </aem-fragment>
+                <aem-fragment fragment="fragment-photography-plans">
+                </aem-fragment>
             </merch-card>
         </template>
         <script type="module">
@@ -95,7 +96,7 @@
             import { mockIms } from './mocks/ims.js';
             import { withWcs } from './mocks/wcs.js';
             import { withAem } from './mocks/aem.js';
-            import { getTemplateContent, oneEvent } from './utils.js';
+            import { delay, getTemplateContent, oneEvent } from './utils.js';
             import '../src/mas.js';
 
             runTests(async () => {
@@ -114,7 +115,7 @@
                         expect(photoshop).to.exist;
                     });
 
-                    it.only('should apply settings from fragment to price', async () => {
+                    it('should apply settings from fragment to price', async () => {
                         const [masCommerceService, ccAllApps] =
                             getTemplateContent('fragment-photography-plans');
                         main.append(masCommerceService, ccAllApps);

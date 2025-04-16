@@ -127,6 +127,9 @@ export class MasCommerceService extends HTMLElement {
                             providers.price.add(provider);
                             return () => providers.price.delete(provider);
                         },
+                        has: (providerFunction) =>
+                            providers.price.has(providerFunction) ||
+                            providers.checkout.has(providerFunction),
                     };
                 },
                 get settings() {

@@ -39,15 +39,15 @@ const MERCH_CARD_LOAD_TIMEOUT = 20000;
 
 const MARK_MERCH_CARD_PREFIX = 'merch-card:';
 
-let priceOptionsProviderRegistered = false;
+function priceOptionsProvider(element, options) {
+    const card = element.closest(MERCH_CARD);
+    if (!card) return options;
+    options.displayPlanType = card.settings?.displayPlanType;
+}
+
 function registerPriceOptionsProvider(masCommerceService) {
-    if (priceOptionsProviderRegistered) return;
-    priceOptionsProviderRegistered = true;
-    masCommerceService.providers.price((element, options) => {
-        const card = element.closest(MERCH_CARD);
-        if (!card) return options;
-        options.displayPlanType = card.settings?.displayPlanType;
-    });
+    if (masCommerceService.providers.has(priceOptionsProvider)) return;
+    masCommerceService.providers.price(priceOptionsProvider);
 }
 
 export class MerchCard extends LitElement {

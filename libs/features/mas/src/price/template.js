@@ -14,11 +14,6 @@ import {
     makeSpacesAroundNonBreaking,
 } from './utilities.js';
 
-// JSON imports require new syntax to run in Milo/wtr tests,
-// but the new syntax is not yet supported by ESLint:
-// import defaultLiterals from '../literals.json' assert {type: 'json'};
-// @see https://github.com/eslint/eslint/discussions/15305
-// the easiest solution for now is to inline the literals
 export const defaultLiterals = {
     recurrenceLabel:
         '{recurrenceTerm, select, MONTH {/mo} YEAR {/yr} other {}}',
