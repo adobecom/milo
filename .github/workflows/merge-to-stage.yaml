@@ -17,17 +17,24 @@ env:
 
 jobs:
   merge-to-stage:
-    if: github.repository_owner == 'skholkhojaev'
+    if: github.repository_owner == 'adobecom'
     runs-on: ubuntu-latest
+    environment: milo_pr_merge
 
     steps:
+      - uses: actions/create-github-app-token@21cfef2b496dd8ef5b904c159339626a10ad380e
+        id: milo-pr-merge-token
+        with:
+          app-id: ${{ secrets.MILO_PR_MERGE_APP_ID }}
+          private-key: ${{ secrets.MILO_PR_MERGE_PRIVATE_KEY }}
+
       - name: Checkout repository
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
 
       - name: Merge to stage or queue to merge
         uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+          github-token: ${{ steps.milo-pr-merge-token.outputs.token }}
           script: |
             const main = require('./.github/workflows/merge-to-stage.js')
             main({ github, context })

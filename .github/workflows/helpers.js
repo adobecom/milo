@@ -113,16 +113,14 @@ Then run: node --env-file=.env .github/workflows/update-ims.js`);
   };
 };
 
-const slackNotification = async (message, webhook = process.env.MILO_RELEASE_SLACK_WH) => {
-  if (!webhook) {
-    console.log('No webhook provided, skipping Slack notification:', message);
-    return;
-  }
-  
-  await fetch(webhook, {
+const slackNotification = (text, webhook) => {
+  console.log(text);
+  return fetch(webhook || process.env.MILO_RELEASE_SLACK_WH, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ text: message }),
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ text }),
   });
 };
 
