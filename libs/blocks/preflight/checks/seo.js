@@ -6,8 +6,8 @@ const SPIDY_URL_FALLBACK = 'https://spidy.corp.adobe.com';
 
 const linksCache = new Map();
 
-export function checkH1s() {
-  const h1s = document.querySelectorAll('h1');
+export function checkH1s(area) {
+  const h1s = area.querySelectorAll('h1');
   let status;
   let description;
 
@@ -29,8 +29,8 @@ export function checkH1s() {
   };
 }
 
-export function checkTitle() {
-  const titleSize = document.title.replace(/\s/g, '').length;
+export function checkTitle(area) {
+  const titleSize = area.title.replace(/\s/g, '').length;
   let status;
   let description;
 
@@ -52,8 +52,8 @@ export function checkTitle() {
   };
 }
 
-export async function checkCanon() {
-  const canon = document.querySelector("link[rel='canonical']");
+export async function checkCanon(area) {
+  const canon = area.querySelector("link[rel='canonical']");
   let status;
   let description;
 
@@ -87,8 +87,8 @@ export async function checkCanon() {
   };
 }
 
-export async function checkDescription() {
-  const metaDesc = document.querySelector('meta[name="description"]');
+export async function checkDescription(area) {
+  const metaDesc = area.querySelector('meta[name="description"]');
   let status;
   let description;
 
@@ -116,8 +116,8 @@ export async function checkDescription() {
   };
 }
 
-export async function checkBody() {
-  const { length } = document.documentElement.innerText;
+export async function checkBody(area) {
+  const { length } = area.documentElement.innerText;
   let status;
   let description;
 
@@ -136,9 +136,9 @@ export async function checkBody() {
   };
 }
 
-export async function checkLorem() {
-  const { innerHTML } = document.documentElement;
-  const htmlWithoutPreflight = innerHTML.replace(document.getElementById('preflight')?.outerHTML, '');
+export async function checkLorem(area) {
+  const { innerHTML } = area.documentElement;
+  const htmlWithoutPreflight = innerHTML.replace(area.getElementById('preflight')?.outerHTML, '');
   let status;
   let description;
 
@@ -216,7 +216,7 @@ function compareResults(result, link) {
   return true;
 }
 
-export async function checkLinks(urlHash) {
+export async function checkLinks(area, urlHash) {
   if (urlHash && linksCache.has(urlHash)) {
     const cachedResult = linksCache.get(urlHash);
     return {
@@ -240,7 +240,7 @@ export async function checkLinks(urlHash) {
     ? preflight?.ignoreDomains.split(',').map((url) => url.trim())
     : KNOWN_BAD_URLS;
 
-  const links = [...document.querySelectorAll('a')]
+  const links = [...area.querySelectorAll('a')]
     .filter((link) => {
       if (
         link.href // Has an href tag
@@ -260,7 +260,7 @@ export async function checkLinks(urlHash) {
   const baseOpts = { method: 'POST', headers: { 'Content-Type': 'application/json' } };
   const badResults = [];
 
-  [...document.querySelectorAll('a')].forEach((link) => {
+  [...area.querySelectorAll('a')].forEach((link) => {
     if (link.dataset?.httpLink) {
       const httpLink = {
         url: link.liveHref,
@@ -303,14 +303,14 @@ export async function checkLinks(urlHash) {
   return result;
 }
 
-export function runChecks(url) {
+export function runChecks(url, area = document) {
   return [
-    checkH1s(),
-    checkTitle(),
-    checkCanon(),
-    checkDescription(),
-    checkBody(),
-    checkLorem(),
-    checkLinks(url),
+    checkH1s(area),
+    checkTitle(area),
+    checkCanon(area),
+    checkDescription(area),
+    checkBody(area),
+    checkLorem(area),
+    checkLinks(area, url),
   ];
 }
