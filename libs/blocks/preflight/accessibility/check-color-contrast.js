@@ -83,7 +83,6 @@ export default function checkColorContrast(elements = [], config = {}) {
     const styles = window.getComputedStyle(el);
     const fontSize = parseFloat(styles.fontSize) || 0;
     const fontWeight = parseInt(styles.fontWeight, 10) || 400;
-
     // WCAG 2.1 Large Text Definition:
     // Bold text >= 14pt (≈ 18.66px), Normal text >= 18pt (≈ 24px)
     // Large text requires contrast ratio of 3:1, Normal text requires 4.5:1

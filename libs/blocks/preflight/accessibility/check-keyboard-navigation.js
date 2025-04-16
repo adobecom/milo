@@ -8,14 +8,9 @@ import { getUniqueSelector } from './helper.js';
  */
 export default function checkKeyboardNavigation(elements = [], config = {}) {
   const { checks = [] } = config;
-
   // Skip this check if 'keyboard' isn't enabled in the config
-  if (!checks.includes('keyboard')) {
-    return [];
-  }
-
+  if (!checks.includes('keyboard')) return [];
   const violations = [];
-
   const focusableSelectors = [
     'a[href]',
     'button',
@@ -24,9 +19,7 @@ export default function checkKeyboardNavigation(elements = [], config = {}) {
     'select',
     '[tabindex]:not([tabindex="-1"])',
   ];
-
   const focusableElements = elements.filter((el) => el.matches(focusableSelectors.join(',')));
-
   // No focusable elements found - report critical violation
   if (focusableElements.length === 0) {
     violations.push({
@@ -37,22 +30,15 @@ export default function checkKeyboardNavigation(elements = [], config = {}) {
       helpUrl: 'https://www.w3.org/WAI/WCAG21/Understanding/keyboard.html',
       nodes: [],
     });
-
     return violations;
   }
-
   // Check each focusable element for a visible focus indicator
   focusableElements.forEach((el) => {
     const styles = window.getComputedStyle(el);
-
     const hasVisibleOutline = styles.outlineStyle !== 'none' && parseFloat(styles.outlineWidth) > 0;
-
     const hasBoxShadow = styles.boxShadow !== 'none' && styles.boxShadow !== '';
-
     const hasFocusIndicator = hasVisibleOutline || hasBoxShadow;
-
     if (hasFocusIndicator) return;
-
     violations.push({
       description: 'Element does not have a visible focus indicator.',
       impact: 'moderate',
@@ -65,6 +51,5 @@ export default function checkKeyboardNavigation(elements = [], config = {}) {
       }],
     });
   });
-
   return violations;
 }

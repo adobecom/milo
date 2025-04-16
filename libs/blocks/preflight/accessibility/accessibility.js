@@ -43,14 +43,12 @@ export default function Accessibility() {
     };
     runTest();
   }, []);
-
   const toggleViolation = (index) => {
     setExpandedViolations((prev) => {
       const isExpanded = prev.includes(index);
       return isExpanded ? prev.filter((i) => i !== index) : [...prev, index];
     });
   };
-
   // Loading markup
   const loadingMarkup = () => html`
     <div class="preflight-columns">
@@ -59,7 +57,6 @@ export default function Accessibility() {
       </div>
     </div>
   `;
-
   // Error markup
   const errorMarkup = (errorMsg) => html`
     <div class="preflight-columns">
@@ -71,7 +68,6 @@ export default function Accessibility() {
       </div>
     </div>
   `;
-
   // Results summary markup
   const resultsSummary = (results, url) => {
     if (!results) {
@@ -81,7 +77,6 @@ export default function Accessibility() {
         </div>
       `;
     }
-
     return html`
       <div class="preflight-column">
         <div class="preflight-content-group">
@@ -109,7 +104,6 @@ export default function Accessibility() {
       </div>
     `;
   };
-
   // Violations markup
   const violationsList = (violations = []) => {
     if (!violations.length) {
@@ -119,7 +113,6 @@ export default function Accessibility() {
         </div>
       `;
     }
-
     return html`
       <div class="preflight-column">
         <div class="preflight-content-group violations-section">
@@ -136,7 +129,6 @@ export default function Accessibility() {
           <div class="violation-list">
             ${violations.map((violation, index) => {
     const isExpanded = expandedViolations.includes(index);
-
     return html`
                 <div class="violation-item">
                   <div
@@ -178,16 +170,9 @@ export default function Accessibility() {
       </div>
     `;
   };
-
   // Conditional rendering based on state
-  if (loading) {
-    return loadingMarkup();
-  }
-
-  if (testResults?.error) {
-    return errorMarkup(testResults.error);
-  }
-
+  if (loading) return loadingMarkup();
+  if (testResults?.error) return errorMarkup(testResults.error);
   if (!testResults) {
     return html`
       <div class="preflight-columns">
@@ -197,7 +182,6 @@ export default function Accessibility() {
       </div>
     `;
   }
-
   return html`
     <div class="preflight-columns">
       ${resultsSummary(testResults, pageURL)}
