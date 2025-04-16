@@ -17,7 +17,7 @@ jobs:
     environment: milo_pr_merge
     # Run this when manually triggered or on a schedule
     # Otherwise run this only on PRs that are merged from stage to main
-    if: github.repository_owner == 'adobecom' && (github.event_name == 'workflow_dispatch' || github.event_name == 'schedule' || (github.event_name == 'pull_request' && github.event.pull_request.base.ref == 'main' && github.event.pull_request.head.ref == 'stage'))
+    if: github.repository_owner == 'skholkhojaev' && (github.event_name == 'workflow_dispatch' || github.event_name == 'schedule' || (github.event_name == 'pull_request' && github.event.pull_request.base.ref == 'main' && github.event.pull_request.head.ref == 'stage'))
 
     steps:
       - uses: actions/create-github-app-token@21cfef2b496dd8ef5b904c159339626a10ad380e
