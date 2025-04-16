@@ -110,9 +110,8 @@ const toggleSuccessSection = (formData) => {
     window.scrollTo(0, offsetPosition);
   };
 
-  const hide = async (sections) => {
+  const hide = (sections) => {
     sections.forEach((section) => section.classList.add('hide-block'));
-    await new Promise((resolve) => { setTimeout(resolve, 300); });
   };
 
   const showClass = formData[SUCCESS_SECTION]?.toLowerCase().replaceAll(' ', '-');
