@@ -18,14 +18,8 @@ async function customAccessibilityChecks(config = {}) {
   try {
     // Filter DOM elements based on include/exclude
     const elements = getFilteredElements(config.include, config.exclude);
-
-    if (!elements.length) {
-      return [];
-    }
-
-    const violations = checkFunctions.flatMap((checkFn) => checkFn(elements, config));
-
-    return violations;
+    if (!elements.length) return [];
+    return checkFunctions.flatMap((checkFn) => checkFn(elements, config));
   } catch (error) {
     window.lana.log(`Error running custom accessibility checks: ${error.message}`);
     return [];

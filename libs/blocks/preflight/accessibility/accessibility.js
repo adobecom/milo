@@ -1,21 +1,7 @@
 import { html, useState, useEffect } from '../../../deps/htm-preact.js';
 import '../../../deps/axe.min.js';
+import { AXE_CORE_CONFIG, CUSTOM_CHECKS_CONFIG } from './accessibility-config.js';
 import customAccessibilityChecks from './accessibility-custom-checks.js';
-
-const axeCoreConfig = {
-  include: [['body']],
-  exclude: [['.preflight'], ['aem-sidekick'], ['header'], ['.global-navigation'], ['footer']],
-  runOnly: {
-    type: 'tag',
-    values: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'],
-  },
-};
-
-const customChecksConfig = {
-  checks: ['altText', 'color-contrast'],
-  include: [['body']],
-  exclude: [['.preflight'], ['aem-sidekick'], ['header'], ['.global-navigation'], ['footer'], ['.global-footer']],
-};
 
 /**
  * Runs the accessibility test using axe-core and custom checks.
@@ -23,14 +9,11 @@ const customChecksConfig = {
  */
 async function runAccessibilityTest() {
   try {
-    const results = await window.axe.run(axeCoreConfig);
-
-    const customViolations = await customAccessibilityChecks(customChecksConfig);
-
+    const results = await window.axe.run(AXE_CORE_CONFIG);
+    const customViolations = await customAccessibilityChecks(CUSTOM_CHECKS_CONFIG);
     results.violations.push(...customViolations);
-
     return {
-      pass: results.violations.length === 0,
+      pass: !results.violations.length,
       violations: results.violations,
     };
   } catch (error) {
@@ -54,12 +37,10 @@ export default function Accessibility() {
       setTestResults(null);
       setExpandedViolations([]);
       setPageURL(window.location.href);
-
       const results = await runAccessibilityTest();
       setTestResults(results);
       setLoading(false);
     };
-
     runTest();
   }, []);
 
@@ -120,7 +101,7 @@ export default function Accessibility() {
               <ul class="summary-list">
                 <li><strong>Page:</strong> <a href="${url}" target="_blank">${url}</a></li>
                 <li><strong>Test Scope:</strong> body</li>
-                <li><strong>WCAG Tags:</strong> ${axeCoreConfig.runOnly?.values?.join(', ') || 'NONE'}</li>
+                <li><strong>WCAG Tags:</strong> ${AXE_CORE_CONFIG.runOnly?.values?.join(', ') || 'NONE'}</li>
               </ul>
             </div>
           </div>

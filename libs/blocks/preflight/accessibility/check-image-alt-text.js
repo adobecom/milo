@@ -8,27 +8,18 @@ import { getUniqueSelector } from './helper.js';
  */
 export default function checkImageAltText(elements = [], config = {}) {
   const { checks = [] } = config;
-
   // Skip this check if 'altText' isn't enabled in the config
-  if (!checks.includes('altText')) {
-    return [];
-  }
-
+  if (!checks.includes('altText')) return [];
   const violations = [];
   const images = elements.filter((el) => el.tagName?.toLowerCase() === 'img');
-
   images.forEach((img) => {
     const alt = img.getAttribute('alt');
-
     const role = (img.getAttribute('role') || '').toLowerCase();
     const ariaHidden = img.getAttribute('aria-hidden') === 'true';
     const isDecorative = role === 'presentation' || ariaHidden;
-
     const style = window.getComputedStyle(img);
     const isHidden = style.display === 'none' || style.visibility === 'hidden' || parseFloat(style.opacity) === 0;
-
     if (isDecorative || isHidden) return;
-
     // Missing alt attribute or value is incorrect ( numbers or too short)
     if (alt === null) {
       violations.push({
@@ -42,15 +33,11 @@ export default function checkImageAltText(elements = [], config = {}) {
           html: img.outerHTML,
         }],
       });
-
       return;
     }
-
     const altTrimmed = alt.trim();
-
     const isNumeric = /^\d+$/.test(alt.trim());
     const isShort = altTrimmed.length < 3;
-
     if (isNumeric || isShort) {
       violations.push({
         description: `Alt text "${alt}" is too short (less than 3 characters) or numeric.`,
@@ -65,6 +52,5 @@ export default function checkImageAltText(elements = [], config = {}) {
       });
     }
   });
-
   return violations;
 }

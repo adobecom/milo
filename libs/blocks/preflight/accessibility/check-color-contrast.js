@@ -4,7 +4,6 @@ function luminance(r, g, b) {
     const c = channel / 255;
     return (c <= 0.03928) ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
   });
-
   return (0.2126 * R) + (0.7152 * G) + (0.0722 * B);
 }
 
@@ -32,19 +31,11 @@ function isZeroAlpha(alpha) {
 // Checks if an RGBA color string is fully transparent.
 function isTransparent(rgbStr) {
   if (!rgbStr) return false;
-
   const str = rgbStr.trim().toLowerCase();
-
   const modernMatch = str.match(/rgb[a]?\([^)]*\/\s*([\d.]+%?)\s*\)/);
-  if (modernMatch) {
-    return isZeroAlpha(modernMatch[1]);
-  }
-
+  if (modernMatch) return isZeroAlpha(modernMatch[1]);
   const legacyMatch = str.match(/rgba?\([^)]*,\s*([\d.]+)\s*\)$/);
-  if (legacyMatch) {
-    return isZeroAlpha(legacyMatch[1]);
-  }
-
+  if (legacyMatch) return isZeroAlpha(legacyMatch[1]);
   return false;
 }
 
@@ -76,11 +67,8 @@ function getComputedColors(element) {
  */
 export default function checkColorContrast(elements = [], config = {}) {
   const { checks = [], minContrast = 4.5 } = config;
-
   if (!checks.includes('color-contrast')) return [];
-
   const violations = [];
-
   const validElements = elements.filter((el) => {
     const styles = window.getComputedStyle(el);
     const isVisible = styles.display !== 'none' && styles.visibility !== 'hidden' && parseFloat(styles.opacity) > 0;
@@ -88,16 +76,9 @@ export default function checkColorContrast(elements = [], config = {}) {
     const tagWhitelist = ['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'a', 'button'];
     return isVisible && hasText && tagWhitelist.includes(el.tagName.toLowerCase());
   });
-
-  // console.log(`\nChecking ${validElements.length} elements for color contrast issues...`);
-
   validElements.forEach((el) => {
     const { fgColor, bgColor } = getComputedColors(el);
-    if (!fgColor || !bgColor) {
-      // console.warn(`[${index}] Skipped: Unable to compute colors for element.`);
-      return;
-    }
-
+    if (!fgColor || !bgColor) return;
     const contrast = contrastRatio(fgColor, bgColor);
     const styles = window.getComputedStyle(el);
     const fontSize = parseFloat(styles.fontSize) || 0;
@@ -108,14 +89,6 @@ export default function checkColorContrast(elements = [], config = {}) {
     // Large text requires contrast ratio of 3:1, Normal text requires 4.5:1
     const isLargeText = fontSize >= 24 || (fontSize >= 18.66 && fontWeight >= 700);
     const requiredContrast = isLargeText ? 3.0 : minContrast;
-
-    /*
-    window.lana.log(
-      `[${index}] ${el.tagName.toLowerCase()}: Contrast ${contrast.toFixed(2)} ` +
-      `(Min: ${requiredContrast}:1)`
-    );
-    */
-
     if (contrast < requiredContrast) {
       violations.push({
         description: `Low contrast text (ratio: ${contrast.toFixed(2)}:1) - WCAG AA Minimum is ${requiredContrast}:1`,
@@ -133,7 +106,5 @@ export default function checkColorContrast(elements = [], config = {}) {
       });
     }
   });
-
-  // window.lana.log(`Color contrast check complete. Total violations found: ${violations.length}`);
   return violations;
 }
