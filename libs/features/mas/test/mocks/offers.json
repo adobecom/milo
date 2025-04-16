@@ -14,9 +14,7 @@
             "commitment": "YEAR",
             "term": "MONTHLY",
             "customerSegment": "INDIVIDUAL",
-            "marketSegments": [
-                "COM"
-            ],
+            "marketSegments": ["COM"],
             "salesChannel": "DIRECT",
             "offerType": "BASE",
             "pricePoint": "REGULAR",
@@ -42,9 +40,7 @@
             "commitment": "MONTH",
             "term": "MONTHLY",
             "customerSegment": "INDIVIDUAL",
-            "marketSegments": [
-                "COM"
-            ],
+            "marketSegments": ["COM"],
             "salesChannel": "DIRECT",
             "offerType": "TRIAL",
             "pricePoint": "TRIAL_STOCK_7_DAY_TRIAL",
@@ -67,9 +63,7 @@
             "commitment": "YEAR",
             "term": "MONTHLY",
             "customerSegment": "INDIVIDUAL",
-            "marketSegments": [
-                "COM"
-            ],
+            "marketSegments": ["COM"],
             "salesChannel": "DIRECT",
             "offerType": "TRIAL",
             "pricePoint": "TRIAL_STOCK_7_DAY_TRIAL",
@@ -94,9 +88,7 @@
             "commitment": "YEAR",
             "term": "ANNUAL",
             "customerSegment": "INDIVIDUAL",
-            "marketSegments": [
-                "COM"
-            ],
+            "marketSegments": ["COM"],
             "salesChannel": "DIRECT",
             "offerType": "TRIAL",
             "pricePoint": "TRIAL_STOCK_7_DAY_TRIAL",
@@ -119,9 +111,7 @@
             "commitment": "YEAR",
             "term": "ANNUAL",
             "customerSegment": "INDIVIDUAL",
-            "marketSegments": [
-                "COM"
-            ],
+            "marketSegments": ["COM"],
             "salesChannel": "DIRECT",
             "offerType": "BASE",
             "pricePoint": "REGULAR",
@@ -144,9 +134,7 @@
             "commitment": "MONTH",
             "term": "MONTHLY",
             "customerSegment": "INDIVIDUAL",
-            "marketSegments": [
-                "COM"
-            ],
+            "marketSegments": ["COM"],
             "salesChannel": "DIRECT",
             "offerType": "BASE",
             "pricePoint": "REGULAR",
@@ -173,9 +161,7 @@
             "commitment": "YEAR",
             "term": "MONTHLY",
             "customerSegment": "INDIVIDUAL",
-            "marketSegments": [
-                "COM"
-            ],
+            "marketSegments": ["COM"],
             "salesChannel": "DIRECT",
             "offerType": "BASE",
             "pricePoint": "REGULAR",
@@ -203,9 +189,7 @@
             "commitment": "YEAR",
             "term": "MONTHLY",
             "customerSegment": "INDIVIDUAL",
-            "marketSegments": [
-                "COM"
-            ],
+            "marketSegments": ["COM"],
             "salesChannel": "DIRECT",
             "offerType": "TRIAL",
             "pricePoint": "TRIAL_WB_60_DAY_TWP_CCPP_20GB_NON_CCX_100_FIREFLY_CREDITS",
@@ -232,9 +216,7 @@
             "commitment": "YEAR",
             "term": "MONTHLY",
             "customerSegment": "INDIVIDUAL",
-            "marketSegments": [
-                "COM"
-            ],
+            "marketSegments": ["COM"],
             "salesChannel": "DIRECT",
             "offerType": "BASE",
             "pricePoint": "INDIV_PLES_NON_CCX_COM_1TB",
@@ -262,9 +244,7 @@
             "commitment": "YEAR",
             "term": "ANNUAL",
             "customerSegment": "INDIVIDUAL",
-            "marketSegments": [
-                "COM"
-            ],
+            "marketSegments": ["COM"],
             "salesChannel": "DIRECT",
             "offerType": "TRIAL",
             "pricePoint": "TRIAL_7_DAY_TWP_CCPP_20GB_AND_1TB_COM_NON_CCX",
@@ -288,9 +268,7 @@
             "commitment": "YEAR",
             "term": "MONTHLY",
             "customerSegment": "INDIVIDUAL",
-            "marketSegments": [
-                "COM"
-            ],
+            "marketSegments": ["COM"],
             "salesChannel": "DIRECT",
             "offerType": "BASE",
             "pricePoint": "REGULAR",
@@ -314,9 +292,7 @@
             "commitment": "MONTH",
             "term": "MONTHLY",
             "customerSegment": "INDIVIDUAL",
-            "marketSegments": [
-                "COM"
-            ],
+            "marketSegments": ["COM"],
             "salesChannel": "DIRECT",
             "offerType": "BASE",
             "pricePoint": "REGULAR",
@@ -338,9 +314,7 @@
             "buyingProgram": "RETAIL",
             "commitment": "PERPETUAL",
             "customerSegment": "INDIVIDUAL",
-            "marketSegments": [
-                "COM"
-            ],
+            "marketSegments": ["COM"],
             "salesChannel": "DIRECT",
             "offerType": "BASE",
             "pricePoint": "FULL",
@@ -367,9 +341,7 @@
             "commitment": "YEAR",
             "term": "MONTHLY",
             "customerSegment": "INDIVIDUAL",
-            "marketSegments": [
-                "COM"
-            ],
+            "marketSegments": ["COM"],
             "salesChannel": "DIRECT",
             "offerType": "BASE",
             "pricePoint": "REGULAR",
@@ -397,9 +369,7 @@
             "commitment": "YEAR",
             "term": "MONTHLY",
             "customerSegment": "TEAM",
-            "marketSegments": [
-                "COM"
-            ],
+            "marketSegments": ["COM"],
             "salesChannel": "DIRECT",
             "offerType": "TRIAL",
             "pricePoint": "TRIAL_14_DAY_TWP_TEAM_DIRECT_CCT_ALL_APPS_COM",
@@ -427,9 +397,7 @@
             "commitment": "YEAR",
             "term": "ANNUAL",
             "customerSegment": "TEAM",
-            "marketSegments": [
-                "COM"
-            ],
+            "marketSegments": ["COM"],
             "salesChannel": "DIRECT",
             "offerType": "TRIAL",
             "pricePoint": "TRIAL_14_DAY_TWP_TEAM_DIRECT_CCT_ALL_APPS_COM",
@@ -457,9 +425,7 @@
             "commitment": "YEAR",
             "term": "MONTHLY",
             "customerSegment": "INDIVIDUAL",
-            "marketSegments": [
-                "EDU"
-            ],
+            "marketSegments": ["EDU"],
             "salesChannel": "DIRECT",
             "offerType": "TRIAL",
             "pricePoint": "TRIAL_TRIAL_STE_FIRST_YEAR_ABM_US_ONLY",
@@ -487,9 +453,7 @@
             "commitment": "YEAR",
             "term": "ANNUAL",
             "customerSegment": "INDIVIDUAL",
-            "marketSegments": [
-                "EDU"
-            ],
+            "marketSegments": ["EDU"],
             "salesChannel": "DIRECT",
             "offerType": "TRIAL",
             "pricePoint": "TRIAL_TRIAL_STE_FIRST_YEAR_ABM_US_ONLY",
@@ -517,9 +481,7 @@
             "commitment": "YEAR",
             "term": "MONTHLY",
             "customerSegment": "INDIVIDUAL",
-            "marketSegments": [
-                "COM"
-            ],
+            "marketSegments": ["COM"],
             "salesChannel": "DIRECT",
             "offerType": "TRIAL",
             "pricePoint": "TRIAL_BASE_OFFER_TWP_CCI_ALL_APPS_AND_SINGLE_APP_NON_CCX",
@@ -529,9 +491,7 @@
     ],
     "qQiJqQPZXOSrog8SR5yfiLR03-thGECfV5Gm9jzeK6k-mult": [
         {
-            "offerSelectorIds": [
-                "qQiJqQPZXOSrog8SR5yfiLR03-thGECfV5Gm9jzeK6k"
-            ],
+            "offerSelectorIds": ["qQiJqQPZXOSrog8SR5yfiLR03-thGECfV5Gm9jzeK6k"],
             "offerId": "B576669D9AAE20A3B4B0FDE65504BB30",
             "startDate": "2021-12-08T08:01:00.000Z",
             "endDate": "2050-01-31T19:59:00.000Z",
@@ -553,9 +513,7 @@
             "commitment": "YEAR",
             "term": "ANNUAL",
             "customerSegment": "INDIVIDUAL",
-            "marketSegments": [
-                "COM"
-            ],
+            "marketSegments": ["COM"],
             "salesChannel": "DIRECT",
             "offerType": "TRIAL",
             "pricePoint": "TRIAL_BASE_OFFER_TWP_CCI_ALL_APPS_AND_SINGLE_APP_NON_CCX",
@@ -565,9 +523,7 @@
     ],
     "AoyCNxLmjibbiE84-I9xlAJEayihAmviExxfyy04g8w-mult": [
         {
-            "offerSelectorIds": [
-                "AoyCNxLmjibbiE84-I9xlAJEayihAmviExxfyy04g8w"
-            ],
+            "offerSelectorIds": ["AoyCNxLmjibbiE84-I9xlAJEayihAmviExxfyy04g8w"],
             "offerId": "B85C86D4214EF804F8951D7E0A0E1945",
             "startDate": "2021-12-08T08:01:00.000Z",
             "endDate": "2050-01-31T19:59:00.000Z",
@@ -589,9 +545,7 @@
             "commitment": "MONTH",
             "term": "MONTHLY",
             "customerSegment": "INDIVIDUAL",
-            "marketSegments": [
-                "COM"
-            ],
+            "marketSegments": ["COM"],
             "salesChannel": "DIRECT",
             "offerType": "TRIAL",
             "pricePoint": "TRIAL_BASE_OFFER_TWP_CCI_ALL_APPS_AND_SINGLE_APP_NON_CCX",
@@ -601,9 +555,7 @@
     ],
     "JzW8dgW8U1SrgbHDmTE-ABsOKPgtl5jugiW8bA5PtKg-mult": [
         {
-            "offerSelectorIds": [
-                "JzW8dgW8U1SrgbHDmTE-ABsOKPgtl5jugiW8bA5PtKg"
-            ],
+            "offerSelectorIds": ["JzW8dgW8U1SrgbHDmTE-ABsOKPgtl5jugiW8bA5PtKg"],
             "offerId": "65BA7CA7573834AC4D043B0E7CBD2349",
             "startDate": "2021-12-08T08:01:00.000Z",
             "endDate": "2050-01-31T19:59:00.000Z",
@@ -625,9 +577,7 @@
             "commitment": "YEAR",
             "term": "MONTHLY",
             "customerSegment": "INDIVIDUAL",
-            "marketSegments": [
-                "COM"
-            ],
+            "marketSegments": ["COM"],
             "salesChannel": "DIRECT",
             "offerType": "TRIAL",
             "pricePoint": "TRIAL_BASE_OFFER_TWP_CCI_ALL_APPS_AND_SINGLE_APP_NON_CCX",
@@ -637,9 +587,7 @@
     ],
     "7QWcHXX6VIH_2BeNYI1GizMNGHJ3ZFz9-IMoC0gC-4c-mult": [
         {
-            "offerSelectorIds": [
-                "7QWcHXX6VIH_2BeNYI1GizMNGHJ3ZFz9-IMoC0gC-4c"
-            ],
+            "offerSelectorIds": ["7QWcHXX6VIH_2BeNYI1GizMNGHJ3ZFz9-IMoC0gC-4c"],
             "offerId": "1AB23148DED3D18062177AFEACEA6ECE",
             "startDate": "2021-12-08T08:01:00.000Z",
             "endDate": "2050-01-31T19:59:00.000Z",
@@ -661,9 +609,7 @@
             "commitment": "YEAR",
             "term": "ANNUAL",
             "customerSegment": "INDIVIDUAL",
-            "marketSegments": [
-                "COM"
-            ],
+            "marketSegments": ["COM"],
             "salesChannel": "DIRECT",
             "offerType": "TRIAL",
             "pricePoint": "TRIAL_BASE_OFFER_TWP_CCI_ALL_APPS_AND_SINGLE_APP_NON_CCX",
@@ -673,9 +619,7 @@
     ],
     "MasJgjrlDjj72m_B1q1_4VhTDtxldl6yG4C16DkznhI-mult": [
         {
-            "offerSelectorIds": [
-                "MasJgjrlDjj72m_B1q1_4VhTDtxldl6yG4C16DkznhI"
-            ],
+            "offerSelectorIds": ["MasJgjrlDjj72m_B1q1_4VhTDtxldl6yG4C16DkznhI"],
             "offerId": "76EB6C3E0486E92E67A0BC1AB3CC7E19",
             "startDate": "2021-12-08T08:01:00.000Z",
             "endDate": "2050-01-31T19:59:00.000Z",
@@ -697,9 +641,7 @@
             "commitment": "MONTH",
             "term": "MONTHLY",
             "customerSegment": "INDIVIDUAL",
-            "marketSegments": [
-                "COM"
-            ],
+            "marketSegments": ["COM"],
             "salesChannel": "DIRECT",
             "offerType": "TRIAL",
             "pricePoint": "TRIAL_BASE_OFFER_TWP_CCI_ALL_APPS_AND_SINGLE_APP_NON_CCX",
@@ -709,9 +651,7 @@
     ],
     "OInILOo_tvV3OiYdJTxo1NhsVX4GxbHnM8JWexA9N8w-mult": [
         {
-            "offerSelectorIds": [
-                "OInILOo_tvV3OiYdJTxo1NhsVX4GxbHnM8JWexA9N8w"
-            ],
+            "offerSelectorIds": ["OInILOo_tvV3OiYdJTxo1NhsVX4GxbHnM8JWexA9N8w"],
             "offerId": "2D25B85032A7A139D38BEEABA53451D4",
             "startDate": "2023-11-01T07:01:00.000Z",
             "endDate": "2099-12-13T07:58:00.000Z",
@@ -733,9 +673,7 @@
             "commitment": "YEAR",
             "term": "MONTHLY",
             "customerSegment": "INDIVIDUAL",
-            "marketSegments": [
-                "COM"
-            ],
+            "marketSegments": ["COM"],
             "salesChannel": "DIRECT",
             "offerType": "TRIAL",
             "pricePoint": "TRIAL_7_DAY_TWP_CCPP_20GB_NON_CCX_100_FIREFLY_CREDITS",
@@ -745,9 +683,7 @@
     ],
     "5OFXVGxVYBZAJIrzV7Z8dsv2ve3oiRzed8f9UB8gbTw-mult": [
         {
-            "offerSelectorIds": [
-                "5OFXVGxVYBZAJIrzV7Z8dsv2ve3oiRzed8f9UB8gbTw"
-            ],
+            "offerSelectorIds": ["5OFXVGxVYBZAJIrzV7Z8dsv2ve3oiRzed8f9UB8gbTw"],
             "offerId": "0B5AC1661376C332EE96BACC473AC0BB",
             "startDate": "2023-11-01T07:01:00.000Z",
             "endDate": "2099-12-13T07:58:00.000Z",
@@ -769,9 +705,7 @@
             "commitment": "YEAR",
             "term": "ANNUAL",
             "customerSegment": "INDIVIDUAL",
-            "marketSegments": [
-                "COM"
-            ],
+            "marketSegments": ["COM"],
             "salesChannel": "DIRECT",
             "offerType": "TRIAL",
             "pricePoint": "TRIAL_7_DAY_TWP_CCPP_20GB_NON_CCX_100_FIREFLY_CREDITS",
@@ -781,9 +715,7 @@
     ],
     "tNF8YrqR3DslSda-1L6pK5z-nYWDQYnjdHkwFDjGAas-mult": [
         {
-            "offerSelectorIds": [
-                "tNF8YrqR3DslSda-1L6pK5z-nYWDQYnjdHkwFDjGAas"
-            ],
+            "offerSelectorIds": ["tNF8YrqR3DslSda-1L6pK5z-nYWDQYnjdHkwFDjGAas"],
             "offerId": "0CDCA0CDDC5EE1F3E127E3D77AAA47DE",
             "startDate": "2021-11-11T08:01:00.000Z",
             "priceDetails": {
@@ -804,9 +736,7 @@
             "commitment": "YEAR",
             "term": "MONTHLY",
             "customerSegment": "INDIVIDUAL",
-            "marketSegments": [
-                "COM"
-            ],
+            "marketSegments": ["COM"],
             "salesChannel": "DIRECT",
             "offerType": "TRIAL",
             "pricePoint": "TRIAL_7_DAY_TRIAL_CCPP_W_LR_PS_1TB_W_O_CCX_COM",
@@ -816,9 +746,7 @@
     ],
     "9zqYpoVccNVW1OM7GKwYCfFEamktcNIamRJYBMknc-E-mult": [
         {
-            "offerSelectorIds": [
-                "9zqYpoVccNVW1OM7GKwYCfFEamktcNIamRJYBMknc-E"
-            ],
+            "offerSelectorIds": ["9zqYpoVccNVW1OM7GKwYCfFEamktcNIamRJYBMknc-E"],
             "offerId": "194C2964E964DE2BAB7A297D547388A5",
             "startDate": "2021-11-11T08:01:00.000Z",
             "priceDetails": {
@@ -839,9 +767,7 @@
             "commitment": "YEAR",
             "term": "ANNUAL",
             "customerSegment": "INDIVIDUAL",
-            "marketSegments": [
-                "COM"
-            ],
+            "marketSegments": ["COM"],
             "salesChannel": "DIRECT",
             "offerType": "TRIAL",
             "pricePoint": "TRIAL_7_DAY_TRIAL_CCPP_W_LR_PS_1TB_W_O_CCX_COM",
@@ -851,9 +777,7 @@
     ],
     "BNTtrDS9wbigrk5Hjeyn6BO62hcRZ-X5fJM9nLqJL6c-mult": [
         {
-            "offerSelectorIds": [
-                "BNTtrDS9wbigrk5Hjeyn6BO62hcRZ-X5fJM9nLqJL6c"
-            ],
+            "offerSelectorIds": ["BNTtrDS9wbigrk5Hjeyn6BO62hcRZ-X5fJM9nLqJL6c"],
             "offerId": "1E47D777E75D45CD12BE910FD7EEEC6E",
             "priceDetails": {
                 "price": 9.99,
@@ -872,9 +796,7 @@
             "commitment": "YEAR",
             "term": "MONTHLY",
             "customerSegment": "INDIVIDUAL",
-            "marketSegments": [
-                "COM"
-            ],
+            "marketSegments": ["COM"],
             "salesChannel": "DIRECT",
             "offerType": "BASE",
             "pricePoint": "REGULAR",
@@ -902,9 +824,7 @@
             "commitment": "YEAR",
             "term": "MONTHLY",
             "customerSegment": "TEAM",
-            "marketSegments": [
-                "GOV"
-            ],
+            "marketSegments": ["GOV"],
             "salesChannel": "DIRECT",
             "offerType": "TRIAL",
             "pricePoint": "TRIAL_14_DAY_TWP_TEAM_DIRECT_CCT_ALL_APPS_COM",
@@ -932,9 +852,7 @@
             "commitment": "YEAR",
             "term": "MONTHLY",
             "customerSegment": "INDIVIDUAL",
-            "marketSegments": [
-                "COM"
-            ],
+            "marketSegments": ["COM"],
             "salesChannel": "DIRECT",
             "offerType": "BASE",
             "pricePoint": "REGULAR",
@@ -962,9 +880,7 @@
             "commitment": "YEAR",
             "term": "MONTHLY",
             "customerSegment": "TEAM",
-            "marketSegments": [
-                "COM"
-            ],
+            "marketSegments": ["COM"],
             "salesChannel": "DIRECT",
             "offerType": "BASE",
             "pricePoint": "REGULAR",
@@ -992,9 +908,7 @@
             "commitment": "YEAR",
             "term": "MONTHLY",
             "customerSegment": "INDIVIDUAL",
-            "marketSegments": [
-                "EDU"
-            ],
+            "marketSegments": ["EDU"],
             "salesChannel": "DIRECT",
             "offerType": "BASE",
             "pricePoint": "REGULAR",
@@ -1022,9 +936,7 @@
             "commitment": "YEAR",
             "term": "MONTHLY",
             "customerSegment": "TEAM",
-            "marketSegments": [
-                "EDU"
-            ],
+            "marketSegments": ["EDU"],
             "salesChannel": "DIRECT",
             "offerType": "BASE",
             "pricePoint": "REGULAR",
@@ -1034,9 +946,7 @@
     ],
     "r_JXAnlFI7xD6FxWKl2ODvZriLYBoSL701Kd1hRyhe8-mult": [
         {
-            "offerSelectorIds": [
-                "r_JXAnlFI7xD6FxWKl2ODvZriLYBoSL701Kd1hRyhe8"
-            ],
+            "offerSelectorIds": ["r_JXAnlFI7xD6FxWKl2ODvZriLYBoSL701Kd1hRyhe8"],
             "offerId": "632B3ADD940A7FBB7864AA5AD19B8D28",
             "startDate": "2015-12-04T17:38:19.000Z",
             "endDate": "2100-04-13T21:20:00.000Z",
@@ -1059,9 +969,7 @@
             "commitment": "YEAR",
             "term": "MONTHLY",
             "customerSegment": "INDIVIDUAL",
-            "marketSegments": [
-                "COM"
-            ],
+            "marketSegments": ["COM"],
             "salesChannel": "DIRECT",
             "offerType": "BASE",
             "pricePoint": "REGULAR",
@@ -1071,9 +979,7 @@
     ],
     "A1xn6EL4pK93bWjM8flffQpfEL-bnvtoQKQAvkx574M-mult": [
         {
-            "offerSelectorIds": [
-                "A1xn6EL4pK93bWjM8flffQpfEL-bnvtoQKQAvkx574M"
-            ],
+            "offerSelectorIds": ["A1xn6EL4pK93bWjM8flffQpfEL-bnvtoQKQAvkx574M"],
             "offerId": "30404A88D89A328584307175B8B27616",
             "startDate": "2015-11-17T20:52:25.000Z",
             "priceDetails": {
@@ -1093,9 +999,7 @@
             "commitment": "YEAR",
             "term": "MONTHLY",
             "customerSegment": "INDIVIDUAL",
-            "marketSegments": [
-                "COM"
-            ],
+            "marketSegments": ["COM"],
             "salesChannel": "DIRECT",
             "offerType": "BASE",
             "pricePoint": "REGULAR",
@@ -1104,41 +1008,66 @@
         }
     ],
     "nTbB50pS4lLGv_x1l_UKggd-lxxo2zAJ7WYDa2mW19s-mult": [
-      {
-          "offerSelectorIds": [
-              "nTbB50pS4lLGv_x1l_UKggd-lxxo2zAJ7WYDa2mW19s"
-          ],
-          "offerId": "44C623423443E5D4D7F53719C25F71D7",
-          "startDate": "2022-08-08T07:00:00.000Z",
-          "endDate": "2099-12-20T07:58:00.000Z",
-          "priceDetails": {
-              "price": 22.19,
-              "priceWithoutDiscount": 23.99,
-              "priceWithoutTax": 22.19,
-              "priceWithoutDiscountAndTax": 23.99,
-              "usePrecision": true,
-              "formatString": "'US$'#,##0.00",
-              "taxDisplay": "TAX_EXCLUSIVE",
-              "taxTerm": "TAX"
-          },
-          "analytics": "{\"offerId\":\"44C623423443E5D4D7F53719C25F71D7\",\"label\":\"acrobat_pro_dc_plus_sign_funnel_team\",\"price\":\"22.19\",\"amountWithoutTax\":\"22.19\",\"commitmentType\":\"YEAR\",\"billingFrequency\":\"MONTHLY\",\"currencyCode\":\"USD\"}",
-          "productArrangementCode": "acrobat_pro_dc_plus_sign_funnel_team",
-          "productArrangement": {
-              "productFamily": "ACROBAT",
-              "productCode": "ASIG"
-          },
-          "buyingProgram": "RETAIL",
-          "commitment": "YEAR",
-          "term": "MONTHLY",
-          "customerSegment": "TEAM",
-          "marketSegments": [
-              "COM"
-          ],
-          "salesChannel": "DIRECT",
-          "offerType": "PROMOTION",
-          "pricePoint": "ACROBAT_PRO_ASIG_FY22_LO_TEAM_BUNDLE_7_5_OFF_WW_COM",
-          "language": "MULT",
-          "merchant": "ADOBE"
-      }
-  ]
+        {
+            "offerSelectorIds": ["nTbB50pS4lLGv_x1l_UKggd-lxxo2zAJ7WYDa2mW19s"],
+            "offerId": "44C623423443E5D4D7F53719C25F71D7",
+            "startDate": "2022-08-08T07:00:00.000Z",
+            "endDate": "2099-12-20T07:58:00.000Z",
+            "priceDetails": {
+                "price": 22.19,
+                "priceWithoutDiscount": 23.99,
+                "priceWithoutTax": 22.19,
+                "priceWithoutDiscountAndTax": 23.99,
+                "usePrecision": true,
+                "formatString": "'US$'#,##0.00",
+                "taxDisplay": "TAX_EXCLUSIVE",
+                "taxTerm": "TAX"
+            },
+            "analytics": "{\"offerId\":\"44C623423443E5D4D7F53719C25F71D7\",\"label\":\"acrobat_pro_dc_plus_sign_funnel_team\",\"price\":\"22.19\",\"amountWithoutTax\":\"22.19\",\"commitmentType\":\"YEAR\",\"billingFrequency\":\"MONTHLY\",\"currencyCode\":\"USD\"}",
+            "productArrangementCode": "acrobat_pro_dc_plus_sign_funnel_team",
+            "productArrangement": {
+                "productFamily": "ACROBAT",
+                "productCode": "ASIG"
+            },
+            "buyingProgram": "RETAIL",
+            "commitment": "YEAR",
+            "term": "MONTHLY",
+            "customerSegment": "TEAM",
+            "marketSegments": ["COM"],
+            "salesChannel": "DIRECT",
+            "offerType": "PROMOTION",
+            "pricePoint": "ACROBAT_PRO_ASIG_FY22_LO_TEAM_BUNDLE_7_5_OFF_WW_COM",
+            "language": "MULT",
+            "merchant": "ADOBE"
+        }
+    ],
+    "caA1xn6EL4pK93bWjM8flffQpfEL-bnvtoQKQAvkx574M-mult": [
+        {
+            "offerSelectorIds": ["A1xn6EL4pK93bWjM8flffQpfEL-bnvtoQKQAvkx574M"],
+            "offerId": "30404A88D89A328584307175B8B27616",
+            "priceDetails": {
+                "price": 29.99,
+                "priceWithoutTax": 29.99,
+                "usePrecision": true,
+                "formatString": "'CAD $'#,##0.00",
+                "taxDisplay": "TAX_EXCLUSIVE",
+                "taxTerm": "TAX"
+            },
+            "productArrangementCode": "phsp_direct_individual",
+            "productArrangement": {
+                "productFamily": "PHOTOSHOP",
+                "productCode": "PHSP"
+            },
+            "buyingProgram": "RETAIL",
+            "commitment": "YEAR",
+            "term": "MONTHLY",
+            "customerSegment": "INDIVIDUAL",
+            "marketSegments": ["COM"],
+            "salesChannel": "DIRECT",
+            "offerType": "BASE",
+            "pricePoint": "REGULAR",
+            "language": "MULT",
+            "merchant": "ADOBE"
+        }
+    ]
 }

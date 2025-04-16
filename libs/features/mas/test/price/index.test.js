@@ -46,6 +46,7 @@ Object.entries({
             { displayPerUnit: true },
             { displayRecurrence: false },
             { displayTax: true },
+            { displayPlanType: true },
             { forceTaxExclusive: false },
             { forceTaxExclusive: true },
         ].forEach((context) => {

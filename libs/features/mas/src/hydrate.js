@@ -182,7 +182,7 @@ export function processDescription(fields, merchCard, mapping) {
   appendSlot('whatsIncluded', fields, merchCard, mapping);
 }
 
-export function processStockOffersAndSecureLabel(fields, merchCard, aemFragmentMapping, settings) {
+export function processStockOffersAndSecureLabel(fields, merchCard, aemFragmentMapping, settings = {}) {
   // for Stock Checkbox, presence flag is set on the card, label and osi for an offer are set in settings
   if (fields.showStockCheckbox && aemFragmentMapping.stockOffer) {
     merchCard.setAttribute('checkbox-label', settings.stockCheckboxLabel);
@@ -445,29 +445,12 @@ export function cleanup(merchCard) {
 }
 
 export async function hydrate(fragment, merchCard) {
-    const { id, fields } = fragment;
+    const { id, fields, settings } = fragment;
     const { variant } = fields;
     if (!variant) throw new Error (`hydrate: no variant found in payload ${id}`);
-    // temporary hardcode for plans. this data will be coming from settings (MWPW-166756)
-    const settings = {
-      stockCheckboxLabel: 'Add a 30-day free trial of Adobe Stock.*', // to be {{stock-checkbox-label}}
-      stockOfferOsis: '',
-      secureLabel: 'Secure transaction' // to be {{secure-transaction}}
-    };
     cleanup(merchCard);
+    merchCard.settings = settings;
     merchCard.id ??= fragment.id;
-
-
-    merchCard.removeAttribute('background-image');
-    merchCard.removeAttribute('background-color');
-    merchCard.removeAttribute('badge-background-color');
-    merchCard.removeAttribute('badge-color');
-    merchCard.removeAttribute('badge-text');
-    merchCard.removeAttribute('size');
-    merchCard.classList.remove('wide-strip');
-    merchCard.classList.remove('thin-strip');
-    merchCard.removeAttribute(ANALYTICS_SECTION_ATTR);
-
     merchCard.variant = variant;
     await merchCard.updateComplete;
 

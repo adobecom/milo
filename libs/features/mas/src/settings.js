@@ -68,6 +68,10 @@ function getSettings(config = {}) {
         getParameter('displayTax', commerce),
         Defaults.displayTax,
     );
+    const displayPlanType = toBoolean(
+        getParameter('displayPlanType', commerce),
+        Defaults.displayPlanType,
+    );
     const entitlement = toBoolean(
         getParameter('entitlement', commerce),
         Defaults.entitlement,
@@ -115,6 +119,7 @@ function getSettings(config = {}) {
         displayPerUnit,
         displayRecurrence,
         displayTax,
+        displayPlanType,
         entitlement,
         extraOptions: Defaults.extraOptions,
         modal,

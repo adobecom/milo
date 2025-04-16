@@ -9,11 +9,6 @@
         rel="stylesheet"
         href="http://localhost:2023/__wds-outside-root__/2/styles/styles.css"
     />
-    <script>
-        window.process = {
-            env: {},
-        };
-    </script>
     <style>
         main {
             display: flex;
@@ -50,10 +45,10 @@
             background: linear-gradient(90deg, rgba(2, 0, 36, 1) 0%, rgba(140, 43, 95, 0.4430147058823529) 35%, rgba(0, 212, 255, 1) 100%);
         }
     </style>
-    <mas-commerce-service env="stage"></mas-commerce-service>
 </head>
 
 <body>
+    <mas-commerce-service env="stage"></mas-commerce-service>
     <script type="module" src="./merch-card.test.html.js"></script>
     <main>
         <div id="sidenav">
