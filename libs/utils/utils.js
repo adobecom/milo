@@ -1670,3 +1670,24 @@ export function loadLana(options = {}) {
 }
 
 export const reloadPage = () => window.location.reload();
+
+export function screenSizeHandler() {
+  const SCREEN_CONSTANTS = {
+    DESKTOP_SIZE: 900,
+    MOBILE_SIZE: 768,
+    DESKTOP: 'DESKTOP',
+    MOBILE: 'MOBILE',
+    TABLET: 'TABLET',
+  };
+  const defineDeviceByScreenSize = () => {
+    const screenWidth = window.innerWidth;
+    if (screenWidth >= SCREEN_CONSTANTS.DESKTOP_SIZE) {
+      return SCREEN_CONSTANTS.DESKTOP;
+    }
+    if (screenWidth <= SCREEN_CONSTANTS.MOBILE_SIZE) {
+      return SCREEN_CONSTANTS.MOBILE;
+    }
+    return SCREEN_CONSTANTS.TABLET;
+  };
+  return [SCREEN_CONSTANTS, defineDeviceByScreenSize];
+}

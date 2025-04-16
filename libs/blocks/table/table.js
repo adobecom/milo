@@ -1,32 +1,21 @@
 /* eslint-disable no-plusplus */
-import { createTag, getConfig, MILO_EVENTS } from '../../utils/utils.js';
+import { createTag, getConfig, MILO_EVENTS, screenSizeHandler } from '../../utils/utils.js';
 import { decorateButtons } from '../../utils/decorate.js';
 import { debounce } from '../../utils/action.js';
 import { replaceKeyArray } from '../../features/placeholders.js';
 import { getGnavHeight } from '../global-navigation/utilities/utilities.js';
 
-const DESKTOP_SIZE = 900;
-const MOBILE_SIZE = 768;
+const [SCREEN_CONSTANTS, defineDeviceByScreenSize] = screenSizeHandler();
 const tableHighlightLoadedEvent = new Event('milo:table:highlight:loaded');
 let tableIndex = 0;
 let isExpandEventsAssigned = false;
 
-const isMobileLandscape = () => (window.matchMedia('(orientation: landscape)').matches && window.innerHeight <= MOBILE_SIZE);
-function defineDeviceByScreenSize() {
-  const screenWidth = window.innerWidth;
-  if (screenWidth >= DESKTOP_SIZE) {
-    return 'DESKTOP';
-  }
-  if (screenWidth <= MOBILE_SIZE) {
-    return 'MOBILE';
-  }
-  return 'TABLET';
-}
+const isMobileLandscape = () => (window.matchMedia('(orientation: landscape)').matches && window.innerHeight <= SCREEN_CONSTANTS.MOBILE_SIZE);
 
 export function isStickyHeader(el) {
   return el.classList.contains('sticky')
-    || (el.classList.contains('sticky-desktop-up') && defineDeviceByScreenSize() === 'DESKTOP')
-    || (el.classList.contains('sticky-tablet-up') && defineDeviceByScreenSize() !== 'MOBILE' && !isMobileLandscape());
+    || (el.classList.contains('sticky-desktop-up') && defineDeviceByScreenSize() === SCREEN_CONSTANTS.DESKTOP)
+    || (el.classList.contains('sticky-tablet-up') && defineDeviceByScreenSize() !== SCREEN_CONSTANTS.MOBILE && !isMobileLandscape());
 }
 
 function handleHeading(table, headingCols) {
