@@ -2,7 +2,7 @@ name: Merge to stage
 
 on:
   schedule:
-    - cron: '0 */4 * * *' # Run every 4 hours
+    - cron: '*/5 * * * *' # Run every 4 hours
   workflow_dispatch: # Allow manual trigger
   repository_dispatch:
     types: [merge-to-stage]
