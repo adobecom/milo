@@ -1408,7 +1408,7 @@ html:has(body.disable-ios-scroll) { /* this class is only added on iOS */
   opacity: 0.4;
   background: linear-gradient(270deg, #D3D3D3, #EAEAEA, #D3D3D3);
   background-size: 200% 200%;
-  animation: shimmer 0.6s infinite alternate linear;
+  animation: mega-menu-skeleton 0.6s infinite alternate linear;
   animation-direction: alternate;
 }
 
@@ -1459,7 +1459,7 @@ html:has(body.disable-ios-scroll) { /* this class is only added on iOS */
   margin: 0px 28px;
 }
 
-@keyframes shimmer {
+@keyframes mega-menu-skeleton {
   from {
     background-position: 0% 100%;
   }
