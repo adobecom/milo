@@ -4,7 +4,7 @@ const {
   pulls: { addLabels, addFiles, getChecks, getReviews },
 } = require('./helpers.js');
 
-// Test For Merge-To-Main
+// Test For Merge-To-Main and more
 // Run from the root of the project for local testing: node --env-file=.env .github/workflows/merge-to-main.js
 const PR_TITLE = '[Release] Stage to Main';
 const STAGE = 'stage';
