@@ -14,3 +14,14 @@ export const SEO_TITLES = {
   Lorem: 'SEO - Lorem Ipsum',
   Links: 'SEO -Links',
 };
+
+export const PERFORMANCE_TITLES = {
+  LcpEl: 'Performance - Valid LCP',
+  SingleBlock: 'Performance - Single Block',
+  ImageSize: 'Performance - Images Size',
+  VideoPoster: 'Performance - Videos',
+  Fragments: 'Performance - Fragments',
+  Personalization: 'Performance - Personalization',
+  Placeholders: 'Performance - Placeholders',
+  Icons: 'Performance - Icons',
+};

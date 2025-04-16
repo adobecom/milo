@@ -1,4 +1,125 @@
 import { html, signal, useEffect } from '../../../deps/htm-preact.js';
+import { runChecks } from '../checks/performance.js';
+import { STATUS } from '../checks/constants.js';
+
+const icons = {
+  [STATUS.PASS]: 'green',
+  [STATUS.FAIL]: 'red',
+  [STATUS.EMPTY]: 'empty',
+};
+
+export const config = {
+  items: signal([]),
+  lcp: null,
+  cls: 0,
+};
+
+export function PerformanceItem({ status, title, description }) {
+  return html`
+    <div class="preflight-item">
+      <div class="result-icon ${icons[status]}"></div>
+      <div class="preflight-item-text">
+        <p class="preflight-item-title">${title}</p>
+        <p class="preflight-item-description">${description}</p>
+      </div>
+    </div>
+  `;
+}
+
+export const createPerformanceItem = ({ status, title, description }) => html`
+  <${PerformanceItem} status=${status} title=${title} description=${description} />
+`;
+
+let clonedLcpSection;
+function highlightElement(event) {
+  if (!config.lcp) return;
+  const lcpSection = config.lcp?.element.closest('.section');
+  const tooltip = document.querySelector('.lcp-tooltip-modal');
+  const { offsetHeight, offsetWidth } = lcpSection;
+  const scaleFactor = Math.min(500 / offsetWidth, 500 / offsetHeight);
+  if (!clonedLcpSection) {
+    clonedLcpSection = lcpSection.cloneNode(true);
+    clonedLcpSection.classList.add('lcp-clone');
+  }
+  Object.assign(clonedLcpSection.style, {
+    width: `${lcpSection.offsetWidth}px`,
+    height: `${lcpSection.offsetHeight}px`,
+    transform: `scale(${scaleFactor})`,
+    transformOrigin: 'top left',
+  });
+  if (!tooltip.children.length) tooltip.appendChild(clonedLcpSection);
+  const { top, left } = event.currentTarget.getBoundingClientRect();
+  Object.assign(tooltip.style, {
+    width: `${offsetWidth * scaleFactor}px`,
+    height: `${offsetHeight * scaleFactor}px`,
+    top: `${top + window.scrollY - offsetHeight * scaleFactor - 10}px`,
+    left: `${left + window.scrollX}px`,
+  });
+  document.querySelector('.lcp-tooltip-modal').classList.add('show');
+}
+
+const removeHighlight = () => {
+  document.querySelector('.lcp-tooltip-modal').classList.remove('show');
+};
+
+function observePerfMetrics() {
+  new PerformanceObserver((entryList) => {
+    const entries = entryList.getEntries();
+    const lastEntry = entries[entries.length - 1];
+    if (lastEntry) {
+      config.lcp = lastEntry;
+      // Run checks and handle async results
+      const results = runChecks(document);
+      config.items.value = results;
+      // Execute async checks
+      results.forEach((result, index) => {
+        if (result.async) {
+          result.fetch().then((asyncResult) => {
+            config.items.value = [
+              ...config.items.value.slice(0, index),
+              asyncResult,
+              ...config.items.value.slice(index + 1),
+            ];
+          });
+        }
+      });
+    }
+  }).observe({ type: 'largest-contentful-paint', buffered: true });
+
+  new PerformanceObserver((entryList) => {
+    const entries = entryList.getEntries();
+    entries.forEach((entry) => {
+      if (!entry.hadRecentInput) {
+        config.cls += entry.value;
+      }
+    });
+    if (config.cls > 0) {
+      // TODO - Lana log? We should not have any CLS.
+    }
+  }).observe({ type: 'layout-shift', buffered: true });
+}
+
+export function Panel() {
+  useEffect(() => observePerfMetrics(), []);
+
+  return html`
+    <div class="preflight-columns">
+      <div class="preflight-column">${config.items.value.slice(0, 4).map((item) => createPerformanceItem(item))}</div>
+      <div class="preflight-column">${config.items.value.slice(4, 8).map((item) => createPerformanceItem(item))}</div>
+      <div>Unsure on how to get this page fully into the green? Check out the <a class="performance-guidelines" href="https://milo.adobe.com/docs/authoring/performance/" target="_blank">Milo Performance Guidelines</a>.</div>
+      <div> 
+        <span class="performance-element-preview" onMouseEnter=${highlightElement} onMouseLeave=${removeHighlight}>
+          Highlight the found LCP section
+        </span> 
+      </div>
+      <div class="lcp-tooltip-modal"></div>
+    </div>
+  `;
+}
+
+export default Panel;
+
+/* import { html, signal, useEffect } from '../../../deps/htm-preact.js';
 import { getMetadata } from '../../../utils/utils.js';
 
 const icons = {
@@ -262,4 +383,6 @@ export function Panel() {
   `;
 }
 
-export default Panel;
+export default Panel; */
+
+
