@@ -435,10 +435,11 @@ function getDate(inputDate) {
 }
 
 function getAbsUrl(manifestUrl, pageUrl) {
-  return manifestUrl.startsWith('http')
+  return manifestUrl?.startsWith('http')
     ? manifestUrl
     : `${pageUrl.split('.com')[0]}.com${manifestUrl}`;
-};
+}
+
 function createReport(el, data) {
   const { result } = data;
   el.innerHTML = `
