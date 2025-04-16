@@ -8,7 +8,7 @@ let log;
 
 function getTimeoutPromise() {
   return new Promise((resolve) => {
-    setTimeout(() => resolve(false), CARD_AUTOBLOCK_TIMEOUT);
+    setTimeout(() => resolve('timeout'), CARD_AUTOBLOCK_TIMEOUT);
   });
 }
 
@@ -37,9 +37,10 @@ async function loadDependencies() {
 export async function checkReady(masElement) {
   const readyPromise = masElement.checkReady();
   const success = await Promise.race([readyPromise, getTimeoutPromise()]);
-
-  if (!success) {
+  if (success === 'timeout') {
     log.error(`${masElement.tagName} did not initialize withing give timeout`);
+  } else if (!success) {
+    log.error(`${masElement.tagName} failed to initialize`);
   }
 }
 
