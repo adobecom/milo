@@ -11,5 +11,12 @@ module.exports = {
       browserParams: '?theme=dark',
       tags: '@mas-docs @checkout-link @commerce @smoke @regression @milo',
     },
+    // Merch Card Page
+    {
+      tcid: '0',
+      name: '@MAS-DOCS-merch-card',
+      path: '/libs/features/mas/docs/merch-card.html',
+      tags: '@mas-docs @merch-card @commerce @smoke @regression @milo',
+    },
   ],
 };

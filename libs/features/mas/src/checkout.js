@@ -10,6 +10,7 @@ import {
 import { buildCheckoutUrl } from './buildCheckoutUrl.js';
 import { Defaults } from './defaults.js';
 import { toOfferSelectorIds, toQuantity } from './utilities.js';
+import { MODAL_TYPE_3_IN_1 } from './constants.js';
 
 /**
  * generate Checkout configuration
@@ -67,7 +68,7 @@ export function Checkout({ providers, settings }) {
             language,
             entitlement: toBoolean(entitlement),
             upgrade: toBoolean(upgrade),
-            modal: toBoolean(modal),
+            modal,
             perpetual: toBoolean(perpetual),
             promotionCode: computePromoStatus(promotionCode).effectivePromoCode,
             wcsOsi: toOfferSelectorIds(wcsOsi),
@@ -101,7 +102,7 @@ export function Checkout({ providers, settings }) {
             quantity,
             ...rest
         } = collectCheckoutOptions(options);
-        const context = window.frameElement ? 'if' : 'fp';
+        const context = window.frameElement || Object.values(MODAL_TYPE_3_IN_1).includes(options.modal) ? 'if' : 'fp';
         const data = {
             checkoutPromoCode,
             clientId,
@@ -118,9 +119,11 @@ export function Checkout({ providers, settings }) {
             const [{ offerId, offerType, productArrangementCode }] = offers;
             const {
                 marketSegments: [marketSegment],
+                customerSegment,
             } = offers[0];
             Object.assign(data, {
                 marketSegment,
+                customerSegment,
                 offerType,
                 productArrangementCode,
             });

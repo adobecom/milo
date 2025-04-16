@@ -155,6 +155,19 @@ function setUserAgent(window, userAgent) {
 // eslint-disable-next-line no-promise-executor-return
 const sleep = (delay) => new Promise((resolve) => setTimeout(resolve, delay));
 
+const injectCSSIntoIframe = (iframe, cssRules) => {
+  iframe.addEventListener('load', () => {
+    try {
+      const style = document.createElement('style');
+      style.textContent = cssRules;
+      iframe.contentWindow.document.head.appendChild(style);
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.warn('Could not inject CSS into iframe. It might be cross-origin.', error);
+    }
+  });
+};
+
 const openDeviceModal = async (e) => {
   if (deviceModal) {
     closeModal(deviceModal);
@@ -173,6 +186,13 @@ const openDeviceModal = async (e) => {
   iFrameUrl.searchParams.set('graybox', 'menu-off');
   const deviceBorder = createTag('img', { class: 'graybox-device-border', src: isMobile ? iphoneFrame : ipadFrame });
   const iFrame = createTag('iframe', { src: iFrameUrl.href, width: '100%', height: '100%' });
+  const cssRules = `
+    body > .mep-preview-overlay {
+      display: none !important;
+    }
+  `;
+
+  injectCSSIntoIframe(iFrame, cssRules);
 
   const modal = createTag('div', null, [deviceBorder, iFrame]);
   docFrag.append(modal);
@@ -191,6 +211,12 @@ const openDeviceModal = async (e) => {
     deviceModal.classList.add('tablet');
     setUserAgent(iFrame.contentWindow, USER_AGENT.iPad);
   }
+
+  // Spoof iFrame dimensions as screen size for MEP
+  iFrame.contentWindow.screen = {
+    width: iFrame.clientWidth,
+    height: iFrame.clientHeight,
+  };
 
   const removeBodyPreviewClasses = () => document.body.classList.remove(
     CLASS.PHONE_PREVIEW,
