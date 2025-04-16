@@ -5,19 +5,6 @@ import { createRedirectsArea } from './utils/redirect-inputs.js';
 export const NO_LOCALE_ERROR = 'No locales selected from list';
 const OUTPUT_LABEL_TEXT = 'Localized results appear here:';
 const COPY_TO_CLIPBOARD = 'Copy to clipboard';
-const INSTRUCTIONS_TEXT = 'Select the locales you require by checking the checkboxes. Paste URLs copied from an excel sheet'
-  + ' into the first input. Press "Process Redirects" to generate localized URLs to paste into redirects.xlsx. To copy your URLS,'
-  + ' press "Copy to clipboard" or select them with the cursor manually.';
-
-export function parseUrlString(input) {
-  const pairs = input.split('\n');
-
-  return pairs.reduce((rdx, pairString) => {
-    const pair = pairString.split(/\t| /);
-    rdx.push(pair);
-    return rdx;
-  }, []);
-}
 
 function handleError(e, eSection) {
   const errorElem = document.querySelector('.error');
@@ -35,14 +22,13 @@ export function stringifyListForExcel(urls) {
 
 export default async function init(el) {
   const { createTag } = await import('../../utils/utils.js');
+
   const xlPath = './locale-config.json';
   const resp = await fetch(xlPath);
   if (!resp.ok) return;
   const { data } = await resp.json();
 
   const redirectsContainer = createTag('section', { class: 'redirects-container' });
-  const header = createTag('h1', null, 'Redirect Formatting Tool');
-  const instructions = createTag('p', { class: 'instructions' }, INSTRUCTIONS_TEXT);
   const errorSection = createTag('p', { class: 'error' });
 
   // Checkboxes
@@ -62,14 +48,14 @@ export default async function init(el) {
 
   // Create the DOM
   redirectsContainer.append(checkBoxes, singleInputArea, outputAreaContainer);
-  el.append(header, instructions, errorSection, redirectsContainer);
+  el.append(errorSection, redirectsContainer);
 
+  // Event Listeners
   document.querySelector('.process-redirects').addEventListener('click', () => {
     const checkboxesList = checkBoxes.querySelectorAll('input[type="checkbox"]');
     const locales = getLocalesFromUi(checkboxesList);
     const activeInput = document.querySelector('.redirects-ui-area .selected');
     const redirectsList = createRedirectsList(activeInput);
-    console.log(redirectsList);
 
     if (!locales.length) {
       handleError(NO_LOCALE_ERROR, checkBoxes);

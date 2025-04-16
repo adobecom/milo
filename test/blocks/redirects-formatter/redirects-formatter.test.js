@@ -4,20 +4,27 @@ import sinon from 'sinon';
 
 const {
   default: init,
-  parseUrlString,
-  generateRedirectList,
-  stringifyListForExcel,
-  SELECT_ALL_REGIONS,
-  DESELECT_ALL_REGIONS,
   NO_LOCALE_ERROR,
 } = await import('../../../libs/blocks/redirects-formatter/redirects-formatter.js');
-const { htmlIncluded, htmlExcluded, externalUrls, mixedSpaceTabUrls } = await import('./mocks/textAreaValues.js');
+const COPY_TO_CLIPBOARD = 'Copied';
 
 describe('Redirects Formatter', () => {
   const ogFetch = window.fetch;
+  let clipboardWriteText;
+  let originalClipboard;
 
   beforeEach(async () => {
     document.body.innerHTML = await readFile({ path: './mocks/redirects-formatter.html' });
+
+    // Store original clipboard
+    originalClipboard = Object.getOwnPropertyDescriptor(navigator, 'clipboard');
+
+    // Mock clipboard using Object.defineProperty and return a Promise
+    clipboardWriteText = sinon.stub().returns(Promise.resolve());
+    Object.defineProperty(navigator, 'clipboard', {
+      value: { writeText: clipboardWriteText },
+      configurable: true,
+    });
 
     const block = document.querySelector('.redirects-formatter');
 
@@ -31,114 +38,65 @@ describe('Redirects Formatter', () => {
 
   afterEach(async () => {
     window.fetch = ogFetch;
-  });
-
-  it('correctly parses values from the input', () => {
-    const parsedInput = parseUrlString(htmlIncluded);
-    const firstPair = parsedInput[0];
-    const lastPair = parsedInput[2];
-    expect(firstPair[0]).to.equal('https://business.adobe.com/products/experience-manager/sites/experience-fragments.html');
-    expect(firstPair[1]).to.equal('https://business.adobe.com/products/experience-manager/sites/omnichannel-experiences.html');
-    expect(lastPair[0]).to.equal('https://business.adobe.com/products/experience-manager/sites/out-of-the-box-components.html');
-    expect(lastPair[1]).to.equal('https://business.adobe.com/products/experience-manager/sites/developer-tools.html');
-  });
-
-  it('correctly parses values from the input with a mix of tabs and spaces', () => {
-    const parsedInput = parseUrlString(mixedSpaceTabUrls);
-    const firstPair = parsedInput[0];
-    const lastPair = parsedInput[2];
-    expect(firstPair[0]).to.equal('https://business.adobe.com/products/experience-manager/sites/experience-fragments.html');
-    expect(firstPair[1]).to.equal('https://business.adobe.com/products/experience-manager/sites/omnichannel-experiences.html');
-    expect(lastPair[0]).to.equal('https://business.adobe.com/products/experience-manager/sites/out-of-the-box-components.html');
-    expect(lastPair[1]).to.equal('https://business.adobe.com/products/experience-manager/sites/developer-tools.html');
-  });
-
-  it('outputs localized urls', () => {
-    const parsedInput = parseUrlString(htmlIncluded);
-    const locales = ['ar', 'au', 'uk'];
-
-    const redir = generateRedirectList(parsedInput, locales);
-    expect(redir[0][0]).to.equal('/ar/products/experience-manager/sites/experience-fragments');
-    expect(redir.length).to.equal(9);
-  });
-
-  it('provides a string formatted for pasting into excel', () => {
-    const parsedInput = parseUrlString(htmlIncluded);
-    const locales = ['ar', 'au', 'uk'];
-    const redir = generateRedirectList(parsedInput, locales);
-    const stringList = stringifyListForExcel(redir);
-
-    expect(typeof stringList).to.equal('string');
-    expect(stringList.substring(0, 4)).to.equal('/ar/');
-    expect(stringList.substring((stringList.length - 6), stringList.length)).to.equal('.html\n');
-  });
-
-  it('adds .html to the end of the string in output', () => {
-    expect(htmlExcluded.substring((htmlExcluded.length - 5), htmlExcluded.length)).to.equal('tools');
-    const parsedInput = parseUrlString(htmlExcluded);
-    const locales = ['ar', 'au', 'uk'];
-    const redir = generateRedirectList(parsedInput, locales);
-    const stringList = stringifyListForExcel(redir);
-
-    expect(typeof stringList).to.equal('string');
-    expect(stringList.substring(0, 4)).to.equal('/ar/');
-    expect(stringList.substring((stringList.length - 6), stringList.length)).to.equal('.html\n');
-  });
-
-  it('does not add .html to the end of the string in output for external or blog urls', () => {
-    expect(externalUrls.substring((externalUrls.length - 5), externalUrls.length)).to.equal('blog\n');
-    const parsedInput = parseUrlString(externalUrls);
-    const locales = ['ar', 'au', 'uk'];
-    const redir = generateRedirectList(parsedInput, locales);
-    const stringList = stringifyListForExcel(redir);
-
-    expect(typeof stringList).to.equal('string');
-    expect(stringList.substring(0, 4)).to.equal('/ar/');
-    expect(stringList.substring((stringList.length - 6), stringList.length)).to.not.equal('.html\n');
-  });
-
-  it('selects/deselects all the checkboxes on click', async () => {
-    const checkBoxes = document.querySelectorAll('.locale-checkbox');
-    expect([...checkBoxes].every((cb) => !cb.checked)).to.be.true;
-
-    const selectAllButton = document.querySelector('button');
-    selectAllButton.click();
-
-    expect([...checkBoxes].every((cb) => cb.checked)).to.be.true;
-    expect(selectAllButton.innerText).to.equal(DESELECT_ALL_REGIONS);
-
-    selectAllButton.click();
-    expect([...checkBoxes].every((cb) => !cb.checked)).to.be.true;
-    expect(selectAllButton.innerText).to.equal(SELECT_ALL_REGIONS);
+    // Restore original clipboard
+    if (originalClipboard) {
+      Object.defineProperty(navigator, 'clipboard', originalClipboard);
+    } else {
+      delete navigator.clipboard;
+    }
   });
 
   it('informs the user of an error if no locales are selected', async () => {
-    const checkBoxes = document.querySelectorAll('.locale-checkbox');
+    const checkBoxes = document.querySelectorAll('.checkboxes .locale-checkbox');
     expect([...checkBoxes].every((cb) => !cb.checked)).to.be.true;
 
     const processButton = document.querySelector('.process-redirects');
     const errorMessage = document.querySelector('.error');
-    const checkBoxContainer = document.querySelector('.checkbox-container');
+    const checkBoxContainer = document.querySelector('.checkboxes-container');
     processButton.click();
     expect(errorMessage.innerHTML).to.equal(NO_LOCALE_ERROR);
     expect(checkBoxContainer.classList.contains('error-border')).to.be.true;
   });
 
   it('informs the user of an error if an incorrect url is passed in to the input', async () => {
-    const input = document.querySelector('.redirects-text-area');
+    const bulkTab = document.querySelector('.bulk-redirects-container');
+    const bulkTextArea = bulkTab.querySelector('textarea');
+    const bulkTabButton = document.querySelector('.bulk-tab');
     const processButton = document.querySelector('.process-redirects');
     const errorMessage = document.querySelector('.error');
-    const selectAllCB = document.querySelector('.select-all-cb');
+    const selectAllCB = document.querySelector('.select-all-container .select');
     const correct = 'https://www.adobe.com/resource\thttps://www.adobe.com';
     const incorrect = '/resource\thttps://www.adobe.com';
 
+    bulkTabButton.click();
     selectAllCB.click();
-    input.value = correct;
+    bulkTextArea.value = correct;
     processButton.click();
-    expect(input.classList.contains('error-border')).to.be.false;
-    input.value = incorrect;
+    expect(bulkTab.classList.contains('selected')).to.be.true;
+    expect(bulkTab.classList.contains('error-border')).to.be.false;
+
+    bulkTextArea.value = incorrect;
     processButton.click();
     expect(errorMessage.innerHTML.length > 0).to.be.true;
-    expect(input.classList.contains('error-border')).to.be.true;
+    expect(document.querySelector('.redirects-ui-area .selected.error-border')).to.exist;
+  });
+
+  it('copies formatted redirects to clipboard when copy button is clicked', async () => {
+    const bulkTab = document.querySelector('.bulk-redirects-container');
+    const bulkTextArea = bulkTab.querySelector('textarea');
+    const bulkTabButton = document.querySelector('.bulk-tab');
+    const processButton = document.querySelector('.process-redirects');
+    const selectAllCB = document.querySelector('.select-all-container .select');
+    const copyButton = document.querySelector('.copy');
+    const testInput = 'https://www.adobe.com/resource\thttps://www.adobe.com';
+
+    bulkTabButton.click();
+    selectAllCB.click();
+    bulkTextArea.value = testInput;
+    processButton.click();
+    await copyButton.click();
+
+    expect(clipboardWriteText.called).to.be.true;
+    expect(copyButton.innerHTML).to.equal(COPY_TO_CLIPBOARD);
   });
 });

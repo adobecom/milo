@@ -87,6 +87,28 @@ section .error-border {
   margin: 20px;
 }
 
+.output-container button {
+  margin-right: 20px;
+}
+
+.output-container textarea {
+  width: 100%;
+  padding: 0;
+}
+
+.select-all-container button {
+  min-width: 115px;
+}
+
+.redirect-tabs button {
+  margin: 0 20px;
+}
+
+.redirects-container section button {
+  grid-column-start: 2;
+  justify-self: end;
+}
+
 .checkboxes-container .tabs button{
   margin: 0 15px 0 5px;
 }
@@ -94,13 +116,8 @@ section .error-border {
 .select-all-container {
   display: flex;
   justify-content: flex-end;
-  border-left: 2px solid black;
   margin: 20px;
   width: 20%;
-}
-
-.select-all-container button {
-  min-width: 115px;
 }
 
 .checkbox-wrapper {
@@ -121,13 +138,12 @@ section .error-border {
   display: none;
 }
 
-.redirects-container section textarea {
-  grid-column: 1/3;
+.bulk-redirects-container textarea {
+  margin-top: 20px;
 }
 
-.redirects-container section button {
-  grid-column-start: 2;
-  justify-self: end;
+.redirects-container section textarea {
+  grid-column: 1/3;
 }
 
 .error {
@@ -157,13 +173,13 @@ section .error-border {
   margin-left: 40px;
 }
 
+.single-redirects-container input {
+  width: 340px;
+}
+
 .redirect-tabs {
   display: flex;
   margin: 20px 0;
-}
-
-.redirect-tabs button {
-  margin: 0 20px;
 }
 
 .redirect-tabs .process-redirects {
@@ -172,10 +188,6 @@ section .error-border {
 
 .bulk-redirects-container { 
   display: grid;
-  margin-top: 20px;
-}
-
-.bulk-redirects-container textarea {
   margin-top: 20px;
 }
 
@@ -191,13 +203,4 @@ section .error-border {
   display: flex;
   justify-content: space-between;
   margin: 40px 0;
-}
-
-.output-container button {
-  margin-right: 20px;
-}
-
-.output-container textarea {
-  width: 100%;
-  padding: 0;
 }

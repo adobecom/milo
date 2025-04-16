@@ -10,16 +10,21 @@ export function getLocalesFromUi(nodeList) {
 // create a function to replace any space, tab, or newline with a space
 function createPairsFromTextaArea(textaAreaValue) {
   const whitespace = /\s+/;
-  const allSourceDestinationValues = textaAreaValue.split(whitespace);
+  const urlValues = textaAreaValue.split(whitespace);
   const pairs = [];
-  for (let i = 0; i < allSourceDestinationValues.length; i += 2) {
-    pairs.push({
-      source: allSourceDestinationValues[i]?.trim(),
-      destination: allSourceDestinationValues[i + 1]?.trim(),
-    });
+  for (let i = 0; i < urlValues.length; i += 2) {
+    const source = urlValues[i]?.trim();
+    const destination = urlValues[i + 1]?.trim();
+
+    if (source && source.length && destination) {
+      pairs.push({
+        source,
+        destination,
+      });
+    }
   }
   return pairs;
-};
+}
 
 function createPairsFromNodeList(nodeList, sourceSelector, destinationSelector) {
   return [...nodeList].reduce((rdx, container) => {

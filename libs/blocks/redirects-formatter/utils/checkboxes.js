@@ -1,5 +1,7 @@
 import { createTag } from '../../../utils/utils.js';
 
+const selectedClassName = 'selected';
+
 export function createGroupings(sheetData) {
   return sheetData.reduce((acc, row) => {
     Object.entries(row).forEach(([key, value]) => {
@@ -24,14 +26,14 @@ export function createAllRegionGroup(data) {
 function createTabs(tabNames) {
   return tabNames.map((tabKey, idx) => {
     const tabClass = tabKey.replaceAll(' ', '-').toLocaleLowerCase().trim();
-    return createTag('button', { class: `${tabClass} checkbox-tab ${idx === 0 ? 'selected' : ''}`, 'data-group-name': tabClass }, tabKey);
+    return createTag('button', { class: `${tabClass} checkbox-tab ${idx === 0 ? selectedClassName : ''}`, 'data-group-name': tabClass }, tabKey);
   });
 }
 
 function createCheckboxGroupNodes(checkboxGroupings) {
   return Object.keys(checkboxGroupings).map((groupKey, idx) => {
     const groupClass = groupKey.replaceAll(' ', '-').toLocaleLowerCase().trim();
-    const group = createTag('div', { class: `${groupClass} checkbox-grouping ${idx === 0 ? 'selected' : ''}` });
+    const group = createTag('div', { class: `${groupClass} checkbox-grouping ${idx === 0 ? selectedClassName : ''}` });
 
     const checkboxes = checkboxGroupings[groupKey].map((locale) => {
       const checkbox = createTag('input', { class: 'locale-checkbox', type: 'checkbox', id: `${locale}`, name: `${locale}` });
@@ -70,21 +72,21 @@ export function createCheckboxArea(data) {
   // Event Listeners
   checkboxUi.querySelectorAll('.checkbox-tab').forEach((clickedTab) => {
     clickedTab.addEventListener('click', () => {
-      checkboxUi.querySelector('.selected').classList.remove('selected');
-      clickedTab.classList.add('selected');
+      checkboxUi.querySelector(`.${selectedClassName}`).classList.remove(selectedClassName);
+      clickedTab.classList.add(selectedClassName);
       const associatedClass = clickedTab.dataset.groupName;
-      const selectedArea = checkboxSelectSection.querySelector('.selected');
+      const selectedArea = checkboxSelectSection.querySelector(`.${selectedClassName}`);
       selectedArea.querySelectorAll('input').forEach((checkbox) => {
         checkbox.checked = false;
       });
       selectButton.innerText = SELECT_ALL_REGIONS;
-      selectedArea.classList.remove('selected');
-      checkboxSelectSection.querySelector(`.${associatedClass}`).classList.add('selected');
+      selectedArea.classList.remove(selectedClassName);
+      checkboxSelectSection.querySelector(`.${associatedClass}`).classList.add(selectedClassName);
     });
   });
 
   selectButton.addEventListener('click', () => {
-    const selectedCheckboxArea = checkboxSelectSection.querySelector('.selected');
+    const selectedCheckboxArea = checkboxSelectSection.querySelector(`.${selectedClassName}`);
     const currentIsSelectAll = selectButton.innerText === SELECT_ALL_REGIONS;
 
     selectedCheckboxArea.querySelectorAll('input').forEach((checkbox) => {
