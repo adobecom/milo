@@ -19,6 +19,16 @@ class LiteYTEmbed extends HTMLElement {
     this.needsYTApiForAutoplay = navigator.vendor.includes('Apple') || this.isMobile;
   }
 
+  async fetchVideoTitle() {
+    try {
+      const response = await fetch(`https://www.youtube.com/oembed?url=http://www.youtube.com/watch?v=${this.videoId}&format=json`);
+      const data = await response.json();
+      if (data.title && this.iframeEl) this.iframeEl.title = data.title;
+    } catch (error) {
+      window.lana.log('Error fetching YouTube video title', { error });
+    }
+  }
+
   static warmConnections() {
     if (LiteYTEmbed.preconnected) return;
     LiteYTEmbed.preconnected = true;
@@ -43,7 +53,6 @@ class LiteYTEmbed extends HTMLElement {
 
   async addIframe() {
     if (this.classList.contains('lyt-activated')) return;
-
     this.classList.add('lyt-activated');
     const params = new URLSearchParams(this.getAttribute('params') || []);
     params.append('autoplay', '1');
@@ -59,18 +68,18 @@ class LiteYTEmbed extends HTMLElement {
         playerVars: Object.fromEntries(params),
         allow: 'accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture',
         allowfullscreen: true,
-        title: this.playLabel,
       });
     } else {
-      const iframeEl = createTag('iframe', {
+      this.iframeEl = createTag('iframe', {
         src: `https://www.youtube-nocookie.com/embed/${encodeURIComponent(this.videoId)}?${params.toString()}`,
         allowFullscreen: true,
         allow: 'accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture',
         title: this.playLabel,
       });
-      this.insertAdjacentElement('afterend', iframeEl);
-      iframeEl.focus();
+      this.insertAdjacentElement('afterend', this.iframeEl);
+      this.iframeEl.focus();
       this.remove();
+      this.fetchVideoTitle();
     }
   }
 }
@@ -80,11 +89,10 @@ export default async function init(a) {
 
   const embedVideo = () => {
     if (isInTextNode(a) || !a.origin?.includes('youtu')) return;
-    const title = !a.textContent.includes('http') ? a.textContent : 'Youtube Video';
     const searchParams = new URLSearchParams(a.search);
     const id = searchParams.get('v') || a.pathname.split('/').pop();
     searchParams.delete('v');
-    const liteYTElement = createTag('lite-youtube', { videoid: id, playlabel: title });
+    const liteYTElement = createTag('lite-youtube', { videoid: id, playLabel: 'Youtube video' });
 
     if (searchParams.toString()) liteYTElement.setAttribute('params', searchParams.toString());
 

@@ -345,7 +345,9 @@ const closeOnClickOutside = (e, isLocalNav, navWrapper) => {
     .find((openItem) => openItem.parentElement.contains(e.target));
 
   if (!isClickedElemOpen) {
-    closeAllDropdowns();
+    const animatedElement = isLocalNav ? document.querySelector('header.new-nav + .feds-localnav .feds-localnav-items') : undefined;
+    const animationType = isLocalNav ? 'transition' : undefined;
+    closeAllDropdowns({ animatedElement, animationType });
   }
 };
 
@@ -536,8 +538,15 @@ class Gnav {
       localNav.querySelector('.feds-localnav-title').setAttribute('daa-ll', `${title}_localNav|${isActive ? 'close' : 'open'}`);
     });
 
-    localNav.querySelector('.feds-localnav-curtain').addEventListener('click', (e) => {
-      trigger({ element: e.currentTarget, event: e, type: 'localNav-curtain' });
+    const curtain = localNav.querySelector('.feds-localnav-curtain');
+    curtain.addEventListener('click', (e) => {
+      trigger({
+        element: e.currentTarget,
+        event: e,
+        type: 'localNav-curtain',
+        animatedElement: itemWrapper,
+        animationType: 'transition',
+      });
     });
     const promo = document.querySelector('.feds-promo-aside-wrapper');
     if (promo) localNav.classList.add('has-promo');
@@ -548,8 +557,17 @@ class Gnav {
       // note: ios safari changes between -0.34375, 0, and 0.328125
       return rect.top === 0;
     };
-    window.addEventListener('scroll', () => {
+    window.addEventListener('scroll', (e) => {
       const classList = this.elements.localNav?.classList;
+      if (classList.contains('feds-localnav--active')) {
+        trigger({
+          element: curtain,
+          event: e,
+          type: 'localNav-curtain',
+          animatedElement: itemWrapper,
+          animationType: 'transition',
+        });
+      }
       if (isAtTop()) {
         if (!classList?.contains('is-sticky')) {
           classList?.add('is-sticky');
@@ -1053,6 +1071,30 @@ class Gnav {
     if (!decorate) return this.elements.aside;
     this.elements.aside = await decorate({ headerElem: this.block, fedsPromoWrapper, promoPath });
     fedsPromoWrapper.append(this.elements.aside);
+
+    const updateLayout = () => {
+      const promoHeight = `${this.elements.aside.clientHeight}px`;
+      const header = document.querySelector('header');
+      const localNav = document.querySelector('.feds-localnav');
+
+      fedsPromoWrapper.style.height = promoHeight;
+      header.style.top = promoHeight;
+
+      if (!isDesktop.matches && localNav) {
+        header.style.top = 0;
+        localNav.style.top = promoHeight;
+      }
+    };
+
+    if (this.elements.aside.clientHeight > fedsPromoWrapper.clientHeight) {
+      lanaLog({ message: 'Promo height is more than expected, potential CLS', tags: 'gnav-promo', errorType: 'info' });
+      updateLayout();
+
+      this.promoResizeObserver?.disconnect();
+      this.promoResizeObserver = new ResizeObserver(updateLayout);
+      this.promoResizeObserver.observe(this.elements.aside);
+    }
+
     return this.elements.aside;
   };
 
@@ -1124,10 +1166,15 @@ class Gnav {
   updatePopupPosition = (activePopup) => {
     const popup = activePopup || this.elements.mainNav.querySelector('.feds-navItem--section.feds-dropdown--active .feds-popup');
     if (!popup) return;
+    const hasPromo = this.block.classList.contains('has-promo');
+    const promoHeight = this.elements.aside?.clientHeight;
+
+    if (!this.isLocalNav()) {
+      if (hasPromo) popup.style.top = `calc(0px - var(--feds-height-nav) - ${promoHeight}px)`;
+      return;
+    }
     const yOffset = window.scrollY || Math.abs(parseInt(document.body.style.top, 10)) || 0;
-    const navOffset = this.block.classList.contains('has-promo')
-      ? 'var(--feds-height-nav) - var(--global-height-navPromo)'
-      : 'var(--feds-height-nav)';
+    const navOffset = hasPromo ? `var(--feds-height-nav) - ${promoHeight}px` : 'var(--feds-height-nav)';
     popup.removeAttribute('style');
     popup.style.top = `calc(${yOffset}px - ${navOffset} - 2px)`;
     const { isPresent, isSticky, height } = getBranchBannerInfo();
@@ -1289,7 +1336,7 @@ class Gnav {
             const popup = dropdownTrigger.nextElementSibling;
             // document.body.style.top should always be set
             // at this point by calling disableMobileScroll
-            if (popup && this.isLocalNav()) {
+            if (popup) {
               this.updatePopupPosition(popup);
             }
             makeTabActive(popup);

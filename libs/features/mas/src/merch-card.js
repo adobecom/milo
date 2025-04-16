@@ -8,6 +8,7 @@ import {
 
 import './global.css.js';
 import './aem-fragment.js';
+import './merch-badge.js';
 import './merch-mnemonic-list.js';
 import './merch-whats-included.js';
 import {
@@ -59,6 +60,7 @@ export class MerchCard extends LitElement {
         },
         badgeText: { type: String, attribute: 'badge-text' },
         actionMenu: { type: Boolean, attribute: 'action-menu' },
+        actionMenuLabel: { type: String, attribute: 'action-menu-label' },
         customHr: { type: Boolean, attribute: 'custom-hr' },
         consonant: { type: Boolean, attribute: 'consonant' },
         failed: { type: Boolean, attribute: 'failed', reflect: true },
