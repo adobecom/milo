@@ -25,7 +25,7 @@ export const loadJarvisChat = async (getConfig, getMetadata, loadScript, loadSty
 };
 
 export const loadPrivacy = async (getConfig, loadScript) => {
-  const { privacyId } = getConfig();
+  const { privacyId, env } = getConfig();
   const acom = '7a5eb705-95ed-4cc4-a11d-0cc5760e93db';
   const ids = {
     'hlx.page': 'f5b9e81a-54b5-40cb-afc3-84ca26e7dbaf-test',
@@ -42,7 +42,11 @@ export const loadPrivacy = async (getConfig, loadScript) => {
     documentLanguage: true,
   };
 
-  const privacyEnv = new URLSearchParams(window.location.search).get('privacyEnv') || '';
+  // Load the privacy script
+  let privacyEnv = '';
+  if (env !== 'prod') {
+    privacyEnv = new URLSearchParams(window.location.search).get('privacyEnv') || '';
+  }
   loadScript(`https://www.${privacyEnv && `${privacyEnv}.`}adobe.com/etc.clientlibs/globalnav/clientlibs/base/privacy-standalone.js`);
 
   // Privacy triggers can exist anywhere on the page and can be added at any time
