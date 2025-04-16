@@ -125,6 +125,11 @@ header.new-nav .feds-nav > section.feds-navItem > .feds-popup .has-subheader .fe
 }
 
 .feds-navLink--gray-gradient {
+  display: none;
+}
+
+.global-navigation.new-nav .feds-navLink--gray-gradient {
+  display: block;
   background: #eaeaea;
 }
 
@@ -140,6 +145,10 @@ header.new-nav .feds-nav > section.feds-navItem > .feds-popup .has-subheader .fe
 
 header.global-navigation.ready {
   visibility: visible !important;
+}
+
+.feds-navLink.feds-navLink--header {
+  pointer-events: none;
 }
 
 /* Desktop styles */
@@ -283,10 +292,6 @@ header.global-navigation.ready {
 
   .feds-navLink.feds-navLink--header[class *= '-gradient'] .feds-navLink-title:after {
     display: none;
-  }
-
-  .feds-navLink.feds-navLink--header {
-    pointer-events: none;
   }
 
   [dir = "rtl"] .feds-navLink[class *= '-gradient'] .feds-navLink-title:after {
