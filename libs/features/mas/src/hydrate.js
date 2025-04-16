@@ -457,9 +457,6 @@ export async function hydrate(fragment, merchCard) {
     cleanup(merchCard);
     merchCard.id ??= fragment.id;
 
-    if (id === 'a8bc3d90-ff5f-4beb-8e23-04e4d22ac37e') console.log(fields);
-
-
     merchCard.removeAttribute('background-image');
     merchCard.removeAttribute('background-color');
     merchCard.removeAttribute('badge-background-color');

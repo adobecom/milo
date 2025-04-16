@@ -19,11 +19,6 @@ export class Catalog extends VariantLayout {
         super(card);
     }
 
-    /* c8 ignore next 3 */
-    get aemFragmentMapping() {
-        return CATALOG_AEM_FRAGMENT_MAPPING;
-    }
-
     get actionMenu() {
         return this.card.shadowRoot.querySelector('.action-menu');
     }

@@ -16,11 +16,6 @@ export class CCDSlice extends VariantLayout {
         return CSS;
     }
 
-    /* c8 ignore next 3 */
-    get aemFragmentMapping() {
-        return CCD_SLICE_AEM_FRAGMENT_MAPPING;
-    }
-
     renderLayout() {
         return html` <div class="content">
                 <div class="top-section">

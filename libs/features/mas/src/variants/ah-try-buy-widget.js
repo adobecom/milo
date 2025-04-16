@@ -21,11 +21,6 @@ export class AHTryBuyWidget extends VariantLayout {
   getGlobalCSS() {
     return CSS;
   }
-  
-  /* c8 ignore next 3 */
-  get aemFragmentMapping() {
-    return AH_TRY_BUY_WIDGET_AEM_FRAGMENT_MAPPING;
-  }
 
   renderLayout() {
     return html`

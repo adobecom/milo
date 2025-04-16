@@ -35,11 +35,6 @@ export class Plans extends VariantLayout {
     this.adaptForMobile = this.adaptForMobile.bind(this);
   }
 
-    /* c8 ignore next 3 */
-  get aemFragmentMapping() {
-    return PLANS_AEM_FRAGMENT_MAPPING;
-  }
-
   getGlobalCSS() {
     return CSS;
   }
@@ -81,7 +76,7 @@ export class Plans extends VariantLayout {
 
   get divider() {
     return this.card.variant === 'plans-education'
-      ? html`<sp-divider></sp-divider>` 
+      ? html`<div class="divider"></div>` 
       : ''
   }
 
@@ -135,20 +130,32 @@ export class Plans extends VariantLayout {
         --merch-card-plans-min-width: 244px;
         --merch-card-plans-max-width: 244px;
         --merch-card-plans-padding: 15px;
-        --merch-card-plans-heading-min-height: 23px;
         --merch-color-green-promo: rgb(0, 122, 77);
         --secure-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%23505050' viewBox='0 0 12 15'%3E%3Cpath d='M11.5 6H11V5A5 5 0 1 0 1 5v1H.5a.5.5 0 0 0-.5.5v8a.5.5 0 0 0 .5.5h11a.5.5 0 0 0 .5-.5v-8a.5.5 0 0 0-.5-.5ZM3 5a3 3 0 1 1 6 0v1H3Zm4 6.111V12.5a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1.389a1.5 1.5 0 1 1 2 0Z'/%3E%3C/svg%3E");
         font-weight: 400;
     }
 
-    :host([variant^='plans']) ::slotted([slot='heading-xs']) {
-        min-height: var(--merch-card-plans-heading-min-height);
+    :host([variant='plans-education']) ::slotted([slot='subtitle']) {
+        font-size: var(--consonant-merch-card-heading-xxxs-font-size);
+        line-height: var(--consonant-merch-card-heading-xxxs-line-height);
+        font-style: italic;
+        font-weight: 400;
+    }
+
+    :host([variant='plans-education']) .divider {
+        border: 0;
+        border-top: 1px solid #E8E8E8;
+        margin-top: 16px;
     }
 
     :host([variant^='plans']) .body {
         min-width: var(--merch-card-plans-min-width);
         max-width: var(--merch-card-plans-max-width);
         padding: var(--merch-card-plans-padding);
+    }
+
+    :host([variant='plans-education']) .body {
+        gap: 0;
     }
 
     :host([variant^='plans'][size]) .body {

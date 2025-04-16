@@ -19,11 +19,6 @@ export class CCDSuggested extends VariantLayout {
         return CSS;
     }
 
-    /* c8 ignore next 3 */
-    get aemFragmentMapping() {
-        return CCD_SUGGESTED_AEM_FRAGMENT_MAPPING;
-    }
-
     get stripStyle() {
         if (!this.card.backgroundImage) return '';
         return `

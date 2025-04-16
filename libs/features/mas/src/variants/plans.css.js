@@ -6,6 +6,7 @@ export const CSS = `
 }
 
 merch-card[variant^="plans"] {
+    --merch-card-plans-heading-xs-min-height: 23px;
     --consonant-merch-card-callout-icon-size: 18px;
     width: var(--consonant-merch-card-plans-width);
 }
@@ -14,7 +15,13 @@ merch-card[variant^="plans"] [slot="icons"] {
     --img-width: 41.5px;
 }
 
+
+merch-card[variant="plans-education"] [slot="subtitle"] {
+    margin-top: 8px;
+}
+
 merch-card[variant="plans-education"] [slot="body-xs"] span.price {
+  display: inline-block;
   font-size: var(--consonant-merch-card-heading-xs-font-size);
   font-weight: 700;
 }
@@ -23,16 +30,23 @@ merch-card[variant^="plans"] [slot="heading-xs"] span.price.price-strikethrough,
 merch-card[variant^="plans"] [slot="heading-m"] span.price.price-strikethrough,
 merch-card[variant="plans-education"] [slot="body-xs"] span.price.price-strikethrough {
   font-size: var(--consonant-merch-card-heading-xxxs-font-size);
-    line-height: var(--consonant-merch-card-body-xs-line-height);
-    font-weight: 700;
+  line-height: var(--consonant-merch-card-body-xs-line-height);
+  font-weight: 700;
+}
+
+merch-card[variant^="plans"] [slot='heading-xs'],
+merch-card[variant="plans-education"] span.heading-xs,
+merch-card[variant="plans-education"] [slot="body-xs"] span.price:not(.price-strikethrough) {
+  min-height: var(--merch-card-plans-heading-xs-min-height);
 }
 
 merch-card[variant="plans-education"] span.heading-xs {
   margin-top: 16px;
+  margin-bottom: 8px;
 }
 
 merch-card[variant="plans-education"] span.promo-text {
-  margin-block: 8px;
+  margin-bottom: 8px;
 }
 
 merch-card[variant^="plans"] [slot="promo-text"],
