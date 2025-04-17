@@ -2,12 +2,8 @@ import { getConfig, getFederatedContentRoot } from './utils.js';
 
 const h1h2Regex = /^h[1-2]$/i;
 const traverseForTextBeforeHeader = (node, regex) => {
-  if (regex.test(node.tagName)) {
-    return { text: '', foundHeader: true };
-  }
-  if (node.nodeType === Node.TEXT_NODE) {
-    return { text: node.nodeValue, foundHeader: false };
-  }
+  if (regex.test(node.tagName)) return { text: '', foundHeader: true };
+  if (node.nodeType === Node.TEXT_NODE) return { text: node.nodeValue, foundHeader: false };
   let text = '';
   let foundHeader = false;
   for (const child of node.childNodes) {
@@ -29,8 +25,7 @@ export const getTextBeforeHeader = (block) => {
 
 export const getProduct = (text, productNames) => {
   if (!text) return '';
-  const normalizedText = text.toLowerCase();
-  return productNames.find(({ us }) => normalizedText.includes(us.toLowerCase()))?.us || '';
+  return productNames.find(({ us }) => text.toLowerCase().includes(us.toLowerCase()))?.us || '';
 };
 
 function addClassPartToSet(className, parts, extractPrefix) {
@@ -79,11 +74,15 @@ const hasSharedClassPattern = (divs, { extractPrefix = false } = {}) => {
 
 function addDeepestContainers(div, findRepeatingContainers, deepestContainers) {
   const nestedContainers = findRepeatingContainers(div);
-  if (nestedContainers.length === 1 && nestedContainers[0] === div) {
-    deepestContainers.push(div);
-  } else if (nestedContainers.length > 1) {
-    deepestContainers.push(...nestedContainers, div);
+  if (!nestedContainers.length) return;
+
+  let toPush;
+  if (nestedContainers.length > 1) {
+    toPush = [...nestedContainers, div];
+  } else if (nestedContainers.length === 1 && nestedContainers[0] === div) {
+    toPush = [div];
   }
+  deepestContainers.push(...toPush);
 }
 
 // Processes nested divs to find the deepest repeating containers
@@ -107,7 +106,7 @@ const findRepeatingSiblings = (divs) => divs.filter(
 // or suffix (e.g., '-item') and occur more than once.
 export const findBlockContainers = (parentContainer) => {
   const childDivs = Array.from(parentContainer.children).filter((element) => element.tagName === 'DIV');
-  if (childDivs.length === 0) return [parentContainer];
+  if (!childDivs.length) return [parentContainer];
 
   const repeatingSiblingDivs = findRepeatingSiblings(childDivs);
 
@@ -282,8 +281,6 @@ export default async function addAriaLabels() {
   const modifiedCTAs = [];
   ctas.forEach((cta) => {
     addAriaLabelToCTA(cta, productNames.data, textsToAddProductNames, textsToAddHeaders);
-    if (cta.hasAttribute('aria-label')) {
-      modifiedCTAs.push(cta);
-    }
+    if (cta.hasAttribute('aria-label')) modifiedCTAs.push(cta);
   });
 }
