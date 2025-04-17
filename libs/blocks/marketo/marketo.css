@@ -4,7 +4,11 @@
   --marketo-form-border: #6E6E6E;
   --marketo-form-error: #D7373F;
   --marketo-form-selected: #0265DC;
-  --marketo-form-placeholder-height: calc(78px * 3 + 57px); /* 3 rows + submit */
+  --marketo-form-focus: #147AF3;
+  --marketo-form-placeholder-height: calc(78px * 7 + 57px); /* 7 rows + submit */
+  --marketo-form-placeholder-height-desktop: calc(78px * 4 + 57px); /* 4 rows + submit */
+  --marketo-form-placeholder-height-multi: calc(78px * 2 + 57px); /* 2 rows + submit */
+  --marketo-form-placeholder-height-multi-desktop: calc(78px + 57px); /* 1 row + submit */
   --marketo-form-min-height: 215px;
   --marketo-form-max-height: 10000px;
 }
@@ -21,6 +25,10 @@
 
 .marketo.loading form {
   min-height: var(--marketo-form-placeholder-height);
+}
+
+.marketo.marketo.multi-step.loading form {
+  min-height: var(--marketo-form-placeholder-height-multi);
 }
 
 .marketo .marketo-title {
@@ -83,6 +91,50 @@
 
 .marketo .mktoFormRowTop {
   display: contents;
+}
+
+.marketo.multi-step .mktoFormRow.mktoFormRowTop[data-validate="2"],
+.marketo.multi-step .mktoFormRow.mktoFormRowTop[data-validate="3"] {
+  display: none;
+}
+
+.marketo.multi-step .mktoForm[data-step="2"] .mktoFormRow.mktoFormRowTop[data-validate="2"],
+.marketo.multi-step .mktoForm[data-step="3"] .mktoFormRow.mktoFormRowTop[data-validate="3"] {
+  display: contents;
+}
+
+.marketo.multi-step .mktoForm[data-step="2"] .mktoFormRow.mktoFormRowTop[data-validate="1"],
+.marketo.multi-step .mktoForm[data-step="3"] .mktoFormRow.mktoFormRowTop[data-validate="1"] {
+  display: none;
+}
+
+.marketo.multi-step .mktoForm[data-step="1"] .mktoFormRow.mktoFormRowTop.adobe-privacy,
+.marketo.multi-step .mktoForm[data-step="2"] .mktoFormRow.mktoFormRowTop.adobe-privacy {
+  display: none;
+}
+
+.marketo.multi-step .mktoForm[data-step="3"] .mktoFormRow.mktoFormRowTop.adobe-privacy,
+.marketo.multi-step.multi-2 .mktoForm[data-step="2"] .mktoFormRow.mktoFormRowTop.adobe-privacy {
+  display: grid;
+}
+
+.marketo.multi-step .step-details {
+  display: flex;
+  justify-content: center;
+  font-size: var(--type-body-xs-size);
+  font-weight: normal;
+  line-height: var(--type-body-xs-lh);
+  grid-column: span 2;
+}
+
+.marketo.multi-step .step-details button {
+  background: none;
+  border: none;
+  padding: 0;
+  text-decoration: underline;
+  cursor: pointer;
+  color: var(--link-color-dark);
+  margin-right: 8px;
 }
 
 .marketo .mktoFormCol.mktoVisible {
@@ -174,8 +226,8 @@
 }
 
 .marketo .mktoForm .mktoField:focus-visible {
-  outline: 0;
-  border-color: var(--link-color-dark);
+  outline: 2px solid var(--marketo-form-focus);
+  outline-offset: 2px;
 }
 
 .marketo .mktoForm select {
@@ -194,7 +246,7 @@
 
 .marketo .mktoForm .mktoCheckboxList .mktoField:focus-visible,
 .marketo .mktoForm .mktoRadioList .mktoField:focus-visible {
-  outline: var(--link-color-dark) auto 2px;
+  outline: 2px solid var(--marketo-form-focus);
 }
 
 .marketo .mktoForm .mktoCheckboxList label,
@@ -230,16 +282,16 @@
   border-radius: 2px;
 }
 
-.marketo .mktoForm .mktoCheckboxList.mktoInvalid input::before {
-  border: 2px solid var(--marketo-form-error);
-}
-
 .marketo .mktoForm .mktoCheckboxList input:checked::before {
   border: 2px solid var(--marketo-form-selected);
   background: var(--marketo-form-selected);
 }
 
-.marketo .mktoForm .mktoCheckboxList.mktoInvalid input:checked::before {
+.marketo .mktoForm.show-warnings .mktoCheckboxList.mktoInvalid input::before {
+  border: 2px solid var(--marketo-form-error);
+}
+
+.marketo .mktoForm.show-warnings .mktoCheckboxList.mktoInvalid input:checked::before {
   background: var(--marketo-form-error);
 }
 
@@ -320,12 +372,12 @@
   outline: 2px solid var(--color-accent-focus-ring);
 }
 
-.marketo .mktoForm .mktoFormRow.msg-error {
+.marketo .mktoFormRow.mktoFormRowTop.msg-error .mktoFormCol {
   display: none;
 }
 
-.marketo .mktoForm.show-warnings .mktoFormRow.msg-error {
-  display: contents;
+.marketo .show-warnings .mktoFormRow.mktoFormRowTop.msg-error .mktoFormCol {
+  display: block;
 }
 
 .marketo .mktoForm .mktoFormRow.msg-error .mktoHtmlText {
@@ -511,6 +563,16 @@
     grid-column: span 2;
   }
 
+  .marketo.multi-step .mktoForm[data-step="2"] .mktoFormRow.mktoFormRowTop[data-validate="2"].comments,
+  .marketo.multi-step .mktoForm[data-step="2"] .mktoFormRow.mktoFormRowTop[data-validate="2"].demo,
+  .marketo.multi-step .mktoForm[data-step="2"] .mktoFormRow.mktoFormRowTop[data-validate="2"].name,
+  .marketo.multi-step .mktoForm[data-step="3"] .mktoFormRow.mktoFormRowTop[data-validate="3"].comments,
+  .marketo.multi-step .mktoForm[data-step="3"] .mktoFormRow.mktoFormRowTop[data-validate="3"].demo,
+  .marketo.multi-step .mktoForm[data-step="3"] .mktoFormRow.mktoFormRowTop[data-validate="3"].name {
+    display: block;
+    grid-column: span 2;
+  }
+
   .marketo .mktoFormRow.mktoFormRowTop.name .mktoFormRow[data-mktofield="Salutation"] {
     grid-area: salutation;
   }
@@ -579,6 +641,22 @@
 }
 
 @media screen and (min-width: 1200px) {
+  .marketo.loading form {
+    min-height: var(--marketo-form-placeholder-height-desktop);
+  }
+
+  .marketo.multi-step.loading form {
+    min-height: var(--marketo-form-placeholder-height-multi-desktop);
+  }
+
+  .marketo .mktoForm {
+    max-height: var(--marketo-form-placeholder-height-desktop);
+  }
+
+  .marketo.multi-step .mktoForm {
+    max-height: var(--marketo-form-placeholder-height-multi-desktop);
+  }
+  
   .resource-form.section.two-up {
     grid-template-columns: repeat(2, 1fr);
   }

@@ -77,7 +77,8 @@ export async function loadMnemonicList(foreground) {
   try {
     const { base } = getConfig();
     const stylePromise = new Promise((resolve) => {
-      loadStyle(`${base}/blocks/mnemonic-list/merch-mnemonic-list.css`, resolve);
+      /* c8 ignore next */
+      loadStyle(`${base}/blocks/mnemonic-list/mnemonic-list.css`, resolve);
     });
     const loadModule = import(`${base}/blocks/mnemonic-list/mnemonic-list.js`)
       .then(({ decorateMnemonicList }) => decorateMnemonicList(foreground));
@@ -87,25 +88,34 @@ export async function loadMnemonicList(foreground) {
   }
 }
 
-function extractQuantitySelect(el) {
-  const quantitySelectConfig = [...el.querySelectorAll('ul')]
-    .find((ul) => ul.querySelector('li')?.innerText?.includes('Quantity'));
-  const configMarkup = quantitySelectConfig?.querySelector('ul');
-  if (!configMarkup) return null;
-  const config = configMarkup.children;
-  if (config.length !== 2) return null;
+function extractQuantitySelect(el, merchCard) {
   const attributes = {};
-  attributes.title = config[0].textContent.trim();
-  const values = config[1].textContent.split(',')
-    .map((value) => value.trim())
-    .filter((value) => /^\d*$/.test(value))
-    .map((value) => (value === '' ? undefined : Number(value)));
-  quantitySelectConfig.remove();
-  if (![3, 4, 5].includes(values.length)) return null;
+  const quantitySelectLink = merchCard?.querySelector('a[href*="#qs"]');
+  if (quantitySelectLink) {
+    const str = quantitySelectLink.getAttribute('href');
+    attributes.title = quantitySelectLink.textContent.trim();
+    const regex = /min=(\d+)&max=(\d+)&step=(\d+)&default=(\d+)&max-input=(\d+)/;
+    [, attributes.min, attributes.max, attributes.step, attributes['default-value'], attributes['max-input']] = str.match(regex);
+    quantitySelectLink.parentElement.remove();
+  } else { // todo: old approach, remove once backwards compatibility is no longer required
+    const quantitySelectConfig = [...el.querySelectorAll('ul')]
+      .find((ul) => ul.querySelector('li')?.innerText?.includes('Quantity'));
+    const configMarkup = quantitySelectConfig?.querySelector('ul');
+    if (configMarkup?.children?.length !== 2) return null;
+    const config = configMarkup.children;
+    attributes.title = config[0].textContent.trim();
+    const values = config[1].textContent.split(',')
+      .map((value) => value.trim())
+      .filter((value) => /^\d*$/.test(value))
+      .map((value) => (value === '' ? undefined : Number(value)));
+    quantitySelectConfig.remove();
+    [attributes.min, attributes.max, attributes.step, attributes['default-value'], attributes['max-input']] = values;
+  }
+  if (!attributes.min || !attributes.max || !attributes.step) {
+    return null;
+  }
   import('../../deps/mas/merch-quantity-select.js');
-  [attributes.min, attributes.max, attributes.step, attributes['default-value'], attributes['max-input']] = values;
-  const quantitySelect = createTag('merch-quantity-select', attributes);
-  return quantitySelect;
+  return createTag('merch-quantity-select', attributes);
 }
 
 const parseTwpContent = async (el, merchCard) => {
@@ -225,6 +235,7 @@ const parseContent = async (el, merchCard) => {
   ];
 
   innerElements.forEach((element) => {
+    if (!element.innerHTML.trim()) return;
     let { tagName } = element;
     if (isHeadingTag(tagName)) {
       let slotName = SLOT_MAP[merchCard.variant]?.[tagName] || SLOT_MAP_DEFAULT[tagName];
@@ -266,10 +277,10 @@ const parseContent = async (el, merchCard) => {
     }
     if (isParagraphTag(tagName)) {
       bodySlot.append(element);
-      merchCard.append(bodySlot);
     }
     if (mnemonicList) bodySlot.append(mnemonicList);
   });
+  merchCard.append(bodySlot);
 
   if (merchCard.variant === MINI_COMPARE_CHART && merchCard.childNodes[1]) {
     merchCard.insertBefore(bodySlot, merchCard.childNodes[1]);
@@ -526,6 +537,19 @@ const addStartingAt = async (styles, merchCard) => {
 
 export default async function init(el) {
   if (!el.querySelector(INNER_ELEMENTS_SELECTOR)) return el;
+  // TODO: Remove after bugfix PR adobe/helix-html2md#556 is merged
+  const liELs = el.querySelectorAll('ul li');
+  if (liELs) {
+    [...liELs].forEach((liEl) => {
+      liEl.querySelectorAll('p').forEach((pElement) => {
+        while (pElement?.firstChild) {
+          pElement.parentNode.insertBefore(pElement.firstChild, pElement);
+        }
+        pElement.remove();
+      });
+    });
+  }
+  // TODO: Remove after bugfix PR adobe/helix-html2md#556 is merged
   const styles = [...el.classList];
   const cardType = getPodType(styles) || PRODUCT;
   if (!styles.includes(cardType)) {
@@ -617,6 +641,8 @@ export default async function init(el) {
     ? getActionMenuContent(el)
     : null;
   if (actionMenuContent) {
+    const { replaceKey } = await import('../../features/placeholders.js');
+    await replaceKey('action-menu', getConfig()).then((key) => merchCard.setAttribute('action-menu-label', key));
     merchCard.setAttribute('action-menu', true);
     merchCard.append(
       createTag(
@@ -625,6 +651,17 @@ export default async function init(el) {
         actionMenuContent.innerHTML,
       ),
     );
+    merchCard.addEventListener('focusin', () => {
+      const actionMenu = merchCard.shadowRoot.querySelector('.action-menu');
+      actionMenu.classList.add('always-visible');
+    });
+    merchCard.addEventListener('focusout', (e) => {
+      if (!e.target.href || e.target.src || e.target.parentElement.classList.contains('card-heading')) {
+        return;
+      }
+      const actionMenu = merchCard.shadowRoot.querySelector('.action-menu');
+      actionMenu.classList.remove('always-visible');
+    });
   }
   let ctas = el.querySelector('p > strong a, p > em a')?.closest('p');
   if (!ctas) {
@@ -651,7 +688,10 @@ export default async function init(el) {
       const merchIcon = createTag('merch-icon', { slot: 'icons', src: icon.src, alt: icon.alt, href: icon.href, size: 'l' });
       merchCard.appendChild(merchIcon);
     });
-    icons.forEach((icon) => icon.remove());
+    icons.forEach((icon) => {
+      if (icon.parentElement.nodeName === 'A') icon.parentElement.remove();
+      else icon.remove();
+    });
   }
 
   addStock(merchCard, styles);
@@ -673,7 +713,7 @@ export default async function init(el) {
     merchCard.appendChild(footer);
 
     if (MULTI_OFFER_CARDS.includes(cardType)) {
-      const quantitySelect = extractQuantitySelect(el);
+      const quantitySelect = extractQuantitySelect(el, merchCard);
       const offerSelection = el.querySelector('ul');
       if (merchCard.variant === MINI_COMPARE_CHART) {
         const miniCompareOffers = createTag('div', { slot: 'offers' });

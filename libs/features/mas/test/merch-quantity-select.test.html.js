@@ -9,7 +9,7 @@ import '../src/merch-quantity-select.js';
 import { appendMiloStyles, delay } from './utils.js';
 import { ARROW_DOWN, ARROW_UP } from '../src/focus.js';
 import { withWcs } from './mocks/wcs.js';
-import mas from './mas.js';
+import '../src/mas.js';
 
 const skipTests = sessionStorage.getItem('skipTests');
 
@@ -19,7 +19,7 @@ runTests(async () => {
     if (skipTests === null) {
         mockLana();
         await mockFetch(withWcs);
-        await mas();
+    
         describe('merch-quantity-selector web component', () => {
             const quantitySelect = document.querySelector(
                 'merch-quantity-select',
@@ -139,7 +139,7 @@ runTests(async () => {
                 event.composedPath = () => [quantitySelect];
                 inputField.dispatchEvent(event);
                 await delay();
-                expect(quantitySelect.selectedValue).to.equal(3);
+                expect(quantitySelect.selectedValue).to.equal(4);
                 expect(popOver.classList.contains('closed')).to.be.true;
             });
 
@@ -156,7 +156,7 @@ runTests(async () => {
                 event.composedPath = () => [quantitySelect];
                 inputField.dispatchEvent(event);
                 await delay();
-                expect(quantitySelect.selectedValue).to.equal(3);
+                expect(quantitySelect.selectedValue).to.equal(4);
                 expect(popOver.classList.contains('closed')).to.be.true;
             });
 
@@ -190,7 +190,7 @@ runTests(async () => {
                 event.composedPath = () => [quantitySelect];
                 inputField.dispatchEvent(event);
                 await delay();
-                expect(quantitySelect.selectedValue).to.equal(250);
+                expect(quantitySelect.selectedValue).to.equal(4);
             });
         });
     }

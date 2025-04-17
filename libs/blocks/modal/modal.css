@@ -1,5 +1,10 @@
 :root {
   --modal-focus-color: #109cde;
+  --modal-max-height: calc((100vh - 6px) - 2em);
+  --modal-z-index: 102;
+  --modal-z-index-curtain: 101;
+  --jarvis-z-index-override: 100;
+  --tall-video-padding: var(--spacing-xl);
 }
 
 .dialog-modal {
@@ -12,13 +17,39 @@
   right: 0;
   bottom: 0;
   max-width: calc((100% - 6px) - 2em);
-  max-height: calc((100% - 6px) - 2em);
+  max-height: var(--modal-max-height);
   height: fit-content;
   width: 100%;
   user-select: text;
   visibility: visible;
   overflow: auto;
-  z-index: 102;
+  z-index: var(--modal-z-index);
+}
+
+.dialog-modal.upgrade-flow-modal,
+.dialog-modal.three-in-one {
+  height: 100%;
+  width: 100%;
+  max-height: 100%;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.upgrade-flow-modal .dialog-close,
+.dialog-modal.hide-close-button .dialog-close {
+  display: none;
+}
+
+.upgrade-flow-modal .upgrade-flow-iframe,
+.three-in-one .milo-iframe {
+  overflow: hidden;
+  height: 100%;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.three-in-one iframe {
+  width: 100%;
 }
 
 #locale-modal-v2 .dialog-close,
@@ -72,25 +103,6 @@
   }
 }
 
-.dialog-modal.upgrade-flow-modal {
-  height: 100%;
-  width: 100%;
-  max-height: 100%;
-  max-width: 100%;
-  overflow: hidden;
-}
-
-.upgrade-flow-modal .dialog-close {
-  display: none;
-}
-
-.upgrade-flow-modal .upgrade-flow-iframe {
-  overflow: hidden;
-  height: 100%;
-  width: 100%;
-  box-sizing: border-box; 
-}
-
 .modal-curtain.is-open {
   position: fixed;
   top: 0;
@@ -98,7 +110,7 @@
   bottom: 0;
   left: 0;
   background: rgb(50 50 50 / 80%);
-  z-index: 101;
+  z-index: var(--modal-z-index-curtain);
 }
 
 .dialog-modal button.dialog-close {
@@ -117,6 +129,10 @@
 
 .dialog-close:focus-visible {
   outline: 2px solid var(--modal-focus-color);
+}
+
+.dialog-focus-placeholder {
+  height: 0;
 }
 
 .dialog-modal .section > .content {
@@ -228,6 +244,7 @@
 .dialog-modal.tall-video .milo-video {
   aspect-ratio: var(--aspect-ratio-tall);
   height: auto;
+  max-height: calc(var(--modal-max-height) - 2 * var(--tall-video-padding));
   padding-bottom: 0;
   min-width: 90vw;
 }
@@ -238,11 +255,26 @@
     width: fit-content;
   }
 
+  .dialog-modal.three-in-one {
+    width: 100%;
+  }
+
+  .dialog-modal .embed-vimeo {
+    min-width: 80vw;
+  }
+
+  .dialog-modal .milo-video {
+    padding-bottom: 0;
+    height: auto;
+    aspect-ratio: var(--aspect-ratio-wide);
+    max-height: var(--modal-max-height);
+  }
+
   .dialog-modal.tall-video {
     --modal-width-var: 50vw;
 
     max-width: var(--modal-width-var);
-    padding: var(--spacing-xl);
+    padding: var(--tall-video-padding);
   }
 
   .dialog-modal.tall-video .milo-video {
@@ -265,10 +297,10 @@
   }
 }
 
-@media (min-width: 900px) and (min-height: 431px)  and (orientation: landscape) {
+@media (min-width: 600px) and (min-height: 431px)  and (orientation: landscape) {
   .dialog-modal.tall-video,
   .dialog-modal.tall-video .milo-video {
-    --modal-width-var: 25vw;
+    --modal-width-var: 35vw;
   }
 }
 
@@ -278,7 +310,7 @@
     max-width: 100%;
     max-height: 100%;
   }
-  
+
   .dialog-modal.upgrade-flow-modal {
     border-radius: 0;
   }
@@ -351,7 +383,7 @@
   .dialog-modal.commerce-frame .milo-iframe iframe {
     height: 0%;
   }
-  
+
   .dialog-modal.upgrade-flow-modal {
     height: 820px;
     max-width: 1100px;
@@ -359,9 +391,21 @@
     width: 80%;
   }
 
+  .dialog-modal.three-in-one {
+    height: 820px;
+    width: 80%;
+    max-width: 1100px;
+    overflow: hidden;
+  }
+
   .dialog-modal.tall-video,
   .dialog-modal.tall-video .milo-video {
     --modal-width-var: 35vw;
+  }
+
+  .dialog-modal.manage-plan-cancel {
+    max-width: 100%;
+    width: 1280px;
   }
 }
 
@@ -376,12 +420,6 @@
   .dialog-modal.tall-video,
   .dialog-modal.tall-video .milo-video {
     --modal-width-var: 25vw;
-
-    max-height: 1200px;
-  }
-
-  .dialog-modal.tall-video .milo-video {
-    height: 100%;
   }
 }
 
@@ -407,4 +445,8 @@
 
 .disable-scroll {
   overflow: hidden;
+}
+
+body:has(.dialog-modal) #adbMsgClientWrapper #adbmsgContainer #adbmsgCta {
+  z-index: var(--jarvis-z-index-override);
 }

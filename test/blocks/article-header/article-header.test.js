@@ -127,14 +127,6 @@ describe('test the invalid article header', () => {
     document.body.innerHTML = invalidDoc;
   });
 
-  it('does not init if the element is invalid', async () => {
-    await init(document.body.querySelector('.article-header'));
-    const authorTextEl = await waitForElement('.article-author');
-    const authorLink = document.querySelector('.article-author a');
-    expect(authorTextEl).to.exist;
-    expect(authorLink).to.not.exist;
-  });
-
   it('adds invalid-date when invalid date is provided', async () => {
     await init(document.body.querySelector('.article-header'));
     const date = await waitForElement('.article-date-invalid');
@@ -156,5 +148,26 @@ describe('article header', () => {
     document.body.innerHTML = await readFile({ path: './mocks/body-without-category.html' });
     await init(document.body.querySelector('.article-header'));
     expect(document.body.querySelector('.article-category a')).to.be.null;
+  });
+
+  it('supports a featured video', async () => {
+    document.body.innerHTML = await readFile({ path: './mocks/body-video.html' });
+    const el = document.body.querySelector('.article-header');
+    await init(el);
+    expect(el.querySelector('.article-feature-video video')).to.exist;
+  });
+
+  it('tries to get author picture from text if no link is provided', async () => {
+    document.body.innerHTML = await readFile({ path: './mocks/body-without-author-link.html' });
+    await init(document.body.querySelector('.article-header'));
+    expect(document.body.querySelector('.article-author-image')).to.exist;
+  });
+
+  it('removes author link via metadata', async () => {
+    document.head.innerHTML = '<meta name="article-author-link" content="off">';
+    document.body.innerHTML = await readFile({ path: './mocks/body.html' });
+    await init(document.body.querySelector('.article-header'));
+    await delay(100);
+    expect(document.querySelector('.article-author').childElementCount).to.equal(0);
   });
 });

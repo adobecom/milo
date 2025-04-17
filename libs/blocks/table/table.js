@@ -1,12 +1,16 @@
 /* eslint-disable no-plusplus */
-import { createTag, MILO_EVENTS } from '../../utils/utils.js';
+import { createTag, getConfig, MILO_EVENTS } from '../../utils/utils.js';
 import { decorateButtons } from '../../utils/decorate.js';
 import { debounce } from '../../utils/action.js';
+import { replaceKeyArray } from '../../features/placeholders.js';
+import { getGnavHeight } from '../global-navigation/utilities/utilities.js';
 
 const DESKTOP_SIZE = 900;
 const MOBILE_SIZE = 768;
 const tableHighlightLoadedEvent = new Event('milo:table:highlight:loaded');
 let tableIndex = 0;
+let isExpandEventsAssigned = false;
+
 const isMobileLandscape = () => (window.matchMedia('(orientation: landscape)').matches && window.innerHeight <= MOBILE_SIZE);
 function defineDeviceByScreenSize() {
   const screenWidth = window.innerWidth;
@@ -19,7 +23,7 @@ function defineDeviceByScreenSize() {
   return 'TABLET';
 }
 
-function isStickyHeader(el) {
+export function isStickyHeader(el) {
   return el.classList.contains('sticky')
     || (el.classList.contains('sticky-desktop-up') && defineDeviceByScreenSize() === 'DESKTOP')
     || (el.classList.contains('sticky-tablet-up') && defineDeviceByScreenSize() !== 'MOBILE' && !isMobileLandscape());
@@ -75,7 +79,6 @@ function handleHeading(table, headingCols) {
     }
 
     const trackingHeader = col.querySelector('.tracking-header');
-    const nodeToApplyRoleScope = trackingHeader ?? col;
 
     if (trackingHeader) {
       const trackingHeaderID = `t${tableIndex + 1}-c${i + 1}-header`;
@@ -90,11 +93,12 @@ function handleHeading(table, headingCols) {
       const describedBy = `${headerBody?.id ?? ''} ${headerPricing?.id ?? ''}`.trim();
       trackingHeader.setAttribute('aria-describedby', describedBy);
 
-      col.removeAttribute('role');
+      col.setAttribute('role', 'columnheader');
     }
 
-    nodeToApplyRoleScope.setAttribute('role', 'columnheader');
-    nodeToApplyRoleScope.setAttribute('scope', 'col');
+    col.querySelectorAll('h1, h2, h3, h4, h5, h6').forEach((heading) => {
+      heading.setAttribute('role', 'paragraph');
+    });
   });
 }
 
@@ -150,6 +154,67 @@ function handleAddOnContent(table) {
     });
   });
   setTimeout(() => handleEqualHeight(table, '.row-heading'), 0);
+  table.addEventListener('mas:resolved', debounce(() => { handleEqualHeight(table, '.row-heading'); }));
+}
+
+function setTooltipPosition(el) {
+  if (!['TABLET', 'MOBILE'].includes(defineDeviceByScreenSize())) return;
+
+  const isRtl = document.documentElement.dir === 'rtl';
+  const classesToCheck = isRtl ? ['top', 'bottom', 'left'] : ['top', 'bottom', 'right'];
+  const selector = classesToCheck.map((cls) => `.milo-tooltip.${cls}`).join(',');
+  const tooltips = el.querySelectorAll(selector);
+
+  tooltips.forEach((tooltip) => {
+    tooltip.classList.remove(...classesToCheck);
+    tooltip.classList.add(isRtl ? 'right' : 'left');
+  });
+}
+
+async function setAriaLabelForIcons(el) {
+  const config = getConfig();
+  const expendableIcons = el.querySelectorAll('.icon.expand[role="button"]');
+  const selectFilters = el.parentElement.querySelectorAll('.filters .filter');
+  const ariaLabelElements = [...selectFilters, ...expendableIcons];
+
+  if (!ariaLabelElements.length) {
+    return;
+  }
+
+  const ariaLabels = await replaceKeyArray(['toggle-row', 'choose-table-column'], config);
+
+  ariaLabelElements.forEach((element) => {
+    const labelIndex = element.classList.contains('filter') ? 1 : 0;
+    element.setAttribute('aria-label', ariaLabels[labelIndex]);
+  });
+}
+
+function setTooltipListeners(el) {
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') {
+      el.querySelectorAll('.milo-tooltip').forEach((tooltip) => {
+        tooltip.classList.add('hide-tooltip');
+      });
+    }
+  });
+
+  el.querySelectorAll('.milo-tooltip').forEach((tooltip) => {
+    tooltip.addEventListener('mouseenter', () => {
+      tooltip.classList.remove('hide-tooltip');
+    });
+
+    tooltip.addEventListener('mouseleave', () => {
+      tooltip.classList.add('hide-tooltip');
+    });
+
+    tooltip.addEventListener('focus', () => {
+      tooltip.classList.remove('hide-tooltip');
+    });
+
+    tooltip.addEventListener('blur', () => {
+      tooltip.classList.add('hide-tooltip');
+    });
+  });
 }
 
 function handleHighlight(table) {
@@ -199,6 +264,22 @@ function handleExpand(e) {
     }
     nextElement = nextElement.nextElementSibling;
   }
+}
+
+function setExpandEvents(el) {
+  if (isExpandEventsAssigned) return;
+
+  el.querySelectorAll('.icon.expand').forEach((icon) => {
+    isExpandEventsAssigned = true;
+    icon.parentElement.classList.add('point-cursor');
+    icon.parentElement.addEventListener('click', () => handleExpand(icon));
+    icon.parentElement.setAttribute('tabindex', 0);
+    icon.parentElement.addEventListener('keydown', (e) => {
+      if (e.key === ' ') e.preventDefault();
+
+      if (e.key === 'Enter' || e.key === ' ') handleExpand(icon);
+    });
+  });
 }
 
 function handleTitleText(cell) {
@@ -254,8 +335,10 @@ function handleSection(sectionParams) {
     }
 
     if (isCollapseTable) {
-      const iconTag = createTag('span', { class: 'icon expand' });
-      sectionHeadTitle.appendChild(iconTag);
+      const iconTag = createTag('span', { class: 'icon expand', role: 'button' });
+      if (!sectionHeadTitle.querySelector('.icon.expand')) {
+        sectionHeadTitle.prepend(iconTag);
+      }
 
       if (expandSection) {
         iconTag.setAttribute('aria-expanded', 'true');
@@ -373,9 +456,8 @@ function handleHovering(table) {
   }
 }
 
-function handleScrollEffect(table) {
-  const gnav = document.querySelector('header');
-  const gnavHeight = gnav ? gnav.offsetHeight : 0;
+async function handleScrollEffect(table) {
+  const gnavHeight = getGnavHeight();
   const highlightRow = table.querySelector('.row-highlight');
   const headingRow = table.querySelector('.row-heading');
 
@@ -419,67 +501,68 @@ function applyStylesBasedOnScreenSize(table, originTable) {
     }
   };
 
-  const reAssignEvents = (tableEl) => {
-    tableEl.dispatchEvent(tableHighlightLoadedEvent);
-    tableEl.querySelectorAll('.icon.expand').forEach((icon) => {
-      icon.parentElement.classList.add('point-cursor');
-      icon.parentElement.addEventListener('click', () => handleExpand(icon));
-      icon.parentElement.setAttribute('tabindex', 0);
-      icon.parentElement.addEventListener('keydown', (e) => {
-        e.preventDefault();
-        if (e.key === 'Enter' || e.key === ' ') handleExpand(icon);
-      });
-    });
-    handleHovering(tableEl);
-  };
-
   const mobileRenderer = () => {
     table.dispatchEvent(tableHighlightLoadedEvent);
     const headings = table.querySelectorAll('.row-heading .col');
     const headingsLength = headings.length;
 
+    table.querySelectorAll('.hide-mobile').forEach((col) => { col.classList.remove('hide-mobile'); });
+
     if (isMerch && headingsLength > 2) {
-      table.querySelectorAll('.col:not(.col-1, .col-2)').forEach((col) => col.remove());
+      table.querySelectorAll('.col:not(.col-1, .col-2)').forEach((col) => { col.classList.add('hide-mobile'); });
     } else if (headingsLength > 3) {
-      table.querySelectorAll('.col:not(.col-1, .col-2, .col-3), .col.no-borders').forEach((col) => col.remove());
+      table.querySelectorAll('.col:not(.col-1, .col-2, .col-3), .col.no-borders').forEach((col) => { col.classList.add('hide-mobile'); });
     }
 
     if ((!isMerch && !table.querySelector('.col-3'))
       || (isMerch && !table.querySelector('.col-2'))) return;
 
-    const filterChangeEvent = () => {
-      table.innerHTML = originTable.innerHTML;
-      reAssignEvents(table);
+    const filterChangeEvent = (e) => {
       const filters = Array.from(table.parentElement.querySelectorAll('.filter')).map((f) => parseInt(f.value, 10));
       const rows = table.querySelectorAll('.row');
 
+      table.querySelectorAll('.hide-mobile, .force-last').forEach((col) => { col.classList.remove('hide-mobile', 'force-last'); });
+
+      rows.forEach((row) => {
+        const clonedCols = row.querySelectorAll('.col[data-cloned]');
+        clonedCols.forEach((col) => col.remove());
+      });
+
       if (isMerch) {
-        table.querySelectorAll(`.col:not(.col-${filters[0] + 1}, .col-${filters[1] + 1})`).forEach((col) => col.remove());
+        table.querySelectorAll(`.col:not(.col-${filters[0] + 1}, .col-${filters[1] + 1})`).forEach((col) => { col.classList.add('hide-mobile'); });
       } else {
-        table.querySelectorAll(`.col:not(.col-1, .col-${filters[0] + 1}, .col-${filters[1] + 1}), .col.no-borders`).forEach((col) => col.remove());
+        table.querySelectorAll(`.col:not(.col-1, .col-${filters[0] + 1}, .col-${filters[1] + 1}), .col.no-borders`).forEach((col) => { col.classList.add('hide-mobile'); });
       }
 
-      if (filters[0] > filters[1]) {
-        if (isMerch) {
-          rows.forEach((row) => row.querySelector('.col:not(.section-row-title)')
-            .classList.add('force-last'));
-        } else {
-          rows.forEach((row) => row.querySelector('.col:not(.section-row-title, .col-1)')
-            .classList.add('force-last'));
-        }
-      } else if (filters[0] === filters[1]) {
+      rows.forEach((row) => {
+        const secondFilterCol = row.querySelector(`.col-${filters[1] + 1}`);
+        if (secondFilterCol) secondFilterCol.classList.add('force-last');
+      });
+
+      if (filters[0] === filters[1]) {
+        const selectedCol = filters[0] + 1;
         rows.forEach((row) => {
-          row.append(row.querySelector('.col:last-child').cloneNode(true));
+          const selectedColumn = row.querySelector(`.col-${selectedCol}`);
+          if (!selectedColumn) return;
+
+          selectedColumn.classList.remove('force-last');
+          selectedColumn.classList.remove('rounded-left', 'rounded-right');
+          const clone = selectedColumn.cloneNode(true);
+          clone.setAttribute('data-cloned', 'true');
+          clone.classList.remove('rounded-left', 'rounded-right');
+          row.appendChild(clone);
+          setTooltipListeners(clone);
         });
       }
 
       setRowStyle();
 
       if (table.matches('.sticky')) handleScrollEffect(table);
+      if (e) handleEqualHeight(table, '.row-heading');
     };
 
     // Remove filter if table there are only 2 columns
-    const filter = isMerch ? headingsLength > 2 : headingsLength > 3;
+    const filter = isMerch ? headingsLength > 2 : headingsLength > 2;
     if (!table.parentElement.querySelector('.filters') && filter) {
       const filters = createTag('div', { class: 'filters' });
       const filter1 = createTag('div', { class: 'filter-wrapper' });
@@ -506,9 +589,14 @@ function applyStylesBasedOnScreenSize(table, originTable) {
       filter2.addEventListener('change', filterChangeEvent);
       table.parentElement.insertBefore(filters, table);
       table.parentElement.classList.add(`table-${table.classList.contains('merch') ? 'merch-' : ''}section`);
+      if (!isMerch && headingsLength < 4) { filters.style.display = 'none'; }
       filterChangeEvent();
     }
   };
+
+  const removeClones = () => table
+    .querySelectorAll('.row .col[data-cloned]')
+    .forEach((clonedCol) => clonedCol.remove());
 
   // For Mobile (else: tablet / desktop)
   if (!isMerch && !table.querySelector('.row-heading .col-2')) {
@@ -516,16 +604,20 @@ function applyStylesBasedOnScreenSize(table, originTable) {
     table.querySelector('.row-heading .col-1').style.display = 'flex';
   }
 
+  removeClones();
   if (deviceBySize === 'MOBILE' || (isMerch && deviceBySize === 'TABLET')) {
     mobileRenderer();
   } else {
-    table.innerHTML = originTable.innerHTML;
-    reAssignEvents(table);
+    table.querySelectorAll('.hide-mobile').forEach((col) => { col.classList.remove('hide-mobile'); });
+    [...(table.querySelector('.row-heading')?.children || [])]
+      .forEach((column) => [...column.children].forEach((row) => row.style.removeProperty('height')));
     table.parentElement.querySelectorAll('.filters select').forEach((select, index) => {
       select.querySelectorAll('option').item(index).selected = true;
     });
   }
 
+  table.dispatchEvent(tableHighlightLoadedEvent);
+  handleHovering(table);
   setRowStyle();
 }
 
@@ -585,20 +677,23 @@ export default function init(el) {
     const handleResize = () => {
       applyStylesBasedOnScreenSize(el, originTable);
       if (isStickyHeader(el)) handleScrollEffect(el);
+      setTooltipPosition(el);
     };
     handleResize();
 
     let deviceBySize = defineDeviceByScreenSize();
     window.addEventListener('resize', () => {
-      if (el.classList.contains('has-addon')) {
-        debounce(handleEqualHeight(el, '.row-heading'), 300);
-      }
+      debounce(handleEqualHeight(el, '.row-heading'), 300);
       if (deviceBySize === defineDeviceByScreenSize()) return;
       deviceBySize = defineDeviceByScreenSize();
       handleResize();
     });
 
     isDecorated = true;
+
+    setExpandEvents(el);
+    setAriaLabelForIcons(el);
+    setTooltipListeners(el);
   };
 
   window.addEventListener(MILO_EVENTS.DEFERRED, () => {

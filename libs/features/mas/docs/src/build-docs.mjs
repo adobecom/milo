@@ -51,8 +51,17 @@ const outputPath = path.join(targetFile);
 // Read the Markdown file
 const inputContent = fs.readFileSync(inputPath, 'utf8');
 
+// depending on surface, load either Milo consonant or Spectrum styles
+const styleDependecy = ['plans.md'].includes(sourceFile) 
+  ? '<link rel="stylesheet" href="../../../styles/styles.css">' 
+  : '<link rel="stylesheet" href="spectrum.css">';
+
 // Render Markdown to HTML
-const htmlContent = md.render(inputContent);
+let htmlContent = md.render(inputContent);
+// wrap in sp-theme
+htmlContent = ['ccd.md'].includes(sourceFile) 
+  ? htmlContent 
+  : `<sp-theme color="light" scale="medium">\n${htmlContent}\n</sp-theme>`;
 
 // HTML template with your custom element script
 const htmlTemplate = `
@@ -62,40 +71,24 @@ const htmlTemplate = `
     <meta charset="UTF-8">
     <title>M@S Web Components</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <script type="module" src="../../../deps/custom-elements.js"></script>
-    <link rel="stylesheet" href="spectrum.css">
+    ${styleDependecy}
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://p.typekit.net/p.css?s=1&amp;k=hah7vzn&amp;ht=tk&amp;f=7180.7181.7182.7183.22474.22749.22750.22751.22753&amp;a=8634977&amp;app=typekit&amp;e=css">
     <link rel="stylesheet" href="https://use.typekit.net/hah7vzn.css">
   
-  <script>
-    if (/localhost/.test(window.location.host)) {
-      const meta = document.createElement('meta');
-      meta.name = 'aem-base-url';
-      meta.content = 'http://localhost:8080'; // local AEM proxy URL
-      document.head.appendChild(meta);
-      }
-  </script>
-  <script type="module" src="../dist/mas.js"></script>
-
+  <!-- Include your custom element script as an ES6 module -->
   <script type="module">
-    const params = new URLSearchParams(document.location.search);
-    const masCommerceService = document.createElement('mas-commerce-service');
-    ['locale','language','env','cli'].forEach((attribute) => {
-      let value = params.get(attribute);
-      if (value === 'cli') attribute = 'checkout-client-id';
-      if (value) masCommerceService.setAttribute(attribute, value);
-    });
-    document.head.appendChild(masCommerceService);
+    import { init } from './common.js';
+    init();
   </script>
   <!-- Include Highlight.js stylesheet for syntax highlighting -->
   <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/default.min.css">
-  <!-- Include any additional stylesheets -->
-  <link rel="stylesheet" href="styles.css">
+  <script type="module" src="./mas-sidenav.js"></script>
 </head>
-<body>
-<main class="spectrum spectrum--medium spectrum--light">
-  <div class="container">
-  ${htmlContent}
-  </div>
+<body class="spectrum spectrum--medium spectrum--light">
+    <aside is="mas-sidenav"></aside>
+<main>
+${htmlContent}
 </main>
 <script type="module">
   document.querySelectorAll('code.demo').forEach(el => {
@@ -107,6 +100,7 @@ const htmlTemplate = `
       const scriptTags = targetContainer.getElementsByTagName('script');
       for (let i = 0; i < scriptTags.length; i++) {
           const script = document.createElement('script');
+          script.type = 'module';
           script.text = scriptTags[i].text;
           document.body.appendChild(script); // Appends to the document to execute
           scriptTags[i].remove(); // Remove the script tag

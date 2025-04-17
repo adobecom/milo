@@ -21,8 +21,11 @@ export default async function bootstrapBlock(initBlock, blockConfig) {
   if (blockConfig.targetEl === 'header') {
     setNavLayout();
     const metaTags = [
+      { key: 'gnavSource', name: 'gnav-source' },
       { key: 'unavComponents', name: 'universal-nav' },
       { key: 'redirect', name: 'adobe-home-redirect' },
+      { key: 'mobileGnavV2', name: 'mobile-gnav-v2' },
+      { key: 'footerSource', name: 'footer-source' },
     ];
     metaTags.forEach((tag) => {
       const { key } = tag;
@@ -34,6 +37,10 @@ export default async function bootstrapBlock(initBlock, blockConfig) {
         document.head.append(metaTag);
       }
     });
+    if (blockConfig.isLocalNav) {
+      const localNavWrapper = createTag('div', { class: 'feds-localnav' });
+      document.querySelector('header').after(localNavWrapper);
+    }
   }
 
   await initBlock(document.querySelector(targetEl));

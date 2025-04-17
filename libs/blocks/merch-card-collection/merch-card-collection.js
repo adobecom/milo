@@ -43,7 +43,15 @@ const fail = (el, err = '') => {
 
 /** Parse and prepare cards */
 async function getCardsRoot(config, html) {
-  const cards = `<div>${html}</div>`;
+  let cards = `<div>${html}</div>`;
+  const { mep, placeholders } = config;
+  if (mep?.commands?.length) {
+    const mepRoot = createTag('div', {}, cards);
+    const { handleCommands, replacePlaceholders } = await import('../../features/personalization/personalization.js');
+    handleCommands(mep?.commands, mepRoot, false, true);
+    if (placeholders) mepRoot.innerHTML = replacePlaceholders(mepRoot.innerHTML, placeholders);
+    cards = mepRoot.innerHTML;
+  }
   const fragment = document.createRange().createContextualFragment(
     await replaceText(cards, config),
   );
@@ -304,9 +312,6 @@ export default async function init(el) {
       literalEl.remove();
       if (slot) {
         slot.setAttribute('slot', LITERAL_SLOTS[index]);
-        if (LITERAL_SLOTS[index].toLowerCase().includes('result')) {
-          slot.setAttribute('aria-live', 'polite');
-        }
         index += 1;
       }
       literalSlots.push(slot);
@@ -343,5 +348,6 @@ export default async function init(el) {
     'merch-card-collection-render',
     'merch-card-collection-render:start',
   );
+
   return merchCardCollection;
 }

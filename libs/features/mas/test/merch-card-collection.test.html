@@ -62,6 +62,7 @@
             env: {},
         };
     </script>
+    <mas-commerce-service env="stage"></mas-commerce-service>
 </head>
 
 <body>
@@ -2608,6 +2609,11 @@
                 <p slot="showMoreText">Show more</p>
             </merch-card-collection>
         </div>
+    </template>
+    <template id="collectionAutoblock" title="Collection autoblock">
+        <merch-card-collection>
+            <aem-fragment fragment="#" />
+        </merch-card-collection>
     </template>
 </body>
 

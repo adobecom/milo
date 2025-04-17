@@ -1,11 +1,14 @@
 /* eslint-disable no-async-promise-executor */
 import {
+  loadBlock,
   decorateAutoBlock,
   decorateLinks,
   getMetadata,
   getConfig,
   localizeLink,
   loadStyle,
+  getFederatedUrl,
+  getFedsPlaceholderConfig,
 } from '../../utils/utils.js';
 
 import {
@@ -21,8 +24,6 @@ import {
   federatePictureSources,
   isDarkMode,
 } from '../global-navigation/utilities/utilities.js';
-
-import { getFederatedUrl, getFedsPlaceholderConfig } from '../../utils/federated.js';
 
 import { replaceKey } from '../../features/placeholders.js';
 
@@ -66,7 +67,7 @@ class Footer {
       observer.disconnect();
       this.decorateContent();
     }, CONFIG.delays.decoration);
-  }, 'Error in global footer init', 'errorType=error,module=global-footer');
+  }, 'Error in global footer init', 'global-footer', 'error');
 
   decorateContent = () => logErrorFor(async () => {
     // Fetch footer content
@@ -76,7 +77,16 @@ class Footer {
       shouldDecorateLinks: false,
     });
 
-    if (!this.body) return;
+    if (!this.body) {
+      const error = new Error('Could not create global footer. Content not found!');
+      error.tags = 'global-footer';
+      error.url = url;
+      error.errorType = 'error';
+      lanaLog({ message: error.message, ...error });
+      const { onFooterError } = getConfig();
+      onFooterError?.(error);
+      return;
+    }
 
     const [region, social] = ['.region-selector', '.social'].map((selector) => this.body.querySelector(selector));
     const [regionParent, socialParent] = [region?.parentElement, social?.parentElement];
@@ -88,6 +98,9 @@ class Footer {
 
     regionParent?.appendChild(region);
     socialParent?.appendChild(social);
+
+    // Support auto populated modal
+    await Promise.all([...this.body.querySelectorAll('.modal')].map(loadBlock));
 
     const path = getFederatedUrl(url);
     federatePictureSources({ section: this.body, forceFederate: path.includes('/federal/') });
@@ -112,9 +125,10 @@ class Footer {
 
     const mepMartech = mep?.martech || '';
     this.block.setAttribute('daa-lh', `gnav|${getExperienceName()}|footer${mepMartech}`);
-
     this.block.append(this.elements.footer);
-  }, 'Failed to decorate footer content', 'errorType=error,module=global-footer');
+    const { onFooterReady } = getConfig();
+    onFooterReady?.();
+  }, 'Failed to decorate footer content', 'global-footer', 'error');
 
   loadMenuLogic = async () => {
     this.menuLogic = this.menuLogic || new Promise(async (resolve) => {
@@ -154,7 +168,8 @@ class Footer {
       lanaLog({
         message: 'Issue with loadIcons',
         e: `${file.statusText} url: ${file.url}`,
-        tags: 'errorType=info,module=global-footer',
+        tags: 'global-footer',
+        errorType: 'info',
       });
     }
     const content = await file.text();
@@ -179,7 +194,7 @@ class Footer {
 
     if (placeholder && placeholder.length) {
       this.elements.featuredProducts
-        .append(toFragment`<span class="feds-featuredProducts-label">${placeholder}</span>`);
+        .append(toFragment`<span class="feds-featuredProducts-label" role="heading" aria-level="2">${placeholder}</span>`);
     }
 
     featuredProductsContent.querySelectorAll('.link-group').forEach((linkGroup) => {
@@ -199,7 +214,7 @@ class Footer {
     try {
       url = new URL(regionSelector.href);
     } catch (e) {
-      lanaLog({ message: `Could not create URL for region picker; href: ${regionSelector.href}`, tags: 'errorType=error,module=global-footer' });
+      lanaLog({ message: `Could not create URL for region picker; href: ${regionSelector.href}`, tags: 'global-footer', errorType: 'error' });
       return this.elements.regionPicker;
     }
 
@@ -209,8 +224,6 @@ class Footer {
       <a
         href="${regionSelector.href}"
         class="${regionPickerClass}"
-        aria-expanded="false"
-        aria-haspopup="true"
         role="button">
         <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" class="feds-regionPicker-globe" focusable="false">
           <use href="#footer-icon-globe" />
@@ -231,14 +244,7 @@ class Footer {
     if (url.hash !== '') {
       // Hash -> region selector opens a modal
       decorateAutoBlock(regionPickerElem); // add modal-specific attributes
-      // TODO remove logs after finding the root cause for the region picker 404s -> MWPW-143627
       regionPickerElem.href = url.hash;
-      if (regionPickerElem.classList[0] !== 'modal') {
-        lanaLog({
-          message: `Modal block class missing from region picker pre loading the block; locale: ${locale}; regionPickerElem: ${regionPickerElem.outerHTML}`,
-          tags: 'errorType=warn,module=global-footer',
-        });
-      }
       loadStyle(`${base}/blocks/modal/modal.css`);
       const { default: initModal } = await import('../modal/modal.js');
       const modal = await initModal(regionPickerElem);
@@ -263,12 +269,6 @@ class Footer {
 
       if (modal) await loadRegionNav(); // just in case the modal is already open
 
-      if (regionPickerElem.classList[0] !== 'modal') {
-        lanaLog({
-          message: `Modal block class missing from region picker post loading the block; locale: ${locale}; regionPickerElem: ${regionPickerElem.outerHTML}`,
-          tags: 'errorType=warn,module=global-footer',
-        });
-      }
       regionPickerElem.addEventListener('click', () => {
         if (!isRegionPickerExpanded()) {
           regionPickerElem.setAttribute('aria-expanded', 'true');
@@ -284,6 +284,7 @@ class Footer {
       });
     } else {
       // No hash -> region selector expands a dropdown
+      regionPickerElem.setAttribute('aria-haspopup', 'true');
       regionPickerElem.href = '#'; // reset href value to not get treated as a fragment
       regionSelector.href = localizeLink(regionSelector.href);
       decorateAutoBlock(regionSelector); // add fragment-specific class(es)
@@ -352,9 +353,7 @@ class Footer {
 
     // Decorate copyright element
     const currentYear = new Date().getFullYear();
-    copyrightElem.replaceWith(toFragment`<span class="feds-footer-copyright">
-        Copyright © ${currentYear} ${copyrightElem.textContent}
-      </span>`);
+    copyrightElem.remove();
 
     // Add Ad Choices icon
     const adChoicesElem = privacyContent.querySelector('a[href*="#interest-based-ads"]');
@@ -363,15 +362,40 @@ class Footer {
       </svg>`);
 
     this.elements.legal = toFragment`<div class="feds-footer-legalWrapper" daa-lh="Legal"></div>`;
+    const linkDivider = '<span class="feds-footer-privacyLink-divider" aria-hidden="true">/</span>';
 
+    let privacyContentIndex = 0;
     while (privacyContent.children.length) {
       const privacySection = privacyContent.firstElementChild;
       privacySection.classList.add('feds-footer-privacySection');
       privacySection.querySelectorAll('a').forEach((link, index) => {
         link.classList.add('feds-footer-privacyLink');
         link.setAttribute('daa-ll', getAnalyticsValue(link.textContent, index + 1));
+        const privacySectionListItem = document.createElement('li');
+        privacySectionListItem.classList.add('feds-footer-privacy-listitem');
+        link.parentNode.insertBefore(privacySectionListItem, link);
+        privacySectionListItem.appendChild(link);
+        if (index !== privacySection.querySelectorAll('a').length - 1) {
+          privacySectionListItem.innerHTML += linkDivider;
+        }
       });
       this.elements.legal.append(privacySection);
+
+      if (privacyContentIndex === 0) {
+        const privacySectionList = document.createElement('ul');
+        [...privacySection.attributes].forEach((attr) => {
+          privacySectionList.setAttribute(attr.name, attr.value);
+        });
+        const copyrightListItem = document.createElement('li');
+        copyrightListItem.classList.add('feds-footer-privacy-listitem');
+        copyrightListItem.innerHTML = linkDivider;
+        copyrightListItem.prepend(copyrightElem);
+        copyrightElem.replaceWith(toFragment`<span class="feds-footer-copyright">Copyright © ${currentYear} ${copyrightElem.textContent}</span>`);
+        privacySectionList.prepend(copyrightListItem);
+        privacySectionList.innerHTML += privacySection.innerHTML.replace(/( \/ )/g, '');
+        privacySection.parentNode.replaceChild(privacySectionList, privacySection);
+      }
+      privacyContentIndex += 1;
     }
 
     return this.elements.legal;

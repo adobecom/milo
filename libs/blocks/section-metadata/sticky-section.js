@@ -1,12 +1,12 @@
 import { createTag } from '../../utils/utils.js';
 import { getMetadata, getDelayTime } from './section-metadata.js';
+import { getGnavHeight } from '../global-navigation/utilities/utilities.js';
 
 function handleTopHeight(section) {
-  const headerHeight = document.querySelector('header')?.offsetHeight ?? 0;
-  section.style.top = `${headerHeight}px`;
+  const topHeight = getGnavHeight();
+  section.style.top = `${topHeight}px`;
 }
 
-let isFooterStart = false;
 function promoIntersectObserve(el, stickySectionEl, options = {}) {
   const io = new IntersectionObserver((entries, observer) => {
     entries.forEach((entry) => {
@@ -15,12 +15,13 @@ function promoIntersectObserve(el, stickySectionEl, options = {}) {
         observer.unobserve(entry.target);
         return;
       }
-      const isPromoStart = entry.target === stickySectionEl;
-      const abovePromoStart = (isPromoStart && entry.isIntersecting)
+
+      const abovePromoStart = (entry.target === stickySectionEl && entry.isIntersecting)
         || stickySectionEl?.getBoundingClientRect().y > 0;
-      if (entry.target === document.querySelector('footer')) isFooterStart = entry.isIntersecting;
-      if (entry.isIntersecting || abovePromoStart || isFooterStart) el.classList.add('hide-sticky-section');
-      else el.classList.remove('hide-sticky-section');
+
+      if (entry.target === document.querySelector('footer')) {
+        el.classList.toggle('fill-sticky-section', entry.isIntersecting);
+      } else el.classList.toggle('hide-sticky-section', abovePromoStart);
     });
   }, options);
   return io;
@@ -43,7 +44,7 @@ function handleStickyPromobar(section, delay) {
   }
   const io = promoIntersectObserve(section, stickySectionEl);
   if (stickySectionEl) io.observe(stickySectionEl);
-  if (section.querySelector(':is(.promobar, .notification:not(.no-hide))')) {
+  if (section.querySelector(':is(.promobar, .notification)')) {
     io.observe(document.querySelector('footer'));
   }
 }

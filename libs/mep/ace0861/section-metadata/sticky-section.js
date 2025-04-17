@@ -1,9 +1,10 @@
 import { createTag } from '../../../utils/utils.js';
 import { getMetadata, getDelayTime } from './section-metadata.js';
+import { getGnavHeight } from '../../../blocks/global-navigation/utilities/utilities.js';
 
 function handleTopHeight(section) {
-  const headerHeight = document.querySelector('header').offsetHeight;
-  section.style.top = `${headerHeight}px`;
+  const topHeight = getGnavHeight();
+  section.style.top = `${topHeight}px`;
 }
 
 function promoIntersectObserve(el, stickySectionEl, options = {}) {

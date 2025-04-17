@@ -8,16 +8,24 @@ import {
   isElementVisible,
   viewports,
   unavVersion,
+  addMetaDataV2,
 } from './test-utilities.js';
 import { isDesktop, setActiveLink, toFragment } from '../../../libs/blocks/global-navigation/utilities/utilities.js';
 import globalNavigationActiveMock from './mocks/global-navigation-active.plain.js';
 
 describe('main nav', () => {
   before(() => {
-    document.head.innerHTML = `<link rel="icon" href="/libs/img/favicons/favicon.ico" size="any">
-    <script src="https://auth.services.adobe.com/imslib/imslib.min.js" type="javascript/blocked" data-loaded="true"></script>
-    <script src="https://stage.adobeccstatic.com/unav/${unavVersion}/UniversalNav.js" type="javascript/blocked" data-loaded="true"></script>
-    `;
+    document.head.innerHTML = `
+    <link rel="icon" href="/libs/img/favicons/favicon.ico" size="any">
+    <script type="importmap">
+      {
+        "imports": {
+          "https://auth.services.adobe.com/imslib/imslib.min.js": "./mocks/imslib-mock.js",
+          "https://stage.adobeccstatic.com/unav/${unavVersion}/UniversalNav.js": "./mocks/unav-mock.js"
+        }
+      }
+    </script>
+  `;
   });
 
   describe('desktop', () => {
@@ -150,6 +158,7 @@ describe('main nav', () => {
     });
 
     it('marks simple link as active', async () => {
+      document.head.appendChild(addMetaDataV2('off'));
       const targetSelector = '#simple-link';
       const template = toFragment`<div></div>`;
       template.innerHTML = globalNavigationActiveMock;
@@ -164,6 +173,7 @@ describe('main nav', () => {
     });
 
     it('marks item with sync dropdown containing active link', async () => {
+      document.head.appendChild(addMetaDataV2('off'));
       const targetSelector = '#link-in-dropdown';
       const template = toFragment`<div></div>`;
       template.innerHTML = globalNavigationActiveMock;
@@ -175,6 +185,7 @@ describe('main nav', () => {
     });
 
     it('marks item from a nav with a single async dropdown containing active link', async () => {
+      document.head.appendChild(addMetaDataV2('off'));
       await createFullGlobalNavigation({ globalNavigation: globalNavigationActiveMock });
       const sections = document.querySelectorAll('section.feds-navItem--section');
       expect(sections.length).to.equal(1);
@@ -207,6 +218,7 @@ describe('main nav', () => {
     });
 
     it('marks a single item as active if multiple links match URL', async () => {
+      document.head.appendChild(addMetaDataV2('off'));
       const targetSelector1 = '#simple-link';
       const targetSelector2 = '#link-in-dropdown';
       const template = toFragment`<div></div>`;

@@ -12,7 +12,7 @@ import {
     formatRegularPrice,
     formatAnnualPrice,
     makeSpacesAroundNonBreaking,
-} from './utilities';
+} from './utilities.js';
 
 // JSON imports require new syntax to run in Milo/wtr tests,
 // but the new syntax is not yet supported by ESLint:
@@ -32,8 +32,8 @@ export const defaultLiterals = {
         '{taxTerm, select, GST {excl. GST} VAT {excl. VAT} TAX {excl. tax} IVA {excl. IVA} SST {excl. SST} KDV {excl. KDV} other {}}',
     taxInclusiveLabel:
         '{taxTerm, select, GST {incl. GST} VAT {incl. VAT} TAX {incl. tax} IVA {incl. IVA} SST {incl. SST} KDV {incl. KDV} other {}}',
-    alternativePriceAriaLabel: 'Alternatively at {alternativePrice}',
-    strikethroughAriaLabel: 'Regularly at {strikethroughPrice}',
+    alternativePriceAriaLabel: 'Alternatively at',
+    strikethroughAriaLabel: 'Regularly at',
 };
 
 const log = createLog('ConsonantTemplates/price');
@@ -44,6 +44,7 @@ const cssClassNames = {
     container: 'price',
     containerOptical: 'price-optical',
     containerStrikethrough: 'price-strikethrough',
+    containerAlternative: 'price-alternative',
     containerAnnual: 'price-annual',
     containerAnnualPrefix: 'price-annual-prefix',
     containerAnnualSuffix: 'price-annual-suffix',
@@ -65,6 +66,7 @@ const literalKeys = {
     taxExclusiveLabel: 'taxExclusiveLabel',
     taxInclusiveLabel: 'taxInclusiveLabel',
     strikethroughAriaLabel: 'strikethroughAriaLabel',
+    alternativePriceAriaLabel: 'alternativePriceAriaLabel'
 };
 const WCS_TAX_DISPLAY_EXCLUSIVE = 'TAX_EXCLUSIVE';
 
@@ -102,6 +104,7 @@ function renderContainer(
     cssClass,
     {
         accessibleLabel,
+        altAccessibleLabel,
         currencySymbol,
         decimals,
         decimalsDelimiter,
@@ -124,6 +127,8 @@ function renderContainer(
     );
 
     let markup = '';
+    if (accessibleLabel) markup = `<sr-only class="strikethrough-aria-label">${accessibleLabel}</sr-only>`;
+    else if (altAccessibleLabel) markup = `<sr-only class="alt-aria-label">${altAccessibleLabel}</sr-only>`;
     if (isCurrencyFirst) markup += currencyMarkup + currencySpaceMarkup;
     markup += renderSpan(cssClassNames.integer, integer);
     markup += renderSpan(cssClassNames.decimalsDelimiter, decimalsDelimiter);
@@ -139,7 +144,6 @@ function renderContainer(
 
     return renderSpan(cssClass, markup, {
         ...attributes,
-        ['aria-label']: accessibleLabel,
     });
 }
 
@@ -150,9 +154,11 @@ function renderContainer(
 // TODO: check WCS data elements to include: analytics, endDate, language, merchant, offerType, pricePoint, startDate
 const createPriceTemplate =
     ({
+        isAlternativePrice = false,
         displayOptical = false,
         displayStrikethrough = false,
         displayAnnual = false,
+        instant = undefined,
     } = {}) =>
     (
         {
@@ -163,6 +169,7 @@ const createPriceTemplate =
             displayTax = false,
             language,
             literals: priceLiterals = {},
+            quantity = 1,
         } = {},
         {
             commitment,
@@ -174,6 +181,7 @@ const createPriceTemplate =
             taxTerm,
             term,
             usePrecision,
+            promotion,
         } = {},
         attributes = {},
     ) => {
@@ -184,8 +192,10 @@ const createPriceTemplate =
             price,
         }).forEach(([key, value]) => {
             if (value == null) {
-              /* c8 ignore next 2 */
-                throw new Error(`Argument "${key}" is missing for osi ${offerSelectorIds?.toString()}, country ${country}, language ${language}`);
+                /* c8 ignore next 2 */
+                throw new Error(
+                    `Argument "${key}" is missing for osi ${offerSelectorIds?.toString()}, country ${country}, language ${language}`,
+                );
             }
         });
 
@@ -208,7 +218,7 @@ const createPriceTemplate =
                     locale,
                 ).format(parameters);
             } catch {
-              /* c8 ignore next 2 */
+                /* c8 ignore next 2 */
                 log.error('Failed to format literal:', literal);
                 return '';
             }
@@ -226,25 +236,21 @@ const createPriceTemplate =
         const { accessiblePrice, recurrenceTerm, ...formattedPrice } = method({
             commitment,
             formatString,
-            term,
-            price: displayOptical ? price : displayPrice,
-            usePrecision,
+            instant,
             isIndianPrice: country === 'IN',
+            originalPrice: price,
+            priceWithoutDiscount,
+            price: displayOptical ? price : displayPrice,
+            promotion,
+            quantity,
+            term,
+            usePrecision,
         });
 
-        let accessibleLabel = accessiblePrice;
+        let accessibleLabel = '', altAccessibleLabel = '';
 
         let recurrenceLabel = '';
         if (toBoolean(displayRecurrence) && recurrenceTerm) {
-            const recurrenceAccessibleLabel = formatLiteral(
-                literalKeys.recurrenceAriaLabel,
-                {
-                    recurrenceTerm,
-                },
-            );
-            if (recurrenceAccessibleLabel) {
-                accessibleLabel += ' ' + recurrenceAccessibleLabel;
-            }
             recurrenceLabel = formatLiteral(literalKeys.recurrenceLabel, {
                 recurrenceTerm,
             });
@@ -255,13 +261,6 @@ const createPriceTemplate =
             perUnitLabel = formatLiteral(literalKeys.perUnitLabel, {
                 perUnit: 'LICENSE',
             });
-            const perUnitAriaLabel = formatLiteral(
-                literalKeys.perUnitAriaLabel,
-                { perUnit: 'LICENSE' },
-            );
-            if (perUnitAriaLabel) {
-                accessibleLabel += ' ' + perUnitAriaLabel;
-            }
         }
 
         let taxInclusivityLabel = '';
@@ -272,9 +271,6 @@ const createPriceTemplate =
                     : literalKeys.taxInclusiveLabel,
                 { taxTerm },
             );
-            if (taxInclusivityLabel) {
-                accessibleLabel += ' ' + taxInclusivityLabel;
-            }
         }
 
         if (displayStrikethrough) {
@@ -286,12 +282,24 @@ const createPriceTemplate =
             );
         }
 
+        if (isAlternativePrice) {
+            altAccessibleLabel = formatLiteral(
+                literalKeys.alternativePriceAriaLabel,
+                {
+                    alternativePrice: altAccessibleLabel,
+                },
+            );
+        }
+
         let cssClass = cssClassNames.container;
         if (displayOptical) {
             cssClass += ' ' + cssClassNames.containerOptical;
         }
         if (displayStrikethrough) {
             cssClass += ' ' + cssClassNames.containerStrikethrough;
+        }
+        if (isAlternativePrice) {
+            cssClass += ' ' + cssClassNames.containerAlternative;
         }
         if (displayAnnual) {
             cssClass += ' ' + cssClassNames.containerAnnual;
@@ -303,6 +311,7 @@ const createPriceTemplate =
                 {
                     ...formattedPrice,
                     accessibleLabel,
+                    altAccessibleLabel,
                     recurrenceLabel,
                     perUnitLabel,
                     taxInclusivityLabel,
@@ -353,7 +362,7 @@ const createPromoPriceTemplate = () => (context, value, attributes) => {
         displayOldPrice &&
         value.priceWithoutDiscount &&
         value.priceWithoutDiscount != value.price;
-    return `${createPriceTemplate()(context, value, attributes)}${
+    return `${createPriceTemplate({ isAlternativePrice: shouldDisplayOldPrice })(context, value, attributes)}${
         shouldDisplayOldPrice
             ? '&nbsp;' +
               createPriceTemplate({
@@ -365,6 +374,20 @@ const createPromoPriceTemplate = () => (context, value, attributes) => {
 
 const createPromoPriceWithAnnualTemplate =
     () => (context, value, attributes) => {
+        let { instant } = context;
+        try {
+            if (!instant) {
+                instant = new URLSearchParams(document.location.search).get(
+                    'instant',
+                );
+            }
+            if (instant) {
+                instant = new Date(instant);
+            }
+        } catch (e) {
+            instant = undefined;
+            /* ignore the error */
+        }
         const ctxStAnnual = {
             ...context,
             displayTax: false,
@@ -383,9 +406,10 @@ const createPromoPriceWithAnnualTemplate =
                       displayStrikethrough: true,
                   })(ctxStAnnual, value, attributes) + '&nbsp;'
                 : ''
-        }${createPriceTemplate()(context, value, attributes)}${renderSpan(cssClassNames.containerAnnualPrefix, '&nbsp;(')}${createPriceTemplate(
+        }${createPriceTemplate({ isAlternativePrice: shouldDisplayOldPrice })(context, value, attributes)}${renderSpan(cssClassNames.containerAnnualPrefix, '&nbsp;(')}${createPriceTemplate(
             {
                 displayAnnual: true,
+                instant,
             },
         )(
             ctxStAnnual,
@@ -400,7 +424,7 @@ const createPriceWithAnnualTemplate = () => (context, value, attributes) => {
         displayTax: false,
         displayPerUnit: false,
     };
-    return `${createPriceTemplate()(context, value, attributes)}${renderSpan(cssClassNames.containerAnnualPrefix, '&nbsp;(')}${createPriceTemplate(
+    return `${createPriceTemplate({ isAlternativePrice: context.displayOldPrice })(context, value, attributes)}${renderSpan(cssClassNames.containerAnnualPrefix, '&nbsp;(')}${createPriceTemplate(
         {
             displayAnnual: true,
         },

@@ -1,50 +1,34 @@
-import { EVENT_AEM_LOAD, EVENT_AEM_ERROR } from './constants.js';
+import {
+    EVENT_AEM_LOAD,
+    EVENT_AEM_ERROR,
+    MARK_START_SUFFIX,
+    MARK_DURATION_SUFFIX,
+} from './constants.js';
+import { MasError } from './mas-error.js';
+import { getService } from './utils.js';
+import { masFetch } from './utils/mas-fetch.js';
 
 const sheet = new CSSStyleSheet();
 sheet.replaceSync(':host { display: contents; }');
 
-const baseUrl =
-    document.querySelector('meta[name="aem-base-url"]')?.content ??
-    'https://odin.adobe.com';
-
 const ATTRIBUTE_FRAGMENT = 'fragment';
 const ATTRIBUTE_AUTHOR = 'author';
-const ATTRIBUTE_IMS = 'ims';
-
-const fail = (message) => {
-    throw new Error(`Failed to get fragment: ${message}`);
-};
-
-/**
- * Get fragment by ID
- * @param {string} baseUrl the aem base url
- * @param {string} id fragment id
- * @param {string} author should the fragment be fetched from author endpoint
- * @param {Object} headers optional request headers
- * @returns {Promise<Object>} the raw fragment item
- */
-export async function getFragmentById(baseUrl, id, author, headers) {
-    const endpoint = author
-        ? `${baseUrl}/adobe/sites/cf/fragments/${id}`
-        : `${baseUrl}/adobe/sites/fragments/${id}`;
-    const response = await fetch(endpoint, {
-        cache: 'default',
-        credentials: 'omit',
-        headers,
-    }).catch((e) => fail(e.message));
-    if (!response?.ok) {
-        fail(`${response.status} ${response.statusText}`);
-    }
-    return response.json();
-}
-
-let headers;
+const AEM_FRAGMENT_TAG_NAME = 'aem-fragment';
 
 class FragmentCache {
     #fragmentCache = new Map();
 
     clear() {
         this.#fragmentCache.clear();
+    }
+
+    /**
+     * Add fragment to cache
+     * @param {string} fragmentId requested id.
+     * requested id can differe from returned fragment.id because of translation
+     */
+    addByRequestedId(fragmentId, fragment) {
+        this.#fragmentCache.set(fragmentId, fragment);
     }
 
     add(...fragments) {
@@ -60,8 +44,8 @@ class FragmentCache {
         return this.#fragmentCache.has(fragmentId);
     }
 
-    get(fragmentId) {
-        return this.#fragmentCache.get(fragmentId);
+    get(key) {
+        return this.#fragmentCache.get(key);
     }
 
     remove(fragmentId) {
@@ -78,9 +62,13 @@ const cache = new FragmentCache();
  */
 export class AemFragment extends HTMLElement {
     cache = cache;
+    #log;
 
-    #rawData;
-    #data;
+    #rawData = null;
+    #data = null;
+    #stale = false;
+    #startMark = null;
+    #service = null;
 
     /**
      * @type {string} fragment id
@@ -88,14 +76,9 @@ export class AemFragment extends HTMLElement {
     #fragmentId;
 
     /**
-     * @type {boolean} whether an access token should be used via IMS.
+     * Internal promise to track if fetching is in progress.
      */
-    #ims = false;
-
-    /**
-     * Internal promise to track the readiness of the web-component to render.
-     */
-    #readyPromise;
+    #fetchPromise;
 
     #author = false;
 
@@ -107,40 +90,78 @@ export class AemFragment extends HTMLElement {
         super();
         this.attachShadow({ mode: 'open' });
         this.shadowRoot.adoptedStyleSheets = [sheet];
-
-        const ims = this.getAttribute(ATTRIBUTE_IMS);
-        if (['', true, 'true'].includes(ims)) {
-            this.#ims = true;
-            if (!headers) {
-                headers = {
-                    Authorization: `Bearer ${window.adobeid?.authorize?.()}`,
-                };
-            }
-        }
     }
 
     attributeChangedCallback(name, oldValue, newValue) {
         if (name === ATTRIBUTE_FRAGMENT) {
             this.#fragmentId = newValue;
-            this.refresh(false);
         }
-
         if (name === ATTRIBUTE_AUTHOR) {
             this.#author = ['', 'true'].includes(newValue);
         }
     }
 
     connectedCallback() {
+        this.#service = getService(this);
+        this.#log = this.#service.log.module(AEM_FRAGMENT_TAG_NAME);
+        this.#startMark = `${AEM_FRAGMENT_TAG_NAME}:${this.#fragmentId}${MARK_START_SUFFIX}`;
+        performance.mark(this.#startMark);
         if (!this.#fragmentId) {
-            this.#fail('Missing fragment id');
+            this.#fail({ message: 'Missing fragment id' });
             return;
+        }
+        this.refresh(false);
+    }
+
+    /**
+     * Get fragment by ID
+     * @param {string} endpoint url to fetch fragment from
+     * @param {string} id fragment id
+     * @returns {Promise<Object>} the raw fragment item
+     */
+    async getFragmentById(endpoint, id, startMark) {
+        const measureName = `${AEM_FRAGMENT_TAG_NAME}:${id}${MARK_DURATION_SUFFIX}`;
+        let response;
+        try {
+            response = await masFetch(endpoint, {
+                cache: 'default',
+                credentials: 'omit',
+            });
+            if (!response?.ok) {
+                const { startTime, duration } = performance.measure(
+                    measureName,
+                    startMark,
+                );
+                throw new MasError('Unexpected fragment response', {
+                    response,
+                    startTime,
+                    duration,
+                    ...this.#service.duration,
+                });
+            }
+            return response.json();
+        } catch (e) {
+            const { startTime, duration } = performance.measure(
+                measureName,
+                startMark,
+            );
+            if (!response) {
+                response = { url: endpoint };
+            }
+
+            throw new MasError('Failed to fetch fragment', {
+                response,
+                startTime,
+                duration,
+                ...this.#service.duration,
+            });
         }
     }
 
     async refresh(flushCache = true) {
-        if (this.#readyPromise) {
+        if (this.#fetchPromise) {
             const ready = await Promise.race([
-                this.#readyPromise,
+                this.#fetchPromise,
                 Promise.resolve(false),
             ]);
             if (!ready) return; // already fetching data
@@ -148,11 +169,20 @@ export class AemFragment extends HTMLElement {
         if (flushCache) {
             cache.remove(this.#fragmentId);
         }
-        this.#readyPromise = this.fetchData()
+
+        this.#fetchPromise = this.fetchData()
             .then(() => {
+                const { references, referencesTree, placeholders } =
+                    this.#rawData || {};
                 this.dispatchEvent(
                     new CustomEvent(EVENT_AEM_LOAD, {
-                        detail: this.data,
+                        detail: {
+                            ...this.data,
+                            stale: this.#stale,
+                            references,
+                            referencesTree,
+                            placeholders,
+                        },
                         bubbles: true,
                         composed: true,
                     }),
@@ -160,19 +190,22 @@ export class AemFragment extends HTMLElement {
                 return true;
             })
             .catch((e) => {
-                /* c8 ignore next 3 */
-                this.#fail('Network error: failed to load fragment');
-                this.#readyPromise = null;
+                if (this.#rawData) {
+                    cache.addByRequestedId(this.#fragmentId, this.#rawData);
+                    return true;
+                }
+                this.#fail(e);
                 return false;
             });
-        this.#readyPromise;
+        return this.#fetchPromise;
     }
 
-    #fail(error) {
+    #fail({ message, context }) {
         this.classList.add('error');
+        this.#log.error(`aem-fragment: ${message}`, context);
         this.dispatchEvent(
             new CustomEvent(EVENT_AEM_ERROR, {
-                detail: error,
+                detail: { message, ...context },
                 bubbles: true,
                 composed: true,
             }),
@@ -180,24 +213,30 @@ export class AemFragment extends HTMLElement {
     }
 
     async fetchData() {
-        this.#rawData = null;
+        this.classList.remove('error');
         this.#data = null;
         let fragment = cache.get(this.#fragmentId);
-        if (!fragment) {
-            fragment = await getFragmentById(
-                baseUrl,
-                this.#fragmentId,
-                this.#author,
-                this.#ims ? headers : undefined,
-            );
-            cache.add(fragment);
+        if (fragment) {
+            this.#rawData = fragment;
+            return;
         }
+        this.#stale = true;
+        const { masIOUrl, wcsApiKey, locale } = this.#service.settings;
+        const endpoint = `${masIOUrl}/fragment?id=${this.#fragmentId}&api_key=${wcsApiKey}&locale=${locale}`;
+
+        fragment = await this.getFragmentById(
+            endpoint,
+            this.#fragmentId,
+            this.#startMark,
+        );
+        cache.addByRequestedId(this.#fragmentId, fragment);
         this.#rawData = fragment;
+        this.#stale = false;
     }
 
     get updateComplete() {
         return (
-            this.#readyPromise ??
+            this.#fetchPromise ??
             Promise.reject(new Error('AEM fragment cannot be loaded'))
         );
     }
@@ -205,34 +244,34 @@ export class AemFragment extends HTMLElement {
     get data() {
         if (this.#data) return this.#data;
         if (this.#author) {
-            this.#transformAuthorData();
+            this.transformAuthorData();
         } else {
-            this.#transformPublishData();
+            this.transformPublishData();
         }
         return this.#data;
     }
 
-    #transformAuthorData() {
-        const { id, tags, fields } = this.#rawData;
+    transformAuthorData() {
+        const { fields, id, tags } = this.#rawData;
         this.#data = fields.reduce(
             (acc, { name, multiple, values }) => {
                 acc.fields[name] = multiple ? values : values[0];
                 return acc;
             },
-            { id, tags, fields: {} },
+            { fields: {}, id, tags },
         );
     }
 
-    #transformPublishData() {
-        const { id, tags, fields } = this.#rawData;
+    transformPublishData() {
+        const { fields, id, tags } = this.#rawData;
         this.#data = Object.entries(fields).reduce(
             (acc, [key, value]) => {
                 acc.fields[key] = value?.mimeType ? value.value : (value ?? '');
                 return acc;
             },
-            { id, tags, fields: {} },
+            { fields: {}, id, tags },
         );
     }
 }
 
-customElements.define('aem-fragment', AemFragment);
+customElements.define(AEM_FRAGMENT_TAG_NAME, AemFragment);

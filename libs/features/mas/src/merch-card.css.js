@@ -5,7 +5,6 @@ export const styles = css`
     :host {
         --consonant-merch-card-background-color: #fff;
         --consonant-merch-card-border: 1px solid var(--consonant-merch-card-border-color);
-        
         -webkit-font-smoothing: antialiased;
         background-color: var(--consonant-merch-card-background-color);
         border-radius: var(--consonant-merch-spacing-xs);
@@ -17,6 +16,10 @@ export const styles = css`
         grid-template-columns: repeat(auto-fit, minmax(300px, max-content));
         position: relative;
         text-align: start;
+    }
+
+    :host([failed]) {
+        display: none;
     }
 
     :host(.placeholder) {
@@ -77,6 +80,22 @@ export const styles = css`
         gap: var(--consonant-merch-spacing-xs);
 
         padding: var(--consonant-merch-spacing-xs);
+    }
+    
+    footer.wide-footer {
+        align-items: center;
+    }
+    
+    footer.wide-footer .secure-transaction-label {
+        flex: 0 1 auto;
+    }
+    
+    footer.footer-column {
+        flex-direction: column;
+    }
+    
+    footer.footer-column .secure-transaction-label {
+        align-self: flex-start;
     }
 
     hr {
@@ -226,24 +245,25 @@ export const styles = css`
 `;
 
 export const sizeStyles = () => {
-    const styles = [
-        css`
-        /* Tablet */
-        @media screen and ${unsafeCSS(TABLET_UP)} {
-            :host([size='wide']),
-            :host([size='super-wide']) {
-                width: 100%;
-                grid-column: 1 / -1;
-            }
-        }
+  const styles = [
+      css`
+      /* Tablet */
+      @media screen and ${unsafeCSS(TABLET_UP)} {
+          :host([size='wide']),
+          :host([size='super-wide']) {
+              width: 100%;
+              grid-column: 1 / -1;
+          }
+      }
 
-        /* Laptop */
-        @media screen and ${unsafeCSS(DESKTOP_UP)} {
-            :host([size='wide']) {
-                grid-column: span 2;
-            }
-        `,
-    ];
+      /* Laptop */
+      @media screen and ${unsafeCSS(DESKTOP_UP)} {
+          :host([size='wide']) {
+              grid-column: span 2;
+          }
+      }
+      `,
+  ];
 
-    return styles;
+  return styles;
 };

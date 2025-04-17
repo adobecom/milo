@@ -212,7 +212,7 @@ describe('getConfig', () => {
       hideCtaTags: [],
       filterPanel: {
         enabled: true,
-        eventFilter: '',
+        eventFilter: [],
         type: 'left',
         showEmptyFilters: false,
         categories: [
@@ -368,7 +368,7 @@ describe('getConfig', () => {
         loadMoreButton: { style: 'primary', useThemeThree: false },
         type: 'paginator',
         i18n: {
-          loadMore: { btnText: 'Load More', resultsQuantityText: '{start} of {end} displayed' },
+          loadMore: { btnText: 'Load more', resultsQuantityText: '{start} of {end} displayed' },
           paginator: {
             resultsQuantityText: '{start} - {end} of {total} results',
             prevLabel: 'Prev',
@@ -481,7 +481,7 @@ describe('getConfig', () => {
       hideCtaTags: [],
       filterPanel: {
         enabled: true,
-        eventFilter: '',
+        eventFilter: [],
         type: 'left',
         showEmptyFilters: false,
         categories: [
@@ -637,7 +637,7 @@ describe('getConfig', () => {
         loadMoreButton: { style: 'primary', useThemeThree: false },
         type: 'paginator',
         i18n: {
-          loadMore: { btnText: 'Load More', resultsQuantityText: '{start} of {end} displayed' },
+          loadMore: { btnText: 'Load more', resultsQuantityText: '{start} of {end} displayed' },
           paginator: {
             resultsQuantityText: '{start} - {end} of {total} results',
             prevLabel: 'Prev',
@@ -846,7 +846,7 @@ describe('getFloodgateCaasConfig', () => {
       hideCtaTags: [],
       filterPanel: {
         enabled: true,
-        eventFilter: '',
+        eventFilter: [],
         type: 'left',
         showEmptyFilters: false,
         categories: [
@@ -1002,7 +1002,7 @@ describe('getFloodgateCaasConfig', () => {
         loadMoreButton: { style: 'primary', useThemeThree: false },
         type: 'paginator',
         i18n: {
-          loadMore: { btnText: 'Load More', resultsQuantityText: '{start} of {end} displayed' },
+          loadMore: { btnText: 'Load more', resultsQuantityText: '{start} of {end} displayed' },
           paginator: {
             resultsQuantityText: '{start} - {end} of {total} results',
             prevLabel: 'Prev',

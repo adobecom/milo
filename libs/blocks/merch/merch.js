@@ -4,6 +4,7 @@ import {
 import { replaceKey } from '../../features/placeholders.js';
 
 export const CHECKOUT_LINK_CONFIG_PATH = '/commerce/checkout-link.json'; // relative to libs.
+export const CHECKOUT_LINK_SANDBOX_CONFIG_PATH = '/commerce/checkout-link-sandbox.json'; // relative to libs.
 
 export const PRICE_TEMPLATE_DISCOUNT = 'discount';
 export const PRICE_TEMPLATE_OPTICAL = 'optical';
@@ -104,7 +105,7 @@ const GeoMap = {
   in_en: 'IN_en',
   in_hi: 'IN_hi',
   id_en: 'ID_en',
-  id_id: 'ID_in',
+  id_id: 'ID_id',
   nz: 'NZ_en',
   sa_ar: 'SA_ar',
   sa_en: 'SA_en',
@@ -280,9 +281,13 @@ export async function fetchEntitlements() {
   return fetchEntitlements.promise;
 }
 
-export async function fetchCheckoutLinkConfigs(base = '') {
+export async function fetchCheckoutLinkConfigs(base = '', env = '') {
+  const params = new URLSearchParams(window.location.search);
+  const path = params.get('checkout-link-sandbox') === 'on' && env !== 'prod'
+    ? `${base}${CHECKOUT_LINK_SANDBOX_CONFIG_PATH}`
+    : `${base}${CHECKOUT_LINK_CONFIG_PATH}`;
   fetchCheckoutLinkConfigs.promise = fetchCheckoutLinkConfigs.promise
-    ?? fetch(`${base}${CHECKOUT_LINK_CONFIG_PATH}`).catch((e) => {
+    ?? fetch(path).catch((e) => {
       log?.error('Failed to fetch checkout link configs', e);
     }).then((mappings) => {
       if (!mappings?.ok) return { data: [] };
@@ -293,11 +298,12 @@ export async function fetchCheckoutLinkConfigs(base = '') {
 
 export async function getCheckoutLinkConfig(productFamily, productCode, paCode) {
   let { base } = getConfig();
+  const { env } = getConfig();
   if (/\.page$/.test(document.location.origin)) {
     /* c8 ignore next 2 */
     base = base.replace('.live', '.page');
   }
-  const checkoutLinkConfigs = await fetchCheckoutLinkConfigs(base);
+  const checkoutLinkConfigs = await fetchCheckoutLinkConfigs(base, env);
   if (!checkoutLinkConfigs.data.length) return undefined;
   const { locale: { region } } = getConfig();
 
@@ -426,15 +432,16 @@ async function openFragmentModal(path, getModal) {
 export function appendTabName(url) {
   const metaPreselectPlan = document.querySelector('meta[name="preselect-plan"]');
   if (!metaPreselectPlan?.content) return url;
+  const isRelativePath = url.startsWith('/');
   let urlWithPlan;
   try {
-    urlWithPlan = new URL(url);
+    urlWithPlan = isRelativePath ? new URL(`${window.location.origin}${url}`) : new URL(url);
   } catch (err) {
     window.lana?.log(`Invalid URL ${url} : ${err}`);
     return url;
   }
   urlWithPlan.searchParams.set('plan', metaPreselectPlan.content);
-  return urlWithPlan.href;
+  return isRelativePath ? urlWithPlan.href.replace(window.location.origin, '') : urlWithPlan.href;
 }
 
 export function appendExtraOptions(url, extraOptions) {
@@ -478,7 +485,7 @@ async function openExternalModal(url, getModal, extraOptions) {
 
 const isInternalModal = (url) => /\/fragments\//.test(url);
 
-export async function openModal(e, url, offerType, hash, extraOptions) {
+export async function openModal(e, url, offerType, hash, extraOptions, el) {
   e.preventDefault();
   e.stopImmediatePropagation();
   const { getModal } = await import('../modal/modal.js');
@@ -489,18 +496,23 @@ export async function openModal(e, url, offerType, hash, extraOptions) {
     const prevHash = window.location.hash.replace('#', '') === hash ? '' : window.location.hash;
     window.location.hash = hash;
     window.addEventListener('milo:modal:closed', () => {
-      window.history.pushState({}, document.title, `#${prevHash}`);
+      window.history.pushState({}, document.title, prevHash !== '' ? `#${prevHash}` : `${window.location.pathname}${window.location.search}`);
     }, { once: true });
+  }
+
+  if (el?.isOpen3in1Modal) {
+    const { default: openThreeInOneModal, handle3in1IFrameEvents } = await import('./three-in-one.js');
+    window.addEventListener('message', handle3in1IFrameEvents);
+    modal = await openThreeInOneModal(el);
+    return;
   }
   if (isInternalModal(url)) {
     const fragmentPath = url.split(/(hlx|aem).(page|live)/).pop();
     modal = await openFragmentModal(fragmentPath, getModal);
   } else {
-    modal = await openExternalModal(url, getModal, extraOptions);
+    modal = await openExternalModal(url, getModal, extraOptions, el);
   }
-  if (modal) {
-    modal.classList.add(offerTypeClass);
-  }
+  modal.classList.add(offerTypeClass);
 }
 
 export function setCtaHash(el, checkoutLinkConfig, offerType) {
@@ -521,12 +533,12 @@ const isProdModal = (url) => {
 };
 
 export async function getModalAction(offers, options, el) {
+  if (!options.modal) return undefined;
   const [{
     offerType,
     productArrangementCode,
     productArrangement: { productCode, productFamily: offerFamily } = {},
   }] = offers ?? [{}];
-  if (options.modal !== true) return undefined;
   const checkoutLinkConfig = await getCheckoutLinkConfig(
     offerFamily,
     productCode,
@@ -536,10 +548,13 @@ export async function getModalAction(offers, options, el) {
   const columnName = (offerType === OFFER_TYPE_TRIAL) ? FREE_TRIAL_PATH : BUY_NOW_PATH;
   const hash = setCtaHash(el, checkoutLinkConfig, offerType);
   let url = checkoutLinkConfig[columnName];
-  if (!url) return undefined;
+  if (!url && !el?.isOpen3in1Modal) return undefined;
   url = isInternalModal(url) || isProdModal(url)
     ? localizeLink(checkoutLinkConfig[columnName]) : checkoutLinkConfig[columnName];
-  return { url, handler: (e) => openModal(e, url, offerType, hash, options.extraOptions) };
+  return {
+    url,
+    handler: (e) => openModal(e, url, offerType, hash, options.extraOptions, el),
+  };
 }
 
 export async function getCheckoutAction(offers, options, imsSignedInPromise, el) {
@@ -676,6 +691,7 @@ export async function getPriceContext(el, params) {
   const displayRecurrence = params.get('term');
   const displayTax = params.get('tax');
   const forceTaxExclusive = params.get('exclusive');
+  const alternativePrice = params.get('alt');
   // The PRICE_TEMPLATE_MAPPING supports legacy OST links
   const template = PRICE_TEMPLATE_MAPPING.get(params.get('type')) ?? PRICE_TEMPLATE_REGULAR;
   return {
@@ -685,6 +701,7 @@ export async function getPriceContext(el, params) {
     displayRecurrence,
     displayTax,
     forceTaxExclusive,
+    alternativePrice,
     template,
   };
 }
@@ -721,6 +738,22 @@ export async function buildCta(el, params) {
       reopenModal(cta);
     });
   }
+
+  // Adding aria-label for checkout-link using productFamily and customerSegment as placeholder key.
+  if (el.ariaLabel) {
+    // If Milo aria-label available from sharepoint doc, just use it.
+    cta.setAttribute('aria-label', el.ariaLabel);
+  } else if (!cta.ariaLabel) {
+    cta.onceSettled().finally(async () => {
+      const productFamily = cta.value[0]?.productArrangement?.productFamily;
+      const marketSegment = cta.value[0]?.marketSegments[0];
+      const customerSegment = marketSegment === 'EDU' ? marketSegment : cta.value[0]?.customerSegment;
+      let ariaLabel = cta.textContent;
+      ariaLabel = productFamily ? `${ariaLabel} - ${await replaceKey(productFamily, getConfig())}` : ariaLabel;
+      ariaLabel = customerSegment ? `${ariaLabel} - ${await replaceKey(customerSegment, getConfig())}` : ariaLabel;
+      cta.setAttribute('aria-label', ariaLabel);
+    });
+  }
   return cta;
 }
 
@@ -747,19 +780,3 @@ export default async function init(el) {
   log.warn('Failed to get context:', { el });
   return null;
 }
-
-export async function handleHashChange() {
-  const modalDialog = document.querySelector('.dialog-modal');
-  if (window.location.hash) {
-    const modalId = window.location.hash.replace('#', '');
-    const cta = document.querySelector(`.con-button[data-modal-id="${modalId}"]`);
-    if (!modalDialog) {
-      reopenModal(cta);
-    }
-  } else if (modalDialog) {
-    const { closeModal } = await import('../modal/modal.js');
-    closeModal(modalDialog);
-  }
-}
-
-window.addEventListener('hashchange', handleHashChange);

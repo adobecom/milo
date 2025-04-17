@@ -83,6 +83,9 @@ describe('Section Metdata', () => {
     const sm = sec.querySelector('.section-metadata');
     await init(sm);
     expect(main.lastElementChild.classList.contains('hide-sticky-section')).to.be.true;
+    window.scrollTo(0, document.body.scrollHeight);
+    await delay(500);
+    expect(main.lastElementChild.classList.contains('fill-sticky-section')).to.be.true;
   });
 
   it('Handles delay in loading the promobar', async () => {
@@ -114,5 +117,13 @@ describe('Section Metdata', () => {
 
     await delay(700);
     expect(sec.style.top).to.be.eql('77px');
+  });
+
+  it('adds an anchor', async () => {
+    const sec = document.querySelector('.section.anchor');
+    const sm = sec.querySelector('.section-metadata');
+    await init(sm);
+    expect(sec.id).to.be.eql('anchor-test');
+    expect(sec.classList.contains('section-anchor')).to.be.true;
   });
 });

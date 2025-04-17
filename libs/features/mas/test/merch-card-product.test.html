@@ -51,6 +51,7 @@
       background: linear-gradient(90deg, rgba(2, 0, 36, 1) 0%, rgba(140, 43, 95, 0.4430147058823529) 35%, rgba(0, 212, 255, 1) 100%);
     }
   </style>
+  <mas-commerce-service env="stage"></mas-commerce-service>
 </head>
 
 <body>
@@ -159,7 +160,12 @@
             min="2" max="10" step="1" default-value="undefined" max-input="undefined" closed=""></merch-quantity-select>
         </div>
         <div slot="footer">
-          <p class="action-area"><a is="checkout-link" data-checkout-workflow="UCv3"
+          <span class="secure-transaction-label">Secure transaction</span>
+          <p class="action-area">
+            <a is="checkout-link" data-checkout-workflow="UCv3" data-checkout-workflow-step="commitment" data-quantity="1"
+               data-wcs-osi="abm" data-extra-options="{}" class="con-button"
+               daa-ll="Free trial-4--Creative Cloud All Apps"><span>Free trial</span></a>
+            <a is="checkout-link" data-checkout-workflow="UCv3" class="con-button"
               data-checkout-workflow-step="recommendation" data-quantity="2" data-wcs-osi="abm" data-extra-options="{}"
               daa-ll="Buy now-2--Acrobat Standard for"><span>Buy now</span></a></p>
         </div>

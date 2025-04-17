@@ -1,5 +1,4 @@
 /* eslint-disable no-console */
-
 const MILO_TEMPLATES = [
   '404',
   'featured-story',
@@ -45,6 +44,7 @@ const MILO_BLOCKS = [
   'instagram',
   'locui',
   'locui-create',
+  'm7',
   'marketo',
   'marquee',
   'marquee-anchors',
@@ -52,7 +52,9 @@ const MILO_BLOCKS = [
   'media',
   'merch',
   'merch-card',
+  'merch-card-autoblock',
   'merch-card-collection',
+  'merch-card-collection-autoblock',
   'merch-offers',
   'mmm',
   'mnemonic-list',
@@ -94,21 +96,26 @@ const MILO_BLOCKS = [
 ];
 const AUTO_BLOCKS = [
   { adobetv: 'tv.adobe.com' },
-  { gist: 'https://gist.github.com' },
+  { gist: 'gist.github.com' },
   { caas: '/tools/caas' },
   { faas: '/tools/faas' },
   { fragment: '/fragments/', styles: false },
-  { instagram: 'https://www.instagram.com' },
-  { slideshare: 'https://www.slideshare.net', styles: false },
-  { tiktok: 'https://www.tiktok.com', styles: false },
-  { twitter: 'https://twitter.com' },
-  { vimeo: 'https://vimeo.com' },
-  { vimeo: 'https://player.vimeo.com' },
-  { youtube: 'https://www.youtube.com' },
-  { youtube: 'https://youtu.be' },
+  { instagram: 'instagram.com' },
+  { slideshare: 'slideshare.net', styles: false },
+  { tiktok: 'tiktok.com', styles: false },
+  { twitter: 'twitter.com' },
+  { vimeo: 'vimeo.com' },
+  { vimeo: 'player.vimeo.com' },
+  { youtube: 'youtube.com' },
+  { youtube: 'youtu.be' },
   { 'pdf-viewer': '.pdf', styles: false },
   { video: '.mp4' },
   { merch: '/tools/ost?' },
+  { merch: '/miniplans' },
+  { 'merch-card-collection-autoblock': 'mas.adobe.com/studio.html#content-type=merch-card-collection', styles: false },
+  { 'merch-card-autoblock': 'mas.adobe.com/studio.html', styles: false },
+  { m7: '/creativecloud/business-plans', styles: false },
+  { m7: '/creativecloud/education-plans', styles: false },
 ];
 const DO_NOT_INLINE = [
   'accordion',
@@ -124,7 +131,7 @@ const ENVS = {
     adminconsole: 'stage.adminconsole.adobe.com',
     account: 'stage.account.adobe.com',
     edgeConfigId: '8d2805dd-85bf-4748-82eb-f99fdad117a6',
-    pdfViewerClientId: '600a4521c23d4c7eb9c7b039bee534a0',
+    pdfViewerClientId: 'a76f1668fd3244d98b3838e189900a5e',
   },
   prod: {
     name: 'prod',
@@ -147,9 +154,18 @@ const TARGET_TIMEOUT_MS = 4000;
 const LANGSTORE = 'langstore';
 const PREVIEW = 'target-preview';
 const PAGE_URL = new URL(window.location.href);
+const LANGUAGE_BASED_PATHS = [
+  // don't add milo too. It's a special case because of tools, merch, etc.
+  'news.adobe.com',
+];
+const DEFAULT_LANG = 'en';
 export const SLD = PAGE_URL.hostname.includes('.aem.') ? 'aem' : 'hlx';
 
 const PROMO_PARAM = 'promo';
+let isMartechLoaded = false;
+
+let localeToLanguageMap;
+let siteLanguages;
 
 export function getEnv(conf) {
   const { host } = window.location;
@@ -192,6 +208,36 @@ export function getLocale(locales, pathname = window.location.pathname) {
   return locale;
 }
 
+export function getLanguage(languages, locales, pathname = window.location.pathname) {
+  const split = pathname.split('/');
+  const locOffset = [LANGSTORE, PREVIEW].includes(split[1]) ? 1 : 0;
+  const languageString = split[locOffset + 1];
+  const region = split[locOffset + 2];
+  let regionPath = '';
+
+  const language = languages[languageString];
+  if (language && region && language.regions) {
+    const [matchingRegion] = language.regions.filter((r) => r.region === region);
+    if (matchingRegion?.region) language.region = matchingRegion.region;
+    if (matchingRegion?.ietf) language.ietf = matchingRegion.ietf;
+    if (matchingRegion?.tk) language.tk = matchingRegion.tk;
+    regionPath = matchingRegion ? `/${region}` : '';
+  }
+
+  const isLegacyLocaleRoutingMode = !language
+      || (language.languageBased === false && !language.region);
+  if (isLegacyLocaleRoutingMode) {
+    const locale = getLocale(locales, pathname);
+    if (locale.prefix === '') locale.language = DEFAULT_LANG;
+    return locale;
+  }
+
+  if (!language.ietf) language.ietf = `${languageString}${language.region ? `_${language.region.toUpperCase()}` : ''}`;
+  language.language = languageString;
+  language.prefix = `${languageString === DEFAULT_LANG && !regionPath ? '' : '/'}${languageString}${regionPath}`;
+  return language;
+}
+
 export function getMetadata(name, doc = document) {
   const attr = name && name.includes(':') ? 'property' : 'name';
   const meta = doc.head.querySelector(`meta[${attr}="${name}"]`);
@@ -230,7 +276,8 @@ export const [setConfig, updateConfig, getConfig] = (() => {
       config = { env: getEnv(conf), ...conf };
       config.codeRoot = conf.codeRoot ? `${origin}${conf.codeRoot}` : origin;
       config.base = config.miloLibs || config.codeRoot;
-      config.locale = pathname ? getLocale(conf.locales, pathname) : getLocale(conf.locales);
+      config.locale = conf.languages
+        ? getLanguage(conf.languages, conf.locales, pathname) : getLocale(conf.locales, pathname);
       config.autoBlocks = conf.autoBlocks ? [...AUTO_BLOCKS, ...conf.autoBlocks] : AUTO_BLOCKS;
       config.signInContext = conf.signInContext || {};
       config.doNotInline = conf.doNotInline
@@ -260,8 +307,102 @@ export const [setConfig, updateConfig, getConfig] = (() => {
   ];
 })();
 
+let federatedContentRoot;
+/* eslint-disable import/prefer-default-export */
+export const getFederatedContentRoot = () => {
+  const cdnWhitelistedOrigins = [
+    'https://www.adobe.com',
+    'https://business.adobe.com',
+    'https://blog.adobe.com',
+    'https://milo.adobe.com',
+    'https://news.adobe.com',
+  ];
+  const { allowedOrigins = [], origin: configOrigin } = getConfig();
+  if (federatedContentRoot) return federatedContentRoot;
+  // Non milo consumers will have its origin from config
+  const origin = configOrigin || window.location.origin;
+
+  federatedContentRoot = [...allowedOrigins, ...cdnWhitelistedOrigins].some((o) => origin.replace('.stage', '') === o)
+    ? origin
+    : 'https://www.adobe.com';
+
+  if (origin.includes('localhost') || origin.includes(`.${SLD}.`)) {
+    federatedContentRoot = `https://main--federal--adobecom.aem.${origin.endsWith('.live') ? 'live' : 'page'}`;
+  }
+
+  return federatedContentRoot;
+};
+
+// TODO we should match the akamai patterns /locale/federal/ at the start of the url
+// and make the check more strict.
+export const getFederatedUrl = (url = '') => {
+  if (typeof url !== 'string' || !url.includes('/federal/')) return url;
+  if (url.startsWith('/')) return `${getFederatedContentRoot()}${url}`;
+  try {
+    const { pathname, search, hash } = new URL(url);
+    return `${getFederatedContentRoot()}${pathname}${search}${hash}`;
+  } catch (e) {
+    window.lana?.log(`getFederatedUrl errored parsing the URL: ${url}: ${e.toString()}`);
+  }
+  return url;
+};
+
+function isPathMatch(path, href) {
+  if (path.includes('*')) {
+    const regex = new RegExp(path.replace(/\*/g, '[a-zA-Z]{1}'));
+    return regex.test(href);
+  }
+  return href.includes(path);
+}
+
+export function hasLanguageLinks(area, paths = LANGUAGE_BASED_PATHS) {
+  if (!area) return false;
+  const links = area.querySelectorAll('a');
+  return Array.from(links).some((link) => {
+    const { href } = link;
+    if (!href) return false;
+    return paths.some((path) => isPathMatch(path, href));
+  });
+}
+
+export async function loadLanguageConfig() {
+  const parseList = (str) => str.split(/[\n,]+/).map((t) => t.trim()).filter(Boolean);
+  try {
+    const response = await fetch(`${getFederatedContentRoot()}/federal/assets/data/languages-config.json`);
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const configJson = await response.json();
+
+    localeToLanguageMap = configJson['locale-to-language-map']?.data;
+    siteLanguages = configJson['site-languages']?.data?.map((site) => ({
+      ...site,
+      pathMatches: parseList(site.pathMatches),
+      languages: parseList(site.languages),
+    }));
+  } catch (e) {
+    window.lana?.log('Failed to load language-config.json:', e);
+  }
+}
+
+let fedsPlaceholderConfig;
+export const getFedsPlaceholderConfig = ({ useCache = true } = {}) => {
+  if (useCache && fedsPlaceholderConfig) return fedsPlaceholderConfig;
+
+  const { locale, placeholders } = getConfig();
+  const libOrigin = getFederatedContentRoot();
+
+  fedsPlaceholderConfig = {
+    locale: {
+      ...locale,
+      contentRoot: `${libOrigin}${locale.prefix}/federal/globalnav`,
+    },
+    placeholders,
+  };
+
+  return fedsPlaceholderConfig;
+};
+
 export function isInTextNode(node) {
-  return node.parentElement.firstChild.nodeType === Node.TEXT_NODE;
+  return (node.parentElement.childNodes.length > 1 && node.parentElement.firstChild.tagName === 'A') || node.parentElement.firstChild.nodeType === Node.TEXT_NODE;
 }
 
 export function createTag(tag, attributes, html, options = {}) {
@@ -291,6 +432,27 @@ function getExtension(path) {
   return pageName.includes('.') ? pageName.split('.').pop() : '';
 }
 
+function getPrefixBySite(locale, url, relative) {
+  let { prefix } = locale;
+  const site = siteLanguages?.find((s) => s.pathMatches.some((d) => isPathMatch(d, url.href)));
+
+  const localeSiteWithLanguageTarget = !locale.language && site && localeToLanguageMap;
+  const languageSiteWithLocaleTarget = locale.language && !relative && !site?.languages.some((l) => (l === DEFAULT_LANG ? '' : `/${l}`) === prefix);
+  if (localeSiteWithLanguageTarget) {
+    const mappedLanguageFromPrefix = localeToLanguageMap?.find((m) => `${m.locale === '' ? '' : '/'}${m.locale}` === prefix);
+    const languageInUseBySite = site.languages.find((l) => `${l}` === mappedLanguageFromPrefix.languagePath);
+    if (languageInUseBySite) {
+      prefix = languageInUseBySite === DEFAULT_LANG ? '' : `/${languageInUseBySite}`;
+    }
+  }
+  if (languageSiteWithLocaleTarget) {
+    const mappedLocaleFromLanguage = localeToLanguageMap?.find((m) => `/${m.languagePath}` === prefix);
+    prefix = mappedLocaleFromLanguage ? `${mappedLocaleFromLanguage.locale === '' ? '' : '/'}${mappedLocaleFromLanguage.locale}` : prefix;
+  }
+
+  return prefix;
+}
+
 export function localizeLink(
   href,
   originHostName = window.location.hostname,
@@ -306,17 +468,20 @@ export function localizeLink(
     const extension = getExtension(path);
     const allowedExts = ['', 'html', 'json'];
     if (!allowedExts.includes(extension)) return processedHref;
-    const { locale, locales, prodDomains } = getConfig();
-    if (!locale || !locales) return processedHref;
+    const { locale, locales, languages, prodDomains } = getConfig();
+    if (!locale || !(locales || languages)) return processedHref;
     const isLocalizable = relative || (prodDomains && prodDomains.includes(url.hostname))
       || overrideDomain;
     if (!isLocalizable) return processedHref;
     const isLocalizedLink = path.startsWith(`/${LANGSTORE}`)
       || path.startsWith(`/${PREVIEW}`)
-      || Object.keys(locales).some((loc) => loc !== '' && (path.startsWith(`/${loc}/`)
-        || path.endsWith(`/${loc}`)));
+      || (languages && Object.keys(languages).some((lang) => lang !== '' && (path.startsWith(`/${lang}/`))))
+      || (locales && Object.keys(locales).some((loc) => loc !== '' && (path.startsWith(`/${loc}/`)
+        || path.endsWith(`/${loc}`))));
     if (isLocalizedLink) return processedHref;
-    const urlPath = `${locale.prefix}${path}${url.search}${hash}`;
+
+    const prefix = getPrefixBySite(locale, url, relative);
+    const urlPath = `${prefix}${path}${url.search}${hash}`;
     return relative ? urlPath : `${url.origin}${urlPath}`;
   } catch (error) {
     return href;
@@ -573,9 +738,20 @@ export function decorateImageLinks(el) {
   });
 }
 
+export function isTrustedAutoBlock(autoBlock, url) {
+  if (!url.href.includes(autoBlock)) return false;
+  const urlHostname = url.hostname.replace('www.', '');
+  const locationHostname = window.location.hostname.replace('www.', '');
+  return urlHostname === locationHostname
+    || urlHostname.endsWith('.adobe.com')
+    || urlHostname === 'adobe.com'
+    || urlHostname === autoBlock
+    || !!urlHostname.match(/\.(hlx|aem)\.(page|live)$/)
+    || (autoBlock === '.pdf' && url.pathname.endsWith(autoBlock));
+}
+
 export function decorateAutoBlock(a) {
   const config = getConfig();
-  const { hostname } = window.location;
   let url;
   try {
     url = new URL(a.href);
@@ -584,14 +760,9 @@ export function decorateAutoBlock(a) {
     return false;
   }
 
-  const href = hostname === url.hostname
-    ? `${url.pathname}${url.search}${url.hash}`
-    : a.href;
-
   return config.autoBlocks.find((candidate) => {
     const key = Object.keys(candidate)[0];
-    const match = href.includes(candidate[key]);
-    if (!match) return false;
+    if (!isTrustedAutoBlock(candidate[key], url)) return false;
 
     if (key === 'pdf-viewer' && !a.textContent.includes('.pdf')) {
       a.target = '_blank';
@@ -668,7 +839,7 @@ export function convertStageLinks({ anchors, config, hostname, href }) {
   if (!matchedRules) return;
   const [, domainsMap] = matchedRules;
   [...anchors].forEach((a) => {
-    const hasLocalePrefix = a.pathname.startsWith(locale.prefix);
+    const hasLocalePrefix = a.pathname.startsWith(`${locale.prefix}/`);
     const noLocaleLink = hasLocalePrefix ? a.href.replace(locale.prefix, '') : a.href;
     const matchedDomain = Object.keys(domainsMap)
       .find((domain) => (new RegExp(domain)).test(noLocaleLink));
@@ -693,6 +864,7 @@ export function decorateLinks(el) {
   const { hostname, href } = window.location;
   const links = [...anchors].reduce((rdx, a) => {
     appendHtmlToLink(a);
+    if (a.href.includes('http:')) a.setAttribute('data-http-link', 'true');
     a.href = localizeLink(a.href);
     decorateSVG(a);
     if (a.href.includes('#_blank')) {
@@ -724,6 +896,14 @@ export function decorateLinks(el) {
     const copyEvent = '#_evt-copy';
     if (a.href.includes(copyEvent)) {
       decorateCopyLink(a, copyEvent);
+    }
+    const branchQuickLink = 'app.link';
+
+    if (a.href.includes(branchQuickLink)) {
+      (async () => {
+        const { default: processQuickLink } = await import('../features/branch-quick-links/branch-quick-links.js');
+        processQuickLink(a);
+      })();
     }
     // Append aria-label
     const pipeRegex = /\s?\|([^|]*)$/;
@@ -773,7 +953,25 @@ function decorateDefaults(el) {
   });
 }
 
-function decorateHeader() {
+export async function getGnavSource() {
+  const { locale, dynamicNavKey } = getConfig();
+  let url = getMetadata('gnav-source') || `${locale.contentRoot}/gnav`;
+  if (dynamicNavKey) {
+    const { default: dynamicNav } = await import('../features/dynamic-navigation/dynamic-navigation.js');
+    url = dynamicNav(url, dynamicNavKey);
+  }
+  return url;
+}
+
+export function isLocalNav() {
+  const { locale = {} } = getConfig();
+  const gnavSource = getMetadata('gnav-source') || `${locale.contentRoot}/gnav`;
+  let newNavEnabled = new URLSearchParams(window.location.search).get('newNav');
+  newNavEnabled = newNavEnabled ? newNavEnabled !== 'false' : getMetadata('mobile-gnav-v2') !== 'off';
+  return gnavSource.split('/').pop().startsWith('localnav-') && newNavEnabled;
+}
+
+async function decorateHeader() {
   const breadcrumbs = document.querySelector('.breadcrumbs');
   breadcrumbs?.remove();
   const header = document.querySelector('header');
@@ -794,9 +992,18 @@ function decorateHeader() {
   const dynamicNavActive = getMetadata('dynamic-nav') === 'on'
     && window.sessionStorage.getItem('gnavSource') !== null;
   if (!dynamicNavActive && (baseBreadcrumbs || breadcrumbs || autoBreadcrumbs)) header.classList.add('has-breadcrumbs');
+  if (isLocalNav()) {
+    // Preserving space to avoid CLS issue
+    const localNavWrapper = createTag('div', { class: 'feds-localnav' });
+    header.after(localNavWrapper);
+  }
   if (breadcrumbs) header.append(breadcrumbs);
   const promo = getMetadata('gnav-promo-source');
-  if (promo?.length) header.classList.add('has-promo');
+  if (promo?.length) {
+    const fedsPromoWrapper = createTag('div', { class: 'feds-promo-aside-wrapper' });
+    header.before(fedsPromoWrapper);
+    header.classList.add('has-promo');
+  }
 }
 
 async function decorateIcons(area, config) {
@@ -827,9 +1034,14 @@ const findReplaceableNodes = (area) => {
     let matchFound = false;
     if (node.nodeType === Node.TEXT_NODE) {
       matchFound = regex.test(node.nodeValue);
-    } else if (node.nodeType === Node.ELEMENT_NODE && node.hasAttribute('href')) {
-      const hrefValue = node.getAttribute('href');
-      matchFound = regex.test(hrefValue);
+    } else if (node.nodeType === Node.ELEMENT_NODE) {
+      const { attributes } = node;
+      for (let i = 0; i < attributes.length; i += 1) {
+        const { value: attrValue } = attributes[i];
+        if (regex.test(attrValue)) {
+          matchFound = true;
+        }
+      }
     }
     if (matchFound) {
       nodes.push(node);
@@ -991,7 +1203,7 @@ export async function loadIms() {
       return;
     }
     const [unavMeta, ahomeMeta] = [getMetadata('universal-nav')?.trim(), getMetadata('adobe-home-redirect')];
-    const defaultScope = `AdobeID,openid,gnav${unavMeta && unavMeta !== 'off' ? ',pps.read,firefly_api,additional_info.roles,read_organizations' : ''}`;
+    const defaultScope = `AdobeID,openid,gnav${unavMeta && unavMeta !== 'off' ? ',pps.read,firefly_api,additional_info.roles,read_organizations,account_cluster.read' : ''}`;
     const timeout = setTimeout(() => reject(new Error('IMS timeout')), imsTimeout || 5000);
     window.adobeid = {
       client_id: imsClientId,
@@ -1049,6 +1261,7 @@ export async function loadMartech({
 
   const { default: initMartech } = await import('../martech/martech.js');
   await initMartech({ persEnabled, persManifests, postLCP });
+  isMartechLoaded = true;
 
   return true;
 }
@@ -1073,7 +1286,7 @@ function isSignedOut() {
  * @returns {boolean} True if personalization is enabled, otherwise false.
  */
 export function enablePersonalizationV2() {
-  const enablePersV2 = document.head.querySelector('meta[name="personalization-v2"]');
+  const enablePersV2 = getMepEnablement('personalization-v2');
   return !!enablePersV2 && isSignedOut();
 }
 
@@ -1085,19 +1298,32 @@ async function checkForPageMods() {
     martech,
   } = Object.fromEntries(PAGE_URL.searchParams);
   let targetInteractionPromise = null;
+  let countryIPPromise = null;
+
+  let calculatedTimeout = null;
   if (mepParam === 'off') return;
   const pzn = getMepEnablement('personalization');
   const promo = getMepEnablement('manifestnames', PROMO_PARAM);
   const target = martech === 'off' ? false : getMepEnablement('target');
   const xlg = martech === 'off' ? false : getMepEnablement('xlg');
+  const ajo = martech === 'off' ? false : getMepEnablement('ajo');
+  const mepgeolocation = martech === 'off' ? false : getMepEnablement('mepgeolocation');
 
   if (!(pzn || target || promo || mepParam
-    || mepHighlight || mepButton || mepParam === '' || xlg)) return;
+    || mepHighlight || mepButton || mepParam === '' || xlg || ajo)) return;
 
+  if (mepgeolocation) {
+    const urlParams = new URLSearchParams(window.location.search);
+    const akamaiCode = urlParams.get('akamaiLocale')?.toLowerCase() || sessionStorage.getItem('akamai');
+    if (!akamaiCode) {
+      const { getAkamaiCode } = await import('../features/georoutingv2/georoutingv2.js');
+      countryIPPromise = getAkamaiCode(true);
+    }
+  }
   const enablePersV2 = enablePersonalizationV2();
   if ((target || xlg) && enablePersV2) {
     const params = new URL(window.location.href).searchParams;
-    const calculatedTimeout = parseInt(params.get('target-timeout'), 10)
+    calculatedTimeout = parseInt(params.get('target-timeout'), 10)
       || parseInt(getMetadata('target-timeout'), 10)
       || TARGET_TIMEOUT_MS;
 
@@ -1115,38 +1341,36 @@ async function checkForPageMods() {
 
       return { targetInteractionData: data, respTime, respStartTime: now };
     })();
-
-    const { init } = await import('../features/personalization/personalization.js');
-    await init({
-      mepParam,
-      mepHighlight,
-      mepButton,
-      pzn,
-      promo,
-      target,
-      targetInteractionPromise,
-      calculatedTimeout,
-    });
-    return;
-  }
-  if (target || xlg) {
-    loadMartech();
-  } else if (pzn && martech !== 'off') {
+  } else if ((target || xlg || ajo) && !isMartechLoaded) loadMartech();
+  else if (pzn && martech !== 'off') {
     loadIms()
       .then(() => {
         /* c8 ignore next */
-        if (window.adobeIMS?.isSignedInUser()) loadMartech();
+        if (window.adobeIMS?.isSignedInUser() && !isMartechLoaded) loadMartech();
       })
       .catch((e) => { console.log('Unable to load IMS:', e); });
   }
 
   const { init } = await import('../features/personalization/personalization.js');
   await init({
-    mepParam, mepHighlight, mepButton, pzn, promo, target, targetInteractionPromise,
+    mepParam,
+    mepHighlight,
+    mepButton,
+    pzn,
+    promo,
+    target,
+    ajo,
+    countryIPPromise,
+    mepgeolocation,
+    targetInteractionPromise,
+    calculatedTimeout,
+    enablePersV2,
   });
 }
 
 async function loadPostLCP(config) {
+  const { default: loadFavIcon } = await import('./favicon.js');
+  loadFavIcon(createTag, getConfig(), getMetadata);
   await decoratePlaceholders(document.body.querySelector('header'), config);
   const sk = document.querySelector('aem-sidekick, helix-sidekick');
   if (sk) import('./sidekick-decorate.js').then((mod) => { mod.default(sk); });
@@ -1154,22 +1378,21 @@ async function loadPostLCP(config) {
     /* c8 ignore next 2 */
     const { init } = await import('../features/personalization/personalization.js');
     await init({ postLCP: true });
-    if (enablePersonalizationV2()) {
-      loadMartech();
-    }
-  } else {
-    loadMartech();
-  }
+    if (enablePersonalizationV2() && !isMartechLoaded) loadMartech();
+  } else if (!isMartechLoaded) loadMartech();
 
   const georouting = getMetadata('georouting') || config.geoRouting;
   if (georouting === 'on') {
-    const { default: loadGeoRouting } = await import('../features/georoutingv2/georoutingv2.js');
-    await loadGeoRouting(config, createTag, getMetadata, loadBlock, loadStyle);
+    const jsonPromise = fetch(`${config.contentRoot ?? ''}/georoutingv2.json`);
+    import('../features/georoutingv2/georoutingv2.js')
+      .then(({ default: loadGeoRouting }) => {
+        loadGeoRouting(config, createTag, getMetadata, loadBlock, loadStyle, jsonPromise);
+      });
   }
   const header = document.querySelector('header');
   if (header) {
     header.classList.add('gnav-hide');
-    await loadBlock(header);
+    loadBlock(header);
     header.classList.remove('gnav-hide');
   }
   loadTemplate();
@@ -1180,6 +1403,12 @@ async function loadPostLCP(config) {
     import('../features/personalization/personalization.js')
       .then(({ addMepAnalytics }) => addMepAnalytics(config, header));
   }
+  // load privacy here if quick-link is present in first section
+  const quickLink = document.querySelector('div.section')?.querySelector('.quick-link');
+  if (!quickLink) return;
+  import('../scripts/delayed.js').then(({ loadPrivacy }) => {
+    loadPrivacy(getConfig, loadScript);
+  });
 }
 
 export function scrollToHashedElement(hash) {
@@ -1298,8 +1527,6 @@ async function documentPostSectionLoading(config) {
     addRichResults(richResults, { createTag, getMetadata });
   }
   loadFooter();
-  const { default: loadFavIcon } = await import('./favicon.js');
-  loadFavIcon(createTag, getConfig(), getMetadata);
   if (config.experiment?.selectedVariant?.scripts?.length) {
     config.experiment.selectedVariant.scripts.forEach((script) => loadScript(script));
   }
@@ -1382,6 +1609,9 @@ export async function loadArea(area = document) {
     appendSuffixToTitles();
   }
   const config = getConfig();
+  if (!localeToLanguageMap && !siteLanguages && (config.languages || hasLanguageLinks(area))) {
+    await loadLanguageConfig();
+  }
 
   if (isDoc) {
     decorateDocumentExtras();
@@ -1407,10 +1637,6 @@ export async function loadArea(area = document) {
   if (isDoc) await documentPostSectionLoading(config);
 
   await loadDeferred(area, areaBlocks, config);
-}
-
-export function loadDelayed() {
-  // TODO: remove after all consumers have stopped calling this method
 }
 
 export const utf8ToB64 = (str) => window.btoa(unescape(encodeURIComponent(str)));

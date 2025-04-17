@@ -1,5 +1,6 @@
 import { html, LitElement, css } from 'lit';
-import { parseState, pushStateFromComponent } from '../deeplink.js';
+import { deeplink, pushStateFromComponent } from '../deeplink.js';
+import { createTag } from '../utils.js';
 
 export class MerchSidenavCheckboxGroup extends LitElement {
     static properties = {
@@ -17,46 +18,22 @@ export class MerchSidenavCheckboxGroup extends LitElement {
             border-top: 1px solid var(--color-gray-200);
             padding: 12px;
         }
-        h3 {
-            font-size: 14px;
-            font-style: normal;
-            font-weight: 700;
-            height: 32px;
-            letter-spacing: 0px;
-            padding: 0px;
-            line-height: 18.2px;
-            color: var(--color-gray-600);
-            margin: 0px;
-        }
         .checkbox-group {
             display: flex;
             flex-direction: column;
         }
     `;
 
-    /*
-     * set the state of the sidenav based on the URL
-     */
-    setStateFromURL() {
-        this.selectedValues = [];
-        const { types: state } = parseState();
-        if (state) {
-            this.selectedValues = state.split(',');
-            this.selectedValues.forEach((name) => {
-                const element = this.querySelector(`sp-checkbox[name=${name}]`);
-                if (element) {
-                    element.checked = true;
-                }
-            });
-        }
+    constructor() {
+      super();
+      this.selectedValues = [];
     }
 
     /**
      * leaf level item change handler
      * @param {*} event
      */
-    selectionChanged(event) {
-        const { target } = event;
+    selectionChanged({ target }) {
         const name = target.getAttribute('name');
         if (name) {
             const index = this.selectedValues.indexOf(name);
@@ -69,16 +46,55 @@ export class MerchSidenavCheckboxGroup extends LitElement {
         pushStateFromComponent(this, this.selectedValues.join(','));
     }
 
+    addGroupTitle() {
+        const id = 'sidenav-checkbox-group-title';
+        const h3El = createTag('h3', { id });
+        h3El.textContent = this.sidenavCheckboxTitle;
+        this.prepend(h3El);
+
+        [...this.children].forEach((el) => {
+          if (el.id && el.id !== id) {
+                el.setAttribute('role', 'group');
+                el.setAttribute('aria-labelledby', id);
+            }
+        });
+    }
+
+    startDeeplink() {
+      this.stopDeeplink = deeplink(
+          ({ types }) => {
+              if (types) {
+                const newTypes = types.split(',');
+                [...new Set([...newTypes, ...this.selectedValues])].forEach(name => {
+                  const checkbox = this.querySelector(`sp-checkbox[name=${name}]`)
+                  if (checkbox) checkbox.checked = newTypes.includes(name);
+                });
+                this.selectedValues = newTypes;
+              } else {
+                this.selectedValues.forEach(name => {
+                  const checkbox = this.querySelector(`sp-checkbox[name=${name}]`)
+                  if (checkbox) checkbox.checked = false;
+                });
+                this.selectedValues = [];
+              }
+          },
+      );
+    }
+
     connectedCallback() {
         super.connectedCallback();
         this.updateComplete.then(async () => {
-            this.setStateFromURL();
+            this.addGroupTitle();
+            this.startDeeplink();
         });
+    }
+
+    disconnectedCallback() {
+      this.stopDeeplink?.();
     }
 
     render() {
         return html`<div aria-label="${this.label}">
-            <h3>${this.sidenavCheckboxTitle}</h3>
             <div
                 @change="${(e) => this.selectionChanged(e)}"
                 class="checkbox-group"

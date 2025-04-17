@@ -13,11 +13,15 @@ import {
   trigger,
   getExperienceName,
   logErrorFor,
+  takeWhile,
+  dropWhile,
+  getGnavHeight,
+  getBranchBannerInfo,
 } from '../../../../libs/blocks/global-navigation/utilities/utilities.js';
-import { setConfig, getConfig } from '../../../../libs/utils/utils.js';
-import { createFullGlobalNavigation, config } from '../test-utilities.js';
+import { setConfig, getConfig, getFedsPlaceholderConfig } from '../../../../libs/utils/utils.js';
+import { createFullGlobalNavigation, config, mockRes } from '../test-utilities.js';
+import gnavWithlocalNav from '../mocks/gnav-with-localnav.plain.js';
 import mepInBlock from '../mocks/mep-config.js';
-import { getFedsPlaceholderConfig } from '../../../../libs/utils/federated.js';
 
 const baseHost = 'https://main--federal--adobecom.aem.page';
 describe('global navigation utilities', () => {
@@ -33,6 +37,16 @@ describe('global navigation utilities', () => {
       expect(inNewMenu).to.exist;
       const newMenu = fragment.querySelector('a[href*="mep-large-menu-table"]');
       expect(newMenu).to.exist;
+    });
+  });
+
+  it('fetchAndProcessPlainHtml with failed fetch call should return null fragment', () => {
+    sinon.stub(window, 'fetch').callsFake((url) => {
+      if (url.includes('/old/navigations')) return mockRes({ payload: null, ok: false, status: 400 });
+      return null;
+    });
+    fetchAndProcessPlainHtml({ url: '/old/navigations' }).then((fragment) => {
+      expect(fragment).to.be.null;
     });
   });
 
@@ -386,6 +400,207 @@ describe('global navigation utilities', () => {
 
       // Restore the original window.lana.log method
       window.lana.log = originalLanaLog;
+    });
+  });
+
+  describe('takeWhile functionality', () => {
+    it('should take elements from the array while the predicate returns true', () => {
+      const array = [1, 2, 3, 4, 5];
+      const predicate = sinon.stub();
+      predicate.withArgs(1).returns(true);
+      predicate.withArgs(2).returns(true);
+      predicate.withArgs(3).returns(false);
+
+      const result = takeWhile(array, predicate);
+
+      expect(result).to.deep.equal([1, 2]);
+      expect(predicate.callCount).to.equal(3);
+      expect(predicate.firstCall.args[0]).to.equal(1);
+      expect(predicate.secondCall.args[0]).to.equal(2);
+      expect(predicate.thirdCall.args[0]).to.equal(3);
+    });
+
+    it('should return an empty array if the predicate returns false for the first element', () => {
+      const array = [1, 2, 3, 4, 5];
+      const predicate = sinon.stub();
+      predicate.withArgs(1).returns(false);
+
+      const result = takeWhile(array, predicate);
+
+      expect(result).to.deep.equal([]);
+      expect(predicate.callCount).to.equal(1);
+      expect(predicate.firstCall.args[0]).to.equal(1);
+    });
+
+    it('should return the entire array if the predicate always returns true', () => {
+      const array = [1, 2, 3, 4, 5];
+      const predicate = sinon.stub().returns(true);
+
+      const result = takeWhile(array, predicate);
+
+      expect(result).to.deep.equal(array);
+      expect(predicate.callCount).to.equal(array.length);
+      array.forEach((value, index) => {
+        expect(predicate.getCall(index).args[0]).to.equal(value);
+      });
+    });
+  });
+
+  describe('dropWhile functionality', () => {
+    it('should drop elements from the array while the predicate returns true', () => {
+      const array = [1, 2, 3, 4, 5];
+      const predicate = sinon.stub();
+      predicate.withArgs(1).returns(true);
+      predicate.withArgs(2).returns(true);
+      predicate.withArgs(3).returns(false);
+      const result = dropWhile(array, predicate);
+      expect(result).to.deep.equal([3, 4, 5]);
+      expect(predicate.callCount).to.equal(3);
+      expect(predicate.firstCall.args[0]).to.equal(1);
+      expect(predicate.secondCall.args[0]).to.equal(2);
+      expect(predicate.thirdCall.args[0]).to.equal(3);
+    });
+
+    it('should return an empty array if the predicate returns true for all elements', () => {
+      const array = [1, 2, 3, 4, 5];
+      const predicate = sinon.stub().returns(true);
+      const result = dropWhile(array, predicate);
+      expect(result).to.deep.equal([]);
+      expect(predicate.callCount).to.equal(array.length);
+      array.forEach((value, index) => {
+        expect(predicate.getCall(index).args[0]).to.equal(value);
+      });
+    });
+
+    it('should return the original array if the predicate returns false for the first element', () => {
+      const array = [1, 2, 3, 4, 5];
+      const predicate = sinon.stub().returns(false);
+      const result = dropWhile(array, predicate);
+      expect(result).to.deep.equal(array);
+      expect(predicate.callCount).to.equal(1);
+      expect(predicate.firstCall.args[0]).to.equal(1);
+    });
+
+    it('should handle an empty array gracefully', () => {
+      const array = [];
+      const predicate = sinon.stub().returns(true);
+      const result = dropWhile(array, predicate);
+      expect(result).to.deep.equal([]);
+      expect(predicate.callCount).to.equal(0);
+    });
+
+    it('should give correct top height when localnav is present', () => {
+      const gnavSourceMeta = toFragment`<meta name="gnav-source" content="http://localhost:2000/ch_de/libs/feds/localnav-gnav">`;
+      const enableMobileGnav = toFragment`<meta name="mobile-gnav-v2" content="on">`;
+      document.head.append(gnavSourceMeta, enableMobileGnav);
+      const gnav = toFragment`<header class="global-navigation"></header>`;
+      const lnav = toFragment`<div class="feds-localnav"></div>`;
+      document.body.append(gnav, lnav);
+      const gnavHeight = getGnavHeight();
+      expect(gnavHeight).to.equal(64);
+    });
+  });
+
+  describe('Branch Banner Load Check', () => {
+    beforeEach(() => {
+      document.body.innerHTML = '';
+    });
+    it('should set the lnav top position and info if branch banner is sticky', async () => {
+      const bannerHeight = '76px';
+      const clock = sinon.useFakeTimers({ shouldClearNativeTimers: true });
+      await createFullGlobalNavigation({ globalNavigation: gnavWithlocalNav, viewport: 'mobile' });
+      const header = document.querySelector('header');
+      const banner = document.createElement('div');
+      banner.id = 'branch-banner-iframe';
+      banner.style.height = bannerHeight;
+      banner.style.position = 'fixed';
+      document.body.insertBefore(banner, header);
+      await clock.tickAsync(300);
+      const { isPresent, isSticky } = getBranchBannerInfo();
+      expect(isPresent).to.be.true;
+      expect(isSticky).to.be.true;
+      expect(document.querySelector('.feds-localnav').style.top).to.equal(bannerHeight);
+      clock.uninstall();
+    });
+    it('should remove the lnav top position if sticky branch banner is removed', async () => {
+      const bannerHeight = '76px';
+      const clock = sinon.useFakeTimers({ shouldClearNativeTimers: true });
+      await createFullGlobalNavigation({ globalNavigation: gnavWithlocalNav, viewport: 'mobile' });
+      const header = document.querySelector('header');
+      const banner = document.createElement('div');
+      banner.id = 'branch-banner-iframe';
+      banner.style.height = bannerHeight;
+      banner.style.position = 'fixed';
+      document.body.insertBefore(banner, header);
+      await clock.tickAsync(300);
+      const { isPresent, isSticky } = getBranchBannerInfo();
+      expect(isPresent).to.be.true;
+      expect(isSticky).to.be.true;
+      expect(document.querySelector('.feds-localnav').style.top).to.equal(bannerHeight);
+      document.querySelector('#branch-banner-iframe').remove();
+      await clock.tickAsync(300);
+      expect(document.querySelector('.feds-localnav').style.top).to.equal('');
+      clock.uninstall();
+    });
+    it('should set info if branch banner is inline', async () => {
+      const bannerHeight = '76px';
+      const clock = sinon.useFakeTimers({ shouldClearNativeTimers: true });
+      await createFullGlobalNavigation({ globalNavigation: gnavWithlocalNav, viewport: 'mobile' });
+      const header = document.querySelector('header');
+      const banner = document.createElement('div');
+      banner.id = 'branch-banner-iframe';
+      banner.style.height = bannerHeight;
+      document.body.insertBefore(banner, header);
+      await clock.tickAsync(300);
+      const { isPresent, isSticky } = getBranchBannerInfo();
+      expect(isPresent).to.be.true;
+      expect(isSticky).to.be.false;
+      expect(document.body.classList.contains('branch-banner-inline')).to.be.true;
+      clock.uninstall();
+    });
+    it('set css for popup if inline banner loads when hamburger menu is open', async () => {
+      const bannerHeight = '76px';
+      const clock = sinon.useFakeTimers({ shouldClearNativeTimers: true });
+      await createFullGlobalNavigation({ globalNavigation: gnavWithlocalNav, viewport: 'mobile' });
+      const toggle = document.querySelector('.feds-toggle');
+      toggle.click();
+      const header = document.querySelector('header');
+      const banner = document.createElement('div');
+      banner.id = 'branch-banner-iframe';
+      banner.style.height = bannerHeight;
+      document.body.insertBefore(banner, header);
+      await clock.tickAsync(300);
+      const { isPresent, isSticky } = getBranchBannerInfo();
+      expect(isPresent).to.be.true;
+      expect(isSticky).to.be.false;
+      const popup = document.querySelector('.feds-navItem--section.feds-dropdown--active .feds-popup');
+      expect(!!popup.style.top).to.be.true;
+      expect(!!popup.style.height).to.be.true;
+      expect(document.body.classList.contains('branch-banner-inline')).to.be.true;
+      clock.uninstall();
+    });
+    it('set css for popup if when we open popup with sticky branch banner', async () => {
+      const bannerHeight = '76px';
+      const clock = sinon.useFakeTimers({ shouldClearNativeTimers: true });
+      await createFullGlobalNavigation({ globalNavigation: gnavWithlocalNav, viewport: 'mobile' });
+      const header = document.querySelector('header');
+      const banner = document.createElement('div');
+      banner.id = 'branch-banner-iframe';
+      banner.style.height = bannerHeight;
+      banner.style.position = 'fixed';
+      document.body.insertBefore(banner, header);
+      await clock.tickAsync(300);
+      const { isPresent, isSticky } = getBranchBannerInfo();
+      expect(isPresent).to.be.true;
+      expect(isSticky).to.be.true;
+      expect(document.querySelector('.feds-localnav').style.top).to.equal(bannerHeight);
+      const toggle = document.querySelector('.feds-toggle');
+      toggle.click();
+      await clock.tickAsync(300);
+      const popup = document.querySelector('.feds-navItem--section.feds-dropdown--active .feds-popup');
+      expect(!!popup.style.top).to.be.true;
+      expect(!!popup.style.height).to.be.true;
+      clock.uninstall();
     });
   });
 });

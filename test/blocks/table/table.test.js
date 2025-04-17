@@ -1,10 +1,15 @@
 import { readFile, sendMouse, sendKeys, resetMouse } from '@web/test-runner-commands';
 import { expect } from 'chai';
-import { MILO_EVENTS } from '../../../libs/utils/utils.js';
+import { getConfig, MILO_EVENTS, setConfig } from '../../../libs/utils/utils.js';
 import { delay, waitForElement } from '../../helpers/waitfor.js';
+import { replaceKey } from '../../../libs/features/placeholders.js';
 
 document.body.innerHTML = await readFile({ path: './mocks/body.html' });
 const { default: init } = await import('../../../libs/blocks/table/table.js');
+const locales = { '': { ietf: 'en-US', tk: 'hah7vzn.css' } };
+const conf = { locales, contentRoot: '/test/blocks/table/mocks' };
+setConfig(conf);
+const config = getConfig();
 
 describe('table and tablemetadata', () => {
   beforeEach(() => {
@@ -57,9 +62,7 @@ describe('table and tablemetadata', () => {
       window.innerWidth = 760;
       window.dispatchEvent(new Event('resize'));
       const filters = await waitForElement('.filters');
-      const col5 = table.querySelector('.col-5');
       expect(filters).to.be.exist;
-      expect(col5).to.be.null;
     });
 
     it('filter test: for case of both filter poiting same options', async () => {
@@ -110,6 +113,37 @@ describe('table and tablemetadata', () => {
       const tooltipHeading = document.querySelector('.tooltip-heading');
       expect(tooltipHeading.childNodes.length).to.equal(2);
       expect(tooltipHeading.querySelector('.milo-tooltip, .icon-tooltip')).to.exist;
+    });
+
+    it('should apply aria-label to all selects within .filters on mobile', async () => {
+      window.innerWidth = 375;
+      window.dispatchEvent(new Event('resize'));
+      const ariaLabel = await replaceKey('choose-table-column', config);
+      const selectElements = document.querySelectorAll('.filters select');
+
+      selectElements.forEach((selectElement) => {
+        expect(selectElement.getAttribute('aria-label')).to.equal(ariaLabel);
+      });
+    });
+
+    it('should show and hide tooltip on hover, focus, and Escape key', async () => {
+      const tooltip = document.querySelector('.milo-tooltip');
+      expect(tooltip).to.exist;
+
+      tooltip.dispatchEvent(new Event('mouseenter'));
+      expect(tooltip.classList.contains('hide-tooltip')).to.be.false;
+
+      tooltip.dispatchEvent(new Event('mouseleave'));
+      expect(tooltip.classList.contains('hide-tooltip')).to.be.true;
+
+      tooltip.dispatchEvent(new Event('focus'));
+      expect(tooltip.classList.contains('hide-tooltip')).to.be.false;
+
+      tooltip.dispatchEvent(new Event('blur'));
+      expect(tooltip.classList.contains('hide-tooltip')).to.be.true;
+
+      await sendKeys({ press: 'Escape' });
+      expect(tooltip.classList.contains('hide-tooltip')).to.be.true;
     });
   });
 });

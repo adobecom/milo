@@ -76,6 +76,7 @@ const defaultOptions = {
     product: 'Product Card',
     'text-card': 'Text Card',
     'icon-card': 'Icon Card',
+    'news-card': 'News Card',
     'custom-card': 'Custom Card',
   },
   collectionBtnStyle: {
@@ -121,7 +122,6 @@ const defaultOptions = {
     custom: 'Custom',
   },
   filterEvent: {
-    '': 'All',
     live: 'Live',
     upcoming: 'Upcoming',
     'on-demand': 'On Demand',
@@ -162,7 +162,7 @@ const defaultOptions = {
   },
   paginationType: {
     paginator: 'Paginator',
-    loadMore: 'Load More',
+    loadMore: 'Load more',
   },
   search: {
     'contentArea.title': 'Card Titles',
@@ -214,6 +214,7 @@ const defaultOptions = {
     default: 'Default',
     createdDate: 'Created Date',
     modifiedDate: 'Modified Date',
+    staticDate: 'Static Date',
   },
   cardHoverEffect: {
     default: 'Default',
@@ -585,7 +586,6 @@ const FilterPanel = ({ tagsData }) => {
     <${Input} label="Show Empty Filters" prop="filtersShowEmpty" type="checkbox" />
     <${Select} label="Filter Location" prop="filterLocation" options=${defaultOptions.filterLocation} />
     <${Select} label="Filter logic within each tag panel" prop="filterLogic" options=${defaultOptions.filterLogic} />
-    <${Select} label="Event Filter" prop="filterEvent" options=${defaultOptions.filterEvent} />
     <${Select} label="Automatic or Custom Panel" prop="filterBuildPanel" options=${defaultOptions.filterBuildPanel} />
   `;
 
@@ -642,6 +642,7 @@ const FilterPanel = ({ tagsData }) => {
       && (state.filterBuildPanel === 'custom'
         ? FilterCustomBuildPanel
         : FilterBuildPanel)}
+    <${DropdownSelect} id="filterEvent" options=${defaultOptions.filterEvent} prop="filterEvent" label="Event Filters" />
   `;
 };
 
@@ -657,6 +658,7 @@ const SearchPanel = () => html`
 const PaginationPanel = () => {
   const { state } = useContext(ConfiguratorContext);
   const paginationOptions = html`
+    <${Input} label="Show Pagination Quantity" prop="paginationQuantityShown" type="checkbox" />
     <${Select}
       label="Load More Button Style"
       prop="loadMoreBtnStyle"
@@ -677,7 +679,6 @@ const PaginationPanel = () => {
 
   return html`
     <${Input} label="Enable Pagination" prop="paginationEnabled" type="checkbox" />
-    <${Input} label="Show Pagination Quantity" prop="paginationQuantityShown" type="checkbox" />
     ${state.paginationEnabled && paginationOptions}
   `;
 };

@@ -9,7 +9,6 @@ import merch, {
   PRICE_TEMPLATE_OPTICAL,
   PRICE_TEMPLATE_STRIKETHROUGH,
   PRICE_TEMPLATE_ANNUAL,
-  CHECKOUT_ALLOWED_KEYS,
   buildCta,
   getCheckoutContext,
   initService,
@@ -27,7 +26,6 @@ import merch, {
   reopenModal,
   setCtaHash,
   openModal,
-  handleHashChange,
 } from '../../../libs/blocks/merch/merch.js';
 
 import { mockFetch, unmockFetch, readMockText } from './mocks/fetch.js';
@@ -409,19 +407,6 @@ describe('Merch Block', () => {
       expect(dataset.promotionCode).to.equal('nicopromo');
     });
 
-    it('renders merch link to UCv2 cta with link-level overrides', async () => {
-      const el = await merch(document.querySelector(
-        '.merch.cta.link-overrides',
-      ));
-      const { nodeName, dataset } = await el.onceSettled();
-      expect(nodeName).to.equal('A');
-      expect(el.getAttribute('is')).to.equal('checkout-link');
-      // https://wiki.corp.adobe.com/pages/viewpage.action?spaceKey=BPS&title=UCv2+Link+Creation+Guide
-      expect(dataset.checkoutWorkflow).to.equal('UCv2');
-      expect(dataset.checkoutWorkflowStep).to.equal('checkout');
-      expect(dataset.checkoutMarketSegment).to.equal('EDU');
-    });
-
     it('adds ims country to checkout link', async () => {
       await mockIms('CH');
       await initService();
@@ -472,35 +457,6 @@ describe('Merch Block', () => {
     });
   });
 
-  describe('function "handleHashChange"', () => {
-    afterEach(() => {
-      document.querySelector('.dialog-modal')?.remove();
-      document.querySelector('.con-button')?.remove();
-    });
-
-    it('reopen modal after hash change', () => {
-      const cta = document.createElement('a');
-      cta.classList.add('con-button');
-      cta.setAttribute('data-modal-id', 'try-phsp');
-      const clickSpy = sinon.spy(cta, 'click');
-      document.body.append(cta);
-      window.location.hash = 'try-phsp';
-
-      handleHashChange();
-      expect(clickSpy.called).to.be.true;
-      window.location.hash = '';
-    });
-
-    it('close modal after hash change', () => {
-      const div = document.createElement('div');
-      div.classList.add('dialog-modal');
-      div.setAttribute('id', 'try-phsp');
-      document.body.append(div);
-
-      handleHashChange();
-    });
-  });
-
   describe('function "buildCta"', () => {
     it('returns null if context params do not have osi', async () => {
       const el = document.createElement('a');
@@ -524,14 +480,36 @@ describe('Merch Block', () => {
     describe('openModal', () => {
       it('sets the new hash and event listener to restore the hash on close', async () => {
         const prevHash = window.location.hash;
-        const event = new CustomEvent('dummy');
-        await openModal(event, 'https://www.adobe.com/mini-plans/creativecloud.html?mid=ft&web=1', 'TRIAL', 'try-photoshop');
+        await openModal(new CustomEvent('test'), 'https://www.adobe.com/mini-plans/creativecloud.html?mid=ft&web=1', 'TRIAL', 'try-photoshop');
         expect(window.location.hash).to.equal('#try-photoshop');
         const modalCloseEvent = new CustomEvent('milo:modal:closed');
         window.dispatchEvent(modalCloseEvent);
         expect(window.location.hash).to.equal(prevHash);
         document.body.querySelector('.dialog-modal').remove();
         window.location.hash = prevHash;
+      });
+
+      it('opens the 3-in-1 modal', async () => {
+        const checkoutLink = document.createElement('a');
+        checkoutLink.setAttribute('is', 'checkout-link');
+        checkoutLink.setAttribute('data-checkout-workflow', 'UCv3');
+        checkoutLink.setAttribute('data-checkout-workflow-step', 'segmentation');
+        checkoutLink.setAttribute('data-modal', 'true');
+        checkoutLink.setAttribute('data-quantity', '1');
+        checkoutLink.setAttribute('data-wcs-osi', 'L2C9cKHNNDaFtBVB6GVsyNI88RlyimSlzVfkMM2gH4A');
+        checkoutLink.setAttribute('data-extra-options', '{}');
+        checkoutLink.setAttribute('class', 'con-button placeholder-resolved');
+        checkoutLink.setAttribute('href', 'https://commerce.adobe.com/store/segmentation?ms=COM&ot=TRIAL&pa=phsp_direct_individual&cli=adobe_com&ctx=if&co=US&lang=en');
+        checkoutLink.setAttribute('daa-ll', 'Free trial-1--');
+        checkoutLink.setAttribute('data-modal-id', 'mini-plans-web-cta-photoshop-card');
+        checkoutLink.setAttribute('data-modal-type', 'twp');
+        Object.defineProperty(checkoutLink, 'isOpen3in1Modal', { get: () => true });
+        await openModal(new CustomEvent('test'), 'https://www.adobe.com/mini-plans/creativecloud.html?mid=ft&web=1', 'TRIAL', 'try-photoshop', {}, checkoutLink);
+        const threeInOneModal = document.querySelector('.dialog-modal.three-in-one');
+        expect(threeInOneModal).to.exist;
+        const iFrame = document.querySelector('.dialog-modal.three-in-one iframe');
+        expect(iFrame.src).to.equal('https://commerce.adobe.com/store/segmentation?ms=COM&ot=TRIAL&pa=phsp_direct_individual&cli=adobe_com&ctx=if&co=US&lang=en');
+        threeInOneModal.remove();
       });
     });
   });
@@ -656,33 +634,6 @@ describe('Merch Block', () => {
       const modal = document.getElementById('checkout-link-modal');
       expect(modal).to.exist;
       document.querySelector('.modal-curtain').click();
-    });
-
-    it('renders Milo TWP modal', async () => {
-      mockIms();
-      const el = document.querySelector('.merch.cta.milo.twp');
-      const cta = await merch(el);
-      const { nodeName, textContent } = await cta.onceSettled();
-      expect(nodeName).to.equal('A');
-      expect(textContent).to.equal('Free Trial');
-      expect(cta.getAttribute('href')).to.equal('#');
-      cta.click();
-      await delay(100);
-      let modal = document.getElementById('checkout-link-modal');
-      expect(modal.querySelector('[data-path]').dataset.path).to.equal('/test/blocks/merch/mocks/fragments/twp');
-      expect(modal.querySelector('h1').innerText).to.equal('twp modal');
-      document.querySelector('.modal-curtain').click();
-      await delay(100);
-      const [,,,, checkoutLinkConfig] = CHECKOUT_LINK_CONFIGS.data;
-      checkoutLinkConfig.FREE_TRIAL_PATH = 'http://main--milo--adobecom.hlx.page/test/blocks/merch/mocks/fragments/twp-url';
-      await cta.render();
-      cta.click();
-      await delay(100);
-      modal = document.getElementById('checkout-link-modal');
-      expect(modal.querySelector('h1').innerText).to.equal('twp modal #2');
-      expect(modal.querySelector('[data-path]').dataset.path).to.equal('/test/blocks/merch/mocks/fragments/twp-url');
-      document.querySelector('.modal-curtain').click();
-      await delay(100);
     });
 
     it('renders D2P modal', async () => {
@@ -812,6 +763,11 @@ describe('Merch Block', () => {
         urlWithPlan: 'https://www.adobe.com/mini-plans/illustrator4.html?plan=edu',
       },
       {
+        url: '/mini-plans/illustrator4.html',
+        plan: 'edu',
+        urlWithPlan: '/mini-plans/illustrator4.html?plan=edu',
+      },
+      {
         url: 'https://www.adobe.com/mini-plans/illustrator5.html#thisishash',
         plan: 'edu',
         urlWithPlan: 'https://www.adobe.com/mini-plans/illustrator5.html?plan=edu#thisishash',
@@ -830,6 +786,11 @@ describe('Merch Block', () => {
         url: 'https://www.adobe.com/mini-plans/illustrator8.selector.html/resource?mid=ft&web=1#thisishash',
         plan: 'team',
         urlWithPlan: 'https://www.adobe.com/mini-plans/illustrator8.selector.html/resource?mid=ft&web=1&plan=team#thisishash',
+      },
+      {
+        url: '/mini-plans/illustrator8.selector.html/resource?mid=ft&web=1#thisishash',
+        plan: 'team',
+        urlWithPlan: '/mini-plans/illustrator8.selector.html/resource?mid=ft&web=1&plan=team#thisishash',
       },
       {
         url: 'https://www.adobe.com/mini-plans/illustrator9.sel1.sel2.html/resource#thisishash',
@@ -867,62 +828,6 @@ describe('Merch Block', () => {
       expect(resultUrl).to.equal(invalidUrl);
       const resultUrl2 = appendExtraOptions(invalidUrl);
       expect(resultUrl2).to.equal(invalidUrl);
-    });
-  });
-
-  describe('checkout link with optional params', async () => {
-    const checkoutUcv2Keys = [
-      'rurl', 'authCode', 'curl',
-    ];
-    const checkoutAllowKeysMapping = {
-      quantity: 'q',
-      checkoutPromoCode: 'apc',
-      ctxrturl: 'ctxRtUrl',
-      country: 'co',
-      language: 'lang',
-      clientId: 'cli',
-      context: 'ctx',
-      productArrangementCode: 'pa',
-      offerType: 'ot',
-      marketSegment: 'ms',
-      authCode: 'code',
-      rurl: 'rUrl',
-      curl: 'cUrl',
-    };
-    const segmentation = [
-      'ot',
-      'pa',
-      'ms',
-    ];
-
-    const keyValueMapping = { lang: 'en', ms: 'COM', ot: 'BASE', pa: 'phsp_direct_individual' };
-
-    const skipKeys = ['quantity', 'co', 'country', 'lang', 'language'];
-
-    CHECKOUT_ALLOWED_KEYS.forEach((key) => {
-      if (skipKeys.includes(key)) return;
-      const mappedKey = checkoutAllowKeysMapping[key] ?? key;
-      it(`renders checkout link with "${mappedKey}" parameter`, async () => {
-        const a = document.createElement('a', { is: 'checkout-link' });
-        a.classList.add('merch');
-        const searchParams = new URLSearchParams();
-        searchParams.set('osi', 1);
-        searchParams.set('type', 'checkoutUrl');
-        if (checkoutUcv2Keys.includes(key)) {
-          searchParams.set('workflow', 'ucv2');
-        }
-        const value = keyValueMapping[mappedKey] ?? 'test';
-        searchParams.set(key, value);
-        if (segmentation.includes(mappedKey)) {
-          searchParams.set('workflowStep', 'segmentation');
-        }
-        a.setAttribute('href', `/tools/ost?${searchParams.toString()}`);
-        document.body.appendChild(a);
-        const el = await merch(a);
-        await el.onceSettled();
-        expect(el.getAttribute('href')).to.match(new RegExp(`https://commerce.adobe.com/.*${mappedKey}=${value}`));
-        el.remove();
-      });
     });
   });
 

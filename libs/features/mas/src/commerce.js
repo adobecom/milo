@@ -1,31 +1,12 @@
-import { CheckoutLink } from './checkout-link.js';
-import { Landscape } from './constants.js';
-import { Defaults } from './defaults.js';
-import { TAG_NAME_SERVICE } from './mas-commerce-service.js';
-import {
-    CheckoutWorkflow,
-    CheckoutWorkflowStep,
-    WcsCommitment,
-    WcsTerm,
-    WcsPlanType,
-    applyPlanType,
-} from './external.js';
-import { InlinePrice } from './inline-price.js';
-import { Log } from './log.js';
-import { getSettings } from './settings.js';
+import './mas-commerce-service.js';
+import './checkout-link.js';
+import './checkout-button.js';
+import './upt-link.js';
+import './inline-price.js';
 
-export {
-    TAG_NAME_SERVICE,
-    CheckoutLink,
-    CheckoutWorkflow,
-    CheckoutWorkflowStep,
-    Defaults,
-    InlinePrice,
-    Log,
-    WcsCommitment,
-    Landscape,
-    WcsTerm,
-    WcsPlanType,
-    applyPlanType,
-    getSettings,
-};
+import { CheckoutWorkflow, CheckoutWorkflowStep } from './constants.js';
+import { Defaults } from './defaults.js';
+import { Log } from './log.js';
+
+import { applyPlanType } from './wcs.js';
+export { CheckoutWorkflow, CheckoutWorkflowStep, Defaults, Log, applyPlanType };

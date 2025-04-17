@@ -7,6 +7,7 @@ import fetchedFooter from '../blocks/global-footer/mocks/fetched-footer.js';
 import placeholders from '../blocks/global-navigation/mocks/placeholders.js';
 import { setConfig } from '../../libs/utils/utils.js';
 import { mockRes } from '../blocks/global-navigation/test-utilities.js';
+import gnavLocalNav from './mocks/gnav-with-localnav.plain.js';
 
 const blockConfig = {
   footer: {
@@ -36,6 +37,7 @@ describe('Bootstrapper', async () => {
           ),
         });
       }
+      if (url.includes('/localnav/gnav.plain.html')) return mockRes({ payload: gnavLocalNav });
       if (url.includes('/placeholders')) return mockRes({ payload: placeholders });
       if (url.includes('/footer.plain.html')) return mockRes({ payload: await readFile({ path: '../blocks/region-nav/mocks/regions.html' }) });
       if (url.includes('/gnav.plain.html')) return mockRes({ payload: await readFile({ path: './mocks/gnav.html' }) });
@@ -90,6 +92,16 @@ describe('Bootstrapper', async () => {
     await loadBlock(init, blockConfig.header);
     const el = document.querySelector('header');
     expect(el.classList.contains('feds--no-border')).to.be.true;
+  });
+
+  it('Renders the localnav', async () => {
+    blockConfig.header.isLocalNav = true;
+    blockConfig.header.mobileGnavV2 = true;
+    setConfig({ contentRoot: '/federal/localnav' });
+    const { default: init } = await import('../../libs/blocks/global-navigation/global-navigation.js');
+    await loadBlock(init, blockConfig.header);
+    const el = document.querySelector('header');
+    expect(el.nextElementSibling.classList.contains('feds-localnav')).to.be.true;
   });
 
   it('should call openMessagingWindow when click on jarvis enabled button', async () => {
