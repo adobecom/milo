@@ -102,25 +102,21 @@ export default async function init(a) {
     .catch(() => ({}));
 
   if (!resp?.ok) {
-    // Check if this is a fragment path and has a regional structure
-    const pathParts = new URL(resourcePath).pathname.split('/');
-    const fragmentsIndex = pathParts.indexOf('fragments');
-    if (fragmentsIndex > 1) {
-      const language = pathParts[1];
-      const region = pathParts[2];
-      if (region && region !== 'fragments') {
-        const fallbackPath = `/${language}/fragments/${pathParts.slice(fragmentsIndex + 1).join('/')}`;
-        const fallbackResp = await customFetch({ resource: `${fallbackPath}.plain.html`, withCacheRules: true })
-          .catch(() => ({}));
-        if (fallbackResp?.ok) {
-          resourcePath = fallbackPath;
-          resp = fallbackResp;
-        } else {
-          window.lana?.log(`Could not get fragment: ${resourcePath}.plain.html or ${fallbackPath}.plain.html`);
-          return;
-        }
+    // Check if this is a fragment path and has a regional structure and handle fallback
+    const resourcePathname = new URL(resourcePath).pathname;
+    const regionalFragmentPattern = /^\/([^/]+)\/([^/]+)(?:\/[^/]+)*\/fragments\//;
+    const match = resourcePathname.match(regionalFragmentPattern);
+    if (match) {
+      const [language] = match.slice(1);
+      const pathAfterRegion = resourcePathname.split('/').slice(3).join('/');
+      const fallbackPath = `/${language}/${pathAfterRegion}`;
+      const fallbackResp = await customFetch({ resource: `${fallbackPath}.plain.html`, withCacheRules: true })
+        .catch(() => ({}));
+      if (fallbackResp?.ok) {
+        resourcePath = fallbackPath;
+        resp = fallbackResp;
       } else {
-        window.lana?.log(`Could not get fragment: ${resourcePath}.plain.html`);
+        window.lana?.log(`Could not get fragment: ${resourcePath}.plain.html or ${fallbackPath}.plain.html`);
         return;
       }
     } else {
