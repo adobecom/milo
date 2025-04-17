@@ -56,35 +56,6 @@ const closeSvg = `<svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" wid
 
 let iconographyLoaded = false;
 
-export const getMetadata = (el) => [...el.childNodes].reduce((rdx, row) => {
-  if (row.children) {
-    const key = row.children[0].textContent.trim().toLowerCase();
-    const content = row.children[1];
-    const text = content.textContent.trim().toLowerCase();
-    if (key && content) rdx[key] = { content, text };
-  }
-  return rdx;
-}, {});
-
-function setHideAtObserver(el) {
-  const sectionMetadata = el.closest('.section')?.querySelector('.section-metadata');
-  if (!sectionMetadata) return;
-
-  const metadata = getMetadata(sectionMetadata);
-  const selector = metadata?.['hide-at-intersection']?.text;
-  const trigger = selector && document.querySelector(selector);
-  if (!trigger) return;
-
-  const handleScroll = () => {
-    // const parentElement = el.closest('.section');
-    // parentElement.classList.toggle('hide-sticky-section', trigger.getBoundingClientRect().top < window.innerHeight);
-    el.style.display = trigger.getBoundingClientRect().top < window.innerHeight ? 'none' : 'block';
-  };
-
-  window.addEventListener('scroll', handleScroll);
-  handleScroll();
-}
-
 function getOpts(el) {
   const optRows = [...el.querySelectorAll(':scope > div:nth-of-type(n+3)')];
   if (!optRows.length) return {};
@@ -240,6 +211,4 @@ export default async function init(el) {
     wrapCopy(blockText);
     decorateMultiViewport(el);
   }
-
-  if (el.classList.contains('ace1068')) setHideAtObserver(el);
 }

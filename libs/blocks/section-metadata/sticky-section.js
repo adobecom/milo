@@ -8,7 +8,7 @@ function handleTopHeight(section) {
 }
 
 function promoIntersectObserve(el, stickySectionEl, options = {}) {
-  const io = new IntersectionObserver((entries, observer) => {
+  return new IntersectionObserver((entries, observer) => {
     entries.forEach((entry) => {
       if (el.classList.contains('close-sticky-section')) {
         window.removeEventListener('resize', handleTopHeight);
@@ -16,15 +16,20 @@ function promoIntersectObserve(el, stickySectionEl, options = {}) {
         return;
       }
 
-      const abovePromoStart = (entry.target === stickySectionEl && entry.isIntersecting)
-        || stickySectionEl?.getBoundingClientRect().y > 0;
+      const { target } = entry;
+      const { isIntersecting } = entry;
 
-      if (entry.target === document.querySelector('footer')) {
-        el.classList.toggle('fill-sticky-section', entry.isIntersecting);
-      } else el.classList.toggle('hide-sticky-section', abovePromoStart);
+      if (target === document.querySelector('footer')) {
+        el.classList.toggle('fill-sticky-section', isIntersecting);
+      } else if (target === stickySectionEl) {
+        const abovePromoStart = isIntersecting || stickySectionEl?.getBoundingClientRect().y > 0;
+        el.classList.toggle('hide-sticky-section', abovePromoStart);
+      } else if (target.classList.contains('hide-at-intersection')) {
+        const aboveViewport = isIntersecting || entry.boundingClientRect.top < 0;
+        el.classList.toggle('hide-sticky-section', aboveViewport);
+      }
     });
   }, options);
-  return io;
 }
 
 function handleStickyPromobar(section, delay) {
@@ -46,6 +51,17 @@ function handleStickyPromobar(section, delay) {
   if (stickySectionEl) io.observe(stickySectionEl);
   if (section.querySelector(':is(.promobar, .notification)')) {
     io.observe(document.querySelector('footer'));
+  }
+
+  const promoOrNotification = section.querySelector(':is(.promobar, .notification)');
+  if (promoOrNotification?.classList.contains('ace1068')) {
+    const metadata = getMetadata(section.querySelector('.section-metadata'));
+    const selector = metadata?.['hide-at-intersection']?.text;
+    const targetElement = document.querySelector(selector);
+    if (targetElement) {
+      targetElement.classList.add('hide-at-intersection');
+      io.observe(targetElement);
+    }
   }
 }
 
