@@ -2,17 +2,13 @@
 import { runTests } from '@web/test-runner-mocha';
 import { expect } from '@esm-bundle/chai';
 
+
 import { mockLana } from './mocks/lana.js';
 import { mockFetch } from './mocks/fetch.js';
-
-import '../src/merch-offer.js';
-import '../src/merch-offer-select.js';
-import '../src/merch-quantity-select.js';
 
 import { delay } from './utils.js';
 import { mockIms } from './mocks/ims.js';
 import { withWcs } from './mocks/wcs.js';
-import mas from './mas.js';
 
 const skipTests = sessionStorage.getItem('skipTests');
 
@@ -20,7 +16,7 @@ runTests(async () => {
     mockIms();
     mockLana();
     await mockFetch(withWcs);
-    await mas();
+    await import('../src/mas.js');
     describe('merch-card web component', () => {
         it('should exist in the HTML document', async () => {
             expect(document.querySelector('merch-card')).to.exist;
@@ -65,12 +61,13 @@ runTests(async () => {
             );
         });
 
-        it('should have and interact with  quantity-selector', async () => {
+        it('should have and interact with quantity-selector', async () => {
             const plansCard = document.querySelector('merch-card[type="q-ty"]');
             const quantitySelect = plansCard.querySelector(
                 'merch-quantity-select',
             );
             expect(quantitySelect).to.exist;
+            await quantitySelect.updateComplete;
             const inputField =
                 quantitySelect.shadowRoot.querySelector('.text-field-input');
             inputField.value = '3';

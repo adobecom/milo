@@ -6,7 +6,10 @@ export async function withWcs(originalFetch) {
     );
     return async ({ pathname, searchParams, headers }) => {
         // mock Wcs responses
-        if (pathname.endsWith('/web_commerce_artifact')) {
+        if (
+            pathname.endsWith('/web_commerce_artifact') ||
+            pathname.endsWith('/web_commerce_artifact_stage')
+        ) {
             const language = searchParams.get('language').toLowerCase();
             const buckets = searchParams
                 .get('offer_selector_ids')
