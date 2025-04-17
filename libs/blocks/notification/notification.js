@@ -98,7 +98,7 @@ function addCloseAction(el, btn) {
       tabindex: '-1',
     });
     liveRegion.textContent = 'Banner closed';
-    el.closest('.section')?.appendChild(liveRegion);
+    document.body.appendChild(liveRegion);
     liveRegion.focus();
     el.style.display = 'none';
     el.closest('.section')?.classList.add('close-sticky-section');
@@ -114,7 +114,7 @@ function addCloseAction(el, btn) {
       const nextFocusable = allFocusable[allFocusable.indexOf(btn) + 1];
       liveRegion?.remove();
       if (nextFocusable) nextFocusable.focus();
-    }, 2500);
+    }, 2000);
   });
 }
 
