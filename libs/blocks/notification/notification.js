@@ -15,7 +15,7 @@
 */
 
 import { decorateBlockText, decorateBlockBg, decorateTextOverrides, decorateMultiViewport, loadCDT } from '../../utils/decorate.js';
-import { createTag, getConfig, loadStyle } from '../../utils/utils.js';
+import { createTag, getConfig, loadStyle, createIntersectionObserver } from '../../utils/utils.js';
 
 const { miloLibs, codeRoot } = getConfig();
 const base = miloLibs || codeRoot;
@@ -140,6 +140,12 @@ async function decorateLockup(lockupArea, el) {
   if (pre && pre[2] === 'icon') el.classList.replace(pre[0], `${pre[1]}-lockup`);
 }
 
+function curtainCallback(el) {
+  const curtain = createTag('div', { class: 'notification-curtain' });
+  document.body.classList.add('mobile-disable-scroll');
+  el.insertAdjacentElement('afterend', curtain);
+}
+
 function decorateSplitList(el, listContent) {
   const closeEvent = '#_evt-close';
   const listContainer = createTag('div', { class: 'split-list-area' });
@@ -166,9 +172,15 @@ function decorateSplitList(el, listContent) {
   listContent.replaceWith(listContainer);
 
   if (el.classList.contains('focus')) {
-    const curtain = createTag('div', { class: 'notification-curtain' });
-    document.body.classList.add('mobile-disable-scroll');
-    el.insertAdjacentElement('afterend', curtain);
+    if (el.classList.contains('no-delay')) {
+      curtainCallback(el);
+      return;
+    }
+    createIntersectionObserver({
+      el,
+      option: { once: true },
+      callback: () => curtainCallback(el),
+    });
   }
 }
 
