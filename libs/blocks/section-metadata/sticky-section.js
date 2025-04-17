@@ -53,15 +53,12 @@ function handleStickyPromobar(section, delay) {
     io.observe(document.querySelector('footer'));
   }
 
-  const promoOrNotification = section.querySelector(':is(.promobar, .notification)');
-  if (promoOrNotification?.classList.contains('ace1068')) {
-    const metadata = getMetadata(section.querySelector('.section-metadata'));
-    const selector = metadata?.['hide-at-intersection']?.text;
-    const targetElement = document.querySelector(selector);
-    if (targetElement) {
-      targetElement.classList.add('hide-at-intersection');
-      io.observe(targetElement);
-    }
+  const metadata = getMetadata(section.querySelector('.section-metadata'));
+  const selector = metadata?.['hide-at-intersection']?.text;
+  const targetElement = document.querySelector(selector);
+  if (targetElement) {
+    targetElement.classList.add('hide-at-intersection');
+    io.observe(targetElement);
   }
 }
 
