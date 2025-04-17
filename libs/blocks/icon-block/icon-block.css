@@ -69,7 +69,6 @@
   margin: 0 auto var(--spacing-xs);
   max-height: var(--icon-size-xxl);
   max-width: 234px;
-  overflow: hidden;
 }
 
 .icon-block .foreground .icon-area picture {
