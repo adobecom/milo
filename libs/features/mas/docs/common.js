@@ -68,7 +68,6 @@ const createMasCommerceService = (params) => {
 
 const init = async () => {
   await polyfills();
-  await import('../dist/mas.js');
   const params = new URLSearchParams(document.location.search);
 
   // theme
@@ -76,6 +75,7 @@ const init = async () => {
 
   // mas-commerce-service
   createMasCommerceService(params);
+  await import('../dist/mas.js');
 
   document.querySelectorAll('a.theme-toggle').forEach((link) => 
     link.addEventListener('click', (event) =>
@@ -88,5 +88,10 @@ const init = async () => {
     )
   );
 }
+
+window.onceEvent = (element, event, handler) => {
+  element.addEventListener(event, handler, { once: true });
+}
+
 window.log = (target, ...messages) =>  (target.innerHTML =  `${messages.join(' ')}<br>${target.innerHTML}`);
 export { init };

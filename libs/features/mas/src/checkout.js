@@ -1,12 +1,7 @@
 import { CheckoutLink } from './checkout-link.js';
-import {
-    CheckoutWorkflow,
-    CheckoutWorkflowStep,
-    computePromoStatus,
-    omitProperties,
-    toBoolean,
-    toEnumeration,
-} from './external.js';
+import { omitProperties, toBoolean, toEnumeration, computePromoStatus } from '@dexter/tacocat-core';
+import { CheckoutWorkflow, CheckoutWorkflowStep } from './constants.js';
+
 import { buildCheckoutUrl } from './buildCheckoutUrl.js';
 import { Defaults } from './defaults.js';
 import { toOfferSelectorIds, toQuantity } from './utilities.js';

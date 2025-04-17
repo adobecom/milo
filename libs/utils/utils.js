@@ -1321,7 +1321,6 @@ async function checkForPageMods() {
     }
   }
   const enablePersV2 = enablePersonalizationV2();
-  const hybridPersEnabled = getMepEnablement('hybrid-pers');
   if ((target || xlg) && enablePersV2) {
     const params = new URL(window.location.href).searchParams;
     calculatedTimeout = parseInt(params.get('target-timeout'), 10)
@@ -1334,7 +1333,7 @@ async function checkForPageMods() {
       const now = performance.now();
       performance.mark('interaction-start');
       const data = await loadAnalyticsAndInteractionData(
-        { locale, env: getEnv({})?.name, calculatedTimeout, hybridPersEnabled },
+        { locale, env: getEnv({})?.name, calculatedTimeout },
       );
       performance.mark('interaction-end');
       performance.measure('total-time', 'interaction-start', 'interaction-end');
@@ -1366,7 +1365,6 @@ async function checkForPageMods() {
     targetInteractionPromise,
     calculatedTimeout,
     enablePersV2,
-    hybridPersEnabled,
   });
 }
 
@@ -1405,6 +1403,12 @@ async function loadPostLCP(config) {
     import('../features/personalization/personalization.js')
       .then(({ addMepAnalytics }) => addMepAnalytics(config, header));
   }
+  // load privacy here if quick-link is present in first section
+  const quickLink = document.querySelector('div.section')?.querySelector('.quick-link');
+  if (!quickLink) return;
+  import('../scripts/delayed.js').then(({ loadPrivacy }) => {
+    loadPrivacy(getConfig, loadScript);
+  });
 }
 
 export function scrollToHashedElement(hash) {

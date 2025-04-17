@@ -5,21 +5,17 @@ import { expect } from '@esm-bundle/chai';
 import { mockLana } from './mocks/lana.js';
 import { mockFetch } from './mocks/fetch.js';
 
-import '../src/merch-offer.js';
-import '../src/merch-offer-select.js';
-import '../src/merch-quantity-select.js';
-
 import { appendMiloStyles, toggleMobile } from './utils.js';
 import { mockIms } from './mocks/ims.js';
 import { withWcs } from './mocks/wcs.js';
-import mas from './mas.js';
 
 runTests(async () => {
     await toggleMobile();
     mockIms();
     mockLana();
     await mockFetch(withWcs);
-    await mas();
+    await import('../src/mas.js');
+    
     describe('[mobile] merch-card web component with mini-compare variant', () => {
         it('[mobile] mini-compare-chart should remove empty rows', async () => {
             const miniCompareChart = document.querySelector(
