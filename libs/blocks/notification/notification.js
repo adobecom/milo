@@ -91,6 +91,10 @@ function addCloseAction(el, btn) {
     if (btn.nodeName === 'A') e.preventDefault();
     el.style.display = 'none';
     el.closest('.section')?.classList.add('close-sticky-section');
+    if (el.classList.contains('focus')) {
+      document.body.classList.remove('mobile-disable-scroll');
+      el.closest('.section').querySelector('.notification-curtain').remove();
+    }
     document.dispatchEvent(new CustomEvent('milo:sticky:closed'));
   });
 }
@@ -160,6 +164,12 @@ function decorateSplitList(el, listContent) {
     pic.querySelector('img').loading = 'eager';
   });
   listContent.replaceWith(listContainer);
+
+  if (el.classList.contains('focus')) {
+    const curtain = createTag('div', { class: 'notification-curtain is-open'});
+    document.body.classList.add('mobile-disable-scroll');
+    el.insertAdjacentElement('afterend', curtain);
+  }
 }
 
 async function decorateForegroundText(el, container) {
