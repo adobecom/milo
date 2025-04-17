@@ -378,20 +378,24 @@ export function trigger({
   if (isOpen) return false;
   element.setAttribute('aria-expanded', 'true');
   if (!isDesktop.matches && type === 'dropdown'
-      && !!document.querySelector('header.new-nav')) disableMobileScroll();
+    && !!document.querySelector('header.new-nav')) disableMobileScroll();
   return true;
 }
 
 export const yieldToMain = () => new Promise((resolve) => { setTimeout(resolve, 0); });
 
-export async function fetchAndProcessPlainHtml({ url, shouldDecorateLinks = true } = {}) {
+export async function fetchAndProcessPlainHtml({
+  url,
+  plainHTMLPromise = null,
+  shouldDecorateLinks = true,
+} = {}) {
   let path = getFederatedUrl(url);
   const mepGnav = getConfig()?.mep?.inBlock?.['global-navigation'];
   const mepFragment = mepGnav?.fragments?.[path];
   if (mepFragment && mepFragment.action === 'replace') {
     path = mepFragment.content;
   }
-  const res = await fetch(path.replace(/(\.html$|$)/, '.plain.html'));
+  const res = await (plainHTMLPromise ?? fetch(path.replace(/(\.html$|$)/, '.plain.html')));
   if (res.status !== 200) {
     lanaLog({
       message: 'Error in fetchAndProcessPlainHtml',
