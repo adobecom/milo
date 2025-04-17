@@ -76,7 +76,7 @@ function addDeepestContainers(div, findRepeatingContainers, deepestContainers) {
   const nestedContainers = findRepeatingContainers(div);
   if (!nestedContainers.length) return;
 
-  let toPush;
+  let toPush = [];
   if (nestedContainers.length > 1) {
     toPush = [...nestedContainers, div];
   } else if (nestedContainers.length === 1 && nestedContainers[0] === div) {
