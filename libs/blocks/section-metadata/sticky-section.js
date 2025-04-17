@@ -20,7 +20,8 @@ function promoIntersectObserve(el, stickySectionEl, options = {}) {
       const abovePromoStart = (entry.target === stickySectionEl && entry.isIntersecting)
         || stickySectionEl?.getBoundingClientRect().y > 0;
       if (entry.target === document.querySelector('footer')) {
-        if (defineDeviceByScreenSize() === SCREEN_CONSTANTS.DESKTOP) {
+        const screenType = defineDeviceByScreenSize();
+        if (screenType === SCREEN_CONSTANTS.DESKTOP || screenType === SCREEN_CONSTANTS.TABLET) {
           el.classList.toggle('fill-sticky-section', entry.isIntersecting);
         } else {
           el.classList.remove('fill-sticky-section', entry.isIntersecting);
