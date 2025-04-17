@@ -1463,7 +1463,6 @@ export async function loadDeferred(area, blocks, config) {
     const { default: loadDNStatus } = await import('../features/dynamic-navigation/status.js');
     loadDNStatus();
   }
-  console.log('Done loading the deferred');
 }
 
 function initSidekick() {
@@ -1598,46 +1597,47 @@ async function processSection(section, config, isDoc) {
 }
 
 export async function loadArea(area = document) {
+  const isPrerendered = document.documentElement.dataset.prerendered === 'true';
   const isDoc = area === document;
-  console.log('We are NOT loading the area');
 
-  // TODO: check if we're already loaded
+  if (isPrerendered) {
+    return;
+  }
 
-  // if (isDoc) {
-  //   await checkForPageMods();
-  //   appendHtmlToCanonicalUrl();
-  //   appendSuffixToTitles();
-  // }
-  // const config = getConfig();
-  // if (!localeToLanguageMap && !siteLanguages && (config.languages || hasLanguageLinks(area))) {
-  //   await loadLanguageConfig();
-  // }
+  if (isDoc) {
+    await checkForPageMods();
+    appendHtmlToCanonicalUrl();
+    appendSuffixToTitles();
+  }
+  const config = getConfig();
+  if (!localeToLanguageMap && !siteLanguages && (config.languages || hasLanguageLinks(area))) {
+    await loadLanguageConfig();
+  }
 
-  // if (isDoc) {
-  //   decorateDocumentExtras();
-  // }
+  if (isDoc) {
+    decorateDocumentExtras();
+  }
 
-  // const sections = decorateSections(area, isDoc);
+  const sections = decorateSections(area, isDoc);
 
-  // const areaBlocks = [];
-  // for (const section of sections) {
-  //   const sectionBlocks = await processSection(section, config, isDoc);
-  //   areaBlocks.push(...sectionBlocks);
+  const areaBlocks = [];
+  for (const section of sections) {
+    const sectionBlocks = await processSection(section, config, isDoc);
+    areaBlocks.push(...sectionBlocks);
 
-  //   areaBlocks.forEach((block) => {
-  //     if (!block.className.includes('metadata')) block.dataset.block = '';
-  //   });
-  // }
+    areaBlocks.forEach((block) => {
+      if (!block.className.includes('metadata')) block.dataset.block = '';
+    });
+  }
 
-  // const currentHash = window.location.hash;
-  // if (currentHash) {
-  //   scrollToHashedElement(currentHash);
-  // }
+  const currentHash = window.location.hash;
+  if (currentHash) {
+    scrollToHashedElement(currentHash);
+  }
 
-  // if (isDoc) await documentPostSectionLoading(config);
+  if (isDoc) await documentPostSectionLoading(config);
 
-  // await loadDeferred(area, areaBlocks, config);
-  // console.log('Done loading the area');
+  await loadDeferred(area, areaBlocks, config);
 }
 
 export const utf8ToB64 = (str) => window.btoa(unescape(encodeURIComponent(str)));
