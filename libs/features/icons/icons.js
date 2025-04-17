@@ -34,6 +34,25 @@ export const fetchIcons = (config) => new Promise(async (resolve) => {
   resolve(fetchedIcons);
 });
 
+let tooltipListenersAdded = false;
+function addTooltipListeners() {
+  tooltipListenersAdded = true;
+
+  ['keydown', 'mouseenter', 'focus', 'mouseleave', 'blur'].forEach((eventType) => {
+    document.addEventListener(eventType, (event) => {
+      const tooltip = event.target?.closest?.('.milo-tooltip');
+      if (!tooltip) return;
+
+      if (['mouseenter', 'focus'].includes(eventType)) {
+        tooltip.classList.remove('hide-tooltip');
+      } else if (['mouseleave', 'blur'].includes(eventType)
+        || (eventType === 'keydown' && event.key === 'Escape')) {
+        tooltip.classList.add('hide-tooltip');
+      }
+    }, true);
+  });
+}
+
 function decorateToolTip(icon, iconName) {
   const hasTooltip = icon.closest('em')?.textContent.includes('|') && [...icon.classList].some((cls) => cls.includes('tooltip'));
   if (!hasTooltip) return;
@@ -53,6 +72,7 @@ function decorateToolTip(icon, iconName) {
   icon.setAttribute('aria-label', content);
   icon.setAttribute('role', 'button');
   wrapper.parentElement.replaceChild(icon, wrapper);
+  if (!tooltipListenersAdded) addTooltipListeners();
 }
 
 export default async function loadIcons(icons, config) {
