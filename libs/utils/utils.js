@@ -1426,7 +1426,7 @@ async function checkForPageMods() {
 
   if (mepParam === 'off') return;
   const pzn = getMepEnablement('personalization');
-  const mepPl = getMepEnablement('mep-placeholders');
+  const mph = getMepEnablement('mep-placeholders');
   const pznroc = getMepEnablement('personalization-roc');
   const promo = getMepEnablement('manifestnames', PROMO_PARAM);
   const target = martech === 'off' ? false : getMepEnablement('target');
@@ -1434,7 +1434,7 @@ async function checkForPageMods() {
   const ajo = martech === 'off' ? false : getMepEnablement('ajo');
   const mepgeolocation = getMepEnablement('mepgeolocation');
 
-  if (!(pzn || mepPl || pznroc || target || promo || mepParam
+  if (!(pzn || mph || pznroc || target || promo || mepParam
     || mepHighlight || mepButton || mepParam === '' || xlg || ajo)) return;
 
   const promises = loadMepAddons();
@@ -1483,7 +1483,7 @@ async function checkForPageMods() {
     mepHighlight,
     mepButton,
     pzn,
-    mepPl,
+    mph,
     pznroc,
     promo,
     target,
