@@ -102,9 +102,23 @@ describe('notification', async () => {
       const stacks = splits[0].querySelectorAll('.split-list-item').length;
       expect(stacks).to.equal(2);
     });
+    it('has focus closes the notification', () => {
+      expect(splits[1].closest('.section').querySelector('.notification-curtain')).to.exist;
+    });
+    it('closes the notification and focus', () => {
+      setTimeout(() => {
+        splits[3].closest('.section').style.display = 'flex';
+        expect(splits[3].closest('.section').querySelector('.notification-curtain')).to.exist;
+      }, 2000);
+    });
     it('closes the notification', () => {
       splits[0].querySelector('a[href*="#_evt-close"]').dispatchEvent(new MouseEvent('click'));
       expect(splits[0].closest('.section').classList.contains('close-sticky-section')).to.be.true;
+    });
+    it('closes the notification and focus', () => {
+      splits[1].querySelector('a[href*="#_evt-close"]').dispatchEvent(new MouseEvent('click'));
+      expect(splits[1].closest('.section').classList.contains('close-sticky-section')).to.be.true;
+      expect(splits[1].closest('.section').querySelector('.notification-curtain')).to.not.exist;
     });
   });
 });
