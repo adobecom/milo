@@ -575,7 +575,7 @@
   .notification.pill.max-width-auto-tablet { max-width: unset; }
 
   .notification.split,
-  .notification.split.focus + .notification-curtain {
+  .notification-curtain {
     display: none;
   }
 }
