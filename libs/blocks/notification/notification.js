@@ -90,6 +90,7 @@ function addCloseAction(el, btn) {
   btn.addEventListener('click', (e) => {
     if (btn.nodeName === 'A') e.preventDefault();
 
+    // Create accessibility live region
     const liveRegion = createTag('div', {
       class: 'notification-visibility-hidden',
       'aria-live': 'assertive',
@@ -109,11 +110,38 @@ function addCloseAction(el, btn) {
     document.dispatchEvent(new CustomEvent('milo:sticky:closed'));
 
     setTimeout(() => {
-      const focusableElements = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
-      const allFocusable = [...document.querySelectorAll(focusableElements)];
-      const nextFocusable = allFocusable[allFocusable.indexOf(btn) + 1];
+      const focusableSelector = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
+      const selectedSelector = '[aria-selected="true"], [aria-checked="true"]';
+      let focusTarget;
+
+      const findFocusableInSection = (section) => {
+        if (!section) return null;
+
+        const selectedElement = section.querySelector(selectedSelector);
+        if (selectedElement) return selectedElement;
+
+        const focusableElements = [...section.querySelectorAll(focusableSelector)];
+        return focusableElements.length > 0
+          ? focusableElements[focusableElements.length - 1]
+          : null;
+      };
+
+      let currentSection = el.closest('.section').previousElementSibling;
+      while (currentSection && !focusTarget) {
+        focusTarget = findFocusableInSection(currentSection);
+        if (!focusTarget) currentSection = currentSection.previousElementSibling;
+      }
+
+      if (!focusTarget) {
+        const header = document.querySelector('header');
+        if (header) {
+          const headerFocusable = [...header.querySelectorAll(focusableSelector)];
+          focusTarget = headerFocusable[headerFocusable.length - 1];
+        }
+      }
+
       liveRegion?.remove();
-      if (nextFocusable) nextFocusable.focus();
+      if (focusTarget) focusTarget.focus();
     }, 2000);
   });
 }
