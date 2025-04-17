@@ -228,7 +228,13 @@ export function getLanguage(languages, locales, pathname = window.location.pathn
       || (language.languageBased === false && !language.region);
   if (isLegacyLocaleRoutingMode) {
     const locale = getLocale(locales, pathname);
-    if (locale.prefix === '') locale.language = DEFAULT_LANG;
+    const englishLang = languages.en;
+    if (locale.prefix === '' && englishLang) {
+      locale.language = DEFAULT_LANG;
+      if (englishLang.region) locale.region = englishLang.region;
+      if (englishLang.ietf) locale.ietf = englishLang.ietf;
+      if (englishLang.tk) locale.tk = englishLang.tk;
+    }
     return locale;
   }
 
@@ -453,6 +459,20 @@ function getPrefixBySite(locale, url, relative) {
   return prefix;
 }
 
+function isLocalizedPath(path, locales) {
+  const langstorePath = path.startsWith(`/${LANGSTORE}`);
+  const previewPath = path.startsWith(`/${PREVIEW}`);
+  const anyTypeOfLocaleOrLanguagePath = localeToLanguageMap
+    && (localeToLanguageMap.some((l) => l.locale !== '' && (path.startsWith(`/${l.locale}/`) || path === `/${l.locale}`))
+      || (localeToLanguageMap.some((l) => path.startsWith(`/${l.langaugePath}/`) || path === `/${l.langaugePath}`)));
+  const legacyLocalePath = locales && Object.keys(locales).some((loc) => loc !== '' && (path.startsWith(`/${loc}/`)
+    || path.endsWith(`/${loc}`)));
+  return langstorePath
+    || previewPath
+    || anyTypeOfLocaleOrLanguagePath
+    || legacyLocalePath;
+}
+
 export function localizeLink(
   href,
   originHostName = window.location.hostname,
@@ -473,11 +493,7 @@ export function localizeLink(
     const isLocalizable = relative || (prodDomains && prodDomains.includes(url.hostname))
       || overrideDomain;
     if (!isLocalizable) return processedHref;
-    const isLocalizedLink = path.startsWith(`/${LANGSTORE}`)
-      || path.startsWith(`/${PREVIEW}`)
-      || (languages && Object.keys(languages).some((lang) => lang !== '' && (path.startsWith(`/${lang}/`))))
-      || (locales && Object.keys(locales).some((loc) => loc !== '' && (path.startsWith(`/${loc}/`)
-        || path.endsWith(`/${loc}`))));
+    const isLocalizedLink = isLocalizedPath(path, locales);
     if (isLocalizedLink) return processedHref;
 
     const prefix = getPrefixBySite(locale, url, relative);
