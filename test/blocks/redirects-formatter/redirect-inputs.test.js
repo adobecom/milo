@@ -118,4 +118,33 @@ describe('Redirects Formatter Tests', () => {
     expect(redirectsArea.querySelectorAll('.redirect-input-row').length).to.equal(1);
     expect(redirectsArea.querySelector('.redirect-input-row').getAttribute('data-row-id')).to.equal('0');
   });
+
+  it('maintains correct row IDs when all rows are deleted and new ones are added', () => {
+    const redirectsArea = createRedirectsArea();
+    container.appendChild(redirectsArea);
+
+    // Add two additional rows (total 3 rows)
+    const addButton = redirectsArea.querySelector('.add-input');
+    addButton.click();
+    addButton.click();
+    expect(redirectsArea.querySelectorAll('.redirect-input-row').length).to.equal(3);
+
+    // Remove all rows
+    const removeButtons = redirectsArea.querySelectorAll('.remove-input');
+    removeButtons[2].click();
+    removeButtons[1].click();
+    removeButtons[0].click();
+    expect(redirectsArea.querySelectorAll('.redirect-input-row').length).to.equal(0);
+
+    // Add a new row
+    addButton.click();
+    const newRow = redirectsArea.querySelector('.redirect-input-row');
+    expect(newRow).to.exist;
+    expect(newRow.getAttribute('data-row-id')).to.equal('0');
+
+    // Add another row and verify it gets the next sequential ID
+    addButton.click();
+    const rows = redirectsArea.querySelectorAll('.redirect-input-row');
+    expect(rows[1].getAttribute('data-row-id')).to.equal('1');
+  });
 });
