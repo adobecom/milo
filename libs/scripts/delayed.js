@@ -25,28 +25,38 @@ export const loadJarvisChat = async (getConfig, getMetadata, loadScript, loadSty
 };
 
 export const loadPrivacy = async (getConfig, loadScript) => {
+  const { privacyId, env } = getConfig();
   const acom = '7a5eb705-95ed-4cc4-a11d-0cc5760e93db';
   const ids = {
-    'hlx.page': '3a6a37fe-9e07-4aa9-8640-8f358a623271-test',
-    'hlx.live': '926b16ce-cc88-4c6a-af45-21749f3167f3-test',
-    'aem.page': '01930689-3b6a-7d5f-9797-8df2c3901a05-test',
-    'aem.live': '01930691-c4e5-75ba-aa0e-721e1213c139-test',
+    'hlx.page': 'f5b9e81a-54b5-40cb-afc3-84ca26e7dbaf-test',
+    'hlx.live': '01958a9e-818e-7213-8d4a-8b3b7a4ec33e-test',
+    'aem.page': '01954847-62a4-7afc-bdc7-f110c4e35b5d-test',
+    'aem.live': '01954848-3f9e-7267-ac5d-d4076841aeb1-test',
   };
 
   const otDomainId = ids?.[Object.keys(ids)
     .find((domainId) => window.location.host.includes(domainId))]
-      ?? (getConfig()?.privacyId || acom);
+      ?? privacyId ?? acom;
   window.fedsConfig = {
     privacy: { otDomainId },
     documentLanguage: true,
   };
-  loadScript('https://www.adobe.com/etc.clientlibs/globalnav/clientlibs/base/privacy-standalone.js');
+
+  // Load the privacy script
+  let privacyEnv = '';
+  if (env?.name !== 'prod') {
+    privacyEnv = new URLSearchParams(window.location.search).get('privacyEnv') || '';
+  }
+  loadScript(`https://www.${privacyEnv && `${privacyEnv}.`}adobe.com/etc.clientlibs/globalnav/clientlibs/base/privacy-standalone.js`);
 
   // Privacy triggers can exist anywhere on the page and can be added at any time
   document.addEventListener('click', (event) => {
     if (event.target.closest('a[href*="#openPrivacy"]')) {
       event.preventDefault();
-      window.adobePrivacy?.showPreferenceCenter();
+      window.adobePrivacy?.showPreferenceCenter({
+        modalLaunchMethod: 'Footer link',
+        triggerElement: event.target,
+      });
     }
   });
 };
