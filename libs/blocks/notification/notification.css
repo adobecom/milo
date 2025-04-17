@@ -411,7 +411,7 @@
   z-index: var(--modal-z-index);
 }
 
-.notification-curtain.is-open {
+.notification-curtain {
   position: fixed;
   top: 0;
   right: 0;
