@@ -72,6 +72,17 @@ describe('Utils', () => {
     expect(resp.json()).to.be.true;
   });
 
+  describe('prerendered support', () => {
+    it('loads milo minimally when document is prerendered', async () => {
+      document.head.innerHTML = head;
+      document.body.innerHTML = await readFile({ path: './mocks/prerendered.html' });
+
+      const originalMarquee = document.querySelector('.marquee');
+      await utils.loadArea();
+      expect(document.querySelector('.marquee')).to.equal(originalMarquee);
+    });
+  });
+
   describe('core-functionality', () => {
     it('preloads blocks for performance reasons', async () => {
       document.head.innerHTML = head;

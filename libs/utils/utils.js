@@ -1601,7 +1601,12 @@ async function processSection(section, config, isDoc) {
 }
 
 export async function loadArea(area = document) {
+  const isPrerendered = document.documentElement.dataset.prerendered === 'true';
   const isDoc = area === document;
+
+  if (isPrerendered) {
+    return;
+  }
 
   if (isDoc) {
     await checkForPageMods();
