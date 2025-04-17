@@ -98,12 +98,35 @@ export default async function init(a) {
     const { getFederatedUrl } = await import('../../utils/utils.js');
     resourcePath = getFederatedUrl(a.href);
   }
-  const resp = await customFetch({ resource: `${resourcePath}.plain.html`, withCacheRules: true })
+  let resp = await customFetch({ resource: `${resourcePath}.plain.html`, withCacheRules: true })
     .catch(() => ({}));
 
   if (!resp?.ok) {
-    window.lana?.log(`Could not get fragment: ${resourcePath}.plain.html`);
-    return;
+    // Check if this is a fragment path and has a regional structure
+    const pathParts = new URL(resourcePath).pathname.split('/');
+    const fragmentsIndex = pathParts.indexOf('fragments');
+    if (fragmentsIndex > 1) {
+      const language = pathParts[1];
+      const region = pathParts[2];
+      if (region && region !== 'fragments') {
+        const fallbackPath = `/${language}/fragments/${pathParts.slice(fragmentsIndex + 1).join('/')}`;
+        const fallbackResp = await customFetch({ resource: `${fallbackPath}.plain.html`, withCacheRules: true })
+          .catch(() => ({}));
+        if (fallbackResp?.ok) {
+          resourcePath = fallbackPath;
+          resp = fallbackResp;
+        } else {
+          window.lana?.log(`Could not get fragment: ${resourcePath}.plain.html or ${fallbackPath}.plain.html`);
+          return;
+        }
+      } else {
+        window.lana?.log(`Could not get fragment: ${resourcePath}.plain.html`);
+        return;
+      }
+    } else {
+      window.lana?.log(`Could not get fragment: ${resourcePath}.plain.html`);
+      return;
+    }
   }
 
   const html = await resp.text();

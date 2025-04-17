@@ -66,6 +66,13 @@ const config = {
         { region: 'de' },
       ],
     },
+    fr: {
+      tk: 'hah7vzn.css',
+      regions: [
+        { region: 'fr' },
+        { region: 'be' },
+      ],
+    },
   },
   prodDomains,
   stageDomainsMap,
