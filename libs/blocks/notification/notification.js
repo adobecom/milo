@@ -103,12 +103,15 @@ function addCloseAction(el, btn) {
     liveRegion.focus();
     let isSticky = false;
     let rect;
-    el.closest('.section').classList.forEach((cls) => {
-      if (cls.includes('sticky')) {
-        isSticky = true;
-        rect = el.closest('.section').getBoundingClientRect();
-      }
-    });
+    const sectionElement = el.closest('.section');
+    if (sectionElement) {
+      sectionElement.classList.forEach((cls) => {
+        if (cls.includes('sticky')) {
+          isSticky = true;
+          rect = sectionElement.getBoundingClientRect();
+        }
+      });
+    }
     el.style.display = 'none';
     el.closest('.section')?.classList.add('close-sticky-section');
     if (el.classList.contains('focus')) {
