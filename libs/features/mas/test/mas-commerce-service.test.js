@@ -1,7 +1,7 @@
 import Sinon from 'sinon';
 
 import '../../../utils/lana.js';
-import { Defaults } from '../src/mas.js';
+import { Defaults } from '../src/defaults.js';
 import { TAG_NAME_SERVICE } from '../src/mas-commerce-service.js';
 
 import { mockFetch } from './mocks/fetch.js';
@@ -9,7 +9,7 @@ import { mockIms, unmockIms } from './mocks/ims.js';
 import {
     expect,
     initMasCommerceService,
-    disableMasCommerceService,
+    removeMasCommerceService,
 } from './utilities.js';
 import { withWcs } from './mocks/wcs.js';
 
@@ -32,7 +32,7 @@ describe('commerce service', () => {
     });
 
     afterEach(() => {
-        disableMasCommerceService();
+        removeMasCommerceService();
         unmockIms();
     });
 
@@ -42,7 +42,7 @@ describe('commerce service', () => {
 
     describe(`component "${TAG_NAME_SERVICE}"`, () => {
         it('returns "Defaults" object', async () => {
-            const instance = await initMasCommerceService();
+            const instance = initMasCommerceService();
             expect(instance.defaults).to.deep.equal(Defaults);
         });
 
@@ -57,7 +57,7 @@ describe('commerce service', () => {
         });
 
         it('registers checkout action', async () => {
-            const el = await initMasCommerceService();
+            const el = initMasCommerceService();
             el.registerCheckoutAction((offers, options, imsPromise) => {
                 /* nop for now */
             });
@@ -72,21 +72,21 @@ describe('commerce service', () => {
         });
 
         it('allows to flush WCS cache', async () => {
-            const el = await initMasCommerceService();
+            const el = initMasCommerceService();
             expect(el.flushWcsCache).to.be.a('function');
             el.flushWcsCache();
             //TODO: add more assertions
         });
 
         it('allows to refresh offers', async () => {
-            const el = await initMasCommerceService();
+            const el = initMasCommerceService();
             expect(el.refreshOffers).to.be.a('function');
             el.refreshOffers();
             //TODO: add more assertions
         });
 
         it('allows to refresh aem fragments & prices', async () => {
-            const el = await initMasCommerceService();
+            const el = initMasCommerceService();
             expect(el.refreshFragments).to.be.a('function');
             el.refreshFragments();
             expect(el.flushWcsCache).to.be.a('function');
@@ -150,7 +150,7 @@ describe('commerce service', () => {
                 const el = await initMasCommerceService({
                     'lana-tags': 'ccd',
                     'lana-sample-rate': '100',
-                    'env': 'stage',
+                    env: 'stage',
                 });
                 el.log.error('test error');
                 const [, url] = calls[0].open.lastCall.args;

@@ -14,6 +14,7 @@ module.exports = {
   ],
   ignorePatterns: [
     '/libs/deps/*',
+    '/libs/features/mas/*',
     '/libs/navigation/dist/*',
     '/tools/loc/*',
   ],

@@ -5,6 +5,8 @@ import { initService } from '../../../libs/blocks/merch/merch.js';
 import initCard from '../../../libs/blocks/merch-card/merch-card.js';
 import { setConfig } from '../../../libs/utils/utils.js';
 
+document.head.appendChild(document.createElement('mas-commerce-service'));
+
 const delay = (duration = 100) => new Promise((resolve) => { setTimeout(resolve, duration); });
 
 function validateMerchOffer(offer, selected, text, badgeText, osi, description) {

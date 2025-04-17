@@ -3,7 +3,7 @@ import {
     updateMasElement,
     MasElement,
 } from './mas-element.js';
-import { selectOffers, useService } from './utilities.js';
+import { selectOffers, getService } from './utilities.js';
 
 // countries where tax is displayed for all segments by default
 const DISPLAY_ALL_TAX_COUNTRIES = [
@@ -99,7 +99,7 @@ export class InlinePrice extends HTMLSpanElement {
 
     static createInlinePrice(options) {
         // eslint-disable-next-line react-hooks/rules-of-hooks
-        const service = useService();
+        const service = getService();
         if (!service) return null;
         const {
             displayOldPrice,
@@ -247,7 +247,7 @@ export class InlinePrice extends HTMLSpanElement {
     async render(overrides = {}) {
         if (!this.isConnected) return false;
         // eslint-disable-next-line react-hooks/rules-of-hooks
-        const service = useService();
+        const service = getService();
         if (!service) return false;
         const options = service.collectPriceOptions(overrides, this);
         if (!options.wcsOsi.length) return false;
@@ -276,7 +276,7 @@ export class InlinePrice extends HTMLSpanElement {
     /**
      * Renders price offer as HTML of this component
      * using consonant price template functions
-     * @param {Commerce.Wcs.Offer[]} offers
+     * @param {Offer[]} offers
      * @param {Record<string, any>} overrides
      * Optional object with properties to use as overrides
      * over those collected from dataset of this component.
@@ -284,7 +284,7 @@ export class InlinePrice extends HTMLSpanElement {
     renderOffers(offers, overrides = {}, version = undefined) {
         if (!this.isConnected) return;
         // eslint-disable-next-line react-hooks/rules-of-hooks
-        const service = useService();
+        const service = getService();
         if (!service) return false;
         const options = service.collectPriceOptions(
             {
@@ -325,7 +325,7 @@ export class InlinePrice extends HTMLSpanElement {
 
     updateOptions(options) {
         // eslint-disable-next-line react-hooks/rules-of-hooks
-        const service = useService();
+        const service = getService();
         if (!service) return false;
         const {
             alternativePrice,

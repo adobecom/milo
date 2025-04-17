@@ -1,3 +1,32 @@
+export const Commitment = Object.freeze({
+    MONTH: 'MONTH',
+    YEAR: 'YEAR',
+    TWO_YEARS: 'TWO_YEARS',
+    THREE_YEARS: 'THREE_YEARS',
+    PERPETUAL: 'PERPETUAL',
+    TERM_LICENSE: 'TERM_LICENSE',
+    ACCESS_PASS: 'ACCESS_PASS',
+    THREE_MONTHS: 'THREE_MONTHS',
+    SIX_MONTHS: 'SIX_MONTHS',
+});
+
+export const Term = Object.freeze({
+    ANNUAL: 'ANNUAL',
+    MONTHLY: 'MONTHLY',
+    TWO_YEARS: 'TWO_YEARS',
+    THREE_YEARS: 'THREE_YEARS',
+    P1D: 'P1D',
+    P1Y: 'P1Y',
+    P3Y: 'P3Y',
+    P10Y: 'P10Y',
+    P15Y: 'P15Y',
+    P3D: 'P3D',
+    P7D: 'P7D',
+    P30D: 'P30D',
+    HALF_YEARLY: 'HALF_YEARLY',
+    QUARTERLY: 'QUARTERLY',
+});
+
 /**
  * Common namespace prefix for CSS classes and DOM event types.
  * @see https://git.corp.adobe.com/wcms/team/discussions/27
@@ -95,10 +124,7 @@ export const Landscape = {
 
 export const HEADER_X_REQUEST_ID = 'X-Request-Id';
 
-export const MAS_COMMERCE_SERVICE_INIT_TIME_MEASURE_NAME =
-    'mas-commerce-service:initTime';
-
-export const WORKFLOW_STEP = {
+export const CheckoutWorkflowStep = Object.freeze({
     CHECKOUT: 'checkout',
     CHECKOUT_EMAIL: 'checkout/email',
     SEGMENTATION: 'segmentation',
@@ -109,7 +135,15 @@ export const WORKFLOW_STEP = {
     PAYMENT: 'payment',
     CHANGE_PLAN_TEAM_PLANS: 'change-plan/team-upgrade/plans',
     CHANGE_PLAN_TEAM_PAYMENT: 'change-plan/team-upgrade/payment',
-};
+});
+
+export const CheckoutWorkflow = Object.freeze({ V2: 'UCv2', V3: 'UCv3' });
+
+export const Env = Object.freeze({
+    STAGE: 'STAGE',
+    PRODUCTION: 'PRODUCTION',
+    LOCAL: 'LOCAL',
+});
 
 export const PROVIDER_ENVIRONMENT = {
     PRODUCTION: 'PRODUCTION',
