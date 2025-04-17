@@ -67,7 +67,7 @@ export function processMnemonics(fields, merchCard, mnemonicsConfig) {
 }
 
 function processBadge(fields, merchCard, mapping) {
-    if (fields.variant === 'plans') {
+    if (fields.variant === 'plans' || fields.variant === 'plans-students') {
         // for back-compatibility
         if (fields.badge?.length && !fields.badge?.startsWith('<merch-badge')) {
             fields.badge = `<merch-badge variant="${fields.variant}" background-color="${DEFAULT_PLANS_BADGE_COLOR}">${fields.badge}</merch-badge>`;
@@ -421,7 +421,7 @@ export function updateLinksCSS(merchCard) {
     });
 }
 
-export function cleanup(merchCard) {
+export function cleanup(merchCard, variant) {
   // remove all previous slotted content except the default slot
   merchCard.querySelectorAll('[slot]').forEach((el) => {
     el.remove();
@@ -454,20 +454,8 @@ export async function hydrate(fragment, merchCard) {
       stockOfferOsis: '',
       secureLabel: 'Secure transaction' // to be {{secure-transaction}}
     };
-    cleanup(merchCard);
+    cleanup(merchCard, variant);
     merchCard.id ??= fragment.id;
-
-
-    merchCard.removeAttribute('background-image');
-    merchCard.removeAttribute('background-color');
-    merchCard.removeAttribute('badge-background-color');
-    merchCard.removeAttribute('badge-color');
-    merchCard.removeAttribute('badge-text');
-    merchCard.removeAttribute('size');
-    merchCard.classList.remove('wide-strip');
-    merchCard.classList.remove('thin-strip');
-    merchCard.removeAttribute(ANALYTICS_SECTION_ATTR);
-
     merchCard.variant = variant;
     await merchCard.updateComplete;
 

@@ -114,7 +114,7 @@ export class Plans extends VariantLayout {
   }
 
   static variantStyle = css`
-    :host([variant='plans']) {
+    :host([variant^='plans']) {
         min-height: 348px;
         border: 1px solid var(--merch-card-custom-border-color, #DADADA);
         --merch-card-plans-min-width: 244px;
@@ -126,25 +126,25 @@ export class Plans extends VariantLayout {
         font-weight: 400;
     }
 
-    :host([variant='plans']) ::slotted([slot='heading-xs']) {
+    :host([variant^='plans']) ::slotted([slot='heading-xs']) {
         min-height: var(--merch-card-plans-heading-min-height);
     }
 
-    :host([variant='plans']) .body {
+    :host([variant^='plans']) .body {
         min-width: var(--merch-card-plans-min-width);
         max-width: var(--merch-card-plans-max-width);
         padding: var(--merch-card-plans-padding);
     }
 
-    :host([variant='plans'][size]) .body {
+    :host([variant^='plans'][size]) .body {
         max-width: none;
     }
 
-    :host([variant='plans']) .wide-footer #stock-checkbox {
+    :host([variant^='plans']) .wide-footer #stock-checkbox {
         margin-top: 0;
     }
 
-    :host([variant='plans']) #stock-checkbox {
+    :host([variant^='plans']) #stock-checkbox {
         margin-top: 8px;
         gap: 9px;
         color: rgb(34, 34, 34);
@@ -153,31 +153,39 @@ export class Plans extends VariantLayout {
         padding-bottom: 5px;
     }
 
-    :host([variant='plans']) #stock-checkbox > span {
+    :host([variant^='plans']) #stock-checkbox > span {
         border: 2px solid rgb(109, 109, 109);
         width: 12px;
         height: 12px;
     }
 
-    :host([variant='plans']) footer {
+    :host([variant^='plans']) footer {
         padding: var(--merch-card-plans-padding);
         padding-top: 1px;
     }
 
-    :host([variant='plans']) .secure-transaction-label {
+    :host([variant^='plans']) .secure-transaction-label {
         color: rgb(80, 80, 80);
         line-height: var(--consonant-merch-card-detail-xs-line-height);
     }
       
-    :host([variant='plans']) ::slotted([slot='heading-xs']) {
+    :host([variant^='plans']) ::slotted([slot='heading-xs']) {
         max-width: var(--consonant-merch-card-heading-xs-max-width, 100%);
     }
 
-    :host([variant='plans']) #badge {
+    :host([variant^='plans']) #badge {
         border-radius: 4px 0 0 4px;
         font-weight: 400;
         line-height: 21px;
         padding: 2px 10px 3px;
     }
+    
+    :host([variant='plans-students']) {
+        min-height: unset;
+    }
+    
+    :host([variant='plans-students']) .body {
+        max-width: none;
+    }    
   `;
 }

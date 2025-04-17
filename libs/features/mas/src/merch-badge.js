@@ -14,6 +14,7 @@ export default class MerchBadge extends LitElement {
         this.variant = '';
         this.backgroundColor = '';
         this.borderColor = '';
+        this.text = this.textContent;
     }
 
     connectedCallback() {
@@ -27,15 +28,13 @@ export default class MerchBadge extends LitElement {
         this.style.setProperty('--merch-badge-padding', '2px 10px 3px 10px');
         this.style.setProperty('--merch-badge-border-radius', '4px 0 0 4px');
         this.style.setProperty('--merch-badge-font-size', 'var(--consonant-merch-card-body-xs-font-size)');
-        if (this.variant === 'plans') {
-            this.style.setProperty('border-right', 'none');
-        }
+        this.textContent = '';
         super.connectedCallback();
     }
 
     render() {
         return html`<div class="plans-badge">
-            ${this.textContent}
+            ${this.text}
         </div>`;
     }
 
@@ -49,6 +48,8 @@ export default class MerchBadge extends LitElement {
             font-size: var(--merch-badge-font-size);
             line-height: 21px;
             border: var(--merch-badge-border);
+            position: relative;
+            left: 1px;
         }
     `;
 }
