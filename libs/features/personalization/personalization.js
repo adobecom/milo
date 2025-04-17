@@ -664,7 +664,7 @@ const getVariantInfo = (line, variantNames, variants, manifestPath, fTargetId) =
     if (action in COMMANDS && variantInfo.selectorType === 'fragment') {
       variants[vn].fragments.push({
         selector: normalizePath(variantInfo.selector.split(' #_')[0]),
-        val: normalizePath(line[vn]),
+        val: normalizePath(replacePlaceholders(line[vn])),
         action,
         manifestId,
         targetManifestId,
@@ -865,7 +865,7 @@ async function setMepCountry(config) {
   const urlParams = new URLSearchParams(window.location.search);
   const country = urlParams.get('country') || (document.cookie.split('; ').find((row) => row.startsWith('international='))?.split('=')[1]);
   const akamaiCode = urlParams.get('akamaiLocale')?.toLowerCase() || sessionStorage.getItem('akamai');
-  config.mep = config.mep || {};
+  config.mep ??= {};
   if (country) {
     config.mep.countryChoice = normCountry(country);
   }
@@ -886,6 +886,9 @@ async function setMepCountry(config) {
       log('MEP Error: Unable to get user country');
     }
   }
+  config.placeholders ??= {};
+  config.placeholders.countryIP = config.mep.countryIP;
+  config.placeholders.countryChoice = config.mep.countryChoice;
 }
 
 async function getPersonalizationVariant(
@@ -932,10 +935,6 @@ async function getPersonalizationVariant(
     });
     return !processedList.includes(false);
   };
-
-  if (config.mep?.geoLocation) {
-    await setMepCountry(config);
-  }
 
   const matchingVariant = variantNames.find((variant) => variantInfo[variant].some(matchVariant));
   return matchingVariant;
@@ -1182,6 +1181,7 @@ export async function applyPers({ manifests }) {
   if (!manifests?.length) return;
   let experiments = manifests;
   const config = getConfig();
+  if (config.mep?.geoLocation) await setMepCountry(config);
   for (let i = 0; i < experiments.length; i += 1) {
     experiments[i] = await getManifestConfig(
       experiments[i],
