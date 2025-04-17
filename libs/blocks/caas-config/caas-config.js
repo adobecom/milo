@@ -345,9 +345,6 @@ const BasicsPanel = ({ tagsData }) => {
     delete countryTags['caas:country/gr_en'];
   }
 
-  const sortedLanguages = Object.fromEntries(Object.entries(languageTags).sort());
-  const sortedCountries = Object.fromEntries(Object.entries(countryTags).sort());
-
   const countryLangOptions = html`
   <${Select} options=${sortedCountries} prop="country" label="Country" sort />
   <${Select} options=${sortedLanguages} prop="language" label="Language" sort />`;
