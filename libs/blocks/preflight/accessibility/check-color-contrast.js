@@ -73,7 +73,7 @@ export default function checkColorContrast(elements = [], config = {}) {
     const styles = window.getComputedStyle(el);
     const isVisible = styles.display !== 'none' && styles.visibility !== 'hidden' && parseFloat(styles.opacity) > 0;
     const hasText = el.textContent.trim().length > 0;
-    const tagWhitelist = ['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'a', 'button'];
+    const tagWhitelist = ['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'a', 'button', 'ul', 'li', 'em'];
     return isVisible && hasText && tagWhitelist.includes(el.tagName.toLowerCase());
   });
   validElements.forEach((el) => {
