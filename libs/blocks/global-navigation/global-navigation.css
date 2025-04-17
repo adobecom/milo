@@ -1082,6 +1082,7 @@ header.new-nav .feds-nav > section.feds-navItem > .feds-popup .tab-content .feds
   display: inline-block;
   font-weight: 400;
   white-space: break-spaces;
+  font-size: 12px;
 }
 
 header.new-nav .feds-nav > section.feds-navItem > .feds-popup .sticky-cta {
