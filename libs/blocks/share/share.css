@@ -83,13 +83,17 @@
   white-space: nowrap;
 }
 
+[dir="rtl"] .share .copy-to-clipboard::before {
+  left: 150%;
+}
+
 .share .copy-to-clipboard::after {
   content: '';
   display: block;
   pointer-events: none;
   position : absolute;
   bottom: 100%;
-  left: 20%;
+  left: 50%;
   transform: translate(-50%, 0);
   opacity: 0;
   visibility: hidden;
@@ -150,10 +154,6 @@ main > .section.center .share.inline p.icon-container {
 
 @media screen and (min-width: 600px) {
   .share .copy-to-clipboard::before {
-    left: 50%;
-  }
-
-  .share .copy-to-clipboard::after {
     left: 50%;
   }
 }
