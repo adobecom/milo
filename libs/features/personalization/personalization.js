@@ -974,12 +974,13 @@ const createDefaultExperiment = (manifest) => ({
   disabled: manifest.disabled,
   event: manifest.event,
   manifest: manifest.manifestPath,
-  executionOrder: '1-1',
+  executionOrder: manifest.isMph ? '0-0' : '1-1',
   selectedVariant: { commands: [], fragments: [] },
-  selectedVariantName: 'default',
+  selectedVariantName: manifest.isMph ? 'all' : 'default',
   variantNames: ['all'],
   variants: {},
-  source: ['promo'],
+  placeholderData: manifest.persData,
+  source: manifest.isMph ? ['mph'] : ['promo'],
 });
 
 export const addMepAnalytics = (config, header) => {
@@ -1022,19 +1023,10 @@ export async function getManifestConfig(info = {}, variantOverride = false) {
   }
 
   const persData = data?.experiences?.data || data?.data || data;
-  const isMepPlaceholder = source?.[0] === 'mepPl';
-  if (!persData || (isMepPlaceholder && !persData.length)) return null;
-  if (isMepPlaceholder) {
-    const manifestConfig = {};
-    manifestConfig.placeholderData = persData;
-    manifestConfig.name = name;
-    manifestConfig.manifest = manifestPath;
-    manifestConfig.manifestUrl = manifestUrl;
-    manifestConfig.source = source;
-    manifestConfig.selectedVariantName = 'all';
-    manifestConfig.variantNames = ['all'];
-    manifestConfig.executionOrder = '1-0';
-    return manifestConfig;
+  const isMph = source?.[0] === 'mph';
+  if (!persData || (isMph && !persData.length)) return null;
+  if (isMph) {
+    return createDefaultExperiment({ manifestPath, isMph, persData });
   }
   const infoTab = manifestInfo || data?.info?.data;
   const infoObj = infoTab?.reduce((acc, item) => {
@@ -1154,7 +1146,7 @@ export function cleanAndSortManifestList(manifests, config = getConfig()) {
     try {
       if (!manifest?.manifest) return;
       if (!manifest.manifestPath) manifest.manifestPath = normalizePath(manifest.manifest);
-      if (manifest?.source?.[0] === 'mepPl') {
+      if (manifest?.source?.[0] === 'mph') {
         parsePlaceholders(manifest.placeholderData, getConfig());
         manifestObj[manifest.manifestPath] = manifest;
         return;
@@ -1283,7 +1275,10 @@ function parseManifestUrlAndAddSource(manifestString, source) {
   return manifestString.toLowerCase()
     .split(/,|(\s+)|(\\n)/g)
     .filter((path) => path?.trim())
-    .map((manifestPath) => ({ manifestPath, source: [source] }));
+    .map((manifestPath) => ({
+      manifestPath: source === 'mph' ? localizeLink(manifestPath) : manifestPath,
+      source: [source],
+    }));
 }
 
 export const combineMepSources = async (
@@ -1303,11 +1298,11 @@ export const combineMepSources = async (
     persManifests = persManifests.concat(rocPersManifest);
   }
 
-export const combineMepSources = async (persEnabled, promoEnabled, mepParam, mepPl) => {
+export const combineMepSources = async (persEnabled, promoEnabled, mepParam, mph) => {
   let persManifests = [];
 
   if (persEnabled) persManifests = createPersManifests(persEnabled, 'pzn');
-  if (mepPl) persManifests = persManifests.concat(createPersManifests(mepPl, 'mepPl'));
+  if (mph) persManifests = persManifests.concat(createPersManifests(mph, 'mph'));
   if (promoEnabled) {
     const { default: getPromoManifests } = await import('./promo-utils.js');
     persManifests = persManifests.concat(getPromoManifests(promoEnabled, PAGE_URL.searchParams));
@@ -1470,7 +1465,7 @@ const awaitMartech = () => new Promise((resolve) => {
 export async function init(enablements = {}) {
   let manifests = [];
   const {
-    mepParam, mepHighlight, mepButton, pzn, pznroc, mepPl, promo, enablePersV2,
+    mepParam, mepHighlight, mepButton, pzn, pznroc, mph, promo, enablePersV2,
     target, ajo, countryIPPromise, mepgeolocation, targetInteractionPromise, calculatedTimeout,
     postLCP,
   } = enablements;
@@ -1494,7 +1489,7 @@ export async function init(enablements = {}) {
       targetInteractionPromise,
     };
 
-    manifests = manifests.concat(await combineMepSources(pzn, pznroc, promo, mepParam, mepPl));
+    manifests = manifests.concat(await combineMepSources(pzn, pznroc, promo, mepParam, mph));
     manifests?.forEach((manifest) => {
       if (manifest.disabled) return;
       const normalizedURL = normalizePath(manifest.manifestPath);
