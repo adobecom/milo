@@ -1,11 +1,11 @@
 import { expect } from '@esm-bundle/chai';
 
-import { Term, Commitment } from '@pandora/data-models-odm';
 import {
     formatAnnualPrice,
     formatOpticalPrice,
     isPromotionActive,
 } from '../../src/price/utilities.js';
+import { Commitment, Term } from '../../src/constants.js';
 
 const OPTICAL_TEST_CASES = [
     [
