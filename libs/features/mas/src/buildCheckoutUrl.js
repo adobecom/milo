@@ -1,4 +1,4 @@
-import { Landscape, WORKFLOW_STEP, PROVIDER_ENVIRONMENT, MODAL_TYPE_3_IN_1 } from './constants.js';
+import { Landscape, CheckoutWorkflowStep, PROVIDER_ENVIRONMENT, MODAL_TYPE_3_IN_1 } from './constants.js';
 
 const AF_DRAFT_LANDSCAPE = 'p_draft_landscape';
 const UCV3_PREFIX = '/store/';
@@ -161,10 +161,10 @@ export function buildCheckoutUrl(checkoutData) {
   };
   let url = new URL(getHostName(env));
   url.pathname = `${UCV3_PREFIX}${workflowStep}`;
-  if (workflowStep !== WORKFLOW_STEP.SEGMENTATION && workflowStep !== WORKFLOW_STEP.CHANGE_PLAN_TEAM_PLANS) {
+  if (workflowStep !== CheckoutWorkflowStep.SEGMENTATION && workflowStep !== CheckoutWorkflowStep.CHANGE_PLAN_TEAM_PLANS) {
     setItemsParameter(items, url.searchParams);
   }
-  if (workflowStep === WORKFLOW_STEP.SEGMENTATION) {
+  if (workflowStep === CheckoutWorkflowStep.SEGMENTATION) {
     addParameters(segmentationParameters, url.searchParams, ALLOWED_KEYS);
   }
   addParameters(rest, url.searchParams, ALLOWED_KEYS);
@@ -182,7 +182,7 @@ export function buildCheckoutUrl(checkoutData) {
  * checkout URL returned.
  * Iterates over the list of required fields (REQUIRED_KEYS) and checks that each of them is present in 'checkoutData'.
  * If any of required fields is missing - throws and Error with a specified message.
- * For WORKFLOW_STEP.SEGMENTATION and for WORKFLOW_STEP.CHANGE_PLAN_TEAM_PLANS 'items' property is not required, for rest of WorkflowStep it is.
+ * For CheckoutWorkflowStep.SEGMENTATION and for CheckoutWorkflowStep.CHANGE_PLAN_TEAM_PLANS 'items' property is not required, for rest of WorkflowStep it is.
  * @param checkoutData object holding the data required to build the checkout URL
  */
 function validateCheckoutData(checkoutData) {
@@ -192,8 +192,8 @@ function validateCheckoutData(checkoutData) {
     }
   }
   if (
-    checkoutData.workflowStep !== WORKFLOW_STEP.SEGMENTATION &&
-    checkoutData.workflowStep !== WORKFLOW_STEP.CHANGE_PLAN_TEAM_PLANS &&
+    checkoutData.workflowStep !== CheckoutWorkflowStep.SEGMENTATION &&
+    checkoutData.workflowStep !== CheckoutWorkflowStep.CHANGE_PLAN_TEAM_PLANS &&
     !checkoutData.items
   ) {
     throw new Error('Argument "checkoutData" is not valid, missing: items');

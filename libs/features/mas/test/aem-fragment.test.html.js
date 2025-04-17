@@ -6,11 +6,8 @@ import { mockFetch } from './mocks/fetch.js';
 import { withWcs } from './mocks/wcs.js';
 import { withAem } from './mocks/aem.js';
 import { delay, getTemplateContent } from './utils.js';
-import mas from './mas.js';
-import '../src/merch-card.js';
-import '../src/aem-fragment.js';
+import '../src/mas.js';
 import { EVENT_MAS_ERROR } from '../src/constants.js';
-import { getFragmentById } from '../src/aem-fragment.js';
 import { MasError } from '../src/mas-error.js';
 
 chai.use(chaiAsPromised);
@@ -42,17 +39,12 @@ function getSelectorElement(root, selector) {
 }
 
 runTests(async () => {
-    await mas();
-    const [cc, photoshop] = await Promise.all([
-        fetch('mocks/sites/fragments/fragment-cc-all-apps.json').then(
-            (res) => res.json(),
-        ),
-        fetch('mocks/sites/fragments/fragment-photoshop.json').then((res) =>
+    const [cc] = await Promise.all([
+        fetch('mocks/sites/fragments/fragment-cc-all-apps.json').then((res) =>
             res.json(),
         ),
     ]);
 
-    await customElements.whenDefined('aem-fragment');
     const { cache } = document.createElement('aem-fragment');
 
     describe('aem-fragment web component', () => {
@@ -73,12 +65,12 @@ runTests(async () => {
         });
 
         it('caches localized fragment by requested(en_US) id', async () => {
-          expect(cache).to.exist;
-          expect(cache.has('id123en_US')).to.false;
-          cache.addByRequestedId('id123en_US', { id: 'id567', test: 1 });
-          expect(cache.has('id123en_US')).to.true;
-          cache.clear();
-          expect(cache.has('id123en_US')).to.false;
+            expect(cache).to.exist;
+            expect(cache.has('id123en_US')).to.false;
+            cache.addByRequestedId('id123en_US', { id: 'id567', test: 1 });
+            expect(cache.has('id123en_US')).to.true;
+            cache.clear();
+            expect(cache.has('id123en_US')).to.false;
         });
 
         it('renders a merch card from cache', async () => {
@@ -88,20 +80,14 @@ runTests(async () => {
             const [ccCard] = getTemplateContent('cards');
             spTheme.append(ccCard);
 
-            const ccdDataSource = ccCard.querySelector('aem-fragment');
-            await ccdDataSource.updateComplete;
-            await delay(100);
+            const ccAemFragment = ccCard.querySelector('aem-fragment');
+            await ccAemFragment.updateComplete;
 
             // Check that the aem-fragment has no error class
-            expect(ccdDataSource.classList.contains('error')).to.be.false;
+            expect(ccAemFragment.classList.contains('error')).to.be.false;
 
             await ccCard.updateComplete;
-            const slotElements = [
-                ...ccCard.querySelectorAll('[slot]'),
-                ...(ccCard.shadowRoot
-                    ? ccCard.shadowRoot.querySelectorAll('[slot]')
-                    : []),
-            ];
+            const slotElements = ccCard.querySelectorAll('[slot]');
 
             expect(slotElements).to.have.length(4);
         });
@@ -158,18 +144,18 @@ runTests(async () => {
 
             let masErrorTriggered = false;
             cardWithMissingPath.addEventListener('mas:error', (e) => {
-              if (e.target.tagName === 'MERCH-CARD') {
-                masErrorTriggered = true;
-              }
+                if (e.target.tagName === 'MERCH-CARD') {
+                    masErrorTriggered = true;
+                }
             });
 
             const aemFragment =
                 cardWithMissingPath.querySelector('aem-fragment');
             let aemErrorTriggered = false;
             aemFragment.addEventListener('aem:error', (e) => {
-              if (e.target.tagName === 'AEM-FRAGMENT') {
-                aemErrorTriggered = true;
-              }
+                if (e.target.tagName === 'AEM-FRAGMENT') {
+                    aemErrorTriggered = true;
+                }
             });
 
             spTheme.append(cardWithMissingPath);
@@ -220,20 +206,22 @@ runTests(async () => {
     });
 
     describe('getFragmentById', async () => {
-        const masCommerceService = {
-          settings: {
-            env: 'stage',
-            locale: 'fr_FR',
-            wcsApiKey: 'testApiKey',
-          }
-        }
+        let aemFragment;
         beforeEach(async () => {
             await mockFetch(withAem);
             cache.clear();
+            aemFragment = document.createElement('aem-fragment');
+            aemFragment.setAttribute('fragment', 'fragment-cc-all-apps');
+            document.body.appendChild(aemFragment);
+            await aemFragment.updateComplete;
+        });
+
+        afterEach(() => {
+            document.body.removeChild(aemFragment);
         });
 
         it('throws an error if response is not ok', async () => {
-            const promise = getFragmentById('notfound');
+            const promise = aemFragment.getFragmentById('notfound');
             try {
                 await promise;
                 expect.fail('Promise should have been rejected');
@@ -249,8 +237,9 @@ runTests(async () => {
         });
 
         it('fetches fragment from freyja on publish', async () => {
-            const endpoint = 'https://www.stage.adobe.com/mas/io/fragment?id=fragment-cc-all-apps&api_key=testApiKey&locale=fr_FR'
-            const promise = getFragmentById(endpoint);
+            const endpoint =
+                'https://www.stage.adobe.com/mas/io/fragment?id=fragment-cc-all-apps&api_key=testApiKey&locale=fr_FR';
+            const promise = aemFragment.getFragmentById(endpoint);
             await promise;
             expect(fetch.lastCall.firstArg).to.equal(
                 'https://www.stage.adobe.com/mas/io/fragment?id=fragment-cc-all-apps&api_key=testApiKey&locale=fr_FR',
