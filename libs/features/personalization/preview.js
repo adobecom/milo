@@ -181,6 +181,7 @@ function getManifestListDomAndParameter(mepConfig) {
     const variantNamesArray = typeof variantNames === 'string' ? variantNames.split('||') : variantNames;
     let options = '';
     let isSelected = '';
+    const isMph = Array.isArray(source) ? source[0] === 'mph' : source === 'mph';
     if (!variantNames.includes(selectedVariantName)) {
       isSelected = 'selected';
       manifestParameter.push(`${editUrl}--default`);
@@ -205,17 +206,20 @@ function getManifestListDomAndParameter(mepConfig) {
           ${targetActivityName ? `<div class="target-activity-name">${targetActivityName || ''}</div>` : ''}
           <div class="mep-columns">
             <div class="mep-column">
-              <div>Selected</div>
+              ${!isMph ? '<div>Selected</div>' : ''}
               <div>Source</div>
-              ${manifest.lastSeen ? '<div>Last seen</div>' : ''}
-              ${eventStart && eventEnd ? '<div>Scheduled</div>' : ''}
+              ${(manifest.lastSeen && !isMph) ? '<div>Last seen</div>' : ''}
+              ${(eventStart && eventEnd && !isMph) ? '<div>Scheduled</div>' : ''}
             
             </div>
             <div class="mep-column">
-              ${!variantNames.includes(selectedVariantName) ? '<div>Default (control)</div>' : `<div class='mep-selected-variant'>${selectedVariantName}</div>`}
-              <div>${source}</div>
-              ${manifest.lastSeen ? `<div>${formatDate(new Date(manifest.lastSeen))}</div>` : ''}
-              ${eventStart && eventEnd ? `<div>${disabled ? 'inactive' : 'active'}</div>` : ''}
+              ${!isMph ? (() => {
+    if (!variantNames.includes(selectedVariantName)) return '<div>Default (control)</div>';
+    return `<div class='mep-selected-variant'>${selectedVariantName}</div>`;
+  })() : ''}
+              <div>${isMph ? 'MEP Localized Placeholders' : source}</div>
+              ${(manifest.lastSeen && !isMph) ? `<div>${formatDate(new Date(manifest.lastSeen))}</div>` : ''}
+              ${(eventStart && eventEnd && !isMph) ? `<div>${disabled ? 'inactive' : 'active'}</div>` : ''}
             </div>
           </div>
           ${eventStart && eventEnd ? `<div class="mep-columns">
@@ -229,10 +233,10 @@ function getManifestListDomAndParameter(mepConfig) {
             </div>
           </div>
         </div>` : ''}
-        <div class="mep-experience-dropdown">
+        ${!isMph ? `<div class="mep-experience-dropdown">
           <label for="experiences">Experience</label>
           <select name="experiences" class="mep-manifest-variants">${options}</select>
-        </div>
+        </div>` : ''}
       </div>
     </div>`;
   });
