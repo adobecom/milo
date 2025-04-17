@@ -231,9 +231,9 @@ export function getLanguage(languages, locales, pathname = window.location.pathn
     const englishLang = languages.en;
     if (locale.prefix === '' && englishLang) {
       locale.language = DEFAULT_LANG;
-      locale.region = englishLang.region;
-      locale.ietf = englishLang.ietf;
-      locale.tk = englishLang.tk;
+      if (englishLang.region) locale.region = englishLang.region;
+      if (englishLang.ietf) locale.ietf = englishLang.ietf;
+      if (englishLang.tk) locale.tk = englishLang.tk;
     }
     return locale;
   }
