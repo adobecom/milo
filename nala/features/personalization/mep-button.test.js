@@ -62,10 +62,10 @@ test(`${features[4].name},${features[4].tags}`, async ({ page, baseURL }) => {
   console.info(`[Test Page]: ${URL}`);
   await page.goto(URL);
   await mepButtonLoc.mepButton.click();
-  await expect(mepButtonLoc.manifestList).toContainText('promo');
-  await expect(mepButtonLoc.manifestList).toContainText('inactive');
-  await expect(mepButtonLoc.manifestList).toContainText('Mar 21, 2035 11:00 PM');
-  await expect(mepButtonLoc.manifestList).toContainText('Mar 30, 2036 11:00 PM');
+  await expect(mepButtonLoc.firstManifestType).toContainText('promo');
+  await expect(mepButtonLoc.firstManifestType).toContainText('inactive');
+  await expect(mepButtonLoc.firstManifestDates).toContainText('Mar 21, 2035 11:00 PM');
+  await expect(mepButtonLoc.firstManifestDates).toContainText('Mar 30, 2036 11:00 PM');
 });
 
 // Test 5: test the ability to add a manifest via the MEP button
