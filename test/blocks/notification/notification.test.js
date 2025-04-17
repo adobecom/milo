@@ -105,6 +105,12 @@ describe('notification', async () => {
     it('has focus closes the notification', () => {
       expect(splits[1].closest('.section').querySelector('.notification-curtain')).to.exist;
     });
+    it('closes the notification and focus', () => {
+      setTimeout(() => {
+        splits[3].closest('.section').style.display = 'flex';
+        expect(splits[3].closest('.section').querySelector('.notification-curtain')).to.exist;
+      }, 2000);
+    });
     it('closes the notification', () => {
       splits[0].querySelector('a[href*="#_evt-close"]').dispatchEvent(new MouseEvent('click'));
       expect(splits[0].closest('.section').classList.contains('close-sticky-section')).to.be.true;
