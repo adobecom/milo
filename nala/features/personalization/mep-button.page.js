@@ -10,5 +10,7 @@ export default class MepButton {
     this.advancedOptions = page.locator('.mep-toggle-advanced');
     this.newManifestInput = page.locator('.new-manifest');
     this.previewButton = page.locator('a[data-id="preview-button"]');
+    this.manifestInput = page.locator('input[name="new-manifest"]');
+    this.targetStatus = page.locator('.mep-columns div + div div');
   }
 }

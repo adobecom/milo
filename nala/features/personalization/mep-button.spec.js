@@ -1,5 +1,5 @@
 module.exports = {
-  name: 'test the mep-button functionality',
+  name: 'test the MEP button functionality',
   features: [
     {
       tcid: '0',
@@ -32,16 +32,28 @@ module.exports = {
     {
       tcid: '4',
       name: '@4 - promos should appear properly on button',
-      desc: 'Promos should have a start and end date and should be labeled appropriately',
+      desc: 'Promos should have a start and end date and should be labeled as a promo',
       path: '/drafts/nala/features/promotions/promo-future',
       tags: '@mep @mepbutton4 @smoke @regression @milo',
     },
     {
+      tcid: '5',
+      name: '@5 - test the ability to add a manifest via the mep button',
+      desc: 'a manifest added via the MEP button should take effect on the page',
+      path: '/drafts/nala/features/personalization/mep-button/adding-new-manifest?mep',
+      data: { pathToManifest: '/drafts/nala/features/personalization/mep-button/added-manifest.json' },
+      tags: '@mep @mepbutton5 @smoke @regression @milo',
+    },
+    {
       tcid: '6',
-      name: '@6 - test the order of experiences',
-      desc: 'test the order of promos vs regular experiences',
-      path: '/drafts/nala/features/promotions/promo-insert?mep=%2Fdrafts%2Fnala%2Ffeatures%2Fpromotions%2Fmanifests%2Fpromo-insert.json--default---%2Fdrafts%2Fnala%2Ffeatures%2Fpersonalization%2Fmep-button%2Fexecution-order1.json',
-      data: { pathToManifest: '' },
+      name: '@6 read the Target status in the MEP button',
+      desc: 'The Target status of postlcp, on, and off should be accurate in the MEP button',
+      path: '',
+      data: {
+        pathPostLCP: '/drafts/nala/features/personalization/mep-button/target-postlcp',
+        pathOff: '/drafts/nala/features/personalization/mep-button/number-of-manifests',
+        pathOn: '/drafts/nala/features/personalization/mep-button/target-on',
+      },
       tags: '@mep @mepbutton6 @smoke @regression @milo',
     },
   ],

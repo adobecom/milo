@@ -12,7 +12,7 @@ test.beforeEach(async ({ page }) => {
   mepButtonLoc = new MepButtonPage(page);
 });
 
-// Test 0: the href of the pencil icon in the MEP Button should have a link which ends in .json (linking to a mep manifest)"
+// Test 0: the manifest link should end in .json
 test(`${features[0].name},${features[0].tags}`, async ({ page, baseURL }) => {
   const URL = `${baseURL}${features[0].path}${miloLibs}`;
   console.info(`[Test Page]: ${URL}`);
@@ -47,7 +47,7 @@ test(`${features[2].name},${features[2].tags}`, async ({ page, baseURL }) => {
   await expect(highlightCSSContentMarquee).toContain('content updated by: mep-button.json');
 });
 
-// Test 3: there should be 3 manifests on this page
+// Test 3: there should be 3 manifests listed in the manifest button
 test(`${features[3].name},${features[3].tags}`, async ({ page, baseURL }) => {
   const URL = `${baseURL}${features[3].path}${miloLibs}`;
   console.info(`[Test Page]: ${URL}`);
@@ -68,7 +68,7 @@ test(`${features[4].name},${features[4].tags}`, async ({ page, baseURL }) => {
   await expect(mepButtonLoc.manifestList).toContainText('Mar 30, 2036 11:00 PM');
 });
 
-// Test 5: test the ability to add a manifest via the mep button
+// Test 5: test the ability to add a manifest via the MEP button
 test(`${features[5].name},${features[5].tags}`, async ({ page, baseURL }) => {
   const marqueePageLoc = new MarqueePage(page);
   const URL = `${baseURL}${features[5].path}${miloLibs}`;
@@ -76,22 +76,29 @@ test(`${features[5].name},${features[5].tags}`, async ({ page, baseURL }) => {
   await page.goto(URL);
   await expect(marqueePageLoc.marquee).toHaveCount(0);
   await mepButtonLoc.mepButton.click();
-  await mepButtonLoc.advancedOptions.click();
-  await mepButtonLoc.newManifestInput.fill(features[5].data.pathToManifest);
-  await mepButtonLoc.previewButton.click();
-  await expect(marqueePageLoc.marquee).toHaveCount(1);
-});
-// Test 6: test the order of experiences 
-test(`${features[6].name},${features[6].tags}`, async ({ page, baseURL }) => {
-  const marqueePageLoc = new MarqueePage(page);
-  const URL = `${baseURL}${features[5].path}${miloLibs}`;
-  console.info(`[Test Page]: ${URL}`);
-  await page.goto(URL);
-  await expect(marqueePageLoc.marquee).toHaveCount(0);
-  await mepButtonLoc.mepButton.click();
-  await mepButtonLoc.advancedOptions.click();
-  await mepButtonLoc.newManifestInput.fill(features[6].data.pathToManifest);
+  await mepButtonLoc.manifestInput.fill(features[5].data.pathToManifest);
   await mepButtonLoc.previewButton.click();
   await expect(marqueePageLoc.marquee).toHaveCount(1);
 });
 
+// Test 6: test the Target status in the MEP button
+test(`${features[6].name},${features[6].tags}`, async ({ page, baseURL }) => {
+  const targetOnURL = `${baseURL}${features[6].data.pathOn}${miloLibs}`;
+  const targetOffURL = `${baseURL}${features[6].data.pathOff}${miloLibs}`;
+  const postLCPURL = `${baseURL}${features[6].data.pathPostLCP}${miloLibs}`;
+
+  console.info(`[Test Page]: ${targetOnURL}`);
+  await page.goto(targetOnURL);
+  await mepButtonLoc.mepButton.click();
+  await expect(mepButtonLoc.targetStatus.nth(0)).toHaveText('on');
+
+  console.info(`[Test Page]: ${postLCPURL}`);
+  await page.goto(postLCPURL);
+  await mepButtonLoc.mepButton.click();
+  await expect(mepButtonLoc.targetStatus.nth(0)).toHaveText('on post LCP');
+
+  console.info(`[Test Page]: ${targetOffURL}`);
+  await page.goto(targetOffURL);
+  await mepButtonLoc.mepButton.click();
+  await expect(mepButtonLoc.targetStatus.nth(0)).toHaveText('off');
+});
