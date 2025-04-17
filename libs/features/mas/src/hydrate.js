@@ -188,7 +188,7 @@ export function processStockOffersAndSecureLabel(fields, merchCard, aemFragmentM
     merchCard.setAttribute('checkbox-label', settings.stockCheckboxLabel);
     merchCard.setAttribute('stock-offer-osis', settings.stockOfferOsis);
   }
-  if (settings.secureLabel && aemFragmentMapping.secureLabel) {
+  if (fields.showSecureLabel && settings.secureLabel && aemFragmentMapping.secureLabel) {
     merchCard.setAttribute('secure-label', settings.secureLabel);
   }
 }
@@ -456,7 +456,6 @@ export async function hydrate(fragment, merchCard) {
     };
     cleanup(merchCard);
     merchCard.id ??= fragment.id;
-
 
     merchCard.removeAttribute('background-image');
     merchCard.removeAttribute('background-color');

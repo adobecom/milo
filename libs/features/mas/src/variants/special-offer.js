@@ -24,10 +24,6 @@ export class SpecialOffer extends VariantLayout {
         return '[slot="detail-m"]';
     }
 
-    get aemFragmentMapping() {
-        return SPECIAL_OFFERS_AEM_FRAGMENT_MAPPING;
-    }
-
     renderLayout() {
         return html`${this.cardImage}
             <div class="body">
