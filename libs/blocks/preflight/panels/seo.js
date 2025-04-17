@@ -110,8 +110,13 @@ async function checkDescription() {
 }
 
 async function checkBody() {
+  const nonContentEls = '#preflight, .picture-meta, aem-sidekick';
   const result = { ...bodyResult.value };
-  const { length } = document.documentElement.innerText;
+  let documentInnerText = document.documentElement.innerText;
+  document.querySelectorAll(nonContentEls).forEach((el) => {
+    documentInnerText = documentInnerText.replace(el.innerText, '');
+  });
+  const { length } = documentInnerText.trim().replaceAll('\n', '');
 
   if (length > 100) {
     result.icon = pass;
