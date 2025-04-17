@@ -199,7 +199,7 @@ describe('processCTAs', async () => {
 
         const link = footer.firstChild;
         expect(link.classList.contains('con-button')).to.be.true;
-        expect(link.classList.contains('accent')).to.be.true;
+        expect(link.classList.contains('blue')).to.be.true;
     });
 
     it('should handle multiple CTAs', async () => {
