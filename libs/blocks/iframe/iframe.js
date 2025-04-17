@@ -52,7 +52,7 @@ export default function init(el) {
 
   iframe.onload = () => {
     if (new URL(iframe.src).origin !== window.location.origin) {
-      iframe.title = ariaLabel || iframe.title;
+      if (ariaLabel) iframe.title = ariaLabel;
       return;
     }
 
