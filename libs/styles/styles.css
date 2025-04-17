@@ -838,6 +838,13 @@ a {
   text-decoration: underline;
 }
 
+a:focus img {
+  outline: auto 2px;
+  outline-color: -webkit-focus-ring-color;
+  outline-color: -moz-focus-ring-color;
+  outline-color: -ms-focus-ring-color;
+}
+
 a:hover {
   color: var(--link-hover-color);
 }
