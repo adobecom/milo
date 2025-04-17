@@ -104,7 +104,7 @@ test.describe('ACOM MAS cards feature test suite', () => {
 
     await test.step('step-2: Verify Plans Students Merch Card CSS', async () => {
       await expect(acomPage.getCard(data.id)).toBeVisible();
-      await expect(acomPage.getCard(data.id)).toHaveAttribute('segment', 'students');
+      await expect(acomPage.getCard(data.id)).toHaveAttribute('variant', 'plans-students');
       expect(await webUtil.verifyCSS(await acomPage.getCard(data.id), acomPage.studentsCssProp.card)).toBeTruthy();
     });
   });
