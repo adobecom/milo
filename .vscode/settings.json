@@ -1,8 +1,10 @@
 {
-    "editor.tabSize": 2,
-    "search.exclude": {
-        "**/coverage": true,
-        "**/deps": true,
-        "**/dist": true
-    }
+  "editor.tabSize": 2,
+  "search.exclude": {
+    "**/coverage": true,
+    "**/deps": true,
+    "**/dist": true
+  },
+  "githubPullRequests.focusedMode": false,
+  "comments.visible": false
 }

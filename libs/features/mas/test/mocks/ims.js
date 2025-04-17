@@ -1,4 +1,4 @@
-import { delay } from '../../src/external.js';
+import { delay } from '../utils.js';
 
 const { adobeIMS } = window;
 

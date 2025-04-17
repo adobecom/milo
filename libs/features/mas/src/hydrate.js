@@ -305,9 +305,6 @@ function createSpectrumCssButton(cta, aemFragmentMapping, isOutline, variant) {
 function createSpectrumSwcButton(cta, aemFragmentMapping, isOutline, variant) {
     const CheckoutButton = customElements.get('checkout-button');
     const checkoutButton = CheckoutButton.createCheckoutButton(cta.dataset);
-    if (cta.dataset.analyticsId) {
-        checkoutButton.setAttribute('data-analytics-id', cta.dataset.analyticsId);
-    }
     checkoutButton.connectedCallback();
     checkoutButton.render();
 
@@ -343,11 +340,13 @@ function createSpectrumSwcButton(cta, aemFragmentMapping, isOutline, variant) {
 }
 
 function createConsonantButton(cta, isAccent) {
-    cta.classList.add('con-button');
+    const CheckoutLink = customElements.get('checkout-link');
+    const checkoutLink = CheckoutLink.createCheckoutLink(cta.dataset, cta.innerHTML);
+    checkoutLink.classList.add('con-button');
     if (isAccent) {
-        cta.classList.add('blue');
+        checkoutLink.classList.add('blue');
     }
-    return cta;
+    return checkoutLink;
 }
 
 export function processCTAs(fields, merchCard, aemFragmentMapping, variant) {
