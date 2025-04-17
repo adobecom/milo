@@ -101,6 +101,14 @@ function addCloseAction(el, btn) {
     liveRegion.textContent = 'Banner closed';
     document.body.appendChild(liveRegion);
     liveRegion.focus();
+    let isSticky = false;
+    let rect;
+    el.closest('.section').classList.forEach((cls) => {
+      if (cls.includes('sticky')) {
+        isSticky = true;
+        rect = el.closest('.section').getBoundingClientRect();
+      }
+    });
     el.style.display = 'none';
     el.closest('.section')?.classList.add('close-sticky-section');
     if (el.classList.contains('focus')) {
@@ -125,6 +133,12 @@ function addCloseAction(el, btn) {
           ? focusableElements[focusableElements.length - 1]
           : null;
       };
+
+      if (isSticky) {
+        const elementAtPosition = document.elementFromPoint(rect.left, rect.top);
+        const stickySection = !elementAtPosition.classList.contains('section') ? elementAtPosition.closest('.section') : elementAtPosition;
+        focusTarget = findFocusableInSection(stickySection);
+      }
 
       let currentSection = el.closest('.section').previousElementSibling;
       while (currentSection && !focusTarget) {
