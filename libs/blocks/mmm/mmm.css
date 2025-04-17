@@ -335,6 +335,10 @@ dd .mep-popup-header .mep-close {
   text-decoration: none;
   color: #4285f4;
 }
+
+.mmm-report-row span a.small {
+  font-size: .75rem;
+}
 .mmm-report-row span {
   border: 1px solid #ddd;
   flex: 1 1 0;
