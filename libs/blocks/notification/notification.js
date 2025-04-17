@@ -166,7 +166,7 @@ function decorateSplitList(el, listContent) {
   listContent.replaceWith(listContainer);
 
   if (el.classList.contains('focus')) {
-    const curtain = createTag('div', { class: 'notification-curtain is-open'});
+    const curtain = createTag('div', { class: 'notification-curtain'});
     document.body.classList.add('mobile-disable-scroll');
     el.insertAdjacentElement('afterend', curtain);
   }
