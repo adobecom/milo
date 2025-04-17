@@ -934,7 +934,7 @@ describe('Utils', () => {
 
     it('should process personalization manifest and save in config', async () => {
       window.fetch = sinon.stub().returns(htmlResponse());
-      document.head.innerHTML = await readFile({ path: './mocks/head-personalization.html' });
+      document.head.innerHTML = await readFile({ path: './mocks/head-personalization-no-geo.html' });
       await utils.loadArea();
       const resultConfig = utils.getConfig();
       const resultExperiment = resultConfig.mep.experiments[0];
