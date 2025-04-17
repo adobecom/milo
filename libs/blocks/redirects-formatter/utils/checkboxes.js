@@ -3,23 +3,23 @@ import { createTag } from '../../../utils/utils.js';
 const selectedClassName = 'selected';
 
 export function createGroupings(sheetData) {
-  return sheetData.reduce((acc, row) => {
-    Object.entries(row).forEach(([key, value]) => {
-      if (!acc[key]) {
-        acc[key] = [];
+  return sheetData.reduce((rdx, row) => {
+    Object.entries(row).forEach(([groupName, locale]) => {
+      if (!rdx[groupName]) {
+        rdx[groupName] = [];
       }
-      if (value && !acc[key].includes(value)) {
-        acc[key].push(value);
+      if (locale && !rdx[groupName].includes(locale)) {
+        rdx[groupName].push(locale);
       }
     });
-    return acc;
+    return rdx;
   }, {});
 }
 
-export function createAllRegionGroup(data) {
+export function createAllRegionGroup(sheetData) {
   return [...new Set(
-    data.flatMap((row) => Object.values(row))
-      .filter((value) => value),
+    sheetData.flatMap((row) => Object.values(row))
+      .filter((locale) => locale),
   )];
 }
 

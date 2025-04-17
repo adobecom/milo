@@ -7,7 +7,6 @@ export function getLocalesFromUi(nodeList) {
   }, []);
 }
 
-// create a function to replace any space, tab, or newline with a space
 function createPairsFromTextaArea(textaAreaValue) {
   const whitespace = /\s+/;
   const urlValues = textaAreaValue.split(whitespace);

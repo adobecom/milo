@@ -3,6 +3,8 @@ import { createRedirectsList, getLocalesFromUi, processRedirects } from './utils
 import { createRedirectsArea } from './utils/redirect-inputs.js';
 
 export const NO_LOCALE_ERROR = 'No locales selected from list';
+const EMPTY_INPUT_ERROR = 'Please input a URl to process';
+const CORRECT_URL_ERROR = 'Please use full urls in the inputs: https://www.adobe.com/x/y/z';
 const OUTPUT_LABEL_TEXT = 'Localized results appear here:';
 const COPY_TO_CLIPBOARD = 'Copy to clipboard';
 
@@ -23,8 +25,8 @@ export function stringifyListForExcel(urls) {
 export default async function init(el) {
   const { createTag } = await import('../../utils/utils.js');
 
-  const xlPath = './locale-config.json';
-  const resp = await fetch(xlPath);
+  const localeConfigPath = './locale-config.json';
+  const resp = await fetch(localeConfigPath);
   if (!resp.ok) return;
   const { data } = await resp.json();
 
@@ -41,7 +43,7 @@ export default async function init(el) {
 
   // Text output Area
   const textAreaOutput = createTag('textarea', { class: 'redirects-text-area', id: 'redirects-output', name: 'redirects-output', readonly: true });
-  const taoLabel = createTag('label', { class: 'io-label', for: 'redirects-output' }, OUTPUT_LABEL_TEXT);
+  const taoLabel = createTag('label', { for: 'redirects-output' }, OUTPUT_LABEL_TEXT);
   const copyButton = createTag('button', { class: 'copy' }, COPY_TO_CLIPBOARD);
   const outputUiWrapper = createTag('div', {}, [taoLabel, copyButton]);
   const outputAreaContainer = createTag('section', { class: 'output-container' }, [outputUiWrapper, textAreaOutput]);
@@ -63,13 +65,12 @@ export default async function init(el) {
     }
 
     if (redirectsList[0]?.source === '') {
-      handleError('Input is empty', activeInput);
+      handleError(EMPTY_INPUT_ERROR, activeInput);
       return;
     }
 
     const processedList = processRedirects(redirectsList, locales, () => {
-      const message = 'Please use full urls in the inputs: https://www.adobe.com/x/y/z';
-      handleError(message, activeInput);
+      handleError(CORRECT_URL_ERROR, activeInput);
     });
     const outputString = stringifyListForExcel(processedList);
 
