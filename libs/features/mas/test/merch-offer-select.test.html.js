@@ -4,13 +4,9 @@ import { expect } from '@esm-bundle/chai';
 import { mockLana } from './mocks/lana.js';
 import { mockFetch } from './mocks/fetch.js';
 
-import '../src/merch-offer.js';
-import '../src/merch-offer-select.js';
-import '../src/merch-quantity-select.js';
-
 import { delay } from './utils.js';
 import { withWcs } from './mocks/wcs.js';
-import mas from './mas.js';
+import '../src/mas.js';
 
 function getDynamicElements(merchCard, merchOfferSelect) {
     const price = merchOfferSelect.price;
@@ -37,7 +33,6 @@ const renderCard = async (id) => {
     const options = merchQuantitySelect?.shadowRoot.querySelectorAll('.item');
     const pickerButton =
         merchQuantitySelect?.shadowRoot.querySelector('.picker-button');
-    await delay(100);
     return {
         merchCard,
         merchOfferSelect,
@@ -50,7 +45,8 @@ const renderCard = async (id) => {
 runTests(async () => {
     mockLana();
     await mockFetch(withWcs);
-    await mas();
+    await import('../src/mas.js');
+
 
     describe('merch-offer-select web component', async () => {
         it('should exist, autoselect first offer and render price and cta', async () => {
@@ -166,6 +162,7 @@ runTests(async () => {
             const { merchCard, merchOfferSelect, pickerButton, options } =
                 await renderCard('card2');
             pickerButton.click();
+            await delay(100);
             options[2].click();
             await delay(100);
             const { price, cta } = getDynamicElements(
@@ -184,6 +181,7 @@ runTests(async () => {
             const { merchCard, merchOfferSelect, pickerButton, options } =
                 await renderCard('card2');
             pickerButton.click();
+            await delay(100);
             options[1].click();
             await delay(100);
             const { price, cta } = getDynamicElements(
