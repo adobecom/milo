@@ -21,7 +21,7 @@ export default function checkKeyboardNavigation(elements = [], config = {}) {
   ];
   const focusableElements = elements.filter((el) => el.matches(focusableSelectors.join(',')));
   // No focusable elements found - report critical violation
-  if (focusableElements.length === 0) {
+  if (!focusableElements.length) {
     violations.push({
       description: 'Ensures focusable elements have a visible focus indicator.',
       impact: 'critical',
@@ -36,9 +36,8 @@ export default function checkKeyboardNavigation(elements = [], config = {}) {
   focusableElements.forEach((el) => {
     const styles = window.getComputedStyle(el);
     const hasVisibleOutline = styles.outlineStyle !== 'none' && parseFloat(styles.outlineWidth) > 0;
-    const hasBoxShadow = styles.boxShadow !== 'none' && styles.boxShadow !== '';
-    const hasFocusIndicator = hasVisibleOutline || hasBoxShadow;
-    if (hasFocusIndicator) return;
+    const hasBoxShadow = styles.boxShadow !== 'none' && styles.boxShadow;
+    if (hasVisibleOutline || hasBoxShadow) return;
     violations.push({
       description: 'Element does not have a visible focus indicator.',
       impact: 'moderate',

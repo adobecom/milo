@@ -11,7 +11,7 @@ export default function checkImageAltText(elements = [], config = {}) {
   // Skip this check if 'altText' isn't enabled in the config
   if (!checks.includes('altText')) return [];
   const violations = [];
-  const images = elements.filter((el) => el.tagName?.toLowerCase() === 'img');
+  const images = elements.filter((el) => el.tagName === 'IMG');
   images.forEach((img) => {
     const alt = img.getAttribute('alt');
     const role = (img.getAttribute('role') || '').toLowerCase();
