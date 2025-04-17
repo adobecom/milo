@@ -668,6 +668,7 @@ body.preflight-assets-analysis {
 picture:has(.picture-meta) {
   position: relative;
   display: block;
+  height: 100%;
 }
 
 .picture-meta {
@@ -688,6 +689,41 @@ picture:has(.picture-meta) {
   opacity: 0.7;
 }
 
+.text.center .picture-meta {
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.brick .background .picture-meta,
+.brick .background .picture-meta > div {
+  height: unset;
+  padding: unset;
+  margin: unset;
+}
+
+.brick .foreground div > :is(.video-container, picture, [class^="picture-meta"]) {
+  margin: 0;
+}
+
+.brick.split.row .foreground .brick-media picture:has(.picture-meta) img {
+  width: 100%;
+}
+
+.brick:has(.background) .foreground .icon-area .picture-meta {
+  top: unset;
+  bottom: -5px;
+}
+
+.brick .icon-stack-area .picture-meta {
+  flex-direction: row;
+  width: max-content;
+  column-gap: 5px;
+}
+
+.hero-marquee.media-cover picture:has(.picture-meta) {
+  display: block;
+}
+
 .picture-meta.no-picture-tag {
   position: relative;
   top: unset;
@@ -701,7 +737,8 @@ img:hover ~ .picture-meta {
   z-index: 19;
 }
 
-.picture-meta > div {
+.picture-meta > div,
+.brick .background .picture-meta > div {
   padding: 5px;
   border-radius: 6px;
 }
