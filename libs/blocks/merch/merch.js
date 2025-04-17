@@ -499,19 +499,20 @@ export async function openModal(e, url, offerType, hash, extraOptions, el) {
       window.history.pushState({}, document.title, prevHash !== '' ? `#${prevHash}` : `${window.location.pathname}${window.location.search}`);
     }, { once: true });
   }
-  if (isInternalModal(url)) {
-    const fragmentPath = url.split(/(hlx|aem).(page|live)/).pop();
-    modal = await openFragmentModal(fragmentPath, getModal);
-  } else if (el?.opens3in1Modal) {
+
+  if (el?.isOpen3in1Modal) {
     const { default: openThreeInOneModal, handle3in1IFrameEvents } = await import('./three-in-one.js');
     window.addEventListener('message', handle3in1IFrameEvents);
     modal = await openThreeInOneModal(el);
+    return;
+  }
+  if (isInternalModal(url)) {
+    const fragmentPath = url.split(/(hlx|aem).(page|live)/).pop();
+    modal = await openFragmentModal(fragmentPath, getModal);
   } else {
     modal = await openExternalModal(url, getModal, extraOptions, el);
   }
-  if (modal) {
-    modal.classList.add(offerTypeClass);
-  }
+  modal.classList.add(offerTypeClass);
 }
 
 export function setCtaHash(el, checkoutLinkConfig, offerType) {
@@ -532,12 +533,12 @@ const isProdModal = (url) => {
 };
 
 export async function getModalAction(offers, options, el) {
+  if (!options.modal) return undefined;
   const [{
     offerType,
     productArrangementCode,
     productArrangement: { productCode, productFamily: offerFamily } = {},
   }] = offers ?? [{}];
-  if (options.modal !== true) return undefined;
   const checkoutLinkConfig = await getCheckoutLinkConfig(
     offerFamily,
     productCode,
@@ -547,7 +548,7 @@ export async function getModalAction(offers, options, el) {
   const columnName = (offerType === OFFER_TYPE_TRIAL) ? FREE_TRIAL_PATH : BUY_NOW_PATH;
   const hash = setCtaHash(el, checkoutLinkConfig, offerType);
   let url = checkoutLinkConfig[columnName];
-  if (!url) return undefined;
+  if (!url && !el?.isOpen3in1Modal) return undefined;
   url = isInternalModal(url) || isProdModal(url)
     ? localizeLink(checkoutLinkConfig[columnName]) : checkoutLinkConfig[columnName];
   return {

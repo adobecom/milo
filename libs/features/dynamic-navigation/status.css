@@ -3,12 +3,19 @@
   border-radius: 32px;
   color: #eee;
   font-size: 16px;
-  padding: 12px 24px;
+  padding: 2px 24px;
   cursor: pointer;
   display: flex;
   align-items: center;
   margin: 12px;
-  position: relative;
+  position: fixed;
+  max-width: 115px;
+  height: 32px;
+  z-index: 5;
+  top: 40px;
+  right: 32px;
+  bottom: auto;
+  left: auto;
 }
 
 .dynamic-nav-status .title { 
@@ -25,6 +32,10 @@
 
 .dynamic-nav-status.inactive {
   background-color: #e20;  
+}
+
+.dynamic-nav-status.reset {
+  background-color: #707070;  
 }
 
 .dns-badge {
@@ -112,7 +123,7 @@
 .dynamic-nav-status .details {
   position: absolute;
   top: 60px;
-  right: 0;
+  right: -14px;
   background-color: #444;
   min-width: 300px;
   border-radius: 16px;
