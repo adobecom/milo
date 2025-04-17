@@ -79,8 +79,9 @@ export function CheckoutMixin(Base) {
             return this.masElement.options;
         }
 
-        get opens3in1Modal() {
-          return Object.values(MODAL_TYPE_3_IN_1).includes(this.getAttribute('data-modal-type')) && !!this.href;
+        get isOpen3in1Modal() {
+          const masFF3in1 = document.querySelector('meta[name=mas-ff-3in1]');
+          return Object.values(MODAL_TYPE_3_IN_1).includes(this.getAttribute('data-modal')) && (!masFF3in1 || masFF3in1.content !== 'off');
         }
 
         requestUpdate(force = false) {
@@ -148,24 +149,6 @@ export function CheckoutMixin(Base) {
         }
 
         /**
-         * Sets `data-modal-type` attribute and returns the modal type.
-         * @param {HTMLElement} el
-         * @param {string} url
-         */
-        setModalType(el, url) {
-          try {
-            const newUrl = new URL(url);
-            const modalParam = newUrl.searchParams.get('modal');
-            if ([MODAL_TYPE_3_IN_1.TWP, MODAL_TYPE_3_IN_1.D2P, MODAL_TYPE_3_IN_1.CRM].includes(modalParam)) {
-                el?.setAttribute('data-modal-type', modalParam);
-                return modalParam;
-            }
-          } catch (error) {
-            this.masElement.log?.error('Failed to set modal type', error);
-          }
-        }
-
-        /**
          * Renders checkout link href for provided offers into this component.
          * @param {Commerce.Wcs.Offer[]} offers
          * @param {Commerce.Checkout.Options} options
@@ -192,14 +175,12 @@ export function CheckoutMixin(Base) {
                 /* c8 ignore next 2 */
                 this.checkoutActionHandler = undefined;
             }
-            let modalType;
             if (checkoutAction) {
                 this.classList.remove(CLASS_NAME_DOWNLOAD, CLASS_NAME_UPGRADE);
                 this.masElement.toggleResolved(version, offers, options);
                 const { url, text, className, handler } = checkoutAction;
                 if (url) {
                   this.setCheckoutUrl(url);
-                  modalType = this.setModalType(this, url)
                 }
                 if (text) this.firstElementChild.innerHTML = text;
                 if (className) this.classList.add(...className.split(' '));
@@ -207,12 +188,13 @@ export function CheckoutMixin(Base) {
                     this.setCheckoutUrl('#');
                     this.checkoutActionHandler = handler.bind(this);
                 }
-                if (!modalType) return true;
             }
             if (offers.length) {
                 if (this.masElement.toggleResolved(version, offers, options)) {
-                    const url = service.buildCheckoutURL(offers, options, modalType);
-                    this.setCheckoutUrl(url);
+                    if (!this.classList.contains(CLASS_NAME_DOWNLOAD) && !this.classList.contains(CLASS_NAME_UPGRADE)) {
+                      const url = service.buildCheckoutURL(offers, options);
+                      this.setCheckoutUrl(options.modal === 'true' ? '#' : url);
+                    }
                     return true;
                 }
             } else {
