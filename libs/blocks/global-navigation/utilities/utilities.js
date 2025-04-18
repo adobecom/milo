@@ -319,15 +319,28 @@ export const [hasActiveLink, setActiveLink, isActiveLink, getActiveLink] = (() =
   ];
 })();
 
-export function closeAllDropdowns({ type } = {}) {
+export function closeAllDropdowns({
+  type,
+  animatedElement = undefined,
+  animationType = undefined,
+} = {}) {
   const selector = selectorMap[type] || `${selectors.globalNav} [aria-expanded = "true"], ${selectors.localNav} [aria-expanded = "true"]`;
 
-  const openElements = document.querySelectorAll(selector);
-  if (!openElements) return;
-  [...openElements].forEach((el) => {
-    if ('fedsPreventautoclose' in el.dataset || (type === 'localNavItem' && el.classList.contains('feds-localnav-title'))) return;
-    el.setAttribute('aria-expanded', 'false');
-  });
+  const closeAllOpenElements = () => {
+    const openElements = document.querySelectorAll(selector);
+    if (!openElements) return;
+    [...openElements].forEach((el) => {
+      if ('fedsPreventautoclose' in el.dataset || (type === 'localNavItem' && el.classList.contains('feds-localnav-title'))) return;
+      el.setAttribute('aria-expanded', 'false');
+    });
+  };
+
+  if (animatedElement && animationType) {
+    animatedElement.addEventListener(`${animationType}end`, closeAllOpenElements, { once: true });
+    animatedElement.setAttribute('aria-expanded', 'false');
+  } else {
+    closeAllOpenElements();
+  }
 
   setActiveDropdown(undefined, type);
 
@@ -352,10 +365,16 @@ export const enableMobileScroll = () => {
   window.scroll(0, y || 0, { behavior: 'instant' });
 };
 
-export function trigger({ element, event, type } = {}) {
+export function trigger({
+  element,
+  event,
+  type,
+  animatedElement = undefined,
+  animationType = undefined,
+} = {}) {
   if (event) event.preventDefault();
   const isOpen = element?.getAttribute('aria-expanded') === 'true';
-  closeAllDropdowns({ type });
+  closeAllDropdowns({ type, animatedElement, animationType });
   if (isOpen) return false;
   element.setAttribute('aria-expanded', 'true');
   if (!isDesktop.matches && type === 'dropdown'
@@ -612,7 +631,8 @@ export const [branchBannerLoadCheck, getBranchBannerInfo] = (() => {
                 branchBannerInfo.height = node.offsetHeight; // Get the height of the element
                 if (branchBannerInfo.isSticky) {
                   // Adjust the top position of the lnav to account for the branch banner height
-                  document.querySelector('.feds-localnav').style.top = `${branchBannerInfo.height}px`;
+                  const navElem = document.querySelector(isLocalNav() ? '.feds-localnav' : 'header');
+                  navElem.style.top = `${branchBannerInfo.height}px`;
                 } else {
                   // Add a class to the body to indicate the presence of a non-sticky branch banner
                   document.body.classList.add('branch-banner-inline');
@@ -629,7 +649,9 @@ export const [branchBannerLoadCheck, getBranchBannerInfo] = (() => {
                 branchBannerInfo.isSticky = false;
                 branchBannerInfo.height = 0;
                 // Remove the top style attribute when the branch banner is removed
-                document.querySelector('.feds-localnav')?.removeAttribute('style');
+                const navElem = document.querySelector(isLocalNav() ? '.feds-localnav' : 'header');
+                navElem?.removeAttribute('style');
+
                 // Remove the class indicating the presence of a non-sticky branch banner
                 document.body.classList.remove('branch-banner-inline');
                 // Update the popup position when the branch banner is removed

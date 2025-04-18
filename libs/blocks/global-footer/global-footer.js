@@ -1,5 +1,6 @@
 /* eslint-disable no-async-promise-executor */
 import {
+  loadBlock,
   decorateAutoBlock,
   decorateLinks,
   getMetadata,
@@ -97,6 +98,9 @@ class Footer {
 
     regionParent?.appendChild(region);
     socialParent?.appendChild(social);
+
+    // Support auto populated modal
+    await Promise.all([...this.body.querySelectorAll('.modal')].map(loadBlock));
 
     const path = getFederatedUrl(url);
     federatePictureSources({ section: this.body, forceFederate: path.includes('/federal/') });

@@ -115,21 +115,18 @@ Two photoshop and three acrobat pro single apps (TEAMS):
     Buy now
 </button>
 <script type="module">
-    document
-        .getElementById('co1')
-        .onceSettled()
-        .then((el) => {
-            document.getElementById('coValue').innerHTML = JSON.stringify(
-                el.value,
-                null,
-                '\t',
-            );
-            document.getElementById('coOptions').innerHTML = JSON.stringify(
-                el.options,
-                null,
-                '\t',
-            );
-        });
+    onceEvent(document.getElementById('co1'), 'mas:resolved', ({ target }) => {
+        document.getElementById('coValue').innerHTML = JSON.stringify(
+            target.value,
+            null,
+            '\t',
+        );
+        document.getElementById('coOptions').innerHTML = JSON.stringify(
+            target.options,
+            null,
+            '\t',
+        );
+    });
 </script>
 ```
 
