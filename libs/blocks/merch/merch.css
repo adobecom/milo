@@ -47,6 +47,33 @@ a[is='checkout-link'].con-button > span {
   transform: translate(-50%);
 }
 
+.error-wrapper {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #d3150f;
+  margin-top: 40px;
+  padding: 0 20px;
+  color: #fff;
+}
+
+.icon-and-text {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.try-again-btn {
+  padding: 10px 16px;
+  background-color: #d3150f;
+  border: 2px solid #fff;
+  border-radius: 20px;
+  font-weight: bold;
+  font-size: 16px;
+  color: #fff;
+  cursor: pointer;
+}
+
 @media (max-width: 1199px) {
   #checkout-link-modal {
     height: 100vh;

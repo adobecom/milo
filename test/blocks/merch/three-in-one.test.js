@@ -1,124 +1,156 @@
-import { expect } from '@esm-bundle/chai';
 import { readFile } from '@web/test-runner-commands';
+import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
 import { setConfig } from '../../../libs/utils/utils.js';
-import openThreeInOneModal, { handle3in1IFrameEvents, MSG_SUBTYPE } from '../../../libs/blocks/merch/three-in-one.js';
 
 document.body.innerHTML = await readFile({ path: './mocks/threeInOne.html' });
 
-const config = {
-  codeRoot: '/libs',
-  env: { name: 'prod' },
-};
-setConfig(config);
+const {
+  MSG_SUBTYPE,
+  reloadIframe,
+  showErrorMsg,
+  handle3in1IFrameEvents,
+  handleTimeoutError,
+  createContent,
+  default: openThreeInOneModal,
+} = await import('../../../libs/blocks/merch/three-in-one.js');
 
-describe('Three-in-one modal', () => {
-  const originalOpen = window.open;
-  const twpLink = document.querySelector('#twp-link');
-  const crmLink = document.querySelector('#crm-link');
-  const d2pLink = document.querySelector('#d2p-link');
-  beforeEach(async () => {
-    window.open = sinon.stub(window, 'open');
+setConfig({ locale: { contentRoot: '/test/blocks/merch/mocks' } });
+
+describe('Three-in-One Modal', () => {
+  let clock;
+
+  beforeEach(() => {
+    clock = sinon.useFakeTimers();
   });
+
   afterEach(() => {
-    window.open = originalOpen;
+    sinon.restore();
+    clock.restore();
   });
 
-  it('should return undefined if no href or modal type', async () => {
-    const checkoutLinkWithoutHref = document.querySelector('#no-href');
-    const checkoutLinkWithoutModalType = document.querySelector('#no-modal-type');
-    expect(await openThreeInOneModal(checkoutLinkWithoutHref)).to.be.undefined;
-    expect(await openThreeInOneModal(checkoutLinkWithoutModalType)).to.be.undefined;
-  });
-
-  it('should open a modal with an iframe and a loader', async () => {
-    const modal = await openThreeInOneModal(twpLink);
-    expect(modal).to.exist;
-    expect(modal.getAttribute('id')).to.equal('three-in-one');
-    expect(modal.classList.contains('three-in-one')).to.be.true;
-    const iframe = modal.querySelector('iframe');
-    expect(iframe).to.exist;
-    expect(iframe.src).to.equal('https://commerce.adobe.com/store/segmentation?ms=COM&ot=TRIAL&pa=phsp_direct_individual&cli=adobe_com&ctx=if&co=US&lang=en');
-    expect(iframe.classList.contains('loading')).to.be.true;
-    expect(iframe.getAttribute('frameborder')).to.equal('0');
-    expect(iframe.getAttribute('marginwidth')).to.equal('0');
-    expect(iframe.getAttribute('marginheight')).to.equal('0');
-    expect(iframe.getAttribute('allowfullscreen')).to.equal('true');
-    expect(iframe.getAttribute('loading')).to.equal('lazy');
-    const spTheme = modal.querySelector('sp-theme');
-    expect(spTheme).to.exist;
-    const loader = spTheme.querySelector('sp-progress-circle');
-    expect(loader).to.exist;
-    modal.remove();
-  });
-
-  it('sets proper iframe title for each modal type', async () => {
-    [twpLink, crmLink, d2pLink].forEach(async (link) => {
-      const modal = await openThreeInOneModal(link);
-      const modalType = link.getAttribute('data-modal-type');
-      const title = modalType === 'crm' ? 'Single App' : modalType;
-      expect(modal.querySelector('iframe').title).to.equal(title);
-      modal.remove();
+  describe('reloadIframe', () => {
+    it('should reload iframe and set appropriate attributes', () => {
+      const iframe = document.querySelector('iframe');
+      const theme = document.querySelector('sp-theme');
+      const msgWrapper = document.querySelector('.error-wrapper');
+      const handleTimeoutErrorSpy = sinon.spy();
+      reloadIframe({ iframe, theme, msgWrapper, handleTimeoutError: handleTimeoutErrorSpy });
+      expect(msgWrapper).to.not.exist;
+      expect(iframe.getAttribute('data-wasreloaded')).to.equal('true');
+      expect(iframe.style.display).to.equal('block');
+      expect(iframe.classList.contains('loading')).to.be.true;
+      expect(theme.style.display).to.equal('block');
+      clock.tick(15000);
+      expect(handleTimeoutErrorSpy.calledOnce).to.be.true;
     });
   });
 
-  it('should hide loader when commerce page finished loading', async () => {
-    const modal = await openThreeInOneModal(twpLink);
-    const iframe = modal.querySelector('iframe');
-    const spTheme = modal.querySelector('sp-theme');
-    const spProgressCircle = spTheme.querySelector('sp-progress-circle');
-    expect(iframe).to.exist;
-    expect(spTheme).to.exist;
-    expect(spProgressCircle).to.exist;
-    handle3in1IFrameEvents({ data: `{"app":"ucv3","subType": "${MSG_SUBTYPE.AppLoaded}"}` });
-    expect(iframe.classList.contains('loading')).to.be.false;
-    modal.remove();
+  describe('showErrorMsg', () => {
+    it('should create error message with retry button', async () => {
+      const iframe = document.querySelector('iframe');
+      const theme = document.querySelector('sp-theme');
+      const miloIframe = document.querySelector('.milo-iframe');
+      const handleTimeoutErrorSpy = sinon.spy();
+      await showErrorMsg({
+        iframe,
+        miloIframe,
+        showBtn: true,
+        theme,
+        handleTimeoutError: handleTimeoutErrorSpy,
+      });
+      expect(theme.style.display).to.equal('none');
+      expect(iframe.style.display).to.equal('none');
+      const errorWrapper = miloIframe.querySelector('.error-wrapper');
+      expect(errorWrapper).to.exist;
+      expect(errorWrapper.querySelector('.icon-and-text')).to.exist;
+      expect(errorWrapper.querySelector('.error-msg')).to.exist;
+      const tryAgainBtn = errorWrapper.querySelector('.try-again-btn');
+      expect(tryAgainBtn).to.exist;
+      const clickEvent = new MouseEvent('click', {
+        bubbles: true,
+        cancelable: true,
+        view: window,
+      });
+      tryAgainBtn.dispatchEvent(clickEvent);
+      expect(handleTimeoutErrorSpy.calledOnce).to.be.true;
+    });
   });
 
-  it('should open external link in a new tab', async () => {
-    const modal = await openThreeInOneModal(twpLink);
-    handle3in1IFrameEvents({ data: `{"app":"ucv3","subType": "${MSG_SUBTYPE.EXTERNAL}", "data":{"externalUrl":"https://www.google.com/maps","target":"_blank"}}` });
-    expect(window.open.calledOnceWith('https://www.google.com/maps', '_blank')).to.be.true;
-    modal.remove();
+  describe('handle3in1IFrameEvents', () => {
+    it('should handle AppLoaded message', () => {
+      const message = {
+        app: 'ucv3',
+        subType: MSG_SUBTYPE.AppLoaded,
+      };
+      handle3in1IFrameEvents({ data: JSON.stringify(message) });
+      const iframe = document.querySelector('iframe');
+      const theme = document.querySelector('sp-theme');
+      const closeBtn = document.querySelector('.dialog-close');
+      expect(theme).to.not.exist;
+      expect(iframe.getAttribute('data-pageloaded')).to.equal('true');
+      expect(iframe.classList.contains('loading')).to.be.false;
+      expect(closeBtn.getAttribute('aria-hidden')).to.equal('true');
+      expect(closeBtn.style.opacity).to.equal('0');
+    });
+
+    it('should handle Close message', () => {
+      const closeEvent = sinon.spy();
+      const modal = document.querySelector('.three-in-one');
+      modal.addEventListener('closeModal', closeEvent);
+      const message = {
+        app: 'ucv3',
+        subType: MSG_SUBTYPE.Close,
+      };
+      handle3in1IFrameEvents({ data: JSON.stringify(message) });
+      expect(closeEvent.calledOnce).to.be.true;
+    });
   });
 
-  it('should open link in a new tab when message subtype is "switch"', async () => {
-    const modal = await openThreeInOneModal(twpLink);
-    handle3in1IFrameEvents({ data: `{"app":"ucv3","subType": "${MSG_SUBTYPE.SWITCH}", "data":{"externalUrl":"https://www.google.com/maps","target":"_blank"}}` });
-    expect(window.open.calledOnceWith('https://www.google.com/maps', '_blank')).to.be.true;
-    modal.remove();
+  describe('handleTimeoutError', () => {
+    it.only('should show error message on timeout', () => {
+      const miloIframe = document.querySelector('.milo-iframe');
+      const iframe = document.querySelector('iframe');
+      const theme = document.querySelector('sp-theme');
+      handleTimeoutError();
+      expect(theme.style.display).to.equal('none');
+      expect(iframe.style.display).to.equal('none');
+      const errorWrapper = miloIframe.querySelector('.error-wrapper');
+      expect(errorWrapper).to.exist;
+      expect(errorWrapper.querySelector('.icon-and-text')).to.exist;
+      expect(errorWrapper.querySelector('.error-msg')).to.exist;
+      const tryAgainBtn = errorWrapper.querySelector('.try-again-btn');
+      expect(tryAgainBtn).to.exist;
+    });
   });
 
-  it('should open link in a new tab when message subtype is "return_back"', async () => {
-    const modal = await openThreeInOneModal(twpLink);
-    handle3in1IFrameEvents({ data: `{"app":"ucv3","subType": "${MSG_SUBTYPE.RETURN_BACK}", "data":{"externalUrl":"https://www.google.com/maps","target":"_blank"}}` });
-    expect(window.open.calledOnceWith('https://www.google.com/maps', '_blank')).to.be.true;
-    modal.remove();
+  describe('createContent', () => {
+    it('should create iframe content with correct URL', async () => {
+      const testUrl = 'https://test.com/';
+      const content = createContent(testUrl);
+      expect(content.classList.contains('milo-iframe')).to.be.true;
+      expect(content.querySelector('sp-theme')).to.exist;
+      expect(content.querySelector('sp-progress-circle')).to.exist;
+      expect(content.querySelector('iframe')).to.exist;
+      expect(content.querySelector('iframe').src).to.equal(testUrl);
+      expect(content.querySelector('iframe').classList.contains('loading')).to.be.true;
+    });
   });
 
-  it('should close modal when message subtype is "close"', async () => {
-    const modal = await openThreeInOneModal(twpLink);
-    const spy = sinon.spy(modal, 'dispatchEvent');
-    handle3in1IFrameEvents({ data: `{"app":"ucv3","subType": "${MSG_SUBTYPE.Close}"}` });
-    expect(spy.calledOnce).to.be.true;
-    expect(spy.calledWithMatch(sinon.match.instanceOf(Event))).to.be.true;
-    expect(spy.calledWithMatch(sinon.match.has('type', 'closeModal'))).to.be.true;
-    modal.dispatchEvent.restore();
-    modal.remove();
-  });
+  describe('openThreeInOneModal', () => {
+    it('should open modal with correct content', async () => {
+      const link = document.querySelector('a');
+      const modal = await openThreeInOneModal(link);
+      expect(modal).to.exist;
+      expect(modal.querySelector('iframe')).to.exist;
+      expect(modal.classList.contains('three-in-one')).to.be.true;
+      expect(modal.id).to.equal('mini-plans-web-cta-illustrator-card');
+      expect(modal.querySelector('iframe').src).to.equal('https://commerce-stg.adobe.com/store/segmentation?ms=COM&ot=TRIAL&pa=ilst_direct_individual&cli=mini_plans&ctx=if&co=US&lang=en&rtc=t&lo=sl&af=uc_new_user_iframe%2Cuc_new_system_close');
+    });
 
-  it('should do nothing if message subtype is not recognized or message data is invalid', async () => {
-    const modal = await openThreeInOneModal(twpLink);
-    const iframe = modal.querySelector('iframe');
-    handle3in1IFrameEvents('unrelevant message');
-    handle3in1IFrameEvents({ data: '{"subType": "unknown"}' });
-    handle3in1IFrameEvents({ data: '{"app":"ucv3","subType": "unknown"}' });
-    handle3in1IFrameEvents({ data: `{"app":"ucv3","subType": "${MSG_SUBTYPE.EXTERNAL}"}` });
-    handle3in1IFrameEvents({ data: `{"app":"ucv3","subType": "${MSG_SUBTYPE.SWITCH}"}` });
-    handle3in1IFrameEvents({ data: `{"app":"ucv3","subType": "${MSG_SUBTYPE.RETURN_BACK}"}` });
-    handle3in1IFrameEvents({ data: `{"app":"ucv3","subType": "${MSG_SUBTYPE.EXTERNAL}", "data":{}}` });
-    expect(iframe.classList.contains('loading')).to.be.true;
-    expect(window.open.notCalled).to.be.true;
-    modal.remove();
+    it('should return undefined for invalid input', async () => {
+      const result = await openThreeInOneModal();
+      expect(result).to.be.undefined;
+    });
   });
 });

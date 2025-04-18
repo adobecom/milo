@@ -1,6 +1,6 @@
-import { Env } from '../src/external.js';
 import { Landscape, WCS_PROD_URL, WCS_STAGE_URL } from '../src/constants.js';
 import { Defaults } from '../src/defaults.js';
+import { Env } from '../src/constants.js';
 import { getSettings } from '../src/settings.js';
 
 import { expect } from './utilities.js';
@@ -27,58 +27,54 @@ describe('getSettings', () => {
         expect(getSettings()).to.deep.equal({
             ...Defaults,
             locale: `${Defaults.language}_${Defaults.country}`,
+            masIOUrl: 'https://www.adobe.com/mas/io',
             quantity: [Defaults.quantity],
         });
     });
 
     it('overrides with search parameters', () => {
-      const checkoutClientId = 'adobe_com';
-      const checkoutWorkflowStep = 'segmentation';
-      const promotionCode = 'nicopromo';
+        const checkoutClientId = 'adobe_com';
+        const checkoutWorkflowStep = 'segmentation';
+        const promotionCode = 'nicopromo';
 
-      const url = new URL(window.location.href);
-      url.searchParams.set('checkoutClientId', checkoutClientId);
-      url.searchParams.set('checkoutWorkflowStep', checkoutWorkflowStep);
-      url.searchParams.set('promotionCode', promotionCode);
-      url.searchParams.set('displayOldPrice', 'false');
-      url.searchParams.set('displayPerUnit', 'true');
-      url.searchParams.set('displayRecurrence', 'false');
-      url.searchParams.set('displayTax', 'true');
-      url.searchParams.set('entitlement', 'true');
-      url.searchParams.set('modal', 'true');
-      url.searchParams.set('commerce.landscape', 'DRAFT');
-      url.searchParams.set('commerce.env', 'STAGE');
-      url.searchParams.set('wcsBufferDelay', '30');
-      url.searchParams.set('wcsBufferLimit', '5');
-      url.searchParams.set('quantity', '2');
-      url.searchParams.set('wcsApiKey', 'testapikey');
-      window.history.replaceState({}, '', url.toString());
-     
-      const config = { commerce: { allowOverride: '' }, };
-      expect(
-          getSettings(config),
-      ).to.deep.equal({
-          ...Defaults,
-          checkoutClientId,
-          checkoutWorkflowStep,
-          promotionCode,
-          displayOldPrice: false,
-          displayPerUnit: true,
-          displayRecurrence: false,
-          displayTax: true,
-          entitlement: true,
-          modal: true,
-          landscape: 'DRAFT',
-          wcsBufferDelay: 30,
-          wcsBufferLimit: 5,
-          quantity: [2],
-          wcsApiKey: 'testapikey',
-          locale: "en_US",
-          env: "STAGE",
-          wcsURL: WCS_STAGE_URL
-      });
+        const url = new URL(window.location.href);
+        url.searchParams.set('checkoutClientId', checkoutClientId);
+        url.searchParams.set('checkoutWorkflowStep', checkoutWorkflowStep);
+        url.searchParams.set('promotionCode', promotionCode);
+        url.searchParams.set('displayOldPrice', 'false');
+        url.searchParams.set('displayPerUnit', 'true');
+        url.searchParams.set('displayRecurrence', 'false');
+        url.searchParams.set('displayTax', 'true');
+        url.searchParams.set('entitlement', 'true');
+        url.searchParams.set('modal', 'true');
+        url.searchParams.set('commerce.landscape', 'DRAFT');
+        url.searchParams.set('commerce.env', 'STAGE');
+        url.searchParams.set('quantity', '2');
+        url.searchParams.set('wcsApiKey', 'testapikey');
+        url.searchParams.set('mas-io-url', 'https://mycustomurl');
+        window.history.replaceState({}, '', url.toString());
+
+        const config = { commerce: { allowOverride: '' } };
+        expect(getSettings(config)).to.deep.equal({
+            ...Defaults,
+            checkoutClientId,
+            checkoutWorkflowStep,
+            promotionCode,
+            displayOldPrice: false,
+            displayPerUnit: true,
+            displayRecurrence: false,
+            displayTax: true,
+            entitlement: true,
+            modal: true,
+            landscape: 'DRAFT',
+            quantity: [2],
+            wcsApiKey: 'testapikey',
+            locale: 'en_US',
+            masIOUrl: 'https://mycustomurl',
+            env: 'STAGE',
+            wcsURL: WCS_STAGE_URL,
+        });
     });
-
 
     it('uses document metadata and storage', () => {
         const wcsApiKey = 'wcs-api-key';
@@ -107,6 +103,7 @@ describe('getSettings', () => {
             env: Env.STAGE,
             language: 'nb',
             locale: 'nb_NO',
+            masIOUrl: 'https://www.stage.adobe.com/mas/io', // because env === Env.STAGE
             quantity: [Defaults.quantity],
             wcsApiKey,
             wcsURL: WCS_STAGE_URL,
@@ -116,34 +113,34 @@ describe('getSettings', () => {
     });
 
     it('host env "local" -> WCS prod origin + prod akamai', () => {
-      const config = { commerce: {}, env: { name: 'local' }, };
-      const settings = getSettings(config);
-      expect(settings.wcsURL).to.equal(WCS_PROD_URL);
-      expect(settings.env).to.equal(Env.PRODUCTION);
+        const config = { commerce: {}, env: { name: 'local' } };
+        const settings = getSettings(config);
+        expect(settings.wcsURL).to.equal(WCS_PROD_URL);
+        expect(settings.env).to.equal(Env.PRODUCTION);
     });
 
     it('host env "stage" -> WCS prod origin + prod akamai', () => {
-      const config = { commerce: {}, env: { name: 'stage' }, };
-      const settings = getSettings(config);
-      expect(settings.wcsURL).to.equal(WCS_PROD_URL);
-      expect(settings.env).to.equal(Env.PRODUCTION);
+        const config = { commerce: {}, env: { name: 'stage' } };
+        const settings = getSettings(config);
+        expect(settings.wcsURL).to.equal(WCS_PROD_URL);
+        expect(settings.env).to.equal(Env.PRODUCTION);
     });
 
     it('host env "prod" -> WCS prod origin + prod akamai', () => {
-      const config = { commerce: {}, env: { name: 'prod' }, };
-      const settings = getSettings(config);
-      expect(settings.wcsURL).to.equal(WCS_PROD_URL);
-      expect(settings.env).to.equal(Env.PRODUCTION);
+        const config = { commerce: {}, env: { name: 'prod' } };
+        const settings = getSettings(config);
+        expect(settings.wcsURL).to.equal(WCS_PROD_URL);
+        expect(settings.env).to.equal(Env.PRODUCTION);
     });
 
     it('host env "stage" - override landscape and WCS origin (_stage)', () => {
-      window.sessionStorage.setItem(PARAM_ENV, 'stage');
-      window.sessionStorage.setItem(PARAM_LANDSCAPE, 'DRAFT');
-      const config = { commerce: { allowOverride: 'true' } };
-      const settings = getSettings(config);
-      expect(settings.wcsURL).to.equal(WCS_STAGE_URL);
-      expect(settings.landscape).to.equal(Landscape.DRAFT);
-      expect(settings.env).to.equal(Env.STAGE);
+        window.sessionStorage.setItem(PARAM_ENV, 'stage');
+        window.sessionStorage.setItem(PARAM_LANDSCAPE, 'DRAFT');
+        const config = { commerce: { allowOverride: 'true' } };
+        const settings = getSettings(config);
+        expect(settings.wcsURL).to.equal(WCS_STAGE_URL);
+        expect(settings.landscape).to.equal(Landscape.DRAFT);
+        expect(settings.env).to.equal(Env.STAGE);
     });
 
     it('if host env is "prod" - cant override landscape or WCS origin', () => {

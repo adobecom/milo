@@ -1,3 +1,32 @@
+export const Commitment = Object.freeze({
+    MONTH: 'MONTH',
+    YEAR: 'YEAR',
+    TWO_YEARS: 'TWO_YEARS',
+    THREE_YEARS: 'THREE_YEARS',
+    PERPETUAL: 'PERPETUAL',
+    TERM_LICENSE: 'TERM_LICENSE',
+    ACCESS_PASS: 'ACCESS_PASS',
+    THREE_MONTHS: 'THREE_MONTHS',
+    SIX_MONTHS: 'SIX_MONTHS',
+});
+
+export const Term = Object.freeze({
+    ANNUAL: 'ANNUAL',
+    MONTHLY: 'MONTHLY',
+    TWO_YEARS: 'TWO_YEARS',
+    THREE_YEARS: 'THREE_YEARS',
+    P1D: 'P1D',
+    P1Y: 'P1Y',
+    P3Y: 'P3Y',
+    P10Y: 'P10Y',
+    P15Y: 'P15Y',
+    P3D: 'P3D',
+    P7D: 'P7D',
+    P30D: 'P30D',
+    HALF_YEARLY: 'HALF_YEARLY',
+    QUARTERLY: 'QUARTERLY',
+});
+
 /**
  * Common namespace prefix for CSS classes and DOM event types.
  * @see https://git.corp.adobe.com/wcms/team/discussions/27
@@ -19,6 +48,13 @@ export const EVENT_TYPE_READY = 'wcms:commerce:ready';
  * Should be in sync with `packages/commerce/src/constants.js`.
  */
 export const TAG_NAME_SERVICE = 'mas-commerce-service';
+
+export const SELECTOR_MAS_INLINE_PRICE =
+    'span[is="inline-price"][data-wcs-osi]';
+export const SELECTOR_MAS_CHECKOUT_LINK =
+    'a[is="checkout-link"][data-wcs-osi],button[is="checkout-button"][data-wcs-osi]';
+export const SELECTOR_MAS_SP_BUTTON = 'sp-button[data-wcs-osi]';
+export const SELECTOR_MAS_ELEMENT = `${SELECTOR_MAS_INLINE_PRICE},${SELECTOR_MAS_CHECKOUT_LINK}`;
 
 /** Event to dispatch when a merch-offer is ready */
 export const EVENT_MERCH_OFFER_READY = 'merch-offer:ready';
@@ -86,25 +122,38 @@ export const Landscape = {
     PUBLISHED: 'PUBLISHED',
 };
 
-export const WORKFLOW_STEP = {
-  CHECKOUT: 'checkout',
-  CHECKOUT_EMAIL: 'checkout/email',
-  SEGMENTATION: 'segmentation',
-  BUNDLE: 'bundle',
-  COMMITMENT: 'commitment',
-  RECOMMENDATION: 'recommendation',
-  EMAIL: 'email',
-  PAYMENT: 'payment',
-  CHANGE_PLAN_TEAM_PLANS: 'change-plan/team-upgrade/plans',
-  CHANGE_PLAN_TEAM_PAYMENT: 'change-plan/team-upgrade/payment',
-}
+export const HEADER_X_REQUEST_ID = 'X-Request-Id';
+
+export const CheckoutWorkflowStep = Object.freeze({
+    CHECKOUT: 'checkout',
+    CHECKOUT_EMAIL: 'checkout/email',
+    SEGMENTATION: 'segmentation',
+    BUNDLE: 'bundle',
+    COMMITMENT: 'commitment',
+    RECOMMENDATION: 'recommendation',
+    EMAIL: 'email',
+    PAYMENT: 'payment',
+    CHANGE_PLAN_TEAM_PLANS: 'change-plan/team-upgrade/plans',
+    CHANGE_PLAN_TEAM_PAYMENT: 'change-plan/team-upgrade/payment',
+});
+
+export const CheckoutWorkflow = Object.freeze({ V2: 'UCv2', V3: 'UCv3' });
+
+export const Env = Object.freeze({
+    STAGE: 'STAGE',
+    PRODUCTION: 'PRODUCTION',
+    LOCAL: 'LOCAL',
+});
 
 export const PROVIDER_ENVIRONMENT = {
-  PRODUCTION: 'PRODUCTION',
+    PRODUCTION: 'PRODUCTION',
 };
 
 export const MODAL_TYPE_3_IN_1 = {
-  TWP: 'twp',
-  D2P: 'd2p',
-  CRM: 'crm',
-}
+    TWP: 'twp',
+    D2P: 'd2p',
+    CRM: 'crm',
+};
+
+export const MARK_START_SUFFIX = ':start';
+export const MARK_DURATION_SUFFIX = ':duration';

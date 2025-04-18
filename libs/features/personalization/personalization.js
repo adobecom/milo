@@ -234,6 +234,7 @@ const COMMANDS = {
     const { manifestId, targetManifestId } = cmd;
     if (!cmd.attribute || !cmd.content) return;
     const [attribute, parameter] = cmd.attribute.split('_');
+    cmd.content = replacePlaceholders(cmd.content);
 
     let value;
 
@@ -361,8 +362,11 @@ const setMetadata = (metadata) => {
 };
 
 function toLowerAlpha(str) {
-  const s = str.toLowerCase();
-  return s.replace(RE_KEY_REPLACE, '');
+  const modifiedStr = str.toLowerCase();
+  if (!modifiedStr.includes('countryip') && !modifiedStr.includes('countrychoice')) {
+    return modifiedStr.replace(RE_KEY_REPLACE, '');
+  }
+  return modifiedStr.replace(RE_KEY_REPLACE, (char) => (['(', ')'].includes(char) ? char : ''));
 }
 
 function normalizeKeys(obj) {
@@ -742,21 +746,42 @@ export async function createMartechMetadata(placeholders, config, column) {
     });
   });
 }
+const matchesCountryChoiceOrIP = (name, config) => {
+  if (!name.includes('countrychoice') && !name.includes('countryip')) return false;
+  const countryList = name.match(/\(([^)]+)\)/)?.[1]?.split(',').map((c) => (c).trim());
+  if (!countryList?.length) return false;
+  const { countryChoice, countryIP } = config.mep;
+  const testCountry = name.includes('countrychoice') ? countryChoice : countryIP;
+  return countryList.includes(testCountry);
+};
 
+function hasCountryMatch(str, config) {
+  if (str.includes('countrychoice') || str.includes('countryip')) {
+    const modifiedStr = str.replace('uk', 'gb');
+    return matchesCountryChoiceOrIP(modifiedStr, config);
+  }
+  return false;
+}
 /* c8 ignore start */
 export function parsePlaceholders(placeholders, config, selectedVariantName = '') {
   if (!placeholders?.length || selectedVariantName === 'default') return config;
+  const { countryIP, countryChoice } = config.mep || {};
   const valueNames = [
     selectedVariantName.toLowerCase(),
     config.mep?.prefix,
     config.locale.region.toLowerCase(),
+    ...(countryIP ? [`countryip(${countryIP})`] : []),
+    ...(countryChoice ? [`countrychoice(${countryChoice})`] : []),
     config.locale.ietf.toLowerCase(),
     ...config.locale.ietf.toLowerCase().split('-'),
     'value',
     'other',
   ];
   const keys = placeholders?.length ? Object.entries(placeholders[0]) : [];
-  const keyVal = keys.find(([key]) => valueNames.includes(key.toLowerCase()));
+  const keyVal = keys.find(([key]) => {
+    const modifiedStr = key.toLowerCase();
+    return valueNames.includes(modifiedStr) || hasCountryMatch(modifiedStr, config);
+  });
   const key = keyVal?.[0];
 
   if (key) {
@@ -792,9 +817,9 @@ function trimNames(arr) {
 export function buildVariantInfo(variantNames) {
   return variantNames.reduce((acc, name) => {
     let nameArr = [name];
-    if (!name.startsWith(TARGET_EXP_PREFIX)) nameArr = name.split(',');
+    if (!name.startsWith(TARGET_EXP_PREFIX)) nameArr = name.split(/,(?![^(]*\))/);
     acc[name] = trimNames(nameArr);
-    acc.allNames = [...acc.allNames, ...trimNames(name.split(/[,&]|\bnot\b/))];
+    acc.allNames = [...acc.allNames, ...trimNames(name.split(/(?:\([^)]*\))?,|&|\bnot\b/))];
     return acc;
   }, { allNames: [] });
 }
@@ -833,6 +858,36 @@ export const getEntitlements = async (data) => {
   });
 };
 
+function normCountry(country) {
+  return (country.toLowerCase() === 'uk' ? 'gb' : country.toLowerCase()).split('_')[0];
+}
+async function setMepCountry(config) {
+  const urlParams = new URLSearchParams(window.location.search);
+  const country = urlParams.get('country') || (document.cookie.split('; ').find((row) => row.startsWith('international='))?.split('=')[1]);
+  const akamaiCode = urlParams.get('akamaiLocale')?.toLowerCase() || sessionStorage.getItem('akamai');
+  config.mep = config.mep || {};
+  if (country) {
+    config.mep.countryChoice = normCountry(country);
+  }
+  if (akamaiCode) {
+    config.mep.countryIP = normCountry(akamaiCode);
+  }
+  if (!config.mep.countryChoice && config.mep.countryIP) {
+    config.mep.countryChoice = config.mep.countryIP;
+  } else if (!config.mep.countryIP && config.mep.countryIPPromise) {
+    try {
+      let countryIP = await config.mep.countryIPPromise;
+      if (countryIP) {
+        countryIP = countryIP === 'uk' ? 'gb' : countryIP.split('_')[0];
+        config.mep.countryIP = countryIP;
+        if (!config.mep.countryChoice) config.mep.countryChoice = countryIP;
+      }
+    } catch (e) {
+      log('MEP Error: Unable to get user country');
+    }
+  }
+}
+
 async function getPersonalizationVariant(
   manifestPath,
   variantNames = [],
@@ -861,6 +916,7 @@ async function getPersonalizationVariant(
     if (!name) return true;
     if (name === variantLabel?.toLowerCase()) return true;
     if (name.startsWith('param-')) return checkForParamMatch(name);
+    if (hasCountryMatch(name, config)) return true;
     if (userEntitlements?.includes(name)) return true;
     return PERSONALIZATION_KEYS.includes(name) && PERSONALIZATION_TAGS[name]();
   };
@@ -876,6 +932,10 @@ async function getPersonalizationVariant(
     });
     return !processedList.includes(false);
   };
+
+  if (config.mep?.geoLocation) {
+    await setMepCountry(config);
+  }
 
   const matchingVariant = variantNames.find((variant) => variantInfo[variant].some(matchVariant));
   return matchingVariant;
@@ -1053,6 +1113,7 @@ export function cleanAndSortManifestList(manifests, conf) {
     try {
       if (!manifest?.manifest) return;
       if (!manifest.manifestPath) manifest.manifestPath = normalizePath(manifest.manifest);
+      if (manifest.source && !manifest.source.includes('target')) manifest.manifest = normalizePath(manifest.manifest);
       if (manifest.manifestPath in manifestObj) {
         let fullManifest = manifestObj[manifest.manifestPath];
         let freshManifest = manifest;
@@ -1085,7 +1146,6 @@ export function cleanAndSortManifestList(manifests, conf) {
         manifestConfig.selectedVariantName = 'default';
         manifestConfig.selectedVariant = 'default';
       }
-
       parsePlaceholders(placeholderData, getConfig(), manifestConfig.selectedVariantName);
     } catch (e) {
       log(`MEP Error parsing manifests: ${e.toString()}`);
@@ -1128,8 +1188,7 @@ export async function applyPers({ manifests }) {
       config.mep?.variantOverride,
     );
   }
-
-  experiments = cleanAndSortManifestList(experiments);
+  experiments = cleanAndSortManifestList(experiments, config);
   parseNestedPlaceholders(config);
 
   let results = [];
@@ -1215,13 +1274,11 @@ async function updateManifestsAndPropositions(
   });
   config.mep.targetAjoManifests = targetAjoManifests;
   if (config.mep.enablePersV2) {
-    if (!config.mep.hybridPersEnabled) {
-      window.addEventListener('alloy_sendEvent', () => {
-        if (targetAjoPropositions?.length && window._satellite) {
-          window._satellite.track('propositionDisplay', targetAjoPropositions);
-        }
-      }, { once: true });
-    }
+    window.addEventListener('alloy_sendEvent', () => {
+      if (targetAjoPropositions?.length && window._satellite) {
+        window._satellite.track('propositionDisplay', targetAjoPropositions);
+      }
+    }, { once: true });
   } else if (targetAjoPropositions?.length && window._satellite) {
     window._satellite.track('propositionDisplay', targetAjoPropositions);
   }
@@ -1344,8 +1401,9 @@ const awaitMartech = () => new Promise((resolve) => {
 export async function init(enablements = {}) {
   let manifests = [];
   const {
-    mepParam, mepHighlight, mepButton, pzn, promo, enablePersV2, hybridPersEnabled,
-    target, ajo, targetInteractionPromise, calculatedTimeout, postLCP,
+    mepParam, mepHighlight, mepButton, pzn, promo, enablePersV2,
+    target, ajo, countryIPPromise, mepgeolocation, targetInteractionPromise, calculatedTimeout,
+    postLCP,
   } = enablements;
   const config = getConfig();
   if (postLCP) {
@@ -1362,7 +1420,9 @@ export async function init(enablements = {}) {
       experiments: [],
       prefix: config.locale?.prefix.split('/')[1]?.toLowerCase() || US_GEO,
       enablePersV2,
-      hybridPersEnabled,
+      countryIPPromise,
+      geoLocation: mepgeolocation,
+      targetInteractionPromise,
     };
 
     manifests = manifests.concat(await combineMepSources(pzn, promo, mepParam));

@@ -1,6 +1,6 @@
 import { Checkout } from './checkout.js';
 import * as Constants from './constants.js';
-import { EVENT_TYPE_READY } from './constants.js';
+import { EVENT_TYPE_READY, SELECTOR_MAS_ELEMENT } from './constants.js';
 import { Defaults } from './defaults.js';
 import { Ims } from './ims.js';
 import { getPriceLiterals } from './literals.js';
@@ -8,32 +8,36 @@ import { Log } from './log.js';
 import { Price } from './price.js';
 import { getSettings } from './settings.js';
 import { Wcs } from './wcs.js';
-import { setImmediate } from './utilities.js';
 import { updateConfig as updateLanaConfig } from './lana.js';
 
 export const TAG_NAME_SERVICE = 'mas-commerce-service';
 
-
 const MARK_START = 'mas:start';
 const MARK_READY = 'mas:ready';
 
+export const MEASURE_INIT_TIME = 'mas-commerce-service:initTime';
+
 /**
- * Custom web component to provide active instance of commerce service
- * to consumers, appended to the head section of current document.
+ * web component to provide commerce and fragment service to consumers.
  */
 export class MasCommerceService extends HTMLElement {
-    static instance;
-    promise = null;
+    #initDuration;
 
+    lastLoggingTime = 0;
     get #config() {
+        const env = this.getAttribute('env') ?? 'prod';
         const config = {
-            hostEnv: { name: this.getAttribute('host-env') ?? 'prod' },
-            commerce: { env: this.getAttribute('env') },
+            hostEnv: { name: env },
+            commerce: { env },
             lana: {
                 tags: this.getAttribute('lana-tags'),
-                sampleRate: parseInt(this.getAttribute('lana-sample-rate'), 10),
-                isProdDomain: this.getAttribute('host-env') === 'prod',
+                sampleRate: parseInt(
+                    this.getAttribute('lana-sample-rate') ?? 1,
+                    10,
+                ),
+                isProdDomain: env === 'prod',
             },
+            masIOUrl: this.getAttribute('mas-io-url'),
         };
         //root parameters
         ['locale', 'country', 'language'].forEach((attribute) => {
@@ -77,7 +81,7 @@ export class MasCommerceService extends HTMLElement {
         };
     }
 
-    async activate() {
+    activate() {
         const config = this.#config;
         // Load settings and literals
         const settings = Object.freeze(getSettings(config));
@@ -86,13 +90,8 @@ export class MasCommerceService extends HTMLElement {
         log.debug('Activating:', config);
 
         // Fetch price literals
-        const literals = { price: {} };
-        try {
-            literals.price = await getPriceLiterals(
-                settings,
-                config.commerce.priceLiterals,
-            );
-        } catch (e) {}
+        const price = getPriceLiterals(settings);
+        const literals = { price };
         // Create checkout/price options providers registry
         const providers = {
             checkout: new Set(),
@@ -136,46 +135,93 @@ export class MasCommerceService extends HTMLElement {
             }),
         );
         log.debug('Activated:', { literals, settings });
-        setImmediate(() => {
-            const event = new CustomEvent(EVENT_TYPE_READY, {
-                bubbles: true,
-                cancelable: false,
-                detail: this,
-            });
-            performance.mark(MARK_READY);
-            this.dispatchEvent(event);
+        const event = new CustomEvent(EVENT_TYPE_READY, {
+            bubbles: true,
+            cancelable: false,
+            detail: this,
         });
+        performance.mark(MARK_READY);
+        this.#initDuration = performance.measure(
+            MEASURE_INIT_TIME,
+            MARK_START,
+            MARK_READY,
+        )?.duration;
+        this.dispatchEvent(event);
+        setTimeout(() => {
+            this.logFailedRequests();
+        }, 10000);
     }
 
     connectedCallback() {
-        if (!this.readyPromise) {
-            performance.mark(MARK_START);
-            this.readyPromise = this.activate();
-        }
-    }
-
-    disconnectedCallback() {
-        this.readyPromise = null;
+        performance.mark(MARK_START);
+        this.activate();
     }
 
     flushWcsCache() {
         /* c8 ignore next 3 */
-        this.flushWcsCache();
+        this.flushWcsCacheInternal();
         this.log.debug('Flushed WCS cache');
     }
 
     refreshOffers() {
-        this.flushWcsCache();
+        this.flushWcsCacheInternal();
         document
-            .querySelectorAll('span[is="inline-price"],a[is="checkout-link"]')
+            .querySelectorAll(SELECTOR_MAS_ELEMENT)
             .forEach((el) => el.requestUpdate(true));
         this.log.debug('Refreshed WCS offers');
+        this.logFailedRequests();
     }
 
     refreshFragments() {
-        this.flushWcsCache();
+        this.flushWcsCacheInternal();
         document.querySelectorAll('aem-fragment').forEach((el) => el.refresh());
         this.log.debug('Refreshed AEM fragments');
+        this.logFailedRequests();
+    }
+
+    get duration() {
+        return {
+            [MEASURE_INIT_TIME]: this.#initDuration,
+        };
+    }
+
+    /**
+     * Logs failed network requests related to AEM fragments and WCS commerce artifacts.
+     * Identifies failed resources by checking for zero transfer size, zero duration,
+     * response status less than 200, or response status greater than or equal to 400.
+     * Only logs errors if any of the failed resources are fragment or commerce artifact requests.
+     */
+    /* c8 ignore next 21 */
+    logFailedRequests() {
+        const failedResources = [...performance.getEntriesByType('resource')]
+            .filter(({ startTime }) => startTime > this.lastLoggingTime)
+            .filter(
+                ({ transferSize, duration, responseStatus }) =>
+                    (transferSize === 0 &&
+                        duration === 0 &&
+                        responseStatus < 200) ||
+                    responseStatus >= 400,
+            );
+
+        // Create a Map to deduplicate resources by URL, keeping only the last one
+        const uniqueFailedResources = Array.from(
+            new Map(
+                failedResources.map((resource) => [resource.name, resource]),
+            ).values(),
+        );
+
+        if (
+            uniqueFailedResources.some(({ name }) =>
+                /(\/fragments\/|web_commerce_artifact)/.test(name),
+            )
+        ) {
+            const failedUrls = uniqueFailedResources.map(({ name }) => name);
+            this.log.error('Failed requests:', {
+                failedUrls,
+                ...this.duration,
+            });
+        }
+        this.lastLoggingTime = performance.now().toFixed(3);
     }
 }
 
