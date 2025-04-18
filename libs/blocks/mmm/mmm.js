@@ -27,7 +27,7 @@ const TARGETSETTING_OPTIONS = {
   postLCP: { label: 'Post LCP', value: 'postLCP' },
 };
 const MANIFESTSRC_OPTIONS = {
-  personalization: { label: 'Personalization', value: 'pzn' },
+  personalization: { label: 'PZN', value: 'pzn' },
   promo: { label: 'Promo', value: 'promo' },
   target: { label: 'Target', value: 'target' },
   ajo: { label: 'AJO', value: 'ajo' },
@@ -366,10 +366,13 @@ function createTargetAndManifestSrcFilter() {
   // document.querySelectorAll('.mmm-checkbox-sub-container fieldset').forEach((fieldset) => {
   //   fieldset.addEventListener('change', () => filterPageList());
   // });
-  document.querySelectorAll('.mmm-checkbox-sub-container fieldset input').forEach((fieldset) => {
-    fieldset.addEventListener('click', (e) => {
-      if (document.querySelectorAll('fieldset input[type="checkbox"]:checked').length === 0) {
+  document.querySelectorAll('.mmm-checkbox-sub-container fieldset input').forEach((input) => {
+    input.addEventListener('click', (e) => {
+      console.log(e.target.closest('fieldset'));
+      if (e.target.closest('fieldset').querySelectorAll('input[type="checkbox"]:checked').length === 0) {
         e.preventDefault();
+        e.target.closest('fieldset').classList.add('minError');
+        setTimeout(() => e.target.closest('fieldset').classList.remove('minError'), 5000);
         console.warn('Please select at least one checkbox');
         return;
       }

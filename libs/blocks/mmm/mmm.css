@@ -266,20 +266,16 @@ dd .mep-popup-header .mep-close {
 }
 .mmm-search-container {
   margin-top: var(--spacing-m);
-  max-width: 1200px;
   margin: auto;
+  max-width: var(--grid-container-width);
 }
 .mmm-form-container {
   display: flex;
-  /* justify-content: center; */
   justify-content: flex-start;
   gap: var(--spacing-s);
   margin: 0 auto;
-  /* width: 700px;  */
   width: 100%;
-  /* flex-flow: row nowrap; */
   flex-wrap: wrap;
-  /* max-width: 80vw; */
   position: relative;
 }
 .mmm-form-container > div {
@@ -423,6 +419,14 @@ dd .mep-popup-header .mep-close {
   opacity: .4;
 }
 
+div[id*="mmm-search-row"] { 
+  display: flex;
+  flex-direction: row;
+  gap: var(--spacing-m);
+  margin-bottom: var(--spacing-m);
+  width: 100%;
+}
+
 /* checkboxes */
 #mmm-targetSetting-fieldset, #mmm-manifestSrc-fieldset {
   border: none;
@@ -432,72 +436,10 @@ dd .mep-popup-header .mep-close {
   display: flex;
   align-items: baseline;
 }
-
 .mmm-checkbox-option input[type="checkbox"] {
   margin-right: var(--spacing-xxs);
   cursor: pointer;
   width: 15px;
-}
-
-#mmm-checkbox-filter-container {
-  margin-top: var(--spacing-m);
-  flex-wrap: wrap;
-}
-
-@media screen and (min-width: 1200px) {
-  .mmm-search-container {
-    display: flex;
-    flex-direction: row;
-    flex-wrap: wrap;
-    position: relative;
-    max-width: var(--grid-container-width);
-  }
-  #mmm-dropdown-container {
-    /* max-width: 48% */
-  }
- 
-  #mmm-targetSetting-container, {
-    justify-content: flex-start;
-  }
-
-  #mmm-targetSetting-fieldset, #mmm-manifestSrc-fieldset {
-    padding: 0 !important;
-  }
-  #mmm-dropdown-container {
-    margin-left: 0;
-  }
-  #mmm-checkbox-filter-container {
-    /* width: 50%; */
-    margin: var(--spacing-m) 0 var(--spacing-xs) 0;
-  }
-  #mmm-manifestSrc-container, #mmm-targetSetting-container {
-    /* max-width: 50%; */
-  }
-}
-
-.mmm-order-1 {
-  order: 1;
-}
-.mmm-order-2 {
-  order: 2;
-}
-.mmm-order-3 {
-  order: 3;
-}
-.mmm-order-4 {
-  order: 4;
-}
-
-div[id*="mmm-search-row"] { 
-  display: flex;
-  flex-direction: row;
-  gap: var(--spacing-m);
-  margin-bottom: var(--spacing-m);
-  width: 100%;
-}
-
-.mmm-search-container {
-  max-width: var(--grid-container-width);
 }
 
 #mmm-checkbox-filter-targetSetting {
@@ -517,17 +459,62 @@ div[id*="mmm-search-row"] {
   justify-content: space-between;
 }
 
-@media screen and (max-width: 870px) {
-  #mmm-search-row2 {
-    flex-direction: column;
-  }
+/* error message */
+fieldset.minError:after {
+  content: "One checkbox must stay selected.";
+  display: block;
+  position: absolute;
+  bottom: -33px;
+  font-size: 12px;
+  background-color: #f7e7e7;
+  border-radius: 6px;
+  padding: 2px 7px;
+  border: 1px solid red;
+  font-weight: 600;
+} 
+
+.mmm-order-1 {
+  order: 1;
 }
-@media screen and (max-width: 580px) {
-  #mmm-search-row1 {
-    flex-direction: column;
+.mmm-order-2 {
+  order: 2;
+}
+.mmm-order-3 {
+  order: 3;
+}
+.mmm-order-4 {
+  order: 4;
+}
+
+@media screen and (min-width: 1200px) {
+  .mmm-search-container {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    position: relative;
+    max-width: var(--grid-container-width);
   }
-  #mmm-search-row1, #mmm-search-row2 {
-    row-gap: var(--spacing-xxs);
+  #mmm-targetSetting-fieldset, #mmm-manifestSrc-fieldset {
+    padding: 0 !important;
   }
 }
 
+@media screen and (min-width: 599px) and (max-width: 1199px) {
+  #mmm-search-row1 .mmm-dropdown-container {
+    min-width: 44%;
+  }
+  #mmm-checkbox-filter-targetSetting {
+    min-width: 48%;
+  }
+}
+
+@media screen and (max-width: 599px) {
+  #mmm-search-row1 .mmm-dropdown-container, 
+  #mmm-checkbox-filter-targetSetting{
+    min-width: 100%;
+  }
+  #mmm-search-row1, #mmm-search-row2 {
+    flex-direction: column;
+    row-gap: var(--spacing-xxs);
+  } 
+}
