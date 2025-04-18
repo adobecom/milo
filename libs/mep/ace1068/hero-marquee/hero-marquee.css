@@ -26,7 +26,7 @@
   color: var(--color-white);
 }
 
-.hero-marquee.typography-extra-bold h1 {
+.hero-marquee.header-extra-bold h1 {
   font-size: 40px;
   font-weight: 800;
   line-height: 44px;
