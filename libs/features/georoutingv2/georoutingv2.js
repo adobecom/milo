@@ -39,9 +39,12 @@ export const getCookie = (name) => document.cookie
   .find((row) => row.startsWith(`${name}=`))
   ?.split('=')[1];
 
-const getAkamaiCode = () => new Promise((resolve, reject) => {
-  const urlParams = new URLSearchParams(window.location.search);
-  const akamaiLocale = urlParams.get('akamaiLocale') || sessionStorage.getItem('akamai');
+export const getAkamaiCode = (checkedParams = false) => new Promise((resolve, reject) => {
+  let akamaiLocale = null;
+  if (!checkedParams) {
+    const urlParams = new URLSearchParams(window.location.search);
+    akamaiLocale = urlParams.get('akamaiLocale') || sessionStorage.getItem('akamai');
+  }
   if (akamaiLocale !== null) {
     resolve(akamaiLocale.toLowerCase());
   } else {
