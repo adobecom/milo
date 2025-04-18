@@ -24,8 +24,10 @@ function promoIntersectObserve(el, stickySectionEl, options = {}) {
       } else if (target === stickySectionEl) {
         const abovePromoStart = isIntersecting || stickySectionEl?.getBoundingClientRect().y > 0;
         el.classList.toggle('hide-sticky-section', abovePromoStart);
-      } else if (target.classList.contains('hide-at-intersection')) {
-        const aboveViewport = isIntersecting || entry.boundingClientRect.top < 0;
+      } else if (target === document.querySelector('.hide-at-intersection')) {
+        const aboveViewport = isIntersecting
+        || entry.boundingClientRect.top < 0
+        || stickySectionEl?.getBoundingClientRect().y > 0;
         el.classList.toggle('hide-sticky-section', aboveViewport);
       }
     });
@@ -54,7 +56,7 @@ function handleStickyPromobar(section, delay) {
   }
 
   const metadata = getMetadata(section.querySelector('.section-metadata'));
-  const selector = metadata?.['hide-at-intersection']?.text;
+  const selector = metadata?.['custom-hide']?.text;
   const targetElement = document.querySelector(selector);
   if (targetElement) {
     targetElement.classList.add('hide-at-intersection');
@@ -66,7 +68,7 @@ export default async function handleStickySection(sticky, section) {
   const main = document.querySelector('main');
   switch (sticky) {
     case 'sticky-top': {
-      const { debounce } = await import('../../utils/action.js');
+      const { debounce } = await import('../../../utils/action.js');
       window.addEventListener('resize', debounce(() => handleTopHeight(section)));
       handleTopHeight(section);
       main.prepend(section);
