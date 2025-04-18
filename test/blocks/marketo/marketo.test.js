@@ -152,30 +152,19 @@ describe('Marketo ungated one page experience', () => {
     expect(document.querySelector('#success-hide-section').classList.contains('hide-block')).to.be.true;
   });
 
-  it('logs error if success section is not provided', async () => {
+  it('logs error if success section is not provided', () => {
     document.querySelector('#success-data').remove();
-    init(document.querySelector('.marketo'));
-    expect(window.lana.log.args[0][0]).to.equal('Error showing Marketo success section');
-  });
-
-  it('logs error if success hide section is not provided', async () => {
     document.querySelector('#success-hide-data').remove();
     init(document.querySelector('.marketo'));
     expect(window.lana.log.args[0][0]).to.equal('Error showing Marketo success section');
     expect(window.lana.log.args[1][0]).to.equal('Error hiding Marketo success section');
   });
 
-  it('logs error if success section does not toggle after maximum intervals', async () => {
+  it('logs error if success section does not toggle after maximum intervals', () => {
     document.querySelector('#success-section').classList.remove('form-success');
-    init(document.querySelector('.marketo'));
-    expect(document.querySelector('#success-section').classList.contains('hide-block')).to.be.true;
-    clock.runAll();
-    expect(window.lana.log.args[0][0]).to.equal('Error showing Marketo success section');
-  });
-
-  it('logs error if success hide section does not toggle after maximum intervals', async () => {
     document.querySelector('#success-hide-section').classList.remove('form-success-hide');
     init(document.querySelector('.marketo'));
+    expect(document.querySelector('#success-section').classList.contains('hide-block')).to.be.true;
     expect(document.querySelector('#success-hide-section').classList.contains('hide-block')).to.be.false;
     clock.runAll();
     expect(window.lana.log.args[0][0]).to.equal('Error showing Marketo success section');

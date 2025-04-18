@@ -115,9 +115,9 @@ const showSuccessSection = (formData) => {
     window.lana?.log('Error showing Marketo success section', { tags: 'warn,marketo' });
     return;
   }
+
   let successSections = document.querySelectorAll(`.section.${showClass}`);
   show(successSections);
-
   document.addEventListener(
     MILO_EVENTS.DEFERRED,
     () => {
@@ -145,7 +145,6 @@ const hideSuccessSection = (formData) => {
 
   let hideSections = document.querySelectorAll(`.section.${hideClass}`);
   hide(hideSections);
-
   document.addEventListener(
     MILO_EVENTS.DEFERRED,
     () => {
