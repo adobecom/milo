@@ -467,6 +467,10 @@ div[id*="mmm-search-row"] {
   width: 100%;
 }
 
+div.mmm-search-container div[id*="mmm-search-row"]:last-child { 
+  margin-bottom: 0
+}
+
 /* checkboxes */
 #mmm-targetSetting-fieldset, #mmm-manifestSrc-fieldset {
   border: none;
@@ -558,3 +562,5 @@ fieldset.minError:after {
     row-gap: var(--spacing-xxs);
   } 
 }
+
+/* mmm-search-row1 */

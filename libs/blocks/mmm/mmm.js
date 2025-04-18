@@ -36,12 +36,19 @@ const MANIFESTSRC_OPTIONS = {
 
 const GRID_FORMAT = {
   // array values must match ids of html element in order desired per row
-  row1: ['mmm-dropdown-pages', 'mmm-dropdown-geos', 'mmm-dropdown-lastSeen', 'mmm-dropdown-subdomain'],
-  row2: ['mmm-checkbox-filter-targetSetting', 'mmm-checkbox-filter-manifestSrc'],
-  row3: ['mmm-search-filter-container'],
+  base: {
+    row1: ['mmm-dropdown-pages', 'mmm-dropdown-geos', 'mmm-dropdown-lastSeen', 'mmm-dropdown-subdomain'],
+    row2: ['mmm-checkbox-filter-targetSetting', 'mmm-checkbox-filter-manifestSrc'],
+    row3: ['mmm-search-filter-container'],
+  },
+  report: {
+    row1: ['mmm-dropdown-lastSeen'],
+    row2: ['mmm-search-filter-container'],
+  },
 };
 
 let isReport = false;
+let mmmPageVer = GRID_FORMAT.base;
 
 export const getLocalStorageFilter = () => {
   const cookie = localStorage.getItem(isReport
@@ -67,7 +74,6 @@ const getInitialValues = () => {
     });
     return values;
   }
-  console.log(['localstorage filter', getLocalStorageFilter()]);
   return getLocalStorageFilter();
 };
 
@@ -76,7 +82,6 @@ const SEARCH_INITIAL_VALUES = () => getInitialValues() ?? {
   pageNum: 1,
   subdomain: SUBDOMAIN_OPTIONS.www.key,
   perPage: 25,
-  // added
   targetSettings: 'on, off',
   manifestSrc: 'pzn, promo, target, ajo, postLCP',
 };
@@ -227,8 +232,9 @@ function parseData(el) {
 
 function findAndSetInGrid(htmlEl) {
   let insertPoint;
-  Object.keys(GRID_FORMAT).forEach((key) => {
-    const checkIndex = GRID_FORMAT[key].indexOf(htmlEl.id);
+
+  Object.keys(mmmPageVer).forEach((key) => {
+    const checkIndex = mmmPageVer[key].indexOf(htmlEl.id);
     if (checkIndex !== -1) insertPoint = [key, checkIndex];
   });
   const searchRow = document.getElementById(`mmm-search-${insertPoint[0]}`);
@@ -269,7 +275,6 @@ function debounce(func) {
 }
 
 function createSearchField() {
-  // const searchContainer = document.querySelector(SEARCH_CONTAINER);
   const searchForm = createTag(
     'div',
     { id: 'mmm-search-filter-container', class: 'mmm-form-container' },
@@ -278,7 +283,6 @@ function createSearchField() {
       <textarea id="mmm-search-filter" type="text" name="mmm-search-filter" class="text-field-input" placeholder="https://www.adobe.com/creativecloud.html\n/test_campaign4/test-campaign4-business.json\nDC1031"></textarea>
     </div>`,
   );
-  // searchContainer.append(searchForm);
   const searchField = searchForm.querySelector('textarea');
   searchField.value = SEARCH_INITIAL_VALUES().filter || '';
 
@@ -292,42 +296,45 @@ function createSearchField() {
 }
 
 function createLastSeenManifestAndDomainDD() {
-  const searchContainer = document.querySelector(SEARCH_CONTAINER);
-  const dd = createTag(
+  const dropdownLastSeen = createTag(
     'div',
-    { id: 'mmm-dropdown-container', class: 'mmm-form-container' },
+    { id: 'mmm-dropdown-lastSeen', class: 'mmm-form-container' },
     `<div>
-      <label for="mmm-lastSeenManifest">Manifests seen in the last:</label>
+      <label for="mmm-lastSeenManifest">Manifests ${isReport ? 'not ' : ''}seen in the last:</label>
       <select id="mmm-lastSeenManifest" type="text" name="mmm-lastSeenManifest" class="text-field-input">
         ${Object.keys(LAST_SEEN_OPTIONS).map((key) => `
           <option value="${LAST_SEEN_OPTIONS[key].key}" ${SEARCH_INITIAL_VALUES().lastSeenManifest === LAST_SEEN_OPTIONS[key].key ? 'selected' : ''}>${LAST_SEEN_OPTIONS[key].value}</option>
         `)}
       </select>
-    </div>
-    ${!isReport ? `<div>
-      <label for="mmm-subdomain">Subdomain:</label>
-      <select id="mmm-subdomain" type="text" name="mmm-subdomain" class="text-field-input">
-        ${Object.keys(SUBDOMAIN_OPTIONS).map((key) => `
-          <option value="${SUBDOMAIN_OPTIONS[key].key}" ${SEARCH_INITIAL_VALUES().subdomain === SUBDOMAIN_OPTIONS[key].key ? 'selected' : ''}>${SUBDOMAIN_OPTIONS[key].value}</option>
-        `)}
-      </select>
-    </div>
-    ` : ''}`,
+    </div>`,
   );
   dropdownLastSeen.addEventListener('change', () => filterPageList());
-  dropdownSubdomain.addEventListener('change', () => filterPageList());
   findAndSetInGrid(dropdownLastSeen);
-  findAndSetInGrid(dropdownSubdomain);
+
+  if (!isReport) {
+    const dropdownSubdomain = createTag(
+      'div',
+      { id: 'mmm-dropdown-subdomain', class: 'mmm-form-container' },
+      `<div>
+        <label for="mmm-subdomain">Subdomain:</label>
+        <select id="mmm-subdomain" type="text" name="mmm-subdomain" class="text-field-input">
+          ${Object.keys(SUBDOMAIN_OPTIONS).map((key) => `
+            <option value="${SUBDOMAIN_OPTIONS[key].key}" ${SEARCH_INITIAL_VALUES().subdomain === SUBDOMAIN_OPTIONS[key].key ? 'selected' : ''}>${SUBDOMAIN_OPTIONS[key].value}</option>
+          `)}
+        </select>
+      </div>`,
+    );
+    dropdownSubdomain.addEventListener('change', () => filterPageList());
+    findAndSetInGrid(dropdownSubdomain);
+  }
 }
 
 function createCheckBoxFilterGroup(checkBoxId, legendLabel, optionsObj) {
-  const initValues = SEARCH_INITIAL_VALUES;
   const checkBoxLegend = createTag('legend', { id: `mmm-checkbox-${checkBoxId}-legend` }, legendLabel);
   const checkBoxFieldset = createTag('fieldset', { id: `mmm-${checkBoxId}-fieldset` }, checkBoxLegend);
-
   // helper function only ran during filter build. consider moving to outter lex scope
   function createCheckBox(groupName, checkboxLabel, checkboxValue) {
-    const initValueCheck = SEARCH_INITIAL_VALUES?.[groupName]?.split(', ').includes(checkboxValue);
+    const initValueCheck = SEARCH_INITIAL_VALUES()?.[groupName]?.split(', ').includes(checkboxValue);
     const checkDiv = createTag('div', { class: 'mmm-checkbox-option' });
     const checkLabel = createTag('label', { for: `mmm-${groupName}-${checkboxValue}` }, checkboxLabel);
     const checkBox = createTag('input', {
@@ -336,8 +343,6 @@ function createCheckBoxFilterGroup(checkBoxId, legendLabel, optionsObj) {
       name: groupName,
       value: checkboxValue,
       class: 'mmm-checkbox',
-      // if all values in group are unselected, then all checkboxes will be selected on refresh
-      // ...(initValueCheck || !initValues?.[groupName] ? { checked: 'true' } : {}),
       ...(initValueCheck ? { checked: 'true' } : {}),
     });
     checkDiv.append(checkBox, checkLabel);
@@ -372,17 +377,12 @@ function createTargetAndManifestSrcFilter() {
     );
     findAndSetInGrid(checkBoxFilterContainer);
   });
-  // document.querySelectorAll('.mmm-checkbox-sub-container fieldset').forEach((fieldset) => {
-  //   fieldset.addEventListener('change', () => filterPageList());
-  // });
   document.querySelectorAll('.mmm-checkbox-sub-container fieldset input').forEach((input) => {
     input.addEventListener('click', (e) => {
-      console.log(e.target.closest('fieldset'));
       if (e.target.closest('fieldset').querySelectorAll('input[type="checkbox"]:checked').length === 0) {
         e.preventDefault();
         e.target.closest('fieldset').classList.add('minError');
         setTimeout(() => e.target.closest('fieldset').classList.remove('minError'), 5000);
-        console.warn('Please select at least one checkbox');
         return;
       }
       filterPageList();
@@ -394,7 +394,7 @@ async function createForm(el) {
   const data = parseData(el);
   createDropdowns(data);
   createLastSeenManifestAndDomainDD();
-  createTargetAndManifestSrcFilter();
+  if (!isReport) createTargetAndManifestSrcFilter();
   createSearchField();
 }
 
@@ -570,7 +570,7 @@ async function createPageList(el, search) {
 function createSearchRows() {
   const searchContainer = createTag('div', { class: SEARCH_CONTAINER.slice(1) });
   document.querySelector('.mmm-container').parentNode.prepend(searchContainer);
-  Object.keys(GRID_FORMAT).forEach((key) => {
+  Object.keys(mmmPageVer).forEach((key) => {
     const row = createTag('div', { id: `mmm-search-${key}`, class: 'mmm-row mmm-form-container' });
     searchContainer.append(row);
   });
@@ -584,7 +584,7 @@ function createSearchRows() {
 function subscribeToSearchCriteriaChanges() {
   document.addEventListener(SEARCH_CRITERIA_CHANGE_EVENT, (el) => {
     // clear url of search params - might need to enable later
-    if (document.location.search) { // remove share
+    if (document.location.search) {
       window.history.pushState({}, document.title, `${document.location.origin}${document.location.pathname}`);
     }
 
@@ -599,6 +599,7 @@ function subscribeToSearchCriteriaChanges() {
 export default async function init(el) {
   window?.console?.log('running branch: mmm-newfilters');
   isReport = el.classList.contains('target-cleanup');
+  mmmPageVer = isReport ? GRID_FORMAT.report : GRID_FORMAT.base;
   await createPageList(el);
   createSearchRows();
   createForm(el);
