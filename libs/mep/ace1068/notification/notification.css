@@ -34,6 +34,7 @@
 .notification.button-full-width .con-button {
   width: 100%;
   max-width: 328px;
+  align-self: center;
 }
 
 .notification.ribbon {
