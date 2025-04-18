@@ -135,11 +135,6 @@ const showSuccessSection = (formData) => {
 const hideSuccessSection = (formData) => {
   const hide = async (sections) => {
     sections.forEach((section) => section.classList.add('hide-block'));
-    await new Promise((resolve) => { setTimeout(resolve, 300); });
-    const pageTop = document.querySelector('header')?.offsetHeight ?? 0;
-    const targetPosition = sections[0]?.getBoundingClientRect().top ?? 0;
-    const offsetPosition = targetPosition + window.scrollY - pageTop;
-    window.scrollTo(0, offsetPosition);
   };
 
   const hideClass = formData[SUCCESS_HIDE_SECTION]?.toLowerCase().replaceAll(' ', '-');
