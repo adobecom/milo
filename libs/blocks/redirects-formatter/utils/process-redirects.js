@@ -15,7 +15,7 @@ function createPairsFromTextaArea(textaAreaValue) {
     const source = urlValues[i]?.trim();
     const destination = urlValues[i + 1]?.trim();
 
-    if (source && source.length && destination) {
+    if (source?.length && destination) {
       pairs.push({
         source,
         destination,
