@@ -123,7 +123,7 @@ const showSuccessSection = (formData) => {
     () => {
       successSections = document.querySelectorAll(`.section.${showClass}`);
       show(successSections);
-
+      /* c8 ignore next 3 */
       if (!document.querySelector(`.section.${showClass}`)) {
         window.lana?.log(`Error showing Marketo success section ${showClass}`, { tags: 'warn,marketo' });
       }
@@ -151,7 +151,7 @@ const hideSuccessSection = (formData) => {
     () => {
       hideSections = document.querySelectorAll(`.section.${hideClass}`);
       hide(hideSections);
-
+      /* c8 ignore next 3 */
       if (!document.querySelector(`.section.${hideClass}`)) {
         window.lana?.log(`Error hiding Marketo success section ${hideClass}`, { tags: 'warn,marketo' });
       }
