@@ -133,7 +133,7 @@ const showSuccessSection = (formData) => {
 };
 
 const hideSuccessSection = (formData) => {
-  const hide = async (sections) => {
+  const hide = (sections) => {
     sections.forEach((section) => section.classList.add('hide-block'));
   };
 
