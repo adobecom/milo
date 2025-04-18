@@ -277,8 +277,9 @@ dd .mep-popup-header .mep-close {
   margin: 0 auto;
   /* width: 700px;  */
   width: 100%;
-  flex-flow: row nowrap;
-  max-width: 80vw;
+  /* flex-flow: row nowrap; */
+  flex-wrap: wrap;
+  /* max-width: 80vw; */
   position: relative;
 }
 .mmm-form-container > div {
@@ -291,11 +292,12 @@ dd .mep-popup-header .mep-close {
   font-size: var(--type-body-xs-size);
 }
 .mmm-form-container textarea {
-  padding: 1rem;
-  width: 95%;
-  min-height: 3rem;
+  padding: .8rem;
+  width: 100%;
+  min-height: 5rem;
   resize: vertical;
   overflow: auto;
+  box-sizing: border-box;
 }
 .mmm-form-container input,
 .mmm-form-container select {
@@ -323,7 +325,7 @@ dd .mep-popup-header .mep-close {
     display: flex;
     gap: var(--spacing-s);
   }
-  #mmm-dropdown-container {
+  #mmm-dropdown-container, .mmm-dropdown-container {
     flex: 0 0 50%;
   }
   #mmm-shareButtonContainer {
@@ -424,6 +426,7 @@ dd .mep-popup-header .mep-close {
 /* checkboxes */
 #mmm-targetSetting-fieldset, #mmm-manifestSrc-fieldset {
   border: none;
+  padding: 0!important;
 }
 .mmm-checkbox-option, #mmm-targetSetting-fieldset, #mmm-manifestSrc-fieldset {
   display: flex;
@@ -450,7 +453,7 @@ dd .mep-popup-header .mep-close {
     max-width: var(--grid-container-width);
   }
   #mmm-dropdown-container {
-    max-width: 48%
+    /* max-width: 48% */
   }
  
   #mmm-targetSetting-container, {
@@ -464,12 +467,67 @@ dd .mep-popup-header .mep-close {
     margin-left: 0;
   }
   #mmm-checkbox-filter-container {
-    width: 50%;
+    /* width: 50%; */
     margin: var(--spacing-m) 0 var(--spacing-xs) 0;
   }
   #mmm-manifestSrc-container, #mmm-targetSetting-container {
-    max-width: 50%;
+    /* max-width: 50%; */
   }
 }
 
+.mmm-order-1 {
+  order: 1;
+}
+.mmm-order-2 {
+  order: 2;
+}
+.mmm-order-3 {
+  order: 3;
+}
+.mmm-order-4 {
+  order: 4;
+}
+
+div[id*="mmm-search-row"] { 
+  display: flex;
+  flex-direction: row;
+  gap: var(--spacing-m);
+  margin-bottom: var(--spacing-m);
+  width: 100%;
+}
+
+.mmm-search-container {
+  max-width: var(--grid-container-width);
+}
+
+#mmm-checkbox-filter-targetSetting {
+  margin: 0;
+  flex: 0;
+  min-width: 23%;
+}
+
+.mmm-checkbox-sub-container {
+  display: flex; 
+  flex: 0 0 auto !important;
+}
+
+.mmm-dropdown-sub-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+@media screen and (max-width: 870px) {
+  #mmm-search-row2 {
+    flex-direction: column;
+  }
+}
+@media screen and (max-width: 580px) {
+  #mmm-search-row1 {
+    flex-direction: column;
+  }
+  #mmm-search-row1, #mmm-search-row2 {
+    row-gap: var(--spacing-xxs);
+  }
+}
 

@@ -33,6 +33,13 @@ const MANIFESTSRC_OPTIONS = {
   ajo: { label: 'AJO', value: 'ajo' },
 };
 
+const GRID_FORMAT = {
+  // array values must match ids of html element in order desired per row
+  row1: ['mmm-dropdown-pages', 'mmm-dropdown-geos', 'mmm-dropdown-lastSeen', 'mmm-dropdown-subdomain'],
+  row2: ['mmm-checkbox-filter-targetSetting', 'mmm-checkbox-filter-manifestSrc'],
+  row3: ['mmm-search-filter-container'],
+};
+
 export const getLocalStorageFilter = () => {
   const cookie = localStorage.getItem(MMM_LOCAL_STORAGE_KEY);
   return cookie ? JSON.parse(cookie) : null;
@@ -206,22 +213,29 @@ function parseData(el) {
   return data;
 }
 
+function findAndSetInGrid(htmlEl) {
+  let insertPoint;
+  Object.keys(GRID_FORMAT).forEach((key) => {
+    const checkIndex = GRID_FORMAT[key].indexOf(htmlEl.id);
+    if (checkIndex !== -1) insertPoint = [key, checkIndex];
+  });
+  const searchRow = document.getElementById(`mmm-search-${insertPoint[0]}`);
+  searchRow.append(htmlEl);
+  htmlEl.classList.add(`mmm-order-${insertPoint[1] + 1}`);
+}
+
 function createDropdowns(data) {
-  const searchContainer = document.querySelector(SEARCH_CONTAINER);
-  const dropdownForm = createTag(
-    'div',
-    { id: 'mmm-dropdown-container', class: 'mmm-form-container' },
-  );
-  searchContainer.append(dropdownForm);
-  const dropdownSubContainer = createTag('div', { id: 'mmm-dropdown-sub-container' });
-  dropdownForm.append(dropdownSubContainer);
   Object.keys(data).forEach((key) => {
     const { label, options } = data[key];
-    const container = createTag('div');
-    dropdownSubContainer.append(container);
-    container.append(createTag('label', { for: `mmm-dropdown-${key}` }, `${label}:`));
+    const dropdownContainer = createTag(
+      'div',
+      { id: `mmm-dropdown-${key}`, class: 'mmm-form-container mmm-dropdown-container' },
+    );
+    const dropdownSubContainer = createTag('div', { class: 'mmm-dropdown-sub-container' });
+    dropdownContainer.append(dropdownSubContainer);
+    dropdownSubContainer.append(createTag('label', { for: `mmm-dropdown-${key}` }, `${label}:`));
     const select = createTag('select', { id: `mmm-dropdown-${key}` });
-    container.append(select);
+    dropdownSubContainer.append(select);
     select.append(createTag('option', { value: '' }, 'Show all'));
     Object.keys(options).forEach((option) => {
       const optionEl = createTag('option', { value: option }, options[option]);
@@ -230,6 +244,7 @@ function createDropdowns(data) {
       if (startingVal === option) optionEl.setAttribute('selected', 'selected');
     });
     select.addEventListener('change', () => filterPageList());
+    findAndSetInGrid(dropdownContainer);
   });
 }
 
@@ -242,16 +257,16 @@ function debounce(func) {
 }
 
 function createSearchField() {
-  const searchContainer = document.querySelector(SEARCH_CONTAINER);
+  // const searchContainer = document.querySelector(SEARCH_CONTAINER);
   const searchForm = createTag(
     'div',
     { id: 'mmm-search-filter-container', class: 'mmm-form-container' },
-    `<div>
+    `<div class="mmm-search-sub-container">
       <label for="mmm-search-filter">Filter: search for a full or partial page URL (production only), manifest URL, manifest experience name or Target activity name:</label>
       <textarea id="mmm-search-filter" type="text" name="mmm-search-filter" class="text-field-input" placeholder="https://www.adobe.com/creativecloud.html\n/test_campaign4/test-campaign4-business.json\nDC1031"></textarea>
     </div>`,
   );
-  searchContainer.append(searchForm);
+  // searchContainer.append(searchForm);
   const searchField = searchForm.querySelector('textarea');
   searchField.value = SEARCH_INITIAL_VALUES.filter || '';
 
@@ -261,22 +276,26 @@ function createSearchField() {
     this.style.height = 'auto'; /* Reset height to auto to recalculate */
     this.style.height = `${this.scrollHeight - 32}px`;
   });
+  findAndSetInGrid(searchForm);
 }
 
 function createLastSeenManifestAndDomainDD() {
-  const searchContainer = document.querySelector(SEARCH_CONTAINER);
-  const dd = createTag(
+  const dropdownLastSeen = createTag(
     'div',
-    { id: 'mmm-dropdown-container', class: 'mmm-form-container' },
-    `<div>
+    { id: 'mmm-dropdown-lastSeen', class: 'mmm-form-container mmm-dropdown-container' },
+    `<div class="mmm-dropdown-sub-container">
       <label for="mmm-lastSeenManifest">Manifests seen in the last:</label>
       <select id="mmm-lastSeenManifest" type="text" name="mmm-lastSeenManifest" class="text-field-input">
         ${Object.keys(LAST_SEEN_OPTIONS).map((key) => `
           <option value="${LAST_SEEN_OPTIONS[key].key}" ${SEARCH_INITIAL_VALUES.lastSeenManifest === LAST_SEEN_OPTIONS[key].key ? 'selected' : ''}>${LAST_SEEN_OPTIONS[key].value}</option>
         `)}
       </select>
-    </div>
-    <div>
+    </div>`,
+  );
+  const dropdownSubdomain = createTag(
+    'div',
+    { id: 'mmm-dropdown-subdomain', class: 'mmm-form-container mmm-dropdown-container' },
+    `<div class="mmm-dropdown-sub-container">
       <label for="mmm-subdomain">Subdomain:</label>
       <select id="mmm-subdomain" type="text" name="mmm-subdomain" class="text-field-input">
         ${Object.keys(SUBDOMAIN_OPTIONS).map((key) => `
@@ -286,11 +305,13 @@ function createLastSeenManifestAndDomainDD() {
     </div>
     `,
   );
-  dd.addEventListener('change', () => filterPageList());
-  searchContainer.append(dd);
+  dropdownLastSeen.addEventListener('change', () => filterPageList());
+  dropdownSubdomain.addEventListener('change', () => filterPageList());
+  findAndSetInGrid(dropdownLastSeen);
+  findAndSetInGrid(dropdownSubdomain);
 }
 
-function createCheckBoxFilterGroup(checkBoxId, legendLabel, optionsObj, allSelected = true) {
+function createCheckBoxFilterGroup(checkBoxId, legendLabel, optionsObj) {
   const initValues = SEARCH_INITIAL_VALUES;
   const checkBoxLegend = createTag('legend', { id: `mmm-checkbox-${checkBoxId}-legend` }, legendLabel);
   const checkBoxFieldset = createTag('fieldset', { id: `mmm-${checkBoxId}-fieldset` }, checkBoxLegend);
@@ -307,7 +328,8 @@ function createCheckBoxFilterGroup(checkBoxId, legendLabel, optionsObj, allSelec
       value: checkboxValue,
       class: 'mmm-checkbox',
       // if all values in group are unselected, then all checkboxes will be selected on refresh
-      ...(initValueCheck || !initValues?.[groupName] ? { checked: 'true' } : {}),
+      // ...(initValueCheck || !initValues?.[groupName] ? { checked: 'true' } : {}),
+      ...(initValueCheck ? { checked: 'true' } : {}),
     });
     checkDiv.append(checkBox, checkLabel);
     return checkDiv;
@@ -330,22 +352,34 @@ function createTargetAndManifestSrcFilter() {
     { name: 'targetSetting', label: "Page's Target Setting:", options: TARGETSETTING_OPTIONS },
     { name: 'manifestSrc', label: 'Manifest Source:', options: MANIFESTSRC_OPTIONS },
   ];
-  const searchContainer = document.querySelector(SEARCH_CONTAINER);
-  const checkBoxFilterContainer = createTag('div', { id: 'mmm-checkbox-filter-container', class: 'mmm-form-container' });
   filterConfigs.forEach(({ name, label, options }) => {
+    const checkboxSubContainer = createTag('div', { class: 'mmm-checkbox-sub-container' });
     const filterGroup = createCheckBoxFilterGroup(name, label, options);
-    checkBoxFilterContainer.append(filterGroup);
+    checkboxSubContainer.append(filterGroup);
+    const checkBoxFilterContainer = createTag(
+      'div',
+      { id: `mmm-checkbox-filter-${name}`, class: 'mmm-form-container ' },
+      checkboxSubContainer,
+    );
+    findAndSetInGrid(checkBoxFilterContainer);
   });
-  searchContainer.append(checkBoxFilterContainer);
-  document.querySelectorAll('#mmm-checkbox-filter-container fieldset').forEach((fieldset) => {
-    fieldset.addEventListener('change', () => filterPageList());
+  // document.querySelectorAll('.mmm-checkbox-sub-container fieldset').forEach((fieldset) => {
+  //   fieldset.addEventListener('change', () => filterPageList());
+  // });
+  document.querySelectorAll('.mmm-checkbox-sub-container fieldset input').forEach((fieldset) => {
+    fieldset.addEventListener('click', (e) => {
+      if (document.querySelectorAll('fieldset input[type="checkbox"]:checked').length === 0) {
+        e.preventDefault();
+        console.warn('Please select at least one checkbox');
+        return;
+      }
+      filterPageList();
+    });
   });
 }
 
 async function createForm(el) {
   const data = parseData(el);
-  const searchContainer = createTag('div', { class: SEARCH_CONTAINER.slice(1) });
-  document.querySelector('.mmm-container').parentNode.prepend(searchContainer);
   createDropdowns(data);
   createLastSeenManifestAndDomainDD();
   createTargetAndManifestSrcFilter();
@@ -487,6 +521,15 @@ async function createPageList(el, search) {
   handlePaginationDropdownChange();
 }
 
+function createSearchRows() {
+  const searchContainer = createTag('div', { class: SEARCH_CONTAINER.slice(1) });
+  document.querySelector('.mmm-container').parentNode.prepend(searchContainer);
+  Object.keys(GRID_FORMAT).forEach((key) => {
+    const row = createTag('div', { id: `mmm-search-${key}`, class: 'mmm-row mmm-form-container' });
+    searchContainer.append(row);
+  });
+}
+
 /**
  * This function creates a listener to search criteria changes
  * and will fires an API call when event is received.
@@ -510,6 +553,7 @@ function subscribeToSearchCriteriaChanges() {
 export default async function init(el) {
   window?.console?.log('running branch: mmm-newfilters');
   await createPageList(el);
+  createSearchRows();
   createForm(el);
   subscribeToSearchCriteriaChanges();
   loadStyle('/libs/features/personalization/preview.css');
