@@ -40,6 +40,10 @@ button:hover {
   color: var(--color-white);
 }
 
+button:hover svg {
+  fill: var(--color-white);
+}
+
 button.selected {
   background-color: var(--color-black);
   border-color: var(--color-black);
