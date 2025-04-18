@@ -1,4 +1,4 @@
-import { getConfig } from '../../utils/utils.js';
+import { getConfig, getLanguage } from '../../utils/utils.js';
 
 const queriedPages = [];
 
