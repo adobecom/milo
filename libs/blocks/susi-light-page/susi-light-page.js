@@ -21,6 +21,8 @@ const onRedirect = (e) => window.location.replace(e.detail);
 
 const onError = (e) => window.lana?.log('Product Login pages: SUSI Light Error: ', e);
 
+const getText = (e) => e?.textContent?.trim();
+
 export class SusiLight {
   constructor(el) {
     this.el = el;
@@ -28,7 +30,7 @@ export class SusiLight {
     this.isDesktop = window.matchMedia('(min-width: 900px)');
   }
 
-  getRedirectURL = (env) => this.children[5]?.textContent?.trim() || `https://www.${env.name === 'prod' ? '' : 'stage.'}adobe.com/home`;
+  getRedirectURL = (env) => getText(this.children[4]) || `https://www.${env.name === 'prod' ? '' : 'stage.'}adobe.com/home`;
 
   init = async () => {
     const { env } = getConfig();
@@ -39,9 +41,7 @@ export class SusiLight {
     this.el.innerHTML = '';
 
     const loginContainer = this.createLoginContainer();
-    const productInfo = this.createProductInfoElement();
-
-    this.el.append(loginContainer, productInfo);
+    this.el.append(loginContainer);
   };
 
   handleViewportChange = () => this.setBackground();
@@ -62,7 +62,7 @@ export class SusiLight {
     sentry.stage = true;
     sentry.variant = 'standard';
     sentry.authParams = this.createAuthParams();
-    sentry.config = {};
+    sentry.config = { consentProfile: 'free' };
     sentry.addEventListener('redirect', onRedirect);
     sentry.addEventListener('on-error', onError);
     return sentry;
@@ -73,10 +73,11 @@ export class SusiLight {
     const susiWrapper = createTag('div', { class: 'susi-light-wrapper' });
     const loginProduct = createTag('div', { class: 'login-product' });
     this.createProductInfo(loginProduct);
-    const loginTitle = createTag('div', { class: 'login-title' }, this.children[1]?.textContent);
-    const loginDesc = createTag('div', { class: 'login-description' }, this.children[2]?.textContent);
+    const loginText = this.children[1]?.querySelectorAll('p');
+    const loginTitle = createTag('div', { class: 'login-title' }, loginText.length > 0 ? getText(loginText[0]) : getText(this.children[1]));
+    const loginDesc = createTag('div', { class: 'login-description' }, loginText.length > 1 ? getText(loginText[1]) : '');
     const susiElement = this.createSusiElement();
-    const guestFooter = createTag('div', { class: 'guest-footer' }, this.children[4]);
+    const guestFooter = createTag('div', { class: 'guest-footer' }, this.children[3]);
 
     susiWrapper.append(loginProduct, loginTitle, loginDesc, susiElement);
     loginContainer.append(susiWrapper, guestFooter);
@@ -85,22 +86,14 @@ export class SusiLight {
   };
 
   createProductInfo = (product) => {
-    const prodInfo = this.children[3]?.querySelectorAll(':scope p');
-    const titleText = prodInfo[1]?.textContent;
+    const prodInfo = this.children[2]?.querySelectorAll(':scope p');
+    const titleText = getText(prodInfo[1]);
     const title = createTag('span', { class: 'susi-product-title' }, titleText);
-    const logoURL = prodInfo[0]?.querySelector('img')?.getAttribute('src') || '';
-    const logo = createTag('img', { class: 'susi-product-logo', src: logoURL, alt: `${titleText}-logo` });
+    const logoURL = this.children[2]?.querySelector('img')?.getAttribute('src') || '';
+    const logo = createTag('img', { class: 'susi-product-logo', src: logoURL, alt: `${titleText || 'product'}-logo` });
+    if (!titleText) logo.style.width = 'auto';
     product.append(logo, title);
     return product;
-  };
-
-  createProductInfoElement = () => {
-    const prodInfo = this.children[3]?.querySelectorAll(':scope p');
-    const productInfo = createTag('div', { class: 'susi-product-info' });
-    const tagline = createTag('div', { class: 'susi-product-tagline' }, prodInfo[2].textContent);
-    const product = createTag('div', { class: 'susi-product' });
-    productInfo.append(this.createProductInfo(product), tagline);
-    return productInfo;
   };
 
   parseBgImg = () => {
@@ -111,7 +104,7 @@ export class SusiLight {
     const src = backgroundElement?.querySelector('img')?.getAttribute('src');
     if (src) return `url${href})`;
 
-    const text = backgroundElement?.textContent?.trim();
+    const text = getText(backgroundElement);
     const gradientPattern = /^(repeating?-)?(linear|radial|conic)-gradient\(.+\)$/;
     if (gradientPattern.test(text)) return text;
 

@@ -1,11 +1,11 @@
 import { expect } from '@esm-bundle/chai';
 import { readFile, setViewport } from '@web/test-runner-commands';
-import initSUSI from '../../../libs/blocks/susi-light/susi-light.js';
+import initSUSI from '../../../libs/blocks/susi-light-page/susi-light-page.js';
 import { setConfig } from '../../../libs/utils/utils.js';
 
 async function init() {
   try {
-    const block = document.body.querySelector('.susi-light');
+    const block = document.body.querySelector('.susi-light-page');
     await initSUSI(block);
   } catch (e) {
     // should throw error
@@ -25,7 +25,7 @@ describe('susi light', () => {
     before(async () => {
       setConfig(config);
       window.adobeIMS = { isSignedInUser: () => false };
-      susiHtml = await readFile({ path: './mocks/susi-light.html' });
+      susiHtml = await readFile({ path: './mocks/susi-light-page.html' });
       document.head.innerHTML = `<link rel="icon" href="/libs/img/favicons/favicon.ico" size="any">
       <script src="https://auth.services.adobe.com/imslib/imslib.min.js" type="javascript/blocked" data-loaded="true"></script>
       <script src="https://auth-light.identity-stage.adobe.com/sentry/wrapper.js" type="javascript/blocked" data-loaded="true"></script>
@@ -50,13 +50,17 @@ describe('susi light', () => {
       expect(loginTitle).to.exist;
       expect(loginTitle.textContent.trim()).equals('Log in or create an account');
     });
-    it('should display product info', async () => {
-      const susiPrdInfo = document.querySelector('.susi-product-info');
-      expect(susiPrdInfo).to.exist;
+    it('should display product title', async () => {
+      const susiPrdTitle = document.querySelector('.susi-product-title');
+      expect(susiPrdTitle).to.exist;
+    });
+    it('should display guest footer', async () => {
+      const guestFooter = document.querySelector('.guest-footer');
+      expect(guestFooter).to.exist;
     });
     it('should add gradient background for desktop', async () => {
       const gradient = 'linear-gradient(165deg, rgb(251, 63, 255) 0%, rgb(230, 255, 41) 35%, rgb(255, 22, 22) 100%)';
-      expect(document.querySelector('.susi-light').style.backgroundImage).equals(gradient);
+      expect(document.querySelector('.susi-light-page').style.backgroundImage).equals(gradient);
     });
   });
   describe('susi on mobile and locale', () => {
@@ -72,7 +76,7 @@ describe('susi light', () => {
       expect(susiElement.authParams.locale).equals(config.locales.fr.ietf);
     });
     it('should not add background for mobile', async () => {
-      expect(document.querySelector('.susi-light').style.backgroundImage).equals('');
+      expect(document.querySelector('.susi-light-page').style.backgroundImage).equals('');
     });
   });
 });
