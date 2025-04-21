@@ -218,9 +218,9 @@ export function getLanguage(languages, locales, pathname = window.location.pathn
   const language = languages[languageString];
   if (language && region && language.regions) {
     const [matchingRegion] = language.regions.filter((r) => r.region === region);
-    language.region = matchingRegion.region;
-    if (matchingRegion.ietf)language.ietf = matchingRegion.ietf;
-    if (matchingRegion.tk) language.tk = matchingRegion.tk;
+    if (matchingRegion?.region) language.region = matchingRegion.region;
+    if (matchingRegion?.ietf) language.ietf = matchingRegion.ietf;
+    if (matchingRegion?.tk) language.tk = matchingRegion.tk;
     regionPath = matchingRegion ? `/${region}` : '';
   }
 
@@ -1298,6 +1298,8 @@ async function checkForPageMods() {
     martech,
   } = Object.fromEntries(PAGE_URL.searchParams);
   let targetInteractionPromise = null;
+  let countryIPPromise = null;
+
   let calculatedTimeout = null;
   if (mepParam === 'off') return;
   const pzn = getMepEnablement('personalization');
@@ -1305,12 +1307,20 @@ async function checkForPageMods() {
   const target = martech === 'off' ? false : getMepEnablement('target');
   const xlg = martech === 'off' ? false : getMepEnablement('xlg');
   const ajo = martech === 'off' ? false : getMepEnablement('ajo');
+  const mepgeolocation = martech === 'off' ? false : getMepEnablement('mepgeolocation');
 
   if (!(pzn || target || promo || mepParam
     || mepHighlight || mepButton || mepParam === '' || xlg || ajo)) return;
 
+  if (mepgeolocation) {
+    const urlParams = new URLSearchParams(window.location.search);
+    const akamaiCode = urlParams.get('akamaiLocale')?.toLowerCase() || sessionStorage.getItem('akamai');
+    if (!akamaiCode) {
+      const { getAkamaiCode } = await import('../features/georoutingv2/georoutingv2.js');
+      countryIPPromise = getAkamaiCode(true);
+    }
+  }
   const enablePersV2 = enablePersonalizationV2();
-  const hybridPersEnabled = getMepEnablement('hybrid-pers');
   if ((target || xlg) && enablePersV2) {
     const params = new URL(window.location.href).searchParams;
     calculatedTimeout = parseInt(params.get('target-timeout'), 10)
@@ -1323,7 +1333,7 @@ async function checkForPageMods() {
       const now = performance.now();
       performance.mark('interaction-start');
       const data = await loadAnalyticsAndInteractionData(
-        { locale, env: getEnv({})?.name, calculatedTimeout, hybridPersEnabled },
+        { locale, env: getEnv({})?.name, calculatedTimeout },
       );
       performance.mark('interaction-end');
       performance.measure('total-time', 'interaction-start', 'interaction-end');
@@ -1350,10 +1360,11 @@ async function checkForPageMods() {
     promo,
     target,
     ajo,
+    countryIPPromise,
+    mepgeolocation,
     targetInteractionPromise,
     calculatedTimeout,
     enablePersV2,
-    hybridPersEnabled,
   });
 }
 
@@ -1392,6 +1403,12 @@ async function loadPostLCP(config) {
     import('../features/personalization/personalization.js')
       .then(({ addMepAnalytics }) => addMepAnalytics(config, header));
   }
+  // load privacy here if quick-link is present in first section
+  const quickLink = document.querySelector('div.section')?.querySelector('.quick-link');
+  if (!quickLink) return;
+  import('../scripts/delayed.js').then(({ loadPrivacy }) => {
+    loadPrivacy(getConfig, loadScript);
+  });
 }
 
 export function scrollToHashedElement(hash) {
