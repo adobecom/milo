@@ -76,22 +76,12 @@ const loadCaas = async (a) => {
   initCaas(state, caasStrs, block);
 };
 
-const isSearchBot = function () {
-  const ua = navigator.userAgent || '';
-  const lower = ua.toLowerCase();
-
-  // 1. Headless / WebDriver contexts
-  if (navigator.webdriver) return true;
-  if (/headlesschrome/.test(ua)) return true;
-  if (/phantomjs/.test(lower)) return true;
-
-  // 2. Generic crawler terms
-  //    matches “bot”, “crawl”, “spider”, “slurp”, etc.
-  return /(bot|crawl|spider|slurp|preview|mediapartners-google)/.test(lower);
+const isGoogleBot = function () {
+  return /googlebot/i.test(navigator.userAgent);
 };
 
 export default async function init(link) {
-  if (link.textContent.includes('no-lazy') || isSearchBot()) {
+  if (link.textContent.includes('no-lazy') || isGoogleBot()) {
     loadCaas(link);
   } else {
     createIntersectionObserver({
