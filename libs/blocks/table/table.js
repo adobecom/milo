@@ -363,6 +363,12 @@ function handleSection(sectionParams) {
     }
   } else if (!row.classList.contains('row-1') && (!isHighlightTable || !row.classList.contains('row-2'))) {
     row.classList.add('section-row');
+    rowCols.forEach((col) => {
+      if (col.querySelector('a') && !col.querySelector('span')) {
+        const textSpan = createTag('span', { class: 'col-text' }, [...col.childNodes]);
+        col.appendChild(textSpan);
+      }
+    });
     if (isMerch && !row.classList.contains('divider')) {
       rowCols.forEach((merchCol) => {
         merchCol.classList.add('col-merch');
