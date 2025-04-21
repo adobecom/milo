@@ -255,6 +255,17 @@ span.feds-footer-privacyLink-divider {
   height: 12px;
 }
 
+.footer-logo {
+  padding: 0 var(--feds-gutter-footer);
+}
+
+.footer-logo-image img,
+.footer-logo-image svg,
+.footer-logo-image picture { 
+  width: 45px;
+}
+
+
 @media (min-width: 600px) {
   dialog.feds-dialog {
     max-width: 80vw;
@@ -323,6 +334,11 @@ span.feds-footer-privacyLink-divider {
   span.feds-footer-privacyLink-divider, .feds-footer-privacyLink {
     margin-left: 5px;
     margin-right: 0;
+  }
+
+  .footer-logo {
+    display: flex;
+    justify-content: center;
   }
 }
 

@@ -401,9 +401,26 @@ class Footer {
     return this.elements.legal;
   };
 
+  decorateLogo = () => {
+    const rawBlock = this.body.querySelector('.adobe-logo');
+    if (!rawBlock) return '';
+    
+    const getImageEl = () => {
+      const svgImg = rawBlock.querySelector('picture img[src$=".svg"]');
+      if (svgImg) return svgImg;
+      return '';
+    };
+  
+    return toFragment`
+      <a class="footer-logo">
+        ${toFragment`<span class="footer-logo-image">${getImageEl()}</span>`}
+      </a>`;
+  }
+
   decorateFooter = () => {
     this.elements.footer = toFragment`<div class="feds-footer-wrapper">
         ${this.elements.footerMenu}
+        ${this.decorateLogo()}
         ${this.elements.featuredProducts}
         <div class="feds-footer-options">
           <div class="feds-footer-miscLinks">
