@@ -62,7 +62,7 @@ export class SusiLight {
     sentry.stage = true;
     sentry.variant = 'standard';
     sentry.authParams = this.createAuthParams();
-    sentry.config = {};
+    sentry.config = { consentProfile: 'free' };
     sentry.addEventListener('redirect', onRedirect);
     sentry.addEventListener('on-error', onError);
     return sentry;
