@@ -1,11 +1,11 @@
 import { expect } from '@esm-bundle/chai';
 import { readFile, setViewport } from '@web/test-runner-commands';
-import initSUSI from '../../../libs/blocks/susi-light-page/susi-light-page.js';
+import initSUSI from '../../../libs/blocks/susi-light-login/susi-light-login.js';
 import { setConfig } from '../../../libs/utils/utils.js';
 
 async function init() {
   try {
-    const block = document.body.querySelector('.susi-light-page');
+    const block = document.body.querySelector('.susi-light-login');
     await initSUSI(block);
   } catch (e) {
     // should throw error
@@ -25,7 +25,7 @@ describe('susi light', () => {
     before(async () => {
       setConfig(config);
       window.adobeIMS = { isSignedInUser: () => false };
-      susiHtml = await readFile({ path: './mocks/susi-light-page.html' });
+      susiHtml = await readFile({ path: './mocks/susi-light-login.html' });
       document.head.innerHTML = `<link rel="icon" href="/libs/img/favicons/favicon.ico" size="any">
       <script src="https://auth.services.adobe.com/imslib/imslib.min.js" type="javascript/blocked" data-loaded="true"></script>
       <script src="https://auth-light.identity-stage.adobe.com/sentry/wrapper.js" type="javascript/blocked" data-loaded="true"></script>
@@ -60,7 +60,7 @@ describe('susi light', () => {
     });
     it('should add gradient background for desktop', async () => {
       const gradient = 'linear-gradient(165deg, rgb(251, 63, 255) 0%, rgb(230, 255, 41) 35%, rgb(255, 22, 22) 100%)';
-      expect(document.querySelector('.susi-light-page').style.backgroundImage).equals(gradient);
+      expect(document.querySelector('.susi-light-login').style.backgroundImage).equals(gradient);
     });
   });
   describe('susi on mobile and locale', () => {
@@ -76,7 +76,7 @@ describe('susi light', () => {
       expect(susiElement.authParams.locale).equals(config.locales.fr.ietf);
     });
     it('should not add background for mobile', async () => {
-      expect(document.querySelector('.susi-light-page').style.backgroundImage).equals('');
+      expect(document.querySelector('.susi-light-login').style.backgroundImage).equals('');
     });
   });
 });

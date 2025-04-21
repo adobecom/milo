@@ -92,7 +92,7 @@ const MILO_BLOCKS = [
   'youtube',
   'z-pattern',
   'share',
-  'susi-light-page',
+  'susi-light-login',
   'reading-time',
 ];
 const AUTO_BLOCKS = [

@@ -1,4 +1,4 @@
-.susi-light-page {
+.susi-light-login {
   background-size: cover;
   align-items: center;
   align-content: center;
@@ -85,7 +85,7 @@ susi-sentry-light {
 
 @media (min-width: 900px) {
 
-  .susi-light-page {
+  .susi-light-login {
     height: calc(100vh - calc(var(--feds-height-nav, 63px) + 67px) );
     min-height: 730px;
     justify-content: initial;
