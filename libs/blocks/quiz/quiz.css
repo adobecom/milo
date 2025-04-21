@@ -214,6 +214,11 @@ html[dir="rtl"] .quiz-option-checkbox {
   padding: 11px 86px;
 }
 
+.quiz-button:focus-visible {
+  outline: 3px solid #000;
+  outline-offset: 3px;
+}
+
 .quiz-button-label {
   color: var(--quiz-option-text-selected);
   font-size: 18px;
