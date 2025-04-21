@@ -402,20 +402,17 @@ class Footer {
   };
 
   decorateLogo = () => {
-    const rawBlock = this.body.querySelector('.adobe-logo');
-    if (!rawBlock) return '';
-    
-    const getImageEl = () => {
-      const svgImg = rawBlock.querySelector('picture img[src$=".svg"]');
-      if (svgImg) return svgImg;
-      return '';
-    };
-  
+    const logoContainer = this.body.querySelector('.adobe-logo');
+    if (!logoContainer) return '';
+
+    const imageEl = logoContainer.querySelector('picture img[src$=".svg"]');
+    if (!imageEl) return '';
+
     return toFragment`
       <a class="footer-logo">
-        ${toFragment`<span class="footer-logo-image">${getImageEl()}</span>`}
+        <span class="footer-logo-image">${imageEl}</span>
       </a>`;
-  }
+  };
 
   decorateFooter = () => {
     this.elements.footer = toFragment`<div class="feds-footer-wrapper">
