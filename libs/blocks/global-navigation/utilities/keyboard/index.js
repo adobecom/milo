@@ -102,7 +102,7 @@ class KeyboardNavigation {
   };
 
   addEventListeners = () => {
-    [...document.querySelectorAll(`${selectors.globalNav}, ${selectors.globalFooter}`)]
+    [...document.querySelectorAll(`${selectors.globalNav}, ${selectors.globalFooter}, ${selectors.localNav}`)]
       .forEach((el) => {
         el.addEventListener('keydown', (e) => logErrorFor(() => {
           switch (e.code) {
