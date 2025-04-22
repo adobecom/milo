@@ -130,19 +130,20 @@ const GeoMap = {
 
 const LANG_STORE_PREFIX = 'langstore/';
 
+// eslint-disable-next-line consistent-return
 function getDefaultLangstoreCountry(language) {
   if (language === 'en') {
     return 'US';
-  } else if (language === 'ar') { // beacuse GeoMap['ar'] is for Argentina
+  }
+  if (language === 'ar') { // beacuse GeoMap['ar'] is for Argentina
     return 'EG';
-  } else if (GeoMap[language]) {
+  }
+  if (GeoMap[language]) {
     return GeoMap[language].split('_', 2)[0];
-  } else {
-    for (const loc in GeoMap) {
-      const value = GeoMap[loc].toLowerCase();
-      if (value.endsWith(`_${language}`)) {
-        return value.split('_', 2)[0];
-      }
+  }
+  for (const [, value] of Object.entries(GeoMap)) {
+    if (value.toLowerCase().endsWith(`_${language}`)) {
+      return value.split('_', 2)[0];
     }
   }
 }
