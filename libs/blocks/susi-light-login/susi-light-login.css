@@ -2,9 +2,10 @@
   --susi-footer-color: #292929;
 
   background-size: cover;
+  display: flex;
   align-items: center;
   align-content: center;
-  justify-items: center;
+  justify-content: center;
   padding: 32px 0;
   box-sizing: border-box;
   overflow-y: scroll;
@@ -98,8 +99,6 @@ susi-sentry-light {
   .susi-light-login {
     height: calc(100vh - calc(var(--feds-height-nav, 63px) + 67px) );
     min-height: 730px;
-    justify-content: initial;
-    box-sizing: border-box;
     padding: 20px 0;
   }
   
@@ -108,7 +107,7 @@ susi-sentry-light {
   }
   
   .guest-footer {
-    padding: 16px 10px 24px;
+    padding: 16px 10px;
     border-radius: 0 0 16px 16px;
   }
 
