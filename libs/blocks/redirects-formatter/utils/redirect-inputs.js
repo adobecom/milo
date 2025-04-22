@@ -37,20 +37,17 @@ export default function createSingleRedirectArea() {
   const addSingleInput = createTag('div', { class: 'single-input-ui' }, addInputButton);
 
   addSingleInput.addEventListener('click', () => {
-    let newRowId = startingRowId;
-    const currentRows = document.querySelectorAll('.redirect-input-row');
-    const numRows = currentRows.length;
-
-    if (numRows >= 1) {
-      const lastRowId = currentRows[numRows - 1].dataset.rowId;
-      newRowId = parseInt(lastRowId, 10) + 1;
-    }
+    const inputParent = document.querySelector('.single-redirects-container');
+    const newRowId = parseInt(inputParent.dataset.nextRowId, 10);
 
     const newRow = createSingleInputRow(newRowId);
     document.querySelector('.single-redirects-container').insertBefore(newRow, addSingleInput);
+    inputParent.dataset.nextRowId = newRowId + 1;
   });
 
-  return createTag('section', { class: 'single-redirects-container selected' }, [singleInput, addSingleInput]);
+  const singleRedirectsContainer = createTag('section', { class: 'single-redirects-container selected' }, [singleInput, addSingleInput]);
+  singleRedirectsContainer.dataset.nextRowId = 1;
+  return singleRedirectsContainer;
 }
 
 function createBulkRedirectsArea() {

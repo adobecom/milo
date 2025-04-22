@@ -140,11 +140,11 @@ describe('Redirects Formatter Tests', () => {
     addButton.click();
     const newRow = redirectsArea.querySelector('.redirect-input-row');
     expect(newRow).to.exist;
-    expect(newRow.getAttribute('data-row-id')).to.equal('0');
+    expect(newRow.getAttribute('data-row-id')).to.equal('3');
 
     // Add another row and verify it gets the next sequential ID
     addButton.click();
     const rows = redirectsArea.querySelectorAll('.redirect-input-row');
-    expect(rows[1].getAttribute('data-row-id')).to.equal('1');
+    expect(rows[1].getAttribute('data-row-id')).to.equal('4');
   });
 });
