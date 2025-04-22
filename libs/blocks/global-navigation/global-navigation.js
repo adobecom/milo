@@ -372,7 +372,7 @@ const convertToPascalCase = (str) => str
   .join(' ');
 
 const removeLocalNav = () => {
-  lanaLog({ message: 'Gnav Localnav was removed, potential CLS', tags: 'gnav-localnav' });
+  lanaLog({ message: 'Gnav Localnav was removed, potential CLS', tags: 'gnav-localnav', errorType: 'i' });
   document.querySelector('.feds-localnav')?.remove();
 };
 
