@@ -45,9 +45,18 @@ function handleStickyPromobar(section, delay) {
     hasScrollControl = true;
     section.classList.remove('hide-sticky-section');
   }
+  const metadata = getMetadata(section.querySelector('.section-metadata'));
+
   if (!hasScrollControl && main.children[0] !== section) {
-    stickySectionEl = createTag('div', { class: 'section show-sticky-section' });
-    section.parentElement.insertBefore(stickySectionEl, section);
+    const isStickyAfterCTA = metadata?.style?.text.includes('sticky-after-cta');
+
+    if (isStickyAfterCTA) {
+      stickySectionEl = main.children[0].querySelector('.action-area');
+      stickySectionEl?.classList.add('show-sticky-section');
+    } else {
+      stickySectionEl = createTag('div', { class: 'section show-sticky-section' });
+      section.parentElement.insertBefore(stickySectionEl, section);
+    }
   }
   const io = promoIntersectObserve(section, stickySectionEl);
   if (stickySectionEl) io.observe(stickySectionEl);
@@ -55,7 +64,6 @@ function handleStickyPromobar(section, delay) {
     io.observe(document.querySelector('footer'));
   }
 
-  const metadata = getMetadata(section.querySelector('.section-metadata'));
   const selector = metadata?.['custom-hide']?.text;
   const targetElement = document.querySelector(selector);
   if (targetElement) {
