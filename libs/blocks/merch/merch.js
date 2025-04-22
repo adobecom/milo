@@ -155,7 +155,7 @@ export function getMiloLocaleSettings(locale) {
     GeoMap[geo] ?? geo
   ).split('_', 2);
 
-  if (geo.startsWith(LANG_STORE_PREFIX)) {
+  if (geo.startsWith(LANG_STORE_PREFIX) || window.location.pathname.startsWith(`/${LANG_STORE_PREFIX}`)) {
     const localeLang = geo.replace(LANG_STORE_PREFIX, '').toLowerCase();
     country = getDefaultLangstoreCountry(localeLang);
     language = localeLang;
