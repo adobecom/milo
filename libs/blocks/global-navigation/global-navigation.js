@@ -663,7 +663,7 @@ class Gnav {
         message: 'GNAV: decorateProfile has failed to fetch profile data',
         e: `${profileData.statusText} url: ${profileData.url}`,
         tags: 'gnav',
-        errorType: 'info',
+        errorType: 'i',
       });
       return;
     }
