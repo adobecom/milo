@@ -10,8 +10,8 @@ export const CLIENT_ID_HLX_PAGE = '600a4521c23d4c7eb9c7b039bee534a0';
 export const CLIENT_ID_HLX_LIVE = '96e41871f28349e08b3562747a72dc75';
 const PDF_EMBED_MODE_CONFIG = {
   'full-window': { defaultViewMode: 'FIT_WIDTH' },
-  'default': { embedMode: 'IN_LINE' }
-}
+  default: { embedMode: 'IN_LINE' },
+};
 
 export const getPdfConfig = (location) => {
   const { host } = location;
@@ -46,11 +46,11 @@ export const getPdfConfig = (location) => {
   return { clientId, reportSuiteId };
 };
 
-const getPdfEmbedConfig = () => {
+export const getPdfEmbedConfig = () => {
   const embedMode = getMetadata('pdf-embed-mode');
   if (embedMode && PDF_EMBED_MODE_CONFIG[embedMode]) return PDF_EMBED_MODE_CONFIG[embedMode];
-  return PDF_EMBED_MODE_CONFIG['default'];
-}
+  return PDF_EMBED_MODE_CONFIG.default;
+};
 
 const initViewer = async (a, url) => {
   const id = `${PDF_RENDER_DIV_ID}_${Math.random().toString().slice(2)}`;
