@@ -4,7 +4,6 @@ import { expect } from '@esm-bundle/chai';
 
 import { mockLana } from '/test/mocks/lana.js';
 import { mockFetch } from '/test/mocks/fetch.js';
-import mas from './mas.js';
 
 import '../src/merch-mnemonic-list.js';
 import '../src/merch-whats-included.js';
@@ -18,7 +17,7 @@ runTests(async () => {
     mockIms();
     mockLana();
     await mockFetch();
-    await mas();
+    await import('../src/mas.js');
     if (skipTests !== null) {
         appendMiloStyles();
         return;

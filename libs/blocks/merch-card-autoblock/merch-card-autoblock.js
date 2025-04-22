@@ -1,5 +1,6 @@
 import { createTag } from '../../utils/utils.js';
 import '../../deps/mas/merch-card.js';
+import '../../deps/mas/merch-quantity-select.js';
 import { initService, getOptions, overrideOptions } from '../merch/merch.js';
 
 const CARD_AUTOBLOCK_TIMEOUT = 5000;
@@ -7,8 +8,19 @@ let log;
 
 function getTimeoutPromise() {
   return new Promise((resolve) => {
-    setTimeout(() => resolve(false), CARD_AUTOBLOCK_TIMEOUT);
+    setTimeout(() => resolve('timeout'), CARD_AUTOBLOCK_TIMEOUT);
   });
+}
+
+export function getOptions(el) {
+  const { hash } = new URL(el.href);
+  const hashValue = hash.startsWith('#') ? hash.substring(1) : hash;
+  const searchParams = new URLSearchParams(hashValue);
+  const options = {};
+  for (const [key, value] of searchParams.entries()) {
+    if (key === 'fragment' || key === 'query') options.fragment = value;
+  }
+  return options;
 }
 
 async function loadDependencies() {
@@ -25,9 +37,10 @@ async function loadDependencies() {
 export async function checkReady(masElement) {
   const readyPromise = masElement.checkReady();
   const success = await Promise.race([readyPromise, getTimeoutPromise()]);
-
-  if (!success) {
+  if (success === 'timeout') {
     log.error(`${masElement.tagName} did not initialize withing give timeout`);
+  } else if (!success) {
+    log.error(`${masElement.tagName} failed to initialize`);
   }
 }
 

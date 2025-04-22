@@ -4,9 +4,27 @@ import init from '../../../libs/blocks/merch-card-autoblock/merch-card-autoblock
 import { setConfig } from '../../../libs/utils/utils.js';
 
 const originalFetch = window.fetch;
+const { adobeIMS } = window;
+// const delay = (timeout = 100) => new Promise((resolve) => setTimeout(resolve, timeout));
+async function mockIms(countryCode) {
+  window.adobeIMS = {
+    initialized: true,
+    isSignedInUser: () => !!countryCode,
+    async getProfile() {
+      // await delay(1);
+      return { countryCode };
+    },
+  };
+}
+
+function unmockIms() {
+  window.adobeIMS = adobeIMS;
+}
+
 describe('merch-card-autoblock autoblock', () => {
   describe('init method', () => {
     before(async () => {
+      await mockIms();
       sinon.stub(window, 'fetch').callsFake(async (url) => {
         let fileName = '';
         if (url.includes('/mas/io/fragment')) {
@@ -33,6 +51,10 @@ describe('merch-card-autoblock autoblock', () => {
 
     afterEach(() => {
       document.body.innerHTML = '';
+    });
+
+    after(() => {
+      unmockIms();
     });
 
     it('creates card', async () => {

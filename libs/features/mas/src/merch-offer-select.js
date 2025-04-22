@@ -145,7 +145,7 @@ class MerchOfferSelect extends LitElement {
         }
     }
 
-    /** Will update price, cta, and other slots/properties in parent container (e.g. merch-card or twp modal) */
+    /** Will update price, cta, and other slots/properties in parent container (e.g. merch-card) */
     updateContainer() {
         const container = this.closest(this.getAttribute('container'));
         if (!container || !this.selectedOffer) return;
