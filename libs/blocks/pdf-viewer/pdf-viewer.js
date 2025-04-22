@@ -1,6 +1,6 @@
 /* global AdobeDC */
 
-import { createTag, getConfig, loadScript } from '../../utils/utils.js';
+import { createTag, getConfig, loadScript, getMetadata } from '../../utils/utils.js';
 
 const API_SOURCE_URL = 'https://acrobatservices.adobe.com/view-sdk/viewer.js';
 const PDF_RENDER_DIV_ID = 'adobe-dc-view';
@@ -8,6 +8,10 @@ export const CLIENT_ID_PAGE = '762c730cf6184796bcd02ff8b79ce6fc';
 export const CLIENT_ID_LIVE = 'cf650e2632384d8fb33d82d2997804d8';
 export const CLIENT_ID_HLX_PAGE = '600a4521c23d4c7eb9c7b039bee534a0';
 export const CLIENT_ID_HLX_LIVE = '96e41871f28349e08b3562747a72dc75';
+const PDF_EMBED_MODE_CONFIG = {
+  'full-window': { defaultViewMode: 'FIT_WIDTH' },
+  'default': { embedMode: 'IN_LINE' }
+}
 
 export const getPdfConfig = (location) => {
   const { host } = location;
@@ -42,6 +46,12 @@ export const getPdfConfig = (location) => {
   return { clientId, reportSuiteId };
 };
 
+const getPdfEmbedConfig = () => {
+  const embedMode = getMetadata('pdf-embed-mode');
+  if (embedMode && PDF_EMBED_MODE_CONFIG[embedMode]) return PDF_EMBED_MODE_CONFIG[embedMode];
+  return PDF_EMBED_MODE_CONFIG['default'];
+}
+
 const initViewer = async (a, url) => {
   const id = `${PDF_RENDER_DIV_ID}_${Math.random().toString().slice(2)}`;
   const pdfViewerDiv = createTag('div', { class: 'pdf-container', id });
@@ -53,6 +63,7 @@ const initViewer = async (a, url) => {
   await loadScript(API_SOURCE_URL);
   const fileName = decodeURI(url?.split('/').pop());
   const { clientId, reportSuiteId } = getPdfConfig(window.location);
+  const pdfEmbedConfig = getPdfEmbedConfig();
 
   /* c8 ignore next 42 */
   const handleViewSdkReady = () => {
@@ -68,7 +79,7 @@ const initViewer = async (a, url) => {
         content: { location: { url } },
         metaData: { fileName },
       },
-      { embedMode: 'IN_LINE' },
+      pdfEmbedConfig,
     );
 
     adobeDCView.registerCallback(
