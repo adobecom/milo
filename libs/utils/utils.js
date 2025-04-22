@@ -490,7 +490,7 @@ export function localizeLink(
     if (!allowedExts.includes(extension)) return processedHref;
     const { locale, locales, languages, prodDomains } = getConfig();
     if (!locale || !(locales || languages)) return processedHref;
-    const isLocalizable = relative || (prodDomains && prodDomains.includes(url.hostname))
+    const isLocalizable = relative || (prodDomains && prodDomains.includes(url.hostname) && path !== '/tools/ost')
       || overrideDomain;
     if (!isLocalizable) return processedHref;
     const isLocalizedLink = isLocalizedPath(path, locales);
