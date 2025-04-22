@@ -346,8 +346,8 @@ const BasicsPanel = ({ tagsData }) => {
   }
 
   const countryLangOptions = html`
-    <${Select} options=${countryTags} prop="country" label="Country" sort />
-    <${Select} options=${languageTags} prop="language" label="Language" sort />`;
+  <${Select} options=${countryTags} prop="country" label="Country" sort />
+  <${Select} options=${languageTags} prop="language" label="Language" sort />`;
 
   const partialLoadOptions = html`
     <${Input} label="Partial Load Count" prop="partialLoadCount" type="number" />`;
