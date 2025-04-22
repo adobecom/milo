@@ -40,7 +40,9 @@
         });
 
         it('gets pdf preview config', () => {
-          expect(getPdfEmbedConfig().embedMode).to.exist;
+          const metaEl = createTag('meta', { name: 'pdf-embed-mode', content: 'full-window' });
+          document.head.append(metaEl);
+          expect(getPdfEmbedConfig().defaultViewMode).to.exist;
         });
 
         it('initializes viewer when hidden section becomes visible', async () => {
