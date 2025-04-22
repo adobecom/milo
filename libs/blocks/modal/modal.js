@@ -216,7 +216,7 @@ export async function getModal(details, custom) {
 
       if (!details?.title) {
         const commerceDetails = findDetails(window.location.hash, null);
-        const commerceFrameTitle = commerceDetails?.title ? commerceDetails.title : null;
+        const commerceFrameTitle = commerceDetails?.title || null;
         if (commerceFrameTitle) iframe.setAttribute('title', commerceFrameTitle);
       }
     } else {
