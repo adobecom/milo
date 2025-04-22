@@ -154,7 +154,7 @@ function filterPageList(pageNum, perPage, event) {
   const detail = {};
   Object.keys(searchValues).forEach((key) => {
     let { value } = searchValues[key];
-    if (value.replace) {
+    if (key === 'filter' && value.replace) { // allow optional commas inside filter textbox
       value = value.replace(',', '');
       value = value.replace(/\n/g, ',\n');
     }
