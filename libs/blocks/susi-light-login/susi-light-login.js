@@ -51,15 +51,16 @@ export class SusiLight {
     return {
       client_id: imsClientId,
       scope: imsScope || window.adobeid.scope || 'AdobeID,openid,gnav',
-      response_type: 'token',
+      response_type: 'code',
       redirect_uri: this.getRedirectURL(env),
       locale: locale?.ietf || 'en-US',
     };
   };
 
   createSusiElement = () => {
+    const { env } = getConfig();
     const sentry = createTag('susi-sentry-light');
-    sentry.stage = true;
+    if (env.name !== 'prod') sentry.stage = true;
     sentry.variant = 'standard';
     sentry.authParams = this.createAuthParams();
     sentry.config = { consentProfile: 'free' };
