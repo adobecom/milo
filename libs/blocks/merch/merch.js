@@ -135,8 +135,8 @@ function getDefaultLangstoreCountry(language) {
   if (language === 'en') {
     return 'US';
   }
-  if (language === 'ar') { // beacuse GeoMap['ar'] is for Argentina
-    return 'EG';
+  if (language === 'ar') { // Arabic, not for Argentina
+    return 'DZ';
   }
   if (language === 'uk') { // Ukraine, not United Kingdom
     return 'UA';

@@ -205,7 +205,7 @@ describe('Merch Block', () => {
         { prefix: '/langstore/de', expectedLocale: 'de_DE' },
         { prefix: '/langstore/id', expectedLocale: 'id_ID' },
         { prefix: '/langstore/hi', expectedLocale: 'hi_IN' },
-        { prefix: '/langstore/ar', expectedLocale: 'ar_EG' },
+        { prefix: '/langstore/ar', expectedLocale: 'ar_DZ' },
         { prefix: '/langstore/nb', expectedLocale: 'nb_NO' },
         { prefix: '/langstore/zh-hant', expectedLocale: 'zh-hant_TW' },
         { prefix: '/langstore/el', expectedLocale: 'el_GR' },

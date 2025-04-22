@@ -461,6 +461,7 @@ function getPrefixBySite(locale, url, relative) {
 
 function isLocalizedPath(path, locales) {
   const langstorePath = path.startsWith(`/${LANGSTORE}`);
+  const isMerchLink = path === '/tools/ost';
   const previewPath = path.startsWith(`/${PREVIEW}`);
   const anyTypeOfLocaleOrLanguagePath = localeToLanguageMap
     && (localeToLanguageMap.some((l) => l.locale !== '' && (path.startsWith(`/${l.locale}/`) || path === `/${l.locale}`))
@@ -468,6 +469,7 @@ function isLocalizedPath(path, locales) {
   const legacyLocalePath = locales && Object.keys(locales).some((loc) => loc !== '' && (path.startsWith(`/${loc}/`)
     || path.endsWith(`/${loc}`)));
   return langstorePath
+    || isMerchLink
     || previewPath
     || anyTypeOfLocaleOrLanguagePath
     || legacyLocalePath;
@@ -490,7 +492,7 @@ export function localizeLink(
     if (!allowedExts.includes(extension)) return processedHref;
     const { locale, locales, languages, prodDomains } = getConfig();
     if (!locale || !(locales || languages)) return processedHref;
-    const isLocalizable = relative || (prodDomains && prodDomains.includes(url.hostname) && path !== '/tools/ost')
+    const isLocalizable = relative || (prodDomains && prodDomains.includes(url.hostname))
       || overrideDomain;
     if (!isLocalizable) return processedHref;
     const isLocalizedLink = isLocalizedPath(path, locales);
