@@ -128,12 +128,37 @@ const GeoMap = {
   th_th: 'TH_th',
 };
 
+const LANG_STORE_PREFIX = 'langstore/';
+
+function getDefaultLangstoreCountry(language) {
+  if (language === 'en') {
+    return 'US';
+  } else if (language === 'ar') { // beacuse GeoMap['ar'] is for Argentina
+    return 'EG';
+  } else if (GeoMap[language]) {
+    return GeoMap[language].split('_', 2)[0];
+  } else {
+    for (const loc in GeoMap) {
+      const value = GeoMap[loc].toLowerCase();
+      if (value.endsWith(`_${language}`)) {
+        return value.split('_', 2)[0];
+      }
+    }
+  }
+}
+
 export function getMiloLocaleSettings(locale) {
   const localePrefix = locale?.prefix || 'US_en';
   const geo = localePrefix.replace('/', '') ?? '';
   let [country = 'US', language = 'en'] = (
     GeoMap[geo] ?? geo
   ).split('_', 2);
+
+  if (geo.startsWith(LANG_STORE_PREFIX)) {
+    const localeLang = geo.replace(LANG_STORE_PREFIX, '').toLowerCase();
+    country = getDefaultLangstoreCountry(localeLang);
+    language = localeLang;
+  }
 
   country = country.toUpperCase();
   language = language.toLowerCase();

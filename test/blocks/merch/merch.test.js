@@ -200,6 +200,15 @@ describe('Merch Block', () => {
         { prefix: '/africa', expectedLocale: 'en_MU' },
         { prefix: '', expectedLocale: 'en_US' },
         { prefix: '/ae_ar', expectedLocale: 'ar_AE' },
+        { prefix: '/langstore/en', expectedLocale: 'en_US' },
+        { prefix: '/langstore/es', expectedLocale: 'es_ES' },
+        { prefix: '/langstore/de', expectedLocale: 'de_DE' },
+        { prefix: '/langstore/id', expectedLocale: 'id_ID' },
+        { prefix: '/langstore/hi', expectedLocale: 'hi_IN' },
+        { prefix: '/langstore/ar', expectedLocale: 'ar_EG' },
+        { prefix: '/langstore/nb', expectedLocale: 'nb_NO' },
+        { prefix: '/langstore/zh-hant', expectedLocale: 'zh-hant_TW' },
+        { prefix: '/langstore/el', expectedLocale: 'el_GR' },
       ].forEach(({ prefix, expectedLocale }) => {
         const computedLocale = getMiloLocaleSettings({ prefix })?.locale;
         expect(computedLocale).to.equal(expectedLocale);
