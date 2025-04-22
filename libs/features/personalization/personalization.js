@@ -390,7 +390,7 @@ function registerInBlockActions(command) {
   if (blockAndSelector.length > 1) {
     blockSelector = blockAndSelector.slice(1).join(' ');
     command.selector = blockSelector;
-    if (blockSelector.startsWith('https://mas.adobe.com')) {
+    if (blockSelector.startsWith('https://mas.adobe.com/')) {
       const getFragmentId = (masUrl) => {
         const { hash } = new URL(masUrl);
         const hashValue = hash.startsWith('#') ? hash.substring(1) : hash;

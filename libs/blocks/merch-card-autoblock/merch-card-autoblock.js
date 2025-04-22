@@ -12,17 +12,6 @@ function getTimeoutPromise() {
   });
 }
 
-export function getOptions(el) {
-  const { hash } = new URL(el.href);
-  const hashValue = hash.startsWith('#') ? hash.substring(1) : hash;
-  const searchParams = new URLSearchParams(hashValue);
-  const options = {};
-  for (const [key, value] of searchParams.entries()) {
-    if (key === 'fragment' || key === 'query') options.fragment = value;
-  }
-  return options;
-}
-
 async function loadDependencies() {
   /** Load service first */
   const servicePromise = initService();

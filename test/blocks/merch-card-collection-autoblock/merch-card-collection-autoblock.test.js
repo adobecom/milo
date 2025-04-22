@@ -80,7 +80,7 @@ describe('merch-card-collection autoblock', () => {
         mep: {
           preview: true,
           inBlock: {
-            'mas-block': {
+            mas: {
               fragments: {
                 'e58f8f75-b882-409a-9ff8-8826b36a8368': {
                   action: 'replace',
@@ -112,7 +112,7 @@ describe('merch-card-collection autoblock', () => {
         mep: {
           preview: true,
           inBlock: {
-            'mas-block': {
+            mas: {
               fragments: {
                 'should-be-replaced': {
                   action: 'replace',

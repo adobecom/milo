@@ -75,7 +75,7 @@ describe('merch-card-autoblock autoblock', () => {
         mep: {
           preview: true,
           inBlock: {
-            'mas-block': {
+            mas: {
               fragments: {
                 a657fd3d9f67: {
                   action: 'replace',
