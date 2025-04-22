@@ -1,9 +1,10 @@
 import { LitElement } from 'lit';
 import { sizeStyles, styles } from './merch-card.css.js';
+import './merch-icon.js';
 import {
     getVariantLayout,
-    getVariantStyles,
-    variantFragmentMappings,
+    registerVariant,
+    getFragmentMapping,
 } from './variants/variants.js';
 
 import './global.css.js';
@@ -16,7 +17,6 @@ import {
     EVENT_MERCH_CARD_READY,
     EVENT_MERCH_OFFER_SELECT_READY,
     EVENT_MERCH_QUANTITY_SELECTOR_CHANGE,
-    EVENT_MERCH_STORAGE_CHANGE,
     EVENT_MAS_READY,
     EVENT_AEM_ERROR,
     EVENT_MAS_ERROR,
@@ -28,8 +28,7 @@ import {
 } from './constants.js';
 import { VariantLayout } from './variants/variant-layout.js';
 import { hydrate, ANALYTICS_SECTION_ATTR } from './hydrate.js';
-import { Log } from './log.js';
-import { getMasCommerceServiceDurationLog } from './utils.js';
+import { getService } from './utils.js';
 
 const MERCH_CARD = 'merch-card';
 const MARK_READY_SUFFIX = ':ready';
@@ -125,7 +124,9 @@ export class MerchCard extends LitElement {
         loading: { type: String },
     };
 
-    static styles = [styles, getVariantStyles(), ...sizeStyles()];
+    static styles = [styles, ...sizeStyles()];
+
+    static registerVariant = registerVariant;
 
     customerSegment;
     marketSegment;
@@ -133,9 +134,10 @@ export class MerchCard extends LitElement {
      * @type {VariantLayout}
      */
     variantLayout;
-    log = undefined;
-    readyEventDispatched = false;
+    #log;
+    #service;
 
+    readyEventDispatched = false;
     constructor() {
         super();
         this.id = null;
@@ -146,12 +148,9 @@ export class MerchCard extends LitElement {
         this.spectrum = 'css';
         this.loading = 'lazy';
         this.handleAemFragmentEvents = this.handleAemFragmentEvents.bind(this);
-        this.log = Log.module('merch-card');
     }
 
-    static getFragmentMapping(variant) {
-        return variantFragmentMappings[variant];
-    }
+    static getFragmentMapping = getFragmentMapping;
 
     firstUpdated() {
         this.variantLayout = getVariantLayout(this, false);
@@ -207,14 +206,7 @@ export class MerchCard extends LitElement {
     }
 
     get computedBorderStyle() {
-        if (
-            ![
-                'twp',
-                'ccd-slice',
-                'ccd-suggested',
-                'ah-promoted-plans',
-            ].includes(this.variant)
-        ) {
+        if (!['ccd-slice', 'ccd-suggested', 'ah-promoted-plans'].includes(this.variant)) {
             return `1px solid ${
                 this.borderColor ? this.borderColor : this.badgeBackgroundColor
             }`;
@@ -320,6 +312,8 @@ export class MerchCard extends LitElement {
 
     connectedCallback() {
         super.connectedCallback();
+        this.#service = getService();
+        this.#log = this.#service.Log.module(MERCH_CARD);
         this.id ??=
             this.querySelector('aem-fragment')?.getAttribute('fragment');
         performance.mark(
@@ -337,10 +331,6 @@ export class MerchCard extends LitElement {
         this.updateComplete.then(() => {
             this.merchCardReady();
         });
-        this.storageOptions?.addEventListener(
-            'change',
-            this.handleStorageChange,
-        );
 
         // aem-fragment logic
         this.addEventListener(EVENT_AEM_ERROR, this.handleAemFragmentEvents);
@@ -359,10 +349,6 @@ export class MerchCard extends LitElement {
             EVENT_MERCH_QUANTITY_SELECTOR_CHANGE,
             this.handleQuantitySelection,
         );
-        this.storageOptions?.removeEventListener(
-            EVENT_MERCH_STORAGE_CHANGE,
-            this.handleStorageChange,
-        );
         this.removeEventListener(EVENT_AEM_ERROR, this.handleAemFragmentEvents);
         this.removeEventListener(EVENT_AEM_LOAD, this.handleAemFragmentEvents);
     }
@@ -380,13 +366,13 @@ export class MerchCard extends LitElement {
                 const fragment = e.detail;
                 hydrate(fragment, this)
                     .then(() => this.checkReady())
-                    .catch((e) => this.log?.error(e));
+                    .catch((e) => this.#log.error(e));
             }
         }
     }
 
     #fail(error, details = {}, dispatch = true) {
-        this.log?.error(`merch-card: ${error}`, details);
+        this.#log.error(`merch-card: ${error}`, details);
         this.failed = true;
         if (!dispatch) return;
         this.dispatchEvent(
@@ -455,7 +441,7 @@ export class MerchCard extends LitElement {
             const details = {
                 duration,
                 startTime,
-                ...getMasCommerceServiceDurationLog(),
+                ...this.#service.duration,
             };
             if (result === 'timeout') {
                 this.#fail(
@@ -470,28 +456,6 @@ export class MerchCard extends LitElement {
 
     get aemFragment() {
         return this.querySelector('aem-fragment');
-    }
-
-    get storageOptions() {
-        return this.querySelector('sp-radio-group#storage');
-    }
-
-    /* c8 ignore next 9 */
-    get storageSpecificOfferSelect() {
-        const storageOption = this.storageOptions?.selected;
-        if (storageOption) {
-            const merchOfferSelect = this.querySelector(
-                `merch-offer-select[storage="${storageOption}"]`,
-            );
-            if (merchOfferSelect) return merchOfferSelect;
-        }
-        return this.querySelector('merch-offer-select');
-    }
-
-    get offerSelect() {
-        return this.storageOptions
-            ? this.storageSpecificOfferSelect
-            : this.querySelector('merch-offer-select');
     }
 
     /* c8 ignore next 3 */
@@ -522,42 +486,9 @@ export class MerchCard extends LitElement {
         this.displayFooterElementsInColumn();
     }
 
-    // TODO enable with TWP //
-    /* c8 ignore next 11 */
-    handleStorageChange() {
-        const offerSelect =
-            this.closest('merch-card')?.offerSelect.cloneNode(true);
-        if (!offerSelect) return;
-        this.dispatchEvent(
-            new CustomEvent(EVENT_MERCH_STORAGE_CHANGE, {
-                detail: { offerSelect },
-                bubbles: true,
-            }),
-        );
-    }
-
     /* c8 ignore next 3 */
     get dynamicPrice() {
         return this.querySelector('[slot="price"]');
-    }
-
-    // TODO enable with TWP //
-    /* c8 ignore next 16 */
-    selectMerchOffer(offer) {
-        if (offer === this.merchOffer) return;
-        this.merchOffer = offer;
-        const previousPrice = this.dynamicPrice;
-        if (offer.price && previousPrice) {
-            const newPrice = offer.price.cloneNode(true);
-            if (previousPrice.onceSettled) {
-                // do not remove before placeholder is settled, otherwise other listeners may be left hanging.
-                previousPrice.onceSettled().then(() => {
-                    previousPrice.replaceWith(newPrice);
-                });
-            } else {
-                previousPrice.replaceWith(newPrice);
-            }
-        }
     }
 }
 

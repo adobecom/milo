@@ -509,7 +509,7 @@ function sendPropositionDisplayRequest(filteredPayload, env, requestPayload) {
 }
 
 export const loadAnalyticsAndInteractionData = async (
-  { locale, env, calculatedTimeout, hybridPersEnabled },
+  { locale, env, calculatedTimeout },
 ) => {
   const value = getCookie('kndctr_9E1005A551ED61CA0A490D45_AdobeOrg_consent');
 
@@ -520,10 +520,8 @@ export const loadAnalyticsAndInteractionData = async (
   const CURRENT_DATE = new Date();
   const localTime = CURRENT_DATE.toISOString();
   const timezoneOffset = CURRENT_DATE.getTimezoneOffset();
-  if (hybridPersEnabled) {
-    window.hybridPers = true;
-  }
-  const hitType = hybridPersEnabled ? 'pageView' : 'propositionFetch';
+  window.hybridPers = true;
+  const hitType = 'pageView';
   const pageName = getPageNameForAnalytics({ locale });
   const updatedContext = getUpdatedContext({ ...getDeviceInfo(), localTime, timezoneOffset });
   const requestUrl = createRequestUrl({
@@ -564,21 +562,19 @@ export const loadAnalyticsAndInteractionData = async (
     });
 
     const resultPayload = getPayloadsByType(targetRespJson, 'personalization:decisions');
-    if (hybridPersEnabled) {
-      const filteredPayload = filterPropositionInJson(resultPayload);
-      if (filteredPayload.length) {
-        sendPropositionDisplayRequest(filteredPayload, env, requestPayload);
-      }
-      const alloyData = {
-        destinations: getPayloadsByType(targetRespJson, 'activation:pull'),
-        propositions: resultPayload,
-        inferences: getPayloadsByType(targetRespJson, 'rtml:inferences'),
-        decisions: [],
-      };
-      window.dispatchEvent(new CustomEvent('alloy_sendEvent', { detail: alloyData }));
-      setWindowAlloy(alloyData);
-      setTTMetaAndAlloyTarget(resultPayload);
+    const filteredPayload = filterPropositionInJson(resultPayload);
+    if (filteredPayload.length) {
+      sendPropositionDisplayRequest(filteredPayload, env, requestPayload);
     }
+    const alloyData = {
+      destinations: getPayloadsByType(targetRespJson, 'activation:pull'),
+      propositions: resultPayload,
+      inferences: getPayloadsByType(targetRespJson, 'rtml:inferences'),
+      decisions: [],
+    };
+    window.dispatchEvent(new CustomEvent('alloy_sendEvent', { detail: alloyData }));
+    setWindowAlloy(alloyData);
+    setTTMetaAndAlloyTarget(resultPayload);
 
     updateAMCVCookie(ECID);
     updateMartechCookies(extractedData);
