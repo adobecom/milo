@@ -3,6 +3,8 @@ name: Dynamic PR Template
 on:
   pull_request:
     types: [opened, synchronize, reopened]
+  pull_request_target:
+    types: [opened, synchronize, reopened]
 
 # Add permissions block
 permissions:
@@ -77,6 +79,7 @@ jobs:
               ""
               "**Sticky Branch Banner:**"
               "- URL: https://main--federal--adobecom.aem.page/drafts/blaishram/banner/branch-banner-sticky?martech=off&milolibs=${BRANCH_NAME}--milo--${REPO_OWNER}"
+              ""
               "**Inline Branch Banner:**"
               "- URL: https://main--federal--adobecom.aem.page/drafts/blaishram/banner/branch-banner-inline?martech=off&milolibs=${BRANCH_NAME}--milo--${REPO_OWNER}"
               ""   
