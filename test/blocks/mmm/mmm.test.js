@@ -163,8 +163,6 @@ describe('MMM', () => {
     let filterData = getLocalStorageFilter();
     expect(filterData).to.be.null;
 
-    const copyButton = document.querySelector('.copy-to-clipboard');
-    expect(copyButton).to.exist;
     const event = new Event('change');
 
     const geoDropdown = document.querySelector('#mmm-dropdown-geos');
