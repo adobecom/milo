@@ -1597,10 +1597,10 @@ async function processSection(section, config, isDoc) {
 }
 
 export async function loadArea(area = document) {
-  const isPrerendered = document.documentElement.dataset.prerendered === 'true';
   const isDoc = area === document;
 
-  if (isPrerendered) {
+  const isPageLoadOk = document.getElementById('page-load-ok-milo') !== null;
+  if (isPageLoadOk) {
     return;
   }
 
