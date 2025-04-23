@@ -17,6 +17,7 @@ const LAST_SEEN_OPTIONS = {
   year: { value: 'Year', key: 'year' },
   all: { value: 'All', key: 'all' },
 };
+
 const SUBDOMAIN_OPTIONS = {
   www: { value: 'www', key: 'www' },
   business: { value: 'business', key: 'business' },
@@ -303,14 +304,22 @@ function createLastSeenManifestAndDomainDD() {
     `<div>
       <label for="mmm-lastSeenManifest">Target manifests ${isReport ? 'not ' : ''}seen in the last:</label>
       <select id="mmm-lastSeenManifest" type="text" name="mmm-lastSeenManifest" class="text-field-input">
-        ${Object.keys(LAST_SEEN_OPTIONS).map((key) => `
-          <option value="${LAST_SEEN_OPTIONS[key].key}" ${SEARCH_INITIAL_VALUES().lastSeenManifest === LAST_SEEN_OPTIONS[key].key ? 'selected' : ''}>${LAST_SEEN_OPTIONS[key].value}</option>
-        `)}
+      
       </select>
     </div>`,
   );
   dropdownLastSeen.addEventListener('change', () => filterPageList());
   findAndSetInGrid(dropdownLastSeen);
+  Object.keys(LAST_SEEN_OPTIONS).forEach((key, index) => {
+    if (isReport && index > 3) return;
+    const lastSeenSelect = dropdownLastSeen.querySelector('select');
+    const newEl = createTag(
+      'option',
+      { value: LAST_SEEN_OPTIONS[key].key, ...(SEARCH_INITIAL_VALUES().lastSeenManifest === LAST_SEEN_OPTIONS[key].key ? { selected: 'selected' } : {}) },
+      LAST_SEEN_OPTIONS[key].value,
+    );
+    lastSeenSelect.append(newEl);
+  });
 
   if (!isReport) {
     const dropdownSubdomain = createTag(
@@ -399,6 +408,8 @@ async function createForm(el) {
   createSearchField();
 }
 
+
+
 function createPaginationEl({ data, el }) {
   const { pageNum, perPage, totalRecords } = data;
   const arrowIcons = {
@@ -472,22 +483,6 @@ function createPaginationEl({ data, el }) {
   } else {
     paginationEl.append(createTag('h5', { id: 'mmm-pagination-no-results' }, 'No results'));
   }
-
-  // add report button
-  if (isReport) {
-    const reportButton = createTag('button', {
-      id: 'mmm-report-button',
-      class: 'tracking-header',
-      type: 'button',
-    }, 'Email Report');
-    reportButton.addEventListener('click', () => {
-      const reportData = [];
-      const selectedCheckboxes = document.querySelectorAll('.mmm-report-add:checked');
-      selectedCheckboxes.forEach((checkedBox) => reportData.push(checkedBox.closest('.mmm-report-row').querySelector('a').href));
-      console.log(reportData);
-    });
-    paginationEl.append(reportButton);
-  }
   el.append(paginationEl);
 }
 
@@ -522,32 +517,51 @@ function getDate(inputDate) {
   const dateOptions = { year: 'numeric', month: 'short', day: 'numeric' };
   return new Date(date).toLocaleDateString('en-US', dateOptions);
 }
+
+function createReportButton() {
+  const parentContainer = document.querySelector('dl.mmm.foreground');
+  console.log(parentContainer.length);
+  const topReportButton = createTag('a', { class: 'con-button blue button-l button-justified-mobile', id: 'mmm-report-button' }, 'Email Report');
+  topReportButton.addEventListener('click', () => {
+    const reportData = [];
+    const selectedCheckboxes = document.querySelectorAll('.mmm-report-add:checked');
+    selectedCheckboxes.forEach((checkedBox) => reportData.push(checkedBox.closest('.mmm-report-row').querySelector('a').href));
+    console.log(reportData);
+  });
+  const topButtonContainer = createTag('div', { id: 'mmm-report-button-container', class: 'mmm-report-button-container' }, topReportButton);
+  parentContainer.prepend(topButtonContainer);
+}
+
 function createReport(el, data) {
   const { result } = data;
   el.innerHTML = `
     <div class="mmm-report">
       <div class="mmm-report-header">
-        <span>
-          <input type="checkbox" id="mmm-report-all" name="mmm-report-all" value="mmm-report-all" class="mmm-report-all">
-          <label for="mmm-report-all">Add to Report</label>
-        </span>
-        <span>URL</span>
-        <span>Target Status</span>
-        <span>Target Seen</span>
-        <span>Page Last Seen</span>
+        <div>
+          <span>
+            <input type="checkbox" id="mmm-report-all" name="mmm-report-all" value="mmm-report-all" class="mmm-report-all">
+            <label for="mmm-report-all">Add to Report</label>
+          </span>
+        </div>
+        <div><span>URL</span></div>
+        <div><span>Target Status</span></div>
+        <div><span>Target Seen</span></div>
+        <div><span>Page Last Seen</span></div>
       </div>
       <div class="mmm-report-body">
         ${result.map((item, index) => `
           <div class="mmm-report-row">
-          <span>
-              <center>
-                <input type="checkbox" id="entry-${index}" name="entry-${index}" value="entry$-{index}" class="mmm-report-add">
-              </center>
-            </span>  
-          <span><a href="${item.url}?mep" target="_blank">${item.url}</a></span>
-            <span>${item.target}</span>
-            <span>${getDate(item.aLastSeen)}</span>
-            <span>${getDate(item.pLastSeen)}</span>
+            <div>
+              <span>
+                <center>
+                  <input type="checkbox" id="entry-${index}" name="entry-${index}" value="entry$-{index}" class="mmm-report-add">
+                </center>
+              </span>  
+            </div>
+            <div><span><a href="${item.url}?mep" target="_blank">${item.url}</a></span></div>
+            <div><span>${item.target}</span></div>
+            <div><span>${getDate(item.aLastSeen)}</span></div>
+            <div><span>${getDate(item.pLastSeen)}</span></div>
           </div>
         `).join('')}
       </div>
@@ -599,6 +613,7 @@ async function createPageList(el, search) {
   paginationEl?.classList.remove('mmm-hide');
   handlePaginationClicks();
   handlePaginationDropdownChange();
+  if (isReport) createReportButton();
 }
 
 function createSearchRows() {
