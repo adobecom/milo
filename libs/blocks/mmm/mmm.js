@@ -539,13 +539,13 @@ function createReport(el, data) {
       <div class="mmm-report-header">
         <div>
           <span>
-            <input type="checkbox" id="mmm-report-all" name="mmm-report-all" value="mmm-report-all" class="mmm-report-all">
-            <label for="mmm-report-all">Add to Report</label>
+            <input style-"margin-right:10px" type="checkbox" id="mmm-report-all" name="mmm-report-all" value="mmm-report-all" class="mmm-report-all">
+            <label for="mmm-report-all">Select All</label>
           </span>
         </div>
         <div><span>URL</span></div>
         <div><span>Target Status</span></div>
-        <div><span>Target Seen</span></div>
+        <div><span>Target Last Seen</span></div>
         <div><span>Page Last Seen</span></div>
       </div>
       <div class="mmm-report-body">
