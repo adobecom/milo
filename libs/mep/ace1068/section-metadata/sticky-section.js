@@ -16,8 +16,7 @@ function promoIntersectObserve(el, stickySectionEl, options = {}) {
         return;
       }
 
-      const { target } = entry;
-      const { isIntersecting } = entry;
+      const { target, isIntersecting } = entry;
 
       if (target === document.querySelector('footer')) {
         el.classList.toggle('fill-sticky-section', isIntersecting);
