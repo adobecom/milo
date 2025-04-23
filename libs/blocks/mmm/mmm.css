@@ -316,11 +316,35 @@ dd .mep-popup-header .mep-close {
   background-color: #eee;
 }
 
+.mmm-report-header span[data-order="asc"] svg {
+  rotate: -90deg;
+}
+.mmm-report-header span  {
+  transition: all 0.3s;
+  position: relative;
+}
+.mmm-report-header span svg {
+  rotate: 90deg;
+  transition: all 0.3s;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  margin: auto .5rem;
+}
+
+.mmm-report-header span:hover {
+  cursor: pointer;
+  color: #000;
+  text-shadow: 0px 0px 1px #111;
+}
+
 .mmm-report-header span {
   border: 1px solid #ddd;
   /* flex-basis: 25%; */
   display: flex;
   justify-content: center;
+  display: flex;
+  align-items: center;
 }
 
 .mmm-report-body {
@@ -336,6 +360,10 @@ dd .mep-popup-header .mep-close {
 .mmm-report-row span a {
   text-decoration: none;
   color: #4285f4;
+}
+
+.mmm-report-row span a.small {
+  font-size: .75rem;
 }
 .mmm-report-row span {
   border: 1px solid #ddd;

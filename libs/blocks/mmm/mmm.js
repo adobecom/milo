@@ -65,21 +65,7 @@ const setLocalStorageFilter = (obj) => {
     : MMM_LOCAL_STORAGE_KEY, JSON.stringify(obj));
 };
 
-const getInitialValues = () => {
-  const search = new URLSearchParams(window.location.search);
-  const values = {};
-  if (search.size) {
-    search.entries().forEach((item) => {
-      const key = item[0];
-      const value = item[1];
-      values[key] = value;
-    });
-    return values;
-  }
-  return getLocalStorageFilter();
-};
-
-const SEARCH_INITIAL_VALUES = () => getInitialValues() ?? {
+const SEARCH_INITIAL_VALUES = () => getLocalStorageFilter() ?? {
   lastSeenManifest: isReport ? LAST_SEEN_OPTIONS.week.key : LAST_SEEN_OPTIONS.threeMonths.key,
   pageNum: 1,
   subdomain: SUBDOMAIN_OPTIONS.www.key,
@@ -188,13 +174,19 @@ function filterPageList(pageNum, perPage, event) {
     });
   }
   // add pageNum and perPage to args for api call
-  searchValues.pageNum = { value: pageNum || 1, tagName: 'A' };
-  searchValues.perPage = { value: perPage || 25, tagName: 'SELECT' };
+  searchValues.pageNum = pageNum || 1;
+  searchValues.perPage = perPage || 25;
+
+  // add orderBy and order to args for api call
+  if (isReport) {
+    searchValues.orderBy = event?.target?.dataset?.orderBy;
+    searchValues.order = event?.target?.dataset?.order;
+  }
 
   // assemble event details object with all filter criterias
   const detail = {};
   Object.keys(searchValues).forEach((key) => {
-    let { value } = searchValues[key];
+    let value = searchValues[key];
     if (key === 'filter' && value.replace) { // allow optional commas inside filter textbox
       value = value.replace(',', '');
       value = value.replace(/\n/g, ',\n');
@@ -408,8 +400,6 @@ async function createForm(el) {
   createSearchField();
 }
 
-
-
 function createPaginationEl({ data, el }) {
   const { pageNum, perPage, totalRecords } = data;
   const arrowIcons = {
@@ -518,6 +508,12 @@ function getDate(inputDate) {
   return new Date(date).toLocaleDateString('en-US', dateOptions);
 }
 
+function getAbsUrl(manifestUrl, pageUrl) {
+  return manifestUrl?.startsWith('http')
+    ? manifestUrl
+    : `${pageUrl.split('.com')[0]}.com${manifestUrl}`;
+}
+
 function createReportButton() {
   const parentContainer = document.querySelector('dl.mmm.foreground');
   console.log(parentContainer.length);
@@ -533,48 +529,55 @@ function createReportButton() {
 }
 
 function createReport(el, data) {
-  const { result } = data;
+  const { result, orderBy, order } = data;
+  const arrow = '<svg width="8" height="12" viewBox="0 0 8 12" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M1.70504 0L0.295044 1.41L4.87504 6L0.295044 10.59L1.70504 12L7.70504 6L1.70504 0Z" fill="black"/></svg>';
+  const headers = [
+
+    { label: 'Add all', orderBy: '.url', order: 'asc' },
+    { label: 'URL', orderBy: 'p.url', order: 'asc' },
+    { label: 'Target Status', orderBy: 'p.target', order: 'asc' },
+    { label: 'Target Seen', orderBy: 'a.lastSeen', order: 'asc' },
+    { label: 'Page Last Seen', orderBy: 'p.lastSeen', order: 'asc' },
+  ];
   el.innerHTML = `
     <div class="mmm-report">
       <div class="mmm-report-header">
-        <div>
-          <span>
-            <input style-"margin-right:10px" type="checkbox" id="mmm-report-all" name="mmm-report-all" value="mmm-report-all" class="mmm-report-all">
-            <label for="mmm-report-all">Select All</label>
-          </span>
-        </div>
-        <div><span>URL</span></div>
-        <div><span>Target Status</span></div>
-        <div><span>Target Last Seen</span></div>
-        <div><span>Page Last Seen</span></div>
+      ${headers.map((header) => `
+        <div><span data-order-by="${header.orderBy}" data-order="${header.orderBy === orderBy ? order : header.order}">
+          ${header.label}
+          <section>${header.orderBy === orderBy ? arrow : ''}</section>
+        </span></div>
+      `).join('')}
       </div>
       <div class="mmm-report-body">
         ${result.map((item, index) => `
           <div class="mmm-report-row">
-            <div>
-              <span>
-                <center>
+            <div><span><center>
                   <input type="checkbox" id="entry-${index}" name="entry-${index}" value="entry$-{index}" class="mmm-report-add">
-                </center>
-              </span>  
-            </div>
+                </center></span></div>
             <div><span><a href="${item.url}?mep" target="_blank">${item.url}</a></span></div>
             <div><span>${item.target}</span></div>
-            <div><span>${getDate(item.aLastSeen)}</span></div>
+            <div><span>${getDate(item.aLastSeen)}<br/><a class="small" target="_blank" href="${getAbsUrl(item.manifestUrl, item.url)}">${item.targetActivityName}</a></span></div>
             <div><span>${getDate(item.pLastSeen)}</span></div>
           </div>
         `).join('')}
       </div>
     </div>
   `;
-  const selectAllCheck = el.querySelector('.mmm-report-all');
-
-  selectAllCheck.addEventListener('change', (e) => {
-    const checkboxes = el.querySelectorAll('input[type="checkbox"].mmm-report-add');
-    checkboxes.forEach((checkbox) => {
-      checkbox.checked = e.target.checked;
+  el.querySelectorAll('.mmm-report-header span').forEach((header) => {
+    header.addEventListener('click', (e) => {
+      e.target.dataset.order = e.target.dataset.order === 'asc' ? 'desc' : 'asc';
+      filterPageList(null, null, e);
     });
   });
+  // const selectAllCheck = el.querySelector('.mmm-report-all');
+
+  // selectAllCheck?.addEventListener('change', (e) => {
+  //   const checkboxes = el.querySelectorAll('input[type="checkbox"].mmm-report-add');
+  //   checkboxes.forEach((checkbox) => {
+  //     checkbox.checked = e.target.checked;
+  //   });
+  // });
 }
 
 async function createPageList(el, search) {
