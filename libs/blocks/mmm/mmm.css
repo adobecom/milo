@@ -612,14 +612,14 @@ fieldset.minError:after {
 .mmm-report-header > div:nth-child(4), 
 .mmm-report-row > div:nth-child(4) {
   display:flex; 
-  flex: 1 1 23%;
-  min-width: 23%;
+  flex: 1 1 25%;
+  min-width: 25%;
 }
 .mmm-report-header > div:nth-child(5), 
 .mmm-report-row > div:nth-child(5) {
   display:flex; 
-  flex: 1 1 12%;
-  min-width: 12%;
+  flex: 1 1 10%;
+  min-width: 10%;
 } 
 
 .mmm-report-row span {
