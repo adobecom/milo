@@ -118,7 +118,6 @@ Adobe Home Gallery provides a comprehensive list of all supported card variants 
 -   `product`
 -   `segment`
 -   `special-offers`
--   `twp`
 -   `ccd-slice`
 -   `ccd-suggested`
 -   `ah-try-buy-widget`
