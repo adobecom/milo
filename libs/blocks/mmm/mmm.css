@@ -564,3 +564,55 @@ fieldset.minError:after {
 }
 
 /* mmm-search-row1 */
+/* .mmm-report-header span {
+  flex-basis: auto; 
+}
+.mmm-report-header > span:nth-child(1), 
+.mmm-report-row > span:nth-child(1) {
+  display: flex;
+  width: 15%;
+}
+.mmm-report-header > span:nth-child(2), 
+.mmm-report-row > span:nth-child(2) {
+  display: flex;
+  width: 50%;
+}
+.mmm-report-header > span:nth-child(3), 
+.mmm-report-row > span:nth-child(3) {
+  display: flex;
+  width: 11.6%
+}
+.mmm-report-header > span:nth-child(4), 
+.mmm-report-row > span:nth-child(4) {
+  display: flex;
+  width: 11.6%
+}
+.mmm-report-header > span:nth-child(5), 
+.mmm-report-row > span:nth-child(5) {
+  display: flex;
+  width: 11.6%
+}  */
+
+.mmm-report-header span {
+  flex-basis: auto; 
+}
+.mmm-report-header > span:nth-child(1), 
+.mmm-report-row > span:nth-child(1) {
+  flex: 1 1 0;
+}
+.mmm-report-header > span:nth-child(2), 
+.mmm-report-row > span:nth-child(2) {
+  flex: 4 1 0;
+}
+.mmm-report-header > span:nth-child(3), 
+.mmm-report-row > span:nth-child(3) {
+  flex: 1 1 0;
+}
+.mmm-report-header > span:nth-child(4), 
+.mmm-report-row > span:nth-child(4) {
+  flex: 1 1 0;
+}
+.mmm-report-header > span:nth-child(5), 
+.mmm-report-row > span:nth-child(5) {
+  flex: 1 1 0;
+}

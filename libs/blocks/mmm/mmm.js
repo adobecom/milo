@@ -32,6 +32,7 @@ const MANIFESTSRC_OPTIONS = {
   promo: { label: 'Promo', value: 'promo' },
   target: { label: 'Target', value: 'target' },
   ajo: { label: 'AJO', value: 'ajo' },
+  placeholder: { label: 'Placeholders', value: 'placeholders' },
 };
 
 const GRID_FORMAT = {
@@ -172,7 +173,7 @@ function filterPageList(pageNum, perPage, event) {
   });
   // handle grouped checkboxes into single object value
   const checkedBoxes = {};
-  document.querySelector(SEARCH_CONTAINER).querySelectorAll('fieldset input[type="checkbox"]:checked').forEach((checkedBox) => {
+  document.querySelector(SEARCH_CONTAINER).querySelectorAll('fieldset input[type="checkbox"]:checked:not(.mmm-report-add, .mmm-report-all)').forEach((checkedBox) => {
     const fieldset = checkedBox.closest('fieldset').getAttribute('id').split('-')[1];
     const { value } = checkedBox;
     if (fieldset in checkedBoxes) {
@@ -300,7 +301,7 @@ function createLastSeenManifestAndDomainDD() {
     'div',
     { id: 'mmm-dropdown-lastSeen', class: 'mmm-form-container' },
     `<div>
-      <label for="mmm-lastSeenManifest">Manifests ${isReport ? 'not ' : ''}seen in the last:</label>
+      <label for="mmm-lastSeenManifest">Target manifests ${isReport ? 'not ' : ''}seen in the last:</label>
       <select id="mmm-lastSeenManifest" type="text" name="mmm-lastSeenManifest" class="text-field-input">
         ${Object.keys(LAST_SEEN_OPTIONS).map((key) => `
           <option value="${LAST_SEEN_OPTIONS[key].key}" ${SEARCH_INITIAL_VALUES().lastSeenManifest === LAST_SEEN_OPTIONS[key].key ? 'selected' : ''}>${LAST_SEEN_OPTIONS[key].value}</option>
@@ -471,6 +472,22 @@ function createPaginationEl({ data, el }) {
   } else {
     paginationEl.append(createTag('h5', { id: 'mmm-pagination-no-results' }, 'No results'));
   }
+
+  // add report button
+  if (isReport) {
+    const reportButton = createTag('button', {
+      id: 'mmm-report-button',
+      class: 'tracking-header',
+      type: 'button',
+    }, 'Email Report');
+    reportButton.addEventListener('click', () => {
+      const reportData = [];
+      const selectedCheckboxes = document.querySelectorAll('.mmm-report-add:checked');
+      selectedCheckboxes.forEach((checkedBox) => reportData.push(checkedBox.closest('.mmm-report-row').querySelector('a').href));
+      console.log(reportData);
+    });
+    paginationEl.append(reportButton);
+  }
   el.append(paginationEl);
 }
 
@@ -510,15 +527,24 @@ function createReport(el, data) {
   el.innerHTML = `
     <div class="mmm-report">
       <div class="mmm-report-header">
+        <span>
+          <input type="checkbox" id="mmm-report-all" name="mmm-report-all" value="mmm-report-all" class="mmm-report-all">
+          <label for="mmm-report-all">Add to Report</label>
+        </span>
         <span>URL</span>
         <span>Target Status</span>
         <span>Target Seen</span>
         <span>Page Last Seen</span>
       </div>
       <div class="mmm-report-body">
-        ${result.map((item) => `
+        ${result.map((item, index) => `
           <div class="mmm-report-row">
-            <span><a href="${item.url}?mep" target="_blank">${item.url}</a></span>
+          <span>
+              <center>
+                <input type="checkbox" id="entry-${index}" name="entry-${index}" value="entry$-{index}" class="mmm-report-add">
+              </center>
+            </span>  
+          <span><a href="${item.url}?mep" target="_blank">${item.url}</a></span>
             <span>${item.target}</span>
             <span>${getDate(item.aLastSeen)}</span>
             <span>${getDate(item.pLastSeen)}</span>
@@ -527,6 +553,14 @@ function createReport(el, data) {
       </div>
     </div>
   `;
+  const selectAllCheck = el.querySelector('.mmm-report-all');
+
+  selectAllCheck.addEventListener('change', (e) => {
+    const checkboxes = el.querySelectorAll('input[type="checkbox"].mmm-report-add');
+    checkboxes.forEach((checkbox) => {
+      checkbox.checked = e.target.checked;
+    });
+  });
 }
 
 async function createPageList(el, search) {
