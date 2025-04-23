@@ -40,14 +40,14 @@ function addTooltipListeners() {
 
   ['keydown', 'mouseenter', 'focus', 'mouseleave', 'blur'].forEach((eventType) => {
     document.addEventListener(eventType, (event) => {
-      const tooltip = event.target?.closest?.('.milo-tooltip');
-      if (!tooltip) return;
+      const isTooltip = event.target?.matches?.('.milo-tooltip');
+      if (!isTooltip) return;
 
       if (['mouseenter', 'focus'].includes(eventType)) {
-        tooltip.classList.remove('hide-tooltip');
+        event.target.classList.remove('hide-tooltip');
       } else if (['mouseleave', 'blur'].includes(eventType)
         || (eventType === 'keydown' && event.key === 'Escape')) {
-        tooltip.classList.add('hide-tooltip');
+        event.target.classList.add('hide-tooltip');
       }
     }, true);
   });
