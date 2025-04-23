@@ -104,14 +104,12 @@ function addCloseAction(el, btn) {
     let isSticky = false;
     let rect;
     const sectionElement = el.closest('.section');
-    if (sectionElement) {
-      sectionElement.classList.forEach((cls) => {
-        if (cls.includes('sticky')) {
-          isSticky = true;
-          rect = sectionElement.getBoundingClientRect();
-        }
-      });
+
+    if (sectionElement?.className.includes('sticky')) {
+      isSticky = true;
+      rect = sectionElement.getBoundingClientRect();
     }
+
     el.style.display = 'none';
     el.closest('.section')?.classList.add('close-sticky-section');
     if (el.classList.contains('focus')) {
@@ -139,7 +137,7 @@ function addCloseAction(el, btn) {
 
       if (isSticky) {
         const elementAtPosition = document.elementFromPoint(rect.left, rect.top);
-        const stickySection = !elementAtPosition.classList.contains('section') ? elementAtPosition.closest('.section') : elementAtPosition;
+        const stickySection = elementAtPosition.closest('.section');
         focusTarget = findFocusableInSection(stickySection);
       }
 
@@ -158,7 +156,7 @@ function addCloseAction(el, btn) {
       }
 
       liveRegion?.remove();
-      if (focusTarget) focusTarget.focus();
+      if (focusTarget) focusTarget.focus({ preventScroll: true });
     }, 2000);
   });
 }
