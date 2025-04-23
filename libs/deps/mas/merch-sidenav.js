@@ -15,7 +15,7 @@ var V=Object.defineProperty;var A=o=>{throw TypeError(o)};var H=(o,e,t)=>e in o?
         >
             ${this.sidenavListTitle?D`<h2>${this.sidenavListTitle}</h2>`:""}
             <slot></slot>
-        </div>`}};i(h,"properties",{sidenavListTitle:{type:String},label:{type:String},deeplink:{type:String,attribute:"deeplink"},selectedText:{type:String,reflect:!0,attribute:"selected-text"},selectedValue:{type:String,reflect:!0,attribute:"selected-value"}}),i(h,"styles",[Y`
+        </div>`}};i(h,"properties",{sidenavListTitle:{type:String},label:{type:String},deeplink:{type:String,attribute:"deeplink"},selectedText:{type:String,reflect:!0,attribute:"selected-text"},selectedValue:{type:String,reflect:!0,attribute:"selected-value"}}),i(h,"styles",[K`
             :host {
                 display: block;
                 contain: content;
