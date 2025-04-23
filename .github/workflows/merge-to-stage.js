@@ -2,13 +2,14 @@ const {
   slackNotification,
   getLocalConfigs,
   isWithinRCP,
+  isWithinPrePostRCP,
   pulls: { addLabels, addFiles, getChecks, getReviews },
 } = require('./helpers.js');
 
 // Run from the root of the project for local testing: node --env-file=.env .github/workflows/merge-to-stage.js
 const PR_TITLE = '[Release] Stage to Main';
 const REQUIRED_APPROVALS = process.env.REQUIRED_APPROVALS ? Number(process.env.REQUIRED_APPROVALS) : 2;
-const MAX_MERGES = process.env.MAX_PRS_PER_BATCH ? Number(process.env.MAX_PRS_PER_BATCH) : 8;
+const BASE_MAX_MERGES = process.env.MAX_PRS_PER_BATCH ? Number(process.env.MAX_PRS_PER_BATCH) : 9;
 let existingPRCount = 0;
 const STAGE = 'stage';
 const PROD = 'main';
@@ -203,25 +204,11 @@ const openStageToMainPR = async () => {
   }
 };
 
-const isWithinPrePostRCP = ({ offset = 7 } = {}) => {
-  const now = new Date();
-  return RCPDates.some(({ start, end}) =>{
-    const preRCPstart = new Date(start);
-    preRCPstart.setDate(preRCPstart.getDate() - offset);
-
-    const postRCPEnd = new Date(end);
-    postRCPEnd.setDate(postRCPEnd.getDate() + offset);
-
-    return ( preRCPstart >= now && now < start ) || ( end < now && now <= postRCPEnd ); 
-  });
-}
-
 const getMaxMerges = () => {
-  const baseMaxMerges = process.env.MAX_PRS_PER_BATCH ? Number(process.env.MAX_PRS_PER_BATCH) : 9;
-  if (isWithinPrePostRCP) {
-    return baseMaxMerges + 3;
+  if (isWithinPrePostRCP()) {
+    return BASE_MAX_MERGES + 3;
   }
-  return baseMaxMerges;
+  return BASE_MAX_MERGES;
 }
 
 const mergeLimitExceeded = () => getMaxMerges() - existingPRCount < 0;
