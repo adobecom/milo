@@ -6,6 +6,10 @@ on:
   workflow_dispatch: # Allow manual trigger
   repository_dispatch:
     types: [merge-to-stage]
+  pull_request_target:
+    types: [closed]
+    branches:
+      - stage
 
 env:
   MILO_RELEASE_SLACK_WH: ${{ secrets.MILO_RELEASE_SLACK_WH }}
