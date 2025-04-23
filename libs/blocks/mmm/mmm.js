@@ -521,7 +521,7 @@ function getDate(inputDate) {
 function createReportButton() {
   const parentContainer = document.querySelector('dl.mmm.foreground');
   console.log(parentContainer.length);
-  const topReportButton = createTag('a', { class: 'con-button blue button-l button-justified-mobile', id: 'mmm-report-button' }, 'Email Report');
+  const topReportButton = createTag('a', { class: 'con-button blue button-l button-justified-mobile' }, 'Email Report');
   topReportButton.addEventListener('click', () => {
     const reportData = [];
     const selectedCheckboxes = document.querySelectorAll('.mmm-report-add:checked');
