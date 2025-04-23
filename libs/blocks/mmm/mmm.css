@@ -328,6 +328,7 @@ dd .mep-popup-header .mep-close {
   top: 0;
   bottom: 0;
   margin: auto .5rem;
+pointer-events: none;
 }
 
 .mmm-report-header span:hover {
