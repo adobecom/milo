@@ -30,6 +30,12 @@ import {
     AHTryBuyWidget,
 } from './variants/ah-try-buy-widget.js';
 
+//Import ah-promoted-plans
+import {
+  AH_PROMOTED_PLANS_AEM_FRAGMENT_MAPPING,
+  AHPromotedPlans,
+} from './variants/ah-promoted-plans.js'
+
 // Register dynamic variants
 registerVariant(
     'ccd-suggested',
@@ -48,4 +54,10 @@ registerVariant(
     AHTryBuyWidget,
     AH_TRY_BUY_WIDGET_AEM_FRAGMENT_MAPPING,
     AHTryBuyWidget.variantStyle,
+);
+registerVariant(
+  'ah-promoted-plans',
+  AHPromotedPlans,
+  AH_PROMOTED_PLANS_AEM_FRAGMENT_MAPPING,
+  AHPromotedPlans.variantStyle,
 );

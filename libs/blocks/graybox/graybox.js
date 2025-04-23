@@ -107,7 +107,6 @@ const checkFooter = (options) => {
 const checkGnav = (options, globalNoClick) => {
   const gnav = document.querySelector('.global-navigation');
   if (gnav) {
-    gnav.style.zIndex = '9000';
     const gnavOptions = getOptions(options.gnav?.text, METADATA.GNAV);
     if (!(gnavOptions?.includes(OPTION.CHANGED))) {
       gnav.classList.add(CLASS.NO_CHANGE);
