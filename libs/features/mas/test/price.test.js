@@ -30,6 +30,7 @@ function mockInlinePrice(id, wcsOsi = '', options = {}) {
 }
 
 afterEach(() => {
+    document.body.innerHTML = '';
     removeMasCommerceService();
     unmockLana();
 });
@@ -41,8 +42,8 @@ beforeEach(async () => {
 
 describe('class "InlinePrice"', () => {
     it('renders price', async () => {
-        await initMasCommerceService();
-        const inlinePrice = mockInlinePrice('price', 'puf');
+        initMasCommerceService();
+        const inlinePrice = mockInlinePrice('puf');
         await inlinePrice.onceSettled();
         expect(inlinePrice.outerHTML).to.be.html(snapshots.price);
         expect(inlinePrice.value).to.be.not.empty;
@@ -50,8 +51,8 @@ describe('class "InlinePrice"', () => {
     });
 
     it('re-dispatches click event', async () => {
-        await initMasCommerceService();
-        const inlinePrice = mockInlinePrice('puf2', 'puf');
+        initMasCommerceService();
+        const inlinePrice = mockInlinePrice('puf');
         let targetIsInlinePrice = false;
         inlinePrice.addEventListener(
             'click',
@@ -72,8 +73,8 @@ describe('class "InlinePrice"', () => {
     });
 
     it('re-dispatches click event', async () => {
-        await initMasCommerceService();
-        const inlinePrice = mockInlinePrice('puf3', 'puf');
+        initMasCommerceService();
+        const inlinePrice = mockInlinePrice('puf');
         let targetIsInlinePrice = false;
         inlinePrice.addEventListener(
             'click',
@@ -94,16 +95,16 @@ describe('class "InlinePrice"', () => {
     });
 
     it('renders strikethrough price', async () => {
-        await initMasCommerceService();
-        const inlinePrice = mockInlinePrice('strikethrough', 'puf');
+        initMasCommerceService();
+        const inlinePrice = mockInlinePrice('puf');
         Object.assign(inlinePrice.dataset, { template: 'strikethrough' });
         await inlinePrice.onceSettled();
         expect(inlinePrice.outerHTML).to.be.html(snapshots.strikethrough);
     });
 
     it('renders optical price', async () => {
-        await initMasCommerceService();
-        const inlinePrice = mockInlinePrice('optical', 'puf');
+        initMasCommerceService();
+        const inlinePrice = mockInlinePrice('puf');
         Object.assign(inlinePrice.dataset, {
             template: 'optical',
             displayPerUnit: true,
@@ -114,24 +115,24 @@ describe('class "InlinePrice"', () => {
     });
 
     it('renders annual price', async () => {
-        await initMasCommerceService();
-        const inlinePrice = mockInlinePrice('annual', 'puf');
+        initMasCommerceService();
+        const inlinePrice = mockInlinePrice('abm');
         Object.assign(inlinePrice.dataset, { template: 'annual' });
         await inlinePrice.onceSettled();
         expect(inlinePrice.outerHTML).to.be.html(snapshots.annual);
     });
 
     it('renders price with promo with strikethrough', async () => {
-        await initMasCommerceService();
-        const inlinePrice = mockInlinePrice('promoStikethrough', 'abm-promo');
+        initMasCommerceService();
+        const inlinePrice = mockInlinePrice('abm-promo');
         inlinePrice.dataset.promotionCode = 'nicopromo';
         await inlinePrice.onceSettled();
         expect(inlinePrice.outerHTML).to.be.html(snapshots.promoStikethrough);
     });
 
     it('renders price with promo', async () => {
-        await initMasCommerceService();
-        const inlinePrice = mockInlinePrice('promo','abm-promo');
+        initMasCommerceService();
+        const inlinePrice = mockInlinePrice('abm-promo');
         inlinePrice.dataset.promotionCode = 'nicopromo';
         inlinePrice.dataset.displayOldPrice = 'false';
         await inlinePrice.onceSettled();
@@ -155,8 +156,8 @@ describe('class "InlinePrice"', () => {
     });
 
     it('does not render failed price', async () => {
-        await initMasCommerceService();
-        const inlinePrice = mockInlinePrice('xyz', 'xyz');
+        initMasCommerceService();
+        const inlinePrice = mockInlinePrice('xyz');
         inlinePrice.innerHTML = 'test';
         try {
             await inlinePrice.onceSettled();
@@ -176,8 +177,8 @@ describe('class "InlinePrice"', () => {
     });
 
     it('does not render missing offer', async () => {
-        await initMasCommerceService();
-        const inlinePrice = mockInlinePrice('noOffer', 'no-offer');
+        initMasCommerceService();
+        const inlinePrice = mockInlinePrice('no-offer');
         await expect(inlinePrice.onceSettled()).to.be.eventually.rejectedWith(
             ERROR_MESSAGE_OFFER_NOT_FOUND,
         );
@@ -185,8 +186,8 @@ describe('class "InlinePrice"', () => {
     });
 
     it('renders perpetual offer', async () => {
-        await initMasCommerceService();
-        const inlinePrice = mockInlinePrice('perpetual', 'perpetual', { perpetual: true });
+        initMasCommerceService();
+        const inlinePrice = mockInlinePrice('perpetual', { perpetual: true });
         await inlinePrice.onceSettled();
         // expect(inlinePrice.outerHTML).to.be.empty;
         expect(fetch.lastCall.args[0]).to.contain('language=EN');
@@ -207,16 +208,16 @@ describe('class "InlinePrice"', () => {
     });
 
     it('renders discount percentage', async () => {
-        await initMasCommerceService();
-        const inlinePrice = mockInlinePrice('discount', 'abm-promo');
+        initMasCommerceService();
+        const inlinePrice = mockInlinePrice('abm-promo');
         inlinePrice.dataset.template = 'discount';
         await inlinePrice.onceSettled();
         expect(inlinePrice.outerHTML).to.be.html(snapshots.discount);
     });
 
     it('renders no discount markup', async () => {
-        await initMasCommerceService();
-        const inlinePrice = mockInlinePrice('noDiscount', 'abm');
+        initMasCommerceService();
+        const inlinePrice = mockInlinePrice('abm');
         inlinePrice.dataset.template = 'discount';
         await inlinePrice.onceSettled();
         expect(inlinePrice.outerHTML).to.be.html(snapshots.noDiscount);
@@ -224,16 +225,16 @@ describe('class "InlinePrice"', () => {
 
     describe('property "isInlinePrice"', () => {
         it('returns true', async () => {
-            await initMasCommerceService();
-            const inlinePrice = mockInlinePrice('abm1','abm');
+            initMasCommerceService();
+            const inlinePrice = mockInlinePrice('abm');
             expect(inlinePrice.isInlinePrice).to.be.true;
         });
     });
 
     describe('method "renderOffers"', () => {
         it('fails placeholder if "orders" array is empty', async () => {
-            await initMasCommerceService();
-            const inlinePrice = mockInlinePrice('abm2','abm');
+            initMasCommerceService();
+            const inlinePrice = mockInlinePrice('abm');
             inlinePrice.renderOffers(
                 [],
                 {},
@@ -243,7 +244,10 @@ describe('class "InlinePrice"', () => {
         });
 
         it('alternativePrice option test for aria label: both price should have sr-only.', async () => {
-            await initMasCommerceService();
+            initMasCommerceService();
+            const inlinePrice = mockInlinePrice('puf');
+            Object.assign(inlinePrice.dataset, { template: 'strikethrough' });
+            const inlinePrice2 = mockInlinePrice('abm');
             const p = document.createElement('p');
             p.id = 'alternativePrice';
             document.body.append(p);
@@ -260,8 +264,8 @@ describe('class "InlinePrice"', () => {
 
     describe('method "requestUpdate"', () => {
         it('has requestUpdate method', async () => {
-            await initMasCommerceService();
-            const inlinePrice = mockInlinePrice('abm5','abm');
+            initMasCommerceService();
+            const inlinePrice = mockInlinePrice('abm');
             inlinePrice.requestUpdate();
         });
     });
@@ -726,42 +730,21 @@ describe('commerce service', () => {
     });
 
     describe('function "direct price calls"', () => {
-        it('works as expected', async () => {
-            const service = await initMasCommerceService();
-            const { collectPriceOptions, buildPriceHTML } = new Price({
-                literals: { price: {} },
-                providers: {
-                    price: [
-                        (p, o) => {
-                            /*nop*/
-                        },
-                    ],
-                },
-                settings: getSettings(service.config),
-            });
-            const inlinePrice1 = mockInlinePrice('abm');
-            const options = collectPriceOptions({}, inlinePrice1);
-            expect(options).not.to.be.empty;
-            buildPriceHTML(
-                { priceDetails: {} },
-                { template: 'discount', ...options },
-            );
-            buildPriceHTML(
-                { priceDetails: {} },
-                { template: 'strikethrough', ...options },
-            );
-            buildPriceHTML(
-                { priceDetails: {} },
-                { template: 'optical', ...options },
-            );
-            buildPriceHTML(
-                { priceDetails: {} },
-                { template: 'annual', ...options },
-            );
-            buildPriceHTML(offers, { country: 'US' });
-            buildPriceHTML(offers, { country: 'US', promotionCode: 'promo' });
-            buildPriceHTML(offers, { country: 'AU' });
-            buildPriceHTML(offers, { country: 'AU', promotionCode: 'promo' });
-        });
-    });
+      it('works as expected', async () => {
+          const service = initMasCommerceService();
+          const { collectPriceOptions, buildPriceHTML } = new Price({
+            literals: { price: {} }, providers: { price: [(p,o) => {/*nop*/} ]}, settings: getSettings(service.config)});
+          const inlinePrice1 = mockInlinePrice('abm');
+          const options = collectPriceOptions({}, inlinePrice1);
+          expect(options).not.to.be.empty;
+          buildPriceHTML({ priceDetails:{} }, { template: 'discount', ...options } );
+          buildPriceHTML({ priceDetails:{} }, { template: 'strikethrough', ...options });
+          buildPriceHTML({ priceDetails:{} }, { template: 'optical', ...options });
+          buildPriceHTML({ priceDetails:{} }, { template: 'annual', ...options });
+          buildPriceHTML(offers, { country: 'US' });
+          buildPriceHTML(offers, { country: 'US', promotionCode: 'promo' });
+          buildPriceHTML(offers, { country: 'AU' });
+          buildPriceHTML(offers, { country: 'AU', promotionCode: 'promo' });
+      });
+  });
 });

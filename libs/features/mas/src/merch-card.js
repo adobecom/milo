@@ -221,7 +221,7 @@ export class MerchCard extends LitElement {
     }
 
     get computedBorderStyle() {
-        if (!['ccd-slice', 'ccd-suggested'].includes(this.variant)) {
+        if (!['ccd-slice', 'ccd-suggested', 'ah-promoted-plans'].includes(this.variant)) {
             return `1px solid ${
                 this.borderColor ? this.borderColor : this.badgeBackgroundColor
             }`;
@@ -329,7 +329,6 @@ export class MerchCard extends LitElement {
         super.connectedCallback();
         this.#service = getService();
         registerPriceOptionsProvider(this.#service);
-
         this.#log = this.#service.Log.module(MERCH_CARD);
         this.id ??=
             this.querySelector('aem-fragment')?.getAttribute('fragment');

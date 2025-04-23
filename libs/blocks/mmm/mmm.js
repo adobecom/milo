@@ -154,7 +154,7 @@ function filterPageList(pageNum, perPage, event) {
   const detail = {};
   Object.keys(searchValues).forEach((key) => {
     let { value } = searchValues[key];
-    if (value.replace) {
+    if (key === 'filter' && value.replace) { // allow optional commas inside filter textbox
       value = value.replace(',', '');
       value = value.replace(/\n/g, ',\n');
     }
@@ -433,6 +433,13 @@ function getDate(inputDate) {
   const dateOptions = { year: 'numeric', month: 'short', day: 'numeric' };
   return new Date(date).toLocaleDateString('en-US', dateOptions);
 }
+
+function getAbsUrl(manifestUrl, pageUrl) {
+  return manifestUrl?.startsWith('http')
+    ? manifestUrl
+    : `${pageUrl.split('.com')[0]}.com${manifestUrl}`;
+}
+
 function createReport(el, data) {
   const { result } = data;
   el.innerHTML = `
@@ -448,7 +455,7 @@ function createReport(el, data) {
           <div class="mmm-report-row">
             <span><a href="${item.url}?mep" target="_blank">${item.url}</a></span>
             <span>${item.target}</span>
-            <span>${getDate(item.aLastSeen)}</span>
+            <span>${getDate(item.aLastSeen)}<br/><a class="small" href="${getAbsUrl(item.manifestUrl, item.url)}">${item.targetActivityName}</a></span>
             <span>${getDate(item.pLastSeen)}</span>
           </div>
         `).join('')}
