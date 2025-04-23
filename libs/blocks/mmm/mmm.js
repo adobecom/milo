@@ -176,44 +176,6 @@ function parseData(el) {
   return data;
 }
 
-function createShareButton() {
-  const div = createTag(
-    'div',
-    { class: 'share-mmm' },
-  );
-  const buttonLabel = 'Copy link to these search settings';
-  const button = createTag(
-    'button',
-    {
-      type: 'button',
-      class: 'copy-to-clipboard',
-      'aria-label': buttonLabel,
-      'data-copy-to-clipboard': buttonLabel,
-      'data-copied': 'Copied!',
-    },
-    `<svg viewBox="0 0 37 37" style="enable-background:new 0 0 37 37" xml:space="preserve" class="icon icon-clipboard">
-      <path fill="currentColor" d="M31 0H6C2.7 0 0 2.7 0 6v25c0 3.3 2.7 6 6 6h25c3.3 0 6-2.7 6-6V6c0-3.3-2.7-6-6-6zM15.34 30.58a6.296 6.296 0 0 1-8.83 0c-2.48-2.44-2.52-6.43-.08-8.91l6.31-6.31a6.423 6.423 0 0 1 9.01-.04c.43.43.79.93 1.08 1.47l-1.52 1.51c-.11.11-.24.2-.38.28a3.68 3.68 0 0 0-3.32-2.44c-1.1-.04-2.17.37-2.96 1.13l-6.31 6.31a3.591 3.591 0 0 0 0 5.09 3.591 3.591 0 0 0 5.09 0c.19-.19 2.81-2.85 3.26-3.3 1.04.43 2.16.61 3.29.53-.96.95-4.31 4.34-4.64 4.68zm15.19-15.2-5.94 5.94c-2.54 2.57-6.63 2.73-9.38.38-.43-.43-.79-.93-1.08-1.47l1.44-1.5a2 2 0 0 1 .37-.28c.24.56.61 1.05 1.09 1.43.64.62 1.49.97 2.37.97 1.1.04 2.17-.37 2.96-1.14l6.26-6.26a3.591 3.591 0 0 0 0-5.09 3.591 3.591 0 0 0-5.09 0c-.19.19-2.87 2.83-3.32 3.29a7.267 7.267 0 0 0-3.29-.53c.96-.96 4.36-4.32 4.7-4.66a6.301 6.301 0 0 1 8.91 0l.01.01c2.46 2.47 2.46 6.46-.01 8.91z"></path>
-    </svg>`,
-  );
-  // set initial destination
-  button.dataset.destination = document.location.href;
-  div.append(button);
-  button.addEventListener('click', (e) => {
-    /* c8 ignore start */
-    e.preventDefault();
-    navigator.clipboard.writeText(button.dataset.destination).then(() => {
-      button.classList.add('copy-to-clipboard-copied');
-      setTimeout(() => document.activeElement.blur(), 500);
-      setTimeout(
-        () => button.classList.remove('copy-to-clipboard-copied'),
-        2000,
-      );
-    });
-    /* c8 ignore end */
-  });
-  return div;
-}
-
 function createDropdowns(data) {
   const searchContainer = document.querySelector(SEARCH_CONTAINER);
   const dropdownForm = createTag(
@@ -223,7 +185,6 @@ function createDropdowns(data) {
   searchContainer.append(dropdownForm);
   const dropdownSubContainer = createTag('div', { id: 'mmm-dropdown-sub-container' });
   dropdownForm.append(dropdownSubContainer);
-  dropdownForm.append(createShareButton());
   Object.keys(data).forEach((key) => {
     const { label, options } = data[key];
     const container = createTag('div');
