@@ -534,7 +534,7 @@ function createReport(el, data) {
   const headers = [
     { label: 'URL', orderBy: 'p.url', order: 'asc' },
     { label: 'Target Status', orderBy: 'p.target', order: 'asc' },
-    { label: 'Target Seen', orderBy: 'a.lastSeen', order: 'asc' },
+    { label: 'Target Last Seen', orderBy: 'a.lastSeen', order: 'asc' },
     { label: 'Page Last Seen', orderBy: 'p.lastSeen', order: 'asc' },
   ];
   el.innerHTML = `
