@@ -239,6 +239,11 @@
   grid-template-columns: repeat(auto-fit, minmax(276px, 1fr)) !important;
 }
 
+.wrapper-anchor {
+  display: flex;
+  flex-direction: column;
+}
+
 .icon-block .foreground .text-content > * {
   width: 100%;
 }

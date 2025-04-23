@@ -54,13 +54,39 @@ function decorateContent(el) {
   if (text) {
     text.classList.add('text-content');
     const image = block.querySelector(':scope img');
-    if (image) image.closest('p').classList.add('icon-area');
-    // place standalone links inside an action-area
     const lastElem = text.lastElementChild;
     if (lastElem.children.length === 1
       && lastElem.lastElementChild.nodeName === 'A'
       && lastElem.lastElementChild.innerText === lastElem.innerText) {
       text.lastElementChild.classList.add('action-area');
+    }
+
+    if (image) {
+      const iconP = image.closest('p');
+      iconP.classList.add('icon-area');
+      const iconLink = iconP.querySelector('a');
+      const actionLink = lastElem?.children.length === 1 && lastElem.lastElementChild.nodeName === 'A'
+        ? lastElem.lastElementChild
+        : null;
+
+      if (iconLink && actionLink) {
+        const wrapper = createTag('a', {
+          href: actionLink.href,
+          class: 'wrapper-anchor',
+        });
+
+        iconLink.replaceWith(...iconLink.childNodes);
+
+        const actionContent = actionLink.innerHTML;
+        lastElem.innerHTML = actionContent;
+        lastElem.classList.add('action-area');
+
+        wrapper.appendChild(iconP.cloneNode(true));
+        wrapper.appendChild(lastElem.cloneNode(true));
+
+        iconP.replaceWith(wrapper);
+        lastElem.remove();
+      }
     }
     const size = getBlockSize(el, 2);
     const variant = [...variants].filter((v) => el.classList.contains(v))?.[0] ?? variants[0];
