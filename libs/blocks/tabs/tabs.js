@@ -284,7 +284,7 @@ const init = (block) => {
   const tabListContainer = tabList.querySelector(':scope > div');
   tabListContainer.classList.add('tab-list-container');
   const tabListLabel = config.pretext;
-  if (tabListLabel)tabList.setAttribute('aria-label', tabListLabel);
+  if (tabListLabel) tabList.setAttribute('aria-label', tabListLabel);
 
   const tabListItems = rows[0].querySelectorAll(':scope li');
   if (tabListItems) {
