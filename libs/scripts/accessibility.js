@@ -6,13 +6,11 @@ function shouldntScroll(element, elFromPoint) {
 }
 
 function setScrollPadding() {
-  document.documentElement.style.setProperty('--scroll-padding-top', '25vh');
-  document.documentElement.style.setProperty('--scroll-padding-bottom', '25vh');
+  document.documentElement.style.setProperty('--scroll-padding-block', '25vh');
 }
 
 function removeScrollPadding() {
-  document.documentElement.style.removeProperty('--scroll-padding-top');
-  document.documentElement.style.removeProperty('--scroll-padding-bottom');
+  document.documentElement.style.removeProperty('--scroll-padding-block');
 }
 
 function scrollTabFocusedElIntoView() {
