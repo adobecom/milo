@@ -1448,7 +1448,7 @@ export async function init(enablements = {}) {
   }
   try {
     if (manifests?.length) await applyPers({ manifests });
-    if (config.mep?.preview) await import('./preview.js').then(({ saveToMmm }) => saveToMmm());
+    if (config.mep?.preview) await import('./mmm.js').then(({ saveToMmm }) => saveToMmm());
   } catch (e) {
     log(`MEP Error: ${e.toString()}`);
     window.lana?.log(`MEP Error: ${e.toString()}`);

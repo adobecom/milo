@@ -1402,6 +1402,9 @@ async function loadPostLCP(config) {
   if (config?.mep) {
     import('../features/personalization/personalization.js')
       .then(({ addMepAnalytics }) => addMepAnalytics(config, header));
+    if (config.mep?.preview || Math.random() < 0.5) {
+      await import('../features/personalization/mmm.js').then(({ saveToMmm }) => saveToMmm());
+    }
   }
   // load privacy here if quick-link is present in first section
   const quickLink = document.querySelector('div.section')?.querySelector('.quick-link');
