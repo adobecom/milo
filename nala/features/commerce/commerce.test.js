@@ -37,7 +37,7 @@ test.describe('Commerce feature test suite', () => {
       expect(await COMM.price.innerText()).toContain('US$263.88/yr');
       expect(await COMM.price.locator('.price-recurrence').innerText()).not.toBe('');
       expect(await COMM.price.locator('.price-unit-type').innerText()).toBe('');
-      expect(await COMM.price.locator('.price-tax-inclusivity.disabled').innerText()).toBe('');
+      expect(await COMM.price.locator('.price-tax-inclusivity').innerText()).toBe('');
     });
 
     await test.step('Validate optical price display', async () => {
@@ -45,7 +45,7 @@ test.describe('Commerce feature test suite', () => {
       expect(await COMM.priceOptical.innerText()).toContain('US$21.99/mo');
       expect(await COMM.priceOptical.locator('.price-recurrence').innerText()).not.toBe('');
       expect(await COMM.priceOptical.locator('.price-unit-type').innerText()).toBe('');
-      expect(await COMM.priceOptical.locator('.price-tax-inclusivity.disabled').innerText()).toBe('');
+      expect(await COMM.priceOptical.locator('.price-tax-inclusivity').innerText()).toBe('');
     });
 
     await test.step('Validate strikethrough price display', async () => {
@@ -53,7 +53,7 @@ test.describe('Commerce feature test suite', () => {
       expect(await COMM.priceStrikethrough.innerText()).toContain('US$263.88/yr');
       expect(await COMM.priceStrikethrough.locator('.price-recurrence').innerText()).not.toBe('');
       expect(await COMM.priceStrikethrough.locator('.price-unit-type').innerText()).toBe('');
-      expect(await COMM.priceStrikethrough.locator('.price-tax-inclusivity.disabled').innerText()).toBe('');
+      expect(await COMM.priceStrikethrough.locator('.price-tax-inclusivity').innerText()).toBe('');
       const priceStyle = await COMM.priceStrikethrough.evaluate(
         (e) => window.getComputedStyle(e).getPropertyValue('text-decoration'),
       );
@@ -76,7 +76,7 @@ test.describe('Commerce feature test suite', () => {
       expect(await COMM.price.innerText()).toContain('US$');
       expect(await COMM.price.locator('.price-recurrence').innerText()).not.toBe('');
       expect(await COMM.price.locator('.price-unit-type').innerText()).not.toBe('');
-      expect(await COMM.price.locator('.price-tax-inclusivity.disabled').innerText()).toBe('');
+      expect(await COMM.price.locator('.price-tax-inclusivity').innerText()).toBe('');
     });
 
     await test.step('Validate optical price display', async () => {
@@ -84,7 +84,7 @@ test.describe('Commerce feature test suite', () => {
       expect(await COMM.priceOptical.innerText()).toContain('US$');
       expect(await COMM.priceOptical.locator('.price-recurrence').innerText()).not.toBe('');
       expect(await COMM.priceOptical.locator('.price-unit-type').innerText()).not.toBe('');
-      expect(await COMM.priceOptical.locator('.price-tax-inclusivity.disabled').innerText()).toBe('');
+      expect(await COMM.priceOptical.locator('.price-tax-inclusivity').innerText()).toBe('');
     });
 
     await test.step('Validate strikethrough price display', async () => {
@@ -92,7 +92,7 @@ test.describe('Commerce feature test suite', () => {
       expect(await COMM.priceStrikethrough.innerText()).toContain('US$');
       expect(await COMM.priceStrikethrough.locator('.price-recurrence').innerText()).not.toBe('');
       expect(await COMM.priceStrikethrough.locator('.price-unit-type').innerText()).not.toBe('');
-      expect(await COMM.priceStrikethrough.locator('.price-tax-inclusivity.disabled').innerText()).toBe('');
+      expect(await COMM.priceStrikethrough.locator('.price-tax-inclusivity').innerText()).toBe('');
       const priceStyle = await COMM.priceStrikethrough.evaluate(
         (e) => window.getComputedStyle(e).getPropertyValue('text-decoration'),
       );
@@ -112,26 +112,26 @@ test.describe('Commerce feature test suite', () => {
 
     await test.step('Validate regular price display', async () => {
       await COMM.price.waitFor({ state: 'visible', timeout: 10000 });
-      expect(await COMM.price.innerText()).toContain('US$');
+      expect(await COMM.price.innerText()).toContain('€');
       expect(await COMM.price.locator('.price-recurrence').innerText()).not.toBe('');
       expect(await COMM.price.locator('.price-unit-type').innerText()).not.toBe('');
-      expect(await COMM.price.locator('.price-tax-inclusivity.disabled').innerText()).toBe('');
+      expect(await COMM.price.locator('.price-tax-inclusivity').innerText()).not.toBe('');
     });
 
     await test.step('Validate optical price display', async () => {
       await COMM.priceOptical.waitFor({ state: 'visible', timeout: 10000 });
-      expect(await COMM.priceOptical.innerText()).toContain('US$');
+      expect(await COMM.priceOptical.innerText()).toContain('€');
       expect(await COMM.priceOptical.locator('.price-recurrence').innerText()).not.toBe('');
       expect(await COMM.priceOptical.locator('.price-unit-type').innerText()).not.toBe('');
-      expect(await COMM.priceOptical.locator('.price-tax-inclusivity.disabled').innerText()).toBe('');
+      expect(await COMM.priceOptical.locator('.price-tax-inclusivity').innerText()).not.toBe('');
     });
 
     await test.step('Validate strikethrough price display', async () => {
       await COMM.priceStrikethrough.waitFor({ state: 'visible', timeout: 10000 });
-      expect(await COMM.priceStrikethrough.innerText()).toContain('US$');
+      expect(await COMM.priceStrikethrough.innerText()).toContain('€');
       expect(await COMM.priceStrikethrough.locator('.price-recurrence').innerText()).not.toBe('');
       expect(await COMM.priceStrikethrough.locator('.price-unit-type').innerText()).not.toBe('');
-      expect(await COMM.priceStrikethrough.locator('.price-tax-inclusivity.disabled').innerText()).toBe('');
+      expect(await COMM.priceStrikethrough.locator('.price-tax-inclusivity').innerText()).not.toBe('');
       const priceStyle = await COMM.priceStrikethrough.evaluate(
         (e) => window.getComputedStyle(e).getPropertyValue('text-decoration'),
       );
@@ -345,7 +345,7 @@ test.describe('Commerce feature test suite', () => {
       expect(await COMM.price.innerText()).toContain('€/Jahr');
       expect(await COMM.price.locator('.price-recurrence').innerText()).not.toBe('');
       expect(await COMM.price.locator('.price-unit-type').innerText()).toBe('');
-      expect(await COMM.price.locator('.price-tax-inclusivity.disabled').innerText()).toBe('');
+      expect(await COMM.price.locator('.price-tax-inclusivity').innerText()).toBe('');
       await expect(COMM.price).toHaveAttribute('data-promotion-code', data.promo);
     });
 
@@ -354,7 +354,7 @@ test.describe('Commerce feature test suite', () => {
       expect(await COMM.priceOptical.innerText()).toContain('€/Monat');
       expect(await COMM.priceOptical.locator('.price-recurrence').innerText()).not.toBe('');
       expect(await COMM.priceOptical.locator('.price-unit-type').innerText()).toBe('');
-      expect(await COMM.priceOptical.locator('.price-tax-inclusivity.disabled').innerText()).toBe('');
+      expect(await COMM.priceOptical.locator('.price-tax-inclusivity').innerText()).toBe('');
       await expect(COMM.priceOptical).toHaveAttribute('data-promotion-code', data.promo);
     });
 
@@ -363,7 +363,7 @@ test.describe('Commerce feature test suite', () => {
       expect(await COMM.priceStrikethrough.innerText()).toContain('€/Jahr');
       expect(await COMM.priceStrikethrough.locator('.price-recurrence').innerText()).not.toBe('');
       expect(await COMM.priceStrikethrough.locator('.price-unit-type').innerText()).toBe('');
-      expect(await COMM.priceStrikethrough.locator('.price-tax-inclusivity.disabled').innerText()).toBe('');
+      expect(await COMM.priceStrikethrough.locator('.price-tax-inclusivity').innerText()).toBe('');
       const priceStyle = await COMM.priceStrikethrough.evaluate(
         (e) => window.getComputedStyle(e).getPropertyValue('text-decoration'),
       );
@@ -453,7 +453,7 @@ test.describe('Commerce feature test suite', () => {
       expect(await COMM.priceOptical.innerText()).toContain('/mo');
       expect(await COMM.priceOptical.locator('.price-recurrence').innerText()).not.toBe('');
       expect(await COMM.priceOptical.locator('.price-unit-type').innerText()).toBe('');
-      expect(await COMM.priceOptical.locator('.price-tax-inclusivity.disabled').innerText()).toBe('');
+      expect(await COMM.priceOptical.locator('.price-tax-inclusivity').innerText()).toBe('');
       await expect(COMM.priceOptical).toHaveAttribute('data-promotion-code', data.promo);
     });
 
@@ -463,7 +463,7 @@ test.describe('Commerce feature test suite', () => {
       expect(await COMM.priceStrikethrough.innerText()).toContain('/yr');
       expect(await COMM.priceStrikethrough.locator('.price-recurrence').innerText()).not.toBe('');
       expect(await COMM.priceStrikethrough.locator('.price-unit-type').innerText()).toBe('');
-      expect(await COMM.priceStrikethrough.locator('.price-tax-inclusivity.disabled').innerText()).toBe('');
+      expect(await COMM.priceStrikethrough.locator('.price-tax-inclusivity').innerText()).toBe('');
       const priceStyle = await COMM.priceStrikethrough.evaluate(
         (e) => window.getComputedStyle(e).getPropertyValue('text-decoration'),
       );
