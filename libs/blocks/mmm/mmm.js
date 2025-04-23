@@ -38,21 +38,7 @@ const setLocalStorageFilter = (obj) => {
     : MMM_LOCAL_STORAGE_KEY, JSON.stringify(obj));
 };
 
-const getInitialValues = () => {
-  const search = new URLSearchParams(window.location.search);
-  const values = {};
-  if (search.size) {
-    search.entries().forEach((item) => {
-      const key = item[0];
-      const value = item[1];
-      values[key] = value;
-    });
-    return values;
-  }
-  return getLocalStorageFilter();
-};
-
-const SEARCH_INITIAL_VALUES = () => getInitialValues() ?? {
+const SEARCH_INITIAL_VALUES = () => getLocalStorageFilter() ?? {
   lastSeenManifest: isReport ? LAST_SEEN_OPTIONS.week.key : LAST_SEEN_OPTIONS.threeMonths.key,
   pageNum: 1,
   subdomain: SUBDOMAIN_OPTIONS.www.key,
@@ -132,28 +118,28 @@ function createButtonDetailsPair(mmmEl, page) {
  * @param {Event} event - optional. Page number click Event object.
  */
 function filterPageList(pageNum, perPage, event) {
-  const shareUrl = new URL(`${window.location.origin}${window.location.pathname}`);
   const searchValues = {};
   const activeSearchWithShortKeyword = event?.target?.value && event.target.value.length < 2;
 
   document.querySelector(SEARCH_CONTAINER).querySelectorAll('input, select, textarea').forEach((field) => {
     const id = field.getAttribute('id').split('-').pop();
-    const { value, tagName } = field;
-    searchValues[id] = {
-      value,
-      tagName,
-    };
-    if (value) shareUrl.searchParams.set(id, value);
+    searchValues[id] = field.value;
   });
 
   // add pageNum and perPage to args for api call
-  searchValues.pageNum = { value: pageNum || 1, tagName: 'A' };
-  searchValues.perPage = { value: perPage || 25, tagName: 'SELECT' };
+  searchValues.pageNum = pageNum || 1;
+  searchValues.perPage = perPage || 25;
+
+  // add orderBy and order to args for api call
+  if (isReport) {
+    searchValues.orderBy = event?.target?.dataset?.orderBy;
+    searchValues.order = event?.target?.dataset?.order;
+  }
 
   // assemble event details object with all filter criterias
   const detail = {};
   Object.keys(searchValues).forEach((key) => {
-    let { value } = searchValues[key];
+    let value = searchValues[key];
     if (key === 'filter' && value.replace) { // allow optional commas inside filter textbox
       value = value.replace(',', '');
       value = value.replace(/\n/g, ',\n');
@@ -165,10 +151,6 @@ function filterPageList(pageNum, perPage, event) {
     setLocalStorageFilter(detail);
     document.dispatchEvent(new CustomEvent(SEARCH_CRITERIA_CHANGE_EVENT, { detail }));
   }
-
-  document.querySelectorAll('button.copy-to-clipboard').forEach((button) => {
-    button.dataset.destination = shareUrl.href;
-  });
 }
 
 function parseData(el) {
@@ -441,14 +423,23 @@ function getAbsUrl(manifestUrl, pageUrl) {
 }
 
 function createReport(el, data) {
-  const { result } = data;
+  const { result, orderBy, order } = data;
+  const arrow = '<svg width="8" height="12" viewBox="0 0 8 12" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M1.70504 0L0.295044 1.41L4.87504 6L0.295044 10.59L1.70504 12L7.70504 6L1.70504 0Z" fill="black"/></svg>';
+  const headers = [
+    { label: 'URL', orderBy: 'p.url', order: 'asc' },
+    { label: 'Target Status', orderBy: 'p.target', order: 'asc' },
+    { label: 'Target Seen', orderBy: 'a.lastSeen', order: 'asc' },
+    { label: 'Page Last Seen', orderBy: 'p.lastSeen', order: 'asc' },
+  ];
   el.innerHTML = `
     <div class="mmm-report">
       <div class="mmm-report-header">
-        <span>URL</span>
-        <span>Target Status</span>
-        <span>Target Seen</span>
-        <span>Page Last Seen</span>
+        ${headers.map((header) => `
+          <span data-order-by="${header.orderBy}" data-order="${header.orderBy === orderBy ? order : header.order}">
+            ${header.label}
+            <section>${header.orderBy === orderBy ? arrow : ''}</section>
+          </span>
+        `).join('')}
       </div>
       <div class="mmm-report-body">
         ${result.map((item) => `
@@ -462,6 +453,12 @@ function createReport(el, data) {
       </div>
     </div>
   `;
+  el.querySelectorAll('.mmm-report-header span').forEach((header) => {
+    header.addEventListener('click', (e) => {
+      e.target.dataset.order = e.target.dataset.order === 'asc' ? 'desc' : 'asc';
+      filterPageList(null, null, e);
+    });
+  });
 }
 
 async function createPageList(el, search) {
