@@ -446,7 +446,7 @@ function createReport(el, data) {
           <div class="mmm-report-row">
             <span><a href="${item.url}?mep" target="_blank">${item.url}</a></span>
             <span>${item.target}</span>
-            <span>${getDate(item.aLastSeen)}<br/><a class="small" href="${getAbsUrl(item.manifestUrl, item.url)}">${item.targetActivityName}</a></span>
+            <span>${getDate(item.aLastSeen)}<br/><a class="small" target="_blank" href="${getAbsUrl(item.manifestUrl, item.url)}">${item.targetActivityName}</a></span>
             <span>${getDate(item.pLastSeen)}</span>
           </div>
         `).join('')}
