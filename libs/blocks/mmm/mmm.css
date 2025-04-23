@@ -594,26 +594,26 @@ fieldset.minError:after {
 .mmm-report-header > div:nth-child(1), 
 .mmm-report-row > div:nth-child(1) {
   display:flex; 
-  flex: 1 1 10%;
-  min-width: 10%;
+  flex: 1 1 8%;
+  min-width: 8%;
 }
 .mmm-report-header > div:nth-child(2), 
 .mmm-report-row > div:nth-child(2) {
   display:flex; 
-  flex: 1 1 51%;
-  min-width:51%;
+  flex: 1 1 48%;
+  min-width:48%;
 }
 .mmm-report-header > div:nth-child(3), 
 .mmm-report-row > div:nth-child(3) {
   display:flex; 
-  flex: 1 1 13%;
-  min-width: 13%;
+  flex: 1 1 8%;
+  min-width: 8%;
 }
 .mmm-report-header > div:nth-child(4), 
 .mmm-report-row > div:nth-child(4) {
   display:flex; 
-  flex: 1 1 13%;
-  min-width: 13%;
+  flex: 1 1 23%;
+  min-width: 23%;
 }
 .mmm-report-header > div:nth-child(5), 
 .mmm-report-row > div:nth-child(5) {
@@ -626,6 +626,7 @@ fieldset.minError:after {
   justify-content: center;
   align-items: center;
   border: none;
+  line-height:normal;
 }
 .mmm-report-row > div {
   border: 1px solid #ddd;

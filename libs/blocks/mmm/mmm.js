@@ -532,8 +532,6 @@ function createReport(el, data) {
   const { result, orderBy, order } = data;
   const arrow = '<svg width="8" height="12" viewBox="0 0 8 12" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M1.70504 0L0.295044 1.41L4.87504 6L0.295044 10.59L1.70504 12L7.70504 6L1.70504 0Z" fill="black"/></svg>';
   const headers = [
-
-    { label: 'Add all', orderBy: '.url', order: 'asc' },
     { label: 'URL', orderBy: 'p.url', order: 'asc' },
     { label: 'Target Status', orderBy: 'p.target', order: 'asc' },
     { label: 'Target Seen', orderBy: 'a.lastSeen', order: 'asc' },
@@ -564,20 +562,47 @@ function createReport(el, data) {
       </div>
     </div>
   `;
+
+  // add checkall checbox to row
+  el.querySelector('.mmm-report-header').prepend(createTag(
+    'div',
+    false,
+    `<span>
+      <center>
+        <input type="checkbox" id="entry-all" name="entry-all" value="entry-all" class="mmm-report-all">
+        <label for="mmm-report-all">Select All</label>
+      </center>
+    </span>`,
+  ));
+  // add checkbox each result row
+  const builtRows = document.querySelectorAll('.mmm-report-row');
+  builtRows.forEach((row, index) => {
+    const checkboxColumn = createTag(
+      'div',
+      false,
+      `<span>
+        <center>
+          <input type="checkbox" id="entry-${index}" name="entry-${index}" value="entry$-{index}" class="mmm-report-add">
+        </center>
+      </span> `,
+    );
+    row.prepend(checkboxColumn);
+  });
+
   el.querySelectorAll('.mmm-report-header span').forEach((header) => {
     header.addEventListener('click', (e) => {
       e.target.dataset.order = e.target.dataset.order === 'asc' ? 'desc' : 'asc';
       filterPageList(null, null, e);
     });
   });
-  // const selectAllCheck = el.querySelector('.mmm-report-all');
+  const selectAllCheck = el.querySelector('.mmm-report-all');
 
-  // selectAllCheck?.addEventListener('change', (e) => {
-  //   const checkboxes = el.querySelectorAll('input[type="checkbox"].mmm-report-add');
-  //   checkboxes.forEach((checkbox) => {
-  //     checkbox.checked = e.target.checked;
-  //   });
-  // });
+  selectAllCheck?.addEventListener('change', (e) => {
+    const checkboxes = el.querySelectorAll('input[type="checkbox"].mmm-report-add');
+    checkboxes.forEach((checkbox) => {
+      checkbox.checked = e.target.checked;
+    });
+  });
 }
 
 async function createPageList(el, search) {
