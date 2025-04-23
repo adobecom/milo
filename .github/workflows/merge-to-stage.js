@@ -203,7 +203,28 @@ const openStageToMainPR = async () => {
   }
 };
 
-const mergeLimitExceeded = () => MAX_MERGES - existingPRCount < 0;
+const isWithinPrePostRCP = ({ offset = 7 } = {}) => {
+  const now = new Date();
+  return RCPDates.some(({ start, end}) =>{
+    const preRCPstart = new Date(start);
+    preRCPstart.setDate(preRCPstart.getDate() - offset);
+
+    const postRCPEnd = new Date(end);
+    postRCPEnd.setDate(postRCPEnd.getDate() + offset);
+
+    return ( preRCPstart >= now && now < start ) || ( end < now && now <= postRCPEnd ); 
+  });
+}
+
+const getMaxMerges = () => {
+  const baseMaxMerges = process.env.MAX_PRS_PER_BATCH ? Number(process.env.MAX_PRS_PER_BATCH) : 9;
+  if (isWithinPrePostRCP) {
+    return baseMaxMerges + 3;
+  }
+  return baseMaxMerges;
+}
+
+const mergeLimitExceeded = () => getMaxMerges() - existingPRCount < 0;
 
 const main = async (params) => {
   github = params.github;
@@ -218,7 +239,7 @@ const main = async (params) => {
     existingPRCount = body.match(/https:\/\/github\.com\/adobecom\/milo\/pull\/\d+/g)?.length || 0;
     console.log(`Number of PRs already in the batch: ${existingPRCount}`);
 
-    if (mergeLimitExceeded()) return console.log(`Maximum number of '${MAX_MERGES}' PRs already merged. Stopping execution`);
+    if (mergeLimitExceeded()) return console.log(`Maximum number of '${getMaxMerges()}' PRs already merged. Stopping execution`);
 
     const { zeroImpactPRs, highImpactPRs, normalPRs } = await getPRs();
     await merge({ prs: zeroImpactPRs, type: LABELS.zeroImpact });
