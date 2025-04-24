@@ -685,3 +685,7 @@ fieldset.minError:after {
 .mmm-report-button {
   color: white; 
 }
+
+label[for="mmm-report-all"] {
+  text-align: center;
+}
