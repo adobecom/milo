@@ -161,7 +161,7 @@ const LANG_STORE_PREFIX = 'langstore/';
 function getDefaultLangstoreCountry(language) {
   let country = LanguageMap[language];
   if (!country && GeoMap[language]) {
-    country = language.toUpperCase(); // es, fr, pt, de
+    country = language; // es, fr, pt, de
   }
   if (!country && language.includes('-')) {
     [country] = language.split('-'); // variations like es-419, pt-PT
