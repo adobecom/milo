@@ -1,6 +1,7 @@
 {
   "project": "Milo",
   "host": "milo.adobe.com",
+  "trustedHosts": ["milo.adobe.com", "*--milo--adobecom.aem.page"],
   "libraries": [
     {
       "text": "Blocks",
