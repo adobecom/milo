@@ -1,7 +1,7 @@
 import { html, LitElement } from 'lit';
 import { MatchMediaController } from '@spectrum-web-components/reactive-controllers/src/MatchMedia.js';
 import { deeplink, pushState } from './deeplink.js';
-import { EVENT_MERCH_SIDENAV_SELECT } from './constants.js';
+import { EVENT_MAS_ERROR, EVENT_MERCH_SIDENAV_SELECT } from './constants.js';
 
 import {
     EVENT_MERCH_CARD_COLLECTION_SORT,
@@ -11,7 +11,7 @@ import {
 } from './constants.js';
 import { TABLET_DOWN } from './media.js';
 import { styles } from './merch-card-collection.css.js';
-import { getSlotText } from './utils.js';
+import { getService, getSlotText } from './utils.js';
 import './mas-commerce-service';
 
 const MERCH_CARD_COLLECTION = 'merch-card-collection';
@@ -94,7 +94,7 @@ const searcher = (elements, { search }) => {
 export class MerchCardCollection extends LitElement {
     static properties = {
         filter: { type: String, attribute: 'filter', reflect: true },
-        filtered: { type: String, attribute: 'filtered' }, // freeze filter
+        filtered: { type: String, attribute: 'filtered', reflect: true }, // freeze filter
         search: { type: String, attribute: 'search', reflect: true },
         sort: {
             type: String,
@@ -113,6 +113,9 @@ export class MerchCardCollection extends LitElement {
         },
         sidenav: { type: Object },
     };
+
+    #service;
+    #log;
 
     mobileAndTablet = new MatchMediaController(this, TABLET_DOWN);
 
@@ -225,20 +228,39 @@ export class MerchCardCollection extends LitElement {
 
     connectedCallback() {
         super.connectedCallback();
-        if (this.filtered) {
-            this.filter = this.filtered;
+        this.#service = getService();
+        this.#log = this.#service.Log.module(MERCH_CARD_COLLECTION);
+        this.init();
+    }
+
+    async init() {
+      await this.hydrate();
+      this.sidenav = document.querySelector('merch-sidenav');
+      if (this.filtered) {
+          this.filter = this.filtered;
             this.page = 1;
-        } else {
-            this.startDeeplink();
-        }
-        this.sidenav = document.querySelector('merch-sidenav');
-        this.hydrate();
+          } else {
+          this.startDeeplink();
+      }
     }
 
     disconnectedCallback() {
         super.disconnectedCallback();
         this.stopDeeplink?.();
     }
+
+    #fail(error, details = {}, dispatch = true) {
+      this.#log.error(`merch-card-collection: ${error}`, details);
+      this.failed = true;
+      if (!dispatch) return;
+      this.dispatchEvent(
+          new CustomEvent(EVENT_MAS_ERROR, {
+              detail: { ...details, message: error },
+              bubbles: true,
+              composed: true,
+          }),
+      );
+  }
 
     async hydrate() {
         if (this.hydrating) return false;
@@ -251,7 +273,7 @@ export class MerchCardCollection extends LitElement {
         this.hydrationReady = new Promise((resolve) => {
             resolveHydration = resolve;
         });
-
+        const self = this;
         function normalizePayload(fragment) {
             const payload = { cards: [], hierarchy: [], placeholders: fragment.placeholders };
 
@@ -273,13 +295,18 @@ export class MerchCardCollection extends LitElement {
                     traverseReferencesTree(collection.collections, reference.referencesTree);
                 }
             }
-            traverseReferencesTree(payload.hierarchy, fragment.referencesTree);
-            
+            traverseReferencesTree(
+                payload.hierarchy,
+                fragment.referencesTree,
+            );
+            if (payload.hierarchy.length === 0) {
+              self.filtered = 'all';
+          }
             return payload;
         }
         
         aemFragment.addEventListener(EVENT_AEM_ERROR, (event) => {
-            console.error(event.detail);
+            this.#fail('Error loading AEM fragment', event.detail);
             this.hydrating = false;
             aemFragment.remove();
         });
@@ -291,7 +318,6 @@ export class MerchCardCollection extends LitElement {
                 const merchCard = document.createElement('merch-card');
                 merchCard.setAttribute('consonant', '');
                 merchCard.setAttribute('style', '');
-                merchCard.filters = {};
 
                 function populateFilters(level) {
                     for (const node of level) {
@@ -307,19 +333,27 @@ export class MerchCardCollection extends LitElement {
                 const mcAemFragment = document.createElement('aem-fragment');
                 mcAemFragment.setAttribute('fragment', fragment.id);
                 merchCard.append(mcAemFragment);
-
+                // if no filters are set, set the default filter
+                if (Object.keys(merchCard.filters).length === 0) {
+                    merchCard.filters = {
+                        all: {
+                            order: cards.indexOf(fragment) + 1,
+                            size: fragment.fields.size,
+                        },
+                    };
+                }
                 this.append(merchCard);
             }
 
             const variant = cards[0]?.fields.variant;
             this.variant = variant;
             this.classList.add('merch-card-collection', variant, ...(VARIANT_CLASSES[variant] || []));
-
             this.displayResult = true;
             this.hydrating = false;
             aemFragment.remove();
             resolveHydration();
         });
+        await this.hydrationReady;
     }
 
     get header() {

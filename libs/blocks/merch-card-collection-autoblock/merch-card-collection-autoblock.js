@@ -64,7 +64,7 @@ async function loadDependencies(options) {
 function getSidenav(collection) {
   if (!collection.data) return null;
   const { hierarchy, placeholders } = collection.data;
-  if (!hierarchy) return null;
+  if (!hierarchy?.length) return null;
 
   const titleKey = `${collection.variant}SidenavTitle`;
   const sidenav = createTag('merch-sidenav', { sidenavTitle: placeholders?.[titleKey] || '' });

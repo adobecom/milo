@@ -136,7 +136,6 @@ export class MerchCard extends LitElement {
     variantLayout;
     #log;
     #service;
-    #initialized = false;
 
     readyEventDispatched = false;
     constructor() {
@@ -317,8 +316,6 @@ export class MerchCard extends LitElement {
 
     connectedCallback() {
         super.connectedCallback();
-        if (this.#initialized) return;
-        this.#initialized = true;
         this.#service = getService();
         this.#log = this.#service.Log.module(MERCH_CARD);
         this.id ??=
@@ -362,6 +359,7 @@ export class MerchCard extends LitElement {
 
     // custom methods
     async handleAemFragmentEvents(e) {
+        if (!this.isConnected) return;
         if (e.type === EVENT_AEM_ERROR) {
             this.#fail(
                 `AEM fragment cannot be loaded: ${e.detail.message}`,
@@ -392,6 +390,7 @@ export class MerchCard extends LitElement {
     }
 
     async checkReady() {
+        if (!this.isConnected) return;
         const timeoutPromise = new Promise((resolve) =>
             setTimeout(() => resolve('timeout'), MERCH_CARD_LOAD_TIMEOUT),
         );

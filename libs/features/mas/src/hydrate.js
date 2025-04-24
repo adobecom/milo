@@ -195,6 +195,7 @@ export function processDescription(fields, merchCard, mapping) {
     appendSlot('description', fields, merchCard, mapping);
     appendSlot('callout', fields, merchCard, mapping);
     appendSlot('quantitySelect', fields, merchCard, mapping);
+    appendSlot('whatsIncluded', fields, merchCard, mapping);
 }
 
 export function processStockOffersAndSecureLabel(

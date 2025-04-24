@@ -31,7 +31,7 @@ async function loadDependencies() {
     throw new Error('Failed to initialize mas commerce service');
   }
   const service = await servicePromise;
-  log = service.Log.module('merch');
+  log = service.Log.module('merch-card');
 }
 
 export async function checkReady(masElement) {
