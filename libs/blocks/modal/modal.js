@@ -215,7 +215,8 @@ export async function getModal(details, custom) {
     } else {
       iframe.onload = () => {
         try {
-          if (iframe.contentWindow.location.origin !== window.location.origin) {
+          if ((new URL(iframe.src).origin !== window.location.origin) && iframe.title) {
+            dialog.setAttribute('aria-label', iframe.title);
             return;
           }
 
