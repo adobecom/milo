@@ -10,6 +10,9 @@
 .mmm-container {
   padding: var(--spacing-m) 0;
 }
+.mmm-container:has(.mmm-report) {
+  padding: 0;
+}
 
 div.mmm {
   display: none;

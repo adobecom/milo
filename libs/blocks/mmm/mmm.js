@@ -519,7 +519,7 @@ function createReportButton() {
   topReportButton.addEventListener('click', () => {
     const reportData = [];
     const selectedCheckboxes = document.querySelectorAll('.mmm-report-add:checked');
-    selectedCheckboxes.forEach((checkedBox) => reportData.push(checkedBox.closest('.mmm-report-row').querySelector('a').href));
+    selectedCheckboxes.forEach((checkedBox) => reportData.push(new URL(checkedBox.closest('.mmm-report-row').querySelector('a').href).pathname.split('.html')[0]));
     console.log(reportData);
     const email = 'tester@adobe.com'; // Recipient email address
     const subject = 'Disable Request'; // Email subject
@@ -527,9 +527,8 @@ function createReportButton() {
 
     // Construct the mailto link
     const mailtoLink = `mailto:${email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-
     // Open the mail client
-    window.location.href = mailtoLink;
+    // window.location.href = mailtoLink;
   });
   const topButtonContainer = createTag('div', { id: 'mmm-report-button-container', class: 'mmm-report-button-container' }, topReportButton);
   parentContainer.prepend(topButtonContainer);
