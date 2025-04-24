@@ -257,6 +257,7 @@ span.feds-footer-privacyLink-divider {
 
 .footer-logo {
   padding: 0 var(--feds-gutter-footer);
+  line-height: 0;
 }
 
 .footer-logo-image img,
