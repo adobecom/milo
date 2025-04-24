@@ -523,12 +523,20 @@ function createReportButton() {
     },
     'Open Slack',
   );
-  copyReportButton.addEventListener('click', () => {
+  copyReportButton.addEventListener('click', (e) => {
     const reportData = [];
     const selectedCheckboxes = document.querySelectorAll('.mmm-report-add:checked');
+    if (selectedCheckboxes.length === 0) {
+      e.target.closest('p').classList.add('minError');
+      setTimeout(() => e.target.closest('p').classList.remove('minError'), 3000);
+      return;
+    }
     selectedCheckboxes.forEach((checkedBox) => reportData.push(checkedBox.closest('.mmm-report-row').querySelector('a').href.split('?')[0]));
     console.log(reportData);
     navigator.clipboard.writeText(`Please disable the following pages.\n\n${reportData.join('\n')}`);
+    e.target.closest('p').classList.remove('minError');
+    e.target.closest('p').classList.add('copySuccess');
+    setTimeout(() => e.target.closest('p').classList.remove('copySuccess'), 3000);
   });
   const topButtonContainer = createTag('div', { id: 'mmm-report-button-container', class: 'mmm-report-button-container' }, '<p class="action-area"></p>');
   topButtonContainer.querySelector('.action-area').append(copyReportButton, openSlackButton);

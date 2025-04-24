@@ -551,6 +551,35 @@ fieldset.minError:after {
   border: 1px solid red;
   font-weight: 600;
 } 
+p:has(.mmm-report-copy) {
+  position: relative;
+}
+p.minError:after {
+  content: "One url must be selected.";
+  display: block;
+  position: absolute;
+  bottom: -30px;
+  font-size: 12px;
+  background-color: #f7e7e7;
+  border-radius: 6px;
+  padding: 2px 7px;
+  border: 1px solid red;
+  font-weight: 600;
+  left: 30%;
+} 
+p.copySuccess:after {
+  content: "Urls copied to clipboard!";
+  display: block;
+  position: absolute;
+  bottom: -30px;
+  font-size: 12px;
+  background-color: #d8f5b0;
+  border-radius: 6px;
+  padding: 2px 7px;
+  border: 1px solid rgb(84, 133, 17);
+  font-weight: 600;
+  left: 30%;
+} 
 
 .mmm-order-1 {
   order: 1;
@@ -691,5 +720,5 @@ label[for="mmm-report-all"] {
 }
 
 .mmm-report-copy, .mmm-report-slack {
-  margin: var(--spacing-xxs);
+  margin: var(--spacing-xs);
 }
