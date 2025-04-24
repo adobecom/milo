@@ -26,7 +26,8 @@ export const PLANS_AEM_FRAGMENT_MAPPING = {
 export const PLANS_EDUCATION_AEM_FRAGMENT_MAPPING = {
   ...PLANS_AEM_FRAGMENT_MAPPING,
   title: { tag: 'p', slot: 'heading-s' },
-  subtitle: { tag: 'p', slot: 'subtitle' }
+  subtitle: { tag: 'p', slot: 'subtitle' },
+  secureLabel: false
 }
 
 export class Plans extends VariantLayout {
