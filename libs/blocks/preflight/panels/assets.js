@@ -57,41 +57,29 @@ function ImageGroup({ group }) {
       <div class="grid-toggle">${title}</div>
     </div>
 
-    ${viewportTooSmall.value &&
-    html`
-      <div class="assets-image-grid">
-        <div class="assets-image-grid-item full-width">
-          Please resize your browser to at least 1200px width to run image checks
+    ${viewportTooSmall.value && html`
+      <div class='assets-image-grid'>
+        <div class='assets-image-grid-item full-width'>Please resize your browser to at least 1200px width to run image checks</div>
+      </div>
+    `}
+
+    ${!viewportTooSmall.value && imgArray.value.length > 0 && html`
+    <div class='assets-image-grid'>
+      ${imgArray.value.map((img) => html`
+      <div class='assets-image-grid-item'>
+        <img src='${img.src}' />
+        <div class='assets-image-grid-item-text'>
+          <span>Factor: ${img.roundedFactor}</span>
+          <span>Upload size: ${img.naturalDimensions}</span>
+          <span>Display size: ${img.displayDimensions}</span>
+          ${img.hasMismatch && html`<span>Recommended size: ${img.recommendedDimensions}</span>`}
         </div>
-      </div>
-    `}
+      </div>`)}
+    </div>`}
 
-    ${!viewportTooSmall.value &&
-    imgArray.value.length > 0 &&
-    html`
-      <div class="assets-image-grid">
-        ${imgArray.value.map(
-          (img) => html`
-            <div class="assets-image-grid-item">
-              <img src="${img.src}" />
-              <div class="assets-image-grid-item-text">
-                <span>Factor: ${img.roundedFactor}</span>
-                <span>Upload size: ${img.naturalDimensions}</span>
-                <span>Display size: ${img.displayDimensions}</span>
-                ${img.hasMismatch &&
-                html`<span>Recommended size: ${img.recommendedDimensions}</span>`}
-              </div>
-            </div>
-          `,
-        )}
-      </div>
-    `}
-
-    ${!viewportTooSmall.value &&
-    !imgArray.value.length &&
-    html`
-      <div class="assets-image-grid">
-        <div class="assets-image-grid-item full-width">No images found</div>
+    ${!viewportTooSmall.value && !imgArray.value.length && html`
+      <div class='assets-image-grid'>
+        <div class='assets-image-grid-item full-width'>No images found</div>
       </div>
     `}
   `;

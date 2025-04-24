@@ -9,7 +9,7 @@ export function isViewportTooSmall() {
 }
 
 // Check: Image dimensions
-export async function checkImageDimensions(url, area) {
+export async function checkImageDimensions(area) {
   if (isViewportTooSmall()) {
     return {
       title: ASSETS_TITLES.ImageDimensions,
@@ -135,5 +135,5 @@ export async function checkImageDimensions(url, area) {
 
 // Main function to run all checks
 export function runChecks(url, area) {
-  return [checkImageDimensions(url, area)];
+  return [checkImageDimensions(area)];
 }
