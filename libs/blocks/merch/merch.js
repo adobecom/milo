@@ -747,7 +747,7 @@ export async function buildCta(el, params) {
     // If Milo aria-label available from sharepoint doc, just use it.
     cta.setAttribute('aria-label', el.ariaLabel);
   } else if (!cta.ariaLabel) {
-    cta.onceSettled().finally(async () => {
+    cta.onceSettled().then(async () => {
       const productFamily = cta.value[0]?.productArrangement?.productFamily;
       const marketSegment = cta.value[0]?.marketSegments[0];
       const customerSegment = marketSegment === 'EDU' ? marketSegment : cta.value[0]?.customerSegment;

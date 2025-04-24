@@ -110,8 +110,11 @@ async function checkDescription() {
 }
 
 async function checkBody() {
+  const nonContentEls = '#preflight, .picture-meta, aem-sidekick';
   const result = { ...bodyResult.value };
-  const { length } = document.documentElement.innerText;
+  const bodyClone = document.body.cloneNode(true);
+  bodyClone.querySelectorAll(nonContentEls).forEach((el) => el.remove());
+  const { length } = bodyClone.innerText.replace(/\n/g, '').trim();
 
   if (length > 100) {
     result.icon = pass;
