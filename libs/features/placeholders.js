@@ -11,7 +11,7 @@ const getPlaceholdersPath = (config, sheet) => {
 
 const parsePlaceholderJson = async (resp, placeholders) => {
   const json = resp.ok ? await resp.json() : { data: [] };
-  if (json.data.length === 0) return;
+  if (!json.data.length) return;
   json.data.forEach((item) => {
     window.mph[item.key] = item.value;
     placeholders[item.key] = item.value;
@@ -27,10 +27,8 @@ const fetchPlaceholder = (path, placeholderRequest) => new Promise(
     const placeholders = {};
 
     if (Array.isArray(resp)) {
-      // Process sequentially, later ones override earlier ones
-      for (const r of resp) {
-        await parsePlaceholderJson(r, placeholders);
-      }
+      // Overlay placeholders
+      for (const r of resp) await parsePlaceholderJson(r, placeholders);
     } else {
       await parsePlaceholderJson(resp, placeholders);
     }

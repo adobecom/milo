@@ -1068,28 +1068,26 @@ const findReplaceableNodes = (area) => {
   return nodes;
 };
 
-let placeholderRequest;
 function getPlaceholderPaths(config) {
-  const rootPath = `${config.locale?.contentRoot}/placeholders`;
-  const placeholderPaths = [`${rootPath}.json`];
-  if (config.env.name !== 'prod') {
-    placeholderPaths.push(`${rootPath}-stage.json`);
-  }
-  return placeholderPaths;
+  const root = `${config.locale?.contentRoot}/placeholders`;
+  const paths = [`${root}.json`];
+  if (config.env.name !== 'prod') paths.push(`${root}-stage.json`);
+  return paths;
 }
 
+let placeholderRequest;
 export async function decoratePlaceholders(area, config) {
   if (!area) return;
   const nodes = findReplaceableNodes(area);
   if (!nodes.length) return;
   area.dataset.hasPlaceholders = 'true';
-  const placeholderPaths = getPlaceholderPaths(config);
+  const phPaths = getPlaceholderPaths(config);
   placeholderRequest ||= Promise.all(
-    placeholderPaths.map((path) => customFetch({ resource: path, withCacheRules: true })),
+    phPaths.map((path) => customFetch({ resource: path, withCacheRules: true })),
   ).catch(() => ({}));
   const { decoratePlaceholderArea } = await import('../features/placeholders.js');
   await decoratePlaceholderArea({
-    placeholderPath: placeholderPaths[0],
+    placeholderPath: phPaths[0],
     placeholderRequest,
     nodes,
   });
