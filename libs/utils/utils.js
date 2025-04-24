@@ -1598,9 +1598,9 @@ async function processSection(section, config, isDoc) {
 
 export async function loadArea(area = document) {
   const isDoc = area === document;
-
   const isPageLoadOk = document.getElementById('page-load-ok-milo') !== null;
-  if (isPageLoadOk) {
+
+  if (isDoc && isPageLoadOk) {
     return;
   }
 
