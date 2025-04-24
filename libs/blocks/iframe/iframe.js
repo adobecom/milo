@@ -55,13 +55,13 @@ export default function init(el) {
 
     if (new URL(iframe.src).origin !== window.location.origin) {
       if (ariaLabel) iframe.title = ariaLabel;
-      if (dialogModal) dialogModal.title = ariaLabel || iframe.title;
+      if (dialogModal) dialogModal.setAttribute('aria-label', ariaLabel || iframe.title);
       return;
     }
 
     const sameOriginText = ariaLabel || iframe.contentWindow.document.querySelector('h1, h2, h3, h4, h5, h6')?.textContent;
     if (sameOriginText) iframe.title = sameOriginText;
-    if (dialogModal && sameOriginText) dialogModal.title = sameOriginText;
+    if (dialogModal && sameOriginText) dialogModal.setAttribute('aria-label', sameOriginText);
   };
 
   el.insertAdjacentElement('afterend', embed);
