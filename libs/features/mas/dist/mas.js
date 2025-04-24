@@ -1014,21 +1014,21 @@ merch-card[variant="plans-education"] [slot="body-xs"] span.price.price-striketh
 }
 
 merch-card[variant^="plans"] [slot='heading-xs'],
-merch-card[variant="plans-education"] span.heading-xs,
+merch-card[variant="plans-education"] p:has(span.heading-xs),
 merch-card[variant="plans-education"] [slot="body-xs"] span.price:not(.price-strikethrough) {
   min-height: var(--merch-card-plans-heading-xs-min-height);
 }
 
-merch-card[variant="plans-education"] span.heading-xs {
+merch-card[variant="plans-education"] p:has(span.heading-xs) {
   margin-top: 16px;
   margin-bottom: 8px;
 }
 
-merch-card[variant="plans-education"] span.promo-text {
+merch-card[variant="plans-education"] p:has(span.promo-text) {
   margin-bottom: 8px;
 }
 
-merch-card[variant="plans-education"] span.heading-xs:has(a[href^='tel:']):has(+ p) {
+merch-card[variant="plans-education"] p:has(a[href^='tel:']):has(+ p) {
   margin-bottom: 16px;
 }
 
