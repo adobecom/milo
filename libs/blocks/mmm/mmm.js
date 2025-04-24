@@ -514,23 +514,24 @@ function getAbsUrl(manifestUrl, pageUrl) {
 
 function createReportButton() {
   const parentContainer = document.querySelector('dl.mmm.foreground');
-  console.log(parentContainer.length);
-  const topReportButton = createTag('a', { class: 'con-button blue button-l button-justified-mobile' }, 'Email Report');
-  topReportButton.addEventListener('click', () => {
+  const copyReportButton = createTag('a', { class: 'con-button blue button-l button-justified-mobile mmm-report-copy' }, 'Copy Selected');
+  const openSlackButton = createTag(
+    'a',
+    {
+      class: 'con-button outline button-l button-justified-mobile mmm-report-slack',
+      href: 'https://adobe.enterprise.slack.com/archives/C08L7AAVD3P',
+    },
+    'Open Slack',
+  );
+  copyReportButton.addEventListener('click', () => {
     const reportData = [];
     const selectedCheckboxes = document.querySelectorAll('.mmm-report-add:checked');
-    selectedCheckboxes.forEach((checkedBox) => reportData.push(new URL(checkedBox.closest('.mmm-report-row').querySelector('a').href).pathname.split('.html')[0]));
+    selectedCheckboxes.forEach((checkedBox) => reportData.push(checkedBox.closest('.mmm-report-row').querySelector('a').href.split('?')[0]));
     console.log(reportData);
-    const email = 'tester@adobe.com'; // Recipient email address
-    const subject = 'Disable Request'; // Email subject
-    const body = reportData; // Email body
-
-    // Construct the mailto link
-    const mailtoLink = `mailto:${email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-    // Open the mail client
-    window.location.href = mailtoLink;
+    navigator.clipboard.writeText(`Please disable the following pages.\n\n${reportData.join('\n')}`);
   });
-  const topButtonContainer = createTag('div', { id: 'mmm-report-button-container', class: 'mmm-report-button-container' }, topReportButton);
+  const topButtonContainer = createTag('div', { id: 'mmm-report-button-container', class: 'mmm-report-button-container' }, '<p class="action-area"></p>');
+  topButtonContainer.querySelector('.action-area').append(copyReportButton, openSlackButton);
   parentContainer.prepend(topButtonContainer);
 }
 

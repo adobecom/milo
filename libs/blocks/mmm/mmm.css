@@ -689,3 +689,7 @@ fieldset.minError:after {
 label[for="mmm-report-all"] {
   text-align: center;
 }
+
+.mmm-report-copy, .mmm-report-slack {
+  margin: var(--spacing-xxs);
+}
