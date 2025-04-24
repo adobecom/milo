@@ -210,6 +210,7 @@ describe('Merch Block', () => {
         { prefix: '/langstore/zh-hant', expectedLocale: 'zh-hant_TW' },
         { prefix: '/langstore/el', expectedLocale: 'el_GR' },
         { prefix: '/langstore/uk', expectedLocale: 'uk_UA' },
+        { prefix: '/langstore/es-419', expectedLocale: 'es-419_ES' },
       ].forEach(({ prefix, expectedLocale }) => {
         const computedLocale = getMiloLocaleSettings({ prefix })?.locale;
         expect(computedLocale).to.equal(expectedLocale);

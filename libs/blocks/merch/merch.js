@@ -46,6 +46,34 @@ export const CC_SINGLE_APPS = [
   ['XD'],
 ];
 
+const LanguageMap = {
+  en: 'US',
+  'en-gb': 'GB',
+  'es-mx': 'MX',
+  'fr-ca': 'CA',
+  da: 'DK',
+  et: 'EE',
+  ar: 'DZ',
+  el: 'GR',
+  iw: 'IL',
+  he: 'IL',
+  id: 'ID',
+  ms: 'MY',
+  nb: 'NO',
+  sl: 'SI',
+  sv: 'SE',
+  cs: 'CZ',
+  uk: 'UA',
+  hi: 'IN',
+  'zh-hans': 'CN',
+  'zh-hant': 'TW',
+  ja: 'JP',
+  ko: 'KR',
+  fil: 'PH',
+  th: 'TH',
+  vi: 'VN',
+};
+
 const GeoMap = {
   ar: 'AR_es',
   be_en: 'BE_en',
@@ -130,25 +158,16 @@ const GeoMap = {
 
 const LANG_STORE_PREFIX = 'langstore/';
 
-// eslint-disable-next-line consistent-return
 function getDefaultLangstoreCountry(language) {
-  if (language === 'en') {
-    return 'US';
+  let country = LanguageMap[language];
+  if (!country && GeoMap[language]) {
+    country = language.toUpperCase(); // es, fr, pt, de
   }
-  if (language === 'ar') { // Arabic, not for Argentina
-    return 'DZ';
+  if (!country && language.includes('-')) {
+    [country] = language.split('-'); // variations like es-419, pt-PT
   }
-  if (language === 'uk') { // Ukraine, not United Kingdom
-    return 'UA';
-  }
-  if (GeoMap[language]) {
-    return GeoMap[language].split('_', 2)[0];
-  }
-  for (const [, value] of Object.entries(GeoMap)) {
-    if (value.toLowerCase().endsWith(`_${language}`)) {
-      return value.split('_', 2)[0];
-    }
-  }
+
+  return country || 'US';
 }
 
 export function getMiloLocaleSettings(locale) {
