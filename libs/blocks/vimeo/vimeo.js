@@ -82,7 +82,7 @@ class LiteVimeo extends HTMLElement {
 }
 
 export default async function init(a) {
-  if (isInTextNode(a)) return;
+  if (isInTextNode(a) || !a) return;
   if (!customElements.get('lite-vimeo')) customElements.define('lite-vimeo', LiteVimeo);
 
   const embedVimeo = () => {
