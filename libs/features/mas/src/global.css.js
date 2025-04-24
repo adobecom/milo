@@ -195,6 +195,11 @@ merch-card span[class^='heading-'] {
     font-weight: 700;
 }
 
+merch-card span[class^='heading-'],
+merch-card span.promo-text {
+    display: block;
+}
+
 merch-card [slot='heading-xxxs'],
 merch-card span.heading-xxxs {
     font-size: var(--consonant-merch-card-heading-xxxs-font-size);
