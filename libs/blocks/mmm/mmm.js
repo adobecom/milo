@@ -528,7 +528,7 @@ function createReportButton() {
     // Construct the mailto link
     const mailtoLink = `mailto:${email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
     // Open the mail client
-    // window.location.href = mailtoLink;
+    window.location.href = mailtoLink;
   });
   const topButtonContainer = createTag('div', { id: 'mmm-report-button-container', class: 'mmm-report-button-container' }, topReportButton);
   parentContainer.prepend(topButtonContainer);
