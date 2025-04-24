@@ -51,6 +51,12 @@
   width: 100%;
 }
 
+.hero-marquee.mobile-cta-left .action-area {
+  flex-flow: row wrap;
+  gap: 8px;
+}
+
+
 .hero-marquee .background-split picture img {
   object-fit: cover;
   height: 100%;
@@ -134,6 +140,10 @@ html[dir="rtl"] .hero-marquee .foreground {
 .hero-marquee .foreground .copy {
   display: grid;
   gap: var(--spacing-xs);
+}
+
+.hero-marquee.mobile-compact-spacing .foreground .copy {
+  gap: 12px;
 }
 
 .hero-marquee hr {
@@ -263,6 +273,15 @@ html[dir="rtl"] .hero-marquee li.icon-item span.icon {
   .hero-marquee .con-button {
     display: block;
     text-align: center;
+  }
+    
+  .hero-marquee.remove-outline .con-button.outline {
+    border-color: transparent;
+    text-decoration: underline;
+  }
+
+  .hero-marquee.remove-outline .action-area {
+    gap: var(--spacing-xs);
   }
 
   .hero-marquee.media-top-mobile {
