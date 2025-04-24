@@ -70,7 +70,7 @@ const SEARCH_INITIAL_VALUES = () => getLocalStorageFilter() ?? {
   pageNum: 1,
   subdomain: SUBDOMAIN_OPTIONS.www.key,
   perPage: 25,
-  targetSettings: 'on, off, postLCP',
+  targetSetting: 'on, off, postLCP',
   manifestSrc: 'pzn, promo, target, ajo, placeholders',
 };
 
@@ -521,6 +521,15 @@ function createReportButton() {
     const selectedCheckboxes = document.querySelectorAll('.mmm-report-add:checked');
     selectedCheckboxes.forEach((checkedBox) => reportData.push(checkedBox.closest('.mmm-report-row').querySelector('a').href));
     console.log(reportData);
+    const email = 'tester@adobe.com'; // Recipient email address
+    const subject = 'Disable Request'; // Email subject
+    const body = reportData; // Email body
+
+    // Construct the mailto link
+    const mailtoLink = `mailto:${email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+
+    // Open the mail client
+    window.location.href = mailtoLink;
   });
   const topButtonContainer = createTag('div', { id: 'mmm-report-button-container', class: 'mmm-report-button-container' }, topReportButton);
   parentContainer.prepend(topButtonContainer);
@@ -553,7 +562,7 @@ function createReport(el, data) {
         ${result.map((item, index) => `
           <div class="mmm-report-row">
             <div>
-              <input type="checkbox" id="entry-${index}" name="entry-${index}" value="entry$-{index}" class="mmm-report-add">
+              <input type="checkbox" id="entry-${index}" name="entry-${index}" value="entry-${index}" class="mmm-report-add">
             </div>
             <div><a href="${item.url}?mep" target="_blank">${item.url}</a></div>
             <div>${item.target}</div>

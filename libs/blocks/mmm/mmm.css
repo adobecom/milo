@@ -668,8 +668,8 @@ fieldset.minError:after {
   justify-content: center;
   align-items: center;
   flex-wrap: wrap;
-    min-width: 0;
-    word-break: break-word;
+  min-width: 0;
+  word-break: break-word;
 }
 
 
