@@ -135,6 +135,10 @@ export class Plans extends VariantLayout {
         font-weight: 400;
     }
 
+    :host([variant='plans-education']) {
+        min-height: unset;
+    }
+
     :host([variant='plans-education']) ::slotted([slot='subtitle']) {
         font-size: var(--consonant-merch-card-heading-xxxs-font-size);
         line-height: var(--consonant-merch-card-heading-xxxs-line-height);

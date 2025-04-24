@@ -49,6 +49,10 @@ merch-card[variant="plans-education"] span.promo-text {
   margin-bottom: 8px;
 }
 
+merch-card[variant="plans-education"] span.heading-xs:has(a[href^='tel:']):has(+ p) {
+  margin-bottom: 16px;
+}
+
 merch-card[variant^="plans"] [slot="promo-text"],
 merch-card[variant="plans-education"] span.promo-text {
     line-height: var(--consonant-merch-card-body-xs-line-height);
