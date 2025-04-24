@@ -60,8 +60,8 @@ export default function init(el) {
     }
 
     const sameOriginText = ariaLabel || iframe.contentWindow.document.querySelector('h1, h2, h3, h4, h5, h6')?.textContent;
-    iframe.title = sameOriginText;
-    if (dialogModal) dialogModal.title = sameOriginText;
+    if (sameOriginText) iframe.title = sameOriginText;
+    if (dialogModal && sameOriginText) dialogModal.title = sameOriginText;
   };
 
   el.insertAdjacentElement('afterend', embed);

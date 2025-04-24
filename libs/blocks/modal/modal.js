@@ -219,18 +219,19 @@ export async function getModal(details, custom) {
             return;
           }
 
-        const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
-        const iframeHeading = iframeDoc.querySelector('h1, h2, h3, h4, h5, h6')?.textContent.trim();
-        if (iframeHeading) dialog.setAttribute('aria-label', iframeHeading);
+          const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+          const iframeHeading = iframeDoc.querySelector('h1, h2, h3, h4, h5, h6')?.textContent.trim();
+          if (iframeHeading) dialog.setAttribute('aria-label', iframeHeading);
+          if (!iframe.title && iframeHeading) iframe.title = iframeHeading;
         } catch (e) {
           // Cross-origin iframe, can't access content
         }
       };
     }
 
-  if (dialog.classList.contains('commerce-frame') || dialog.classList.contains('dynamic-height')) {
-    const { default: enableCommerceFrameFeatures } = await import('./modal.merch.js');
-    await enableCommerceFrameFeatures({ dialog, iframe });
+    if (dialog.classList.contains('commerce-frame') || dialog.classList.contains('dynamic-height')) {
+      const { default: enableCommerceFrameFeatures } = await import('./modal.merch.js');
+      await enableCommerceFrameFeatures({ dialog, iframe });
 
       if (!details?.title) {
         const commerceDetails = findDetails(window.location.hash, null);
