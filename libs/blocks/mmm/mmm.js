@@ -142,21 +142,20 @@ function createButtonDetailsPair(mmmEl, page) {
 
 /**
  * This function should be fired by any search criteria field change event
- * Or by page number change event
- * @param {Number} pageNum - optional. Number of the clicked page.
- * @param {Event} event - optional. Page number click Event object.
+ * @param {Number} pageNum - optional. Number of page.
+ * @param {Number} perPage - optional. Rows per page.
+ * @param {Event} filterEvent - optional. Fitler input Event object.
+ * @param {Event} sortingEvent - optional. Sorting Event object.
  */
-function filterPageList(pageNum, perPage, event) {
+function filterPageList(pageNum, perPage, filterEvent, sortingEvent) {
   const searchValues = {};
-  const activeSearchWithShortKeyword = event?.target?.value && event.target.value.length < 2;
+  const activeSearchWithShortKeyword = filterEvent?.target?.value
+    && filterEvent.target.value.length < 2;
   // handle dropdowns and text area
   document.querySelector(SEARCH_CONTAINER).querySelectorAll('select, textarea').forEach((field) => {
     const id = field.getAttribute('id').split('-').pop();
-    const { value, tagName } = field;
-    searchValues[id] = {
-      value,
-      tagName,
-    };
+    const { value } = field;
+    searchValues[id] = value;
   });
   // handle grouped checkboxes into single object value
   const checkedBoxes = {};
@@ -170,17 +169,18 @@ function filterPageList(pageNum, perPage, event) {
   if (Object.entries(checkedBoxes).length) {
     Object.keys(checkedBoxes).forEach((key) => {
       const fieldsetValue = checkedBoxes[key].value.join((', '));
-      searchValues[key] = { value: fieldsetValue }; // no need for tagName
+      searchValues[key] = fieldsetValue; // no need for tagName
     });
   }
   // add pageNum and perPage to args for api call
-  searchValues.pageNum = pageNum || 1;
-  searchValues.perPage = perPage || 25;
+  searchValues.pageNum = pageNum || getLocalStorageFilter()?.pageNum || 1;
+  searchValues.perPage = perPage || getLocalStorageFilter()?.perPage || 25;
 
   // add orderBy and order to args for api call
   if (isReport) {
-    searchValues.orderBy = event?.target?.dataset?.orderBy;
-    searchValues.order = event?.target?.dataset?.order;
+    searchValues.orderBy = sortingEvent?.target?.dataset?.orderBy
+      || getLocalStorageFilter()?.orderBy;
+    searchValues.order = sortingEvent?.target?.dataset?.order || getLocalStorageFilter()?.order;
   }
 
   // assemble event details object with all filter criterias
@@ -483,7 +483,6 @@ function handlePaginationDropdownChange() {
     filterPageList(
       paginationEl.dataset.pageNum,
       paginationEl.dataset.perpage,
-      event,
     );
   });
 }
@@ -491,12 +490,11 @@ function handlePaginationDropdownChange() {
 function handlePaginationClicks() {
   const paginationEl = document.querySelector('#mmm-pagination');
   paginationEl?.querySelectorAll('a').forEach((item) => {
-    item?.addEventListener('click', (event) => {
+    item?.addEventListener('click', () => {
       paginationEl.dataset.currentPage = item.dataset.pageNum;
       filterPageList(
         item.dataset.pageNum,
         paginationEl.dataset.perpage,
-        event,
       );
     });
   });
@@ -533,66 +531,44 @@ function createReport(el, data) {
   const arrow = '<svg width="8" height="12" viewBox="0 0 8 12" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M1.70504 0L0.295044 1.41L4.87504 6L0.295044 10.59L1.70504 12L7.70504 6L1.70504 0Z" fill="black"/></svg>';
   const headers = [
     { label: 'URL', orderBy: 'p.url', order: 'asc' },
-    { label: 'Target Status', orderBy: 'p.target', order: 'asc' },
+    { label: 'Target', orderBy: 'p.target', order: 'asc' },
     { label: 'Target Last Seen', orderBy: 'a.lastSeen', order: 'asc' },
     { label: 'Page Last Seen', orderBy: 'p.lastSeen', order: 'asc' },
   ];
   el.innerHTML = `
     <div class="mmm-report">
       <div class="mmm-report-header">
+        <div class="select-all">
+          <label for="mmm-report-all">Select All</label>
+          <input id="mmm-report-all" type="checkbox" id="entry-all" name="entry-all" value="entry-all" class="mmm-report-all">
+        </div>
       ${headers.map((header) => `
-        <div><span data-order-by="${header.orderBy}" data-order="${header.orderBy === orderBy ? order : header.order}">
+        <div data-order-by="${header.orderBy}" data-order="${header.orderBy === orderBy ? order : header.order}" class="sortable">
           ${header.label}
           <section>${header.orderBy === orderBy ? arrow : ''}</section>
-        </span></div>
+        </div>
       `).join('')}
       </div>
       <div class="mmm-report-body">
         ${result.map((item, index) => `
           <div class="mmm-report-row">
-            <div><span><center>
-                  <input type="checkbox" id="entry-${index}" name="entry-${index}" value="entry$-{index}" class="mmm-report-add">
-                </center></span></div>
-            <div><span><a href="${item.url}?mep" target="_blank">${item.url}</a></span></div>
-            <div><span>${item.target}</span></div>
-            <div><span>${getDate(item.aLastSeen)}<br/><a class="small" target="_blank" href="${getAbsUrl(item.manifestUrl, item.url)}">${item.targetActivityName}</a></span></div>
-            <div><span>${getDate(item.pLastSeen)}</span></div>
+            <div>
+              <input type="checkbox" id="entry-${index}" name="entry-${index}" value="entry$-{index}" class="mmm-report-add">
+            </div>
+            <div><a href="${item.url}?mep" target="_blank">${item.url}</a></div>
+            <div>${item.target}</div>
+            <div>${getDate(item.aLastSeen)}<br/><a class="small" target="_blank" href="${getAbsUrl(item.manifestUrl, item.url)}">${item.targetActivityName}</a></div>
+            <div>${getDate(item.pLastSeen)}</div>
           </div>
         `).join('')}
       </div>
     </div>
   `;
 
-  // add checkall checbox to row
-  el.querySelector('.mmm-report-header').prepend(createTag(
-    'div',
-    false,
-    `<span>
-      <center>
-        <input type="checkbox" id="entry-all" name="entry-all" value="entry-all" class="mmm-report-all">
-        <label for="mmm-report-all">Select All</label>
-      </center>
-    </span>`,
-  ));
-  // add checkbox each result row
-  const builtRows = document.querySelectorAll('.mmm-report-row');
-  builtRows.forEach((row, index) => {
-    const checkboxColumn = createTag(
-      'div',
-      false,
-      `<span>
-        <center>
-          <input type="checkbox" id="entry-${index}" name="entry-${index}" value="entry$-{index}" class="mmm-report-add">
-        </center>
-      </span> `,
-    );
-    row.prepend(checkboxColumn);
-  });
-
-  el.querySelectorAll('.mmm-report-header span').forEach((header) => {
+  el.querySelectorAll('.mmm-report-header div.sortable').forEach((header) => {
     header.addEventListener('click', (e) => {
       e.target.dataset.order = e.target.dataset.order === 'asc' ? 'desc' : 'asc';
-      filterPageList(null, null, e);
+      filterPageList(null, null, null, e);
     });
   });
   const selectAllCheck = el.querySelector('.mmm-report-all');

@@ -311,34 +311,35 @@ dd .mep-popup-header .mep-close {
 .mmm-report-header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: stretch;
   font-weight: 600;
   background-color: #eee;
 }
 
-.mmm-report-header span[data-order="asc"] svg {
+.mmm-report-header div[data-order="asc"] svg {
   rotate: -90deg;
 }
-.mmm-report-header span  {
+.mmm-report-header div  {
   transition: all 0.3s;
   position: relative;
 }
-.mmm-report-header span svg {
+.mmm-report-header div svg {
   rotate: 90deg;
   transition: all 0.3s;
-  position: absolute;
+  /* position: absolute; */
   top: 0;
   bottom: 0;
   margin: auto .5rem;
+  pointer-events: none;
 }
 
-.mmm-report-header span:hover {
+.mmm-report-header div.sortable:hover {
   cursor: pointer;
   color: #000;
   text-shadow: 0px 0px 1px #111;
 }
 
-.mmm-report-header span {
+.mmm-report-header div {
   border: 1px solid #ddd;
   /* flex-basis: 25%; */
   display: flex;
@@ -357,15 +358,18 @@ dd .mep-popup-header .mep-close {
   justify-content: space-between;
 }
 
-.mmm-report-row span a {
+.mmm-report-row div a {
   text-decoration: none;
   color: #4285f4;
+  line-height: 1.5rem;
 }
 
-.mmm-report-row span a.small {
+.mmm-report-row div a.small {
   font-size: .75rem;
+  line-height: 1rem;
 }
-.mmm-report-row span {
+.mmm-report-row div,
+.mmm-report-header div {
   border: 1px solid #ddd;
   flex: 1 1 0;
   width: 0;
@@ -591,62 +595,83 @@ fieldset.minError:after {
   } 
 }
 
+.mmm-report-row > div:nth-child(1) input {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  margin: auto;
+}
+
+.mmm-report input {
+  width: 14px;
+  height: 14px;
+}
+.mmm-report input, .mmm-report label { cursor: pointer; }
+
+.mmm-report-row > div:nth-child(4) {
+  align-items: flex-start;
+  flex-direction: column;
+  gap: .5rem;
+}
+
 .mmm-report-header > div:nth-child(1), 
 .mmm-report-row > div:nth-child(1) {
   display:flex; 
-  flex: 1 1 8%;
-  min-width: 8%;
+  flex: 1 1 3%;
+  font-size: 14px;
 }
 .mmm-report-header > div:nth-child(2), 
 .mmm-report-row > div:nth-child(2) {
   display:flex; 
-  flex: 1 1 48%;
-  min-width:48%;
+  flex: 1 1 50%;
 }
 .mmm-report-header > div:nth-child(3), 
 .mmm-report-row > div:nth-child(3) {
   display:flex; 
-  flex: 1 1 8%;
-  min-width: 8%;
+  flex: 1 1 5%;
 }
 .mmm-report-header > div:nth-child(4), 
 .mmm-report-row > div:nth-child(4) {
   display:flex; 
-  flex: 1 1 25%;
-  min-width: 25%;
+  flex: 1 1 12%;
 }
 .mmm-report-header > div:nth-child(5), 
 .mmm-report-row > div:nth-child(5) {
   display:flex; 
   flex: 1 1 10%;
-  min-width: 10%;
 } 
 
-.mmm-report-row span {
-  justify-content: center;
+.mmm-report-row div {
   align-items: center;
   border: none;
   line-height:normal;
+  position: relative;
+  flex-wrap: wrap;
+  min-width: 0;
+  word-break: break-word;
 }
 .mmm-report-row > div {
   border: 1px solid #ddd;
+}
+
+.mmm-report-header > div.select-all {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
 }
 
 .mmm-report-header > div {
   border: 1px solid #ddd;
   justify-content: center;
   align-items: center;
+  flex-wrap: wrap;
+    min-width: 0;
+    word-break: break-word;
 }
 
-.mmm-report-header > div > span {
-  border: none
-}
-
-.mmm-report-header {
-  display: flex;
-  align-items: stretch;
-  font-size: 16px;
-}
 
 #mmm-report-button-container { 
   display: flex;
