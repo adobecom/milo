@@ -1,4 +1,4 @@
-import { getConfig, getLanguage } from '../../utils/utils.js';
+import { getConfig, getLanguage, getLocale } from '../../utils/utils.js';
 
 const queriedPages = [];
 
@@ -35,7 +35,7 @@ export function decorateLink(link, path) {
     try { pathname = new URL(pathname).pathname; } catch (e) { /* href does not contain domain */ }
   }
   const { languageMap, languages, locales } = getConfig();
-  const language = getLanguage(languages, locales, pathname);
+  const language = languages ? getLanguage(languages, locales, pathname) : getLocale(locales, pathname);
   const prefix = language.prefix.replace('/', '');
 
   let { href } = link;
