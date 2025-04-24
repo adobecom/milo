@@ -41,9 +41,9 @@ export function decorateLink(link, path) {
   let { href } = link;
   if (href.endsWith('/')) href = href.slice(0, -1);
   
-  if (languageMap && !getConfig().locales[prefix]) {
-    const valueInMap = languageMap[prefix];
-    href = href.replace(`/${prefix}`, valueInMap ? `/${valueInMap}` : '');
+  if (languageMap && !getConfig().locales[pathname.split('/')[1]]) {
+    const valueInMap = languageMap[pathname.split('/')[1]];
+    href = href.replace(`/${pathname.split('/')[1]}`, valueInMap ? `/${valueInMap}` : '');
   }
   link.href = `${href}${path}`;
 
