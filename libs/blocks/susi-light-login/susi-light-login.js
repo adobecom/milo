@@ -17,7 +17,7 @@ const redirectIfLoggedIn = async (destURL) => {
   }
 };
 
-const onRedirect = (e) => window.location.replace(e.detail);
+const onRedirect = (e) => window.location.assign(e.detail);
 
 const onError = (e) => window.lana?.log('Product Login pages: SUSI Light Error: ', e);
 
