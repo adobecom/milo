@@ -26,3 +26,7 @@ export const PERFORMANCE_TITLES = {
   Placeholders: 'Performance - Placeholders',
   Icons: 'Performance - Icons',
 };
+
+export const ASSETS_TITLES = {
+  ImageDimensions: 'Assets - Image Dimensions',
+};
