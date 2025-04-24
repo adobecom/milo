@@ -70,8 +70,8 @@ const SEARCH_INITIAL_VALUES = () => getLocalStorageFilter() ?? {
   pageNum: 1,
   subdomain: SUBDOMAIN_OPTIONS.www.key,
   perPage: 25,
-  targetSettings: 'on, off',
-  manifestSrc: 'pzn, promo, target, ajo, postLCP',
+  targetSettings: 'on, off, postLCP',
+  manifestSrc: 'pzn, promo, target, ajo, placeholders',
 };
 
 async function toggleDrawer(target, dd, pageId) {
