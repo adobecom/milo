@@ -64,6 +64,7 @@ export class AemFragment extends HTMLElement {
     cache = cache;
     #log;
 
+    #initialized = false;
     #rawData = null;
     #data = null;
     #stale = false;
@@ -102,6 +103,8 @@ export class AemFragment extends HTMLElement {
     }
 
     connectedCallback() {
+        if (this.#initialized) return;
+        this.#initialized = true;
         this.#service = getService(this);
         this.#log = this.#service.log.module(AEM_FRAGMENT_TAG_NAME);
         this.#startMark = `${AEM_FRAGMENT_TAG_NAME}:${this.#fragmentId}${MARK_START_SUFFIX}`;

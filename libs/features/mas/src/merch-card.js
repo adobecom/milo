@@ -136,6 +136,7 @@ export class MerchCard extends LitElement {
     variantLayout;
     #log;
     #service;
+    #initialized = false;
 
     readyEventDispatched = false;
     constructor() {
@@ -206,7 +207,11 @@ export class MerchCard extends LitElement {
     }
 
     get computedBorderStyle() {
-        if (!['ccd-slice', 'ccd-suggested', 'ah-promoted-plans'].includes(this.variant)) {
+        if (
+            !['ccd-slice', 'ccd-suggested', 'ah-promoted-plans'].includes(
+                this.variant,
+            )
+        ) {
             return `1px solid ${
                 this.borderColor ? this.borderColor : this.badgeBackgroundColor
             }`;
@@ -312,6 +317,8 @@ export class MerchCard extends LitElement {
 
     connectedCallback() {
         super.connectedCallback();
+        if (this.#initialized) return;
+        this.#initialized = true;
         this.#service = getService();
         this.#log = this.#service.Log.module(MERCH_CARD);
         this.id ??=
