@@ -1164,7 +1164,7 @@ class Gnav {
 
   // update GNAV popup position based on branch banner
   updatePopupPosition = (activePopup) => {
-    const popup = activePopup || this.elements.mainNav.querySelector('.feds-navItem--section.feds-dropdown--active .feds-popup');
+    const popup = activePopup || this.elements.mainNav?.querySelector('.feds-navItem--section.feds-dropdown--active .feds-popup');
     if (!popup) return;
     const hasPromo = this.block.classList.contains('has-promo');
     const promoHeight = this.elements.aside?.clientHeight;
