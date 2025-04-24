@@ -26,16 +26,18 @@ async function getResults() {
     placeholdersResult,
     iconsResult,
   ];
-  debugger;
   const checks = runChecks(window.location.pathname, document);
 
   const checkPromises = checks.map((resultOrPromise, index) => {
     const signalResult = signals[index];
     return Promise.resolve(resultOrPromise)
       .then((result) => {
-        const icon = result.status === STATUS.PASS ? 'green'
-          : result.status === STATUS.FAIL ? 'red'
-            : result.status === STATUS.EMPTY ? 'empty' : 'orange';
+        const statusToIconMap = {
+          [STATUS.PASS]: 'green',
+          [STATUS.FAIL]: 'red',
+          [STATUS.EMPTY]: 'empty',
+        };
+        const icon = statusToIconMap[result.status] ?? 'orange';
         signalResult.value = {
           icon,
           title: result.title.replace('Performance - ', ''),
@@ -72,8 +74,8 @@ function PerformanceItem({ icon, title, description }) {
  * LCP Highlighting Functionality
  */
 let clonedLcpSection;
-function highlightElement(event) {
-  const lcp = getLcpEntry(window.location.pathname, document);
+async function highlightElement(event) {
+  const lcp = await getLcpEntry(window.location.pathname, document);
   if (!lcp) return;
   const lcpSection = lcp.element.closest('.section');
   const tooltip = document.querySelector('.lcp-tooltip-modal');

@@ -16,6 +16,7 @@ export const SEO_TITLES = {
 };
 
 export const PERFORMANCE_TITLES = {
+  Performance: 'Performance',
   LcpEl: 'Performance - Valid LCP',
   SingleBlock: 'Performance - Single Block',
   ImageSize: 'Performance - Images Size',
