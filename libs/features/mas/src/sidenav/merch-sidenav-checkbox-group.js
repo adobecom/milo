@@ -53,7 +53,7 @@ export class MerchSidenavCheckboxGroup extends LitElement {
         this.prepend(h3El);
 
         [...this.children].forEach((el) => {
-          if (el.id && el.id !== id) {
+          if (!el.id) {
                 el.setAttribute('role', 'group');
                 el.setAttribute('aria-labelledby', id);
             }
