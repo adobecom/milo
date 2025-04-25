@@ -20,12 +20,12 @@
 
 .gb-graybox-body:not(.gb-no-border)::before {
   content: '';
-  position: absolute;
-  top: calc(50% + 8px);
+  position: fixed;
+  top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: calc(100% - 15.5px);
-  height: 100%;
+  width: calc(100% - 16px);
+  height: calc(100vh - 16px);
   border: var(--gb-page-outline-border);
   z-index: calc(var(--base-z-index) + 1);
   pointer-events: none;
