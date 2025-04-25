@@ -60,11 +60,11 @@ async function checkAlt() {
     if (picture) {
       pictureMetaElem = picture.querySelector('.picture-meta');
       if (!pictureMetaElem) {
-        pictureMetaElem = createTag('div', { class: 'picture-meta' });
+        pictureMetaElem = createTag('div', { class: 'picture-meta preflight-decoration' });
         picture.insertBefore(pictureMetaElem, img.nextSibling);
       }
     } else {
-      pictureMetaElem = createTag('div', { class: 'picture-meta no-picture-tag' });
+      pictureMetaElem = createTag('div', { class: 'picture-meta preflight-decoration no-picture-tag' });
       img.parentNode.insertBefore(pictureMetaElem, img.nextSibling);
     }
 
@@ -75,7 +75,7 @@ async function checkAlt() {
 
       a11yMessage = createTag(
         'div',
-        { class: 'picture-meta-a11y is-decorative' },
+        { class: 'picture-meta-a11y preflight-decoration is-decorative' },
         img.dataset.altCheck,
       );
 
@@ -89,7 +89,7 @@ async function checkAlt() {
     if (alt) {
       a11yMessage = createTag(
         'div',
-        { class: 'picture-meta-a11y has-alt' },
+        { class: 'picture-meta-a11y preflight-decoration has-alt' },
         `Alt: ${alt}`,
       );
 
