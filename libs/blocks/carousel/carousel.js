@@ -80,7 +80,7 @@ function decorateSlideIndicators(slides, jumpTo) {
       li.setAttribute('role', 'tab');
       li.setAttribute('tabindex', -1);
       li.setAttribute('aria-selected', false);
-      li.setAttribute('aria-labelledby', `Viewing Slide ${i + 1}`);
+      li.setAttribute('aria-label', `Viewing Slide ${i + 1} of ${slides.length}`);
     }
 
     // Set inital active state
