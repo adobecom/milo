@@ -275,12 +275,12 @@ html[dir="rtl"] .hero-marquee li.icon-item span.icon {
     text-align: center;
   }
     
-  .hero-marquee.remove-outline .con-button.outline {
-    border-color: transparent;
-    text-decoration: underline;
+  .hero-marquee.mobile-center-link a:not(.con-button) {
+    color: #000;
+    align-self: center;
   }
 
-  .hero-marquee.remove-outline .action-area {
+  .hero-marquee.mobile-center-link .action-area {
     gap: var(--spacing-xs);
   }
 
