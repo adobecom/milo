@@ -1,5 +1,5 @@
 import { createTag, getConfig } from '../../utils/utils.js';
-import { initService } from '../merch/merch.js';
+import { initService, getMasPreview } from '../merch/merch.js';
 import '../../deps/mas/merch-card-collection.js';
 import '../../deps/mas/merch-card.js';
 import '../../deps/mas/merch-quantity-select.js';
@@ -119,6 +119,10 @@ export async function checkReady(masElement) {
 
 export async function createCollection(el, options) {
   const aemFragment = createTag('aem-fragment', { fragment: options.fragment });
+  const preview = getMasPreview();
+  if (preview) {
+    aemFragment.setAttribute('preview', preview);
+  }
   const collection = createTag('merch-card-collection', null, aemFragment);
   let container = collection;
 

@@ -13,6 +13,7 @@ sheet.replaceSync(':host { display: contents; }');
 
 const ATTRIBUTE_FRAGMENT = 'fragment';
 const ATTRIBUTE_AUTHOR = 'author';
+const ATTRIBUTE_PREVIEW = 'preview';
 const AEM_FRAGMENT_TAG_NAME = 'aem-fragment';
 
 class FragmentCache {
@@ -82,8 +83,10 @@ export class AemFragment extends HTMLElement {
 
     #author = false;
 
+    #preview = false;
+
     static get observedAttributes() {
-        return [ATTRIBUTE_FRAGMENT, ATTRIBUTE_AUTHOR];
+        return [ATTRIBUTE_FRAGMENT, ATTRIBUTE_AUTHOR, ATTRIBUTE_PREVIEW];
     }
 
     constructor() {
@@ -94,10 +97,13 @@ export class AemFragment extends HTMLElement {
 
     attributeChangedCallback(name, oldValue, newValue) {
         if (name === ATTRIBUTE_FRAGMENT) {
-            this.#fragmentId = newValue;
+          this.#fragmentId = newValue;
         }
         if (name === ATTRIBUTE_AUTHOR) {
-            this.#author = ['', 'true'].includes(newValue);
+          this.#author = ['', 'true'].includes(newValue);
+        }
+        if (name === ATTRIBUTE_PREVIEW) {
+          this.#preview = newValue;
         }
     }
 
@@ -109,6 +115,10 @@ export class AemFragment extends HTMLElement {
         if (!this.#fragmentId) {
             this.#fail({ message: 'Missing fragment id' });
             return;
+        }
+        if (this.#preview) {
+          this.generatePreview();
+          return;
         }
         this.refresh(false);
     }
@@ -271,6 +281,36 @@ export class AemFragment extends HTMLElement {
             },
             { fields: {}, id, tags },
         );
+    }
+
+    generatePreview() {
+      this.#fetchPromise = new Promise( async (resolve, reject) => {
+          const { previewFragment } = await import('https://mwpw-162398--mas--adobecom.aem.live/studio/libs/fragment-client.js');
+          const data = await previewFragment(this.#fragmentId, {
+          surface: this.#preview,
+          locale: this.#service.settings.locale,
+          apiKey: this.#service.settings.wcsApiKey,
+        });
+        if (data) {
+          this.#rawData = data;
+          this.#data = data;
+          this.#stale = false;
+          this.dispatchEvent(
+            new CustomEvent(EVENT_AEM_LOAD, {
+              detail: {
+                ...this.data,
+                stale: this.#stale,
+              },
+              bubbles: true,
+              composed: true,
+            }),
+          );
+          resolve(data)
+        } else {
+          this.#fail({ message: 'Failed to generate preview' });
+          reject();
+        }
+      });
     }
 }
 

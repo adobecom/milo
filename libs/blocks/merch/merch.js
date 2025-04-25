@@ -572,6 +572,14 @@ export async function getCheckoutAction(offers, options, imsSignedInPromise, el)
   }
 }
 
+export function getMasPreview() {
+  if (window.isMasPreviewMode !== undefined) return window.isMasPreviewMode;
+  const searchParams = new URLSearchParams(window.location.search);
+  window.isMasPreviewMode = searchParams.get('masPreview')
+    || window.localStorage.getItem('masPreview');
+  return window.isMasPreviewMode;
+}
+
 /**
  * Activates commerce service and returns a promise resolving to its ready-to-use instance.
  */
