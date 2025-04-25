@@ -7,12 +7,12 @@ export const STATUS = {
 
 export const SEO_TITLES = {
   H1Count: 'SEO - H1 count',
-  TitleSize: 'SEO -Title size',
+  TitleSize: 'SEO - Title size',
   Canonical: 'SEO - Canonical',
   MetaDescription: 'SEO -Meta description',
-  BodySize: 'SEO -Body size',
+  BodySize: 'SEO - Body size',
   Lorem: 'SEO - Lorem Ipsum',
-  Links: 'SEO -Links',
+  Links: 'SEO - Links',
 };
 
 export const PERFORMANCE_TITLES = {
@@ -27,6 +27,4 @@ export const PERFORMANCE_TITLES = {
   Icons: 'Performance - Icons',
 };
 
-export const ASSETS_TITLES = {
-  ImageDimensions: 'Assets - Image Dimensions',
-};
+export const ASSETS_TITLES = { ImageDimensions: 'Assets - Image Dimensions' };
