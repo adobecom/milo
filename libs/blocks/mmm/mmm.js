@@ -519,7 +519,7 @@ function createReportButton() {
     'a',
     {
       class: 'con-button outline button-l button-justified-mobile mmm-report-slack',
-      href: 'https://adobe.enterprise.slack.com/archives/C08L7AAVD3P',
+      href: 'https://adobe.enterprise.slack.com/archives/C08LXEQ735W',
     },
     'Open Slack',
   );
@@ -532,8 +532,7 @@ function createReportButton() {
       return;
     }
     selectedCheckboxes.forEach((checkedBox) => reportData.push(checkedBox.closest('.mmm-report-row').querySelector('a').href.split('?')[0]));
-    console.log(reportData);
-    navigator.clipboard.writeText(`Please disable the following pages.\n\n${reportData.join('\n')}`);
+    navigator.clipboard.writeText(`Please turn off Target integration from the following ${reportData.length > 1 ? `${reportData.length} pages:` : 'page:'}\n${reportData.join('\n')}`);
     e.target.closest('p').classList.remove('minError');
     e.target.closest('p').classList.add('copySuccess');
     setTimeout(() => e.target.closest('p').classList.remove('copySuccess'), 3000);
