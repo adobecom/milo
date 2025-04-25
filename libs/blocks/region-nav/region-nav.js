@@ -37,7 +37,7 @@ export function decorateLink(link, path) {
   const linkParts = pathname.split('/');
   const expressPrefix = linkParts[1] || '';
   const { languageMap, languages, locales } = getConfig();
-  const language = languages 
+  const language = languages
     ? getLanguage(languages, locales, pathname) : getLocale(locales, pathname);
   const prefix = language.prefix.replace('/', '');
 
