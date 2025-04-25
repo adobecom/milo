@@ -66,8 +66,9 @@ function handleStickyPromobar(section, delay) {
   const selector = metadata?.['custom-hide']?.text;
   const targetElement = document.querySelector(selector);
   if (targetElement) {
-    targetElement.classList.add('hide-at-intersection');
-    io.observe(targetElement);
+    stickySectionEl = createTag('div', { class: 'hide-at-intersection' });
+    targetElement.parentElement.insertBefore(stickySectionEl, targetElement);
+    io.observe(stickySectionEl);
   }
 }
 
