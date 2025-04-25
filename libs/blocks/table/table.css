@@ -190,7 +190,7 @@
   justify-content: space-between;
 }
 
-.table .row-heading .col.col-heading * {
+.table .col-heading * {
   max-width: 100%;
 }
 
