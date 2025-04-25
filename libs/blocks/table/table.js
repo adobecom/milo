@@ -439,6 +439,20 @@ async function handleScrollEffect(table) {
   const highlightRow = table.querySelector('.row-highlight');
   const headingRow = table.querySelector('.row-heading');
 
+  setTimeout(() => {
+    if (isStickyHeader(table)) {
+      const headingRowHeight = headingRow.offsetHeight;
+      const viewportHeight = window.innerHeight;
+      const heightRatio = headingRowHeight / viewportHeight;
+      const isAtLeast25vh = heightRatio >= 0.25;
+
+      if (isAtLeast25vh) {
+        headingRow.style.position = 'static';
+        highlightRow.style.position = 'static';
+      }
+    }
+  }, 0);
+
   if (highlightRow) {
     highlightRow.style.top = `${gnavHeight}px`;
     highlightRow.classList.add('top-border-transparent');
