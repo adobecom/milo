@@ -20,7 +20,7 @@ export async function generateM7Link(href) {
   const country = imsCountry || localeSettings.country || 'US';
   const { language } = localeSettings;
 
-  const m7link = new URL('https://commerce.adobe.com/store/segmentation?cli=creative&cs=t');
+  const m7link = new URL('https://commerce.adobe.com/store/segmentation?cli=acom_biz&cs=t');
   m7link.searchParams.append('co', country);
   m7link.searchParams.append('pa', paCode);
   if (href.includes('/creativecloud/education-plans')) {

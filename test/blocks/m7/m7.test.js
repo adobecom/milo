@@ -29,7 +29,7 @@ describe('m7business autoblock', () => {
     const a = document.createElement('a');
     a.setAttribute('href', 'https://www.adobe.com/creativecloud/business-plans.html');
     await init(a);
-    expect(a.href).to.equal('https://commerce.adobe.com/store/segmentation?cli=creative&cs=t&co=US&pa=ccsn_direct_individual');
+    expect(a.href).to.equal('https://commerce.adobe.com/store/segmentation?cli=acom_biz&cs=t&co=US&pa=ccsn_direct_individual');
     window.adobeIMS = buIms;
   });
 
@@ -40,7 +40,7 @@ describe('m7business autoblock', () => {
     const a = document.createElement('a');
     a.setAttribute('href', 'https://www.adobe.com/creativecloud/education-plans.html');
     await init(a);
-    expect(a.href).to.equal('https://commerce.adobe.com/store/segmentation?cli=creative&cs=t&co=US&pa=ccsn_direct_individual&ms=EDU');
+    expect(a.href).to.equal('https://commerce.adobe.com/store/segmentation?cli=acom_biz&cs=t&co=US&pa=ccsn_direct_individual&ms=EDU');
     window.adobeIMS = buIms;
   });
 
@@ -66,7 +66,7 @@ describe('m7business autoblock', () => {
     a.setAttribute('href', 'https://www.adobe.com/creativecloud/business-plans.html');
     setTimeout(() => {
       window.dispatchEvent(new window.CustomEvent('getImsLibInstance'));
-      expect(a.href).to.equal('https://commerce.adobe.com/store/segmentation?cli=creative&cs=t&co=US&pa=ccsn_direct_individual');
+      expect(a.href).to.equal('https://commerce.adobe.com/store/segmentation?cli=acom_biz&cs=t&co=US&pa=ccsn_direct_individual');
       window.adobeIMS = buIms;
     }, 100);
     await init(a);
@@ -86,7 +86,7 @@ describe('m7business autoblock', () => {
     const profile = { countryCode: 'CH' };
     window.adobeIMS = { initialized: true, getProfile: () => profile, isSignedInUser: () => true };
     const m7Link = await generateM7Link('/creativecloud/business-plans');
-    expect(m7Link).to.equal('https://commerce.adobe.com/store/segmentation?cli=creative&cs=t&co=CH&pa=ccsn_direct_individual&lang=fr');
+    expect(m7Link).to.equal('https://commerce.adobe.com/store/segmentation?cli=acom_biz&cs=t&co=CH&pa=ccsn_direct_individual&lang=fr');
     window.adobeIMS = buIms;
   });
 });
