@@ -55,7 +55,7 @@ export default function init(el) {
 
     if (new URL(iframe.src).origin !== window.location.origin) {
       if (ariaLabel) iframe.title = ariaLabel;
-      if (dialogModal) dialogModal.setAttribute('aria-label', ariaLabel || iframe.title);
+      dialogModal?.setAttribute('aria-label', iframe.title);
       return;
     }
 

@@ -58,9 +58,8 @@ export function createIntersectionObserver({ el, callback /* , once = true, opti
   callback(el, { target: el });
 }
 
-export const setDialogAndIframeTitle = ({ element, title }) => {
-  const dialogModal = element.closest('.dialog-modal');
-
-  if (element && title) element.title = title;
-  if (dialogModal && title) dialogModal.setAttribute('aria-label', title);
+export const setDialogAndElementAttributes = ({ element, title }) => {
+  if (!element || !title) return;
+  element.title = title;
+  element.closest('.dialog-modal')?.setAttribute('aria-label', title);
 };
