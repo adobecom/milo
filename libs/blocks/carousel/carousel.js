@@ -465,6 +465,7 @@ export default function init(el) {
   if (jumpTo) {
     dotsUl.setAttribute('role', 'tablist');
     dotsUl.setAttribute('tabindex', 0);
+    dotsUl.setAttribute('aria-label', 'Carousel indicators');
   }
 
   dotsUl.append(...slideIndicators);
