@@ -50,11 +50,13 @@ export function decorateLink(link, path) {
   }
   link.href = `${href}${path}`;
 
+  const interactionPrefix = languageMap ? expressPrefix : prefix;
+
   link.addEventListener('mouseover', () => {
     setTimeout(() => {
       if (link.matches(':hover') && !hrefAdapted) {
         handleEvent({
-          prefix,
+          interactionPrefix,
           link,
           callback: (newHref) => {
             link.href = newHref;
@@ -70,7 +72,7 @@ export function decorateLink(link, path) {
     if (hrefAdapted) return;
     e.preventDefault();
     handleEvent({
-      prefix,
+      interactionPrefix,
       link,
       callback: (newHref) => {
         window.open(newHref, e.ctrlKey || e.metaKey ? '_blank' : '_self');
