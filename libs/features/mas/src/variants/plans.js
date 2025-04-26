@@ -37,7 +37,7 @@ export class Plans extends VariantLayout {
 
     priceOptionsProvider(element, options) {
         if (element.closest('[slot="heading-m"]')) {
-            options.displayPlanType = this.settings?.displayPlanType ?? false;
+            options.displayPlanType = this.card?.settings?.displayPlanType ?? false;
             options.breakLine = true;
         }
     }
