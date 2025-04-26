@@ -72,6 +72,10 @@ function getSettings(config = {}) {
         getParameter('displayPlanType', commerce),
         Defaults.displayPlanType,
     );
+    const breakLine = toBoolean(
+        getParameter('breakLine', commerce),
+        Defaults.breakLine,
+    );
     const entitlement = toBoolean(
         getParameter('entitlement', commerce),
         Defaults.entitlement,
@@ -120,6 +124,7 @@ function getSettings(config = {}) {
         displayRecurrence,
         displayTax,
         displayPlanType,
+        breakLine,
         entitlement,
         extraOptions: Defaults.extraOptions,
         modal,

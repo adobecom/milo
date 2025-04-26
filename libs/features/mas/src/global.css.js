@@ -194,24 +194,6 @@ merch-card span[is='inline-price'] {
     display: inline-block;
 }
 
-merch-card span.price-sub-text {
-    display: inline-block;
-    color: var(--consonant-merch-card-price-sub-text-color);
-    font-family: var(--Font-adobe-clean, "Adobe Clean");
-    font-size: 14px;
-    font-style: italic;
-    font-weight: 400;
-    line-height: 21px;
-}
-
-merch-card span.price-sub-text::first-letter {
-    text-transform: uppercase;
-}
-
-merch-card span.price-sub-text .price-tax-inclusivity::before {
-  content: initial;
-}
-
 merch-card [slot^='heading-'] {
     color: var(--consonant-merch-card-heading-color);
     font-weight: 700;

@@ -113,6 +113,7 @@ function renderContainer(
         perUnitLabel,
         taxInclusivityLabel,
         planTypeLabel,
+        breakLine,
     },
     attributes = {},
 ) {
@@ -136,27 +137,22 @@ function renderContainer(
     markup += renderSpan(cssClassNames.decimals, decimals);
     if (!isCurrencyFirst) markup += currencySpaceMarkup + currencyMarkup;
     markup += renderSpan(cssClassNames.recurrence, recurrenceLabel, null, true);
+    if (breakLine) {
+        markup = `${markup}<span class="price-sub-text">`;
+    }
     markup += renderSpan(cssClassNames.unitType, perUnitLabel, null, true);
-    if (!planTypeLabel) {
-        markup += renderSpan(
-            cssClassNames.taxInclusivity,
-            taxInclusivityLabel,
-            true,
-        );
+    markup += renderSpan(
+        cssClassNames.taxInclusivity,
+        taxInclusivityLabel,
+        true,
+    );
+    if (taxInclusivityLabel && planTypeLabel) {
+        markup += '. ';
     }
     if (planTypeLabel) {
-        markup = `${markup}<span class="price-sub-text">`;
-        markup += renderSpan(
-            cssClassNames.taxInclusivity,
-            taxInclusivityLabel,
-            true,
-        );
-        if (taxInclusivityLabel && planTypeLabel) {
-            markup += '. ';
-        }
-        if (planTypeLabel) {
-            markup += renderSpan(cssClassNames.planType, planTypeLabel, null);
-        }
+        markup += renderSpan(cssClassNames.planType, planTypeLabel, null);
+    }
+    if (breakLine) {
         markup += '</span>';
     }
 
@@ -186,6 +182,7 @@ const createPriceTemplate =
             displayPerUnit = false,
             displayTax = false,
             displayPlanType = false,
+            breakLine = false,
             language,
             literals: priceLiterals = {},
             quantity = 1,
@@ -347,6 +344,7 @@ const createPriceTemplate =
                     perUnitLabel,
                     taxInclusivityLabel,
                     planTypeLabel,
+                    breakLine,
                 },
                 attributes,
             );

@@ -42,7 +42,7 @@ const MARK_MERCH_CARD_PREFIX = 'merch-card:';
 function priceOptionsProvider(element, options) {
     const card = element.closest(MERCH_CARD);
     if (!card) return options;
-    options.displayPlanType = card.settings?.displayPlanType;
+    card.variantLayout?.priceOptionsProvider?.(element, options);
 }
 
 function registerPriceOptionsProvider(masCommerceService) {

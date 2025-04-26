@@ -130,6 +130,7 @@ describe('commerce service', () => {
                     displayRecurrence: true,
                     displayTax: false,
                     displayPlanType: false,
+                    breakLine: false,
                     entitlement: false,
                     env: 'PRODUCTION',
                     extraOptions: {},

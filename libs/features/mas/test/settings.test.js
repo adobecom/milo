@@ -46,6 +46,7 @@ describe('getSettings', () => {
         url.searchParams.set('displayRecurrence', 'false');
         url.searchParams.set('displayTax', 'true');
         url.searchParams.set('displayPlanType', 'true');
+        url.searchParams.set('breakLine', 'true');
         url.searchParams.set('entitlement', 'true');
         url.searchParams.set('modal', 'true');
         url.searchParams.set('commerce.landscape', 'DRAFT');
@@ -66,6 +67,7 @@ describe('getSettings', () => {
             displayRecurrence: false,
             displayTax: true,
             displayPlanType: true,
+            breakLine: true,
             entitlement: true,
             modal: true,
             landscape: 'DRAFT',

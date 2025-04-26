@@ -16,11 +16,16 @@
                 flex-direction: column;
                 padding-top: 80px;
             }
+            mas-commerce-service {
+              display: none;
+            }
         </style>
     </head>
 
     <body>
-        <main></main>
+        <main>
+          <div class="two-merch-cards plans"></div>
+        </main>
         <template id="photoshop">
             <mas-commerce-service
                 env="stage"
@@ -48,19 +53,7 @@
                         data-template="price"
                         data-wcs-osi="caA1xn6EL4pK93bWjM8flffQpfEL-bnvtoQKQAvkx574M"
                         data-display-tax="true"
-                        data-display-plan-type="true"
-                        ><span class="price"
-                            ><span class="price-currency-symbol">US$</span
-                            ><span class="price-currency-space disabled"></span
-                            ><span class="price-integer">22</span
-                            ><span class="price-decimals-delimiter">.</span
-                            ><span class="price-decimals">99</span
-                            ><span class="price-recurrence">/mo</span
-                            ><span class="price-unit-type disabled"></span
-                            ><span
-                                class="price-tax-inclusivity disabled"
-                            ></span></span
-                    ></span>
+                        data-display-plan-type="true"></span>
                 </p>
                 <div slot="body-xs">
                     <p>
@@ -102,23 +95,23 @@
             runTests(async () => {
                 mockIms();
                 await mockFetch(withWcs, withAem);
-                const main = document.querySelector('main');
+                const container = document.querySelector('main > div');
 
                 describe('merch-card web component with plans variant', () => {
                     beforeEach(() => {
-                        main.innerHTML = '';
+                        container.innerHTML = '';
                     });
                     it.only('should render tax text & plans type under price', () => {
                         const [masCommerceService, photoshop] =
                             getTemplateContent('photoshop');
-                        main.append(masCommerceService, photoshop);
+                        container.append(masCommerceService, photoshop);
                         expect(photoshop).to.exist;
                     });
 
                     it('should apply settings from fragment to price', async () => {
                         const [masCommerceService, ccAllApps] =
                             getTemplateContent('fragment-photography-plans');
-                        main.append(masCommerceService, ccAllApps);
+                        container.append(masCommerceService, ccAllApps);
                         await oneEvent(ccAllApps, 'mas:ready');
                         const [price] = ccAllApps.prices;
                         expect(price.options.displayPlanType).to.be.true;

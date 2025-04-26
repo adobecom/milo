@@ -35,6 +35,7 @@ export function Price({ literals, providers, settings }) {
             displayRecurrence,
             displayTax,
             displayPlanType,
+            breakLine,
             forceTaxExclusive,
             perpetual,
             promotionCode,
@@ -52,6 +53,7 @@ export function Price({ literals, providers, settings }) {
                 displayRecurrence: toBoolean(displayRecurrence),
                 displayTax: toBoolean(displayTax),
                 displayPlanType: toBoolean(displayPlanType),
+                breakLine: toBoolean(breakLine),
                 forceTaxExclusive: toBoolean(forceTaxExclusive),
                 perpetual: toBoolean(perpetual),
                 promotionCode:

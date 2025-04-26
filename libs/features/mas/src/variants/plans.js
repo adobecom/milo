@@ -13,6 +13,7 @@ export const PLANS_AEM_FRAGMENT_MAPPING = {
   quantitySelect: { tag: 'div', slot: 'quantity-select' },
   stockOffer: true,
   secureLabel: true,
+  planType: true,
   badge: { tag: 'div', slot: 'badge' },
   allowedBadgeColors: ['spectrum-yellow-300-plans', 'spectrum-gray-300-plans', 'spectrum-gray-700-plans', 'spectrum-green-900-plans'],
   allowedBorderColors: ['spectrum-yellow-300-plans', 'spectrum-gray-300-plans'],
@@ -30,18 +31,29 @@ export class Plans extends VariantLayout {
   }
 
     /* c8 ignore next 3 */
-  get aemFragmentMapping() {
-    return PLANS_AEM_FRAGMENT_MAPPING;
-  }
+    get aemFragmentMapping() {
+        return PLANS_AEM_FRAGMENT_MAPPING;
+    }
+
+    priceOptionsProvider(element, options) {
+        if (element.closest('[slot="heading-m"]')) {
+            options.displayPlanType = this.settings?.displayPlanType ?? false;
+            options.breakLine = true;
+        }
+    }
 
   getGlobalCSS() {
     return CSS;
   }
 
   adaptForMobile() {
-    if (!this.card.closest('merch-card-collection,overlay-trigger')) {
-      this.card.removeAttribute('size');
-      return;
+    if (
+        !this.card.closest(
+            'merch-card-collection,overlay-trigger,.two-merch-cards,.three-merch-cards,.four-merch-cards',
+        )
+    ) {
+        this.card.removeAttribute('size');
+        return;
     }
 
     const shadowRoot = this.card.shadowRoot;
