@@ -153,7 +153,7 @@ const tryAssignAriaLabel = (
   });
 
   const buttonText = cta.textContent.trim().toLowerCase();
-  const productInCTA = !cta.classList.contains('modal') && !!cta.href ? getProduct(cta.href.replace('-', ' '), productNames) : '';
+  const productInCTA = (!cta.classList.contains('modal') && getProduct(cta.href?.replace('-', ' '), productNames)) || '';
   const allContent = [...singleOccurrenceHeaders, textBeforeHeader].filter(Boolean);
 
   if (textsToAddProductNames.includes(buttonText)) {
