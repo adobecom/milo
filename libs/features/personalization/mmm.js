@@ -50,8 +50,6 @@ export function parseMepConfig() {
 }
 export async function saveToMmm() {
   const data = parseMepConfig();
-  const excludedStrings = ['/drafts/', '.stage.', '.page/', '.live/', '/fragments/', '/nala/', 'localhost'];
-  if (excludedStrings.some((str) => data.page.url.includes(str))) return false;
   data.activities = data.activities.filter((activity) => {
     const { url, source } = activity;
     activity.source = source.filter((item) => item !== 'mep param');
@@ -66,6 +64,12 @@ export async function saveToMmm() {
   if (data.page.prefix === US_GEO) data.page.prefix = '';
   data.page.target = getMetadata('target') || 'off';
   delete data.page.highlight;
+  const excludedStrings = ['/drafts/', '.stage.', '.page/', '.live/', '/fragments/', '/nala/', 'localhost'];
+  if (excludedStrings.some((str) => data.page.url.includes(str))) {
+    // eslint-disable-next-line no-console
+    console.log('Not saving to MMM because the URL contains an excluded string', data);
+    return false;
+  }
   return fetch(API_URLS.save, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
