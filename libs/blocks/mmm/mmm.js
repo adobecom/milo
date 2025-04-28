@@ -197,7 +197,6 @@ function filterPageList(pageNum, perPage, filterEvent, sortingEvent) {
     setLocalStorageFilter(detail);
     document.dispatchEvent(new CustomEvent(SEARCH_CRITERIA_CHANGE_EVENT, { detail }));
   }
-  console.log('searchValues', searchValues); // remove
 }
 
 function parseData(el) {
