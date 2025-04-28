@@ -193,7 +193,6 @@ function filterPageList(pageNum, perPage, filterEvent, sortingEvent) {
     }
     detail[key] = value;
   });
-  window?.console.log(['searchValues:', searchValues]);
   // This event triggers an API call with most recent search criteria and a forces a re-render
   if (!activeSearchWithShortKeyword) {
     setLocalStorageFilter(detail);
@@ -666,7 +665,6 @@ function subscribeToSearchCriteriaChanges() {
 }
 
 export default async function init(el) {
-  window?.console?.log('running branch: mmm-newfilters');
   isReport = el.classList.contains('target-cleanup');
   mmmPageVer = isReport ? GRID_FORMAT.report : GRID_FORMAT.base;
   await createPageList(el);
