@@ -134,7 +134,8 @@ export function add3in1Parameters(url, modal, customerSegment, marketSegment) {
     url.searchParams.set('cli', modal === MODAL_TYPE_3_IN_1.CRM ? 'creative' : 'mini_plans');
   }
   if (modal === MODAL_TYPE_3_IN_1.CRM) {
-    url.searchParams.set('af', 'uc_segmentation_hide_tabs,uc_new_user_iframe,uc_new_system_close');
+    url.searchParams.set('af', 'uc_new_user_iframe,uc_new_system_close');
+    url.searchParams.set('rf', 'uc_segmentation_hide_tabs_cr');
   } else if (modal === MODAL_TYPE_3_IN_1.TWP || modal === MODAL_TYPE_3_IN_1.D2P) {
     url.searchParams.set('af', 'uc_new_user_iframe,uc_new_system_close');
     if (customerSegment === 'INDIVIDUAL' && marketSegment === 'EDU') {
