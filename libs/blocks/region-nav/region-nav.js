@@ -34,29 +34,32 @@ export function decorateLink(link, path) {
   if (pathname.startsWith('http')) {
     try { pathname = new URL(pathname).pathname; } catch (e) { /* href does not contain domain */ }
   }
-  const linkParts = pathname.split('/');
-  const expressPrefix = linkParts[1] || '';
+
+  let prefix = '';
   const { languageMap, languages, locales } = getConfig();
-  const language = languages
-    ? getLanguage(languages, locales, pathname) : getLocale(locales, pathname);
-  const prefix = language.prefix.replace('/', '');
+  if (languageMap) {
+    const linkParts = pathname.split('/');
+    prefix = linkParts[1] || '';
+  } else {
+    const language = languages
+      ? getLanguage(languages, locales, pathname) : getLocale(locales, pathname);
+    prefix = language.prefix.replace('/', '');
+  }
 
   let { href } = link;
   if (href.endsWith('/')) href = href.slice(0, -1);
 
-  if (languageMap && !getConfig().locales[expressPrefix]) {
-    const valueInMap = languageMap[expressPrefix];
+  if (languageMap && !getConfig().locales[prefix]) {
+    const valueInMap = languageMap[prefix];
     href = href.replace(`/${prefix}`, valueInMap ? `/${valueInMap}` : '');
   }
   link.href = `${href}${path}`;
-
-  const interactionPrefix = languageMap ? expressPrefix : prefix;
 
   link.addEventListener('mouseover', () => {
     setTimeout(() => {
       if (link.matches(':hover') && !hrefAdapted) {
         handleEvent({
-          interactionPrefix,
+          prefix,
           link,
           callback: (newHref) => {
             link.href = newHref;
@@ -72,7 +75,7 @@ export function decorateLink(link, path) {
     if (hrefAdapted) return;
     e.preventDefault();
     handleEvent({
-      interactionPrefix,
+      prefix,
       link,
       callback: (newHref) => {
         window.open(newHref, e.ctrlKey || e.metaKey ? '_blank' : '_self');
