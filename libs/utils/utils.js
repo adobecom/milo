@@ -1402,7 +1402,7 @@ async function loadPostLCP(config) {
   if (config?.mep) {
     import('../features/personalization/personalization.js')
       .then(({ addMepAnalytics }) => addMepAnalytics(config, header));
-    if (config.mep?.preview || Math.random() < 0.5) {
+    if (config.env?.name === 'prod' && (config.mep?.preview || Math.random() < 0.001)) {
       await import('../features/personalization/mmm.js').then(({ saveToMmm }) => saveToMmm());
     }
   }

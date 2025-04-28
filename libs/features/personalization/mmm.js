@@ -83,9 +83,8 @@ export function parseMepConfig() {
   };
 }
 export async function saveToMmm() {
-  const config = getConfig();
   const data = parseMepConfig();
-  const excludedStrings = ['/drafts/', '.stage.', '.page/', '.live/', '/fragments/', '/nala/'];
+  const excludedStrings = ['/drafts/', '.stage.', '.page/', '.live/', '/fragments/', '/nala/', 'localhost'];
   if (excludedStrings.some((str) => data.page.url.includes(str))) return false;
   data.activities = data.activities.filter((activity) => {
     const { url, source } = activity;
