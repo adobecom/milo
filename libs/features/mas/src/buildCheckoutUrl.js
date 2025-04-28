@@ -155,7 +155,7 @@ export function buildCheckoutUrl(checkoutData) {
   const { env, items, workflowStep, ms, marketSegment, customerSegment, ot, offerType, pa, productArrangementCode, landscape, modal, ...rest } =
     checkoutData;
   const segmentationParameters = {
-    marketSegment: marketSegment ?? ms,
+    marketSegment: ms ?? marketSegment,
     offerType: offerType ?? ot,
     productArrangementCode: productArrangementCode ?? pa,
   };
