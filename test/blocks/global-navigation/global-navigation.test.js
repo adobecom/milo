@@ -14,7 +14,6 @@ import {
   addMetaDataV2,
 } from './test-utilities.js';
 import { setConfig, getLocale } from '../../../libs/utils/utils.js';
-import initNav, { getUniversalNavLocale, osMap } from '../../../libs/blocks/global-navigation/global-navigation.js';
 import { isDesktop, isTangentToViewport, toFragment } from '../../../libs/blocks/global-navigation/utilities/utilities.js';
 import logoOnlyNav from './mocks/global-navigation-only-logo.plain.js';
 import longNav from './mocks/global-navigation-long.plain.js';
@@ -31,6 +30,10 @@ import { getConfig } from '../../../tools/send-to-caas/send-utils.js';
 
 async function initGnav(block) {
   try {
+    // After optimizing the gnav load, certain operations (e.g. getGnavSource) on load of
+    // the js file rather than on init. The queryparamenter supports this by reloading
+    // the module each time we get here.
+    const { default: initNav } = await import(`../../../libs/blocks/global-navigation/global-navigation.js?unique=${crypto.randomUUID()}`);
     await initNav(block);
   } catch (e) {
     // should throw error
@@ -238,7 +241,7 @@ describe('global navigation', () => {
 
         window.fetch = sinon.stub().callsFake(() => mockRes({
           payload:
-          { query_prefix: 'f', locale: 'en-US', suggested_completions: [{ name: 'framemaker', score: 578.15875, scope: 'learn' }, { name: 'fuse', score: 578.15875, scope: 'learn' }, { name: 'flash player', score: 578.15875, scope: 'learn' }, { name: 'framemaker publishing server', score: 578.15875, scope: 'learn' }, { name: 'fill & sign', score: 578.15875, scope: 'learn' }, { name: 'font folio', score: 578.15875, scope: 'learn' }, { name: 'free fonts for photoshop', score: 577.25055, scope: 'learn' }, { name: 'free lightroom presets', score: 577.25055, scope: 'learn' }, { name: 'frame', score: 577.25055, scope: 'learn' }, { name: 'frame for creative cloud', score: 577.25055, scope: 'learn' }], elastic_search_time: 1440.750028 },
+            { query_prefix: 'f', locale: 'en-US', suggested_completions: [{ name: 'framemaker', score: 578.15875, scope: 'learn' }, { name: 'fuse', score: 578.15875, scope: 'learn' }, { name: 'flash player', score: 578.15875, scope: 'learn' }, { name: 'framemaker publishing server', score: 578.15875, scope: 'learn' }, { name: 'fill & sign', score: 578.15875, scope: 'learn' }, { name: 'font folio', score: 578.15875, scope: 'learn' }, { name: 'free fonts for photoshop', score: 577.25055, scope: 'learn' }, { name: 'free lightroom presets', score: 577.25055, scope: 'learn' }, { name: 'frame', score: 577.25055, scope: 'learn' }, { name: 'frame for creative cloud', score: 577.25055, scope: 'learn' }], elastic_search_time: 1440.750028 },
         }));
 
         searchField.focus();
@@ -255,7 +258,7 @@ describe('global navigation', () => {
   describe('Gnav-logo', () => {
     describe('desktop', () => {
       it('renders the logo', async () => {
-        await createFullGlobalNavigation({ });
+        await createFullGlobalNavigation({});
 
         const logo = document.querySelector(selectors.logo);
         expect(isElementVisible(logo)).to.equal(true);
@@ -490,6 +493,7 @@ describe('global navigation', () => {
       });
 
       it('should send the correct device type', async () => {
+        const { osMap } = await import('../../../libs/blocks/global-navigation/global-navigation.js');
         const gnav = await createFullGlobalNavigation({ unavContent: 'on' });
         window.UniversalNav.resetHistory();
         const map = { Test: 'linux', ...osMap };
@@ -504,7 +508,8 @@ describe('global navigation', () => {
       });
 
       it('should send the correct locale to unav', async () => {
-        for (const data of unavLocalesTestData) {
+        const { LANGMAP, getUniversalNavLocale } = await import('../../../libs/blocks/global-navigation/global-navigation.js');
+        for (const data of unavLocalesTestData(LANGMAP)) {
           expect(getUniversalNavLocale({ prefix: data.prefix })).to.equal(data.expectedLocale);
         }
       });
