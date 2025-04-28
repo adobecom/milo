@@ -1,5 +1,5 @@
 import {
-  createTag, getConfig, loadArea, loadScript, loadStyle, localizeLink, SLD,
+  createTag, getConfig, loadArea, loadScript, loadStyle, localizeLink, SLD, getMetadata,
 } from '../../utils/utils.js';
 import { replaceKey } from '../../features/placeholders.js';
 
@@ -686,10 +686,12 @@ export async function getCheckoutContext(el, params) {
 export async function getPriceContext(el, params) {
   const context = await getCommerceContext(el, params);
   if (!context) return null;
+  const annualEnabled = getMetadata('mas-ff-annual-price');
   const displayOldPrice = context.promotionCode ? params.get('old') : undefined;
   const displayPerUnit = params.get('seat');
   const displayRecurrence = params.get('term');
   const displayTax = params.get('tax');
+  const displayAnnual = (annualEnabled && params.get('annual') !== 'false') || undefined;
   const forceTaxExclusive = params.get('exclusive');
   const alternativePrice = params.get('alt');
   // The PRICE_TEMPLATE_MAPPING supports legacy OST links
@@ -700,6 +702,7 @@ export async function getPriceContext(el, params) {
     displayPerUnit,
     displayRecurrence,
     displayTax,
+    displayAnnual,
     forceTaxExclusive,
     alternativePrice,
     template,
@@ -744,7 +747,7 @@ export async function buildCta(el, params) {
     // If Milo aria-label available from sharepoint doc, just use it.
     cta.setAttribute('aria-label', el.ariaLabel);
   } else if (!cta.ariaLabel) {
-    cta.onceSettled().finally(async () => {
+    cta.onceSettled().then(async () => {
       const productFamily = cta.value[0]?.productArrangement?.productFamily;
       const marketSegment = cta.value[0]?.marketSegments[0];
       const customerSegment = marketSegment === 'EDU' ? marketSegment : cta.value[0]?.customerSegment;
