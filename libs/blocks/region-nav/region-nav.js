@@ -46,7 +46,7 @@ export function decorateLink(link, path) {
 
   if (languageMap && !getConfig().locales[expressPrefix]) {
     const valueInMap = languageMap[expressPrefix];
-    href = href.replace(`/${expressPrefix}`, valueInMap ? `/${valueInMap}` : '');
+    href = href.replace(`/${prefix}`, valueInMap ? `/${valueInMap}` : '');
   }
   link.href = `${href}${path}`;
 
