@@ -114,6 +114,7 @@
                             getTemplateContent('fragment-photography-plans');
                         container.append(masCommerceService, ccAllApps);
                         await oneEvent(ccAllApps, 'mas:ready');
+                        await delay(50);
                         const [price, legal] = ccAllApps.prices;
                         expect(price.options.displayPerUnit).to.be.false;
                         expect(price.options.displayTax).to.be.false;

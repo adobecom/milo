@@ -105,14 +105,15 @@ export class Plans extends VariantLayout {
         const price = headingM.querySelector(
             `${SELECTOR_MAS_INLINE_PRICE}[data-template="price"]`,
         );
-        if (!price) return;
         const legal = price.cloneNode(true);
-        price.dataset.displayPerUnit = 'false';
-        price.dataset.displayTax = 'false';
-        price.dataset.displayPlanType = 'false';
+        this.legal = legal;
+        await price.onceSettled();
+        if (!price?.options) return;
+        if (price.options.displayPerUnit) price.dataset.displayPerUnit = 'false';
+        if (price.options.displayTax) price.dataset.displayTax = 'false';
+        if (price.options.displayPlanType) price.dataset.displayPlanType = 'false';
         legal.setAttribute('data-template', 'legal');
         headingM.appendChild(legal);
-        this.legal = legal;
     }
 
     get stockCheckbox() {
