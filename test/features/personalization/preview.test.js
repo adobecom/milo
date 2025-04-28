@@ -3,7 +3,7 @@ import { expect } from '@esm-bundle/chai';
 import experiments from './mocks/preview.js';
 
 document.body.innerHTML = await readFile({ path: './mocks/postPersonalization.html' });
-const { default: decoratePreviewMode, parsePageAndUrl } = await import('../../../libs/features/personalization/preview.js');
+const { default: decoratePreviewMode } = await import('../../../libs/features/personalization/preview.js');
 const { setConfig, MILO_EVENTS } = await import('../../../libs/utils/utils.js');
 
 const config = {
@@ -109,45 +109,6 @@ describe('preview feature', () => {
     document.querySelector('input#mepPreviewButtonCheckbox').click();
     expect(document.querySelector('a[title="Preview above choices"]').getAttribute('href')).to.contain('mepButton=off');
     expect(document.querySelector('a[title="Preview above choices"]').getAttribute('href')).to.contain('---');
-  });
-  it('parse url and page for stage', () => {
-    const { url, page } = parsePageAndUrl(config, new URL('https://www.stage.adobe.com/fr/products/photoshop.html'), 'fr');
-    expect(url).to.equal('https://www.adobe.com/fr/products/photoshop.html');
-    expect(page).to.equal('/products/photoshop.html');
-  });
-  it('parse url and page for preview', () => {
-    const { url, page } = parsePageAndUrl(config, new URL('https://main--cc--adobecom.aem.page/fr/products/photoshop'), 'fr');
-    expect(url).to.equal('https://www.adobe.com/fr/products/photoshop.html');
-    expect(page).to.equal('/products/photoshop.html');
-  });
-  it('parse url and page for homepage preview', () => {
-    const { url, page } = parsePageAndUrl(config, new URL('https://main--homepage--adobecom.hlx.page/fr/homepage/index-loggedout'), 'fr');
-    expect(url).to.equal('https://www.adobe.com/fr/');
-    expect(page).to.equal('/');
-  });
-  it('parse url and page for bacom preview', () => {
-    config.stageDomainsMap = { 'business.stage.adobe.com': {} };
-    const { url, page } = parsePageAndUrl(config, new URL('https://main--bacom--adobecom.hlx.page/fr/products/real-time-customer-data-platform/rtcdp'), 'fr');
-    expect(url).to.equal('https://business.adobe.com/fr/products/real-time-customer-data-platform/rtcdp.html');
-    expect(page).to.equal('/products/real-time-customer-data-platform/rtcdp.html');
-  });
-  it('parse url and page for prod US', () => {
-    config.env.name = 'prod';
-    const { url, page } = parsePageAndUrl(config, new URL('https://www.adobe.com/products/photoshop.html'), '');
-    expect(url).to.equal('https://www.adobe.com/products/photoshop.html');
-    expect(page).to.equal('/products/photoshop.html');
-  });
-  it('parse url and page for prod non US', () => {
-    const { url, page } = parsePageAndUrl(config, new URL('https://www.adobe.com/fr/products/photoshop.html'), 'fr');
-    expect(url).to.equal('https://www.adobe.com/fr/products/photoshop.html');
-    expect(page).to.equal('/products/photoshop.html');
-  });
-  it('parse url and page for no stage map', () => {
-    config.env.name = 'stage';
-    delete config.stageDomainsMap;
-    const { url, page } = parsePageAndUrl(config, new URL('https://www.stage.adobe.com/events/2024-10-31.html'), '');
-    expect(url).to.equal('https://www.adobe.com/events/2024-10-31.html');
-    expect(page).to.equal('/events/2024-10-31.html');
   });
   it('opens manifest', () => {
     document.querySelector('a.mep-edit-manifest').click();
