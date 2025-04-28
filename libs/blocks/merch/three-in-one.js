@@ -3,6 +3,7 @@ import { createTag, getConfig } from '../../utils/utils.js';
 import { replaceKeyArray } from '../../features/placeholders.js';
 import '../../features/spectrum-web-components/dist/theme.js';
 import '../../features/spectrum-web-components/dist/progress-circle.js';
+import { EVENT_MERCH_ADDON_AND_QUANTITY_UPDATE } from '../../features/mas/src/constants.js';
 
 export const MSG_SUBTYPE = {
   AppLoaded: 'AppLoaded',
@@ -75,6 +76,7 @@ export const handle3in1IFrameEvents = ({ data: msgData }) => {
   const closeBtn = threeInOne?.querySelector('.dialog-close');
   const iframe = threeInOne?.querySelector('iframe');
   if (!threeInOne) return;
+  let addonAndQuantityUpdateEvent;
   switch (subType) {
     case MSG_SUBTYPE.AppLoaded:
       iframe?.setAttribute('data-pageloaded', 'true');
@@ -93,6 +95,36 @@ export const handle3in1IFrameEvents = ({ data: msgData }) => {
       }
       break;
     case MSG_SUBTYPE.Close:
+      // {
+      //   app: 'ucv3',
+      //   type: 'System',
+      //   subType: 'Close',
+      //   data: {
+      //     actionRequired: '<boolean>',
+      //     actionType: 'GETTING_STARTED' | 'SET_PASSWORD',
+      //     status: 'ORDER_COMPLETE' | 'ORDER_INCOMPLETE',
+      //     actionUrl: '{url}',
+      //     state: {
+      //       cart: {
+      //         items: [
+      //           {
+      //             offerId: string,
+      //             quantity: number,
+      //             productArrangementCode: string
+      //           }
+      //         ]
+      //       }
+      //     }
+      //   }
+      // }
+      if (data?.actionRequired && data?.actionUrl) {
+        window.open(data.actionUrl);
+      }
+      addonAndQuantityUpdateEvent = new CustomEvent(
+        EVENT_MERCH_ADDON_AND_QUANTITY_UPDATE,
+        { detail: { id: threeInOne?.getAttribute('data-id'), items: data?.state?.cart?.items } },
+      );
+      window.dispatchEvent(addonAndQuantityUpdateEvent);
       document.querySelector('.dialog-modal.three-in-one')?.dispatchEvent(new Event('closeModal'));
       window.removeEventListener('message', handle3in1IFrameEvents);
       break;

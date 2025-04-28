@@ -1,12 +1,6367 @@
-var yi=Object.defineProperty;var Ei=e=>{throw TypeError(e)};var yc=(e,t,r)=>t in e?yi(e,t,{enumerable:!0,configurable:!0,writable:!0,value:r}):e[t]=r;var Ec=(e,t)=>{for(var r in t)yi(e,r,{get:t[r],enumerable:!0})};var p=(e,t,r)=>yc(e,typeof t!="symbol"?t+"":t,r),Ao=(e,t,r)=>t.has(e)||Ei("Cannot "+r);var b=(e,t,r)=>(Ao(e,t,"read from private field"),r?r.call(e):t.get(e)),L=(e,t,r)=>t.has(e)?Ei("Cannot add the same private member more than once"):t instanceof WeakSet?t.add(e):t.set(e,r),R=(e,t,r,o)=>(Ao(e,t,"write to private field"),o?o.call(e,r):t.set(e,r),r),de=(e,t,r)=>(Ao(e,t,"access private method"),r);(function(){let r={clientId:"",endpoint:"https://www.adobe.com/lana/ll",endpointStage:"https://www.stage.adobe.com/lana/ll",errorType:"e",sampleRate:1,tags:"",implicitSampleRate:1,useProd:!0,isProdDomain:!1},o=window;function n(){let{host:h}=window.location;return h.substring(h.length-10)===".adobe.com"&&h.substring(h.length-15)!==".corp.adobe.com"&&h.substring(h.length-16)!==".stage.adobe.com"}function i(h,u){h||(h={}),u||(u={});function d(m){return h[m]!==void 0?h[m]:u[m]!==void 0?u[m]:r[m]}return Object.keys(r).reduce((m,x)=>(m[x]=d(x),m),{})}function a(h,u){h=h&&h.stack?h.stack:h||"",h.length>2e3&&(h=`${h.slice(0,2e3)}<trunc>`);let d=i(u,o.lana.options);if(!d.clientId){console.warn("LANA ClientID is not set in options.");return}let x=parseInt(new URL(window.location).searchParams.get("lana-sample"),10)||(d.errorType==="i"?d.implicitSampleRate:d.sampleRate);if(!o.lana.debug&&!o.lana.localhost&&x<=Math.random()*100)return;let f=n()||d.isProdDomain,S=!f||!d.useProd?d.endpointStage:d.endpoint,E=[`m=${encodeURIComponent(h)}`,`c=${encodeURI(d.clientId)}`,`s=${x}`,`t=${encodeURI(d.errorType)}`];if(d.tags&&E.push(`tags=${encodeURI(d.tags)}`),(!f||o.lana.debug||o.lana.localhost)&&console.log("LANA Msg: ",h,`
-Opts:`,d),!o.lana.localhost||o.lana.debug){let A=new XMLHttpRequest;return o.lana.debug&&(E.push("d"),A.addEventListener("load",()=>{console.log("LANA response:",A.responseText)})),A.open("GET",`${S}?${E.join("&")}`),A.send(),A}}function s(h){a(h.reason||h.error||h.message,{errorType:"i"})}function c(){return o.location.search.toLowerCase().indexOf("lanadebug")!==-1}function l(){return o.location.host.toLowerCase().indexOf("localhost")!==-1}o.lana={debug:!1,log:a,options:i(o.lana&&o.lana.options)},c()&&(o.lana.debug=!0),l()&&(o.lana.localhost=!0),o.addEventListener("error",s),o.addEventListener("unhandledrejection",s)})();var Go={};Ec(Go,{CLASS_NAME_FAILED:()=>ko,CLASS_NAME_HIDDEN:()=>wc,CLASS_NAME_PENDING:()=>Lo,CLASS_NAME_RESOLVED:()=>Ro,CheckoutWorkflow:()=>ie,CheckoutWorkflowStep:()=>V,Commitment:()=>He,ERROR_MESSAGE_BAD_REQUEST:()=>Oo,ERROR_MESSAGE_MISSING_LITERALS_URL:()=>Rc,ERROR_MESSAGE_OFFER_NOT_FOUND:()=>$o,EVENT_AEM_ERROR:()=>Be,EVENT_AEM_LOAD:()=>Ue,EVENT_MAS_ERROR:()=>Po,EVENT_MAS_READY:()=>Co,EVENT_MERCH_CARD_ACTION_MENU_TOGGLE:()=>So,EVENT_MERCH_CARD_COLLECTION_SHOWMORE:()=>kc,EVENT_MERCH_CARD_COLLECTION_SORT:()=>Pc,EVENT_MERCH_CARD_READY:()=>_o,EVENT_MERCH_OFFER_READY:()=>ct,EVENT_MERCH_OFFER_SELECT_READY:()=>Ft,EVENT_MERCH_QUANTITY_SELECTOR_CHANGE:()=>ue,EVENT_MERCH_SEARCH_CHANGE:()=>Cc,EVENT_MERCH_SIDENAV_SELECT:()=>Lc,EVENT_MERCH_STOCK_CHANGE:()=>Sc,EVENT_MERCH_STORAGE_CHANGE:()=>Tc,EVENT_OFFER_SELECTED:()=>To,EVENT_TYPE_FAILED:()=>Mo,EVENT_TYPE_READY:()=>Sr,EVENT_TYPE_RESOLVED:()=>No,Env:()=>fe,HEADER_X_REQUEST_ID:()=>zo,LOG_NAMESPACE:()=>Io,Landscape:()=>Se,MARK_DURATION_SUFFIX:()=>Gt,MARK_START_SUFFIX:()=>Te,MODAL_TYPE_3_IN_1:()=>ae,NAMESPACE:()=>Ac,PARAM_AOS_API_KEY:()=>Oc,PARAM_ENV:()=>Ho,PARAM_LANDSCAPE:()=>Do,PARAM_WCS_API_KEY:()=>$c,PROVIDER_ENVIRONMENT:()=>Fo,SELECTOR_MAS_CHECKOUT_LINK:()=>De,SELECTOR_MAS_ELEMENT:()=>zt,SELECTOR_MAS_INLINE_PRICE:()=>Tr,SELECTOR_MAS_SP_BUTTON:()=>wo,STATE_FAILED:()=>me,STATE_PENDING:()=>_e,STATE_RESOLVED:()=>pe,TAG_NAME_SERVICE:()=>_c,Term:()=>te,WCS_PROD_URL:()=>Uo,WCS_STAGE_URL:()=>Bo});var He=Object.freeze({MONTH:"MONTH",YEAR:"YEAR",TWO_YEARS:"TWO_YEARS",THREE_YEARS:"THREE_YEARS",PERPETUAL:"PERPETUAL",TERM_LICENSE:"TERM_LICENSE",ACCESS_PASS:"ACCESS_PASS",THREE_MONTHS:"THREE_MONTHS",SIX_MONTHS:"SIX_MONTHS"}),te=Object.freeze({ANNUAL:"ANNUAL",MONTHLY:"MONTHLY",TWO_YEARS:"TWO_YEARS",THREE_YEARS:"THREE_YEARS",P1D:"P1D",P1Y:"P1Y",P3Y:"P3Y",P10Y:"P10Y",P15Y:"P15Y",P3D:"P3D",P7D:"P7D",P30D:"P30D",HALF_YEARLY:"HALF_YEARLY",QUARTERLY:"QUARTERLY"}),Ac="merch",wc="hidden",Sr="wcms:commerce:ready",_c="mas-commerce-service",Tr='span[is="inline-price"][data-wcs-osi]',De='a[is="checkout-link"][data-wcs-osi],button[is="checkout-button"][data-wcs-osi]',wo="sp-button[data-wcs-osi]",zt=`${Tr},${De}`,ct="merch-offer:ready",Ft="merch-offer-select:ready",_o="merch-card:ready",So="merch-card:action-menu-toggle",To="merch-offer:selected",Sc="merch-stock:change",Tc="merch-storage:change",ue="merch-quantity-selector:change",Cc="merch-search:change",Pc="merch-card-collection:sort",kc="merch-card-collection:showmore",Lc="merch-sidenav:select",Ue="aem:load",Be="aem:error",Co="mas:ready",Po="mas:error",ko="placeholder-failed",Lo="placeholder-pending",Ro="placeholder-resolved",Oo="Bad WCS request",$o="Commerce offer not found",Rc="Literals URL not provided",Mo="mas:failed",No="mas:resolved",Io="mas/commerce",Ho="commerce.env",Do="commerce.landscape",Oc="commerce.aosKey",$c="commerce.wcsKey",Uo="https://www.adobe.com/web_commerce_artifact",Bo="https://www.stage.adobe.com/web_commerce_artifact_stage",me="failed",_e="pending",pe="resolved",Se={DRAFT:"DRAFT",PUBLISHED:"PUBLISHED"},zo="X-Request-Id",V=Object.freeze({CHECKOUT:"checkout",CHECKOUT_EMAIL:"checkout/email",SEGMENTATION:"segmentation",BUNDLE:"bundle",COMMITMENT:"commitment",RECOMMENDATION:"recommendation",EMAIL:"email",PAYMENT:"payment",CHANGE_PLAN_TEAM_PLANS:"change-plan/team-upgrade/plans",CHANGE_PLAN_TEAM_PAYMENT:"change-plan/team-upgrade/payment"}),ie=Object.freeze({V2:"UCv2",V3:"UCv3"}),fe=Object.freeze({STAGE:"STAGE",PRODUCTION:"PRODUCTION",LOCAL:"LOCAL"}),Fo={PRODUCTION:"PRODUCTION"},ae={TWP:"twp",D2P:"d2p",CRM:"crm"},Te=":start",Gt=":duration";var Ai="tacocat.js";var Vo=(e,t)=>String(e??"").toLowerCase()==String(t??"").toLowerCase(),wi=e=>`${e??""}`.replace(/[&<>'"]/g,t=>({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;",'"':"&quot;"})[t]??t)??"";function I(e,t={},{metadata:r=!0,search:o=!0,storage:n=!0}={}){let i;if(o&&i==null){let a=new URLSearchParams(window.location.search),s=lt(o)?o:e;i=a.get(s)}if(n&&i==null){let a=lt(n)?n:e;i=window.sessionStorage.getItem(a)??window.localStorage.getItem(a)}if(r&&i==null){let a=Nc(lt(r)?r:e);i=document.documentElement.querySelector(`meta[name="${a}"]`)?.content}return i??t[e]}var Mc=e=>typeof e=="boolean",Cr=e=>typeof e=="function",Pr=e=>typeof e=="number",_i=e=>e!=null&&typeof e=="object";var lt=e=>typeof e=="string",Si=e=>lt(e)&&e,Vt=e=>Pr(e)&&Number.isFinite(e)&&e>0;function jt(e,t=r=>r==null||r===""){return e!=null&&Object.entries(e).forEach(([r,o])=>{t(o)&&delete e[r]}),e}function C(e,t){if(Mc(e))return e;let r=String(e);return r==="1"||r==="true"?!0:r==="0"||r==="false"?!1:t}function ze(e,t,r){let o=Object.values(t);return o.find(n=>Vo(n,e))??r??o[0]}function Nc(e=""){return String(e).replace(/(\p{Lowercase_Letter})(\p{Uppercase_Letter})/gu,(t,r,o)=>`${r}-${o}`).replace(/\W+/gu,"-").toLowerCase()}function Ti(e,t=1){return Pr(e)||(e=Number.parseInt(e,10)),!Number.isNaN(e)&&e>0&&Number.isFinite(e)?e:t}var Ic=Date.now(),jo=()=>`(+${Date.now()-Ic}ms)`,kr=new Set,Hc=C(I("tacocat.debug",{},{metadata:!1}),!1);function Ci(e){let t=`[${Ai}/${e}]`,r=(a,s,...c)=>a?!0:(n(s,...c),!1),o=Hc?(a,...s)=>{console.debug(`${t} ${a}`,...s,jo())}:()=>{},n=(a,...s)=>{let c=`${t} ${a}`;kr.forEach(([l])=>l(c,...s))};return{assert:r,debug:o,error:n,warn:(a,...s)=>{let c=`${t} ${a}`;kr.forEach(([,l])=>l(c,...s))}}}function Dc(e,t){let r=[e,t];return kr.add(r),()=>{kr.delete(r)}}Dc((e,...t)=>{console.error(e,...t,jo())},(e,...t)=>{console.warn(e,...t,jo())});var Uc="no promo",Pi="promo-tag",Bc="yellow",zc="neutral",Fc=(e,t,r)=>{let o=i=>i||Uc,n=r?` (was "${o(t)}")`:"";return`${o(e)}${n}`},Gc="cancel-context",Lr=(e,t)=>{let r=e===Gc,o=!r&&e?.length>0,n=(o||r)&&(t&&t!=e||!t&&!r),i=n&&o||!n&&!!t,a=i?e||t:void 0;return{effectivePromoCode:a,overridenPromoCode:e,className:i?Pi:`${Pi} no-promo`,text:Fc(a,t,n),variant:i?Bc:zc,isOverriden:n}};var qo;(function(e){e.BASE="BASE",e.TRIAL="TRIAL",e.PROMOTION="PROMOTION"})(qo||(qo={}));var J;(function(e){e.MONTH="MONTH",e.YEAR="YEAR",e.TWO_YEARS="TWO_YEARS",e.THREE_YEARS="THREE_YEARS",e.PERPETUAL="PERPETUAL",e.TERM_LICENSE="TERM_LICENSE",e.ACCESS_PASS="ACCESS_PASS",e.THREE_MONTHS="THREE_MONTHS",e.SIX_MONTHS="SIX_MONTHS"})(J||(J={}));var re;(function(e){e.ANNUAL="ANNUAL",e.MONTHLY="MONTHLY",e.TWO_YEARS="TWO_YEARS",e.THREE_YEARS="THREE_YEARS",e.P1D="P1D",e.P1Y="P1Y",e.P3Y="P3Y",e.P10Y="P10Y",e.P15Y="P15Y",e.P3D="P3D",e.P7D="P7D",e.P30D="P30D",e.HALF_YEARLY="HALF_YEARLY",e.QUARTERLY="QUARTERLY"})(re||(re={}));var Wo;(function(e){e.INDIVIDUAL="INDIVIDUAL",e.TEAM="TEAM",e.ENTERPRISE="ENTERPRISE"})(Wo||(Wo={}));var Yo;(function(e){e.COM="COM",e.EDU="EDU",e.GOV="GOV"})(Yo||(Yo={}));var Xo;(function(e){e.DIRECT="DIRECT",e.INDIRECT="INDIRECT"})(Xo||(Xo={}));var Ko;(function(e){e.ENTERPRISE_PRODUCT="ENTERPRISE_PRODUCT",e.ETLA="ETLA",e.RETAIL="RETAIL",e.VIP="VIP",e.VIPMP="VIPMP",e.FREE="FREE"})(Ko||(Ko={}));var Zo="ABM",Qo="PUF",Jo="M2M",en="PERPETUAL",tn="P3Y",Vc="TAX_INCLUSIVE_DETAILS",jc="TAX_EXCLUSIVE",ki={ABM:Zo,PUF:Qo,M2M:Jo,PERPETUAL:en,P3Y:tn},dd={[Zo]:{commitment:J.YEAR,term:re.MONTHLY},[Qo]:{commitment:J.YEAR,term:re.ANNUAL},[Jo]:{commitment:J.MONTH,term:re.MONTHLY},[en]:{commitment:J.PERPETUAL,term:void 0},[tn]:{commitment:J.THREE_MONTHS,term:re.P3Y}},Li="Value is not an offer",Rr=e=>{if(typeof e!="object")return Li;let{commitment:t,term:r}=e,o=qc(t,r);return{...e,planType:o}};var qc=(e,t)=>{switch(e){case void 0:return Li;case"":return"";case J.YEAR:return t===re.MONTHLY?Zo:t===re.ANNUAL?Qo:"";case J.MONTH:return t===re.MONTHLY?Jo:"";case J.PERPETUAL:return en;case J.TERM_LICENSE:return t===re.P3Y?tn:"";default:return""}};function Ri(e){let{priceDetails:t}=e,{price:r,priceWithoutDiscount:o,priceWithoutTax:n,priceWithoutDiscountAndTax:i,taxDisplay:a}=t;if(a!==Vc)return e;let s={...e,priceDetails:{...t,price:n??r,priceWithoutDiscount:i??o,taxDisplay:jc}};return s.offerType==="TRIAL"&&s.priceDetails.price===0&&(s.priceDetails.price=s.priceDetails.priceWithoutDiscount),s}var Wc="mas-commerce-service";function qt(e,{country:t,forceTaxExclusive:r,perpetual:o}){let n;if(e.length<2)n=e;else{let i=t==="GB"||o?"EN":"MULT",[a,s]=e;n=[a.language===i?a:s]}return r&&(n=n.map(Ri)),n}var Or=e=>window.setTimeout(e);function ht(e,t=1){if(e==null)return[t];let r=(Array.isArray(e)?e:String(e).split(",")).map(Ti).filter(Vt);return r.length||(r=[t]),r}function $r(e){return e==null?[]:(Array.isArray(e)?e:String(e).split(",")).filter(Si)}function Y(){return document.getElementsByTagName(Wc)?.[0]}var Fe={clientId:"merch-at-scale",delimiter:"\xB6",ignoredProperties:["analytics","literals","element"],serializableTypes:["Array","Object"],sampleRate:1,tags:"acom",isProdDomain:!1},Oi=1e3;function Yc(e){return e instanceof Error||typeof e?.originatingRequest=="string"}function $i(e){if(e==null)return;let t=typeof e;if(t==="function")return e.name?`function ${e.name}`:"function";if(t==="object"){if(e instanceof Error)return e.message;if(typeof e.originatingRequest=="string"){let{message:o,originatingRequest:n,status:i}=e;return[o,i,n].filter(Boolean).join(" ")}let r=e[Symbol.toStringTag]??Object.getPrototypeOf(e).constructor.name;if(!Fe.serializableTypes.includes(r))return r}return e}function Xc(e,t){if(!Fe.ignoredProperties.includes(e))return $i(t)}var rn={append(e){if(e.level!=="error")return;let{message:t,params:r}=e,o=[],n=[],i=t;r.forEach(l=>{l!=null&&(Yc(l)?o:n).push(l)}),o.length&&(i+=" "+o.map($i).join(" "));let{pathname:a,search:s}=window.location,c=`${Fe.delimiter}page=${a}${s}`;c.length>Oi&&(c=`${c.slice(0,Oi)}<trunc>`),i+=c,n.length&&(i+=`${Fe.delimiter}facts=`,i+=JSON.stringify(n,Xc)),window.lana?.log(i,Fe)}};function dt(e){Object.assign(Fe,Object.fromEntries(Object.entries(e).filter(([t,r])=>t in Fe&&r!==""&&r!==null&&r!==void 0&&!Number.isNaN(r))))}var Mi={LOCAL:"local",PROD:"prod",STAGE:"stage"},on={DEBUG:"debug",ERROR:"error",INFO:"info",WARN:"warn"},nn=new Set,an=new Set,Ni=new Map,Ii={append({level:e,message:t,params:r,timestamp:o,source:n}){console[e](`${o}ms [${n}] %c${t}`,"font-weight: bold;",...r)}},Hi={filter:({level:e})=>e!==on.DEBUG},Kc={filter:()=>!1};function Zc(e,t,r,o,n){return{level:e,message:t,namespace:r,get params(){return o.length===1&&Cr(o[0])&&(o=o[0](),Array.isArray(o)||(o=[o])),o},source:n,timestamp:performance.now().toFixed(3)}}function Qc(e){[...an].every(t=>t(e))&&nn.forEach(t=>t(e))}function Di(e){let t=(Ni.get(e)??0)+1;Ni.set(e,t);let r=`${e} #${t}`,o={id:r,namespace:e,module:n=>Di(`${o.namespace}/${n}`),updateConfig:dt};return Object.values(on).forEach(n=>{o[n]=(i,...a)=>Qc(Zc(n,i,e,a,r))}),Object.seal(o)}function Mr(...e){e.forEach(t=>{let{append:r,filter:o}=t;Cr(o)&&an.add(o),Cr(r)&&nn.add(r)})}function Jc(e={}){let{name:t}=e,r=C(I("commerce.debug",{search:!0,storage:!0}),t===Mi.LOCAL);return Mr(r?Ii:Hi),t===Mi.PROD&&Mr(rn),ee}function el(){nn.clear(),an.clear()}var ee={...Di(Io),Level:on,Plugins:{consoleAppender:Ii,debugFilter:Hi,quietFilter:Kc,lanaAppender:rn},init:Jc,reset:el,use:Mr};var ge=class e extends Error{constructor(t,r,o){if(super(t,{cause:o}),this.name="MasError",r.response){let n=r.response.headers?.get(zo);n&&(r.requestId=n),r.response.status&&(r.status=r.response.status,r.statusText=r.response.statusText),r.response.url&&(r.url=r.response.url)}delete r.response,this.context=r,Error.captureStackTrace&&Error.captureStackTrace(this,e)}toString(){let t=Object.entries(this.context||{}).map(([o,n])=>`${o}: ${JSON.stringify(n)}`).join(", "),r=`${this.name}: ${this.message}`;return t&&(r+=` (${t})`),this.cause&&(r+=`
-Caused by: ${this.cause}`),r}};var tl={[me]:ko,[_e]:Lo,[pe]:Ro},rl={[me]:Mo,[pe]:No},Wt,ut=class{constructor(t){L(this,Wt);p(this,"changes",new Map);p(this,"connected",!1);p(this,"error");p(this,"log");p(this,"options");p(this,"promises",[]);p(this,"state",_e);p(this,"timer",null);p(this,"value");p(this,"version",0);p(this,"wrapperElement");this.wrapperElement=t,this.log=ee.module("mas-element")}update(){[me,_e,pe].forEach(t=>{this.wrapperElement.classList.toggle(tl[t],t===this.state)})}notify(){(this.state===pe||this.state===me)&&(this.state===pe?this.promises.forEach(({resolve:r})=>r(this.wrapperElement)):this.state===me&&this.promises.forEach(({reject:r})=>r(this.error)),this.promises=[]);let t=this.error;this.error instanceof ge&&(t={message:this.error.message,...this.error.context}),this.wrapperElement.dispatchEvent(new CustomEvent(rl[this.state],{bubbles:!0,detail:t}))}attributeChangedCallback(t,r,o){this.changes.set(t,o),this.requestUpdate()}connectedCallback(){R(this,Wt,Y()),this.requestUpdate(!0)}disconnectedCallback(){this.connected&&(this.connected=!1,this.log?.debug("Disconnected:",{element:this.wrapperElement}))}onceSettled(){let{error:t,promises:r,state:o}=this;return pe===o?Promise.resolve(this.wrapperElement):me===o?Promise.reject(t):new Promise((n,i)=>{r.push({resolve:n,reject:i})})}toggleResolved(t,r,o){return t!==this.version?!1:(o!==void 0&&(this.options=o),this.state=pe,this.value=r,this.update(),this.log?.debug("Resolved:",{element:this.wrapperElement,value:r}),Or(()=>this.notify()),!0)}toggleFailed(t,r,o){if(t!==this.version)return!1;o!==void 0&&(this.options=o),this.error=r,this.state=me,this.update();let n=this.wrapperElement.getAttribute("is");return this.log?.error(`${n}: Failed to render: ${r.message}`,{element:this.wrapperElement,...r.context,...b(this,Wt)?.duration}),Or(()=>this.notify()),!0}togglePending(t){return this.version++,t&&(this.options=t),this.state=_e,this.update(),this.log?.debug("Pending:",{osi:this.wrapperElement?.options?.wcsOsi}),this.version}requestUpdate(t=!1){if(!this.wrapperElement.isConnected||!Y()||this.timer)return;let{error:r,options:o,state:n,value:i,version:a}=this;this.state=_e,this.timer=Or(async()=>{this.timer=null;let s=null;if(this.changes.size&&(s=Object.fromEntries(this.changes.entries()),this.changes.clear()),this.connected?this.log?.debug("Updated:",{element:this.wrapperElement,changes:s}):(this.connected=!0,this.log?.debug("Connected:",{element:this.wrapperElement,changes:s})),s||t)try{await this.wrapperElement.render?.()===!1&&this.state===_e&&this.version===a&&(this.state=n,this.error=r,this.value=i,this.update(),this.notify())}catch(c){this.toggleFailed(this.version,c,o)}})}};Wt=new WeakMap;function Ui(e={}){return Object.entries(e).forEach(([t,r])=>{(r==null||r===""||r?.length===0)&&delete e[t]}),e}function Nr(e,t={}){let{tag:r,is:o}=e,n=document.createElement(r,{is:o});return n.setAttribute("is",o),Object.assign(n.dataset,Ui(t)),n}function Ir(e,t={}){return e instanceof HTMLElement?(Object.assign(e.dataset,Ui(t)),e):null}var Bi="download",zi="upgrade";function Hr(e,t={},r=""){let o=Y();if(!o)return null;let{checkoutMarketSegment:n,checkoutWorkflow:i,checkoutWorkflowStep:a,entitlement:s,upgrade:c,modal:l,perpetual:h,promotionCode:u,quantity:d,wcsOsi:m,extraOptions:x,analyticsId:f}=o.collectCheckoutOptions(t),S=Nr(e,{checkoutMarketSegment:n,checkoutWorkflow:i,checkoutWorkflowStep:a,entitlement:s,upgrade:c,modal:l,perpetual:h,promotionCode:u,quantity:d,wcsOsi:m,extraOptions:x,analyticsId:f});return r&&(S.innerHTML=`<span style="pointer-events: none;">${r}</span>`),S}function Dr(e){return class extends e{constructor(){super(...arguments);p(this,"checkoutActionHandler");p(this,"masElement",new ut(this))}attributeChangedCallback(o,n,i){this.masElement.attributeChangedCallback(o,n,i)}connectedCallback(){this.masElement.connectedCallback(),this.addEventListener("click",this.clickHandler)}disconnectedCallback(){this.masElement.disconnectedCallback(),this.removeEventListener("click",this.clickHandler)}onceSettled(){return this.masElement.onceSettled()}get value(){return this.masElement.value}get options(){return this.masElement.options}get isOpen3in1Modal(){let o=document.querySelector("meta[name=mas-ff-3in1]");return Object.values(ae).includes(this.getAttribute("data-modal"))&&(!o||o.content!=="off")}requestUpdate(o=!1){return this.masElement.requestUpdate(o)}static get observedAttributes(){return["data-checkout-workflow","data-checkout-workflow-step","data-extra-options","data-ims-country","data-perpetual","data-promotion-code","data-quantity","data-template","data-wcs-osi","data-entitlement","data-upgrade","data-modal"]}async render(o={}){let n=Y();if(!n)return!1;this.dataset.imsCountry||n.imsCountryPromise.then(u=>{u&&(this.dataset.imsCountry=u)}),o.imsCountry=null;let i=n.collectCheckoutOptions(o,this);if(!i.wcsOsi.length)return!1;let a;try{a=JSON.parse(i.extraOptions??"{}")}catch(u){this.masElement.log?.error("cannot parse exta checkout options",u)}let s=this.masElement.togglePending(i);this.setCheckoutUrl("");let c=n.resolveOfferSelectors(i),l=await Promise.all(c);l=l.map(u=>qt(u,i)),i.country=this.dataset.imsCountry||i.country;let h=await n.buildCheckoutAction?.(l.flat(),{...a,...i},this);return this.renderOffers(l.flat(),i,{},h,s)}renderOffers(o,n,i={},a=void 0,s=void 0){let c=Y();if(!c)return!1;if(n={...JSON.parse(this.dataset.extraOptions??"null"),...n,...i},s??(s=this.masElement.togglePending(n)),this.checkoutActionHandler&&(this.checkoutActionHandler=void 0),a){this.classList.remove(Bi,zi),this.masElement.toggleResolved(s,o,n);let{url:h,text:u,className:d,handler:m}=a;h&&this.setCheckoutUrl(h),u&&(this.firstElementChild.innerHTML=u),d&&this.classList.add(...d.split(" ")),m&&(this.setCheckoutUrl("#"),this.checkoutActionHandler=m.bind(this))}if(o.length){if(this.masElement.toggleResolved(s,o,n)){if(!this.classList.contains(Bi)&&!this.classList.contains(zi)){let h=c.buildCheckoutURL(o,n);this.setCheckoutUrl(n.modal==="true"?"#":h)}return!0}}else{let h=new Error(`Not provided: ${n?.wcsOsi??"-"}`);if(this.masElement.toggleFailed(s,h,n))return this.setCheckoutUrl("#"),!0}}setCheckoutUrl(){}clickHandler(o){}updateOptions(o={}){let n=Y();if(!n)return!1;let{checkoutMarketSegment:i,checkoutWorkflow:a,checkoutWorkflowStep:s,entitlement:c,upgrade:l,modal:h,perpetual:u,promotionCode:d,quantity:m,wcsOsi:x}=n.collectCheckoutOptions(o);return Ir(this,{checkoutMarketSegment:i,checkoutWorkflow:a,checkoutWorkflowStep:s,entitlement:c,upgrade:l,modal:h,perpetual:u,promotionCode:d,quantity:m,wcsOsi:x}),!0}}}var Yt=class Yt extends Dr(HTMLAnchorElement){static createCheckoutLink(t={},r=""){return Hr(Yt,t,r)}setCheckoutUrl(t){this.setAttribute("href",t)}get isCheckoutLink(){return!0}clickHandler(t){if(this.checkoutActionHandler){this.checkoutActionHandler?.(t);return}}};p(Yt,"is","checkout-link"),p(Yt,"tag","a");var xe=Yt;window.customElements.get(xe.is)||window.customElements.define(xe.is,xe,{extends:xe.tag});var ol="p_draft_landscape",nl="/store/",il=new Map([["countrySpecific","cs"],["customerSegment","cs"],["quantity","q"],["authCode","code"],["checkoutPromoCode","apc"],["rurl","rUrl"],["curl","cUrl"],["ctxrturl","ctxRtUrl"],["country","co"],["language","lang"],["clientId","cli"],["context","ctx"],["productArrangementCode","pa"],["offerType","ot"],["marketSegment","ms"]]),sn=new Set(["af","ai","apc","appctxid","cli","co","cs","csm","ctx","ctxRtUrl","DCWATC","dp","fr","gsp","ijt","lang","lo","mal","ms","mv","mv2","nglwfdata","ot","otac","pa","pcid","promoid","q","rf","sc","scl","sdid","sid","spint","svar","th","thm","trackingid","usid","workflowid","context.guid","so.ca","so.su","so.tr","so.va"]),al=["env","workflowStep","clientId","country"],Fi=e=>il.get(e)??e;function cn(e,t,r){for(let[o,n]of Object.entries(e)){let i=Fi(o);n!=null&&r.has(i)&&t.set(i,n)}}function sl(e){switch(e){case Fo.PRODUCTION:return"https://commerce.adobe.com";default:return"https://commerce-stg.adobe.com"}}function cl(e,t){for(let r in e){let o=e[r];for(let[n,i]of Object.entries(o)){if(i==null)continue;let a=Fi(n);t.set(`items[${r}][${a}]`,i)}}}function ll(e,t,r,o){return!Object.values(ae).includes(t)||!e?.searchParams||!r||!o||(e.searchParams.set("rtc","t"),e.searchParams.set("lo","sl"),e.searchParams.get("cli")!=="doc_cloud"&&e.searchParams.set("cli",t===ae.CRM?"creative":"mini_plans"),t===ae.CRM?e.searchParams.set("af","uc_segmentation_hide_tabs,uc_new_user_iframe,uc_new_system_close"):(t===ae.TWP||t===ae.D2P)&&(e.searchParams.set("af","uc_new_user_iframe,uc_new_system_close"),r==="INDIVIDUAL"&&o==="EDU"&&e.searchParams.set("ms","e"),r==="TEAM"&&o==="COM"&&e.searchParams.set("cs","t"))),e}function Gi(e){hl(e);let{env:t,items:r,workflowStep:o,ms:n,marketSegment:i,customerSegment:a,ot:s,offerType:c,pa:l,productArrangementCode:h,landscape:u,modal:d,...m}=e,x={marketSegment:i??n,offerType:c??s,productArrangementCode:h??l},f=new URL(sl(t));return f.pathname=`${nl}${o}`,o!==V.SEGMENTATION&&o!==V.CHANGE_PLAN_TEAM_PLANS&&cl(r,f.searchParams),o===V.SEGMENTATION&&cn(x,f.searchParams,sn),cn(m,f.searchParams,sn),u===Se.DRAFT&&cn({af:ol},f.searchParams,sn),f=ll(f,d,a,i),f.toString()}function hl(e){for(let t of al)if(!e[t])throw new Error('Argument "checkoutData" is not valid, missing: '+t);if(e.workflowStep!==V.SEGMENTATION&&e.workflowStep!==V.CHANGE_PLAN_TEAM_PLANS&&!e.items)throw new Error('Argument "checkoutData" is not valid, missing: items');return!0}var P=Object.freeze({checkoutClientId:"adobe_com",checkoutWorkflow:ie.V3,checkoutWorkflowStep:V.EMAIL,country:"US",displayOldPrice:!0,displayPerUnit:!1,displayRecurrence:!0,displayTax:!1,env:fe.PRODUCTION,forceTaxExclusive:!1,language:"en",entitlement:!1,extraOptions:{},modal:!1,promotionCode:"",quantity:1,alternativePrice:!1,wcsApiKey:"wcms-commerce-ims-ro-user-milo",wcsURL:"https://www.adobe.com/web_commerce_artifact",landscape:Se.PUBLISHED});function Vi({providers:e,settings:t}){function r(i,a){let{checkoutClientId:s,checkoutWorkflow:c,checkoutWorkflowStep:l,country:h,language:u,promotionCode:d,quantity:m}=t,{checkoutMarketSegment:x,checkoutWorkflow:f=c,checkoutWorkflowStep:S=l,imsCountry:E,country:A=E??h,language:T=u,quantity:k=m,entitlement:N,upgrade:H,modal:j,perpetual:W,promotionCode:ne=d,wcsOsi:U,extraOptions:Q,...se}=Object.assign({},a?.dataset??{},i??{}),Ae=ze(f,ie,P.checkoutWorkflow),he=V.CHECKOUT;Ae===ie.V3&&(he=ze(S,V,P.checkoutWorkflowStep));let Ie=jt({...se,extraOptions:Q,checkoutClientId:s,checkoutMarketSegment:x,country:A,quantity:ht(k,P.quantity),checkoutWorkflow:Ae,checkoutWorkflowStep:he,language:T,entitlement:C(N),upgrade:C(H),modal:j,perpetual:C(W),promotionCode:Lr(ne).effectivePromoCode,wcsOsi:$r(U)});if(a)for(let we of e.checkout)we(a,Ie);return Ie}function o(i,a){if(!Array.isArray(i)||!i.length||!a)return"";let{env:s,landscape:c}=t,{checkoutClientId:l,checkoutMarketSegment:h,checkoutWorkflow:u,checkoutWorkflowStep:d,country:m,promotionCode:x,quantity:f,...S}=r(a),E=window.frameElement||Object.values(ae).includes(a.modal)?"if":"fp",A={checkoutPromoCode:x,clientId:l,context:E,country:m,env:s,items:[],marketSegment:h,workflowStep:d,landscape:c,...S};if(i.length===1){let[{offerId:T,offerType:k,productArrangementCode:N}]=i,{marketSegments:[H],customerSegment:j}=i[0];Object.assign(A,{marketSegment:H,customerSegment:j,offerType:k,productArrangementCode:N}),A.items.push(f[0]===1?{id:T}:{id:T,quantity:f[0]})}else A.items.push(...i.map(({offerId:T},k)=>({id:T,quantity:f[k]??P.quantity})));return Gi(A)}let{createCheckoutLink:n}=xe;return{CheckoutLink:xe,CheckoutWorkflow:ie,CheckoutWorkflowStep:V,buildCheckoutURL:o,collectCheckoutOptions:r,createCheckoutLink:n}}function dl({interval:e=200,maxAttempts:t=25}={}){let r=ee.module("ims");return new Promise(o=>{r.debug("Waing for IMS to be ready");let n=0;function i(){window.adobeIMS?.initialized?o():++n>t?(r.debug("Timeout"),o()):setTimeout(i,e)}i()})}function ul(e){return e.then(()=>window.adobeIMS?.isSignedInUser()??!1)}function ml(e){let t=ee.module("ims");return e.then(r=>r?window.adobeIMS.getProfile().then(({countryCode:o})=>(t.debug("Got user country:",o),o),o=>{t.error("Unable to get user country:",o)}):null)}function ji({}){let e=dl(),t=ul(e),r=ml(t);return{imsReadyPromise:e,imsSignedInPromise:t,imsCountryPromise:r}}var qi=window.masPriceLiterals;function Wi(e){if(Array.isArray(qi)){let t=o=>qi.find(n=>Vo(n.lang,o)),r=t(e.language)??t(P.language);if(r)return Object.freeze(r)}return{}}var ln=function(e,t){return ln=Object.setPrototypeOf||{__proto__:[]}instanceof Array&&function(r,o){r.__proto__=o}||function(r,o){for(var n in o)Object.prototype.hasOwnProperty.call(o,n)&&(r[n]=o[n])},ln(e,t)};function Xt(e,t){if(typeof t!="function"&&t!==null)throw new TypeError("Class extends value "+String(t)+" is not a constructor or null");ln(e,t);function r(){this.constructor=e}e.prototype=t===null?Object.create(t):(r.prototype=t.prototype,new r)}var w=function(){return w=Object.assign||function(t){for(var r,o=1,n=arguments.length;o<n;o++){r=arguments[o];for(var i in r)Object.prototype.hasOwnProperty.call(r,i)&&(t[i]=r[i])}return t},w.apply(this,arguments)};function Ur(e,t,r){if(r||arguments.length===2)for(var o=0,n=t.length,i;o<n;o++)(i||!(o in t))&&(i||(i=Array.prototype.slice.call(t,0,o)),i[o]=t[o]);return e.concat(i||Array.prototype.slice.call(t))}var y;(function(e){e[e.EXPECT_ARGUMENT_CLOSING_BRACE=1]="EXPECT_ARGUMENT_CLOSING_BRACE",e[e.EMPTY_ARGUMENT=2]="EMPTY_ARGUMENT",e[e.MALFORMED_ARGUMENT=3]="MALFORMED_ARGUMENT",e[e.EXPECT_ARGUMENT_TYPE=4]="EXPECT_ARGUMENT_TYPE",e[e.INVALID_ARGUMENT_TYPE=5]="INVALID_ARGUMENT_TYPE",e[e.EXPECT_ARGUMENT_STYLE=6]="EXPECT_ARGUMENT_STYLE",e[e.INVALID_NUMBER_SKELETON=7]="INVALID_NUMBER_SKELETON",e[e.INVALID_DATE_TIME_SKELETON=8]="INVALID_DATE_TIME_SKELETON",e[e.EXPECT_NUMBER_SKELETON=9]="EXPECT_NUMBER_SKELETON",e[e.EXPECT_DATE_TIME_SKELETON=10]="EXPECT_DATE_TIME_SKELETON",e[e.UNCLOSED_QUOTE_IN_ARGUMENT_STYLE=11]="UNCLOSED_QUOTE_IN_ARGUMENT_STYLE",e[e.EXPECT_SELECT_ARGUMENT_OPTIONS=12]="EXPECT_SELECT_ARGUMENT_OPTIONS",e[e.EXPECT_PLURAL_ARGUMENT_OFFSET_VALUE=13]="EXPECT_PLURAL_ARGUMENT_OFFSET_VALUE",e[e.INVALID_PLURAL_ARGUMENT_OFFSET_VALUE=14]="INVALID_PLURAL_ARGUMENT_OFFSET_VALUE",e[e.EXPECT_SELECT_ARGUMENT_SELECTOR=15]="EXPECT_SELECT_ARGUMENT_SELECTOR",e[e.EXPECT_PLURAL_ARGUMENT_SELECTOR=16]="EXPECT_PLURAL_ARGUMENT_SELECTOR",e[e.EXPECT_SELECT_ARGUMENT_SELECTOR_FRAGMENT=17]="EXPECT_SELECT_ARGUMENT_SELECTOR_FRAGMENT",e[e.EXPECT_PLURAL_ARGUMENT_SELECTOR_FRAGMENT=18]="EXPECT_PLURAL_ARGUMENT_SELECTOR_FRAGMENT",e[e.INVALID_PLURAL_ARGUMENT_SELECTOR=19]="INVALID_PLURAL_ARGUMENT_SELECTOR",e[e.DUPLICATE_PLURAL_ARGUMENT_SELECTOR=20]="DUPLICATE_PLURAL_ARGUMENT_SELECTOR",e[e.DUPLICATE_SELECT_ARGUMENT_SELECTOR=21]="DUPLICATE_SELECT_ARGUMENT_SELECTOR",e[e.MISSING_OTHER_CLAUSE=22]="MISSING_OTHER_CLAUSE",e[e.INVALID_TAG=23]="INVALID_TAG",e[e.INVALID_TAG_NAME=25]="INVALID_TAG_NAME",e[e.UNMATCHED_CLOSING_TAG=26]="UNMATCHED_CLOSING_TAG",e[e.UNCLOSED_TAG=27]="UNCLOSED_TAG"})(y||(y={}));var $;(function(e){e[e.literal=0]="literal",e[e.argument=1]="argument",e[e.number=2]="number",e[e.date=3]="date",e[e.time=4]="time",e[e.select=5]="select",e[e.plural=6]="plural",e[e.pound=7]="pound",e[e.tag=8]="tag"})($||($={}));var Ge;(function(e){e[e.number=0]="number",e[e.dateTime=1]="dateTime"})(Ge||(Ge={}));function hn(e){return e.type===$.literal}function Yi(e){return e.type===$.argument}function Br(e){return e.type===$.number}function zr(e){return e.type===$.date}function Fr(e){return e.type===$.time}function Gr(e){return e.type===$.select}function Vr(e){return e.type===$.plural}function Xi(e){return e.type===$.pound}function jr(e){return e.type===$.tag}function qr(e){return!!(e&&typeof e=="object"&&e.type===Ge.number)}function Kt(e){return!!(e&&typeof e=="object"&&e.type===Ge.dateTime)}var dn=/[ \xA0\u1680\u2000-\u200A\u202F\u205F\u3000]/;var pl=/(?:[Eec]{1,6}|G{1,5}|[Qq]{1,5}|(?:[yYur]+|U{1,5})|[ML]{1,5}|d{1,2}|D{1,3}|F{1}|[abB]{1,5}|[hkHK]{1,2}|w{1,2}|W{1}|m{1,2}|s{1,2}|[zZOvVxX]{1,4})(?=([^']*'[^']*')*[^']*$)/g;function Ki(e){var t={};return e.replace(pl,function(r){var o=r.length;switch(r[0]){case"G":t.era=o===4?"long":o===5?"narrow":"short";break;case"y":t.year=o===2?"2-digit":"numeric";break;case"Y":case"u":case"U":case"r":throw new RangeError("`Y/u/U/r` (year) patterns are not supported, use `y` instead");case"q":case"Q":throw new RangeError("`q/Q` (quarter) patterns are not supported");case"M":case"L":t.month=["numeric","2-digit","short","long","narrow"][o-1];break;case"w":case"W":throw new RangeError("`w/W` (week) patterns are not supported");case"d":t.day=["numeric","2-digit"][o-1];break;case"D":case"F":case"g":throw new RangeError("`D/F/g` (day) patterns are not supported, use `d` instead");case"E":t.weekday=o===4?"short":o===5?"narrow":"short";break;case"e":if(o<4)throw new RangeError("`e..eee` (weekday) patterns are not supported");t.weekday=["short","long","narrow","short"][o-4];break;case"c":if(o<4)throw new RangeError("`c..ccc` (weekday) patterns are not supported");t.weekday=["short","long","narrow","short"][o-4];break;case"a":t.hour12=!0;break;case"b":case"B":throw new RangeError("`b/B` (period) patterns are not supported, use `a` instead");case"h":t.hourCycle="h12",t.hour=["numeric","2-digit"][o-1];break;case"H":t.hourCycle="h23",t.hour=["numeric","2-digit"][o-1];break;case"K":t.hourCycle="h11",t.hour=["numeric","2-digit"][o-1];break;case"k":t.hourCycle="h24",t.hour=["numeric","2-digit"][o-1];break;case"j":case"J":case"C":throw new RangeError("`j/J/C` (hour) patterns are not supported, use `h/H/K/k` instead");case"m":t.minute=["numeric","2-digit"][o-1];break;case"s":t.second=["numeric","2-digit"][o-1];break;case"S":case"A":throw new RangeError("`S/A` (second) patterns are not supported, use `s` instead");case"z":t.timeZoneName=o<4?"short":"long";break;case"Z":case"O":case"v":case"V":case"X":case"x":throw new RangeError("`Z/O/v/V/X/x` (timeZone) patterns are not supported, use `z` instead")}return""}),t}var Zi=/[\t-\r \x85\u200E\u200F\u2028\u2029]/i;function ta(e){if(e.length===0)throw new Error("Number skeleton cannot be empty");for(var t=e.split(Zi).filter(function(d){return d.length>0}),r=[],o=0,n=t;o<n.length;o++){var i=n[o],a=i.split("/");if(a.length===0)throw new Error("Invalid number skeleton");for(var s=a[0],c=a.slice(1),l=0,h=c;l<h.length;l++){var u=h[l];if(u.length===0)throw new Error("Invalid number skeleton")}r.push({stem:s,options:c})}return r}function fl(e){return e.replace(/^(.*?)-/,"")}var Qi=/^\.(?:(0+)(\*)?|(#+)|(0+)(#+))$/g,ra=/^(@+)?(\+|#+)?[rs]?$/g,gl=/(\*)(0+)|(#+)(0+)|(0+)/g,oa=/^(0+)$/;function Ji(e){var t={};return e[e.length-1]==="r"?t.roundingPriority="morePrecision":e[e.length-1]==="s"&&(t.roundingPriority="lessPrecision"),e.replace(ra,function(r,o,n){return typeof n!="string"?(t.minimumSignificantDigits=o.length,t.maximumSignificantDigits=o.length):n==="+"?t.minimumSignificantDigits=o.length:o[0]==="#"?t.maximumSignificantDigits=o.length:(t.minimumSignificantDigits=o.length,t.maximumSignificantDigits=o.length+(typeof n=="string"?n.length:0)),""}),t}function na(e){switch(e){case"sign-auto":return{signDisplay:"auto"};case"sign-accounting":case"()":return{currencySign:"accounting"};case"sign-always":case"+!":return{signDisplay:"always"};case"sign-accounting-always":case"()!":return{signDisplay:"always",currencySign:"accounting"};case"sign-except-zero":case"+?":return{signDisplay:"exceptZero"};case"sign-accounting-except-zero":case"()?":return{signDisplay:"exceptZero",currencySign:"accounting"};case"sign-never":case"+_":return{signDisplay:"never"}}}function xl(e){var t;if(e[0]==="E"&&e[1]==="E"?(t={notation:"engineering"},e=e.slice(2)):e[0]==="E"&&(t={notation:"scientific"},e=e.slice(1)),t){var r=e.slice(0,2);if(r==="+!"?(t.signDisplay="always",e=e.slice(2)):r==="+?"&&(t.signDisplay="exceptZero",e=e.slice(2)),!oa.test(e))throw new Error("Malformed concise eng/scientific notation");t.minimumIntegerDigits=e.length}return t}function ea(e){var t={},r=na(e);return r||t}function ia(e){for(var t={},r=0,o=e;r<o.length;r++){var n=o[r];switch(n.stem){case"percent":case"%":t.style="percent";continue;case"%x100":t.style="percent",t.scale=100;continue;case"currency":t.style="currency",t.currency=n.options[0];continue;case"group-off":case",_":t.useGrouping=!1;continue;case"precision-integer":case".":t.maximumFractionDigits=0;continue;case"measure-unit":case"unit":t.style="unit",t.unit=fl(n.options[0]);continue;case"compact-short":case"K":t.notation="compact",t.compactDisplay="short";continue;case"compact-long":case"KK":t.notation="compact",t.compactDisplay="long";continue;case"scientific":t=w(w(w({},t),{notation:"scientific"}),n.options.reduce(function(c,l){return w(w({},c),ea(l))},{}));continue;case"engineering":t=w(w(w({},t),{notation:"engineering"}),n.options.reduce(function(c,l){return w(w({},c),ea(l))},{}));continue;case"notation-simple":t.notation="standard";continue;case"unit-width-narrow":t.currencyDisplay="narrowSymbol",t.unitDisplay="narrow";continue;case"unit-width-short":t.currencyDisplay="code",t.unitDisplay="short";continue;case"unit-width-full-name":t.currencyDisplay="name",t.unitDisplay="long";continue;case"unit-width-iso-code":t.currencyDisplay="symbol";continue;case"scale":t.scale=parseFloat(n.options[0]);continue;case"integer-width":if(n.options.length>1)throw new RangeError("integer-width stems only accept a single optional option");n.options[0].replace(gl,function(c,l,h,u,d,m){if(l)t.minimumIntegerDigits=h.length;else{if(u&&d)throw new Error("We currently do not support maximum integer digits");if(m)throw new Error("We currently do not support exact integer digits")}return""});continue}if(oa.test(n.stem)){t.minimumIntegerDigits=n.stem.length;continue}if(Qi.test(n.stem)){if(n.options.length>1)throw new RangeError("Fraction-precision stems only accept a single optional option");n.stem.replace(Qi,function(c,l,h,u,d,m){return h==="*"?t.minimumFractionDigits=l.length:u&&u[0]==="#"?t.maximumFractionDigits=u.length:d&&m?(t.minimumFractionDigits=d.length,t.maximumFractionDigits=d.length+m.length):(t.minimumFractionDigits=l.length,t.maximumFractionDigits=l.length),""});var i=n.options[0];i==="w"?t=w(w({},t),{trailingZeroDisplay:"stripIfInteger"}):i&&(t=w(w({},t),Ji(i)));continue}if(ra.test(n.stem)){t=w(w({},t),Ji(n.stem));continue}var a=na(n.stem);a&&(t=w(w({},t),a));var s=xl(n.stem);s&&(t=w(w({},t),s))}return t}var Zt={AX:["H"],BQ:["H"],CP:["H"],CZ:["H"],DK:["H"],FI:["H"],ID:["H"],IS:["H"],ML:["H"],NE:["H"],RU:["H"],SE:["H"],SJ:["H"],SK:["H"],AS:["h","H"],BT:["h","H"],DJ:["h","H"],ER:["h","H"],GH:["h","H"],IN:["h","H"],LS:["h","H"],PG:["h","H"],PW:["h","H"],SO:["h","H"],TO:["h","H"],VU:["h","H"],WS:["h","H"],"001":["H","h"],AL:["h","H","hB"],TD:["h","H","hB"],"ca-ES":["H","h","hB"],CF:["H","h","hB"],CM:["H","h","hB"],"fr-CA":["H","h","hB"],"gl-ES":["H","h","hB"],"it-CH":["H","h","hB"],"it-IT":["H","h","hB"],LU:["H","h","hB"],NP:["H","h","hB"],PF:["H","h","hB"],SC:["H","h","hB"],SM:["H","h","hB"],SN:["H","h","hB"],TF:["H","h","hB"],VA:["H","h","hB"],CY:["h","H","hb","hB"],GR:["h","H","hb","hB"],CO:["h","H","hB","hb"],DO:["h","H","hB","hb"],KP:["h","H","hB","hb"],KR:["h","H","hB","hb"],NA:["h","H","hB","hb"],PA:["h","H","hB","hb"],PR:["h","H","hB","hb"],VE:["h","H","hB","hb"],AC:["H","h","hb","hB"],AI:["H","h","hb","hB"],BW:["H","h","hb","hB"],BZ:["H","h","hb","hB"],CC:["H","h","hb","hB"],CK:["H","h","hb","hB"],CX:["H","h","hb","hB"],DG:["H","h","hb","hB"],FK:["H","h","hb","hB"],GB:["H","h","hb","hB"],GG:["H","h","hb","hB"],GI:["H","h","hb","hB"],IE:["H","h","hb","hB"],IM:["H","h","hb","hB"],IO:["H","h","hb","hB"],JE:["H","h","hb","hB"],LT:["H","h","hb","hB"],MK:["H","h","hb","hB"],MN:["H","h","hb","hB"],MS:["H","h","hb","hB"],NF:["H","h","hb","hB"],NG:["H","h","hb","hB"],NR:["H","h","hb","hB"],NU:["H","h","hb","hB"],PN:["H","h","hb","hB"],SH:["H","h","hb","hB"],SX:["H","h","hb","hB"],TA:["H","h","hb","hB"],ZA:["H","h","hb","hB"],"af-ZA":["H","h","hB","hb"],AR:["H","h","hB","hb"],CL:["H","h","hB","hb"],CR:["H","h","hB","hb"],CU:["H","h","hB","hb"],EA:["H","h","hB","hb"],"es-BO":["H","h","hB","hb"],"es-BR":["H","h","hB","hb"],"es-EC":["H","h","hB","hb"],"es-ES":["H","h","hB","hb"],"es-GQ":["H","h","hB","hb"],"es-PE":["H","h","hB","hb"],GT:["H","h","hB","hb"],HN:["H","h","hB","hb"],IC:["H","h","hB","hb"],KG:["H","h","hB","hb"],KM:["H","h","hB","hb"],LK:["H","h","hB","hb"],MA:["H","h","hB","hb"],MX:["H","h","hB","hb"],NI:["H","h","hB","hb"],PY:["H","h","hB","hb"],SV:["H","h","hB","hb"],UY:["H","h","hB","hb"],JP:["H","h","K"],AD:["H","hB"],AM:["H","hB"],AO:["H","hB"],AT:["H","hB"],AW:["H","hB"],BE:["H","hB"],BF:["H","hB"],BJ:["H","hB"],BL:["H","hB"],BR:["H","hB"],CG:["H","hB"],CI:["H","hB"],CV:["H","hB"],DE:["H","hB"],EE:["H","hB"],FR:["H","hB"],GA:["H","hB"],GF:["H","hB"],GN:["H","hB"],GP:["H","hB"],GW:["H","hB"],HR:["H","hB"],IL:["H","hB"],IT:["H","hB"],KZ:["H","hB"],MC:["H","hB"],MD:["H","hB"],MF:["H","hB"],MQ:["H","hB"],MZ:["H","hB"],NC:["H","hB"],NL:["H","hB"],PM:["H","hB"],PT:["H","hB"],RE:["H","hB"],RO:["H","hB"],SI:["H","hB"],SR:["H","hB"],ST:["H","hB"],TG:["H","hB"],TR:["H","hB"],WF:["H","hB"],YT:["H","hB"],BD:["h","hB","H"],PK:["h","hB","H"],AZ:["H","hB","h"],BA:["H","hB","h"],BG:["H","hB","h"],CH:["H","hB","h"],GE:["H","hB","h"],LI:["H","hB","h"],ME:["H","hB","h"],RS:["H","hB","h"],UA:["H","hB","h"],UZ:["H","hB","h"],XK:["H","hB","h"],AG:["h","hb","H","hB"],AU:["h","hb","H","hB"],BB:["h","hb","H","hB"],BM:["h","hb","H","hB"],BS:["h","hb","H","hB"],CA:["h","hb","H","hB"],DM:["h","hb","H","hB"],"en-001":["h","hb","H","hB"],FJ:["h","hb","H","hB"],FM:["h","hb","H","hB"],GD:["h","hb","H","hB"],GM:["h","hb","H","hB"],GU:["h","hb","H","hB"],GY:["h","hb","H","hB"],JM:["h","hb","H","hB"],KI:["h","hb","H","hB"],KN:["h","hb","H","hB"],KY:["h","hb","H","hB"],LC:["h","hb","H","hB"],LR:["h","hb","H","hB"],MH:["h","hb","H","hB"],MP:["h","hb","H","hB"],MW:["h","hb","H","hB"],NZ:["h","hb","H","hB"],SB:["h","hb","H","hB"],SG:["h","hb","H","hB"],SL:["h","hb","H","hB"],SS:["h","hb","H","hB"],SZ:["h","hb","H","hB"],TC:["h","hb","H","hB"],TT:["h","hb","H","hB"],UM:["h","hb","H","hB"],US:["h","hb","H","hB"],VC:["h","hb","H","hB"],VG:["h","hb","H","hB"],VI:["h","hb","H","hB"],ZM:["h","hb","H","hB"],BO:["H","hB","h","hb"],EC:["H","hB","h","hb"],ES:["H","hB","h","hb"],GQ:["H","hB","h","hb"],PE:["H","hB","h","hb"],AE:["h","hB","hb","H"],"ar-001":["h","hB","hb","H"],BH:["h","hB","hb","H"],DZ:["h","hB","hb","H"],EG:["h","hB","hb","H"],EH:["h","hB","hb","H"],HK:["h","hB","hb","H"],IQ:["h","hB","hb","H"],JO:["h","hB","hb","H"],KW:["h","hB","hb","H"],LB:["h","hB","hb","H"],LY:["h","hB","hb","H"],MO:["h","hB","hb","H"],MR:["h","hB","hb","H"],OM:["h","hB","hb","H"],PH:["h","hB","hb","H"],PS:["h","hB","hb","H"],QA:["h","hB","hb","H"],SA:["h","hB","hb","H"],SD:["h","hB","hb","H"],SY:["h","hB","hb","H"],TN:["h","hB","hb","H"],YE:["h","hB","hb","H"],AF:["H","hb","hB","h"],LA:["H","hb","hB","h"],CN:["H","hB","hb","h"],LV:["H","hB","hb","h"],TL:["H","hB","hb","h"],"zu-ZA":["H","hB","hb","h"],CD:["hB","H"],IR:["hB","H"],"hi-IN":["hB","h","H"],"kn-IN":["hB","h","H"],"ml-IN":["hB","h","H"],"te-IN":["hB","h","H"],KH:["hB","h","H","hb"],"ta-IN":["hB","h","hb","H"],BN:["hb","hB","h","H"],MY:["hb","hB","h","H"],ET:["hB","hb","h","H"],"gu-IN":["hB","hb","h","H"],"mr-IN":["hB","hb","h","H"],"pa-IN":["hB","hb","h","H"],TW:["hB","hb","h","H"],KE:["hB","hb","H","h"],MM:["hB","hb","H","h"],TZ:["hB","hb","H","h"],UG:["hB","hb","H","h"]};function aa(e,t){for(var r="",o=0;o<e.length;o++){var n=e.charAt(o);if(n==="j"){for(var i=0;o+1<e.length&&e.charAt(o+1)===n;)i++,o++;var a=1+(i&1),s=i<2?1:3+(i>>1),c="a",l=bl(t);for((l=="H"||l=="k")&&(s=0);s-- >0;)r+=c;for(;a-- >0;)r=l+r}else n==="J"?r+="H":r+=n}return r}function bl(e){var t=e.hourCycle;if(t===void 0&&e.hourCycles&&e.hourCycles.length&&(t=e.hourCycles[0]),t)switch(t){case"h24":return"k";case"h23":return"H";case"h12":return"h";case"h11":return"K";default:throw new Error("Invalid hourCycle")}var r=e.language,o;r!=="root"&&(o=e.maximize().region);var n=Zt[o||""]||Zt[r||""]||Zt["".concat(r,"-001")]||Zt["001"];return n[0]}var un,vl=new RegExp("^".concat(dn.source,"*")),yl=new RegExp("".concat(dn.source,"*$"));function _(e,t){return{start:e,end:t}}var El=!!String.prototype.startsWith,Al=!!String.fromCodePoint,wl=!!Object.fromEntries,_l=!!String.prototype.codePointAt,Sl=!!String.prototype.trimStart,Tl=!!String.prototype.trimEnd,Cl=!!Number.isSafeInteger,Pl=Cl?Number.isSafeInteger:function(e){return typeof e=="number"&&isFinite(e)&&Math.floor(e)===e&&Math.abs(e)<=9007199254740991},pn=!0;try{sa=da("([^\\p{White_Space}\\p{Pattern_Syntax}]*)","yu"),pn=((un=sa.exec("a"))===null||un===void 0?void 0:un[0])==="a"}catch{pn=!1}var sa,ca=El?function(t,r,o){return t.startsWith(r,o)}:function(t,r,o){return t.slice(o,o+r.length)===r},fn=Al?String.fromCodePoint:function(){for(var t=[],r=0;r<arguments.length;r++)t[r]=arguments[r];for(var o="",n=t.length,i=0,a;n>i;){if(a=t[i++],a>1114111)throw RangeError(a+" is not a valid code point");o+=a<65536?String.fromCharCode(a):String.fromCharCode(((a-=65536)>>10)+55296,a%1024+56320)}return o},la=wl?Object.fromEntries:function(t){for(var r={},o=0,n=t;o<n.length;o++){var i=n[o],a=i[0],s=i[1];r[a]=s}return r},ha=_l?function(t,r){return t.codePointAt(r)}:function(t,r){var o=t.length;if(!(r<0||r>=o)){var n=t.charCodeAt(r),i;return n<55296||n>56319||r+1===o||(i=t.charCodeAt(r+1))<56320||i>57343?n:(n-55296<<10)+(i-56320)+65536}},kl=Sl?function(t){return t.trimStart()}:function(t){return t.replace(vl,"")},Ll=Tl?function(t){return t.trimEnd()}:function(t){return t.replace(yl,"")};function da(e,t){return new RegExp(e,t)}var gn;pn?(mn=da("([^\\p{White_Space}\\p{Pattern_Syntax}]*)","yu"),gn=function(t,r){var o;mn.lastIndex=r;var n=mn.exec(t);return(o=n[1])!==null&&o!==void 0?o:""}):gn=function(t,r){for(var o=[];;){var n=ha(t,r);if(n===void 0||ma(n)||$l(n))break;o.push(n),r+=n>=65536?2:1}return fn.apply(void 0,o)};var mn,ua=function(){function e(t,r){r===void 0&&(r={}),this.message=t,this.position={offset:0,line:1,column:1},this.ignoreTag=!!r.ignoreTag,this.locale=r.locale,this.requiresOtherClause=!!r.requiresOtherClause,this.shouldParseSkeletons=!!r.shouldParseSkeletons}return e.prototype.parse=function(){if(this.offset()!==0)throw Error("parser can only be used once");return this.parseMessage(0,"",!1)},e.prototype.parseMessage=function(t,r,o){for(var n=[];!this.isEOF();){var i=this.char();if(i===123){var a=this.parseArgument(t,o);if(a.err)return a;n.push(a.val)}else{if(i===125&&t>0)break;if(i===35&&(r==="plural"||r==="selectordinal")){var s=this.clonePosition();this.bump(),n.push({type:$.pound,location:_(s,this.clonePosition())})}else if(i===60&&!this.ignoreTag&&this.peek()===47){if(o)break;return this.error(y.UNMATCHED_CLOSING_TAG,_(this.clonePosition(),this.clonePosition()))}else if(i===60&&!this.ignoreTag&&xn(this.peek()||0)){var a=this.parseTag(t,r);if(a.err)return a;n.push(a.val)}else{var a=this.parseLiteral(t,r);if(a.err)return a;n.push(a.val)}}}return{val:n,err:null}},e.prototype.parseTag=function(t,r){var o=this.clonePosition();this.bump();var n=this.parseTagName();if(this.bumpSpace(),this.bumpIf("/>"))return{val:{type:$.literal,value:"<".concat(n,"/>"),location:_(o,this.clonePosition())},err:null};if(this.bumpIf(">")){var i=this.parseMessage(t+1,r,!0);if(i.err)return i;var a=i.val,s=this.clonePosition();if(this.bumpIf("</")){if(this.isEOF()||!xn(this.char()))return this.error(y.INVALID_TAG,_(s,this.clonePosition()));var c=this.clonePosition(),l=this.parseTagName();return n!==l?this.error(y.UNMATCHED_CLOSING_TAG,_(c,this.clonePosition())):(this.bumpSpace(),this.bumpIf(">")?{val:{type:$.tag,value:n,children:a,location:_(o,this.clonePosition())},err:null}:this.error(y.INVALID_TAG,_(s,this.clonePosition())))}else return this.error(y.UNCLOSED_TAG,_(o,this.clonePosition()))}else return this.error(y.INVALID_TAG,_(o,this.clonePosition()))},e.prototype.parseTagName=function(){var t=this.offset();for(this.bump();!this.isEOF()&&Ol(this.char());)this.bump();return this.message.slice(t,this.offset())},e.prototype.parseLiteral=function(t,r){for(var o=this.clonePosition(),n="";;){var i=this.tryParseQuote(r);if(i){n+=i;continue}var a=this.tryParseUnquoted(t,r);if(a){n+=a;continue}var s=this.tryParseLeftAngleBracket();if(s){n+=s;continue}break}var c=_(o,this.clonePosition());return{val:{type:$.literal,value:n,location:c},err:null}},e.prototype.tryParseLeftAngleBracket=function(){return!this.isEOF()&&this.char()===60&&(this.ignoreTag||!Rl(this.peek()||0))?(this.bump(),"<"):null},e.prototype.tryParseQuote=function(t){if(this.isEOF()||this.char()!==39)return null;switch(this.peek()){case 39:return this.bump(),this.bump(),"'";case 123:case 60:case 62:case 125:break;case 35:if(t==="plural"||t==="selectordinal")break;return null;default:return null}this.bump();var r=[this.char()];for(this.bump();!this.isEOF();){var o=this.char();if(o===39)if(this.peek()===39)r.push(39),this.bump();else{this.bump();break}else r.push(o);this.bump()}return fn.apply(void 0,r)},e.prototype.tryParseUnquoted=function(t,r){if(this.isEOF())return null;var o=this.char();return o===60||o===123||o===35&&(r==="plural"||r==="selectordinal")||o===125&&t>0?null:(this.bump(),fn(o))},e.prototype.parseArgument=function(t,r){var o=this.clonePosition();if(this.bump(),this.bumpSpace(),this.isEOF())return this.error(y.EXPECT_ARGUMENT_CLOSING_BRACE,_(o,this.clonePosition()));if(this.char()===125)return this.bump(),this.error(y.EMPTY_ARGUMENT,_(o,this.clonePosition()));var n=this.parseIdentifierIfPossible().value;if(!n)return this.error(y.MALFORMED_ARGUMENT,_(o,this.clonePosition()));if(this.bumpSpace(),this.isEOF())return this.error(y.EXPECT_ARGUMENT_CLOSING_BRACE,_(o,this.clonePosition()));switch(this.char()){case 125:return this.bump(),{val:{type:$.argument,value:n,location:_(o,this.clonePosition())},err:null};case 44:return this.bump(),this.bumpSpace(),this.isEOF()?this.error(y.EXPECT_ARGUMENT_CLOSING_BRACE,_(o,this.clonePosition())):this.parseArgumentOptions(t,r,n,o);default:return this.error(y.MALFORMED_ARGUMENT,_(o,this.clonePosition()))}},e.prototype.parseIdentifierIfPossible=function(){var t=this.clonePosition(),r=this.offset(),o=gn(this.message,r),n=r+o.length;this.bumpTo(n);var i=this.clonePosition(),a=_(t,i);return{value:o,location:a}},e.prototype.parseArgumentOptions=function(t,r,o,n){var i,a=this.clonePosition(),s=this.parseIdentifierIfPossible().value,c=this.clonePosition();switch(s){case"":return this.error(y.EXPECT_ARGUMENT_TYPE,_(a,c));case"number":case"date":case"time":{this.bumpSpace();var l=null;if(this.bumpIf(",")){this.bumpSpace();var h=this.clonePosition(),u=this.parseSimpleArgStyleIfPossible();if(u.err)return u;var d=Ll(u.val);if(d.length===0)return this.error(y.EXPECT_ARGUMENT_STYLE,_(this.clonePosition(),this.clonePosition()));var m=_(h,this.clonePosition());l={style:d,styleLocation:m}}var x=this.tryParseArgumentClose(n);if(x.err)return x;var f=_(n,this.clonePosition());if(l&&ca(l?.style,"::",0)){var S=kl(l.style.slice(2));if(s==="number"){var u=this.parseNumberSkeletonFromString(S,l.styleLocation);return u.err?u:{val:{type:$.number,value:o,location:f,style:u.val},err:null}}else{if(S.length===0)return this.error(y.EXPECT_DATE_TIME_SKELETON,f);var E=S;this.locale&&(E=aa(S,this.locale));var d={type:Ge.dateTime,pattern:E,location:l.styleLocation,parsedOptions:this.shouldParseSkeletons?Ki(E):{}},A=s==="date"?$.date:$.time;return{val:{type:A,value:o,location:f,style:d},err:null}}}return{val:{type:s==="number"?$.number:s==="date"?$.date:$.time,value:o,location:f,style:(i=l?.style)!==null&&i!==void 0?i:null},err:null}}case"plural":case"selectordinal":case"select":{var T=this.clonePosition();if(this.bumpSpace(),!this.bumpIf(","))return this.error(y.EXPECT_SELECT_ARGUMENT_OPTIONS,_(T,w({},T)));this.bumpSpace();var k=this.parseIdentifierIfPossible(),N=0;if(s!=="select"&&k.value==="offset"){if(!this.bumpIf(":"))return this.error(y.EXPECT_PLURAL_ARGUMENT_OFFSET_VALUE,_(this.clonePosition(),this.clonePosition()));this.bumpSpace();var u=this.tryParseDecimalInteger(y.EXPECT_PLURAL_ARGUMENT_OFFSET_VALUE,y.INVALID_PLURAL_ARGUMENT_OFFSET_VALUE);if(u.err)return u;this.bumpSpace(),k=this.parseIdentifierIfPossible(),N=u.val}var H=this.tryParsePluralOrSelectOptions(t,s,r,k);if(H.err)return H;var x=this.tryParseArgumentClose(n);if(x.err)return x;var j=_(n,this.clonePosition());return s==="select"?{val:{type:$.select,value:o,options:la(H.val),location:j},err:null}:{val:{type:$.plural,value:o,options:la(H.val),offset:N,pluralType:s==="plural"?"cardinal":"ordinal",location:j},err:null}}default:return this.error(y.INVALID_ARGUMENT_TYPE,_(a,c))}},e.prototype.tryParseArgumentClose=function(t){return this.isEOF()||this.char()!==125?this.error(y.EXPECT_ARGUMENT_CLOSING_BRACE,_(t,this.clonePosition())):(this.bump(),{val:!0,err:null})},e.prototype.parseSimpleArgStyleIfPossible=function(){for(var t=0,r=this.clonePosition();!this.isEOF();){var o=this.char();switch(o){case 39:{this.bump();var n=this.clonePosition();if(!this.bumpUntil("'"))return this.error(y.UNCLOSED_QUOTE_IN_ARGUMENT_STYLE,_(n,this.clonePosition()));this.bump();break}case 123:{t+=1,this.bump();break}case 125:{if(t>0)t-=1;else return{val:this.message.slice(r.offset,this.offset()),err:null};break}default:this.bump();break}}return{val:this.message.slice(r.offset,this.offset()),err:null}},e.prototype.parseNumberSkeletonFromString=function(t,r){var o=[];try{o=ta(t)}catch{return this.error(y.INVALID_NUMBER_SKELETON,r)}return{val:{type:Ge.number,tokens:o,location:r,parsedOptions:this.shouldParseSkeletons?ia(o):{}},err:null}},e.prototype.tryParsePluralOrSelectOptions=function(t,r,o,n){for(var i,a=!1,s=[],c=new Set,l=n.value,h=n.location;;){if(l.length===0){var u=this.clonePosition();if(r!=="select"&&this.bumpIf("=")){var d=this.tryParseDecimalInteger(y.EXPECT_PLURAL_ARGUMENT_SELECTOR,y.INVALID_PLURAL_ARGUMENT_SELECTOR);if(d.err)return d;h=_(u,this.clonePosition()),l=this.message.slice(u.offset,this.offset())}else break}if(c.has(l))return this.error(r==="select"?y.DUPLICATE_SELECT_ARGUMENT_SELECTOR:y.DUPLICATE_PLURAL_ARGUMENT_SELECTOR,h);l==="other"&&(a=!0),this.bumpSpace();var m=this.clonePosition();if(!this.bumpIf("{"))return this.error(r==="select"?y.EXPECT_SELECT_ARGUMENT_SELECTOR_FRAGMENT:y.EXPECT_PLURAL_ARGUMENT_SELECTOR_FRAGMENT,_(this.clonePosition(),this.clonePosition()));var x=this.parseMessage(t+1,r,o);if(x.err)return x;var f=this.tryParseArgumentClose(m);if(f.err)return f;s.push([l,{value:x.val,location:_(m,this.clonePosition())}]),c.add(l),this.bumpSpace(),i=this.parseIdentifierIfPossible(),l=i.value,h=i.location}return s.length===0?this.error(r==="select"?y.EXPECT_SELECT_ARGUMENT_SELECTOR:y.EXPECT_PLURAL_ARGUMENT_SELECTOR,_(this.clonePosition(),this.clonePosition())):this.requiresOtherClause&&!a?this.error(y.MISSING_OTHER_CLAUSE,_(this.clonePosition(),this.clonePosition())):{val:s,err:null}},e.prototype.tryParseDecimalInteger=function(t,r){var o=1,n=this.clonePosition();this.bumpIf("+")||this.bumpIf("-")&&(o=-1);for(var i=!1,a=0;!this.isEOF();){var s=this.char();if(s>=48&&s<=57)i=!0,a=a*10+(s-48),this.bump();else break}var c=_(n,this.clonePosition());return i?(a*=o,Pl(a)?{val:a,err:null}:this.error(r,c)):this.error(t,c)},e.prototype.offset=function(){return this.position.offset},e.prototype.isEOF=function(){return this.offset()===this.message.length},e.prototype.clonePosition=function(){return{offset:this.position.offset,line:this.position.line,column:this.position.column}},e.prototype.char=function(){var t=this.position.offset;if(t>=this.message.length)throw Error("out of bound");var r=ha(this.message,t);if(r===void 0)throw Error("Offset ".concat(t," is at invalid UTF-16 code unit boundary"));return r},e.prototype.error=function(t,r){return{val:null,err:{kind:t,message:this.message,location:r}}},e.prototype.bump=function(){if(!this.isEOF()){var t=this.char();t===10?(this.position.line+=1,this.position.column=1,this.position.offset+=1):(this.position.column+=1,this.position.offset+=t<65536?1:2)}},e.prototype.bumpIf=function(t){if(ca(this.message,t,this.offset())){for(var r=0;r<t.length;r++)this.bump();return!0}return!1},e.prototype.bumpUntil=function(t){var r=this.offset(),o=this.message.indexOf(t,r);return o>=0?(this.bumpTo(o),!0):(this.bumpTo(this.message.length),!1)},e.prototype.bumpTo=function(t){if(this.offset()>t)throw Error("targetOffset ".concat(t," must be greater than or equal to the current offset ").concat(this.offset()));for(t=Math.min(t,this.message.length);;){var r=this.offset();if(r===t)break;if(r>t)throw Error("targetOffset ".concat(t," is at invalid UTF-16 code unit boundary"));if(this.bump(),this.isEOF())break}},e.prototype.bumpSpace=function(){for(;!this.isEOF()&&ma(this.char());)this.bump()},e.prototype.peek=function(){if(this.isEOF())return null;var t=this.char(),r=this.offset(),o=this.message.charCodeAt(r+(t>=65536?2:1));return o??null},e}();function xn(e){return e>=97&&e<=122||e>=65&&e<=90}function Rl(e){return xn(e)||e===47}function Ol(e){return e===45||e===46||e>=48&&e<=57||e===95||e>=97&&e<=122||e>=65&&e<=90||e==183||e>=192&&e<=214||e>=216&&e<=246||e>=248&&e<=893||e>=895&&e<=8191||e>=8204&&e<=8205||e>=8255&&e<=8256||e>=8304&&e<=8591||e>=11264&&e<=12271||e>=12289&&e<=55295||e>=63744&&e<=64975||e>=65008&&e<=65533||e>=65536&&e<=983039}function ma(e){return e>=9&&e<=13||e===32||e===133||e>=8206&&e<=8207||e===8232||e===8233}function $l(e){return e>=33&&e<=35||e===36||e>=37&&e<=39||e===40||e===41||e===42||e===43||e===44||e===45||e>=46&&e<=47||e>=58&&e<=59||e>=60&&e<=62||e>=63&&e<=64||e===91||e===92||e===93||e===94||e===96||e===123||e===124||e===125||e===126||e===161||e>=162&&e<=165||e===166||e===167||e===169||e===171||e===172||e===174||e===176||e===177||e===182||e===187||e===191||e===215||e===247||e>=8208&&e<=8213||e>=8214&&e<=8215||e===8216||e===8217||e===8218||e>=8219&&e<=8220||e===8221||e===8222||e===8223||e>=8224&&e<=8231||e>=8240&&e<=8248||e===8249||e===8250||e>=8251&&e<=8254||e>=8257&&e<=8259||e===8260||e===8261||e===8262||e>=8263&&e<=8273||e===8274||e===8275||e>=8277&&e<=8286||e>=8592&&e<=8596||e>=8597&&e<=8601||e>=8602&&e<=8603||e>=8604&&e<=8607||e===8608||e>=8609&&e<=8610||e===8611||e>=8612&&e<=8613||e===8614||e>=8615&&e<=8621||e===8622||e>=8623&&e<=8653||e>=8654&&e<=8655||e>=8656&&e<=8657||e===8658||e===8659||e===8660||e>=8661&&e<=8691||e>=8692&&e<=8959||e>=8960&&e<=8967||e===8968||e===8969||e===8970||e===8971||e>=8972&&e<=8991||e>=8992&&e<=8993||e>=8994&&e<=9e3||e===9001||e===9002||e>=9003&&e<=9083||e===9084||e>=9085&&e<=9114||e>=9115&&e<=9139||e>=9140&&e<=9179||e>=9180&&e<=9185||e>=9186&&e<=9254||e>=9255&&e<=9279||e>=9280&&e<=9290||e>=9291&&e<=9311||e>=9472&&e<=9654||e===9655||e>=9656&&e<=9664||e===9665||e>=9666&&e<=9719||e>=9720&&e<=9727||e>=9728&&e<=9838||e===9839||e>=9840&&e<=10087||e===10088||e===10089||e===10090||e===10091||e===10092||e===10093||e===10094||e===10095||e===10096||e===10097||e===10098||e===10099||e===10100||e===10101||e>=10132&&e<=10175||e>=10176&&e<=10180||e===10181||e===10182||e>=10183&&e<=10213||e===10214||e===10215||e===10216||e===10217||e===10218||e===10219||e===10220||e===10221||e===10222||e===10223||e>=10224&&e<=10239||e>=10240&&e<=10495||e>=10496&&e<=10626||e===10627||e===10628||e===10629||e===10630||e===10631||e===10632||e===10633||e===10634||e===10635||e===10636||e===10637||e===10638||e===10639||e===10640||e===10641||e===10642||e===10643||e===10644||e===10645||e===10646||e===10647||e===10648||e>=10649&&e<=10711||e===10712||e===10713||e===10714||e===10715||e>=10716&&e<=10747||e===10748||e===10749||e>=10750&&e<=11007||e>=11008&&e<=11055||e>=11056&&e<=11076||e>=11077&&e<=11078||e>=11079&&e<=11084||e>=11085&&e<=11123||e>=11124&&e<=11125||e>=11126&&e<=11157||e===11158||e>=11159&&e<=11263||e>=11776&&e<=11777||e===11778||e===11779||e===11780||e===11781||e>=11782&&e<=11784||e===11785||e===11786||e===11787||e===11788||e===11789||e>=11790&&e<=11798||e===11799||e>=11800&&e<=11801||e===11802||e===11803||e===11804||e===11805||e>=11806&&e<=11807||e===11808||e===11809||e===11810||e===11811||e===11812||e===11813||e===11814||e===11815||e===11816||e===11817||e>=11818&&e<=11822||e===11823||e>=11824&&e<=11833||e>=11834&&e<=11835||e>=11836&&e<=11839||e===11840||e===11841||e===11842||e>=11843&&e<=11855||e>=11856&&e<=11857||e===11858||e>=11859&&e<=11903||e>=12289&&e<=12291||e===12296||e===12297||e===12298||e===12299||e===12300||e===12301||e===12302||e===12303||e===12304||e===12305||e>=12306&&e<=12307||e===12308||e===12309||e===12310||e===12311||e===12312||e===12313||e===12314||e===12315||e===12316||e===12317||e>=12318&&e<=12319||e===12320||e===12336||e===64830||e===64831||e>=65093&&e<=65094}function bn(e){e.forEach(function(t){if(delete t.location,Gr(t)||Vr(t))for(var r in t.options)delete t.options[r].location,bn(t.options[r].value);else Br(t)&&qr(t.style)||(zr(t)||Fr(t))&&Kt(t.style)?delete t.style.location:jr(t)&&bn(t.children)})}function pa(e,t){t===void 0&&(t={}),t=w({shouldParseSkeletons:!0,requiresOtherClause:!0},t);var r=new ua(e,t).parse();if(r.err){var o=SyntaxError(y[r.err.kind]);throw o.location=r.err.location,o.originalMessage=r.err.message,o}return t?.captureLocation||bn(r.val),r.val}function Qt(e,t){var r=t&&t.cache?t.cache:Ul,o=t&&t.serializer?t.serializer:Dl,n=t&&t.strategy?t.strategy:Nl;return n(e,{cache:r,serializer:o})}function Ml(e){return e==null||typeof e=="number"||typeof e=="boolean"}function fa(e,t,r,o){var n=Ml(o)?o:r(o),i=t.get(n);return typeof i>"u"&&(i=e.call(this,o),t.set(n,i)),i}function ga(e,t,r){var o=Array.prototype.slice.call(arguments,3),n=r(o),i=t.get(n);return typeof i>"u"&&(i=e.apply(this,o),t.set(n,i)),i}function vn(e,t,r,o,n){return r.bind(t,e,o,n)}function Nl(e,t){var r=e.length===1?fa:ga;return vn(e,this,r,t.cache.create(),t.serializer)}function Il(e,t){return vn(e,this,ga,t.cache.create(),t.serializer)}function Hl(e,t){return vn(e,this,fa,t.cache.create(),t.serializer)}var Dl=function(){return JSON.stringify(arguments)};function yn(){this.cache=Object.create(null)}yn.prototype.get=function(e){return this.cache[e]};yn.prototype.set=function(e,t){this.cache[e]=t};var Ul={create:function(){return new yn}},Wr={variadic:Il,monadic:Hl};var Ve;(function(e){e.MISSING_VALUE="MISSING_VALUE",e.INVALID_VALUE="INVALID_VALUE",e.MISSING_INTL_API="MISSING_INTL_API"})(Ve||(Ve={}));var Jt=function(e){Xt(t,e);function t(r,o,n){var i=e.call(this,r)||this;return i.code=o,i.originalMessage=n,i}return t.prototype.toString=function(){return"[formatjs Error: ".concat(this.code,"] ").concat(this.message)},t}(Error);var En=function(e){Xt(t,e);function t(r,o,n,i){return e.call(this,'Invalid values for "'.concat(r,'": "').concat(o,'". Options are "').concat(Object.keys(n).join('", "'),'"'),Ve.INVALID_VALUE,i)||this}return t}(Jt);var xa=function(e){Xt(t,e);function t(r,o,n){return e.call(this,'Value for "'.concat(r,'" must be of type ').concat(o),Ve.INVALID_VALUE,n)||this}return t}(Jt);var ba=function(e){Xt(t,e);function t(r,o){return e.call(this,'The intl string context variable "'.concat(r,'" was not provided to the string "').concat(o,'"'),Ve.MISSING_VALUE,o)||this}return t}(Jt);var q;(function(e){e[e.literal=0]="literal",e[e.object=1]="object"})(q||(q={}));function Bl(e){return e.length<2?e:e.reduce(function(t,r){var o=t[t.length-1];return!o||o.type!==q.literal||r.type!==q.literal?t.push(r):o.value+=r.value,t},[])}function zl(e){return typeof e=="function"}function er(e,t,r,o,n,i,a){if(e.length===1&&hn(e[0]))return[{type:q.literal,value:e[0].value}];for(var s=[],c=0,l=e;c<l.length;c++){var h=l[c];if(hn(h)){s.push({type:q.literal,value:h.value});continue}if(Xi(h)){typeof i=="number"&&s.push({type:q.literal,value:r.getNumberFormat(t).format(i)});continue}var u=h.value;if(!(n&&u in n))throw new ba(u,a);var d=n[u];if(Yi(h)){(!d||typeof d=="string"||typeof d=="number")&&(d=typeof d=="string"||typeof d=="number"?String(d):""),s.push({type:typeof d=="string"?q.literal:q.object,value:d});continue}if(zr(h)){var m=typeof h.style=="string"?o.date[h.style]:Kt(h.style)?h.style.parsedOptions:void 0;s.push({type:q.literal,value:r.getDateTimeFormat(t,m).format(d)});continue}if(Fr(h)){var m=typeof h.style=="string"?o.time[h.style]:Kt(h.style)?h.style.parsedOptions:o.time.medium;s.push({type:q.literal,value:r.getDateTimeFormat(t,m).format(d)});continue}if(Br(h)){var m=typeof h.style=="string"?o.number[h.style]:qr(h.style)?h.style.parsedOptions:void 0;m&&m.scale&&(d=d*(m.scale||1)),s.push({type:q.literal,value:r.getNumberFormat(t,m).format(d)});continue}if(jr(h)){var x=h.children,f=h.value,S=n[f];if(!zl(S))throw new xa(f,"function",a);var E=er(x,t,r,o,n,i),A=S(E.map(function(N){return N.value}));Array.isArray(A)||(A=[A]),s.push.apply(s,A.map(function(N){return{type:typeof N=="string"?q.literal:q.object,value:N}}))}if(Gr(h)){var T=h.options[d]||h.options.other;if(!T)throw new En(h.value,d,Object.keys(h.options),a);s.push.apply(s,er(T.value,t,r,o,n));continue}if(Vr(h)){var T=h.options["=".concat(d)];if(!T){if(!Intl.PluralRules)throw new Jt(`Intl.PluralRules is not available in this environment.
-Try polyfilling it using "@formatjs/intl-pluralrules"
-`,Ve.MISSING_INTL_API,a);var k=r.getPluralRules(t,{type:h.pluralType}).select(d-(h.offset||0));T=h.options[k]||h.options.other}if(!T)throw new En(h.value,d,Object.keys(h.options),a);s.push.apply(s,er(T.value,t,r,o,n,d-(h.offset||0)));continue}}return Bl(s)}function Fl(e,t){return t?w(w(w({},e||{}),t||{}),Object.keys(e).reduce(function(r,o){return r[o]=w(w({},e[o]),t[o]||{}),r},{})):e}function Gl(e,t){return t?Object.keys(e).reduce(function(r,o){return r[o]=Fl(e[o],t[o]),r},w({},e)):e}function An(e){return{create:function(){return{get:function(t){return e[t]},set:function(t,r){e[t]=r}}}}}function Vl(e){return e===void 0&&(e={number:{},dateTime:{},pluralRules:{}}),{getNumberFormat:Qt(function(){for(var t,r=[],o=0;o<arguments.length;o++)r[o]=arguments[o];return new((t=Intl.NumberFormat).bind.apply(t,Ur([void 0],r,!1)))},{cache:An(e.number),strategy:Wr.variadic}),getDateTimeFormat:Qt(function(){for(var t,r=[],o=0;o<arguments.length;o++)r[o]=arguments[o];return new((t=Intl.DateTimeFormat).bind.apply(t,Ur([void 0],r,!1)))},{cache:An(e.dateTime),strategy:Wr.variadic}),getPluralRules:Qt(function(){for(var t,r=[],o=0;o<arguments.length;o++)r[o]=arguments[o];return new((t=Intl.PluralRules).bind.apply(t,Ur([void 0],r,!1)))},{cache:An(e.pluralRules),strategy:Wr.variadic})}}var va=function(){function e(t,r,o,n){var i=this;if(r===void 0&&(r=e.defaultLocale),this.formatterCache={number:{},dateTime:{},pluralRules:{}},this.format=function(a){var s=i.formatToParts(a);if(s.length===1)return s[0].value;var c=s.reduce(function(l,h){return!l.length||h.type!==q.literal||typeof l[l.length-1]!="string"?l.push(h.value):l[l.length-1]+=h.value,l},[]);return c.length<=1?c[0]||"":c},this.formatToParts=function(a){return er(i.ast,i.locales,i.formatters,i.formats,a,void 0,i.message)},this.resolvedOptions=function(){return{locale:i.resolvedLocale.toString()}},this.getAst=function(){return i.ast},this.locales=r,this.resolvedLocale=e.resolveLocale(r),typeof t=="string"){if(this.message=t,!e.__parse)throw new TypeError("IntlMessageFormat.__parse must be set to process `message` of type `string`");this.ast=e.__parse(t,{ignoreTag:n?.ignoreTag,locale:this.resolvedLocale})}else this.ast=t;if(!Array.isArray(this.ast))throw new TypeError("A message must be provided as a String or AST.");this.formats=Gl(e.formats,o),this.formatters=n&&n.formatters||Vl(this.formatterCache)}return Object.defineProperty(e,"defaultLocale",{get:function(){return e.memoizedDefaultLocale||(e.memoizedDefaultLocale=new Intl.NumberFormat().resolvedOptions().locale),e.memoizedDefaultLocale},enumerable:!1,configurable:!0}),e.memoizedDefaultLocale=null,e.resolveLocale=function(t){var r=Intl.NumberFormat.supportedLocalesOf(t);return r.length>0?new Intl.Locale(r[0]):new Intl.Locale(typeof t=="string"?t:t[0])},e.__parse=pa,e.formats={number:{integer:{maximumFractionDigits:0},currency:{style:"currency"},percent:{style:"percent"}},date:{short:{month:"numeric",day:"numeric",year:"2-digit"},medium:{month:"short",day:"numeric",year:"numeric"},long:{month:"long",day:"numeric",year:"numeric"},full:{weekday:"long",month:"long",day:"numeric",year:"numeric"}},time:{short:{hour:"numeric",minute:"numeric"},medium:{hour:"numeric",minute:"numeric",second:"numeric"},long:{hour:"numeric",minute:"numeric",second:"numeric",timeZoneName:"short"},full:{hour:"numeric",minute:"numeric",second:"numeric",timeZoneName:"short"}}},e}();var ya=va;var jl=/[0-9\-+#]/,ql=/[^\d\-+#]/g;function Ea(e){return e.search(jl)}function Wl(e="#.##"){let t={},r=e.length,o=Ea(e);t.prefix=o>0?e.substring(0,o):"";let n=Ea(e.split("").reverse().join("")),i=r-n,a=e.substring(i,i+1),s=i+(a==="."||a===","?1:0);t.suffix=n>0?e.substring(s,r):"",t.mask=e.substring(o,s),t.maskHasNegativeSign=t.mask.charAt(0)==="-",t.maskHasPositiveSign=t.mask.charAt(0)==="+";let c=t.mask.match(ql);return t.decimal=c&&c[c.length-1]||".",t.separator=c&&c[1]&&c[0]||",",c=t.mask.split(t.decimal),t.integer=c[0],t.fraction=c[1],t}function Yl(e,t,r){let o=!1,n={value:e};e<0&&(o=!0,n.value=-n.value),n.sign=o?"-":"",n.value=Number(n.value).toFixed(t.fraction&&t.fraction.length),n.value=Number(n.value).toString();let i=t.fraction&&t.fraction.lastIndexOf("0"),[a="0",s=""]=n.value.split(".");return(!s||s&&s.length<=i)&&(s=i<0?"":(+("0."+s)).toFixed(i+1).replace("0.","")),n.integer=a,n.fraction=s,Xl(n,t),(n.result==="0"||n.result==="")&&(o=!1,n.sign=""),!o&&t.maskHasPositiveSign?n.sign="+":o&&t.maskHasPositiveSign?n.sign="-":o&&(n.sign=r&&r.enforceMaskSign&&!t.maskHasNegativeSign?"":"-"),n}function Xl(e,t){e.result="";let r=t.integer.split(t.separator),o=r.join(""),n=o&&o.indexOf("0");if(n>-1)for(;e.integer.length<o.length-n;)e.integer="0"+e.integer;else Number(e.integer)===0&&(e.integer="");let i=r[1]&&r[r.length-1].length;if(i){let a=e.integer.length,s=a%i;for(let c=0;c<a;c++)e.result+=e.integer.charAt(c),!((c-s+1)%i)&&c<a-i&&(e.result+=t.separator)}else e.result=e.integer;return e.result+=t.fraction&&e.fraction?t.decimal+e.fraction:"",e}function Kl(e,t,r={}){if(!e||isNaN(Number(t)))return t;let o=Wl(e),n=Yl(t,o,r);return o.prefix+n.sign+n.result+o.suffix}var Aa=Kl;var wa=".",Zl=",",Sa=/^\s+/,Ta=/\s+$/,_a="&nbsp;",wn=e=>e*12,Ca=(e,t)=>{let{start:r,end:o,displaySummary:{amount:n,duration:i,minProductQuantity:a,outcomeType:s}={}}=e;if(!(n&&i&&s&&a))return!1;let c=t?new Date(t):new Date;if(!r||!o)return!1;let l=new Date(r),h=new Date(o);return c>=l&&c<=h},je={MONTH:"MONTH",YEAR:"YEAR"},Ql={[te.ANNUAL]:12,[te.MONTHLY]:1,[te.THREE_YEARS]:36,[te.TWO_YEARS]:24},_n=(e,t)=>({accept:e,round:t}),Jl=[_n(({divisor:e,price:t})=>t%e==0,({divisor:e,price:t})=>t/e),_n(({usePrecision:e})=>e,({divisor:e,price:t})=>Math.round(t/e*100)/100),_n(()=>!0,({divisor:e,price:t})=>Math.ceil(Math.floor(t*100/e)/100))],Sn={[He.YEAR]:{[te.MONTHLY]:je.MONTH,[te.ANNUAL]:je.YEAR},[He.MONTH]:{[te.MONTHLY]:je.MONTH}},eh=(e,t)=>e.indexOf(`'${t}'`)===0,th=(e,t=!0)=>{let r=e.replace(/'.*?'/,"").trim(),o=ka(r);return!!o?t||(r=r.replace(/[,\.]0+/,o)):r=r.replace(/\s?(#.*0)(?!\s)?/,"$&"+oh(e)),r},rh=e=>{let t=nh(e),r=eh(e,t),o=e.replace(/'.*?'/,""),n=Sa.test(o)||Ta.test(o);return{currencySymbol:t,isCurrencyFirst:r,hasCurrencySpace:n}},Pa=e=>e.replace(Sa,_a).replace(Ta,_a),oh=e=>e.match(/#(.?)#/)?.[1]===wa?Zl:wa,nh=e=>e.match(/'(.*?)'/)?.[1]??"",ka=e=>e.match(/0(.?)0/)?.[1]??"";function mt({formatString:e,price:t,usePrecision:r,isIndianPrice:o=!1},n,i=a=>a){let{currencySymbol:a,isCurrencyFirst:s,hasCurrencySpace:c}=rh(e),l=r?ka(e):"",h=th(e,r),u=r?2:0,d=i(t,{currencySymbol:a}),m=o?d.toLocaleString("hi-IN",{minimumFractionDigits:u,maximumFractionDigits:u}):Aa(h,d),x=r?m.lastIndexOf(l):m.length,f=m.substring(0,x),S=m.substring(x+1);return{accessiblePrice:e.replace(/'.*?'/,"SYMBOL").replace(/#.*0/,m).replace(/SYMBOL/,a),currencySymbol:a,decimals:S,decimalsDelimiter:l,hasCurrencySpace:c,integer:f,isCurrencyFirst:s,recurrenceTerm:n}}var La=e=>{let{commitment:t,term:r,usePrecision:o}=e,n=Ql[r]??1;return mt(e,n>1?je.MONTH:Sn[t]?.[r],i=>{let a={divisor:n,price:i,usePrecision:o},{round:s}=Jl.find(({accept:c})=>c(a));if(!s)throw new Error(`Missing rounding rule for: ${JSON.stringify(a)}`);return s(a)})},Ra=({commitment:e,term:t,...r})=>mt(r,Sn[e]?.[t]),Oa=e=>{let{commitment:t,instant:r,price:o,originalPrice:n,priceWithoutDiscount:i,promotion:a,quantity:s=1,term:c}=e;if(t===He.YEAR&&c===te.MONTHLY){if(!a)return mt(e,je.YEAR,wn);let{displaySummary:{outcomeType:l,duration:h,minProductQuantity:u=1}={}}=a;switch(l){case"PERCENTAGE_DISCOUNT":if(s>=u&&Ca(a,r)){let d=parseInt(h.replace("P","").replace("M",""));if(isNaN(d))return wn(o);let m=s*n*d,x=s*i*(12-d),f=Math.floor((m+x)*100)/100;return mt({...e,price:f},je.YEAR)}default:return mt(e,je.YEAR,()=>wn(i??o))}}return mt(e,Sn[t]?.[c])};var ih={recurrenceLabel:"{recurrenceTerm, select, MONTH {/mo} YEAR {/yr} other {}}",recurrenceAriaLabel:"{recurrenceTerm, select, MONTH {per month} YEAR {per year} other {}}",perUnitLabel:"{perUnit, select, LICENSE {per license} other {}}",perUnitAriaLabel:"{perUnit, select, LICENSE {per license} other {}}",freeLabel:"Free",freeAriaLabel:"Free",taxExclusiveLabel:"{taxTerm, select, GST {excl. GST} VAT {excl. VAT} TAX {excl. tax} IVA {excl. IVA} SST {excl. SST} KDV {excl. KDV} other {}}",taxInclusiveLabel:"{taxTerm, select, GST {incl. GST} VAT {incl. VAT} TAX {incl. tax} IVA {incl. IVA} SST {incl. SST} KDV {incl. KDV} other {}}",alternativePriceAriaLabel:"Alternatively at",strikethroughAriaLabel:"Regularly at"},ah=Ci("ConsonantTemplates/price"),sh=/<\/?[^>]+(>|$)/g,B={container:"price",containerOptical:"price-optical",containerStrikethrough:"price-strikethrough",containerAlternative:"price-alternative",containerAnnual:"price-annual",containerAnnualPrefix:"price-annual-prefix",containerAnnualSuffix:"price-annual-suffix",disabled:"disabled",currencySpace:"price-currency-space",currencySymbol:"price-currency-symbol",decimals:"price-decimals",decimalsDelimiter:"price-decimals-delimiter",integer:"price-integer",recurrence:"price-recurrence",taxInclusivity:"price-tax-inclusivity",unitType:"price-unit-type"},pt={perUnitLabel:"perUnitLabel",perUnitAriaLabel:"perUnitAriaLabel",recurrenceLabel:"recurrenceLabel",recurrenceAriaLabel:"recurrenceAriaLabel",taxExclusiveLabel:"taxExclusiveLabel",taxInclusiveLabel:"taxInclusiveLabel",strikethroughAriaLabel:"strikethroughAriaLabel",alternativePriceAriaLabel:"alternativePriceAriaLabel"},ch="TAX_EXCLUSIVE",lh=e=>_i(e)?Object.entries(e).filter(([,t])=>lt(t)||Pr(t)||t===!0).reduce((t,[r,o])=>t+` ${r}${o===!0?"":'="'+wi(o)+'"'}`,""):"",K=(e,t,r,o=!1)=>`<span class="${e}${t?"":" "+B.disabled}"${lh(r)}>${o?Pa(t):t??""}</span>`;function hh(e,{accessibleLabel:t,altAccessibleLabel:r,currencySymbol:o,decimals:n,decimalsDelimiter:i,hasCurrencySpace:a,integer:s,isCurrencyFirst:c,recurrenceLabel:l,perUnitLabel:h,taxInclusivityLabel:u},d={}){let m=K(B.currencySymbol,o),x=K(B.currencySpace,a?"&nbsp;":""),f="";return t?f=`<sr-only class="strikethrough-aria-label">${t}</sr-only>`:r&&(f=`<sr-only class="alt-aria-label">${r}</sr-only>`),c&&(f+=m+x),f+=K(B.integer,s),f+=K(B.decimalsDelimiter,i),f+=K(B.decimals,n),c||(f+=x+m),f+=K(B.recurrence,l,null,!0),f+=K(B.unitType,h,null,!0),f+=K(B.taxInclusivity,u,!0),K(e,f,{...d})}var Z=({isAlternativePrice:e=!1,displayOptical:t=!1,displayStrikethrough:r=!1,displayAnnual:o=!1,instant:n=void 0}={})=>({country:i,displayFormatted:a=!0,displayRecurrence:s=!0,displayPerUnit:c=!1,displayTax:l=!1,language:h,literals:u={},quantity:d=1}={},{commitment:m,offerSelectorIds:x,formatString:f,price:S,priceWithoutDiscount:E,taxDisplay:A,taxTerm:T,term:k,usePrecision:N,promotion:H}={},j={})=>{Object.entries({country:i,formatString:f,language:h,price:S}).forEach(([vo,yo])=>{if(yo==null)throw new Error(`Argument "${vo}" is missing for osi ${x?.toString()}, country ${i}, language ${h}`)});let W={...ih,...u},ne=`${h.toLowerCase()}-${i.toUpperCase()}`;function U(vo,yo){let Eo=W[vo];if(Eo==null)return"";try{return new ya(Eo.replace(sh,""),ne).format(yo)}catch{return ah.error("Failed to format literal:",Eo),""}}let Q=r&&E?E:S,se=t?La:Ra;o&&(se=Oa);let{accessiblePrice:Ae,recurrenceTerm:he,...Ie}=se({commitment:m,formatString:f,instant:n,isIndianPrice:i==="IN",originalPrice:S,priceWithoutDiscount:E,price:t?S:Q,promotion:H,quantity:d,term:k,usePrecision:N}),we="",Bt="",go="";C(s)&&he&&(go=U(pt.recurrenceLabel,{recurrenceTerm:he}));let xo="";C(c)&&(xo=U(pt.perUnitLabel,{perUnit:"LICENSE"}));let bo="";C(l)&&T&&(bo=U(A===ch?pt.taxExclusiveLabel:pt.taxInclusiveLabel,{taxTerm:T})),r&&(we=U(pt.strikethroughAriaLabel,{strikethroughPrice:we})),e&&(Bt=U(pt.alternativePriceAriaLabel,{alternativePrice:Bt}));let at=B.container;if(t&&(at+=" "+B.containerOptical),r&&(at+=" "+B.containerStrikethrough),e&&(at+=" "+B.containerAlternative),o&&(at+=" "+B.containerAnnual),C(a))return hh(at,{...Ie,accessibleLabel:we,altAccessibleLabel:Bt,recurrenceLabel:go,perUnitLabel:xo,taxInclusivityLabel:bo},j);let{currencySymbol:bi,decimals:fc,decimalsDelimiter:gc,hasCurrencySpace:vi,integer:xc,isCurrencyFirst:bc}=Ie,st=[xc,gc,fc];bc?(st.unshift(vi?"\xA0":""),st.unshift(bi)):(st.push(vi?"\xA0":""),st.push(bi)),st.push(go,xo,bo);let vc=st.join("");return K(at,vc,j)},$a=()=>(e,t,r)=>{let n=(e.displayOldPrice===void 0||C(e.displayOldPrice))&&t.priceWithoutDiscount&&t.priceWithoutDiscount!=t.price;return`${Z({isAlternativePrice:n})(e,t,r)}${n?"&nbsp;"+Z({displayStrikethrough:!0})(e,t,r):""}`},Ma=()=>(e,t,r)=>{let{instant:o}=e;try{o||(o=new URLSearchParams(document.location.search).get("instant")),o&&(o=new Date(o))}catch{o=void 0}let n={...e,displayTax:!1,displayPerUnit:!1},a=(e.displayOldPrice===void 0||C(e.displayOldPrice))&&t.priceWithoutDiscount&&t.priceWithoutDiscount!=t.price;return`${a?Z({displayStrikethrough:!0})(n,t,r)+"&nbsp;":""}${Z({isAlternativePrice:a})(e,t,r)}${K(B.containerAnnualPrefix,"&nbsp;(")}${Z({displayAnnual:!0,instant:o})(n,t,r)}${K(B.containerAnnualSuffix,")")}`},Na=()=>(e,t,r)=>{let o={...e,displayTax:!1,displayPerUnit:!1};return`${Z({isAlternativePrice:e.displayOldPrice})(e,t,r)}${K(B.containerAnnualPrefix,"&nbsp;(")}${Z({displayAnnual:!0})(o,t,r)}${K(B.containerAnnualSuffix,")")}`};var Ia=Z(),Ha=$a(),Da=Z({displayOptical:!0}),Ua=Z({displayStrikethrough:!0}),Ba=Z({displayAnnual:!0}),za=Z({displayOptical:!0,isAlternativePrice:!0}),Fa=Z({isAlternativePrice:!0}),Ga=Na(),Va=Ma();var dh=(e,t)=>{if(!(!Vt(e)||!Vt(t)))return Math.floor((t-e)/t*100)},ja=()=>(e,t)=>{let{price:r,priceWithoutDiscount:o}=t,n=dh(r,o);return n===void 0?'<span class="no-discount"></span>':`<span class="discount">${n}%</span>`};var qa=ja();var Wa=["GB_en","AU_en","FR_fr","AT_de","BE_en","BE_fr","BE_nl","BG_bg","CH_de","CH_fr","CH_it","CZ_cs","DE_de","DK_da","EE_et","EG_ar","EG_en","ES_es","FI_fi","FR_fr","GR_el","GR_en","HU_hu","IE_en","IT_it","LU_de","LU_en","LU_fr","NL_nl","NO_nb","PL_pl","PT_pt","RO_ro","SE_sv","SI_sl","SK_sk","TR_tr","UA_uk","ID_en","ID_in","IN_en","IN_hi","JP_ja","MY_en","MY_ms","NZ_en","TH_en","TH_th"],uh={INDIVIDUAL_COM:["ZA_en","LT_lt","LV_lv","NG_en","SA_ar","SA_en","ZA_en","SG_en","KR_ko"],TEAM_COM:["ZA_en","LT_lt","LV_lv","NG_en","ZA_en","CO_es","KR_ko"],INDIVIDUAL_EDU:["LT_lt","LV_lv","SA_en","SG_en"],TEAM_EDU:["SG_en","KR_ko"]},tr=class tr extends HTMLSpanElement{constructor(){super();p(this,"masElement",new ut(this));this.handleClick=this.handleClick.bind(this)}static get observedAttributes(){return["data-display-old-price","data-display-per-unit","data-display-recurrence","data-display-tax","data-perpetual","data-promotion-code","data-tax-exclusive","data-template","data-wcs-osi"]}static createInlinePrice(r){let o=Y();if(!o)return null;let{displayOldPrice:n,displayPerUnit:i,displayRecurrence:a,displayTax:s,forceTaxExclusive:c,perpetual:l,promotionCode:h,quantity:u,alternativePrice:d,template:m,wcsOsi:x}=o.collectPriceOptions(r);return Nr(tr,{displayOldPrice:n,displayPerUnit:i,displayRecurrence:a,displayTax:s,forceTaxExclusive:c,perpetual:l,promotionCode:h,quantity:u,alternativePrice:d,template:m,wcsOsi:x})}get isInlinePrice(){return!0}attributeChangedCallback(r,o,n){this.masElement.attributeChangedCallback(r,o,n)}connectedCallback(){this.masElement.connectedCallback(),this.addEventListener("click",this.handleClick)}disconnectedCallback(){this.masElement.disconnectedCallback(),this.removeEventListener("click",this.handleClick)}handleClick(r){r.target!==this&&(r.stopImmediatePropagation(),this.dispatchEvent(new MouseEvent("click",{bubbles:!0,cancelable:!0,view:window})))}onceSettled(){return this.masElement.onceSettled()}get value(){return this.masElement.value}get options(){return this.masElement.options}requestUpdate(r=!1){return this.masElement.requestUpdate(r)}resolveDisplayTaxForGeoAndSegment(r,o,n,i){let a=`${r}_${o}`;if(Wa.includes(r)||Wa.includes(a))return!0;let s=uh[`${n}_${i}`];return s?!!(s.includes(r)||s.includes(a)):!1}async resolveDisplayTax(r,o){let[n]=await r.resolveOfferSelectors(o),i=qt(await n,o);if(i?.length){let{country:a,language:s}=o,c=i[0],[l=""]=c.marketSegments;return this.resolveDisplayTaxForGeoAndSegment(a,s,c.customerSegment,l)}}async render(r={}){if(!this.isConnected)return!1;let o=Y();if(!o)return!1;let n=o.collectPriceOptions(r,this);if(!n.wcsOsi.length)return!1;let i=this.masElement.togglePending(n);this.innerHTML="";let[a]=o.resolveOfferSelectors(n);return this.renderOffers(qt(await a,n),n,i)}renderOffers(r,o={},n=void 0){if(!this.isConnected)return;let i=Y();if(!i)return!1;let a=i.collectPriceOptions({...this.dataset,...o},this);if(n??(n=this.masElement.togglePending(a)),r.length){if(this.masElement.toggleResolved(n,r,a)){this.innerHTML=i.buildPriceHTML(r,a);let s=this.closest("p, h3, div");if(!s||!s.querySelector('span[data-template="strikethrough"]')||s.querySelector(".alt-aria-label"))return!0;let c=s?.querySelectorAll('span[is="inline-price"]');return c.length>1&&c.length===s.querySelectorAll('span[data-template="strikethrough"]').length*2&&c.forEach(l=>{l.dataset.template!=="strikethrough"&&l.options&&!l.options.alternativePrice&&(l.options.alternativePrice=!0,l.innerHTML=i.buildPriceHTML(r,l.options))}),!0}}else{let s=new Error(`Not provided: ${a?.wcsOsi??"-"}`);if(this.masElement.toggleFailed(n,s,a))return this.innerHTML="",!0}return!1}updateOptions(r){let o=Y();if(!o)return!1;let{alternativePrice:n,displayOldPrice:i,displayPerUnit:a,displayRecurrence:s,displayTax:c,forceTaxExclusive:l,perpetual:h,promotionCode:u,quantity:d,template:m,wcsOsi:x}=o.collectPriceOptions(r);return Ir(this,{alternativePrice:n,displayOldPrice:i,displayPerUnit:a,displayRecurrence:s,displayTax:c,forceTaxExclusive:l,perpetual:h,promotionCode:u,quantity:d,template:m,wcsOsi:x}),!0}};p(tr,"is","inline-price"),p(tr,"tag","span");var be=tr;window.customElements.get(be.is)||window.customElements.define(be.is,be,{extends:be.tag});function Ya({literals:e,providers:t,settings:r}){function o(a,s){let{country:c,displayOldPrice:l,displayPerUnit:h,displayRecurrence:u,displayTax:d,forceTaxExclusive:m,language:x,promotionCode:f,quantity:S,alternativePrice:E}=r,{displayOldPrice:A=l,displayPerUnit:T=h,displayRecurrence:k=u,displayTax:N=d,forceTaxExclusive:H=m,country:j=c,language:W=x,perpetual:ne,promotionCode:U=f,quantity:Q=S,alternativePrice:se=E,template:Ae,wcsOsi:he,...Ie}=Object.assign({},s?.dataset??{},a??{}),we=jt({...Ie,country:j,displayOldPrice:C(A),displayPerUnit:C(T),displayRecurrence:C(k),displayTax:C(N),forceTaxExclusive:C(H),language:W,perpetual:C(ne),promotionCode:Lr(U).effectivePromoCode,quantity:ht(Q,P.quantity),alternativePrice:C(se),template:Ae,wcsOsi:$r(he)});if(s)for(let Bt of t.price)Bt(s,we);return we}function n(a,s){if(!Array.isArray(a)||!a.length||!s)return"";let{template:c}=s,l;switch(c){case"discount":l=qa;break;case"strikethrough":l=Ua;break;case"annual":l=Ba;break;default:s.template==="optical"&&s.alternativePrice?l=za:s.template==="optical"?l=Da:s.country==="AU"&&a[0].planType==="ABM"?l=s.promotionCode?Va:Ga:s.alternativePrice?l=Fa:l=s.promotionCode?Ha:Ia}let h=o(s);h.literals=Object.assign({},e.price,jt(s.literals??{}));let[u]=a;return u={...u,...u.priceDetails},l(h,u)}let i=be.createInlinePrice;return{InlinePrice:be,buildPriceHTML:n,collectPriceOptions:o,createInlinePrice:i}}function mh({locale:e=void 0,country:t=void 0,language:r=void 0}={}){return r??(r=e?.split("_")?.[0]||P.language),t??(t=e?.split("_")?.[1]||P.country),e??(e=`${r}_${t}`),{locale:e,country:t,language:r}}function Xa(e={}){let{commerce:t={}}=e,r=fe.PRODUCTION,o=Uo,n=I("checkoutClientId",t)??P.checkoutClientId,i=ze(I("checkoutWorkflow",t),ie,P.checkoutWorkflow),a=V.CHECKOUT;i===ie.V3&&(a=ze(I("checkoutWorkflowStep",t),V,P.checkoutWorkflowStep));let s=C(I("displayOldPrice",t),P.displayOldPrice),c=C(I("displayPerUnit",t),P.displayPerUnit),l=C(I("displayRecurrence",t),P.displayRecurrence),h=C(I("displayTax",t),P.displayTax),u=C(I("entitlement",t),P.entitlement),d=C(I("modal",t),P.modal),m=C(I("forceTaxExclusive",t),P.forceTaxExclusive),x=I("promotionCode",t)??P.promotionCode,f=ht(I("quantity",t)),S=I("wcsApiKey",t)??P.wcsApiKey,E=t?.env==="stage",A=Se.PUBLISHED;["true",""].includes(t.allowOverride)&&(E=(I(Ho,t,{metadata:!1})?.toLowerCase()??t?.env)==="stage",A=ze(I(Do,t),Se,A)),E&&(r=fe.STAGE,o=Bo);let k=I("mas-io-url")??e.masIOUrl??`https://www${r===fe.STAGE?".stage":""}.adobe.com/mas/io`;return{...mh(e),displayOldPrice:s,checkoutClientId:n,checkoutWorkflow:i,checkoutWorkflowStep:a,displayPerUnit:c,displayRecurrence:l,displayTax:h,entitlement:u,extraOptions:P.extraOptions,modal:d,env:r,forceTaxExclusive:m,promotionCode:x,quantity:f,alternativePrice:P.alternativePrice,wcsApiKey:S,wcsURL:o,landscape:A,masIOUrl:k}}async function Yr(e,t={},r=2,o=100){let n;for(let i=0;i<=r;i++)try{return await fetch(e,t)}catch(a){if(n=a,i>r)break;await new Promise(s=>setTimeout(s,o*(i+1)))}throw n}var Tn="wcs";function Ka({settings:e}){let t=ee.module(Tn),{env:r,wcsApiKey:o}=e,n=new Map,i=new Map,a,s=new Map;async function c(d,m,x=!0){let f=Y(),S=$o;t.debug("Fetching:",d);let E="",A;if(d.offerSelectorIds.length>1)throw new Error("Multiple OSIs are not supported anymore");let T=new Map(m),[k]=d.offerSelectorIds,N=Date.now()+Math.random().toString(36).substring(2,7),H=`${Tn}:${k}:${N}${Te}`,j=`${Tn}:${k}:${N}${Gt}`,W,ne;try{if(performance.mark(H),E=new URL(e.wcsURL),E.searchParams.set("offer_selector_ids",k),E.searchParams.set("country",d.country),E.searchParams.set("locale",d.locale),E.searchParams.set("landscape",r===fe.STAGE?"ALL":e.landscape),E.searchParams.set("api_key",o),d.language&&E.searchParams.set("language",d.language),d.promotionCode&&E.searchParams.set("promotion_code",d.promotionCode),d.currency&&E.searchParams.set("currency",d.currency),A=await Yr(E.toString(),{credentials:"omit"}),A.ok){let U=[];try{let Q=await A.json();t.debug("Fetched:",d,Q),U=Q.resolvedOffers??[]}catch(Q){t.error(`Error parsing JSON: ${Q.message}`,{...Q.context,...f?.duration})}U=U.map(Rr),m.forEach(({resolve:Q},se)=>{let Ae=U.filter(({offerSelectorIds:he})=>he.includes(se)).flat();Ae.length&&(T.delete(se),m.delete(se),Q(Ae))})}else S=Oo}catch(U){S=`Network error: ${U.message}`}finally{({startTime:W,duration:ne}=performance.measure(j,H)),performance.clearMarks(H),performance.clearMeasures(j)}x&&m.size&&(t.debug("Missing:",{offerSelectorIds:[...m.keys()]}),m.forEach(U=>{U.reject(new ge(S,{...d,response:A,startTime:W,duration:ne,...f?.duration}))}))}function l(){clearTimeout(a);let d=[...i.values()];i.clear(),d.forEach(({options:m,promises:x})=>c(m,x))}function h(){let d=n.size;s=new Map(n),n.clear(),t.debug(`Moved ${d} cache entries to stale cache`)}function u({country:d,language:m,perpetual:x=!1,promotionCode:f="",wcsOsi:S=[]}){let E=`${m}_${d}`;d!=="GB"&&(m=x?"EN":"MULT");let A=[d,m,f].filter(T=>T).join("-").toLowerCase();return S.map(T=>{let k=`${T}-${A}`;if(n.has(k))return n.get(k);let N=new Promise((H,j)=>{let W=i.get(A);if(!W){let ne={country:d,locale:E,offerSelectorIds:[]};d!=="GB"&&(ne.language=m),W={options:ne,promises:new Map},i.set(A,W)}f&&(W.options.promotionCode=f),W.options.offerSelectorIds.push(T),W.promises.set(T,{resolve:H,reject:j}),l()}).catch(H=>{if(s.has(k))return s.get(k);throw H});return n.set(k,N),N})}return{Commitment:He,PlanType:ki,Term:te,applyPlanType:Rr,resolveOfferSelectors:u,flushWcsCacheInternal:h}}var Za="mas-commerce-service",Qa="mas:start",Ja="mas:ready",es="mas-commerce-service:initTime",rr,Xr,ts,Cn=class extends HTMLElement{constructor(){super(...arguments);L(this,Xr);L(this,rr);p(this,"lastLoggingTime",0)}async registerCheckoutAction(r){typeof r=="function"&&(this.buildCheckoutAction=async(o,n,i)=>{let a=await r?.(o,n,this.imsSignedInPromise,i);return a||null})}activate(){let r=b(this,Xr,ts),o=Object.freeze(Xa(r));dt(r.lana);let n=ee.init(r.hostEnv).module("service");n.debug("Activating:",r);let a={price:Wi(o)},s={checkout:new Set,price:new Set},c={literals:a,providers:s,settings:o};Object.defineProperties(this,Object.getOwnPropertyDescriptors({...Vi(c),...ji(c),...Ya(c),...Ka(c),...Go,Log:ee,get defaults(){return P},get log(){return ee},get providers(){return{checkout(h){return s.checkout.add(h),()=>s.checkout.delete(h)},price(h){return s.price.add(h),()=>s.price.delete(h)}}},get settings(){return o}})),n.debug("Activated:",{literals:a,settings:o});let l=new CustomEvent(Sr,{bubbles:!0,cancelable:!1,detail:this});performance.mark(Ja),R(this,rr,performance.measure(es,Qa,Ja)?.duration),this.dispatchEvent(l),setTimeout(()=>{this.logFailedRequests()},1e4)}connectedCallback(){performance.mark(Qa),this.activate()}flushWcsCache(){this.flushWcsCacheInternal(),this.log.debug("Flushed WCS cache")}refreshOffers(){this.flushWcsCacheInternal(),document.querySelectorAll(zt).forEach(r=>r.requestUpdate(!0)),this.log.debug("Refreshed WCS offers"),this.logFailedRequests()}refreshFragments(){this.flushWcsCacheInternal(),document.querySelectorAll("aem-fragment").forEach(r=>r.refresh()),this.log.debug("Refreshed AEM fragments"),this.logFailedRequests()}get duration(){return{[es]:b(this,rr)}}logFailedRequests(){let r=[...performance.getEntriesByType("resource")].filter(({startTime:n})=>n>this.lastLoggingTime).filter(({transferSize:n,duration:i,responseStatus:a})=>n===0&&i===0&&a<200||a>=400),o=Array.from(new Map(r.map(n=>[n.name,n])).values());if(o.some(({name:n})=>/(\/fragments\/|web_commerce_artifact)/.test(n))){let n=o.map(({name:i})=>i);this.log.error("Failed requests:",{failedUrls:n,...this.duration})}this.lastLoggingTime=performance.now().toFixed(3)}};rr=new WeakMap,Xr=new WeakSet,ts=function(){let r=this.getAttribute("env")??"prod",o={hostEnv:{name:r},commerce:{env:r},lana:{tags:this.getAttribute("lana-tags"),sampleRate:parseInt(this.getAttribute("lana-sample-rate")??1,10),isProdDomain:r==="prod"},masIOUrl:this.getAttribute("mas-io-url")};return["locale","country","language"].forEach(n=>{let i=this.getAttribute(n);i&&(o[n]=i)}),["checkout-workflow-step","force-tax-exclusive","checkout-client-id","allow-override","wcs-api-key"].forEach(n=>{let i=this.getAttribute(n);if(i!=null){let a=n.replace(/-([a-z])/g,s=>s[1].toUpperCase());o.commerce[a]=i}}),o};window.customElements.get(Za)||window.customElements.define(Za,Cn);var or=class or extends Dr(HTMLButtonElement){static createCheckoutButton(t={},r=""){return Hr(or,t,r)}setCheckoutUrl(t){this.setAttribute("data-href",t)}get href(){return this.getAttribute("data-href")}get isCheckoutButton(){return!0}clickHandler(t){if(this.checkoutActionHandler){this.checkoutActionHandler?.(t);return}this.href&&(window.location.href=this.href)}};p(or,"is","checkout-button"),p(or,"tag","button");var ft=or;window.customElements.get(ft.is)||window.customElements.define(ft.is,ft,{extends:ft.tag});var ph="mas-commerce-service";function rs(e,t){let r;return function(){let o=this,n=arguments;clearTimeout(r),r=setTimeout(()=>e.apply(o,n),t)}}function qe(e,t={},r=null,o=null){let n=o?document.createElement(e,{is:o}):document.createElement(e);r instanceof HTMLElement?n.appendChild(r):n.innerHTML=r;for(let[i,a]of Object.entries(t))n.setAttribute(i,a);return n}function Kr(){return window.matchMedia("(max-width: 767px)")}function gt(){return Kr().matches}function os(){return window.matchMedia("(max-width: 1024px)").matches}function xt(){return document.getElementsByTagName(ph)?.[0]}function fh(e){return`https://${e==="PRODUCTION"?"www.adobe.com":"www.stage.adobe.com"}/offers/promo-terms.html`}var nr,We=class We extends HTMLAnchorElement{constructor(){super();L(this,nr,!1);this.setAttribute("is",We.is)}get isUptLink(){return!0}initializeWcsData(r,o){this.setAttribute("data-wcs-osi",r),o&&this.setAttribute("data-promotion-code",o),R(this,nr,!0),this.composePromoTermsUrl()}attributeChangedCallback(r,o,n){b(this,nr)&&this.composePromoTermsUrl()}composePromoTermsUrl(){let r=this.getAttribute("data-wcs-osi");if(!r){let u=this.closest("merch-card").querySelector("aem-fragment").getAttribute("fragment");console.error(`Missing 'data-wcs-osi' attribute on upt-link. Fragment: ${u}`);return}let o=xt(),n=[r],i=this.getAttribute("data-promotion-code"),{country:a,language:s,env:c}=o.settings,l={country:a,language:s,wcsOsi:n,promotionCode:i},h=o.resolveOfferSelectors(l);Promise.all(h).then(([[u]])=>{let d=`locale=${s}_${a}&country=${a}&offer_id=${u.offerId}`;i&&(d+=`&promotion_code=${encodeURIComponent(i)}`),this.href=`${fh(c)}?${d}`}).catch(u=>{console.error(`Could not resolve offer selectors for id: ${r}.`,u.message)})}static createFrom(r){let o=new We;for(let n of r.attributes)n.name!=="is"&&(n.name==="class"&&n.value.includes("upt-link")?o.setAttribute("class",n.value.replace("upt-link","").trim()):o.setAttribute(n.name,n.value));return o.innerHTML=r.innerHTML,o.setAttribute("tabindex",0),o}};nr=new WeakMap,p(We,"is","upt-link"),p(We,"tag","a"),p(We,"observedAttributes",["data-wcs-osi","data-promotion-code"]);var Ce=We;window.customElements.get(Ce.is)||window.customElements.define(Ce.is,Ce,{extends:Ce.tag});var Zr=window,Jr=Zr.ShadowRoot&&(Zr.ShadyCSS===void 0||Zr.ShadyCSS.nativeShadow)&&"adoptedStyleSheets"in Document.prototype&&"replace"in CSSStyleSheet.prototype,is=Symbol(),ns=new WeakMap,Qr=class{constructor(t,r,o){if(this._$cssResult$=!0,o!==is)throw Error("CSSResult is not constructable. Use `unsafeCSS` or `css` instead.");this.cssText=t,this.t=r}get styleSheet(){let t=this.o,r=this.t;if(Jr&&t===void 0){let o=r!==void 0&&r.length===1;o&&(t=ns.get(r)),t===void 0&&((this.o=t=new CSSStyleSheet).replaceSync(this.cssText),o&&ns.set(r,t))}return t}toString(){return this.cssText}},as=e=>new Qr(typeof e=="string"?e:e+"",void 0,is);var Pn=(e,t)=>{Jr?e.adoptedStyleSheets=t.map(r=>r instanceof CSSStyleSheet?r:r.styleSheet):t.forEach(r=>{let o=document.createElement("style"),n=Zr.litNonce;n!==void 0&&o.setAttribute("nonce",n),o.textContent=r.cssText,e.appendChild(o)})},eo=Jr?e=>e:e=>e instanceof CSSStyleSheet?(t=>{let r="";for(let o of t.cssRules)r+=o.cssText;return as(r)})(e):e;var kn,to=window,ss=to.trustedTypes,gh=ss?ss.emptyScript:"",cs=to.reactiveElementPolyfillSupport,Rn={toAttribute(e,t){switch(t){case Boolean:e=e?gh:null;break;case Object:case Array:e=e==null?e:JSON.stringify(e)}return e},fromAttribute(e,t){let r=e;switch(t){case Boolean:r=e!==null;break;case Number:r=e===null?null:Number(e);break;case Object:case Array:try{r=JSON.parse(e)}catch{r=null}}return r}},ls=(e,t)=>t!==e&&(t==t||e==e),Ln={attribute:!0,type:String,converter:Rn,reflect:!1,hasChanged:ls},On="finalized",Ye=class extends HTMLElement{constructor(){super(),this._$Ei=new Map,this.isUpdatePending=!1,this.hasUpdated=!1,this._$El=null,this._$Eu()}static addInitializer(t){var r;this.finalize(),((r=this.h)!==null&&r!==void 0?r:this.h=[]).push(t)}static get observedAttributes(){this.finalize();let t=[];return this.elementProperties.forEach((r,o)=>{let n=this._$Ep(o,r);n!==void 0&&(this._$Ev.set(n,o),t.push(n))}),t}static createProperty(t,r=Ln){if(r.state&&(r.attribute=!1),this.finalize(),this.elementProperties.set(t,r),!r.noAccessor&&!this.prototype.hasOwnProperty(t)){let o=typeof t=="symbol"?Symbol():"__"+t,n=this.getPropertyDescriptor(t,o,r);n!==void 0&&Object.defineProperty(this.prototype,t,n)}}static getPropertyDescriptor(t,r,o){return{get(){return this[r]},set(n){let i=this[t];this[r]=n,this.requestUpdate(t,i,o)},configurable:!0,enumerable:!0}}static getPropertyOptions(t){return this.elementProperties.get(t)||Ln}static finalize(){if(this.hasOwnProperty(On))return!1;this[On]=!0;let t=Object.getPrototypeOf(this);if(t.finalize(),t.h!==void 0&&(this.h=[...t.h]),this.elementProperties=new Map(t.elementProperties),this._$Ev=new Map,this.hasOwnProperty("properties")){let r=this.properties,o=[...Object.getOwnPropertyNames(r),...Object.getOwnPropertySymbols(r)];for(let n of o)this.createProperty(n,r[n])}return this.elementStyles=this.finalizeStyles(this.styles),!0}static finalizeStyles(t){let r=[];if(Array.isArray(t)){let o=new Set(t.flat(1/0).reverse());for(let n of o)r.unshift(eo(n))}else t!==void 0&&r.push(eo(t));return r}static _$Ep(t,r){let o=r.attribute;return o===!1?void 0:typeof o=="string"?o:typeof t=="string"?t.toLowerCase():void 0}_$Eu(){var t;this._$E_=new Promise(r=>this.enableUpdating=r),this._$AL=new Map,this._$Eg(),this.requestUpdate(),(t=this.constructor.h)===null||t===void 0||t.forEach(r=>r(this))}addController(t){var r,o;((r=this._$ES)!==null&&r!==void 0?r:this._$ES=[]).push(t),this.renderRoot!==void 0&&this.isConnected&&((o=t.hostConnected)===null||o===void 0||o.call(t))}removeController(t){var r;(r=this._$ES)===null||r===void 0||r.splice(this._$ES.indexOf(t)>>>0,1)}_$Eg(){this.constructor.elementProperties.forEach((t,r)=>{this.hasOwnProperty(r)&&(this._$Ei.set(r,this[r]),delete this[r])})}createRenderRoot(){var t;let r=(t=this.shadowRoot)!==null&&t!==void 0?t:this.attachShadow(this.constructor.shadowRootOptions);return Pn(r,this.constructor.elementStyles),r}connectedCallback(){var t;this.renderRoot===void 0&&(this.renderRoot=this.createRenderRoot()),this.enableUpdating(!0),(t=this._$ES)===null||t===void 0||t.forEach(r=>{var o;return(o=r.hostConnected)===null||o===void 0?void 0:o.call(r)})}enableUpdating(t){}disconnectedCallback(){var t;(t=this._$ES)===null||t===void 0||t.forEach(r=>{var o;return(o=r.hostDisconnected)===null||o===void 0?void 0:o.call(r)})}attributeChangedCallback(t,r,o){this._$AK(t,o)}_$EO(t,r,o=Ln){var n;let i=this.constructor._$Ep(t,o);if(i!==void 0&&o.reflect===!0){let a=(((n=o.converter)===null||n===void 0?void 0:n.toAttribute)!==void 0?o.converter:Rn).toAttribute(r,o.type);this._$El=t,a==null?this.removeAttribute(i):this.setAttribute(i,a),this._$El=null}}_$AK(t,r){var o;let n=this.constructor,i=n._$Ev.get(t);if(i!==void 0&&this._$El!==i){let a=n.getPropertyOptions(i),s=typeof a.converter=="function"?{fromAttribute:a.converter}:((o=a.converter)===null||o===void 0?void 0:o.fromAttribute)!==void 0?a.converter:Rn;this._$El=i,this[i]=s.fromAttribute(r,a.type),this._$El=null}}requestUpdate(t,r,o){let n=!0;t!==void 0&&(((o=o||this.constructor.getPropertyOptions(t)).hasChanged||ls)(this[t],r)?(this._$AL.has(t)||this._$AL.set(t,r),o.reflect===!0&&this._$El!==t&&(this._$EC===void 0&&(this._$EC=new Map),this._$EC.set(t,o))):n=!1),!this.isUpdatePending&&n&&(this._$E_=this._$Ej())}async _$Ej(){this.isUpdatePending=!0;try{await this._$E_}catch(r){Promise.reject(r)}let t=this.scheduleUpdate();return t!=null&&await t,!this.isUpdatePending}scheduleUpdate(){return this.performUpdate()}performUpdate(){var t;if(!this.isUpdatePending)return;this.hasUpdated,this._$Ei&&(this._$Ei.forEach((n,i)=>this[i]=n),this._$Ei=void 0);let r=!1,o=this._$AL;try{r=this.shouldUpdate(o),r?(this.willUpdate(o),(t=this._$ES)===null||t===void 0||t.forEach(n=>{var i;return(i=n.hostUpdate)===null||i===void 0?void 0:i.call(n)}),this.update(o)):this._$Ek()}catch(n){throw r=!1,this._$Ek(),n}r&&this._$AE(o)}willUpdate(t){}_$AE(t){var r;(r=this._$ES)===null||r===void 0||r.forEach(o=>{var n;return(n=o.hostUpdated)===null||n===void 0?void 0:n.call(o)}),this.hasUpdated||(this.hasUpdated=!0,this.firstUpdated(t)),this.updated(t)}_$Ek(){this._$AL=new Map,this.isUpdatePending=!1}get updateComplete(){return this.getUpdateComplete()}getUpdateComplete(){return this._$E_}shouldUpdate(t){return!0}update(t){this._$EC!==void 0&&(this._$EC.forEach((r,o)=>this._$EO(o,this[o],r)),this._$EC=void 0),this._$Ek()}updated(t){}firstUpdated(t){}};Ye[On]=!0,Ye.elementProperties=new Map,Ye.elementStyles=[],Ye.shadowRootOptions={mode:"open"},cs?.({ReactiveElement:Ye}),((kn=to.reactiveElementVersions)!==null&&kn!==void 0?kn:to.reactiveElementVersions=[]).push("1.6.3");var $n,ro=window,bt=ro.trustedTypes,hs=bt?bt.createPolicy("lit-html",{createHTML:e=>e}):void 0,Nn="$lit$",Pe=`lit$${(Math.random()+"").slice(9)}$`,xs="?"+Pe,xh=`<${xs}>`,Ze=document,oo=()=>Ze.createComment(""),ar=e=>e===null||typeof e!="object"&&typeof e!="function",bs=Array.isArray,bh=e=>bs(e)||typeof e?.[Symbol.iterator]=="function",Mn=`[ 	
-\f\r]`,ir=/<(?:(!--|\/[^a-zA-Z])|(\/?[a-zA-Z][^>\s]*)|(\/?$))/g,ds=/-->/g,us=/>/g,Xe=RegExp(`>|${Mn}(?:([^\\s"'>=/]+)(${Mn}*=${Mn}*(?:[^ 	
-\f\r"'\`<>=]|("|')|))|$)`,"g"),ms=/'/g,ps=/"/g,vs=/^(?:script|style|textarea|title)$/i,ys=e=>(t,...r)=>({_$litType$:e,strings:t,values:r}),up=ys(1),mp=ys(2),sr=Symbol.for("lit-noChange"),z=Symbol.for("lit-nothing"),fs=new WeakMap,Ke=Ze.createTreeWalker(Ze,129,null,!1);function Es(e,t){if(!Array.isArray(e)||!e.hasOwnProperty("raw"))throw Error("invalid template strings array");return hs!==void 0?hs.createHTML(t):t}var vh=(e,t)=>{let r=e.length-1,o=[],n,i=t===2?"<svg>":"",a=ir;for(let s=0;s<r;s++){let c=e[s],l,h,u=-1,d=0;for(;d<c.length&&(a.lastIndex=d,h=a.exec(c),h!==null);)d=a.lastIndex,a===ir?h[1]==="!--"?a=ds:h[1]!==void 0?a=us:h[2]!==void 0?(vs.test(h[2])&&(n=RegExp("</"+h[2],"g")),a=Xe):h[3]!==void 0&&(a=Xe):a===Xe?h[0]===">"?(a=n??ir,u=-1):h[1]===void 0?u=-2:(u=a.lastIndex-h[2].length,l=h[1],a=h[3]===void 0?Xe:h[3]==='"'?ps:ms):a===ps||a===ms?a=Xe:a===ds||a===us?a=ir:(a=Xe,n=void 0);let m=a===Xe&&e[s+1].startsWith("/>")?" ":"";i+=a===ir?c+xh:u>=0?(o.push(l),c.slice(0,u)+Nn+c.slice(u)+Pe+m):c+Pe+(u===-2?(o.push(void 0),s):m)}return[Es(e,i+(e[r]||"<?>")+(t===2?"</svg>":"")),o]},cr=class e{constructor({strings:t,_$litType$:r},o){let n;this.parts=[];let i=0,a=0,s=t.length-1,c=this.parts,[l,h]=vh(t,r);if(this.el=e.createElement(l,o),Ke.currentNode=this.el.content,r===2){let u=this.el.content,d=u.firstChild;d.remove(),u.append(...d.childNodes)}for(;(n=Ke.nextNode())!==null&&c.length<s;){if(n.nodeType===1){if(n.hasAttributes()){let u=[];for(let d of n.getAttributeNames())if(d.endsWith(Nn)||d.startsWith(Pe)){let m=h[a++];if(u.push(d),m!==void 0){let x=n.getAttribute(m.toLowerCase()+Nn).split(Pe),f=/([.?@])?(.*)/.exec(m);c.push({type:1,index:i,name:f[2],strings:x,ctor:f[1]==="."?Hn:f[1]==="?"?Dn:f[1]==="@"?Un:yt})}else c.push({type:6,index:i})}for(let d of u)n.removeAttribute(d)}if(vs.test(n.tagName)){let u=n.textContent.split(Pe),d=u.length-1;if(d>0){n.textContent=bt?bt.emptyScript:"";for(let m=0;m<d;m++)n.append(u[m],oo()),Ke.nextNode(),c.push({type:2,index:++i});n.append(u[d],oo())}}}else if(n.nodeType===8)if(n.data===xs)c.push({type:2,index:i});else{let u=-1;for(;(u=n.data.indexOf(Pe,u+1))!==-1;)c.push({type:7,index:i}),u+=Pe.length-1}i++}}static createElement(t,r){let o=Ze.createElement("template");return o.innerHTML=t,o}};function vt(e,t,r=e,o){var n,i,a,s;if(t===sr)return t;let c=o!==void 0?(n=r._$Co)===null||n===void 0?void 0:n[o]:r._$Cl,l=ar(t)?void 0:t._$litDirective$;return c?.constructor!==l&&((i=c?._$AO)===null||i===void 0||i.call(c,!1),l===void 0?c=void 0:(c=new l(e),c._$AT(e,r,o)),o!==void 0?((a=(s=r)._$Co)!==null&&a!==void 0?a:s._$Co=[])[o]=c:r._$Cl=c),c!==void 0&&(t=vt(e,c._$AS(e,t.values),c,o)),t}var In=class{constructor(t,r){this._$AV=[],this._$AN=void 0,this._$AD=t,this._$AM=r}get parentNode(){return this._$AM.parentNode}get _$AU(){return this._$AM._$AU}u(t){var r;let{el:{content:o},parts:n}=this._$AD,i=((r=t?.creationScope)!==null&&r!==void 0?r:Ze).importNode(o,!0);Ke.currentNode=i;let a=Ke.nextNode(),s=0,c=0,l=n[0];for(;l!==void 0;){if(s===l.index){let h;l.type===2?h=new no(a,a.nextSibling,this,t):l.type===1?h=new l.ctor(a,l.name,l.strings,this,t):l.type===6&&(h=new Bn(a,this,t)),this._$AV.push(h),l=n[++c]}s!==l?.index&&(a=Ke.nextNode(),s++)}return Ke.currentNode=Ze,i}v(t){let r=0;for(let o of this._$AV)o!==void 0&&(o.strings!==void 0?(o._$AI(t,o,r),r+=o.strings.length-2):o._$AI(t[r])),r++}},no=class e{constructor(t,r,o,n){var i;this.type=2,this._$AH=z,this._$AN=void 0,this._$AA=t,this._$AB=r,this._$AM=o,this.options=n,this._$Cp=(i=n?.isConnected)===null||i===void 0||i}get _$AU(){var t,r;return(r=(t=this._$AM)===null||t===void 0?void 0:t._$AU)!==null&&r!==void 0?r:this._$Cp}get parentNode(){let t=this._$AA.parentNode,r=this._$AM;return r!==void 0&&t?.nodeType===11&&(t=r.parentNode),t}get startNode(){return this._$AA}get endNode(){return this._$AB}_$AI(t,r=this){t=vt(this,t,r),ar(t)?t===z||t==null||t===""?(this._$AH!==z&&this._$AR(),this._$AH=z):t!==this._$AH&&t!==sr&&this._(t):t._$litType$!==void 0?this.g(t):t.nodeType!==void 0?this.$(t):bh(t)?this.T(t):this._(t)}k(t){return this._$AA.parentNode.insertBefore(t,this._$AB)}$(t){this._$AH!==t&&(this._$AR(),this._$AH=this.k(t))}_(t){this._$AH!==z&&ar(this._$AH)?this._$AA.nextSibling.data=t:this.$(Ze.createTextNode(t)),this._$AH=t}g(t){var r;let{values:o,_$litType$:n}=t,i=typeof n=="number"?this._$AC(t):(n.el===void 0&&(n.el=cr.createElement(Es(n.h,n.h[0]),this.options)),n);if(((r=this._$AH)===null||r===void 0?void 0:r._$AD)===i)this._$AH.v(o);else{let a=new In(i,this),s=a.u(this.options);a.v(o),this.$(s),this._$AH=a}}_$AC(t){let r=fs.get(t.strings);return r===void 0&&fs.set(t.strings,r=new cr(t)),r}T(t){bs(this._$AH)||(this._$AH=[],this._$AR());let r=this._$AH,o,n=0;for(let i of t)n===r.length?r.push(o=new e(this.k(oo()),this.k(oo()),this,this.options)):o=r[n],o._$AI(i),n++;n<r.length&&(this._$AR(o&&o._$AB.nextSibling,n),r.length=n)}_$AR(t=this._$AA.nextSibling,r){var o;for((o=this._$AP)===null||o===void 0||o.call(this,!1,!0,r);t&&t!==this._$AB;){let n=t.nextSibling;t.remove(),t=n}}setConnected(t){var r;this._$AM===void 0&&(this._$Cp=t,(r=this._$AP)===null||r===void 0||r.call(this,t))}},yt=class{constructor(t,r,o,n,i){this.type=1,this._$AH=z,this._$AN=void 0,this.element=t,this.name=r,this._$AM=n,this.options=i,o.length>2||o[0]!==""||o[1]!==""?(this._$AH=Array(o.length-1).fill(new String),this.strings=o):this._$AH=z}get tagName(){return this.element.tagName}get _$AU(){return this._$AM._$AU}_$AI(t,r=this,o,n){let i=this.strings,a=!1;if(i===void 0)t=vt(this,t,r,0),a=!ar(t)||t!==this._$AH&&t!==sr,a&&(this._$AH=t);else{let s=t,c,l;for(t=i[0],c=0;c<i.length-1;c++)l=vt(this,s[o+c],r,c),l===sr&&(l=this._$AH[c]),a||(a=!ar(l)||l!==this._$AH[c]),l===z?t=z:t!==z&&(t+=(l??"")+i[c+1]),this._$AH[c]=l}a&&!n&&this.j(t)}j(t){t===z?this.element.removeAttribute(this.name):this.element.setAttribute(this.name,t??"")}},Hn=class extends yt{constructor(){super(...arguments),this.type=3}j(t){this.element[this.name]=t===z?void 0:t}},yh=bt?bt.emptyScript:"",Dn=class extends yt{constructor(){super(...arguments),this.type=4}j(t){t&&t!==z?this.element.setAttribute(this.name,yh):this.element.removeAttribute(this.name)}},Un=class extends yt{constructor(t,r,o,n,i){super(t,r,o,n,i),this.type=5}_$AI(t,r=this){var o;if((t=(o=vt(this,t,r,0))!==null&&o!==void 0?o:z)===sr)return;let n=this._$AH,i=t===z&&n!==z||t.capture!==n.capture||t.once!==n.once||t.passive!==n.passive,a=t!==z&&(n===z||i);i&&this.element.removeEventListener(this.name,this,n),a&&this.element.addEventListener(this.name,this,t),this._$AH=t}handleEvent(t){var r,o;typeof this._$AH=="function"?this._$AH.call((o=(r=this.options)===null||r===void 0?void 0:r.host)!==null&&o!==void 0?o:this.element,t):this._$AH.handleEvent(t)}},Bn=class{constructor(t,r,o){this.element=t,this.type=6,this._$AN=void 0,this._$AM=r,this.options=o}get _$AU(){return this._$AM._$AU}_$AI(t){vt(this,t)}};var gs=ro.litHtmlPolyfillSupport;gs?.(cr,no),(($n=ro.litHtmlVersions)!==null&&$n!==void 0?$n:ro.litHtmlVersions=[]).push("2.8.0");var io=window,ao=io.ShadowRoot&&(io.ShadyCSS===void 0||io.ShadyCSS.nativeShadow)&&"adoptedStyleSheets"in Document.prototype&&"replace"in CSSStyleSheet.prototype,zn=Symbol(),As=new WeakMap,lr=class{constructor(t,r,o){if(this._$cssResult$=!0,o!==zn)throw Error("CSSResult is not constructable. Use `unsafeCSS` or `css` instead.");this.cssText=t,this.t=r}get styleSheet(){let t=this.o,r=this.t;if(ao&&t===void 0){let o=r!==void 0&&r.length===1;o&&(t=As.get(r)),t===void 0&&((this.o=t=new CSSStyleSheet).replaceSync(this.cssText),o&&As.set(r,t))}return t}toString(){return this.cssText}},ke=e=>new lr(typeof e=="string"?e:e+"",void 0,zn),v=(e,...t)=>{let r=e.length===1?e[0]:t.reduce((o,n,i)=>o+(a=>{if(a._$cssResult$===!0)return a.cssText;if(typeof a=="number")return a;throw Error("Value passed to 'css' function must be a 'css' function result: "+a+". Use 'unsafeCSS' to pass non-literal values, but take care to ensure page security.")})(n)+e[i+1],e[0]);return new lr(r,e,zn)},Fn=(e,t)=>{ao?e.adoptedStyleSheets=t.map(r=>r instanceof CSSStyleSheet?r:r.styleSheet):t.forEach(r=>{let o=document.createElement("style"),n=io.litNonce;n!==void 0&&o.setAttribute("nonce",n),o.textContent=r.cssText,e.appendChild(o)})},so=ao?e=>e:e=>e instanceof CSSStyleSheet?(t=>{let r="";for(let o of t.cssRules)r+=o.cssText;return ke(r)})(e):e;var Gn,co=window,ws=co.trustedTypes,Eh=ws?ws.emptyScript:"",_s=co.reactiveElementPolyfillSupport,jn={toAttribute(e,t){switch(t){case Boolean:e=e?Eh:null;break;case Object:case Array:e=e==null?e:JSON.stringify(e)}return e},fromAttribute(e,t){let r=e;switch(t){case Boolean:r=e!==null;break;case Number:r=e===null?null:Number(e);break;case Object:case Array:try{r=JSON.parse(e)}catch{r=null}}return r}},Ss=(e,t)=>t!==e&&(t==t||e==e),Vn={attribute:!0,type:String,converter:jn,reflect:!1,hasChanged:Ss},qn="finalized",ve=class extends HTMLElement{constructor(){super(),this._$Ei=new Map,this.isUpdatePending=!1,this.hasUpdated=!1,this._$El=null,this._$Eu()}static addInitializer(t){var r;this.finalize(),((r=this.h)!==null&&r!==void 0?r:this.h=[]).push(t)}static get observedAttributes(){this.finalize();let t=[];return this.elementProperties.forEach((r,o)=>{let n=this._$Ep(o,r);n!==void 0&&(this._$Ev.set(n,o),t.push(n))}),t}static createProperty(t,r=Vn){if(r.state&&(r.attribute=!1),this.finalize(),this.elementProperties.set(t,r),!r.noAccessor&&!this.prototype.hasOwnProperty(t)){let o=typeof t=="symbol"?Symbol():"__"+t,n=this.getPropertyDescriptor(t,o,r);n!==void 0&&Object.defineProperty(this.prototype,t,n)}}static getPropertyDescriptor(t,r,o){return{get(){return this[r]},set(n){let i=this[t];this[r]=n,this.requestUpdate(t,i,o)},configurable:!0,enumerable:!0}}static getPropertyOptions(t){return this.elementProperties.get(t)||Vn}static finalize(){if(this.hasOwnProperty(qn))return!1;this[qn]=!0;let t=Object.getPrototypeOf(this);if(t.finalize(),t.h!==void 0&&(this.h=[...t.h]),this.elementProperties=new Map(t.elementProperties),this._$Ev=new Map,this.hasOwnProperty("properties")){let r=this.properties,o=[...Object.getOwnPropertyNames(r),...Object.getOwnPropertySymbols(r)];for(let n of o)this.createProperty(n,r[n])}return this.elementStyles=this.finalizeStyles(this.styles),!0}static finalizeStyles(t){let r=[];if(Array.isArray(t)){let o=new Set(t.flat(1/0).reverse());for(let n of o)r.unshift(so(n))}else t!==void 0&&r.push(so(t));return r}static _$Ep(t,r){let o=r.attribute;return o===!1?void 0:typeof o=="string"?o:typeof t=="string"?t.toLowerCase():void 0}_$Eu(){var t;this._$E_=new Promise(r=>this.enableUpdating=r),this._$AL=new Map,this._$Eg(),this.requestUpdate(),(t=this.constructor.h)===null||t===void 0||t.forEach(r=>r(this))}addController(t){var r,o;((r=this._$ES)!==null&&r!==void 0?r:this._$ES=[]).push(t),this.renderRoot!==void 0&&this.isConnected&&((o=t.hostConnected)===null||o===void 0||o.call(t))}removeController(t){var r;(r=this._$ES)===null||r===void 0||r.splice(this._$ES.indexOf(t)>>>0,1)}_$Eg(){this.constructor.elementProperties.forEach((t,r)=>{this.hasOwnProperty(r)&&(this._$Ei.set(r,this[r]),delete this[r])})}createRenderRoot(){var t;let r=(t=this.shadowRoot)!==null&&t!==void 0?t:this.attachShadow(this.constructor.shadowRootOptions);return Fn(r,this.constructor.elementStyles),r}connectedCallback(){var t;this.renderRoot===void 0&&(this.renderRoot=this.createRenderRoot()),this.enableUpdating(!0),(t=this._$ES)===null||t===void 0||t.forEach(r=>{var o;return(o=r.hostConnected)===null||o===void 0?void 0:o.call(r)})}enableUpdating(t){}disconnectedCallback(){var t;(t=this._$ES)===null||t===void 0||t.forEach(r=>{var o;return(o=r.hostDisconnected)===null||o===void 0?void 0:o.call(r)})}attributeChangedCallback(t,r,o){this._$AK(t,o)}_$EO(t,r,o=Vn){var n;let i=this.constructor._$Ep(t,o);if(i!==void 0&&o.reflect===!0){let a=(((n=o.converter)===null||n===void 0?void 0:n.toAttribute)!==void 0?o.converter:jn).toAttribute(r,o.type);this._$El=t,a==null?this.removeAttribute(i):this.setAttribute(i,a),this._$El=null}}_$AK(t,r){var o;let n=this.constructor,i=n._$Ev.get(t);if(i!==void 0&&this._$El!==i){let a=n.getPropertyOptions(i),s=typeof a.converter=="function"?{fromAttribute:a.converter}:((o=a.converter)===null||o===void 0?void 0:o.fromAttribute)!==void 0?a.converter:jn;this._$El=i,this[i]=s.fromAttribute(r,a.type),this._$El=null}}requestUpdate(t,r,o){let n=!0;t!==void 0&&(((o=o||this.constructor.getPropertyOptions(t)).hasChanged||Ss)(this[t],r)?(this._$AL.has(t)||this._$AL.set(t,r),o.reflect===!0&&this._$El!==t&&(this._$EC===void 0&&(this._$EC=new Map),this._$EC.set(t,o))):n=!1),!this.isUpdatePending&&n&&(this._$E_=this._$Ej())}async _$Ej(){this.isUpdatePending=!0;try{await this._$E_}catch(r){Promise.reject(r)}let t=this.scheduleUpdate();return t!=null&&await t,!this.isUpdatePending}scheduleUpdate(){return this.performUpdate()}performUpdate(){var t;if(!this.isUpdatePending)return;this.hasUpdated,this._$Ei&&(this._$Ei.forEach((n,i)=>this[i]=n),this._$Ei=void 0);let r=!1,o=this._$AL;try{r=this.shouldUpdate(o),r?(this.willUpdate(o),(t=this._$ES)===null||t===void 0||t.forEach(n=>{var i;return(i=n.hostUpdate)===null||i===void 0?void 0:i.call(n)}),this.update(o)):this._$Ek()}catch(n){throw r=!1,this._$Ek(),n}r&&this._$AE(o)}willUpdate(t){}_$AE(t){var r;(r=this._$ES)===null||r===void 0||r.forEach(o=>{var n;return(n=o.hostUpdated)===null||n===void 0?void 0:n.call(o)}),this.hasUpdated||(this.hasUpdated=!0,this.firstUpdated(t)),this.updated(t)}_$Ek(){this._$AL=new Map,this.isUpdatePending=!1}get updateComplete(){return this.getUpdateComplete()}getUpdateComplete(){return this._$E_}shouldUpdate(t){return!0}update(t){this._$EC!==void 0&&(this._$EC.forEach((r,o)=>this._$EO(o,this[o],r)),this._$EC=void 0),this._$Ek()}updated(t){}firstUpdated(t){}};ve[qn]=!0,ve.elementProperties=new Map,ve.elementStyles=[],ve.shadowRootOptions={mode:"open"},_s?.({ReactiveElement:ve}),((Gn=co.reactiveElementVersions)!==null&&Gn!==void 0?Gn:co.reactiveElementVersions=[]).push("1.6.3");var Wn,lo=window,Et=lo.trustedTypes,Ts=Et?Et.createPolicy("lit-html",{createHTML:e=>e}):void 0,Xn="$lit$",Le=`lit$${(Math.random()+"").slice(9)}$`,$s="?"+Le,Ah=`<${$s}>`,et=document,dr=()=>et.createComment(""),ur=e=>e===null||typeof e!="object"&&typeof e!="function",Ms=Array.isArray,wh=e=>Ms(e)||typeof e?.[Symbol.iterator]=="function",Yn=`[ 	
-\f\r]`,hr=/<(?:(!--|\/[^a-zA-Z])|(\/?[a-zA-Z][^>\s]*)|(\/?$))/g,Cs=/-->/g,Ps=/>/g,Qe=RegExp(`>|${Yn}(?:([^\\s"'>=/]+)(${Yn}*=${Yn}*(?:[^ 	
-\f\r"'\`<>=]|("|')|))|$)`,"g"),ks=/'/g,Ls=/"/g,Ns=/^(?:script|style|textarea|title)$/i,Is=e=>(t,...r)=>({_$litType$:e,strings:t,values:r}),g=Is(1),vp=Is(2),tt=Symbol.for("lit-noChange"),F=Symbol.for("lit-nothing"),Rs=new WeakMap,Je=et.createTreeWalker(et,129,null,!1);function Hs(e,t){if(!Array.isArray(e)||!e.hasOwnProperty("raw"))throw Error("invalid template strings array");return Ts!==void 0?Ts.createHTML(t):t}var _h=(e,t)=>{let r=e.length-1,o=[],n,i=t===2?"<svg>":"",a=hr;for(let s=0;s<r;s++){let c=e[s],l,h,u=-1,d=0;for(;d<c.length&&(a.lastIndex=d,h=a.exec(c),h!==null);)d=a.lastIndex,a===hr?h[1]==="!--"?a=Cs:h[1]!==void 0?a=Ps:h[2]!==void 0?(Ns.test(h[2])&&(n=RegExp("</"+h[2],"g")),a=Qe):h[3]!==void 0&&(a=Qe):a===Qe?h[0]===">"?(a=n??hr,u=-1):h[1]===void 0?u=-2:(u=a.lastIndex-h[2].length,l=h[1],a=h[3]===void 0?Qe:h[3]==='"'?Ls:ks):a===Ls||a===ks?a=Qe:a===Cs||a===Ps?a=hr:(a=Qe,n=void 0);let m=a===Qe&&e[s+1].startsWith("/>")?" ":"";i+=a===hr?c+Ah:u>=0?(o.push(l),c.slice(0,u)+Xn+c.slice(u)+Le+m):c+Le+(u===-2?(o.push(void 0),s):m)}return[Hs(e,i+(e[r]||"<?>")+(t===2?"</svg>":"")),o]},mr=class e{constructor({strings:t,_$litType$:r},o){let n;this.parts=[];let i=0,a=0,s=t.length-1,c=this.parts,[l,h]=_h(t,r);if(this.el=e.createElement(l,o),Je.currentNode=this.el.content,r===2){let u=this.el.content,d=u.firstChild;d.remove(),u.append(...d.childNodes)}for(;(n=Je.nextNode())!==null&&c.length<s;){if(n.nodeType===1){if(n.hasAttributes()){let u=[];for(let d of n.getAttributeNames())if(d.endsWith(Xn)||d.startsWith(Le)){let m=h[a++];if(u.push(d),m!==void 0){let x=n.getAttribute(m.toLowerCase()+Xn).split(Le),f=/([.?@])?(.*)/.exec(m);c.push({type:1,index:i,name:f[2],strings:x,ctor:f[1]==="."?Zn:f[1]==="?"?Qn:f[1]==="@"?Jn:wt})}else c.push({type:6,index:i})}for(let d of u)n.removeAttribute(d)}if(Ns.test(n.tagName)){let u=n.textContent.split(Le),d=u.length-1;if(d>0){n.textContent=Et?Et.emptyScript:"";for(let m=0;m<d;m++)n.append(u[m],dr()),Je.nextNode(),c.push({type:2,index:++i});n.append(u[d],dr())}}}else if(n.nodeType===8)if(n.data===$s)c.push({type:2,index:i});else{let u=-1;for(;(u=n.data.indexOf(Le,u+1))!==-1;)c.push({type:7,index:i}),u+=Le.length-1}i++}}static createElement(t,r){let o=et.createElement("template");return o.innerHTML=t,o}};function At(e,t,r=e,o){var n,i,a,s;if(t===tt)return t;let c=o!==void 0?(n=r._$Co)===null||n===void 0?void 0:n[o]:r._$Cl,l=ur(t)?void 0:t._$litDirective$;return c?.constructor!==l&&((i=c?._$AO)===null||i===void 0||i.call(c,!1),l===void 0?c=void 0:(c=new l(e),c._$AT(e,r,o)),o!==void 0?((a=(s=r)._$Co)!==null&&a!==void 0?a:s._$Co=[])[o]=c:r._$Cl=c),c!==void 0&&(t=At(e,c._$AS(e,t.values),c,o)),t}var Kn=class{constructor(t,r){this._$AV=[],this._$AN=void 0,this._$AD=t,this._$AM=r}get parentNode(){return this._$AM.parentNode}get _$AU(){return this._$AM._$AU}u(t){var r;let{el:{content:o},parts:n}=this._$AD,i=((r=t?.creationScope)!==null&&r!==void 0?r:et).importNode(o,!0);Je.currentNode=i;let a=Je.nextNode(),s=0,c=0,l=n[0];for(;l!==void 0;){if(s===l.index){let h;l.type===2?h=new pr(a,a.nextSibling,this,t):l.type===1?h=new l.ctor(a,l.name,l.strings,this,t):l.type===6&&(h=new ei(a,this,t)),this._$AV.push(h),l=n[++c]}s!==l?.index&&(a=Je.nextNode(),s++)}return Je.currentNode=et,i}v(t){let r=0;for(let o of this._$AV)o!==void 0&&(o.strings!==void 0?(o._$AI(t,o,r),r+=o.strings.length-2):o._$AI(t[r])),r++}},pr=class e{constructor(t,r,o,n){var i;this.type=2,this._$AH=F,this._$AN=void 0,this._$AA=t,this._$AB=r,this._$AM=o,this.options=n,this._$Cp=(i=n?.isConnected)===null||i===void 0||i}get _$AU(){var t,r;return(r=(t=this._$AM)===null||t===void 0?void 0:t._$AU)!==null&&r!==void 0?r:this._$Cp}get parentNode(){let t=this._$AA.parentNode,r=this._$AM;return r!==void 0&&t?.nodeType===11&&(t=r.parentNode),t}get startNode(){return this._$AA}get endNode(){return this._$AB}_$AI(t,r=this){t=At(this,t,r),ur(t)?t===F||t==null||t===""?(this._$AH!==F&&this._$AR(),this._$AH=F):t!==this._$AH&&t!==tt&&this._(t):t._$litType$!==void 0?this.g(t):t.nodeType!==void 0?this.$(t):wh(t)?this.T(t):this._(t)}k(t){return this._$AA.parentNode.insertBefore(t,this._$AB)}$(t){this._$AH!==t&&(this._$AR(),this._$AH=this.k(t))}_(t){this._$AH!==F&&ur(this._$AH)?this._$AA.nextSibling.data=t:this.$(et.createTextNode(t)),this._$AH=t}g(t){var r;let{values:o,_$litType$:n}=t,i=typeof n=="number"?this._$AC(t):(n.el===void 0&&(n.el=mr.createElement(Hs(n.h,n.h[0]),this.options)),n);if(((r=this._$AH)===null||r===void 0?void 0:r._$AD)===i)this._$AH.v(o);else{let a=new Kn(i,this),s=a.u(this.options);a.v(o),this.$(s),this._$AH=a}}_$AC(t){let r=Rs.get(t.strings);return r===void 0&&Rs.set(t.strings,r=new mr(t)),r}T(t){Ms(this._$AH)||(this._$AH=[],this._$AR());let r=this._$AH,o,n=0;for(let i of t)n===r.length?r.push(o=new e(this.k(dr()),this.k(dr()),this,this.options)):o=r[n],o._$AI(i),n++;n<r.length&&(this._$AR(o&&o._$AB.nextSibling,n),r.length=n)}_$AR(t=this._$AA.nextSibling,r){var o;for((o=this._$AP)===null||o===void 0||o.call(this,!1,!0,r);t&&t!==this._$AB;){let n=t.nextSibling;t.remove(),t=n}}setConnected(t){var r;this._$AM===void 0&&(this._$Cp=t,(r=this._$AP)===null||r===void 0||r.call(this,t))}},wt=class{constructor(t,r,o,n,i){this.type=1,this._$AH=F,this._$AN=void 0,this.element=t,this.name=r,this._$AM=n,this.options=i,o.length>2||o[0]!==""||o[1]!==""?(this._$AH=Array(o.length-1).fill(new String),this.strings=o):this._$AH=F}get tagName(){return this.element.tagName}get _$AU(){return this._$AM._$AU}_$AI(t,r=this,o,n){let i=this.strings,a=!1;if(i===void 0)t=At(this,t,r,0),a=!ur(t)||t!==this._$AH&&t!==tt,a&&(this._$AH=t);else{let s=t,c,l;for(t=i[0],c=0;c<i.length-1;c++)l=At(this,s[o+c],r,c),l===tt&&(l=this._$AH[c]),a||(a=!ur(l)||l!==this._$AH[c]),l===F?t=F:t!==F&&(t+=(l??"")+i[c+1]),this._$AH[c]=l}a&&!n&&this.j(t)}j(t){t===F?this.element.removeAttribute(this.name):this.element.setAttribute(this.name,t??"")}},Zn=class extends wt{constructor(){super(...arguments),this.type=3}j(t){this.element[this.name]=t===F?void 0:t}},Sh=Et?Et.emptyScript:"",Qn=class extends wt{constructor(){super(...arguments),this.type=4}j(t){t&&t!==F?this.element.setAttribute(this.name,Sh):this.element.removeAttribute(this.name)}},Jn=class extends wt{constructor(t,r,o,n,i){super(t,r,o,n,i),this.type=5}_$AI(t,r=this){var o;if((t=(o=At(this,t,r,0))!==null&&o!==void 0?o:F)===tt)return;let n=this._$AH,i=t===F&&n!==F||t.capture!==n.capture||t.once!==n.once||t.passive!==n.passive,a=t!==F&&(n===F||i);i&&this.element.removeEventListener(this.name,this,n),a&&this.element.addEventListener(this.name,this,t),this._$AH=t}handleEvent(t){var r,o;typeof this._$AH=="function"?this._$AH.call((o=(r=this.options)===null||r===void 0?void 0:r.host)!==null&&o!==void 0?o:this.element,t):this._$AH.handleEvent(t)}},ei=class{constructor(t,r,o){this.element=t,this.type=6,this._$AN=void 0,this._$AM=r,this.options=o}get _$AU(){return this._$AM._$AU}_$AI(t){At(this,t)}};var Os=lo.litHtmlPolyfillSupport;Os?.(mr,pr),((Wn=lo.litHtmlVersions)!==null&&Wn!==void 0?Wn:lo.litHtmlVersions=[]).push("2.8.0");var Ds=(e,t,r)=>{var o,n;let i=(o=r?.renderBefore)!==null&&o!==void 0?o:t,a=i._$litPart$;if(a===void 0){let s=(n=r?.renderBefore)!==null&&n!==void 0?n:null;i._$litPart$=a=new pr(t.insertBefore(dr(),s),s,void 0,r??{})}return a._$AI(e),a};var ti,ri;var M=class extends ve{constructor(){super(...arguments),this.renderOptions={host:this},this._$Do=void 0}createRenderRoot(){var t,r;let o=super.createRenderRoot();return(t=(r=this.renderOptions).renderBefore)!==null&&t!==void 0||(r.renderBefore=o.firstChild),o}update(t){let r=this.render();this.hasUpdated||(this.renderOptions.isConnected=this.isConnected),super.update(t),this._$Do=Ds(r,this.renderRoot,this.renderOptions)}connectedCallback(){var t;super.connectedCallback(),(t=this._$Do)===null||t===void 0||t.setConnected(!0)}disconnectedCallback(){var t;super.disconnectedCallback(),(t=this._$Do)===null||t===void 0||t.setConnected(!1)}render(){return tt}};M.finalized=!0,M._$litElement$=!0,(ti=globalThis.litElementHydrateSupport)===null||ti===void 0||ti.call(globalThis,{LitElement:M});var Us=globalThis.litElementPolyfillSupport;Us?.({LitElement:M});((ri=globalThis.litElementVersions)!==null&&ri!==void 0?ri:globalThis.litElementVersions=[]).push("3.3.3");var Re="(max-width: 767px)",ho="(max-width: 1199px)",G="(min-width: 768px)",D="(min-width: 1200px)",ce="(min-width: 1600px)";var Bs=v`
+var __defProp = Object.defineProperty;
+var __defNormalProp = (obj, key, value) => key in obj ? __defProp(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
+var __export = (target, all) => {
+  for (var name in all)
+    __defProp(target, name, { get: all[name], enumerable: true });
+};
+var __publicField = (obj, key, value) => {
+  __defNormalProp(obj, typeof key !== "symbol" ? key + "" : key, value);
+  return value;
+};
+var __accessCheck = (obj, member, msg) => {
+  if (!member.has(obj))
+    throw TypeError("Cannot " + msg);
+};
+var __privateGet = (obj, member, getter) => {
+  __accessCheck(obj, member, "read from private field");
+  return getter ? getter.call(obj) : member.get(obj);
+};
+var __privateAdd = (obj, member, value) => {
+  if (member.has(obj))
+    throw TypeError("Cannot add the same private member more than once");
+  member instanceof WeakSet ? member.add(obj) : member.set(obj, value);
+};
+var __privateSet = (obj, member, value, setter) => {
+  __accessCheck(obj, member, "write to private field");
+  setter ? setter.call(obj, value) : member.set(obj, value);
+  return value;
+};
+var __privateMethod = (obj, member, method) => {
+  __accessCheck(obj, member, "access private method");
+  return method;
+};
+
+// ../../utils/lana.js
+(function iife() {
+  const MSG_LIMIT = 2e3;
+  const defaultOptions = {
+    clientId: "",
+    endpoint: "https://www.adobe.com/lana/ll",
+    endpointStage: "https://www.stage.adobe.com/lana/ll",
+    errorType: "e",
+    sampleRate: 1,
+    tags: "",
+    implicitSampleRate: 1,
+    useProd: true,
+    isProdDomain: false
+  };
+  const w3 = window;
+  function isProd() {
+    const { host } = window.location;
+    if (host.substring(host.length - 10) === ".adobe.com" && host.substring(host.length - 15) !== ".corp.adobe.com" && host.substring(host.length - 16) !== ".stage.adobe.com") {
+      return true;
+    }
+    return false;
+  }
+  function mergeOptions(op1, op2) {
+    if (!op1) {
+      op1 = {};
+    }
+    if (!op2) {
+      op2 = {};
+    }
+    function getOpt(key) {
+      if (op1[key] !== void 0) {
+        return op1[key];
+      }
+      if (op2[key] !== void 0) {
+        return op2[key];
+      }
+      return defaultOptions[key];
+    }
+    return Object.keys(defaultOptions).reduce((options, key) => {
+      options[key] = getOpt(key);
+      return options;
+    }, {});
+  }
+  function log2(msg, options) {
+    msg = msg && msg.stack ? msg.stack : msg || "";
+    if (msg.length > MSG_LIMIT) {
+      msg = `${msg.slice(0, MSG_LIMIT)}<trunc>`;
+    }
+    const o8 = mergeOptions(options, w3.lana.options);
+    if (!o8.clientId) {
+      console.warn("LANA ClientID is not set in options.");
+      return;
+    }
+    const sampleRateParam = parseInt(new URL(window.location).searchParams.get("lana-sample"), 10);
+    const sampleRate = sampleRateParam || (o8.errorType === "i" ? o8.implicitSampleRate : o8.sampleRate);
+    if (!w3.lana.debug && !w3.lana.localhost && sampleRate <= Math.random() * 100)
+      return;
+    const isProdDomain = isProd() || o8.isProdDomain;
+    const endpoint = !isProdDomain || !o8.useProd ? o8.endpointStage : o8.endpoint;
+    const queryParams = [
+      `m=${encodeURIComponent(msg)}`,
+      `c=${encodeURI(o8.clientId)}`,
+      `s=${sampleRate}`,
+      `t=${encodeURI(o8.errorType)}`
+    ];
+    if (o8.tags) {
+      queryParams.push(`tags=${encodeURI(o8.tags)}`);
+    }
+    if (!isProdDomain || w3.lana.debug || w3.lana.localhost)
+      console.log("LANA Msg: ", msg, "\nOpts:", o8);
+    if (!w3.lana.localhost || w3.lana.debug) {
+      const xhr = new XMLHttpRequest();
+      if (w3.lana.debug) {
+        queryParams.push("d");
+        xhr.addEventListener("load", () => {
+          console.log("LANA response:", xhr.responseText);
+        });
+      }
+      xhr.open("GET", `${endpoint}?${queryParams.join("&")}`);
+      xhr.send();
+      return xhr;
+    }
+  }
+  function sendUnhandledError(e7) {
+    log2(e7.reason || e7.error || e7.message, { errorType: "i" });
+  }
+  function hasDebugParam() {
+    return w3.location.search.toLowerCase().indexOf("lanadebug") !== -1;
+  }
+  function isLocalhost() {
+    return w3.location.host.toLowerCase().indexOf("localhost") !== -1;
+  }
+  w3.lana = {
+    debug: false,
+    log: log2,
+    options: mergeOptions(w3.lana && w3.lana.options)
+  };
+  if (hasDebugParam())
+    w3.lana.debug = true;
+  if (isLocalhost())
+    w3.lana.localhost = true;
+  w3.addEventListener("error", sendUnhandledError);
+  w3.addEventListener("unhandledrejection", sendUnhandledError);
+})();
+
+// src/constants.js
+var constants_exports = {};
+__export(constants_exports, {
+  CLASS_NAME_FAILED: () => CLASS_NAME_FAILED,
+  CLASS_NAME_HIDDEN: () => CLASS_NAME_HIDDEN,
+  CLASS_NAME_PENDING: () => CLASS_NAME_PENDING,
+  CLASS_NAME_RESOLVED: () => CLASS_NAME_RESOLVED,
+  CheckoutWorkflow: () => CheckoutWorkflow,
+  CheckoutWorkflowStep: () => CheckoutWorkflowStep,
+  Commitment: () => Commitment,
+  ERROR_MESSAGE_BAD_REQUEST: () => ERROR_MESSAGE_BAD_REQUEST,
+  ERROR_MESSAGE_MISSING_LITERALS_URL: () => ERROR_MESSAGE_MISSING_LITERALS_URL,
+  ERROR_MESSAGE_OFFER_NOT_FOUND: () => ERROR_MESSAGE_OFFER_NOT_FOUND,
+  EVENT_AEM_ERROR: () => EVENT_AEM_ERROR,
+  EVENT_AEM_LOAD: () => EVENT_AEM_LOAD,
+  EVENT_MAS_ERROR: () => EVENT_MAS_ERROR,
+  EVENT_MAS_READY: () => EVENT_MAS_READY,
+  EVENT_MERCH_ADDON_AND_QUANTITY_UPDATE: () => EVENT_MERCH_ADDON_AND_QUANTITY_UPDATE,
+  EVENT_MERCH_CARD_ACTION_MENU_TOGGLE: () => EVENT_MERCH_CARD_ACTION_MENU_TOGGLE,
+  EVENT_MERCH_CARD_COLLECTION_SHOWMORE: () => EVENT_MERCH_CARD_COLLECTION_SHOWMORE,
+  EVENT_MERCH_CARD_COLLECTION_SORT: () => EVENT_MERCH_CARD_COLLECTION_SORT,
+  EVENT_MERCH_CARD_READY: () => EVENT_MERCH_CARD_READY,
+  EVENT_MERCH_OFFER_READY: () => EVENT_MERCH_OFFER_READY,
+  EVENT_MERCH_OFFER_SELECT_READY: () => EVENT_MERCH_OFFER_SELECT_READY,
+  EVENT_MERCH_QUANTITY_SELECTOR_CHANGE: () => EVENT_MERCH_QUANTITY_SELECTOR_CHANGE,
+  EVENT_MERCH_SEARCH_CHANGE: () => EVENT_MERCH_SEARCH_CHANGE,
+  EVENT_MERCH_SIDENAV_SELECT: () => EVENT_MERCH_SIDENAV_SELECT,
+  EVENT_MERCH_STOCK_CHANGE: () => EVENT_MERCH_STOCK_CHANGE,
+  EVENT_MERCH_STORAGE_CHANGE: () => EVENT_MERCH_STORAGE_CHANGE,
+  EVENT_OFFER_SELECTED: () => EVENT_OFFER_SELECTED,
+  EVENT_TYPE_FAILED: () => EVENT_TYPE_FAILED,
+  EVENT_TYPE_READY: () => EVENT_TYPE_READY,
+  EVENT_TYPE_RESOLVED: () => EVENT_TYPE_RESOLVED,
+  Env: () => Env,
+  HEADER_X_REQUEST_ID: () => HEADER_X_REQUEST_ID,
+  LOG_NAMESPACE: () => LOG_NAMESPACE,
+  Landscape: () => Landscape,
+  MARK_DURATION_SUFFIX: () => MARK_DURATION_SUFFIX,
+  MARK_START_SUFFIX: () => MARK_START_SUFFIX,
+  MODAL_TYPE_3_IN_1: () => MODAL_TYPE_3_IN_1,
+  NAMESPACE: () => NAMESPACE,
+  PARAM_AOS_API_KEY: () => PARAM_AOS_API_KEY,
+  PARAM_ENV: () => PARAM_ENV,
+  PARAM_LANDSCAPE: () => PARAM_LANDSCAPE,
+  PARAM_WCS_API_KEY: () => PARAM_WCS_API_KEY,
+  PROVIDER_ENVIRONMENT: () => PROVIDER_ENVIRONMENT,
+  SELECTOR_MAS_CHECKOUT_LINK: () => SELECTOR_MAS_CHECKOUT_LINK,
+  SELECTOR_MAS_ELEMENT: () => SELECTOR_MAS_ELEMENT,
+  SELECTOR_MAS_INLINE_PRICE: () => SELECTOR_MAS_INLINE_PRICE,
+  SELECTOR_MAS_SP_BUTTON: () => SELECTOR_MAS_SP_BUTTON,
+  STATE_FAILED: () => STATE_FAILED,
+  STATE_PENDING: () => STATE_PENDING,
+  STATE_RESOLVED: () => STATE_RESOLVED,
+  TAG_NAME_SERVICE: () => TAG_NAME_SERVICE,
+  Term: () => Term,
+  WCS_PROD_URL: () => WCS_PROD_URL,
+  WCS_STAGE_URL: () => WCS_STAGE_URL
+});
+var Commitment = Object.freeze({
+  MONTH: "MONTH",
+  YEAR: "YEAR",
+  TWO_YEARS: "TWO_YEARS",
+  THREE_YEARS: "THREE_YEARS",
+  PERPETUAL: "PERPETUAL",
+  TERM_LICENSE: "TERM_LICENSE",
+  ACCESS_PASS: "ACCESS_PASS",
+  THREE_MONTHS: "THREE_MONTHS",
+  SIX_MONTHS: "SIX_MONTHS"
+});
+var Term = Object.freeze({
+  ANNUAL: "ANNUAL",
+  MONTHLY: "MONTHLY",
+  TWO_YEARS: "TWO_YEARS",
+  THREE_YEARS: "THREE_YEARS",
+  P1D: "P1D",
+  P1Y: "P1Y",
+  P3Y: "P3Y",
+  P10Y: "P10Y",
+  P15Y: "P15Y",
+  P3D: "P3D",
+  P7D: "P7D",
+  P30D: "P30D",
+  HALF_YEARLY: "HALF_YEARLY",
+  QUARTERLY: "QUARTERLY"
+});
+var NAMESPACE = "merch";
+var CLASS_NAME_HIDDEN = "hidden";
+var EVENT_TYPE_READY = "wcms:commerce:ready";
+var TAG_NAME_SERVICE = "mas-commerce-service";
+var SELECTOR_MAS_INLINE_PRICE = 'span[is="inline-price"][data-wcs-osi]';
+var SELECTOR_MAS_CHECKOUT_LINK = 'a[is="checkout-link"][data-wcs-osi],button[is="checkout-button"][data-wcs-osi]';
+var SELECTOR_MAS_SP_BUTTON = "sp-button[data-wcs-osi]";
+var SELECTOR_MAS_ELEMENT = `${SELECTOR_MAS_INLINE_PRICE},${SELECTOR_MAS_CHECKOUT_LINK}`;
+var EVENT_MERCH_OFFER_READY = "merch-offer:ready";
+var EVENT_MERCH_OFFER_SELECT_READY = "merch-offer-select:ready";
+var EVENT_MERCH_CARD_READY = "merch-card:ready";
+var EVENT_MERCH_CARD_ACTION_MENU_TOGGLE = "merch-card:action-menu-toggle";
+var EVENT_OFFER_SELECTED = "merch-offer:selected";
+var EVENT_MERCH_STOCK_CHANGE = "merch-stock:change";
+var EVENT_MERCH_STORAGE_CHANGE = "merch-storage:change";
+var EVENT_MERCH_QUANTITY_SELECTOR_CHANGE = "merch-quantity-selector:change";
+var EVENT_MERCH_ADDON_AND_QUANTITY_UPDATE = "merch-modal:addon-and-quantity-update";
+var EVENT_MERCH_SEARCH_CHANGE = "merch-search:change";
+var EVENT_MERCH_CARD_COLLECTION_SORT = "merch-card-collection:sort";
+var EVENT_MERCH_CARD_COLLECTION_SHOWMORE = "merch-card-collection:showmore";
+var EVENT_MERCH_SIDENAV_SELECT = "merch-sidenav:select";
+var EVENT_AEM_LOAD = "aem:load";
+var EVENT_AEM_ERROR = "aem:error";
+var EVENT_MAS_READY = "mas:ready";
+var EVENT_MAS_ERROR = "mas:error";
+var CLASS_NAME_FAILED = "placeholder-failed";
+var CLASS_NAME_PENDING = "placeholder-pending";
+var CLASS_NAME_RESOLVED = "placeholder-resolved";
+var ERROR_MESSAGE_BAD_REQUEST = "Bad WCS request";
+var ERROR_MESSAGE_OFFER_NOT_FOUND = "Commerce offer not found";
+var ERROR_MESSAGE_MISSING_LITERALS_URL = "Literals URL not provided";
+var EVENT_TYPE_FAILED = "mas:failed";
+var EVENT_TYPE_RESOLVED = "mas:resolved";
+var LOG_NAMESPACE = "mas/commerce";
+var PARAM_ENV = "commerce.env";
+var PARAM_LANDSCAPE = "commerce.landscape";
+var PARAM_AOS_API_KEY = "commerce.aosKey";
+var PARAM_WCS_API_KEY = "commerce.wcsKey";
+var WCS_PROD_URL = "https://www.adobe.com/web_commerce_artifact";
+var WCS_STAGE_URL = "https://www.stage.adobe.com/web_commerce_artifact_stage";
+var STATE_FAILED = "failed";
+var STATE_PENDING = "pending";
+var STATE_RESOLVED = "resolved";
+var Landscape = {
+  DRAFT: "DRAFT",
+  PUBLISHED: "PUBLISHED"
+};
+var HEADER_X_REQUEST_ID = "X-Request-Id";
+var CheckoutWorkflowStep = Object.freeze({
+  CHECKOUT: "checkout",
+  CHECKOUT_EMAIL: "checkout/email",
+  SEGMENTATION: "segmentation",
+  BUNDLE: "bundle",
+  COMMITMENT: "commitment",
+  RECOMMENDATION: "recommendation",
+  EMAIL: "email",
+  PAYMENT: "payment",
+  CHANGE_PLAN_TEAM_PLANS: "change-plan/team-upgrade/plans",
+  CHANGE_PLAN_TEAM_PAYMENT: "change-plan/team-upgrade/payment"
+});
+var CheckoutWorkflow = Object.freeze({ V2: "UCv2", V3: "UCv3" });
+var Env = Object.freeze({
+  STAGE: "STAGE",
+  PRODUCTION: "PRODUCTION",
+  LOCAL: "LOCAL"
+});
+var PROVIDER_ENVIRONMENT = {
+  PRODUCTION: "PRODUCTION"
+};
+var MODAL_TYPE_3_IN_1 = {
+  TWP: "twp",
+  D2P: "d2p",
+  CRM: "crm"
+};
+var MARK_START_SUFFIX = ":start";
+var MARK_DURATION_SUFFIX = ":duration";
+
+// node_modules/@dexter/tacocat-core/src/utilities.js
+var namespace = "tacocat.js";
+var equalsCaseInsensitive = (value1, value2) => String(value1 ?? "").toLowerCase() == String(value2 ?? "").toLowerCase();
+var escapeHtml = (html) => `${html ?? ""}`.replace(
+  /[&<>'"]/g,
+  (tag) => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    "'": "&#39;",
+    '"': "&quot;"
+  })[tag] ?? tag
+) ?? "";
+function getParameter(key, defaults = {}, { metadata = true, search = true, storage = true } = {}) {
+  let param;
+  if (search && param == null) {
+    const params = new URLSearchParams(window.location.search);
+    const searchKey = isString(search) ? search : key;
+    param = params.get(searchKey);
+  }
+  if (storage && param == null) {
+    const storageKey = isString(storage) ? storage : key;
+    param = window.sessionStorage.getItem(storageKey) ?? window.localStorage.getItem(storageKey);
+  }
+  if (metadata && param == null) {
+    const metadataKey = toKebabCase(isString(metadata) ? metadata : key);
+    const element = document.documentElement.querySelector(
+      `meta[name="${metadataKey}"]`
+    );
+    param = element?.content;
+  }
+  return param == null ? defaults[key] : param;
+}
+var isBoolean = (value) => typeof value === "boolean";
+var isFunction = (value) => typeof value === "function";
+var isNumber = (value) => typeof value === "number";
+var isObject = (value) => value != null && typeof value === "object";
+var isString = (value) => typeof value === "string";
+var isNotEmptyString = (value) => isString(value) && value;
+var isPositiveFiniteNumber = (value) => isNumber(value) && Number.isFinite(value) && value > 0;
+function omitProperties(target, test = (value) => value == null || value === "") {
+  if (target != null) {
+    Object.entries(target).forEach(([key, value]) => {
+      if (test(value))
+        delete target[key];
+    });
+  }
+  return target;
+}
+function toBoolean(value, defaultValue) {
+  if (isBoolean(value))
+    return value;
+  const string = String(value);
+  if (string === "1" || string === "true")
+    return true;
+  if (string === "0" || string === "false")
+    return false;
+  return defaultValue;
+}
+function toEnumeration(value, enumeration, defaultValue) {
+  const values = Object.values(enumeration);
+  return values.find((candidate) => equalsCaseInsensitive(candidate, value)) ?? defaultValue ?? values[0];
+}
+function toKebabCase(value = "") {
+  return String(value).replace(
+    /(\p{Lowercase_Letter})(\p{Uppercase_Letter})/gu,
+    (_3, p1, p22) => `${p1}-${p22}`
+  ).replace(/\W+/gu, "-").toLowerCase();
+}
+function toPositiveFiniteInteger(value, defaultValue = 1) {
+  if (!isNumber(value)) {
+    value = Number.parseInt(value, 10);
+  }
+  if (!Number.isNaN(value) && value > 0 && Number.isFinite(value)) {
+    return value;
+  }
+  return defaultValue;
+}
+
+// node_modules/@dexter/tacocat-core/src/log.js
+var epoch = Date.now();
+var suffix = () => `(+${Date.now() - epoch}ms)`;
+var loggers = /* @__PURE__ */ new Set();
+var isDebugEnabled = toBoolean(
+  getParameter("tacocat.debug", {}, { metadata: false }),
+  typeof process !== "undefined" && process.env?.DEBUG
+);
+function createLog(source) {
+  const prefix = `[${namespace}/${source}]`;
+  const assert = (condition, message, ...args) => {
+    if (!condition) {
+      error(message, ...args);
+      return false;
+    }
+    return true;
+  };
+  const debug = isDebugEnabled ? (message, ...args) => {
+    console.debug(`${prefix} ${message}`, ...args, suffix());
+  } : () => {
+  };
+  const error = (message, ...args) => {
+    const prefixedMessage = `${prefix} ${message}`;
+    loggers.forEach(
+      ([errorLogger]) => errorLogger(prefixedMessage, ...args)
+    );
+  };
+  const warn = (message, ...args) => {
+    const prefixedMessage = `${prefix} ${message}`;
+    loggers.forEach(
+      ([, warnLogger]) => warnLogger(prefixedMessage, ...args)
+    );
+  };
+  return { assert, debug, error, warn };
+}
+function registerLogger(errorLogger, warnLogger) {
+  const logger = [errorLogger, warnLogger];
+  loggers.add(logger);
+  return () => {
+    loggers.delete(logger);
+  };
+}
+registerLogger(
+  (message, ...args) => {
+    console.error(message, ...args, suffix());
+  },
+  (message, ...args) => {
+    console.warn(message, ...args, suffix());
+  }
+);
+
+// node_modules/@dexter/tacocat-core/src/promotion.js
+var NO_PROMO_TEXT = "no promo";
+var CLASS = "promo-tag";
+var PROMO_VARIANT = "yellow";
+var NOPROMO_VARIANT = "neutral";
+var fullPromoText = (promo, old, isOverriden) => {
+  const promoText = (promo2) => promo2 || NO_PROMO_TEXT;
+  const suffix2 = isOverriden ? ` (was "${promoText(old)}")` : "";
+  return `${promoText(promo)}${suffix2}`;
+};
+var PROMO_CONTEXT_CANCEL_VALUE = "cancel-context";
+var computePromoStatus = (overriden, configured) => {
+  const localPromoUnset = overriden === PROMO_CONTEXT_CANCEL_VALUE;
+  const localPromoSet = !localPromoUnset && overriden?.length > 0;
+  const isOverriden = (localPromoSet || localPromoUnset) && //in case configured equals override, we consider no override
+  (configured && configured != overriden || //in case it does not have been configured, if overriden to cancel,
+  // we consider no override
+  !configured && !localPromoUnset);
+  const isPromo = isOverriden && localPromoSet || !isOverriden && !!configured;
+  const effectivePromoCode = isPromo ? overriden || configured : void 0;
+  return {
+    effectivePromoCode,
+    overridenPromoCode: overriden,
+    className: isPromo ? CLASS : `${CLASS} no-promo`,
+    text: fullPromoText(effectivePromoCode, configured, isOverriden),
+    variant: isPromo ? PROMO_VARIANT : NOPROMO_VARIANT,
+    isOverriden
+  };
+};
+
+// node_modules/@pandora/data-models-odm/esm/businessDimensions.js
+var OfferType;
+(function(OfferType2) {
+  OfferType2["BASE"] = "BASE";
+  OfferType2["TRIAL"] = "TRIAL";
+  OfferType2["PROMOTION"] = "PROMOTION";
+})(OfferType || (OfferType = {}));
+var Commitment2;
+(function(Commitment3) {
+  Commitment3["MONTH"] = "MONTH";
+  Commitment3["YEAR"] = "YEAR";
+  Commitment3["TWO_YEARS"] = "TWO_YEARS";
+  Commitment3["THREE_YEARS"] = "THREE_YEARS";
+  Commitment3["PERPETUAL"] = "PERPETUAL";
+  Commitment3["TERM_LICENSE"] = "TERM_LICENSE";
+  Commitment3["ACCESS_PASS"] = "ACCESS_PASS";
+  Commitment3["THREE_MONTHS"] = "THREE_MONTHS";
+  Commitment3["SIX_MONTHS"] = "SIX_MONTHS";
+})(Commitment2 || (Commitment2 = {}));
+var Term2;
+(function(Term3) {
+  Term3["ANNUAL"] = "ANNUAL";
+  Term3["MONTHLY"] = "MONTHLY";
+  Term3["TWO_YEARS"] = "TWO_YEARS";
+  Term3["THREE_YEARS"] = "THREE_YEARS";
+  Term3["P1D"] = "P1D";
+  Term3["P1Y"] = "P1Y";
+  Term3["P3Y"] = "P3Y";
+  Term3["P10Y"] = "P10Y";
+  Term3["P15Y"] = "P15Y";
+  Term3["P3D"] = "P3D";
+  Term3["P7D"] = "P7D";
+  Term3["P30D"] = "P30D";
+  Term3["HALF_YEARLY"] = "HALF_YEARLY";
+  Term3["QUARTERLY"] = "QUARTERLY";
+})(Term2 || (Term2 = {}));
+var CustomerSegment;
+(function(CustomerSegment2) {
+  CustomerSegment2["INDIVIDUAL"] = "INDIVIDUAL";
+  CustomerSegment2["TEAM"] = "TEAM";
+  CustomerSegment2["ENTERPRISE"] = "ENTERPRISE";
+})(CustomerSegment || (CustomerSegment = {}));
+var MarketSegment;
+(function(MarketSegment2) {
+  MarketSegment2["COM"] = "COM";
+  MarketSegment2["EDU"] = "EDU";
+  MarketSegment2["GOV"] = "GOV";
+})(MarketSegment || (MarketSegment = {}));
+var SalesChannel;
+(function(SalesChannel2) {
+  SalesChannel2["DIRECT"] = "DIRECT";
+  SalesChannel2["INDIRECT"] = "INDIRECT";
+})(SalesChannel || (SalesChannel = {}));
+var BuyingProgram;
+(function(BuyingProgram2) {
+  BuyingProgram2["ENTERPRISE_PRODUCT"] = "ENTERPRISE_PRODUCT";
+  BuyingProgram2["ETLA"] = "ETLA";
+  BuyingProgram2["RETAIL"] = "RETAIL";
+  BuyingProgram2["VIP"] = "VIP";
+  BuyingProgram2["VIPMP"] = "VIPMP";
+  BuyingProgram2["FREE"] = "FREE";
+})(BuyingProgram || (BuyingProgram = {}));
+
+// node_modules/@dexter/tacocat-core/src/wcsUtils.js
+var ABM = "ABM";
+var PUF = "PUF";
+var M2M = "M2M";
+var PERPETUAL = "PERPETUAL";
+var P3Y = "P3Y";
+var TAX_INCLUSIVE_DETAILS = "TAX_INCLUSIVE_DETAILS";
+var TAX_EXCLUSIVE = "TAX_EXCLUSIVE";
+var PlanType = {
+  ABM,
+  PUF,
+  M2M,
+  PERPETUAL,
+  P3Y
+};
+var planTypes = {
+  [ABM]: { commitment: Commitment2.YEAR, term: Term2.MONTHLY },
+  [PUF]: { commitment: Commitment2.YEAR, term: Term2.ANNUAL },
+  [M2M]: { commitment: Commitment2.MONTH, term: Term2.MONTHLY },
+  [PERPETUAL]: { commitment: Commitment2.PERPETUAL, term: void 0 },
+  [P3Y]: { commitment: Commitment2.THREE_MONTHS, term: Term2.P3Y }
+};
+var errorValueNotOffer = "Value is not an offer";
+var applyPlanType = (offer) => {
+  if (typeof offer !== "object")
+    return errorValueNotOffer;
+  const { commitment, term } = offer;
+  const planType = getPlanType(commitment, term);
+  return { ...offer, planType };
+};
+var getPlanType = (commitment, term) => {
+  switch (commitment) {
+    case void 0:
+      return errorValueNotOffer;
+    case "":
+      return "";
+    case Commitment2.YEAR:
+      return term === Term2.MONTHLY ? ABM : term === Term2.ANNUAL ? PUF : "";
+    case Commitment2.MONTH:
+      return term === Term2.MONTHLY ? M2M : "";
+    case Commitment2.PERPETUAL:
+      return PERPETUAL;
+    case Commitment2.TERM_LICENSE:
+      return term === Term2.P3Y ? P3Y : "";
+    default:
+      return "";
+  }
+};
+function forceTaxExclusivePrice(offer) {
+  const { priceDetails } = offer;
+  const {
+    price: price2,
+    priceWithoutDiscount,
+    priceWithoutTax,
+    priceWithoutDiscountAndTax,
+    taxDisplay
+  } = priceDetails;
+  if (taxDisplay !== TAX_INCLUSIVE_DETAILS)
+    return offer;
+  const amendedOffer = {
+    ...offer,
+    priceDetails: {
+      ...priceDetails,
+      price: priceWithoutTax ?? price2,
+      priceWithoutDiscount: priceWithoutDiscountAndTax ?? priceWithoutDiscount,
+      taxDisplay: TAX_EXCLUSIVE
+    }
+  };
+  if (amendedOffer.offerType === "TRIAL" && amendedOffer.priceDetails.price === 0) {
+    amendedOffer.priceDetails.price = amendedOffer.priceDetails.priceWithoutDiscount;
+  }
+  return amendedOffer;
+}
+
+// src/utilities.js
+var MAS_COMMERCE_SERVICE = "mas-commerce-service";
+function selectOffers(offers, { country, forceTaxExclusive, perpetual }) {
+  let selected;
+  if (offers.length < 2)
+    selected = offers;
+  else {
+    const language = country === "GB" || perpetual ? "EN" : "MULT";
+    const [first, second] = offers;
+    selected = [first.language === language ? first : second];
+  }
+  if (forceTaxExclusive) {
+    selected = selected.map(forceTaxExclusivePrice);
+  }
+  return selected;
+}
+var setImmediate = (getConfig) => window.setTimeout(getConfig);
+function toQuantity(value, defaultValue = 1) {
+  if (value == null)
+    return [defaultValue];
+  let quantity = (Array.isArray(value) ? value : String(value).split(",")).map(toPositiveFiniteInteger).filter(isPositiveFiniteNumber);
+  if (!quantity.length)
+    quantity = [defaultValue];
+  return quantity;
+}
+function toOfferSelectorIds(value) {
+  if (value == null)
+    return [];
+  const ids = Array.isArray(value) ? value : String(value).split(",");
+  return ids.filter(isNotEmptyString);
+}
+function getService() {
+  return document.getElementsByTagName(MAS_COMMERCE_SERVICE)?.[0];
+}
+
+// src/lana.js
+var config = {
+  clientId: "merch-at-scale",
+  delimiter: "\xB6",
+  ignoredProperties: ["analytics", "literals", "element"],
+  serializableTypes: ["Array", "Object"],
+  sampleRate: 1,
+  tags: "acom",
+  isProdDomain: false
+};
+var PAGE_LIMIT = 1e3;
+function isError(value) {
+  return value instanceof Error || typeof value?.originatingRequest === "string";
+}
+function serializeValue(value) {
+  if (value == null)
+    return void 0;
+  const type = typeof value;
+  if (type === "function") {
+    return value.name ? `function ${value.name}` : "function";
+  }
+  if (type === "object") {
+    if (value instanceof Error)
+      return value.message;
+    if (typeof value.originatingRequest === "string") {
+      const { message, originatingRequest, status } = value;
+      return [message, status, originatingRequest].filter(Boolean).join(" ");
+    }
+    const objectType = value[Symbol.toStringTag] ?? Object.getPrototypeOf(value).constructor.name;
+    if (!config.serializableTypes.includes(objectType))
+      return objectType;
+  }
+  return value;
+}
+function serializeParam(key, value) {
+  if (config.ignoredProperties.includes(key))
+    return void 0;
+  return serializeValue(value);
+}
+var lanaAppender = {
+  append(entry) {
+    if (entry.level !== "error")
+      return;
+    const { message, params } = entry;
+    const errors = [];
+    const values = [];
+    let payload = message;
+    params.forEach((param) => {
+      if (param != null) {
+        (isError(param) ? errors : values).push(param);
+      }
+    });
+    if (errors.length) {
+      payload += " " + errors.map(serializeValue).join(" ");
+    }
+    const { pathname, search } = window.location;
+    let page = `${config.delimiter}page=${pathname}${search}`;
+    if (page.length > PAGE_LIMIT) {
+      page = `${page.slice(0, PAGE_LIMIT)}<trunc>`;
+    }
+    payload += page;
+    if (values.length) {
+      payload += `${config.delimiter}facts=`;
+      payload += JSON.stringify(values, serializeParam);
+    }
+    window.lana?.log(payload, config);
+  }
+};
+function updateConfig(newConfig) {
+  Object.assign(
+    config,
+    Object.fromEntries(
+      Object.entries(newConfig).filter(
+        ([key, value]) => key in config && value !== "" && value !== null && value !== void 0 && !Number.isNaN(value)
+        // Correctly exclude NaN
+      )
+    )
+  );
+}
+
+// src/log.js
+var HostEnv = {
+  LOCAL: "local",
+  PROD: "prod",
+  STAGE: "stage"
+};
+var LogLevels = {
+  DEBUG: "debug",
+  ERROR: "error",
+  INFO: "info",
+  WARN: "warn"
+};
+var appenders = /* @__PURE__ */ new Set();
+var filters = /* @__PURE__ */ new Set();
+var loggerIndexes = /* @__PURE__ */ new Map();
+var consoleAppender = {
+  append({ level, message, params, timestamp, source }) {
+    console[level](
+      `${timestamp}ms [${source}] %c${message}`,
+      "font-weight: bold;",
+      ...params
+    );
+  }
+};
+var debugFilter = { filter: ({ level }) => level !== LogLevels.DEBUG };
+var quietFilter = { filter: () => false };
+function createEntry(level, message, namespace2, params, source) {
+  return {
+    level,
+    message,
+    namespace: namespace2,
+    get params() {
+      if (params.length === 1 && isFunction(params[0])) {
+        params = params[0]();
+        if (!Array.isArray(params))
+          params = [params];
+      }
+      return params;
+    },
+    source,
+    timestamp: performance.now().toFixed(3)
+  };
+}
+function handleEntry(entry) {
+  if ([...filters].every((filter) => filter(entry))) {
+    appenders.forEach((appender) => appender(entry));
+  }
+}
+function createLog2(namespace2) {
+  const index = (loggerIndexes.get(namespace2) ?? 0) + 1;
+  loggerIndexes.set(namespace2, index);
+  const id = `${namespace2} #${index}`;
+  const log2 = {
+    id,
+    namespace: namespace2,
+    module: (name) => createLog2(`${log2.namespace}/${name}`),
+    updateConfig
+  };
+  Object.values(LogLevels).forEach((level) => {
+    log2[level] = (message, ...params) => handleEntry(createEntry(level, message, namespace2, params, id));
+  });
+  return Object.seal(log2);
+}
+function use(...plugins) {
+  plugins.forEach((plugin) => {
+    const { append, filter } = plugin;
+    if (isFunction(filter))
+      filters.add(filter);
+    if (isFunction(append))
+      appenders.add(append);
+  });
+}
+function init(env = {}) {
+  const { name } = env;
+  const debug = toBoolean(
+    getParameter("commerce.debug", { search: true, storage: true }),
+    name === HostEnv.LOCAL
+  );
+  if (debug)
+    use(consoleAppender);
+  else
+    use(debugFilter);
+  if (name === HostEnv.PROD)
+    use(lanaAppender);
+  return Log;
+}
+function reset() {
+  appenders.clear();
+  filters.clear();
+}
+var Log = {
+  ...createLog2(LOG_NAMESPACE),
+  Level: LogLevels,
+  Plugins: { consoleAppender, debugFilter, quietFilter, lanaAppender },
+  init,
+  reset,
+  use
+};
+
+// src/mas-error.js
+var MasError = class _MasError extends Error {
+  /**
+   * Creates a new MasError instance
+   * @param {string} message - The error message
+   * @param {Object} context - Additional context information about the error
+   * @param {unknown} cause - The original error that caused this error
+   */
+  constructor(message, context, cause) {
+    super(message, { cause });
+    this.name = "MasError";
+    if (context.response) {
+      const requestId = context.response.headers?.get(HEADER_X_REQUEST_ID);
+      if (requestId) {
+        context.requestId = requestId;
+      }
+      if (context.response.status) {
+        context.status = context.response.status;
+        context.statusText = context.response.statusText;
+      }
+      if (context.response.url) {
+        context.url = context.response.url;
+      }
+    }
+    delete context.response;
+    this.context = context;
+    if (Error.captureStackTrace) {
+      Error.captureStackTrace(this, _MasError);
+    }
+  }
+  /**
+   * Returns a string representation of the error including context
+   * @returns {string} String representation of the error
+   */
+  toString() {
+    const contextStr = Object.entries(this.context || {}).map(([key, value]) => `${key}: ${JSON.stringify(value)}`).join(", ");
+    let errorString = `${this.name}: ${this.message}`;
+    if (contextStr) {
+      errorString += ` (${contextStr})`;
+    }
+    if (this.cause) {
+      errorString += `
+Caused by: ${this.cause}`;
+    }
+    return errorString;
+  }
+};
+
+// src/mas-element.js
+var StateClassName = {
+  [STATE_FAILED]: CLASS_NAME_FAILED,
+  [STATE_PENDING]: CLASS_NAME_PENDING,
+  [STATE_RESOLVED]: CLASS_NAME_RESOLVED
+};
+var StateEventType = {
+  [STATE_FAILED]: EVENT_TYPE_FAILED,
+  [STATE_RESOLVED]: EVENT_TYPE_RESOLVED
+};
+var _service;
+var MasElement = class {
+  constructor(wrapperElement) {
+    __privateAdd(this, _service, void 0);
+    __publicField(this, "changes", /* @__PURE__ */ new Map());
+    __publicField(this, "connected", false);
+    __publicField(this, "error");
+    __publicField(this, "log");
+    __publicField(this, "options");
+    __publicField(this, "promises", []);
+    __publicField(this, "state", STATE_PENDING);
+    __publicField(this, "timer", null);
+    __publicField(this, "value");
+    __publicField(this, "version", 0);
+    __publicField(this, "wrapperElement");
+    this.wrapperElement = wrapperElement;
+    this.log = Log.module("mas-element");
+  }
+  update() {
+    [STATE_FAILED, STATE_PENDING, STATE_RESOLVED].forEach((state) => {
+      this.wrapperElement.classList.toggle(
+        StateClassName[state],
+        state === this.state
+      );
+    });
+  }
+  notify() {
+    if (this.state === STATE_RESOLVED || this.state === STATE_FAILED) {
+      if (this.state === STATE_RESOLVED) {
+        this.promises.forEach(
+          ({ resolve }) => resolve(this.wrapperElement)
+        );
+      } else if (this.state === STATE_FAILED) {
+        this.promises.forEach(({ reject }) => reject(this.error));
+      }
+      this.promises = [];
+    }
+    let detail = this.error;
+    if (this.error instanceof MasError) {
+      detail = {
+        message: this.error.message,
+        ...this.error.context
+      };
+    }
+    this.wrapperElement.dispatchEvent(
+      new CustomEvent(StateEventType[this.state], {
+        bubbles: true,
+        detail
+      })
+    );
+  }
+  /**
+   * Adds name/value of the updated attribute to the `changes` map,
+   * requests placeholder update.
+   */
+  attributeChangedCallback(name, _3, value) {
+    this.changes.set(name, value);
+    this.requestUpdate();
+  }
+  /**
+   * Triggers when this component is connected to DOM.
+   * Subscribes to the `ready` event of the commerce service,
+   * requests placeholder update.
+   */
+  connectedCallback() {
+    __privateSet(this, _service, getService());
+    this.requestUpdate(true);
+  }
+  /**
+   * Triggers when this component is disconnected from DOM.
+   * Runs and then erases all disposers.
+   */
+  disconnectedCallback() {
+    if (this.connected) {
+      this.connected = false;
+      this.log?.debug("Disconnected:", { element: this.wrapperElement });
+    }
+  }
+  /**
+   * Returns a promise resolving to this placeholder
+   * when its value is resolved or rejected.
+   * If placeholder is not pending for completion of an async operation
+   * the returned promise is already resolved or rejected.
+   */
+  onceSettled() {
+    const { error, promises, state } = this;
+    if (STATE_RESOLVED === state)
+      return Promise.resolve(this.wrapperElement);
+    if (STATE_FAILED === state)
+      return Promise.reject(error);
+    return new Promise((resolve, reject) => {
+      promises.push({ resolve, reject });
+    });
+  }
+  /**
+   * Sets component state to "RESOLVED".
+   * Updates its class list and stored value, notifies observers and fires "RESOLVED" event.
+   */
+  toggleResolved(version, value, options) {
+    if (version !== this.version)
+      return false;
+    if (options !== void 0)
+      this.options = options;
+    this.state = STATE_RESOLVED;
+    this.value = value;
+    this.update();
+    this.log?.debug("Resolved:", { element: this.wrapperElement, value });
+    setImmediate(() => this.notify());
+    return true;
+  }
+  /**
+   * Sets component state to "FAILED".
+   * Updates its class list and stored error, notifies observers and fires "FAILED" event.
+   */
+  toggleFailed(version, error, options) {
+    if (version !== this.version)
+      return false;
+    if (options !== void 0)
+      this.options = options;
+    this.error = error;
+    this.state = STATE_FAILED;
+    this.update();
+    const wcName = this.wrapperElement.getAttribute("is");
+    this.log?.error(`${wcName}: Failed to render: ${error.message}`, {
+      element: this.wrapperElement,
+      ...error.context,
+      ...__privateGet(this, _service)?.duration
+    });
+    setImmediate(() => this.notify());
+    return true;
+  }
+  /**
+   * Sets component state to "PENDING".
+   * Increments its version, updates CSS classes, notifies observers and fires "PENDING" event.
+   */
+  togglePending(options) {
+    this.version++;
+    if (options)
+      this.options = options;
+    this.state = STATE_PENDING;
+    this.update();
+    this.log?.debug("Pending:", {
+      osi: this.wrapperElement?.options?.wcsOsi
+    });
+    return this.version;
+  }
+  /**
+   * Queues task to update this component.
+   * Skips rendering if update is not forced and no changes were accumulated since the previous update.
+   * Calls `render` method to perform the update.
+   * Restores previous state of the component if the `render` method returned `false`.
+   */
+  requestUpdate(force = false) {
+    if (!this.wrapperElement.isConnected || !getService())
+      return;
+    if (this.timer)
+      return;
+    const { error, options, state, value, version } = this;
+    this.state = STATE_PENDING;
+    this.timer = setImmediate(async () => {
+      this.timer = null;
+      let changes = null;
+      if (this.changes.size) {
+        changes = Object.fromEntries(this.changes.entries());
+        this.changes.clear();
+      }
+      if (this.connected) {
+        this.log?.debug("Updated:", {
+          element: this.wrapperElement,
+          changes
+        });
+      } else {
+        this.connected = true;
+        this.log?.debug("Connected:", {
+          element: this.wrapperElement,
+          changes
+        });
+      }
+      if (changes || force) {
+        try {
+          const result = await this.wrapperElement.render?.();
+          if (result === false && this.state === STATE_PENDING && this.version === version) {
+            this.state = state;
+            this.error = error;
+            this.value = value;
+            this.update();
+            this.notify();
+          }
+        } catch (error2) {
+          this.toggleFailed(this.version, error2, options);
+        }
+      }
+    });
+  }
+};
+_service = new WeakMap();
+function cleanupDataset(dataset = {}) {
+  Object.entries(dataset).forEach(([key, value]) => {
+    const remove = value == null || value === "" || value?.length === 0;
+    if (remove)
+      delete dataset[key];
+  });
+  return dataset;
+}
+function createMasElement(Class, dataset = {}) {
+  const { tag, is } = Class;
+  const element = document.createElement(tag, { is });
+  element.setAttribute("is", is);
+  Object.assign(element.dataset, cleanupDataset(dataset));
+  return element;
+}
+function updateMasElement(element, dataset = {}) {
+  if (element instanceof HTMLElement) {
+    Object.assign(element.dataset, cleanupDataset(dataset));
+    return element;
+  }
+  return null;
+}
+
+// src/checkout-mixin.js
+var CLASS_NAME_DOWNLOAD = "download";
+var CLASS_NAME_UPGRADE = "upgrade";
+function createCheckoutElement(Class, options = {}, innerHTML = "") {
+  const service = getService();
+  if (!service)
+    return null;
+  const {
+    checkoutMarketSegment,
+    checkoutWorkflow,
+    checkoutWorkflowStep,
+    entitlement,
+    upgrade,
+    modal,
+    perpetual,
+    promotionCode,
+    quantity,
+    wcsOsi,
+    extraOptions,
+    analyticsId
+  } = service.collectCheckoutOptions(options);
+  const element = createMasElement(Class, {
+    checkoutMarketSegment,
+    checkoutWorkflow,
+    checkoutWorkflowStep,
+    entitlement,
+    upgrade,
+    modal,
+    perpetual,
+    promotionCode,
+    quantity,
+    wcsOsi,
+    extraOptions,
+    analyticsId
+  });
+  if (innerHTML)
+    element.innerHTML = `<span style="pointer-events: none;">${innerHTML}</span>`;
+  return element;
+}
+function CheckoutMixin(Base) {
+  return class CheckoutBase extends Base {
+    constructor() {
+      super(...arguments);
+      /* c8 ignore next 1 */
+      __publicField(this, "checkoutActionHandler");
+      __publicField(this, "masElement", new MasElement(this));
+    }
+    attributeChangedCallback(name, oldValue, value) {
+      this.masElement.attributeChangedCallback(name, oldValue, value);
+    }
+    connectedCallback() {
+      this.masElement.connectedCallback();
+      this.addEventListener("click", this.clickHandler);
+    }
+    disconnectedCallback() {
+      this.masElement.disconnectedCallback();
+      this.removeEventListener("click", this.clickHandler);
+    }
+    onceSettled() {
+      return this.masElement.onceSettled();
+    }
+    get value() {
+      return this.masElement.value;
+    }
+    get options() {
+      return this.masElement.options;
+    }
+    get isOpen3in1Modal() {
+      const masFF3in1 = document.querySelector("meta[name=mas-ff-3in1]");
+      return Object.values(MODAL_TYPE_3_IN_1).includes(this.getAttribute("data-modal")) && (!masFF3in1 || masFF3in1.content !== "off");
+    }
+    requestUpdate(force = false) {
+      return this.masElement.requestUpdate(force);
+    }
+    static get observedAttributes() {
+      return [
+        "data-checkout-workflow",
+        "data-checkout-workflow-step",
+        "data-extra-options",
+        "data-ims-country",
+        "data-perpetual",
+        "data-promotion-code",
+        "data-quantity",
+        "data-template",
+        "data-wcs-osi",
+        "data-entitlement",
+        "data-upgrade",
+        "data-modal"
+      ];
+    }
+    async render(overrides = {}) {
+      const service = getService();
+      if (!service)
+        return false;
+      if (!this.dataset.imsCountry) {
+        service.imsCountryPromise.then((countryCode) => {
+          if (countryCode)
+            this.dataset.imsCountry = countryCode;
+        });
+      }
+      overrides.imsCountry = null;
+      const options = service.collectCheckoutOptions(overrides, this);
+      if (!options.wcsOsi.length)
+        return false;
+      let extraOptions;
+      try {
+        extraOptions = JSON.parse(options.extraOptions ?? "{}");
+      } catch (e7) {
+        this.masElement.log?.error(
+          "cannot parse exta checkout options",
+          e7
+        );
+      }
+      const version = this.masElement.togglePending(options);
+      this.setCheckoutUrl("");
+      const promises = service.resolveOfferSelectors(options);
+      let offers = await Promise.all(promises);
+      offers = offers.map((offer) => selectOffers(offer, options));
+      options.country = this.dataset.imsCountry || options.country;
+      const checkoutAction = await service.buildCheckoutAction?.(
+        offers.flat(),
+        { ...extraOptions, ...options },
+        this
+      );
+      return this.renderOffers(
+        offers.flat(),
+        options,
+        {},
+        checkoutAction,
+        version
+      );
+    }
+    /**
+     * Renders checkout link href for provided offers into this component.
+     * @param {Commerce.Wcs.Offer[]} offers
+     * @param {Commerce.Checkout.Options} options
+     * @param {Commerce.Checkout.AnyOptions} overrides
+     * @param {Commerce.Checkout.CheckoutAction} checkoutAction
+     * @param {number} version
+     */
+    renderOffers(offers, options, overrides = {}, checkoutAction = void 0, version = void 0) {
+      const service = getService();
+      if (!service)
+        return false;
+      const extraOptions = JSON.parse(
+        this.dataset.extraOptions ?? "null"
+      );
+      options = { ...extraOptions, ...options, ...overrides };
+      version ?? (version = this.masElement.togglePending(options));
+      if (this.checkoutActionHandler) {
+        this.checkoutActionHandler = void 0;
+      }
+      if (checkoutAction) {
+        this.classList.remove(CLASS_NAME_DOWNLOAD, CLASS_NAME_UPGRADE);
+        this.masElement.toggleResolved(version, offers, options);
+        const { url, text, className, handler } = checkoutAction;
+        if (url) {
+          this.setCheckoutUrl(url);
+        }
+        if (text)
+          this.firstElementChild.innerHTML = text;
+        if (className)
+          this.classList.add(...className.split(" "));
+        if (handler) {
+          this.setCheckoutUrl("#");
+          this.checkoutActionHandler = handler.bind(this);
+        }
+      }
+      if (offers.length) {
+        if (this.masElement.toggleResolved(version, offers, options)) {
+          if (!this.classList.contains(CLASS_NAME_DOWNLOAD) && !this.classList.contains(CLASS_NAME_UPGRADE)) {
+            const url = service.buildCheckoutURL(offers, options);
+            this.setCheckoutUrl(options.modal === "true" ? "#" : url);
+          }
+          return true;
+        }
+      } else {
+        const error = new Error(
+          `Not provided: ${options?.wcsOsi ?? "-"}`
+        );
+        if (this.masElement.toggleFailed(version, error, options)) {
+          this.setCheckoutUrl("#");
+          return true;
+        }
+      }
+    }
+    setCheckoutUrl() {
+    }
+    clickHandler(e7) {
+    }
+    updateOptions(options = {}) {
+      const service = getService();
+      if (!service)
+        return false;
+      const {
+        checkoutMarketSegment,
+        checkoutWorkflow,
+        checkoutWorkflowStep,
+        entitlement,
+        upgrade,
+        modal,
+        perpetual,
+        promotionCode,
+        quantity,
+        wcsOsi
+      } = service.collectCheckoutOptions(options);
+      updateMasElement(this, {
+        checkoutMarketSegment,
+        checkoutWorkflow,
+        checkoutWorkflowStep,
+        entitlement,
+        upgrade,
+        modal,
+        perpetual,
+        promotionCode,
+        quantity,
+        wcsOsi
+      });
+      return true;
+    }
+  };
+}
+
+// src/checkout-link.js
+var _CheckoutLink = class _CheckoutLink extends CheckoutMixin(HTMLAnchorElement) {
+  static createCheckoutLink(options = {}, innerHTML = "") {
+    return createCheckoutElement(_CheckoutLink, options, innerHTML);
+  }
+  setCheckoutUrl(value) {
+    this.setAttribute("href", value);
+  }
+  get isCheckoutLink() {
+    return true;
+  }
+  clickHandler(e7) {
+    if (this.checkoutActionHandler) {
+      this.checkoutActionHandler?.(e7);
+      return;
+    }
+  }
+};
+__publicField(_CheckoutLink, "is", "checkout-link");
+__publicField(_CheckoutLink, "tag", "a");
+var CheckoutLink = _CheckoutLink;
+if (!window.customElements.get(CheckoutLink.is)) {
+  window.customElements.define(CheckoutLink.is, CheckoutLink, {
+    extends: CheckoutLink.tag
+  });
+}
+
+// src/buildCheckoutUrl.js
+var AF_DRAFT_LANDSCAPE = "p_draft_landscape";
+var UCV3_PREFIX = "/store/";
+var PARAMETERS = /* @__PURE__ */ new Map([
+  ["countrySpecific", "cs"],
+  ["customerSegment", "cs"],
+  ["quantity", "q"],
+  ["authCode", "code"],
+  ["checkoutPromoCode", "apc"],
+  ["rurl", "rUrl"],
+  ["curl", "cUrl"],
+  ["ctxrturl", "ctxRtUrl"],
+  ["country", "co"],
+  ["language", "lang"],
+  ["clientId", "cli"],
+  ["context", "ctx"],
+  ["productArrangementCode", "pa"],
+  ["offerType", "ot"],
+  ["marketSegment", "ms"]
+]);
+var ALLOWED_KEYS = /* @__PURE__ */ new Set([
+  "af",
+  "ai",
+  "apc",
+  "appctxid",
+  "cli",
+  "co",
+  "cs",
+  "csm",
+  "ctx",
+  "ctxRtUrl",
+  "DCWATC",
+  "dp",
+  // Enable digital payments for iframe context
+  "fr",
+  // represents the commerce app redirecting to UC
+  "gsp",
+  "ijt",
+  "lang",
+  "lo",
+  "mal",
+  "ms",
+  "mv",
+  "mv2",
+  "nglwfdata",
+  "ot",
+  "otac",
+  "pa",
+  "pcid",
+  // Unified Paywall configuration ID for analytics
+  "promoid",
+  "q",
+  "rf",
+  "sc",
+  "scl",
+  "sdid",
+  "sid",
+  // x-adobe-clientsession
+  "spint",
+  "svar",
+  "th",
+  "thm",
+  "trackingid",
+  "usid",
+  "workflowid",
+  "context.guid",
+  "so.ca",
+  "so.su",
+  "so.tr",
+  "so.va"
+]);
+var REQUIRED_KEYS = ["env", "workflowStep", "clientId", "country"];
+var mapParameterName = (field) => PARAMETERS.get(field) ?? field;
+function addParameters(inputParameters, resultParameters, allowedKeys) {
+  for (const [key, value] of Object.entries(inputParameters)) {
+    const mappedKey = mapParameterName(key);
+    if (value != null && allowedKeys.has(mappedKey)) {
+      resultParameters.set(mappedKey, value);
+    }
+  }
+}
+function getHostName(env) {
+  switch (env) {
+    case PROVIDER_ENVIRONMENT.PRODUCTION:
+      return "https://commerce.adobe.com";
+    default:
+      return "https://commerce-stg.adobe.com";
+  }
+}
+function setItemsParameter(items, parameters) {
+  for (const idx in items) {
+    const item = items[idx];
+    for (const [key, value] of Object.entries(item)) {
+      if (value == null)
+        continue;
+      const parameterName = mapParameterName(key);
+      parameters.set(`items[${idx}][${parameterName}]`, value);
+    }
+  }
+}
+function add3in1Parameters({ url, modal, customerSegment, marketSegment, quantity, productArrangementCode, addonProductArrangementCode }) {
+  const masFF3in1 = document.querySelector("meta[name=mas-ff-3in1]");
+  if (!Object.values(MODAL_TYPE_3_IN_1).includes(modal) || !url?.searchParams || !customerSegment || !marketSegment || masFF3in1?.content === "off")
+    return url;
+  url.searchParams.set("rtc", "t");
+  url.searchParams.set("lo", "sl");
+  if (url.searchParams.get("cli") !== "doc_cloud") {
+    url.searchParams.set("cli", modal === MODAL_TYPE_3_IN_1.CRM ? "creative" : "mini_plans");
+  }
+  if (modal === MODAL_TYPE_3_IN_1.CRM) {
+    url.searchParams.set("af", "uc_segmentation_hide_tabs,uc_new_user_iframe,uc_new_system_close");
+  } else if (modal === MODAL_TYPE_3_IN_1.TWP || modal === MODAL_TYPE_3_IN_1.D2P) {
+    url.searchParams.set("af", "uc_new_user_iframe,uc_new_system_close");
+    if (customerSegment === "INDIVIDUAL" && marketSegment === "EDU") {
+      url.searchParams.set("ms", "e");
+    }
+    if (customerSegment === "TEAM" && marketSegment === "COM") {
+      url.searchParams.set("cs", "t");
+    }
+  }
+  if (quantity) {
+    url.searchParams.set("q", quantity);
+  }
+  if (addonProductArrangementCode) {
+    url.searchParams.set("ao", addonProductArrangementCode);
+  }
+  console.log("productArrangementCode", productArrangementCode);
+  if (productArrangementCode) {
+    url.searchParams.set("pa", productArrangementCode);
+  }
+  return url;
+}
+function buildCheckoutUrl(checkoutData) {
+  console.log("checkoutData", checkoutData);
+  validateCheckoutData(checkoutData);
+  const { env, items, workflowStep, ms, marketSegment, customerSegment, ot, offerType, pa, productArrangementCode, landscape, modal, ...rest } = checkoutData;
+  const segmentationParameters = {
+    marketSegment: marketSegment ?? ms,
+    offerType: offerType ?? ot,
+    productArrangementCode: productArrangementCode ?? pa
+  };
+  let url = new URL(getHostName(env));
+  url.pathname = `${UCV3_PREFIX}${workflowStep}`;
+  if (workflowStep !== CheckoutWorkflowStep.SEGMENTATION && workflowStep !== CheckoutWorkflowStep.CHANGE_PLAN_TEAM_PLANS) {
+    setItemsParameter(items, url.searchParams);
+  }
+  if (workflowStep === CheckoutWorkflowStep.SEGMENTATION) {
+    addParameters(segmentationParameters, url.searchParams, ALLOWED_KEYS);
+  }
+  addParameters(rest, url.searchParams, ALLOWED_KEYS);
+  if (landscape === Landscape.DRAFT) {
+    addParameters({ af: AF_DRAFT_LANDSCAPE }, url.searchParams, ALLOWED_KEYS);
+  }
+  url = add3in1Parameters({
+    url,
+    modal,
+    customerSegment: customerSegment ?? items?.[0]?.customerSegment,
+    marketSegment: ms ?? marketSegment ?? items?.[0]?.marketSegment,
+    quantity: items?.[0]?.quantity > 1 && items?.[0]?.quantity,
+    productArrangementCode: productArrangementCode ?? items?.[0]?.productArrangementCode,
+    addonProductArrangementCode: productArrangementCode ? items?.find((item) => item.productArrangementCode !== productArrangementCode)?.productArrangementCode : items?.[1]?.productArrangementCode
+  });
+  return url.toString();
+}
+function validateCheckoutData(checkoutData) {
+  for (const key of REQUIRED_KEYS) {
+    if (!checkoutData[key]) {
+      throw new Error('Argument "checkoutData" is not valid, missing: ' + key);
+    }
+  }
+  if (checkoutData.workflowStep !== CheckoutWorkflowStep.SEGMENTATION && checkoutData.workflowStep !== CheckoutWorkflowStep.CHANGE_PLAN_TEAM_PLANS && !checkoutData.items) {
+    throw new Error('Argument "checkoutData" is not valid, missing: items');
+  }
+  return true;
+}
+
+// src/defaults.js
+var Defaults = Object.freeze({
+  checkoutClientId: "adobe_com",
+  checkoutWorkflow: CheckoutWorkflow.V3,
+  checkoutWorkflowStep: CheckoutWorkflowStep.EMAIL,
+  country: "US",
+  displayOldPrice: true,
+  displayPerUnit: false,
+  displayRecurrence: true,
+  displayTax: false,
+  env: Env.PRODUCTION,
+  forceTaxExclusive: false,
+  language: "en",
+  entitlement: false,
+  extraOptions: {},
+  modal: false,
+  promotionCode: "",
+  quantity: 1,
+  alternativePrice: false,
+  wcsApiKey: "wcms-commerce-ims-ro-user-milo",
+  wcsURL: "https://www.adobe.com/web_commerce_artifact",
+  landscape: Landscape.PUBLISHED
+});
+
+// src/checkout.js
+function Checkout({ providers, settings }) {
+  function collectCheckoutOptions(overrides, placeholder) {
+    const {
+      checkoutClientId,
+      checkoutWorkflow: defaultWorkflow,
+      checkoutWorkflowStep: defaultWorkflowStep,
+      country: defaultCountry,
+      language: defaultLanguage,
+      promotionCode: defaultPromotionCode,
+      quantity: defaultQuantity
+    } = settings;
+    const {
+      checkoutMarketSegment,
+      checkoutWorkflow = defaultWorkflow,
+      checkoutWorkflowStep = defaultWorkflowStep,
+      imsCountry: imsCountry2,
+      country = imsCountry2 ?? defaultCountry,
+      language = defaultLanguage,
+      quantity = defaultQuantity,
+      entitlement,
+      upgrade,
+      modal,
+      perpetual,
+      promotionCode = defaultPromotionCode,
+      wcsOsi,
+      extraOptions,
+      ...rest
+    } = Object.assign({}, placeholder?.dataset ?? {}, overrides ?? {});
+    const workflow = toEnumeration(
+      checkoutWorkflow,
+      CheckoutWorkflow,
+      Defaults.checkoutWorkflow
+    );
+    let workflowStep = CheckoutWorkflowStep.CHECKOUT;
+    if (workflow === CheckoutWorkflow.V3) {
+      workflowStep = toEnumeration(
+        checkoutWorkflowStep,
+        CheckoutWorkflowStep,
+        Defaults.checkoutWorkflowStep
+      );
+    }
+    const options = omitProperties({
+      ...rest,
+      extraOptions,
+      checkoutClientId,
+      checkoutMarketSegment,
+      country,
+      quantity: toQuantity(quantity, Defaults.quantity),
+      checkoutWorkflow: workflow,
+      checkoutWorkflowStep: workflowStep,
+      language,
+      entitlement: toBoolean(entitlement),
+      upgrade: toBoolean(upgrade),
+      modal,
+      perpetual: toBoolean(perpetual),
+      promotionCode: computePromoStatus(promotionCode).effectivePromoCode,
+      wcsOsi: toOfferSelectorIds(wcsOsi)
+    });
+    if (placeholder) {
+      for (const provider of providers.checkout) {
+        provider(placeholder, options);
+      }
+    }
+    return options;
+  }
+  function buildCheckoutURL(offers, options) {
+    if (!Array.isArray(offers) || !offers.length || !options) {
+      return "";
+    }
+    const { env, landscape } = settings;
+    const {
+      checkoutClientId: clientId,
+      checkoutMarketSegment: marketSegment,
+      checkoutWorkflow: workflow,
+      checkoutWorkflowStep: workflowStep,
+      country,
+      promotionCode: checkoutPromoCode,
+      quantity,
+      ...rest
+    } = collectCheckoutOptions(options);
+    const masFF3in1 = document.querySelector("meta[name=mas-ff-3in1]");
+    const is3in1 = Object.values(MODAL_TYPE_3_IN_1).includes(options.modal) && (!masFF3in1 || masFF3in1.content !== "off");
+    const context = window.frameElement || is3in1 ? "if" : "fp";
+    const data = {
+      checkoutPromoCode,
+      clientId,
+      context,
+      country,
+      env,
+      items: [],
+      marketSegment,
+      workflowStep,
+      landscape,
+      ...rest
+    };
+    if (offers.length === 1) {
+      const [{ offerId, offerType, productArrangementCode }] = offers;
+      const {
+        marketSegments: [marketSegment2],
+        customerSegment
+      } = offers[0];
+      Object.assign(data, {
+        marketSegment: marketSegment2,
+        customerSegment,
+        offerType,
+        productArrangementCode
+      });
+      data.items.push(
+        quantity[0] === 1 ? { id: offerId } : { id: offerId, quantity: quantity[0] }
+      );
+    } else {
+      data.items.push(
+        ...offers.map(({ offerId, productArrangementCode, marketSegments, customerSegment }, index) => ({
+          id: offerId,
+          quantity: quantity[index] ?? Defaults.quantity,
+          ...is3in1 ? { productArrangementCode, marketSegment: marketSegments[0], customerSegment } : {}
+        }))
+      );
+    }
+    return buildCheckoutUrl(data);
+  }
+  const { createCheckoutLink } = CheckoutLink;
+  return {
+    CheckoutLink,
+    CheckoutWorkflow,
+    CheckoutWorkflowStep,
+    buildCheckoutURL,
+    collectCheckoutOptions,
+    createCheckoutLink
+  };
+}
+
+// src/ims.js
+function imsReady({ interval = 200, maxAttempts = 25 } = {}) {
+  const log2 = Log.module("ims");
+  return new Promise((resolve) => {
+    log2.debug("Waing for IMS to be ready");
+    let count = 0;
+    function poll() {
+      if (window.adobeIMS?.initialized) {
+        resolve();
+      } else if (++count > maxAttempts) {
+        log2.debug("Timeout");
+        resolve();
+      } else {
+        setTimeout(poll, interval);
+      }
+    }
+    poll();
+  });
+}
+function imsSignedIn(imsReadyPromise) {
+  return imsReadyPromise.then(
+    () => window.adobeIMS?.isSignedInUser() ?? false
+  );
+}
+function imsCountry(imsSignedInPromise) {
+  const log2 = Log.module("ims");
+  return imsSignedInPromise.then((signedIn) => {
+    if (!signedIn)
+      return null;
+    return window.adobeIMS.getProfile().then(
+      ({ countryCode }) => {
+        log2.debug("Got user country:", countryCode);
+        return countryCode;
+      },
+      (error) => {
+        log2.error("Unable to get user country:", error);
+        return void 0;
+      }
+    );
+  });
+}
+function Ims({}) {
+  const imsReadyPromise = imsReady();
+  const imsSignedInPromise = imsSignedIn(imsReadyPromise);
+  const imsCountryPromise = imsCountry(imsSignedInPromise);
+  return { imsReadyPromise, imsSignedInPromise, imsCountryPromise };
+}
+
+// src/literals.js
+var priceLiterals = window.masPriceLiterals;
+function getPriceLiterals(settings) {
+  if (Array.isArray(priceLiterals)) {
+    const find = (language) => priceLiterals.find(
+      (candidate) => equalsCaseInsensitive(candidate.lang, language)
+    );
+    const literals = find(settings.language) ?? find(Defaults.language);
+    if (literals)
+      return Object.freeze(literals);
+  }
+  return {};
+}
+
+// node_modules/tslib/tslib.es6.mjs
+var extendStatics = function(d5, b3) {
+  extendStatics = Object.setPrototypeOf || { __proto__: [] } instanceof Array && function(d6, b4) {
+    d6.__proto__ = b4;
+  } || function(d6, b4) {
+    for (var p3 in b4)
+      if (Object.prototype.hasOwnProperty.call(b4, p3))
+        d6[p3] = b4[p3];
+  };
+  return extendStatics(d5, b3);
+};
+function __extends(d5, b3) {
+  if (typeof b3 !== "function" && b3 !== null)
+    throw new TypeError("Class extends value " + String(b3) + " is not a constructor or null");
+  extendStatics(d5, b3);
+  function __() {
+    this.constructor = d5;
+  }
+  d5.prototype = b3 === null ? Object.create(b3) : (__.prototype = b3.prototype, new __());
+}
+var __assign = function() {
+  __assign = Object.assign || function __assign2(t5) {
+    for (var s8, i5 = 1, n8 = arguments.length; i5 < n8; i5++) {
+      s8 = arguments[i5];
+      for (var p3 in s8)
+        if (Object.prototype.hasOwnProperty.call(s8, p3))
+          t5[p3] = s8[p3];
+    }
+    return t5;
+  };
+  return __assign.apply(this, arguments);
+};
+function __spreadArray(to, from, pack) {
+  if (pack || arguments.length === 2)
+    for (var i5 = 0, l6 = from.length, ar; i5 < l6; i5++) {
+      if (ar || !(i5 in from)) {
+        if (!ar)
+          ar = Array.prototype.slice.call(from, 0, i5);
+        ar[i5] = from[i5];
+      }
+    }
+  return to.concat(ar || Array.prototype.slice.call(from));
+}
+
+// node_modules/@formatjs/icu-messageformat-parser/lib/error.js
+var ErrorKind;
+(function(ErrorKind2) {
+  ErrorKind2[ErrorKind2["EXPECT_ARGUMENT_CLOSING_BRACE"] = 1] = "EXPECT_ARGUMENT_CLOSING_BRACE";
+  ErrorKind2[ErrorKind2["EMPTY_ARGUMENT"] = 2] = "EMPTY_ARGUMENT";
+  ErrorKind2[ErrorKind2["MALFORMED_ARGUMENT"] = 3] = "MALFORMED_ARGUMENT";
+  ErrorKind2[ErrorKind2["EXPECT_ARGUMENT_TYPE"] = 4] = "EXPECT_ARGUMENT_TYPE";
+  ErrorKind2[ErrorKind2["INVALID_ARGUMENT_TYPE"] = 5] = "INVALID_ARGUMENT_TYPE";
+  ErrorKind2[ErrorKind2["EXPECT_ARGUMENT_STYLE"] = 6] = "EXPECT_ARGUMENT_STYLE";
+  ErrorKind2[ErrorKind2["INVALID_NUMBER_SKELETON"] = 7] = "INVALID_NUMBER_SKELETON";
+  ErrorKind2[ErrorKind2["INVALID_DATE_TIME_SKELETON"] = 8] = "INVALID_DATE_TIME_SKELETON";
+  ErrorKind2[ErrorKind2["EXPECT_NUMBER_SKELETON"] = 9] = "EXPECT_NUMBER_SKELETON";
+  ErrorKind2[ErrorKind2["EXPECT_DATE_TIME_SKELETON"] = 10] = "EXPECT_DATE_TIME_SKELETON";
+  ErrorKind2[ErrorKind2["UNCLOSED_QUOTE_IN_ARGUMENT_STYLE"] = 11] = "UNCLOSED_QUOTE_IN_ARGUMENT_STYLE";
+  ErrorKind2[ErrorKind2["EXPECT_SELECT_ARGUMENT_OPTIONS"] = 12] = "EXPECT_SELECT_ARGUMENT_OPTIONS";
+  ErrorKind2[ErrorKind2["EXPECT_PLURAL_ARGUMENT_OFFSET_VALUE"] = 13] = "EXPECT_PLURAL_ARGUMENT_OFFSET_VALUE";
+  ErrorKind2[ErrorKind2["INVALID_PLURAL_ARGUMENT_OFFSET_VALUE"] = 14] = "INVALID_PLURAL_ARGUMENT_OFFSET_VALUE";
+  ErrorKind2[ErrorKind2["EXPECT_SELECT_ARGUMENT_SELECTOR"] = 15] = "EXPECT_SELECT_ARGUMENT_SELECTOR";
+  ErrorKind2[ErrorKind2["EXPECT_PLURAL_ARGUMENT_SELECTOR"] = 16] = "EXPECT_PLURAL_ARGUMENT_SELECTOR";
+  ErrorKind2[ErrorKind2["EXPECT_SELECT_ARGUMENT_SELECTOR_FRAGMENT"] = 17] = "EXPECT_SELECT_ARGUMENT_SELECTOR_FRAGMENT";
+  ErrorKind2[ErrorKind2["EXPECT_PLURAL_ARGUMENT_SELECTOR_FRAGMENT"] = 18] = "EXPECT_PLURAL_ARGUMENT_SELECTOR_FRAGMENT";
+  ErrorKind2[ErrorKind2["INVALID_PLURAL_ARGUMENT_SELECTOR"] = 19] = "INVALID_PLURAL_ARGUMENT_SELECTOR";
+  ErrorKind2[ErrorKind2["DUPLICATE_PLURAL_ARGUMENT_SELECTOR"] = 20] = "DUPLICATE_PLURAL_ARGUMENT_SELECTOR";
+  ErrorKind2[ErrorKind2["DUPLICATE_SELECT_ARGUMENT_SELECTOR"] = 21] = "DUPLICATE_SELECT_ARGUMENT_SELECTOR";
+  ErrorKind2[ErrorKind2["MISSING_OTHER_CLAUSE"] = 22] = "MISSING_OTHER_CLAUSE";
+  ErrorKind2[ErrorKind2["INVALID_TAG"] = 23] = "INVALID_TAG";
+  ErrorKind2[ErrorKind2["INVALID_TAG_NAME"] = 25] = "INVALID_TAG_NAME";
+  ErrorKind2[ErrorKind2["UNMATCHED_CLOSING_TAG"] = 26] = "UNMATCHED_CLOSING_TAG";
+  ErrorKind2[ErrorKind2["UNCLOSED_TAG"] = 27] = "UNCLOSED_TAG";
+})(ErrorKind || (ErrorKind = {}));
+
+// node_modules/@formatjs/icu-messageformat-parser/lib/types.js
+var TYPE;
+(function(TYPE2) {
+  TYPE2[TYPE2["literal"] = 0] = "literal";
+  TYPE2[TYPE2["argument"] = 1] = "argument";
+  TYPE2[TYPE2["number"] = 2] = "number";
+  TYPE2[TYPE2["date"] = 3] = "date";
+  TYPE2[TYPE2["time"] = 4] = "time";
+  TYPE2[TYPE2["select"] = 5] = "select";
+  TYPE2[TYPE2["plural"] = 6] = "plural";
+  TYPE2[TYPE2["pound"] = 7] = "pound";
+  TYPE2[TYPE2["tag"] = 8] = "tag";
+})(TYPE || (TYPE = {}));
+var SKELETON_TYPE;
+(function(SKELETON_TYPE2) {
+  SKELETON_TYPE2[SKELETON_TYPE2["number"] = 0] = "number";
+  SKELETON_TYPE2[SKELETON_TYPE2["dateTime"] = 1] = "dateTime";
+})(SKELETON_TYPE || (SKELETON_TYPE = {}));
+function isLiteralElement(el) {
+  return el.type === TYPE.literal;
+}
+function isArgumentElement(el) {
+  return el.type === TYPE.argument;
+}
+function isNumberElement(el) {
+  return el.type === TYPE.number;
+}
+function isDateElement(el) {
+  return el.type === TYPE.date;
+}
+function isTimeElement(el) {
+  return el.type === TYPE.time;
+}
+function isSelectElement(el) {
+  return el.type === TYPE.select;
+}
+function isPluralElement(el) {
+  return el.type === TYPE.plural;
+}
+function isPoundElement(el) {
+  return el.type === TYPE.pound;
+}
+function isTagElement(el) {
+  return el.type === TYPE.tag;
+}
+function isNumberSkeleton(el) {
+  return !!(el && typeof el === "object" && el.type === SKELETON_TYPE.number);
+}
+function isDateTimeSkeleton(el) {
+  return !!(el && typeof el === "object" && el.type === SKELETON_TYPE.dateTime);
+}
+
+// node_modules/@formatjs/icu-messageformat-parser/lib/regex.generated.js
+var SPACE_SEPARATOR_REGEX = /[ \xA0\u1680\u2000-\u200A\u202F\u205F\u3000]/;
+
+// node_modules/@formatjs/icu-skeleton-parser/lib/date-time.js
+var DATE_TIME_REGEX = /(?:[Eec]{1,6}|G{1,5}|[Qq]{1,5}|(?:[yYur]+|U{1,5})|[ML]{1,5}|d{1,2}|D{1,3}|F{1}|[abB]{1,5}|[hkHK]{1,2}|w{1,2}|W{1}|m{1,2}|s{1,2}|[zZOvVxX]{1,4})(?=([^']*'[^']*')*[^']*$)/g;
+function parseDateTimeSkeleton(skeleton) {
+  var result = {};
+  skeleton.replace(DATE_TIME_REGEX, function(match) {
+    var len = match.length;
+    switch (match[0]) {
+      case "G":
+        result.era = len === 4 ? "long" : len === 5 ? "narrow" : "short";
+        break;
+      case "y":
+        result.year = len === 2 ? "2-digit" : "numeric";
+        break;
+      case "Y":
+      case "u":
+      case "U":
+      case "r":
+        throw new RangeError("`Y/u/U/r` (year) patterns are not supported, use `y` instead");
+      case "q":
+      case "Q":
+        throw new RangeError("`q/Q` (quarter) patterns are not supported");
+      case "M":
+      case "L":
+        result.month = ["numeric", "2-digit", "short", "long", "narrow"][len - 1];
+        break;
+      case "w":
+      case "W":
+        throw new RangeError("`w/W` (week) patterns are not supported");
+      case "d":
+        result.day = ["numeric", "2-digit"][len - 1];
+        break;
+      case "D":
+      case "F":
+      case "g":
+        throw new RangeError("`D/F/g` (day) patterns are not supported, use `d` instead");
+      case "E":
+        result.weekday = len === 4 ? "short" : len === 5 ? "narrow" : "short";
+        break;
+      case "e":
+        if (len < 4) {
+          throw new RangeError("`e..eee` (weekday) patterns are not supported");
+        }
+        result.weekday = ["short", "long", "narrow", "short"][len - 4];
+        break;
+      case "c":
+        if (len < 4) {
+          throw new RangeError("`c..ccc` (weekday) patterns are not supported");
+        }
+        result.weekday = ["short", "long", "narrow", "short"][len - 4];
+        break;
+      case "a":
+        result.hour12 = true;
+        break;
+      case "b":
+      case "B":
+        throw new RangeError("`b/B` (period) patterns are not supported, use `a` instead");
+      case "h":
+        result.hourCycle = "h12";
+        result.hour = ["numeric", "2-digit"][len - 1];
+        break;
+      case "H":
+        result.hourCycle = "h23";
+        result.hour = ["numeric", "2-digit"][len - 1];
+        break;
+      case "K":
+        result.hourCycle = "h11";
+        result.hour = ["numeric", "2-digit"][len - 1];
+        break;
+      case "k":
+        result.hourCycle = "h24";
+        result.hour = ["numeric", "2-digit"][len - 1];
+        break;
+      case "j":
+      case "J":
+      case "C":
+        throw new RangeError("`j/J/C` (hour) patterns are not supported, use `h/H/K/k` instead");
+      case "m":
+        result.minute = ["numeric", "2-digit"][len - 1];
+        break;
+      case "s":
+        result.second = ["numeric", "2-digit"][len - 1];
+        break;
+      case "S":
+      case "A":
+        throw new RangeError("`S/A` (second) patterns are not supported, use `s` instead");
+      case "z":
+        result.timeZoneName = len < 4 ? "short" : "long";
+        break;
+      case "Z":
+      case "O":
+      case "v":
+      case "V":
+      case "X":
+      case "x":
+        throw new RangeError("`Z/O/v/V/X/x` (timeZone) patterns are not supported, use `z` instead");
+    }
+    return "";
+  });
+  return result;
+}
+
+// node_modules/@formatjs/icu-skeleton-parser/lib/regex.generated.js
+var WHITE_SPACE_REGEX = /[\t-\r \x85\u200E\u200F\u2028\u2029]/i;
+
+// node_modules/@formatjs/icu-skeleton-parser/lib/number.js
+function parseNumberSkeletonFromString(skeleton) {
+  if (skeleton.length === 0) {
+    throw new Error("Number skeleton cannot be empty");
+  }
+  var stringTokens = skeleton.split(WHITE_SPACE_REGEX).filter(function(x3) {
+    return x3.length > 0;
+  });
+  var tokens = [];
+  for (var _i = 0, stringTokens_1 = stringTokens; _i < stringTokens_1.length; _i++) {
+    var stringToken = stringTokens_1[_i];
+    var stemAndOptions = stringToken.split("/");
+    if (stemAndOptions.length === 0) {
+      throw new Error("Invalid number skeleton");
+    }
+    var stem = stemAndOptions[0], options = stemAndOptions.slice(1);
+    for (var _a2 = 0, options_1 = options; _a2 < options_1.length; _a2++) {
+      var option = options_1[_a2];
+      if (option.length === 0) {
+        throw new Error("Invalid number skeleton");
+      }
+    }
+    tokens.push({ stem, options });
+  }
+  return tokens;
+}
+function icuUnitToEcma(unit) {
+  return unit.replace(/^(.*?)-/, "");
+}
+var FRACTION_PRECISION_REGEX = /^\.(?:(0+)(\*)?|(#+)|(0+)(#+))$/g;
+var SIGNIFICANT_PRECISION_REGEX = /^(@+)?(\+|#+)?$/g;
+var INTEGER_WIDTH_REGEX = /(\*)(0+)|(#+)(0+)|(0+)/g;
+var CONCISE_INTEGER_WIDTH_REGEX = /^(0+)$/;
+function parseSignificantPrecision(str) {
+  var result = {};
+  str.replace(SIGNIFICANT_PRECISION_REGEX, function(_3, g1, g22) {
+    if (typeof g22 !== "string") {
+      result.minimumSignificantDigits = g1.length;
+      result.maximumSignificantDigits = g1.length;
+    } else if (g22 === "+") {
+      result.minimumSignificantDigits = g1.length;
+    } else if (g1[0] === "#") {
+      result.maximumSignificantDigits = g1.length;
+    } else {
+      result.minimumSignificantDigits = g1.length;
+      result.maximumSignificantDigits = g1.length + (typeof g22 === "string" ? g22.length : 0);
+    }
+    return "";
+  });
+  return result;
+}
+function parseSign(str) {
+  switch (str) {
+    case "sign-auto":
+      return {
+        signDisplay: "auto"
+      };
+    case "sign-accounting":
+    case "()":
+      return {
+        currencySign: "accounting"
+      };
+    case "sign-always":
+    case "+!":
+      return {
+        signDisplay: "always"
+      };
+    case "sign-accounting-always":
+    case "()!":
+      return {
+        signDisplay: "always",
+        currencySign: "accounting"
+      };
+    case "sign-except-zero":
+    case "+?":
+      return {
+        signDisplay: "exceptZero"
+      };
+    case "sign-accounting-except-zero":
+    case "()?":
+      return {
+        signDisplay: "exceptZero",
+        currencySign: "accounting"
+      };
+    case "sign-never":
+    case "+_":
+      return {
+        signDisplay: "never"
+      };
+  }
+}
+function parseConciseScientificAndEngineeringStem(stem) {
+  var result;
+  if (stem[0] === "E" && stem[1] === "E") {
+    result = {
+      notation: "engineering"
+    };
+    stem = stem.slice(2);
+  } else if (stem[0] === "E") {
+    result = {
+      notation: "scientific"
+    };
+    stem = stem.slice(1);
+  }
+  if (result) {
+    var signDisplay = stem.slice(0, 2);
+    if (signDisplay === "+!") {
+      result.signDisplay = "always";
+      stem = stem.slice(2);
+    } else if (signDisplay === "+?") {
+      result.signDisplay = "exceptZero";
+      stem = stem.slice(2);
+    }
+    if (!CONCISE_INTEGER_WIDTH_REGEX.test(stem)) {
+      throw new Error("Malformed concise eng/scientific notation");
+    }
+    result.minimumIntegerDigits = stem.length;
+  }
+  return result;
+}
+function parseNotationOptions(opt) {
+  var result = {};
+  var signOpts = parseSign(opt);
+  if (signOpts) {
+    return signOpts;
+  }
+  return result;
+}
+function parseNumberSkeleton(tokens) {
+  var result = {};
+  for (var _i = 0, tokens_1 = tokens; _i < tokens_1.length; _i++) {
+    var token = tokens_1[_i];
+    switch (token.stem) {
+      case "percent":
+      case "%":
+        result.style = "percent";
+        continue;
+      case "%x100":
+        result.style = "percent";
+        result.scale = 100;
+        continue;
+      case "currency":
+        result.style = "currency";
+        result.currency = token.options[0];
+        continue;
+      case "group-off":
+      case ",_":
+        result.useGrouping = false;
+        continue;
+      case "precision-integer":
+      case ".":
+        result.maximumFractionDigits = 0;
+        continue;
+      case "measure-unit":
+      case "unit":
+        result.style = "unit";
+        result.unit = icuUnitToEcma(token.options[0]);
+        continue;
+      case "compact-short":
+      case "K":
+        result.notation = "compact";
+        result.compactDisplay = "short";
+        continue;
+      case "compact-long":
+      case "KK":
+        result.notation = "compact";
+        result.compactDisplay = "long";
+        continue;
+      case "scientific":
+        result = __assign(__assign(__assign({}, result), { notation: "scientific" }), token.options.reduce(function(all, opt) {
+          return __assign(__assign({}, all), parseNotationOptions(opt));
+        }, {}));
+        continue;
+      case "engineering":
+        result = __assign(__assign(__assign({}, result), { notation: "engineering" }), token.options.reduce(function(all, opt) {
+          return __assign(__assign({}, all), parseNotationOptions(opt));
+        }, {}));
+        continue;
+      case "notation-simple":
+        result.notation = "standard";
+        continue;
+      case "unit-width-narrow":
+        result.currencyDisplay = "narrowSymbol";
+        result.unitDisplay = "narrow";
+        continue;
+      case "unit-width-short":
+        result.currencyDisplay = "code";
+        result.unitDisplay = "short";
+        continue;
+      case "unit-width-full-name":
+        result.currencyDisplay = "name";
+        result.unitDisplay = "long";
+        continue;
+      case "unit-width-iso-code":
+        result.currencyDisplay = "symbol";
+        continue;
+      case "scale":
+        result.scale = parseFloat(token.options[0]);
+        continue;
+      case "integer-width":
+        if (token.options.length > 1) {
+          throw new RangeError("integer-width stems only accept a single optional option");
+        }
+        token.options[0].replace(INTEGER_WIDTH_REGEX, function(_3, g1, g22, g3, g4, g5) {
+          if (g1) {
+            result.minimumIntegerDigits = g22.length;
+          } else if (g3 && g4) {
+            throw new Error("We currently do not support maximum integer digits");
+          } else if (g5) {
+            throw new Error("We currently do not support exact integer digits");
+          }
+          return "";
+        });
+        continue;
+    }
+    if (CONCISE_INTEGER_WIDTH_REGEX.test(token.stem)) {
+      result.minimumIntegerDigits = token.stem.length;
+      continue;
+    }
+    if (FRACTION_PRECISION_REGEX.test(token.stem)) {
+      if (token.options.length > 1) {
+        throw new RangeError("Fraction-precision stems only accept a single optional option");
+      }
+      token.stem.replace(FRACTION_PRECISION_REGEX, function(_3, g1, g22, g3, g4, g5) {
+        if (g22 === "*") {
+          result.minimumFractionDigits = g1.length;
+        } else if (g3 && g3[0] === "#") {
+          result.maximumFractionDigits = g3.length;
+        } else if (g4 && g5) {
+          result.minimumFractionDigits = g4.length;
+          result.maximumFractionDigits = g4.length + g5.length;
+        } else {
+          result.minimumFractionDigits = g1.length;
+          result.maximumFractionDigits = g1.length;
+        }
+        return "";
+      });
+      if (token.options.length) {
+        result = __assign(__assign({}, result), parseSignificantPrecision(token.options[0]));
+      }
+      continue;
+    }
+    if (SIGNIFICANT_PRECISION_REGEX.test(token.stem)) {
+      result = __assign(__assign({}, result), parseSignificantPrecision(token.stem));
+      continue;
+    }
+    var signOpts = parseSign(token.stem);
+    if (signOpts) {
+      result = __assign(__assign({}, result), signOpts);
+    }
+    var conciseScientificAndEngineeringOpts = parseConciseScientificAndEngineeringStem(token.stem);
+    if (conciseScientificAndEngineeringOpts) {
+      result = __assign(__assign({}, result), conciseScientificAndEngineeringOpts);
+    }
+  }
+  return result;
+}
+
+// node_modules/@formatjs/icu-messageformat-parser/lib/parser.js
+var _a;
+var SPACE_SEPARATOR_START_REGEX = new RegExp("^" + SPACE_SEPARATOR_REGEX.source + "*");
+var SPACE_SEPARATOR_END_REGEX = new RegExp(SPACE_SEPARATOR_REGEX.source + "*$");
+function createLocation(start, end) {
+  return { start, end };
+}
+var hasNativeStartsWith = !!String.prototype.startsWith;
+var hasNativeFromCodePoint = !!String.fromCodePoint;
+var hasNativeFromEntries = !!Object.fromEntries;
+var hasNativeCodePointAt = !!String.prototype.codePointAt;
+var hasTrimStart = !!String.prototype.trimStart;
+var hasTrimEnd = !!String.prototype.trimEnd;
+var hasNativeIsSafeInteger = !!Number.isSafeInteger;
+var isSafeInteger = hasNativeIsSafeInteger ? Number.isSafeInteger : function(n8) {
+  return typeof n8 === "number" && isFinite(n8) && Math.floor(n8) === n8 && Math.abs(n8) <= 9007199254740991;
+};
+var REGEX_SUPPORTS_U_AND_Y = true;
+try {
+  re = RE("([^\\p{White_Space}\\p{Pattern_Syntax}]*)", "yu");
+  REGEX_SUPPORTS_U_AND_Y = ((_a = re.exec("a")) === null || _a === void 0 ? void 0 : _a[0]) === "a";
+} catch (_3) {
+  REGEX_SUPPORTS_U_AND_Y = false;
+}
+var re;
+var startsWith = hasNativeStartsWith ? (
+  // Native
+  function startsWith2(s8, search, position) {
+    return s8.startsWith(search, position);
+  }
+) : (
+  // For IE11
+  function startsWith3(s8, search, position) {
+    return s8.slice(position, position + search.length) === search;
+  }
+);
+var fromCodePoint = hasNativeFromCodePoint ? String.fromCodePoint : (
+  // IE11
+  function fromCodePoint2() {
+    var codePoints = [];
+    for (var _i = 0; _i < arguments.length; _i++) {
+      codePoints[_i] = arguments[_i];
+    }
+    var elements = "";
+    var length = codePoints.length;
+    var i5 = 0;
+    var code;
+    while (length > i5) {
+      code = codePoints[i5++];
+      if (code > 1114111)
+        throw RangeError(code + " is not a valid code point");
+      elements += code < 65536 ? String.fromCharCode(code) : String.fromCharCode(((code -= 65536) >> 10) + 55296, code % 1024 + 56320);
+    }
+    return elements;
+  }
+);
+var fromEntries = (
+  // native
+  hasNativeFromEntries ? Object.fromEntries : (
+    // Ponyfill
+    function fromEntries2(entries) {
+      var obj = {};
+      for (var _i = 0, entries_1 = entries; _i < entries_1.length; _i++) {
+        var _a2 = entries_1[_i], k3 = _a2[0], v3 = _a2[1];
+        obj[k3] = v3;
+      }
+      return obj;
+    }
+  )
+);
+var codePointAt = hasNativeCodePointAt ? (
+  // Native
+  function codePointAt2(s8, index) {
+    return s8.codePointAt(index);
+  }
+) : (
+  // IE 11
+  function codePointAt3(s8, index) {
+    var size = s8.length;
+    if (index < 0 || index >= size) {
+      return void 0;
+    }
+    var first = s8.charCodeAt(index);
+    var second;
+    return first < 55296 || first > 56319 || index + 1 === size || (second = s8.charCodeAt(index + 1)) < 56320 || second > 57343 ? first : (first - 55296 << 10) + (second - 56320) + 65536;
+  }
+);
+var trimStart = hasTrimStart ? (
+  // Native
+  function trimStart2(s8) {
+    return s8.trimStart();
+  }
+) : (
+  // Ponyfill
+  function trimStart3(s8) {
+    return s8.replace(SPACE_SEPARATOR_START_REGEX, "");
+  }
+);
+var trimEnd = hasTrimEnd ? (
+  // Native
+  function trimEnd2(s8) {
+    return s8.trimEnd();
+  }
+) : (
+  // Ponyfill
+  function trimEnd3(s8) {
+    return s8.replace(SPACE_SEPARATOR_END_REGEX, "");
+  }
+);
+function RE(s8, flag) {
+  return new RegExp(s8, flag);
+}
+var matchIdentifierAtIndex;
+if (REGEX_SUPPORTS_U_AND_Y) {
+  IDENTIFIER_PREFIX_RE_1 = RE("([^\\p{White_Space}\\p{Pattern_Syntax}]*)", "yu");
+  matchIdentifierAtIndex = function matchIdentifierAtIndex2(s8, index) {
+    var _a2;
+    IDENTIFIER_PREFIX_RE_1.lastIndex = index;
+    var match = IDENTIFIER_PREFIX_RE_1.exec(s8);
+    return (_a2 = match[1]) !== null && _a2 !== void 0 ? _a2 : "";
+  };
+} else {
+  matchIdentifierAtIndex = function matchIdentifierAtIndex2(s8, index) {
+    var match = [];
+    while (true) {
+      var c5 = codePointAt(s8, index);
+      if (c5 === void 0 || _isWhiteSpace(c5) || _isPatternSyntax(c5)) {
+        break;
+      }
+      match.push(c5);
+      index += c5 >= 65536 ? 2 : 1;
+    }
+    return fromCodePoint.apply(void 0, match);
+  };
+}
+var IDENTIFIER_PREFIX_RE_1;
+var Parser = (
+  /** @class */
+  function() {
+    function Parser2(message, options) {
+      if (options === void 0) {
+        options = {};
+      }
+      this.message = message;
+      this.position = { offset: 0, line: 1, column: 1 };
+      this.ignoreTag = !!options.ignoreTag;
+      this.requiresOtherClause = !!options.requiresOtherClause;
+      this.shouldParseSkeletons = !!options.shouldParseSkeletons;
+    }
+    Parser2.prototype.parse = function() {
+      if (this.offset() !== 0) {
+        throw Error("parser can only be used once");
+      }
+      return this.parseMessage(0, "", false);
+    };
+    Parser2.prototype.parseMessage = function(nestingLevel, parentArgType, expectingCloseTag) {
+      var elements = [];
+      while (!this.isEOF()) {
+        var char = this.char();
+        if (char === 123) {
+          var result = this.parseArgument(nestingLevel, expectingCloseTag);
+          if (result.err) {
+            return result;
+          }
+          elements.push(result.val);
+        } else if (char === 125 && nestingLevel > 0) {
+          break;
+        } else if (char === 35 && (parentArgType === "plural" || parentArgType === "selectordinal")) {
+          var position = this.clonePosition();
+          this.bump();
+          elements.push({
+            type: TYPE.pound,
+            location: createLocation(position, this.clonePosition())
+          });
+        } else if (char === 60 && !this.ignoreTag && this.peek() === 47) {
+          if (expectingCloseTag) {
+            break;
+          } else {
+            return this.error(ErrorKind.UNMATCHED_CLOSING_TAG, createLocation(this.clonePosition(), this.clonePosition()));
+          }
+        } else if (char === 60 && !this.ignoreTag && _isAlpha(this.peek() || 0)) {
+          var result = this.parseTag(nestingLevel, parentArgType);
+          if (result.err) {
+            return result;
+          }
+          elements.push(result.val);
+        } else {
+          var result = this.parseLiteral(nestingLevel, parentArgType);
+          if (result.err) {
+            return result;
+          }
+          elements.push(result.val);
+        }
+      }
+      return { val: elements, err: null };
+    };
+    Parser2.prototype.parseTag = function(nestingLevel, parentArgType) {
+      var startPosition = this.clonePosition();
+      this.bump();
+      var tagName = this.parseTagName();
+      this.bumpSpace();
+      if (this.bumpIf("/>")) {
+        return {
+          val: {
+            type: TYPE.literal,
+            value: "<" + tagName + "/>",
+            location: createLocation(startPosition, this.clonePosition())
+          },
+          err: null
+        };
+      } else if (this.bumpIf(">")) {
+        var childrenResult = this.parseMessage(nestingLevel + 1, parentArgType, true);
+        if (childrenResult.err) {
+          return childrenResult;
+        }
+        var children = childrenResult.val;
+        var endTagStartPosition = this.clonePosition();
+        if (this.bumpIf("</")) {
+          if (this.isEOF() || !_isAlpha(this.char())) {
+            return this.error(ErrorKind.INVALID_TAG, createLocation(endTagStartPosition, this.clonePosition()));
+          }
+          var closingTagNameStartPosition = this.clonePosition();
+          var closingTagName = this.parseTagName();
+          if (tagName !== closingTagName) {
+            return this.error(ErrorKind.UNMATCHED_CLOSING_TAG, createLocation(closingTagNameStartPosition, this.clonePosition()));
+          }
+          this.bumpSpace();
+          if (!this.bumpIf(">")) {
+            return this.error(ErrorKind.INVALID_TAG, createLocation(endTagStartPosition, this.clonePosition()));
+          }
+          return {
+            val: {
+              type: TYPE.tag,
+              value: tagName,
+              children,
+              location: createLocation(startPosition, this.clonePosition())
+            },
+            err: null
+          };
+        } else {
+          return this.error(ErrorKind.UNCLOSED_TAG, createLocation(startPosition, this.clonePosition()));
+        }
+      } else {
+        return this.error(ErrorKind.INVALID_TAG, createLocation(startPosition, this.clonePosition()));
+      }
+    };
+    Parser2.prototype.parseTagName = function() {
+      var startOffset = this.offset();
+      this.bump();
+      while (!this.isEOF() && _isPotentialElementNameChar(this.char())) {
+        this.bump();
+      }
+      return this.message.slice(startOffset, this.offset());
+    };
+    Parser2.prototype.parseLiteral = function(nestingLevel, parentArgType) {
+      var start = this.clonePosition();
+      var value = "";
+      while (true) {
+        var parseQuoteResult = this.tryParseQuote(parentArgType);
+        if (parseQuoteResult) {
+          value += parseQuoteResult;
+          continue;
+        }
+        var parseUnquotedResult = this.tryParseUnquoted(nestingLevel, parentArgType);
+        if (parseUnquotedResult) {
+          value += parseUnquotedResult;
+          continue;
+        }
+        var parseLeftAngleResult = this.tryParseLeftAngleBracket();
+        if (parseLeftAngleResult) {
+          value += parseLeftAngleResult;
+          continue;
+        }
+        break;
+      }
+      var location = createLocation(start, this.clonePosition());
+      return {
+        val: { type: TYPE.literal, value, location },
+        err: null
+      };
+    };
+    Parser2.prototype.tryParseLeftAngleBracket = function() {
+      if (!this.isEOF() && this.char() === 60 && (this.ignoreTag || // If at the opening tag or closing tag position, bail.
+      !_isAlphaOrSlash(this.peek() || 0))) {
+        this.bump();
+        return "<";
+      }
+      return null;
+    };
+    Parser2.prototype.tryParseQuote = function(parentArgType) {
+      if (this.isEOF() || this.char() !== 39) {
+        return null;
+      }
+      switch (this.peek()) {
+        case 39:
+          this.bump();
+          this.bump();
+          return "'";
+        case 123:
+        case 60:
+        case 62:
+        case 125:
+          break;
+        case 35:
+          if (parentArgType === "plural" || parentArgType === "selectordinal") {
+            break;
+          }
+          return null;
+        default:
+          return null;
+      }
+      this.bump();
+      var codePoints = [this.char()];
+      this.bump();
+      while (!this.isEOF()) {
+        var ch = this.char();
+        if (ch === 39) {
+          if (this.peek() === 39) {
+            codePoints.push(39);
+            this.bump();
+          } else {
+            this.bump();
+            break;
+          }
+        } else {
+          codePoints.push(ch);
+        }
+        this.bump();
+      }
+      return fromCodePoint.apply(void 0, codePoints);
+    };
+    Parser2.prototype.tryParseUnquoted = function(nestingLevel, parentArgType) {
+      if (this.isEOF()) {
+        return null;
+      }
+      var ch = this.char();
+      if (ch === 60 || ch === 123 || ch === 35 && (parentArgType === "plural" || parentArgType === "selectordinal") || ch === 125 && nestingLevel > 0) {
+        return null;
+      } else {
+        this.bump();
+        return fromCodePoint(ch);
+      }
+    };
+    Parser2.prototype.parseArgument = function(nestingLevel, expectingCloseTag) {
+      var openingBracePosition = this.clonePosition();
+      this.bump();
+      this.bumpSpace();
+      if (this.isEOF()) {
+        return this.error(ErrorKind.EXPECT_ARGUMENT_CLOSING_BRACE, createLocation(openingBracePosition, this.clonePosition()));
+      }
+      if (this.char() === 125) {
+        this.bump();
+        return this.error(ErrorKind.EMPTY_ARGUMENT, createLocation(openingBracePosition, this.clonePosition()));
+      }
+      var value = this.parseIdentifierIfPossible().value;
+      if (!value) {
+        return this.error(ErrorKind.MALFORMED_ARGUMENT, createLocation(openingBracePosition, this.clonePosition()));
+      }
+      this.bumpSpace();
+      if (this.isEOF()) {
+        return this.error(ErrorKind.EXPECT_ARGUMENT_CLOSING_BRACE, createLocation(openingBracePosition, this.clonePosition()));
+      }
+      switch (this.char()) {
+        case 125: {
+          this.bump();
+          return {
+            val: {
+              type: TYPE.argument,
+              // value does not include the opening and closing braces.
+              value,
+              location: createLocation(openingBracePosition, this.clonePosition())
+            },
+            err: null
+          };
+        }
+        case 44: {
+          this.bump();
+          this.bumpSpace();
+          if (this.isEOF()) {
+            return this.error(ErrorKind.EXPECT_ARGUMENT_CLOSING_BRACE, createLocation(openingBracePosition, this.clonePosition()));
+          }
+          return this.parseArgumentOptions(nestingLevel, expectingCloseTag, value, openingBracePosition);
+        }
+        default:
+          return this.error(ErrorKind.MALFORMED_ARGUMENT, createLocation(openingBracePosition, this.clonePosition()));
+      }
+    };
+    Parser2.prototype.parseIdentifierIfPossible = function() {
+      var startingPosition = this.clonePosition();
+      var startOffset = this.offset();
+      var value = matchIdentifierAtIndex(this.message, startOffset);
+      var endOffset = startOffset + value.length;
+      this.bumpTo(endOffset);
+      var endPosition = this.clonePosition();
+      var location = createLocation(startingPosition, endPosition);
+      return { value, location };
+    };
+    Parser2.prototype.parseArgumentOptions = function(nestingLevel, expectingCloseTag, value, openingBracePosition) {
+      var _a2;
+      var typeStartPosition = this.clonePosition();
+      var argType = this.parseIdentifierIfPossible().value;
+      var typeEndPosition = this.clonePosition();
+      switch (argType) {
+        case "":
+          return this.error(ErrorKind.EXPECT_ARGUMENT_TYPE, createLocation(typeStartPosition, typeEndPosition));
+        case "number":
+        case "date":
+        case "time": {
+          this.bumpSpace();
+          var styleAndLocation = null;
+          if (this.bumpIf(",")) {
+            this.bumpSpace();
+            var styleStartPosition = this.clonePosition();
+            var result = this.parseSimpleArgStyleIfPossible();
+            if (result.err) {
+              return result;
+            }
+            var style = trimEnd(result.val);
+            if (style.length === 0) {
+              return this.error(ErrorKind.EXPECT_ARGUMENT_STYLE, createLocation(this.clonePosition(), this.clonePosition()));
+            }
+            var styleLocation = createLocation(styleStartPosition, this.clonePosition());
+            styleAndLocation = { style, styleLocation };
+          }
+          var argCloseResult = this.tryParseArgumentClose(openingBracePosition);
+          if (argCloseResult.err) {
+            return argCloseResult;
+          }
+          var location_1 = createLocation(openingBracePosition, this.clonePosition());
+          if (styleAndLocation && startsWith(styleAndLocation === null || styleAndLocation === void 0 ? void 0 : styleAndLocation.style, "::", 0)) {
+            var skeleton = trimStart(styleAndLocation.style.slice(2));
+            if (argType === "number") {
+              var result = this.parseNumberSkeletonFromString(skeleton, styleAndLocation.styleLocation);
+              if (result.err) {
+                return result;
+              }
+              return {
+                val: { type: TYPE.number, value, location: location_1, style: result.val },
+                err: null
+              };
+            } else {
+              if (skeleton.length === 0) {
+                return this.error(ErrorKind.EXPECT_DATE_TIME_SKELETON, location_1);
+              }
+              var style = {
+                type: SKELETON_TYPE.dateTime,
+                pattern: skeleton,
+                location: styleAndLocation.styleLocation,
+                parsedOptions: this.shouldParseSkeletons ? parseDateTimeSkeleton(skeleton) : {}
+              };
+              var type = argType === "date" ? TYPE.date : TYPE.time;
+              return {
+                val: { type, value, location: location_1, style },
+                err: null
+              };
+            }
+          }
+          return {
+            val: {
+              type: argType === "number" ? TYPE.number : argType === "date" ? TYPE.date : TYPE.time,
+              value,
+              location: location_1,
+              style: (_a2 = styleAndLocation === null || styleAndLocation === void 0 ? void 0 : styleAndLocation.style) !== null && _a2 !== void 0 ? _a2 : null
+            },
+            err: null
+          };
+        }
+        case "plural":
+        case "selectordinal":
+        case "select": {
+          var typeEndPosition_1 = this.clonePosition();
+          this.bumpSpace();
+          if (!this.bumpIf(",")) {
+            return this.error(ErrorKind.EXPECT_SELECT_ARGUMENT_OPTIONS, createLocation(typeEndPosition_1, __assign({}, typeEndPosition_1)));
+          }
+          this.bumpSpace();
+          var identifierAndLocation = this.parseIdentifierIfPossible();
+          var pluralOffset = 0;
+          if (argType !== "select" && identifierAndLocation.value === "offset") {
+            if (!this.bumpIf(":")) {
+              return this.error(ErrorKind.EXPECT_PLURAL_ARGUMENT_OFFSET_VALUE, createLocation(this.clonePosition(), this.clonePosition()));
+            }
+            this.bumpSpace();
+            var result = this.tryParseDecimalInteger(ErrorKind.EXPECT_PLURAL_ARGUMENT_OFFSET_VALUE, ErrorKind.INVALID_PLURAL_ARGUMENT_OFFSET_VALUE);
+            if (result.err) {
+              return result;
+            }
+            this.bumpSpace();
+            identifierAndLocation = this.parseIdentifierIfPossible();
+            pluralOffset = result.val;
+          }
+          var optionsResult = this.tryParsePluralOrSelectOptions(nestingLevel, argType, expectingCloseTag, identifierAndLocation);
+          if (optionsResult.err) {
+            return optionsResult;
+          }
+          var argCloseResult = this.tryParseArgumentClose(openingBracePosition);
+          if (argCloseResult.err) {
+            return argCloseResult;
+          }
+          var location_2 = createLocation(openingBracePosition, this.clonePosition());
+          if (argType === "select") {
+            return {
+              val: {
+                type: TYPE.select,
+                value,
+                options: fromEntries(optionsResult.val),
+                location: location_2
+              },
+              err: null
+            };
+          } else {
+            return {
+              val: {
+                type: TYPE.plural,
+                value,
+                options: fromEntries(optionsResult.val),
+                offset: pluralOffset,
+                pluralType: argType === "plural" ? "cardinal" : "ordinal",
+                location: location_2
+              },
+              err: null
+            };
+          }
+        }
+        default:
+          return this.error(ErrorKind.INVALID_ARGUMENT_TYPE, createLocation(typeStartPosition, typeEndPosition));
+      }
+    };
+    Parser2.prototype.tryParseArgumentClose = function(openingBracePosition) {
+      if (this.isEOF() || this.char() !== 125) {
+        return this.error(ErrorKind.EXPECT_ARGUMENT_CLOSING_BRACE, createLocation(openingBracePosition, this.clonePosition()));
+      }
+      this.bump();
+      return { val: true, err: null };
+    };
+    Parser2.prototype.parseSimpleArgStyleIfPossible = function() {
+      var nestedBraces = 0;
+      var startPosition = this.clonePosition();
+      while (!this.isEOF()) {
+        var ch = this.char();
+        switch (ch) {
+          case 39: {
+            this.bump();
+            var apostrophePosition = this.clonePosition();
+            if (!this.bumpUntil("'")) {
+              return this.error(ErrorKind.UNCLOSED_QUOTE_IN_ARGUMENT_STYLE, createLocation(apostrophePosition, this.clonePosition()));
+            }
+            this.bump();
+            break;
+          }
+          case 123: {
+            nestedBraces += 1;
+            this.bump();
+            break;
+          }
+          case 125: {
+            if (nestedBraces > 0) {
+              nestedBraces -= 1;
+            } else {
+              return {
+                val: this.message.slice(startPosition.offset, this.offset()),
+                err: null
+              };
+            }
+            break;
+          }
+          default:
+            this.bump();
+            break;
+        }
+      }
+      return {
+        val: this.message.slice(startPosition.offset, this.offset()),
+        err: null
+      };
+    };
+    Parser2.prototype.parseNumberSkeletonFromString = function(skeleton, location) {
+      var tokens = [];
+      try {
+        tokens = parseNumberSkeletonFromString(skeleton);
+      } catch (e7) {
+        return this.error(ErrorKind.INVALID_NUMBER_SKELETON, location);
+      }
+      return {
+        val: {
+          type: SKELETON_TYPE.number,
+          tokens,
+          location,
+          parsedOptions: this.shouldParseSkeletons ? parseNumberSkeleton(tokens) : {}
+        },
+        err: null
+      };
+    };
+    Parser2.prototype.tryParsePluralOrSelectOptions = function(nestingLevel, parentArgType, expectCloseTag, parsedFirstIdentifier) {
+      var _a2;
+      var hasOtherClause = false;
+      var options = [];
+      var parsedSelectors = /* @__PURE__ */ new Set();
+      var selector = parsedFirstIdentifier.value, selectorLocation = parsedFirstIdentifier.location;
+      while (true) {
+        if (selector.length === 0) {
+          var startPosition = this.clonePosition();
+          if (parentArgType !== "select" && this.bumpIf("=")) {
+            var result = this.tryParseDecimalInteger(ErrorKind.EXPECT_PLURAL_ARGUMENT_SELECTOR, ErrorKind.INVALID_PLURAL_ARGUMENT_SELECTOR);
+            if (result.err) {
+              return result;
+            }
+            selectorLocation = createLocation(startPosition, this.clonePosition());
+            selector = this.message.slice(startPosition.offset, this.offset());
+          } else {
+            break;
+          }
+        }
+        if (parsedSelectors.has(selector)) {
+          return this.error(parentArgType === "select" ? ErrorKind.DUPLICATE_SELECT_ARGUMENT_SELECTOR : ErrorKind.DUPLICATE_PLURAL_ARGUMENT_SELECTOR, selectorLocation);
+        }
+        if (selector === "other") {
+          hasOtherClause = true;
+        }
+        this.bumpSpace();
+        var openingBracePosition = this.clonePosition();
+        if (!this.bumpIf("{")) {
+          return this.error(parentArgType === "select" ? ErrorKind.EXPECT_SELECT_ARGUMENT_SELECTOR_FRAGMENT : ErrorKind.EXPECT_PLURAL_ARGUMENT_SELECTOR_FRAGMENT, createLocation(this.clonePosition(), this.clonePosition()));
+        }
+        var fragmentResult = this.parseMessage(nestingLevel + 1, parentArgType, expectCloseTag);
+        if (fragmentResult.err) {
+          return fragmentResult;
+        }
+        var argCloseResult = this.tryParseArgumentClose(openingBracePosition);
+        if (argCloseResult.err) {
+          return argCloseResult;
+        }
+        options.push([
+          selector,
+          {
+            value: fragmentResult.val,
+            location: createLocation(openingBracePosition, this.clonePosition())
+          }
+        ]);
+        parsedSelectors.add(selector);
+        this.bumpSpace();
+        _a2 = this.parseIdentifierIfPossible(), selector = _a2.value, selectorLocation = _a2.location;
+      }
+      if (options.length === 0) {
+        return this.error(parentArgType === "select" ? ErrorKind.EXPECT_SELECT_ARGUMENT_SELECTOR : ErrorKind.EXPECT_PLURAL_ARGUMENT_SELECTOR, createLocation(this.clonePosition(), this.clonePosition()));
+      }
+      if (this.requiresOtherClause && !hasOtherClause) {
+        return this.error(ErrorKind.MISSING_OTHER_CLAUSE, createLocation(this.clonePosition(), this.clonePosition()));
+      }
+      return { val: options, err: null };
+    };
+    Parser2.prototype.tryParseDecimalInteger = function(expectNumberError, invalidNumberError) {
+      var sign = 1;
+      var startingPosition = this.clonePosition();
+      if (this.bumpIf("+")) {
+      } else if (this.bumpIf("-")) {
+        sign = -1;
+      }
+      var hasDigits = false;
+      var decimal = 0;
+      while (!this.isEOF()) {
+        var ch = this.char();
+        if (ch >= 48 && ch <= 57) {
+          hasDigits = true;
+          decimal = decimal * 10 + (ch - 48);
+          this.bump();
+        } else {
+          break;
+        }
+      }
+      var location = createLocation(startingPosition, this.clonePosition());
+      if (!hasDigits) {
+        return this.error(expectNumberError, location);
+      }
+      decimal *= sign;
+      if (!isSafeInteger(decimal)) {
+        return this.error(invalidNumberError, location);
+      }
+      return { val: decimal, err: null };
+    };
+    Parser2.prototype.offset = function() {
+      return this.position.offset;
+    };
+    Parser2.prototype.isEOF = function() {
+      return this.offset() === this.message.length;
+    };
+    Parser2.prototype.clonePosition = function() {
+      return {
+        offset: this.position.offset,
+        line: this.position.line,
+        column: this.position.column
+      };
+    };
+    Parser2.prototype.char = function() {
+      var offset = this.position.offset;
+      if (offset >= this.message.length) {
+        throw Error("out of bound");
+      }
+      var code = codePointAt(this.message, offset);
+      if (code === void 0) {
+        throw Error("Offset " + offset + " is at invalid UTF-16 code unit boundary");
+      }
+      return code;
+    };
+    Parser2.prototype.error = function(kind, location) {
+      return {
+        val: null,
+        err: {
+          kind,
+          message: this.message,
+          location
+        }
+      };
+    };
+    Parser2.prototype.bump = function() {
+      if (this.isEOF()) {
+        return;
+      }
+      var code = this.char();
+      if (code === 10) {
+        this.position.line += 1;
+        this.position.column = 1;
+        this.position.offset += 1;
+      } else {
+        this.position.column += 1;
+        this.position.offset += code < 65536 ? 1 : 2;
+      }
+    };
+    Parser2.prototype.bumpIf = function(prefix) {
+      if (startsWith(this.message, prefix, this.offset())) {
+        for (var i5 = 0; i5 < prefix.length; i5++) {
+          this.bump();
+        }
+        return true;
+      }
+      return false;
+    };
+    Parser2.prototype.bumpUntil = function(pattern) {
+      var currentOffset = this.offset();
+      var index = this.message.indexOf(pattern, currentOffset);
+      if (index >= 0) {
+        this.bumpTo(index);
+        return true;
+      } else {
+        this.bumpTo(this.message.length);
+        return false;
+      }
+    };
+    Parser2.prototype.bumpTo = function(targetOffset) {
+      if (this.offset() > targetOffset) {
+        throw Error("targetOffset " + targetOffset + " must be greater than or equal to the current offset " + this.offset());
+      }
+      targetOffset = Math.min(targetOffset, this.message.length);
+      while (true) {
+        var offset = this.offset();
+        if (offset === targetOffset) {
+          break;
+        }
+        if (offset > targetOffset) {
+          throw Error("targetOffset " + targetOffset + " is at invalid UTF-16 code unit boundary");
+        }
+        this.bump();
+        if (this.isEOF()) {
+          break;
+        }
+      }
+    };
+    Parser2.prototype.bumpSpace = function() {
+      while (!this.isEOF() && _isWhiteSpace(this.char())) {
+        this.bump();
+      }
+    };
+    Parser2.prototype.peek = function() {
+      if (this.isEOF()) {
+        return null;
+      }
+      var code = this.char();
+      var offset = this.offset();
+      var nextCode = this.message.charCodeAt(offset + (code >= 65536 ? 2 : 1));
+      return nextCode !== null && nextCode !== void 0 ? nextCode : null;
+    };
+    return Parser2;
+  }()
+);
+function _isAlpha(codepoint) {
+  return codepoint >= 97 && codepoint <= 122 || codepoint >= 65 && codepoint <= 90;
+}
+function _isAlphaOrSlash(codepoint) {
+  return _isAlpha(codepoint) || codepoint === 47;
+}
+function _isPotentialElementNameChar(c5) {
+  return c5 === 45 || c5 === 46 || c5 >= 48 && c5 <= 57 || c5 === 95 || c5 >= 97 && c5 <= 122 || c5 >= 65 && c5 <= 90 || c5 == 183 || c5 >= 192 && c5 <= 214 || c5 >= 216 && c5 <= 246 || c5 >= 248 && c5 <= 893 || c5 >= 895 && c5 <= 8191 || c5 >= 8204 && c5 <= 8205 || c5 >= 8255 && c5 <= 8256 || c5 >= 8304 && c5 <= 8591 || c5 >= 11264 && c5 <= 12271 || c5 >= 12289 && c5 <= 55295 || c5 >= 63744 && c5 <= 64975 || c5 >= 65008 && c5 <= 65533 || c5 >= 65536 && c5 <= 983039;
+}
+function _isWhiteSpace(c5) {
+  return c5 >= 9 && c5 <= 13 || c5 === 32 || c5 === 133 || c5 >= 8206 && c5 <= 8207 || c5 === 8232 || c5 === 8233;
+}
+function _isPatternSyntax(c5) {
+  return c5 >= 33 && c5 <= 35 || c5 === 36 || c5 >= 37 && c5 <= 39 || c5 === 40 || c5 === 41 || c5 === 42 || c5 === 43 || c5 === 44 || c5 === 45 || c5 >= 46 && c5 <= 47 || c5 >= 58 && c5 <= 59 || c5 >= 60 && c5 <= 62 || c5 >= 63 && c5 <= 64 || c5 === 91 || c5 === 92 || c5 === 93 || c5 === 94 || c5 === 96 || c5 === 123 || c5 === 124 || c5 === 125 || c5 === 126 || c5 === 161 || c5 >= 162 && c5 <= 165 || c5 === 166 || c5 === 167 || c5 === 169 || c5 === 171 || c5 === 172 || c5 === 174 || c5 === 176 || c5 === 177 || c5 === 182 || c5 === 187 || c5 === 191 || c5 === 215 || c5 === 247 || c5 >= 8208 && c5 <= 8213 || c5 >= 8214 && c5 <= 8215 || c5 === 8216 || c5 === 8217 || c5 === 8218 || c5 >= 8219 && c5 <= 8220 || c5 === 8221 || c5 === 8222 || c5 === 8223 || c5 >= 8224 && c5 <= 8231 || c5 >= 8240 && c5 <= 8248 || c5 === 8249 || c5 === 8250 || c5 >= 8251 && c5 <= 8254 || c5 >= 8257 && c5 <= 8259 || c5 === 8260 || c5 === 8261 || c5 === 8262 || c5 >= 8263 && c5 <= 8273 || c5 === 8274 || c5 === 8275 || c5 >= 8277 && c5 <= 8286 || c5 >= 8592 && c5 <= 8596 || c5 >= 8597 && c5 <= 8601 || c5 >= 8602 && c5 <= 8603 || c5 >= 8604 && c5 <= 8607 || c5 === 8608 || c5 >= 8609 && c5 <= 8610 || c5 === 8611 || c5 >= 8612 && c5 <= 8613 || c5 === 8614 || c5 >= 8615 && c5 <= 8621 || c5 === 8622 || c5 >= 8623 && c5 <= 8653 || c5 >= 8654 && c5 <= 8655 || c5 >= 8656 && c5 <= 8657 || c5 === 8658 || c5 === 8659 || c5 === 8660 || c5 >= 8661 && c5 <= 8691 || c5 >= 8692 && c5 <= 8959 || c5 >= 8960 && c5 <= 8967 || c5 === 8968 || c5 === 8969 || c5 === 8970 || c5 === 8971 || c5 >= 8972 && c5 <= 8991 || c5 >= 8992 && c5 <= 8993 || c5 >= 8994 && c5 <= 9e3 || c5 === 9001 || c5 === 9002 || c5 >= 9003 && c5 <= 9083 || c5 === 9084 || c5 >= 9085 && c5 <= 9114 || c5 >= 9115 && c5 <= 9139 || c5 >= 9140 && c5 <= 9179 || c5 >= 9180 && c5 <= 9185 || c5 >= 9186 && c5 <= 9254 || c5 >= 9255 && c5 <= 9279 || c5 >= 9280 && c5 <= 9290 || c5 >= 9291 && c5 <= 9311 || c5 >= 9472 && c5 <= 9654 || c5 === 9655 || c5 >= 9656 && c5 <= 9664 || c5 === 9665 || c5 >= 9666 && c5 <= 9719 || c5 >= 9720 && c5 <= 9727 || c5 >= 9728 && c5 <= 9838 || c5 === 9839 || c5 >= 9840 && c5 <= 10087 || c5 === 10088 || c5 === 10089 || c5 === 10090 || c5 === 10091 || c5 === 10092 || c5 === 10093 || c5 === 10094 || c5 === 10095 || c5 === 10096 || c5 === 10097 || c5 === 10098 || c5 === 10099 || c5 === 10100 || c5 === 10101 || c5 >= 10132 && c5 <= 10175 || c5 >= 10176 && c5 <= 10180 || c5 === 10181 || c5 === 10182 || c5 >= 10183 && c5 <= 10213 || c5 === 10214 || c5 === 10215 || c5 === 10216 || c5 === 10217 || c5 === 10218 || c5 === 10219 || c5 === 10220 || c5 === 10221 || c5 === 10222 || c5 === 10223 || c5 >= 10224 && c5 <= 10239 || c5 >= 10240 && c5 <= 10495 || c5 >= 10496 && c5 <= 10626 || c5 === 10627 || c5 === 10628 || c5 === 10629 || c5 === 10630 || c5 === 10631 || c5 === 10632 || c5 === 10633 || c5 === 10634 || c5 === 10635 || c5 === 10636 || c5 === 10637 || c5 === 10638 || c5 === 10639 || c5 === 10640 || c5 === 10641 || c5 === 10642 || c5 === 10643 || c5 === 10644 || c5 === 10645 || c5 === 10646 || c5 === 10647 || c5 === 10648 || c5 >= 10649 && c5 <= 10711 || c5 === 10712 || c5 === 10713 || c5 === 10714 || c5 === 10715 || c5 >= 10716 && c5 <= 10747 || c5 === 10748 || c5 === 10749 || c5 >= 10750 && c5 <= 11007 || c5 >= 11008 && c5 <= 11055 || c5 >= 11056 && c5 <= 11076 || c5 >= 11077 && c5 <= 11078 || c5 >= 11079 && c5 <= 11084 || c5 >= 11085 && c5 <= 11123 || c5 >= 11124 && c5 <= 11125 || c5 >= 11126 && c5 <= 11157 || c5 === 11158 || c5 >= 11159 && c5 <= 11263 || c5 >= 11776 && c5 <= 11777 || c5 === 11778 || c5 === 11779 || c5 === 11780 || c5 === 11781 || c5 >= 11782 && c5 <= 11784 || c5 === 11785 || c5 === 11786 || c5 === 11787 || c5 === 11788 || c5 === 11789 || c5 >= 11790 && c5 <= 11798 || c5 === 11799 || c5 >= 11800 && c5 <= 11801 || c5 === 11802 || c5 === 11803 || c5 === 11804 || c5 === 11805 || c5 >= 11806 && c5 <= 11807 || c5 === 11808 || c5 === 11809 || c5 === 11810 || c5 === 11811 || c5 === 11812 || c5 === 11813 || c5 === 11814 || c5 === 11815 || c5 === 11816 || c5 === 11817 || c5 >= 11818 && c5 <= 11822 || c5 === 11823 || c5 >= 11824 && c5 <= 11833 || c5 >= 11834 && c5 <= 11835 || c5 >= 11836 && c5 <= 11839 || c5 === 11840 || c5 === 11841 || c5 === 11842 || c5 >= 11843 && c5 <= 11855 || c5 >= 11856 && c5 <= 11857 || c5 === 11858 || c5 >= 11859 && c5 <= 11903 || c5 >= 12289 && c5 <= 12291 || c5 === 12296 || c5 === 12297 || c5 === 12298 || c5 === 12299 || c5 === 12300 || c5 === 12301 || c5 === 12302 || c5 === 12303 || c5 === 12304 || c5 === 12305 || c5 >= 12306 && c5 <= 12307 || c5 === 12308 || c5 === 12309 || c5 === 12310 || c5 === 12311 || c5 === 12312 || c5 === 12313 || c5 === 12314 || c5 === 12315 || c5 === 12316 || c5 === 12317 || c5 >= 12318 && c5 <= 12319 || c5 === 12320 || c5 === 12336 || c5 === 64830 || c5 === 64831 || c5 >= 65093 && c5 <= 65094;
+}
+
+// node_modules/@formatjs/icu-messageformat-parser/lib/index.js
+function pruneLocation(els) {
+  els.forEach(function(el) {
+    delete el.location;
+    if (isSelectElement(el) || isPluralElement(el)) {
+      for (var k3 in el.options) {
+        delete el.options[k3].location;
+        pruneLocation(el.options[k3].value);
+      }
+    } else if (isNumberElement(el) && isNumberSkeleton(el.style)) {
+      delete el.style.location;
+    } else if ((isDateElement(el) || isTimeElement(el)) && isDateTimeSkeleton(el.style)) {
+      delete el.style.location;
+    } else if (isTagElement(el)) {
+      pruneLocation(el.children);
+    }
+  });
+}
+function parse(message, opts) {
+  if (opts === void 0) {
+    opts = {};
+  }
+  opts = __assign({ shouldParseSkeletons: true, requiresOtherClause: true }, opts);
+  var result = new Parser(message, opts).parse();
+  if (result.err) {
+    var error = SyntaxError(ErrorKind[result.err.kind]);
+    error.location = result.err.location;
+    error.originalMessage = result.err.message;
+    throw error;
+  }
+  if (!(opts === null || opts === void 0 ? void 0 : opts.captureLocation)) {
+    pruneLocation(result.val);
+  }
+  return result.val;
+}
+
+// node_modules/@formatjs/fast-memoize/lib/index.js
+function memoize(fn, options) {
+  var cache2 = options && options.cache ? options.cache : cacheDefault;
+  var serializer = options && options.serializer ? options.serializer : serializerDefault;
+  var strategy = options && options.strategy ? options.strategy : strategyDefault;
+  return strategy(fn, {
+    cache: cache2,
+    serializer
+  });
+}
+function isPrimitive(value) {
+  return value == null || typeof value === "number" || typeof value === "boolean";
+}
+function monadic(fn, cache2, serializer, arg) {
+  var cacheKey = isPrimitive(arg) ? arg : serializer(arg);
+  var computedValue = cache2.get(cacheKey);
+  if (typeof computedValue === "undefined") {
+    computedValue = fn.call(this, arg);
+    cache2.set(cacheKey, computedValue);
+  }
+  return computedValue;
+}
+function variadic(fn, cache2, serializer) {
+  var args = Array.prototype.slice.call(arguments, 3);
+  var cacheKey = serializer(args);
+  var computedValue = cache2.get(cacheKey);
+  if (typeof computedValue === "undefined") {
+    computedValue = fn.apply(this, args);
+    cache2.set(cacheKey, computedValue);
+  }
+  return computedValue;
+}
+function assemble(fn, context, strategy, cache2, serialize) {
+  return strategy.bind(context, fn, cache2, serialize);
+}
+function strategyDefault(fn, options) {
+  var strategy = fn.length === 1 ? monadic : variadic;
+  return assemble(fn, this, strategy, options.cache.create(), options.serializer);
+}
+function strategyVariadic(fn, options) {
+  return assemble(fn, this, variadic, options.cache.create(), options.serializer);
+}
+function strategyMonadic(fn, options) {
+  return assemble(fn, this, monadic, options.cache.create(), options.serializer);
+}
+var serializerDefault = function() {
+  return JSON.stringify(arguments);
+};
+function ObjectWithoutPrototypeCache() {
+  this.cache = /* @__PURE__ */ Object.create(null);
+}
+ObjectWithoutPrototypeCache.prototype.get = function(key) {
+  return this.cache[key];
+};
+ObjectWithoutPrototypeCache.prototype.set = function(key, value) {
+  this.cache[key] = value;
+};
+var cacheDefault = {
+  create: function create() {
+    return new ObjectWithoutPrototypeCache();
+  }
+};
+var strategies = {
+  variadic: strategyVariadic,
+  monadic: strategyMonadic
+};
+
+// node_modules/intl-messageformat/lib/src/error.js
+var ErrorCode;
+(function(ErrorCode2) {
+  ErrorCode2["MISSING_VALUE"] = "MISSING_VALUE";
+  ErrorCode2["INVALID_VALUE"] = "INVALID_VALUE";
+  ErrorCode2["MISSING_INTL_API"] = "MISSING_INTL_API";
+})(ErrorCode || (ErrorCode = {}));
+var FormatError = (
+  /** @class */
+  function(_super) {
+    __extends(FormatError2, _super);
+    function FormatError2(msg, code, originalMessage) {
+      var _this = _super.call(this, msg) || this;
+      _this.code = code;
+      _this.originalMessage = originalMessage;
+      return _this;
+    }
+    FormatError2.prototype.toString = function() {
+      return "[formatjs Error: " + this.code + "] " + this.message;
+    };
+    return FormatError2;
+  }(Error)
+);
+var InvalidValueError = (
+  /** @class */
+  function(_super) {
+    __extends(InvalidValueError2, _super);
+    function InvalidValueError2(variableId, value, options, originalMessage) {
+      return _super.call(this, 'Invalid values for "' + variableId + '": "' + value + '". Options are "' + Object.keys(options).join('", "') + '"', ErrorCode.INVALID_VALUE, originalMessage) || this;
+    }
+    return InvalidValueError2;
+  }(FormatError)
+);
+var InvalidValueTypeError = (
+  /** @class */
+  function(_super) {
+    __extends(InvalidValueTypeError2, _super);
+    function InvalidValueTypeError2(value, type, originalMessage) {
+      return _super.call(this, 'Value for "' + value + '" must be of type ' + type, ErrorCode.INVALID_VALUE, originalMessage) || this;
+    }
+    return InvalidValueTypeError2;
+  }(FormatError)
+);
+var MissingValueError = (
+  /** @class */
+  function(_super) {
+    __extends(MissingValueError2, _super);
+    function MissingValueError2(variableId, originalMessage) {
+      return _super.call(this, 'The intl string context variable "' + variableId + '" was not provided to the string "' + originalMessage + '"', ErrorCode.MISSING_VALUE, originalMessage) || this;
+    }
+    return MissingValueError2;
+  }(FormatError)
+);
+
+// node_modules/intl-messageformat/lib/src/formatters.js
+var PART_TYPE;
+(function(PART_TYPE2) {
+  PART_TYPE2[PART_TYPE2["literal"] = 0] = "literal";
+  PART_TYPE2[PART_TYPE2["object"] = 1] = "object";
+})(PART_TYPE || (PART_TYPE = {}));
+function mergeLiteral(parts) {
+  if (parts.length < 2) {
+    return parts;
+  }
+  return parts.reduce(function(all, part) {
+    var lastPart = all[all.length - 1];
+    if (!lastPart || lastPart.type !== PART_TYPE.literal || part.type !== PART_TYPE.literal) {
+      all.push(part);
+    } else {
+      lastPart.value += part.value;
+    }
+    return all;
+  }, []);
+}
+function isFormatXMLElementFn(el) {
+  return typeof el === "function";
+}
+function formatToParts(els, locales, formatters, formats, values, currentPluralValue, originalMessage) {
+  if (els.length === 1 && isLiteralElement(els[0])) {
+    return [
+      {
+        type: PART_TYPE.literal,
+        value: els[0].value
+      }
+    ];
+  }
+  var result = [];
+  for (var _i = 0, els_1 = els; _i < els_1.length; _i++) {
+    var el = els_1[_i];
+    if (isLiteralElement(el)) {
+      result.push({
+        type: PART_TYPE.literal,
+        value: el.value
+      });
+      continue;
+    }
+    if (isPoundElement(el)) {
+      if (typeof currentPluralValue === "number") {
+        result.push({
+          type: PART_TYPE.literal,
+          value: formatters.getNumberFormat(locales).format(currentPluralValue)
+        });
+      }
+      continue;
+    }
+    var varName = el.value;
+    if (!(values && varName in values)) {
+      throw new MissingValueError(varName, originalMessage);
+    }
+    var value = values[varName];
+    if (isArgumentElement(el)) {
+      if (!value || typeof value === "string" || typeof value === "number") {
+        value = typeof value === "string" || typeof value === "number" ? String(value) : "";
+      }
+      result.push({
+        type: typeof value === "string" ? PART_TYPE.literal : PART_TYPE.object,
+        value
+      });
+      continue;
+    }
+    if (isDateElement(el)) {
+      var style = typeof el.style === "string" ? formats.date[el.style] : isDateTimeSkeleton(el.style) ? el.style.parsedOptions : void 0;
+      result.push({
+        type: PART_TYPE.literal,
+        value: formatters.getDateTimeFormat(locales, style).format(value)
+      });
+      continue;
+    }
+    if (isTimeElement(el)) {
+      var style = typeof el.style === "string" ? formats.time[el.style] : isDateTimeSkeleton(el.style) ? el.style.parsedOptions : void 0;
+      result.push({
+        type: PART_TYPE.literal,
+        value: formatters.getDateTimeFormat(locales, style).format(value)
+      });
+      continue;
+    }
+    if (isNumberElement(el)) {
+      var style = typeof el.style === "string" ? formats.number[el.style] : isNumberSkeleton(el.style) ? el.style.parsedOptions : void 0;
+      if (style && style.scale) {
+        value = value * (style.scale || 1);
+      }
+      result.push({
+        type: PART_TYPE.literal,
+        value: formatters.getNumberFormat(locales, style).format(value)
+      });
+      continue;
+    }
+    if (isTagElement(el)) {
+      var children = el.children, value_1 = el.value;
+      var formatFn = values[value_1];
+      if (!isFormatXMLElementFn(formatFn)) {
+        throw new InvalidValueTypeError(value_1, "function", originalMessage);
+      }
+      var parts = formatToParts(children, locales, formatters, formats, values, currentPluralValue);
+      var chunks = formatFn(parts.map(function(p3) {
+        return p3.value;
+      }));
+      if (!Array.isArray(chunks)) {
+        chunks = [chunks];
+      }
+      result.push.apply(result, chunks.map(function(c5) {
+        return {
+          type: typeof c5 === "string" ? PART_TYPE.literal : PART_TYPE.object,
+          value: c5
+        };
+      }));
+    }
+    if (isSelectElement(el)) {
+      var opt = el.options[value] || el.options.other;
+      if (!opt) {
+        throw new InvalidValueError(el.value, value, Object.keys(el.options), originalMessage);
+      }
+      result.push.apply(result, formatToParts(opt.value, locales, formatters, formats, values));
+      continue;
+    }
+    if (isPluralElement(el)) {
+      var opt = el.options["=" + value];
+      if (!opt) {
+        if (!Intl.PluralRules) {
+          throw new FormatError('Intl.PluralRules is not available in this environment.\nTry polyfilling it using "@formatjs/intl-pluralrules"\n', ErrorCode.MISSING_INTL_API, originalMessage);
+        }
+        var rule = formatters.getPluralRules(locales, { type: el.pluralType }).select(value - (el.offset || 0));
+        opt = el.options[rule] || el.options.other;
+      }
+      if (!opt) {
+        throw new InvalidValueError(el.value, value, Object.keys(el.options), originalMessage);
+      }
+      result.push.apply(result, formatToParts(opt.value, locales, formatters, formats, values, value - (el.offset || 0)));
+      continue;
+    }
+  }
+  return mergeLiteral(result);
+}
+
+// node_modules/intl-messageformat/lib/src/core.js
+function mergeConfig(c1, c22) {
+  if (!c22) {
+    return c1;
+  }
+  return __assign(__assign(__assign({}, c1 || {}), c22 || {}), Object.keys(c1).reduce(function(all, k3) {
+    all[k3] = __assign(__assign({}, c1[k3]), c22[k3] || {});
+    return all;
+  }, {}));
+}
+function mergeConfigs(defaultConfig, configs) {
+  if (!configs) {
+    return defaultConfig;
+  }
+  return Object.keys(defaultConfig).reduce(function(all, k3) {
+    all[k3] = mergeConfig(defaultConfig[k3], configs[k3]);
+    return all;
+  }, __assign({}, defaultConfig));
+}
+function createFastMemoizeCache(store) {
+  return {
+    create: function() {
+      return {
+        get: function(key) {
+          return store[key];
+        },
+        set: function(key, value) {
+          store[key] = value;
+        }
+      };
+    }
+  };
+}
+function createDefaultFormatters(cache2) {
+  if (cache2 === void 0) {
+    cache2 = {
+      number: {},
+      dateTime: {},
+      pluralRules: {}
+    };
+  }
+  return {
+    getNumberFormat: memoize(function() {
+      var _a2;
+      var args = [];
+      for (var _i = 0; _i < arguments.length; _i++) {
+        args[_i] = arguments[_i];
+      }
+      return new ((_a2 = Intl.NumberFormat).bind.apply(_a2, __spreadArray([void 0], args)))();
+    }, {
+      cache: createFastMemoizeCache(cache2.number),
+      strategy: strategies.variadic
+    }),
+    getDateTimeFormat: memoize(function() {
+      var _a2;
+      var args = [];
+      for (var _i = 0; _i < arguments.length; _i++) {
+        args[_i] = arguments[_i];
+      }
+      return new ((_a2 = Intl.DateTimeFormat).bind.apply(_a2, __spreadArray([void 0], args)))();
+    }, {
+      cache: createFastMemoizeCache(cache2.dateTime),
+      strategy: strategies.variadic
+    }),
+    getPluralRules: memoize(function() {
+      var _a2;
+      var args = [];
+      for (var _i = 0; _i < arguments.length; _i++) {
+        args[_i] = arguments[_i];
+      }
+      return new ((_a2 = Intl.PluralRules).bind.apply(_a2, __spreadArray([void 0], args)))();
+    }, {
+      cache: createFastMemoizeCache(cache2.pluralRules),
+      strategy: strategies.variadic
+    })
+  };
+}
+var IntlMessageFormat = (
+  /** @class */
+  function() {
+    function IntlMessageFormat2(message, locales, overrideFormats, opts) {
+      var _this = this;
+      if (locales === void 0) {
+        locales = IntlMessageFormat2.defaultLocale;
+      }
+      this.formatterCache = {
+        number: {},
+        dateTime: {},
+        pluralRules: {}
+      };
+      this.format = function(values) {
+        var parts = _this.formatToParts(values);
+        if (parts.length === 1) {
+          return parts[0].value;
+        }
+        var result = parts.reduce(function(all, part) {
+          if (!all.length || part.type !== PART_TYPE.literal || typeof all[all.length - 1] !== "string") {
+            all.push(part.value);
+          } else {
+            all[all.length - 1] += part.value;
+          }
+          return all;
+        }, []);
+        if (result.length <= 1) {
+          return result[0] || "";
+        }
+        return result;
+      };
+      this.formatToParts = function(values) {
+        return formatToParts(_this.ast, _this.locales, _this.formatters, _this.formats, values, void 0, _this.message);
+      };
+      this.resolvedOptions = function() {
+        return {
+          locale: Intl.NumberFormat.supportedLocalesOf(_this.locales)[0]
+        };
+      };
+      this.getAst = function() {
+        return _this.ast;
+      };
+      if (typeof message === "string") {
+        this.message = message;
+        if (!IntlMessageFormat2.__parse) {
+          throw new TypeError("IntlMessageFormat.__parse must be set to process `message` of type `string`");
+        }
+        this.ast = IntlMessageFormat2.__parse(message, {
+          ignoreTag: opts === null || opts === void 0 ? void 0 : opts.ignoreTag
+        });
+      } else {
+        this.ast = message;
+      }
+      if (!Array.isArray(this.ast)) {
+        throw new TypeError("A message must be provided as a String or AST.");
+      }
+      this.formats = mergeConfigs(IntlMessageFormat2.formats, overrideFormats);
+      this.locales = locales;
+      this.formatters = opts && opts.formatters || createDefaultFormatters(this.formatterCache);
+    }
+    Object.defineProperty(IntlMessageFormat2, "defaultLocale", {
+      get: function() {
+        if (!IntlMessageFormat2.memoizedDefaultLocale) {
+          IntlMessageFormat2.memoizedDefaultLocale = new Intl.NumberFormat().resolvedOptions().locale;
+        }
+        return IntlMessageFormat2.memoizedDefaultLocale;
+      },
+      enumerable: false,
+      configurable: true
+    });
+    IntlMessageFormat2.memoizedDefaultLocale = null;
+    IntlMessageFormat2.__parse = parse;
+    IntlMessageFormat2.formats = {
+      number: {
+        integer: {
+          maximumFractionDigits: 0
+        },
+        currency: {
+          style: "currency"
+        },
+        percent: {
+          style: "percent"
+        }
+      },
+      date: {
+        short: {
+          month: "numeric",
+          day: "numeric",
+          year: "2-digit"
+        },
+        medium: {
+          month: "short",
+          day: "numeric",
+          year: "numeric"
+        },
+        long: {
+          month: "long",
+          day: "numeric",
+          year: "numeric"
+        },
+        full: {
+          weekday: "long",
+          month: "long",
+          day: "numeric",
+          year: "numeric"
+        }
+      },
+      time: {
+        short: {
+          hour: "numeric",
+          minute: "numeric"
+        },
+        medium: {
+          hour: "numeric",
+          minute: "numeric",
+          second: "numeric"
+        },
+        long: {
+          hour: "numeric",
+          minute: "numeric",
+          second: "numeric",
+          timeZoneName: "short"
+        },
+        full: {
+          hour: "numeric",
+          minute: "numeric",
+          second: "numeric",
+          timeZoneName: "short"
+        }
+      }
+    };
+    return IntlMessageFormat2;
+  }()
+);
+
+// node_modules/intl-messageformat/lib/index.js
+var lib_default = IntlMessageFormat;
+
+// src/price/numberFormat.js
+var maskRegex = /[0-9\-+#]/;
+var notMaskRegex = /[^\d\-+#]/g;
+function getIndex(mask) {
+  return mask.search(maskRegex);
+}
+function processMask(mask = "#.##") {
+  const maskObj = {};
+  const len = mask.length;
+  const start = getIndex(mask);
+  maskObj.prefix = start > 0 ? mask.substring(0, start) : "";
+  const end = getIndex(mask.split("").reverse().join(""));
+  const offset = len - end;
+  const substr = mask.substring(offset, offset + 1);
+  const indx = offset + (substr === "." || substr === "," ? 1 : 0);
+  maskObj.suffix = end > 0 ? mask.substring(indx, len) : "";
+  maskObj.mask = mask.substring(start, indx);
+  maskObj.maskHasNegativeSign = maskObj.mask.charAt(0) === "-";
+  maskObj.maskHasPositiveSign = maskObj.mask.charAt(0) === "+";
+  let result = maskObj.mask.match(notMaskRegex);
+  maskObj.decimal = result && result[result.length - 1] || ".";
+  maskObj.separator = result && result[1] && result[0] || ",";
+  result = maskObj.mask.split(maskObj.decimal);
+  maskObj.integer = result[0];
+  maskObj.fraction = result[1];
+  return maskObj;
+}
+function processValue(value, maskObj, options) {
+  let isNegative = false;
+  const valObj = {
+    value
+  };
+  if (value < 0) {
+    isNegative = true;
+    valObj.value = -valObj.value;
+  }
+  valObj.sign = isNegative ? "-" : "";
+  valObj.value = Number(valObj.value).toFixed(
+    maskObj.fraction && maskObj.fraction.length
+  );
+  valObj.value = Number(valObj.value).toString();
+  const posTrailZero = maskObj.fraction && maskObj.fraction.lastIndexOf("0");
+  let [valInteger = "0", valFraction = ""] = valObj.value.split(".");
+  if (!valFraction || valFraction && valFraction.length <= posTrailZero) {
+    valFraction = posTrailZero < 0 ? "" : Number("0." + valFraction).toFixed(posTrailZero + 1).replace("0.", "");
+  }
+  valObj.integer = valInteger;
+  valObj.fraction = valFraction;
+  addSeparators(valObj, maskObj);
+  if (valObj.result === "0" || valObj.result === "") {
+    isNegative = false;
+    valObj.sign = "";
+  }
+  if (!isNegative && maskObj.maskHasPositiveSign) {
+    valObj.sign = "+";
+  } else if (isNegative && maskObj.maskHasPositiveSign) {
+    valObj.sign = "-";
+  } else if (isNegative) {
+    valObj.sign = options && options.enforceMaskSign && !maskObj.maskHasNegativeSign ? "" : "-";
+  }
+  return valObj;
+}
+function addSeparators(valObj, maskObj) {
+  valObj.result = "";
+  const szSep = maskObj.integer.split(maskObj.separator);
+  const maskInteger = szSep.join("");
+  const posLeadZero = maskInteger && maskInteger.indexOf("0");
+  if (posLeadZero > -1) {
+    while (valObj.integer.length < maskInteger.length - posLeadZero) {
+      valObj.integer = "0" + valObj.integer;
+    }
+  } else if (Number(valObj.integer) === 0) {
+    valObj.integer = "";
+  }
+  const posSeparator = szSep[1] && szSep[szSep.length - 1].length;
+  if (posSeparator) {
+    const len = valObj.integer.length;
+    const offset = len % posSeparator;
+    for (let indx = 0; indx < len; indx++) {
+      valObj.result += valObj.integer.charAt(indx);
+      if (!((indx - offset + 1) % posSeparator) && indx < len - posSeparator) {
+        valObj.result += maskObj.separator;
+      }
+    }
+  } else {
+    valObj.result = valObj.integer;
+  }
+  valObj.result += maskObj.fraction && valObj.fraction ? maskObj.decimal + valObj.fraction : "";
+  return valObj;
+}
+function formatNumber(mask, value, options = {}) {
+  if (!mask || isNaN(Number(value))) {
+    return value;
+  }
+  const maskObj = processMask(mask);
+  const valObj = processValue(value, maskObj, options);
+  return maskObj.prefix + valObj.sign + valObj.result + maskObj.suffix;
+}
+var numberFormat_default = formatNumber;
+
+// src/price/utilities.js
+var DECIMAL_POINT = ".";
+var DECIMAL_COMMA = ",";
+var SPACE_START_PATTERN = /^\s+/;
+var SPACE_END_PATTERN = /\s+$/;
+var NBSP = "&nbsp;";
+var getAnnualPrice = (price2) => price2 * 12;
+var isPromotionActive = (promotion, instant) => {
+  const {
+    start,
+    end,
+    displaySummary: {
+      amount,
+      duration,
+      minProductQuantity,
+      outcomeType
+    } = {}
+  } = promotion;
+  if (!(amount && duration && outcomeType && minProductQuantity)) {
+    return false;
+  }
+  const now = instant ? new Date(instant) : /* @__PURE__ */ new Date();
+  if (!start || !end) {
+    return false;
+  }
+  const startDate = new Date(start);
+  const endDate = new Date(end);
+  return now >= startDate && now <= endDate;
+};
+var RecurrenceTerm = {
+  MONTH: "MONTH",
+  YEAR: "YEAR"
+};
+var opticalPriceDivisors = {
+  [Term.ANNUAL]: 12,
+  [Term.MONTHLY]: 1,
+  [Term.THREE_YEARS]: 36,
+  [Term.TWO_YEARS]: 24
+};
+var opticalPriceRoundingRule = (accept, round) => ({ accept, round });
+var opticalPriceRoundingRules = [
+  opticalPriceRoundingRule(
+    // optical price for the term is a multiple of the initial price
+    ({ divisor, price: price2 }) => price2 % divisor == 0,
+    ({ divisor, price: price2 }) => price2 / divisor
+  ),
+  opticalPriceRoundingRule(
+    // round optical price up to 2 decimals
+    ({ usePrecision }) => usePrecision,
+    ({ divisor, price: price2 }) => Math.round(price2 / divisor * 100) / 100
+  ),
+  opticalPriceRoundingRule(
+    // round optical price up to integer
+    () => true,
+    ({ divisor, price: price2 }) => Math.ceil(Math.floor(price2 * 100 / divisor) / 100)
+  )
+];
+var recurrenceTerms = {
+  [Commitment.YEAR]: {
+    [Term.MONTHLY]: RecurrenceTerm.MONTH,
+    [Term.ANNUAL]: RecurrenceTerm.YEAR
+  },
+  [Commitment.MONTH]: {
+    [Term.MONTHLY]: RecurrenceTerm.MONTH
+  }
+};
+var currencyIsFirstChar = (formatString, currencySymbol) => formatString.indexOf(`'${currencySymbol}'`) === 0;
+var extractNumberMask = (formatString, usePrecision = true) => {
+  let numberMask = formatString.replace(/'.*?'/, "").trim();
+  const decimalsDelimiter = findDecimalsDelimiter(numberMask);
+  const hasDecimalDelimiter = !!decimalsDelimiter;
+  if (!hasDecimalDelimiter) {
+    numberMask = numberMask.replace(
+      /\s?(#.*0)(?!\s)?/,
+      "$&" + getPossibleDecimalsDelimiter(formatString)
+    );
+  } else if (!usePrecision) {
+    numberMask = numberMask.replace(/[,\.]0+/, decimalsDelimiter);
+  }
+  return numberMask;
+};
+var getCurrencySymbolDetails = (formatString) => {
+  const currencySymbol = findCurrencySymbol(formatString);
+  const isCurrencyFirst = currencyIsFirstChar(formatString, currencySymbol);
+  const formatStringWithoutSymbol = formatString.replace(/'.*?'/, "");
+  const hasCurrencySpace = SPACE_START_PATTERN.test(formatStringWithoutSymbol) || SPACE_END_PATTERN.test(formatStringWithoutSymbol);
+  return { currencySymbol, isCurrencyFirst, hasCurrencySpace };
+};
+var makeSpacesAroundNonBreaking = (text) => {
+  return text.replace(SPACE_START_PATTERN, NBSP).replace(SPACE_END_PATTERN, NBSP);
+};
+var getPossibleDecimalsDelimiter = (formatString) => formatString.match(/#(.?)#/)?.[1] === DECIMAL_POINT ? DECIMAL_COMMA : DECIMAL_POINT;
+var findCurrencySymbol = (formatString) => formatString.match(/'(.*?)'/)?.[1] ?? "";
+var findDecimalsDelimiter = (formatString) => formatString.match(/0(.?)0/)?.[1] ?? "";
+function formatPrice({ formatString, price: price2, usePrecision, isIndianPrice = false }, recurrenceTerm, transformPrice = (formattedPrice) => formattedPrice) {
+  const { currencySymbol, isCurrencyFirst, hasCurrencySpace } = getCurrencySymbolDetails(formatString);
+  const decimalsDelimiter = usePrecision ? findDecimalsDelimiter(formatString) : "";
+  const numberMask = extractNumberMask(formatString, usePrecision);
+  const fractionDigits = usePrecision ? 2 : 0;
+  const transformedPrice = transformPrice(price2, { currencySymbol });
+  const formattedPrice = isIndianPrice ? transformedPrice.toLocaleString("hi-IN", {
+    minimumFractionDigits: fractionDigits,
+    maximumFractionDigits: fractionDigits
+  }) : numberFormat_default(numberMask, transformedPrice);
+  const decimalIndex = usePrecision ? formattedPrice.lastIndexOf(decimalsDelimiter) : formattedPrice.length;
+  const integer = formattedPrice.substring(0, decimalIndex);
+  const decimals = formattedPrice.substring(decimalIndex + 1);
+  const accessiblePrice = formatString.replace(/'.*?'/, "SYMBOL").replace(/#.*0/, formattedPrice).replace(/SYMBOL/, currencySymbol);
+  return {
+    accessiblePrice,
+    currencySymbol,
+    decimals,
+    decimalsDelimiter,
+    hasCurrencySpace,
+    integer,
+    isCurrencyFirst,
+    recurrenceTerm
+  };
+}
+var formatOpticalPrice = (data) => {
+  const { commitment, term, usePrecision } = data;
+  const divisor = opticalPriceDivisors[term] ?? 1;
+  return formatPrice(
+    data,
+    divisor > 1 ? RecurrenceTerm.MONTH : recurrenceTerms[commitment]?.[term],
+    (price2) => {
+      const priceData = {
+        divisor,
+        price: price2,
+        usePrecision
+      };
+      const { round } = opticalPriceRoundingRules.find(
+        ({ accept }) => accept(priceData)
+      );
+      if (!round)
+        throw new Error(
+          `Missing rounding rule for: ${JSON.stringify(priceData)}`
+        );
+      return round(priceData);
+    }
+  );
+};
+var formatRegularPrice = ({ commitment, term, ...data }) => formatPrice(data, recurrenceTerms[commitment]?.[term]);
+var formatAnnualPrice = (data) => {
+  const {
+    commitment,
+    instant,
+    price: price2,
+    originalPrice,
+    priceWithoutDiscount,
+    promotion,
+    quantity = 1,
+    term
+  } = data;
+  if (commitment === Commitment.YEAR && term === Term.MONTHLY) {
+    if (!promotion) {
+      return formatPrice(data, RecurrenceTerm.YEAR, getAnnualPrice);
+    }
+    const {
+      displaySummary: {
+        outcomeType,
+        duration,
+        minProductQuantity = 1
+      } = {}
+    } = promotion;
+    switch (outcomeType) {
+      case "PERCENTAGE_DISCOUNT": {
+        if (quantity >= minProductQuantity && isPromotionActive(promotion, instant)) {
+          const durationInMonths = parseInt(
+            duration.replace("P", "").replace("M", "")
+          );
+          if (isNaN(durationInMonths))
+            return getAnnualPrice(price2);
+          const discountPrice = quantity * originalPrice * durationInMonths;
+          const regularPrice = quantity * priceWithoutDiscount * (12 - durationInMonths);
+          const totalPrice = Math.floor((discountPrice + regularPrice) * 100) / 100;
+          return formatPrice(
+            { ...data, price: totalPrice },
+            RecurrenceTerm.YEAR
+          );
+        }
+      }
+      default:
+        return formatPrice(
+          data,
+          RecurrenceTerm.YEAR,
+          () => getAnnualPrice(priceWithoutDiscount ?? price2)
+        );
+    }
+  }
+  return formatPrice(data, recurrenceTerms[commitment]?.[term]);
+};
+
+// src/price/template.js
+var defaultLiterals = {
+  recurrenceLabel: "{recurrenceTerm, select, MONTH {/mo} YEAR {/yr} other {}}",
+  recurrenceAriaLabel: "{recurrenceTerm, select, MONTH {per month} YEAR {per year} other {}}",
+  perUnitLabel: "{perUnit, select, LICENSE {per license} other {}}",
+  perUnitAriaLabel: "{perUnit, select, LICENSE {per license} other {}}",
+  freeLabel: "Free",
+  freeAriaLabel: "Free",
+  taxExclusiveLabel: "{taxTerm, select, GST {excl. GST} VAT {excl. VAT} TAX {excl. tax} IVA {excl. IVA} SST {excl. SST} KDV {excl. KDV} other {}}",
+  taxInclusiveLabel: "{taxTerm, select, GST {incl. GST} VAT {incl. VAT} TAX {incl. tax} IVA {incl. IVA} SST {incl. SST} KDV {incl. KDV} other {}}",
+  alternativePriceAriaLabel: "Alternatively at",
+  strikethroughAriaLabel: "Regularly at"
+};
+var log = createLog("ConsonantTemplates/price");
+var htmlPattern = /<\/?[^>]+(>|$)/g;
+var cssClassNames = {
+  container: "price",
+  containerOptical: "price-optical",
+  containerStrikethrough: "price-strikethrough",
+  containerAlternative: "price-alternative",
+  containerAnnual: "price-annual",
+  containerAnnualPrefix: "price-annual-prefix",
+  containerAnnualSuffix: "price-annual-suffix",
+  disabled: "disabled",
+  currencySpace: "price-currency-space",
+  currencySymbol: "price-currency-symbol",
+  decimals: "price-decimals",
+  decimalsDelimiter: "price-decimals-delimiter",
+  integer: "price-integer",
+  recurrence: "price-recurrence",
+  taxInclusivity: "price-tax-inclusivity",
+  unitType: "price-unit-type"
+};
+var literalKeys = {
+  perUnitLabel: "perUnitLabel",
+  perUnitAriaLabel: "perUnitAriaLabel",
+  recurrenceLabel: "recurrenceLabel",
+  recurrenceAriaLabel: "recurrenceAriaLabel",
+  taxExclusiveLabel: "taxExclusiveLabel",
+  taxInclusiveLabel: "taxInclusiveLabel",
+  strikethroughAriaLabel: "strikethroughAriaLabel",
+  alternativePriceAriaLabel: "alternativePriceAriaLabel"
+};
+var WCS_TAX_DISPLAY_EXCLUSIVE = "TAX_EXCLUSIVE";
+var renderAttributes = (attributes) => isObject(attributes) ? Object.entries(attributes).filter(
+  ([, value]) => isString(value) || isNumber(value) || value === true
+).reduce(
+  (html, [key, value]) => html + ` ${key}${value === true ? "" : '="' + escapeHtml(value) + '"'}`,
+  ""
+) : "";
+var renderSpan = (cssClass, content, attributes, convertSpaces = false) => {
+  return `<span class="${cssClass}${content ? "" : " " + cssClassNames.disabled}"${renderAttributes(attributes)}>${convertSpaces ? makeSpacesAroundNonBreaking(content) : content ?? ""}</span>`;
+};
+function renderContainer(cssClass, {
+  accessibleLabel,
+  altAccessibleLabel,
+  currencySymbol,
+  decimals,
+  decimalsDelimiter,
+  hasCurrencySpace,
+  integer,
+  isCurrencyFirst,
+  recurrenceLabel,
+  perUnitLabel,
+  taxInclusivityLabel
+}, attributes = {}) {
+  const currencyMarkup = renderSpan(
+    cssClassNames.currencySymbol,
+    currencySymbol
+  );
+  const currencySpaceMarkup = renderSpan(
+    cssClassNames.currencySpace,
+    hasCurrencySpace ? "&nbsp;" : ""
+  );
+  let markup = "";
+  if (accessibleLabel)
+    markup = `<sr-only class="strikethrough-aria-label">${accessibleLabel}</sr-only>`;
+  else if (altAccessibleLabel)
+    markup = `<sr-only class="alt-aria-label">${altAccessibleLabel}</sr-only>`;
+  if (isCurrencyFirst)
+    markup += currencyMarkup + currencySpaceMarkup;
+  markup += renderSpan(cssClassNames.integer, integer);
+  markup += renderSpan(cssClassNames.decimalsDelimiter, decimalsDelimiter);
+  markup += renderSpan(cssClassNames.decimals, decimals);
+  if (!isCurrencyFirst)
+    markup += currencySpaceMarkup + currencyMarkup;
+  markup += renderSpan(cssClassNames.recurrence, recurrenceLabel, null, true);
+  markup += renderSpan(cssClassNames.unitType, perUnitLabel, null, true);
+  markup += renderSpan(
+    cssClassNames.taxInclusivity,
+    taxInclusivityLabel,
+    true
+  );
+  return renderSpan(cssClass, markup, {
+    ...attributes
+  });
+}
+var createPriceTemplate = ({
+  isAlternativePrice = false,
+  displayOptical = false,
+  displayStrikethrough = false,
+  displayAnnual = false,
+  instant = void 0
+} = {}) => ({
+  country,
+  displayFormatted = true,
+  displayRecurrence = true,
+  displayPerUnit = false,
+  displayTax = false,
+  language,
+  literals: priceLiterals2 = {},
+  quantity = 1
+} = {}, {
+  commitment,
+  offerSelectorIds,
+  formatString,
+  price: price2,
+  priceWithoutDiscount,
+  taxDisplay,
+  taxTerm,
+  term,
+  usePrecision,
+  promotion
+} = {}, attributes = {}) => {
+  Object.entries({
+    country,
+    formatString,
+    language,
+    price: price2
+  }).forEach(([key, value]) => {
+    if (value == null) {
+      throw new Error(
+        `Argument "${key}" is missing for osi ${offerSelectorIds?.toString()}, country ${country}, language ${language}`
+      );
+    }
+  });
+  const literals = {
+    ...defaultLiterals,
+    ...priceLiterals2
+  };
+  const locale = `${language.toLowerCase()}-${country.toUpperCase()}`;
+  function formatLiteral(key, parameters) {
+    const literal = literals[key];
+    if (literal == void 0) {
+      return "";
+    }
+    try {
+      return new lib_default(
+        literal.replace(htmlPattern, ""),
+        locale
+      ).format(parameters);
+    } catch {
+      log.error("Failed to format literal:", literal);
+      return "";
+    }
+  }
+  const displayPrice = displayStrikethrough && priceWithoutDiscount ? priceWithoutDiscount : price2;
+  let method = displayOptical ? formatOpticalPrice : formatRegularPrice;
+  if (displayAnnual) {
+    method = formatAnnualPrice;
+  }
+  const { accessiblePrice, recurrenceTerm, ...formattedPrice } = method({
+    commitment,
+    formatString,
+    instant,
+    isIndianPrice: country === "IN",
+    originalPrice: price2,
+    priceWithoutDiscount,
+    price: displayOptical ? price2 : displayPrice,
+    promotion,
+    quantity,
+    term,
+    usePrecision
+  });
+  let accessibleLabel = "", altAccessibleLabel = "";
+  let recurrenceLabel = "";
+  if (toBoolean(displayRecurrence) && recurrenceTerm) {
+    recurrenceLabel = formatLiteral(literalKeys.recurrenceLabel, {
+      recurrenceTerm
+    });
+  }
+  let perUnitLabel = "";
+  if (toBoolean(displayPerUnit)) {
+    perUnitLabel = formatLiteral(literalKeys.perUnitLabel, {
+      perUnit: "LICENSE"
+    });
+  }
+  let taxInclusivityLabel = "";
+  if (toBoolean(displayTax) && taxTerm) {
+    taxInclusivityLabel = formatLiteral(
+      taxDisplay === WCS_TAX_DISPLAY_EXCLUSIVE ? literalKeys.taxExclusiveLabel : literalKeys.taxInclusiveLabel,
+      { taxTerm }
+    );
+  }
+  if (displayStrikethrough) {
+    accessibleLabel = formatLiteral(
+      literalKeys.strikethroughAriaLabel,
+      {
+        strikethroughPrice: accessibleLabel
+      }
+    );
+  }
+  if (isAlternativePrice) {
+    altAccessibleLabel = formatLiteral(
+      literalKeys.alternativePriceAriaLabel,
+      {
+        alternativePrice: altAccessibleLabel
+      }
+    );
+  }
+  let cssClass = cssClassNames.container;
+  if (displayOptical) {
+    cssClass += " " + cssClassNames.containerOptical;
+  }
+  if (displayStrikethrough) {
+    cssClass += " " + cssClassNames.containerStrikethrough;
+  }
+  if (isAlternativePrice) {
+    cssClass += " " + cssClassNames.containerAlternative;
+  }
+  if (displayAnnual) {
+    cssClass += " " + cssClassNames.containerAnnual;
+  }
+  if (toBoolean(displayFormatted)) {
+    return renderContainer(
+      cssClass,
+      {
+        ...formattedPrice,
+        accessibleLabel,
+        altAccessibleLabel,
+        recurrenceLabel,
+        perUnitLabel,
+        taxInclusivityLabel
+      },
+      attributes
+    );
+  }
+  const {
+    currencySymbol,
+    decimals,
+    decimalsDelimiter,
+    hasCurrencySpace,
+    integer,
+    isCurrencyFirst
+  } = formattedPrice;
+  const unformattedPrice = [integer, decimalsDelimiter, decimals];
+  if (isCurrencyFirst) {
+    unformattedPrice.unshift(hasCurrencySpace ? "\xA0" : "");
+    unformattedPrice.unshift(currencySymbol);
+  } else {
+    unformattedPrice.push(hasCurrencySpace ? "\xA0" : "");
+    unformattedPrice.push(currencySymbol);
+  }
+  unformattedPrice.push(
+    recurrenceLabel,
+    perUnitLabel,
+    taxInclusivityLabel
+  );
+  const content = unformattedPrice.join("");
+  return renderSpan(cssClass, content, attributes);
+};
+var createPromoPriceTemplate = () => (context, value, attributes) => {
+  const displayOldPrice = context.displayOldPrice === void 0 || toBoolean(context.displayOldPrice);
+  const shouldDisplayOldPrice = displayOldPrice && value.priceWithoutDiscount && value.priceWithoutDiscount != value.price;
+  return `${createPriceTemplate({ isAlternativePrice: shouldDisplayOldPrice })(context, value, attributes)}${shouldDisplayOldPrice ? "&nbsp;" + createPriceTemplate({
+    displayStrikethrough: true
+  })(context, value, attributes) : ""}`;
+};
+var createPromoPriceWithAnnualTemplate = () => (context, value, attributes) => {
+  let { instant } = context;
+  try {
+    if (!instant) {
+      instant = new URLSearchParams(document.location.search).get(
+        "instant"
+      );
+    }
+    if (instant) {
+      instant = new Date(instant);
+    }
+  } catch (e7) {
+    instant = void 0;
+  }
+  const ctxStAnnual = {
+    ...context,
+    displayTax: false,
+    displayPerUnit: false
+  };
+  const displayOldPrice = context.displayOldPrice === void 0 || toBoolean(context.displayOldPrice);
+  const shouldDisplayOldPrice = displayOldPrice && value.priceWithoutDiscount && value.priceWithoutDiscount != value.price;
+  return `${shouldDisplayOldPrice ? createPriceTemplate({
+    displayStrikethrough: true
+  })(ctxStAnnual, value, attributes) + "&nbsp;" : ""}${createPriceTemplate({ isAlternativePrice: shouldDisplayOldPrice })(context, value, attributes)}${renderSpan(cssClassNames.containerAnnualPrefix, "&nbsp;(")}${createPriceTemplate(
+    {
+      displayAnnual: true,
+      instant
+    }
+  )(
+    ctxStAnnual,
+    value,
+    attributes
+  )}${renderSpan(cssClassNames.containerAnnualSuffix, ")")}`;
+};
+var createPriceWithAnnualTemplate = () => (context, value, attributes) => {
+  const ctxAnnual = {
+    ...context,
+    displayTax: false,
+    displayPerUnit: false
+  };
+  return `${createPriceTemplate({ isAlternativePrice: context.displayOldPrice })(context, value, attributes)}${renderSpan(cssClassNames.containerAnnualPrefix, "&nbsp;(")}${createPriceTemplate(
+    {
+      displayAnnual: true
+    }
+  )(
+    ctxAnnual,
+    value,
+    attributes
+  )}${renderSpan(cssClassNames.containerAnnualSuffix, ")")}`;
+};
+
+// src/price/index.js
+var price = createPriceTemplate();
+var pricePromo = createPromoPriceTemplate();
+var priceOptical = createPriceTemplate({
+  displayOptical: true
+});
+var priceStrikethrough = createPriceTemplate({
+  displayStrikethrough: true
+});
+var priceAnnual = createPriceTemplate({
+  displayAnnual: true
+});
+var priceOpticalAlternative = createPriceTemplate({
+  displayOptical: true,
+  isAlternativePrice: true
+});
+var priceAlternative = createPriceTemplate({
+  isAlternativePrice: true
+});
+var priceWithAnnual = createPriceWithAnnualTemplate();
+var pricePromoWithAnnual = createPromoPriceWithAnnualTemplate();
+
+// src/discount/template.js
+var getDiscount = (price2, priceWithoutDiscount) => {
+  if (!isPositiveFiniteNumber(price2) || !isPositiveFiniteNumber(priceWithoutDiscount))
+    return;
+  return Math.floor(
+    (priceWithoutDiscount - price2) / priceWithoutDiscount * 100
+  );
+};
+var createDiscountTemplate = () => (context, value) => {
+  const { price: price2, priceWithoutDiscount } = value;
+  const discount2 = getDiscount(price2, priceWithoutDiscount);
+  return discount2 === void 0 ? `<span class="no-discount"></span>` : `<span class="discount">${discount2}%</span>`;
+};
+
+// src/discount/index.js
+var discount = createDiscountTemplate();
+
+// src/inline-price.js
+var DISPLAY_ALL_TAX_COUNTRIES = [
+  "GB_en",
+  "AU_en",
+  "FR_fr",
+  "AT_de",
+  "BE_en",
+  "BE_fr",
+  "BE_nl",
+  "BG_bg",
+  "CH_de",
+  "CH_fr",
+  "CH_it",
+  "CZ_cs",
+  "DE_de",
+  "DK_da",
+  "EE_et",
+  "EG_ar",
+  "EG_en",
+  "ES_es",
+  "FI_fi",
+  "FR_fr",
+  "GR_el",
+  "GR_en",
+  "HU_hu",
+  "IE_en",
+  "IT_it",
+  "LU_de",
+  "LU_en",
+  "LU_fr",
+  "NL_nl",
+  "NO_nb",
+  "PL_pl",
+  "PT_pt",
+  "RO_ro",
+  "SE_sv",
+  "SI_sl",
+  "SK_sk",
+  "TR_tr",
+  "UA_uk",
+  "ID_en",
+  "ID_in",
+  "IN_en",
+  "IN_hi",
+  "JP_ja",
+  "MY_en",
+  "MY_ms",
+  "NZ_en",
+  "TH_en",
+  "TH_th"
+];
+var DISPLAY_TAX_MAP = {
+  // individual
+  INDIVIDUAL_COM: [
+    "ZA_en",
+    "LT_lt",
+    "LV_lv",
+    "NG_en",
+    "SA_ar",
+    "SA_en",
+    "ZA_en",
+    "SG_en",
+    "KR_ko"
+  ],
+  // business
+  TEAM_COM: ["ZA_en", "LT_lt", "LV_lv", "NG_en", "ZA_en", "CO_es", "KR_ko"],
+  // student
+  INDIVIDUAL_EDU: ["LT_lt", "LV_lv", "SA_en", "SG_en"],
+  // school and uni
+  TEAM_EDU: ["SG_en", "KR_ko"]
+};
+var _InlinePrice = class _InlinePrice extends HTMLSpanElement {
+  constructor() {
+    super();
+    __publicField(this, "masElement", new MasElement(this));
+    this.handleClick = this.handleClick.bind(this);
+  }
+  static get observedAttributes() {
+    return [
+      "data-display-old-price",
+      "data-display-per-unit",
+      "data-display-recurrence",
+      "data-display-tax",
+      "data-perpetual",
+      "data-promotion-code",
+      "data-tax-exclusive",
+      "data-template",
+      "data-wcs-osi"
+    ];
+  }
+  static createInlinePrice(options) {
+    const service = getService();
+    if (!service)
+      return null;
+    const {
+      displayOldPrice,
+      displayPerUnit,
+      displayRecurrence,
+      displayTax,
+      forceTaxExclusive,
+      perpetual,
+      promotionCode,
+      quantity,
+      alternativePrice,
+      template,
+      wcsOsi
+    } = service.collectPriceOptions(options);
+    const element = createMasElement(_InlinePrice, {
+      displayOldPrice,
+      displayPerUnit,
+      displayRecurrence,
+      displayTax,
+      forceTaxExclusive,
+      perpetual,
+      promotionCode,
+      quantity,
+      alternativePrice,
+      template,
+      wcsOsi
+    });
+    return element;
+  }
+  get isInlinePrice() {
+    return true;
+  }
+  attributeChangedCallback(name, _3, value) {
+    this.masElement.attributeChangedCallback(name, _3, value);
+  }
+  connectedCallback() {
+    this.masElement.connectedCallback();
+    this.addEventListener("click", this.handleClick);
+  }
+  disconnectedCallback() {
+    this.masElement.disconnectedCallback();
+    this.removeEventListener("click", this.handleClick);
+  }
+  handleClick(event) {
+    if (event.target === this)
+      return;
+    event.stopImmediatePropagation();
+    this.dispatchEvent(
+      new MouseEvent("click", {
+        bubbles: true,
+        cancelable: true,
+        view: window
+      })
+    );
+  }
+  onceSettled() {
+    return this.masElement.onceSettled();
+  }
+  get value() {
+    return this.masElement.value;
+  }
+  get options() {
+    return this.masElement.options;
+  }
+  requestUpdate(force = false) {
+    return this.masElement.requestUpdate(force);
+  }
+  /**
+   * Resolves default value of displayTax property, based on provided geo info and segments.
+   * @returns {boolean}
+   */
+  /* c8 ignore next 26 */
+  resolveDisplayTaxForGeoAndSegment(country, language, customerSegment, marketSegment) {
+    const locale = `${country}_${language}`;
+    if (DISPLAY_ALL_TAX_COUNTRIES.includes(country) || DISPLAY_ALL_TAX_COUNTRIES.includes(locale)) {
+      return true;
+    }
+    const segmentConfig = DISPLAY_TAX_MAP[`${customerSegment}_${marketSegment}`];
+    if (!segmentConfig) {
+      return false;
+    }
+    if (segmentConfig.includes(country) || segmentConfig.includes(locale)) {
+      return true;
+    }
+    return false;
+  }
+  /**
+   * Resolves default value of displayTax property, based on provided geo info and segments extracted from offers object.
+   * @returns {boolean}
+   */
+  /* c8 ignore next 15 */
+  async resolveDisplayTax(service, options) {
+    const [offerSelectors] = await service.resolveOfferSelectors(options);
+    const offers = selectOffers(await offerSelectors, options);
+    if (offers?.length) {
+      const { country, language } = options;
+      const offer = offers[0];
+      const [marketSegment = ""] = offer.marketSegments;
+      return this.resolveDisplayTaxForGeoAndSegment(
+        country,
+        language,
+        offer.customerSegment,
+        marketSegment
+      );
+    }
+  }
+  /**
+   * Resolves associated osi via Wcs and renders price offer.
+   * @param {Record<string, any>} overrides
+   */
+  async render(overrides = {}) {
+    if (!this.isConnected)
+      return false;
+    const service = getService();
+    if (!service)
+      return false;
+    const options = service.collectPriceOptions(overrides, this);
+    if (!options.wcsOsi.length)
+      return false;
+    const version = this.masElement.togglePending(options);
+    this.innerHTML = "";
+    const [promise] = service.resolveOfferSelectors(options);
+    return this.renderOffers(
+      selectOffers(await promise, options),
+      options,
+      version
+    );
+  }
+  // TODO: can be extended to accept array of offers and compute subtotal price
+  /**
+   * Renders price offer as HTML of this component
+   * using consonant price template functions
+   * @param {Offer[]} offers
+   * @param {Record<string, any>} overrides
+   * Optional object with properties to use as overrides
+   * over those collected from dataset of this component.
+   */
+  renderOffers(offers, overrides = {}, version = void 0) {
+    if (!this.isConnected)
+      return;
+    const service = getService();
+    if (!service)
+      return false;
+    const options = service.collectPriceOptions(
+      {
+        ...this.dataset,
+        ...overrides
+      },
+      this
+    );
+    version ?? (version = this.masElement.togglePending(options));
+    if (offers.length) {
+      if (this.masElement.toggleResolved(version, offers, options)) {
+        this.innerHTML = service.buildPriceHTML(offers, options);
+        const parentEl = this.closest("p, h3, div");
+        if (!parentEl || !parentEl.querySelector('span[data-template="strikethrough"]') || parentEl.querySelector(".alt-aria-label"))
+          return true;
+        const inlinePrices = parentEl?.querySelectorAll('span[is="inline-price"]');
+        if (inlinePrices.length > 1 && inlinePrices.length === parentEl.querySelectorAll('span[data-template="strikethrough"]').length * 2) {
+          inlinePrices.forEach((price2) => {
+            if (price2.dataset.template !== "strikethrough" && price2.options && !price2.options.alternativePrice) {
+              price2.options.alternativePrice = true;
+              price2.innerHTML = service.buildPriceHTML(offers, price2.options);
+            }
+          });
+        }
+        return true;
+      }
+    } else {
+      const error = new Error(`Not provided: ${options?.wcsOsi ?? "-"}`);
+      if (this.masElement.toggleFailed(version, error, options)) {
+        this.innerHTML = "";
+        return true;
+      }
+    }
+    return false;
+  }
+  updateOptions(options) {
+    const service = getService();
+    if (!service)
+      return false;
+    const {
+      alternativePrice,
+      displayOldPrice,
+      displayPerUnit,
+      displayRecurrence,
+      displayTax,
+      forceTaxExclusive,
+      perpetual,
+      promotionCode,
+      quantity,
+      template,
+      wcsOsi
+    } = service.collectPriceOptions(options);
+    updateMasElement(this, {
+      alternativePrice,
+      displayOldPrice,
+      displayPerUnit,
+      displayRecurrence,
+      displayTax,
+      forceTaxExclusive,
+      perpetual,
+      promotionCode,
+      quantity,
+      template,
+      wcsOsi
+    });
+    return true;
+  }
+};
+__publicField(_InlinePrice, "is", "inline-price");
+__publicField(_InlinePrice, "tag", "span");
+var InlinePrice = _InlinePrice;
+if (!window.customElements.get(InlinePrice.is)) {
+  window.customElements.define(InlinePrice.is, InlinePrice, {
+    extends: InlinePrice.tag
+  });
+}
+
+// src/price.js
+function Price({ literals, providers, settings }) {
+  function collectPriceOptions(overrides, placeholder) {
+    const {
+      country: defaultCountry,
+      displayOldPrice: defaultDisplayOldPrice,
+      displayPerUnit: defaultDisplayPerUnit,
+      displayRecurrence: defaultDisplayRecurrence,
+      displayTax: defaultDisplayTax,
+      forceTaxExclusive: defaultForceTaxExclusive,
+      language: defaultLanguage,
+      promotionCode: defaultPromotionCode,
+      quantity: defaultQuantity,
+      alternativePrice: defaultAlternativePrice
+    } = settings;
+    const {
+      displayOldPrice = defaultDisplayOldPrice,
+      displayPerUnit = defaultDisplayPerUnit,
+      displayRecurrence = defaultDisplayRecurrence,
+      displayTax = defaultDisplayTax,
+      forceTaxExclusive = defaultForceTaxExclusive,
+      country = defaultCountry,
+      language = defaultLanguage,
+      perpetual,
+      promotionCode = defaultPromotionCode,
+      quantity = defaultQuantity,
+      alternativePrice = defaultAlternativePrice,
+      template,
+      wcsOsi,
+      ...rest
+    } = Object.assign({}, placeholder?.dataset ?? {}, overrides ?? {});
+    const options = omitProperties({
+      ...rest,
+      country,
+      displayOldPrice: toBoolean(displayOldPrice),
+      displayPerUnit: toBoolean(displayPerUnit),
+      displayRecurrence: toBoolean(displayRecurrence),
+      displayTax: toBoolean(displayTax),
+      forceTaxExclusive: toBoolean(forceTaxExclusive),
+      language,
+      perpetual: toBoolean(perpetual),
+      promotionCode: computePromoStatus(promotionCode).effectivePromoCode,
+      quantity: toQuantity(quantity, Defaults.quantity),
+      alternativePrice: toBoolean(alternativePrice),
+      template,
+      wcsOsi: toOfferSelectorIds(wcsOsi)
+    });
+    if (placeholder) {
+      for (const provider of providers.price) {
+        provider(placeholder, options);
+      }
+    }
+    return options;
+  }
+  function buildPriceHTML(offers, options) {
+    if (!Array.isArray(offers) || !offers.length || !options) {
+      return "";
+    }
+    const { template } = options;
+    let method;
+    switch (template) {
+      case "discount":
+        method = discount;
+        break;
+      case "strikethrough":
+        method = priceStrikethrough;
+        break;
+      case "annual":
+        method = priceAnnual;
+        break;
+      default:
+        if (options.template === "optical" && options.alternativePrice) {
+          method = priceOpticalAlternative;
+        } else if (options.template === "optical") {
+          method = priceOptical;
+        } else if (options.country === "AU" && offers[0].planType === "ABM") {
+          method = options.promotionCode ? pricePromoWithAnnual : priceWithAnnual;
+        } else if (options.alternativePrice) {
+          method = priceAlternative;
+        } else {
+          method = options.promotionCode ? pricePromo : price;
+        }
+    }
+    const context = collectPriceOptions(options);
+    context.literals = Object.assign(
+      {},
+      literals.price,
+      omitProperties(options.literals ?? {})
+    );
+    let [offer] = offers;
+    offer = { ...offer, ...offer.priceDetails };
+    return method(context, offer);
+  }
+  const createInlinePrice = InlinePrice.createInlinePrice;
+  return {
+    InlinePrice,
+    buildPriceHTML,
+    collectPriceOptions,
+    createInlinePrice
+  };
+}
+
+// src/settings.js
+function getLocaleSettings({
+  locale = void 0,
+  country = void 0,
+  language = void 0
+} = {}) {
+  language ?? (language = locale?.split("_")?.[0] || Defaults.language);
+  country ?? (country = locale?.split("_")?.[1] || Defaults.country);
+  locale ?? (locale = `${language}_${country}`);
+  return { locale, country, language };
+}
+function getSettings(config2 = {}) {
+  const { commerce = {} } = config2;
+  let env = Env.PRODUCTION;
+  let wcsURL = WCS_PROD_URL;
+  const checkoutClientId = getParameter("checkoutClientId", commerce) ?? Defaults.checkoutClientId;
+  const checkoutWorkflow = toEnumeration(
+    getParameter("checkoutWorkflow", commerce),
+    CheckoutWorkflow,
+    Defaults.checkoutWorkflow
+  );
+  let checkoutWorkflowStep = CheckoutWorkflowStep.CHECKOUT;
+  if (checkoutWorkflow === CheckoutWorkflow.V3) {
+    checkoutWorkflowStep = toEnumeration(
+      getParameter("checkoutWorkflowStep", commerce),
+      CheckoutWorkflowStep,
+      Defaults.checkoutWorkflowStep
+    );
+  }
+  const displayOldPrice = toBoolean(
+    getParameter("displayOldPrice", commerce),
+    Defaults.displayOldPrice
+  );
+  const displayPerUnit = toBoolean(
+    getParameter("displayPerUnit", commerce),
+    Defaults.displayPerUnit
+  );
+  const displayRecurrence = toBoolean(
+    getParameter("displayRecurrence", commerce),
+    Defaults.displayRecurrence
+  );
+  const displayTax = toBoolean(
+    getParameter("displayTax", commerce),
+    Defaults.displayTax
+  );
+  const entitlement = toBoolean(
+    getParameter("entitlement", commerce),
+    Defaults.entitlement
+  );
+  const modal = toBoolean(getParameter("modal", commerce), Defaults.modal);
+  const forceTaxExclusive = toBoolean(
+    getParameter("forceTaxExclusive", commerce),
+    Defaults.forceTaxExclusive
+  );
+  const promotionCode = getParameter("promotionCode", commerce) ?? Defaults.promotionCode;
+  const quantity = toQuantity(getParameter("quantity", commerce));
+  const wcsApiKey = getParameter("wcsApiKey", commerce) ?? Defaults.wcsApiKey;
+  let isStage = commerce?.env === "stage";
+  let landscape = Landscape.PUBLISHED;
+  const allowOverride = ["true", ""].includes(commerce.allowOverride);
+  if (allowOverride) {
+    isStage = (getParameter(PARAM_ENV, commerce, {
+      metadata: false
+    })?.toLowerCase() ?? commerce?.env) === "stage";
+    landscape = toEnumeration(
+      getParameter(PARAM_LANDSCAPE, commerce),
+      Landscape,
+      landscape
+    );
+  }
+  if (isStage) {
+    env = Env.STAGE;
+    wcsURL = WCS_STAGE_URL;
+  }
+  const masIOUrl = getParameter("mas-io-url") ?? config2.masIOUrl ?? `https://www${env === Env.STAGE ? ".stage" : ""}.adobe.com/mas/io`;
+  return {
+    ...getLocaleSettings(config2),
+    displayOldPrice,
+    checkoutClientId,
+    checkoutWorkflow,
+    checkoutWorkflowStep,
+    displayPerUnit,
+    displayRecurrence,
+    displayTax,
+    entitlement,
+    extraOptions: Defaults.extraOptions,
+    modal,
+    env,
+    forceTaxExclusive,
+    promotionCode,
+    quantity,
+    alternativePrice: Defaults.alternativePrice,
+    wcsApiKey,
+    wcsURL,
+    landscape,
+    masIOUrl
+  };
+}
+
+// src/utils/mas-fetch.js
+async function masFetch(resource, options = {}, retries = 2, baseDelay = 100) {
+  let lastError;
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    try {
+      const response = await fetch(resource, options);
+      return response;
+    } catch (error) {
+      lastError = error;
+      if (attempt > retries)
+        break;
+      await new Promise(
+        (resolve) => setTimeout(resolve, baseDelay * (attempt + 1))
+      );
+    }
+  }
+  throw lastError;
+}
+
+// src/wcs.js
+var NAMESPACE2 = "wcs";
+function Wcs({ settings }) {
+  const log2 = Log.module(NAMESPACE2);
+  const { env, wcsApiKey: apiKey } = settings;
+  const cache2 = /* @__PURE__ */ new Map();
+  const queue = /* @__PURE__ */ new Map();
+  let timer;
+  let staleCache = /* @__PURE__ */ new Map();
+  async function resolveWcsOffers(options, promises, reject = true) {
+    const service = getService();
+    let message = ERROR_MESSAGE_OFFER_NOT_FOUND;
+    log2.debug("Fetching:", options);
+    let url = "";
+    let response;
+    if (options.offerSelectorIds.length > 1)
+      throw new Error("Multiple OSIs are not supported anymore");
+    const unresolvedPromises = new Map(promises);
+    const [osi] = options.offerSelectorIds;
+    const uniqueId = Date.now() + Math.random().toString(36).substring(2, 7);
+    const startMark = `${NAMESPACE2}:${osi}:${uniqueId}${MARK_START_SUFFIX}`;
+    const measureName = `${NAMESPACE2}:${osi}:${uniqueId}${MARK_DURATION_SUFFIX}`;
+    let startTime;
+    let duration;
+    try {
+      performance.mark(startMark);
+      url = new URL(settings.wcsURL);
+      url.searchParams.set("offer_selector_ids", osi);
+      url.searchParams.set("country", options.country);
+      url.searchParams.set("locale", options.locale);
+      url.searchParams.set(
+        "landscape",
+        env === Env.STAGE ? "ALL" : settings.landscape
+      );
+      url.searchParams.set("api_key", apiKey);
+      if (options.language) {
+        url.searchParams.set("language", options.language);
+      }
+      if (options.promotionCode) {
+        url.searchParams.set("promotion_code", options.promotionCode);
+      }
+      if (options.currency) {
+        url.searchParams.set("currency", options.currency);
+      }
+      response = await masFetch(url.toString(), {
+        credentials: "omit"
+      });
+      if (response.ok) {
+        let offers = [];
+        try {
+          const data = await response.json();
+          log2.debug("Fetched:", options, data);
+          offers = data.resolvedOffers ?? [];
+        } catch (e7) {
+          log2.error(`Error parsing JSON: ${e7.message}`, {
+            ...e7.context,
+            ...service?.duration
+          });
+        }
+        offers = offers.map(applyPlanType);
+        promises.forEach(({ resolve }, offerSelectorId) => {
+          const resolved = offers.filter(
+            ({ offerSelectorIds }) => offerSelectorIds.includes(offerSelectorId)
+          ).flat();
+          if (resolved.length) {
+            unresolvedPromises.delete(offerSelectorId);
+            promises.delete(offerSelectorId);
+            resolve(resolved);
+          }
+        });
+      } else {
+        message = ERROR_MESSAGE_BAD_REQUEST;
+      }
+    } catch (e7) {
+      message = `Network error: ${e7.message}`;
+    } finally {
+      ({ startTime, duration } = performance.measure(
+        measureName,
+        startMark
+      ));
+      performance.clearMarks(startMark);
+      performance.clearMeasures(measureName);
+    }
+    if (reject && promises.size) {
+      log2.debug("Missing:", { offerSelectorIds: [...promises.keys()] });
+      promises.forEach((promise) => {
+        promise.reject(
+          new MasError(message, {
+            ...options,
+            response,
+            startTime,
+            duration,
+            ...service?.duration
+          })
+        );
+      });
+    }
+  }
+  function flushQueue() {
+    clearTimeout(timer);
+    const pending = [...queue.values()];
+    queue.clear();
+    pending.forEach(
+      ({ options, promises }) => resolveWcsOffers(options, promises)
+    );
+  }
+  function flushWcsCacheInternal() {
+    const size = cache2.size;
+    staleCache = new Map(cache2);
+    cache2.clear();
+    log2.debug(`Moved ${size} cache entries to stale cache`);
+  }
+  function resolveOfferSelectors({
+    country,
+    language,
+    perpetual = false,
+    promotionCode = "",
+    wcsOsi = []
+  }) {
+    const locale = `${language}_${country}`;
+    if (country !== "GB")
+      language = perpetual ? "EN" : "MULT";
+    const groupKey = [country, language, promotionCode].filter((val) => val).join("-").toLowerCase();
+    return wcsOsi.map((osi) => {
+      const cacheKey = `${osi}-${groupKey}`;
+      if (cache2.has(cacheKey)) {
+        return cache2.get(cacheKey);
+      }
+      const promiseWithFallback = new Promise((resolve, reject) => {
+        let group = queue.get(groupKey);
+        if (!group) {
+          const options = {
+            country,
+            locale,
+            offerSelectorIds: []
+          };
+          if (country !== "GB")
+            options.language = language;
+          const promises = /* @__PURE__ */ new Map();
+          group = { options, promises };
+          queue.set(groupKey, group);
+        }
+        if (promotionCode) {
+          group.options.promotionCode = promotionCode;
+        }
+        group.options.offerSelectorIds.push(osi);
+        group.promises.set(osi, {
+          resolve,
+          reject
+        });
+        flushQueue();
+      }).catch((error) => {
+        if (staleCache.has(cacheKey)) {
+          return staleCache.get(cacheKey);
+        }
+        throw error;
+      });
+      cache2.set(cacheKey, promiseWithFallback);
+      return promiseWithFallback;
+    });
+  }
+  return {
+    Commitment,
+    PlanType,
+    Term,
+    applyPlanType,
+    resolveOfferSelectors,
+    flushWcsCacheInternal
+  };
+}
+
+// src/mas-commerce-service.js
+var TAG_NAME_SERVICE2 = "mas-commerce-service";
+var MARK_START = "mas:start";
+var MARK_READY = "mas:ready";
+var MEASURE_INIT_TIME = "mas-commerce-service:initTime";
+var _initDuration, _config, config_get;
+var MasCommerceService = class extends HTMLElement {
+  constructor() {
+    super(...arguments);
+    __privateAdd(this, _config);
+    __privateAdd(this, _initDuration, void 0);
+    __publicField(this, "lastLoggingTime", 0);
+  }
+  async registerCheckoutAction(action) {
+    if (typeof action != "function")
+      return;
+    this.buildCheckoutAction = async (offers, options, el) => {
+      const checkoutAction = await action?.(
+        offers,
+        options,
+        this.imsSignedInPromise,
+        el
+      );
+      if (checkoutAction) {
+        return checkoutAction;
+      }
+      return null;
+    };
+  }
+  activate() {
+    const config2 = __privateGet(this, _config, config_get);
+    const settings = Object.freeze(getSettings(config2));
+    updateConfig(config2.lana);
+    const log2 = Log.init(config2.hostEnv).module("service");
+    log2.debug("Activating:", config2);
+    const price2 = getPriceLiterals(settings);
+    const literals = { price: price2 };
+    const providers = {
+      checkout: /* @__PURE__ */ new Set(),
+      price: /* @__PURE__ */ new Set()
+    };
+    const startup = { literals, providers, settings };
+    Object.defineProperties(
+      this,
+      Object.getOwnPropertyDescriptors({
+        // Activate modules and expose their API as combined flat object
+        ...Checkout(startup),
+        ...Ims(startup),
+        ...Price(startup),
+        ...Wcs(startup),
+        ...constants_exports,
+        // Defined serviceweb  component API
+        Log,
+        get defaults() {
+          return Defaults;
+        },
+        get log() {
+          return Log;
+        },
+        /* c8 ignore next 11 */
+        get providers() {
+          return {
+            checkout(provider) {
+              providers.checkout.add(provider);
+              return () => providers.checkout.delete(provider);
+            },
+            price(provider) {
+              providers.price.add(provider);
+              return () => providers.price.delete(provider);
+            }
+          };
+        },
+        get settings() {
+          return settings;
+        }
+      })
+    );
+    log2.debug("Activated:", { literals, settings });
+    const event = new CustomEvent(EVENT_TYPE_READY, {
+      bubbles: true,
+      cancelable: false,
+      detail: this
+    });
+    performance.mark(MARK_READY);
+    __privateSet(this, _initDuration, performance.measure(
+      MEASURE_INIT_TIME,
+      MARK_START,
+      MARK_READY
+    )?.duration);
+    this.dispatchEvent(event);
+    setTimeout(() => {
+      this.logFailedRequests();
+    }, 1e4);
+  }
+  connectedCallback() {
+    performance.mark(MARK_START);
+    this.activate();
+  }
+  flushWcsCache() {
+    this.flushWcsCacheInternal();
+    this.log.debug("Flushed WCS cache");
+  }
+  refreshOffers() {
+    this.flushWcsCacheInternal();
+    document.querySelectorAll(SELECTOR_MAS_ELEMENT).forEach((el) => el.requestUpdate(true));
+    this.log.debug("Refreshed WCS offers");
+    this.logFailedRequests();
+  }
+  refreshFragments() {
+    this.flushWcsCacheInternal();
+    document.querySelectorAll("aem-fragment").forEach((el) => el.refresh());
+    this.log.debug("Refreshed AEM fragments");
+    this.logFailedRequests();
+  }
+  get duration() {
+    return {
+      [MEASURE_INIT_TIME]: __privateGet(this, _initDuration)
+    };
+  }
+  /**
+   * Logs failed network requests related to AEM fragments and WCS commerce artifacts.
+   * Identifies failed resources by checking for zero transfer size, zero duration,
+   * response status less than 200, or response status greater than or equal to 400.
+   * Only logs errors if any of the failed resources are fragment or commerce artifact requests.
+   */
+  /* c8 ignore next 21 */
+  logFailedRequests() {
+    const failedResources = [...performance.getEntriesByType("resource")].filter(({ startTime }) => startTime > this.lastLoggingTime).filter(
+      ({ transferSize, duration, responseStatus }) => transferSize === 0 && duration === 0 && responseStatus < 200 || responseStatus >= 400
+    );
+    const uniqueFailedResources = Array.from(
+      new Map(
+        failedResources.map((resource) => [resource.name, resource])
+      ).values()
+    );
+    if (uniqueFailedResources.some(
+      ({ name }) => /(\/fragments\/|web_commerce_artifact)/.test(name)
+    )) {
+      const failedUrls = uniqueFailedResources.map(({ name }) => name);
+      this.log.error("Failed requests:", {
+        failedUrls,
+        ...this.duration
+      });
+    }
+    this.lastLoggingTime = performance.now().toFixed(3);
+  }
+};
+_initDuration = new WeakMap();
+_config = new WeakSet();
+config_get = function() {
+  const env = this.getAttribute("env") ?? "prod";
+  const config2 = {
+    hostEnv: { name: env },
+    commerce: { env },
+    lana: {
+      tags: this.getAttribute("lana-tags"),
+      sampleRate: parseInt(
+        this.getAttribute("lana-sample-rate") ?? 1,
+        10
+      ),
+      isProdDomain: env === "prod"
+    },
+    masIOUrl: this.getAttribute("mas-io-url")
+  };
+  ["locale", "country", "language"].forEach((attribute) => {
+    const value = this.getAttribute(attribute);
+    if (value) {
+      config2[attribute] = value;
+    }
+  });
+  [
+    "checkout-workflow-step",
+    "force-tax-exclusive",
+    "checkout-client-id",
+    "allow-override",
+    "wcs-api-key"
+  ].forEach((attribute) => {
+    const value = this.getAttribute(attribute);
+    if (value != null) {
+      const camelCaseAttribute = attribute.replace(
+        /-([a-z])/g,
+        (g3) => g3[1].toUpperCase()
+      );
+      config2.commerce[camelCaseAttribute] = value;
+    }
+  });
+  return config2;
+};
+if (!window.customElements.get(TAG_NAME_SERVICE2)) {
+  window.customElements.define(TAG_NAME_SERVICE2, MasCommerceService);
+}
+
+// src/checkout-button.js
+var _CheckoutButton = class _CheckoutButton extends CheckoutMixin(HTMLButtonElement) {
+  static createCheckoutButton(options = {}, innerHTML = "") {
+    return createCheckoutElement(_CheckoutButton, options, innerHTML);
+  }
+  setCheckoutUrl(value) {
+    this.setAttribute("data-href", value);
+  }
+  get href() {
+    return this.getAttribute("data-href");
+  }
+  get isCheckoutButton() {
+    return true;
+  }
+  clickHandler(e7) {
+    if (this.checkoutActionHandler) {
+      this.checkoutActionHandler?.(e7);
+      return;
+    }
+    if (this.href) {
+      window.location.href = this.href;
+    }
+  }
+};
+__publicField(_CheckoutButton, "is", "checkout-button");
+__publicField(_CheckoutButton, "tag", "button");
+var CheckoutButton = _CheckoutButton;
+if (!window.customElements.get(CheckoutButton.is)) {
+  window.customElements.define(CheckoutButton.is, CheckoutButton, {
+    extends: CheckoutButton.tag
+  });
+}
+
+// src/utils.js
+var MAS_COMMERCE_SERVICE2 = "mas-commerce-service";
+function debounce(func, delay) {
+  let debounceTimer;
+  return function() {
+    const context = this;
+    const args = arguments;
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(() => func.apply(context, args), delay);
+  };
+}
+function createTag(tag, attributes = {}, content = null, is = null) {
+  const element = is ? document.createElement(tag, { is }) : document.createElement(tag);
+  if (content instanceof HTMLElement) {
+    element.appendChild(content);
+  } else {
+    element.innerHTML = content;
+  }
+  for (const [key, value] of Object.entries(attributes)) {
+    element.setAttribute(key, value);
+  }
+  return element;
+}
+function matchMobile() {
+  return window.matchMedia("(max-width: 767px)");
+}
+function isMobile() {
+  return matchMobile().matches;
+}
+function isMobileOrTablet() {
+  return window.matchMedia("(max-width: 1024px)").matches;
+}
+function getService2() {
+  return document.getElementsByTagName(MAS_COMMERCE_SERVICE2)?.[0];
+}
+
+// src/upt-link.js
+function getPromoTermsUrl(env) {
+  const host = env === "PRODUCTION" ? "www.adobe.com" : "www.stage.adobe.com";
+  return `https://${host}/offers/promo-terms.html`;
+}
+var _initialized;
+var _UptLink = class _UptLink extends HTMLAnchorElement {
+  constructor() {
+    super();
+    __privateAdd(this, _initialized, false);
+    this.setAttribute("is", _UptLink.is);
+  }
+  get isUptLink() {
+    return true;
+  }
+  /**
+   * @param {string} osi 
+   * @param {string} promotionCode 
+   */
+  initializeWcsData(osi, promotionCode) {
+    this.setAttribute("data-wcs-osi", osi);
+    if (promotionCode)
+      this.setAttribute("data-promotion-code", promotionCode);
+    __privateSet(this, _initialized, true);
+    this.composePromoTermsUrl();
+  }
+  attributeChangedCallback(_name, _oldValue, _newValue) {
+    if (!__privateGet(this, _initialized))
+      return;
+    this.composePromoTermsUrl();
+  }
+  composePromoTermsUrl() {
+    const osi = this.getAttribute("data-wcs-osi");
+    if (!osi) {
+      const fragmentId = this.closest("merch-card").querySelector("aem-fragment").getAttribute("fragment");
+      console.error(`Missing 'data-wcs-osi' attribute on upt-link. Fragment: ${fragmentId}`);
+      return;
+    }
+    const service = getService2();
+    const wcsOsi = [osi];
+    const promotionCode = this.getAttribute("data-promotion-code");
+    const { country, language, env } = service.settings;
+    const options = { country, language, wcsOsi, promotionCode };
+    const promises = service.resolveOfferSelectors(options);
+    Promise.all(promises).then(([[offer]]) => {
+      let params = `locale=${language}_${country}&country=${country}&offer_id=${offer.offerId}`;
+      if (promotionCode)
+        params += `&promotion_code=${encodeURIComponent(promotionCode)}`;
+      this.href = `${getPromoTermsUrl(env)}?${params}`;
+    }).catch((error) => {
+      console.error(`Could not resolve offer selectors for id: ${osi}.`, error.message);
+    });
+  }
+  /**
+   * @param {HTMLElement} element 
+   */
+  static createFrom(element) {
+    const uptLink = new _UptLink();
+    for (const attribute of element.attributes) {
+      if (attribute.name === "is")
+        continue;
+      if (attribute.name === "class" && attribute.value.includes("upt-link"))
+        uptLink.setAttribute("class", attribute.value.replace("upt-link", "").trim());
+      else
+        uptLink.setAttribute(attribute.name, attribute.value);
+    }
+    uptLink.innerHTML = element.innerHTML;
+    uptLink.setAttribute("tabindex", 0);
+    return uptLink;
+  }
+};
+_initialized = new WeakMap();
+__publicField(_UptLink, "is", "upt-link");
+__publicField(_UptLink, "tag", "a");
+__publicField(_UptLink, "observedAttributes", ["data-wcs-osi", "data-promotion-code"]);
+var UptLink = _UptLink;
+if (!window.customElements.get(UptLink.is)) {
+  window.customElements.define(UptLink.is, UptLink, {
+    extends: UptLink.tag
+  });
+}
+
+// node_modules/lit/node_modules/@lit/reactive-element/css-tag.js
+var t = window;
+var e = t.ShadowRoot && (void 0 === t.ShadyCSS || t.ShadyCSS.nativeShadow) && "adoptedStyleSheets" in Document.prototype && "replace" in CSSStyleSheet.prototype;
+var s = Symbol();
+var n = /* @__PURE__ */ new WeakMap();
+var o = class {
+  constructor(t5, e7, n8) {
+    if (this._$cssResult$ = true, n8 !== s)
+      throw Error("CSSResult is not constructable. Use `unsafeCSS` or `css` instead.");
+    this.cssText = t5, this.t = e7;
+  }
+  get styleSheet() {
+    let t5 = this.o;
+    const s8 = this.t;
+    if (e && void 0 === t5) {
+      const e7 = void 0 !== s8 && 1 === s8.length;
+      e7 && (t5 = n.get(s8)), void 0 === t5 && ((this.o = t5 = new CSSStyleSheet()).replaceSync(this.cssText), e7 && n.set(s8, t5));
+    }
+    return t5;
+  }
+  toString() {
+    return this.cssText;
+  }
+};
+var r = (t5) => new o("string" == typeof t5 ? t5 : t5 + "", void 0, s);
+var S = (s8, n8) => {
+  e ? s8.adoptedStyleSheets = n8.map((t5) => t5 instanceof CSSStyleSheet ? t5 : t5.styleSheet) : n8.forEach((e7) => {
+    const n9 = document.createElement("style"), o8 = t.litNonce;
+    void 0 !== o8 && n9.setAttribute("nonce", o8), n9.textContent = e7.cssText, s8.appendChild(n9);
+  });
+};
+var c = e ? (t5) => t5 : (t5) => t5 instanceof CSSStyleSheet ? ((t6) => {
+  let e7 = "";
+  for (const s8 of t6.cssRules)
+    e7 += s8.cssText;
+  return r(e7);
+})(t5) : t5;
+
+// node_modules/lit/node_modules/@lit/reactive-element/reactive-element.js
+var s2;
+var e2 = window;
+var r2 = e2.trustedTypes;
+var h = r2 ? r2.emptyScript : "";
+var o2 = e2.reactiveElementPolyfillSupport;
+var n2 = { toAttribute(t5, i5) {
+  switch (i5) {
+    case Boolean:
+      t5 = t5 ? h : null;
+      break;
+    case Object:
+    case Array:
+      t5 = null == t5 ? t5 : JSON.stringify(t5);
+  }
+  return t5;
+}, fromAttribute(t5, i5) {
+  let s8 = t5;
+  switch (i5) {
+    case Boolean:
+      s8 = null !== t5;
+      break;
+    case Number:
+      s8 = null === t5 ? null : Number(t5);
+      break;
+    case Object:
+    case Array:
+      try {
+        s8 = JSON.parse(t5);
+      } catch (t6) {
+        s8 = null;
+      }
+  }
+  return s8;
+} };
+var a = (t5, i5) => i5 !== t5 && (i5 == i5 || t5 == t5);
+var l = { attribute: true, type: String, converter: n2, reflect: false, hasChanged: a };
+var d = "finalized";
+var u = class extends HTMLElement {
+  constructor() {
+    super(), this._$Ei = /* @__PURE__ */ new Map(), this.isUpdatePending = false, this.hasUpdated = false, this._$El = null, this._$Eu();
+  }
+  static addInitializer(t5) {
+    var i5;
+    this.finalize(), (null !== (i5 = this.h) && void 0 !== i5 ? i5 : this.h = []).push(t5);
+  }
+  static get observedAttributes() {
+    this.finalize();
+    const t5 = [];
+    return this.elementProperties.forEach((i5, s8) => {
+      const e7 = this._$Ep(s8, i5);
+      void 0 !== e7 && (this._$Ev.set(e7, s8), t5.push(e7));
+    }), t5;
+  }
+  static createProperty(t5, i5 = l) {
+    if (i5.state && (i5.attribute = false), this.finalize(), this.elementProperties.set(t5, i5), !i5.noAccessor && !this.prototype.hasOwnProperty(t5)) {
+      const s8 = "symbol" == typeof t5 ? Symbol() : "__" + t5, e7 = this.getPropertyDescriptor(t5, s8, i5);
+      void 0 !== e7 && Object.defineProperty(this.prototype, t5, e7);
+    }
+  }
+  static getPropertyDescriptor(t5, i5, s8) {
+    return { get() {
+      return this[i5];
+    }, set(e7) {
+      const r7 = this[t5];
+      this[i5] = e7, this.requestUpdate(t5, r7, s8);
+    }, configurable: true, enumerable: true };
+  }
+  static getPropertyOptions(t5) {
+    return this.elementProperties.get(t5) || l;
+  }
+  static finalize() {
+    if (this.hasOwnProperty(d))
+      return false;
+    this[d] = true;
+    const t5 = Object.getPrototypeOf(this);
+    if (t5.finalize(), void 0 !== t5.h && (this.h = [...t5.h]), this.elementProperties = new Map(t5.elementProperties), this._$Ev = /* @__PURE__ */ new Map(), this.hasOwnProperty("properties")) {
+      const t6 = this.properties, i5 = [...Object.getOwnPropertyNames(t6), ...Object.getOwnPropertySymbols(t6)];
+      for (const s8 of i5)
+        this.createProperty(s8, t6[s8]);
+    }
+    return this.elementStyles = this.finalizeStyles(this.styles), true;
+  }
+  static finalizeStyles(i5) {
+    const s8 = [];
+    if (Array.isArray(i5)) {
+      const e7 = new Set(i5.flat(1 / 0).reverse());
+      for (const i6 of e7)
+        s8.unshift(c(i6));
+    } else
+      void 0 !== i5 && s8.push(c(i5));
+    return s8;
+  }
+  static _$Ep(t5, i5) {
+    const s8 = i5.attribute;
+    return false === s8 ? void 0 : "string" == typeof s8 ? s8 : "string" == typeof t5 ? t5.toLowerCase() : void 0;
+  }
+  _$Eu() {
+    var t5;
+    this._$E_ = new Promise((t6) => this.enableUpdating = t6), this._$AL = /* @__PURE__ */ new Map(), this._$Eg(), this.requestUpdate(), null === (t5 = this.constructor.h) || void 0 === t5 || t5.forEach((t6) => t6(this));
+  }
+  addController(t5) {
+    var i5, s8;
+    (null !== (i5 = this._$ES) && void 0 !== i5 ? i5 : this._$ES = []).push(t5), void 0 !== this.renderRoot && this.isConnected && (null === (s8 = t5.hostConnected) || void 0 === s8 || s8.call(t5));
+  }
+  removeController(t5) {
+    var i5;
+    null === (i5 = this._$ES) || void 0 === i5 || i5.splice(this._$ES.indexOf(t5) >>> 0, 1);
+  }
+  _$Eg() {
+    this.constructor.elementProperties.forEach((t5, i5) => {
+      this.hasOwnProperty(i5) && (this._$Ei.set(i5, this[i5]), delete this[i5]);
+    });
+  }
+  createRenderRoot() {
+    var t5;
+    const s8 = null !== (t5 = this.shadowRoot) && void 0 !== t5 ? t5 : this.attachShadow(this.constructor.shadowRootOptions);
+    return S(s8, this.constructor.elementStyles), s8;
+  }
+  connectedCallback() {
+    var t5;
+    void 0 === this.renderRoot && (this.renderRoot = this.createRenderRoot()), this.enableUpdating(true), null === (t5 = this._$ES) || void 0 === t5 || t5.forEach((t6) => {
+      var i5;
+      return null === (i5 = t6.hostConnected) || void 0 === i5 ? void 0 : i5.call(t6);
+    });
+  }
+  enableUpdating(t5) {
+  }
+  disconnectedCallback() {
+    var t5;
+    null === (t5 = this._$ES) || void 0 === t5 || t5.forEach((t6) => {
+      var i5;
+      return null === (i5 = t6.hostDisconnected) || void 0 === i5 ? void 0 : i5.call(t6);
+    });
+  }
+  attributeChangedCallback(t5, i5, s8) {
+    this._$AK(t5, s8);
+  }
+  _$EO(t5, i5, s8 = l) {
+    var e7;
+    const r7 = this.constructor._$Ep(t5, s8);
+    if (void 0 !== r7 && true === s8.reflect) {
+      const h5 = (void 0 !== (null === (e7 = s8.converter) || void 0 === e7 ? void 0 : e7.toAttribute) ? s8.converter : n2).toAttribute(i5, s8.type);
+      this._$El = t5, null == h5 ? this.removeAttribute(r7) : this.setAttribute(r7, h5), this._$El = null;
+    }
+  }
+  _$AK(t5, i5) {
+    var s8;
+    const e7 = this.constructor, r7 = e7._$Ev.get(t5);
+    if (void 0 !== r7 && this._$El !== r7) {
+      const t6 = e7.getPropertyOptions(r7), h5 = "function" == typeof t6.converter ? { fromAttribute: t6.converter } : void 0 !== (null === (s8 = t6.converter) || void 0 === s8 ? void 0 : s8.fromAttribute) ? t6.converter : n2;
+      this._$El = r7, this[r7] = h5.fromAttribute(i5, t6.type), this._$El = null;
+    }
+  }
+  requestUpdate(t5, i5, s8) {
+    let e7 = true;
+    void 0 !== t5 && (((s8 = s8 || this.constructor.getPropertyOptions(t5)).hasChanged || a)(this[t5], i5) ? (this._$AL.has(t5) || this._$AL.set(t5, i5), true === s8.reflect && this._$El !== t5 && (void 0 === this._$EC && (this._$EC = /* @__PURE__ */ new Map()), this._$EC.set(t5, s8))) : e7 = false), !this.isUpdatePending && e7 && (this._$E_ = this._$Ej());
+  }
+  async _$Ej() {
+    this.isUpdatePending = true;
+    try {
+      await this._$E_;
+    } catch (t6) {
+      Promise.reject(t6);
+    }
+    const t5 = this.scheduleUpdate();
+    return null != t5 && await t5, !this.isUpdatePending;
+  }
+  scheduleUpdate() {
+    return this.performUpdate();
+  }
+  performUpdate() {
+    var t5;
+    if (!this.isUpdatePending)
+      return;
+    this.hasUpdated, this._$Ei && (this._$Ei.forEach((t6, i6) => this[i6] = t6), this._$Ei = void 0);
+    let i5 = false;
+    const s8 = this._$AL;
+    try {
+      i5 = this.shouldUpdate(s8), i5 ? (this.willUpdate(s8), null === (t5 = this._$ES) || void 0 === t5 || t5.forEach((t6) => {
+        var i6;
+        return null === (i6 = t6.hostUpdate) || void 0 === i6 ? void 0 : i6.call(t6);
+      }), this.update(s8)) : this._$Ek();
+    } catch (t6) {
+      throw i5 = false, this._$Ek(), t6;
+    }
+    i5 && this._$AE(s8);
+  }
+  willUpdate(t5) {
+  }
+  _$AE(t5) {
+    var i5;
+    null === (i5 = this._$ES) || void 0 === i5 || i5.forEach((t6) => {
+      var i6;
+      return null === (i6 = t6.hostUpdated) || void 0 === i6 ? void 0 : i6.call(t6);
+    }), this.hasUpdated || (this.hasUpdated = true, this.firstUpdated(t5)), this.updated(t5);
+  }
+  _$Ek() {
+    this._$AL = /* @__PURE__ */ new Map(), this.isUpdatePending = false;
+  }
+  get updateComplete() {
+    return this.getUpdateComplete();
+  }
+  getUpdateComplete() {
+    return this._$E_;
+  }
+  shouldUpdate(t5) {
+    return true;
+  }
+  update(t5) {
+    void 0 !== this._$EC && (this._$EC.forEach((t6, i5) => this._$EO(i5, this[i5], t6)), this._$EC = void 0), this._$Ek();
+  }
+  updated(t5) {
+  }
+  firstUpdated(t5) {
+  }
+};
+u[d] = true, u.elementProperties = /* @__PURE__ */ new Map(), u.elementStyles = [], u.shadowRootOptions = { mode: "open" }, null == o2 || o2({ ReactiveElement: u }), (null !== (s2 = e2.reactiveElementVersions) && void 0 !== s2 ? s2 : e2.reactiveElementVersions = []).push("1.6.3");
+
+// node_modules/lit/node_modules/lit-html/lit-html.js
+var t2;
+var i2 = window;
+var s3 = i2.trustedTypes;
+var e3 = s3 ? s3.createPolicy("lit-html", { createHTML: (t5) => t5 }) : void 0;
+var o3 = "$lit$";
+var n3 = `lit$${(Math.random() + "").slice(9)}$`;
+var l2 = "?" + n3;
+var h2 = `<${l2}>`;
+var r3 = document;
+var u2 = () => r3.createComment("");
+var d2 = (t5) => null === t5 || "object" != typeof t5 && "function" != typeof t5;
+var c2 = Array.isArray;
+var v = (t5) => c2(t5) || "function" == typeof (null == t5 ? void 0 : t5[Symbol.iterator]);
+var a2 = "[ 	\n\f\r]";
+var f = /<(?:(!--|\/[^a-zA-Z])|(\/?[a-zA-Z][^>\s]*)|(\/?$))/g;
+var _ = /-->/g;
+var m = />/g;
+var p = RegExp(`>|${a2}(?:([^\\s"'>=/]+)(${a2}*=${a2}*(?:[^ 	
+\f\r"'\`<>=]|("|')|))|$)`, "g");
+var g = /'/g;
+var $ = /"/g;
+var y = /^(?:script|style|textarea|title)$/i;
+var w = (t5) => (i5, ...s8) => ({ _$litType$: t5, strings: i5, values: s8 });
+var x = w(1);
+var b = w(2);
+var T = Symbol.for("lit-noChange");
+var A = Symbol.for("lit-nothing");
+var E = /* @__PURE__ */ new WeakMap();
+var C = r3.createTreeWalker(r3, 129, null, false);
+function P(t5, i5) {
+  if (!Array.isArray(t5) || !t5.hasOwnProperty("raw"))
+    throw Error("invalid template strings array");
+  return void 0 !== e3 ? e3.createHTML(i5) : i5;
+}
+var V = (t5, i5) => {
+  const s8 = t5.length - 1, e7 = [];
+  let l6, r7 = 2 === i5 ? "<svg>" : "", u5 = f;
+  for (let i6 = 0; i6 < s8; i6++) {
+    const s9 = t5[i6];
+    let d5, c5, v3 = -1, a5 = 0;
+    for (; a5 < s9.length && (u5.lastIndex = a5, c5 = u5.exec(s9), null !== c5); )
+      a5 = u5.lastIndex, u5 === f ? "!--" === c5[1] ? u5 = _ : void 0 !== c5[1] ? u5 = m : void 0 !== c5[2] ? (y.test(c5[2]) && (l6 = RegExp("</" + c5[2], "g")), u5 = p) : void 0 !== c5[3] && (u5 = p) : u5 === p ? ">" === c5[0] ? (u5 = null != l6 ? l6 : f, v3 = -1) : void 0 === c5[1] ? v3 = -2 : (v3 = u5.lastIndex - c5[2].length, d5 = c5[1], u5 = void 0 === c5[3] ? p : '"' === c5[3] ? $ : g) : u5 === $ || u5 === g ? u5 = p : u5 === _ || u5 === m ? u5 = f : (u5 = p, l6 = void 0);
+    const w3 = u5 === p && t5[i6 + 1].startsWith("/>") ? " " : "";
+    r7 += u5 === f ? s9 + h2 : v3 >= 0 ? (e7.push(d5), s9.slice(0, v3) + o3 + s9.slice(v3) + n3 + w3) : s9 + n3 + (-2 === v3 ? (e7.push(void 0), i6) : w3);
+  }
+  return [P(t5, r7 + (t5[s8] || "<?>") + (2 === i5 ? "</svg>" : "")), e7];
+};
+var N = class _N {
+  constructor({ strings: t5, _$litType$: i5 }, e7) {
+    let h5;
+    this.parts = [];
+    let r7 = 0, d5 = 0;
+    const c5 = t5.length - 1, v3 = this.parts, [a5, f3] = V(t5, i5);
+    if (this.el = _N.createElement(a5, e7), C.currentNode = this.el.content, 2 === i5) {
+      const t6 = this.el.content, i6 = t6.firstChild;
+      i6.remove(), t6.append(...i6.childNodes);
+    }
+    for (; null !== (h5 = C.nextNode()) && v3.length < c5; ) {
+      if (1 === h5.nodeType) {
+        if (h5.hasAttributes()) {
+          const t6 = [];
+          for (const i6 of h5.getAttributeNames())
+            if (i6.endsWith(o3) || i6.startsWith(n3)) {
+              const s8 = f3[d5++];
+              if (t6.push(i6), void 0 !== s8) {
+                const t7 = h5.getAttribute(s8.toLowerCase() + o3).split(n3), i7 = /([.?@])?(.*)/.exec(s8);
+                v3.push({ type: 1, index: r7, name: i7[2], strings: t7, ctor: "." === i7[1] ? H : "?" === i7[1] ? L : "@" === i7[1] ? z : k });
+              } else
+                v3.push({ type: 6, index: r7 });
+            }
+          for (const i6 of t6)
+            h5.removeAttribute(i6);
+        }
+        if (y.test(h5.tagName)) {
+          const t6 = h5.textContent.split(n3), i6 = t6.length - 1;
+          if (i6 > 0) {
+            h5.textContent = s3 ? s3.emptyScript : "";
+            for (let s8 = 0; s8 < i6; s8++)
+              h5.append(t6[s8], u2()), C.nextNode(), v3.push({ type: 2, index: ++r7 });
+            h5.append(t6[i6], u2());
+          }
+        }
+      } else if (8 === h5.nodeType)
+        if (h5.data === l2)
+          v3.push({ type: 2, index: r7 });
+        else {
+          let t6 = -1;
+          for (; -1 !== (t6 = h5.data.indexOf(n3, t6 + 1)); )
+            v3.push({ type: 7, index: r7 }), t6 += n3.length - 1;
+        }
+      r7++;
+    }
+  }
+  static createElement(t5, i5) {
+    const s8 = r3.createElement("template");
+    return s8.innerHTML = t5, s8;
+  }
+};
+function S2(t5, i5, s8 = t5, e7) {
+  var o8, n8, l6, h5;
+  if (i5 === T)
+    return i5;
+  let r7 = void 0 !== e7 ? null === (o8 = s8._$Co) || void 0 === o8 ? void 0 : o8[e7] : s8._$Cl;
+  const u5 = d2(i5) ? void 0 : i5._$litDirective$;
+  return (null == r7 ? void 0 : r7.constructor) !== u5 && (null === (n8 = null == r7 ? void 0 : r7._$AO) || void 0 === n8 || n8.call(r7, false), void 0 === u5 ? r7 = void 0 : (r7 = new u5(t5), r7._$AT(t5, s8, e7)), void 0 !== e7 ? (null !== (l6 = (h5 = s8)._$Co) && void 0 !== l6 ? l6 : h5._$Co = [])[e7] = r7 : s8._$Cl = r7), void 0 !== r7 && (i5 = S2(t5, r7._$AS(t5, i5.values), r7, e7)), i5;
+}
+var M = class {
+  constructor(t5, i5) {
+    this._$AV = [], this._$AN = void 0, this._$AD = t5, this._$AM = i5;
+  }
+  get parentNode() {
+    return this._$AM.parentNode;
+  }
+  get _$AU() {
+    return this._$AM._$AU;
+  }
+  u(t5) {
+    var i5;
+    const { el: { content: s8 }, parts: e7 } = this._$AD, o8 = (null !== (i5 = null == t5 ? void 0 : t5.creationScope) && void 0 !== i5 ? i5 : r3).importNode(s8, true);
+    C.currentNode = o8;
+    let n8 = C.nextNode(), l6 = 0, h5 = 0, u5 = e7[0];
+    for (; void 0 !== u5; ) {
+      if (l6 === u5.index) {
+        let i6;
+        2 === u5.type ? i6 = new R(n8, n8.nextSibling, this, t5) : 1 === u5.type ? i6 = new u5.ctor(n8, u5.name, u5.strings, this, t5) : 6 === u5.type && (i6 = new Z(n8, this, t5)), this._$AV.push(i6), u5 = e7[++h5];
+      }
+      l6 !== (null == u5 ? void 0 : u5.index) && (n8 = C.nextNode(), l6++);
+    }
+    return C.currentNode = r3, o8;
+  }
+  v(t5) {
+    let i5 = 0;
+    for (const s8 of this._$AV)
+      void 0 !== s8 && (void 0 !== s8.strings ? (s8._$AI(t5, s8, i5), i5 += s8.strings.length - 2) : s8._$AI(t5[i5])), i5++;
+  }
+};
+var R = class _R {
+  constructor(t5, i5, s8, e7) {
+    var o8;
+    this.type = 2, this._$AH = A, this._$AN = void 0, this._$AA = t5, this._$AB = i5, this._$AM = s8, this.options = e7, this._$Cp = null === (o8 = null == e7 ? void 0 : e7.isConnected) || void 0 === o8 || o8;
+  }
+  get _$AU() {
+    var t5, i5;
+    return null !== (i5 = null === (t5 = this._$AM) || void 0 === t5 ? void 0 : t5._$AU) && void 0 !== i5 ? i5 : this._$Cp;
+  }
+  get parentNode() {
+    let t5 = this._$AA.parentNode;
+    const i5 = this._$AM;
+    return void 0 !== i5 && 11 === (null == t5 ? void 0 : t5.nodeType) && (t5 = i5.parentNode), t5;
+  }
+  get startNode() {
+    return this._$AA;
+  }
+  get endNode() {
+    return this._$AB;
+  }
+  _$AI(t5, i5 = this) {
+    t5 = S2(this, t5, i5), d2(t5) ? t5 === A || null == t5 || "" === t5 ? (this._$AH !== A && this._$AR(), this._$AH = A) : t5 !== this._$AH && t5 !== T && this._(t5) : void 0 !== t5._$litType$ ? this.g(t5) : void 0 !== t5.nodeType ? this.$(t5) : v(t5) ? this.T(t5) : this._(t5);
+  }
+  k(t5) {
+    return this._$AA.parentNode.insertBefore(t5, this._$AB);
+  }
+  $(t5) {
+    this._$AH !== t5 && (this._$AR(), this._$AH = this.k(t5));
+  }
+  _(t5) {
+    this._$AH !== A && d2(this._$AH) ? this._$AA.nextSibling.data = t5 : this.$(r3.createTextNode(t5)), this._$AH = t5;
+  }
+  g(t5) {
+    var i5;
+    const { values: s8, _$litType$: e7 } = t5, o8 = "number" == typeof e7 ? this._$AC(t5) : (void 0 === e7.el && (e7.el = N.createElement(P(e7.h, e7.h[0]), this.options)), e7);
+    if ((null === (i5 = this._$AH) || void 0 === i5 ? void 0 : i5._$AD) === o8)
+      this._$AH.v(s8);
+    else {
+      const t6 = new M(o8, this), i6 = t6.u(this.options);
+      t6.v(s8), this.$(i6), this._$AH = t6;
+    }
+  }
+  _$AC(t5) {
+    let i5 = E.get(t5.strings);
+    return void 0 === i5 && E.set(t5.strings, i5 = new N(t5)), i5;
+  }
+  T(t5) {
+    c2(this._$AH) || (this._$AH = [], this._$AR());
+    const i5 = this._$AH;
+    let s8, e7 = 0;
+    for (const o8 of t5)
+      e7 === i5.length ? i5.push(s8 = new _R(this.k(u2()), this.k(u2()), this, this.options)) : s8 = i5[e7], s8._$AI(o8), e7++;
+    e7 < i5.length && (this._$AR(s8 && s8._$AB.nextSibling, e7), i5.length = e7);
+  }
+  _$AR(t5 = this._$AA.nextSibling, i5) {
+    var s8;
+    for (null === (s8 = this._$AP) || void 0 === s8 || s8.call(this, false, true, i5); t5 && t5 !== this._$AB; ) {
+      const i6 = t5.nextSibling;
+      t5.remove(), t5 = i6;
+    }
+  }
+  setConnected(t5) {
+    var i5;
+    void 0 === this._$AM && (this._$Cp = t5, null === (i5 = this._$AP) || void 0 === i5 || i5.call(this, t5));
+  }
+};
+var k = class {
+  constructor(t5, i5, s8, e7, o8) {
+    this.type = 1, this._$AH = A, this._$AN = void 0, this.element = t5, this.name = i5, this._$AM = e7, this.options = o8, s8.length > 2 || "" !== s8[0] || "" !== s8[1] ? (this._$AH = Array(s8.length - 1).fill(new String()), this.strings = s8) : this._$AH = A;
+  }
+  get tagName() {
+    return this.element.tagName;
+  }
+  get _$AU() {
+    return this._$AM._$AU;
+  }
+  _$AI(t5, i5 = this, s8, e7) {
+    const o8 = this.strings;
+    let n8 = false;
+    if (void 0 === o8)
+      t5 = S2(this, t5, i5, 0), n8 = !d2(t5) || t5 !== this._$AH && t5 !== T, n8 && (this._$AH = t5);
+    else {
+      const e8 = t5;
+      let l6, h5;
+      for (t5 = o8[0], l6 = 0; l6 < o8.length - 1; l6++)
+        h5 = S2(this, e8[s8 + l6], i5, l6), h5 === T && (h5 = this._$AH[l6]), n8 || (n8 = !d2(h5) || h5 !== this._$AH[l6]), h5 === A ? t5 = A : t5 !== A && (t5 += (null != h5 ? h5 : "") + o8[l6 + 1]), this._$AH[l6] = h5;
+    }
+    n8 && !e7 && this.j(t5);
+  }
+  j(t5) {
+    t5 === A ? this.element.removeAttribute(this.name) : this.element.setAttribute(this.name, null != t5 ? t5 : "");
+  }
+};
+var H = class extends k {
+  constructor() {
+    super(...arguments), this.type = 3;
+  }
+  j(t5) {
+    this.element[this.name] = t5 === A ? void 0 : t5;
+  }
+};
+var I = s3 ? s3.emptyScript : "";
+var L = class extends k {
+  constructor() {
+    super(...arguments), this.type = 4;
+  }
+  j(t5) {
+    t5 && t5 !== A ? this.element.setAttribute(this.name, I) : this.element.removeAttribute(this.name);
+  }
+};
+var z = class extends k {
+  constructor(t5, i5, s8, e7, o8) {
+    super(t5, i5, s8, e7, o8), this.type = 5;
+  }
+  _$AI(t5, i5 = this) {
+    var s8;
+    if ((t5 = null !== (s8 = S2(this, t5, i5, 0)) && void 0 !== s8 ? s8 : A) === T)
+      return;
+    const e7 = this._$AH, o8 = t5 === A && e7 !== A || t5.capture !== e7.capture || t5.once !== e7.once || t5.passive !== e7.passive, n8 = t5 !== A && (e7 === A || o8);
+    o8 && this.element.removeEventListener(this.name, this, e7), n8 && this.element.addEventListener(this.name, this, t5), this._$AH = t5;
+  }
+  handleEvent(t5) {
+    var i5, s8;
+    "function" == typeof this._$AH ? this._$AH.call(null !== (s8 = null === (i5 = this.options) || void 0 === i5 ? void 0 : i5.host) && void 0 !== s8 ? s8 : this.element, t5) : this._$AH.handleEvent(t5);
+  }
+};
+var Z = class {
+  constructor(t5, i5, s8) {
+    this.element = t5, this.type = 6, this._$AN = void 0, this._$AM = i5, this.options = s8;
+  }
+  get _$AU() {
+    return this._$AM._$AU;
+  }
+  _$AI(t5) {
+    S2(this, t5);
+  }
+};
+var B = i2.litHtmlPolyfillSupport;
+null == B || B(N, R), (null !== (t2 = i2.litHtmlVersions) && void 0 !== t2 ? t2 : i2.litHtmlVersions = []).push("2.8.0");
+
+// node_modules/lit-element/node_modules/@lit/reactive-element/css-tag.js
+var t3 = window;
+var e4 = t3.ShadowRoot && (void 0 === t3.ShadyCSS || t3.ShadyCSS.nativeShadow) && "adoptedStyleSheets" in Document.prototype && "replace" in CSSStyleSheet.prototype;
+var s4 = Symbol();
+var n4 = /* @__PURE__ */ new WeakMap();
+var o4 = class {
+  constructor(t5, e7, n8) {
+    if (this._$cssResult$ = true, n8 !== s4)
+      throw Error("CSSResult is not constructable. Use `unsafeCSS` or `css` instead.");
+    this.cssText = t5, this.t = e7;
+  }
+  get styleSheet() {
+    let t5 = this.o;
+    const s8 = this.t;
+    if (e4 && void 0 === t5) {
+      const e7 = void 0 !== s8 && 1 === s8.length;
+      e7 && (t5 = n4.get(s8)), void 0 === t5 && ((this.o = t5 = new CSSStyleSheet()).replaceSync(this.cssText), e7 && n4.set(s8, t5));
+    }
+    return t5;
+  }
+  toString() {
+    return this.cssText;
+  }
+};
+var r4 = (t5) => new o4("string" == typeof t5 ? t5 : t5 + "", void 0, s4);
+var i3 = (t5, ...e7) => {
+  const n8 = 1 === t5.length ? t5[0] : e7.reduce((e8, s8, n9) => e8 + ((t6) => {
+    if (true === t6._$cssResult$)
+      return t6.cssText;
+    if ("number" == typeof t6)
+      return t6;
+    throw Error("Value passed to 'css' function must be a 'css' function result: " + t6 + ". Use 'unsafeCSS' to pass non-literal values, but take care to ensure page security.");
+  })(s8) + t5[n9 + 1], t5[0]);
+  return new o4(n8, t5, s4);
+};
+var S3 = (s8, n8) => {
+  e4 ? s8.adoptedStyleSheets = n8.map((t5) => t5 instanceof CSSStyleSheet ? t5 : t5.styleSheet) : n8.forEach((e7) => {
+    const n9 = document.createElement("style"), o8 = t3.litNonce;
+    void 0 !== o8 && n9.setAttribute("nonce", o8), n9.textContent = e7.cssText, s8.appendChild(n9);
+  });
+};
+var c3 = e4 ? (t5) => t5 : (t5) => t5 instanceof CSSStyleSheet ? ((t6) => {
+  let e7 = "";
+  for (const s8 of t6.cssRules)
+    e7 += s8.cssText;
+  return r4(e7);
+})(t5) : t5;
+
+// node_modules/lit-element/node_modules/@lit/reactive-element/reactive-element.js
+var s5;
+var e5 = window;
+var r5 = e5.trustedTypes;
+var h3 = r5 ? r5.emptyScript : "";
+var o5 = e5.reactiveElementPolyfillSupport;
+var n5 = { toAttribute(t5, i5) {
+  switch (i5) {
+    case Boolean:
+      t5 = t5 ? h3 : null;
+      break;
+    case Object:
+    case Array:
+      t5 = null == t5 ? t5 : JSON.stringify(t5);
+  }
+  return t5;
+}, fromAttribute(t5, i5) {
+  let s8 = t5;
+  switch (i5) {
+    case Boolean:
+      s8 = null !== t5;
+      break;
+    case Number:
+      s8 = null === t5 ? null : Number(t5);
+      break;
+    case Object:
+    case Array:
+      try {
+        s8 = JSON.parse(t5);
+      } catch (t6) {
+        s8 = null;
+      }
+  }
+  return s8;
+} };
+var a3 = (t5, i5) => i5 !== t5 && (i5 == i5 || t5 == t5);
+var l3 = { attribute: true, type: String, converter: n5, reflect: false, hasChanged: a3 };
+var d3 = "finalized";
+var u3 = class extends HTMLElement {
+  constructor() {
+    super(), this._$Ei = /* @__PURE__ */ new Map(), this.isUpdatePending = false, this.hasUpdated = false, this._$El = null, this._$Eu();
+  }
+  static addInitializer(t5) {
+    var i5;
+    this.finalize(), (null !== (i5 = this.h) && void 0 !== i5 ? i5 : this.h = []).push(t5);
+  }
+  static get observedAttributes() {
+    this.finalize();
+    const t5 = [];
+    return this.elementProperties.forEach((i5, s8) => {
+      const e7 = this._$Ep(s8, i5);
+      void 0 !== e7 && (this._$Ev.set(e7, s8), t5.push(e7));
+    }), t5;
+  }
+  static createProperty(t5, i5 = l3) {
+    if (i5.state && (i5.attribute = false), this.finalize(), this.elementProperties.set(t5, i5), !i5.noAccessor && !this.prototype.hasOwnProperty(t5)) {
+      const s8 = "symbol" == typeof t5 ? Symbol() : "__" + t5, e7 = this.getPropertyDescriptor(t5, s8, i5);
+      void 0 !== e7 && Object.defineProperty(this.prototype, t5, e7);
+    }
+  }
+  static getPropertyDescriptor(t5, i5, s8) {
+    return { get() {
+      return this[i5];
+    }, set(e7) {
+      const r7 = this[t5];
+      this[i5] = e7, this.requestUpdate(t5, r7, s8);
+    }, configurable: true, enumerable: true };
+  }
+  static getPropertyOptions(t5) {
+    return this.elementProperties.get(t5) || l3;
+  }
+  static finalize() {
+    if (this.hasOwnProperty(d3))
+      return false;
+    this[d3] = true;
+    const t5 = Object.getPrototypeOf(this);
+    if (t5.finalize(), void 0 !== t5.h && (this.h = [...t5.h]), this.elementProperties = new Map(t5.elementProperties), this._$Ev = /* @__PURE__ */ new Map(), this.hasOwnProperty("properties")) {
+      const t6 = this.properties, i5 = [...Object.getOwnPropertyNames(t6), ...Object.getOwnPropertySymbols(t6)];
+      for (const s8 of i5)
+        this.createProperty(s8, t6[s8]);
+    }
+    return this.elementStyles = this.finalizeStyles(this.styles), true;
+  }
+  static finalizeStyles(i5) {
+    const s8 = [];
+    if (Array.isArray(i5)) {
+      const e7 = new Set(i5.flat(1 / 0).reverse());
+      for (const i6 of e7)
+        s8.unshift(c3(i6));
+    } else
+      void 0 !== i5 && s8.push(c3(i5));
+    return s8;
+  }
+  static _$Ep(t5, i5) {
+    const s8 = i5.attribute;
+    return false === s8 ? void 0 : "string" == typeof s8 ? s8 : "string" == typeof t5 ? t5.toLowerCase() : void 0;
+  }
+  _$Eu() {
+    var t5;
+    this._$E_ = new Promise((t6) => this.enableUpdating = t6), this._$AL = /* @__PURE__ */ new Map(), this._$Eg(), this.requestUpdate(), null === (t5 = this.constructor.h) || void 0 === t5 || t5.forEach((t6) => t6(this));
+  }
+  addController(t5) {
+    var i5, s8;
+    (null !== (i5 = this._$ES) && void 0 !== i5 ? i5 : this._$ES = []).push(t5), void 0 !== this.renderRoot && this.isConnected && (null === (s8 = t5.hostConnected) || void 0 === s8 || s8.call(t5));
+  }
+  removeController(t5) {
+    var i5;
+    null === (i5 = this._$ES) || void 0 === i5 || i5.splice(this._$ES.indexOf(t5) >>> 0, 1);
+  }
+  _$Eg() {
+    this.constructor.elementProperties.forEach((t5, i5) => {
+      this.hasOwnProperty(i5) && (this._$Ei.set(i5, this[i5]), delete this[i5]);
+    });
+  }
+  createRenderRoot() {
+    var t5;
+    const s8 = null !== (t5 = this.shadowRoot) && void 0 !== t5 ? t5 : this.attachShadow(this.constructor.shadowRootOptions);
+    return S3(s8, this.constructor.elementStyles), s8;
+  }
+  connectedCallback() {
+    var t5;
+    void 0 === this.renderRoot && (this.renderRoot = this.createRenderRoot()), this.enableUpdating(true), null === (t5 = this._$ES) || void 0 === t5 || t5.forEach((t6) => {
+      var i5;
+      return null === (i5 = t6.hostConnected) || void 0 === i5 ? void 0 : i5.call(t6);
+    });
+  }
+  enableUpdating(t5) {
+  }
+  disconnectedCallback() {
+    var t5;
+    null === (t5 = this._$ES) || void 0 === t5 || t5.forEach((t6) => {
+      var i5;
+      return null === (i5 = t6.hostDisconnected) || void 0 === i5 ? void 0 : i5.call(t6);
+    });
+  }
+  attributeChangedCallback(t5, i5, s8) {
+    this._$AK(t5, s8);
+  }
+  _$EO(t5, i5, s8 = l3) {
+    var e7;
+    const r7 = this.constructor._$Ep(t5, s8);
+    if (void 0 !== r7 && true === s8.reflect) {
+      const h5 = (void 0 !== (null === (e7 = s8.converter) || void 0 === e7 ? void 0 : e7.toAttribute) ? s8.converter : n5).toAttribute(i5, s8.type);
+      this._$El = t5, null == h5 ? this.removeAttribute(r7) : this.setAttribute(r7, h5), this._$El = null;
+    }
+  }
+  _$AK(t5, i5) {
+    var s8;
+    const e7 = this.constructor, r7 = e7._$Ev.get(t5);
+    if (void 0 !== r7 && this._$El !== r7) {
+      const t6 = e7.getPropertyOptions(r7), h5 = "function" == typeof t6.converter ? { fromAttribute: t6.converter } : void 0 !== (null === (s8 = t6.converter) || void 0 === s8 ? void 0 : s8.fromAttribute) ? t6.converter : n5;
+      this._$El = r7, this[r7] = h5.fromAttribute(i5, t6.type), this._$El = null;
+    }
+  }
+  requestUpdate(t5, i5, s8) {
+    let e7 = true;
+    void 0 !== t5 && (((s8 = s8 || this.constructor.getPropertyOptions(t5)).hasChanged || a3)(this[t5], i5) ? (this._$AL.has(t5) || this._$AL.set(t5, i5), true === s8.reflect && this._$El !== t5 && (void 0 === this._$EC && (this._$EC = /* @__PURE__ */ new Map()), this._$EC.set(t5, s8))) : e7 = false), !this.isUpdatePending && e7 && (this._$E_ = this._$Ej());
+  }
+  async _$Ej() {
+    this.isUpdatePending = true;
+    try {
+      await this._$E_;
+    } catch (t6) {
+      Promise.reject(t6);
+    }
+    const t5 = this.scheduleUpdate();
+    return null != t5 && await t5, !this.isUpdatePending;
+  }
+  scheduleUpdate() {
+    return this.performUpdate();
+  }
+  performUpdate() {
+    var t5;
+    if (!this.isUpdatePending)
+      return;
+    this.hasUpdated, this._$Ei && (this._$Ei.forEach((t6, i6) => this[i6] = t6), this._$Ei = void 0);
+    let i5 = false;
+    const s8 = this._$AL;
+    try {
+      i5 = this.shouldUpdate(s8), i5 ? (this.willUpdate(s8), null === (t5 = this._$ES) || void 0 === t5 || t5.forEach((t6) => {
+        var i6;
+        return null === (i6 = t6.hostUpdate) || void 0 === i6 ? void 0 : i6.call(t6);
+      }), this.update(s8)) : this._$Ek();
+    } catch (t6) {
+      throw i5 = false, this._$Ek(), t6;
+    }
+    i5 && this._$AE(s8);
+  }
+  willUpdate(t5) {
+  }
+  _$AE(t5) {
+    var i5;
+    null === (i5 = this._$ES) || void 0 === i5 || i5.forEach((t6) => {
+      var i6;
+      return null === (i6 = t6.hostUpdated) || void 0 === i6 ? void 0 : i6.call(t6);
+    }), this.hasUpdated || (this.hasUpdated = true, this.firstUpdated(t5)), this.updated(t5);
+  }
+  _$Ek() {
+    this._$AL = /* @__PURE__ */ new Map(), this.isUpdatePending = false;
+  }
+  get updateComplete() {
+    return this.getUpdateComplete();
+  }
+  getUpdateComplete() {
+    return this._$E_;
+  }
+  shouldUpdate(t5) {
+    return true;
+  }
+  update(t5) {
+    void 0 !== this._$EC && (this._$EC.forEach((t6, i5) => this._$EO(i5, this[i5], t6)), this._$EC = void 0), this._$Ek();
+  }
+  updated(t5) {
+  }
+  firstUpdated(t5) {
+  }
+};
+u3[d3] = true, u3.elementProperties = /* @__PURE__ */ new Map(), u3.elementStyles = [], u3.shadowRootOptions = { mode: "open" }, null == o5 || o5({ ReactiveElement: u3 }), (null !== (s5 = e5.reactiveElementVersions) && void 0 !== s5 ? s5 : e5.reactiveElementVersions = []).push("1.6.3");
+
+// node_modules/lit-element/node_modules/lit-html/lit-html.js
+var t4;
+var i4 = window;
+var s6 = i4.trustedTypes;
+var e6 = s6 ? s6.createPolicy("lit-html", { createHTML: (t5) => t5 }) : void 0;
+var o6 = "$lit$";
+var n6 = `lit$${(Math.random() + "").slice(9)}$`;
+var l4 = "?" + n6;
+var h4 = `<${l4}>`;
+var r6 = document;
+var u4 = () => r6.createComment("");
+var d4 = (t5) => null === t5 || "object" != typeof t5 && "function" != typeof t5;
+var c4 = Array.isArray;
+var v2 = (t5) => c4(t5) || "function" == typeof (null == t5 ? void 0 : t5[Symbol.iterator]);
+var a4 = "[ 	\n\f\r]";
+var f2 = /<(?:(!--|\/[^a-zA-Z])|(\/?[a-zA-Z][^>\s]*)|(\/?$))/g;
+var _2 = /-->/g;
+var m2 = />/g;
+var p2 = RegExp(`>|${a4}(?:([^\\s"'>=/]+)(${a4}*=${a4}*(?:[^ 	
+\f\r"'\`<>=]|("|')|))|$)`, "g");
+var g2 = /'/g;
+var $2 = /"/g;
+var y2 = /^(?:script|style|textarea|title)$/i;
+var w2 = (t5) => (i5, ...s8) => ({ _$litType$: t5, strings: i5, values: s8 });
+var x2 = w2(1);
+var b2 = w2(2);
+var T2 = Symbol.for("lit-noChange");
+var A2 = Symbol.for("lit-nothing");
+var E2 = /* @__PURE__ */ new WeakMap();
+var C2 = r6.createTreeWalker(r6, 129, null, false);
+function P2(t5, i5) {
+  if (!Array.isArray(t5) || !t5.hasOwnProperty("raw"))
+    throw Error("invalid template strings array");
+  return void 0 !== e6 ? e6.createHTML(i5) : i5;
+}
+var V2 = (t5, i5) => {
+  const s8 = t5.length - 1, e7 = [];
+  let l6, r7 = 2 === i5 ? "<svg>" : "", u5 = f2;
+  for (let i6 = 0; i6 < s8; i6++) {
+    const s9 = t5[i6];
+    let d5, c5, v3 = -1, a5 = 0;
+    for (; a5 < s9.length && (u5.lastIndex = a5, c5 = u5.exec(s9), null !== c5); )
+      a5 = u5.lastIndex, u5 === f2 ? "!--" === c5[1] ? u5 = _2 : void 0 !== c5[1] ? u5 = m2 : void 0 !== c5[2] ? (y2.test(c5[2]) && (l6 = RegExp("</" + c5[2], "g")), u5 = p2) : void 0 !== c5[3] && (u5 = p2) : u5 === p2 ? ">" === c5[0] ? (u5 = null != l6 ? l6 : f2, v3 = -1) : void 0 === c5[1] ? v3 = -2 : (v3 = u5.lastIndex - c5[2].length, d5 = c5[1], u5 = void 0 === c5[3] ? p2 : '"' === c5[3] ? $2 : g2) : u5 === $2 || u5 === g2 ? u5 = p2 : u5 === _2 || u5 === m2 ? u5 = f2 : (u5 = p2, l6 = void 0);
+    const w3 = u5 === p2 && t5[i6 + 1].startsWith("/>") ? " " : "";
+    r7 += u5 === f2 ? s9 + h4 : v3 >= 0 ? (e7.push(d5), s9.slice(0, v3) + o6 + s9.slice(v3) + n6 + w3) : s9 + n6 + (-2 === v3 ? (e7.push(void 0), i6) : w3);
+  }
+  return [P2(t5, r7 + (t5[s8] || "<?>") + (2 === i5 ? "</svg>" : "")), e7];
+};
+var N2 = class _N {
+  constructor({ strings: t5, _$litType$: i5 }, e7) {
+    let h5;
+    this.parts = [];
+    let r7 = 0, d5 = 0;
+    const c5 = t5.length - 1, v3 = this.parts, [a5, f3] = V2(t5, i5);
+    if (this.el = _N.createElement(a5, e7), C2.currentNode = this.el.content, 2 === i5) {
+      const t6 = this.el.content, i6 = t6.firstChild;
+      i6.remove(), t6.append(...i6.childNodes);
+    }
+    for (; null !== (h5 = C2.nextNode()) && v3.length < c5; ) {
+      if (1 === h5.nodeType) {
+        if (h5.hasAttributes()) {
+          const t6 = [];
+          for (const i6 of h5.getAttributeNames())
+            if (i6.endsWith(o6) || i6.startsWith(n6)) {
+              const s8 = f3[d5++];
+              if (t6.push(i6), void 0 !== s8) {
+                const t7 = h5.getAttribute(s8.toLowerCase() + o6).split(n6), i7 = /([.?@])?(.*)/.exec(s8);
+                v3.push({ type: 1, index: r7, name: i7[2], strings: t7, ctor: "." === i7[1] ? H2 : "?" === i7[1] ? L2 : "@" === i7[1] ? z2 : k2 });
+              } else
+                v3.push({ type: 6, index: r7 });
+            }
+          for (const i6 of t6)
+            h5.removeAttribute(i6);
+        }
+        if (y2.test(h5.tagName)) {
+          const t6 = h5.textContent.split(n6), i6 = t6.length - 1;
+          if (i6 > 0) {
+            h5.textContent = s6 ? s6.emptyScript : "";
+            for (let s8 = 0; s8 < i6; s8++)
+              h5.append(t6[s8], u4()), C2.nextNode(), v3.push({ type: 2, index: ++r7 });
+            h5.append(t6[i6], u4());
+          }
+        }
+      } else if (8 === h5.nodeType)
+        if (h5.data === l4)
+          v3.push({ type: 2, index: r7 });
+        else {
+          let t6 = -1;
+          for (; -1 !== (t6 = h5.data.indexOf(n6, t6 + 1)); )
+            v3.push({ type: 7, index: r7 }), t6 += n6.length - 1;
+        }
+      r7++;
+    }
+  }
+  static createElement(t5, i5) {
+    const s8 = r6.createElement("template");
+    return s8.innerHTML = t5, s8;
+  }
+};
+function S4(t5, i5, s8 = t5, e7) {
+  var o8, n8, l6, h5;
+  if (i5 === T2)
+    return i5;
+  let r7 = void 0 !== e7 ? null === (o8 = s8._$Co) || void 0 === o8 ? void 0 : o8[e7] : s8._$Cl;
+  const u5 = d4(i5) ? void 0 : i5._$litDirective$;
+  return (null == r7 ? void 0 : r7.constructor) !== u5 && (null === (n8 = null == r7 ? void 0 : r7._$AO) || void 0 === n8 || n8.call(r7, false), void 0 === u5 ? r7 = void 0 : (r7 = new u5(t5), r7._$AT(t5, s8, e7)), void 0 !== e7 ? (null !== (l6 = (h5 = s8)._$Co) && void 0 !== l6 ? l6 : h5._$Co = [])[e7] = r7 : s8._$Cl = r7), void 0 !== r7 && (i5 = S4(t5, r7._$AS(t5, i5.values), r7, e7)), i5;
+}
+var M2 = class {
+  constructor(t5, i5) {
+    this._$AV = [], this._$AN = void 0, this._$AD = t5, this._$AM = i5;
+  }
+  get parentNode() {
+    return this._$AM.parentNode;
+  }
+  get _$AU() {
+    return this._$AM._$AU;
+  }
+  u(t5) {
+    var i5;
+    const { el: { content: s8 }, parts: e7 } = this._$AD, o8 = (null !== (i5 = null == t5 ? void 0 : t5.creationScope) && void 0 !== i5 ? i5 : r6).importNode(s8, true);
+    C2.currentNode = o8;
+    let n8 = C2.nextNode(), l6 = 0, h5 = 0, u5 = e7[0];
+    for (; void 0 !== u5; ) {
+      if (l6 === u5.index) {
+        let i6;
+        2 === u5.type ? i6 = new R2(n8, n8.nextSibling, this, t5) : 1 === u5.type ? i6 = new u5.ctor(n8, u5.name, u5.strings, this, t5) : 6 === u5.type && (i6 = new Z2(n8, this, t5)), this._$AV.push(i6), u5 = e7[++h5];
+      }
+      l6 !== (null == u5 ? void 0 : u5.index) && (n8 = C2.nextNode(), l6++);
+    }
+    return C2.currentNode = r6, o8;
+  }
+  v(t5) {
+    let i5 = 0;
+    for (const s8 of this._$AV)
+      void 0 !== s8 && (void 0 !== s8.strings ? (s8._$AI(t5, s8, i5), i5 += s8.strings.length - 2) : s8._$AI(t5[i5])), i5++;
+  }
+};
+var R2 = class _R {
+  constructor(t5, i5, s8, e7) {
+    var o8;
+    this.type = 2, this._$AH = A2, this._$AN = void 0, this._$AA = t5, this._$AB = i5, this._$AM = s8, this.options = e7, this._$Cp = null === (o8 = null == e7 ? void 0 : e7.isConnected) || void 0 === o8 || o8;
+  }
+  get _$AU() {
+    var t5, i5;
+    return null !== (i5 = null === (t5 = this._$AM) || void 0 === t5 ? void 0 : t5._$AU) && void 0 !== i5 ? i5 : this._$Cp;
+  }
+  get parentNode() {
+    let t5 = this._$AA.parentNode;
+    const i5 = this._$AM;
+    return void 0 !== i5 && 11 === (null == t5 ? void 0 : t5.nodeType) && (t5 = i5.parentNode), t5;
+  }
+  get startNode() {
+    return this._$AA;
+  }
+  get endNode() {
+    return this._$AB;
+  }
+  _$AI(t5, i5 = this) {
+    t5 = S4(this, t5, i5), d4(t5) ? t5 === A2 || null == t5 || "" === t5 ? (this._$AH !== A2 && this._$AR(), this._$AH = A2) : t5 !== this._$AH && t5 !== T2 && this._(t5) : void 0 !== t5._$litType$ ? this.g(t5) : void 0 !== t5.nodeType ? this.$(t5) : v2(t5) ? this.T(t5) : this._(t5);
+  }
+  k(t5) {
+    return this._$AA.parentNode.insertBefore(t5, this._$AB);
+  }
+  $(t5) {
+    this._$AH !== t5 && (this._$AR(), this._$AH = this.k(t5));
+  }
+  _(t5) {
+    this._$AH !== A2 && d4(this._$AH) ? this._$AA.nextSibling.data = t5 : this.$(r6.createTextNode(t5)), this._$AH = t5;
+  }
+  g(t5) {
+    var i5;
+    const { values: s8, _$litType$: e7 } = t5, o8 = "number" == typeof e7 ? this._$AC(t5) : (void 0 === e7.el && (e7.el = N2.createElement(P2(e7.h, e7.h[0]), this.options)), e7);
+    if ((null === (i5 = this._$AH) || void 0 === i5 ? void 0 : i5._$AD) === o8)
+      this._$AH.v(s8);
+    else {
+      const t6 = new M2(o8, this), i6 = t6.u(this.options);
+      t6.v(s8), this.$(i6), this._$AH = t6;
+    }
+  }
+  _$AC(t5) {
+    let i5 = E2.get(t5.strings);
+    return void 0 === i5 && E2.set(t5.strings, i5 = new N2(t5)), i5;
+  }
+  T(t5) {
+    c4(this._$AH) || (this._$AH = [], this._$AR());
+    const i5 = this._$AH;
+    let s8, e7 = 0;
+    for (const o8 of t5)
+      e7 === i5.length ? i5.push(s8 = new _R(this.k(u4()), this.k(u4()), this, this.options)) : s8 = i5[e7], s8._$AI(o8), e7++;
+    e7 < i5.length && (this._$AR(s8 && s8._$AB.nextSibling, e7), i5.length = e7);
+  }
+  _$AR(t5 = this._$AA.nextSibling, i5) {
+    var s8;
+    for (null === (s8 = this._$AP) || void 0 === s8 || s8.call(this, false, true, i5); t5 && t5 !== this._$AB; ) {
+      const i6 = t5.nextSibling;
+      t5.remove(), t5 = i6;
+    }
+  }
+  setConnected(t5) {
+    var i5;
+    void 0 === this._$AM && (this._$Cp = t5, null === (i5 = this._$AP) || void 0 === i5 || i5.call(this, t5));
+  }
+};
+var k2 = class {
+  constructor(t5, i5, s8, e7, o8) {
+    this.type = 1, this._$AH = A2, this._$AN = void 0, this.element = t5, this.name = i5, this._$AM = e7, this.options = o8, s8.length > 2 || "" !== s8[0] || "" !== s8[1] ? (this._$AH = Array(s8.length - 1).fill(new String()), this.strings = s8) : this._$AH = A2;
+  }
+  get tagName() {
+    return this.element.tagName;
+  }
+  get _$AU() {
+    return this._$AM._$AU;
+  }
+  _$AI(t5, i5 = this, s8, e7) {
+    const o8 = this.strings;
+    let n8 = false;
+    if (void 0 === o8)
+      t5 = S4(this, t5, i5, 0), n8 = !d4(t5) || t5 !== this._$AH && t5 !== T2, n8 && (this._$AH = t5);
+    else {
+      const e8 = t5;
+      let l6, h5;
+      for (t5 = o8[0], l6 = 0; l6 < o8.length - 1; l6++)
+        h5 = S4(this, e8[s8 + l6], i5, l6), h5 === T2 && (h5 = this._$AH[l6]), n8 || (n8 = !d4(h5) || h5 !== this._$AH[l6]), h5 === A2 ? t5 = A2 : t5 !== A2 && (t5 += (null != h5 ? h5 : "") + o8[l6 + 1]), this._$AH[l6] = h5;
+    }
+    n8 && !e7 && this.j(t5);
+  }
+  j(t5) {
+    t5 === A2 ? this.element.removeAttribute(this.name) : this.element.setAttribute(this.name, null != t5 ? t5 : "");
+  }
+};
+var H2 = class extends k2 {
+  constructor() {
+    super(...arguments), this.type = 3;
+  }
+  j(t5) {
+    this.element[this.name] = t5 === A2 ? void 0 : t5;
+  }
+};
+var I2 = s6 ? s6.emptyScript : "";
+var L2 = class extends k2 {
+  constructor() {
+    super(...arguments), this.type = 4;
+  }
+  j(t5) {
+    t5 && t5 !== A2 ? this.element.setAttribute(this.name, I2) : this.element.removeAttribute(this.name);
+  }
+};
+var z2 = class extends k2 {
+  constructor(t5, i5, s8, e7, o8) {
+    super(t5, i5, s8, e7, o8), this.type = 5;
+  }
+  _$AI(t5, i5 = this) {
+    var s8;
+    if ((t5 = null !== (s8 = S4(this, t5, i5, 0)) && void 0 !== s8 ? s8 : A2) === T2)
+      return;
+    const e7 = this._$AH, o8 = t5 === A2 && e7 !== A2 || t5.capture !== e7.capture || t5.once !== e7.once || t5.passive !== e7.passive, n8 = t5 !== A2 && (e7 === A2 || o8);
+    o8 && this.element.removeEventListener(this.name, this, e7), n8 && this.element.addEventListener(this.name, this, t5), this._$AH = t5;
+  }
+  handleEvent(t5) {
+    var i5, s8;
+    "function" == typeof this._$AH ? this._$AH.call(null !== (s8 = null === (i5 = this.options) || void 0 === i5 ? void 0 : i5.host) && void 0 !== s8 ? s8 : this.element, t5) : this._$AH.handleEvent(t5);
+  }
+};
+var Z2 = class {
+  constructor(t5, i5, s8) {
+    this.element = t5, this.type = 6, this._$AN = void 0, this._$AM = i5, this.options = s8;
+  }
+  get _$AU() {
+    return this._$AM._$AU;
+  }
+  _$AI(t5) {
+    S4(this, t5);
+  }
+};
+var B2 = i4.litHtmlPolyfillSupport;
+null == B2 || B2(N2, R2), (null !== (t4 = i4.litHtmlVersions) && void 0 !== t4 ? t4 : i4.litHtmlVersions = []).push("2.8.0");
+var D = (t5, i5, s8) => {
+  var e7, o8;
+  const n8 = null !== (e7 = null == s8 ? void 0 : s8.renderBefore) && void 0 !== e7 ? e7 : i5;
+  let l6 = n8._$litPart$;
+  if (void 0 === l6) {
+    const t6 = null !== (o8 = null == s8 ? void 0 : s8.renderBefore) && void 0 !== o8 ? o8 : null;
+    n8._$litPart$ = l6 = new R2(i5.insertBefore(u4(), t6), t6, void 0, null != s8 ? s8 : {});
+  }
+  return l6._$AI(t5), l6;
+};
+
+// node_modules/lit-element/lit-element.js
+var l5;
+var o7;
+var s7 = class extends u3 {
+  constructor() {
+    super(...arguments), this.renderOptions = { host: this }, this._$Do = void 0;
+  }
+  createRenderRoot() {
+    var t5, e7;
+    const i5 = super.createRenderRoot();
+    return null !== (t5 = (e7 = this.renderOptions).renderBefore) && void 0 !== t5 || (e7.renderBefore = i5.firstChild), i5;
+  }
+  update(t5) {
+    const i5 = this.render();
+    this.hasUpdated || (this.renderOptions.isConnected = this.isConnected), super.update(t5), this._$Do = D(i5, this.renderRoot, this.renderOptions);
+  }
+  connectedCallback() {
+    var t5;
+    super.connectedCallback(), null === (t5 = this._$Do) || void 0 === t5 || t5.setConnected(true);
+  }
+  disconnectedCallback() {
+    var t5;
+    super.disconnectedCallback(), null === (t5 = this._$Do) || void 0 === t5 || t5.setConnected(false);
+  }
+  render() {
+    return T2;
+  }
+};
+s7.finalized = true, s7._$litElement$ = true, null === (l5 = globalThis.litElementHydrateSupport) || void 0 === l5 || l5.call(globalThis, { LitElement: s7 });
+var n7 = globalThis.litElementPolyfillSupport;
+null == n7 || n7({ LitElement: s7 });
+(null !== (o7 = globalThis.litElementVersions) && void 0 !== o7 ? o7 : globalThis.litElementVersions = []).push("3.3.3");
+
+// src/media.js
+var MOBILE_LANDSCAPE = "(max-width: 767px)";
+var TABLET_DOWN = "(max-width: 1199px)";
+var TABLET_UP = "(min-width: 768px)";
+var DESKTOP_UP = "(min-width: 1200px)";
+var LARGE_DESKTOP = "(min-width: 1600px)";
+
+// src/merch-card.css.js
+var styles = i3`
     :host {
         --consonant-merch-card-background-color: #fff;
         --consonant-merch-card-border: 1px solid var(--consonant-merch-card-border-color);
@@ -247,9 +6602,12 @@ Try polyfilling it using "@formatjs/intl-pluralrules"
     ::slotted([slot='price']) {
       color: var(--consonant-merch-card-price-color);
     }
-`,zs=()=>[v`
+`;
+var sizeStyles = () => {
+  const styles5 = [
+    i3`
       /* Tablet */
-      @media screen and ${ke(G)} {
+      @media screen and ${r4(TABLET_UP)} {
           :host([size='wide']),
           :host([size='super-wide']) {
               width: 100%;
@@ -258,14 +6616,39 @@ Try polyfilling it using "@formatjs/intl-pluralrules"
       }
 
       /* Laptop */
-      @media screen and ${ke(D)} {
+      @media screen and ${r4(DESKTOP_UP)} {
           :host([size='wide']) {
               grid-column: span 2;
           }
       }
-      `];var _t=class extends M{constructor(){super(),this.size="m",this.alt="",this.loading="lazy"}render(){let{href:t}=this;return t?g`<a href="${t}">
+      `
+  ];
+  return styles5;
+};
+
+// src/merch-icon.js
+var MerchIcon = class extends s7 {
+  constructor() {
+    super();
+    this.size = "m";
+    this.alt = "";
+    this.loading = "lazy";
+  }
+  render() {
+    const { href } = this;
+    return href ? x2`<a href="${href}">
                   <img src="${this.src}" alt="${this.alt}" loading="${this.loading}" />
-              </a>`:g` <img src="${this.src}" alt="${this.alt}" loading="${this.loading}" />`}};p(_t,"properties",{size:{type:String,attribute:!0},src:{type:String,attribute:!0},alt:{type:String,attribute:!0},href:{type:String,attribute:!0},loading:{type:String,attribute:!0}}),p(_t,"styles",v`
+              </a>` : x2` <img src="${this.src}" alt="${this.alt}" loading="${this.loading}" />`;
+  }
+};
+__publicField(MerchIcon, "properties", {
+  size: { type: String, attribute: true },
+  src: { type: String, attribute: true },
+  alt: { type: String, attribute: true },
+  href: { type: String, attribute: true },
+  loading: { type: String, attribute: true }
+});
+__publicField(MerchIcon, "styles", i3`
         :host {
             --img-width: 32px;
             --img-height: 32px;
@@ -293,22 +6676,130 @@ Try polyfilling it using "@formatjs/intl-pluralrules"
             width: var(--mod-img-width, var(--img-width));
             height: var(--mod-img-height, var(--img-height));
         }
-    `);customElements.define("merch-icon",_t);var St,fr=class fr{constructor(t){p(this,"card");L(this,St);this.card=t,this.insertVariantStyle()}getContainer(){return R(this,St,b(this,St)??this.card.closest('[class*="-merch-cards"]')??this.card.parentElement),b(this,St)}insertVariantStyle(){if(!fr.styleMap[this.card.variant]){fr.styleMap[this.card.variant]=!0;let t=document.createElement("style");t.innerHTML=this.getGlobalCSS(),document.head.appendChild(t)}}updateCardElementMinHeight(t,r){if(!t)return;let o=`--consonant-merch-card-${this.card.variant}-${r}-height`,n=Math.max(0,parseInt(window.getComputedStyle(t).height)||0),i=parseInt(this.getContainer().style.getPropertyValue(o))||0;n>i&&this.getContainer().style.setProperty(o,`${n}px`)}get badge(){let t;if(!(!this.card.badgeBackgroundColor||!this.card.badgeColor||!this.card.badgeText))return this.evergreen&&(t=`border: 1px solid ${this.card.badgeBackgroundColor}; border-right: none;`),g`
+    `);
+customElements.define("merch-icon", MerchIcon);
+
+// src/variants/variant-layout.js
+var _container;
+var _VariantLayout = class _VariantLayout {
+  constructor(card) {
+    __publicField(this, "card");
+    __privateAdd(this, _container, void 0);
+    this.card = card;
+    this.insertVariantStyle();
+  }
+  getContainer() {
+    __privateSet(this, _container, __privateGet(this, _container) ?? this.card.closest('[class*="-merch-cards"]') ?? this.card.parentElement);
+    return __privateGet(this, _container);
+  }
+  insertVariantStyle() {
+    if (!_VariantLayout.styleMap[this.card.variant]) {
+      _VariantLayout.styleMap[this.card.variant] = true;
+      const styles5 = document.createElement("style");
+      styles5.innerHTML = this.getGlobalCSS();
+      document.head.appendChild(styles5);
+    }
+  }
+  updateCardElementMinHeight(el, name) {
+    if (!el)
+      return;
+    const elMinHeightPropertyName = `--consonant-merch-card-${this.card.variant}-${name}-height`;
+    const height = Math.max(
+      0,
+      parseInt(window.getComputedStyle(el).height) || 0
+    );
+    const maxMinHeight = parseInt(
+      this.getContainer().style.getPropertyValue(
+        elMinHeightPropertyName
+      )
+    ) || 0;
+    if (height > maxMinHeight) {
+      this.getContainer().style.setProperty(
+        elMinHeightPropertyName,
+        `${height}px`
+      );
+    }
+  }
+  get badge() {
+    let additionalStyles;
+    if (!this.card.badgeBackgroundColor || !this.card.badgeColor || !this.card.badgeText) {
+      return;
+    }
+    if (this.evergreen) {
+      additionalStyles = `border: 1px solid ${this.card.badgeBackgroundColor}; border-right: none;`;
+    }
+    return x2`
             <div
                 id="badge"
                 class="${this.card.variant}-badge"
                 style="background-color: ${this.card.badgeBackgroundColor};
                 color: ${this.card.badgeColor};
-                ${t}"
+                ${additionalStyles}"
             >
                 ${this.card.badgeText}
             </div>
-        `}get cardImage(){return g` <div class="image">
+        `;
+  }
+  get cardImage() {
+    return x2` <div class="image">
             <slot name="bg-image"></slot>
             ${this.badge}
-        </div>`}getGlobalCSS(){return""}get theme(){return document.querySelector("sp-theme")}get evergreen(){return this.card.classList.contains("intro-pricing")}get promoBottom(){return this.card.classList.contains("promo-bottom")}get headingSelector(){return'[slot="heading-xs"]'}get secureLabelFooter(){let t=this.card.secureLabel?g`<span class="secure-transaction-label"
+        </div>`;
+  }
+  /* c8 ignore next 3 */
+  getGlobalCSS() {
+    return "";
+  }
+  /* c8 ignore next 3 */
+  get theme() {
+    return document.querySelector("sp-theme");
+  }
+  get evergreen() {
+    return this.card.classList.contains("intro-pricing");
+  }
+  get promoBottom() {
+    return this.card.classList.contains("promo-bottom");
+  }
+  get headingSelector() {
+    return '[slot="heading-xs"]';
+  }
+  get secureLabelFooter() {
+    const secureLabel = this.card.secureLabel ? x2`<span class="secure-transaction-label"
                   >${this.card.secureLabel}</span
-              >`:"";return g`<footer>${t}<slot name="footer"></slot></footer>`}async adjustTitleWidth(){let t=this.card.getBoundingClientRect().width,r=this.card.badgeElement?.getBoundingClientRect().width||0;t===0||r===0||this.card.style.setProperty("--consonant-merch-card-heading-xs-max-width",`${Math.round(t-r-16)}px`)}postCardUpdateHook(){}connectedCallbackHook(){}disconnectedCallbackHook(){}renderLayout(){}get aemFragmentMapping(){}};St=new WeakMap,p(fr,"styleMap",{});var O=fr;var Fs=`
+              >` : "";
+    return x2`<footer>${secureLabel}<slot name="footer"></slot></footer>`;
+  }
+  async adjustTitleWidth() {
+    const cardWidth = this.card.getBoundingClientRect().width;
+    const badgeWidth = this.card.badgeElement?.getBoundingClientRect().width || 0;
+    if (cardWidth === 0 || badgeWidth === 0)
+      return;
+    this.card.style.setProperty(
+      "--consonant-merch-card-heading-xs-max-width",
+      `${Math.round(cardWidth - badgeWidth - 16)}px`
+      // consonant-merch-spacing-xs
+    );
+  }
+  postCardUpdateHook() {
+  }
+  connectedCallbackHook() {
+  }
+  disconnectedCallbackHook() {
+  }
+  /* c8 ignore next 3 */
+  renderLayout() {
+  }
+  /* c8 ignore next 4 */
+  get aemFragmentMapping() {
+    return void 0;
+  }
+};
+_container = new WeakMap();
+__publicField(_VariantLayout, "styleMap", {});
+var VariantLayout = _VariantLayout;
+
+// src/variants/catalog.css.js
+var CSS = `
 :root {
   --consonant-merch-card-catalog-width: 276px;
   --consonant-merch-card-catalog-icon-size: 40px;
@@ -320,7 +6811,7 @@ Try polyfilling it using "@formatjs/intl-pluralrules"
     grid-template-columns: var(--consonant-merch-card-catalog-width);
 }
 
-@media screen and ${G} {
+@media screen and ${TABLET_UP} {
     :root {
       --consonant-merch-card-catalog-width: 302px;
     }
@@ -332,7 +6823,7 @@ Try polyfilling it using "@formatjs/intl-pluralrules"
     }
 }
 
-@media screen and ${D} {
+@media screen and ${DESKTOP_UP} {
     :root {
       --consonant-merch-card-catalog-width: 276px;
     }
@@ -343,7 +6834,7 @@ Try polyfilling it using "@formatjs/intl-pluralrules"
     }
 }
 
-@media screen and ${ce} {
+@media screen and ${LARGE_DESKTOP} {
     .four-merch-cards.catalog {
         grid-template-columns: repeat(4, var(--consonant-merch-card-catalog-width));
     }
@@ -394,13 +6885,77 @@ merch-card[variant="catalog"] .payment-details {
   font-style: italic;
   font-weight: 400;
   line-height: var(--consonant-merch-card-body-line-height);
-}`;var oi={badge:!0,ctas:{slot:"footer",size:"m"},description:{tag:"div",slot:"body-xs"},mnemonics:{size:"l"},prices:{tag:"h3",slot:"heading-xs"},size:["wide","super-wide"],title:{tag:"h3",slot:"heading-xs"}},Tt=class extends O{constructor(r){super(r);p(this,"dispatchActionMenuToggle",()=>{this.card.dispatchEvent(new CustomEvent(So,{bubbles:!0,composed:!0,detail:{card:this.card.name,type:"action-menu"}}))});p(this,"toggleActionMenu",r=>{if(!this.actionMenuContentSlot||!r||r.type!=="click"&&r.code!=="Space"&&r.code!=="Enter")return;r.preventDefault(),this.actionMenuContentSlot.classList.toggle("hidden");let o=this.actionMenuContentSlot.classList.contains("hidden");o||this.dispatchActionMenuToggle(),this.setAriaExpanded(this.actionMenu,(!o).toString())});p(this,"toggleActionMenuFromCard",r=>{let o=r?.type==="mouseleave"?!0:void 0;this.card.blur(),this.actionMenu?.classList.remove("always-visible"),this.actionMenuContentSlot&&(o||this.dispatchActionMenuToggle(),this.actionMenuContentSlot.classList.toggle("hidden",o),this.setAriaExpanded(this.actionMenu,"false"))});p(this,"hideActionMenu",r=>{this.actionMenuContentSlot?.classList.add("hidden"),this.setAriaExpanded(this.actionMenu,"false")})}get aemFragmentMapping(){return oi}get actionMenu(){return this.card.shadowRoot.querySelector(".action-menu")}get actionMenuContentSlot(){return this.card.shadowRoot.querySelector('slot[name="action-menu-content"]')}renderLayout(){return g` <div class="body">
+}`;
+
+// src/variants/catalog.js
+var CATALOG_AEM_FRAGMENT_MAPPING = {
+  badge: true,
+  ctas: { slot: "footer", size: "m" },
+  description: { tag: "div", slot: "body-xs" },
+  mnemonics: { size: "l" },
+  prices: { tag: "h3", slot: "heading-xs" },
+  size: ["wide", "super-wide"],
+  title: { tag: "h3", slot: "heading-xs" }
+};
+var Catalog = class extends VariantLayout {
+  constructor(card) {
+    super(card);
+    __publicField(this, "dispatchActionMenuToggle", () => {
+      this.card.dispatchEvent(
+        new CustomEvent(EVENT_MERCH_CARD_ACTION_MENU_TOGGLE, {
+          bubbles: true,
+          composed: true,
+          detail: {
+            card: this.card.name,
+            type: "action-menu"
+          }
+        })
+      );
+    });
+    __publicField(this, "toggleActionMenu", (e7) => {
+      if (!this.actionMenuContentSlot || !e7 || e7.type !== "click" && e7.code !== "Space" && e7.code !== "Enter")
+        return;
+      e7.preventDefault();
+      this.actionMenuContentSlot.classList.toggle("hidden");
+      const isHidden = this.actionMenuContentSlot.classList.contains("hidden");
+      if (!isHidden)
+        this.dispatchActionMenuToggle();
+      this.setAriaExpanded(this.actionMenu, (!isHidden).toString());
+    });
+    __publicField(this, "toggleActionMenuFromCard", (e7) => {
+      const retract = e7?.type === "mouseleave" ? true : void 0;
+      this.card.blur();
+      this.actionMenu?.classList.remove("always-visible");
+      if (!this.actionMenuContentSlot)
+        return;
+      if (!retract)
+        this.dispatchActionMenuToggle();
+      this.actionMenuContentSlot.classList.toggle("hidden", retract);
+      this.setAriaExpanded(this.actionMenu, "false");
+    });
+    __publicField(this, "hideActionMenu", (e7) => {
+      this.actionMenuContentSlot?.classList.add("hidden");
+      this.setAriaExpanded(this.actionMenu, "false");
+    });
+  }
+  /* c8 ignore next 3 */
+  get aemFragmentMapping() {
+    return CATALOG_AEM_FRAGMENT_MAPPING;
+  }
+  get actionMenu() {
+    return this.card.shadowRoot.querySelector(".action-menu");
+  }
+  get actionMenuContentSlot() {
+    return this.card.shadowRoot.querySelector('slot[name="action-menu-content"]');
+  }
+  renderLayout() {
+    return x2` <div class="body">
                 <div class="top-section">
                     <slot name="icons"></slot> ${this.badge}
                     <div
                         class="action-menu
-                ${os()&&this.card.actionMenu?"always-visible":""}
-                ${this.card.actionMenu?"invisible":"hidden"}"
+                ${isMobileOrTablet() && this.card.actionMenu ? "always-visible" : ""}
+                ${!this.card.actionMenu ? "hidden" : "invisible"}"
                         @click="${this.toggleActionMenu}"
                         @keypress="${this.toggleActionMenu}"
                         tabindex="0"
@@ -411,21 +6966,36 @@ merch-card[variant="catalog"] .payment-details {
                 <slot
                     name="action-menu-content"
                     class="action-menu-content
-            ${this.card.actionMenuContent?"":"hidden"}"
+            ${!this.card.actionMenuContent ? "hidden" : ""}"
                     @focusout="${this.hideActionMenu}"
                     >${this.card.actionMenuContent}
                 </slot>
                 <slot name="heading-xs"></slot>
                 <slot name="heading-m"></slot>
                 <slot name="body-xxs"></slot>
-                ${this.promoBottom?"":g`<slot name="promo-text"></slot
-                          ><slot name="callout-content"></slot>`}
+                ${!this.promoBottom ? x2`<slot name="promo-text"></slot
+                          ><slot name="callout-content"></slot>` : ""}
                 <slot name="body-xs"></slot>
-                ${this.promoBottom?g`<slot name="promo-text"></slot
-                          ><slot name="callout-content"></slot>`:""}
+                ${this.promoBottom ? x2`<slot name="promo-text"></slot
+                          ><slot name="callout-content"></slot>` : ""}
             </div>
             ${this.secureLabelFooter}
-            <slot></slot>`}getGlobalCSS(){return Fs}setAriaExpanded(r,o){r.setAttribute("aria-expanded",o)}connectedCallbackHook(){this.card.addEventListener("mouseleave",this.toggleActionMenuFromCard)}disconnectedCallbackHook(){this.card.removeEventListener("mouseleave",this.toggleActionMenuFromCard)}};p(Tt,"variantStyle",v`
+            <slot></slot>`;
+  }
+  getGlobalCSS() {
+    return CSS;
+  }
+  setAriaExpanded(element, value) {
+    element.setAttribute("aria-expanded", value);
+  }
+  connectedCallbackHook() {
+    this.card.addEventListener("mouseleave", this.toggleActionMenuFromCard);
+  }
+  disconnectedCallbackHook() {
+    this.card.removeEventListener("mouseleave", this.toggleActionMenuFromCard);
+  }
+};
+__publicField(Catalog, "variantStyle", i3`
         :host([variant='catalog']) {
             min-height: 330px;
             width: var(--consonant-merch-card-catalog-width);
@@ -443,7 +7013,10 @@ merch-card[variant="catalog"] .payment-details {
             margin-left: var(--consonant-merch-spacing-xxs);
             box-sizing: border-box;
         }
-    `);var Gs=`
+    `);
+
+// src/variants/image.css.js
+var CSS2 = `
 :root {
   --consonant-merch-card-image-width: 300px;
 }
@@ -455,7 +7028,7 @@ merch-card[variant="catalog"] .payment-details {
   grid-template-columns: var(--consonant-merch-card-image-width);
 }
 
-@media screen and ${G} {
+@media screen and ${TABLET_UP} {
   .two-merch-cards.image,
   .three-merch-cards.image,
   .four-merch-cards.image {
@@ -463,7 +7036,7 @@ merch-card[variant="catalog"] .payment-details {
   }
 }
 
-@media screen and ${D} {
+@media screen and ${DESKTOP_UP} {
   :root {
     --consonant-merch-card-image-width: 378px;
     --consonant-merch-card-image-width-4clm: 276px;
@@ -477,24 +7050,40 @@ merch-card[variant="catalog"] .payment-details {
       grid-template-columns: repeat(4, var(--consonant-merch-card-image-width-4clm));
   }
 }
-`;var uo=class extends O{constructor(t){super(t)}getGlobalCSS(){return Gs}renderLayout(){return g`${this.cardImage}
+`;
+
+// src/variants/image.js
+var Image2 = class extends VariantLayout {
+  constructor(card) {
+    super(card);
+  }
+  getGlobalCSS() {
+    return CSS2;
+  }
+  renderLayout() {
+    return x2`${this.cardImage}
     <div class="body">
         <slot name="icons"></slot>
         <slot name="heading-xs"></slot>
         <slot name="body-xxs"></slot>
-        ${this.promoBottom?g`<slot name="body-xs"></slot><slot name="promo-text"></slot>`:g`<slot name="promo-text"></slot><slot name="body-xs"></slot>`}
+        ${this.promoBottom ? x2`<slot name="body-xs"></slot><slot name="promo-text"></slot>` : x2`<slot name="promo-text"></slot><slot name="body-xs"></slot>`}
     </div>
-    ${this.evergreen?g`
+    ${this.evergreen ? x2`
               <div
                   class="detail-bg-container"
-                  style="background: ${this.card.detailBg}"
+                  style="background: ${this.card["detailBg"]}"
               >
                   <slot name="detail-bg"></slot>
               </div>
-          `:g`
+          ` : x2`
               <hr />
               ${this.secureLabelFooter}
-          `}`}};var Vs=`
+          `}`;
+  }
+};
+
+// src/variants/inline-heading.css.js
+var CSS3 = `
 :root {
   --consonant-merch-card-inline-heading-width: 300px;
 }
@@ -506,7 +7095,7 @@ merch-card[variant="catalog"] .payment-details {
     grid-template-columns: var(--consonant-merch-card-inline-heading-width);
 }
 
-@media screen and ${G} {
+@media screen and ${TABLET_UP} {
   .two-merch-cards.inline-heading,
   .three-merch-cards.inline-heading,
   .four-merch-cards.inline-heading {
@@ -514,7 +7103,7 @@ merch-card[variant="catalog"] .payment-details {
   }
 }
 
-@media screen and ${D} {
+@media screen and ${DESKTOP_UP} {
   :root {
     --consonant-merch-card-inline-heading-width: 378px;
   }
@@ -525,12 +7114,23 @@ merch-card[variant="catalog"] .payment-details {
   }
 }
 
-@media screen and ${ce} {
+@media screen and ${LARGE_DESKTOP} {
   .four-merch-cards.inline-heading {
       grid-template-columns: repeat(4, var(--consonant-merch-card-inline-heading-width));
   }
 }
-`;var mo=class extends O{constructor(t){super(t)}getGlobalCSS(){return Vs}renderLayout(){return g` ${this.badge}
+`;
+
+// src/variants/inline-heading.js
+var InlineHeading = class extends VariantLayout {
+  constructor(card) {
+    super(card);
+  }
+  getGlobalCSS() {
+    return CSS3;
+  }
+  renderLayout() {
+    return x2` ${this.badge}
     <div class="body">
         <div class="top-section">
             <slot name="icons"></slot>
@@ -538,7 +7138,12 @@ merch-card[variant="catalog"] .payment-details {
         </div>
         <slot name="body-xs"></slot>
     </div>
-    ${this.card.customHr?"":g`<hr />`} ${this.secureLabelFooter}`}};var js=`
+    ${!this.card.customHr ? x2`<hr />` : ""} ${this.secureLabelFooter}`;
+  }
+};
+
+// src/variants/mini-compare-chart.css.js
+var CSS4 = `
   :root {
     --consonant-merch-card-mini-compare-chart-icon-size: 32px;
     --consonant-merch-card-mini-compare-mobile-cta-font-size: 15px;
@@ -729,7 +7334,7 @@ merch-card[variant="catalog"] .payment-details {
 }
 
 /* mini compare mobile */ 
-@media screen and ${Re} {
+@media screen and ${MOBILE_LANDSCAPE} {
   :root {
     --consonant-merch-card-mini-compare-chart-width: 302px;
     --consonant-merch-card-mini-compare-chart-wide-width: 302px;
@@ -767,7 +7372,7 @@ merch-card[variant="catalog"] .payment-details {
   }
 }
 
-@media screen and ${ho} {
+@media screen and ${TABLET_DOWN} {
   merch-card[variant="mini-compare-chart"] [slot='heading-m'] {
     font-size: var(--consonant-merch-card-body-s-font-size);
     line-height: var(--consonant-merch-card-body-s-line-height);
@@ -793,7 +7398,7 @@ merch-card[variant="catalog"] .payment-details {
     line-height: var(--consonant-merch-card-body-xs-line-height);
   }
 }
-@media screen and ${G} {
+@media screen and ${TABLET_UP} {
   :root {
     --consonant-merch-card-mini-compare-chart-width: 302px;
     --consonant-merch-card-mini-compare-chart-wide-width: 302px;
@@ -811,7 +7416,7 @@ merch-card[variant="catalog"] .payment-details {
 }
 
 /* desktop */
-@media screen and ${D} {
+@media screen and ${DESKTOP_UP} {
   :root {
     --consonant-merch-card-mini-compare-chart-width: 378px;
     --consonant-merch-card-mini-compare-chart-wide-width: 484px;  
@@ -832,7 +7437,7 @@ merch-card[variant="catalog"] .payment-details {
   }
 }
 
-@media screen and ${ce} {
+@media screen and ${LARGE_DESKTOP} {
   .four-merch-cards.mini-compare-chart {
       grid-template-columns: repeat(4, var(--consonant-merch-card-mini-compare-chart-width));
   }
@@ -869,16 +7474,109 @@ merch-card .footer-row-cell:nth-child(7) {
 merch-card .footer-row-cell:nth-child(8) {
   min-height: var(--consonant-merch-card-footer-row-8-min-height);
 }
-`;var Th=32,Ct=class extends O{constructor(r){super(r);p(this,"getRowMinHeightPropertyName",r=>`--consonant-merch-card-footer-row-${r}-min-height`);p(this,"getMiniCompareFooter",()=>{let r=this.card.secureLabel?g`<slot name="secure-transaction-label">
+`;
+
+// src/variants/mini-compare-chart.js
+var FOOTER_ROW_MIN_HEIGHT = 32;
+var MiniCompareChart = class extends VariantLayout {
+  constructor(card) {
+    super(card);
+    __publicField(this, "getRowMinHeightPropertyName", (index) => `--consonant-merch-card-footer-row-${index}-min-height`);
+    __publicField(this, "getMiniCompareFooter", () => {
+      const secureLabel = this.card.secureLabel ? x2`<slot name="secure-transaction-label">
               <span class="secure-transaction-label"
                   >${this.card.secureLabel}</span
               ></slot
-          >`:g`<slot name="secure-transaction-label"></slot>`;return g`<footer>${r}<slot name="footer"></slot></footer>`})}getGlobalCSS(){return js}adjustMiniCompareBodySlots(){if(this.card.getBoundingClientRect().width<=2)return;this.updateCardElementMinHeight(this.card.shadowRoot.querySelector(".top-section"),"top-section");let r=["heading-m","body-m","heading-m-price","body-xxs","price-commitment","offers","promo-text","callout-content"];this.card.classList.contains("bullet-list")&&r.push("footer-rows"),r.forEach(n=>this.updateCardElementMinHeight(this.card.shadowRoot.querySelector(`slot[name="${n}"]`),n)),this.updateCardElementMinHeight(this.card.shadowRoot.querySelector("footer"),"footer");let o=this.card.shadowRoot.querySelector(".mini-compare-chart-badge");o&&o.textContent!==""&&this.getContainer().style.setProperty("--consonant-merch-card-mini-compare-chart-top-section-mobile-height","32px")}adjustMiniCompareFooterRows(){if(this.card.getBoundingClientRect().width===0)return;let r=this.card.querySelector('[slot="footer-rows"] ul');!r||!r.children||[...r.children].forEach((o,n)=>{let i=Math.max(Th,parseFloat(window.getComputedStyle(o).height)||0),a=parseFloat(this.getContainer().style.getPropertyValue(this.getRowMinHeightPropertyName(n+1)))||0;i>a&&this.getContainer().style.setProperty(this.getRowMinHeightPropertyName(n+1),`${i}px`)})}removeEmptyRows(){this.card.querySelectorAll(".footer-row-cell").forEach(o=>{let n=o.querySelector(".footer-row-cell-description");n&&!n.textContent.trim()&&o.remove()})}renderLayout(){return g` <div class="top-section${this.badge?" badge":""}">
+          >` : x2`<slot name="secure-transaction-label"></slot>`;
+      return x2`<footer>${secureLabel}<slot name="footer"></slot></footer>`;
+    });
+  }
+  getGlobalCSS() {
+    return CSS4;
+  }
+  adjustMiniCompareBodySlots() {
+    if (this.card.getBoundingClientRect().width <= 2)
+      return;
+    this.updateCardElementMinHeight(
+      this.card.shadowRoot.querySelector(".top-section"),
+      "top-section"
+    );
+    let slots = [
+      "heading-m",
+      "body-m",
+      "heading-m-price",
+      "body-xxs",
+      "price-commitment",
+      "offers",
+      "promo-text",
+      "callout-content"
+    ];
+    if (this.card.classList.contains("bullet-list")) {
+      slots.push("footer-rows");
+    }
+    slots.forEach(
+      (slot) => this.updateCardElementMinHeight(
+        this.card.shadowRoot.querySelector(`slot[name="${slot}"]`),
+        slot
+      )
+    );
+    this.updateCardElementMinHeight(
+      this.card.shadowRoot.querySelector("footer"),
+      "footer"
+    );
+    const badge = this.card.shadowRoot.querySelector(
+      ".mini-compare-chart-badge"
+    );
+    if (badge && badge.textContent !== "") {
+      this.getContainer().style.setProperty(
+        "--consonant-merch-card-mini-compare-chart-top-section-mobile-height",
+        "32px"
+      );
+    }
+  }
+  adjustMiniCompareFooterRows() {
+    if (this.card.getBoundingClientRect().width === 0)
+      return;
+    const footerRows = this.card.querySelector('[slot="footer-rows"] ul');
+    if (!footerRows || !footerRows.children)
+      return;
+    [...footerRows.children].forEach((el, index) => {
+      const height = Math.max(
+        FOOTER_ROW_MIN_HEIGHT,
+        parseFloat(window.getComputedStyle(el).height) || 0
+      );
+      const maxMinHeight = parseFloat(
+        this.getContainer().style.getPropertyValue(
+          this.getRowMinHeightPropertyName(index + 1)
+        )
+      ) || 0;
+      if (height > maxMinHeight) {
+        this.getContainer().style.setProperty(
+          this.getRowMinHeightPropertyName(index + 1),
+          `${height}px`
+        );
+      }
+    });
+  }
+  removeEmptyRows() {
+    const footerRows = this.card.querySelectorAll(".footer-row-cell");
+    footerRows.forEach((row) => {
+      const rowDescription = row.querySelector(".footer-row-cell-description");
+      if (rowDescription) {
+        const isEmpty = !rowDescription.textContent.trim();
+        if (isEmpty) {
+          row.remove();
+        }
+      }
+    });
+  }
+  renderLayout() {
+    return x2` <div class="top-section${this.badge ? " badge" : ""}">
             <slot name="icons"></slot> ${this.badge}
         </div>
         <slot name="heading-m"></slot>
-        ${this.card.classList.contains("bullet-list")?g`<slot name="heading-m-price"></slot>
-          <slot name="body-m"></slot>`:g`<slot name="body-m"></slot>
+        ${this.card.classList.contains("bullet-list") ? x2`<slot name="heading-m-price"></slot>
+          <slot name="body-m"></slot>` : x2`<slot name="body-m"></slot>
           <slot name="heading-m-price"></slot>`}
         <slot name="body-xxs"></slot>
         <slot name="price-commitment"></slot>
@@ -886,7 +7584,19 @@ merch-card .footer-row-cell:nth-child(8) {
         <slot name="promo-text"></slot>
         <slot name="callout-content"></slot>
         ${this.getMiniCompareFooter()}
-        <slot name="footer-rows"><slot name="body-s"></slot></slot>`}async postCardUpdateHook(){gt()?this.removeEmptyRows():(await Promise.all(this.card.prices.map(r=>r.onceSettled())),this.adjustMiniCompareBodySlots(),this.adjustMiniCompareFooterRows())}};p(Ct,"variantStyle",v`
+        <slot name="footer-rows"><slot name="body-s"></slot></slot>`;
+  }
+  async postCardUpdateHook() {
+    if (!isMobile()) {
+      await Promise.all(this.card.prices.map((price2) => price2.onceSettled()));
+      this.adjustMiniCompareBodySlots();
+      this.adjustMiniCompareFooterRows();
+    } else {
+      this.removeEmptyRows();
+    }
+  }
+};
+__publicField(MiniCompareChart, "variantStyle", i3`
     :host([variant='mini-compare-chart']) > slot:not([name='icons']) {
         display: block;
     }
@@ -919,7 +7629,7 @@ merch-card .footer-row-cell:nth-child(8) {
       color: var(--merch-color-grey-700);
     }
 
-    @media screen and ${ke(ho)} {
+    @media screen and ${r4(TABLET_DOWN)} {
         [class*'-merch-cards'] :host([variant='mini-compare-chart']) footer {
             flex-direction: column;
             align-items: stretch;
@@ -927,7 +7637,7 @@ merch-card .footer-row-cell:nth-child(8) {
         }
     }
 
-    @media screen and ${ke(D)} {
+    @media screen and ${r4(DESKTOP_UP)} {
         :host([variant='mini-compare-chart']) footer {
             padding: var(--consonant-merch-spacing-xs)
                 var(--consonant-merch-spacing-s)
@@ -978,7 +7688,10 @@ merch-card .footer-row-cell:nth-child(8) {
     :host([variant='mini-compare-chart']) slot[name='footer-rows'] {
         justify-content: flex-start;
     }
-  `);var qs=`
+  `);
+
+// src/variants/plans.css.js
+var CSS5 = `
 :root {
     --consonant-merch-card-plans-width: 300px;
     --consonant-merch-card-plans-icon-size: 40px;
@@ -1074,7 +7787,7 @@ merch-card[variant="plans"] [slot="footer"] a {
 }
 
 /* Mobile */
-@media screen and ${Re} {
+@media screen and ${MOBILE_LANDSCAPE} {
     merch-whats-included merch-mnemonic-list,
     merch-whats-included [slot="heading"] {
         width: 100%;
@@ -1096,7 +7809,7 @@ merch-card[variant="plans"]:not([size]) {
 }
 
 /* Tablet */
-@media screen and ${G} {
+@media screen and ${TABLET_UP} {
   :root {
     --consonant-merch-card-plans-width: 302px;
   }
@@ -1111,7 +7824,7 @@ merch-card[variant="plans"]:not([size]) {
 }
 
 /* desktop */
-@media screen and ${D} {
+@media screen and ${DESKTOP_UP} {
   :root {
     --consonant-merch-card-plans-width: 276px;
   }
@@ -1122,16 +7835,96 @@ merch-card[variant="plans"]:not([size]) {
 }
 
 /* Large desktop */
-    @media screen and ${ce} {
+    @media screen and ${LARGE_DESKTOP} {
     .four-merch-cards.plans {
         grid-template-columns: repeat(4, var(--consonant-merch-card-plans-width));
     }
 }
-`;var ni={title:{tag:"p",slot:"heading-xs"},prices:{tag:"p",slot:"heading-m"},promoText:{tag:"p",slot:"promo-text"},description:{tag:"div",slot:"body-xs"},mnemonics:{size:"l"},callout:{tag:"div",slot:"callout-content"},quantitySelect:{tag:"div",slot:"quantity-select"},stockOffer:!0,secureLabel:!0,badge:{tag:"div",slot:"badge"},allowedBadgeColors:["spectrum-yellow-300-plans","spectrum-gray-300-plans","spectrum-gray-700-plans","spectrum-green-900-plans"],allowedBorderColors:["spectrum-yellow-300-plans","spectrum-gray-300-plans"],borderColor:{attribute:"border-color"},size:["wide","super-wide"],whatsIncluded:{tag:"div",slot:"whats-included"},ctas:{slot:"footer",size:"m"},style:"consonant"},Pt=class extends O{constructor(t){super(t),this.adaptForMobile=this.adaptForMobile.bind(this)}get aemFragmentMapping(){return ni}getGlobalCSS(){return qs}adaptForMobile(){if(!this.card.closest("merch-card-collection,overlay-trigger")){this.card.removeAttribute("size");return}let t=this.card.shadowRoot,r=t.querySelector("footer"),o=this.card.getAttribute("size"),n=t.querySelector("footer #stock-checkbox"),i=t.querySelector(".body #stock-checkbox"),a=t.querySelector(".body");if(!o){r.classList.remove("wide-footer"),n&&n.remove();return}let s=gt();if(r&&r.classList.toggle("wide-footer",!s),s&&n){i?n.remove():a.appendChild(n);return}!s&&i&&(n?i.remove():r.prepend(i))}postCardUpdateHook(){this.adaptForMobile(),this.adjustTitleWidth()}get stockCheckbox(){return this.card.checkboxLabel?g`<label id="stock-checkbox">
+`;
+
+// src/variants/plans.js
+var PLANS_AEM_FRAGMENT_MAPPING = {
+  title: { tag: "p", slot: "heading-xs" },
+  prices: { tag: "p", slot: "heading-m" },
+  promoText: { tag: "p", slot: "promo-text" },
+  description: { tag: "div", slot: "body-xs" },
+  mnemonics: { size: "l" },
+  callout: { tag: "div", slot: "callout-content" },
+  quantitySelect: { tag: "div", slot: "quantity-select" },
+  stockOffer: true,
+  secureLabel: true,
+  badge: { tag: "div", slot: "badge" },
+  allowedBadgeColors: ["spectrum-yellow-300-plans", "spectrum-gray-300-plans", "spectrum-gray-700-plans", "spectrum-green-900-plans"],
+  allowedBorderColors: ["spectrum-yellow-300-plans", "spectrum-gray-300-plans"],
+  borderColor: { attribute: "border-color" },
+  size: ["wide", "super-wide"],
+  whatsIncluded: { tag: "div", slot: "whats-included" },
+  ctas: { slot: "footer", size: "m" },
+  style: "consonant"
+};
+var Plans = class extends VariantLayout {
+  constructor(card) {
+    super(card);
+    this.adaptForMobile = this.adaptForMobile.bind(this);
+  }
+  /* c8 ignore next 3 */
+  get aemFragmentMapping() {
+    return PLANS_AEM_FRAGMENT_MAPPING;
+  }
+  getGlobalCSS() {
+    return CSS5;
+  }
+  adaptForMobile() {
+    if (!this.card.closest("merch-card-collection,overlay-trigger")) {
+      this.card.removeAttribute("size");
+      return;
+    }
+    const shadowRoot = this.card.shadowRoot;
+    const footer = shadowRoot.querySelector("footer");
+    const size = this.card.getAttribute("size");
+    const stockInFooter = shadowRoot.querySelector("footer #stock-checkbox");
+    const stockInBody = shadowRoot.querySelector(".body #stock-checkbox");
+    const body = shadowRoot.querySelector(".body");
+    if (!size) {
+      footer.classList.remove("wide-footer");
+      if (stockInFooter)
+        stockInFooter.remove();
+      return;
+    }
+    const mobile = isMobile();
+    if (footer)
+      footer.classList.toggle("wide-footer", !mobile);
+    if (mobile && stockInFooter) {
+      stockInBody ? stockInFooter.remove() : body.appendChild(stockInFooter);
+      return;
+    }
+    if (!mobile && stockInBody) {
+      stockInFooter ? stockInBody.remove() : footer.prepend(stockInBody);
+    }
+  }
+  postCardUpdateHook() {
+    this.adaptForMobile();
+    this.adjustTitleWidth();
+  }
+  get stockCheckbox() {
+    return this.card.checkboxLabel ? x2`<label id="stock-checkbox">
                 <input type="checkbox" @change=${this.card.toggleStockOffer}></input>
                 <span></span>
                 ${this.card.checkboxLabel}
-            </label>`:""}connectedCallbackHook(){let t=Kr();t?.addEventListener&&t.addEventListener("change",this.adaptForMobile)}disconnectedCallbackHook(){let t=Kr();t?.removeEventListener&&t.removeEventListener("change",this.adaptForMobile)}renderLayout(){return g` ${this.badge}
+            </label>` : "";
+  }
+  connectedCallbackHook() {
+    const match = matchMobile();
+    if (match?.addEventListener)
+      match.addEventListener("change", this.adaptForMobile);
+  }
+  disconnectedCallbackHook() {
+    const match = matchMobile();
+    if (match?.removeEventListener)
+      match.removeEventListener("change", this.adaptForMobile);
+  }
+  renderLayout() {
+    return x2` ${this.badge}
         <div class="body">
             <slot name="icons"></slot>
             <slot name="heading-xs"></slot>
@@ -1147,7 +7940,10 @@ merch-card[variant="plans"]:not([size]) {
             <slot name="badge"></slot>
             <slot name="quantity-select"></slot>
         </div>
-        ${this.secureLabelFooter}`}};p(Pt,"variantStyle",v`
+        ${this.secureLabelFooter}`;
+  }
+};
+__publicField(Plans, "variantStyle", i3`
     :host([variant='plans']) {
         min-height: 348px;
         border: 1px solid var(--merch-card-custom-border-color, #DADADA);
@@ -1213,7 +8009,10 @@ merch-card[variant="plans"]:not([size]) {
         line-height: 21px;
         padding: 2px 10px 3px;
     }
-  `);var Ws=`
+  `);
+
+// src/variants/product.css.js
+var CSS6 = `
 :root {
   --consonant-merch-card-product-width: 300px;
 }
@@ -1227,7 +8026,7 @@ merch-card[variant="plans"]:not([size]) {
 }
 
 /* Tablet */
-@media screen and ${G} {
+@media screen and ${TABLET_UP} {
     .two-merch-cards.product,
     .three-merch-cards.product,
     .four-merch-cards.product {
@@ -1236,7 +8035,7 @@ merch-card[variant="plans"]:not([size]) {
 }
 
 /* desktop */
-@media screen and ${D} {
+@media screen and ${DESKTOP_UP} {
   :root {
     --consonant-merch-card-product-width: 378px;
     --consonant-merch-card-product-width-4clm: 276px;
@@ -1250,18 +8049,65 @@ merch-card[variant="plans"]:not([size]) {
       grid-template-columns: repeat(4, var(--consonant-merch-card-product-width-4clm));
   }
 }
-`;var rt=class extends O{constructor(t){super(t),this.postCardUpdateHook=this.postCardUpdateHook.bind(this)}getGlobalCSS(){return Ws}adjustProductBodySlots(){if(this.card.getBoundingClientRect().width===0)return;["heading-xs","body-xxs","body-xs","promo-text","callout-content","body-lower"].forEach(r=>this.updateCardElementMinHeight(this.card.shadowRoot.querySelector(`slot[name="${r}"]`),r))}renderLayout(){return g` ${this.badge}
+`;
+
+// src/variants/product.js
+var Product = class extends VariantLayout {
+  constructor(card) {
+    super(card);
+    this.postCardUpdateHook = this.postCardUpdateHook.bind(this);
+  }
+  getGlobalCSS() {
+    return CSS6;
+  }
+  adjustProductBodySlots() {
+    if (this.card.getBoundingClientRect().width === 0)
+      return;
+    const slots = [
+      "heading-xs",
+      "body-xxs",
+      "body-xs",
+      "promo-text",
+      "callout-content",
+      "body-lower"
+    ];
+    slots.forEach(
+      (slot) => this.updateCardElementMinHeight(
+        this.card.shadowRoot.querySelector(`slot[name="${slot}"]`),
+        slot
+      )
+    );
+  }
+  renderLayout() {
+    return x2` ${this.badge}
       <div class="body" aria-live="polite">
           <slot name="icons"></slot>
           <slot name="heading-xs"></slot>
           <slot name="body-xxs"></slot>
-          ${this.promoBottom?"":g`<slot name="promo-text"></slot>`}
+          ${!this.promoBottom ? x2`<slot name="promo-text"></slot>` : ""}
           <slot name="body-xs"></slot>
-          ${this.promoBottom?g`<slot name="promo-text"></slot>`:""}
+          ${this.promoBottom ? x2`<slot name="promo-text"></slot>` : ""}
           <slot name="callout-content"></slot>
           <slot name="body-lower"></slot>
       </div>
-      ${this.secureLabelFooter}`}connectedCallbackHook(){window.addEventListener("resize",this.postCardUpdateHook)}disconnectedCallbackHook(){window.removeEventListener("resize",this.postCardUpdateHook)}postCardUpdateHook(){this.card.isConnected&&(gt()||this.adjustProductBodySlots(),this.adjustTitleWidth())}};p(rt,"variantStyle",v`
+      ${this.secureLabelFooter}`;
+  }
+  connectedCallbackHook() {
+    window.addEventListener("resize", this.postCardUpdateHook);
+  }
+  disconnectedCallbackHook() {
+    window.removeEventListener("resize", this.postCardUpdateHook);
+  }
+  postCardUpdateHook() {
+    if (!this.card.isConnected)
+      return;
+    if (!isMobile()) {
+      this.adjustProductBodySlots();
+    }
+    this.adjustTitleWidth();
+  }
+};
+__publicField(Product, "variantStyle", i3`
     :host([variant='product']) > slot:not([name='icons']) {
         display: block;
     }
@@ -1289,7 +8135,10 @@ merch-card[variant="plans"]:not([size]) {
     :host([variant='product']) ::slotted([slot='heading-xs']) {
       max-width: var(--consonant-merch-card-heading-xs-max-width, 100%);
     }
-  `);var Ys=`
+  `);
+
+// src/variants/segment.css.js
+var CSS7 = `
 :root {
   --consonant-merch-card-segment-width: 378px;
 }
@@ -1303,13 +8152,13 @@ merch-card[variant="plans"]:not([size]) {
 }
 
 /* Mobile */
-@media screen and ${Re} {
+@media screen and ${MOBILE_LANDSCAPE} {
   :root {
     --consonant-merch-card-segment-width: 276px;
   }
 }
 
-@media screen and ${G} {
+@media screen and ${TABLET_UP} {
   :root {
     --consonant-merch-card-segment-width: 276px;
   }
@@ -1322,7 +8171,7 @@ merch-card[variant="plans"]:not([size]) {
 }
 
 /* desktop */
-@media screen and ${D} {
+@media screen and ${DESKTOP_UP} {
   :root {
     --consonant-merch-card-segment-width: 302px;
   }
@@ -1335,23 +8184,43 @@ merch-card[variant="plans"]:not([size]) {
       grid-template-columns: repeat(4, minmax(276px, var(--consonant-merch-card-segment-width)));
   }
 }
-`;var kt=class extends O{constructor(t){super(t)}getGlobalCSS(){return Ys}postCardUpdateHook(){this.adjustTitleWidth()}renderLayout(){return g` ${this.badge}
+`;
+
+// src/variants/segment.js
+var Segment = class extends VariantLayout {
+  constructor(card) {
+    super(card);
+  }
+  getGlobalCSS() {
+    return CSS7;
+  }
+  postCardUpdateHook() {
+    this.adjustTitleWidth();
+  }
+  renderLayout() {
+    return x2` ${this.badge}
     <div class="body">
         <slot name="heading-xs"></slot>
         <slot name="body-xxs"></slot>
-        ${this.promoBottom?"":g`<slot name="promo-text"></slot><slot name="callout-content"></slot>`}
+        ${!this.promoBottom ? x2`<slot name="promo-text"></slot><slot name="callout-content"></slot>` : ""}
         <slot name="body-xs"></slot>
-        ${this.promoBottom?g`<slot name="promo-text"></slot><slot name="callout-content"></slot>`:""}
+        ${this.promoBottom ? x2`<slot name="promo-text"></slot><slot name="callout-content"></slot>` : ""}
     </div>
     <hr />
-    ${this.secureLabelFooter}`}};p(kt,"variantStyle",v`
+    ${this.secureLabelFooter}`;
+  }
+};
+__publicField(Segment, "variantStyle", i3`
     :host([variant='segment']) {
       min-height: 214px;
     }
     :host([variant='segment']) ::slotted([slot='heading-xs']) {
       max-width: var(--consonant-merch-card-heading-xs-max-width, 100%);
     }
-  `);var Xs=`
+  `);
+
+// src/variants/special-offer.css.js
+var CSS8 = `
 :root {
   --consonant-merch-card-special-offers-width: 378px;
 }
@@ -1368,13 +8237,13 @@ merch-card[variant="special-offers"] span[is="inline-price"][data-template="stri
   grid-template-columns: minmax(300px, var(--consonant-merch-card-special-offers-width));
 }
 
-@media screen and ${Re} {
+@media screen and ${MOBILE_LANDSCAPE} {
   :root {
     --consonant-merch-card-special-offers-width: 302px;
   }
 } 
   
-@media screen and ${G} {
+@media screen and ${TABLET_UP} {
   :root {
     --consonant-merch-card-special-offers-width: 302px;
   }
@@ -1387,36 +8256,64 @@ merch-card[variant="special-offers"] span[is="inline-price"][data-template="stri
 }
 
 /* desktop */
-@media screen and ${D} {
+@media screen and ${DESKTOP_UP} {
   .three-merch-cards.special-offers,
   .four-merch-cards.special-offers {
     grid-template-columns: repeat(3, minmax(300px, var(--consonant-merch-card-special-offers-width)));
   }
 }
 
-@media screen and ${ce} {
+@media screen and ${LARGE_DESKTOP} {
   .four-merch-cards.special-offers {
     grid-template-columns: repeat(4, minmax(300px, var(--consonant-merch-card-special-offers-width)));
   }
 }
-`;var ii={name:{tag:"h4",slot:"detail-m"},title:{tag:"h4",slot:"detail-m"},backgroundImage:{tag:"div",slot:"bg-image"},prices:{tag:"h3",slot:"heading-xs"},description:{tag:"div",slot:"body-xs"},ctas:{slot:"footer",size:"l"}},Lt=class extends O{constructor(t){super(t)}getGlobalCSS(){return Xs}get headingSelector(){return'[slot="detail-m"]'}get aemFragmentMapping(){return ii}renderLayout(){return g`${this.cardImage}
+`;
+
+// src/variants/special-offer.js
+var SPECIAL_OFFERS_AEM_FRAGMENT_MAPPING = {
+  name: { tag: "h4", slot: "detail-m" },
+  title: { tag: "h4", slot: "detail-m" },
+  backgroundImage: { tag: "div", slot: "bg-image" },
+  prices: { tag: "h3", slot: "heading-xs" },
+  description: { tag: "div", slot: "body-xs" },
+  ctas: { slot: "footer", size: "l" }
+};
+var SpecialOffer = class extends VariantLayout {
+  constructor(card) {
+    super(card);
+  }
+  getGlobalCSS() {
+    return CSS8;
+  }
+  get headingSelector() {
+    return '[slot="detail-m"]';
+  }
+  get aemFragmentMapping() {
+    return SPECIAL_OFFERS_AEM_FRAGMENT_MAPPING;
+  }
+  renderLayout() {
+    return x2`${this.cardImage}
             <div class="body">
                 <slot name="detail-m"></slot>
                 <slot name="heading-xs"></slot>
                 <slot name="body-xs"></slot>
             </div>
-            ${this.evergreen?g`
+            ${this.evergreen ? x2`
                       <div
                           class="detail-bg-container"
-                          style="background: ${this.card.detailBg}"
+                          style="background: ${this.card["detailBg"]}"
                       >
                           <slot name="detail-bg"></slot>
                       </div>
-                  `:g`
+                  ` : x2`
                       <hr />
                       ${this.secureLabelFooter}
                   `}
-            <slot></slot>`}};p(Lt,"variantStyle",v`
+            <slot></slot>`;
+  }
+};
+__publicField(SpecialOffer, "variantStyle", i3`
         :host([variant='special-offers']) {
             min-height: 439px;
         }
@@ -1428,7 +8325,60 @@ merch-card[variant="special-offers"] span[is="inline-price"][data-template="stri
         :host([variant='special-offers'].center) {
             text-align: center;
         }
-    `);var ai=new Map,X=(e,t,r=null,o=null)=>{ai.set(e,{class:t,fragmentMapping:r,style:o})};X("catalog",Tt,oi,Tt.variantStyle);X("image",uo);X("inline-heading",mo);X("mini-compare-chart",Ct,null,Ct.variantStyle);X("plans",Pt,ni,Pt.variantStyle);X("product",rt,null,rt.variantStyle);X("segment",kt,null,kt.variantStyle);X("special-offers",Lt,ii,Lt.variantStyle);var si=(e,t=!1)=>{let r=ai.get(e.variant);if(!r)return t?void 0:new rt(e);let{class:o,style:n}=r;if(n){let i=new CSSStyleSheet;i.replaceSync(n.cssText),e.shadowRoot.adoptedStyleSheets.push(i)}return new o(e)};function Ks(e){return ai.get(e)?.fragmentMapping}var Zs=document.createElement("style");Zs.innerHTML=`
+    `);
+
+// src/variants/variants.js
+var variantRegistry = /* @__PURE__ */ new Map();
+var registerVariant = (name, variantClass, fragmentMapping = null, style = null) => {
+  variantRegistry.set(name, {
+    class: variantClass,
+    fragmentMapping,
+    style
+  });
+};
+registerVariant(
+  "catalog",
+  Catalog,
+  CATALOG_AEM_FRAGMENT_MAPPING,
+  Catalog.variantStyle
+);
+registerVariant("image", Image2);
+registerVariant("inline-heading", InlineHeading);
+registerVariant(
+  "mini-compare-chart",
+  MiniCompareChart,
+  null,
+  MiniCompareChart.variantStyle
+);
+registerVariant("plans", Plans, PLANS_AEM_FRAGMENT_MAPPING, Plans.variantStyle);
+registerVariant("product", Product, null, Product.variantStyle);
+registerVariant("segment", Segment, null, Segment.variantStyle);
+registerVariant(
+  "special-offers",
+  SpecialOffer,
+  SPECIAL_OFFERS_AEM_FRAGMENT_MAPPING,
+  SpecialOffer.variantStyle
+);
+var getVariantLayout = (card, mustMatch = false) => {
+  const variantInfo = variantRegistry.get(card.variant);
+  if (!variantInfo) {
+    return mustMatch ? void 0 : new Product(card);
+  }
+  const { class: VariantClass, style } = variantInfo;
+  if (style) {
+    const sheet2 = new CSSStyleSheet();
+    sheet2.replaceSync(style.cssText);
+    card.shadowRoot.adoptedStyleSheets.push(sheet2);
+  }
+  return new VariantClass(card);
+};
+function getFragmentMapping(variant) {
+  return variantRegistry.get(variant)?.fragmentMapping;
+}
+
+// src/global.css.js
+var styles2 = document.createElement("style");
+styles2.innerHTML = `
 :root {
     --consonant-merch-card-detail-font-size: 12px;
     --consonant-merch-card-detail-font-weight: 500;
@@ -1940,9 +8890,293 @@ sr-only {
   border: 0;
 }
 
-`;document.head.appendChild(Zs);var ec=new CSSStyleSheet;ec.replaceSync(":host { display: contents; }");var Qs="fragment",Js="author",po="aem-fragment",ye,ci=class{constructor(){L(this,ye,new Map)}clear(){b(this,ye).clear()}addByRequestedId(t,r){b(this,ye).set(t,r)}add(...t){t.forEach(r=>{let{id:o}=r;o&&b(this,ye).set(o,r)})}has(t){return b(this,ye).has(t)}get(t){return b(this,ye).get(t)}remove(t){b(this,ye).delete(t)}};ye=new WeakMap;var gr=new ci,xr,le,Ee,Rt,Ot,Oe,oe,$e,br,vr,hi,li=class extends HTMLElement{constructor(){super();L(this,vr);p(this,"cache",gr);L(this,xr);L(this,le,null);L(this,Ee,null);L(this,Rt,!1);L(this,Ot,null);L(this,Oe,null);L(this,oe);L(this,$e);L(this,br,!1);this.attachShadow({mode:"open"}),this.shadowRoot.adoptedStyleSheets=[ec]}static get observedAttributes(){return[Qs,Js]}attributeChangedCallback(r,o,n){r===Qs&&R(this,oe,n),r===Js&&R(this,br,["","true"].includes(n))}connectedCallback(){if(R(this,Oe,xt(this)),R(this,xr,b(this,Oe).log.module(po)),R(this,Ot,`${po}:${b(this,oe)}${Te}`),performance.mark(b(this,Ot)),!b(this,oe)){de(this,vr,hi).call(this,{message:"Missing fragment id"});return}this.refresh(!1)}async getFragmentById(r,o,n){let i=`${po}:${o}${Gt}`,a;try{if(a=await Yr(r,{cache:"default",credentials:"omit"}),!a?.ok){let{startTime:s,duration:c}=performance.measure(i,n);throw new ge("Unexpected fragment response",{response:a,startTime:s,duration:c,...b(this,Oe).duration})}return a.json()}catch{let{startTime:c,duration:l}=performance.measure(i,n);throw a||(a={url:r}),new ge("Failed to fetch fragment",{response:a,startTime:c,duration:l,...b(this,Oe).duration})}}async refresh(r=!0){if(!(b(this,$e)&&!await Promise.race([b(this,$e),Promise.resolve(!1)])))return r&&gr.remove(b(this,oe)),R(this,$e,this.fetchData().then(()=>{let{references:o,referencesTree:n,placeholders:i}=b(this,le)||{};return this.dispatchEvent(new CustomEvent(Ue,{detail:{...this.data,stale:b(this,Rt),references:o,referencesTree:n,placeholders:i},bubbles:!0,composed:!0})),!0}).catch(o=>b(this,le)?(gr.addByRequestedId(b(this,oe),b(this,le)),!0):(de(this,vr,hi).call(this,o),!1))),b(this,$e)}async fetchData(){this.classList.remove("error"),R(this,Ee,null);let r=gr.get(b(this,oe));if(r){R(this,le,r);return}R(this,Rt,!0);let{masIOUrl:o,wcsApiKey:n,locale:i}=b(this,Oe).settings,a=`${o}/fragment?id=${b(this,oe)}&api_key=${n}&locale=${i}`;r=await this.getFragmentById(a,b(this,oe),b(this,Ot)),gr.addByRequestedId(b(this,oe),r),R(this,le,r),R(this,Rt,!1)}get updateComplete(){return b(this,$e)??Promise.reject(new Error("AEM fragment cannot be loaded"))}get data(){return b(this,Ee)?b(this,Ee):(b(this,br)?this.transformAuthorData():this.transformPublishData(),b(this,Ee))}transformAuthorData(){let{fields:r,id:o,tags:n}=b(this,le);R(this,Ee,r.reduce((i,{name:a,multiple:s,values:c})=>(i.fields[a]=s?c:c[0],i),{fields:{},id:o,tags:n}))}transformPublishData(){let{fields:r,id:o,tags:n}=b(this,le);R(this,Ee,Object.entries(r).reduce((i,[a,s])=>(i.fields[a]=s?.mimeType?s.value:s??"",i),{fields:{},id:o,tags:n}))}};xr=new WeakMap,le=new WeakMap,Ee=new WeakMap,Rt=new WeakMap,Ot=new WeakMap,Oe=new WeakMap,oe=new WeakMap,$e=new WeakMap,br=new WeakMap,vr=new WeakSet,hi=function({message:r,context:o}){this.classList.add("error"),b(this,xr).error(`aem-fragment: ${r}`,o),this.dispatchEvent(new CustomEvent(Be,{detail:{message:r,...o},bubbles:!0,composed:!0}))};customElements.define(po,li);var $t=class extends M{constructor(){super(),this.color="",this.variant="",this.backgroundColor="",this.borderColor=""}connectedCallback(){this.borderColor&&this.borderColor!=="Transparent"?this.style.setProperty("--merch-badge-border",`1px solid var(--${this.borderColor})`):this.style.setProperty("--merch-badge-border",`1px solid var(--${this.backgroundColor})`),this.style.setProperty("--merch-badge-background-color",`var(--${this.backgroundColor})`),this.style.setProperty("--merch-badge-color",this.color),this.style.setProperty("--merch-badge-padding","2px 10px 3px 10px"),this.style.setProperty("--merch-badge-border-radius","4px 0 0 4px"),this.style.setProperty("--merch-badge-font-size","var(--consonant-merch-card-body-xs-font-size)"),this.variant==="plans"&&this.style.setProperty("border-right","none"),super.connectedCallback()}render(){return g`<div class="plans-badge">
+`;
+document.head.appendChild(styles2);
+
+// src/aem-fragment.js
+var sheet = new CSSStyleSheet();
+sheet.replaceSync(":host { display: contents; }");
+var ATTRIBUTE_FRAGMENT = "fragment";
+var ATTRIBUTE_AUTHOR = "author";
+var AEM_FRAGMENT_TAG_NAME = "aem-fragment";
+var _fragmentCache;
+var FragmentCache = class {
+  constructor() {
+    __privateAdd(this, _fragmentCache, /* @__PURE__ */ new Map());
+  }
+  clear() {
+    __privateGet(this, _fragmentCache).clear();
+  }
+  /**
+   * Add fragment to cache
+   * @param {string} fragmentId requested id.
+   * requested id can differe from returned fragment.id because of translation
+   */
+  addByRequestedId(fragmentId, fragment) {
+    __privateGet(this, _fragmentCache).set(fragmentId, fragment);
+  }
+  add(...fragments) {
+    fragments.forEach((fragment) => {
+      const { id: fragmentId } = fragment;
+      if (fragmentId) {
+        __privateGet(this, _fragmentCache).set(fragmentId, fragment);
+      }
+    });
+  }
+  has(fragmentId) {
+    return __privateGet(this, _fragmentCache).has(fragmentId);
+  }
+  get(key) {
+    return __privateGet(this, _fragmentCache).get(key);
+  }
+  remove(fragmentId) {
+    __privateGet(this, _fragmentCache).delete(fragmentId);
+  }
+};
+_fragmentCache = new WeakMap();
+var cache = new FragmentCache();
+var _log, _rawData, _data, _stale, _startMark, _service2, _fragmentId, _fetchPromise, _author, _fail, fail_fn;
+var AemFragment = class extends HTMLElement {
+  constructor() {
+    super();
+    __privateAdd(this, _fail);
+    __publicField(this, "cache", cache);
+    __privateAdd(this, _log, void 0);
+    __privateAdd(this, _rawData, null);
+    __privateAdd(this, _data, null);
+    __privateAdd(this, _stale, false);
+    __privateAdd(this, _startMark, null);
+    __privateAdd(this, _service2, null);
+    /**
+     * @type {string} fragment id
+     */
+    __privateAdd(this, _fragmentId, void 0);
+    /**
+     * Internal promise to track if fetching is in progress.
+     */
+    __privateAdd(this, _fetchPromise, void 0);
+    __privateAdd(this, _author, false);
+    this.attachShadow({ mode: "open" });
+    this.shadowRoot.adoptedStyleSheets = [sheet];
+  }
+  static get observedAttributes() {
+    return [ATTRIBUTE_FRAGMENT, ATTRIBUTE_AUTHOR];
+  }
+  attributeChangedCallback(name, oldValue, newValue) {
+    if (name === ATTRIBUTE_FRAGMENT) {
+      __privateSet(this, _fragmentId, newValue);
+    }
+    if (name === ATTRIBUTE_AUTHOR) {
+      __privateSet(this, _author, ["", "true"].includes(newValue));
+    }
+  }
+  connectedCallback() {
+    __privateSet(this, _service2, getService2(this));
+    __privateSet(this, _log, __privateGet(this, _service2).log.module(AEM_FRAGMENT_TAG_NAME));
+    __privateSet(this, _startMark, `${AEM_FRAGMENT_TAG_NAME}:${__privateGet(this, _fragmentId)}${MARK_START_SUFFIX}`);
+    performance.mark(__privateGet(this, _startMark));
+    if (!__privateGet(this, _fragmentId)) {
+      __privateMethod(this, _fail, fail_fn).call(this, { message: "Missing fragment id" });
+      return;
+    }
+    this.refresh(false);
+  }
+  /**
+   * Get fragment by ID
+   * @param {string} endpoint url to fetch fragment from
+   * @param {string} id fragment id
+   * @returns {Promise<Object>} the raw fragment item
+   */
+  async getFragmentById(endpoint, id, startMark) {
+    const measureName = `${AEM_FRAGMENT_TAG_NAME}:${id}${MARK_DURATION_SUFFIX}`;
+    let response;
+    try {
+      response = await masFetch(endpoint, {
+        cache: "default",
+        credentials: "omit"
+      });
+      if (!response?.ok) {
+        const { startTime, duration } = performance.measure(
+          measureName,
+          startMark
+        );
+        throw new MasError("Unexpected fragment response", {
+          response,
+          startTime,
+          duration,
+          ...__privateGet(this, _service2).duration
+        });
+      }
+      return response.json();
+    } catch (e7) {
+      const { startTime, duration } = performance.measure(
+        measureName,
+        startMark
+      );
+      if (!response) {
+        response = { url: endpoint };
+      }
+      throw new MasError("Failed to fetch fragment", {
+        response,
+        startTime,
+        duration,
+        ...__privateGet(this, _service2).duration
+      });
+    }
+  }
+  async refresh(flushCache = true) {
+    if (__privateGet(this, _fetchPromise)) {
+      const ready = await Promise.race([
+        __privateGet(this, _fetchPromise),
+        Promise.resolve(false)
+      ]);
+      if (!ready)
+        return;
+    }
+    if (flushCache) {
+      cache.remove(__privateGet(this, _fragmentId));
+    }
+    __privateSet(this, _fetchPromise, this.fetchData().then(() => {
+      const { references, referencesTree, placeholders } = __privateGet(this, _rawData) || {};
+      this.dispatchEvent(
+        new CustomEvent(EVENT_AEM_LOAD, {
+          detail: {
+            ...this.data,
+            stale: __privateGet(this, _stale),
+            references,
+            referencesTree,
+            placeholders
+          },
+          bubbles: true,
+          composed: true
+        })
+      );
+      return true;
+    }).catch((e7) => {
+      if (__privateGet(this, _rawData)) {
+        cache.addByRequestedId(__privateGet(this, _fragmentId), __privateGet(this, _rawData));
+        return true;
+      }
+      __privateMethod(this, _fail, fail_fn).call(this, e7);
+      return false;
+    }));
+    return __privateGet(this, _fetchPromise);
+  }
+  async fetchData() {
+    this.classList.remove("error");
+    __privateSet(this, _data, null);
+    let fragment = cache.get(__privateGet(this, _fragmentId));
+    if (fragment) {
+      __privateSet(this, _rawData, fragment);
+      return;
+    }
+    __privateSet(this, _stale, true);
+    const { masIOUrl, wcsApiKey, locale } = __privateGet(this, _service2).settings;
+    const endpoint = `${masIOUrl}/fragment?id=${__privateGet(this, _fragmentId)}&api_key=${wcsApiKey}&locale=${locale}`;
+    fragment = await this.getFragmentById(
+      endpoint,
+      __privateGet(this, _fragmentId),
+      __privateGet(this, _startMark)
+    );
+    cache.addByRequestedId(__privateGet(this, _fragmentId), fragment);
+    __privateSet(this, _rawData, fragment);
+    __privateSet(this, _stale, false);
+  }
+  get updateComplete() {
+    return __privateGet(this, _fetchPromise) ?? Promise.reject(new Error("AEM fragment cannot be loaded"));
+  }
+  get data() {
+    if (__privateGet(this, _data))
+      return __privateGet(this, _data);
+    if (__privateGet(this, _author)) {
+      this.transformAuthorData();
+    } else {
+      this.transformPublishData();
+    }
+    return __privateGet(this, _data);
+  }
+  transformAuthorData() {
+    const { fields, id, tags } = __privateGet(this, _rawData);
+    __privateSet(this, _data, fields.reduce(
+      (acc, { name, multiple, values }) => {
+        acc.fields[name] = multiple ? values : values[0];
+        return acc;
+      },
+      { fields: {}, id, tags }
+    ));
+  }
+  transformPublishData() {
+    const { fields, id, tags } = __privateGet(this, _rawData);
+    __privateSet(this, _data, Object.entries(fields).reduce(
+      (acc, [key, value]) => {
+        acc.fields[key] = value?.mimeType ? value.value : value ?? "";
+        return acc;
+      },
+      { fields: {}, id, tags }
+    ));
+  }
+};
+_log = new WeakMap();
+_rawData = new WeakMap();
+_data = new WeakMap();
+_stale = new WeakMap();
+_startMark = new WeakMap();
+_service2 = new WeakMap();
+_fragmentId = new WeakMap();
+_fetchPromise = new WeakMap();
+_author = new WeakMap();
+_fail = new WeakSet();
+fail_fn = function({ message, context }) {
+  this.classList.add("error");
+  __privateGet(this, _log).error(`aem-fragment: ${message}`, context);
+  this.dispatchEvent(
+    new CustomEvent(EVENT_AEM_ERROR, {
+      detail: { message, ...context },
+      bubbles: true,
+      composed: true
+    })
+  );
+};
+customElements.define(AEM_FRAGMENT_TAG_NAME, AemFragment);
+
+// src/merch-badge.js
+var MerchBadge = class extends s7 {
+  constructor() {
+    super();
+    this.color = "";
+    this.variant = "";
+    this.backgroundColor = "";
+    this.borderColor = "";
+  }
+  connectedCallback() {
+    if (this.borderColor && this.borderColor !== "Transparent") {
+      this.style.setProperty("--merch-badge-border", `1px solid var(--${this.borderColor})`);
+    } else {
+      this.style.setProperty("--merch-badge-border", `1px solid var(--${this.backgroundColor})`);
+    }
+    this.style.setProperty("--merch-badge-background-color", `var(--${this.backgroundColor})`);
+    this.style.setProperty("--merch-badge-color", this.color);
+    this.style.setProperty("--merch-badge-padding", "2px 10px 3px 10px");
+    this.style.setProperty("--merch-badge-border-radius", "4px 0 0 4px");
+    this.style.setProperty("--merch-badge-font-size", "var(--consonant-merch-card-body-xs-font-size)");
+    if (this.variant === "plans") {
+      this.style.setProperty("border-right", "none");
+    }
+    super.connectedCallback();
+  }
+  render() {
+    return x2`<div class="plans-badge">
             ${this.textContent}
-        </div>`}};p($t,"properties",{color:{type:String},variant:{type:String},backgroundColor:{type:String,attribute:"background-color"},borderColor:{type:String,attribute:"border-color"}}),p($t,"styles",v`
+        </div>`;
+  }
+};
+__publicField(MerchBadge, "properties", {
+  color: { type: String },
+  variant: { type: String },
+  backgroundColor: { type: String, attribute: "background-color" },
+  borderColor: { type: String, attribute: "border-color" }
+});
+__publicField(MerchBadge, "styles", i3`
         :host {
             display: block;
             background-color: var(--merch-badge-background-color);
@@ -1953,10 +9187,22 @@ sr-only {
             line-height: 21px;
             border: var(--merch-badge-border);
         }
-    `);customElements.define("merch-badge",$t);var yr=class extends M{constructor(){super()}render(){return g`
+    `);
+customElements.define("merch-badge", MerchBadge);
+
+// src/merch-mnemonic-list.js
+var MerchMnemonicList = class extends s7 {
+  constructor() {
+    super();
+  }
+  render() {
+    return x2`
             <slot name="icon"></slot>
             <slot name="description">${this.description}</slot>
-        `}};p(yr,"styles",v`
+        `;
+  }
+};
+__publicField(MerchMnemonicList, "styles", i3`
         :host {
             display: flex;
             flex-wrap: nowrap;
@@ -1981,11 +9227,56 @@ sr-only {
         :host .hidden {
             display: none;
         }
-    `),p(yr,"properties",{description:{type:String,attribute:!0}});customElements.define("merch-mnemonic-list",yr);var Er=class extends M{updated(){this.hideSeeMoreEls()}hideSeeMoreEls(){this.isMobile&&this.rows.forEach((t,r)=>{r>=5&&(t.style.display=this.showAll?"flex":"none")})}constructor(){super(),this.showAll=!1,this.mobileRows=this.mobileRows===void 0?5:this.mobileRows}toggle(){this.showAll=!this.showAll,this.dispatchEvent(new CustomEvent("hide-see-more-elements",{bubbles:!0,composed:!0})),this.requestUpdate()}render(){return g`<slot name="heading"></slot>
+    `);
+__publicField(MerchMnemonicList, "properties", {
+  description: { type: String, attribute: true }
+});
+customElements.define("merch-mnemonic-list", MerchMnemonicList);
+
+// src/merch-whats-included.js
+var MerchWhatsIncluded = class extends s7 {
+  updated() {
+    this.hideSeeMoreEls();
+  }
+  hideSeeMoreEls() {
+    if (this.isMobile) {
+      this.rows.forEach((node, index) => {
+        if (index >= 5) {
+          node.style.display = this.showAll ? "flex" : "none";
+        }
+      });
+    }
+  }
+  constructor() {
+    super();
+    this.showAll = false;
+    this.mobileRows = this.mobileRows === void 0 ? 5 : this.mobileRows;
+  }
+  toggle() {
+    this.showAll = !this.showAll;
+    this.dispatchEvent(
+      new CustomEvent("hide-see-more-elements", {
+        bubbles: true,
+        composed: true
+      })
+    );
+    this.requestUpdate();
+  }
+  render() {
+    return x2`<slot name="heading"></slot>
             <slot name="content"></slot>
-            ${this.isMobile&&this.rows.length>this.mobileRows?g`<div @click=${this.toggle} class="see-more">
-                      ${this.showAll?"- See less":"+ See more"}
-                  </div>`:g``}`}get isMobile(){return window.matchMedia("(max-width: 767px)").matches}get rows(){return this.querySelectorAll("merch-mnemonic-list")}};p(Er,"styles",v`
+            ${this.isMobile && this.rows.length > this.mobileRows ? x2`<div @click=${this.toggle} class="see-more">
+                      ${this.showAll ? "- See less" : "+ See more"}
+                  </div>` : x2``}`;
+  }
+  get isMobile() {
+    return window.matchMedia("(max-width: 767px)").matches;
+  }
+  get rows() {
+    return this.querySelectorAll("merch-mnemonic-list");
+  }
+};
+__publicField(MerchWhatsIncluded, "styles", i3`
         :host {
             display: flex;
             flex-wrap: wrap;
@@ -2014,7 +9305,1096 @@ sr-only {
             text-decoration: underline;
             color: var(--link-color-dark);
         }
-    `),p(Er,"properties",{heading:{type:String,attribute:!0},mobileRows:{type:Number,attribute:!0}});customElements.define("merch-whats-included",Er);var Ch="#000000",tc="spectrum-yellow-300-plans",rc="#F8D904",Ph="#EAEAEA",kh=/(accent|primary|secondary)(-(outline|link))?/,Lh="mas:product_code/",Rh="daa-ll",Ar="daa-lh",Oh=["XL","L","M","S"],di="...";function Me(e,t,r,o){let n=o[e];if(t[e]&&n){let i={slot:n?.slot},a=t[e];if(n.maxCount&&typeof a=="string"){let[c,l]=Vh(a,n.maxCount,n.withSuffix);c!==a&&(i.title=l,a=c)}let s=qe(n.tag,i,a);r.append(s)}}function $h(e,t,r){e.mnemonicIcon?.map((n,i)=>({icon:n,alt:e.mnemonicAlt[i]??"",link:e.mnemonicLink[i]??""}))?.forEach(({icon:n,alt:i,link:a})=>{if(a&&!/^https?:/.test(a))try{a=new URL(`https://${a}`).href.toString()}catch{a="#"}let s={slot:"icons",src:n,loading:t.loading,size:r?.size??"l"};i&&(s.alt=i),a&&(s.href=a);let c=qe("merch-icon",s);t.append(c)})}function Mh(e,t,r){if(e.variant==="plans"){e.badge?.length&&!e.badge?.startsWith("<merch-badge")&&(e.badge=`<merch-badge variant="${e.variant}" background-color="${tc}">${e.badge}</merch-badge>`,e.borderColor||(e.borderColor=tc)),Me("badge",e,t,r);return}e.badge?(t.setAttribute("badge-text",e.badge),t.setAttribute("badge-color",e.badgeColor||Ch),t.setAttribute("badge-background-color",e.badgeBackgroundColor||rc),t.setAttribute("border-color",e.badgeBackgroundColor||rc)):t.setAttribute("border-color",e.borderColor||Ph)}function Nh(e,t,r){r?.includes(e.size)&&t.setAttribute("size",e.size)}function Ih(e,t,r){Me("cardTitle",e,t,{cardTitle:r})}function Hh(e,t,r){Me("subtitle",e,t,r)}function Dh(e,t,r){if(!e.backgroundColor||e.backgroundColor.toLowerCase()==="default"){t.style.removeProperty("--merch-card-custom-background-color"),t.removeAttribute("background-color");return}r?.[e.backgroundColor]&&(t.style.setProperty("--merch-card-custom-background-color",`var(${r[e.backgroundColor]})`),t.setAttribute("background-color",e.backgroundColor))}function Uh(e,t,r){let o="--merch-card-custom-border-color";e.borderColor?.toLowerCase()==="transparent"?(t.style.removeProperty(o),e.variant==="plans"&&t.style.setProperty(o,"transparent")):e.borderColor&&r&&(/-gradient/.test(e.borderColor)?(t.setAttribute("gradient-border","true"),t.style.removeProperty(o)):t.style.setProperty(o,`var(--${e.borderColor})`))}function Bh(e,t,r){if(e.backgroundImage){let o={loading:t.loading??"lazy",src:e.backgroundImage};if(e.backgroundImageAltText?o.alt=e.backgroundImageAltText:o.role="none",!r)return;if(r?.attribute){t.setAttribute(r.attribute,e.backgroundImage);return}t.append(qe(r.tag,{slot:r.slot},qe("img",o)))}}function zh(e,t,r){Me("prices",e,t,r)}function Fh(e,t,r){Me("promoText",e,t,r),Me("description",e,t,r),Me("callout",e,t,r),Me("quantitySelect",e,t,r)}function Gh(e,t,r,o){e.showStockCheckbox&&r.stockOffer&&(t.setAttribute("checkbox-label",o.stockCheckboxLabel),t.setAttribute("stock-offer-osis",o.stockOfferOsis)),o.secureLabel&&r.secureLabel&&t.setAttribute("secure-label",o.secureLabel)}function Vh(e,t,r=!0){try{let o=typeof e!="string"?"":e,n=oc(o);if(n.length<=t)return[o,n];let i=0,a=!1,s=r?t-di.length<1?1:t-di.length:t,c=[];for(let u of o){if(i++,u==="<")if(a=!0,o[i]==="/")c.pop();else{let d="";for(let m of o.substring(i)){if(m===" "||m===">")break;d+=m}c.push(d)}if(u==="/"&&o[i]===">"&&c.pop(),u===">"){a=!1;continue}if(!a&&(s--,s===0))break}let l=o.substring(0,i).trim();if(c.length>0){c[0]==="p"&&c.shift();for(let u of c.reverse())l+=`</${u}>`}return[`${l}${r?di:""}`,n]}catch{let n=typeof e=="string"?e:"",i=oc(n);return[n,i]}}function oc(e){if(!e)return"";let t="",r=!1;for(let o of e){if(o==="<"&&(r=!0),o===">"){r=!1;continue}r||(t+=o)}return t}function jh(e,t){t.querySelectorAll("a.upt-link").forEach(o=>{let n=Ce.createFrom(o);o.replaceWith(n),n.initializeWcsData(e.osi,e.promoCode)})}function qh(e,t,r,o){let i=customElements.get("checkout-button").createCheckoutButton({},e.innerHTML);i.setAttribute("tabindex",0);for(let h of e.attributes)["class","is"].includes(h.name)||i.setAttribute(h.name,h.value);i.firstElementChild?.classList.add("spectrum-Button-label");let a=t.ctas.size??"M",s=`spectrum-Button--${o}`,c=Oh.includes(a)?`spectrum-Button--size${a}`:"spectrum-Button--sizeM",l=["spectrum-Button",s,c];return r&&l.push("spectrum-Button--outline"),i.classList.add(...l),i}function Wh(e,t,r,o){let i=customElements.get("checkout-button").createCheckoutButton(e.dataset);i.connectedCallback(),i.render();let a="fill";r&&(a="outline");let s=qe("sp-button",{treatment:a,variant:o,tabIndex:0,size:t.ctas.size??"m",...e.dataset.analyticsId&&{"data-analytics-id":e.dataset.analyticsId}},e.innerHTML);return s.source=i,i.onceSettled().then(c=>{s.setAttribute("data-navigation-url",c.href)}),s.addEventListener("click",c=>{c.defaultPrevented||i.click()}),s}function Yh(e,t){let o=customElements.get("checkout-link").createCheckoutLink(e.dataset,e.innerHTML);return o.classList.add("con-button"),t&&o.classList.add("blue"),o}function Xh(e,t,r,o){if(e.ctas){let{slot:n}=r.ctas,i=qe("div",{slot:n},e.ctas),a=[...i.querySelectorAll("a")].map(s=>{let c=kh.exec(s.className)?.[0]??"accent",l=c.includes("accent"),h=c.includes("primary"),u=c.includes("secondary"),d=c.includes("-outline"),m=c.includes("-link");if(t.consonant)return Yh(s,l);if(m)return s;let x;return l?x="accent":h?x="primary":u&&(x="secondary"),t.spectrum==="swc"?Wh(s,r,d,x):qh(s,r,d,x)});i.innerHTML="",i.append(...a),t.append(i)}}function Kh(e,t){let{tags:r}=e,o=r?.find(i=>i.startsWith(Lh))?.split("/").pop();if(!o)return;t.setAttribute(Ar,o),[...t.shadowRoot.querySelectorAll("a[data-analytics-id],button[data-analytics-id]"),...t.querySelectorAll("a[data-analytics-id],button[data-analytics-id]")].forEach((i,a)=>{i.setAttribute(Rh,`${i.dataset.analyticsId}-${a+1}`)})}function Zh(e){e.spectrum==="css"&&[["primary-link","primary"],["secondary-link","secondary"]].forEach(([t,r])=>{e.querySelectorAll(`a.${t}`).forEach(o=>{o.classList.remove(t),o.classList.add("spectrum-Link",`spectrum-Link--${r}`)})})}function Qh(e){e.querySelectorAll("[slot]").forEach(o=>{o.remove()}),["checkbox-label","stock-offer-osis","secure-label","background-image","background-color","border-color","badge-background-color","badge-color","badge-text","size",Ar].forEach(o=>e.removeAttribute(o));let r=["wide-strip","thin-strip"];e.classList.remove(...r)}async function nc(e,t){let{id:r,fields:o}=e,{variant:n}=o;if(!n)throw new Error(`hydrate: no variant found in payload ${r}`);let i={stockCheckboxLabel:"Add a 30-day free trial of Adobe Stock.*",stockOfferOsis:"",secureLabel:"Secure transaction"};Qh(t),t.id??(t.id=e.id),t.removeAttribute("background-image"),t.removeAttribute("background-color"),t.removeAttribute("badge-background-color"),t.removeAttribute("badge-color"),t.removeAttribute("badge-text"),t.removeAttribute("size"),t.removeAttribute("gradient-border"),t.classList.remove("wide-strip"),t.classList.remove("thin-strip"),t.removeAttribute(Ar),t.variant=n,await t.updateComplete;let{aemFragmentMapping:a}=t.variantLayout;if(!a)throw new Error(`hydrate: aemFragmentMapping found for ${r}`);a.style==="consonant"&&t.setAttribute("consonant",!0),$h(o,t,a.mnemonics),Mh(o,t,a),Nh(o,t,a.size),Ih(o,t,a.title),Hh(o,t,a),zh(o,t,a),Bh(o,t,a.backgroundImage),Dh(o,t,a.allowedColors),Uh(o,t,a.borderColor),Fh(o,t,a),Gh(o,t,a,i),jh(o,t),Xh(o,t,a,n),Kh(o,t),Zh(t)}var ic="merch-card",Jh=":ready",ed=":error",ui=2e4,fo="merch-card:",Nt,It,Ne,Mt,ot=class extends M{constructor(){super();L(this,Ne);p(this,"customerSegment");p(this,"marketSegment");p(this,"variantLayout");L(this,Nt);L(this,It);p(this,"readyEventDispatched",!1);this.id=null,this.failed=!1,this.filters={},this.types="",this.selected=!1,this.spectrum="css",this.loading="lazy",this.handleAemFragmentEvents=this.handleAemFragmentEvents.bind(this)}firstUpdated(){this.variantLayout=si(this,!1),this.variantLayout?.connectedCallbackHook(),this.aemFragment?.updateComplete.catch(r=>{de(this,Ne,Mt).call(this,r,{},!1),this.style.display="none"})}willUpdate(r){(r.has("variant")||!this.variantLayout)&&(this.variantLayout=si(this),this.variantLayout.connectedCallbackHook())}updated(r){(r.has("badgeBackgroundColor")||r.has("borderColor"))&&this.style.setProperty("--consonant-merch-card-border",this.computedBorderStyle),this.variantLayout?.postCardUpdateHook(r)}get theme(){return this.closest("sp-theme")}get dir(){return this.closest("[dir]")?.getAttribute("dir")??"ltr"}get prices(){return Array.from(this.querySelectorAll('span[is="inline-price"][data-wcs-osi]'))}render(){if(!(!this.isConnected||!this.variantLayout||this.style.display==="none"))return this.variantLayout.renderLayout()}get computedBorderStyle(){return["ccd-slice","ccd-suggested","ah-promoted-plans"].includes(this.variant)?"":`1px solid ${this.borderColor?this.borderColor:this.badgeBackgroundColor}`}get badgeElement(){return this.shadowRoot.getElementById("badge")}get headingmMSlot(){return this.shadowRoot.querySelector('slot[name="heading-m"]').assignedElements()[0]}get footerSlot(){return this.shadowRoot.querySelector('slot[name="footer"]')?.assignedElements()[0]}get price(){return this.headingmMSlot?.querySelector(Tr)}get checkoutLinks(){return[...this.footerSlot?.querySelectorAll(De)??[]]}async toggleStockOffer({target:r}){if(!this.stockOfferOsis)return;let o=this.checkoutLinks;if(o.length!==0)for(let n of o){await n.onceSettled();let i=n.value?.[0]?.planType;if(!i)return;let a=this.stockOfferOsis[i];if(!a)return;let s=n.dataset.wcsOsi.split(",").filter(c=>c!==a);r.checked&&s.push(a),n.dataset.wcsOsi=s.join(",")}}handleQuantitySelection(r){let o=this.checkoutLinks;for(let n of o)n.dataset.quantity=r.detail.option}get titleElement(){return this.querySelector(this.variantLayout?.headingSelector||".card-heading")}get title(){return this.titleElement?.textContent?.trim()}get description(){return this.querySelector('[slot="body-xs"]')?.textContent?.trim()}updateFilters(r){let o={...this.filters};Object.keys(o).forEach(n=>{if(r){o[n].order=Math.min(o[n].order||2,2);return}let i=o[n].order;i===1||isNaN(i)||(o[n].order=Number(i)+1)}),this.filters=o}includes(r){return this.textContent.match(new RegExp(r,"i"))!==null}connectedCallback(){super.connectedCallback(),R(this,It,xt()),R(this,Nt,b(this,It).Log.module(ic)),this.id??(this.id=this.querySelector("aem-fragment")?.getAttribute("fragment")),performance.mark(`${fo}${this.id}${Te}`),this.addEventListener(ue,this.handleQuantitySelection),this.addEventListener(Ft,this.merchCardReady,{once:!0}),this.updateComplete.then(()=>{this.merchCardReady()}),this.addEventListener(Be,this.handleAemFragmentEvents),this.addEventListener(Ue,this.handleAemFragmentEvents),this.aemFragment||setTimeout(()=>this.checkReady(),0)}disconnectedCallback(){super.disconnectedCallback(),this.variantLayout?.disconnectedCallbackHook(),this.removeEventListener(ue,this.handleQuantitySelection),this.removeEventListener(Be,this.handleAemFragmentEvents),this.removeEventListener(Ue,this.handleAemFragmentEvents)}async handleAemFragmentEvents(r){if(r.type===Be&&de(this,Ne,Mt).call(this,`AEM fragment cannot be loaded: ${r.detail.message}`,r.detail),r.type===Ue&&r.target.nodeName==="AEM-FRAGMENT"){let o=r.detail;nc(o,this).then(()=>this.checkReady()).catch(n=>b(this,Nt).error(n))}}async checkReady(){let r=new Promise(a=>setTimeout(()=>a("timeout"),ui));if(this.aemFragment){let a=await Promise.race([this.aemFragment.updateComplete,r]);if(a===!1){let s=a==="timeout"?`AEM fragment was not resolved within ${ui} timeout`:"AEM fragment cannot be loaded";de(this,Ne,Mt).call(this,s,{},!1);return}}let o=[...this.querySelectorAll(zt)];o.push(...[...this.querySelectorAll(wo)].map(a=>a.source));let n=Promise.all(o.map(a=>a.onceSettled().catch(()=>a))).then(a=>a.every(s=>s.classList.contains("placeholder-resolved"))),i=await Promise.race([n,r]);if(i===!0)return performance.mark(`${fo}${this.id}${Jh}`),this.readyEventDispatched||(this.readyEventDispatched=!0,this.dispatchEvent(new CustomEvent(Co,{bubbles:!0,composed:!0}))),this;{let{duration:a,startTime:s}=performance.measure(`${fo}${this.id}${ed}`,`${fo}${this.id}${Te}`),c={duration:a,startTime:s,...b(this,It).duration};i==="timeout"?de(this,Ne,Mt).call(this,`Contains offers that were not resolved within ${ui} timeout`,c):de(this,Ne,Mt).call(this,"Contains unresolved offers",c)}}get aemFragment(){return this.querySelector("aem-fragment")}get quantitySelect(){return this.querySelector("merch-quantity-select")}displayFooterElementsInColumn(){if(!this.classList.contains("product"))return;let r=this.shadowRoot.querySelector(".secure-transaction-label");(this.footerSlot?.querySelectorAll(De)).length===2&&r&&r.parentElement.classList.add("footer-column")}merchCardReady(){this.offerSelect&&!this.offerSelect.planType||(this.dispatchEvent(new CustomEvent(_o,{bubbles:!0})),this.displayFooterElementsInColumn())}get dynamicPrice(){return this.querySelector('[slot="price"]')}};Nt=new WeakMap,It=new WeakMap,Ne=new WeakSet,Mt=function(r,o={},n=!0){b(this,Nt).error(`merch-card: ${r}`,o),this.failed=!0,n&&this.dispatchEvent(new CustomEvent(Po,{detail:{...o,message:r},bubbles:!0,composed:!0}))},p(ot,"properties",{id:{type:String,attribute:"id",reflect:!0},name:{type:String,attribute:"name",reflect:!0},variant:{type:String,reflect:!0},size:{type:String,attribute:"size",reflect:!0},badgeColor:{type:String,attribute:"badge-color",reflect:!0},borderColor:{type:String,attribute:"border-color",reflect:!0},badgeBackgroundColor:{type:String,attribute:"badge-background-color",reflect:!0},backgroundImage:{type:String,attribute:"background-image",reflect:!0},badgeText:{type:String,attribute:"badge-text"},actionMenu:{type:Boolean,attribute:"action-menu"},actionMenuLabel:{type:String,attribute:"action-menu-label"},customHr:{type:Boolean,attribute:"custom-hr"},consonant:{type:Boolean,attribute:"consonant"},failed:{type:Boolean,attribute:"failed",reflect:!0},spectrum:{type:String,attribute:"spectrum"},detailBg:{type:String,attribute:"detail-bg"},secureLabel:{type:String,attribute:"secure-label"},checkboxLabel:{type:String,attribute:"checkbox-label"},selected:{type:Boolean,attribute:"aria-selected",reflect:!0},storageOption:{type:String,attribute:"storage",reflect:!0},stockOfferOsis:{type:Object,attribute:"stock-offer-osis",converter:{fromAttribute:r=>{if(!r)return;let[o,n,i]=r.split(",");return{PUF:o,ABM:n,M2M:i}}}},filters:{type:String,reflect:!0,converter:{fromAttribute:r=>Object.fromEntries(r.split(",").map(o=>{let[n,i,a]=o.split(":"),s=Number(i);return[n,{order:isNaN(s)?void 0:s,size:a}]})),toAttribute:r=>Object.entries(r).map(([o,{order:n,size:i}])=>[o,n,i].filter(a=>a!=null).join(":")).join(",")}},types:{type:String,attribute:"types",reflect:!0},merchOffer:{type:Object},analyticsId:{type:String,attribute:Ar,reflect:!0},loading:{type:String}}),p(ot,"styles",[Bs,...zs()]),p(ot,"registerVariant",X),p(ot,"getFragmentMapping",Ks);customElements.define(ic,ot);var Ht,wr=class extends M{constructor(){super();L(this,Ht);this.defaults={},this.variant="plans"}saveContainerDefaultValues(){let r=this.closest(this.getAttribute("container")),o=r?.querySelector('[slot="description"]:not(merch-offer > *)')?.cloneNode(!0),n=r?.badgeText;return{description:o,badgeText:n}}getSlottedElement(r,o){return(o||this.closest(this.getAttribute("container"))).querySelector(`[slot="${r}"]:not(merch-offer > *)`)}updateSlot(r,o){let n=this.getSlottedElement(r,o);if(!n)return;let i=this.selectedOffer.getOptionValue(r)?this.selectedOffer.getOptionValue(r):this.defaults[r];i&&n.replaceWith(i.cloneNode(!0))}handleOfferSelection(r){let o=r.detail;this.selectOffer(o)}handleOfferSelectionByQuantity(r){let o=r.detail.option,n=Number.parseInt(o),i=this.findAppropriateOffer(n);this.selectOffer(i),this.getSlottedElement("cta").setAttribute("data-quantity",n)}selectOffer(r){if(!r)return;let o=this.selectedOffer;o&&(o.selected=!1),r.selected=!0,this.selectedOffer=r,this.planType=r.planType,this.updateContainer(),this.updateComplete.then(()=>{this.dispatchEvent(new CustomEvent(To,{detail:this,bubbles:!0}))})}findAppropriateOffer(r){let o=null;return this.offers.find(i=>{let a=Number.parseInt(i.getAttribute("value"));if(a===r)return!0;if(a>r)return!1;o=i})||o}updateBadgeText(r){this.selectedOffer.badgeText===""?r.badgeText=null:this.selectedOffer.badgeText?r.badgeText=this.selectedOffer.badgeText:r.badgeText=this.defaults.badgeText}updateContainer(){let r=this.closest(this.getAttribute("container"));!r||!this.selectedOffer||(this.updateSlot("cta",r),this.updateSlot("secondary-cta",r),this.updateSlot("price",r),!this.manageableMode&&(this.updateSlot("description",r),this.updateBadgeText(r)))}render(){return g`<fieldset><slot class="${this.variant}"></slot></fieldset>`}connectedCallback(){super.connectedCallback(),this.addEventListener("focusin",this.handleFocusin),this.addEventListener("click",this.handleFocusin),this.addEventListener(ct,this.handleOfferSelectReady);let r=this.closest("merch-quantity-select");this.manageableMode=r,this.offers=[...this.querySelectorAll("merch-offer")],R(this,Ht,this.handleOfferSelectionByQuantity.bind(this)),this.manageableMode?r.addEventListener(ue,b(this,Ht)):this.defaults=this.saveContainerDefaultValues(),this.selectedOffer=this.offers[0],this.planType&&this.updateContainer()}get miniCompareMobileCard(){return this.merchCard?.variant==="mini-compare-chart"&&this.isMobile}get merchCard(){return this.closest("merch-card")}get isMobile(){return window.matchMedia("(max-width: 767px)").matches}disconnectedCallback(){super.disconnectedCallback(),this.removeEventListener(ue,b(this,Ht)),this.removeEventListener(ct,this.handleOfferSelectReady),this.removeEventListener("focusin",this.handleFocusin),this.removeEventListener("click",this.handleFocusin)}get price(){return this.querySelector('merch-offer[aria-selected] [is="inline-price"]')}get customerSegment(){return this.selectedOffer?.customerSegment}get marketSegment(){return this.selectedOffer?.marketSegment}handleFocusin(r){r.target?.nodeName==="MERCH-OFFER"&&(r.preventDefault(),r.stopImmediatePropagation(),this.selectOffer(r.target))}async handleOfferSelectReady(){this.planType||this.querySelector("merch-offer:not([plan-type])")||(this.planType=this.selectedOffer.planType,await this.updateComplete,this.selectOffer(this.selectedOffer??this.querySelector("merch-offer[aria-selected]")??this.querySelector("merch-offer")),this.dispatchEvent(new CustomEvent(Ft,{bubbles:!0})))}};Ht=new WeakMap,p(wr,"styles",v`
+    `);
+__publicField(MerchWhatsIncluded, "properties", {
+  heading: { type: String, attribute: true },
+  mobileRows: { type: Number, attribute: true }
+});
+customElements.define("merch-whats-included", MerchWhatsIncluded);
+
+// src/hydrate.js
+var DEFAULT_BADGE_COLOR = "#000000";
+var DEFAULT_PLANS_BADGE_COLOR = "spectrum-yellow-300-plans";
+var DEFAULT_BADGE_BACKGROUND_COLOR = "#F8D904";
+var DEFAULT_BORDER_COLOR = "#EAEAEA";
+var CHECKOUT_STYLE_PATTERN = /(accent|primary|secondary)(-(outline|link))?/;
+var ANALYTICS_TAG = "mas:product_code/";
+var ANALYTICS_LINK_ATTR = "daa-ll";
+var ANALYTICS_SECTION_ATTR = "daa-lh";
+var SPECTRUM_BUTTON_SIZES = ["XL", "L", "M", "S"];
+var TEXT_TRUNCATE_SUFFIX = "...";
+function appendSlot(fieldName, fields, el, mapping) {
+  const config2 = mapping[fieldName];
+  if (fields[fieldName] && config2) {
+    const attributes = { slot: config2?.slot };
+    let content = fields[fieldName];
+    if (config2.maxCount && typeof content === "string") {
+      const [truncatedContent, cleanContent] = getTruncatedTextData(
+        content,
+        config2.maxCount,
+        config2.withSuffix
+      );
+      if (truncatedContent !== content) {
+        attributes.title = cleanContent;
+        content = truncatedContent;
+      }
+    }
+    const tag = createTag(config2.tag, attributes, content);
+    el.append(tag);
+  }
+}
+function processMnemonics(fields, merchCard, mnemonicsConfig) {
+  const mnemonics = fields.mnemonicIcon?.map((icon, index) => ({
+    icon,
+    alt: fields.mnemonicAlt[index] ?? "",
+    link: fields.mnemonicLink[index] ?? ""
+  }));
+  mnemonics?.forEach(({ icon: src, alt, link: href }) => {
+    if (href && !/^https?:/.test(href)) {
+      try {
+        href = new URL(`https://${href}`).href.toString();
+      } catch (e7) {
+        href = "#";
+      }
+    }
+    const attrs = {
+      slot: "icons",
+      src,
+      loading: merchCard.loading,
+      size: mnemonicsConfig?.size ?? "l"
+    };
+    if (alt)
+      attrs.alt = alt;
+    if (href)
+      attrs.href = href;
+    const merchIcon = createTag("merch-icon", attrs);
+    merchCard.append(merchIcon);
+  });
+}
+function processBadge(fields, merchCard, mapping) {
+  if (fields.variant === "plans") {
+    if (fields.badge?.length && !fields.badge?.startsWith("<merch-badge")) {
+      fields.badge = `<merch-badge variant="${fields.variant}" background-color="${DEFAULT_PLANS_BADGE_COLOR}">${fields.badge}</merch-badge>`;
+      if (!fields.borderColor)
+        fields.borderColor = DEFAULT_PLANS_BADGE_COLOR;
+    }
+    appendSlot("badge", fields, merchCard, mapping);
+    return;
+  }
+  if (fields.badge) {
+    merchCard.setAttribute("badge-text", fields.badge);
+    merchCard.setAttribute(
+      "badge-color",
+      fields.badgeColor || DEFAULT_BADGE_COLOR
+    );
+    merchCard.setAttribute(
+      "badge-background-color",
+      fields.badgeBackgroundColor || DEFAULT_BADGE_BACKGROUND_COLOR
+    );
+    merchCard.setAttribute(
+      "border-color",
+      fields.badgeBackgroundColor || DEFAULT_BADGE_BACKGROUND_COLOR
+    );
+  } else {
+    merchCard.setAttribute(
+      "border-color",
+      fields.borderColor || DEFAULT_BORDER_COLOR
+    );
+  }
+}
+function processSize(fields, merchCard, sizeConfig) {
+  if (sizeConfig?.includes(fields.size)) {
+    merchCard.setAttribute("size", fields.size);
+  }
+}
+function processTitle(fields, merchCard, titleConfig) {
+  appendSlot("cardTitle", fields, merchCard, { cardTitle: titleConfig });
+}
+function processSubtitle(fields, merchCard, mapping) {
+  appendSlot("subtitle", fields, merchCard, mapping);
+}
+function processBackgroundColor(fields, merchCard, allowedColors) {
+  if (!fields.backgroundColor || fields.backgroundColor.toLowerCase() === "default") {
+    merchCard.style.removeProperty("--merch-card-custom-background-color");
+    merchCard.removeAttribute("background-color");
+    return;
+  }
+  if (allowedColors?.[fields.backgroundColor]) {
+    merchCard.style.setProperty(
+      "--merch-card-custom-background-color",
+      `var(${allowedColors[fields.backgroundColor]})`
+    );
+    merchCard.setAttribute("background-color", fields.backgroundColor);
+  }
+}
+function processBorderColor(fields, merchCard, borderColorConfig) {
+  const customBorderColor = "--merch-card-custom-border-color";
+  if (fields.borderColor?.toLowerCase() === "transparent") {
+    merchCard.style.removeProperty(customBorderColor);
+    if (fields.variant === "plans")
+      merchCard.style.setProperty(customBorderColor, "transparent");
+  } else if (fields.borderColor && borderColorConfig) {
+    if (/-gradient/.test(fields.borderColor)) {
+      merchCard.setAttribute("gradient-border", "true");
+      merchCard.style.removeProperty(customBorderColor);
+    } else {
+      merchCard.style.setProperty(
+        customBorderColor,
+        `var(--${fields.borderColor})`
+      );
+    }
+  }
+}
+function processBackgroundImage(fields, merchCard, backgroundImageConfig) {
+  if (fields.backgroundImage) {
+    const imgAttributes = {
+      loading: merchCard.loading ?? "lazy",
+      src: fields.backgroundImage
+    };
+    if (fields.backgroundImageAltText) {
+      imgAttributes.alt = fields.backgroundImageAltText;
+    } else {
+      imgAttributes.role = "none";
+    }
+    if (!backgroundImageConfig)
+      return;
+    if (backgroundImageConfig?.attribute) {
+      merchCard.setAttribute(
+        backgroundImageConfig.attribute,
+        fields.backgroundImage
+      );
+      return;
+    }
+    merchCard.append(
+      createTag(
+        backgroundImageConfig.tag,
+        { slot: backgroundImageConfig.slot },
+        createTag("img", imgAttributes)
+      )
+    );
+  }
+}
+function processPrices(fields, merchCard, mapping) {
+  appendSlot("prices", fields, merchCard, mapping);
+}
+function processDescription(fields, merchCard, mapping) {
+  appendSlot("promoText", fields, merchCard, mapping);
+  appendSlot("description", fields, merchCard, mapping);
+  appendSlot("callout", fields, merchCard, mapping);
+  appendSlot("quantitySelect", fields, merchCard, mapping);
+}
+function processStockOffersAndSecureLabel(fields, merchCard, aemFragmentMapping, settings) {
+  if (fields.showStockCheckbox && aemFragmentMapping.stockOffer) {
+    merchCard.setAttribute("checkbox-label", settings.stockCheckboxLabel);
+    merchCard.setAttribute("stock-offer-osis", settings.stockOfferOsis);
+  }
+  if (settings.secureLabel && aemFragmentMapping.secureLabel) {
+    merchCard.setAttribute("secure-label", settings.secureLabel);
+  }
+}
+function getTruncatedTextData(text, limit, withSuffix = true) {
+  try {
+    const _text = typeof text !== "string" ? "" : text;
+    const cleanText = clearTags(_text);
+    if (cleanText.length <= limit)
+      return [_text, cleanText];
+    let index = 0;
+    let inTag = false;
+    let remaining = withSuffix ? limit - TEXT_TRUNCATE_SUFFIX.length < 1 ? 1 : limit - TEXT_TRUNCATE_SUFFIX.length : limit;
+    let openTags = [];
+    for (const char of _text) {
+      index++;
+      if (char === "<") {
+        inTag = true;
+        if (_text[index] === "/") {
+          openTags.pop();
+        } else {
+          let tagName = "";
+          for (const tagChar of _text.substring(index)) {
+            if (tagChar === " " || tagChar === ">")
+              break;
+            tagName += tagChar;
+          }
+          openTags.push(tagName);
+        }
+      }
+      if (char === "/") {
+        if (_text[index] === ">") {
+          openTags.pop();
+        }
+      }
+      if (char === ">") {
+        inTag = false;
+        continue;
+      }
+      if (inTag)
+        continue;
+      remaining--;
+      if (remaining === 0)
+        break;
+    }
+    let trimmedText = _text.substring(0, index).trim();
+    if (openTags.length > 0) {
+      if (openTags[0] === "p")
+        openTags.shift();
+      for (const tag of openTags.reverse()) {
+        trimmedText += `</${tag}>`;
+      }
+    }
+    let truncatedText = `${trimmedText}${withSuffix ? TEXT_TRUNCATE_SUFFIX : ""}`;
+    return [truncatedText, cleanText];
+  } catch (error) {
+    const fallbackText = typeof text === "string" ? text : "";
+    const cleanFallback = clearTags(fallbackText);
+    return [fallbackText, cleanFallback];
+  }
+}
+function clearTags(text) {
+  if (!text)
+    return "";
+  let result = "";
+  let inTag = false;
+  for (const char of text) {
+    if (char === "<")
+      inTag = true;
+    if (char === ">") {
+      inTag = false;
+      continue;
+    }
+    if (inTag)
+      continue;
+    result += char;
+  }
+  return result;
+}
+function processUptLinks(fields, merchCard) {
+  const placeholders = merchCard.querySelectorAll("a.upt-link");
+  placeholders.forEach((placeholder) => {
+    const uptLink = UptLink.createFrom(placeholder);
+    placeholder.replaceWith(uptLink);
+    uptLink.initializeWcsData(fields.osi, fields.promoCode);
+  });
+}
+function createSpectrumCssButton(cta, aemFragmentMapping, isOutline, variant) {
+  const CheckoutButton2 = customElements.get("checkout-button");
+  const spectrumCta = CheckoutButton2.createCheckoutButton({}, cta.innerHTML);
+  spectrumCta.setAttribute("tabindex", 0);
+  for (const attr of cta.attributes) {
+    if (["class", "is"].includes(attr.name))
+      continue;
+    spectrumCta.setAttribute(attr.name, attr.value);
+  }
+  spectrumCta.firstElementChild?.classList.add("spectrum-Button-label");
+  const size = aemFragmentMapping.ctas.size ?? "M";
+  const variantClass = `spectrum-Button--${variant}`;
+  const sizeClass = SPECTRUM_BUTTON_SIZES.includes(size) ? `spectrum-Button--size${size}` : "spectrum-Button--sizeM";
+  const spectrumClass = ["spectrum-Button", variantClass, sizeClass];
+  if (isOutline) {
+    spectrumClass.push("spectrum-Button--outline");
+  }
+  spectrumCta.classList.add(...spectrumClass);
+  return spectrumCta;
+}
+function createSpectrumSwcButton(cta, aemFragmentMapping, isOutline, variant) {
+  const CheckoutButton2 = customElements.get("checkout-button");
+  const checkoutButton = CheckoutButton2.createCheckoutButton(cta.dataset);
+  checkoutButton.connectedCallback();
+  checkoutButton.render();
+  let treatment = "fill";
+  if (isOutline) {
+    treatment = "outline";
+  }
+  const spectrumCta = createTag(
+    "sp-button",
+    {
+      treatment,
+      variant,
+      tabIndex: 0,
+      size: aemFragmentMapping.ctas.size ?? "m",
+      ...cta.dataset.analyticsId && {
+        "data-analytics-id": cta.dataset.analyticsId
+      }
+    },
+    cta.innerHTML
+  );
+  spectrumCta.source = checkoutButton;
+  checkoutButton.onceSettled().then((target) => {
+    spectrumCta.setAttribute("data-navigation-url", target.href);
+  });
+  spectrumCta.addEventListener("click", (e7) => {
+    if (e7.defaultPrevented)
+      return;
+    checkoutButton.click();
+  });
+  return spectrumCta;
+}
+function createConsonantButton(cta, isAccent) {
+  const CheckoutLink2 = customElements.get("checkout-link");
+  const checkoutLink = CheckoutLink2.createCheckoutLink(cta.dataset, cta.innerHTML);
+  checkoutLink.classList.add("con-button");
+  if (isAccent) {
+    checkoutLink.classList.add("blue");
+  }
+  return checkoutLink;
+}
+function processCTAs(fields, merchCard, aemFragmentMapping, variant) {
+  if (fields.ctas) {
+    const { slot } = aemFragmentMapping.ctas;
+    const footer = createTag("div", { slot }, fields.ctas);
+    const ctas = [...footer.querySelectorAll("a")].map((cta) => {
+      const checkoutLinkStyle = CHECKOUT_STYLE_PATTERN.exec(cta.className)?.[0] ?? "accent";
+      const isAccent = checkoutLinkStyle.includes("accent");
+      const isPrimary = checkoutLinkStyle.includes("primary");
+      const isSecondary = checkoutLinkStyle.includes("secondary");
+      const isOutline = checkoutLinkStyle.includes("-outline");
+      const isLink = checkoutLinkStyle.includes("-link");
+      if (merchCard.consonant)
+        return createConsonantButton(cta, isAccent);
+      if (isLink) {
+        return cta;
+      }
+      let variant2;
+      if (isAccent) {
+        variant2 = "accent";
+      } else if (isPrimary) {
+        variant2 = "primary";
+      } else if (isSecondary) {
+        variant2 = "secondary";
+      }
+      return merchCard.spectrum === "swc" ? createSpectrumSwcButton(
+        cta,
+        aemFragmentMapping,
+        isOutline,
+        variant2
+      ) : createSpectrumCssButton(
+        cta,
+        aemFragmentMapping,
+        isOutline,
+        variant2
+      );
+    });
+    footer.innerHTML = "";
+    footer.append(...ctas);
+    merchCard.append(footer);
+  }
+}
+function processAnalytics(fields, merchCard) {
+  const { tags } = fields;
+  const cardAnalyticsId = tags?.find((tag) => tag.startsWith(ANALYTICS_TAG))?.split("/").pop();
+  if (!cardAnalyticsId)
+    return;
+  merchCard.setAttribute(ANALYTICS_SECTION_ATTR, cardAnalyticsId);
+  const elements = [
+    ...merchCard.shadowRoot.querySelectorAll(
+      `a[data-analytics-id],button[data-analytics-id]`
+    ),
+    ...merchCard.querySelectorAll(
+      `a[data-analytics-id],button[data-analytics-id]`
+    )
+  ];
+  elements.forEach((el, index) => {
+    el.setAttribute(
+      ANALYTICS_LINK_ATTR,
+      `${el.dataset.analyticsId}-${index + 1}`
+    );
+  });
+}
+function updateLinksCSS(merchCard) {
+  if (merchCard.spectrum !== "css")
+    return;
+  [
+    ["primary-link", "primary"],
+    ["secondary-link", "secondary"]
+  ].forEach(([className, variant]) => {
+    merchCard.querySelectorAll(`a.${className}`).forEach((link) => {
+      link.classList.remove(className);
+      link.classList.add("spectrum-Link", `spectrum-Link--${variant}`);
+    });
+  });
+}
+function cleanup(merchCard) {
+  merchCard.querySelectorAll("[slot]").forEach((el) => {
+    el.remove();
+  });
+  const attributesToRemove = [
+    "checkbox-label",
+    "stock-offer-osis",
+    "secure-label",
+    "background-image",
+    "background-color",
+    "border-color",
+    "badge-background-color",
+    "badge-color",
+    "badge-text",
+    "size",
+    ANALYTICS_SECTION_ATTR
+  ];
+  attributesToRemove.forEach((attr) => merchCard.removeAttribute(attr));
+  const classesToRemove = ["wide-strip", "thin-strip"];
+  merchCard.classList.remove(...classesToRemove);
+}
+async function hydrate(fragment, merchCard) {
+  const { id, fields } = fragment;
+  const { variant } = fields;
+  if (!variant)
+    throw new Error(`hydrate: no variant found in payload ${id}`);
+  const settings = {
+    stockCheckboxLabel: "Add a 30-day free trial of Adobe Stock.*",
+    // to be {{stock-checkbox-label}}
+    stockOfferOsis: "",
+    secureLabel: "Secure transaction"
+    // to be {{secure-transaction}}
+  };
+  cleanup(merchCard);
+  merchCard.id ?? (merchCard.id = fragment.id);
+  merchCard.removeAttribute("background-image");
+  merchCard.removeAttribute("background-color");
+  merchCard.removeAttribute("badge-background-color");
+  merchCard.removeAttribute("badge-color");
+  merchCard.removeAttribute("badge-text");
+  merchCard.removeAttribute("size");
+  merchCard.removeAttribute("gradient-border");
+  merchCard.classList.remove("wide-strip");
+  merchCard.classList.remove("thin-strip");
+  merchCard.removeAttribute(ANALYTICS_SECTION_ATTR);
+  merchCard.variant = variant;
+  await merchCard.updateComplete;
+  const { aemFragmentMapping } = merchCard.variantLayout;
+  if (!aemFragmentMapping)
+    throw new Error(`hydrate: aemFragmentMapping found for ${id}`);
+  if (aemFragmentMapping.style === "consonant") {
+    merchCard.setAttribute("consonant", true);
+  }
+  processMnemonics(fields, merchCard, aemFragmentMapping.mnemonics);
+  processBadge(fields, merchCard, aemFragmentMapping);
+  processSize(fields, merchCard, aemFragmentMapping.size);
+  processTitle(fields, merchCard, aemFragmentMapping.title);
+  processSubtitle(fields, merchCard, aemFragmentMapping);
+  processPrices(fields, merchCard, aemFragmentMapping);
+  processBackgroundImage(
+    fields,
+    merchCard,
+    aemFragmentMapping.backgroundImage
+  );
+  processBackgroundColor(fields, merchCard, aemFragmentMapping.allowedColors);
+  processBorderColor(fields, merchCard, aemFragmentMapping.borderColor);
+  processDescription(fields, merchCard, aemFragmentMapping);
+  processStockOffersAndSecureLabel(
+    fields,
+    merchCard,
+    aemFragmentMapping,
+    settings
+  );
+  processUptLinks(fields, merchCard);
+  processCTAs(fields, merchCard, aemFragmentMapping, variant);
+  processAnalytics(fields, merchCard);
+  updateLinksCSS(merchCard);
+}
+
+// src/merch-card.js
+var MERCH_CARD = "merch-card";
+var MARK_READY_SUFFIX = ":ready";
+var MARK_ERROR_SUFFIX = ":error";
+var MERCH_CARD_LOAD_TIMEOUT = 2e4;
+var MARK_MERCH_CARD_PREFIX = "merch-card:";
+var _log2, _service3, _fail2, fail_fn2;
+var MerchCard = class extends s7 {
+  constructor() {
+    super();
+    __privateAdd(this, _fail2);
+    __publicField(this, "customerSegment");
+    __publicField(this, "marketSegment");
+    /**
+     * @type {VariantLayout}
+     */
+    __publicField(this, "variantLayout");
+    __privateAdd(this, _log2, void 0);
+    __privateAdd(this, _service3, void 0);
+    __publicField(this, "readyEventDispatched", false);
+    this.id = null;
+    this.failed = false;
+    this.filters = {};
+    this.types = "";
+    this.selected = false;
+    this.spectrum = "css";
+    this.loading = "lazy";
+    this.handleAemFragmentEvents = this.handleAemFragmentEvents.bind(this);
+  }
+  firstUpdated() {
+    this.variantLayout = getVariantLayout(this, false);
+    this.variantLayout?.connectedCallbackHook();
+    this.aemFragment?.updateComplete.catch((e7) => {
+      __privateMethod(this, _fail2, fail_fn2).call(this, e7, {}, false);
+      this.style.display = "none";
+    });
+  }
+  willUpdate(changedProperties) {
+    if (changedProperties.has("variant") || !this.variantLayout) {
+      this.variantLayout = getVariantLayout(this);
+      this.variantLayout.connectedCallbackHook();
+    }
+  }
+  updated(changedProperties) {
+    if (changedProperties.has("badgeBackgroundColor") || changedProperties.has("borderColor")) {
+      this.style.setProperty(
+        "--consonant-merch-card-border",
+        this.computedBorderStyle
+      );
+    }
+    this.variantLayout?.postCardUpdateHook(changedProperties);
+  }
+  get theme() {
+    return this.closest("sp-theme");
+  }
+  get dir() {
+    return this.closest("[dir]")?.getAttribute("dir") ?? "ltr";
+  }
+  get prices() {
+    return Array.from(
+      this.querySelectorAll('span[is="inline-price"][data-wcs-osi]')
+    );
+  }
+  render() {
+    if (!this.isConnected || !this.variantLayout || this.style.display === "none")
+      return;
+    return this.variantLayout.renderLayout();
+  }
+  get computedBorderStyle() {
+    if (!["ccd-slice", "ccd-suggested", "ah-promoted-plans"].includes(this.variant)) {
+      return `1px solid ${this.borderColor ? this.borderColor : this.badgeBackgroundColor}`;
+    }
+    return "";
+  }
+  get badgeElement() {
+    return this.shadowRoot.getElementById("badge");
+  }
+  get headingmMSlot() {
+    return this.shadowRoot.querySelector('slot[name="heading-m"]').assignedElements()[0];
+  }
+  get footerSlot() {
+    return this.shadowRoot.querySelector('slot[name="footer"]')?.assignedElements()[0];
+  }
+  get price() {
+    return this.headingmMSlot?.querySelector(SELECTOR_MAS_INLINE_PRICE);
+  }
+  get checkoutLinks() {
+    return [
+      ...this.footerSlot?.querySelectorAll(SELECTOR_MAS_CHECKOUT_LINK) ?? []
+    ];
+  }
+  async toggleStockOffer({ target }) {
+    if (!this.stockOfferOsis)
+      return;
+    const elements = this.checkoutLinks;
+    if (elements.length === 0)
+      return;
+    for (const element of elements) {
+      await element.onceSettled();
+      const planType = element.value?.[0]?.planType;
+      if (!planType)
+        return;
+      const stockOfferOsi = this.stockOfferOsis[planType];
+      if (!stockOfferOsi)
+        return;
+      const osis = element.dataset.wcsOsi.split(",").filter((osi) => osi !== stockOfferOsi);
+      if (target.checked) {
+        osis.push(stockOfferOsi);
+      }
+      element.dataset.wcsOsi = osis.join(",");
+    }
+  }
+  handleQuantitySelection(event) {
+    const elements = this.checkoutLinks;
+    for (const element of elements) {
+      element.dataset.quantity = event.detail.option;
+    }
+  }
+  get titleElement() {
+    return this.querySelector(
+      this.variantLayout?.headingSelector || ".card-heading"
+    );
+  }
+  get title() {
+    return this.titleElement?.textContent?.trim();
+  }
+  /* c8 ignore next 3 */
+  get description() {
+    return this.querySelector('[slot="body-xs"]')?.textContent?.trim();
+  }
+  /**
+   * If the card is the single app, set the order for all filters to 2.
+   * If not, increment the order for all filters after the second card by 1.
+   * @param {*} singleApp
+   */
+  updateFilters(singleApp) {
+    const newFilters = { ...this.filters };
+    Object.keys(newFilters).forEach((key) => {
+      if (singleApp) {
+        newFilters[key].order = Math.min(newFilters[key].order || 2, 2);
+        return;
+      }
+      const value = newFilters[key].order;
+      if (value === 1 || isNaN(value))
+        return;
+      newFilters[key].order = Number(value) + 1;
+    });
+    this.filters = newFilters;
+  }
+  /* c8 ignore next 3 */
+  includes(text) {
+    return this.textContent.match(new RegExp(text, "i")) !== null;
+  }
+  connectedCallback() {
+    super.connectedCallback();
+    __privateSet(this, _service3, getService2());
+    __privateSet(this, _log2, __privateGet(this, _service3).Log.module(MERCH_CARD));
+    this.id ?? (this.id = this.querySelector("aem-fragment")?.getAttribute("fragment"));
+    performance.mark(
+      `${MARK_MERCH_CARD_PREFIX}${this.id}${MARK_START_SUFFIX}`
+    );
+    this.addEventListener(
+      EVENT_MERCH_QUANTITY_SELECTOR_CHANGE,
+      this.handleQuantitySelection
+    );
+    this.addEventListener(
+      EVENT_MERCH_ADDON_AND_QUANTITY_UPDATE,
+      this.handleAddonAndQuantityUpdate
+    );
+    this.addEventListener(
+      EVENT_MERCH_OFFER_SELECT_READY,
+      this.merchCardReady,
+      { once: true }
+    );
+    this.updateComplete.then(() => {
+      this.merchCardReady();
+    });
+    this.addEventListener(EVENT_AEM_ERROR, this.handleAemFragmentEvents);
+    this.addEventListener(EVENT_AEM_LOAD, this.handleAemFragmentEvents);
+    if (!this.aemFragment) {
+      setTimeout(() => this.checkReady(), 0);
+    }
+  }
+  disconnectedCallback() {
+    super.disconnectedCallback();
+    this.variantLayout?.disconnectedCallbackHook();
+    this.removeEventListener(
+      EVENT_MERCH_QUANTITY_SELECTOR_CHANGE,
+      this.handleQuantitySelection
+    );
+    this.removeEventListener(EVENT_AEM_ERROR, this.handleAemFragmentEvents);
+    this.removeEventListener(EVENT_AEM_LOAD, this.handleAemFragmentEvents);
+  }
+  // custom methods
+  async handleAemFragmentEvents(e7) {
+    if (e7.type === EVENT_AEM_ERROR) {
+      __privateMethod(this, _fail2, fail_fn2).call(this, `AEM fragment cannot be loaded: ${e7.detail.message}`, e7.detail);
+    }
+    if (e7.type === EVENT_AEM_LOAD) {
+      if (e7.target.nodeName === "AEM-FRAGMENT") {
+        const fragment = e7.detail;
+        hydrate(fragment, this).then(() => this.checkReady()).catch((e8) => __privateGet(this, _log2).error(e8));
+      }
+    }
+  }
+  async checkReady() {
+    const timeoutPromise = new Promise(
+      (resolve) => setTimeout(() => resolve("timeout"), MERCH_CARD_LOAD_TIMEOUT)
+    );
+    if (this.aemFragment) {
+      const result2 = await Promise.race([
+        this.aemFragment.updateComplete,
+        timeoutPromise
+      ]);
+      if (result2 === false) {
+        const errorMessage = result2 === "timeout" ? `AEM fragment was not resolved within ${MERCH_CARD_LOAD_TIMEOUT} timeout` : "AEM fragment cannot be loaded";
+        __privateMethod(this, _fail2, fail_fn2).call(this, errorMessage, {}, false);
+        return;
+      }
+    }
+    const masElements = [...this.querySelectorAll(SELECTOR_MAS_ELEMENT)];
+    masElements.push(
+      ...[...this.querySelectorAll(SELECTOR_MAS_SP_BUTTON)].map(
+        (element) => element.source
+      )
+    );
+    const successPromise = Promise.all(
+      masElements.map(
+        (element) => element.onceSettled().catch(() => element)
+      )
+    ).then(
+      (elements) => elements.every(
+        (el) => el.classList.contains("placeholder-resolved")
+      )
+    );
+    const result = await Promise.race([successPromise, timeoutPromise]);
+    if (result === true) {
+      performance.mark(
+        `${MARK_MERCH_CARD_PREFIX}${this.id}${MARK_READY_SUFFIX}`
+      );
+      if (!this.readyEventDispatched) {
+        this.readyEventDispatched = true;
+        this.dispatchEvent(
+          new CustomEvent(EVENT_MAS_READY, {
+            bubbles: true,
+            composed: true
+          })
+        );
+      }
+      return this;
+    } else {
+      const { duration, startTime } = performance.measure(
+        `${MARK_MERCH_CARD_PREFIX}${this.id}${MARK_ERROR_SUFFIX}`,
+        `${MARK_MERCH_CARD_PREFIX}${this.id}${MARK_START_SUFFIX}`
+      );
+      const details = {
+        duration,
+        startTime,
+        ...__privateGet(this, _service3).duration
+      };
+      if (result === "timeout") {
+        __privateMethod(this, _fail2, fail_fn2).call(this, `Contains offers that were not resolved within ${MERCH_CARD_LOAD_TIMEOUT} timeout`, details);
+      } else {
+        __privateMethod(this, _fail2, fail_fn2).call(this, `Contains unresolved offers`, details);
+      }
+    }
+  }
+  get aemFragment() {
+    return this.querySelector("aem-fragment");
+  }
+  /* c8 ignore next 3 */
+  get quantitySelect() {
+    return this.querySelector("merch-quantity-select");
+  }
+  displayFooterElementsInColumn() {
+    if (!this.classList.contains("product"))
+      return;
+    const secureTransactionLabel = this.shadowRoot.querySelector(
+      ".secure-transaction-label"
+    );
+    const checkoutLinkCtas = this.footerSlot?.querySelectorAll(
+      SELECTOR_MAS_CHECKOUT_LINK
+    );
+    if (checkoutLinkCtas.length === 2 && secureTransactionLabel) {
+      secureTransactionLabel.parentElement.classList.add("footer-column");
+    }
+  }
+  merchCardReady() {
+    if (this.offerSelect && !this.offerSelect.planType)
+      return;
+    this.dispatchEvent(
+      new CustomEvent(EVENT_MERCH_CARD_READY, { bubbles: true })
+    );
+    this.displayFooterElementsInColumn();
+  }
+  /* c8 ignore next 3 */
+  get dynamicPrice() {
+    return this.querySelector('[slot="price"]');
+  }
+  handleAddonAndQuantityUpdate({ detail: { id, items } }) {
+    if (!id || !items?.length)
+      return;
+    const cta = this.checkoutLinks.find((link) => link.getAttribute("data-modal-id") === id);
+    if (!cta)
+      return;
+    console.log("found card that has to be updated", cta);
+  }
+};
+_log2 = new WeakMap();
+_service3 = new WeakMap();
+_fail2 = new WeakSet();
+fail_fn2 = function(error, details = {}, dispatch = true) {
+  __privateGet(this, _log2).error(`merch-card: ${error}`, details);
+  this.failed = true;
+  if (!dispatch)
+    return;
+  this.dispatchEvent(
+    new CustomEvent(EVENT_MAS_ERROR, {
+      detail: { ...details, message: error },
+      bubbles: true,
+      composed: true
+    })
+  );
+};
+__publicField(MerchCard, "properties", {
+  id: { type: String, attribute: "id", reflect: true },
+  name: { type: String, attribute: "name", reflect: true },
+  variant: { type: String, reflect: true },
+  size: { type: String, attribute: "size", reflect: true },
+  badgeColor: { type: String, attribute: "badge-color", reflect: true },
+  borderColor: { type: String, attribute: "border-color", reflect: true },
+  badgeBackgroundColor: {
+    type: String,
+    attribute: "badge-background-color",
+    reflect: true
+  },
+  backgroundImage: {
+    type: String,
+    attribute: "background-image",
+    reflect: true
+  },
+  badgeText: { type: String, attribute: "badge-text" },
+  actionMenu: { type: Boolean, attribute: "action-menu" },
+  actionMenuLabel: { type: String, attribute: "action-menu-label" },
+  customHr: { type: Boolean, attribute: "custom-hr" },
+  consonant: { type: Boolean, attribute: "consonant" },
+  failed: { type: Boolean, attribute: "failed", reflect: true },
+  spectrum: { type: String, attribute: "spectrum" },
+  detailBg: { type: String, attribute: "detail-bg" },
+  secureLabel: { type: String, attribute: "secure-label" },
+  checkboxLabel: { type: String, attribute: "checkbox-label" },
+  selected: { type: Boolean, attribute: "aria-selected", reflect: true },
+  storageOption: { type: String, attribute: "storage", reflect: true },
+  stockOfferOsis: {
+    type: Object,
+    attribute: "stock-offer-osis",
+    converter: {
+      fromAttribute: (value) => {
+        if (!value)
+          return;
+        const [PUF2, ABM2, M2M2] = value.split(",");
+        return { PUF: PUF2, ABM: ABM2, M2M: M2M2 };
+      }
+    }
+  },
+  filters: {
+    type: String,
+    reflect: true,
+    converter: {
+      fromAttribute: (value) => {
+        return Object.fromEntries(
+          value.split(",").map((filter) => {
+            const [key, order, size] = filter.split(":");
+            const value2 = Number(order);
+            return [
+              key,
+              {
+                order: isNaN(value2) ? void 0 : value2,
+                size
+              }
+            ];
+          })
+        );
+      },
+      toAttribute: (value) => {
+        return Object.entries(value).map(
+          ([key, { order, size }]) => [key, order, size].filter((v3) => v3 != void 0).join(":")
+        ).join(",");
+      }
+    }
+  },
+  types: {
+    type: String,
+    attribute: "types",
+    reflect: true
+  },
+  merchOffer: { type: Object },
+  analyticsId: {
+    type: String,
+    attribute: ANALYTICS_SECTION_ATTR,
+    reflect: true
+  },
+  loading: { type: String }
+});
+__publicField(MerchCard, "styles", [styles, ...sizeStyles()]);
+__publicField(MerchCard, "registerVariant", registerVariant);
+__publicField(MerchCard, "getFragmentMapping", getFragmentMapping);
+customElements.define(MERCH_CARD, MerchCard);
+
+// src/merch-offer-select.js
+var _handleOfferSelectionByQuantityFn;
+var MerchOfferSelect = class extends s7 {
+  constructor() {
+    super();
+    __privateAdd(this, _handleOfferSelectionByQuantityFn, void 0);
+    this.defaults = {};
+    this.variant = "plans";
+  }
+  /** Returns the default values for the price, cta, and description slots.
+   * These are the values coming from the container itself, not from the merch-offer elements.
+   * E.g. initial merch-card description text. There is no default price or cta in the container.
+   */
+  saveContainerDefaultValues() {
+    const container = this.closest(this.getAttribute("container"));
+    const description = container?.querySelector('[slot="description"]:not(merch-offer > *)')?.cloneNode(true);
+    const badgeText = container?.badgeText;
+    return {
+      description,
+      badgeText
+    };
+  }
+  getSlottedElement(slotName, container) {
+    const containerEl = container || this.closest(this.getAttribute("container"));
+    return containerEl.querySelector(
+      `[slot="${slotName}"]:not(merch-offer > *)`
+    );
+  }
+  updateSlot(slotName, container) {
+    const slot = this.getSlottedElement(slotName, container);
+    if (!slot)
+      return;
+    const node = this.selectedOffer.getOptionValue(slotName) ? this.selectedOffer.getOptionValue(slotName) : this.defaults[slotName];
+    if (node) {
+      slot.replaceWith(node.cloneNode(true));
+    }
+  }
+  handleOfferSelection(e7) {
+    const newOffer = e7.detail;
+    this.selectOffer(newOffer);
+  }
+  handleOfferSelectionByQuantity(event) {
+    const selected = event.detail.option;
+    const selectedValue = Number.parseInt(selected);
+    const newOffer = this.findAppropriateOffer(selectedValue);
+    this.selectOffer(newOffer);
+    const cta = this.getSlottedElement("cta");
+    cta.setAttribute("data-quantity", selectedValue);
+  }
+  selectOffer(newOffer) {
+    if (!newOffer) {
+      return;
+    }
+    const previousOffer = this.selectedOffer;
+    if (previousOffer) {
+      previousOffer.selected = false;
+    }
+    newOffer.selected = true;
+    this.selectedOffer = newOffer;
+    this.planType = newOffer.planType;
+    this.updateContainer();
+    this.updateComplete.then(() => {
+      this.dispatchEvent(
+        new CustomEvent(EVENT_OFFER_SELECTED, {
+          detail: this,
+          bubbles: true
+        })
+      );
+    });
+  }
+  findAppropriateOffer(selectedValue) {
+    let previousOfferWithValue = null;
+    const foundOffer = this.offers.find((offer) => {
+      const offerAttribute = Number.parseInt(offer.getAttribute("value"));
+      if (offerAttribute === selectedValue) {
+        return true;
+      } else if (offerAttribute > selectedValue) {
+        return false;
+      } else {
+        previousOfferWithValue = offer;
+      }
+    });
+    return foundOffer || previousOfferWithValue;
+  }
+  /**
+   * If badge text is empty string - delete the badge.
+   * If badge text is present - set the badge.
+   * If badge text is null or undefined - set default badge. */
+  updateBadgeText(container) {
+    if (this.selectedOffer.badgeText === "") {
+      container.badgeText = null;
+    } else if (this.selectedOffer.badgeText) {
+      container.badgeText = this.selectedOffer.badgeText;
+    } else {
+      container.badgeText = this.defaults.badgeText;
+    }
+  }
+  /** Will update price, cta, and other slots/properties in parent container (e.g. merch-card) */
+  updateContainer() {
+    const container = this.closest(this.getAttribute("container"));
+    if (!container || !this.selectedOffer)
+      return;
+    this.updateSlot("cta", container);
+    this.updateSlot("secondary-cta", container);
+    this.updateSlot("price", container);
+    if (this.manageableMode)
+      return;
+    this.updateSlot("description", container);
+    this.updateBadgeText(container);
+  }
+  render() {
+    return x2`<fieldset><slot class="${this.variant}"></slot></fieldset>`;
+  }
+  connectedCallback() {
+    super.connectedCallback();
+    this.addEventListener("focusin", this.handleFocusin);
+    this.addEventListener("click", this.handleFocusin);
+    this.addEventListener(
+      EVENT_MERCH_OFFER_READY,
+      this.handleOfferSelectReady
+    );
+    const quantitySelect = this.closest("merch-quantity-select");
+    this.manageableMode = quantitySelect;
+    this.offers = [...this.querySelectorAll("merch-offer")];
+    __privateSet(this, _handleOfferSelectionByQuantityFn, this.handleOfferSelectionByQuantity.bind(this));
+    if (this.manageableMode) {
+      quantitySelect.addEventListener(
+        EVENT_MERCH_QUANTITY_SELECTOR_CHANGE,
+        __privateGet(this, _handleOfferSelectionByQuantityFn)
+      );
+    } else {
+      this.defaults = this.saveContainerDefaultValues();
+    }
+    this.selectedOffer = this.offers[0];
+    if (this.planType) {
+      this.updateContainer();
+    }
+  }
+  get miniCompareMobileCard() {
+    return this.merchCard?.variant === "mini-compare-chart" && this.isMobile;
+  }
+  get merchCard() {
+    return this.closest("merch-card");
+  }
+  get isMobile() {
+    return window.matchMedia("(max-width: 767px)").matches;
+  }
+  disconnectedCallback() {
+    super.disconnectedCallback();
+    this.removeEventListener(
+      EVENT_MERCH_QUANTITY_SELECTOR_CHANGE,
+      __privateGet(this, _handleOfferSelectionByQuantityFn)
+    );
+    this.removeEventListener(
+      EVENT_MERCH_OFFER_READY,
+      this.handleOfferSelectReady
+    );
+    this.removeEventListener("focusin", this.handleFocusin);
+    this.removeEventListener("click", this.handleFocusin);
+  }
+  get price() {
+    return this.querySelector(
+      'merch-offer[aria-selected] [is="inline-price"]'
+    );
+  }
+  get customerSegment() {
+    return this.selectedOffer?.customerSegment;
+  }
+  get marketSegment() {
+    return this.selectedOffer?.marketSegment;
+  }
+  handleFocusin(event) {
+    if (event.target?.nodeName === "MERCH-OFFER") {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      this.selectOffer(event.target);
+    }
+  }
+  async handleOfferSelectReady() {
+    if (this.planType)
+      return;
+    if (this.querySelector("merch-offer:not([plan-type])"))
+      return;
+    this.planType = this.selectedOffer.planType;
+    await this.updateComplete;
+    this.selectOffer(
+      this.selectedOffer ?? this.querySelector("merch-offer[aria-selected]") ?? this.querySelector("merch-offer")
+    );
+    this.dispatchEvent(
+      new CustomEvent(EVENT_MERCH_OFFER_SELECT_READY, { bubbles: true })
+    );
+  }
+};
+_handleOfferSelectionByQuantityFn = new WeakMap();
+__publicField(MerchOfferSelect, "styles", i3`
         :host {
             display: inline-block;
         }
@@ -2033,7 +10413,19 @@ sr-only {
             flex-direction: column;
             gap: var(--consonant-merch-spacing-xs);
         }
-    `),p(wr,"properties",{offers:{type:Array},selectedOffer:{type:Object},defaults:{type:Object},variant:{type:String,attribute:"variant",reflect:!0},planType:{type:String,attribute:"plan-type",reflect:!0},stock:{type:Boolean,reflect:!0}});customElements.define("merch-offer-select",wr);var ac=v`
+    `);
+__publicField(MerchOfferSelect, "properties", {
+  offers: { type: Array },
+  selectedOffer: { type: Object },
+  defaults: { type: Object },
+  variant: { type: String, attribute: "variant", reflect: true },
+  planType: { type: String, attribute: "plan-type", reflect: true },
+  stock: { type: Boolean, reflect: true }
+});
+customElements.define("merch-offer-select", MerchOfferSelect);
+
+// src/merch-offer.css.js
+var styles3 = i3`
     :host {
         --merch-radio: rgba(82, 88, 228);
         --merch-radio-hover: rgba(64, 70, 202);
@@ -2244,11 +10636,41 @@ sr-only {
         position: relative;
         height: 40px;
     }
-`;var td="merch-offer",_r=class extends M{constructor(){super();p(this,"tr");this.type="radio",this.selected=!1}getOptionValue(r){return this.querySelector(`[slot="${r}"]`)}connectedCallback(){super.connectedCallback(),this.initOffer(),this.configuration=this.closest("quantity-selector"),!this.hasAttribute("tabindex")&&!this.configuration&&(this.tabIndex=0),!this.hasAttribute("role")&&!this.configuration&&(this.role="radio")}get asRadioOption(){return g` <div class="merch-Radio">
+`;
+
+// src/merch-offer.js
+var TAG_NAME = "merch-offer";
+var MerchOffer = class extends s7 {
+  constructor() {
+    super();
+    __publicField(this, "tr");
+    this.type = "radio";
+    this.selected = false;
+  }
+  getOptionValue(slotName) {
+    return this.querySelector(`[slot="${slotName}"]`);
+  }
+  // setting attributes can't be done in constructor, so using connectedCallback
+  connectedCallback() {
+    super.connectedCallback();
+    this.initOffer();
+    this.configuration = this.closest("quantity-selector");
+    if (!this.hasAttribute("tabindex") && !this.configuration) {
+      this.tabIndex = 0;
+    }
+    if (!this.hasAttribute("role") && !this.configuration) {
+      this.role = "radio";
+    }
+  }
+  get asRadioOption() {
+    return x2` <div class="merch-Radio">
             <input tabindex="-1" type="radio" class="merch-Radio-input" />
             <span class="merch-Radio-button"></span>
             <span class="merch-Radio-label">${this.text}</span>
-        </div>`}get asSubscriptionOption(){return g`<slot name="commitment"></slot>
+        </div>`;
+  }
+  get asSubscriptionOption() {
+    return x2`<slot name="commitment"></slot>
             <slot name="price"></slot>
             <slot name="teaser"></slot>
             <div id="condition">
@@ -2261,7 +10683,63 @@ sr-only {
                         ><slot name="condition-tooltip"></slot
                     ></sp-tooltip>
                 </sp-overlay>
-            </div>`}render(){return this.configuration||!this.price?"":this.type==="subscription-option"?this.asSubscriptionOption:this.asRadioOption}get price(){return this.querySelector('span[is="inline-price"]:not([data-template="strikethrough"])')}get cta(){return this.querySelector(De)}get prices(){return this.querySelectorAll('span[is="inline-price"]')}get customerSegment(){return this.price?.value?.[0].customerSegment}get marketSegment(){return this.price?.value?.[0].marketSegments[0]}async initOffer(){if(!this.price)return;this.prices.forEach(o=>o.setAttribute("slot","price")),await this.updateComplete,await Promise.all([...this.prices].map(o=>o.onceSettled()));let{value:[r]}=this.price;this.planType=r.planType,await this.updateComplete,this.dispatchEvent(new CustomEvent(ct,{bubbles:!0}))}};p(_r,"properties",{text:{type:String},selected:{type:Boolean,attribute:"aria-selected",reflect:!0},badgeText:{type:String,attribute:"badge-text"},type:{type:String,attribute:"type",reflect:!0},planType:{type:String,attribute:"plan-type",reflect:!0}}),p(_r,"styles",[ac]);customElements.define(td,_r);var sc=v`
+            </div>`;
+  }
+  render() {
+    if (this.configuration)
+      return "";
+    if (!this.price)
+      return "";
+    if (this.type === "subscription-option")
+      return this.asSubscriptionOption;
+    return this.asRadioOption;
+  }
+  get price() {
+    return this.querySelector(
+      'span[is="inline-price"]:not([data-template="strikethrough"])'
+    );
+  }
+  get cta() {
+    return this.querySelector(SELECTOR_MAS_CHECKOUT_LINK);
+  }
+  get prices() {
+    return this.querySelectorAll('span[is="inline-price"]');
+  }
+  get customerSegment() {
+    return this.price?.value?.[0].customerSegment;
+  }
+  get marketSegment() {
+    return this.price?.value?.[0].marketSegments[0];
+  }
+  async initOffer() {
+    if (!this.price)
+      return;
+    this.prices.forEach((el) => el.setAttribute("slot", "price"));
+    await this.updateComplete;
+    await Promise.all([...this.prices].map((price2) => price2.onceSettled()));
+    const {
+      value: [offer]
+    } = this.price;
+    this.planType = offer.planType;
+    await this.updateComplete;
+    this.dispatchEvent(
+      new CustomEvent(EVENT_MERCH_OFFER_READY, { bubbles: true })
+    );
+  }
+};
+__publicField(MerchOffer, "properties", {
+  text: { type: String },
+  selected: { type: Boolean, attribute: "aria-selected", reflect: true },
+  badgeText: { type: String, attribute: "badge-text" },
+  type: { type: String, attribute: "type", reflect: true },
+  // values: radio, subscription-option
+  planType: { type: String, attribute: "plan-type", reflect: true }
+});
+__publicField(MerchOffer, "styles", [styles3]);
+customElements.define(TAG_NAME, MerchOffer);
+
+// src/merch-quantity-select.css.js
+var styles4 = i3`
     :host {
         box-sizing: border-box;
         --background-color: var(--qs-background-color, #f6f6f6);
@@ -2391,17 +10869,193 @@ sr-only {
     .item.highlighted {
         background-color: var(--background-color);
     }
-`;var[Xg,Kg,cc,lc,hc,Zg]=["ArrowLeft","ArrowRight","ArrowUp","ArrowDown","Enter","Tab"];var mi=class extends M{static get properties(){return{closed:{type:Boolean,reflect:!0},selected:{type:Number},min:{type:Number},max:{type:Number},step:{type:Number},maxInput:{type:Number,attribute:"max-input"},options:{type:Array},highlightedIndex:{type:Number},defaultValue:{type:Number,attribute:"default-value",reflect:!0},title:{type:String}}}static get styles(){return sc}constructor(){super(),this.options=[],this.title="",this.closed=!0,this.min=0,this.max=0,this.step=0,this.maxInput=void 0,this.defaultValue=void 0,this.selectedValue=0,this.highlightedIndex=0,this.toggleMenu=this.toggleMenu.bind(this),this.handleClickOutside=this.handleClickOutside.bind(this),this.boundKeydownListener=this.handleKeydown.bind(this),this.addEventListener("keydown",this.boundKeydownListener),window.addEventListener("mousedown",this.handleClickOutside),this.handleKeyupDebounced=rs(this.handleKeyup.bind(this),500)}handleKeyup(){this.handleInput(),this.sendEvent()}handleKeydown(t){switch(t.key){case lc:this.closed||(t.preventDefault(),this.highlightedIndex=(this.highlightedIndex+1)%this.options.length);break;case cc:this.closed||(t.preventDefault(),this.highlightedIndex=(this.highlightedIndex-1+this.options.length)%this.options.length);break;case hc:if(this.closed)this.closePopover(),this.blur();else{let r=this.options[this.highlightedIndex];if(!r)break;this.selectedValue=r,this.handleMenuOption(this.selectedValue),this.toggleMenu()}break}t.composedPath().includes(this)&&t.stopPropagation()}adjustInput(t,r){this.selectedValue=r,t.value=r,this.highlightedIndex=this.options.indexOf(r)}handleInput(){let t=this.shadowRoot.querySelector(".text-field-input"),r=parseInt(t.value);if(!isNaN(r))if(r>0&&r!==this.selectedValue){let o=r;this.maxInput&&r>this.maxInput&&(o=this.maxInput),this.min&&o<this.min&&(o=this.min),this.adjustInput(t,o)}else this.adjustInput(t,this.min||1)}disconnectedCallback(){super.disconnectedCallback(),window.removeEventListener("mousedown",this.handleClickOutside),this.removeEventListener("keydown",this.boundKeydownListener)}generateOptionsArray(){let t=[];if(this.step>0)for(let r=this.min;r<=this.max;r+=this.step)t.push(r);return t}update(t){(t.has("min")||t.has("max")||t.has("step")||t.has("defaultValue"))&&(this.options=this.generateOptionsArray(),this.highlightedIndex=this.defaultValue?this.options.indexOf(this.defaultValue):0,this.handleMenuOption(this.defaultValue?this.defaultValue:this.options[0])),super.update(t)}handleClickOutside(t){t.composedPath().includes(this)||this.closePopover()}toggleMenu(){this.closed=!this.closed}handleMouseEnter(t){this.highlightedIndex=t}handleMenuOption(t){t===this.max&&this.shadowRoot.querySelector(".text-field-input")?.focus(),this.selectedValue=t,this.sendEvent(),this.closePopover()}sendEvent(){let t=new CustomEvent(ue,{detail:{option:this.selectedValue},bubbles:!0});this.dispatchEvent(t)}closePopover(){this.closed||this.toggleMenu()}get offerSelect(){return this.querySelector("merch-offer-select")}get popover(){return g` <div class="popover ${this.closed?"closed":"open"}">
-            ${this.options.map((t,r)=>g`
+`;
+
+// src/focus.js
+var [ARROW_LEFT, ARROW_RIGHT, ARROW_UP, ARROW_DOWN, ENTER, TAB] = [
+  "ArrowLeft",
+  "ArrowRight",
+  "ArrowUp",
+  "ArrowDown",
+  "Enter",
+  "Tab"
+];
+
+// src/merch-quantity-select.js
+var MerchQuantitySelect = class extends s7 {
+  static get properties() {
+    return {
+      closed: { type: Boolean, reflect: true },
+      selected: { type: Number },
+      min: { type: Number },
+      max: { type: Number },
+      step: { type: Number },
+      maxInput: { type: Number, attribute: "max-input" },
+      options: { type: Array },
+      highlightedIndex: { type: Number },
+      defaultValue: {
+        type: Number,
+        attribute: "default-value",
+        reflect: true
+      },
+      title: { type: String }
+    };
+  }
+  static get styles() {
+    return styles4;
+  }
+  constructor() {
+    super();
+    this.options = [];
+    this.title = "";
+    this.closed = true;
+    this.min = 0;
+    this.max = 0;
+    this.step = 0;
+    this.maxInput = void 0;
+    this.defaultValue = void 0;
+    this.selectedValue = 0;
+    this.highlightedIndex = 0;
+    this.toggleMenu = this.toggleMenu.bind(this);
+    this.handleClickOutside = this.handleClickOutside.bind(this);
+    this.boundKeydownListener = this.handleKeydown.bind(this);
+    this.addEventListener("keydown", this.boundKeydownListener);
+    window.addEventListener("mousedown", this.handleClickOutside);
+    this.handleKeyupDebounced = debounce(this.handleKeyup.bind(this), 500);
+  }
+  handleKeyup() {
+    this.handleInput();
+    this.sendEvent();
+  }
+  handleKeydown(e7) {
+    switch (e7.key) {
+      case ARROW_DOWN:
+        if (!this.closed) {
+          e7.preventDefault();
+          this.highlightedIndex = (this.highlightedIndex + 1) % this.options.length;
+        }
+        break;
+      case ARROW_UP:
+        if (!this.closed) {
+          e7.preventDefault();
+          this.highlightedIndex = (this.highlightedIndex - 1 + this.options.length) % this.options.length;
+        }
+        break;
+      case ENTER:
+        if (!this.closed) {
+          const option = this.options[this.highlightedIndex];
+          if (!option)
+            break;
+          this.selectedValue = option;
+          this.handleMenuOption(this.selectedValue);
+          this.toggleMenu();
+        } else {
+          this.closePopover();
+          this.blur();
+        }
+        break;
+    }
+    if (e7.composedPath().includes(this))
+      e7.stopPropagation();
+  }
+  adjustInput(inputField, value) {
+    this.selectedValue = value;
+    inputField.value = value;
+    this.highlightedIndex = this.options.indexOf(value);
+  }
+  handleInput() {
+    const inputField = this.shadowRoot.querySelector(".text-field-input");
+    const inputValue = parseInt(inputField.value);
+    if (isNaN(inputValue))
+      return;
+    if (inputValue > 0 && inputValue !== this.selectedValue) {
+      let adjustedInputValue = inputValue;
+      if (this.maxInput && inputValue > this.maxInput)
+        adjustedInputValue = this.maxInput;
+      if (this.min && adjustedInputValue < this.min)
+        adjustedInputValue = this.min;
+      this.adjustInput(inputField, adjustedInputValue);
+    } else
+      this.adjustInput(inputField, this.min || 1);
+  }
+  disconnectedCallback() {
+    super.disconnectedCallback();
+    window.removeEventListener("mousedown", this.handleClickOutside);
+    this.removeEventListener("keydown", this.boundKeydownListener);
+  }
+  generateOptionsArray() {
+    const options = [];
+    if (this.step > 0) {
+      for (let value = this.min; value <= this.max; value += this.step) {
+        options.push(value);
+      }
+    }
+    return options;
+  }
+  update(changedProperties) {
+    if (changedProperties.has("min") || changedProperties.has("max") || changedProperties.has("step") || changedProperties.has("defaultValue")) {
+      this.options = this.generateOptionsArray();
+      this.highlightedIndex = this.defaultValue ? this.options.indexOf(this.defaultValue) : 0;
+      this.handleMenuOption(
+        this.defaultValue ? this.defaultValue : this.options[0]
+      );
+    }
+    super.update(changedProperties);
+  }
+  handleClickOutside(event) {
+    const path = event.composedPath();
+    if (!path.includes(this)) {
+      this.closePopover();
+    }
+  }
+  toggleMenu() {
+    this.closed = !this.closed;
+  }
+  handleMouseEnter(index) {
+    this.highlightedIndex = index;
+  }
+  handleMenuOption(option) {
+    if (option === this.max)
+      this.shadowRoot.querySelector(".text-field-input")?.focus();
+    this.selectedValue = option;
+    this.sendEvent();
+    this.closePopover();
+  }
+  sendEvent() {
+    const customEvent = new CustomEvent(
+      EVENT_MERCH_QUANTITY_SELECTOR_CHANGE,
+      {
+        detail: { option: this.selectedValue },
+        bubbles: true
+      }
+    );
+    this.dispatchEvent(customEvent);
+  }
+  closePopover() {
+    if (!this.closed) {
+      this.toggleMenu();
+    }
+  }
+  get offerSelect() {
+    return this.querySelector("merch-offer-select");
+  }
+  get popover() {
+    return x2` <div class="popover ${this.closed ? "closed" : "open"}">
+            ${this.options.map(
+      (option, index) => x2`
                     <div
-                        class="item ${r===this.highlightedIndex?"highlighted":""}"
-                        @click="${()=>this.handleMenuOption(t)}"
-                        @mouseenter="${()=>this.handleMouseEnter(r)}"
+                        class="item ${index === this.highlightedIndex ? "highlighted" : ""}"
+                        @click="${() => this.handleMenuOption(option)}"
+                        @mouseenter="${() => this.handleMouseEnter(index)}"
                     >
-                        ${t===this.max?`${t}+`:t}
+                        ${option === this.max ? `${option}+` : option}
                     </div>
-                `)}
-        </div>`}render(){return g`
+                `
+    )}
+        </div>`;
+  }
+  render() {
+    return x2`
             <div class="label">${this.title}</div>
             <div class="text-field">
                 <input
@@ -2414,12 +11068,18 @@ sr-only {
                 />
                 <button class="picker-button" @click="${this.toggleMenu}">
                     <div
-                        class="picker-button-fill ${this.closed?"open":"closed"}"
+                        class="picker-button-fill ${this.closed ? "open" : "closed"}"
                     ></div>
                 </button>
                 ${this.popover}
             </div>
-        `}};customElements.define("merch-quantity-select",mi);var dc=`
+        `;
+  }
+};
+customElements.define("merch-quantity-select", MerchQuantitySelect);
+
+// src/variants/ccd-suggested.css.js
+var CSS9 = `
 
   merch-card[variant="ccd-suggested"] [slot="heading-xs"] {
     font-size: var(--consonant-merch-card-heading-xxs-font-size);
@@ -2449,12 +11109,40 @@ sr-only {
 .spectrum--darkest  merch-card[variant="ccd-suggested"]:hover {
   --consonant-merch-card-border-color:rgb(73, 73, 73);
 }
-`;var pi={backgroundImage:{attribute:"background-image"},badge:!0,ctas:{slot:"cta",size:"M"},description:{tag:"div",slot:"body-xs"},mnemonics:{size:"l"},prices:{tag:"p",slot:"price"},size:[],subtitle:{tag:"h4",slot:"detail-s"},title:{tag:"h3",slot:"heading-xs"}},Dt=class extends O{getGlobalCSS(){return dc}get aemFragmentMapping(){return pi}get stripStyle(){return this.card.backgroundImage?`
+`;
+
+// src/variants/ccd-suggested.js
+var CCD_SUGGESTED_AEM_FRAGMENT_MAPPING = {
+  backgroundImage: { attribute: "background-image" },
+  badge: true,
+  ctas: { slot: "cta", size: "M" },
+  description: { tag: "div", slot: "body-xs" },
+  mnemonics: { size: "l" },
+  prices: { tag: "p", slot: "price" },
+  size: [],
+  subtitle: { tag: "h4", slot: "detail-s" },
+  title: { tag: "h3", slot: "heading-xs" }
+};
+var CCDSuggested = class extends VariantLayout {
+  getGlobalCSS() {
+    return CSS9;
+  }
+  /* c8 ignore next 3 */
+  get aemFragmentMapping() {
+    return CCD_SUGGESTED_AEM_FRAGMENT_MAPPING;
+  }
+  get stripStyle() {
+    if (!this.card.backgroundImage)
+      return "";
+    return `
             background: url("${this.card.backgroundImage}");
         background-size: auto 100%;
         background-repeat: no-repeat;
-        background-position: ${this.card.dir==="ltr"?"left":"right"};
-        `:""}renderLayout(){return g` <div style="${this.stripStyle}" class="body">
+        background-position: ${this.card.dir === "ltr" ? "left" : "right"};
+        `;
+  }
+  renderLayout() {
+    return x2` <div style="${this.stripStyle}" class="body">
                 <div class="header">
                     <div class="top-section">
                         <slot name="icons"></slot>
@@ -2471,7 +11159,30 @@ sr-only {
                     <slot name="cta"></slot>
                 </div>
             </div>
-            <slot></slot>`}postCardUpdateHook(t){t.has("backgroundImage")&&this.styleBackgroundImage()}styleBackgroundImage(){if(this.card.classList.remove("thin-strip"),this.card.classList.remove("wide-strip"),!this.card.backgroundImage)return;let t=new Image;t.src=this.card.backgroundImage,t.onload=()=>{t.width>8?this.card.classList.add("wide-strip"):t.width===8&&this.card.classList.add("thin-strip")}}};p(Dt,"variantStyle",v`
+            <slot></slot>`;
+  }
+  postCardUpdateHook(changedProperties) {
+    if (changedProperties.has("backgroundImage"))
+      this.styleBackgroundImage();
+  }
+  styleBackgroundImage() {
+    this.card.classList.remove("thin-strip");
+    this.card.classList.remove("wide-strip");
+    if (!this.card.backgroundImage) {
+      return;
+    }
+    const img = new Image();
+    img.src = this.card.backgroundImage;
+    img.onload = () => {
+      if (img.width > 8) {
+        this.card.classList.add("wide-strip");
+      } else if (img.width === 8) {
+        this.card.classList.add("thin-strip");
+      }
+    };
+  }
+};
+__publicField(CCDSuggested, "variantStyle", i3`
         :host([variant='ccd-suggested']) {
             --consonant-merch-card-background-color: rgb(245, 245, 245);
             --consonant-merch-card-body-xs-color: rgb(75, 75, 75);
@@ -2579,7 +11290,10 @@ sr-only {
         :host([variant='ccd-suggested']) .top-section {
             align-items: center;
         }
-    `);var uc=`
+    `);
+
+// src/variants/ccd-slice.css.js
+var CSS10 = `
 
 merch-card[variant="ccd-slice"] [slot='image'] img {
   overflow: hidden;
@@ -2599,7 +11313,27 @@ merch-card[variant="ccd-slice"] [slot='body-s'] a.spectrum-Link {
   --consonant-merch-card-border-color:rgb(48, 48, 48);
   --consonant-merch-card-detail-s-color:rgb(235, 235, 235);
 }
-`;var fi={backgroundImage:{tag:"div",slot:"image"},badge:!0,ctas:{slot:"footer",size:"S"},description:{tag:"div",slot:"body-s"},mnemonics:{size:"m"},size:["wide"]},Ut=class extends O{getGlobalCSS(){return uc}get aemFragmentMapping(){return fi}renderLayout(){return g` <div class="content">
+`;
+
+// src/variants/ccd-slice.js
+var CCD_SLICE_AEM_FRAGMENT_MAPPING = {
+  backgroundImage: { tag: "div", slot: "image" },
+  badge: true,
+  ctas: { slot: "footer", size: "S" },
+  description: { tag: "div", slot: "body-s" },
+  mnemonics: { size: "m" },
+  size: ["wide"]
+};
+var CCDSlice = class extends VariantLayout {
+  getGlobalCSS() {
+    return CSS10;
+  }
+  /* c8 ignore next 3 */
+  get aemFragmentMapping() {
+    return CCD_SLICE_AEM_FRAGMENT_MAPPING;
+  }
+  renderLayout() {
+    return x2` <div class="content">
                 <div class="top-section">
                     <slot name="icons"></slot>
                     ${this.badge}
@@ -2608,7 +11342,10 @@ merch-card[variant="ccd-slice"] [slot='body-s'] a.spectrum-Link {
                 <slot name="footer"></slot>
             </div>
             <slot name="image"></slot>
-            <slot></slot>`}};p(Ut,"variantStyle",v`
+            <slot></slot>`;
+  }
+};
+__publicField(CCDSlice, "variantStyle", i3`
         :host([variant='ccd-slice']) {
             --consonant-merch-card-background-color: rgb(248, 248, 248);
             --consonant-merch-card-border-color: rgb(230, 230, 230);
@@ -2711,7 +11448,10 @@ merch-card[variant="ccd-slice"] [slot='body-s'] a.spectrum-Link {
             align-items: center;
             gap: 8px;
         }
-    `);var mc=`
+    `);
+
+// src/variants/ah-try-buy-widget.css.js
+var CSS11 = `
     merch-card[variant="ah-try-buy-widget"] [slot="body-xxs"] {
         letter-spacing: normal;
         margin-bottom: 16px;
@@ -2836,7 +11576,38 @@ merch-card[variant="ccd-slice"] [slot='body-s'] a.spectrum-Link {
     .spectrum--darkest merch-card[variant="ah-try-buy-widget"]:hover {
       --consonant-merch-card-border-color:rgb(73, 73, 73);
     }
-`;var gi={mnemonics:{size:"s"},title:{tag:"h3",slot:"heading-xxxs",maxCount:40,withSuffix:!0},description:{tag:"div",slot:"body-xxs",maxCount:200,withSuffix:!1},prices:{tag:"p",slot:"price"},ctas:{slot:"cta",size:"S"},backgroundImage:{tag:"div",slot:"image"},backgroundColor:{attribute:"background-color"},borderColor:{attribute:"border-color",specialValues:{}},allowedColors:{gray:"--spectrum-gray-100"},size:["single","double","triple"]},nt=class extends O{getGlobalCSS(){return mc}get aemFragmentMapping(){return gi}renderLayout(){return g`
+`;
+
+// src/variants/ah-try-buy-widget.js
+var AH_TRY_BUY_WIDGET_AEM_FRAGMENT_MAPPING = {
+  mnemonics: { size: "s" },
+  title: { tag: "h3", slot: "heading-xxxs", maxCount: 40, withSuffix: true },
+  description: {
+    tag: "div",
+    slot: "body-xxs",
+    maxCount: 200,
+    withSuffix: false
+  },
+  prices: { tag: "p", slot: "price" },
+  ctas: { slot: "cta", size: "S" },
+  backgroundImage: { tag: "div", slot: "image" },
+  backgroundColor: { attribute: "background-color" },
+  borderColor: { attribute: "border-color", specialValues: {} },
+  allowedColors: {
+    gray: "--spectrum-gray-100"
+  },
+  size: ["single", "double", "triple"]
+};
+var AHTryBuyWidget = class extends VariantLayout {
+  getGlobalCSS() {
+    return CSS11;
+  }
+  /* c8 ignore next 3 */
+  get aemFragmentMapping() {
+    return AH_TRY_BUY_WIDGET_AEM_FRAGMENT_MAPPING;
+  }
+  renderLayout() {
+    return x2`
             <div class="content">
                 <div class="header">
                     <slot name="icons"></slot>
@@ -2852,7 +11623,10 @@ merch-card[variant="ccd-slice"] [slot='body-s'] a.spectrum-Link {
             </div>
             <slot name="image"></slot>
             <slot></slot>
-        `}};p(nt,"variantStyle",v`
+        `;
+  }
+};
+__publicField(AHTryBuyWidget, "variantStyle", i3`
         :host([variant='ah-try-buy-widget']) {
             --merch-card-ah-try-buy-widget-min-width: 156px;
             --merch-card-ah-try-buy-widget-content-min-width: 132px;
@@ -2931,7 +11705,11 @@ merch-card[variant="ccd-slice"] [slot='body-s'] a.spectrum-Link {
             gap: 8px;
             flex-direction: row;
         }
-    `);customElements.define("ah-try-buy-widget",nt);var pc=`
+    `);
+customElements.define("ah-try-buy-widget", AHTryBuyWidget);
+
+// src/variants/ah-promoted-plans.css.js
+var CSS12 = `
     merch-card[variant="ah-promoted-plans"] [slot="body-xxs"] {
         letter-spacing: normal;
         box-sizing: border-box;
@@ -3018,7 +11796,38 @@ merch-card[variant="ccd-slice"] [slot='body-s'] a.spectrum-Link {
       --consonant-merch-card-body-xxs-color:rgb(219, 219, 219);
       --merch-card-ah-promoted-plans-strikethrough-color:rgb(138, 138, 138);
     }
-`;var xi={mnemonics:{size:"s"},title:{tag:"h3",slot:"heading-xxxs",maxCount:40,withSuffix:!0},description:{tag:"div",slot:"body-xxs",maxCount:200,withSuffix:!1},prices:{tag:"p",slot:"price"},ctas:{slot:"cta",size:"S"},backgroundImage:{tag:"div",slot:"image"},backgroundColor:{attribute:"background-color"},borderColor:{attribute:"border-color",specialValues:{gradient:"linear-gradient(135deg, #ff4885 0%, #b272eb 50%, #5d89ff 100%)"}}},it=class extends O{getGlobalCSS(){return pc}get aemFragmentMapping(){return xi}renderLayout(){return g`
+`;
+
+// src/variants/ah-promoted-plans.js
+var AH_PROMOTED_PLANS_AEM_FRAGMENT_MAPPING = {
+  mnemonics: { size: "s" },
+  title: { tag: "h3", slot: "heading-xxxs", maxCount: 40, withSuffix: true },
+  description: {
+    tag: "div",
+    slot: "body-xxs",
+    maxCount: 200,
+    withSuffix: false
+  },
+  prices: { tag: "p", slot: "price" },
+  ctas: { slot: "cta", size: "S" },
+  backgroundImage: { tag: "div", slot: "image" },
+  backgroundColor: { attribute: "background-color" },
+  borderColor: {
+    attribute: "border-color",
+    specialValues: {
+      gradient: "linear-gradient(135deg, #ff4885 0%, #b272eb 50%, #5d89ff 100%)"
+    }
+  }
+};
+var AHPromotedPlans = class extends VariantLayout {
+  getGlobalCSS() {
+    return CSS12;
+  }
+  get aemFragmentMapping() {
+    return AH_PROMOTED_PLANS_AEM_FRAGMENT_MAPPING;
+  }
+  renderLayout() {
+    return x2`
             <div class="content">
                 <div class="header">
                     <slot name="icons"></slot>
@@ -3033,7 +11842,10 @@ merch-card[variant="ccd-slice"] [slot='body-s'] a.spectrum-Link {
                 </div>
             </div>
             <slot></slot>
-        `}};p(it,"variantStyle",v`
+        `;
+  }
+};
+__publicField(AHPromotedPlans, "variantStyle", i3`
         /* Default styles for the component */
         :host([variant='ah-promoted-plans']) {
             --merch-card-ah-promoted-plans-min-width: 211px;
@@ -3121,7 +11933,35 @@ merch-card[variant="ccd-slice"] [slot='body-s'] a.spectrum-Link {
             justify-content: space-between;
             align-items: center;
         }
-    `);customElements.define("ah-promoted-plans",it);dt({sampleRate:1});X("ccd-suggested",Dt,pi,Dt.variantStyle);X("ccd-slice",Ut,fi,Ut.variantStyle);X("ah-try-buy-widget",nt,gi,nt.variantStyle);X("ah-promoted-plans",it,xi,it.variantStyle);
+    `);
+customElements.define("ah-promoted-plans", AHPromotedPlans);
+
+// src/mas.js
+updateConfig({ sampleRate: 1 });
+registerVariant(
+  "ccd-suggested",
+  CCDSuggested,
+  CCD_SUGGESTED_AEM_FRAGMENT_MAPPING,
+  CCDSuggested.variantStyle
+);
+registerVariant(
+  "ccd-slice",
+  CCDSlice,
+  CCD_SLICE_AEM_FRAGMENT_MAPPING,
+  CCDSlice.variantStyle
+);
+registerVariant(
+  "ah-try-buy-widget",
+  AHTryBuyWidget,
+  AH_TRY_BUY_WIDGET_AEM_FRAGMENT_MAPPING,
+  AHTryBuyWidget.variantStyle
+);
+registerVariant(
+  "ah-promoted-plans",
+  AHPromotedPlans,
+  AH_PROMOTED_PLANS_AEM_FRAGMENT_MAPPING,
+  AHPromotedPlans.variantStyle
+);
 /*! Bundled license information:
 
 @lit/reactive-element/css-tag.js:

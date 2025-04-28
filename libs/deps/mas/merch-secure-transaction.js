@@ -1,4 +1,16 @@
-var a=Object.defineProperty;var c=(e,t,o)=>t in e?a(e,t,{enumerable:!0,configurable:!0,writable:!0,value:o}):e[t]=o;var n=(e,t,o)=>c(e,typeof t!="symbol"?t+"":t,o);import{LitElement as m,html as p}from"../lit-all.min.js";import{css as x}from"../lit-all.min.js";var l=x`
+var __defProp = Object.defineProperty;
+var __defNormalProp = (obj, key, value) => key in obj ? __defProp(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
+var __publicField = (obj, key, value) => {
+  __defNormalProp(obj, typeof key !== "symbol" ? key + "" : key, value);
+  return value;
+};
+
+// src/merch-secure-transaction.js
+import { LitElement, html } from "../lit-all.min.js";
+
+// src/merch-secure-transaction.css.js
+import { css } from "../lit-all.min.js";
+var styles = css`
     #label {
         align-items: center;
         cursor: pointer;
@@ -18,15 +30,43 @@ var a=Object.defineProperty;var c=(e,t,o)=>t in e?a(e,t,{enumerable:!0,configura
         height: 1em;
         width: 1em;
     }
-`;var d="merch-secure-transaction",i=class extends m{constructor(){super(),this.labelText="",this.showIcon=!0,this.tooltipText=""}render(){let{labelText:t,showIcon:o,tooltipText:s}=this,r=p`
-            <div class="${o?"icon":""}" id="label" slot="trigger">
-                ${t}
+`;
+
+// src/merch-secure-transaction.js
+var TAG_NAME = "merch-secure-transaction";
+var MerchSecureTransaction = class extends LitElement {
+  constructor() {
+    super();
+    this.labelText = "";
+    this.showIcon = true;
+    this.tooltipText = "";
+  }
+  render() {
+    const { labelText, showIcon, tooltipText } = this;
+    const label = html`
+            <div class="${showIcon ? "icon" : ""}" id="label" slot="trigger">
+                ${labelText}
             </div>
-        `;return s?p`
+        `;
+    if (!tooltipText)
+      return label;
+    return html`
             <overlay-trigger placement="top-start" offset="4">
-                ${r}
+                ${label}
                 <sp-tooltip id="tooltip" slot="hover-content" delayed
-                    >${s}</sp-tooltip
+                    >${tooltipText}</sp-tooltip
                 >
             </overlay-trigger>
-        `:r}};n(i,"properties",{labelText:{attribute:"label",type:String},showIcon:{attribute:"icon",type:Boolean},tooltipText:{attribute:"tooltip",type:String}}),n(i,"styles",[l]);window.customElements.define(d,i);export{i as default};
+        `;
+  }
+};
+__publicField(MerchSecureTransaction, "properties", {
+  labelText: { attribute: "label", type: String },
+  showIcon: { attribute: "icon", type: Boolean },
+  tooltipText: { attribute: "tooltip", type: String }
+});
+__publicField(MerchSecureTransaction, "styles", [styles]);
+window.customElements.define(TAG_NAME, MerchSecureTransaction);
+export {
+  MerchSecureTransaction as default
+};

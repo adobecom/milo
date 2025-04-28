@@ -126,8 +126,9 @@ export function setItemsParameter(items, parameters) {
  * @param marketSegment - market segment: 'EDU', 'COM'
  * @returns URL object
  */
-export function add3in1Parameters(url, modal, customerSegment, marketSegment) {
-  if (!Object.values(MODAL_TYPE_3_IN_1).includes(modal) || !url?.searchParams || !customerSegment || !marketSegment) return url;
+export function add3in1Parameters({ url, modal, customerSegment, marketSegment, quantity, productArrangementCode, addonProductArrangementCode }) {
+  const masFF3in1 = document.querySelector('meta[name=mas-ff-3in1]');
+  if (!Object.values(MODAL_TYPE_3_IN_1).includes(modal) || !url?.searchParams || !customerSegment || !marketSegment || masFF3in1?.content === 'off') return url;
   url.searchParams.set('rtc', 't');
   url.searchParams.set('lo', 'sl');
   if (url.searchParams.get('cli') !== 'doc_cloud') {
@@ -143,6 +144,15 @@ export function add3in1Parameters(url, modal, customerSegment, marketSegment) {
     if (customerSegment === 'TEAM' && marketSegment === 'COM') {
       url.searchParams.set('cs', 't');
     }
+  }
+  if (quantity) {
+    url.searchParams.set('q', quantity);
+  }
+  if (addonProductArrangementCode) {
+    url.searchParams.set('ao', addonProductArrangementCode);
+  }
+  if (productArrangementCode) {
+    url.searchParams.set('pa', productArrangementCode);
   }
   return url;
 }
@@ -171,7 +181,17 @@ export function buildCheckoutUrl(checkoutData) {
   if (landscape === Landscape.DRAFT) {
     addParameters({ af: AF_DRAFT_LANDSCAPE }, url.searchParams, ALLOWED_KEYS);
   }
-  url = add3in1Parameters(url, modal, customerSegment, marketSegment)
+  url = add3in1Parameters({
+    url,
+    modal,
+    customerSegment: customerSegment ?? items?.[0]?.customerSegment,
+    marketSegment: ms ?? marketSegment ?? items?.[0]?.marketSegment,
+    quantity: items?.[0]?.quantity > 1 && items?.[0]?.quantity,
+    productArrangementCode: productArrangementCode ?? items?.[0]?.productArrangementCode,
+    addonProductArrangementCode: productArrangementCode 
+    ? items?.find((item) => item.productArrangementCode !== productArrangementCode)?.productArrangementCode 
+    : items?.[1]?.productArrangementCode,
+  });
   return url.toString();
 }
 

@@ -156,4 +156,100 @@ describe('buildCheckoutUrl', () => {
     const parsedUrl = new URL(url);
     expect(parsedUrl.searchParams.get('cs')).to.equal('t');
   });
+
+  it('should handle addon product arrangement code for 3-in-1 modal', () => {
+    const checkoutData = {
+      env: PROVIDER_ENVIRONMENT.PRODUCTION,
+      workflowStep: CheckoutWorkflowStep.CHECKOUT,
+      clientId: 'testClient',
+      country: 'US',
+      items: [
+        { quantity: 1 },
+        { productArrangementCode: 'ADDON123' }
+      ],
+      modal: 'twp',
+      customerSegment: 'INDIVIDUAL',
+      marketSegment: 'EDU'
+    };
+    const url = buildCheckoutUrl(checkoutData);
+    const parsedUrl = new URL(url);
+    expect(parsedUrl.searchParams.get('ao')).to.equal('ADDON123');
+  });
+  
+  it('should respect mas-ff-3in1 meta tag when off', () => {
+    const meta = document.createElement('meta');
+    meta.name = 'mas-ff-3in1';
+    meta.content = 'off';
+    document.head.appendChild(meta);
+
+    const checkoutData = {
+      env: PROVIDER_ENVIRONMENT.PRODUCTION,
+      workflowStep: CheckoutWorkflowStep.CHECKOUT,
+      clientId: 'testClient',
+      country: 'US',
+      items: [{ quantity: 1 }],
+      modal: 'twp',
+      customerSegment: 'INDIVIDUAL',
+      marketSegment: 'EDU'
+    };
+    const url = buildCheckoutUrl(checkoutData);
+    const parsedUrl = new URL(url);
+    
+    expect(parsedUrl.searchParams.has('rtc')).to.be.false;
+    expect(parsedUrl.searchParams.has('lo')).to.be.false;
+    
+    document.head.removeChild(meta);
+  });
+
+  it('should not modify clientId if doc_cloud for 3-in-1 modal', () => {
+    const checkoutData = {
+      env: PROVIDER_ENVIRONMENT.PRODUCTION,
+      workflowStep: CheckoutWorkflowStep.CHECKOUT,
+      clientId: 'doc_cloud',
+      country: 'US',
+      items: [{ quantity: 1 }],
+      modal: 'twp',
+      customerSegment: 'INDIVIDUAL',
+      marketSegment: 'EDU'
+    };
+    const url = buildCheckoutUrl(checkoutData);
+    const parsedUrl = new URL(url);
+    expect(parsedUrl.searchParams.get('cli')).to.equal('doc_cloud');
+  });
+
+  it('should not add 3-in-1 parameters for non-3-in-1 modal types', () => {
+    const checkoutData = {
+      env: PROVIDER_ENVIRONMENT.PRODUCTION,
+      workflowStep: CheckoutWorkflowStep.CHECKOUT,
+      clientId: 'testClient',
+      country: 'US',
+      items: [{ quantity: 1 }],
+      modal: 'other',
+      customerSegment: 'INDIVIDUAL',
+      marketSegment: 'EDU'
+    };
+    const url = buildCheckoutUrl(checkoutData);
+    const parsedUrl = new URL(url);
+    expect(parsedUrl.searchParams.has('rtc')).to.be.false;
+    expect(parsedUrl.searchParams.has('lo')).to.be.false;
+  });
+
+  it('should handle segmentation workflow step without items', () => {
+    const checkoutData = {
+      env: PROVIDER_ENVIRONMENT.PRODUCTION,
+      workflowStep: CheckoutWorkflowStep.SEGMENTATION,
+      clientId: 'testClient',
+      country: 'US',
+      marketSegment: 'EDU',
+      offerType: 'SUBSCRIPTION',
+      productArrangementCode: 'PAC123'
+    };
+    expect(() => buildCheckoutUrl(checkoutData)).to.not.throw();
+    const url = buildCheckoutUrl(checkoutData);
+    const parsedUrl = new URL(url);
+    expect(parsedUrl.pathname).to.include('/store/segmentation');
+    expect(parsedUrl.searchParams.get('ms')).to.equal('EDU');
+    expect(parsedUrl.searchParams.get('ot')).to.equal('SUBSCRIPTION');
+    expect(parsedUrl.searchParams.get('pa')).to.equal('PAC123');
+  });
 });

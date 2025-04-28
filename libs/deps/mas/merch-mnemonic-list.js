@@ -1,7 +1,24 @@
-var o=Object.defineProperty;var r=(e,t,i)=>t in e?o(e,t,{enumerable:!0,configurable:!0,writable:!0,value:i}):e[t]=i;var n=(e,t,i)=>r(e,typeof t!="symbol"?t+"":t,i);import{html as l,css as p,LitElement as a}from"../lit-all.min.js";var s=class extends a{constructor(){super()}render(){return l`
+var __defProp = Object.defineProperty;
+var __defNormalProp = (obj, key, value) => key in obj ? __defProp(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
+var __publicField = (obj, key, value) => {
+  __defNormalProp(obj, typeof key !== "symbol" ? key + "" : key, value);
+  return value;
+};
+
+// src/merch-mnemonic-list.js
+import { html, css, LitElement } from "../lit-all.min.js";
+var MerchMnemonicList = class extends LitElement {
+  constructor() {
+    super();
+  }
+  render() {
+    return html`
             <slot name="icon"></slot>
             <slot name="description">${this.description}</slot>
-        `}};n(s,"styles",p`
+        `;
+  }
+};
+__publicField(MerchMnemonicList, "styles", css`
         :host {
             display: flex;
             flex-wrap: nowrap;
@@ -26,4 +43,11 @@ var o=Object.defineProperty;var r=(e,t,i)=>t in e?o(e,t,{enumerable:!0,configura
         :host .hidden {
             display: none;
         }
-    `),n(s,"properties",{description:{type:String,attribute:!0}});customElements.define("merch-mnemonic-list",s);export{s as MerchMnemonicList};
+    `);
+__publicField(MerchMnemonicList, "properties", {
+  description: { type: String, attribute: true }
+});
+customElements.define("merch-mnemonic-list", MerchMnemonicList);
+export {
+  MerchMnemonicList
+};

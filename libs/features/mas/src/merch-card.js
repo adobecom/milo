@@ -25,6 +25,7 @@ import {
     SELECTOR_MAS_INLINE_PRICE,
     SELECTOR_MAS_SP_BUTTON,
     MARK_START_SUFFIX,
+    EVENT_MERCH_ADDON_AND_QUANTITY_UPDATE,
 } from './constants.js';
 import { VariantLayout } from './variants/variant-layout.js';
 import { hydrate, ANALYTICS_SECTION_ATTR } from './hydrate.js';
@@ -324,6 +325,10 @@ export class MerchCard extends LitElement {
             this.handleQuantitySelection,
         );
         this.addEventListener(
+            EVENT_MERCH_ADDON_AND_QUANTITY_UPDATE,
+            this.handleAddonAndQuantityUpdate,
+        );
+        this.addEventListener(
             EVENT_MERCH_OFFER_SELECT_READY,
             this.merchCardReady,
             { once: true },
@@ -489,6 +494,15 @@ export class MerchCard extends LitElement {
     /* c8 ignore next 3 */
     get dynamicPrice() {
         return this.querySelector('[slot="price"]');
+    }
+
+    handleAddonAndQuantityUpdate({ detail: { id, items } }) {
+      if (!id || !items?.length) return;
+      const cta = this.checkoutLinks.find(link => link.getAttribute('data-modal-id') === id);
+      if (!cta) return;
+      console.log('found card that has to be updated', cta);
+      // check if items contain the productArrangementCode of this stock and call toggleStockOffer to update stock
+      // call handleQuantitySelection to update quantity
     }
 }
 
