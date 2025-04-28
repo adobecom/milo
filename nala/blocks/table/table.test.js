@@ -80,9 +80,12 @@ test.describe('Milo Table block feature test suite', () => {
       // verify table header row attributes ( class, position(sticky) and top )
       await expect(await table.stickyTable).toBeVisible();
 
+      if (!await table.stickyTable.evaluate((el) => el.classList.contains('cancel-sticky'))) {
+        await expect(await table.stickyRow).toHaveCSS('position', 'sticky');
+        await expect(await table.stickyRow).toHaveCSS('top', '64px');
+      }
+
       await expect(await table.stickyRow).toHaveAttribute('class', 'row row-1 row-heading top-border-transparent');
-      await expect(await table.stickyRow).toHaveCSS('position', 'sticky');
-      await expect(await table.stickyRow).toHaveCSS('top', '64px');
 
       // verify table row, column count
       await expect(await table.rows).toHaveCount(data.rowsCount);
@@ -111,8 +114,11 @@ test.describe('Milo Table block feature test suite', () => {
       await expect(await table.collapseStickyTable).toBeVisible();
       await expect(table.highlightRow).toHaveClass(/row.*row-1.*row-highlight/);
       await expect(table.stickyRow).toHaveClass(/row.*row-2.*row-heading/);
-      await expect(await table.stickyRow).toHaveCSS('position', 'sticky');
-      await expect(await table.stickyRow).toHaveCSS('top', '114px');
+
+      if (!await table.collapseStickyTable.evaluate((el) => el.classList.contains('cancel-sticky'))) {
+        await expect(await table.stickyRow).toHaveCSS('position', 'sticky');
+        await expect(await table.stickyRow).toHaveCSS('top', '114px');
+      }
 
       // verify table rows and columns count
       await expect(await table.rows).toHaveCount(data.rowsCount);
