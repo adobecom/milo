@@ -444,9 +444,7 @@ async function handleScrollEffect(table) {
       return;
     }
 
-    const isOverBoundery = headingRow.offsetHeight / window.innerHeight >= 0.3;
-    if (isOverBoundery && headingRow) headingRow.style.position = 'static';
-    if (isOverBoundery && highlightRow) highlightRow.style.position = 'static';
+    if (headingRow.offsetHeight / window.innerHeight >= 0.3) table.classList.add('cancel-sticky');
   }, 0);
 
   if (highlightRow) {
