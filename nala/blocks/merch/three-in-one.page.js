@@ -14,7 +14,7 @@ export default class ThreeInOne {
       },
       allAppsCrmSegmentation: {
         el: page.locator('[data-wcs-osi="r_JXAnlFI7xD6FxWKl2ODvZriLYBoSL701Kd1hRyhe8"][data-checkout-workflow-step="segmentation"]'),
-        href: 'https://commerce.adobe.com/store/segmentation?ms=COM&ot=BASE&pa=ccsn_direct_individual&cli=creative&ctx=if&co=US&lang=en&rtc=t&lo=sl&af=uc_segmentation_hide_tabs%2Cuc_new_user_iframe%2Cuc_new_system_close',
+        href: 'https://commerce.adobe.com/store/segmentation?ms=COM&ot=BASE&pa=ccsn_direct_individual&cli=creative&ctx=if&co=US&lang=en&rtc=t&lo=sl&af=uc_new_user_iframe%2Cuc_new_system_close',
       },
       illustratorAndAcrobatProTwpCommitment: {
         el: page.locator('[data-wcs-osi="ByqyQ6QmyXhzAOnjIcfHcoF1l6nfkeLgbzWz-aeM8GQ"][data-checkout-workflow-step="commitment"]'),
@@ -26,7 +26,7 @@ export default class ThreeInOne {
       },
       allAppsCrmCommitment: {
         el: page.locator('[data-wcs-osi="r_JXAnlFI7xD6FxWKl2ODvZriLYBoSL701Kd1hRyhe8"][data-checkout-workflow-step="commitment"]'),
-        href: 'https://commerce.adobe.com/store/commitment?items%5B0%5D%5Bid%5D=632B3ADD940A7FBB7864AA5AD19B8D28&cli=creative&ctx=if&co=US&lang=en&rtc=t&lo=sl&af=uc_segmentation_hide_tabs%2Cuc_new_user_iframe%2Cuc_new_system_close',
+        href: 'https://commerce.adobe.com/store/commitment?items%5B0%5D%5Bid%5D=632B3ADD940A7FBB7864AA5AD19B8D28&cli=creative&ctx=if&co=US&lang=en&rtc=t&lo=sl&af=uc_new_user_iframe%2Cuc_new_system_close',
       },
       allAppsTrue: {
         el: page.locator('[data-wcs-osi="Mutn1LYoGojkrcMdCLO7LQlx1FyTHw27ETsfLv0h8DQ"][is="checkout-link"]'),
