@@ -25,7 +25,7 @@ async function loadJsonAndSetResponse(jsonPath) {
   setFetchResponse(json);
 }
 
-describe('MMM - Targer Cleanup Report', () => {
+describe('MMM - Target Cleanup Report', () => {
   before(async () => {
     await loadJsonAndSetResponse('./mocks/get-report.json');
     document.body.innerHTML = await readFile({ path: './mocks/bodyReport.html' });
