@@ -444,11 +444,7 @@ async function handleScrollEffect(table) {
       return;
     }
 
-    const headingRowHeight = headingRow.offsetHeight;
-    const viewportHeight = window.innerHeight;
-    const heightRatio = headingRowHeight / viewportHeight;
-    const isAtLeast25vh = heightRatio >= 0.3;
-
+    const isAtLeast25vh = headingRow.offsetHeight / window.innerHeight >= 0.3;
     if (isAtLeast25vh && headingRow) headingRow.style.position = 'static';
     if (isAtLeast25vh && highlightRow) highlightRow.style.position = 'static';
   }, 0);
