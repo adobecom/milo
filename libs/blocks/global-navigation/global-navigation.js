@@ -1,6 +1,7 @@
 /* eslint import/no-relative-packages: 0 */
 /* eslint-disable no-async-promise-executor */
 import {
+  loadStyle,
   getConfig,
   getMetadata,
   loadIms,
@@ -1018,6 +1019,14 @@ class Gnav {
       return this.elements.aside;
     }
 
+    const { miloLibs, codeRoot } = getConfig();
+    const url = `${miloLibs || codeRoot}/blocks/aside/aside.css`;
+    await new Promise((resolve, reject) => {
+      loadStyle(url, (e) => {
+        if (e === 'error') return reject(url);
+        return resolve();
+      });
+    });
     const { default: decorate } = await import('./features/aside/aside.js');
     if (!decorate) return this.elements.aside;
     this.elements.aside = await decorate({ headerElem: this.block, fedsPromoWrapper, promoPath });
