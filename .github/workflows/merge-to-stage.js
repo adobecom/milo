@@ -205,9 +205,7 @@ const openStageToMainPR = async () => {
 };
 
 const getMaxMerges = () => {
-  if (isWithinPrePostRCP()) {
-    return BASE_MAX_MERGES + 3;
-  }
+  if (isWithinPrePostRCP()) return BASE_MAX_MERGES + 3;
   return BASE_MAX_MERGES;
 }
 
