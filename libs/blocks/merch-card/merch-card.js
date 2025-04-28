@@ -367,6 +367,26 @@ const addStock = (merchCard, styles) => {
   }
 };
 
+const addAddons = (merchCard, styles) => {
+  if (styles.includes('add-addons') && (merchCard.variant === MINI_COMPARE_CHART || merchCard.variant === PRODUCT)) {
+    const cardTitle = merchCard.querySelector('h3')?.textContent.trim().toLowerCase().split(' ').join('-');
+    console.log(merchCard);
+    // const cardId = `${fragAudience}-${cardPlanType}-${cardTitle}`;
+    const callout = merchCard.querySelector('[slot="price-commitment"]');
+    console.log(callout);
+    const checkboxContainer = createTag(
+      'div',
+      { slot: 'callout-content', class: 'ai-checkbox-container' },
+      `<input type="checkbox" id="ai-checkbox-test">
+      <label for="ai-checkbox-test">
+        <span><strong>TEST</strong></span>
+        <span class="ai-checkbox-subtitle">test</span>
+      </label>`,
+    );
+    callout?.replaceWith(checkboxContainer);
+  }
+};
+
 const simplifyHrs = (el) => {
   const hrs = el.querySelectorAll('hr');
   hrs.forEach((hr) => {
@@ -695,6 +715,7 @@ export default async function init(el) {
   }
 
   addStock(merchCard, styles);
+  addAddons(merchCard, styles);
   if (styles.includes('secure')) {
     const { replaceKey } = await import('../../features/placeholders.js');
     await replaceKey('secure-transaction', getConfig()).then((key) => merchCard.setAttribute('secure-label', key));
