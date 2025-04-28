@@ -169,7 +169,7 @@ export const CONFIG = {
                   trace: () => {},
                   debug: () => {},
                   info: () => {},
-                  warn: (e) => lanaLog({ message: 'Profile Menu warning', e, tags: 'universalnav,warn'}),
+                  warn: (e) => lanaLog({ message: 'Profile Menu warning', e, tags: 'universalnav,warn' }),
                   error: (e) => lanaLog({ message: 'Profile Menu error', e, tags: 'universalnav', errorType: 'e' }),
                 },
               },
