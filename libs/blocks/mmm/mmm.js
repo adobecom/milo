@@ -39,7 +39,7 @@ const MANIFESTSRC_OPTIONS = {
 const GRID_FORMAT = {
   // array values must match ids of html element in order desired per row
   base: {
-    row1: ['mmm-dropdown-pages', 'mmm-dropdown-geos', 'mmm-dropdown-lastSeen', 'mmm-dropdown-subdomain'],
+    row1: ['mmm-container-dropdown-pages', 'mmm-container-dropdown-geos', 'mmm-dropdown-lastSeen', 'mmm-dropdown-subdomain'],
     row2: ['mmm-checkbox-filter-targetSetting', 'mmm-checkbox-filter-manifestSrc'],
     row3: ['mmm-search-filter-container'],
   },
@@ -182,7 +182,6 @@ function filterPageList(pageNum, perPage, filterEvent, sortingEvent) {
       || getLocalStorageFilter()?.orderBy;
     searchValues.order = sortingEvent?.target?.dataset?.order || getLocalStorageFilter()?.order;
   }
-
   // assemble event details object with all filter criterias
   const detail = {};
   Object.keys(searchValues).forEach((key) => {
@@ -198,6 +197,7 @@ function filterPageList(pageNum, perPage, filterEvent, sortingEvent) {
     setLocalStorageFilter(detail);
     document.dispatchEvent(new CustomEvent(SEARCH_CRITERIA_CHANGE_EVENT, { detail }));
   }
+  console.log('searchValues', searchValues); // remove
 }
 
 function parseData(el) {
@@ -240,7 +240,7 @@ function createDropdowns(data) {
     const { label, options } = data[key];
     const dropdownContainer = createTag(
       'div',
-      { id: `mmm-dropdown-${key}`, class: 'mmm-form-container mmm-dropdown-container' },
+      { id: `mmm-container-dropdown-${key}`, class: 'mmm-form-container mmm-dropdown-container' },
     );
     const dropdownSubContainer = createTag('div', { class: 'mmm-dropdown-sub-container' });
     dropdownContainer.append(dropdownSubContainer);
