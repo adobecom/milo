@@ -80,64 +80,6 @@ describe('function "createPriceTemplate"', () => {
             expect(() => template(context, value)).to.not.throw();
         });
     });
-
-    it('displays annual price with tax and plan type texts', () => {
-        const template = createPriceTemplate();
-        renderAndComparePrice(
-            'createPriceTemplate2',
-            template(
-                {
-                    country: 'FR',
-                    language: 'fr',
-                    displayPlanType: true,
-                    displayTax: true,
-                    literals: {
-                        taxInclusiveLabel: 'incl. VAT',
-                        planTypeLabel: 'Annuel, facturé mensuellement',
-                    },
-                },
-                {
-                    price: 67.01,
-                    priceWithoutTax: 55.84,
-                    usePrecision: true,
-                    formatString: "# ##0,00 '&euro;'",
-                    taxDisplay: 'TAX_INCLUSIVE_DETAILS',
-                    taxTerm: 'VAT',
-                    planType: 'ABM',
-                },
-                {},
-            ),
-        );
-    });
-
-    it('displays annual price with plan type text and hides tax text when country is US and language is en', () => {
-        const template = createPriceTemplate();
-        renderAndComparePrice(
-            'createPriceTemplate3',
-            template(
-                {
-                    country: 'US',
-                    language: 'en',
-                    displayPlanType: true,
-                    displayTax: true,
-                    literals: {
-                        taxInclusiveLabel: 'excl. VAT',
-                        planTypeLabel: 'Annual, paid monthly.',
-                    },
-                },
-                {
-                    price: 67.01,
-                    priceWithoutTax: 55.84,
-                    usePrecision: true,
-                    formatString: "'US$'#,##0.00",
-                    taxDisplay: 'TAX_EXCLUSIVE',
-                    taxTerm: 'TAX',
-                    planType: 'ABM',
-                },
-                {},
-            ),
-        );
-    });
 });
 
 describe('function "createPromoPriceTemplate"', () => {

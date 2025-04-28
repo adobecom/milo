@@ -14,6 +14,11 @@ import {
     makeSpacesAroundNonBreaking,
 } from './utilities.js';
 
+// JSON imports require new syntax to run in Milo/wtr tests,
+// but the new syntax is not yet supported by ESLint:
+// import defaultLiterals from '../literals.json' assert {type: 'json'};
+// @see https://github.com/eslint/eslint/discussions/15305
+// the easiest solution for now is to inline the literals
 export const defaultLiterals = {
     recurrenceLabel:
         '{recurrenceTerm, select, MONTH {/mo} YEAR {/yr} other {}}',
@@ -34,9 +39,9 @@ export const defaultLiterals = {
 
 const log = createLog('ConsonantTemplates/price');
 
-const htmlPattern = /<\/?[^>]+(>|$)/g;
+export const htmlPattern = /<\/?[^>]+(>|$)/g;
 
-const cssClassNames = {
+export const cssClassNames = {
     container: 'price',
     containerOptical: 'price-optical',
     containerStrikethrough: 'price-strikethrough',
@@ -53,9 +58,9 @@ const cssClassNames = {
     recurrence: 'price-recurrence',
     taxInclusivity: 'price-tax-inclusivity',
     unitType: 'price-unit-type',
-    planType: 'price-plan-type',
 };
-const literalKeys = {
+
+export const literalKeys = {
     perUnitLabel: 'perUnitLabel',
     perUnitAriaLabel: 'perUnitAriaLabel',
     recurrenceLabel: 'recurrenceLabel',
@@ -64,11 +69,11 @@ const literalKeys = {
     taxInclusiveLabel: 'taxInclusiveLabel',
     strikethroughAriaLabel: 'strikethroughAriaLabel',
     alternativePriceAriaLabel: 'alternativePriceAriaLabel',
-    planTypeLabel: 'planTypeLabel',
 };
-const WCS_TAX_DISPLAY_EXCLUSIVE = 'TAX_EXCLUSIVE';
 
-const renderAttributes = (attributes) =>
+export const WCS_TAX_DISPLAY_EXCLUSIVE = 'TAX_EXCLUSIVE';
+
+export const renderAttributes = (attributes) =>
     isObject(attributes)
         ? Object.entries(attributes)
               .filter(
@@ -85,7 +90,12 @@ const renderAttributes = (attributes) =>
               )
         : '';
 
-const renderSpan = (cssClass, content, attributes, convertSpaces = false) => {
+export const renderSpan = (
+    cssClass,
+    content,
+    attributes,
+    convertSpaces = false,
+) => {
     return (
         `<span class="${cssClass}${
             content ? '' : ' ' + cssClassNames.disabled
@@ -97,6 +107,24 @@ const renderSpan = (cssClass, content, attributes, convertSpaces = false) => {
         }</span>`
     );
 };
+
+export function formatLiteral(literals, locale, key, parameters) {
+    const literal = literals[key];
+    if (literal == undefined) {
+        /* c8 ignore next 2 */
+        return '';
+    }
+    try {
+        return new IntlMessageFormat(
+            literal.replace(htmlPattern, ''),
+            locale,
+        ).format(parameters);
+    } catch {
+        /* c8 ignore next 2 */
+        log.error('Failed to format literal:', literal);
+        return '';
+    }
+}
 
 function renderContainer(
     cssClass,
@@ -112,8 +140,6 @@ function renderContainer(
         recurrenceLabel,
         perUnitLabel,
         taxInclusivityLabel,
-        planTypeLabel,
-        breakLine,
     },
     attributes = {},
 ) {
@@ -137,24 +163,12 @@ function renderContainer(
     markup += renderSpan(cssClassNames.decimals, decimals);
     if (!isCurrencyFirst) markup += currencySpaceMarkup + currencyMarkup;
     markup += renderSpan(cssClassNames.recurrence, recurrenceLabel, null, true);
-    if (breakLine) {
-        markup = `${markup}<span class="price-sub-text">`;
-    }
     markup += renderSpan(cssClassNames.unitType, perUnitLabel, null, true);
     markup += renderSpan(
         cssClassNames.taxInclusivity,
         taxInclusivityLabel,
         true,
     );
-    if (taxInclusivityLabel && planTypeLabel) {
-        markup += '. ';
-    }
-    if (planTypeLabel) {
-        markup += renderSpan(cssClassNames.planType, planTypeLabel, null);
-    }
-    if (breakLine) {
-        markup += '</span>';
-    }
 
     return renderSpan(cssClass, markup, {
         ...attributes,
@@ -181,8 +195,6 @@ const createPriceTemplate =
             displayRecurrence = true,
             displayPerUnit = false,
             displayTax = false,
-            displayPlanType = false,
-            breakLine = false,
             language,
             literals: priceLiterals = {},
             quantity = 1,
@@ -195,7 +207,6 @@ const createPriceTemplate =
             priceWithoutDiscount,
             taxDisplay,
             taxTerm,
-            planType,
             term,
             usePrecision,
             promotion,
@@ -223,24 +234,6 @@ const createPriceTemplate =
 
         const locale = `${language.toLowerCase()}-${country.toUpperCase()}`;
 
-        function formatLiteral(key, parameters) {
-            const literal = literals[key];
-            if (literal == undefined) {
-                /* c8 ignore next 2 */
-                return '';
-            }
-            try {
-                return new IntlMessageFormat(
-                    literal.replace(htmlPattern, ''),
-                    locale,
-                ).format(parameters);
-            } catch {
-                /* c8 ignore next 2 */
-                log.error('Failed to format literal:', literal);
-                return '';
-            }
-        }
-
         const displayPrice =
             displayStrikethrough && priceWithoutDiscount
                 ? priceWithoutDiscount
@@ -264,29 +257,38 @@ const createPriceTemplate =
             usePrecision,
         });
 
-        let accessibleLabel = '';
-        let altAccessibleLabel = '';
+        let accessibleLabel = '',
+            altAccessibleLabel = '';
 
         let recurrenceLabel = '';
         if (toBoolean(displayRecurrence) && recurrenceTerm) {
-            recurrenceLabel = formatLiteral(literalKeys.recurrenceLabel, {
-                recurrenceTerm,
-            });
+            recurrenceLabel = formatLiteral(
+                literals,
+                locale,
+                literalKeys.recurrenceLabel,
+                {
+                    recurrenceTerm,
+                },
+            );
         }
 
         let perUnitLabel = '';
         if (toBoolean(displayPerUnit)) {
-            perUnitLabel = formatLiteral(literalKeys.perUnitLabel, {
-                perUnit: 'LICENSE',
-            });
+            perUnitLabel = formatLiteral(
+                literals,
+                locale,
+                literalKeys.perUnitLabel,
+                {
+                    perUnit: 'LICENSE',
+                },
+            );
         }
 
         let taxInclusivityLabel = '';
-        if (country === 'US' && language === 'en') {
-            displayTax = false;
-        }
         if (toBoolean(displayTax) && taxTerm) {
             taxInclusivityLabel = formatLiteral(
+                literals,
+                locale,
                 taxDisplay === WCS_TAX_DISPLAY_EXCLUSIVE
                     ? literalKeys.taxExclusiveLabel
                     : literalKeys.taxInclusiveLabel,
@@ -294,15 +296,10 @@ const createPriceTemplate =
             );
         }
 
-        let planTypeLabel = '';
-        if (toBoolean(displayPlanType) && planType) {
-            planTypeLabel = formatLiteral(literalKeys.planTypeLabel, {
-                planType,
-            });
-        }
-
         if (displayStrikethrough) {
             accessibleLabel = formatLiteral(
+                literals,
+                locale,
                 literalKeys.strikethroughAriaLabel,
                 {
                     strikethroughPrice: accessibleLabel,
@@ -312,6 +309,8 @@ const createPriceTemplate =
 
         if (isAlternativePrice) {
             altAccessibleLabel = formatLiteral(
+                literals,
+                locale,
                 literalKeys.alternativePriceAriaLabel,
                 {
                     alternativePrice: altAccessibleLabel,
@@ -343,8 +342,6 @@ const createPriceTemplate =
                     recurrenceLabel,
                     perUnitLabel,
                     taxInclusivityLabel,
-                    planTypeLabel,
-                    breakLine,
                 },
                 attributes,
             );
@@ -373,7 +370,6 @@ const createPriceTemplate =
             recurrenceLabel,
             perUnitLabel,
             taxInclusivityLabel,
-            planTypeLabel,
         );
         const content = unformattedPrice.join('');
         return renderSpan(cssClass, content, attributes);
@@ -422,7 +418,6 @@ const createPromoPriceWithAnnualTemplate =
         const ctxStAnnual = {
             ...context,
             displayTax: false,
-            displayPlanType: false,
             displayPerUnit: false,
         };
         const displayOldPrice =
@@ -454,7 +449,6 @@ const createPriceWithAnnualTemplate = () => (context, value, attributes) => {
     const ctxAnnual = {
         ...context,
         displayTax: false,
-        displayPlanType: false,
         displayPerUnit: false,
     };
     return `${createPriceTemplate({ isAlternativePrice: context.displayOldPrice })(context, value, attributes)}${renderSpan(cssClassNames.containerAnnualPrefix, '&nbsp;(')}${createPriceTemplate(

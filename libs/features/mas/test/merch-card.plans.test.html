@@ -17,14 +17,14 @@
                 padding-top: 80px;
             }
             mas-commerce-service {
-              display: none;
+                display: none;
             }
         </style>
     </head>
 
     <body>
         <main>
-          <div class="two-merch-cards plans"></div>
+            <div class="two-merch-cards plans"></div>
         </main>
         <template id="photoshop">
             <mas-commerce-service
@@ -53,7 +53,8 @@
                         data-template="price"
                         data-wcs-osi="caA1xn6EL4pK93bWjM8flffQpfEL-bnvtoQKQAvkx574M"
                         data-display-tax="true"
-                        data-display-plan-type="true"></span>
+                        data-display-plan-type="true"
+                    ></span>
                 </p>
                 <div slot="body-xs">
                     <p>
@@ -101,7 +102,7 @@
                     beforeEach(() => {
                         container.innerHTML = '';
                     });
-                    it.only('should render tax text & plans type under price', () => {
+                    it('should render tax text & plans type under price', () => {
                         const [masCommerceService, photoshop] =
                             getTemplateContent('photoshop');
                         container.append(masCommerceService, photoshop);
@@ -113,8 +114,13 @@
                             getTemplateContent('fragment-photography-plans');
                         container.append(masCommerceService, ccAllApps);
                         await oneEvent(ccAllApps, 'mas:ready');
-                        const [price] = ccAllApps.prices;
-                        expect(price.options.displayPlanType).to.be.true;
+                        const [price, legal] = ccAllApps.prices;
+                        expect(price.options.displayPerUnit).to.be.false;
+                        expect(price.options.displayTax).to.be.false;
+                        expect(price.options.displayPlanType).to.be.false;
+                        expect(legal.options.displayTax).to.be.true;
+                        expect(legal.options.displayPlanType).to.be.true;
+                        expect(legal.querySelector('.price-tax-inclusivity.disabled')).to.exist;
                     });
                 });
             });
