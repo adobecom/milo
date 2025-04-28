@@ -77,16 +77,23 @@ function decorateSlideIndicators(slides, jumpTo) {
     });
 
     if (jumpTo) {
+      slides[i].id = `slide-${i}`;
       li.setAttribute('role', 'tab');
       li.setAttribute('tabindex', -1);
       li.setAttribute('aria-selected', false);
-      li.setAttribute('aria-label', `Viewing Slide ${i + 1} of ${slides.length}`);
+      // li.setAttribute('aria-current', true);
+      // li.setAttribute('aria-label', `Viewing Slide ${i + 1} of ${slides.length}`);
+      // li.setAttribute('aria-label', `Slide ${i + 1}`);
+      li.setAttribute('aria-labelledby', `slide-${i}`);
     }
 
     // Set inital active state
     if (i === 0) {
       li.classList.add('active');
-      if (jumpTo) li.setAttribute('tabindex', 0);
+      if (jumpTo) {
+        li.setAttribute('tabindex', 0);
+        li.setAttribute('aria-current', 'location');
+      }
     }
     indicatorDots.push(li);
   }
@@ -210,7 +217,10 @@ function moveSlides(event, carouselElements, jumpToIndex) {
   activeSlide.classList.remove('active');
   activeSlide.querySelectorAll('a, video').forEach((focusableElement) => focusableElement.setAttribute('tabindex', -1));
   activeSlideIndicator.classList.remove('active');
-  if (jumpTo) activeSlideIndicator.setAttribute('tabindex', -1);
+  if (jumpTo) {
+    activeSlideIndicator.setAttribute('tabindex', -1);
+    activeSlideIndicator.removeAttribute('aria-current');
+  }
 
   /*
    * If indicator dot buttons are clicked update:
@@ -278,7 +288,10 @@ function moveSlides(event, carouselElements, jumpToIndex) {
       .forEach((focusableElement) => { focusableElement.setAttribute('tabindex', 0); });
   }
   activeSlideIndicator.classList.add('active');
-  if (jumpTo) activeSlideIndicator.setAttribute('tabindex', 0);
+  if (jumpTo) {
+    activeSlideIndicator.setAttribute('tabindex', 0);
+    activeSlideIndicator.setAttribute('aria-current', 'location');
+  }
   setIndicatorMultiplyer(carouselElements, activeSlideIndicator, event);
 
   // Loop over all slide siblings to update their order
