@@ -440,17 +440,17 @@ async function handleScrollEffect(table) {
   const headingRow = table.querySelector('.row-heading');
 
   setTimeout(() => {
-    if (isStickyHeader(table)) {
-      const headingRowHeight = headingRow.offsetHeight;
-      const viewportHeight = window.innerHeight;
-      const heightRatio = headingRowHeight / viewportHeight;
-      const isAtLeast25vh = heightRatio >= 0.3;
-
-      if (isAtLeast25vh) {
-        if (headingRow) headingRow.style.position = 'static';
-        if (highlightRow) highlightRow.style.position = 'static';
-      }
+    if (!isStickyHeader(table)) {
+      return;
     }
+
+    const headingRowHeight = headingRow.offsetHeight;
+    const viewportHeight = window.innerHeight;
+    const heightRatio = headingRowHeight / viewportHeight;
+    const isAtLeast25vh = heightRatio >= 0.3;
+
+    if (isAtLeast25vh && headingRow) headingRow.style.position = 'static';
+    if (isAtLeast25vh && highlightRow) highlightRow.style.position = 'static';
   }, 0);
 
   if (highlightRow) {
