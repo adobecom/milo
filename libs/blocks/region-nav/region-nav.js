@@ -34,8 +34,6 @@ export function decorateLink(link, path) {
   if (pathname.startsWith('http')) {
     try { pathname = new URL(pathname).pathname; } catch (e) { /* href does not contain domain */ }
   }
-  const linkParts = pathname.split('/');
-  const expressPrefix = linkParts[1] || '';
   const { languageMap, languages, locales } = getConfig();
   const language = languages
     ? getLanguage(languages, locales, pathname) : getLocale(locales, pathname);
@@ -43,6 +41,9 @@ export function decorateLink(link, path) {
 
   let { href } = link;
   if (href.endsWith('/')) href = href.slice(0, -1);
+
+  const linkParts = pathname.split('/');
+  const expressPrefix = linkParts[1] || '';
 
   if (languageMap && !getConfig().locales[expressPrefix]) {
     const valueInMap = languageMap[expressPrefix];
