@@ -444,9 +444,9 @@ async function handleScrollEffect(table) {
       return;
     }
 
-    const isAtLeast25vh = headingRow.offsetHeight / window.innerHeight >= 0.3;
-    if (isAtLeast25vh && headingRow) headingRow.style.position = 'static';
-    if (isAtLeast25vh && highlightRow) highlightRow.style.position = 'static';
+    const isOverBoundery = headingRow.offsetHeight / window.innerHeight >= 0.3;
+    if (isOverBoundery && headingRow) headingRow.style.position = 'static';
+    if (isOverBoundery && highlightRow) highlightRow.style.position = 'static';
   }, 0);
 
   if (highlightRow) {
