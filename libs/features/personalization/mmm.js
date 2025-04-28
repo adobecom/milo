@@ -10,39 +10,6 @@ export const API_URLS = {
   report: `${API_DOMAIN}/get-report`,
 };
 
-function parsePageAndUrl(config, windowLocation, prefix) {
-  const { stageDomainsMap, env } = config;
-  const { pathname, origin } = windowLocation;
-  const allowedHosts = [
-    'business.stage.adobe.com',
-    'www.stage.adobe.com',
-    'milo.stage.adobe.com',
-  ];
-  if (env?.name === 'prod' || !stageDomainsMap
-    || allowedHosts.includes(origin.replace('https://', ''))) {
-    const domain = origin.replace('stage.adobe.com', 'adobe.com');
-    return { page: pathname.replace(`/${prefix}/`, '/'), url: `${domain}${pathname}` };
-  }
-  let path = pathname;
-  let domain = origin;
-  const domainCheck = Object.keys(stageDomainsMap)
-    .find((key) => {
-      try {
-        const { host } = new URL(`https://${key}`);
-        return allowedHosts.includes(host);
-      } catch (e) {
-        /* c8 ignore next 2 */
-        return false;
-      }
-    });
-  if (domainCheck) domain = `https://${domainCheck}`;
-  path = path.replace('/homepage/index-loggedout', '/');
-  if (!path.endsWith('/') && !path.endsWith('.html') && !domain.includes('milo')) {
-    path += '.html';
-  }
-  domain = domain.replace('stage.adobe.com', 'adobe.com');
-  return { page: path.replace(`/${prefix}/`, '/'), url: `${domain}${path}` };
-}
 export function parseMepConfig() {
   const config = getConfig();
   const { mep, locale } = config;
@@ -66,12 +33,11 @@ export function parseMepConfig() {
       analyticsTitle,
     };
   });
-  const { page, url } = parsePageAndUrl(config, window.location, prefix);
-
+  const { origin, pathname } = window.location;
   return {
     page: {
-      url,
-      page,
+      url: `${origin}${pathname}`,
+      page: pathname.replace(`/${prefix}/`, '/'),
       target: getMetadata('target') || 'off',
       personalization: (getMetadata('personalization')) ? 'on' : 'off',
       geo: prefix === US_GEO ? '' : prefix,
