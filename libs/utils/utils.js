@@ -971,7 +971,7 @@ function decorateDefaults(el) {
 
 export async function getGnavSource() {
   const { locale, dynamicNavKey } = getConfig();
-  let url = getMetadata('gnav-source') || `${locale.contentRoot}/gnav`;
+  let url = getMetadata('gnav-source') || `${locale?.contentRoot ?? window.location.origin}/gnav`;
   if (dynamicNavKey) {
     const { default: dynamicNav } = await import('../features/dynamic-navigation/dynamic-navigation.js');
     url = dynamicNav(url, dynamicNavKey);
@@ -981,7 +981,7 @@ export async function getGnavSource() {
 
 export function isLocalNav() {
   const { locale = {} } = getConfig();
-  const gnavSource = getMetadata('gnav-source') || `${locale.contentRoot}/gnav`;
+  const gnavSource = getMetadata('gnav-source') || `${locale?.contentRoot ?? window.location.origin}/gnav`;
   let newNavEnabled = new URLSearchParams(window.location.search).get('newNav');
   newNavEnabled = newNavEnabled ? newNavEnabled !== 'false' : getMetadata('mobile-gnav-v2') !== 'off';
   return gnavSource.split('/').pop().startsWith('localnav-') && newNavEnabled;
