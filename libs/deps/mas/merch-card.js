@@ -986,9 +986,12 @@ merch-card[variant^="plans"] [slot="icons"] {
     --img-width: 41.5px;
 }
 
-
 merch-card[variant="plans-education"] [slot="subtitle"] {
     margin-top: 8px;
+}
+
+merch-card[variant^="plans"] [slot="body-xs"] {
+    flex-grow: 1;
 }
 
 merch-card[variant="plans-education"] [slot="body-xs"] span.price {
@@ -1157,7 +1160,7 @@ merch-card[variant^="plans"]:not([size]) {
                 <input type="checkbox" @change=${this.card.toggleStockOffer}></input>
                 <span></span>
                 ${this.card.checkboxLabel}
-            </label>`:""}connectedCallbackHook(){let e=vt();e?.addEventListener&&e.addEventListener("change",this.adaptForMobile)}disconnectedCallbackHook(){let e=vt();e?.removeEventListener&&e.removeEventListener("change",this.adaptForMobile)}renderLayout(){return Ct` ${this.badge}
+            </label>`:""}connectedCallbackHook(){let e=vt();e?.addEventListener&&e.addEventListener("change",this.adaptForMobile)}disconnectedCallbackHook(){let e=vt();e?.removeEventListener&&e.removeEventListener("change",this.adaptForMobile)}renderLayout(){return console.log(this.card.fields),Ct` ${this.badge}
         <div class="body">
             <slot name="icons"></slot>
             <slot name="heading-xs"></slot>
@@ -1179,6 +1182,7 @@ merch-card[variant^="plans"]:not([size]) {
         ${this.secureLabelFooter}`}};s(C,"variantStyle",Pe`
     :host([variant^='plans']) {
         min-height: 348px;
+        height: 100%;
         border: 1px solid var(--merch-card-custom-border-color, #DADADA);
         --merch-card-plans-min-width: 244px;
         --merch-card-plans-max-width: 244px;

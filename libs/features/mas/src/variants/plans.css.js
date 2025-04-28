@@ -15,9 +15,12 @@ merch-card[variant^="plans"] [slot="icons"] {
     --img-width: 41.5px;
 }
 
-
 merch-card[variant="plans-education"] [slot="subtitle"] {
     margin-top: 8px;
+}
+
+merch-card[variant^="plans"] [slot="body-xs"] {
+    flex-grow: 1;
 }
 
 merch-card[variant="plans-education"] [slot="body-xs"] span.price {
