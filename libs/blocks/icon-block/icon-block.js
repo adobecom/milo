@@ -55,19 +55,18 @@ function decorateContent(el) {
     text.classList.add('text-content');
     const image = block.querySelector(':scope img');
     const lastElem = text.lastElementChild;
+    let actionLink = null;
     if (lastElem.children.length === 1
       && lastElem.lastElementChild.nodeName === 'A'
       && lastElem.lastElementChild.innerText === lastElem.innerText) {
       text.lastElementChild.classList.add('action-area');
+      actionLink = lastElem.lastElementChild;
     }
 
     if (image) {
       const iconP = image.closest('p');
       iconP.classList.add('icon-area');
       const iconLink = iconP.querySelector('a');
-      const actionLink = lastElem?.children.length === 1 && lastElem.lastElementChild.nodeName === 'A'
-        ? lastElem.lastElementChild
-        : null;
 
       if (iconLink && actionLink) {
         const wrapper = createTag('a', {
@@ -77,15 +76,11 @@ function decorateContent(el) {
 
         iconLink.replaceWith(...iconLink.childNodes);
 
-        const actionContent = actionLink.innerHTML;
-        lastElem.innerHTML = actionContent;
-        lastElem.classList.add('action-area');
+        lastElem.innerHTML = actionLink.innerHTML;
 
-        wrapper.appendChild(iconP.cloneNode(true));
-        wrapper.appendChild(lastElem.cloneNode(true));
-
-        iconP.replaceWith(wrapper);
-        lastElem.remove();
+        iconP.parentNode.insertBefore(wrapper, iconP);
+        wrapper.appendChild(iconP);
+        wrapper.appendChild(lastElem);
       }
     }
     const size = getBlockSize(el, 2);
