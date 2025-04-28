@@ -22,6 +22,7 @@ const KEY_CODES = {
   HOME: 'Home',
   ARROW_LEFT: 'ArrowLeft',
   ARROW_RIGHT: 'ArrowRight',
+  TAB: 'Tab',
 };
 
 function decorateNextPreviousBtns() {
@@ -75,24 +76,24 @@ function decorateSlideIndicators(slides, jumpTo) {
       class: 'carousel-indicator',
       'data-index': i,
     });
+    slides[i].setAttribute('aria-hidden', true);
 
     if (jumpTo) {
-      slides[i].id = `slide-${i}`;
       li.setAttribute('role', 'tab');
       li.setAttribute('tabindex', -1);
       li.setAttribute('aria-selected', false);
       // li.setAttribute('aria-current', true);
       // li.setAttribute('aria-label', `Viewing Slide ${i + 1} of ${slides.length}`);
       // li.setAttribute('aria-label', `Slide ${i + 1}`);
-      li.setAttribute('aria-labelledby', `slide-${i}`);
+      li.setAttribute('aria-labelledby', slides[i].id);
     }
 
     // Set inital active state
     if (i === 0) {
+      slides[i].removeAttribute('aria-hidden');
       li.classList.add('active');
       if (jumpTo) {
         li.setAttribute('tabindex', 0);
-        li.setAttribute('aria-current', 'location');
       }
     }
     indicatorDots.push(li);
@@ -215,11 +216,11 @@ function moveSlides(event, carouselElements, jumpToIndex) {
   referenceSlide.classList.remove('reference-slide');
   referenceSlide.style.order = null;
   activeSlide.classList.remove('active');
+  activeSlide.setAttribute('aria-hidden', true);
   activeSlide.querySelectorAll('a, video').forEach((focusableElement) => focusableElement.setAttribute('tabindex', -1));
   activeSlideIndicator.classList.remove('active');
   if (jumpTo) {
     activeSlideIndicator.setAttribute('tabindex', -1);
-    activeSlideIndicator.removeAttribute('aria-current');
   }
 
   /*
@@ -249,6 +250,8 @@ function moveSlides(event, carouselElements, jumpToIndex) {
     referenceSlide = handleNext(referenceSlide, slides);
     activeSlideIndicator = handleNext(activeSlideIndicator, slideIndicators);
     activeSlide = handleNext(activeSlide, slides);
+    nextPreviousBtns[1].setAttribute('aria-labelledby', activeSlide.id);
+    activeSlide.removeAttribute('aria-hidden');
     slideContainer?.classList.remove('is-reversing');
   }
 
@@ -260,6 +263,8 @@ function moveSlides(event, carouselElements, jumpToIndex) {
     referenceSlide = handlePrevious(referenceSlide, slides);
     activeSlideIndicator = handlePrevious(activeSlideIndicator, slideIndicators);
     activeSlide = handlePrevious(activeSlide, slides);
+    nextPreviousBtns[0].setAttribute('aria-labelledby', activeSlide.id);
+    activeSlide.removeAttribute('aria-hidden');
     slideContainer.classList.add('is-reversing');
   }
 
@@ -290,7 +295,6 @@ function moveSlides(event, carouselElements, jumpToIndex) {
   activeSlideIndicator.classList.add('active');
   if (jumpTo) {
     activeSlideIndicator.setAttribute('tabindex', 0);
-    activeSlideIndicator.setAttribute('aria-current', 'location');
   }
   setIndicatorMultiplyer(carouselElements, activeSlideIndicator, event);
 
@@ -308,7 +312,11 @@ function moveSlides(event, carouselElements, jumpToIndex) {
   */
   const slideDelay = 25;
   slideContainer.classList.remove('is-ready');
-  return setTimeout(() => slideContainer.classList.add('is-ready'), slideDelay);
+  // nextPreviousBtns.forEach((btn) => btn.removeAttribute('aria-labelledby'));
+  return setTimeout(() => {
+    // nextPreviousBtns.forEach((btn) => btn.removeAttribute('aria-labelledby'));
+    slideContainer.classList.add('is-ready');
+  }, slideDelay);
 }
 
 export function getSwipeDistance(start, end) {
@@ -374,7 +382,11 @@ function handleChangingSlides(carouselElements) {
   // Handle keyboard navigation
   el.addEventListener('keydown', (event) => {
     if (event.key === KEY_CODES.ARROW_RIGHT
-      || event.key === KEY_CODES.ARROW_LEFT) { moveSlides(event, carouselElements); }
+      || event.key === KEY_CODES.ARROW_LEFT) {
+      moveSlides(event, carouselElements);
+    } else if (event.key === KEY_CODES.TAB) {
+      // nextPreviousBtns.forEach((btn) => btn.removeAttribute('aria-labelledby'));
+    }
   });
 
   // Handle slide indictors click
@@ -429,14 +441,16 @@ export default function init(el) {
       const slide = key.closest('.section');
       slide.classList.add('carousel-slide');
       rdx.push(slide);
-      slide.setAttribute('data-index', rdx.indexOf(slide));
+      const slideIndex = rdx.indexOf(slide);
+      slide.setAttribute('id', `${carouselName.toLowerCase().replaceAll(/\s+/g, '-')}-${slideIndex}`);
+      slide.setAttribute('data-index', slideIndex);
     }
     return rdx;
   }, []);
 
   const jumpTo = el.classList.contains('jump-to');
   const fragment = new DocumentFragment();
-  const nextPreviousBtns = decorateNextPreviousBtns();
+  const nextPreviousBtns = decorateNextPreviousBtns(slides);
   const nextPreviousContainer = createTag('div', { class: 'carousel-button-container' });
   const slideIndicators = decorateSlideIndicators(slides, jumpTo);
   const controlsContainer = createTag('div', { class: 'carousel-controls is-delayed' });
