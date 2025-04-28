@@ -165,6 +165,7 @@ export const CHECKOUT_ALLOWED_KEYS = [
   'lo',
   'mal',
   'ms',
+  'cs',
   'mv',
   'mv2',
   'nglwfdata',

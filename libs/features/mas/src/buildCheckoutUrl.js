@@ -122,13 +122,11 @@ export function setItemsParameter(items, parameters) {
  * Adds 3-in-1 parameters to the URL.
  * @param url - URL object
  * @param modal - modal type: 'crm', 'twp', 'd2p'
- * @param customerSegment - customer segment: 'INDIVIDUAL', 'TEAM'
- * @param marketSegment - market segment: 'EDU', 'COM'
- * @param cs - overriden customer segment
- * @param ms - overriden market segment
+ * @param checkoutData
  * @returns URL object
  */
-export function add3in1Parameters(url, modal, customerSegment, marketSegment, cs, ms) {
+export function add3in1Parameters(url, modal, checkoutData) {
+  const { customerSegment, marketSegment, cs, ms } = checkoutData;
   if (!Object.values(MODAL_TYPE_3_IN_1).includes(modal) || !url?.searchParams || !customerSegment || !marketSegment) return url;
   url.searchParams.set('rtc', 't');
   url.searchParams.set('lo', 'sl');
@@ -156,7 +154,7 @@ export function add3in1Parameters(url, modal, customerSegment, marketSegment, cs
  */
 export function buildCheckoutUrl(checkoutData) {
   validateCheckoutData(checkoutData);
-  const { env, items, workflowStep, ms, marketSegment, customerSegment, ot, offerType, pa, productArrangementCode, landscape, modal, cs, ...rest } =
+  const { env, items, workflowStep, ms, marketSegment, customerSegment, ot, offerType, pa, productArrangementCode, landscape, modal, ...rest } =
     checkoutData;
   const segmentationParameters = {
     marketSegment: marketSegment ?? ms,
@@ -175,7 +173,7 @@ export function buildCheckoutUrl(checkoutData) {
   if (landscape === Landscape.DRAFT) {
     addParameters({ af: AF_DRAFT_LANDSCAPE }, url.searchParams, ALLOWED_KEYS);
   }
-  url = add3in1Parameters(url, modal, customerSegment, marketSegment, cs, ms)
+  url = add3in1Parameters(url, modal, checkoutData)
   return url.toString();
 }
 
