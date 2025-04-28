@@ -6,9 +6,9 @@ import { decorateSectionAnalytics } from '../../martech/attributes.js';
 const FOCUSABLES = 'a:not(.hide-video), button:not([disabled], .locale-modal-v2 .paddle), input, textarea, select, details, [tabindex]:not([tabindex="-1"])';
 const CLOSE_ICON = `<svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20">
   <g transform="translate(-10500 3403)">
-    <circle cx="10" cy="10" r="10" transform="translate(10500 -3403)" fill="#707070"/>
-    <line y1="8" x2="8" transform="translate(10506 -3397)" fill="none" stroke="#fff" stroke-width="2"/>
-    <line x1="8" y1="8" transform="translate(10506 -3397)" fill="none" stroke="#fff" stroke-width="2"/>
+    <circle cx="10" cy="10" r="10" transform="translate(10500 -3403)"/>
+    <line y1="8" x2="8" transform="translate(10506 -3397)" fill="none" stroke-width="2"/>
+    <line x1="8" y1="8" transform="translate(10506 -3397)" fill="none" stroke-width="2"/>
   </g>
 </svg>`;
 
@@ -20,7 +20,13 @@ export function findDetails(hash, el) {
   const id = hash.replace('#', '');
   const a = el || document.querySelector(`a[data-modal-hash="${hash}"]`);
   const path = a?.dataset.modalPath || localizeLink(getMetadata(`-${id}`));
-  return { id, path, isHash: hash === window.location.hash };
+  const ariaLabel = a?.getAttribute('aria-label') || document.querySelector(`a[data-modal-id="${id}"]`)?.getAttribute('aria-label');
+  return {
+    id,
+    path,
+    isHash: hash === window.location.hash,
+    title: ariaLabel ? `Modal: ${ariaLabel}` : null,
+  };
 }
 
 function fireAnalyticsEvent(event) {
@@ -202,9 +208,17 @@ export async function getModal(details, custom) {
 
   const iframe = dialog.querySelector('iframe');
   if (iframe) {
+    if (details?.title) iframe.setAttribute('title', details.title);
+
     if (dialog.classList.contains('commerce-frame') || dialog.classList.contains('dynamic-height')) {
       const { default: enableCommerceFrameFeatures } = await import('./modal.merch.js');
       await enableCommerceFrameFeatures({ dialog, iframe });
+
+      if (!details?.title) {
+        const commerceDetails = findDetails(window.location.hash, null);
+        const commerceFrameTitle = commerceDetails?.title || null;
+        if (commerceFrameTitle) iframe.setAttribute('title', commerceFrameTitle);
+      }
     } else {
       /* Initially iframe height is set to 0% in CSS for the height auto adjustment feature.
       The height auto adjustment feature is applicable only to dialogs
