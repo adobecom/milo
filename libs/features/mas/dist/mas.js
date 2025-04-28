@@ -1068,6 +1068,10 @@ merch-card[variant^="plans"] [slot="footer"] a {
     padding: 3px 16px 4px;
 }
 
+merch-card[variant^="plans"] [slot="footer"] .con-button > span {
+    min-width: unset;
+}
+
 .plans-container {
     display: flex;
     justify-content: center;
