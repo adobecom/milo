@@ -43,7 +43,7 @@ function renderContainer(
     markup += renderSpan(cssClassNames.planType, planTypeLabel, null);
 
     if (perUnitLabel && (taxInclusivityLabel || planTypeLabel)) {
-        markup += ') ';
+        markup += ')';
     }
 
     return renderSpan(cssClass, markup, {
