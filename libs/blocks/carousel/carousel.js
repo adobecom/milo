@@ -456,7 +456,7 @@ export default function init(el) {
         child.setAttribute('id', childId);
         labelledBy += ` ${childId}`;
       });
-      slide.setAttribute('id', slideId);
+      // slide.setAttribute('id', slideId);
       slide.setAttribute('data-labelledby', labelledBy.trim());
       slide.setAttribute('aria-hidden', true);
     }
