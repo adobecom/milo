@@ -537,7 +537,7 @@ export async function getModalAction(offers, options, el) {
   if (!options.modal) return undefined;
 
   if (el.isOpen3in1Modal && !window.location.search.includes('testingWithout')) {
-    loadScript('https://commerce-stg.adobe.com/store/iframe/preload.js?cli=mini-plans', 'text/javascript', { mode: 'defer', id: 'ucv3-preload-script' });
+    loadScript('https://commerce.adobe.com/store/iframe/preload.js?cli=mini-plans', 'text/javascript', { mode: 'defer', id: 'ucv3-preload-script' });
   }
 
   const [{
