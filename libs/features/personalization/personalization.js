@@ -1423,14 +1423,14 @@ export async function init(enablements = {}) {
       countryIPPromise,
       geoLocation: mepgeolocation,
       targetInteractionPromise,
-      mmmSample: false,
+      mmmSave: false,
     };
     if (config.env?.name === 'prod' && mepSampleRate !== 'off') {
       let sampleRateDenom = 1000;
       if (!Number.isNaN(Number(mepSampleRate)) && mepSampleRate > sampleRateDenom) {
         sampleRateDenom = Number(mepSampleRate);
       }
-      if (config.mep?.preview || Math.random() < 1 / sampleRateDenom) config.mep.mmmSample = true;
+      if (config.mep?.preview || Math.random() < 1 / sampleRateDenom) config.mep.mmmSave = true;
     }
 
     manifests = manifests.concat(await combineMepSources(pzn, promo, mepParam));

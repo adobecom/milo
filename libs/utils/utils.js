@@ -1431,7 +1431,7 @@ async function loadPostLCP(config) {
   if (config?.mep) {
     import('../features/personalization/personalization.js')
       .then(({ addMepAnalytics }) => addMepAnalytics(config, header));
-    if (config.mep.mmmSample) {
+    if (config.mep.mmmSave) {
       await import('../features/personalization/mmm.js').then(({ saveToMmm }) => saveToMmm());
     }
   }
