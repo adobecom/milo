@@ -38,6 +38,7 @@ export function Price({ literals, providers, settings }) {
             displayPlanType,
             forceTaxExclusive,
             perpetual,
+            displayAnnual,
             promotionCode,
             quantity,
             alternativePrice,
@@ -55,6 +56,7 @@ export function Price({ literals, providers, settings }) {
                 displayPlanType: toBoolean(displayPlanType),
                 forceTaxExclusive: toBoolean(forceTaxExclusive),
                 perpetual: toBoolean(perpetual),
+                displayAnnual: toBoolean(displayAnnual),
                 promotionCode:
                     computePromoStatus(promotionCode).effectivePromoCode,
                 quantity: toQuantity(quantity, Defaults.quantity),
@@ -96,7 +98,7 @@ export function Price({ literals, providers, settings }) {
                 } else if (options.template === 'optical') {
                     method = priceOptical;
                 } else if (
-                    options.country === 'AU' &&
+                    options.displayAnnual &&
                     offers[0].planType === 'ABM'
                 ) {
                     method = options.promotionCode

@@ -197,20 +197,15 @@ export function processDescription(fields, merchCard, mapping) {
     appendSlot('quantitySelect', fields, merchCard, mapping);
 }
 
-export function processStockOffersAndSecureLabel(
-    fields,
-    merchCard,
-    aemFragmentMapping,
-    settings,
-) {
-    // for Stock Checkbox, presence flag is set on the card, label and osi for an offer are set in settings
-    if (fields.showStockCheckbox && aemFragmentMapping.stockOffer) {
-        merchCard.setAttribute('checkbox-label', settings.stockCheckboxLabel);
-        merchCard.setAttribute('stock-offer-osis', settings.stockOfferOsis);
-    }
-    if (settings.secureLabel && aemFragmentMapping.secureLabel) {
-        merchCard.setAttribute('secure-label', settings.secureLabel);
-    }
+export function processStockOffersAndSecureLabel(fields, merchCard, aemFragmentMapping, settings) {
+  // for Stock Checkbox, presence flag is set on the card, label and osi for an offer are set in settings
+  if (fields.showStockCheckbox && aemFragmentMapping.stockOffer) {
+    merchCard.setAttribute('checkbox-label', settings?.stockCheckboxLabel ? settings.stockCheckboxLabel : '');
+    merchCard.setAttribute('stock-offer-osis', settings?.stockOfferOsis ? settings.stockOfferOsis : '');
+  }
+  if (settings?.secureLabel && aemFragmentMapping?.secureLabel) {
+    merchCard.setAttribute('secure-label', settings.secureLabel);
+  }
 }
 
 export function getTruncatedTextData(text, limit, withSuffix = true) {
