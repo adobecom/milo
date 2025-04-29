@@ -781,13 +781,6 @@ export default async function init(el) {
   const service = await initService();
   log = service.Log.module('merch');
   if (merch) {
-    // preload Unified Checkout for 3-in-1
-    if (merch.isOpen3in1Modal) {
-      if (!document.querySelector('#ucv3-preload-script')) {
-        const ucScript = createTag('script', { id: 'ucv3-preload-script', type: 'text/javascript', src: 'https://commerce.adobe.com/store/iframe/preload?cli=creative', defer: '' });
-        document.body.append(ucScript);
-      }
-    }
     log.debug('Rendering:', { options: { ...merch.dataset }, merch, el });
     el.replaceWith(merch);
     return merch;
