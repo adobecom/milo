@@ -77,6 +77,7 @@ export const handle3in1IFrameEvents = ({ data: msgData }) => {
   if (!threeInOne) return;
   switch (subType) {
     case MSG_SUBTYPE.AppLoaded:
+      console.log('modal content loaded...', new Date());
       iframe?.setAttribute('data-pageloaded', 'true');
       iframe?.classList.remove('loading');
       threeInOne.querySelector('sp-theme')?.remove();

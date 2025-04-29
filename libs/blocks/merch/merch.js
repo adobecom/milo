@@ -503,6 +503,7 @@ export async function openModal(e, url, offerType, hash, extraOptions, el) {
   if (el?.isOpen3in1Modal) {
     const { default: openThreeInOneModal, handle3in1IFrameEvents } = await import('./three-in-one.js');
     window.addEventListener('message', handle3in1IFrameEvents);
+    console.log('opening modal...', new Date());
     modal = await openThreeInOneModal(el);
     return;
   }
@@ -535,7 +536,7 @@ const isProdModal = (url) => {
 export async function getModalAction(offers, options, el) {
   if (!options.modal) return undefined;
 
-  if (el.isOpen3in1Modal) {
+  if (el.isOpen3in1Modal && !window.location.search.includes('testingWithout')) {
     loadScript('https://commerce-stg.adobe.com/store/iframe/preload.js?cli=mini-plans', 'text/javascript', { mode: 'defer', id: 'ucv3-preload-script' });
   }
 
