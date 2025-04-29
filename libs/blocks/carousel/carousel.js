@@ -243,7 +243,9 @@ function moveSlides(event, carouselElements, jumpToIndex) {
     // if (nextBtnLabelledBy !== activeSlide.id) {
     // }
     activeSlide.removeAttribute('aria-hidden');
-    nextPreviousBtns[1].setAttribute('aria-labelledby', activeSlide.id);
+    const dataLabelledBy = activeSlide.getAttribute('data-labelledby');
+    nextPreviousBtns[1].setAttribute('aria-labelledby', dataLabelledBy);
+    // nextPreviousBtns[1].setAttribute('aria-labelledby', activeSlide.id);
     nextPreviousBtns[1].focus();
     slideContainer?.classList.remove('is-reversing');
   }
@@ -259,7 +261,9 @@ function moveSlides(event, carouselElements, jumpToIndex) {
     // if (prevBtnLabelledBy !== activeSlide.id) {
     // }
     activeSlide.removeAttribute('aria-hidden');
-    nextPreviousBtns[0].setAttribute('aria-labelledby', activeSlide.id);
+    const dataLabelledBy = activeSlide.getAttribute('data-labelledby');
+    nextPreviousBtns[0].setAttribute('aria-labelledby', dataLabelledBy);
+    // nextPreviousBtns[0].setAttribute('aria-labelledby', activeSlide.id);
     nextPreviousBtns[0].focus();
     slideContainer.classList.add('is-reversing');
   }
@@ -372,17 +376,14 @@ function handleChangingSlides(carouselElements) {
     });
     btn.addEventListener('mouseover', () => {
       if (btn.getAttribute('aria-labelledby')) return;
-      console.log('mousein');
       const active = el.querySelector('.active');
       const dataToggle = btn.getAttribute('data-toggle');
       const nextEl = dataToggle === 'next' ? handleNext(active, slides) : handlePrevious(active, slides);
-      setTimeout(() => {
-        btn.setAttribute('aria-labelledby', nextEl.id);
-      });
+      const dataLabelledBy = nextEl.getAttribute('data-labelledby');
+      btn.setAttribute('aria-labelledby', dataLabelledBy);
     });
     btn.addEventListener('mouseout', (event) => {
       if (event.target !== btn) return;
-      console.log('mouseout');
       btn.removeAttribute('aria-labelledby');
     });
   });
@@ -444,12 +445,19 @@ export default function init(el) {
     if (key.textContent === 'carousel' && key.nextElementSibling.textContent === carouselName) {
       const slide = key.closest('.section');
       slide.classList.add('carousel-slide');
-      key.closest('.section-metadata').remove();
       rdx.push(slide);
       const slideIndex = rdx.indexOf(slide);
       slide.setAttribute('data-index', slideIndex);
+      let labelledBy = '';
       const slideId = `${carouselName.toLowerCase().trim().replaceAll(/\s+/g, '-')}-${slideIndex}`;
+      [...slide.children].forEach((child, index) => {
+        if (child.classList.contains('section-metadata')) return;
+        const childId = `${slideId}-${index}`;
+        child.setAttribute('id', childId);
+        labelledBy += ` ${childId}`;
+      });
       slide.setAttribute('id', slideId);
+      slide.setAttribute('data-labelledby', labelledBy.trim());
       slide.setAttribute('aria-hidden', true);
     }
     return rdx;
