@@ -87,7 +87,12 @@ header.global-navigation {
 }
 
 .feds-promo-aside-wrapper .aside.promobar {
-  min-height: 100%;
+  animation: 0s 1s appendHeight forwards;
+}
+@keyframes appendHeight {
+  100% {
+    min-height: 100%;
+  }
 }
 
 /* Product Entry CTA */
