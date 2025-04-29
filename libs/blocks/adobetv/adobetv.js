@@ -1,5 +1,5 @@
 import { decorateAnchorVideo } from '../../utils/decorate.js';
-import { createTag, setDialogAndElementAttributes } from '../../utils/utils.js';
+import { createTag } from '../../utils/utils.js';
 
 export default function init(a) {
   a.classList.add('hide-video');
@@ -29,7 +29,8 @@ export default function init(a) {
     if (videoId) {
       window.fetch(`https://video.tv.adobe.com/v/${videoId}?format=json-ld`)
         .then((res) => res.json())
-        .then((info) => {
+        .then(async (info) => {
+          const { setDialogAndElementAttributes } = await import('../../scripts/accessibility.js');
           setDialogAndElementAttributes({ element: iframe, title: `${info?.jsonLinkedData?.name}` });
         });
     }

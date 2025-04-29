@@ -763,12 +763,6 @@ export function decorateImageLinks(el) {
   });
 }
 
-export const setDialogAndElementAttributes = ({ element, title }) => {
-  if (!element || !title) return;
-  element.title = title;
-  element.closest('.dialog-modal')?.setAttribute('aria-label', title);
-};
-
 export function isTrustedAutoBlock(autoBlock, url) {
   if (!url.href.includes(autoBlock)) return false;
   const urlHostname = url.hostname.replace('www.', '');
