@@ -22,6 +22,7 @@ const KEY_CODES = {
   HOME: 'Home',
   ARROW_LEFT: 'ArrowLeft',
   ARROW_RIGHT: 'ArrowRight',
+  TAB: 'Tab',
 };
 
 function decorateNextPreviousBtns() {
@@ -44,6 +45,7 @@ function decorateNextPreviousBtns() {
     },
     ARROW_NEXT_IMG,
   );
+
   return [previousBtn, nextBtn];
 }
 
@@ -67,7 +69,7 @@ function decorateLightboxButtons() {
   return [expandBtn, closeBtn];
 }
 
-function decorateSlideIndicators(slides, jumpTo) {
+function decorateSlideIndicators(slides) {
   const indicatorDots = [];
 
   for (let i = 0; i < slides.length; i += 1) {
@@ -76,17 +78,15 @@ function decorateSlideIndicators(slides, jumpTo) {
       'data-index': i,
     });
 
-    if (jumpTo) {
-      li.setAttribute('role', 'tab');
-      li.setAttribute('tabindex', -1);
-      li.setAttribute('aria-selected', false);
-      li.setAttribute('aria-labelledby', `Viewing Slide ${i + 1}`);
-    }
+    li.setAttribute('role', 'tab');
+    li.setAttribute('tabindex', -1);
+    li.setAttribute('aria-selected', false);
+    li.setAttribute('aria-label', `Slide ${i + 1} of ${slides.length}`);
 
     // Set inital active state
     if (i === 0) {
       li.classList.add('active');
-      if (jumpTo) li.setAttribute('tabindex', 0);
+      li.setAttribute('tabindex', 0);
     }
     indicatorDots.push(li);
   }
@@ -187,7 +187,6 @@ function moveSlides(event, carouselElements, jumpToIndex) {
     slideIndicators,
     controlsContainer,
     direction,
-    jumpTo,
   } = carouselElements;
 
   let referenceSlide = slideContainer.querySelector('.reference-slide');
@@ -208,9 +207,10 @@ function moveSlides(event, carouselElements, jumpToIndex) {
   referenceSlide.classList.remove('reference-slide');
   referenceSlide.style.order = null;
   activeSlide.classList.remove('active');
+  activeSlide.setAttribute('aria-hidden', true);
   activeSlide.querySelectorAll('a, video').forEach((focusableElement) => focusableElement.setAttribute('tabindex', -1));
   activeSlideIndicator.classList.remove('active');
-  if (jumpTo) activeSlideIndicator.setAttribute('tabindex', -1);
+  activeSlideIndicator.setAttribute('tabindex', -1);
 
   /*
    * If indicator dot buttons are clicked update:
@@ -228,6 +228,7 @@ function moveSlides(event, carouselElements, jumpToIndex) {
     referenceSlide.style.order = '1';
     activeSlideIndicator = slideIndicators[jumpToIndex];
     activeSlide = slides[jumpToIndex];
+    activeSlide.removeAttribute('aria-hidden');
     jumpToDirection(activeSlideIndex, jumpToIndex, slideContainer);
   }
 
@@ -235,10 +236,15 @@ function moveSlides(event, carouselElements, jumpToIndex) {
   if ((event.currentTarget).dataset.toggle === 'next'
     || event.key === KEY_CODES.ARROW_RIGHT
     || (direction === 'left' && event.type === 'touchend')) {
-    nextPreviousBtns[1].focus();
     referenceSlide = handleNext(referenceSlide, slides);
     activeSlideIndicator = handleNext(activeSlideIndicator, slideIndicators);
     activeSlide = handleNext(activeSlide, slides);
+    const nextBtnLabelledBy = nextPreviousBtns[1].getAttribute('aria-labelledby');
+    if (nextBtnLabelledBy !== activeSlide.id) {
+      nextPreviousBtns[1].setAttribute('aria-labelledby', activeSlide.id);
+    }
+    activeSlide.removeAttribute('aria-hidden');
+    nextPreviousBtns[1].focus();
     slideContainer?.classList.remove('is-reversing');
   }
 
@@ -246,10 +252,15 @@ function moveSlides(event, carouselElements, jumpToIndex) {
   if ((event.currentTarget).dataset.toggle === 'previous'
     || event.key === KEY_CODES.ARROW_LEFT
     || (direction === 'right' && event.type === 'touchend')) {
-    nextPreviousBtns[0].focus();
     referenceSlide = handlePrevious(referenceSlide, slides);
     activeSlideIndicator = handlePrevious(activeSlideIndicator, slideIndicators);
     activeSlide = handlePrevious(activeSlide, slides);
+    const prevBtnLabelledBy = nextPreviousBtns[0].getAttribute('aria-labelledby');
+    if (prevBtnLabelledBy !== activeSlide.id) {
+      nextPreviousBtns[0].setAttribute('aria-labelledby', activeSlide.id);
+    }
+    activeSlide.removeAttribute('aria-hidden');
+    nextPreviousBtns[0].focus();
     slideContainer.classList.add('is-reversing');
   }
 
@@ -278,7 +289,7 @@ function moveSlides(event, carouselElements, jumpToIndex) {
       .forEach((focusableElement) => { focusableElement.setAttribute('tabindex', 0); });
   }
   activeSlideIndicator.classList.add('active');
-  if (jumpTo) activeSlideIndicator.setAttribute('tabindex', 0);
+  activeSlideIndicator.setAttribute('tabindex', 0);
   setIndicatorMultiplyer(carouselElements, activeSlideIndicator, event);
 
   // Loop over all slide siblings to update their order
@@ -349,12 +360,30 @@ function mobileSwipeDetect(carouselElements) {
 }
 
 function handleChangingSlides(carouselElements) {
-  const { el, nextPreviousBtns, slideIndicators, jumpTo } = carouselElements;
+  const { el, nextPreviousBtns, slideIndicators, jumpTo, slides } = carouselElements;
 
   // Handle Next/Previous Buttons
   [...nextPreviousBtns].forEach((btn) => {
     btn.addEventListener('click', (event) => {
       moveSlides(event, carouselElements);
+    });
+    btn.addEventListener('blur', () => {
+      btn.removeAttribute('aria-labelledby');
+    });
+    btn.addEventListener('mouseover', () => {
+      if (btn.getAttribute('aria-labelledby')) return;
+      console.log('mousein1');
+      const active = el.querySelector('.active');
+      const dataToggle = btn.getAttribute('data-toggle');
+      const nextEl = dataToggle === 'next' ? handleNext(active, slides) : handlePrevious(active, slides);
+      setTimeout(() => {
+        btn.setAttribute('aria-labelledby', nextEl.id);
+      });
+    });
+    btn.addEventListener('mouseout', (event) => {
+      if (event.target !== btn) return;
+      console.log('mouseout');
+      btn.removeAttribute('aria-labelledby');
     });
   });
 
@@ -416,16 +445,20 @@ export default function init(el) {
       const slide = key.closest('.section');
       slide.classList.add('carousel-slide');
       rdx.push(slide);
-      slide.setAttribute('data-index', rdx.indexOf(slide));
+      const slideIndex = rdx.indexOf(slide);
+      slide.setAttribute('data-index', slideIndex);
+      const slideId = `${carouselName.toLowerCase().trim().replaceAll(/\s+/g, '-')}-${slideIndex}`;
+      slide.setAttribute('id', slideId);
+      slide.setAttribute('aria-hidden', true);
     }
     return rdx;
   }, []);
 
   const jumpTo = el.classList.contains('jump-to');
   const fragment = new DocumentFragment();
-  const nextPreviousBtns = decorateNextPreviousBtns();
+  const nextPreviousBtns = decorateNextPreviousBtns(slides);
   const nextPreviousContainer = createTag('div', { class: 'carousel-button-container' });
-  const slideIndicators = decorateSlideIndicators(slides, jumpTo);
+  const slideIndicators = decorateSlideIndicators(slides);
   const controlsContainer = createTag('div', { class: 'carousel-controls is-delayed' });
 
   convertMpcMp4(slides);
@@ -462,11 +495,8 @@ export default function init(el) {
   el.append(slideWrapper);
 
   const dotsUl = createTag('ul', { class: 'carousel-indicators' });
-  if (jumpTo) {
-    dotsUl.setAttribute('role', 'tablist');
-    dotsUl.setAttribute('tabindex', 0);
-  }
-
+  dotsUl.setAttribute('role', 'tablist');
+  dotsUl.setAttribute('tabindex', 0);
   dotsUl.append(...slideIndicators);
   controlsContainer.append(dotsUl);
   nextPreviousContainer.append(...nextPreviousBtns, controlsContainer);
@@ -482,6 +512,7 @@ export default function init(el) {
   parentArea.addEventListener(MILO_EVENTS.DEFERRED, handleDeferredImages, true);
 
   slides[0].classList.add('active');
+  slides[0].removeAttribute('aria-hidden');
   const IndexOfShowClass = [...el.classList].findIndex((ele) => ele.includes('show-'));
   let NoOfVisibleSlides = 1;
   if (IndexOfShowClass >= 0) {
