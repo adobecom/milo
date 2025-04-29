@@ -12,13 +12,12 @@ const getPlaceholdersPath = (config, sheet) => {
 const parsePlaceholderJson = async (resp, placeholders) => {
   try {
     const json = resp.ok ? await resp.json() : { data: [] };
-    if (!json.data.length) return;
-    json.data.forEach((item) => {
+    json.data?.forEach((item) => {
       window.mph[item.key] = item.value;
       placeholders[item.key] = item.value;
     });
   } catch (e) {
-    console.log('Error parsing placeholder json', e);
+    window.lana.log(`Error parsing placeholder json: ${e.message}`, { tags: 'placeholders', errorType: 'e' });
   }
 };
 
