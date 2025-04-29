@@ -503,7 +503,7 @@ export async function openModal(e, url, offerType, hash, extraOptions, el) {
   if (el?.isOpen3in1Modal) {
     const { default: openThreeInOneModal, handle3in1IFrameEvents } = await import('./three-in-one.js');
     window.addEventListener('message', handle3in1IFrameEvents);
-    console.log('opening modal...', new Date());
+    console.log('opening modal...', new Date().getTime());
     modal = await openThreeInOneModal(el);
     return;
   }
