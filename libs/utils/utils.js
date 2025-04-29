@@ -590,7 +590,7 @@ export function appendHtmlToLink(link) {
   }
 }
 
-export const loadScript = (url, type, { mode } = {}) => new Promise((resolve, reject) => {
+export const loadScript = (url, type, { mode, ...attrs } = {}) => new Promise((resolve, reject) => {
   let script = document.querySelector(`head > script[src="${url}"]`);
   if (!script) {
     const { head } = document;
@@ -600,6 +600,9 @@ export const loadScript = (url, type, { mode } = {}) => new Promise((resolve, re
       script.setAttribute('type', type);
     }
     if (['async', 'defer'].includes(mode)) script.setAttribute(mode, true);
+    Object.keys(attrs).forEach((key) => {
+      script.setAttribute(key, attrs[key]);
+    });
     head.append(script);
   }
 
