@@ -1,9 +1,6 @@
 // part of the code is an optimized version of lite-vimeo-embed -> https://github.com/luwes/lite-vimeo-embed
 import { replaceKey } from '../../features/placeholders.js';
-import {
-  createIntersectionObserver, createTag, getConfig, isInTextNode, loadLink,
-  setDialogAndElementAttributes,
-} from '../../utils/utils.js';
+import { createIntersectionObserver, createTag, getConfig, isInTextNode, loadLink } from '../../utils/utils.js';
 
 class LiteVimeo extends HTMLElement {
   static preconnected = false;
@@ -23,6 +20,7 @@ class LiteVimeo extends HTMLElement {
       const response = await fetch(`https://vimeo.com/api/oembed.json?url=https://vimeo.com/${this.videoId}`);
       const data = await response.json();
 
+      const { setDialogAndElementAttributes } = await import('../../scripts/accessibility.js');
       setDialogAndElementAttributes({ element: this.iframeEl, title: data.title });
     } catch (error) {
       window.lana.log('Error fetching Vimeo video title', { error });
