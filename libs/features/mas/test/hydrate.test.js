@@ -1,7 +1,7 @@
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
 import '../../spectrum-web-components/dist/button.js';
-import mas from './mas.js';
+import '../src/mas.js';
 import {
     hydrate,
     processMnemonics,
@@ -52,7 +52,6 @@ const mockMerchCard = () => {
     return merchCard;
 };
 
-await mas();
 await mockFetch(withWcs);
 
 document.head.appendChild(document.createElement('mas-commerce-service'));
@@ -200,7 +199,7 @@ describe('processCTAs', async () => {
 
         const link = footer.firstChild;
         expect(link.classList.contains('con-button')).to.be.true;
-        expect(link.classList.contains('accent')).to.be.true;
+        expect(link.classList.contains('blue')).to.be.true;
     });
 
     it('should handle multiple CTAs', async () => {
@@ -273,7 +272,6 @@ describe('processSubtitle', () => {
     let merchCard;
 
     before(async () => {
-        await mas();
         await mockFetch(withWcs);
     });
 
@@ -476,6 +474,11 @@ describe('hydrate', () => {
 
     it('should hydrate a ccd-slice merch card', async () => {
         const fragment = {
+            settings: {
+                stockCheckboxLabel: '{{stock-checkbox-label}}',
+                stockOfferOsis: '',
+                secureLabel: '{{secure-label}}',
+            },
             fields: {
                 variant: 'ccd-slice',
                 mnemonicIcon: ['www.adobe.com/icons/photoshop.svg'],
