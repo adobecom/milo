@@ -1598,9 +1598,8 @@ async function processSection(section, config, isDoc) {
 
 export async function loadArea(area = document) {
   const isDoc = area === document;
-  if (isDoc && !!document.getElementById('page-load-ok-milo')) return;
-
   if (isDoc) {
+    if (document.getElementById('page-load-ok-milo')) return;
     await checkForPageMods();
     appendHtmlToCanonicalUrl();
     appendSuffixToTitles();
