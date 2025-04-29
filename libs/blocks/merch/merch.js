@@ -250,6 +250,14 @@ export function getMasBase(hostname, maslibs) {
   return baseUrl;
 }
 
+function getCommercePreloadUrl() {
+  const { env } = getConfig();
+  if (env === 'prod') {
+    return 'https://commerce.adobe.com/store/iframe/preload.js';
+  }
+  return 'https://commerce-stg.adobe.com/store/iframe/preload.js';
+}
+
 export async function polyfills() {
   if (polyfills.promise) return polyfills.promise;
   let isSupported = false;
@@ -503,7 +511,6 @@ export async function openModal(e, url, offerType, hash, extraOptions, el) {
   if (el?.isOpen3in1Modal) {
     const { default: openThreeInOneModal, handle3in1IFrameEvents } = await import('./three-in-one.js');
     window.addEventListener('message', handle3in1IFrameEvents);
-    console.log('opening modal...', new Date().getTime());
     modal = await openThreeInOneModal(el);
     return;
   }
@@ -536,8 +543,10 @@ const isProdModal = (url) => {
 export async function getModalAction(offers, options, el) {
   if (!options.modal) return undefined;
 
-  if (el.isOpen3in1Modal && !window.location.search.includes('testingWithout')) {
-    loadScript('https://commerce.adobe.com/store/iframe/preload.js?cli=mini-plans', 'text/javascript', { mode: 'defer', id: 'ucv3-preload-script' });
+  if (el.isOpen3in1Modal) {
+    const baseUrl = getCommercePreloadUrl();
+    const client = 'mini-plans'; // TODO get client
+    loadScript(`${baseUrl}?cli=${client}`, 'text/javascript', { mode: 'defer', id: 'ucv3-preload-script' });
   }
 
   const [{
