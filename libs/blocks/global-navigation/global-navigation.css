@@ -86,10 +86,6 @@ header.global-navigation {
   z-index: 1;
 }
 
-.feds-promo-aside-wrapper .aside.promobar {
-  min-height: 100%;
-}
-
 /* Product Entry CTA */
 .feds-product-entry-cta{
   align-items: center;

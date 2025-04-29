@@ -264,13 +264,13 @@ export class AemFragment extends HTMLElement {
     }
 
     transformPublishData() {
-        const { fields, id, tags } = this.#rawData;
+        const { fields, id, tags, settings } = this.#rawData;
         this.#data = Object.entries(fields).reduce(
             (acc, [key, value]) => {
                 acc.fields[key] = value?.mimeType ? value.value : (value ?? '');
                 return acc;
             },
-            { fields: {}, id, tags },
+            { fields: {}, id, tags, settings },
         );
     }
 }
