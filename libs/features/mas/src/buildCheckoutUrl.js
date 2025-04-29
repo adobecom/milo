@@ -154,7 +154,7 @@ export function add3in1Parameters(url, modal, checkoutData) {
  */
 export function buildCheckoutUrl(checkoutData) {
   validateCheckoutData(checkoutData);
-  const { env, items, workflowStep, ms, marketSegment, customerSegment, ot, offerType, pa, productArrangementCode, landscape, modal, ...rest } =
+  const { env, items, workflowStep, ms, cs, marketSegment, customerSegment, ot, offerType, pa, productArrangementCode, landscape, modal, ...rest } =
     checkoutData;
   const segmentationParameters = {
     marketSegment: marketSegment ?? ms,
