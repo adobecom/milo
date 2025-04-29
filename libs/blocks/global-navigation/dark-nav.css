@@ -210,7 +210,7 @@ header.global-navigation.feds--dark,
 * background transparent
 */
 .feds-navLink--gray-gradient {
-  background: transparent;
+  background: #1b1b1b;
 }
 
 @media (min-width: 900px) {
