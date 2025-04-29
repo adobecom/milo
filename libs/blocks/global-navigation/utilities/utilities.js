@@ -59,7 +59,7 @@ export const darkIcons = {
 };
 
 export const lanaLog = ({ message, e = '', tags = 'default', errorType }) => {
-  const { locale } = getConfig();
+  const { locale = {} } = getConfig();
   const url = getMetadata('gnav-source') || `${locale.contentRoot}/gnav`;
   window.lana.log(`${message} | gnav-source: ${url} | href: ${window.location.href} | ${e.reason || e.error || e.message || e}`, {
     clientId: 'feds-milo',
