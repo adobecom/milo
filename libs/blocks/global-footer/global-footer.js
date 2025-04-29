@@ -102,6 +102,18 @@ class Footer {
     // Support auto populated modal
     await Promise.all([...this.body.querySelectorAll('.modal')].map(loadBlock));
 
+    // get jarvis metadata
+    const sectionMeta = this.body.querySelector('.section-metadata');
+    if (sectionMeta) {
+      const { getMetadata: sectionMetadata } = await import('../section-metadata/section-metadata.js');
+      const jarvisMeta = {};
+      Object.entries(sectionMetadata(sectionMeta)).forEach(([key, value]) => {
+        if (key.startsWith('jarvis-')) jarvisMeta[key] = value.text;
+      });
+      const jarvisLink = this.body.querySelector('[href*="#open-jarvis-chat"]');
+      if (jarvisLink && Object.keys(jarvisMeta).length) jarvisLink.setAttribute('data-jarvis-config', JSON.stringify(jarvisMeta));
+    }
+
     const path = getFederatedUrl(url);
     federatePictureSources({ section: this.body, forceFederate: path.includes('/federal/') });
 

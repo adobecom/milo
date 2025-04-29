@@ -2,6 +2,7 @@ let chatInitialized = false;
 let loadScript;
 let loadStyle;
 let getMetadata;
+let jarvisSecMeta = null;
 
 const isSilentEvent = (data) => (data['event.workflow'] === 'init' && data['event.type'] === 'request')
   || (data['event.workflow'] === 'Chat' && data['event.type'] === 'load' && data['event.subtype'] === 'window');
@@ -245,7 +246,18 @@ const startInitialization = async (config, event, onDemand) => {
       },
       initErrorCallback: () => {},
       chatStateCallback: () => {},
-      getContextCallback: () => {},
+      getContextCallback: () => {
+        let appId; let appVer;
+        if (jarvisSecMeta) {
+          appId = jarvisSecMeta['jarvis-surface-id'];
+          appVer = jarvisSecMeta['jarvis-surface-version'];
+          jarvisSecMeta = null;
+        }
+        return {
+          appid: appId || getMetadata('jarvis-surface-id') || config.jarvis.id,
+          appver: appVer || getMetadata('jarvis-surface-version') || config.jarvis.version,
+        };
+      },
       signInProvider: () => window.adobeIMS?.signIn(config.signInContext),
       analyticsCallback: (eventData) => {
         if (!window.alloy_all || !window.digitalData) return;
@@ -296,7 +308,18 @@ const initJarvisChat = async (
   const onDemand = onDemandMeta ? onDemandMeta === 'on' : config.jarvis.onDemand;
 
   document.addEventListener('click', async (event) => {
-    if (!event.target.closest('[href*="#open-jarvis-chat"]')) return;
+    const jarvisLink = event.target.closest('[href*="#open-jarvis-chat"]');
+    if (!jarvisLink) return;
+    if (event.target.closest('.global-footer')) {
+      try {
+        const jarvisAttr = jarvisLink.getAttribute('data-jarvis-config');
+        jarvisSecMeta = jarvisAttr ? JSON.parse(jarvisAttr) : null;
+      } catch (e) {
+        // do nothing
+      }
+    } else {
+      jarvisSecMeta = null;
+    }
     event.preventDefault();
     if (onDemand && !chatInitialized) {
       await startInitialization(config, event, onDemand);
