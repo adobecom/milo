@@ -2,7 +2,11 @@ import { VariantLayout } from './variant-layout';
 import { html, css } from 'lit';
 import { CSS } from './plans.css.js';
 import { isMobile, matchMobile } from '../utils.js';
-import { SELECTOR_MAS_INLINE_PRICE, TEMPLATE_PRICE, TEMPLATE_PRICE_LEGAL } from '../constants.js';
+import {
+    SELECTOR_MAS_INLINE_PRICE,
+    TEMPLATE_PRICE,
+    TEMPLATE_PRICE_LEGAL,
+} from '../constants.js';
 
 export const PLANS_AEM_FRAGMENT_MAPPING = {
     title: { tag: 'p', slot: 'heading-xs' },
@@ -98,8 +102,8 @@ export class Plans extends VariantLayout {
     }
 
     async adjustLegal() {
-        if (this.legal) return;
         await this.card.updateComplete;
+        if (this.legal) return;
         const headingM = this.card.querySelector('[slot="heading-m"]');
         if (!headingM) return;
         const price = headingM.querySelector(
@@ -109,9 +113,11 @@ export class Plans extends VariantLayout {
         this.legal = legal;
         await price.onceSettled();
         if (!price?.options) return;
-        if (price.options.displayPerUnit) price.dataset.displayPerUnit = 'false';
+        if (price.options.displayPerUnit)
+            price.dataset.displayPerUnit = 'false';
         if (price.options.displayTax) price.dataset.displayTax = 'false';
-        if (price.options.displayPlanType) price.dataset.displayPlanType = 'false';
+        if (price.options.displayPlanType)
+            price.dataset.displayPlanType = 'false';
         legal.setAttribute('data-template', 'legal');
         headingM.appendChild(legal);
     }

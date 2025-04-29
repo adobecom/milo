@@ -193,7 +193,11 @@ export class MerchCard extends LitElement {
                 this.computedBorderStyle,
             );
         }
-        this.variantLayout?.postCardUpdateHook(changedProperties);
+        try {
+            this.variantLayout?.postCardUpdateHook(changedProperties);
+        } catch (e) {
+            this.#fail(`Error in postCardUpdateHook: ${e.message}`, {}, false);
+        }
     }
 
     get theme() {

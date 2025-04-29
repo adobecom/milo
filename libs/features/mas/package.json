@@ -7,9 +7,10 @@
     "scripts": {
         "lint": "eslint --fix",
         "build": "npm run test && npm run build:bundle",
-        "build:dev": "npm run build:bundle sourcemap",
+        "build:dev": "npm run test && npm run build:bundle:dev",
         "build:docs": "cd ./docs/src && ./build-docs.sh",
         "build:bundle": "node ./build.mjs",
+        "build:bundle:dev": "npm run build:bundle sourcemap",
         "test:watch": "wtr --config ./web-test-runner.config.mjs --coverage --watch --debug",
         "test": "wtr --config ./web-test-runner.config.mjs --coverage"
     },
