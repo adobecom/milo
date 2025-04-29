@@ -239,11 +239,11 @@ function moveSlides(event, carouselElements, jumpToIndex) {
     referenceSlide = handleNext(referenceSlide, slides);
     activeSlideIndicator = handleNext(activeSlideIndicator, slideIndicators);
     activeSlide = handleNext(activeSlide, slides);
-    const nextBtnLabelledBy = nextPreviousBtns[1].getAttribute('aria-labelledby');
-    if (nextBtnLabelledBy !== activeSlide.id) {
-      nextPreviousBtns[1].setAttribute('aria-labelledby', activeSlide.id);
-    }
+    // const nextBtnLabelledBy = nextPreviousBtns[1].getAttribute('aria-labelledby');
+    // if (nextBtnLabelledBy !== activeSlide.id) {
+    // }
     activeSlide.removeAttribute('aria-hidden');
+    nextPreviousBtns[1].setAttribute('aria-labelledby', activeSlide.id);
     nextPreviousBtns[1].focus();
     slideContainer?.classList.remove('is-reversing');
   }
@@ -255,11 +255,11 @@ function moveSlides(event, carouselElements, jumpToIndex) {
     referenceSlide = handlePrevious(referenceSlide, slides);
     activeSlideIndicator = handlePrevious(activeSlideIndicator, slideIndicators);
     activeSlide = handlePrevious(activeSlide, slides);
-    const prevBtnLabelledBy = nextPreviousBtns[0].getAttribute('aria-labelledby');
-    if (prevBtnLabelledBy !== activeSlide.id) {
-      nextPreviousBtns[0].setAttribute('aria-labelledby', activeSlide.id);
-    }
+    // const prevBtnLabelledBy = nextPreviousBtns[0].getAttribute('aria-labelledby');
+    // if (prevBtnLabelledBy !== activeSlide.id) {
+    // }
     activeSlide.removeAttribute('aria-hidden');
+    nextPreviousBtns[0].setAttribute('aria-labelledby', activeSlide.id);
     nextPreviousBtns[0].focus();
     slideContainer.classList.add('is-reversing');
   }
@@ -444,6 +444,7 @@ export default function init(el) {
     if (key.textContent === 'carousel' && key.nextElementSibling.textContent === carouselName) {
       const slide = key.closest('.section');
       slide.classList.add('carousel-slide');
+      key.closest('.section-metadata').remove();
       rdx.push(slide);
       const slideIndex = rdx.indexOf(slide);
       slide.setAttribute('data-index', slideIndex);
