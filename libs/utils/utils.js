@@ -1071,7 +1071,8 @@ const findReplaceableNodes = (area) => {
 function getPlaceholderPaths(config) {
   const root = `${config.locale?.contentRoot}/placeholders`;
   const paths = [`${root}.json`];
-  if (config.env.name !== 'prod') paths.push(`${root}-stage.json`);
+  if (config.env.name !== 'prod'
+    && getMetadata('placeholders-stage') === 'on') paths.push(`${root}-stage.json`);
   return paths;
 }
 
