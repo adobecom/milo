@@ -1598,11 +1598,7 @@ async function processSection(section, config, isDoc) {
 
 export async function loadArea(area = document) {
   const isDoc = area === document;
-  const isPageLoadOk = document.getElementById('page-load-ok-milo') !== null;
-
-  if (isDoc && isPageLoadOk) {
-    return;
-  }
+  if (isDoc && !!document.getElementById('page-load-ok-milo')) return;
 
   if (isDoc) {
     await checkForPageMods();
