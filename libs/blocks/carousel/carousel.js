@@ -372,7 +372,7 @@ function handleChangingSlides(carouselElements) {
     });
     btn.addEventListener('mouseover', () => {
       if (btn.getAttribute('aria-labelledby')) return;
-      console.log('mousein1');
+      console.log('mousein');
       const active = el.querySelector('.active');
       const dataToggle = btn.getAttribute('data-toggle');
       const nextEl = dataToggle === 'next' ? handleNext(active, slides) : handlePrevious(active, slides);
