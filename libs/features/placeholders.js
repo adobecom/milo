@@ -9,22 +9,44 @@ const getPlaceholdersPath = (config, sheet) => {
   return `${path}${query}`;
 };
 
-const fetchPlaceholders = async ({ config, sheet, placeholderRequest, placeholderPath }) => {
-  const path = placeholderPath || getPlaceholdersPath(config, sheet);
+const parsePlaceholderJson = async (resp, placeholders) => {
+  const json = resp.ok ? await resp.json() : { data: [] };
+  if (!json.data.length) return;
+  json.data.forEach((item) => {
+    window.mph[item.key] = item.value;
+    placeholders[item.key] = item.value;
+  });
+};
+
+const fetchPlaceholder = (path, placeholderRequest) => new Promise(
   // eslint-disable-next-line no-async-promise-executor
-  fetchedPlaceholders[path] = fetchedPlaceholders[path] || new Promise(async (resolve) => {
+  async (resolve) => {
     const resp = await placeholderRequest || await customFetch(
       { resource: path, withCacheRules: true },
     ).catch(() => ({}));
-    const json = resp.ok ? await resp.json() : { data: [] };
-    if (json.data.length === 0) { resolve({}); return; }
     const placeholders = {};
-    json.data.forEach((item) => {
-      window.mph[item.key] = item.value;
-      placeholders[item.key] = item.value;
-    });
+
+    if (Array.isArray(resp)) {
+      // Overlay placeholders
+      for (const r of resp) await parsePlaceholderJson(r, placeholders);
+    } else {
+      await parsePlaceholderJson(resp, placeholders);
+    }
+
     resolve(placeholders);
-  });
+  },
+);
+
+const fetchPlaceholders = async ({
+  config,
+  sheet,
+  placeholderRequest,
+  placeholderPath,
+}) => {
+  const path = placeholderPath || getPlaceholdersPath(config, sheet);
+
+  fetchedPlaceholders[path] ||= fetchPlaceholder(path, placeholderRequest);
+
   return fetchedPlaceholders[path];
 };
 
