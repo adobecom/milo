@@ -1403,7 +1403,7 @@ export async function init(enablements = {}) {
   const {
     mepParam, mepHighlight, mepButton, pzn, promo, enablePersV2,
     target, ajo, countryIPPromise, mepgeolocation, targetInteractionPromise, calculatedTimeout,
-    postLCP,
+    postLCP, mepSampleRate,
   } = enablements;
   const config = getConfig();
   if (postLCP) {
@@ -1423,7 +1423,15 @@ export async function init(enablements = {}) {
       countryIPPromise,
       geoLocation: mepgeolocation,
       targetInteractionPromise,
+      mmmSample: false,
     };
+    if (config.env?.name === 'prod' && mepSampleRate !== 'off') {
+      let sampleRateDenom = 1000;
+      if (!Number.isNaN(Number(mepSampleRate)) && mepSampleRate > sampleRateDenom) {
+        sampleRateDenom = Number(mepSampleRate);
+      }
+      if (config.mep?.preview || Math.random() < 1 / sampleRateDenom) config.mep.mmmSample = true;
+    }
 
     manifests = manifests.concat(await combineMepSources(pzn, promo, mepParam));
     manifests?.forEach((manifest) => {

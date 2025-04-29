@@ -70,15 +70,19 @@ export async function saveToMmm() {
     console.log('Not saving to MMM because the URL contains an excluded string', data);
     return false;
   }
-  return fetch(API_URLS.save, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(data),
-  })
-    .then(async (response) => {
-      const res = await response.json();
-      if (response.ok) return res;
-      /* c8 ignore next 1 */
-      throw new Error(res.message || 'Network response failed');
+  try {
+    const response = await fetch(API_URLS.save, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
     });
+    const res = await response.json();
+    if (response.ok) return res;
+    /* c8 ignore next 1 */
+    throw new Error(res.message || 'Network response failed');
+  } catch (error) {
+    // eslint-disable-next-line no-console
+    console.error('Error saving to MMM:', error);
+    throw error;
+  }
 }

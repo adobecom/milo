@@ -1335,6 +1335,7 @@ async function checkForPageMods() {
   const xlg = martech === 'off' ? false : getMepEnablement('xlg');
   const ajo = martech === 'off' ? false : getMepEnablement('ajo');
   const mepgeolocation = martech === 'off' ? false : getMepEnablement('mepgeolocation');
+  const mepSampleRate = getMepEnablement('mepSampleRate');
 
   if (!(pzn || target || promo || mepParam
     || mepHighlight || mepButton || mepParam === '' || xlg || ajo)) return;
@@ -1392,6 +1393,7 @@ async function checkForPageMods() {
     targetInteractionPromise,
     calculatedTimeout,
     enablePersV2,
+    mepSampleRate,
   });
 }
 
@@ -1429,7 +1431,7 @@ async function loadPostLCP(config) {
   if (config?.mep) {
     import('../features/personalization/personalization.js')
       .then(({ addMepAnalytics }) => addMepAnalytics(config, header));
-    if (config.env?.name === 'prod' && (config.mep?.preview || Math.random() < 0.001)) {
+    if (config.mep.mmmSample) {
       await import('../features/personalization/mmm.js').then(({ saveToMmm }) => saveToMmm());
     }
   }
