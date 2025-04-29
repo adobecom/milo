@@ -543,7 +543,7 @@ const isProdModal = (url) => {
 export async function getModalAction(offers, options, el) {
   if (!options.modal) return undefined;
 
-  if (el.isOpen3in1Modal) {
+  if (el?.isOpen3in1Modal) {
     const baseUrl = getCommercePreloadUrl();
     const client = 'mini-plans'; // TODO get client
     loadScript(`${baseUrl}?cli=${client}`, 'text/javascript', { mode: 'defer', id: 'ucv3-preload-script' });
