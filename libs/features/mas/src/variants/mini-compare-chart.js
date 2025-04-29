@@ -17,6 +17,21 @@ export class MiniCompareChart extends VariantLayout {
     return CSS;
   }
 
+  get addonsCheckbox() {
+    return this.card.addonTitle ? html`<div slot="callout-content" id="addons-checkbox-container">
+    <input type="checkbox" @change=${this.card.toggleAddons} id="addons-checkbox-input"></input>
+            <label id="addons-checkbox" for="addons-checkbox-input">
+                <span><strong>${this.card.addonTitle}</strong></span>
+                <span>${this.card.addonDescription}Add AI assistant to your free Reader app for</span>
+                <span><strong>US$4.99/mo</strong></span>
+            </label>
+        </div>` : '';
+  }
+
+  // For addon tiitle is it ok if we hardocde it in card settings?
+  // For addon is it ok if we hardcode it as placeholder key?
+  // How to add the price?
+
   getMiniCompareFooter = () => {
     const secureLabel = this.card.secureLabel
         ? html`<slot name="secure-transaction-label">
@@ -127,6 +142,7 @@ export class MiniCompareChart extends VariantLayout {
         <slot name="offers"></slot>
         <slot name="promo-text"></slot>
         <slot name="callout-content"></slot>
+        ${this.addonsCheckbox}
         ${this.getMiniCompareFooter()}
         <slot name="footer-rows"><slot name="body-s"></slot></slot>`;
   }

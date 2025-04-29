@@ -48,6 +48,17 @@ export class Product extends VariantLayout {
       ${this.secureLabelFooter}`;
   }
 
+  get addonsCheckbox() {
+    return this.card.addonTitle
+        ? html`<label id="addons-checkbox">
+                <input type="checkbox" @change=${this.card.toggleAddons}></input>
+                <span></span>
+                <span>${this.card.addonTitle}</span>
+                <span>${this.card.addonDescription} 'TODO ADD PRICE'</span> 
+            </label>`
+        : '';
+  }
+
   connectedCallbackHook() {
     window.addEventListener('resize', this.postCardUpdateHook);
   }

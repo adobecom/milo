@@ -67,6 +67,8 @@ export class MerchCard extends LitElement {
         detailBg: { type: String, attribute: 'detail-bg' },
         secureLabel: { type: String, attribute: 'secure-label' },
         checkboxLabel: { type: String, attribute: 'checkbox-label' },
+        addonTitle: { type: String, attribute: 'addon-title' },
+        addonOffers: { type: Object, attribute: 'addon-offers' },
         selected: { type: Boolean, attribute: 'aria-selected', reflect: true },
         storageOption: { type: String, attribute: 'storage', reflect: true },
         stockOfferOsis: {
@@ -250,6 +252,37 @@ export class MerchCard extends LitElement {
             const planType = element.value?.[0]?.planType;
             if (!planType) return;
             const stockOfferOsi = this.stockOfferOsis[planType];
+            if (!stockOfferOsi) return;
+            const osis = element.dataset.wcsOsi
+                .split(',')
+                .filter((osi) => osi !== stockOfferOsi);
+
+            if (target.checked) {
+                osis.push(stockOfferOsi);
+            }
+            element.dataset.wcsOsi = osis.join(',');
+        }
+    }
+
+    async toggleAddons({ target }) {
+        if (!this.stockOfferOsis) return;
+        const elements = this.checkoutLinks;
+        if (elements.length === 0) return;
+        for (const element of elements) {
+            await element.onceSettled();
+            const planType = element.value?.[0]?.planType;
+            if (!planType) return;
+            const isStudentAndTeachers = element.value?.[0]?.marketSegment[0] === 'EDU';
+            let stockOfferOsi;
+            if(isStudentAndTeachers) {
+                stockOfferOsi = offerObject.studentsAndTeachers[planType];
+            } else {
+                if(element.value?.[0]?.customerSegment === 'INDIVIDUAL') {
+                    stockOfferOsi = offerObject.individuals[planType];
+                } else {
+                    stockOfferOsi = offerObject.business[planType];
+                }
+            }
             if (!stockOfferOsi) return;
             const osis = element.dataset.wcsOsi
                 .split(',')

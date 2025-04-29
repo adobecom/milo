@@ -367,23 +367,42 @@ const addStock = (merchCard, styles) => {
   }
 };
 
+{/* <div class="merch-offers acrobat-ai-assistant" data-block-status="loaded" data-block="">
+   <p>Acrobat AI Assistant</p>
+   <p><strong>Individuals:</strong><br>ABM: Add AI Assistant to your free Reader app for <br>PUF: Add AI Assistant to your free Reader app for <br>M2M: Add AI Assistant to your free Reader app for </p>
+   <p><strong>Business:</strong><br>ABM: Add AI Assistant to your free Reader app for <br>PUF: Add AI Assistant to your free Reader app for </p>
+   <p><strong>Students and teachers:</strong><br>ABM: Add AI Assistant to your free Reader app for <br>PUF: <br>M2M: </p>
+   <span is="inline-price" data-display-old-price="true" data-quantity="1" data-template="price" data-wcs-osi="nIy-IPGnALw3KNncaqMjOJsMUrqElWi8sdGnBFBAgTw" class="placeholder-pending"></span><span is="inline-price" data-display-old-price="true" data-quantity="1" data-template="price" data-wcs-osi="17iJqYk74YuHnf7VbvW2j8Vy4-Nv4X6n1DdeGallASA" class="placeholder-pending"></span><span is="inline-price" data-display-old-price="true" data-quantity="1" data-template="price" data-wcs-osi="8f96T80D4yD0B0CqMSukrTaor1XKtou5wqQQ6eZp-jk" class="placeholder-pending"></span><span is="inline-price" data-display-old-price="true" data-quantity="1" data-template="price" data-wcs-osi="WRe4gUHuyqJgCCr3ZywwU9CDP0ezBaCKoMk4xryVQhs" class="placeholder-pending"></span><span is="inline-price" data-display-old-price="true" data-quantity="1" data-template="price" data-wcs-osi="NXO_Px0F8tnb9mW-uPtUfTqm7UjTNBp74LGlqaZ63n0" class="placeholder-pending"></span><span is="inline-price" data-display-old-price="true" data-quantity="1" data-template="price" data-wcs-osi="JpGjrD0B6mxXXR8Vo4YXGH91X0vzLuXmHxHT1j1hlks" class="placeholder-pending"></span><span is="inline-price" data-display-old-price="true" data-quantity="1" data-template="price" data-wcs-osi="m1yG9gV54GL_mRkID61XkaeI2D8ua9zTLI-B1cyiBtI" class="placeholder-pending"></span><span is="inline-price" data-display-old-price="true" data-quantity="1" data-template="price" data-wcs-osi="Rx0_PNHTOvg4Lgs4fZuns0dctT7LagQs2h1ivTTJGro" class="placeholder-pending"></span>
+</div>
+</div></div></div> */}
+
 const addAddons = (merchCard, styles) => {
   if (styles.includes('add-addons') && (merchCard.variant === MINI_COMPARE_CHART || merchCard.variant === PRODUCT)) {
-    const cardTitle = merchCard.querySelector('h3')?.textContent.trim().toLowerCase().split(' ').join('-');
-    console.log(merchCard);
-    // const cardId = `${fragAudience}-${cardPlanType}-${cardTitle}`;
-    const callout = merchCard.querySelector('[slot="price-commitment"]');
-    console.log(callout);
-    const checkboxContainer = createTag(
-      'div',
-      { slot: 'callout-content', class: 'ai-checkbox-container' },
-      `<input type="checkbox" id="ai-checkbox-test">
-      <label for="ai-checkbox-test">
-        <span><strong>TEST</strong></span>
-        <span class="ai-checkbox-subtitle">test</span>
-      </label>`,
-    );
-    callout?.replaceWith(checkboxContainer);
+    const addon = {title: document.querySelector('div.merch-offers.acrobat-ai-assistant p:first-of-type')?.textContent.trim(),
+      individuals: {ABM: document.querySelector('div.merch-offers.acrobat-ai-assistant p:nth-of-type(2) br:first-of-type')?.textContent.trim(),
+        PUF: document.querySelector('div.merch-offers.acrobat-ai-assistant p:nth-of-type(2) br:nth-of-type(2)')?.textContent.trim(),
+        M2M: document.querySelector('div.merch-offers.acrobat-ai-assistant p:nth-of-type(2) br:nth-of-type(3)')?.textContent.trim(),
+      },
+      teams: {ABM: document.querySelector('div.merch-offers.acrobat-ai-assistant p:nth-of-type(3) br:first-of-type')?.textContent.trim(),
+        PUF: document.querySelector('div.merch-offers.acrobat-ai-assistant p:nth-of-type(3) br:nth-of-type(2)')?.textContent.trim(),
+        M2M: document.querySelector('div.merch-offers.acrobat-ai-assistant p:nth-of-type(3) br:nth-of-type(3)')?.textContent.trim(),
+      },
+      students: {ABM: document.querySelector('div.merch-offers.acrobat-ai-assistant p:nth-of-type(4) br:first-of-type')?.textContent.trim(),
+        PUF: document.querySelector('div.merch-offers.acrobat-ai-assistant p:nth-of-type(4) br:nth-of-type(2)')?.textContent.trim(),
+        M2M: document.querySelector('div.merch-offers.acrobat-ai-assistant p:nth-of-type(4) br:nth-of-type(3)')?.textContent.trim(),
+      },
+    };
+    merchCard.setAttribute('addon-title', addon.title);
+    
+    console.log(document.body.innerHTML);
+    const selector = 'merch-offers.acrobat-ai-assistant > *'
+    const [label, ...rest] = [...document.querySelectorAll(selector)];
+    console.log(label);
+    console.log(rest);
+    console.log(addon);
+    console.log(merchCard.querySelector('div[slot="footer"]'));
+    // Take title and description from the card settings
+    // Hardcode offer osis that we got from fred
   }
 };
 
