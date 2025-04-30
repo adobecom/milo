@@ -6,25 +6,25 @@ export const STATUS = {
 };
 
 export const SEO_TITLES = {
-  H1Count: 'SEO - H1 count',
-  TitleSize: 'SEO - Title size',
-  Canonical: 'SEO - Canonical',
-  MetaDescription: 'SEO -Meta description',
-  BodySize: 'SEO - Body size',
-  Lorem: 'SEO - Lorem Ipsum',
-  Links: 'SEO - Links',
+  H1Count: 'H1 count',
+  TitleSize: 'Title size',
+  Canonical: 'Canonical',
+  MetaDescription: 'Meta description',
+  BodySize: 'Body size',
+  Lorem: 'Lorem Ipsum',
+  Links: 'Links',
 };
 
 export const PERFORMANCE_TITLES = {
   Performance: 'Performance',
-  LcpEl: 'Performance - Valid LCP',
-  SingleBlock: 'Performance - Single Block',
-  ImageSize: 'Performance - Images Size',
-  VideoPoster: 'Performance - Videos',
-  Fragments: 'Performance - Fragments',
-  Personalization: 'Performance - Personalization',
-  Placeholders: 'Performance - Placeholders',
-  Icons: 'Performance - Icons',
+  LcpEl: 'LCP',
+  SingleBlock: 'Single Block',
+  ImageSize: 'Images Size',
+  VideoPoster: 'Videos',
+  Fragments: 'Fragments',
+  Personalization: 'Personalization',
+  Placeholders: 'Placeholders',
+  Icons: 'Icons',
 };
 
-export const ASSETS_TITLES = { ImageDimensions: 'Assets - Image Dimensions' };
+export const ASSETS_TITLES = { ImageDimensions: 'Image Dimensions' };

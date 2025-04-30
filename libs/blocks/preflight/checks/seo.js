@@ -216,7 +216,7 @@ function compareResults(result, link) {
   return true;
 }
 
-export async function checkLinks(area, urlHash) {
+export async function checkLinks({ area, urlHash, envName }) {
   if (urlHash && linksCache.has(urlHash)) {
     const cachedResult = linksCache.get(urlHash);
     return {
@@ -225,7 +225,7 @@ export async function checkLinks(area, urlHash) {
     };
   }
 
-  const { spidy, preflight } = await getServiceConfig(window.location.origin);
+  const { spidy, preflight } = await getServiceConfig(window.location.origin, envName);
   // Check to see if Spidy is available.
   const spidyUrl = spidy?.url || SPIDY_URL_FALLBACK;
   const canSpidy = await spidyCheck(spidyUrl);
@@ -303,7 +303,7 @@ export async function checkLinks(area, urlHash) {
   return result;
 }
 
-export function runChecks(url, area = document) {
+export function runChecks({ url, area = document, envName }) {
   return [
     checkH1s(area),
     checkTitle(area),
@@ -311,6 +311,6 @@ export function runChecks(url, area = document) {
     checkDescription(area),
     checkBody(area),
     checkLorem(area),
-    checkLinks(area, url),
+    checkLinks({ area, url, envName }),
   ];
 }
