@@ -178,7 +178,7 @@ export async function checkIcons(url, area, observeLcp) {
       description: 'No LCP element found.',
     };
   }
-  const hasIcons = lcp.element.closest('.section').querySelector('.icon-milo');
+  const hasIcons = lcp.element.closest('.section')?.querySelector('.icon-milo');
   return {
     title: PERFORMANCE_TITLES.Icons,
     status: hasIcons ? STATUS.FAIL : STATUS.PASS,
