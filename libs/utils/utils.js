@@ -1071,7 +1071,8 @@ const findReplaceableNodes = (area) => {
 function getPlaceholderPaths(config) {
   const root = `${config.locale?.contentRoot}/placeholders`;
   const paths = [`${root}.json`];
-  if (config.env.name !== 'prod') paths.push(`${root}-stage.json`);
+  if (config.env.name !== 'prod'
+    && getMetadata('placeholders-stage') === 'on') paths.push(`${root}-stage.json`);
   return paths;
 }
 
@@ -1543,9 +1544,6 @@ function decorateDocumentExtras() {
 
 async function documentPostSectionLoading(config) {
   decorateFooterPromo();
-  import('../scripts/accessibility.js').then((accessibility) => {
-    accessibility.default();
-  });
   if (getMetadata('seotech-structured-data') === 'on' || getMetadata('seotech-video-url')) {
     import('../features/seotech/seotech.js').then((module) => module.default(
       { locationUrl: window.location.href, getMetadata, createTag, getConfig },
