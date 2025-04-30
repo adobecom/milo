@@ -1156,7 +1156,7 @@ class Gnav {
     if (this.newMobileNav) {
       await this.decorateLocalNav();
     }
-    performance('Decorate-MainNav-End');
+    performance.mark('Decorate-MainNav-End');
     return this.elements.mainNav;
   };
 
