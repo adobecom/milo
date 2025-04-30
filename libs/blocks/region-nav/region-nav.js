@@ -1,4 +1,4 @@
-import { getConfig, getLanguage, getLocale } from '../../utils/utils.js';
+import { getConfig, getLanguage, getLocale, loadLanguageConfig } from '../../utils/utils.js';
 
 const queriedPages = [];
 
@@ -28,28 +28,31 @@ function handleEvent({ prefix, link, callback } = {}) {
   });
 }
 
-export function decorateLink(link, path) {
+export function decorateLink(link, path, localeToLanguageMap = []) {
   let hrefAdapted;
   let pathname = link.getAttribute('href');
   if (pathname.startsWith('http')) {
     try { pathname = new URL(pathname).pathname; } catch (e) { /* href does not contain domain */ }
   }
 
-  let prefix = '';
   const { languageMap, languages, locales } = getConfig();
-  if (languageMap) {
-    const linkParts = pathname.split('/');
-    prefix = linkParts[1] || '';
-  } else {
-    const language = languages
-      ? getLanguage(languages, locales, pathname) : getLocale(locales, pathname);
-    prefix = language.prefix.replace('/', '');
-  }
+  const localeArray = localeToLanguageMap.map((l) => l?.locale);
+  const mergedLocales = { ...locales };
+
+  localeArray.forEach((locale) => {
+    if (!mergedLocales[locale]) {
+      mergedLocales[locale] = { ietf: 'none', tk: 'none' };
+    }
+  });
+
+  const currentLocaleObj = languages
+    ? getLanguage(languages, mergedLocales, pathname) : getLocale(mergedLocales, pathname);
+  const prefix = currentLocaleObj.prefix.replace('/', '');
 
   let { href } = link;
   if (href.endsWith('/')) href = href.slice(0, -1);
 
-  if (languageMap && !getConfig().locales[prefix]) {
+  if (languageMap && !locales[prefix] && (languages && !languages[prefix])) {
     const valueInMap = languageMap[prefix];
     href = href.replace(`/${prefix}`, valueInMap ? `/${valueInMap}` : '');
   }
@@ -84,7 +87,8 @@ export function decorateLink(link, path) {
   });
 }
 
-export default function init(block) {
+export default async function init(block) {
+  const { localeToLanguageMap } = await loadLanguageConfig();
   const config = getConfig();
   const divs = block.querySelectorAll(':scope > div');
   if (divs.length < 2) return;
@@ -92,5 +96,5 @@ export default function init(block) {
   if (!links.length) return;
   const { prefix } = config.locale;
   const path = window.location.href.replace(`${window.location.origin}${prefix}`, '').replace('#langnav', '');
-  links.forEach((link) => decorateLink(link, path));
+  links.forEach((link) => decorateLink(link, path, localeToLanguageMap));
 }
