@@ -191,6 +191,7 @@ function moveSlides(event, carouselElements, jumpToIndex) {
     direction,
     al,
   } = carouselElements;
+  // al.setAttribute('aria-hidden', true);
   clearTimeout(asa);
   al.textContent = '';
 
@@ -272,9 +273,10 @@ function moveSlides(event, carouselElements, jumpToIndex) {
 
   // Update active slide and indicator dot attributes
   activeSlide.classList.add('active');
-  asa = setTimeout(() => {
+  // asa = setTimeout(() => {
     al.textContent = activeSlide.textContent;
-  }, 500);
+  console.log(al.textContent);
+  // }, 500);
   // setTimeout(() => {
   // }, 200);
   const indexOfActive = [...activeSlide.parentElement.children]
@@ -389,7 +391,7 @@ function handleChangingSlides(carouselElements) {
     //   // btn.setAttribute('aria-labelledby', dataLabelledBy);
     // });
     btn.addEventListener('click', (event) => {
-      al.textContent = '';
+      // btn.removeAttribute('aria-hidden');
       moveSlides(event, carouselElements);
       // btn.removeAttribute('aria-labelledby');
     });
