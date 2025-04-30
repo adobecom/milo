@@ -32,7 +32,6 @@ function decorateNextPreviousBtns() {
       class: 'carousel-button carousel-previous is-delayed',
       'aria-label': 'Previous slide',
       'data-toggle': 'previous',
-      'aria-labelledby': 'not-a-valid-id',
     },
     ARROW_PREVIOUS_IMG,
   );
@@ -43,7 +42,6 @@ function decorateNextPreviousBtns() {
       class: 'carousel-button carousel-next is-delayed',
       'aria-label': 'Next slide',
       'data-toggle': 'next',
-      'aria-labelledby': 'not-a-valid-id',
     },
     ARROW_NEXT_IMG,
   );
@@ -182,6 +180,7 @@ function setIndicatorMultiplyer(carouselElements, activeSlideIndicator, event) {
   }
 }
 
+let asa;
 function moveSlides(event, carouselElements, jumpToIndex) {
   const {
     slideContainer,
@@ -190,7 +189,10 @@ function moveSlides(event, carouselElements, jumpToIndex) {
     slideIndicators,
     controlsContainer,
     direction,
+    al,
   } = carouselElements;
+  clearTimeout(asa);
+  al.textContent = '';
 
   let referenceSlide = slideContainer.querySelector('.reference-slide');
   let activeSlide = slideContainer.querySelector('.active');
@@ -245,7 +247,7 @@ function moveSlides(event, carouselElements, jumpToIndex) {
     activeSlide = handleNext(activeSlide, slides);
     activeSlide.removeAttribute('aria-hidden');
     const dataLabelledBy = activeSlide.getAttribute('data-labelledby');
-    nextPreviousBtns[1].setAttribute('aria-labelledby', dataLabelledBy);
+    // nextPreviousBtns[1].setAttribute('aria-labelledby', dataLabelledBy);
     nextPreviousBtns[1].focus();
     slideContainer?.classList.remove('is-reversing');
   }
@@ -259,7 +261,7 @@ function moveSlides(event, carouselElements, jumpToIndex) {
     activeSlide = handlePrevious(activeSlide, slides);
     activeSlide.removeAttribute('aria-hidden');
     const dataLabelledBy = activeSlide.getAttribute('data-labelledby');
-    nextPreviousBtns[0].setAttribute('aria-labelledby', dataLabelledBy);
+    // nextPreviousBtns[0].setAttribute('aria-labelledby', dataLabelledBy);
     nextPreviousBtns[0].focus();
     slideContainer.classList.add('is-reversing');
   }
@@ -270,6 +272,11 @@ function moveSlides(event, carouselElements, jumpToIndex) {
 
   // Update active slide and indicator dot attributes
   activeSlide.classList.add('active');
+  asa = setTimeout(() => {
+    al.textContent = activeSlide.textContent;
+  }, 500);
+  // setTimeout(() => {
+  // }, 200);
   const indexOfActive = [...activeSlide.parentElement.children]
     .findIndex((ele) => activeSlide.isSameNode(ele));
   const IndexOfShowClass = [...carouselElements.el.classList].findIndex((ele) => ele.includes('show-'));
@@ -367,35 +374,45 @@ function mobileSwipeDetect(carouselElements) {
 }
 
 function handleChangingSlides(carouselElements) {
-  const { el, nextPreviousBtns, slideIndicators, jumpTo, slides } = carouselElements;
+  const { el, nextPreviousBtns, slideIndicators, jumpTo, slides, al } = carouselElements;
 
+  let asa;
   // Handle Next/Previous Buttons
   [...nextPreviousBtns].forEach((btn) => {
-    btn.addEventListener('mousedown', () => {
-      const active = el.querySelector('.active');
-      const dataToggle = btn.getAttribute('data-toggle');
-      const nextEl = dataToggle === 'next' ? handleNext(active, slides) : handlePrevious(active, slides);
-      const dataLabelledBy = nextEl.getAttribute('data-labelledby');
-      btn.setAttribute('aria-labelledby', dataLabelledBy);
-    });
+    // btn.addEventListener('mousedown', () => {
+    //   const active = el.querySelector('.active');
+    //   const dataToggle = btn.getAttribute('data-toggle');
+    //   const nextEl = dataToggle === 'next' ? handleNext(active, slides) : handlePrevious(active, slides);
+    //   al.textContent = nextEl.textContent;
+    //   // const dataLabelledBy = nextEl.getAttribute('data-labelledby');
+    //   // btn.removeAttribute('aria-label');
+    //   // btn.setAttribute('aria-labelledby', dataLabelledBy);
+    // });
     btn.addEventListener('click', (event) => {
+      al.textContent = '';
       moveSlides(event, carouselElements);
       // btn.removeAttribute('aria-labelledby');
     });
     // btn.addEventListener('blur', () => {
     //   btn.removeAttribute('aria-labelledby');
     // });
-    btn.addEventListener('mouseover', () => {
-      const svg = btn.querySelector('svg');
-      svg.setAttribute('aria-hidden', true);
-      btn.removeAttribute('aria-label');
-    });
-    btn.addEventListener('mouseout', () => {
-      const svg = btn.querySelector('svg');
-      svg.removeAttribute('aria-hidden');
-      btn.setAttribute('aria-label', 'My test attribute');
-      btn.setAttribute('aria-labelledby', 'not-a-valid-id');
-    });
+    // btn.addEventListener('mouseover', () => {
+    //   clearTimeout(asa);
+    //   if (btn.getAttribute('aria-labelledby')) return;
+    //   const active = el.querySelector('.active');
+    //   const dataToggle = btn.getAttribute('data-toggle');
+    //   const nextEl = dataToggle === 'next' ? handleNext(active, slides) : handlePrevious(active, slides);
+    //   const dataLabelledBy = nextEl.getAttribute('data-labelledby');
+    //   // const btnL = btn.getAttribute('data-labelledby');
+    //   // if (dataLabelledBy === btnL) return;
+    //   asa = setTimeout(() => {
+    //     btn.setAttribute('aria-labelledby', dataLabelledBy);
+    //   }, 500);
+    // });
+    // btn.addEventListener('mouseout', (event) => {
+    //   if (event.target !== btn && btn.contains(event.target)) return;
+    //   btn.removeAttribute('aria-labelledby');
+    // });
   });
 
   // Handle keyboard navigation
@@ -482,6 +499,11 @@ export default function init(el) {
   convertMpcMp4(slides);
   fragment.append(...slides);
   const slideWrapper = createTag('div', { class: 'carousel-wrapper' });
+  const al = createTag('div', {
+    class: 'dummy',
+    'aria-live': 'polite',
+  });
+  slideWrapper.appendChild(al);
   const slideContainer = createTag('div', { class: 'carousel-slides' }, fragment);
   const carouselElements = {
     el,
@@ -492,6 +514,7 @@ export default function init(el) {
     controlsContainer,
     direction: undefined,
     jumpTo,
+    al,
   };
 
   if (el.classList.contains('lightbox')) {
