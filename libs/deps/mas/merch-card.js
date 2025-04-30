@@ -285,7 +285,7 @@ var Le=Object.defineProperty;var Gt=o=>{throw TypeError(o)};var Re=(o,e,t)=>e in
             width: var(--mod-img-width, var(--img-width));
             height: var(--mod-img-height, var(--img-height));
         }
-    `);customElements.define("merch-icon",F);import{LitElement as ze,html as Oe,css as $e}from"../lit-all.min.js";var Dr=Object.freeze({MONTH:"MONTH",YEAR:"YEAR",TWO_YEARS:"TWO_YEARS",THREE_YEARS:"THREE_YEARS",PERPETUAL:"PERPETUAL",TERM_LICENSE:"TERM_LICENSE",ACCESS_PASS:"ACCESS_PASS",THREE_MONTHS:"THREE_MONTHS",SIX_MONTHS:"SIX_MONTHS"}),Hr=Object.freeze({ANNUAL:"ANNUAL",MONTHLY:"MONTHLY",TWO_YEARS:"TWO_YEARS",THREE_YEARS:"THREE_YEARS",P1D:"P1D",P1Y:"P1Y",P3Y:"P3Y",P10Y:"P10Y",P15Y:"P15Y",P3D:"P3D",P7D:"P7D",P30D:"P30D",HALF_YEARLY:"HALF_YEARLY",QUARTERLY:"QUARTERLY"});var E='span[is="inline-price"][data-wcs-osi]',xt='a[is="checkout-link"][data-wcs-osi],button[is="checkout-button"][data-wcs-osi]',Xt="sp-button[data-wcs-osi]",Qt=`${E},${xt}`;var Zt="merch-offer-select:ready",Jt="merch-card:ready",te="merch-card:action-menu-toggle";var kt="merch-quantity-selector:change";var B="aem:load",U="aem:error",ee="mas:ready",re="mas:error";var Ct="mas:resolved";var oe="X-Request-Id",Fr=Object.freeze({CHECKOUT:"checkout",CHECKOUT_EMAIL:"checkout/email",SEGMENTATION:"segmentation",BUNDLE:"bundle",COMMITMENT:"commitment",RECOMMENDATION:"recommendation",EMAIL:"email",PAYMENT:"payment",CHANGE_PLAN_TEAM_PLANS:"change-plan/team-upgrade/plans",CHANGE_PLAN_TEAM_PAYMENT:"change-plan/team-upgrade/payment"}),Br=Object.freeze({V2:"UCv2",V3:"UCv3"}),Ur=Object.freeze({STAGE:"STAGE",PRODUCTION:"PRODUCTION",LOCAL:"LOCAL"});var nt=":start",ae=":duration";var ne="legal";var V=class extends ze{constructor(){super(),this.planType=void 0,this.checked=!1,this.updatePlanType=this.updatePlanType.bind(this),this.handleChange=this.handleChange.bind(this)}connectedCallback(){super.connectedCallback(),this.addEventListener(Ct,this.updatePlanType)}disconnectedCallback(){super.disconnectedCallback(),this.removeEventListener(Ct,this.updatePlanType)}updatePlanType(e){if(e.target.tagName!=="SPAN")return;let t=e.target,r=t?.value?.[0];r&&t.parentElement.setAttribute("data-plan-type",r.planType)}handleChange(e){this.checked=e.target.checked,this.dispatchEvent(new CustomEvent("change",{detail:{checked:this.checked},bubbles:!0,composed:!0}))}render(){return Oe`<input
+    `);customElements.define("merch-icon",F);import{LitElement as ze,html as Oe,css as $e}from"../lit-all.min.js";var Dr=Object.freeze({MONTH:"MONTH",YEAR:"YEAR",TWO_YEARS:"TWO_YEARS",THREE_YEARS:"THREE_YEARS",PERPETUAL:"PERPETUAL",TERM_LICENSE:"TERM_LICENSE",ACCESS_PASS:"ACCESS_PASS",THREE_MONTHS:"THREE_MONTHS",SIX_MONTHS:"SIX_MONTHS"}),Hr=Object.freeze({ANNUAL:"ANNUAL",MONTHLY:"MONTHLY",TWO_YEARS:"TWO_YEARS",THREE_YEARS:"THREE_YEARS",P1D:"P1D",P1Y:"P1Y",P3Y:"P3Y",P10Y:"P10Y",P15Y:"P15Y",P3D:"P3D",P7D:"P7D",P30D:"P30D",HALF_YEARLY:"HALF_YEARLY",QUARTERLY:"QUARTERLY"});var E='span[is="inline-price"][data-wcs-osi]',xt='a[is="checkout-link"][data-wcs-osi],button[is="checkout-button"][data-wcs-osi]',Xt="sp-button[data-wcs-osi]",Qt=`${E},${xt}`;var Zt="merch-offer-select:ready",Jt="merch-card:ready",te="merch-card:action-menu-toggle";var kt="merch-quantity-selector:change";var B="aem:load",U="aem:error",ee="mas:ready",re="mas:error";var Ct="mas:resolved";var oe="X-Request-Id",Fr=Object.freeze({CHECKOUT:"checkout",CHECKOUT_EMAIL:"checkout/email",SEGMENTATION:"segmentation",BUNDLE:"bundle",COMMITMENT:"commitment",RECOMMENDATION:"recommendation",EMAIL:"email",PAYMENT:"payment",CHANGE_PLAN_TEAM_PLANS:"change-plan/team-upgrade/plans",CHANGE_PLAN_TEAM_PAYMENT:"change-plan/team-upgrade/payment"}),Br=Object.freeze({V2:"UCv2",V3:"UCv3"}),Ur=Object.freeze({STAGE:"STAGE",PRODUCTION:"PRODUCTION",LOCAL:"LOCAL"});var nt=":start",ae=":duration";var ne="legal";var V=class extends ze{constructor(){super(),this.planType=void 0,this.checked=!1,this.updatePlanType=this.updatePlanType.bind(this),this.handleChange=this.handleChange.bind(this)}connectedCallback(){super.connectedCallback(),this.addEventListener(Ct,this.updatePlanType)}disconnectedCallback(){super.disconnectedCallback(),this.removeEventListener(Ct,this.updatePlanType)}updatePlanType(e){if(e.target.tagName!=="SPAN")return;let t=e.target,r=t?.value?.[0];r&&t.closest("p").setAttribute("data-plan-type",r.planType)}handleChange(e){this.checked=e.target.checked,this.dispatchEvent(new CustomEvent("change",{detail:{checked:this.checked},bubbles:!0,composed:!0}))}render(){return Oe`<input
                 type="checkbox"
                 id="addon-checkbox"
                 .checked=${this.checked}
@@ -298,15 +298,6 @@ var Le=Object.defineProperty;var Gt=o=>{throw TypeError(o)};var Re=(o,e,t)=>e in
             display: flex;
             gap: 9px;
             align-items: start;
-        }
-
-        ::slotted(p) {
-            margin: 0;
-            color: var(
-                --Alias-content-neutral-default,
-                var(--Alias-content-neutral-default, #222)
-            );
-            font-family: 'Adobe Clean';
         }
 
         ::slotted(p[data-plan-type]) {
@@ -1284,6 +1275,7 @@ merch-card[variant="plans"]:not([size]) {
 }
 
 merch-card[variant="product"] merch-addon {
+    padding-left: 4px;
     padding-top: 8px;
     padding-bottom: 8px;
     padding-right: 8px;
@@ -1988,6 +1980,10 @@ merch-offer-select[variant="subscription-options"] merch-offer span[is="inline-p
     position: absolute;
     left: 0;
     top: 20px;
+}
+
+merch-gradient {
+    display: none;
 }
 
 body.merch-modal {

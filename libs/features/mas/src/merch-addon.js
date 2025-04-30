@@ -30,7 +30,7 @@ export default class MerchAddon extends LitElement {
         const price = e.target;
         const offer = price?.value?.[0];
         if (!offer) return;
-        price.parentElement.setAttribute('data-plan-type', offer.planType);
+        price.closest('p').setAttribute('data-plan-type', offer.planType);
     }
 
     handleChange(e) {
@@ -61,15 +61,6 @@ export default class MerchAddon extends LitElement {
             display: flex;
             gap: 9px;
             align-items: start;
-        }
-
-        ::slotted(p) {
-            margin: 0;
-            color: var(
-                --Alias-content-neutral-default,
-                var(--Alias-content-neutral-default, #222)
-            );
-            font-family: 'Adobe Clean';
         }
 
         ::slotted(p[data-plan-type]) {

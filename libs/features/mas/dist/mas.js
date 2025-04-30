@@ -293,7 +293,7 @@ Try polyfilling it using "@formatjs/intl-pluralrules"
             width: var(--mod-img-width, var(--img-width));
             height: var(--mod-img-height, var(--img-height));
         }
-    `);customElements.define("merch-icon",Pt);var kt=class extends N{constructor(){super(),this.planType=void 0,this.checked=!1,this.updatePlanType=this.updatePlanType.bind(this),this.handleChange=this.handleChange.bind(this)}connectedCallback(){super.connectedCallback(),this.addEventListener(ut,this.updatePlanType)}disconnectedCallback(){super.disconnectedCallback(),this.removeEventListener(ut,this.updatePlanType)}updatePlanType(t){if(t.target.tagName!=="SPAN")return;let r=t.target,o=r?.value?.[0];o&&r.parentElement.setAttribute("data-plan-type",o.planType)}handleChange(t){this.checked=t.target.checked,this.dispatchEvent(new CustomEvent("change",{detail:{checked:this.checked},bubbles:!0,composed:!0}))}render(){return x`<input
+    `);customElements.define("merch-icon",Pt);var kt=class extends N{constructor(){super(),this.planType=void 0,this.checked=!1,this.updatePlanType=this.updatePlanType.bind(this),this.handleChange=this.handleChange.bind(this)}connectedCallback(){super.connectedCallback(),this.addEventListener(ut,this.updatePlanType)}disconnectedCallback(){super.disconnectedCallback(),this.removeEventListener(ut,this.updatePlanType)}updatePlanType(t){if(t.target.tagName!=="SPAN")return;let r=t.target,o=r?.value?.[0];o&&r.closest("p").setAttribute("data-plan-type",o.planType)}handleChange(t){this.checked=t.target.checked,this.dispatchEvent(new CustomEvent("change",{detail:{checked:this.checked},bubbles:!0,composed:!0}))}render(){return x`<input
                 type="checkbox"
                 id="addon-checkbox"
                 .checked=${this.checked}
@@ -306,15 +306,6 @@ Try polyfilling it using "@formatjs/intl-pluralrules"
             display: flex;
             gap: 9px;
             align-items: start;
-        }
-
-        ::slotted(p) {
-            margin: 0;
-            color: var(
-                --Alias-content-neutral-default,
-                var(--Alias-content-neutral-default, #222)
-            );
-            font-family: 'Adobe Clean';
         }
 
         ::slotted(p[data-plan-type]) {
@@ -1292,6 +1283,7 @@ merch-card[variant="plans"]:not([size]) {
 }
 
 merch-card[variant="product"] merch-addon {
+    padding-left: 4px;
     padding-top: 8px;
     padding-bottom: 8px;
     padding-right: 8px;
@@ -1996,6 +1988,10 @@ merch-offer-select[variant="subscription-options"] merch-offer span[is="inline-p
     position: absolute;
     left: 0;
     top: 20px;
+}
+
+merch-gradient {
+    display: none;
 }
 
 body.merch-modal {
