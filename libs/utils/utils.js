@@ -1398,8 +1398,9 @@ async function checkForPageMods() {
 }
 
 async function loadPostLCP(config) {
-  const { default: loadFavIcon } = await import('./favicon.js');
-  loadFavIcon(createTag, getConfig(), getMetadata);
+  import('./favicon.js').then(({ default: loadFavIcon }) => {
+    loadFavIcon(createTag, getConfig(), getMetadata);
+  });
   await decoratePlaceholders(document.body.querySelector('header'), config);
   const sk = document.querySelector('aem-sidekick, helix-sidekick');
   if (sk) import('./sidekick-decorate.js').then((mod) => { mod.default(sk); });
@@ -1602,10 +1603,10 @@ async function resolveInlineFrags(section) {
   section.preloadLinks = newlyDecoratedSection.preloadLinks;
 }
 
-async function processSection(section, config, isDoc) {
+async function processSection(section, config, isDoc, lcpSectionId) {
   await resolveInlineFrags(section);
-  const firstSection = section.el.dataset.idx === '0';
-  const stylePromises = firstSection ? preloadBlockResources(section.blocks) : [];
+  const isLcpSection = lcpSectionId === section.idx;
+  const stylePromises = isLcpSection ? preloadBlockResources(section.blocks) : [];
   preloadBlockResources(section.preloadLinks);
   await Promise.all([
     decoratePlaceholders(section.el, config),
@@ -1624,7 +1625,7 @@ async function processSection(section, config, isDoc) {
   await Promise.all(loadBlocks);
 
   delete section.el.dataset.status;
-  if (isDoc && firstSection) await loadPostLCP(config);
+  if (isDoc && isLcpSection) await loadPostLCP(config);
   delete section.el.dataset.idx;
   return section.blocks;
 }
@@ -1649,8 +1650,11 @@ export async function loadArea(area = document) {
   const sections = decorateSections(area, isDoc);
 
   const areaBlocks = [];
+  let lcpSectionId = null;
+
   for (const section of sections) {
-    const sectionBlocks = await processSection(section, config, isDoc);
+    if (lcpSectionId === null && section.blocks.length !== 0) { lcpSectionId = section.idx; }
+    const sectionBlocks = await processSection(section, config, isDoc, lcpSectionId);
     areaBlocks.push(...sectionBlocks);
 
     areaBlocks.forEach((block) => {
