@@ -82,7 +82,7 @@ export const logPerformance = (
       .join(',');
     window.lana.log(measureStr, {
       clientId: LANA_CLIENT_ID,
-      sampleRate: 1,
+      sampleRate: 50,
     });
   } catch (e) {
     console.error(e);
