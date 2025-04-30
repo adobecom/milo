@@ -62,10 +62,10 @@ export function processRedirects(redirectList, locales, errorCallback) {
         errorCallback();
       }
 
+      const appendHtml = document.querySelector('#add-html').checked;
       const sourcePath = source.pathname?.split('.html')[0] || '/';
       const destinationPath = () => {
-        const excludeHTMLPaths = ['/blog', '.html'];
-        if (!destination.origin.endsWith('.adobe.com') || excludeHTMLPaths.some((p) => destination.pathname.includes(p)) || destination.pathname === '/') {
+        if (!appendHtml || destination.pathname === '/') {
           return destination.pathname;
         }
         return `${destination.pathname}.html`;
