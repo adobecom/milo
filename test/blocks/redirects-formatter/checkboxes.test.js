@@ -128,7 +128,7 @@ describe('Checkbox Area Component', () => {
     expect(englishGroup.classList.contains('selected')).to.be.true;
 
     const englishCheckboxes = englishGroup.querySelectorAll('.locale-checkbox');
-    const expectedEnglishValues = ['ae_en', 'africa_en', 'au_en', 'be_en', 'ca_en', 'cis_en'];
+    const expectedEnglishValues = ['English-ae_en', 'English-africa_en', 'English-au_en', 'English-be_en', 'English-ca_en', 'English-cis_en'];
     expect(englishCheckboxes).to.have.length(expectedEnglishValues.length);
 
     englishCheckboxes.forEach((checkbox, index) => {

@@ -60,7 +60,7 @@ export function createRedirectsArea() {
   const selectedClassName = 'selected';
   const singleTab = createTag('button', { class: `single-tab ${selectedClassName}`, 'data-toggles-content': 'single-redirects-container' }, 'Single Redirects');
   const bulkTab = createTag('button', { class: 'bulk-tab', 'data-toggles-content': 'bulk-redirects-container' }, 'Bulk Redirects');
-  const htmlLabel = createTag('label', { for: 'add-html'}, 'Add .html to the end of urls');
+  const htmlLabel = createTag('label', { for: 'add-html' }, 'Add .html to the end of urls');
   const htlmCheckbox = createTag('input', { type: 'checkbox', class: 'add-html', id: 'add-html', name: 'add-html', checked: true });
   const submitButton = createTag('button', { class: 'process-redirects' }, PROCESS_TEXT);
   const tabsHolder = createTag('div', { class: 'redirect-tabs' }, [singleTab, bulkTab, htmlLabel, htlmCheckbox, submitButton]);

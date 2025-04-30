@@ -9,9 +9,9 @@ describe('Process Redirects', () => {
   describe('getLocalesFromUi', () => {
     it('should return an array of checked locale IDs', () => {
       const nodeList = [
-        { id: 'en', checked: true },
-        { id: 'fr', checked: false },
-        { id: 'de', checked: true },
+        { value: 'en', checked: true },
+        { value: 'fr', checked: false },
+        { value: 'de', checked: true },
       ];
       const result = getLocalesFromUi(nodeList);
       expect(result).to.deep.equal(['en', 'de']);
@@ -75,7 +75,16 @@ describe('Process Redirects', () => {
   });
 
   describe('processRedirects', () => {
-    it('should process redirects for multiple locales', () => {
+    beforeEach(() => {
+      // Add checkbox to DOM for testing
+      document.body.innerHTML = '<input type="checkbox" id="add-html" checked >';
+    });
+
+    afterEach(() => {
+      document.body.innerHTML = '';
+    });
+
+    it('should append .html when checkbox is checked', () => {
       const redirectList = [{
         source: 'https://www.example.com/path1',
         destination: 'https://www.adobe.com/path2',
@@ -90,17 +99,18 @@ describe('Process Redirects', () => {
       ]);
     });
 
-    it('should handle blog paths without adding .html', () => {
+    it('should not append .html when checkbox is unchecked', () => {
+      document.querySelector('#add-html').checked = false;
       const redirectList = [{
-        source: 'https://example.com/blog/post1',
-        destination: 'https://adobe.com/blog/post2',
+        source: 'https://example.com/path1',
+        destination: 'https://adobe.com/path2',
       }];
       const locales = ['en'];
       const errorCallback = () => {};
 
       const result = processRedirects(redirectList, locales, errorCallback);
       expect(result).to.deep.equal([
-        ['/en/blog/post1', 'https://adobe.com/en/blog/post2'],
+        ['/en/path1', 'https://adobe.com/en/path2'],
       ]);
     });
 
@@ -117,17 +127,18 @@ describe('Process Redirects', () => {
       expect(errorCalled).to.be.true;
     });
 
-    it('should handle external domains without adding .html', () => {
+    it('should not append .html to root path even when checkbox is checked', () => {
+      document.querySelector('#add-html').checked = true;
       const redirectList = [{
         source: 'https://example.com/path1',
-        destination: 'https://external.com/path2',
+        destination: 'https://external.com/',
       }];
       const locales = ['en'];
       const errorCallback = () => {};
 
       const result = processRedirects(redirectList, locales, errorCallback);
       expect(result).to.deep.equal([
-        ['/en/path1', 'https://external.com/en/path2'],
+        ['/en/path1', 'https://external.com/en/'],
       ]);
     });
   });
