@@ -43,7 +43,7 @@ const plainHTMLPromise = (async () => {
   let federatedURL = getFederatedUrl(url);
   const mepGnav = getConfig()?.mep?.inBlock?.['global-navigation'];
   const mepFragment = mepGnav?.fragments?.[federatedURL];
-  if (mepFragment && mepFragment.action === 'replace') {
+  if (mepFragment?.action === 'replace') {
     federatedURL = mepFragment.content;
   }
   const res = await fetch(federatedURL.replace(/(\.html$|$)/, '.plain.html'));
