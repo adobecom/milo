@@ -1,6 +1,7 @@
 import { LitElement } from 'lit';
 import { sizeStyles, styles } from './merch-card.css.js';
 import './merch-icon.js';
+import './merch-addon.js';
 import {
     getVariantLayout,
     registerVariant,
