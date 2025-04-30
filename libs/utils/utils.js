@@ -1398,9 +1398,7 @@ async function checkForPageMods() {
 }
 
 async function loadPostLCP(config) {
-  import('./favicon.js').then(({ default: loadFavIcon }) => {
-    loadFavIcon(createTag, getConfig(), getMetadata);
-  });
+  import('./favicon.js').then(({ default: loadFavIcon }) => loadFavIcon(createTag, getConfig(), getMetadata));
   await decoratePlaceholders(document.body.querySelector('header'), config);
   const sk = document.querySelector('aem-sidekick, helix-sidekick');
   if (sk) import('./sidekick-decorate.js').then((mod) => { mod.default(sk); });
