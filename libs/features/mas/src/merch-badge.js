@@ -27,7 +27,7 @@ export default class MerchBadge extends LitElement {
         this.style.setProperty('--merch-badge-padding', '2px 10px 3px 10px');
         this.style.setProperty('--merch-badge-border-radius', '4px 0 0 4px');
         this.style.setProperty('--merch-badge-font-size', 'var(--consonant-merch-card-body-xs-font-size)');
-        if (this.variant === 'plans') {
+        if (this.variant.startsWith('plans')) {
             this.style.setProperty('border-right', 'none');
         }
         super.connectedCallback();
