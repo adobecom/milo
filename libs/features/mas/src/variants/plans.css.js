@@ -15,11 +15,6 @@ merch-card[variant^="plans"] [slot="icons"] {
     --img-width: 41.5px;
 }
 
-
-merch-card[variant="plans-education"] [slot="subtitle"] {
-    margin-top: 8px;
-}
-
 merch-card[variant="plans-education"] [slot="body-xs"] span.price {
   display: inline-block;
   font-size: var(--consonant-merch-card-heading-xs-font-size);
@@ -45,6 +40,10 @@ merch-card[variant="plans-education"] span.heading-xs {
   margin-bottom: 8px;
 }
 
+merch-card[variant="plans-education"] [slot="body-xs"] p:first-of-type span.heading-xs {
+  margin-top: 8px;
+}
+
 merch-card[variant="plans-education"] span.promo-text {
   margin-bottom: 8px;
 }
@@ -58,8 +57,9 @@ merch-card[variant="plans-education"] span.promo-text {
     line-height: var(--consonant-merch-card-body-xs-line-height);
 }
 
-merch-card-collection merch-card[variant^="plans"] {
+merch-card-collection.plans merch-card {
   width: auto;
+  height: 100%;
 }
 
 merch-card[variant^="plans"] [slot="description"] {
@@ -111,6 +111,8 @@ merch-card[variant^="plans"] [slot="quantity-select"] {
     box-sizing: border-box;
     width: 100%;
     padding-top: 16px;
+    flex-grow: 1;
+    align-items: end;
 }
 
 merch-card[variant^="plans"] [slot="footer"] a {

@@ -172,6 +172,7 @@ button {
 
     & .plans-link {
         font-size: 14px;
+        padding-left: 6px;
     }
 }
 

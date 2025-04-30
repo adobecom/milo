@@ -91,6 +91,11 @@ export class Plans extends VariantLayout {
         : '';
   }
 
+  get icons() {
+    if (!this.card.querySelector('[slot="icons"]')) return '';
+    return html`<slot name="icons"></slot>`;
+  }
+
   connectedCallbackHook() {
     const match = matchMobile();
     if (match?.addEventListener) match.addEventListener('change', this.adaptForMobile);
@@ -104,7 +109,7 @@ export class Plans extends VariantLayout {
   renderLayout() {
     return html` ${this.badge}
         <div class="body">
-            <slot name="icons"></slot>
+            ${this.icons}
             <slot name="heading-xs"></slot>
             <slot name="heading-s"></slot>
             <slot name="subtitle"></slot>
@@ -126,7 +131,7 @@ export class Plans extends VariantLayout {
 
   static variantStyle = css`
     :host([variant^='plans']) {
-        min-height: 348px;
+        min-height: 273px;
         border: 1px solid var(--merch-card-custom-border-color, #DADADA);
         --merch-card-plans-min-width: 244px;
         --merch-card-plans-max-width: 244px;
@@ -150,17 +155,13 @@ export class Plans extends VariantLayout {
     :host([variant='plans-education']) .divider {
         border: 0;
         border-top: 1px solid #E8E8E8;
-        margin-top: 16px;
+        margin-top: 8px;
     }
 
     :host([variant^='plans']) .body {
         min-width: var(--merch-card-plans-min-width);
         max-width: var(--merch-card-plans-max-width);
         padding: var(--merch-card-plans-padding);
-    }
-
-    :host([variant='plans-education']) .body {
-        gap: 0;
     }
 
     :host([variant^='plans'][size]) .body {

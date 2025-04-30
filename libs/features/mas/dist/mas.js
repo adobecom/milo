@@ -994,11 +994,6 @@ merch-card[variant^="plans"] [slot="icons"] {
     --img-width: 41.5px;
 }
 
-
-merch-card[variant="plans-education"] [slot="subtitle"] {
-    margin-top: 8px;
-}
-
 merch-card[variant="plans-education"] [slot="body-xs"] span.price {
   display: inline-block;
   font-size: var(--consonant-merch-card-heading-xs-font-size);
@@ -1024,6 +1019,10 @@ merch-card[variant="plans-education"] span.heading-xs {
   margin-bottom: 8px;
 }
 
+merch-card[variant="plans-education"] [slot="body-xs"] p:first-of-type span.heading-xs {
+  margin-top: 8px;
+}
+
 merch-card[variant="plans-education"] span.promo-text {
   margin-bottom: 8px;
 }
@@ -1037,8 +1036,9 @@ merch-card[variant="plans-education"] span.promo-text {
     line-height: var(--consonant-merch-card-body-xs-line-height);
 }
 
-merch-card-collection merch-card[variant^="plans"] {
+merch-card-collection.plans merch-card {
   width: auto;
+  height: 100%;
 }
 
 merch-card[variant^="plans"] [slot="description"] {
@@ -1090,6 +1090,8 @@ merch-card[variant^="plans"] [slot="quantity-select"] {
     box-sizing: border-box;
     width: 100%;
     padding-top: 16px;
+    flex-grow: 1;
+    align-items: end;
 }
 
 merch-card[variant^="plans"] [slot="footer"] a {
@@ -1165,9 +1167,9 @@ merch-card[variant^="plans"]:not([size]) {
                 <input type="checkbox" @change=${this.card.toggleStockOffer}></input>
                 <span></span>
                 ${this.card.checkboxLabel}
-            </label>`:""}connectedCallbackHook(){let t=Zr();t?.addEventListener&&t.addEventListener("change",this.adaptForMobile)}disconnectedCallbackHook(){let t=Zr();t?.removeEventListener&&t.removeEventListener("change",this.adaptForMobile)}renderLayout(){return x` ${this.badge}
+            </label>`:""}get icons(){return this.card.querySelector('[slot="icons"]')?x`<slot name="icons"></slot>`:""}connectedCallbackHook(){let t=Zr();t?.addEventListener&&t.addEventListener("change",this.adaptForMobile)}disconnectedCallbackHook(){let t=Zr();t?.removeEventListener&&t.removeEventListener("change",this.adaptForMobile)}renderLayout(){return x` ${this.badge}
         <div class="body">
-            <slot name="icons"></slot>
+            ${this.icons}
             <slot name="heading-xs"></slot>
             <slot name="heading-s"></slot>
             <slot name="subtitle"></slot>
@@ -1186,7 +1188,7 @@ merch-card[variant^="plans"]:not([size]) {
         </div>
         ${this.secureLabelFooter}`}};p(Re,"variantStyle",v`
     :host([variant^='plans']) {
-        min-height: 348px;
+        min-height: 273px;
         border: 1px solid var(--merch-card-custom-border-color, #DADADA);
         --merch-card-plans-min-width: 244px;
         --merch-card-plans-max-width: 244px;
@@ -1210,17 +1212,13 @@ merch-card[variant^="plans"]:not([size]) {
     :host([variant='plans-education']) .divider {
         border: 0;
         border-top: 1px solid #E8E8E8;
-        margin-top: 16px;
+        margin-top: 8px;
     }
 
     :host([variant^='plans']) .body {
         min-width: var(--merch-card-plans-min-width);
         max-width: var(--merch-card-plans-max-width);
         padding: var(--merch-card-plans-padding);
-    }
-
-    :host([variant='plans-education']) .body {
-        gap: 0;
     }
 
     :host([variant^='plans'][size]) .body {
