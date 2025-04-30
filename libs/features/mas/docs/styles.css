@@ -173,6 +173,16 @@ button {
     & .plans-link {
         font-size: 14px;
     }
+
+    & .plans-item {
+        position: relative;
+
+        & .plans-link {
+            position: absolute;
+            top: calc(100% + 6px);
+            left: 8px;
+        }
+    }
 }
 
 code {

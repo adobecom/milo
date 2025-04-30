@@ -994,14 +994,6 @@ merch-card[variant^="plans"] [slot="icons"] {
     --img-width: 41.5px;
 }
 
-merch-card[variant="plans-education"] [slot="subtitle"] {
-    margin-top: 8px;
-}
-
-merch-card[variant^="plans"] [slot="body-xs"] {
-    flex-grow: 1;
-}
-
 merch-card[variant="plans-education"] [slot="body-xs"] span.price {
   display: inline-block;
   font-size: var(--consonant-merch-card-heading-xs-font-size);
@@ -1025,6 +1017,10 @@ merch-card[variant="plans-education"] [slot="body-xs"] span.price:not(.price-str
 merch-card[variant="plans-education"] span.heading-xs {
   margin-top: 16px;
   margin-bottom: 8px;
+}
+
+merch-card[variant="plans-education"] [slot="body-xs"] p:first-of-type span.heading-xs {
+  margin-top: 8px;
 }
 
 merch-card[variant="plans-education"] span.promo-text {
@@ -1093,6 +1089,8 @@ merch-card[variant^="plans"] [slot="quantity-select"] {
     box-sizing: border-box;
     width: 100%;
     padding-top: 16px;
+    flex-grow: 1;
+    align-items: end;
 }
 
 merch-card[variant^="plans"] [slot="footer"] a {
@@ -1168,9 +1166,9 @@ merch-card[variant^="plans"]:not([size]) {
                 <input type="checkbox" @change=${this.card.toggleStockOffer}></input>
                 <span></span>
                 ${this.card.checkboxLabel}
-            </label>`:""}connectedCallbackHook(){let t=Kr();t?.addEventListener&&t.addEventListener("change",this.adaptForMobile)}disconnectedCallbackHook(){let t=Kr();t?.removeEventListener&&t.removeEventListener("change",this.adaptForMobile)}renderLayout(){return console.log(this.card.fields),g` ${this.badge}
+            </label>`:""}get icons(){return this.card.querySelector('[slot="icons"]')?g`<slot name="icons"></slot>`:""}connectedCallbackHook(){let t=Kr();t?.addEventListener&&t.addEventListener("change",this.adaptForMobile)}disconnectedCallbackHook(){let t=Kr();t?.removeEventListener&&t.removeEventListener("change",this.adaptForMobile)}renderLayout(){return g` ${this.badge}
         <div class="body">
-            <slot name="icons"></slot>
+            ${this.icons}
             <slot name="heading-xs"></slot>
             <slot name="heading-s"></slot>
             <slot name="subtitle"></slot>
@@ -1189,7 +1187,7 @@ merch-card[variant^="plans"]:not([size]) {
         </div>
         ${this.secureLabelFooter}`}};p(Oe,"variantStyle",v`
     :host([variant^='plans']) {
-        min-height: 348px;
+        min-height: 273px;
         height: 100%;
         border: 1px solid var(--merch-card-custom-border-color, #DADADA);
         --merch-card-plans-min-width: 244px;
@@ -1214,17 +1212,13 @@ merch-card[variant^="plans"]:not([size]) {
     :host([variant='plans-education']) .divider {
         border: 0;
         border-top: 1px solid #E8E8E8;
-        margin-top: 16px;
+        margin-top: 8px;
     }
 
     :host([variant^='plans']) .body {
         min-width: var(--merch-card-plans-min-width);
         max-width: var(--merch-card-plans-max-width);
         padding: var(--merch-card-plans-padding);
-    }
-
-    :host([variant='plans-education']) .body {
-        gap: 0;
     }
 
     :host([variant^='plans'][size]) .body {
