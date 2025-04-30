@@ -30,6 +30,8 @@ export const PLANS_EDUCATION_AEM_FRAGMENT_MAPPING = {
   secureLabel: false
 }
 
+delete PLANS_EDUCATION_AEM_FRAGMENT_MAPPING.whatsIncluded;
+
 export class Plans extends VariantLayout {
   constructor(card) {
     super(card);
