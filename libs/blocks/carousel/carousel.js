@@ -248,7 +248,7 @@ function moveSlides(event, carouselElements, jumpToIndex) {
     activeSlide = handleNext(activeSlide, slides);
     activeSlide.removeAttribute('aria-hidden');
     const dataLabelledBy = activeSlide.getAttribute('data-labelledby');
-    // nextPreviousBtns[1].setAttribute('aria-labelledby', dataLabelledBy);
+    nextPreviousBtns[1].setAttribute('aria-labelledby', dataLabelledBy);
     nextPreviousBtns[1].focus();
     slideContainer?.classList.remove('is-reversing');
   }
@@ -273,10 +273,10 @@ function moveSlides(event, carouselElements, jumpToIndex) {
 
   // Update active slide and indicator dot attributes
   activeSlide.classList.add('active');
-  // asa = setTimeout(() => {
+  // nextPreviousBtns[1].blur();
+  asa = setTimeout(() => {
     al.textContent = activeSlide.textContent;
-  console.log(al.textContent);
-  // }, 500);
+  }, 500);
   // setTimeout(() => {
   // }, 200);
   const indexOfActive = [...activeSlide.parentElement.children]
@@ -503,7 +503,7 @@ export default function init(el) {
   const slideWrapper = createTag('div', { class: 'carousel-wrapper' });
   const al = createTag('div', {
     class: 'dummy',
-    'aria-live': 'polite',
+    'aria-live': 'assertive',
   });
   slideWrapper.appendChild(al);
   const slideContainer = createTag('div', { class: 'carousel-slides' }, fragment);
