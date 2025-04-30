@@ -69,14 +69,27 @@ export const lanaLog = ({ message, e = '', tags = 'default', errorType }) => {
   });
 };
 
+const usedMeasurementNames = new Set();
 export const logPerformance = (
   measurementName,
   startMark,
   endMark,
 ) => {
   try {
-    const measure = performance.measure(measurementName, startMark, endMark);
-    measure.url = window.location.toString();
+    if (usedMeasurementNames.has(measurementName)) throw new Error(`${measurementName} has already been used`);
+    const {
+      name,
+      startTime,
+      duration,
+    } = performance.measure(measurementName, startMark, endMark);
+    usedMeasurementNames.add(measurementName);
+    const measure = {
+      name,
+      startTime,
+      duration,
+      url: window.location.toString(),
+      errorType: 'i',
+    };
     const measureStr = Object.entries(measure)
       .map(([key, value]) => `${key}=${value}`)
       .join(',');
