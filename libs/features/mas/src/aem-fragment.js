@@ -102,6 +102,7 @@ export class AemFragment extends HTMLElement {
     }
 
     connectedCallback() {
+        if (this.#fetchPromise) return;
         this.#service = getService(this);
         this.#log = this.#service.log.module(AEM_FRAGMENT_TAG_NAME);
         this.#startMark = `${AEM_FRAGMENT_TAG_NAME}:${this.#fragmentId}${MARK_START_SUFFIX}`;
