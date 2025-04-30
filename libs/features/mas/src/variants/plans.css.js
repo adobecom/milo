@@ -3,12 +3,17 @@ export const CSS = `
 :root {
     --consonant-merch-card-plans-width: 300px;
     --consonant-merch-card-plans-icon-size: 40px;
+    --consonant-merch-card-plans-students-width: 568px;
 }
 
 merch-card[variant^="plans"] {
     --merch-card-plans-heading-xs-min-height: 23px;
     --consonant-merch-card-callout-icon-size: 18px;
     width: var(--consonant-merch-card-plans-width);
+}
+
+merch-card[variant="plans-students"] {
+    width: var(--consonant-merch-card-plans-students-width);
 }
 
 merch-card[variant^="plans"] [slot="icons"] {
@@ -120,6 +125,10 @@ merch-card[variant^="plans"] [slot="footer"] a {
     padding: 3px 16px 4px;
 }
 
+merch-card[variant^="plans"] [slot="footer"] .con-button > span {
+    min-width: unset;
+}
+
 .plans-container {
     display: flex;
     justify-content: center;
@@ -134,6 +143,12 @@ merch-card[variant^="plans"] [slot="footer"] a {
 @media screen and ${MOBILE_LANDSCAPE} {
     merch-whats-included merch-mnemonic-list,
     merch-whats-included [slot="heading"] {
+        width: 100%;
+    }
+
+    merch-card[variant="plans-students"] {
+        min-width: var(--consonant-merch-card-plans-width);
+        max-width: var(--consonant-merch-card-plans-students-width);
         width: 100%;
     }
 }

@@ -20,6 +20,10 @@
         <merch-card><aem-fragment fragment="8373b5c2-69e6-4e9c-befc-b424dd33469b"></aem-fragment></merch-card>
         <a class="plans-link" target="_blank" href="https://main--mas--adobecom.aem.live/studio.html?#path=nala&query=8373b5c2-69e6-4e9c-befc-b424dd33469b"> Open in Studio</a>
       </div>
+      <div>
+        <merch-card><aem-fragment fragment="dfc2eede-7e88-4ed3-b96c-f5214472dfcf"></aem-fragment></merch-card>
+        <a class="plans-link" target="_blank" href="https://main--mas--adobecom.aem.live/studio.html?#path=nala&query=dfc2eede-7e88-4ed3-b96c-f5214472dfcf"> Open in Studio</a>
+      </div>
   </div>
   <h2 id="crd-mrch-plan-bus">Regular Plans Business Cards <a class="header-anchor" href="#crd-mrch-plan-bus" title="Permalink to this heading">#</a></h2>
   <div class="four-merch-cards plans">

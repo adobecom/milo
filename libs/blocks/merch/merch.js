@@ -768,6 +768,32 @@ async function buildPrice(el, params) {
   return price;
 }
 
+export const MEP_SELECTOR = 'mas';
+
+export function overrideOptions(fragment, options) {
+  const { mep } = getConfig();
+  const fragments = mep?.inBlock?.[MEP_SELECTOR]?.fragments;
+  if (fragments) {
+    const command = fragments[fragment];
+    if (command && command.action === 'replace') {
+      return { ...options, fragment: command.content };
+    }
+  }
+  return options;
+}
+
+export function getOptions(el) {
+  const { hash } = new URL(el.href);
+  const hashValue = hash.startsWith('#') ? hash.substring(1) : hash;
+  const searchParams = new URLSearchParams(hashValue);
+  const options = {};
+  for (const [key, value] of searchParams.entries()) {
+    if (key === 'sidenav') options.sidenav = value === 'true';
+    else if (key === 'fragment' || key === 'query') options.fragment = value;
+  }
+  return options;
+}
+
 export default async function init(el) {
   if (!el?.classList?.contains('merch')) return undefined;
   const { searchParams } = new URL(el.href);
