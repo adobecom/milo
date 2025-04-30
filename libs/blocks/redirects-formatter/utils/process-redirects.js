@@ -1,7 +1,7 @@
 export function getLocalesFromUi(nodeList) {
   return [...nodeList].reduce((rdx, cb) => {
     if (cb.checked) {
-      rdx.push(cb.id);
+      rdx.push(cb.value);
     }
     return rdx;
   }, []);
