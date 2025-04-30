@@ -1408,3 +1408,11 @@ html:has(body.disable-ios-scroll) { /* this class is only added on iOS */
   position: relative;
   display: block;
 }
+
+/* Landscape mode for mobile */
+@media (orientation: landscape) and (max-width: 900px) {
+  header.new-nav .feds-nav > section.feds-navItem > .feds-popup .tabs button {
+    padding: 15px 11px 15px 20px;
+    min-height: max-content;
+  }
+}
