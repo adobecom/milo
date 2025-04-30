@@ -309,7 +309,7 @@ function moveSlides(event, carouselElements, jumpToIndex) {
     slideContainer.classList.add('is-ready');
     nextPreviousBtns.forEach((btn) => {
       btn.removeAttribute('aria-labelledby');
-      btn.setAttribute('aria-label', 'My label test');
+      // btn.setAttribute('aria-label', 'My label test');
     });
   }, slideDelay);
 }
