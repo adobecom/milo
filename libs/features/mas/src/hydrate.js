@@ -67,7 +67,7 @@ export function processMnemonics(fields, merchCard, mnemonicsConfig) {
 }
 
 function processBadge(fields, merchCard, mapping) {
-    if (fields.variant === 'plans') {
+    if (fields.variant === 'plans' || fields.variant === 'plans-students') {
         // for back-compatibility
         if (fields.badge?.length && !fields.badge?.startsWith('<merch-badge')) {
             fields.badge = `<merch-badge variant="${fields.variant}" background-color="${DEFAULT_PLANS_BADGE_COLOR}">${fields.badge}</merch-badge>`;
@@ -471,6 +471,7 @@ export function cleanup(merchCard) {
         'badge-background-color',
         'badge-color',
         'badge-text',
+        'gradient-border',
         'size',
         ANALYTICS_SECTION_ATTR,
     ];
@@ -485,18 +486,6 @@ export async function hydrate(fragment, merchCard) {
     if (!variant) throw new Error (`hydrate: no variant found in payload ${id}`);
     cleanup(merchCard);
     merchCard.id ??= fragment.id;
-
-    merchCard.removeAttribute('background-image');
-    merchCard.removeAttribute('background-color');
-    merchCard.removeAttribute('badge-background-color');
-    merchCard.removeAttribute('badge-color');
-    merchCard.removeAttribute('badge-text');
-    merchCard.removeAttribute('size');
-    merchCard.removeAttribute('gradient-border');
-    merchCard.classList.remove('wide-strip');
-    merchCard.classList.remove('thin-strip');
-    merchCard.removeAttribute(ANALYTICS_SECTION_ATTR);
-
     merchCard.variant = variant;
     await merchCard.updateComplete;
 
