@@ -139,10 +139,6 @@
   fill: var(--color-white);
 }
 
-/* .carousel svg { */
-/*   pointer-events: none; */
-/* } */
-
 .carousel .carousel-previous svg {
   margin-right: 2px;
   transform: rotate(180deg);

@@ -241,13 +241,9 @@ function moveSlides(event, carouselElements, jumpToIndex) {
     referenceSlide = handleNext(referenceSlide, slides);
     activeSlideIndicator = handleNext(activeSlideIndicator, slideIndicators);
     activeSlide = handleNext(activeSlide, slides);
-    // const nextBtnLabelledBy = nextPreviousBtns[1].getAttribute('aria-labelledby');
-    // if (nextBtnLabelledBy !== activeSlide.id) {
-    // }
     activeSlide.removeAttribute('aria-hidden');
     const dataLabelledBy = activeSlide.getAttribute('data-labelledby');
     nextPreviousBtns[1].setAttribute('aria-labelledby', dataLabelledBy);
-    // nextPreviousBtns[1].setAttribute('aria-labelledby', activeSlide.id);
     nextPreviousBtns[1].focus();
     slideContainer?.classList.remove('is-reversing');
   }
@@ -259,13 +255,9 @@ function moveSlides(event, carouselElements, jumpToIndex) {
     referenceSlide = handlePrevious(referenceSlide, slides);
     activeSlideIndicator = handlePrevious(activeSlideIndicator, slideIndicators);
     activeSlide = handlePrevious(activeSlide, slides);
-    // const prevBtnLabelledBy = nextPreviousBtns[0].getAttribute('aria-labelledby');
-    // if (prevBtnLabelledBy !== activeSlide.id) {
-    // }
     activeSlide.removeAttribute('aria-hidden');
     const dataLabelledBy = activeSlide.getAttribute('data-labelledby');
     nextPreviousBtns[0].setAttribute('aria-labelledby', dataLabelledBy);
-    // nextPreviousBtns[0].setAttribute('aria-labelledby', activeSlide.id);
     nextPreviousBtns[0].focus();
     slideContainer.classList.add('is-reversing');
   }
@@ -313,7 +305,10 @@ function moveSlides(event, carouselElements, jumpToIndex) {
   */
   const slideDelay = 25;
   slideContainer.classList.remove('is-ready');
-  return setTimeout(() => slideContainer.classList.add('is-ready'), slideDelay);
+  return setTimeout(() => {
+    slideContainer.classList.add('is-ready');
+    nextPreviousBtns.forEach((btn) => btn.removeAttribute('aria-labelledby'));
+  }, slideDelay);
 }
 
 export function getSwipeDistance(start, end) {
@@ -371,24 +366,35 @@ function handleChangingSlides(carouselElements) {
 
   // Handle Next/Previous Buttons
   [...nextPreviousBtns].forEach((btn) => {
-    btn.addEventListener('click', (event) => {
-      moveSlides(event, carouselElements);
-    });
-    btn.addEventListener('blur', () => {
-      btn.removeAttribute('aria-labelledby');
-    });
-    btn.addEventListener('mouseover', () => {
-      if (btn.getAttribute('aria-labelledby')) return;
+    btn.addEventListener('mousedown', (event) => {
       const active = el.querySelector('.active');
       const dataToggle = btn.getAttribute('data-toggle');
       const nextEl = dataToggle === 'next' ? handleNext(active, slides) : handlePrevious(active, slides);
       const dataLabelledBy = nextEl.getAttribute('data-labelledby');
       btn.setAttribute('aria-labelledby', dataLabelledBy);
     });
-    btn.addEventListener('mouseout', (event) => {
-      if (event.target !== btn) return;
-      btn.removeAttribute('aria-labelledby');
+    btn.addEventListener('click', (event) => {
+      moveSlides(event, carouselElements);
+      // btn.removeAttribute('aria-labelledby');
     });
+    // btn.addEventListener('blur', () => {
+    //   btn.removeAttribute('aria-labelledby');
+    // });
+    // btn.addEventListener('mouseover', () => {
+    //   if (btn.getAttribute('aria-labelledby')) return;
+    //   console.log('mousein');
+    //   const active = el.querySelector('.active');
+    //   const dataToggle = btn.getAttribute('data-toggle');
+    //   const nextEl = dataToggle === 'next' ? handleNext(active, slides) : handlePrevious(active, slides);
+    //   const dataLabelledBy = active.getAttribute('data-labelledby');
+    //   const btnL = btn.getAttribute('data-labelledby');
+    //   if (dataLabelledBy === btnL) return;
+    //   btn.setAttribute('aria-labelledby', dataLabelledBy);
+    // });
+    // btn.addEventListener('mouseout', (event) => {
+    //   if (event.target !== btn && btn.contains(event.target)) return;
+    //   btn.removeAttribute('aria-labelledby');
+    // });
   });
 
   // Handle keyboard navigation
@@ -459,7 +465,6 @@ export default function init(el) {
         child.setAttribute('id', childId);
         labelledBy += ` ${childId}`;
       });
-      // slide.setAttribute('id', slideId);
       slide.setAttribute('data-labelledby', labelledBy.trim());
       slide.setAttribute('aria-hidden', true);
     }
