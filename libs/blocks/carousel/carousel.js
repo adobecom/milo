@@ -384,9 +384,13 @@ function handleChangingSlides(carouselElements) {
     //   btn.removeAttribute('aria-labelledby');
     // });
     btn.addEventListener('mouseover', () => {
+      const svg = btn.querySelector('svg');
+      svg.setAttribute('aria-hidden', true);
       btn.removeAttribute('aria-label');
     });
     btn.addEventListener('mouseout', () => {
+      const svg = btn.querySelector('svg');
+      svg.removeAttribute('aria-hidden');
       btn.setAttribute('aria-label', 'My test attribute');
     });
   });
