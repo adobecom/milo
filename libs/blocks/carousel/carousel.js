@@ -307,7 +307,10 @@ function moveSlides(event, carouselElements, jumpToIndex) {
   slideContainer.classList.remove('is-ready');
   return setTimeout(() => {
     slideContainer.classList.add('is-ready');
-    nextPreviousBtns.forEach((btn) => btn.removeAttribute('aria-labelledby'));
+    nextPreviousBtns.forEach((btn) => {
+      btn.removeAttribute('aria-labelledby');
+      btn.setAttribute('aria-label', 'My label test');
+    });
   }, slideDelay);
 }
 
@@ -366,11 +369,12 @@ function handleChangingSlides(carouselElements) {
 
   // Handle Next/Previous Buttons
   [...nextPreviousBtns].forEach((btn) => {
-    btn.addEventListener('mousedown', (event) => {
+    btn.addEventListener('mousedown', () => {
       const active = el.querySelector('.active');
       const dataToggle = btn.getAttribute('data-toggle');
       const nextEl = dataToggle === 'next' ? handleNext(active, slides) : handlePrevious(active, slides);
       const dataLabelledBy = nextEl.getAttribute('data-labelledby');
+      btn.removeAttribute('aria-label');
       btn.setAttribute('aria-labelledby', dataLabelledBy);
     });
     btn.addEventListener('click', (event) => {
