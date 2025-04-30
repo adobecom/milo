@@ -132,7 +132,6 @@ export class Plans extends VariantLayout {
   static variantStyle = css`
     :host([variant^='plans']) {
         min-height: 273px;
-        height: 100%;
         border: 1px solid var(--merch-card-custom-border-color, #DADADA);
         --merch-card-plans-min-width: 244px;
         --merch-card-plans-max-width: 244px;

@@ -59,6 +59,7 @@ merch-card[variant="plans-education"] span.promo-text {
 
 merch-card-collection merch-card[variant^="plans"] {
   width: auto;
+  height: 100%;
 }
 
 merch-card[variant^="plans"] [slot="description"] {

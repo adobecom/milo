@@ -1030,6 +1030,7 @@ merch-card[variant="plans-education"] span.promo-text {
 
 merch-card-collection merch-card[variant^="plans"] {
   width: auto;
+  height: 100%;
 }
 
 merch-card[variant^="plans"] [slot="description"] {
@@ -1180,7 +1181,6 @@ merch-card[variant^="plans"]:not([size]) {
         ${this.secureLabelFooter}`}};s(C,"variantStyle",Pe`
     :host([variant^='plans']) {
         min-height: 273px;
-        height: 100%;
         border: 1px solid var(--merch-card-custom-border-color, #DADADA);
         --merch-card-plans-min-width: 244px;
         --merch-card-plans-max-width: 244px;
