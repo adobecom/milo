@@ -511,6 +511,5 @@ sr-only {
   white-space: nowrap;
   border: 0;
 }
-
 `;
 document.head.appendChild(styles);

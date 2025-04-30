@@ -1,7 +1,16 @@
-import { TABLET_UP, DESKTOP_UP, } from '../media.js';
+import { TABLET_UP, DESKTOP_UP } from '../media.js';
 export const CSS = `
 :root {
   --consonant-merch-card-product-width: 300px;
+}
+
+merch-card[variant="product"] merch-addon {
+    padding-top: 8px;
+    padding-bottom: 8px;
+    padding-right: 8px;
+    font-family: "Adobe Clean";
+    font-size: 14px;
+    line-height: normal;
 }
 
 /* grid style for product */

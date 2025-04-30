@@ -225,7 +225,11 @@ export class MerchCard extends LitElement {
     }
 
     get computedBorderStyle() {
-        if (!['ccd-slice', 'ccd-suggested', 'ah-promoted-plans'].includes(this.variant)) {
+        if (
+            !['ccd-slice', 'ccd-suggested', 'ah-promoted-plans'].includes(
+                this.variant,
+            )
+        ) {
             return `1px solid ${
                 this.borderColor ? this.borderColor : this.badgeBackgroundColor
             }`;
@@ -276,6 +280,32 @@ export class MerchCard extends LitElement {
 
             if (target.checked) {
                 osis.push(stockOfferOsi);
+            }
+            element.dataset.wcsOsi = osis.join(',');
+        }
+    }
+
+    changeHandler(event) {
+        if (event.target.tagName === 'MERCH-ADDON') {
+            this.toggleAddon(event.target);
+        }
+    }
+
+    toggleAddon(merchAddon) {
+        const elements = this.checkoutLinks;
+        if (elements.length === 0) return;
+        for (const element of elements) {
+            const planType = element.value?.[0]?.planType;
+            if (!planType) return;
+            const addonOsi = merchAddon.querySelector(
+                `p[data-plan-type="${planType}"] ${SELECTOR_MAS_INLINE_PRICE}`,
+            )?.dataset?.wcsOsi;
+            const osis = element.dataset.wcsOsi
+                .split(',')
+                .filter((osi) => osi !== addonOsi);
+
+            if (merchAddon.checked) {
+                osis.push(addonOsi);
             }
             element.dataset.wcsOsi = osis.join(',');
         }
@@ -355,6 +385,7 @@ export class MerchCard extends LitElement {
         // aem-fragment logic
         this.addEventListener(EVENT_AEM_ERROR, this.handleAemFragmentEvents);
         this.addEventListener(EVENT_AEM_LOAD, this.handleAemFragmentEvents);
+        this.addEventListener('change', this.changeHandler);
 
         if (!this.aemFragment) {
             setTimeout(() => this.checkReady(), 0);
@@ -371,6 +402,7 @@ export class MerchCard extends LitElement {
         );
         this.removeEventListener(EVENT_AEM_ERROR, this.handleAemFragmentEvents);
         this.removeEventListener(EVENT_AEM_LOAD, this.handleAemFragmentEvents);
+        this.removeEventListener('change', this.changeHandler);
     }
 
     // custom methods
@@ -476,6 +508,10 @@ export class MerchCard extends LitElement {
 
     get aemFragment() {
         return this.querySelector('aem-fragment');
+    }
+
+    get addon() {
+        return this.querySelector('merch-addon');
     }
 
     /* c8 ignore next 3 */

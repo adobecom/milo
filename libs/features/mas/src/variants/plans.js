@@ -4,7 +4,6 @@ import { CSS } from './plans.css.js';
 import { isMobile, matchMobile } from '../utils.js';
 import {
     SELECTOR_MAS_INLINE_PRICE,
-    TEMPLATE_PRICE,
     TEMPLATE_PRICE_LEGAL,
 } from '../constants.js';
 
@@ -16,9 +15,9 @@ export const PLANS_AEM_FRAGMENT_MAPPING = {
     mnemonics: { size: 'l' },
     callout: { tag: 'div', slot: 'callout-content' },
     quantitySelect: { tag: 'div', slot: 'quantity-select' },
-    stockOffer: true,
+    stockOffer: true /* @deprecated */,
+    addon: true,
     secureLabel: true,
-    planType: true,
     badge: { tag: 'div', slot: 'badge' },
     allowedBadgeColors: [
         'spectrum-yellow-300-plans',
@@ -99,16 +98,25 @@ export class Plans extends VariantLayout {
         this.adaptForMobile();
         this.adjustTitleWidth();
         this.adjustLegal();
+        this.adjustAddon();
+    }
+
+    get headingM() {
+        return this.card.querySelector('[slot="heading-m"]');
+    }
+
+    get mainPrice() {
+        const price = this.headingM.querySelector(
+            `${SELECTOR_MAS_INLINE_PRICE}[data-template="price"]`,
+        );
+        return price;
     }
 
     async adjustLegal() {
         await this.card.updateComplete;
         if (this.legal) return;
-        const headingM = this.card.querySelector('[slot="heading-m"]');
-        if (!headingM) return;
-        const price = headingM.querySelector(
-            `${SELECTOR_MAS_INLINE_PRICE}[data-template="price"]`,
-        );
+        const price = this.mainPrice;
+        if (!price) return;
         const legal = price.cloneNode(true);
         this.legal = legal;
         await price.onceSettled();
@@ -119,7 +127,19 @@ export class Plans extends VariantLayout {
         if (price.options.displayPlanType)
             price.dataset.displayPlanType = 'false';
         legal.setAttribute('data-template', 'legal');
-        headingM.appendChild(legal);
+        this.headingM.appendChild(legal);
+    }
+
+    async adjustAddon() {
+        await this.card.updateComplete;
+        const addon = this.card.addon;
+        if (!addon) return;
+        const price = this.mainPrice;
+        if (!price) return;
+        await price.onceSettled();
+        const planType = price.value?.[0]?.planType;
+        if (!planType) return;
+        addon.planType = planType;
     }
 
     get stockCheckbox() {
@@ -158,6 +178,7 @@ export class Plans extends VariantLayout {
                 <slot name="whats-included"></slot>
                 <slot name="callout-content"></slot>
                 ${this.stockCheckbox}
+                <slot name="addon"></slot>
                 <slot name="badge"></slot>
                 <slot name="quantity-select"></slot>
             </div>

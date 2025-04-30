@@ -1,3 +1,4 @@
+import { SELECTOR_MAS_INLINE_PRICE } from './constants.js';
 import { UptLink } from './upt-link.js';
 import { createTag } from './utils.js';
 
@@ -197,15 +198,40 @@ export function processDescription(fields, merchCard, mapping) {
     appendSlot('quantitySelect', fields, merchCard, mapping);
 }
 
-export function processStockOffersAndSecureLabel(fields, merchCard, aemFragmentMapping, settings) {
-  // for Stock Checkbox, presence flag is set on the card, label and osi for an offer are set in settings
-  if (fields.showStockCheckbox && aemFragmentMapping.stockOffer) {
-    merchCard.setAttribute('checkbox-label', settings?.stockCheckboxLabel ? settings.stockCheckboxLabel : '');
-    merchCard.setAttribute('stock-offer-osis', settings?.stockOfferOsis ? settings.stockOfferOsis : '');
-  }
-  if (settings?.secureLabel && aemFragmentMapping?.secureLabel) {
-    merchCard.setAttribute('secure-label', settings.secureLabel);
-  }
+export function processAddon(fields, merchCard, mapping) {
+    if (!mapping.addon) return;
+    const addonField = fields.addon;
+    if (!addonField) return;
+    if (/disabled/.test(addonField)) return;
+    const addon = createTag('merch-addon', { slot: 'addon' }, addonField);
+    [...addon.querySelectorAll(SELECTOR_MAS_INLINE_PRICE)].forEach((span) => {
+        const parent = span.parentElement;
+        if (parent?.nodeName !== 'P') return;
+        parent.setAttribute('data-plan-type', '');
+    });
+    merchCard.append(addon);
+}
+
+export function processStockOffersAndSecureLabel(
+    fields,
+    merchCard,
+    aemFragmentMapping,
+    settings,
+) {
+    // for Stock Checkbox, presence flag is set on the card, label and osi for an offer are set in settings
+    if (fields.showStockCheckbox && aemFragmentMapping.stockOffer) {
+        merchCard.setAttribute(
+            'checkbox-label',
+            settings?.stockCheckboxLabel ? settings.stockCheckboxLabel : '',
+        );
+        merchCard.setAttribute(
+            'stock-offer-osis',
+            settings?.stockOfferOsis ? settings.stockOfferOsis : '',
+        );
+    }
+    if (settings?.secureLabel && aemFragmentMapping?.secureLabel) {
+        merchCard.setAttribute('secure-label', settings.secureLabel);
+    }
 }
 
 export function getTruncatedTextData(text, limit, withSuffix = true) {
@@ -361,7 +387,10 @@ function createSpectrumSwcButton(cta, aemFragmentMapping, isOutline, variant) {
 
 function createConsonantButton(cta, isAccent) {
     const CheckoutLink = customElements.get('checkout-link');
-    const checkoutLink = CheckoutLink.createCheckoutLink(cta.dataset, cta.innerHTML);
+    const checkoutLink = CheckoutLink.createCheckoutLink(
+        cta.dataset,
+        cta.innerHTML,
+    );
     checkoutLink.classList.add('con-button');
     if (isAccent) {
         checkoutLink.classList.add('blue');
@@ -482,7 +511,7 @@ export function cleanup(merchCard) {
 export async function hydrate(fragment, merchCard) {
     const { id, fields, settings = {} } = fragment;
     const { variant } = fields;
-    if (!variant) throw new Error (`hydrate: no variant found in payload ${id}`);
+    if (!variant) throw new Error(`hydrate: no variant found in payload ${id}`);
     cleanup(merchCard);
     merchCard.settings = settings;
     merchCard.variant = variant;
@@ -509,6 +538,7 @@ export async function hydrate(fragment, merchCard) {
     processBackgroundColor(fields, merchCard, aemFragmentMapping.allowedColors);
     processBorderColor(fields, merchCard, aemFragmentMapping.borderColor);
     processDescription(fields, merchCard, aemFragmentMapping);
+    processAddon(fields, merchCard, aemFragmentMapping);
     processStockOffersAndSecureLabel(
         fields,
         merchCard,
