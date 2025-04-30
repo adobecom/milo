@@ -21,6 +21,7 @@ const FEDERAL_PATH_KEY = 'federal';
 // Set a default height for LocalNav,
 // as sticky blocks position themselves before LocalNav loads into the DOM.
 const DEFAULT_LOCALNAV_HEIGHT = 40;
+const LANA_CLIENT_ID = 'feds-milo';
 
 const selectorMap = {
   headline: '.feds-menu-headline[aria-expanded="true"]',
@@ -61,11 +62,31 @@ export const darkIcons = {
 export const lanaLog = ({ message, e = '', tags = 'default', errorType }) => {
   const url = getMetadata('gnav-source');
   window.lana.log(`${message} | gnav-source: ${url} | href: ${window.location.href} | ${e.reason || e.error || e.message || e}`, {
-    clientId: 'feds-milo',
+    clientId: LANA_CLIENT_ID,
     sampleRate: 1,
     tags,
     errorType,
   });
+};
+
+export const logPerformance = (
+  measurementName,
+  startMark,
+  endMark,
+) => {
+  try {
+    const measure = performance.measure(measurementName, startMark, endMark);
+    measure.url = window.location.toString();
+    const measureStr = Object.entries(measure)
+      .map(([key, value]) => `${key}=${value}`)
+      .join(',');
+    window.lana.log(measureStr, {
+      clientId: LANA_CLIENT_ID,
+      sampleRate: 1,
+    });
+  } catch (e) {
+    console.error(e);
+  }
 };
 
 export const logErrorFor = async (fn, message, tags, errorType) => {

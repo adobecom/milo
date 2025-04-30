@@ -326,6 +326,7 @@ const decorateMenu = (config) => logErrorFor(async () => {
   }
 
   if (config.type === 'asyncDropdownTrigger') {
+    performance.mark(`DecorateMenu-${asyncDropDownCount}-Start`);
     const pathElement = config.item.querySelector('a');
     if (!(pathElement instanceof HTMLElement)) return;
 
@@ -381,6 +382,9 @@ const decorateMenu = (config) => logErrorFor(async () => {
   }
 
   config.template?.append(menuTemplate);
+  if (config.type === 'asyncDropdownTrigger') {
+    performance.mark(`DecorateMenu-${asyncDropDownCount}-End`);
+  }
 }, 'Decorate menu failed', 'gnav-menu', 'info');
 
 export default { decorateMenu, decorateLinkGroup };

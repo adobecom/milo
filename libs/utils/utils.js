@@ -1420,6 +1420,7 @@ async function loadPostLCP(config) {
   const header = document.querySelector('header');
   if (header) {
     header.classList.add('gnav-hide');
+    performance.mark('Gnav-Start');
     loadBlock(header);
     header.classList.remove('gnav-hide');
   }
