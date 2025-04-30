@@ -57,7 +57,7 @@ merch-card[variant="plans-education"] span.promo-text {
     line-height: var(--consonant-merch-card-body-xs-line-height);
 }
 
-merch-card-collection merch-card[variant^="plans"] {
+merch-card-collection.plans merch-card {
   width: auto;
   height: 100%;
 }
