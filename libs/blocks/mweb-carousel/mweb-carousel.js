@@ -1,5 +1,5 @@
-import { createTag, getConfig, MILO_EVENTS } from '../../../libs/utils/utils.js';
-import { decorateAnchorVideo, syncPausePlayIcon } from '../../../libs/utils/decorate.js';
+import { createTag, getConfig, MILO_EVENTS } from '../../utils/utils.js';
+import { decorateAnchorVideo, syncPausePlayIcon } from '../../utils/decorate.js';
 
 const { miloLibs, codeRoot } = getConfig();
 const base = miloLibs || codeRoot;
