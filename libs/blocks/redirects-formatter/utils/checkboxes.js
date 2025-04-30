@@ -36,7 +36,8 @@ function createCheckboxGroupNodes(checkboxGroupings) {
     const group = createTag('div', { class: `${groupClass} checkbox-grouping ${idx === 0 ? selectedClassName : ''}` });
 
     const checkboxes = checkboxGroupings[groupKey].map((locale) => {
-      const checkbox = createTag('input', { class: 'locale-checkbox',
+      const checkbox = createTag('input', {
+        class: 'locale-checkbox',
         type: 'checkbox',
         id: `${groupKey}-${locale}`,
         name: `${groupKey}-${locale}`,
