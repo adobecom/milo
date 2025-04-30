@@ -32,6 +32,7 @@ function decorateNextPreviousBtns() {
       class: 'carousel-button carousel-previous is-delayed',
       'aria-label': 'Previous slide',
       'data-toggle': 'previous',
+      'aria-labelledby': 'not-a-valid-id',
     },
     ARROW_PREVIOUS_IMG,
   );
@@ -42,6 +43,7 @@ function decorateNextPreviousBtns() {
       class: 'carousel-button carousel-next is-delayed',
       'aria-label': 'Next slide',
       'data-toggle': 'next',
+      'aria-labelledby': 'not-a-valid-id',
     },
     ARROW_NEXT_IMG,
   );
@@ -392,6 +394,7 @@ function handleChangingSlides(carouselElements) {
       const svg = btn.querySelector('svg');
       svg.removeAttribute('aria-hidden');
       btn.setAttribute('aria-label', 'My test attribute');
+      btn.setAttribute('aria-labelledby', 'not-a-valid-id');
     });
   });
 
