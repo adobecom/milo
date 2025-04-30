@@ -370,29 +370,25 @@ const addStock = (merchCard, styles) => {
 
 const addAddons = (merchCard, styles) => {
   if (styles.includes('add-addons') && (merchCard.variant === MINI_COMPARE_CHART || merchCard.variant === PRODUCT)) {
-    const addon = {title: document.querySelector('div.merch-offers.acrobat-ai-assistant p:first-of-type')?.textContent.trim(),
-      individuals: {ABM: document.querySelector('div.merch-offers.acrobat-ai-assistant p:nth-of-type(2) br:first-of-type')?.textContent.trim(),
-        PUF: document.querySelector('div.merch-offers.acrobat-ai-assistant p:nth-of-type(2) br:nth-of-type(2)')?.textContent.trim(),
-        M2M: document.querySelector('div.merch-offers.acrobat-ai-assistant p:nth-of-type(2) br:nth-of-type(3)')?.textContent.trim(),
-      },
-      teams: {ABM: document.querySelector('div.merch-offers.acrobat-ai-assistant p:nth-of-type(3) br:first-of-type')?.textContent.trim(),
-        PUF: document.querySelector('div.merch-offers.acrobat-ai-assistant p:nth-of-type(3) br:nth-of-type(2)')?.textContent.trim(),
-        M2M: document.querySelector('div.merch-offers.acrobat-ai-assistant p:nth-of-type(3) br:nth-of-type(3)')?.textContent.trim(),
-      },
-      students: {ABM: document.querySelector('div.merch-offers.acrobat-ai-assistant p:nth-of-type(4) br:first-of-type')?.textContent.trim(),
-        PUF: document.querySelector('div.merch-offers.acrobat-ai-assistant p:nth-of-type(4) br:nth-of-type(2)')?.textContent.trim(),
-        M2M: document.querySelector('div.merch-offers.acrobat-ai-assistant p:nth-of-type(4) br:nth-of-type(3)')?.textContent.trim(),
-      },
-    };
-    merchCard.setAttribute('addon-title', addon.title);
-    
-    console.log(document.body.innerHTML);
-    const selector = 'merch-offers.acrobat-ai-assistant > *'
+    // const addon = {title: document.querySelector('div.merch-offers.acrobat-ai-assistant p:first-of-type')?.textContent.trim(),
+    //   individuals: {ABM: document.querySelector('div.merch-offers.acrobat-ai-assistant p:nth-of-type(2) br:first-of-type')?.textContent.trim(),
+    //     PUF: document.querySelector('div.merch-offers.acrobat-ai-assistant p:nth-of-type(2) br:nth-of-type(2)')?.textContent.trim(),
+    //     M2M: document.querySelector('div.merch-offers.acrobat-ai-assistant p:nth-of-type(2) br:nth-of-type(3)')?.textContent.trim(),
+    //   },
+    //   teams: {ABM: document.querySelector('div.merch-offers.acrobat-ai-assistant p:nth-of-type(3) br:first-of-type')?.textContent.trim(),
+    //     PUF: document.querySelector('div.merch-offers.acrobat-ai-assistant p:nth-of-type(3) br:nth-of-type(2)')?.textContent.trim(),
+    //     M2M: document.querySelector('div.merch-offers.acrobat-ai-assistant p:nth-of-type(3) br:nth-of-type(3)')?.textContent.trim(),
+    //   },
+    //   students: {ABM: document.querySelector('div.merch-offers.acrobat-ai-assistant p:nth-of-type(4) br:first-of-type')?.textContent.trim(),
+    //     PUF: document.querySelector('div.merch-offers.acrobat-ai-assistant p:nth-of-type(4) br:nth-of-type(2)')?.textContent.trim(),
+    //     M2M: document.querySelector('div.merch-offers.acrobat-ai-assistant p:nth-of-type(4) br:nth-of-type(3)')?.textContent.trim(),
+    //   },
+    // };
+    const selector = '.merch-offers.acrobat-ai-assistant > *'
     const [label, ...rest] = [...document.querySelectorAll(selector)];
-    console.log(label);
-    console.log(rest);
-    console.log(addon);
-    console.log(merchCard.querySelector('div[slot="footer"]'));
+    merchCard.setAttribute('addon-title', label?.innerText.trim());
+    // console.log(addon);
+    // console.log(merchCard.querySelector('div[slot="footer"]'));
     // Take title and description from the card settings
     // Hardcode offer osis that we got from fred
   }
