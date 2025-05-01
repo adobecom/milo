@@ -637,6 +637,7 @@ function handleMetadataFilterInput(event) {
   urls.forEach((url) => {
     const path = url.split(/\.com|\.html/g)[1];
     const match = metadataLookupData.find((item) => item.URL === path);
+    if (match) match.url = url;
     if (!match && url) {
       categories.notFound.push(url);
     } else if (match.target) {
@@ -651,7 +652,7 @@ function handleMetadataFilterInput(event) {
     buildUrlPod(categories[key], METADATA_URLS_CATEGORIES[key].display);
   });
 
-  // handle copy to clipboard buttons
+  // handle 'copy to clipboard' pod buttons
   const container = document.querySelector('.mmm-metadata-lookup__results');
   container.querySelectorAll('.mmm-metadata-lookup__button').forEach((item) => {
     item.addEventListener('click', (e) => {
@@ -722,7 +723,7 @@ function createMetadataLookup(el) {
     filterResultObj.notFound = [];
     const reportText = `On ${getDate()} the following URLs in the *${selectedRepo.toUpperCase()}* repo had the following Target statuses:
       ${Object.keys(filterResultObj).map((key) => {
-      const urls = filterResultObj[key].map((item) => item.URL || item.split(/\.com|\.html/g)[1]);
+      const urls = filterResultObj[key].map((item) => item.url || item);
       return urls.length ? `\n*${METADATA_URLS_CATEGORIES[key].display}*:\n\n${urls.join(',\n')}\n` : null;
     }).join('')}`;
     // copy to clipboard
