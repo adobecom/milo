@@ -265,22 +265,21 @@ export class MerchCard extends LitElement {
     }
 
     async toggleAddons({ target }) {
-        if (!this.stockOfferOsis) return;
         const elements = this.checkoutLinks;
         if (elements.length === 0) return;
         for (const element of elements) {
             await element.onceSettled();
             const planType = element.value?.[0]?.planType;
             if (!planType) return;
-            const isStudentAndTeachers = element.value?.[0]?.marketSegment[0] === 'EDU';
+            const isStudentAndTeachers = element.value?.[0]?.marketSegments === 'EDU';
             let stockOfferOsi;
             if(isStudentAndTeachers) {
-                stockOfferOsi = offerObject.studentsAndTeachers[planType];
+                stockOfferOsi = this.addonOffers.edu[planType];
             } else {
                 if(element.value?.[0]?.customerSegment === 'INDIVIDUAL') {
-                    stockOfferOsi = offerObject.individuals[planType];
+                    stockOfferOsi = this.addonOffers.marketSegment[planType];
                 } else {
-                    stockOfferOsi = offerObject.business[planType];
+                    stockOfferOsi = this.addonOffers.business[planType];
                 }
             }
             if (!stockOfferOsi) return;
