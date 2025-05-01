@@ -1431,9 +1431,6 @@ async function loadPostLCP(config) {
   if (config?.mep) {
     import('../features/personalization/personalization.js')
       .then(({ addMepAnalytics }) => addMepAnalytics(config, header));
-    if (config.mep.mmmSave) {
-      await import('../features/personalization/mmm.js').then(({ saveToMmm }) => saveToMmm());
-    }
   }
   // load privacy here if quick-link is present in first section
   const quickLink = document.querySelector('div.section')?.querySelector('.quick-link');
@@ -1492,6 +1489,10 @@ export async function loadDeferred(area, blocks, config) {
   if (config.mep?.preview) {
     import('../features/personalization/preview.js')
       .then(({ default: decoratePreviewMode }) => decoratePreviewMode());
+  }
+  if (config.mep?.mmmSave) {
+    import('../features/personalization/mmm.js')
+      .then(({ default: saveToMmm }) => saveToMmm());
   }
   if (config?.dynamicNavKey && config?.env?.name !== 'prod') {
     const { miloLibs } = config;

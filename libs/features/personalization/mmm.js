@@ -48,7 +48,7 @@ export function parseMepConfig() {
     activities,
   };
 }
-export async function saveToMmm() {
+export default async function saveToMmm() {
   const data = parseMepConfig();
   data.activities = data.activities.filter((activity) => {
     const { url, source } = activity;
