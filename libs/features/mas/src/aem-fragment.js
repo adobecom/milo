@@ -102,6 +102,7 @@ export class AemFragment extends HTMLElement {
     }
 
     connectedCallback() {
+      if (this.#fetchPromise) return;
         this.#service = getService(this);
         this.#log = this.#service.log.module(AEM_FRAGMENT_TAG_NAME);
         this.#startMark = `${AEM_FRAGMENT_TAG_NAME}:${this.#fragmentId}${MARK_START_SUFFIX}`;
@@ -252,24 +253,24 @@ export class AemFragment extends HTMLElement {
     }
 
     transformAuthorData() {
-        const { fields, id, tags } = this.#rawData;
+        const { fields, id, tags, settings = {} } = this.#rawData;
         this.#data = fields.reduce(
             (acc, { name, multiple, values }) => {
                 acc.fields[name] = multiple ? values : values[0];
                 return acc;
             },
-            { fields: {}, id, tags },
+            { fields: {}, id, tags, settings },
         );
     }
 
     transformPublishData() {
-        const { fields, id, tags } = this.#rawData;
+        const { fields, id, tags, settings = {} } = this.#rawData;
         this.#data = Object.entries(fields).reduce(
             (acc, [key, value]) => {
                 acc.fields[key] = value?.mimeType ? value.value : (value ?? '');
                 return acc;
             },
-            { fields: {}, id, tags },
+            { fields: {}, id, tags, settings },
         );
     }
 }

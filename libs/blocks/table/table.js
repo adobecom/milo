@@ -189,34 +189,6 @@ async function setAriaLabelForIcons(el) {
   });
 }
 
-function setTooltipListeners(el) {
-  document.addEventListener('keydown', (event) => {
-    if (event.key === 'Escape') {
-      el.querySelectorAll('.milo-tooltip').forEach((tooltip) => {
-        tooltip.classList.add('hide-tooltip');
-      });
-    }
-  });
-
-  el.querySelectorAll('.milo-tooltip').forEach((tooltip) => {
-    tooltip.addEventListener('mouseenter', () => {
-      tooltip.classList.remove('hide-tooltip');
-    });
-
-    tooltip.addEventListener('mouseleave', () => {
-      tooltip.classList.add('hide-tooltip');
-    });
-
-    tooltip.addEventListener('focus', () => {
-      tooltip.classList.remove('hide-tooltip');
-    });
-
-    tooltip.addEventListener('blur', () => {
-      tooltip.classList.add('hide-tooltip');
-    });
-  });
-}
-
 function handleHighlight(table) {
   const isHighlightTable = table.classList.contains('highlight');
   const firstRow = table.querySelector('.row-1');
@@ -551,7 +523,6 @@ function applyStylesBasedOnScreenSize(table, originTable) {
           clone.setAttribute('data-cloned', 'true');
           clone.classList.remove('rounded-left', 'rounded-right');
           row.appendChild(clone);
-          setTooltipListeners(clone);
         });
       }
 
@@ -693,7 +664,6 @@ export default function init(el) {
 
     setExpandEvents(el);
     setAriaLabelForIcons(el);
-    setTooltipListeners(el);
   };
 
   window.addEventListener(MILO_EVENTS.DEFERRED, () => {

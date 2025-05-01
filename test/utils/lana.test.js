@@ -97,6 +97,11 @@ describe('LANA', () => {
     window.lana.debug = true;
     window.lana.log('Test debug log message', { clientId: 'debugClientId' });
     const serverResponse = 'client=debugClientId,type=e,sample=1,user-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/101.0.4951.54 Safari/537.36,referer=undefined,ip=23.56.175.228,message=Test debug log message';
+
+    // Check the URL to make sure it includes r=d and the debug flag
+    expect(xhrRequests[0].url).to.contain('r=d');
+    expect(xhrRequests[0].url).to.contain('&d');
+
     xhrRequests[0].respond(200, { 'Content-Type': 'text/html' }, serverResponse);
 
     setTimeout(() => {
@@ -223,5 +228,83 @@ describe('LANA', () => {
     );
 
     window.history.pushState({ path: originalUrl }, '', originalUrl);
+  });
+
+  it('uses severity if defined in options', () => {
+    window.lana.log('Testing severity', { severity: 'w' });
+    expect(xhrRequests.length).to.equal(1);
+    expect(xhrRequests[0].method).to.equal('GET');
+    expect(xhrRequests[0].url).to.equal(
+      'https://www.stage.adobe.com/lana/ll?m=Testing%20severity&c=testClientId&s=100&t=e&r=w',
+    );
+  });
+
+  it('uses debug severity when in debug mode', () => {
+    window.lana.debug = true;
+    window.lana.log('Debug mode test');
+    expect(xhrRequests.length).to.equal(1);
+    expect(xhrRequests[0].method).to.equal('GET');
+    expect(xhrRequests[0].url).to.equal(
+      'https://www.stage.adobe.com/lana/ll?m=Debug%20mode%20test&c=testClientId&s=100&t=e&r=d&d',
+    );
+  });
+
+  it('explicit severity takes precedence over debug mode default', () => {
+    window.lana.debug = true;
+    window.lana.log('Explicit severity test', { severity: 'w' });
+    expect(xhrRequests.length).to.equal(1);
+    expect(xhrRequests[0].method).to.equal('GET');
+    expect(xhrRequests[0].url).to.equal(
+      'https://www.stage.adobe.com/lana/ll?m=Explicit%20severity%20test&c=testClientId&s=100&t=e&r=w&d',
+    );
+
+    // Also test with invalid severity to verify debug mode is used for fallback
+    window.lana.log('Invalid severity test', { severity: 'invalid' });
+    expect(xhrRequests.length).to.equal(2);
+    expect(xhrRequests[1].method).to.equal('GET');
+    expect(xhrRequests[1].url).to.equal(
+      'https://www.stage.adobe.com/lana/ll?m=Invalid%20severity%20test&c=testClientId&s=100&t=e&r=d&d',
+    );
+    expect(console.warn.called).to.be.true;
+    expect(console.warn.args[0][0]).to.include('Invalid severity');
+    expect(console.warn.args[0][0]).to.include('Defaulting to \'d\'');
+  });
+
+  it('prevents XSS by properly encoding message content', () => {
+    // Test with a string containing characters that should be encoded for XSS prevention
+    // According to standards, encodeURIComponent does NOT encode: A-Z a-z 0-9 - _ . ! ~ * ' ( )
+    // But it DOES encode: < > " & ; , / ? : @ & = + $ #
+    const maliciousString = '<>"&;,/?:@=+$#';
+
+    // Create a reference properly encoded string using the standard function
+    const properlyEncoded = encodeURIComponent(maliciousString);
+
+    window.lana.log(maliciousString);
+    expect(xhrRequests.length).to.equal(1);
+
+    // Verify the URL contains properly encoded values
+    const { url } = xhrRequests[0];
+    const msgParam = url.match(/m=([^&]*)/)[1];
+
+    // The encoded message should match what encodeURIComponent would produce
+    expect(msgParam).to.equal(properlyEncoded);
+
+    // Specifically check that key characters are encoded in the message parameter
+    // Note: We're checking msgParam, not the entire URL,
+    // because & is a valid URL parameter separator
+    expect(msgParam).not.to.include('<');
+    expect(msgParam).not.to.include('>');
+    expect(msgParam).not.to.include('"');
+    expect(msgParam).not.to.include('&');
+
+    // Verify encoded versions exist in the message parameter
+    expect(msgParam).to.include('%3C'); // < encoded
+    expect(msgParam).to.include('%3E'); // > encoded
+    expect(msgParam).to.include('%22'); // " encoded
+    expect(msgParam).to.include('%26'); // & encoded
+
+    // Double-check that decoding gets back the original string
+    const decodedMsg = decodeURIComponent(msgParam);
+    expect(decodedMsg).to.equal(maliciousString);
   });
 });

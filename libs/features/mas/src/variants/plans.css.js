@@ -28,6 +28,24 @@ merch-card-collection merch-card[variant="plans"] {
   width: auto;
 }
 
+merch-card[variant^='plans'] span[data-template="legal"] {
+    display: block;
+    color: var(----merch-color-grey-80);
+    font-family: var(--Font-adobe-clean, "Adobe Clean");
+    font-size: 14px;
+    font-style: italic;
+    font-weight: 400;
+    line-height: 21px;
+}
+
+merch-card[variant^='plans'] span.price-legal::first-letter {
+    text-transform: uppercase;
+}
+
+merch-card[variant^='plans'] span.price-legal .price-tax-inclusivity::before {
+  content: initial;
+}
+
 merch-card[variant="plans"] [slot="description"] {
     min-height: 84px;
 }
@@ -92,6 +110,21 @@ merch-card[variant="plans"] [slot="footer"] a {
 
 .plans-container merch-card-collection {
     padding: 0;
+}
+
+merch-card[variant^="plans"] merch-addon {
+    margin-top: 16px;
+    margin-bottom: 16px;
+    font-family: "Adobe Clean";
+    font-size: 12px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: normal;
+    align-items: center;
+}
+
+merch-card[variant^="plans"] merch-addon span[data-template="price"] {
+    display: none;
 }
 
 /* Mobile */

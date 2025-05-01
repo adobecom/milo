@@ -1,5 +1,5 @@
 import {
-  createTag, getConfig, loadArea, loadScript, loadStyle, localizeLink, SLD,
+  createTag, getConfig, loadArea, loadScript, loadStyle, localizeLink, SLD, getMetadata,
 } from '../../utils/utils.js';
 import { replaceKey } from '../../features/placeholders.js';
 
@@ -11,6 +11,7 @@ export const PRICE_TEMPLATE_OPTICAL = 'optical';
 export const PRICE_TEMPLATE_REGULAR = 'price';
 export const PRICE_TEMPLATE_STRIKETHROUGH = 'strikethrough';
 export const PRICE_TEMPLATE_ANNUAL = 'annual';
+export const PRICE_TEMPLATE_LEGAL = 'legal';
 
 const PRICE_TEMPLATE_MAPPING = new Map([
   ['priceDiscount', PRICE_TEMPLATE_DISCOUNT],
@@ -21,6 +22,7 @@ const PRICE_TEMPLATE_MAPPING = new Map([
   [PRICE_TEMPLATE_STRIKETHROUGH, PRICE_TEMPLATE_STRIKETHROUGH],
   ['priceAnnual', PRICE_TEMPLATE_ANNUAL],
   [PRICE_TEMPLATE_ANNUAL, PRICE_TEMPLATE_ANNUAL],
+  [PRICE_TEMPLATE_LEGAL, PRICE_TEMPLATE_LEGAL],
 ]);
 
 export const PLACEHOLDER_KEY_DOWNLOAD = 'download';
@@ -686,10 +688,13 @@ export async function getCheckoutContext(el, params) {
 export async function getPriceContext(el, params) {
   const context = await getCommerceContext(el, params);
   if (!context) return null;
+  const annualEnabled = getMetadata('mas-ff-annual-price');
   const displayOldPrice = context.promotionCode ? params.get('old') : undefined;
   const displayPerUnit = params.get('seat');
   const displayRecurrence = params.get('term');
   const displayTax = params.get('tax');
+  const displayPlanType = params.get('planType');
+  const displayAnnual = (annualEnabled && params.get('annual') !== 'false') || undefined;
   const forceTaxExclusive = params.get('exclusive');
   const alternativePrice = params.get('alt');
   // The PRICE_TEMPLATE_MAPPING supports legacy OST links
@@ -700,6 +705,8 @@ export async function getPriceContext(el, params) {
     displayPerUnit,
     displayRecurrence,
     displayTax,
+    displayPlanType,
+    displayAnnual,
     forceTaxExclusive,
     alternativePrice,
     template,

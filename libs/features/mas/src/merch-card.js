@@ -1,6 +1,7 @@
 import { LitElement } from 'lit';
 import { sizeStyles, styles } from './merch-card.css.js';
 import './merch-icon.js';
+import './merch-addon.js';
 import {
     getVariantLayout,
     registerVariant,
@@ -39,6 +40,17 @@ const MERCH_CARD_LOAD_TIMEOUT = 20000;
 
 const MARK_MERCH_CARD_PREFIX = 'merch-card:';
 
+function priceOptionsProvider(element, options) {
+    const card = element.closest(MERCH_CARD);
+    if (!card) return options;
+    card.variantLayout?.priceOptionsProvider?.(element, options);
+}
+
+function registerPriceOptionsProvider(masCommerceService) {
+    if (masCommerceService.providers.has(priceOptionsProvider)) return;
+    masCommerceService.providers.price(priceOptionsProvider);
+}
+
 export class MerchCard extends LitElement {
     static properties = {
         id: { type: String, attribute: 'id', reflect: true },
@@ -71,6 +83,10 @@ export class MerchCard extends LitElement {
         addonOffers: { type: Object, attribute: 'addon-offers' },
         selected: { type: Boolean, attribute: 'aria-selected', reflect: true },
         storageOption: { type: String, attribute: 'storage', reflect: true },
+        settings: {
+            type: Object,
+            attribute: false,
+        },
         stockOfferOsis: {
             type: Object,
             attribute: 'stock-offer-osis',
@@ -180,7 +196,11 @@ export class MerchCard extends LitElement {
                 this.computedBorderStyle,
             );
         }
-        this.variantLayout?.postCardUpdateHook(changedProperties);
+        try {
+            this.variantLayout?.postCardUpdateHook(changedProperties);
+        } catch (e) {
+            this.#fail(`Error in postCardUpdateHook: ${e.message}`, {}, false);
+        }
     }
 
     get theme() {
@@ -208,7 +228,11 @@ export class MerchCard extends LitElement {
     }
 
     get computedBorderStyle() {
-        if (!['ccd-slice', 'ccd-suggested', 'ah-promoted-plans'].includes(this.variant)) {
+        if (
+            !['ccd-slice', 'ccd-suggested', 'ah-promoted-plans'].includes(
+                this.variant,
+            )
+        ) {
             return `1px solid ${
                 this.borderColor ? this.borderColor : this.badgeBackgroundColor
             }`;
@@ -264,31 +288,27 @@ export class MerchCard extends LitElement {
         }
     }
 
-    async toggleAddons({ target }) {
+    changeHandler(event) {
+        if (event.target.tagName === 'MERCH-ADDON') {
+            this.toggleAddon(event.target);
+        }
+    }
+
+    toggleAddon(merchAddon) {
         const elements = this.checkoutLinks;
         if (elements.length === 0) return;
         for (const element of elements) {
-            await element.onceSettled();
             const planType = element.value?.[0]?.planType;
             if (!planType) return;
-            const isStudentAndTeachers = element.value?.[0]?.marketSegments === 'EDU';
-            let stockOfferOsi;
-            if(isStudentAndTeachers) {
-                stockOfferOsi = this.addonOffers.edu[planType];
-            } else {
-                if(element.value?.[0]?.customerSegment === 'INDIVIDUAL') {
-                    stockOfferOsi = this.addonOffers.marketSegment[planType];
-                } else {
-                    stockOfferOsi = this.addonOffers.business[planType];
-                }
-            }
-            if (!stockOfferOsi) return;
+            const addonOsi = merchAddon.querySelector(
+                `p[data-plan-type="${planType}"] ${SELECTOR_MAS_INLINE_PRICE}`,
+            )?.dataset?.wcsOsi;
             const osis = element.dataset.wcsOsi
                 .split(',')
-                .filter((osi) => osi !== stockOfferOsi);
+                .filter((osi) => osi !== addonOsi);
 
-            if (target.checked) {
-                osis.push(stockOfferOsi);
+            if (merchAddon.checked) {
+                osis.push(addonOsi);
             }
             element.dataset.wcsOsi = osis.join(',');
         }
@@ -345,6 +365,7 @@ export class MerchCard extends LitElement {
     connectedCallback() {
         super.connectedCallback();
         this.#service = getService();
+        registerPriceOptionsProvider(this.#service);
         this.#log = this.#service.Log.module(MERCH_CARD);
         this.id ??=
             this.querySelector('aem-fragment')?.getAttribute('fragment');
@@ -367,6 +388,7 @@ export class MerchCard extends LitElement {
         // aem-fragment logic
         this.addEventListener(EVENT_AEM_ERROR, this.handleAemFragmentEvents);
         this.addEventListener(EVENT_AEM_LOAD, this.handleAemFragmentEvents);
+        this.addEventListener('change', this.changeHandler);
 
         if (!this.aemFragment) {
             setTimeout(() => this.checkReady(), 0);
@@ -383,6 +405,7 @@ export class MerchCard extends LitElement {
         );
         this.removeEventListener(EVENT_AEM_ERROR, this.handleAemFragmentEvents);
         this.removeEventListener(EVENT_AEM_LOAD, this.handleAemFragmentEvents);
+        this.removeEventListener('change', this.changeHandler);
     }
 
     // custom methods
@@ -488,6 +511,10 @@ export class MerchCard extends LitElement {
 
     get aemFragment() {
         return this.querySelector('aem-fragment');
+    }
+
+    get addon() {
+        return this.querySelector('merch-addon');
     }
 
     /* c8 ignore next 3 */
