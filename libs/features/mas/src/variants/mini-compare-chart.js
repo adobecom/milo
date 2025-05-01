@@ -3,29 +3,19 @@ import { isMobile } from '../utils.js';
 import { VariantLayout } from './variant-layout.js';
 import { CSS } from './mini-compare-chart.css.js';
 import { DESKTOP_UP, TABLET_DOWN } from '../media.js';
+import { SELECTOR_MAS_INLINE_PRICE } from '../constants.js';
 const FOOTER_ROW_MIN_HEIGHT = 32; // as per the XD.
 
 export class MiniCompareChart extends VariantLayout {
   constructor(card) {
     super(card);
   }
-
+  
   getRowMinHeightPropertyName = (index) =>
     `--consonant-merch-card-footer-row-${index}-min-height`;
 
   getGlobalCSS() {
     return CSS;
-  }
-
-  get addonsCheckbox() {
-    return this.card.addonTitle ? html`<div slot="callout-content" id="addons-checkbox-container">
-    <input type="checkbox" @change=${this.card.toggleAddons} id="addons-checkbox-input"></input>
-            <label id="addons-checkbox" for="addons-checkbox-input">
-                <span><strong>${this.card.addonTitle}</strong></span>
-                <span>${this.card.addonDescription}Add AI assistant to your free Reader app for</span>
-                <span><strong>US$4.99/mo</strong></span>
-            </label>
-        </div>` : '';
   }
 
   // For addon tiitle is it ok if we hardocde it in card settings?
@@ -60,6 +50,7 @@ export class MiniCompareChart extends VariantLayout {
         'offers',
         'promo-text',
         'callout-content',
+        'addon',
     ];
     if (this.card.classList.contains('bullet-list')) {
         slots.push('footer-rows');
@@ -125,6 +116,25 @@ export class MiniCompareChart extends VariantLayout {
     });
   }
 
+  get mainPrice() {
+    const price = this.card.querySelector(
+        `[slot="heading-m-price"] ${SELECTOR_MAS_INLINE_PRICE}[data-template="price"]`,
+    );
+    return price;
+}
+
+  async adjustAddon() {
+    await this.card.updateComplete;
+    const addon = this.card.addon;
+    if (!addon) return;
+    const price = this.mainPrice;
+    if (!price) return;
+    await price.onceSettled();
+    const planType = price.value?.[0]?.planType;
+    if (!planType) return;
+    addon.planType = planType;
+}
+
   renderLayout() {
     return html` <div class="top-section${this.badge ? ' badge' : ''}">
             <slot name="icons"></slot> ${this.badge}
@@ -142,7 +152,7 @@ export class MiniCompareChart extends VariantLayout {
         <slot name="offers"></slot>
         <slot name="promo-text"></slot>
         <slot name="callout-content"></slot>
-        ${this.addonsCheckbox}
+        <slot name="addon"></slot>
         ${this.getMiniCompareFooter()}
         <slot name="footer-rows"><slot name="body-s"></slot></slot>`;
   }
@@ -150,6 +160,7 @@ export class MiniCompareChart extends VariantLayout {
     if (!isMobile()) {
       await Promise.all(this.card.prices.map((price) => price.onceSettled()));
       this.adjustMiniCompareBodySlots();
+      this.adjustAddon();
       this.adjustMiniCompareFooterRows();
     } else {
       this.removeEmptyRows();

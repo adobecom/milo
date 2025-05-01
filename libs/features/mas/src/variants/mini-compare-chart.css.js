@@ -11,6 +11,19 @@ export const CSS = `
     padding: 0 var(--consonant-merch-spacing-s) 0;
   }
 
+  merch-card[variant="mini-compare-chart"] merch-addon {
+    padding-left: 4px;
+    padding-top: 8px;
+    padding-bottom: 8px;
+    padding-right: 8px;
+    font-family: "Adobe Clean";
+    font-size: 14px;
+    line-height: normal;
+}
+    merch-card[variant="mini-compare-chart"] merch-addon [is="inline-price"] {
+    font-weight: bold;
+}
+
   merch-card[variant="mini-compare-chart"].bullet-list [slot="heading-m"] {
     padding: var(--consonant-merch-spacing-xxs) var(--consonant-merch-spacing-xs);
     font-size: var(--consonant-merch-card-heading-xs-font-size);

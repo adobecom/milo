@@ -369,31 +369,48 @@ const addStock = (merchCard, styles) => {
 
 
 const addAddons = (merchCard, styles) => {
-  if (styles.includes('add-addons') && (merchCard.variant === MINI_COMPARE_CHART || merchCard.variant === PRODUCT)) {
+  if (styles.includes('add-addon') && (merchCard.variant === MINI_COMPARE_CHART || merchCard.variant === PRODUCT)) {
     let selector;
     if (styles.includes('edu')) {
-        selector = '.merch-offers.acrobat-ai-assistant.edu > *';
-    } else if (styles.includes('bu')) {
-        selector = '.merch-offers.acrobat-ai-assistant.bu > *';
+        selector = '.merch-offers.edu';
+    } else if (styles.includes('team')) {
+        selector = '.merch-offers.team';
     } else {
-        selector = '.merch-offers.acrobat-ai-assistant:not(.edu):not(.bu) > *';
+        selector = '.merch-offers:not(.edu):not(.team)';
     }
-    const [label, ...rest] = [...document.querySelectorAll(selector)];
-    const addons = {};
-    const spans = rest.slice(1);
-    
-    spans.forEach(span => {
-        const osiValue = span.getAttribute('data-wcs-osi');
-        const planType = span.value[0]?.planType;
-        
-        if (osiValue) {
-            addons[osiValue] = planType;
-        }
-    });
-    console.log(addons, "addons");
-    if(label){
-      merchCard.setAttribute('addon-title', label?.innerText.trim());
-    }
+    const merchOffers = document.querySelector(selector);
+    const addonLabel = merchOffers?.querySelector('p');
+    const addonLabelCopy = addonLabel?.cloneNode(true);
+    const strongTag = createTag('strong', '', addonLabelCopy.innerHTML);
+    addonLabelCopy.replaceChildren(strongTag);
+    const addonDescriptions = [...merchOffers?.querySelectorAll('p:not(:first-child)')]
+        .filter(p => p.innerText.trim())
+        .map((p, i) => createTag(
+            'span',
+            '',
+            `${i === 0 ? '' : ' '}${p.cloneNode(true).innerHTML}${i === 0 ? ' ' : ''}`
+        ));
+    const addon = createTag('merch-addon', { slot: 'addon'});
+    merchCard.appendChild(addon);
+    addon.appendChild(addonLabelCopy);
+    const spans = merchOffers?.querySelectorAll('span[data-wcs-osi]');
+    spans?.forEach(span => {
+      const p = createTag('p', { 'data-plan-type': '' });
+      const priceSpan = span.cloneNode(true);
+      p.appendChild(addonDescriptions[0].cloneNode(true));
+      p.appendChild(priceSpan);
+      if(addonDescriptions[1]){
+        p.appendChild(addonDescriptions[1].cloneNode(true));
+      }
+      addon.appendChild(p);
+  });
+  const gradient = createTag('merch-gradient', {
+    colors: '#F5F6FD, #F8F1F8, #F9E9ED',
+    positions: '33.52%, 67.33%, 110.37%',
+    angle: '211deg',
+    'border-radius': '10px'
+});
+    addon.appendChild(gradient);
   }
 };
 
