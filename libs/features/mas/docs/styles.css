@@ -306,3 +306,35 @@ h5 {
 .benchmark-mask-under-limit {
     background: rgba(133, 215, 133, 0.7);
 }
+
+.fries-gallery-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 30px;
+    line-height: 16px;
+
+    & h1,
+    h2 {
+        margin-block: 10px;
+    }
+
+    & .fries-link {
+        font-size: 14px;
+    }
+}
+
+.fries-merch-cards {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 20px;
+    padding: 20px 0;
+    width: 100%;
+    max-width: 1200px;
+}
+
+@media screen and (min-width: 966px) {
+    .fries-merch-cards {
+        grid-template-columns: repeat(auto-fill, minmax(620px, 1fr));
+    }
+}

@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>M@S Web Components - Fries Card</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="../../../styles/styles.css">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://p.typekit.net/p.css?s=1&amp;k=hah7vzn&amp;ht=tk&amp;f=7180.7181.7182.7183.22474.22749.22750.22751.22753&amp;a=8634977&amp;app=typekit&amp;e=css">
+    <link rel="stylesheet" href="https://use.typekit.net/hah7vzn.css">
+  
+    <!-- Include your custom element script as an ES6 module -->
+    <script type="module">
+        import { init } from './common.js';
+        init();
+    </script>
+    <!-- Include Highlight.js stylesheet for syntax highlighting -->
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/default.min.css">
+    <script type="module" src="./mas-sidenav.js"></script>
+</head>
+<body class="spectrum spectrum--medium spectrum--light">
+    <aside is="mas-sidenav"></aside>
+    <main>
+        <sp-theme color="light" scale="medium">
+            <div class="fries-gallery-content">
+                <h1 id="fries-gallery">Fries Gallery</h1>
+                <a class="fries-link" target="_blank" href="https://main--milo--adobecom.aem.page/merch/mas/fries">Test Fries collection page ↗</a>
+                
+                <h2 id="crd-mrch-fries">Fries Cards <a class="header-anchor" href="#crd-mrch-fries" title="Permalink to this heading">#</a></h2>
+                <div class="fries-merch-cards">
+                    <div>
+                        <merch-card variant="fries" size="single">
+                            <h3 slot="heading-xxxs">Get the ultimate creative toolkit</h3>
+                            <div slot="body-xxs">Bundle and save to get the ultimate creative toolkit. This includes: Acrobat Pro, Photoshop, Illustrator, Premier Pro, and more.</div>
+                            <p slot="price">US$ 59.99/mo</p>
+                            <div slot="cta">
+                                <button class="spectrum-Button spectrum-Button--primary">
+                                    <span class="spectrum-Button-label">Select</span>
+                                </button>
+                            </div>
+                            <div slot="icons">
+                                <img src="https://www.adobe.com/content/dam/cc/icons/Adobe_Photoshop_icon_RGB.svg" width="32" height="32">
+                                <img src="https://www.adobe.com/content/dam/cc/icons/Adobe_Illustrator_icon_RGB.svg" width="32" height="32">
+                                <img src="https://www.adobe.com/content/dam/cc/icons/Adobe_Acrobat_Reader_icon_RGB.svg" width="32" height="32">
+                                <img src="https://www.adobe.com/content/dam/cc/icons/Adobe_Premiere_Pro_icon_RGB.svg" width="32" height="32">
+                            </div>
+                        </merch-card>
+                    </div>
+                    
+                    <div>
+                        <merch-card variant="fries" size="double">
+                            <h3 slot="heading-xxxs">Adobe Stock — 10 standard assets a month</h3>
+                            <div slot="body-xxs">Access millions of royalty-free photos, templates, videos, and more — all in one plan. Up-level your creative project faster than ever.</div>
+                            <p slot="price">US$ XX.XX/mo</p>
+                            <div slot="cta">
+                                <button class="spectrum-Button spectrum-Button--primary">
+                                    <span class="spectrum-Button-label">1-month free trial</span>
+                                </button>
+                            </div>
+                            <div slot="icons">
+                                <img src="https://www.adobe.com/content/dam/cc/icons/Adobe_Stock_icon_RGB.svg" width="32" height="32">
+                            </div>
+                        </merch-card>
+                    </div>
+                </div>
+            </div>
+        </sp-theme>
+    </main>
+    <script type="module">
+        document.querySelectorAll('code.demo').forEach(el => {
+            const targetContainer = document.createElement('div');
+            targetContainer.classList.toggle('light', el.classList.contains('light'));
+            targetContainer.innerHTML = `<h4>Demo: </h4><div class="demo-container">${el.textContent}</div>`;
+            el.parentElement.after(targetContainer);
+            // Extract and evaluate <script> tags
+            const scriptTags = targetContainer.getElementsByTagName('script');
+            for (let i = 0; i < scriptTags.length; i++) {
+                const script = document.createElement('script');
+                script.type = 'module';
+                script.text = scriptTags[i].text;
+                document.body.appendChild(script); // Appends to the document to execute
+                scriptTags[i].remove(); // Remove the script tag
+            }
+        });
+    </script>
+</body>
+</html> 
