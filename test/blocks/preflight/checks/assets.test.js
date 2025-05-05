@@ -49,15 +49,16 @@ describe('Preflight Asset Checks', () => {
   });
 
   describe('Basic Functionality', () => {
-    it('tests basic checks for empty states', async () => {
+    it('returns empty status when viewport is too small', async () => {
       mockMatchMedia.returns({ matches: false });
-      const smallViewportResult = await checkImageDimensions('test-url-1', mockDocument);
-      expect(smallViewportResult.status).to.equal(STATUS.EMPTY);
+      const result = await checkImageDimensions('test-url', mockDocument);
+      expect(result.status).to.equal(STATUS.EMPTY);
+    });
 
-      mockMatchMedia.returns({ matches: true });
+    it('returns empty status when no images are found', async () => {
       mockDocument.querySelectorAll.withArgs('main picture img').returns([]);
-      const noImagesResult = await checkImageDimensions('test-url-2', mockDocument);
-      expect(noImagesResult.status).to.equal(STATUS.EMPTY);
+      const result = await checkImageDimensions('test-url', mockDocument);
+      expect(result.status).to.equal(STATUS.EMPTY);
     });
 
     it('tests basic checks for pass states', async () => {
