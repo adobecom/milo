@@ -293,8 +293,28 @@ const isPagePublished = async () => {
   return false;
 };
 
+const getLanguageFirstCountryAndLang = async (path) => {
+  const localeArr = path.split('/');
+    const langStr = (localeArr.length > 1) ? LANGS[localeArr[1]] || LANGS[''] : 'en';
+    let countryStr = (localeArr.length > 2) ? LOCALES[localeArr[2]] || 'xx' : 'xx';
+    if (typeof countryStr === 'object') {
+      const { ietf } = countryStr;
+      const localeAttributes = ietf?.split('-');
+      const [, c = 'xx'] = localeAttributes;
+      countryStr = c;
+    }
+    return {
+      country: countryStr,
+      lang: langStr,
+    };
+}
+
 const getBulkPublishLangAttr = async (options) => {
-  let { getLocale } = getConfig();
+  let { doc, getLocale } = getConfig();
+  const langFirst = getMetadata('langfirst', doc);
+  if (langFirst) {
+    return getLanguageFirstCountryAndLang(options.prodUrl);
+  }
   if (!getLocale) {
     // This is only imported from the bulk publisher so there is no dependency cycle
     // eslint-disable-next-line import/no-cycle
@@ -308,19 +328,7 @@ const getBulkPublishLangAttr = async (options) => {
 const getCountryAndLang = async (options) => {
   const langFirst = getMetadata('langfirst');
   if (langFirst) {
-    const localeArr = window.location.pathname.split('/');
-    const langStr = (localeArr.length > 1) ? LANGS[localeArr[1]] || LANGS[''] : 'en';
-    let countryStr = (localeArr.length > 2) ? LOCALES[localeArr[2]] || 'xx' : 'xx';
-    if (typeof countryStr === 'object') {
-      const { ietf } = countryStr;
-      const localeAttributes = ietf?.split('-');
-      const [, c = 'xx'] = localeAttributes;
-      countryStr = c;
-    }
-    return {
-      country: countryStr,
-      lang: langStr,
-    };
+    return getLanguageFirstCountryAndLang(window.location.pathname);
   }
   /* c8 ignore next */
   const langStr = window.location.pathname.includes('/tools/send-to-caas/bulkpublisher')
@@ -389,7 +397,7 @@ const props = {
   contenttype: (s) => s || getMetaContent('property', 'og:type') || getConfig().contentType,
   country: async (s, options) => {
     if (s) return s;
-    const { country } = await getCountryAndLang(options);
+    const { country } = await getCountryAndLang(options, getMetadata('langfirst') || false);
     return country;
   },
   created: (s) => {
