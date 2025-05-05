@@ -734,7 +734,7 @@ function createMetadataLookup(el) {
     const reportText = `On ${getDate()} the following URLs in the *${selectedRepo.toUpperCase()}* repo had the following Target statuses:
       ${Object.keys(filterResultObj).map((key) => {
     const urls = filterResultObj[key].map((item) => item.url || item);
-      return urls.length ? `\n*${METADATA_URLS_CATEGORIES[key].display}*:\n\n${urls.join(',\n')}\n` : null;
+    return urls.length ? `\n*${METADATA_URLS_CATEGORIES[key].display}*:\n\n${urls.join(',\n')}\n` : null;
 }).join('')}`;
     // copy to clipboard
     navigator.clipboard.writeText(reportText).then(() => {
