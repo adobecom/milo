@@ -82,9 +82,11 @@ export class Product extends VariantLayout {
         const addon = this.card.addon;
         if (!addon) return;
         const price = this.mainPrice;
-        if (!price) return;
-        await price.onceSettled();
-        const planType = price.value?.[0]?.planType;
+        let planType = this.card.planType;
+        if (price) {
+            await price.onceSettled();
+            planType = price.value?.[0]?.planType;
+        }
         if (!planType) return;
         addon.planType = planType;
     }

@@ -485,6 +485,10 @@ merch-offer-select[variant="subscription-options"] merch-offer span[is="inline-p
     top: 20px;
 }
 
+merch-gradient {
+    display: none;
+}
+
 body.merch-modal {
     overflow: hidden;
     scrollbar-gutter: stable;

@@ -1,6 +1,7 @@
 import { LitElement } from 'lit';
 import { sizeStyles, styles } from './merch-card.css.js';
 import './merch-icon.js';
+import './merch-gradient.js';
 import './merch-addon.js';
 import {
     getVariantLayout,
@@ -83,6 +84,7 @@ export class MerchCard extends LitElement {
         addonOffers: { type: Object, attribute: 'addon-offers' },
         selected: { type: Boolean, attribute: 'aria-selected', reflect: true },
         storageOption: { type: String, attribute: 'storage', reflect: true },
+        planType: { type: String, attribute: 'plan-type', reflect: true },
         settings: {
             type: Object,
             attribute: false,

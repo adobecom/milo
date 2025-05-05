@@ -5,6 +5,7 @@ export const CSS = `
 }
 
 merch-card[variant="product"] merch-addon {
+    padding-left: 4px;
     padding-top: 8px;
     padding-bottom: 8px;
     padding-right: 8px;
