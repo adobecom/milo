@@ -176,17 +176,17 @@ test.describe('Milo Tab block feature test suite', () => {
     });
 
     await test.step('click tab and get redirected to proper page with a `tab` URL param', async () => {
-      const newUrl = await new URL(await page.url());
-      await newUrl.searchParams.set('tab', 'demo-3');
+      const newUrl = new URL(await page.url());
+      newUrl.searchParams.set('tab', 'demo-3');
       await page.goto(newUrl.toString());
-      await page.waitForTimeout(2000);
-      await expect(await page.url()).toContain('tabs-page-3?tab=demo-3');
+      await page.waitForLoadState('networkidle');
+      await expect(page).toHaveURL(/tabs-page-3\?tab=demo-3/);
       await tab.tab2.click();
-      await expect(await page.url()).toContain('tabs-page-2?tab=demo-2');
+      await expect(page).toHaveURL(/tabs-page-2\?tab=demo-2/);
       await tab.tab3.click();
-      await expect(await page.url()).toContain('tabs-page-3?tab=demo-3');
+      await expect(page).toHaveURL(/tabs-page-3\?tab=demo-3/);
       await tab.tab1.click();
-      await expect(await page.url()).toContain('tabs-page-1?tab=demo-1');
+      await expect(page).toHaveURL(/tabs-page-1\?tab=demo-1/);
     });
   });
 });
