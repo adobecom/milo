@@ -733,9 +733,9 @@ function createMetadataLookup(el) {
     filterResultObj.notFound = [];
     const reportText = `On ${getDate()} the following URLs in the *${selectedRepo.toUpperCase()}* repo had the following Target statuses:
       ${Object.keys(filterResultObj).map((key) => {
-    const urls = filterResultObj[key].map((item) => item.url || item);
-    return urls.length ? `\n*${METADATA_URLS_CATEGORIES[key].display}*:\n\n${urls.join(',\n')}\n` : null;
-  }).join('')}`;
+      const urls = filterResultObj[key].map((item) => item.url || item);
+      return urls.length ? `\n*${METADATA_URLS_CATEGORIES[key].display}*:\n\n${urls.join(',\n')}\n` : null;
+    }).join('')}`;
     // copy to clipboard
     navigator.clipboard.writeText(reportText).then(() => {
       const btn = document.querySelector('#mmm-copy-metadata-report');
@@ -848,8 +848,8 @@ export default async function init(el) {
   isMetadataLookup = el.classList.contains('target-metadata-lookup');
   await createView(el);
   if (!isMetadataLookup) {
-    createFiltersForm(el);
     createSearchRows();
+    createFiltersForm(el);
   }
   subscribeToSearchCriteriaChanges();
   loadStyle('/libs/features/personalization/preview.css');
