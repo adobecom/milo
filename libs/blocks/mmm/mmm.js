@@ -51,6 +51,7 @@ const GRID_FORMAT = {
 
 let isReport = false;
 let mmmPageVer = GRID_FORMAT.base;
+let isMetadataLookup = false;
 
 export const getLocalStorageFilter = () => {
   const cookie = localStorage.getItem(isReport
@@ -390,7 +391,7 @@ function createTargetAndManifestSrcFilter() {
   });
 }
 
-async function createForm(el) {
+async function createFiltersForm(el) {
   const data = parseData(el);
   createDropdowns(data);
   createLastSeenManifestAndDomainDD();
@@ -595,7 +596,53 @@ function createReport(el, data) {
   });
 }
 
-async function createPageList(el, search) {
+function createMetadataLookup(el, data) {
+  const dropdowns = [
+    {
+      id: 'mmm-metadata-lookup-repo-cc',
+      label: 'Repos',
+      options: {
+        cc: 'CC',
+        dc: 'DC',
+        express: 'Express',
+        bacom: 'BACOM',
+      },
+
+    },
+  ];
+  const table = `
+    <table>
+      <thead>
+        <th>URL</th>
+        <th>Target</th>
+      </thead>
+      <tbody>
+        ${data.data.map((item) => `<tr>
+          <td>${item.URL}</td>
+          <td>${item.target}</td>
+        </tr>`).join('')}
+      </tbody>
+    </table>`;
+  el.innerHTML = table;
+
+  const search = createTag('div', { class: 'mmm-metadata-lookup' }, `
+    <div class="mmm-metadata-lookup-filters">
+      ${dropdowns.map((dropdown) => `
+        <select id="${dropdown.id}" class="text-field-input">
+          ${Object.keys(dropdown.options).map((key) => `
+            <option value="${key}">${dropdown.options[key]}</option>
+          `).join('')}
+        </select>`).join('')}
+    </div>
+  `)
+  el.prepend(search);
+}
+
+function creastePageList(el, data) {
+  data?.result.map((page) => createButtonDetailsPair(el, page));
+}
+
+async function createView(el, search) {
   const paginationEl = document.querySelector('.mmm-pagination');
   paginationEl?.classList.add('mmm-hide');
   const mmmElContainer = createTag('div', { class: 'mmm-container max-width-12-desktop' });
@@ -606,19 +653,36 @@ async function createPageList(el, search) {
   });
   mmmElContainer.append(mmmEl);
 
-  const url = isReport ? API_URLS.report : API_URLS.pageList;
-  const response = await fetchData(
-    url,
-    DATA_TYPE.JSON,
-    {
-      method: 'POST',
-      body: JSON.stringify(search ?? SEARCH_INITIAL_VALUES()),
-    },
-  );
+  let url = '';
+  let method = 'POST';
+  let body = JSON.stringify(search ?? SEARCH_INITIAL_VALUES());
+
+  switch (true) {
+    case isReport: url = API_URLS.report; break;
+    case isMetadataLookup: {
+      url = API_URLS.metadata.cc;
+      method = 'GET';
+      body = null;
+      break;
+    }
+    default: url = API_URLS.pageList;
+  }
+
+  const response = await fetch(url, {
+    method,
+    body,
+  }).then((res) => res.json())
+    .catch((error) => {
+      console.error('Error fetching data:', error);
+      return { result: [] };
+    });
+
   if (isReport) {
     createReport(mmmEl, response);
+  } else if (isMetadataLookup) {
+    createMetadataLookup(mmmEl, response);
   } else {
-    response.result?.map((page) => createButtonDetailsPair(mmmEl, page));
+    creastePageList(mmmEl, response);
   }
   const section = createTag('div', { id: 'mep-section', class: 'section' });
   const main = document.querySelector('main');
@@ -657,7 +721,7 @@ function subscribeToSearchCriteriaChanges() {
 
     const searchCriteria = JSON.stringify(el?.detail || {});
     if (cachedSearchCriteria !== searchCriteria) {
-      createPageList(document.querySelector('.mmm').parentNode, el.detail);
+      createView(document.querySelector('.mmm').parentNode, el.detail);
       cachedSearchCriteria = searchCriteria;
     }
   });
@@ -666,9 +730,10 @@ function subscribeToSearchCriteriaChanges() {
 export default async function init(el) {
   isReport = el.classList.contains('target-cleanup');
   mmmPageVer = isReport ? GRID_FORMAT.report : GRID_FORMAT.base;
-  await createPageList(el);
   createSearchRows();
-  createForm(el);
+  isMetadataLookup = el.classList.contains('target-metadata-lookup');
+  await createView(el);
+  if (!isMetadataLookup) createFiltersForm(el);
   subscribeToSearchCriteriaChanges();
   loadStyle('/libs/features/personalization/preview.css');
 }
