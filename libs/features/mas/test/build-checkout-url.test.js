@@ -87,7 +87,7 @@ describe('buildCheckoutUrl', () => {
     };
     const url = buildCheckoutUrl(checkoutData);
     const parsedUrl = new URL(url);
-    expect(parsedUrl.searchParams.get('af')).to.equal('uc_segmentation_hide_tabs,uc_new_user_iframe,uc_new_system_close');
+    expect(parsedUrl.searchParams.get('af')).to.equal('uc_new_user_iframe,uc_new_system_close');
     expect(parsedUrl.searchParams.get('cli')).to.equal('creative');
   });
 

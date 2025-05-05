@@ -61,3 +61,9 @@ export function createIntersectionObserver({ el, callback /* , once = true, opti
   // fire immediately
   callback(el, { target: el });
 }
+
+export function getMetadata(name, doc = document) {
+  const attr = name && name.includes(':') ? 'property' : 'name';
+  const meta = doc.head.querySelector(`meta[${attr}="${name}"]`);
+  return meta && meta.content;
+}

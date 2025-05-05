@@ -106,7 +106,7 @@
   top: var(--spacing-xs);
 }
 
-.tabs div[role="tablist"] {
+.tabs .tabList {
   position: relative;
   box-shadow: 0 -1px 0 inset var(--tabs-border-color);
   display: flex;
@@ -126,7 +126,7 @@
   background-repeat: no-repeat;
 }
 
-.tabs div[role="tablist"]::-webkit-scrollbar {
+.tabs .tabList::-webkit-scrollbar {
   display: none; /* Safari and Chrome */
 }
 
@@ -139,7 +139,7 @@
   text-align: center;
 }
 
-.tabs div[role="tablist"] .tab-list-container {
+.tabs .tabList .tab-list-container {
   display: flex;
   width: var(--grid-container-width);
   margin: 0 auto;
@@ -147,13 +147,13 @@
 }
 
 /* center tabs */
-.tabs.center > div[role="tablist"]::after,
-.tabs.center > div[role="tablist"]::before {
+.tabs.center > .tabList::after,
+.tabs.center > .tabList::before {
   content: "";
   margin: auto;
 }
 
-.tabs.center:not(.same-width) div[role="tablist"] .tab-list-container {
+.tabs.center:not(.same-width) .tabList .tab-list-container {
   width: auto;
 }
 
@@ -185,7 +185,7 @@
   width: 100%;
 }
 
-.tabs div[role="tablist"] button {
+.tabs .tabList button {
   background: transparent;
   border-radius: 4px 4px 0 0;
   border: 1px solid transparent;
@@ -204,7 +204,7 @@
   z-index: 1;
 }
 
-.tabs.same-width div[role="tablist"] button {
+.tabs.same-width .tabList button {
   flex: 1;
 }
 
@@ -226,35 +226,36 @@
   margin-top: 1px;
 }
 
-.tabs.radio div[role="tablist"],
-.tabs.radio div[role="tablist"] button,
+.tabs.radio .tabList,
+.tabs.radio .tabList button,
 .tabs.radio .paddle {
   box-shadow: none;
   background: none;
   border: none;
 }
 
-.tabs div[role="tablist"] button:first-of-type {
+.tabs .tabList button:first-of-type {
   margin-left: 0;
   margin-top: 0;
 }
 
-.tabs div[role="tablist"] button:hover {
+.tabs .tabList button:hover {
   color: var(--tabs-active-text-color);
 }
 
-.tabs div[role="tablist"] button:active {
+.tabs .tabList button:active {
   color: var(--tabs-active-color);
 }
 
-.tabs div[role="tablist"] button[aria-selected="true"] {
+.tabs .tabList button[aria-selected="true"],
+.tabs .tabList button[aria-checked="true"] {
   background: var(--tabs-active-bg-color);
   border-color: var(--tabs-border-color) var(--tabs-border-color) transparent;
   color: var(--tabs-active-text-color);
 }
 
 /* Tabs: .quiet, .pill */
-.tabs.quiet div[role="tablist"] button {
+.tabs.quiet .tabList button {
   border-width: 0 0 2px;
   border-color: transparent;
   background: transparent;
@@ -263,7 +264,7 @@
   margin-inline-start: 24px;
 }
 
-.tabs.quiet:is(.no-top-border, .no-border) div[role="tablist"], 
+.tabs.quiet:is(.no-top-border, .no-border) .tabList,
 .tabs.quiet:is(.no-top-border, .no-border) .paddle,
 .tabs.quiet:is(.no-bottom-border, .no-border) .tab-content {
   border-bottom: none;
@@ -279,17 +280,17 @@
   border-bottom: none;
 }
 
-.tabs[class*='pill'] div[role="tablist"] {
+.tabs[class*='pill'] .tabList {
   box-shadow: unset;
   background: unset;
 }
 
-.tabs[class*='pill'] div[role="tablist"] .tab-list-container {
+.tabs[class*='pill'] .tabList .tab-list-container {
   margin-top: var(--spacing-xxs);
   margin-bottom: var(--spacing-xxs);
 }
 
-.tabs[class*='pill'] div[role="tablist"] button {
+.tabs[class*='pill'] .tabList button {
   color: var(--tabs-pill-text-color);
   margin: 0;
   margin-inline-start: 16px;
@@ -299,7 +300,7 @@
   border: none;
 }
 
-.tabs.radio div[role="tablist"] button {
+.tabs.radio .tabList button {
   background: transparent;
   padding-block: 0 var(--spacing-s);
   padding-inline: 0;
@@ -310,57 +311,59 @@
   align-items: center;
 }
 
-.tabs.quiet div[role="tablist"] button:first-of-type,
-.tabs[class*='pill'] div[role="tablist"] button:first-of-type {
+.tabs.quiet .tabList button:first-of-type,
+.tabs[class*='pill'] .tabList button:first-of-type {
   margin-inline-start: 0;
 }
 
-.tabs.quiet div[role="tablist"] button:hover {
+.tabs.quiet .tabList button:hover {
   border-bottom-color: var(--tabs-border-hover-color);
 }
 
-.tabs.quiet div[role="tablist"] button[aria-selected="true"] {
+.tabs.quiet .tabList button[aria-selected="true"],
+.tabs.quiet .tabList button[aria-checked="true"] {
   border-bottom-color: var(--tabs-active-color);
 }
 
-.tabs[class*='pill'] div[role="tablist"] button:focus {
+.tabs[class*='pill'] .tabList button:focus {
   color: var(--tabs-pill-text-focus-color);
   background: var(--tabs-pill-bg-focus);
 }
 
-.tabs[class*='pill'] div[role="tablist"] button:focus-visible {
+.tabs[class*='pill'] .tabList button:focus-visible {
   outline: 2px solid #4145ca;
 }
 
-.tabs[class*='pill'] div[role="tablist"] button[aria-selected="true"] {
+.tabs[class*='pill'] .tabList button[aria-selected="true"],
+.tabs[class*='pill'] .tabList button[aria-checked="true"] {
   color: var(--tabs-pill-text-selected-color);
   background: var(--tabs-pill-bg-color);
   text-shadow: 0.4px 0 0 var(--tabs-pill-text-color);
 }
 
-.tabs[class*='pill'] div[role="tablist"] button:hover {
+.tabs[class*='pill'] .tabList button:hover {
   color: var(--tabs-pill-text-color);
   background: var(--tabs-pill-bg-color-hover);
 }
 
-.tabs[class*='pill'] div[role="tablist"] button:active {
+.tabs[class*='pill'] .tabList button:active {
   color: var(--tabs-pill-text-focus-color);
   background: var(--tabs-pill-bg-color-active);
 }
 
-.tabs[class*='pill'] div[role="tablist"] button.l-pill {
+.tabs[class*='pill'] .tabList button.l-pill {
   font-size: 16px;
   line-height: 20.8px;
   height: 40px;
 }
 
-.tabs[class*='pill'] div[role="tablist"] button.m-pill {
+.tabs[class*='pill'] .tabList button.m-pill {
   font-size: 14px;
   line-height: 18.2px;
   height: 32px;
 }
 
-.tabs[class*='pill'] div[role="tablist"] button.s-pill {
+.tabs[class*='pill'] .tabList button.s-pill {
   font-size: 12px;
   line-height: 15.6px;
   height: 24px;
@@ -427,13 +430,13 @@
   display: none;
 }
 
-.tabs.radio div[role="tablist"] {
+.tabs.radio .tabList {
   margin-block: 0;
   margin-inline: auto;
   inline-size: var(--grid-container-width);
 }
 
-.tabs.radio div[role="tablist"].tabList .tab-list-container {
+.tabs.radio .tabList.tabList .tab-list-container {
   background: var(--tabs-radio-bg);
   border: 1px solid var(--tabs-border-color);
   border-radius: 24px;
@@ -446,12 +449,12 @@
   inline-size: 100%;
 }
 
-.tabs.radio div[role="tablist"] button:last-of-type {
+.tabs.radio .tabList button:last-of-type {
   padding-inline-end: 0;
   padding-block-end: 0;
 }
 
-.tabs.radio div[role="tablist"] button::before {
+.tabs.radio .tabList button::before {
   content: '';
   border: 2px solid var(--tabs-radio-gray);
   border-radius: 100%;
@@ -463,11 +466,12 @@
   box-sizing: border-box;
 }
 
-.tabs.radio div[role="tablist"] button:hover::before {
+.tabs.radio .tabList button:hover::before {
   border-color: var(--tabs-radio-blue);
 }
 
-.tabs.radio div[role="tablist"] button[aria-selected="true"]::before {
+.tabs.radio .tabList button[aria-selected="true"]::before,
+.tabs.radio .tabList button[aria-checked="true"]::before {
   border: 5px solid var(--tabs-radio-blue);
 }
 
@@ -478,7 +482,7 @@
   margin-block-end: var(--spacing-xs);
 }
 
-.tabs.radio div[role="tablist"] :is(button, button:hover, button:focus-visible, button[aria-selected="true"]) {
+.tabs.radio .tabList :is(button, button:hover, button:focus-visible, button[aria-selected="true"], button[aria-checked="true"]) {
   background: unset;
   border-radius: unset;
   outline: revert;
@@ -490,31 +494,33 @@
 
 /* Section Metadata */
 .tabs-background-transparent .tabs,
-.tabs-background-transparent .tabs div[role="tablist"],
-.tabs-background-transparent .tabs div[role="tablist"] button[aria-selected="true"],
+.tabs-background-transparent .tabs .tabList,
+.tabs-background-transparent .tabs .tabList button[aria-selected="true"],
+.tabs-background-transparent .tabs .tabList button[aria-checked="true"],
 .tabs-background-transparent .tabs .tabList .paddle {
   background: transparent;
 }
 
-.tabs.radio.center div[role="tablist"] {
+.tabs.radio.center .tabList {
   justify-content: center;
 }
 
-.tabs.radio.right div[role="tablist"] {
+.tabs.radio.right .tabList {
   justify-content: end;
 }
 
 .dark .tabs.radio .tab-list-container::before,
-.dark .tabs.radio div[role="tablist"] button {
+.dark .tabs.radio .tabList button {
   color: var(--color-white);
 }
 
-.tabs-background-transparent .tabs div[role="tablist"] button[aria-selected="true"] {
+.tabs-background-transparent .tabs .tabList button[aria-selected="true"],
+.tabs-background-transparent .tabs .tabList button[aria-checked="true"] {
   border-bottom-color: var(--tabs-active-bg-color);
 }
 
 @media screen and (min-width: 600px) {
-  .tabs.radio div[role="tablist"].tabList .tab-list-container {
+  .tabs.radio .tabList.tabList .tab-list-container {
     flex-direction: row;
     align-items: center;
     border-radius: 40px;
@@ -531,13 +537,13 @@
     margin-inline-end: -8px;
   }
 
-  .tabs.radio div[role="tablist"] button {
+  .tabs.radio .tabList button {
     white-space: normal;
     text-align: start;
   }
 
-  .tabs.radio div[role="tablist"] button,
-  .tabs.radio div[role="tablist"] button:last-of-type {
+  .tabs.radio .tabList button,
+  .tabs.radio .tabList button:last-of-type {
     padding-block: var(--spacing-xs);
     padding-inline: 0;
     min-block-size: 56px;
@@ -554,12 +560,12 @@
     min-height: 62px;
   }
 
-  .tabs div[role="tablist"] button {
+  .tabs .tabList button {
     padding: 24px 32px 18px;
     line-height: 18px;
   }
 
-  .tabs.quiet div[role="tablist"] button {
+  .tabs.quiet .tabList button {
     padding-top: 18px;
     padding-bottom: 18px;
   }
@@ -574,7 +580,7 @@
 }
 
 @media screen and (max-width: 599px) {
-  .tabs.stacked-mobile div[role="tablist"] {
+  .tabs.stacked-mobile .tabList {
     margin: 0;
   }
 
@@ -582,12 +588,12 @@
     display: none;
   }
 
-  .tabs.stacked-mobile div[role="tablist"] .tab-list-container {
+  .tabs.stacked-mobile .tabList .tab-list-container {
     flex-direction: column;
     margin: 30px auto;
   }
 
-  .tabs.stacked-mobile div[role="tablist"] button {
+  .tabs.stacked-mobile .tabList button {
     font-size: 20px;
     white-space: unset;
     word-wrap: break-word;
@@ -598,21 +604,22 @@
     margin-bottom: 8px;
   }
 
-  .tabs.stacked-mobile div[role="tablist"] button:last-of-type {
+  .tabs.stacked-mobile .tabList button:last-of-type {
     margin-bottom: 0;
   }
 
-  .tabs.stacked-mobile div[role="tablist"] button[aria-selected="true"] {
+  .tabs.stacked-mobile .tabList button[aria-selected="true"],
+  .tabs.stacked-mobile .tabList button[aria-checked="true"] {
     background-color: var(--tabs-mobile-stacked-bg-color);
     color: var(--tabs-mobile-stacked-text-color);
   }
 
-  .tabs.stacked-mobile.center div[role="tablist"] .tab-list-container {
+  .tabs.stacked-mobile.center .tabList .tab-list-container {
     width: 100%;
     margin: 0 30px 30px;
   }
 
-  .tabs.stacked-mobile.quiet div[role="tablist"] button {
+  .tabs.stacked-mobile.quiet .tabList button {
     margin-inline-start: 0;
   }
 
