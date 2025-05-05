@@ -67,7 +67,7 @@ export function processMnemonics(fields, merchCard, mnemonicsConfig) {
 }
 
 function processBadge(fields, merchCard, mapping) {
-    if (fields.variant === 'plans') {
+    if (fields.variant === 'plans' || fields.variant === 'plans-students') {
         // for back-compatibility
         if (fields.badge?.length && !fields.badge?.startsWith('<merch-badge')) {
             fields.badge = `<merch-badge variant="${fields.variant}" background-color="${DEFAULT_PLANS_BADGE_COLOR}">${fields.badge}</merch-badge>`;
@@ -195,22 +195,18 @@ export function processDescription(fields, merchCard, mapping) {
     appendSlot('description', fields, merchCard, mapping);
     appendSlot('callout', fields, merchCard, mapping);
     appendSlot('quantitySelect', fields, merchCard, mapping);
+    appendSlot('whatsIncluded', fields, merchCard, mapping);
 }
 
-export function processStockOffersAndSecureLabel(
-    fields,
-    merchCard,
-    aemFragmentMapping,
-    settings,
-) {
-    // for Stock Checkbox, presence flag is set on the card, label and osi for an offer are set in settings
-    if (fields.showStockCheckbox && aemFragmentMapping.stockOffer) {
-        merchCard.setAttribute('checkbox-label', settings.stockCheckboxLabel);
-        merchCard.setAttribute('stock-offer-osis', settings.stockOfferOsis);
-    }
-    if (settings.secureLabel && aemFragmentMapping.secureLabel) {
-        merchCard.setAttribute('secure-label', settings.secureLabel);
-    }
+export function processStockOffersAndSecureLabel(fields, merchCard, aemFragmentMapping, settings) {
+  // for Stock Checkbox, presence flag is set on the card, label and osi for an offer are set in settings
+  if (fields.showStockCheckbox && aemFragmentMapping.stockOffer) {
+    merchCard.setAttribute('checkbox-label', settings?.stockCheckboxLabel ? settings.stockCheckboxLabel : '');
+    merchCard.setAttribute('stock-offer-osis', settings?.stockOfferOsis ? settings.stockOfferOsis : '');
+  }
+  if (settings?.secureLabel && aemFragmentMapping?.secureLabel) {
+    merchCard.setAttribute('secure-label', settings.secureLabel);
+  }
 }
 
 export function getTruncatedTextData(text, limit, withSuffix = true) {
@@ -475,6 +471,7 @@ export function cleanup(merchCard) {
         'badge-background-color',
         'badge-color',
         'badge-text',
+        'gradient-border',
         'size',
         ANALYTICS_SECTION_ATTR,
     ];
@@ -484,29 +481,11 @@ export function cleanup(merchCard) {
 }
 
 export async function hydrate(fragment, merchCard) {
-    const { id, fields } = fragment;
+    const { id, fields, settings } = fragment;
     const { variant } = fields;
-    if (!variant) throw new Error(`hydrate: no variant found in payload ${id}`);
-    // temporary hardcode for plans. this data will be coming from settings (MWPW-166756)
-    const settings = {
-        stockCheckboxLabel: 'Add a 30-day free trial of Adobe Stock.*', // to be {{stock-checkbox-label}}
-        stockOfferOsis: '',
-        secureLabel: 'Secure transaction', // to be {{secure-transaction}}
-    };
+    if (!variant) throw new Error (`hydrate: no variant found in payload ${id}`);
     cleanup(merchCard);
     merchCard.id ??= fragment.id;
-
-    merchCard.removeAttribute('background-image');
-    merchCard.removeAttribute('background-color');
-    merchCard.removeAttribute('badge-background-color');
-    merchCard.removeAttribute('badge-color');
-    merchCard.removeAttribute('badge-text');
-    merchCard.removeAttribute('size');
-    merchCard.removeAttribute('gradient-border');
-    merchCard.classList.remove('wide-strip');
-    merchCard.classList.remove('thin-strip');
-    merchCard.removeAttribute(ANALYTICS_SECTION_ATTR);
-
     merchCard.variant = variant;
     await merchCard.updateComplete;
 
