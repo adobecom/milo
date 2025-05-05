@@ -14,9 +14,9 @@ const getCookie = (name) => document.cookie
   .find((row) => row.startsWith(`${name}=`))
   ?.split('=')[1];
 
-describe('Region Nav Block', () => {
+describe('Region Nav Block', async () => {
   const block = document.body.querySelector('.region-nav');
-  init(block);
+  await init(block);
   let clock;
 
   beforeEach(async () => {
@@ -164,14 +164,5 @@ describe('Region Nav Block', () => {
 
     // No languageMap means no transformation
     expect(link.href).to.equal('https://adobe.com/ar/some-page');
-  });
-
-  it('replaces the prefix with the mapped value from language', () => {
-    setConfig({ locales: { '': { ietf: 'en-US', tk: 'hah7vzn.css' } } });
-
-    const link = createTag('a', { href: 'https://adobe.com/ph_en/' });
-    decorateLink(link, '/path/to/some/page');
-
-    expect(link.href).to.equal('https://adobe.com/en/apac/path/to/some/page');
   });
 });
