@@ -172,7 +172,7 @@ function getUpdatedAcrobatVisitAttempt() {
   const { hostname, pathname } = window.location;
   const secondVisitAttempt = Number(localStorage.getItem('acrobatSecondHit')) || 0;
 
-  const isAdobeDomain = hostname === ('www.adobe.com' || hostname === 'www.stage.adobe.com') && /\/acrobat/.test(pathname);
+  const isAdobeDomain = (hostname === 'www.adobe.com' || hostname === 'www.stage.adobe.com') && /\/acrobat/.test(pathname);
   const consentCookieValue = getCookie('OptanonConsent');
 
   if (consentCookieValue?.includes('C0002:1') && isAdobeDomain) {
@@ -256,6 +256,9 @@ function getProcessedPageNameForAnalytics() {
 function resolveAgiCampaignAndFlag() {
   const { hostname, pathname, href } = window.location;
   const consentValue = getCookie('OptanonConsent');
+  const EXPIRY_TIME_IN_DAYS = 90;
+  const CAMPAIGN_PAGE_VALUE = '1';
+  const ACROBAT_DOMAIN_VALUE = '2';
 
   if (!consentValue?.includes('C0002:1')) {
     return { agiCampaign: false, setAgICampVal: false };
@@ -264,7 +267,7 @@ function resolveAgiCampaignAndFlag() {
   const agiCookie = getCookie('agiCamp');
   const setAgiCookie = (value) => {
     setCookie('agiCamp', value, {
-      expires: 90,
+      expires: EXPIRY_TIME_IN_DAYS,
       domain: getDomainWithoutWWW(),
     });
   };
@@ -275,16 +278,16 @@ function resolveAgiCampaignAndFlag() {
 
   let agiCampaign = false;
 
-  if (isGotItPage && (!agiCookie || agiCookie !== '2')) {
-    setAgiCookie('1');
-    agiCampaign = '1';
-  } else if (isAcrobatDomain && (!agiCookie || agiCookie !== '1')) {
-    if (agiCookie === '2') return { agiCampaign: false, setAgICampVal: false };
-    setAgiCookie('2');
-    agiCampaign = '2';
+  if (isGotItPage && (!agiCookie || agiCookie !== ACROBAT_DOMAIN_VALUE)) {
+    setAgiCookie(CAMPAIGN_PAGE_VALUE);
+    agiCampaign = CAMPAIGN_PAGE_VALUE;
+  } else if (isAcrobatDomain && (!agiCookie || agiCookie !== CAMPAIGN_PAGE_VALUE)) {
+    if (agiCookie === ACROBAT_DOMAIN_VALUE) return { agiCampaign: false, setAgICampVal: false };
+    setAgiCookie(ACROBAT_DOMAIN_VALUE);
+    agiCampaign = ACROBAT_DOMAIN_VALUE;
   }
 
-  const setAgICampVal = agiCampaign === '1' || agiCampaign === '2';
+  const setAgICampVal = agiCampaign === CAMPAIGN_PAGE_VALUE || agiCampaign === ACROBAT_DOMAIN_VALUE;
   return { agiCampaign, setAgICampVal };
 }
 
@@ -362,7 +365,7 @@ function createRequestPayload({
     isErrorPage: false,
     isHomePage: false,
     name: pageName,
-    pageViews: { value: isPageViewCall ? 1 : 0 },
+    pageViews: { value: Number(isPageViewCall) },
   };
 
   const consentState = (() => {
