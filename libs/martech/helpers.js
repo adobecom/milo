@@ -243,7 +243,7 @@ function getProcessedPageNameForAnalytics() {
   if (pageName.match(/^stock\.adobe\.com:..:(1|2|3[^\d]|4|5|6|7|8|9)|^stock\.adobe\.com:(1|2|3[^\d]|4|5|6|7|8|9)/)) {
     return 'stock.adobe.com:file';
   }
-  for (const [domain, filter] of Object.entries(FILTERS)) {
+  for (const [, filter] of Object.entries(FILTERS)) {
     if (pageName.startsWith(filter[0])) {
       const filtered = pageArray.filter((value) => filter.includes(value)).join(':');
       return SPECIAL_DOMAINS.includes(filtered) ? pageName : filtered;
