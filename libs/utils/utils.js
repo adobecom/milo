@@ -468,7 +468,7 @@ function isLocalizedPath(path, locales) {
     && (localeToLanguageMap.some((l) => l.locale !== '' && (path.startsWith(`/${l.locale}/`) || path === `/${l.locale}`))
       || (localeToLanguageMap.some((l) => {
       console.log('languagePath:', l.languagePath);
-      return path.startsWith(`/${l.languagePath}/`) || path === `/${l.languagePath}`;
+      return path.startsWith(`/${l.languagePath.trim()}/`) || path === `/${l.languagePath.trim()}`;
   })));
   const legacyLocalePath = locales && Object.keys(locales).some((loc) => loc !== '' && (path.startsWith(`/${loc}/`)
     || path.endsWith(`/${loc}`)));
