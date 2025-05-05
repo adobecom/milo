@@ -61,6 +61,12 @@ export default class MerchAddon extends LitElement {
             display: flex;
             gap: 9px;
             align-items: start;
+            cursor: pointer;
+        }
+
+        :host,
+        label {
+            cursor: pointer;
         }
 
         ::slotted(p[data-plan-type]) {

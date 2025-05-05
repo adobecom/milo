@@ -439,29 +439,108 @@
                     <p data-plan-type="">
                         Add AI Assistant to your free Reader app for
                         <strong>
-                        <span
-                            is="inline-price"
-                            data-template="price"
-                            data-wcs-osi="puf"
-                        ></span></strong>
+                            <span
+                                is="inline-price"
+                                data-template="price"
+                                data-wcs-osi="puf"
+                            ></span
+                        ></strong>
                     </p>
                     <p data-plan-type="">
                         Add AI Assistant to your free Reader app for
                         <strong>
-                        <span
-                            is="inline-price"
-                            data-template="price"
-                            data-wcs-osi="abm"
-                        ></span></strong>
+                            <span
+                                is="inline-price"
+                                data-template="price"
+                                data-wcs-osi="abm"
+                            ></span
+                        ></strong>
                     </p>
                     <p data-plan-type="">
                         Add AI Assistant to your free Reader app for
                         <strong>
-                        <span
-                            is="inline-price"
-                            data-template="price"
-                            data-wcs-osi="m2m"
-                        ></span></strong>
+                            <span
+                                is="inline-price"
+                                data-template="price"
+                                data-wcs-osi="m2m"
+                            ></span
+                        ></strong>
+                    </p>
+                    <merch-gradient
+                        colors="#F5F6FD, #F8F1F8, #F9E9ED"
+                        positions="33.52%, 67.33%, 110.37%"
+                        angle="211deg"
+                        border-radius="10px"
+                    ></merch-gradient>
+                </merch-addon>
+                <div slot="footer">
+                    <p class="action-area">
+                        <a
+                            is="checkout-link"
+                            data-checkout-workflow="UCv3"
+                            data-checkout-workflow-step="email"
+                            data-quantity="1"
+                            data-wcs-osi="QgYu51CVY2wKyFEqMuvec4N1tc1OaCypeKJjT5n2-Fc"
+                            data-extra-options="{}"
+                            class="con-button blue"
+                            >Buy now</a
+                        >
+                    </p>
+                </div>
+                <div slot="body-lower"><hr style="background: #e8e8e8" /></div
+            ></merch-card>
+        </template>
+        <template id="acrobat-free">
+            <merch-card
+                class="merch-card product secure has-divider"
+                variant="product"
+                secure-label="Secure transaction"
+                plan-type="PUF"
+            >
+                <h3
+                    id="acrobat-standard"
+                    class="card-heading"
+                    slot="heading-xs"
+                >
+                    Acrobat Reader
+                </h3>
+                <p class="card-heading" slot="heading-xs">Free</p>
+                <div slot="body-xs">
+                    <p>
+                        Simple PDF tools for editing and converting documents.
+                    </p>
+                </div>
+                <merch-addon slot="addon">
+                    <p><strong>Acrobat AI Assistant</strong></p>
+                    <p data-plan-type="">
+                        Add AI Assistant to your free Reader app for
+                        <strong>
+                            <span
+                                is="inline-price"
+                                data-template="price"
+                                data-wcs-osi="puf"
+                            ></span
+                        ></strong>
+                    </p>
+                    <p data-plan-type="">
+                        Add AI Assistant to your free Reader app for
+                        <strong>
+                            <span
+                                is="inline-price"
+                                data-template="price"
+                                data-wcs-osi="abm"
+                            ></span
+                        ></strong>
+                    </p>
+                    <p data-plan-type="">
+                        Add AI Assistant to your free Reader app for
+                        <strong>
+                            <span
+                                is="inline-price"
+                                data-template="price"
+                                data-wcs-osi="m2m"
+                            ></span
+                        ></strong>
                     </p>
                     <merch-gradient
                         colors="#F5F6FD, #F8F1F8, #F9E9ED"
@@ -565,6 +644,12 @@
 
                         container.append(standard);
                         await standard.checkReady;
+                    });
+
+                    it('should change free text to addon price', async () => {
+                        const [free] = getTemplateContent('acrobat-free');
+                        container.append(free);
+                        await free.checkReady;
                     });
                 });
             });
