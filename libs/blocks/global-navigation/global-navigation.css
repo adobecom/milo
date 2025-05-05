@@ -1102,6 +1102,7 @@ header.new-nav .feds-nav > section.feds-navItem > .feds-popup .tab-content .feds
   display: inline-block;
   font-weight: 400;
   white-space: break-spaces;
+  font-size: 12px;
 }
 
 header.new-nav .feds-nav > section.feds-navItem > .feds-popup .sticky-cta {
@@ -1406,4 +1407,12 @@ html:has(body.disable-ios-scroll) { /* this class is only added on iOS */
 .disable-ios-scroll.branch-banner-is-active.branch-banner-inline #branch-banner-iframe {
   position: relative;
   display: block;
+}
+
+/* Landscape mode for mobile */
+@media (orientation: landscape) and (max-width: 900px) {
+  header.new-nav .feds-nav > section.feds-navItem > .feds-popup .tabs button {
+    padding: 15px 11px 15px 20px;
+    min-height: max-content;
+  }
 }

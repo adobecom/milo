@@ -47,6 +47,34 @@ export const CC_SINGLE_APPS = [
   ['XD'],
 ];
 
+const LanguageMap = {
+  en: 'US',
+  'en-gb': 'GB',
+  'es-mx': 'MX',
+  'fr-ca': 'CA',
+  da: 'DK',
+  et: 'EE',
+  ar: 'DZ',
+  el: 'GR',
+  iw: 'IL',
+  he: 'IL',
+  id: 'ID',
+  ms: 'MY',
+  nb: 'NO',
+  sl: 'SI',
+  sv: 'SE',
+  cs: 'CZ',
+  uk: 'UA',
+  hi: 'IN',
+  'zh-hans': 'CN',
+  'zh-hant': 'TW',
+  ja: 'JP',
+  ko: 'KR',
+  fil: 'PH',
+  th: 'TH',
+  vi: 'VN',
+};
+
 const GeoMap = {
   ar: 'AR_es',
   be_en: 'BE_en',
@@ -129,12 +157,32 @@ const GeoMap = {
   th_th: 'TH_th',
 };
 
+const LANG_STORE_PREFIX = 'langstore/';
+
+function getDefaultLangstoreCountry(language) {
+  let country = LanguageMap[language];
+  if (!country && GeoMap[language]) {
+    country = language; // es, fr, pt, de
+  }
+  if (!country && language.includes('-')) {
+    [country] = language.split('-'); // variations like es-419, pt-PT
+  }
+
+  return country || 'US';
+}
+
 export function getMiloLocaleSettings(locale) {
   const localePrefix = locale?.prefix || 'US_en';
   const geo = localePrefix.replace('/', '') ?? '';
   let [country = 'US', language = 'en'] = (
     GeoMap[geo] ?? geo
   ).split('_', 2);
+
+  if (geo.startsWith(LANG_STORE_PREFIX) || window.location.pathname.startsWith(`/${LANG_STORE_PREFIX}`)) {
+    const localeLang = geo.replace(LANG_STORE_PREFIX, '').toLowerCase();
+    country = getDefaultLangstoreCountry(localeLang);
+    language = localeLang;
+  }
 
   country = country.toUpperCase();
   language = language.toLowerCase();
@@ -784,6 +832,32 @@ async function buildPrice(el, params) {
   const service = await initService();
   const price = service.createInlinePrice(context);
   return price;
+}
+
+export const MEP_SELECTOR = 'mas';
+
+export function overrideOptions(fragment, options) {
+  const { mep } = getConfig();
+  const fragments = mep?.inBlock?.[MEP_SELECTOR]?.fragments;
+  if (fragments) {
+    const command = fragments[fragment];
+    if (command && command.action === 'replace') {
+      return { ...options, fragment: command.content };
+    }
+  }
+  return options;
+}
+
+export function getOptions(el) {
+  const { hash } = new URL(el.href);
+  const hashValue = hash.startsWith('#') ? hash.substring(1) : hash;
+  const searchParams = new URLSearchParams(hashValue);
+  const options = {};
+  for (const [key, value] of searchParams.entries()) {
+    if (key === 'sidenav') options.sidenav = value === 'true';
+    else if (key === 'fragment' || key === 'query') options.fragment = value;
+  }
+  return options;
 }
 
 export default async function init(el) {

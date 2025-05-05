@@ -390,6 +390,22 @@ function registerInBlockActions(command) {
   if (blockAndSelector.length > 1) {
     blockSelector = blockAndSelector.slice(1).join(' ');
     command.selector = blockSelector;
+    if (blockSelector.startsWith('https://mas.adobe.com/')) {
+      const getFragmentId = (masUrl) => {
+        const { hash } = new URL(masUrl);
+        const hashValue = hash.startsWith('#') ? hash.substring(1) : hash;
+        const searchParams = new URLSearchParams(hashValue);
+        return searchParams.get('fragment') || searchParams.get('query');
+      };
+      blockSelector = getFragmentId(blockSelector);
+      if (blockSelector) {
+        config.mep.inBlock[blockName].fragments ??= {};
+        const { fragments } = config.mep.inBlock[blockName];
+        command.content = getFragmentId(command.content);
+        fragments[blockSelector] = command;
+      }
+      return;
+    }
     if (getSelectorType(blockSelector) === 'fragment') {
       if (blockSelector.includes('/federal/')) blockSelector = getFederatedUrl(blockSelector);
       if (command.content.includes('/federal/')) command.content = getFederatedUrl(command.content);
