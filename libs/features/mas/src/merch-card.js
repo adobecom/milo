@@ -225,7 +225,11 @@ export class MerchCard extends LitElement {
     }
 
     get computedBorderStyle() {
-        if (!['ccd-slice', 'ccd-suggested', 'ah-promoted-plans'].includes(this.variant)) {
+        if (
+            !['ccd-slice', 'ccd-suggested', 'ah-promoted-plans'].includes(
+                this.variant,
+            )
+        ) {
             return `1px solid ${
                 this.borderColor ? this.borderColor : this.badgeBackgroundColor
             }`;
@@ -375,6 +379,7 @@ export class MerchCard extends LitElement {
 
     // custom methods
     async handleAemFragmentEvents(e) {
+        if (!this.isConnected) return;
         if (e.type === EVENT_AEM_ERROR) {
             this.#fail(
                 `AEM fragment cannot be loaded: ${e.detail.message}`,
@@ -405,6 +410,7 @@ export class MerchCard extends LitElement {
     }
 
     async checkReady() {
+        if (!this.isConnected) return;
         const timeoutPromise = new Promise((resolve) =>
             setTimeout(() => resolve('timeout'), MERCH_CARD_LOAD_TIMEOUT),
         );
