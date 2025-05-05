@@ -92,6 +92,7 @@ const MILO_BLOCKS = [
   'youtube',
   'z-pattern',
   'share',
+  'susi-light-login',
   'reading-time',
 ];
 const AUTO_BLOCKS = [
@@ -1299,7 +1300,7 @@ export async function loadMartech({
  *
  * @returns {boolean} True if the user is signed out, otherwise false.
  */
-function isSignedOut() {
+export function isSignedOut() {
   const serverTiming = window.performance?.getEntriesByType('navigation')?.[0]?.serverTiming?.reduce(
     (acc, { name, description }) => ({ ...acc, [name]: description }),
     {},

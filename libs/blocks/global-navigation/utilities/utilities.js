@@ -571,6 +571,7 @@ export const transformTemplateToMobile = async (popup, item, localnav = false) =
           id="${i}"
           role="tabpanel"
           aria-labelledby="${i}"
+          class="${links.match(/class\s*=\s*["'][^"']*\bfeds-navLink--header\b[^"']*["']/) !== null ? 'has-subheader' : ''}"
           ${daalhTabContent ? `daa-lh="${daalhTabContent}"` : ''}
           hidden
         >
@@ -581,7 +582,6 @@ export const transformTemplateToMobile = async (popup, item, localnav = false) =
       ${CTA}
     </div>
     `;
-
   popup.querySelector('.close-icon')?.addEventListener('click', () => {
     document.querySelector(selectors.mainNavToggle).focus();
     closeAllDropdowns();
