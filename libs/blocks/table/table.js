@@ -116,7 +116,7 @@ function handleEqualHeight(table, tag) {
   });
   columns.forEach(({ children }) => {
     [...children].forEach((row, i) => {
-      row.style.height = height[i] > 0 ? `${height[i]}px` : 'auto';
+      row.style.minHeight = height[i] > 0 ? `${height[i]}px` : 'unset';
     });
   });
 }
