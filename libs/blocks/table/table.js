@@ -116,7 +116,7 @@ function handleEqualHeight(table, tag) {
   });
   columns.forEach(({ children }) => {
     [...children].forEach((row, i) => {
-      row.style.height = height[i] > 0 ? `${height[i]}px` : 'auto';
+      row.style.minHeight = height[i] > 0 ? `${height[i]}px` : 'unset';
     });
   });
 }
@@ -186,34 +186,6 @@ async function setAriaLabelForIcons(el) {
   ariaLabelElements.forEach((element) => {
     const labelIndex = element.classList.contains('filter') ? 1 : 0;
     element.setAttribute('aria-label', ariaLabels[labelIndex]);
-  });
-}
-
-function setTooltipListeners(el) {
-  document.addEventListener('keydown', (event) => {
-    if (event.key === 'Escape') {
-      el.querySelectorAll('.milo-tooltip').forEach((tooltip) => {
-        tooltip.classList.add('hide-tooltip');
-      });
-    }
-  });
-
-  el.querySelectorAll('.milo-tooltip').forEach((tooltip) => {
-    tooltip.addEventListener('mouseenter', () => {
-      tooltip.classList.remove('hide-tooltip');
-    });
-
-    tooltip.addEventListener('mouseleave', () => {
-      tooltip.classList.add('hide-tooltip');
-    });
-
-    tooltip.addEventListener('focus', () => {
-      tooltip.classList.remove('hide-tooltip');
-    });
-
-    tooltip.addEventListener('blur', () => {
-      tooltip.classList.add('hide-tooltip');
-    });
   });
 }
 
@@ -363,6 +335,12 @@ function handleSection(sectionParams) {
     }
   } else if (!row.classList.contains('row-1') && (!isHighlightTable || !row.classList.contains('row-2'))) {
     row.classList.add('section-row');
+    rowCols.forEach((col) => {
+      if (col.querySelector('a') && !col.querySelector('span')) {
+        const textSpan = createTag('span', { class: 'col-text' }, [...col.childNodes]);
+        col.appendChild(textSpan);
+      }
+    });
     if (isMerch && !row.classList.contains('divider')) {
       rowCols.forEach((merchCol) => {
         merchCol.classList.add('col-merch');
@@ -551,7 +529,6 @@ function applyStylesBasedOnScreenSize(table, originTable) {
           clone.setAttribute('data-cloned', 'true');
           clone.classList.remove('rounded-left', 'rounded-right');
           row.appendChild(clone);
-          setTooltipListeners(clone);
         });
       }
 
@@ -693,7 +670,6 @@ export default function init(el) {
 
     setExpandEvents(el);
     setAriaLabelForIcons(el);
-    setTooltipListeners(el);
   };
 
   window.addEventListener(MILO_EVENTS.DEFERRED, () => {

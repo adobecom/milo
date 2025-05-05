@@ -106,6 +106,9 @@ export default class MasAcom {
         'line-height': '19px',
       },
     };
+
+    // Plans students card properties:
+    this.studentsCssProp = { card: { width: '568px' } };
   }
 
   getCard(id) {
