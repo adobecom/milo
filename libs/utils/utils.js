@@ -504,11 +504,14 @@ export function localizeLink(
   }
 }
 
-export function loadLink(href, { as, callback, crossorigin, rel, fetchpriority } = {}) {
+export function loadLink(href, {
+  id, as, callback, crossorigin, rel, fetchpriority,
+} = {}) {
   let link = document.head.querySelector(`link[href="${href}"]`);
   if (!link) {
     link = document.createElement('link');
     link.setAttribute('rel', rel);
+    if (id) link.setAttribute('id', id);
     if (as) link.setAttribute('as', as);
     if (crossorigin) link.setAttribute('crossorigin', crossorigin);
     if (fetchpriority) link.setAttribute('fetchpriority', fetchpriority);
@@ -590,7 +593,7 @@ export function appendHtmlToLink(link) {
   }
 }
 
-export const loadScript = (url, type, { mode, ...attrs } = {}) => new Promise((resolve, reject) => {
+export const loadScript = (url, type, { mode } = {}) => new Promise((resolve, reject) => {
   let script = document.querySelector(`head > script[src="${url}"]`);
   if (!script) {
     const { head } = document;
@@ -600,9 +603,6 @@ export const loadScript = (url, type, { mode, ...attrs } = {}) => new Promise((r
       script.setAttribute('type', type);
     }
     if (['async', 'defer'].includes(mode)) script.setAttribute(mode, true);
-    Object.keys(attrs).forEach((key) => {
-      script.setAttribute(key, attrs[key]);
-    });
     head.append(script);
   }
 
