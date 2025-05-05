@@ -51,7 +51,7 @@ const GRID_FORMAT = {
 
 const METADATA_URLS_CATEGORIES = {
   notFound: { display: 'Not in spreadsheet', key: 'notFound' },
-  off: { display: 'Off or empty', key: 'off' },
+  off: { display: 'Off', key: 'off' },
   on: { display: 'On', key: 'on' },
   postLCP: { display: 'PostLCP', key: 'postLCP' },
 };
@@ -633,7 +633,7 @@ function updatePageTargetStatus(url, target) {
 function handleMetadataFilterInput(event) {
   const { target } = event;
   target.style.height = 'auto'; /* Reset height to auto to recalculate */
-  target.style.height = `${target.scrollHeight - 32}px`;
+  target.style.height = `${target.scrollHeight}px`;
   const categories = {
     [METADATA_URLS_CATEGORIES.notFound.key]: [],
     [METADATA_URLS_CATEGORIES.off.key]: [],
@@ -731,11 +731,11 @@ function createMetadataLookup(el) {
     const filterResultObj = JSON.parse(filterResult);
     filterResultObj.off = filterResultObj.off.concat(filterResultObj.notFound);
     filterResultObj.notFound = [];
-    const reportText = `On ${getDate()} the following URLs in the *${selectedRepo.toUpperCase()}* repo had the following Target statuses:
+    const reportText = `Date: ${getDate()}\nRepo: ${selectedRepo.toUpperCase()}\nRequested pages are grouped below by their Target setting.
       ${Object.keys(filterResultObj).map((key) => {
-    const urls = filterResultObj[key].map((item) => item.url || item);
-    return urls.length ? `\n*${METADATA_URLS_CATEGORIES[key].display}*:\n\n${urls.join(',\n')}\n` : null;
-  }).join('')}`;
+      const urls = filterResultObj[key].map((item) => item.url || item);
+      return urls.length ? `\n\n${METADATA_URLS_CATEGORIES[key].display}:\n${urls.join('\n')}\n` : null;
+    }).join('')}`;
     // copy to clipboard
     navigator.clipboard.writeText(reportText).then(() => {
       const btn = document.querySelector('#mmm-copy-metadata-report');
