@@ -36,10 +36,9 @@ export function decorateLink(link, path, localeToLanguageMap = []) {
   }
 
   const { languageMap, languages, locales } = getConfig();
-  const localeArray = localeToLanguageMap.map((l) => l?.locale);
   const mergedLocales = { ...locales };
-
-  localeArray.forEach((locale) => {
+  localeToLanguageMap.forEach((lang) => {
+    const { locale } = lang;
     if (!mergedLocales[locale]) {
       mergedLocales[locale] = { ietf: 'none', tk: 'none' };
     }
