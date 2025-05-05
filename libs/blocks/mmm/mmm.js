@@ -49,9 +49,18 @@ const GRID_FORMAT = {
   },
 };
 
+const METADATA_URLS_CATEGORIES = {
+  notFound: { display: 'Not in spreadsheet', key: 'notFound' },
+  off: { display: 'Off or empty', key: 'off' },
+  on: { display: 'On', key: 'on' },
+  postLCP: { display: 'PostLCP', key: 'postLCP' },
+};
+
 let isReport = false;
 let mmmPageVer = GRID_FORMAT.base;
 let isMetadataLookup = false;
+let metadataLookupData = null;
+let selectedRepo = 'cc';
 
 export const getLocalStorageFilter = () => {
   const cookie = localStorage.getItem(isReport
@@ -596,8 +605,78 @@ function createReport(el, data) {
   });
 }
 
-function createMetadataLookup(el, data) {
-  const dropdowns = [
+function buildUrlPod(list, title) {
+  if (!list.length) return;
+  const container = document.querySelector('.mmm-metadata-lookup__results');
+  const html = `
+    <div class="mmm-metadata-url-pod">
+      <h3>${title}</h3>
+      ${list.map((item) => `
+      <div class="mmm-metadata-url-pod__item">
+        <span>${item.URL || item.split(/\.com|\.html/g)[1]}</span>
+      </div>
+      `).join('')}
+    </div>
+    <button class="mmm-metadata-lookup__button" data-result=${JSON.stringify(list)}>Copy</button>
+    `;
+  // TODO: add copy functionality for a JIRA report (with abs url)
+  container.append(createTag('div', { class: 'mmm-metadata-url-pod-container' }, html));
+}
+
+function handleMetadataFilterInput(event) {
+  const { target } = event;
+  target.style.height = 'auto'; /* Reset height to auto to recalculate */
+  target.style.height = `${target.scrollHeight - 32}px`;
+  const categories = {
+    [METADATA_URLS_CATEGORIES.notFound.key]: [],
+    [METADATA_URLS_CATEGORIES.off.key]: [],
+    [METADATA_URLS_CATEGORIES.on.key]: [],
+    [METADATA_URLS_CATEGORIES.postLCP.key]: [],
+  };
+  const urls = event.target.value?.split(/,|\n/)?.filter((item) => item.trim().length > 0) || [];
+  urls.forEach((url) => {
+    const path = url.split(/\.com|\.html/g)[1];
+    const match = metadataLookupData.find((item) => item.URL === path);
+    if (!match && url) {
+      categories.notFound.push(url);
+    } else if (match.target) {
+      categories[match.target].push(match);
+    } else {
+      categories[METADATA_URLS_CATEGORIES.off.key].push(match);
+    }
+  });// TODO : UPDATE existing pages `target` field with values from the list
+  document.querySelector('.mmm-metadata-lookup__results').innerHTML = '';
+
+  Object.keys(categories).forEach((key) => {
+    buildUrlPod(categories[key], METADATA_URLS_CATEGORIES[key].display);
+  });
+
+  // handle copy to clipboard buttons
+  const container = document.querySelector('.mmm-metadata-lookup__results');
+  container.querySelectorAll('.mmm-metadata-lookup__button').forEach((item) => {
+    item.addEventListener('click', (e) => {
+      const tgt = e.target;
+      const result = JSON.parse(tgt.dataset.result);
+      const text = `${result.map((url) => url.URL || url.split(/\.com|\.html/g)[1]).join('\n')}`;
+      tgt.classList.add('success');
+      navigator.clipboard.writeText(text).then(() => {
+        setTimeout(() => tgt.classList.remove('success'), 2000);
+      });
+    });
+  });
+
+  const filterResult = document.querySelector('.mmm-metadata-lookup__results');
+  filterResult.dataset.result = JSON.stringify(categories);
+
+  if (filterResult.childNodes.length) {
+    document.querySelector('#mmm-copy-metadata-report').classList.remove('mmm-hide');
+  } else {
+    document.querySelector('#mmm-copy-metadata-report').classList.add('mmm-hide');
+  }
+}
+
+function createMetadataLookup(el) {
+  const REPO_DROPDOWNS = [
     {
       id: 'mmm-metadata-lookup-repo-cc',
       label: 'Repos',
@@ -610,32 +689,53 @@ function createMetadataLookup(el, data) {
 
     },
   ];
-  const table = `
-    <table>
-      <thead>
-        <th>URL</th>
-        <th>Target</th>
-      </thead>
-      <tbody>
-        ${data.data.map((item) => `<tr>
-          <td>${item.URL}</td>
-          <td>${item.target}</td>
-        </tr>`).join('')}
-      </tbody>
-    </table>`;
-  el.innerHTML = table;
 
   const search = createTag('div', { class: 'mmm-metadata-lookup' }, `
-    <div class="mmm-metadata-lookup-filters">
-      ${dropdowns.map((dropdown) => `
+    <div class="mmm-form-container">
+      ${REPO_DROPDOWNS.map((dropdown) => `
+      <div>
+        <label for="${dropdown.id}">${dropdown.label}:</label>
         <select id="${dropdown.id}" class="text-field-input">
           ${Object.keys(dropdown.options).map((key) => `
-            <option value="${key}">${dropdown.options[key]}</option>
+            <option value="${key}" ${selectedRepo === key ? 'selected' : ''}>${dropdown.options[key]}</option>
           `).join('')}
         </select>`).join('')}
+      </div>
+      <div>
+        <label for="mmm-metadata-lookup__filter">Insert URLs (absolute paths):</label>
+        <textarea id="mmm-metadata-lookup__filter"></textarea>
+      </div>
     </div>
-  `)
-  el.prepend(search);
+    <div class="mmm-metadata-lookup__results"></div>
+    <button id="mmm-copy-metadata-report" class="mmm-metadata-lookup__button primary mmm-hide" style="align-self: center">Copy Report</button>
+  `);
+  el.append(search);
+
+  // Handle REPO change
+  // eslint-disable-next-line no-use-before-define
+  el.querySelector('#mmm-metadata-lookup-repo-cc').addEventListener('change', handleRepoChange);
+  // Handle copy report button
+  el.querySelector('#mmm-copy-metadata-report').addEventListener('click', () => {
+    const filterResult = document.querySelector('.mmm-metadata-lookup__results')?.dataset?.result;
+    const filterResultObj = JSON.parse(filterResult);
+    filterResultObj.off = filterResultObj.off.concat(filterResultObj.notFound);
+    filterResultObj.notFound = [];
+    const reportText = `On ${getDate()} the following URLs in the *${selectedRepo.toUpperCase()}* repo had the following Target statuses:
+      ${Object.keys(filterResultObj).map((key) => {
+      const urls = filterResultObj[key].map((item) => item.URL || item.split(/\.com|\.html/g)[1]);
+      return urls.length ? `\n*${METADATA_URLS_CATEGORIES[key].display}*:\n\n${urls.join(',\n')}\n` : null;
+    }).join('')}`;
+    // copy to clipboard
+    navigator.clipboard.writeText(reportText).then(() => {
+      const btn = document.querySelector('#mmm-copy-metadata-report');
+      btn.classList.add('success');
+      setTimeout(() => btn.classList.remove('success'), 2000);
+    });
+  });
+  // Handle Filter input
+  const textarea = search.querySelector('textarea');
+  textarea.addEventListener('input', (event) => handleMetadataFilterInput(event));
+  textarea.addEventListener('keyup', (event) => handleMetadataFilterInput(event));
 }
 
 function creastePageList(el, data) {
@@ -643,11 +743,9 @@ function creastePageList(el, data) {
 }
 
 async function createView(el, search) {
-  const paginationEl = document.querySelector('.mmm-pagination');
-  paginationEl?.classList.add('mmm-hide');
   const mmmElContainer = createTag('div', { class: 'mmm-container max-width-12-desktop' });
   const mmmEl = createTag('dl', {
-    class: 'mmm foreground',
+    class: `mmm foreground ${el.classList[1]}`,
     id: 'mmm',
     role: 'presentation',
   });
@@ -656,11 +754,10 @@ async function createView(el, search) {
   let url = '';
   let method = 'POST';
   let body = JSON.stringify(search ?? SEARCH_INITIAL_VALUES());
-
   switch (true) {
     case isReport: url = API_URLS.report; break;
     case isMetadataLookup: {
-      url = API_URLS.metadata.cc;
+      url = selectedRepo ? API_URLS.metadata[selectedRepo] : API_URLS.metadata.cc;
       method = 'GET';
       body = null;
       break;
@@ -673,6 +770,7 @@ async function createView(el, search) {
     body,
   }).then((res) => res.json())
     .catch((error) => {
+      // eslint-disable-next-line no-console
       console.error('Error fetching data:', error);
       return { result: [] };
     });
@@ -680,7 +778,8 @@ async function createView(el, search) {
   if (isReport) {
     createReport(mmmEl, response);
   } else if (isMetadataLookup) {
-    createMetadataLookup(mmmEl, response);
+    metadataLookupData = response?.data;
+    createMetadataLookup(mmmEl);
   } else {
     creastePageList(mmmEl, response);
   }
@@ -688,13 +787,14 @@ async function createView(el, search) {
   const main = document.querySelector('main');
   el.replaceWith(mmmElContainer);
   main.append(section);
-  createPaginationEl({
-    data: response,
-    el: mmmElContainer,
-  });
-  paginationEl?.classList.remove('mmm-hide');
-  handlePaginationClicks();
-  handlePaginationDropdownChange();
+  if (!isMetadataLookup) {
+    createPaginationEl({
+      data: response,
+      el: mmmElContainer,
+    });
+    handlePaginationClicks();
+    handlePaginationDropdownChange();
+  }
   if (isReport) createReportButton();
 }
 
@@ -725,6 +825,11 @@ function subscribeToSearchCriteriaChanges() {
       cachedSearchCriteria = searchCriteria;
     }
   });
+}
+
+function handleRepoChange(e) {
+  selectedRepo = e.target.value;
+  createView(document.querySelector('.mmm').parentNode);
 }
 
 export default async function init(el) {
