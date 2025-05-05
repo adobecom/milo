@@ -845,10 +845,12 @@ function handleRepoChange(e) {
 export default async function init(el) {
   isReport = el.classList.contains('target-cleanup');
   mmmPageVer = isReport ? GRID_FORMAT.report : GRID_FORMAT.base;
-  createSearchRows();
   isMetadataLookup = el.classList.contains('target-metadata-lookup');
   await createView(el);
-  if (!isMetadataLookup) createFiltersForm(el);
+  if (!isMetadataLookup) {
+    createFiltersForm(el);
+    createSearchRows();
+  }
   subscribeToSearchCriteriaChanges();
   loadStyle('/libs/features/personalization/preview.css');
 }
