@@ -12,7 +12,7 @@ import {
   getFedsPlaceholderConfig,
 } from '../../../utils/utils.js';
 import { processTrackingLabels } from '../../../martech/attributes.js';
-import { replaceText } from '../../../features/placeholders.js';
+import { replaceKey, replaceText } from '../../../features/placeholders.js';
 import { PERSONALIZATION_TAGS } from '../../../features/personalization/personalization.js';
 
 loadLana();
@@ -496,6 +496,20 @@ export const transformTemplateToMobile = async (popup, item, localnav = false) =
       const links = [...content.querySelectorAll('a.feds-navLink, .feds-cta--secondary')].map((x) => x.outerHTML).join('');
       return { name, links, daallTab, daalhTabContent };
     });
+
+  const promoSections = [...popup.querySelectorAll('.feds-menu-section')]
+    .filter((section) => section.querySelector('.feds-promo'));
+  const crossCloudMenus = [...popup.querySelectorAll('.feds-crossCloudMenu-wrapper')];
+
+  if (promoSections.length || crossCloudMenus.length) {
+    const links = [...promoSections, ...crossCloudMenus]
+      .map((section) => {
+        return [...section.querySelectorAll('.feds-promo-wrapper, .feds-crossCloudMenu a')].map((x) => x.outerHTML).join('');
+      })
+      .join('');
+    const placeholder = await replaceKey('more', getFedsPlaceholderConfig());
+    tabs.push({ name: placeholder, links, daallTab: placeholder, daalhTabContent: placeholder });
+  }
   const CTA = popup.querySelector('.feds-cta--primary')?.outerHTML ?? '';
   const mainMenu = `
       <button class="main-menu" daa-ll="Main menu_Gnav" aria-label='Main menu'>
@@ -562,7 +576,7 @@ export const transformTemplateToMobile = async (popup, item, localnav = false) =
   const tabpanels = popup.querySelectorAll('.tab-content [role="tabpanel"]');
 
   tabpanels.forEach((panel) => {
-    animateInSequence(panel.querySelectorAll('a'), 0.02);
+    animateInSequence([...panel.children], 0.02);
   });
 
   tabbuttons.forEach((tab, i) => {

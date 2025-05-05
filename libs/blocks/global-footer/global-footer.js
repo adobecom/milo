@@ -23,6 +23,9 @@ import {
   toFragment,
   federatePictureSources,
   isDarkMode,
+  isDesktop,
+  trigger,
+  setActiveDropdown,
 } from '../global-navigation/utilities/utilities.js';
 
 import { replaceKey } from '../../features/placeholders.js';
@@ -135,6 +138,7 @@ class Footer {
       const menuLogic = await loadDecorateMenu();
       this.decorateMenu = menuLogic.decorateMenu;
       this.decorateLinkGroup = menuLogic.decorateLinkGroup;
+      this.decorateHeadline = menuLogic.decorateHeadline;
       resolve();
     });
 
@@ -193,14 +197,18 @@ class Footer {
     ]);
 
     if (placeholder && placeholder.length) {
-      this.elements.featuredProducts
-        .append(toFragment`<span class="feds-featuredProducts-label" role="heading" aria-level="2">${placeholder}</span>`);
+      const headline = toFragment`<div class="feds-menu-headline">${placeholder}</div>`;
+      this.elements.featuredProducts.append(this.decorateHeadline(headline, 0));
     }
 
+    const featuredProductsList = toFragment`<ul></ul>`;
+    
     featuredProductsContent.querySelectorAll('.link-group').forEach((linkGroup) => {
-      this.elements.featuredProducts.append(this.decorateLinkGroup(linkGroup));
+      featuredProductsList.append(toFragment`<li>${this.decorateLinkGroup(linkGroup)}</li>`);
     });
-
+    const featuredProductsContainer = toFragment`<div class="feds-menu-items">${featuredProductsList}</div>`;
+    this.elements.featuredProducts.append(featuredProductsContainer);
+    
     return this.elements.featuredProducts;
   };
 
