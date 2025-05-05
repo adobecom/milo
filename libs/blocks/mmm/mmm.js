@@ -733,9 +733,9 @@ function createMetadataLookup(el) {
     filterResultObj.notFound = [];
     const reportText = `Date: ${getDate()}\nRepo: ${selectedRepo.toUpperCase()}\nRequested pages are grouped below by their Target setting.
       ${Object.keys(filterResultObj).map((key) => {
-      const urls = filterResultObj[key].map((item) => item.url || item);
-      return urls.length ? `\n\n${METADATA_URLS_CATEGORIES[key].display}:\n${urls.join('\n')}\n` : null;
-    }).join('')}`;
+    const urls = filterResultObj[key].map((item) => item.url || item);
+    return urls.length ? `\n\n${METADATA_URLS_CATEGORIES[key].display}:\n${urls.join('\n')}\n` : null;
+  }).join('')}`;
     // copy to clipboard
     navigator.clipboard.writeText(reportText).then(() => {
       const btn = document.querySelector('#mmm-copy-metadata-report');
