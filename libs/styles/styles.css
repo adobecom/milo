@@ -793,6 +793,10 @@ h1, h2, h3, h4, h5, h6 {
   scroll-margin-top: var(--feds-totalheight-nav);
 }
 
+h1, h2, h3, h4, h5, h6 strong {
+  font-weight: 700;
+}
+
 h1 {
   font-size: var(--type-heading-xl-size);
   line-height: var(--type-heading-xl-lh);
