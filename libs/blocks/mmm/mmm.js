@@ -619,8 +619,15 @@ function buildUrlPod(list, title) {
     </div>
     <button class="mmm-metadata-lookup__button" data-result=${JSON.stringify(list)}>Copy</button>
     `;
-  // TODO: add copy functionality for a JIRA report (with abs url)
   container.append(createTag('div', { class: 'mmm-metadata-url-pod-container' }, html));
+}
+
+function updatePageTargetStatus(url, target) {
+  return fetch(API_URLS.save, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ page: { url, target }, updateOnly: true }),
+  });
 }
 
 function handleMetadataFilterInput(event) {
@@ -645,11 +652,17 @@ function handleMetadataFilterInput(event) {
     } else {
       categories[METADATA_URLS_CATEGORIES.off.key].push(match);
     }
-  });// TODO : UPDATE existing pages `target` field with values from the list
+  });
   document.querySelector('.mmm-metadata-lookup__results').innerHTML = '';
 
   Object.keys(categories).forEach((key) => {
     buildUrlPod(categories[key], METADATA_URLS_CATEGORIES[key].display);
+    if (key !== 'notFound') {
+      categories[key].forEach((item) => {
+        item.target = key;
+        updatePageTargetStatus(item.url, key);
+      });
+    }
   });
 
   // handle 'copy to clipboard' pod buttons
@@ -677,30 +690,27 @@ function handleMetadataFilterInput(event) {
 }
 
 function createMetadataLookup(el) {
-  const REPO_DROPDOWNS = [
-    {
-      id: 'mmm-metadata-lookup-repo-cc',
-      label: 'Repos',
-      options: {
-        cc: 'CC',
-        dc: 'DC',
-        express: 'Express',
-        bacom: 'BACOM',
-      },
-
+  const dropdown = {
+    id: 'mmm-metadata-lookup-repo-cc',
+    label: 'Repos',
+    options: {
+      cc: 'CC',
+      dc: 'DC',
+      express: 'Express',
+      bacom: 'BACOM',
     },
-  ];
+
+  };
 
   const search = createTag('div', { class: 'mmm-metadata-lookup' }, `
     <div class="mmm-form-container">
-      ${REPO_DROPDOWNS.map((dropdown) => `
       <div>
         <label for="${dropdown.id}">${dropdown.label}:</label>
         <select id="${dropdown.id}" class="text-field-input">
           ${Object.keys(dropdown.options).map((key) => `
             <option value="${key}" ${selectedRepo === key ? 'selected' : ''}>${dropdown.options[key]}</option>
           `).join('')}
-        </select>`).join('')}
+        </select>
       </div>
       <div>
         <label for="mmm-metadata-lookup__filter">Insert URLs (absolute paths):</label>
@@ -735,8 +745,7 @@ function createMetadataLookup(el) {
   });
   // Handle Filter input
   const textarea = search.querySelector('textarea');
-  textarea.addEventListener('input', (event) => handleMetadataFilterInput(event));
-  textarea.addEventListener('keyup', (event) => handleMetadataFilterInput(event));
+  textarea.addEventListener('input', debounce((event) => handleMetadataFilterInput(event)));
 }
 
 function creastePageList(el, data) {

@@ -536,10 +536,10 @@ main > .section > .inline-wrapper > .share-mmm.inline {
   transition: all 0.3s ease;
   content: "✅";
   position: absolute;
-  top: 3px;
+  top: 7px;
   opacity: 0;
   bottom: 0;
-  right: -33px;
+  right: -35px;
   margin: auto;
 }
 
