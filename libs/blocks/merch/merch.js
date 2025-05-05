@@ -1,5 +1,5 @@
 import {
-  createTag, getConfig, loadArea, loadScript, loadStyle, localizeLink, SLD,
+  createTag, getConfig, loadArea, loadScript, loadStyle, localizeLink, SLD, getMetadata,
 } from '../../utils/utils.js';
 import { replaceKey } from '../../features/placeholders.js';
 
@@ -686,10 +686,12 @@ export async function getCheckoutContext(el, params) {
 export async function getPriceContext(el, params) {
   const context = await getCommerceContext(el, params);
   if (!context) return null;
+  const annualEnabled = getMetadata('mas-ff-annual-price');
   const displayOldPrice = context.promotionCode ? params.get('old') : undefined;
   const displayPerUnit = params.get('seat');
   const displayRecurrence = params.get('term');
   const displayTax = params.get('tax');
+  const displayAnnual = (annualEnabled && params.get('annual') !== 'false') || undefined;
   const forceTaxExclusive = params.get('exclusive');
   const alternativePrice = params.get('alt');
   // The PRICE_TEMPLATE_MAPPING supports legacy OST links
@@ -700,6 +702,7 @@ export async function getPriceContext(el, params) {
     displayPerUnit,
     displayRecurrence,
     displayTax,
+    displayAnnual,
     forceTaxExclusive,
     alternativePrice,
     template,
@@ -763,6 +766,32 @@ async function buildPrice(el, params) {
   const service = await initService();
   const price = service.createInlinePrice(context);
   return price;
+}
+
+export const MEP_SELECTOR = 'mas';
+
+export function overrideOptions(fragment, options) {
+  const { mep } = getConfig();
+  const fragments = mep?.inBlock?.[MEP_SELECTOR]?.fragments;
+  if (fragments) {
+    const command = fragments[fragment];
+    if (command && command.action === 'replace') {
+      return { ...options, fragment: command.content };
+    }
+  }
+  return options;
+}
+
+export function getOptions(el) {
+  const { hash } = new URL(el.href);
+  const hashValue = hash.startsWith('#') ? hash.substring(1) : hash;
+  const searchParams = new URLSearchParams(hashValue);
+  const options = {};
+  for (const [key, value] of searchParams.entries()) {
+    if (key === 'sidenav') options.sidenav = value === 'true';
+    else if (key === 'fragment' || key === 'query') options.fragment = value;
+  }
+  return options;
 }
 
 export default async function init(el) {

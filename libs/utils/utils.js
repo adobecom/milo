@@ -92,6 +92,7 @@ const MILO_BLOCKS = [
   'youtube',
   'z-pattern',
   'share',
+  'susi-light-login',
   'reading-time',
 ];
 const AUTO_BLOCKS = [
@@ -971,7 +972,7 @@ function decorateDefaults(el) {
 
 export async function getGnavSource() {
   const { locale, dynamicNavKey } = getConfig();
-  let url = getMetadata('gnav-source') || `${locale.contentRoot}/gnav`;
+  let url = getMetadata('gnav-source') || `${locale?.contentRoot ?? window.location.origin}/gnav`;
   if (dynamicNavKey) {
     const { default: dynamicNav } = await import('../features/dynamic-navigation/dynamic-navigation.js');
     url = dynamicNav(url, dynamicNavKey);
@@ -981,7 +982,7 @@ export async function getGnavSource() {
 
 export function isLocalNav() {
   const { locale = {} } = getConfig();
-  const gnavSource = getMetadata('gnav-source') || `${locale.contentRoot}/gnav`;
+  const gnavSource = getMetadata('gnav-source') || `${locale?.contentRoot ?? window.location.origin}/gnav`;
   let newNavEnabled = new URLSearchParams(window.location.search).get('newNav');
   newNavEnabled = newNavEnabled ? newNavEnabled !== 'false' : getMetadata('mobile-gnav-v2') !== 'off';
   return gnavSource.split('/').pop().startsWith('localnav-') && newNavEnabled;
@@ -1068,18 +1069,30 @@ const findReplaceableNodes = (area) => {
   return nodes;
 };
 
+function getPlaceholderPaths(config) {
+  const root = `${config.locale?.contentRoot}/placeholders`;
+  const paths = [`${root}.json`];
+  if (config.env.name !== 'prod'
+    && getMetadata('placeholders-stage') === 'on') paths.push(`${root}-stage.json`);
+  return paths;
+}
+
 let placeholderRequest;
 export async function decoratePlaceholders(area, config) {
   if (!area) return;
   const nodes = findReplaceableNodes(area);
   if (!nodes.length) return;
   area.dataset.hasPlaceholders = 'true';
-  const placeholderPath = `${config.locale?.contentRoot}/placeholders.json`;
-  placeholderRequest = placeholderRequest
-    || customFetch({ resource: placeholderPath, withCacheRules: true })
-      .catch(() => ({}));
+  const phPaths = getPlaceholderPaths(config);
+  placeholderRequest ||= Promise.all(
+    phPaths.map((path) => customFetch({ resource: path, withCacheRules: true })),
+  ).catch(() => ({}));
   const { decoratePlaceholderArea } = await import('../features/placeholders.js');
-  await decoratePlaceholderArea({ placeholderPath, placeholderRequest, nodes });
+  await decoratePlaceholderArea({
+    placeholderPath: phPaths[0],
+    placeholderRequest,
+    nodes,
+  });
 }
 
 async function loadFooter() {
@@ -1287,7 +1300,7 @@ export async function loadMartech({
  *
  * @returns {boolean} True if the user is signed out, otherwise false.
  */
-function isSignedOut() {
+export function isSignedOut() {
   const serverTiming = window.performance?.getEntriesByType('navigation')?.[0]?.serverTiming?.reduce(
     (acc, { name, description }) => ({ ...acc, [name]: description }),
     {},
