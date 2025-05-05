@@ -201,7 +201,7 @@ export function processDescription(fields, merchCard, mapping) {
 
 export function processAddon(fields, merchCard, mapping) {
     if (!mapping.addon) return;
-    const addonField = fields.addon;
+    let addonField = fields.addon?.replace(/[{}]/g, '');
     if (!addonField) return;
     if (/disabled/.test(addonField)) return;
     const addon = createTag('merch-addon', { slot: 'addon' }, addonField);
