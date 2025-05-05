@@ -97,7 +97,9 @@ export function Checkout({ providers, settings }) {
             quantity,
             ...rest
         } = collectCheckoutOptions(options);
-        const context = window.frameElement || Object.values(MODAL_TYPE_3_IN_1).includes(options.modal) ? 'if' : 'fp';
+        const masFF3in1 = document.querySelector('meta[name=mas-ff-3in1]');
+        const is3in1 = Object.values(MODAL_TYPE_3_IN_1).includes(options.modal) && (!masFF3in1 || masFF3in1.content !== 'off');
+        const context = window.frameElement || is3in1 ? 'if' : 'fp';
         const data = {
             checkoutPromoCode,
             clientId,
@@ -130,9 +132,10 @@ export function Checkout({ providers, settings }) {
         } else {
             /* c8 ignore next 7 */
             data.items.push(
-                ...offers.map(({ offerId }, index) => ({
+                ...offers.map(({ offerId, productArrangementCode, marketSegments, customerSegment }, index) => ({
                     id: offerId,
                     quantity: quantity[index] ?? Defaults.quantity,
+                    ...(is3in1 ? { productArrangementCode, marketSegment: marketSegments[0], customerSegment } : {}),
                 })),
             );
         }

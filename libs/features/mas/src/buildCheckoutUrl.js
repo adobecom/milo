@@ -126,23 +126,38 @@ export function setItemsParameter(items, parameters) {
  * @param marketSegment - market segment: 'EDU', 'COM'
  * @returns URL object
  */
-export function add3in1Parameters(url, modal, customerSegment, marketSegment) {
-  if (!Object.values(MODAL_TYPE_3_IN_1).includes(modal) || !url?.searchParams || !customerSegment || !marketSegment) return url;
+export function add3in1Parameters({ url, modal, customerSegment, cs, ms, marketSegment, quantity, productArrangementCode, addonProductArrangementCode }) {
+  const masFF3in1 = document.querySelector('meta[name=mas-ff-3in1]');
+  if (!Object.values(MODAL_TYPE_3_IN_1).includes(modal) || !url?.searchParams || !customerSegment || !marketSegment || masFF3in1?.content === 'off') return url;
   url.searchParams.set('rtc', 't');
   url.searchParams.set('lo', 'sl');
+  url.searchParams.set('af', 'uc_new_user_iframe,uc_new_system_close');
   if (url.searchParams.get('cli') !== 'doc_cloud') {
     url.searchParams.set('cli', modal === MODAL_TYPE_3_IN_1.CRM ? 'creative' : 'mini_plans');
   }
-  if (modal === MODAL_TYPE_3_IN_1.CRM) {
-    url.searchParams.set('af', 'uc_segmentation_hide_tabs,uc_new_user_iframe,uc_new_system_close');
-  } else if (modal === MODAL_TYPE_3_IN_1.TWP || modal === MODAL_TYPE_3_IN_1.D2P) {
-    url.searchParams.set('af', 'uc_new_user_iframe,uc_new_system_close');
+  if (modal === MODAL_TYPE_3_IN_1.TWP || modal === MODAL_TYPE_3_IN_1.D2P) {
     if (customerSegment === 'INDIVIDUAL' && marketSegment === 'EDU') {
       url.searchParams.set('ms', 'e');
     }
     if (customerSegment === 'TEAM' && marketSegment === 'COM') {
       url.searchParams.set('cs', 't');
     }
+  }
+  if (quantity) {
+    url.searchParams.set('q', quantity);
+  }
+  if (addonProductArrangementCode) {
+    url.searchParams.set('ao', addonProductArrangementCode);
+  }
+  if (productArrangementCode) {
+    url.searchParams.set('pa', productArrangementCode);
+  }
+  // cs and ms are params manually set by authors, they should take precedence over marketSegment and customerSegment
+  if (cs) {
+    url.searchParams.set('cs', cs);
+  }
+  if (ms) {
+    url.searchParams.set('ms', ms);
   }
   return url;
 }
@@ -152,7 +167,7 @@ export function add3in1Parameters(url, modal, customerSegment, marketSegment) {
  */
 export function buildCheckoutUrl(checkoutData) {
   validateCheckoutData(checkoutData);
-  const { env, items, workflowStep, ms, marketSegment, customerSegment, ot, offerType, pa, productArrangementCode, landscape, modal, ...rest } =
+  const { env, items, workflowStep, ms, cs, marketSegment, customerSegment, ot, offerType, pa, productArrangementCode, landscape, modal, ...rest } =
     checkoutData;
   const segmentationParameters = {
     marketSegment: marketSegment ?? ms,
@@ -171,7 +186,19 @@ export function buildCheckoutUrl(checkoutData) {
   if (landscape === Landscape.DRAFT) {
     addParameters({ af: AF_DRAFT_LANDSCAPE }, url.searchParams, ALLOWED_KEYS);
   }
-  url = add3in1Parameters(url, modal, customerSegment, marketSegment)
+  url = add3in1Parameters({
+    url,
+    modal,
+    customerSegment: customerSegment ?? items?.[0]?.customerSegment,
+    marketSegment: marketSegment ?? items?.[0]?.marketSegment,
+    cs,
+    ms,
+    quantity: items?.[0]?.quantity > 1 && items?.[0]?.quantity,
+    productArrangementCode: productArrangementCode ?? items?.[0]?.productArrangementCode,
+    addonProductArrangementCode: productArrangementCode 
+    ? items?.find((item) => item.productArrangementCode !== productArrangementCode)?.productArrangementCode 
+    : items?.[1]?.productArrangementCode,
+  });
   return url.toString();
 }
 

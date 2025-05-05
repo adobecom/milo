@@ -1,7 +1,7 @@
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
-import { setConfig } from '../../../libs/utils/utils.js';
+import { setConfig, createTag } from '../../../libs/utils/utils.js';
 
 document.body.innerHTML = await readFile({ path: './mocks/threeInOne.html' });
 
@@ -104,6 +104,87 @@ describe('Three-in-One Modal', () => {
       };
       handle3in1IFrameEvents({ data: JSON.stringify(message) });
       expect(closeEvent.calledOnce).to.be.true;
+    });
+
+    it('should handle EXTERNAL message and open window with external URL', () => {
+      const windowOpenSpy = sinon.spy(window, 'open');
+      const message = {
+        app: 'ucv3',
+        subType: MSG_SUBTYPE.EXTERNAL,
+        data: {
+          externalUrl: 'https://example.com',
+          target: '_blank',
+        },
+      };
+      handle3in1IFrameEvents({ data: JSON.stringify(message) });
+      expect(windowOpenSpy.calledWith('https://example.com', '_blank')).to.be.true;
+    });
+
+    it('should handle SWITCH message and open window with external URL', () => {
+      const windowOpenSpy = sinon.spy(window, 'open');
+      const message = {
+        app: 'ucv3',
+        subType: MSG_SUBTYPE.SWITCH,
+        data: {
+          externalUrl: 'https://example.com',
+          target: '_blank',
+        },
+      };
+      handle3in1IFrameEvents({ data: JSON.stringify(message) });
+      expect(windowOpenSpy.calledWith('https://example.com', '_blank')).to.be.true;
+    });
+
+    it('should handle RETURN_BACK message and open window with external URL', () => {
+      const windowOpenSpy = sinon.spy(window, 'open');
+      const message = {
+        app: 'ucv3',
+        subType: MSG_SUBTYPE.RETURN_BACK,
+        data: {
+          externalUrl: 'https://example.com',
+          target: '_blank',
+        },
+      };
+      handle3in1IFrameEvents({ data: JSON.stringify(message) });
+      expect(windowOpenSpy.calledWith('https://example.com', '_blank')).to.be.true;
+    });
+
+    it('should handle Close message with action URL', () => {
+      const windowOpenSpy = sinon.spy(window, 'open');
+      const message = {
+        app: 'ucv3',
+        subType: MSG_SUBTYPE.Close,
+        data: {
+          actionRequired: true,
+          actionUrl: 'https://example.com/action',
+        },
+      };
+      handle3in1IFrameEvents({ data: JSON.stringify(message) });
+      expect(windowOpenSpy.calledWith('https://example.com/action')).to.be.true;
+    });
+
+    it('should dispatch merch-modal:addon-and-quantity-update event on Close message with cart items', () => {
+      const modal = document.querySelector('.three-in-one');
+      modal.id = 'test-modal-id';
+      const link = createTag('a', { 'data-modal-id': 'test-modal-id' });
+      const merchCard = createTag('merch-card');
+      merchCard.appendChild(link);
+      document.body.appendChild(merchCard);
+
+      const eventSpy = sinon.spy();
+      merchCard.addEventListener('merch-modal:addon-and-quantity-update', eventSpy);
+
+      const message = {
+        app: 'ucv3',
+        subType: MSG_SUBTYPE.Close,
+        data: { state: { cart: { items: ['item1', 'item2'] } } },
+      };
+      handle3in1IFrameEvents({ data: JSON.stringify(message) });
+
+      expect(eventSpy.calledOnce).to.be.true;
+      expect(eventSpy.firstCall.args[0].detail).to.deep.equal({
+        id: 'test-modal-id',
+        items: ['item1', 'item2'],
+      });
     });
   });
 
