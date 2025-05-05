@@ -735,7 +735,7 @@ function createMetadataLookup(el) {
       ${Object.keys(filterResultObj).map((key) => {
       const urls = filterResultObj[key].map((item) => item.url || item);
       return urls.length ? `\n*${METADATA_URLS_CATEGORIES[key].display}*:\n\n${urls.join(',\n')}\n` : null;
-    }).join('')}`;
+}).join('')}`;
     // copy to clipboard
     navigator.clipboard.writeText(reportText).then(() => {
       const btn = document.querySelector('#mmm-copy-metadata-report');
