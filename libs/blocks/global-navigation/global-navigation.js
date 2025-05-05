@@ -1467,7 +1467,7 @@ export default async function init(block) {
     const error = new Error('Could not create global navigation. Content not found!');
     error.tags = 'gnav';
     error.url = url;
-    error.errorType = 'i';
+    error.errorType = 'e';
     lanaLog({ message: error.message, ...error });
     throw error;
   }
