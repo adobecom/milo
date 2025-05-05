@@ -397,6 +397,9 @@ const addAddons = (merchCard, styles) => {
     spans?.forEach(span => {
       const p = createTag('p', { 'data-plan-type': '' });
       const priceSpan = span.cloneNode(true);
+      if(addonDescriptions[0]){
+        addonDescriptions[0].style.display = 'block';
+      }
       p.appendChild(addonDescriptions[0].cloneNode(true));
       p.appendChild(priceSpan);
       if(addonDescriptions[1]){

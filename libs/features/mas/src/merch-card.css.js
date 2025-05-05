@@ -186,33 +186,6 @@ export const styles = css`
         border-color: var(--color-accent);
     }
 
-    #addons-checkbox-container {
-        display: flex;
-        flex-direction: row;
-        align-items: flex-start;
-        background: linear-gradient(211deg, #F5F6FD 33.52%, #F8F1F8 67.33%, #F9E9ED 110.37%);
-        border-radius: .5rem;
-        font-size: var(--consonant-merch-card-body-xs-font-size);
-        line-height: var(--consonant-merch-card-body-xs-line-height);
-        color: var(--merch-color-grey-80);
-        padding: 0;
-        margin: var(--consonant-merch-spacing-xs) var(--consonant-merch-spacing-s) .5rem;
-        gap: var(--consonant-merch-card-callout-spacing-xxs);
-    }
-    #addons-checkbox-container > label {
-        display: flex;
-        flex-direction: column;
-        padding: 8px 4px 8px 0;
-        cursor: pointer;
-        width: 100%;
-    }
-    #addons-checkbox-container > input[type="checkbox"] {
-        height: 18px;
-        width: 18px;
-        margin: 14px 12px 0 8px;
-        cursor: pointer;
-    }
-
     .secure-transaction-label {
         white-space: nowrap;
         display: inline-flex;
