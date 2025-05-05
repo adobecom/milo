@@ -67,12 +67,18 @@ export function processMnemonics(fields, merchCard, mnemonicsConfig) {
 }
 
 function processBadge(fields, merchCard, mapping) {
-    if (fields.variant === 'plans' || fields.variant === 'plans-students') {
+    if (fields.variant === 'plans' || fields.variant === 'plans-students' || fields.variant === 'fries') {
         // for back-compatibility
         if (fields.badge?.length && !fields.badge?.startsWith('<merch-badge')) {
-            fields.badge = `<merch-badge variant="${fields.variant}" background-color="${DEFAULT_PLANS_BADGE_COLOR}">${fields.badge}</merch-badge>`;
-            if (!fields.borderColor)
+            const defaultBgColor = fields.variant === 'fries' 
+                ? (fields.badgeBackgroundColor || DEFAULT_BADGE_BACKGROUND_COLOR)
+                : DEFAULT_PLANS_BADGE_COLOR;
+                
+            fields.badge = `<merch-badge variant="${fields.variant}" background-color="${fields.badgeBackgroundColor || defaultBgColor}" border-color="${fields.borderColor || ""}">${fields.badge}</merch-badge>`;
+            
+            if (!fields.borderColor && fields.variant !== 'fries') {
                 fields.borderColor = DEFAULT_PLANS_BADGE_COLOR;
+            }
         }
         appendSlot('badge', fields, merchCard, mapping);
         return;

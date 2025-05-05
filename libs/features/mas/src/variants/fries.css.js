@@ -1,51 +1,61 @@
-import { css } from 'lit';
-
-export const CSS = css`
-    :host {
-        --merch-card-fries-min-width: 620px;
-        --merch-card-fries-height: 220px;
-        --merch-card-fries-padding: 24px;
-        --merch-card-fries-content-min-width: 300px;
-        --merch-card-fries-header-min-height: 36px;
-        --merch-card-fries-text-color: var(--spectrum-neutral-content-color-default);
-        --merch-card-fries-price-line-height: 17px;
-        --merch-card-fries-outline: transparent;
-        --merch-card-custom-border-width: 1px;
-    }
-
-    :host([variant='fries']) {
+export const CSS = `
+    merch-card[variant='fries'] {
         background-color: var(
             --merch-card-custom-background-color,
             var(--consonant-merch-card-background-color)
         );
     }
 
-    :host([variant='fries']) ::slotted([slot='heading-xxxs']) {
-        font-size: var(--spectrum-heading-s-text-size);
-        font-weight: var(--spectrum-heading-s-text-font-weight);
-        line-height: var(--spectrum-heading-s-text-line-height);
-        margin: 0;
+    merch-card[variant='fries'] [slot="badge"] {
+        position: absolute;
+        top: 0;
+        right: 24px;
     }
 
-    :host([variant='fries']) ::slotted([slot='body-xxs']) {
-        font-size: var(--spectrum-body-s-text-size);
-        font-weight: var(--spectrum-body-s-text-font-weight);
-        line-height: var(--spectrum-body-s-text-line-height);
-        color: var(--spectrum-neutral-content-color-default);
-        margin: 0;
+    merch-card[variant='fries'] [slot="badge"] merch-badge {
+        border-radius: 0 0 5px 5px;
     }
 
-    :host([variant='fries']) ::slotted([slot='image']) {
-        width: 200px;
-        height: 100%;
-        object-fit: contain;
-        display: flex;
-        align-items: center;
-        justify-content: center;
+    merch-card[variant='fries'] [slot="body-s"] {
+        letter-spacing: normal;
     }
 
-    :host([variant='fries']) ::slotted([slot='cta']) {
-        display: flex;
-        gap: 8px;
+    merch-card[variant='fries'] [slot="body-s"] .mnemonic {
+        display: inline-flex;
+        width: 20px;
+        height: 20px;
+        padding-inline-end: 6px;
+        padding-top: 15px;
     }
-`; 
+
+    merch-card[variant='fries'] [slot="body-s"] .mnemonic-text {
+        color: var(--merch-color-grey-80);
+        font-size: var(--consonant-merch-card-body-xxs-font-size);
+        line-height: var(--consonant-merch-card-body-xxs-line-height);
+        font-weight: 400;
+        letter-spacing: normal;
+        display: inline-flex;
+        vertical-align: super;
+    }
+
+    merch-card[variant='fries'] [slot="price"] .price-currency-symbol {
+        font-size: var(--consonant-merch-card-body-xs-font-size);
+        line-height: var(--consonant-merch-card-body-xs-line-height);
+        font-weight: 400;
+        vertical-align: super;
+    }
+
+    merch-card[variant='fries'] [slot="price"] .price-integer,
+    merch-card[variant='fries'] [slot="price"] .price-decimals-delimiter,
+    merch-card[variant='fries'] [slot="price"] .price-decimals {
+        font-size: var(--consonant-merch-card-heading-m-font-size);
+        line-height: var(--consonant-merch-card-heading-m-line-height);
+        font-weight: 700;
+    }
+
+    merch-card[variant='fries'] [slot="price"] .price-recurrence {
+        font-size: var(--consonant-merch-card-body-xs-font-size);
+        line-height: var(--consonant-merch-card-body-xs-line-height);
+        font-weight: 400;
+    }
+`;
