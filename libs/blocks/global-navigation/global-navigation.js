@@ -1168,7 +1168,7 @@ class Gnav {
     if (!popup) return;
     const hasPromo = this.block.classList.contains('has-promo');
     const promoHeight = this.elements.aside?.clientHeight;
-    
+
     if (!this.isLocalNav()) {
       if (hasPromo) popup.style.top = `calc(0px - var(--feds-height-nav) - ${promoHeight}px)`;
       return;
@@ -1307,6 +1307,7 @@ class Gnav {
       template.addEventListener('click', decorateDropdown);
       decorationTimeout = setTimeout(decorateDropdown, CONFIG.delays.mainNavDropdowns);
     };
+
     // Decorate item based on its type
     switch (itemType) {
       case 'syncDropdownTrigger':
