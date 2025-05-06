@@ -73,11 +73,8 @@ function decorateContent(el) {
           href: actionLink.href,
           class: 'wrapper-anchor',
         });
-
         iconLink.replaceWith(...iconLink.childNodes);
-
-        lastElem.innerHTML = actionLink.innerHTML;
-
+        lastElem.replaceChildren(...actionLink.childNodes);
         iconP.parentNode.insertBefore(wrapper, iconP);
         wrapper.appendChild(iconP);
         wrapper.appendChild(lastElem);
