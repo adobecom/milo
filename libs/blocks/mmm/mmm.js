@@ -7,6 +7,7 @@ let cachedSearchCriteria = '';
 export const DEBOUNCE_TIME = 800;
 export const MMM_LOCAL_STORAGE_KEY = 'mmm_filter_settings';
 export const MMM_REPORT_LOCAL_STORAGE_KEY = 'mmm_report_filter_settings';
+export const MMM_METADATA_LOCAL_STORAGE_KEY = 'mmm_metadata_report_filter_settings';
 const SEARCH_CONTAINER = '.mmm-search-container';
 const LAST_SEEN_OPTIONS = {
   day: { value: 'Day', key: 'day' },
@@ -60,19 +61,24 @@ let isReport = false;
 let mmmPageVer = GRID_FORMAT.base;
 let isMetadataLookup = false;
 let metadataLookupData = null;
-let selectedRepo = 'cc';
+
+function getStorageKey() {
+  if (isReport) {
+    return MMM_REPORT_LOCAL_STORAGE_KEY;
+  }
+  if (isMetadataLookup) {
+    return MMM_METADATA_LOCAL_STORAGE_KEY;
+  }
+  return MMM_LOCAL_STORAGE_KEY;
+}
 
 export const getLocalStorageFilter = () => {
-  const cookie = localStorage.getItem(isReport
-    ? MMM_REPORT_LOCAL_STORAGE_KEY
-    : MMM_LOCAL_STORAGE_KEY);
+  const cookie = localStorage.getItem(getStorageKey());
   return cookie ? JSON.parse(cookie) : null;
 };
 
 const setLocalStorageFilter = (obj) => {
-  localStorage.setItem(isReport
-    ? MMM_REPORT_LOCAL_STORAGE_KEY
-    : MMM_LOCAL_STORAGE_KEY, JSON.stringify(obj));
+  localStorage.setItem(getStorageKey(), JSON.stringify(obj));
 };
 
 const SEARCH_INITIAL_VALUES = () => getLocalStorageFilter() ?? {
@@ -82,6 +88,8 @@ const SEARCH_INITIAL_VALUES = () => getLocalStorageFilter() ?? {
   perPage: 25,
   targetSetting: 'on, off, postLCP',
   manifestSrc: 'pzn, promo, target, ajo, placeholders',
+  selectedRepo: 'cc',
+  metadataFilter: '',
 };
 
 async function toggleDrawer(target, dd, pageId) {
@@ -631,16 +639,21 @@ function updatePageTargetStatus(url, target) {
 }
 
 function handleMetadataFilterInput(event) {
-  const { target } = event;
-  target.style.height = 'auto'; /* Reset height to auto to recalculate */
-  target.style.height = `${target.scrollHeight}px`;
+  setLocalStorageFilter({
+    selectedRepo: document.querySelector('#mmm-metadata-lookup-repo-cc').value,
+    metadataFilter: document.querySelector('#mmm-metadata-lookup__filter').value,
+  });
+  const { target, detail } = event;
+  const el = target ?? detail;
+  el.style.height = 'auto'; /* Reset height to auto to recalculate */
+  el.style.height = `${el.scrollHeight}px`;
   const categories = {
     [METADATA_URLS_CATEGORIES.notFound.key]: [],
     [METADATA_URLS_CATEGORIES.off.key]: [],
     [METADATA_URLS_CATEGORIES.on.key]: [],
     [METADATA_URLS_CATEGORIES.postLCP.key]: [],
   };
-  const urls = event.target.value?.split(/,|\n/)?.filter((item) => item.trim().length > 0) || [];
+  const urls = el.value?.split(/,|\n/)?.filter((item) => item.trim().length > 0) || [];
   urls.forEach((url) => {
     const path = url.split(/\.com|\.html/g)[1];
     const match = metadataLookupData.find((item) => item.URL === path);
@@ -692,7 +705,8 @@ function handleMetadataFilterInput(event) {
 function createMetadataLookup(el) {
   const dropdown = {
     id: 'mmm-metadata-lookup-repo-cc',
-    label: 'Repos',
+    label: 'Choose Repo',
+    selected: SEARCH_INITIAL_VALUES().selectedRepo,
     options: {
       cc: 'CC',
       dc: 'DC',
@@ -708,12 +722,12 @@ function createMetadataLookup(el) {
         <label for="${dropdown.id}">${dropdown.label}:</label>
         <select id="${dropdown.id}" class="text-field-input">
           ${Object.keys(dropdown.options).map((key) => `
-            <option value="${key}" ${selectedRepo === key ? 'selected' : ''}>${dropdown.options[key]}</option>
+            <option value="${key}" ${dropdown.selected === key ? 'selected' : ''}>${dropdown.options[key]}</option>
           `).join('')}
         </select>
       </div>
       <div>
-        <label for="mmm-metadata-lookup__filter">Insert URLs (absolute paths):</label>
+        <label for="mmm-metadata-lookup__filter">URL list (full URLs):</label>
         <textarea id="mmm-metadata-lookup__filter"></textarea>
       </div>
     </div>
@@ -731,11 +745,11 @@ function createMetadataLookup(el) {
     const filterResultObj = JSON.parse(filterResult);
     filterResultObj.off = filterResultObj.off.concat(filterResultObj.notFound);
     filterResultObj.notFound = [];
-    const reportText = `Date: ${getDate()}\nRepo: ${selectedRepo.toUpperCase()}\nRequested pages are grouped below by their Target setting.
+    const reportText = `Date: ${getDate()}\nRepo: ${SEARCH_INITIAL_VALUES().selectedRepo.toUpperCase()}\nRequested pages are grouped below by their Target setting.
       ${Object.keys(filterResultObj).map((key) => {
-    const urls = filterResultObj[key].map((item) => item.url || item);
-    return urls.length ? `\n\n${METADATA_URLS_CATEGORIES[key].display}:\n${urls.join('\n')}\n` : null;
-  }).join('')}`;
+      const urls = filterResultObj[key].map((item) => item.url || item);
+      return urls.length ? `\n\n${METADATA_URLS_CATEGORIES[key].display}:\n${urls.join('\n')}\n` : null;
+    }).join('')}`;
     // copy to clipboard
     navigator.clipboard.writeText(reportText).then(() => {
       const btn = document.querySelector('#mmm-copy-metadata-report');
@@ -746,6 +760,8 @@ function createMetadataLookup(el) {
   // Handle Filter input
   const textarea = search.querySelector('textarea');
   textarea.addEventListener('input', debounce((event) => handleMetadataFilterInput(event)));
+  textarea.innerHTML = SEARCH_INITIAL_VALUES().metadataFilter;
+  textarea.dispatchEvent(new CustomEvent('input', { detail: textarea }));
 }
 
 function creastePageList(el, data) {
@@ -767,7 +783,7 @@ async function createView(el, search) {
   switch (true) {
     case isReport: url = API_URLS.report; break;
     case isMetadataLookup: {
-      url = selectedRepo ? API_URLS.metadata[selectedRepo] : API_URLS.metadata.cc;
+      url = API_URLS.metadata[SEARCH_INITIAL_VALUES().selectedRepo];
       method = 'GET';
       body = null;
       break;
@@ -837,8 +853,11 @@ function subscribeToSearchCriteriaChanges() {
   });
 }
 
-function handleRepoChange(e) {
-  selectedRepo = e.target.value;
+function handleRepoChange() {
+  setLocalStorageFilter({
+    selectedRepo: document.querySelector('#mmm-metadata-lookup-repo-cc').value,
+    metadataFilter: document.querySelector('#mmm-metadata-lookup__filter').value,
+  });
   createView(document.querySelector('.mmm').parentNode);
 }
 
