@@ -163,4 +163,37 @@ describe('Tooltip', () => {
     expect(noTooltipIcon.classList.contains('milo-tooltip')).to.be.false;
     expect(noTooltipIcon.dataset.tooltip).to.be.undefined;
   });
+
+  it('should show and hide tooltip on hover, focus, and Escape key', async () => {
+    await loadIcons([iconTooltip], config);
+    const tooltip = document.querySelector('.milo-tooltip');
+    expect(tooltip).to.exist;
+
+    // Create events with tooltip as target for document to catch
+    const mouseenterEvent = new Event('mouseenter', { bubbles: true });
+    Object.defineProperty(mouseenterEvent, 'target', { value: tooltip });
+    document.dispatchEvent(mouseenterEvent);
+    expect(tooltip.classList.contains('hide-tooltip')).to.be.false;
+
+    const mouseleaveEvent = new Event('mouseleave', { bubbles: true });
+    Object.defineProperty(mouseleaveEvent, 'target', { value: tooltip });
+    document.dispatchEvent(mouseleaveEvent);
+    expect(tooltip.classList.contains('hide-tooltip')).to.be.true;
+
+    const focusEvent = new Event('focus', { bubbles: true });
+    Object.defineProperty(focusEvent, 'target', { value: tooltip });
+    document.dispatchEvent(focusEvent);
+    expect(tooltip.classList.contains('hide-tooltip')).to.be.false;
+
+    const blurEvent = new Event('blur', { bubbles: true });
+    Object.defineProperty(blurEvent, 'target', { value: tooltip });
+    document.dispatchEvent(blurEvent);
+    expect(tooltip.classList.contains('hide-tooltip')).to.be.true;
+
+    // For Escape key, we need to simulate a keydown event on document
+    const escapeEvent = new KeyboardEvent('keydown', { key: 'Escape', bubbles: true });
+    Object.defineProperty(escapeEvent, 'target', { value: tooltip });
+    document.dispatchEvent(escapeEvent);
+    expect(tooltip.classList.contains('hide-tooltip')).to.be.true;
+  });
 });

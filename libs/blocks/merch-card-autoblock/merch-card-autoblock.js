@@ -1,7 +1,7 @@
 import { createTag } from '../../utils/utils.js';
 import '../../deps/mas/merch-card.js';
 import '../../deps/mas/merch-quantity-select.js';
-import { initService, getMasPreview } from '../merch/merch.js';
+import { initService, getMasPreview, getOptions, overrideOptions } from '../merch/merch.js';
 
 const CARD_AUTOBLOCK_TIMEOUT = 5000;
 let log;
@@ -12,17 +12,6 @@ function getTimeoutPromise() {
   });
 }
 
-export function getOptions(el) {
-  const { hash } = new URL(el.href);
-  const hashValue = hash.startsWith('#') ? hash.substring(1) : hash;
-  const searchParams = new URLSearchParams(hashValue);
-  const options = {};
-  for (const [key, value] of searchParams.entries()) {
-    if (key === 'fragment' || key === 'query') options.fragment = value;
-  }
-  return options;
-}
-
 async function loadDependencies() {
   /** Load service first */
   const servicePromise = initService();
@@ -31,7 +20,7 @@ async function loadDependencies() {
     throw new Error('Failed to initialize mas commerce service');
   }
   const service = await servicePromise;
-  log = service.Log.module('merch');
+  log = service.Log.module('merch-card');
 }
 
 export async function checkReady(masElement) {
@@ -56,8 +45,10 @@ export async function createCard(el, options) {
 }
 
 export default async function init(el) {
-  const options = getOptions(el);
-  if (!options.fragment) return;
+  let options = getOptions(el);
+  const { fragment } = options;
+  if (!fragment) return;
+  options = overrideOptions(fragment, options);
   await loadDependencies();
   await createCard(el, options);
 }

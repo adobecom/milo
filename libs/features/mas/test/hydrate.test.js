@@ -474,6 +474,11 @@ describe('hydrate', () => {
 
     it('should hydrate a ccd-slice merch card', async () => {
         const fragment = {
+            settings: {
+                stockCheckboxLabel: '{{stock-checkbox-label}}',
+                stockOfferOsis: '',
+                secureLabel: '{{secure-label}}',
+            },
             fields: {
                 variant: 'ccd-slice',
                 mnemonicIcon: ['www.adobe.com/icons/photoshop.svg'],
