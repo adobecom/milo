@@ -314,7 +314,8 @@ const LOCALE_MAPPINGS = {
 };
 
 function getLanguageCode(locale) {
-  return locale ? LOCALE_MAPPINGS[locale] || LOCALE_MAPPINGS[''] : LOCALE_MAPPINGS[''];
+  const region = locale?.region || '';
+  return LOCALE_MAPPINGS[region] || LOCALE_MAPPINGS[''] || 'en-US';
 }
 
 function getUpdatedContext({
