@@ -856,7 +856,7 @@ function subscribeToSearchCriteriaChanges() {
 function handleRepoChange() {
   setLocalStorageFilter({
     selectedRepo: document.querySelector('#mmm-metadata-lookup-repo-cc').value,
-    metadataFilter: document.querySelector('#mmm-metadata-lookup__filter').value,
+    metadataFilter: '',
   });
   createView(document.querySelector('.mmm').parentNode);
 }
