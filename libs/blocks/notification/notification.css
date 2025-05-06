@@ -39,17 +39,23 @@
   color: var(--color-white);
 }
 
-.notification p {
+.notification:not(.ribbon.in-line) p {
   margin: 0;
   inline-size: 100%;
+  margin-block-end: 16px;
 }
 
-.notification [class*="heading-"] {
+.notification:not(.ribbon.in-line) [class*="heading-"] {
   margin-block-end: var(--spacing-xxs);
 }
 
 .notification [class*="heading-"] strong {
   font-weight: unset;
+}
+
+.notification.ribbon.in-line [class*="heading-"] strong {
+  font-size: var(--type-heading-s-size);
+  line-height: var(--type-heading-s-lh);
 }
 
 .notification .text p:not(.icon-area, .action-area) {
@@ -140,6 +146,12 @@
   align-items: center;
 }
 
+.notification.ribbon.in-line .action-area {
+  gap: var(--spacing-xs);
+  order: 2;
+  margin-left: auto;
+}
+
 .notification .background img {
   min-block-size: unset;
 }
@@ -159,7 +171,7 @@
   inline-size: 100%;
 }
 
-.notification.ribbon [class*="heading-"]:only-child {
+.notification.ribbon:not(.in-line) [class*="heading-"]:only-child {
   margin-block-end: var(--spacing-s);
 }
 
@@ -172,12 +184,24 @@
   inline-size: 100%;
 }
 
+.notification.ribbon.in-line .foreground .text {
+  flex-wrap: nowrap;
+  inline-size: 100%;
+  gap: var(--spacing-xxs);
+}
+
 .notification.ribbon.space-between .foreground .copy-wrap {
   margin-inline-end: var(--spacing-s);
   display: flex;
   flex-direction: column;
   justify-content: center;
   flex-basis: 100%;
+}
+
+.notification.ribbon.in-line .foreground .copy-wrap {
+  order: 1;
+  max-width: 152px;
+  margin: auto 0;
 }
 
 .notification .foreground .image {
@@ -207,6 +231,10 @@
 
 .notification.ribbon .icon-area img {
   max-block-size: var(--icon-size);
+}
+
+.notification.ribbon.in-line .icon-area img {
+  max-block-size: var(--icon-size-m);
 }
 
 .notification .icon-area.lockup-area img {
@@ -275,6 +303,14 @@
   margin-inline-end: var(--spacing-xs);
   margin-block-end: 0;
 }
+
+.notification.ribbon.in-line .foreground .icon-area {
+  margin: auto 0;
+  width: 40px;
+  order: 0;
+  height: 40px;
+}
+
 
 .notification .foreground .text a:not(.con-button) {
   inline-size: auto;
@@ -424,6 +460,12 @@
 @media screen and (max-width: 600px) {
   .mobile-disable-scroll {
     overflow: hidden;
+  }
+}
+
+@media screen and (max-width: 359px) {
+  .notification.ribbon.in-line .action-area {
+    flex-wrap: wrap;
   }
 }
 
