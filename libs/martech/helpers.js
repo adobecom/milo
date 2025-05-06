@@ -315,7 +315,7 @@ const LOCALE_MAPPINGS = {
 
 function getLanguageCode(locale) {
   const region = locale?.region || '';
-  return LOCALE_MAPPINGS[region] || LOCALE_MAPPINGS[''] || 'en-US';
+  return LOCALE_MAPPINGS[region] || LOCALE_MAPPINGS[''];
 }
 
 function getUpdatedContext({
