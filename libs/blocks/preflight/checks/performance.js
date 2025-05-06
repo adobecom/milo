@@ -74,7 +74,7 @@ export async function checkLcpEl(url, area, observeLcp) {
     status: validLcp ? STATUS.PASS : STATUS.FAIL,
     description: validLcp
       ? 'Valid LCP in the first section detected.'
-      : 'No LCP image or video in the first section detected.',
+      : 'No LCP image or video in the first section detected. Please check the page and make sure the first section is your marquee and all the fragments are working properly. If everything is good, ignore the error.',
   };
 }
 
