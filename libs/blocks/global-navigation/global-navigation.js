@@ -1373,7 +1373,7 @@ class Gnav {
         if (customLinksSection) {
           const removeLink = () => {
             const url = new URL(linkElem.href);
-            linkElem.setAttribute('href', `${url.origin}${url.pathname}${url.search}`);
+            // linkElem.setAttribute('href', `${url.origin}${url.pathname}${url.search}`);
             if (isActiveLink(linkElem)) {
               linkElem.removeAttribute('href');
             }
