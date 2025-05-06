@@ -23,9 +23,6 @@ import {
   toFragment,
   federatePictureSources,
   isDarkMode,
-  isDesktop,
-  trigger,
-  setActiveDropdown,
 } from '../global-navigation/utilities/utilities.js';
 
 import { replaceKey } from '../../features/placeholders.js';
@@ -202,13 +199,11 @@ class Footer {
     }
 
     const featuredProductsList = toFragment`<ul></ul>`;
-    
     featuredProductsContent.querySelectorAll('.link-group').forEach((linkGroup) => {
       featuredProductsList.append(toFragment`<li>${this.decorateLinkGroup(linkGroup)}</li>`);
     });
     const featuredProductsContainer = toFragment`<div class="feds-menu-items">${featuredProductsList}</div>`;
     this.elements.featuredProducts.append(featuredProductsContainer);
-    
     return this.elements.featuredProducts;
   };
 

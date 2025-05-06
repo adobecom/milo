@@ -161,6 +161,10 @@ content auhtored manually and AEM-imported content */
   text-decoration: underline;
 }
 
+.feds-promo-wrapper {
+  display: none;
+}
+
 @media (min-width: 900px) {
   .feds-menu-content {
     display: flex;
@@ -228,6 +232,7 @@ content auhtored manually and AEM-imported content */
   }
 
   .feds-promo-wrapper {
+    display: flex;
     width: 260px;
     padding: 0 32px;
     margin: 0;

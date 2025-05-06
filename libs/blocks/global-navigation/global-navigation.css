@@ -1085,6 +1085,10 @@ header.new-nav .feds-nav > section.feds-navItem > .feds-popup .tab-content a.fed
   font-weight: 700;
 }
 
+header.new-nav .feds-promo-wrapper {
+  display: flex;
+}
+
 header.new-nav .feds-nav > section.feds-navItem > .feds-popup .tab-content .feds-promo-wrapper {
   translate: 0 12px;
   opacity: 0;

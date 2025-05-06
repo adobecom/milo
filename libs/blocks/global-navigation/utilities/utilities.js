@@ -503,9 +503,7 @@ export const transformTemplateToMobile = async (popup, item, localnav = false) =
 
   if (promoSections.length || crossCloudMenus.length) {
     const links = [...promoSections, ...crossCloudMenus]
-      .map((section) => {
-        return [...section.querySelectorAll('.feds-promo-wrapper, .feds-crossCloudMenu a')].map((x) => x.outerHTML).join('');
-      })
+      .map((section) => [...section.querySelectorAll('.feds-promo-wrapper, .feds-crossCloudMenu a')].map((x) => x.outerHTML).join(''))
       .join('');
     const placeholder = await replaceKey('more', getFedsPlaceholderConfig());
     tabs.push({ name: placeholder, links, daallTab: placeholder, daalhTabContent: placeholder });
