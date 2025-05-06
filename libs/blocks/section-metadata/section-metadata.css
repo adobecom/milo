@@ -269,6 +269,9 @@ main > .section[class*='-up'] > .content {
     display: block;
   }
 
+  .section[class*='grid-width-'] > *:not(:first-child) {
+    margin-top: var(--spacing-m);
+  }
 }
 
 @media screen and (min-width: 600px) and (max-width: 1200px) {
