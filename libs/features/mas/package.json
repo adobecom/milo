@@ -7,7 +7,7 @@
     "scripts": {
         "lint": "eslint --fix",
         "build": "npm run test && npm run build:bundle",
-        "build:dev": "npm run test && npm run build:bundle:dev",
+        "build:dev": "npm run test && npm run build:bundle sourcemap no-minify",
         "build:docs": "cd ./docs/src && ./build-docs.sh",
         "build:bundle": "node ./build.mjs",
         "build:bundle:dev": "npm run build:bundle sourcemap",

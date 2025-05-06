@@ -68,7 +68,7 @@ export function processMnemonics(fields, merchCard, mnemonicsConfig) {
 }
 
 function processBadge(fields, merchCard, mapping) {
-    if (fields.variant === 'plans') {
+    if (fields.variant === 'plans' || fields.variant === 'plans-students') {
         // for back-compatibility
         if (fields.badge?.length && !fields.badge?.startsWith('<merch-badge')) {
             fields.badge = `<merch-badge variant="${fields.variant}" background-color="${DEFAULT_PLANS_BADGE_COLOR}">${fields.badge}</merch-badge>`;
@@ -196,11 +196,12 @@ export function processDescription(fields, merchCard, mapping) {
     appendSlot('description', fields, merchCard, mapping);
     appendSlot('callout', fields, merchCard, mapping);
     appendSlot('quantitySelect', fields, merchCard, mapping);
+    appendSlot('whatsIncluded', fields, merchCard, mapping);
 }
 
 export function processAddon(fields, merchCard, mapping) {
     if (!mapping.addon) return;
-    const addonField = fields.addon;
+    let addonField = fields.addon?.replace(/[{}]/g, '');
     if (!addonField) return;
     if (/disabled/.test(addonField)) return;
     const addon = createTag('merch-addon', { slot: 'addon' }, addonField);
@@ -500,6 +501,7 @@ export function cleanup(merchCard) {
         'badge-background-color',
         'badge-color',
         'badge-text',
+        'gradient-border',
         'size',
         ANALYTICS_SECTION_ATTR,
     ];
@@ -514,6 +516,7 @@ export async function hydrate(fragment, merchCard) {
     if (!variant) throw new Error(`hydrate: no variant found in payload ${id}`);
     cleanup(merchCard);
     merchCard.settings = settings;
+    merchCard.id ??= fragment.id;
     merchCard.variant = variant;
     await merchCard.updateComplete;
 

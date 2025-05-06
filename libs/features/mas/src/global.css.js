@@ -277,7 +277,7 @@ merch-card [slot='callout-content'] {
     gap: var(--consonant-merch-card-callout-spacing-xxs);
 }
 
-merch-card[variant='plans'] [slot='badge'] {
+merch-card[variant^='plans'] [slot='badge'] {
     position: absolute;
     top: 16px;
     right: 0;
