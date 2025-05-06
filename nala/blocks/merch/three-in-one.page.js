@@ -36,6 +36,14 @@ export default class ThreeInOne {
         el: page.locator('[data-wcs-osi="MOTPxRjjKKie1Rn-Shd7Y5_UYWZYaN6UCfjf29oNn7w"][data-modal="d2p"]'),
         href: 'https://commerce.adobe.com/store/segmentation?ms=e&ot=BASE&pa=PA-1176&cli=mini_plans&ctx=if&co=US&lang=en&rtc=t&lo=sl&af=uc_new_user_iframe%2Cuc_new_system_close',
       },
+      csParamOverride: {
+        el: page.locator('[data-wcs-osi="uNuSxc0Vg8l3Gm0W21Ge_TKAKfXKI_fnRHdwJu74l_I"]'),
+        href: 'https://commerce.adobe.com/store/segmentation?ms=COM&ot=BASE&pa=acrobat_pro_dc_plus_sign_funnel_individual&cli=creative&ctx=if&co=US&lang=en&rtc=t&lo=sl&af=uc_new_user_iframe%2Cuc_new_system_close&cs=myoverride',
+      },
+      msParamOverride: {
+        el: page.locator('[data-wcs-osi="1ZyMOJpSngx9IU5AjEDyp7oRBz843zNlbbtPKbIb1gM"]'),
+        href: 'https://commerce.adobe.com/store/segmentation?ms=myoverride&ot=BASE&pa=creative_cloud_all_apps_with_2tb_cloud_services_individual&cli=creative&ctx=if&co=US&lang=en&rtc=t&lo=sl&af=uc_new_user_iframe%2Cuc_new_system_close',
+      },
     };
     this.props = {};
   }

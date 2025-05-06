@@ -120,15 +120,21 @@ export function setItemsParameter(items, parameters) {
 
 /**
  * Adds 3-in-1 parameters to the URL.
- * @param url - URL object
- * @param modal - modal type: 'crm', 'twp', 'd2p'
- * @param customerSegment - customer segment: 'INDIVIDUAL', 'TEAM'
- * @param marketSegment - market segment: 'EDU', 'COM'
+ * @param {URL} url - The URL object to add parameters to
+ * @param {string} modal - The type of modal: 'crm', 'twp', or 'd2p'
+ * @param {Object} checkoutData - Object containing checkout parameters including:
+ *   @param {string} customerSegment - Customer segment value
+ *   @param {string} cs - Custom customer segment override
+ *   @param {string} ms - Custom market segment override  
+ *   @param {string} marketSegment - Market segment value
+ *   @param {string} quantity - Quantity value
+ *   @param {string} productArrangementCode - Product arrangement code
+ *   @param {string} addonProductArrangementCode - Addon product arrangement code
  * @returns URL object
  */
 export function add3in1Parameters({ url, modal, customerSegment, cs, ms, marketSegment, quantity, productArrangementCode, addonProductArrangementCode }) {
   const masFF3in1 = document.querySelector('meta[name=mas-ff-3in1]');
-  if (!Object.values(MODAL_TYPE_3_IN_1).includes(modal) || !url?.searchParams || !customerSegment || !marketSegment || masFF3in1?.content === 'off') return url;
+  if (!Object.values(MODAL_TYPE_3_IN_1).includes(modal) || !url?.searchParams || !customerSegment || !marketSegment || (masFF3in1 && masFF3in1.content === 'off')) return url;
   url.searchParams.set('rtc', 't');
   url.searchParams.set('lo', 'sl');
   url.searchParams.set('af', 'uc_new_user_iframe,uc_new_system_close');
@@ -143,22 +149,12 @@ export function add3in1Parameters({ url, modal, customerSegment, cs, ms, marketS
       url.searchParams.set('cs', 't');
     }
   }
-  if (quantity) {
-    url.searchParams.set('q', quantity);
-  }
-  if (addonProductArrangementCode) {
-    url.searchParams.set('ao', addonProductArrangementCode);
-  }
-  if (productArrangementCode) {
-    url.searchParams.set('pa', productArrangementCode);
-  }
+  if (quantity) url.searchParams.set('q', quantity);
+  if (addonProductArrangementCode) url.searchParams.set('ao', addonProductArrangementCode);
+  if (productArrangementCode) url.searchParams.set('pa', productArrangementCode);
   // cs and ms are params manually set by authors, they should take precedence over marketSegment and customerSegment
-  if (cs) {
-    url.searchParams.set('cs', cs);
-  }
-  if (ms) {
-    url.searchParams.set('ms', ms);
-  }
+  if (cs) url.searchParams.set('cs', cs);
+  if (ms) url.searchParams.set('ms', ms);
   return url;
 }
 
@@ -179,26 +175,26 @@ export function buildCheckoutUrl(checkoutData) {
   if (workflowStep !== CheckoutWorkflowStep.SEGMENTATION && workflowStep !== CheckoutWorkflowStep.CHANGE_PLAN_TEAM_PLANS) {
     setItemsParameter(items, url.searchParams);
   }
-  if (workflowStep === CheckoutWorkflowStep.SEGMENTATION) {
-    addParameters(segmentationParameters, url.searchParams, ALLOWED_KEYS);
-  }
   addParameters(rest, url.searchParams, ALLOWED_KEYS);
   if (landscape === Landscape.DRAFT) {
     addParameters({ af: AF_DRAFT_LANDSCAPE }, url.searchParams, ALLOWED_KEYS);
   }
-  url = add3in1Parameters({
-    url,
-    modal,
-    customerSegment: customerSegment ?? items?.[0]?.customerSegment,
-    marketSegment: marketSegment ?? items?.[0]?.marketSegment,
-    cs,
-    ms,
-    quantity: items?.[0]?.quantity > 1 && items?.[0]?.quantity,
-    productArrangementCode: productArrangementCode ?? items?.[0]?.productArrangementCode,
-    addonProductArrangementCode: productArrangementCode 
-    ? items?.find((item) => item.productArrangementCode !== productArrangementCode)?.productArrangementCode 
-    : items?.[1]?.productArrangementCode,
-  });
+  if (workflowStep === CheckoutWorkflowStep.SEGMENTATION) {
+    addParameters(segmentationParameters, url.searchParams, ALLOWED_KEYS);
+    url = add3in1Parameters({
+      url,
+      modal,
+      customerSegment: customerSegment ?? items?.[0]?.customerSegment,
+      marketSegment: marketSegment ?? items?.[0]?.marketSegment,
+      cs,
+      ms,
+      quantity: items?.[0]?.quantity > 1 && items?.[0]?.quantity,
+      productArrangementCode: productArrangementCode ?? items?.[0]?.productArrangementCode,
+      addonProductArrangementCode: productArrangementCode 
+      ? items?.find((item) => item.productArrangementCode !== productArrangementCode)?.productArrangementCode 
+      : items?.[1]?.productArrangementCode,
+    });
+  }
   return url.toString();
 }
 
