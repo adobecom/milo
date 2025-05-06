@@ -1307,7 +1307,8 @@ class Gnav {
       template.addEventListener('click', decorateDropdown);
       decorationTimeout = setTimeout(decorateDropdown, CONFIG.delays.mainNavDropdowns);
     };
-
+    console.log("test 123");
+    
     // Decorate item based on its type
     switch (itemType) {
       case 'syncDropdownTrigger':
@@ -1381,7 +1382,7 @@ class Gnav {
             return !this.customLinks.includes(linkHash);
           };
           [...customLinksSection.classList].splice(1).forEach((className) => {
-            customLinkModifier = ` feds-navItem--${className} test-test123`;
+            customLinkModifier = ` feds-navItem--${className}`;
           });
           removeCustomLink = removeLink();
         } else if (itemHasActiveLink) {
