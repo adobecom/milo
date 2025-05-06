@@ -75,13 +75,13 @@ const decorateLinkGroup = (elem, index) => {
       <div class="feds-navLink-title">${link.textContent}</div>
       ${descriptionElem}
     </div>` : '';
-  const linkGroup = toFragment`<a
+  const linkGroup = toFragment`<li><a
     href="${link.href}"
     class="feds-navLink${modifierClasses.length ? ` ${modifierClasses.join(' ')}` : ''}"
     daa-ll="${getAnalyticsValue(link.textContent, index)}">
       ${imageElem}
       ${contentElem}
-    </a>`;
+    </a></li>`;
   if (link?.target) linkGroup.target = link.target;
 
   return linkGroup;
@@ -273,14 +273,28 @@ const decorateColumns = async ({ content, separatorTagName = 'H5' } = {}) => {
 
         itemDestination.append(imageElem);
       } else {
-        const decoratedElem = decorateElements({ elem: columnElem, itemIndex });
+        let decoratedElem = decorateElements({ elem: columnElem, itemIndex });
         columnElem.remove();
 
         // If an items template has been previously created,
         // add the current element to it;
         // otherwise append the element to the section
         const elemDestination = menuItems || itemDestination;
-        elemDestination.append(decoratedElem);
+        let menuList = null;
+        if(decoratedElem.tagName === 'P'){
+          const li = toFragment`<li></li>`;
+          li.innerHTML = decoratedElem.innerHTML;
+          decoratedElem = li;
+        }
+        if (decoratedElem.tagName === 'LI') {
+          if (!elemDestination.querySelector('ul')) {
+            elemDestination.append(toFragment`<ul></ul>`);
+          }
+          menuList = elemDestination.querySelector('ul');
+        } else {
+          menuList = elemDestination;
+        }
+        menuList.append(decoratedElem);
       }
     }
 
