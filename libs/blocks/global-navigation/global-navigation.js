@@ -1168,6 +1168,7 @@ class Gnav {
     if (!popup) return;
     const hasPromo = this.block.classList.contains('has-promo');
     const promoHeight = this.elements.aside?.clientHeight;
+    
     if (!this.isLocalNav()) {
       if (hasPromo) popup.style.top = `calc(0px - var(--feds-height-nav) - ${promoHeight}px)`;
       return;
@@ -1316,7 +1317,7 @@ class Gnav {
           aria-haspopup="true"
           daa-ll="${getAnalyticsValue(item.textContent, index + 1)}"
           daa-lh="header|Open">
-          ${item.textContent.trim()}
+            ${item.textContent.trim()}
           </button>`;
 
         const isSectionMenu = item.closest('.section') instanceof HTMLElement;
@@ -1324,9 +1325,9 @@ class Gnav {
         const sectionModifier = isSectionMenu ? ' feds-navItem--section' : '';
         const sectionDaaLh = isSectionMenu ? ` daa-lh='${getAnalyticsValue(item.textContent)}'` : '';
         const triggerTemplate = toFragment`
-        <${tag} role="listitem" class="feds-navItem${sectionModifier}${activeModifier}" ${sectionDaaLh}>
-          ${dropdownTrigger}
-        </${tag}>`;
+          <${tag} role="listitem" class="feds-navItem${sectionModifier}${activeModifier}" ${sectionDaaLh}>
+            ${dropdownTrigger}
+          </${tag}>`;
 
         // Toggle trigger's dropdown on click
         dropdownTrigger.addEventListener('click', (e) => {
