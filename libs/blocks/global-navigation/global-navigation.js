@@ -1307,8 +1307,7 @@ class Gnav {
       template.addEventListener('click', decorateDropdown);
       decorationTimeout = setTimeout(decorateDropdown, CONFIG.delays.mainNavDropdowns);
     };
-    debugger;
-    
+
     // Decorate item based on its type
     switch (itemType) {
       case 'syncDropdownTrigger':
