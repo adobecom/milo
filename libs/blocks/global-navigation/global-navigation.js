@@ -1168,7 +1168,7 @@ class Gnav {
     if (!popup) return;
     const hasPromo = this.block.classList.contains('has-promo');
     const promoHeight = this.elements.aside?.clientHeight;
-
+    
     if (!this.isLocalNav()) {
       if (hasPromo) popup.style.top = `calc(0px - var(--feds-height-nav) - ${promoHeight}px)`;
       return;
@@ -1307,38 +1307,53 @@ class Gnav {
       template.addEventListener('click', decorateDropdown);
       decorationTimeout = setTimeout(decorateDropdown, CONFIG.delays.mainNavDropdowns);
     };
-
+    
     // Decorate item based on its type
     switch (itemType) {
       case 'syncDropdownTrigger':
-      case 'asyncDropdownTrigger': {
-        const dropdownTrigger = toFragment`<button
+        case 'asyncDropdownTrigger': {
+          const dropdownTrigger = toFragment`<button
           class="feds-navLink feds-navLink--hoverCaret"
           aria-expanded="false"
           aria-haspopup="true"
           daa-ll="${getAnalyticsValue(item.textContent, index + 1)}"
           daa-lh="header|Open">
-            ${item.textContent.trim()}
+          ${item.textContent.trim()}
           </button>`;
-
-        const isSectionMenu = item.closest('.section') instanceof HTMLElement;
-        const tag = isSectionMenu ? 'section' : 'div';
-        const sectionModifier = isSectionMenu ? ' feds-navItem--section' : '';
-        const sectionDaaLh = isSectionMenu ? ` daa-lh='${getAnalyticsValue(item.textContent)}'` : '';
-        const triggerTemplate = toFragment`
+          
+          const isSectionMenu = item.closest('.section') instanceof HTMLElement;
+          const tag = isSectionMenu ? 'section' : 'div';
+          const sectionModifier = isSectionMenu ? ' feds-navItem--section' : '';
+          const sectionDaaLh = isSectionMenu ? ` daa-lh='${getAnalyticsValue(item.textContent)}'` : '';
+          const triggerTemplate = toFragment`
           <${tag} role="listitem" class="feds-navItem${sectionModifier}${activeModifier}" ${sectionDaaLh}>
-            ${dropdownTrigger}
+          ${dropdownTrigger}
           </${tag}>`;
 
         // Toggle trigger's dropdown on click
         dropdownTrigger.addEventListener('click', (e) => {
-          if (!isDesktop.matches && this.newMobileNav && isSectionMenu) {
-            const popup = dropdownTrigger.nextElementSibling;
-            // document.body.style.top should always be set
-            // at this point by calling disableMobileScroll
-            if (popup) {
-              this.updatePopupPosition(popup);
+          const navlinkHeaders = dropdownTrigger.nextElementSibling.querySelectorAll('.feds-navLink--header');
+          navlinkHeaders.forEach((navlinkHeader) => {
+            if (navlinkHeader !== dropdownTrigger) {
+              navlinkHeader.setAttribute('tabindex', -1);
+              // navlinkHeader.setAttribute('role', 'heading');
+              // navlinkHeader.removeAttribute('href');
+              // const newElement = document.createElement("div");
+              // newElement.innerHTML = navlinkHeader.innerHTML;
+              // newElement.className = navlinkHeader.className;
+              // newElement.id = navlinkHeader.id;
+              // navlinkHeader.parentNode.replaceChild(newElement, navlinkHeader);
+              // navlinkHeader.setAttribute('tabindex', -1);
             }
+          });
+
+            if (!isDesktop.matches && this.newMobileNav && isSectionMenu) {
+              const popup = dropdownTrigger.nextElementSibling;
+              // document.body.style.top should always be set
+              // at this point by calling disableMobileScroll
+              if (popup) {
+                this.updatePopupPosition(popup);
+              }
             makeTabActive(popup);
           } else if (isDesktop.matches && this.newMobileNav && isSectionMenu) {
             const popup = dropdownTrigger.nextElementSibling;

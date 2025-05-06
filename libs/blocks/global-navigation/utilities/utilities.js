@@ -30,7 +30,7 @@ const selectorMap = {
 export const selectors = {
   globalNav: '.global-navigation',
   curtain: '.feds-curtain',
-  navLink: '.feds-navLink',
+  navLink: '.feds-navLink:not(.feds-navLink--header)',
   overflowingTopNav: '.feds-topnav--overflowing',
   navItem: '.feds-navItem',
   activeNavItem: '.feds-navItem--active',
