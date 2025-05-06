@@ -69,6 +69,21 @@ export default class MerchAddon extends LitElement {
             cursor: pointer;
         }
 
+        :host-context(merch-card[variant="product"]) label,
+        :host-context(merch-card[variant="mini-compare-chart"]) label {
+            display: flex;
+            flex-direction: column;
+            padding: 8px 4px 8px 0;
+            width: 100%;
+        }
+
+        :host input[type="checkbox"] {
+            height: 18px;
+            width: 18px;
+            margin: 14px 12px 0 8px;
+        }
+
+
         ::slotted(p[data-plan-type]) {
             display: none;
         }

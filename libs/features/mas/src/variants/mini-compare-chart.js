@@ -1,5 +1,5 @@
 import { html, css, unsafeCSS } from 'lit';
-import { isMobile } from '../utils.js';
+import { isMobile, createTag } from '../utils.js';
 import { VariantLayout } from './variant-layout.js';
 import { CSS } from './mini-compare-chart.css.js';
 import { DESKTOP_UP, TABLET_DOWN } from '../media.js';
@@ -123,14 +123,53 @@ export class MiniCompareChart extends VariantLayout {
     return price;
 }
 
-  async adjustAddon() {
+get headingMPriceSlot() {
+    return this.card.shadowRoot
+        .querySelector('slot[name="heading-m-price"]')
+        ?.assignedElements()[0];
+}
+
+toggleAddon(merchAddon) {
+    const mainPrice = this.mainPrice;
+    const headingMPriceSlot = this.headingMPriceSlot;
+        if (!mainPrice && headingMPriceSlot) {
+            const planType = merchAddon?.getAttribute('plan-type');
+            let visibleSpan = null;
+            if (merchAddon && planType) {
+                const matchingP = merchAddon.querySelector(`p[data-plan-type="${planType}"]`);
+                visibleSpan = matchingP?.querySelector('span[is="inline-price"]');
+            }
+            this.card.querySelectorAll('p[slot="heading-m-price"]').forEach(p => p.remove());
+            if (merchAddon.checked) {
+                if (visibleSpan) {
+                    const replacementP = createTag(
+                        'p',
+                        { class: 'addon-heading-m-price-addon', slot: 'heading-m-price' },
+                        visibleSpan.innerHTML
+                    );
+                    this.card.appendChild(replacementP);
+                }
+            } else {
+                const freeP = createTag(
+                    'p',
+                    { class: 'card-heading', id: 'free', slot: 'heading-m-price' },
+                    'Free'
+                );
+                this.card.appendChild(freeP);
+            }
+     }
+}
+
+async adjustAddon() {
     await this.card.updateComplete;
     const addon = this.card.addon;
     if (!addon) return;
     const price = this.mainPrice;
-    if (!price) return;
-    await price.onceSettled();
-    const planType = price.value?.[0]?.planType;
+    let planType = this.card.planType;
+    if (price) {
+        await price.onceSettled();
+        planType = price.value?.[0]?.planType;
+    }
     if (!planType) return;
     addon.planType = planType;
 }

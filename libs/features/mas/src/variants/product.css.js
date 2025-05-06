@@ -4,15 +4,21 @@ export const CSS = `
   --consonant-merch-card-product-width: 300px;
 }
 
-merch-card[variant="product"] merch-addon {
+  merch-card[variant="product"] merch-addon {
     padding-left: 4px;
     padding-top: 8px;
     padding-bottom: 8px;
     padding-right: 8px;
-    font-family: "Adobe Clean";
-    font-size: 14px;
-    line-height: normal;
-}
+    border-radius: .5rem;
+    font-family: var(--merch-body-font-family, 'Adobe Clean');
+    font-size: var(--consonant-merch-card-body-xs-font-size);
+    line-height: var(--consonant-merch-card-body-xs-line-height);
+  }
+
+  merch-card[variant="product"] merch-addon [is="inline-price"] {
+    font-weight: bold;
+    pointer-events: none;
+  }
 
 /* grid style for product */
 .one-merch-card.product,

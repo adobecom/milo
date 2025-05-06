@@ -298,6 +298,7 @@ export class MerchCard extends LitElement {
 
     toggleAddon(merchAddon) {
         const elements = this.checkoutLinks;
+        this.variantLayout?.toggleAddon(merchAddon);
         if (elements.length === 0) return;
         for (const element of elements) {
             const planType = element.value?.[0]?.planType;

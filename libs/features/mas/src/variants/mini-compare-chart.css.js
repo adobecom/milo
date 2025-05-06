@@ -16,13 +16,17 @@ export const CSS = `
     padding-top: 8px;
     padding-bottom: 8px;
     padding-right: 8px;
-    font-family: "Adobe Clean";
-    font-size: 14px;
-    line-height: normal;
-}
-    merch-card[variant="mini-compare-chart"] merch-addon [is="inline-price"] {
+    border-radius: .5rem;
+    font-family: var(--merch-body-font-family, 'Adobe Clean');
+    margin: var(--consonant-merch-spacing-xs) var(--consonant-merch-spacing-s) .5rem;
+    font-size: var(--consonant-merch-card-body-xs-font-size);
+    line-height: var(--consonant-merch-card-body-xs-line-height);
+  }
+
+  merch-card[variant="mini-compare-chart"] merch-addon [is="inline-price"] {
     font-weight: bold;
-}
+    pointer-events: none;
+  }
 
   merch-card[variant="mini-compare-chart"].bullet-list [slot="heading-m"] {
     padding: var(--consonant-merch-spacing-xxs) var(--consonant-merch-spacing-xs);

@@ -368,7 +368,7 @@ const addStock = (merchCard, styles) => {
 };
 
 
-const addAddons = (merchCard, styles) => {
+const addAddon = (merchCard, styles) => {
   if (styles.includes('add-addon') && (merchCard.variant === MINI_COMPARE_CHART || merchCard.variant === PRODUCT)) {
     let selector;
     if (styles.includes('edu')) {
@@ -378,6 +378,18 @@ const addAddons = (merchCard, styles) => {
     } else {
         selector = '.merch-offers:not(.edu):not(.team)';
     }
+    let planType = '';
+    if (styles.includes('m2m')) {
+    planType = 'M2M';
+    } else if (styles.includes('abm')) {
+    planType = 'ABM';
+    } else if (styles.includes('puf')) {
+    planType = 'PUF';
+    }
+
+if (planType) {
+    merchCard.setAttribute('plan-type', planType);
+}
     const merchOffers = document.querySelector(selector);
     const addonLabel = merchOffers?.querySelector('p');
     const addonLabelCopy = addonLabel?.cloneNode(true);
@@ -745,7 +757,7 @@ export default async function init(el) {
   }
 
   addStock(merchCard, styles);
-  addAddons(merchCard, styles);
+  addAddon(merchCard, styles);
   if (styles.includes('secure')) {
     const { replaceKey } = await import('../../features/placeholders.js');
     await replaceKey('secure-transaction', getConfig()).then((key) => merchCard.setAttribute('secure-label', key));
