@@ -407,7 +407,7 @@ if (planType) {
     addon.appendChild(addonLabelCopy);
     const spans = merchOffers?.querySelectorAll('span[data-wcs-osi]');
     spans?.forEach(span => {
-      const p = createTag('p', { 'data-plan-type': '' });
+      const p = createTag('p');
       const priceSpan = span.cloneNode(true);
       if(addonDescriptions[0]){
         addonDescriptions[0].style.display = 'block';
