@@ -14,7 +14,7 @@ export default class ThreeInOne {
       },
       allAppsCrmSegmentation: {
         el: page.locator('[data-wcs-osi="r_JXAnlFI7xD6FxWKl2ODvZriLYBoSL701Kd1hRyhe8"][data-checkout-workflow-step="segmentation"]'),
-        href: 'https://commerce.adobe.com/store/segmentation?ms=COM&ot=BASE&pa=ccsn_direct_individual&cli=creative&ctx=if&co=US&lang=en&rtc=t&lo=sl&af=uc_segmentation_hide_tabs%2Cuc_new_user_iframe%2Cuc_new_system_close',
+        href: 'https://commerce.adobe.com/store/segmentation?ms=COM&ot=BASE&pa=ccsn_direct_individual&cli=creative&ctx=if&co=US&lang=en&rtc=t&lo=sl&af=uc_new_user_iframe%2Cuc_new_system_close',
       },
       illustratorAndAcrobatProTwpCommitment: {
         el: page.locator('[data-wcs-osi="ByqyQ6QmyXhzAOnjIcfHcoF1l6nfkeLgbzWz-aeM8GQ"][data-checkout-workflow-step="commitment"]'),
@@ -26,7 +26,7 @@ export default class ThreeInOne {
       },
       allAppsCrmCommitment: {
         el: page.locator('[data-wcs-osi="r_JXAnlFI7xD6FxWKl2ODvZriLYBoSL701Kd1hRyhe8"][data-checkout-workflow-step="commitment"]'),
-        href: 'https://commerce.adobe.com/store/commitment?items%5B0%5D%5Bid%5D=632B3ADD940A7FBB7864AA5AD19B8D28&cli=creative&ctx=if&co=US&lang=en&rtc=t&lo=sl&af=uc_segmentation_hide_tabs%2Cuc_new_user_iframe%2Cuc_new_system_close',
+        href: 'https://commerce.adobe.com/store/commitment?items%5B0%5D%5Bid%5D=632B3ADD940A7FBB7864AA5AD19B8D28&cli=creative&ctx=if&co=US&lang=en&rtc=t&lo=sl&af=uc_new_user_iframe%2Cuc_new_system_close',
       },
       allAppsTrue: {
         el: page.locator('[data-wcs-osi="Mutn1LYoGojkrcMdCLO7LQlx1FyTHw27ETsfLv0h8DQ"][is="checkout-link"]'),
@@ -47,6 +47,14 @@ export default class ThreeInOne {
       msParam: {
         el: page.locator('[data-wcs-osi="MOTPxRjjKKie1Rn-Shd7Y5_UYWZYaN6UCfjf29oNn7w"][data-modal="d2p"]'),
         href: 'https://commerce.adobe.com/store/segmentation?ms=e&ot=BASE&pa=PA-1176&cli=mini_plans&ctx=if&co=US&lang=en&rtc=t&lo=sl&af=uc_new_user_iframe%2Cuc_new_system_close',
+      },
+      csParamOverride: {
+        el: page.locator('[data-wcs-osi="uNuSxc0Vg8l3Gm0W21Ge_TKAKfXKI_fnRHdwJu74l_I"]'),
+        href: 'https://commerce.adobe.com/store/segmentation?ms=COM&ot=BASE&pa=acrobat_pro_dc_plus_sign_funnel_individual&cli=creative&ctx=if&co=US&lang=en&rtc=t&lo=sl&af=uc_new_user_iframe%2Cuc_new_system_close&cs=myoverride',
+      },
+      msParamOverride: {
+        el: page.locator('[data-wcs-osi="1ZyMOJpSngx9IU5AjEDyp7oRBz843zNlbbtPKbIb1gM"]'),
+        href: 'https://commerce.adobe.com/store/segmentation?ms=myoverride&ot=BASE&pa=creative_cloud_all_apps_with_2tb_cloud_services_individual&cli=creative&ctx=if&co=US&lang=en&rtc=t&lo=sl&af=uc_new_user_iframe%2Cuc_new_system_close',
       },
     };
     this.props = {};
