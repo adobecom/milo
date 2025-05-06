@@ -38,4 +38,10 @@ describe('Image Link', () => {
     await new Promise((resolve) => { setTimeout(resolve, 500); });
     expect(p.querySelector('.modal-img-link')).to.exist;
   });
+
+  it('Creates an image link with parameters', () => {
+    const p = document.querySelector('#link-with-params');
+    const url = new URL(p.querySelector('a').href);
+    expect(url.search).to.equal('?form=off');
+  });
 });

@@ -40,10 +40,10 @@ const iconBlocks = {
 };
 
 // checking if block is part of xx-up and is inline variant
-function upAndInline(el) {
-  const isInlineAndSectionMetadata = el.classList.contains('inline') && el.parentElement?.querySelector('.section-metadata');
-  if (!isInlineAndSectionMetadata) return false;
-  return /(two|three|four|five)[- ]?up/i.test(el.parentElement.className);
+export function upAndInline(el) {
+  const sectionMetadata = el.parentElement?.querySelector('.section-metadata');
+  if (!el.classList.contains('inline') || !sectionMetadata) return false;
+  return /(two|three|four)[- ]?up/i.test(sectionMetadata.innerText);
 }
 
 function decorateContent(el) {

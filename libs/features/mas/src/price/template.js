@@ -362,14 +362,12 @@ const createPromoPriceTemplate = () => (context, value, attributes) => {
         displayOldPrice &&
         value.priceWithoutDiscount &&
         value.priceWithoutDiscount != value.price;
-    return `${createPriceTemplate({ isAlternativePrice: shouldDisplayOldPrice })(context, value, attributes)}${
-        shouldDisplayOldPrice
-            ? '&nbsp;' +
-              createPriceTemplate({
-                  displayStrikethrough: true,
-              })(context, value, attributes)
-            : ''
-    }`;
+    return `${shouldDisplayOldPrice
+        ? createPriceTemplate({
+          displayStrikethrough: true,
+        })(context, value, attributes) + '&nbsp;'
+        : ''
+    }${createPriceTemplate({ isAlternativePrice: shouldDisplayOldPrice })(context, value, attributes)}`;
 };
 
 const createPromoPriceWithAnnualTemplate =
