@@ -1373,7 +1373,7 @@ class Gnav {
         if (customLinksSection) {
           const removeLink = () => {
             const url = new URL(linkElem.href);
-            // linkElem.setAttribute('href', `${url.origin}${url.pathname}${url.search}`);
+            linkElem.setAttribute('href', `${url.origin}${url.pathname}${url.search}`);
             if (isActiveLink(linkElem)) {
               linkElem.removeAttribute('href');
             }
@@ -1381,7 +1381,7 @@ class Gnav {
             return !this.customLinks.includes(linkHash);
           };
           [...customLinksSection.classList].splice(1).forEach((className) => {
-            customLinkModifier = ` feds-navItem--${className}`;
+            customLinkModifier = ` feds-navItem--${className} test-test123`;
           });
           removeCustomLink = removeLink();
         } else if (itemHasActiveLink) {
