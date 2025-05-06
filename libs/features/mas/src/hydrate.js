@@ -106,6 +106,15 @@ function processBadge(fields, merchCard, mapping) {
     }
 }
 
+export function processTrialBadge(fields, merchCard, mapping) {
+    if (fields.variant === 'fries' && fields.trialBadge) {
+        if (!fields.trialBadge.startsWith('<merch-badge')) {
+            fields.trialBadge = `<merch-badge variant="trial">${fields.trialBadge}</merch-badge>`;
+        }
+        appendSlot('trialBadge', fields, merchCard, mapping);
+    }
+}
+
 export function processSize(fields, merchCard, sizeConfig) {
     if (sizeConfig?.includes(fields.size)) {
         merchCard.setAttribute('size', fields.size);
@@ -504,6 +513,7 @@ export async function hydrate(fragment, merchCard) {
     }
     processMnemonics(fields, merchCard, aemFragmentMapping.mnemonics);
     processBadge(fields, merchCard, aemFragmentMapping);
+    processTrialBadge(fields, merchCard, aemFragmentMapping);
     processSize(fields, merchCard, aemFragmentMapping.size);
     processTitle(fields, merchCard, aemFragmentMapping.title);
     processSubtitle(fields, merchCard, aemFragmentMapping);
