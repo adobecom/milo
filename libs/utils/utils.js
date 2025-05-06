@@ -465,8 +465,8 @@ function isLocalizedPath(path, locales) {
   const isMerchLink = path === '/tools/ost';
   const previewPath = path.startsWith(`/${PREVIEW}`);
   const anyTypeOfLocaleOrLanguagePath = localeToLanguageMap
-    && (localeToLanguageMap.some((l) => l.locale !== '' && (path.startsWith(`/${l.locale.trim()}/`) || path === `/${l.locale.trim()}`))
-      || (localeToLanguageMap.some((l) => path.startsWith(`/${l.langaugePath.trim()}/`) || path === `/${l.langaugePath.trim()}`)));
+    && (localeToLanguageMap.some((l) => l.locale !== '' && (path.startsWith(`/${l.locale}/`) || path === `/${l.locale}`))
+      || (localeToLanguageMap.some((l) => path.startsWith(`/${l.languagePath}/`) || path === `/${l.languagePath}`)));
   const legacyLocalePath = locales && Object.keys(locales).some((loc) => loc !== '' && (path.startsWith(`/${loc}/`)
     || path.endsWith(`/${loc}`)));
   return langstorePath
