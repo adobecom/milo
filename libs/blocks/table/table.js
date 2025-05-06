@@ -599,7 +599,7 @@ function applyStylesBasedOnScreenSize(table, originTable) {
 }
 
 function handleStickyHeader(el) {
-  if (!Array.from(el.classList).some((className) => className.includes('sticky'))) return;
+  if (!el.classList.value.includes('sticky')) return;
 
   setTimeout(() => {
     const headingRow = el.querySelector('.row-heading');
