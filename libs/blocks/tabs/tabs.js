@@ -360,7 +360,7 @@ const init = (block) => {
     let id = tabId;
     let val = getStringKeyName(metaSettings.tab);
     const assotiatedTabButton = rootElem.querySelector(`#tab-${val}`);
-    assotiatedTabButton.setAttribute('data-deeplink', metaSettings.deeplink);
+    assotiatedTabButton?.setAttribute('data-deeplink', metaSettings.deeplink);
     let assocTabItem = rootElem.querySelector(`#tab-panel-${id}-${val}`);
     if (config.id) {
       const values = metaSettings.tab.split(',');

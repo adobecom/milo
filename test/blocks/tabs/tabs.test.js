@@ -181,4 +181,12 @@ describe('tabs', () => {
       expect(document.querySelector('#tab-2-tab-b').getAttribute('daa-ll')).to.equal('tab-2-tab-b');
     });
   });
+
+  describe('Tabs with custom deeplink', () => {
+    it('sets deeplink attribute to tab buttons', () => {
+      const tabs = document.querySelector('#tabs-demo');
+      expect(tabs.querySelector('button[id="tab-demo-1"]')?.dataset.deeplink).to.equal('custom-deeplink-1');
+      expect(tabs.querySelector('button[id="tab-demo-2"]')?.dataset.deeplink).to.equal('custom-deeplink-2');
+    });
+  });
 });
