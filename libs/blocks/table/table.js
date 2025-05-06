@@ -439,11 +439,6 @@ async function handleScrollEffect(table) {
   const highlightRow = table.querySelector('.row-highlight');
   const headingRow = table.querySelector('.row-heading');
 
-  setTimeout(() => {
-    if (!isStickyHeader(table)) return;
-    if (headingRow.offsetHeight / window.innerHeight >= 0.3) table.classList.add('cancel-sticky');
-  }, 0);
-
   if (highlightRow) {
     highlightRow.style.top = `${gnavHeight}px`;
     highlightRow.classList.add('top-border-transparent');
@@ -603,6 +598,15 @@ function applyStylesBasedOnScreenSize(table, originTable) {
   setRowStyle();
 }
 
+function handleStickyHeader(el) {
+  if (!Array.from(el.classList).some((className) => className.includes('sticky'))) return;
+
+  setTimeout(() => {
+    const headingRow = el.querySelector('.row-heading');
+    if (headingRow.offsetHeight / window.innerHeight >= 0.3) el.classList.add('cancel-sticky');
+  });
+}
+
 export default function init(el) {
   el.setAttribute('role', 'table');
   if (el.parentElement.classList.contains('section')) {
@@ -662,10 +666,12 @@ export default function init(el) {
       setTooltipPosition(el);
     };
     handleResize();
+    handleStickyHeader(el);
 
     let deviceBySize = defineDeviceByScreenSize();
     window.addEventListener('resize', () => {
       debounce(handleEqualHeight(el, '.row-heading'), 300);
+      handleStickyHeader(el);
       if (deviceBySize === defineDeviceByScreenSize()) return;
       deviceBySize = defineDeviceByScreenSize();
       handleResize();
