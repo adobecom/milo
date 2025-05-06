@@ -440,10 +440,7 @@ async function handleScrollEffect(table) {
   const headingRow = table.querySelector('.row-heading');
 
   setTimeout(() => {
-    if (!isStickyHeader(table)) {
-      return;
-    }
-
+    if (!isStickyHeader(table)) return;
     if (headingRow.offsetHeight / window.innerHeight >= 0.3) table.classList.add('cancel-sticky');
   }, 0);
 
