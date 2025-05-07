@@ -295,22 +295,22 @@ const isPagePublished = async () => {
 
 const getLanguageFirstCountryAndLang = async (path) => {
   const localeArr = path.split('/');
-    const langStr = (localeArr.length > 1) ? LANGS[localeArr[1]] || LANGS[''] : 'en';
-    let countryStr = (localeArr.length > 2) ? LOCALES[localeArr[2]] || 'xx' : 'xx';
-    if (typeof countryStr === 'object') {
-      const { ietf } = countryStr;
-      const localeAttributes = ietf?.split('-');
-      const [, c = 'xx'] = localeAttributes;
-      countryStr = c;
-    }
-    return {
-      country: countryStr,
-      lang: langStr,
-    };
-}
+  const langStr = (localeArr.length > 1) ? LANGS[localeArr[1]] || LANGS[''] : 'en';
+  let countryStr = (localeArr.length > 2) ? LOCALES[localeArr[2]] || 'xx' : 'xx';
+  if (typeof countryStr === 'object') {
+    const { ietf } = countryStr;
+    const localeAttributes = ietf?.split('-');
+    const [, c = 'xx'] = localeAttributes;
+    countryStr = c;
+  }
+  return {
+    country: countryStr,
+    lang: langStr,
+  };
+};
 
 const getBulkPublishLangAttr = async (options) => {
-  let { getLocale } = getConfig();  
+  let { getLocale } = getConfig();
   if (options.languageFirst) {
     const { country, lang } = await getLanguageFirstCountryAndLang(options.prodUrl);
     return `${lang}-${country}`;
