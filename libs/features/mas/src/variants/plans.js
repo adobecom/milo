@@ -47,6 +47,13 @@ export const PLANS_EDUCATION_AEM_FRAGMENT_MAPPING = {
   secureLabel: false
 }
 
+export const PLANS_STUDENTS_AEM_FRAGMENT_MAPPING = {
+  ...(function(){
+    const { whatsIncluded, size, quantitySelect, ...rest } = PLANS_AEM_FRAGMENT_MAPPING;
+    return rest;
+  }())
+}
+
 export class Plans extends VariantLayout {
     constructor(card) {
         super(card);
@@ -184,7 +191,7 @@ export class Plans extends VariantLayout {
     }
 
     static variantStyle = css`
-        :host([variant='plans']) {
+        :host([variant^='plans']) {
             min-height: 273px;
             border: 1px solid var(--merch-card-custom-border-color, #dadada);
             --merch-card-plans-min-width: 244px;
