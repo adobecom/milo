@@ -26,8 +26,8 @@ export const CSS = `
         background-color: transparent;
         border-radius: 4px;
         color: var(--merch-badge-background-color, var(--spectrum-global-color-green-700));
-        font-size: 14px;
-        line-height: 1.3;
+        font-size: var(--consonant-merch-card-body-xxs-font-size);
+        line-height: var(--consonant-merch-card-body-xxs-line-height);
         max-width: fit-content;
     }
 

@@ -1472,8 +1472,8 @@ merch-card[variant="special-offers"] span[is="inline-price"][data-template="stri
         background-color: transparent;
         border-radius: 4px;
         color: var(--merch-badge-background-color, var(--spectrum-global-color-green-700));
-        font-size: 14px;
-        line-height: 1.3;
+        font-size: var(--consonant-merch-card-body-xxs-font-size);
+        line-height: var(--consonant-merch-card-body-xxs-line-height);
         max-width: fit-content;
     }
 
@@ -1705,7 +1705,7 @@ merch-card[variant="special-offers"] span[is="inline-price"][data-template="stri
     --merch-color-grey-600: #686868;
     --merch-color-grey-700: #464646;
     --merch-color-green-promo: #2D9D78;
-    --merch-color-red-promo: #D31510;
+    --merch-color-grey-80: #2c2c2c;
     --consonant-merch-card-body-xs-color: var(--spectrum-gray-100, var(--merch-color-grey-80));
     --merch-color-inline-price-strikethrough: initial;
     --consonant-merch-card-detail-s-color: var(--spectrum-gray-600, var(--merch-color-grey-600));
