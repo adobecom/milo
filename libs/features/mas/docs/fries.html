@@ -1,23 +1,43 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
-<head>
-    <meta charset="UTF-8">
-    <title>M@S Web Components - Fries Card</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link rel="stylesheet" href="../../../styles/styles.css">
-    <link rel="stylesheet" href="styles.css">
-    <link rel="stylesheet" href="https://p.typekit.net/p.css?s=1&amp;k=hah7vzn&amp;ht=tk&amp;f=7180.7181.7182.7183.22474.22749.22750.22751.22753&amp;a=8634977&amp;app=typekit&amp;e=css">
-    <link rel="stylesheet" href="https://use.typekit.net/hah7vzn.css">
-  
-    <!-- Include your custom element script as an ES6 module -->
-    <script type="module">
-        import { init } from './common.js';
-        init();
-    </script>
-    <!-- Include Highlight.js stylesheet for syntax highlighting -->
-    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/default.min.css">
-    <script type="module" src="./mas-sidenav.js"></script>
-</head>
+    <head>
+        <meta charset="UTF-8" />
+        <title>Fries Gallery</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <link rel="stylesheet" href="spectrum.css" />
+        <link rel="stylesheet" href="styles.css" />
+        <link
+            rel="stylesheet"
+            href="https://p.typekit.net/p.css?s=1&k=hah7vzn&ht=tk&f=7180.7181.7182.7183.22474.22749.22750.22751.22753&a=8634977&app=typekit&e=css"
+        />
+        <link rel="stylesheet" href="https://use.typekit.net/hah7vzn.css" />
+        <script src="/libs/deps/lit-all.min.js" type="module"></script>
+
+        <script>
+            function toggleTheme(theme) {
+                document.body.className = 'spectrum spectrum--medium';
+                document.body.classList.add(`spectrum--${theme}`);
+                document
+                    .querySelector('sp-theme')
+                    ?.setAttribute('color', theme);
+
+                const url = new URL(window.location.href);
+                url.searchParams.set('theme', theme);
+
+                window.location.href = url.toString();
+            }
+        </script>
+        <script type="module" src="./mas-sidenav.js"></script>
+        <script type="module">
+            import { init } from './common.js';
+            init();
+        </script>
+        <script
+            type="module"
+            src="../../../features/spectrum-web-components/dist/button.js"
+        ></script>
+    </head>
+
 <body class="spectrum spectrum--medium spectrum--light">
     <aside is="mas-sidenav"></aside>
     <main>
@@ -28,40 +48,10 @@
                 
                 <h2 id="crd-mrch-fries">Fries Cards <a class="header-anchor" href="#crd-mrch-fries" title="Permalink to this heading">#</a></h2>
                 <div class="fries-merch-cards">
-                    <div>
-                        <merch-card variant="fries" size="single">
-                            <h3 slot="heading-xxxs">Get the ultimate creative toolkit</h3>
-                            <div slot="body-xxs">Bundle and save to get the ultimate creative toolkit. This includes: Acrobat Pro, Photoshop, Illustrator, Premier Pro, and more.</div>
-                            <p slot="price">US$ 59.99/mo</p>
-                            <div slot="cta">
-                                <button class="spectrum-Button spectrum-Button--primary">
-                                    <span class="spectrum-Button-label">Select</span>
-                                </button>
-                            </div>
-                            <div slot="icons">
-                                <img src="https://www.adobe.com/content/dam/cc/icons/Adobe_Photoshop_icon_RGB.svg" width="32" height="32">
-                                <img src="https://www.adobe.com/content/dam/cc/icons/Adobe_Illustrator_icon_RGB.svg" width="32" height="32">
-                                <img src="https://www.adobe.com/content/dam/cc/icons/Adobe_Acrobat_Reader_icon_RGB.svg" width="32" height="32">
-                                <img src="https://www.adobe.com/content/dam/cc/icons/Adobe_Premiere_Pro_icon_RGB.svg" width="32" height="32">
-                            </div>
-                        </merch-card>
-                    </div>
-                    
-                    <div>
-                        <merch-card variant="fries" size="double">
-                            <h3 slot="heading-xxxs">Adobe Stock — 10 standard assets a month</h3>
-                            <div slot="body-xxs">Access millions of royalty-free photos, templates, videos, and more — all in one plan. Up-level your creative project faster than ever.</div>
-                            <p slot="price">US$ XX.XX/mo</p>
-                            <div slot="cta">
-                                <button class="spectrum-Button spectrum-Button--primary">
-                                    <span class="spectrum-Button-label">1-month free trial</span>
-                                </button>
-                            </div>
-                            <div slot="icons">
-                                <img src="https://www.adobe.com/content/dam/cc/icons/Adobe_Stock_icon_RGB.svg" width="32" height="32">
-                            </div>
-                        </merch-card>
-                    </div>
+                    <merch-card><aem-fragment fragment="7a679b0a-512a-4129-9e47-9cbfa3a185da" title="Creative Cloud All Apps — with Acrobat Pro"></aem-fragment></merch-card>
+                    <merch-card><aem-fragment fragment="06b88745-45eb-42a0-ab5d-f779b18525bf" title="Photography plan 1TB"></aem-fragment></merch-card>
+                    <merch-card><aem-fragment fragment="929c5fc5-4912-488f-911f-040304ee0337" title="Adobe Stock — access 700M+ images, videos, and more, plus Gen AI all in one plan"></aem-fragment></merch-card>
+                    <merch-card><aem-fragment fragment="edc741af-31bf-4388-a8f8-37ecb71bae98" title="AI Assistant for Acrobat — try it for 7 days"></aem-fragment></merch-card>
                 </div>
             </div>
         </sp-theme>
