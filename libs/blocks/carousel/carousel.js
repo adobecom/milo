@@ -184,6 +184,15 @@ function setIndicatorMultiplyer(carouselElements, activeSlideIndicator, event) {
   }
 }
 
+function updateAriaLive(ariaLive, slide) {
+  let textContent = '';
+  slide.querySelectorAll(':scope > :not(.section-metadata').forEach((el) => {
+    textContent += el.textContent;
+  });
+
+  ariaLive.textContent = textContent;
+}
+
 let ariaLiveTimeout;
 function moveSlides(event, carouselElements, jumpToIndex) {
   const {
@@ -282,10 +291,11 @@ function moveSlides(event, carouselElements, jumpToIndex) {
   if (navTabbedInto && event.timeStamp - navTabbedInto.timeStamp < ARIA_LIVE_DELAY) {
     ariaLiveDelay = ARIA_LIVE_DELAY - (event.timeStamp - navTabbedInto.timeStamp);
   }
-  ariaLiveTimeout = setTimeout(() => {
-    firstTimePressed = true;
-    ariaLive.textContent = activeSlide.textContent;
-  });
+
+  // ariaLiveTimeout = setTimeout(() => {
+  //   firstTimePressed = true;
+  // }, ariaLiveDelay);
+  updateAriaLive(ariaLive, activeSlide);
 
   // Update active slide and indicator dot attributes
   activeSlide.classList.add('active');
