@@ -42,7 +42,7 @@ export default class ThreeInOne {
       },
       msParamOverride: {
         el: page.locator('[data-wcs-osi="1ZyMOJpSngx9IU5AjEDyp7oRBz843zNlbbtPKbIb1gM"]'),
-        href: 'https://commerce.adobe.com/store/segmentation?cli=creative&ctx=if&co=US&rf=uc_segmentation_hide_tabs_cr&lang=en&ms=myoverride&ot=BASE&pa=creative_cloud_all_apps_with_2tb_cloud_services_individual&rtc=t&lo=sl&af=uc_new_user_iframe%2Cuc_new_system_close',
+        href: 'https://commerce.adobe.com/store/segmentation?cli=creative&ctx=if&co=US&lang=en&ms=myoverride&ot=BASE&pa=creative_cloud_all_apps_with_2tb_cloud_services_individual&rtc=t&lo=sl&af=uc_new_user_iframe%2Cuc_new_system_close',
       },
     };
     this.props = {};
