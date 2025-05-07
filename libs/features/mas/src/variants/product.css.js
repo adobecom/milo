@@ -26,6 +26,13 @@ export const CSS = `
       margin: 14px 12px 0 8px;
   }
 
+  merch-card[variant="product"] merch-addon::part(label) {
+    display: flex;
+    flex-direction: column;
+    padding: 8px 4px 8px 0;
+    width: 100%;
+  }
+
 /* grid style for product */
 .one-merch-card.product,
 .two-merch-cards.product,

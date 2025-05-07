@@ -34,6 +34,13 @@ export const CSS = `
       margin: 14px 12px 0 8px;
   }
 
+  merch-card[variant="mini-compare-chart"] merch-addon::part(label) {
+    display: flex;
+    flex-direction: column;
+    padding: 8px 4px 8px 0;
+    width: 100%;
+  }
+
   merch-card[variant="mini-compare-chart"].bullet-list [slot="heading-m"] {
     padding: var(--consonant-merch-spacing-xxs) var(--consonant-merch-spacing-xs);
     font-size: var(--consonant-merch-card-heading-xs-font-size);

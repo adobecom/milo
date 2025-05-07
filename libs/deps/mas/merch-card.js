@@ -303,15 +303,6 @@ var Ne=Object.defineProperty;var Xt=o=>{throw TypeError(o)};var Ie=(o,e,t)=>e in
             cursor: pointer;
         }
 
-        :host-context(merch-card[variant="product"]) label,
-        :host-context(merch-card[variant="mini-compare-chart"]) label {
-            display: flex;
-            flex-direction: column;
-            padding: 8px 4px 8px 0;
-            width: 100%;
-        }
-
-
         ::slotted(p[data-plan-type]) {
             display: none;
         }
@@ -605,6 +596,13 @@ merch-card[variant="catalog"] .payment-details {
       height: 18px;
       width: 18px;
       margin: 14px 12px 0 8px;
+  }
+
+  merch-card[variant="mini-compare-chart"] merch-addon::part(label) {
+    display: flex;
+    flex-direction: column;
+    padding: 8px 4px 8px 0;
+    width: 100%;
   }
 
   merch-card[variant="mini-compare-chart"].bullet-list [slot="heading-m"] {
@@ -1345,6 +1343,13 @@ merch-card[variant^="plans"]:not([size]) {
       height: 18px;
       width: 18px;
       margin: 14px 12px 0 8px;
+  }
+
+  merch-card[variant="product"] merch-addon::part(label) {
+    display: flex;
+    flex-direction: column;
+    padding: 8px 4px 8px 0;
+    width: 100%;
   }
 
 /* grid style for product */
