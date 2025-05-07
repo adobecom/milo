@@ -38,7 +38,9 @@ export const selectors = {
   activeDropdown: '.feds-dropdown--active',
   menuSection: '.feds-menu-section',
   menuColumn: '.feds-menu-column',
+  gnavPromoWrapper: '.feds-promo-wrapper',
   gnavPromo: '.gnav-promo',
+  crossCloudMenuLinks: '.feds-crossCloudMenu a',
   columnBreak: '.column-break',
   brandImageOnly: '.brand-image-only',
   localNav: '.feds-localnav',
@@ -486,27 +488,27 @@ export const transformTemplateToMobile = async (popup, item, localnav = false) =
   if (notMegaMenu) return originalContent;
 
   const tabs = [...popup.querySelectorAll('.feds-menu-section')]
-    .filter((section) => !section.querySelector('.feds-promo') && section.textContent)
-    .map((section) => {
-      const headline = section.querySelector('.feds-menu-headline');
-      const name = headline?.textContent ?? 'Shop For';
-      const daallTab = headline?.getAttribute('daa-ll');
-      const daalhTabContent = section.querySelector('.feds-menu-items')?.getAttribute('daa-lh');
-      const content = section.querySelector('.feds-menu-items') ?? section;
-      const links = [...content.querySelectorAll('a.feds-navLink, .feds-cta--secondary')].map((x) => x.outerHTML).join('');
-      return { name, links, daallTab, daalhTabContent };
-    });
+  .filter((section) => !section.querySelector('.feds-promo') && section.textContent)
+  .map((section) => {
+    const headline = section.querySelector('.feds-menu-headline');
+    const name = headline?.textContent ?? 'Shop For';
+    const daallTab = headline?.getAttribute('daa-ll');
+    const daalhTabContent = section.querySelector('.feds-menu-items')?.getAttribute('daa-lh');
+    const content = section.querySelector('.feds-menu-items') ?? section;
+    const links = [...content.querySelectorAll('a.feds-navLink, .feds-cta--secondary')].map((x) => x.outerHTML).join('');
+    return { name, links, daallTab, daalhTabContent };
+  });
 
-  const promoSections = [...popup.querySelectorAll('.feds-menu-section')]
-    .filter((section) => section.querySelector('.feds-promo'));
-  const crossCloudMenus = [...popup.querySelectorAll('.feds-crossCloudMenu-wrapper')];
-
-  if (promoSections.length || crossCloudMenus.length) {
-    const links = [...promoSections, ...crossCloudMenus]
-      .map((section) => [...section.querySelectorAll('.feds-promo-wrapper, .feds-crossCloudMenu a')].map((x) => x.outerHTML).join(''))
-      .join('');
+  // promo and cross cloud menu links
+  const links = [...popup.querySelectorAll(`${selectors.gnavPromoWrapper}, ${selectors.crossCloudMenuLinks}`)];
+  if (links.length) {
     const placeholder = await replaceKey('more', getFedsPlaceholderConfig());
-    tabs.push({ name: placeholder, links, daallTab: placeholder, daalhTabContent: placeholder });
+    tabs.push({
+      name: placeholder,
+      links: links.map((x) => x.outerHTML).join(''),
+      daallTab: placeholder,
+      daalhTabContent: placeholder,
+    });
   }
   const CTA = popup.querySelector('.feds-cta--primary')?.outerHTML ?? '';
   const mainMenu = `
