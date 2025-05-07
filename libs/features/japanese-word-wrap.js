@@ -134,6 +134,7 @@ export async function applyJapaneseLineBreaks(config, options = {}) {
       budouxExcludeElements.has(el)
       || isWordWrapApplied(el)
       || (isFirefox() && hasFlexOrGrid(el))
+      || (el.lang && el.lang !== 'ja')
     ) return;
     parser.applyElement(el, { threshold: budouxThres });
   });
