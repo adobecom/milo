@@ -367,6 +367,44 @@ const addStock = (merchCard, styles) => {
   }
 };
 
+const addAddon = (merchCard, styles) => {
+  if (
+    styles.includes('add-addon')
+    && (merchCard.variant === MINI_COMPARE_CHART || merchCard.variant === PRODUCT)
+  ) {
+    let selector = 'template.merch-addon.acrobat-ai-assistant.individual';
+    if (styles.includes('edu')) {
+      selector = 'template.merch-addon.acrobat-ai-assistant.edu';
+    } else if (styles.includes('team')) {
+      selector = 'template.merch-addon.acrobat-ai-assistant.team';
+    }
+    let planType = '';
+    if (styles.includes('m2m')) {
+      planType = 'M2M';
+    } else if (styles.includes('abm')) {
+      planType = 'ABM';
+    } else if (styles.includes('puf')) {
+      planType = 'PUF';
+    }
+
+    if (planType) {
+      merchCard.setAttribute('plan-type', planType);
+    }
+    const template = document.querySelector(selector);
+    if (!template) return;
+    const addon = template.content.cloneNode(true).firstElementChild;
+    addon.setAttribute('slot', 'addon');
+    const gradient = createTag('merch-gradient', {
+      colors: '#F5F6FD, #F8F1F8, #F9E9ED',
+      positions: '33.52%, 67.33%, 110.37%',
+      angle: '211deg',
+      'border-radius': '10px',
+    });
+    addon.appendChild(gradient);
+    merchCard.appendChild(addon);
+  }
+};
+
 const simplifyHrs = (el) => {
   const hrs = el.querySelectorAll('hr');
   hrs.forEach((hr) => {
@@ -695,6 +733,7 @@ export default async function init(el) {
   }
 
   addStock(merchCard, styles);
+  addAddon(merchCard, styles);
   if (styles.includes('secure')) {
     const { replaceKey } = await import('../../features/placeholders.js');
     await replaceKey('secure-transaction', getConfig()).then((key) => merchCard.setAttribute('secure-label', key));
