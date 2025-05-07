@@ -161,3 +161,8 @@ export const MODAL_TYPE_3_IN_1 = {
 
 export const MARK_START_SUFFIX = ':start';
 export const MARK_DURATION_SUFFIX = ':duration';
+
+export const TEMPLATE_PRICE = 'price';
+export const TEMPLATE_PRICE_STRIKETHROUGH = 'price-strikethrough';
+export const TEMPLATE_PRICE_ANNUAL = 'annual';
+export const TEMPLATE_PRICE_LEGAL = 'legal';

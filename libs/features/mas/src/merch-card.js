@@ -41,6 +41,17 @@ const MERCH_CARD_LOAD_TIMEOUT = 20000;
 
 const MARK_MERCH_CARD_PREFIX = 'merch-card:';
 
+function priceOptionsProvider(element, options) {
+    const card = element.closest(MERCH_CARD);
+    if (!card) return options;
+    card.variantLayout?.priceOptionsProvider?.(element, options);
+}
+
+function registerPriceOptionsProvider(masCommerceService) {
+    if (masCommerceService.providers.has(priceOptionsProvider)) return;
+    masCommerceService.providers.price(priceOptionsProvider);
+}
+
 export class MerchCard extends LitElement {
     static properties = {
         id: { type: String, attribute: 'id', reflect: true },
@@ -71,6 +82,10 @@ export class MerchCard extends LitElement {
         checkboxLabel: { type: String, attribute: 'checkbox-label' },
         selected: { type: Boolean, attribute: 'aria-selected', reflect: true },
         storageOption: { type: String, attribute: 'storage', reflect: true },
+        settings: {
+            type: Object,
+            attribute: false,
+        },
         stockOfferOsis: {
             type: Object,
             attribute: 'stock-offer-osis',
@@ -180,7 +195,11 @@ export class MerchCard extends LitElement {
                 this.computedBorderStyle,
             );
         }
-        this.variantLayout?.postCardUpdateHook(changedProperties);
+        try {
+            this.variantLayout?.postCardUpdateHook(changedProperties);
+        } catch (e) {
+            this.#fail(`Error in postCardUpdateHook: ${e.message}`, {}, false);
+        }
     }
 
     get theme() {
@@ -319,6 +338,7 @@ export class MerchCard extends LitElement {
     connectedCallback() {
         super.connectedCallback();
         this.#service = getService();
+        registerPriceOptionsProvider(this.#service);
         this.#log = this.#service.Log.module(MERCH_CARD);
         this.id ??=
             this.querySelector('aem-fragment')?.getAttribute('fragment');
