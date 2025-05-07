@@ -319,11 +319,13 @@ main > .section[class*='-up'] > .content {
   }
 }
 
-@media screen and (min-width: 1200px) {
+@media screen and (min-width: 1070px) {
   .section.two-up {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+}
 
+@media screen and (min-width: 1200px) {
   .section.three-up {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
