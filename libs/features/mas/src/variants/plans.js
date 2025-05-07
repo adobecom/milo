@@ -4,31 +4,41 @@ import { CSS } from './plans.css.js';
 import { isMobile, matchMobile } from '../utils.js';
 import {
     SELECTOR_MAS_INLINE_PRICE,
+    TEMPLATE_PRICE,
     TEMPLATE_PRICE_LEGAL,
 } from '../constants.js';
 
 export const PLANS_AEM_FRAGMENT_MAPPING = {
     title: { tag: 'p', slot: 'heading-xs' },
     prices: { tag: 'p', slot: 'heading-m' },
-    promoText: { tag: 'p', slot: 'promo-text' },
+    promoText: {  tag: 'p', slot: 'promo-text'  },
     description: { tag: 'div', slot: 'body-xs' },
     mnemonics: { size: 'l' },
-    callout: { tag: 'div', slot: 'callout-content' },
+    callout: {  tag: 'div', slot: 'callout-content'  },
     quantitySelect: { tag: 'div', slot: 'quantity-select' },
     stockOffer: true /* @deprecated */,
     addon: true,
     secureLabel: true,
+    planType: true,
     badge: { tag: 'div', slot: 'badge' },
     allowedBadgeColors: [
-        'spectrum-yellow-300-plans',
-        'spectrum-gray-300-plans',
-        'spectrum-gray-700-plans',
-        'spectrum-green-900-plans',
-    ],
+      
+      'spectrum-yellow-300-plans',
+      
+      'spectrum-gray-300-plans',
+      
+      'spectrum-gray-700-plans',
+      
+      'spectrum-green-900-plans',
+  ,
+  ],
     allowedBorderColors: [
-        'spectrum-yellow-300-plans',
-        'spectrum-gray-300-plans',
-    ],
+      
+      'spectrum-yellow-300-plans',
+      
+      'spectrum-gray-300-plans',
+  ,
+  ],
     borderColor: { attribute: 'border-color' },
     size: ['wide', 'super-wide'],
     whatsIncluded: { tag: 'div', slot: 'whats-included' },
@@ -111,12 +121,14 @@ export class Plans extends VariantLayout {
         );
         return price;
     }
-
     async adjustLegal() {
         await this.card.updateComplete;
         if (this.legal) return;
-        const price = this.mainPrice;
-        if (!price) return;
+        const headingM = this.card.querySelector('[slot="heading-m"]');
+        if (!headingM) return;
+        const price = headingM.querySelector(
+            `${SELECTOR_MAS_INLINE_PRICE}[data-template="price"]`,
+        );
         const legal = price.cloneNode(true);
         this.legal = legal;
         await price.onceSettled();
@@ -127,20 +139,20 @@ export class Plans extends VariantLayout {
         if (price.options.displayPlanType)
             price.dataset.displayPlanType = 'false';
         legal.setAttribute('data-template', 'legal');
-        this.headingM.appendChild(legal);
+        headingM.appendChild(legal);
     }
 
     async adjustAddon() {
-        await this.card.updateComplete;
-        const addon = this.card.addon;
-        if (!addon) return;
-        const price = this.mainPrice;
-        if (!price) return;
-        await price.onceSettled();
-        const planType = price.value?.[0]?.planType;
-        if (!planType) return;
-        addon.planType = planType;
-    }
+      await this.card.updateComplete;
+      const addon = this.card.addon;
+      if (!addon) return;
+      const price = this.mainPrice;
+      if (!price) return;
+      await price.onceSettled();
+      const planType = price.value?.[0]?.planType;
+      if (!planType) return;
+      addon.planType = planType;
+  }
 
     get stockCheckbox() {
         return this.card.checkboxLabel
