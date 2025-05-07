@@ -285,7 +285,7 @@ function moveSlides(event, carouselElements, jumpToIndex) {
   ariaLiveTimeout = setTimeout(() => {
     firstTimePressed = true;
     ariaLive.textContent = activeSlide.textContent;
-  }, ariaLiveDelay);
+  });
 
   // Update active slide and indicator dot attributes
   activeSlide.classList.add('active');
@@ -474,7 +474,7 @@ export default function init(el) {
   const slideWrapper = createTag('div', { class: 'carousel-wrapper' });
   const ariaLive = createTag('div', {
     class: 'aria-live-container',
-    'aria-live': 'assertive',
+    'aria-live': 'polite',
   });
   slideWrapper.appendChild(ariaLive);
   const slideContainer = createTag('div', { class: 'carousel-slides' }, fragment);
