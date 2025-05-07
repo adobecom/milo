@@ -29,6 +29,49 @@ function getState() {
   };
 }
 
+function open({ triggerEl, e } = {}) {
+  const { items, curr } = getState();
+  const el = triggerEl || items[curr];
+  if (!el?.hasAttribute('aria-haspopup')) return;
+  if (e) e.preventDefault();
+  if (el.getAttribute('aria-expanded') === 'false') {
+    const isHeader = el.classList.contains('feds-localnav-title');
+    if (isHeader) document.querySelector(selectors.localNav).classList.add('feds-localnav--active');
+    trigger({ element: el, type: isHeader ? 'headline' : 'localNavItem' });
+  }
+}
+
+function navigate(current, dir) {
+  const items = getNavList();
+  const currIdx = items.indexOf(current);
+  const isHeader = current.classList.contains('feds-localnav-title');
+  const titleBtn = document.querySelector(`${selectors.localNav} > button`);
+  if (currIdx === -1 && !isHeader) return;
+  if (isHeader && dir === 1) open({ triggerEl: current });
+  // If item is first or last move next focus to header
+  if ((dir === 1 && current === items.at(-1)) || (dir === -1 && current === items.at(0))) {
+    titleBtn?.focus();
+    return;
+  }
+  // if Arrow up on header element focus to its last item
+  if (dir === -1 && isHeader) {
+    items.at(-1)?.focus();
+    return;
+  }
+  const next = items[(currIdx + dir + items.length) % items.length];
+  next.focus();
+
+  if (next.matches('[aria-haspopup="true"]')) {
+    const collapsed = next.matches('[aria-expanded="false"]');
+    open({ triggerEl: next });
+    // Focus on last item of the dropdown if arrow up
+    if (dir === -1 && collapsed) {
+      const dropdownItems = focusables(next.parentElement.querySelector('.feds-popup'));
+      dropdownItems.at(-1)?.focus();
+    }
+  }
+}
+
 class LocalNavItem {
   constructor() {
     this.localNav = document.querySelector(selectors.localNav);
@@ -36,49 +79,6 @@ class LocalNavItem {
     this.exitLink = this.localNav?.querySelector(selectors.localNavExit);
     this.addEventListeners();
   }
-
-  open = ({ triggerEl, e } = {}) => {
-    const { items, curr } = getState();
-    const el = triggerEl || items[curr];
-    if (!el?.hasAttribute('aria-haspopup')) return;
-    if (e) e.preventDefault();
-    if (el.getAttribute('aria-expanded') === 'false') {
-      const isHeader = el.classList.contains('feds-localnav-title');
-      if (isHeader) document.querySelector(selectors.localNav).classList.add('feds-localnav--active');
-      trigger({ element: el, type: isHeader ? 'headline' : 'localNavItem' });
-    }
-  };
-
-  navigate = (current, dir) => {
-    const items = getNavList();
-    const currIdx = items.indexOf(current);
-    const isHeader = current.classList.contains('feds-localnav-title');
-    const titleBtn = document.querySelector(`${selectors.localNav} > button`);
-    if (currIdx === -1 && !isHeader) return;
-    if (isHeader && dir === 1) this.open({ triggerEl: current });
-    // If item is first or last move next focus to header
-    if ((dir === 1 && current === items.at(-1)) || (dir === -1 && current === items.at(0))) {
-      titleBtn?.focus();
-      return;
-    }
-    // if Arrow up on header element focus to its last item
-    if (dir === -1 && isHeader) {
-      items.at(-1)?.focus();
-      return;
-    }
-    const next = items[(currIdx + dir + items.length) % items.length];
-    next.focus();
-
-    if (next.matches('[aria-haspopup="true"]')) {
-      const collapsed = next.matches('[aria-expanded="false"]');
-      this.open({ triggerEl: next });
-      // Focus on last item of the dropdown if arrow up
-      if (dir === -1 && collapsed) {
-        const dropdownItems = focusables(next.parentElement.querySelector('.feds-popup'));
-        dropdownItems.at(-1)?.focus();
-      }
-    }
-  };
 
   handleKeyDown = (e) => {
     const { code, target } = e;
@@ -106,7 +106,7 @@ class LocalNavItem {
         e.stopPropagation();
         e.preventDefault();
         const dir = code === 'ArrowDown' ? +1 : -1;
-        this.navigate(target, dir);
+        navigate(target, dir);
         break;
       }
       default:
