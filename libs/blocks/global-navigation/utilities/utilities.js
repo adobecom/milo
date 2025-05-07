@@ -499,7 +499,7 @@ export const transformTemplateToMobile = async (popup, item, localnav = false) =
     return { name, links, daallTab, daalhTabContent };
   });
 
-  // promo and cross cloud menu links
+  // promo and cross cloud menu section
   const links = [...popup.querySelectorAll(`${selectors.gnavPromoWrapper}, ${selectors.crossCloudMenuLinks}`)];
   if (links.length) {
     const placeholder = await replaceKey('more', getFedsPlaceholderConfig());
