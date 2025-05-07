@@ -20,6 +20,12 @@ export const CSS = `
     pointer-events: none;
   }
 
+  merch-card[variant="product"] merch-addon::part(checkbox) {
+      height: 18px;
+      width: 18px;
+      margin: 14px 12px 0 8px;
+  }
+
 /* grid style for product */
 .one-merch-card.product,
 .two-merch-cards.product,

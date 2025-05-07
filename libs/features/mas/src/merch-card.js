@@ -301,10 +301,10 @@ export class MerchCard extends LitElement {
         this.variantLayout?.toggleAddon(merchAddon);
         if (elements.length === 0) return;
         for (const element of elements) {
-            const planType = element.value?.[0]?.planType;
-            if (!planType) return;
+            const { offerType, planType } = element.value?.[0];
+            if (!offerType || !planType) return;
             const addonOsi = merchAddon.querySelector(
-                `p[data-plan-type="${planType}"] ${SELECTOR_MAS_INLINE_PRICE}`,
+                `p[data-plan-type="${planType}"] ${SELECTOR_MAS_INLINE_PRICE}[data-offer-type="${offerType}"]`,
             )?.dataset?.wcsOsi;
             const osis = element.dataset.wcsOsi
                 .split(',')

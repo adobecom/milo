@@ -30,6 +30,7 @@ export default class MerchAddon extends LitElement {
         const price = e.target;
         const offer = price?.value?.[0];
         if (!offer) return;
+        price.setAttribute('data-offer-type', offer.offerType);
         price.closest('p').setAttribute('data-plan-type', offer.planType);
     }
 
@@ -48,10 +49,11 @@ export default class MerchAddon extends LitElement {
         return html`<input
                 type="checkbox"
                 id="addon-checkbox"
+                part="checkbox"
                 .checked=${this.checked}
                 @change=${this.handleChange}
             />
-            <label for="addon-checkbox">
+            <label for="addon-checkbox" part="label">
                 <slot></slot>
             </label>`;
     }
@@ -75,12 +77,6 @@ export default class MerchAddon extends LitElement {
             flex-direction: column;
             padding: 8px 4px 8px 0;
             width: 100%;
-        }
-
-        :host input[type="checkbox"] {
-            height: 18px;
-            width: 18px;
-            margin: 14px 12px 0 8px;
         }
 
 

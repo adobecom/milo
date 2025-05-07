@@ -368,14 +368,15 @@ const addStock = (merchCard, styles) => {
 };
 
 const addAddon = (merchCard, styles) => {
-  if (styles.includes('add-addon') && (merchCard.variant === MINI_COMPARE_CHART || merchCard.variant === PRODUCT)) {
-    let selector;
+  if (
+    styles.includes('add-addon')
+    && (merchCard.variant === MINI_COMPARE_CHART || merchCard.variant === PRODUCT)
+  ) {
+    let selector = 'template.merch-addon.acrobat-ai-assistant.individual';
     if (styles.includes('edu')) {
-      selector = '.merch-offers.edu';
+      selector = 'template.merch-addon.acrobat-ai-assistant.edu';
     } else if (styles.includes('team')) {
-      selector = '.merch-offers.team';
-    } else {
-      selector = '.merch-offers:not(.edu):not(.team)';
+      selector = 'template.merch-addon.acrobat-ai-assistant.team';
     }
     let planType = '';
     if (styles.includes('m2m')) {
@@ -389,36 +390,10 @@ const addAddon = (merchCard, styles) => {
     if (planType) {
       merchCard.setAttribute('plan-type', planType);
     }
-    const merchOffers = document.querySelector(selector);
-    if (!merchOffers) return;
-    const addonLabel = merchOffers?.querySelector('p');
-    const addonLabelCopy = addonLabel?.cloneNode(true);
-    const strongTag = createTag('strong', '', addonLabelCopy.innerHTML);
-    addonLabelCopy.replaceChildren(strongTag);
-    const addonDescriptions = [...merchOffers.querySelectorAll('p:not(:first-child)')]
-      .filter((p) => p.innerText.trim())
-      .map((p, i) => createTag(
-        'span',
-        '',
-        `${i === 0 ? '' : ' '}${p.cloneNode(true).innerHTML}${i === 0 ? ' ' : ''}`,
-      ));
-    const addon = createTag('merch-addon', { slot: 'addon' });
-    merchCard.appendChild(addon);
-    addon.appendChild(addonLabelCopy);
-    const spans = merchOffers?.querySelectorAll('span[data-wcs-osi]');
-    spans?.forEach((span) => {
-      const p = createTag('p');
-      const priceSpan = span.cloneNode(true);
-      if (addonDescriptions[0]) {
-        addonDescriptions[0].style.display = 'block';
-      }
-      p.appendChild(addonDescriptions[0].cloneNode(true));
-      p.appendChild(priceSpan);
-      if (addonDescriptions[1]) {
-        p.appendChild(addonDescriptions[1].cloneNode(true));
-      }
-      addon.appendChild(p);
-    });
+    const template = document.querySelector(selector);
+    if (!template) return;
+    const addon = template.content.cloneNode(true).firstElementChild;
+    addon.setAttribute('slot', 'addon');
     const gradient = createTag('merch-gradient', {
       colors: '#F5F6FD, #F8F1F8, #F9E9ED',
       positions: '33.52%, 67.33%, 110.37%',
@@ -426,6 +401,7 @@ const addAddon = (merchCard, styles) => {
       'border-radius': '10px',
     });
     addon.appendChild(gradient);
+    merchCard.appendChild(addon);
   }
 };
 

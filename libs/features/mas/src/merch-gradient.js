@@ -6,7 +6,7 @@ export default class MerchGradient extends HTMLElement {
     }
 
     #angle = '';
-    #borderRadius = '';
+    #borderRadius = undefined;
     #colors = [];
     #positions = [];
     #updateParentBackground;
@@ -14,7 +14,13 @@ export default class MerchGradient extends HTMLElement {
     constructor() {
         super();
         this.#updateParentBackground = debounce(() => {
+            if (!this.isConnected) return;
             this.parentElement.style.background = this.value;
+            if (this.#borderRadius) {
+                this.parentElement.style.borderRadius = this.#borderRadius;
+            } else if (this.#borderRadius === '') {
+                this.parentElement.style.borderRadius = '';
+            }
         }, 1);
     }
 
@@ -29,14 +35,13 @@ export default class MerchGradient extends HTMLElement {
         return `linear-gradient(${this.#angle}, ${stops})`;
     }
 
+    connectedCallback() {
+        this.#updateParentBackground();
+    }
+
     attributeChangedCallback(name, oldValue, newValue) {
         if (name === 'border-radius') {
             this.#borderRadius = newValue?.trim();
-            if (this.#borderRadius) {
-                this.parentElement.style.borderRadius = this.#borderRadius;
-            } else if (oldValue) {
-                this.parentElement.style.borderRadius = '';
-            }
         }
         if (name === 'colors' && newValue) {
             this.#colors =
