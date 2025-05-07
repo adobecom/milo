@@ -30,7 +30,7 @@ const getLiteralsTemplate = (el, name) => {
  * This block provides offers data like stock offers for re-using in cards or dialogs.
  */
 export default async function init(el) {
-  if (el.classList.contains('acrobat-ai-assistant')) {
+  if (el.classList.contains('addon')) {
     const merchAddonTemplate = createTag('template', { class: el.classList });
     merchAddonTemplate.classList.remove('merch-offers');
     merchAddonTemplate.classList.add('merch-addon');

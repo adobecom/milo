@@ -368,15 +368,15 @@ const addStock = (merchCard, styles) => {
 };
 
 const addAddon = (merchCard, styles) => {
-  if (
-    styles.includes('add-addon')
-    && (merchCard.variant === MINI_COMPARE_CHART || merchCard.variant === PRODUCT)
-  ) {
-    let selector = 'template.merch-addon.acrobat-ai-assistant.individual';
+  const genai = /add-addon-genai/.test(merchCard.className) ? 'genai' : null;
+  const stock = /add-addon-stock/.test(merchCard.className) ? 'stock' : null;
+  const addonType = genai || stock;
+  if (addonType) {
+    let selector = `template.merch-addon.${addonType}.individual`;
     if (styles.includes('edu')) {
-      selector = 'template.merch-addon.acrobat-ai-assistant.edu';
+      selector = `template.merch-addon.${addonType}.edu`;
     } else if (styles.includes('team')) {
-      selector = 'template.merch-addon.acrobat-ai-assistant.team';
+      selector = `template.merch-addon.${addonType}.team`;
     }
     let planType = '';
     if (styles.includes('m2m')) {
