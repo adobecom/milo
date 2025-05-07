@@ -192,6 +192,7 @@ function moveSlides(event, carouselElements, jumpToIndex) {
     al,
   } = carouselElements;
   // al.setAttribute('aria-hidden', true);
+
   clearTimeout(asa);
   al.textContent = '';
 
@@ -247,8 +248,6 @@ function moveSlides(event, carouselElements, jumpToIndex) {
     activeSlideIndicator = handleNext(activeSlideIndicator, slideIndicators);
     activeSlide = handleNext(activeSlide, slides);
     activeSlide.removeAttribute('aria-hidden');
-    const dataLabelledBy = activeSlide.getAttribute('data-labelledby');
-    nextPreviousBtns[1].setAttribute('aria-labelledby', dataLabelledBy);
     nextPreviousBtns[1].focus();
     slideContainer?.classList.remove('is-reversing');
   }
@@ -261,8 +260,6 @@ function moveSlides(event, carouselElements, jumpToIndex) {
     activeSlideIndicator = handlePrevious(activeSlideIndicator, slideIndicators);
     activeSlide = handlePrevious(activeSlide, slides);
     activeSlide.removeAttribute('aria-hidden');
-    const dataLabelledBy = activeSlide.getAttribute('data-labelledby');
-    nextPreviousBtns[0].setAttribute('aria-labelledby', dataLabelledBy);
     nextPreviousBtns[0].focus();
     slideContainer.classList.add('is-reversing');
   }
@@ -500,7 +497,7 @@ export default function init(el) {
   const slideWrapper = createTag('div', { class: 'carousel-wrapper' });
   const al = createTag('div', {
     class: 'dummy',
-    'aria-live': 'assertive',
+    'aria-live': 'polite',
   });
   slideWrapper.appendChild(al);
   const slideContainer = createTag('div', { class: 'carousel-slides' }, fragment);
