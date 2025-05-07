@@ -26,7 +26,7 @@ const renderText = (content, tag = 'p') => {
 };
 
 const renderAndComparePrice = (id, html) => {
-    const el = document.createElement('div', { id });
+    const el = document.createElement('p', { id });
     el.setAttribute('id', id);
     el.innerHTML = html;
     root.append(el);

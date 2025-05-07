@@ -104,3 +104,9 @@ export const getTemplateContent = (template) => {
     const templateContent = templateEl.content.cloneNode(true);
     return [...templateContent.children];
 };
+
+export const oneEvent = (element, eventName) => {
+    return new Promise((resolve) => {
+        element.addEventListener(eventName, resolve, { once: true });
+    });
+};
