@@ -42,7 +42,7 @@
 .notification:not(.ribbon.in-line) p {
   margin: 0;
   inline-size: 100%;
-  margin-block-end: 16px;
+  margin-block-end: var(--spacing-xs);
 }
 
 .notification:not(.ribbon.in-line) [class*="heading-"] {
@@ -306,9 +306,9 @@
 
 .notification.ribbon.in-line .foreground .icon-area {
   margin: auto 0;
-  width: 40px;
+  width: var(--icon-size-m);
   order: 0;
-  height: 40px;
+  height: var(--icon-size-m);
 }
 
 
