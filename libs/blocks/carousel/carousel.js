@@ -28,6 +28,7 @@ const KEY_CODES = {
 const ARIA_LIVE_DELAY = 2500;
 let firstTimePressed = false;
 let navTabbedInto = null;
+// let firstButtonActivation = null;
 
 function decorateNextPreviousBtns() {
   const previousBtn = createTag(
@@ -292,10 +293,10 @@ function moveSlides(event, carouselElements, jumpToIndex) {
     ariaLiveDelay = ARIA_LIVE_DELAY - (event.timeStamp - navTabbedInto.timeStamp);
   }
 
-  // ariaLiveTimeout = setTimeout(() => {
-  //   firstTimePressed = true;
-  // }, ariaLiveDelay);
-  updateAriaLive(ariaLive, activeSlide);
+  ariaLiveTimeout = setTimeout(() => {
+    firstTimePressed = true;
+    updateAriaLive(ariaLive, activeSlide);
+  }, ariaLiveDelay);
 
   // Update active slide and indicator dot attributes
   activeSlide.classList.add('active');
@@ -484,7 +485,7 @@ export default function init(el) {
   const slideWrapper = createTag('div', { class: 'carousel-wrapper' });
   const ariaLive = createTag('div', {
     class: 'aria-live-container',
-    'aria-live': 'polite',
+    'aria-live': 'assertive',
   });
   slideWrapper.appendChild(ariaLive);
   const slideContainer = createTag('div', { class: 'carousel-slides' }, fragment);
