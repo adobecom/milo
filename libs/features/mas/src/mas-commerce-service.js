@@ -84,7 +84,7 @@ export class MasCommerceService extends HTMLElement {
     activate() {
         const config = this.#config;
         // Load settings and literals
-        const settings = Object.freeze(getSettings(config));
+        const settings = getSettings(config);
         updateLanaConfig(config.lana);
         const log = Log.init(config.hostEnv).module('service');
         log.debug('Activating:', config);
@@ -127,6 +127,9 @@ export class MasCommerceService extends HTMLElement {
                             providers.price.add(provider);
                             return () => providers.price.delete(provider);
                         },
+                        has: (providerFunction) =>
+                            providers.price.has(providerFunction) ||
+                            providers.checkout.has(providerFunction),
                     };
                 },
                 get settings() {

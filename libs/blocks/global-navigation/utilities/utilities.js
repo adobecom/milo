@@ -166,7 +166,7 @@ export function loadStyles(url, override = false) {
         message: 'GNAV: Error in loadStyles',
         e: `error loading style: ${url}`,
         tags: 'utilities',
-        errorType: 'info',
+        errorType: 'i',
       });
     }
   });
@@ -403,7 +403,7 @@ export async function fetchAndProcessPlainHtml({
       message: 'Error in fetchAndProcessPlainHtml',
       e: `${res.statusText} url: ${res.url}`,
       tags: 'utilities',
-      errorType: 'info',
+      errorType: 'i',
     });
     return null;
   }
@@ -442,7 +442,7 @@ export async function fetchAndProcessPlainHtml({
           message: 'Error in fetchAndProcessPlainHtml',
           e,
           tags: 'utilities',
-          errorType: 'info',
+          errorType: 'i',
         });
       });
   }

@@ -33,6 +33,24 @@ merch-card-collection merch-card[variant^="plans"] {
   width: auto;
 }
 
+merch-card[variant^='plans'] span[data-template="legal"] {
+    display: block;
+    color: var(----merch-color-grey-80);
+    font-family: var(--Font-adobe-clean, "Adobe Clean");
+    font-size: 14px;
+    font-style: italic;
+    font-weight: 400;
+    line-height: 21px;
+}
+
+merch-card[variant^='plans'] span.price-legal::first-letter {
+    text-transform: uppercase;
+}
+
+merch-card[variant^='plans'] span.price-legal .price-tax-inclusivity::before {
+  content: initial;
+}
+
 merch-card[variant^="plans"] [slot="description"] {
     min-height: 84px;
 }
