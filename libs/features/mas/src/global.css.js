@@ -85,6 +85,7 @@ styles.innerHTML = `
     --merch-color-grey-600: #686868;
     --merch-color-grey-700: #464646;
     --merch-color-green-promo: #2D9D78;
+    --merch-color-red-promo: #D31510;
     --consonant-merch-card-body-xs-color: var(--spectrum-gray-100, var(--merch-color-grey-80));
     --merch-color-inline-price-strikethrough: initial;
     --consonant-merch-card-detail-s-color: var(--spectrum-gray-600, var(--merch-color-grey-600));

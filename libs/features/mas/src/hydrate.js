@@ -5,6 +5,7 @@ const DEFAULT_BADGE_COLOR = '#000000';
 const DEFAULT_PLANS_BADGE_COLOR = 'spectrum-yellow-300-plans';
 const DEFAULT_BADGE_BACKGROUND_COLOR = '#F8D904';
 const DEFAULT_BORDER_COLOR = '#EAEAEA';
+const DEFAULT_TRIAL_BADGE_BORDER_COLOR = '#31A547';
 const CHECKOUT_STYLE_PATTERN = /(accent|primary|secondary)(-(outline|link))?/;
 export const ANALYTICS_TAG = 'mas:product_code/';
 export const ANALYTICS_LINK_ATTR = 'daa-ll';
@@ -109,7 +110,7 @@ function processBadge(fields, merchCard, mapping) {
 export function processTrialBadge(fields, merchCard, mapping) {
     if (fields.variant === 'fries' && fields.trialBadge) {
         if (!fields.trialBadge.startsWith('<merch-badge')) {
-            fields.trialBadge = `<merch-badge variant="trial">${fields.trialBadge}</merch-badge>`;
+            fields.trialBadge = `<merch-badge variant="${fields.variant}" border-color="${fields.trialBadgeBorderColor || DEFAULT_TRIAL_BADGE_BORDER_COLOR}">${fields.trialBadge}</merch-badge>`;
         }
         appendSlot('trialBadge', fields, merchCard, mapping);
     }

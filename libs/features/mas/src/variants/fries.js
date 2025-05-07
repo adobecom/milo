@@ -36,9 +36,9 @@ export class FriesCard extends VariantLayout {
                 <div class="header">
                     <slot name="icons"></slot>
                     <slot name="heading-xxs"></slot>
+                    <slot name="trial-badge"></slot>
                 </div>
                 <slot name="badge"></slot>
-                <slot name="trial-badge"></slot>
                 <slot name="body-s"></slot>
                 <div class="footer">
                     <slot name="cta"></slot>
@@ -106,7 +106,7 @@ export class FriesCard extends VariantLayout {
           gap: 8px;
           flex-direction: row;
           margin-top: auto;
-          align-items: flex-start;
+          align-items: end;
           width: 100%;
           justify-content: space-between;
         }

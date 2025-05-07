@@ -16,6 +16,21 @@ export const CSS = `
         border-radius: 0 0 5px 5px;
     }
 
+    merch-card[variant='fries'] [slot="trial-badge"] {
+        min-width: fit-content;
+    }
+
+    merch-card[variant='fries'] [slot="trial-badge"] merch-badge {
+        display: inline-flex;
+        padding: 4px 9px;
+        background-color: transparent;
+        border-radius: 4px;
+        color: var(--merch-badge-background-color, var(--spectrum-global-color-green-700));
+        font-size: 14px;
+        line-height: 1.3;
+        max-width: fit-content;
+    }
+
     merch-card[variant='fries'] [slot="body-s"] {
         letter-spacing: normal;
     }
@@ -36,6 +51,31 @@ export const CSS = `
         letter-spacing: normal;
         display: inline-flex;
         vertical-align: super;
+    }
+
+    merch-card[variant='fries'] [slot="price"] {
+        display: flex;
+        flex-direction: column;
+        align-items: end;
+    }
+
+    merch-card[variant='fries'] [slot="price"] .price-strikethrough {
+        font-size: var(--consonant-merch-card-body-xs-font-size);
+        line-height: var(--consonant-merch-card-body-xs-line-height);
+        vertical-align: middle;
+        text-decoration: line-through;
+        text-decoration-color: var(--merch-color-red-promo);
+    }
+
+    merch-card[variant='fries'] [slot="price"] .price-strikethrough .price-currency-symbol,
+    merch-card[variant='fries'] [slot="price"] .price-strikethrough .price-integer,
+    merch-card[variant='fries'] [slot="price"] .price-strikethrough .price-decimals-delimiter,
+    merch-card[variant='fries'] [slot="price"] .price-strikethrough .price-decimals,
+    merch-card[variant='fries'] [slot="price"] .price-strikethrough .price-recurrence {
+        font-size: var(--consonant-merch-card-body-xs-font-size);
+        line-height: var(--consonant-merch-card-body-xs-line-height);
+        font-weight: 700;
+        vertical-align: middle;
     }
 
     merch-card[variant='fries'] [slot="price"] .price-currency-symbol {
