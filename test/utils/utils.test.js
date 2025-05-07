@@ -72,6 +72,17 @@ describe('Utils', () => {
     expect(resp.json()).to.be.true;
   });
 
+  describe('prerendered support', () => {
+    it('loads milo minimally when document is prerendered', async () => {
+      document.head.innerHTML = head;
+      document.body.innerHTML = await readFile({ path: './mocks/body-page-load-ok-milo.html' });
+
+      const originalMarquee = document.querySelector('.marquee');
+      await utils.loadArea();
+      expect(document.querySelector('.marquee')).to.equal(originalMarquee);
+    });
+  });
+
   describe('core-functionality', () => {
     it('preloads blocks for performance reasons', async () => {
       document.head.innerHTML = head;
@@ -750,6 +761,7 @@ describe('Utils', () => {
   describe('title-append', async () => {
     beforeEach(async () => {
       document.head.innerHTML = await readFile({ path: './mocks/head-title-append.html' });
+      document.body.innerHTML = body;
     });
     it('should append to title using string from metadata', async () => {
       const expected = 'Document Title NOODLE';
@@ -765,6 +777,7 @@ describe('Utils', () => {
     beforeEach(async () => {
       window.lana = { log: (msg) => console.error(msg) };
       document.head.innerHTML = await readFile({ path: './mocks/head-seotech-video.html' });
+      document.body.innerHTML = body;
     });
     afterEach(() => {
       window.lana.release?.();
@@ -969,6 +982,7 @@ describe('Utils', () => {
 
   describe('localNav', async () => {
     it('Preserving space to avoid CLS issue', async () => {
+      document.body.innerHTML = body;
       const footer = document.createElement('footer');
       footer.innerHTML = '<p>Footer Content</p>';
       document.body.appendChild(footer);

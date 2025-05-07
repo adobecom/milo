@@ -461,6 +461,7 @@ export function cleanup(merchCard) {
     merchCard.querySelectorAll('[slot]').forEach((el) => {
         el.remove();
     });
+    merchCard.variant = undefined;
     const attributesToRemove = [
         'checkbox-label',
         'stock-offer-osis',
@@ -481,10 +482,11 @@ export function cleanup(merchCard) {
 }
 
 export async function hydrate(fragment, merchCard) {
-    const { id, fields, settings } = fragment;
+    const { id, fields, settings = {} } = fragment;
     const { variant } = fields;
     if (!variant) throw new Error (`hydrate: no variant found in payload ${id}`);
     cleanup(merchCard);
+    merchCard.settings = settings;
     merchCard.id ??= fragment.id;
     merchCard.variant = variant;
     await merchCard.updateComplete;
