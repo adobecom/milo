@@ -310,10 +310,10 @@ const getLanguageFirstCountryAndLang = async (path) => {
 }
 
 const getBulkPublishLangAttr = async (options) => {
-  let { doc, getLocale } = getConfig();
-  const langFirst = getMetadata('langfirst', doc);
-  if (langFirst) {
-    return getLanguageFirstCountryAndLang(options.prodUrl);
+  let { getLocale } = getConfig();  
+  if (options.languageFirst) {
+    const { country, lang } = await getLanguageFirstCountryAndLang(options.prodUrl);
+    return `${lang}-${country}`;
   }
   if (!getLocale) {
     // This is only imported from the bulk publisher so there is no dependency cycle
@@ -397,7 +397,7 @@ const props = {
   contenttype: (s) => s || getMetaContent('property', 'og:type') || getConfig().contentType,
   country: async (s, options) => {
     if (s) return s;
-    const { country } = await getCountryAndLang(options, getMetadata('langfirst') || false);
+    const { country } = await getCountryAndLang(options);
     return country;
   },
   created: (s) => {
