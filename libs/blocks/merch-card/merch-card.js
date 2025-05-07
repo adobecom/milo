@@ -372,11 +372,11 @@ const addAddon = (merchCard, styles) => {
   const stock = /add-addon-stock/.test(merchCard.className) ? 'stock' : null;
   const addonType = genai || stock;
   if (addonType) {
-    let selector = `template.merch-addon.${addonType}.individual`;
+    let selector = `template.addon.${addonType}.individual`;
     if (styles.includes('edu')) {
-      selector = `template.merch-addon.${addonType}.edu`;
+      selector = `template.addon.${addonType}.edu`;
     } else if (styles.includes('team')) {
-      selector = `template.merch-addon.${addonType}.team`;
+      selector = `template.addon.${addonType}.team`;
     }
     let planType = '';
     if (styles.includes('m2m')) {

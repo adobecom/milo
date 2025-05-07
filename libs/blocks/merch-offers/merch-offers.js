@@ -32,8 +32,6 @@ const getLiteralsTemplate = (el, name) => {
 export default async function init(el) {
   if (el.classList.contains('addon')) {
     const merchAddonTemplate = createTag('template', { class: el.classList });
-    merchAddonTemplate.classList.remove('merch-offers');
-    merchAddonTemplate.classList.add('merch-addon');
     merchAddonTemplate.innerHTML = `<merch-addon>${el.firstElementChild.firstElementChild.innerHTML}</merch-addon>`;
     el.replaceWith(merchAddonTemplate);
     return merchAddonTemplate;
