@@ -27,6 +27,7 @@ import merch, {
   reopenModal,
   setCtaHash,
   openModal,
+  PRICE_TEMPLATE_LEGAL,
 } from '../../../libs/blocks/merch/merch.js';
 
 import { mockFetch, unmockFetch, readMockText } from './mocks/fetch.js';
@@ -309,6 +310,13 @@ describe('Merch Block', () => {
 
     it('renders merch link to full promo price', async () => {
       await validatePriceSpan('.fragment .merch.price.promo', { promotionCode: 'nicopromo' });
+    });
+  });
+
+  describe('Prices: legal template', () => {
+    it('renders merch link with legal template', async () => {
+      const el = await validatePriceSpan('.merch.price.legal', { template: PRICE_TEMPLATE_LEGAL });
+      expect(el.textContent).to.equal('per license (Annual, paid monthly.)');
     });
   });
 
