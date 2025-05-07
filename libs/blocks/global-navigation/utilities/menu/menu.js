@@ -281,7 +281,7 @@ const decorateColumns = async ({ content, separatorTagName = 'H5' } = {}) => {
         // otherwise append the element to the section
         const elemDestination = menuItems || itemDestination;
         let menuList = null;
-        if(decoratedElem.tagName === 'P'){
+        if (decoratedElem.tagName === 'P') {
           const li = toFragment`<li></li>`;
           li.innerHTML = decoratedElem.innerHTML;
           decoratedElem = li;
