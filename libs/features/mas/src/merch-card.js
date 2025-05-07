@@ -25,6 +25,8 @@ import {
     SELECTOR_MAS_INLINE_PRICE,
     SELECTOR_MAS_SP_BUTTON,
     MARK_START_SUFFIX,
+    EVENT_MERCH_ADDON_AND_QUANTITY_UPDATE,
+    EVENT_MERCH_CARD_QUANTITY_CHANGE,
 } from './constants.js';
 import { VariantLayout } from './variants/variant-layout.js';
 import { hydrate, ANALYTICS_SECTION_ATTR } from './hydrate.js';
@@ -348,6 +350,10 @@ export class MerchCard extends LitElement {
             this.handleQuantitySelection,
         );
         this.addEventListener(
+            EVENT_MERCH_ADDON_AND_QUANTITY_UPDATE,
+            this.handleAddonAndQuantityUpdate,
+        );
+        this.addEventListener(
             EVENT_MERCH_OFFER_SELECT_READY,
             this.merchCardReady,
             { once: true },
@@ -375,6 +381,7 @@ export class MerchCard extends LitElement {
         );
         this.removeEventListener(EVENT_AEM_ERROR, this.handleAemFragmentEvents);
         this.removeEventListener(EVENT_AEM_LOAD, this.handleAemFragmentEvents);
+        this.removeEventListener(EVENT_MERCH_ADDON_AND_QUANTITY_UPDATE, this.handleAddonAndQuantityUpdate);
     }
 
     // custom methods
@@ -489,6 +496,10 @@ export class MerchCard extends LitElement {
         return this.querySelector('merch-quantity-select');
     }
 
+    get addonCheckbox() {
+      return this.shadowRoot.querySelector('input[type="checkbox"]');
+  }
+
     displayFooterElementsInColumn() {
         if (!this.classList.contains('product')) return;
 
@@ -515,6 +526,27 @@ export class MerchCard extends LitElement {
     /* c8 ignore next 3 */
     get dynamicPrice() {
         return this.querySelector('[slot="price"]');
+    }
+
+    handleAddonAndQuantityUpdate({ detail: { id, items } }) {
+      if (!id || !items?.length) return;
+      const cta = this.checkoutLinks.find(link => link.getAttribute('data-modal-id') === id);
+      if (!cta) return;
+      const url = new URL(cta.getAttribute('href'));
+      const pa = url.searchParams.get('pa');
+      const mainProductQuantity = items.find(item => item.productArrangementCode === pa)?.quantity;
+      const isAddonIncluded = !!items.find(item => item.productArrangementCode !== pa);
+      if (mainProductQuantity) {
+        this.quantitySelect?.dispatchEvent(new CustomEvent(EVENT_MERCH_CARD_QUANTITY_CHANGE, {
+          detail: { quantity: mainProductQuantity },
+          bubbles: true,
+          composed: true
+        }));
+      }
+      if (this.addonCheckbox?.checked !== isAddonIncluded) {
+        this.addonCheckbox.checked = isAddonIncluded;
+        this.toggleStockOffer({ target: this.addonCheckbox });
+      }
     }
 }
 

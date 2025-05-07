@@ -70,10 +70,11 @@ export const handle3in1IFrameEvents = ({ data: msgData }) => {
   }
   const { app, subType, data } = parsedMsg || {};
   if (app !== 'ucv3') return;
-  window.lana?.log(`3-in-1 modal: ${subType}`, data, LANA_OPTIONS);
+  window.lana?.log(`3-in-1 modal: ${subType}, data: ${JSON.stringify(data)}`);
   const threeInOne = document.querySelector('.three-in-one');
   const closeBtn = threeInOne?.querySelector('.dialog-close');
   const iframe = threeInOne?.querySelector('iframe');
+  const relatedMerchCards = document.querySelectorAll(`a[data-modal-id="${threeInOne?.id}"]`);
   if (!threeInOne) return;
   switch (subType) {
     case MSG_SUBTYPE.AppLoaded:
@@ -93,7 +94,16 @@ export const handle3in1IFrameEvents = ({ data: msgData }) => {
       }
       break;
     case MSG_SUBTYPE.Close:
-      document.querySelector('.dialog-modal.three-in-one')?.dispatchEvent(new Event('closeModal'));
+      if (data?.actionRequired && data?.actionUrl) {
+        window.open(data.actionUrl);
+      }
+      relatedMerchCards.forEach((card) => {
+        card?.closest('merch-card')?.dispatchEvent(new CustomEvent(
+          'merch-modal:addon-and-quantity-update',
+          { detail: { id: threeInOne?.id, items: data?.state?.cart?.items } },
+        ));
+      });
+      threeInOne?.dispatchEvent(new Event('closeModal'));
       window.removeEventListener('message', handle3in1IFrameEvents);
       break;
     default:
