@@ -182,6 +182,7 @@ function setIndicatorMultiplyer(carouselElements, activeSlideIndicator, event) {
   }
 }
 
+let removeTimeout;
 function moveSlides(event, carouselElements, jumpToIndex) {
   const {
     slideContainer,
@@ -191,6 +192,7 @@ function moveSlides(event, carouselElements, jumpToIndex) {
     controlsContainer,
     direction,
   } = carouselElements;
+  clearTimeout(removeTimeout);
 
   let referenceSlide = slideContainer.querySelector('.reference-slide');
   let activeSlide = slideContainer.querySelector('.active');
@@ -299,6 +301,12 @@ function moveSlides(event, carouselElements, jumpToIndex) {
     referenceSlide.style.order = i;
   }
 
+  removeTimeout = setTimeout(() => {
+    nextPreviousBtns.forEach((btn) => {
+      btn.removeAttribute('aria-labelledby');
+    });
+  },1000);
+
   /*
    * Activates slide animation.
    * Delay time matches animation time for next/previous controls.
@@ -309,10 +317,6 @@ function moveSlides(event, carouselElements, jumpToIndex) {
   slideContainer.classList.remove('is-ready');
   return setTimeout(() => {
     slideContainer.classList.add('is-ready');
-    // nextPreviousBtns.forEach((btn) => {
-      // btn.removeAttribute('aria-labelledby');
-      // btn.setAttribute('aria-label', 'My label test');
-    // });
   }, slideDelay);
 }
 
@@ -371,13 +375,13 @@ function handleChangingSlides(carouselElements) {
 
   // Handle Next/Previous Buttons
   [...nextPreviousBtns].forEach((btn) => {
-    btn.addEventListener('mousedown', () => {
-      const active = el.querySelector('.active');
-      const dataToggle = btn.getAttribute('data-toggle');
-      const nextEl = dataToggle === 'next' ? handleNext(active, slides) : handlePrevious(active, slides);
-      const dataLabelledBy = nextEl.getAttribute('data-labelledby');
-      btn.setAttribute('aria-labelledby', dataLabelledBy);
-    });
+    // btn.addEventListener('mousedown', () => {
+    //   const active = el.querySelector('.active');
+    //   const dataToggle = btn.getAttribute('data-toggle');
+    //   const nextEl = dataToggle === 'next' ? handleNext(active, slides) : handlePrevious(active, slides);
+    //   const dataLabelledBy = nextEl.getAttribute('data-labelledby');
+    //   btn.setAttribute('aria-labelledby', dataLabelledBy);
+    // });
     btn.addEventListener('click', (event) => {
       moveSlides(event, carouselElements);
       // btn.removeAttribute('aria-labelledby');
@@ -385,17 +389,17 @@ function handleChangingSlides(carouselElements) {
     // btn.addEventListener('blur', () => {
     //   btn.removeAttribute('aria-labelledby');
     // });
-    btn.addEventListener('mouseover', () => {
-      const svg = btn.querySelector('svg');
-      svg.setAttribute('aria-hidden', true);
-      btn.removeAttribute('aria-label');
-    });
-    btn.addEventListener('mouseout', () => {
-      const svg = btn.querySelector('svg');
-      svg.removeAttribute('aria-hidden');
-      btn.setAttribute('aria-label', 'My test attribute');
-      btn.setAttribute('aria-labelledby', 'not-a-valid-id');
-    });
+    // btn.addEventListener('mouseover', () => {
+    //   const active = el.querySelector('.active');
+    //   const dataToggle = btn.getAttribute('data-toggle');
+    //   const nextEl = dataToggle === 'next' ? handleNext(active, slides) : handlePrevious(active, slides);
+    //   const dataLabelledBy = nextEl.getAttribute('data-labelledby');
+    //   btn.setAttribute('aria-labelledby', dataLabelledBy);
+    // });
+
+    // btn.addEventListener('mouseout', () => {
+    //   btn.removeAttribute('aria-labelledby');
+    // });
   });
 
   // Handle keyboard navigation
