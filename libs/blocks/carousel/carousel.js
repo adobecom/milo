@@ -25,7 +25,7 @@ const KEY_CODES = {
   TAB: 'Tab',
 };
 
-const ARIA_LIVE_DELAY = 3000;
+const ARIA_LIVE_DELAY = 2000;
 let pressedBtn = null;
 
 function decorateNextPreviousBtns() {
@@ -254,7 +254,7 @@ function moveSlides(event, carouselElements, jumpToIndex) {
     nextPreviousBtns[1].focus();
     slideContainer?.classList.remove('is-reversing');
     if (!pressedBtn) {
-      pressedBtn = true;
+      // pressedBtn = true;
       ariaLiveDelay = ARIA_LIVE_DELAY;
     }
   }
@@ -270,7 +270,7 @@ function moveSlides(event, carouselElements, jumpToIndex) {
     nextPreviousBtns[0].focus();
     slideContainer.classList.add('is-reversing');
     if (!pressedBtn) {
-      pressedBtn = true;
+      // pressedBtn = true;
       ariaLiveDelay = ARIA_LIVE_DELAY;
     }
   }
@@ -281,6 +281,7 @@ function moveSlides(event, carouselElements, jumpToIndex) {
 
   // Update aria-live
   ariaLiveTimeout = setTimeout(() => {
+    pressedBtn = true;
     ariaLive.textContent = activeSlide.textContent;
   }, ariaLiveDelay);
 
