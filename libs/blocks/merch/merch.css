@@ -32,6 +32,10 @@ a[is='checkout-link'].con-button > span {
   height: 100%;
 }
 
+.three-in-one .milo-iframe {
+  padding-bottom: 0;
+}
+
 .three-in-one .loading iframe {
   visibility: hidden;
 }
