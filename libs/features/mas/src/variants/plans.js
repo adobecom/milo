@@ -11,25 +11,34 @@ import {
 export const PLANS_AEM_FRAGMENT_MAPPING = {
     title: { tag: 'p', slot: 'heading-xs' },
     prices: { tag: 'p', slot: 'heading-m' },
-    promoText: { tag: 'p', slot: 'promo-text' },
+    promoText: {  tag: 'p', slot: 'promo-text'  },
     description: { tag: 'div', slot: 'body-xs' },
     mnemonics: { size: 'l' },
-    callout: { tag: 'div', slot: 'callout-content' },
+    callout: {  tag: 'div', slot: 'callout-content'  },
     quantitySelect: { tag: 'div', slot: 'quantity-select' },
-    stockOffer: true,
+    stockOffer: true /* @deprecated */,
+    addon: true,
     secureLabel: true,
     planType: true,
     badge: { tag: 'div', slot: 'badge' },
     allowedBadgeColors: [
-        'spectrum-yellow-300-plans',
-        'spectrum-gray-300-plans',
-        'spectrum-gray-700-plans',
-        'spectrum-green-900-plans',
-    ],
+      
+      'spectrum-yellow-300-plans',
+      
+      'spectrum-gray-300-plans',
+      
+      'spectrum-gray-700-plans',
+      
+      'spectrum-green-900-plans',
+  ,
+  ],
     allowedBorderColors: [
-        'spectrum-yellow-300-plans',
-        'spectrum-gray-300-plans',
-    ],
+      
+      'spectrum-yellow-300-plans',
+      
+      'spectrum-gray-300-plans',
+  ,
+  ],
     borderColor: { attribute: 'border-color' },
     size: ['wide', 'super-wide'],
     whatsIncluded: { tag: 'div', slot: 'whats-included' },
@@ -99,8 +108,19 @@ export class Plans extends VariantLayout {
         this.adaptForMobile();
         this.adjustTitleWidth();
         this.adjustLegal();
+        this.adjustAddon();
     }
 
+    get headingM() {
+        return this.card.querySelector('[slot="heading-m"]');
+    }
+
+    get mainPrice() {
+        const price = this.headingM.querySelector(
+            `${SELECTOR_MAS_INLINE_PRICE}[data-template="price"]`,
+        );
+        return price;
+    }
     async adjustLegal() {
         await this.card.updateComplete;
         if (this.legal) return;
@@ -121,6 +141,18 @@ export class Plans extends VariantLayout {
         legal.setAttribute('data-template', 'legal');
         headingM.appendChild(legal);
     }
+
+    async adjustAddon() {
+      await this.card.updateComplete;
+      const addon = this.card.addon;
+      if (!addon) return;
+      const price = this.mainPrice;
+      if (!price) return;
+      await price.onceSettled();
+      const planType = price.value?.[0]?.planType;
+      if (!planType) return;
+      addon.planType = planType;
+  }
 
     get stockCheckbox() {
         return this.card.checkboxLabel
@@ -158,6 +190,7 @@ export class Plans extends VariantLayout {
                 <slot name="whats-included"></slot>
                 <slot name="callout-content"></slot>
                 ${this.stockCheckbox}
+                <slot name="addon"></slot>
                 <slot name="badge"></slot>
                 <slot name="quantity-select"></slot>
             </div>

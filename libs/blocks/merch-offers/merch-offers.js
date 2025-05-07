@@ -30,6 +30,14 @@ const getLiteralsTemplate = (el, name) => {
  * This block provides offers data like stock offers for re-using in cards or dialogs.
  */
 export default async function init(el) {
+  if (el.classList.contains('acrobat-ai-assistant')) {
+    const merchAddonTemplate = createTag('template', { class: el.classList });
+    merchAddonTemplate.classList.remove('merch-offers');
+    merchAddonTemplate.classList.add('merch-addon');
+    merchAddonTemplate.innerHTML = `<merch-addon>${el.firstElementChild.firstElementChild.innerHTML}</merch-addon>`;
+    el.replaceWith(merchAddonTemplate);
+    return merchAddonTemplate;
+  }
   const commonsDeps = [
     import(`${base}/deps/lit-all.min.js`),
     import(`${base}/features/spectrum-web-components/dist/theme.js`),

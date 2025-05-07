@@ -1,6 +1,8 @@
 import { LitElement } from 'lit';
 import { sizeStyles, styles } from './merch-card.css.js';
 import './merch-icon.js';
+import './merch-gradient.js';
+import './merch-addon.js';
 import {
     getVariantLayout,
     registerVariant,
@@ -80,8 +82,11 @@ export class MerchCard extends LitElement {
         detailBg: { type: String, attribute: 'detail-bg' },
         secureLabel: { type: String, attribute: 'secure-label' },
         checkboxLabel: { type: String, attribute: 'checkbox-label' },
+        addonTitle: { type: String, attribute: 'addon-title' },
+        addonOffers: { type: Object, attribute: 'addon-offers' },
         selected: { type: Boolean, attribute: 'aria-selected', reflect: true },
         storageOption: { type: String, attribute: 'storage', reflect: true },
+        planType: { type: String, attribute: 'plan-type', reflect: true },
         settings: {
             type: Object,
             attribute: false,
@@ -287,6 +292,34 @@ export class MerchCard extends LitElement {
         }
     }
 
+    changeHandler(event) {
+        if (event.target.tagName === 'MERCH-ADDON') {
+            this.toggleAddon(event.target);
+        }
+    }
+
+    toggleAddon(merchAddon) {
+        const elements = this.checkoutLinks;
+        // content toggle should be handled in the variant layout
+        this.variantLayout?.toggleAddon?.(merchAddon);
+        if (elements.length === 0) return;
+        for (const element of elements) {
+            const { offerType, planType } = element.value?.[0];
+            if (!offerType || !planType) return;
+            const addonOsi = merchAddon.querySelector(
+                `p[data-plan-type="${planType}"] ${SELECTOR_MAS_INLINE_PRICE}[data-offer-type="${offerType}"]`,
+            )?.dataset?.wcsOsi;
+            const osis = element.dataset.wcsOsi
+                .split(',')
+                .filter((osi) => osi !== addonOsi);
+
+            if (merchAddon.checked) {
+                osis.push(addonOsi);
+            }
+            element.dataset.wcsOsi = osis.join(',');
+        }
+    }
+
     handleQuantitySelection(event) {
         const elements = this.checkoutLinks;
         for (const element of elements) {
@@ -365,6 +398,7 @@ export class MerchCard extends LitElement {
         // aem-fragment logic
         this.addEventListener(EVENT_AEM_ERROR, this.handleAemFragmentEvents);
         this.addEventListener(EVENT_AEM_LOAD, this.handleAemFragmentEvents);
+        this.addEventListener('change', this.changeHandler);
 
         if (!this.aemFragment) {
             setTimeout(() => this.checkReady(), 0);
@@ -382,6 +416,7 @@ export class MerchCard extends LitElement {
         this.removeEventListener(EVENT_AEM_ERROR, this.handleAemFragmentEvents);
         this.removeEventListener(EVENT_AEM_LOAD, this.handleAemFragmentEvents);
         this.removeEventListener(EVENT_MERCH_ADDON_AND_QUANTITY_UPDATE, this.handleAddonAndQuantityUpdate);
+        this.removeEventListener('change', this.changeHandler);
     }
 
     // custom methods
@@ -489,6 +524,10 @@ export class MerchCard extends LitElement {
 
     get aemFragment() {
         return this.querySelector('aem-fragment');
+    }
+
+    get addon() {
+        return this.querySelector('merch-addon');
     }
 
     /* c8 ignore next 3 */
