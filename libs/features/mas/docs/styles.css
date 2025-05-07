@@ -236,6 +236,25 @@ merch-card[variant='ccd-slice'][size='wide'] {
     }
 }
 
+.four-merch-cards.plans merch-card:not([variant='plans-students']) {
+    width: auto;
+}
+
+@media screen and (min-width: 768px) {
+    .plans-item:has(merch-card[size='wide']),
+    .plans-item:has(merch-card[size='super-wide']) {
+        width: 100%;
+        grid-column: 1 / -1;
+    }
+}
+
+/* Laptop */
+@media screen and (min-width: 1200px) {
+    .plans-item:has(merch-card[size='wide']) {
+        grid-column: span 2;
+    }
+}
+
 /* Adobe Home */
 
 h1,
