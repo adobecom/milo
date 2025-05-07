@@ -26,7 +26,7 @@ const KEY_CODES = {
 };
 
 const ARIA_LIVE_DELAY = 2500;
-let pressedBtn = false;
+let firstTimePressed = false;
 let navTabbedInto = null;
 
 function decorateNextPreviousBtns() {
@@ -254,7 +254,7 @@ function moveSlides(event, carouselElements, jumpToIndex) {
     activeSlide.removeAttribute('aria-hidden');
     nextPreviousBtns[1].focus();
     slideContainer?.classList.remove('is-reversing');
-    if (!pressedBtn) {
+    if (!firstTimePressed) {
       ariaLiveDelay = ARIA_LIVE_DELAY;
     }
   }
@@ -269,7 +269,7 @@ function moveSlides(event, carouselElements, jumpToIndex) {
     activeSlide.removeAttribute('aria-hidden');
     nextPreviousBtns[0].focus();
     slideContainer.classList.add('is-reversing');
-    if (!pressedBtn) {
+    if (!firstTimePressed) {
       ariaLiveDelay = ARIA_LIVE_DELAY;
     }
   }
@@ -283,7 +283,7 @@ function moveSlides(event, carouselElements, jumpToIndex) {
     ariaLiveDelay = ARIA_LIVE_DELAY - (event.timeStamp - navTabbedInto.timeStamp);
   }
   ariaLiveTimeout = setTimeout(() => {
-    pressedBtn = true;
+    firstTimePressed = true;
     ariaLive.textContent = activeSlide.textContent;
   }, ariaLiveDelay);
 
@@ -389,7 +389,7 @@ function handleChangingSlides(carouselElements) {
     });
 
     btn.addEventListener('blur', () => {
-      pressedBtn = false;
+      firstTimePressed = false;
     });
   });
 
@@ -400,7 +400,7 @@ function handleChangingSlides(carouselElements) {
       moveSlides(event, carouselElements);
     } else if (event.key === KEY_CODES.TAB) {
       navTabbedInto = event;
-      pressedBtn = true;
+      firstTimePressed = true;
     }
   });
 
