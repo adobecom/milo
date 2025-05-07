@@ -939,6 +939,14 @@ class Gnav {
     toggle?.setAttribute('aria-expanded', !isExpanded);
     document.body.classList.toggle('disable-scroll', !isExpanded);
     this.elements.navWrapper?.classList?.toggle('feds-nav-wrapper--expanded', !isExpanded);
+    const trapNavFocus = (trap) => {
+      const nav = this.elements.navWrapper;
+      document.querySelectorAll('body *').forEach((el) => {
+        const skip = nav.contains(el) || ['SCRIPT', 'STYLE'].includes(el.tagName);
+        if (!skip) (trap ? el.setAttribute : el.removeAttribute).call(el, 'aria-hidden', 'true');
+      });
+    };
+    trapNavFocus(!isExpanded);
     closeAllDropdowns();
     setCurtainState(!isExpanded);
     toggle?.setAttribute('daa-ll', `hamburgermenu|${isExpanded ? 'open' : 'close'}`);
