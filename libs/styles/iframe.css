@@ -17,7 +17,7 @@
 }
 
 .dialog-modal .milo-video,
-.dialog-modal .milo-iframe {
+.dialog-modal:not(.three-in-one) .milo-iframe {
   min-width: 80vw;
 }
 
