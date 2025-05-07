@@ -1417,6 +1417,7 @@ async function loadPostLCP(config) {
       const { default: loadGeoRouting } = await import('../features/georoutingv2/georoutingv2.js');
       await loadGeoRouting(config, createTag, getMetadata, loadBlock, loadStyle, jsonPromise);
     })();
+    // This is used only in webapp-prompt.js
     config.georouting = { loadedPromise: geoRoutingPromise };
   }
   const header = document.querySelector('header');
