@@ -78,8 +78,7 @@ const decorateLinkGroup = (elem, index) => {
   const linkGroup = toFragment`<a
     href="${link.href}"
     class="feds-navLink${modifierClasses.length ? ` ${modifierClasses.join(' ')}` : ''}"
-    daa-ll="${getAnalyticsValue(link.textContent, index)}"
-    >
+    daa-ll="${getAnalyticsValue(link.textContent, index)}">
       ${imageElem}
       ${contentElem}
     </a>`;
