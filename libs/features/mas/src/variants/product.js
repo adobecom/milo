@@ -1,5 +1,5 @@
 import { VariantLayout } from './variant-layout';
-import { isMobile } from '../utils.js';
+import { isMobile, createTag } from '../utils.js';
 import { html, css } from 'lit';
 import { CSS } from './product.css.js';
 import { SELECTOR_MAS_INLINE_PRICE } from '../constants.js';
@@ -70,12 +70,49 @@ export class Product extends VariantLayout {
         this.adjustAddon();
     }
 
+    get headingXSSlot() {
+      return this.card.shadowRoot
+        .querySelector('slot[name="heading-xs"]')
+        .assignedElements()[0];
+  }
+
     get mainPrice() {
         const price = this.card.querySelector(
             `[slot="heading-xs"] ${SELECTOR_MAS_INLINE_PRICE}[data-template="price"]`,
         );
         return price;
     }
+
+    toggleAddon(merchAddon) {
+      const mainPrice = this.mainPrice;
+      const headingXSSlot = this.headingXSSlot;
+          if (!mainPrice && headingXSSlot) {
+              const planType = merchAddon?.getAttribute('plan-type');
+              let visibleSpan = null;
+              if (merchAddon && planType) {
+                  const matchingP = merchAddon.querySelector(`p[data-plan-type="${planType}"]`);
+                  visibleSpan = matchingP?.querySelector('span[is="inline-price"]');
+              }
+              this.card.querySelectorAll('p[slot="heading-xs"]').forEach(p => p.remove());
+              if (merchAddon.checked) {
+                  if (visibleSpan) {
+                      const replacementP = createTag(
+                        'p',
+                        { class: 'addon-heading-xs-price-addon', slot: 'heading-xs' },
+                        visibleSpan.innerHTML
+                      );
+                      this.card.appendChild(replacementP);
+                  }
+              } else {
+                  const freeP = createTag(
+                    'p',
+                    { class: 'card-heading', id: 'free', slot: 'heading-xs' },
+                    'Free'
+                  );
+                  this.card.appendChild(freeP);
+              }
+       }
+  }
 
     async adjustAddon() {
         await this.card.updateComplete;

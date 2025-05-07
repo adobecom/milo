@@ -80,6 +80,8 @@ export class MerchCard extends LitElement {
         detailBg: { type: String, attribute: 'detail-bg' },
         secureLabel: { type: String, attribute: 'secure-label' },
         checkboxLabel: { type: String, attribute: 'checkbox-label' },
+        addonTitle: { type: String, attribute: 'addon-title' },
+        addonOffers: { type: Object, attribute: 'addon-offers' },
         selected: { type: Boolean, attribute: 'aria-selected', reflect: true },
         storageOption: { type: String, attribute: 'storage', reflect: true },
         planType: { type: String, attribute: 'plan-type', reflect: true },
@@ -296,6 +298,7 @@ export class MerchCard extends LitElement {
 
     toggleAddon(merchAddon) {
         const elements = this.checkoutLinks;
+        this.variantLayout?.toggleAddon(merchAddon);
         if (elements.length === 0) return;
         for (const element of elements) {
             const planType = element.value?.[0]?.planType;
