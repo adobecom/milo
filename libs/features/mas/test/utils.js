@@ -1,4 +1,7 @@
 import { setViewport } from '@web/test-runner-commands';
+import priceLiteralsJson from '../price-literals.json' with { type: 'json' };
+
+window.masPriceLiterals = priceLiteralsJson.data;
 
 export const delay = (ms = 0) =>
     new Promise((resolve) => setTimeout(resolve, ms));
@@ -100,4 +103,10 @@ export const getTemplateContent = (template) => {
     const templateEl = document.getElementById(template);
     const templateContent = templateEl.content.cloneNode(true);
     return [...templateContent.children];
+};
+
+export const oneEvent = (element, eventName) => {
+    return new Promise((resolve) => {
+        element.addEventListener(eventName, resolve, { once: true });
+    });
 };

@@ -14,9 +14,9 @@ const getCookie = (name) => document.cookie
   .find((row) => row.startsWith(`${name}=`))
   ?.split('=')[1];
 
-describe('Region Nav Block', () => {
+describe('Region Nav Block', async () => {
   const block = document.body.querySelector('.region-nav');
-  init(block);
+  await init(block);
   let clock;
 
   beforeEach(async () => {

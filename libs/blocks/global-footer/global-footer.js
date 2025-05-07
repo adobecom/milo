@@ -67,7 +67,7 @@ class Footer {
       observer.disconnect();
       this.decorateContent();
     }, CONFIG.delays.decoration);
-  }, 'Error in global footer init', 'global-footer', 'error');
+  }, 'Error in global footer init', 'global-footer', 'e');
 
   decorateContent = () => logErrorFor(async () => {
     // Fetch footer content
@@ -81,7 +81,7 @@ class Footer {
       const error = new Error('Could not create global footer. Content not found!');
       error.tags = 'global-footer';
       error.url = url;
-      error.errorType = 'error';
+      error.errorType = 'e';
       lanaLog({ message: error.message, ...error });
       const { onFooterError } = getConfig();
       onFooterError?.(error);
@@ -128,7 +128,7 @@ class Footer {
     this.block.append(this.elements.footer);
     const { onFooterReady } = getConfig();
     onFooterReady?.();
-  }, 'Failed to decorate footer content', 'global-footer', 'error');
+  }, 'Failed to decorate footer content', 'global-footer', 'e');
 
   loadMenuLogic = async () => {
     this.menuLogic = this.menuLogic || new Promise(async (resolve) => {
@@ -169,7 +169,7 @@ class Footer {
         message: 'Issue with loadIcons',
         e: `${file.statusText} url: ${file.url}`,
         tags: 'global-footer',
-        errorType: 'info',
+        errorType: 'i',
       });
     }
     const content = await file.text();
@@ -214,7 +214,7 @@ class Footer {
     try {
       url = new URL(regionSelector.href);
     } catch (e) {
-      lanaLog({ message: `Could not create URL for region picker; href: ${regionSelector.href}`, tags: 'global-footer', errorType: 'error' });
+      lanaLog({ message: `Could not create URL for region picker; href: ${regionSelector.href}`, tags: 'global-footer', errorType: 'e' });
       return this.elements.regionPicker;
     }
 
@@ -401,9 +401,23 @@ class Footer {
     return this.elements.legal;
   };
 
+  decorateLogo = () => {
+    const logoContainer = this.body.querySelector('.adobe-logo');
+    if (!logoContainer) return '';
+
+    const imageEl = logoContainer.querySelector('picture img[src$=".svg"]');
+    if (!imageEl) return '';
+
+    return toFragment`
+      <a class="footer-logo">
+        <span class="footer-logo-image">${imageEl}</span>
+      </a>`;
+  };
+
   decorateFooter = () => {
     this.elements.footer = toFragment`<div class="feds-footer-wrapper">
         ${this.elements.footerMenu}
+        ${this.decorateLogo()}
         ${this.elements.featuredProducts}
         <div class="feds-footer-options">
           <div class="feds-footer-miscLinks">

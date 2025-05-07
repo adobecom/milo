@@ -2,8 +2,8 @@
 // https://git.corp.adobe.com/PandoraUI/commerce/tree/master/packages/react-price/src/js/utils/
 //      price-util.ts
 //      FormatStringHelpers.ts
-import { Term, Commitment } from '@pandora/data-models-odm';
 // import { RecurrenceTerm } from '@pandora/react-price';
+import { Commitment, Term } from '../constants.js';
 import formatNumber from './numberFormat.js';
 
 const DECIMAL_POINT = '.';

@@ -7,7 +7,7 @@ import {
   setItemsParameter, 
   buildCheckoutUrl 
 } from '../src/buildCheckoutUrl.js';
-import { PROVIDER_ENVIRONMENT, WORKFLOW_STEP } from '../src/constants.js';
+import { PROVIDER_ENVIRONMENT, CheckoutWorkflowStep } from '../src/constants.js';
 
 describe('mapParameterName', () => {
   it('should return mapped name for known parameters', () => {
@@ -60,7 +60,7 @@ describe('buildCheckoutUrl', () => {
     const validateStub = sinon.stub().returns(true);
     const checkoutData = {
       env: PROVIDER_ENVIRONMENT.PRODUCTION,
-      workflowStep: WORKFLOW_STEP.CHECKOUT,
+      workflowStep: CheckoutWorkflowStep.CHECKOUT,
       clientId: 'testClient',
       country: 'US',
       items: [{ quantity: 1, language: 'en' }],
@@ -71,13 +71,13 @@ describe('buildCheckoutUrl', () => {
   });
 
   it('should throw an error if required fields are missing', () => {
-    expect(() => buildCheckoutUrl({ workflowStep: WORKFLOW_STEP.CHECKOUT })).to.throw();
+    expect(() => buildCheckoutUrl({ workflowStep: CheckoutWorkflowStep.CHECKOUT })).to.throw();
   });
 
   it('should set correct parameters for CRM modal type', () => {
     const checkoutData = {
       env: PROVIDER_ENVIRONMENT.PRODUCTION,
-      workflowStep: WORKFLOW_STEP.CHECKOUT,
+      workflowStep: CheckoutWorkflowStep.CHECKOUT,
       clientId: 'testClient',
       country: 'US',
       items: [{ quantity: 1 }],
@@ -87,14 +87,14 @@ describe('buildCheckoutUrl', () => {
     };
     const url = buildCheckoutUrl(checkoutData);
     const parsedUrl = new URL(url);
-    expect(parsedUrl.searchParams.get('af')).to.equal('uc_segmentation_hide_tabs,uc_new_user_iframe,uc_new_system_close');
+    expect(parsedUrl.searchParams.get('af')).to.equal('uc_new_user_iframe,uc_new_system_close');
     expect(parsedUrl.searchParams.get('cli')).to.equal('creative');
   });
 
   it('should set correct parameters for TWP modal type', () => {
     const checkoutData = {
       env: PROVIDER_ENVIRONMENT.PRODUCTION,
-      workflowStep: WORKFLOW_STEP.CHECKOUT,
+      workflowStep: CheckoutWorkflowStep.CHECKOUT,
       clientId: 'testClient',
       country: 'US',
       items: [{ quantity: 1 }],
@@ -111,7 +111,7 @@ describe('buildCheckoutUrl', () => {
   it('should set correct parameters for D2P modal type', () => {
     const checkoutData = {
       env: PROVIDER_ENVIRONMENT.PRODUCTION,
-      workflowStep: WORKFLOW_STEP.CHECKOUT,
+      workflowStep: CheckoutWorkflowStep.CHECKOUT,
       clientId: 'testClient',
       country: 'US',
       items: [{ quantity: 1 }],
@@ -128,7 +128,7 @@ describe('buildCheckoutUrl', () => {
   it('should set market segment for EDU individual customer', () => {
     const checkoutData = {
       env: PROVIDER_ENVIRONMENT.PRODUCTION,
-      workflowStep: WORKFLOW_STEP.CHECKOUT,
+      workflowStep: CheckoutWorkflowStep.CHECKOUT,
       clientId: 'testClient',
       country: 'US',
       items: [{ quantity: 1 }],
@@ -144,7 +144,7 @@ describe('buildCheckoutUrl', () => {
   it('should set customer segment for COM team customer', () => {
     const checkoutData = {
       env: PROVIDER_ENVIRONMENT.PRODUCTION,
-      workflowStep: WORKFLOW_STEP.CHECKOUT,
+      workflowStep: CheckoutWorkflowStep.CHECKOUT,
       clientId: 'testClient',
       country: 'US',
       items: [{ quantity: 1 }],

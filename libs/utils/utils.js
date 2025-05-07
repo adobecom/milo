@@ -92,6 +92,7 @@ const MILO_BLOCKS = [
   'youtube',
   'z-pattern',
   'share',
+  'susi-light-login',
   'reading-time',
 ];
 const AUTO_BLOCKS = [
@@ -228,7 +229,13 @@ export function getLanguage(languages, locales, pathname = window.location.pathn
       || (language.languageBased === false && !language.region);
   if (isLegacyLocaleRoutingMode) {
     const locale = getLocale(locales, pathname);
-    if (locale.prefix === '') locale.language = DEFAULT_LANG;
+    const englishLang = languages.en;
+    if (locale.prefix === '' && englishLang) {
+      locale.language = DEFAULT_LANG;
+      if (englishLang.region) locale.region = englishLang.region;
+      if (englishLang.ietf) locale.ietf = englishLang.ietf;
+      if (englishLang.tk) locale.tk = englishLang.tk;
+    }
     return locale;
   }
 
@@ -366,6 +373,8 @@ export function hasLanguageLinks(area, paths = LANGUAGE_BASED_PATHS) {
 }
 
 export async function loadLanguageConfig() {
+  if (localeToLanguageMap && siteLanguages) return { siteLanguages, localeToLanguageMap };
+
   const parseList = (str) => str.split(/[\n,]+/).map((t) => t.trim()).filter(Boolean);
   try {
     const response = await fetch(`${getFederatedContentRoot()}/federal/assets/data/languages-config.json`);
@@ -378,9 +387,13 @@ export async function loadLanguageConfig() {
       pathMatches: parseList(site.pathMatches),
       languages: parseList(site.languages),
     }));
+
+    return { siteLanguages, localeToLanguageMap };
   } catch (e) {
     window.lana?.log('Failed to load language-config.json:', e);
   }
+
+  return {};
 }
 
 let fedsPlaceholderConfig;
@@ -453,6 +466,22 @@ function getPrefixBySite(locale, url, relative) {
   return prefix;
 }
 
+function isLocalizedPath(path, locales) {
+  const langstorePath = path.startsWith(`/${LANGSTORE}`);
+  const isMerchLink = path === '/tools/ost';
+  const previewPath = path.startsWith(`/${PREVIEW}`);
+  const anyTypeOfLocaleOrLanguagePath = localeToLanguageMap
+    && (localeToLanguageMap.some((l) => l.locale !== '' && (path.startsWith(`/${l.locale}/`) || path === `/${l.locale}`))
+      || (localeToLanguageMap.some((l) => path.startsWith(`/${l.langaugePath}/`) || path === `/${l.langaugePath}`)));
+  const legacyLocalePath = locales && Object.keys(locales).some((loc) => loc !== '' && (path.startsWith(`/${loc}/`)
+    || path.endsWith(`/${loc}`)));
+  return langstorePath
+    || isMerchLink
+    || previewPath
+    || anyTypeOfLocaleOrLanguagePath
+    || legacyLocalePath;
+}
+
 export function localizeLink(
   href,
   originHostName = window.location.hostname,
@@ -473,11 +502,7 @@ export function localizeLink(
     const isLocalizable = relative || (prodDomains && prodDomains.includes(url.hostname))
       || overrideDomain;
     if (!isLocalizable) return processedHref;
-    const isLocalizedLink = path.startsWith(`/${LANGSTORE}`)
-      || path.startsWith(`/${PREVIEW}`)
-      || (languages && Object.keys(languages).some((lang) => lang !== '' && (path.startsWith(`/${lang}/`))))
-      || (locales && Object.keys(locales).some((loc) => loc !== '' && (path.startsWith(`/${loc}/`)
-        || path.endsWith(`/${loc}`))));
+    const isLocalizedLink = isLocalizedPath(path, locales);
     if (isLocalizedLink) return processedHref;
 
     const prefix = getPrefixBySite(locale, url, relative);
@@ -715,7 +740,7 @@ export function decorateImageLinks(el) {
     const [source, alt, icon] = img.alt.split('|');
     try {
       const url = new URL(source.trim());
-      const href = url.hostname.includes(`.${SLD}.`) ? `${url.pathname}${url.hash}` : url.href;
+      const href = (url.hostname.includes('.aem.') || url.hostname.includes('.hlx.')) ? `${url.pathname}${url.search}${url.hash}` : url.href;
       if (alt?.trim().length) img.alt = alt.trim();
       const pic = img.closest('picture');
       const picParent = pic.parentElement;
@@ -955,7 +980,7 @@ function decorateDefaults(el) {
 
 export async function getGnavSource() {
   const { locale, dynamicNavKey } = getConfig();
-  let url = getMetadata('gnav-source') || `${locale.contentRoot}/gnav`;
+  let url = getMetadata('gnav-source') || `${locale?.contentRoot ?? window.location.origin}/gnav`;
   if (dynamicNavKey) {
     const { default: dynamicNav } = await import('../features/dynamic-navigation/dynamic-navigation.js');
     url = dynamicNav(url, dynamicNavKey);
@@ -965,7 +990,7 @@ export async function getGnavSource() {
 
 export function isLocalNav() {
   const { locale = {} } = getConfig();
-  const gnavSource = getMetadata('gnav-source') || `${locale.contentRoot}/gnav`;
+  const gnavSource = getMetadata('gnav-source') || `${locale?.contentRoot ?? window.location.origin}/gnav`;
   let newNavEnabled = new URLSearchParams(window.location.search).get('newNav');
   newNavEnabled = newNavEnabled ? newNavEnabled !== 'false' : getMetadata('mobile-gnav-v2') !== 'off';
   return gnavSource.split('/').pop().startsWith('localnav-') && newNavEnabled;
@@ -1052,18 +1077,30 @@ const findReplaceableNodes = (area) => {
   return nodes;
 };
 
+function getPlaceholderPaths(config) {
+  const root = `${config.locale?.contentRoot}/placeholders`;
+  const paths = [`${root}.json`];
+  if (config.env.name !== 'prod'
+    && getMetadata('placeholders-stage') === 'on') paths.push(`${root}-stage.json`);
+  return paths;
+}
+
 let placeholderRequest;
 export async function decoratePlaceholders(area, config) {
   if (!area) return;
   const nodes = findReplaceableNodes(area);
   if (!nodes.length) return;
   area.dataset.hasPlaceholders = 'true';
-  const placeholderPath = `${config.locale?.contentRoot}/placeholders.json`;
-  placeholderRequest = placeholderRequest
-    || customFetch({ resource: placeholderPath, withCacheRules: true })
-      .catch(() => ({}));
+  const phPaths = getPlaceholderPaths(config);
+  placeholderRequest ||= Promise.all(
+    phPaths.map((path) => customFetch({ resource: path, withCacheRules: true })),
+  ).catch(() => ({}));
   const { decoratePlaceholderArea } = await import('../features/placeholders.js');
-  await decoratePlaceholderArea({ placeholderPath, placeholderRequest, nodes });
+  await decoratePlaceholderArea({
+    placeholderPath: phPaths[0],
+    placeholderRequest,
+    nodes,
+  });
 }
 
 async function loadFooter() {
@@ -1271,7 +1308,7 @@ export async function loadMartech({
  *
  * @returns {boolean} True if the user is signed out, otherwise false.
  */
-function isSignedOut() {
+export function isSignedOut() {
   const serverTiming = window.performance?.getEntriesByType('navigation')?.[0]?.serverTiming?.reduce(
     (acc, { name, description }) => ({ ...acc, [name]: description }),
     {},
@@ -1321,7 +1358,6 @@ async function checkForPageMods() {
     }
   }
   const enablePersV2 = enablePersonalizationV2();
-  const hybridPersEnabled = getMepEnablement('hybrid-pers');
   if ((target || xlg) && enablePersV2) {
     const params = new URL(window.location.href).searchParams;
     calculatedTimeout = parseInt(params.get('target-timeout'), 10)
@@ -1334,7 +1370,7 @@ async function checkForPageMods() {
       const now = performance.now();
       performance.mark('interaction-start');
       const data = await loadAnalyticsAndInteractionData(
-        { locale, env: getEnv({})?.name, calculatedTimeout, hybridPersEnabled },
+        { locale, env: getEnv({})?.name, calculatedTimeout },
       );
       performance.mark('interaction-end');
       performance.measure('total-time', 'interaction-start', 'interaction-end');
@@ -1366,7 +1402,6 @@ async function checkForPageMods() {
     targetInteractionPromise,
     calculatedTimeout,
     enablePersV2,
-    hybridPersEnabled,
   });
 }
 
@@ -1405,6 +1440,12 @@ async function loadPostLCP(config) {
     import('../features/personalization/personalization.js')
       .then(({ addMepAnalytics }) => addMepAnalytics(config, header));
   }
+  // load privacy here if quick-link is present in first section
+  const quickLink = document.querySelector('div.section')?.querySelector('.quick-link');
+  if (!quickLink) return;
+  import('../scripts/delayed.js').then(({ loadPrivacy }) => {
+    loadPrivacy(getConfig, loadScript);
+  });
 }
 
 export function scrollToHashedElement(hash) {
@@ -1598,8 +1639,8 @@ async function processSection(section, config, isDoc) {
 
 export async function loadArea(area = document) {
   const isDoc = area === document;
-
   if (isDoc) {
+    if (document.getElementById('page-load-ok-milo')) return;
     await checkForPageMods();
     appendHtmlToCanonicalUrl();
     appendSuffixToTitles();
