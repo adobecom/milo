@@ -488,24 +488,24 @@ export const transformTemplateToMobile = async (popup, item, localnav = false) =
   if (notMegaMenu) return originalContent;
 
   const tabs = [...popup.querySelectorAll('.feds-menu-section')]
-  .filter((section) => !section.querySelector('.feds-promo') && section.textContent)
-  .map((section) => {
-    const headline = section.querySelector('.feds-menu-headline');
-    const name = headline?.textContent ?? 'Shop For';
-    const daallTab = headline?.getAttribute('daa-ll');
-    const daalhTabContent = section.querySelector('.feds-menu-items')?.getAttribute('daa-lh');
-    const content = section.querySelector('.feds-menu-items') ?? section;
-    const links = [...content.querySelectorAll('a.feds-navLink, .feds-cta--secondary')].map((x) => x.outerHTML).join('');
-    return { name, links, daallTab, daalhTabContent };
-  });
+    .filter((section) => !section.querySelector('.feds-promo') && section.textContent)
+    .map((section) => {
+      const headline = section.querySelector('.feds-menu-headline');
+      const name = headline?.textContent ?? 'Shop For';
+      const daallTab = headline?.getAttribute('daa-ll');
+      const daalhTabContent = section.querySelector('.feds-menu-items')?.getAttribute('daa-lh');
+      const content = section.querySelector('.feds-menu-items') ?? section;
+      const links = [...content.querySelectorAll('a.feds-navLink, .feds-cta--secondary')].map((x) => x.outerHTML).join('');
+      return { name, links, daallTab, daalhTabContent };
+    });
 
   // promo and cross cloud menu section
-  const links = [...popup.querySelectorAll(`${selectors.gnavPromoWrapper}, ${selectors.crossCloudMenuLinks}`)];
-  if (links.length) {
+  const promoAndCrossCloudMenuLinks = [...popup.querySelectorAll(`${selectors.gnavPromoWrapper}, ${selectors.crossCloudMenuLinks}`)];
+  if (promoAndCrossCloudMenuLinks.length) {
     const placeholder = await replaceKey('more', getFedsPlaceholderConfig());
     tabs.push({
       name: placeholder,
-      links: links.map((x) => x.outerHTML).join(''),
+      links: promoAndCrossCloudMenuLinks.map((x) => x.outerHTML).join(''),
       daallTab: placeholder,
       daalhTabContent: placeholder,
     });
