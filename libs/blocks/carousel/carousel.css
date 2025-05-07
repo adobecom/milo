@@ -723,7 +723,7 @@ html[dir="rtl"] .carousel .move-indicators {
   }
 }
 
-.carousel div[aria-live='polite'] {
+.carousel .aria-live-container {
   position: absolute;
   width: 0;
   height: 0;

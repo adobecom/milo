@@ -25,8 +25,9 @@ const KEY_CODES = {
   TAB: 'Tab',
 };
 
-const ARIA_LIVE_DELAY = 2000;
-let pressedBtn = null;
+const ARIA_LIVE_DELAY = 2500;
+let pressedBtn = false;
+let navTabbedInto = null;
 
 function decorateNextPreviousBtns() {
   const previousBtn = createTag(
@@ -254,7 +255,6 @@ function moveSlides(event, carouselElements, jumpToIndex) {
     nextPreviousBtns[1].focus();
     slideContainer?.classList.remove('is-reversing');
     if (!pressedBtn) {
-      // pressedBtn = true;
       ariaLiveDelay = ARIA_LIVE_DELAY;
     }
   }
@@ -270,7 +270,6 @@ function moveSlides(event, carouselElements, jumpToIndex) {
     nextPreviousBtns[0].focus();
     slideContainer.classList.add('is-reversing');
     if (!pressedBtn) {
-      // pressedBtn = true;
       ariaLiveDelay = ARIA_LIVE_DELAY;
     }
   }
@@ -280,6 +279,9 @@ function moveSlides(event, carouselElements, jumpToIndex) {
   referenceSlide.style.order = '1';
 
   // Update aria-live
+  if (navTabbedInto && event.timeStamp - navTabbedInto.timeStamp < ARIA_LIVE_DELAY) {
+    ariaLiveDelay = ARIA_LIVE_DELAY - (event.timeStamp - navTabbedInto.timeStamp);
+  }
   ariaLiveTimeout = setTimeout(() => {
     pressedBtn = true;
     ariaLive.textContent = activeSlide.textContent;
@@ -387,14 +389,19 @@ function handleChangingSlides(carouselElements) {
     });
 
     btn.addEventListener('blur', () => {
-      pressedBtn = null;
+      pressedBtn = false;
     });
   });
 
   // Handle keyboard navigation
   el.addEventListener('keydown', (event) => {
     if (event.key === KEY_CODES.ARROW_RIGHT
-      || event.key === KEY_CODES.ARROW_LEFT) { moveSlides(event, carouselElements); }
+      || event.key === KEY_CODES.ARROW_LEFT) {
+      moveSlides(event, carouselElements);
+    } else if (event.key === KEY_CODES.TAB) {
+      navTabbedInto = event;
+      pressedBtn = true;
+    }
   });
 
   // Handle slide indictors click
@@ -465,7 +472,10 @@ export default function init(el) {
   convertMpcMp4(slides);
   fragment.append(...slides);
   const slideWrapper = createTag('div', { class: 'carousel-wrapper' });
-  const ariaLive = createTag('div', { 'aria-live': 'polite' });
+  const ariaLive = createTag('div', {
+    class: 'aria-live-container',
+    'aria-live': 'assertive',
+  });
   slideWrapper.appendChild(ariaLive);
   const slideContainer = createTag('div', { class: 'carousel-slides' }, fragment);
   const carouselElements = {
