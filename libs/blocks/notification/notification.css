@@ -485,6 +485,10 @@
     padding-inline-end: 0;
   }
 
+  .notification p .con-button wbr {
+    display: none;
+  }
+
   .notification .foreground .text + .image {
     margin-inline-end: 0;
   }
