@@ -27,6 +27,7 @@ import merch, {
   reopenModal,
   setCtaHash,
   openModal,
+  PRICE_TEMPLATE_LEGAL,
 } from '../../../libs/blocks/merch/merch.js';
 
 import { mockFetch, unmockFetch, readMockText } from './mocks/fetch.js';
@@ -201,6 +202,17 @@ describe('Merch Block', () => {
         { prefix: '/africa', expectedLocale: 'en_MU' },
         { prefix: '', expectedLocale: 'en_US' },
         { prefix: '/ae_ar', expectedLocale: 'ar_AE' },
+        { prefix: '/langstore/en', expectedLocale: 'en_US' },
+        { prefix: '/langstore/es', expectedLocale: 'es_ES' },
+        { prefix: '/langstore/de', expectedLocale: 'de_DE' },
+        { prefix: '/langstore/id', expectedLocale: 'id_ID' },
+        { prefix: '/langstore/hi', expectedLocale: 'hi_IN' },
+        { prefix: '/langstore/ar', expectedLocale: 'ar_DZ' },
+        { prefix: '/langstore/nb', expectedLocale: 'nb_NO' },
+        { prefix: '/langstore/zh-hant', expectedLocale: 'zh-hant_TW' },
+        { prefix: '/langstore/el', expectedLocale: 'el_GR' },
+        { prefix: '/langstore/uk', expectedLocale: 'uk_UA' },
+        { prefix: '/langstore/es-419', expectedLocale: 'es-419_ES' },
       ].forEach(({ prefix, expectedLocale }) => {
         const computedLocale = getMiloLocaleSettings({ prefix })?.locale;
         expect(computedLocale).to.equal(expectedLocale);
@@ -298,6 +310,13 @@ describe('Merch Block', () => {
 
     it('renders merch link to full promo price', async () => {
       await validatePriceSpan('.fragment .merch.price.promo', { promotionCode: 'nicopromo' });
+    });
+  });
+
+  describe('Prices: legal template', () => {
+    it('renders merch link with legal template', async () => {
+      const el = await validatePriceSpan('.merch.price.legal', { template: PRICE_TEMPLATE_LEGAL });
+      expect(el.textContent).to.equal('per license (Annual, paid monthly.)');
     });
   });
 

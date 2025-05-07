@@ -11,6 +11,7 @@ export const PRICE_TEMPLATE_OPTICAL = 'optical';
 export const PRICE_TEMPLATE_REGULAR = 'price';
 export const PRICE_TEMPLATE_STRIKETHROUGH = 'strikethrough';
 export const PRICE_TEMPLATE_ANNUAL = 'annual';
+export const PRICE_TEMPLATE_LEGAL = 'legal';
 
 const PRICE_TEMPLATE_MAPPING = new Map([
   ['priceDiscount', PRICE_TEMPLATE_DISCOUNT],
@@ -21,6 +22,7 @@ const PRICE_TEMPLATE_MAPPING = new Map([
   [PRICE_TEMPLATE_STRIKETHROUGH, PRICE_TEMPLATE_STRIKETHROUGH],
   ['priceAnnual', PRICE_TEMPLATE_ANNUAL],
   [PRICE_TEMPLATE_ANNUAL, PRICE_TEMPLATE_ANNUAL],
+  [PRICE_TEMPLATE_LEGAL, PRICE_TEMPLATE_LEGAL],
 ]);
 
 export const PLACEHOLDER_KEY_DOWNLOAD = 'download';
@@ -45,6 +47,34 @@ export const CC_SINGLE_APPS = [
   ['RUSH'],
   ['XD'],
 ];
+
+const LanguageMap = {
+  en: 'US',
+  'en-gb': 'GB',
+  'es-mx': 'MX',
+  'fr-ca': 'CA',
+  da: 'DK',
+  et: 'EE',
+  ar: 'DZ',
+  el: 'GR',
+  iw: 'IL',
+  he: 'IL',
+  id: 'ID',
+  ms: 'MY',
+  nb: 'NO',
+  sl: 'SI',
+  sv: 'SE',
+  cs: 'CZ',
+  uk: 'UA',
+  hi: 'IN',
+  'zh-hans': 'CN',
+  'zh-hant': 'TW',
+  ja: 'JP',
+  ko: 'KR',
+  fil: 'PH',
+  th: 'TH',
+  vi: 'VN',
+};
 
 const GeoMap = {
   ar: 'AR_es',
@@ -128,12 +158,32 @@ const GeoMap = {
   th_th: 'TH_th',
 };
 
+const LANG_STORE_PREFIX = 'langstore/';
+
+function getDefaultLangstoreCountry(language) {
+  let country = LanguageMap[language];
+  if (!country && GeoMap[language]) {
+    country = language; // es, fr, pt, de
+  }
+  if (!country && language.includes('-')) {
+    [country] = language.split('-'); // variations like es-419, pt-PT
+  }
+
+  return country || 'US';
+}
+
 export function getMiloLocaleSettings(locale) {
   const localePrefix = locale?.prefix || 'US_en';
   const geo = localePrefix.replace('/', '') ?? '';
   let [country = 'US', language = 'en'] = (
     GeoMap[geo] ?? geo
   ).split('_', 2);
+
+  if (geo.startsWith(LANG_STORE_PREFIX) || window.location.pathname.startsWith(`/${LANG_STORE_PREFIX}`)) {
+    const localeLang = geo.replace(LANG_STORE_PREFIX, '').toLowerCase();
+    country = getDefaultLangstoreCountry(localeLang);
+    language = localeLang;
+  }
 
   country = country.toUpperCase();
   language = language.toLowerCase();
@@ -165,6 +215,7 @@ export const CHECKOUT_ALLOWED_KEYS = [
   'lo',
   'mal',
   'ms',
+  'cs',
   'mv',
   'mv2',
   'nglwfdata',
@@ -691,6 +742,7 @@ export async function getPriceContext(el, params) {
   const displayPerUnit = params.get('seat');
   const displayRecurrence = params.get('term');
   const displayTax = params.get('tax');
+  const displayPlanType = params.get('planType');
   const displayAnnual = (annualEnabled && params.get('annual') !== 'false') || undefined;
   const forceTaxExclusive = params.get('exclusive');
   const alternativePrice = params.get('alt');
@@ -702,6 +754,7 @@ export async function getPriceContext(el, params) {
     displayPerUnit,
     displayRecurrence,
     displayTax,
+    displayPlanType,
     displayAnnual,
     forceTaxExclusive,
     alternativePrice,
