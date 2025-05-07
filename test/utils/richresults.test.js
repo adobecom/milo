@@ -10,6 +10,7 @@ describe('Rich Results', () => {
 
   it('add the Article rich results', async () => {
     document.head.innerHTML = await readFile({ path: './mocks/head-rich-results-article.html' });
+    document.body.innerHTML = await readFile({ path: './mocks/body.html' });
     await loadArea(document);
     const script = document.querySelector('script[type="application/ld+json"]');
     const actual = JSON.parse(script.innerHTML);
@@ -32,6 +33,7 @@ describe('Rich Results', () => {
 
   it('add the NewsArticle rich results', async () => {
     document.head.innerHTML = await readFile({ path: './mocks/head-rich-results.html' });
+    document.body.innerHTML = await readFile({ path: './mocks/body.html' });
     await loadArea(document);
     const script = document.querySelector('script[type="application/ld+json"]');
     const actual = JSON.parse(script.innerHTML);
@@ -54,6 +56,7 @@ describe('Rich Results', () => {
 
   it('disable the NewsArticle rich results', async () => {
     document.head.innerHTML = await readFile({ path: './mocks/head-rich-results.html' });
+    document.body.innerHTML = await readFile({ path: './mocks/body.html' });
     // remove the richresults meta tag
     document.querySelector('meta[name="richresults"]').remove();
     await loadArea(document);
@@ -63,6 +66,7 @@ describe('Rich Results', () => {
 
   it('add the Organization rich results', async () => {
     document.head.innerHTML = await readFile({ path: './mocks/head-rich-results-org.html' });
+    document.body.innerHTML = await readFile({ path: './mocks/body.html' });
     await loadArea(document);
     const script = document.querySelector('script[type="application/ld+json"]');
     const actual = JSON.parse(script.innerHTML);
@@ -78,6 +82,7 @@ describe('Rich Results', () => {
   it('unsupported rich results type', async () => {
     sinon.stub(console, 'error');
     document.head.innerHTML = await readFile({ path: './mocks/head-rich-results-unsupported-type.html' });
+    document.body.innerHTML = await readFile({ path: './mocks/body.html' });
     await loadArea(document);
     const script = document.querySelector('script[type="application/ld+json"]');
     expect(script).to.be.null;
@@ -86,6 +91,7 @@ describe('Rich Results', () => {
 
   it('add the Site Search Box rich results', async () => {
     document.head.innerHTML = await readFile({ path: './mocks/head-rich-results-sitesearchbox.html' });
+    document.body.innerHTML = await readFile({ path: './mocks/body.html' });
     await loadArea(document);
     const script = document.querySelector('script[type="application/ld+json"]');
     const actual = JSON.parse(script.innerHTML);
