@@ -723,10 +723,9 @@ html[dir="rtl"] .carousel .move-indicators {
   }
 }
 
-.dummy {
+.carousel div[aria-live='polite'] {
   position: absolute;
   width: 0;
   height: 0;
-  background: red;
   overflow: hidden;
 }
