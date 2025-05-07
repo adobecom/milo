@@ -1332,21 +1332,6 @@ class Gnav {
 
         // Toggle trigger's dropdown on click
         dropdownTrigger.addEventListener('click', (e) => {
-          const navlinkHeaders = dropdownTrigger.nextElementSibling.querySelectorAll('.feds-navLink--header');
-          navlinkHeaders.forEach((navlinkHeader) => {
-            if (navlinkHeader !== dropdownTrigger) {
-              navlinkHeader.setAttribute('tabindex', -1);
-              // navlinkHeader.setAttribute('role', 'heading');
-              // navlinkHeader.removeAttribute('href');
-              // const newElement = document.createElement("div");
-              // newElement.innerHTML = navlinkHeader.innerHTML;
-              // newElement.className = navlinkHeader.className;
-              // newElement.id = navlinkHeader.id;
-              // navlinkHeader.parentNode.replaceChild(newElement, navlinkHeader);
-              // navlinkHeader.setAttribute('tabindex', -1);
-            }
-          });
-
           if (!isDesktop.matches && this.newMobileNav && isSectionMenu) {
             const popup = dropdownTrigger.nextElementSibling;
             // document.body.style.top should always be set
