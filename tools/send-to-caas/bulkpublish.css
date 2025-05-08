@@ -72,6 +72,12 @@ dd.content h3 {
   font-weight: 500;
 }
 
+dd.content h4 {
+  font-size: 16px;
+  font-weight: 400;
+  margin: 5px 20px 10px;
+}
+
 dd.content .field {
   padding: 0 20px;
   margin: 12px 0
@@ -190,7 +196,7 @@ body.advanced .preset-options {
 }
 
 body.advanced .advanced-options {
-  height: 390px;
+  height: 440px;
 }
 
 body.advanced .preset-options {
