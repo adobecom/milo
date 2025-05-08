@@ -1,5 +1,5 @@
 /* eslint-disable consistent-return */
-import { loadScript, createTag, getConfig, loadIms, isSignedOut } from '../../utils/utils.js';
+import { loadScript, createTag, getConfig, loadIms } from '../../utils/utils.js';
 
 const loadSusiLight = async (env) => {
   const lib = `https://auth-light.identity${env.name === 'prod' ? '' : '-stage'}.adobe.com/sentry/wrapper.js`;
@@ -8,7 +8,6 @@ const loadSusiLight = async (env) => {
 
 const redirectIfLoggedIn = async (destURL) => {
   const redirect = () => window.location.replace(destURL);
-  if (!isSignedOut()) return redirect();
   try {
     if (!window.adobeIMS) await loadIms();
     if (window.adobeIMS?.isSignedInUser()) return redirect();
@@ -75,7 +74,7 @@ export class SusiLight {
     const loginProduct = createTag('div', { class: 'login-product' });
     this.createProductInfo(loginProduct);
     const loginText = this.children[1]?.querySelectorAll('p');
-    const loginTitle = createTag('div', { class: 'login-title' }, loginText.length > 0 ? getText(loginText[0]) : getText(this.children[1]));
+    const loginTitle = createTag('h1', { class: 'login-title' }, loginText.length > 0 ? getText(loginText[0]) : getText(this.children[1]));
     const loginDesc = createTag('div', { class: 'login-description' }, loginText.length > 1 ? getText(loginText[1]) : '');
     const susiElement = this.createSusiElement();
     const guestFooter = createTag('div', { class: 'guest-footer' }, this.children[3]);
@@ -90,8 +89,10 @@ export class SusiLight {
     const prodInfo = this.children[2]?.querySelectorAll(':scope p');
     const titleText = getText(prodInfo[1]);
     const title = createTag('span', { class: 'susi-product-title' }, titleText);
-    const logoURL = this.children[2]?.querySelector('img')?.getAttribute('src') || '';
-    const logo = createTag('img', { class: 'susi-product-logo', src: logoURL, alt: `${titleText || 'product'}-logo` });
+    const logoEl = this.children[2]?.querySelector('img');
+    const logoURL = logoEl?.getAttribute('src') || '';
+    const altText = logoEl?.getAttribute('alt') || 'logo';
+    const logo = createTag('img', { class: 'susi-product-logo', src: logoURL, alt: altText });
     if (!titleText) logo.style.width = 'auto';
     product.append(logo, title);
     return product;
@@ -103,7 +104,7 @@ export class SusiLight {
     const href = backgroundElement?.querySelector('a')?.getAttribute('href');
     if (href) return `url(${href})`;
     const src = backgroundElement?.querySelector('img')?.getAttribute('src');
-    if (src) return `url${href})`;
+    if (src) return `url(${src})`;
 
     const text = getText(backgroundElement);
     const gradientPattern = /^(repeating?-)?(linear|radial|conic)-gradient\(.+\)$/;
