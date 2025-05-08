@@ -35,7 +35,7 @@ export const CSS = `
         letter-spacing: normal;
     }
 
-    merch-card[variant='fries'] [slot="body-s"] .mnemonic {
+    merch-card[variant='fries'] [slot="body-s"] merch-icon {
         display: inline-flex;
         width: 20px;
         height: 20px;
