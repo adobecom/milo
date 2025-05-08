@@ -555,7 +555,16 @@ helpButtons.forEach((btn) => {
           </p>
           <p>This can be useful for testing before publishing content to production.</p>`);
         break;
-
+      case 'language-first':
+        showAlert(`<p><b>Language First</b></p>
+          <p>When this option is checked, the tool will publish the content using language-first localization:</p>
+          <p>For example:<br>
+            <tt> - https://www.adobe.com/en/news/2025/05/08/adobe-announces-new-features-for-adobe-stock.html will be published as en-xx</tt><br>
+            <tt> - https://www.adobe.com/en/apac/news/2025/05/08/adobe-announces-new-features-for-adobe-stock.html will be published as en-apac</tt><br>
+            <tt> - https://www.adobe.com/fr/news/2025/05/08/adobe-announces-new-features-for-adobe-stock.html will be published as fr-xx  </tt><br>
+            <tt> - https://www.adobe.com/de/news/2025/05/08/adobe-announces-new-features-for-adobe-stock.html will be published as de-xx</tt><br>
+          </p>`);
+        break;
       default:
         showAlert(`<p><b>Help</b><p>Help for "${el}" is on its way! Stay tuned.</p>`);
         break;
