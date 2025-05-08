@@ -285,6 +285,7 @@ export const [setConfig, updateConfig, getConfig] = (() => {
       config.base = config.miloLibs || config.codeRoot;
       config.locale = conf.languages
         ? getLanguage(conf.languages, conf.locales, pathname) : getLocale(conf.locales, pathname);
+      config.pathname = pathname;
       config.autoBlocks = conf.autoBlocks ? [...AUTO_BLOCKS, ...conf.autoBlocks] : AUTO_BLOCKS;
       config.signInContext = conf.signInContext || {};
       config.doNotInline = conf.doNotInline
