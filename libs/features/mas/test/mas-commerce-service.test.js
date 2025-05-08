@@ -129,6 +129,7 @@ describe('commerce service', () => {
                     displayPerUnit: false,
                     displayRecurrence: true,
                     displayTax: false,
+                    displayPlanType: false,
                     entitlement: false,
                     env: 'PRODUCTION',
                     extraOptions: {},

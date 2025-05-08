@@ -80,7 +80,7 @@ const createWithBase = async (el) => {
     element.querySelector('ul')?.prepend(...base.querySelectorAll('li'));
     return createBreadcrumbs(element);
   } catch (e) {
-    lanaLog({ e, message: 'Breadcrumbs failed fetching base', tags: 'gnav-breadcrumbs', errorType: 'info' });
+    lanaLog({ e, message: 'Breadcrumbs failed fetching base', tags: 'gnav-breadcrumbs', errorType: 'i' });
     return null;
   }
 };
@@ -109,7 +109,7 @@ export default async function init(el) {
     setBreadcrumbSEO(breadcrumbsEl);
     return breadcrumbsEl;
   } catch (e) {
-    lanaLog({ e, message: 'Breadcrumbs failed rendering', tags: 'gnav-breadcrumbs', errorType: 'error' });
+    lanaLog({ e, message: 'Breadcrumbs failed rendering', tags: 'gnav-breadcrumbs', errorType: 'e' });
     return null;
   }
 }

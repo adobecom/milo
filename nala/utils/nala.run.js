@@ -99,16 +99,16 @@ function getLocalTestLiveUrl(env, milolibs, repo = 'milo', owner = 'adobecom') {
   if (milolibs) {
     process.env.MILO_LIBS = `?milolibs=${milolibs}`;
     if (env === 'local') {
-      return 'http://127.0.0.1:3000';
+      return 'http://localhost:3000';
     } if (env === 'libs') {
-      return 'http://127.0.0.1:6456';
+      return 'http://localhost:6456';
     }
     return `https://${env}--${repo}--${owner}.aem.live`;
   }
   if (env === 'local') {
-    return 'http://127.0.0.1:3000';
+    return 'http://localhost:3000';
   } if (env === 'libs') {
-    return 'http://127.0.0.1:6456';
+    return 'http://localhost:6456';
   }
   return `https://${env}--${repo}--${owner}.aem.live`;
 }

@@ -5,6 +5,8 @@ import {
     createPromoPriceWithAnnualTemplate,
 } from './template.js';
 
+import { legalTemplate } from './legal.js';
+
 import { isPromotionActive } from './utilities.js';
 
 const price = createPriceTemplate();
@@ -28,7 +30,10 @@ const priceAlternative = createPriceTemplate({
 const priceWithAnnual = createPriceWithAnnualTemplate();
 const pricePromoWithAnnual = createPromoPriceWithAnnualTemplate();
 
+const legal = legalTemplate;
+
 export {
+    legal,
     price,
     pricePromo,
     priceOptical,

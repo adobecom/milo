@@ -23,29 +23,38 @@ describe('m7business autoblock', () => {
   });
 
   it('Converts business plans link to M7 link', async () => {
-    document.head.innerHTML = '<meta name="m7-pa-code" content="ccsn_direct_individual">';
+    document.head.innerHTML = `
+      <meta name="m7-pa-code" content="ccsn_direct_individual">
+      <meta name="m7-checkout-client-id" content="acom_biz">
+    `;
     const buIms = window.adobeIMS;
     window.adobeIMS = { initialized: true, getProfile: () => {}, isSignedInUser: () => false };
     const a = document.createElement('a');
     a.setAttribute('href', 'https://www.adobe.com/creativecloud/business-plans.html');
     await init(a);
-    expect(a.href).to.equal('https://commerce.adobe.com/store/segmentation?cli=creative&cs=t&co=US&pa=ccsn_direct_individual');
+    expect(a.href).to.equal('https://commerce.adobe.com/store/segmentation?cli=acom_biz&cs=t&co=US&pa=ccsn_direct_individual');
     window.adobeIMS = buIms;
   });
 
   it('Converts education plans link to M7 link', async () => {
-    document.head.innerHTML = '<meta name="m7-pa-code" content="ccsn_direct_individual">';
+    document.head.innerHTML = `
+      <meta name="m7-pa-code" content="ccsn_direct_individual">
+      <meta name="m7-checkout-client-id" content="acom_biz">
+    `;
     const buIms = window.adobeIMS;
     window.adobeIMS = { initialized: true, getProfile: () => {}, isSignedInUser: () => false };
     const a = document.createElement('a');
     a.setAttribute('href', 'https://www.adobe.com/creativecloud/education-plans.html');
     await init(a);
-    expect(a.href).to.equal('https://commerce.adobe.com/store/segmentation?cli=creative&cs=t&co=US&pa=ccsn_direct_individual&ms=EDU');
+    expect(a.href).to.equal('https://commerce.adobe.com/store/segmentation?cli=acom_biz&cs=t&co=US&pa=ccsn_direct_individual&ms=EDU');
     window.adobeIMS = buIms;
   });
 
   it('Handles the errors gracefully', async () => {
-    document.head.innerHTML = '<meta name="m7-pa-code" content="ccsn_direct_individual">';
+    document.head.innerHTML = `
+      <meta name="m7-pa-code" content="ccsn_direct_individual">
+      <meta name="m7-checkout-client-id" content="acom_biz">
+    `;
     const buIms = window.adobeIMS;
     window.adobeIMS = { initialized: true, getProfile: () => {}, isSignedInUser: () => false };
     const element = { href: null };
@@ -58,7 +67,10 @@ describe('m7business autoblock', () => {
   });
 
   it('Converts business plans link to M7 link for signed in user - IMS not ready', async () => {
-    document.head.innerHTML = '<meta name="m7-pa-code" content="ccsn_direct_individual">';
+    document.head.innerHTML = `
+      <meta name="m7-pa-code" content="ccsn_direct_individual">
+      <meta name="m7-checkout-client-id" content="acom_biz">
+    `;
     const buIms = window.adobeIMS;
     const profile = { countryCode: 'CH' };
     window.adobeIMS = { initialized: false, getProfile: () => profile, isSignedInUser: () => true };
@@ -66,7 +78,7 @@ describe('m7business autoblock', () => {
     a.setAttribute('href', 'https://www.adobe.com/creativecloud/business-plans.html');
     setTimeout(() => {
       window.dispatchEvent(new window.CustomEvent('getImsLibInstance'));
-      expect(a.href).to.equal('https://commerce.adobe.com/store/segmentation?cli=creative&cs=t&co=US&pa=ccsn_direct_individual');
+      expect(a.href).to.equal('https://commerce.adobe.com/store/segmentation?cli=acom_biz&cs=t&co=US&pa=ccsn_direct_individual');
       window.adobeIMS = buIms;
     }, 100);
     await init(a);
@@ -81,12 +93,15 @@ describe('m7business autoblock', () => {
       },
     };
     setConfig(cfg);
-    document.head.innerHTML = '<meta name="m7-pa-code" content="ccsn_direct_individual">';
+    document.head.innerHTML = `
+      <meta name="m7-pa-code" content="ccsn_direct_individual">
+      <meta name="m7-checkout-client-id" content="acom_biz">
+    `;
     const buIms = window.adobeIMS;
     const profile = { countryCode: 'CH' };
     window.adobeIMS = { initialized: true, getProfile: () => profile, isSignedInUser: () => true };
     const m7Link = await generateM7Link('/creativecloud/business-plans');
-    expect(m7Link).to.equal('https://commerce.adobe.com/store/segmentation?cli=creative&cs=t&co=CH&pa=ccsn_direct_individual&lang=fr');
+    expect(m7Link).to.equal('https://commerce.adobe.com/store/segmentation?cli=acom_biz&cs=t&co=CH&pa=ccsn_direct_individual&lang=fr');
     window.adobeIMS = buIms;
   });
 });

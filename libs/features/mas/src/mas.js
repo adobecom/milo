@@ -2,6 +2,8 @@ import '../../../utils/lana.js';
 import './commerce.js';
 import './merch-card.js';
 import './merch-icon.js';
+import './merch-addon.js';
+import './merch-gradient.js';
 import './merch-mnemonic-list.js';
 import './merch-offer-select.js';
 import './merch-offer.js';

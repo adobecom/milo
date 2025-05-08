@@ -77,6 +77,10 @@ export const EVENT_MERCH_STORAGE_CHANGE = 'merch-storage:change';
 export const EVENT_MERCH_QUANTITY_SELECTOR_CHANGE =
     'merch-quantity-selector:change';
 
+export const EVENT_MERCH_CARD_QUANTITY_CHANGE = 'merch-card-quantity:change';
+
+export const EVENT_MERCH_ADDON_AND_QUANTITY_UPDATE = 'merch-modal:addon-and-quantity-update';
+
 export const EVENT_MERCH_SEARCH_CHANGE = 'merch-search:change';
 
 export const EVENT_MERCH_CARD_COLLECTION_SORT = 'merch-card-collection:sort';
@@ -157,3 +161,8 @@ export const MODAL_TYPE_3_IN_1 = {
 
 export const MARK_START_SUFFIX = ':start';
 export const MARK_DURATION_SUFFIX = ':duration';
+
+export const TEMPLATE_PRICE = 'price';
+export const TEMPLATE_PRICE_STRIKETHROUGH = 'price-strikethrough';
+export const TEMPLATE_PRICE_ANNUAL = 'annual';
+export const TEMPLATE_PRICE_LEGAL = 'legal';

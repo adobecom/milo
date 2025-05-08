@@ -8,10 +8,8 @@ const IMS_COMMERCE_CLIENT_ID = 'aos_milo_commerce';
 const IMS_SCOPE = 'AdobeID,openid';
 const IMS_ENV = 'prod';
 const IMS_PROD_URL = 'https://auth.services.adobe.com/imslib/imslib.min.js';
-const OST_VERSION = '1.19.2';
-const OST_BASE = `https://www.stage.adobe.com/special/tacocat/ost/lib/${OST_VERSION}`;
-const OST_SCRIPT_URL = `${OST_BASE}/index.js`;
-const OST_STYLE_URL = `${OST_BASE}/index.css`;
+const OST_SCRIPT_URL = 'https://mas.adobe.com/studio/ost/index.js';
+const OST_STYLE_URL = 'https://mas.adobe.com/studio/ost/index.css';
 /** @see https://git.corp.adobe.com/PandoraUI/core/blob/master/packages/react-env-provider/src/component.tsx#L49 */
 export const WCS_ENV = 'PROD';
 export const WCS_API_KEY = 'wcms-commerce-ims-ro-user-cc';
