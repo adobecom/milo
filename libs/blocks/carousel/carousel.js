@@ -215,7 +215,6 @@ function moveSlides(event, carouselElements, jumpToIndex) {
   referenceSlide.classList.remove('reference-slide');
   referenceSlide.style.order = null;
   activeSlide.classList.remove('active');
-  activeSlide.setAttribute('aria-hidden', true);
   activeSlide.querySelectorAll('a, video').forEach((focusableElement) => focusableElement.setAttribute('tabindex', -1));
   activeSlideIndicator.classList.remove('active');
   activeSlideIndicator.setAttribute('tabindex', -1);
@@ -269,8 +268,8 @@ function moveSlides(event, carouselElements, jumpToIndex) {
   updateAriaLive(ariaLive, activeSlide);
 
   // Update active slide and indicator dot attributes
+  activeSlide.classList.remove('visibility-hidden');
   activeSlide.classList.add('active');
-  activeSlide.removeAttribute('aria-hidden');
   const indexOfActive = [...activeSlide.parentElement.children]
     .findIndex((ele) => activeSlide.isSameNode(ele));
   const IndexOfShowClass = [...carouselElements.el.classList].findIndex((ele) => ele.includes('show-'));
@@ -308,7 +307,12 @@ function moveSlides(event, carouselElements, jumpToIndex) {
   */
   const slideDelay = 25;
   slideContainer.classList.remove('is-ready');
-  return setTimeout(() => slideContainer.classList.add('is-ready'), slideDelay);
+  setTimeout(() => {
+    slides[activeSlideIndex].classList.add('visibility-hidden');
+  }, 600);
+  return setTimeout(() => {
+    slideContainer.classList.add('is-ready');
+  }, slideDelay);
 }
 
 export function getSwipeDistance(start, end) {
@@ -427,10 +431,10 @@ export default function init(el) {
   const slides = [...candidateKeys].reduce((rdx, key) => {
     if (key.textContent === 'carousel' && key.nextElementSibling.textContent === carouselName) {
       const slide = key.closest('.section');
-      slide.classList.add('carousel-slide');
+      slide.classList.add('carousel-slide', 'visibility-hidden');
       rdx.push(slide);
       slide.setAttribute('data-index', rdx.indexOf(slide));
-      slide.setAttribute('aria-hidden', true);
+      // slide.setAttribute('aria-hidden', true);
     }
     return rdx;
   }, []);
@@ -498,6 +502,7 @@ export default function init(el) {
   }
   parentArea.addEventListener(MILO_EVENTS.DEFERRED, handleDeferredImages, true);
 
+  slides[0].classList.remove('visibility-hidden');
   slides[0].classList.add('active');
   slides[0].removeAttribute('aria-hidden');
   const IndexOfShowClass = [...el.classList].findIndex((ele) => ele.includes('show-'));
