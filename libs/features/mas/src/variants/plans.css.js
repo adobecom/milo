@@ -89,10 +89,6 @@ merch-card[variant^="plans"] [slot="description"] {
     min-height: 84px;
 }
 
-merch-card[variant^="plans"] [slot="body-xs"] a {
-    color: var(--link-color);
-}
-
 merch-card[variant^="plans"] [slot="promo-text"] a {
     color: inherit;
 }
