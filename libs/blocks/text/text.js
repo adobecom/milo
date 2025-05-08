@@ -111,7 +111,12 @@ export default async function init(el) {
       [...row.children].forEach((c) => decorateBlockText(c, blockTypeSizes[blockType][size]));
       decorateMultiViewport(row);
     }
-    [...row.children].forEach((c) => decorateBlockIconArea(c, el));
+    [...row.children].forEach((c) => {
+      decorateBlockIconArea(c, el);
+      const strong = c.querySelector('strong');
+      const parentDiv = strong?.parentNode;
+      if (strong && parentDiv?.tagName === 'DIV') parentDiv.replaceChildren(createTag('p', null, [...parentDiv.childNodes]));
+    });
   });
   if (el.classList.contains('full-width')) helperClasses.push('max-width-8-desktop', 'center', 'xxl-spacing');
   if (el.classList.contains('intro')) helperClasses.push('max-width-8-desktop', 'xxl-spacing-top', 'xl-spacing-bottom');
