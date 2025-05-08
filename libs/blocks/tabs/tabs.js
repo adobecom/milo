@@ -10,7 +10,7 @@ const tabColor = {};
 const linkedTabs = {};
 
 const isTabInTabListView = (tab) => {
-  const tabList = tab.closest('[role="tablist"]');
+  const tabList = tab.closest('[role="tablist"], [role="radiogroup"]');
   const tabRect = tab.getBoundingClientRect();
   const tabListRect = tabList.getBoundingClientRect();
 
@@ -67,24 +67,33 @@ function changeTabs(e) {
   }
   const parent = target.parentNode;
   const content = parent.parentNode.parentNode.lastElementChild;
-  const targetContent = content.querySelector(`#${target.getAttribute('aria-controls')}`);
   const tabsBlock = target.closest('.tabs');
   const blockId = tabsBlock.id;
+  const isRadio = target.getAttribute('role') === 'radio';
+  const attributeName = isRadio ? 'aria-checked' : 'aria-selected';
+
+  let targetContent;
+  if (isRadio) {
+    targetContent = content.querySelector(`#${target.getAttribute('data-control-id')}`);
+  } else {
+    targetContent = content.querySelector(`#${target.getAttribute('aria-controls')}`);
+  }
+
   parent
-    .querySelectorAll(`[aria-selected="true"][data-block-id="${blockId}"]`)
+    .querySelectorAll(`[${attributeName}="true"][data-block-id="${blockId}"]`)
     .forEach((t) => {
-      t.setAttribute('aria-selected', false);
+      t.setAttribute(attributeName, false);
       if (Object.keys(tabColor).length) {
         t.removeAttribute('style', 'backgroundColor');
       }
     });
-  target.setAttribute('aria-selected', true);
+  target.setAttribute(attributeName, true);
   if (tabColor[targetId]) {
     target.style.backgroundColor = tabColor[targetId];
   }
   scrollTabIntoView(target);
   content
-    .querySelectorAll(`[role="tabpanel"][data-block-id="${blockId}"]`)
+    .querySelectorAll(`.tabpanel[data-block-id="${blockId}"]`)
     .forEach((p) => p.setAttribute('hidden', true));
   targetContent.removeAttribute('hidden');
   if (tabsBlock.classList.contains('stacked-mobile')) scrollStackedMobile(targetContent);
@@ -118,8 +127,8 @@ function configTabs(config, rootElem) {
 }
 
 function initTabs(elm, config, rootElem) {
-  const tabs = elm.querySelectorAll('[role="tab"]');
-  const tabLists = elm.querySelectorAll('[role="tablist"]');
+  const tabs = elm.querySelectorAll('[role="tab"], [role="radio"]');
+  const tabLists = elm.querySelectorAll('[role="tablist"], [role="radiogroup"]');
   let tabFocus = 0;
 
   tabLists.forEach((tabList) => {
@@ -157,8 +166,8 @@ function nextTab(current, i, arr) {
   return (previous && isTabInTabListView(previous) && !isTabInTabListView(current));
 }
 
-function initPaddles(tabList, left, right) {
-  const tabListItems = tabList.querySelectorAll('[role="tab"]');
+function initPaddles(tabList, left, right, isRadio) {
+  const tabListItems = tabList.querySelectorAll(isRadio ? '[role="radio"]' : '[role="tab"]');
   const tabListItemsArray = [...tabListItems];
   const firstTab = tabListItemsArray[0];
   const lastTab = tabListItemsArray[tabListItemsArray.length - 1];
@@ -267,28 +276,33 @@ const init = (block) => {
   const tabContent = createTag('div', { class: 'tab-content' }, tabContentContainer);
   block.append(tabContent);
 
+  const isRadio = block.classList.contains('radio');
   // Tab List
   const tabList = rows[0];
   tabList.classList.add('tabList');
-  tabList.setAttribute('role', 'tablist');
+  tabList.setAttribute('role', isRadio ? 'radiogroup' : 'tablist');
   const tabListContainer = tabList.querySelector(':scope > div');
   tabListContainer.classList.add('tab-list-container');
+  const tabListLabel = config.pretext;
+  if (tabListLabel) tabList.setAttribute('aria-label', tabListLabel);
+
   const tabListItems = rows[0].querySelectorAll(':scope li');
   if (tabListItems) {
     const pillVariant = [...block.classList].find((variant) => variant.includes('pill'));
     const btnClass = pillVariant ? handlePillSize(pillVariant) : 'heading-xs';
     tabListItems.forEach((item, i) => {
       const tabName = config.id ? i + 1 : getStringKeyName(item.textContent);
+      const controlId = `tab-panel-${tabId}-${tabName}`;
       const tabBtnAttributes = {
-        role: 'tab',
+        role: isRadio ? 'radio' : 'tab',
         class: btnClass,
         id: `tab-${tabId}-${tabName}`,
         tabindex: '0',
-        'aria-selected': (i === 0) ? 'true' : 'false',
-        'aria-controls': `tab-panel-${tabId}-${tabName}`,
+        [isRadio ? 'aria-checked' : 'aria-selected']: (i === 0) ? 'true' : 'false',
         'data-block-id': `tabs-${tabId}`,
         'daa-state': 'true',
         'daa-ll': `tab-${tabId}-${tabName}`,
+        ...(isRadio ? { 'data-control-id': controlId } : { 'aria-controls': controlId }),
       };
       const tabBtn = createTag('button', tabBtnAttributes);
       tabBtn.innerText = item.textContent;
@@ -296,7 +310,7 @@ const init = (block) => {
 
       const tabContentAttributes = {
         id: `tab-panel-${tabId}-${tabName}`,
-        role: 'tabpanel',
+        ...(isRadio ? { } : { role: 'tabpanel' }),
         class: 'tabpanel',
         'aria-labelledby': `tab-${tabId}-${tabName}`,
         'data-block-id': `tabs-${tabId}`,
@@ -315,7 +329,7 @@ const init = (block) => {
   const paddleRight = createTag('button', { class: 'paddle paddle-right', disabled: '', 'aria-hidden': true, 'aria-label': 'Scroll tabs to right' }, PADDLE);
   tabList.insertAdjacentElement('afterend', paddleRight);
   block.prepend(paddleLeft);
-  initPaddles(tabList, paddleLeft, paddleRight);
+  initPaddles(tabList, paddleLeft, paddleRight, isRadio);
 
   // Tab Sections
   const allSections = Array.from(rootElem.querySelectorAll('div.section'));

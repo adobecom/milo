@@ -122,11 +122,11 @@ export function setItemsParameter(items, parameters) {
  * Adds 3-in-1 parameters to the URL.
  * @param url - URL object
  * @param modal - modal type: 'crm', 'twp', 'd2p'
- * @param customerSegment - customer segment: 'INDIVIDUAL', 'TEAM'
- * @param marketSegment - market segment: 'EDU', 'COM'
+ * @param checkoutData
  * @returns URL object
  */
-export function add3in1Parameters(url, modal, customerSegment, marketSegment) {
+export function add3in1Parameters(url, modal, checkoutData) {
+  const { customerSegment, marketSegment, cs, ms } = checkoutData;
   if (!Object.values(MODAL_TYPE_3_IN_1).includes(modal) || !url?.searchParams || !customerSegment || !marketSegment) return url;
   url.searchParams.set('rtc', 't');
   url.searchParams.set('lo', 'sl');
@@ -134,7 +134,7 @@ export function add3in1Parameters(url, modal, customerSegment, marketSegment) {
     url.searchParams.set('cli', modal === MODAL_TYPE_3_IN_1.CRM ? 'creative' : 'mini_plans');
   }
   if (modal === MODAL_TYPE_3_IN_1.CRM) {
-    url.searchParams.set('af', 'uc_segmentation_hide_tabs,uc_new_user_iframe,uc_new_system_close');
+    url.searchParams.set('af', 'uc_new_user_iframe,uc_new_system_close');
   } else if (modal === MODAL_TYPE_3_IN_1.TWP || modal === MODAL_TYPE_3_IN_1.D2P) {
     url.searchParams.set('af', 'uc_new_user_iframe,uc_new_system_close');
     if (customerSegment === 'INDIVIDUAL' && marketSegment === 'EDU') {
@@ -144,6 +144,8 @@ export function add3in1Parameters(url, modal, customerSegment, marketSegment) {
       url.searchParams.set('cs', 't');
     }
   }
+  if (cs) url.searchParams.set('cs', cs);
+  if (ms) url.searchParams.set('ms', ms);
   return url;
 }
 
@@ -152,7 +154,7 @@ export function add3in1Parameters(url, modal, customerSegment, marketSegment) {
  */
 export function buildCheckoutUrl(checkoutData) {
   validateCheckoutData(checkoutData);
-  const { env, items, workflowStep, ms, marketSegment, customerSegment, ot, offerType, pa, productArrangementCode, landscape, modal, ...rest } =
+  const { env, items, workflowStep, ms, cs, marketSegment, customerSegment, ot, offerType, pa, productArrangementCode, landscape, modal, ...rest } =
     checkoutData;
   const segmentationParameters = {
     marketSegment: marketSegment ?? ms,
@@ -171,7 +173,7 @@ export function buildCheckoutUrl(checkoutData) {
   if (landscape === Landscape.DRAFT) {
     addParameters({ af: AF_DRAFT_LANDSCAPE }, url.searchParams, ALLOWED_KEYS);
   }
-  url = add3in1Parameters(url, modal, customerSegment, marketSegment)
+  url = add3in1Parameters(url, modal, checkoutData)
   return url.toString();
 }
 

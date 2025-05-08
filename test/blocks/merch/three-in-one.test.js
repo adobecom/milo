@@ -2,6 +2,8 @@ import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
 import { setConfig } from '../../../libs/utils/utils.js';
+import { mockFetch } from './mocks/fetch.js';
+import { mockIms } from './mocks/ims.js';
 
 document.body.innerHTML = await readFile({ path: './mocks/threeInOne.html' });
 
@@ -14,6 +16,8 @@ const {
   createContent,
   default: openThreeInOneModal,
 } = await import('../../../libs/blocks/merch/three-in-one.js');
+
+const { default: initMerch } = await import('../../../libs/blocks/merch/merch.js');
 
 setConfig({ locale: { contentRoot: '/test/blocks/merch/mocks' } });
 
@@ -151,6 +155,40 @@ describe('Three-in-One Modal', () => {
     it('should return undefined for invalid input', async () => {
       const result = await openThreeInOneModal();
       expect(result).to.be.undefined;
+    });
+  });
+
+  describe('handle3in1Params', () => {
+    beforeEach(async () => {
+      await mockFetch();
+      await mockIms('CH');
+    });
+
+    it('should override market segment param', async () => {
+      const link = document.querySelector('#ms-override');
+      await initMerch(link);
+      const checkoutLink = document.querySelector('[data-wcs-osi="1ZyMOJpSngx9IU5AjEDyp7oRBz843zNlbbtPKbIb1gM"]');
+      await checkoutLink.render();
+      expect(checkoutLink).to.exist;
+      expect(checkoutLink.href).to.include('ms=myoverride');
+    });
+
+    it('should override customer segment param', async () => {
+      const link = document.querySelector('#cs-override');
+      await initMerch(link);
+      const checkoutLink = document.querySelector('[data-wcs-osi="VbDsK1jsr3uGWMCxyps3lJH_voQxJHKsRR5tz9lZoDo"]');
+      await checkoutLink.render();
+      expect(checkoutLink).to.exist;
+      expect(checkoutLink.href).to.include('cs=myoverride');
+    });
+
+    it('should unhide tabs on the CRM modal', async () => {
+      const link = document.querySelector('#unhide-tabs-crm');
+      await initMerch(link);
+      const checkoutLink = document.querySelector('[data-wcs-osi="cNKNAZtQxpD-jCOXiERTprpDatlhaoWsbZo1Onvrh_M"]');
+      await checkoutLink.render();
+      expect(checkoutLink).to.exist;
+      expect(checkoutLink.href).to.include('rf=uc_segmentation_hide_tabs_cr');
     });
   });
 });
