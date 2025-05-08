@@ -191,8 +191,8 @@ function filterPageList(pageNum, perPage, filterEvent, sortingEvent) {
     });
   }
   // add pageNum and perPage to args for api call
-  searchValues.pageNum = pageNum || getLocalStorageFilter()?.pageNum || 1;
-  searchValues.perPage = perPage || getLocalStorageFilter()?.perPage || 25;
+  searchValues.pageNum = pageNum || 1;
+  searchValues.perPage = perPage || SEARCH_INITIAL_VALUES()?.perPage;
 
   // add orderBy and order to args for api call
   if (isReport) {
@@ -205,7 +205,7 @@ function filterPageList(pageNum, perPage, filterEvent, sortingEvent) {
   Object.keys(searchValues).forEach((key) => {
     let value = searchValues[key];
     if (key === 'filter' && value.replace) { // allow optional commas inside filter textbox
-      value = value.replace(',', '');
+      value = value.replace(/,/g, '');
       value = value.replace(/\n/g, ',\n');
     }
     detail[key] = value;
@@ -294,14 +294,16 @@ function createSearchField() {
     </div>`,
   );
   const searchField = searchForm.querySelector('textarea');
-  searchField.value = SEARCH_INITIAL_VALUES().filter || '';
+  searchField.innerHTML = SEARCH_INITIAL_VALUES().filter || '';
 
   searchField.addEventListener('keyup', debounce((event) => filterPageList(null, null, event)));
   searchField.addEventListener('change', debounce((event) => filterPageList(null, null, event)));
-  searchField.addEventListener('input', function adjustHeight() {
-    this.style.height = 'auto'; /* Reset height to auto to recalculate */
-    this.style.height = `${this.scrollHeight - 32}px`;
+  searchField.addEventListener('input', (event) => {
+    const target = event.target || event.detail;
+    target.style.height = 'auto'; /* Reset height to auto to recalculate */
+    target.style.height = `${target.scrollHeight}px`;
   });
+  setTimeout(() => searchField.dispatchEvent(new Event('input'), 10));
   findAndSetInGrid(searchForm);
 }
 
@@ -747,9 +749,9 @@ function createMetadataLookup(el) {
     filterResultObj.notFound = [];
     const reportText = `Date: ${getDate()}\nRepo: ${SEARCH_INITIAL_VALUES().selectedRepo.toUpperCase()}\nRequested pages are grouped below by their Target setting.
       ${Object.keys(filterResultObj).map((key) => {
-    const urls = filterResultObj[key].map((item) => item.url || item);
-    return urls.length ? `\n\n${METADATA_URLS_CATEGORIES[key].display}:\n${urls.join('\n')}\n` : null;
-  }).join('')}`;
+      const urls = filterResultObj[key].map((item) => item.url || item);
+      return urls.length ? `\n\n${METADATA_URLS_CATEGORIES[key].display}:\n${urls.join('\n')}\n` : null;
+    }).join('')}`;
     // copy to clipboard
     navigator.clipboard.writeText(reportText).then(() => {
       const btn = document.querySelector('#mmm-copy-metadata-report');
