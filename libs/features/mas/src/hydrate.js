@@ -5,6 +5,7 @@ const DEFAULT_BADGE_COLOR = '#000000';
 const DEFAULT_PLANS_BADGE_COLOR = 'spectrum-yellow-300-plans';
 const DEFAULT_BADGE_BACKGROUND_COLOR = '#F8D904';
 const DEFAULT_BORDER_COLOR = '#EAEAEA';
+const DEFAULT_TRIAL_BADGE_BORDER_COLOR = '#31A547';
 const CHECKOUT_STYLE_PATTERN = /(accent|primary|secondary)(-(outline|link))?/;
 export const ANALYTICS_TAG = 'mas:product_code/';
 export const ANALYTICS_LINK_ATTR = 'daa-ll';
@@ -67,12 +68,18 @@ export function processMnemonics(fields, merchCard, mnemonicsConfig) {
 }
 
 function processBadge(fields, merchCard, mapping) {
-    if (fields.variant === 'plans' || fields.variant === 'plans-students') {
+    if (fields.variant === 'plans' || fields.variant === 'plans-students' || fields.variant === 'fries') {
         // for back-compatibility
         if (fields.badge?.length && !fields.badge?.startsWith('<merch-badge')) {
-            fields.badge = `<merch-badge variant="${fields.variant}" background-color="${DEFAULT_PLANS_BADGE_COLOR}">${fields.badge}</merch-badge>`;
-            if (!fields.borderColor)
+            const defaultBgColor = fields.variant === 'fries' 
+                ? (fields.badgeBackgroundColor || DEFAULT_BADGE_BACKGROUND_COLOR)
+                : DEFAULT_PLANS_BADGE_COLOR;
+                
+            fields.badge = `<merch-badge variant="${fields.variant}" background-color="${fields.badgeBackgroundColor || defaultBgColor}" border-color="${fields.borderColor || ""}">${fields.badge}</merch-badge>`;
+            
+            if (!fields.borderColor && fields.variant !== 'fries') {
                 fields.borderColor = DEFAULT_PLANS_BADGE_COLOR;
+            }
         }
         appendSlot('badge', fields, merchCard, mapping);
         return;
@@ -97,6 +104,15 @@ function processBadge(fields, merchCard, mapping) {
             'border-color',
             fields.borderColor || DEFAULT_BORDER_COLOR,
         );
+    }
+}
+
+export function processTrialBadge(fields, merchCard, mapping) {
+    if (fields.variant === 'fries' && fields.trialBadge) {
+        if (!fields.trialBadge.startsWith('<merch-badge')) {
+            fields.trialBadge = `<merch-badge variant="${fields.variant}" border-color="${fields.trialBadgeBorderColor || DEFAULT_TRIAL_BADGE_BORDER_COLOR}">${fields.trialBadge}</merch-badge>`;
+        }
+        appendSlot('trialBadge', fields, merchCard, mapping);
     }
 }
 
@@ -500,6 +516,7 @@ export async function hydrate(fragment, merchCard) {
     }
     processMnemonics(fields, merchCard, aemFragmentMapping.mnemonics);
     processBadge(fields, merchCard, aemFragmentMapping);
+    processTrialBadge(fields, merchCard, aemFragmentMapping);
     processSize(fields, merchCard, aemFragmentMapping.size);
     processTitle(fields, merchCard, aemFragmentMapping.title);
     processSubtitle(fields, merchCard, aemFragmentMapping);

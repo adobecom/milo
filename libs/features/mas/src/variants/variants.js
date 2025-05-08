@@ -9,6 +9,7 @@ import {
     SPECIAL_OFFERS_AEM_FRAGMENT_MAPPING,
     SpecialOffer,
 } from './special-offer.js';
+import { FriesCard, FRIES_AEM_FRAGMENT_MAPPING } from './fries.js';
 
 // Registry for dynamic variants
 const variantRegistry = new Map();
@@ -51,6 +52,12 @@ registerVariant(
     SpecialOffer,
     SPECIAL_OFFERS_AEM_FRAGMENT_MAPPING,
     SpecialOffer.variantStyle,
+);
+registerVariant(
+    'fries',
+    FriesCard,
+    FRIES_AEM_FRAGMENT_MAPPING,
+    FriesCard.variantStyle,
 );
 
 const getVariantLayout = (card, mustMatch = false) => {

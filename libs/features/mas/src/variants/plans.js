@@ -109,6 +109,7 @@ export class Plans extends VariantLayout {
         const price = headingM.querySelector(
             `${SELECTOR_MAS_INLINE_PRICE}[data-template="price"]`,
         );
+        if (!price) return;
         const legal = price.cloneNode(true);
         this.legal = legal;
         await price.onceSettled();
