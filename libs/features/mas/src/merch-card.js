@@ -536,7 +536,7 @@ export class MerchCard extends LitElement {
     }
 
     get addonCheckbox() {
-      return this.shadowRoot.querySelector('input[type="checkbox"]');
+      return this.querySelector('merch-addon')?.shadowRoot?.querySelector('input[type="checkbox"]');
   }
 
     displayFooterElementsInColumn() {
