@@ -368,6 +368,15 @@ function handleSection(sectionParams) {
       sectionRowTitle.setAttribute('scope', 'row');
     }
   }
+
+  rowCols.forEach((col) => {
+    const strong = col.querySelector('strong');
+    if (strong && Array.from(col.childNodes).some(
+      (node) => node.nodeType === Node.TEXT_NODE && node.textContent.trim()
+      && node.parentNode === col && strong.parentNode.tagName === 'DIV',
+    )) col.replaceChildren(createTag('p', {}, [...col.childNodes]));
+  });
+
   return expandSection;
 }
 
