@@ -1,13 +1,11 @@
 import { STATUS, PERFORMANCE_TITLES } from './constants.js';
 import { getMetadata } from '../../../utils/utils.js';
 
-// Cache for LCP entries, mapped by URL
 const lcpCache = new Map();
 
-// Default LCP observation method for the current document
 function defaultObserveLcp(area) {
   if (area !== document) {
-    return Promise.resolve(null); // Return null if not the current document
+    return Promise.resolve(null);
   }
   return new Promise((resolve) => {
     new PerformanceObserver((entryList) => {
@@ -20,7 +18,6 @@ function defaultObserveLcp(area) {
   });
 }
 
-// Helper function to get or compute the LCP entry
 export async function getLcpEntry(url, area, observeLcp = defaultObserveLcp) {
   if (lcpCache.has(url)) {
     return lcpCache.get(url);
@@ -30,7 +27,6 @@ export async function getLcpEntry(url, area, observeLcp = defaultObserveLcp) {
   return lcpPromise;
 }
 
-// Check: Single block in the first section
 export function checkSingleBlock(area) {
   const firstSection = area.querySelector('main > div.section');
   const hasMultipleBlocks = firstSection && firstSection.childElementCount > 1;
@@ -43,7 +39,6 @@ export function checkSingleBlock(area) {
   };
 }
 
-// Check: Personalization enabled
 export function checkForPersonalization(area) {
   const personalization = getMetadata('personalization', area);
   const target = getMetadata('target', area) === 'on';
@@ -57,7 +52,6 @@ export function checkForPersonalization(area) {
   };
 }
 
-// Check: LCP element validation
 export async function checkLcpEl(url, area, observeLcp) {
   const lcp = await getLcpEntry(url, area, observeLcp);
   if (!lcp) {
@@ -78,7 +72,6 @@ export async function checkLcpEl(url, area, observeLcp) {
   };
 }
 
-// Check: Image size for LCP
 export async function checkImageSize(url, area, observeLcp) {
   const lcp = await getLcpEntry(url, area, observeLcp);
   if (!lcp || !lcp.url || lcp.url.match('media_.*.mp4')) {
@@ -107,7 +100,6 @@ export async function checkImageSize(url, area, observeLcp) {
   }
 }
 
-// Check: Video poster attribute for LCP
 export async function checkVideoPoster(url, area, observeLcp) {
   const lcp = await getLcpEntry(url, area, observeLcp);
   if (!lcp?.url?.match('media_.*.mp4')) {
@@ -127,7 +119,6 @@ export async function checkVideoPoster(url, area, observeLcp) {
   };
 }
 
-// Check: Fragments in LCP section
 export async function checkFragments(url, area, observeLcp) {
   const lcp = await getLcpEntry(url, area, observeLcp);
   if (!lcp?.element) {
@@ -147,7 +138,6 @@ export async function checkFragments(url, area, observeLcp) {
   };
 }
 
-// Check: Placeholders in LCP section
 export async function checkPlaceholders(url, area, observeLcp) {
   const lcp = await getLcpEntry(url, area, observeLcp);
   if (!lcp?.element) {
@@ -168,7 +158,6 @@ export async function checkPlaceholders(url, area, observeLcp) {
   };
 }
 
-// Check: Icons in LCP section
 export async function checkIcons(url, area, observeLcp) {
   const lcp = await getLcpEntry(url, area, observeLcp);
   if (!lcp?.element) {
@@ -187,7 +176,7 @@ export async function checkIcons(url, area, observeLcp) {
       : 'No icons found within the LCP section.',
   };
 }
-// Main function to run all checks
+
 export function runChecks(url, area, observeLcp = defaultObserveLcp) {
   return [
     checkLcpEl(url, area, observeLcp),

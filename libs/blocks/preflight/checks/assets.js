@@ -2,15 +2,13 @@ import { STATUS, ASSETS_TITLES } from './constants.js';
 import { createTag } from '../../../utils/utils.js';
 
 const maxFullWidth = 1920;
-const assetsCache = new Map(); // Cache for asset check results
+const assetsCache = new Map();
 
-// Helper function to check if viewport is too small
 export function isViewportTooSmall() {
   return !window.matchMedia('(min-width: 1200px)').matches;
 }
 
-// Check: Image dimensions
-export async function checkImageDimensions(url, area) { // Use object destructuring for pathname
+export async function checkImageDimensions(url, area) {
   if (isViewportTooSmall()) {
     return {
       title: ASSETS_TITLES.ImageDimensions,
@@ -19,10 +17,8 @@ export async function checkImageDimensions(url, area) { // Use object destructur
     };
   }
 
-  // 1. Check cache first
   if (assetsCache.has(url)) {
     const cachedResult = assetsCache.get(url);
-    // Return a deep copy to prevent modifying the cache
     return JSON.parse(JSON.stringify(cachedResult));
   }
 
@@ -35,7 +31,6 @@ export async function checkImageDimensions(url, area) { // Use object destructur
     };
   }
 
-  // Force load all images
   await Promise.all(
     allImages.map((img) => {
       if (!img.complete) {
@@ -49,7 +44,6 @@ export async function checkImageDimensions(url, area) { // Use object destructur
     }),
   );
 
-  // Filter visible images, excluding icons and SVGs
   const images = allImages.filter((img) => img.checkVisibility()
     && !img.closest('.icon-area')
     && !img.src.includes('.svg'));
@@ -66,7 +60,6 @@ export async function checkImageDimensions(url, area) { // Use object destructur
   const imagesWithMismatch = [];
   const imagesWithMatch = [];
 
-  // Apply overflow class to prevent scrolling issues
   area.body.classList.add('preflight-assets-analysis');
 
   for (const img of images) {
@@ -121,10 +114,8 @@ export async function checkImageDimensions(url, area) { // Use object destructur
     }
   }
 
-  // Remove overflow class
   area.body.classList.remove('preflight-assets-analysis');
 
-  // 2. Calculate the final result
   const result = {
     title: ASSETS_TITLES.ImageDimensions,
     status: imagesWithMismatch.length > 0 ? STATUS.FAIL : STATUS.PASS,
@@ -138,16 +129,13 @@ export async function checkImageDimensions(url, area) { // Use object destructur
     },
   };
 
-  // 3. Store PASS/FAIL results in cache before returning
   if (result.status === STATUS.PASS || result.status === STATUS.FAIL) {
-    // Store a deep copy to prevent modifying the cache later
     assetsCache.set(url, JSON.parse(JSON.stringify(result)));
   }
 
   return result;
 }
 
-// Main function to run all checks
 export function runChecks(url, area) {
   return [checkImageDimensions(url, area)];
 }

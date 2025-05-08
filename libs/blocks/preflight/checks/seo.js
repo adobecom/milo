@@ -226,7 +226,6 @@ export async function checkLinks({ area, urlHash, envName }) {
   }
 
   const { spidy, preflight } = await getServiceConfig(window.location.origin, envName);
-  // Check to see if Spidy is available.
   const spidyUrl = spidy?.url || SPIDY_URL_FALLBACK;
   const canSpidy = await spidyCheck(spidyUrl);
   if (!canSpidy) return connectionError();
@@ -243,10 +242,10 @@ export async function checkLinks({ area, urlHash, envName }) {
   const links = [...area.querySelectorAll('a')]
     .filter((link) => {
       if (
-        link.href // Has an href tag
-        && !link.href.includes('local') // Is not a local link
-        && !link.closest('.preflight') // Is not inside preflight
-        && !knownBadUrls.some((url) => url === link.hostname) // Is not a known bad url
+        link.href
+        && !link.href.includes('local')
+        && !link.closest('.preflight')
+        && !knownBadUrls.some((url) => url === link.hostname)
       ) {
         link.liveHref = link.href;
         if (link.href.includes('hlx.page')) link.liveHref = link.href.replace('hlx.page', 'hlx.live');
@@ -280,7 +279,6 @@ export async function checkLinks({ area, urlHash, envName }) {
   const badLinks = badResults.map((result) => links.find((link) => compareResults(result, link)))
     .filter(Boolean);
 
-  // Format the results for display
   const count = badLinks.length;
   const linkText = count > 1 || count === 0 ? 'links' : 'link';
   const status = count > 0 ? STATUS.FAIL : STATUS.PASS;
@@ -288,7 +286,6 @@ export async function checkLinks({ area, urlHash, envName }) {
     ? `Reason: ${count} problem ${linkText}. Use the list below to fix them.`
     : 'Links are valid.';
 
-  // Build the result display object
   const result = {
     title: SEO_TITLES.Links,
     status,
