@@ -347,20 +347,6 @@ function handleSection(sectionParams) {
         const textSpan = createTag('span', { class: 'col-text' }, [...col.childNodes]);
         col.appendChild(textSpan);
       }
-
-      setTimeout(() => {
-        const strong = col.querySelector('strong');
-        const hasDirectText = Array.from(col.childNodes).some(
-          (node) => {
-            const isTextNode = node.nodeType === Node.TEXT_NODE;
-            const hasContent = node.textContent.trim();
-            const isDirectChild = node.parentNode === col;
-            const isStrongInDiv = strong && strong.parentNode.tagName === 'DIV';
-            return (isTextNode && hasContent && isDirectChild) && isStrongInDiv;
-          },
-        );
-        if (hasDirectText) col.replaceChildren(createTag('p', {}, [...col.childNodes]));
-      });
     });
     if (isMerch && !row.classList.contains('divider')) {
       rowCols.forEach((merchCol) => {
@@ -389,6 +375,21 @@ function handleSection(sectionParams) {
       sectionRowTitle.setAttribute('scope', 'row');
     }
   }
+
+  rowCols.forEach((col) => {
+    const strong = col.querySelector('strong');
+    const hasDirectText = Array.from(col.childNodes).some(
+      (node) => {
+        const isTextNode = node.nodeType === Node.TEXT_NODE;
+        const hasContent = node.textContent.trim();
+        const isDirectChild = node.parentNode === col;
+        const isStrongInDiv = strong && strong.parentNode.tagName === 'DIV';
+        return (isTextNode && hasContent && isDirectChild) && isStrongInDiv;
+      },
+    );
+    if (hasDirectText) col.replaceChildren(createTag('p', {}, [...col.childNodes]));
+  });
+
   return expandSection;
 }
 
