@@ -722,3 +722,10 @@ html[dir="rtl"] .carousel .move-indicators {
     transform: translateX(calc(round(down, (var(--offset) / (var(--slides) - 1)), 2px) * -1));
   }
 }
+
+.carousel .aria-live-container {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+}

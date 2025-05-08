@@ -67,7 +67,7 @@ function decorateLightboxButtons() {
   return [expandBtn, closeBtn];
 }
 
-function decorateSlideIndicators(slides, jumpTo) {
+function decorateSlideIndicators(slides) {
   const indicatorDots = [];
 
   for (let i = 0; i < slides.length; i += 1) {
@@ -76,17 +76,16 @@ function decorateSlideIndicators(slides, jumpTo) {
       'data-index': i,
     });
 
-    if (jumpTo) {
-      li.setAttribute('role', 'tab');
-      li.setAttribute('tabindex', -1);
-      li.setAttribute('aria-selected', false);
-      li.setAttribute('aria-labelledby', `Viewing Slide ${i + 1}`);
-    }
+    li.setAttribute('role', 'tab');
+    li.setAttribute('tabindex', -1);
+    li.setAttribute('aria-selected', false);
+    li.setAttribute('aria-label', `Slide ${i + 1} of ${slides.length}`);
 
     // Set inital active state
     if (i === 0) {
       li.classList.add('active');
-      if (jumpTo) li.setAttribute('tabindex', 0);
+      li.setAttribute('aria-current', 'location');
+      li.setAttribute('tabindex', 0);
     }
     indicatorDots.push(li);
   }
@@ -179,6 +178,12 @@ function setIndicatorMultiplyer(carouselElements, activeSlideIndicator, event) {
   }
 }
 
+function updateAriaLive(ariaLive, slide) {
+  slide.querySelectorAll(':scope > :not(.section-metadata')?.forEach((el) => {
+    ariaLive.textContent += el.textContent;
+  });
+}
+
 function moveSlides(event, carouselElements, jumpToIndex) {
   const {
     slideContainer,
@@ -187,8 +192,10 @@ function moveSlides(event, carouselElements, jumpToIndex) {
     slideIndicators,
     controlsContainer,
     direction,
-    jumpTo,
+    ariaLive,
   } = carouselElements;
+
+  ariaLive.textContent = '';
 
   let referenceSlide = slideContainer.querySelector('.reference-slide');
   let activeSlide = slideContainer.querySelector('.active');
@@ -208,9 +215,11 @@ function moveSlides(event, carouselElements, jumpToIndex) {
   referenceSlide.classList.remove('reference-slide');
   referenceSlide.style.order = null;
   activeSlide.classList.remove('active');
+  activeSlide.setAttribute('aria-hidden', true);
   activeSlide.querySelectorAll('a, video').forEach((focusableElement) => focusableElement.setAttribute('tabindex', -1));
   activeSlideIndicator.classList.remove('active');
-  if (jumpTo) activeSlideIndicator.setAttribute('tabindex', -1);
+  activeSlideIndicator.setAttribute('tabindex', -1);
+  activeSlideIndicator.removeAttribute('aria-current');
 
   /*
    * If indicator dot buttons are clicked update:
@@ -257,8 +266,11 @@ function moveSlides(event, carouselElements, jumpToIndex) {
   referenceSlide.classList.add('reference-slide');
   referenceSlide.style.order = '1';
 
+  updateAriaLive(ariaLive, activeSlide);
+
   // Update active slide and indicator dot attributes
   activeSlide.classList.add('active');
+  activeSlide.removeAttribute('aria-hidden');
   const indexOfActive = [...activeSlide.parentElement.children]
     .findIndex((ele) => activeSlide.isSameNode(ele));
   const IndexOfShowClass = [...carouselElements.el.classList].findIndex((ele) => ele.includes('show-'));
@@ -278,7 +290,8 @@ function moveSlides(event, carouselElements, jumpToIndex) {
       .forEach((focusableElement) => { focusableElement.setAttribute('tabindex', 0); });
   }
   activeSlideIndicator.classList.add('active');
-  if (jumpTo) activeSlideIndicator.setAttribute('tabindex', 0);
+  activeSlideIndicator.setAttribute('tabindex', 0);
+  activeSlideIndicator.setAttribute('aria-current', 'location');
   setIndicatorMultiplyer(carouselElements, activeSlideIndicator, event);
 
   // Loop over all slide siblings to update their order
@@ -417,6 +430,7 @@ export default function init(el) {
       slide.classList.add('carousel-slide');
       rdx.push(slide);
       slide.setAttribute('data-index', rdx.indexOf(slide));
+      slide.setAttribute('aria-hidden', true);
     }
     return rdx;
   }, []);
@@ -425,12 +439,17 @@ export default function init(el) {
   const fragment = new DocumentFragment();
   const nextPreviousBtns = decorateNextPreviousBtns();
   const nextPreviousContainer = createTag('div', { class: 'carousel-button-container' });
-  const slideIndicators = decorateSlideIndicators(slides, jumpTo);
+  const slideIndicators = decorateSlideIndicators(slides);
   const controlsContainer = createTag('div', { class: 'carousel-controls is-delayed' });
 
   convertMpcMp4(slides);
   fragment.append(...slides);
   const slideWrapper = createTag('div', { class: 'carousel-wrapper' });
+  const ariaLive = createTag('div', {
+    class: 'aria-live-container',
+    'aria-live': 'polite',
+  });
+  slideWrapper.appendChild(ariaLive);
   const slideContainer = createTag('div', { class: 'carousel-slides' }, fragment);
   const carouselElements = {
     el,
@@ -441,6 +460,7 @@ export default function init(el) {
     controlsContainer,
     direction: undefined,
     jumpTo,
+    ariaLive,
   };
 
   if (el.classList.contains('lightbox')) {
@@ -462,11 +482,8 @@ export default function init(el) {
   el.append(slideWrapper);
 
   const dotsUl = createTag('ul', { class: 'carousel-indicators' });
-  if (jumpTo) {
-    dotsUl.setAttribute('role', 'tablist');
-    dotsUl.setAttribute('tabindex', 0);
-  }
-
+  dotsUl.setAttribute('role', 'tablist');
+  dotsUl.setAttribute('tabindex', 0);
   dotsUl.append(...slideIndicators);
   controlsContainer.append(dotsUl);
   nextPreviousContainer.append(...nextPreviousBtns, controlsContainer);
@@ -482,6 +499,7 @@ export default function init(el) {
   parentArea.addEventListener(MILO_EVENTS.DEFERRED, handleDeferredImages, true);
 
   slides[0].classList.add('active');
+  slides[0].removeAttribute('aria-hidden');
   const IndexOfShowClass = [...el.classList].findIndex((ele) => ele.includes('show-'));
   let NoOfVisibleSlides = 1;
   if (IndexOfShowClass >= 0) {
