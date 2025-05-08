@@ -298,10 +298,7 @@ const getLanguageFirstCountryAndLang = async (path) => {
   const langStr = (localeArr.length > 1) ? LANGS[localeArr[1]] || LANGS[''] : 'en';
   let countryStr = (localeArr.length > 2) ? LOCALES[localeArr[2]] || 'xx' : 'xx';
   if (typeof countryStr === 'object') {
-    const { ietf } = countryStr;
-    const localeAttributes = ietf?.split('-');
-    const [, c = 'xx'] = localeAttributes;
-    countryStr = c;
+    countryStr = countryStr.ietf?.split('-')[1] ?? 'xx';
   }
   return {
     country: countryStr,
