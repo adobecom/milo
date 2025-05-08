@@ -282,7 +282,7 @@ function resolveAgiCampaignAndFlag() {
     return { agiCampaign: false, setAgICampVal: false };
   }
 
-  const agiCookie = getCookie('agiCamp'); 
+  const agiCookie = getCookie('agiCamp');
   const setAgiCookie = (value) => {
     setCookie('agiCamp', value, {
       expires: EXPIRY_TIME_IN_DAYS,
