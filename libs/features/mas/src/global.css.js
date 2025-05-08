@@ -37,10 +37,6 @@ styles.innerHTML = `
     --consonant-merch-card-heading-s-line-height: 25px;
     --consonant-merch-card-heading-m-font-size: 24px;
     --consonant-merch-card-heading-m-line-height: 30px;
-    --consonant-merch-card-heading-l-font-size: 20px;
-    --consonant-merch-card-heading-l-line-height: 30px;
-    --consonant-merch-card-heading-xl-font-size: 36px;
-    --consonant-merch-card-heading-xl-line-height: 45px;
 
     /* detail */
     --consonant-merch-card-detail-xs-line-height: 12px;
@@ -193,19 +189,34 @@ merch-card span[is='inline-price'] {
     display: inline-block;
 }
 
-merch-card [slot^='heading-'] {
+merch-card [slot^='heading-'],
+merch-card span[class^='heading-'] {
     color: var(--consonant-merch-card-heading-color);
     font-weight: 700;
 }
 
-merch-card [slot='heading-xxxs'] {
-        font-size: var(--consonant-merch-card-heading-xxxs-font-size);
-        line-height: var(--consonant-merch-card-heading-xxxs-line-height);
-        color: var(--consonant-merch-card-heading-xxxs-color);
-        letter-spacing: normal;
+merch-card span[class^='heading-'],
+merch-card span.promo-text {
+    display: block;
 }
 
-merch-card [slot='heading-xs'] {
+merch-card [slot='heading-xxxs'],
+merch-card span.heading-xxxs {
+    font-size: var(--consonant-merch-card-heading-xxxs-font-size);
+    line-height: var(--consonant-merch-card-heading-xxxs-line-height);
+    color: var(--consonant-merch-card-heading-xxxs-color);
+    letter-spacing: normal;
+}
+
+merch-card [slot='heading-xxs'],
+merch-card span.heading-xxs {
+    font-size: var(--consonant-merch-card-heading-xxs-font-size);
+    line-height: var(--consonant-merch-card-heading-xxs-line-height);
+    letter-spacing: normal;
+}
+
+merch-card [slot='heading-xs'],
+merch-card span.heading-xs {
     font-size: var(--consonant-merch-card-heading-xs-font-size);
     line-height: var(--consonant-merch-card-heading-xs-line-height);
     color: var(--consonant-merch-card-heading-xs-color);
@@ -230,13 +241,15 @@ merch-card [slot='heading-xs'] a:not(:hover) {
     text-decoration: inherit;
 }
 
-merch-card [slot='heading-s'] {
+merch-card [slot='heading-s'],
+merch-card span.heading-s {
     font-size: var(--consonant-merch-card-heading-s-font-size);
     line-height: var(--consonant-merch-card-heading-s-line-height);
     margin: 0;
 }
 
-merch-card [slot='heading-m'] {
+merch-card [slot='heading-m'],
+merch-card span.heading-m {
     font-size: var(--consonant-merch-card-heading-m-font-size);
     line-height: var(--consonant-merch-card-heading-m-line-height);
     margin: 0;
@@ -252,18 +265,6 @@ merch-card [slot='heading-m-price'] {
 
 merch-card [slot='offers'] {
     padding: var(--consonant-merch-spacing-xxs) var(--consonant-merch-spacing-s);
-}
-
-merch-card [slot='heading-l'] {
-    font-size: var(--consonant-merch-card-heading-l-font-size);
-    line-height: var(--consonant-merch-card-heading-l-line-height);
-    margin: 0;
-}
-
-merch-card [slot='heading-xl'] {
-    font-size: var(--consonant-merch-card-heading-xl-font-size);
-    line-height: var(--consonant-merch-card-heading-xl-line-height);
-    margin: 0;
 }
 
 merch-card [slot='whats-included'] {
@@ -415,7 +416,8 @@ merch-card [slot="cce-footer"] p {
     margin: 0;
 }
 
-merch-card [slot="promo-text"] {
+merch-card [slot="promo-text"],
+merch-card span.promo-text {
     color: var(--merch-color-green-promo);
     font-size: var(--consonant-merch-card-promo-text-height);
     font-weight: 700;
@@ -423,6 +425,11 @@ merch-card [slot="promo-text"] {
     margin: 0;
     min-height: var(--consonant-merch-card-promo-text-height);
     padding: 0;
+}
+
+merch-card span[data-styling][class^='heading-'],
+merch-card span[data-styling].promo-text {
+    display: block;
 }
 
 merch-card [slot="footer-rows"] {

@@ -359,7 +359,8 @@ export class MerchCardCollection extends LitElement {
                 this.append(merchCard);
             }
 
-            const variant = cards[0]?.fields.variant;
+            let variant = cards[0]?.fields.variant;
+            if (variant.startsWith('plans')) variant = 'plans';
             this.variant = variant;
             this.classList.add('merch-card-collection', variant, ...(VARIANT_CLASSES[variant] || []));
             this.displayResult = true;
