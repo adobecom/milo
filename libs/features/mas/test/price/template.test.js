@@ -174,6 +174,42 @@ describe('Promotion price display with annual template', () => {
         );
     });
 
+    it('displays annual price with promotion applied when promotion is active #2', () => {
+        const promoContext = {
+            ...basePromoContext,
+            instant: '2025-05-02T07:00:00.000Z',
+        };
+        renderAndComparePrice(
+            'annualTemplatePromo2',
+            template(
+                promoContext,
+                {
+                    price: 48.49,
+                    priceWithoutDiscount: 96.99,
+                    priceWithoutTax: 44.08,
+                    priceWithoutDiscountAndTax: 88.17,
+                    usePrecision: true,
+                    formatString: "'A$'#,##0.00",
+                    taxDisplay: 'TAX_INCLUSIVE_DETAILS',
+                    taxTerm: 'GST',
+                    commitment: 'YEAR',
+                    term: 'MONTHLY',
+                    promotion: {
+                        start: '2025-04-02T07:00:00.000Z',
+                        end: '2025-05-31T06:59:00.000Z',
+                        displaySummary: {
+                            outcomeType: 'PERCENTAGE_DISCOUNT',
+                            duration: 'P6M',
+                            amount: 50.0,
+                            minProductQuantity: 1,
+                        },
+                    },
+                },
+                {},
+            ),
+        );
+    });
+
     it('displays annual price based on regular price when promotion has not started yet', () => {
         const promoContext = {
             ...basePromoContext,
