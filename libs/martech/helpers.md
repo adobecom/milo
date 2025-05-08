@@ -312,8 +312,8 @@ function resolveAgiCampaignAndFlag() {
 
 **Returns:**
 - `Object`: An object containing -
-            agiCampaign (String|Boolean): The campaign value or false if no campaign is active.
-            setAgICampVal (Boolean): Whether the campaign value was set.
+        agiCampaign (String|Boolean): The campaign value or false if no campaign is active.
+        setAgICampVal (Boolean): Whether the campaign value was set.
 
 ---
 

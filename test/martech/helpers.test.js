@@ -1,10 +1,6 @@
 import { expect } from 'chai';
 import sinon from 'sinon';
-import {
-  getTargetPropertyBasedOnPageRegion,
-  getVisitorStatus,
-  loadAnalyticsAndInteractionData,
-} from '../../libs/martech/helpers.js';
+import { getTargetPropertyBasedOnPageRegion, getVisitorStatus, loadAnalyticsAndInteractionData } from '../../libs/martech/helpers.js';
 
 describe('loadAnalyticsAndInteractionData', () => {
   beforeEach(() => {
