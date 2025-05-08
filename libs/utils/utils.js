@@ -373,6 +373,8 @@ export function hasLanguageLinks(area, paths = LANGUAGE_BASED_PATHS) {
 }
 
 export async function loadLanguageConfig() {
+  if (localeToLanguageMap && siteLanguages) return { siteLanguages, localeToLanguageMap };
+
   const parseList = (str) => str.split(/[\n,]+/).map((t) => t.trim()).filter(Boolean);
   try {
     const response = await fetch(`${getFederatedContentRoot()}/federal/assets/data/languages-config.json`);
@@ -385,9 +387,13 @@ export async function loadLanguageConfig() {
       pathMatches: parseList(site.pathMatches),
       languages: parseList(site.languages),
     }));
+
+    return { siteLanguages, localeToLanguageMap };
   } catch (e) {
     window.lana?.log('Failed to load language-config.json:', e);
   }
+
+  return {};
 }
 
 let fedsPlaceholderConfig;
@@ -1633,8 +1639,8 @@ async function processSection(section, config, isDoc) {
 
 export async function loadArea(area = document) {
   const isDoc = area === document;
-
   if (isDoc) {
+    if (document.getElementById('page-load-ok-milo')) return;
     await checkForPageMods();
     appendHtmlToCanonicalUrl();
     appendSuffixToTitles();

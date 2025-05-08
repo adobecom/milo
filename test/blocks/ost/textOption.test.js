@@ -22,7 +22,9 @@ describe('test ctaTextOption', () => {
       { id: 'take-the-quiz', name: 'Take the quiz' },
       { id: 'see-more', name: 'See more' },
       { id: 'upgrade-now', name: 'Upgrade now' },
-      { id: 'save-today', name: 'Save today' }];
+      { id: 'save-today', name: 'Save today' },
+      { id: 'select', name: 'Select' },
+    ];
     const texts = ctaTextOption.getTexts();
     expect(EXPECTED_TEXTS).to.deep.equal(texts);
   });

@@ -9,11 +9,6 @@
         rel="stylesheet"
         href="http://localhost:2023/__wds-outside-root__/2/styles/styles.css"
     />
-    <script>
-        window.process = {
-            env: {},
-        };
-    </script>
     <style>
         main {
             display: flex;
@@ -54,6 +49,7 @@
 </head>
 
 <body>
+    <mas-commerce-service env="stage"></mas-commerce-service>
     <script type="module" src="./merch-card.test.html.js"></script>
     <main>
         <div id="sidenav">
