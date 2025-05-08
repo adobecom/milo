@@ -168,7 +168,7 @@ function getUpdatedVisitAttempt() {
   return secondVisitAttempt;
 }
 
-function getUpdatedAcrobatVisitAttempt() {
+export function getUpdatedAcrobatVisitAttempt() {
   const { hostname, pathname } = window.location;
   const secondVisitAttempt = Number(localStorage.getItem('acrobatSecondHit')) || 0;
 
@@ -184,7 +184,7 @@ function getUpdatedAcrobatVisitAttempt() {
   return secondVisitAttempt;
 }
 
-function getPageNameForAnalytics() {
+export function getPageNameForAnalytics() {
   const { hostname, pathname } = new URL(window.location.href);
   const urlRegions = Object.fromEntries(['ae_ar', 'ae_en', 'africa', 'apac', 'ar', 'at', 'au', 'be', 'be_en', 'be_fr', 'be_nl',
     'bg', 'br', 'ca', 'ca_es', 'ca_fr', 'ch', 'ch_de', 'ch_fr', 'ch_it', 'cin', 'cis_en', 'cis_ru', 'cl', 'cn', 'co', 'cr', 'cs',
@@ -201,7 +201,7 @@ function getPageNameForAnalytics() {
   return `${hostname.replace('www.', '')}${path ? `:${path}` : ''}`;
 }
 
-function getProcessedPageNameForAnalytics() {
+export function getProcessedPageNameForAnalytics() {
   const pageName = getPageNameForAnalytics().toLowerCase();
   const pageArray = pageName.split(':');
 
@@ -313,7 +313,7 @@ const LOCALE_MAPPINGS = {
   '': 'en-US', ar: 'es-AR', br: 'pt-BR', ca: 'en-CA', ca_fr: 'fr-CA', cl: 'es-CL', co: 'es-CO', la: 'es-LA', mx: 'es-MX', pe: 'es-PE', africa: 'en-AFRICA', be_fr: 'fr-BE', be_en: 'en-BE', be_nl: 'nl-BE', cy_en: 'en-CY', dk: 'da-DK', de: 'de-DE', ee: 'et-EE', es: 'es-ES', fr: 'fr-FR', gr_en: 'en-GR', ie: 'en-IE', il_en: 'en-IL', it: 'it-IT', lv: 'lv-LV', lt: 'lt-LT', lu_de: 'de-LU', lu_en: 'en-LU', lu_fr: 'fr-LU', hu: 'hu-HU', mt: 'en-MT', mena_en: 'en-MENA', nl: 'nl-NL', no: 'no-NO', pl: 'pl-PL', pt: 'pt-PT', ro: 'ro-RO', sa_en: 'en-SA', ch_de: 'de-CH', si: 'sl-SI', sk: 'sk-SK', ch_fr: 'fr-CH', fi: 'fi-FI', se: 'sv-SE', ch_it: 'it-CH', tr: 'tr-TR', ae_en: 'en-AE', uk: 'en-UK', at: 'de-AT', cz: 'cs-CZ', bg: 'bg-BG', ru: 'ru-RU', ua: 'uk-UA', il_he: 'iw-IL', ae_ar: 'ar-AE', mena_ar: 'ar-MENA', sa_ar: 'ar-SA', au: 'en-AU', hk_en: 'en-HK', in: 'en-IN', id_id: 'in-ID', id_en: 'en-ID', my_ms: 'ms-MY', my_en: 'en-MY', nz: 'en-NZ', ph_en: 'en-PH', ph_fil: 'fil-PH', sg: 'en-SG', th_en: 'en-TH', in_hi: 'hi-IN', th_th: 'th-TH', cn: 'zh-CN', hk_zh: 'zh-HK', tw: 'zh-hant-TW', jp: 'ja-JP', kr: 'ko-KR', langstore: 'en-US', za: 'en-ZA', ng: 'en-NG', cr: 'es-CR', ec: 'es-EC', pr: 'es-PR', gt: 'es-GT', eg_ar: 'ar-EG', kw_ar: 'ar-KW', qa_ar: 'ar-QA', eg_en: 'en-EG', kw_en: 'en-KW', qa_en: 'en-QA', gr_el: 'el-GR', vn_en: 'en-VN', vn_vi: 'vi-VN', cis_ru: 'ru-CIS', cis_en: 'en-CIS',
 };
 
-function getLanguageCode(locale) {
+export function getLanguageCode(locale) {
   const region = locale?.region || '';
   return LOCALE_MAPPINGS[region] || LOCALE_MAPPINGS[''];
 }
