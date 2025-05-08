@@ -1,28 +1,30 @@
-import { PARAM_ENV, PARAM_LANDSCAPE, Landscape, WCS_PROD_URL, WCS_STAGE_URL } from './constants.js';
-import { Defaults } from './defaults.js';
 import {
-    CheckoutWorkflow,
-    CheckoutWorkflowStep,
-    Env,
+    PARAM_ENV,
+    PARAM_LANDSCAPE,
+    Landscape,
+    WCS_PROD_URL,
+    WCS_STAGE_URL,
+} from './constants.js';
+import { Defaults } from './defaults.js';
+import { Env, CheckoutWorkflow, CheckoutWorkflowStep } from './constants.js';
+
+import {
     getParameter,
     toBoolean,
     toEnumeration,
-    toPositiveFiniteInteger,
-} from './external.js';
+} from '@dexter/tacocat-core';
+
 import { toQuantity } from './utilities.js';
 
-const HostEnv = Object.freeze({
-    LOCAL: 'local',
-    PROD: 'prod',
-    STAGE: 'stage',
-});
-
-
-function getLocaleSettings({ locale = undefined, country = undefined, language = undefined, } = {}) {
-  language ??= locale?.split('_')?.[0] || Defaults.language;
-  country ??= locale?.split('_')?.[1] || Defaults.country;
-  locale ??= `${language}_${country}`;
-  return { locale, country, language };
+function getLocaleSettings({
+    locale = undefined,
+    country = undefined,
+    language = undefined,
+} = {}) {
+    language ??= locale?.split('_')?.[0] || Defaults.language;
+    country ??= locale?.split('_')?.[1] || Defaults.country;
+    locale ??= `${language}_${country}`;
+    return { locale, country, language };
 }
 
 function getSettings(config = {}) {
@@ -66,6 +68,10 @@ function getSettings(config = {}) {
         getParameter('displayTax', commerce),
         Defaults.displayTax,
     );
+    const displayPlanType = toBoolean(
+        getParameter('displayPlanType', commerce),
+        Defaults.displayPlanType,
+    );
     const entitlement = toBoolean(
         getParameter('entitlement', commerce),
         Defaults.entitlement,
@@ -79,7 +85,7 @@ function getSettings(config = {}) {
         getParameter('promotionCode', commerce) ?? Defaults.promotionCode;
     const quantity = toQuantity(getParameter('quantity', commerce));
     const wcsApiKey = getParameter('wcsApiKey', commerce) ?? Defaults.wcsApiKey;
-  
+
     let isStage = commerce?.env === 'stage';
     let landscape = Landscape.PUBLISHED;
     const allowOverride = ['true', ''].includes(commerce.allowOverride);
@@ -100,9 +106,10 @@ function getSettings(config = {}) {
         wcsURL = WCS_STAGE_URL;
     }
 
-    const masIOUrl = getParameter('mas-io-url') 
-                  ?? config.masIOUrl 
-                  ?? `https://www${env === Env.STAGE ? '.stage' : ''}.adobe.com/mas/io`;
+    const masIOUrl =
+        getParameter('mas-io-url') ??
+        config.masIOUrl ??
+        `https://www${env === Env.STAGE ? '.stage' : ''}.adobe.com/mas/io`;
     return {
         ...getLocaleSettings(config),
         displayOldPrice,
@@ -112,6 +119,7 @@ function getSettings(config = {}) {
         displayPerUnit,
         displayRecurrence,
         displayTax,
+        displayPlanType,
         entitlement,
         extraOptions: Defaults.extraOptions,
         modal,
@@ -127,4 +135,4 @@ function getSettings(config = {}) {
     };
 }
 
-export { HostEnv, getLocaleSettings, getSettings };
+export { getLocaleSettings, getSettings };

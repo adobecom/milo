@@ -955,8 +955,8 @@
     text-align: center;
   }
 
-  .aside.promobar .action-area wbr,
-  .aside.notification .action-area wbr {
+  .aside.promobar p .con-button wbr,
+  .aside.notification p .con-button wbr {
     display: none;
   }
 }

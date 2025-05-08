@@ -9,65 +9,62 @@ import {
     pricePromoWithAnnual,
     priceAlternative,
     priceOpticalAlternative,
+    legal,
+} from './price/index.js';
+
+import { discount } from './discount/index.js';
+
+import {
     omitProperties,
-    toBoolean,
-    discount,
     computePromoStatus,
-} from './external.js';
+    toBoolean,
+} from '@dexter/tacocat-core';
 import { InlinePrice } from './inline-price.js';
 import { toOfferSelectorIds, toQuantity } from './utilities.js';
 
 export function Price({ literals, providers, settings }) {
-    function collectPriceOptions(overrides, placeholder) {
-        const {
-            country: defaultCountry,
-            displayOldPrice: defaultDisplayOldPrice,
-            displayPerUnit: defaultDisplayPerUnit,
-            displayRecurrence: defaultDisplayRecurrence,
-            displayTax: defaultDisplayTax,
-            forceTaxExclusive: defaultForceTaxExclusive,
-            language: defaultLanguage,
-            promotionCode: defaultPromotionCode,
-            quantity: defaultQuantity,
-            alternativePrice: defaultAlternativePrice,
-        } = settings;
-        const {
-            displayOldPrice = defaultDisplayOldPrice,
-            displayPerUnit = defaultDisplayPerUnit,
-            displayRecurrence = defaultDisplayRecurrence,
-            displayTax = defaultDisplayTax,
-            forceTaxExclusive = defaultForceTaxExclusive,
-            country = defaultCountry,
-            language = defaultLanguage,
-            perpetual,
-            promotionCode = defaultPromotionCode,
-            quantity = defaultQuantity,
-            alternativePrice = defaultAlternativePrice,
-            template,
-            wcsOsi,
-            ...rest
-        } = Object.assign({}, placeholder?.dataset ?? {}, overrides ?? {});
-        const options = omitProperties({
-            ...rest,
-            country,
-            displayOldPrice: toBoolean(displayOldPrice),
-            displayPerUnit: toBoolean(displayPerUnit),
-            displayRecurrence: toBoolean(displayRecurrence),
-            displayTax: toBoolean(displayTax),
-            forceTaxExclusive: toBoolean(forceTaxExclusive),
-            language,
-            perpetual: toBoolean(perpetual),
-            promotionCode: computePromoStatus(promotionCode).effectivePromoCode,
-            quantity: toQuantity(quantity, Defaults.quantity),
-            alternativePrice: toBoolean(alternativePrice),
-            template,
-            wcsOsi: toOfferSelectorIds(wcsOsi),
-        });
+    function collectPriceOptions(overrides, placeholder = null) {
+        const options = structuredClone(settings);
         if (placeholder) {
             for (const provider of providers.price) {
                 provider(placeholder, options);
             }
         }
+        const {
+            displayOldPrice,
+            displayPerUnit,
+            displayRecurrence,
+            displayTax,
+            displayPlanType,
+            forceTaxExclusive,
+            perpetual,
+            displayAnnual,
+            promotionCode,
+            quantity,
+            alternativePrice,
+            wcsOsi,
+            ...rest
+        } = Object.assign(options, placeholder?.dataset ?? {}, overrides ?? {});
+        Object.assign(
+            options,
+            omitProperties({
+                ...rest,
+                displayOldPrice: toBoolean(displayOldPrice),
+                displayPerUnit: toBoolean(displayPerUnit),
+                displayRecurrence: toBoolean(displayRecurrence),
+                displayTax: toBoolean(displayTax),
+                displayPlanType: toBoolean(displayPlanType),
+                forceTaxExclusive: toBoolean(forceTaxExclusive),
+                perpetual: toBoolean(perpetual),
+                displayAnnual: toBoolean(displayAnnual),
+                promotionCode:
+                    computePromoStatus(promotionCode).effectivePromoCode,
+                quantity: toQuantity(quantity, Defaults.quantity),
+                alternativePrice: toBoolean(alternativePrice),
+                wcsOsi: toOfferSelectorIds(wcsOsi),
+            }),
+        );
+
         return options;
     }
 
@@ -89,12 +86,21 @@ export function Price({ literals, providers, settings }) {
             case 'annual':
                 method = priceAnnual;
                 break;
+            case 'legal':
+                method = legal;
+                break;
             default:
-                if (options.template === 'optical' && options.alternativePrice) {
+                if (
+                    options.template === 'optical' &&
+                    options.alternativePrice
+                ) {
                     method = priceOpticalAlternative;
                 } else if (options.template === 'optical') {
                     method = priceOptical;
-                } else if (options.country === 'AU' && offers[0].planType === 'ABM') {
+                } else if (
+                    options.displayAnnual &&
+                    offers[0].planType === 'ABM'
+                ) {
                     method = options.promotionCode
                         ? pricePromoWithAnnual
                         : priceWithAnnual;
@@ -116,7 +122,7 @@ export function Price({ literals, providers, settings }) {
         return method(context, offer);
     }
 
-     const createInlinePrice = InlinePrice.createInlinePrice;
+    const createInlinePrice = InlinePrice.createInlinePrice;
 
     return {
         InlinePrice,

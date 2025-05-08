@@ -357,5 +357,22 @@ module.exports = {
       browserParams: '?theme=darkest',
       tags: '@mas-ccd @slice-card @slice-single @commerce @smoke @regression @milo',
     },
+    {
+      tcid: '20',
+      name: '@MAS-CCD-FR-suggested-eyebrow',
+      path: '/libs/features/mas/docs/ccd.html?country=FR&language=fr',
+      data: {
+        id: '0a2ac7c9-1965-488e-beca-856849305313',
+        title: 'Obtenez le plan Photoshop',
+        eyebrow: 'INDIVIDUALS',
+        description: 'La version complète de Photoshop plus le plan Adobe Express Premium.',
+        price: '26,21 €/mois',
+        cta: 'S’abonner',
+        osi: 'A1xn6EL4pK93bWjM8flffQpfEL-bnvtoQKQAvkx574M',
+        iconUrl: '',
+      },
+      browserParams: '?theme=darkest',
+      tags: '@mas-ccd @suggested-card @commerce @smoke @regression @milo',
+    },
   ],
 };

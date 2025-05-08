@@ -9,11 +9,6 @@
         rel="stylesheet"
         href="http://localhost:2023/__wds-outside-root__/2/styles/styles.css"
     />
-    <script>
-        window.process = {
-            env: {},
-        };
-    </script>
     <style>
         main {
             display: flex;
@@ -50,9 +45,11 @@
             background: linear-gradient(90deg, rgba(2, 0, 36, 1) 0%, rgba(140, 43, 95, 0.4430147058823529) 35%, rgba(0, 212, 255, 1) 100%);
         }
     </style>
+    <mas-commerce-service env="stage"></mas-commerce-service>
 </head>
 
 <body>
+    <mas-commerce-service env="stage"></mas-commerce-service>
     <script type="module" src="./merch-card.test.html.js"></script>
     <main>
         <div id="sidenav">
@@ -407,74 +404,6 @@
             </merch-card>
         </div>
 
-        <div class="two-merch-cards twp">
-            <merch-card class="merch-card twp" variant="twp" filters="all" types="" tabindex="0">
-                <merch-icon slot="icons" size="l" src="../img/lightroom.svg" alt="Lightroom"></merch-icon>
-                <merch-icon slot="icons" size="l" src="./mocks/img/photoshop.svg" alt="Photoshop"></merch-icon>
-                <p slot="heading-xs" class="heading-xs">
-                    <strong>Photography</strong>
-                </p>
-                <p slot="body-xs-top" class="body-xs-top">Edit, organize and transform your photos.</p>
-                <div slot="body-xs">
-                    <p>
-                        <strong>What you get:</strong>
-                    </p>
-                    <ul>
-                        <li>Lightroom on desktop, mobile and web</li>
-                        <li>Photoshop on desktop and iPad</li>
-                        <li>Lightroom Classic on desktop</li>
-                        <li>Tutorials, fonts, templates, and more</li>
-                        <li>X,XXX monthly <a href="https://firefly.adobe.com/">generative credits</a></li>
-                    </ul>
-                </div>
-                <div slot="footer">
-                    <p>
-                        <strong>7-day free trial, then</strong>
-                    </p>
-                    <p>
-                        <strong>
-                            <span is="inline-price" data-display-old-price="true" data-display-per-unit="false"
-                                data-display-recurrence="true" data-display-tax="false" data-force-tax-exclusive="false"
-                                data-quantity="1" data-template="price"
-                                data-wcs-osi="BNTtrDS9wbigrk5Hjeyn6BO62hcRZ-X5fJM9nLqJL6c">
-                            </span>
-                        </strong>
-                    </p>
-                </div>
-            </merch-card>
-            <merch-card class="merch-card twp" variant="twp" badge-background-color="#2D9D78" badge-color="#FFFFFF"
-                badge-text="Best value" filters="all" types="" tabindex="0">
-                <merch-icon slot="icons" size="l" src="/test/mocks/img/creative-cloud.svg"
-                    alt="Creative Cloud All Apps"></merch-icon>
-                <p slot="heading-xs" class="heading-xs">
-                    <strong>Creative Cloud All Apps</strong>
-                </p>
-                <p slot="body-xs-top" class="body-xs-top">The ultimate toolkit for unlimited creativity.</p>
-                <div slot="body-xs">
-                    <p><strong>What you get:</strong></p>
-                    <ul>
-                        <li>20+ apps – Photoshop, Illustrator, Adobe Express, Firefly, Acrobat Pro, and more</li>
-                        <li>Tutorials, fonts , templates, and more</li>
-                        <li>100GB of cloud storage</li>
-                        <li>X,XXX monthly <a href="https://firefly.adobe.com/">generative credits</a></li>
-                    </ul>
-                    <p><a href="https://adobe.com/">See all included apps.</a></p>
-                </div>
-                <div slot="footer">
-                    <p><strong>7-day free trial, then</strong></p>
-                    <p>
-                    <div>
-                        <span id="M2M" is="inline-price" data-display-per-unit="false" data-display-recurrence="true"
-                            data-display-tax="false" data-wcs-osi="m2m"></span>
-                    </div>
-                    <div>
-                        <span id="ABM" is="inline-price" data-display-per-unit="false" data-display-recurrence="true"
-                            data-display-tax="false" data-wcs-osi="abm-promo"></span>
-                    </div>
-                    </p>
-                </div>
-            </merch-card>
-        </div>
         <div class="three-merch-cards segment">
             <merch-card class="merch-card background-opacity-70 segment badge-card custom-border-color" variant="segment" size=""
                 badge-background-color="#2D9D78" badge-color="#fff" badge-text="Save a lot" filters="all" types="" tabindex="0" border-color="#1473E6"

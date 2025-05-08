@@ -1,0 +1,28 @@
+{
+  "total": 3,
+  "offset": 0,
+  "limit": 3,
+  "data": [
+  {
+  "prefixes": "us,gr_en",
+  "addProductName": "Buy now, \nStart free trial,\nFree trial,\nPreview,\nDownload now,\nTry for free,\nWatch video,\nSave now,\nLicense for free,\nChoose a plan,\nTry now,\nStart creating,\nSee all plans and pricing,\nRequest Demo",
+  "addHeader": "Learn more,\nLearn how,\nSee tutorials,\nGet started,\nSee best practices,\nSee customer stories,\nLicense for free,\nRead now,\nSee more,\nRead the story,\nFind a career,\nStart creating,"
+  },
+  {
+  "prefixes": "de, ch_de",
+  "addProductName": "Kostenlos testen,\nJetzt kaufen,",
+  "addHeader": "Weitere Infos,"
+  },
+  {
+  "prefixes": "kr",
+  "addProductName": "無料で始める,\n購入する",
+  "addHeader": "詳細を見る"
+  }
+  ],
+  "columns": [
+  "prefixes",
+  "addProductName",
+  "addHeader"
+  ],
+  ":type": "sheet"
+  }

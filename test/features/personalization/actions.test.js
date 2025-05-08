@@ -344,6 +344,19 @@ describe('custom actions', async () => {
           },
         },
       },
+      'mas-block': {
+        fragments: {
+          '64e0c5b8-9572-43e6-b0a7-fc68563589de': {
+            action: 'replace',
+            content: 'aec092ef-d5b5-4271-8b6f-4bbd535fcc56',
+            manifestId: false,
+            selector: 'https://mas.adobe.com/studio.html#page=content&path=sandbox&query=64e0c5b8-9572-43e6-b0a7-fc68563589de',
+            targetManifestId: false,
+            pageFilter: '',
+            selectorType: 'in-block:',
+          },
+        },
+      },
     });
   });
 

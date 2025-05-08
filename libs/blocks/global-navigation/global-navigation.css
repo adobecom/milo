@@ -34,7 +34,6 @@ header.global-navigation {
   z-index: 10;
   background-color: var(--feds-background-nav);
   box-sizing: content-box;
-  overflow-x: clip;
 }
 
 .feds-topnav-wrapper {
@@ -268,17 +267,17 @@ header.global-navigation {
   cursor: pointer;
 }
 
+.feds-topnav--overflowing .feds-cta {
+  height: 30px;
+  padding: 0 10px;
+  font-size: 14px;
+}
+
 .feds-promo .feds-cta {
   height: initial;
   min-height: 32px;
   line-height: 1.5;
   white-space: unset;
-}
-
-.feds-topnav--overflowing .feds-cta {
-  height: 30px;
-  padding: 0 10px;
-  font-size: 14px;
 }
 
 .feds-cta--primary {
@@ -427,6 +426,10 @@ header.global-navigation {
   justify-content: end;
 }
 
+header.new-nav.global-navigation:not(:has(.feds-dropdown--active)) .feds-profile {
+  z-index: 3;
+}
+
 /* Profile styles */
 .feds-profile-img {
   max-height: 30px;
@@ -521,6 +524,10 @@ header.global-navigation {
 
 /* Desktop styles */
 @media (min-width: 900px) {
+  header.global-navigation {
+    contain: layout;
+  }
+
   /* General */
   .global-navigation.has-breadcrumbs {
     padding-bottom: var(--feds-height-breadcrumbs);
@@ -796,6 +803,19 @@ header.new-nav .feds-nav-wrapper {
   transition: translate 0.4s ease-out, opacity 0.4s ease, visibility 0s linear 0.5s;
   display: flex;
   visibility: hidden;
+}
+
+header.new-nav .feds-nav-wrapper:not(:has(.feds-dropdown--active)),
+header.new-nav.global-navigation:has(.feds-dropdown--active) {
+  overflow-x: clip;
+}
+
+header.new-nav .feds-nav-wrapper:not(.feds-nav-wrapper--expanded) {
+  position: fixed;
+}
+
+header.new-nav.global-navigation:has(.feds-nav-wrapper--expanded):not(:has(.feds-dropdown--active)) .feds-utilities{
+  z-index: 3;
 }
 
 [dir = "rtl"] header.new-nav .feds-nav-wrapper {
@@ -1082,6 +1102,7 @@ header.new-nav .feds-nav > section.feds-navItem > .feds-popup .tab-content .feds
   display: inline-block;
   font-weight: 400;
   white-space: break-spaces;
+  font-size: 12px;
 }
 
 header.new-nav .feds-nav > section.feds-navItem > .feds-popup .sticky-cta {
@@ -1386,4 +1407,12 @@ html:has(body.disable-ios-scroll) { /* this class is only added on iOS */
 .disable-ios-scroll.branch-banner-is-active.branch-banner-inline #branch-banner-iframe {
   position: relative;
   display: block;
+}
+
+/* Landscape mode for mobile */
+@media (orientation: landscape) and (max-width: 900px) {
+  header.new-nav .feds-nav > section.feds-navItem > .feds-popup .tabs button {
+    padding: 15px 11px 15px 20px;
+    min-height: max-content;
+  }
 }

@@ -390,6 +390,22 @@ function registerInBlockActions(command) {
   if (blockAndSelector.length > 1) {
     blockSelector = blockAndSelector.slice(1).join(' ');
     command.selector = blockSelector;
+    if (blockSelector.startsWith('https://mas.adobe.com/')) {
+      const getFragmentId = (masUrl) => {
+        const { hash } = new URL(masUrl);
+        const hashValue = hash.startsWith('#') ? hash.substring(1) : hash;
+        const searchParams = new URLSearchParams(hashValue);
+        return searchParams.get('fragment') || searchParams.get('query');
+      };
+      blockSelector = getFragmentId(blockSelector);
+      if (blockSelector) {
+        config.mep.inBlock[blockName].fragments ??= {};
+        const { fragments } = config.mep.inBlock[blockName];
+        command.content = getFragmentId(command.content);
+        fragments[blockSelector] = command;
+      }
+      return;
+    }
     if (getSelectorType(blockSelector) === 'fragment') {
       if (blockSelector.includes('/federal/')) blockSelector = getFederatedUrl(blockSelector);
       if (command.content.includes('/federal/')) command.content = getFederatedUrl(command.content);
@@ -1274,13 +1290,11 @@ async function updateManifestsAndPropositions(
   });
   config.mep.targetAjoManifests = targetAjoManifests;
   if (config.mep.enablePersV2) {
-    if (!config.mep.hybridPersEnabled) {
-      window.addEventListener('alloy_sendEvent', () => {
-        if (targetAjoPropositions?.length && window._satellite) {
-          window._satellite.track('propositionDisplay', targetAjoPropositions);
-        }
-      }, { once: true });
-    }
+    window.addEventListener('alloy_sendEvent', () => {
+      if (targetAjoPropositions?.length && window._satellite) {
+        window._satellite.track('propositionDisplay', targetAjoPropositions);
+      }
+    }, { once: true });
   } else if (targetAjoPropositions?.length && window._satellite) {
     window._satellite.track('propositionDisplay', targetAjoPropositions);
   }
@@ -1403,7 +1417,7 @@ const awaitMartech = () => new Promise((resolve) => {
 export async function init(enablements = {}) {
   let manifests = [];
   const {
-    mepParam, mepHighlight, mepButton, pzn, promo, enablePersV2, hybridPersEnabled,
+    mepParam, mepHighlight, mepButton, pzn, promo, enablePersV2,
     target, ajo, countryIPPromise, mepgeolocation, targetInteractionPromise, calculatedTimeout,
     postLCP,
   } = enablements;
@@ -1425,7 +1439,6 @@ export async function init(enablements = {}) {
       countryIPPromise,
       geoLocation: mepgeolocation,
       targetInteractionPromise,
-      hybridPersEnabled,
     };
 
     manifests = manifests.concat(await combineMepSources(pzn, promo, mepParam));
