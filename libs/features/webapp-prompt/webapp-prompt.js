@@ -367,6 +367,9 @@ export class AppPrompt {
 
 export default async function init(config) {
   try {
+    const miloConfig = getConfig();
+    await miloConfig.georouting.loadedPromise;
+    delete miloConfig.georouting;
     const appPrompt = new AppPrompt(config);
     if (!appPrompt.initializationQueued) await appPrompt.init();
     return appPrompt;
