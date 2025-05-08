@@ -184,6 +184,7 @@ function updateAriaLive(ariaLive, slide) {
   });
 }
 
+let hiddenSlideTimeout;
 function moveSlides(event, carouselElements, jumpToIndex) {
   const {
     slideContainer,
@@ -195,6 +196,7 @@ function moveSlides(event, carouselElements, jumpToIndex) {
     ariaLive,
   } = carouselElements;
 
+  clearTimeout(hiddenSlideTimeout);
   ariaLive.textContent = '';
 
   let referenceSlide = slideContainer.querySelector('.reference-slide');
@@ -268,7 +270,7 @@ function moveSlides(event, carouselElements, jumpToIndex) {
   updateAriaLive(ariaLive, activeSlide);
 
   // Update active slide and indicator dot attributes
-  activeSlide.classList.remove('visibility-hidden');
+  activeSlide.classList.remove('non-visible-slide');
   activeSlide.classList.add('active');
   const indexOfActive = [...activeSlide.parentElement.children]
     .findIndex((ele) => activeSlide.isSameNode(ele));
@@ -307,9 +309,9 @@ function moveSlides(event, carouselElements, jumpToIndex) {
   */
   const slideDelay = 25;
   slideContainer.classList.remove('is-ready');
-  setTimeout(() => {
-    slides[activeSlideIndex].classList.add('visibility-hidden');
-  }, 600);
+  hiddenSlideTimeout = setTimeout(() => {
+    slides[activeSlideIndex].classList.add('non-visible-slide');
+  }, 625);
   return setTimeout(() => {
     slideContainer.classList.add('is-ready');
   }, slideDelay);
@@ -431,10 +433,9 @@ export default function init(el) {
   const slides = [...candidateKeys].reduce((rdx, key) => {
     if (key.textContent === 'carousel' && key.nextElementSibling.textContent === carouselName) {
       const slide = key.closest('.section');
-      slide.classList.add('carousel-slide', 'visibility-hidden');
+      slide.classList.add('carousel-slide', 'non-visible-slide');
       rdx.push(slide);
       slide.setAttribute('data-index', rdx.indexOf(slide));
-      // slide.setAttribute('aria-hidden', true);
     }
     return rdx;
   }, []);
@@ -502,9 +503,8 @@ export default function init(el) {
   }
   parentArea.addEventListener(MILO_EVENTS.DEFERRED, handleDeferredImages, true);
 
-  slides[0].classList.remove('visibility-hidden');
+  slides[0].classList.remove('non-visible-slide');
   slides[0].classList.add('active');
-  slides[0].removeAttribute('aria-hidden');
   const IndexOfShowClass = [...el.classList].findIndex((ele) => ele.includes('show-'));
   let NoOfVisibleSlides = 1;
   if (IndexOfShowClass >= 0) {

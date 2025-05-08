@@ -193,13 +193,9 @@ html[dir="rtl"] .carousel-slides .section.carousel-slide {
   opacity: 1;
 } 
 
-.carousel-slide.visibility-hidden {
+.carousel-slide.non-visible-slide {
   visibility: hidden;
 }
-
-/* .carousel-slide:not(.active) { */
-/*   visibility: hidden; */
-/* } */
 
 .carousel-slides.is-ready,
 .carousel-slides.is-ready.is-reversing,
