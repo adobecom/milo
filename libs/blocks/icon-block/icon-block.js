@@ -54,13 +54,30 @@ function decorateContent(el) {
   if (text) {
     text.classList.add('text-content');
     const image = block.querySelector(':scope img');
-    if (image) image.closest('p').classList.add('icon-area');
-    // place standalone links inside an action-area
     const lastElem = text.lastElementChild;
+    let actionLink = null;
     if (lastElem.children.length === 1
       && lastElem.lastElementChild.nodeName === 'A'
       && lastElem.lastElementChild.innerText === lastElem.innerText) {
       text.lastElementChild.classList.add('action-area');
+      actionLink = lastElem.lastElementChild;
+    }
+
+    if (image) {
+      const iconP = image.closest('p');
+      iconP?.classList.add('icon-area');
+      const iconLink = iconP?.querySelector('a');
+
+      if (iconLink && actionLink) {
+        const wrapper = createTag('a', {
+          href: actionLink.href,
+          class: 'wrapper-anchor',
+        });
+        iconLink.replaceWith(...iconLink.childNodes);
+        lastElem.replaceChildren(...actionLink.childNodes);
+        iconP.parentNode.insertBefore(wrapper, iconP);
+        wrapper.append(iconP, lastElem);
+      }
     }
     const size = getBlockSize(el, 2);
     const variant = [...variants].filter((v) => el.classList.contains(v))?.[0] ?? variants[0];
