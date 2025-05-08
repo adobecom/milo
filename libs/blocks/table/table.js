@@ -378,11 +378,10 @@ function handleSection(sectionParams) {
 
   rowCols.forEach((col) => {
     const strong = col.querySelector('strong');
-    const hasDirectText = Array.from(col.childNodes).some(
+    if (strong && Array.from(col.childNodes).some(
       (node) => node.nodeType === Node.TEXT_NODE && node.textContent.trim()
-      && node.parentNode === col && strong && strong.parentNode.tagName === 'DIV',
-    );
-    if (hasDirectText) col.replaceChildren(createTag('p', {}, [...col.childNodes]));
+      && node.parentNode === col && strong.parentNode.tagName === 'DIV',
+    )) col.replaceChildren(createTag('p', {}, [...col.childNodes]));
   });
 
   return expandSection;
