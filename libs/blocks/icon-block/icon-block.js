@@ -65,8 +65,8 @@ function decorateContent(el) {
 
     if (image) {
       const iconP = image.closest('p');
-      iconP.classList.add('icon-area');
-      const iconLink = iconP.querySelector('a');
+      iconP?.classList.add('icon-area');
+      const iconLink = iconP?.querySelector('a');
 
       if (iconLink && actionLink) {
         const wrapper = createTag('a', {
@@ -76,8 +76,7 @@ function decorateContent(el) {
         iconLink.replaceWith(...iconLink.childNodes);
         lastElem.replaceChildren(...actionLink.childNodes);
         iconP.parentNode.insertBefore(wrapper, iconP);
-        wrapper.appendChild(iconP);
-        wrapper.appendChild(lastElem);
+        wrapper.append(iconP, lastElem);
       }
     }
     const size = getBlockSize(el, 2);
