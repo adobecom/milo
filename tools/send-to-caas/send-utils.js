@@ -295,8 +295,8 @@ const isPagePublished = async () => {
 
 const getLanguageFirstCountryAndLang = async (path) => {
   const localeArr = path.split('/');
-  const langStr = (localeArr.length > 1) ? LANGS[localeArr[1]] || LANGS[''] : 'en';
-  let countryStr = (localeArr.length > 2) ? LOCALES[localeArr[2]] || 'xx' : 'xx';
+  const langStr = LANGS[localeArr[1]] ?? LANGS[''] ?? 'en';
+  let countryStr = LOCALES[localeArr[2]] ?? 'xx';
   if (typeof countryStr === 'object') {
     countryStr = countryStr.ietf?.split('-')[1] ?? 'xx';
   }
