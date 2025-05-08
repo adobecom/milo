@@ -340,4 +340,21 @@ describe('buildCheckoutUrl', () => {
     expect(parsedUrl.searchParams.get('cs')).to.equal('custom_cs');
     expect(parsedUrl.searchParams.get('ms')).to.equal('custom_ms');
   });
+
+  it('should remove the ot parameter when it is PROMOTION', () => {
+    const checkoutData = {
+      env: PROVIDER_ENVIRONMENT.PRODUCTION,
+      workflowStep: CheckoutWorkflowStep.SEGMENTATION,
+      clientId: 'testClient',
+      country: 'US',
+      items: [{ quantity: 1 }],
+      modal: 'twp',
+      customerSegment: 'INDIVIDUAL',
+      marketSegment: 'EDU',
+      ot: 'PROMOTION'
+    };
+    const url = buildCheckoutUrl(checkoutData);
+    const parsedUrl = new URL(url);
+    expect(parsedUrl.searchParams.has('ot')).to.be.false;
+  });
 });
