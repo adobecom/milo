@@ -355,9 +355,9 @@ export async function rolloutAll(e, reroll) {
   polling.value = true;
 }
 
-export async function cancelLocProject() {
+export async function cancelLocProject(options) {
   const { getModal } = await import('../../modal/modal.js');
   const div = createTag('div');
-  const content = Modal(div, 'cancel');
+  const content = Modal(div, 'cancel', options);
   getModal(null, { id: 'cancel-modal', content, closeEvent: 'closeModal' });
 }
