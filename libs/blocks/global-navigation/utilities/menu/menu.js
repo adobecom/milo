@@ -83,6 +83,12 @@ const decorateLinkGroup = (elem, index) => {
       ${contentElem}
     </a>`;
   if (link?.target) linkGroup.target = link.target;
+  if (linkGroup.classList.contains('feds-navLink--header')) {
+    linkGroup.setAttribute('tabindex', -1);
+    linkGroup.setAttribute('role', 'heading');
+    linkGroup.setAttribute('aria-level', 3);
+    linkGroup.removeAttribute('href');
+  }
 
   return linkGroup;
 };
