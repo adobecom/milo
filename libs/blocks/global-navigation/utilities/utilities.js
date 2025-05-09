@@ -12,7 +12,7 @@ import {
   getFedsPlaceholderConfig,
 } from '../../../utils/utils.js';
 import { processTrackingLabels } from '../../../martech/attributes.js';
-import { replaceText } from '../../../features/placeholders.js';
+import { replaceKey, replaceText } from '../../../features/placeholders.js';
 import { PERSONALIZATION_TAGS } from '../../../features/personalization/personalization.js';
 
 loadLana();
@@ -38,7 +38,9 @@ export const selectors = {
   activeDropdown: '.feds-dropdown--active',
   menuSection: '.feds-menu-section',
   menuColumn: '.feds-menu-column',
+  gnavPromoWrapper: '.feds-promo-wrapper',
   gnavPromo: '.gnav-promo',
+  crossCloudMenuLinks: '.feds-crossCloudMenu a',
   columnBreak: '.column-break',
   brandImageOnly: '.brand-image-only',
   localNav: '.feds-localnav',
@@ -480,6 +482,28 @@ export const closeAllTabs = (tabs, tabpanels) => {
   tabs.forEach((t) => t.setAttribute('aria-selected', 'false'));
 };
 
+const parseTabsFromMenuSection = (section) => {
+  const headline = section.querySelector('.feds-menu-headline');
+  const name = headline?.textContent ?? 'Shop For';
+  const daallTab = headline?.getAttribute('daa-ll');
+  const daalhTabContent = section.querySelector('.feds-menu-items')?.getAttribute('daa-lh');
+  const content = section.querySelector('.feds-menu-items') ?? section;
+  const links = [...content.querySelectorAll('a.feds-navLink, .feds-cta--secondary')].map((x) => x.outerHTML).join('');
+  return { name, links, daallTab, daalhTabContent };
+};
+
+const promoCrossCloudTab = async (popup) => {
+  const additionalLinks = [...popup.querySelectorAll(`${selectors.gnavPromoWrapper}, ${selectors.crossCloudMenuLinks}`)];
+  if (!additionalLinks.length) return [];
+  const tabName = await replaceKey('more', getFedsPlaceholderConfig());
+  return [{
+    name: tabName,
+    links: additionalLinks.map((x) => x.outerHTML).join(''),
+    daallTab: tabName,
+    daalhTabContent: tabName,
+  }];
+};
+
 export const transformTemplateToMobile = async (popup, item, localnav = false) => {
   const notMegaMenu = popup.parentElement.tagName === 'DIV';
   const originalContent = popup.innerHTML;
@@ -487,15 +511,9 @@ export const transformTemplateToMobile = async (popup, item, localnav = false) =
 
   const tabs = [...popup.querySelectorAll('.feds-menu-section')]
     .filter((section) => !section.querySelector('.feds-promo') && section.textContent)
-    .map((section) => {
-      const headline = section.querySelector('.feds-menu-headline');
-      const name = headline?.textContent ?? 'Shop For';
-      const daallTab = headline?.getAttribute('daa-ll');
-      const daalhTabContent = section.querySelector('.feds-menu-items')?.getAttribute('daa-lh');
-      const content = section.querySelector('.feds-menu-items') ?? section;
-      const links = [...content.querySelectorAll('a.feds-navLink, .feds-cta--secondary')].map((x) => x.outerHTML).join('');
-      return { name, links, daallTab, daalhTabContent };
-    });
+    .map(parseTabsFromMenuSection)
+    .concat(await promoCrossCloudTab(popup));
+
   const CTA = popup.querySelector('.feds-cta--primary')?.outerHTML ?? '';
   const mainMenu = `
       <button class="main-menu" daa-ll="Main menu_Gnav" aria-label='Main menu'>
@@ -562,7 +580,7 @@ export const transformTemplateToMobile = async (popup, item, localnav = false) =
   const tabpanels = popup.querySelectorAll('.tab-content [role="tabpanel"]');
 
   tabpanels.forEach((panel) => {
-    animateInSequence(panel.querySelectorAll('a'), 0.02);
+    animateInSequence([...panel.children], 0.02);
   });
 
   tabbuttons.forEach((tab, i) => {
