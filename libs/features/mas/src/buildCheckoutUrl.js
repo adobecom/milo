@@ -72,7 +72,6 @@ const ALLOWED_KEYS = new Set([
   'so.va',
 ]);
 const REQUIRED_KEYS = ['env', 'workflowStep', 'clientId', 'country'];
-const OFFER_TYPES = ['BASE', 'TRIAL'];
 
 /**
  * Maps human-readable parameter name to the name expected by Checkout Page.
@@ -166,10 +165,9 @@ export function buildCheckoutUrl(checkoutData) {
   validateCheckoutData(checkoutData);
   const { env, items, workflowStep, ms, cs, marketSegment, customerSegment, ot, offerType, pa, productArrangementCode, landscape, modal, ...rest } =
     checkoutData;
-  const offerTypeVal = offerType ?? ot;
   const segmentationParameters = {
     marketSegment: marketSegment ?? ms,
-    offerType: OFFER_TYPES.includes(offerTypeVal) ? offerTypeVal : undefined,
+    offerType: offerType ?? ot,
     productArrangementCode: productArrangementCode ?? pa,
   };
   let url = new URL(getHostName(env));
