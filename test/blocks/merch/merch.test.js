@@ -742,7 +742,7 @@ describe('Merch Block', () => {
       });
       fetchCheckoutLinkConfigs.promise = undefined;
       setCheckoutLinkConfigs(CHECKOUT_LINK_CONFIGS);
-      const action = await getModalAction([{ productArrangement: { productFamily: 'ILLUSTRATOR' } }], { modal: true });
+      const action = await getModalAction([{ productArrangement: { productFamily: 'ILLUSTRATOR' } }], { modal: 'true' });
       expect(action.url).to.equal('https://www.adobe.com/fr/plans-fragments/modals/individual/modals-content-rich/illustrator/master.modal.html');
     });
 
@@ -756,7 +756,7 @@ describe('Merch Block', () => {
       });
       fetchCheckoutLinkConfigs.promise = undefined;
       setCheckoutLinkConfigs(CHECKOUT_LINK_CONFIGS);
-      const action = await getModalAction([{ productArrangement: { productFamily: 'AUDITION' } }], { modal: true });
+      const action = await getModalAction([{ productArrangement: { productFamily: 'AUDITION' } }], { modal: 'true' });
       expect(action.url).to.equal('www.adobe.com/will/not/be/localized.html');
     });
 
