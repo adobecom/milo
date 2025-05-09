@@ -1,4 +1,4 @@
-name: Dynamic PR Template
+name: Extended Dynamic PR Template
 
 on:
   pull_request:
@@ -19,10 +19,6 @@ jobs:
       - name: Get changed files
         id: changed-files
         uses: tj-actions/changed-files@823fcebdb31bb35fdf2229d9f769b400309430d0
-        with:
-          files: |
-            libs/blocks/global-navigation/**
-            libs/blocks/global-footer/**
 
       - name: Debug Changed Files
         run: |
@@ -42,17 +38,30 @@ jobs:
           BRANCH_NAME="$BRANCH_NAME"
           REPO_OWNER="$REPO_OWNER"
           
-          # Check if changes are in either global navigation or footer
+          # Create base PR testing URL
+          BASE_URL="https://${BRANCH_NAME}--milo--${REPO_OWNER}.hlx.page"
+          
+          # Add Generic Milo Test URLs 
+          TEST_URLS=(
+            "## Test URLs"
+            ""
+            "**Main Pages:**"
+            "- Milo Home: ${BASE_URL}/?martech=off"
+            "- Milo Feature: ${BASE_URL}/feature?martech=off"
+            "- Milo 404: ${BASE_URL}/404?martech=off"
+            ""
+          )
+          
+          # Check if changes are in global navigation or footer
           if [[ "${{ steps.changed-files.outputs.all_changed_files }}" == *"libs/blocks/global-navigation/"* ]] || [[ "${{ steps.changed-files.outputs.all_changed_files }}" == *"libs/blocks/global-footer/"* ]]; then
-            echo "Changes detected in global navigation or footer"
-            TEST_URLS=(
-              "## GNav Test URLs"
+            TEST_URLS+=(
+              "**GNav Test URLs**"
               ""
               "**Gnav + Footer + Region Picker modal:**"
               "- Acrobat: https://main--dc--adobecom.hlx.live/acrobat?martech=off&milolibs=${BRANCH_NAME}--milo--${REPO_OWNER}"
               "- BACOM: https://main--bacom--adobecom.hlx.live/?martech=off&milolibs=${BRANCH_NAME}--milo--${REPO_OWNER}"
               "- CC: https://main--cc--adobecom.aem.live/creativecloud?martech=off&milolibs=${BRANCH_NAME}--milo--${REPO_OWNER}"
-              "- Milo: https://${BRANCH_NAME}--milo--${REPO_OWNER}.aem.page/drafts/blaishram/test-urls/page?martech=off"
+              "- Milo: ${BASE_URL}/drafts/blaishram/test-urls/page?martech=off"
               "- Express: https://main--express-milo--adobecom.aem.live/express/?martech=off&milolibs=${BRANCH_NAME}--milo--${REPO_OWNER}"
               "- News: https://main--news--adobecom.aem.live/?martech=off&milolibs=${BRANCH_NAME}--milo--${REPO_OWNER}"
               "- Homepage: https://main--homepage--adobecom.aem.live/homepage/index-loggedout?martech=off&milolibs=${BRANCH_NAME}--milo--${REPO_OWNER}"
@@ -61,7 +70,7 @@ jobs:
               "- Acrobat: https://main--dc--adobecom.hlx.page/drafts/blaishram/test-urls/page-gnav-footer-thin?martech=off&milolibs=${BRANCH_NAME}--milo--${REPO_OWNER}"
               "- BACOM: https://main--bacom--adobecom.hlx.page/drafts/blaishram/test-urls/page-gnav-footer-thin?martech=off&milolibs=${BRANCH_NAME}--milo--${REPO_OWNER}"
               "- CC: https://main--cc--adobecom.hlx.page/drafts/blaishram/test-urls/page-gnav-footer-thin?martech=off&milolibs=${BRANCH_NAME}--milo--${REPO_OWNER}"
-              "- Milo: https://${BRANCH_NAME}--milo--${REPO_OWNER}.hlx.page/drafts/blaishram/test-urls/page-gnav-footer-thin?martech=off"
+              "- Milo: ${BASE_URL}/drafts/blaishram/test-urls/page-gnav-footer-thin?martech=off"
               "- Express: https://main--express-milo--adobecom.hlx.page/drafts/blaishram/test-urls/page-gnav-footer-thin?martech=off&milolibs=${BRANCH_NAME}--milo--${REPO_OWNER}"
               "- News: https://main--news--adobecom.hlx.page/drafts/blaishram/test-urls/page-gnav-footer-thin?martech=off&milolibs=${BRANCH_NAME}--milo--${REPO_OWNER}"
               "- Homepage: https://main--homepage--adobecom.hlx.page/drafts/blaishram/test-urls/page-gnav-footer-thin?martech=off&milolibs=${BRANCH_NAME}--milo--${REPO_OWNER}"
@@ -70,7 +79,7 @@ jobs:
               "- Acrobat: https://main--dc--adobecom.hlx.page/drafts/blaishram/test-urls/page-with-promo?martech=off&milolibs=${BRANCH_NAME}--milo--${REPO_OWNER}"
               "- BACOM: https://main--bacom--adobecom.hlx.page/drafts/blaishram/test-urls/page-with-promo?martech=off&milolibs=${BRANCH_NAME}--milo--${REPO_OWNER}"
               "- CC: https://main--cc--adobecom.hlx.page/drafts/blaishram/test-urls/page-with-promo?martech=off&milolibs=${BRANCH_NAME}--milo--${REPO_OWNER}"
-              "- Milo: https://${BRANCH_NAME}--milo--${REPO_OWNER}.hlx.page/drafts/blaishram/test-urls/page-with-promo?martech=off"             
+              "- Milo: ${BASE_URL}/drafts/blaishram/test-urls/page-with-promo?martech=off"             
               "- Express: https://main--express-milo--adobecom.hlx.page/drafts/blaishram/test-urls/page-with-promo?martech=off&milolibs=${BRANCH_NAME}--milo--${REPO_OWNER}"
               "- News: https://main--news--adobecom.hlx.page/drafts/blaishram/test-urls/page-with-promo?martech=off&milolibs=${BRANCH_NAME}--milo--${REPO_OWNER}"
               "- Homepage: https://main--homepage--adobecom.hlx.page/drafts/blaishram/test-urls/page-with-promo?martech=off&milolibs=${BRANCH_NAME}--milo--${REPO_OWNER}"
@@ -84,10 +93,60 @@ jobs:
               "- URL: https://main--blog--adobecom.aem.page/?martech=off&milolibs=${BRANCH_NAME}--milo--${REPO_OWNER}"
               ""
               "**RTL Locale**"
-              "- URL: https://main--homepage--adobecom.aem.live/mena_ar/homepage/index-loggedout?martech=off&milolibs=${BRANCH_NAME}--milo--${REPO_OWNER}"   
+              "- URL: https://main--homepage--adobecom.aem.live/mena_ar/homepage/index-loggedout?martech=off&milolibs=${BRANCH_NAME}--milo--${REPO_OWNER}"
             )
-          else
-            echo "No changes detected in global navigation or footer"
+          fi
+          
+          # Check for changes in specific block directories
+          for dir in libs/blocks/*/; do
+            dir=${dir%*/} # Remove trailing slash
+            block_name=$(basename "$dir")
+            
+            # Skip gnav and footer since they're handled separately
+            if [[ "$block_name" == "global-navigation" ]] || [[ "$block_name" == "global-footer" ]]; then
+              continue
+            fi
+            
+            # Check if this block directory has changes
+            if [[ "${{ steps.changed-files.outputs.all_changed_files }}" == *"$dir"* ]]; then
+              # Add block-specific test URLs
+              TEST_URLS+=(
+                "**${block_name^} Block Test URLs**"
+                ""
+                "- Basic: ${BASE_URL}/drafts/blocks/${block_name}?martech=off"
+                "- With other content: ${BASE_URL}/drafts/blocks/${block_name}-examples?martech=off"
+                "- Consuming sites:"
+                "  - BACOM: https://main--bacom--adobecom.hlx.live/?martech=off&milolibs=${BRANCH_NAME}--milo--${REPO_OWNER}"
+                "  - Homepage: https://main--homepage--adobecom.aem.live/homepage/index-loggedout?martech=off&milolibs=${BRANCH_NAME}--milo--${REPO_OWNER}"
+                ""
+              )
+            fi
+          done
+          
+          # Check for changes in features directory
+          if [[ "${{ steps.changed-files.outputs.all_changed_files }}" == *"libs/features/"* ]]; then
+            TEST_URLS+=(
+              "**Features Test URLs**"
+              ""
+              "- Features Overview: ${BASE_URL}/drafts/features/overview?martech=off"
+              "- Consuming sites with features:"
+              "  - BACOM: https://main--bacom--adobecom.hlx.live/?martech=off&milolibs=${BRANCH_NAME}--milo--${REPO_OWNER}"
+              "  - Homepage: https://main--homepage--adobecom.aem.live/homepage/index-loggedout?martech=off&milolibs=${BRANCH_NAME}--milo--${REPO_OWNER}"
+              ""
+            )
+          fi
+          
+          # Check for changes in utils directory
+          if [[ "${{ steps.changed-files.outputs.all_changed_files }}" == *"libs/utils/"* ]]; then
+            TEST_URLS+=(
+              "**Utils Test URLs**"
+              ""
+              "- Utils Tests: ${BASE_URL}/drafts/utils/tests?martech=off"
+              "- Consuming sites using utilities:"
+              "  - BACOM: https://main--bacom--adobecom.hlx.live/?martech=off&milolibs=${BRANCH_NAME}--milo--${REPO_OWNER}"
+              "  - Homepage: https://main--homepage--adobecom.aem.live/homepage/index-loggedout?martech=off&milolibs=${BRANCH_NAME}--milo--${REPO_OWNER}"
+              ""
+            )
           fi
           
           # Convert array to JSON and set output
@@ -118,11 +177,11 @@ jobs:
               console.log('New test URLs section:', testUrlsSection);
               
               // Check if Test URLs section exists
-              const hasTestUrlsSection = pullRequest.body.includes('## GNav Test URLs');
+              const hasTestUrlsSection = pullRequest.body.includes('## Test URLs') || pullRequest.body.includes('## GNav Test URLs');
               let newDescription;
               if (hasTestUrlsSection) {
                 // Replace existing Test URLs section
-                newDescription = pullRequest.body.replace(/## GNav Test URLs[\s\S]*?(?=(^##\s|\Z))/m, testUrlsSection);
+                newDescription = pullRequest.body.replace(/## (Test URLs|GNav Test URLs)[\s\S]*?(?=(^##\s|\Z))/m, testUrlsSection);
               } else {
                 // Add Test URLs section at the end
                 newDescription = `${pullRequest.body}\n\n${testUrlsSection}`;
@@ -142,4 +201,4 @@ jobs:
               process.exit(0);
             }
         env:
-          TEST_URLS: ${{ steps.test-urls.outputs.test_urls }} 
+          TEST_URLS: ${{ steps.test-urls.outputs.test_urls }}
