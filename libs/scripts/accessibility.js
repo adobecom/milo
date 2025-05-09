@@ -2,7 +2,8 @@ function shouldntScroll(element, elFromPoint) {
   return !elFromPoint
     || elFromPoint === element
     || element.contains(elFromPoint)
-    || elFromPoint.contains(element);
+    || elFromPoint.contains(element)
+    || elFromPoint.shadowRoot?.contains(element);
 }
 
 function setScrollPadding() {
@@ -29,10 +30,11 @@ function scrollTabFocusedElIntoView() {
   });
 
   document.addEventListener('focusin', (e) => {
+    const element = e.target?.shadowRoot?.activeElement ?? e.target;
+
     if (isPadding) removeScrollPadding();
     isFocused = true;
 
-    const { target: element } = e;
     const rect = element.getBoundingClientRect();
     const viewportHeight = window.innerHeight;
     const outsideViewport = rect.top < 0 || rect.bottom > viewportHeight;
