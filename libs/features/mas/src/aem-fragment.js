@@ -13,7 +13,6 @@ sheet.replaceSync(':host { display: contents; }');
 
 const ATTRIBUTE_FRAGMENT = 'fragment';
 const ATTRIBUTE_AUTHOR = 'author';
-const ATTRIBUTE_PREVIEW = 'preview';
 const AEM_FRAGMENT_TAG_NAME = 'aem-fragment';
 
 class FragmentCache {
@@ -83,10 +82,8 @@ export class AemFragment extends HTMLElement {
 
     #author = false;
 
-    #preview = false;
-
     static get observedAttributes() {
-        return [ATTRIBUTE_FRAGMENT, ATTRIBUTE_AUTHOR, ATTRIBUTE_PREVIEW];
+        return [ATTRIBUTE_FRAGMENT, ATTRIBUTE_AUTHOR];
     }
 
     constructor() {
@@ -102,9 +99,6 @@ export class AemFragment extends HTMLElement {
         if (name === ATTRIBUTE_AUTHOR) {
           this.#author = ['', 'true'].includes(newValue);
         }
-        if (name === ATTRIBUTE_PREVIEW) {
-          this.#preview = newValue;
-        }
     }
 
     connectedCallback() {
@@ -117,10 +111,6 @@ export class AemFragment extends HTMLElement {
             this.#fail({ message: 'Missing fragment id' });
             return;
         }
-        if (this.#preview) {
-          this.generatePreview();
-          return;
-        }
         this.refresh(false);
     }
 
@@ -128,10 +118,15 @@ export class AemFragment extends HTMLElement {
      * Get fragment by ID
      * @param {string} endpoint url to fetch fragment from
      * @param {string} id fragment id
+     * @param {string} startMark performance mark to measure duration
+     * @param {boolean} preview if defined, fetches preview data
      * @returns {Promise<Object>} the raw fragment item
      */
-    async getFragmentById(endpoint, id, startMark) {
+    async getFragmentById(endpoint, id, startMark, preview) {
         const measureName = `${AEM_FRAGMENT_TAG_NAME}:${id}${MARK_DURATION_SUFFIX}`;
+        if (preview) {
+          return await this.generatePreview();
+        }
         let response;
         try {
             response = await masFetch(endpoint, {
@@ -232,13 +227,14 @@ export class AemFragment extends HTMLElement {
             return;
         }
         this.#stale = true;
-        const { masIOUrl, wcsApiKey, locale } = this.#service.settings;
+        const { masIOUrl, locale, preview, wcsApiKey } = this.#service.settings;
         const endpoint = `${masIOUrl}/fragment?id=${this.#fragmentId}&api_key=${wcsApiKey}&locale=${locale}`;
 
         fragment = await this.getFragmentById(
             endpoint,
             this.#fragmentId,
             this.#startMark,
+            preview,
         );
         cache.addByRequestedId(this.#fragmentId, fragment);
         this.#rawData = fragment;
@@ -284,34 +280,14 @@ export class AemFragment extends HTMLElement {
         );
     }
 
-    generatePreview() {
-      this.#fetchPromise = new Promise( async (resolve, reject) => {
-          const { previewFragment } = await import('https://mwpw-162398--mas--adobecom.aem.live/studio/libs/fragment-client.js');
-          const data = await previewFragment(this.#fragmentId, {
-          surface: this.#preview,
+    async generatePreview() {
+        const { previewFragment } = await import('https://mwpw-162398--mas--adobecom.aem.live/studio/libs/fragment-client.js');
+        const data = await previewFragment(this.#fragmentId, {
+          surface: this.#service.settings.previewSurface,
           locale: this.#service.settings.locale,
           apiKey: this.#service.settings.wcsApiKey,
         });
-        if (data) {
-          this.#rawData = data;
-          this.#data = data;
-          this.#stale = false;
-          this.dispatchEvent(
-            new CustomEvent(EVENT_AEM_LOAD, {
-              detail: {
-                ...this.data,
-                stale: this.#stale,
-              },
-              bubbles: true,
-              composed: true,
-            }),
-          );
-          resolve(data)
-        } else {
-          this.#fail({ message: 'Failed to generate preview' });
-          reject();
-        }
-      });
+        return data;
     }
 }
 

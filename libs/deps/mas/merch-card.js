@@ -1,4 +1,30 @@
-var Ce=Object.defineProperty;var Ut=o=>{throw TypeError(o)};var _e=(o,e,t)=>e in o?Ce(o,e,{enumerable:!0,configurable:!0,writable:!0,value:t}):o[e]=t;var l=(o,e,t)=>_e(o,typeof e!="symbol"?e+"":e,t),Tt=(o,e,t)=>e.has(o)||Ut("Cannot "+t);var i=(o,e,t)=>(Tt(o,e,"read from private field"),t?t.call(o):e.get(o)),m=(o,e,t)=>e.has(o)?Ut("Cannot add the same private member more than once"):e instanceof WeakSet?e.add(o):e.set(o,t),h=(o,e,t,r)=>(Tt(o,e,"write to private field"),r?r.call(o,t):e.set(o,t),t),E=(o,e,t)=>(Tt(o,e,"access private method"),t);import{LitElement as yr}from"../lit-all.min.js";import{css as Gt,unsafeCSS as Vt}from"../lit-all.min.js";var R="(max-width: 767px)",ut="(max-width: 1199px)",g="(min-width: 768px)",p="(min-width: 1200px)",w="(min-width: 1600px)";var qt=Gt`
+var __defProp = Object.defineProperty;
+var __typeError = (msg) => {
+  throw TypeError(msg);
+};
+var __defNormalProp = (obj, key, value) => key in obj ? __defProp(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
+var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "symbol" ? key + "" : key, value);
+var __accessCheck = (obj, member, msg) => member.has(obj) || __typeError("Cannot " + msg);
+var __privateGet = (obj, member, getter) => (__accessCheck(obj, member, "read from private field"), getter ? getter.call(obj) : member.get(obj));
+var __privateAdd = (obj, member, value) => member.has(obj) ? __typeError("Cannot add the same private member more than once") : member instanceof WeakSet ? member.add(obj) : member.set(obj, value);
+var __privateSet = (obj, member, value, setter) => (__accessCheck(obj, member, "write to private field"), setter ? setter.call(obj, value) : member.set(obj, value), value);
+var __privateMethod = (obj, member, method) => (__accessCheck(obj, member, "access private method"), method);
+
+// src/merch-card.js
+import { LitElement as LitElement5 } from "../lit-all.min.js";
+
+// src/merch-card.css.js
+import { css, unsafeCSS } from "../lit-all.min.js";
+
+// src/media.js
+var MOBILE_LANDSCAPE = "(max-width: 767px)";
+var TABLET_DOWN = "(max-width: 1199px)";
+var TABLET_UP = "(min-width: 768px)";
+var DESKTOP_UP = "(min-width: 1200px)";
+var LARGE_DESKTOP = "(min-width: 1600px)";
+
+// src/merch-card.css.js
+var styles = css`
     :host {
         --consonant-merch-card-background-color: #fff;
         --consonant-merch-card-border: 1px solid var(--consonant-merch-card-border-color);
@@ -235,9 +261,12 @@ var Ce=Object.defineProperty;var Ut=o=>{throw TypeError(o)};var _e=(o,e,t)=>e in
     ::slotted([slot='price']) {
       color: var(--consonant-merch-card-price-color);
     }
-`,Yt=()=>[Gt`
+`;
+var sizeStyles = () => {
+  const styles3 = [
+    css`
       /* Tablet */
-      @media screen and ${Vt(g)} {
+      @media screen and ${unsafeCSS(TABLET_UP)} {
           :host([size='wide']),
           :host([size='super-wide']) {
               width: 100%;
@@ -246,14 +275,40 @@ var Ce=Object.defineProperty;var Ut=o=>{throw TypeError(o)};var _e=(o,e,t)=>e in
       }
 
       /* Laptop */
-      @media screen and ${Vt(p)} {
+      @media screen and ${unsafeCSS(DESKTOP_UP)} {
           :host([size='wide']) {
               grid-column: span 2;
           }
       }
-      `];import{LitElement as Le,html as jt,css as Re}from"../lit-all.min.js";var F=class extends Le{constructor(){super(),this.size="m",this.alt="",this.loading="lazy"}render(){let{href:e}=this;return e?jt`<a href="${e}">
+      `
+  ];
+  return styles3;
+};
+
+// src/merch-icon.js
+import { LitElement, html, css as css2 } from "../lit-all.min.js";
+var MerchIcon = class extends LitElement {
+  constructor() {
+    super();
+    this.size = "m";
+    this.alt = "";
+    this.loading = "lazy";
+  }
+  render() {
+    const { href } = this;
+    return href ? html`<a href="${href}">
                   <img src="${this.src}" alt="${this.alt}" loading="${this.loading}" />
-              </a>`:jt` <img src="${this.src}" alt="${this.alt}" loading="${this.loading}" />`}};l(F,"properties",{size:{type:String,attribute:!0},src:{type:String,attribute:!0},alt:{type:String,attribute:!0},href:{type:String,attribute:!0},loading:{type:String,attribute:!0}}),l(F,"styles",Re`
+              </a>` : html` <img src="${this.src}" alt="${this.alt}" loading="${this.loading}" />`;
+  }
+};
+__publicField(MerchIcon, "properties", {
+  size: { type: String, attribute: true },
+  src: { type: String, attribute: true },
+  alt: { type: String, attribute: true },
+  href: { type: String, attribute: true },
+  loading: { type: String, attribute: true }
+});
+__publicField(MerchIcon, "styles", css2`
         :host {
             --img-width: 32px;
             --img-height: 32px;
@@ -281,22 +336,221 @@ var Ce=Object.defineProperty;var Ut=o=>{throw TypeError(o)};var _e=(o,e,t)=>e in
             width: var(--mod-img-width, var(--img-width));
             height: var(--mod-img-height, var(--img-height));
         }
-    `);customElements.define("merch-icon",F);import{html as ft}from"../lit-all.min.js";var B,at=class at{constructor(e){l(this,"card");m(this,B);this.card=e,this.insertVariantStyle()}getContainer(){return h(this,B,i(this,B)??this.card.closest('[class*="-merch-cards"]')??this.card.parentElement),i(this,B)}insertVariantStyle(){if(!at.styleMap[this.card.variant]){at.styleMap[this.card.variant]=!0;let e=document.createElement("style");e.innerHTML=this.getGlobalCSS(),document.head.appendChild(e)}}updateCardElementMinHeight(e,t){if(!e)return;let r=`--consonant-merch-card-${this.card.variant}-${t}-height`,n=Math.max(0,parseInt(window.getComputedStyle(e).height)||0),a=parseInt(this.getContainer().style.getPropertyValue(r))||0;n>a&&this.getContainer().style.setProperty(r,`${n}px`)}get badge(){let e;if(!(!this.card.badgeBackgroundColor||!this.card.badgeColor||!this.card.badgeText))return this.evergreen&&(e=`border: 1px solid ${this.card.badgeBackgroundColor}; border-right: none;`),ft`
+    `);
+customElements.define("merch-icon", MerchIcon);
+
+// src/variants/variant-layout.js
+import { html as html2 } from "../lit-all.min.js";
+var _container;
+var _VariantLayout = class _VariantLayout {
+  constructor(card) {
+    __publicField(this, "card");
+    __privateAdd(this, _container);
+    this.card = card;
+    this.insertVariantStyle();
+  }
+  getContainer() {
+    __privateSet(this, _container, __privateGet(this, _container) ?? this.card.closest('[class*="-merch-cards"]') ?? this.card.parentElement);
+    return __privateGet(this, _container);
+  }
+  insertVariantStyle() {
+    if (!_VariantLayout.styleMap[this.card.variant]) {
+      _VariantLayout.styleMap[this.card.variant] = true;
+      const styles3 = document.createElement("style");
+      styles3.innerHTML = this.getGlobalCSS();
+      document.head.appendChild(styles3);
+    }
+  }
+  updateCardElementMinHeight(el, name) {
+    if (!el) return;
+    const elMinHeightPropertyName = `--consonant-merch-card-${this.card.variant}-${name}-height`;
+    const height = Math.max(
+      0,
+      parseInt(window.getComputedStyle(el).height) || 0
+    );
+    const maxMinHeight = parseInt(
+      this.getContainer().style.getPropertyValue(
+        elMinHeightPropertyName
+      )
+    ) || 0;
+    if (height > maxMinHeight) {
+      this.getContainer().style.setProperty(
+        elMinHeightPropertyName,
+        `${height}px`
+      );
+    }
+  }
+  get badge() {
+    let additionalStyles;
+    if (!this.card.badgeBackgroundColor || !this.card.badgeColor || !this.card.badgeText) {
+      return;
+    }
+    if (this.evergreen) {
+      additionalStyles = `border: 1px solid ${this.card.badgeBackgroundColor}; border-right: none;`;
+    }
+    return html2`
             <div
                 id="badge"
                 class="${this.card.variant}-badge"
                 style="background-color: ${this.card.badgeBackgroundColor};
                 color: ${this.card.badgeColor};
-                ${e}"
+                ${additionalStyles}"
             >
                 ${this.card.badgeText}
             </div>
-        `}get cardImage(){return ft` <div class="image">
+        `;
+  }
+  get cardImage() {
+    return html2` <div class="image">
             <slot name="bg-image"></slot>
             ${this.badge}
-        </div>`}getGlobalCSS(){return""}get theme(){return document.querySelector("sp-theme")}get evergreen(){return this.card.classList.contains("intro-pricing")}get promoBottom(){return this.card.classList.contains("promo-bottom")}get headingSelector(){return'[slot="heading-xs"]'}get secureLabelFooter(){let e=this.card.secureLabel?ft`<span class="secure-transaction-label"
+        </div>`;
+  }
+  /* c8 ignore next 3 */
+  getGlobalCSS() {
+    return "";
+  }
+  /* c8 ignore next 3 */
+  get theme() {
+    return document.querySelector("sp-theme");
+  }
+  get evergreen() {
+    return this.card.classList.contains("intro-pricing");
+  }
+  get promoBottom() {
+    return this.card.classList.contains("promo-bottom");
+  }
+  get headingSelector() {
+    return '[slot="heading-xs"]';
+  }
+  get secureLabelFooter() {
+    const secureLabel = this.card.secureLabel ? html2`<span class="secure-transaction-label"
                   >${this.card.secureLabel}</span
-              >`:"";return ft`<footer>${e}<slot name="footer"></slot></footer>`}async adjustTitleWidth(){let e=this.card.getBoundingClientRect().width,t=this.card.badgeElement?.getBoundingClientRect().width||0;e===0||t===0||this.card.style.setProperty("--consonant-merch-card-heading-xs-max-width",`${Math.round(e-t-16)}px`)}postCardUpdateHook(){}connectedCallbackHook(){}disconnectedCallbackHook(){}renderLayout(){}get aemFragmentMapping(){}};B=new WeakMap,l(at,"styleMap",{});var u=at;import{html as Lt,css as ze}from"../lit-all.min.js";var Pr=Object.freeze({MONTH:"MONTH",YEAR:"YEAR",TWO_YEARS:"TWO_YEARS",THREE_YEARS:"THREE_YEARS",PERPETUAL:"PERPETUAL",TERM_LICENSE:"TERM_LICENSE",ACCESS_PASS:"ACCESS_PASS",THREE_MONTHS:"THREE_MONTHS",SIX_MONTHS:"SIX_MONTHS"}),$r=Object.freeze({ANNUAL:"ANNUAL",MONTHLY:"MONTHLY",TWO_YEARS:"TWO_YEARS",THREE_YEARS:"THREE_YEARS",P1D:"P1D",P1Y:"P1Y",P3Y:"P3Y",P10Y:"P10Y",P15Y:"P15Y",P3D:"P3D",P7D:"P7D",P30D:"P30D",HALF_YEARLY:"HALF_YEARLY",QUARTERLY:"QUARTERLY"});var Ct='span[is="inline-price"][data-wcs-osi]',xt='a[is="checkout-link"][data-wcs-osi],button[is="checkout-button"][data-wcs-osi]',Kt="sp-button[data-wcs-osi]",Wt=`${Ct},${xt}`;var Xt="merch-offer-select:ready",Qt="merch-card:ready",Zt="merch-card:action-menu-toggle";var _t="merch-quantity-selector:change";var $="aem:load",U="aem:error",Jt="mas:ready",te="mas:error";var ee="X-Request-Id",Nr=Object.freeze({CHECKOUT:"checkout",CHECKOUT_EMAIL:"checkout/email",SEGMENTATION:"segmentation",BUNDLE:"bundle",COMMITMENT:"commitment",RECOMMENDATION:"recommendation",EMAIL:"email",PAYMENT:"payment",CHANGE_PLAN_TEAM_PLANS:"change-plan/team-upgrade/plans",CHANGE_PLAN_TEAM_PAYMENT:"change-plan/team-upgrade/payment"}),Dr=Object.freeze({V2:"UCv2",V3:"UCv3"}),Ir=Object.freeze({STAGE:"STAGE",PRODUCTION:"PRODUCTION",LOCAL:"LOCAL"});var ct=":start",re=":duration";var Me="mas-commerce-service";function N(o,e={},t=null,r=null){let n=r?document.createElement(o,{is:r}):document.createElement(o);t instanceof HTMLElement?n.appendChild(t):n.innerHTML=t;for(let[a,c]of Object.entries(e))n.setAttribute(a,c);return n}function bt(){return window.matchMedia("(max-width: 767px)")}function V(){return bt().matches}function oe(){return window.matchMedia("(max-width: 1024px)").matches}function G(){return document.getElementsByTagName(Me)?.[0]}var ne=`
+              >` : "";
+    return html2`<footer>${secureLabel}<slot name="footer"></slot></footer>`;
+  }
+  async adjustTitleWidth() {
+    const cardWidth = this.card.getBoundingClientRect().width;
+    const badgeWidth = this.card.badgeElement?.getBoundingClientRect().width || 0;
+    if (cardWidth === 0 || badgeWidth === 0) return;
+    this.card.style.setProperty(
+      "--consonant-merch-card-heading-xs-max-width",
+      `${Math.round(cardWidth - badgeWidth - 16)}px`
+      // consonant-merch-spacing-xs
+    );
+  }
+  postCardUpdateHook() {
+  }
+  connectedCallbackHook() {
+  }
+  disconnectedCallbackHook() {
+  }
+  /* c8 ignore next 3 */
+  renderLayout() {
+  }
+  /* c8 ignore next 4 */
+  get aemFragmentMapping() {
+    return void 0;
+  }
+};
+_container = new WeakMap();
+__publicField(_VariantLayout, "styleMap", {});
+var VariantLayout = _VariantLayout;
+
+// src/variants/catalog.js
+import { html as html3, css as css3 } from "../lit-all.min.js";
+
+// src/constants.js
+var Commitment = Object.freeze({
+  MONTH: "MONTH",
+  YEAR: "YEAR",
+  TWO_YEARS: "TWO_YEARS",
+  THREE_YEARS: "THREE_YEARS",
+  PERPETUAL: "PERPETUAL",
+  TERM_LICENSE: "TERM_LICENSE",
+  ACCESS_PASS: "ACCESS_PASS",
+  THREE_MONTHS: "THREE_MONTHS",
+  SIX_MONTHS: "SIX_MONTHS"
+});
+var Term = Object.freeze({
+  ANNUAL: "ANNUAL",
+  MONTHLY: "MONTHLY",
+  TWO_YEARS: "TWO_YEARS",
+  THREE_YEARS: "THREE_YEARS",
+  P1D: "P1D",
+  P1Y: "P1Y",
+  P3Y: "P3Y",
+  P10Y: "P10Y",
+  P15Y: "P15Y",
+  P3D: "P3D",
+  P7D: "P7D",
+  P30D: "P30D",
+  HALF_YEARLY: "HALF_YEARLY",
+  QUARTERLY: "QUARTERLY"
+});
+var SELECTOR_MAS_INLINE_PRICE = 'span[is="inline-price"][data-wcs-osi]';
+var SELECTOR_MAS_CHECKOUT_LINK = 'a[is="checkout-link"][data-wcs-osi],button[is="checkout-button"][data-wcs-osi]';
+var SELECTOR_MAS_SP_BUTTON = "sp-button[data-wcs-osi]";
+var SELECTOR_MAS_ELEMENT = `${SELECTOR_MAS_INLINE_PRICE},${SELECTOR_MAS_CHECKOUT_LINK}`;
+var EVENT_MERCH_OFFER_SELECT_READY = "merch-offer-select:ready";
+var EVENT_MERCH_CARD_READY = "merch-card:ready";
+var EVENT_MERCH_CARD_ACTION_MENU_TOGGLE = "merch-card:action-menu-toggle";
+var EVENT_MERCH_QUANTITY_SELECTOR_CHANGE = "merch-quantity-selector:change";
+var EVENT_AEM_LOAD = "aem:load";
+var EVENT_AEM_ERROR = "aem:error";
+var EVENT_MAS_READY = "mas:ready";
+var EVENT_MAS_ERROR = "mas:error";
+var HEADER_X_REQUEST_ID = "X-Request-Id";
+var CheckoutWorkflowStep = Object.freeze({
+  CHECKOUT: "checkout",
+  CHECKOUT_EMAIL: "checkout/email",
+  SEGMENTATION: "segmentation",
+  BUNDLE: "bundle",
+  COMMITMENT: "commitment",
+  RECOMMENDATION: "recommendation",
+  EMAIL: "email",
+  PAYMENT: "payment",
+  CHANGE_PLAN_TEAM_PLANS: "change-plan/team-upgrade/plans",
+  CHANGE_PLAN_TEAM_PAYMENT: "change-plan/team-upgrade/payment"
+});
+var CheckoutWorkflow = Object.freeze({ V2: "UCv2", V3: "UCv3" });
+var Env = Object.freeze({
+  STAGE: "STAGE",
+  PRODUCTION: "PRODUCTION",
+  LOCAL: "LOCAL"
+});
+var MARK_START_SUFFIX = ":start";
+var MARK_DURATION_SUFFIX = ":duration";
+
+// src/utils.js
+var MAS_COMMERCE_SERVICE = "mas-commerce-service";
+function createTag(tag, attributes = {}, content = null, is = null) {
+  const element = is ? document.createElement(tag, { is }) : document.createElement(tag);
+  if (content instanceof HTMLElement) {
+    element.appendChild(content);
+  } else {
+    element.innerHTML = content;
+  }
+  for (const [key, value] of Object.entries(attributes)) {
+    element.setAttribute(key, value);
+  }
+  return element;
+}
+function matchMobile() {
+  return window.matchMedia("(max-width: 767px)");
+}
+function isMobile() {
+  return matchMobile().matches;
+}
+function isMobileOrTablet() {
+  return window.matchMedia("(max-width: 1024px)").matches;
+}
+function getService() {
+  return document.getElementsByTagName(MAS_COMMERCE_SERVICE)?.[0];
+}
+
+// src/variants/catalog.css.js
+var CSS = `
 :root {
   --consonant-merch-card-catalog-width: 276px;
   --consonant-merch-card-catalog-icon-size: 40px;
@@ -308,7 +562,7 @@ var Ce=Object.defineProperty;var Ut=o=>{throw TypeError(o)};var _e=(o,e,t)=>e in
     grid-template-columns: var(--consonant-merch-card-catalog-width);
 }
 
-@media screen and ${g} {
+@media screen and ${TABLET_UP} {
     :root {
       --consonant-merch-card-catalog-width: 302px;
     }
@@ -320,7 +574,7 @@ var Ce=Object.defineProperty;var Ut=o=>{throw TypeError(o)};var _e=(o,e,t)=>e in
     }
 }
 
-@media screen and ${p} {
+@media screen and ${DESKTOP_UP} {
     :root {
       --consonant-merch-card-catalog-width: 276px;
     }
@@ -331,7 +585,7 @@ var Ce=Object.defineProperty;var Ut=o=>{throw TypeError(o)};var _e=(o,e,t)=>e in
     }
 }
 
-@media screen and ${w} {
+@media screen and ${LARGE_DESKTOP} {
     .four-merch-cards.catalog {
         grid-template-columns: repeat(4, var(--consonant-merch-card-catalog-width));
     }
@@ -382,13 +636,73 @@ merch-card[variant="catalog"] .payment-details {
   font-style: italic;
   font-weight: 400;
   line-height: var(--consonant-merch-card-body-line-height);
-}`;var Rt={badge:!0,ctas:{slot:"footer",size:"m"},description:{tag:"div",slot:"body-xs"},mnemonics:{size:"l"},prices:{tag:"h3",slot:"heading-xs"},size:["wide","super-wide"],title:{tag:"h3",slot:"heading-xs"}},q=class extends u{constructor(t){super(t);l(this,"dispatchActionMenuToggle",()=>{this.card.dispatchEvent(new CustomEvent(Zt,{bubbles:!0,composed:!0,detail:{card:this.card.name,type:"action-menu"}}))});l(this,"toggleActionMenu",t=>{if(!this.actionMenuContentSlot||!t||t.type!=="click"&&t.code!=="Space"&&t.code!=="Enter")return;t.preventDefault(),this.actionMenuContentSlot.classList.toggle("hidden");let r=this.actionMenuContentSlot.classList.contains("hidden");r||this.dispatchActionMenuToggle(),this.setAriaExpanded(this.actionMenu,(!r).toString())});l(this,"toggleActionMenuFromCard",t=>{let r=t?.type==="mouseleave"?!0:void 0;this.card.blur(),this.actionMenu?.classList.remove("always-visible"),this.actionMenuContentSlot&&(r||this.dispatchActionMenuToggle(),this.actionMenuContentSlot.classList.toggle("hidden",r),this.setAriaExpanded(this.actionMenu,"false"))});l(this,"hideActionMenu",t=>{this.actionMenuContentSlot?.classList.add("hidden"),this.setAriaExpanded(this.actionMenu,"false")})}get aemFragmentMapping(){return Rt}get actionMenu(){return this.card.shadowRoot.querySelector(".action-menu")}get actionMenuContentSlot(){return this.card.shadowRoot.querySelector('slot[name="action-menu-content"]')}renderLayout(){return Lt` <div class="body">
+}`;
+
+// src/variants/catalog.js
+var CATALOG_AEM_FRAGMENT_MAPPING = {
+  badge: true,
+  ctas: { slot: "footer", size: "m" },
+  description: { tag: "div", slot: "body-xs" },
+  mnemonics: { size: "l" },
+  prices: { tag: "h3", slot: "heading-xs" },
+  size: ["wide", "super-wide"],
+  title: { tag: "h3", slot: "heading-xs" }
+};
+var Catalog = class extends VariantLayout {
+  constructor(card) {
+    super(card);
+    __publicField(this, "dispatchActionMenuToggle", () => {
+      this.card.dispatchEvent(
+        new CustomEvent(EVENT_MERCH_CARD_ACTION_MENU_TOGGLE, {
+          bubbles: true,
+          composed: true,
+          detail: {
+            card: this.card.name,
+            type: "action-menu"
+          }
+        })
+      );
+    });
+    __publicField(this, "toggleActionMenu", (e) => {
+      if (!this.actionMenuContentSlot || !e || e.type !== "click" && e.code !== "Space" && e.code !== "Enter") return;
+      e.preventDefault();
+      this.actionMenuContentSlot.classList.toggle("hidden");
+      const isHidden = this.actionMenuContentSlot.classList.contains("hidden");
+      if (!isHidden) this.dispatchActionMenuToggle();
+      this.setAriaExpanded(this.actionMenu, (!isHidden).toString());
+    });
+    __publicField(this, "toggleActionMenuFromCard", (e) => {
+      const retract = e?.type === "mouseleave" ? true : void 0;
+      this.card.blur();
+      this.actionMenu?.classList.remove("always-visible");
+      if (!this.actionMenuContentSlot) return;
+      if (!retract) this.dispatchActionMenuToggle();
+      this.actionMenuContentSlot.classList.toggle("hidden", retract);
+      this.setAriaExpanded(this.actionMenu, "false");
+    });
+    __publicField(this, "hideActionMenu", (e) => {
+      this.actionMenuContentSlot?.classList.add("hidden");
+      this.setAriaExpanded(this.actionMenu, "false");
+    });
+  }
+  /* c8 ignore next 3 */
+  get aemFragmentMapping() {
+    return CATALOG_AEM_FRAGMENT_MAPPING;
+  }
+  get actionMenu() {
+    return this.card.shadowRoot.querySelector(".action-menu");
+  }
+  get actionMenuContentSlot() {
+    return this.card.shadowRoot.querySelector('slot[name="action-menu-content"]');
+  }
+  renderLayout() {
+    return html3` <div class="body">
                 <div class="top-section">
                     <slot name="icons"></slot> ${this.badge}
                     <div
                         class="action-menu
-                ${oe()&&this.card.actionMenu?"always-visible":""}
-                ${this.card.actionMenu?"invisible":"hidden"}"
+                ${isMobileOrTablet() && this.card.actionMenu ? "always-visible" : ""}
+                ${!this.card.actionMenu ? "hidden" : "invisible"}"
                         @click="${this.toggleActionMenu}"
                         @keypress="${this.toggleActionMenu}"
                         tabindex="0"
@@ -399,21 +713,36 @@ merch-card[variant="catalog"] .payment-details {
                 <slot
                     name="action-menu-content"
                     class="action-menu-content
-            ${this.card.actionMenuContent?"":"hidden"}"
+            ${!this.card.actionMenuContent ? "hidden" : ""}"
                     @focusout="${this.hideActionMenu}"
                     >${this.card.actionMenuContent}
                 </slot>
                 <slot name="heading-xs"></slot>
                 <slot name="heading-m"></slot>
                 <slot name="body-xxs"></slot>
-                ${this.promoBottom?"":Lt`<slot name="promo-text"></slot
-                          ><slot name="callout-content"></slot>`}
+                ${!this.promoBottom ? html3`<slot name="promo-text"></slot
+                          ><slot name="callout-content"></slot>` : ""}
                 <slot name="body-xs"></slot>
-                ${this.promoBottom?Lt`<slot name="promo-text"></slot
-                          ><slot name="callout-content"></slot>`:""}
+                ${this.promoBottom ? html3`<slot name="promo-text"></slot
+                          ><slot name="callout-content"></slot>` : ""}
             </div>
             ${this.secureLabelFooter}
-            <slot></slot>`}getGlobalCSS(){return ne}setAriaExpanded(t,r){t.setAttribute("aria-expanded",r)}connectedCallbackHook(){this.card.addEventListener("mouseleave",this.toggleActionMenuFromCard)}disconnectedCallbackHook(){this.card.removeEventListener("mouseleave",this.toggleActionMenuFromCard)}};l(q,"variantStyle",ze`
+            <slot></slot>`;
+  }
+  getGlobalCSS() {
+    return CSS;
+  }
+  setAriaExpanded(element, value) {
+    element.setAttribute("aria-expanded", value);
+  }
+  connectedCallbackHook() {
+    this.card.addEventListener("mouseleave", this.toggleActionMenuFromCard);
+  }
+  disconnectedCallbackHook() {
+    this.card.removeEventListener("mouseleave", this.toggleActionMenuFromCard);
+  }
+};
+__publicField(Catalog, "variantStyle", css3`
         :host([variant='catalog']) {
             min-height: 330px;
             width: var(--consonant-merch-card-catalog-width);
@@ -431,7 +760,13 @@ merch-card[variant="catalog"] .payment-details {
             margin-left: var(--consonant-merch-spacing-xxs);
             box-sizing: border-box;
         }
-    `);import{html as it}from"../lit-all.min.js";var ae=`
+    `);
+
+// src/variants/image.js
+import { html as html4 } from "../lit-all.min.js";
+
+// src/variants/image.css.js
+var CSS2 = `
 :root {
   --consonant-merch-card-image-width: 300px;
 }
@@ -443,7 +778,7 @@ merch-card[variant="catalog"] .payment-details {
   grid-template-columns: var(--consonant-merch-card-image-width);
 }
 
-@media screen and ${g} {
+@media screen and ${TABLET_UP} {
   .two-merch-cards.image,
   .three-merch-cards.image,
   .four-merch-cards.image {
@@ -451,7 +786,7 @@ merch-card[variant="catalog"] .payment-details {
   }
 }
 
-@media screen and ${p} {
+@media screen and ${DESKTOP_UP} {
   :root {
     --consonant-merch-card-image-width: 378px;
     --consonant-merch-card-image-width-4clm: 276px;
@@ -465,24 +800,43 @@ merch-card[variant="catalog"] .payment-details {
       grid-template-columns: repeat(4, var(--consonant-merch-card-image-width-4clm));
   }
 }
-`;var vt=class extends u{constructor(e){super(e)}getGlobalCSS(){return ae}renderLayout(){return it`${this.cardImage}
+`;
+
+// src/variants/image.js
+var Image = class extends VariantLayout {
+  constructor(card) {
+    super(card);
+  }
+  getGlobalCSS() {
+    return CSS2;
+  }
+  renderLayout() {
+    return html4`${this.cardImage}
     <div class="body">
         <slot name="icons"></slot>
         <slot name="heading-xs"></slot>
         <slot name="body-xxs"></slot>
-        ${this.promoBottom?it`<slot name="body-xs"></slot><slot name="promo-text"></slot>`:it`<slot name="promo-text"></slot><slot name="body-xs"></slot>`}
+        ${this.promoBottom ? html4`<slot name="body-xs"></slot><slot name="promo-text"></slot>` : html4`<slot name="promo-text"></slot><slot name="body-xs"></slot>`}
     </div>
-    ${this.evergreen?it`
+    ${this.evergreen ? html4`
               <div
                   class="detail-bg-container"
-                  style="background: ${this.card.detailBg}"
+                  style="background: ${this.card["detailBg"]}"
               >
                   <slot name="detail-bg"></slot>
               </div>
-          `:it`
+          ` : html4`
               <hr />
               ${this.secureLabelFooter}
-          `}`}};import{html as ie}from"../lit-all.min.js";var ce=`
+          `}`;
+  }
+};
+
+// src/variants/inline-heading.js
+import { html as html5 } from "../lit-all.min.js";
+
+// src/variants/inline-heading.css.js
+var CSS3 = `
 :root {
   --consonant-merch-card-inline-heading-width: 300px;
 }
@@ -494,7 +848,7 @@ merch-card[variant="catalog"] .payment-details {
     grid-template-columns: var(--consonant-merch-card-inline-heading-width);
 }
 
-@media screen and ${g} {
+@media screen and ${TABLET_UP} {
   .two-merch-cards.inline-heading,
   .three-merch-cards.inline-heading,
   .four-merch-cards.inline-heading {
@@ -502,7 +856,7 @@ merch-card[variant="catalog"] .payment-details {
   }
 }
 
-@media screen and ${p} {
+@media screen and ${DESKTOP_UP} {
   :root {
     --consonant-merch-card-inline-heading-width: 378px;
   }
@@ -513,12 +867,23 @@ merch-card[variant="catalog"] .payment-details {
   }
 }
 
-@media screen and ${w} {
+@media screen and ${LARGE_DESKTOP} {
   .four-merch-cards.inline-heading {
       grid-template-columns: repeat(4, var(--consonant-merch-card-inline-heading-width));
   }
 }
-`;var yt=class extends u{constructor(e){super(e)}getGlobalCSS(){return ce}renderLayout(){return ie` ${this.badge}
+`;
+
+// src/variants/inline-heading.js
+var InlineHeading = class extends VariantLayout {
+  constructor(card) {
+    super(card);
+  }
+  getGlobalCSS() {
+    return CSS3;
+  }
+  renderLayout() {
+    return html5` ${this.badge}
     <div class="body">
         <div class="top-section">
             <slot name="icons"></slot>
@@ -526,7 +891,15 @@ merch-card[variant="catalog"] .payment-details {
         </div>
         <slot name="body-xs"></slot>
     </div>
-    ${this.card.customHr?"":ie`<hr />`} ${this.secureLabelFooter}`}};import{html as Y,css as Oe,unsafeCSS as le}from"../lit-all.min.js";var se=`
+    ${!this.card.customHr ? html5`<hr />` : ""} ${this.secureLabelFooter}`;
+  }
+};
+
+// src/variants/mini-compare-chart.js
+import { html as html6, css as css4, unsafeCSS as unsafeCSS2 } from "../lit-all.min.js";
+
+// src/variants/mini-compare-chart.css.js
+var CSS4 = `
   :root {
     --consonant-merch-card-mini-compare-chart-icon-size: 32px;
     --consonant-merch-card-mini-compare-mobile-cta-font-size: 15px;
@@ -717,7 +1090,7 @@ merch-card[variant="catalog"] .payment-details {
 }
 
 /* mini compare mobile */ 
-@media screen and ${R} {
+@media screen and ${MOBILE_LANDSCAPE} {
   :root {
     --consonant-merch-card-mini-compare-chart-width: 302px;
     --consonant-merch-card-mini-compare-chart-wide-width: 302px;
@@ -755,7 +1128,7 @@ merch-card[variant="catalog"] .payment-details {
   }
 }
 
-@media screen and ${ut} {
+@media screen and ${TABLET_DOWN} {
   merch-card[variant="mini-compare-chart"] [slot='heading-m'] {
     font-size: var(--consonant-merch-card-body-s-font-size);
     line-height: var(--consonant-merch-card-body-s-line-height);
@@ -781,7 +1154,7 @@ merch-card[variant="catalog"] .payment-details {
     line-height: var(--consonant-merch-card-body-xs-line-height);
   }
 }
-@media screen and ${g} {
+@media screen and ${TABLET_UP} {
   :root {
     --consonant-merch-card-mini-compare-chart-width: 302px;
     --consonant-merch-card-mini-compare-chart-wide-width: 302px;
@@ -799,7 +1172,7 @@ merch-card[variant="catalog"] .payment-details {
 }
 
 /* desktop */
-@media screen and ${p} {
+@media screen and ${DESKTOP_UP} {
   :root {
     --consonant-merch-card-mini-compare-chart-width: 378px;
     --consonant-merch-card-mini-compare-chart-wide-width: 484px;  
@@ -820,7 +1193,7 @@ merch-card[variant="catalog"] .payment-details {
   }
 }
 
-@media screen and ${w} {
+@media screen and ${LARGE_DESKTOP} {
   .four-merch-cards.mini-compare-chart {
       grid-template-columns: repeat(4, var(--consonant-merch-card-mini-compare-chart-width));
   }
@@ -857,16 +1230,106 @@ merch-card .footer-row-cell:nth-child(7) {
 merch-card .footer-row-cell:nth-child(8) {
   min-height: var(--consonant-merch-card-footer-row-8-min-height);
 }
-`;var Pe=32,j=class extends u{constructor(t){super(t);l(this,"getRowMinHeightPropertyName",t=>`--consonant-merch-card-footer-row-${t}-min-height`);l(this,"getMiniCompareFooter",()=>{let t=this.card.secureLabel?Y`<slot name="secure-transaction-label">
+`;
+
+// src/variants/mini-compare-chart.js
+var FOOTER_ROW_MIN_HEIGHT = 32;
+var MiniCompareChart = class extends VariantLayout {
+  constructor(card) {
+    super(card);
+    __publicField(this, "getRowMinHeightPropertyName", (index) => `--consonant-merch-card-footer-row-${index}-min-height`);
+    __publicField(this, "getMiniCompareFooter", () => {
+      const secureLabel = this.card.secureLabel ? html6`<slot name="secure-transaction-label">
               <span class="secure-transaction-label"
                   >${this.card.secureLabel}</span
               ></slot
-          >`:Y`<slot name="secure-transaction-label"></slot>`;return Y`<footer>${t}<slot name="footer"></slot></footer>`})}getGlobalCSS(){return se}adjustMiniCompareBodySlots(){if(this.card.getBoundingClientRect().width<=2)return;this.updateCardElementMinHeight(this.card.shadowRoot.querySelector(".top-section"),"top-section");let t=["heading-m","body-m","heading-m-price","body-xxs","price-commitment","offers","promo-text","callout-content"];this.card.classList.contains("bullet-list")&&t.push("footer-rows"),t.forEach(n=>this.updateCardElementMinHeight(this.card.shadowRoot.querySelector(`slot[name="${n}"]`),n)),this.updateCardElementMinHeight(this.card.shadowRoot.querySelector("footer"),"footer");let r=this.card.shadowRoot.querySelector(".mini-compare-chart-badge");r&&r.textContent!==""&&this.getContainer().style.setProperty("--consonant-merch-card-mini-compare-chart-top-section-mobile-height","32px")}adjustMiniCompareFooterRows(){if(this.card.getBoundingClientRect().width===0)return;let t=this.card.querySelector('[slot="footer-rows"] ul');!t||!t.children||[...t.children].forEach((r,n)=>{let a=Math.max(Pe,parseFloat(window.getComputedStyle(r).height)||0),c=parseFloat(this.getContainer().style.getPropertyValue(this.getRowMinHeightPropertyName(n+1)))||0;a>c&&this.getContainer().style.setProperty(this.getRowMinHeightPropertyName(n+1),`${a}px`)})}removeEmptyRows(){this.card.querySelectorAll(".footer-row-cell").forEach(r=>{let n=r.querySelector(".footer-row-cell-description");n&&!n.textContent.trim()&&r.remove()})}renderLayout(){return Y` <div class="top-section${this.badge?" badge":""}">
+          >` : html6`<slot name="secure-transaction-label"></slot>`;
+      return html6`<footer>${secureLabel}<slot name="footer"></slot></footer>`;
+    });
+  }
+  getGlobalCSS() {
+    return CSS4;
+  }
+  adjustMiniCompareBodySlots() {
+    if (this.card.getBoundingClientRect().width <= 2) return;
+    this.updateCardElementMinHeight(
+      this.card.shadowRoot.querySelector(".top-section"),
+      "top-section"
+    );
+    let slots = [
+      "heading-m",
+      "body-m",
+      "heading-m-price",
+      "body-xxs",
+      "price-commitment",
+      "offers",
+      "promo-text",
+      "callout-content"
+    ];
+    if (this.card.classList.contains("bullet-list")) {
+      slots.push("footer-rows");
+    }
+    slots.forEach(
+      (slot) => this.updateCardElementMinHeight(
+        this.card.shadowRoot.querySelector(`slot[name="${slot}"]`),
+        slot
+      )
+    );
+    this.updateCardElementMinHeight(
+      this.card.shadowRoot.querySelector("footer"),
+      "footer"
+    );
+    const badge = this.card.shadowRoot.querySelector(
+      ".mini-compare-chart-badge"
+    );
+    if (badge && badge.textContent !== "") {
+      this.getContainer().style.setProperty(
+        "--consonant-merch-card-mini-compare-chart-top-section-mobile-height",
+        "32px"
+      );
+    }
+  }
+  adjustMiniCompareFooterRows() {
+    if (this.card.getBoundingClientRect().width === 0) return;
+    const footerRows = this.card.querySelector('[slot="footer-rows"] ul');
+    if (!footerRows || !footerRows.children) return;
+    [...footerRows.children].forEach((el, index) => {
+      const height = Math.max(
+        FOOTER_ROW_MIN_HEIGHT,
+        parseFloat(window.getComputedStyle(el).height) || 0
+      );
+      const maxMinHeight = parseFloat(
+        this.getContainer().style.getPropertyValue(
+          this.getRowMinHeightPropertyName(index + 1)
+        )
+      ) || 0;
+      if (height > maxMinHeight) {
+        this.getContainer().style.setProperty(
+          this.getRowMinHeightPropertyName(index + 1),
+          `${height}px`
+        );
+      }
+    });
+  }
+  removeEmptyRows() {
+    const footerRows = this.card.querySelectorAll(".footer-row-cell");
+    footerRows.forEach((row) => {
+      const rowDescription = row.querySelector(".footer-row-cell-description");
+      if (rowDescription) {
+        const isEmpty = !rowDescription.textContent.trim();
+        if (isEmpty) {
+          row.remove();
+        }
+      }
+    });
+  }
+  renderLayout() {
+    return html6` <div class="top-section${this.badge ? " badge" : ""}">
             <slot name="icons"></slot> ${this.badge}
         </div>
         <slot name="heading-m"></slot>
-        ${this.card.classList.contains("bullet-list")?Y`<slot name="heading-m-price"></slot>
-          <slot name="body-m"></slot>`:Y`<slot name="body-m"></slot>
+        ${this.card.classList.contains("bullet-list") ? html6`<slot name="heading-m-price"></slot>
+          <slot name="body-m"></slot>` : html6`<slot name="body-m"></slot>
           <slot name="heading-m-price"></slot>`}
         <slot name="body-xxs"></slot>
         <slot name="price-commitment"></slot>
@@ -874,7 +1337,19 @@ merch-card .footer-row-cell:nth-child(8) {
         <slot name="promo-text"></slot>
         <slot name="callout-content"></slot>
         ${this.getMiniCompareFooter()}
-        <slot name="footer-rows"><slot name="body-s"></slot></slot>`}async postCardUpdateHook(){V()?this.removeEmptyRows():(await Promise.all(this.card.prices.map(t=>t.onceSettled())),this.adjustMiniCompareBodySlots(),this.adjustMiniCompareFooterRows())}};l(j,"variantStyle",Oe`
+        <slot name="footer-rows"><slot name="body-s"></slot></slot>`;
+  }
+  async postCardUpdateHook() {
+    if (!isMobile()) {
+      await Promise.all(this.card.prices.map((price) => price.onceSettled()));
+      this.adjustMiniCompareBodySlots();
+      this.adjustMiniCompareFooterRows();
+    } else {
+      this.removeEmptyRows();
+    }
+  }
+};
+__publicField(MiniCompareChart, "variantStyle", css4`
     :host([variant='mini-compare-chart']) > slot:not([name='icons']) {
         display: block;
     }
@@ -907,7 +1382,7 @@ merch-card .footer-row-cell:nth-child(8) {
       color: var(--merch-color-grey-700);
     }
 
-    @media screen and ${le(ut)} {
+    @media screen and ${unsafeCSS2(TABLET_DOWN)} {
         [class*'-merch-cards'] :host([variant='mini-compare-chart']) footer {
             flex-direction: column;
             align-items: stretch;
@@ -915,7 +1390,7 @@ merch-card .footer-row-cell:nth-child(8) {
         }
     }
 
-    @media screen and ${le(p)} {
+    @media screen and ${unsafeCSS2(DESKTOP_UP)} {
         :host([variant='mini-compare-chart']) footer {
             padding: var(--consonant-merch-spacing-xs)
                 var(--consonant-merch-spacing-s)
@@ -966,7 +1441,13 @@ merch-card .footer-row-cell:nth-child(8) {
     :host([variant='mini-compare-chart']) slot[name='footer-rows'] {
         justify-content: flex-start;
     }
-  `);import{html as he,css as $e}from"../lit-all.min.js";var de=`
+  `);
+
+// src/variants/plans.js
+import { html as html7, css as css5 } from "../lit-all.min.js";
+
+// src/variants/plans.css.js
+var CSS5 = `
 :root {
     --consonant-merch-card-plans-width: 300px;
     --consonant-merch-card-plans-icon-size: 40px;
@@ -1071,7 +1552,7 @@ merch-card[variant^="plans"] [slot="footer"] .con-button > span {
 }
 
 /* Mobile */
-@media screen and ${R} {
+@media screen and ${MOBILE_LANDSCAPE} {
     merch-whats-included merch-mnemonic-list,
     merch-whats-included [slot="heading"] {
         width: 100%;
@@ -1099,7 +1580,7 @@ merch-card[variant^="plans"]:not([size]) {
 }
 
 /* Tablet */
-@media screen and ${g} {
+@media screen and ${TABLET_UP} {
   :root {
     --consonant-merch-card-plans-width: 302px;
   }
@@ -1114,7 +1595,7 @@ merch-card[variant^="plans"]:not([size]) {
 }
 
 /* desktop */
-@media screen and ${p} {
+@media screen and ${DESKTOP_UP} {
   :root {
     --consonant-merch-card-plans-width: 276px;
   }
@@ -1125,16 +1606,92 @@ merch-card[variant^="plans"]:not([size]) {
 }
 
 /* Large desktop */
-    @media screen and ${w} {
+    @media screen and ${LARGE_DESKTOP} {
     .four-merch-cards.plans {
         grid-template-columns: repeat(4, var(--consonant-merch-card-plans-width));
     }
 }
-`;var Et={title:{tag:"p",slot:"heading-xs"},prices:{tag:"p",slot:"heading-m"},promoText:{tag:"p",slot:"promo-text"},description:{tag:"div",slot:"body-xs"},mnemonics:{size:"l"},callout:{tag:"div",slot:"callout-content"},quantitySelect:{tag:"div",slot:"quantity-select"},stockOffer:!0,secureLabel:!0,badge:{tag:"div",slot:"badge"},allowedBadgeColors:["spectrum-yellow-300-plans","spectrum-gray-300-plans","spectrum-gray-700-plans","spectrum-green-900-plans"],allowedBorderColors:["spectrum-yellow-300-plans","spectrum-gray-300-plans"],borderColor:{attribute:"border-color"},size:["wide","super-wide"],whatsIncluded:{tag:"div",slot:"whats-included"},ctas:{slot:"footer",size:"m"},style:"consonant"},M=class extends u{constructor(e){super(e),this.adaptForMobile=this.adaptForMobile.bind(this)}get aemFragmentMapping(){return Et}getGlobalCSS(){return de}adaptForMobile(){if(!this.card.closest("merch-card-collection,overlay-trigger")){this.card.removeAttribute("size");return}let e=this.card.shadowRoot,t=e.querySelector("footer"),r=this.card.getAttribute("size"),n=e.querySelector("footer #stock-checkbox"),a=e.querySelector(".body #stock-checkbox"),c=e.querySelector(".body");if(!r){t?.classList.remove("wide-footer"),n&&n.remove();return}let s=V();if(t?.classList.toggle("wide-footer",!s),s&&n){a?n.remove():c.appendChild(n);return}!s&&a&&(n?a.remove():t.prepend(a))}postCardUpdateHook(){this.adaptForMobile(),this.adjustTitleWidth()}get stockCheckbox(){return this.card.checkboxLabel?he`<label id="stock-checkbox">
+`;
+
+// src/variants/plans.js
+var PLANS_AEM_FRAGMENT_MAPPING = {
+  title: { tag: "p", slot: "heading-xs" },
+  prices: { tag: "p", slot: "heading-m" },
+  promoText: { tag: "p", slot: "promo-text" },
+  description: { tag: "div", slot: "body-xs" },
+  mnemonics: { size: "l" },
+  callout: { tag: "div", slot: "callout-content" },
+  quantitySelect: { tag: "div", slot: "quantity-select" },
+  stockOffer: true,
+  secureLabel: true,
+  badge: { tag: "div", slot: "badge" },
+  allowedBadgeColors: ["spectrum-yellow-300-plans", "spectrum-gray-300-plans", "spectrum-gray-700-plans", "spectrum-green-900-plans"],
+  allowedBorderColors: ["spectrum-yellow-300-plans", "spectrum-gray-300-plans"],
+  borderColor: { attribute: "border-color" },
+  size: ["wide", "super-wide"],
+  whatsIncluded: { tag: "div", slot: "whats-included" },
+  ctas: { slot: "footer", size: "m" },
+  style: "consonant"
+};
+var Plans = class extends VariantLayout {
+  constructor(card) {
+    super(card);
+    this.adaptForMobile = this.adaptForMobile.bind(this);
+  }
+  /* c8 ignore next 3 */
+  get aemFragmentMapping() {
+    return PLANS_AEM_FRAGMENT_MAPPING;
+  }
+  getGlobalCSS() {
+    return CSS5;
+  }
+  adaptForMobile() {
+    if (!this.card.closest("merch-card-collection,overlay-trigger")) {
+      this.card.removeAttribute("size");
+      return;
+    }
+    const shadowRoot = this.card.shadowRoot;
+    const footer = shadowRoot.querySelector("footer");
+    const size = this.card.getAttribute("size");
+    const stockInFooter = shadowRoot.querySelector("footer #stock-checkbox");
+    const stockInBody = shadowRoot.querySelector(".body #stock-checkbox");
+    const body = shadowRoot.querySelector(".body");
+    if (!size) {
+      footer?.classList.remove("wide-footer");
+      if (stockInFooter) stockInFooter.remove();
+      return;
+    }
+    const mobile = isMobile();
+    footer?.classList.toggle("wide-footer", !mobile);
+    if (mobile && stockInFooter) {
+      stockInBody ? stockInFooter.remove() : body.appendChild(stockInFooter);
+      return;
+    }
+    if (!mobile && stockInBody) {
+      stockInFooter ? stockInBody.remove() : footer.prepend(stockInBody);
+    }
+  }
+  postCardUpdateHook() {
+    this.adaptForMobile();
+    this.adjustTitleWidth();
+  }
+  get stockCheckbox() {
+    return this.card.checkboxLabel ? html7`<label id="stock-checkbox">
                 <input type="checkbox" @change=${this.card.toggleStockOffer}></input>
                 <span></span>
                 ${this.card.checkboxLabel}
-            </label>`:""}connectedCallbackHook(){let e=bt();e?.addEventListener&&e.addEventListener("change",this.adaptForMobile)}disconnectedCallbackHook(){let e=bt();e?.removeEventListener&&e.removeEventListener("change",this.adaptForMobile)}renderLayout(){return he` ${this.badge}
+            </label>` : "";
+  }
+  connectedCallbackHook() {
+    const match = matchMobile();
+    if (match?.addEventListener) match.addEventListener("change", this.adaptForMobile);
+  }
+  disconnectedCallbackHook() {
+    const match = matchMobile();
+    if (match?.removeEventListener) match.removeEventListener("change", this.adaptForMobile);
+  }
+  renderLayout() {
+    return html7` ${this.badge}
         <div class="body">
             <slot name="icons"></slot>
             <slot name="heading-xs"></slot>
@@ -1150,7 +1707,10 @@ merch-card[variant^="plans"]:not([size]) {
             <slot name="badge"></slot>
             <slot name="quantity-select"></slot>
         </div>
-        ${this.secureLabelFooter}`}};l(M,"variantStyle",$e`
+        ${this.secureLabelFooter}`;
+  }
+};
+__publicField(Plans, "variantStyle", css5`
     :host([variant^='plans']) {
         min-height: 348px;
         border: 1px solid var(--merch-card-custom-border-color, #DADADA);
@@ -1224,7 +1784,13 @@ merch-card[variant^="plans"]:not([size]) {
     :host([variant='plans-students']) .body {
         max-width: none;
     }    
-  `);import{html as Mt,css as Ne}from"../lit-all.min.js";var me=`
+  `);
+
+// src/variants/product.js
+import { html as html8, css as css6 } from "../lit-all.min.js";
+
+// src/variants/product.css.js
+var CSS6 = `
 :root {
   --consonant-merch-card-product-width: 300px;
 }
@@ -1238,7 +1804,7 @@ merch-card[variant^="plans"]:not([size]) {
 }
 
 /* Tablet */
-@media screen and ${g} {
+@media screen and ${TABLET_UP} {
     .two-merch-cards.product,
     .three-merch-cards.product,
     .four-merch-cards.product {
@@ -1247,7 +1813,7 @@ merch-card[variant^="plans"]:not([size]) {
 }
 
 /* desktop */
-@media screen and ${p} {
+@media screen and ${DESKTOP_UP} {
   :root {
     --consonant-merch-card-product-width: 378px;
     --consonant-merch-card-product-width-4clm: 276px;
@@ -1261,18 +1827,63 @@ merch-card[variant^="plans"]:not([size]) {
       grid-template-columns: repeat(4, var(--consonant-merch-card-product-width-4clm));
   }
 }
-`;var D=class extends u{constructor(e){super(e),this.postCardUpdateHook=this.postCardUpdateHook.bind(this)}getGlobalCSS(){return me}adjustProductBodySlots(){if(this.card.getBoundingClientRect().width===0)return;["heading-xs","body-xxs","body-xs","promo-text","callout-content","body-lower"].forEach(t=>this.updateCardElementMinHeight(this.card.shadowRoot.querySelector(`slot[name="${t}"]`),t))}renderLayout(){return Mt` ${this.badge}
+`;
+
+// src/variants/product.js
+var Product = class extends VariantLayout {
+  constructor(card) {
+    super(card);
+    this.postCardUpdateHook = this.postCardUpdateHook.bind(this);
+  }
+  getGlobalCSS() {
+    return CSS6;
+  }
+  adjustProductBodySlots() {
+    if (this.card.getBoundingClientRect().width === 0) return;
+    const slots = [
+      "heading-xs",
+      "body-xxs",
+      "body-xs",
+      "promo-text",
+      "callout-content",
+      "body-lower"
+    ];
+    slots.forEach(
+      (slot) => this.updateCardElementMinHeight(
+        this.card.shadowRoot.querySelector(`slot[name="${slot}"]`),
+        slot
+      )
+    );
+  }
+  renderLayout() {
+    return html8` ${this.badge}
       <div class="body" aria-live="polite">
           <slot name="icons"></slot>
           <slot name="heading-xs"></slot>
           <slot name="body-xxs"></slot>
-          ${this.promoBottom?"":Mt`<slot name="promo-text"></slot>`}
+          ${!this.promoBottom ? html8`<slot name="promo-text"></slot>` : ""}
           <slot name="body-xs"></slot>
-          ${this.promoBottom?Mt`<slot name="promo-text"></slot>`:""}
+          ${this.promoBottom ? html8`<slot name="promo-text"></slot>` : ""}
           <slot name="callout-content"></slot>
           <slot name="body-lower"></slot>
       </div>
-      ${this.secureLabelFooter}`}connectedCallbackHook(){window.addEventListener("resize",this.postCardUpdateHook)}disconnectedCallbackHook(){window.removeEventListener("resize",this.postCardUpdateHook)}postCardUpdateHook(){this.card.isConnected&&(V()||this.adjustProductBodySlots(),this.adjustTitleWidth())}};l(D,"variantStyle",Ne`
+      ${this.secureLabelFooter}`;
+  }
+  connectedCallbackHook() {
+    window.addEventListener("resize", this.postCardUpdateHook);
+  }
+  disconnectedCallbackHook() {
+    window.removeEventListener("resize", this.postCardUpdateHook);
+  }
+  postCardUpdateHook() {
+    if (!this.card.isConnected) return;
+    if (!isMobile()) {
+      this.adjustProductBodySlots();
+    }
+    this.adjustTitleWidth();
+  }
+};
+__publicField(Product, "variantStyle", css6`
     :host([variant='product']) > slot:not([name='icons']) {
         display: block;
     }
@@ -1300,7 +1911,13 @@ merch-card[variant^="plans"]:not([size]) {
     :host([variant='product']) ::slotted([slot='heading-xs']) {
       max-width: var(--consonant-merch-card-heading-xs-max-width, 100%);
     }
-  `);import{html as zt,css as De}from"../lit-all.min.js";var pe=`
+  `);
+
+// src/variants/segment.js
+import { html as html9, css as css7 } from "../lit-all.min.js";
+
+// src/variants/segment.css.js
+var CSS7 = `
 :root {
   --consonant-merch-card-segment-width: 378px;
 }
@@ -1314,13 +1931,13 @@ merch-card[variant^="plans"]:not([size]) {
 }
 
 /* Mobile */
-@media screen and ${R} {
+@media screen and ${MOBILE_LANDSCAPE} {
   :root {
     --consonant-merch-card-segment-width: 276px;
   }
 }
 
-@media screen and ${g} {
+@media screen and ${TABLET_UP} {
   :root {
     --consonant-merch-card-segment-width: 276px;
   }
@@ -1333,7 +1950,7 @@ merch-card[variant^="plans"]:not([size]) {
 }
 
 /* desktop */
-@media screen and ${p} {
+@media screen and ${DESKTOP_UP} {
   :root {
     --consonant-merch-card-segment-width: 302px;
   }
@@ -1346,23 +1963,46 @@ merch-card[variant^="plans"]:not([size]) {
       grid-template-columns: repeat(4, minmax(276px, var(--consonant-merch-card-segment-width)));
   }
 }
-`;var K=class extends u{constructor(e){super(e)}getGlobalCSS(){return pe}postCardUpdateHook(){this.adjustTitleWidth()}renderLayout(){return zt` ${this.badge}
+`;
+
+// src/variants/segment.js
+var Segment = class extends VariantLayout {
+  constructor(card) {
+    super(card);
+  }
+  getGlobalCSS() {
+    return CSS7;
+  }
+  postCardUpdateHook() {
+    this.adjustTitleWidth();
+  }
+  renderLayout() {
+    return html9` ${this.badge}
     <div class="body">
         <slot name="heading-xs"></slot>
         <slot name="body-xxs"></slot>
-        ${this.promoBottom?"":zt`<slot name="promo-text"></slot><slot name="callout-content"></slot>`}
+        ${!this.promoBottom ? html9`<slot name="promo-text"></slot><slot name="callout-content"></slot>` : ""}
         <slot name="body-xs"></slot>
-        ${this.promoBottom?zt`<slot name="promo-text"></slot><slot name="callout-content"></slot>`:""}
+        ${this.promoBottom ? html9`<slot name="promo-text"></slot><slot name="callout-content"></slot>` : ""}
     </div>
     <hr />
-    ${this.secureLabelFooter}`}};l(K,"variantStyle",De`
+    ${this.secureLabelFooter}`;
+  }
+};
+__publicField(Segment, "variantStyle", css7`
     :host([variant='segment']) {
       min-height: 214px;
     }
     :host([variant='segment']) ::slotted([slot='heading-xs']) {
       max-width: var(--consonant-merch-card-heading-xs-max-width, 100%);
     }
-  `);import{html as Ot,css as Ie}from"../lit-all.min.js";var ge=`
+  `);
+
+// src/variants/special-offer.js
+import { html as html10, css as css8 } from "../lit-all.min.js";
+
+// src/variants/special-offer.css.js
+var CSS8 = `
 :root {
   --consonant-merch-card-special-offers-width: 378px;
 }
@@ -1379,13 +2019,13 @@ merch-card[variant="special-offers"] span[is="inline-price"][data-template="stri
   grid-template-columns: minmax(300px, var(--consonant-merch-card-special-offers-width));
 }
 
-@media screen and ${R} {
+@media screen and ${MOBILE_LANDSCAPE} {
   :root {
     --consonant-merch-card-special-offers-width: 302px;
   }
 } 
   
-@media screen and ${g} {
+@media screen and ${TABLET_UP} {
   :root {
     --consonant-merch-card-special-offers-width: 302px;
   }
@@ -1398,36 +2038,64 @@ merch-card[variant="special-offers"] span[is="inline-price"][data-template="stri
 }
 
 /* desktop */
-@media screen and ${p} {
+@media screen and ${DESKTOP_UP} {
   .three-merch-cards.special-offers,
   .four-merch-cards.special-offers {
     grid-template-columns: repeat(3, minmax(300px, var(--consonant-merch-card-special-offers-width)));
   }
 }
 
-@media screen and ${w} {
+@media screen and ${LARGE_DESKTOP} {
   .four-merch-cards.special-offers {
     grid-template-columns: repeat(4, minmax(300px, var(--consonant-merch-card-special-offers-width)));
   }
 }
-`;var Pt={name:{tag:"h4",slot:"detail-m"},title:{tag:"h4",slot:"detail-m"},backgroundImage:{tag:"div",slot:"bg-image"},prices:{tag:"h3",slot:"heading-xs"},description:{tag:"div",slot:"body-xs"},ctas:{slot:"footer",size:"l"}},W=class extends u{constructor(e){super(e)}getGlobalCSS(){return ge}get headingSelector(){return'[slot="detail-m"]'}get aemFragmentMapping(){return Pt}renderLayout(){return Ot`${this.cardImage}
+`;
+
+// src/variants/special-offer.js
+var SPECIAL_OFFERS_AEM_FRAGMENT_MAPPING = {
+  name: { tag: "h4", slot: "detail-m" },
+  title: { tag: "h4", slot: "detail-m" },
+  backgroundImage: { tag: "div", slot: "bg-image" },
+  prices: { tag: "h3", slot: "heading-xs" },
+  description: { tag: "div", slot: "body-xs" },
+  ctas: { slot: "footer", size: "l" }
+};
+var SpecialOffer = class extends VariantLayout {
+  constructor(card) {
+    super(card);
+  }
+  getGlobalCSS() {
+    return CSS8;
+  }
+  get headingSelector() {
+    return '[slot="detail-m"]';
+  }
+  get aemFragmentMapping() {
+    return SPECIAL_OFFERS_AEM_FRAGMENT_MAPPING;
+  }
+  renderLayout() {
+    return html10`${this.cardImage}
             <div class="body">
                 <slot name="detail-m"></slot>
                 <slot name="heading-xs"></slot>
                 <slot name="body-xs"></slot>
             </div>
-            ${this.evergreen?Ot`
+            ${this.evergreen ? html10`
                       <div
                           class="detail-bg-container"
-                          style="background: ${this.card.detailBg}"
+                          style="background: ${this.card["detailBg"]}"
                       >
                           <slot name="detail-bg"></slot>
                       </div>
-                  `:Ot`
+                  ` : html10`
                       <hr />
                       ${this.secureLabelFooter}
                   `}
-            <slot></slot>`}};l(W,"variantStyle",Ie`
+            <slot></slot>`;
+  }
+};
+__publicField(SpecialOffer, "variantStyle", css8`
         :host([variant='special-offers']) {
             min-height: 439px;
         }
@@ -1439,7 +2107,61 @@ merch-card[variant="special-offers"] span[is="inline-price"][data-template="stri
         :host([variant='special-offers'].center) {
             text-align: center;
         }
-    `);var $t=new Map,v=(o,e,t=null,r=null)=>{$t.set(o,{class:e,fragmentMapping:t,style:r})};v("catalog",q,Rt,q.variantStyle);v("image",vt);v("inline-heading",yt);v("mini-compare-chart",j,null,j.variantStyle);v("plans",M,Et,M.variantStyle);v("plans-students",M,Et,M.variantStyle);v("product",D,null,D.variantStyle);v("segment",K,null,K.variantStyle);v("special-offers",W,Pt,W.variantStyle);var Nt=(o,e=!1)=>{let t=$t.get(o.variant);if(!t)return e?void 0:new D(o);let{class:r,style:n}=t;if(n){let a=new CSSStyleSheet;a.replaceSync(n.cssText),o.shadowRoot.adoptedStyleSheets.push(a)}return new r(o)};function ue(o){return $t.get(o)?.fragmentMapping}var fe=document.createElement("style");fe.innerHTML=`
+    `);
+
+// src/variants/variants.js
+var variantRegistry = /* @__PURE__ */ new Map();
+var registerVariant = (name, variantClass, fragmentMapping = null, style = null) => {
+  variantRegistry.set(name, {
+    class: variantClass,
+    fragmentMapping,
+    style
+  });
+};
+registerVariant(
+  "catalog",
+  Catalog,
+  CATALOG_AEM_FRAGMENT_MAPPING,
+  Catalog.variantStyle
+);
+registerVariant("image", Image);
+registerVariant("inline-heading", InlineHeading);
+registerVariant(
+  "mini-compare-chart",
+  MiniCompareChart,
+  null,
+  MiniCompareChart.variantStyle
+);
+registerVariant("plans", Plans, PLANS_AEM_FRAGMENT_MAPPING, Plans.variantStyle);
+registerVariant("plans-students", Plans, PLANS_AEM_FRAGMENT_MAPPING, Plans.variantStyle);
+registerVariant("product", Product, null, Product.variantStyle);
+registerVariant("segment", Segment, null, Segment.variantStyle);
+registerVariant(
+  "special-offers",
+  SpecialOffer,
+  SPECIAL_OFFERS_AEM_FRAGMENT_MAPPING,
+  SpecialOffer.variantStyle
+);
+var getVariantLayout = (card, mustMatch = false) => {
+  const variantInfo = variantRegistry.get(card.variant);
+  if (!variantInfo) {
+    return mustMatch ? void 0 : new Product(card);
+  }
+  const { class: VariantClass, style } = variantInfo;
+  if (style) {
+    const sheet2 = new CSSStyleSheet();
+    sheet2.replaceSync(style.cssText);
+    card.shadowRoot.adoptedStyleSheets.push(sheet2);
+  }
+  return new VariantClass(card);
+};
+function getFragmentMapping(variant) {
+  return variantRegistry.get(variant)?.fragmentMapping;
+}
+
+// src/global.css.js
+var styles2 = document.createElement("style");
+styles2.innerHTML = `
 :root {
     --consonant-merch-card-detail-font-size: 12px;
     --consonant-merch-card-detail-font-weight: 500;
@@ -1951,10 +2673,373 @@ sr-only {
   border: 0;
 }
 
-`;document.head.appendChild(fe);var st=class o extends Error{constructor(e,t,r){if(super(e,{cause:r}),this.name="MasError",t.response){let n=t.response.headers?.get(ee);n&&(t.requestId=n),t.response.status&&(t.status=t.response.status,t.statusText=t.response.statusText),t.response.url&&(t.url=t.response.url)}delete t.response,this.context=t,Error.captureStackTrace&&Error.captureStackTrace(this,o)}toString(){let e=Object.entries(this.context||{}).map(([r,n])=>`${r}: ${JSON.stringify(n)}`).join(", "),t=`${this.name}: ${this.message}`;return e&&(t+=` (${e})`),this.cause&&(t+=`
-Caused by: ${this.cause}`),t}};async function xe(o,e={},t=2,r=100){let n;for(let a=0;a<=t;a++)try{return await fetch(o,e)}catch(c){if(n=c,a>t)break;await new Promise(s=>setTimeout(s,r*(a+1)))}throw n}var Ee=new CSSStyleSheet;Ee.replaceSync(":host { display: contents; }");var be="fragment",ve="author",ye="preview",wt="aem-fragment",T,Dt=class{constructor(){m(this,T,new Map)}clear(){i(this,T).clear()}addByRequestedId(e,t){i(this,T).set(e,t)}add(...e){e.forEach(t=>{let{id:r}=t;r&&i(this,T).set(r,t)})}has(e){return i(this,T).has(e)}get(e){return i(this,T).get(e)}remove(e){i(this,T).delete(e)}};T=new WeakMap;var lt=new Dt,dt,y,S,z,X,A,b,k,ht,Q,Z,St,It=class extends HTMLElement{constructor(){super();m(this,Z);l(this,"cache",lt);m(this,dt);m(this,y,null);m(this,S,null);m(this,z,!1);m(this,X,null);m(this,A,null);m(this,b);m(this,k);m(this,ht,!1);m(this,Q,!1);this.attachShadow({mode:"open"}),this.shadowRoot.adoptedStyleSheets=[Ee]}static get observedAttributes(){return[be,ve,ye]}attributeChangedCallback(t,r,n){t===be&&h(this,b,n),t===ve&&h(this,ht,["","true"].includes(n)),t===ye&&h(this,Q,n)}connectedCallback(){if(!i(this,k)){if(h(this,A,G(this)),h(this,dt,i(this,A).log.module(wt)),h(this,X,`${wt}:${i(this,b)}${ct}`),performance.mark(i(this,X)),!i(this,b)){E(this,Z,St).call(this,{message:"Missing fragment id"});return}if(i(this,Q)){this.generatePreview();return}this.refresh(!1)}}async getFragmentById(t,r,n){let a=`${wt}:${r}${re}`,c;try{if(c=await xe(t,{cache:"default",credentials:"omit"}),!c?.ok){let{startTime:s,duration:d}=performance.measure(a,n);throw new st("Unexpected fragment response",{response:c,startTime:s,duration:d,...i(this,A).duration})}return c.json()}catch{let{startTime:d,duration:f}=performance.measure(a,n);throw c||(c={url:t}),new st("Failed to fetch fragment",{response:c,startTime:d,duration:f,...i(this,A).duration})}}async refresh(t=!0){if(!(i(this,k)&&!await Promise.race([i(this,k),Promise.resolve(!1)])))return t&&lt.remove(i(this,b)),h(this,k,this.fetchData().then(()=>{let{references:r,referencesTree:n,placeholders:a}=i(this,y)||{};return this.dispatchEvent(new CustomEvent($,{detail:{...this.data,stale:i(this,z),references:r,referencesTree:n,placeholders:a},bubbles:!0,composed:!0})),!0}).catch(r=>i(this,y)?(lt.addByRequestedId(i(this,b),i(this,y)),!0):(E(this,Z,St).call(this,r),!1))),i(this,k)}async fetchData(){this.classList.remove("error"),h(this,S,null);let t=lt.get(i(this,b));if(t){h(this,y,t);return}h(this,z,!0);let{masIOUrl:r,wcsApiKey:n,locale:a}=i(this,A).settings,c=`${r}/fragment?id=${i(this,b)}&api_key=${n}&locale=${a}`;t=await this.getFragmentById(c,i(this,b),i(this,X)),lt.addByRequestedId(i(this,b),t),h(this,y,t),h(this,z,!1)}get updateComplete(){return i(this,k)??Promise.reject(new Error("AEM fragment cannot be loaded"))}get data(){return i(this,S)?i(this,S):(i(this,ht)?this.transformAuthorData():this.transformPublishData(),i(this,S))}transformAuthorData(){let{fields:t,id:r,tags:n}=i(this,y);h(this,S,t.reduce((a,{name:c,multiple:s,values:d})=>(a.fields[c]=s?d:d[0],a),{fields:{},id:r,tags:n}))}transformPublishData(){let{fields:t,id:r,tags:n,settings:a}=i(this,y);h(this,S,Object.entries(t).reduce((c,[s,d])=>(c.fields[s]=d?.mimeType?d.value:d??"",c),{fields:{},id:r,tags:n,settings:a}))}generatePreview(){h(this,k,new Promise(async(t,r)=>{let{previewFragment:n}=await import("https://mwpw-162398--mas--adobecom.aem.live/studio/libs/fragment-client.js"),a=await n(i(this,b),{surface:i(this,Q),locale:i(this,A).settings.locale,apiKey:i(this,A).settings.wcsApiKey});a?(h(this,y,a),h(this,S,a),h(this,z,!1),this.dispatchEvent(new CustomEvent($,{detail:{...this.data,stale:i(this,z)},bubbles:!0,composed:!0})),t(a)):(E(this,Z,St).call(this,{message:"Failed to generate preview"}),r())}))}};dt=new WeakMap,y=new WeakMap,S=new WeakMap,z=new WeakMap,X=new WeakMap,A=new WeakMap,b=new WeakMap,k=new WeakMap,ht=new WeakMap,Q=new WeakMap,Z=new WeakSet,St=function({message:t,context:r}){this.classList.add("error"),i(this,dt).error(`aem-fragment: ${t}`,r),this.dispatchEvent(new CustomEvent(U,{detail:{message:t,...r},bubbles:!0,composed:!0}))};customElements.define(wt,It);import{LitElement as He,html as Fe,css as Be}from"../lit-all.min.js";var J=class extends He{constructor(){super(),this.color="",this.variant="",this.backgroundColor="",this.borderColor="",this.text=this.textContent}connectedCallback(){this.borderColor&&this.borderColor!=="Transparent"?this.style.setProperty("--merch-badge-border",`1px solid var(--${this.borderColor})`):this.style.setProperty("--merch-badge-border",`1px solid var(--${this.backgroundColor})`),this.style.setProperty("--merch-badge-background-color",`var(--${this.backgroundColor})`),this.style.setProperty("--merch-badge-color",this.color),this.style.setProperty("--merch-badge-padding","2px 10px 3px 10px"),this.style.setProperty("--merch-badge-border-radius","4px 0 0 4px"),this.style.setProperty("--merch-badge-font-size","var(--consonant-merch-card-body-xs-font-size)"),this.textContent="",super.connectedCallback()}render(){return Fe`<div class="plans-badge">
+`;
+document.head.appendChild(styles2);
+
+// src/mas-error.js
+var MasError = class _MasError extends Error {
+  /**
+   * Creates a new MasError instance
+   * @param {string} message - The error message
+   * @param {Object} context - Additional context information about the error
+   * @param {unknown} cause - The original error that caused this error
+   */
+  constructor(message, context, cause) {
+    super(message, { cause });
+    this.name = "MasError";
+    if (context.response) {
+      const requestId = context.response.headers?.get(HEADER_X_REQUEST_ID);
+      if (requestId) {
+        context.requestId = requestId;
+      }
+      if (context.response.status) {
+        context.status = context.response.status;
+        context.statusText = context.response.statusText;
+      }
+      if (context.response.url) {
+        context.url = context.response.url;
+      }
+    }
+    delete context.response;
+    this.context = context;
+    if (Error.captureStackTrace) {
+      Error.captureStackTrace(this, _MasError);
+    }
+  }
+  /**
+   * Returns a string representation of the error including context
+   * @returns {string} String representation of the error
+   */
+  toString() {
+    const contextStr = Object.entries(this.context || {}).map(([key, value]) => `${key}: ${JSON.stringify(value)}`).join(", ");
+    let errorString = `${this.name}: ${this.message}`;
+    if (contextStr) {
+      errorString += ` (${contextStr})`;
+    }
+    if (this.cause) {
+      errorString += `
+Caused by: ${this.cause}`;
+    }
+    return errorString;
+  }
+};
+
+// src/utils/mas-fetch.js
+async function masFetch(resource, options = {}, retries = 2, baseDelay = 100) {
+  let lastError;
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    try {
+      const response = await fetch(resource, options);
+      return response;
+    } catch (error) {
+      lastError = error;
+      if (attempt > retries) break;
+      await new Promise(
+        (resolve) => setTimeout(resolve, baseDelay * (attempt + 1))
+      );
+    }
+  }
+  throw lastError;
+}
+
+// src/aem-fragment.js
+var sheet = new CSSStyleSheet();
+sheet.replaceSync(":host { display: contents; }");
+var ATTRIBUTE_FRAGMENT = "fragment";
+var ATTRIBUTE_AUTHOR = "author";
+var AEM_FRAGMENT_TAG_NAME = "aem-fragment";
+var _fragmentCache;
+var FragmentCache = class {
+  constructor() {
+    __privateAdd(this, _fragmentCache, /* @__PURE__ */ new Map());
+  }
+  clear() {
+    __privateGet(this, _fragmentCache).clear();
+  }
+  /**
+   * Add fragment to cache
+   * @param {string} fragmentId requested id.
+   * requested id can differe from returned fragment.id because of translation
+   */
+  addByRequestedId(fragmentId, fragment) {
+    __privateGet(this, _fragmentCache).set(fragmentId, fragment);
+  }
+  add(...fragments) {
+    fragments.forEach((fragment) => {
+      const { id: fragmentId } = fragment;
+      if (fragmentId) {
+        __privateGet(this, _fragmentCache).set(fragmentId, fragment);
+      }
+    });
+  }
+  has(fragmentId) {
+    return __privateGet(this, _fragmentCache).has(fragmentId);
+  }
+  get(key) {
+    return __privateGet(this, _fragmentCache).get(key);
+  }
+  remove(fragmentId) {
+    __privateGet(this, _fragmentCache).delete(fragmentId);
+  }
+};
+_fragmentCache = new WeakMap();
+var cache = new FragmentCache();
+var _log, _rawData, _data, _stale, _startMark, _service, _fragmentId, _fetchPromise, _author, _AemFragment_instances, fail_fn;
+var AemFragment = class extends HTMLElement {
+  constructor() {
+    super();
+    __privateAdd(this, _AemFragment_instances);
+    __publicField(this, "cache", cache);
+    __privateAdd(this, _log);
+    __privateAdd(this, _rawData, null);
+    __privateAdd(this, _data, null);
+    __privateAdd(this, _stale, false);
+    __privateAdd(this, _startMark, null);
+    __privateAdd(this, _service, null);
+    /**
+     * @type {string} fragment id
+     */
+    __privateAdd(this, _fragmentId);
+    /**
+     * Internal promise to track if fetching is in progress.
+     */
+    __privateAdd(this, _fetchPromise);
+    __privateAdd(this, _author, false);
+    this.attachShadow({ mode: "open" });
+    this.shadowRoot.adoptedStyleSheets = [sheet];
+  }
+  static get observedAttributes() {
+    return [ATTRIBUTE_FRAGMENT, ATTRIBUTE_AUTHOR];
+  }
+  attributeChangedCallback(name, oldValue, newValue) {
+    if (name === ATTRIBUTE_FRAGMENT) {
+      __privateSet(this, _fragmentId, newValue);
+    }
+    if (name === ATTRIBUTE_AUTHOR) {
+      __privateSet(this, _author, ["", "true"].includes(newValue));
+    }
+  }
+  connectedCallback() {
+    if (__privateGet(this, _fetchPromise)) return;
+    __privateSet(this, _service, getService(this));
+    __privateSet(this, _log, __privateGet(this, _service).log.module(AEM_FRAGMENT_TAG_NAME));
+    __privateSet(this, _startMark, `${AEM_FRAGMENT_TAG_NAME}:${__privateGet(this, _fragmentId)}${MARK_START_SUFFIX}`);
+    performance.mark(__privateGet(this, _startMark));
+    if (!__privateGet(this, _fragmentId)) {
+      __privateMethod(this, _AemFragment_instances, fail_fn).call(this, { message: "Missing fragment id" });
+      return;
+    }
+    this.refresh(false);
+  }
+  /**
+   * Get fragment by ID
+   * @param {string} endpoint url to fetch fragment from
+   * @param {string} id fragment id
+   * @param {string} startMark performance mark to measure duration
+   * @param {boolean} preview if defined, fetches preview data
+   * @returns {Promise<Object>} the raw fragment item
+   */
+  async getFragmentById(endpoint, id, startMark, preview) {
+    const measureName = `${AEM_FRAGMENT_TAG_NAME}:${id}${MARK_DURATION_SUFFIX}`;
+    if (preview) {
+      return await this.generatePreview();
+    }
+    let response;
+    try {
+      response = await masFetch(endpoint, {
+        cache: "default",
+        credentials: "omit"
+      });
+      if (!response?.ok) {
+        const { startTime, duration } = performance.measure(
+          measureName,
+          startMark
+        );
+        throw new MasError("Unexpected fragment response", {
+          response,
+          startTime,
+          duration,
+          ...__privateGet(this, _service).duration
+        });
+      }
+      return response.json();
+    } catch (e) {
+      const { startTime, duration } = performance.measure(
+        measureName,
+        startMark
+      );
+      if (!response) {
+        response = { url: endpoint };
+      }
+      throw new MasError("Failed to fetch fragment", {
+        response,
+        startTime,
+        duration,
+        ...__privateGet(this, _service).duration
+      });
+    }
+  }
+  async refresh(flushCache = true) {
+    if (__privateGet(this, _fetchPromise)) {
+      const ready = await Promise.race([
+        __privateGet(this, _fetchPromise),
+        Promise.resolve(false)
+      ]);
+      if (!ready) return;
+    }
+    if (flushCache) {
+      cache.remove(__privateGet(this, _fragmentId));
+    }
+    __privateSet(this, _fetchPromise, this.fetchData().then(() => {
+      const { references, referencesTree, placeholders } = __privateGet(this, _rawData) || {};
+      this.dispatchEvent(
+        new CustomEvent(EVENT_AEM_LOAD, {
+          detail: {
+            ...this.data,
+            stale: __privateGet(this, _stale),
+            references,
+            referencesTree,
+            placeholders
+          },
+          bubbles: true,
+          composed: true
+        })
+      );
+      return true;
+    }).catch((e) => {
+      if (__privateGet(this, _rawData)) {
+        cache.addByRequestedId(__privateGet(this, _fragmentId), __privateGet(this, _rawData));
+        return true;
+      }
+      __privateMethod(this, _AemFragment_instances, fail_fn).call(this, e);
+      return false;
+    }));
+    return __privateGet(this, _fetchPromise);
+  }
+  async fetchData() {
+    this.classList.remove("error");
+    __privateSet(this, _data, null);
+    let fragment = cache.get(__privateGet(this, _fragmentId));
+    if (fragment) {
+      __privateSet(this, _rawData, fragment);
+      return;
+    }
+    __privateSet(this, _stale, true);
+    const { masIOUrl, locale, preview, wcsApiKey } = __privateGet(this, _service).settings;
+    const endpoint = `${masIOUrl}/fragment?id=${__privateGet(this, _fragmentId)}&api_key=${wcsApiKey}&locale=${locale}`;
+    fragment = await this.getFragmentById(
+      endpoint,
+      __privateGet(this, _fragmentId),
+      __privateGet(this, _startMark),
+      preview
+    );
+    cache.addByRequestedId(__privateGet(this, _fragmentId), fragment);
+    __privateSet(this, _rawData, fragment);
+    __privateSet(this, _stale, false);
+  }
+  get updateComplete() {
+    return __privateGet(this, _fetchPromise) ?? Promise.reject(new Error("AEM fragment cannot be loaded"));
+  }
+  get data() {
+    if (__privateGet(this, _data)) return __privateGet(this, _data);
+    if (__privateGet(this, _author)) {
+      this.transformAuthorData();
+    } else {
+      this.transformPublishData();
+    }
+    return __privateGet(this, _data);
+  }
+  transformAuthorData() {
+    const { fields, id, tags } = __privateGet(this, _rawData);
+    __privateSet(this, _data, fields.reduce(
+      (acc, { name, multiple, values }) => {
+        acc.fields[name] = multiple ? values : values[0];
+        return acc;
+      },
+      { fields: {}, id, tags }
+    ));
+  }
+  transformPublishData() {
+    const { fields, id, tags, settings } = __privateGet(this, _rawData);
+    __privateSet(this, _data, Object.entries(fields).reduce(
+      (acc, [key, value]) => {
+        acc.fields[key] = value?.mimeType ? value.value : value ?? "";
+        return acc;
+      },
+      { fields: {}, id, tags, settings }
+    ));
+  }
+  async generatePreview() {
+    const { previewFragment } = await import("https://mwpw-162398--mas--adobecom.aem.live/studio/libs/fragment-client.js");
+    const data = await previewFragment(__privateGet(this, _fragmentId), {
+      surface: __privateGet(this, _service).settings.previewSurface,
+      locale: __privateGet(this, _service).settings.locale,
+      apiKey: __privateGet(this, _service).settings.wcsApiKey
+    });
+    return data;
+  }
+};
+_log = new WeakMap();
+_rawData = new WeakMap();
+_data = new WeakMap();
+_stale = new WeakMap();
+_startMark = new WeakMap();
+_service = new WeakMap();
+_fragmentId = new WeakMap();
+_fetchPromise = new WeakMap();
+_author = new WeakMap();
+_AemFragment_instances = new WeakSet();
+fail_fn = function({ message, context }) {
+  this.classList.add("error");
+  __privateGet(this, _log).error(`aem-fragment: ${message}`, context);
+  this.dispatchEvent(
+    new CustomEvent(EVENT_AEM_ERROR, {
+      detail: { message, ...context },
+      bubbles: true,
+      composed: true
+    })
+  );
+};
+customElements.define(AEM_FRAGMENT_TAG_NAME, AemFragment);
+
+// src/merch-badge.js
+import { LitElement as LitElement2, html as html11, css as css9 } from "../lit-all.min.js";
+var MerchBadge = class extends LitElement2 {
+  constructor() {
+    super();
+    this.color = "";
+    this.variant = "";
+    this.backgroundColor = "";
+    this.borderColor = "";
+    this.text = this.textContent;
+  }
+  connectedCallback() {
+    if (this.borderColor && this.borderColor !== "Transparent") {
+      this.style.setProperty("--merch-badge-border", `1px solid var(--${this.borderColor})`);
+    } else {
+      this.style.setProperty("--merch-badge-border", `1px solid var(--${this.backgroundColor})`);
+    }
+    this.style.setProperty("--merch-badge-background-color", `var(--${this.backgroundColor})`);
+    this.style.setProperty("--merch-badge-color", this.color);
+    this.style.setProperty("--merch-badge-padding", "2px 10px 3px 10px");
+    this.style.setProperty("--merch-badge-border-radius", "4px 0 0 4px");
+    this.style.setProperty("--merch-badge-font-size", "var(--consonant-merch-card-body-xs-font-size)");
+    this.textContent = "";
+    super.connectedCallback();
+  }
+  render() {
+    return html11`<div class="plans-badge">
             ${this.text}
-        </div>`}};l(J,"properties",{color:{type:String},variant:{type:String},backgroundColor:{type:String,attribute:"background-color"},borderColor:{type:String,attribute:"border-color"}}),l(J,"styles",Be`
+        </div>`;
+  }
+};
+__publicField(MerchBadge, "properties", {
+  color: { type: String },
+  variant: { type: String },
+  backgroundColor: { type: String, attribute: "background-color" },
+  borderColor: { type: String, attribute: "border-color" }
+});
+__publicField(MerchBadge, "styles", css9`
         :host {
             display: block;
             background-color: var(--merch-badge-background-color);
@@ -1967,10 +3052,23 @@ Caused by: ${this.cause}`),t}};async function xe(o,e={},t=2,r=100){let n;for(let
             position: relative;
             left: 1px;
         }
-    `);customElements.define("merch-badge",J);import{html as Ue,css as Ve,LitElement as Ge}from"../lit-all.min.js";var mt=class extends Ge{constructor(){super()}render(){return Ue`
+    `);
+customElements.define("merch-badge", MerchBadge);
+
+// src/merch-mnemonic-list.js
+import { html as html12, css as css10, LitElement as LitElement3 } from "../lit-all.min.js";
+var MerchMnemonicList = class extends LitElement3 {
+  constructor() {
+    super();
+  }
+  render() {
+    return html12`
             <slot name="icon"></slot>
             <slot name="description">${this.description}</slot>
-        `}};l(mt,"styles",Ve`
+        `;
+  }
+};
+__publicField(MerchMnemonicList, "styles", css10`
         :host {
             display: flex;
             flex-wrap: nowrap;
@@ -1995,11 +3093,57 @@ Caused by: ${this.cause}`),t}};async function xe(o,e={},t=2,r=100){let n;for(let
         :host .hidden {
             display: none;
         }
-    `),l(mt,"properties",{description:{type:String,attribute:!0}});customElements.define("merch-mnemonic-list",mt);import{html as Ht,css as qe,LitElement as Ye}from"../lit-all.min.js";var pt=class extends Ye{updated(){this.hideSeeMoreEls()}hideSeeMoreEls(){this.isMobile&&this.rows.forEach((e,t)=>{t>=5&&(e.style.display=this.showAll?"flex":"none")})}constructor(){super(),this.showAll=!1,this.mobileRows=this.mobileRows===void 0?5:this.mobileRows}toggle(){this.showAll=!this.showAll,this.dispatchEvent(new CustomEvent("hide-see-more-elements",{bubbles:!0,composed:!0})),this.requestUpdate()}render(){return Ht`<slot name="heading"></slot>
+    `);
+__publicField(MerchMnemonicList, "properties", {
+  description: { type: String, attribute: true }
+});
+customElements.define("merch-mnemonic-list", MerchMnemonicList);
+
+// src/merch-whats-included.js
+import { html as html13, css as css11, LitElement as LitElement4 } from "../lit-all.min.js";
+var MerchWhatsIncluded = class extends LitElement4 {
+  updated() {
+    this.hideSeeMoreEls();
+  }
+  hideSeeMoreEls() {
+    if (this.isMobile) {
+      this.rows.forEach((node, index) => {
+        if (index >= 5) {
+          node.style.display = this.showAll ? "flex" : "none";
+        }
+      });
+    }
+  }
+  constructor() {
+    super();
+    this.showAll = false;
+    this.mobileRows = this.mobileRows === void 0 ? 5 : this.mobileRows;
+  }
+  toggle() {
+    this.showAll = !this.showAll;
+    this.dispatchEvent(
+      new CustomEvent("hide-see-more-elements", {
+        bubbles: true,
+        composed: true
+      })
+    );
+    this.requestUpdate();
+  }
+  render() {
+    return html13`<slot name="heading"></slot>
             <slot name="content"></slot>
-            ${this.isMobile&&this.rows.length>this.mobileRows?Ht`<div @click=${this.toggle} class="see-more">
-                      ${this.showAll?"- See less":"+ See more"}
-                  </div>`:Ht``}`}get isMobile(){return window.matchMedia("(max-width: 767px)").matches}get rows(){return this.querySelectorAll("merch-mnemonic-list")}};l(pt,"styles",qe`
+            ${this.isMobile && this.rows.length > this.mobileRows ? html13`<div @click=${this.toggle} class="see-more">
+                      ${this.showAll ? "- See less" : "+ See more"}
+                  </div>` : html13``}`;
+  }
+  get isMobile() {
+    return window.matchMedia("(max-width: 767px)").matches;
+  }
+  get rows() {
+    return this.querySelectorAll("merch-mnemonic-list");
+  }
+};
+__publicField(MerchWhatsIncluded, "styles", css11`
         :host {
             display: flex;
             flex-wrap: wrap;
@@ -2028,4 +3172,932 @@ Caused by: ${this.cause}`),t}};async function xe(o,e={},t=2,r=100){let n;for(let
             text-decoration: underline;
             color: var(--link-color-dark);
         }
-    `),l(pt,"properties",{heading:{type:String,attribute:!0},mobileRows:{type:Number,attribute:!0}});customElements.define("merch-whats-included",pt);function je(o){return`https://${o==="PRODUCTION"?"www.adobe.com":"www.stage.adobe.com"}/offers/promo-terms.html`}var gt,I=class I extends HTMLAnchorElement{constructor(){super();m(this,gt,!1);this.setAttribute("is",I.is)}get isUptLink(){return!0}initializeWcsData(t,r){this.setAttribute("data-wcs-osi",t),r&&this.setAttribute("data-promotion-code",r),h(this,gt,!0),this.composePromoTermsUrl()}attributeChangedCallback(t,r,n){i(this,gt)&&this.composePromoTermsUrl()}composePromoTermsUrl(){let t=this.getAttribute("data-wcs-osi");if(!t){let x=this.closest("merch-card").querySelector("aem-fragment").getAttribute("fragment");console.error(`Missing 'data-wcs-osi' attribute on upt-link. Fragment: ${x}`);return}let r=G(),n=[t],a=this.getAttribute("data-promotion-code"),{country:c,language:s,env:d}=r.settings,f={country:c,language:s,wcsOsi:n,promotionCode:a},_=r.resolveOfferSelectors(f);Promise.all(_).then(([[x]])=>{let L=`locale=${s}_${c}&country=${c}&offer_id=${x.offerId}`;a&&(L+=`&promotion_code=${encodeURIComponent(a)}`),this.href=`${je(d)}?${L}`}).catch(x=>{console.error(`Could not resolve offer selectors for id: ${t}.`,x.message)})}static createFrom(t){let r=new I;for(let n of t.attributes)n.name!=="is"&&(n.name==="class"&&n.value.includes("upt-link")?r.setAttribute("class",n.value.replace("upt-link","").trim()):r.setAttribute(n.name,n.value));return r.innerHTML=t.innerHTML,r.setAttribute("tabindex",0),r}};gt=new WeakMap,l(I,"is","upt-link"),l(I,"tag","a"),l(I,"observedAttributes",["data-wcs-osi","data-promotion-code"]);var O=I;window.customElements.get(O.is)||window.customElements.define(O.is,O,{extends:O.tag});var Ke="#000000",we="spectrum-yellow-300-plans",Se="#F8D904",We="#EAEAEA",Xe=/(accent|primary|secondary)(-(outline|link))?/,Qe="mas:product_code/",Ze="daa-ll",At="daa-lh",Je=["XL","L","M","S"],Ft="...";function C(o,e,t,r){let n=r[o];if(e[o]&&n){let a={slot:n?.slot},c=e[o];if(n.maxCount&&typeof c=="string"){let[d,f]=hr(c,n.maxCount,n.withSuffix);d!==c&&(a.title=f,c=d)}let s=N(n.tag,a,c);t.append(s)}}function tr(o,e,t){o.mnemonicIcon?.map((n,a)=>({icon:n,alt:o.mnemonicAlt[a]??"",link:o.mnemonicLink[a]??""}))?.forEach(({icon:n,alt:a,link:c})=>{if(c&&!/^https?:/.test(c))try{c=new URL(`https://${c}`).href.toString()}catch{c="#"}let s={slot:"icons",src:n,loading:e.loading,size:t?.size??"l"};a&&(s.alt=a),c&&(s.href=c);let d=N("merch-icon",s);e.append(d)})}function er(o,e,t){if(o.variant==="plans"||o.variant==="plans-students"){o.badge?.length&&!o.badge?.startsWith("<merch-badge")&&(o.badge=`<merch-badge variant="${o.variant}" background-color="${we}">${o.badge}</merch-badge>`,o.borderColor||(o.borderColor=we)),C("badge",o,e,t);return}o.badge?(e.setAttribute("badge-text",o.badge),e.setAttribute("badge-color",o.badgeColor||Ke),e.setAttribute("badge-background-color",o.badgeBackgroundColor||Se),e.setAttribute("border-color",o.badgeBackgroundColor||Se)):e.setAttribute("border-color",o.borderColor||We)}function rr(o,e,t){t?.includes(o.size)&&e.setAttribute("size",o.size)}function or(o,e,t){C("cardTitle",o,e,{cardTitle:t})}function nr(o,e,t){C("subtitle",o,e,t)}function ar(o,e,t){if(!o.backgroundColor||o.backgroundColor.toLowerCase()==="default"){e.style.removeProperty("--merch-card-custom-background-color"),e.removeAttribute("background-color");return}t?.[o.backgroundColor]&&(e.style.setProperty("--merch-card-custom-background-color",`var(${t[o.backgroundColor]})`),e.setAttribute("background-color",o.backgroundColor))}function cr(o,e,t){let r="--merch-card-custom-border-color";o.borderColor?.toLowerCase()==="transparent"?(e.style.removeProperty(r),o.variant==="plans"&&e.style.setProperty(r,"transparent")):o.borderColor&&t&&(/-gradient/.test(o.borderColor)?(e.setAttribute("gradient-border","true"),e.style.removeProperty(r)):e.style.setProperty(r,`var(--${o.borderColor})`))}function ir(o,e,t){if(o.backgroundImage){let r={loading:e.loading??"lazy",src:o.backgroundImage};if(o.backgroundImageAltText?r.alt=o.backgroundImageAltText:r.role="none",!t)return;if(t?.attribute){e.setAttribute(t.attribute,o.backgroundImage);return}e.append(N(t.tag,{slot:t.slot},N("img",r)))}}function sr(o,e,t){C("prices",o,e,t)}function lr(o,e,t){C("promoText",o,e,t),C("description",o,e,t),C("callout",o,e,t),C("quantitySelect",o,e,t),C("whatsIncluded",o,e,t)}function dr(o,e,t,r){o.showStockCheckbox&&t.stockOffer&&(e.setAttribute("checkbox-label",r?.stockCheckboxLabel?r.stockCheckboxLabel:""),e.setAttribute("stock-offer-osis",r?.stockOfferOsis?r.stockOfferOsis:"")),r?.secureLabel&&t?.secureLabel&&e.setAttribute("secure-label",r.secureLabel)}function hr(o,e,t=!0){try{let r=typeof o!="string"?"":o,n=Ae(r);if(n.length<=e)return[r,n];let a=0,c=!1,s=t?e-Ft.length<1?1:e-Ft.length:e,d=[];for(let x of r){if(a++,x==="<")if(c=!0,r[a]==="/")d.pop();else{let L="";for(let ot of r.substring(a)){if(ot===" "||ot===">")break;L+=ot}d.push(L)}if(x==="/"&&r[a]===">"&&d.pop(),x===">"){c=!1;continue}if(!c&&(s--,s===0))break}let f=r.substring(0,a).trim();if(d.length>0){d[0]==="p"&&d.shift();for(let x of d.reverse())f+=`</${x}>`}return[`${f}${t?Ft:""}`,n]}catch{let n=typeof o=="string"?o:"",a=Ae(n);return[n,a]}}function Ae(o){if(!o)return"";let e="",t=!1;for(let r of o){if(r==="<"&&(t=!0),r===">"){t=!1;continue}t||(e+=r)}return e}function mr(o,e){e.querySelectorAll("a.upt-link").forEach(r=>{let n=O.createFrom(r);r.replaceWith(n),n.initializeWcsData(o.osi,o.promoCode)})}function pr(o,e,t,r){let a=customElements.get("checkout-button").createCheckoutButton({},o.innerHTML);a.setAttribute("tabindex",0);for(let _ of o.attributes)["class","is"].includes(_.name)||a.setAttribute(_.name,_.value);a.firstElementChild?.classList.add("spectrum-Button-label");let c=e.ctas.size??"M",s=`spectrum-Button--${r}`,d=Je.includes(c)?`spectrum-Button--size${c}`:"spectrum-Button--sizeM",f=["spectrum-Button",s,d];return t&&f.push("spectrum-Button--outline"),a.classList.add(...f),a}function gr(o,e,t,r){let a=customElements.get("checkout-button").createCheckoutButton(o.dataset);a.connectedCallback(),a.render();let c="fill";t&&(c="outline");let s=N("sp-button",{treatment:c,variant:r,tabIndex:0,size:e.ctas.size??"m",...o.dataset.analyticsId&&{"data-analytics-id":o.dataset.analyticsId}},o.innerHTML);return s.source=a,a.onceSettled().then(d=>{s.setAttribute("data-navigation-url",d.href)}),s.addEventListener("click",d=>{d.defaultPrevented||a.click()}),s}function ur(o,e){let r=customElements.get("checkout-link").createCheckoutLink(o.dataset,o.innerHTML);return r.classList.add("con-button"),e&&r.classList.add("blue"),r}function fr(o,e,t,r){if(o.ctas){let{slot:n}=t.ctas,a=N("div",{slot:n},o.ctas),c=[...a.querySelectorAll("a")].map(s=>{let d=Xe.exec(s.className)?.[0]??"accent",f=d.includes("accent"),_=d.includes("primary"),x=d.includes("secondary"),L=d.includes("-outline"),ot=d.includes("-link");if(e.consonant)return ur(s,f);if(ot)return s;let nt;return f?nt="accent":_?nt="primary":x&&(nt="secondary"),e.spectrum==="swc"?gr(s,t,L,nt):pr(s,t,L,nt)});a.innerHTML="",a.append(...c),e.append(a)}}function xr(o,e){let{tags:t}=o,r=t?.find(a=>a.startsWith(Qe))?.split("/").pop();if(!r)return;e.setAttribute(At,r),[...e.shadowRoot.querySelectorAll("a[data-analytics-id],button[data-analytics-id]"),...e.querySelectorAll("a[data-analytics-id],button[data-analytics-id]")].forEach((a,c)=>{a.setAttribute(Ze,`${a.dataset.analyticsId}-${c+1}`)})}function br(o){o.spectrum==="css"&&[["primary-link","primary"],["secondary-link","secondary"]].forEach(([e,t])=>{o.querySelectorAll(`a.${e}`).forEach(r=>{r.classList.remove(e),r.classList.add("spectrum-Link",`spectrum-Link--${t}`)})})}function vr(o){o.querySelectorAll("[slot]").forEach(r=>{r.remove()}),["checkbox-label","stock-offer-osis","secure-label","background-image","background-color","border-color","badge-background-color","badge-color","badge-text","gradient-border","size",At].forEach(r=>o.removeAttribute(r));let t=["wide-strip","thin-strip"];o.classList.remove(...t)}async function ke(o,e){let{id:t,fields:r,settings:n}=o,{variant:a}=r;if(!a)throw new Error(`hydrate: no variant found in payload ${t}`);vr(e),e.id??(e.id=o.id),e.variant=a,await e.updateComplete;let{aemFragmentMapping:c}=e.variantLayout;if(!c)throw new Error(`hydrate: aemFragmentMapping found for ${t}`);c.style==="consonant"&&e.setAttribute("consonant",!0),tr(r,e,c.mnemonics),er(r,e,c),rr(r,e,c.size),or(r,e,c.title),nr(r,e,c),sr(r,e,c),ir(r,e,c.backgroundImage),ar(r,e,c.allowedColors),cr(r,e,c.borderColor),lr(r,e,c),dr(r,e,c,n),mr(r,e),fr(r,e,c,a),xr(r,e),br(e)}var Te="merch-card",Er=":ready",wr=":error",Bt=2e4,kt="merch-card:",et,rt,P,tt,H=class extends yr{constructor(){super();m(this,P);l(this,"customerSegment");l(this,"marketSegment");l(this,"variantLayout");m(this,et);m(this,rt);l(this,"readyEventDispatched",!1);this.id=null,this.failed=!1,this.filters={},this.types="",this.selected=!1,this.spectrum="css",this.loading="lazy",this.handleAemFragmentEvents=this.handleAemFragmentEvents.bind(this)}firstUpdated(){this.variantLayout=Nt(this,!1),this.variantLayout?.connectedCallbackHook(),this.aemFragment?.updateComplete.catch(t=>{E(this,P,tt).call(this,t,{},!1),this.style.display="none"})}willUpdate(t){(t.has("variant")||!this.variantLayout)&&(this.variantLayout=Nt(this),this.variantLayout.connectedCallbackHook())}updated(t){(t.has("badgeBackgroundColor")||t.has("borderColor"))&&this.style.setProperty("--consonant-merch-card-border",this.computedBorderStyle),this.variantLayout?.postCardUpdateHook(t)}get theme(){return this.closest("sp-theme")}get dir(){return this.closest("[dir]")?.getAttribute("dir")??"ltr"}get prices(){return Array.from(this.querySelectorAll('span[is="inline-price"][data-wcs-osi]'))}render(){if(!(!this.isConnected||!this.variantLayout||this.style.display==="none"))return this.variantLayout.renderLayout()}get computedBorderStyle(){return["ccd-slice","ccd-suggested","ah-promoted-plans"].includes(this.variant)?"":`1px solid ${this.borderColor?this.borderColor:this.badgeBackgroundColor}`}get badgeElement(){return this.shadowRoot.getElementById("badge")}get headingmMSlot(){return this.shadowRoot.querySelector('slot[name="heading-m"]').assignedElements()[0]}get footerSlot(){return this.shadowRoot.querySelector('slot[name="footer"]')?.assignedElements()[0]}get price(){return this.headingmMSlot?.querySelector(Ct)}get checkoutLinks(){return[...this.footerSlot?.querySelectorAll(xt)??[]]}async toggleStockOffer({target:t}){if(!this.stockOfferOsis)return;let r=this.checkoutLinks;if(r.length!==0)for(let n of r){await n.onceSettled();let a=n.value?.[0]?.planType;if(!a)return;let c=this.stockOfferOsis[a];if(!c)return;let s=n.dataset.wcsOsi.split(",").filter(d=>d!==c);t.checked&&s.push(c),n.dataset.wcsOsi=s.join(",")}}handleQuantitySelection(t){let r=this.checkoutLinks;for(let n of r)n.dataset.quantity=t.detail.option}get titleElement(){return this.querySelector(this.variantLayout?.headingSelector||".card-heading")}get title(){return this.titleElement?.textContent?.trim()}get description(){return this.querySelector('[slot="body-xs"]')?.textContent?.trim()}updateFilters(t){let r={...this.filters};Object.keys(r).forEach(n=>{if(t){r[n].order=Math.min(r[n].order||2,2);return}let a=r[n].order;a===1||isNaN(a)||(r[n].order=Number(a)+1)}),this.filters=r}includes(t){return this.textContent.match(new RegExp(t,"i"))!==null}connectedCallback(){super.connectedCallback(),h(this,rt,G()),h(this,et,i(this,rt).Log.module(Te)),this.id??(this.id=this.querySelector("aem-fragment")?.getAttribute("fragment")),performance.mark(`${kt}${this.id}${ct}`),this.addEventListener(_t,this.handleQuantitySelection),this.addEventListener(Xt,this.merchCardReady,{once:!0}),this.updateComplete.then(()=>{this.merchCardReady()}),this.addEventListener(U,this.handleAemFragmentEvents),this.addEventListener($,this.handleAemFragmentEvents),this.aemFragment||setTimeout(()=>this.checkReady(),0)}disconnectedCallback(){super.disconnectedCallback(),this.variantLayout?.disconnectedCallbackHook(),this.removeEventListener(_t,this.handleQuantitySelection),this.removeEventListener(U,this.handleAemFragmentEvents),this.removeEventListener($,this.handleAemFragmentEvents)}async handleAemFragmentEvents(t){if(this.isConnected&&(t.type===U&&E(this,P,tt).call(this,`AEM fragment cannot be loaded: ${t.detail.message}`,t.detail),t.type===$&&t.target.nodeName==="AEM-FRAGMENT")){let r=t.detail;ke(r,this).then(()=>this.checkReady()).catch(n=>i(this,et).error(n))}}async checkReady(){if(!this.isConnected)return;let t=new Promise(c=>setTimeout(()=>c("timeout"),Bt));if(this.aemFragment){let c=await Promise.race([this.aemFragment.updateComplete,t]);if(c===!1){let s=c==="timeout"?`AEM fragment was not resolved within ${Bt} timeout`:"AEM fragment cannot be loaded";E(this,P,tt).call(this,s,{},!1);return}}let r=[...this.querySelectorAll(Wt)];r.push(...[...this.querySelectorAll(Kt)].map(c=>c.source));let n=Promise.all(r.map(c=>c.onceSettled().catch(()=>c))).then(c=>c.every(s=>s.classList.contains("placeholder-resolved"))),a=await Promise.race([n,t]);if(a===!0)return performance.mark(`${kt}${this.id}${Er}`),this.readyEventDispatched||(this.readyEventDispatched=!0,this.dispatchEvent(new CustomEvent(Jt,{bubbles:!0,composed:!0}))),this;{let{duration:c,startTime:s}=performance.measure(`${kt}${this.id}${wr}`,`${kt}${this.id}${ct}`),d={duration:c,startTime:s,...i(this,rt).duration};a==="timeout"?E(this,P,tt).call(this,`Contains offers that were not resolved within ${Bt} timeout`,d):E(this,P,tt).call(this,"Contains unresolved offers",d)}}get aemFragment(){return this.querySelector("aem-fragment")}get quantitySelect(){return this.querySelector("merch-quantity-select")}displayFooterElementsInColumn(){if(!this.classList.contains("product"))return;let t=this.shadowRoot.querySelector(".secure-transaction-label");(this.footerSlot?.querySelectorAll(xt)).length===2&&t&&t.parentElement.classList.add("footer-column")}merchCardReady(){this.offerSelect&&!this.offerSelect.planType||(this.dispatchEvent(new CustomEvent(Qt,{bubbles:!0})),this.displayFooterElementsInColumn())}get dynamicPrice(){return this.querySelector('[slot="price"]')}};et=new WeakMap,rt=new WeakMap,P=new WeakSet,tt=function(t,r={},n=!0){i(this,et).error(`merch-card: ${t}`,r),this.failed=!0,n&&this.dispatchEvent(new CustomEvent(te,{detail:{...r,message:t},bubbles:!0,composed:!0}))},l(H,"properties",{id:{type:String,attribute:"id",reflect:!0},name:{type:String,attribute:"name",reflect:!0},variant:{type:String,reflect:!0},size:{type:String,attribute:"size",reflect:!0},badgeColor:{type:String,attribute:"badge-color",reflect:!0},borderColor:{type:String,attribute:"border-color",reflect:!0},badgeBackgroundColor:{type:String,attribute:"badge-background-color",reflect:!0},backgroundImage:{type:String,attribute:"background-image",reflect:!0},badgeText:{type:String,attribute:"badge-text"},actionMenu:{type:Boolean,attribute:"action-menu"},actionMenuLabel:{type:String,attribute:"action-menu-label"},customHr:{type:Boolean,attribute:"custom-hr"},consonant:{type:Boolean,attribute:"consonant"},failed:{type:Boolean,attribute:"failed",reflect:!0},spectrum:{type:String,attribute:"spectrum"},detailBg:{type:String,attribute:"detail-bg"},secureLabel:{type:String,attribute:"secure-label"},checkboxLabel:{type:String,attribute:"checkbox-label"},selected:{type:Boolean,attribute:"aria-selected",reflect:!0},storageOption:{type:String,attribute:"storage",reflect:!0},stockOfferOsis:{type:Object,attribute:"stock-offer-osis",converter:{fromAttribute:t=>{if(!t)return;let[r,n,a]=t.split(",");return{PUF:r,ABM:n,M2M:a}}}},filters:{type:String,reflect:!0,converter:{fromAttribute:t=>Object.fromEntries(t.split(",").map(r=>{let[n,a,c]=r.split(":"),s=Number(a);return[n,{order:isNaN(s)?void 0:s,size:c}]})),toAttribute:t=>Object.entries(t).map(([r,{order:n,size:a}])=>[r,n,a].filter(c=>c!=null).join(":")).join(",")}},types:{type:String,attribute:"types",reflect:!0},merchOffer:{type:Object},analyticsId:{type:String,attribute:At,reflect:!0},loading:{type:String}}),l(H,"styles",[qt,...Yt()]),l(H,"registerVariant",v),l(H,"getFragmentMapping",ue);customElements.define(Te,H);export{H as MerchCard};
+    `);
+__publicField(MerchWhatsIncluded, "properties", {
+  heading: { type: String, attribute: true },
+  mobileRows: { type: Number, attribute: true }
+});
+customElements.define("merch-whats-included", MerchWhatsIncluded);
+
+// src/upt-link.js
+function getPromoTermsUrl(env) {
+  const host = env === "PRODUCTION" ? "www.adobe.com" : "www.stage.adobe.com";
+  return `https://${host}/offers/promo-terms.html`;
+}
+var _initialized;
+var _UptLink = class _UptLink extends HTMLAnchorElement {
+  constructor() {
+    super();
+    __privateAdd(this, _initialized, false);
+    this.setAttribute("is", _UptLink.is);
+  }
+  get isUptLink() {
+    return true;
+  }
+  /**
+   * @param {string} osi 
+   * @param {string} promotionCode 
+   */
+  initializeWcsData(osi, promotionCode) {
+    this.setAttribute("data-wcs-osi", osi);
+    if (promotionCode)
+      this.setAttribute("data-promotion-code", promotionCode);
+    __privateSet(this, _initialized, true);
+    this.composePromoTermsUrl();
+  }
+  attributeChangedCallback(_name, _oldValue, _newValue) {
+    if (!__privateGet(this, _initialized)) return;
+    this.composePromoTermsUrl();
+  }
+  composePromoTermsUrl() {
+    const osi = this.getAttribute("data-wcs-osi");
+    if (!osi) {
+      const fragmentId = this.closest("merch-card").querySelector("aem-fragment").getAttribute("fragment");
+      console.error(`Missing 'data-wcs-osi' attribute on upt-link. Fragment: ${fragmentId}`);
+      return;
+    }
+    const service = getService();
+    const wcsOsi = [osi];
+    const promotionCode = this.getAttribute("data-promotion-code");
+    const { country, language, env } = service.settings;
+    const options = { country, language, wcsOsi, promotionCode };
+    const promises = service.resolveOfferSelectors(options);
+    Promise.all(promises).then(([[offer]]) => {
+      let params = `locale=${language}_${country}&country=${country}&offer_id=${offer.offerId}`;
+      if (promotionCode) params += `&promotion_code=${encodeURIComponent(promotionCode)}`;
+      this.href = `${getPromoTermsUrl(env)}?${params}`;
+    }).catch((error) => {
+      console.error(`Could not resolve offer selectors for id: ${osi}.`, error.message);
+    });
+  }
+  /**
+   * @param {HTMLElement} element 
+   */
+  static createFrom(element) {
+    const uptLink = new _UptLink();
+    for (const attribute of element.attributes) {
+      if (attribute.name === "is") continue;
+      if (attribute.name === "class" && attribute.value.includes("upt-link"))
+        uptLink.setAttribute("class", attribute.value.replace("upt-link", "").trim());
+      else
+        uptLink.setAttribute(attribute.name, attribute.value);
+    }
+    uptLink.innerHTML = element.innerHTML;
+    uptLink.setAttribute("tabindex", 0);
+    return uptLink;
+  }
+};
+_initialized = new WeakMap();
+__publicField(_UptLink, "is", "upt-link");
+__publicField(_UptLink, "tag", "a");
+__publicField(_UptLink, "observedAttributes", ["data-wcs-osi", "data-promotion-code"]);
+var UptLink = _UptLink;
+if (!window.customElements.get(UptLink.is)) {
+  window.customElements.define(UptLink.is, UptLink, {
+    extends: UptLink.tag
+  });
+}
+
+// src/hydrate.js
+var DEFAULT_BADGE_COLOR = "#000000";
+var DEFAULT_PLANS_BADGE_COLOR = "spectrum-yellow-300-plans";
+var DEFAULT_BADGE_BACKGROUND_COLOR = "#F8D904";
+var DEFAULT_BORDER_COLOR = "#EAEAEA";
+var CHECKOUT_STYLE_PATTERN = /(accent|primary|secondary)(-(outline|link))?/;
+var ANALYTICS_TAG = "mas:product_code/";
+var ANALYTICS_LINK_ATTR = "daa-ll";
+var ANALYTICS_SECTION_ATTR = "daa-lh";
+var SPECTRUM_BUTTON_SIZES = ["XL", "L", "M", "S"];
+var TEXT_TRUNCATE_SUFFIX = "...";
+function appendSlot(fieldName, fields, el, mapping) {
+  const config = mapping[fieldName];
+  if (fields[fieldName] && config) {
+    const attributes = { slot: config?.slot };
+    let content = fields[fieldName];
+    if (config.maxCount && typeof content === "string") {
+      const [truncatedContent, cleanContent] = getTruncatedTextData(
+        content,
+        config.maxCount,
+        config.withSuffix
+      );
+      if (truncatedContent !== content) {
+        attributes.title = cleanContent;
+        content = truncatedContent;
+      }
+    }
+    const tag = createTag(config.tag, attributes, content);
+    el.append(tag);
+  }
+}
+function processMnemonics(fields, merchCard, mnemonicsConfig) {
+  const mnemonics = fields.mnemonicIcon?.map((icon, index) => ({
+    icon,
+    alt: fields.mnemonicAlt[index] ?? "",
+    link: fields.mnemonicLink[index] ?? ""
+  }));
+  mnemonics?.forEach(({ icon: src, alt, link: href }) => {
+    if (href && !/^https?:/.test(href)) {
+      try {
+        href = new URL(`https://${href}`).href.toString();
+      } catch (e) {
+        href = "#";
+      }
+    }
+    const attrs = {
+      slot: "icons",
+      src,
+      loading: merchCard.loading,
+      size: mnemonicsConfig?.size ?? "l"
+    };
+    if (alt) attrs.alt = alt;
+    if (href) attrs.href = href;
+    const merchIcon = createTag("merch-icon", attrs);
+    merchCard.append(merchIcon);
+  });
+}
+function processBadge(fields, merchCard, mapping) {
+  if (fields.variant === "plans" || fields.variant === "plans-students") {
+    if (fields.badge?.length && !fields.badge?.startsWith("<merch-badge")) {
+      fields.badge = `<merch-badge variant="${fields.variant}" background-color="${DEFAULT_PLANS_BADGE_COLOR}">${fields.badge}</merch-badge>`;
+      if (!fields.borderColor)
+        fields.borderColor = DEFAULT_PLANS_BADGE_COLOR;
+    }
+    appendSlot("badge", fields, merchCard, mapping);
+    return;
+  }
+  if (fields.badge) {
+    merchCard.setAttribute("badge-text", fields.badge);
+    merchCard.setAttribute(
+      "badge-color",
+      fields.badgeColor || DEFAULT_BADGE_COLOR
+    );
+    merchCard.setAttribute(
+      "badge-background-color",
+      fields.badgeBackgroundColor || DEFAULT_BADGE_BACKGROUND_COLOR
+    );
+    merchCard.setAttribute(
+      "border-color",
+      fields.badgeBackgroundColor || DEFAULT_BADGE_BACKGROUND_COLOR
+    );
+  } else {
+    merchCard.setAttribute(
+      "border-color",
+      fields.borderColor || DEFAULT_BORDER_COLOR
+    );
+  }
+}
+function processSize(fields, merchCard, sizeConfig) {
+  if (sizeConfig?.includes(fields.size)) {
+    merchCard.setAttribute("size", fields.size);
+  }
+}
+function processTitle(fields, merchCard, titleConfig) {
+  appendSlot("cardTitle", fields, merchCard, { cardTitle: titleConfig });
+}
+function processSubtitle(fields, merchCard, mapping) {
+  appendSlot("subtitle", fields, merchCard, mapping);
+}
+function processBackgroundColor(fields, merchCard, allowedColors) {
+  if (!fields.backgroundColor || fields.backgroundColor.toLowerCase() === "default") {
+    merchCard.style.removeProperty("--merch-card-custom-background-color");
+    merchCard.removeAttribute("background-color");
+    return;
+  }
+  if (allowedColors?.[fields.backgroundColor]) {
+    merchCard.style.setProperty(
+      "--merch-card-custom-background-color",
+      `var(${allowedColors[fields.backgroundColor]})`
+    );
+    merchCard.setAttribute("background-color", fields.backgroundColor);
+  }
+}
+function processBorderColor(fields, merchCard, borderColorConfig) {
+  const customBorderColor = "--merch-card-custom-border-color";
+  if (fields.borderColor?.toLowerCase() === "transparent") {
+    merchCard.style.removeProperty(customBorderColor);
+    if (fields.variant === "plans")
+      merchCard.style.setProperty(customBorderColor, "transparent");
+  } else if (fields.borderColor && borderColorConfig) {
+    if (/-gradient/.test(fields.borderColor)) {
+      merchCard.setAttribute("gradient-border", "true");
+      merchCard.style.removeProperty(customBorderColor);
+    } else {
+      merchCard.style.setProperty(
+        customBorderColor,
+        `var(--${fields.borderColor})`
+      );
+    }
+  }
+}
+function processBackgroundImage(fields, merchCard, backgroundImageConfig) {
+  if (fields.backgroundImage) {
+    const imgAttributes = {
+      loading: merchCard.loading ?? "lazy",
+      src: fields.backgroundImage
+    };
+    if (fields.backgroundImageAltText) {
+      imgAttributes.alt = fields.backgroundImageAltText;
+    } else {
+      imgAttributes.role = "none";
+    }
+    if (!backgroundImageConfig) return;
+    if (backgroundImageConfig?.attribute) {
+      merchCard.setAttribute(
+        backgroundImageConfig.attribute,
+        fields.backgroundImage
+      );
+      return;
+    }
+    merchCard.append(
+      createTag(
+        backgroundImageConfig.tag,
+        { slot: backgroundImageConfig.slot },
+        createTag("img", imgAttributes)
+      )
+    );
+  }
+}
+function processPrices(fields, merchCard, mapping) {
+  appendSlot("prices", fields, merchCard, mapping);
+}
+function processDescription(fields, merchCard, mapping) {
+  appendSlot("promoText", fields, merchCard, mapping);
+  appendSlot("description", fields, merchCard, mapping);
+  appendSlot("callout", fields, merchCard, mapping);
+  appendSlot("quantitySelect", fields, merchCard, mapping);
+  appendSlot("whatsIncluded", fields, merchCard, mapping);
+}
+function processStockOffersAndSecureLabel(fields, merchCard, aemFragmentMapping, settings) {
+  if (fields.showStockCheckbox && aemFragmentMapping.stockOffer) {
+    merchCard.setAttribute("checkbox-label", settings?.stockCheckboxLabel ? settings.stockCheckboxLabel : "");
+    merchCard.setAttribute("stock-offer-osis", settings?.stockOfferOsis ? settings.stockOfferOsis : "");
+  }
+  if (settings?.secureLabel && aemFragmentMapping?.secureLabel) {
+    merchCard.setAttribute("secure-label", settings.secureLabel);
+  }
+}
+function getTruncatedTextData(text, limit, withSuffix = true) {
+  try {
+    const _text = typeof text !== "string" ? "" : text;
+    const cleanText = clearTags(_text);
+    if (cleanText.length <= limit) return [_text, cleanText];
+    let index = 0;
+    let inTag = false;
+    let remaining = withSuffix ? limit - TEXT_TRUNCATE_SUFFIX.length < 1 ? 1 : limit - TEXT_TRUNCATE_SUFFIX.length : limit;
+    let openTags = [];
+    for (const char of _text) {
+      index++;
+      if (char === "<") {
+        inTag = true;
+        if (_text[index] === "/") {
+          openTags.pop();
+        } else {
+          let tagName = "";
+          for (const tagChar of _text.substring(index)) {
+            if (tagChar === " " || tagChar === ">") break;
+            tagName += tagChar;
+          }
+          openTags.push(tagName);
+        }
+      }
+      if (char === "/") {
+        if (_text[index] === ">") {
+          openTags.pop();
+        }
+      }
+      if (char === ">") {
+        inTag = false;
+        continue;
+      }
+      if (inTag) continue;
+      remaining--;
+      if (remaining === 0) break;
+    }
+    let trimmedText = _text.substring(0, index).trim();
+    if (openTags.length > 0) {
+      if (openTags[0] === "p") openTags.shift();
+      for (const tag of openTags.reverse()) {
+        trimmedText += `</${tag}>`;
+      }
+    }
+    let truncatedText = `${trimmedText}${withSuffix ? TEXT_TRUNCATE_SUFFIX : ""}`;
+    return [truncatedText, cleanText];
+  } catch (error) {
+    const fallbackText = typeof text === "string" ? text : "";
+    const cleanFallback = clearTags(fallbackText);
+    return [fallbackText, cleanFallback];
+  }
+}
+function clearTags(text) {
+  if (!text) return "";
+  let result = "";
+  let inTag = false;
+  for (const char of text) {
+    if (char === "<") inTag = true;
+    if (char === ">") {
+      inTag = false;
+      continue;
+    }
+    if (inTag) continue;
+    result += char;
+  }
+  return result;
+}
+function processUptLinks(fields, merchCard) {
+  const placeholders = merchCard.querySelectorAll("a.upt-link");
+  placeholders.forEach((placeholder) => {
+    const uptLink = UptLink.createFrom(placeholder);
+    placeholder.replaceWith(uptLink);
+    uptLink.initializeWcsData(fields.osi, fields.promoCode);
+  });
+}
+function createSpectrumCssButton(cta, aemFragmentMapping, isOutline, variant) {
+  const CheckoutButton = customElements.get("checkout-button");
+  const spectrumCta = CheckoutButton.createCheckoutButton({}, cta.innerHTML);
+  spectrumCta.setAttribute("tabindex", 0);
+  for (const attr of cta.attributes) {
+    if (["class", "is"].includes(attr.name)) continue;
+    spectrumCta.setAttribute(attr.name, attr.value);
+  }
+  spectrumCta.firstElementChild?.classList.add("spectrum-Button-label");
+  const size = aemFragmentMapping.ctas.size ?? "M";
+  const variantClass = `spectrum-Button--${variant}`;
+  const sizeClass = SPECTRUM_BUTTON_SIZES.includes(size) ? `spectrum-Button--size${size}` : "spectrum-Button--sizeM";
+  const spectrumClass = ["spectrum-Button", variantClass, sizeClass];
+  if (isOutline) {
+    spectrumClass.push("spectrum-Button--outline");
+  }
+  spectrumCta.classList.add(...spectrumClass);
+  return spectrumCta;
+}
+function createSpectrumSwcButton(cta, aemFragmentMapping, isOutline, variant) {
+  const CheckoutButton = customElements.get("checkout-button");
+  const checkoutButton = CheckoutButton.createCheckoutButton(cta.dataset);
+  checkoutButton.connectedCallback();
+  checkoutButton.render();
+  let treatment = "fill";
+  if (isOutline) {
+    treatment = "outline";
+  }
+  const spectrumCta = createTag(
+    "sp-button",
+    {
+      treatment,
+      variant,
+      tabIndex: 0,
+      size: aemFragmentMapping.ctas.size ?? "m",
+      ...cta.dataset.analyticsId && {
+        "data-analytics-id": cta.dataset.analyticsId
+      }
+    },
+    cta.innerHTML
+  );
+  spectrumCta.source = checkoutButton;
+  checkoutButton.onceSettled().then((target) => {
+    spectrumCta.setAttribute("data-navigation-url", target.href);
+  });
+  spectrumCta.addEventListener("click", (e) => {
+    if (e.defaultPrevented) return;
+    checkoutButton.click();
+  });
+  return spectrumCta;
+}
+function createConsonantButton(cta, isAccent) {
+  const CheckoutLink = customElements.get("checkout-link");
+  const checkoutLink = CheckoutLink.createCheckoutLink(cta.dataset, cta.innerHTML);
+  checkoutLink.classList.add("con-button");
+  if (isAccent) {
+    checkoutLink.classList.add("blue");
+  }
+  return checkoutLink;
+}
+function processCTAs(fields, merchCard, aemFragmentMapping, variant) {
+  if (fields.ctas) {
+    const { slot } = aemFragmentMapping.ctas;
+    const footer = createTag("div", { slot }, fields.ctas);
+    const ctas = [...footer.querySelectorAll("a")].map((cta) => {
+      const checkoutLinkStyle = CHECKOUT_STYLE_PATTERN.exec(cta.className)?.[0] ?? "accent";
+      const isAccent = checkoutLinkStyle.includes("accent");
+      const isPrimary = checkoutLinkStyle.includes("primary");
+      const isSecondary = checkoutLinkStyle.includes("secondary");
+      const isOutline = checkoutLinkStyle.includes("-outline");
+      const isLink = checkoutLinkStyle.includes("-link");
+      if (merchCard.consonant)
+        return createConsonantButton(cta, isAccent);
+      if (isLink) {
+        return cta;
+      }
+      let variant2;
+      if (isAccent) {
+        variant2 = "accent";
+      } else if (isPrimary) {
+        variant2 = "primary";
+      } else if (isSecondary) {
+        variant2 = "secondary";
+      }
+      return merchCard.spectrum === "swc" ? createSpectrumSwcButton(
+        cta,
+        aemFragmentMapping,
+        isOutline,
+        variant2
+      ) : createSpectrumCssButton(
+        cta,
+        aemFragmentMapping,
+        isOutline,
+        variant2
+      );
+    });
+    footer.innerHTML = "";
+    footer.append(...ctas);
+    merchCard.append(footer);
+  }
+}
+function processAnalytics(fields, merchCard) {
+  const { tags } = fields;
+  const cardAnalyticsId = tags?.find((tag) => tag.startsWith(ANALYTICS_TAG))?.split("/").pop();
+  if (!cardAnalyticsId) return;
+  merchCard.setAttribute(ANALYTICS_SECTION_ATTR, cardAnalyticsId);
+  const elements = [
+    ...merchCard.shadowRoot.querySelectorAll(
+      `a[data-analytics-id],button[data-analytics-id]`
+    ),
+    ...merchCard.querySelectorAll(
+      `a[data-analytics-id],button[data-analytics-id]`
+    )
+  ];
+  elements.forEach((el, index) => {
+    el.setAttribute(
+      ANALYTICS_LINK_ATTR,
+      `${el.dataset.analyticsId}-${index + 1}`
+    );
+  });
+}
+function updateLinksCSS(merchCard) {
+  if (merchCard.spectrum !== "css") return;
+  [
+    ["primary-link", "primary"],
+    ["secondary-link", "secondary"]
+  ].forEach(([className, variant]) => {
+    merchCard.querySelectorAll(`a.${className}`).forEach((link) => {
+      link.classList.remove(className);
+      link.classList.add("spectrum-Link", `spectrum-Link--${variant}`);
+    });
+  });
+}
+function cleanup(merchCard) {
+  merchCard.querySelectorAll("[slot]").forEach((el) => {
+    el.remove();
+  });
+  const attributesToRemove = [
+    "checkbox-label",
+    "stock-offer-osis",
+    "secure-label",
+    "background-image",
+    "background-color",
+    "border-color",
+    "badge-background-color",
+    "badge-color",
+    "badge-text",
+    "gradient-border",
+    "size",
+    ANALYTICS_SECTION_ATTR
+  ];
+  attributesToRemove.forEach((attr) => merchCard.removeAttribute(attr));
+  const classesToRemove = ["wide-strip", "thin-strip"];
+  merchCard.classList.remove(...classesToRemove);
+}
+async function hydrate(fragment, merchCard) {
+  const { id, fields, settings } = fragment;
+  const { variant } = fields;
+  if (!variant) throw new Error(`hydrate: no variant found in payload ${id}`);
+  cleanup(merchCard);
+  merchCard.id ?? (merchCard.id = fragment.id);
+  merchCard.variant = variant;
+  await merchCard.updateComplete;
+  const { aemFragmentMapping } = merchCard.variantLayout;
+  if (!aemFragmentMapping)
+    throw new Error(`hydrate: aemFragmentMapping found for ${id}`);
+  if (aemFragmentMapping.style === "consonant") {
+    merchCard.setAttribute("consonant", true);
+  }
+  processMnemonics(fields, merchCard, aemFragmentMapping.mnemonics);
+  processBadge(fields, merchCard, aemFragmentMapping);
+  processSize(fields, merchCard, aemFragmentMapping.size);
+  processTitle(fields, merchCard, aemFragmentMapping.title);
+  processSubtitle(fields, merchCard, aemFragmentMapping);
+  processPrices(fields, merchCard, aemFragmentMapping);
+  processBackgroundImage(
+    fields,
+    merchCard,
+    aemFragmentMapping.backgroundImage
+  );
+  processBackgroundColor(fields, merchCard, aemFragmentMapping.allowedColors);
+  processBorderColor(fields, merchCard, aemFragmentMapping.borderColor);
+  processDescription(fields, merchCard, aemFragmentMapping);
+  processStockOffersAndSecureLabel(
+    fields,
+    merchCard,
+    aemFragmentMapping,
+    settings
+  );
+  processUptLinks(fields, merchCard);
+  processCTAs(fields, merchCard, aemFragmentMapping, variant);
+  processAnalytics(fields, merchCard);
+  updateLinksCSS(merchCard);
+}
+
+// src/merch-card.js
+var MERCH_CARD = "merch-card";
+var MARK_READY_SUFFIX = ":ready";
+var MARK_ERROR_SUFFIX = ":error";
+var MERCH_CARD_LOAD_TIMEOUT = 2e4;
+var MARK_MERCH_CARD_PREFIX = "merch-card:";
+var _log2, _service2, _MerchCard_instances, fail_fn2;
+var MerchCard = class extends LitElement5 {
+  constructor() {
+    super();
+    __privateAdd(this, _MerchCard_instances);
+    __publicField(this, "customerSegment");
+    __publicField(this, "marketSegment");
+    /**
+     * @type {VariantLayout}
+     */
+    __publicField(this, "variantLayout");
+    __privateAdd(this, _log2);
+    __privateAdd(this, _service2);
+    __publicField(this, "readyEventDispatched", false);
+    this.id = null;
+    this.failed = false;
+    this.filters = {};
+    this.types = "";
+    this.selected = false;
+    this.spectrum = "css";
+    this.loading = "lazy";
+    this.handleAemFragmentEvents = this.handleAemFragmentEvents.bind(this);
+  }
+  firstUpdated() {
+    this.variantLayout = getVariantLayout(this, false);
+    this.variantLayout?.connectedCallbackHook();
+    this.aemFragment?.updateComplete.catch((e) => {
+      __privateMethod(this, _MerchCard_instances, fail_fn2).call(this, e, {}, false);
+      this.style.display = "none";
+    });
+  }
+  willUpdate(changedProperties) {
+    if (changedProperties.has("variant") || !this.variantLayout) {
+      this.variantLayout = getVariantLayout(this);
+      this.variantLayout.connectedCallbackHook();
+    }
+  }
+  updated(changedProperties) {
+    if (changedProperties.has("badgeBackgroundColor") || changedProperties.has("borderColor")) {
+      this.style.setProperty(
+        "--consonant-merch-card-border",
+        this.computedBorderStyle
+      );
+    }
+    this.variantLayout?.postCardUpdateHook(changedProperties);
+  }
+  get theme() {
+    return this.closest("sp-theme");
+  }
+  get dir() {
+    return this.closest("[dir]")?.getAttribute("dir") ?? "ltr";
+  }
+  get prices() {
+    return Array.from(
+      this.querySelectorAll('span[is="inline-price"][data-wcs-osi]')
+    );
+  }
+  render() {
+    if (!this.isConnected || !this.variantLayout || this.style.display === "none")
+      return;
+    return this.variantLayout.renderLayout();
+  }
+  get computedBorderStyle() {
+    if (!["ccd-slice", "ccd-suggested", "ah-promoted-plans"].includes(
+      this.variant
+    )) {
+      return `1px solid ${this.borderColor ? this.borderColor : this.badgeBackgroundColor}`;
+    }
+    return "";
+  }
+  get badgeElement() {
+    return this.shadowRoot.getElementById("badge");
+  }
+  get headingmMSlot() {
+    return this.shadowRoot.querySelector('slot[name="heading-m"]').assignedElements()[0];
+  }
+  get footerSlot() {
+    return this.shadowRoot.querySelector('slot[name="footer"]')?.assignedElements()[0];
+  }
+  get price() {
+    return this.headingmMSlot?.querySelector(SELECTOR_MAS_INLINE_PRICE);
+  }
+  get checkoutLinks() {
+    return [
+      ...this.footerSlot?.querySelectorAll(SELECTOR_MAS_CHECKOUT_LINK) ?? []
+    ];
+  }
+  async toggleStockOffer({ target }) {
+    if (!this.stockOfferOsis) return;
+    const elements = this.checkoutLinks;
+    if (elements.length === 0) return;
+    for (const element of elements) {
+      await element.onceSettled();
+      const planType = element.value?.[0]?.planType;
+      if (!planType) return;
+      const stockOfferOsi = this.stockOfferOsis[planType];
+      if (!stockOfferOsi) return;
+      const osis = element.dataset.wcsOsi.split(",").filter((osi) => osi !== stockOfferOsi);
+      if (target.checked) {
+        osis.push(stockOfferOsi);
+      }
+      element.dataset.wcsOsi = osis.join(",");
+    }
+  }
+  handleQuantitySelection(event) {
+    const elements = this.checkoutLinks;
+    for (const element of elements) {
+      element.dataset.quantity = event.detail.option;
+    }
+  }
+  get titleElement() {
+    return this.querySelector(
+      this.variantLayout?.headingSelector || ".card-heading"
+    );
+  }
+  get title() {
+    return this.titleElement?.textContent?.trim();
+  }
+  /* c8 ignore next 3 */
+  get description() {
+    return this.querySelector('[slot="body-xs"]')?.textContent?.trim();
+  }
+  /**
+   * If the card is the single app, set the order for all filters to 2.
+   * If not, increment the order for all filters after the second card by 1.
+   * @param {*} singleApp
+   */
+  updateFilters(singleApp) {
+    const newFilters = { ...this.filters };
+    Object.keys(newFilters).forEach((key) => {
+      if (singleApp) {
+        newFilters[key].order = Math.min(newFilters[key].order || 2, 2);
+        return;
+      }
+      const value = newFilters[key].order;
+      if (value === 1 || isNaN(value)) return;
+      newFilters[key].order = Number(value) + 1;
+    });
+    this.filters = newFilters;
+  }
+  /* c8 ignore next 3 */
+  includes(text) {
+    return this.textContent.match(new RegExp(text, "i")) !== null;
+  }
+  connectedCallback() {
+    super.connectedCallback();
+    __privateSet(this, _service2, getService());
+    __privateSet(this, _log2, __privateGet(this, _service2).Log.module(MERCH_CARD));
+    this.id ?? (this.id = this.querySelector("aem-fragment")?.getAttribute("fragment"));
+    performance.mark(
+      `${MARK_MERCH_CARD_PREFIX}${this.id}${MARK_START_SUFFIX}`
+    );
+    this.addEventListener(
+      EVENT_MERCH_QUANTITY_SELECTOR_CHANGE,
+      this.handleQuantitySelection
+    );
+    this.addEventListener(
+      EVENT_MERCH_OFFER_SELECT_READY,
+      this.merchCardReady,
+      { once: true }
+    );
+    this.updateComplete.then(() => {
+      this.merchCardReady();
+    });
+    this.addEventListener(EVENT_AEM_ERROR, this.handleAemFragmentEvents);
+    this.addEventListener(EVENT_AEM_LOAD, this.handleAemFragmentEvents);
+    if (!this.aemFragment) {
+      setTimeout(() => this.checkReady(), 0);
+    }
+  }
+  disconnectedCallback() {
+    super.disconnectedCallback();
+    this.variantLayout?.disconnectedCallbackHook();
+    this.removeEventListener(
+      EVENT_MERCH_QUANTITY_SELECTOR_CHANGE,
+      this.handleQuantitySelection
+    );
+    this.removeEventListener(EVENT_AEM_ERROR, this.handleAemFragmentEvents);
+    this.removeEventListener(EVENT_AEM_LOAD, this.handleAemFragmentEvents);
+  }
+  // custom methods
+  async handleAemFragmentEvents(e) {
+    if (!this.isConnected) return;
+    if (e.type === EVENT_AEM_ERROR) {
+      __privateMethod(this, _MerchCard_instances, fail_fn2).call(this, `AEM fragment cannot be loaded: ${e.detail.message}`, e.detail);
+    }
+    if (e.type === EVENT_AEM_LOAD) {
+      if (e.target.nodeName === "AEM-FRAGMENT") {
+        const fragment = e.detail;
+        hydrate(fragment, this).then(() => this.checkReady()).catch((e2) => __privateGet(this, _log2).error(e2));
+      }
+    }
+  }
+  async checkReady() {
+    if (!this.isConnected) return;
+    const timeoutPromise = new Promise(
+      (resolve) => setTimeout(() => resolve("timeout"), MERCH_CARD_LOAD_TIMEOUT)
+    );
+    if (this.aemFragment) {
+      const result2 = await Promise.race([
+        this.aemFragment.updateComplete,
+        timeoutPromise
+      ]);
+      if (result2 === false) {
+        const errorMessage = result2 === "timeout" ? `AEM fragment was not resolved within ${MERCH_CARD_LOAD_TIMEOUT} timeout` : "AEM fragment cannot be loaded";
+        __privateMethod(this, _MerchCard_instances, fail_fn2).call(this, errorMessage, {}, false);
+        return;
+      }
+    }
+    const masElements = [...this.querySelectorAll(SELECTOR_MAS_ELEMENT)];
+    masElements.push(
+      ...[...this.querySelectorAll(SELECTOR_MAS_SP_BUTTON)].map(
+        (element) => element.source
+      )
+    );
+    const successPromise = Promise.all(
+      masElements.map(
+        (element) => element.onceSettled().catch(() => element)
+      )
+    ).then(
+      (elements) => elements.every(
+        (el) => el.classList.contains("placeholder-resolved")
+      )
+    );
+    const result = await Promise.race([successPromise, timeoutPromise]);
+    if (result === true) {
+      performance.mark(
+        `${MARK_MERCH_CARD_PREFIX}${this.id}${MARK_READY_SUFFIX}`
+      );
+      if (!this.readyEventDispatched) {
+        this.readyEventDispatched = true;
+        this.dispatchEvent(
+          new CustomEvent(EVENT_MAS_READY, {
+            bubbles: true,
+            composed: true
+          })
+        );
+      }
+      return this;
+    } else {
+      const { duration, startTime } = performance.measure(
+        `${MARK_MERCH_CARD_PREFIX}${this.id}${MARK_ERROR_SUFFIX}`,
+        `${MARK_MERCH_CARD_PREFIX}${this.id}${MARK_START_SUFFIX}`
+      );
+      const details = {
+        duration,
+        startTime,
+        ...__privateGet(this, _service2).duration
+      };
+      if (result === "timeout") {
+        __privateMethod(this, _MerchCard_instances, fail_fn2).call(this, `Contains offers that were not resolved within ${MERCH_CARD_LOAD_TIMEOUT} timeout`, details);
+      } else {
+        __privateMethod(this, _MerchCard_instances, fail_fn2).call(this, `Contains unresolved offers`, details);
+      }
+    }
+  }
+  get aemFragment() {
+    return this.querySelector("aem-fragment");
+  }
+  /* c8 ignore next 3 */
+  get quantitySelect() {
+    return this.querySelector("merch-quantity-select");
+  }
+  displayFooterElementsInColumn() {
+    if (!this.classList.contains("product")) return;
+    const secureTransactionLabel = this.shadowRoot.querySelector(
+      ".secure-transaction-label"
+    );
+    const checkoutLinkCtas = this.footerSlot?.querySelectorAll(
+      SELECTOR_MAS_CHECKOUT_LINK
+    );
+    if (checkoutLinkCtas.length === 2 && secureTransactionLabel) {
+      secureTransactionLabel.parentElement.classList.add("footer-column");
+    }
+  }
+  merchCardReady() {
+    if (this.offerSelect && !this.offerSelect.planType) return;
+    this.dispatchEvent(
+      new CustomEvent(EVENT_MERCH_CARD_READY, { bubbles: true })
+    );
+    this.displayFooterElementsInColumn();
+  }
+  /* c8 ignore next 3 */
+  get dynamicPrice() {
+    return this.querySelector('[slot="price"]');
+  }
+};
+_log2 = new WeakMap();
+_service2 = new WeakMap();
+_MerchCard_instances = new WeakSet();
+fail_fn2 = function(error, details = {}, dispatch = true) {
+  __privateGet(this, _log2).error(`merch-card: ${error}`, details);
+  this.failed = true;
+  if (!dispatch) return;
+  this.dispatchEvent(
+    new CustomEvent(EVENT_MAS_ERROR, {
+      detail: { ...details, message: error },
+      bubbles: true,
+      composed: true
+    })
+  );
+};
+__publicField(MerchCard, "properties", {
+  id: { type: String, attribute: "id", reflect: true },
+  name: { type: String, attribute: "name", reflect: true },
+  variant: { type: String, reflect: true },
+  size: { type: String, attribute: "size", reflect: true },
+  badgeColor: { type: String, attribute: "badge-color", reflect: true },
+  borderColor: { type: String, attribute: "border-color", reflect: true },
+  badgeBackgroundColor: {
+    type: String,
+    attribute: "badge-background-color",
+    reflect: true
+  },
+  backgroundImage: {
+    type: String,
+    attribute: "background-image",
+    reflect: true
+  },
+  badgeText: { type: String, attribute: "badge-text" },
+  actionMenu: { type: Boolean, attribute: "action-menu" },
+  actionMenuLabel: { type: String, attribute: "action-menu-label" },
+  customHr: { type: Boolean, attribute: "custom-hr" },
+  consonant: { type: Boolean, attribute: "consonant" },
+  failed: { type: Boolean, attribute: "failed", reflect: true },
+  spectrum: { type: String, attribute: "spectrum" },
+  detailBg: { type: String, attribute: "detail-bg" },
+  secureLabel: { type: String, attribute: "secure-label" },
+  checkboxLabel: { type: String, attribute: "checkbox-label" },
+  selected: { type: Boolean, attribute: "aria-selected", reflect: true },
+  storageOption: { type: String, attribute: "storage", reflect: true },
+  stockOfferOsis: {
+    type: Object,
+    attribute: "stock-offer-osis",
+    converter: {
+      fromAttribute: (value) => {
+        if (!value) return;
+        const [PUF, ABM, M2M] = value.split(",");
+        return { PUF, ABM, M2M };
+      }
+    }
+  },
+  filters: {
+    type: String,
+    reflect: true,
+    converter: {
+      fromAttribute: (value) => {
+        return Object.fromEntries(
+          value.split(",").map((filter) => {
+            const [key, order, size] = filter.split(":");
+            const value2 = Number(order);
+            return [
+              key,
+              {
+                order: isNaN(value2) ? void 0 : value2,
+                size
+              }
+            ];
+          })
+        );
+      },
+      toAttribute: (value) => {
+        return Object.entries(value).map(
+          ([key, { order, size }]) => [key, order, size].filter((v) => v != void 0).join(":")
+        ).join(",");
+      }
+    }
+  },
+  types: {
+    type: String,
+    attribute: "types",
+    reflect: true
+  },
+  merchOffer: { type: Object },
+  analyticsId: {
+    type: String,
+    attribute: ANALYTICS_SECTION_ATTR,
+    reflect: true
+  },
+  loading: { type: String }
+});
+__publicField(MerchCard, "styles", [styles, ...sizeStyles()]);
+__publicField(MerchCard, "registerVariant", registerVariant);
+__publicField(MerchCard, "getFragmentMapping", getFragmentMapping);
+customElements.define(MERCH_CARD, MerchCard);
+export {
+  MerchCard
+};
+//# sourceMappingURL=merch-card.js.map

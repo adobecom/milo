@@ -580,6 +580,12 @@ export function getMasPreview() {
   return window.isMasPreviewMode;
 }
 
+export function setPreview(attributes) {
+  const { host } = window.location;
+  if (host.includes(`${SLD}.page`) || host.includes('www.stage.adobe.com')) {
+    attributes.preview = 'on';
+  }
+}
 /**
  * Activates commerce service and returns a promise resolving to its ready-to-use instance.
  */
@@ -613,6 +619,7 @@ export async function initService(force = false, attributes = {}) {
     const { language, locale, country } = getMiloLocaleSettings(miloLocale);
     let service = document.head.querySelector('mas-commerce-service');
     if (!service) {
+      setPreview(attributes);
       service = createTag('mas-commerce-service', {
         locale,
         language,
