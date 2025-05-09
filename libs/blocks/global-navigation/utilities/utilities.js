@@ -502,12 +502,12 @@ export const transformTemplateToMobile = async (popup, item, localnav = false) =
   // promo and cross cloud menu section
   const promoAndCrossCloudMenuLinks = [...popup.querySelectorAll(`${selectors.gnavPromoWrapper}, ${selectors.crossCloudMenuLinks}`)];
   if (promoAndCrossCloudMenuLinks.length) {
-    const placeholder = await replaceKey('more', getFedsPlaceholderConfig());
+    const tabName = await replaceKey('more', getFedsPlaceholderConfig());
     tabs.push({
-      name: placeholder,
+      name: tabName,
       links: promoAndCrossCloudMenuLinks.map((x) => x.outerHTML).join(''),
-      daallTab: placeholder,
-      daalhTabContent: placeholder,
+      daallTab: tabName,
+      daalhTabContent: tabName,
     });
   }
   const CTA = popup.querySelector('.feds-cta--primary')?.outerHTML ?? '';
