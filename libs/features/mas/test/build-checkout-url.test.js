@@ -241,7 +241,7 @@ describe('buildCheckoutUrl', () => {
       clientId: 'testClient',
       country: 'US',
       marketSegment: 'EDU',
-      offerType: 'SUBSCRIPTION',
+      offerType: 'BASE',
       productArrangementCode: 'PAC123'
     };
     expect(() => buildCheckoutUrl(checkoutData)).to.not.throw();
@@ -249,8 +249,25 @@ describe('buildCheckoutUrl', () => {
     const parsedUrl = new URL(url);
     expect(parsedUrl.pathname).to.include('/store/segmentation');
     expect(parsedUrl.searchParams.get('ms')).to.equal('EDU');
-    expect(parsedUrl.searchParams.get('ot')).to.equal('SUBSCRIPTION');
+    expect(parsedUrl.searchParams.get('ot')).to.equal('BASE');
     expect(parsedUrl.searchParams.get('pa')).to.equal('PAC123');
+  });
+
+  it('should handle segmentation workflow step and ignore legacy PROMOTION offer type', () => {
+    const checkoutData = {
+      env: PROVIDER_ENVIRONMENT.PRODUCTION,
+      workflowStep: CheckoutWorkflowStep.SEGMENTATION,
+      clientId: 'testClient',
+      country: 'US',
+      marketSegment: 'EDU',
+      offerType: 'PROMOTION',
+      productArrangementCode: 'PAC123'
+    };
+    expect(() => buildCheckoutUrl(checkoutData)).to.not.throw();
+    const url = buildCheckoutUrl(checkoutData);
+    const parsedUrl = new URL(url);
+    expect(parsedUrl.pathname).to.include('/store/segmentation');
+    expect(parsedUrl.searchParams.has('ot')).to.be.false;
   });
 
   it('should handle quantity parameter for 3-in-1 modal when quantity > 1', () => {
@@ -283,22 +300,6 @@ describe('buildCheckoutUrl', () => {
     const url = buildCheckoutUrl(checkoutData);
     const parsedUrl = new URL(url);
     expect(parsedUrl.searchParams.has('q')).to.be.false;
-  });
-
-  it('should handle product arrangement code from items when not provided in root', () => {
-    const checkoutData = {
-      env: PROVIDER_ENVIRONMENT.PRODUCTION,
-      workflowStep: CheckoutWorkflowStep.SEGMENTATION,
-      clientId: 'testClient',
-      country: 'US',
-      items: [{ productArrangementCode: 'PAC123' }],
-      modal: 'twp',
-      customerSegment: 'INDIVIDUAL',
-      marketSegment: 'EDU'
-    };
-    const url = buildCheckoutUrl(checkoutData);
-    const parsedUrl = new URL(url);
-    expect(parsedUrl.searchParams.get('pa')).to.equal('PAC123');
   });
 
   it('should handle addon product arrangement code when root pa is provided', () => {

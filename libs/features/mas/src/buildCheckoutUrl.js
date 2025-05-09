@@ -72,6 +72,7 @@ const ALLOWED_KEYS = new Set([
   'so.va',
 ]);
 const REQUIRED_KEYS = ['env', 'workflowStep', 'clientId', 'country'];
+const OFFER_TYPES = ['BASE', 'TRIAL'];
 
 /**
  * Maps human-readable parameter name to the name expected by Checkout Page.
@@ -165,9 +166,10 @@ export function buildCheckoutUrl(checkoutData) {
   validateCheckoutData(checkoutData);
   const { env, items, workflowStep, ms, cs, marketSegment, customerSegment, ot, offerType, pa, productArrangementCode, landscape, modal, ...rest } =
     checkoutData;
+  const offerTypeVal = offerType ?? ot;
   const segmentationParameters = {
     marketSegment: marketSegment ?? ms,
-    offerType: offerType ?? ot,
+    offerType: OFFER_TYPES.includes(offerTypeVal) ? offerTypeVal : undefined,
     productArrangementCode: productArrangementCode ?? pa,
   };
   let url = new URL(getHostName(env));
@@ -184,12 +186,12 @@ export function buildCheckoutUrl(checkoutData) {
     url = add3in1Parameters({
       url,
       modal,
-      customerSegment: customerSegment ?? items?.[0]?.customerSegment,
-      marketSegment: marketSegment ?? items?.[0]?.marketSegment,
+      customerSegment,
+      marketSegment,
       cs,
       ms,
       quantity: items?.[0]?.quantity > 1 && items?.[0]?.quantity,
-      productArrangementCode: productArrangementCode ?? items?.[0]?.productArrangementCode,
+      productArrangementCode,
       addonProductArrangementCode: productArrangementCode 
       ? items?.find((item) => item.productArrangementCode !== productArrangementCode)?.productArrangementCode 
       : items?.[1]?.productArrangementCode,
