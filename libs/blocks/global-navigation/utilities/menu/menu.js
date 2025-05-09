@@ -22,21 +22,24 @@ const decorateHeadline = (elem, index) => {
   if (!(elem instanceof HTMLElement)) return null;
 
   const headline = toFragment`<div class="feds-menu-headline">
-      ${elem.textContent.trim()}
+      <span>${elem.textContent.trim()}</span>
     </div>`;
 
   const setHeadlineAttributes = () => {
+    const headlineElem = headline.querySelector('span');
     if (isDesktop.matches) {
-      headline.setAttribute('role', 'heading');
+      headline.removeAttribute('role');
+      headlineElem.setAttribute('role', 'heading');
       headline.removeAttribute('tabindex');
-      headline.setAttribute('aria-level', 2);
+      headlineElem.setAttribute('aria-level', 2);
       headline.removeAttribute('aria-haspopup', true);
       headline.removeAttribute('aria-expanded', false);
       headline.removeAttribute('daa-ll');
     } else {
       headline.setAttribute('role', 'button');
       headline.setAttribute('tabindex', 0);
-      headline.removeAttribute('aria-level');
+      headlineElem.removeAttribute('role');
+      headlineElem.removeAttribute('aria-level');
       headline.setAttribute('aria-haspopup', true);
       headline.setAttribute('aria-expanded', false);
       headline.setAttribute('daa-ll', getAnalyticsValue(headline.textContent, index));
