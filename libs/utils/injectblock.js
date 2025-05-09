@@ -7,9 +7,9 @@ export default async function injectBlock(blockNamesStr) {
   const mainEl = document.querySelector('main');
   if (!mainEl) return;
 
-  const blockNames = blockNamesStr.split(',').map(name => name.trim()).filter(Boolean);
+  const blockNames = blockNamesStr.split(',').map((name) => name.trim()).filter(Boolean);
 
-  await Promise.all(blockNames.map(blockName => {
+  await Promise.all(blockNames.map((blockName) => {
     const blockEl = createTag('div', { class: blockName });
     mainEl.appendChild(blockEl);
     return loadBlock(blockEl);

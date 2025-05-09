@@ -1,4 +1,4 @@
-import { createTag, getMetadata, MILO_EVENTS } from '../../utils/utils.js';
+import { createTag, getMetadata } from '../../utils/utils.js';
 import { getModal, closeModal } from '../modal/modal.js';
 import { iphoneFrame, ipadFrame } from './mobileFrames.js';
 
