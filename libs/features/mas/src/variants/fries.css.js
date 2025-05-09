@@ -98,4 +98,11 @@ export const CSS = `
         line-height: var(--consonant-merch-card-body-xs-line-height);
         font-weight: 400;
     }
+
+    merch-card[variant='fries'] .cta-confirmation {
+        color: var(--spectrum-global-color-green-700);
+        font-size: var(--consonant-merch-card-body-s-font-size);
+        font-weight: bold;
+        margin-left: 8px;
+    }
 `;

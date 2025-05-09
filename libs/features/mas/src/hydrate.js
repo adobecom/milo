@@ -2,7 +2,6 @@ import { UptLink } from './upt-link.js';
 import { createTag } from './utils.js';
 
 const DEFAULT_BADGE_COLOR = '#000000';
-const DEFAULT_PLANS_BADGE_COLOR = 'spectrum-yellow-300-plans';
 const DEFAULT_BADGE_BACKGROUND_COLOR = '#F8D904';
 const DEFAULT_BORDER_COLOR = '#EAEAEA';
 const DEFAULT_TRIAL_BADGE_BORDER_COLOR = '#31A547';
@@ -68,49 +67,57 @@ export function processMnemonics(fields, merchCard, mnemonicsConfig) {
 }
 
 function processBadge(fields, merchCard, mapping) {
-    if (fields.variant === 'plans' || fields.variant === 'plans-students' || fields.variant === 'fries') {
-        // for back-compatibility
+    if (mapping.badge?.slot) {
         if (fields.badge?.length && !fields.badge?.startsWith('<merch-badge')) {
-            const defaultBgColor = fields.variant === 'fries' 
-                ? (fields.badgeBackgroundColor || DEFAULT_BADGE_BACKGROUND_COLOR)
-                : DEFAULT_PLANS_BADGE_COLOR;
-                
-            fields.badge = `<merch-badge variant="${fields.variant}" background-color="${fields.badgeBackgroundColor || defaultBgColor}" border-color="${fields.borderColor || ""}">${fields.badge}</merch-badge>`;
-            
-            if (!fields.borderColor && fields.variant !== 'fries') {
-                fields.borderColor = DEFAULT_PLANS_BADGE_COLOR;
+            let badgeDefaultBgColor = DEFAULT_BADGE_BACKGROUND_COLOR;
+            let setBorderColorForBadge = false;
+
+            if (mapping.allowedBadgeColors?.includes(mapping.badge?.default)) {
+                badgeDefaultBgColor = mapping.badge?.default;
+                if (!fields.borderColor) {
+                    setBorderColorForBadge = true;
+                }
             }
+
+            const bgColorToUse = fields.badgeBackgroundColor || badgeDefaultBgColor;
+            let borderColorToUse = fields.borderColor || '';
+            if (setBorderColorForBadge) {
+                borderColorToUse = mapping.badge?.default;
+                fields.borderColor = mapping.badge?.default;
+            }
+            
+            fields.badge = `<merch-badge variant="${fields.variant}" background-color="${bgColorToUse}" border-color="${borderColorToUse}">${fields.badge}</merch-badge>`;
         }
         appendSlot('badge', fields, merchCard, mapping);
-        return;
-    }
-
-    if (fields.badge) {
-        merchCard.setAttribute('badge-text', fields.badge);
-        merchCard.setAttribute(
-            'badge-color',
-            fields.badgeColor || DEFAULT_BADGE_COLOR,
-        );
-        merchCard.setAttribute(
-            'badge-background-color',
-            fields.badgeBackgroundColor || DEFAULT_BADGE_BACKGROUND_COLOR,
-        );
-        merchCard.setAttribute(
-            'border-color',
-            fields.badgeBackgroundColor || DEFAULT_BADGE_BACKGROUND_COLOR,
-        );
     } else {
-        merchCard.setAttribute(
-            'border-color',
-            fields.borderColor || DEFAULT_BORDER_COLOR,
-        );
+        if (fields.badge) {
+            merchCard.setAttribute('badge-text', fields.badge);
+            merchCard.setAttribute(
+                'badge-color',
+                fields.badgeColor || DEFAULT_BADGE_COLOR,
+            );
+            merchCard.setAttribute(
+                'badge-background-color',
+                fields.badgeBackgroundColor || DEFAULT_BADGE_BACKGROUND_COLOR,
+            );
+            merchCard.setAttribute(
+                'border-color',
+                fields.badgeBackgroundColor || DEFAULT_BADGE_BACKGROUND_COLOR,
+            );
+        } else {
+            merchCard.setAttribute(
+                'border-color',
+                fields.borderColor || DEFAULT_BORDER_COLOR,
+            );
+        }
     }
 }
 
 export function processTrialBadge(fields, merchCard, mapping) {
-    if (fields.variant === 'fries' && fields.trialBadge) {
+    if (mapping.trialBadge && fields.trialBadge) {
         if (!fields.trialBadge.startsWith('<merch-badge')) {
-            fields.trialBadge = `<merch-badge variant="${fields.variant}" border-color="${fields.trialBadgeBorderColor || DEFAULT_TRIAL_BADGE_BORDER_COLOR}">${fields.trialBadge}</merch-badge>`;
+            const borderColorToUse = fields.trialBadgeBorderColor || DEFAULT_TRIAL_BADGE_BORDER_COLOR;
+            fields.trialBadge = `<merch-badge variant="${fields.variant}" border-color="${borderColorToUse}">${fields.trialBadge}</merch-badge>`;
         }
         appendSlot('trialBadge', fields, merchCard, mapping);
     }
@@ -123,7 +130,6 @@ export function processSize(fields, merchCard, sizeConfig) {
 }
 
 export function processTitle(fields, merchCard, titleConfig) {
-    // Use the enhanced appendSlot function for consistency
     appendSlot('cardTitle', fields, merchCard, { cardTitle: titleConfig });
 }
 
@@ -131,7 +137,7 @@ export function processSubtitle(fields, merchCard, mapping) {
     appendSlot('subtitle', fields, merchCard, mapping);
 }
 
-export function processBackgroundColor(fields, merchCard, allowedColors) {
+export function processBackgroundColor(fields, merchCard, allowedColors, backgroundColorConfig) {
     if (
         !fields.backgroundColor ||
         fields.backgroundColor.toLowerCase() === 'default'
@@ -147,15 +153,21 @@ export function processBackgroundColor(fields, merchCard, allowedColors) {
             `var(${allowedColors[fields.backgroundColor]})`,
         );
         merchCard.setAttribute('background-color', fields.backgroundColor);
+    } else if (backgroundColorConfig?.attribute && fields.backgroundColor) {
+        merchCard.setAttribute(backgroundColorConfig.attribute, fields.backgroundColor);
+        merchCard.style.removeProperty('--merch-card-custom-background-color');
     }
 }
 
-export function processBorderColor(fields, merchCard, borderColorConfig) {
+export function processBorderColor(fields, merchCard, variantMapping) {
+    const borderColorConfig = variantMapping.borderColor;
     const customBorderColor = '--merch-card-custom-border-color';
+
     if (fields.borderColor?.toLowerCase() === 'transparent') {
         merchCard.style.removeProperty(customBorderColor);
-        if (fields.variant === 'plans')
+        if (variantMapping.allowedBorderColors?.includes(variantMapping.badge?.default)) {
             merchCard.style.setProperty(customBorderColor, 'transparent');
+        }
     } else if (fields.borderColor && borderColorConfig) {
         if (/-gradient/.test(fields.borderColor)) {
             merchCard.setAttribute('gradient-border', 'true');
@@ -498,45 +510,58 @@ export function cleanup(merchCard) {
 }
 
 export async function hydrate(fragment, merchCard) {
+    // Guard against missing fragment or fragment.fields
+    if (!fragment) {
+        const cardIdForError = merchCard?.id || 'unknown';
+        console.error(`hydrate: Fragment is undefined. Cannot hydrate card (merchCard id: ${cardIdForError}).`);
+        throw new Error(`hydrate: Fragment is undefined for card (merchCard id: ${cardIdForError}).`);
+    }
+    if (!fragment.fields) {
+        const problemId = fragment.id || 'unknown';
+        const cardIdForError = merchCard?.id || 'unknown';
+        console.error(`hydrate: Fragment for card ID '${problemId}' (merchCard id: ${cardIdForError}) is missing 'fields'. Cannot hydrate.`);
+        throw new Error(`hydrate: Fragment for card ID '${problemId}' (merchCard id: ${cardIdForError}) is missing 'fields'.`);
+    }
+
     const { id, fields, settings = {} } = fragment;
     const { variant } = fields;
-    if (!variant) throw new Error (`hydrate: no variant found in payload ${id}`);
+    if (!variant) throw new Error (`hydrate: 'variant' property is missing or empty in fields for payload ID '${id}'.`);
+
     cleanup(merchCard);
     merchCard.settings = settings;
     merchCard.id ??= fragment.id;
     merchCard.variant = variant;
     await merchCard.updateComplete;
 
-    const { aemFragmentMapping } = merchCard.variantLayout;
-    if (!aemFragmentMapping)
-        throw new Error(`hydrate: aemFragmentMapping found for ${id}`);
+    const { aemFragmentMapping: mapping } = merchCard.variantLayout;
+    if (!mapping) throw new Error (`hydrate: variant mapping not found for ${id}`);
 
-    if (aemFragmentMapping.style === 'consonant') {
+    if (mapping.style === 'consonant') {
         merchCard.setAttribute('consonant', true);
     }
-    processMnemonics(fields, merchCard, aemFragmentMapping.mnemonics);
-    processBadge(fields, merchCard, aemFragmentMapping);
-    processTrialBadge(fields, merchCard, aemFragmentMapping);
-    processSize(fields, merchCard, aemFragmentMapping.size);
-    processTitle(fields, merchCard, aemFragmentMapping.title);
-    processSubtitle(fields, merchCard, aemFragmentMapping);
-    processPrices(fields, merchCard, aemFragmentMapping);
+    processMnemonics(fields, merchCard, mapping.mnemonics);
+    processBadge(fields, merchCard, mapping);
+    processTrialBadge(fields, merchCard, mapping);
+    processSize(fields, merchCard, mapping.size);
+    processTitle(fields, merchCard, mapping.title);
+    processSubtitle(fields, merchCard, mapping);
+    processPrices(fields, merchCard, mapping);
     processBackgroundImage(
         fields,
         merchCard,
-        aemFragmentMapping.backgroundImage,
+        mapping.backgroundImage,
     );
-    processBackgroundColor(fields, merchCard, aemFragmentMapping.allowedColors);
-    processBorderColor(fields, merchCard, aemFragmentMapping.borderColor);
-    processDescription(fields, merchCard, aemFragmentMapping);
+    processBackgroundColor(fields, merchCard, mapping.allowedColors, mapping.backgroundColor);
+    processBorderColor(fields, merchCard, mapping);
+    processDescription(fields, merchCard, mapping);
     processStockOffersAndSecureLabel(
         fields,
         merchCard,
-        aemFragmentMapping,
+        mapping,
         settings,
     );
     processUptLinks(fields, merchCard);
-    processCTAs(fields, merchCard, aemFragmentMapping, variant);
+    processCTAs(fields, merchCard, mapping, variant);
     processAnalytics(fields, merchCard);
     updateLinksCSS(merchCard);
 }

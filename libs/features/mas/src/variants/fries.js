@@ -30,6 +30,65 @@ export class FriesCard extends VariantLayout {
         return FRIES_AEM_FRAGMENT_MAPPING;
     }
 
+    handleCtaClick(event) {
+        const clickedButton = event.target.closest('a, button, sp-button');
+
+        if (!clickedButton || clickedButton.dataset.ctaToggleText === undefined) {
+            return; // Not a toggleable button or no toggle text defined
+        }
+
+        // Verify the clicked button is within our 'cta' slot
+        const ctaSlot = this.shadowRoot.querySelector('slot[name="cta"]');
+        if (!ctaSlot) return;
+        const assignedNodes = ctaSlot.assignedNodes({ flatten: true });
+        let isButtonInSlot = false;
+        for (const node of assignedNodes) {
+            if (node === clickedButton || (node.nodeType === Node.ELEMENT_NODE && node.contains(clickedButton))) {
+                isButtonInSlot = true;
+                break;
+            }
+        }
+        if (!isButtonInSlot) return;
+
+        event.stopPropagation(); // Prevent further event bubbling if needed
+
+        const toggleText = clickedButton.dataset.ctaToggleText;
+        let isToggled = clickedButton.dataset.isToggled === 'true';
+
+        // Find the associated confirmation span
+        let confirmationSpan = null;
+        if (clickedButton.nextElementSibling && clickedButton.nextElementSibling.classList.contains('cta-confirmation')) {
+            confirmationSpan = clickedButton.nextElementSibling;
+        } else if (clickedButton.parentElement) {
+            // Search for a .cta-confirmation among the parent's children
+            confirmationSpan = Array.from(clickedButton.parentElement.children)
+                .find(child => child.classList.contains('cta-confirmation'));
+        }
+
+        isToggled = !isToggled; // Flip the state
+
+        if (isToggled) {
+            if (clickedButton.dataset.originalText === undefined) {
+                clickedButton.dataset.originalText = clickedButton.textContent;
+            }
+            if (toggleText && toggleText.trim() !== '') {
+                clickedButton.textContent = toggleText;
+            }
+            if (confirmationSpan) {
+                confirmationSpan.style.display = ''; // Show (remove display:none)
+            }
+        } else {
+            if (clickedButton.dataset.originalText !== undefined) {
+                clickedButton.textContent = clickedButton.dataset.originalText;
+            }
+            if (confirmationSpan) {
+                confirmationSpan.style.display = 'none'; // Hide
+            }
+        }
+        clickedButton.dataset.isToggled = isToggled ? 'true' : 'false';
+        
+    }
+
     renderLayout() {
         return html`
             <div class="content">
@@ -40,7 +99,7 @@ export class FriesCard extends VariantLayout {
                 </div>
                 <slot name="badge"></slot>
                 <slot name="body-s"></slot>
-                <div class="footer">
+                <div class="footer" @click=\${this.handleCtaClick}>
                     <slot name="cta"></slot>
                     <slot name="price"></slot>
                 </div>
@@ -109,6 +168,12 @@ export class FriesCard extends VariantLayout {
           align-items: end;
           width: 100%;
           justify-content: space-between;
+        }
+
+        :host([variant='fries']) .cta-container {
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
     `;
 }
