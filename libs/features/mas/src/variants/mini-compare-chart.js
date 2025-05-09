@@ -55,7 +55,7 @@ export class MiniCompareChart extends VariantLayout {
     if (this.card.classList.contains('bullet-list')) {
         slots.push('footer-rows');
     }
-  
+
     slots.forEach((slot) =>
         this.updateCardElementMinHeight(
             this.card.shadowRoot.querySelector(`slot[name="${slot}"]`),
@@ -196,10 +196,10 @@ async adjustAddon() {
         <slot name="footer-rows"><slot name="body-s"></slot></slot>`;
   }
   async postCardUpdateHook() {
-    if (!isMobile()) {
-      await Promise.all(this.card.prices.map((price) => price.onceSettled()));
+    await Promise.all(this.card.prices.map((price) => price.onceSettled()));
+    await this.adjustAddon();
+    if (!isMobile()) {   
       this.adjustMiniCompareBodySlots();
-      this.adjustAddon();
       this.adjustMiniCompareFooterRows();
     } else {
       this.removeEmptyRows();
@@ -292,6 +292,11 @@ async adjustAddon() {
     :host([variant='mini-compare-chart']) slot[name='callout-content'] {
         min-height: var(
             --consonant-merch-card-mini-compare-chart-callout-content-height
+        );
+    }
+    :host([variant='mini-compare-chart']) slot[name='addon'] {
+        min-height: var(
+            --consonant-merch-card-mini-compare-chart-addon-height
         );
     }
     :host([variant='mini-compare-chart']) slot[name='footer-rows'] {
