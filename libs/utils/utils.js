@@ -1552,6 +1552,11 @@ function decorateDocumentExtras() {
 }
 
 async function documentPostSectionLoading(config) {
+  const injectBlock = getMetadata('injectblock');
+  if (injectBlock) {
+    import('./injectblock.js').then((module) => module.default(injectBlock));
+  }
+
   decorateFooterPromo();
   if (getMetadata('seotech-structured-data') === 'on' || getMetadata('seotech-video-url')) {
     import('../features/seotech/seotech.js').then((module) => module.default(
