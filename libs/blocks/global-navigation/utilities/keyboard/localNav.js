@@ -3,13 +3,25 @@ import { trigger } from '../utilities.js';
 
 const focusables = (root) => [...root.querySelectorAll('a[href],button:not([disabled])')];
 
+const nestedFocusables = (root) => [...root.querySelectorAll('a, button, .feds-menu-headline')].filter((el) => {
+  const items = el.closest('.feds-menu-items');
+  const headline = items?.previousElementSibling;
+  return !items || headline?.getAttribute('aria-expanded') === 'true';
+});
+
 function getNavList() {
   return [...document.querySelector('.feds-localnav-items').children].flatMap((item) => {
-    const triggerBtn = item.querySelector('a,button');
-    if (!triggerBtn) return [];
-    const dropdown = triggerBtn.matches('[aria-haspopup="true"][aria-expanded="true"]')
-      ? focusables(item.querySelector('.feds-popup'))
-      : [];
+    const triggerBtn = item.querySelector('a, button, .feds-menu-headline');
+    if (!triggerBtn || !triggerBtn.matches('[aria-haspopup="true"][aria-expanded="true"]')) return triggerBtn ? [triggerBtn] : [];
+
+    const popup = item.querySelector('.feds-popup');
+    if (!popup) return [triggerBtn];
+
+    const hasHeadline = item.querySelector('.feds-menu-items');
+    const dropdown = hasHeadline
+      ? nestedFocusables(popup)
+      : focusables(popup);
+
     return [triggerBtn, ...dropdown];
   });
 }
@@ -35,7 +47,7 @@ function open({ triggerEl, e } = {}) {
   if (!el?.hasAttribute('aria-haspopup')) return;
   if (e) e.preventDefault();
   if (el.getAttribute('aria-expanded') === 'false') {
-    const isHeader = el.classList.contains('feds-localnav-title');
+    const isHeader = el.classList.contains('feds-localnav-title') || el.classList.contains('feds-menu-headline');
     if (isHeader) document.querySelector(selectors.localNav).classList.add('feds-localnav--active');
     trigger({ element: el, type: isHeader ? 'headline' : 'localNavItem' });
   }
@@ -66,7 +78,8 @@ function navigate(current, dir) {
     open({ triggerEl: next });
     // Focus on last item of the dropdown if arrow up
     if (dir === -1 && collapsed) {
-      const dropdownItems = focusables(next.parentElement.querySelector('.feds-popup'));
+      const hasHeadline = next.parentElement.querySelector('.feds-menu-items');
+      const dropdownItems = hasHeadline ? nestedFocusables(next.parentElement) : focusables(next.parentElement.querySelector('.feds-popup'));
       dropdownItems.at(-1)?.focus();
     }
   }
