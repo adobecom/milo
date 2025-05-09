@@ -506,18 +506,22 @@ class Gnav {
         tags: 'gnav',
         errorType: 'i',
       });
-      localNav = toFragment`<div class="feds-localnav" aria-hidden="true"/>`;
+      localNav = toFragment`<div class="feds-localnav"/>`;
       this.block.after(localNav);
     }
     localNav.setAttribute('daa-lh', `${title}_localNav`);
-    localNav.append(toFragment`<button class="feds-navLink--hoverCaret feds-localnav-title" aria-haspopup="true" aria-expanded="false" daa-ll="${title}_localNav|open"></button>`, toFragment` <div class="feds-localnav-curtain"></div>`, toFragment` <div class="feds-localnav-items" inert></div>`, toFragment`<a href="#" class="feds-sr-only feds-localnav-exit">.</a>`);
+    localNav.append(toFragment`<button class="feds-navLink--hoverCaret feds-localnav-title" aria-haspopup="true" aria-expanded="false" daa-ll="${title}_localNav|open"></button>`, toFragment` <div class="feds-localnav-curtain"></div>`, toFragment` <div class="feds-localnav-items"></div>`, toFragment`<a href="#" class="feds-sr-only feds-localnav-exit">.</a>`);
 
     const itemWrapper = localNav.querySelector('.feds-localnav-items');
     const localNavTitle = document.querySelector('.feds-localnav-title');
     // Skip keyboard navigation on localnav items if it is closed
     const observer = new MutationObserver(() => {
       const isExpanded = localNavTitle.getAttribute('aria-expanded') === 'true';
-      itemWrapper.toggleAttribute('inert', !isExpanded);
+      itemWrapper.toggleAttribute('aria-hidden', !isExpanded);
+      [...itemWrapper.childNodes].forEach(node => {
+        node.querySelector('a, button').toggleAttribute('aria-hidden', !isExpanded);
+        node.querySelector('a, button').setAttribute('tabindex', isExpanded ? '0' : '-1');
+      })
     });
     observer.observe(localNavTitle, { attributes: true, attributeFilter: ['aria-expanded'] });
 
@@ -1237,6 +1241,8 @@ class Gnav {
       const elements = [...document.querySelectorAll('.feds-localnav .feds-navItem')].find(
         (el) => {
           const link = el.querySelector('a, button');
+          link.setAttribute('tabindex', '-1');
+          link.setAttribute('aria-hidden', true);
           return link.dataset.title?.trim() === navItem.textContent;
         },
       );
