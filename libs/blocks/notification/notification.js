@@ -90,15 +90,13 @@ function addCloseAction(el, btn) {
   btn.addEventListener('click', (e) => {
     if (btn.nodeName === 'A') e.preventDefault();
 
-    // Create accessibility live region
     const liveRegion = createTag('div', {
       class: 'notification-visibility-hidden',
       'aria-live': 'assertive',
       'aria-atomic': 'true',
       role: 'status',
       tabindex: '-1',
-    });
-    liveRegion.textContent = 'Banner closed';
+    }, 'Banner closed');
     document.body.appendChild(liveRegion);
     liveRegion.focus();
     let isSticky = false;
@@ -141,18 +139,16 @@ function addCloseAction(el, btn) {
         focusTarget = findFocusableInSection(stickySection);
       }
 
-      let currentSection = el.closest('.section').previousElementSibling;
+      let currentSection = el.closest('.section')?.previousElementSibling;
       while (currentSection && !focusTarget) {
         focusTarget = findFocusableInSection(currentSection);
         if (!focusTarget) currentSection = currentSection.previousElementSibling;
       }
 
-      if (!focusTarget) {
-        const header = document.querySelector('header');
-        if (header) {
-          const headerFocusable = [...header.querySelectorAll(focusableSelector)];
-          focusTarget = headerFocusable[headerFocusable.length - 1];
-        }
+      const header = document.querySelector('header');
+      if (!focusTarget && header) {
+        const headerFocusable = [...header.querySelectorAll(focusableSelector)];
+        focusTarget = headerFocusable[headerFocusable.length - 1];
       }
 
       liveRegion?.remove();
