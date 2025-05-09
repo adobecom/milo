@@ -119,7 +119,19 @@ function configTabs(config, rootElem) {
       sel.click();
     }
   }
-  const tabParam = new URLSearchParams(window.location.search).get('tab');
+
+  const params = new URLSearchParams(window.location.search);
+  // Deeplink with a custom id parameter, e.g. ?plans=edu
+  const deeplinkParam = params.get(config.id);
+  if (deeplinkParam) {
+    const tabBtn = rootElem.querySelector(`[data-deeplink="${deeplinkParam}"]`);
+    if (tabBtn) {
+      tabBtn.click();
+      return;
+    }
+  }
+  // Deeplink with tab parameter, e.g. ?tab=plans-2
+  const tabParam = params.get('tab');
   if (!tabParam) return;
   const dashIndex = tabParam.lastIndexOf('-');
   const [tabsId, tabIndex] = [tabParam.substring(0, dashIndex), tabParam.substring(dashIndex + 1)];
@@ -339,7 +351,7 @@ const init = (block) => {
     const metaSettings = {};
     sectionMetadata.querySelectorAll(':scope > div').forEach((row) => {
       const key = getStringKeyName(row.children[0].textContent);
-      if (!['tab', 'tab-background', 'link'].includes(key)) return;
+      if (!['tab', 'tab-background', 'link', 'deeplink'].includes(key)) return;
       const val = row.children[1].textContent;
       if (!val) return;
       metaSettings[key] = val;
@@ -347,6 +359,8 @@ const init = (block) => {
     if (!metaSettings.tab) return;
     let id = tabId;
     let val = getStringKeyName(metaSettings.tab);
+    const assotiatedTabButton = rootElem.querySelector(`#tab-${val}`);
+    assotiatedTabButton?.setAttribute('data-deeplink', metaSettings.deeplink);
     let assocTabItem = rootElem.querySelector(`#tab-panel-${id}-${val}`);
     if (config.id) {
       const values = metaSettings.tab.split(',');

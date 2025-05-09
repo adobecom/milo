@@ -175,4 +175,44 @@ test.describe('Milo Tab block feature test suite', () => {
       await expect(await page.url()).toContain('tabs-page-1');
     });
   });
+
+  // Test 4 : Tabs with custom deeplink
+  test(`[Test Id - ${features[4].tcid}] ${features[4].name},${features[4].tags}`, async ({ page, baseURL }) => {
+    console.info(`[Test Page]: ${baseURL}${features[4].path}${miloLibs}`);
+    const { data } = features[4];
+
+    await test.step('step-1: Go to Tabs Deeplink test page', async () => {
+      await page.goto(`${baseURL}${features[4].path}${miloLibs}`);
+      await page.waitForLoadState('domcontentloaded');
+      await expect(page).toHaveURL(`${baseURL}${features[4].path}${miloLibs}`);
+      // verify default tab contents
+      await expect(await tab.tab2).toHaveAttribute('aria-selected', 'true');
+      await expect(await tab.tab2Panel).toBeVisible();
+    });
+
+    await test.step('step-2: Verify tab selection based on custom deeplink parameter', async () => {
+      const newUrl = new URL(page.url());
+      newUrl.searchParams.set('plans', data.deeplinkValue);
+      await page.goto(newUrl.toString());
+      await page.waitForLoadState('domcontentloaded');
+
+      // Verify the correct tab is selected based on deeplink
+      const selectedTab = await tab.tab3;
+      await expect(selectedTab).toHaveAttribute('aria-selected', 'true');
+      await expect(selectedTab).toHaveAttribute('data-deeplink', data.deeplinkValue);
+      await expect(await tab.tab3Panel).toBeVisible();
+    });
+
+    await test.step('step-3: Verify fallback to tab parameter when deeplink is not found', async () => {
+      const newUrl = new URL(page.url());
+      newUrl.searchParams.delete('plans');
+      newUrl.searchParams.set('tab', 'plans-1');
+      await page.goto(newUrl.toString());
+      await page.waitForLoadState('domcontentloaded');
+
+      // Verify the correct tab is selected based on tab parameter
+      await expect(await tab.tab1).toHaveAttribute('aria-selected', 'true');
+      await expect(await tab.tab1Panel).toBeVisible();
+    });
+  });
 });
