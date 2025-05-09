@@ -953,7 +953,7 @@ merch-card .footer-row-cell:nth-child(8) {
         <slot name="callout-content"></slot>
         <slot name="addon"></slot>
         ${this.getMiniCompareFooter()}
-        <slot name="footer-rows"><slot name="body-s"></slot></slot>`}async postCardUpdateHook(){wt()?this.removeEmptyRows():(await Promise.all(this.card.prices.map(r=>r.onceSettled())),this.adjustMiniCompareBodySlots(),this.adjustAddon(),this.adjustMiniCompareFooterRows())}};m(It,"variantStyle",y`
+        <slot name="footer-rows"><slot name="body-s"></slot></slot>`}async postCardUpdateHook(){await Promise.all(this.card.prices.map(r=>r.onceSettled())),await this.adjustAddon(),wt()?this.removeEmptyRows():(this.adjustMiniCompareBodySlots(),this.adjustMiniCompareFooterRows())}};m(It,"variantStyle",y`
     :host([variant='mini-compare-chart']) > slot:not([name='icons']) {
         display: block;
     }
@@ -1040,6 +1040,11 @@ merch-card .footer-row-cell:nth-child(8) {
     :host([variant='mini-compare-chart']) slot[name='callout-content'] {
         min-height: var(
             --consonant-merch-card-mini-compare-chart-callout-content-height
+        );
+    }
+    :host([variant='mini-compare-chart']) slot[name='addon'] {
+        min-height: var(
+            --consonant-merch-card-mini-compare-chart-addon-height
         );
     }
     :host([variant='mini-compare-chart']) slot[name='footer-rows'] {
