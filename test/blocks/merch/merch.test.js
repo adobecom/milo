@@ -716,6 +716,22 @@ describe('Merch Block', () => {
       expect(action).to.be.undefined;
     });
 
+    it('getModalAction: returns undefined if 3in1 is off and modal is not true', async () => {
+      const meta = document.createElement('meta');
+      meta.setAttribute('name', 'mas-ff-3in1');
+      meta.setAttribute('content', 'off');
+      document.getElementsByTagName('head')[0].appendChild(meta);
+      setConfig({
+        ...config,
+        prodDomains: PROD_DOMAINS,
+      });
+      fetchCheckoutLinkConfigs.promise = undefined;
+      setCheckoutLinkConfigs(CHECKOUT_LINK_CONFIGS);
+      const action = await getModalAction([{ productArrangement: { productFamily: 'PHOTOSHOP' } }], { modal: 'crm' });
+      expect(action).to.be.undefined;
+      document.getElementsByTagName('head')[0].removeChild(meta);
+    });
+
     it('getModalAction: localize buy now path if it comes from us/en production', async () => {
       setConfig({
         ...config,
