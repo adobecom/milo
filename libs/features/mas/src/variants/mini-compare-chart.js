@@ -196,10 +196,10 @@ async adjustAddon() {
         <slot name="footer-rows"><slot name="body-s"></slot></slot>`;
   }
   async postCardUpdateHook() {
+    await Promise.all(this.card.prices.map((price) => price.onceSettled()));
+    this.adjustAddon();
     if (!isMobile()) {
-      await Promise.all(this.card.prices.map((price) => price.onceSettled()));
       this.adjustMiniCompareBodySlots();
-      this.adjustAddon();
       this.adjustMiniCompareFooterRows();
     } else {
       this.removeEmptyRows();
