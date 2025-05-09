@@ -23,7 +23,7 @@ const SIGNEDOUT_EL = BODY.querySelector('.status-signed-out');
 
 const LS_KEY = 'bulk-publish-caas';
 const FIELDS = ['presetSelector', 'host', 'repo', 'owner', 'caasEnv', 'urls', 'contentType', 'publishToFloodgate'];
-const FIELDS_CB = ['draftOnly', 'useHtml', 'usePreview'];
+const FIELDS_CB = ['draftOnly', 'useHtml', 'usePreview', 'languageFirst'];
 const DEFAULT_VALUES = {
   preset: 'default',
   caasEnv: 'prod',
@@ -39,6 +39,7 @@ const DEFAULT_VALUES_CB = {
   draftOnly: false,
   usePreview: false,
   useHtml: false,
+  languageFirst: false,
 };
 
 // Hold the selected preset data
@@ -173,6 +174,7 @@ const processData = async (data, accessToken) => {
     usePreview,
     previewHost,
     publishToFloodgate,
+    languageFirst,
   } = getConfig();
 
   if (!repo) {
@@ -212,6 +214,7 @@ const processData = async (data, accessToken) => {
       const { caasMetadata, errors } = await getCardMetadata({
         prodUrl,
         floodgatecolor: publishToFloodgate,
+        languageFirst,
       });
 
       if (errors.length) {
@@ -339,6 +342,7 @@ const resetAdvancedOptions = () => {
   draftOnly.checked = false;
   useHtml.checked = false;
   usePreview.checked = false;
+  languageFirst.checked = false;
   publishToFloodgate.value = 'default';
   /* eslint-enable no-undef */
 };
@@ -383,6 +387,7 @@ presetSelector.addEventListener('change', () => {
   config.owner = selectedPreset.owner || '';
   config.repo = selectedPreset.repo || '';
   config.useHtml = selectedPreset.useHtml === 'true';
+  config.languageFirst = selectedPreset.languageFirst === 'false';
   if (selectedPreset.contentType === '' || selectedPreset.contentType?.toLowerCase() === 'auto') {
     config.contentType = '';
   } else {
@@ -550,7 +555,16 @@ helpButtons.forEach((btn) => {
           </p>
           <p>This can be useful for testing before publishing content to production.</p>`);
         break;
-
+      case 'language-first':
+        showAlert(`<p><b>Language First</b></p>
+          <p>When this option is checked, the tool will publish the content using language-first localization:</p>
+          <p>For example:<br>
+            <tt> - https://www.adobe.com/en/news/2025/05/08/adobe-announces-new-features-for-adobe-stock.html will be published as en-xx</tt><br>
+            <tt> - https://www.adobe.com/en/apac/news/2025/05/08/adobe-announces-new-features-for-adobe-stock.html will be published as en-apac</tt><br>
+            <tt> - https://www.adobe.com/fr/news/2025/05/08/adobe-announces-new-features-for-adobe-stock.html will be published as fr-xx  </tt><br>
+            <tt> - https://www.adobe.com/de/news/2025/05/08/adobe-announces-new-features-for-adobe-stock.html will be published as de-xx</tt><br>
+          </p>`);
+        break;
       default:
         showAlert(`<p><b>Help</b><p>Help for "${el}" is on its way! Stay tuned.</p>`);
         break;
@@ -605,6 +619,7 @@ const init = async () => {
       draftOnly: document.getElementById('draftOnly').checked,
       useHtml: document.getElementById('useHtml').checked,
       usePreview: document.getElementById('usePreview').checked,
+      languageFirst: document.getElementById('languageFirst').checked,
     });
     bulkPublish();
   });

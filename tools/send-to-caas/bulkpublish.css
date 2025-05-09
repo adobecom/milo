@@ -72,6 +72,12 @@ dd.content h3 {
   font-weight: 500;
 }
 
+dd.content h4 {
+  font-size: 16px;
+  font-weight: 400;
+  margin: 5px 20px 10px;
+}
+
 dd.content .field {
   padding: 0 20px;
   margin: 12px 0
@@ -185,9 +191,15 @@ body.preset .preset-options .help {
   display: none;
 }
 
-body.advanced .preset-options,
-body.advanced .advanced-options {
+body.advanced .preset-options {
   height: 368px;
+}
+
+body.advanced .advanced-options {
+  height: 440px;
+}
+
+body.advanced .preset-options {
   border-width: 1px;
   border: solid 1px #aaa;
   border-radius: 10px;
