@@ -35,10 +35,6 @@ export async function checkReady(masElement) {
 
 export async function createCard(el, options) {
   const aemFragment = createTag('aem-fragment', { fragment: options.fragment });
-  const preview = getMasPreview();
-  if (preview) {
-    aemFragment.setAttribute('preview', preview);
-  }
   const merchCard = createTag('merch-card', { consonant: '' }, aemFragment);
   el.replaceWith(merchCard);
   await checkReady(merchCard);

@@ -107,10 +107,6 @@ export async function checkReady(masElement) {
 
 export async function createCollection(el, options) {
   const aemFragment = createTag('aem-fragment', { fragment: options.fragment });
-  const preview = getMasPreview();
-  if (preview) {
-    aemFragment.setAttribute('preview', preview);
-  }
   // Get MEP overrides if available
   const { mep } = getConfig();
   const mepFragments = mep?.inBlock?.[MEP_SELECTOR]?.fragments || {};

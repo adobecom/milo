@@ -572,14 +572,6 @@ export async function getCheckoutAction(offers, options, imsSignedInPromise, el)
   }
 }
 
-export function getMasPreview() {
-  if (window.isMasPreviewMode !== undefined) return window.isMasPreviewMode;
-  const searchParams = new URLSearchParams(window.location.search);
-  window.isMasPreviewMode = searchParams.get('masPreview')
-    || window.localStorage.getItem('masPreview');
-  return window.isMasPreviewMode;
-}
-
 export function setPreview(attributes) {
   const { host } = window.location;
   if (host.includes(`${SLD}.page`) || host.includes('www.stage.adobe.com')) {
