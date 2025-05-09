@@ -506,7 +506,7 @@ class Gnav {
         tags: 'gnav',
         errorType: 'i',
       });
-      localNav = toFragment`<div class="feds-localnav"/>`;
+      localNav = toFragment`<div class="feds-localnav" aria-hidden="true"/>`;
       this.block.after(localNav);
     }
     localNav.setAttribute('daa-lh', `${title}_localNav`);
