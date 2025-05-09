@@ -334,7 +334,7 @@ function createCheckBoxFilterGroup(checkBoxId, legendLabel, optionsObj) {
   const checkBoxFieldset = createTag('fieldset', { id: `mmm-${checkBoxId}-fieldset` }, checkBoxLegend);
   // helper function only ran during filter build. consider moving to outter lex scope
   function createCheckBox(groupName, checkboxLabel, checkboxValue) {
-    const initValueCheck = SEARCH_INITIAL_VALUES()?.[groupName]?.split(', ').includes(checkboxValue);
+    const initValueCheck = !SEARCH_INITIAL_VALUES()?.[groupName] || SEARCH_INITIAL_VALUES()?.[groupName]?.split(', ').includes(checkboxValue);
     const checkDiv = createTag('div', { class: 'mmm-checkbox-option' });
     const checkLabel = createTag('label', { for: `mmm-${groupName}-${checkboxValue}` }, checkboxLabel);
     const checkBox = createTag('input', {
