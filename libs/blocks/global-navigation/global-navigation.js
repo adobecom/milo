@@ -520,9 +520,8 @@ class Gnav {
       itemWrapper.toggleAttribute('inert', !isExpanded);
     });
     observer.observe(localNavTitle, { attributes: true, attributeFilter: ['aria-expanded'] });
-    
-    const titleLabel = await replaceKey('overview', getFedsPlaceholderConfig());
 
+    const titleLabel = await replaceKey('overview', getFedsPlaceholderConfig());
     localNavItems.forEach((elem, idx) => {
       const clonedItem = elem.cloneNode(true);
       const link = clonedItem.querySelector('a, button');
