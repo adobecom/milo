@@ -2,13 +2,14 @@ const {
   slackNotification,
   getLocalConfigs,
   isWithinRCP,
+  isWithinPrePostRCP,
   pulls: { addLabels, addFiles, getChecks, getReviews },
 } = require('./helpers.js');
 
 // Run from the root of the project for local testing: node --env-file=.env .github/workflows/merge-to-stage.js
 const PR_TITLE = '[Release] Stage to Main';
 const REQUIRED_APPROVALS = process.env.REQUIRED_APPROVALS ? Number(process.env.REQUIRED_APPROVALS) : 2;
-const MAX_MERGES = process.env.MAX_PRS_PER_BATCH ? Number(process.env.MAX_PRS_PER_BATCH) : 8;
+const BASE_MAX_MERGES = process.env.MAX_PRS_PER_BATCH ? Number(process.env.MAX_PRS_PER_BATCH) : 9;
 let existingPRCount = 0;
 const STAGE = 'stage';
 const PROD = 'main';
@@ -203,7 +204,12 @@ const openStageToMainPR = async () => {
   }
 };
 
-const mergeLimitExceeded = () => MAX_MERGES - existingPRCount < 0;
+const getMaxMerges = () => {
+  if (isWithinPrePostRCP()) return BASE_MAX_MERGES + 3;
+  return BASE_MAX_MERGES;
+}
+
+const mergeLimitExceeded = () => getMaxMerges() - existingPRCount < 0;
 
 const main = async (params) => {
   github = params.github;
@@ -218,7 +224,7 @@ const main = async (params) => {
     existingPRCount = body.match(/https:\/\/github\.com\/adobecom\/milo\/pull\/\d+/g)?.length || 0;
     console.log(`Number of PRs already in the batch: ${existingPRCount}`);
 
-    if (mergeLimitExceeded()) return console.log(`Maximum number of '${MAX_MERGES}' PRs already merged. Stopping execution`);
+    if (mergeLimitExceeded()) return console.log('Maximum number of PRs already merged. Stopping execution');
 
     const { zeroImpactPRs, highImpactPRs, normalPRs } = await getPRs();
     await merge({ prs: zeroImpactPRs, type: LABELS.zeroImpact });
