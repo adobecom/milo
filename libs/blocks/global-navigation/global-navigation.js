@@ -510,9 +510,17 @@ class Gnav {
       this.block.after(localNav);
     }
     localNav.setAttribute('daa-lh', `${title}_localNav`);
-    localNav.append(toFragment`<button class="feds-navLink--hoverCaret feds-localnav-title" aria-haspopup="true" aria-expanded="false" daa-ll="${title}_localNav|open"></button>`, toFragment` <div class="feds-localnav-curtain"></div>`, toFragment` <div class="feds-localnav-items"></div>`, toFragment`<a href="#" class="feds-sr-only feds-localnav-exit">.</a>`);
+    localNav.append(toFragment`<button class="feds-navLink--hoverCaret feds-localnav-title" aria-haspopup="true" aria-expanded="false" daa-ll="${title}_localNav|open"></button>`, toFragment` <div class="feds-localnav-curtain"></div>`, toFragment` <div class="feds-localnav-items" inert></div>`, toFragment`<a href="#" class="feds-sr-only feds-localnav-exit">.</a>`);
 
     const itemWrapper = localNav.querySelector('.feds-localnav-items');
+    const localNavTitle = document.querySelector('.feds-localnav-title');
+    // Skip keyboard navigation on localnav items if it is closed
+    const observer = new MutationObserver(() => {
+      const isExpanded = localNavTitle.getAttribute('aria-expanded') === 'true';
+      itemWrapper.toggleAttribute('inert', !isExpanded);
+    });
+    observer.observe(localNavTitle, { attributes: true, attributeFilter: ['aria-expanded'] });
+    
     const titleLabel = await replaceKey('overview', getFedsPlaceholderConfig());
 
     localNavItems.forEach((elem, idx) => {
