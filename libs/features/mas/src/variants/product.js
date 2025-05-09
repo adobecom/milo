@@ -156,7 +156,7 @@ export class Product extends VariantLayout {
         }
         :host([variant='product']) slot[name='addon'] {
             min-height: var(
-            --consonant-merch-card-product-addon-height
+                --consonant-merch-card-product-addon-height
             );
         }
 

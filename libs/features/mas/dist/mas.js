@@ -1440,7 +1440,7 @@ merch-card[variant^="plans"]:not([size]) {
         }
         :host([variant='product']) slot[name='addon'] {
             min-height: var(
-            --consonant-merch-card-product-addon-height
+                --consonant-merch-card-product-addon-height
             );
         }
 
