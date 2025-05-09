@@ -1,7 +1,7 @@
 import { createTag } from '../../utils/utils.js';
 import '../../deps/mas/merch-card.js';
 import '../../deps/mas/merch-quantity-select.js';
-import { initService, getMasPreview, getOptions, overrideOptions } from '../merch/merch.js';
+import { initService, getOptions, overrideOptions } from '../merch/merch.js';
 
 const CARD_AUTOBLOCK_TIMEOUT = 5000;
 let log;

@@ -1,5 +1,5 @@
 import { createTag, getConfig } from '../../utils/utils.js';
-import { initService, getOptions, MEP_SELECTOR, overrideOptions, getMasPreview } from '../merch/merch.js';
+import { initService, getOptions, MEP_SELECTOR, overrideOptions } from '../merch/merch.js';
 import '../../deps/mas/merch-card-collection.js';
 import '../../deps/mas/merch-card.js';
 import '../../deps/mas/merch-quantity-select.js';
