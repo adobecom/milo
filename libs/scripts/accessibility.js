@@ -30,7 +30,7 @@ function scrollTabFocusedElIntoView() {
   });
 
   document.addEventListener('focusin', (e) => {
-    const element = e.target?.shadowRoot?.activeElement ?? e.target;
+    const element = e.target.shadowRoot?.activeElement ?? e.target;
 
     if (isPadding) removeScrollPadding();
     isFocused = true;
