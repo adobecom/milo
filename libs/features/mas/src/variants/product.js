@@ -63,11 +63,12 @@ export class Product extends VariantLayout {
 
     postCardUpdateHook() {
         if (!this.card.isConnected) return;
+        this.adjustAddon();
         if (!isMobile()) {
             this.adjustProductBodySlots();
         }
         this.adjustTitleWidth();
-        this.adjustAddon();
+        
     }
 
     get headingXSSlot() {
@@ -153,6 +154,11 @@ export class Product extends VariantLayout {
                 --consonant-merch-card-product-callout-content-height
             );
             display: block;
+        }
+        :host([variant='product']) slot[name='addon'] {
+            min-height: var(
+            --consonant-merch-card-product-addon-height
+            );
         }
 
         :host([variant='product']) ::slotted([slot='heading-xs']) {
