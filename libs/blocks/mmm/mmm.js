@@ -65,7 +65,7 @@ const setLocalStorageFilter = (obj) => {
     : MMM_LOCAL_STORAGE_KEY, JSON.stringify(obj));
 };
 
-const SEARCH_INITIAL_VALUES = () => getLocalStorageFilter() ?? {
+const SEARCH = () => getLocalStorageFilter() ?? {
   lastSeenManifest: isReport ? LAST_SEEN_OPTIONS.week.key : LAST_SEEN_OPTIONS.threeMonths.key,
   pageNum: 1,
   subdomain: SUBDOMAIN_OPTIONS.www.key,
@@ -91,7 +91,7 @@ async function toggleDrawer(target, dd, pageId) {
     dd.removeAttribute('hidden');
     const loading = dd.querySelector('.loading');
     if (dd.classList.contains('placeholder-resolved') || !loading) return;
-    const pageData = await fetchData(`${API_URLS.pageDetails}${pageId}`, DATA_TYPE.JSON);
+    const pageData = await fetchData(`${API_URLS.pageDetails}?id=${pageId}&lastSeen=${SEARCH().lastSeenManifest}&manifestSrc=${SEARCH().manifestSrc}`, DATA_TYPE.JSON);
     loading.replaceWith(getMepPopup(pageData, true));
     dd.classList.add('placeholder-resolved');
   }
@@ -250,7 +250,7 @@ function createDropdowns(data) {
     Object.keys(options).forEach((option) => {
       const optionEl = createTag('option', { value: option }, options[option]);
       select.append(optionEl);
-      const startingVal = SEARCH_INITIAL_VALUES()[key];
+      const startingVal = SEARCH()[key];
       if (startingVal === option) optionEl.setAttribute('selected', 'selected');
     });
     select.addEventListener('change', () => filterPageList());
@@ -276,7 +276,7 @@ function createSearchField() {
     </div>`,
   );
   const searchField = searchForm.querySelector('textarea');
-  searchField.value = SEARCH_INITIAL_VALUES().filter || '';
+  searchField.value = SEARCH().filter || '';
 
   searchField.addEventListener('keyup', debounce((event) => filterPageList(null, null, event)));
   searchField.addEventListener('change', debounce((event) => filterPageList(null, null, event)));
@@ -305,7 +305,7 @@ function createLastSeenManifestAndDomainDD() {
     const lastSeenSelect = dropdownLastSeen.querySelector('select');
     const newEl = createTag(
       'option',
-      { value: LAST_SEEN_OPTIONS[key].key, ...(SEARCH_INITIAL_VALUES().lastSeenManifest === LAST_SEEN_OPTIONS[key].key ? { selected: 'selected' } : {}) },
+      { value: LAST_SEEN_OPTIONS[key].key, ...(SEARCH().lastSeenManifest === LAST_SEEN_OPTIONS[key].key ? { selected: 'selected' } : {}) },
       LAST_SEEN_OPTIONS[key].value,
     );
     lastSeenSelect.append(newEl);
@@ -319,7 +319,7 @@ function createLastSeenManifestAndDomainDD() {
         <label for="mmm-subdomain">Subdomain:</label>
         <select id="mmm-subdomain" type="text" name="mmm-subdomain" class="text-field-input">
           ${Object.keys(SUBDOMAIN_OPTIONS).map((key) => `
-            <option value="${SUBDOMAIN_OPTIONS[key].key}" ${SEARCH_INITIAL_VALUES().subdomain === SUBDOMAIN_OPTIONS[key].key ? 'selected' : ''}>${SUBDOMAIN_OPTIONS[key].value}</option>
+            <option value="${SUBDOMAIN_OPTIONS[key].key}" ${SEARCH().subdomain === SUBDOMAIN_OPTIONS[key].key ? 'selected' : ''}>${SUBDOMAIN_OPTIONS[key].value}</option>
           `)}
         </select>
       </div>`,
@@ -334,7 +334,7 @@ function createCheckBoxFilterGroup(checkBoxId, legendLabel, optionsObj) {
   const checkBoxFieldset = createTag('fieldset', { id: `mmm-${checkBoxId}-fieldset` }, checkBoxLegend);
   // helper function only ran during filter build. consider moving to outter lex scope
   function createCheckBox(groupName, checkboxLabel, checkboxValue) {
-    const initValueCheck = SEARCH_INITIAL_VALUES()?.[groupName]?.split(', ').includes(checkboxValue);
+    const initValueCheck = SEARCH()?.[groupName]?.split(', ').includes(checkboxValue);
     const checkDiv = createTag('div', { class: 'mmm-checkbox-option' });
     const checkLabel = createTag('label', { for: `mmm-${groupName}-${checkboxValue}` }, checkboxLabel);
     const checkBox = createTag('input', {
@@ -612,7 +612,7 @@ async function createPageList(el, search) {
     DATA_TYPE.JSON,
     {
       method: 'POST',
-      body: JSON.stringify(search ?? SEARCH_INITIAL_VALUES()),
+      body: JSON.stringify(search ?? SEARCH()),
     },
   );
   if (isReport) {
