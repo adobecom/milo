@@ -518,7 +518,7 @@ class Gnav {
     const observer = new MutationObserver(() => {
       const isExpanded = localNavTitle.getAttribute('aria-expanded') === 'true';
       itemWrapper.toggleAttribute('aria-hidden', !isExpanded);
-      [...itemWrapper.childNodes].forEach(node => {
+      [...itemWrapper.childNodes].forEach((node) => {
         node.querySelector('a, button').toggleAttribute('aria-hidden', !isExpanded);
         node.querySelector('a, button').setAttribute('tabindex', isExpanded ? '0' : '-1');
       })
