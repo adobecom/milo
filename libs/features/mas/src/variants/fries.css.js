@@ -6,10 +6,15 @@ export const CSS = `
         );
     }
 
+    merch-card[variant='fries'] [slot="heading-xxs"] {
+        color: var(--consonant-merch-card-heading-xxs-color);
+    }
+
     merch-card[variant='fries'] [slot="badge"] {
         position: absolute;
         top: 0;
         right: 24px;
+        font-weight: 700;
     }
 
     merch-card[variant='fries'] [slot="badge"] merch-badge {
@@ -33,6 +38,7 @@ export const CSS = `
 
     merch-card[variant='fries'] [slot="body-s"] {
         letter-spacing: normal;
+        color: var(--consonant-merch-card-body-s-color);
     }
 
     merch-card[variant='fries'] [slot="body-s"] merch-icon {
@@ -44,7 +50,7 @@ export const CSS = `
     }
 
     merch-card[variant='fries'] [slot="body-s"] .mnemonic-text {
-        color: var(--merch-color-grey-80);
+        color: var(--spectrum-gray-900);
         font-size: var(--consonant-merch-card-body-xxs-font-size);
         line-height: var(--consonant-merch-card-body-xxs-line-height);
         font-weight: 400;
@@ -57,7 +63,14 @@ export const CSS = `
         display: flex;
         flex-direction: column;
         align-items: end;
+        color: var(--spectrum-gray-900);
     }
+
+    merch-card[variant='fries'] [slot="addon"] {
+        color: var(--spectrum-green-800);
+        font-weight: 700;
+    }
+
 
     merch-card[variant='fries'] [slot="price"] .price-strikethrough {
         font-size: var(--consonant-merch-card-body-xs-font-size);
@@ -104,5 +117,15 @@ export const CSS = `
         font-size: var(--consonant-merch-card-body-s-font-size);
         font-weight: bold;
         margin-left: 8px;
+    }
+
+    .spectrum--dark merch-card[variant="fries"],
+    .spectrum--darkest merch-card[variant="fries"] {
+      --consonant-merch-card-background-color:rgb(19, 19, 19);
+      --consonant-merch-card-heading-xxs-color:rgb(253, 253, 253);
+      --consonant-merch-card-body-s-color:rgb(128, 128, 128);
+      --merch-card-fries-badge-color:rgb(0, 122, 77);
+      --consonant-merch-card-body-xxs-color:rgb(219, 219, 219);
+      --merch-card-ah-promoted-plans-strikethrough-color:rgb(138, 138, 138);
     }
 `;

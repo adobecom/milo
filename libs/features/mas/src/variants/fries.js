@@ -11,11 +11,10 @@ export const FRIES_AEM_FRAGMENT_MAPPING = {
         maxCount: 300,
         withSuffix: false,
     },
-    badge: { tag: 'div', slot: 'badge' },
-    trialBadge: { tag: 'div', slot: 'trial-badge' },
+    badge: { tag: 'div', slot: 'badge' , default: 'spectrum-yellow-300'},
+    trialBadge: { tag: 'div', slot: 'trial-badge', default: 'spectrum-green-800' },
     prices: { tag: 'p', slot: 'price' },
     ctas: { slot: 'cta', size: 'M' },
-    backgroundColor: { attribute: 'background-color' },
     borderColor: { attribute: 'border-color', specialValues: {
         gray: '--spectrum-gray-300',
     } },
@@ -30,68 +29,8 @@ export class FriesCard extends VariantLayout {
         return FRIES_AEM_FRAGMENT_MAPPING;
     }
 
-    handleCtaClick(event) {
-        const clickedButton = event.target.closest('a, button, sp-button');
-
-        if (!clickedButton || clickedButton.dataset.ctaToggleText === undefined) {
-            return; // Not a toggleable button or no toggle text defined
-        }
-
-        // Verify the clicked button is within our 'cta' slot
-        const ctaSlot = this.shadowRoot.querySelector('slot[name="cta"]');
-        if (!ctaSlot) return;
-        const assignedNodes = ctaSlot.assignedNodes({ flatten: true });
-        let isButtonInSlot = false;
-        for (const node of assignedNodes) {
-            if (node === clickedButton || (node.nodeType === Node.ELEMENT_NODE && node.contains(clickedButton))) {
-                isButtonInSlot = true;
-                break;
-            }
-        }
-        if (!isButtonInSlot) return;
-
-        event.stopPropagation(); // Prevent further event bubbling if needed
-
-        const toggleText = clickedButton.dataset.ctaToggleText;
-        let isToggled = clickedButton.dataset.isToggled === 'true';
-
-        // Find the associated confirmation span
-        let confirmationSpan = null;
-        if (clickedButton.nextElementSibling && clickedButton.nextElementSibling.classList.contains('cta-confirmation')) {
-            confirmationSpan = clickedButton.nextElementSibling;
-        } else if (clickedButton.parentElement) {
-            // Search for a .cta-confirmation among the parent's children
-            confirmationSpan = Array.from(clickedButton.parentElement.children)
-                .find(child => child.classList.contains('cta-confirmation'));
-        }
-
-        isToggled = !isToggled; // Flip the state
-
-        if (isToggled) {
-            if (clickedButton.dataset.originalText === undefined) {
-                clickedButton.dataset.originalText = clickedButton.textContent;
-            }
-            if (toggleText && toggleText.trim() !== '') {
-                clickedButton.textContent = toggleText;
-            }
-            if (confirmationSpan) {
-                confirmationSpan.style.display = ''; // Show (remove display:none)
-            }
-        } else {
-            if (clickedButton.dataset.originalText !== undefined) {
-                clickedButton.textContent = clickedButton.dataset.originalText;
-            }
-            if (confirmationSpan) {
-                confirmationSpan.style.display = 'none'; // Hide
-            }
-        }
-        clickedButton.dataset.isToggled = isToggled ? 'true' : 'false';
-        
-    }
-
     renderLayout() {
-        return html`
-            <div class="content">
+        return html`            <div class="content">
                 <div class="header">
                     <slot name="icons"></slot>
                     <slot name="heading-xxs"></slot>
@@ -99,9 +38,12 @@ export class FriesCard extends VariantLayout {
                 </div>
                 <slot name="badge"></slot>
                 <slot name="body-s"></slot>
-                <div class="footer" @click=\${this.handleCtaClick}>
+                <div class="footer">
+                  div class="cta">
                     <slot name="cta"></slot>
-                    <slot name="price"></slot>
+                    <slot name="addon"></slot>
+                  </div>
+                  <slot name="price"></slot>
                 </div>
             </div>
             <slot></slot>
@@ -126,7 +68,7 @@ export class FriesCard extends VariantLayout {
             min-width: var(--merch-card-fries-min-width);
             background-color: var(
                 --merch-card-custom-background-color,
-                var(--consonant-merch-card-background-color)
+                var(--spectrum-gray-300)
             );
             color: var(--consonant-merch-card-heading-xxxs-color);
             border-radius: 4px;
@@ -179,3 +121,4 @@ export class FriesCard extends VariantLayout {
 }
 
 customElements.define('fries-card', FriesCard); 
+
