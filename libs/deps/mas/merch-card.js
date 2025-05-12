@@ -576,6 +576,10 @@ merch-card[variant="catalog"] .payment-details {
   }
 
   merch-card[variant="mini-compare-chart"] merch-addon {
+    min-height: 74px;
+  }
+
+  merch-card[variant="mini-compare-chart"] merch-addon {
     padding-left: 4px;
     padding-top: 8px;
     padding-bottom: 8px;
@@ -817,9 +821,14 @@ merch-card[variant="catalog"] .payment-details {
     font-size: var(--consonant-merch-card-body-xs-font-size);
     line-height: var(--consonant-merch-card-body-xs-line-height);
   }
+
   merch-card[variant="mini-compare-chart"] .footer-row-cell-description {
     font-size: var(--consonant-merch-card-body-xs-font-size);
     line-height: var(--consonant-merch-card-body-xs-line-height);
+  }
+
+  merch-card[variant="mini-compare-chart"] merch-addon {
+    min-height: 95px;
   }
 }
 
@@ -943,7 +952,7 @@ merch-card .footer-row-cell:nth-child(8) {
         <slot name="callout-content"></slot>
         <slot name="addon"></slot>
         ${this.getMiniCompareFooter()}
-        <slot name="footer-rows"><slot name="body-s"></slot></slot>`}async postCardUpdateHook(){await Promise.all(this.card.prices.map(t=>t.onceSettled())),await this.adjustAddon(),V()?this.removeEmptyRows():(this.adjustMiniCompareBodySlots(),this.adjustMiniCompareFooterRows())}};d(Z,"variantStyle",je`
+        <slot name="footer-rows"><slot name="body-s"></slot></slot>`}async postCardUpdateHook(){await Promise.all(this.card.prices.map(t=>t.onceSettled())),this.adjustAddon(),V()?this.removeEmptyRows():(this.adjustMiniCompareBodySlots(),this.adjustMiniCompareFooterRows())}};d(Z,"variantStyle",je`
     :host([variant='mini-compare-chart']) > slot:not([name='icons']) {
         display: block;
     }
