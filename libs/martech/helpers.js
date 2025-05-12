@@ -8,14 +8,8 @@ const KNDCTR_COOKIE_KEYS = [
 const KNDCTR_CONSENT_COOKIE = 'kndctr_9E1005A551ED61CA0A490D45_AdobeOrg_consent';
 const OPT_ON_AND_CONSENT_COOKIE = 'OptanonConsent';
 
-const DATA_STREAM_IDS_PROD = {
-  excludeDS: '57c20bab-94c3-425e-95cb-0b9948b1fdd4',
-  default: '913eac4d-900b-45e8-9ee7-306216765cd2',
-};
-const DATA_STREAM_IDS_STAGE = {
-  excludeDS: 'a44f0037-2ada-441f-a012-243832ce5ff9',
-  default: 'e065836d-be57-47ef-b8d1-999e1657e8fd',
-};
+const DATA_STREAM_IDS_PROD = { default: '913eac4d-900b-45e8-9ee7-306216765cd2' };
+const DATA_STREAM_IDS_STAGE = { default: 'e065836d-be57-47ef-b8d1-999e1657e8fd' };
 
 let dataStreamId = '';
 
@@ -45,32 +39,6 @@ function generateUUIDv4() {
   });
 
   return uuid;
-}
-
-export function getTargetPropertyBasedOnPageRegion({ env, pathname }) {
-  if (env !== 'prod') return 'bc8dfa27-29cc-625c-22ea-f7ccebfc6231';
-
-  // EMEA & LATAM
-  if (
-    pathname.search(
-      /(\/africa\/|\/be_en\/|\/be_fr\/|\/be_nl\/|\/cis_en\/|\/cy_en\/|\/dk\/|\/de\/|\/ee\/|\/es\/|\/fr\/|\/gr_en\/|\/ie\/|\/il_en\/|\/it\/|\/lv\/|\/lu_de\/|\/lu_en\/|\/lu_fr\/|\/hu\/|\/mt\/|\/mena_en\/|\/nl\/|\/no\/|\/pl\/|\/pt\/|\/ro\/|\/ch_de\/|\/si\/|\/sk\/|\/ch_fr\/|\/fi\/|\/se\/|\/ch_it\/|\/tr\/|\/uk\/|\/at\/|\/cz\/|\/bg\/|\/ru\/|\/cis_ru\/|\/ua\/|\/il_he\/|\/mena_ar\/|\/lt\/|\/sa_en\/|\/ae_en\/|\/ae_ar\/|\/sa_ar\/|\/ng\/|\/za\/|\/qa_ar\/|\/eg_en\/|\/eg_ar\/|\/kw_ar\/|\/eg_ar\/|\/qa_en\/|\/kw_en\/|\/gr_el\/|\/br\/|\/cl\/|\/la\/|\/mx\/|\/co\/|\/ar\/|\/pe\/|\/gt\/|\/pr\/|\/ec\/|\/cr\/)/,
-    ) !== -1
-  ) {
-    return '488edf5f-3cbe-f410-0953-8c0c5c323772';
-  }
-  if ( // APAC
-    pathname.search(
-      /(\/au\/|\/hk_en\/|\/in\/|\/nz\/|\/sea\/|\/cn\/|\/hk_zh\/|\/tw\/|\/kr\/|\/sg\/|\/th_en\/|\/th_th\/|\/my_en\/|\/my_ms\/|\/ph_en\/|\/ph_fil\/|\/vn_en\/|\/vn_vi\/|\/in_hi\/|\/id_id\/|\/id_en\/)/,
-    ) !== -1
-  ) {
-    return '3de509ee-bbc7-58a3-0851-600d1c2e2918';
-  }
-  // JP
-  if (pathname.indexOf('/jp/') !== -1) {
-    return 'ba5bc9e8-8fb4-037a-12c8-682384720007';
-  }
-
-  return '4db35ee5-63ad-59f6-cec6-82ef8863b22d'; // Default
 }
 
 function getDeviceInfo() {
@@ -347,18 +315,10 @@ const getMartechCookies = () => document.cookie.split(';')
   .filter(([key]) => KNDCTR_COOKIE_KEYS.includes(key))
   .map(([key, value]) => ({ key, value }));
 
-function createRequestPayload({
-  updatedContext, pageName, processedPageName, locale, env, hitType,
-}) {
+function createRequestPayload({ updatedContext, pageName, processedPageName, locale, hitType }) {
   const prevPageName = getCookie('gpv');
   const isCollectCall = hitType === 'propositionDisplay';
   const isPageViewCall = hitType === 'pageView';
-
-  const REPORT_SUITES_ID = env === 'prod' ? ['adbadobenonacdcprod', 'adbadobeprototype'] : ['adbadobenonacdcqa'];
-  const AT_PROPERTY_VAL = getTargetPropertyBasedOnPageRegion(
-    { env, pathname: window.location?.pathname },
-  );
-
   const webPageDetails = {
     URL: window.location.href,
     siteSection: window.location.hostname,
@@ -405,7 +365,9 @@ function createRequestPayload({
           ...(getEntityId() ? { 'entity.id': getEntityId() } : {}),
         },
       },
+      eventMergeId: generateUUIDv4(),
       _adobe_corpnew: {
+        configuration: { edgeConfigId: dataStreamId },
         digitalData: {
           page: { pageInfo: { language: getLanguageCode(locale) } },
           diagnostic: { franklin: { implementation: 'milo' } },
@@ -418,8 +380,6 @@ function createRequestPayload({
         adobe: {
           alloy: {
             approach: 'martech-API',
-            edgeConfigIdLaunch: dataStreamId,
-            edgeConfigId: dataStreamId,
             personalisation: 'hybrid',
           },
         },
@@ -432,6 +392,7 @@ function createRequestPayload({
       href, origin, protocol, host, hostname, port, pathname, search, hash,
     } = window.location;
     const { data, xdm } = eventObj;
+    const consentCookie = getCookie(OPT_ON_AND_CONSENT_COOKIE) || '';
     const { digitalData } = data._adobe_corpnew;
     const { pageInfo } = digitalData.page;
     const { agiCampaign, setAgICampVal } = resolveAgiCampaignAndFlag();
@@ -447,7 +408,6 @@ function createRequestPayload({
       entitlementCreativeCloud: 'unknown',
       entitlementStatusCreativeCloud: 'unknown',
     };
-    digitalData.target = { at_property_val: AT_PROPERTY_VAL };
     data.web = {
       webPageDetails,
       webReferrer: { URL: document.referrer },
@@ -463,6 +423,7 @@ function createRequestPayload({
     if (getUpdatedAcrobatVisitAttempt() === 2) {
       digitalData.adobe = { experienceCloud: { acrobatSecondVisits: 'setEvent' } };
     }
+    digitalData.otherConsents.advertising = consentCookie && consentCookie.includes('C0004:0') ? 'false' : 'true';
     digitalData.adobe = {
       experienceCloud: { agiCampaign: setAgICampVal ? agiCampaign : '' },
       gpc: getGlobalPrivacyControl(),
@@ -497,10 +458,6 @@ function createRequestPayload({
     },
     meta: {
       target: { migration: true },
-      configOverrides: {
-        com_adobe_analytics: { reportSuites: REPORT_SUITES_ID },
-        com_adobe_target: { propertyToken: AT_PROPERTY_VAL },
-      },
       state: {
         domain: getDomainWithoutWWW(),
         cookiesEnabled: true,
@@ -558,15 +515,6 @@ export const createRequestUrl = ({
 }) => {
   const TARGET_API_URL = getUrl(hitType === 'propositionDisplay');
   dataStreamId = env === 'prod' ? DATA_STREAM_IDS_PROD.default : DATA_STREAM_IDS_STAGE.default;
-  if (hitType === 'pageView' || hitType === 'propositionDisplay') {
-    const isFirstVisit = !getCookie(AMCV_COOKIE);
-    const consentCookie = getCookie(OPT_ON_AND_CONSENT_COOKIE) || '';
-    if (isFirstVisit || !consentCookie || consentCookie.includes('C0004:0')) {
-      dataStreamId = env === 'prod' ? DATA_STREAM_IDS_PROD.excludeDS : DATA_STREAM_IDS_STAGE.excludeDS;
-    }
-    return `${TARGET_API_URL}?dataStreamId=${dataStreamId}&requestId=${generateUUIDv4()}`;
-  }
-
   return `${TARGET_API_URL}?dataStreamId=${dataStreamId}&requestId=${generateUUIDv4()}`;
 };
 
