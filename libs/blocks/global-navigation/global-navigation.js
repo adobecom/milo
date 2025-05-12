@@ -510,7 +510,9 @@ class Gnav {
       this.block.after(localNav);
     }
     localNav.setAttribute('daa-lh', `${title}_localNav`);
-    localNav.append(toFragment`<button class="feds-navLink--hoverCaret feds-localnav-title" aria-haspopup="true" aria-expanded="false" daa-ll="${title}_localNav|open"></button>`, toFragment` <div class="feds-localnav-curtain"></div>`, toFragment` <div class="feds-localnav-items"></div>`, toFragment`<a href="#" class="feds-sr-only feds-localnav-exit">.</a>`);
+    const localNavBtn = toFragment`<button class="feds-navLink--hoverCaret feds-localnav-title" aria-haspopup="true" aria-expanded="false" daa-ll="${title}_localNav|open"></button>`;
+    const localNavCurtain = toFragment` <div class="feds-localnav-curtain"></div>`;
+    localNav.append(localNavBtn, localNavCurtain , toFragment`<a href="#" class="feds-sr-only feds-localnav-exit">.</a>`);
 
     const itemWrapper = localNav.querySelector('.feds-localnav-items');
     const localNavTitle = document.querySelector('.feds-localnav-title');
@@ -521,7 +523,7 @@ class Gnav {
       [...itemWrapper.childNodes].forEach((node) => {
         node.querySelector('a, button').toggleAttribute('aria-hidden', !isExpanded);
         node.querySelector('a, button').setAttribute('tabindex', isExpanded ? '0' : '-1');
-      })
+      });
     });
     observer.observe(localNavTitle, { attributes: true, attributeFilter: ['aria-expanded'] });
 
