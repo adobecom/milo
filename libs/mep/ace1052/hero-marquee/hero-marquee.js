@@ -6,8 +6,8 @@ import {
   decorateButtons,
   handleObjectFit,
   loadCDT,
-} from '../../utils/decorate.js';
-import { createTag, loadStyle, getConfig } from '../../utils/utils.js';
+} from '../../../utils/decorate.js';
+import { createTag, loadStyle, getConfig } from '../../../utils/utils.js';
 
 const contentTypes = ['list', 'qrcode', 'lockup', 'text', 'bgcolor', 'supplemental'];
 const rowTypeKeyword = 'con-block-row-';
@@ -41,8 +41,10 @@ function decorateList(el, classes) {
       if (firstElemIsSvg) {
         firstElemIsSvg.parentElement.classList.add('list-icon');
         item.closest('ul, ol').classList.add('has-svg-bullet');
-        const listText = createTag('div', {class: 'list-text'});
-        [...item.childNodes].forEach((c) => (c !== firstElemIsSvg.parentElement) ? listText.append(c) : null);
+        const listText = createTag('div', { class: 'list-text' });
+        [...item.childNodes].forEach((c) => {
+          if (c !== item.children[0]) listText.append(c);
+        });
         item.append(listText);
       }
       if (!item.parentElement.classList.contains('icon-list')) item.parentElement.classList.add('icon-list');
