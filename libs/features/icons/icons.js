@@ -81,8 +81,8 @@ export default async function loadIcons(icons, config) {
   icons.forEach(async (icon) => {
     const iconNameInitial = icon.classList[1].replace('icon-', '');
     let iconName = iconNameInitial === 'tooltip' ? 'info' : iconNameInitial;
-    if (iconNameInitial.includes('tooltip')) iconName = iconNameInitial.replace('tooltip', '');
-      decorateToolTip(icon, iconName);
+    if (iconNameInitial.includes('tooltip-')) iconName = iconNameInitial.replace(/tooltip-/, '');
+    decorateToolTip(icon, iconName);
 
     const existingIcon = icon.querySelector('svg');
     if (!iconSVGs[iconName] || existingIcon) return;
