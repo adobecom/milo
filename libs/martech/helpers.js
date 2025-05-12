@@ -328,6 +328,7 @@ function createRequestPayload({ updatedContext, pageName, processedPageName, loc
     name: pageName,
     pageViews: { value: Number(isPageViewCall) },
   };
+  const consentCookie = getCookie(OPT_ON_AND_CONSENT_COOKIE) || '';
 
   const consentState = (() => {
     const hasOptOnCookie = getCookie(OPT_ON_AND_CONSENT_COOKIE);
@@ -374,6 +375,7 @@ function createRequestPayload({ updatedContext, pageName, processedPageName, loc
           previousPage: { pageInfo: { pageName: prevPageName } },
           primaryUser: { primaryProfile: { profileInfo: { authState: 'loggedOut', returningStatus: getVisitorStatus({}) } } },
         },
+        otherConsents: { configuration: { advertising: consentCookie && consentCookie.includes('C0004:0') ? 'false' : 'true' } },
         cmp: { state: consentState },
       },
       marketingtech: {
@@ -392,7 +394,6 @@ function createRequestPayload({ updatedContext, pageName, processedPageName, loc
       href, origin, protocol, host, hostname, port, pathname, search, hash,
     } = window.location;
     const { data, xdm } = eventObj;
-    const consentCookie = getCookie(OPT_ON_AND_CONSENT_COOKIE) || '';
     const { digitalData } = data._adobe_corpnew;
     const { pageInfo } = digitalData.page;
     const { agiCampaign, setAgICampVal } = resolveAgiCampaignAndFlag();
@@ -424,7 +425,6 @@ function createRequestPayload({ updatedContext, pageName, processedPageName, loc
       digitalData.adobe = { experienceCloud: { acrobatSecondVisits: 'setEvent' } };
     }
     digitalData.otherConsents = digitalData.otherConsents || {};
-    digitalData.otherConsents.advertising = consentCookie && consentCookie.includes('C0004:0') ? 'false' : 'true';
     digitalData.adobe = {
       experienceCloud: { agiCampaign: setAgICampVal ? agiCampaign : '' },
       gpc: getGlobalPrivacyControl(),
