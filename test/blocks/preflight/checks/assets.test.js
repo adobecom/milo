@@ -11,7 +11,7 @@ describe('Preflight Asset Checks', () => {
 
   beforeEach(() => {
     mockMatchMedia = sinon.stub(window, 'matchMedia').returns({ matches: true });
-    
+
     mockPicture = {
       querySelector: sinon.stub().returns(null),
       insertBefore: sinon.stub(),
@@ -84,16 +84,16 @@ describe('Preflight Asset Checks', () => {
 
     it('tests image dimensions with specific width/height attributes', async () => {
       window.createTag = () => ({ append: sinon.stub() });
-      
+
       mockImage.offsetWidth = 1200;
       mockImage.getAttribute.withArgs('width').returns('2400');
       mockImage.getAttribute.withArgs('height').returns('1200');
-      
+
       await checkImageDimensions('test-url-fullwidth', mockDocument);
-      
+
       mockImage.getAttribute.withArgs('width').returns(null);
       mockImage.getAttribute.withArgs('height').returns(null);
-      
+
       await checkImageDimensions('test-url-noattrs', mockDocument);
     });
 
@@ -102,18 +102,18 @@ describe('Preflight Asset Checks', () => {
       mockImage.getAttribute.withArgs('height').returns('1000');
       mockImage.getAttribute.withArgs('src').returns('test.jpg');
       window.createTag = () => ({ append: sinon.stub() });
-      
+
       await runChecks('test-url-cached', mockDocument);
-      
+
       mockDocument.querySelectorAll.withArgs('main picture img').returns([]);
-      
+
       const secondResults = await runChecks('test-url-cached', mockDocument);
       expect(secondResults).to.be.an('array');
     });
 
     it('sets up mockImport conditions', () => {
       window.mockImport = true;
-      
+
       expect(window.mockImport).to.be.true;
     });
   });
