@@ -39,7 +39,7 @@ export class FriesCard extends VariantLayout {
                 <slot name="badge"></slot>
                 <slot name="body-s"></slot>
                 <div class="footer">
-                  div class="cta">
+                  <div class="cta">
                     <slot name="cta"></slot>
                     <slot name="addon"></slot>
                   </div>
