@@ -332,7 +332,7 @@ function getGlobalPrivacyControl() {
   if (!navigator || !navigator.globalPrivacyControl) return '';
   return navigator.globalPrivacyControl.toString();
 }
-```
+``` 
 
 **Returns:**
 - String: 'true' if GPC is enabled, 'false' if disabled, or an empty string if not supported.
