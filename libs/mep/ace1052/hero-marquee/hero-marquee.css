@@ -254,6 +254,10 @@ html[dir="rtl"] .hero-marquee li.icon-item span.icon {
   margin: 0;
 }
 
+.hero-marquee .row-list.align-icon-start li.icon-item {
+  align-items: flex-start;
+}
+
 /* row-supplemental */
 .hero-marquee .row-supplemental.bold {
   font-weight: 700;
