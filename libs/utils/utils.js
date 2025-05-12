@@ -1032,7 +1032,7 @@ async function decorateHeader() {
   }
 }
 
-async function decorateIcons(area, config) { 
+async function decorateIcons(area, config) {
   const icons = area.querySelectorAll('span.icon');
   if (icons.length === 0) return;
   const { base } = config;
