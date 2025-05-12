@@ -184,12 +184,12 @@ export function buildCheckoutUrl(checkoutData) {
     url = add3in1Parameters({
       url,
       modal,
-      customerSegment: customerSegment ?? items?.[0]?.customerSegment,
-      marketSegment: marketSegment ?? items?.[0]?.marketSegment,
+      customerSegment: customerSegment,
+      marketSegment: marketSegment,
       cs,
       ms,
       quantity: items?.[0]?.quantity > 1 && items?.[0]?.quantity,
-      productArrangementCode: productArrangementCode ?? items?.[0]?.productArrangementCode,
+      productArrangementCode: productArrangementCode,
       addonProductArrangementCode: productArrangementCode 
       ? items?.find((item) => item.productArrangementCode !== productArrangementCode)?.productArrangementCode 
       : items?.[1]?.productArrangementCode,
