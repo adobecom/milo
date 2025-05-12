@@ -11,13 +11,22 @@
   <body>
     <div class="section hide-block form-success">
       <div class="content" daa-lh="b1|content"><p>Form Success</p></div>
-        <div class="section-metadata">
-          <div>
-            <div>style</div>
-            <div>hide block, form success</div>
-          </div>
+      <div class="section-metadata">
+        <div>
+          <div>style</div>
+          <div>hide block, form success</div>
         </div>
       </div>
+    </div>
+    <div class="section form-success-hide">
+      <div class="content" daa-lh="b1|content"><p>Form Success Hide</p></div>
+      <div class="section-metadata">
+        <div>
+          <div>style</div>
+          <div>visible block, form success hide</div>
+        </div>
+      </div>
+    </div>
     <div>
       <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec cursus mi id tincidunt pretium. Praesent a porta ex.
         Etiam eu metus urna. Etiam vulputate nibh nisi, sed gravida diam dictum id. Cras et justo metus. Morbi consectetur
@@ -65,6 +74,15 @@
         <div>
           <div>style</div>
           <div>hide block, form success</div>
+        </div>
+      </div>
+    </div>
+    <div class="section form-success-hide">
+      <div class="content" daa-lh="b1|content"><p>Form Success Hide 2</p></div>
+      <div class="section-metadata">
+        <div>
+          <div>style</div>
+          <div>visible block, form success hide</div>
         </div>
       </div>
     </div>
@@ -122,17 +140,22 @@
           expect(window.mktoSubmitted).to.be.true;
         });
 
-        it('shows success section', async () => {
+        it('toggles success section', async () => {
           const form = document.querySelector('form');
-          const sections = document.querySelectorAll('.form-success');
+          const showSections = document.querySelectorAll('.form-success');
+          const hideSections = document.querySelectorAll('.form-success-hide');
           const formData = {
             'form.success.type': 'section',
             'form.success.section': 'form success',
+            'form.success.hide.section': 'form success hide',
           };
 
           formSuccess(form, formData);
-          expect(sections[0].classList.contains('hide-block')).to.be.false;
-          expect(sections[1].classList.contains('hide-block')).to.be.false;
+
+          expect(showSections[0].classList.contains('hide-block')).to.be.false;
+          expect(showSections[1].classList.contains('hide-block')).to.be.false;
+          expect(hideSections[0].classList.contains('hide-block')).to.be.true;
+          expect(hideSections[1].classList.contains('hide-block')).to.be.true;
         });
       });
     });

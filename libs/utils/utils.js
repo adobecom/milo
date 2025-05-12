@@ -92,6 +92,7 @@ const MILO_BLOCKS = [
   'youtube',
   'z-pattern',
   'share',
+  'susi-light-login',
   'reading-time',
 ];
 const AUTO_BLOCKS = [
@@ -372,6 +373,8 @@ export function hasLanguageLinks(area, paths = LANGUAGE_BASED_PATHS) {
 }
 
 export async function loadLanguageConfig() {
+  if (localeToLanguageMap && siteLanguages) return { siteLanguages, localeToLanguageMap };
+
   const parseList = (str) => str.split(/[\n,]+/).map((t) => t.trim()).filter(Boolean);
   try {
     const response = await fetch(`${getFederatedContentRoot()}/federal/assets/data/languages-config.json`);
@@ -384,9 +387,13 @@ export async function loadLanguageConfig() {
       pathMatches: parseList(site.pathMatches),
       languages: parseList(site.languages),
     }));
+
+    return { siteLanguages, localeToLanguageMap };
   } catch (e) {
     window.lana?.log('Failed to load language-config.json:', e);
   }
+
+  return {};
 }
 
 let fedsPlaceholderConfig;
@@ -461,6 +468,7 @@ function getPrefixBySite(locale, url, relative) {
 
 function isLocalizedPath(path, locales) {
   const langstorePath = path.startsWith(`/${LANGSTORE}`);
+  const isMerchLink = path === '/tools/ost';
   const previewPath = path.startsWith(`/${PREVIEW}`);
   const anyTypeOfLocaleOrLanguagePath = localeToLanguageMap
     && (localeToLanguageMap.some((l) => l.locale !== '' && (path.startsWith(`/${l.locale}/`) || path === `/${l.locale}`))
@@ -468,6 +476,7 @@ function isLocalizedPath(path, locales) {
   const legacyLocalePath = locales && Object.keys(locales).some((loc) => loc !== '' && (path.startsWith(`/${loc}/`)
     || path.endsWith(`/${loc}`)));
   return langstorePath
+    || isMerchLink
     || previewPath
     || anyTypeOfLocaleOrLanguagePath
     || legacyLocalePath;
@@ -1071,7 +1080,8 @@ const findReplaceableNodes = (area) => {
 function getPlaceholderPaths(config) {
   const root = `${config.locale?.contentRoot}/placeholders`;
   const paths = [`${root}.json`];
-  if (config.env.name !== 'prod') paths.push(`${root}-stage.json`);
+  if (config.env.name !== 'prod'
+    && getMetadata('placeholders-stage') === 'on') paths.push(`${root}-stage.json`);
   return paths;
 }
 
@@ -1298,7 +1308,7 @@ export async function loadMartech({
  *
  * @returns {boolean} True if the user is signed out, otherwise false.
  */
-function isSignedOut() {
+export function isSignedOut() {
   const serverTiming = window.performance?.getEntriesByType('navigation')?.[0]?.serverTiming?.reduce(
     (acc, { name, description }) => ({ ...acc, [name]: description }),
     {},
@@ -1543,9 +1553,6 @@ function decorateDocumentExtras() {
 
 async function documentPostSectionLoading(config) {
   decorateFooterPromo();
-  import('../scripts/accessibility.js').then((accessibility) => {
-    accessibility.default();
-  });
   if (getMetadata('seotech-structured-data') === 'on' || getMetadata('seotech-video-url')) {
     import('../features/seotech/seotech.js').then((module) => module.default(
       { locationUrl: window.location.href, getMetadata, createTag, getConfig },
@@ -1632,8 +1639,8 @@ async function processSection(section, config, isDoc) {
 
 export async function loadArea(area = document) {
   const isDoc = area === document;
-
   if (isDoc) {
+    if (document.getElementById('page-load-ok-milo')) return;
     await checkForPageMods();
     appendHtmlToCanonicalUrl();
     appendSuffixToTitles();

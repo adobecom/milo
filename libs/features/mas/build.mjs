@@ -6,7 +6,7 @@ const outfolder = '../../deps/mas';
 const defaults = {
     bundle: true,
     format: 'esm',
-    minify: true,
+    minify: !process.argv.includes('no-minify'),
     sourcemap: process.argv.includes('sourcemap'),
     platform: 'browser',
     target: ['es2020'],
@@ -37,6 +37,9 @@ await build({
     entryPoints: ['./src/mas.js'],
     outfile: './dist/mas.js',
     plugins: [],
+    banner: {
+        js: `window.masPriceLiterals = ${priceLiteralsContent}.data;`,
+    },
 });
 
 // web components

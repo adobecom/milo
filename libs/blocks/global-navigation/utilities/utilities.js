@@ -164,7 +164,7 @@ export function loadStyles(url, override = false) {
         message: 'GNAV: Error in loadStyles',
         e: `error loading style: ${url}`,
         tags: 'utilities',
-        errorType: 'info',
+        errorType: 'i',
       });
     }
   });
@@ -401,7 +401,7 @@ export async function fetchAndProcessPlainHtml({
       message: 'Error in fetchAndProcessPlainHtml',
       e: `${res.statusText} url: ${res.url}`,
       tags: 'utilities',
-      errorType: 'info',
+      errorType: 'i',
     });
     return null;
   }
@@ -440,7 +440,7 @@ export async function fetchAndProcessPlainHtml({
           message: 'Error in fetchAndProcessPlainHtml',
           e,
           tags: 'utilities',
-          errorType: 'info',
+          errorType: 'i',
         });
       });
   }
@@ -537,6 +537,7 @@ export const transformTemplateToMobile = async (popup, item, localnav = false) =
           id="${i}"
           role="tabpanel"
           aria-labelledby="${i}"
+          class="${links.match(/class\s*=\s*["'][^"']*\bfeds-navLink--header\b[^"']*["']/) !== null ? 'has-subheader' : ''}"
           ${daalhTabContent ? `daa-lh="${daalhTabContent}"` : ''}
           hidden
         >
@@ -547,7 +548,6 @@ export const transformTemplateToMobile = async (popup, item, localnav = false) =
       ${CTA}
     </div>
     `;
-
   popup.querySelector('.close-icon')?.addEventListener('click', () => {
     document.querySelector(selectors.mainNavToggle).focus();
     closeAllDropdowns();
