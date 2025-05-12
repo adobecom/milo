@@ -44,10 +44,13 @@ describe('Icon Support', () => {
 
   it('Fetches successfully with cache control enabled', async () => {
     const otherIcons = [createTag('span', { class: 'icon icon-play' })];
+    document.body.appendChild(otherIcons[0]);
+
     await loadIcons(otherIcons, config);
+    expect(otherIcons[0].querySelector('svg')).to.exist;
   });
 
-  it('Replaces span.icon', async () => {
+  it('Renders an SVG after loading the icons',, async () => {
     const selector = icons[0].querySelector(':scope svg');
     expect(selector).to.exist;
   });
