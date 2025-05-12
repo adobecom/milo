@@ -295,6 +295,10 @@
   width: 100%;
 }
 
+.section[class*="-up"] .text-block:not(.legal, .link-farm) .foreground >div:has(> strong) {
+  display: block;
+}
+
 .section[class*="-up"] .text-block:not(.legal, .link-farm) [class^="heading"],
 .section[class*="-up"] .text-block:not(.legal, .link-farm) p:not([class^="detail-"]),
 .section[class*="-up"] .text-block:not(.legal, .link-farm) [class^="body-"] {
