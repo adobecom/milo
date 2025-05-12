@@ -363,11 +363,11 @@
   width: 12px;
   aspect-ratio: 1.7;
   cursor: pointer;
-  rotate: -90deg;	
-  background-size: contain;	
-}	
+  rotate: -90deg;
+  background-size: contain;
+}
 
-[dir="rtl"] .table .icon.expand {	
+[dir="rtl"] .table .icon.expand {
   rotate: 90deg;
 }
 
