@@ -175,7 +175,7 @@ export function buildCheckoutUrl(checkoutData) {
   if (workflowStep !== CheckoutWorkflowStep.SEGMENTATION && workflowStep !== CheckoutWorkflowStep.CHANGE_PLAN_TEAM_PLANS) {
     setItemsParameter(items, url.searchParams);
   }
-  addParameters(rest, url.searchParams, ALLOWED_KEYS);
+  addParameters({ cs, ...rest }, url.searchParams, ALLOWED_KEYS);
   if (landscape === Landscape.DRAFT) {
     addParameters({ af: AF_DRAFT_LANDSCAPE }, url.searchParams, ALLOWED_KEYS);
   }

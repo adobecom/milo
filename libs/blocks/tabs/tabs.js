@@ -95,9 +95,8 @@ function changeTabs(e) {
   content
     .querySelectorAll(`.tabpanel[data-block-id="${blockId}"]`)
     .forEach((p) => p.setAttribute('hidden', true));
-
-  content.querySelector(`#${target.getAttribute('aria-controls')}`).removeAttribute('hidden');
-  if (tabsBlock.classList.contains('stacked-mobile')) scrollStackedMobile(parent);
+  targetContent?.removeAttribute('hidden');
+  if (tabsBlock.classList.contains('stacked-mobile')) scrollStackedMobile(targetContent);
 }
 
 function getStringKeyName(str) {

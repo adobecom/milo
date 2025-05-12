@@ -38,7 +38,7 @@ export default class ThreeInOne {
       },
       csParamOverride: {
         el: page.locator('[data-wcs-osi="uNuSxc0Vg8l3Gm0W21Ge_TKAKfXKI_fnRHdwJu74l_I"]'),
-        href: 'https://commerce.adobe.com/store/segmentation?cli=creative&ctx=if&co=US&lang=en&ms=COM&ot=BASE&pa=acrobat_pro_dc_plus_sign_funnel_individual&rtc=t&lo=sl&af=uc_new_user_iframe%2Cuc_new_system_close&cs=myoverride',
+        href: 'https://commerce.adobe.com/store/segmentation?cs=myoverride&cli=creative&ctx=if&co=US&lang=en&ms=COM&ot=BASE&pa=acrobat_pro_dc_plus_sign_funnel_individual&rtc=t&lo=sl&af=uc_new_user_iframe%2Cuc_new_system_close',
       },
       msParamOverride: {
         el: page.locator('[data-wcs-osi="1ZyMOJpSngx9IU5AjEDyp7oRBz843zNlbbtPKbIb1gM"]'),

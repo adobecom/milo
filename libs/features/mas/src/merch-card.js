@@ -415,8 +415,8 @@ export class MerchCard extends LitElement {
         );
         this.removeEventListener(EVENT_AEM_ERROR, this.handleAemFragmentEvents);
         this.removeEventListener(EVENT_AEM_LOAD, this.handleAemFragmentEvents);
-        this.removeEventListener(EVENT_MERCH_ADDON_AND_QUANTITY_UPDATE, this.handleAddonAndQuantityUpdate);
         this.removeEventListener('change', this.changeHandler);
+        this.removeEventListener(EVENT_MERCH_ADDON_AND_QUANTITY_UPDATE, this.handleAddonAndQuantityUpdate);
     }
 
     // custom methods
@@ -536,7 +536,7 @@ export class MerchCard extends LitElement {
     }
 
     get addonCheckbox() {
-      return this.shadowRoot.querySelector('input[type="checkbox"]');
+      return this.querySelector('merch-addon')?.shadowRoot?.querySelector('input[type="checkbox"]');
   }
 
     displayFooterElementsInColumn() {

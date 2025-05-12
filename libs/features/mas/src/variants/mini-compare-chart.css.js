@@ -24,6 +24,7 @@ export const CSS = `
   }
 
   merch-card[variant="mini-compare-chart"] merch-addon [is="inline-price"] {
+    min-height: unset;
     font-weight: bold;
     pointer-events: none;
   }
