@@ -102,8 +102,6 @@ const {
   logPerformance,
 } = utilities;
 
-import { getMiloLocaleSettings } from '../merch/merch.js';
-
 const SIGNIN_CONTEXT = getConfig()?.signInContext;
 
 function getHelpChildren() {
