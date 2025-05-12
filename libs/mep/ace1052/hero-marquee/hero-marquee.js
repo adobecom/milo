@@ -39,9 +39,11 @@ function decorateList(el, classes) {
       const firstElemIsSvg = item.children[0]?.querySelector('img[src*=".svg"]');
       if (firstElemIsIcon || firstElemIsSvg) item.classList.add('icon-item');
       if (firstElemIsSvg) {
+        firstElemIsSvg.parentElement.classList.add('list-icon');
         item.closest('ul, ol').classList.add('has-svg-bullet');
-        firstElemIsSvg.parentElement.classList.add('list-icon')
-        console.log('first elem is svg')
+        const listText = createTag('div', {class: 'list-text'});
+        [...item.childNodes].forEach((c) => (c !== firstElemIsSvg.parentElement) ? listText.append(c) : null);
+        item.append(listText);
       }
       if (!item.parentElement.classList.contains('icon-list')) item.parentElement.classList.add('icon-list');
     });
