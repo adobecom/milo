@@ -64,8 +64,10 @@ export default async function saveToMmm() {
   if (data.page.prefix === US_GEO) data.page.prefix = '';
   data.page.target = getMetadata('target') || 'off';
   delete data.page.highlight;
-  const excludedStrings = ['/drafts/', '.stage.', '.page/', '.live/', '/fragments/', '/nala/', 'localhost'];
-  if (excludedStrings.some((str) => data.page.url.includes(str))) {
+  const excludedStrings = [
+    '.stage.', '.page/', '.live/', 'localhost', '/drafts/', '/fragments/', '/nala/',
+  ];
+  if (excludedStrings.some((str) => data.page.url.includes(str)) || document.title?.includes('404')) {
     // eslint-disable-next-line no-console
     console.log('Not saving to MMM because the URL contains an excluded string', data);
     return false;
