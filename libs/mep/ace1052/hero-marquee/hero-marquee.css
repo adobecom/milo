@@ -239,7 +239,14 @@ html[dir="rtl"] .hero-marquee li.icon-item span.icon {
   right: -28px;
 }
 
-.hero-marquee li.icon-item.has-svg-bullet {
+.hero-marquee .icon-list.has-svg-bullet {
+  padding-inline-start: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 17px;
+}
+
+.hero-marquee .icon-list.has-svg-bullet li.icon-item {
   display: flex;
   gap: 12px;
   align-items: center;
@@ -262,10 +269,8 @@ html[dir="rtl"] .hero-marquee li.icon-item span.icon {
 .hero-marquee li.icon-item picture.list-icon,
 .hero-marquee li.icon-item picture.list-icon img {
   display: flex;
-  width: 36px;
-  height: auto;
-  min-width: 36px;
   max-width: 36px;
+  height: auto;
 }
 
 /* mobile ONLY */

@@ -37,10 +37,9 @@ function decorateList(el, classes) {
     [...listItems].forEach((item) => {
       const firstElemIsIcon = item.children[0]?.classList.contains('icon');
       const firstElemIsSvg = item.children[0]?.querySelector('img[src*=".svg"]');
-      if (firstElemIsIcon) item.classList.add('icon-item');
+      if (firstElemIsIcon || firstElemIsSvg) item.classList.add('icon-item');
       if (firstElemIsSvg) {
-        item.classList.add('icon-item');
-        item.classList.add('has-svg-bullet');
+        item.closest('ul, ol').classList.add('has-svg-bullet');
         firstElemIsSvg.parentElement.classList.add('list-icon')
         console.log('first elem is svg')
       }
