@@ -34,7 +34,28 @@ export const fetchIcons = (config) => new Promise(async (resolve) => {
   resolve(fetchedIcons);
 });
 
-function decorateToolTip(icon) {
+let tooltipListenersAdded = false;
+function addTooltipListeners() {
+  tooltipListenersAdded = true;
+
+  ['keydown', 'mouseenter', 'focus', 'mouseleave', 'blur'].forEach((eventType) => {
+    document.addEventListener(eventType, (event) => {
+      const isTooltip = event.target?.matches?.('.milo-tooltip');
+      if (!isTooltip) return;
+
+      if (['mouseenter', 'focus'].includes(eventType)) {
+        event.target.classList.remove('hide-tooltip');
+      } else if (['mouseleave', 'blur'].includes(eventType)
+        || (eventType === 'keydown' && event.key === 'Escape')) {
+        event.target.classList.add('hide-tooltip');
+      }
+    }, true);
+  });
+}
+
+function decorateToolTip(icon, iconName) {
+  const hasTooltip = icon.closest('em')?.textContent.includes('|') && [...icon.classList].some((cls) => cls.includes('tooltip'));
+  if (!hasTooltip) return;
   const wrapper = icon.closest('em');
   wrapper.className = 'tooltip-wrapper';
   if (!wrapper) return;
