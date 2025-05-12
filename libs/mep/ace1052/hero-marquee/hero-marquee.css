@@ -285,6 +285,10 @@ html[dir="rtl"] .hero-marquee li.icon-item span.icon {
     text-align: center;
   }
 
+  .hero-marquee .body-bold {
+    font-weight: 700;
+  }
+
   .hero-marquee.media-top-mobile {
     flex-direction: column-reverse;
   }
@@ -333,10 +337,6 @@ html[dir="rtl"] .hero-marquee li.icon-item span.icon {
 
   .hero-marquee .con-block.row-text:has(.action-area) + .con-block.row-text .row-wrapper {
     text-align: center;
-  }
-
-  .hero-marquee .con-block.row-text .body-bold {
-    font-weight: 700;
   }
 }
 
