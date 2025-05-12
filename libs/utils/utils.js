@@ -1554,10 +1554,6 @@ function decorateDocumentExtras() {
 async function documentPostSectionLoading(config) {
   decorateFooterPromo();
 
-  const appendage = getMetadata('title-append');
-  if (appendage) {
-    import('../features/title-append/title-append.js').then((module) => module.default(appendage));
-  }
   if (getMetadata('seotech-structured-data') === 'on' || getMetadata('seotech-video-url')) {
     import('../features/seotech/seotech.js').then((module) => module.default(
       { locationUrl: window.location.href, getMetadata, createTag, getConfig },
