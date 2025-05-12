@@ -141,7 +141,7 @@ export function getUpdatedAcrobatVisitAttempt() {
   const secondVisitAttempt = Number(localStorage.getItem('acrobatSecondHit')) || 0;
 
   const isAdobeDomain = (hostname === 'www.adobe.com' || hostname === 'www.stage.adobe.com') && /\/acrobat/.test(pathname);
-  const consentCookieValue = getCookie('OptanonConsent');
+  const consentCookieValue = getCookie(OPT_ON_AND_CONSENT_COOKIE);
 
   if (consentCookieValue?.includes('C0002:1') && isAdobeDomain) {
     const updatedVisitAttempt = secondVisitAttempt === 0 ? 1 : secondVisitAttempt + 1;
@@ -423,6 +423,7 @@ function createRequestPayload({ updatedContext, pageName, processedPageName, loc
     if (getUpdatedAcrobatVisitAttempt() === 2) {
       digitalData.adobe = { experienceCloud: { acrobatSecondVisits: 'setEvent' } };
     }
+    digitalData.otherConsents = digitalData.otherConsents || {};
     digitalData.otherConsents.advertising = consentCookie && consentCookie.includes('C0004:0') ? 'false' : 'true';
     digitalData.adobe = {
       experienceCloud: { agiCampaign: setAgICampVal ? agiCampaign : '' },
