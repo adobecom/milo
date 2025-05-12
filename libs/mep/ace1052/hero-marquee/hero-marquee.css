@@ -243,13 +243,15 @@ html[dir="rtl"] .hero-marquee li.icon-item span.icon {
   padding-inline-start: 0;
   display: flex;
   flex-direction: column;
-  gap: 17px;
+  gap: var(--spacing-xs);
 }
 
 .hero-marquee .icon-list.has-svg-bullet li.icon-item {
   display: flex;
   gap: 12px;
   align-items: center;
+  padding: 0;
+  margin: 0;
 }
 
 /* row-supplemental */
