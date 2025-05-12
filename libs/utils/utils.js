@@ -1577,8 +1577,6 @@ async function documentPostSectionLoading(config) {
   });
 
   document.body.appendChild(createTag('div', { id: 'page-load-ok-milo', style: 'display: none;' }));
-
-  import('../blocks/preflight/mini-preflight.js');
 }
 
 export function partition(arr, fn) {

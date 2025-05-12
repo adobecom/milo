@@ -101,7 +101,6 @@ async function getResults() {
         icons[index] = icon;
       })
       .catch((error) => {
-        console.error(`Check failed: ${signalResult.value.title}`, error);
         const icon = toUIFormat(
           {
             title: signalResult.value.title,
