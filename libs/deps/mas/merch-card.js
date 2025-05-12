@@ -1502,7 +1502,7 @@ merch-card[variant="special-offers"] span[is="inline-price"][data-template="stri
         width: 20px;
         height: 20px;
         padding-inline-end: 6px;
-        padding-top: 15px;
+        margin-top: 15px;
     }
 
     merch-card[variant='fries'] [slot="body-s"] .mnemonic-text {
