@@ -86,6 +86,21 @@ function wrapCopy(foreground) {
   });
 }
 
+const focusableSelector = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
+const selectedSelector = '[aria-selected="true"], [aria-checked="true"]';
+
+export function findFocusableInSection(section, selSelector, focSelector) {
+  if (!section) return null;
+
+  const selectedElement = section.querySelector(selSelector);
+  if (selectedElement) return selectedElement;
+
+  const focusableElements = [...section.querySelectorAll(focSelector)];
+  return focusableElements.length > 0
+    ? focusableElements[focusableElements.length - 1]
+    : null;
+}
+
 function addCloseAction(el, btn) {
   btn.addEventListener('click', (e) => {
     if (btn.nodeName === 'A') e.preventDefault();
@@ -117,31 +132,17 @@ function addCloseAction(el, btn) {
     document.dispatchEvent(new CustomEvent('milo:sticky:closed'));
 
     setTimeout(() => {
-      const focusableSelector = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
-      const selectedSelector = '[aria-selected="true"], [aria-checked="true"]';
       let focusTarget;
-
-      const findFocusableInSection = (section) => {
-        if (!section) return null;
-
-        const selectedElement = section.querySelector(selectedSelector);
-        if (selectedElement) return selectedElement;
-
-        const focusableElements = [...section.querySelectorAll(focusableSelector)];
-        return focusableElements.length > 0
-          ? focusableElements[focusableElements.length - 1]
-          : null;
-      };
 
       if (isSticky) {
         const elementAtPosition = document.elementFromPoint(rect.left, rect.top);
         const stickySection = elementAtPosition.closest('.section');
-        focusTarget = findFocusableInSection(stickySection);
+        focusTarget = findFocusableInSection(stickySection, selectedSelector, focusableSelector);
       }
 
       let currentSection = el.closest('.section')?.previousElementSibling;
       while (currentSection && !focusTarget) {
-        focusTarget = findFocusableInSection(currentSection);
+        focusTarget = findFocusableInSection(currentSection, selectedSelector, focusableSelector);
         if (!focusTarget) currentSection = currentSection.previousElementSibling;
       }
 
