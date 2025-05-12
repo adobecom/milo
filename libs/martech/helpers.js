@@ -520,10 +520,8 @@ export const loadAnalyticsAndInteractionData = async (
   const CURRENT_DATE = new Date();
   const localTime = CURRENT_DATE.toISOString();
   const timezoneOffset = CURRENT_DATE.getTimezoneOffset();
-  if (hybridPersEnabled) {
-    window.hybridPers = true;
-  }
-  const hitType = hybridPersEnabled ? 'pageView' : 'propositionFetch';
+  window.hybridPers = true;	  if (hybridPersEnabled) {
+    const hitType = 'pageView';
   const pageName = getPageNameForAnalytics({ locale });
   const updatedContext = getUpdatedContext({ ...getDeviceInfo(), localTime, timezoneOffset });
   const requestUrl = createRequestUrl({
