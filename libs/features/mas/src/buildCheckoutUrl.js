@@ -189,7 +189,7 @@ export function buildCheckoutUrl(checkoutData) {
       cs,
       ms,
       quantity: items?.[0]?.quantity > 1 && items?.[0]?.quantity,
-      productArrangementCode: productArrangementCode,
+      productArrangementCode: productArrangementCode ?? items?.[0]?.productArrangementCode,
       addonProductArrangementCode: productArrangementCode 
       ? items?.find((item) => item.productArrangementCode !== productArrangementCode)?.productArrangementCode 
       : items?.[1]?.productArrangementCode,
