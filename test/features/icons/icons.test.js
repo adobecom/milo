@@ -32,13 +32,13 @@ describe('Icon Support', () => {
     await loadIcons(icons, config);
   });
 
-  it('Handles tooltip- prefix correctly', async () => {	
-    const tooltipIcon = createTag('span', { class: 'icon icon-tooltip-info' });	
-    await loadIcons([tooltipIcon], config);	
-    const svgIcon = tooltipIcon.querySelector(':scope svg');	
-    expect(svgIcon).to.exist;	
+  it('Handles tooltip- prefix correctly', async () => {
+    const tooltipIcon = createTag('span', { class: 'icon icon-tooltip-info' });
+    await loadIcons([tooltipIcon], config);
+    const svgIcon = tooltipIcon.querySelector(':scope svg');
+    expect(svgIcon).to.exist;
 
-    const iconName = tooltipIcon.classList[1].replace('icon-', '').replace(/tooltip-/, '');	
+    const iconName = tooltipIcon.classList[1].replace('icon-', '').replace(/tooltip-/, '');
     expect(iconName).to.equal('info');
   });
 
