@@ -130,7 +130,7 @@ export function Checkout({ providers, settings }) {
         } else {
             /* c8 ignore next 7 */
             data.items.push(
-                ...offers.map(({ offerId }, index) => ({
+                ...offers.map(({ offerId, productArrangementCode }, index) => ({
                     id: offerId,
                     quantity: quantity[index] ?? Defaults.quantity,
                     ...(is3in1 ? { productArrangementCode } : {}),
