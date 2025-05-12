@@ -133,6 +133,7 @@ export function Checkout({ providers, settings }) {
                 ...offers.map(({ offerId }, index) => ({
                     id: offerId,
                     quantity: quantity[index] ?? Defaults.quantity,
+                    ...(is3in1 ? { productArrangementCode } : {}),
                 })),
             );
         }
