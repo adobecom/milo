@@ -267,7 +267,6 @@ html[dir="rtl"] .hero-marquee li.icon-item span.icon {
   order: 2;
 }
 
-
 .hero-marquee li.icon-item picture.list-icon,
 .hero-marquee li.icon-item picture.list-icon img {
   display: flex;
@@ -330,6 +329,10 @@ html[dir="rtl"] .hero-marquee li.icon-item span.icon {
 
   .hero-marquee .con-block.row-text:has(.action-area) + .con-block.row-text .row-wrapper {
     text-align: center;
+  }
+
+  .hero-marquee .con-block.row-text .body-bold {
+    font-weight: 700;
   }
 }
 
