@@ -22,39 +22,37 @@ const decorateHeadline = (elem, index) => {
   if (!(elem instanceof HTMLElement)) return null;
 
   const headline = toFragment`<div class="feds-menu-headline">
-      <span>${elem.textContent.trim()}</span>
+      ${elem.textContent.trim()}
     </div>`;
+  
+  const headlineClickHandler = () => {
+    if (isDesktop.matches) return;
+    trigger({ element: headline, event: event, type: 'headline' });
+    setActiveDropdown(headline);
+  }
 
   const setHeadlineAttributes = () => {
-    const headlineElem = headline.querySelector('span');
     if (isDesktop.matches) {
-      headline.removeAttribute('role');
-      headlineElem.setAttribute('role', 'heading');
+      headline.setAttribute('role', 'heading');
       headline.removeAttribute('tabindex');
-      headlineElem.setAttribute('aria-level', 2);
+      headline.setAttribute('aria-level', 2);
       headline.removeAttribute('aria-haspopup', true);
       headline.removeAttribute('aria-expanded', false);
       headline.removeAttribute('daa-ll');
+      headline.removeEventListener('click', headlineClickHandler);
     } else {
       headline.setAttribute('role', 'button');
       headline.setAttribute('tabindex', 0);
-      headlineElem.removeAttribute('role');
-      headlineElem.removeAttribute('aria-level');
+      headline.removeAttribute('aria-level');
       headline.setAttribute('aria-haspopup', true);
       headline.setAttribute('aria-expanded', false);
       headline.setAttribute('daa-ll', getAnalyticsValue(headline.textContent, index));
+      headline.addEventListener('click', headlineClickHandler);
     }
   };
 
   setHeadlineAttributes();
   isDesktop.addEventListener('change', setHeadlineAttributes);
-
-  headline.addEventListener('click', (e) => {
-    if (isDesktop.matches) return;
-
-    trigger({ element: headline, event: e, type: 'headline' });
-    setActiveDropdown(headline);
-  });
 
   // Since heading is turned into a div, it can be safely removed
   elem.remove();
