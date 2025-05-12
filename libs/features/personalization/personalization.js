@@ -1399,12 +1399,14 @@ const awaitMartech = () => new Promise((resolve) => {
 });
 
 function getMmmSave({ config, manifests, mepSampleRate }) {
-  if (config.env?.name !== 'prod') return false;
-  if (config.mep?.preview) return true;
-  if (!config.mep.target || !manifests?.length) return false;
+  if (config.env?.name !== 'prod' || !config.mep || mepSampleRate === 'off') return false;
+  const { preview, target } = config.mep;
+  if (preview) return true;
+  if (!target || !manifests?.length) return false;
   let sampleRateDenom = 1000;
-  if (!Number.isNaN(Number(mepSampleRate)) && mepSampleRate > sampleRateDenom) {
-    sampleRateDenom = Number(mepSampleRate);
+  const mepSampleRateNum = Number(mepSampleRate);
+  if (!Number.isNaN(mepSampleRateNum) && mepSampleRate > sampleRateDenom) {
+    sampleRateDenom = mepSampleRateNum;
   }
   if (Math.random() < 1 / sampleRateDenom) return true;
   return false;
