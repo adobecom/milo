@@ -34,7 +34,29 @@ export const fetchIcons = (config) => new Promise(async (resolve) => {
   resolve(fetchedIcons);
 });
 
-function decorateToolTip(icon) {
+let tooltipListenersAdded = false;
+function addTooltipListeners() {
+  tooltipListenersAdded = true;
+
+  ['keydown', 'mouseenter', 'focus', 'mouseleave', 'blur'].forEach((eventType) => {
+    document.addEventListener(eventType, (event) => {
+      const isTooltip = event.target?.matches?.('.milo-tooltip');
+      if (!isTooltip) return;
+
+      if (['mouseenter', 'focus'].includes(eventType)) {
+        event.target.classList.remove('hide-tooltip');
+      } else if (['mouseleave', 'blur'].includes(eventType)
+        || (eventType === 'keydown' && event.key === 'Escape')) {
+        event.target.classList.add('hide-tooltip');
+      }
+    }, true);
+  });
+}
+
+function decorateToolTip(icon, iconName) {
+  const hasTooltip = icon.closest('em')?.textContent.includes('|') && [...icon.classList].some((cls) => cls.includes('tooltip'));
+  if (!hasTooltip) return;
+
   const wrapper = icon.closest('em');
   wrapper.className = 'tooltip-wrapper';
   if (!wrapper) return;
@@ -45,7 +67,10 @@ function decorateToolTip(icon) {
   icon.dataset.tooltip = content;
   // Position is the next to last part of a tooltip
   const place = conf.pop()?.trim().toLowerCase() || 'right';
-  icon.className = `icon icon-info milo-tooltip ${place}`;
+  icon.className = `icon icon-${iconName} milo-tooltip ${place}`;
+  icon.setAttribute('tabindex', '0');
+  icon.setAttribute('aria-label', content);
+  icon.setAttribute('role', 'button');
   wrapper.parentElement.replaceChild(icon, wrapper);
   if (!tooltipListenersAdded) addTooltipListeners();
 }
