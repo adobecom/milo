@@ -1,3 +1,4 @@
+import { SELECTOR_MAS_INLINE_PRICE } from './constants.js';
 import { UptLink } from './upt-link.js';
 import { createTag } from './utils.js';
 
@@ -13,27 +14,27 @@ const SPECTRUM_BUTTON_SIZES = ['XL', 'L', 'M', 'S'];
 const TEXT_TRUNCATE_SUFFIX = '...';
 
 export function appendSlot(fieldName, fields, el, mapping) {
-  const config = mapping[fieldName];
-  if (fields[fieldName] && config) {
-    const attributes = { slot: config?.slot };
-    let content = fields[fieldName];
-    
-    // Handle maxCount if specified in the config
-    if (config.maxCount && typeof content === 'string') {
-      const [truncatedContent, cleanContent] = getTruncatedTextData(content, config.maxCount, config.withSuffix);
-      if (truncatedContent !== content) {
-        attributes.title = cleanContent; // Add full text as title attribute for tooltip
-        content = truncatedContent;
-      }
+    const config = mapping[fieldName];
+    if (fields[fieldName] && config) {
+        const attributes = { slot: config?.slot };
+        let content = fields[fieldName];
+
+        // Handle maxCount if specified in the config
+        if (config.maxCount && typeof content === 'string') {
+            const [truncatedContent, cleanContent] = getTruncatedTextData(
+                content,
+                config.maxCount,
+                config.withSuffix,
+            );
+            if (truncatedContent !== content) {
+                attributes.title = cleanContent; // Add full text as title attribute for tooltip
+                content = truncatedContent;
+            }
+        }
+
+        const tag = createTag(config.tag, attributes, content);
+        el.append(tag);
     }
-    
-    const tag = createTag(
-      config.tag,
-      attributes,
-      content,
-    );
-    el.append(tag);
-  }
 }
 
 export function processMnemonics(fields, merchCard, mnemonicsConfig) {
@@ -67,11 +68,12 @@ export function processMnemonics(fields, merchCard, mnemonicsConfig) {
 }
 
 function processBadge(fields, merchCard, mapping) {
-    if (fields.variant === 'plans') {
+    if (fields.variant === 'plans' || fields.variant === 'plans-students') {
         // for back-compatibility
         if (fields.badge?.length && !fields.badge?.startsWith('<merch-badge')) {
             fields.badge = `<merch-badge variant="${fields.variant}" background-color="${DEFAULT_PLANS_BADGE_COLOR}">${fields.badge}</merch-badge>`;
-            if (!fields.borderColor) fields.borderColor = DEFAULT_PLANS_BADGE_COLOR;
+            if (!fields.borderColor)
+                fields.borderColor = DEFAULT_PLANS_BADGE_COLOR;
         }
         appendSlot('badge', fields, merchCard, mapping);
         return;
@@ -106,23 +108,29 @@ export function processSize(fields, merchCard, sizeConfig) {
 }
 
 export function processTitle(fields, merchCard, titleConfig) {
-  // Use the enhanced appendSlot function for consistency
-  appendSlot('cardTitle', fields, merchCard, { cardTitle: titleConfig });
+    // Use the enhanced appendSlot function for consistency
+    appendSlot('cardTitle', fields, merchCard, { cardTitle: titleConfig });
 }
 
 export function processSubtitle(fields, merchCard, mapping) {
-  appendSlot('subtitle', fields, merchCard, mapping); 
+    appendSlot('subtitle', fields, merchCard, mapping);
 }
 
 export function processBackgroundColor(fields, merchCard, allowedColors) {
-    if (!fields.backgroundColor || fields.backgroundColor.toLowerCase() === 'default') {
+    if (
+        !fields.backgroundColor ||
+        fields.backgroundColor.toLowerCase() === 'default'
+    ) {
         merchCard.style.removeProperty('--merch-card-custom-background-color');
         merchCard.removeAttribute('background-color');
         return;
     }
 
     if (allowedColors?.[fields.backgroundColor]) {
-        merchCard.style.setProperty('--merch-card-custom-background-color', `var(${allowedColors[fields.backgroundColor]})`);
+        merchCard.style.setProperty(
+            '--merch-card-custom-background-color',
+            `var(${allowedColors[fields.backgroundColor]})`,
+        );
         merchCard.setAttribute('background-color', fields.backgroundColor);
     }
 }
@@ -131,9 +139,18 @@ export function processBorderColor(fields, merchCard, borderColorConfig) {
     const customBorderColor = '--merch-card-custom-border-color';
     if (fields.borderColor?.toLowerCase() === 'transparent') {
         merchCard.style.removeProperty(customBorderColor);
-        if (fields.variant === 'plans') merchCard.style.setProperty(customBorderColor, 'transparent');
+        if (fields.variant === 'plans')
+            merchCard.style.setProperty(customBorderColor, 'transparent');
     } else if (fields.borderColor && borderColorConfig) {
-        merchCard.style.setProperty(customBorderColor, `var(--${fields.borderColor})`);
+        if (/-gradient/.test(fields.borderColor)) {
+            merchCard.setAttribute('gradient-border', 'true');
+            merchCard.style.removeProperty(customBorderColor);
+        } else {
+            merchCard.style.setProperty(
+                customBorderColor,
+                `var(--${fields.borderColor})`,
+            );
+        }
     }
 }
 
@@ -171,26 +188,51 @@ export function processBackgroundImage(
 }
 
 export function processPrices(fields, merchCard, mapping) {
-  appendSlot('prices', fields, merchCard, mapping); 
+    appendSlot('prices', fields, merchCard, mapping);
 }
 
 export function processDescription(fields, merchCard, mapping) {
-  appendSlot('promoText', fields, merchCard, mapping);
-  appendSlot('description', fields, merchCard, mapping);
-  appendSlot('callout', fields, merchCard, mapping);
-  appendSlot('quantitySelect', fields, merchCard, mapping);
-  appendSlot('whatsIncluded', fields, merchCard, mapping);
+    appendSlot('promoText', fields, merchCard, mapping);
+    appendSlot('description', fields, merchCard, mapping);
+    appendSlot('callout', fields, merchCard, mapping);
+    appendSlot('quantitySelect', fields, merchCard, mapping);
+    appendSlot('whatsIncluded', fields, merchCard, mapping);
 }
 
-export function processStockOffersAndSecureLabel(fields, merchCard, aemFragmentMapping, settings) {
-  // for Stock Checkbox, presence flag is set on the card, label and osi for an offer are set in settings
-  if (fields.showStockCheckbox && aemFragmentMapping.stockOffer) {
-    merchCard.setAttribute('checkbox-label', settings.stockCheckboxLabel);
-    merchCard.setAttribute('stock-offer-osis', settings.stockOfferOsis);
-  }
-  if (settings.secureLabel && aemFragmentMapping.secureLabel) {
-    merchCard.setAttribute('secure-label', settings.secureLabel);
-  }
+export function processAddon(fields, merchCard, mapping) {
+    if (!mapping.addon) return;
+    let addonField = fields.addon?.replace(/[{}]/g, '');
+    if (!addonField) return;
+    if (/disabled/.test(addonField)) return;
+    const addon = createTag('merch-addon', { slot: 'addon' }, addonField);
+    [...addon.querySelectorAll(SELECTOR_MAS_INLINE_PRICE)].forEach((span) => {
+        const parent = span.parentElement;
+        if (parent?.nodeName !== 'P') return;
+        parent.setAttribute('data-plan-type', '');
+    });
+    merchCard.append(addon);
+}
+
+export function processStockOffersAndSecureLabel(
+    fields,
+    merchCard,
+    aemFragmentMapping,
+    settings,
+) {
+    // for Stock Checkbox, presence flag is set on the card, label and osi for an offer are set in settings
+    if (fields.showStockCheckbox && aemFragmentMapping.stockOffer) {
+        merchCard.setAttribute(
+            'checkbox-label',
+            settings?.stockCheckboxLabel ? settings.stockCheckboxLabel : '',
+        );
+        merchCard.setAttribute(
+            'stock-offer-osis',
+            settings?.stockOfferOsis ? settings.stockOfferOsis : '',
+        );
+    }
+    if (settings?.secureLabel && aemFragmentMapping?.secureLabel) {
+        merchCard.setAttribute('secure-label', settings.secureLabel);
+    }
 }
 
 export function getTruncatedTextData(text, limit, withSuffix = true) {
@@ -201,7 +243,11 @@ export function getTruncatedTextData(text, limit, withSuffix = true) {
 
         let index = 0;
         let inTag = false;
-        let remaining = withSuffix ? (limit - TEXT_TRUNCATE_SUFFIX.length < 1 ? 1 : limit - TEXT_TRUNCATE_SUFFIX.length) : limit;
+        let remaining = withSuffix
+            ? limit - TEXT_TRUNCATE_SUFFIX.length < 1
+                ? 1
+                : limit - TEXT_TRUNCATE_SUFFIX.length
+            : limit;
         let openTags = [];
 
         for (const char of _text) {
@@ -211,8 +257,7 @@ export function getTruncatedTextData(text, limit, withSuffix = true) {
                 // Check next character
                 if (_text[index] === '/') {
                     openTags.pop();
-                }
-                else {
+                } else {
                     let tagName = '';
                     for (const tagChar of _text.substring(index)) {
                         if (tagChar === ' ' || tagChar === '>') break;
@@ -240,9 +285,9 @@ export function getTruncatedTextData(text, limit, withSuffix = true) {
         if (openTags.length > 0) {
             if (openTags[0] === 'p') openTags.shift();
             for (const tag of openTags.reverse()) {
-                trimmedText += `</${tag}>`
+                trimmedText += `</${tag}>`;
             }
-  }
+        }
         let truncatedText = `${trimmedText}${withSuffix ? TEXT_TRUNCATE_SUFFIX : ''}`;
         return [truncatedText, cleanText];
     } catch (error) {
@@ -272,7 +317,7 @@ function clearTags(text) {
 
 export function processUptLinks(fields, merchCard) {
     const placeholders = merchCard.querySelectorAll('a.upt-link');
-    placeholders.forEach(placeholder => {
+    placeholders.forEach((placeholder) => {
         const uptLink = UptLink.createFrom(placeholder);
         placeholder.replaceWith(uptLink);
         uptLink.initializeWcsData(fields.osi, fields.promoCode);
@@ -321,7 +366,9 @@ function createSpectrumSwcButton(cta, aemFragmentMapping, isOutline, variant) {
             variant,
             tabIndex: 0,
             size: aemFragmentMapping.ctas.size ?? 'm',
-            ...(cta.dataset.analyticsId && { 'data-analytics-id': cta.dataset.analyticsId }),
+            ...(cta.dataset.analyticsId && {
+                'data-analytics-id': cta.dataset.analyticsId,
+            }),
         },
         cta.innerHTML,
     );
@@ -341,7 +388,10 @@ function createSpectrumSwcButton(cta, aemFragmentMapping, isOutline, variant) {
 
 function createConsonantButton(cta, isAccent) {
     const CheckoutLink = customElements.get('checkout-link');
-    const checkoutLink = CheckoutLink.createCheckoutLink(cta.dataset, cta.innerHTML);
+    const checkoutLink = CheckoutLink.createCheckoutLink(
+        cta.dataset,
+        cta.innerHTML,
+    );
     checkoutLink.classList.add('con-button');
     if (isAccent) {
         checkoutLink.classList.add('blue');
@@ -362,7 +412,8 @@ export function processCTAs(fields, merchCard, aemFragmentMapping, variant) {
             const isSecondary = checkoutLinkStyle.includes('secondary');
             const isOutline = checkoutLinkStyle.includes('-outline');
             const isLink = checkoutLinkStyle.includes('-link');
-            if (merchCard.consonant) return createConsonantButton(cta, isAccent);
+            if (merchCard.consonant)
+                return createConsonantButton(cta, isAccent);
             if (isLink) {
                 return cta;
             }
@@ -377,8 +428,18 @@ export function processCTAs(fields, merchCard, aemFragmentMapping, variant) {
             }
 
             return merchCard.spectrum === 'swc'
-                ? createSpectrumSwcButton(cta, aemFragmentMapping, isOutline, variant)
-                : createSpectrumCssButton(cta, aemFragmentMapping, isOutline, variant);
+                ? createSpectrumSwcButton(
+                      cta,
+                      aemFragmentMapping,
+                      isOutline,
+                      variant,
+                  )
+                : createSpectrumCssButton(
+                      cta,
+                      aemFragmentMapping,
+                      isOutline,
+                      variant,
+                  );
         });
 
         footer.innerHTML = '';
@@ -396,8 +457,12 @@ export function processAnalytics(fields, merchCard) {
     if (!cardAnalyticsId) return;
     merchCard.setAttribute(ANALYTICS_SECTION_ATTR, cardAnalyticsId);
     const elements = [
-      ...merchCard.shadowRoot.querySelectorAll(`a[data-analytics-id],button[data-analytics-id]`),
-      ...merchCard.querySelectorAll(`a[data-analytics-id],button[data-analytics-id]`)
+        ...merchCard.shadowRoot.querySelectorAll(
+            `a[data-analytics-id],button[data-analytics-id]`,
+        ),
+        ...merchCard.querySelectorAll(
+            `a[data-analytics-id],button[data-analytics-id]`,
+        ),
     ];
     elements.forEach((el, index) => {
         el.setAttribute(
@@ -421,60 +486,46 @@ export function updateLinksCSS(merchCard) {
 }
 
 export function cleanup(merchCard) {
-  // remove all previous slotted content except the default slot
-  merchCard.querySelectorAll('[slot]').forEach((el) => {
-    el.remove();
-  });
-  const attributesToRemove = [
-  'checkbox-label',
-  'stock-offer-osis',
-  'secure-label',
-  'background-image',
-  'background-color',
-  'border-color',
-  'badge-background-color',
-  'badge-color',
-  'badge-text',
-  'size',
-  ANALYTICS_SECTION_ATTR,
-  ];
-  attributesToRemove.forEach(attr => merchCard.removeAttribute(attr));
-  const classesToRemove = ['wide-strip', 'thin-strip'];
-  merchCard.classList.remove(...classesToRemove);
+    // remove all previous slotted content except the default slot
+    merchCard.querySelectorAll('[slot]').forEach((el) => {
+        el.remove();
+    });
+    merchCard.variant = undefined;
+    const attributesToRemove = [
+        'checkbox-label',
+        'stock-offer-osis',
+        'secure-label',
+        'background-image',
+        'background-color',
+        'border-color',
+        'badge-background-color',
+        'badge-color',
+        'badge-text',
+        'gradient-border',
+        'size',
+        ANALYTICS_SECTION_ATTR,
+    ];
+    attributesToRemove.forEach((attr) => merchCard.removeAttribute(attr));
+    const classesToRemove = ['wide-strip', 'thin-strip'];
+    merchCard.classList.remove(...classesToRemove);
 }
 
 export async function hydrate(fragment, merchCard) {
-    const { id, fields } = fragment;
+    const { id, fields, settings = {} } = fragment;
     const { variant } = fields;
-    if (!variant) throw new Error (`hydrate: no variant found in payload ${id}`);
-    // temporary hardcode for plans. this data will be coming from settings (MWPW-166756)
-    const settings = {
-      stockCheckboxLabel: 'Add a 30-day free trial of Adobe Stock.*', // to be {{stock-checkbox-label}}
-      stockOfferOsis: '',
-      secureLabel: 'Secure transaction' // to be {{secure-transaction}}
-    };
+    if (!variant) throw new Error(`hydrate: no variant found in payload ${id}`);
     cleanup(merchCard);
+    merchCard.settings = settings;
     merchCard.id ??= fragment.id;
-
-
-    merchCard.removeAttribute('background-image');
-    merchCard.removeAttribute('background-color');
-    merchCard.removeAttribute('badge-background-color');
-    merchCard.removeAttribute('badge-color');
-    merchCard.removeAttribute('badge-text');
-    merchCard.removeAttribute('size');
-    merchCard.classList.remove('wide-strip');
-    merchCard.classList.remove('thin-strip');
-    merchCard.removeAttribute(ANALYTICS_SECTION_ATTR);
-
     merchCard.variant = variant;
     await merchCard.updateComplete;
 
     const { aemFragmentMapping } = merchCard.variantLayout;
-    if (!aemFragmentMapping) throw new Error (`hydrate: aemFragmentMapping found for ${id}`)
+    if (!aemFragmentMapping)
+        throw new Error(`hydrate: aemFragmentMapping found for ${id}`);
 
     if (aemFragmentMapping.style === 'consonant') {
-      merchCard.setAttribute('consonant', true);
+        merchCard.setAttribute('consonant', true);
     }
     processMnemonics(fields, merchCard, aemFragmentMapping.mnemonics);
     processBadge(fields, merchCard, aemFragmentMapping);
@@ -490,7 +541,13 @@ export async function hydrate(fragment, merchCard) {
     processBackgroundColor(fields, merchCard, aemFragmentMapping.allowedColors);
     processBorderColor(fields, merchCard, aemFragmentMapping.borderColor);
     processDescription(fields, merchCard, aemFragmentMapping);
-    processStockOffersAndSecureLabel(fields, merchCard, aemFragmentMapping, settings);
+    processAddon(fields, merchCard, aemFragmentMapping);
+    processStockOffersAndSecureLabel(
+        fields,
+        merchCard,
+        aemFragmentMapping,
+        settings,
+    );
     processUptLinks(fields, merchCard);
     processCTAs(fields, merchCard, aemFragmentMapping, variant);
     processAnalytics(fields, merchCard);

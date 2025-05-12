@@ -1,7 +1,9 @@
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
-import { setConfig } from '../../../libs/utils/utils.js';
+import { setConfig, createTag } from '../../../libs/utils/utils.js';
+import { mockFetch } from './mocks/fetch.js';
+import { mockIms } from './mocks/ims.js';
 
 document.body.innerHTML = await readFile({ path: './mocks/threeInOne.html' });
 
@@ -14,6 +16,8 @@ const {
   createContent,
   default: openThreeInOneModal,
 } = await import('../../../libs/blocks/merch/three-in-one.js');
+
+const { default: initMerch } = await import('../../../libs/blocks/merch/merch.js');
 
 setConfig({ locale: { contentRoot: '/test/blocks/merch/mocks' } });
 
@@ -105,6 +109,87 @@ describe('Three-in-One Modal', () => {
       handle3in1IFrameEvents({ data: JSON.stringify(message) });
       expect(closeEvent.calledOnce).to.be.true;
     });
+
+    it('should handle EXTERNAL message and open window with external URL', () => {
+      const windowOpenSpy = sinon.spy(window, 'open');
+      const message = {
+        app: 'ucv3',
+        subType: MSG_SUBTYPE.EXTERNAL,
+        data: {
+          externalUrl: 'https://example.com',
+          target: '_blank',
+        },
+      };
+      handle3in1IFrameEvents({ data: JSON.stringify(message) });
+      expect(windowOpenSpy.calledWith('https://example.com', '_blank')).to.be.true;
+    });
+
+    it('should handle SWITCH message and open window with external URL', () => {
+      const windowOpenSpy = sinon.spy(window, 'open');
+      const message = {
+        app: 'ucv3',
+        subType: MSG_SUBTYPE.SWITCH,
+        data: {
+          externalUrl: 'https://example.com',
+          target: '_blank',
+        },
+      };
+      handle3in1IFrameEvents({ data: JSON.stringify(message) });
+      expect(windowOpenSpy.calledWith('https://example.com', '_blank')).to.be.true;
+    });
+
+    it('should handle RETURN_BACK message and open window with external URL', () => {
+      const windowOpenSpy = sinon.spy(window, 'open');
+      const message = {
+        app: 'ucv3',
+        subType: MSG_SUBTYPE.RETURN_BACK,
+        data: {
+          externalUrl: 'https://example.com',
+          target: '_blank',
+        },
+      };
+      handle3in1IFrameEvents({ data: JSON.stringify(message) });
+      expect(windowOpenSpy.calledWith('https://example.com', '_blank')).to.be.true;
+    });
+
+    it('should handle Close message with action URL', () => {
+      const windowOpenSpy = sinon.spy(window, 'open');
+      const message = {
+        app: 'ucv3',
+        subType: MSG_SUBTYPE.Close,
+        data: {
+          actionRequired: true,
+          actionUrl: 'https://example.com/action',
+        },
+      };
+      handle3in1IFrameEvents({ data: JSON.stringify(message) });
+      expect(windowOpenSpy.calledWith('https://example.com/action')).to.be.true;
+    });
+
+    it('should dispatch merch-modal:addon-and-quantity-update event on Close message with cart items', () => {
+      const modal = document.querySelector('.three-in-one');
+      modal.id = 'test-modal-id';
+      const link = createTag('a', { 'data-modal-id': 'test-modal-id' });
+      const merchCard = createTag('merch-card');
+      merchCard.appendChild(link);
+      document.body.appendChild(merchCard);
+
+      const eventSpy = sinon.spy();
+      merchCard.addEventListener('merch-modal:addon-and-quantity-update', eventSpy);
+
+      const message = {
+        app: 'ucv3',
+        subType: MSG_SUBTYPE.Close,
+        data: { state: { cart: { items: ['item1', 'item2'] } } },
+      };
+      handle3in1IFrameEvents({ data: JSON.stringify(message) });
+
+      expect(eventSpy.calledOnce).to.be.true;
+      expect(eventSpy.firstCall.args[0].detail).to.deep.equal({
+        id: 'test-modal-id',
+        items: ['item1', 'item2'],
+      });
+    });
   });
 
   describe('handleTimeoutError', () => {
@@ -151,6 +236,40 @@ describe('Three-in-One Modal', () => {
     it('should return undefined for invalid input', async () => {
       const result = await openThreeInOneModal();
       expect(result).to.be.undefined;
+    });
+  });
+
+  describe('handle3in1Params', () => {
+    beforeEach(async () => {
+      await mockFetch();
+      await mockIms('CH');
+    });
+
+    it('should override market segment param', async () => {
+      const link = document.querySelector('#ms-override');
+      await initMerch(link);
+      const checkoutLink = document.querySelector('[data-wcs-osi="1ZyMOJpSngx9IU5AjEDyp7oRBz843zNlbbtPKbIb1gM"]');
+      await checkoutLink.render();
+      expect(checkoutLink).to.exist;
+      expect(checkoutLink.href).to.include('ms=myoverride');
+    });
+
+    it('should override customer segment param', async () => {
+      const link = document.querySelector('#cs-override');
+      await initMerch(link);
+      const checkoutLink = document.querySelector('[data-wcs-osi="VbDsK1jsr3uGWMCxyps3lJH_voQxJHKsRR5tz9lZoDo"]');
+      await checkoutLink.render();
+      expect(checkoutLink).to.exist;
+      expect(checkoutLink.href).to.include('cs=myoverride');
+    });
+
+    it('should unhide tabs on the CRM modal', async () => {
+      const link = document.querySelector('#unhide-tabs-crm');
+      await initMerch(link);
+      const checkoutLink = document.querySelector('[data-wcs-osi="cNKNAZtQxpD-jCOXiERTprpDatlhaoWsbZo1Onvrh_M"]');
+      await checkoutLink.render();
+      expect(checkoutLink).to.exist;
+      expect(checkoutLink.href).to.include('rf=uc_segmentation_hide_tabs_cr');
     });
   });
 });

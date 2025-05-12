@@ -190,6 +190,10 @@
   justify-content: space-between;
 }
 
+.table .col-heading * {
+  max-width: 100%;
+}
+
 .table .row-heading .col.col-heading .buttons-wrapper {
   display: flex;
   justify-content: center;
