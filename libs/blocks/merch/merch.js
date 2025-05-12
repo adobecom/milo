@@ -1,15 +1,17 @@
 import {
-  createTag, getConfig, loadArea, loadScript, loadStyle, localizeLink, SLD,
+  createTag, getConfig, loadArea, loadScript, loadStyle, localizeLink, SLD, getMetadata,
 } from '../../utils/utils.js';
 import { replaceKey } from '../../features/placeholders.js';
 
 export const CHECKOUT_LINK_CONFIG_PATH = '/commerce/checkout-link.json'; // relative to libs.
+export const CHECKOUT_LINK_SANDBOX_CONFIG_PATH = '/commerce/checkout-link-sandbox.json'; // relative to libs.
 
 export const PRICE_TEMPLATE_DISCOUNT = 'discount';
 export const PRICE_TEMPLATE_OPTICAL = 'optical';
 export const PRICE_TEMPLATE_REGULAR = 'price';
 export const PRICE_TEMPLATE_STRIKETHROUGH = 'strikethrough';
 export const PRICE_TEMPLATE_ANNUAL = 'annual';
+export const PRICE_TEMPLATE_LEGAL = 'legal';
 
 const PRICE_TEMPLATE_MAPPING = new Map([
   ['priceDiscount', PRICE_TEMPLATE_DISCOUNT],
@@ -20,6 +22,7 @@ const PRICE_TEMPLATE_MAPPING = new Map([
   [PRICE_TEMPLATE_STRIKETHROUGH, PRICE_TEMPLATE_STRIKETHROUGH],
   ['priceAnnual', PRICE_TEMPLATE_ANNUAL],
   [PRICE_TEMPLATE_ANNUAL, PRICE_TEMPLATE_ANNUAL],
+  [PRICE_TEMPLATE_LEGAL, PRICE_TEMPLATE_LEGAL],
 ]);
 
 export const PLACEHOLDER_KEY_DOWNLOAD = 'download';
@@ -44,6 +47,34 @@ export const CC_SINGLE_APPS = [
   ['RUSH'],
   ['XD'],
 ];
+
+const LanguageMap = {
+  en: 'US',
+  'en-gb': 'GB',
+  'es-mx': 'MX',
+  'fr-ca': 'CA',
+  da: 'DK',
+  et: 'EE',
+  ar: 'DZ',
+  el: 'GR',
+  iw: 'IL',
+  he: 'IL',
+  id: 'ID',
+  ms: 'MY',
+  nb: 'NO',
+  sl: 'SI',
+  sv: 'SE',
+  cs: 'CZ',
+  uk: 'UA',
+  hi: 'IN',
+  'zh-hans': 'CN',
+  'zh-hant': 'TW',
+  ja: 'JP',
+  ko: 'KR',
+  fil: 'PH',
+  th: 'TH',
+  vi: 'VN',
+};
 
 const GeoMap = {
   ar: 'AR_es',
@@ -104,7 +135,7 @@ const GeoMap = {
   in_en: 'IN_en',
   in_hi: 'IN_hi',
   id_en: 'ID_en',
-  id_id: 'ID_in',
+  id_id: 'ID_id',
   nz: 'NZ_en',
   sa_ar: 'SA_ar',
   sa_en: 'SA_en',
@@ -127,12 +158,32 @@ const GeoMap = {
   th_th: 'TH_th',
 };
 
+const LANG_STORE_PREFIX = 'langstore/';
+
+function getDefaultLangstoreCountry(language) {
+  let country = LanguageMap[language];
+  if (!country && GeoMap[language]) {
+    country = language; // es, fr, pt, de
+  }
+  if (!country && language.includes('-')) {
+    [country] = language.split('-'); // variations like es-419, pt-PT
+  }
+
+  return country || 'US';
+}
+
 export function getMiloLocaleSettings(locale) {
   const localePrefix = locale?.prefix || 'US_en';
   const geo = localePrefix.replace('/', '') ?? '';
   let [country = 'US', language = 'en'] = (
     GeoMap[geo] ?? geo
   ).split('_', 2);
+
+  if (geo.startsWith(LANG_STORE_PREFIX) || window.location.pathname.startsWith(`/${LANG_STORE_PREFIX}`)) {
+    const localeLang = geo.replace(LANG_STORE_PREFIX, '').toLowerCase();
+    country = getDefaultLangstoreCountry(localeLang);
+    language = localeLang;
+  }
 
   country = country.toUpperCase();
   language = language.toLowerCase();
@@ -164,6 +215,7 @@ export const CHECKOUT_ALLOWED_KEYS = [
   'lo',
   'mal',
   'ms',
+  'cs',
   'mv',
   'mv2',
   'nglwfdata',
@@ -280,9 +332,13 @@ export async function fetchEntitlements() {
   return fetchEntitlements.promise;
 }
 
-export async function fetchCheckoutLinkConfigs(base = '') {
+export async function fetchCheckoutLinkConfigs(base = '', env = '') {
+  const params = new URLSearchParams(window.location.search);
+  const path = params.get('checkout-link-sandbox') === 'on' && env !== 'prod'
+    ? `${base}${CHECKOUT_LINK_SANDBOX_CONFIG_PATH}`
+    : `${base}${CHECKOUT_LINK_CONFIG_PATH}`;
   fetchCheckoutLinkConfigs.promise = fetchCheckoutLinkConfigs.promise
-    ?? fetch(`${base}${CHECKOUT_LINK_CONFIG_PATH}`).catch((e) => {
+    ?? fetch(path).catch((e) => {
       log?.error('Failed to fetch checkout link configs', e);
     }).then((mappings) => {
       if (!mappings?.ok) return { data: [] };
@@ -293,11 +349,12 @@ export async function fetchCheckoutLinkConfigs(base = '') {
 
 export async function getCheckoutLinkConfig(productFamily, productCode, paCode) {
   let { base } = getConfig();
+  const { env } = getConfig();
   if (/\.page$/.test(document.location.origin)) {
     /* c8 ignore next 2 */
     base = base.replace('.live', '.page');
   }
-  const checkoutLinkConfigs = await fetchCheckoutLinkConfigs(base);
+  const checkoutLinkConfigs = await fetchCheckoutLinkConfigs(base, env);
   if (!checkoutLinkConfigs.data.length) return undefined;
   const { locale: { region } } = getConfig();
 
@@ -493,19 +550,20 @@ export async function openModal(e, url, offerType, hash, extraOptions, el) {
       window.history.pushState({}, document.title, prevHash !== '' ? `#${prevHash}` : `${window.location.pathname}${window.location.search}`);
     }, { once: true });
   }
-  if (isInternalModal(url)) {
-    const fragmentPath = url.split(/(hlx|aem).(page|live)/).pop();
-    modal = await openFragmentModal(fragmentPath, getModal);
-  } else if (el?.opens3in1Modal) {
+
+  if (el?.isOpen3in1Modal) {
     const { default: openThreeInOneModal, handle3in1IFrameEvents } = await import('./three-in-one.js');
     window.addEventListener('message', handle3in1IFrameEvents);
     modal = await openThreeInOneModal(el);
+    return;
+  }
+  if (isInternalModal(url)) {
+    const fragmentPath = url.split(/(hlx|aem).(page|live)/).pop();
+    modal = await openFragmentModal(fragmentPath, getModal);
   } else {
     modal = await openExternalModal(url, getModal, extraOptions, el);
   }
-  if (modal) {
-    modal.classList.add(offerTypeClass);
-  }
+  modal.classList.add(offerTypeClass);
 }
 
 export function setCtaHash(el, checkoutLinkConfig, offerType) {
@@ -526,12 +584,12 @@ const isProdModal = (url) => {
 };
 
 export async function getModalAction(offers, options, el) {
+  if (!options.modal) return undefined;
   const [{
     offerType,
     productArrangementCode,
     productArrangement: { productCode, productFamily: offerFamily } = {},
   }] = offers ?? [{}];
-  if (options.modal !== true) return undefined;
   const checkoutLinkConfig = await getCheckoutLinkConfig(
     offerFamily,
     productCode,
@@ -541,7 +599,7 @@ export async function getModalAction(offers, options, el) {
   const columnName = (offerType === OFFER_TYPE_TRIAL) ? FREE_TRIAL_PATH : BUY_NOW_PATH;
   const hash = setCtaHash(el, checkoutLinkConfig, offerType);
   let url = checkoutLinkConfig[columnName];
-  if (!url) return undefined;
+  if (!url && !el?.isOpen3in1Modal) return undefined;
   url = isInternalModal(url) || isProdModal(url)
     ? localizeLink(checkoutLinkConfig[columnName]) : checkoutLinkConfig[columnName];
   return {
@@ -679,11 +737,15 @@ export async function getCheckoutContext(el, params) {
 export async function getPriceContext(el, params) {
   const context = await getCommerceContext(el, params);
   if (!context) return null;
+  const annualEnabled = getMetadata('mas-ff-annual-price');
   const displayOldPrice = context.promotionCode ? params.get('old') : undefined;
   const displayPerUnit = params.get('seat');
   const displayRecurrence = params.get('term');
   const displayTax = params.get('tax');
+  const displayPlanType = params.get('planType');
+  const displayAnnual = (annualEnabled && params.get('annual') !== 'false') || undefined;
   const forceTaxExclusive = params.get('exclusive');
+  const alternativePrice = params.get('alt');
   // The PRICE_TEMPLATE_MAPPING supports legacy OST links
   const template = PRICE_TEMPLATE_MAPPING.get(params.get('type')) ?? PRICE_TEMPLATE_REGULAR;
   return {
@@ -692,7 +754,10 @@ export async function getPriceContext(el, params) {
     displayPerUnit,
     displayRecurrence,
     displayTax,
+    displayPlanType,
+    displayAnnual,
     forceTaxExclusive,
+    alternativePrice,
     template,
   };
 }
@@ -731,8 +796,11 @@ export async function buildCta(el, params) {
   }
 
   // Adding aria-label for checkout-link using productFamily and customerSegment as placeholder key.
-  if (!cta.getAttribute('aria-label')) {
-    cta.onceSettled().finally(async () => {
+  if (el.ariaLabel) {
+    // If Milo aria-label available from sharepoint doc, just use it.
+    cta.setAttribute('aria-label', el.ariaLabel);
+  } else if (!cta.ariaLabel) {
+    cta.onceSettled().then(async () => {
       const productFamily = cta.value[0]?.productArrangement?.productFamily;
       const marketSegment = cta.value[0]?.marketSegments[0];
       const customerSegment = marketSegment === 'EDU' ? marketSegment : cta.value[0]?.customerSegment;
@@ -751,6 +819,32 @@ async function buildPrice(el, params) {
   const service = await initService();
   const price = service.createInlinePrice(context);
   return price;
+}
+
+export const MEP_SELECTOR = 'mas';
+
+export function overrideOptions(fragment, options) {
+  const { mep } = getConfig();
+  const fragments = mep?.inBlock?.[MEP_SELECTOR]?.fragments;
+  if (fragments) {
+    const command = fragments[fragment];
+    if (command && command.action === 'replace') {
+      return { ...options, fragment: command.content };
+    }
+  }
+  return options;
+}
+
+export function getOptions(el) {
+  const { hash } = new URL(el.href);
+  const hashValue = hash.startsWith('#') ? hash.substring(1) : hash;
+  const searchParams = new URLSearchParams(hashValue);
+  const options = {};
+  for (const [key, value] of searchParams.entries()) {
+    if (key === 'sidenav') options.sidenav = value === 'true';
+    else if (key === 'fragment' || key === 'query') options.fragment = value;
+  }
+  return options;
 }
 
 export default async function init(el) {

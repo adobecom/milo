@@ -10,6 +10,8 @@ const locales = { '': { ietf: 'en-US', tk: 'hah7vzn.css' } };
 const conf = { locales };
 setConfig(conf);
 
+document.head.appendChild(document.createElement('mas-commerce-service'));
+
 loadStyle('/libs/blocks/merch-card/merch-card.css');
 
 /**
@@ -399,47 +401,6 @@ describe('Mini Compare Chart Merch Card', () => {
     const merchCardDesktop = await init(merchCards[2]);
     expect(merchCardDesktop.querySelector('.checkmark-copy-container')).to.not.be.null;
     expect(merchCardChevonOpen.querySelector('.checkmark-copy-container').classList.contains('open')).to.be.true;
-  });
-});
-
-describe('TWP Merch Card', () => {
-  it('Supports TWP Merch card with Stock Option', async () => {
-    document.body.innerHTML = await readMockText('/test/blocks/merch-card/mocks/twp.html');
-    const merchCard = await init(document.querySelector('#stock'));
-    await delay();
-
-    const body = merchCard.querySelector('div[slot="body-xs"]');
-    const footer = merchCard.querySelector('div[slot="footer"]');
-    const offerSelect = footer.querySelector('merch-offer-select');
-    const price = footer.querySelector('.merch-card-price [is="inline-price"]');
-
-    expect(merchCard.classList.contains('add-stock')).to.be.true;
-    expect(merchCard.getAttribute('variant')).to.equal('twp');
-    expect(body.textContent).to.contains('What you get:');
-    expect(price).to.exist;
-    expect(offerSelect).to.exist;
-    expect(offerSelect.getAttribute('stock')).to.exist;
-    expect(offerSelect.querySelectorAll('merch-offer').length).to.equal(3);
-  });
-
-  it('Supports TWP Merch card with Quantity Select & no Stock', async () => {
-    document.body.innerHTML = await readMockText('/test/blocks/merch-card/mocks/twp.html');
-    const merchCard = await init(document.querySelector('#quantity-selector'));
-    await delay();
-
-    const body = merchCard.querySelector('div[slot="body-xs"]');
-    const footer = merchCard.querySelector('div[slot="footer"]');
-    const quantitySelect = merchCard.querySelector('merch-quantity-select');
-    const price = footer.querySelector('.merch-card-price [is="inline-price"]');
-
-    expect(merchCard.classList.contains('add-stock')).to.be.false;
-    expect(merchCard.getAttribute('variant')).to.equal('twp');
-    expect(body.textContent).to.contains('What you get:');
-    expect(price).to.exist;
-    expect(quantitySelect).to.exist;
-    expect(quantitySelect.getAttribute('min')).to.equal('1');
-    expect(quantitySelect.getAttribute('max')).to.equal('10');
-    expect(quantitySelect.getAttribute('min')).to.equal('1');
   });
 });
 

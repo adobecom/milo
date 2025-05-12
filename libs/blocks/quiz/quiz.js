@@ -295,22 +295,20 @@ const App = ({
   const { locale } = getConfig();
 
   return html`<div class="quiz-container${locale?.ietf === 'ja-JP' ? ' jpwordwrap-disabled' : ''}">
-                  ${selectedQuestion.questions && html`<${StepIndicator}
-                    currentStep=${currentStep} 
-                    totalSteps=${totalSteps} 
-                    prevStepIndicator=${prevStepIndicator}
-                    top="${true}" />
-                  `}
-
                   ${selectedQuestion.questions && getStringValue('background') !== '' && html`<div class="quiz-background">
                       ${DecorateBlockBackground(getStringValue)}
                   </div>`}
 
                   ${selectedQuestion.questions && html`<${DecorateBlockForeground} 
                       heading=${getStringValue('heading')} 
-                      subhead=${getStringValue('sub-head')} 
-                      btnText=${getStringValue('btn')} />`}
-                      
+                      subhead=${getStringValue('sub-head')} />`}
+
+                  ${selectedQuestion.questions && html`<${StepIndicator}
+                    currentStep=${currentStep} 
+                    totalSteps=${totalSteps} 
+                    prevStepIndicator=${prevStepIndicator} />
+                  `}
+
                   ${selectedQuestion.questions && html`<${GetQuizOption} 
                     btnText=${getStringValue('btn')} 
                     minSelections=${minSelections} 
@@ -323,14 +321,6 @@ const App = ({
                     getOptionsIcons=${getOptionsIcons}
                     handleOnNextClick=${handleOnNextClick}
                     btnAnalyticsData=${btnAnalytics}/>`}
-
-                  ${selectedQuestion.questions && html`
-                    <${StepIndicator} 
-                      currentStep=${currentStep} 
-                      totalSteps=${totalSteps} 
-                      prevStepIndicator=${prevStepIndicator}
-                      bottom="${true}" />
-                  `}
                   <div class=quiz-footer />
               </div>`;
 };

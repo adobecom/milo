@@ -11,6 +11,8 @@ import init, {
 
 import { mockFetch, unmockFetch } from '../merch/mocks/fetch.js';
 
+document.head.appendChild(document.createElement('mas-commerce-service'));
+
 const offer = {
   offerType: 'BASE',
   offerId: '01A09572A72A7D7F848721DE4D3C73FA',

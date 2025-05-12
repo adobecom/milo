@@ -6,7 +6,7 @@ const blockConfig = [
     name: 'global-navigation',
     targetEl: 'header',
     appendType: 'prepend',
-    params: ['imsClientId', 'searchEnabled', 'unav', 'customLinks', 'jarvis'],
+    params: ['imsClientId', 'searchEnabled', 'unav', 'customLinks', 'jarvis', 'selfIntegrateUnav'],
   },
   {
     key: 'footer',
@@ -149,7 +149,7 @@ export default async function loadBlock(configs, customLib) {
           await bootstrapBlock(init, {
             ...block,
             gnavSource,
-            unavComponents: configBlock.unav?.unavComponents,
+            unavComponents: configBlock.selfIntegrateUnav ? [] : configBlock.unav?.unavComponents,
             redirect: configBlock.redirect,
             layout: configBlock.layout,
             noBorder: configBlock.noBorder,

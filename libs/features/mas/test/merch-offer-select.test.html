@@ -26,6 +26,7 @@
             display: initial;
         }
     </style>
+    <mas-commerce-service env="stage"></mas-commerce-service>
 </head>
 
 <body>
@@ -92,7 +93,7 @@
             <div slot="quantity-select">
                 <merch-quantity-select title="Select a quantity" min="1" max="3" step="1">
                     <merch-offer-select container="merch-card">
-                        <merch-offer value=1>
+                        <merch-offer value="1">
                             <span slot="price" is="inline-price" data-display-per-unit="false"
                                 data-display-recurrence="true" data-display-tax="false" data-template="priceOptical"
                                 data-wcs-osi="abm"></span>
@@ -100,7 +101,7 @@
                                 data-checkout-workflow-step="email" data-quantity="1" data-wcs-osi="abm"
                                 class="con-button blue">Buy now 1</a>
                         </merch-offer>
-                        <merch-offer value=3>
+                        <merch-offer value="3">
                             <span slot="price" is="inline-price" data-display-per-unit="false"
                                 data-display-recurrence="true" data-display-tax="false" data-template="priceOptical"
                                 data-wcs-osi="m2m"></span>

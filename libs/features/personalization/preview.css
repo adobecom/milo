@@ -217,6 +217,15 @@
   gap: 8px;
 }
 
+.mep-popup select.mep-manifest-variants {
+  width: 100%;
+  overflow: hidden;
+  white-space: pre;
+  -moz-white-space: pre;
+  -o-white-space: pre;
+  text-overflow: ellipsis;
+}
+
 .mep-popup input.new-manifest,
 .mep-popup select.mep-manifest-variants {
   height: 36px;

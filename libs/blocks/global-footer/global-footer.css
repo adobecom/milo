@@ -255,6 +255,18 @@ span.feds-footer-privacyLink-divider {
   height: 12px;
 }
 
+.footer-logo {
+  padding: 0 var(--feds-gutter-footer);
+  line-height: 0;
+}
+
+.footer-logo-image img,
+.footer-logo-image svg,
+.footer-logo-image picture { 
+  width: 45px;
+}
+
+
 @media (min-width: 600px) {
   dialog.feds-dialog {
     max-width: 80vw;
@@ -324,16 +336,16 @@ span.feds-footer-privacyLink-divider {
     margin-left: 5px;
     margin-right: 0;
   }
+
+  .footer-logo {
+    display: flex;
+    justify-content: center;
+  }
 }
 
 /* max-width (1440) + 2 x gutter (32) */
 @media (min-width: 1504px) {
-  .feds-footer-wrapper .feds-menu-content,
-  .feds-footer-options {
-    margin: 0 calc(var(--feds-gutter-footer) * -1);
-  }
-
-  .feds-featuredProducts {
-    margin: 0;
+  .feds-footer-wrapper {
+    max-width: 1504px;
   }
 }

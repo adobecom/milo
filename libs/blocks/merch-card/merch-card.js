@@ -88,25 +88,34 @@ export async function loadMnemonicList(foreground) {
   }
 }
 
-function extractQuantitySelect(el) {
-  const quantitySelectConfig = [...el.querySelectorAll('ul')]
-    .find((ul) => ul.querySelector('li')?.innerText?.includes('Quantity'));
-  const configMarkup = quantitySelectConfig?.querySelector('ul');
-  if (!configMarkup) return null;
-  const config = configMarkup.children;
-  if (config.length !== 2) return null;
+function extractQuantitySelect(el, merchCard) {
   const attributes = {};
-  attributes.title = config[0].textContent.trim();
-  const values = config[1].textContent.split(',')
-    .map((value) => value.trim())
-    .filter((value) => /^\d*$/.test(value))
-    .map((value) => (value === '' ? undefined : Number(value)));
-  quantitySelectConfig.remove();
-  if (![3, 4, 5].includes(values.length)) return null;
+  const quantitySelectLink = merchCard?.querySelector('a[href*="#qs"]');
+  if (quantitySelectLink) {
+    const str = quantitySelectLink.getAttribute('href');
+    attributes.title = quantitySelectLink.textContent.trim();
+    const regex = /min=(\d+)&max=(\d+)&step=(\d+)&default=(\d+)&max-input=(\d+)/;
+    [, attributes.min, attributes.max, attributes.step, attributes['default-value'], attributes['max-input']] = str.match(regex);
+    quantitySelectLink.parentElement.remove();
+  } else { // todo: old approach, remove once backwards compatibility is no longer required
+    const quantitySelectConfig = [...el.querySelectorAll('ul')]
+      .find((ul) => ul.querySelector('li')?.innerText?.includes('Quantity'));
+    const configMarkup = quantitySelectConfig?.querySelector('ul');
+    if (configMarkup?.children?.length !== 2) return null;
+    const config = configMarkup.children;
+    attributes.title = config[0].textContent.trim();
+    const values = config[1].textContent.split(',')
+      .map((value) => value.trim())
+      .filter((value) => /^\d*$/.test(value))
+      .map((value) => (value === '' ? undefined : Number(value)));
+    quantitySelectConfig.remove();
+    [attributes.min, attributes.max, attributes.step, attributes['default-value'], attributes['max-input']] = values;
+  }
+  if (!attributes.min || !attributes.max || !attributes.step) {
+    return null;
+  }
   import('../../deps/mas/merch-quantity-select.js');
-  [attributes.min, attributes.max, attributes.step, attributes['default-value'], attributes['max-input']] = values;
-  const quantitySelect = createTag('merch-quantity-select', attributes);
-  return quantitySelect;
+  return createTag('merch-quantity-select', attributes);
 }
 
 const parseTwpContent = async (el, merchCard) => {
@@ -268,10 +277,10 @@ const parseContent = async (el, merchCard) => {
     }
     if (isParagraphTag(tagName)) {
       bodySlot.append(element);
-      merchCard.append(bodySlot);
     }
     if (mnemonicList) bodySlot.append(mnemonicList);
   });
+  merchCard.append(bodySlot);
 
   if (merchCard.variant === MINI_COMPARE_CHART && merchCard.childNodes[1]) {
     merchCard.insertBefore(bodySlot, merchCard.childNodes[1]);
@@ -355,6 +364,44 @@ const addStock = (merchCard, styles) => {
       merchCard.setAttribute('checkbox-label', stock.label);
       merchCard.setAttribute('stock-offer-osis', stock.offers);
     }
+  }
+};
+
+const addAddon = (merchCard, styles) => {
+  const genai = /add-addon-genai/.test(merchCard.className) ? 'genai' : null;
+  const stock = /add-addon-stock/.test(merchCard.className) ? 'stock' : null;
+  const addonType = genai || stock;
+  if (addonType) {
+    let selector = `template.addon.${addonType}.individual`;
+    if (styles.includes('edu')) {
+      selector = `template.addon.${addonType}.edu`;
+    } else if (styles.includes('team')) {
+      selector = `template.addon.${addonType}.team`;
+    }
+    let planType = '';
+    if (styles.includes('m2m')) {
+      planType = 'M2M';
+    } else if (styles.includes('abm')) {
+      planType = 'ABM';
+    } else if (styles.includes('puf')) {
+      planType = 'PUF';
+    }
+
+    if (planType) {
+      merchCard.setAttribute('plan-type', planType);
+    }
+    const template = document.querySelector(selector);
+    if (!template) return;
+    const addon = template.content.cloneNode(true).firstElementChild;
+    addon.setAttribute('slot', 'addon');
+    const gradient = createTag('merch-gradient', {
+      colors: '#F5F6FD, #F8F1F8, #F9E9ED',
+      positions: '33.52%, 67.33%, 110.37%',
+      angle: '211deg',
+      'border-radius': '10px',
+    });
+    addon.appendChild(gradient);
+    merchCard.appendChild(addon);
   }
 };
 
@@ -632,6 +679,8 @@ export default async function init(el) {
     ? getActionMenuContent(el)
     : null;
   if (actionMenuContent) {
+    const { replaceKey } = await import('../../features/placeholders.js');
+    await replaceKey('action-menu', getConfig()).then((key) => merchCard.setAttribute('action-menu-label', key));
     merchCard.setAttribute('action-menu', true);
     merchCard.append(
       createTag(
@@ -684,6 +733,7 @@ export default async function init(el) {
   }
 
   addStock(merchCard, styles);
+  addAddon(merchCard, styles);
   if (styles.includes('secure')) {
     const { replaceKey } = await import('../../features/placeholders.js');
     await replaceKey('secure-transaction', getConfig()).then((key) => merchCard.setAttribute('secure-label', key));
@@ -702,7 +752,7 @@ export default async function init(el) {
     merchCard.appendChild(footer);
 
     if (MULTI_OFFER_CARDS.includes(cardType)) {
-      const quantitySelect = extractQuantitySelect(el);
+      const quantitySelect = extractQuantitySelect(el, merchCard);
       const offerSelection = el.querySelector('ul');
       if (merchCard.variant === MINI_COMPARE_CHART) {
         const miniCompareOffers = createTag('div', { slot: 'offers' });

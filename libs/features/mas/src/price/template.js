@@ -14,11 +14,6 @@ import {
     makeSpacesAroundNonBreaking,
 } from './utilities.js';
 
-// JSON imports require new syntax to run in Milo/wtr tests,
-// but the new syntax is not yet supported by ESLint:
-// import defaultLiterals from '../literals.json' assert {type: 'json'};
-// @see https://github.com/eslint/eslint/discussions/15305
-// the easiest solution for now is to inline the literals
 export const defaultLiterals = {
     recurrenceLabel:
         '{recurrenceTerm, select, MONTH {/mo} YEAR {/yr} other {}}',
@@ -32,18 +27,20 @@ export const defaultLiterals = {
         '{taxTerm, select, GST {excl. GST} VAT {excl. VAT} TAX {excl. tax} IVA {excl. IVA} SST {excl. SST} KDV {excl. KDV} other {}}',
     taxInclusiveLabel:
         '{taxTerm, select, GST {incl. GST} VAT {incl. VAT} TAX {incl. tax} IVA {incl. IVA} SST {incl. SST} KDV {incl. KDV} other {}}',
-    alternativePriceAriaLabel: 'Alternatively at {alternativePrice}',
-    strikethroughAriaLabel: 'Regularly at {strikethroughPrice}',
+    alternativePriceAriaLabel: 'Alternatively at',
+    strikethroughAriaLabel: 'Regularly at',
+    planTypeLabel: '{planType, select, ABM {Annual, paid monthly.} other {}}',
 };
 
 const log = createLog('ConsonantTemplates/price');
 
-const htmlPattern = /<\/?[^>]+(>|$)/g;
+export const htmlPattern = /<\/?[^>]+(>|$)/g;
 
-const cssClassNames = {
+export const cssClassNames = {
     container: 'price',
     containerOptical: 'price-optical',
     containerStrikethrough: 'price-strikethrough',
+    containerAlternative: 'price-alternative',
     containerAnnual: 'price-annual',
     containerAnnualPrefix: 'price-annual-prefix',
     containerAnnualSuffix: 'price-annual-suffix',
@@ -57,7 +54,8 @@ const cssClassNames = {
     taxInclusivity: 'price-tax-inclusivity',
     unitType: 'price-unit-type',
 };
-const literalKeys = {
+
+export const literalKeys = {
     perUnitLabel: 'perUnitLabel',
     perUnitAriaLabel: 'perUnitAriaLabel',
     recurrenceLabel: 'recurrenceLabel',
@@ -65,10 +63,12 @@ const literalKeys = {
     taxExclusiveLabel: 'taxExclusiveLabel',
     taxInclusiveLabel: 'taxInclusiveLabel',
     strikethroughAriaLabel: 'strikethroughAriaLabel',
+    alternativePriceAriaLabel: 'alternativePriceAriaLabel',
 };
-const WCS_TAX_DISPLAY_EXCLUSIVE = 'TAX_EXCLUSIVE';
 
-const renderAttributes = (attributes) =>
+export const WCS_TAX_DISPLAY_EXCLUSIVE = 'TAX_EXCLUSIVE';
+
+export const renderAttributes = (attributes) =>
     isObject(attributes)
         ? Object.entries(attributes)
               .filter(
@@ -85,7 +85,12 @@ const renderAttributes = (attributes) =>
               )
         : '';
 
-const renderSpan = (cssClass, content, attributes, convertSpaces = false) => {
+export const renderSpan = (
+    cssClass,
+    content,
+    attributes,
+    convertSpaces = false,
+) => {
     return (
         `<span class="${cssClass}${
             content ? '' : ' ' + cssClassNames.disabled
@@ -98,10 +103,29 @@ const renderSpan = (cssClass, content, attributes, convertSpaces = false) => {
     );
 };
 
+export function formatLiteral(literals, locale, key, parameters) {
+    const literal = literals[key];
+    if (literal == undefined) {
+        /* c8 ignore next 2 */
+        return '';
+    }
+    try {
+        return new IntlMessageFormat(
+            literal.replace(htmlPattern, ''),
+            locale,
+        ).format(parameters);
+    } catch {
+        /* c8 ignore next 2 */
+        log.error('Failed to format literal:', literal);
+        return '';
+    }
+}
+
 function renderContainer(
     cssClass,
     {
         accessibleLabel,
+        altAccessibleLabel,
         currencySymbol,
         decimals,
         decimalsDelimiter,
@@ -124,6 +148,10 @@ function renderContainer(
     );
 
     let markup = '';
+    if (accessibleLabel)
+        markup = `<sr-only class="strikethrough-aria-label">${accessibleLabel}</sr-only>`;
+    else if (altAccessibleLabel)
+        markup = `<sr-only class="alt-aria-label">${altAccessibleLabel}</sr-only>`;
     if (isCurrencyFirst) markup += currencyMarkup + currencySpaceMarkup;
     markup += renderSpan(cssClassNames.integer, integer);
     markup += renderSpan(cssClassNames.decimalsDelimiter, decimalsDelimiter);
@@ -139,7 +167,6 @@ function renderContainer(
 
     return renderSpan(cssClass, markup, {
         ...attributes,
-        ['aria-label']: accessibleLabel,
     });
 }
 
@@ -150,6 +177,7 @@ function renderContainer(
 // TODO: check WCS data elements to include: analytics, endDate, language, merchant, offerType, pricePoint, startDate
 const createPriceTemplate =
     ({
+        isAlternativePrice = false,
         displayOptical = false,
         displayStrikethrough = false,
         displayAnnual = false,
@@ -201,24 +229,6 @@ const createPriceTemplate =
 
         const locale = `${language.toLowerCase()}-${country.toUpperCase()}`;
 
-        function formatLiteral(key, parameters) {
-            const literal = literals[key];
-            if (literal == undefined) {
-                /* c8 ignore next 2 */
-                return '';
-            }
-            try {
-                return new IntlMessageFormat(
-                    literal.replace(htmlPattern, ''),
-                    locale,
-                ).format(parameters);
-            } catch {
-                /* c8 ignore next 2 */
-                log.error('Failed to format literal:', literal);
-                return '';
-            }
-        }
-
         const displayPrice =
             displayStrikethrough && priceWithoutDiscount
                 ? priceWithoutDiscount
@@ -242,56 +252,63 @@ const createPriceTemplate =
             usePrecision,
         });
 
-        let accessibleLabel = accessiblePrice;
+        let accessibleLabel = '',
+            altAccessibleLabel = '';
 
         let recurrenceLabel = '';
         if (toBoolean(displayRecurrence) && recurrenceTerm) {
-            const recurrenceAccessibleLabel = formatLiteral(
-                literalKeys.recurrenceAriaLabel,
+            recurrenceLabel = formatLiteral(
+                literals,
+                locale,
+                literalKeys.recurrenceLabel,
                 {
                     recurrenceTerm,
                 },
             );
-            if (recurrenceAccessibleLabel) {
-                accessibleLabel += ' ' + recurrenceAccessibleLabel;
-            }
-            recurrenceLabel = formatLiteral(literalKeys.recurrenceLabel, {
-                recurrenceTerm,
-            });
         }
 
         let perUnitLabel = '';
         if (toBoolean(displayPerUnit)) {
-            perUnitLabel = formatLiteral(literalKeys.perUnitLabel, {
-                perUnit: 'LICENSE',
-            });
-            const perUnitAriaLabel = formatLiteral(
-                literalKeys.perUnitAriaLabel,
-                { perUnit: 'LICENSE' },
+            perUnitLabel = formatLiteral(
+                literals,
+                locale,
+                literalKeys.perUnitLabel,
+                {
+                    perUnit: 'LICENSE',
+                },
             );
-            if (perUnitAriaLabel) {
-                accessibleLabel += ' ' + perUnitAriaLabel;
-            }
         }
 
         let taxInclusivityLabel = '';
         if (toBoolean(displayTax) && taxTerm) {
             taxInclusivityLabel = formatLiteral(
+                literals,
+                locale,
                 taxDisplay === WCS_TAX_DISPLAY_EXCLUSIVE
                     ? literalKeys.taxExclusiveLabel
                     : literalKeys.taxInclusiveLabel,
                 { taxTerm },
             );
-            if (taxInclusivityLabel) {
-                accessibleLabel += ' ' + taxInclusivityLabel;
-            }
         }
 
         if (displayStrikethrough) {
             accessibleLabel = formatLiteral(
+                literals,
+                locale,
                 literalKeys.strikethroughAriaLabel,
                 {
                     strikethroughPrice: accessibleLabel,
+                },
+            );
+        }
+
+        if (isAlternativePrice) {
+            altAccessibleLabel = formatLiteral(
+                literals,
+                locale,
+                literalKeys.alternativePriceAriaLabel,
+                {
+                    alternativePrice: altAccessibleLabel,
                 },
             );
         }
@@ -303,6 +320,9 @@ const createPriceTemplate =
         if (displayStrikethrough) {
             cssClass += ' ' + cssClassNames.containerStrikethrough;
         }
+        if (isAlternativePrice) {
+            cssClass += ' ' + cssClassNames.containerAlternative;
+        }
         if (displayAnnual) {
             cssClass += ' ' + cssClassNames.containerAnnual;
         }
@@ -313,6 +333,7 @@ const createPriceTemplate =
                 {
                     ...formattedPrice,
                     accessibleLabel,
+                    altAccessibleLabel,
                     recurrenceLabel,
                     perUnitLabel,
                     taxInclusivityLabel,
@@ -363,14 +384,12 @@ const createPromoPriceTemplate = () => (context, value, attributes) => {
         displayOldPrice &&
         value.priceWithoutDiscount &&
         value.priceWithoutDiscount != value.price;
-    return `${createPriceTemplate()(context, value, attributes)}${
-        shouldDisplayOldPrice
-            ? '&nbsp;' +
-              createPriceTemplate({
-                  displayStrikethrough: true,
-              })(context, value, attributes)
-            : ''
-    }`;
+    return `${shouldDisplayOldPrice
+        ? createPriceTemplate({
+          displayStrikethrough: true,
+        })(context, value, attributes) + '&nbsp;'
+        : ''
+    }${createPriceTemplate({ isAlternativePrice: shouldDisplayOldPrice })(context, value, attributes)}`;
 };
 
 const createPromoPriceWithAnnualTemplate =
@@ -407,7 +426,7 @@ const createPromoPriceWithAnnualTemplate =
                       displayStrikethrough: true,
                   })(ctxStAnnual, value, attributes) + '&nbsp;'
                 : ''
-        }${createPriceTemplate()(context, value, attributes)}${renderSpan(cssClassNames.containerAnnualPrefix, '&nbsp;(')}${createPriceTemplate(
+        }${createPriceTemplate({ isAlternativePrice: shouldDisplayOldPrice })(context, value, attributes)}${renderSpan(cssClassNames.containerAnnualPrefix, '&nbsp;(')}${createPriceTemplate(
             {
                 displayAnnual: true,
                 instant,
@@ -425,7 +444,7 @@ const createPriceWithAnnualTemplate = () => (context, value, attributes) => {
         displayTax: false,
         displayPerUnit: false,
     };
-    return `${createPriceTemplate()(context, value, attributes)}${renderSpan(cssClassNames.containerAnnualPrefix, '&nbsp;(')}${createPriceTemplate(
+    return `${createPriceTemplate({ isAlternativePrice: context.displayOldPrice })(context, value, attributes)}${renderSpan(cssClassNames.containerAnnualPrefix, '&nbsp;(')}${createPriceTemplate(
         {
             displayAnnual: true,
         },

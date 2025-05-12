@@ -1,10 +1,9 @@
-import { ignore } from './external.js';
 import {
     createMasElement,
     updateMasElement,
     MasElement,
 } from './mas-element.js';
-import { selectOffers, useService } from './utilities.js';
+import { selectOffers, getService } from './utilities.js';
 import { MODAL_TYPE_3_IN_1 } from '../src/constants.js';
 
 export const CLASS_NAME_DOWNLOAD = 'download';
@@ -12,7 +11,7 @@ export const CLASS_NAME_UPGRADE = 'upgrade';
 
 export function createCheckoutElement(Class, options = {}, innerHTML = '') {
     // eslint-disable-next-line react-hooks/rules-of-hooks
-    const service = useService();
+    const service = getService();
     if (!service) return null;
     const {
         checkoutMarketSegment,
@@ -26,6 +25,7 @@ export function createCheckoutElement(Class, options = {}, innerHTML = '') {
         quantity,
         wcsOsi,
         extraOptions,
+        analyticsId,
     } = service.collectCheckoutOptions(options);
 
     const element = createMasElement(Class, {
@@ -40,6 +40,7 @@ export function createCheckoutElement(Class, options = {}, innerHTML = '') {
         quantity,
         wcsOsi,
         extraOptions,
+        analyticsId,
     });
     if (innerHTML)
         element.innerHTML = `<span style="pointer-events: none;">${innerHTML}</span>`;
@@ -79,8 +80,9 @@ export function CheckoutMixin(Base) {
             return this.masElement.options;
         }
 
-        get opens3in1Modal() {
-          return Object.values(MODAL_TYPE_3_IN_1).includes(this.getAttribute('data-modal-type')) && !!this.href;
+        get isOpen3in1Modal() {
+          const masFF3in1 = document.querySelector('meta[name=mas-ff-3in1]');
+          return Object.values(MODAL_TYPE_3_IN_1).includes(this.getAttribute('data-modal')) && (!masFF3in1 || masFF3in1.content !== 'off');
         }
 
         requestUpdate(force = false) {
@@ -106,12 +108,12 @@ export function CheckoutMixin(Base) {
 
         async render(overrides = {}) {
             // eslint-disable-next-line react-hooks/rules-of-hooks
-            const service = useService();
+            const service = getService();
             if (!service) return false;
             if (!this.dataset.imsCountry) {
                 service.imsCountryPromise.then((countryCode) => {
                     if (countryCode) this.dataset.imsCountry = countryCode;
-                }, ignore);
+                });
             }
             overrides.imsCountry = null;
             const options = service.collectCheckoutOptions(overrides, this);
@@ -148,46 +150,6 @@ export function CheckoutMixin(Base) {
         }
 
         /**
-         * Adds 3-in-1 modal related parameters to the URL.
-         * @param {string} url
-         * @param {'twp' | 'd2p' | 'crm'} modalType
-         */
-        add3in1ModalParams(url, modalType) {
-          try {
-            const newUrl = new URL(url);
-            newUrl.searchParams.set('ctx', 'if');
-            if (modalType === MODAL_TYPE_3_IN_1.CRM) {
-              newUrl.searchParams.set('af', 'uc_segmentation_hide_tabs,uc_new_user_iframe,uc_new_system_close');
-              newUrl.searchParams.set('cli', 'creative');
-            } else {
-              newUrl.searchParams.set('af', 'uc_new_user_iframe,uc_new_system_close');
-              newUrl.searchParams.set('cli', 'mini_plans');
-            }
-            return newUrl.toString();
-          } catch (error) {
-            this.masElement.log?.error('Failed to add 3-in-1 modal parameters', error);
-          }
-        }
-
-        /**
-         * Sets `data-modal-type` attribute and returns the modal type.
-         * @param {HTMLElement} el
-         * @param {string} url
-         */
-        setModalType(el, url) {
-          try {
-            const newUrl = new URL(url);
-            const modalParam = newUrl.searchParams.get('modal');
-            if ([MODAL_TYPE_3_IN_1.TWP, MODAL_TYPE_3_IN_1.D2P, MODAL_TYPE_3_IN_1.CRM].includes(modalParam)) {
-                el?.setAttribute('data-modal-type', modalParam);
-                return modalParam;
-            }
-          } catch (error) {
-            this.masElement.log?.error('Failed to set modal type', error);
-          }
-        }
-
-        /**
          * Renders checkout link href for provided offers into this component.
          * @param {Commerce.Wcs.Offer[]} offers
          * @param {Commerce.Checkout.Options} options
@@ -203,7 +165,7 @@ export function CheckoutMixin(Base) {
             version = undefined,
         ) {
             // eslint-disable-next-line react-hooks/rules-of-hooks
-            const service = useService();
+            const service = getService();
             if (!service) return false;
             const extraOptions = JSON.parse(
                 this.dataset.extraOptions ?? 'null',
@@ -214,14 +176,12 @@ export function CheckoutMixin(Base) {
                 /* c8 ignore next 2 */
                 this.checkoutActionHandler = undefined;
             }
-            let modalType;
             if (checkoutAction) {
                 this.classList.remove(CLASS_NAME_DOWNLOAD, CLASS_NAME_UPGRADE);
                 this.masElement.toggleResolved(version, offers, options);
                 const { url, text, className, handler } = checkoutAction;
                 if (url) {
                   this.setCheckoutUrl(url);
-                  modalType = this.setModalType(this, url)
                 }
                 if (text) this.firstElementChild.innerHTML = text;
                 if (className) this.classList.add(...className.split(' '));
@@ -229,13 +189,13 @@ export function CheckoutMixin(Base) {
                     this.setCheckoutUrl('#');
                     this.checkoutActionHandler = handler.bind(this);
                 }
-                if (!modalType) return true;
             }
             if (offers.length) {
                 if (this.masElement.toggleResolved(version, offers, options)) {
-                    const url = service.buildCheckoutURL(offers, options);
-                    const urlToSet = checkoutAction && modalType ? this.add3in1ModalParams(url, modalType) : url;
-                    this.setCheckoutUrl(urlToSet);
+                    if (!this.classList.contains(CLASS_NAME_DOWNLOAD) && !this.classList.contains(CLASS_NAME_UPGRADE)) {
+                      const url = service.buildCheckoutURL(offers, options);
+                      this.setCheckoutUrl(options.modal === 'true' ? '#' : url);
+                    }
                     return true;
                 }
             } else {
@@ -259,7 +219,7 @@ export function CheckoutMixin(Base) {
 
         updateOptions(options = {}) {
             // eslint-disable-next-line react-hooks/rules-of-hooks
-            const service = useService();
+            const service = getService();
             if (!service) return false;
             const {
                 checkoutMarketSegment,

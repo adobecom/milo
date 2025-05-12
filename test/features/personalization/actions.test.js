@@ -81,15 +81,17 @@ describe('replace action', () => {
 });
 
 describe('updateAttribute action', async () => {
-  it('updateAttribute should add or modify a html element attribute', async () => {
+  it('updateAttribute should add or modify a html element attribute, including placeholders', async () => {
     let manifestJson = await readFile({ path: './mocks/actions/manifestUpdateAttribute.json' });
     manifestJson = JSON.parse(manifestJson);
     setFetchResponse(manifestJson);
     await init(mepSettings);
+    config.placeholders = { 'my-aria-test': 'Hello world!' };
     await handleCommands(manifestJson.data, undefined, true, true);
     expect(document.querySelector('.marquee h2').getAttribute('class')).to.equal('added-class');
     expect(document.querySelector('.marquee strong a').getAttribute('href')).to.equal('https://www.google.com/?osi=new-parameter#_inline');
     expect(document.querySelector('.marquee em a').getAttribute('new-attribute')).to.equal('added-attribute');
+    expect(document.querySelector('#placeholder-replace').getAttribute('aria-label')).to.equal('Hello world!');
   });
 });
 
@@ -339,6 +341,19 @@ describe('custom actions', async () => {
             selectorType: 'in-block:',
             manifestId: false,
             targetManifestId: false,
+          },
+        },
+      },
+      'mas-block': {
+        fragments: {
+          '64e0c5b8-9572-43e6-b0a7-fc68563589de': {
+            action: 'replace',
+            content: 'aec092ef-d5b5-4271-8b6f-4bbd535fcc56',
+            manifestId: false,
+            selector: 'https://mas.adobe.com/studio.html#page=content&path=sandbox&query=64e0c5b8-9572-43e6-b0a7-fc68563589de',
+            targetManifestId: false,
+            pageFilter: '',
+            selectorType: 'in-block:',
           },
         },
       },

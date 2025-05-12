@@ -1,5 +1,7 @@
 import { Defaults } from './defaults.js';
-import { equalsCaseInsensitive } from './external.js';
+import { equalsCaseInsensitive } from '@dexter/tacocat-core';
+
+const priceLiterals = window.masPriceLiterals;
 
 /**
  * Method resolves price literals for the given language from the group of price literals.
@@ -8,12 +10,11 @@ import { equalsCaseInsensitive } from './external.js';
  * @param settings
  * @param priceLiterals
  */
-export async function getPriceLiterals(settings, priceLiterals) {
+export function getPriceLiterals(settings) {
     //we are expecting an array of objects with lang and literals
-    const { data } = priceLiterals ? priceLiterals : await import('../price-literals.json');
-    if (Array.isArray(data)) {
+    if (Array.isArray(priceLiterals)) {
         const find = (language) =>
-            data.find((candidate) =>
+            priceLiterals.find((candidate) =>
                 equalsCaseInsensitive(candidate.lang, language),
             );
         const literals = find(settings.language) ?? find(Defaults.language);

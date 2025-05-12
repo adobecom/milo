@@ -15,7 +15,7 @@
 */
 
 import { decorateBlockText, decorateBlockBg, decorateTextOverrides, decorateMultiViewport, loadCDT } from '../../utils/decorate.js';
-import { createTag, getConfig, loadStyle } from '../../utils/utils.js';
+import { createTag, getConfig, loadStyle, createIntersectionObserver } from '../../utils/utils.js';
 
 const { miloLibs, codeRoot } = getConfig();
 const base = miloLibs || codeRoot;
@@ -86,14 +86,22 @@ function wrapCopy(foreground) {
   });
 }
 
-function decorateClose(el) {
-  const btn = createTag('button', { 'aria-label': 'close', class: 'close' }, closeSvg);
-  btn.addEventListener('click', () => {
+function addCloseAction(el, btn) {
+  btn.addEventListener('click', (e) => {
+    if (btn.nodeName === 'A') e.preventDefault();
     el.style.display = 'none';
     el.closest('.section')?.classList.add('close-sticky-section');
+    if (el.classList.contains('focus')) {
+      document.body.classList.remove('mobile-disable-scroll');
+      el.closest('.section').querySelector('.notification-curtain').remove();
+    }
     document.dispatchEvent(new CustomEvent('milo:sticky:closed'));
   });
+}
 
+function decorateClose(el) {
+  const btn = createTag('button', { 'aria-label': 'close', class: 'close' }, closeSvg);
+  addCloseAction(el, btn);
   el.appendChild(btn);
 }
 
@@ -132,11 +140,59 @@ async function decorateLockup(lockupArea, el) {
   if (pre && pre[2] === 'icon') el.classList.replace(pre[0], `${pre[1]}-lockup`);
 }
 
+function curtainCallback(el) {
+  const curtain = createTag('div', { class: 'notification-curtain' });
+  document.body.classList.add('mobile-disable-scroll');
+  el.insertAdjacentElement('afterend', curtain);
+}
+
+function decorateSplitList(el, listContent) {
+  const closeEvent = '#_evt-close';
+  const listContainer = createTag('div', { class: 'split-list-area' });
+  listContent?.querySelectorAll('li').forEach((item) => {
+    const listItem = createTag('div', { class: 'split-list-item' });
+    const pic = item.querySelector('picture');
+    if (!pic) return;
+    const textli = ['STRONG', 'EM', 'A'].includes(item.lastElementChild.nodeName)
+      ? item
+      : item.nextElementSibling;
+    const btn = createTag('div', {}, textli.lastElementChild);
+    const btnA = btn.querySelector('a');
+    if (btnA?.href.includes(closeEvent)) {
+      btnA.href = closeEvent;
+      addCloseAction(el, btnA);
+    }
+    const textContent = createTag('div', { class: 'text-content' });
+    const text = createTag('div', {}, textli.innerText.trim());
+    textContent.append(pic, text);
+    listItem.append(textContent, btn);
+    listContainer.append(listItem);
+    pic.querySelector('img').loading = 'eager';
+  });
+  listContent.replaceWith(listContainer);
+
+  if (el.classList.contains('focus')) {
+    if (el.classList.contains('no-delay')) {
+      curtainCallback(el);
+      return;
+    }
+    createIntersectionObserver({
+      el,
+      option: { once: true },
+      callback: () => curtainCallback(el),
+    });
+  }
+}
+
 async function decorateForegroundText(el, container) {
   const text = container?.querySelector('h1, h2, h3, h4, h5, h6, p')?.closest('div');
   text?.classList.add('text');
   if (el.classList.contains('countdown-timer') && !el.classList.contains('pill') && !el.classList.contains('ribbon')) {
     await loadCDT(text, el.classList);
+  }
+  if (el.classList.contains('split')) {
+    decorateSplitList(el, text?.querySelector('ul'));
+    return;
   }
   const iconArea = text?.querySelector('p:has(picture)');
   iconArea?.classList.add('icon-area');

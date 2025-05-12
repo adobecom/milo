@@ -7,7 +7,7 @@ module.exports = {
       desc: 'check default page',
       path: '/drafts/nala/features/personalization/allowhtml/allowhtml?mep=%2Fdrafts%2Fnala%2Ffeatures%2Fpersonalization%2Fallowhtml%2Fallowhtml.json--default',
       data: {},
-      tags: '@pzn @allowhtml0 @smoke @regression @milo',
+      tags: '@allowhtml0 @mep @smoke @regression @milo',
     },
     {
       tcid: '1',
@@ -15,7 +15,7 @@ module.exports = {
       desc: 'Various fixes from PR 2683: allow HTML as a replacement value; allow text as a replacement value, add #_href locator',
       path: '/drafts/nala/features/personalization/allowhtml/allowhtml',
       data: {},
-      tags: '@pzn @allowhtml1 @smoke @regression @milo',
+      tags: '@allowhtml1 @mep @smoke @regression @milo',
     },
   ],
 };

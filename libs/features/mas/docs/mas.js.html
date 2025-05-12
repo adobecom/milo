@@ -7,6 +7,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="stylesheet" href="spectrum.css">
     <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://p.typekit.net/p.css?s=1&amp;k=hah7vzn&amp;ht=tk&amp;f=7180.7181.7182.7183.22474.22749.22750.22751.22753&amp;a=8634977&amp;app=typekit&amp;e=css">
     <link rel="stylesheet" href="https://use.typekit.net/hah7vzn.css">
   
   <!-- Include your custom element script as an ES6 module -->
@@ -19,18 +20,7 @@
   <script type="module" src="./mas-sidenav.js"></script>
 </head>
 <body class="spectrum spectrum--medium spectrum--light">
-<aside class="sidenav">
-    <a href="/libs/features/mas/docs/mas.html">Home</a>
-    <a href="/libs/features/mas/docs/mas.js.html">mas.js</a>
-    <a href="/libs/features/mas/docs/checkout-link.html">Checkout Link</a>
-    <a href="/libs/features/mas/docs/checkout-button.html">Checkout Button</a>
-    <a href="/libs/features/mas/docs/inline-price.html">Inline Price</a>
-    <a href="/libs/features/mas/docs/merch-card.html">Merch Card</a>
-    <a href="/libs/features/mas/docs/ccd.html">CCD Gallery</a>
-    <a href="/libs/features/mas/docs/adobe-home.html">Adobe Home Gallery</a>
-    <a href="/libs/features/mas/docs/plans.html">Plans Gallery</a>
-    <a href="/libs/features/mas/docs/benchmarks.html">Benchmarks</a>
-</aside>
+    <aside is="mas-sidenav"></aside>
 <main>
 <sp-theme color="light" scale="medium">
 <h1 id="mas.js" tabindex="-1">mas.js <a class="header-anchor" href="#mas.js" href="#mas.js" title="Permalink to this heading">#</a></h1>
@@ -43,6 +33,9 @@
 <li><a href="/libs/features/mas/docs/checkout-button.html">checkout-button</a></li>
 <li><a href="/libs/features/mas/docs/merch-card.html">merch-card</a></li>
 </ul>
+<p><code>inline-price</code>, <code>checkout-link</code>, <code>checkout-button</code> elements are loaded via WCS.
+In case of network issues, the requests will be retried up to 3 times with 500ms of delay between attempts.
+It will also fallback to last successfully loaded offers for the same OSI if available.</p>
 <h2 id="enablement-mas-commerce-service" tabindex="-1">Enablement <code>mas-commerce-service</code> <a class="header-anchor" href="#enablement-mas-commerce-service" href="#enablement-mas-commerce-service" title="Permalink to this heading">#</a></h2>
 <p>⚠️ Safari does not support customized built-in elements. Therefore, you need to load the following polyfill before <code>mas.js</code> for browser compatibility (not required for in-app usage).</p>
 <pre><code class="hljs language-html"><span class="hljs-tag">&lt;<span class="hljs-name">script</span>
@@ -56,6 +49,7 @@
 &gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span>
 </code></pre>
 <h3 id="attributes" tabindex="-1">Attributes <a class="header-anchor" href="#attributes" href="#attributes" title="Permalink to this heading">#</a></h3>
+<p>For production, the minimun attributes to set are: <code>wcs-api-key</code> and <code>lana-tags</code>. Rest can be left default.</p>
 <table>
 <thead>
 <tr>
@@ -93,12 +87,6 @@
 <tr>
 <td><code>env</code></td>
 <td>commerce environment you want this page to use, either <code>stage</code> or <code>prod</code></td>
-<td><code>prod</code></td>
-<td><code>false</code></td>
-</tr>
-<tr>
-<td><code>host-env</code></td>
-<td>host environment, either <code>stage</code> or <code>prod</code></td>
 <td><code>prod</code></td>
 <td><code>false</code></td>
 </tr>

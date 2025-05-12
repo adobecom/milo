@@ -1,15 +1,11 @@
 import { CheckoutLink } from './checkout-link.js';
-import {
-    CheckoutWorkflow,
-    CheckoutWorkflowStep,
-    computePromoStatus,
-    omitProperties,
-    toBoolean,
-    toEnumeration,
-} from './external.js';
+import { omitProperties, toBoolean, toEnumeration, computePromoStatus } from '@dexter/tacocat-core';
+import { CheckoutWorkflow, CheckoutWorkflowStep } from './constants.js';
+
 import { buildCheckoutUrl } from './buildCheckoutUrl.js';
 import { Defaults } from './defaults.js';
 import { toOfferSelectorIds, toQuantity } from './utilities.js';
+import { MODAL_TYPE_3_IN_1 } from './constants.js';
 
 /**
  * generate Checkout configuration
@@ -67,7 +63,7 @@ export function Checkout({ providers, settings }) {
             language,
             entitlement: toBoolean(entitlement),
             upgrade: toBoolean(upgrade),
-            modal: toBoolean(modal),
+            modal,
             perpetual: toBoolean(perpetual),
             promotionCode: computePromoStatus(promotionCode).effectivePromoCode,
             wcsOsi: toOfferSelectorIds(wcsOsi),
@@ -101,7 +97,9 @@ export function Checkout({ providers, settings }) {
             quantity,
             ...rest
         } = collectCheckoutOptions(options);
-        const context = window.frameElement ? 'if' : 'fp';
+        const masFF3in1 = document.querySelector('meta[name=mas-ff-3in1]');
+        const is3in1 = Object.values(MODAL_TYPE_3_IN_1).includes(options.modal) && (!masFF3in1 || masFF3in1.content !== 'off');
+        const context = window.frameElement || is3in1 ? 'if' : 'fp';
         const data = {
             checkoutPromoCode,
             clientId,
@@ -118,9 +116,11 @@ export function Checkout({ providers, settings }) {
             const [{ offerId, offerType, productArrangementCode }] = offers;
             const {
                 marketSegments: [marketSegment],
+                customerSegment,
             } = offers[0];
             Object.assign(data, {
                 marketSegment,
+                customerSegment,
                 offerType,
                 productArrangementCode,
             });
@@ -132,9 +132,10 @@ export function Checkout({ providers, settings }) {
         } else {
             /* c8 ignore next 7 */
             data.items.push(
-                ...offers.map(({ offerId }, index) => ({
+                ...offers.map(({ offerId, productArrangementCode, marketSegments, customerSegment }, index) => ({
                     id: offerId,
                     quantity: quantity[index] ?? Defaults.quantity,
+                    ...(is3in1 ? { productArrangementCode, marketSegment: marketSegments[0], customerSegment } : {}),
                 })),
             );
         }

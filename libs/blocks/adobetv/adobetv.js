@@ -23,6 +23,17 @@ export default function init(a) {
     const embed = createTag('div', { class: 'milo-video' }, iframe);
     a.insertAdjacentElement('afterend', embed);
 
+    const idMatch = a.href.match(/\/v\/(\d+)/);
+    const videoId = idMatch ? idMatch[1] : null;
+
+    if (videoId) {
+      window.fetch(`https://video.tv.adobe.com/v/${videoId}?format=json-ld`)
+        .then((res) => res.json())
+        .then((info) => {
+          iframe.setAttribute('title', `${info?.jsonLinkedData?.name}`);
+        });
+    }
+
     window.addEventListener('message', (event) => {
       if (event.origin !== 'https://video.tv.adobe.com' || !event.data) return;
       const { state, id } = event.data;

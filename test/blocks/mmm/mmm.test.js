@@ -25,6 +25,22 @@ async function loadJsonAndSetResponse(jsonPath) {
   setFetchResponse(json);
 }
 
+describe('MMM - Target Cleanup Report', () => {
+  before(async () => {
+    await loadJsonAndSetResponse('./mocks/get-report.json');
+    document.body.innerHTML = await readFile({ path: './mocks/bodyReport.html' });
+    const module = await import('../../../libs/blocks/mmm/mmm.js');
+    await module.default(document.querySelector('.mmm'));
+  });
+
+  it('should load report page', async () => {
+    expect(document.querySelector('.mmm-report')).to.exist;
+    expect(document.querySelector('#mmm-pagination')).to.exist;
+    expect(document.querySelector('#mmm-search-filter')).to.exist;
+    expect(document.querySelector('#mmm-lastSeenManifest')).to.exist;
+  });
+});
+
 describe('MMM', () => {
   before(async () => {
     await loadJsonAndSetResponse('./mocks/get-pages.json');
@@ -147,48 +163,30 @@ describe('MMM', () => {
     let filterData = getLocalStorageFilter();
     expect(filterData).to.be.null;
 
-    const copyButton = document.querySelector('.copy-to-clipboard');
-    expect(copyButton).to.exist;
     const event = new Event('change');
-    expect(copyButton.dataset.destination).to.not.include('geos');
-    expect(copyButton.dataset.destination).to.not.include('pages');
-    expect(copyButton.dataset.destination).to.not.include('filter');
 
     const geoDropdown = document.querySelector('#mmm-dropdown-geos');
     expect(geoDropdown).to.exist;
     geoDropdown.options[1].selected = true;
     geoDropdown.dispatchEvent(event);
-    expect(copyButton.dataset.destination).to.include('geos');
-    expect(copyButton.dataset.destination).to.not.include('pages');
-    expect(copyButton.dataset.destination).to.not.include('filter');
 
     const pageDropdown = document.querySelector('#mmm-dropdown-pages');
     expect(pageDropdown).to.exist;
     pageDropdown.options[2].selected = true;
     pageDropdown.dispatchEvent(event);
-    expect(copyButton.dataset.destination).to.include('geos');
-    expect(copyButton.dataset.destination).to.include('pages');
-    expect(copyButton.dataset.destination).to.not.include('filter');
 
     geoDropdown.options[0].selected = true;
     geoDropdown.dispatchEvent(event);
-    expect(copyButton.dataset.destination).to.not.include('geos');
-    expect(copyButton.dataset.destination).to.include('pages');
-    expect(copyButton.dataset.destination).to.not.include('filter');
 
     const lastSeenManifestDropdown = document.querySelector('#mmm-lastSeenManifest');
     lastSeenManifestDropdown.options[0].selected = true;
     lastSeenManifestDropdown.dispatchEvent(event);
-    expect(copyButton.dataset.destination).to.include('lastSeenManifest');
 
     const mmmSearchQuery = document.querySelector('#mmm-search-filter');
     expect(mmmSearchQuery).to.exist;
     mmmSearchQuery.value = 'pricing';
     mmmSearchQuery.dispatchEvent(event);
     await delay(DEBOUNCE_TIME + 1); // await debounce time
-    expect(copyButton.dataset.destination).to.not.include('geos');
-    expect(copyButton.dataset.destination).to.include('pages');
-    expect(copyButton.dataset.destination).to.include('filter');
 
     filterData = getLocalStorageFilter();
     expect(filterData).to.not.be.null;

@@ -1,7 +1,7 @@
 {
-  "total": 5,
+  "total": 6,
   "offset": 0,
-  "limit": 5,
+  "limit": 6,
   "data": [
     {
       "action": "updateattribute",
@@ -42,6 +42,14 @@
       "param-newoffer=123": "",
       "chrome": "",
       "content": "thisshouldfail"
+    },
+    {
+      "action": "updateattribute",
+      "selector": "#placeholder-replace aria-label",
+      "page filter (optional)": "",
+      "param-newoffer=123": "",
+      "chrome": "",
+      "content": "{{my-aria-test}}"
     }
   ],
   ":type": "sheet"

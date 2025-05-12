@@ -11,6 +11,10 @@ mas.js includes the followings custom elements:
 -   [checkout-button](/libs/features/mas/docs/checkout-button.html)
 -   [merch-card](/libs/features/mas/docs/merch-card.html)
 
+`inline-price`, `checkout-link`, `checkout-button` elements are loaded via WCS.
+In case of network issues, the requests will be retried up to 3 times with 500ms of delay between attempts.
+It will also fallback to last successfully loaded offers for the same OSI if available.
+
 ## Enablement `mas-commerce-service`
 ⚠️ Safari does not support customized built-in elements. Therefore, you need to load the following polyfill before `mas.js` for browser compatibility (not required for in-app usage).
 ```html
@@ -28,7 +32,11 @@ To add `mas.js` to your page or application, include it as shown below:
 ></script>
 ```
 
+
+
 ### Attributes
+
+For production, the minimun attributes to set are: `wcs-api-key` and `lana-tags`. Rest can be left default.
 
 | Name                     | Description                                                                                         | Default Value                    | Required |
 | ------------------------ | --------------------------------------------------------------------------------------------------- | -------------------------------- | -------- |
@@ -37,12 +45,11 @@ To add `mas.js` to your page or application, include it as shown below:
 | `checkout-workflow-step` | default checkout workflow step                                                                      | `CheckoutWorkflowStep.EMAIL`     | `false`  |
 | `country`                | country of the offers to retrieve from WCS, determines the currency, price format, etc.             | US or locale country if set      | `false`  |
 |  `env`                   | commerce environment you want this page to use, either `stage` or `prod`                            |  `prod`                          |  `false` |
-|  `host-env`              | host environment, either `stage` or `prod`                            |  `prod`                          |  `false` |
 |  `force-tax-exclusive`   | force all price display to be tax exclusive                                                         |  `false`                         |  `false` |
 | `locale`                 | currency & price locale you need, must belong to one of the [supported locales](#supported-locales) | `en_US`                          | `false`  |
 | `language`               | language of the price literal, e.g: per license                                                     | en or locale langauge if set     | `false`  |
 | `wcs-api-key`            | api key used for making WCS calls                                                                   | `wcms-commerce-ims-ro-user-milo` | `false`  |
-| `lana-tags`              | Enables logging via lana[^1][^2] with the given tags. e.g:`ccd`.                       |                                  | `false`  |
+| `lana-tags`              | Enables logging via lana[^1][^2] with the given tags. e.g:`ccd`.                                    |                                  | `false`  |
 | `lana-sample-rate`       | Sets the sampling rate, see [^1] for details.                                                       | 1                                | `false`  |
 
 [^1]: https://wiki.corp.adobe.com/pages/viewpage.action?spaceKey=WCMSOps&title=LANA+-+Log+Always+Never+Assume
