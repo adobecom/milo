@@ -50,7 +50,7 @@ describe('Icon Support', () => {
     expect(otherIcons[0].querySelector('svg')).to.exist;
   });
 
-  it('Renders an SVG after loading the icons',, async () => {
+  it('Renders an SVG after loading the icons', () => {
     const selector = icons[0].querySelector(':scope svg');
     expect(selector).to.exist;
   });
