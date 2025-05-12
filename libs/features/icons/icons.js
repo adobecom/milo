@@ -79,13 +79,15 @@ export default async function loadIcons(icons, config) {
   const iconSVGs = await fetchIcons(config);
   if (!iconSVGs) return;
   icons.forEach(async (icon) => {
-    const { classList } = icon;
-    if (classList.contains('icon-tooltip')) decorateToolTip(icon);
-    const iconName = icon.classList[1].replace('icon-', '');
+    const iconNameInitial = icon.classList[1].replace('icon-', '');
+    let iconName = iconNameInitial === 'tooltip' ? 'info' : iconNameInitial;
+    if (iconNameInitial.includes('tooltip')) iconName = iconNameInitial.replace('tooltip', '');
+      decorateToolTip(icon, iconName);
+
     const existingIcon = icon.querySelector('svg');
     if (!iconSVGs[iconName] || existingIcon) return;
     const parent = icon.parentElement;
-    if (parent.childNodes.length > 1) {
+    if (parent?.childNodes.length > 1) {
       if (parent.lastChild === icon) {
         icon.classList.add('margin-inline-start');
       } else if (parent.firstChild === icon) {
