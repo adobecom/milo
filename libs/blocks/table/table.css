@@ -363,6 +363,12 @@
   width: 12px;
   aspect-ratio: 1.7;
   cursor: pointer;
+  rotate: -90deg;	
+  background-size: contain;	
+}	
+
+[dir="rtl"] .table .icon.expand {	
+  rotate: 90deg;	
 }
 
 .table .section-head-title:hover .icon.expand {
