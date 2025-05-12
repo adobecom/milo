@@ -24,12 +24,12 @@ const decorateHeadline = (elem, index) => {
   const headline = toFragment`<div class="feds-menu-headline">
       ${elem.textContent.trim()}
     </div>`;
-  
-  const headlineClickHandler = () => {
+
+  const headlineClickHandler = (e) => {
     if (isDesktop.matches) return;
-    trigger({ element: headline, event: event, type: 'headline' });
+    trigger({ element: headline, event: e, type: 'headline' });
     setActiveDropdown(headline);
-  }
+  };
 
   const setHeadlineAttributes = () => {
     if (isDesktop.matches) {
