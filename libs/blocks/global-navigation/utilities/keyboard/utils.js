@@ -2,6 +2,7 @@ import { selectors as baseSelectors } from '../utilities.js';
 
 const selectors = {
   ...baseSelectors,
+  globalFooterTag: 'footer',
   globalFooter: '.global-footer',
   mainNavItems:
     '.feds-navItem > a, .feds-navItem > button, .feds-navItem > .feds-cta-wrapper > .feds-cta',

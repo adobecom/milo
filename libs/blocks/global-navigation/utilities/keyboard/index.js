@@ -102,9 +102,10 @@ class KeyboardNavigation {
   };
 
   addEventListeners = () => {
-    [...document.querySelectorAll(`${selectors.globalNav}, ${selectors.globalFooter}`)]
+    [...document.querySelectorAll(`${selectors.globalNavTag}, ${selectors.globalFooterTag}`)]
       .forEach((el) => {
         el.addEventListener('keydown', (e) => logErrorFor(() => {
+          if (!(e.target.closest(selectors.globalNav) || e.target.closest(selectors.globalFooter))) return;
           switch (e.code) {
             case 'Tab': {
               const isNewNav = !!document.querySelector('header.new-nav');

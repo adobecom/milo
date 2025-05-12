@@ -242,16 +242,19 @@ class Popup {
   };
 
   addEventListeners = () => {
-    document.querySelector(selectors.globalNav)
+    document.querySelector(selectors.globalNavTag)
       ?.addEventListener('keydown', (e) => logErrorFor(() => {
+        if (!e.target.closest(selectors.globalNav)) return;
         const element = getOpenPopup();
         if (!e.target.closest(selectors.popup) || !element || this.desktop.matches) return;
         this.handleKeyDown({ e, element, popupEl: element, isFooter: false });
       }, `popup key failed ${e.code}`, 'gnav-keyboard', 'e'));
 
-    document.querySelector(selectors.globalFooter)
+    document.querySelector(selectors.globalFooterTag)
       ?.addEventListener('keydown', (e) => logErrorFor(() => {
-        const element = e.target.closest(selectors.menuContent);
+        if (!e.target.closest(selectors.globalFooter)) return;
+
+        const element = e.target.closest(selectors.menuContent) || e.target.closest('.feds-featuredProducts');
         if (!element || this.desktop.matches) return;
 
         const firstNavLink = element.querySelector(selectors.popupItems);

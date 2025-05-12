@@ -28,6 +28,7 @@ const selectorMap = {
 };
 
 export const selectors = {
+  globalNavTag: 'header',
   globalNav: '.global-navigation',
   curtain: '.feds-curtain',
   navLink: '.feds-navLink',
