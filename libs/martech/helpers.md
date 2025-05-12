@@ -328,7 +328,7 @@ This function checks if the browser's Global Privacy Control (GPC) signal is ena
 - If it does not exist, returns an empty string.
 
 ```javascript
-function getGlobalPrivacyControl() { 
+function getGlobalPrivacyControl() {
   if (!navigator || !navigator.globalPrivacyControl) return '';
   return navigator.globalPrivacyControl.toString();
 }
