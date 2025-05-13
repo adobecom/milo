@@ -11,6 +11,10 @@ merch-card[variant^="plans"] {
     width: var(--consonant-merch-card-plans-width);
 }
 
+merch-card[variant^="plans"][size="wide"], merch-card[variant^="plans"][size="super-wide"] {
+    width: auto;
+}
+
 merch-card[variant="plans-students"] {
     width: var(--consonant-merch-card-plans-students-width);
 }
@@ -164,6 +168,11 @@ merch-card[variant^="plans"]:not([size]) {
     grid-template-columns: var(--consonant-merch-card-plans-width);
 }
 
+.columns.merch-card > .row {
+    grid-template-columns: repeat(auto-fit, var(--consonant-merch-card-plans-width));
+    justify-content: center;
+}
+
 /* Tablet */
 @media screen and ${TABLET_UP} {
   :root {
@@ -177,6 +186,9 @@ merch-card[variant^="plans"]:not([size]) {
   .four-merch-cards.plans .foreground {
       max-width: unset;
   }
+  .columns.merch-card > .row {
+      grid-template-columns: repeat(auto-fit, calc(var(--consonant-merch-card-plans-width)*2 + var(--consonant-merch-spacing-m)));
+  }
 }
 
 /* desktop */
@@ -188,12 +200,18 @@ merch-card[variant^="plans"]:not([size]) {
   .four-merch-cards.plans {
       grid-template-columns: repeat(3, var(--consonant-merch-card-plans-width));
   }
+  .columns .four-merch-cards.plans {
+      grid-template-columns: repeat(2, var(--consonant-merch-card-plans-width));
+  }
 }
 
 /* Large desktop */
     @media screen and ${LARGE_DESKTOP} {
     .four-merch-cards.plans {
         grid-template-columns: repeat(4, var(--consonant-merch-card-plans-width));
+    }
+    .columns .four-merch-cards.plans {
+        grid-template-columns: repeat(2, var(--consonant-merch-card-plans-width));
     }
 }
 `;
