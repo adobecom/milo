@@ -96,7 +96,7 @@ function changeTabs(e) {
     .querySelectorAll(`.tabpanel[data-block-id="${blockId}"]`)
     .forEach((p) => p.setAttribute('hidden', true));
   targetContent?.removeAttribute('hidden');
-  if (tabsBlock.classList.contains('stacked-mobile')) scrollStackedMobile(parent);
+  if (tabsBlock.classList.contains('stacked-mobile')) scrollStackedMobile(targetContent);
 }
 
 function getStringKeyName(str) {
