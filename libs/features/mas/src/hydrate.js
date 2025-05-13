@@ -331,7 +331,7 @@ function createSpectrumCssButton(cta, aemFragmentMapping, isOutline, variant, is
         button = CheckoutButton.createCheckoutButton({}, cta.innerHTML);
     }
     else {
-        button.innerHTML = `<span style="pointer-events: none;">${button.textContent}</span>`
+        button.innerHTML = `<span>${button.textContent}</span>`
     }
     button.setAttribute('tabindex', 0);
     for (const attr of cta.attributes) {
@@ -417,13 +417,14 @@ export function processCTAs(fields, merchCard, aemFragmentMapping, variant) {
         const footer = createTag('div', { slot }, fields.ctas);
 
         const ctas = [...footer.querySelectorAll('a')].map((cta) => {
-            const isCheckout = cta.hasAttribute('data-wcs-osi');
+            const isCheckout = cta.hasAttribute('data-wcs-osi') && Boolean(cta.getAttribute('data-wcs-osi'));
             const checkoutLinkStyle = CHECKOUT_STYLE_PATTERN.exec(cta.className)?.[0] ?? 'accent';
             const isAccent = checkoutLinkStyle.includes('accent');
             const isPrimary = checkoutLinkStyle.includes('primary');
             const isSecondary = checkoutLinkStyle.includes('secondary');
             const isOutline = checkoutLinkStyle.includes('-outline');
             const isLink = checkoutLinkStyle.includes('-link');
+            cta.classList.remove('accent', 'primary', 'secondary');
             if (merchCard.consonant)
                 return createConsonantButton(cta, isAccent, isCheckout);
             if (isLink) {
