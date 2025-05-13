@@ -33,8 +33,8 @@ test.describe('Footer Block Test Suite', () => {
 
       // updated the footer section and heading content as per consuming sites
       // milo=6, cc=9 and so on
-      await expect([4, 6, 9].includes(await Footer.footerSections.count())).toBeTruthy();
-      await expect([4, 6, 9].includes(await Footer.footerHeadings.count())).toBeTruthy();
+      await expect([4, 7, 9].includes(await Footer.footerSections.count())).toBeTruthy();
+      await expect([4, 7, 9].includes(await Footer.footerHeadings.count())).toBeTruthy();
 
       await expect(Footer.socialIcons).toHaveCount(4);
       await expect(Footer.legalLinks).toHaveCount(5);
@@ -98,8 +98,8 @@ test.describe('Footer Block Test Suite', () => {
         await expect(Footer.footerHeadings).not.toBeVisible();
       } else {
         expect([0, 5].includes(await Footer.footerColumns.count())).toBeTruthy();
-        expect([4, 6, 9].includes(await Footer.footerSections.count())).toBeTruthy();
-        expect([4, 6, 9].includes(await Footer.footerHeadings.count())).toBeTruthy();
+        expect([4, 7, 9].includes(await Footer.footerSections.count())).toBeTruthy();
+        expect([4, 7, 9].includes(await Footer.footerHeadings.count())).toBeTruthy();
       }
     });
 
@@ -145,7 +145,7 @@ test.describe('Footer Block Test Suite', () => {
 
       // updated the footer section and heading content equal or greater
       // than 6, to pass tests on cc pages.
-      expect([4, 6, 9].includes(await Footer.footerSections.count())).toBeTruthy();
+      expect([4, 7, 9].includes(await Footer.footerSections.count())).toBeTruthy();
       expect([4, 7, 9].includes(await Footer.footerHeadings.count())).toBeTruthy();
       expect([3, 4].includes(await Footer.featuredProducts.count())).toBeTruthy();
       expect([1, 2].includes(await Footer.legalSections.count())).toBeTruthy();
