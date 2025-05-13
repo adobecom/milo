@@ -1,4 +1,5 @@
 :root {
+  --base-z-index: 100;
   --gb-container-bg: white;
   --gb-outline-color: #1473E6;
   --gb-container-btn-bg: #505050;
@@ -19,14 +20,14 @@
 
 .gb-graybox-body:not(.gb-no-border)::before {
   content: '';
-  position: absolute;
-  top: calc(50% + 8px);
+  position: fixed;
+  top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: calc(100% - 15.5px);
-  height: 100%;
+  width: calc(100% - 16px);
+  height: calc(100vh - 16px);
   border: var(--gb-page-outline-border);
-  z-index: calc(var(--above-all) + 1);
+  z-index: calc(var(--base-z-index) + 1);
   pointer-events: none;
 }
 
@@ -49,7 +50,7 @@
   height: 100%;
   position: absolute;
   width: 100%;
-  z-index: var(--above-all);
+  z-index: var(--base-z-index);
   left: 0;
   top: 0;
 }
@@ -68,7 +69,7 @@
   position: fixed;
   top: 0;
   width: 100%;
-  z-index: calc(var(--above-all) - 1);
+  z-index: calc(var(--base-z-index) - 1);
 }
 
 .gb-no-change::before {
@@ -81,20 +82,20 @@
   position: absolute;
   top: 0;
   width: 100%;
-  z-index: calc(var(--above-all) - 1);
+  z-index: calc(var(--base-z-index) - 1);
 }
 
 /* The elements that should appear above the overlay */
 .gb-graybox-body .gb-changed {
   position: relative;
-  z-index: calc(var(--above-all) - 1);
+  z-index: calc(var(--base-z-index) - 1);
 }
 
 .graybox-container {
   position: fixed;
   right: 0;
   top: 15%;
-  z-index: calc(var(--above-all) + 2);
+  z-index: calc(var(--base-z-index) + 50);
 }
 
 .graybox-container .gb-toggle {
@@ -194,7 +195,7 @@
 }
 
 .dialog-modal.graybox-modal {
-  z-index: calc(var(--above-all) + 1);
+  z-index: calc(var(--base-z-index) + 1);
 }
 
 .dialog-modal.graybox-modal.mobile > div {
@@ -264,7 +265,7 @@
 
 .modal-curtain.graybox-curtain.is-open {
   background: var(--gb-modal-bg);
-  z-index: var(--above-all);
+  z-index: var(--base-z-index);
 }
 
 @media (max-height: 910px), (max-width: 420px) {
@@ -277,7 +278,7 @@
     background-color: #f0f0f0;
     color: #000;
     font-size: 16px;
-    z-index: var(--above-all);
+    z-index: var(--base-z-index);
     border-radius: 5px;
   }
 }
@@ -292,7 +293,7 @@
     background-color: #f0f0f0;
     color: #000;
     font-size: 16px;
-    z-index: var(--above-all);
+    z-index: var(--base-z-index);
     border-radius: 5px;
   }
 }

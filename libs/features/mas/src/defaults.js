@@ -1,9 +1,9 @@
 import {
+    Landscape,
     CheckoutWorkflow,
     CheckoutWorkflowStep,
     Env,
-} from './external.js';
-import { Landscape } from './constants.js';
+} from './constants.js';
 
 export const Defaults = Object.freeze({
     checkoutClientId: 'adobe_com',
@@ -14,6 +14,7 @@ export const Defaults = Object.freeze({
     displayPerUnit: false,
     displayRecurrence: true,
     displayTax: false,
+    displayPlanType: false,
     env: Env.PRODUCTION,
     forceTaxExclusive: false,
     language: 'en',

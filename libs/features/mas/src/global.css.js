@@ -277,7 +277,7 @@ merch-card [slot='callout-content'] {
     gap: var(--consonant-merch-card-callout-spacing-xxs);
 }
 
-merch-card[variant='plans'] [slot='badge'] {
+merch-card[variant^='plans'] [slot='badge'] {
     position: absolute;
     top: 16px;
     right: 0;
@@ -485,6 +485,14 @@ merch-offer-select[variant="subscription-options"] merch-offer span[is="inline-p
     top: 20px;
 }
 
+merch-addon span[data-wcs-osi][data-offer-type="TRIAL"] {
+    display: none;
+}
+
+merch-gradient {
+    display: none;
+}
+
 body.merch-modal {
     overflow: hidden;
     scrollbar-gutter: stable;
@@ -511,6 +519,5 @@ sr-only {
   white-space: nowrap;
   border: 0;
 }
-
 `;
 document.head.appendChild(styles);

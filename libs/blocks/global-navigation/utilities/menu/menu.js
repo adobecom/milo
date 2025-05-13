@@ -384,6 +384,6 @@ const decorateMenu = (config) => logErrorFor(async () => {
   // Remove the loading state created in delayDropdownDecoration
   config.template?.querySelector('.feds-popup.loading')?.remove();
   config.template?.append(menuTemplate);
-}, 'Decorate menu failed', 'gnav-menu', 'info');
+}, 'Decorate menu failed', 'gnav-menu', 'i');
 
 export default { decorateMenu, decorateLinkGroup };

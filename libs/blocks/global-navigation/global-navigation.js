@@ -167,11 +167,11 @@ export const CONFIG = {
               enableProfileSwitcher: true,
               miniAppContext: {
                 logger: {
-                  trace: () => { },
-                  debug: () => { },
-                  info: () => { },
-                  warn: (e) => lanaLog({ message: 'Profile Menu warning', e, tags: 'universalnav', errorType: 'warn' }),
-                  error: (e) => lanaLog({ message: 'Profile Menu error', e, tags: 'universalnav', errorType: 'error' }),
+                  trace: () => {},
+                  debug: () => {},
+                  info: () => {},
+                  warn: (e) => lanaLog({ message: 'Profile Menu warning', e, tags: 'universalnav,warn' }),
+                  error: (e) => lanaLog({ message: 'Profile Menu error', e, tags: 'universalnav', errorType: 'e' }),
                 },
               },
               ...getConfig().unav?.profile?.config,
@@ -242,7 +242,7 @@ export const LANGMAP = {
 // signIn, decorateSignIn and decorateProfileTrigger can be removed if IMS takes over the profile
 const signIn = (options = {}) => {
   if (typeof window.adobeIMS?.signIn !== 'function') {
-    lanaLog({ message: 'IMS signIn method not available', tags: 'gnav', errorType: 'warn' });
+    lanaLog({ message: 'IMS signIn method not available', tags: 'gnav,warn' });
     return;
   }
   window.adobeIMS.signIn(options);
@@ -278,7 +278,7 @@ const decorateSignIn = async ({ rawElem, decoratedElem }) => {
         signIn(SIGNIN_CONTEXT);
       });
     } else {
-      lanaLog({ message: 'Sign in link not found in dropdown.', tags: 'gnav', errorType: 'warn' });
+      lanaLog({ message: 'Sign in link not found in dropdown.', tags: 'gnav,warn' });
     }
 
     decoratedElem.append(dropdownElem);
@@ -373,7 +373,7 @@ const convertToPascalCase = (str) => str
   .join(' ');
 
 const removeLocalNav = () => {
-  lanaLog({ message: 'Gnav Localnav was removed, potential CLS', tags: 'gnav-localnav' });
+  lanaLog({ message: 'Gnav Localnav was removed, potential CLS', tags: 'gnav-localnav', errorType: 'i' });
   document.querySelector('.feds-localnav')?.remove();
 };
 
@@ -449,7 +449,7 @@ class Gnav {
 
     document.addEventListener('click', (e) => closeOnClickOutside(e, this.isLocalNav(), this.elements.navWrapper));
     isDesktop.addEventListener('change', closeAllDropdowns);
-  }, 'Error in global navigation init', 'gnav', 'error');
+  }, 'Error in global navigation init', 'gnav', 'e');
 
   ims = async () => (window.adobeIMS?.initialized ? this.imsReady() : loadIms()
     .then(() => this.imsReady())
@@ -458,7 +458,7 @@ class Gnav {
         window.addEventListener('onImsLibInstance', () => this.imsReady());
         return;
       }
-      lanaLog({ message: 'GNAV: Error with IMS', e, tags: 'gnav', errorType: 'info' });
+      lanaLog({ message: 'GNAV: Error with IMS', e, tags: 'gnav', errorType: 'i' });
     }));
 
   decorateProductEntryCTA = () => {
@@ -496,7 +496,7 @@ class Gnav {
     const localNavItems = this.elements.navWrapper.querySelector('.feds-nav').querySelectorAll('.feds-navItem:not(.feds-navItem--section, .feds-navItem--mobile-only)');
     const firstElem = localNavItems[0]?.querySelector('a') || localNavItems[0]?.querySelector('button');
     if (!firstElem) {
-      lanaLog({ message: 'GNAV: Incorrect authoring of localnav found.', tags: 'gnav', errorType: 'info' });
+      lanaLog({ message: 'GNAV: Incorrect authoring of localnav found.', tags: 'gnav', errorType: 'i' });
       return;
     }
     const [title, navTitle = ''] = this.getOriginalTitle(firstElem);
@@ -505,7 +505,7 @@ class Gnav {
       lanaLog({
         message: 'GNAV: Localnav does not include \'localnav\' in its name.',
         tags: 'gnav',
-        errorType: 'info',
+        errorType: 'i',
       });
       localNav = toFragment`<div class="feds-localnav"/>`;
       this.block.after(localNav);
@@ -662,7 +662,7 @@ class Gnav {
 
         resolve();
       } catch (e) {
-        lanaLog({ message: 'GNAV: Error within loadDelayed', e, tags: 'gnav', errorType: 'warn' });
+        lanaLog({ message: 'GNAV: Error within loadDelayed', e, tags: 'gnav,warn' });
         resolve();
       }
     });
@@ -684,7 +684,7 @@ class Gnav {
       lanaLog({
         e,
         tags: 'gnav',
-        errorType: 'info',
+        errorType: 'i',
         message: `GNAV: issues within imsReady - ${this.useUniversalNav ? 'decorateUniversalNav' : 'decorateProfile'}`,
       });
     }
@@ -713,7 +713,7 @@ class Gnav {
         message: 'GNAV: decorateProfile has failed to fetch profile data',
         e: `${profileData.statusText} url: ${profileData.url}`,
         tags: 'gnav',
-        errorType: 'info',
+        errorType: 'i',
       });
       return;
     }
@@ -979,7 +979,7 @@ class Gnav {
       if (this.isToggleExpanded()) setHamburgerPadding();
     };
 
-    toggle.addEventListener('click', () => logErrorFor(onToggleClick, 'Toggle click failed', 'gnav', 'error'));
+    toggle.addEventListener('click', () => logErrorFor(onToggleClick, 'Toggle click failed', 'gnav', 'e'));
 
     const onDeviceChange = () => {
       if (isDesktop.matches) {
@@ -992,7 +992,7 @@ class Gnav {
       }
     };
 
-    isDesktop.addEventListener('change', () => logErrorFor(onDeviceChange, 'Toggle logic failed on device change', 'gnav', 'error'));
+    isDesktop.addEventListener('change', () => logErrorFor(onDeviceChange, 'Toggle logic failed on device change', 'gnav', 'e'));
 
     return toggle;
   };
@@ -1072,6 +1072,30 @@ class Gnav {
     if (!decorate) return this.elements.aside;
     this.elements.aside = await decorate({ headerElem: this.block, fedsPromoWrapper, promoPath });
     fedsPromoWrapper.append(this.elements.aside);
+
+    const updateLayout = () => {
+      const promoHeight = `${this.elements.aside.clientHeight}px`;
+      const header = document.querySelector('header');
+      const localNav = document.querySelector('.feds-localnav');
+
+      fedsPromoWrapper.style.height = promoHeight;
+      header.style.top = promoHeight;
+
+      if (!isDesktop.matches && localNav) {
+        header.style.top = 0;
+        localNav.style.top = promoHeight;
+      }
+    };
+
+    if (this.elements.aside.clientHeight > fedsPromoWrapper.clientHeight) {
+      lanaLog({ message: 'Promo height is more than expected, potential CLS', tags: 'gnav-promo', errorType: 'i' });
+      updateLayout();
+
+      this.promoResizeObserver?.disconnect();
+      this.promoResizeObserver = new ResizeObserver(updateLayout);
+      this.promoResizeObserver.observe(this.elements.aside);
+    }
+
     return this.elements.aside;
   };
 
@@ -1141,12 +1165,17 @@ class Gnav {
 
   // update GNAV popup position based on branch banner
   updatePopupPosition = (activePopup) => {
-    const popup = activePopup || this.elements.mainNav.querySelector('.feds-navItem--section.feds-dropdown--active .feds-popup');
+    const popup = activePopup || this.elements.mainNav?.querySelector('.feds-navItem--section.feds-dropdown--active .feds-popup');
     if (!popup) return;
+    const hasPromo = this.block.classList.contains('has-promo');
+    const promoHeight = this.elements.aside?.clientHeight;
+
+    if (!this.isLocalNav()) {
+      if (hasPromo) popup.style.top = `calc(0px - var(--feds-height-nav) - ${promoHeight}px)`;
+      return;
+    }
     const yOffset = window.scrollY || Math.abs(parseInt(document.body.style.top, 10)) || 0;
-    const navOffset = this.block.classList.contains('has-promo')
-      ? 'var(--feds-height-nav) - var(--global-height-navPromo)'
-      : 'var(--feds-height-nav)';
+    const navOffset = hasPromo ? `var(--feds-height-nav) - ${promoHeight}px` : 'var(--feds-height-nav)';
     popup.removeAttribute('style');
     popup.style.top = `calc(${yOffset}px - ${navOffset} - 2px)`;
     const { isPresent, isSticky, height } = getBranchBannerInfo();
@@ -1307,7 +1336,7 @@ class Gnav {
             decorateLocalNavItems(item, template);
           }
         }
-      }, 'Decorate dropdown failed', 'gnav', 'info');
+      }, 'Decorate dropdown failed', 'gnav', 'i');
 
       template.addEventListener('click', decorateDropdown);
       const loadingMegaMenu = loaderMegaMenu();
@@ -1344,7 +1373,7 @@ class Gnav {
             const popup = dropdownTrigger.nextElementSibling;
             // document.body.style.top should always be set
             // at this point by calling disableMobileScroll
-            if (popup && this.isLocalNav()) {
+            if (popup) {
               this.updatePopupPosition(popup);
             }
             makeTabActive(popup);
@@ -1475,7 +1504,7 @@ export default async function init(block) {
     const error = new Error('Could not create global navigation. Content not found!');
     error.tags = 'gnav';
     error.url = url;
-    error.errorType = 'error';
+    error.errorType = 'e';
     lanaLog({ message: error.message, ...error });
     throw error;
   }

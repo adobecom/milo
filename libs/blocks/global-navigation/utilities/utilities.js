@@ -164,7 +164,7 @@ export function loadStyles(url, override = false) {
         message: 'GNAV: Error in loadStyles',
         e: `error loading style: ${url}`,
         tags: 'utilities',
-        errorType: 'info',
+        errorType: 'i',
       });
     }
   });
@@ -401,7 +401,7 @@ export async function fetchAndProcessPlainHtml({
       message: 'Error in fetchAndProcessPlainHtml',
       e: `${res.statusText} url: ${res.url}`,
       tags: 'utilities',
-      errorType: 'info',
+      errorType: 'i',
     });
     return null;
   }
@@ -440,7 +440,7 @@ export async function fetchAndProcessPlainHtml({
           message: 'Error in fetchAndProcessPlainHtml',
           e,
           tags: 'utilities',
-          errorType: 'info',
+          errorType: 'i',
         });
       });
   }
@@ -537,6 +537,7 @@ export const transformTemplateToMobile = async ({ popup, item, localnav = false,
           id="${i}"
           role="tabpanel"
           aria-labelledby="${i}"
+          class="${links.match(/class\s*=\s*["'][^"']*\bfeds-navLink--header\b[^"']*["']/) !== null ? 'has-subheader' : ''}"
           ${daalhTabContent ? `daa-lh="${daalhTabContent}"` : ''}
           hidden
         >
@@ -717,7 +718,8 @@ export const [branchBannerLoadCheck, getBranchBannerInfo] = (() => {
                 branchBannerInfo.height = node.offsetHeight; // Get the height of the element
                 if (branchBannerInfo.isSticky) {
                   // Adjust the top position of the lnav to account for the branch banner height
-                  document.querySelector('.feds-localnav').style.top = `${branchBannerInfo.height}px`;
+                  const navElem = document.querySelector(isLocalNav() ? '.feds-localnav' : 'header');
+                  navElem.style.top = `${branchBannerInfo.height}px`;
                 } else {
                   // Add a class to the body to indicate the presence of a non-sticky branch banner
                   document.body.classList.add('branch-banner-inline');
@@ -734,7 +736,9 @@ export const [branchBannerLoadCheck, getBranchBannerInfo] = (() => {
                 branchBannerInfo.isSticky = false;
                 branchBannerInfo.height = 0;
                 // Remove the top style attribute when the branch banner is removed
-                document.querySelector('.feds-localnav')?.removeAttribute('style');
+                const navElem = document.querySelector(isLocalNav() ? '.feds-localnav' : 'header');
+                navElem?.removeAttribute('style');
+
                 // Remove the class indicating the presence of a non-sticky branch banner
                 document.body.classList.remove('branch-banner-inline');
                 // Update the popup position when the branch banner is removed

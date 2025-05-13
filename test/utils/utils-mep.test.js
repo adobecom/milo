@@ -63,6 +63,16 @@ describe('MEP Utils', () => {
       const ajoEnabled = getMepEnablement('ajo');
       expect(ajoEnabled).to.equal('postlcp');
     });
+    it('checks mepgeolocation metadata set to off', async () => {
+      document.head.innerHTML = await readFile({ path: './mocks/mep/head-mepgeolocation-off.html' });
+      const mepGelocationEnabled = getMepEnablement('mepgeolocation');
+      expect(mepGelocationEnabled).to.equal(false);
+    });
+    it('checks mepgeolocation metadata set to off', async () => {
+      document.head.innerHTML = await readFile({ path: './mocks/mep/head-mepgeolocation-on.html' });
+      const mepGelocationEnabled = getMepEnablement('mepgeolocation');
+      expect(mepGelocationEnabled).to.equal(true);
+    });
     it('checks from just metadata with no target metadata', async () => {
       document.head.innerHTML = await readFile({ path: './mocks/mep/head-promo.html' });
       const persEnabled = getMepEnablement('personalization');

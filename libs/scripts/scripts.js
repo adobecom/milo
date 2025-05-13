@@ -19,7 +19,7 @@ import {
 import locales from '../utils/locales.js';
 
 // Production Domain
-const prodDomains = ['milo.adobe.com', 'business.adobe.com', 'www.adobe.com'];
+const prodDomains = ['milo.adobe.com', 'business.adobe.com', 'www.adobe.com', 'news.adobe.com'];
 
 const stageDomainsMap = {
   'www.stage.adobe.com': {
@@ -50,6 +50,23 @@ const config = {
   imsClientId: 'milo',
   codeRoot: '/libs',
   locales,
+  languages: {
+    en: {
+      tk: 'hah7vzn.css',
+      regions: [
+        { region: 'us' },
+        { region: 'gb' },
+        { region: 'apac', ietf: 'en' },
+      ],
+    },
+    de: {
+      tk: 'hah7vzn.css',
+      regions: [
+        { region: 'ch' },
+        { region: 'de' },
+      ],
+    },
+  },
   prodDomains,
   stageDomainsMap,
   jarvis: {

@@ -1,7 +1,7 @@
 import { html, LitElement } from 'lit';
 import { MatchMediaController } from '@spectrum-web-components/reactive-controllers/src/MatchMedia.js';
 import { deeplink, pushState } from './deeplink.js';
-import { EVENT_MERCH_SIDENAV_SELECT } from './constants.js';
+import { EVENT_MAS_ERROR, EVENT_MERCH_SIDENAV_SELECT } from './constants.js';
 
 import {
     EVENT_MERCH_CARD_COLLECTION_SORT,
@@ -11,7 +11,7 @@ import {
 } from './constants.js';
 import { TABLET_DOWN } from './media.js';
 import { styles } from './merch-card-collection.css.js';
-import { getSlotText } from './utils.js';
+import { getService, getSlotText } from './utils.js';
 import './mas-commerce-service';
 
 const MERCH_CARD_COLLECTION = 'merch-card-collection';
@@ -93,9 +93,19 @@ const searcher = (elements, { search }) => {
 
 export class MerchCardCollection extends LitElement {
     static properties = {
+        displayResult: { type: Boolean, attribute: 'display-result' },
         filter: { type: String, attribute: 'filter', reflect: true },
-        filtered: { type: String, attribute: 'filtered' }, // freeze filter
+        filtered: { type: String, attribute: 'filtered', reflect: true }, // freeze filter
+        hasMore: { type: Boolean },
+        limit: { type: Number, attribute: 'limit' },
+        overrides : { type: String },
+        page: { type: Number, attribute: 'page', reflect: true },
+        resultCount: {
+          type: Number,
+        },
         search: { type: String, attribute: 'search', reflect: true },
+        sidenav: { type: Object },
+        singleApp: { type: String, attribute: 'single-app', reflect: true },
         sort: {
             type: String,
             attribute: 'sort',
@@ -103,16 +113,11 @@ export class MerchCardCollection extends LitElement {
             reflect: true,
         },
         types: { type: String, attribute: 'types', reflect: true },
-        limit: { type: Number, attribute: 'limit' },
-        page: { type: Number, attribute: 'page', reflect: true },
-        singleApp: { type: String, attribute: 'single-app', reflect: true },
-        hasMore: { type: Boolean },
-        displayResult: { type: Boolean, attribute: 'display-result' },
-        resultCount: {
-            type: Number,
-        },
-        sidenav: { type: Object },
     };
+
+    #overrideMap = {};
+    #service;
+    #log;
 
     mobileAndTablet = new MatchMediaController(this, TABLET_DOWN);
 
@@ -223,22 +228,52 @@ export class MerchCardCollection extends LitElement {
         });
     }
 
+    buildOverrideMap() {
+      this.#overrideMap = {};
+      this.overrides?.split(',').forEach((token) => {
+        const [ key, value ] = token?.split(':');
+        if (key && value) {
+          this.#overrideMap[key] = value;
+        }
+      });
+    }
+
     connectedCallback() {
         super.connectedCallback();
-        if (this.filtered) {
-            this.filter = this.filtered;
+        this.#service = getService();
+        this.#log = this.#service.Log.module(MERCH_CARD_COLLECTION);
+        this.buildOverrideMap();
+        this.init();
+    }
+
+    async init() {
+      await this.hydrate();
+      this.sidenav = document.querySelector('merch-sidenav');
+      if (this.filtered) {
+          this.filter = this.filtered;
             this.page = 1;
-        } else {
-            this.startDeeplink();
-        }
-        this.sidenav = document.querySelector('merch-sidenav');
-        this.hydrate();
+          } else {
+          this.startDeeplink();
+      }
     }
 
     disconnectedCallback() {
         super.disconnectedCallback();
         this.stopDeeplink?.();
     }
+
+    #fail(error, details = {}, dispatch = true) {
+      this.#log.error(`merch-card-collection: ${error}`, details);
+      this.failed = true;
+      if (!dispatch) return;
+      this.dispatchEvent(
+          new CustomEvent(EVENT_MAS_ERROR, {
+              detail: { ...details, message: error },
+              bubbles: true,
+              composed: true,
+          }),
+      );
+  }
 
     async hydrate() {
         if (this.hydrating) return false;
@@ -251,8 +286,8 @@ export class MerchCardCollection extends LitElement {
         this.hydrationReady = new Promise((resolve) => {
             resolveHydration = resolve;
         });
-
-        function normalizePayload(fragment) {
+        const self = this;
+        function normalizePayload(fragment, overrideMap) {
             const payload = { cards: [], hierarchy: [], placeholders: fragment.placeholders };
 
             function traverseReferencesTree(root, references) {
@@ -266,36 +301,41 @@ export class MerchCardCollection extends LitElement {
                     const collection = {
                         label: fields.label,
                         icon: fields.icon,
-                        cards: fields.cards,
+                        cards: fields.cards.map(cardId => overrideMap[cardId] || cardId),
                         collections: []
                     };
                     root.push(collection);
                     traverseReferencesTree(collection.collections, reference.referencesTree);
                 }
             }
-            traverseReferencesTree(payload.hierarchy, fragment.referencesTree);
-            
+            traverseReferencesTree(
+                payload.hierarchy,
+                fragment.referencesTree,
+            );
+            if (payload.hierarchy.length === 0) {
+              self.filtered = 'all';
+          }
             return payload;
         }
         
         aemFragment.addEventListener(EVENT_AEM_ERROR, (event) => {
-            console.error(event.detail);
+            this.#fail('Error loading AEM fragment', event.detail);
             this.hydrating = false;
             aemFragment.remove();
         });
         aemFragment.addEventListener(EVENT_AEM_LOAD, async (event) => {
-            this.data = normalizePayload(event.detail);
+            this.data = normalizePayload(event.detail, this.#overrideMap);
             const { cards, hierarchy } = this.data;
             aemFragment.cache.add(...cards);
             for (const fragment of cards) {
                 const merchCard = document.createElement('merch-card');
+                const fragmentId = this.#overrideMap[fragment.id] || fragment.id;
                 merchCard.setAttribute('consonant', '');
                 merchCard.setAttribute('style', '');
-                merchCard.filters = {};
 
                 function populateFilters(level) {
                     for (const node of level) {
-                        const index = node.cards.indexOf(fragment.id);
+                        const index = node.cards.indexOf(fragmentId);
                         if (index === -1) continue;
                         const name = node.label.toLowerCase();
                         merchCard.filters[name] = { order: index + 1, size: fragment.fields.size };
@@ -305,21 +345,29 @@ export class MerchCardCollection extends LitElement {
                 populateFilters(hierarchy);
 
                 const mcAemFragment = document.createElement('aem-fragment');
-                mcAemFragment.setAttribute('fragment', fragment.id);
+                mcAemFragment.setAttribute('fragment', fragmentId);
                 merchCard.append(mcAemFragment);
-
+                // if no filters are set, set the default filter
+                if (Object.keys(merchCard.filters).length === 0) {
+                    merchCard.filters = {
+                        all: {
+                            order: cards.indexOf(fragment) + 1,
+                            size: fragment.fields.size,
+                        },
+                    };
+                }
                 this.append(merchCard);
             }
 
             const variant = cards[0]?.fields.variant;
             this.variant = variant;
             this.classList.add('merch-card-collection', variant, ...(VARIANT_CLASSES[variant] || []));
-
             this.displayResult = true;
             this.hydrating = false;
             aemFragment.remove();
             resolveHydration();
         });
+        await this.hydrationReady;
     }
 
     get header() {
