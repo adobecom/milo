@@ -187,6 +187,8 @@ class Footer {
 
     const featuredProductsContent = featuredProductElem.parentElement;
     this.elements.featuredProducts = toFragment`<div class="feds-featuredProducts"></div>`;
+    const featureProductsSection = toFragment`<div class="feds-menu-section"></div>`;
+    this.elements.featuredProducts.append(featureProductsSection);
 
     const [placeholder] = await Promise.all([
       replaceKey('featured-products', getFedsPlaceholderConfig()),
@@ -195,7 +197,7 @@ class Footer {
 
     if (placeholder && placeholder.length) {
       const headline = toFragment`<div class="feds-menu-headline">${placeholder}</div>`;
-      this.elements.featuredProducts.append(this.decorateHeadline(headline, 0));
+      featureProductsSection.append(this.decorateHeadline(headline, 0));
     }
 
     const featuredProductsList = toFragment`<ul></ul>`;
@@ -203,7 +205,7 @@ class Footer {
       featuredProductsList.append(toFragment`<li>${this.decorateLinkGroup(linkGroup)}</li>`);
     });
     const featuredProductsContainer = toFragment`<div class="feds-menu-items">${featuredProductsList}</div>`;
-    this.elements.featuredProducts.append(featuredProductsContainer);
+    featureProductsSection.append(featuredProductsContainer);
     return this.elements.featuredProducts;
   };
 

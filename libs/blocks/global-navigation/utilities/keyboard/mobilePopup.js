@@ -21,7 +21,7 @@ const openHeadline = ({ headline, focus } = {}) => {
     headline.setAttribute('aria-expanded', 'true');
     setActiveDropdown(headline);
     const section = headline.closest(selectors.section)
-      || headline.closest(selectors.column);
+      || headline.closest(selectors.column) || headline.closest(selectors.featuredProducts);
     const items = [...section.querySelectorAll(selectors.popupItems)]
       .filter((el) => isElementVisible(el));
     if (focus === 'first') items[0].focus();
@@ -101,6 +101,16 @@ class Popup {
       return;
     }
 
+    if (!prevHeadline && isFooter) {
+      const prevElement = element?.previousElementSibling;
+      const allHeadlines = [...prevElement.querySelectorAll(selectors.headline)];
+      if (allHeadlines.length && allHeadlines[allHeadlines.length - 1]) {
+        closeHeadlines();
+        openHeadline({ headline: allHeadlines[allHeadlines.length - 1], focus: 'last' });
+      }
+      return;
+    }
+
     // Case 3: Open the previous headline
     if (newNav && !isFooter) popupItems?.[popupItems.length - 1]?.focus();
     else openHeadline({ headline: prevHeadline, focus: 'last' });
@@ -121,6 +131,18 @@ class Popup {
     if (!nextHeadline && !newNav) {
       closeHeadlines();
       this.focusMainNavNext(isFooter);
+      return;
+    }
+    
+    if (!nextHeadline && isFooter) {
+      const nextElement = element?.nextElementSibling;
+      const headline = nextElement && nextElement.querySelector('.feds-menu-headline');
+      closeHeadlines();
+      if (headline) {
+        openHeadline({ headline, focus: 'first' });
+      } else {
+        nextElement?.querySelector('a')?.focus();
+      }
       return;
     }
 
@@ -254,14 +276,14 @@ class Popup {
       ?.addEventListener('keydown', (e) => logErrorFor(() => {
         if (!e.target.closest(selectors.globalFooter)) return;
 
-        const element = e.target.closest(selectors.menuContent) || e.target.closest('.feds-featuredProducts');
+        const element = e.target.closest(selectors.menuContent) || e.target.closest(selectors.featuredProducts);
         if (!element || this.desktop.matches) return;
 
         const firstNavLink = element.querySelector(selectors.popupItems);
         const firstHeadline = element.querySelector(selectors.headline);
         const isFirstNavlink = e.target === firstNavLink;
         const isFirstHeadline = e.target === firstHeadline;
-        const shiftTabOutOfFooter = e.shiftKey && (isFirstNavlink || isFirstHeadline);
+        const shiftTabOutOfFooter = e.shiftKey && (isFirstNavlink || isFirstHeadline) && !e.target.closest(selectors.featuredProducts);
         if (shiftTabOutOfFooter) return;
 
         // special case, the first dropdown needs some special logic to allow opening.

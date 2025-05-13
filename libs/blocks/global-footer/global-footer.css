@@ -307,12 +307,16 @@ span.feds-footer-privacyLink-divider {
     display: flex;
     justify-content: center;
     align-items: center;
-    column-gap: 12px;
     padding: 8px 0;
     margin: 0 var(--feds-gutter-footer);
     border-width: 1px 0 1px 0;
     border-style: solid;
     border-color: var(--feds-borderColor-featuredProducts);
+  }
+
+  .feds-featuredProducts .feds-menu-section {
+    display: flex;
+    column-gap: 8px;
   }
 
   .feds-featuredProducts .feds-menu-headline {

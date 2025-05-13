@@ -29,6 +29,7 @@ const selectors = {
   column: '.feds-menu-column:not(.feds-menu-column--group)',
   cta: '.feds-cta',
   openSearch: '.feds-search-trigger[aria-expanded = "true"]',
+  featuredProducts: '.feds-featuredProducts',
   regionPicker: '.feds-regionPicker',
   socialLink: '.feds-social-link',
   privacyLink: '.feds-footer-privacyLink',
