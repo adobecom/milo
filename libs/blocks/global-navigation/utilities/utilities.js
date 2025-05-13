@@ -424,8 +424,10 @@ export async function fetchAndProcessPlainHtml({
   shouldDecorateLinks = true,
 } = {}) {
   let path = getFederatedUrl(url);
-  const mepGnav = getConfig()?.mep?.inBlock?.['global-navigation'];
-  const mepFragment = mepGnav?.fragments?.[path];
+  const config = getConfig();
+  const mepGnav = config?.mep?.inBlock?.['global-navigation'];
+  const mepFragments = { ...mepGnav?.fragments, ...config?.mep?.fragments };
+  const mepFragment = mepFragments[path];
   if (mepFragment && mepFragment.action === 'replace') {
     path = mepFragment.content;
   }
