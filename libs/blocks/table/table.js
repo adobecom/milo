@@ -603,7 +603,8 @@ function handleStickyHeader(el) {
 
   setTimeout(() => {
     const headingRow = el.querySelector('.row-heading');
-    if (headingRow.offsetHeight / window.innerHeight >= 0.3) el.classList.add('cancel-sticky');
+    if (headingRow.offsetHeight / window.innerHeight < 0.45) el.classList.remove('cancel-sticky');
+    if (headingRow.offsetHeight / window.innerHeight >= 0.45) el.classList.add('cancel-sticky');
   });
 }
 
