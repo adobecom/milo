@@ -1293,7 +1293,7 @@ class Gnav {
         template.removeEventListener('click', decorateDropdown);
         clearTimeout(decorationTimeout);
 
-        const loadingDesktopMegaMenuHTML = template.querySelector('.feds-popup.loading').innerHTML;
+        const loadingDesktopMegaMenuHTML = template.querySelector('.feds-popup.loading')?.innerHTML;
         const menuLogic = await loadDecorateMenu();
 
         menuLogic.decorateMenu({
@@ -1357,9 +1357,11 @@ class Gnav {
       }, 'Decorate dropdown failed', 'gnav', 'i');
 
       template.addEventListener('click', decorateDropdown);
-      const loadingMegaMenu = loaderMegaMenu();
-      loadingMegaMenu.style.visibility = 'hidden';
-      template.append(loadingMegaMenu);
+      if ((this.newMobileNav && !isDesktop.matches) || isDesktop.matches) {
+        const loadingMegaMenu = loaderMegaMenu();
+        loadingMegaMenu.style.visibility = 'hidden';
+        template.append(loadingMegaMenu);
+      }
       decorationTimeout = setTimeout(decorateDropdown, CONFIG.delays.mainNavDropdowns);
     };
 
