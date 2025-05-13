@@ -1417,6 +1417,10 @@ html:has(body.disable-ios-scroll) { /* this class is only added on iOS */
  *
  */
 
+.feds-popup.loading * {
+  pointer-events: none;
+}
+
 .feds-popup.loading .feds-promo,
 .feds-popup.loading .first-headline-one,
 .feds-popup.loading .first-headline-two,
@@ -1475,6 +1479,15 @@ header.new-nav .feds-nav > section.feds-navItem > .feds-popup.loading .tabs butt
   width: 86px;
   padding: 0;
 }
+
+/* for compliance with design specs */
+.feds-popup.loading .feds-menu-headline.small {
+  margin-top: 29px;
+  margin-bottom: 0px;
+  height: 14px;
+  width: 56px;
+}
+
 
 .feds-popup.loading .feds-crossCloudMenu-item .feds-navLink {
   height: 14px;

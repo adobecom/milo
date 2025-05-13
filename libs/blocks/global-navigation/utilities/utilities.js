@@ -605,10 +605,10 @@ export const loaderMegaMenu = () => {
     </div>
   </div>
   `;
-  const columnItems = (n) => new Array(n).fill(0).map(() => `<a href="" class="feds-navLink">
+  const columnItems = (n, desc = true) => new Array(n).fill(0).map(() => `<a href="" class="feds-navLink">
           <div class="feds-navLink-content">
             <div class="feds-navLink-title"></div>
-            <div class="feds-navLink-description"></div>
+            ${desc ? '<div class="feds-navLink-description"></div>' : ''}
           </div>
         </a>`).join('');
   const columnContent = [
@@ -628,7 +628,13 @@ export const loaderMegaMenu = () => {
     `,
     `<div class="feds-menu-headline"></div>
      <div class="feds-menu-items">
-       ${columnItems(6)}
+       ${columnItems(2)}
+     </div>
+     <div style="padding-top: 29px;"></div>
+     <div class="feds-menu-headline"></div>
+     <div class="feds-menu-headline small"></div>
+     <div class="feds-menu-items">
+       ${columnItems(4, false)}
      </div>`,
     `<div class="feds-promo-wrapper">
        <div class="feds-promo">
