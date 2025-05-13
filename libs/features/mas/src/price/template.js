@@ -14,11 +14,6 @@ import {
     makeSpacesAroundNonBreaking,
 } from './utilities.js';
 
-// JSON imports require new syntax to run in Milo/wtr tests,
-// but the new syntax is not yet supported by ESLint:
-// import defaultLiterals from '../literals.json' assert {type: 'json'};
-// @see https://github.com/eslint/eslint/discussions/15305
-// the easiest solution for now is to inline the literals
 export const defaultLiterals = {
     recurrenceLabel:
         '{recurrenceTerm, select, MONTH {/mo} YEAR {/yr} other {}}',
@@ -34,13 +29,14 @@ export const defaultLiterals = {
         '{taxTerm, select, GST {incl. GST} VAT {incl. VAT} TAX {incl. tax} IVA {incl. IVA} SST {incl. SST} KDV {incl. KDV} other {}}',
     alternativePriceAriaLabel: 'Alternatively at',
     strikethroughAriaLabel: 'Regularly at',
+    planTypeLabel: '{planType, select, ABM {Annual, paid monthly.} other {}}',
 };
 
 const log = createLog('ConsonantTemplates/price');
 
-const htmlPattern = /<\/?[^>]+(>|$)/g;
+export const htmlPattern = /<\/?[^>]+(>|$)/g;
 
-const cssClassNames = {
+export const cssClassNames = {
     container: 'price',
     containerOptical: 'price-optical',
     containerStrikethrough: 'price-strikethrough',
@@ -58,7 +54,8 @@ const cssClassNames = {
     taxInclusivity: 'price-tax-inclusivity',
     unitType: 'price-unit-type',
 };
-const literalKeys = {
+
+export const literalKeys = {
     perUnitLabel: 'perUnitLabel',
     perUnitAriaLabel: 'perUnitAriaLabel',
     recurrenceLabel: 'recurrenceLabel',
@@ -66,11 +63,12 @@ const literalKeys = {
     taxExclusiveLabel: 'taxExclusiveLabel',
     taxInclusiveLabel: 'taxInclusiveLabel',
     strikethroughAriaLabel: 'strikethroughAriaLabel',
-    alternativePriceAriaLabel: 'alternativePriceAriaLabel'
+    alternativePriceAriaLabel: 'alternativePriceAriaLabel',
 };
-const WCS_TAX_DISPLAY_EXCLUSIVE = 'TAX_EXCLUSIVE';
 
-const renderAttributes = (attributes) =>
+export const WCS_TAX_DISPLAY_EXCLUSIVE = 'TAX_EXCLUSIVE';
+
+export const renderAttributes = (attributes) =>
     isObject(attributes)
         ? Object.entries(attributes)
               .filter(
@@ -87,7 +85,12 @@ const renderAttributes = (attributes) =>
               )
         : '';
 
-const renderSpan = (cssClass, content, attributes, convertSpaces = false) => {
+export const renderSpan = (
+    cssClass,
+    content,
+    attributes,
+    convertSpaces = false,
+) => {
     return (
         `<span class="${cssClass}${
             content ? '' : ' ' + cssClassNames.disabled
@@ -99,6 +102,24 @@ const renderSpan = (cssClass, content, attributes, convertSpaces = false) => {
         }</span>`
     );
 };
+
+export function formatLiteral(literals, locale, key, parameters) {
+    const literal = literals[key];
+    if (literal == undefined) {
+        /* c8 ignore next 2 */
+        return '';
+    }
+    try {
+        return new IntlMessageFormat(
+            literal.replace(htmlPattern, ''),
+            locale,
+        ).format(parameters);
+    } catch {
+        /* c8 ignore next 2 */
+        log.error('Failed to format literal:', literal);
+        return '';
+    }
+}
 
 function renderContainer(
     cssClass,
@@ -127,8 +148,10 @@ function renderContainer(
     );
 
     let markup = '';
-    if (accessibleLabel) markup = `<sr-only class="strikethrough-aria-label">${accessibleLabel}</sr-only>`;
-    else if (altAccessibleLabel) markup = `<sr-only class="alt-aria-label">${altAccessibleLabel}</sr-only>`;
+    if (accessibleLabel)
+        markup = `<sr-only class="strikethrough-aria-label">${accessibleLabel}</sr-only>`;
+    else if (altAccessibleLabel)
+        markup = `<sr-only class="alt-aria-label">${altAccessibleLabel}</sr-only>`;
     if (isCurrencyFirst) markup += currencyMarkup + currencySpaceMarkup;
     markup += renderSpan(cssClassNames.integer, integer);
     markup += renderSpan(cssClassNames.decimalsDelimiter, decimalsDelimiter);
@@ -206,24 +229,6 @@ const createPriceTemplate =
 
         const locale = `${language.toLowerCase()}-${country.toUpperCase()}`;
 
-        function formatLiteral(key, parameters) {
-            const literal = literals[key];
-            if (literal == undefined) {
-                /* c8 ignore next 2 */
-                return '';
-            }
-            try {
-                return new IntlMessageFormat(
-                    literal.replace(htmlPattern, ''),
-                    locale,
-                ).format(parameters);
-            } catch {
-                /* c8 ignore next 2 */
-                log.error('Failed to format literal:', literal);
-                return '';
-            }
-        }
-
         const displayPrice =
             displayStrikethrough && priceWithoutDiscount
                 ? priceWithoutDiscount
@@ -247,25 +252,38 @@ const createPriceTemplate =
             usePrecision,
         });
 
-        let accessibleLabel = '', altAccessibleLabel = '';
+        let accessibleLabel = '',
+            altAccessibleLabel = '';
 
         let recurrenceLabel = '';
         if (toBoolean(displayRecurrence) && recurrenceTerm) {
-            recurrenceLabel = formatLiteral(literalKeys.recurrenceLabel, {
-                recurrenceTerm,
-            });
+            recurrenceLabel = formatLiteral(
+                literals,
+                locale,
+                literalKeys.recurrenceLabel,
+                {
+                    recurrenceTerm,
+                },
+            );
         }
 
         let perUnitLabel = '';
         if (toBoolean(displayPerUnit)) {
-            perUnitLabel = formatLiteral(literalKeys.perUnitLabel, {
-                perUnit: 'LICENSE',
-            });
+            perUnitLabel = formatLiteral(
+                literals,
+                locale,
+                literalKeys.perUnitLabel,
+                {
+                    perUnit: 'LICENSE',
+                },
+            );
         }
 
         let taxInclusivityLabel = '';
         if (toBoolean(displayTax) && taxTerm) {
             taxInclusivityLabel = formatLiteral(
+                literals,
+                locale,
                 taxDisplay === WCS_TAX_DISPLAY_EXCLUSIVE
                     ? literalKeys.taxExclusiveLabel
                     : literalKeys.taxInclusiveLabel,
@@ -275,6 +293,8 @@ const createPriceTemplate =
 
         if (displayStrikethrough) {
             accessibleLabel = formatLiteral(
+                literals,
+                locale,
                 literalKeys.strikethroughAriaLabel,
                 {
                     strikethroughPrice: accessibleLabel,
@@ -284,6 +304,8 @@ const createPriceTemplate =
 
         if (isAlternativePrice) {
             altAccessibleLabel = formatLiteral(
+                literals,
+                locale,
                 literalKeys.alternativePriceAriaLabel,
                 {
                     alternativePrice: altAccessibleLabel,
