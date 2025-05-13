@@ -1417,7 +1417,10 @@ html:has(body.disable-ios-scroll) { /* this class is only added on iOS */
  *
  */
 
-.feds-popup.loading * {
+.feds-popup.loading tabs *,
+.feds-popup.loading tab-content *,
+.feds-popup.loading .feds-menu-container *,
+.feds-popup.loading .feds-crossCloudMenu-wrapper * {
   pointer-events: none;
 }
 
