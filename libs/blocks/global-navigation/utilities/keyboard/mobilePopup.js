@@ -133,7 +133,7 @@ class Popup {
       this.focusMainNavNext(isFooter);
       return;
     }
-    
+
     if (!nextHeadline && isFooter) {
       const nextElement = element?.nextElementSibling;
       const headline = nextElement && nextElement.querySelector('.feds-menu-headline');
@@ -276,14 +276,17 @@ class Popup {
       ?.addEventListener('keydown', (e) => logErrorFor(() => {
         if (!e.target.closest(selectors.globalFooter)) return;
 
-        const element = e.target.closest(selectors.menuContent) || e.target.closest(selectors.featuredProducts);
+        const element = e.target.closest(selectors.menuContent)
+          || e.target.closest(selectors.featuredProducts);
         if (!element || this.desktop.matches) return;
 
         const firstNavLink = element.querySelector(selectors.popupItems);
         const firstHeadline = element.querySelector(selectors.headline);
         const isFirstNavlink = e.target === firstNavLink;
         const isFirstHeadline = e.target === firstHeadline;
-        const shiftTabOutOfFooter = e.shiftKey && (isFirstNavlink || isFirstHeadline) && !e.target.closest(selectors.featuredProducts);
+        const shiftTabOutOfFooter = e.shiftKey
+          && (isFirstNavlink || isFirstHeadline)
+          && !e.target.closest(selectors.featuredProducts);
         if (shiftTabOutOfFooter) return;
 
         // special case, the first dropdown needs some special logic to allow opening.
