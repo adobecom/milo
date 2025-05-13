@@ -87,6 +87,7 @@
   bottom: 5px;
 }
 
+.mep-popup-header a,
 .mep-popup-header svg {
   height: 20px;
 }
@@ -265,6 +266,19 @@
 .mep-popup.in-page .mep-manifest-list {
   flex-wrap: initial;
   flex-direction: column;
+}
+
+.mep-popup.in-page .mep-manifest-list-mmm {
+  display: none;
+}
+
+.mep-popup.in-page .mep-manifest-list-mmm.mep-show {
+  display: initial;
+}
+
+.mep-popup.in-page .mep-import-weekly-manifests {
+  cursor: pointer;
+  align-self: center;
 }
 
 .mep-popup.in-page .mep-section {
