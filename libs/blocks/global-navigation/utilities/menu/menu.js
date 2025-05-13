@@ -326,6 +326,7 @@ const decorateMenu = (config) => logErrorFor(async () => {
   }
 
   if (config.type === 'asyncDropdownTrigger') {
+    performance.mark(`DecorateMenu-${asyncDropDownCount}-Start`);
     const pathElement = config.item.querySelector('a');
     if (!(pathElement instanceof HTMLElement)) return;
 
@@ -383,6 +384,9 @@ const decorateMenu = (config) => logErrorFor(async () => {
   // Remove the loading state created in delayDropdownDecoration
   config.template?.querySelector('.feds-popup.loading')?.remove();
   config.template?.append(menuTemplate);
+  if (config.type === 'asyncDropdownTrigger') {
+    performance.mark(`DecorateMenu-${asyncDropDownCount}-End`);
+  }
 }, 'Decorate menu failed', 'gnav-menu', 'i');
 
 export default { decorateMenu, decorateLinkGroup };
