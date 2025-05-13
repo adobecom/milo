@@ -46,15 +46,27 @@ export const PLANS_AEM_FRAGMENT_MAPPING = {
     style: 'consonant',
 };
 
+export const PLANS_EDUCATION_AEM_FRAGMENT_MAPPING = {
+  ...(function(){
+    const { whatsIncluded, ...rest } = PLANS_AEM_FRAGMENT_MAPPING;
+    return rest;
+  }()),
+  title: { tag: 'p', slot: 'heading-s' },
+  subtitle: { tag: 'p', slot: 'subtitle' },
+  secureLabel: false
+}
+
+export const PLANS_STUDENTS_AEM_FRAGMENT_MAPPING = {
+  ...(function(){
+    const { whatsIncluded, size, quantitySelect, ...rest } = PLANS_AEM_FRAGMENT_MAPPING;
+    return rest;
+  }())
+}
+
 export class Plans extends VariantLayout {
     constructor(card) {
         super(card);
         this.adaptForMobile = this.adaptForMobile.bind(this);
-    }
-
-    /* c8 ignore next 3 */
-    get aemFragmentMapping() {
-        return PLANS_AEM_FRAGMENT_MAPPING;
     }
 
     priceOptionsProvider(element, options) {
@@ -121,6 +133,13 @@ export class Plans extends VariantLayout {
         );
         return price;
     }
+
+    get divider() {
+      return this.card.variant === 'plans-education'
+        ? html`<div class="divider"></div>` 
+        : ''
+    }
+
     async adjustLegal() {
         await this.card.updateComplete;
         if (this.legal) return;
@@ -164,6 +183,11 @@ export class Plans extends VariantLayout {
             : '';
     }
 
+    get icons() {
+      if (!this.card.querySelector('[slot="icons"]')) return '';
+      return html`<slot name="icons"></slot>`;
+    }
+
     connectedCallbackHook() {
         const match = matchMobile();
         if (match?.addEventListener)
@@ -179,8 +203,11 @@ export class Plans extends VariantLayout {
     renderLayout() {
         return html` ${this.badge}
             <div class="body">
-                <slot name="icons"></slot>
+                ${this.icons}
                 <slot name="heading-xs"></slot>
+                <slot name="heading-s"></slot>
+                <slot name="subtitle"></slot>
+                ${this.divider}
                 <slot name="heading-m"></slot>
                 <slot name="annualPrice"></slot>
                 <slot name="priceLabel"></slot>
@@ -198,8 +225,8 @@ export class Plans extends VariantLayout {
     }
 
     static variantStyle = css`
-        :host([variant='plans']) {
-            min-height: 348px;
+        :host([variant^='plans']) {
+            min-height: 273px;
             border: 1px solid var(--merch-card-custom-border-color, #dadada);
             --merch-card-plans-min-width: 244px;
             --merch-card-plans-max-width: 244px;
@@ -208,6 +235,22 @@ export class Plans extends VariantLayout {
             --merch-color-green-promo: rgb(0, 122, 77);
             --secure-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%23505050' viewBox='0 0 12 15'%3E%3Cpath d='M11.5 6H11V5A5 5 0 1 0 1 5v1H.5a.5.5 0 0 0-.5.5v8a.5.5 0 0 0 .5.5h11a.5.5 0 0 0 .5-.5v-8a.5.5 0 0 0-.5-.5ZM3 5a3 3 0 1 1 6 0v1H3Zm4 6.111V12.5a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1.389a1.5 1.5 0 1 1 2 0Z'/%3E%3C/svg%3E");
             font-weight: 400;
+        }
+
+        :host([variant='plans-education']) {
+            min-height: unset;
+        }
+
+        :host([variant='plans-education']) ::slotted([slot='subtitle']) {
+            font-size: var(--consonant-merch-card-heading-xxxs-font-size);
+            line-height: var(--consonant-merch-card-heading-xxxs-line-height);
+            font-style: italic;
+            font-weight: 400;
+        }
+        :host([variant='plans-education']) .divider {
+            border: 0;
+            border-top: 1px solid #E8E8E8;
+            margin-top: 8px;
         }
 
         :host([variant='plans']) ::slotted([slot='heading-xs']) {
