@@ -161,12 +161,12 @@ export function processBackgroundColor(fields, merchCard, allowedColors, backgro
 }
 
 export function processBorderColor(fields, merchCard, variantMapping) {
-    const borderColorConfig = variantMapping.borderColor;
+    const borderColorConfig = variantMapping?.borderColor;
     const customBorderColor = '--merch-card-custom-border-color';
 
     if (fields.borderColor?.toLowerCase() === 'transparent') {
         merchCard.style.removeProperty(customBorderColor);
-        if (variantMapping.allowedBorderColors?.includes(variantMapping.badge?.default)) {
+        if (variantMapping?.allowedBorderColors?.includes(variantMapping?.badge?.default)) {
             merchCard.style.setProperty(customBorderColor, 'transparent');
         }
     } else if (fields.borderColor && borderColorConfig) {
@@ -582,7 +582,7 @@ export async function hydrate(fragment, merchCard) {
     processBackgroundColor(fields, merchCard, mapping.allowedColors, mapping.backgroundColor);
     processBorderColor(fields, merchCard, mapping);
     processDescription(fields, merchCard, mapping);
-    processAddon(fields, merchCard, aemFragmentMapping);
+    processAddon(fields, merchCard, mapping);
     processStockOffersAndSecureLabel(
         fields,
         merchCard,
