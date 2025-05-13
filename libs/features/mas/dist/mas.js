@@ -1253,6 +1253,7 @@ merch-card[variant^="plans"]:not([size]) {
 .columns.merch-card > .row {
     grid-template-columns: repeat(auto-fit, var(--consonant-merch-card-plans-width));
     justify-content: center;
+    align-items: center;
 }
 
 .columns.checkmark-list ul {
