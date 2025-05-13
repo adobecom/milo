@@ -19,7 +19,9 @@ class LiteVimeo extends HTMLElement {
     try {
       const response = await fetch(`https://vimeo.com/api/oembed.json?url=https://vimeo.com/${this.videoId}`);
       const data = await response.json();
-      if (data.title && this.iframeEl) this.iframeEl.title = data.title;
+
+      const { setDialogAndElementAttributes } = await import('../../scripts/accessibility.js');
+      setDialogAndElementAttributes({ element: this.iframeEl, title: data.title });
     } catch (error) {
       window.lana.log('Error fetching Vimeo video title', { error });
     }
@@ -79,7 +81,7 @@ class LiteVimeo extends HTMLElement {
 }
 
 export default async function init(a) {
-  if (isInTextNode(a)) return;
+  if (!a || isInTextNode(a)) return;
   if (!customElements.get('lite-vimeo')) customElements.define('lite-vimeo', LiteVimeo);
 
   const embedVimeo = () => {
