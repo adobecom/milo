@@ -185,6 +185,10 @@ const decoratePromo = (elem, index) => {
     decorateImage();
   }
 
+  const description = elem.querySelector('.feds-promo-content p')?.textContent;
+  const linkText = elem.querySelector('.feds-promo-content a')?.textContent;
+  elem.querySelector('.feds-promo-content a')?.setAttribute('aria-label', `${description} ${linkText}`);
+
   elem.classList = 'feds-promo';
 
   if (isDarkTheme) {
