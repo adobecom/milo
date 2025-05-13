@@ -96,7 +96,7 @@ class Popup {
 
     // Case 2: No headline + no previous item, move to the main nav
     const { prevHeadline } = getState(element);
-    if (!prevHeadline && !newNav) {
+    if (!prevHeadline && !newNav && !isFooter) {
       this.focusMainNav(isFooter);
       return;
     }
@@ -128,7 +128,7 @@ class Popup {
     }
     // Case 2: No headline + no next item, move to the main nav
     const { nextHeadline } = getState(element);
-    if (!nextHeadline && !newNav) {
+    if (!nextHeadline && !newNav && !isFooter) {
       closeHeadlines();
       this.focusMainNavNext(isFooter);
       return;
