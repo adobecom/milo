@@ -964,52 +964,65 @@ class Gnav {
     const toggle = this.elements.mobileToggle;
     const isExpanded = this.isToggleExpanded();
     const modal = this.elements.navWrapper;
-
+    const modalContainer = modal.closest('header'); // Assume gnav lives inside <header>
+  
+    if (!modalContainer) return;
+  
     if (!isExpanded && this.newMobileNav) {
-      const sections = document.querySelectorAll('header.new-nav .feds-nav > section.feds-navItem > button.feds-navLink');
+      const sections = document.querySelectorAll(
+        'header.new-nav .feds-nav > section.feds-navItem > button.feds-navLink'
+      );
       animateInSequence(sections, 0.075);
-
+  
       if (this.isLocalNav() && this.hasMegaMenu()) {
         disableMobileScroll();
         const section = sections[0];
         queueMicrotask(() => section.click());
       }
-
-      // ✅ 1. Add role and aria-modal
-      modal.setAttribute('role', 'dialog');
-      modal.setAttribute('aria-modal', 'true');
-      modal.setAttribute('aria-label', 'Main navigation menu'); // You can replace with actual label
-
-      // ✅ 2. Move modal to body if not already
+  
+      // ✅ Modal ARIA setup
+      if (!modal.hasAttribute('role')) {
+        modal.setAttribute('role', 'dialog');
+        modal.setAttribute('aria-modal', 'true');
+        modal.setAttribute('aria-label', 'Main navigation menu');
+      }
+  
+      // ✅ Move modal to body end if needed (optional: improves iOS VoiceOver)
       if (!document.body.contains(modal)) {
         document.body.appendChild(modal);
       }
-
-      // ✅ 3. Focus first focusable element inside modal
+  
+      // ✅ Focus first focusable element in modal
       const firstFocusable = modal.querySelector(
         'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
       );
       firstFocusable?.focus();
-
-      // ✅ 4. Hide all siblings in <body> (except modal itself)
-      Array.from(document.body.children).forEach((el) => {
-        if (el !== modal && !['SCRIPT', 'STYLE'].includes(el.tagName)) {
+  
+      // ✅ Hide only *siblings* of gnav container
+      Array.from(modalContainer.parentElement.children).forEach((el) => {
+        if (el !== modalContainer && !['SCRIPT', 'STYLE'].includes(el.tagName)) {
           el.setAttribute('aria-hidden', 'true');
         }
       });
-    } else if (isExpanded && this.isLocalNav()) {
-      enableMobileScroll();
-      // ✅ 5. Restore aria-hidden for siblings
-      Array.from(document.body.children).forEach((el) => {
-        if (el !== modal && !['SCRIPT', 'STYLE'].includes(el.tagName)) {
+  
+    } else {
+      // ✅ Remove aria-hidden from siblings
+      Array.from(modalContainer.parentElement.children).forEach((el) => {
+        if (el !== modalContainer && !['SCRIPT', 'STYLE'].includes(el.tagName)) {
           el.removeAttribute('aria-hidden');
         }
       });
-      // ✅ 6. Remove modal role when closing (optional but cleaner)
+  
+      // ✅ Clean up modal attributes (optional)
       modal.removeAttribute('role');
       modal.removeAttribute('aria-modal');
       modal.removeAttribute('aria-label');
+  
+      if (this.isLocalNav()) {
+        enableMobileScroll();
+      }
     }
+  
     toggle?.setAttribute('aria-expanded', !isExpanded);
     document.body.classList.toggle('disable-scroll', !isExpanded);
     modal?.classList?.toggle('feds-nav-wrapper--expanded', !isExpanded);
@@ -1017,6 +1030,7 @@ class Gnav {
     setCurtainState(!isExpanded);
     toggle?.setAttribute('daa-ll', `hamburgermenu|${isExpanded ? 'open' : 'close'}`);
   };
+  
 
   decorateToggle = () => {
     if (!this.mainNavItemCount || (this.newMobileNav && !this.hasMegaMenu())) return '';
