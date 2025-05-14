@@ -600,12 +600,7 @@ function applyStylesBasedOnScreenSize(table, originTable) {
 
 function handleStickyHeader(el) {
   if (!el.classList.value.includes('sticky')) return;
-
-  setTimeout(() => {
-    const headingRow = el.querySelector('.row-heading');
-    if (headingRow.offsetHeight / window.innerHeight < 0.45) el.classList.remove('cancel-sticky');
-    if (headingRow.offsetHeight / window.innerHeight >= 0.45) el.classList.add('cancel-sticky');
-  });
+  setTimeout(() => el.classList.toggle('cancel-sticky', !(el.querySelector('.row-heading').offsetHeight / window.innerHeight < 0.45)));
 }
 
 export default function init(el) {
