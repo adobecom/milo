@@ -1725,3 +1725,35 @@ export function loadLana(options = {}) {
 }
 
 export const reloadPage = () => window.location.reload();
+
+export function trapFocusInsideModal(modalId) {
+  const modal = document.getElementById(modalId);
+  if (!modal) return;
+
+  const siblings = Array.from(document.body.children).filter(
+    (el) => el !== modal && el.tagName !== 'SCRIPT' && el.tagName !== 'STYLE'
+  );
+
+  siblings.forEach((el) => {
+    el.setAttribute('aria-hidden', 'true');
+  });
+
+  modal.setAttribute('aria-modal', 'true');
+  modal.setAttribute('role', 'dialog');
+}
+
+export function releaseFocusTrap(modalId) {
+  const modal = document.getElementById(modalId);
+  if (!modal) return;
+
+  const siblings = Array.from(document.body.children).filter(
+    (el) => el !== modal && el.tagName !== 'SCRIPT' && el.tagName !== 'STYLE'
+  );
+
+  siblings.forEach((el) => {
+    el.removeAttribute('aria-hidden');
+  });
+
+  modal.removeAttribute('aria-modal');
+  modal.removeAttribute('role');
+}

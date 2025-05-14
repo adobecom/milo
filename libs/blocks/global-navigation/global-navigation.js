@@ -11,6 +11,8 @@ import {
   getGnavSource,
   getFederatedUrl,
   getFedsPlaceholderConfig,
+  trapFocusInsideModal,
+  releaseFocusTrap,
 } from '../../utils/utils.js';
 
 (async () => {
@@ -945,35 +947,14 @@ class Gnav {
         const section = sections[0];
         queueMicrotask(() => section.click());
       }
+      trapFocusInsideModal('feds-nav-wrapper');
     } else if (isExpanded && this.isLocalNav()) {
       enableMobileScroll();
+      releaseFocusTrap('feds-nav-wrapper');
     }
     toggle?.setAttribute('aria-expanded', !isExpanded);
     document.body.classList.toggle('disable-scroll', !isExpanded);
     this.elements.navWrapper?.classList?.toggle('feds-nav-wrapper--expanded', !isExpanded);
-    // Accessibility fix for iOS VoiceOver
-    const nav = this.elements.navWrapper;
-    if (!isExpanded) {
-      nav.setAttribute('role', 'dialog');
-      nav.setAttribute('aria-modal', 'true');
-      nav.setAttribute('tabindex', '-1');
-      setTimeout(() => nav.focus(), 0); // This makes iOS VoiceOver focus inside the menu
-    }
-
-    // Screen reader trap
-    const trapNavFocus = (trap) => {
-      document.querySelectorAll('body > *').forEach((el) => {
-        const skip = nav.contains(el) || ['SCRIPT', 'STYLE'].includes(el.tagName);
-        if (!skip) {
-          if (trap) {
-            el.setAttribute('aria-hidden', 'true');
-          } else {
-            el.removeAttribute('aria-hidden');
-          }
-        }
-      });
-    };
-    trapNavFocus(!isExpanded);
     closeAllDropdowns();
     setCurtainState(!isExpanded);
     toggle?.setAttribute('daa-ll', `hamburgermenu|${isExpanded ? 'open' : 'close'}`);
