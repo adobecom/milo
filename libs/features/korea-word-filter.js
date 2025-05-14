@@ -14,7 +14,7 @@ export default function filterKoreaWords() {
     let parent = node.parentElement;
     let shouldProcess = true;
     while (parent) {
-      if (parent.tagName === 'A' || parent.tagName === 'BUTTON' || parent.tagName === 'BTN') {
+      if (parent.tagName === 'A' || parent.tagName === 'BUTTON') {
         shouldProcess = false;
         break;
       }
