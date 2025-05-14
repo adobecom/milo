@@ -151,7 +151,7 @@ export class Plans extends VariantLayout {
           if (price.options.displayPlanType)
               price.dataset.displayPlanType = 'false';
           legal.setAttribute('data-template', 'legal');
-          price.parentNode.insertBefore(legal, price.nextSibling || null);
+          price.parentNode.insertBefore(legal, price.nextSibling);
         });
         await Promise.all(legalPromises);
     }
