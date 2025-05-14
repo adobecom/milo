@@ -289,14 +289,10 @@
   width: 100%;
 }
 
-.section[class*="-up"] .text-block:not(.legal, .link-farm) .foreground > div {
+.section[class*="-up"] .text-block:not(.legal, .link-farm) .foreground > div:not(:has(> strong)) {
   display: flex;
   flex-direction: column;
   width: 100%;
-}
-
-.section[class*="-up"] .text-block:not(.legal, .link-farm) .foreground >div:has(> strong) {
-  display: block;
 }
 
 .section[class*="-up"] .text-block:not(.legal, .link-farm) [class^="heading"],
