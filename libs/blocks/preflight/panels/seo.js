@@ -18,6 +18,7 @@ const bodyResult = signal({ icon: DEF_ICON, title: 'Body size', description: DEF
 const loremResult = signal({ icon: DEF_ICON, title: 'Lorem Ipsum', description: DEF_DESC });
 const linksResult = signal({ icon: DEF_ICON, title: 'Links', description: DEF_DESC });
 const badLinks = signal([]);
+const checksData = signal(null);
 
 function findOpportunity(data, where, what) {
   const desiredItem = data.find((item) => item.name === where);
@@ -44,21 +45,18 @@ function checkH1s() {
   return result.icon;
 }
 
-async function checkTitle(data) {
-  const opportunity = findOpportunity(data.audits, 'metatags', 'title');
-  console.log(opportunity);
-  const titleSize = document.title.replace(/\s/g, '').length;
+async function checkTitle() {
+  const opportunity = findOpportunity(checksData.value.audits, 'metatags', 'title');
+
   const result = { ...titleResult.value };
-  if (titleSize < 15) {
+  if (opportunity.issue) {
     result.icon = fail;
-    result.description = 'Reason: Title size is too short.';
-  } else if (titleSize > 70) {
-    result.icon = fail;
-    result.description = 'Reason: Title size is too long.';
+    result.description = `${opportunity.issue}; ${opportunity.issueDetails}`;
   } else {
     result.icon = pass;
     result.description = 'Title size is good.';
   }
+
   titleResult.value = result;
   return result.icon;
 }
@@ -96,24 +94,18 @@ async function checkCanon() {
 }
 
 async function checkDescription() {
-  const metaDesc = document.querySelector('meta[name="description"]');
+  const opportunity = findOpportunity(checksData.value.audits, 'metatags', 'description');
+
   const result = { ...descResult.value };
-  if (!metaDesc) {
+
+  if (opportunity.issue) {
     result.icon = fail;
-    result.description = 'Reason: No meta description found.';
+    result.description = `${opportunity.issue}; ${opportunity.issueDetails}`;
   } else {
-    const descSize = metaDesc.content.replace(/\s/g, '').length;
-    if (descSize < 50) {
-      result.icon = fail;
-      result.description = 'Reason: Meta description too short.';
-    } else if (descSize > 150) {
-      result.icon = fail;
-      result.description = 'Reason: Meta description too long.';
-    } else {
-      result.icon = pass;
-      result.description = 'Meta description is good.';
-    }
+    result.icon = pass;
+    result.description = 'Meta description is good.';
   }
+
   descResult.value = result;
   return result.icon;
 }
@@ -328,8 +320,9 @@ function SeoItem({ icon, title, description }) {
 }
 
 async function getResults(checks) {
+  checksData.value = checks;
   const h1 = checkH1s();
-  const title = checkTitle(checks);
+  const title = checkTitle();
   const canon = await checkCanon();
   const desc = checkDescription();
   const body = checkBody();
