@@ -997,19 +997,34 @@ class Gnav {
       firstFocusable?.focus();
   
       // ✅ Hide only *siblings* of gnav container
-      Array.from(modalContainer.parentElement.children).forEach((el) => {
-        if (el !== modalContainer && !['SCRIPT', 'STYLE'].includes(el.tagName)) {
-          el.setAttribute('aria-hidden', 'true');
-        }
-      });
+      // Hide siblings of modalContainer
+Array.from(modalContainer.parentElement.children).forEach((el) => {
+  if (el !== modalContainer && !['SCRIPT', 'STYLE'].includes(el.tagName)) {
+    el.setAttribute('aria-hidden', 'true');
+  }
+});
+
+// ALSO hide elements inside modalContainer except the modal itself
+Array.from(modalContainer.children).forEach((el) => {
+  if (el !== modal && !['SCRIPT', 'STYLE'].includes(el.tagName)) {
+    el.setAttribute('aria-hidden', 'true');
+  }
+});
   
     } else {
-      // ✅ Remove aria-hidden from siblings
-      Array.from(modalContainer.parentElement.children).forEach((el) => {
-        if (el !== modalContainer && !['SCRIPT', 'STYLE'].includes(el.tagName)) {
-          el.removeAttribute('aria-hidden');
-        }
-      });
+      // Remove aria-hidden from siblings
+Array.from(modalContainer.parentElement.children).forEach((el) => {
+  if (el !== modalContainer && !['SCRIPT', 'STYLE'].includes(el.tagName)) {
+    el.removeAttribute('aria-hidden');
+  }
+});
+
+// Remove aria-hidden from children inside modalContainer
+Array.from(modalContainer.children).forEach((el) => {
+  if (el !== modal && !['SCRIPT', 'STYLE'].includes(el.tagName)) {
+    el.removeAttribute('aria-hidden');
+  }
+});
   
       // ✅ Clean up modal attributes (optional)
       modal.removeAttribute('role');
