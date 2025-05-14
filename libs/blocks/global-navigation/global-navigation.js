@@ -961,13 +961,22 @@ class Gnav {
     const toggle = this.elements.mobileToggle;
     const isExpanded = this.isToggleExpanded();
     const modal = this.elements.navWrapper;
-    const modalContainer = modal.closest('header'); // Assume gnav lives inside <header>
   
-    if (!modalContainer) return;
+    // ✅ Wrap the modal in a container if not already
+    let modalWrapper = modal.closest('.feds-modal-container');
+    if (!modalWrapper) {
+      modalWrapper = document.createElement('div');
+      modalWrapper.className = 'feds-modal-container';
+      modal.replaceWith(modalWrapper);
+      modalWrapper.appendChild(modal);
+    }
   
-    const bodyChildren = Array.from(document.body.children);
+    if (!modalWrapper) return;
+  
+    const allSiblings = Array.from(document.body.children);
   
     if (!isExpanded && this.newMobileNav) {
+      // Animate in
       const sections = document.querySelectorAll(
         'header.new-nav .feds-nav > section.feds-navItem > button.feds-navLink'
       );
@@ -979,21 +988,21 @@ class Gnav {
         queueMicrotask(() => section.click());
       }
   
-      // ✅ Modal ARIA setup
+      // ARIA attributes
       if (!modal.hasAttribute('role')) {
         modal.setAttribute('role', 'dialog');
         modal.setAttribute('aria-modal', 'true');
         modal.setAttribute('aria-label', 'Main navigation menu');
       }
   
-      // ✅ Move modal to end of body if needed (improves VoiceOver)
-      if (!document.body.contains(modal)) {
-        document.body.appendChild(modal);
+      // ✅ Move modalWrapper to body end (VoiceOver needs this)
+      if (!document.body.contains(modalWrapper)) {
+        document.body.appendChild(modalWrapper);
       }
   
-      // ✅ Hide everything in body except modal
-      bodyChildren.forEach((el) => {
-        if (el !== modal && !['SCRIPT', 'STYLE'].includes(el.tagName)) {
+      // ✅ Hide everything in body except modalWrapper
+      allSiblings.forEach((el) => {
+        if (el !== modalWrapper && !['SCRIPT', 'STYLE'].includes(el.tagName)) {
           el.setAttribute('aria-hidden', 'true');
         }
       });
@@ -1005,14 +1014,12 @@ class Gnav {
       firstFocusable?.focus();
   
     } else {
-      // ✅ Unhide all siblings in body
-      bodyChildren.forEach((el) => {
-        if (el !== modal && !['SCRIPT', 'STYLE'].includes(el.tagName)) {
-          el.removeAttribute('aria-hidden');
-        }
+      // ✅ Restore visibility to all elements
+      allSiblings.forEach((el) => {
+        el.removeAttribute('aria-hidden');
       });
   
-      // ✅ Clean up modal ARIA
+      // Remove modal ARIA
       modal.removeAttribute('role');
       modal.removeAttribute('aria-modal');
       modal.removeAttribute('aria-label');
