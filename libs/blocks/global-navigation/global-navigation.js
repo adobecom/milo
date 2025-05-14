@@ -962,9 +962,7 @@ class Gnav {
     const toggle = this.elements.mobileToggle;
     const isExpanded = this.isToggleExpanded();
     const modal = this.elements.navWrapper;
-  
-    // Grab the closest container (usually <header>)
-    const modalContainer = modal.closest('header');
+    const modalContainer = modal.closest('header'); // Assume gnav lives inside <header>
   
     if (!modalContainer) return;
   
@@ -980,27 +978,25 @@ class Gnav {
         queueMicrotask(() => section.click());
       }
   
-      // Set modal attributes for screen readers
+      // ✅ Modal ARIA setup
       if (!modal.hasAttribute('role')) {
         modal.setAttribute('role', 'dialog');
         modal.setAttribute('aria-modal', 'true');
         modal.setAttribute('aria-label', 'Main navigation menu');
       }
   
-      // Focus first interactive element inside modal
+      // ✅ Move modal to body end if needed (optional: improves iOS VoiceOver)
+      if (!document.body.contains(modal)) {
+        document.body.appendChild(modal);
+      }
+  
+      // ✅ Focus first focusable element in modal
       const firstFocusable = modal.querySelector(
         'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
       );
       firstFocusable?.focus();
   
-      // ✅ Hide everything INSIDE the container except the modal
-      Array.from(modalContainer.children).forEach((el) => {
-        if (el !== modal && !['SCRIPT', 'STYLE'].includes(el.tagName)) {
-          el.setAttribute('aria-hidden', 'true');
-        }
-      });
-  
-      // ✅ Hide all siblings of the container (rest of the page)
+      // ✅ Hide only *siblings* of gnav container
       Array.from(modalContainer.parentElement.children).forEach((el) => {
         if (el !== modalContainer && !['SCRIPT', 'STYLE'].includes(el.tagName)) {
           el.setAttribute('aria-hidden', 'true');
@@ -1008,21 +1004,14 @@ class Gnav {
       });
   
     } else {
-      // ✅ Restore everything inside the container
-      Array.from(modalContainer.children).forEach((el) => {
-        if (el !== modal && !['SCRIPT', 'STYLE'].includes(el.tagName)) {
-          el.removeAttribute('aria-hidden');
-        }
-      });
-  
-      // ✅ Restore everything outside the container
+      // ✅ Remove aria-hidden from siblings
       Array.from(modalContainer.parentElement.children).forEach((el) => {
         if (el !== modalContainer && !['SCRIPT', 'STYLE'].includes(el.tagName)) {
           el.removeAttribute('aria-hidden');
         }
       });
   
-      // Clean up modal attributes
+      // ✅ Clean up modal attributes (optional)
       modal.removeAttribute('role');
       modal.removeAttribute('aria-modal');
       modal.removeAttribute('aria-label');
