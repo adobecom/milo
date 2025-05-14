@@ -965,6 +965,8 @@ class Gnav {
   
     if (!modalContainer) return;
   
+    const bodyChildren = Array.from(document.body.children);
+  
     if (!isExpanded && this.newMobileNav) {
       const sections = document.querySelectorAll(
         'header.new-nav .feds-nav > section.feds-navItem > button.feds-navLink'
@@ -984,32 +986,33 @@ class Gnav {
         modal.setAttribute('aria-label', 'Main navigation menu');
       }
   
-      // ✅ Move modal to body end if needed (optional: improves iOS VoiceOver)
+      // ✅ Move modal to end of body if needed (improves VoiceOver)
       if (!document.body.contains(modal)) {
         document.body.appendChild(modal);
       }
   
-      // ✅ Focus first focusable element in modal
+      // ✅ Hide everything in body except modal
+      bodyChildren.forEach((el) => {
+        if (el !== modal && !['SCRIPT', 'STYLE'].includes(el.tagName)) {
+          el.setAttribute('aria-hidden', 'true');
+        }
+      });
+  
+      // ✅ Focus first element in modal
       const firstFocusable = modal.querySelector(
         'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
       );
       firstFocusable?.focus();
   
-      // ✅ Hide all siblings of modal inside <header> (including Adobe logo)
-      Array.from(modalContainer.children).forEach((el) => {
-        if (el !== modal && !['SCRIPT', 'STYLE'].includes(el.tagName)) {
-          el.setAttribute('aria-hidden', 'true');
-        }
-      });
     } else {
-      // ✅ Unhide siblings inside <header>
-      Array.from(modalContainer.children).forEach((el) => {
+      // ✅ Unhide all siblings in body
+      bodyChildren.forEach((el) => {
         if (el !== modal && !['SCRIPT', 'STYLE'].includes(el.tagName)) {
           el.removeAttribute('aria-hidden');
         }
       });
   
-      // ✅ Clean up modal attributes (optional)
+      // ✅ Clean up modal ARIA
       modal.removeAttribute('role');
       modal.removeAttribute('aria-modal');
       modal.removeAttribute('aria-label');
