@@ -1,4 +1,3 @@
-import { html } from '@esm-bundle/chai';
 import { runTests } from '@web/test-runner-mocha';
 import { expect } from '@esm-bundle/chai';
 
@@ -12,20 +11,19 @@ import '../src/merch-quantity-select.js';
 
 import { mockIms } from './mocks/ims.js';
 import { withWcs } from './mocks/wcs.js';
-import mas from './mas.js';
 
 export default async () => {
     return runTests(async () => {
         mockIms();
         mockLana();
         mockFetch(withWcs);
-        mas();
+        import('../src/mas.js');
 
         describe('merch-card web component for fries', () => {
             let merchCard;
             beforeEach(() => {
                 merchCard = document.querySelector(
-                    'merch-card[variant="fries"]#7a679b0a-512a-4129-9e47-9cbfa3a185da',
+                    'merch-card[variant="fries"][id="7a679b0a-512a-4129-9e47-9cbfa3a185da"]',
                 );
             });
 
