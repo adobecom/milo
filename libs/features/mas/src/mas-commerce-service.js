@@ -37,7 +37,7 @@ export class MasCommerceService extends HTMLElement {
                 ),
                 isProdDomain: env === 'prod',
             },
-            masIOUrl: this.getAttribute('mas-io-url'),            
+            masIOUrl: this.getAttribute('mas-io-url'),
         };
         //root parameters
         ['locale', 'country', 'language', 'preview'].forEach((attribute) => {

@@ -17,7 +17,7 @@ import {
 
 import { toQuantity } from './utilities.js';
 
-const REGISTERED_SURFACE = { 'wcms-commerce-ims-ro.+': 'acom', 'CreativeCloud_.+': 'ccd', "CCHome.+": 'adobe-home' };
+const PREVIEW_REGISTERED_SURFACE = { 'wcms-commerce-ims-ro.+': 'acom', 'CreativeCloud_.+': 'ccd', "CCHome.+": 'adobe-home' };
 
 function getLocaleSettings({
     locale = undefined,
@@ -31,7 +31,7 @@ function getLocaleSettings({
 }
 
 function getPreviewSurface(wcsApiKey, previewParam) {
-  for (const [key, value] of Object.entries(REGISTERED_SURFACE)) {
+  for (const [key, value] of Object.entries(PREVIEW_REGISTERED_SURFACE)) {
     const pattern = new RegExp(key);
     if (pattern.test(wcsApiKey)) {
       return value;
