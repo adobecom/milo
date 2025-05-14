@@ -40,22 +40,14 @@
 
             import { mockIms } from './mocks/ims.js';
             import { withWcs } from './mocks/wcs.js';
+            import friesTests from './merch-card.fries.test.html.js';
 
             runTests(async () => {
                 mockIms();
                 mockLana();
                 await mockFetch(withWcs);
                 await import('../src/mas.js');
-
-                describe('merch-card web component with fries variant', () => {
-                    it('should exist in the HTML document', async () => {
-                        expect(
-                            document.querySelector(
-                                'merch-card[variant="fries"]',
-                            ),
-                        ).to.exist;
-                    });
-                });
+                await friesTests();
             });
         </script>
         <main>
@@ -66,7 +58,7 @@
             >
                 <merch-icon
                     slot="icons"
-                    src="https://www.adobe.com/cc-shared/assets/img/product-icons/svg/creative-cloud.svg"
+                    src="./img/illustrator.svg"
                     size="s"
                 ></merch-icon>
                 <div slot="badge">
@@ -100,28 +92,28 @@
                     <p>
                         <span class="mnemonic"
                             ><merch-icon
-                                src="https://main--cc--adobecom.aem.live/cc-shared/assets/img/product-icons/svg/photoshop.svg"
+                                src="./img/premiere.svg"
                                 size="xs"
                                 alt="Adobe Photoshop"
                             ></merch-icon
                         ></span>
                         <span class="mnemonic"
                             ><merch-icon
-                                src="https://main--cc--adobecom.aem.live/cc-shared/assets/img/product-icons/svg/illustrator.svg"
+                                src="./img/illustrator.svg"
                                 size="xs"
                                 alt="Adobe Illustrator"
                             ></merch-icon
                         ></span>
                         <span class="mnemonic"
                             ><merch-icon
-                                src="https://main--cc--adobecom.aem.live/cc-shared/assets/img/product-icons/svg/acrobat-pro-40.svg"
+                                src="./img/lightroom.svg"
                                 size="xs"
                                 alt="Adobe Acrobat Pro"
                             ></merch-icon
                         ></span>
                         <span class="mnemonic"
                             ><merch-icon
-                                src="https://main--cc--adobecom.aem.live/cc-shared/assets/img/product-icons/svg/premiere-pro.svg"
+                                src="./img/premiere.svg"
                                 size="xs"
                                 alt="Adobe Premiere Pro"
                             ></merch-icon
@@ -147,7 +139,7 @@
             >
                 <merch-icon
                     slot="icons"
-                    src="https://www.adobe.com/cc-shared/assets/img/product-icons/svg/photoshop.svg"
+                    src="./img/premiere.svg"
                     size="s"
                 ></merch-icon>
                 <h3 slot="heading-xxs">Photoshop</h3>

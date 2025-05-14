@@ -18,8 +18,8 @@ export default async () => {
     return runTests(async () => {
         mockIms();
         mockLana();
-        await mockFetch(withWcs);
-        await mas();
+        mockFetch(withWcs);
+        mas();
 
         describe('merch-card web component for fries', () => {
             let merchCard;
