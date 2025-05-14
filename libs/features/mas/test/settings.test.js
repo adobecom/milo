@@ -169,28 +169,28 @@ describe('getSettings', () => {
       expect(settings.previewSurface).to.equal('acom');
     });
   
-    it('sets correctly preview configuration from parameter masPreview', () => {
+    it('sets correctly preview configuration from parameter mas.preview', () => {
       const config = { commerce: {} };
       window.sessionStorage.setItem('wcsApiKey', 'wcms-commerce-ims-ro-user-milo');
-      window.sessionStorage.setItem('masPreview', 'on');
+      window.sessionStorage.setItem('mas.preview', 'on');
       const settings = getSettings(config);
       expect(settings.preview).to.equal(true);
       expect(settings.previewSurface).to.equal('acom');
     });
   
-    it('unset correctly preview configuration from parameter masPreview', () => {
+    it('unset correctly preview configuration from parameter mas.preview', () => {
       const config = { commerce: {}, preview: '' };
       window.sessionStorage.setItem('wcsApiKey', 'wcms-commerce-ims-ro-user-milo');
-      window.sessionStorage.setItem('masPreview', 'off');
+      window.sessionStorage.setItem('mas.preview', 'off');
       const settings = getSettings(config);
       expect(settings.preview).to.be.undefined;
       expect(settings.previewSurface).to.be.undefined;
     });
   
-    it('overrides correctly preview surface configuration from parameter masPreview', () => {
+    it('overrides correctly preview surface configuration from parameter mas.preview', () => {
       const config = { commerce: {}, preview: '' };
       window.sessionStorage.setItem('wcsApiKey', 'user-test');
-      window.sessionStorage.setItem('masPreview', 'nala');
+      window.sessionStorage.setItem('mas.preview', 'nala');
       const settings = getSettings(config);
       expect(settings.preview).to.equal(true);
       expect(settings.previewSurface).to.equal('nala');

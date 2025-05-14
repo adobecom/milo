@@ -1,6 +1,7 @@
 import {
     PARAM_ENV,
     PARAM_LANDSCAPE,
+    PARAM_MAS_PREVIEW,
     Landscape,
     WCS_PROD_URL,
     WCS_STAGE_URL,
@@ -118,7 +119,7 @@ function getSettings(config = {}) {
         wcsURL = WCS_STAGE_URL;
     }
 
-    const previewParam = getParameter('masPreview') ?? config.preview;
+    const previewParam = getParameter(PARAM_MAS_PREVIEW) ?? config.preview;
     const previewSettings = {};
     const preview = (typeof previewParam != 'undefined') && previewParam !== 'off' && previewParam !== 'false';
     if (preview) {

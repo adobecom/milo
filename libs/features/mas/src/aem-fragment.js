@@ -281,7 +281,7 @@ export class AemFragment extends HTMLElement {
     }
 
     async generatePreview() {
-        const { previewFragment } = await import('https://mwpw-162398--mas--adobecom.aem.live/studio/libs/fragment-client.js');
+        const { previewFragment } = await import('https://mas.adobe.com/studio/libs/fragment-client.js');
         const data = await previewFragment(this.#fragmentId, {
           surface: this.#service.settings.previewSurface,
           locale: this.#service.settings.locale,
