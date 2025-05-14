@@ -17,7 +17,7 @@ module.exports = {
     {
       tcid: '2',
       name: '@Commerce-Price-Taxlabel-Unit-Term',
-      path: '/drafts/nala/features/commerce/prices-with-term-unit-taxlabel',
+      path: '/pl/drafts/nala/features/commerce/prices-with-term-unit-taxlabel',
       tags: '@commerce @smoke @regression',
     },
     {

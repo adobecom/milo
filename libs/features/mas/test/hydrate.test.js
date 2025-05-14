@@ -21,11 +21,14 @@ import {
     processBackgroundColor,
     processBorderColor,
     appendSlot,
+    processAddon,
 } from '../src/hydrate.js';
 import { CCD_SLICE_AEM_FRAGMENT_MAPPING } from '../src/variants/ccd-slice.js';
 
 import { mockFetch } from './mocks/fetch.js';
 import { withWcs } from './mocks/wcs.js';
+import { delay } from './utils.js';
+import { PLANS_AEM_FRAGMENT_MAPPING } from '../src/variants/plans.js';
 
 function getFooterElement(merchCard) {
     return merchCard.querySelector('div[slot="footer"]');
@@ -474,6 +477,11 @@ describe('hydrate', () => {
 
     it('should hydrate a ccd-slice merch card', async () => {
         const fragment = {
+            settings: {
+                stockCheckboxLabel: '{{stock-checkbox-label}}',
+                stockOfferOsis: '',
+                secureLabel: '{{secure-label}}',
+            },
             fields: {
                 variant: 'ccd-slice',
                 mnemonicIcon: ['www.adobe.com/icons/photoshop.svg'],
@@ -482,6 +490,9 @@ describe('hydrate', () => {
                 backgroundImage: 'test-image.jpg',
                 ctas: '<a is="checkout-link" data-wcs-osi="abm" class="accent" data-analytics-id="buy-now">Click me</a>',
                 tags: ['mas:term/montly', 'mas:product_code/ccsn'],
+            },
+            settings: {
+                secureLabel: 'Secure Label',
             },
         };
         merchCard.variantLayout = {
@@ -540,6 +551,30 @@ describe('processDescription', async () => {
         expect(
             merchCard.querySelector('div[slot="callout-content"]')?.textContent,
         ).to.equal('AI Assistant add-on available.');
+    });
+});
+
+describe('processAddon', async () => {
+    let merchCard;
+
+    beforeEach(() => {
+        merchCard = mockMerchCard();
+    });
+
+    it('should process addon', async () => {
+        const fields = {
+            addon: '<p><strong>Acrobat AI Assistant</strong></p><p>Add AI Assistant to your free Reader app for <span is="inline-price" data-template="price" data-wcs-osi="puf"></span></p><p>Add AI Assistant to your free Reader app for <span is="inline-price" data-template="price" data-wcs-osi="abm"></span></p><p>Add AI Assistant to your free Reader app for <span is="inline-price" data-template="price" data-wcs-osi="m2m"></span></p>',
+        };
+        processAddon(fields, merchCard, PLANS_AEM_FRAGMENT_MAPPING);
+        let [puf, abm, m2m] = merchCard.querySelectorAll('p[data-plan-type]');
+        expect(puf.getAttribute('data-plan-type')).to.equal('');
+        expect(abm.getAttribute('data-plan-type')).to.equal('');
+        expect(m2m.getAttribute('data-plan-type')).to.equal('');
+        await delay(50);
+        [puf, abm, m2m] = merchCard.querySelectorAll('p[data-plan-type]');
+        expect(puf.getAttribute('data-plan-type')).to.equal('PUF');
+        expect(abm.getAttribute('data-plan-type')).to.equal('ABM');
+        expect(m2m.getAttribute('data-plan-type')).to.equal('M2M');
     });
 });
 

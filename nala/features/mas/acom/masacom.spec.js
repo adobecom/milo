@@ -31,5 +31,13 @@ module.exports = {
       browserParams: '?theme=darkest',
       tags: '@mas-acom @mas-plans-card @commerce @smoke @regression @milo',
     },
+    {
+      tcid: '2',
+      name: '@MAS-Plans-Students-CSS',
+      path: '/libs/features/mas/docs/plans.html',
+      data: { id: 'dfc2eede-7e88-4ed3-b96c-f5214472dfcf' },
+      browserParams: '?theme=darkest',
+      tags: '@mas-acom @mas-plans-card @commerce @smoke @regression @milo',
+    },
   ],
 };
