@@ -957,7 +957,7 @@ class Gnav {
       nav.setAttribute('role', 'dialog');
       nav.setAttribute('aria-modal', 'true');
       nav.setAttribute('tabindex', '-1');
-      nav.focus(); // This makes iOS VoiceOver focus inside the menu
+      setTimeout(() => nav.focus(), 0); // This makes iOS VoiceOver focus inside the menu
     }
 
     // Screen reader trap
