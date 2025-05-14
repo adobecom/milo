@@ -962,7 +962,7 @@ class Gnav {
     const toggle = this.elements.mobileToggle;
     const isExpanded = this.isToggleExpanded();
     const modal = this.elements.navWrapper;
-    const modalContainer = modal.closest('header'); // Assume gnav lives inside <header>
+    const modalContainer = modal.closest('header'); // Gnav container
   
     if (!modalContainer) return;
   
@@ -978,16 +978,11 @@ class Gnav {
         queueMicrotask(() => section.click());
       }
   
-      // ✅ Modal ARIA setup
+      // ✅ Add ARIA modal attributes
       if (!modal.hasAttribute('role')) {
         modal.setAttribute('role', 'dialog');
         modal.setAttribute('aria-modal', 'true');
         modal.setAttribute('aria-label', 'Main navigation menu');
-      }
-  
-      // ✅ Move modal to body end if needed (optional: improves iOS VoiceOver)
-      if (!document.body.contains(modal)) {
-        document.body.appendChild(modal);
       }
   
       // ✅ Focus first focusable element in modal
@@ -996,7 +991,14 @@ class Gnav {
       );
       firstFocusable?.focus();
   
-      // ✅ Hide only *siblings* of gnav container
+      // ✅ Hide other elements inside the same header (like Adobe logo)
+      Array.from(modalContainer.children).forEach((el) => {
+        if (el !== modal && !['SCRIPT', 'STYLE'].includes(el.tagName)) {
+          el.setAttribute('aria-hidden', 'true');
+        }
+      });
+  
+      // ✅ Hide all siblings of the header (rest of the page)
       Array.from(modalContainer.parentElement.children).forEach((el) => {
         if (el !== modalContainer && !['SCRIPT', 'STYLE'].includes(el.tagName)) {
           el.setAttribute('aria-hidden', 'true');
@@ -1004,14 +1006,21 @@ class Gnav {
       });
   
     } else {
-      // ✅ Remove aria-hidden from siblings
+      // ✅ Restore visibility for header children
+      Array.from(modalContainer.children).forEach((el) => {
+        if (el !== modal && !['SCRIPT', 'STYLE'].includes(el.tagName)) {
+          el.removeAttribute('aria-hidden');
+        }
+      });
+  
+      // ✅ Restore visibility for header siblings
       Array.from(modalContainer.parentElement.children).forEach((el) => {
         if (el !== modalContainer && !['SCRIPT', 'STYLE'].includes(el.tagName)) {
           el.removeAttribute('aria-hidden');
         }
       });
   
-      // ✅ Clean up modal attributes (optional)
+      // ✅ Clean up ARIA attributes
       modal.removeAttribute('role');
       modal.removeAttribute('aria-modal');
       modal.removeAttribute('aria-label');
@@ -1028,7 +1037,6 @@ class Gnav {
     setCurtainState(!isExpanded);
     toggle?.setAttribute('daa-ll', `hamburgermenu|${isExpanded ? 'open' : 'close'}`);
   };
-  
 
   decorateToggle = () => {
     if (!this.mainNavItemCount || (this.newMobileNav && !this.hasMegaMenu())) return '';
