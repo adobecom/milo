@@ -1506,6 +1506,11 @@ export async function loadDeferred(area, blocks, config) {
     });
   }
 
+  if (config.locale?.prefix === '/kr') {
+    const { default: filterKoreaWords } = await import('../features/korea-word-filter.js');
+    filterKoreaWords();
+  }
+
   if (getMetadata('pageperf') === 'on') {
     import('./logWebVitals.js')
       .then((mod) => mod.default(getConfig().mep, {
