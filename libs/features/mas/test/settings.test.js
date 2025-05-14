@@ -45,6 +45,7 @@ describe('getSettings', () => {
         url.searchParams.set('displayPerUnit', 'true');
         url.searchParams.set('displayRecurrence', 'false');
         url.searchParams.set('displayTax', 'true');
+        url.searchParams.set('displayPlanType', 'true');
         url.searchParams.set('entitlement', 'true');
         url.searchParams.set('modal', 'true');
         url.searchParams.set('commerce.landscape', 'DRAFT');
@@ -64,6 +65,7 @@ describe('getSettings', () => {
             displayPerUnit: true,
             displayRecurrence: false,
             displayTax: true,
+            displayPlanType: true,
             entitlement: true,
             modal: true,
             landscape: 'DRAFT',
@@ -113,21 +115,21 @@ describe('getSettings', () => {
     });
 
     it('host env "local" -> WCS prod origin + prod akamai', () => {
-        const config = { commerce: {}, env: { name: 'local' } };
+      const config = { commerce: {}, env: { name: 'local' }, };
         const settings = getSettings(config);
         expect(settings.wcsURL).to.equal(WCS_PROD_URL);
         expect(settings.env).to.equal(Env.PRODUCTION);
     });
 
     it('host env "stage" -> WCS prod origin + prod akamai', () => {
-        const config = { commerce: {}, env: { name: 'stage' } };
+      const config = { commerce: {}, env: { name: 'stage' }, };
         const settings = getSettings(config);
         expect(settings.wcsURL).to.equal(WCS_PROD_URL);
         expect(settings.env).to.equal(Env.PRODUCTION);
     });
 
     it('host env "prod" -> WCS prod origin + prod akamai', () => {
-        const config = { commerce: {}, env: { name: 'prod' } };
+      const config = { commerce: {}, env: { name: 'prod' }, };
         const settings = getSettings(config);
         expect(settings.wcsURL).to.equal(WCS_PROD_URL);
         expect(settings.env).to.equal(Env.PRODUCTION);

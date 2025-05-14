@@ -21,6 +21,7 @@ const FEDERAL_PATH_KEY = 'federal';
 // Set a default height for LocalNav,
 // as sticky blocks position themselves before LocalNav loads into the DOM.
 const DEFAULT_LOCALNAV_HEIGHT = 40;
+const LANA_CLIENT_ID = 'feds-milo';
 
 const selectorMap = {
   headline: '.feds-menu-headline[aria-expanded="true"]',
@@ -61,11 +62,44 @@ export const darkIcons = {
 export const lanaLog = ({ message, e = '', tags = 'default', errorType }) => {
   const url = getMetadata('gnav-source');
   window.lana.log(`${message} | gnav-source: ${url} | href: ${window.location.href} | ${e.reason || e.error || e.message || e}`, {
-    clientId: 'feds-milo',
+    clientId: LANA_CLIENT_ID,
     sampleRate: 1,
     tags,
     errorType,
   });
+};
+
+const usedMeasurementNames = new Set();
+export const logPerformance = (
+  measurementName,
+  startMark,
+  endMark,
+) => {
+  try {
+    if (usedMeasurementNames.has(measurementName)) throw new Error(`${measurementName} has already been used`);
+    const {
+      name,
+      startTime,
+      duration,
+    } = performance.measure(measurementName, startMark, endMark);
+    usedMeasurementNames.add(measurementName);
+    const measure = {
+      name,
+      startTime,
+      duration,
+      url: window.location.toString(),
+      errorType: 'i',
+    };
+    const measureStr = Object.entries(measure)
+      .map(([key, value]) => `${key}=${value}`)
+      .join(',');
+    window.lana.log(measureStr, {
+      clientId: LANA_CLIENT_ID,
+      sampleRate: 50,
+    });
+  } catch (e) {
+    console.error(e);
+  }
 };
 
 export const logErrorFor = async (fn, message, tags, errorType) => {
@@ -164,7 +198,7 @@ export function loadStyles(url, override = false) {
         message: 'GNAV: Error in loadStyles',
         e: `error loading style: ${url}`,
         tags: 'utilities',
-        errorType: 'info',
+        errorType: 'i',
       });
     }
   });
@@ -378,26 +412,32 @@ export function trigger({
   if (isOpen) return false;
   element.setAttribute('aria-expanded', 'true');
   if (!isDesktop.matches && type === 'dropdown'
-      && !!document.querySelector('header.new-nav')) disableMobileScroll();
+    && !!document.querySelector('header.new-nav')) disableMobileScroll();
   return true;
 }
 
 export const yieldToMain = () => new Promise((resolve) => { setTimeout(resolve, 0); });
 
-export async function fetchAndProcessPlainHtml({ url, shouldDecorateLinks = true } = {}) {
+export async function fetchAndProcessPlainHtml({
+  url,
+  plainHTMLPromise = null,
+  shouldDecorateLinks = true,
+} = {}) {
   let path = getFederatedUrl(url);
-  const mepGnav = getConfig()?.mep?.inBlock?.['global-navigation'];
-  const mepFragment = mepGnav?.fragments?.[path];
+  const config = getConfig();
+  const mepGnav = config?.mep?.inBlock?.['global-navigation'];
+  const mepFragments = { ...mepGnav?.fragments, ...config?.mep?.fragments };
+  const mepFragment = mepFragments[path];
   if (mepFragment && mepFragment.action === 'replace') {
     path = mepFragment.content;
   }
-  const res = await fetch(path.replace(/(\.html$|$)/, '.plain.html'));
+  const res = await (plainHTMLPromise ?? fetch(path.replace(/(\.html$|$)/, '.plain.html')));
   if (res.status !== 200) {
     lanaLog({
       message: 'Error in fetchAndProcessPlainHtml',
       e: `${res.statusText} url: ${res.url}`,
       tags: 'utilities',
-      errorType: 'info',
+      errorType: 'i',
     });
     return null;
   }
@@ -436,7 +476,7 @@ export async function fetchAndProcessPlainHtml({ url, shouldDecorateLinks = true
           message: 'Error in fetchAndProcessPlainHtml',
           e,
           tags: 'utilities',
-          errorType: 'info',
+          errorType: 'i',
         });
       });
   }
@@ -533,6 +573,7 @@ export const transformTemplateToMobile = async (popup, item, localnav = false) =
           id="${i}"
           role="tabpanel"
           aria-labelledby="${i}"
+          class="${links.match(/class\s*=\s*["'][^"']*\bfeds-navLink--header\b[^"']*["']/) !== null ? 'has-subheader' : ''}"
           ${daalhTabContent ? `daa-lh="${daalhTabContent}"` : ''}
           hidden
         >
@@ -543,7 +584,6 @@ export const transformTemplateToMobile = async (popup, item, localnav = false) =
       ${CTA}
     </div>
     `;
-
   popup.querySelector('.close-icon')?.addEventListener('click', () => {
     document.querySelector(selectors.mainNavToggle).focus();
     closeAllDropdowns();
