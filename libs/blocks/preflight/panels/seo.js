@@ -19,6 +19,13 @@ const loremResult = signal({ icon: DEF_ICON, title: 'Lorem Ipsum', description: 
 const linksResult = signal({ icon: DEF_ICON, title: 'Links', description: DEF_DESC });
 const badLinks = signal([]);
 
+function findOpportunity(data, where, what) {
+  const desiredItem = data.find((item) => item.name === where);
+  if (!desiredItem) return null;
+
+  return desiredItem.opportunities.find((opp) => opp.tagName === what);
+}
+
 function checkH1s() {
   const h1s = document.querySelectorAll('h1');
   const result = { ...h1Result.value };
@@ -37,7 +44,9 @@ function checkH1s() {
   return result.icon;
 }
 
-async function checkTitle() {
+async function checkTitle(data) {
+  const opportunity = findOpportunity(data.audits, 'metatags', 'title');
+  console.log(opportunity);
   const titleSize = document.title.replace(/\s/g, '').length;
   const result = { ...titleResult.value };
   if (titleSize < 15) {
@@ -318,9 +327,9 @@ function SeoItem({ icon, title, description }) {
     </div>`;
 }
 
-async function getResults() {
+async function getResults(checks) {
   const h1 = checkH1s();
-  const title = checkTitle();
+  const title = checkTitle(checks);
   const canon = await checkCanon();
   const desc = checkDescription();
   const body = checkBody();
@@ -345,8 +354,8 @@ async function getResults() {
   });
 }
 
-export default function Panel() {
-  useEffect(() => { getResults(); }, []);
+export default function Panel(data) {
+  useEffect(() => { getResults(data.checks); }, []);
   return html`
     <div class=preflight-columns>
       <div class=preflight-column>
