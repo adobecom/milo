@@ -958,18 +958,18 @@ class Gnav {
       nav.setAttribute('aria-modal', 'true');
       nav.setAttribute('tabindex', '-1');
       nav.focus(); // This makes iOS VoiceOver focus inside the menu
-    } else {
-      nav.removeAttribute('role');
-      nav.removeAttribute('aria-modal');
-      nav.removeAttribute('tabindex');
     }
 
     // Screen reader trap
     const trapNavFocus = (trap) => {
-      document.querySelectorAll('body *').forEach((el) => {
+      document.querySelectorAll('body > *').forEach((el) => {
         const skip = nav.contains(el) || ['SCRIPT', 'STYLE'].includes(el.tagName);
         if (!skip) {
-          (trap ? el.setAttribute : el.removeAttribute).call(el, 'aria-hidden', 'true');
+          if (trap) {
+            el.setAttribute('aria-hidden', 'true');
+          } else {
+            el.removeAttribute('aria-hidden');
+          }
         }
       });
     };
@@ -1154,7 +1154,7 @@ class Gnav {
     const breadcrumbs = isDesktop.matches ? '' : await this.decorateBreadcrumbs();
     this.elements.mainNav = toFragment`<div class="feds-nav" role="list"></div>`;
     this.elements.navWrapper = toFragment`
-      <div class="feds-nav-wrapper" id="feds-nav-wrapper">
+      <div class="feds-nav-wrapper" id="feds-nav-wrapper" role="dialog" aria-modal="true" tabindex="-1">
         ${breadcrumbs}
         ${isDesktop.matches ? '' : this.decorateSearch()}
         ${this.elements.mainNav}
