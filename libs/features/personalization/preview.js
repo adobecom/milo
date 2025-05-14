@@ -259,7 +259,7 @@ let sevenDayPageData;
 async function mmmToggleManifests(event, popup, pageId) {
   const mepConfig = parseMepConfig();
   const mmmManifestsElement = document.querySelector('.mep-manifest-list.mmm-list');
-
+  console.log(mepConfig.activities);
   if (!sevenDayPageData) {
     try {
       //const pageDataUrl = `${API_URLS.pageDataByURL}${mepConfig.page.url}&lastSeen=week`;
@@ -273,7 +273,8 @@ async function mmmToggleManifests(event, popup, pageId) {
         sevenDayPageData = data;
         sevenDayPageData.activities = sevenDayPageData.activities.filter(
           (activity) => !mepConfig.activities.some(
-            (existingActivity) => existingActivity.url === activity.url,
+            (existingActivity) => normalizePath(existingActivity.url)
+            === normalizePath(activity.url),
           ),
         ).map((activity) => {
           activity.source = 'MMM';
