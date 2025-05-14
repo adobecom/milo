@@ -62,6 +62,7 @@ export class MerchCard extends LitElement {
         size: { type: String, attribute: 'size', reflect: true },
         badgeColor: { type: String, attribute: 'badge-color', reflect: true },
         borderColor: { type: String, attribute: 'border-color', reflect: true },
+        backgroundColor: { type: String, attribute: 'background-color', reflect: true },
         badgeBackgroundColor: {
             type: String,
             attribute: 'badge-background-color',
@@ -198,6 +199,12 @@ export class MerchCard extends LitElement {
             this.style.setProperty(
                 '--consonant-merch-card-border',
                 this.computedBorderStyle,
+            );
+        }
+        if (changedProperties.has('backgroundColor')) {
+            this.style.setProperty(
+                '--merch-card-custom-background-color',
+                this.backgroundColor ? `var(--${this.backgroundColor})` : '',
             );
         }
         try {

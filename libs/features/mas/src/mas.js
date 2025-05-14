@@ -38,6 +38,12 @@ import {
   AHPromotedPlans,
 } from './variants/ah-promoted-plans.js'
 
+//Import fries
+import {
+  FRIES_AEM_FRAGMENT_MAPPING,
+  FriesCard,
+} from './variants/fries.js';
+
 // Register dynamic variants
 registerVariant(
     'ccd-suggested',
@@ -62,4 +68,10 @@ registerVariant(
   AHPromotedPlans,
   AH_PROMOTED_PLANS_AEM_FRAGMENT_MAPPING,
   AHPromotedPlans.variantStyle,
+);
+registerVariant(
+  'fries',
+  FriesCard,
+  FRIES_AEM_FRAGMENT_MAPPING,
+  FriesCard.variantStyle,
 );

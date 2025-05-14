@@ -20,7 +20,7 @@ export const PLANS_AEM_FRAGMENT_MAPPING = {
     addon: true,
     secureLabel: true,
     planType: true,
-    badge: { tag: 'div', slot: 'badge' },
+    badge: { tag: 'div', slot: 'badge', default: 'spectrum-yellow-300-plans' },
     allowedBadgeColors: [
       
       'spectrum-yellow-300-plans',
@@ -148,6 +148,7 @@ export class Plans extends VariantLayout {
         const price = headingM.querySelector(
             `${SELECTOR_MAS_INLINE_PRICE}[data-template="price"]`,
         );
+        if (!price) return;
         const legal = price.cloneNode(true);
         this.legal = legal;
         await price.onceSettled();
