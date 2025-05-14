@@ -34,7 +34,7 @@ const getStageDomainsMap = (stageDomainsMap, env) => {
   const domainMap = { 'www.stage.adobe.com': merged };
 
   if (env !== 'prod') {
-    domainMap[window.location.host] = merged;
+    domainMap[window.location.host] = { ...merged, 'www.adobe.com': 'www.stage.adobe.com' };
   }
 
   return domainMap;
