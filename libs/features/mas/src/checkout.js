@@ -113,7 +113,7 @@ export function Checkout({ providers, settings }) {
             ...rest,
         };
         // even if CTA has multiple offers, they should have same ms, cs, ot values
-        const [{ productArrangementCode, marketSegments: [marketSegment], customerSegment, offerType,  }] = offers;
+        const [{ productArrangementCode, marketSegments: [marketSegment], customerSegment, offerType }] = offers;
         Object.assign(data, {
             productArrangementCode,
             marketSegment,
