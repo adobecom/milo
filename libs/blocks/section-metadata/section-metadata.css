@@ -266,11 +266,8 @@ main > .section[class*='-up'] > .content {
   }
 
   .section[class*='grid-width-'] {
-    display: block;
-  }
-
-  .section[class*='grid-width-'] > *:not(:first-child) {
-    margin-top: var(--spacing-m);
+    display: flex;
+    flex-direction: column;
   }
 }
 
@@ -326,6 +323,10 @@ main > .section[class*='-up'] > .content {
 }
 
 @media screen and (min-width: 1200px) {
+  .section.two-up {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .section.three-up {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
