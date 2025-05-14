@@ -21,6 +21,7 @@ const FEDERAL_PATH_KEY = 'federal';
 // Set a default height for LocalNav,
 // as sticky blocks position themselves before LocalNav loads into the DOM.
 const DEFAULT_LOCALNAV_HEIGHT = 40;
+const LANA_CLIENT_ID = 'feds-milo';
 
 const selectorMap = {
   headline: '.feds-menu-headline[aria-expanded="true"]',
@@ -61,11 +62,44 @@ export const darkIcons = {
 export const lanaLog = ({ message, e = '', tags = 'default', errorType }) => {
   const url = getMetadata('gnav-source');
   window.lana.log(`${message} | gnav-source: ${url} | href: ${window.location.href} | ${e.reason || e.error || e.message || e}`, {
-    clientId: 'feds-milo',
+    clientId: LANA_CLIENT_ID,
     sampleRate: 1,
     tags,
     errorType,
   });
+};
+
+const usedMeasurementNames = new Set();
+export const logPerformance = (
+  measurementName,
+  startMark,
+  endMark,
+) => {
+  try {
+    if (usedMeasurementNames.has(measurementName)) throw new Error(`${measurementName} has already been used`);
+    const {
+      name,
+      startTime,
+      duration,
+    } = performance.measure(measurementName, startMark, endMark);
+    usedMeasurementNames.add(measurementName);
+    const measure = {
+      name,
+      startTime,
+      duration,
+      url: window.location.toString(),
+      errorType: 'i',
+    };
+    const measureStr = Object.entries(measure)
+      .map(([key, value]) => `${key}=${value}`)
+      .join(',');
+    window.lana.log(measureStr, {
+      clientId: LANA_CLIENT_ID,
+      sampleRate: 50,
+    });
+  } catch (e) {
+    console.error(e);
+  }
 };
 
 export const logErrorFor = async (fn, message, tags, errorType) => {
@@ -390,8 +424,10 @@ export async function fetchAndProcessPlainHtml({
   shouldDecorateLinks = true,
 } = {}) {
   let path = getFederatedUrl(url);
-  const mepGnav = getConfig()?.mep?.inBlock?.['global-navigation'];
-  const mepFragment = mepGnav?.fragments?.[path];
+  const config = getConfig();
+  const mepGnav = config?.mep?.inBlock?.['global-navigation'];
+  const mepFragments = { ...mepGnav?.fragments, ...config?.mep?.fragments };
+  const mepFragment = mepFragments[path];
   if (mepFragment && mepFragment.action === 'replace') {
     path = mepFragment.content;
   }

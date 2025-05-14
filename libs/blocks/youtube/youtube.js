@@ -23,7 +23,9 @@ class LiteYTEmbed extends HTMLElement {
     try {
       const response = await fetch(`https://www.youtube.com/oembed?url=http://www.youtube.com/watch?v=${this.videoId}&format=json`);
       const data = await response.json();
-      if (data.title && this.iframeEl) this.iframeEl.title = data.title;
+
+      const { setDialogAndElementAttributes } = await import('../../scripts/accessibility.js');
+      setDialogAndElementAttributes({ element: this.iframeEl, title: data.title });
     } catch (error) {
       window.lana.log('Error fetching YouTube video title', { error });
     }
