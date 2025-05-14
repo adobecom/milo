@@ -11,8 +11,6 @@ import {
   getGnavSource,
   getFederatedUrl,
   getFedsPlaceholderConfig,
-  trapFocusInsideModal,
-  releaseFocusTrap,
 } from '../../utils/utils.js';
 
 (async () => {
