@@ -111,7 +111,41 @@ function checkViewportPromobar(foreground) {
   if (childCount < 3) addPromobar(children[childCount - 1], foreground);
 }
 
-function combineTextBocks(textBlocks, iconArea, viewPort, variant) {
+function getTooltipPosition(foreground) {
+  const section = foreground.closest('.section');
+  const sectionMetadata = section.querySelector('.section-metadata');
+  if (/sticky[- ]top/i.test(sectionMetadata?.textContent)) return 'bottom';
+  if (/sticky[- ]bottom/i.test(sectionMetadata?.textContent)) return 'top';
+  return '';
+}
+
+async function addTooltip(foreground) {
+  const desktopContentText = foreground.querySelector('.desktop-up .text-area')?.textContent.trim();
+  const toolTipIcons = [];
+  [...foreground.querySelectorAll(':scope > div:not(.desktop-up)')].forEach((viewPortEl) => {
+    const childContent = viewPortEl.querySelector('.text-area');
+    const childContentText = childContent.textContent.trim();
+    if (childContentText === desktopContentText) return;
+    const appendTarget = viewPortEl.querySelector('.text-area').lastElementChild;
+    const iconWrapper = createTag('em');
+    iconWrapper.style.display = 'none';
+    iconWrapper.textContent = `${getTooltipPosition(foreground)}|${desktopContentText}`;
+    const tooltipSpan = createTag('span', { class: 'icon icon-tooltip' });
+    iconWrapper.appendChild(tooltipSpan);
+    toolTipIcons.push(tooltipSpan);
+    appendTarget.appendChild(iconWrapper);
+  });
+
+  if (!toolTipIcons.length) return;
+
+  const config = getConfig();
+  const base = config.miloLibs || config.codeRoot;
+  const { default: loadIcons } = await import('../../features/icons/icons.js');
+  loadStyle(`${base}/features/icons/icons.css`);
+  loadIcons(toolTipIcons, config);
+}
+
+function combineTextBlocks(textBlocks, iconArea, viewPort, variant) {
   const promobarConfig = {
     default: {
       'mobile-up': ['s', 's'],
@@ -158,9 +192,12 @@ function decoratePromobar(el) {
     if (iconArea) textBlocks.shift();
     if (actionArea.length) textBlocks.pop();
     if (!(textBlocks.length || iconArea || actionArea.length)) child.classList.add('hide-block');
-    else if (textBlocks.length) combineTextBocks(textBlocks, iconArea, viewports[index], variant);
+    else if (textBlocks.length) combineTextBlocks(textBlocks, iconArea, viewports[index], variant);
   });
-  if (variant === 'popup') addCloseButton(el);
+  if (variant === 'popup') {
+    addCloseButton(el);
+    addTooltip(foreground);
+  }
   return foreground;
 }
 

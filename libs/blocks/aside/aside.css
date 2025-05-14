@@ -6,7 +6,6 @@
   position: relative;
   align-items: center;
   justify-content: center;
-  overflow: hidden;
 }
 
 .dark .aside,
@@ -716,6 +715,7 @@
     right: 0;
     top: 0;
     bottom: 0;
+    border-radius: inherit;
   }
 
   .aside .foreground.container .text {
