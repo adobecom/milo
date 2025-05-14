@@ -886,12 +886,24 @@ export function convertStageLinks({ anchors, config, hostname, href }) {
   });
 }
 
+export function shouldBlockFreeTrialLinks(a, prefix) {
+  if (prefix !== '/kr') return false;
+
+  const freeTrialsCTATextArray = ['free-trial', 'free trial', '무료 체험판', '무료 체험하기'];
+  return freeTrialsCTATextArray.some((text) => a.textContent.toLowerCase()
+    ?.includes(text.toLowerCase()));
+}
+
 export function decorateLinks(el) {
   const config = getConfig();
   decorateImageLinks(el);
   const anchors = el.getElementsByTagName('a');
   const { hostname, href } = window.location;
   const links = [...anchors].reduce((rdx, a) => {
+    if (shouldBlockFreeTrialLinks(a, config.locale.prefix)) {
+      a.remove();
+      return rdx;
+    }
     appendHtmlToLink(a);
     if (a.href.includes('http:')) a.setAttribute('data-http-link', 'true');
     a.href = localizeLink(a.href);
