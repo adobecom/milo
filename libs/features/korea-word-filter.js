@@ -11,23 +11,9 @@ export default function filterKoreaWords() {
 
   let node = walker.nextNode();
   while (node) {
-    let parent = node.parentElement;
-    let shouldProcess = true;
-    while (parent) {
-      if (parent.tagName === 'A' || parent.tagName === 'BUTTON') {
-        shouldProcess = false;
-        break;
-      }
-      parent = parent.parentElement;
-    }
-
-    if (shouldProcess) {
-      const text = node.nodeValue;
-      const modifiedText = text.replace(combinedPattern, '');
-      if (modifiedText !== text) {
-        node.nodeValue = modifiedText;
-      }
-    }
+    const text = node.nodeValue;
+    const modifiedText = text.replace(combinedPattern, '');
+    if (modifiedText !== text) node.nodeValue = modifiedText;
     node = walker.nextNode();
   }
 }
