@@ -961,13 +961,24 @@ class Gnav {
     const toggle = this.elements.mobileToggle;
     const isExpanded = this.isToggleExpanded();
     const modal = this.elements.navWrapper;
-    const modalContainer = modal.closest('header'); // Assume modal lives in <header>
   
+    // Modal lives in <header>
+    const modalContainer = modal.closest('header');
     if (!modalContainer) return;
   
-    // Get siblings of <header> (i.e. everything else in <body>)
-    const bodySiblings = Array.from(document.body.children).filter(
-      (el) => el !== modalContainer && !['SCRIPT', 'STYLE'].includes(el.tagName)
+    // Get ALL elements in body EXCEPT:
+    // - modal itself
+    // - ancestors of modal (like <header>)
+    const bodyChildren = Array.from(document.body.children);
+    const safeElements = new Set();
+    let node = modal;
+    while (node) {
+      safeElements.add(node);
+      node = node.parentElement;
+    }
+  
+    const elementsToHide = bodyChildren.filter(
+      (el) => !safeElements.has(el) && !['SCRIPT', 'STYLE'].includes(el.tagName)
     );
   
     if (!isExpanded && this.newMobileNav) {
@@ -982,31 +993,31 @@ class Gnav {
         queueMicrotask(() => section.click());
       }
   
-      // ✅ Correct ARIA for modal
+      // Modal ARIA
       if (!modal.hasAttribute('role')) {
         modal.setAttribute('role', 'dialog');
         modal.setAttribute('aria-modal', 'true');
         modal.setAttribute('aria-label', 'Main navigation menu');
       }
   
-      // ✅ Focus first interactive element
+      // ✅ Hide everything outside modal and its ancestors
+      elementsToHide.forEach((el) => {
+        el.setAttribute('aria-hidden', 'true');
+      });
+  
+      // ✅ Focus first focusable element in modal
       const firstFocusable = modal.querySelector(
         'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
       );
       firstFocusable?.focus();
   
-      // ✅ Hide everything outside <header> (like main/footer)
-      bodySiblings.forEach((el) => {
-        el.setAttribute('aria-hidden', 'true');
-      });
-  
     } else {
-      // ✅ Restore visibility to everything
-      bodySiblings.forEach((el) => {
+      // ✅ Restore visibility
+      elementsToHide.forEach((el) => {
         el.removeAttribute('aria-hidden');
       });
   
-      // ✅ Remove ARIA from modal
+      // Clean up ARIA
       modal.removeAttribute('role');
       modal.removeAttribute('aria-modal');
       modal.removeAttribute('aria-label');
