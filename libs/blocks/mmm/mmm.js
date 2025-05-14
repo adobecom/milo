@@ -517,7 +517,7 @@ function createReportButton() {
     'a',
     {
       class: 'con-button outline button-l button-justified-mobile mmm-report-slack',
-      href: 'https://adobe.enterprise.slack.com/archives/C08LXEQ735W',
+      href: 'https://adobe.enterprise.slack.com/archives/C08SA7JUW3F',
     },
     'Open Slack',
   );
