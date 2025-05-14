@@ -1,5 +1,5 @@
 import { createTag, getConfig, getMetadata, loadStyle } from '../../utils/utils.js';
-import { US_GEO, getFileName, normalizePath } from './personalization.js';
+import { US_GEO, getFileName, normalizePath, fetchData } from './personalization.js';
 
 const API_DOMAIN = 'https://jvdtssh5lkvwwi4y3kbletjmvu0qctxj.lambda-url.us-west-2.on.aws';
 
@@ -18,23 +18,22 @@ function updatePreviewButton(popup, pageId) {
   const manifestParameter = [];
 
   selectedInputs.forEach((selected) => {
+    if (!selected.value) return;
+
     let { value } = selected;
-    if (selected.classList.contains('new-manifest')) {
-      if (selected.value !== '') {
-        try {
-          const newManifest = new URL(value);
-          if (newManifest) {
-            value = newManifest.pathname;
-          }
-        } catch (e) {
-          // do nothing
-        }
-        manifestParameter.push(value);
+
+    if (selected.classList.contains('new-manifest') && value) {
+      try {
+        const newManifest = new URL(value);
+        value = newManifest.pathname || value;
+      } catch {
+        // Ignore invalid URL
       }
     } else {
       value = `${selected.dataset.manifest}--${value}`;
-      manifestParameter.push(value);
     }
+
+    manifestParameter.push(value);
   });
 
   const isMmm = pageId.length;
@@ -192,8 +191,9 @@ function getManifestListDomAndParameter(mepConfig) {
       isSelected = 'selected';
       manifestParameter.push(`${editUrl}--default`);
     }
+    options += `<option name="${editPath}${pageId}" value="" ${isSelected} title="none">none</option>`;
     options += `<option name="${editPath}${pageId}" value="default" 
-    id="${editPath}${pageId}--default" data-manifest="${editPath}" ${isSelected} title="Default (control)">Default (control)</option>`;
+    id="${editPath}${pageId}--default" data-manifest="${editPath}" ${isSelected} title="default (control)">default (control)</option>`;
     isSelected = '';
     variantNamesArray.forEach((variant) => {
       isSelected = '';
@@ -212,14 +212,14 @@ function getManifestListDomAndParameter(mepConfig) {
           ${targetActivityName ? `<div class="target-activity-name">${targetActivityName || ''}</div>` : ''}
           <div class="mep-columns">
             <div class="mep-column">
-              <div>Selected</div>
+              <div class="mep-active">Active</div>
               <div>Source</div>
               ${manifest.lastSeen ? '<div>Last seen</div>' : ''}
               ${eventStart && eventEnd ? '<div>Scheduled</div>' : ''}
             
             </div>
             <div class="mep-column">
-              ${!variantNames.includes(selectedVariantName) ? '<div>Default (control)</div>' : `<div class='mep-selected-variant'>${selectedVariantName}</div>`}
+              ${!variantNames.includes(selectedVariantName) ? '<div class="mep-active">default (control)</div>' : `<div class='mep-selected-variant mep-active'>${selectedVariantName}</div>`}
               <div>${source}</div>
               ${manifest.lastSeen ? `<div>${formatDate(new Date(manifest.lastSeen))}</div>` : ''}
               ${eventStart && eventEnd ? `<div>${disabled ? 'inactive' : 'active'}</div>` : ''}
@@ -246,27 +246,44 @@ function getManifestListDomAndParameter(mepConfig) {
 
   return { manifestList, manifestParameter };
 }
-let sevenDayPagetData;
-async function mmmToggleManifests(event) {
+function formatManifestText(count) {
+  return count > 1 ? 'Manifests' : 'Manifest';
+}
+function getPillText(manifestCount) {
+  return `
+    <span class="mep-open"></span>
+    <div class="mep-manifest-count">${manifestCount || 0} ${formatManifestText(manifestCount)} found</div>
+  `;
+}
+let sevenDayPageData;
+async function mmmToggleManifests(event, popup, pageId) {
   const mepConfig = parseMepConfig();
-  const mmmManifestsElement = document.querySelector('.mep-manifest-list-mmm');
+  const mmmManifestsElement = document.querySelector('.mep-manifest-list.mmm-list');
 
-  if (!sevenDayPagetData) {
+  if (!sevenDayPageData) {
     try {
-      const pageDataUrl = `${API_URLS.pageDataByURL}${mepConfig.page.url}&lastSeen=week`;
+      //const pageDataUrl = `${API_URLS.pageDataByURL}${mepConfig.page.url}&lastSeen=week`;
+      const pageDataUrl = `${API_URLS.pageDataByURL}https://www.adobe.com${mepConfig.page.page}.html&lastSeen=week`;
       const response = await fetch(pageDataUrl);
 
       if (!response.ok) throw new Error('Network error');
 
       const data = await response.json();
       if (data) {
-        sevenDayPagetData = data;
-        sevenDayPagetData.activities = sevenDayPagetData.activities.filter(
+        sevenDayPageData = data;
+        sevenDayPageData.activities = sevenDayPageData.activities.filter(
           (activity) => !mepConfig.activities.some(
             (existingActivity) => existingActivity.url === activity.url,
           ),
-        );
-        mmmManifestsElement.innerHTML = getManifestListDomAndParameter(data).manifestList;
+        ).map((activity) => {
+          activity.source = 'MMM';
+          return activity;
+        });
+        mmmManifestsElement.innerHTML = `<h6>7 Day Manifests</h6> ${getManifestListDomAndParameter(data).manifestList}`;
+        mmmManifestsElement.querySelectorAll('select').forEach((input) => {
+          input.querySelector('option').selected = true;
+          input.addEventListener('change', updatePreviewButton.bind(null, popup, pageId));
+        });
         addDividers(mmmManifestsElement, '.mep-section');
       }
     } catch (error) {
@@ -274,10 +291,13 @@ async function mmmToggleManifests(event) {
     }
   }
 
-  if (event.target.checked && sevenDayPagetData) {
+  const pill = document.querySelector('.mep-manifest.mep-badge');
+  if (event.target.checked && sevenDayPageData) {
     mmmManifestsElement.classList.add('mep-show');
+    pill.innerHTML = getPillText(sevenDayPageData.activities.length + mepConfig.activities.length);
   } else {
     mmmManifestsElement.classList.remove('mep-show');
+    pill.innerHTML = getPillText(mepConfig.activities?.length);
   }
 }
 function addMepPopupListeners(popup, pageId) {
@@ -289,11 +309,8 @@ function addMepPopupListeners(popup, pageId) {
     input.addEventListener('change', updatePreviewButton.bind(null, popup, pageId));
   });
   popup.querySelectorAll('#mepManifestsCheckbox').forEach((input) => {
-    input.addEventListener('change', mmmToggleManifests);
+    input.addEventListener('change', (event) => mmmToggleManifests.bind(null, event, popup, pageId)());
   });
-}
-function formatManifestText(count) {
-  return count > 1 ? 'Manifests' : 'Manifest';
 }
 function setTargetOnText(target, page) {
   if (target === undefined) return page.target;
@@ -319,7 +336,7 @@ export function getMepPopup(mepConfig, isMmm = false) {
   const mepOptions = createTag('div', { class: 'mep-section' });
   const mepPopupBody = createTag('div', { class: 'mep-popup-body' });
   const mepManifestList = createTag('div', { class: 'mep-manifest-list' });
-  const mepManifestListMMM = createTag('div', { class: 'mep-manifest-list-mmm' });
+  const mepManifestListMMM = createTag('div', { class: 'mep-manifest-list mmm-list' });
 
   const config = getConfig();
   const targetMapping = {
@@ -350,7 +367,7 @@ export function getMepPopup(mepConfig, isMmm = false) {
       </div>
     </div>
     `;
-  const hasProdManifests = mepConfig.env?.name !== 'prod'
+  const hasProdManifests = config.env?.name === 'prod'
     ? `<div>
         <input type="checkbox" name="mepHighlight${pageId}"
         id="mepManifestsCheckbox" value="false">
@@ -386,26 +403,25 @@ export function getMepPopup(mepConfig, isMmm = false) {
   mepPopupHeader.innerHTML = `
     ${mmmLink}
     <span class="mep-close"></span>`;
-  // ${activities?.length || 0} ${formatManifestText(activities?.length)}
-  mepManifestList.innerHTML = manifestList;
-  mepManifestListMMM.innerHTML = '<div>mepManifestListMMM</div>';
+  mepManifestList.innerHTML = `<h6>Page Manifests</h6>${manifestList}`;
 
   if (mepPageInfo) mepPopupBody.append(mepPageInfo);
   if (mepManifestList) mepPopupBody.append(mepManifestList);
-  if (mepManifestListMMM && mepConfig.env?.name !== 'prod') mepPopupBody.append(mepManifestListMMM);
+  if (mepManifestListMMM && config.env?.name === 'prod') mepPopupBody.append(mepManifestListMMM);
   if (mepOptions) mepPopupBody.append(mepOptions);
 
   mepPopup.append(mepPopupHeader);
   mepPopup.append(mepPopupBody);
   mepPopup.append(mepPopupFooter);
 
-  addDividers(mepManifestList, '.mep-popup-body > .mep-section:not(:last-child), .mep-manifest-list > .mep-section');
+  addDividers(mepPopup, '.mep-popup-body > .mep-section:not(:last-child), .mep-manifest-list > .mep-section');
 
   const previewButton = mepPopup.querySelector(`a[data-id="${PREVIEW_BUTTON_ID}"]`);
   if (previewButton) updatePreviewButton(mepPopup, pageId);
   addMepPopupListeners(mepPopup, pageId);
   return mepPopup;
 }
+
 function createPreviewPill() {
   const mepConfig = parseMepConfig();
   const { activities } = mepConfig;
@@ -413,9 +429,7 @@ function createPreviewPill() {
   const pill = document.createElement('div');
   pill.classList.add('mep-hidden');
   const mepBadge = createTag('div', { class: 'mep-manifest mep-badge' });
-  mepBadge.innerHTML = `
-   <span class="mep-open"></span>
-      <div class="mep-manifest-count">${activities?.length || 0} ${formatManifestText(activities?.length)} found</div>`;
+  mepBadge.innerHTML = getPillText(activities?.length);
   pill.append(mepBadge);
   pill.append(getMepPopup(mepConfig));
   overlay.append(pill);
