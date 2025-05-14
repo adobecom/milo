@@ -12,7 +12,7 @@ const metadata = {
   fromUrl: 'breadcrumbs-from-url',
 };
 
-const setBreadcrumbSEO = (breadcrumbs) => {
+const setBreadcrumbSEO = (breadcrumbs, el) => {
   const seoDisabled = (getMetadata(metadata.seo) || getMetadata(metadata.seoLegacy)) === 'off';
   if (seoDisabled || !breadcrumbs) return;
   const breadcrumbsSEO = {
@@ -20,14 +20,21 @@ const setBreadcrumbSEO = (breadcrumbs) => {
     '@type': 'BreadcrumbList',
     itemListElement: [],
   };
+
   breadcrumbs.querySelectorAll('ul > li').forEach((item, idx) => {
     const link = item.querySelector('a');
     const name = link ? link.innerText.trim() : [...item.childNodes].filter((node) => !node.matches?.('span[aria-hidden="true"]')).map((node) => node.textContent.trim()).join('');
+    let itemUrl = link?.href;
+    const addLastItemUrl = el.classList.contains('last-item-url');
+    const isLastItem = idx === breadcrumbs.querySelectorAll('ul > li').length - 1;
+    if ( isLastItem&& addLastItemUrl) {
+      itemUrl = window.location.href;
+    }
     breadcrumbsSEO.itemListElement.push({
       '@type': 'ListItem',
       position: idx + 1,
       name,
-      item: link?.href,
+      item: itemUrl,
     });
   });
   const script = toFragment`<script type="application/ld+json">${JSON.stringify(
@@ -106,7 +113,7 @@ const fromUrl = () => {
 export default async function init(el) {
   try {
     const breadcrumbsEl = await createWithBase(el) || createBreadcrumbs(el) || fromUrl();
-    setBreadcrumbSEO(breadcrumbsEl);
+    setBreadcrumbSEO(breadcrumbsEl, el);
     return breadcrumbsEl;
   } catch (e) {
     lanaLog({ e, message: 'Breadcrumbs failed rendering', tags: 'gnav-breadcrumbs', errorType: 'e' });
