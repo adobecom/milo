@@ -21,13 +21,11 @@ const setBreadcrumbSEO = (breadcrumbs, el) => {
     itemListElement: [],
   };
 
-  breadcrumbs.querySelectorAll('ul > li').forEach((item, idx) => {
+  breadcrumbs.querySelectorAll('ul > li').forEach((item, idx, list) => {
     const link = item.querySelector('a');
     const name = link ? link.innerText.trim() : [...item.childNodes].filter((node) => !node.matches?.('span[aria-hidden="true"]')).map((node) => node.textContent.trim()).join('');
     let itemUrl = link?.href;
-    const addLastItemUrl = el.classList.contains('last-item-url');
-    const isLastItem = idx === breadcrumbs.querySelectorAll('ul > li').length - 1;
-    if ( isLastItem&& addLastItemUrl) {
+    if (el.classList.contains('auto-link-last') && idx === list.length - 1) {
       itemUrl = window.location.href;
     }
     breadcrumbsSEO.itemListElement.push({
