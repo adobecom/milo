@@ -957,7 +957,6 @@ class Gnav {
   //   setCurtainState(!isExpanded);
   //   toggle?.setAttribute('daa-ll', `hamburgermenu|${isExpanded ? 'open' : 'close'}`);
   // };
-
   toggleMenuMobile = () => {
     const toggle = this.elements.mobileToggle;
     const isExpanded = this.isToggleExpanded();
@@ -965,8 +964,6 @@ class Gnav {
     const modalContainer = modal.closest('header'); // Assume gnav lives inside <header>
   
     if (!modalContainer) return;
-  
-    const brand = modalContainer.querySelector('.feds-brand-container');
   
     if (!isExpanded && this.newMobileNav) {
       const sections = document.querySelectorAll(
@@ -998,11 +995,19 @@ class Gnav {
       );
       firstFocusable?.focus();
   
-      // ✅ Hide Adobe logo from screen readers
-      brand?.setAttribute('aria-hidden', 'true');
+      // ✅ Hide all siblings of modal inside <header> (including Adobe logo)
+      Array.from(modalContainer.children).forEach((el) => {
+        if (el !== modal && !['SCRIPT', 'STYLE'].includes(el.tagName)) {
+          el.setAttribute('aria-hidden', 'true');
+        }
+      });
     } else {
-      // ✅ Remove aria-hidden from Adobe logo
-      brand?.removeAttribute('aria-hidden');
+      // ✅ Unhide siblings inside <header>
+      Array.from(modalContainer.children).forEach((el) => {
+        if (el !== modal && !['SCRIPT', 'STYLE'].includes(el.tagName)) {
+          el.removeAttribute('aria-hidden');
+        }
+      });
   
       // ✅ Clean up modal attributes (optional)
       modal.removeAttribute('role');
