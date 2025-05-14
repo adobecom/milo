@@ -14,6 +14,7 @@ const CLOSE_ICON = `<svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" w
 
 let isDelayedModal = false;
 let prevHash = '';
+let isDeepLink = false;
 const dialogLoadingSet = new Set();
 
 export function findDetails(hash, el) {
@@ -77,6 +78,11 @@ export function closeModal(modal) {
   if (prevHash) {
     window.location.hash = prevHash;
     prevHash = '';
+  }
+
+  if (isDeepLink) {
+    document.querySelector('#onetrust-banner-sdk')?.focus();
+    isDeepLink = false;
   }
 }
 
@@ -294,6 +300,7 @@ export default function init(el) {
   if (delayedModal(el) || window.location.hash !== modalHash || document.querySelector(`div.dialog-modal${modalHash}`)) return null;
   if (dialogLoadingSet.has(modalHash?.replace('#', ''))) return null; // prevent duplicate modal loading
   const details = findDetails(window.location.hash, el);
+  if (details) isDeepLink = true;
   return details ? getModal(details) : null;
 }
 
