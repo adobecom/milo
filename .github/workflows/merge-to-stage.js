@@ -10,6 +10,7 @@ const {
 const PR_TITLE = '[Release] Stage to Main';
 const REQUIRED_APPROVALS = process.env.REQUIRED_APPROVALS ? Number(process.env.REQUIRED_APPROVALS) : 2;
 const BASE_MAX_MERGES = process.env.MAX_PRS_PER_BATCH ? Number(process.env.MAX_PRS_PER_BATCH) : 9;
+const MAX_MERGES = BASE_MAX_MERGES + (isWithinPrePostRCP() ? 3 : 0);
 let existingPRCount = 0;
 const STAGE = 'stage';
 const PROD = 'main';
@@ -204,12 +205,7 @@ const openStageToMainPR = async () => {
   }
 };
 
-const getMaxMerges = () => {
-  if (isWithinPrePostRCP()) return BASE_MAX_MERGES + 3;
-  return BASE_MAX_MERGES;
-}
-
-const mergeLimitExceeded = () => getMaxMerges() - existingPRCount < 0;
+const mergeLimitExceeded = () => MAX_MERGES - existingPRCount < 0;
 
 const main = async (params) => {
   github = params.github;
