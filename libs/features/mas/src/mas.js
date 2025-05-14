@@ -12,9 +12,6 @@ import './merch-badge.js';
 import './merch-whats-included.js';
 
 import { registerVariant } from './variants/variants.js';
-import { updateConfig } from './lana.js';
-
-updateConfig({ sampleRate: 1 });
 
 // Import ccd variants
 import {

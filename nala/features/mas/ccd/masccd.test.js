@@ -941,9 +941,9 @@ test.describe('CCD Merchcard feature test suite', () => {
       await expect(await CCD.getCardLegalLink(data.id, 'slice-wide')).toContainText(data.linkText);
       await expect(await CCD.getCardLegalLink(data.id, 'slice-wide')).toHaveAttribute('data-analytics-id', data.linkAnalyticsId);
       await expect(await CCD.getCardLegalLink(data.id, 'slice-wide')).toHaveAttribute('daa-ll', data.linkDaaLL);
-      await expect(await CCD.getCardCTA(data.id, 'slice-wide')).toBeVisible();
-      await expect(await CCD.getCardCTA(data.id, 'slice-wide')).toHaveAttribute('class', /accent/);
-      await expect(await CCD.getCardCTA(data.id, 'slice-wide')).toContainText(data.cta);
+      await expect(await CCD.getCardFooterLink(data.id, 'slice-wide')).toBeVisible();
+      await expect(await CCD.getCardFooterLink(data.id, 'slice-wide')).toHaveAttribute('class', /accent/);
+      await expect(await CCD.getCardFooterLink(data.id, 'slice-wide')).toContainText(data.cta);
       // await (expect(await CCD.getCardCTALink(data.id, "slice-wide")).evaluate((el) => el.href)).resolves.toMatch(COMMERCE_LINK_REGEX());
       // await expect(await CCD.getCardCTALink(data.id, 'slice-wide')).toHaveAttribute('data-analytics-id', /.*/);
       // await expect(await CCD.getCardCTALink(data.id, 'slice-wide')).toHaveAttribute('daa-ll', data.ctaDaaLL);
@@ -955,7 +955,7 @@ test.describe('CCD Merchcard feature test suite', () => {
       expect(await webUtil.verifyCSS(await CCD.getCardIcon(data.id, 'slice-wide'), CCD.sliceCssProp.icon)).toBeTruthy();
       expect(await webUtil.verifyCSS(await CCD.getCardDescription(data.id, 'slice-wide'), CCD.sliceCssProp.description.light)).toBeTruthy();
       expect(await webUtil.verifyCSS(await CCD.getCardLegalLink(data.id, 'slice-wide'), CCD.sliceCssProp.legalLink.light)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await CCD.getCardCTA(data.id, 'slice-wide'), CCD.sliceCssProp.cta.light)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardFooterLink(data.id, 'slice-wide'), CCD.sliceCssProp.cta.light)).toBeTruthy();
     });
 
     await test.step('step-4: Go to CCD Merch Card feature test page in dark mode', async () => {
@@ -972,7 +972,7 @@ test.describe('CCD Merchcard feature test suite', () => {
       expect(await webUtil.verifyCSS(await CCD.getCardIcon(data.id, 'slice-wide'), CCD.sliceCssProp.icon)).toBeTruthy();
       expect(await webUtil.verifyCSS(await CCD.getCardLegalLink(data.id, 'slice-wide'), CCD.sliceCssProp.legalLink.dark)).toBeTruthy();
       expect(await webUtil.verifyCSS(await CCD.getCardDescription(data.id, 'slice-wide'), CCD.sliceCssProp.description.dark)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await CCD.getCardCTA(data.id, 'slice-wide'), CCD.sliceCssProp.cta.dark)).toBeTruthy();
+      expect(await webUtil.verifyCSS(await CCD.getCardFooterLink(data.id, 'slice-wide'), CCD.sliceCssProp.cta.dark)).toBeTruthy();
     });
   });
 
@@ -1282,6 +1282,26 @@ test.describe('CCD Merchcard feature test suite', () => {
       await expect(await CCD.getCardCTA(data.id, 'suggested')).toContainText(data.cta);
       await expect((await CCD.getCardCTALink(data.id, 'suggested')).evaluate((el) => el.href)).resolves.toMatch(COMMERCE_LINK_REGEX('FR', 'fr'));
       await expect(await CCD.getCardCTALink(data.id, 'suggested')).toHaveAttribute('data-analytics-id', /.*/);
+    });
+  });
+
+  // @MAS-CCD-regular-footer-link : CCD card with a regular footer link
+  test(`${features[21].name},${features[21].tags}`, async ({ page, baseURL }) => {
+    const testPage = `${baseURL}${features[21].path}${miloLibs}`;
+    const { data } = features[21];
+    console.info('[Test Page]: ', testPage);
+
+    await test.step('step-1: Go to CCD Merch Card feature test page', async () => {
+      await page.goto(testPage);
+      await page.waitForLoadState('domcontentloaded');
+      await expect(page).toHaveURL(`${baseURL}${features[21].path}`);
+    });
+
+    await test.step('step-2: Verify CCD Merch Card content', async () => {
+      await expect(await CCD.getCard(data.id, 'slice')).toBeVisible();
+      await expect(await CCD.getCard(data.id, 'slice')).toHaveAttribute('daa-lh', /.*/);
+      await expect(await CCD.getCardFooterLink(data.id, 'slice')).toBeVisible();
+      await expect(await CCD.getCardFooterLink(data.id, 'slice')).not.toHaveAttribute('is');
     });
   });
 });
