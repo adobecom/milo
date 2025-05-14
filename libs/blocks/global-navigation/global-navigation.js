@@ -951,6 +951,29 @@ class Gnav {
     toggle?.setAttribute('aria-expanded', !isExpanded);
     document.body.classList.toggle('disable-scroll', !isExpanded);
     this.elements.navWrapper?.classList?.toggle('feds-nav-wrapper--expanded', !isExpanded);
+    // Accessibility fix for iOS VoiceOver
+    const nav = this.elements.navWrapper;
+    if (!isExpanded) {
+      nav.setAttribute('role', 'dialog');
+      nav.setAttribute('aria-modal', 'true');
+      nav.setAttribute('tabindex', '-1');
+      nav.focus(); // This makes iOS VoiceOver focus inside the menu
+    } else {
+      nav.removeAttribute('role');
+      nav.removeAttribute('aria-modal');
+      nav.removeAttribute('tabindex');
+    }
+
+    // Screen reader trap
+    const trapNavFocus = (trap) => {
+      document.querySelectorAll('body *').forEach((el) => {
+        const skip = nav.contains(el) || ['SCRIPT', 'STYLE'].includes(el.tagName);
+        if (!skip) {
+          (trap ? el.setAttribute : el.removeAttribute).call(el, 'aria-hidden', 'true');
+        }
+      });
+    };
+    trapNavFocus(!isExpanded);
     closeAllDropdowns();
     setCurtainState(!isExpanded);
     toggle?.setAttribute('daa-ll', `hamburgermenu|${isExpanded ? 'open' : 'close'}`);
