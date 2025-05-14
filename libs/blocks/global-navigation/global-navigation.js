@@ -961,22 +961,16 @@ class Gnav {
     const toggle = this.elements.mobileToggle;
     const isExpanded = this.isToggleExpanded();
     const modal = this.elements.navWrapper;
+    const modalContainer = modal.closest('header'); // Assume modal lives in <header>
   
-    // ✅ Wrap the modal in a container if not already
-    let modalWrapper = modal.closest('.feds-modal-container');
-    if (!modalWrapper) {
-      modalWrapper = document.createElement('div');
-      modalWrapper.className = 'feds-modal-container';
-      modal.replaceWith(modalWrapper);
-      modalWrapper.appendChild(modal);
-    }
+    if (!modalContainer) return;
   
-    if (!modalWrapper) return;
-  
-    const allSiblings = Array.from(document.body.children);
+    // Get siblings of <header> (i.e. everything else in <body>)
+    const bodySiblings = Array.from(document.body.children).filter(
+      (el) => el !== modalContainer && !['SCRIPT', 'STYLE'].includes(el.tagName)
+    );
   
     if (!isExpanded && this.newMobileNav) {
-      // Animate in
       const sections = document.querySelectorAll(
         'header.new-nav .feds-nav > section.feds-navItem > button.feds-navLink'
       );
@@ -988,38 +982,31 @@ class Gnav {
         queueMicrotask(() => section.click());
       }
   
-      // ARIA attributes
+      // ✅ Correct ARIA for modal
       if (!modal.hasAttribute('role')) {
         modal.setAttribute('role', 'dialog');
         modal.setAttribute('aria-modal', 'true');
         modal.setAttribute('aria-label', 'Main navigation menu');
       }
   
-      // ✅ Move modalWrapper to body end (VoiceOver needs this)
-      if (!document.body.contains(modalWrapper)) {
-        document.body.appendChild(modalWrapper);
-      }
-  
-      // ✅ Hide everything in body except modalWrapper
-      allSiblings.forEach((el) => {
-        if (el !== modalWrapper && !['SCRIPT', 'STYLE'].includes(el.tagName)) {
-          el.setAttribute('aria-hidden', 'true');
-        }
-      });
-  
-      // ✅ Focus first element in modal
+      // ✅ Focus first interactive element
       const firstFocusable = modal.querySelector(
         'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
       );
       firstFocusable?.focus();
   
+      // ✅ Hide everything outside <header> (like main/footer)
+      bodySiblings.forEach((el) => {
+        el.setAttribute('aria-hidden', 'true');
+      });
+  
     } else {
-      // ✅ Restore visibility to all elements
-      allSiblings.forEach((el) => {
+      // ✅ Restore visibility to everything
+      bodySiblings.forEach((el) => {
         el.removeAttribute('aria-hidden');
       });
   
-      // Remove modal ARIA
+      // ✅ Remove ARIA from modal
       modal.removeAttribute('role');
       modal.removeAttribute('aria-modal');
       modal.removeAttribute('aria-label');
