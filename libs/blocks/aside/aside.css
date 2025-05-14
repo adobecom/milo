@@ -6,6 +6,7 @@
   position: relative;
   align-items: center;
   justify-content: center;
+  overflow: hidden;
 }
 
 .dark .aside,
@@ -594,11 +595,24 @@
   align-items: center;
 }
 
+.aside.promobar.popup .mobile-up.promo-text .text-area:has(.milo-tooltip) {
+  width: 100%;
+}
+
+.aside.promobar.popup .mobile-up.promo-text .milo-tooltip {
+  float: right;
+}
+
 .aside.promobar.popup {
   border-radius: var(--spacing-xs);
   width: var(--grid-container-width);
   margin: auto;
   box-shadow: 0 3px 6px #707070;
+  overflow: unset;
+}
+
+.aside.promobar.popup .background {
+  border-radius: inherit;
 }
 
 .aside.promobar.popup .foreground.container .promo-text {
@@ -715,7 +729,6 @@
     right: 0;
     top: 0;
     bottom: 0;
-    border-radius: inherit;
   }
 
   .aside .foreground.container .text {
