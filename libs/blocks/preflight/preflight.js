@@ -143,8 +143,8 @@ async function getJobId() {
 }
 
 async function getJobResults(jobId) {
-  const MAX_RETRIES = 10;
-  const POLL_INTERVAL = 500;
+  const MAX_RETRIES = 50;
+  const POLL_INTERVAL = 2500;
   let retries = 0;
 
   while (retries < MAX_RETRIES) {
