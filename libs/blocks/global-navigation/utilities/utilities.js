@@ -529,7 +529,7 @@ export const transformTemplateToMobile = async (popup, item, localnav = false) =
       const daallTab = headline?.getAttribute('daa-ll');
       const daalhTabContent = section.querySelector('.feds-menu-items')?.getAttribute('daa-lh');
       const content = section.querySelector('.feds-menu-items') ?? section;
-      const links = [...content.querySelectorAll('.feds-navLink, .feds-navLink.feds-navLink--header, .feds-cta--secondary')].map((x) => x.outerHTML).join('');
+      const links = [...content.querySelectorAll('a.feds-navLink, .feds-navLink.feds-navLink--header, .feds-cta--secondary')].map((x) => x.outerHTML).join('');
       return { name, links, daallTab, daalhTabContent };
     });
   const CTA = popup.querySelector('.feds-cta--primary')?.outerHTML ?? '';
