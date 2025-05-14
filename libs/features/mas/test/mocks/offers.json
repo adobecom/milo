@@ -1098,5 +1098,34 @@
             "language": "MULT",
             "merchant": "ADOBE"
         }
+    ],
+    "Mutn1LYoGojkrcMdCLO7LQlx1FyTHw27ETsfLv0h8DQ-mult": [
+        {
+            "offerSelectorIds": ["Mutn1LYoGojkrcMdCLO7LQlx1FyTHw27ETsfLv0h8DQ"],
+            "offerId": "01A09572A72A7D7F848721DE4D3C73FA",
+            "priceDetails": {
+                "price": 79.99,
+                "priceWithoutTax": 79.99,
+                "usePrecision": true,
+                "formatString": "'US$'#,##0.00",
+                "taxDisplay": "TAX_EXCLUSIVE",
+                "taxTerm": "TAX"
+            },
+            "productArrangementCode": "creative_cloud_all_apps_with_2tb_cloud_services_individual",
+            "productArrangement": {
+                "productFamily": "CC_ALL_APPS",
+                "productCode": "CCES"
+            },
+            "buyingProgram": "RETAIL",
+            "commitment": "YEAR",
+            "term": "MONTHLY",
+            "customerSegment": "INDIVIDUAL",
+            "marketSegments": ["COM"],
+            "salesChannel": "DIRECT",
+            "offerType": "BASE",
+            "pricePoint": "INDIV_CCES_COM_2TB",
+            "language": "MULT",
+            "merchant": "ADOBE"
+        }
     ]
 }

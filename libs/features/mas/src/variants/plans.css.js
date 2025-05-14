@@ -20,7 +20,7 @@ merch-card[variant^="plans"] [slot="icons"] {
     --img-width: 41.5px;
 }
 
-merch-card[variant="plans-education"] [slot="body-xs"] span.price {
+merch-card[variant="plans-education"] [slot="body-xs"] span.price:not(.price-legal) {
   display: inline-block;
   font-size: var(--consonant-merch-card-heading-xs-font-size);
   font-weight: 700;
