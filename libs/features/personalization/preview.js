@@ -1,5 +1,5 @@
 import { createTag, getConfig, getMetadata, loadStyle } from '../../utils/utils.js';
-import { US_GEO, getFileName, normalizePath, fetchData } from './personalization.js';
+import { US_GEO, getFileName, normalizePath } from './personalization.js';
 
 const API_DOMAIN = 'https://jvdtssh5lkvwwi4y3kbletjmvu0qctxj.lambda-url.us-west-2.on.aws';
 
@@ -262,7 +262,7 @@ async function mmmToggleManifests(event, popup, pageId) {
 
   if (!sevenDayPageData) {
     try {
-      //const pageDataUrl = `${API_URLS.pageDataByURL}${mepConfig.page.url}&lastSeen=week`;
+      // const pageDataUrl = `${API_URLS.pageDataByURL}${mepConfig.page.url}&lastSeen=week`;
       const pageDataUrl = `${API_URLS.pageDataByURL}https://www.adobe.com${mepConfig.page.page}.html&lastSeen=week`;
       const response = await fetch(pageDataUrl);
 
@@ -288,6 +288,7 @@ async function mmmToggleManifests(event, popup, pageId) {
         addDividers(mmmManifestsElement, '.mep-section');
       }
     } catch (error) {
+      // eslint-disable-next-line no-console
       console.error('Error fetching 7-day page data:', error);
     }
   }
