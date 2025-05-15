@@ -90,6 +90,19 @@ const isWithinRCP = ({ offset = 0, excludeShortRCP = false } = {}) => {
   return false;
 };
 
+const isWithinPrePostRCP = ({ offset = 7 } = {}) => {
+  const now = new Date();
+  return RCPDates.some(({ start, end }) => {
+    const preRCPStart = new Date(start);
+    preRCPStart.setDate(preRCPStart.getDate() - offset);
+
+    const postRCPEnd = new Date(end);
+    postRCPEnd.setDate(postRCPEnd.getDate() + offset);
+
+    return (preRCPStart <= now && now < postRCPEnd);
+  });
+};
+
 const getLocalConfigs = () => {
   if (!owner || !repo || !auth) {
     throw new Error(`Create a .env file on the root of the project with credentials.
@@ -177,5 +190,6 @@ module.exports = {
   pulls: { addLabels, addFiles, getChecks, getReviews },
   isShortRCP,
   isWithinRCP,
+  isWithinPrePostRCP,
   RCPDates,
 };

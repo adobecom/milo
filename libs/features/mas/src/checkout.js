@@ -89,7 +89,7 @@ export function Checkout({ providers, settings }) {
         const { env, landscape } = settings;
         const {
             checkoutClientId: clientId,
-            checkoutMarketSegment: marketSegment,
+            checkoutMarketSegment,
             checkoutWorkflow: workflow,
             checkoutWorkflowStep: workflowStep,
             country,
@@ -107,23 +107,21 @@ export function Checkout({ providers, settings }) {
             country,
             env,
             items: [],
-            marketSegment,
+            marketSegment: checkoutMarketSegment,
             workflowStep,
             landscape,
             ...rest,
         };
+        // even if CTA has multiple offers, they should have same ms, cs, ot values
+        const [{ productArrangementCode, marketSegments: [marketSegment], customerSegment, offerType }] = offers;
+        Object.assign(data, {
+            productArrangementCode,
+            marketSegment,
+            customerSegment,
+            offerType,
+        });
         if (offers.length === 1) {
-            const [{ offerId, offerType, productArrangementCode }] = offers;
-            const {
-                marketSegments: [marketSegment],
-                customerSegment,
-            } = offers[0];
-            Object.assign(data, {
-                marketSegment,
-                customerSegment,
-                offerType,
-                productArrangementCode,
-            });
+            const { offerId } = offers[0];
             data.items.push(
                 quantity[0] === 1
                     ? { id: offerId }
@@ -132,10 +130,10 @@ export function Checkout({ providers, settings }) {
         } else {
             /* c8 ignore next 7 */
             data.items.push(
-                ...offers.map(({ offerId, productArrangementCode, marketSegments, customerSegment }, index) => ({
+                ...offers.map(({ offerId, productArrangementCode }, index) => ({
                     id: offerId,
                     quantity: quantity[index] ?? Defaults.quantity,
-                    ...(is3in1 ? { productArrangementCode, marketSegment: marketSegments[0], customerSegment } : {}),
+                    ...(is3in1 ? { productArrangementCode } : {}),
                 })),
             );
         }

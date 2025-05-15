@@ -12,12 +12,13 @@ export default function init(el, a, btnFormat) {
   const playBtnFormat = btnFormat.split(':')[1];
   const btnSize = playBtnFormat.includes('-') ? `btn-${playBtnFormat.split('-')[1]}` : 'btn-large';
   const pic = el.querySelector('picture');
+  const alt = pic.querySelector('img').getAttribute('alt');
   const playIcon = createTag('div', { class: 'play-icon-container' }, PLAY_ICON_SVG);
   const imgLinkContainer = createTag('span', { class: 'modal-img-link' });
   el.insertBefore(imgLinkContainer, pic);
   if (btnSize) a.classList.add(btnSize);
   a.classList.add('consonant-play-btn');
-  a.setAttribute('aria-label', 'play');
+  a.setAttribute('aria-label', `Play${alt ? ` ${alt}` : ''}`);
   a.append(playIcon);
   imgLinkContainer.append(pic, a);
 }
