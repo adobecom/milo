@@ -2,7 +2,7 @@ import { signal } from '../../deps/htm-preact.js';
 import login from '../../tools/sharepoint/login.js';
 import { accessToken } from '../../tools/sharepoint/state.js';
 import { origin } from '../locui/utils/franklin.js';
-import { LOCALES, LOCALE_GROUPS, TRANSCREATION_WORKFLOW, USER_WORKFLOW_TYPE } from './utils/constant.js';
+import { LOCALES, LOCALE_GROUPS, USER_WORKFLOW_TYPE } from './utils/constant.js';
 import {
   processLocaleData,
   createPayload,
@@ -118,7 +118,7 @@ export async function fetchLocaleDetails() {
         localeRegion: processedLocaleRegion,
       } = processLocaleData(localeData);
 
-    locales.value = processedLocales.filter((locItem) => locItem.workflow !== TRANSCREATION_WORKFLOW && locItem.livecopies !== '');
+    locales.value = processedLocales.filter((locItem) =>  locItem.livecopies !== '');
     localeRegion.value = processedLocaleRegion;
   } catch (error) {
     console.error('Error during fetchLocaleDetails:', error.message);
