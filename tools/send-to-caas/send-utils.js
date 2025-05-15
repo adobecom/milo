@@ -362,7 +362,7 @@ const parseCardMetadata = () => {
 };
 
 function checkCtaUrl(s, options, i) {
-  if (s?.trim() === '') return '';
+  if (s?.trim() === '' || s === undefined) return '';
   const url = s || options.prodUrl || window.location.origin + window.location.pathname;
   return checkUrl(url, `Invalid Cta${i}Url: ${url}`);
 }
