@@ -383,6 +383,7 @@ html[dir="rtl"] .quiz-step::after {
     padding: 6px 16px 24px;
   }
 
+  .quiz-option.has-icon .quiz-option-text-container,
   .quiz-option.has-image .quiz-option-text-container,
   .quiz-option.has-background .quiz-option-text-container {
     flex-grow: 1;
