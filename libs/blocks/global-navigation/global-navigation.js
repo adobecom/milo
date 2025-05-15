@@ -959,10 +959,12 @@ class Gnav {
   // };
   toggleMenuMobile = () => {
     const toggle = this.elements.mobileToggle;
-    const navWrapper = this.elements.navWrapper;
     const isExpanded = this.isToggleExpanded();
+    const modal = this.elements.navWrapper;
+    const modalContainer = modal.closest('header'); // Assume gnav lives inside <header>
   
-    // Handle opening the menu
+    if (!modalContainer) return;
+  
     if (!isExpanded && this.newMobileNav) {
       const sections = document.querySelectorAll(
         'header.new-nav .feds-nav > section.feds-navItem > button.feds-navLink'
@@ -975,35 +977,52 @@ class Gnav {
         queueMicrotask(() => section.click());
       }
   
-      // Accessibility: make nav a modal dialog
-      navWrapper.setAttribute('role', 'dialog');
-      navWrapper.setAttribute('aria-modal', 'true');
-      navWrapper.setAttribute('tabindex', '-1');
-      navWrapper.setAttribute('aria-label', 'Main navigation');
+      // ✅ Modal ARIA setup
+      if (!modal.hasAttribute('role')) {
+        modal.setAttribute('role', 'dialog');
+        modal.setAttribute('aria-modal', 'true');
+        modal.setAttribute('aria-label', 'Main navigation menu');
+      }
   
-      // Move focus to the first focusable element inside nav
-      const firstFocusable = navWrapper.querySelector(
-        'button, a, input, [tabindex]:not([tabindex="-1"])'
+      // ✅ Move modal to body end if needed (optional: improves iOS VoiceOver)
+      if (!document.body.contains(modal)) {
+        document.body.appendChild(modal);
+      }
+  
+      // ✅ Focus first focusable element in modal
+      const firstFocusable = modal.querySelector(
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
       );
-      if (firstFocusable) firstFocusable.focus();
-      else navWrapper.focus();
+      firstFocusable?.focus();
+  
+      // ✅ Hide only *siblings* of gnav container
+      Array.from(modalContainer.parentElement.children).forEach((el) => {
+        if (el !== modalContainer && !['SCRIPT', 'STYLE'].includes(el.tagName)) {
+          el.setAttribute('aria-hidden', 'true');
+        }
+      });
+  
+    } else {
+      // ✅ Remove aria-hidden from siblings
+      Array.from(modalContainer.parentElement.children).forEach((el) => {
+        if (el !== modalContainer && !['SCRIPT', 'STYLE'].includes(el.tagName)) {
+          el.removeAttribute('aria-hidden');
+        }
+      });
+  
+      // ✅ Clean up modal attributes (optional)
+      modal.removeAttribute('role');
+      modal.removeAttribute('aria-modal');
+      modal.removeAttribute('aria-label');
+  
+      if (this.isLocalNav()) {
+        enableMobileScroll();
+      }
     }
   
-    // Handle closing the menu
-    if (isExpanded && this.isLocalNav()) {
-      enableMobileScroll();
-  
-      // Remove modal-related attributes
-      navWrapper.removeAttribute('role');
-      navWrapper.removeAttribute('aria-modal');
-      navWrapper.removeAttribute('tabindex');
-      navWrapper.removeAttribute('aria-label');
-    }
-  
-    // Toggle ARIA state and visual classes
     toggle?.setAttribute('aria-expanded', !isExpanded);
     document.body.classList.toggle('disable-scroll', !isExpanded);
-    navWrapper?.classList?.toggle('feds-nav-wrapper--expanded', !isExpanded);
+    modal?.classList?.toggle('feds-nav-wrapper--expanded', !isExpanded);
     closeAllDropdowns();
     setCurtainState(!isExpanded);
     toggle?.setAttribute('daa-ll', `hamburgermenu|${isExpanded ? 'open' : 'close'}`);
