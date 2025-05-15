@@ -192,7 +192,7 @@ function filterPageList(pageNum, perPage, filterEvent, sortingEvent) {
   }
   // add pageNum and perPage to args for api call
   searchValues.pageNum = pageNum || 1;
-  searchValues.perPage = perPage || SEARCH_INITIAL_VALUES()?.perPage;
+  searchValues.perPage = perPage || SEARCH()?.perPage;
 
   // add orderBy and order to args for api call
   if (isReport) {
@@ -708,7 +708,7 @@ function createMetadataLookup(el) {
   const dropdown = {
     id: 'mmm-metadata-lookup-repo-cc',
     label: 'Choose Repo',
-    selected: SEARCH_INITIAL_VALUES().selectedRepo,
+    selected: SEARCH().selectedRepo,
     options: {
       cc: 'CC',
       dc: 'DC',
@@ -747,11 +747,11 @@ function createMetadataLookup(el) {
     const filterResultObj = JSON.parse(filterResult);
     filterResultObj.off = filterResultObj.off.concat(filterResultObj.notFound);
     filterResultObj.notFound = [];
-    const reportText = `Date: ${getDate()}\nRepo: ${SEARCH_INITIAL_VALUES().selectedRepo.toUpperCase()}\nRequested pages are grouped below by their Target setting.
+    const reportText = `Date: ${getDate()}\nRepo: ${SEARCH().selectedRepo.toUpperCase()}\nRequested pages are grouped below by their Target setting.
       ${Object.keys(filterResultObj).map((key) => {
-      const urls = filterResultObj[key].map((item) => item.url || item);
-      return urls.length ? `\n\n${METADATA_URLS_CATEGORIES[key].display}:\n${urls.join('\n')}\n` : null;
-    }).join('')}`;
+    const urls = filterResultObj[key].map((item) => item.url || item);
+    return urls.length ? `\n\n${METADATA_URLS_CATEGORIES[key].display}:\n${urls.join('\n')}\n` : null;
+  }).join('')}`;
     // copy to clipboard
     navigator.clipboard.writeText(reportText).then(() => {
       const btn = document.querySelector('#mmm-copy-metadata-report');
@@ -762,7 +762,7 @@ function createMetadataLookup(el) {
   // Handle Filter input
   const textarea = search.querySelector('textarea');
   textarea.addEventListener('input', debounce((event) => handleMetadataFilterInput(event)));
-  textarea.innerHTML = SEARCH_INITIAL_VALUES().metadataFilter;
+  textarea.innerHTML = SEARCH().metadataFilter;
   textarea.dispatchEvent(new CustomEvent('input', { detail: textarea }));
 }
 
