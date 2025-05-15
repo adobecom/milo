@@ -31,6 +31,22 @@ describe('MEP Utils', () => {
       expect(manifests[3].manifestPath).to.equal('/mep-param/manifest1.json');
       expect(manifests[4].manifestPath).to.equal('/mep-param/manifest2.json');
     });
+    it('combines promos and personalization, personalization-roc and mep param', async () => {
+      document.head.innerHTML = await readFile({ path: './mocks/mep/head-promo.html' });
+      const manifests = await combineMepSources(
+        '/pers/manifest.json',
+        { manifestnames: 'pre-black-friday-global,black-friday-global' },
+        '/pers/manifest.json--var1---/mep-param/manifest1.json--all---/mep-param/manifest2.json--all',
+        '/persroc/manifest.json',
+      );
+      expect(manifests.length).to.equal(6);
+      expect(manifests[0].manifestPath).to.equal('/pers/manifest.json');
+      expect(manifests[1].manifestPath).to.equal('/persroc/manifest.json');
+      expect(manifests[2].manifestPath).to.equal('/pre-black-friday.json');
+      expect(manifests[3].manifestPath).to.equal('/black-friday.json');
+      expect(manifests[4].manifestPath).to.equal('/mep-param/manifest1.json');
+      expect(manifests[5].manifestPath).to.equal('/mep-param/manifest2.json');
+    });
   });
   describe('getMepEnablement', async () => {
     it('checks target metadata set to on', async () => {
