@@ -1557,6 +1557,11 @@ function decorateDocumentExtras() {
 }
 
 async function documentPostSectionLoading(config) {
+  const injectBlock = getMetadata('injectblock');
+  if (injectBlock) {
+    import('./injectblock.js').then((module) => module.default(injectBlock));
+  }
+
   decorateFooterPromo();
   import('../scripts/accessibility.js').then((accessibility) => {
     accessibility.default();
