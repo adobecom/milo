@@ -472,7 +472,7 @@ function isLocalizedPath(path, locales) {
   const previewPath = path.startsWith(`/${PREVIEW}`);
   const anyTypeOfLocaleOrLanguagePath = localeToLanguageMap
     && (localeToLanguageMap.some((l) => l.locale !== '' && (path.startsWith(`/${l.locale}/`) || path === `/${l.locale}`))
-      || (localeToLanguageMap.some((l) => path.startsWith(`/${l.langaugePath}/`) || path === `/${l.langaugePath}`)));
+      || (localeToLanguageMap.some((l) => path.startsWith(`/${l.languagePath}/`) || path === `/${l.languagePath}`)));
   const legacyLocalePath = locales && Object.keys(locales).some((loc) => loc !== '' && (path.startsWith(`/${loc}/`)
     || path.endsWith(`/${loc}`)));
   return langstorePath
@@ -513,11 +513,14 @@ export function localizeLink(
   }
 }
 
-export function loadLink(href, { as, callback, crossorigin, rel, fetchpriority } = {}) {
+export function loadLink(href, {
+  id, as, callback, crossorigin, rel, fetchpriority,
+} = {}) {
   let link = document.head.querySelector(`link[href="${href}"]`);
   if (!link) {
     link = document.createElement('link');
     link.setAttribute('rel', rel);
+    if (id) link.setAttribute('id', id);
     if (as) link.setAttribute('as', as);
     if (crossorigin) link.setAttribute('crossorigin', crossorigin);
     if (fetchpriority) link.setAttribute('fetchpriority', fetchpriority);
@@ -1406,8 +1409,7 @@ async function checkForPageMods() {
 }
 
 async function loadPostLCP(config) {
-  const { default: loadFavIcon } = await import('./favicon.js');
-  loadFavIcon(createTag, getConfig(), getMetadata);
+  import('./favicon.js').then(({ default: loadFavIcon }) => loadFavIcon(createTag, getConfig(), getMetadata));
   await decoratePlaceholders(document.body.querySelector('header'), config);
   const sk = document.querySelector('aem-sidekick, helix-sidekick');
   if (sk) import('./sidekick-decorate.js').then((mod) => { mod.default(sk); });
@@ -1611,10 +1613,10 @@ async function resolveInlineFrags(section) {
   section.preloadLinks = newlyDecoratedSection.preloadLinks;
 }
 
-async function processSection(section, config, isDoc) {
+async function processSection(section, config, isDoc, lcpSectionId) {
   await resolveInlineFrags(section);
-  const firstSection = section.el.dataset.idx === '0';
-  const stylePromises = firstSection ? preloadBlockResources(section.blocks) : [];
+  const isLcpSection = lcpSectionId === section.idx;
+  const stylePromises = isLcpSection ? preloadBlockResources(section.blocks) : [];
   preloadBlockResources(section.preloadLinks);
   await Promise.all([
     decoratePlaceholders(section.el, config),
@@ -1633,7 +1635,7 @@ async function processSection(section, config, isDoc) {
   await Promise.all(loadBlocks);
 
   delete section.el.dataset.status;
-  if (isDoc && firstSection) await loadPostLCP(config);
+  if (isDoc && isLcpSection) await loadPostLCP(config);
   delete section.el.dataset.idx;
   return section.blocks;
 }
@@ -1658,8 +1660,11 @@ export async function loadArea(area = document) {
   const sections = decorateSections(area, isDoc);
 
   const areaBlocks = [];
+  let lcpSectionId = null;
+
   for (const section of sections) {
-    const sectionBlocks = await processSection(section, config, isDoc);
+    if (lcpSectionId === null && section.blocks.length !== 0) { lcpSectionId = section.idx; }
+    const sectionBlocks = await processSection(section, config, isDoc, lcpSectionId);
     areaBlocks.push(...sectionBlocks);
 
     areaBlocks.forEach((block) => {

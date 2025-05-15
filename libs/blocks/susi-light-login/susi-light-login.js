@@ -1,5 +1,5 @@
 /* eslint-disable consistent-return */
-import { loadScript, createTag, getConfig, loadIms } from '../../utils/utils.js';
+import { loadScript, createTag, getConfig, loadIms, getMetadata } from '../../utils/utils.js';
 
 const loadSusiLight = async (env) => {
   const lib = `https://auth-light.identity${env.name === 'prod' ? '' : '-stage'}.adobe.com/sentry/wrapper.js`;
@@ -62,6 +62,8 @@ export class SusiLight {
     if (env.name !== 'prod') sentry.stage = true;
     sentry.variant = 'standard';
     sentry.authParams = this.createAuthParams();
+    const dctxId = getMetadata('susi-light-dctx-id');
+    if (dctxId) sentry.authParams.dctx_id = dctxId;
     sentry.config = { consentProfile: 'free' };
     sentry.addEventListener('redirect', onRedirect);
     sentry.addEventListener('on-error', onError);
