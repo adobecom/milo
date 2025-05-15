@@ -889,7 +889,10 @@ export function convertStageLinks({ anchors, config, hostname, href }) {
 export function shouldBlockFreeTrialLinks(a, prefix) {
   if (prefix !== '/kr') return false;
 
-  const freeTrialsCTATextArray = ['free-trial', 'free trial', '무료 체험판', '무료 체험하기', '{{free-trial}}'];
+  const freeTrialsCTATextArray = [
+    'free-trial', 'free trial', '무료 체험판', '무료 체험하기', '{{free-trial}}', '{{start-free-trial}}',
+    '{{try-for-free}}',
+  ];
   return (a.dataset.modalPath?.includes('trial-modals') || freeTrialsCTATextArray.some((text) => a.textContent.toLowerCase()
     ?.includes(text.toLowerCase()))) && !a.classList.contains('fragment', 'link-block');
 }

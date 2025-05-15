@@ -6,7 +6,10 @@ export default function filterKoreaWords() {
     false,
   );
 
-  const wordsToFilter = ['free-trial', 'free trial', '무료 체험판', '무료 체험하기', '{{free-trial}}'];
+  const wordsToFilter = [
+    'free-trial', 'free trial', '무료 체험판', '무료 체험하기', '{{free-trial}}', '{{start-free-trial}}',
+    '{{try-for-free}}',
+  ];
   const combinedPattern = new RegExp(wordsToFilter.join('|'), 'gi');
 
   let node = walker.nextNode();
