@@ -33,8 +33,8 @@ const MANIFESTSRC_OPTIONS = {
   personalization: { label: 'PZN', value: 'pzn' },
   promo: { label: 'Promo', value: 'promo' },
   target: { label: 'Target', value: 'target' },
-  ajo: { label: 'AJO', value: 'ajo' },
-  placeholder: { label: 'Placeholders', value: 'placeholders' },
+  // ajo: { label: 'AJO', value: 'ajo' },
+  // placeholder: { label: 'Placeholders', value: 'placeholders' },
 };
 
 const GRID_FORMAT = {
