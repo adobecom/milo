@@ -36,4 +36,4 @@ const ORG_MAP = {
   }${window.location.pathname}#/${redirectPath}`;
   window.history.replaceState({}, null, fullURL);
   document.body.style.visibility = 'visible';
-})();
+}());
