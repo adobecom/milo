@@ -33,8 +33,8 @@ const MANIFESTSRC_OPTIONS = {
   personalization: { label: 'PZN', value: 'pzn' },
   promo: { label: 'Promo', value: 'promo' },
   target: { label: 'Target', value: 'target' },
-  ajo: { label: 'AJO', value: 'ajo' },
-  placeholder: { label: 'Placeholders', value: 'placeholders' },
+  // ajo: { label: 'AJO', value: 'ajo' },
+  // placeholder: { label: 'Placeholders', value: 'placeholders' },
 };
 
 const GRID_FORMAT = {
@@ -354,7 +354,7 @@ function createCheckBoxFilterGroup(checkBoxId, legendLabel, optionsObj) {
   const checkBoxFieldset = createTag('fieldset', { id: `mmm-${checkBoxId}-fieldset` }, checkBoxLegend);
   // helper function only ran during filter build. consider moving to outter lex scope
   function createCheckBox(groupName, checkboxLabel, checkboxValue) {
-    const initValueCheck = SEARCH()?.[groupName]?.split(', ').includes(checkboxValue);
+    const initValueCheck = !SEARCH()?.[groupName] || SEARCH()?.[groupName]?.split(', ').includes(checkboxValue);
     const checkDiv = createTag('div', { class: 'mmm-checkbox-option' });
     const checkLabel = createTag('label', { for: `mmm-${groupName}-${checkboxValue}` }, checkboxLabel);
     const checkBox = createTag('input', {
@@ -537,7 +537,7 @@ function createReportButton() {
     'a',
     {
       class: 'con-button outline button-l button-justified-mobile mmm-report-slack',
-      href: 'https://adobe.enterprise.slack.com/archives/C08LXEQ735W',
+      href: 'https://adobe.enterprise.slack.com/archives/C08SA7JUW3F',
     },
     'Open Slack',
   );
