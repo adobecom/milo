@@ -995,7 +995,8 @@ class Gnav {
         'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
       );
       firstFocusable?.focus();
-      modalContainer.querySelector('.feds-brand-container')?.setAttribute('aria-hidden', 'true');
+      modalContainer.querySelector('.feds-brand a')?.setAttribute('aria-hidden', 'true');
+
       // ✅ Hide only *siblings* of gnav container
       Array.from(modalContainer.parentElement.children).forEach((el) => {
         if (el !== modalContainer && !['SCRIPT', 'STYLE'].includes(el.tagName)) {
@@ -1011,7 +1012,7 @@ class Gnav {
         }
       });
   
-      modalContainer.querySelector('.feds-brand-container')?.removeAttribute('aria-hidden');
+      modalContainer.querySelector('.feds-brand a')?.removeAttribute('aria-hidden');
       // ✅ Clean up modal attributes (optional)
       modal.removeAttribute('role');
       modal.removeAttribute('aria-modal');
