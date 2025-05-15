@@ -12,7 +12,7 @@ export const CSS = `
   }
 
   merch-card[variant="mini-compare-chart"] merch-addon {
-    min-height: 74px;
+    box-sizing: border-box;
   }
 
   merch-card[variant="mini-compare-chart"] merch-addon {
@@ -264,7 +264,7 @@ export const CSS = `
   }
 
   merch-card[variant="mini-compare-chart"] merch-addon {
-    min-height: 95px;
+    box-sizing: border-box;
   }
 }
 
