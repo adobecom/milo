@@ -959,28 +959,10 @@ class Gnav {
   // };
   toggleMenuMobile = () => {
     const toggle = this.elements.mobileToggle;
+    const navWrapper = this.elements.navWrapper;
     const isExpanded = this.isToggleExpanded();
-    const modal = this.elements.navWrapper;
   
-    // Modal lives in <header>
-    const modalContainer = modal.closest('header');
-    if (!modalContainer) return;
-  
-    // Get ALL elements in body EXCEPT:
-    // - modal itself
-    // - ancestors of modal (like <header>)
-    const bodyChildren = Array.from(document.body.children);
-    const safeElements = new Set();
-    let node = modal;
-    while (node) {
-      safeElements.add(node);
-      node = node.parentElement;
-    }
-  
-    const elementsToHide = bodyChildren.filter(
-      (el) => !safeElements.has(el) && !['SCRIPT', 'STYLE'].includes(el.tagName)
-    );
-  
+    // Handle opening the menu
     if (!isExpanded && this.newMobileNav) {
       const sections = document.querySelectorAll(
         'header.new-nav .feds-nav > section.feds-navItem > button.feds-navLink'
@@ -993,43 +975,35 @@ class Gnav {
         queueMicrotask(() => section.click());
       }
   
-      // Modal ARIA
-      if (!modal.hasAttribute('role')) {
-        modal.setAttribute('role', 'dialog');
-        modal.setAttribute('aria-modal', 'true');
-        modal.setAttribute('aria-label', 'Main navigation menu');
-      }
+      // Accessibility: make nav a modal dialog
+      navWrapper.setAttribute('role', 'dialog');
+      navWrapper.setAttribute('aria-modal', 'true');
+      navWrapper.setAttribute('tabindex', '-1');
+      navWrapper.setAttribute('aria-label', 'Main navigation');
   
-      // ✅ Hide everything outside modal and its ancestors
-      elementsToHide.forEach((el) => {
-        el.setAttribute('aria-hidden', 'true');
-      });
-  
-      // ✅ Focus first focusable element in modal
-      const firstFocusable = modal.querySelector(
-        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+      // Move focus to the first focusable element inside nav
+      const firstFocusable = navWrapper.querySelector(
+        'button, a, input, [tabindex]:not([tabindex="-1"])'
       );
-      firstFocusable?.focus();
-  
-    } else {
-      // ✅ Restore visibility
-      elementsToHide.forEach((el) => {
-        el.removeAttribute('aria-hidden');
-      });
-  
-      // Clean up ARIA
-      modal.removeAttribute('role');
-      modal.removeAttribute('aria-modal');
-      modal.removeAttribute('aria-label');
-  
-      if (this.isLocalNav()) {
-        enableMobileScroll();
-      }
+      if (firstFocusable) firstFocusable.focus();
+      else navWrapper.focus();
     }
   
+    // Handle closing the menu
+    if (isExpanded && this.isLocalNav()) {
+      enableMobileScroll();
+  
+      // Remove modal-related attributes
+      navWrapper.removeAttribute('role');
+      navWrapper.removeAttribute('aria-modal');
+      navWrapper.removeAttribute('tabindex');
+      navWrapper.removeAttribute('aria-label');
+    }
+  
+    // Toggle ARIA state and visual classes
     toggle?.setAttribute('aria-expanded', !isExpanded);
     document.body.classList.toggle('disable-scroll', !isExpanded);
-    modal?.classList?.toggle('feds-nav-wrapper--expanded', !isExpanded);
+    navWrapper?.classList?.toggle('feds-nav-wrapper--expanded', !isExpanded);
     closeAllDropdowns();
     setCurtainState(!isExpanded);
     toggle?.setAttribute('daa-ll', `hamburgermenu|${isExpanded ? 'open' : 'close'}`);
