@@ -45,7 +45,7 @@ const GRID_FORMAT = {
     row3: ['mmm-search-filter-container'],
   },
   report: {
-    row1: ['mmm-dropdown-lastSeen'],
+    row1: ['mmm-dropdown-lastSeen', 'mmm-container-dropdown-geos'],
     row2: ['mmm-search-filter-container'],
   },
 };
