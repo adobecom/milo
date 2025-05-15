@@ -43,4 +43,3 @@ jobs:
           script: |
             const main = require('./.github/workflows/merge-to-stage.js')
             main({ github, context })
-            
