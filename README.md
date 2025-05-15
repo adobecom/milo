@@ -96,7 +96,7 @@ npm run nala <env> [options]
 ```
 
 Examples:
-```
+```sh
 npm run nala local test=masccd.test.js                # Run tests from masccd.test.js file on your local changes. Don't forget `aem up` before running.
 npm run nala MWPW-162385 owner='npeltier' @mas-ccd    # Run tests tagged as 'mas-ccd' in 'npeltier' fork on MWPW-162385 branch
 ```
