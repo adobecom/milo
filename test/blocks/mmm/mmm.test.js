@@ -117,11 +117,11 @@ describe('MMM', () => {
     const inputs = mepPopupBody.querySelectorAll('input[type="text"]');
     expect(inputs.length).to.equal(1);
     const manifestColumnOne = mepPopupBody.querySelector('.mep-manifest-info .mep-columns > .mep-column:nth-child(1)');
-    expect(manifestColumnOne.querySelector('div:nth-child(1)').textContent).to.include('Selected');
+    expect(manifestColumnOne.querySelector('div:nth-child(1)').textContent).to.include('Active');
     expect(manifestColumnOne.querySelector('div:nth-child(2)').textContent).to.include('Source');
     expect(manifestColumnOne.querySelector('div:nth-child(3)').textContent).to.include('Last seen');
     const manifestColumnTwo = mepPopupBody.querySelector('.mep-manifest-info .mep-columns > .mep-column:nth-child(2)');
-    expect(manifestColumnTwo.querySelector('div:nth-child(1)').textContent).to.include('Default (control)');
+    expect(manifestColumnTwo.querySelector('div:nth-child(1)').textContent).to.include('default (control)');
     expect(manifestColumnTwo.querySelector('div:nth-child(2)').textContent).to.include('target');
     const editButton = mepPopupBody.querySelector('.mep-edit-manifest');
     expect(editButton).to.exist;
