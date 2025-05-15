@@ -118,7 +118,7 @@ export async function fetchLocaleDetails() {
         localeRegion: processedLocaleRegion,
       } = processLocaleData(localeData);
 
-    locales.value = processedLocales.filter((locItem) =>  locItem.livecopies !== '');
+    locales.value = processedLocales.filter((locItem) => locItem.livecopies !== '');
     localeRegion.value = processedLocaleRegion;
   } catch (error) {
     console.error('Error during fetchLocaleDetails:', error.message);
