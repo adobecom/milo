@@ -185,15 +185,15 @@ export function buildCheckoutUrl(checkoutData) {
     url = add3in1Parameters({
       url,
       modal,
-      customerSegment: customerSegment,
-      marketSegment: marketSegment,
+      customerSegment,
+      marketSegment,
       cs,
       ms,
       quantity: items?.[0]?.quantity > 1 && items?.[0]?.quantity,
-      productArrangementCode: productArrangementCode,
+      productArrangementCode,
       addonProductArrangementCode: productArrangementCode 
-      ? items?.find((item) => item.productArrangementCode !== productArrangementCode)?.productArrangementCode 
-      : items?.[1]?.productArrangementCode,
+        ? items?.find((item) => item.productArrangementCode !== productArrangementCode)?.productArrangementCode 
+        : items?.[1]?.productArrangementCode,
     });
   }
   return url.toString();
