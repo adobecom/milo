@@ -1409,7 +1409,8 @@ async function checkForPageMods() {
 }
 
 async function loadPostLCP(config) {
-  import('./favicon.js').then(({ default: loadFavIcon }) => loadFavIcon(createTag, getConfig(), getMetadata));
+  const { default: loadFavIcon } = await import('./favicon.js');
+  loadFavIcon(createTag, getConfig(), getMetadata);
   await decoratePlaceholders(document.body.querySelector('header'), config);
   const sk = document.querySelector('aem-sidekick, helix-sidekick');
   if (sk) import('./sidekick-decorate.js').then((mod) => { mod.default(sk); });
@@ -1613,10 +1614,10 @@ async function resolveInlineFrags(section) {
   section.preloadLinks = newlyDecoratedSection.preloadLinks;
 }
 
-async function processSection(section, config, isDoc, lcpSectionId) {
+async function processSection(section, config, isDoc) {
   await resolveInlineFrags(section);
-  const isLcpSection = lcpSectionId === section.idx;
-  const stylePromises = isLcpSection ? preloadBlockResources(section.blocks) : [];
+  const firstSection = section.el.dataset.idx === '0';
+  const stylePromises = firstSection ? preloadBlockResources(section.blocks) : [];
   preloadBlockResources(section.preloadLinks);
   await Promise.all([
     decoratePlaceholders(section.el, config),
@@ -1635,7 +1636,7 @@ async function processSection(section, config, isDoc, lcpSectionId) {
   await Promise.all(loadBlocks);
 
   delete section.el.dataset.status;
-  if (isDoc && isLcpSection) await loadPostLCP(config);
+  if (isDoc && firstSection) await loadPostLCP(config);
   delete section.el.dataset.idx;
   return section.blocks;
 }
@@ -1660,11 +1661,8 @@ export async function loadArea(area = document) {
   const sections = decorateSections(area, isDoc);
 
   const areaBlocks = [];
-  let lcpSectionId = null;
-
   for (const section of sections) {
-    if (lcpSectionId === null && section.blocks.length !== 0) { lcpSectionId = section.idx; }
-    const sectionBlocks = await processSection(section, config, isDoc, lcpSectionId);
+    const sectionBlocks = await processSection(section, config, isDoc);
     areaBlocks.push(...sectionBlocks);
 
     areaBlocks.forEach((block) => {
