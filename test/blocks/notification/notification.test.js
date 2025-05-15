@@ -2,6 +2,7 @@ import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import { setConfig } from '../../../libs/utils/utils.js';
 import { delay } from '../../helpers/waitfor.js';
+import { findFocusableInSection } from '../../../libs/blocks/notification/notification.js';
 
 const locales = { '': { ietf: 'en-US', tk: 'hah7vzn.css' } };
 const conf = { locales, miloLibs: 'http://localhost:2000/libs' };
@@ -119,6 +120,38 @@ describe('notification', async () => {
       splits[1].querySelector('a[href*="#_evt-close"]').dispatchEvent(new MouseEvent('click'));
       expect(splits[1].closest('.section').classList.contains('close-sticky-section')).to.be.true;
       expect(splits[1].closest('.section').querySelector('.notification-curtain')).to.not.exist;
+    });
+  });
+
+  describe('findFocusableInSection', () => {
+    let section;
+    let splits;
+    const focusableSelector = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
+    const selectedSelector = '[aria-selected="true"], [aria-checked="true"]';
+
+    beforeEach(async () => {
+      splits = [...notifs].filter((e) => e.classList.contains('split'));
+      section = splits[0].closest('.section');
+    });
+
+    it('returns selected element when present', () => {
+      const link = section.querySelector('a');
+      link.setAttribute('aria-selected', 'true');
+      const result = findFocusableInSection(section, selectedSelector, focusableSelector);
+      expect(result).to.equal(link);
+    });
+
+    it('returns last focusable element when no selected element', () => {
+      const result = findFocusableInSection(section, selectedSelector, focusableSelector);
+      const focusableElements = [...section.querySelectorAll(focusableSelector)];
+      expect(result).to.equal(focusableElements[focusableElements.length - 1]);
+    });
+
+    it('returns null when no focusable elements', () => {
+      section.querySelectorAll(focusableSelector)
+        .forEach((el) => el.remove());
+      const result = findFocusableInSection(section, selectedSelector, focusableSelector);
+      expect(result).to.be.null;
     });
   });
 });
