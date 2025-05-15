@@ -42,4 +42,6 @@ export const getMetadata = stub();
 
 export const localizeLink = stub();
 
+export const loadLink = stub();
+
 export const reloadPage = stub();

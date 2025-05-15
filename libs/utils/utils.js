@@ -472,7 +472,7 @@ function isLocalizedPath(path, locales) {
   const previewPath = path.startsWith(`/${PREVIEW}`);
   const anyTypeOfLocaleOrLanguagePath = localeToLanguageMap
     && (localeToLanguageMap.some((l) => l.locale !== '' && (path.startsWith(`/${l.locale}/`) || path === `/${l.locale}`))
-      || (localeToLanguageMap.some((l) => path.startsWith(`/${l.langaugePath}/`) || path === `/${l.langaugePath}`)));
+      || (localeToLanguageMap.some((l) => path.startsWith(`/${l.languagePath}/`) || path === `/${l.languagePath}`)));
   const legacyLocalePath = locales && Object.keys(locales).some((loc) => loc !== '' && (path.startsWith(`/${loc}/`)
     || path.endsWith(`/${loc}`)));
   return langstorePath
@@ -513,11 +513,14 @@ export function localizeLink(
   }
 }
 
-export function loadLink(href, { as, callback, crossorigin, rel, fetchpriority } = {}) {
+export function loadLink(href, {
+  id, as, callback, crossorigin, rel, fetchpriority,
+} = {}) {
   let link = document.head.querySelector(`link[href="${href}"]`);
   if (!link) {
     link = document.createElement('link');
     link.setAttribute('rel', rel);
+    if (id) link.setAttribute('id', id);
     if (as) link.setAttribute('as', as);
     if (crossorigin) link.setAttribute('crossorigin', crossorigin);
     if (fetchpriority) link.setAttribute('fetchpriority', fetchpriority);

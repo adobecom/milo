@@ -51,13 +51,8 @@ export class MerchSidenavCheckboxGroup extends LitElement {
         const h3El = createTag('h3', { id });
         h3El.textContent = this.sidenavCheckboxTitle;
         this.prepend(h3El);
-
-        [...this.children].forEach((el) => {
-          if (el.id && el.id !== id) {
-                el.setAttribute('role', 'group');
-                el.setAttribute('aria-labelledby', id);
-            }
-        });
+        this.setAttribute('role', 'group');
+        this.setAttribute('aria-labelledby', id);
     }
 
     startDeeplink() {

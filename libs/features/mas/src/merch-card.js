@@ -536,7 +536,7 @@ export class MerchCard extends LitElement {
     }
 
     get addonCheckbox() {
-      return this.querySelector('merch-addon')?.shadowRoot?.querySelector('input[type="checkbox"]');
+      return this.querySelector('merch-addon');
   }
 
     displayFooterElementsInColumn() {
@@ -583,8 +583,17 @@ export class MerchCard extends LitElement {
         }));
       }
       if (this.addonCheckbox?.checked !== isAddonIncluded) {
-        this.addonCheckbox.checked = isAddonIncluded;
         this.toggleStockOffer({ target: this.addonCheckbox });
+        const checkboxEvent = new Event('change', {
+          bubbles: true,
+          cancelable: true
+        });
+
+        Object.defineProperty(checkboxEvent, 'target', {
+          writable: false,
+          value: { checked: isAddonIncluded }
+        });
+        this.addonCheckbox.handleChange(checkboxEvent);
       }
     }
 }

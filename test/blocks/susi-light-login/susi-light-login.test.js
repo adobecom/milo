@@ -27,6 +27,7 @@ describe('susi light', () => {
       window.adobeIMS = { isSignedInUser: () => false };
       susiHtml = await readFile({ path: './mocks/susi-light-login.html' });
       document.head.innerHTML = `<link rel="icon" href="/libs/img/favicons/favicon.ico" size="any">
+      <meta name="susi-light-dctx-id" content="v:2,test-id">
       <script src="https://auth.services.adobe.com/imslib/imslib.min.js" type="javascript/blocked" data-loaded="true"></script>
       <script src="https://auth-light.identity-stage.adobe.com/sentry/wrapper.js" type="javascript/blocked" data-loaded="true"></script>
       `;
@@ -77,6 +78,11 @@ describe('susi light', () => {
     });
     it('should not add background for mobile', async () => {
       expect(document.querySelector('.susi-light-login').style.backgroundImage).equals('');
+    });
+    it('should have the dctx id if defined in metadata', async () => {
+      susiElement = document.querySelector('susi-sentry-light');
+      console.log(susiElement.authParams);
+      expect(susiElement.authParams.dctx_id).equals('v:2,test-id');
     });
   });
 });
