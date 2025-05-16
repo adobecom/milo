@@ -123,9 +123,10 @@ async function getPathModal(path, dialog) {
   await getFragment(block);
 }
 
-export async function getModal(details, custom) {
+export async function getModal(details, custom, deepLink) {
   if (!((details?.path && details?.id) || custom)) return null;
   const { id } = details || custom;
+  isDeepLink = deepLink;
 
   dialogLoadingSet.add(id);
   const dialog = createTag('div', { class: 'dialog-modal', id, role: 'dialog', 'aria-modal': true });
@@ -300,8 +301,7 @@ export default function init(el) {
   if (delayedModal(el) || window.location.hash !== modalHash || document.querySelector(`div.dialog-modal${modalHash}`)) return null;
   if (dialogLoadingSet.has(modalHash?.replace('#', ''))) return null; // prevent duplicate modal loading
   const details = findDetails(window.location.hash, el);
-  if (details) isDeepLink = true;
-  return details ? getModal(details) : null;
+  return details ? getModal(details, undefined, true) : null;
 }
 
 // Click-based modal
