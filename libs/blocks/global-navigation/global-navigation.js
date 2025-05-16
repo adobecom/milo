@@ -1316,6 +1316,10 @@ class Gnav {
             toggleMenu: this.toggleMenuMobile,
           });
           if (popup.closest('section.feds-dropdown--active')) makeTabActive(popup);
+
+          if (this.isLocalNav()) {
+            decorateLocalNavItems(item, template);
+          }
         });
 
         if (this.newMobileNav) {
@@ -1350,14 +1354,12 @@ class Gnav {
               this.block.classList.add('new-nav');
             }
           });
-          if (this.isLocalNav()) {
-            decorateLocalNavItems(item, template);
-          }
         }
       }, 'Decorate dropdown failed', 'gnav', 'i');
 
       template.addEventListener('click', decorateDropdown);
-      if ((this.newMobileNav && !isDesktop.matches) || isDesktop.matches) {
+      const newMobileNavActive = this.newMobileNav & !isDesktop.matches;
+      if (itemType === 'asyncDropdownTrigger' &&(newMobileNavActive || isDesktop.matches)) {
         const loadingMegaMenu = loaderMegaMenu();
         loadingMegaMenu.style.visibility = 'hidden';
         template.append(loadingMegaMenu);
