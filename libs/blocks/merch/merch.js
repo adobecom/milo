@@ -1,5 +1,6 @@
 import {
   createTag, getConfig, loadArea, loadScript, loadStyle, localizeLink, SLD, getMetadata,
+  loadLink,
 } from '../../utils/utils.js';
 import { replaceKey } from '../../features/placeholders.js';
 
@@ -301,6 +302,14 @@ export function getMasBase(hostname, maslibs) {
   return baseUrl;
 }
 
+function getCommercePreloadUrl() {
+  const { env } = getConfig();
+  if (env === 'prod') {
+    return 'https://commerce.adobe.com/store/iframe/preload.js';
+  }
+  return 'https://commerce-stg.adobe.com/store/iframe/preload.js';
+}
+
 export async function polyfills() {
   if (polyfills.promise) return polyfills.promise;
   let isSupported = false;
@@ -585,6 +594,15 @@ const isProdModal = (url) => {
 
 export async function getModalAction(offers, options, el) {
   if (!options.modal) return undefined;
+
+  if (el?.isOpen3in1Modal) {
+    const baseUrl = getCommercePreloadUrl();
+    // The script can preload more, based on clientId, but for the ones in use
+    // ('mini-plans', 'creative') there is no difference, so we can just use either one.
+    const client = 'creative';
+    loadLink(`${baseUrl}?cli=${client}`, 'text/javascript', { id: 'ucv3-preload-script', as: 'script', crossorigin: 'anonymous', rel: 'preload' });
+  }
+
   const [{
     offerType,
     productArrangementCode,

@@ -285,6 +285,7 @@ export const [setConfig, updateConfig, getConfig] = (() => {
       config.base = config.miloLibs || config.codeRoot;
       config.locale = conf.languages
         ? getLanguage(conf.languages, conf.locales, pathname) : getLocale(conf.locales, pathname);
+      config.pathname = pathname;
       config.autoBlocks = conf.autoBlocks ? [...AUTO_BLOCKS, ...conf.autoBlocks] : AUTO_BLOCKS;
       config.signInContext = conf.signInContext || {};
       config.doNotInline = conf.doNotInline
@@ -472,7 +473,7 @@ function isLocalizedPath(path, locales) {
   const previewPath = path.startsWith(`/${PREVIEW}`);
   const anyTypeOfLocaleOrLanguagePath = localeToLanguageMap
     && (localeToLanguageMap.some((l) => l.locale !== '' && (path.startsWith(`/${l.locale}/`) || path === `/${l.locale}`))
-      || (localeToLanguageMap.some((l) => path.startsWith(`/${l.langaugePath}/`) || path === `/${l.langaugePath}`)));
+      || (localeToLanguageMap.some((l) => path.startsWith(`/${l.languagePath}/`) || path === `/${l.languagePath}`)));
   const legacyLocalePath = locales && Object.keys(locales).some((loc) => loc !== '' && (path.startsWith(`/${loc}/`)
     || path.endsWith(`/${loc}`)));
   return langstorePath
@@ -513,11 +514,14 @@ export function localizeLink(
   }
 }
 
-export function loadLink(href, { as, callback, crossorigin, rel, fetchpriority } = {}) {
+export function loadLink(href, {
+  id, as, callback, crossorigin, rel, fetchpriority,
+} = {}) {
   let link = document.head.querySelector(`link[href="${href}"]`);
   if (!link) {
     link = document.createElement('link');
     link.setAttribute('rel', rel);
+    if (id) link.setAttribute('id', id);
     if (as) link.setAttribute('as', as);
     if (crossorigin) link.setAttribute('crossorigin', crossorigin);
     if (fetchpriority) link.setAttribute('fetchpriority', fetchpriority);
@@ -1553,7 +1557,15 @@ function decorateDocumentExtras() {
 }
 
 async function documentPostSectionLoading(config) {
+  const injectBlock = getMetadata('injectblock');
+  if (injectBlock) {
+    import('./injectblock.js').then((module) => module.default(injectBlock));
+  }
+
   decorateFooterPromo();
+  import('../scripts/accessibility.js').then((accessibility) => {
+    accessibility.default();
+  });
   if (getMetadata('seotech-structured-data') === 'on' || getMetadata('seotech-video-url')) {
     import('../features/seotech/seotech.js').then((module) => module.default(
       { locationUrl: window.location.href, getMetadata, createTag, getConfig },
