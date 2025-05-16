@@ -19,15 +19,16 @@ let videoLabels = {
 };
 let videoCounter = 0;
 
-const FREE_TRIAL_PATTERNS = [
-  'free-trial', 'free trial',
-  '무료 체험판', '무료 체험하기',
-  '{{free-trial}}', '{{start-free-trial}}', '{{try-for-free}}',
-];
-
 const shouldBlockFreeTrialLinks = (a, prefix) => {
   if (prefix !== '/kr') return false;
   if (a.dataset?.modalPath?.includes('/kr/cc-shared/fragments/trial-modals')) return true;
+
+  const FREE_TRIAL_PATTERNS = [
+    'free-trial', 'free trial',
+    '무료 체험판', '무료 체험하기',
+    '{{free-trial}}', '{{start-free-trial}}', '{{try-for-free}}',
+  ];
+
   return FREE_TRIAL_PATTERNS.some((pattern) => a.textContent?.toLowerCase()?.includes(
     pattern.toLowerCase(),
   ));
