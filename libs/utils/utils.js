@@ -892,19 +892,6 @@ export function decorateLinks(el) {
   const anchors = el.getElementsByTagName('a');
   const { hostname, href } = window.location;
 
-  const shouldBlockFreeTrialLinks = (a, prefix) => {
-    if (prefix !== '/kr') return false;
-
-    const freeTrialsCTATextArray = [
-      'free-trial', 'free trial',
-      '무료 체험판', '무료 체험하기',
-      '{{free-trial}}', '{{start-free-trial}}', '{{try-for-free}}',
-    ];
-
-    return (a.dataset.modalPath?.includes('/kr/cc-shared/fragments/trial-modals') || freeTrialsCTATextArray.some((text) => a.textContent.toLowerCase()
-      ?.includes(text.toLowerCase()))) && !a.classList.contains('fragment', 'link-block');
-  };
-
   const links = [...anchors].reduce((rdx, a) => {
     appendHtmlToLink(a);
     if (a.href.includes('http:')) a.setAttribute('data-http-link', 'true');
@@ -955,12 +942,6 @@ export function decorateLinks(el) {
       const ariaLabel = node.textContent.match(pipeRegex)[1];
       node.textContent = node.textContent.replace(pipeRegex, '');
       a.setAttribute('aria-label', ariaLabel.trim());
-    }
-
-    if (shouldBlockFreeTrialLinks(a, config.locale.prefix)) {
-      const elementToRemove = (a.parentElement.tagName === 'STRONG' || a.parentElement.tagName === 'EM') && a.parentElement.children.length === 1 ? a.parentElement : a;
-      elementToRemove.remove();
-      return rdx;
     }
 
     return rdx;
