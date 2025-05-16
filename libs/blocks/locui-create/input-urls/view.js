@@ -25,14 +25,17 @@ import {
   findFragments,
   validateFragments,
   getInitialName,
+  formatDateTime,
 } from './index.js';
 import { getUrls } from '../../locui/loc/index.js';
 import { PROJECT_TYPES, PROJECT_TYPE_LABELS, URL_SEPARATOR_PATTERN, WORKFLOW } from '../utils/constant.js';
 import Toast from '../components/toast.js';
+import DateTimePicker from '../components/dateTimePicker.js';
 
 export default function InputUrls() {
   const [type, setType] = useState(PROJECT_TYPES.translation);
   const [name, setName] = useState(getInitialName(type));
+  const [dueDate, setDueDate] = useState('');
   const [htmlFlow, setHtmlFlow] = useState(true);
   const [editBehavior, setEditBehavior] = useState('');
   const [urlsStr, setUrlsStr] = useState('');
@@ -46,6 +49,7 @@ export default function InputUrls() {
     editBehavior: '',
     urlsStr: '',
     fragments: '',
+    dueDate: '',
   });
   const [apiError, setApiError] = useState('');
 
@@ -112,6 +116,11 @@ export default function InputUrls() {
     }
   }
 
+  function handleDueDateChange(ev) {
+    setDueDate(ev.target.value);
+    setErrors({ ...errors, dueDate: '' });
+  }
+
   const handleFragmentsChange = useCallback(
     (_fragments) => {
       setFragments(_fragments);
@@ -137,6 +146,7 @@ export default function InputUrls() {
       fragmentsEnabled,
       fragments,
       noOfValidFrag,
+      dueDate,
     });
     setErrors(formErrors);
     if (checkForErrors(formErrors)) {
@@ -150,6 +160,7 @@ export default function InputUrls() {
       editBehavior: type === PROJECT_TYPES.rollout ? editBehavior : '',
       urls: urlsStr.split(/,|\n/),
       fragments,
+      dueDate: type === PROJECT_TYPES.translation ? formatDateTime(dueDate) : '',
     });
     let error = '';
     if (!projectCreated.value) {
@@ -173,6 +184,7 @@ export default function InputUrls() {
       setUrlsStr(project.value?.urls?.join('\n'));
       setFragmentsEnabled(project.value?.fragments?.length > 0);
       setFragments(project.value?.fragments ?? []);
+      setDueDate(project.value?.dueDate ?? '');
       if (
         project.value?.fragments?.length > 0
         && project.value?.urls.length > 0
@@ -238,6 +250,18 @@ export default function InputUrls() {
               && html`<div class="form-field-error">${errors.name}</div>`}
             </div>
           </div>
+
+          ${type === PROJECT_TYPES.translation
+          && html`
+            <div class="form-field">
+              <div class="form-field-label">Due Date</div>
+              <${DateTimePicker} 
+                value=${dueDate}
+                onInput=${handleDueDateChange}
+                error=${errors.dueDate}
+              />
+            </div>
+          `}
 
           ${type === PROJECT_TYPES.translation
           && html`

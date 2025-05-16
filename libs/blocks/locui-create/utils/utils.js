@@ -52,6 +52,7 @@ export const createPayload = (project) => {
       env: env.value,
       regionalEditBehaviour: project.value.editBehavior,
       useHtmlFlow: project.value.htmlFlow,
+      dueDate: project.value.dueDate,
     },
   };
 };

@@ -944,3 +944,15 @@ div.locui-create .nav-label {
   width: 70px;
 }
 
+.locui-date-picker-container > span {
+  padding-left: 10px;
+}
+
+.locui-date-picker-container > input {
+  min-width: 212px;
+  padding: 4px 8px;
+  font-size: 14px;
+  border: 2px solid #c6c6c6;
+  border-radius: 8px;
+  outline: none;
+}

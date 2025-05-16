@@ -45,8 +45,9 @@ export function validateForm({
   fragmentsEnabled,
   fragments,
   noOfValidFrag,
+  dueDate,
 }) {
-  const errors = { name: '', editBehavior: '', urlsStr: '', fragments: '' };
+  const errors = { name: '', editBehavior: '', urlsStr: '', fragments: '', dueDate: '' };
   if (name === '') {
     errors.name = 'Project name is required';
   }
@@ -62,12 +63,15 @@ export function validateForm({
   if (fragmentsEnabled && noOfValidFrag > 0 && fragments.length === 0) {
     errors.fragments = 'Select atleast one fragment to proceed further';
   }
+  if (new Date(`${dueDate}Z`) < new Date()) {
+    errors.dueDate = 'Please select a future date and time';
+  }
   return errors;
 }
 
 export function checkForErrors(errors) {
   return (
-    errors.name || errors.editBehavior || errors.urlsStr || errors.fragments
+    errors.name || errors.editBehavior || errors.urlsStr || errors.fragments || errors.dueDate
   );
 }
 
@@ -103,4 +107,15 @@ export function getInitialName(type) {
   }
   const formattedDate = date.replace(/[-:]/g, '').replace(/T/g, '-');
   return `${prefix}-${formattedDate}`;
+}
+
+export function formatDateTime(dueDate) {
+  const date = new Date(dueDate);
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  const hours = String(date.getHours()).padStart(2, '0');
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+  const seconds = String(date.getSeconds()).padStart(2, '0');
+  return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
 }
