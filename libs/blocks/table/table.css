@@ -562,6 +562,11 @@
   transition: box-shadow 200ms cubic-bezier(0.33, 1, 0.68, 1);
 }
 
+.table.cancel-sticky .row-heading,
+.table.cancel-sticky .row-highlight {
+  position: static;
+}
+
 .table:not(.merch) .row-heading.active,
 .table.merch .row-heading.active .col-heading {
   transition-duration: 400ms;

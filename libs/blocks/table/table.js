@@ -598,6 +598,11 @@ function applyStylesBasedOnScreenSize(table, originTable) {
   setRowStyle();
 }
 
+function handleStickyHeader(el) {
+  if (!el.classList.value.includes('sticky')) return;
+  setTimeout(() => el.classList.toggle('cancel-sticky', !(el.querySelector('.row-heading').offsetHeight / window.innerHeight < 0.45)));
+}
+
 export default function init(el) {
   el.setAttribute('role', 'table');
   if (el.parentElement.classList.contains('section')) {
@@ -657,10 +662,12 @@ export default function init(el) {
       setTooltipPosition(el);
     };
     handleResize();
+    handleStickyHeader(el);
 
     let deviceBySize = defineDeviceByScreenSize();
     window.addEventListener('resize', () => {
       debounce(handleEqualHeight(el, '.row-heading'), 300);
+      handleStickyHeader(el);
       if (deviceBySize === defineDeviceByScreenSize()) return;
       deviceBySize = defineDeviceByScreenSize();
       handleResize();
