@@ -775,6 +775,41 @@ describe('keyboard navigation', () => {
         await sendKeys({ press: 'ArrowLeft' });
       }
     });
+
+    // Added feature products for mobile as well
+    // Test the keyboard navigation
+    it('Check behaviour of feature products on mobile with keyboard navigation using TAB/SHIFT+TAB', async () => {
+      setViewport({ width: 600, height: 600 });
+      document.body.innerHTML = await readFile({ path: './mocks/global-nav-mobile.html' });
+      document.querySelector('.global-navigation').classList.add('new-nav');
+      keyboardNavigation = new KeyboardNavigation();
+      [...document.querySelectorAll('.is-open')].forEach((el) => {
+        el.classList.remove('is-open');
+      });
+
+      const lastMenuSectionSelector = `${selectors.globalFooter} ${selectors.column}:last-of-type ${selectors.section}:last-of-type`;
+      document.querySelector(`${lastMenuSectionSelector} ${selectors.headline}`).setAttribute('aria-expanded', true);
+      const lastMenuElement = [...document.querySelectorAll(`${lastMenuSectionSelector} li:last-of-type a`)][0];
+      lastMenuElement.focus();
+      await sendKeys({ press: 'Tab' });
+
+      const featureProductSelector = `.feds-featuredProducts ${selectors.section}`;
+      const featureProductsLastLink = document.querySelector(`${featureProductSelector} li:last-of-type a`);
+      const featureProductsFirstLink = document.querySelector(`${featureProductSelector} li:first-of-type a`);
+      expect(document.activeElement).to.equal(featureProductsFirstLink);
+      featureProductsLastLink.focus();
+      await sendKeys({ press: 'Tab' });
+      expect(document.activeElement.classList.contains('feds-regionPicker')).to.be.true;
+      // SHIFT + TAB
+      await sendKeys({ down: 'Shift' });
+      await sendKeys({ press: 'Tab' });
+      await sendKeys({ up: 'Shift' });
+      // SHIFT + TAB
+      await sendKeys({ down: 'Shift' });
+      await sendKeys({ press: 'Tab' });
+      await sendKeys({ up: 'Shift' });
+      expect(document.activeElement).to.equal(lastMenuElement);
+    });
   });
 
   describe('new mobile GNAV redesign', () => {
