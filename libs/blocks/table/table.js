@@ -273,8 +273,8 @@ function handleTitleText(cell) {
 
   const blockquote = nodeToInsert.querySelector('blockquote');
   if (blockquote) {
-    const quoteReplacement = createTag('p', { class: 'blockquote' });
-    quoteReplacement.innerHTML = blockquote.innerHTML;
+    const quoteReplacement = createTag('div', { class: 'blockquote' });
+    while (blockquote.firstChild) quoteReplacement.appendChild(blockquote.firstChild);
     blockquote.replaceWith(quoteReplacement);
   }
 
