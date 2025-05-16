@@ -1,0 +1,210 @@
+
+:root {
+  --notch-size: 12px;
+  --text-color: #2c2c2c;
+  --color-white: #FFF;
+  --color-black: #000;
+}
+
+h1 {
+  margin: 20px;
+  width: fit-content;
+  padding-bottom: 10px;
+  border-bottom: 2px solid var(--text-color);
+}
+
+textarea {
+  white-space: pre;
+  min-height: 200px;
+  height: fit-content;
+}
+
+button {
+  background-color: transparent;
+  border-radius: 16px;
+  border: 2px solid var(--text-color);
+  color: var(--text-color);
+  display: inline-block;
+  font-size: 15px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 16px;
+  padding: 5px 14px;
+  text-decoration: none;
+  min-height: 21px;
+}
+
+button:hover {
+  background-color: var(--color-black);
+  border-color: var(--color-black);
+  color: var(--color-white);
+}
+
+button:hover svg {
+  fill: var(--color-white);
+}
+
+button.selected {
+  background-color: var(--color-black);
+  border-color: var(--color-black);
+  color: var(--color-white);
+}
+
+label {
+  margin: 4px;
+  align-self: center;
+}
+
+section .error-border {
+  border: 1px solid red;
+}
+
+.redirects-formatter,
+.redirects-container {
+  display: flex;
+  flex-direction: column;
+  margin: 0 20px 20px;
+}
+
+.instructions {
+  margin: 0 20px;
+}
+
+.checkboxes-container {
+  display: grid;
+  background: #efefef;
+  grid-column: 1/3;
+  border: 1px solid black;
+  width: 100%;
+}
+
+.checkbox-ui {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+
+.checkboxes-container .tabs {
+  display: flex;
+  flex-direction: row;
+  justify-content: left;
+  margin: 20px;
+}
+
+.output-container button {
+  margin-right: 20px;
+}
+
+.output-container textarea {
+  width: 100%;
+  padding: 0;
+}
+
+.select-all-container button {
+  min-width: 115px;
+}
+
+.redirect-tabs button {
+  margin: 0 20px;
+}
+
+.redirects-container section button {
+  grid-column-start: 2;
+  justify-self: end;
+}
+
+.checkboxes-container .tabs button {
+  margin: 0 15px 0 5px;
+}
+
+.select-all-container {
+  display: flex;
+  justify-content: flex-end;
+  margin: 20px;
+  width: 20%;
+}
+
+.checkbox-wrapper {
+  padding: 5px;
+  min-width: 130px;
+  display: flex;
+  align-items: center;
+}
+
+.checkbox-grouping {
+  display: flex;
+  flex-flow: row wrap;
+  justify-content: left;
+  margin: 0 20px 20px;
+}
+
+.checkboxes .checkbox-grouping:not(.selected) {
+  display: none;
+}
+
+.bulk-redirects-container textarea {
+  margin-top: 20px;
+}
+
+.redirects-container section textarea {
+  grid-column: 1/3;
+}
+
+.error {
+  margin: 10px 20px;
+  min-height: 30px;
+  color: red;
+}
+
+.single-redirects-container .redirect-input-row {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  width: 100%;
+  margin: 20px 0;
+}
+
+.single-redirects-container .redirect-input-row:nth-child(odd) {
+  background-color: #efefef;
+}
+
+.single-redirects-container .redirect-input-row label {
+  padding-right: 20px;
+  margin: 20px 0;
+}
+
+.single-redirects-container .redirect-input-row label:last-of-type {
+  margin-left: 40px;
+}
+
+.single-redirects-container input {
+  width: 340px;
+}
+
+.redirect-tabs {
+  display: flex;
+  margin: 20px 0;
+}
+
+.redirect-tabs .process-redirects {
+  margin: 0 20px 0 auto;
+}
+
+.bulk-redirects-container { 
+  display: grid;
+  margin-top: 20px;
+}
+
+.redirects-ui-area {
+  min-height: 260px;
+}
+
+.redirects-ui-area section:not(.selected) {
+  display: none;
+}
+
+.output-container > div {
+  display: flex;
+  justify-content: space-between;
+  margin: 40px 0;
+}

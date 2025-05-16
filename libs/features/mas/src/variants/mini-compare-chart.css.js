@@ -13,6 +13,10 @@ export const CSS = `
   }
 
   merch-card[variant="mini-compare-chart"] merch-addon {
+    box-sizing: border-box;
+  }
+
+  merch-card[variant="mini-compare-chart"] merch-addon {
     padding-left: 4px;
     padding-top: 8px;
     padding-bottom: 8px;
@@ -255,9 +259,14 @@ export const CSS = `
     font-size: var(--consonant-merch-card-body-xs-font-size);
     line-height: var(--consonant-merch-card-body-xs-line-height);
   }
+
   merch-card[variant="mini-compare-chart"] .footer-row-cell-description {
     font-size: var(--consonant-merch-card-body-xs-font-size);
     line-height: var(--consonant-merch-card-body-xs-line-height);
+  }
+
+  merch-card[variant="mini-compare-chart"] merch-addon {
+    box-sizing: border-box;
   }
 }
 

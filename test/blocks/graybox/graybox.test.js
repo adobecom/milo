@@ -6,6 +6,8 @@ import { waitForElement, waitForRemoval } from '../../helpers/waitfor.js';
 const { default: init } = await import('../../../libs/blocks/graybox/graybox.js');
 await loadStyle('../../../libs/blocks/graybox/graybox.css');
 
+window.milo = { deferredPromise: Promise.resolve() };
+
 describe('Graybox', () => {
   before(async () => {
     document.body.innerHTML = await readFile({ path: './mocks/graybox.html' });
