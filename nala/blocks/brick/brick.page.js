@@ -7,27 +7,27 @@ export default class Brick {
     this.brick = page.locator('.brick.dark.split.row.media-right');
     this.brick = page.locator('.brick');
     this.brickButtonFill = page.locator(
-      '.brick.rounded-corners.button-fill.dark.grid-span-4'
+      '.brick.rounded-corners.button-fill.dark.grid-span-4',
     );
     this.brickClickable = page.locator(
-      '.brick.dark.click.rounded-corners.grid-span-4'
+      '.brick.dark.click.rounded-corners.grid-span-4',
     );
     this.brickDefaultHeading = page.locator(
-      '.brick.light.rounded-corners.split.row.media-right.grid-full-width'
+      '.brick.light.rounded-corners.split.row.media-right.grid-full-width',
     );
     this.brickHeadingS = page.locator(
-      '.brick.light.rounded-corners.grid-span-4'
+      '.brick.light.rounded-corners.grid-span-4',
     );
     this.brickHeadingM = page.locator(
-      '.brick.dark.rounded-corners.grid-span-4'
+      '.brick.dark.rounded-corners.grid-span-4',
     );
     this.brickHeadingL = page.locator(
-      '.brick.click.rounded-corners.dark.grid-span-4'
+      '.brick.click.rounded-corners.dark.grid-span-4',
     );
     this.brickHeadingXXL = page.locator('.brick.rounded-corners.center.light');
     this.brickSplit = page.locator('.brick.split');
     this.brickSupplemental = page.locator(
-      '.brick.rounded-corners.dark.grid-span-4'
+      '.brick.rounded-corners.dark.grid-span-4',
     );
     this.brickImageCenter = page.locator('.brick.rounded-corners.button-fill');
     this.brickImageRight = page.locator('.brick.dark.button-fill');
@@ -37,7 +37,7 @@ export default class Brick {
 
     // brick corners
     this.brickRoundedCornersM = this.page.locator(
-      '.brick.light.m-rounded-corners.grid-span-4'
+      '.brick.light.m-rounded-corners.grid-span-4',
     );
     this.brickSquareCorners = this.page.locator('.brick.light.grid-span-4');
 
@@ -64,19 +64,19 @@ export default class Brick {
     this.iconArea = this.brick.locator('.icon-area');
     this.iconImage = this.brick.locator('.icon-area img');
     this.splitForegroundImage = this.brick.locator(
-      '.foreground .brick-media img'
+      '.foreground .brick-media img',
     );
     this.brickTextDetailL = page.locator('.detail-l');
 
     // background images
     this.backgroundImage = this.brick.locator('div.background img');
     this.splitBackgroundImage = this.brick.locator(
-      '.background .tablet-only.desktop-only img'
+      '.background .tablet-only.desktop-only img',
     );
     this.backgroundMobile = this.brick.locator('.background .mobile-only img');
     this.backgroundTablet = this.brick.locator('.background .tablet-only img');
     this.backgroundDesktop = this.brick.locator(
-      '.background .desktop-only img'
+      '.background .desktop-only img',
     );
 
     this.brickMediaImg = this.brick.locator('.brick-media img');
@@ -88,12 +88,12 @@ export default class Brick {
     this.sectionMetadata = page.locator('.section-metadata');
     this.sectionXXLspacing = this.page.locator('.section.xxl-spacing');
     this.sectionBackgroundImage = this.page.locator(
-      'div.section picture.section-background img'
+      'div.section picture.section-background img',
     );
     this.heading = this.page.locator('.heading-xl');
     this.bodyM = this.page.locator('.heading-xl + .body-m');
 
-    //attributes
+    // attributes
     this.attributes = {
       'brick.background.mobile': {
         backgroundImg: {
@@ -134,9 +134,7 @@ export default class Brick {
       },
 
       'brick.button-fill': {
-        iconImg: {
-          loading: 'lazy',
-        },
+        iconImg: {loading: 'lazy',},
       },
       'brick.video-container': {
         playsinline: '',
@@ -144,9 +142,7 @@ export default class Brick {
         muted: '',
       },
       'brick.headingS': {
-        blockStyle: {
-          borderRadius: '16px',
-        },
+        blockStyle: {borderRadius: '16px',},
       },
       'brick.headingM': {
         backgroundImg: {
@@ -156,9 +152,7 @@ export default class Brick {
           height: '1125',
           style: 'object-position: center bottom;',
         },
-        blockStyle: {
-          borderRadius: '16px',
-        },
+        blockStyle: {borderRadius: '16px',},
       },
       'brick.headingL': {
         backgroundImg: {
@@ -168,9 +162,7 @@ export default class Brick {
           height: '450',
           style: 'object-fit: contain; object-position: center bottom;',
         },
-        blockStyle: {
-          borderRadius: '16px',
-        },
+        blockStyle: {borderRadius: '16px',},
       },
       'brick.headingXXL': {
         backgroundImg: {
@@ -180,9 +172,7 @@ export default class Brick {
           height: '240',
           style: 'object-fit: cover; object-position: center center;',
         },
-        blockStyle: {
-          borderRadius: '16px',
-        },
+        blockStyle: {borderRadius: '16px',},
       },
       'section.headingS': {
         backgroundImg: {
@@ -193,14 +183,10 @@ export default class Brick {
         },
       },
       'brick.M.rounded.corners': {
-        blockStyle: {
-          borderRadius: '8px',
-        },
+        blockStyle: {borderRadius: '8px',},
       },
       'brick.square.corners': {
-        blockStyle: {
-          borderRadius: '0px',
-        },
+        blockStyle: {borderRadius: '0px',},
         backgroundImg: {
           loading: 'eager',
           fetchpriority: 'high',
@@ -209,9 +195,7 @@ export default class Brick {
         },
       },
       'brick.split.background': {
-        blockStyle: {
-          borderRadius: '16px',
-        },
+        blockStyle: {borderRadius: '16px',},
         backgroundImg: {
           loading: 'eager',
           fetchpriority: 'high',
@@ -221,9 +205,7 @@ export default class Brick {
         },
       },
       'brick.split.foreground': {
-        blockStyle: {
-          borderRadius: '16px',
-        },
+        blockStyle: {borderRadius: '16px',},
         backgroundImg: {
           loading: 'eager',
           fetchpriority: 'high',
@@ -232,9 +214,7 @@ export default class Brick {
         },
       },
       'brick.supplemental': {
-        blockStyle: {
-          borderRadius: '16px',
-        },
+        blockStyle: {borderRadius: '16px',},
         backgroundImg: {
           loading: 'eager',
           fetchpriority: 'high',
