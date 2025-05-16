@@ -33,8 +33,8 @@ const MANIFESTSRC_OPTIONS = {
   personalization: { label: 'PZN', value: 'pzn' },
   promo: { label: 'Promo', value: 'promo' },
   target: { label: 'Target', value: 'target' },
-  ajo: { label: 'AJO', value: 'ajo' },
-  placeholder: { label: 'Placeholders', value: 'placeholders' },
+  // ajo: { label: 'AJO', value: 'ajo' },
+  // placeholder: { label: 'Placeholders', value: 'placeholders' },
 };
 
 const GRID_FORMAT = {
@@ -44,8 +44,8 @@ const GRID_FORMAT = {
     row2: ['mmm-checkbox-filter-targetSetting', 'mmm-checkbox-filter-manifestSrc'],
     row3: ['mmm-search-filter-container'],
   },
-  report: {
-    row1: ['mmm-dropdown-lastSeen'],
+  targetCleanUp: {
+    row1: ['mmm-dropdown-lastSeen', 'mmm-container-dropdown-geos'],
     row2: ['mmm-search-filter-container'],
   },
 };
@@ -81,7 +81,7 @@ const setLocalStorageFilter = (obj) => {
   localStorage.setItem(getStorageKey(), JSON.stringify(obj));
 };
 
-const SEARCH_INITIAL_VALUES = () => getLocalStorageFilter() ?? {
+const SEARCH = () => getLocalStorageFilter() ?? {
   lastSeenManifest: isReport ? LAST_SEEN_OPTIONS.week.key : LAST_SEEN_OPTIONS.threeMonths.key,
   pageNum: 1,
   subdomain: SUBDOMAIN_OPTIONS.www.key,
@@ -109,7 +109,7 @@ async function toggleDrawer(target, dd, pageId) {
     dd.removeAttribute('hidden');
     const loading = dd.querySelector('.loading');
     if (dd.classList.contains('placeholder-resolved') || !loading) return;
-    const pageData = await fetchData(`${API_URLS.pageDetails}${pageId}`, DATA_TYPE.JSON);
+    const pageData = await fetchData(`${API_URLS.pageDetails}?id=${pageId}&lastSeen=${SEARCH().lastSeenManifest}&manifestSrc=${SEARCH().manifestSrc}`, DATA_TYPE.JSON);
     loading.replaceWith(getMepPopup(pageData, true));
     dd.classList.add('placeholder-resolved');
   }
@@ -192,7 +192,7 @@ function filterPageList(pageNum, perPage, filterEvent, sortingEvent) {
   }
   // add pageNum and perPage to args for api call
   searchValues.pageNum = pageNum || 1;
-  searchValues.perPage = perPage || SEARCH_INITIAL_VALUES()?.perPage;
+  searchValues.perPage = perPage || SEARCH()?.perPage;
 
   // add orderBy and order to args for api call
   if (isReport) {
@@ -268,7 +268,7 @@ function createDropdowns(data) {
     Object.keys(options).forEach((option) => {
       const optionEl = createTag('option', { value: option }, options[option]);
       select.append(optionEl);
-      const startingVal = SEARCH_INITIAL_VALUES()[key];
+      const startingVal = SEARCH()[key];
       if (startingVal === option) optionEl.setAttribute('selected', 'selected');
     });
     select.addEventListener('change', () => filterPageList());
@@ -294,7 +294,7 @@ function createSearchField() {
     </div>`,
   );
   const searchField = searchForm.querySelector('textarea');
-  searchField.innerHTML = SEARCH_INITIAL_VALUES().filter || '';
+  searchField.innerHTML = SEARCH().filter || '';
 
   searchField.addEventListener('keyup', debounce((event) => filterPageList(null, null, event)));
   searchField.addEventListener('change', debounce((event) => filterPageList(null, null, event)));
@@ -325,7 +325,7 @@ function createLastSeenManifestAndDomainDD() {
     const lastSeenSelect = dropdownLastSeen.querySelector('select');
     const newEl = createTag(
       'option',
-      { value: LAST_SEEN_OPTIONS[key].key, ...(SEARCH_INITIAL_VALUES().lastSeenManifest === LAST_SEEN_OPTIONS[key].key ? { selected: 'selected' } : {}) },
+      { value: LAST_SEEN_OPTIONS[key].key, ...(SEARCH().lastSeenManifest === LAST_SEEN_OPTIONS[key].key ? { selected: 'selected' } : {}) },
       LAST_SEEN_OPTIONS[key].value,
     );
     lastSeenSelect.append(newEl);
@@ -339,7 +339,7 @@ function createLastSeenManifestAndDomainDD() {
         <label for="mmm-subdomain">Subdomain:</label>
         <select id="mmm-subdomain" type="text" name="mmm-subdomain" class="text-field-input">
           ${Object.keys(SUBDOMAIN_OPTIONS).map((key) => `
-            <option value="${SUBDOMAIN_OPTIONS[key].key}" ${SEARCH_INITIAL_VALUES().subdomain === SUBDOMAIN_OPTIONS[key].key ? 'selected' : ''}>${SUBDOMAIN_OPTIONS[key].value}</option>
+            <option value="${SUBDOMAIN_OPTIONS[key].key}" ${SEARCH().subdomain === SUBDOMAIN_OPTIONS[key].key ? 'selected' : ''}>${SUBDOMAIN_OPTIONS[key].value}</option>
           `)}
         </select>
       </div>`,
@@ -354,7 +354,7 @@ function createCheckBoxFilterGroup(checkBoxId, legendLabel, optionsObj) {
   const checkBoxFieldset = createTag('fieldset', { id: `mmm-${checkBoxId}-fieldset` }, checkBoxLegend);
   // helper function only ran during filter build. consider moving to outter lex scope
   function createCheckBox(groupName, checkboxLabel, checkboxValue) {
-    const initValueCheck = SEARCH_INITIAL_VALUES()?.[groupName]?.split(', ').includes(checkboxValue);
+    const initValueCheck = !SEARCH()?.[groupName] || SEARCH()?.[groupName]?.split(', ').includes(checkboxValue);
     const checkDiv = createTag('div', { class: 'mmm-checkbox-option' });
     const checkLabel = createTag('label', { for: `mmm-${groupName}-${checkboxValue}` }, checkboxLabel);
     const checkBox = createTag('input', {
@@ -537,7 +537,7 @@ function createReportButton() {
     'a',
     {
       class: 'con-button outline button-l button-justified-mobile mmm-report-slack',
-      href: 'https://adobe.enterprise.slack.com/archives/C08LXEQ735W',
+      href: 'https://adobe.enterprise.slack.com/archives/C08SA7JUW3F',
     },
     'Open Slack',
   );
@@ -708,7 +708,7 @@ function createMetadataLookup(el) {
   const dropdown = {
     id: 'mmm-metadata-lookup-repo-cc',
     label: 'Choose Repo',
-    selected: SEARCH_INITIAL_VALUES().selectedRepo,
+    selected: SEARCH().selectedRepo,
     options: {
       cc: 'CC',
       dc: 'DC',
@@ -747,7 +747,7 @@ function createMetadataLookup(el) {
     const filterResultObj = JSON.parse(filterResult);
     filterResultObj.off = filterResultObj.off.concat(filterResultObj.notFound);
     filterResultObj.notFound = [];
-    const reportText = `Date: ${getDate()}\nRepo: ${SEARCH_INITIAL_VALUES().selectedRepo.toUpperCase()}\nRequested pages are grouped below by their Target setting.
+    const reportText = `Date: ${getDate()}\nRepo: ${SEARCH().selectedRepo.toUpperCase()}\nRequested pages are grouped below by their Target setting.
       ${Object.keys(filterResultObj).map((key) => {
     const urls = filterResultObj[key].map((item) => item.url || item);
     return urls.length ? `\n\n${METADATA_URLS_CATEGORIES[key].display}:\n${urls.join('\n')}\n` : null;
@@ -762,7 +762,7 @@ function createMetadataLookup(el) {
   // Handle Filter input
   const textarea = search.querySelector('textarea');
   textarea.addEventListener('input', debounce((event) => handleMetadataFilterInput(event)));
-  textarea.innerHTML = SEARCH_INITIAL_VALUES().metadataFilter;
+  textarea.innerHTML = SEARCH().metadataFilter;
   textarea.dispatchEvent(new CustomEvent('input', { detail: textarea }));
 }
 
@@ -781,11 +781,11 @@ async function createView(el, search) {
 
   let url = '';
   let method = 'POST';
-  let body = JSON.stringify(search ?? SEARCH_INITIAL_VALUES());
+  let body = JSON.stringify(search ?? SEARCH());
   switch (true) {
     case isReport: url = API_URLS.report; break;
     case isMetadataLookup: {
-      url = API_URLS.metadata[SEARCH_INITIAL_VALUES().selectedRepo];
+      url = API_URLS.metadata[SEARCH().selectedRepo];
       method = 'GET';
       body = null;
       break;
@@ -865,7 +865,7 @@ function handleRepoChange() {
 
 export default async function init(el) {
   isReport = el.classList.contains('target-cleanup');
-  mmmPageVer = isReport ? GRID_FORMAT.report : GRID_FORMAT.base;
+  mmmPageVer = isReport ? GRID_FORMAT.targetCleanUp : GRID_FORMAT.base;
   isMetadataLookup = el.classList.contains('target-metadata-lookup');
   await createView(el);
   if (!isMetadataLookup) {
