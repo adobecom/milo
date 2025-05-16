@@ -75,13 +75,13 @@ const decorateLinkGroup = (elem, index) => {
       <div class="feds-navLink-title">${link.textContent}</div>
       ${descriptionElem}
     </div>` : '';
-  const linkGroup = toFragment`<li><a
+  const linkGroup = toFragment`<a
     href="${link.href}"
     class="feds-navLink${modifierClasses.length ? ` ${modifierClasses.join(' ')}` : ''}"
     daa-ll="${getAnalyticsValue(link.textContent, index)}">
       ${imageElem}
       ${contentElem}
-    </a></li>`;
+    </a>`;
   if (link?.target) linkGroup.target = link.target;
 
   return linkGroup;
@@ -94,7 +94,7 @@ const decorateElements = ({ elem, className = 'feds-navLink', itemIndex = { posi
 
     // Decorate link group
     if (link.matches('.link-group')) {
-      return decorateLinkGroup(link, itemIndex.position);
+      return toFragment`<li>${decorateLinkGroup(link, itemIndex.position)}</li>`;
     }
 
     // If the link is wrapped in a 'strong' or 'em' tag, make it a CTA
