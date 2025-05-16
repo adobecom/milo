@@ -13,9 +13,12 @@ function sendToLana(lanaData) {
     downlink: window.navigator?.connection?.downlink || '',
     loggedIn: window.adobeIMS?.isSignedInUser() || false,
     os: (ua.match(/Windows/) && 'win')
+      || (ua.match(/CriOS/) && 'iOS')
       || (ua.match(/Mac/) && 'mac')
       || (ua.match(/Android/) && 'android')
       || (ua.match(/Linux/) && 'linux')
+      || '',
+    tablet: (ua.match(/(ipad|iPad|tablet|(android(?!.*mobile))|(windows(?!.*phone).*touch))/) && 'yes')
       || '',
     windowHeight: window.innerHeight,
     windowWidth: window.innerWidth,
@@ -115,8 +118,11 @@ function logMepExperiments(lanaData, mep) {
 export default function webVitals(mep, { delay = 1000, sampleRate = 50 } = {}) {
   const isChrome = () => {
     const nav = window.navigator;
-    return nav.userAgent.includes('Chrome') && nav.vendor.includes('Google');
+    const desktopChrome = nav.userAgent.includes('Chrome') && nav.vendor.includes('Google');
+    const iOSChrome = nav.userAgent.includes('CriOS') && nav.vendor.includes('Google');
+    return desktopChrome || iOSChrome;
   };
+
   if (!isChrome() || Math.random() * 100 > sampleRate) return;
   const getConsent = () => window.adobePrivacy?.activeCookieGroups().indexOf('C0002') !== -1;
   function handleEvent() {
