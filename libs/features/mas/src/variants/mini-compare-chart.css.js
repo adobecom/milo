@@ -2,9 +2,10 @@ import { MOBILE_LANDSCAPE, TABLET_DOWN, TABLET_UP, DESKTOP_UP, LARGE_DESKTOP } f
 export const CSS = `
   :root {
     --consonant-merch-card-mini-compare-chart-icon-size: 32px;
-    --consonant-merch-card-mini-compare-mobile-cta-font-size: 15px;
+    --consonant-merch-card-mini-compare-mobile-cta-font-size: 16px;
     --consonant-merch-card-mini-compare-mobile-cta-width: 75px;
     --consonant-merch-card-mini-compare-badge-mobile-max-width: 50px;
+    --consonant-merch-card-mini-compare-mobile-price-font-size: 32px;
   }
   
   merch-card[variant="mini-compare-chart"] [slot="heading-m"] {
@@ -48,12 +49,13 @@ export const CSS = `
 
   merch-card[variant="mini-compare-chart"].bullet-list [slot="heading-m"] {
     padding: var(--consonant-merch-spacing-xxs) var(--consonant-merch-spacing-xs);
-    font-size: var(--consonant-merch-card-heading-xs-font-size);
+    font-size: var(--consonant-merch-card-heading-xxs-font-size);
   }
 
   merch-card[variant="mini-compare-chart"].bullet-list [slot='heading-m-price'] {
-    font-size: var(--consonant-merch-card-body-xxl-font-size);
     padding: 0 var(--consonant-merch-spacing-xs);
+    font-size: var(--consonant-merch-card-mini-compare-mobile-price-font-size);
+    font-weight: 800;
   }
 
   merch-card[variant="mini-compare-chart"] [slot="body-m"] {
@@ -149,7 +151,7 @@ export const CSS = `
     font-weight: 700;
     padding-block-end: var(--consonant-merch-spacing-xxs);
     line-height: var(--consonant-merch-card-body-xs-line-height);
-    font-size: var(--consonant-merch-card-body-xs-font-size);
+    font-size: var(--consonant-merch-card-body-s-font-size);
   }
 
   merch-card[variant="mini-compare-chart"] .footer-row-cell {
