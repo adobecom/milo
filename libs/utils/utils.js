@@ -324,6 +324,7 @@ export const getFederatedContentRoot = () => {
     'https://blog.adobe.com',
     'https://milo.adobe.com',
     'https://news.adobe.com',
+    'https://test.graybox.adobe.com',
   ];
   const { allowedOrigins = [], origin: configOrigin } = getConfig();
   if (federatedContentRoot) return federatedContentRoot;
