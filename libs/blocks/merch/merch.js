@@ -836,7 +836,8 @@ export async function buildCta(el, params) {
       reopenModal(cta);
     });
 
-    // Adding aria-label for checkout-link using productFamily and customerSegment as placeholder key.
+    // Adding aria-label for checkout-link using productFamily and customerSegment
+    // as placeholder key.
     if (el.ariaLabel) {
     // If Milo aria-label available from sharepoint doc, just use it.
       cta.setAttribute('aria-label', el.ariaLabel);
@@ -852,8 +853,7 @@ export async function buildCta(el, params) {
       });
     }
 
-    if (window.location.href.includes('aem.page')
-     && document.head.querySelector('meta[name=mas-ff-copy-cta]')?.content === 'on') {
+    if (document.head.querySelector('meta[name=mas-ff-copy-cta]')?.content === 'on') {
       return addCopyToClipboard(el, cta);
     }
   }
