@@ -63,7 +63,7 @@ export function validateForm({
   if (fragmentsEnabled && noOfValidFrag > 0 && fragments.length === 0) {
     errors.fragments = 'Select atleast one fragment to proceed further';
   }
-  if (new Date(dueDate + 'Z') < new Date()){
+  if (new Date(`${dueDate}Z`) < new Date()) {
     errors.dueDate = 'Please select a future date and time';
   }
   return errors;
@@ -111,7 +111,6 @@ export function getInitialName(type) {
 
 export function formatDateTime(dueDate) {
   const date = new Date(dueDate);
-  if (isNaN(date.getTime())) return '';
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, '0');
   const day = String(date.getDate()).padStart(2, '0');

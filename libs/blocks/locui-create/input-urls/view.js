@@ -117,7 +117,7 @@ export default function InputUrls() {
   }
 
   function handleDueDateChange(ev) {
-    setDueDate(ev.target.value)
+    setDueDate(ev.target.value);
     setErrors({ ...errors, dueDate: '' });
   }
 
