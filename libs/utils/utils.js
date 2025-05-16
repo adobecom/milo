@@ -891,7 +891,6 @@ export function decorateLinks(el) {
   decorateImageLinks(el);
   const anchors = el.getElementsByTagName('a');
   const { hostname, href } = window.location;
-
   const links = [...anchors].reduce((rdx, a) => {
     appendHtmlToLink(a);
     if (a.href.includes('http:')) a.setAttribute('data-http-link', 'true');
