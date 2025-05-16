@@ -193,6 +193,10 @@ html[dir="rtl"] .carousel-slides .section.carousel-slide {
   opacity: 1;
 } 
 
+.carousel-slide.non-visible-slide {
+  visibility: hidden;
+}
+
 .carousel-slides.is-ready,
 .carousel-slides.is-ready.is-reversing,
 .carousel[class*='show-'] .carousel-slides.is-ready,
@@ -721,4 +725,11 @@ html[dir="rtl"] .carousel .move-indicators {
 
     transform: translateX(calc(round(down, (var(--offset) / (var(--slides) - 1)), 2px) * -1));
   }
+}
+
+.carousel .aria-live-container {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
 }

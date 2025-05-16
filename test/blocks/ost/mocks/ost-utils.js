@@ -29,6 +29,8 @@ const loadArea = () => Promise.resolve();
 
 const localizeLink = () => Promise.resolve();
 
+const loadLink = () => Promise.resolve();
+
 const mockRes = ({ payload, status = 200 } = {}) => new Promise((resolve) => {
   resolve({
     status,
@@ -117,6 +119,7 @@ export {
   loadScript,
   loadStyle,
   localizeLink,
+  loadLink,
   mockOstDeps,
   unmockOstDeps,
   mockRes,
