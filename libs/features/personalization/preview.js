@@ -9,6 +9,12 @@ export const API_URLS = {
   pageDataByURL: `${API_DOMAIN}/get-page?url=`,
   save: `${API_DOMAIN}/save-mep-call`,
   report: `${API_DOMAIN}/get-report`,
+  metadata: {
+    cc: 'https://main--cc--adobecom.aem.live/metadata-optimization.json',
+    dc: 'https://main--dc--adobecom.aem.live/metadata-optimization.json',
+    express: 'https://main--express-milo--adobecom.aem.live/metadata-optimization.json',
+    bacom: 'https://main--bacom--adobecom.aem.live/metadata-optimization.json',
+  },
 };
 
 function updatePreviewButton(popup, pageId) {
