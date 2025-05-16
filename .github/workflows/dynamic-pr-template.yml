@@ -18,7 +18,7 @@ jobs:
         with:
           repository: ${{ github.event.pull_request.head.repo.full_name }}
           ref: ${{ github.event.pull_request.head.sha }}
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.PAT_TOKEN }}
 
       - name: Get changed files
         id: changed-files
@@ -102,7 +102,7 @@ jobs:
       - name: Update PR description
         uses: actions/github-script@v6
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+          github-token: ${{ secrets.PAT_TOKEN }}
           script: |
             const testUrls = process.env.TEST_URLS.split('\n');
             const prNumber = context.issue.number;
