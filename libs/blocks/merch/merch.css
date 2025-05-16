@@ -136,3 +136,10 @@ a[is='checkout-link'].con-button > span {
   top: 50%; 
   transform: translate(-50%,-50%);
 }
+
+.copy-cta-wrapper {
+  display: flex;
+  gap: 14px;
+}
+
+

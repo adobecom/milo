@@ -786,6 +786,30 @@ export function reopenModal(cta) {
   }
 }
 
+/**
+ * @param {string} ostLink
+ * @param {HTMLElement} cta
+ * @returns {HTMLElement} wrapper with copy to clipboard button
+ */
+function addCopyToClipboard(ostLink, cta) {
+  if (!ostLink || !cta) return cta;
+  const copyToClipboard = `<button onclick="navigator.clipboard.writeText('${ostLink}')" style="background: none; border: none; padding: 0; cursor: pointer;">
+    <svg xmlns="http://www.w3.org/2000/svg" height="30" width="30" id="S_AddTo_22_N" viewBox="0 0 22 22">
+      <defs>
+        <style>
+          .fill {
+            fill: #464646;
+          }
+        </style>
+      </defs>
+      <rect id="Canvas" fill="#ff13dc" opacity="0" width="22" height="22" />
+      <path class="fill" d="M19,8H14V3a.5.5,0,0,0-.5-.5H3a.5.5,0,0,0-.5.5V13.5A.5.5,0,0,0,3,14H8v5a.5.5,0,0,0,.5.5H19a.5.5,0,0,0,.5-.5V8.5A.5.5,0,0,0,19,8Z" />
+    </svg>
+  </button>
+  ${cta.outerHTML}`;
+  return createTag('div', { class: 'copy-cta-wrapper' }, copyToClipboard);
+}
+
 export async function buildCta(el, params) {
   const large = !!el.closest('.marquee');
   const strong = el.firstElementChild?.tagName === 'STRONG' || el.parentElement?.tagName === 'STRONG';
@@ -811,22 +835,27 @@ export async function buildCta(el, params) {
       // after opening a modal, navigating to another page and back we need to reopen the modal
       reopenModal(cta);
     });
-  }
 
-  // Adding aria-label for checkout-link using productFamily and customerSegment as placeholder key.
-  if (el.ariaLabel) {
+    // Adding aria-label for checkout-link using productFamily and customerSegment as placeholder key.
+    if (el.ariaLabel) {
     // If Milo aria-label available from sharepoint doc, just use it.
-    cta.setAttribute('aria-label', el.ariaLabel);
-  } else if (!cta.ariaLabel) {
-    cta.onceSettled().then(async () => {
-      const productFamily = cta.value[0]?.productArrangement?.productFamily;
-      const marketSegment = cta.value[0]?.marketSegments[0];
-      const customerSegment = marketSegment === 'EDU' ? marketSegment : cta.value[0]?.customerSegment;
-      let ariaLabel = cta.textContent;
-      ariaLabel = productFamily ? `${ariaLabel} - ${await replaceKey(productFamily, getConfig())}` : ariaLabel;
-      ariaLabel = customerSegment ? `${ariaLabel} - ${await replaceKey(customerSegment, getConfig())}` : ariaLabel;
-      cta.setAttribute('aria-label', ariaLabel);
-    });
+      cta.setAttribute('aria-label', el.ariaLabel);
+    } else if (!cta.ariaLabel) {
+      cta.onceSettled().then(async () => {
+        const productFamily = cta.value[0]?.productArrangement?.productFamily;
+        const marketSegment = cta.value[0]?.marketSegments[0];
+        const customerSegment = marketSegment === 'EDU' ? marketSegment : cta.value[0]?.customerSegment;
+        let ariaLabel = cta.textContent;
+        ariaLabel = productFamily ? `${ariaLabel} - ${await replaceKey(productFamily, getConfig())}` : ariaLabel;
+        ariaLabel = customerSegment ? `${ariaLabel} - ${await replaceKey(customerSegment, getConfig())}` : ariaLabel;
+        cta.setAttribute('aria-label', ariaLabel);
+      });
+    }
+
+    if (window.location.href.includes('aem.page')
+     && document.head.querySelector('meta[name=mas-ff-copy-cta]')?.content === 'on') {
+      return addCopyToClipboard(el, cta);
+    }
   }
   return cta;
 }
