@@ -886,22 +886,25 @@ export function convertStageLinks({ anchors, config, hostname, href }) {
   });
 }
 
-export function shouldBlockFreeTrialLinks(a, prefix) {
-  if (prefix !== '/kr') return false;
-
-  const freeTrialsCTATextArray = [
-    'free-trial', 'free trial', '무료 체험판', '무료 체험하기', '{{free-trial}}', '{{start-free-trial}}',
-    '{{try-for-free}}',
-  ];
-  return (a.dataset.modalPath?.includes('trial-modals') || freeTrialsCTATextArray.some((text) => a.textContent.toLowerCase()
-    ?.includes(text.toLowerCase()))) && !a.classList.contains('fragment', 'link-block');
-}
-
 export function decorateLinks(el) {
   const config = getConfig();
   decorateImageLinks(el);
   const anchors = el.getElementsByTagName('a');
   const { hostname, href } = window.location;
+
+  const shouldBlockFreeTrialLinks = (a, prefix) => {
+    if (prefix !== '/kr') return false;
+
+    const freeTrialsCTATextArray = [
+      'free-trial', 'free trial',
+      '무료 체험판', '무료 체험하기',
+      '{{free-trial}}', '{{start-free-trial}}', '{{try-for-free}}',
+    ];
+
+    return (a.dataset.modalPath?.includes('/kr/cc-shared/fragments/trial-modals') || freeTrialsCTATextArray.some((text) => a.textContent.toLowerCase()
+      ?.includes(text.toLowerCase()))) && !a.classList.contains('fragment', 'link-block');
+  };
+
   const links = [...anchors].reduce((rdx, a) => {
     appendHtmlToLink(a);
     if (a.href.includes('http:')) a.setAttribute('data-http-link', 'true');
@@ -955,7 +958,8 @@ export function decorateLinks(el) {
     }
 
     if (shouldBlockFreeTrialLinks(a, config.locale.prefix)) {
-      a.remove();
+      const elementToRemove = (a.parentElement.tagName === 'STRONG' || a.parentElement.tagName === 'EM') && a.parentElement.children.length === 1 ? a.parentElement : a;
+      elementToRemove.remove();
       return rdx;
     }
 
@@ -1507,12 +1511,6 @@ export async function loadDeferred(area, blocks, config) {
     // Japanese word-wrap
     import('../features/japanese-word-wrap.js').then(({ default: controlJapaneseLineBreaks }) => {
       controlJapaneseLineBreaks(config, area);
-    });
-  }
-
-  if (config.locale?.prefix === '/kr') {
-    import('../features/korea-word-filter.js').then(({ default: filterKoreaWords }) => {
-      filterKoreaWords();
     });
   }
 
