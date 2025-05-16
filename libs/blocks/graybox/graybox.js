@@ -1,4 +1,4 @@
-import { createTag, getMetadata, MILO_EVENTS } from '../../utils/utils.js';
+import { createTag, getMetadata } from '../../utils/utils.js';
 import { getModal, closeModal } from '../modal/modal.js';
 import { iphoneFrame, ipadFrame } from './mobileFrames.js';
 
@@ -29,6 +29,8 @@ const USER_AGENT = {
   iPhone: 'Mozilla/5.0 (iPhone13,2; U; CPU iPhone OS 14_0 like Mac OS X) AppleWebKit/602.1.50 (KHTML, like Gecko) Version/10.0 Mobile/15E148 Safari/602.1',
   iPad: 'Mozilla/5.0 (iPad; CPU OS 13_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.3 Mobile/15E148 Safari/604.1',
 };
+
+const DEFAULT_TITLE = 'Review Update';
 
 let deviceModal;
 
@@ -237,7 +239,7 @@ const createGrayboxMenu = (options, { isOpen = false } = {}) => {
   }
 
   const grayboxText = createTag('div', { class: 'graybox-text' }, null, { parent: grayboxMenu });
-  const title = options.title?.text || getMetadata(METADATA.TITLE) || 'Review Update';
+  const title = options.title?.text || getMetadata(METADATA.TITLE) || DEFAULT_TITLE;
   const desc = options.desc?.text || getMetadata(METADATA.DESC) || '';
   grayboxText.innerHTML = `<p>${title}</p>${desc && `<p>${desc}</p>`}`;
 
@@ -262,7 +264,7 @@ const createGrayboxMenu = (options, { isOpen = false } = {}) => {
   grayboxContainer.appendChild(toggleBtn);
   document.body.appendChild(grayboxContainer);
 
-  if (isOpen) {
+  if (isOpen && (title !== DEFAULT_TITLE || desc)) {
     grayboxContainer.classList.add('open');
   }
 };
@@ -297,7 +299,7 @@ const transformLinks = () => {
   });
 };
 
-const grayboxThePage = (grayboxEl, grayboxMenuOff) => () => {
+const grayboxThePage = (grayboxEl, grayboxMenuOff) => {
   transformLinks();
   document.body.classList.add(CLASS.GRAYBOX_BODY);
   const globalNoClick = grayboxEl.classList.contains(CLASS.NO_CLICK)
@@ -346,9 +348,5 @@ export default function init(grayboxEl) {
   setMetadata({ selector: 'georouting', val: 'off' });
   const grayboxMenuOff = url.searchParams.get('graybox') === 'menu-off';
 
-  document.addEventListener(
-    MILO_EVENTS.DEFERRED,
-    grayboxThePage(grayboxEl, grayboxMenuOff),
-    { once: true },
-  );
+  window.milo.deferredPromise.then(() => grayboxThePage(grayboxEl, grayboxMenuOff));
 }
