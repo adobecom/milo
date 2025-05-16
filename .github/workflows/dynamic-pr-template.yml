@@ -3,8 +3,6 @@ name: Dynamic PR Template
 on:
   pull_request:
     types: [opened, synchronize, reopened]
-  pull_request_target:
-    types: [opened, synchronize, reopened]
 
 # Add permissions block
 permissions:
@@ -17,6 +15,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
 
       - name: Get changed files
         id: changed-files
@@ -35,7 +35,7 @@ jobs:
         id: test-urls
         env:
           BRANCH_NAME: ${{ github.event.pull_request.head.ref }}
-          REPO_OWNER: ${{ github.repository_owner }}
+          REPO_OWNER: ${{ github.event.pull_request.head.repo.owner.login }}
         run: |
           # Initialize test URLs array
           TEST_URLS=()
