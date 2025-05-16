@@ -19,32 +19,35 @@ let videoLabels = {
 };
 let videoCounter = 0;
 
+const FREE_TRIAL_PATTERNS = [
+  'free-trial', 'free trial',
+  '무료 체험판', '무료 체험하기',
+  '{{free-trial}}', '{{start-free-trial}}', '{{try-for-free}}',
+];
+
+const shouldBlockFreeTrialLinks = (a, prefix) => {
+  if (prefix !== '/kr') return false;
+  if (a.dataset?.modalPath?.includes('/kr/cc-shared/fragments/trial-modals')) return true;
+  return FREE_TRIAL_PATTERNS.some((pattern) => a.textContent?.toLowerCase()?.includes(
+    pattern.toLowerCase(),
+  ));
+};
+
 export function decorateButtons(el, size) {
   const buttons = el.querySelectorAll('em a, strong a, p > a strong');
   if (buttons.length === 0) return;
   const buttonTypeMap = { STRONG: 'blue', EM: 'outline', A: 'blue' };
 
-  const shouldBlockFreeTrialLinks = (a, prefix) => {
-    if (prefix !== '/kr') return false;
-
-    const freeTrialsCTATextArray = [
-      'free-trial', 'free trial',
-      '무료 체험판', '무료 체험하기',
-      '{{free-trial}}', '{{start-free-trial}}', '{{try-for-free}}',
-    ];
-
-    return (a.dataset?.modalPath?.includes('/kr/cc-shared/fragments/trial-modals') || freeTrialsCTATextArray.some((text) => a.textContent.toLowerCase()
-      ?.includes(text.toLowerCase())));
-  };
-
   buttons.forEach((button) => {
+    const parent = button.parentElement;
+
     if (shouldBlockFreeTrialLinks(button, getConfig().locale.prefix)) {
-      const elementToRemove = (button.parentElement.tagName === 'STRONG' || button.parentElement.tagName === 'EM') && button.parentElement.children.length === 1 ? button.parentElement : button;
+      const elementToRemove = (parent.tagName === 'STRONG' || parent.tagName === 'EM') && parent.children.length === 1 ? parent : button;
       elementToRemove.remove();
       return;
     }
+
     let target = button;
-    const parent = button.parentElement;
     const buttonType = buttonTypeMap[parent.nodeName] || 'outline';
     if (button.nodeName === 'STRONG') {
       target = parent;
