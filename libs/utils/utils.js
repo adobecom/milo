@@ -1423,12 +1423,14 @@ async function loadPostLCP(config) {
   } else if (!isMartechLoaded) loadMartech();
 
   const georouting = getMetadata('georouting') || config.geoRouting;
+  config.georouting = { loadedPromise: Promise.resolve() };
   if (georouting === 'on') {
     const jsonPromise = fetch(`${config.contentRoot ?? ''}/georoutingv2.json`);
-    import('../features/georoutingv2/georoutingv2.js')
-      .then(({ default: loadGeoRouting }) => {
-        loadGeoRouting(config, createTag, getMetadata, loadBlock, loadStyle, jsonPromise);
-      });
+    config.georouting.loadedPromise = (async () => {
+      const { default: loadGeoRouting } = await import('../features/georoutingv2/georoutingv2.js');
+      await loadGeoRouting(config, createTag, getMetadata, loadBlock, loadStyle, jsonPromise);
+    })();
+    // This is used only in webapp-prompt.js
   }
   const header = document.querySelector('header');
   if (header) {
