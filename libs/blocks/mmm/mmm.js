@@ -44,8 +44,8 @@ const GRID_FORMAT = {
     row2: ['mmm-checkbox-filter-targetSetting', 'mmm-checkbox-filter-manifestSrc'],
     row3: ['mmm-search-filter-container'],
   },
-  report: {
-    row1: ['mmm-dropdown-lastSeen'],
+  targetCleanUp: {
+    row1: ['mmm-dropdown-lastSeen', 'mmm-container-dropdown-geos'],
     row2: ['mmm-search-filter-container'],
   },
 };
@@ -865,7 +865,7 @@ function handleRepoChange() {
 
 export default async function init(el) {
   isReport = el.classList.contains('target-cleanup');
-  mmmPageVer = isReport ? GRID_FORMAT.report : GRID_FORMAT.base;
+  mmmPageVer = isReport ? GRID_FORMAT.targetCleanUp : GRID_FORMAT.base;
   isMetadataLookup = el.classList.contains('target-metadata-lookup');
   await createView(el);
   if (!isMetadataLookup) {
