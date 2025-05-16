@@ -25,7 +25,7 @@ const setBreadcrumbSEO = (breadcrumbs, el) => {
     const link = item.querySelector('a');
     const name = link ? link.innerText.trim() : [...item.childNodes].filter((node) => !node.matches?.('span[aria-hidden="true"]')).map((node) => node.textContent.trim()).join('');
     let itemUrl = link?.href;
-    if (el.classList.contains('auto-link-last') && idx === list.length - 1) {
+    if (!itemUrl && idx === list.length - 1) {
       itemUrl = window.location.href;
     }
     breadcrumbsSEO.itemListElement.push({
