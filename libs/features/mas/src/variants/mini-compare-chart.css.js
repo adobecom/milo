@@ -11,6 +11,41 @@ export const CSS = `
     padding: 0 var(--consonant-merch-spacing-s) 0;
   }
 
+  merch-card[variant="mini-compare-chart"] merch-addon {
+    box-sizing: border-box;
+  }
+
+  merch-card[variant="mini-compare-chart"] merch-addon {
+    padding-left: 4px;
+    padding-top: 8px;
+    padding-bottom: 8px;
+    padding-right: 8px;
+    border-radius: .5rem;
+    font-family: var(--merch-body-font-family, 'Adobe Clean');
+    margin: var(--consonant-merch-spacing-xs) var(--consonant-merch-spacing-s) .5rem;
+    font-size: var(--consonant-merch-card-body-xs-font-size);
+    line-height: var(--consonant-merch-card-body-xs-line-height);
+  }
+
+  merch-card[variant="mini-compare-chart"] merch-addon [is="inline-price"] {
+    min-height: unset;
+    font-weight: bold;
+    pointer-events: none;
+  }
+
+  merch-card[variant="mini-compare-chart"] merch-addon::part(checkbox) {
+      height: 18px;
+      width: 18px;
+      margin: 14px 12px 0 8px;
+  }
+
+  merch-card[variant="mini-compare-chart"] merch-addon::part(label) {
+    display: flex;
+    flex-direction: column;
+    padding: 8px 4px 8px 0;
+    width: 100%;
+  }
+
   merch-card[variant="mini-compare-chart"].bullet-list [slot="heading-m"] {
     padding: var(--consonant-merch-spacing-xxs) var(--consonant-merch-spacing-xs);
     font-size: var(--consonant-merch-card-heading-xs-font-size);
@@ -222,9 +257,14 @@ export const CSS = `
     font-size: var(--consonant-merch-card-body-xs-font-size);
     line-height: var(--consonant-merch-card-body-xs-line-height);
   }
+
   merch-card[variant="mini-compare-chart"] .footer-row-cell-description {
     font-size: var(--consonant-merch-card-body-xs-font-size);
     line-height: var(--consonant-merch-card-body-xs-line-height);
+  }
+
+  merch-card[variant="mini-compare-chart"] merch-addon {
+    box-sizing: border-box;
   }
 }
 
