@@ -242,7 +242,6 @@ export function processAddon(fields, merchCard, mapping) {
 }
 
 export function processAddonConfirmation(fields, merchCard, mapping) {
-  console.log('addonConfirmation:', fields.addonConfirmation);
     if (fields.addonConfirmation) {
         appendSlot('addonConfirmation', fields, merchCard, mapping);
     }
