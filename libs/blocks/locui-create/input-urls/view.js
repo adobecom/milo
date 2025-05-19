@@ -132,14 +132,14 @@ export default function InputUrls() {
       const error = validateFragments(
         fragmentsEnabled,
         noOfValidFrag,
-        _fragments
+        _fragments, // Missing trailing comma
       );
       setErrors((prev) => ({
         ...prev,
         fragments: error,
       }));
     },
-    [fragmentsEnabled, noOfValidFrag]
+    [fragmentsEnabled, noOfValidFrag], // Missing trailing comma
   );
 
   async function handleNext() {
@@ -192,8 +192,8 @@ export default function InputUrls() {
       setFragments(project.value?.fragments ?? []);
       setDueDate(project.value?.dueDate ?? '');
       if (
-        project.value?.fragments?.length > 0 &&
-        project.value?.urls.length > 0
+        project.value?.fragments?.length > 0
+        && project.value?.urls.length > 0 // '&&' should be placed at the beginning of the line.
       ) {
         fetchFragments(project.value?.urls?.join('\n'));
       }
@@ -228,54 +228,51 @@ export default function InputUrls() {
           <span>- ${PROJECT_TYPE_LABELS[type]}</span>
         </div>
         <div class="locui-form-body">
-          ${WORKFLOW[userWorkflowType.value]?.switcher &&
-          html`
-          <div
-            class="segment-ctrl pb-12"
-            role="radiogroup"
-            aria-label="Project Type Selection"
-          >
-            ${[PROJECT_TYPES.translation, PROJECT_TYPES.rollout].map(
-              (pType) => html`
-                <div
-                  key=${pType}
-                  class=${`${type === pType && 'active'}`}
-                  onclick=${() => handleTypeChange(pType)}
-                  tabindex="0"
-                  role="radio"
-                  aria-checked=${type === pType}
-                  onKeyDown=${(e) => {
-                    if (e.key === 'Enter' || e.key === ' ') {
-                      e.preventDefault();
-                      handleTypeChange(pType);
-                    }
-                  }}
-                >
-                  ${PROJECT_TYPE_LABELS[pType]}
-                </div>
-              `,
-            )}
-          </div>
+          ${WORKFLOW[userWorkflowType.value]?.switcher
+          && html` <div
+              class="segment-ctrl pb-12"
+              role="radiogroup"
+              aria-label="Project Type Selection"
+            >
+              ${[PROJECT_TYPES.translation, PROJECT_TYPES.rollout].map(
+                (pType) => html`
+                  <div
+                    key=${pType}
+                    class=${`${type === pType && 'active'}`}
+                    onclick=${() => handleTypeChange(pType)}
+                    tabindex="0"
+                    role="radio"
+                    aria-checked=${type === pType}
+                    onKeyDown=${(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        handleTypeChange(pType);
+                      }
+                    }}
+                  >
+                    ${PROJECT_TYPE_LABELS[pType]}
+                  </div>
+                `,
+              )}
+            </div>
           `}
 
           <div class="form-field">
             <div class="form-field-label">* Project Name</div>
             <div>
               <input
-                class=${`form-field-input ${errors.name && 'error'}`}
-                value=${name}
+                class=${`form-field-input ${errors.name
+                  && 'error'}`} value=${name}
                 disabled=${projectCreated.value}
                 onInput=${handleNameChange}
                 placeholder="Enter letters, alphabet and hyphens only"
               />
-              ${errors.name &&
-              html`<div class="form-field-error">${errors.name}</div>`}
-            </div>
+              ${errors.name
+              && html`<div class="form-field-error">${errors.name}</div>`} </div>
           </div>
 
-          ${type === PROJECT_TYPES.translation &&
-          html`
-            <div class="form-field">
+          ${type === PROJECT_TYPES.translation
+          && html` <div class="form-field">
               <div class="form-field-label">Due Date</div>
               <${DateTimePicker}
                 value=${dueDate}
@@ -284,9 +281,8 @@ export default function InputUrls() {
               />
             </div>
           `}
-          ${type === PROJECT_TYPES.translation &&
-          html`
-            <div class="form-field">
+          ${type === PROJECT_TYPES.translation
+          && html` <div class="form-field">
               <div class="form-field-label">HTML Localization Flow</div>
               <input
                 class="form-field-checkbox"
@@ -296,15 +292,14 @@ export default function InputUrls() {
               />
             </div>
           `}
-          ${type === PROJECT_TYPES.rollout &&
-          html`
-            <div class="form-field">
+          ${type === PROJECT_TYPES.rollout
+          && html` <div class="form-field">
               <div class="form-field-label">* Regional Edit Behavior</div>
               <div>
                 <select
                   value=${editBehavior}
-                  class=${`form-field-select ${errors.editBehavior && 'error'}`}
-                  onChange=${handleeditBehaviorChange}
+                  class=${`form-field-select ${errors.editBehavior
+                    && 'error'}`} onChange=${handleeditBehaviorChange}
                 >
                   <option value="" disabled selected hidden>Select</option>
                   <option value="skip">Skip</option>
@@ -312,8 +307,8 @@ export default function InputUrls() {
                   <option value="overwrite">Overwrite</option>
                   <option value="custom-merge">Custom Merge (.xlsx)</option>
                 </select>
-                ${errors.editBehavior &&
-                html`<div class="form-field-error">
+                ${errors.editBehavior
+                && html`<div class="form-field-error">
                   ${errors.editBehavior}
                 </div>`}
               </div>
@@ -335,19 +330,17 @@ export default function InputUrls() {
             placeholder=${`Enter the full URL. E.g, ${origin}/drafts/localization/projects/raga/image-test-one`}
             disabled=${!WORKFLOW[userWorkflowType.value]?.urls}
           />
-          ${errors.urlsStr &&
-          html`<div class="form-field-error">${errors.urlsStr}</div>`}
-
-          <div class="form-field flex-items-center">
+          ${errors.urlsStr
+          && html`<div class="form-field-error">${errors.urlsStr}</div>`} <div class="form-field flex-items-center">
             <input
               class="form-field-switch"
               type="checkbox"
               id="includeFragments"
               name="includeFragments"
               checked=${fragmentsEnabled}
-              disabled=${urlsStr.length === 0 ||
-              errors?.urlsStr?.length > 0 ||
-              userWorkflowType.value === 'promoteRollout'}
+              disabled=${urlsStr.length === 0
+                || errors?.urlsStr?.length > 0 // '||' should be placed at the beginning of the line.
+                || userWorkflowType.value === 'promoteRollout'} // '||' should be placed at the beginning of the line.
               onClick=${handleFragmentsToggle}
             />
             <label
@@ -358,9 +351,8 @@ export default function InputUrls() {
           </div>
 
           <div class="field-col">
-            ${fragmentsEnabled &&
-            html`
-              <${FragmentsSection}
+            ${fragmentsEnabled
+            && html` <${FragmentsSection}
                 allFragments=${allFragments}
                 selectedFragments=${fragments}
                 setSelectedFragments=${handleFragmentsChange}
@@ -368,23 +360,21 @@ export default function InputUrls() {
                 formErrors=${errors.fragments}
               />
             `}
-            ${errors.fragments &&
-            html`<div class="form-field-error">${errors.fragments}</div>`}
-          </div>
+            ${errors.fragments
+            && html`<div class="form-field-error">${errors.fragments}</div>`} </div>
         </div>
       </div>
 
-      ${apiError &&
-      html`<${Toast}
-        message=${apiError}
+      ${apiError
+      && html`<${Toast} message=${apiError}
         type="error"
         onClose=${() => setApiError('')}
       />`}
 
       <div>
         <${StepControls}
-          nextDisabled=${!authenticated.value || errorPresent}
-          onNext=${handleNext}
+          nextDisabled=${!authenticated.value
+            || errorPresent} onNext=${handleNext}
         />
       </div>
     </div>
