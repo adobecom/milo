@@ -137,9 +137,9 @@ class KeyboardNavigation {
             }
             case 'Escape': {
               const toggle = document.querySelector('header.new-nav .feds-toggle');
-              if (toggle && toggle === e.target) {
+              if (toggle && toggle === e.target && toggle.getAttribute('aria-expanded') === 'true') {
                 toggle.click();
-                requestAnimationFrame(() => toggle.focus());
+                toggle.focus();
               }
               break;
             }

@@ -54,12 +54,11 @@ class MainNavItem {
           }
           case 'Escape': {
             closeAllDropdowns();
-            if (newNav) {
+            const activePopup = document.querySelector(selectors.activePopup);
+            if (newNav && !activePopup) {
               const toggle = document.querySelector('header.new-nav .feds-toggle');
-              if (toggle) {
-                toggle.click();
-                requestAnimationFrame(() => toggle.focus());
-              }
+              toggle?.click();
+              toggle?.focus();
             }
             break;
           }
