@@ -77,7 +77,7 @@ describe('buildCheckoutUrl', () => {
   it('should set correct parameters for CRM modal type', () => {
     const checkoutData = {
       env: PROVIDER_ENVIRONMENT.PRODUCTION,
-      workflowStep: CheckoutWorkflowStep.CHECKOUT,
+      workflowStep: CheckoutWorkflowStep.SEGMENTATION,
       clientId: 'testClient',
       country: 'US',
       items: [{ quantity: 1 }],
@@ -94,7 +94,7 @@ describe('buildCheckoutUrl', () => {
   it('should set correct parameters for TWP modal type', () => {
     const checkoutData = {
       env: PROVIDER_ENVIRONMENT.PRODUCTION,
-      workflowStep: CheckoutWorkflowStep.CHECKOUT,
+      workflowStep: CheckoutWorkflowStep.SEGMENTATION,
       clientId: 'testClient',
       country: 'US',
       items: [{ quantity: 1 }],
@@ -111,7 +111,7 @@ describe('buildCheckoutUrl', () => {
   it('should set correct parameters for D2P modal type', () => {
     const checkoutData = {
       env: PROVIDER_ENVIRONMENT.PRODUCTION,
-      workflowStep: CheckoutWorkflowStep.CHECKOUT,
+      workflowStep: CheckoutWorkflowStep.SEGMENTATION,
       clientId: 'testClient',
       country: 'US',
       items: [{ quantity: 1 }],
@@ -128,7 +128,7 @@ describe('buildCheckoutUrl', () => {
   it('should set market segment for EDU individual customer', () => {
     const checkoutData = {
       env: PROVIDER_ENVIRONMENT.PRODUCTION,
-      workflowStep: CheckoutWorkflowStep.CHECKOUT,
+      workflowStep: CheckoutWorkflowStep.SEGMENTATION,
       clientId: 'testClient',
       country: 'US',
       items: [{ quantity: 1 }],
@@ -144,7 +144,7 @@ describe('buildCheckoutUrl', () => {
   it('should set customer segment for COM team customer', () => {
     const checkoutData = {
       env: PROVIDER_ENVIRONMENT.PRODUCTION,
-      workflowStep: CheckoutWorkflowStep.CHECKOUT,
+      workflowStep: CheckoutWorkflowStep.SEGMENTATION,
       clientId: 'testClient',
       country: 'US',
       items: [{ quantity: 1 }],
@@ -155,5 +155,190 @@ describe('buildCheckoutUrl', () => {
     const url = buildCheckoutUrl(checkoutData);
     const parsedUrl = new URL(url);
     expect(parsedUrl.searchParams.get('cs')).to.equal('t');
+  });
+
+  it('should handle addon product arrangement code for 3-in-1 modal', () => {
+    const checkoutData = {
+      env: PROVIDER_ENVIRONMENT.PRODUCTION,
+      workflowStep: CheckoutWorkflowStep.SEGMENTATION,
+      clientId: 'testClient',
+      country: 'US',
+      items: [
+        { quantity: 1 },
+        { productArrangementCode: 'ADDON123' }
+      ],
+      modal: 'twp',
+      customerSegment: 'INDIVIDUAL',
+      marketSegment: 'EDU'
+    };
+    const url = buildCheckoutUrl(checkoutData);
+    const parsedUrl = new URL(url);
+    expect(parsedUrl.searchParams.get('ao')).to.equal('ADDON123');
+  });
+  
+  it('should respect mas-ff-3in1 meta tag when off', () => {
+    const meta = document.createElement('meta');
+    meta.name = 'mas-ff-3in1';
+    meta.content = 'off';
+    document.head.appendChild(meta);
+
+    const checkoutData = {
+      env: PROVIDER_ENVIRONMENT.PRODUCTION,
+      workflowStep: CheckoutWorkflowStep.SEGMENTATION,
+      clientId: 'testClient',
+      country: 'US',
+      items: [{ quantity: 1 }],
+      modal: 'twp',
+      customerSegment: 'INDIVIDUAL',
+      marketSegment: 'EDU'
+    };
+    const url = buildCheckoutUrl(checkoutData);
+    const parsedUrl = new URL(url);
+    
+    expect(parsedUrl.searchParams.has('rtc')).to.be.false;
+    expect(parsedUrl.searchParams.has('lo')).to.be.false;
+    
+    document.head.removeChild(meta);
+  });
+
+  it('should not modify clientId if doc_cloud for 3-in-1 modal', () => {
+    const checkoutData = {
+      env: PROVIDER_ENVIRONMENT.PRODUCTION,
+      workflowStep: CheckoutWorkflowStep.SEGMENTATION,
+      clientId: 'doc_cloud',
+      country: 'US',
+      items: [{ quantity: 1 }],
+      modal: 'twp',
+      customerSegment: 'INDIVIDUAL',
+      marketSegment: 'EDU'
+    };
+    const url = buildCheckoutUrl(checkoutData);
+    const parsedUrl = new URL(url);
+    expect(parsedUrl.searchParams.get('cli')).to.equal('doc_cloud');
+  });
+
+  it('should not add 3-in-1 parameters for non-3-in-1 modal types', () => {
+    const checkoutData = {
+      env: PROVIDER_ENVIRONMENT.PRODUCTION,
+      workflowStep: CheckoutWorkflowStep.SEGMENTATION,
+      clientId: 'testClient',
+      country: 'US',
+      items: [{ quantity: 1 }],
+      modal: 'other',
+      customerSegment: 'INDIVIDUAL',
+      marketSegment: 'EDU'
+    };
+    const url = buildCheckoutUrl(checkoutData);
+    const parsedUrl = new URL(url);
+    expect(parsedUrl.searchParams.has('rtc')).to.be.false;
+    expect(parsedUrl.searchParams.has('lo')).to.be.false;
+  });
+
+  it('should handle segmentation workflow step without items', () => {
+    const checkoutData = {
+      env: PROVIDER_ENVIRONMENT.PRODUCTION,
+      workflowStep: CheckoutWorkflowStep.SEGMENTATION,
+      clientId: 'testClient',
+      country: 'US',
+      marketSegment: 'EDU',
+      offerType: 'SUBSCRIPTION',
+      productArrangementCode: 'PAC123'
+    };
+    expect(() => buildCheckoutUrl(checkoutData)).to.not.throw();
+    const url = buildCheckoutUrl(checkoutData);
+    const parsedUrl = new URL(url);
+    expect(parsedUrl.pathname).to.include('/store/segmentation');
+    expect(parsedUrl.searchParams.get('ms')).to.equal('EDU');
+    expect(parsedUrl.searchParams.get('ot')).to.equal('SUBSCRIPTION');
+    expect(parsedUrl.searchParams.get('pa')).to.equal('PAC123');
+  });
+
+  it('should handle quantity parameter for 3-in-1 modal when quantity > 1', () => {
+    const checkoutData = {
+      env: PROVIDER_ENVIRONMENT.PRODUCTION,
+      workflowStep: CheckoutWorkflowStep.SEGMENTATION,
+      clientId: 'testClient',
+      country: 'US',
+      items: [{ quantity: 2 }],
+      modal: 'twp',
+      customerSegment: 'INDIVIDUAL',
+      marketSegment: 'EDU'
+    };
+    const url = buildCheckoutUrl(checkoutData);
+    const parsedUrl = new URL(url);
+    expect(parsedUrl.searchParams.get('q')).to.equal('2');
+  });
+
+  it('should not set quantity parameter when quantity is 1', () => {
+    const checkoutData = {
+      env: PROVIDER_ENVIRONMENT.PRODUCTION,
+      workflowStep: CheckoutWorkflowStep.SEGMENTATION,
+      clientId: 'testClient',
+      country: 'US',
+      items: [{ quantity: 1 }],
+      modal: 'twp',
+      customerSegment: 'INDIVIDUAL',
+      marketSegment: 'EDU'
+    };
+    const url = buildCheckoutUrl(checkoutData);
+    const parsedUrl = new URL(url);
+    expect(parsedUrl.searchParams.has('q')).to.be.false;
+  });
+
+  it('should handle addon product arrangement code when root pa is provided', () => {
+    const checkoutData = {
+      env: PROVIDER_ENVIRONMENT.PRODUCTION,
+      workflowStep: CheckoutWorkflowStep.SEGMENTATION,
+      clientId: 'testClient',
+      country: 'US',
+      productArrangementCode: 'MAIN123',
+      items: [
+        { productArrangementCode: 'MAIN123' },
+        { productArrangementCode: 'ADDON123' }
+      ],
+      modal: 'twp',
+      customerSegment: 'INDIVIDUAL',
+      marketSegment: 'EDU'
+    };
+    const url = buildCheckoutUrl(checkoutData);
+    const parsedUrl = new URL(url);
+    expect(parsedUrl.searchParams.get('pa')).to.equal('MAIN123');
+    expect(parsedUrl.searchParams.get('ao')).to.equal('ADDON123');
+  });
+
+  it('should prioritize manually set cs and ms over marketSegment and customerSegment', () => {
+    const checkoutData = {
+      env: PROVIDER_ENVIRONMENT.PRODUCTION,
+      workflowStep: CheckoutWorkflowStep.SEGMENTATION,
+      clientId: 'testClient',
+      country: 'US',
+      items: [{ quantity: 1 }],
+      modal: 'twp',
+      customerSegment: 'INDIVIDUAL',
+      marketSegment: 'EDU',
+      cs: 'custom_cs',
+      ms: 'custom_ms'
+    };
+    const url = buildCheckoutUrl(checkoutData);
+    const parsedUrl = new URL(url);
+    expect(parsedUrl.searchParams.get('cs')).to.equal('custom_cs');
+    expect(parsedUrl.searchParams.get('ms')).to.equal('custom_ms');
+  });
+
+  it('should remove the ot parameter when it is PROMOTION', () => {
+    const checkoutData = {
+      env: PROVIDER_ENVIRONMENT.PRODUCTION,
+      workflowStep: CheckoutWorkflowStep.SEGMENTATION,
+      clientId: 'testClient',
+      country: 'US',
+      items: [{ quantity: 1 }],
+      modal: 'twp',
+      customerSegment: 'INDIVIDUAL',
+      marketSegment: 'EDU',
+      ot: 'PROMOTION'
+    };
+    const url = buildCheckoutUrl(checkoutData);
+    const parsedUrl = new URL(url);
+    expect(parsedUrl.searchParams.has('ot')).to.be.false;
   });
 });

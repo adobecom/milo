@@ -1069,5 +1069,34 @@
             "language": "MULT",
             "merchant": "ADOBE"
         }
+    ],
+    "QgYu51CVY2wKyFEqMuvec4N1tc1OaCypeKJjT5n2-Fc-mult": [
+        {
+            "offerSelectorIds": ["QgYu51CVY2wKyFEqMuvec4N1tc1OaCypeKJjT5n2-Fc"],
+            "offerId": "04EA56333389C2F1EFD15EB8FCF79E87",
+            "priceDetails": {
+                "price": 12.99,
+                "priceWithoutTax": 12.99,
+                "usePrecision": true,
+                "formatString": "'US$'#,##0.00",
+                "taxDisplay": "TAX_EXCLUSIVE",
+                "taxTerm": "TAX"
+            },
+            "productArrangementCode": "acro_direct_individual",
+            "productArrangement": {
+                "productFamily": "ACROBAT",
+                "productCode": "ACRO"
+            },
+            "buyingProgram": "RETAIL",
+            "commitment": "YEAR",
+            "term": "MONTHLY",
+            "customerSegment": "INDIVIDUAL",
+            "marketSegments": ["COM"],
+            "salesChannel": "DIRECT",
+            "offerType": "BASE",
+            "pricePoint": "REGULAR",
+            "language": "MULT",
+            "merchant": "ADOBE"
+        }
     ]
 }

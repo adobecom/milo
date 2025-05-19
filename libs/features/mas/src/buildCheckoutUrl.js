@@ -120,23 +120,28 @@ export function setItemsParameter(items, parameters) {
 
 /**
  * Adds 3-in-1 parameters to the URL.
- * @param url - URL object
- * @param modal - modal type: 'crm', 'twp', 'd2p'
- * @param checkoutData
+ * @param {URL} url - The URL object to add parameters to
+ * @param {string} modal - The type of modal: 'crm', 'twp', or 'd2p'
+ * @param {Object} checkoutData - Object containing checkout parameters including:
+ *   @param {string} customerSegment - Customer segment value
+ *   @param {string} cs - Custom customer segment override
+ *   @param {string} ms - Custom market segment override  
+ *   @param {string} marketSegment - Market segment value
+ *   @param {string} quantity - Quantity value
+ *   @param {string} productArrangementCode - Product arrangement code
+ *   @param {string} addonProductArrangementCode - Addon product arrangement code
  * @returns URL object
  */
-export function add3in1Parameters(url, modal, checkoutData) {
-  const { customerSegment, marketSegment, cs, ms } = checkoutData;
-  if (!Object.values(MODAL_TYPE_3_IN_1).includes(modal) || !url?.searchParams || !customerSegment || !marketSegment) return url;
+export function add3in1Parameters({ url, modal, customerSegment, cs, ms, marketSegment, quantity, productArrangementCode, addonProductArrangementCode }) {
+  const masFF3in1 = document.querySelector('meta[name=mas-ff-3in1]');
+  if (!Object.values(MODAL_TYPE_3_IN_1).includes(modal) || !url?.searchParams || !customerSegment || !marketSegment || (masFF3in1 && masFF3in1.content === 'off')) return url;
   url.searchParams.set('rtc', 't');
   url.searchParams.set('lo', 'sl');
+  url.searchParams.set('af', 'uc_new_user_iframe,uc_new_system_close');
   if (url.searchParams.get('cli') !== 'doc_cloud') {
     url.searchParams.set('cli', modal === MODAL_TYPE_3_IN_1.CRM ? 'creative' : 'mini_plans');
   }
-  if (modal === MODAL_TYPE_3_IN_1.CRM) {
-    url.searchParams.set('af', 'uc_new_user_iframe,uc_new_system_close');
-  } else if (modal === MODAL_TYPE_3_IN_1.TWP || modal === MODAL_TYPE_3_IN_1.D2P) {
-    url.searchParams.set('af', 'uc_new_user_iframe,uc_new_system_close');
+  if (modal === MODAL_TYPE_3_IN_1.TWP || modal === MODAL_TYPE_3_IN_1.D2P) {
     if (customerSegment === 'INDIVIDUAL' && marketSegment === 'EDU') {
       url.searchParams.set('ms', 'e');
     }
@@ -144,8 +149,13 @@ export function add3in1Parameters(url, modal, checkoutData) {
       url.searchParams.set('cs', 't');
     }
   }
+  if (quantity) url.searchParams.set('q', quantity);
+  if (addonProductArrangementCode) url.searchParams.set('ao', addonProductArrangementCode);
+  if (productArrangementCode) url.searchParams.set('pa', productArrangementCode);
+  // cs and ms are params manually set by authors, they should take precedence over marketSegment and customerSegment
   if (cs) url.searchParams.set('cs', cs);
   if (ms) url.searchParams.set('ms', ms);
+  if (url.searchParams.get('ot') === 'PROMOTION') url.searchParams.delete('ot');
   return url;
 }
 
@@ -166,14 +176,26 @@ export function buildCheckoutUrl(checkoutData) {
   if (workflowStep !== CheckoutWorkflowStep.SEGMENTATION && workflowStep !== CheckoutWorkflowStep.CHANGE_PLAN_TEAM_PLANS) {
     setItemsParameter(items, url.searchParams);
   }
-  if (workflowStep === CheckoutWorkflowStep.SEGMENTATION) {
-    addParameters(segmentationParameters, url.searchParams, ALLOWED_KEYS);
-  }
-  addParameters(rest, url.searchParams, ALLOWED_KEYS);
+  addParameters({ cs, ...rest }, url.searchParams, ALLOWED_KEYS);
   if (landscape === Landscape.DRAFT) {
     addParameters({ af: AF_DRAFT_LANDSCAPE }, url.searchParams, ALLOWED_KEYS);
   }
-  url = add3in1Parameters(url, modal, checkoutData)
+  if (workflowStep === CheckoutWorkflowStep.SEGMENTATION) {
+    addParameters(segmentationParameters, url.searchParams, ALLOWED_KEYS);
+    url = add3in1Parameters({
+      url,
+      modal,
+      customerSegment,
+      marketSegment,
+      cs,
+      ms,
+      quantity: items?.[0]?.quantity > 1 && items?.[0]?.quantity,
+      productArrangementCode,
+      addonProductArrangementCode: productArrangementCode 
+        ? items?.find((item) => item.productArrangementCode !== productArrangementCode)?.productArrangementCode 
+        : items?.[1]?.productArrangementCode,
+    });
+  }
   return url.toString();
 }
 
