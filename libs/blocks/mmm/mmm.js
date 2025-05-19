@@ -705,6 +705,13 @@ function handleMetadataFilterInput(event) {
 }
 
 function createMetadataLookup(el) {
+  const openMetadataSheetBtn = document.querySelector('h2 ~ .cta-container a');
+  const metadataSheetUrls = {
+    cc: 'https://adobe.sharepoint.com/:x:/r/sites/adobecom/_layouts/15/Doc.aspx?sourcedoc=%7B818b8ad2-72db-4726-85a6-5238d6715069%7D&action=edit&activeCell=%27helix-default%27!A16&wdinitialsession=11b36a4d-a08b-0def-1294-1fcf497cfc1a&wdrldsc=4&wdrldc=1&wdrldr=AccessTokenExpiredWarningUnauthenticated%2CRefreshin',
+    dc: 'https://adobe.sharepoint.com/:x:/r/sites/adobecom/_layouts/15/Doc.aspx?sourcedoc=%7B8F5A8CD0-7979-41CE-894A-CC465B293C1A%7D&file=metadata-optimization.xlsx&action=default&mobileredirect=true&wdsle=0',
+    express: 'https://adobe.sharepoint.com/:x:/r/sites/adobecom/_layouts/15/Doc.aspx?sourcedoc=%7BEC96D2B9-9F25-48AF-B88A-A6926A340D3A%7D&file=metadata-optimization.xlsx&action=default&mobileredirect=true',
+    bacom: 'https://adobe.sharepoint.com/:x:/r/sites/adobecom/_layouts/15/Doc.aspx?sourcedoc=%7BEE70634D-C16E-45E7-B16E-718C5022413E%7D&file=metadata-optimization.xlsx&action=default&mobileredirect=true&wdsle=0',
+  };
   const dropdown = {
     id: 'mmm-metadata-lookup-repo-cc',
     label: 'Choose Repo',
@@ -715,7 +722,6 @@ function createMetadataLookup(el) {
       express: 'Express',
       bacom: 'BACOM',
     },
-
   };
 
   const search = createTag('div', { class: 'mmm-metadata-lookup' }, `
@@ -737,6 +743,9 @@ function createMetadataLookup(el) {
     <button id="mmm-copy-metadata-report" class="mmm-metadata-lookup__button primary mmm-hide" style="align-self: center">Copy Report</button>
   `);
   el.append(search);
+  // Edit REP button label and URL
+  openMetadataSheetBtn.innerHTML = `Open ${dropdown.options[dropdown.selected]} Spreadsheet`;
+  openMetadataSheetBtn.href = metadataSheetUrls[dropdown.selected];
 
   // Handle REPO change
   // eslint-disable-next-line no-use-before-define
