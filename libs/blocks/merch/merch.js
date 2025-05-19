@@ -845,6 +845,7 @@ export async function buildCta(el, params) {
     });
   }
 
+  // @see https://jira.corp.adobe.com/browse/MWPW-173470
   cta.onceSettled().then(() => {
     if (getConfig().locale.prefix === '/kr' && cta.value[0].offerType === OFFER_TYPE_TRIAL) cta.remove();
   });
