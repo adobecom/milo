@@ -13,8 +13,10 @@ class MainNavItem {
   }
 
   addEventListeners() {
-    document.querySelector(selectors.globalNav)
+    document.querySelector(selectors.globalNavTag)
       .addEventListener('keydown', (e) => logErrorFor(() => {
+        if (!e.target.closest(selectors.globalNav)) return;
+
         if (!e.target.closest(selectors.fedsNav) || e.target.closest(selectors.popup)) {
           return;
         }
