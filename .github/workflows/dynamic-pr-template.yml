@@ -1,7 +1,7 @@
 name: Dynamic PR Template
 
 on:
-  pull_request:
+  pull_request_target:
     types: [opened, synchronize, reopened]
 
 # Add permissions block
