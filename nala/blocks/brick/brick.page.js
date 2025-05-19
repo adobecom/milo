@@ -125,6 +125,14 @@ export default class Brick {
           height: '150',
         },
       },
+      'brick.fill.icon': {
+        iconImg: {
+          loading: 'eager',
+          width: '154',
+          height: '150',
+          fetchpriority: 'high',
+        },
+      },
       'brick.media': {
         img: {
           loading: 'lazy',
@@ -301,16 +309,13 @@ export default class Brick {
     const navigationPromise = this.page.waitForNavigation({ timeout: 30000, waitUntil: 'load' });
 
     await this.brickClickable.click();
-
     const result = await Promise.race([newTabPromise, navigationPromise]);
-
     if (result instanceof this.page.constructor) {
       await result.waitForLoadState('load');
       const newUrl = result.url();
       console.log(`New URL from new tab: ${newUrl}`);
       return newUrl;
     }
-
     const currentUrl = this.page.url();
     console.log(`New URL from current tab: ${currentUrl}`);
     return currentUrl;

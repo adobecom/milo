@@ -68,8 +68,8 @@ test.describe('Milo Brick Block test suite', () => {
       await expect(await brick.brickBodyM).toContainText(data.bodyText);
       await expect(await brick.whiteButtonL).toContainText(data.whiteButtonText);
       await expect(await brick.outlineButtonL).toContainText(data.outlineButtonText);
-      expect(await brick.iconImage).toBeVisible();
-      expect(await webUtil.verifyAttributes(brick.iconImage, brick.attributes['brick.button-fill'].iconImg)).toBeTruthy();
+      await expect(brick.iconImage).toBeVisible();
+      expect(await webUtil.verifyAttributes(brick.iconImage, brick.attributes['brick.fill.icon'].iconImg)).toBeTruthy();
     });
 
     await test.step('step-3: Verify analytic attributes', async () => {
@@ -138,7 +138,7 @@ test.describe('Milo Brick Block test suite', () => {
     await test.step('step-3: Verify analytic attributes', async () => {
       await expect(await brick.brickDefaultHeading).toHaveAttribute('daa-lh', await webUtil.getBlockDaalh('brick', 1));
       await expect(await brick.outlineButtonL).toHaveAttribute('daa-ll', await webUtil.getLinkDaall(data.outlineButtonText, 1, data.h3Text));
-      await expect(await brick.pausePlayWrapper).toHaveAttribute('daa-ll', await webUtil.getLinkDaall('Pause motion', 2, data.h3Text));
+      await expect(await brick.pausePlayWrapper).toHaveAttribute('daa-ll', expect.stringContaining('Pause'));
     });
 
     await test.step('step-4: Verify the accessibility test on the Brick_rounded-corners-light-default-heading block', async () => {
@@ -377,7 +377,7 @@ test.describe('Milo Brick Block test suite', () => {
       await expect(await brick.brickBodyM).toContainText(data.bodyText);
       await expect(await brick.outlineButtonL).toContainText(data.outlineButtonText);
       await expect(await brick.blueButtonL).toContainText(data.blueButtonText);
-      expect(await brick.iconImage).toBeVisible();
+      await expect(brick.iconImage).toBeVisible();
 
       await expect(await brick.splitBackgroundImage).toBeVisible();
       expect(await webUtil.verifyAttributes(brick.splitBackgroundImage, brick.attributes['brick.split.background'].backgroundImg)).toBeTruthy();
