@@ -132,14 +132,14 @@ export default function InputUrls() {
       const error = validateFragments(
         fragmentsEnabled,
         noOfValidFrag,
-        _fragments, // Missing trailing comma
+        _fragments,
       );
       setErrors((prev) => ({
         ...prev,
         fragments: error,
       }));
     },
-    [fragmentsEnabled, noOfValidFrag], // Missing trailing comma
+    [fragmentsEnabled, noOfValidFrag],
   );
 
   async function handleNext() {
@@ -193,7 +193,7 @@ export default function InputUrls() {
       setDueDate(project.value?.dueDate ?? '');
       if (
         project.value?.fragments?.length > 0
-        && project.value?.urls.length > 0 // '&&' should be placed at the beginning of the line.
+        && project.value?.urls.length > 0
       ) {
         fetchFragments(project.value?.urls?.join('\n'));
       }
@@ -229,7 +229,8 @@ export default function InputUrls() {
         </div>
         <div class="locui-form-body">
           ${WORKFLOW[userWorkflowType.value]?.switcher
-          && html` <div
+            && html`
+            <div
               class="segment-ctrl pb-12"
               role="radiogroup"
               aria-label="Project Type Selection"
@@ -261,18 +262,20 @@ export default function InputUrls() {
             <div class="form-field-label">* Project Name</div>
             <div>
               <input
-                class=${`form-field-input ${errors.name
-                  && 'error'}`} value=${name}
+                class=${`form-field-input ${errors.name && 'error'}`}
+                value=${name}
                 disabled=${projectCreated.value}
                 onInput=${handleNameChange}
                 placeholder="Enter letters, alphabet and hyphens only"
               />
               ${errors.name
-              && html`<div class="form-field-error">${errors.name}</div>`} </div>
+                && html`<div class="form-field-error">${errors.name}</div>`}
+            </div>
           </div>
 
           ${type === PROJECT_TYPES.translation
-          && html` <div class="form-field">
+            && html`
+            <div class="form-field">
               <div class="form-field-label">Due Date</div>
               <${DateTimePicker}
                 value=${dueDate}
@@ -282,7 +285,8 @@ export default function InputUrls() {
             </div>
           `}
           ${type === PROJECT_TYPES.translation
-          && html` <div class="form-field">
+            && html`
+            <div class="form-field">
               <div class="form-field-label">HTML Localization Flow</div>
               <input
                 class="form-field-checkbox"
@@ -293,13 +297,14 @@ export default function InputUrls() {
             </div>
           `}
           ${type === PROJECT_TYPES.rollout
-          && html` <div class="form-field">
+            && html`
+            <div class="form-field">
               <div class="form-field-label">* Regional Edit Behavior</div>
               <div>
                 <select
                   value=${editBehavior}
-                  class=${`form-field-select ${errors.editBehavior
-                    && 'error'}`} onChange=${handleeditBehaviorChange}
+                  class=${`form-field-select ${errors.editBehavior && 'error'}`}
+                  onChange=${handleeditBehaviorChange}
                 >
                   <option value="" disabled selected hidden>Select</option>
                   <option value="skip">Skip</option>
@@ -308,7 +313,7 @@ export default function InputUrls() {
                   <option value="custom-merge">Custom Merge (.xlsx)</option>
                 </select>
                 ${errors.editBehavior
-                && html`<div class="form-field-error">
+                  && html`<div class="form-field-error">
                   ${errors.editBehavior}
                 </div>`}
               </div>
@@ -331,7 +336,9 @@ export default function InputUrls() {
             disabled=${!WORKFLOW[userWorkflowType.value]?.urls}
           />
           ${errors.urlsStr
-          && html`<div class="form-field-error">${errors.urlsStr}</div>`} <div class="form-field flex-items-center">
+            && html`<div class="form-field-error">${errors.urlsStr}</div>`}
+
+          <div class="form-field flex-items-center">
             <input
               class="form-field-switch"
               type="checkbox"
@@ -339,8 +346,8 @@ export default function InputUrls() {
               name="includeFragments"
               checked=${fragmentsEnabled}
               disabled=${urlsStr.length === 0
-                || errors?.urlsStr?.length > 0 // '||' should be placed at the beginning of the line.
-                || userWorkflowType.value === 'promoteRollout'} // '||' should be placed at the beginning of the line.
+                || errors?.urlsStr?.length > 0
+                || userWorkflowType.value === 'promoteRollout'}
               onClick=${handleFragmentsToggle}
             />
             <label
@@ -352,7 +359,8 @@ export default function InputUrls() {
 
           <div class="field-col">
             ${fragmentsEnabled
-            && html` <${FragmentsSection}
+              && html`
+              <${FragmentsSection}
                 allFragments=${allFragments}
                 selectedFragments=${fragments}
                 setSelectedFragments=${handleFragmentsChange}
@@ -361,20 +369,22 @@ export default function InputUrls() {
               />
             `}
             ${errors.fragments
-            && html`<div class="form-field-error">${errors.fragments}</div>`} </div>
+              && html`<div class="form-field-error">${errors.fragments}</div>`}
+          </div>
         </div>
       </div>
 
       ${apiError
-      && html`<${Toast} message=${apiError}
-        type="error"
-        onClose=${() => setApiError('')}
-      />`}
+        && html`<${Toast}
+          message=${apiError}
+          type="error"
+          onClose=${() => setApiError('')}
+        />`}
 
       <div>
         <${StepControls}
-          nextDisabled=${!authenticated.value
-            || errorPresent} onNext=${handleNext}
+          nextDisabled=${!authenticated.value || errorPresent}
+          onNext=${handleNext}
         />
       </div>
     </div>
