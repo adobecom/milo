@@ -1044,9 +1044,7 @@ export async function getManifestConfig(info = {}, variantOverride = false) {
       const index = infoKeyMap[key].indexOf(infoObj[key]);
       executionOrder[key] = index > -1 ? index : 1;
     });
-    manifestConfig.executionOrder = source?.[0] === 'pzn-roc'
-      ? '2-0'
-      : `${executionOrder['manifest-execution-order']}-${executionOrder['manifest-type']}`;
+    manifestConfig.executionOrder = `${executionOrder['manifest-execution-order']}-${executionOrder['manifest-type']}`;
   } else {
     // eslint-disable-next-line prefer-destructuring
     manifestConfig.manifestType = infoKeyMap['manifest-type'][1];
@@ -1259,9 +1257,9 @@ function createManifests(manifestString, source) {
 
 export const combineMepSources = async (
   persEnabled,
+  rocPersEnabled,
   promoEnabled,
   mepParam,
-  rocPersEnabled = null,
 ) => {
   let persManifests = [];
 
@@ -1460,7 +1458,7 @@ export async function init(enablements = {}) {
       targetInteractionPromise,
     };
 
-    manifests = manifests.concat(await combineMepSources(pzn, promo, mepParam, pznroc));
+    manifests = manifests.concat(await combineMepSources(pzn, pznroc, promo, mepParam));
     manifests?.forEach((manifest) => {
       if (manifest.disabled) return;
       const normalizedURL = normalizePath(manifest.manifestPath);
