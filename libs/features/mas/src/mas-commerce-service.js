@@ -9,6 +9,7 @@ import { Price } from './price.js';
 import { getSettings } from './settings.js';
 import { Wcs } from './wcs.js';
 import { updateConfig as updateLanaConfig } from './lana.js';
+import { roundMeasure } from './utils.js';
 
 export const TAG_NAME_SERVICE = 'mas-commerce-service';
 
@@ -144,10 +145,8 @@ export class MasCommerceService extends HTMLElement {
             detail: this,
         });
         performance.mark(MARK_READY);
-        this.#initDuration = performance.measure(
-            MEASURE_INIT_TIME,
-            MARK_START,
-            MARK_READY,
+        this.#initDuration = roundMeasure(
+            performance.measure(MEASURE_INIT_TIME, MARK_START, MARK_READY),
         )?.duration;
         this.dispatchEvent(event);
         setTimeout(() => {
