@@ -1316,7 +1316,6 @@ class Gnav {
             toggleMenu: this.toggleMenuMobile,
           });
           if (popup.closest('section.feds-dropdown--active')) makeTabActive(popup);
-
         }).finally(() => {
           if (this.isLocalNav()) {
             decorateLocalNavItems(item, template);
@@ -1359,7 +1358,7 @@ class Gnav {
       }, 'Decorate dropdown failed', 'gnav', 'i');
 
       template.addEventListener('click', decorateDropdown);
-      const newMobileNavActive = this.newMobileNav & !isDesktop.matches;
+      const newMobileNavActive = this.newMobileNav && !isDesktop.matches;
       if (itemType === 'asyncDropdownTrigger' && (newMobileNavActive || isDesktop.matches)) {
         const loadingMegaMenu = loaderMegaMenu();
         loadingMegaMenu.style.visibility = 'hidden';
