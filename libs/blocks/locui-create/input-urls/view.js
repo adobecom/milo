@@ -132,14 +132,14 @@ export default function InputUrls() {
       const error = validateFragments(
         fragmentsEnabled,
         noOfValidFrag,
-        _fragments,
+        _fragments
       );
       setErrors((prev) => ({
         ...prev,
         fragments: error,
       }));
     },
-    [fragmentsEnabled, noOfValidFrag],
+    [fragmentsEnabled, noOfValidFrag]
   );
 
   async function handleNext() {
@@ -192,8 +192,8 @@ export default function InputUrls() {
       setFragments(project.value?.fragments ?? []);
       setDueDate(project.value?.dueDate ?? '');
       if (
-        project.value?.fragments?.length > 0
-        && project.value?.urls.length > 0
+        project.value?.fragments?.length > 0 &&
+        project.value?.urls.length > 0
       ) {
         fetchFragments(project.value?.urls?.join('\n'));
       }
@@ -228,34 +228,34 @@ export default function InputUrls() {
           <span>- ${PROJECT_TYPE_LABELS[type]}</span>
         </div>
         <div class="locui-form-body">
-          ${WORKFLOW[userWorkflowType.value]?.switcher
-          && html`
-            <div
-              class="segment-ctrl pb-12"
-              role="radiogroup"
-              aria-label="Project Type Selection"
-            >
-              ${[PROJECT_TYPES.translation, PROJECT_TYPES.rollout].map(
-                (pType) => html`
-                  <div
-                    key=${pType}
-                    class=${`${type === pType && 'active'}`}
-                    onclick=${() => handleTypeChange(pType)}
-                    tabindex="0"
-                    role="radio"
-                    aria-checked=${type === pType}
-                    onKeyDown=${(e) => {
-                      if (e.key === 'Enter' || e.key === ' ') {
-                        e.preventDefault();
-                        handleTypeChange(pType);
-                      }
-                    }}
-                  >
-                    ${PROJECT_TYPE_LABELS[pType]}
-                  </div>
-                `
-              )}
-            </div>
+          ${WORKFLOW[userWorkflowType.value]?.switcher &&
+          html`
+          <div
+            class="segment-ctrl pb-12"
+            role="radiogroup"
+            aria-label="Project Type Selection"
+          >
+            ${[PROJECT_TYPES.translation, PROJECT_TYPES.rollout].map(
+              (pType) => html`
+                <div
+                  key=${pType}
+                  class=${`${type === pType && 'active'}`}
+                  onclick=${() => handleTypeChange(pType)}
+                  tabindex="0"
+                  role="radio"
+                  aria-checked=${type === pType}
+                  onKeyDown=${(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      handleTypeChange(pType);
+                    }
+                  }}
+                >
+                  ${PROJECT_TYPE_LABELS[pType]}
+                </div>
+              `,
+            )}
+          </div>
           `}
 
           <div class="form-field">
@@ -268,13 +268,13 @@ export default function InputUrls() {
                 onInput=${handleNameChange}
                 placeholder="Enter letters, alphabet and hyphens only"
               />
-              ${errors.name
-              && html`<div class="form-field-error">${errors.name}</div>`}
+              ${errors.name &&
+              html`<div class="form-field-error">${errors.name}</div>`}
             </div>
           </div>
 
-          ${type === PROJECT_TYPES.translation
-          && html`
+          ${type === PROJECT_TYPES.translation &&
+          html`
             <div class="form-field">
               <div class="form-field-label">Due Date</div>
               <${DateTimePicker}
@@ -284,8 +284,8 @@ export default function InputUrls() {
               />
             </div>
           `}
-          ${type === PROJECT_TYPES.translation
-          && html`
+          ${type === PROJECT_TYPES.translation &&
+          html`
             <div class="form-field">
               <div class="form-field-label">HTML Localization Flow</div>
               <input
@@ -296,8 +296,8 @@ export default function InputUrls() {
               />
             </div>
           `}
-          ${type === PROJECT_TYPES.rollout
-          && html`
+          ${type === PROJECT_TYPES.rollout &&
+          html`
             <div class="form-field">
               <div class="form-field-label">* Regional Edit Behavior</div>
               <div>
@@ -312,8 +312,8 @@ export default function InputUrls() {
                   <option value="overwrite">Overwrite</option>
                   <option value="custom-merge">Custom Merge (.xlsx)</option>
                 </select>
-                ${errors.editBehavior
-                && html`<div class="form-field-error">
+                ${errors.editBehavior &&
+                html`<div class="form-field-error">
                   ${errors.editBehavior}
                 </div>`}
               </div>
@@ -335,8 +335,8 @@ export default function InputUrls() {
             placeholder=${`Enter the full URL. E.g, ${origin}/drafts/localization/projects/raga/image-test-one`}
             disabled=${!WORKFLOW[userWorkflowType.value]?.urls}
           />
-          ${errors.urlsStr
-          && html`<div class="form-field-error">${errors.urlsStr}</div>`}
+          ${errors.urlsStr &&
+          html`<div class="form-field-error">${errors.urlsStr}</div>`}
 
           <div class="form-field flex-items-center">
             <input
@@ -345,9 +345,9 @@ export default function InputUrls() {
               id="includeFragments"
               name="includeFragments"
               checked=${fragmentsEnabled}
-              disabled=${urlsStr.length === 0
-              || errors?.urlsStr?.length > 0
-              || userWorkflowType.value === 'promoteRollout'}
+              disabled=${urlsStr.length === 0 ||
+              errors?.urlsStr?.length > 0 ||
+              userWorkflowType.value === 'promoteRollout'}
               onClick=${handleFragmentsToggle}
             />
             <label
@@ -358,8 +358,8 @@ export default function InputUrls() {
           </div>
 
           <div class="field-col">
-            ${fragmentsEnabled
-            && html`
+            ${fragmentsEnabled &&
+            html`
               <${FragmentsSection}
                 allFragments=${allFragments}
                 selectedFragments=${fragments}
@@ -368,14 +368,14 @@ export default function InputUrls() {
                 formErrors=${errors.fragments}
               />
             `}
-            ${errors.fragments
-            && html`<div class="form-field-error">${errors.fragments}</div>`}
+            ${errors.fragments &&
+            html`<div class="form-field-error">${errors.fragments}</div>`}
           </div>
         </div>
       </div>
 
-      ${apiError
-      && html`<${Toast}
+      ${apiError &&
+      html`<${Toast}
         message=${apiError}
         type="error"
         onClose=${() => setApiError('')}
