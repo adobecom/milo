@@ -1,8 +1,8 @@
 import { expect, test } from '@playwright/test';
-import WebUtil from '../../libs/webutil';
-import Brick from './brick.page';
-import { features } from './brick.spec';
-import { runAccessibilityTest } from '../../libs/accessibility';
+import WebUtil from '../../libs/webutil.js';
+import Brick from './brick.page.js';
+import { features } from './brick.spec.js';
+import { runAccessibilityTest } from '../../libs/accessibility.js';
 
 let webUtil;
 let brick;
@@ -15,7 +15,7 @@ test.describe('Milo Brick Block test suite', () => {
     brick = new Brick(page);
   });
 
-  test(`[Test Id - ${features[0].tcid}] ${features[0].name},${features[0].tags}`, async ({ page, baseURL,}) => {
+  test(`[Test Id - ${features[0].tcid}] ${features[0].name},${features[0].tags}`, async ({ page, baseURL }) => {
     console.info(`[Test Page]: ${baseURL}${features[0].path}${miloLibs}`);
     const { data } = features[0];
 
@@ -33,17 +33,17 @@ test.describe('Milo Brick Block test suite', () => {
       await expect(await brick.outlineButtonL).toContainText(data.outlineButtonText);
       await expect(await brick.blueButtonL).toContainText(data.blueButtonText);
 
-      expect(await webUtil.verifyAttributes(brick.iconImage,brick.attributes['brick.icon.area'].iconImg)).toBeTruthy();
-      expect(await webUtil.verifyAttributes(brick.backgroundMobile,brick.attributes['brick.background.mobile'].backgroundImg)).toBeTruthy();
-      expect(await webUtil.verifyAttributes(brick.backgroundTablet,brick.attributes['brick.background.tablet'].backgroundImg)).toBeTruthy();
-      expect(await webUtil.verifyAttributes(brick.backgroundDesktop,brick.attributes['brick.background.desktop'].backgroundImg)).toBeTruthy();
-      expect(await webUtil.verifyAttributes(brick.brickMediaImg,brick.attributes['brick.media'].img)).toBeTruthy();
+      expect(await webUtil.verifyAttributes(brick.iconImage, brick.attributes['brick.icon.area'].iconImg)).toBeTruthy();
+      expect(await webUtil.verifyAttributes(brick.backgroundMobile, brick.attributes['brick.background.mobile'].backgroundImg)).toBeTruthy();
+      expect(await webUtil.verifyAttributes(brick.backgroundTablet, brick.attributes['brick.background.tablet'].backgroundImg)).toBeTruthy();
+      expect(await webUtil.verifyAttributes(brick.backgroundDesktop, brick.attributes['brick.background.desktop'].backgroundImg)).toBeTruthy();
+      expect(await webUtil.verifyAttributes(brick.brickMediaImg, brick.attributes['brick.media'].img)).toBeTruthy();
     });
 
     await test.step('step-3: Verify analytic attributes', async () => {
-      await expect(await brick.brick).toHaveAttribute('daa-lh',await webUtil.getBlockDaalh('brick', 1));
-      await expect(await brick.outlineButtonL).toHaveAttribute('daa-ll',await webUtil.getLinkDaall(data.outlineButtonText, 1, data.h3Text));
-      await expect(await brick.blueButtonL).toHaveAttribute('daa-ll',await webUtil.getLinkDaall(data.blueButtonText, 2, data.h3Text));
+      await expect(await brick.brick).toHaveAttribute('daa-lh', await webUtil.getBlockDaalh('brick', 1));
+      await expect(await brick.outlineButtonL).toHaveAttribute('daa-ll', await webUtil.getLinkDaall(data.outlineButtonText, 1, data.h3Text));
+      await expect(await brick.blueButtonL).toHaveAttribute('daa-ll', await webUtil.getLinkDaall(data.blueButtonText, 2, data.h3Text));
     });
 
     await test.step('step-4: Verify the accessibility test on the Brick block', async () => {
@@ -51,7 +51,7 @@ test.describe('Milo Brick Block test suite', () => {
     });
   });
 
-  test(`[Test Id - ${features[1].tcid}] ${features[1].name},${features[1].tags}`, async ({page,baseURL}) => {
+  test(`[Test Id - ${features[1].tcid}] ${features[1].name},${features[1].tags}`, async ({ page, baseURL }) => {
     console.info(`[Test Page]: ${baseURL}${features[1].path}${miloLibs}`);
     const { data } = features[1];
 
@@ -69,13 +69,13 @@ test.describe('Milo Brick Block test suite', () => {
       await expect(await brick.whiteButtonL).toContainText(data.whiteButtonText);
       await expect(await brick.outlineButtonL).toContainText(data.outlineButtonText);
       expect(await brick.iconImage).toBeVisible();
-      expect(await webUtil.verifyAttributes(brick.iconImage,brick.attributes['brick.button-fill'].iconImg)).toBeTruthy();
+      expect(await webUtil.verifyAttributes(brick.iconImage, brick.attributes['brick.button-fill'].iconImg)).toBeTruthy();
     });
 
     await test.step('step-3: Verify analytic attributes', async () => {
-      await expect(await brick.brickButtonFill).toHaveAttribute('daa-lh',await webUtil.getBlockDaalh('brick', 1));
-      await expect(await brick.whiteButtonL).toHaveAttribute('daa-ll',await webUtil.getLinkDaall(data.whiteButtonText, 1, data.h2Text));
-      await expect(await brick.outlineButtonL).toHaveAttribute('daa-ll',await webUtil.getLinkDaall(data.outlineButtonText, 2, data.h2Text));
+      await expect(await brick.brickButtonFill).toHaveAttribute('daa-lh', await webUtil.getBlockDaalh('brick', 1));
+      await expect(await brick.whiteButtonL).toHaveAttribute('daa-ll', await webUtil.getLinkDaall(data.whiteButtonText, 1, data.h2Text));
+      await expect(await brick.outlineButtonL).toHaveAttribute('daa-ll', await webUtil.getLinkDaall(data.outlineButtonText, 2, data.h2Text));
     });
 
     await test.step('step-4: Verify the accessibility test on the Brick_rounded-corners-l-heading-button-fill block', async () => {
@@ -83,7 +83,7 @@ test.describe('Milo Brick Block test suite', () => {
     });
   });
 
-  test(`[Test Id - ${features[2].tcid}] ${features[2].name},${features[2].tags}`, async ({page,baseURL,}) => {
+  test(`[Test Id - ${features[2].tcid}] ${features[2].name},${features[2].tags}`, async ({ page, baseURL }) => {
     console.info(`[Test Page]: ${baseURL}${features[2].path}${miloLibs}`);
     const { data } = features[2];
 
@@ -96,6 +96,7 @@ test.describe('Milo Brick Block test suite', () => {
     await test.step('step-2: Verify Brick_rounded-corners-clickable specs', async () => {
       await expect(brick.brickClickable).toBeVisible();
 
+      await brick.closeGeoroutingWrapper();
       await expect(await brick.headingL).toContainText(data.h1Text);
       await expect(await brick.brickBodyM).toContainText(data.bodyText);
       await expect(await brick.outlineButtonL).toContainText(data.outlineButtonText);
@@ -111,7 +112,7 @@ test.describe('Milo Brick Block test suite', () => {
     });
   });
 
-  test(`[Test Id - ${features[3].tcid}] ${features[3].name},${features[3].tags}`, async ({page,baseURL,}) => {
+  test(`[Test Id - ${features[3].tcid}] ${features[3].name},${features[3].tags}`, async ({ page, baseURL }) => {
     console.info(`[Test Page]: ${baseURL}${features[3].path}${miloLibs}`);
     const { data } = features[3];
 
@@ -135,18 +136,17 @@ test.describe('Milo Brick Block test suite', () => {
     });
 
     await test.step('step-3: Verify analytic attributes', async () => {
-      await expect(await brick.brickDefaultHeading).toHaveAttribute('daa-lh',await webUtil.getBlockDaalh('brick', 1));
-      await expect(await brick.outlineButtonL).toHaveAttribute('daa-ll',await webUtil.getLinkDaall(data.outlineButtonText, 1, data.h3Text));
-      await expect(await brick.pausePlayWrapper).toHaveAttribute('daa-ll',await webUtil.getLinkDaall('Pause motion', 2, data.h3Text)
-      );
+      await expect(await brick.brickDefaultHeading).toHaveAttribute('daa-lh', await webUtil.getBlockDaalh('brick', 1));
+      await expect(await brick.outlineButtonL).toHaveAttribute('daa-ll', await webUtil.getLinkDaall(data.outlineButtonText, 1, data.h3Text));
+      await expect(await brick.pausePlayWrapper).toHaveAttribute('daa-ll', await webUtil.getLinkDaall('Pause motion', 2, data.h3Text));
     });
 
     await test.step('step-4: Verify the accessibility test on the Brick_rounded-corners-light-default-heading block', async () => {
-      await runAccessibilityTest({page,testScope: brick.brickDefaultHeading,});
+      await runAccessibilityTest({ page, testScope: brick.brickDefaultHeading });
     });
   });
 
-  test(`[Test Id - ${features[4].tcid}] ${features[4].name},${features[4].tags}`, async ({page,baseURL}) => {
+  test(`[Test Id - ${features[4].tcid}] ${features[4].name},${features[4].tags}`, async ({ page, baseURL }) => {
     console.info(`[Test Page]: ${baseURL}${features[4].path}${miloLibs}`);
     const { data } = features[4];
 
@@ -165,18 +165,19 @@ test.describe('Milo Brick Block test suite', () => {
       await expect(await brick.brickBodyM).toContainText(data.brickTextBodyM);
 
       const borderRadius = await brick.brickHeadingS.evaluate(
-        (el) => getComputedStyle(el).borderRadius);
+        (el) => getComputedStyle(el).borderRadius,
+      );
       expect(borderRadius).toBe(
-        brick.attributes['brick.headingS'].blockStyle.borderRadius
+        brick.attributes['brick.headingS'].blockStyle.borderRadius,
       );
 
       await expect(await brick.sectionBackgroundImage).toBeVisible();
-      expect(await webUtil.verifyAttributes(brick.sectionBackgroundImage,brick.attributes['section.headingS'].backgroundImg)).toBeTruthy();
+      expect(await webUtil.verifyAttributes(brick.sectionBackgroundImage, brick.attributes['section.headingS'].backgroundImg)).toBeTruthy();
     });
 
     await test.step('step-3: Verify analytic attributes', async () => {
       await expect(brick.sectionXXLspacing).toHaveAttribute('daa-lh', 's1');
-      await expect(await brick.brickHeadingS).toHaveAttribute('daa-lh',await webUtil.getBlockDaalh('brick', 2));
+      await expect(await brick.brickHeadingS).toHaveAttribute('daa-lh', await webUtil.getBlockDaalh('brick', 2));
     });
 
     await test.step('step-4: Verify the accessibility test on the Brick_rounded-corners-light-s-heading block', async () => {
@@ -184,7 +185,7 @@ test.describe('Milo Brick Block test suite', () => {
     });
   });
 
-  test(`[Test Id - ${features[5].tcid}] ${features[5].name},${features[5].tags}`, async ({page,baseURL,}) => {
+  test(`[Test Id - ${features[5].tcid}] ${features[5].name},${features[5].tags}`, async ({ page, baseURL }) => {
     console.info(`[Test Page]: ${baseURL}${features[5].path}${miloLibs}`);
     const { data } = features[5];
 
@@ -200,18 +201,19 @@ test.describe('Milo Brick Block test suite', () => {
       await expect(await brick.headingM).toContainText(data.h2Text);
       await expect(await brick.outlineButtonL).toContainText(data.outlineButtonText);
       await expect(await brick.backgroundImage).toBeVisible();
-      expect(await webUtil.verifyAttributes(brick.backgroundImage,brick.attributes['brick.headingM'].backgroundImg)).toBeTruthy();
+      expect(await webUtil.verifyAttributes(brick.backgroundImage, brick.attributes['brick.headingM'].backgroundImg)).toBeTruthy();
 
       const borderRadius = await brick.brickHeadingM.evaluate(
-        (el) => getComputedStyle(el).borderRadius);
+        (el) => getComputedStyle(el).borderRadius,
+      );
       expect(borderRadius).toBe(
-        brick.attributes['brick.headingM'].blockStyle.borderRadius
+        brick.attributes['brick.headingM'].blockStyle.borderRadius,
       );
     });
 
     await test.step('step-3: Verify analytic attributes', async () => {
-      await expect(await brick.brickHeadingM).toHaveAttribute('daa-lh',await webUtil.getBlockDaalh('brick', 1));
-      await expect(await brick.outlineButtonL).toHaveAttribute('daa-ll',await webUtil.getLinkDaall(data.outlineButtonText, 1, data.h2Text));
+      await expect(await brick.brickHeadingM).toHaveAttribute('daa-lh', await webUtil.getBlockDaalh('brick', 1));
+      await expect(await brick.outlineButtonL).toHaveAttribute('daa-ll', await webUtil.getLinkDaall(data.outlineButtonText, 1, data.h2Text));
     });
 
     await test.step('step-4: Verify the accessibility test on the Brick_rounded-corners-light-default-heading block', async () => {
@@ -219,7 +221,7 @@ test.describe('Milo Brick Block test suite', () => {
     });
   });
 
-  test(`[Test Id - ${features[6].tcid}] ${features[6].name},${features[6].tags}`, async ({page,baseURL}) => {
+  test(`[Test Id - ${features[6].tcid}] ${features[6].name},${features[6].tags}`, async ({ page, baseURL }) => {
     console.info(`[Test Page]: ${baseURL}${features[6].path}${miloLibs}`);
     const { data } = features[6];
 
@@ -235,14 +237,15 @@ test.describe('Milo Brick Block test suite', () => {
       await expect(await brick.headingL).toContainText(data.h2Text);
       await expect(await brick.outlineButtonL).toContainText(data.outlineButtonText);
       await expect(await brick.backgroundImage).toBeVisible();
-      expect(await webUtil.verifyAttributes(brick.backgroundImage,brick.attributes['brick.headingL'].backgroundImg)).toBeTruthy();
+      expect(await webUtil.verifyAttributes(brick.backgroundImage, brick.attributes['brick.headingL'].backgroundImg)).toBeTruthy();
       const borderRadius = await brick.brickHeadingL.evaluate(
-        (el) => getComputedStyle(el).borderRadius);
+        (el) => getComputedStyle(el).borderRadius,
+      );
       expect(borderRadius).toBe(brick.attributes['brick.headingL'].blockStyle.borderRadius);
     });
 
     await test.step('step-3: Verify analytic attributes', async () => {
-      await expect(await brick.brickHeadingL).toHaveAttribute('daa-lh',await webUtil.getBlockDaalh('brick', 1));
+      await expect(await brick.brickHeadingL).toHaveAttribute('daa-lh', await webUtil.getBlockDaalh('brick', 1));
     });
 
     await test.step('step-4: Verify the accessibility test on the Brick_rounded-corners-click-l-heading block', async () => {
@@ -250,7 +253,7 @@ test.describe('Milo Brick Block test suite', () => {
     });
   });
 
-  test(`[Test Id - ${features[7].tcid}] ${features[7].name},${features[7].tags}`, async ({page,baseURL,}) => {
+  test(`[Test Id - ${features[7].tcid}] ${features[7].name},${features[7].tags}`, async ({ page, baseURL }) => {
     console.info(`[Test Page]: ${baseURL}${features[7].path}${miloLibs}`);
     const { data } = features[7];
 
@@ -267,14 +270,15 @@ test.describe('Milo Brick Block test suite', () => {
       await expect(await brick.brickTextDetailL).toContainText(data.textDetailL);
 
       await expect(await brick.backgroundImage).toBeVisible();
-      expect(await webUtil.verifyAttributes(brick.backgroundImage,brick.attributes['brick.headingXXL'].backgroundImg)).toBeTruthy();
+      expect(await webUtil.verifyAttributes(brick.backgroundImage, brick.attributes['brick.headingXXL'].backgroundImg)).toBeTruthy();
       const borderRadius = await brick.brickHeadingXXL.evaluate(
-        (el) => getComputedStyle(el).borderRadius);
+        (el) => getComputedStyle(el).borderRadius,
+      );
       expect(borderRadius).toBe(brick.attributes['brick.headingXXL'].blockStyle.borderRadius);
     });
 
     await test.step('step-3: Verify analytic attributes', async () => {
-      await expect(await brick.brickHeadingXXL).toHaveAttribute('daa-lh',await webUtil.getBlockDaalh('brick', 1));
+      await expect(await brick.brickHeadingXXL).toHaveAttribute('daa-lh', await webUtil.getBlockDaalh('brick', 1));
     });
 
     await test.step('step-4: Verify the accessibility test on the Brick_rounded-corners-light-xxl-heading-center block', async () => {
@@ -282,7 +286,7 @@ test.describe('Milo Brick Block test suite', () => {
     });
   });
 
-  test(`[Test Id - ${features[8].tcid}] ${features[8].name},${features[8].tags}`, async ({page,baseURL,}) => {
+  test(`[Test Id - ${features[8].tcid}] ${features[8].name},${features[8].tags}`, async ({ page, baseURL }) => {
     console.info(`[Test Page]: ${baseURL}${features[8].path}${miloLibs}`);
     const { data } = features[8];
 
@@ -301,24 +305,25 @@ test.describe('Milo Brick Block test suite', () => {
       await expect(await brick.brickBodyM).toContainText(data.brickTextBodyM);
 
       const borderRadius = await brick.brickRoundedCornersM.evaluate(
-        (el) => getComputedStyle(el).borderRadius);
+        (el) => getComputedStyle(el).borderRadius,
+      );
       expect(borderRadius).toBe(brick.attributes['brick.M.rounded.corners'].blockStyle.borderRadius);
 
       await expect(await brick.sectionBackgroundImage).toBeVisible();
-      expect(await webUtil.verifyAttributes(brick.sectionBackgroundImage,brick.attributes['section.headingS'].backgroundImg)).toBeTruthy();
+      expect(await webUtil.verifyAttributes(brick.sectionBackgroundImage, brick.attributes['section.headingS'].backgroundImg)).toBeTruthy();
     });
 
     await test.step('step-3: Verify analytic attributes', async () => {
       await expect(brick.sectionXXLspacing).toHaveAttribute('daa-lh', 's1');
-      await expect(await brick.brickRoundedCornersM).toHaveAttribute('daa-lh',await webUtil.getBlockDaalh('brick', 2));
+      await expect(await brick.brickRoundedCornersM).toHaveAttribute('daa-lh', await webUtil.getBlockDaalh('brick', 2));
     });
 
     await test.step('step-4: Verify the accessibility test on the Brick_m-rounded-corners-light-s-heading block', async () => {
-      await runAccessibilityTest({page,testScope: brick.brickRoundedCornersM});
+      await runAccessibilityTest({ page, testScope: brick.brickRoundedCornersM });
     });
   });
 
-  test(`[Test Id - ${features[9].tcid}] ${features[9].name},${features[9].tags}`, async ({page,baseURL,}) => {
+  test(`[Test Id - ${features[9].tcid}] ${features[9].name},${features[9].tags}`, async ({ page, baseURL }) => {
     console.info(`[Test Page]: ${baseURL}${features[9].path}${miloLibs}`);
     const { data } = features[9];
 
@@ -337,16 +342,17 @@ test.describe('Milo Brick Block test suite', () => {
       await expect(await brick.brickBodyM).toContainText(data.brickTextBodyM);
 
       const borderRadius = await brick.brickSquareCorners.evaluate(
-        (el) => getComputedStyle(el).borderRadius);
+        (el) => getComputedStyle(el).borderRadius,
+      );
       expect(borderRadius).toBe(brick.attributes['brick.square.corners'].blockStyle.borderRadius);
 
       await expect(await brick.sectionBackgroundImage).toBeVisible();
-      expect(await webUtil.verifyAttributes(brick.sectionBackgroundImage,brick.attributes['brick.square.corners'].backgroundImg)).toBeTruthy();
+      expect(await webUtil.verifyAttributes(brick.sectionBackgroundImage, brick.attributes['brick.square.corners'].backgroundImg)).toBeTruthy();
     });
 
     await test.step('step-3: Verify analytic attributes', async () => {
       await expect(brick.sectionXXLspacing).toHaveAttribute('daa-lh', 's1');
-      await expect(await brick.brickSquareCorners).toHaveAttribute('daa-lh',await webUtil.getBlockDaalh('brick', 2));
+      await expect(await brick.brickSquareCorners).toHaveAttribute('daa-lh', await webUtil.getBlockDaalh('brick', 2));
     });
 
     await test.step('step-4: Verify the accessibility test on the Brick_square-corners-light-s-heading block', async () => {
@@ -354,7 +360,7 @@ test.describe('Milo Brick Block test suite', () => {
     });
   });
 
-  test(`[Test Id - ${features[10].tcid}] ${features[10].name},${features[10].tags}`, async ({page,baseURL,}) => {
+  test(`[Test Id - ${features[10].tcid}] ${features[10].name},${features[10].tags}`, async ({ page, baseURL }) => {
     console.info(`[Test Page]: ${baseURL}${features[10].path}${miloLibs}`);
     const { data } = features[10];
 
@@ -374,16 +380,17 @@ test.describe('Milo Brick Block test suite', () => {
       expect(await brick.iconImage).toBeVisible();
 
       await expect(await brick.splitBackgroundImage).toBeVisible();
-      expect(await webUtil.verifyAttributes(brick.splitBackgroundImage,brick.attributes['brick.split.background'].backgroundImg)).toBeTruthy();
+      expect(await webUtil.verifyAttributes(brick.splitBackgroundImage, brick.attributes['brick.split.background'].backgroundImg)).toBeTruthy();
       const borderRadius = await brick.brickSplit.evaluate(
-        (el) => getComputedStyle(el).borderRadius);
+        (el) => getComputedStyle(el).borderRadius,
+      );
       expect(borderRadius).toBe(brick.attributes['brick.split.background'].blockStyle.borderRadius);
     });
 
     await test.step('step-3: Verify analytic attributes', async () => {
-      await expect(await brick.brickSplit).toHaveAttribute('daa-lh',await webUtil.getBlockDaalh('brick', 1));
-      await expect(await brick.outlineButtonL).toHaveAttribute('daa-ll',await webUtil.getLinkDaall(data.outlineButtonText, 1, data.h2Text));
-      await expect(await brick.blueButtonL).toHaveAttribute('daa-ll',await webUtil.getLinkDaall(data.blueButtonText, 2, data.h2Text));
+      await expect(await brick.brickSplit).toHaveAttribute('daa-lh', await webUtil.getBlockDaalh('brick', 1));
+      await expect(await brick.outlineButtonL).toHaveAttribute('daa-ll', await webUtil.getLinkDaall(data.outlineButtonText, 1, data.h2Text));
+      await expect(await brick.blueButtonL).toHaveAttribute('daa-ll', await webUtil.getLinkDaall(data.blueButtonText, 2, data.h2Text));
     });
 
     await test.step('step-4: Verify the accessibility test on the Brick_split-rounded-corners-dark-l-heading block', async () => {
@@ -391,7 +398,7 @@ test.describe('Milo Brick Block test suite', () => {
     });
   });
 
-  test(`[Test Id - ${features[11].tcid}] ${features[11].name},${features[11].tags}`, async ({page,baseURL,}) => {
+  test(`[Test Id - ${features[11].tcid}] ${features[11].name},${features[11].tags}`, async ({ page, baseURL }) => {
     console.info(`[Test Page]: ${baseURL}${features[11].path}${miloLibs}`);
     const { data } = features[11];
 
@@ -410,16 +417,17 @@ test.describe('Milo Brick Block test suite', () => {
       await expect(await brick.whiteButtonL).toContainText(data.whiteButtonText);
 
       await expect(await brick.splitForegroundImage).toBeVisible();
-      expect(await webUtil.verifyAttributes(brick.splitForegroundImage,brick.attributes['brick.split.foreground'].backgroundImg)).toBeTruthy();
+      expect(await webUtil.verifyAttributes(brick.splitForegroundImage, brick.attributes['brick.split.foreground'].backgroundImg)).toBeTruthy();
       const borderRadius = await brick.brickSplit.evaluate(
-        (el) => getComputedStyle(el).borderRadius);
+        (el) => getComputedStyle(el).borderRadius,
+      );
       expect(borderRadius).toBe(brick.attributes['brick.split.foreground'].blockStyle.borderRadius);
     });
 
     await test.step('step-3: Verify analytic attributes', async () => {
-      await expect(await brick.brickSplit).toHaveAttribute('daa-lh',await webUtil.getBlockDaalh('brick', 1));
-      await expect(await brick.outlineButtonL).toHaveAttribute('daa-ll',await webUtil.getLinkDaall(data.outlineButtonText, 1, data.h3Text));
-      await expect(await brick.whiteButtonL).toHaveAttribute('daa-ll',await webUtil.getLinkDaall(data.whiteButtonText, 2, data.h3Text));
+      await expect(await brick.brickSplit).toHaveAttribute('daa-lh', await webUtil.getBlockDaalh('brick', 1));
+      await expect(await brick.outlineButtonL).toHaveAttribute('daa-ll', await webUtil.getLinkDaall(data.outlineButtonText, 1, data.h3Text));
+      await expect(await brick.whiteButtonL).toHaveAttribute('daa-ll', await webUtil.getLinkDaall(data.whiteButtonText, 2, data.h3Text));
     });
 
     await test.step('step-4: Verify the accessibility test on the Brick_split-two-column-rounded-corners-dark-l-heading block', async () => {
@@ -427,7 +435,7 @@ test.describe('Milo Brick Block test suite', () => {
     });
   });
 
-  test(`[Test Id - ${features[12].tcid}] ${features[12].name},${features[12].tags}`, async ({page,baseURL,}) => {
+  test(`[Test Id - ${features[12].tcid}] ${features[12].name},${features[12].tags}`, async ({ page, baseURL }) => {
     console.info(`[Test Page]: ${baseURL}${features[12].path}${miloLibs}`);
     const { data } = features[12];
 
@@ -445,16 +453,18 @@ test.describe('Milo Brick Block test suite', () => {
       await expect(await brick.outlineButtonL).toContainText(data.outlineButtonText);
 
       await expect(await brick.backgroundImage).toBeVisible();
-      expect(await webUtil.verifyAttributes(brick.backgroundImage,brick.attributes['brick.supplemental'].backgroundImg)).toBeTruthy();
+      expect(await webUtil.verifyAttributes(brick.backgroundImage, brick.attributes['brick.supplemental'].backgroundImg)).toBeTruthy();
       const borderRadius = await brick.brickSupplemental.evaluate(
-        (el) => getComputedStyle(el).borderRadius);
+        (el) => getComputedStyle(el).borderRadius,
+      );
       expect(borderRadius).toBe(
-        brick.attributes['brick.supplemental'].blockStyle.borderRadius);
+        brick.attributes['brick.supplemental'].blockStyle.borderRadius,
+      );
     });
 
     await test.step('step-3: Verify analytic attributes', async () => {
-      await expect(await brick.brickSupplemental).toHaveAttribute('daa-lh',await webUtil.getBlockDaalh('brick', 1));
-      await expect(await brick.outlineButtonL).toHaveAttribute('daa-ll',await webUtil.getLinkDaall(data.outlineButtonText, 1, data.h2Text));
+      await expect(await brick.brickSupplemental).toHaveAttribute('daa-lh', await webUtil.getBlockDaalh('brick', 1));
+      await expect(await brick.outlineButtonL).toHaveAttribute('daa-ll', await webUtil.getLinkDaall(data.outlineButtonText, 1, data.h2Text));
     });
 
     await test.step('step-4: Verify the accessibility test on the Brick_supplemental-text-rounded-corners-l-heading block', async () => {
@@ -462,7 +472,7 @@ test.describe('Milo Brick Block test suite', () => {
     });
   });
 
-  test(`[Test Id - ${features[13].tcid}] ${features[13].name},${features[13].tags}`, async ({page,baseURL,}) => {
+  test(`[Test Id - ${features[13].tcid}] ${features[13].name},${features[13].tags}`, async ({ page, baseURL }) => {
     console.info(`[Test Page]: ${baseURL}${features[13].path}${miloLibs}`);
     const { data } = features[13];
 
@@ -479,14 +489,14 @@ test.describe('Milo Brick Block test suite', () => {
       await expect(await brick.brickTextDetailL).toContainText(data.paragraphText);
       await expect(await brick.whiteButtonL).toContainText(data.whiteButtonText);
 
-      expect(await webUtil.verifyAttributes(brick.backgroundMobile,brick.attributes['brick.center.background.mobile'].backgroundImg)).toBeTruthy();
-      expect(await webUtil.verifyAttributes(brick.backgroundTablet,brick.attributes['brick.center.background.tablet'].backgroundImg)).toBeTruthy();
-      expect(await webUtil.verifyAttributes(brick.backgroundDesktop,brick.attributes['brick.center.background.desktop'].backgroundImg)).toBeTruthy();
+      expect(await webUtil.verifyAttributes(brick.backgroundMobile, brick.attributes['brick.center.background.mobile'].backgroundImg)).toBeTruthy();
+      expect(await webUtil.verifyAttributes(brick.backgroundTablet, brick.attributes['brick.center.background.tablet'].backgroundImg)).toBeTruthy();
+      expect(await webUtil.verifyAttributes(brick.backgroundDesktop, brick.attributes['brick.center.background.desktop'].backgroundImg)).toBeTruthy();
     });
 
     await test.step('step-3: Verify analytic attributes', async () => {
-      await expect(await brick.brickImageCenter).toHaveAttribute('daa-lh',await webUtil.getBlockDaalh('brick', 1));
-      await expect(await brick.whiteButtonL).toHaveAttribute('daa-ll',await webUtil.getLinkDaall(data.whiteButtonText, 1, data.h3Text));
+      await expect(await brick.brickImageCenter).toHaveAttribute('daa-lh', await webUtil.getBlockDaalh('brick', 1));
+      await expect(await brick.whiteButtonL).toHaveAttribute('daa-ll', await webUtil.getLinkDaall(data.whiteButtonText, 1, data.h3Text));
     });
 
     await test.step('step-4: Verify the accessibility test on the Brick_image-bottom-center block', async () => {
@@ -494,7 +504,7 @@ test.describe('Milo Brick Block test suite', () => {
     });
   });
 
-  test(`[Test Id - ${features[14].tcid}] ${features[14].name},${features[14].tags}`, async ({page,baseURL,}) => {
+  test(`[Test Id - ${features[14].tcid}] ${features[14].name},${features[14].tags}`, async ({ page, baseURL }) => {
     console.info(`[Test Page]: ${baseURL}${features[14].path}${miloLibs}`);
     const { data } = features[14];
 
@@ -512,15 +522,15 @@ test.describe('Milo Brick Block test suite', () => {
       await expect(await brick.outlineButtonL).toContainText(data.outlineButtonText);
       await expect(await brick.whiteButtonL).toContainText(data.whiteButtonText);
 
-      expect(await webUtil.verifyAttributes(brick.backgroundMobile,brick.attributes['brick.right.background.mobile'].backgroundImg)).toBeTruthy();
-      expect(await webUtil.verifyAttributes(brick.backgroundTablet,brick.attributes['brick.right.background.tablet'].backgroundImg)).toBeTruthy();
-      expect(await webUtil.verifyAttributes(brick.backgroundDesktop,brick.attributes['brick.right.background.desktop'].backgroundImg)).toBeTruthy();
+      expect(await webUtil.verifyAttributes(brick.backgroundMobile, brick.attributes['brick.right.background.mobile'].backgroundImg)).toBeTruthy();
+      expect(await webUtil.verifyAttributes(brick.backgroundTablet, brick.attributes['brick.right.background.tablet'].backgroundImg)).toBeTruthy();
+      expect(await webUtil.verifyAttributes(brick.backgroundDesktop, brick.attributes['brick.right.background.desktop'].backgroundImg)).toBeTruthy();
     });
 
     await test.step('step-3: Verify analytic attributes', async () => {
-      await expect(await brick.brickImageLeft).toHaveAttribute('daa-lh',await webUtil.getBlockDaalh('brick', 1));
-      await expect(await brick.outlineButtonL).toHaveAttribute('daa-ll',await webUtil.getLinkDaall(data.outlineButtonText, 1, data.h1Text));
-      await expect(await brick.whiteButtonL).toHaveAttribute('daa-ll',await webUtil.getLinkDaall(data.whiteButtonText, 2, data.h1Text));
+      await expect(await brick.brickImageLeft).toHaveAttribute('daa-lh', await webUtil.getBlockDaalh('brick', 1));
+      await expect(await brick.outlineButtonL).toHaveAttribute('daa-ll', await webUtil.getLinkDaall(data.outlineButtonText, 1, data.h1Text));
+      await expect(await brick.whiteButtonL).toHaveAttribute('daa-ll', await webUtil.getLinkDaall(data.whiteButtonText, 2, data.h1Text));
     });
 
     await test.step('step-4: Verify the accessibility test on the Brick_image-bottom-right block', async () => {
@@ -528,7 +538,7 @@ test.describe('Milo Brick Block test suite', () => {
     });
   });
 
-  test(`[Test Id - ${features[15].tcid}] ${features[15].name},${features[15].tags}`, async ({page,baseURL,}) => {
+  test(`[Test Id - ${features[15].tcid}] ${features[15].name},${features[15].tags}`, async ({ page, baseURL }) => {
     console.info(`[Test Page]: ${baseURL}${features[15].path}${miloLibs}`);
     const { data } = features[15];
 
@@ -545,14 +555,14 @@ test.describe('Milo Brick Block test suite', () => {
       await expect(await brick.brickBodyM).toContainText(data.bodyText);
       await expect(await brick.whiteButtonL).toContainText(data.whiteButtonText);
 
-      expect(await webUtil.verifyAttributes(brick.backgroundMobile,brick.attributes['brick.left.background.mobile'].backgroundImg)).toBeTruthy();
-      expect(await webUtil.verifyAttributes(brick.backgroundTablet,brick.attributes['brick.left.background.tablet'].backgroundImg)).toBeTruthy();
-      expect(await webUtil.verifyAttributes(brick.backgroundDesktop,brick.attributes['brick.left.background.desktop'].backgroundImg)).toBeTruthy();
+      expect(await webUtil.verifyAttributes(brick.backgroundMobile, brick.attributes['brick.left.background.mobile'].backgroundImg)).toBeTruthy();
+      expect(await webUtil.verifyAttributes(brick.backgroundTablet, brick.attributes['brick.left.background.tablet'].backgroundImg)).toBeTruthy();
+      expect(await webUtil.verifyAttributes(brick.backgroundDesktop, brick.attributes['brick.left.background.desktop'].backgroundImg)).toBeTruthy();
     });
 
     await test.step('step-3: Verify analytic attributes', async () => {
-      await expect(await brick.brickImageLeft).toHaveAttribute('daa-lh',await webUtil.getBlockDaalh('brick', 1));
-      await expect(await brick.whiteButtonL).toHaveAttribute('daa-ll',await webUtil.getLinkDaall(data.whiteButtonText, 1, data.h3Text));
+      await expect(await brick.brickImageLeft).toHaveAttribute('daa-lh', await webUtil.getBlockDaalh('brick', 1));
+      await expect(await brick.whiteButtonL).toHaveAttribute('daa-ll', await webUtil.getLinkDaall(data.whiteButtonText, 1, data.h3Text));
     });
 
     await test.step('step-4: Verify the accessibility test on the Brick_image-bottom-left block', async () => {
@@ -560,7 +570,7 @@ test.describe('Milo Brick Block test suite', () => {
     });
   });
 
-  test(`[Test Id - ${features[16].tcid}] ${features[16].name},${features[16].tags}`, async ({page,baseURL,}) => {
+  test(`[Test Id - ${features[16].tcid}] ${features[16].name},${features[16].tags}`, async ({ page, baseURL }) => {
     console.info(`[Test Page]: ${baseURL}${features[16].path}${miloLibs}`);
     const { data } = features[16];
 
@@ -585,11 +595,11 @@ test.describe('Milo Brick Block test suite', () => {
         expect(brickInstance.outlineButtonL).toContainText(data.outlineButtonText);
         expect(brickInstance.blueButtonL).toContainText(data.blueButtonText);
 
-        expect(await webUtil.verifyAttributes(brickInstance.iconImage,brick.attributes['brick.icon.area'].iconImg)).toBeTruthy();
-        expect(await webUtil.verifyAttributes(brickInstance.backgroundMobile,brick.attributes['brick.background.mobile'].backgroundImg)).toBeTruthy();
-        expect(await webUtil.verifyAttributes(brickInstance.backgroundTablet,brick.attributes['brick.background.tablet'].backgroundImg)).toBeTruthy();
-        expect(await webUtil.verifyAttributes(brickInstance.backgroundDesktop,brick.attributes['brick.background.desktop'].backgroundImg)).toBeTruthy();
-        expect(await webUtil.verifyAttributes(brickInstance.brickMediaImg,brick.attributes['brick.media'].img)).toBeTruthy();
+        expect(await webUtil.verifyAttributes(brickInstance.iconImage, brick.attributes['brick.icon.area'].iconImg)).toBeTruthy();
+        expect(await webUtil.verifyAttributes(brickInstance.backgroundMobile, brick.attributes['brick.background.mobile'].backgroundImg)).toBeTruthy();
+        expect(await webUtil.verifyAttributes(brickInstance.backgroundTablet, brick.attributes['brick.background.tablet'].backgroundImg)).toBeTruthy();
+        expect(await webUtil.verifyAttributes(brickInstance.backgroundDesktop, brick.attributes['brick.background.desktop'].backgroundImg)).toBeTruthy();
+        expect(await webUtil.verifyAttributes(brickInstance.brickMediaImg, brick.attributes['brick.media'].img)).toBeTruthy();
       }
       await expect(brick.sectionMetadata).toContainText('masonry');
       await brick.checkSectionMetadataTexts();
@@ -606,11 +616,11 @@ test.describe('Milo Brick Block test suite', () => {
         const expectedDaaLh = await webUtil.getBlockDaalh('brick', i + 1);
         await expect(singleBrick).toHaveAttribute('daa-lh', expectedDaaLh);
 
-        const expectedOutlineDaaLl = await webUtil.getLinkDaall(data.outlineButtonText,1,data.h3Text);
-        await expect(brickInstance.outlineButtonL).toHaveAttribute('daa-ll',expectedOutlineDaaLl);
+        const expectedOutlineDaaLl = await webUtil.getLinkDaall(data.outlineButtonText, 1, data.h3Text);
+        await expect(brickInstance.outlineButtonL).toHaveAttribute('daa-ll', expectedOutlineDaaLl);
 
-        const expectedBlueDaaLl = await webUtil.getLinkDaall(data.blueButtonText,2,data.h3Text);
-        await expect(brickInstance.blueButtonL).toHaveAttribute('daa-ll',expectedBlueDaaLl);
+        const expectedBlueDaaLl = await webUtil.getLinkDaall(data.blueButtonText, 2, data.h3Text);
+        await expect(brickInstance.blueButtonL).toHaveAttribute('daa-ll', expectedBlueDaaLl);
       }
     });
 

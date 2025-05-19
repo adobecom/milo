@@ -133,17 +133,13 @@ export default class Brick {
         },
       },
 
-      'brick.button-fill': {
-        iconImg: {loading: 'lazy',},
-      },
+      'brick.button-fill': { iconImg: { loading: 'lazy' } },
       'brick.video-container': {
         playsinline: '',
         autoplay: '',
         muted: '',
       },
-      'brick.headingS': {
-        blockStyle: {borderRadius: '16px',},
-      },
+      'brick.headingS': { blockStyle: { borderRadius: '16px' } },
       'brick.headingM': {
         backgroundImg: {
           loading: 'eager',
@@ -152,7 +148,7 @@ export default class Brick {
           height: '1125',
           style: 'object-position: center bottom;',
         },
-        blockStyle: {borderRadius: '16px',},
+        blockStyle: { borderRadius: '16px' },
       },
       'brick.headingL': {
         backgroundImg: {
@@ -162,7 +158,7 @@ export default class Brick {
           height: '450',
           style: 'object-fit: contain; object-position: center bottom;',
         },
-        blockStyle: {borderRadius: '16px',},
+        blockStyle: { borderRadius: '16px' },
       },
       'brick.headingXXL': {
         backgroundImg: {
@@ -172,7 +168,7 @@ export default class Brick {
           height: '240',
           style: 'object-fit: cover; object-position: center center;',
         },
-        blockStyle: {borderRadius: '16px',},
+        blockStyle: { borderRadius: '16px' },
       },
       'section.headingS': {
         backgroundImg: {
@@ -182,11 +178,9 @@ export default class Brick {
           height: '240',
         },
       },
-      'brick.M.rounded.corners': {
-        blockStyle: {borderRadius: '8px',},
-      },
+      'brick.M.rounded.corners': { blockStyle: { borderRadius: '8px' } },
       'brick.square.corners': {
-        blockStyle: {borderRadius: '0px',},
+        blockStyle: { borderRadius: '0px' },
         backgroundImg: {
           loading: 'eager',
           fetchpriority: 'high',
@@ -195,7 +189,7 @@ export default class Brick {
         },
       },
       'brick.split.background': {
-        blockStyle: {borderRadius: '16px',},
+        blockStyle: { borderRadius: '16px' },
         backgroundImg: {
           loading: 'eager',
           fetchpriority: 'high',
@@ -205,7 +199,7 @@ export default class Brick {
         },
       },
       'brick.split.foreground': {
-        blockStyle: {borderRadius: '16px',},
+        blockStyle: { borderRadius: '16px' },
         backgroundImg: {
           loading: 'eager',
           fetchpriority: 'high',
@@ -214,7 +208,7 @@ export default class Brick {
         },
       },
       'brick.supplemental': {
-        blockStyle: {borderRadius: '16px',},
+        blockStyle: { borderRadius: '16px' },
         backgroundImg: {
           loading: 'eager',
           fetchpriority: 'high',
@@ -300,20 +294,49 @@ export default class Brick {
       },
     };
   }
-  // // perform click action and wait for new page
+
+  // perform click action and wait for new page
   async clickBrickAndWaitForNewPage() {
-    const [newPageNavigation] = await Promise.all([
-      this.page.waitForNavigation({ timeout: 30000 }),
-      this.brickClickable.click(),
-    ]);
-    const newUrl = this.page.url();
-    console.log(`New URL: ${newUrl}`);
-    return newUrl;
+    const newTabPromise = this.page.context().waitForEvent('page');
+    const navigationPromise = this.page.waitForNavigation({ timeout: 30000, waitUntil: 'load' });
+
+    await this.brickClickable.click();
+
+    const result = await Promise.race([newTabPromise, navigationPromise]);
+
+    if (result instanceof this.page.constructor) {
+      await result.waitForLoadState('load');
+      const newUrl = result.url();
+      console.log(`New URL from new tab: ${newUrl}`);
+      return newUrl;
+    }
+
+    const currentUrl = this.page.url();
+    console.log(`New URL from current tab: ${currentUrl}`);
+    return currentUrl;
   }
+
+  // close georouting wrapper
+  async closeGeoroutingWrapper() {
+    try {
+      const closeButton = await this.page.waitForSelector('.dialog-close', {
+        timeout: 2000,
+        state: 'visible',
+      });
+
+      if (closeButton) {
+        await closeButton.click();
+      }
+    } catch (error) {
+      'Button not visible';
+    }
+  }
+
   // return all bricks
   async getAllBricks() {
     return this.brickGrid.locator('[daa-lh$="|brick"]');
   }
+
   // get a specific brick locator
   getBrick(i) {
     const brick = this.brick.nth(i);
@@ -333,6 +356,7 @@ export default class Brick {
   async getSectionMetadata() {
     return this.page.locator('.section-metadata');
   }
+
   async checkSectionMetadataTexts() {
     const texts = [
       'Full width',
