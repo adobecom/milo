@@ -625,7 +625,7 @@ export async function getCheckoutAction(offers, options, imsSignedInPromise, el)
 
 export function setPreview(attributes) {
   const { host } = window.location;
-  if (host.includes(`${SLD}.page`) || host.includes('www.stage.adobe.com')) {
+  if (host.includes(`${SLD}.page`) || host.origin === 'https://www.stage.adobe.com') {
     attributes.preview = 'on';
   }
 }
