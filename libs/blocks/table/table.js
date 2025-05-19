@@ -271,6 +271,13 @@ function handleTitleText(cell) {
     nodeToInsert = titleRowSpan;
   }
 
+  const blockquote = nodeToInsert.querySelector('blockquote');
+  if (blockquote) {
+    const quoteReplacement = createTag('div', { class: 'blockquote' });
+    while (blockquote.firstChild) quoteReplacement.appendChild(blockquote.firstChild);
+    blockquote.replaceWith(quoteReplacement);
+  }
+
   cell.insertBefore(nodeToInsert, cell.firstChild);
 }
 
