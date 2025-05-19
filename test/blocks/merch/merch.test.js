@@ -672,7 +672,7 @@ describe('Merch Block', () => {
       document.querySelector('.modal-curtain').click();
     });
 
-    it('renders TWP modal with preselected plan', async () => {
+    it('renders TWP modal with preselected plan that overrides extra options', async () => {
       mockIms();
       const meta = document.createElement('meta');
       meta.setAttribute('name', 'preselect-plan');

@@ -260,7 +260,7 @@ export const CHECKOUT_ALLOWED_KEYS = [
 ];
 
 /**
- * Used when 3in1 modals are configured with ms=e or cs=t extra paramter, but 3in1 is diabled.
+ * Used when 3in1 modals are configured with ms=e or cs=t extra paramter, but 3in1 is disabled.
  * Dexter modals should deeplink to plan=edu or plan=team tabs.
  * @type {Record<string, string>}
  */
