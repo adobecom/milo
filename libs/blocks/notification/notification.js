@@ -146,6 +146,11 @@ function curtainCallback(el) {
   const curtain = createTag('div', { class: 'notification-curtain' });
   document.body.classList.add('mobile-disable-scroll');
   el.insertAdjacentElement('afterend', curtain);
+  if (!document.body.classList.contains('disable-scroll') && document.body.classList.contains('mobile-disable-scroll')) {
+    const firstFocusable = el.querySelector('a, button, input, select, textarea');
+    firstFocusable.setAttribute('autofocus', '');
+    firstFocusable.focus({ focusVisible: true });
+  }
 }
 
 function decorateSplitList(el, listContent) {
@@ -241,7 +246,6 @@ async function decorateLayout(el) {
   foreground?.classList.toggle('no-image', !media && !el.querySelector('.icon-area'));
   if (el.matches(`:is(.${pill}, .${ribbon}):not(.no-closure)`)) decorateClose(el);
   if (el.matches(`.${pill}.flexible`)) decorateFlexible(el);
-  trapFocusWithElement(el);
   return foreground;
 }
 
@@ -259,4 +263,5 @@ export default async function init(el) {
     wrapCopy(blockText);
     decorateMultiViewport(el);
   }
+  trapFocusWithElement(el);
 }
