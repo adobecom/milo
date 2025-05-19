@@ -155,6 +155,7 @@ export function add3in1Parameters({ url, modal, customerSegment, cs, ms, marketS
   // cs and ms are params manually set by authors, they should take precedence over marketSegment and customerSegment
   if (cs) url.searchParams.set('cs', cs);
   if (ms) url.searchParams.set('ms', ms);
+  if (url.searchParams.get('ot') === 'PROMOTION') url.searchParams.delete('ot');
   return url;
 }
 
@@ -184,15 +185,15 @@ export function buildCheckoutUrl(checkoutData) {
     url = add3in1Parameters({
       url,
       modal,
-      customerSegment: customerSegment ?? items?.[0]?.customerSegment,
-      marketSegment: marketSegment ?? items?.[0]?.marketSegment,
+      customerSegment,
+      marketSegment,
       cs,
       ms,
       quantity: items?.[0]?.quantity > 1 && items?.[0]?.quantity,
-      productArrangementCode: productArrangementCode ?? items?.[0]?.productArrangementCode,
+      productArrangementCode,
       addonProductArrangementCode: productArrangementCode 
-      ? items?.find((item) => item.productArrangementCode !== productArrangementCode)?.productArrangementCode 
-      : items?.[1]?.productArrangementCode,
+        ? items?.find((item) => item.productArrangementCode !== productArrangementCode)?.productArrangementCode 
+        : items?.[1]?.productArrangementCode,
     });
   }
   return url.toString();

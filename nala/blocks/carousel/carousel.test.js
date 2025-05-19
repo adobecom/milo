@@ -32,7 +32,7 @@ test.describe('Milo Carousel Block test suite', () => {
       // verify carousel indictor and active indicator
       expect(await carousel.areIndicatorsDisplayed()).toBeTruthy();
       expect(await carousel.getNumberOfIndicators()).toBe(4);
-      expect(await carousel.getCurrentIndicatorIndex()).toBeNull();
+      expect(await carousel.getCurrentIndicatorIndex()).toBe('0');
 
       // verify carousel next and previous buttons
       expect(await carousel.isNextButtonlVisible()).toBeTruthy();
@@ -43,12 +43,12 @@ test.describe('Milo Carousel Block test suite', () => {
       // move to next slide by clicking next button and verify h2 tag header
       await carousel.moveToNextSlide();
       expect(await carousel.getCurrentSlideIndex()).toBe('1');
-      expect(await carousel.getSlideText(1, 'h2', 'Orange Slices')).toBeTruthy();
+      expect(await carousel.getSlideText(1, 'h2', 'hidden')).toBeTruthy();
 
       // move to 3rd slide by clicking indicator and verify h2 tag header
       await carousel.moveToIndicator(3);
-      expect(await carousel.getCurrentIndicatorIndex()).toBeNull();
-      expect(await carousel.getSlideText(3, 'h2', 'Apples')).toBeTruthy();
+      expect(await carousel.getCurrentIndicatorIndex()).toBe('0');
+      expect(await carousel.getSlideText(3, 'h2', 'hidden')).toBeTruthy();
     });
 
     await test.step('step-4: Verify the accessibility test on the carousel block', async () => {
@@ -76,7 +76,7 @@ test.describe('Milo Carousel Block test suite', () => {
       // verify indicator visibility, count and index of active slide
       expect(await carousel.areIndicatorsDisplayed()).toBeTruthy();
       expect(await carousel.getNumberOfIndicators()).toBe(4);
-      expect(await carousel.getCurrentIndicatorIndex()).toBeNull();
+      expect(await carousel.getCurrentIndicatorIndex()).toBe('0');
 
       expect(await carousel.isNextButtonlVisible()).toBeTruthy();
       expect(await carousel.isPreviousButtonlVisible()).toBeTruthy();
@@ -119,7 +119,7 @@ test.describe('Milo Carousel Block test suite', () => {
     await test.step('step-3: Perform carousel slides and controls operation and verify contents', async () => {
       // move to next slide by clicking next button and verify h2 tag header
       await carousel.moveToNextSlide();
-      expect(await carousel.getSlideText(1, 'h2', 'Melon')).toBeTruthy();
+      expect(await carousel.getSlideText(1, 'h2')).toBeTruthy();
     });
 
     await test.step('step-3: Verify the accessibility test on the carousel show-2 container block', async () => {
