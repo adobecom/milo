@@ -48,6 +48,8 @@ const selectors = {
   localNavActive: '.feds-localnav--active',
   localNavTitle: '.feds-localnav-title',
   localNavExit: '.feds-localnav-exit',
+  localNavItem: '.feds-localnav-items .feds-navItem',
+  localNavItems: '.feds-navItem .feds-menu-column > a, .feds-navItem > a, .feds-navItem > button, .feds-navItem > .feds-cta-wrapper > .feds-cta',
 };
 
 selectors.profileDropdown = `
