@@ -10,6 +10,7 @@
   --feds-localnav-height: 40px;
   --global-height-nav: 56px;
   --feds-height-nav: 55px;
+  --color-white: #FFF;
 }
 
 .global-navigation, .global-footer, .dialog-modal {
