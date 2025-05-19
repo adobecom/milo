@@ -76,6 +76,7 @@ class Footer {
       url,
       shouldDecorateLinks: false,
     });
+    console.log("Hello world")
 
     if (!this.body) {
       const error = new Error('Could not create global footer. Content not found!');
