@@ -1317,6 +1317,7 @@ class Gnav {
           });
           if (popup.closest('section.feds-dropdown--active')) makeTabActive(popup);
 
+        }).finally(() => {
           if (this.isLocalNav()) {
             decorateLocalNavItems(item, template);
           }
@@ -1359,7 +1360,7 @@ class Gnav {
 
       template.addEventListener('click', decorateDropdown);
       const newMobileNavActive = this.newMobileNav & !isDesktop.matches;
-      if (itemType === 'asyncDropdownTrigger' &&(newMobileNavActive || isDesktop.matches)) {
+      if (itemType === 'asyncDropdownTrigger' && (newMobileNavActive || isDesktop.matches)) {
         const loadingMegaMenu = loaderMegaMenu();
         loadingMegaMenu.style.visibility = 'hidden';
         template.append(loadingMegaMenu);
