@@ -3446,6 +3446,10 @@ merch-card[variant="ccd-slice"] [slot='body-s'] a.spectrum-Link {
         color: var(--spectrum-gray-900);
     }
 
+    merch-card[variant='fries'] [slot="price"] span.placeholder-resolved[data-template="strikethrough"] {
+        text-decoration: none;
+    }
+
     merch-card[variant='fries'] [slot="price"] .price-strikethrough {
         font-size: var(--consonant-merch-card-body-xs-font-size);
         line-height: var(--consonant-merch-card-body-xs-line-height);
