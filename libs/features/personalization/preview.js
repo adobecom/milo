@@ -24,7 +24,9 @@ function updatePreviewButton(popup, pageId) {
   const manifestParameter = [];
 
   selectedInputs.forEach((selected) => {
-    if (!selected.value) return;
+    const isHidden = selected.closest('.mmm-list.mep-show');
+
+    if (!selected.value || isHidden) return;
 
     let { value } = selected;
 
@@ -172,7 +174,7 @@ function formatDate(dateTime, format = 'local') {
 }
 function getManifestListDomAndParameter(mepConfig) {
   const { activities, page } = mepConfig;
-  const { pageId = 1 } = page;
+  const { pageId = 0 } = page;
   let manifestList = '';
   const manifestParameter = [];
   activities?.forEach((manifest, mIdx) => {
@@ -193,11 +195,12 @@ function getManifestListDomAndParameter(mepConfig) {
     const variantNamesArray = typeof variantNames === 'string' ? variantNames.split('||') : variantNames;
     let options = '';
     let isSelected = '';
-    if (!variantNames.includes(selectedVariantName)) {
+    // Only set default if it's the first mep button build, otherwise none. Possibly use isMMM
+    if (!variantNames.includes(selectedVariantName) && pageId === 0) {
       isSelected = 'selected';
       manifestParameter.push(`${editUrl}--default`);
     }
-    options += `<option name="${editPath}${pageId}" value="" ${isSelected} title="none">none</option>`;
+    options += `<option name="${editPath}${pageId}" value="" title="none">none</option>`;
     options += `<option name="${editPath}${pageId}" value="default" 
     id="${editPath}${pageId}--default" data-manifest="${editPath}" ${isSelected} title="default (control)">default (control)</option>`;
     isSelected = '';
@@ -286,9 +289,9 @@ async function mmmToggleManifests(event, popup, pageId) {
           activity.source = 'MMM';
           return activity;
         });
-        mmmManifestsElement.innerHTML = `<h6>7 Day Manifests</h6> ${getManifestListDomAndParameter(data).manifestList}`;
+        mmmManifestsElement.innerHTML = `<h6>MMM data for last 7 days</h6> ${getManifestListDomAndParameter(data).manifestList}`;
         mmmManifestsElement.querySelectorAll('select').forEach((input) => {
-          input.querySelector('option').selected = true;
+          input.querySelector('option[title="none"]').selected = true;
           input.addEventListener('change', updatePreviewButton.bind(null, popup, pageId));
         });
         addDividers(mmmManifestsElement, '.mep-section');
@@ -379,7 +382,7 @@ export function getMepPopup(mepConfig, isMmm = false) {
     ? `<div>
         <input type="checkbox" name="mepHighlight${pageId}"
         id="mepManifestsCheckbox" value="false">
-        <label for="mepManifestsCheckbox">Get 7 day manifests from MMM</label>
+        <label for="mepManifestsCheckbox">MMM data for last 7 days</label>
       </div>`
     : '';
   mepOptions.innerHTML = `
