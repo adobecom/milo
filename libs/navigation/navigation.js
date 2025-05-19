@@ -162,7 +162,7 @@ export default async function loadBlock(configs, customLib) {
           configBlock.onError?.(e);
           window.lana.log(`${e.message} | gnav-source: ${gnavSource} | href: ${window.location.href}`, {
             clientId: 'feds-milo',
-            tags: 'standalone-gnav',
+            tags: 'standalone-gnav-test',
             errorType: e.errorType,
           });
         }
