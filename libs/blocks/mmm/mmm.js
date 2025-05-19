@@ -705,7 +705,7 @@ function handleMetadataFilterInput(event) {
 }
 
 function createMetadataLookup(el) {
-  const openMetadataSheetBtn = document.querySelector('h2 ~ .cta-container a');
+  const openMetadataSheetBtn = document.querySelector('.text.instructions .cta-container a');
   const metadataSheetUrls = {
     cc: 'https://adobe.sharepoint.com/:x:/r/sites/adobecom/_layouts/15/Doc.aspx?sourcedoc=%7B818b8ad2-72db-4726-85a6-5238d6715069%7D&action=edit&activeCell=%27helix-default%27!A16&wdinitialsession=11b36a4d-a08b-0def-1294-1fcf497cfc1a&wdrldsc=4&wdrldc=1&wdrldr=AccessTokenExpiredWarningUnauthenticated%2CRefreshin',
     dc: 'https://adobe.sharepoint.com/:x:/r/sites/adobecom/_layouts/15/Doc.aspx?sourcedoc=%7B8F5A8CD0-7979-41CE-894A-CC465B293C1A%7D&file=metadata-optimization.xlsx&action=default&mobileredirect=true&wdsle=0',
