@@ -19,15 +19,13 @@ let videoLabels = {
 };
 let videoCounter = 0;
 
-const shouldBlockFreeTrialLinks = (a, prefix) => {
-  if (prefix !== '/kr') return false;
-  if (a.dataset?.modalPath?.includes('/kr/cc-shared/fragments/trial-modals')) return true;
-  return [
-    'free-trial', 'free trial',
-    '무료 체험판', '무료 체험하기',
+const shouldBlockFreeTrialLinks = (a, prefix) => prefix === '/kr' && (
+  a.dataset?.modalPath?.includes('/kr/cc-shared/fragments/trial-modals')
+  || [
+    'free-trial', 'free trial', '무료 체험판', '무료 체험하기',
     '{{free-trial}}', '{{start-free-trial}}', '{{try-for-free}}',
-  ].some((pattern) => a.textContent?.toLowerCase()?.includes(pattern.toLowerCase()));
-};
+  ].some((pattern) => a.textContent?.toLowerCase()?.includes(pattern.toLowerCase()))
+);
 
 export function decorateButtons(el, size) {
   const buttons = el.querySelectorAll('em a, strong a, p > a strong');
