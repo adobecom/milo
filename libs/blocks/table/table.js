@@ -383,11 +383,10 @@ function handleSection(sectionParams) {
   }
 
   rowCols.forEach((col) => {
-    const formattingTags = col.querySelector('strong, em, mark, b, i, u, del, ins, code, small, sub, sup, cite');
-    if (formattingTags && Array.from(col.childNodes).some(
-      (node) => node.nodeType === Node.TEXT_NODE && node.textContent.trim()
-      && node.parentNode === col && formattingTags.parentNode.tagName === 'DIV',
-    )) col.replaceChildren(createTag('p', {}, [...col.childNodes]));
+    const textModifiers = ['STRONG', 'EM', 'MARK', 'B', 'I', 'U', 'DEL', 'INS', 'CODE', 'SMALL', 'SUB', 'SUP', 'CITE'];
+    if (Array.from(col.children).every((child) => textModifiers.includes(child.tagName))) {
+      col.replaceChildren(createTag('p', {}, [...col.childNodes]));
+    }
   });
 
   return expandSection;
