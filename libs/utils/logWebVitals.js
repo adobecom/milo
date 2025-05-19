@@ -88,7 +88,7 @@ function observeLCP(lanaData, delay, mep) {
     const lastEntry = entries[entries.length - 1]; // Use the latest LCP candidate
     lanaData.lcp = parseInt(lastEntry.startTime, 10);
     const lcpEl = lastEntry.element;
-    lanaData.lcpElType = lcpEl.nodeName.toLowerCase();
+    lanaData.lcpElType = lcpEl?.nodeName?.toLowerCase() || 'Element Was Replaced';
     lanaData.lcpEl = getElementInfo(lcpEl);
     lanaData.lcpSectionOne = boolStr(sectionOne.contains(lcpEl));
     const closestFrag = lcpEl.closest('.fragment');
