@@ -254,7 +254,7 @@ const decorateSignIn = async ({ rawElem, decoratedElem }) => {
   let signInElem;
 
   if (!dropdownElem) {
-    signInElem = toFragment`<button daa-ll="${signInLabel}" class="feds-signIn">${signInLabel}</button>`;
+    signInElem = toFragment`<button daa-ll="${signInLabel}" class="feds-signIn-test">${signInLabel}</button>`;
 
     signInElem.addEventListener('click', (e) => {
       e.preventDefault();
