@@ -178,7 +178,7 @@ export default async function loadBlock(configs, customLib) {
           configBlock.onError?.(e);
           window.lana.log(`${e.message} | footer-source: ${footerSource} | href: ${window.location.href}`, {
             clientId: 'feds-milo',
-            tags: 'standalone-footer',
+            tags: 'standalone-footer-test',
             errorType: e.errorType,
           });
         }
