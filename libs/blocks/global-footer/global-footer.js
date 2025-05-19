@@ -137,7 +137,7 @@ class Footer {
       this.decorateLinkGroup = menuLogic.decorateLinkGroup;
       resolve();
     });
-    console.log("Hello")
+    console.log("Hello world")
 
     return this.menuLogic;
   };
