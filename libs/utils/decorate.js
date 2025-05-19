@@ -39,7 +39,7 @@ export function decorateButtons(el, size) {
 
   buttons.forEach((button) => {
     const parent = button.parentElement;
-    if (shouldBlockFreeTrialLinks(button, getConfig().locale.prefix, parent)) return;
+    if (shouldBlockFreeTrialLinks(button, getConfig()?.locale?.prefix, parent)) return;
     let target = button;
     const buttonType = buttonTypeMap[parent.nodeName] || 'outline';
     if (button.nodeName === 'STRONG') {
