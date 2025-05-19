@@ -529,7 +529,10 @@ export function appendExtraOptions(url, extraOptions) {
   Object.keys(extraOptionsObj).forEach((key) => {
     if (CHECKOUT_ALLOWED_KEYS.includes(key)) {
       const value = extraOptionsObj[key];
-      urlWithExtraOptions.searchParams.set(TAB_DEEPLINK_MAPPING[key], TAB_DEEPLINK_MAPPING[value]);
+      urlWithExtraOptions.searchParams.set(
+        TAB_DEEPLINK_MAPPING[key] ?? key,
+        TAB_DEEPLINK_MAPPING[value] ?? value,
+      );
     }
   });
   return urlWithExtraOptions.href;
