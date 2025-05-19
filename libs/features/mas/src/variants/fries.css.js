@@ -122,7 +122,7 @@ export const CSS = `
 
     merch-card[variant='fries'] [slot="addon-confirmation"] {
         color: var(--spectrum-global-color-green-500);
-        font-size: var(--consonant-merch-card-body-s-font-size);
+        font-size: 15px;
         font-weight: bold;
         margin-left: 8px;
     }
