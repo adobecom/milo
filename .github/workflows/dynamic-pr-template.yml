@@ -23,6 +23,9 @@ jobs:
           files: |
             libs/blocks/global-navigation/**
             libs/blocks/global-footer/**
+            libs/blocks/region-nav/**
+            libs/navigation/**
+            libs/styles/styles.css
 
       - name: Debug Changed Files
         run: |
@@ -77,6 +80,7 @@ jobs:
               ""
               "**Sticky Branch Banner:**"
               "- URL: https://main--federal--adobecom.aem.page/drafts/blaishram/banner/branch-banner-sticky?martech=off&milolibs=${BRANCH_NAME}--milo--${REPO_OWNER}"
+              ""
               "**Inline Branch Banner:**"
               "- URL: https://main--federal--adobecom.aem.page/drafts/blaishram/banner/branch-banner-inline?martech=off&milolibs=${BRANCH_NAME}--milo--${REPO_OWNER}"
               ""   
