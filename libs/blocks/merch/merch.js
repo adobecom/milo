@@ -829,7 +829,7 @@ export async function buildCta(el, params) {
       });
     }
 
-    if (document.head.querySelector('meta[name=mas-ff-copy-cta]')?.content === 'on') {
+    if (getMetadata('mas-ff-copy-cta') === 'on') {
       const { default: addCopyToClipboard } = await import('./copy-to-clipboard.js');
       return addCopyToClipboard(el, cta);
     }
