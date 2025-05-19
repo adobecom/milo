@@ -11,6 +11,7 @@
   --global-height-nav: 56px;
   --feds-height-nav: 55px;
   --color-white: #FFF;
+  --modal-close-accent-color: #707070;
 }
 
 .global-navigation, .global-footer, .dialog-modal {
