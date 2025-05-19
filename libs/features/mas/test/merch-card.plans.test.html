@@ -155,6 +155,61 @@
                 </div></merch-card
             >
         </template>
+        <template id="plans-education-with-body-prices">
+            <mas-commerce-service env="stage"></mas-commerce-service>
+            <merch-card consonant="true" variant="plans-education">
+                <p slot="heading-s">Heading S</p>
+                <p slot="subtitle">Subheading</p>
+                <p slot="heading-m">
+                    <span
+                        is="inline-price"
+                        data-display-per-unit="false"
+                        data-template="price"
+                        data-wcs-osi="Mutn1LYoGojkrcMdCLO7LQlx1FyTHw27ETsfLv0h8DQ"
+                    ></span>
+                </p>
+                <div slot="body-xs">
+                    <p><span class="heading-xs">Heading XS</span></p>
+                    <p>
+                        <span
+                            is="inline-price"
+                            data-display-per-unit="false"
+                            data-template="price"
+                            data-wcs-osi="Mutn1LYoGojkrcMdCLO7LQlx1FyTHw27ETsfLv0h8DQ"
+                        ></span>
+                    </p>
+                    <p>
+                        <span class="heading-xs"
+                            >To order, call:
+                            <a
+                                class="spectrum-Link spectrum-Link--primary"
+                                href="tel:800-685-3638."
+                                title="some link"
+                                target="_self"
+                                daa-ll="800 685 3638-1--"
+                                >800-685-3638.</a
+                            ></span
+                        >
+                    </p>
+                    <p>
+                        Body XS/Regular Includes institutional control —
+                        licenses can be reassigned to new students or courses.
+                    </p>
+                </div>
+                <div slot="footer">
+                    <a
+                        is="checkout-link"
+                        data-checkout-workflow="UCv3"
+                        data-checkout-workflow-step="email"
+                        data-quantity="1"
+                        data-wcs-osi="Mutn1LYoGojkrcMdCLO7LQlx1FyTHw27ETsfLv0h8DQ"
+                        data-analytics-id="buy-now"
+                        class="con-button blue"
+                        >Lorem ipsum</a
+                    >
+                </div></merch-card
+            >
+        </template>
         <script type="module">
             import { runTests } from '@web/test-runner-mocha';
             import { expect } from '@esm-bundle/chai';
@@ -207,6 +262,22 @@
                             photoshopWithAddon,
                         );
                         expect(photoshopWithAddon).to.exist;
+                    });
+                    it('should render addon checkbox', async () => {
+                        const [masCommerceService, educationWithBodyPrices] =
+                            getTemplateContent(
+                                'plans-education-with-body-prices',
+                            );
+                        container.append(
+                            masCommerceService,
+                            educationWithBodyPrices,
+                        );
+                        await educationWithBodyPrices.checkReady();
+                        const priceLegals =
+                            educationWithBodyPrices.querySelectorAll(
+                                '[data-template="legal"]',
+                            );
+                        expect(priceLegals.length).to.equal(2);
                     });
                 });
             });
