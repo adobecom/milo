@@ -241,6 +241,13 @@ export function processAddon(fields, merchCard, mapping) {
     merchCard.append(addon);
 }
 
+export function processAddonConfirmation(fields, merchCard, mapping) {
+  console.log('addonConfirmation:', fields.addonConfirmation);
+    if (fields.addonConfirmation) {
+        appendSlot('addonConfirmation', fields, merchCard, mapping);
+    }
+}
+
 export function processStockOffersAndSecureLabel(
     fields,
     merchCard,
@@ -444,6 +451,7 @@ export function processCTAs(fields, merchCard, aemFragmentMapping, variant) {
         const { slot } = aemFragmentMapping.ctas;
         const footer = createTag('div', { slot }, fields.ctas);
 
+        // Process buttons while preserving other content
         const ctas = [...footer.querySelectorAll('a')].map((cta) => {
             const isCheckout = cta.hasAttribute('data-wcs-osi') && Boolean(cta.getAttribute('data-wcs-osi'));
             const checkoutLinkStyle = CHECKOUT_STYLE_PATTERN.exec(cta.className)?.[0] ?? 'accent';
@@ -598,6 +606,7 @@ export async function hydrate(fragment, merchCard) {
     processBorderColor(fields, merchCard, mapping);
     processDescription(fields, merchCard, mapping);
     processAddon(fields, merchCard, mapping);
+    processAddonConfirmation(fields, merchCard, mapping);
     processStockOffersAndSecureLabel(
         fields,
         merchCard,

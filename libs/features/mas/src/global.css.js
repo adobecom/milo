@@ -368,6 +368,8 @@ merch-card [slot="body-xxs"] {
 }
 
 merch-card [slot="body-s"] {
+    font-size: var(--consonant-merch-card-body-s-font-size);
+    line-height: var(--consonant-merch-card-body-s-line-height);
     color: var(--consonant-merch-card-body-s-color);
 }
 

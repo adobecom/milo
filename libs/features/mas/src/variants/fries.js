@@ -15,6 +15,7 @@ export const FRIES_AEM_FRAGMENT_MAPPING = {
     trialBadge: { tag: 'div', slot: 'trial-badge', default: 'spectrum-green-800' },
     prices: { tag: 'p', slot: 'price' },
     ctas: { slot: 'cta', size: 'M' },
+    addonConfirmation: { tag: 'div', slot: 'addon-confirmation' },
     borderColor: { attribute: 'border-color', specialValues: {
         gray: '--spectrum-gray-300',
     } },
@@ -30,7 +31,8 @@ export class FriesCard extends VariantLayout {
     }
 
     renderLayout() {
-        return html`            <div class="content">
+        return html`            
+            <div class="content">
                 <div class="header">
                     <slot name="icons"></slot>
                     <slot name="heading-xxs"></slot>
@@ -41,7 +43,7 @@ export class FriesCard extends VariantLayout {
                 <div class="footer">
                   <div class="cta">
                     <slot name="cta"></slot>
-                    <slot name="addon"></slot>
+                    <slot name="addon-confirmation"></slot>
                   </div>
                   <slot name="price"></slot>
                 </div>
@@ -89,15 +91,14 @@ export class FriesCard extends VariantLayout {
             min-width: var(--merch-card-fries-content-min-width);
             flex-basis: var(--merch-card-fries-content-min-width);
             flex-grow: 1;
-            gap: 15px;
         }
 
         :host([variant='fries']) .header {
             display: flex;
-            min-height: var(--merch-card-fries-header-min-height);
             flex-direction: row;
             align-items: center;
             gap: var(--consonant-merch-spacing-xxs);
+            padding-bottom: 15px;
         }
 
         :host([variant='fries']) .footer {
@@ -112,8 +113,9 @@ export class FriesCard extends VariantLayout {
           justify-content: space-between;
         }
 
-        :host([variant='fries']) .cta-container {
+        :host([variant='fries']) .cta  {
             display: flex;
+            flex-direction: row;
             align-items: center;
             gap: 8px;
         }
