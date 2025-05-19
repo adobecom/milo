@@ -62,6 +62,9 @@ export function closeModal(modal) {
       mod.remove();
     }
     document.querySelector(`[data-modal-hash="#${mod.id}"]`)?.focus();
+    if (document.body.classList.contains('mobile-disable-scroll')) {
+      document.querySelector('.section .notification a').focus();
+    }
   });
 
   if (!document.querySelectorAll('.modal-curtain').length) {
