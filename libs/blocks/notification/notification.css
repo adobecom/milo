@@ -39,14 +39,24 @@
   color: var(--color-white);
 }
 
-.notification:not(.ribbon.in-line) p {
+.notification p {
   margin: 0;
   inline-size: 100%;
   margin-block-end: var(--spacing-xs);
 }
 
-.notification:not(.ribbon.in-line) [class*="heading-"] {
+.notification.ribbon.in-line p {
+  margin: initial;
+  inline-size: initial;
+  margin-block-end: initial;
+}
+
+.notification [class*="heading-"] {
   margin-block-end: var(--spacing-xxs);
+}
+
+.notification.ribbon.in-line [class*="heading-"] {
+  margin-block-end: initial;
 }
 
 .notification [class*="heading-"] strong {
