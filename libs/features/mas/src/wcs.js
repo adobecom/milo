@@ -13,6 +13,7 @@ import { Log } from './log.js';
 import { MasError } from './mas-error.js';
 import { masFetch } from './utils/mas-fetch.js';
 import { getService } from './utilities.js';
+import { roundMeasure } from './utils.js';
 
 const NAMESPACE = 'wcs';
 
@@ -185,9 +186,8 @@ export function Wcs({ settings }) {
             /* c8 ignore next 2 */
             message = `Network error: ${e.message}`;
         } finally {
-            ({ startTime, duration } = performance.measure(
-                measureName,
-                startMark,
+            ({ startTime, duration } = roundMeasure(
+                performance.measure(measureName, startMark),
             ));
             // Clean up marks
             performance.clearMarks(startMark);
