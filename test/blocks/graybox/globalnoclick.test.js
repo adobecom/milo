@@ -10,6 +10,8 @@ const CLASS = {
   NO_CHANGE: 'gb-no-change',
 };
 
+window.milo = { deferredPromise: Promise.resolve() };
+
 describe('Graybox Global No Click With Changed Els', () => {
   before(async () => {
     document.body.innerHTML = await readFile({ path: './mocks/noclick-changed-els.html' });
