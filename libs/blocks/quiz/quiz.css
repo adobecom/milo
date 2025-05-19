@@ -119,12 +119,15 @@ html[dir="rtl"] .quiz-option-text-container {
 
 .quiz-option-title {
   color: var(--text-color);
-  display: none;
   font-size: 18px;
   font-weight: 700;
   line-height: 22px;
   margin: 0 0 8px;
-  text-align: center;
+  text-align: left;
+}
+
+html[dir="rtl"] .quiz-option-title {
+  text-align: right;
 }
 
 .quiz-option-text {
@@ -390,9 +393,11 @@ html[dir="rtl"] .quiz-step::after {
     padding: 38px 16px 24px;
   }
 
-  .quiz-option-title {
-    display: block;
+  .quiz-option-title,
+  html[dir="rtl"] .quiz-option-title {
+    text-align: center;
   }
+  
 
   .quiz-option-text {
     text-align: center;
