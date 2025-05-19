@@ -99,12 +99,6 @@ function handleHeading(table, headingCols) {
     col.querySelectorAll('h1, h2, h3, h4, h5, h6').forEach((heading) => {
       heading.setAttribute('role', 'paragraph');
     });
-
-    const formattingTags = col.querySelector('strong, em, mark, b, i, u, del, ins, code, small, sub, sup, cite');
-    if (formattingTags && Array.from(col.childNodes).some(
-      (node) => node.nodeType === Node.TEXT_NODE && node.textContent.trim()
-      && node.parentNode === col && formattingTags.parentNode.tagName === 'DIV',
-    )) col.replaceChildren(createTag('p', {}, [...col.childNodes]));
   });
 }
 
