@@ -5,10 +5,9 @@ import chai, { expect } from '@esm-bundle/chai';
 import { mockFetch } from './mocks/fetch.js';
 import { withWcs } from './mocks/wcs.js';
 import { withAem } from './mocks/aem.js';
-import { delay, getTemplateContent } from './utils.js';
+import { delay, getTemplateContent, oneEvent } from './utils.js';
 import '../src/mas.js';
-import { EVENT_MAS_ERROR } from '../src/constants.js';
-import { MasError } from '../src/mas-error.js';
+import { EVENT_MAS_ERROR, EVENT_MAS_READY } from '../src/constants.js';
 
 chai.use(chaiAsPromised);
 
@@ -169,28 +168,24 @@ runTests(async () => {
 
         it('merch-card fails when aem-fragment contains incorrect merch data', async () => {
             const [, , , , , cardWithWrongOsis] = getTemplateContent('cards');
-
-            let masErrorTriggered = false;
-            cardWithWrongOsis.addEventListener(EVENT_MAS_ERROR, (e) => {
-                masErrorTriggered = true;
-            });
-
+            let masErrorTriggered = oneEvent(
+                cardWithWrongOsis,
+                EVENT_MAS_ERROR,
+            ).then(() => true);
             spTheme.append(cardWithWrongOsis);
             const aemFragment = cardWithWrongOsis.querySelector('aem-fragment');
             await aemFragment.updateComplete;
             await cardWithWrongOsis.checkReady();
-            expect(masErrorTriggered).to.true;
+            expect(await masErrorTriggered).to.true;
         });
 
         it('renders ccd slice card', async () => {
             const [, , , , , , sliceCard] = getTemplateContent('cards');
             spTheme.append(sliceCard);
+            const masReady = oneEvent(sliceCard, EVENT_MAS_READY);
             await delay(200);
-
             expect(getSelectorElement(sliceCard, 'merch-icon')).to.exist;
-
             expect(getSlotElement(sliceCard, 'image')).to.exist;
-
             expect(getSlotElement(sliceCard, 'body-s')).to.exist;
 
             const footerSlot = sliceCard.shadowRoot
@@ -202,17 +197,26 @@ runTests(async () => {
                 ? sliceCard.shadowRoot.querySelector('div#badge')
                 : sliceCard.querySelector('div#badge');
             expect(badge).to.exist;
+            const { detail } = await masReady;
+            expect(detail).to.have.property('duration');
+            expect(detail).to.have.property('startTime');
+            expect(detail).to.have.property('fragmentDuration');
+            expect(detail).to.have.property('fragmentStartTime');
         });
     });
 
     describe('getFragmentById', async () => {
         let aemFragment;
+        const addFragment = (fragment) => {
+            aemFragment = document.createElement('aem-fragment');
+            aemFragment.setAttribute('fragment', fragment);
+            document.body.appendChild(aemFragment);
+            return aemFragment;
+        };
         beforeEach(async () => {
             await mockFetch(withAem);
             cache.clear();
-            aemFragment = document.createElement('aem-fragment');
-            aemFragment.setAttribute('fragment', 'fragment-cc-all-apps');
-            document.body.appendChild(aemFragment);
+            aemFragment = addFragment('fragment-cc-all-apps');
             await aemFragment.updateComplete;
         });
 
@@ -221,28 +225,28 @@ runTests(async () => {
         });
 
         it('throws an error if response is not ok', async () => {
-            const promise = aemFragment.getFragmentById('notfound');
-            try {
-                await promise;
-                expect.fail('Promise should have been rejected');
-            } catch (error) {
-                expect(error).to.be.instanceOf(MasError);
-                expect(error.context).to.have.property('duration');
-                expect(error.context).to.have.property('startTime');
-                expect(error.context).to.include({
-                    status: 404,
-                    url: 'http://localhost:2023/test/notfound',
-                });
-            }
+            addFragment('notfound');
+            const event = oneEvent(aemFragment, 'aem:error');
+            const { detail: error } = await event;
+            expect(error).to.have.property('duration');
+            expect(error).to.have.property('startTime');
+            expect(error).to.include({
+                status: 404,
+                url: 'http://localhost:2023/mas/io/fragment',
+            });
         });
 
         it('fetches fragment from freyja on publish', async () => {
-            const endpoint =
-                'https://www.stage.adobe.com/mas/io/fragment?id=fragment-cc-all-apps&api_key=testApiKey&locale=fr_FR';
-            const promise = aemFragment.getFragmentById(endpoint);
-            await promise;
+            cache.clear();
+            document.querySelector('meta[name="mas-io-url"]').remove();
+            const masCommerceService = document.querySelector(
+                'mas-commerce-service',
+            );
+            masCommerceService.activate();
+            addFragment('fragment-cc-all-apps');
+            await aemFragment.updateComplete;
             expect(fetch.lastCall.firstArg).to.equal(
-                'https://www.stage.adobe.com/mas/io/fragment?id=fragment-cc-all-apps&api_key=testApiKey&locale=fr_FR',
+                'https://www.stage.adobe.com/mas/io/fragment?id=fragment-cc-all-apps&api_key=wcms-commerce-ims-ro-user-milo&locale=en_US',
             );
         });
     });

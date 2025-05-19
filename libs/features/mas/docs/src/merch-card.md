@@ -163,7 +163,7 @@ The reason is that some merch cards are resolved very quickly and event could di
     { 
         const logReady = document.getElementById('log-mas-ready');
         const message = (e, type) => {
-          const id = e.target.getAttribute('id') || e.target.getAttribute('data-wcs-osi');
+          const id = e.target.getAttribute('id') || e.target.getAttribute('fragment') || e.target.getAttribute('data-wcs-osi');
           const detail = e.detail ? `: ${JSON.stringify(e.detail, null, 2)}` : '';
           return `'${type}' on ${e.target.nodeName} #${id}${detail}`;
         };

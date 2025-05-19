@@ -1098,5 +1098,31 @@
             "language": "MULT",
             "merchant": "ADOBE"
         }
+    ],
+    "PpnQ-UmW9NBwZwXlFw79zw2JybhvwIUwMTDYiIlu5qI-mult": [
+        {
+            "offerSelectorIds": ["PpnQ-UmW9NBwZwXlFw79zw2JybhvwIUwMTDYiIlu5qI"],
+            "offerId": "257E1D82082387D152029F93C1030624",
+            "priceDetails": {
+                "price": 89.99,
+                "priceWithoutTax": 89.99,
+                "usePrecision": true,
+                "formatString": "'US$'#,##0.00",
+                "taxDisplay": "TAX_EXCLUSIVE",
+                "taxTerm": "TAX"
+            },
+            "productArrangementCode": "ccsn_direct_individual",
+            "productArrangement": {
+                "productFamily": "CC_ALL_APPS",
+                "productCode": "CCSN"
+            },
+            "buyingProgram": "RETAIL",
+            "commitment": "MONTH",
+            "term": "MONTHLY",
+            "customerSegment": "INDIVIDUAL",
+            "marketSegments": ["COM"],
+            "salesChannel": "DIRECT",
+            "offerType": "BASE"
+        }
     ]
 }

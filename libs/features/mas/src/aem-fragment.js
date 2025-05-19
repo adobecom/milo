@@ -5,7 +5,7 @@ import {
     MARK_DURATION_SUFFIX,
 } from './constants.js';
 import { MasError } from './mas-error.js';
-import { getService } from './utils.js';
+import { getService, roundMeasure } from './utils.js';
 import { masFetch } from './utils/mas-fetch.js';
 
 const sheet = new CSSStyleSheet();
@@ -67,9 +67,9 @@ export class AemFragment extends HTMLElement {
     #rawData = null;
     #data = null;
     #stale = false;
-    #startMark = null;
     #service = null;
-
+    #startMarkName = null;
+    #lastSuccessMark = null;
     /**
      * @type {string} fragment id
      */
@@ -81,6 +81,7 @@ export class AemFragment extends HTMLElement {
     #fetchPromise;
 
     #author = false;
+    #fetchCount = 0;
 
     static get observedAttributes() {
         return [ATTRIBUTE_FRAGMENT, ATTRIBUTE_AUTHOR];
@@ -105,13 +106,15 @@ export class AemFragment extends HTMLElement {
         if (this.#fetchPromise) return;
         this.#service = getService(this);
         this.#log = this.#service.log.module(AEM_FRAGMENT_TAG_NAME);
-        this.#startMark = `${AEM_FRAGMENT_TAG_NAME}:${this.#fragmentId}${MARK_START_SUFFIX}`;
-        performance.mark(this.#startMark);
         if (!this.#fragmentId) {
             this.#fail({ message: 'Missing fragment id' });
             return;
         }
         this.refresh(false);
+    }
+
+    get startMarkName() {
+        return this.#startMarkName;
     }
 
     /**
@@ -120,8 +123,12 @@ export class AemFragment extends HTMLElement {
      * @param {string} id fragment id
      * @returns {Promise<Object>} the raw fragment item
      */
-    async getFragmentById(endpoint, id, startMark) {
-        const measureName = `${AEM_FRAGMENT_TAG_NAME}:${id}${MARK_DURATION_SUFFIX}`;
+    async #getFragmentById(endpoint) {
+        this.#fetchCount++;
+        const markPrefix = `${AEM_FRAGMENT_TAG_NAME}:${this.#fragmentId}:${this.#fetchCount}`;
+        this.#startMarkName = `${markPrefix}${MARK_START_SUFFIX}`;
+        const measureName = `${markPrefix}${MARK_DURATION_SUFFIX}`;
+        performance.mark(this.#startMarkName);
         let response;
         try {
             response = await masFetch(endpoint, {
@@ -129,9 +136,8 @@ export class AemFragment extends HTMLElement {
                 credentials: 'omit',
             });
             if (!response?.ok) {
-                const { startTime, duration } = performance.measure(
-                    measureName,
-                    startMark,
+                const { startTime, duration } = roundMeasure(
+                    performance.measure(measureName, this.#startMarkName),
                 );
                 throw new MasError('Unexpected fragment response', {
                     response,
@@ -140,17 +146,19 @@ export class AemFragment extends HTMLElement {
                     ...this.#service.duration,
                 });
             }
+            this.#lastSuccessMark = roundMeasure(
+                performance.measure(measureName, this.#startMarkName),
+            );
             return response.json();
         } catch (e) {
-            const { startTime, duration } = performance.measure(
-                measureName,
-                startMark,
+            const { startTime, duration } = roundMeasure(
+                performance.measure(measureName, this.#startMarkName),
             );
             if (!response) {
                 response = { url: endpoint };
             }
-
-            throw new MasError('Failed to fetch fragment', {
+            const reason = e.message ?? 'unknown';
+            throw new MasError(`Failed to fetch fragment: ${reason}`, {
                 response,
                 startTime,
                 duration,
@@ -171,10 +179,11 @@ export class AemFragment extends HTMLElement {
             cache.remove(this.#fragmentId);
         }
 
-        this.#fetchPromise = this.fetchData()
+        this.#fetchPromise = this.#fetchData()
             .then(() => {
                 const { references, referencesTree, placeholders } =
                     this.#rawData || {};
+                const { startTime, duration } = this.#lastSuccessMark;
                 this.dispatchEvent(
                     new CustomEvent(EVENT_AEM_LOAD, {
                         detail: {
@@ -183,6 +192,8 @@ export class AemFragment extends HTMLElement {
                             references,
                             referencesTree,
                             placeholders,
+                            startTime,
+                            duration,
                         },
                         bubbles: true,
                         composed: true,
@@ -213,7 +224,7 @@ export class AemFragment extends HTMLElement {
         );
     }
 
-    async fetchData() {
+    async #fetchData() {
         this.classList.remove('error');
         this.#data = null;
         let fragment = cache.get(this.#fragmentId);
@@ -225,11 +236,8 @@ export class AemFragment extends HTMLElement {
         const { masIOUrl, wcsApiKey, locale } = this.#service.settings;
         const endpoint = `${masIOUrl}/fragment?id=${this.#fragmentId}&api_key=${wcsApiKey}&locale=${locale}`;
 
-        fragment = await this.getFragmentById(
-            endpoint,
-            this.#fragmentId,
-            this.#startMark,
-        );
+        fragment = await this.#getFragmentById(endpoint);
+        // TODO add all references to cache
         cache.addByRequestedId(this.#fragmentId, fragment);
         this.#rawData = fragment;
         this.#stale = false;
