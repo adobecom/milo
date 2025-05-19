@@ -4,6 +4,7 @@ import { getMetadata } from '../section-metadata/section-metadata.js';
 import { processTrackingLabels } from '../../martech/attributes.js';
 import '../../deps/mas/merch-card.js';
 import '../../deps/lit-all.min.js';
+import { initService } from '../merch/merch.js';
 
 const TAG_PATTERN = /^[a-zA-Z0-9_-]+:[a-zA-Z0-9_-]+\/[a-zA-Z0-9_-].*$/;
 
@@ -575,6 +576,7 @@ const addStartingAt = async (styles, merchCard) => {
 
 export default async function init(el) {
   if (!el.querySelector(INNER_ELEMENTS_SELECTOR)) return el;
+  const merchServicePromise = initService();
   // TODO: Remove after bugfix PR adobe/helix-html2md#556 is merged
   const liELs = el.querySelectorAll('ul li');
   if (liELs) {
@@ -782,6 +784,7 @@ export default async function init(el) {
   } else {
     parseTwpContent(el, merchCard);
   }
+  await merchServicePromise;
   el.replaceWith(merchCard);
   decorateMerchCardLinkAnalytics(merchCard);
   return merchCard;
