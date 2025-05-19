@@ -96,7 +96,7 @@ export function getService() {
  */
 export function roundMeasure(measure) {
     const { startTime, duration } = measure;
-    const roundTo = 100000;
+    const roundTo = 1000;
   return {
         startTime: Math.round(startTime * roundTo) / roundTo,
         duration: Math.round(duration * roundTo) / roundTo,
