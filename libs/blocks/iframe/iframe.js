@@ -51,12 +51,20 @@ export default function init(el) {
   const embed = createTag('div', { class: `milo-iframe ${classes}` }, iframe);
 
   iframe.onload = () => {
-    if (new URL(iframe.src).origin !== window.location.origin) {
-      if (ariaLabel) iframe.title = ariaLabel;
-      return;
-    }
+    try {
+      const dialogModal = iframe.closest('.dialog-modal');
+      if (new URL(iframe.src).origin !== window.location.origin) {
+        if (ariaLabel) iframe.title = ariaLabel;
+        dialogModal?.setAttribute('aria-label', iframe.title);
+        return;
+      }
 
-    iframe.title = ariaLabel || iframe.contentWindow.document.querySelector('h1, h2, h3, h4, h5, h6')?.textContent;
+      const sameOriginText = ariaLabel || iframe.contentWindow.document.querySelector('h1, h2, h3, h4, h5, h6')?.textContent;
+      if (sameOriginText) iframe.title = sameOriginText;
+      if (dialogModal && sameOriginText) dialogModal.setAttribute('aria-label', sameOriginText);
+    } catch (error) {
+      // Cross-origin iframe, can't access content
+    }
   };
 
   el.insertAdjacentElement('afterend', embed);

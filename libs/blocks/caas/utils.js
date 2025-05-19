@@ -519,18 +519,15 @@ export function getCountryAndLang({ autoCountryLang, country, language }) {
     This can be changed after lang-first localization is supported from the milo utils */
   if (langFirst && autoCountryLang) {
     const pathArr = pageConfigHelper()?.pathname?.split('/') || [];
-    const langStr = (pathArr.length > 1) ? LANGS[pathArr[1]] || LANGS[''] : 'en';
-    let countryStr = (pathArr.length > 2) ? LOCALES[pathArr[2]] || 'xx' : 'xx';
+    const langStr = LANGS[pathArr[1]] ?? LANGS[''] ?? 'en';
+    let countryStr = LOCALES[pathArr[2]] ?? 'xx';
     if (typeof countryStr === 'object') {
-      const { ietf } = countryStr;
-      const localeAttributes = ietf?.split('-');
-      const [, c = 'xx'] = localeAttributes;
-      countryStr = c;
+      countryStr = countryStr.ietf?.split('-')[1] ?? 'xx';
     }
 
     return {
       country: countryStr,
-      lang: langStr,
+      language: langStr,
       locales,
     };
   }

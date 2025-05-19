@@ -89,7 +89,7 @@ export function Checkout({ providers, settings }) {
         const { env, landscape } = settings;
         const {
             checkoutClientId: clientId,
-            checkoutMarketSegment: marketSegment,
+            checkoutMarketSegment,
             checkoutWorkflow: workflow,
             checkoutWorkflowStep: workflowStep,
             country,
@@ -97,7 +97,9 @@ export function Checkout({ providers, settings }) {
             quantity,
             ...rest
         } = collectCheckoutOptions(options);
-        const context = window.frameElement || Object.values(MODAL_TYPE_3_IN_1).includes(options.modal) ? 'if' : 'fp';
+        const masFF3in1 = document.querySelector('meta[name=mas-ff-3in1]');
+        const is3in1 = Object.values(MODAL_TYPE_3_IN_1).includes(options.modal) && (!masFF3in1 || masFF3in1.content !== 'off');
+        const context = window.frameElement || is3in1 ? 'if' : 'fp';
         const data = {
             checkoutPromoCode,
             clientId,
@@ -105,23 +107,21 @@ export function Checkout({ providers, settings }) {
             country,
             env,
             items: [],
-            marketSegment,
+            marketSegment: checkoutMarketSegment,
             workflowStep,
             landscape,
             ...rest,
         };
+        // even if CTA has multiple offers, they should have same ms, cs, ot values
+        const [{ productArrangementCode, marketSegments: [marketSegment], customerSegment, offerType }] = offers;
+        Object.assign(data, {
+            productArrangementCode,
+            marketSegment,
+            customerSegment,
+            offerType,
+        });
         if (offers.length === 1) {
-            const [{ offerId, offerType, productArrangementCode }] = offers;
-            const {
-                marketSegments: [marketSegment],
-                customerSegment,
-            } = offers[0];
-            Object.assign(data, {
-                marketSegment,
-                customerSegment,
-                offerType,
-                productArrangementCode,
-            });
+            const { offerId } = offers[0];
             data.items.push(
                 quantity[0] === 1
                     ? { id: offerId }
@@ -130,9 +130,10 @@ export function Checkout({ providers, settings }) {
         } else {
             /* c8 ignore next 7 */
             data.items.push(
-                ...offers.map(({ offerId }, index) => ({
+                ...offers.map(({ offerId, productArrangementCode }, index) => ({
                     id: offerId,
                     quantity: quantity[index] ?? Defaults.quantity,
+                    ...(is3in1 ? { productArrangementCode } : {}),
                 })),
             );
         }
