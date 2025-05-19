@@ -417,30 +417,16 @@ function createRequestPayload({ updatedContext, pageName, processedPageName, loc
 
     if (getUpdatedVisitAttempt() === 2) {
       digitalData.adobe = {
-        ...digitalData.adobe,
         libraryVersions: 'alloy-api',
-        experienceCloud: {
-          ...digitalData.adobe?.experienceCloud,
-          secondVisits: 'setEvent',
-        },
+        experienceCloud: { secondVisits: 'setEvent' },
       };
     }
     if (getUpdatedAcrobatVisitAttempt() === 2) {
-      digitalData.adobe = {
-        ...digitalData.adobe,
-        experienceCloud: {
-          ...digitalData.adobe?.experienceCloud,
-          acrobatSecondVisits: 'setEvent',
-        },
-      };
+      digitalData.adobe = { experienceCloud: { acrobatSecondVisits: 'setEvent' } };
     }
     digitalData.otherConsents = digitalData.otherConsents || {};
     digitalData.adobe = {
-      ...digitalData.adobe,
-      experienceCloud: {
-        ...digitalData.adobe?.experienceCloud,
-        agiCampaign: setAgICampVal ? agiCampaign : '',
-      },
+      experienceCloud: { agiCampaign: setAgICampVal ? agiCampaign : '' },
       gpc: getGlobalPrivacyControl(),
     };
     xdm.implementationDetails = {
