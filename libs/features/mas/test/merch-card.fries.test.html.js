@@ -5,9 +5,7 @@ import { mockLana } from './mocks/lana.js';
 import { mockFetch } from './mocks/fetch.js';
 
 import './spectrum.js';
-import '../src/merch-offer.js';
-import '../src/merch-offer-select.js';
-import '../src/merch-quantity-select.js';
+import '../src/mas.js'
 
 import { mockIms } from './mocks/ims.js';
 import { withWcs } from './mocks/wcs.js';
@@ -17,7 +15,6 @@ export default async () => {
         mockIms();
         mockLana();
         mockFetch(withWcs);
-        import('../src/mas.js');
 
         describe('merch-card web component for fries', () => {
             let merchCard;
