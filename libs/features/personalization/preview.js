@@ -199,9 +199,9 @@ function getManifestListDomAndParameter(mepConfig) {
       isSelected = 'selected';
       manifestParameter.push(`${editUrl}--default`);
     }
-    options += `<option name="${editPath}${pageId}" value="" title="none">none</option>`;
+    options += `<option name="${editPath}${pageId}" value="" title="none">Choose one to add this manifest</option>`;
     options += `<option name="${editPath}${pageId}" value="default" 
-    id="${editPath}${pageId}--default" data-manifest="${editPath}" ${isSelected} title="default (control)">default (control)</option>`;
+    id="${editPath}${pageId}--default" data-manifest="${editPath}" ${isSelected} title="Default (control)">Default (control)</option>`;
     isSelected = '';
     variantNamesArray.forEach((variant) => {
       isSelected = '';
