@@ -37,5 +37,3 @@ const ORG_MAP = {
   window.history.replaceState({}, null, fullURL);
   document.body.style.visibility = 'visible';
 }());
-
-// test change
