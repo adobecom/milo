@@ -10,9 +10,12 @@ import requests
 APPLICATION_JSON = "application/json"
 CMR_RETRIEVAL_ERROR = "CMR ID Retrieval Operation failed..."
 POST_FAILURE_MESSAGE = "POST failed with response code: "
-IMS_URL = 'https://ims-na1.adobelogin.com/ims/token'
-SERVICENOW_CMR_URL = 'https://ipaasapi.adobe-services.com/change_management/changes'
-SERVICENOW_GET_CMR_URL = 'https://ipaasapi.adobe-services.com/change_management/transactions/'
+#IMS_URL = 'https://ims-na1.adobelogin.com/ims/token'
+IMS_URL = 'https://ims-na1-stg1.adobelogin.com/ims/token'
+#SERVICENOW_CMR_URL = 'https://ipaasapi.adobe-services.com/change_management/changes'
+SERVICENOW_CMR_URL = 'https://ipaasapi-stage.adobe-services.com/change_management/changes'
+#SERVICENOW_GET_CMR_URL = 'https://ipaasapi.adobe-services.com/change_management/transactions/'
+SERVICENOW_GET_CMR_URL = 'https://ipaasapi-stage.adobe-services.com/change_management/transactions/'
 
 def _search_value(value, target_string):
     if isinstance(value, str):
@@ -111,39 +114,6 @@ def get_cmr_id_operation(servicenow_get_cmr_url):
 
   return json_parse["result"]["changeId"]
 
-def get_ims_token():
-  """
-  Retrieves an IMS token using client credentials.
-
-  Returns:
-      str: The access token if successful
-
-  Raises:
-      SystemExit: If the token request fails
-  """
-  print("Getting IMS Token")
-  headers = {"Content-Type":"multipart/form-data"}
-  data = {
-      'client_id': os.environ['IMSACCESS_CLIENT_ID'],
-      'client_secret': os.environ['IMSACCESS_CLIENT_SECRET'],
-      'grant_type': "authorization_code",
-      'code': os.environ['IMSACCESS_AUTH_CODE']
-  }
-  response = requests.post(IMS_URL, headers=headers, data=data)
-  json_parse = json.loads(response.text)
-
-  if response.status_code != 200:
-      print(f"{POST_FAILURE_MESSAGE} {response.status_code}")
-      print(response.text)
-      sys.exit(1)
-  elif find_string_in_json(json_parse, "error"):
-      print(f"IMS token request failed with response code: {response.status_code}")
-      print(response.text)
-      sys.exit(1)
-  else:
-      print(f"IMS token request was successful: {response.status_code}")
-      return json_parse["access_token"]
-
 # Execute Script logic:
 # python3 servicenow.py
 if __name__ == "__main__":
@@ -165,7 +135,28 @@ if __name__ == "__main__":
   pr_merged = os.environ['PR_MERGED_AT']
   release_summary = f"Release_Details: {release_details} \n\nPull Request Number: {pr_num} \nPull Request Link: {pr_link} \nPull Request Created At: {pr_created} \nPull Request Merged At: {pr_merged}"
 
-  token = get_ims_token()
+  print("Getting IMS Token")
+  headers = {"Content-Type":"multipart/form-data"}
+  data = {
+      'client_id': os.environ['IMSACCESS_CLIENT_ID'],
+      'client_secret': os.environ['IMSACCESS_CLIENT_SECRET'],
+      'grant_type': "authorization_code",
+      'code': os.environ['IMSACCESS_AUTH_CODE']
+  }
+  response = requests.post(IMS_URL, data=data)
+  json_parse = json.loads(response.text)
+
+  if response.status_code != 200:
+      print(f"{POST_FAILURE_MESSAGE} {response.status_code}")
+      print(response.text)
+      sys.exit(1)
+  elif find_string_in_json(json_parse, "error"):
+      print(f"IMS token request failed with response code: {response.status_code}")
+      print(response.text)
+      sys.exit(1)
+  else:
+      print(f"IMS token request was successful: {response.status_code}")
+      token = json_parse["access_token"]
 
   print("Create CMR in ServiceNow...")
 
