@@ -127,7 +127,7 @@ function getUpdatedVisitAttempt() {
   const isAdobeDomain = hostname === 'www.adobe.com' || hostname === 'www.stage.adobe.com';
   const consentCookieValue = getCookie(OPT_ON_AND_CONSENT_COOKIE);
 
-  if (consentCookieValue?.includes('C0002:1') && isAdobeDomain) {
+  if (!consentCookieValue?.includes('C0002:0') && isAdobeDomain && secondVisitAttempt <= 2) {
     const updatedVisitAttempt = secondVisitAttempt === 0 ? 1 : secondVisitAttempt + 1;
     localStorage.setItem('secondHit', updatedVisitAttempt);
     return updatedVisitAttempt;
@@ -136,14 +136,14 @@ function getUpdatedVisitAttempt() {
   return secondVisitAttempt;
 }
 
-export function getUpdatedAcrobatVisitAttempt() {
+function getUpdatedAcrobatVisitAttempt() {
   const { hostname, pathname } = window.location;
   const secondVisitAttempt = Number(localStorage.getItem('acrobatSecondHit')) || 0;
 
   const isAdobeDomain = (hostname === 'www.adobe.com' || hostname === 'www.stage.adobe.com') && /\/acrobat/.test(pathname);
   const consentCookieValue = getCookie(OPT_ON_AND_CONSENT_COOKIE);
 
-  if (consentCookieValue?.includes('C0002:1') && isAdobeDomain) {
+  if (!consentCookieValue?.includes('C0002:0') && isAdobeDomain) {
     const updatedVisitAttempt = secondVisitAttempt === 0 ? 1 : secondVisitAttempt + 1;
     localStorage.setItem('acrobatSecondHit', updatedVisitAttempt);
     return updatedVisitAttempt;
@@ -434,7 +434,6 @@ function createRequestPayload({ updatedContext, pageName, processedPageName, loc
         },
       };
     }
-    digitalData.otherConsents = digitalData.otherConsents || {};
     digitalData.adobe = {
       ...digitalData.adobe,
       experienceCloud: {
