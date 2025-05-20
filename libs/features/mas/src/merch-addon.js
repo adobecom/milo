@@ -1,5 +1,5 @@
 import { LitElement, html, css } from 'lit';
-import { EVENT_TYPE_RESOLVED } from './constants.js';
+import { EVENT_TYPE_RESOLVED, SELECTOR_MAS_INLINE_PRICE } from './constants.js';
 
 export default class MerchAddon extends LitElement {
     static properties = {
@@ -13,6 +13,14 @@ export default class MerchAddon extends LitElement {
         this.checked = false;
         this.updatePlanType = this.updatePlanType.bind(this);
         this.handleChange = this.handleChange.bind(this);
+    }
+
+    getOsi(planType, offerType) {
+      let el = this.querySelector(`p[data-plan-type="${planType}"] ${SELECTOR_MAS_INLINE_PRICE}[data-offer-type="${offerType}"]`);
+      if (!el && offerType !== 'TRIAL') {
+        el = this.querySelector(`p[data-plan-type="${planType}"] ${SELECTOR_MAS_INLINE_PRICE}:not([data-offer-type="TRIAL"])`);
+      }
+      return el?.dataset?.wcsOsi;
     }
 
     connectedCallback() {
