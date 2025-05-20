@@ -123,7 +123,7 @@ if __name__ == "__main__":
   release_summary = f"Release_Details: {release_details} \n\nPull Request Number: {pr_num} \nPull Request Created At: {pr_created} \nPull Request Merged At: {pr_merged}"
 
   print("Getting IMS Token")
-  //ims_url = 'https://ims-na1.adobelogin.com/ims/token'
+  #ims_url = 'https://ims-na1.adobelogin.com/ims/token'
   ims_url = 'https://ims-na1-stg1.adobelogin.com/ims/token'
   headers = {"Content-Type":"multipart/form-data"}
   data = {
@@ -149,7 +149,7 @@ if __name__ == "__main__":
 
   print("Create CMR in ServiceNow...")
 
-  //servicenow_cmr_url = 'https://ipaasapi.adobe-services.com/change_management/changes'
+  #servicenow_cmr_url = 'https://ipaasapi.adobe-services.com/change_management/changes'
   servicenow_cmr_url = 'https://ipaasapi-stage.adobe-services.com/change_management/changes'
   headers = {
     "Accept": APPLICATION_JSON,
@@ -191,7 +191,8 @@ if __name__ == "__main__":
 
   print("Waiting for Transaction from Queue to ServiceNow then Retrieve CMR ID...")
 
-  servicenow_get_cmr_url = f'https://ipaasapi.adobe-services.com/change_management/transactions/{transaction_id}'
+  #servicenow_get_cmr_url = f'https://ipaasapi.adobe-services.com/change_management/transactions/{transaction_id}'
+  servicenow_get_cmr_url = f'https://ipaasapi-stage.adobe-services.com/change_management/transactions/{transaction_id}'
   headers = {
     "Accept": APPLICATION_JSON,
     "Authorization":token,
