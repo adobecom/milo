@@ -951,8 +951,6 @@ class Gnav {
   toggleMenuMobile = () => {
     const toggle = this.elements.mobileToggle;
     const isExpanded = this.isToggleExpanded();
-    const main = document.querySelector('main');
-    const footer = document.querySelector('footer');
     if (!isExpanded && this.newMobileNav) {
       const sections = document.querySelectorAll('header.new-nav .feds-nav > section.feds-navItem > button.feds-navLink');
       animateInSequence(sections, 0.075);
@@ -964,8 +962,7 @@ class Gnav {
     } else if (isExpanded && this.isLocalNav()) {
       enableMobileScroll();
     }
-    if (main) main.setAttribute('aria-hidden', !isExpanded);
-    if (footer) footer.setAttribute('aria-hidden', !isExpanded);
+    ['main', 'footer'].forEach((ele) => document.querySelector(ele)?.setAttribute('aria-hidden', !isExpanded));
     toggle?.setAttribute('aria-expanded', !isExpanded);
     document.body.classList.toggle('disable-scroll', !isExpanded);
     this.elements.navWrapper?.classList?.toggle('feds-nav-wrapper--expanded', !isExpanded);
