@@ -10,6 +10,12 @@ import requests
 APPLICATION_JSON = "application/json"
 CMR_RETRIEVAL_ERROR = "CMR ID Retrieval Operation failed..."
 POST_FAILURE_MESSAGE = "POST failed with response code: "
+#IMS_URL = 'https://ims-na1.adobelogin.com/ims/token'
+IMS_URL = 'https://ims-na1-stg1.adobelogin.com/ims/token'
+#SERVICENOW_CMR_URL = 'https://ipaasapi.adobe-services.com/change_management/changes'
+SERVICENOW_CMR_URL = 'https://ipaasapi-stage.adobe-services.com/change_management/changes'
+#SERVICENOW_GET_CMR_URL = 'https://ipaasapi.adobe-services.com/change_management/transactions/'
+SERVICENOW_GET_CMR_URL = 'https://ipaasapi-stage.adobe-services.com/change_management/transactions/'
 
 def _search_value(value, target_string):
     if isinstance(value, str):
@@ -70,9 +76,12 @@ def backoff_with_timeout(operation, max_retries=5, base_delay=1, max_delay=60, t
           time.sleep(delay)
   raise TimeoutError(f"Operation timed out after {timeout} seconds or {max_retries} retries, whatever came first.")
 
-def get_cmr_id_operation():
+def get_cmr_id_operation(servicenow_get_cmr_url):
   """
   Operation to retrieve a Change Management Request ID from ServiceNow
+
+  Args:
+      servicenow_get_cmr_url (str): The API GET Request URL to retrieve the Change Management Request ID from ServiceNow
 
   Raises:
       Exception: If the GET request returns a non 200 response.
@@ -83,18 +92,18 @@ def get_cmr_id_operation():
       _type_: The Change ID from the JSON payload
   """
   response = requests.get(servicenow_get_cmr_url, headers=headers)
-  JSON_PARSE = json.loads(response.text)
+  json_parse = json.loads(response.text)
 
   if response.status_code != 200:
     print(f"GET failed with response code: {response.status_code}")
     print(response.text)
     raise requests.exceptions.RequestException(CMR_RETRIEVAL_ERROR)
-  elif find_string_in_json(JSON_PARSE, "error"):
+  elif find_string_in_json(json_parse, "error"):
     print(f"CMR ID retrieval failed with response code: {response.status_code}")
     print(response.text)
     raise requests.exceptions.RequestException(CMR_RETRIEVAL_ERROR)
   else:
-    if find_string_in_json(JSON_PARSE, "Unknown"):
+    if find_string_in_json(json_parse, "Unknown"):
       print(f"CMR ID retrieval failed with response code: {response.status_code}")
       print(response.text)
       raise requests.exceptions.RequestException(CMR_RETRIEVAL_ERROR)
@@ -102,12 +111,44 @@ def get_cmr_id_operation():
     print(f"CMR ID retrieval was successful: {response.status_code}")
     print(response.text)
 
-  return JSON_PARSE["result"]["changeId"]
+  return json_parse["result"]["changeId"]
+
+def get_ims_token():
+  """
+  Retrieves an IMS token using client credentials.
+
+  Returns:
+      str: The access token if successful
+
+  Raises:
+      SystemExit: If the token request fails
+  """
+  print("Getting IMS Token")
+  headers = {"Content-Type":"multipart/form-data"}
+  data = {
+      'client_id': os.environ['IMSACCESS_CLIENT_ID'],
+      'client_secret': os.environ['IMSACCESS_CLIENT_SECRET'],
+      'grant_type': "authorization_code",
+      'code': os.environ['IMSACCESS_AUTH_CODE']
+  }
+  response = requests.post(IMS_URL, headers=headers, json=data)
+  json_parse = json.loads(response.text)
+
+  if response.status_code != 200:
+      print(f"{POST_FAILURE_MESSAGE} {response.status_code}")
+      print(response.text)
+      sys.exit(1)
+  elif find_string_in_json(json_parse, "error"):
+      print(f"IMS token request failed with response code: {response.status_code}")
+      print(response.text)
+      sys.exit(1)
+  else:
+      print(f"IMS token request was successful: {response.status_code}")
+      return json_parse["access_token"]
 
 # Execute Script logic:
 # python3 servicenow.py
 if __name__ == "__main__":
-
   print("Starting CMR Action...")
 
   print("Setting Planned Maintenance Time Windows for CMR...")
@@ -126,35 +167,10 @@ if __name__ == "__main__":
   pr_merged = os.environ['PR_MERGED_AT']
   release_summary = f"Release_Details: {release_details} \n\nPull Request Number: {pr_num} \nPull Request Link: {pr_link} \nPull Request Created At: {pr_created} \nPull Request Merged At: {pr_merged}"
 
-  print("Getting IMS Token")
-  #ims_url = 'https://ims-na1.adobelogin.com/ims/token'
-  ims_url = 'https://ims-na1-stg1.adobelogin.com/ims/token'
-  headers = {"Content-Type":"multipart/form-data"}
-  data = {
-    'client_id': os.environ['IMSACCESS_CLIENT_ID'],
-    'client_secret': os.environ['IMSACCESS_CLIENT_SECRET'],
-    'grant_type': "authorization_code",
-    'code': os.environ['IMSACCESS_AUTH_CODE']
-  }
-  response = requests.post(ims_url, data=data)
-  jsonParse = json.loads(response.text)
-
-  if response.status_code != 200:
-    print(f"{POST_FAILURE_MESSAGE} {response.status_code}")
-    print(response.text)
-    sys.exit(1)
-  elif find_string_in_json(jsonParse, "error"):
-    print(f"IMS token request failed with response code: {response.status_code}")
-    print(response.text)
-    sys.exit(1)
-  else:
-    print(f"IMS token request was successful: {response.status_code}")
-    token = jsonParse["access_token"]
+  token = get_ims_token()
 
   print("Create CMR in ServiceNow...")
 
-  #servicenow_cmr_url = 'https://ipaasapi.adobe-services.com/change_management/changes'
-  servicenow_cmr_url = 'https://ipaasapi-stage.adobe-services.com/change_management/changes'
   headers = {
     "Accept": APPLICATION_JSON,
     "Authorization":token,
@@ -177,26 +193,25 @@ if __name__ == "__main__":
     "implementationPlan": "The change will be released as part of the continuous deployment of Milo's production branch, i.e., \"main\"",
     "backoutPlan": "Revert merge to the Milo production branch by creating a revert commit.", "testResults": "Changes are tested and validated successfully in staging environment. Please see the link of the PR in the description for the test results and/or the \"#nala-test-results\" slack channel."
   }
-  response = requests.post(servicenow_cmr_url, headers=headers, json=data)
-  jsonParse = json.loads(response.text)
+  response = requests.post(SERVICENOW_CMR_URL, headers=headers, json=data)
+  json_parse = json.loads(response.text)
 
   if response.status_code != 200:
     print(f"{POST_FAILURE_MESSAGE} {response.status_code}")
     print(response.text)
     sys.exit(1)
-  elif find_string_in_json(jsonParse, "error"):
+  elif find_string_in_json(json_parse, "error"):
     print(f"CMR creation failed with response code: {response.status_code}")
     print(response.text)
     sys.exit(1)
   else:
     print(f"CMR creation was successful: {response.status_code}")
     print(response.text)
-    transaction_id = jsonParse["id"]
+    transaction_id = json_parse["id"]
 
   print("Waiting for Transaction from Queue to ServiceNow then Retrieve CMR ID...")
 
-  #servicenow_get_cmr_url = f'https://ipaasapi.adobe-services.com/change_management/transactions/{transaction_id}'
-  servicenow_get_cmr_url = f'https://ipaasapi-stage.adobe-services.com/change_management/transactions/{transaction_id}'
+  servicenow_get_cmr_url = f'{SERVICENOW_GET_CMR_URL}{transaction_id}'
   headers = {
     "Accept": APPLICATION_JSON,
     "Authorization":token,
@@ -207,7 +222,7 @@ if __name__ == "__main__":
   time.sleep(10)
 
   try:
-      cmr_id = backoff_with_timeout(get_cmr_id_operation, max_retries=300, base_delay=1, max_delay=60, timeout=3600)
+      cmr_id = backoff_with_timeout(get_cmr_id_operation(servicenow_get_cmr_url), max_retries=300, base_delay=1, max_delay=60, timeout=3600)
       print(f"CMR ID found and validated: {cmr_id}")
   except Exception as e:
       print(f"All CMR ID retrieval attempts failed: {e}")
@@ -233,14 +248,14 @@ if __name__ == "__main__":
     "closeCode": "Successful",
     "notes": "The change request is closed as the change was released successfully"
   }
-  response = requests.post(servicenow_cmr_url, headers=headers, json=data)
-  jsonParse = json.loads(response.text)
+  response = requests.post(SERVICENOW_CMR_URL, headers=headers, json=data)
+  json_parse = json.loads(response.text)
 
   if response.status_code != 200:
     print(f"{POST_FAILURE_MESSAGE} {response.status_code}")
     print(response.text)
     sys.exit(1)
-  elif find_string_in_json(jsonParse, "error"):
+  elif find_string_in_json(json_parse, "error"):
     print(f"CMR closure failed with response code: {response.status_code}")
     print(response.text)
     sys.exit(1)

@@ -6,7 +6,6 @@ name: Create CMR in ServiceNow
 on:
   pull_request_target:
     types:
-      - opened
       - closed
     branches:
       - servicenow-cmr-test
