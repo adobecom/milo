@@ -24,7 +24,7 @@ function updatePreviewButton(popup, pageId) {
   const manifestParameter = [];
 
   selectedInputs.forEach((selected) => {
-    const isHidden = selected.closest('.mmm-list.mep-show');
+    const isHidden = selected.closest('select')?.disabled;
 
     if (!selected.value || isHidden) return;
 
@@ -305,9 +305,15 @@ async function mmmToggleManifests(event, popup, pageId) {
   const pill = document.querySelector('.mep-manifest.mep-badge');
   if (event.target.checked && sevenDayPageData) {
     mmmManifestsElement.classList.add('mep-show');
+    mmmManifestsElement.querySelectorAll('select').forEach((select) => {
+      select.disabled = false;
+    });
     pill.innerHTML = getPillText(sevenDayPageData.activities.length + mepConfig.activities.length);
   } else {
     mmmManifestsElement.classList.remove('mep-show');
+    mmmManifestsElement.querySelectorAll('select').forEach((select) => {
+      select.disabled = true;
+    });
     pill.innerHTML = getPillText(mepConfig.activities?.length);
   }
 }
@@ -321,6 +327,7 @@ function addMepPopupListeners(popup, pageId) {
   });
   popup.querySelectorAll('#mepManifestsCheckbox').forEach((input) => {
     input.addEventListener('change', (event) => mmmToggleManifests.bind(null, event, popup, pageId)());
+    input.addEventListener('change', updatePreviewButton.bind(null, popup, pageId));
   });
 }
 function setTargetOnText(target, page) {
