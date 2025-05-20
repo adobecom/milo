@@ -117,7 +117,7 @@ class KeyboardNavigation {
                   e.preventDefault();
                   if (e.shiftKey) {
                     const menuItems = [...document.querySelectorAll(`${selectors.mainMenuItems}, ${selectors.mainMenuLinks}`)];
-                    menuItems[menuItems.length - 1]?.focus();
+                    menuItems.at(-1)?.focus();
                   } else {
                     document.querySelector(`${selectors.mainMenuItems}, ${selectors.mainMenuLinks}`)?.focus();
                   }
