@@ -43,7 +43,7 @@ const plainHTMLPromise = (async () => {
   let federatedURL = getFederatedUrl(url);
   const mepGnav = getConfig()?.mep?.inBlock?.['global-navigation'];
   const mepFragment = mepGnav?.fragments?.[federatedURL];
-  if (mepFragment && mepFragment.action === 'replace') {
+  if (mepFragment?.action === 'replace') {
     federatedURL = mepFragment.content;
   }
   const res = await fetch(federatedURL.replace(/(\.html$|$)/, '.plain.html'));
@@ -99,6 +99,7 @@ const {
   setAsyncDropdownCount,
   branchBannerLoadCheck,
   getBranchBannerInfo,
+  logPerformance,
 } = utilities;
 
 const SIGNIN_CONTEXT = getConfig()?.signInContext;
@@ -510,11 +511,25 @@ class Gnav {
       this.block.after(localNav);
     }
     localNav.setAttribute('daa-lh', `${title}_localNav`);
-    localNav.append(toFragment`<button class="feds-navLink--hoverCaret feds-localnav-title" aria-haspopup="true" aria-expanded="false" daa-ll="${title}_localNav|open"></button>`, toFragment` <div class="feds-localnav-curtain"></div>`, toFragment` <div class="feds-localnav-items"></div>`, toFragment`<a href="#" class="feds-sr-only feds-localnav-exit">.</a>`);
+    const localNavBtn = toFragment`<button class="feds-navLink--hoverCaret feds-localnav-title" aria-haspopup="true" aria-expanded="false" daa-ll="${title}_localNav|open"></button>`;
+    const localNavCurtain = toFragment` <div class="feds-localnav-curtain"></div>`;
+    // Skip keyboard navigation on localnav items if it is closed
+    localNav.append(localNavBtn, localNavCurtain, toFragment` <div class="feds-localnav-items"></div>`, toFragment`<a href="#" class="feds-sr-only feds-localnav-exit">.</a>`);
 
     const itemWrapper = localNav.querySelector('.feds-localnav-items');
-    const titleLabel = await replaceKey('overview', getFedsPlaceholderConfig());
+    const localNavTitle = document.querySelector('.feds-localnav-title');
+    // Skip keyboard navigation on localnav items if it is closed
+    const observer = new MutationObserver(() => {
+      const isExpanded = localNavTitle.getAttribute('aria-expanded') === 'true';
+      itemWrapper.toggleAttribute('aria-hidden', !isExpanded);
+      [...itemWrapper.childNodes].forEach((node) => {
+        node.querySelector('a, button').toggleAttribute('aria-hidden', !isExpanded);
+        node.querySelector('a, button').setAttribute('tabindex', isExpanded ? '0' : '-1');
+      });
+    });
+    observer.observe(localNavTitle, { attributes: true, attributeFilter: ['aria-expanded'] });
 
+    const titleLabel = await replaceKey('overview', getFedsPlaceholderConfig());
     localNavItems.forEach((elem, idx) => {
       const clonedItem = elem.cloneNode(true);
       const link = clonedItem.querySelector('a, button');
@@ -746,6 +761,7 @@ class Gnav {
   };
 
   decorateUniversalNav = async () => {
+    performance.mark('Unav-Start');
     const config = getConfig();
     const locale = getUniversalNavLocale(config.locale);
     const environment = config.env.name === 'prod' ? 'prod' : 'stage';
@@ -868,6 +884,8 @@ class Gnav {
     // Exposing UNAV config for consumers
     CONFIG.universalNav.universalNavConfig = getConfiguration();
     await window.UniversalNav(CONFIG.universalNav.universalNavConfig);
+    performance.mark('Unav-End');
+    logPerformance('Unav-Time', 'Unav-Start', 'Unav-End');
     this.decorateAppPrompt({ getAnchorState: () => window.UniversalNav.getComponent?.('app-switcher') });
     isDesktop.addEventListener('change', () => {
       window.UniversalNav.reload(getConfiguration());
@@ -875,6 +893,7 @@ class Gnav {
   };
 
   decorateAppPrompt = async ({ getAnchorState } = {}) => {
+    performance.mark('PEP-Start');
     const state = getMetadata('app-prompt')?.toLowerCase();
     const entName = getMetadata('app-prompt-entitlement')?.toLowerCase();
     const promptPath = getMetadata('app-prompt-path')?.toLowerCase();
@@ -895,7 +914,14 @@ class Gnav {
       loadStyles(`${base}/features/webapp-prompt/webapp-prompt.css`),
     ]);
 
-    webappPrompt.default({ promptPath, entName, parent: this.blocks.universalNav, getAnchorState });
+    await webappPrompt.default({
+      promptPath,
+      entName,
+      parent: this.blocks.universalNav,
+      getAnchorState,
+    });
+    performance.mark('PEP-End');
+    logPerformance('PEP-Time', 'PEP-Start', 'PEP-End');
   };
 
   loadSearch = () => {
@@ -1057,6 +1083,7 @@ class Gnav {
   };
 
   decorateAside = async () => {
+    performance.mark('Gnav-Aside-Start');
     this.elements.aside = '';
     const promoPath = getMetadata('gnav-promo-source');
     const fedsPromoWrapper = document.querySelector('.feds-promo-aside-wrapper');
@@ -1094,6 +1121,8 @@ class Gnav {
       this.promoResizeObserver = new ResizeObserver(updateLayout);
       this.promoResizeObserver.observe(this.elements.aside);
     }
+    performance.mark('Gnav-Aside-End');
+    logPerformance('Gnav-Aside-Time', 'Gnav-Aside-Start', 'Gnav-Aside-End');
 
     return this.elements.aside;
   };
@@ -1112,6 +1141,7 @@ class Gnav {
   });
 
   decorateMainNav = async () => {
+    performance.mark('Decorate-MainNav-Start');
     const breadcrumbs = isDesktop.matches ? '' : await this.decorateBreadcrumbs();
     this.elements.mainNav = toFragment`<div class="feds-nav" role="list"></div>`;
     this.elements.navWrapper = toFragment`
@@ -1140,6 +1170,7 @@ class Gnav {
     if (this.newMobileNav) {
       await this.decorateLocalNav();
     }
+    performance.mark('Decorate-MainNav-End');
     return this.elements.mainNav;
   };
 
@@ -1190,6 +1221,7 @@ class Gnav {
   };
 
   decorateMainNavItem = (item, index) => {
+    performance.mark(`Decorate-MainNav-Item-${index}-Start`);
     const itemType = this.getMainNavItemType(item);
 
     const itemHasActiveLink = ['syncDropdownTrigger', 'link'].includes(itemType)
@@ -1230,6 +1262,8 @@ class Gnav {
       const elements = [...document.querySelectorAll('.feds-localnav .feds-navItem')].find(
         (el) => {
           const link = el.querySelector('a, button');
+          link.setAttribute('tabindex', '-1');
+          link.setAttribute('aria-hidden', true);
           return link.dataset.title?.trim() === navItem.textContent;
         },
       );
@@ -1309,108 +1343,113 @@ class Gnav {
     };
 
     // Decorate item based on its type
-    switch (itemType) {
-      case 'syncDropdownTrigger':
-      case 'asyncDropdownTrigger': {
-        const dropdownTrigger = toFragment`<button
-          class="feds-navLink feds-navLink--hoverCaret"
-          aria-expanded="false"
-          aria-haspopup="true"
-          daa-ll="${getAnalyticsValue(item.textContent, index + 1)}"
-          daa-lh="header|Open">
-            ${item.textContent.trim()}
-          </button>`;
+    const returnValue = (() => {
+      switch (itemType) {
+        case 'syncDropdownTrigger':
+        case 'asyncDropdownTrigger': {
+          const dropdownTrigger = toFragment`<button
+            class="feds-navLink feds-navLink--hoverCaret"
+            aria-expanded="false"
+            aria-haspopup="true"
+            daa-ll="${getAnalyticsValue(item.textContent, index + 1)}"
+            daa-lh="header|Open">
+              ${item.textContent.trim()}
+            </button>`;
 
-        const isSectionMenu = item.closest('.section') instanceof HTMLElement;
-        const tag = isSectionMenu ? 'section' : 'div';
-        const sectionModifier = isSectionMenu ? ' feds-navItem--section' : '';
-        const sectionDaaLh = isSectionMenu ? ` daa-lh='${getAnalyticsValue(item.textContent)}'` : '';
-        const triggerTemplate = toFragment`
-          <${tag} role="listitem" class="feds-navItem${sectionModifier}${activeModifier}" ${sectionDaaLh}>
-            ${dropdownTrigger}
-          </${tag}>`;
+          const isSectionMenu = item.closest('.section') instanceof HTMLElement;
+          const tag = isSectionMenu ? 'section' : 'div';
+          const sectionModifier = isSectionMenu ? ' feds-navItem--section' : '';
+          const sectionDaaLh = isSectionMenu ? ` daa-lh='${getAnalyticsValue(item.textContent)}'` : '';
+          const triggerTemplate = toFragment`
+            <${tag} role="listitem" class="feds-navItem${sectionModifier}${activeModifier}" ${sectionDaaLh}>
+              ${dropdownTrigger}
+            </${tag}>`;
 
-        // Toggle trigger's dropdown on click
-        dropdownTrigger.addEventListener('click', (e) => {
-          if (!isDesktop.matches && this.newMobileNav && isSectionMenu) {
-            const popup = dropdownTrigger.nextElementSibling;
-            // document.body.style.top should always be set
-            // at this point by calling disableMobileScroll
-            if (popup) {
-              this.updatePopupPosition(popup);
+          // Toggle trigger's dropdown on click
+          dropdownTrigger.addEventListener('click', (e) => {
+            if (!isDesktop.matches && this.newMobileNav && isSectionMenu) {
+              const popup = dropdownTrigger.nextElementSibling;
+              // document.body.style.top should always be set
+              // at this point by calling disableMobileScroll
+              if (popup) {
+                this.updatePopupPosition(popup);
+              }
+              makeTabActive(popup);
+            } else if (isDesktop.matches && this.newMobileNav && isSectionMenu) {
+              const popup = dropdownTrigger.nextElementSibling;
+              if (popup) popup.style.removeProperty('top');
             }
-            makeTabActive(popup);
-          } else if (isDesktop.matches && this.newMobileNav && isSectionMenu) {
-            const popup = dropdownTrigger.nextElementSibling;
-            if (popup) popup.style.removeProperty('top');
-          }
-          trigger({ element: dropdownTrigger, event: e, type: 'dropdown' });
-          setActiveDropdown(dropdownTrigger);
-        });
-
-        // Update analytics value when dropdown is expanded/collapsed
-        observeDropdown(dropdownTrigger);
-
-        delayDropdownDecoration({ template: triggerTemplate });
-        return addMepHighlightAndTargetId(triggerTemplate, item);
-      }
-      case 'primaryCta':
-      case 'secondaryCta':
-        // Remove its 'em' or 'strong' wrapper
-        item.parentElement.replaceWith(item);
-
-        return addMepHighlightAndTargetId(toFragment`<div class="feds-navItem feds-navItem--centered" role="listitem">
-            ${decorateCta({ elem: item, type: itemType, index: index + 1 })}
-          </div>`, item);
-      case 'link': {
-        let customLinkModifier = '';
-        let removeCustomLink = false;
-        const linkElem = item.querySelector('a');
-        const customLinksSection = item.closest('.link-group');
-        linkElem.className = 'feds-navLink';
-        linkElem.setAttribute('daa-ll', getAnalyticsValue(linkElem.textContent, index + 1));
-
-        if (customLinksSection) {
-          const removeLink = () => {
-            const url = new URL(linkElem.href);
-            linkElem.setAttribute('href', `${url.origin}${url.pathname}${url.search}`);
-            if (isActiveLink(linkElem)) {
-              linkElem.removeAttribute('href');
-            }
-            const linkHash = url.hash.slice(2);
-            return !this.customLinks.includes(linkHash);
-          };
-          [...customLinksSection.classList].splice(1).forEach((className) => {
-            customLinkModifier = ` feds-navItem--${className}`;
+            trigger({ element: dropdownTrigger, event: e, type: 'dropdown' });
+            setActiveDropdown(dropdownTrigger);
           });
-          removeCustomLink = removeLink();
-        } else if (itemHasActiveLink) {
-          linkElem.removeAttribute('href');
-          linkElem.setAttribute('role', 'link');
-          linkElem.setAttribute('aria-disabled', 'true');
-          linkElem.setAttribute('aria-current', 'page');
-          linkElem.setAttribute('tabindex', 0);
-        }
 
-        const linkTemplate = toFragment`
-          <div class="feds-navItem${activeModifier}${customLinkModifier}" role="listitem">
-            ${linkElem}
-          </div>`;
-        return removeCustomLink ? '' : addMepHighlightAndTargetId(linkTemplate, item);
+          // Update analytics value when dropdown is expanded/collapsed
+          observeDropdown(dropdownTrigger);
+
+          delayDropdownDecoration({ template: triggerTemplate });
+          return addMepHighlightAndTargetId(triggerTemplate, item);
+        }
+        case 'primaryCta':
+        case 'secondaryCta':
+          // Remove its 'em' or 'strong' wrapper
+          item.parentElement.replaceWith(item);
+
+          return addMepHighlightAndTargetId(toFragment`<div class="feds-navItem feds-navItem--centered" role="listitem">
+              ${decorateCta({ elem: item, type: itemType, index: index + 1 })}
+            </div>`, item);
+        case 'link': {
+          let customLinkModifier = '';
+          let removeCustomLink = false;
+          const linkElem = item.querySelector('a');
+          const customLinksSection = item.closest('.link-group');
+          linkElem.className = 'feds-navLink';
+          linkElem.setAttribute('daa-ll', getAnalyticsValue(linkElem.textContent, index + 1));
+
+          if (customLinksSection) {
+            const removeLink = () => {
+              const url = new URL(linkElem.href);
+              linkElem.setAttribute('href', `${url.origin}${url.pathname}${url.search}`);
+              if (isActiveLink(linkElem)) {
+                linkElem.removeAttribute('href');
+              }
+              const linkHash = url.hash.slice(2);
+              return !this.customLinks.includes(linkHash);
+            };
+            [...customLinksSection.classList].splice(1).forEach((className) => {
+              customLinkModifier = ` feds-navItem--${className}`;
+            });
+            removeCustomLink = removeLink();
+          } else if (itemHasActiveLink) {
+            linkElem.removeAttribute('href');
+            linkElem.setAttribute('role', 'link');
+            linkElem.setAttribute('aria-disabled', 'true');
+            linkElem.setAttribute('aria-current', 'page');
+            linkElem.setAttribute('tabindex', 0);
+          }
+
+          const linkTemplate = toFragment`
+            <div class="feds-navItem${activeModifier}${customLinkModifier}" role="listitem">
+              ${linkElem}
+            </div>`;
+          return removeCustomLink ? '' : addMepHighlightAndTargetId(linkTemplate, item);
+        }
+        case 'text':
+          return addMepHighlightAndTargetId(toFragment`<div class="feds-navItem feds-navItem--centered">
+              ${item.textContent}
+            </div>`, item);
+        default:
+          /* c8 ignore next 3 */
+          return addMepHighlightAndTargetId(toFragment`<div class="feds-navItem feds-navItem--centered">
+              ${item}
+            </div>`, item);
       }
-      case 'text':
-        return addMepHighlightAndTargetId(toFragment`<div class="feds-navItem feds-navItem--centered">
-            ${item.textContent}
-          </div>`, item);
-      default:
-        /* c8 ignore next 3 */
-        return addMepHighlightAndTargetId(toFragment`<div class="feds-navItem feds-navItem--centered">
-            ${item}
-          </div>`, item);
-    }
+    })();
+    performance.mark(`Decorate-MainNav-Item-${index}-End`);
+    return returnValue;
   };
 
   decorateBreadcrumbs = async () => {
+    performance.mark('Breadcrumbs-Start');
     if (!this.block.classList.contains('has-breadcrumbs')) return null;
     if (this.elements.breadcrumbsWrapper) return this.elements.breadcrumbsWrapper;
     const breadcrumbsElem = this.block.querySelector('.breadcrumbs');
@@ -1419,6 +1458,7 @@ class Gnav {
     if (!breadCrumbsJsPromise) return null;
     const { default: createBreadcrumbs } = await breadCrumbsJsPromise;
     this.elements.breadcrumbsWrapper = await createBreadcrumbs(breadcrumbsElem);
+    performance.mark('Breadcrumbs-End');
     return this.elements.breadcrumbsWrapper;
   };
 
@@ -1485,5 +1525,9 @@ export default async function init(block) {
   block.setAttribute('daa-lh', `gnav|${getExperienceName()}${mepMartech}`);
   if (isDarkMode()) block.classList.add('feds--dark');
   block.classList.add('ready');
+  performance.mark('Gnav-Visible');
+  performance.mark('Gnav-Init-End');
+  logPerformance('Gnav-Init-Function-Time', 'Gnav-Start', 'Gnav-Init-End');
+  logPerformance('Gnav-Time-To-Visible', 'Gnav-Start', 'Gnav-Visible');
   return gnav;
 }

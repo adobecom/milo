@@ -4,6 +4,7 @@ import { getMetadata } from '../section-metadata/section-metadata.js';
 import { processTrackingLabels } from '../../martech/attributes.js';
 import '../../deps/mas/merch-card.js';
 import '../../deps/lit-all.min.js';
+import { initService } from '../merch/merch.js';
 
 const TAG_PATTERN = /^[a-zA-Z0-9_-]+:[a-zA-Z0-9_-]+\/[a-zA-Z0-9_-].*$/;
 
@@ -367,6 +368,44 @@ const addStock = (merchCard, styles) => {
   }
 };
 
+const addAddon = (merchCard, styles) => {
+  const genai = /add-addon-genai/.test(merchCard.className) ? 'genai' : null;
+  const stock = /add-addon-stock/.test(merchCard.className) ? 'stock' : null;
+  const addonType = genai || stock;
+  if (addonType) {
+    let selector = `template.addon.${addonType}.individual`;
+    if (styles.includes('edu')) {
+      selector = `template.addon.${addonType}.edu`;
+    } else if (styles.includes('team')) {
+      selector = `template.addon.${addonType}.team`;
+    }
+    let planType = '';
+    if (styles.includes('m2m')) {
+      planType = 'M2M';
+    } else if (styles.includes('abm')) {
+      planType = 'ABM';
+    } else if (styles.includes('puf')) {
+      planType = 'PUF';
+    }
+
+    if (planType) {
+      merchCard.setAttribute('plan-type', planType);
+    }
+    const template = document.querySelector(selector);
+    if (!template) return;
+    const addon = template.content.cloneNode(true).firstElementChild;
+    addon.setAttribute('slot', 'addon');
+    const gradient = createTag('merch-gradient', {
+      colors: '#F5F6FD, #F8F1F8, #F9E9ED',
+      positions: '33.52%, 67.33%, 110.37%',
+      angle: '211deg',
+      'border-radius': '10px',
+    });
+    addon.appendChild(gradient);
+    merchCard.appendChild(addon);
+  }
+};
+
 const simplifyHrs = (el) => {
   const hrs = el.querySelectorAll('hr');
   hrs.forEach((hr) => {
@@ -537,6 +576,7 @@ const addStartingAt = async (styles, merchCard) => {
 
 export default async function init(el) {
   if (!el.querySelector(INNER_ELEMENTS_SELECTOR)) return el;
+  const merchServicePromise = initService();
   // TODO: Remove after bugfix PR adobe/helix-html2md#556 is merged
   const liELs = el.querySelectorAll('ul li');
   if (liELs) {
@@ -695,6 +735,7 @@ export default async function init(el) {
   }
 
   addStock(merchCard, styles);
+  addAddon(merchCard, styles);
   if (styles.includes('secure')) {
     const { replaceKey } = await import('../../features/placeholders.js');
     await replaceKey('secure-transaction', getConfig()).then((key) => merchCard.setAttribute('secure-label', key));
@@ -743,6 +784,7 @@ export default async function init(el) {
   } else {
     parseTwpContent(el, merchCard);
   }
+  await merchServicePromise;
   el.replaceWith(merchCard);
   decorateMerchCardLinkAnalytics(merchCard);
   return merchCard;

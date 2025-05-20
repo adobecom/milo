@@ -15,7 +15,7 @@ export const allSelectors = {
   menuHeadline: '.feds-menu-headline',
   menuItems: '.feds-menu-items',
   featuredProducts: '.feds-featuredProducts',
-  featuredProductsLabel: '.feds-featuredProducts-label',
+  featuredProductsLabel: '.feds-featuredProducts .feds-menu-headline',
   navLink: gnavSelectors.navLink,
   navLinkImage: '.feds-navLink-image',
   navLinkContent: '.feds-navLink-content',
