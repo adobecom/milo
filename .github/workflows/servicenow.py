@@ -111,8 +111,8 @@ if __name__ == "__main__":
   print("Starting CMR Action...")
 
   print("Setting Planned Maintenance Time Windows for CMR...")
-  start_time = (datetime.datetime.now() + datetime.timedelta(seconds = 10)).timestamp()
-  end_time = (datetime.datetime.now() + datetime.timedelta(minutes = 10)).timestamp()
+  start_time = int((datetime.datetime.now() + datetime.timedelta(seconds = 10)).timestamp())
+  end_time = int((datetime.datetime.now() + datetime.timedelta(minutes = 10)).timestamp())
 
   print("Set Release Summary for CMR...")
   release_title = os.environ['PR_TITLE']
@@ -207,8 +207,8 @@ if __name__ == "__main__":
       cmr_id = None
 
   print("Setting Actual Maintenance Time Windows for CMR...")
-  actual_start_time = (datetime.datetime.now() - datetime.timedelta(seconds = 10)).timestamp()
-  actual_end_time = datetime.datetime.now().timestamp()
+  actual_start_time = int((datetime.datetime.now() - datetime.timedelta(seconds = 10)).timestamp())
+  actual_end_time = int(datetime.datetime.now().timestamp())
 
   print("Closing CMR in ServiceNow...")
 
