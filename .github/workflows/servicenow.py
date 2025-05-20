@@ -55,20 +55,20 @@ def backoff_with_timeout(operation, max_retries=5, base_delay=1, max_delay=60, t
       _type_: The return value from the sent in operation that requires a smart backoff.
   """
 
-  start_time = time.time()
+  start_time_timer = time.time()
   attempts = 0
-  while attempts <= max_retries and (time.time() - start_time) < timeout:
+  while attempts <= max_retries and (time.time() - start_time_timer) < timeout:
       try:
           print("Attempting ServiceNow API operation...")
           return operation()  # Attempt the operation
       except Exception as e:
           attempts += 1
-          if attempts > max_retries or (time.time() - start_time) >= timeout:
+          if attempts > max_retries or (time.time() - start_time_timer) >= timeout:
               raise  # Re-raise the exception if max retries or timeout is reached
 
           delay = min(base_delay * (2 ** (attempts - 1)), max_delay) + random.uniform(0, 0.1 * base_delay)
           time.sleep(delay)
-  raise TimeoutError("Operation timed out after {} seconds or {} retries, whatever came first.".format(timeout, max_retries))
+  raise TimeoutError(f"Operation timed out after {timeout} seconds or {max_retries} retries, whatever came first.")
 
 def get_cmr_id_operation():
   """
@@ -86,20 +86,20 @@ def get_cmr_id_operation():
   JSON_PARSE = json.loads(response.text)
 
   if response.status_code != 200:
-    print("GET failed with response code: ", response.status_code)
+    print(f"GET failed with response code: {response.status_code}")
     print(response.text)
     raise requests.exceptions.RequestException(CMR_RETRIEVAL_ERROR)
   elif find_string_in_json(JSON_PARSE, "error"):
-    print("CMR ID retrieval failed with response code: ", response.status_code)
+    print(f"CMR ID retrieval failed with response code: {response.status_code}")
     print(response.text)
     raise requests.exceptions.RequestException(CMR_RETRIEVAL_ERROR)
   else:
     if find_string_in_json(JSON_PARSE, "Unknown"):
-      print("CMR ID retrieval failed with response code: ", response.status_code)
+      print(f"CMR ID retrieval failed with response code: {response.status_code}")
       print(response.text)
       raise requests.exceptions.RequestException(CMR_RETRIEVAL_ERROR)
 
-    print("CMR ID retrieval was successful: ", response.status_code)
+    print(f"CMR ID retrieval was successful: {response.status_code}")
     print(response.text)
 
   return JSON_PARSE["result"]["changeId"]
@@ -113,6 +113,9 @@ if __name__ == "__main__":
   print("Setting Planned Maintenance Time Windows for CMR...")
   start_time = int((datetime.datetime.now() + datetime.timedelta(seconds = 10)).timestamp())
   end_time = int((datetime.datetime.now() + datetime.timedelta(minutes = 10)).timestamp())
+
+  print(f"Set start time for CMR: {start_time}")
+  print(f"Set end time for CMR: {end_time}")
 
   print("Set Release Summary for CMR...")
   release_title = os.environ['PR_TITLE']
@@ -136,15 +139,15 @@ if __name__ == "__main__":
   jsonParse = json.loads(response.text)
 
   if response.status_code != 200:
-    print(POST_FAILURE_MESSAGE, response.status_code)
+    print(f"{POST_FAILURE_MESSAGE} {response.status_code}")
     print(response.text)
     sys.exit(1)
   elif find_string_in_json(jsonParse, "error"):
-    print("IMS token request failed with response code: ", response.status_code)
+    print(f"IMS token request failed with response code: {response.status_code}")
     print(response.text)
     sys.exit(1)
   else:
-    print("IMS token request was successful: ", response.status_code)
+    print(f"IMS token request was successful: {response.status_code}")
     token = jsonParse["access_token"]
 
   print("Create CMR in ServiceNow...")
@@ -160,7 +163,7 @@ if __name__ == "__main__":
   data = {
     "title":release_title,
     "description":release_summary,
-    "instanceIds": [ 537445 ],
+    "instanceIds": [ 571573 ],
     "plannedStartDate": start_time,
     "plannedEndDate": end_time,
     "coordinator": "narcis@adobe.com",
@@ -177,15 +180,15 @@ if __name__ == "__main__":
   jsonParse = json.loads(response.text)
 
   if response.status_code != 200:
-    print(POST_FAILURE_MESSAGE, response.status_code)
+    print(f"{POST_FAILURE_MESSAGE} {response.status_code}")
     print(response.text)
     sys.exit(1)
   elif find_string_in_json(jsonParse, "error"):
-    print("CMR creation failed with response code: ", response.status_code)
+    print(f"CMR creation failed with response code: {response.status_code}")
     print(response.text)
     sys.exit(1)
   else:
-    print("CMR creation was successful: ", response.status_code)
+    print(f"CMR creation was successful: {response.status_code}")
     print(response.text)
     transaction_id = jsonParse["id"]
 
@@ -204,9 +207,9 @@ if __name__ == "__main__":
 
   try:
       cmr_id = backoff_with_timeout(get_cmr_id_operation, max_retries=300, base_delay=1, max_delay=60, timeout=3600)
-      print("CMR ID found and validated: ", cmr_id)
+      print(f"CMR ID found and validated: {cmr_id}")
   except Exception as e:
-      print("All CMR ID retrieval attempts failed: ", e)
+      print(f"All CMR ID retrieval attempts failed: {e}")
       cmr_id = None
 
   print("Setting Actual Maintenance Time Windows for CMR...")
@@ -233,18 +236,20 @@ if __name__ == "__main__":
   jsonParse = json.loads(response.text)
 
   if response.status_code != 200:
-    print(POST_FAILURE_MESSAGE, response.status_code)
+    print(f"{POST_FAILURE_MESSAGE} {response.status_code}")
     print(response.text)
     sys.exit(1)
   elif find_string_in_json(jsonParse, "error"):
-    print("CMR closure failed with response code: ", response.status_code)
+    print(f"CMR closure failed with response code: {response.status_code}")
     print(response.text)
     sys.exit(1)
   else:
-    print("CMR closure was successful: ", response.status_code)
+    print(f"CMR closure was successful: {response.status_code}")
     print(response.text)
 
   print("Change Management Request has been sent to the queue and is being processed.")
-  print("You can find the change record in ServiceNow https://adobe.service-now.com/now/change-launchpad/homepage, by searching for this ID: ", cmr_id)
-  print("If the CMR ID is not found, search for the change record in ServiceNow by the planned start time {start_time} and/or planned end time {end_time}.")
-  print("If it is still not found, please check the ServiceNow queue for the transaction and validate that the CMR was created successfully by reaching out to the Change Management team in the #unified-change-management-support slack channel. Or check the ServiceNow change record for the transaction and validate that the CMR was created successfully by reaching out to the Change Management team in the #unified-change-management-support slack channel.")
+  print(f"You can find the change record in ServiceNow https://adobe.service-now.com/now/change-launchpad/homepage, by searching for this ID: {cmr_id}")
+  print("")
+  print(f"If the CMR ID is not found, search for the change record in ServiceNow by the planned start time {datetime.datetime.fromtimestamp(start_time)} and/or planned end time {datetime.datetime.fromtimestamp(end_time)}.")
+  print("")
+  print(f"If all else fails, please check the ServiceNow queue for transaction ID '{transaction_id}' and validate that the CMR was created successfully by reaching out to the Change Management team in the #unified-change-management-support slack channel.")
