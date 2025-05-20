@@ -731,7 +731,7 @@ function createMetadataLookup(el) {
   const dropdown = {
     id: 'mmm-metadata-lookup-repo-cc',
     label: 'Choose Repo',
-    selected: SEARCH_INITIAL_VALUES().selectedRepo,
+    selected: SEARCH().selectedRepo,
   };
 
   const search = createTag('div', { class: 'mmm-metadata-lookup' }, `
@@ -805,7 +805,7 @@ async function createView(el, search) {
   switch (true) {
     case isReport: url = API_URLS.report; break;
     case isMetadataLookup: {
-      url = TARGET_METADATA_OPTIONS[SEARCH_INITIAL_VALUES().selectedRepo].metadata;
+      url = TARGET_METADATA_OPTIONS[SEARCH().selectedRepo].metadata;
       method = 'GET';
       body = null;
       break;
