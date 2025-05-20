@@ -8,7 +8,7 @@ on:
     types:
       - closed
     branches:
-      - service-now-cmr-test
+      - servicenow-cmr-test
 
 permissions:
   contents: read
