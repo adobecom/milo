@@ -19,15 +19,14 @@ let videoLabels = {
 };
 let videoCounter = 0;
 
-const shouldBlockFreeTrialLinks = (a, prefix, parent) => {
-  if (prefix !== '/kr' || (!a.dataset?.modalPath?.includes('/kr/cc-shared/fragments/trial-modals')
-    && !['free-trial', 'free trial', '무료 체험판', '무료 체험하기',
-      '{{free-trial}}', '{{start-free-trial}}', '{{try-for-free}}']
-      .some((pattern) => a.textContent?.toLowerCase()?.includes(pattern.toLowerCase())))) {
+const shouldBlockFreeTrialLinks = ({ button, localePrefix, parent }) => {
+  if (localePrefix !== '/kr' || (!button.dataset?.modalPath?.includes('/kr/cc-shared/fragments/trial-modals')
+    && !['free-trial', 'free trial', '무료 체험판', '무료 체험하기', '{{try-for-free}}']
+      .some((pattern) => button.textContent?.toLowerCase()?.includes(pattern.toLowerCase())))) {
     return false;
   }
 
-  const elementToRemove = (parent.tagName === 'STRONG' || parent.tagName === 'EM') && parent.children.length === 1 ? parent : a;
+  const elementToRemove = (parent.tagName === 'STRONG' || parent.tagName === 'EM') && parent.children.length === 1 ? parent : button;
   elementToRemove.remove();
   return true;
 };
@@ -36,10 +35,11 @@ export function decorateButtons(el, size) {
   const buttons = el.querySelectorAll('em a, strong a, p > a strong');
   if (buttons.length === 0) return;
   const buttonTypeMap = { STRONG: 'blue', EM: 'outline', A: 'blue' };
+  const localePrefix = getConfig()?.locale?.prefix;
 
   buttons.forEach((button) => {
     const parent = button.parentElement;
-    if (shouldBlockFreeTrialLinks(button, getConfig()?.locale?.prefix, parent)) return;
+    if (shouldBlockFreeTrialLinks({ button, localePrefix, parent })) return;
     let target = button;
     const buttonType = buttonTypeMap[parent.nodeName] || 'outline';
     if (button.nodeName === 'STRONG') {
