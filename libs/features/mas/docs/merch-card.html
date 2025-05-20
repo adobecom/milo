@@ -53,8 +53,8 @@ Adobe Home Gallery provides a comprehensive list of all supported card variants 
       fragment1.<span class="hljs-title function_">addEventListener</span>(<span class="hljs-string">&#x27;aem:load&#x27;</span>, <span class="hljs-function">(<span class="hljs-params">e</span>) =&gt;</span> {
           <span class="hljs-title function_">log</span>(
               target,
-              <span class="hljs-string">&#x27;aem-fragment is loaded: &#x27;</span>,
-              <span class="hljs-title class_">JSON</span>.<span class="hljs-title function_">stringify</span>(e.<span class="hljs-property">target</span>.<span class="hljs-property">data</span>, <span class="hljs-literal">null</span>, <span class="hljs-string">&#x27;\t&#x27;</span>),
+              <span class="hljs-string">&#x27;aem:load &#x27;</span>,
+              <span class="hljs-title class_">JSON</span>.<span class="hljs-title function_">stringify</span>(e.<span class="hljs-property">detail</span>, <span class="hljs-literal">null</span>, <span class="hljs-number">2</span>),
           );
       });
 

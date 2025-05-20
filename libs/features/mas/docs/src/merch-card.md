@@ -42,8 +42,8 @@ Adobe Home Gallery provides a comprehensive list of all supported card variants 
       fragment1.addEventListener('aem:load', (e) => {
           log(
               target,
-              'aem-fragment is loaded: ',
-              JSON.stringify(e.target.data, null, '\t'),
+              'aem:load ',
+              JSON.stringify(e.detail, null, 2),
           );
       });
 

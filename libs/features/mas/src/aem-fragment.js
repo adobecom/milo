@@ -151,7 +151,7 @@ export class AemFragment extends HTMLElement {
                 performance.measure(measureName, this.#startMarkName),
             );
             for (const [key, value] of response.headers.entries()) {
-              this.#headers += `${key}: ${value}\n`;
+              this.#headers += `${key}: ${value}, `;
           }
             return response.json();
         } catch (e) {
