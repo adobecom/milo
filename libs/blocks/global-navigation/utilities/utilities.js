@@ -519,7 +519,6 @@ export const closeAllTabs = (tabs, tabpanels) => {
   tabs.forEach((t) => t.setAttribute('aria-selected', 'false'));
 };
 
-export const transformTemplateToMobile = async ({ popup, item, localnav = false, toggleMenu }) => {
 const parseTabsFromMenuSection = (section) => {
   const headline = section.querySelector('.feds-menu-headline');
   const name = headline?.textContent ?? 'Shop For';
