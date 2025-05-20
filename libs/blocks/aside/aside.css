@@ -112,6 +112,7 @@
 .aside .foreground.container .image {
   position: relative;
   display: flex;
+  width: 100%;
 }
 
 .aside .foreground.container > div {
