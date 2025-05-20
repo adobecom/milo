@@ -1,6 +1,8 @@
 import { html, signal, useEffect } from '../../../deps/htm-preact.js';
 import { STATUS } from '../checks/constants.js';
-import { runChecks } from '../checks/seo.js';
+import preflightApi from '../checks/preflightApi.js';
+
+const { runChecks } = preflightApi.seo;
 
 const DEF_ICON = 'purple';
 const DEF_DESC = 'Checking...';

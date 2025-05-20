@@ -1,6 +1,8 @@
 import { html, signal, useEffect } from '../../../deps/htm-preact.js';
-import { runChecks, isViewportTooSmall } from '../checks/assets.js';
+import preflightApi from '../checks/preflightApi.js';
 import { STATUS } from '../checks/constants.js';
+
+const { isViewportTooSmall, runChecks } = preflightApi.assets;
 
 // Define signals for check results and viewport status
 const imageDimensionsResult = signal({

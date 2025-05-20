@@ -1,6 +1,8 @@
 import { html, signal, useEffect } from '../../../deps/htm-preact.js';
-import { runChecks, getLcpEntry } from '../checks/performance.js';
+import preflightApi from '../checks/preflightApi.js';
 import { STATUS } from '../checks/constants.js';
+
+const { getLcpEntry, runChecks } = preflightApi.performance;
 
 // Define signals for each performance check result
 const lcpElResult = signal({ icon: 'purple', title: 'Valid LCP', description: 'Checking...' });
