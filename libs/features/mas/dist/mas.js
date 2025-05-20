@@ -3376,7 +3376,7 @@ merch-card[variant="ccd-slice"] [slot='body-s'] a.spectrum-Link {
         );
     }
 
-    merch-card[variant='fries'] merch-icon[size='s'] {
+    merch-card[variant='fries'] merch-icon[size='s'] img {
         width: 26px;
         height: 25px;
     }

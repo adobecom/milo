@@ -156,6 +156,7 @@ button {
 .gallery-content {
   display: block;
   padding: 30px;
+  width: 100%;
 }
 
 .plans-gallery-content {

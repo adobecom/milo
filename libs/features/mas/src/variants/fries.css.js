@@ -6,7 +6,7 @@ export const CSS = `
         );
     }
 
-    merch-card[variant='fries'] merch-icon[size='s'] {
+    merch-card[variant='fries'] merch-icon[size='s'] img {
         width: 26px;
         height: 25px;
     }
