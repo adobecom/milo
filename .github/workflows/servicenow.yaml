@@ -6,6 +6,7 @@ name: Create CMR in ServiceNow
 on:
   pull_request_target:
     types:
+      - opened
       - closed
     branches:
       - servicenow-cmr-test
@@ -18,11 +19,13 @@ env:
   IMSACCESS_CLIENT_SECRET: ${{ secrets.IMSACCESS_CLIENT_SECRET_STAGE }}
   IMSACCESS_AUTH_CODE: ${{ secrets.IMSACCESS_AUTH_CODE_STAGE }}
   IPAAS_KEY: ${{ secrets.IPAAS_KEY_STAGE }}
+  SNOW_INSTANCE_ID: ${{ secrets.SNOW_INSTANCE_ID }}
   PR_TITLE: ${{ github.event.pull_request.title }}
   PR_BODY: ${{ github.event.pull_request.body }}
   PR_NUMBER: ${{ github.event.pull_request.number }}
   PR_CREATED_AT: ${{ github.event.pull_request.created_at }}
   PR_MERGED_AT: ${{ github.event.pull_request.merged_at }}
+  PR_LINK: ${{ github.event.pull_request.html_url }}
 
 jobs:
   build:

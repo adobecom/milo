@@ -121,9 +121,10 @@ if __name__ == "__main__":
   release_title = os.environ['PR_TITLE']
   release_details = os.environ['PR_BODY']
   pr_num = os.environ['PR_NUMBER']
+  pr_link = os.environ['PR_LINK']
   pr_created = os.environ['PR_CREATED_AT']
   pr_merged = os.environ['PR_MERGED_AT']
-  release_summary = f"Release_Details: {release_details} \n\nPull Request Number: {pr_num} \nPull Request Created At: {pr_created} \nPull Request Merged At: {pr_merged}"
+  release_summary = f"Release_Details: {release_details} \n\nPull Request Number: {pr_num} \nPull Request Link: {pr_link} \nPull Request Created At: {pr_created} \nPull Request Merged At: {pr_merged}"
 
   print("Getting IMS Token")
   #ims_url = 'https://ims-na1.adobelogin.com/ims/token'
@@ -163,7 +164,7 @@ if __name__ == "__main__":
   data = {
     "title":release_title,
     "description":release_summary,
-    "instanceIds": [ 571573 ],
+    "instanceIds": [ os.environ['SNOW_INSTANCE_ID'] ],
     "plannedStartDate": start_time,
     "plannedEndDate": end_time,
     "coordinator": "narcis@adobe.com",
