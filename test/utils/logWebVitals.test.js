@@ -33,7 +33,8 @@ describe('Log Web Vitals', () => {
         expect(vitals.manifest3selected).to.equal('all');
         expect(vitals.manifest4path).to.equal('/cc-shared/fragments/tests/2024/q2/ace0875/ace0875.json');
         expect(vitals.manifest4selected).to.equal('target-var-marqueelink');
-        expect(vitals.os).to.be.oneOf(['mac', 'win', 'android', 'linux', '']);
+        expect(vitals.os).to.be.oneOf(['mac', 'iOS', 'win', 'android', 'linux', '']);
+        expect(vitals.tablet).to.be.oneOf(['yes', '']);
         expect(vitals.url).to.equal('localhost:2000/');
         expect(vitals.isMep).to.equal('false');
         expect(vitals.isFrag).to.equal('false');
