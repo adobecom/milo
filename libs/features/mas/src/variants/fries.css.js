@@ -44,6 +44,8 @@ export const CSS = `
     merch-card[variant='fries'] [slot="body-s"] {
         letter-spacing: normal;
         color: var(--consonant-merch-card-body-s-color);
+        font-size: var(--consonant-merch-card-body-s-font-size);
+        line-height: var(--consonant-merch-card-body-s-line-height);
     }
 
     merch-card[variant='fries'] [slot="body-s"] merch-icon {
