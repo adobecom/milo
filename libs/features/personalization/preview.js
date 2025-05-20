@@ -271,8 +271,8 @@ async function mmmToggleManifests(event, popup, pageId) {
 
   if (!sevenDayPageData) {
     try {
-      // const pageDataUrl = `${API_URLS.pageDataByURL}${mepConfig.page.url}&lastSeen=week`;
-      const pageDataUrl = `${API_URLS.pageDataByURL}https://www.adobe.com${mepConfig.page.page}.html&lastSeen=week`;
+      const pageDataUrl = `${API_URLS.pageDataByURL}${mepConfig.page.url}&lastSeen=week`;
+
       const response = await fetch(pageDataUrl);
 
       if (!response.ok) throw new Error('Network error');
