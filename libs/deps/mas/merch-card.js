@@ -2012,6 +2012,10 @@ merch-card [slot="body-xxs"] {
     color: var(--merch-color-grey-80);
 }
 
+merch-card [slot="body-s"] {
+    color: var(--consonant-merch-card-body-s-color);
+}
+
 merch-card button.spectrum-Button > a {
   color: inherit;
   text-decoration: none;
