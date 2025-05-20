@@ -200,7 +200,7 @@ if __name__ == "__main__":
   time.sleep(10)
 
   try:
-      cmr_id = backoff_with_timeout(get_cmr_id_operation, max_retries=15, base_delay=1, max_delay=60, timeout=300)
+      cmr_id = backoff_with_timeout(get_cmr_id_operation, max_retries=300, base_delay=1, max_delay=60, timeout=3600)
       print("CMR ID found and validated: ", cmr_id)
   except Exception as e:
       print("All CMR ID retrieval attempts failed: ", e)
