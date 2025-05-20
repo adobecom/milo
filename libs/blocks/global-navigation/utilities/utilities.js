@@ -541,10 +541,10 @@ const promoCrossCloudTab = async (popup) => {
   }];
 };
 
+// returns a cleanup function
 export const transformTemplateToMobile = async ({ popup, item, localnav = false, toggleMenu }) => {
   const notMegaMenu = popup.parentElement.tagName === 'DIV';
-  const originalContent = popup.innerHTML;
-  if (notMegaMenu) return originalContent;
+  if (notMegaMenu) return () => {};
 
   const tabs = [...popup.querySelectorAll('.feds-menu-section')]
     .filter((section) => !section.querySelector('.feds-promo') && section.textContent)
