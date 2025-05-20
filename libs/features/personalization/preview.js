@@ -195,7 +195,6 @@ function getManifestListDomAndParameter(mepConfig) {
     const variantNamesArray = typeof variantNames === 'string' ? variantNames.split('||') : variantNames;
     let options = '';
     let isSelected = '';
-    // Only set default if it's the first mep button build, otherwise none. Possibly use isMMM
     if (!variantNames.includes(selectedVariantName) && pageId === 0) {
       isSelected = 'selected';
       manifestParameter.push(`${editUrl}--default`);
