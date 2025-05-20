@@ -1247,7 +1247,7 @@ export async function applyPers({ manifests }) {
   config.mep.martech = `|${pznVariants.join('--')}|${pznManifests.join('--')}`;
 }
 
-function createManifests(manifestString, source) {
+function parseManifestUrlAndAddSource(manifestString, source) {
   if (!manifestString) return [];
   return manifestString.toLowerCase()
     .split(/,|(\s+)|(\\n)/g)
@@ -1264,11 +1264,11 @@ export const combineMepSources = async (
   let persManifests = [];
 
   if (persEnabled) {
-    persManifests = createManifests(persEnabled, 'pzn');
+    persManifests = parseManifestUrlAndAddSource(persEnabled, 'pzn');
   }
 
   if (rocPersEnabled) {
-    const rocPersManifest = createManifests(rocPersEnabled, 'pzn-roc');
+    const rocPersManifest = parseManifestUrlAndAddSource(rocPersEnabled, 'pzn-roc');
     persManifests = persManifests.concat(rocPersManifest);
   }
 
