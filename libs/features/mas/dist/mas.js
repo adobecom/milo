@@ -3499,6 +3499,7 @@ merch-card[variant="ccd-slice"] [slot='body-s'] a.spectrum-Link {
 
     .spectrum--dark merch-card[variant="fries"],
     .spectrum--darkest merch-card[variant="fries"] {
+      --consonant-merch-card-body-s-color: rgb(142, 142, 147);
       --spectrum-yellow-300:rgb(248, 217, 4);
       --consonant-merch-card-background-color:rgb(19, 19, 19);
       --consonant-merch-card-heading-xxs-color:rgb(253, 253, 253);
