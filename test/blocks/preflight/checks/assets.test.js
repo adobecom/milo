@@ -1,7 +1,9 @@
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
-import { checkImageDimensions, isViewportTooSmall, runChecks } from '../../../../libs/blocks/preflight/checks/assets.js';
+import preflightApi from '../../../../libs/blocks/preflight/checks/preflightApi.js';
 import { STATUS } from '../../../../libs/blocks/preflight/checks/constants.js';
+
+const { checkImageDimensions, isViewportTooSmall, runChecks } = preflightApi.assets;
 
 describe('Preflight Asset Checks', () => {
   let mockMatchMedia;
@@ -46,6 +48,20 @@ describe('Preflight Asset Checks', () => {
     delete window.checkImageDimensions;
     delete window.runChecks;
     delete window.createTag;
+  });
+
+  describe('Sanity Checks', () => {
+    it('preflightApi.assets.checkImageDimensions exists', () => {
+      expect(checkImageDimensions).to.exist;
+    });
+
+    it('preflightApi.assets.isViewportTooSmall exists', () => {
+      expect(isViewportTooSmall).to.exist;
+    });
+
+    it('preflightApi.assets.runChecks exists', () => {
+      expect(runChecks).to.exist;
+    });
   });
 
   describe('Basic Functionality', () => {
