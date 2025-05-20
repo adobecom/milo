@@ -132,7 +132,7 @@ def get_ims_token():
       'grant_type': "authorization_code",
       'code': os.environ['IMSACCESS_AUTH_CODE']
   }
-  response = requests.post(IMS_URL, headers=headers, json=data)
+  response = requests.post(IMS_URL, headers=headers, data=data)
   json_parse = json.loads(response.text)
 
   if response.status_code != 200:
