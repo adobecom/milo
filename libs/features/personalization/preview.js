@@ -5,7 +5,7 @@ const API_DOMAIN = 'https://jvdtssh5lkvwwi4y3kbletjmvu0qctxj.lambda-url.us-west-
 
 export const API_URLS = {
   pageList: `${API_DOMAIN}/get-pages`,
-  pageDetails: `${API_DOMAIN}/get-page?id=`,
+  pageDetails: `${API_DOMAIN}/get-page`,
   save: `${API_DOMAIN}/save-mep-call`,
   report: `${API_DOMAIN}/get-report`,
 };
