@@ -193,10 +193,6 @@ html[dir="rtl"] .carousel-slides .section.carousel-slide {
   opacity: 1;
 } 
 
-.carousel-slide.non-visible-slide {
-  visibility: hidden;
-}
-
 .carousel-slides.is-ready,
 .carousel-slides.is-ready.is-reversing,
 .carousel[class*='show-'] .carousel-slides.is-ready,
@@ -213,7 +209,7 @@ html[dir="rtl"] .carousel-slides .section.carousel-slide {
 }
 
 .carousel .carousel-controls {
-  display: flex;
+  display: none;
   position: relative;
   max-width: 88px;
   overflow: hidden;
