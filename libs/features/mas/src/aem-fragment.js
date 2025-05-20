@@ -65,6 +65,7 @@ export class AemFragment extends HTMLElement {
     #log;
 
     #rawData = null;
+    #headers = '';
     #data = null;
     #stale = false;
     #service = null;
@@ -149,6 +150,9 @@ export class AemFragment extends HTMLElement {
             this.#lastSuccessMark = roundMeasure(
                 performance.measure(measureName, this.#startMarkName),
             );
+            for (const [key, value] of response.headers.entries()) {
+              this.#headers += `${key}: ${value}\n`;
+          }
             return response.json();
         } catch (e) {
             const { startTime, duration } = roundMeasure(
@@ -194,6 +198,7 @@ export class AemFragment extends HTMLElement {
                             placeholders,
                             startTime,
                             duration,
+                            headers: this.#headers,
                         },
                         bubbles: true,
                         composed: true,
