@@ -10,12 +10,9 @@ import requests
 APPLICATION_JSON = "application/json"
 CMR_RETRIEVAL_ERROR = "CMR ID Retrieval Operation failed..."
 POST_FAILURE_MESSAGE = "POST failed with response code: "
-#IMS_URL = 'https://ims-na1.adobelogin.com/ims/token'
-IMS_URL = 'https://ims-na1-stg1.adobelogin.com/ims/token'
-#SERVICENOW_CMR_URL = 'https://ipaasapi.adobe-services.com/change_management/changes'
-SERVICENOW_CMR_URL = 'https://ipaasapi-stage.adobe-services.com/change_management/changes'
-#SERVICENOW_GET_CMR_URL = 'https://ipaasapi.adobe-services.com/change_management/transactions/'
-SERVICENOW_GET_CMR_URL = 'https://ipaasapi-stage.adobe-services.com/change_management/transactions/'
+IMS_URL = 'https://ims-na1.adobelogin.com/ims/token'
+SERVICENOW_CMR_URL = 'https://ipaasapi.adobe-services.com/change_management/changes'
+SERVICENOW_GET_CMR_URL = 'https://ipaasapi.adobe-services.com/change_management/transactions/'
 
 def _search_value(value, target_string):
     if isinstance(value, str):
