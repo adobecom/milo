@@ -57,6 +57,28 @@ const METADATA_URLS_CATEGORIES = {
   postLCP: { display: 'PostLCP', key: 'postLCP' },
 };
 
+const TARGET_METADATA_OPTIONS = {
+  cc: {
+    name: 'CC',
+    metadata: 'https://main--cc--adobecom.aem.live/metadata-optimization.json',
+    source: 'https://adobe.sharepoint.com/:x:/r/sites/adobecom/_layouts/15/Doc.aspx?sourcedoc=%7B818b8ad2-72db-4726-85a6-5238d6715069%7D&action=edit&activeCell=%27helix-default%27!A16&wdinitialsession=11b36a4d-a08b-0def-1294-1fcf497cfc1a&wdrldsc=4&wdrldc=1&wdrldr=AccessTokenExpiredWarningUnauthenticated%2CRefreshin',
+  },
+  dc: {
+    name: 'DC',
+    metadata: 'https://main--dc--adobecom.aem.live/metadata-optimization.json',
+    source: 'https://adobe.sharepoint.com/:x:/r/sites/adobecom/_layouts/15/Doc.aspx?sourcedoc=%7B8F5A8CD0-7979-41CE-894A-CC465B293C1A%7D&file=metadata-optimization.xlsx&action=default&mobileredirect=true&wdsle=0',
+  },
+  express: {
+    name: 'Express',
+    metadata: 'https://main--express-milo--adobecom.aem.live/metadata-optimization.json',
+    source: 'https://adobe.sharepoint.com/:x:/r/sites/adobecom/_layouts/15/Doc.aspx?sourcedoc=%7BEC96D2B9-9F25-48AF-B88A-A6926A340D3A%7D&file=metadata-optimization.xlsx&action=default&mobileredirect=true',
+  },
+  bacom: {
+    name: 'BACOM',
+    metadata: 'https://main--bacom--adobecom.aem.live/metadata-optimization.json',
+    source: 'https://adobe.sharepoint.com/:x:/r/sites/adobecom/_layouts/15/Doc.aspx?sourcedoc=%7BEE70634D-C16E-45E7-B16E-718C5022413E%7D&file=metadata-optimization.xlsx&action=default&mobileredirect=true&wdsle=0',
+  },
+};
 let isReport = false;
 let mmmPageVer = GRID_FORMAT.base;
 let isMetadataLookup = false;
@@ -710,28 +732,6 @@ function createMetadataLookup(el) {
     id: 'mmm-metadata-lookup-repo-cc',
     label: 'Choose Repo',
     selected: SEARCH_INITIAL_VALUES().selectedRepo,
-    options: {
-      cc: {
-        name: 'CC',
-        metadata: 'https://main--cc--adobecom.aem.live/metadata-optimization.json',
-        source: 'https://adobe.sharepoint.com/:x:/r/sites/adobecom/_layouts/15/Doc.aspx?sourcedoc=%7B818b8ad2-72db-4726-85a6-5238d6715069%7D&action=edit&activeCell=%27helix-default%27!A16&wdinitialsession=11b36a4d-a08b-0def-1294-1fcf497cfc1a&wdrldsc=4&wdrldc=1&wdrldr=AccessTokenExpiredWarningUnauthenticated%2CRefreshin',
-      },
-      dc: {
-        name: 'DC',
-        metadata: 'https://main--dc--adobecom.aem.live/metadata-optimization.json',
-        source: 'https://adobe.sharepoint.com/:x:/r/sites/adobecom/_layouts/15/Doc.aspx?sourcedoc=%7B8F5A8CD0-7979-41CE-894A-CC465B293C1A%7D&file=metadata-optimization.xlsx&action=default&mobileredirect=true&wdsle=0',
-      },
-      express: {
-        name: 'Express',
-        metadata: 'https://main--express-milo--adobecom.aem.live/metadata-optimization.json',
-        source: 'https://adobe.sharepoint.com/:x:/r/sites/adobecom/_layouts/15/Doc.aspx?sourcedoc=%7BEC96D2B9-9F25-48AF-B88A-A6926A340D3A%7D&file=metadata-optimization.xlsx&action=default&mobileredirect=true',
-      },
-      bacom: {
-        name: 'BACOM',
-        metadata: 'https://main--bacom--adobecom.aem.live/metadata-optimization.json',
-        source: 'https://adobe.sharepoint.com/:x:/r/sites/adobecom/_layouts/15/Doc.aspx?sourcedoc=%7BEE70634D-C16E-45E7-B16E-718C5022413E%7D&file=metadata-optimization.xlsx&action=default&mobileredirect=true&wdsle=0',
-      },
-    },
   };
 
   const search = createTag('div', { class: 'mmm-metadata-lookup' }, `
@@ -739,8 +739,8 @@ function createMetadataLookup(el) {
       <div>
         <label for="${dropdown.id}">${dropdown.label}:</label>
         <select id="${dropdown.id}" class="text-field-input">
-          ${Object.keys(dropdown.options).map((key) => `
-            <option value="${key}" ${dropdown.selected === key ? 'selected' : ''}>${dropdown.options[key].name}</option>
+          ${Object.keys(TARGET_METADATA_OPTIONS).map((key) => `
+            <option value="${key}" ${dropdown.selected === key ? 'selected' : ''}>${TARGET_METADATA_OPTIONS[key].name}</option>
           `).join('')}
         </select>
       </div>
@@ -754,7 +754,7 @@ function createMetadataLookup(el) {
   `);
   el.append(search);
   // Edit REP button label and URL
-  const { name, source } = dropdown.options[dropdown.selected];
+  const { name, source } = TARGET_METADATA_OPTIONS[dropdown.selected];
   openMetadataSheetBtn.innerHTML = `Open ${name} Spreadsheet`;
   openMetadataSheetBtn.href = source;
 
@@ -805,7 +805,7 @@ async function createView(el, search) {
   switch (true) {
     case isReport: url = API_URLS.report; break;
     case isMetadataLookup: {
-      url = API_URLS.metadata[SEARCH_INITIAL_VALUES().selectedRepo];
+      url = TARGET_METADATA_OPTIONS[SEARCH_INITIAL_VALUES().selectedRepo].metadata;
       method = 'GET';
       body = null;
       break;
