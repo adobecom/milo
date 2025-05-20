@@ -4,8 +4,12 @@
   margin-left: auto;
   margin-right: auto;
   text-align: center;
-  padding: 64px 0;
+  padding: 56px 0;
   overflow: hidden;
+}
+
+.share.dark {
+  background-color: #1E1E1E;
 }
 
 .share svg.icon {
@@ -33,8 +37,16 @@
   padding-bottom: 8px;
 }
 
+.share.dark p {
+  color: #fff;
+}
+
 .share p.icon-container svg {
-  color: #adadad;
+  color: var(--color-gray-600);
+}
+
+.share.dark p.icon-container svg {
+  color: #fff;
 }
 
 .share p.icon-container > a:not(:first-child) {
