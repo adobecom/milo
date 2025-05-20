@@ -541,7 +541,7 @@ const promoCrossCloudTab = async (popup) => {
   }];
 };
 
-export const transformTemplateToMobile = async (popup, item, localnav = false) => {
+export const transformTemplateToMobile = async ({ popup, item, localnav = false, toggleMenu }) => {
   const notMegaMenu = popup.parentElement.tagName === 'DIV';
   const originalContent = popup.innerHTML;
   if (notMegaMenu) return originalContent;
