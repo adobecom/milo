@@ -67,7 +67,7 @@ function decorateLightboxButtons() {
   return [expandBtn, closeBtn];
 }
 
-function decorateSlideIndicators(slides) {
+function decorateSlideIndicators(slides, jumpTo) {
   const indicatorDots = [];
 
   for (let i = 0; i < slides.length; i += 1) {
@@ -76,16 +76,17 @@ function decorateSlideIndicators(slides) {
       'data-index': i,
     });
 
-    li.setAttribute('role', 'tab');
-    li.setAttribute('tabindex', -1);
-    li.setAttribute('aria-selected', false);
-    li.setAttribute('aria-label', `Slide ${i + 1} of ${slides.length}`);
+    if (jumpTo) {
+      li.setAttribute('role', 'tab');
+      li.setAttribute('tabindex', -1);
+      li.setAttribute('aria-selected', false);
+      li.setAttribute('aria-labelledby', `Viewing Slide ${i + 1}`);
+    }
 
     // Set inital active state
     if (i === 0) {
       li.classList.add('active');
-      li.setAttribute('aria-current', 'location');
-      li.setAttribute('tabindex', 0);
+      if (jumpTo) li.setAttribute('tabindex', 0);
     }
     indicatorDots.push(li);
   }
@@ -178,13 +179,6 @@ function setIndicatorMultiplyer(carouselElements, activeSlideIndicator, event) {
   }
 }
 
-function updateAriaLive(ariaLive, slide) {
-  slide.querySelectorAll(':scope > :not(.section-metadata')?.forEach((el) => {
-    ariaLive.textContent += el.textContent;
-  });
-}
-
-let hiddenSlideTimeout;
 function moveSlides(event, carouselElements, jumpToIndex) {
   const {
     slideContainer,
@@ -193,11 +187,8 @@ function moveSlides(event, carouselElements, jumpToIndex) {
     slideIndicators,
     controlsContainer,
     direction,
-    ariaLive,
+    jumpTo,
   } = carouselElements;
-
-  clearTimeout(hiddenSlideTimeout);
-  ariaLive.textContent = '';
 
   let referenceSlide = slideContainer.querySelector('.reference-slide');
   let activeSlide = slideContainer.querySelector('.active');
@@ -219,8 +210,7 @@ function moveSlides(event, carouselElements, jumpToIndex) {
   activeSlide.classList.remove('active');
   activeSlide.querySelectorAll('a, video').forEach((focusableElement) => focusableElement.setAttribute('tabindex', -1));
   activeSlideIndicator.classList.remove('active');
-  activeSlideIndicator.setAttribute('tabindex', -1);
-  activeSlideIndicator.removeAttribute('aria-current');
+  if (jumpTo) activeSlideIndicator.setAttribute('tabindex', -1);
 
   /*
    * If indicator dot buttons are clicked update:
@@ -267,10 +257,7 @@ function moveSlides(event, carouselElements, jumpToIndex) {
   referenceSlide.classList.add('reference-slide');
   referenceSlide.style.order = '1';
 
-  updateAriaLive(ariaLive, activeSlide);
-
   // Update active slide and indicator dot attributes
-  activeSlide.classList.remove('non-visible-slide');
   activeSlide.classList.add('active');
   const indexOfActive = [...activeSlide.parentElement.children]
     .findIndex((ele) => activeSlide.isSameNode(ele));
@@ -291,8 +278,7 @@ function moveSlides(event, carouselElements, jumpToIndex) {
       .forEach((focusableElement) => { focusableElement.setAttribute('tabindex', 0); });
   }
   activeSlideIndicator.classList.add('active');
-  activeSlideIndicator.setAttribute('tabindex', 0);
-  activeSlideIndicator.setAttribute('aria-current', 'location');
+  if (jumpTo) activeSlideIndicator.setAttribute('tabindex', 0);
   setIndicatorMultiplyer(carouselElements, activeSlideIndicator, event);
 
   // Loop over all slide siblings to update their order
@@ -309,12 +295,7 @@ function moveSlides(event, carouselElements, jumpToIndex) {
   */
   const slideDelay = 25;
   slideContainer.classList.remove('is-ready');
-  hiddenSlideTimeout = setTimeout(() => {
-    slides[activeSlideIndex].classList.add('non-visible-slide');
-  }, 625);
-  return setTimeout(() => {
-    slideContainer.classList.add('is-ready');
-  }, slideDelay);
+  return setTimeout(() => slideContainer.classList.add('is-ready'), slideDelay);
 }
 
 export function getSwipeDistance(start, end) {
@@ -433,7 +414,7 @@ export default function init(el) {
   const slides = [...candidateKeys].reduce((rdx, key) => {
     if (key.textContent === 'carousel' && key.nextElementSibling.textContent === carouselName) {
       const slide = key.closest('.section');
-      slide.classList.add('carousel-slide', 'non-visible-slide');
+      slide.classList.add('carousel-slide');
       rdx.push(slide);
       slide.setAttribute('data-index', rdx.indexOf(slide));
     }
@@ -444,17 +425,12 @@ export default function init(el) {
   const fragment = new DocumentFragment();
   const nextPreviousBtns = decorateNextPreviousBtns();
   const nextPreviousContainer = createTag('div', { class: 'carousel-button-container' });
-  const slideIndicators = decorateSlideIndicators(slides);
+  const slideIndicators = decorateSlideIndicators(slides, jumpTo);
   const controlsContainer = createTag('div', { class: 'carousel-controls is-delayed' });
 
   convertMpcMp4(slides);
   fragment.append(...slides);
   const slideWrapper = createTag('div', { class: 'carousel-wrapper' });
-  const ariaLive = createTag('div', {
-    class: 'aria-live-container',
-    'aria-live': 'polite',
-  });
-  slideWrapper.appendChild(ariaLive);
   const slideContainer = createTag('div', { class: 'carousel-slides' }, fragment);
   const carouselElements = {
     el,
@@ -465,7 +441,6 @@ export default function init(el) {
     controlsContainer,
     direction: undefined,
     jumpTo,
-    ariaLive,
   };
 
   if (el.classList.contains('lightbox')) {
@@ -487,8 +462,11 @@ export default function init(el) {
   el.append(slideWrapper);
 
   const dotsUl = createTag('ul', { class: 'carousel-indicators' });
-  dotsUl.setAttribute('role', 'tablist');
-  dotsUl.setAttribute('tabindex', 0);
+  if (jumpTo) {
+    dotsUl.setAttribute('role', 'tablist');
+    dotsUl.setAttribute('tabindex', 0);
+  }
+
   dotsUl.append(...slideIndicators);
   controlsContainer.append(dotsUl);
   nextPreviousContainer.append(...nextPreviousBtns, controlsContainer);
@@ -503,7 +481,6 @@ export default function init(el) {
   }
   parentArea.addEventListener(MILO_EVENTS.DEFERRED, handleDeferredImages, true);
 
-  slides[0].classList.remove('non-visible-slide');
   slides[0].classList.add('active');
   const IndexOfShowClass = [...el.classList].findIndex((ele) => ele.includes('show-'));
   let NoOfVisibleSlides = 1;
