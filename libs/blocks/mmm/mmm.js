@@ -334,7 +334,7 @@ function createLastSeenManifestAndDomainDD() {
     'div',
     { id: 'mmm-dropdown-lastSeen', class: 'mmm-form-container' },
     `<div>
-      <label for="mmm-lastSeenManifest">Target manifests ${isReport ? 'not ' : ''}seen in the last:</label>
+      <label for="mmm-lastSeenManifest">${isReport ? 'Target manifests not' : 'Manifests'} seen in the last:</label>
       <select id="mmm-lastSeenManifest" type="text" name="mmm-lastSeenManifest" class="text-field-input">
       
       </select>
