@@ -282,8 +282,8 @@ const LOCALE_MAPPINGS = {
 };
 
 export function getLanguageCode(locale) {
-  const region = locale?.region || '';
-  return LOCALE_MAPPINGS[region] || LOCALE_MAPPINGS[''];
+  const prefix = locale?.prefix?.replace(/^\//, '') || '';
+  return LOCALE_MAPPINGS[prefix] || LOCALE_MAPPINGS[''];
 }
 
 function getUpdatedContext({
