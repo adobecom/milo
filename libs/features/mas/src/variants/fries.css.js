@@ -52,7 +52,6 @@ export const CSS = `
         height: 20px;
         padding-inline-end: 6px;
         margin-top: 15px;
-        margin-bottom: 15px;
     }
 
     merch-card[variant='fries'] [slot="body-s"] .spectrum-Link--primary {

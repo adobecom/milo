@@ -54,20 +54,17 @@ export class FriesCard extends VariantLayout {
 
     static variantStyle = css`
         :host([variant='fries']) {
-            --merch-card-fries-min-width: 620px;
-            --merch-card-fries-width: 620px;
-            --merch-card-fries-height: 220px;
+            --merch-card-fries-max-width: 620px;
             --merch-card-fries-padding: 24px;
-            --merch-card-fries-content-min-width: 300px;
+            --merch-card-fries-min-height: 204px;
             --merch-card-fries-header-min-height: 36px;
             --merch-card-fries-gray-background: rgba(248, 248, 248);
             --merch-card-fries-text-color: rgba(19, 19, 19);
             --merch-card-fries-price-line-height: 17px;
             --merch-card-fries-outline: transparent;
             --merch-card-custom-border-width: 1px;
-            height: var(--merch-card-fries-height);
-            width: var(--merch-card-fries-width);
-            min-width: var(--merch-card-fries-min-width);
+            max-width: var(--merch-card-fries-min-width);
+            min-height: var(--merch-card-fries-min-height);
             background-color: var(
                 --merch-card-custom-background-color,
                 var(--spectrum-gray-300)
@@ -88,8 +85,6 @@ export class FriesCard extends VariantLayout {
             display: flex;
             flex-direction: column;
             justify-content: flex-start;
-            min-width: var(--merch-card-fries-content-min-width);
-            flex-basis: var(--merch-card-fries-content-min-width);
             flex-grow: 1;
         }
 
@@ -118,6 +113,7 @@ export class FriesCard extends VariantLayout {
             flex-direction: row;
             align-items: center;
             gap: 8px;
+            margin-top: 15px;
         }
     `;
 }

@@ -2862,7 +2862,6 @@ merch-card[variant="ccd-slice"] [slot='body-s'] a.spectrum-Link {
             --consonant-merch-card-body-s-color: rgb(34, 34, 34);
             --merch-color-inline-price-strikethrough: var(--spectrum-gray-600);
             --mod-img-height: 29px;
-
             box-sizing: border-box;
             min-width: 290px;
             max-width: 322px;
@@ -3422,7 +3421,6 @@ merch-card[variant="ccd-slice"] [slot='body-s'] a.spectrum-Link {
         height: 20px;
         padding-inline-end: 6px;
         margin-top: 15px;
-        margin-bottom: 15px;
     }
 
     merch-card[variant='fries'] [slot="body-s"] .spectrum-Link--primary {
@@ -3532,20 +3530,17 @@ merch-card[variant="ccd-slice"] [slot='body-s'] a.spectrum-Link {
             <slot></slot>
         `}};u(ht,"variantStyle",y`
         :host([variant='fries']) {
-            --merch-card-fries-min-width: 620px;
-            --merch-card-fries-width: 620px;
-            --merch-card-fries-height: 220px;
+            --merch-card-fries-max-width: 620px;
             --merch-card-fries-padding: 24px;
-            --merch-card-fries-content-min-width: 300px;
+            --merch-card-fries-min-height: 204px;
             --merch-card-fries-header-min-height: 36px;
             --merch-card-fries-gray-background: rgba(248, 248, 248);
             --merch-card-fries-text-color: rgba(19, 19, 19);
             --merch-card-fries-price-line-height: 17px;
             --merch-card-fries-outline: transparent;
             --merch-card-custom-border-width: 1px;
-            height: var(--merch-card-fries-height);
-            width: var(--merch-card-fries-width);
-            min-width: var(--merch-card-fries-min-width);
+            max-width: var(--merch-card-fries-min-width);
+            min-height: var(--merch-card-fries-min-height);
             background-color: var(
                 --merch-card-custom-background-color,
                 var(--spectrum-gray-300)
@@ -3566,8 +3561,6 @@ merch-card[variant="ccd-slice"] [slot='body-s'] a.spectrum-Link {
             display: flex;
             flex-direction: column;
             justify-content: flex-start;
-            min-width: var(--merch-card-fries-content-min-width);
-            flex-basis: var(--merch-card-fries-content-min-width);
             flex-grow: 1;
         }
 
@@ -3596,6 +3589,7 @@ merch-card[variant="ccd-slice"] [slot='body-s'] a.spectrum-Link {
             flex-direction: row;
             align-items: center;
             gap: 8px;
+            margin-top: 15px;
         }
     `);customElements.define("fries-card",ht);q("ccd-suggested",Vt,Cc,Vt.variantStyle);q("ccd-slice",jt,kc,jt.variantStyle);q("ah-try-buy-widget",ct,Pi,ct.variantStyle);q("ah-promoted-plans",lt,ki,lt.variantStyle);q("fries",ht,Li,ht.variantStyle);
 /*! Bundled license information:
