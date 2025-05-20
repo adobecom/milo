@@ -67,8 +67,9 @@ def backoff_with_timeout(operation, max_retries=5, base_delay=1, max_delay=60, t
       try:
           print("Attempting ServiceNow API operation...")
           return operation()  # Attempt the operation
-      except Exception as e:
+      except:
           attempts += 1
+
           if attempts > max_retries or (time.time() - start_time_timer) >= timeout:
               raise  # Re-raise the exception if max retries or timeout is reached
 
