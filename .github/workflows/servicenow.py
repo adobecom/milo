@@ -74,7 +74,7 @@ def backoff_with_timeout(operation, max_retries=5, base_delay=1, max_delay=60, t
           time.sleep(delay)
   raise TimeoutError(f"Operation timed out after {timeout} seconds or {max_retries} retries, whatever came first.")
 
-def get_cmr_id_operation():
+def get_cmr_id_operation(servicenow_get_cmr_url):
   """
   Operation to retrieve a Change Management Request ID from ServiceNow
 
@@ -208,7 +208,7 @@ if __name__ == "__main__":
   time.sleep(10)
 
   try:
-      cmr_id = backoff_with_timeout(get_cmr_id_operation, max_retries=300, base_delay=1, max_delay=60, timeout=3600)
+      cmr_id = backoff_with_timeout(get_cmr_id_operation(servicenow_get_cmr_url), max_retries=300, base_delay=1, max_delay=60, timeout=3600)
       print(f"CMR ID found and validated: {cmr_id}")
   except Exception as e:
       print(f"All CMR ID retrieval attempts failed: {e}")
