@@ -327,6 +327,10 @@ h5 {
   background: rgba(133, 215, 133, 0.7);
 }
 
+.gallery-content .placeholder-failed {
+  border: none;
+}
+
 .fries-gallery-content {
   display: flex;
   flex-direction: column;
