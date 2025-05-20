@@ -374,5 +374,13 @@ module.exports = {
       browserParams: '?theme=darkest',
       tags: '@mas-ccd @suggested-card @commerce @smoke @regression @milo',
     },
+    {
+      tcid: '21',
+      name: '@MAS-CCD-regular-footer-link',
+      path: '/libs/features/mas/docs/ccd.html',
+      data: { id: 'bdf40d06-5914-4f1f-aa10-77c5676fe671' },
+      browserParams: '?theme=darkest',
+      tags: '@mas-ccd @slice-card @commerce @smoke @regression @milo',
+    },
   ],
 };
