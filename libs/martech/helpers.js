@@ -143,7 +143,7 @@ function getUpdatedAcrobatVisitAttempt() {
   const isAdobeDomain = (hostname === 'www.adobe.com' || hostname === 'www.stage.adobe.com') && /\/acrobat/.test(pathname);
   const consentCookieValue = getCookie(OPT_ON_AND_CONSENT_COOKIE);
 
-  if (!consentCookieValue?.includes('C0002:0') && isAdobeDomain) {
+  if (!consentCookieValue?.includes('C0002:0') && isAdobeDomain && secondVisitAttempt <= 2) {
     const updatedVisitAttempt = secondVisitAttempt === 0 ? 1 : secondVisitAttempt + 1;
     localStorage.setItem('acrobatSecondHit', updatedVisitAttempt);
     return updatedVisitAttempt;
