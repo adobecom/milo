@@ -1,39 +1,39 @@
-import requests
-import time
 import datetime
-import random
 import json
 import os
+import random
 import sys
+import time
+
+import requests
+
+APPLICATION_JSON = "application/json"
+CMR_RETRIEVAL_ERROR = "CMR ID Retrieval Operation failed..."
+POST_FAILURE_MESSAGE = "POST failed with response code: "
+
+def _search_value(value, target_string):
+    if isinstance(value, str):
+        return target_string in value
+    if isinstance(value, (dict, list)):
+        return find_string_in_json(value, target_string)
+    return False
 
 def find_string_in_json(json_data, target_string):
-  """
-  Finds a target string in a JSON object.
+    """
+    Finds a target string in a JSON object.
 
-  Args:
-      json_data (dict or list): The JSON data to search.
-      target_string (str): The string to find.
+    Args:
+        json_data (dict or list): The JSON data to search.
+        target_string (str): The string to find.
 
-  Returns:
-      bool: True if the string is found, False otherwise.
-  """
-
-  if isinstance(json_data, dict):
-      for key, value in json_data.items():
-          if isinstance(value, str) and target_string in value:
-              return True
-          elif isinstance(value, (dict, list)):
-              if find_string_in_json(value, target_string):
-                  return True
-  elif isinstance(json_data, list):
-      for item in json_data:
-          if isinstance(item, str) and target_string in item:
-              return True
-          elif isinstance(item, (dict, list)):
-              if find_string_in_json(item, target_string):
-                  return True
-
-  return False
+    Returns:
+        bool: True if the string is found, False otherwise.
+    """
+    if isinstance(json_data, dict):
+        return any(_search_value(value, target_string) for value in json_data.values())
+    if isinstance(json_data, list):
+        return any(_search_value(item, target_string) for item in json_data)
+    return False
 
 def backoff_with_timeout(operation, max_retries=5, base_delay=1, max_delay=60, timeout=300):
   """
@@ -88,16 +88,16 @@ def get_cmr_id_operation():
   if response.status_code != 200:
     print("GET failed with response code: ", response.status_code)
     print(response.text)
-    raise Exception("CMR ID Retrieval Operation failed...")
+    raise requests.exceptions.RequestException(CMR_RETRIEVAL_ERROR)
   elif find_string_in_json(JSON_PARSE, "error"):
     print("CMR ID retrieval failed with response code: ", response.status_code)
     print(response.text)
-    raise Exception("CMR ID Retrieval Operation failed...")
+    raise requests.exceptions.RequestException(CMR_RETRIEVAL_ERROR)
   else:
     if find_string_in_json(JSON_PARSE, "Unknown"):
       print("CMR ID retrieval failed with response code: ", response.status_code)
       print(response.text)
-      raise Exception("CMR ID Retrieval Operation failed...")
+      raise requests.exceptions.RequestException(CMR_RETRIEVAL_ERROR)
 
     print("CMR ID retrieval was successful: ", response.status_code)
     print(response.text)
@@ -124,7 +124,7 @@ if __name__ == "__main__":
 
   print("Getting IMS Token")
   ims_url = 'https://ims-na1.adobelogin.com/ims/token'
-  headers = {"Content-Type":"multipart/form-data"}
+  headers = {"Content-Type": APPLICATION_JSON}
   data = {
     'client_id': os.environ['IMSACCESS_CLIENT_ID'],
     'client_secret': os.environ['IMSACCESS_CLIENT_SECRET'],
@@ -135,7 +135,7 @@ if __name__ == "__main__":
   jsonParse = json.loads(response.text)
 
   if response.status_code != 200:
-    print("POST failed with response code: ", response.status_code)
+    print(POST_FAILURE_MESSAGE, response.status_code)
     print(response.text)
     sys.exit(1)
   elif find_string_in_json(jsonParse, "error"):
@@ -150,9 +150,9 @@ if __name__ == "__main__":
 
   servicenow_cmr_url = 'https://ipaasapi.adobe-services.com/change_management/changes'
   headers = {
-    "Accept":"application/json",
+    "Accept": APPLICATION_JSON,
     "Authorization":token,
-    "Content-Type":"application/json",
+    "Content-Type": APPLICATION_JSON,
     "api_key":os.environ['IPAAS_KEY']
   }
   data = {
@@ -175,7 +175,7 @@ if __name__ == "__main__":
   jsonParse = json.loads(response.text)
 
   if response.status_code != 200:
-    print("POST failed with response code: ", response.status_code)
+    print(POST_FAILURE_MESSAGE, response.status_code)
     print(response.text)
     sys.exit(1)
   elif find_string_in_json(jsonParse, "error"):
@@ -191,7 +191,7 @@ if __name__ == "__main__":
 
   servicenow_get_cmr_url = f'https://ipaasapi.adobe-services.com/change_management/transactions/{transaction_id}'
   headers = {
-    "Accept":"application/json",
+    "Accept": APPLICATION_JSON,
     "Authorization":token,
     "api_key":os.environ['IPAAS_KEY']
   }
@@ -200,11 +200,11 @@ if __name__ == "__main__":
   time.sleep(10)
 
   try:
-      cmr_id = backoff_with_timeout(get_cmr_id_operation, max_retries=15, base_delay=1, max_delay=60, timeout=120)
+      cmr_id = backoff_with_timeout(get_cmr_id_operation, max_retries=15, base_delay=1, max_delay=60, timeout=300)
       print("CMR ID found and validated: ", cmr_id)
   except Exception as e:
       print("All CMR ID retrieval attempts failed: ", e)
-      sys.exit(1)
+      cmr_id = None
 
   print("Setting Actual Maintenance Time Windows for CMR...")
   actual_start_time = (datetime.datetime.now() - datetime.timedelta(seconds = 10)).timestamp()
@@ -213,9 +213,9 @@ if __name__ == "__main__":
   print("Closing CMR in ServiceNow...")
 
   headers = {
-    "Accept":"application/json",
+    "Accept": APPLICATION_JSON,
     "Authorization":token,
-    "Content-Type":"application/json",
+    "Content-Type": APPLICATION_JSON,
     "api_key":os.environ['IPAAS_KEY']
   }
   data = {
@@ -230,7 +230,7 @@ if __name__ == "__main__":
   jsonParse = json.loads(response.text)
 
   if response.status_code != 200:
-    print("POST failed with response code: ", response.status_code)
+    print(POST_FAILURE_MESSAGE, response.status_code)
     print(response.text)
     sys.exit(1)
   elif find_string_in_json(jsonParse, "error"):
@@ -241,5 +241,7 @@ if __name__ == "__main__":
     print("CMR closure was successful: ", response.status_code)
     print(response.text)
 
-  print("Change Management Request in ServiceNow was successful.")
-  print ("You can find the change record in ServiceNow https://adobe.service-now.com/now/change-launchpad/homepage, by searching for this ID: ", cmr_id)
+  print("Change Management Request has been sent to the queue and is being processed.")
+  print("You can find the change record in ServiceNow https://adobe.service-now.com/now/change-launchpad/homepage, by searching for this ID: ", cmr_id)
+  print("If the CMR ID is not found, search for the change record in ServiceNow by the planned start time {start_time} and/or planned end time {end_time}.")
+  print("If it is still not found, please check the ServiceNow queue for the transaction and validate that the CMR was created successfully by reaching out to the Change Management team in the #unified-change-management-support slack channel. Or check the ServiceNow change record for the transaction and validate that the CMR was created successfully by reaching out to the Change Management team in the #unified-change-management-support slack channel.")
