@@ -1308,7 +1308,7 @@ class Gnav {
           const popup = template.querySelector('.feds-popup');
           if (isDesktop.matches || !popup) return;
           desktopMegaMenuHTML = popup.innerHTML;
-          mobileNavCleanup();
+          mobileNavCleanup?.();
           mobileNavCleanup = await transformTemplateToMobile({
             popup,
             item,
@@ -1325,7 +1325,7 @@ class Gnav {
         if (this.newMobileNav) {
           const popup = template.querySelector('.feds-popup');
           if (!isDesktop.matches && popup) {
-            mobileNavCleanup();
+            mobileNavCleanup?.();
             mobileNavCleanup = await transformTemplateToMobile({
               popup,
               item,
@@ -1344,7 +1344,7 @@ class Gnav {
               newPopup.innerHTML = desktopMegaMenuHTML ?? loadingDesktopMegaMenuHTML;
               this.block.classList.remove('new-nav');
             } else {
-              mobileNavCleanup();
+              mobileNavCleanup?.();
               mobileNavCleanup = await transformTemplateToMobile({
                 popup: newPopup,
                 item,
