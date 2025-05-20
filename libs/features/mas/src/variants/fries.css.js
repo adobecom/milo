@@ -129,7 +129,6 @@ export const CSS = `
 
     .spectrum--dark merch-card[variant="fries"],
     .spectrum--darkest merch-card[variant="fries"] {
-      --consonant-merch-card-body-s-color: rgb(142, 142, 147);
       --spectrum-yellow-300:rgb(248, 217, 4);
       --consonant-merch-card-background-color:rgb(19, 19, 19);
       --consonant-merch-card-heading-xxs-color:rgb(253, 253, 253);
@@ -137,5 +136,10 @@ export const CSS = `
       --merch-card-fries-badge-color:rgb(0, 122, 77);
       --consonant-merch-card-body-xxs-color:rgb(219, 219, 219);
       --merch-card-ah-promoted-plans-strikethrough-color:rgb(138, 138, 138);
+    }
+
+    .spectrum--dark merch-card[variant="fries"] [slot="body-s"],
+    .spectrum--darkest merch-card[variant="fries"] [slot="body-s"] {
+        color: rgb(142, 142, 147);
     }
 `;
