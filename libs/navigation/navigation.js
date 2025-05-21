@@ -156,7 +156,7 @@ export default async function loadBlock(configs, customLib) {
               jarvis: configBlock.jarvis,
               isLocalNav: configBlock.isLocalNav,
               mobileGnavV2: configBlock.mobileGnavV2 || 'off',
-            });
+            }, config);
             configBlock.onReady?.();
           } catch (e) {
             configBlock.onError?.(e);

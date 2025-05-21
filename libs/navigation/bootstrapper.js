@@ -1,5 +1,5 @@
 /* eslint import/no-relative-packages: 0 */
-export default async function bootstrapBlock(initBlock, blockConfig) {
+export default async function bootstrapBlock(initBlock, blockConfig, config) {
   const { name, targetEl, layout, noBorder, jarvis } = blockConfig;
   const { getConfig, createTag, loadScript } = await import('../utils/utils.js');
 
@@ -43,7 +43,7 @@ export default async function bootstrapBlock(initBlock, blockConfig) {
     }
   }
 
-  await initBlock(document.querySelector(targetEl));
+  await initBlock(document.querySelector(targetEl), config);
   if (blockConfig.targetEl === 'footer') {
     const { loadPrivacy } = await import('../scripts/delayed.js');
     setTimeout(() => {

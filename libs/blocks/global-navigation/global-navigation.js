@@ -1,6 +1,7 @@
 /* eslint import/no-relative-packages: 0 */
 /* eslint-disable no-async-promise-executor */
 import {
+  setConfig,
   getConfig,
   getMetadata,
   loadIms,
@@ -1493,7 +1494,8 @@ class Gnav {
   };
 }
 
-export default async function init(block) {
+export default async function init(block, config) {
+  if (config) setConfig(config);
   const { mep } = getConfig();
   const sourceUrl = await getGnavSource();
   let newMobileNav = new URLSearchParams(window.location.search).get('newNav');
