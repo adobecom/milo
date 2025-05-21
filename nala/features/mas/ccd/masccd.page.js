@@ -16,6 +16,7 @@ export default class MasCCDPage {
     this.suggestedCardPrice = page.locator('p[slot="price"]');
     this.suggestedCardCTA = page.locator('div[slot="cta"] > button');
     this.suggestedCardCTAButton = page.locator('div[slot="cta"] button[is="checkout-button"]');
+    this.suggestedCardFooterLink = page.locator('div[slot="cta"] > a');
     // slice cards
     this.sliceCard = page.locator('merch-card[variant="ccd-slice"]');
     this.sliceCardWide = page.locator('merch-card[variant="ccd-slice"][size="wide"]');
@@ -25,6 +26,7 @@ export default class MasCCDPage {
     this.sliceCardUptLink = page.locator('div[slot="body-s"] p > a[is="upt-link"]');
     this.sliceCardCTA = page.locator('div[slot="footer"] > button');
     this.sliceCardCTAButton = page.locator('div[slot="footer"] button[is="checkout-button"]');
+    this.sliceCardFooterLink = page.locator('div[slot="footer"] > a');
 
     // Suggested card properties:
     this.suggestedCssProp = {
@@ -315,6 +317,11 @@ export default class MasCCDPage {
         slice: this.sliceCardCTAButton,
         'slice-wide': this.sliceCardCTAButton,
       },
+      footerLink: {
+        suggested: this.suggestedCardFooterLink,
+        slice: this.sliceCardFooterLink,
+        'slice-wide': this.sliceCardFooterLink,
+      },
       image: this.sliceCardImage,
     };
 
@@ -393,6 +400,10 @@ export default class MasCCDPage {
 
   async getCardCTALink(id, cardType) {
     return this.getCardField(id, cardType, 'ctaLink');
+  }
+
+  async getCardFooterLink(id, cardType) {
+    return this.getCardField(id, cardType, 'footerLink');
   }
 
   async getCardImage(id, cardType) {

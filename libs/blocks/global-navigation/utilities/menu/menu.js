@@ -25,6 +25,12 @@ const decorateHeadline = (elem, index) => {
       ${elem.textContent.trim()}
     </div>`;
 
+  const headlineClickHandler = (e) => {
+    if (isDesktop.matches) return;
+    trigger({ element: headline, event: e, type: 'headline' });
+    setActiveDropdown(headline);
+  };
+
   const setHeadlineAttributes = () => {
     if (isDesktop.matches) {
       headline.setAttribute('role', 'heading');
@@ -33,6 +39,7 @@ const decorateHeadline = (elem, index) => {
       headline.removeAttribute('aria-haspopup', true);
       headline.removeAttribute('aria-expanded', false);
       headline.removeAttribute('daa-ll');
+      headline.removeEventListener('click', headlineClickHandler);
     } else {
       headline.setAttribute('role', 'button');
       headline.setAttribute('tabindex', 0);
@@ -40,18 +47,12 @@ const decorateHeadline = (elem, index) => {
       headline.setAttribute('aria-haspopup', true);
       headline.setAttribute('aria-expanded', false);
       headline.setAttribute('daa-ll', getAnalyticsValue(headline.textContent, index));
+      headline.addEventListener('click', headlineClickHandler);
     }
   };
 
   setHeadlineAttributes();
   isDesktop.addEventListener('change', setHeadlineAttributes);
-
-  headline.addEventListener('click', (e) => {
-    if (isDesktop.matches) return;
-
-    trigger({ element: headline, event: e, type: 'headline' });
-    setActiveDropdown(headline);
-  });
 
   // Since heading is turned into a div, it can be safely removed
   elem.remove();
@@ -75,22 +76,22 @@ const decorateLinkGroup = (elem, index) => {
       <div class="feds-navLink-title">${link.textContent}</div>
       ${descriptionElem}
     </div>` : '';
-  let linkGroup = toFragment`<li><a
+  let linkGroup = toFragment`<a
     href="${link.href}"
     class="feds-navLink${modifierClasses.length ? ` ${modifierClasses.join(' ')}` : ''}"
     daa-ll="${getAnalyticsValue(link.textContent, index)}">
       ${imageElem}
       ${contentElem}
-    </a></li>`;
+    </a>`;
   if (linkGroup.classList.contains('feds-navLink--header')) {
-    linkGroup = toFragment`<li><div
+    linkGroup = toFragment`<div
       role="heading"
       aria-level="3"
       class="feds-navLink${modifierClasses.length ? ` ${modifierClasses.join(' ')}` : ''}"
       daa-ll="${getAnalyticsValue(link.textContent, index)}">
         ${imageElem}
         ${contentElem}
-      </div></li>`;
+      </div>`;
   }
   if (link?.target) linkGroup.target = link.target;
 
@@ -283,28 +284,14 @@ const decorateColumns = async ({ content, separatorTagName = 'H5' } = {}) => {
 
         itemDestination.append(imageElem);
       } else {
-        let decoratedElem = decorateElements({ elem: columnElem, itemIndex });
+        const decoratedElem = decorateElements({ elem: columnElem, itemIndex });
         columnElem.remove();
 
         // If an items template has been previously created,
         // add the current element to it;
         // otherwise append the element to the section
         const elemDestination = menuItems || itemDestination;
-        let menuList = null;
-        if (decoratedElem.tagName === 'P') {
-          const li = toFragment`<li></li>`;
-          li.innerHTML = decoratedElem.innerHTML;
-          decoratedElem = li;
-        }
-        if (decoratedElem.tagName === 'LI') {
-          if (!elemDestination.querySelector('ul')) {
-            elemDestination.append(toFragment`<ul></ul>`);
-          }
-          menuList = elemDestination.querySelector('ul');
-        } else {
-          menuList = elemDestination;
-        }
-        menuList.append(decoratedElem);
+        elemDestination.append(decoratedElem);
       }
     }
 
@@ -411,4 +398,4 @@ const decorateMenu = (config) => logErrorFor(async () => {
   }
 }, 'Decorate menu failed', 'gnav-menu', 'i');
 
-export default { decorateMenu, decorateLinkGroup };
+export default { decorateMenu, decorateLinkGroup, decorateHeadline };
