@@ -182,14 +182,15 @@ function setIndicatorMultiplyer(carouselElements, activeSlideIndicator, event) {
 
 function updateAriaLive(ariaLive, slide) {
   let text = '';
-  slide.querySelectorAll(':scope > :not(.section-metadata')?.forEach((el) => {
-    text += el.textContent.trim();
+  slide.querySelectorAll(':scope > :not(.section-metadata').forEach((el, index) => {
+    text += `${index ? ' ' : ''}${el.textContent.trim()}`;
   });
   if (text) {
     ariaLive.textContent = text;
   } else {
-    const img = slide.querySelector('img');
-    if (img) ariaLive.textContent = img.getAttribute('alt');
+    const img = slide.querySelector('img[alt]');
+    const video = slide.querySelectorAll('video[title], iframe[title]');
+    ariaLive.textContent = img?.getAttribute('alt') || video?.getAttribute('title') || '';
   }
 }
 
@@ -197,20 +198,20 @@ function setAriaHiddenAndTabIndex(carouselElements, activeSlide) {
   const { el: carouselBlock, slides } = carouselElements;
   const active = activeSlide ?? carouselBlock.querySelector('.carousel-slide.active');
   const activeSlideIndex = slides
-    .findIndex((ele) => active.isSameNode(ele));
-  const IndexOfShowClass = [...carouselBlock.classList].findIndex((ele) => ele.includes('show-'));
+    .findIndex((el) => active === el);
+  const indexOfShowClass = [...carouselBlock.classList].findIndex((ele) => ele.includes('show-'));
   let tempSlides = slides;
-  let NoOfVisibleSlides = 1;
+  let noOfVisibleSlides = 1;
   const mediaQueryMatches = window.matchMedia('(min-width: 900px)').matches;
-  if (IndexOfShowClass >= 0 && mediaQueryMatches) {
-    NoOfVisibleSlides = parseInt(carouselBlock.classList[IndexOfShowClass].split('-')[1], 10);
+  if (indexOfShowClass >= 0 && mediaQueryMatches) {
+    noOfVisibleSlides = parseInt(carouselBlock.classList[indexOfShowClass].split('-')[1], 10);
   }
   if (activeSlideIndex > 0) {
     tempSlides = [...slides.slice(activeSlideIndex), ...slides.slice(0, activeSlideIndex)];
   }
   tempSlides.forEach((slide, index) => {
     let tabIndex = -1;
-    if (index < NoOfVisibleSlides) {
+    if (index < noOfVisibleSlides) {
       tabIndex = 0;
       slide.removeAttribute('aria-hidden');
     } else {
