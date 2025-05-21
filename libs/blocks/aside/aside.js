@@ -115,9 +115,8 @@ function toolTipPosition(container) {
   const isRtl = document.documentElement.getAttribute('dir') === 'rtl';
   const isTablet = container.classList.contains('tablet-up');
   const isMobile = container.classList.contains('mobile-up');
-  if ((isRtl && isTablet) || (isMobile && !isRtl)) {
-    return 'right';
-  }
+  if ((isRtl && isTablet) || (isMobile && !isRtl)) return 'right';
+
   return 'left';
 }
 
