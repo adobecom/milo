@@ -60,7 +60,7 @@ selectors.profileDropdown = `
 `;
 
 selectors.popupItems = `
-  ${selectors.navLink}:not(.feds-navLink--header),
+  ${selectors.navLink},
   ${selectors.promoLink},
   ${selectors.imagePromo},
   ${selectors.cta},
