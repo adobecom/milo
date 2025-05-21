@@ -308,9 +308,7 @@ export class MerchCard extends LitElement {
         for (const element of elements) {
             const { offerType, planType } = element.value?.[0];
             if (!offerType || !planType) return;
-            const addonOsi = merchAddon.querySelector(
-                `p[data-plan-type="${planType}"] ${SELECTOR_MAS_INLINE_PRICE}[data-offer-type="${offerType}"]`,
-            )?.dataset?.wcsOsi;
+            const addonOsi = merchAddon.getOsi(planType, offerType);
             const osis = element.dataset.wcsOsi
                 .split(',')
                 .filter((osi) => osi !== addonOsi);
@@ -598,41 +596,33 @@ export class MerchCard extends LitElement {
     }
 
     handleAddonAndQuantityUpdate({ detail: { id, items } }) {
-        if (!id || !items?.length) return;
-        const cta = this.checkoutLinks.find(
-            (link) => link.getAttribute('data-modal-id') === id,
-        );
-        if (!cta) return;
-        const url = new URL(cta.getAttribute('href'));
-        const pa = url.searchParams.get('pa');
-        const mainProductQuantity = items.find(
-            (item) => item.productArrangementCode === pa,
-        )?.quantity;
-        const isAddonIncluded = !!items.find(
-            (item) => item.productArrangementCode !== pa,
-        );
-        if (mainProductQuantity) {
-            this.quantitySelect?.dispatchEvent(
-                new CustomEvent(EVENT_MERCH_CARD_QUANTITY_CHANGE, {
-                    detail: { quantity: mainProductQuantity },
-                    bubbles: true,
-                    composed: true,
-                }),
-            );
-        }
-        if (this.addonCheckbox?.checked !== isAddonIncluded) {
-            this.toggleStockOffer({ target: this.addonCheckbox });
-            const checkboxEvent = new Event('change', {
-                bubbles: true,
-                cancelable: true,
-            });
+      if (!id || !items?.length) return;
+      const cta = this.checkoutLinks.find(link => link.getAttribute('data-modal-id') === id);
+      if (!cta) return;
+      const url = new URL(cta.getAttribute('href'));
+      const pa = url.searchParams.get('pa');
+      const mainProductQuantity = items.find(item => item.productArrangementCode === pa)?.quantity;
+      const isAddonIncluded = !!items.find(item => item.productArrangementCode !== pa);
+      if (mainProductQuantity) {
+        this.quantitySelect?.dispatchEvent(new CustomEvent(EVENT_MERCH_CARD_QUANTITY_CHANGE, {
+          detail: { quantity: mainProductQuantity },
+          bubbles: true,
+          composed: true
+        }));
+      }
+      if (this.addonCheckbox?.checked !== isAddonIncluded) {
+        this.toggleStockOffer({ target: this.addonCheckbox });
+        const checkboxEvent = new Event('change', {
+          bubbles: true,
+          cancelable: true
+        });
 
-            Object.defineProperty(checkboxEvent, 'target', {
-                writable: false,
-                value: { checked: isAddonIncluded },
-            });
-            this.addonCheckbox.handleChange(checkboxEvent);
-        }
+        Object.defineProperty(checkboxEvent, 'target', {
+          writable: false,
+          value: { checked: isAddonIncluded }
+        });
+        this.addonCheckbox.handleChange(checkboxEvent);
+      }
     }
 }
 
