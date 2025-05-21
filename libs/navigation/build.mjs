@@ -3,6 +3,7 @@ import fs from 'node:fs';
 
 fs.rmSync('./dist/', { recursive: true, force: true });
 
+// Build CSS files
 await esbuild.build({
   entryPoints: ['navigation.css', 'footer.css', 'dark-nav.css', 'base.css'],
   bundle: true,
@@ -52,6 +53,7 @@ const StyleLoader = {
   },
 };
 
+// Build the main navigation bundle
 await esbuild.build({
   entryPoints: ['navigation.js'],
   bundle: true,
@@ -59,5 +61,16 @@ await esbuild.build({
   format: 'esm',
   sourcemap: true,
   outdir: './dist/',
+  plugins: [StyleLoader],
+});
+
+// Build minified global navigation bundle
+await esbuild.build({
+  entryPoints: ['../blocks/global-navigation/global-navigation.js'],
+  bundle: true,
+  minify: true,
+  format: 'esm',
+  sourcemap: true,
+  outfile: './dist/global-navigation.min.js',
   plugins: [StyleLoader],
 });

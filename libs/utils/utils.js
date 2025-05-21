@@ -672,7 +672,7 @@ function getBlockData(block) {
   return { blockPath, name, hasStyles };
 }
 
-export async function loadBlock(block) {
+export async function loadBlock(block, type) {
   if (block.classList.contains('hide-block')) {
     block.remove();
     return null;
@@ -684,9 +684,16 @@ export async function loadBlock(block) {
   const scriptLoaded = new Promise((resolve) => {
     (async () => {
       try {
-        const { default: init } = await import(`${blockPath}.js`);
-        await init(block);
-        block.dataset.blockStatus = 'loaded';
+        if (type === 'gnav') {
+          const { default: init } = await import('../navigation/dist/global-navigation.min.js');
+          await init(block);
+          block.dataset.blockStatus = 'loaded';
+        } else {
+          const { default: init } = await import(`${blockPath}.js`);
+          await init(block);
+          block.dataset.blockStatus = 'loaded';
+        }
+        
       } catch (err) {
         console.log(`Failed loading ${name}`, err);
         const config = getConfig();
@@ -1436,7 +1443,7 @@ async function loadPostLCP(config) {
   if (header) {
     header.classList.add('gnav-hide');
     performance.mark('Gnav-Start');
-    loadBlock(header);
+    loadBlock(header, 'gnav');
     header.classList.remove('gnav-hide');
   }
   loadTemplate();
