@@ -14,6 +14,7 @@ const CLOSE_ICON = `<svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" w
 
 let isDelayedModal = false;
 let prevHash = '';
+let isDeepLink = false;
 const dialogLoadingSet = new Set();
 
 export function findDetails(hash, el) {
@@ -78,6 +79,11 @@ export function closeModal(modal) {
     window.location.hash = prevHash;
     prevHash = '';
   }
+
+  if (isDeepLink) {
+    document.querySelector('#onetrust-banner-sdk')?.focus();
+    isDeepLink = false;
+  }
 }
 
 function isElementInView(element) {
@@ -119,7 +125,8 @@ async function getPathModal(path, dialog) {
 
 export async function getModal(details, custom) {
   if (!((details?.path && details?.id) || custom)) return null;
-  const { id } = details || custom;
+  const { id, deepLink } = details || custom;
+  isDeepLink = deepLink;
 
   dialogLoadingSet.add(id);
   const dialog = createTag('div', { class: 'dialog-modal', id, role: 'dialog', 'aria-modal': true });
@@ -294,6 +301,7 @@ export default function init(el) {
   if (delayedModal(el) || window.location.hash !== modalHash || document.querySelector(`div.dialog-modal${modalHash}`)) return null;
   if (dialogLoadingSet.has(modalHash?.replace('#', ''))) return null; // prevent duplicate modal loading
   const details = findDetails(window.location.hash, el);
+  details.deepLink = true;
   return details ? getModal(details) : null;
 }
 

@@ -114,6 +114,12 @@
   box-sizing: content-box;
 }
 
+.feds-promo-header {
+  margin: 0;
+  font-size: inherit;
+  line-height: inherit;
+}
+
 .feds-promo--dark {
   background: var(--feds-background-promo--dark);
 }
