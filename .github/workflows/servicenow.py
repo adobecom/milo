@@ -61,28 +61,24 @@ def backoff_with_timeout(operation, max_retries=5, base_delay=1, max_delay=60, t
       _type_: The return value from the sent in operation that requires a smart backoff.
   """
 
-  start_time_timer = time.time()
+  start_time = time.time()
   attempts = 0
-  while attempts <= max_retries and (time.time() - start_time_timer) < timeout:
+  while attempts <= max_retries and (time.time() - start_time) < timeout:
     try:
       print("Attempting ServiceNow API operation...")
       return operation()  # Attempt the operation
-    except:
+    except Exception as e:
       attempts += 1
-
-      if attempts > max_retries or (time.time() - start_time_timer) >= timeout:
-          raise  # Re-raise the exception if max retries or timeout is reached
+      if attempts > max_retries or (time.time() - start_time) >= timeout:
+        raise  # Re-raise the exception if max retries or timeout is reached
 
       delay = min(base_delay * (2 ** (attempts - 1)), max_delay) + random.uniform(0, 0.1 * base_delay)
       time.sleep(delay)
-  raise TimeoutError(f"Operation timed out after {timeout} seconds or {max_retries} retries, whatever came first.")
+  raise TimeoutError("Operation timed out after {} seconds or {} retries, whatever came first.".format(timeout, max_retries))
 
 def get_cmr_id_operation():
   """
   Operation to retrieve a Change Management Request ID from ServiceNow
-
-  Args:
-      url (str): The API GET Request URL to retrieve the Change Management Request ID from ServiceNow
 
   Raises:
       Exception: If the GET request returns a non 200 response.
@@ -93,26 +89,26 @@ def get_cmr_id_operation():
       _type_: The Change ID from the JSON payload
   """
   response = requests.get(servicenow_get_cmr_url, headers=headers)
-  json_parse = json.loads(response.text)
+  JSON_PARSE = json.loads(response.text)
 
   if response.status_code != 200:
     print(f"GET failed with response code: {response.status_code}")
     print(response.text)
-    raise requests.exceptions.RequestException(CMR_RETRIEVAL_ERROR)
-  elif find_string_in_json(json_parse, "error"):
+    raise Exception(CMR_RETRIEVAL_ERROR)
+  elif find_string_in_json(JSON_PARSE, "error"):
     print(f"CMR ID retrieval failed with response code: {response.status_code}")
     print(response.text)
-    raise requests.exceptions.RequestException(CMR_RETRIEVAL_ERROR)
+    raise Exception(CMR_RETRIEVAL_ERROR)
   else:
-    if find_string_in_json(json_parse, "Unknown"):
+    if find_string_in_json(JSON_PARSE, "Unknown"):
       print(f"CMR ID retrieval failed with response code: {response.status_code}")
       print(response.text)
-      raise requests.exceptions.RequestException(CMR_RETRIEVAL_ERROR)
+      raise Exception(CMR_RETRIEVAL_ERROR)
 
     print(f"CMR ID retrieval was successful: {response.status_code}")
     print(response.text)
 
-  return json_parse["result"]["changeId"]
+  return JSON_PARSE["result"]["changeId"]
 
 # Execute Script logic:
 # python3 servicenow.py
@@ -211,7 +207,7 @@ if __name__ == "__main__":
   time.sleep(10)
 
   try:
-    cmr_id = backoff_with_timeout(get_cmr_id_operation(), max_retries=300, base_delay=1, max_delay=60, timeout=3600)
+    cmr_id = backoff_with_timeout(get_cmr_id_operation, max_retries=300, base_delay=1, max_delay=60, timeout=3600)
     print(f"CMR ID found and validated: {cmr_id}")
   except Exception as e:
     print(f"All CMR ID retrieval attempts failed: {e}")
