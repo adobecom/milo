@@ -11,10 +11,10 @@ import {
 export const PLANS_AEM_FRAGMENT_MAPPING = {
     title: { tag: 'p', slot: 'heading-xs' },
     prices: { tag: 'p', slot: 'heading-m' },
-    promoText: {  tag: 'p', slot: 'promo-text'  },
+    promoText: { tag: 'p', slot: 'promo-text' },
     description: { tag: 'div', slot: 'body-xs' },
     mnemonics: { size: 'l' },
-    callout: {  tag: 'div', slot: 'callout-content'  },
+    callout: { tag: 'div', slot: 'callout-content' },
     quantitySelect: { tag: 'div', slot: 'quantity-select' },
     stockOffer: true /* @deprecated */,
     addon: true,
@@ -22,23 +22,15 @@ export const PLANS_AEM_FRAGMENT_MAPPING = {
     planType: true,
     badge: { tag: 'div', slot: 'badge' },
     allowedBadgeColors: [
-      
       'spectrum-yellow-300-plans',
-      
       'spectrum-gray-300-plans',
-      
       'spectrum-gray-700-plans',
-      
       'spectrum-green-900-plans',
-  ,
-  ],
+    ],
     allowedBorderColors: [
-      
       'spectrum-yellow-300-plans',
-      
       'spectrum-gray-300-plans',
-  ,
-  ],
+    ],
     borderColor: { attribute: 'border-color' },
     size: ['wide', 'super-wide'],
     whatsIncluded: { tag: 'div', slot: 'whats-included' },
@@ -143,22 +135,25 @@ export class Plans extends VariantLayout {
     async adjustLegal() {
         await this.card.updateComplete;
         if (this.legal) return;
-        const headingM = this.card.querySelector('[slot="heading-m"]');
-        if (!headingM) return;
-        const price = headingM.querySelector(
-            `${SELECTOR_MAS_INLINE_PRICE}[data-template="price"]`,
-        );
-        const legal = price.cloneNode(true);
-        this.legal = legal;
-        await price.onceSettled();
-        if (!price?.options) return;
-        if (price.options.displayPerUnit)
-            price.dataset.displayPerUnit = 'false';
-        if (price.options.displayTax) price.dataset.displayTax = 'false';
-        if (price.options.displayPlanType)
-            price.dataset.displayPlanType = 'false';
-        legal.setAttribute('data-template', 'legal');
-        headingM.appendChild(legal);
+        const prices = [];
+        const headingPrice = this.card.querySelector(`[slot="heading-m"] ${SELECTOR_MAS_INLINE_PRICE}[data-template="price"]`);
+        if (headingPrice) prices.push(headingPrice);
+        const bodyPrices = this.card.querySelectorAll(`[slot="body-xs"] ${SELECTOR_MAS_INLINE_PRICE}[data-template="price"]`);
+        bodyPrices.forEach(bodyPrice => prices.push(bodyPrice));
+        const legalPromises = prices.map(async (price) => {
+          const legal = price.cloneNode(true);
+          if (price === headingPrice) this.legal = legal;
+          await price.onceSettled();
+          if (!price?.options) return;
+          if (price.options.displayPerUnit)
+              price.dataset.displayPerUnit = 'false';
+          if (price.options.displayTax) price.dataset.displayTax = 'false';
+          if (price.options.displayPlanType)
+              price.dataset.displayPlanType = 'false';
+          legal.setAttribute('data-template', 'legal');
+          price.parentNode.insertBefore(legal, price.nextSibling);
+        });
+        await Promise.all(legalPromises);
     }
 
     async adjustAddon() {
