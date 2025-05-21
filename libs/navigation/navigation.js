@@ -135,55 +135,57 @@ export default async function loadBlock(configs, customLib) {
     ...paramConfigs,
   };
   setConfig(clientConfig);
-  for await (const block of blockConfig) {
-    const configBlock = configs[block.key];
-
-    if (configBlock) {
-      const config = getConfig();
-      const gnavSource = `${config?.locale?.contentRoot}/gnav`;
-      const footerSource = `${config?.locale?.contentRoot}/footer`;
-      if (block.key === 'header') {
-        try {
-          const { default: init } = await import('../blocks/global-navigation/global-navigation.js');
-          await bootstrapBlock(init, {
-            ...block,
-            gnavSource,
-            unavComponents: configBlock.selfIntegrateUnav ? [] : configBlock.unav?.unavComponents,
-            redirect: configBlock.redirect,
-            layout: configBlock.layout,
-            noBorder: configBlock.noBorder,
-            jarvis: configBlock.jarvis,
-            isLocalNav: configBlock.isLocalNav,
-            mobileGnavV2: configBlock.mobileGnavV2 || 'off',
-          });
-          configBlock.onReady?.();
-        } catch (e) {
-          configBlock.onError?.(e);
-          window.lana.log(`${e.message} | gnav-source: ${gnavSource} | href: ${window.location.href}`, {
-            clientId: 'feds-milo',
-            tags: 'standalone-gnav',
-            errorType: e.errorType,
-          });
+  setTimeout(async ()=> {
+    for await (const block of blockConfig) {
+      const configBlock = configs[block.key];
+  
+      if (configBlock) {
+        const config = getConfig();
+        const gnavSource = `${config?.locale?.contentRoot}/gnav`;
+        const footerSource = `${config?.locale?.contentRoot}/footer`;
+        if (block.key === 'header') {
+          try {
+            const { default: init } = await import('./dist/global-navigation.min.js');
+            await bootstrapBlock(init, {
+              ...block,
+              gnavSource,
+              unavComponents: configBlock.selfIntegrateUnav ? [] : configBlock.unav?.unavComponents,
+              redirect: configBlock.redirect,
+              layout: configBlock.layout,
+              noBorder: configBlock.noBorder,
+              jarvis: configBlock.jarvis,
+              isLocalNav: configBlock.isLocalNav,
+              mobileGnavV2: configBlock.mobileGnavV2 || 'off',
+            });
+            configBlock.onReady?.();
+          } catch (e) {
+            configBlock.onError?.(e);
+            window.lana.log(`${e.message} | gnav-source: ${gnavSource} | href: ${window.location.href}`, {
+              clientId: 'feds-milo',
+              tags: 'standalone-gnav',
+              errorType: e.errorType,
+            });
+          }
         }
-      }
-      if (block.key === 'footer') {
-        import('./footer.css').catch(() => {
-          loadStyle(`${miloLibs}/libs/navigation/footer.css`);
-        });
-        try {
-          const { default: init } = await import('../blocks/global-footer/global-footer.js');
-          await bootstrapBlock(init, { ...block, footerSource });
-        } catch (e) {
-          configBlock.onError?.(e);
-          window.lana.log(`${e.message} | footer-source: ${footerSource} | href: ${window.location.href}`, {
-            clientId: 'feds-milo',
-            tags: 'standalone-footer',
-            errorType: e.errorType,
+        if (block.key === 'footer') {
+          import('./footer.css').catch(() => {
+            loadStyle(`${miloLibs}/libs/navigation/footer.css`);
           });
+          try {
+            const { default: init } = await import('../blocks/global-footer/global-footer.js');
+            await bootstrapBlock(init, { ...block, footerSource });
+          } catch (e) {
+            configBlock.onError?.(e);
+            window.lana.log(`${e.message} | footer-source: ${footerSource} | href: ${window.location.href}`, {
+              clientId: 'feds-milo',
+              tags: 'standalone-footer',
+              errorType: e.errorType,
+            });
+          }
         }
       }
     }
-  }
+  }, 4000)
 }
 
 window.loadNavigation = loadBlock;
