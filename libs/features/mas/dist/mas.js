@@ -3489,7 +3489,7 @@ merch-card[variant="ccd-slice"] [slot='body-s'] a.spectrum-Link {
     }
 
     merch-card[variant='fries'] [slot="addon-confirmation"] {
-        color: var(--spectrum-green-500);
+        color: var(--spectrum-green-800);
         font-size: 15px;
         font-weight: bold;
         margin-left: 8px;
