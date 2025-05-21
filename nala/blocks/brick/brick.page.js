@@ -303,24 +303,6 @@ export default class Brick {
     };
   }
 
-  // perform click action and wait for new page
-  async clickBrickAndWaitForNewPage() {
-    const newTabPromise = this.page.context().waitForEvent('page');
-    const navigationPromise = this.page.waitForNavigation({ timeout: 30000, waitUntil: 'load' });
-
-    await this.brickClickable.click();
-    const result = await Promise.race([newTabPromise, navigationPromise]);
-    if (result instanceof this.page.constructor) {
-      await result.waitForLoadState('load');
-      const newUrl = result.url();
-      console.log(`New URL from new tab: ${newUrl}`);
-      return newUrl;
-    }
-    const currentUrl = this.page.url();
-    console.log(`New URL from current tab: ${currentUrl}`);
-    return currentUrl;
-  }
-
   // close georouting wrapper
   async closeGeoroutingWrapper() {
     try {

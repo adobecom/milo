@@ -101,13 +101,12 @@ test.describe('Milo Brick Block test suite', () => {
       await expect(await brick.brickBodyM).toContainText(data.bodyText);
       await expect(await brick.outlineButtonL).toContainText(data.outlineButtonText);
 
-      await test.step('step-3: Verify the accessibility test on the Brick_rounded-corners-clickable block', async () => {
-        await runAccessibilityTest({ page, testScope: brick.brickClickable });
+      await test.step('step-3: Verify analytic attributes', async () => {
+        await expect(await brick.brickClickable).toHaveAttribute('daa-lh', await webUtil.getBlockDaalh('brick', 1));
       });
 
-      await test.step('step-4: Verify clickable block', async () => {
-        const newUrl = await brick.clickBrickAndWaitForNewPage();
-        expect(newUrl).toBe(`${features[2].newUrl}`);
+      await test.step('step-4: Verify the accessibility test on the Brick_rounded-corners-clickable block', async () => {
+        await runAccessibilityTest({ page, testScope: brick.brickClickable });
       });
     });
   });

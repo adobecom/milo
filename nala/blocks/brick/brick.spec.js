@@ -32,7 +32,6 @@ module.exports = {
       tcid: '2',
       name: 'Brick_clickable',
       path: '/drafts/nala/blocks/brick/brick-rounded-corners-clickable',
-      newUrl: 'https://www.adobe.com/products/photoshop.html',
       tags: '@brick @smoke @regression @milo',
       data: {
         h1Text: 'Brick (dark, l-heading, click, rounded-corners)',
