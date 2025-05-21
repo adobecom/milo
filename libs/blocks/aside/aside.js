@@ -111,6 +111,16 @@ function checkViewportPromobar(foreground) {
   if (childCount < 3) addPromobar(children[childCount - 1], foreground);
 }
 
+function toolTipPosition(container) {
+  const isRtl = document.documentElement.getAttribute('dir') === 'rtl';
+  const isTablet = container.classList.contains('tablet-up');
+  const isMobile = container.classList.contains('mobile-up');
+  if ((isRtl && isTablet) || (isMobile && !isRtl)) {
+    return 'right';
+  }
+  return 'left';
+}
+
 async function addTooltip(foreground) {
   const desktopContentText = foreground.querySelector('.desktop-up .text-area')?.textContent.trim();
   const toolTipIcons = [];
@@ -121,8 +131,7 @@ async function addTooltip(foreground) {
     const appendTarget = viewPortEl.querySelector('.text-area').lastElementChild;
     const iconWrapper = createTag('em');
     iconWrapper.style.display = 'none';
-    const tooltipPosition = viewPortEl.classList.contains('mobile-up') ? 'right' : 'left';
-    iconWrapper.textContent = `${tooltipPosition}|${desktopContentText}`;
+    iconWrapper.textContent = `${toolTipPosition(viewPortEl)}|${desktopContentText}`;
     const tooltipSpan = createTag('span', { class: 'icon icon-tooltip' });
     iconWrapper.appendChild(tooltipSpan);
     toolTipIcons.push(tooltipSpan);
