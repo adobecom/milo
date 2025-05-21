@@ -602,9 +602,9 @@
 .aside.promobar.popup .mobile-up.promo-text .milo-tooltip {
   position: absolute;
   bottom: var(--spacing-xs);
-  left: var(--spacing-xs);
+  left: calc(var(--spacing-xs) - 4px);
+  font-size: var(--type-heading-s-size);
   margin-inline-start: 0;
-  justify-content: unset;
 }
 
 .aside.promobar.popup {
