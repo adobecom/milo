@@ -412,7 +412,7 @@
   display: flex;
   width: auto;
   height: var(--icon-size-xs);
-  min-width: unset;
+  min-width: var(--icon-size-xs);
   max-width: unset;
 }
 
