@@ -94,6 +94,7 @@ export class FriesCard extends VariantLayout {
             align-items: center;
             gap: var(--consonant-merch-spacing-xxs);
             padding-bottom: 15px;
+            padding-top: 5px;
         }
 
         :host([variant='fries']) .footer {

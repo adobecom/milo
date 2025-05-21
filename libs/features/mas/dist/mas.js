@@ -3489,7 +3489,7 @@ merch-card[variant="ccd-slice"] [slot='body-s'] a.spectrum-Link {
     }
 
     merch-card[variant='fries'] [slot="addon-confirmation"] {
-        color: var(--spectrum-global-color-green-500);
+        color: var(--spectrum-green-500);
         font-size: 15px;
         font-weight: bold;
         margin-left: 8px;
@@ -3570,6 +3570,7 @@ merch-card[variant="ccd-slice"] [slot='body-s'] a.spectrum-Link {
             align-items: center;
             gap: var(--consonant-merch-spacing-xxs);
             padding-bottom: 15px;
+            padding-top: 5px;
         }
 
         :host([variant='fries']) .footer {
