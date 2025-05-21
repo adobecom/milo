@@ -120,19 +120,14 @@ function getSettings(config = {}) {
     }
 
     const previewParam = getParameter(PARAM_MAS_PREVIEW) ?? config.preview;
-    const previewSettings = {};
     const preview = (typeof previewParam != 'undefined') && previewParam !== 'off' && previewParam !== 'false';
-    if (preview) {
-      previewSettings.preview = preview;
-      previewSettings.previewSurface = getPreviewSurface(wcsApiKey, previewParam);
-    }
     const masIOUrl =
         getParameter('mas-io-url') ??
         config.masIOUrl ??
         `https://www${env === Env.STAGE ? '.stage' : ''}.adobe.com/mas/io`;
     return {
         ...getLocaleSettings(config),
-        ...previewSettings,
+        preview,
         displayOldPrice,
         checkoutClientId,
         checkoutWorkflow,

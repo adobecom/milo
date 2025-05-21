@@ -154,19 +154,12 @@ describe('getSettings', () => {
         expect(settings.landscape).to.equal(Landscape.PUBLISHED);
         expect(settings.env).to.equal(Env.PRODUCTION);
     });
-
-    it('returns the correct preview surface', () => {
-      expect(getPreviewSurface('foo')).to.equal('foo');
-      expect(getPreviewSurface('wcms-commerce-ims-ro-user-cc')).to.equal('acom');
-      expect(getPreviewSurface('CreativeCloud_v6_6')).to.equal('ccd');
-    });
   
     it('sets correctly preview configuration from configuration', () => {
       const config = { commerce: {}, preview: '' };
       window.sessionStorage.setItem('wcsApiKey', 'wcms-commerce-ims-ro-user-milo');
       const settings = getSettings(config);
       expect(settings.preview).to.equal(true);
-      expect(settings.previewSurface).to.equal('acom');
     });
   
     it('sets correctly preview configuration from parameter mas.preview', () => {
@@ -175,7 +168,6 @@ describe('getSettings', () => {
       window.sessionStorage.setItem('mas.preview', 'on');
       const settings = getSettings(config);
       expect(settings.preview).to.equal(true);
-      expect(settings.previewSurface).to.equal('acom');
     });
   
     it('unset correctly preview configuration from parameter mas.preview', () => {
@@ -184,7 +176,6 @@ describe('getSettings', () => {
       window.sessionStorage.setItem('mas.preview', 'off');
       const settings = getSettings(config);
       expect(settings.preview).to.be.undefined;
-      expect(settings.previewSurface).to.be.undefined;
     });
   
     it('overrides correctly preview surface configuration from parameter mas.preview', () => {
@@ -193,6 +184,5 @@ describe('getSettings', () => {
       window.sessionStorage.setItem('mas.preview', 'nala');
       const settings = getSettings(config);
       expect(settings.preview).to.equal(true);
-      expect(settings.previewSurface).to.equal('nala');
     });
 });

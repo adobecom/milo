@@ -1,14 +1,7830 @@
 window.masPriceLiterals = {"total":38,"offset":0,"limit":38,"data":[{"lang":"ar","recurrenceLabel":"{recurrenceTerm, select, MONTH {/الشهر} YEAR {/العام} other {}}","recurrenceAriaLabel":"{recurrenceTerm, select, MONTH {كل شهر} YEAR {كل عام} other {}}","perUnitLabel":"{perUnit, select, LICENSE {لكل ترخيص} other {}}","perUnitAriaLabel":"{perUnit, select, LICENSE {لكل ترخيص} other {}}","freeLabel":"مجانًا","freeAriaLabel":"مجانًا","taxExclusiveLabel":"{taxTerm, select, GST {excl. GST} VAT {excl. VAT} TAX {excl. tax} IVA {excl. IVA} SST {excl. SST} KDV {excl. KDV} other {}}","taxInclusiveLabel":"{taxTerm, select, GST {incl. GST} VAT {incl. VAT} TAX {incl. tax} IVA {incl. IVA} SST {incl. SST} KDV {incl. KDV} other {}}","alternativePriceAriaLabel":"أو بدلاً من ذلك بقيمة {alternativePrice}","strikethroughAriaLabel":"بشكل منتظم بقيمة {strikethroughPrice}"},{"lang":"bg","recurrenceLabel":"{recurrenceTerm, select, MONTH {/мес.} YEAR {/год.} other {}}","recurrenceAriaLabel":"{recurrenceTerm, select, MONTH {на месец} YEAR {на година} other {}}","perUnitLabel":"{perUnit, select, LICENSE {на лиценз} other {}}","perUnitAriaLabel":"{perUnit, select, LICENSE {на лиценз} other {}}","freeLabel":"Безплатно","freeAriaLabel":"Безплатно","taxExclusiveLabel":"{taxTerm, select, GST {excl. GST} VAT {excl. VAT} TAX {excl. tax} IVA {excl. IVA} SST {excl. SST} KDV {excl. KDV} other {}}","taxInclusiveLabel":"{incl. VAT} TAX {incl. tax} IVA {incl. IVA} SST {incl. SST} KDV {incl. KDV} other {}}","alternativePriceAriaLabel":"Алтернативно на {alternativePrice}","strikethroughAriaLabel":"Редовно на {strikethroughPrice}"},{"lang":"cs","recurrenceLabel":"{recurrenceTerm, select, MONTH {/měsíc} YEAR {/rok} other {}}","recurrenceAriaLabel":"{recurrenceTerm, select, MONTH {za měsíc} YEAR {za rok} other {}}","perUnitLabel":"{perUnit, select, LICENSE {za licenci} other {}}","perUnitAriaLabel":"{perUnit, select, LICENSE {za licenci} other {}}","freeLabel":"Zdarma","freeAriaLabel":"Zdarma","taxExclusiveLabel":"{taxTerm, select, GST {bez daně ze zboží a služeb} VAT {bez DPH} TAX {bez daně} IVA {bez IVA} SST {bez SST} KDV {bez KDV} other {}}","taxInclusiveLabel":"{taxTerm, select, GST {včetně daně ze zboží a služeb} VAT {včetně DPH} TAX {včetně daně} IVA {včetně IVA} SST {včetně SST} KDV {včetně KDV} other {}}","alternativePriceAriaLabel":"Případně za {alternativePrice}","strikethroughAriaLabel":"Pravidelně za {strikethroughPrice}"},{"lang":"da","recurrenceLabel":"{recurrenceTerm, select, MONTH {/md} YEAR {/år} other {}}","recurrenceAriaLabel":"{recurrenceTerm, select, MONTH {pr. måned} YEAR {pr. år} other {}}","perUnitLabel":"{perUnit, select, LICENSE {pr. licens} other {}}","perUnitAriaLabel":"{perUnit, select, LICENSE {pr. licens} other {}}","freeLabel":"Gratis","freeAriaLabel":"Gratis","taxExclusiveLabel":"{taxTerm, select, GST {ekskl. GST} VAT {ekskl. moms} TAX {ekskl. skat} IVA {ekskl. IVA} SST {ekskl. SST} KDV {ekskl. KDV} other {}}","taxInclusiveLabel":"{taxTerm, select, GST {inkl. GST} VAT {inkl. moms} TAX {inkl. skat} IVA {inkl. IVA} SST {inkl. SST} KDV {inkl. KDV} other {}}","alternativePriceAriaLabel":"Alternativt til {alternativePrice}","strikethroughAriaLabel":"Normalpris {strikethroughPrice}"},{"lang":"de","recurrenceLabel":"{recurrenceTerm, select, MONTH {/Monat} YEAR {/Jahr} other {}}","recurrenceAriaLabel":"{recurrenceTerm, select, MONTH {pro Monat} YEAR {pro Jahr} other {}}","perUnitLabel":"{perUnit, select, LICENSE {pro Lizenz} other {}}","perUnitAriaLabel":"{perUnit, select, LICENSE {pro Lizenz} other {}}","freeLabel":"Kostenlos","freeAriaLabel":"Kostenlos","taxExclusiveLabel":"{taxTerm, select, GST {zzgl. GST} VAT {zzgl. MwSt.} TAX {zzgl. Steuern} IVA {zzgl. IVA} SST {zzgl. SST} KDV {zzgl. KDV} other {}}","taxInclusiveLabel":"{taxTerm, select, GST {inkl. GST} VAT {inkl. MwSt.} TAX {inkl. Steuern} IVA {inkl. IVA} SST {inkl. SST} KDV {inkl. KDV} other {}}","alternativePriceAriaLabel":"Alternativ: {alternativePrice}","strikethroughAriaLabel":"Regulär: {strikethroughPrice}"},{"lang":"en","recurrenceLabel":"{recurrenceTerm, select, MONTH {/mo} YEAR {/yr} other {}}","recurrenceAriaLabel":"{recurrenceTerm, select, MONTH {per month} YEAR {per year} other {}}","perUnitLabel":"{perUnit, select, LICENSE {per license} other {}}","perUnitAriaLabel":"{perUnit, select, LICENSE {per license} other {}}","freeLabel":"Free","freeAriaLabel":"Free","taxExclusiveLabel":"{taxTerm, select, GST {excl. GST} VAT {excl. VAT} TAX {excl. tax} IVA {excl. IVA} SST {excl. SST} KDV {excl. KDV} other {}}","taxInclusiveLabel":"{taxTerm, select, GST {incl. GST} VAT {incl. VAT} TAX {incl. tax} IVA {incl. IVA} SST {incl. SST} KDV {incl. KDV} other {}}","alternativePriceAriaLabel":"Alternatively at {alternativePrice}","strikethroughAriaLabel":"Regularly at {strikethroughPrice}"},{"lang":"et","recurrenceLabel":"{recurrenceTerm, select, MONTH {kuus} YEAR {aastas} other {}}","recurrenceAriaLabel":"{recurrenceTerm, select, MONTH {kuus} YEAR {aastas} other {}}","perUnitLabel":"{perUnit, select, LICENSE {litsentsi kohta} other {}}","perUnitAriaLabel":"{perUnit, select, LICENSE {litsentsi kohta} other {}}","freeLabel":"Tasuta","freeAriaLabel":"Tasuta","taxExclusiveLabel":"{taxTerm, select, GST {excl. GST} VAT {excl. VAT} TAX {excl. tax} IVA {excl. IVA} SST {excl. SST} KDV {excl. KDV} other {}}","taxInclusiveLabel":"{taxTerm, select, GST {incl. GST} VAT {incl. VAT} TAX {incl. tax} IVA {incl. IVA} SST {incl. SST} KDV {incl. KDV} other {}}","alternativePriceAriaLabel":"Teise võimalusena hinnaga {alternativePrice}","strikethroughAriaLabel":"Tavahind {strikethroughPrice}"},{"lang":"fi","recurrenceLabel":"{recurrenceTerm, select, MONTH {/kk} YEAR {/v} other {}}","recurrenceAriaLabel":"{recurrenceTerm, select, MONTH {kuukausittain} YEAR {vuosittain} other {}}","perUnitLabel":"{perUnit, select, LICENSE {käyttöoikeutta kohti} other {}}","perUnitAriaLabel":"{perUnit, select, LICENSE {käyttöoikeutta kohti} other {}}","freeLabel":"Maksuton","freeAriaLabel":"Maksuton","taxExclusiveLabel":"{taxTerm, select, GST {ilman GST:tä} VAT {ilman ALV:tä} TAX {ilman veroja} IVA {ilman IVA:ta} SST {ilman SST:tä} KDV {ilman KDV:tä} other {}}","taxInclusiveLabel":"{taxTerm, select, GST {sis. GST:n} VAT {sis. ALV:n} TAX {sis. verot} IVA {sis. IVA:n} SST {sis. SST:n} KDV {sis. KDV:n} other {}}","alternativePriceAriaLabel":"Vaihtoehtoisesti hintaan {alternativePrice}","strikethroughAriaLabel":"Säännöllisesti hintaan {strikethroughPrice}"},{"lang":"fr","recurrenceLabel":"{recurrenceTerm, select, MONTH {/mois} YEAR {/an} other {}}","recurrenceAriaLabel":"{recurrenceTerm, select, MONTH {par mois} YEAR {par an} other {}}","perUnitLabel":"{perUnit, select, LICENSE {par licence} other {}}","perUnitAriaLabel":"{perUnit, select, LICENSE {par licence} other {}}","freeLabel":"Gratuit","freeAriaLabel":"Gratuit","taxExclusiveLabel":"{taxTerm, select, GST {hors TPS} VAT {hors TVA} TAX {hors taxes} IVA {hors IVA} SST {hors SST} KDV {hors KDV} other {}}","taxInclusiveLabel":"{taxTerm, select, GST {TPS comprise} VAT {TVA comprise} TAX {taxes comprises} IVA {IVA comprise} SST {SST comprise} KDV {KDV comprise} other {}}","alternativePriceAriaLabel":"Autre prix {alternativePrice}","strikethroughAriaLabel":"Prix habituel {strikethroughPrice}"},{"lang":"he","recurrenceLabel":"{recurrenceTerm, select, MONTH {/חודש} YEAR {/שנה} other {}}","recurrenceAriaLabel":"{recurrenceTerm, select, MONTH {לחודש} YEAR {לשנה} other {}}","perUnitLabel":"{perUnit, select, LICENSE {לרישיון} other {}}","perUnitAriaLabel":"{perUnit, select, LICENSE {לרישיון} other {}}","freeLabel":"חינם","freeAriaLabel":"חינם","taxExclusiveLabel":"{taxTerm, select, GST {excl. GST} VAT {excl. VAT} TAX {excl. tax} IVA {excl. IVA} SST {excl. SST} KDV {excl. KDV} other {}}","taxInclusiveLabel":"{taxTerm, select, GST {incl. GST} VAT {incl. VAT} TAX {incl. tax} IVA {incl. IVA} SST {incl. SST} KDV {incl. KDV} other {}}","alternativePriceAriaLabel":"לחלופין ב-{alternativePrice}","strikethroughAriaLabel":"באופן קבוע ב-{strikethroughPrice}"},{"lang":"hu","recurrenceLabel":"{recurrenceTerm, select, MONTH {/hó} YEAR {/év} other {}}","recurrenceAriaLabel":"{recurrenceTerm, select, MONTH {havonta} YEAR {évente} other {}}","perUnitLabel":"{perUnit, select, LICENSE {licencenként} other {}}","perUnitAriaLabel":"{perUnit, select, LICENSE {licencenként} other {}}","freeLabel":"Ingyenes","freeAriaLabel":"Ingyenes","taxExclusiveLabel":"{taxTerm, select, GST {excl. GST} VAT {excl. VAT} TAX {excl. tax} IVA {excl. IVA} SST {excl. SST} KDV {excl. KDV} other {}}","taxInclusiveLabel":"{taxTerm, select, GST {incl. GST} VAT {incl. VAT} TAX {incl. tax} IVA {incl. IVA} SST {incl. SST} KDV {incl. KDV} other {}}","alternativePriceAriaLabel":"Másik lehetőség: {alternativePrice}","strikethroughAriaLabel":"Általában {strikethroughPrice} áron"},{"lang":"it","recurrenceLabel":"{recurrenceTerm, select, MONTH {/mese} YEAR {/anno} other {}}","recurrenceAriaLabel":"{recurrenceTerm, select, MONTH {al mese} YEAR {all'anno} other {}}","perUnitLabel":"{perUnit, select, LICENSE {per licenza} other {}}","perUnitAriaLabel":"{perUnit, select, LICENSE {per licenza} other {}}","freeLabel":"Gratuito","freeAriaLabel":"Gratuito","taxExclusiveLabel":"{taxTerm, select, GST {escl. GST} VAT {escl. IVA.} TAX {escl. imposte} IVA {escl. IVA} SST {escl. SST} KDV {escl. KDV} other {}}","taxInclusiveLabel":"{taxTerm, select, GST {incl. GST} VAT {incl. IVA} TAX {incl. imposte} IVA {incl. IVA} SST {incl. SST} KDV {incl. KDV} other {}}","alternativePriceAriaLabel":"In alternativa a {alternativePrice}","strikethroughAriaLabel":"Regolarmente a {strikethroughPrice}"},{"lang":"ja","recurrenceLabel":"{recurrenceTerm, select, MONTH {/月} YEAR {/年} other {}}","recurrenceAriaLabel":"{recurrenceTerm, select, MONTH {毎月} YEAR {毎年} other {}}","perUnitLabel":"{perUnit, select, LICENSE {ライセンスごと} other {}}","perUnitAriaLabel":"{perUnit, select, LICENSE {ライセンスごと} other {}}","freeLabel":"無料","freeAriaLabel":"無料","taxExclusiveLabel":"{taxTerm, select, GST {GST 別} VAT {VAT 別} TAX {税別} IVA {IVA 別} SST {SST 別} KDV {KDV 別} other {}}","taxInclusiveLabel":"{taxTerm, select, GST {GST 込} VAT {VAT 込} TAX {税込} IVA {IVA 込} SST {SST 込} KDV {KDV 込} other {}}","alternativePriceAriaLabel":"特別価格 : {alternativePrice}","strikethroughAriaLabel":"通常価格 : {strikethroughPrice}"},{"lang":"ko","recurrenceLabel":"{recurrenceTerm, select, MONTH {/월} YEAR {/년} other {}}","recurrenceAriaLabel":"{recurrenceTerm, select, MONTH {월간} YEAR {연간} other {}}","perUnitLabel":"{perUnit, select, LICENSE {라이선스당} other {}}","perUnitAriaLabel":"{perUnit, select, LICENSE {라이선스당} other {}}","freeLabel":"무료","freeAriaLabel":"무료","taxExclusiveLabel":"{taxTerm, select, GST {GST 제외} VAT {VAT 제외} TAX {세금 제외} IVA {IVA 제외} SST {SST 제외} KDV {KDV 제외} other {}}","taxInclusiveLabel":"{taxTerm, select, GST {GST 포함} VAT {VAT 포함} TAX {세금 포함} IVA {IVA 포함} SST {SST 포함} KDV {KDV 포함} other {}}","alternativePriceAriaLabel":"또는 {alternativePrice}에","strikethroughAriaLabel":"또는 {alternativePrice}에"},{"lang":"lt","recurrenceLabel":"{recurrenceTerm, select, MONTH { per mėn.} YEAR { per metus} other {}}","recurrenceAriaLabel":"{recurrenceTerm, select, MONTH {per mėn.} YEAR {per metus} other {}}","perUnitLabel":"{perUnit, select, LICENSE {už licenciją} other {}}","perUnitAriaLabel":"{perUnit, select, LICENSE {už licenciją} other {}}","freeLabel":"Nemokamai","freeAriaLabel":"Nemokamai","taxExclusiveLabel":"{taxTerm, select, GST {excl. GST} VAT {excl. VAT} TAX {excl. tax} IVA {excl. IVA} SST {excl. SST} KDV {excl. KDV} other {}}","taxInclusiveLabel":"{taxTerm, select, GST {incl. GST} VAT {incl. VAT} TAX {incl. tax} IVA {incl. IVA} SST {incl. SST} KDV {incl. KDV} other {}}","alternativePriceAriaLabel":"Arba už {alternativePrice}","strikethroughAriaLabel":"Normaliai už {strikethroughPrice}"},{"lang":"lv","recurrenceLabel":"{recurrenceTerm, select, MONTH {mēnesī} YEAR {gadā} other {}}","recurrenceAriaLabel":"{recurrenceTerm, select, MONTH {mēnesī} YEAR {gadā} other {}}","perUnitLabel":"{perUnit, select, LICENSE {vienai licencei} other {}}","perUnitAriaLabel":"{perUnit, select, LICENSE {vienai licencei} other {}}","freeLabel":"Bezmaksas","freeAriaLabel":"Bezmaksas","taxExclusiveLabel":"{taxTerm, select, GST {excl. GST} VAT {excl. VAT} TAX {excl. tax} IVA {excl. IVA} SST {excl. SST} KDV {excl. KDV} other {}}","taxInclusiveLabel":"{taxTerm, select, GST {incl. GST} VAT {incl. VAT} TAX {incl. tax} IVA {incl. IVA} SST {incl. SST} KDV {incl. KDV} other {}}","alternativePriceAriaLabel":"Alternatīvi par {alternativePrice}","strikethroughAriaLabel":"Regulāri par {strikethroughPrice}"},{"lang":"nb","recurrenceLabel":"{recurrenceTerm, select, MONTH {/mnd.} YEAR {/år} other {}}","recurrenceAriaLabel":"{recurrenceTerm, select, MONTH {per måned} YEAR {per år} other {}}","perUnitLabel":"{perUnit, select, LICENSE {per lisens} other {}}","perUnitAriaLabel":"{perUnit, select, LICENSE {per lisens} other {}}","freeLabel":"Fri","freeAriaLabel":"Fri","taxExclusiveLabel":"{taxTerm, select, GST {ekskl. GST} VAT {ekskl. moms} TAX {ekskl. avgift} IVA {ekskl. IVA} SST {ekskl. SST} KDV {ekskl. KDV} other {}}","taxInclusiveLabel":"{taxTerm, select, GST {inkl. GST} VAT {inkl. moms} TAX {inkl. avgift} IVA {inkl. IVA} SST {inkl. SST} KDV {inkl. KDV} other {}}","alternativePriceAriaLabel":"Alternativt til {alternativePrice}","strikethroughAriaLabel":"Regelmessig til {strikethroughPrice}"},{"lang":"nl","recurrenceLabel":"{recurrenceTerm, select, MONTH {/mnd} YEAR {/jr} other {}}","recurrenceAriaLabel":"{recurrenceTerm, select, MONTH {per maand} YEAR {per jaar} other {}}","perUnitLabel":"{perUnit, select, LICENSE {per licentie} other {}}","perUnitAriaLabel":"{perUnit, select, LICENSE {per licentie} other {}}","freeLabel":"Gratis","freeAriaLabel":"Gratis","taxExclusiveLabel":"{taxTerm, select, GST {excl. GST} VAT {excl. btw} TAX {excl. belasting} IVA {excl. IVA} SST {excl. SST} KDV {excl. KDV} other {}}","taxInclusiveLabel":"{taxTerm, select, GST {incl. GST} VAT {incl. btw} TAX {incl. belasting} IVA {incl. IVA} SST {incl. SST} KDV {incl. KDV} other {}}","alternativePriceAriaLabel":"Nu {alternativePrice}","strikethroughAriaLabel":"Normaal {strikethroughPrice}"},{"lang":"pl","recurrenceLabel":"{recurrenceTerm, select, MONTH { / mies.} YEAR { / rok} other {}}","recurrenceAriaLabel":"{recurrenceTerm, select, MONTH { / miesiąc} YEAR { / rok} other {}}","perUnitLabel":"{perUnit, select, LICENSE {za licencję} other {}}","perUnitAriaLabel":"{perUnit, select, LICENSE {za licencję} other {}}","freeLabel":"Bezpłatne","freeAriaLabel":"Bezpłatne","taxExclusiveLabel":"{taxTerm, select, GST {bez GST} VAT {bez VAT} TAX {netto} IVA {bez IVA} SST {bez SST} KDV {bez KDV} other {}}","taxInclusiveLabel":"{taxTerm, select, GST {z GST} VAT {z VAT} TAX {brutto} IVA {z IVA} SST {z SST} KDV {z KDV} other {}}","alternativePriceAriaLabel":"Lub za {alternativePrice}","strikethroughAriaLabel":"Cena zwykła: {strikethroughPrice}"},{"lang":"pt","recurrenceLabel":"{recurrenceTerm, select, MONTH {/mês} YEAR {/ano} other {}}","recurrenceAriaLabel":"{recurrenceTerm, select, MONTH {por mês} YEAR {por ano} other {}}","perUnitLabel":"{perUnit, select, LICENSE {por licença} other {}}","perUnitAriaLabel":"{perUnit, select, LICENSE {por licença} other {}}","freeLabel":"Gratuito","freeAriaLabel":"Gratuito","taxExclusiveLabel":"{taxTerm, select, GST {ICMS não incluso} VAT {IVA não incluso} TAX {impostos não inclusos} IVA {IVA não incluso} SST { SST não incluso} KDV {KDV não incluso} other {}}","taxInclusiveLabel":"{taxTerm, select, GST {ICMS incluso} VAT {IVA incluso} TAX {impostos inclusos} IVA {IVA incluso} SST {SST incluso} KDV {KDV incluso} other {}}","alternativePriceAriaLabel":"Ou a {alternativePrice}","strikethroughAriaLabel":"Preço normal: {strikethroughPrice}"},{"lang":"ro","recurrenceLabel":"{recurrenceTerm, select, MONTH {/lună} YEAR {/an} other {}}","recurrenceAriaLabel":"{recurrenceTerm, select, MONTH {pe lună} YEAR {pe an} other {}}","perUnitLabel":"{perUnit, select, LICENSE {pe licență} other {}}","perUnitAriaLabel":"{perUnit, select, LICENSE {pe licență} other {}}","freeLabel":"Gratuit","freeAriaLabel":"Gratuit","taxExclusiveLabel":"{taxTerm, select, GST {excl. GST} VAT {excl. VAT} TAX {excl. tax} IVA {excl. IVA} SST {excl. SST} KDV {excl. KDV} other {}}","taxInclusiveLabel":"{taxTerm, select, GST {incl. GST} VAT {incl. VAT} TAX {incl. tax} IVA {incl. IVA} SST {incl. SST} KDV {incl. KDV} other {}}","alternativePriceAriaLabel":"Alternativ, la {alternativePrice}","strikethroughAriaLabel":"În mod normal, la {strikethroughPrice}"},{"lang":"ru","recurrenceLabel":"{recurrenceTerm, select, MONTH {/мес.} YEAR {/г.} other {}}","recurrenceAriaLabel":"{recurrenceTerm, select, MONTH {в месяц} YEAR {в год} other {}}","perUnitLabel":"{perUnit, select, LICENSE {за лицензию} other {}}","perUnitAriaLabel":"{perUnit, select, LICENSE {за лицензию} other {}}","freeLabel":"Бесплатно","freeAriaLabel":"Бесплатно","taxExclusiveLabel":"{taxTerm, select, GST {искл. налог на товары и услуги} VAT {искл. НДС} TAX {искл. налог} IVA {искл. ИВА} SST {искл. SST} KDV {искл. КДВ} other {}}","taxInclusiveLabel":"{taxTerm, select, GST {вкл. налог на товары и услуги} VAT {вкл. НДС} TAX {вкл. налог} IVA {вкл. ИВА} SST {вкл. SST} KDV {вкл. КДВ} other {}}","alternativePriceAriaLabel":"Альтернативный вариант за {alternativePrice}","strikethroughAriaLabel":"Регулярно по цене {strikethroughPrice}"},{"lang":"sk","recurrenceLabel":"{recurrenceTerm, select, MONTH {/mesiac} YEAR {/rok} other {}}","recurrenceAriaLabel":"{recurrenceTerm, select, MONTH {za mesiac} YEAR {za rok} other {}}","perUnitLabel":"{perUnit, select, LICENSE {za licenciu} other {}}","perUnitAriaLabel":"{perUnit, select, LICENSE {za licenciu} other {}}","freeLabel":"Zadarmo","freeAriaLabel":"Zadarmo","taxExclusiveLabel":"{taxTerm, select, GST {excl. GST} VAT {excl. VAT} TAX {excl. tax} IVA {excl. IVA} SST {excl. SST} KDV {excl. KDV} other {}}","taxInclusiveLabel":"{taxTerm, select, GST {incl. GST} VAT {incl. VAT} TAX {incl. tax} IVA {incl. IVA} SST {incl. SST} KDV {incl. KDV} other {}}","alternativePriceAriaLabel":"Prípadne za {alternativePrice}","strikethroughAriaLabel":"Pravidelne za {strikethroughPrice}"},{"lang":"sl","recurrenceLabel":"{recurrenceTerm, select, MONTH {/mesec} YEAR {/leto} other {}}","recurrenceAriaLabel":"{recurrenceTerm, select, MONTH {na mesec} YEAR {na leto} other {}}","perUnitLabel":"{perUnit, select, LICENSE {na licenco} other {}}","perUnitAriaLabel":"{perUnit, select, LICENSE {na licenco} other {}}","freeLabel":"Brezplačno","freeAriaLabel":"Brezplačno","taxExclusiveLabel":"{taxTerm, select, GST {excl. GST} VAT {excl. VAT} TAX {excl. tax} IVA {excl. IVA} SST {excl. SST} KDV {excl. KDV} other {}}","taxInclusiveLabel":"{taxTerm, select, GST {incl. GST} VAT {incl. VAT} TAX {incl. tax} IVA {incl. IVA} SST {incl. SST} KDV {incl. KDV} other {}}","alternativePriceAriaLabel":"Druga možnost je: {alternativePrice}","strikethroughAriaLabel":"Redno po {strikethroughPrice}"},{"lang":"sv","recurrenceLabel":"{recurrenceTerm, select, MONTH {/mån} YEAR {/år} other {}}","recurrenceAriaLabel":"{recurrenceTerm, select, MONTH {per månad} YEAR {per år} other {}}","perUnitLabel":"{perUnit, select, LICENSE {per licens} other {}}","perUnitAriaLabel":"{perUnit, select, LICENSE {per licens} other {}}","freeLabel":"Kostnadsfritt","freeAriaLabel":"Kostnadsfritt","taxExclusiveLabel":"{taxTerm, select, GST {exkl. GST} VAT {exkl. moms} TAX {exkl. skatt} IVA {exkl. IVA} SST {exkl. SST} KDV {exkl. KDV} other {}}","taxInclusiveLabel":"{taxTerm, select, GST {inkl. GST} VAT {inkl. moms} TAX {inkl. skatt} IVA {inkl. IVA} SST {inkl. SST} KDV {inkl. KDV} other {}}","alternativePriceAriaLabel":"Alternativt för {alternativePrice}","strikethroughAriaLabel":"Normalpris {strikethroughPrice}"},{"lang":"tr","recurrenceLabel":"{recurrenceTerm, select, MONTH {/ay} YEAR {/yıl} other {}}","recurrenceAriaLabel":"{recurrenceTerm, select, MONTH {(aylık)} YEAR {(yıllık)} other {}}","perUnitLabel":"{perUnit, select, LICENSE {(lisans başına)} other {}}","perUnitAriaLabel":"{perUnit, select, LICENSE {(lisans başına)} other {}}","freeLabel":"Ücretsiz","freeAriaLabel":"Ücretsiz","taxExclusiveLabel":"{taxTerm, select, GST {GST hariç} VAT {KDV hariç} TAX {vergi hariç} IVA {IVA hariç} SST {SST hariç} KDV {KDV hariç} other {}}","taxInclusiveLabel":"{taxTerm, select, GST {GST dahil} VAT {KDV dahil} TAX {vergi dahil} IVA {IVA dahil} SST {SST dahil} KDV {KDV dahil} other {}}","alternativePriceAriaLabel":"Ya da {alternativePrice}","strikethroughAriaLabel":"Standart fiyat: {strikethroughPrice}"},{"lang":"uk","recurrenceLabel":"{recurrenceTerm, select, MONTH {/міс.} YEAR {/рік} other {}}","recurrenceAriaLabel":"{recurrenceTerm, select, MONTH {на місяць} YEAR {на рік} other {}}","perUnitLabel":"{perUnit, select, LICENSE {за ліцензію} other {}}","perUnitAriaLabel":"{perUnit, select, LICENSE {за ліцензію} other {}}","freeLabel":"Безкоштовно","freeAriaLabel":"Безкоштовно","taxExclusiveLabel":"{taxTerm, select, GST {без GST} VAT {без ПДВ} TAX {без податку} IVA {без IVA} SST {без SST} KDV {без KDV} other {}}","taxInclusiveLabel":"{taxTerm, select, GST {разом із GST} VAT {разом із ПДВ} TAX {разом із податком} IVA {разом з IVA} SST {разом із SST} KDV {разом із KDV} other {}}","alternativePriceAriaLabel":"Або за {alternativePrice}","strikethroughAriaLabel":"Звичайна ціна {strikethroughPrice}"},{"lang":"zh-hans","recurrenceLabel":"{recurrenceTerm, select, MONTH {/月} YEAR {/年} other {}}","recurrenceAriaLabel":"{recurrenceTerm, select, MONTH {每月} YEAR {每年} other {}}","perUnitLabel":"{perUnit, select, LICENSE {每个许可证} other {}}","perUnitAriaLabel":"{perUnit, select, LICENSE {每个许可证} other {}}","freeLabel":"免费","freeAriaLabel":"免费","taxExclusiveLabel":"{taxTerm, select, GST {excl. GST} VAT {excl. VAT} TAX {excl. tax} IVA {excl. IVA} SST {excl. SST} KDV {excl. KDV} other {}}","taxInclusiveLabel":"{taxTerm, select, GST {incl. GST} VAT {incl. VAT} TAX {incl. tax} IVA {incl. IVA} SST {incl. SST} KDV {incl. KDV} other {}}","alternativePriceAriaLabel":"或定价 {alternativePrice}","strikethroughAriaLabel":"正常价 {strikethroughPrice}"},{"lang":"zh-hant","recurrenceLabel":"{recurrenceTerm, select, MONTH {/月} YEAR {/年} other {}}","recurrenceAriaLabel":"{recurrenceTerm, select, MONTH {每月} YEAR {每年} other {}}","perUnitLabel":"{perUnit, select, LICENSE {每個授權} other {}}","perUnitAriaLabel":"{perUnit, select, LICENSE {每個授權} other {}}","freeLabel":"免費","freeAriaLabel":"免費","taxExclusiveLabel":"{taxTerm, select, GST {不含 GST} VAT {不含 VAT} TAX {不含稅} IVA {不含 IVA} SST {不含 SST} KDV {不含 KDV} other {}}","taxInclusiveLabel":"{taxTerm, select, GST {含 GST} VAT {含 VAT} TAX {含稅} IVA {含 IVA} SST {含 SST} KDV {含 KDV} other {}}","alternativePriceAriaLabel":"或者在 {alternativePrice}","strikethroughAriaLabel":"標準價格為 {strikethroughPrice}"},{"lang":"es","recurrenceLabel":"{recurrenceTerm, select, MONTH {/mes} YEAR {/año} other {}}","recurrenceAriaLabel":"{recurrenceTerm, select, MONTH {al mes} YEAR {al año} other {}}","perUnitLabel":"{perUnit, select, LICENSE {por licencia} other {}}","perUnitAriaLabel":"{perUnit, select, LICENSE {por licencia} other {}}","freeLabel":"Gratuito","freeAriaLabel":"Gratuito","taxExclusiveLabel":"{taxTerm, select, GST {GST no incluido} VAT {IVA no incluido} TAX {Impuestos no incluidos} IVA {IVA no incluido} SST {SST no incluido} KDV {KDV no incluido} other {}}","taxInclusiveLabel":"{taxTerm, select, GST {GST incluido} VAT {IVA incluido} TAX {Impuestos incluidos} IVA {IVA incluido} SST {SST incluido} KDV {KDV incluido} other {}}","alternativePriceAriaLabel":"Alternativamente por {alternativePrice}","strikethroughAriaLabel":"Normalmente a {strikethroughPrice}"},{"lang":"in","recurrenceLabel":"{recurrenceTerm, select, MONTH {/bulan} YEAR {/tahun} other {}}","recurrenceAriaLabel":"{recurrenceTerm, select, MONTH {per bulan} YEAR {per tahun} other {}}","perUnitLabel":"{perUnit, select, LICENSE {per lisensi} other {}}","perUnitAriaLabel":"{perUnit, select, LICENSE {per lisensi} other {}}","freeLabel":"Gratis","freeAriaLabel":"Gratis","taxExclusiveLabel":"{taxTerm, select, GST {tidak termasuk PBJ} VAT {tidak termasuk PPN} TAX {tidak termasuk pajak} IVA {tidak termasuk IVA} SST {tidak termasuk SST} KDV {tidak termasuk KDV} other {}}","taxInclusiveLabel":"{taxTerm, select, GST {termasuk PBJ} VAT {termasuk PPN} TAX {termasuk pajak} IVA {termasuk IVA} SST {termasuk SST} KDV {termasuk KDV} other {}}","alternativePriceAriaLabel":"Atau seharga {alternativePrice}","strikethroughAriaLabel":"Normalnya seharga {strikethroughPrice}"},{"lang":"vi","recurrenceLabel":"{recurrenceTerm, select, MONTH {/tháng} YEAR {/năm} other {}}","recurrenceAriaLabel":"{recurrenceTerm, select, MONTH {mỗi tháng} YEAR {mỗi năm} other {}}","perUnitLabel":"{perUnit, select, LICENSE {mỗi giấy phép} other {}}","perUnitAriaLabel":"{perUnit, select, LICENSE {mỗi giấy phép} other {}}","freeLabel":"Miễn phí","freeAriaLabel":"Miễn phí","taxExclusiveLabel":"{taxTerm, select, GST {chưa bao gồm thuế hàng hóa và dịch vụ} VAT {chưa bao gồm thuế GTGT} TAX {chưa bao gồm thuế} IVA {chưa bao gồm IVA} SST {chưa bao gồm SST} KDV {chưa bao gồm KDV} other {}}","taxInclusiveLabel":"{taxTerm, select, GST {(đã bao gồm thuế hàng hóa và dịch vụ)} VAT {(đã bao gồm thuế GTGT)} TAX {(đã bao gồm thuế)} IVA {(đã bao gồm IVA)} SST {(đã bao gồm SST)} KDV {(đã bao gồm KDV)} other {}}","alternativePriceAriaLabel":"Giá ưu đãi {alternativePrice}","strikethroughAriaLabel":"Giá thông thường {strikethroughPrice}"},{"lang":"th","recurrenceLabel":"{recurrenceTerm, select, MONTH {/เดือน} YEAR {/ปี} other {}}","recurrenceAriaLabel":"{recurrenceTerm, select, MONTH {ต่อเดือน} YEAR {ต่อปี} other {}}","perUnitLabel":"{perUnit, select, LICENSE {ต่อสิทธิ์การใช้งาน} other {}}","perUnitAriaLabel":"{perUnit, select, LICENSE {ต่อสิทธิ์การใช้งาน} other {}}","freeLabel":"ฟรี","freeAriaLabel":"ฟรี","taxExclusiveLabel":"{taxTerm, select, GST {ไม่รวมภาษี GST} VAT {ไม่รวม VAT} TAX {ไม่รวมภาษี} IVA {ไม่รวม IVA} SST {ไม่รวม SST} KDV {ไม่รวม KDV} other {}}","taxInclusiveLabel":"{taxTerm, select, GST {รวมภาษี GST} VAT {รวม VAT} TAX {รวมภาษี} IVA {รวม IVA} SST {รวม SST} KDV {รวม KDV} other {}}","alternativePriceAriaLabel":"ราคาพิเศษ {alternativePrice}","strikethroughAriaLabel":"ราคาปกติ {strikethroughPrice}"},{"lang":"el","recurrenceLabel":"{recurrenceTerm, select, MONTH {/μήνα} YEAR {/έτος} other {}}","recurrenceAriaLabel":"{recurrenceTerm, select, MONTH {κάθε μήνα} YEAR {ανά έτος} other {}}","perUnitLabel":"{perUnit, select, LICENSE {ανά άδεια χρήσης} other {}}","perUnitAriaLabel":"{perUnit, select, LICENSE {ανά άδεια χρήσης} other {}}","freeLabel":"Δωρεάν","freeAriaLabel":"Δωρεάν","taxExclusiveLabel":"{taxTerm, select, GST {(μη συμπεριλαμβανομένου GST)} VAT {(μη συμπεριλαμβανομένου ΦΠΑ)} TAX {(μη συμπεριλαμβανομένου φόρο)} IVA {(μη συμπεριλαμβανομένου IVA)} SST {(μη συμπεριλαμβανομένου SST)} KDV {(μη συμπεριλαμβανομένου KDV)} other {}}","taxInclusiveLabel":"{taxTerm, select, GST {(συμπεριλαμβανομένου του GST)} VAT {(συμπεριλαμβανομένου ΦΠΑ)} TAX {(συμπεριλαμβανομένου του φόρου)} IVA {(συμπεριλαμβανομένου του IVA)} SST {(συμπεριλαμβανομένου του SST)} KDV {(συμπεριλαμβανομένου του KDV)} other {}}","alternativePriceAriaLabel":"Διαφορετικά, {alternativePrice}","strikethroughAriaLabel":"Κανονική τιμή {strikethroughPrice}"},{"lang":"fil","recurrenceLabel":"{recurrenceTerm, select, MONTH {/buwan} YEAR {/taon} other {}}","recurrenceAriaLabel":"{recurrenceTerm, select, MONTH {per buwan} YEAR {per taon} other {}}","perUnitLabel":"{perUnit, select, LICENSE {kada lisensya} other {}}","perUnitAriaLabel":"{perUnit, select, LICENSE {kada lisensya} other {}}","freeLabel":"Libre","freeAriaLabel":"Libre","taxExclusiveLabel":"{taxTerm, select, GST {hindi kasama ang GST} VAT {hindi kasama ang VAT} TAX {hindi kasama ang Buwis} IVA {hindi kasama ang IVA} SST {hindi kasama ang SST} KDV {hindi kasama ang KDV} other {}}","taxInclusiveLabel":"{taxTerm, select, GST {kasama ang GST} VAT {kasama ang VAT} TAX {kasama ang Buwis} IVA {kasama ang IVA} SST {kasama ang SST} KDV {kasama ang KDV} other {}}","alternativePriceAriaLabel":"Alternatibong nasa halagang {alternativePrice}","strikethroughAriaLabel":"Regular na nasa halagang {strikethroughPrice}"},{"lang":"ms","recurrenceLabel":"{recurrenceTerm, select, MONTH {/bulan} YEAR {/tahun} other {}}","recurrenceAriaLabel":"{recurrenceTerm, select, MONTH {per bulan} YEAR {per tahun} other {}}","perUnitLabel":"{perUnit, select, LICENSE {setiap lesen} other {}}","perUnitAriaLabel":"{perUnit, select, LICENSE {setiap lesen} other {}}","freeLabel":"Percuma","freeAriaLabel":"Percuma","taxExclusiveLabel":"{taxTerm, select, GST {kecuali GST} VAT {kecuali VAT} TAX {kecuali Cukai} IVA {kecuali IVA} SST {kecuali SST} KDV {kecuali KDV} other {}}","taxInclusiveLabel":"{taxTerm, select, GST {termasuk GST} VAT {termasuk VAT} TAX {termasuk Cukai} IVA {termasuk IVA} SST {termasuk SST} KDV {termasuk KDV} other {}}","alternativePriceAriaLabel":"Secara alternatif pada {alternativePrice}","strikethroughAriaLabel":"Biasanya pada {strikethroughPrice}"},{"lang":"hi","recurrenceLabel":"{recurrenceTerm, select, MONTH {/माह} YEAR {/वर्ष} other {}}","recurrenceAriaLabel":"{recurrenceTerm, select, MONTH {per माह} YEAR {per वर्ष} other {}}","perUnitLabel":"{perUnit, select, LICENSE {प्रति लाइसेंस} other {}}","perUnitAriaLabel":"{perUnit, select, LICENSE {प्रति लाइसेंस} other {}}","freeLabel":"फ़्री","freeAriaLabel":"फ़्री","taxExclusiveLabel":"{taxTerm, select, GST {GST अतिरिक्त} VAT {VAT अतिरिक्त} TAX {कर अतिरिक्त} IVA {IVA अतिरिक्त} SST {SST अतिरिक्त} KDV {KDV अतिरिक्त} other {}}","taxInclusiveLabel":"{taxTerm, select, GST {GST सहित} VAT {VAT सहित} TAX {कर सहित} IVA {IVA सहित} SST {SST सहित} KDV {KDV सहित} other {}}","alternativePriceAriaLabel":"वैकल्पिक रूप से इस पर {alternativePrice}","strikethroughAriaLabel":"नियमित रूप से इस पर {strikethroughPrice}"},{"lang":"iw","recurrenceLabel":"{recurrenceTerm, select, MONTH {/חודש} YEAR {/שנה} other {}}","recurrenceAriaLabel":"{recurrenceTerm, select, MONTH {לחודש} YEAR {לשנה} other {}}","perUnitLabel":"{perUnit, select, LICENSE {לרישיון} other {}}","perUnitAriaLabel":"{perUnit, select, LICENSE {לרישיון} other {}}","freeLabel":"חינם","freeAriaLabel":"חינם","taxExclusiveLabel":"{taxTerm, select, GST {ללא GST} VAT {ללא מע\"מ} TAX {ללא מס} IVA {ללא IVA} SST {ללא SST} KDV {ללא KDV} other {}}","taxInclusiveLabel":"{taxTerm, select, GST {כולל GST} VAT {כולל מע\"מ} TAX {כולל מס} IVA {כולל IVA} SST {כולל SST} KDV {כולל KDV} other {}}","alternativePriceAriaLabel":"לחלופין ב-{alternativePrice}","strikethroughAriaLabel":"באופן קבוע ב-{strikethroughPrice}"}],":type":"sheet"}
 .data;
-var Ri=Object.defineProperty;var Oi=e=>{throw TypeError(e)};var Dc=(e,t,r)=>t in e?Ri(e,t,{enumerable:!0,configurable:!0,writable:!0,value:r}):e[t]=r;var Bc=(e,t)=>{for(var r in t)Ri(e,r,{get:t[r],enumerable:!0})};var u=(e,t,r)=>Dc(e,typeof t!="symbol"?t+"":t,r),Mn=(e,t,r)=>t.has(e)||Oi("Cannot "+r);var b=(e,t,r)=>(Mn(e,t,"read from private field"),r?r.call(e):t.get(e)),P=(e,t,r)=>t.has(e)?Oi("Cannot add the same private member more than once"):t instanceof WeakSet?t.add(e):t.set(e,r),k=(e,t,r,n)=>(Mn(e,t,"write to private field"),n?n.call(e,r):t.set(e,r),r),le=(e,t,r)=>(Mn(e,t,"access private method"),r);(function(){let r={clientId:"",endpoint:"https://www.adobe.com/lana/ll",endpointStage:"https://www.stage.adobe.com/lana/ll",errorType:"e",sampleRate:1,tags:"",implicitSampleRate:1,useProd:!0,isProdDomain:!1},n=new Set(["d","debug","i","info","w","warn","e","error","c","critical"]),o=window;function i(){let{host:d}=window.location;return d.substring(d.length-10)===".adobe.com"&&d.substring(d.length-15)!==".corp.adobe.com"&&d.substring(d.length-16)!==".stage.adobe.com"}function a(d,p){d||(d={}),p||(p={});function m(x){return d[x]!==void 0?d[x]:p[x]!==void 0?p[x]:r[x]}return Object.keys(r).reduce((x,f)=>(x[f]=m(f),x),{})}function s(){return o.location.search.toLowerCase().indexOf("lanadebug")!==-1}function c(){return o.location.host.toLowerCase().indexOf("localhost")!==-1}function l(d,p){d=d&&d.stack?d.stack:d||"",d.length>2e3&&(d=`${d.slice(0,2e3)}<trunc>`);let m=a(p,o.lana.options);if(!m.clientId){console.warn("LANA ClientID is not set in options.");return}let x;if(p&&p.severity!==void 0)if(n.has(p.severity))x=p.severity;else{let O=s()||o.lana.debug?"d":"i";console.warn(`LANA: Invalid severity '${p.severity}'. Defaulting to '${O}'.`),x=O}else o.lana.debug&&(x="d");let v=parseInt(new URL(window.location).searchParams.get("lana-sample"),10)||(m.errorType==="i"?m.implicitSampleRate:m.sampleRate);if(!o.lana.debug&&!o.lana.localhost&&v<=Math.random()*100)return;let E=i()||m.isProdDomain,R=!E||!m.useProd?m.endpointStage:m.endpoint,_=[`m=${encodeURIComponent(d)}`,`c=${encodeURI(m.clientId)}`,`s=${v}`,`t=${encodeURI(m.errorType)}`];if(x&&_.push(`r=${encodeURI(x)}`),m.tags&&_.push(`tags=${encodeURI(m.tags)}`),(!E||o.lana.debug||o.lana.localhost)&&console.log("LANA Msg: ",d,`
-Opts:`,m),!o.lana.localhost||o.lana.debug){let S=new XMLHttpRequest;return o.lana.debug&&(_.push("d"),S.addEventListener("load",()=>{console.log("LANA response:",S.responseText)})),S.open("GET",`${R}?${_.join("&")}`),S.send(),S}}function h(d){l(d.reason||d.error||d.message,{errorType:"i"})}o.lana={debug:!1,log:l,options:a(o.lana&&o.lana.options)},s()&&(o.lana.debug=!0),c()&&(o.lana.localhost=!0),o.addEventListener("error",h),o.addEventListener("unhandledrejection",h)})();var ro={};Bc(ro,{CLASS_NAME_FAILED:()=>zn,CLASS_NAME_HIDDEN:()=>Fc,CLASS_NAME_PENDING:()=>Fn,CLASS_NAME_RESOLVED:()=>Gn,CheckoutWorkflow:()=>se,CheckoutWorkflowStep:()=>W,Commitment:()=>De,ERROR_MESSAGE_BAD_REQUEST:()=>Vn,ERROR_MESSAGE_MISSING_LITERALS_URL:()=>Kc,ERROR_MESSAGE_OFFER_NOT_FOUND:()=>jn,EVENT_AEM_ERROR:()=>Fe,EVENT_AEM_LOAD:()=>ze,EVENT_MAS_ERROR:()=>Bn,EVENT_MAS_READY:()=>Dn,EVENT_MERCH_ADDON_AND_QUANTITY_UPDATE:()=>Mr,EVENT_MERCH_CARD_ACTION_MENU_TOGGLE:()=>Hn,EVENT_MERCH_CARD_COLLECTION_SHOWMORE:()=>Yc,EVENT_MERCH_CARD_COLLECTION_SORT:()=>Wc,EVENT_MERCH_CARD_QUANTITY_CHANGE:()=>ft,EVENT_MERCH_CARD_READY:()=>In,EVENT_MERCH_OFFER_READY:()=>ut,EVENT_MERCH_OFFER_SELECT_READY:()=>Wt,EVENT_MERCH_QUANTITY_SELECTOR_CHANGE:()=>ue,EVENT_MERCH_SEARCH_CHANGE:()=>qc,EVENT_MERCH_SIDENAV_SELECT:()=>Xc,EVENT_MERCH_STOCK_CHANGE:()=>Vc,EVENT_MERCH_STORAGE_CHANGE:()=>jc,EVENT_OFFER_SELECTED:()=>Un,EVENT_TYPE_FAILED:()=>qn,EVENT_TYPE_READY:()=>Nr,EVENT_TYPE_RESOLVED:()=>gt,Env:()=>xe,HEADER_X_REQUEST_ID:()=>Jn,LOG_NAMESPACE:()=>Wn,Landscape:()=>Le,MARK_DURATION_SUFFIX:()=>Yt,MARK_START_SUFFIX:()=>Re,MODAL_TYPE_3_IN_1:()=>he,NAMESPACE:()=>zc,PARAM_AOS_API_KEY:()=>Qc,PARAM_ENV:()=>Xn,PARAM_LANDSCAPE:()=>Kn,PARAM_MAS_PREVIEW:()=>Yn,PARAM_WCS_API_KEY:()=>Zc,PROVIDER_ENVIRONMENT:()=>eo,SELECTOR_MAS_CHECKOUT_LINK:()=>Be,SELECTOR_MAS_ELEMENT:()=>qt,SELECTOR_MAS_INLINE_PRICE:()=>J,SELECTOR_MAS_SP_BUTTON:()=>$n,STATE_FAILED:()=>fe,STATE_PENDING:()=>ke,STATE_RESOLVED:()=>ge,TAG_NAME_SERVICE:()=>Gc,TEMPLATE_PRICE:()=>Jc,TEMPLATE_PRICE_ANNUAL:()=>tl,TEMPLATE_PRICE_LEGAL:()=>to,TEMPLATE_PRICE_STRIKETHROUGH:()=>el,Term:()=>ie,WCS_PROD_URL:()=>Qn,WCS_STAGE_URL:()=>Zn});var De=Object.freeze({MONTH:"MONTH",YEAR:"YEAR",TWO_YEARS:"TWO_YEARS",THREE_YEARS:"THREE_YEARS",PERPETUAL:"PERPETUAL",TERM_LICENSE:"TERM_LICENSE",ACCESS_PASS:"ACCESS_PASS",THREE_MONTHS:"THREE_MONTHS",SIX_MONTHS:"SIX_MONTHS"}),ie=Object.freeze({ANNUAL:"ANNUAL",MONTHLY:"MONTHLY",TWO_YEARS:"TWO_YEARS",THREE_YEARS:"THREE_YEARS",P1D:"P1D",P1Y:"P1Y",P3Y:"P3Y",P10Y:"P10Y",P15Y:"P15Y",P3D:"P3D",P7D:"P7D",P30D:"P30D",HALF_YEARLY:"HALF_YEARLY",QUARTERLY:"QUARTERLY"}),zc="merch",Fc="hidden",Nr="wcms:commerce:ready",Gc="mas-commerce-service",J='span[is="inline-price"][data-wcs-osi]',Be='a[is="checkout-link"][data-wcs-osi],button[is="checkout-button"][data-wcs-osi]',$n="sp-button[data-wcs-osi]",qt=`${J},${Be}`,ut="merch-offer:ready",Wt="merch-offer-select:ready",In="merch-card:ready",Hn="merch-card:action-menu-toggle",Un="merch-offer:selected",Vc="merch-stock:change",jc="merch-storage:change",ue="merch-quantity-selector:change",ft="merch-card-quantity:change",Mr="merch-modal:addon-and-quantity-update",qc="merch-search:change",Wc="merch-card-collection:sort",Yc="merch-card-collection:showmore",Xc="merch-sidenav:select",ze="aem:load",Fe="aem:error",Dn="mas:ready",Bn="mas:error",zn="placeholder-failed",Fn="placeholder-pending",Gn="placeholder-resolved",Vn="Bad WCS request",jn="Commerce offer not found",Kc="Literals URL not provided",qn="mas:failed",gt="mas:resolved",Wn="mas/commerce",Yn="mas.preview",Xn="commerce.env",Kn="commerce.landscape",Qc="commerce.aosKey",Zc="commerce.wcsKey",Qn="https://www.adobe.com/web_commerce_artifact",Zn="https://www.stage.adobe.com/web_commerce_artifact_stage",fe="failed",ke="pending",ge="resolved",Le={DRAFT:"DRAFT",PUBLISHED:"PUBLISHED"},Jn="X-Request-Id",W=Object.freeze({CHECKOUT:"checkout",CHECKOUT_EMAIL:"checkout/email",SEGMENTATION:"segmentation",BUNDLE:"bundle",COMMITMENT:"commitment",RECOMMENDATION:"recommendation",EMAIL:"email",PAYMENT:"payment",CHANGE_PLAN_TEAM_PLANS:"change-plan/team-upgrade/plans",CHANGE_PLAN_TEAM_PAYMENT:"change-plan/team-upgrade/payment"}),se=Object.freeze({V2:"UCv2",V3:"UCv3"}),xe=Object.freeze({STAGE:"STAGE",PRODUCTION:"PRODUCTION",LOCAL:"LOCAL"}),eo={PRODUCTION:"PRODUCTION"},he={TWP:"twp",D2P:"d2p",CRM:"crm"},Re=":start",Yt=":duration",Jc="price",el="price-strikethrough",tl="annual",to="legal";var Ni="tacocat.js";var no=(e,t)=>String(e??"").toLowerCase()==String(t??"").toLowerCase(),Mi=e=>`${e??""}`.replace(/[&<>'"]/g,t=>({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;",'"':"&quot;"})[t]??t)??"";function H(e,t={},{metadata:r=!0,search:n=!0,storage:o=!0}={}){let i;if(n&&i==null){let a=new URLSearchParams(window.location.search),s=xt(n)?n:e;i=a.get(s)}if(o&&i==null){let a=xt(o)?o:e;i=window.sessionStorage.getItem(a)??window.localStorage.getItem(a)}if(r&&i==null){let a=nl(xt(r)?r:e);i=document.documentElement.querySelector(`meta[name="${a}"]`)?.content}return i??t[e]}var rl=e=>typeof e=="boolean",$r=e=>typeof e=="function",Ir=e=>typeof e=="number",$i=e=>e!=null&&typeof e=="object";var xt=e=>typeof e=="string",Ii=e=>xt(e)&&e,Xt=e=>Ir(e)&&Number.isFinite(e)&&e>0;function Kt(e,t=r=>r==null||r===""){return e!=null&&Object.entries(e).forEach(([r,n])=>{t(n)&&delete e[r]}),e}function A(e,t){if(rl(e))return e;let r=String(e);return r==="1"||r==="true"?!0:r==="0"||r==="false"?!1:t}function Ge(e,t,r){let n=Object.values(t);return n.find(o=>no(o,e))??r??n[0]}function nl(e=""){return String(e).replace(/(\p{Lowercase_Letter})(\p{Uppercase_Letter})/gu,(t,r,n)=>`${r}-${n}`).replace(/\W+/gu,"-").toLowerCase()}function Hi(e,t=1){return Ir(e)||(e=Number.parseInt(e,10)),!Number.isNaN(e)&&e>0&&Number.isFinite(e)?e:t}var ol=Date.now(),oo=()=>`(+${Date.now()-ol}ms)`,Hr=new Set,il=A(H("tacocat.debug",{},{metadata:!1}),typeof process<"u"&&process.env?.DEBUG);function Ui(e){let t=`[${Ni}/${e}]`,r=(a,s,...c)=>a?!0:(o(s,...c),!1),n=il?(a,...s)=>{console.debug(`${t} ${a}`,...s,oo())}:()=>{},o=(a,...s)=>{let c=`${t} ${a}`;Hr.forEach(([l])=>l(c,...s))};return{assert:r,debug:n,error:o,warn:(a,...s)=>{let c=`${t} ${a}`;Hr.forEach(([,l])=>l(c,...s))}}}function al(e,t){let r=[e,t];return Hr.add(r),()=>{Hr.delete(r)}}al((e,...t)=>{console.error(e,...t,oo())},(e,...t)=>{console.warn(e,...t,oo())});var sl="no promo",Di="promo-tag",cl="yellow",ll="neutral",hl=(e,t,r)=>{let n=i=>i||sl,o=r?` (was "${n(t)}")`:"";return`${n(e)}${o}`},dl="cancel-context",Ur=(e,t)=>{let r=e===dl,n=!r&&e?.length>0,o=(n||r)&&(t&&t!=e||!t&&!r),i=o&&n||!o&&!!t,a=i?e||t:void 0;return{effectivePromoCode:a,overridenPromoCode:e,className:i?Di:`${Di} no-promo`,text:hl(a,t,o),variant:i?cl:ll,isOverriden:o}};var io;(function(e){e.BASE="BASE",e.TRIAL="TRIAL",e.PROMOTION="PROMOTION"})(io||(io={}));var re;(function(e){e.MONTH="MONTH",e.YEAR="YEAR",e.TWO_YEARS="TWO_YEARS",e.THREE_YEARS="THREE_YEARS",e.PERPETUAL="PERPETUAL",e.TERM_LICENSE="TERM_LICENSE",e.ACCESS_PASS="ACCESS_PASS",e.THREE_MONTHS="THREE_MONTHS",e.SIX_MONTHS="SIX_MONTHS"})(re||(re={}));var ae;(function(e){e.ANNUAL="ANNUAL",e.MONTHLY="MONTHLY",e.TWO_YEARS="TWO_YEARS",e.THREE_YEARS="THREE_YEARS",e.P1D="P1D",e.P1Y="P1Y",e.P3Y="P3Y",e.P10Y="P10Y",e.P15Y="P15Y",e.P3D="P3D",e.P7D="P7D",e.P30D="P30D",e.HALF_YEARLY="HALF_YEARLY",e.QUARTERLY="QUARTERLY"})(ae||(ae={}));var ao;(function(e){e.INDIVIDUAL="INDIVIDUAL",e.TEAM="TEAM",e.ENTERPRISE="ENTERPRISE"})(ao||(ao={}));var so;(function(e){e.COM="COM",e.EDU="EDU",e.GOV="GOV"})(so||(so={}));var co;(function(e){e.DIRECT="DIRECT",e.INDIRECT="INDIRECT"})(co||(co={}));var lo;(function(e){e.ENTERPRISE_PRODUCT="ENTERPRISE_PRODUCT",e.ETLA="ETLA",e.RETAIL="RETAIL",e.VIP="VIP",e.VIPMP="VIPMP",e.FREE="FREE"})(lo||(lo={}));var ho="ABM",po="PUF",mo="M2M",uo="PERPETUAL",fo="P3Y",pl="TAX_INCLUSIVE_DETAILS",ml="TAX_EXCLUSIVE",Bi={ABM:ho,PUF:po,M2M:mo,PERPETUAL:uo,P3Y:fo},Id={[ho]:{commitment:re.YEAR,term:ae.MONTHLY},[po]:{commitment:re.YEAR,term:ae.ANNUAL},[mo]:{commitment:re.MONTH,term:ae.MONTHLY},[uo]:{commitment:re.PERPETUAL,term:void 0},[fo]:{commitment:re.THREE_MONTHS,term:ae.P3Y}},zi="Value is not an offer",Dr=e=>{if(typeof e!="object")return zi;let{commitment:t,term:r}=e,n=ul(t,r);return{...e,planType:n}};var ul=(e,t)=>{switch(e){case void 0:return zi;case"":return"";case re.YEAR:return t===ae.MONTHLY?ho:t===ae.ANNUAL?po:"";case re.MONTH:return t===ae.MONTHLY?mo:"";case re.PERPETUAL:return uo;case re.TERM_LICENSE:return t===ae.P3Y?fo:"";default:return""}};function Fi(e){let{priceDetails:t}=e,{price:r,priceWithoutDiscount:n,priceWithoutTax:o,priceWithoutDiscountAndTax:i,taxDisplay:a}=t;if(a!==pl)return e;let s={...e,priceDetails:{...t,price:o??r,priceWithoutDiscount:i??n,taxDisplay:ml}};return s.offerType==="TRIAL"&&s.priceDetails.price===0&&(s.priceDetails.price=s.priceDetails.priceWithoutDiscount),s}var fl="mas-commerce-service";function Qt(e,{country:t,forceTaxExclusive:r,perpetual:n}){let o;if(e.length<2)o=e;else{let i=t==="GB"||n?"EN":"MULT",[a,s]=e;o=[a.language===i?a:s]}return r&&(o=o.map(Fi)),o}var Br=e=>window.setTimeout(e);function bt(e,t=1){if(e==null)return[t];let r=(Array.isArray(e)?e:String(e).split(",")).map(Hi).filter(Xt);return r.length||(r=[t]),r}function zr(e){return e==null?[]:(Array.isArray(e)?e:String(e).split(",")).filter(Ii)}function Q(){return document.getElementsByTagName(fl)?.[0]}var Ve={clientId:"merch-at-scale",delimiter:"\xB6",ignoredProperties:["analytics","literals","element"],serializableTypes:["Array","Object"],sampleRate:1,tags:"acom",isProdDomain:!1},Gi=1e3;function gl(e){return e instanceof Error||typeof e?.originatingRequest=="string"}function Vi(e){if(e==null)return;let t=typeof e;if(t==="function")return e.name?`function ${e.name}`:"function";if(t==="object"){if(e instanceof Error)return e.message;if(typeof e.originatingRequest=="string"){let{message:n,originatingRequest:o,status:i}=e;return[n,i,o].filter(Boolean).join(" ")}let r=e[Symbol.toStringTag]??Object.getPrototypeOf(e).constructor.name;if(!Ve.serializableTypes.includes(r))return r}return e}function xl(e,t){if(!Ve.ignoredProperties.includes(e))return Vi(t)}var go={append(e){if(e.level!=="error")return;let{message:t,params:r}=e,n=[],o=[],i=t;r.forEach(l=>{l!=null&&(gl(l)?n:o).push(l)}),n.length&&(i+=" "+n.map(Vi).join(" "));let{pathname:a,search:s}=window.location,c=`${Ve.delimiter}page=${a}${s}`;c.length>Gi&&(c=`${c.slice(0,Gi)}<trunc>`),i+=c,o.length&&(i+=`${Ve.delimiter}facts=`,i+=JSON.stringify(o,xl)),window.lana?.log(i,Ve)}};function Fr(e){Object.assign(Ve,Object.fromEntries(Object.entries(e).filter(([t,r])=>t in Ve&&r!==""&&r!==null&&r!==void 0&&!Number.isNaN(r))))}var ji={LOCAL:"local",PROD:"prod",STAGE:"stage"},xo={DEBUG:"debug",ERROR:"error",INFO:"info",WARN:"warn"},bo=new Set,vo=new Set,qi=new Map,Wi={append({level:e,message:t,params:r,timestamp:n,source:o}){console[e](`${n}ms [${o}] %c${t}`,"font-weight: bold;",...r)}},Yi={filter:({level:e})=>e!==xo.DEBUG},bl={filter:()=>!1};function vl(e,t,r,n,o){return{level:e,message:t,namespace:r,get params(){return n.length===1&&$r(n[0])&&(n=n[0](),Array.isArray(n)||(n=[n])),n},source:o,timestamp:performance.now().toFixed(3)}}function yl(e){[...vo].every(t=>t(e))&&bo.forEach(t=>t(e))}function Xi(e){let t=(qi.get(e)??0)+1;qi.set(e,t);let r=`${e} #${t}`,n={id:r,namespace:e,module:o=>Xi(`${n.namespace}/${o}`),updateConfig:Fr};return Object.values(xo).forEach(o=>{n[o]=(i,...a)=>yl(vl(o,i,e,a,r))}),Object.seal(n)}function Gr(...e){e.forEach(t=>{let{append:r,filter:n}=t;$r(n)&&vo.add(n),$r(r)&&bo.add(r)})}function El(e={}){let{name:t}=e,r=A(H("commerce.debug",{search:!0,storage:!0}),t===ji.LOCAL);return Gr(r?Wi:Yi),t===ji.PROD&&Gr(go),ne}function Al(){bo.clear(),vo.clear()}var ne={...Xi(Wn),Level:xo,Plugins:{consoleAppender:Wi,debugFilter:Yi,quietFilter:bl,lanaAppender:go},init:El,reset:Al,use:Gr};var be=class e extends Error{constructor(t,r,n){if(super(t,{cause:n}),this.name="MasError",r.response){let o=r.response.headers?.get(Jn);o&&(r.requestId=o),r.response.status&&(r.status=r.response.status,r.statusText=r.response.statusText),r.response.url&&(r.url=r.response.url)}delete r.response,this.context=r,Error.captureStackTrace&&Error.captureStackTrace(this,e)}toString(){let t=Object.entries(this.context||{}).map(([n,o])=>`${n}: ${JSON.stringify(o)}`).join(", "),r=`${this.name}: ${this.message}`;return t&&(r+=` (${t})`),this.cause&&(r+=`
-Caused by: ${this.cause}`),r}};var wl={[fe]:zn,[ke]:Fn,[ge]:Gn},_l={[fe]:qn,[ge]:gt},Zt,vt=class{constructor(t){P(this,Zt);u(this,"changes",new Map);u(this,"connected",!1);u(this,"error");u(this,"log");u(this,"options");u(this,"promises",[]);u(this,"state",ke);u(this,"timer",null);u(this,"value");u(this,"version",0);u(this,"wrapperElement");this.wrapperElement=t,this.log=ne.module("mas-element")}update(){[fe,ke,ge].forEach(t=>{this.wrapperElement.classList.toggle(wl[t],t===this.state)})}notify(){(this.state===ge||this.state===fe)&&(this.state===ge?this.promises.forEach(({resolve:r})=>r(this.wrapperElement)):this.state===fe&&this.promises.forEach(({reject:r})=>r(this.error)),this.promises=[]);let t=this.error;this.error instanceof be&&(t={message:this.error.message,...this.error.context}),this.wrapperElement.dispatchEvent(new CustomEvent(_l[this.state],{bubbles:!0,detail:t}))}attributeChangedCallback(t,r,n){this.changes.set(t,n),this.requestUpdate()}connectedCallback(){k(this,Zt,Q()),this.requestUpdate(!0)}disconnectedCallback(){this.connected&&(this.connected=!1,this.log?.debug("Disconnected:",{element:this.wrapperElement}))}onceSettled(){let{error:t,promises:r,state:n}=this;return ge===n?Promise.resolve(this.wrapperElement):fe===n?Promise.reject(t):new Promise((o,i)=>{r.push({resolve:o,reject:i})})}toggleResolved(t,r,n){return t!==this.version?!1:(n!==void 0&&(this.options=n),this.state=ge,this.value=r,this.update(),this.log?.debug("Resolved:",{element:this.wrapperElement,value:r}),Br(()=>this.notify()),!0)}toggleFailed(t,r,n){if(t!==this.version)return!1;n!==void 0&&(this.options=n),this.error=r,this.state=fe,this.update();let o=this.wrapperElement.getAttribute("is");return this.log?.error(`${o}: Failed to render: ${r.message}`,{element:this.wrapperElement,...r.context,...b(this,Zt)?.duration}),Br(()=>this.notify()),!0}togglePending(t){return this.version++,t&&(this.options=t),this.state=ke,this.update(),this.log?.debug("Pending:",{osi:this.wrapperElement?.options?.wcsOsi}),this.version}requestUpdate(t=!1){if(!this.wrapperElement.isConnected||!Q()||this.timer)return;let{error:r,options:n,state:o,value:i,version:a}=this;this.state=ke,this.timer=Br(async()=>{this.timer=null;let s=null;if(this.changes.size&&(s=Object.fromEntries(this.changes.entries()),this.changes.clear()),this.connected?this.log?.debug("Updated:",{element:this.wrapperElement,changes:s}):(this.connected=!0,this.log?.debug("Connected:",{element:this.wrapperElement,changes:s})),s||t)try{await this.wrapperElement.render?.()===!1&&this.state===ke&&this.version===a&&(this.state=o,this.error=r,this.value=i,this.update(),this.notify())}catch(c){this.toggleFailed(this.version,c,n)}})}};Zt=new WeakMap;function Ki(e={}){return Object.entries(e).forEach(([t,r])=>{(r==null||r===""||r?.length===0)&&delete e[t]}),e}function Vr(e,t={}){let{tag:r,is:n}=e,o=document.createElement(r,{is:n});return o.setAttribute("is",n),Object.assign(o.dataset,Ki(t)),o}function jr(e,t={}){return e instanceof HTMLElement?(Object.assign(e.dataset,Ki(t)),e):null}var Qi="download",Zi="upgrade";function qr(e,t={},r=""){let n=Q();if(!n)return null;let{checkoutMarketSegment:o,checkoutWorkflow:i,checkoutWorkflowStep:a,entitlement:s,upgrade:c,modal:l,perpetual:h,promotionCode:d,quantity:p,wcsOsi:m,extraOptions:x,analyticsId:f}=n.collectCheckoutOptions(t),v=Vr(e,{checkoutMarketSegment:o,checkoutWorkflow:i,checkoutWorkflowStep:a,entitlement:s,upgrade:c,modal:l,perpetual:h,promotionCode:d,quantity:p,wcsOsi:m,extraOptions:x,analyticsId:f});return r&&(v.innerHTML=`<span style="pointer-events: none;">${r}</span>`),v}function Wr(e){return class extends e{constructor(){super(...arguments);u(this,"checkoutActionHandler");u(this,"masElement",new vt(this))}attributeChangedCallback(n,o,i){this.masElement.attributeChangedCallback(n,o,i)}connectedCallback(){this.masElement.connectedCallback(),this.addEventListener("click",this.clickHandler)}disconnectedCallback(){this.masElement.disconnectedCallback(),this.removeEventListener("click",this.clickHandler)}onceSettled(){return this.masElement.onceSettled()}get value(){return this.masElement.value}get options(){return this.masElement.options}get isOpen3in1Modal(){let n=document.querySelector("meta[name=mas-ff-3in1]");return Object.values(he).includes(this.getAttribute("data-modal"))&&(!n||n.content!=="off")}requestUpdate(n=!1){return this.masElement.requestUpdate(n)}static get observedAttributes(){return["data-checkout-workflow","data-checkout-workflow-step","data-extra-options","data-ims-country","data-perpetual","data-promotion-code","data-quantity","data-template","data-wcs-osi","data-entitlement","data-upgrade","data-modal"]}async render(n={}){let o=Q();if(!o)return!1;this.dataset.imsCountry||o.imsCountryPromise.then(d=>{d&&(this.dataset.imsCountry=d)}),n.imsCountry=null;let i=o.collectCheckoutOptions(n,this);if(!i.wcsOsi.length)return!1;let a;try{a=JSON.parse(i.extraOptions??"{}")}catch(d){this.masElement.log?.error("cannot parse exta checkout options",d)}let s=this.masElement.togglePending(i);this.setCheckoutUrl("");let c=o.resolveOfferSelectors(i),l=await Promise.all(c);l=l.map(d=>Qt(d,i)),i.country=this.dataset.imsCountry||i.country;let h=await o.buildCheckoutAction?.(l.flat(),{...a,...i},this);return this.renderOffers(l.flat(),i,{},h,s)}renderOffers(n,o,i={},a=void 0,s=void 0){let c=Q();if(!c)return!1;if(o={...JSON.parse(this.dataset.extraOptions??"null"),...o,...i},s??(s=this.masElement.togglePending(o)),this.checkoutActionHandler&&(this.checkoutActionHandler=void 0),a){this.classList.remove(Qi,Zi),this.masElement.toggleResolved(s,n,o);let{url:h,text:d,className:p,handler:m}=a;h&&this.setCheckoutUrl(h),d&&(this.firstElementChild.innerHTML=d),p&&this.classList.add(...p.split(" ")),m&&(this.setCheckoutUrl("#"),this.checkoutActionHandler=m.bind(this))}if(n.length){if(this.masElement.toggleResolved(s,n,o)){if(!this.classList.contains(Qi)&&!this.classList.contains(Zi)){let h=c.buildCheckoutURL(n,o);this.setCheckoutUrl(o.modal==="true"?"#":h)}return!0}}else{let h=new Error(`Not provided: ${o?.wcsOsi??"-"}`);if(this.masElement.toggleFailed(s,h,o))return this.setCheckoutUrl("#"),!0}}setCheckoutUrl(){}clickHandler(n){}updateOptions(n={}){let o=Q();if(!o)return!1;let{checkoutMarketSegment:i,checkoutWorkflow:a,checkoutWorkflowStep:s,entitlement:c,upgrade:l,modal:h,perpetual:d,promotionCode:p,quantity:m,wcsOsi:x}=o.collectCheckoutOptions(n);return jr(this,{checkoutMarketSegment:i,checkoutWorkflow:a,checkoutWorkflowStep:s,entitlement:c,upgrade:l,modal:h,perpetual:d,promotionCode:p,quantity:m,wcsOsi:x}),!0}}}var Jt=class Jt extends Wr(HTMLAnchorElement){static createCheckoutLink(t={},r=""){return qr(Jt,t,r)}setCheckoutUrl(t){this.setAttribute("href",t)}get isCheckoutLink(){return!0}clickHandler(t){if(this.checkoutActionHandler){this.checkoutActionHandler?.(t);return}}};u(Jt,"is","checkout-link"),u(Jt,"tag","a");var ve=Jt;window.customElements.get(ve.is)||window.customElements.define(ve.is,ve,{extends:ve.tag});var Sl="p_draft_landscape",Tl="/store/",Cl=new Map([["countrySpecific","cs"],["customerSegment","cs"],["quantity","q"],["authCode","code"],["checkoutPromoCode","apc"],["rurl","rUrl"],["curl","cUrl"],["ctxrturl","ctxRtUrl"],["country","co"],["language","lang"],["clientId","cli"],["context","ctx"],["productArrangementCode","pa"],["offerType","ot"],["marketSegment","ms"]]),yo=new Set(["af","ai","apc","appctxid","cli","co","cs","csm","ctx","ctxRtUrl","DCWATC","dp","fr","gsp","ijt","lang","lo","mal","ms","mv","mv2","nglwfdata","ot","otac","pa","pcid","promoid","q","rf","sc","scl","sdid","sid","spint","svar","th","thm","trackingid","usid","workflowid","context.guid","so.ca","so.su","so.tr","so.va"]),Pl=["env","workflowStep","clientId","country"],Ji=e=>Cl.get(e)??e;function Eo(e,t,r){for(let[n,o]of Object.entries(e)){let i=Ji(n);o!=null&&r.has(i)&&t.set(i,o)}}function kl(e){switch(e){case eo.PRODUCTION:return"https://commerce.adobe.com";default:return"https://commerce-stg.adobe.com"}}function Ll(e,t){for(let r in e){let n=e[r];for(let[o,i]of Object.entries(n)){if(i==null)continue;let a=Ji(o);t.set(`items[${r}][${a}]`,i)}}}function Rl({url:e,modal:t,customerSegment:r,cs:n,ms:o,marketSegment:i,quantity:a,productArrangementCode:s,addonProductArrangementCode:c}){let l=document.querySelector("meta[name=mas-ff-3in1]");return!Object.values(he).includes(t)||!e?.searchParams||!r||!i||l&&l.content==="off"||(e.searchParams.set("rtc","t"),e.searchParams.set("lo","sl"),e.searchParams.set("af","uc_new_user_iframe,uc_new_system_close"),e.searchParams.get("cli")!=="doc_cloud"&&e.searchParams.set("cli",t===he.CRM?"creative":"mini_plans"),(t===he.TWP||t===he.D2P)&&(r==="INDIVIDUAL"&&i==="EDU"&&e.searchParams.set("ms","e"),r==="TEAM"&&i==="COM"&&e.searchParams.set("cs","t")),a&&e.searchParams.set("q",a),c&&e.searchParams.set("ao",c),s&&e.searchParams.set("pa",s),n&&e.searchParams.set("cs",n),o&&e.searchParams.set("ms",o),e.searchParams.get("ot")==="PROMOTION"&&e.searchParams.delete("ot")),e}function ea(e){Ol(e);let{env:t,items:r,workflowStep:n,ms:o,cs:i,marketSegment:a,customerSegment:s,ot:c,offerType:l,pa:h,productArrangementCode:d,landscape:p,modal:m,...x}=e,f={marketSegment:a??o,offerType:l??c,productArrangementCode:d??h},v=new URL(kl(t));return v.pathname=`${Tl}${n}`,n!==W.SEGMENTATION&&n!==W.CHANGE_PLAN_TEAM_PLANS&&Ll(r,v.searchParams),Eo({cs:i,...x},v.searchParams,yo),p===Le.DRAFT&&Eo({af:Sl},v.searchParams,yo),n===W.SEGMENTATION&&(Eo(f,v.searchParams,yo),v=Rl({url:v,modal:m,customerSegment:s,marketSegment:a,cs:i,ms:o,quantity:r?.[0]?.quantity>1&&r?.[0]?.quantity,productArrangementCode:d,addonProductArrangementCode:d?r?.find(E=>E.productArrangementCode!==d)?.productArrangementCode:r?.[1]?.productArrangementCode})),v.toString()}function Ol(e){for(let t of Pl)if(!e[t])throw new Error('Argument "checkoutData" is not valid, missing: '+t);if(e.workflowStep!==W.SEGMENTATION&&e.workflowStep!==W.CHANGE_PLAN_TEAM_PLANS&&!e.items)throw new Error('Argument "checkoutData" is not valid, missing: items');return!0}var L=Object.freeze({checkoutClientId:"adobe_com",checkoutWorkflow:se.V3,checkoutWorkflowStep:W.EMAIL,country:"US",displayOldPrice:!0,displayPerUnit:!1,displayRecurrence:!0,displayTax:!1,displayPlanType:!1,env:xe.PRODUCTION,forceTaxExclusive:!1,language:"en",entitlement:!1,extraOptions:{},modal:!1,promotionCode:"",quantity:1,alternativePrice:!1,wcsApiKey:"wcms-commerce-ims-ro-user-milo",wcsURL:"https://www.adobe.com/web_commerce_artifact",landscape:Le.PUBLISHED});function ta({providers:e,settings:t}){function r(i,a){let{checkoutClientId:s,checkoutWorkflow:c,checkoutWorkflowStep:l,country:h,language:d,promotionCode:p,quantity:m}=t,{checkoutMarketSegment:x,checkoutWorkflow:f=c,checkoutWorkflowStep:v=l,imsCountry:E,country:R=E??h,language:_=d,quantity:S=m,entitlement:O,upgrade:$,modal:q,perpetual:U,promotionCode:F=p,wcsOsi:K,extraOptions:Z,...ht}=Object.assign({},a?.dataset??{},i??{}),Pe=Ge(f,se,L.checkoutWorkflow),Ue=W.CHECKOUT;Pe===se.V3&&(Ue=Ge(v,W,L.checkoutWorkflowStep));let dt=Kt({...ht,extraOptions:Z,checkoutClientId:s,checkoutMarketSegment:x,country:R,quantity:bt(S,L.quantity),checkoutWorkflow:Pe,checkoutWorkflowStep:Ue,language:_,entitlement:A(O),upgrade:A($),modal:q,perpetual:A(U),promotionCode:Ur(F).effectivePromoCode,wcsOsi:zr(K)});if(a)for(let jt of e.checkout)jt(a,dt);return dt}function n(i,a){if(!Array.isArray(i)||!i.length||!a)return"";let{env:s,landscape:c}=t,{checkoutClientId:l,checkoutMarketSegment:h,checkoutWorkflow:d,checkoutWorkflowStep:p,country:m,promotionCode:x,quantity:f,...v}=r(a),E=document.querySelector("meta[name=mas-ff-3in1]"),R=Object.values(he).includes(a.modal)&&(!E||E.content!=="off"),_=window.frameElement||R?"if":"fp",S={checkoutPromoCode:x,clientId:l,context:_,country:m,env:s,items:[],marketSegment:h,workflowStep:p,landscape:c,...v},[{productArrangementCode:O,marketSegments:[$],customerSegment:q,offerType:U}]=i;if(Object.assign(S,{productArrangementCode:O,marketSegment:$,customerSegment:q,offerType:U}),i.length===1){let{offerId:F}=i[0];S.items.push(f[0]===1?{id:F}:{id:F,quantity:f[0]})}else S.items.push(...i.map(({offerId:F,productArrangementCode:K},Z)=>({id:F,quantity:f[Z]??L.quantity,...R?{productArrangementCode:K}:{}})));return ea(S)}let{createCheckoutLink:o}=ve;return{CheckoutLink:ve,CheckoutWorkflow:se,CheckoutWorkflowStep:W,buildCheckoutURL:n,collectCheckoutOptions:r,createCheckoutLink:o}}function Nl({interval:e=200,maxAttempts:t=25}={}){let r=ne.module("ims");return new Promise(n=>{r.debug("Waing for IMS to be ready");let o=0;function i(){window.adobeIMS?.initialized?n():++o>t?(r.debug("Timeout"),n()):setTimeout(i,e)}i()})}function Ml(e){return e.then(()=>window.adobeIMS?.isSignedInUser()??!1)}function $l(e){let t=ne.module("ims");return e.then(r=>r?window.adobeIMS.getProfile().then(({countryCode:n})=>(t.debug("Got user country:",n),n),n=>{t.error("Unable to get user country:",n)}):null)}function ra({}){let e=Nl(),t=Ml(e),r=$l(t);return{imsReadyPromise:e,imsSignedInPromise:t,imsCountryPromise:r}}var na=window.masPriceLiterals;function oa(e){if(Array.isArray(na)){let t=n=>na.find(o=>no(o.lang,n)),r=t(e.language)??t(L.language);if(r)return Object.freeze(r)}return{}}var Ao=function(e,t){return Ao=Object.setPrototypeOf||{__proto__:[]}instanceof Array&&function(r,n){r.__proto__=n}||function(r,n){for(var o in n)Object.prototype.hasOwnProperty.call(n,o)&&(r[o]=n[o])},Ao(e,t)};function er(e,t){if(typeof t!="function"&&t!==null)throw new TypeError("Class extends value "+String(t)+" is not a constructor or null");Ao(e,t);function r(){this.constructor=e}e.prototype=t===null?Object.create(t):(r.prototype=t.prototype,new r)}var T=function(){return T=Object.assign||function(t){for(var r,n=1,o=arguments.length;n<o;n++){r=arguments[n];for(var i in r)Object.prototype.hasOwnProperty.call(r,i)&&(t[i]=r[i])}return t},T.apply(this,arguments)};function Yr(e,t,r){if(r||arguments.length===2)for(var n=0,o=t.length,i;n<o;n++)(i||!(n in t))&&(i||(i=Array.prototype.slice.call(t,0,n)),i[n]=t[n]);return e.concat(i||Array.prototype.slice.call(t))}var w;(function(e){e[e.EXPECT_ARGUMENT_CLOSING_BRACE=1]="EXPECT_ARGUMENT_CLOSING_BRACE",e[e.EMPTY_ARGUMENT=2]="EMPTY_ARGUMENT",e[e.MALFORMED_ARGUMENT=3]="MALFORMED_ARGUMENT",e[e.EXPECT_ARGUMENT_TYPE=4]="EXPECT_ARGUMENT_TYPE",e[e.INVALID_ARGUMENT_TYPE=5]="INVALID_ARGUMENT_TYPE",e[e.EXPECT_ARGUMENT_STYLE=6]="EXPECT_ARGUMENT_STYLE",e[e.INVALID_NUMBER_SKELETON=7]="INVALID_NUMBER_SKELETON",e[e.INVALID_DATE_TIME_SKELETON=8]="INVALID_DATE_TIME_SKELETON",e[e.EXPECT_NUMBER_SKELETON=9]="EXPECT_NUMBER_SKELETON",e[e.EXPECT_DATE_TIME_SKELETON=10]="EXPECT_DATE_TIME_SKELETON",e[e.UNCLOSED_QUOTE_IN_ARGUMENT_STYLE=11]="UNCLOSED_QUOTE_IN_ARGUMENT_STYLE",e[e.EXPECT_SELECT_ARGUMENT_OPTIONS=12]="EXPECT_SELECT_ARGUMENT_OPTIONS",e[e.EXPECT_PLURAL_ARGUMENT_OFFSET_VALUE=13]="EXPECT_PLURAL_ARGUMENT_OFFSET_VALUE",e[e.INVALID_PLURAL_ARGUMENT_OFFSET_VALUE=14]="INVALID_PLURAL_ARGUMENT_OFFSET_VALUE",e[e.EXPECT_SELECT_ARGUMENT_SELECTOR=15]="EXPECT_SELECT_ARGUMENT_SELECTOR",e[e.EXPECT_PLURAL_ARGUMENT_SELECTOR=16]="EXPECT_PLURAL_ARGUMENT_SELECTOR",e[e.EXPECT_SELECT_ARGUMENT_SELECTOR_FRAGMENT=17]="EXPECT_SELECT_ARGUMENT_SELECTOR_FRAGMENT",e[e.EXPECT_PLURAL_ARGUMENT_SELECTOR_FRAGMENT=18]="EXPECT_PLURAL_ARGUMENT_SELECTOR_FRAGMENT",e[e.INVALID_PLURAL_ARGUMENT_SELECTOR=19]="INVALID_PLURAL_ARGUMENT_SELECTOR",e[e.DUPLICATE_PLURAL_ARGUMENT_SELECTOR=20]="DUPLICATE_PLURAL_ARGUMENT_SELECTOR",e[e.DUPLICATE_SELECT_ARGUMENT_SELECTOR=21]="DUPLICATE_SELECT_ARGUMENT_SELECTOR",e[e.MISSING_OTHER_CLAUSE=22]="MISSING_OTHER_CLAUSE",e[e.INVALID_TAG=23]="INVALID_TAG",e[e.INVALID_TAG_NAME=25]="INVALID_TAG_NAME",e[e.UNMATCHED_CLOSING_TAG=26]="UNMATCHED_CLOSING_TAG",e[e.UNCLOSED_TAG=27]="UNCLOSED_TAG"})(w||(w={}));var M;(function(e){e[e.literal=0]="literal",e[e.argument=1]="argument",e[e.number=2]="number",e[e.date=3]="date",e[e.time=4]="time",e[e.select=5]="select",e[e.plural=6]="plural",e[e.pound=7]="pound",e[e.tag=8]="tag"})(M||(M={}));var je;(function(e){e[e.number=0]="number",e[e.dateTime=1]="dateTime"})(je||(je={}));function wo(e){return e.type===M.literal}function ia(e){return e.type===M.argument}function Xr(e){return e.type===M.number}function Kr(e){return e.type===M.date}function Qr(e){return e.type===M.time}function Zr(e){return e.type===M.select}function Jr(e){return e.type===M.plural}function aa(e){return e.type===M.pound}function en(e){return e.type===M.tag}function tn(e){return!!(e&&typeof e=="object"&&e.type===je.number)}function tr(e){return!!(e&&typeof e=="object"&&e.type===je.dateTime)}var _o=/[ \xA0\u1680\u2000-\u200A\u202F\u205F\u3000]/;var Il=/(?:[Eec]{1,6}|G{1,5}|[Qq]{1,5}|(?:[yYur]+|U{1,5})|[ML]{1,5}|d{1,2}|D{1,3}|F{1}|[abB]{1,5}|[hkHK]{1,2}|w{1,2}|W{1}|m{1,2}|s{1,2}|[zZOvVxX]{1,4})(?=([^']*'[^']*')*[^']*$)/g;function sa(e){var t={};return e.replace(Il,function(r){var n=r.length;switch(r[0]){case"G":t.era=n===4?"long":n===5?"narrow":"short";break;case"y":t.year=n===2?"2-digit":"numeric";break;case"Y":case"u":case"U":case"r":throw new RangeError("`Y/u/U/r` (year) patterns are not supported, use `y` instead");case"q":case"Q":throw new RangeError("`q/Q` (quarter) patterns are not supported");case"M":case"L":t.month=["numeric","2-digit","short","long","narrow"][n-1];break;case"w":case"W":throw new RangeError("`w/W` (week) patterns are not supported");case"d":t.day=["numeric","2-digit"][n-1];break;case"D":case"F":case"g":throw new RangeError("`D/F/g` (day) patterns are not supported, use `d` instead");case"E":t.weekday=n===4?"short":n===5?"narrow":"short";break;case"e":if(n<4)throw new RangeError("`e..eee` (weekday) patterns are not supported");t.weekday=["short","long","narrow","short"][n-4];break;case"c":if(n<4)throw new RangeError("`c..ccc` (weekday) patterns are not supported");t.weekday=["short","long","narrow","short"][n-4];break;case"a":t.hour12=!0;break;case"b":case"B":throw new RangeError("`b/B` (period) patterns are not supported, use `a` instead");case"h":t.hourCycle="h12",t.hour=["numeric","2-digit"][n-1];break;case"H":t.hourCycle="h23",t.hour=["numeric","2-digit"][n-1];break;case"K":t.hourCycle="h11",t.hour=["numeric","2-digit"][n-1];break;case"k":t.hourCycle="h24",t.hour=["numeric","2-digit"][n-1];break;case"j":case"J":case"C":throw new RangeError("`j/J/C` (hour) patterns are not supported, use `h/H/K/k` instead");case"m":t.minute=["numeric","2-digit"][n-1];break;case"s":t.second=["numeric","2-digit"][n-1];break;case"S":case"A":throw new RangeError("`S/A` (second) patterns are not supported, use `s` instead");case"z":t.timeZoneName=n<4?"short":"long";break;case"Z":case"O":case"v":case"V":case"X":case"x":throw new RangeError("`Z/O/v/V/X/x` (timeZone) patterns are not supported, use `z` instead")}return""}),t}var ca=/[\t-\r \x85\u200E\u200F\u2028\u2029]/i;function pa(e){if(e.length===0)throw new Error("Number skeleton cannot be empty");for(var t=e.split(ca).filter(function(p){return p.length>0}),r=[],n=0,o=t;n<o.length;n++){var i=o[n],a=i.split("/");if(a.length===0)throw new Error("Invalid number skeleton");for(var s=a[0],c=a.slice(1),l=0,h=c;l<h.length;l++){var d=h[l];if(d.length===0)throw new Error("Invalid number skeleton")}r.push({stem:s,options:c})}return r}function Hl(e){return e.replace(/^(.*?)-/,"")}var la=/^\.(?:(0+)(\*)?|(#+)|(0+)(#+))$/g,ma=/^(@+)?(\+|#+)?[rs]?$/g,Ul=/(\*)(0+)|(#+)(0+)|(0+)/g,ua=/^(0+)$/;function ha(e){var t={};return e[e.length-1]==="r"?t.roundingPriority="morePrecision":e[e.length-1]==="s"&&(t.roundingPriority="lessPrecision"),e.replace(ma,function(r,n,o){return typeof o!="string"?(t.minimumSignificantDigits=n.length,t.maximumSignificantDigits=n.length):o==="+"?t.minimumSignificantDigits=n.length:n[0]==="#"?t.maximumSignificantDigits=n.length:(t.minimumSignificantDigits=n.length,t.maximumSignificantDigits=n.length+(typeof o=="string"?o.length:0)),""}),t}function fa(e){switch(e){case"sign-auto":return{signDisplay:"auto"};case"sign-accounting":case"()":return{currencySign:"accounting"};case"sign-always":case"+!":return{signDisplay:"always"};case"sign-accounting-always":case"()!":return{signDisplay:"always",currencySign:"accounting"};case"sign-except-zero":case"+?":return{signDisplay:"exceptZero"};case"sign-accounting-except-zero":case"()?":return{signDisplay:"exceptZero",currencySign:"accounting"};case"sign-never":case"+_":return{signDisplay:"never"}}}function Dl(e){var t;if(e[0]==="E"&&e[1]==="E"?(t={notation:"engineering"},e=e.slice(2)):e[0]==="E"&&(t={notation:"scientific"},e=e.slice(1)),t){var r=e.slice(0,2);if(r==="+!"?(t.signDisplay="always",e=e.slice(2)):r==="+?"&&(t.signDisplay="exceptZero",e=e.slice(2)),!ua.test(e))throw new Error("Malformed concise eng/scientific notation");t.minimumIntegerDigits=e.length}return t}function da(e){var t={},r=fa(e);return r||t}function ga(e){for(var t={},r=0,n=e;r<n.length;r++){var o=n[r];switch(o.stem){case"percent":case"%":t.style="percent";continue;case"%x100":t.style="percent",t.scale=100;continue;case"currency":t.style="currency",t.currency=o.options[0];continue;case"group-off":case",_":t.useGrouping=!1;continue;case"precision-integer":case".":t.maximumFractionDigits=0;continue;case"measure-unit":case"unit":t.style="unit",t.unit=Hl(o.options[0]);continue;case"compact-short":case"K":t.notation="compact",t.compactDisplay="short";continue;case"compact-long":case"KK":t.notation="compact",t.compactDisplay="long";continue;case"scientific":t=T(T(T({},t),{notation:"scientific"}),o.options.reduce(function(c,l){return T(T({},c),da(l))},{}));continue;case"engineering":t=T(T(T({},t),{notation:"engineering"}),o.options.reduce(function(c,l){return T(T({},c),da(l))},{}));continue;case"notation-simple":t.notation="standard";continue;case"unit-width-narrow":t.currencyDisplay="narrowSymbol",t.unitDisplay="narrow";continue;case"unit-width-short":t.currencyDisplay="code",t.unitDisplay="short";continue;case"unit-width-full-name":t.currencyDisplay="name",t.unitDisplay="long";continue;case"unit-width-iso-code":t.currencyDisplay="symbol";continue;case"scale":t.scale=parseFloat(o.options[0]);continue;case"integer-width":if(o.options.length>1)throw new RangeError("integer-width stems only accept a single optional option");o.options[0].replace(Ul,function(c,l,h,d,p,m){if(l)t.minimumIntegerDigits=h.length;else{if(d&&p)throw new Error("We currently do not support maximum integer digits");if(m)throw new Error("We currently do not support exact integer digits")}return""});continue}if(ua.test(o.stem)){t.minimumIntegerDigits=o.stem.length;continue}if(la.test(o.stem)){if(o.options.length>1)throw new RangeError("Fraction-precision stems only accept a single optional option");o.stem.replace(la,function(c,l,h,d,p,m){return h==="*"?t.minimumFractionDigits=l.length:d&&d[0]==="#"?t.maximumFractionDigits=d.length:p&&m?(t.minimumFractionDigits=p.length,t.maximumFractionDigits=p.length+m.length):(t.minimumFractionDigits=l.length,t.maximumFractionDigits=l.length),""});var i=o.options[0];i==="w"?t=T(T({},t),{trailingZeroDisplay:"stripIfInteger"}):i&&(t=T(T({},t),ha(i)));continue}if(ma.test(o.stem)){t=T(T({},t),ha(o.stem));continue}var a=fa(o.stem);a&&(t=T(T({},t),a));var s=Dl(o.stem);s&&(t=T(T({},t),s))}return t}var rr={AX:["H"],BQ:["H"],CP:["H"],CZ:["H"],DK:["H"],FI:["H"],ID:["H"],IS:["H"],ML:["H"],NE:["H"],RU:["H"],SE:["H"],SJ:["H"],SK:["H"],AS:["h","H"],BT:["h","H"],DJ:["h","H"],ER:["h","H"],GH:["h","H"],IN:["h","H"],LS:["h","H"],PG:["h","H"],PW:["h","H"],SO:["h","H"],TO:["h","H"],VU:["h","H"],WS:["h","H"],"001":["H","h"],AL:["h","H","hB"],TD:["h","H","hB"],"ca-ES":["H","h","hB"],CF:["H","h","hB"],CM:["H","h","hB"],"fr-CA":["H","h","hB"],"gl-ES":["H","h","hB"],"it-CH":["H","h","hB"],"it-IT":["H","h","hB"],LU:["H","h","hB"],NP:["H","h","hB"],PF:["H","h","hB"],SC:["H","h","hB"],SM:["H","h","hB"],SN:["H","h","hB"],TF:["H","h","hB"],VA:["H","h","hB"],CY:["h","H","hb","hB"],GR:["h","H","hb","hB"],CO:["h","H","hB","hb"],DO:["h","H","hB","hb"],KP:["h","H","hB","hb"],KR:["h","H","hB","hb"],NA:["h","H","hB","hb"],PA:["h","H","hB","hb"],PR:["h","H","hB","hb"],VE:["h","H","hB","hb"],AC:["H","h","hb","hB"],AI:["H","h","hb","hB"],BW:["H","h","hb","hB"],BZ:["H","h","hb","hB"],CC:["H","h","hb","hB"],CK:["H","h","hb","hB"],CX:["H","h","hb","hB"],DG:["H","h","hb","hB"],FK:["H","h","hb","hB"],GB:["H","h","hb","hB"],GG:["H","h","hb","hB"],GI:["H","h","hb","hB"],IE:["H","h","hb","hB"],IM:["H","h","hb","hB"],IO:["H","h","hb","hB"],JE:["H","h","hb","hB"],LT:["H","h","hb","hB"],MK:["H","h","hb","hB"],MN:["H","h","hb","hB"],MS:["H","h","hb","hB"],NF:["H","h","hb","hB"],NG:["H","h","hb","hB"],NR:["H","h","hb","hB"],NU:["H","h","hb","hB"],PN:["H","h","hb","hB"],SH:["H","h","hb","hB"],SX:["H","h","hb","hB"],TA:["H","h","hb","hB"],ZA:["H","h","hb","hB"],"af-ZA":["H","h","hB","hb"],AR:["H","h","hB","hb"],CL:["H","h","hB","hb"],CR:["H","h","hB","hb"],CU:["H","h","hB","hb"],EA:["H","h","hB","hb"],"es-BO":["H","h","hB","hb"],"es-BR":["H","h","hB","hb"],"es-EC":["H","h","hB","hb"],"es-ES":["H","h","hB","hb"],"es-GQ":["H","h","hB","hb"],"es-PE":["H","h","hB","hb"],GT:["H","h","hB","hb"],HN:["H","h","hB","hb"],IC:["H","h","hB","hb"],KG:["H","h","hB","hb"],KM:["H","h","hB","hb"],LK:["H","h","hB","hb"],MA:["H","h","hB","hb"],MX:["H","h","hB","hb"],NI:["H","h","hB","hb"],PY:["H","h","hB","hb"],SV:["H","h","hB","hb"],UY:["H","h","hB","hb"],JP:["H","h","K"],AD:["H","hB"],AM:["H","hB"],AO:["H","hB"],AT:["H","hB"],AW:["H","hB"],BE:["H","hB"],BF:["H","hB"],BJ:["H","hB"],BL:["H","hB"],BR:["H","hB"],CG:["H","hB"],CI:["H","hB"],CV:["H","hB"],DE:["H","hB"],EE:["H","hB"],FR:["H","hB"],GA:["H","hB"],GF:["H","hB"],GN:["H","hB"],GP:["H","hB"],GW:["H","hB"],HR:["H","hB"],IL:["H","hB"],IT:["H","hB"],KZ:["H","hB"],MC:["H","hB"],MD:["H","hB"],MF:["H","hB"],MQ:["H","hB"],MZ:["H","hB"],NC:["H","hB"],NL:["H","hB"],PM:["H","hB"],PT:["H","hB"],RE:["H","hB"],RO:["H","hB"],SI:["H","hB"],SR:["H","hB"],ST:["H","hB"],TG:["H","hB"],TR:["H","hB"],WF:["H","hB"],YT:["H","hB"],BD:["h","hB","H"],PK:["h","hB","H"],AZ:["H","hB","h"],BA:["H","hB","h"],BG:["H","hB","h"],CH:["H","hB","h"],GE:["H","hB","h"],LI:["H","hB","h"],ME:["H","hB","h"],RS:["H","hB","h"],UA:["H","hB","h"],UZ:["H","hB","h"],XK:["H","hB","h"],AG:["h","hb","H","hB"],AU:["h","hb","H","hB"],BB:["h","hb","H","hB"],BM:["h","hb","H","hB"],BS:["h","hb","H","hB"],CA:["h","hb","H","hB"],DM:["h","hb","H","hB"],"en-001":["h","hb","H","hB"],FJ:["h","hb","H","hB"],FM:["h","hb","H","hB"],GD:["h","hb","H","hB"],GM:["h","hb","H","hB"],GU:["h","hb","H","hB"],GY:["h","hb","H","hB"],JM:["h","hb","H","hB"],KI:["h","hb","H","hB"],KN:["h","hb","H","hB"],KY:["h","hb","H","hB"],LC:["h","hb","H","hB"],LR:["h","hb","H","hB"],MH:["h","hb","H","hB"],MP:["h","hb","H","hB"],MW:["h","hb","H","hB"],NZ:["h","hb","H","hB"],SB:["h","hb","H","hB"],SG:["h","hb","H","hB"],SL:["h","hb","H","hB"],SS:["h","hb","H","hB"],SZ:["h","hb","H","hB"],TC:["h","hb","H","hB"],TT:["h","hb","H","hB"],UM:["h","hb","H","hB"],US:["h","hb","H","hB"],VC:["h","hb","H","hB"],VG:["h","hb","H","hB"],VI:["h","hb","H","hB"],ZM:["h","hb","H","hB"],BO:["H","hB","h","hb"],EC:["H","hB","h","hb"],ES:["H","hB","h","hb"],GQ:["H","hB","h","hb"],PE:["H","hB","h","hb"],AE:["h","hB","hb","H"],"ar-001":["h","hB","hb","H"],BH:["h","hB","hb","H"],DZ:["h","hB","hb","H"],EG:["h","hB","hb","H"],EH:["h","hB","hb","H"],HK:["h","hB","hb","H"],IQ:["h","hB","hb","H"],JO:["h","hB","hb","H"],KW:["h","hB","hb","H"],LB:["h","hB","hb","H"],LY:["h","hB","hb","H"],MO:["h","hB","hb","H"],MR:["h","hB","hb","H"],OM:["h","hB","hb","H"],PH:["h","hB","hb","H"],PS:["h","hB","hb","H"],QA:["h","hB","hb","H"],SA:["h","hB","hb","H"],SD:["h","hB","hb","H"],SY:["h","hB","hb","H"],TN:["h","hB","hb","H"],YE:["h","hB","hb","H"],AF:["H","hb","hB","h"],LA:["H","hb","hB","h"],CN:["H","hB","hb","h"],LV:["H","hB","hb","h"],TL:["H","hB","hb","h"],"zu-ZA":["H","hB","hb","h"],CD:["hB","H"],IR:["hB","H"],"hi-IN":["hB","h","H"],"kn-IN":["hB","h","H"],"ml-IN":["hB","h","H"],"te-IN":["hB","h","H"],KH:["hB","h","H","hb"],"ta-IN":["hB","h","hb","H"],BN:["hb","hB","h","H"],MY:["hb","hB","h","H"],ET:["hB","hb","h","H"],"gu-IN":["hB","hb","h","H"],"mr-IN":["hB","hb","h","H"],"pa-IN":["hB","hb","h","H"],TW:["hB","hb","h","H"],KE:["hB","hb","H","h"],MM:["hB","hb","H","h"],TZ:["hB","hb","H","h"],UG:["hB","hb","H","h"]};function xa(e,t){for(var r="",n=0;n<e.length;n++){var o=e.charAt(n);if(o==="j"){for(var i=0;n+1<e.length&&e.charAt(n+1)===o;)i++,n++;var a=1+(i&1),s=i<2?1:3+(i>>1),c="a",l=Bl(t);for((l=="H"||l=="k")&&(s=0);s-- >0;)r+=c;for(;a-- >0;)r=l+r}else o==="J"?r+="H":r+=o}return r}function Bl(e){var t=e.hourCycle;if(t===void 0&&e.hourCycles&&e.hourCycles.length&&(t=e.hourCycles[0]),t)switch(t){case"h24":return"k";case"h23":return"H";case"h12":return"h";case"h11":return"K";default:throw new Error("Invalid hourCycle")}var r=e.language,n;r!=="root"&&(n=e.maximize().region);var o=rr[n||""]||rr[r||""]||rr["".concat(r,"-001")]||rr["001"];return o[0]}var So,zl=new RegExp("^".concat(_o.source,"*")),Fl=new RegExp("".concat(_o.source,"*$"));function C(e,t){return{start:e,end:t}}var Gl=!!String.prototype.startsWith,Vl=!!String.fromCodePoint,jl=!!Object.fromEntries,ql=!!String.prototype.codePointAt,Wl=!!String.prototype.trimStart,Yl=!!String.prototype.trimEnd,Xl=!!Number.isSafeInteger,Kl=Xl?Number.isSafeInteger:function(e){return typeof e=="number"&&isFinite(e)&&Math.floor(e)===e&&Math.abs(e)<=9007199254740991},Co=!0;try{ba=Aa("([^\\p{White_Space}\\p{Pattern_Syntax}]*)","yu"),Co=((So=ba.exec("a"))===null||So===void 0?void 0:So[0])==="a"}catch{Co=!1}var ba,va=Gl?function(t,r,n){return t.startsWith(r,n)}:function(t,r,n){return t.slice(n,n+r.length)===r},Po=Vl?String.fromCodePoint:function(){for(var t=[],r=0;r<arguments.length;r++)t[r]=arguments[r];for(var n="",o=t.length,i=0,a;o>i;){if(a=t[i++],a>1114111)throw RangeError(a+" is not a valid code point");n+=a<65536?String.fromCharCode(a):String.fromCharCode(((a-=65536)>>10)+55296,a%1024+56320)}return n},ya=jl?Object.fromEntries:function(t){for(var r={},n=0,o=t;n<o.length;n++){var i=o[n],a=i[0],s=i[1];r[a]=s}return r},Ea=ql?function(t,r){return t.codePointAt(r)}:function(t,r){var n=t.length;if(!(r<0||r>=n)){var o=t.charCodeAt(r),i;return o<55296||o>56319||r+1===n||(i=t.charCodeAt(r+1))<56320||i>57343?o:(o-55296<<10)+(i-56320)+65536}},Ql=Wl?function(t){return t.trimStart()}:function(t){return t.replace(zl,"")},Zl=Yl?function(t){return t.trimEnd()}:function(t){return t.replace(Fl,"")};function Aa(e,t){return new RegExp(e,t)}var ko;Co?(To=Aa("([^\\p{White_Space}\\p{Pattern_Syntax}]*)","yu"),ko=function(t,r){var n;To.lastIndex=r;var o=To.exec(t);return(n=o[1])!==null&&n!==void 0?n:""}):ko=function(t,r){for(var n=[];;){var o=Ea(t,r);if(o===void 0||_a(o)||th(o))break;n.push(o),r+=o>=65536?2:1}return Po.apply(void 0,n)};var To,wa=function(){function e(t,r){r===void 0&&(r={}),this.message=t,this.position={offset:0,line:1,column:1},this.ignoreTag=!!r.ignoreTag,this.locale=r.locale,this.requiresOtherClause=!!r.requiresOtherClause,this.shouldParseSkeletons=!!r.shouldParseSkeletons}return e.prototype.parse=function(){if(this.offset()!==0)throw Error("parser can only be used once");return this.parseMessage(0,"",!1)},e.prototype.parseMessage=function(t,r,n){for(var o=[];!this.isEOF();){var i=this.char();if(i===123){var a=this.parseArgument(t,n);if(a.err)return a;o.push(a.val)}else{if(i===125&&t>0)break;if(i===35&&(r==="plural"||r==="selectordinal")){var s=this.clonePosition();this.bump(),o.push({type:M.pound,location:C(s,this.clonePosition())})}else if(i===60&&!this.ignoreTag&&this.peek()===47){if(n)break;return this.error(w.UNMATCHED_CLOSING_TAG,C(this.clonePosition(),this.clonePosition()))}else if(i===60&&!this.ignoreTag&&Lo(this.peek()||0)){var a=this.parseTag(t,r);if(a.err)return a;o.push(a.val)}else{var a=this.parseLiteral(t,r);if(a.err)return a;o.push(a.val)}}}return{val:o,err:null}},e.prototype.parseTag=function(t,r){var n=this.clonePosition();this.bump();var o=this.parseTagName();if(this.bumpSpace(),this.bumpIf("/>"))return{val:{type:M.literal,value:"<".concat(o,"/>"),location:C(n,this.clonePosition())},err:null};if(this.bumpIf(">")){var i=this.parseMessage(t+1,r,!0);if(i.err)return i;var a=i.val,s=this.clonePosition();if(this.bumpIf("</")){if(this.isEOF()||!Lo(this.char()))return this.error(w.INVALID_TAG,C(s,this.clonePosition()));var c=this.clonePosition(),l=this.parseTagName();return o!==l?this.error(w.UNMATCHED_CLOSING_TAG,C(c,this.clonePosition())):(this.bumpSpace(),this.bumpIf(">")?{val:{type:M.tag,value:o,children:a,location:C(n,this.clonePosition())},err:null}:this.error(w.INVALID_TAG,C(s,this.clonePosition())))}else return this.error(w.UNCLOSED_TAG,C(n,this.clonePosition()))}else return this.error(w.INVALID_TAG,C(n,this.clonePosition()))},e.prototype.parseTagName=function(){var t=this.offset();for(this.bump();!this.isEOF()&&eh(this.char());)this.bump();return this.message.slice(t,this.offset())},e.prototype.parseLiteral=function(t,r){for(var n=this.clonePosition(),o="";;){var i=this.tryParseQuote(r);if(i){o+=i;continue}var a=this.tryParseUnquoted(t,r);if(a){o+=a;continue}var s=this.tryParseLeftAngleBracket();if(s){o+=s;continue}break}var c=C(n,this.clonePosition());return{val:{type:M.literal,value:o,location:c},err:null}},e.prototype.tryParseLeftAngleBracket=function(){return!this.isEOF()&&this.char()===60&&(this.ignoreTag||!Jl(this.peek()||0))?(this.bump(),"<"):null},e.prototype.tryParseQuote=function(t){if(this.isEOF()||this.char()!==39)return null;switch(this.peek()){case 39:return this.bump(),this.bump(),"'";case 123:case 60:case 62:case 125:break;case 35:if(t==="plural"||t==="selectordinal")break;return null;default:return null}this.bump();var r=[this.char()];for(this.bump();!this.isEOF();){var n=this.char();if(n===39)if(this.peek()===39)r.push(39),this.bump();else{this.bump();break}else r.push(n);this.bump()}return Po.apply(void 0,r)},e.prototype.tryParseUnquoted=function(t,r){if(this.isEOF())return null;var n=this.char();return n===60||n===123||n===35&&(r==="plural"||r==="selectordinal")||n===125&&t>0?null:(this.bump(),Po(n))},e.prototype.parseArgument=function(t,r){var n=this.clonePosition();if(this.bump(),this.bumpSpace(),this.isEOF())return this.error(w.EXPECT_ARGUMENT_CLOSING_BRACE,C(n,this.clonePosition()));if(this.char()===125)return this.bump(),this.error(w.EMPTY_ARGUMENT,C(n,this.clonePosition()));var o=this.parseIdentifierIfPossible().value;if(!o)return this.error(w.MALFORMED_ARGUMENT,C(n,this.clonePosition()));if(this.bumpSpace(),this.isEOF())return this.error(w.EXPECT_ARGUMENT_CLOSING_BRACE,C(n,this.clonePosition()));switch(this.char()){case 125:return this.bump(),{val:{type:M.argument,value:o,location:C(n,this.clonePosition())},err:null};case 44:return this.bump(),this.bumpSpace(),this.isEOF()?this.error(w.EXPECT_ARGUMENT_CLOSING_BRACE,C(n,this.clonePosition())):this.parseArgumentOptions(t,r,o,n);default:return this.error(w.MALFORMED_ARGUMENT,C(n,this.clonePosition()))}},e.prototype.parseIdentifierIfPossible=function(){var t=this.clonePosition(),r=this.offset(),n=ko(this.message,r),o=r+n.length;this.bumpTo(o);var i=this.clonePosition(),a=C(t,i);return{value:n,location:a}},e.prototype.parseArgumentOptions=function(t,r,n,o){var i,a=this.clonePosition(),s=this.parseIdentifierIfPossible().value,c=this.clonePosition();switch(s){case"":return this.error(w.EXPECT_ARGUMENT_TYPE,C(a,c));case"number":case"date":case"time":{this.bumpSpace();var l=null;if(this.bumpIf(",")){this.bumpSpace();var h=this.clonePosition(),d=this.parseSimpleArgStyleIfPossible();if(d.err)return d;var p=Zl(d.val);if(p.length===0)return this.error(w.EXPECT_ARGUMENT_STYLE,C(this.clonePosition(),this.clonePosition()));var m=C(h,this.clonePosition());l={style:p,styleLocation:m}}var x=this.tryParseArgumentClose(o);if(x.err)return x;var f=C(o,this.clonePosition());if(l&&va(l?.style,"::",0)){var v=Ql(l.style.slice(2));if(s==="number"){var d=this.parseNumberSkeletonFromString(v,l.styleLocation);return d.err?d:{val:{type:M.number,value:n,location:f,style:d.val},err:null}}else{if(v.length===0)return this.error(w.EXPECT_DATE_TIME_SKELETON,f);var E=v;this.locale&&(E=xa(v,this.locale));var p={type:je.dateTime,pattern:E,location:l.styleLocation,parsedOptions:this.shouldParseSkeletons?sa(E):{}},R=s==="date"?M.date:M.time;return{val:{type:R,value:n,location:f,style:p},err:null}}}return{val:{type:s==="number"?M.number:s==="date"?M.date:M.time,value:n,location:f,style:(i=l?.style)!==null&&i!==void 0?i:null},err:null}}case"plural":case"selectordinal":case"select":{var _=this.clonePosition();if(this.bumpSpace(),!this.bumpIf(","))return this.error(w.EXPECT_SELECT_ARGUMENT_OPTIONS,C(_,T({},_)));this.bumpSpace();var S=this.parseIdentifierIfPossible(),O=0;if(s!=="select"&&S.value==="offset"){if(!this.bumpIf(":"))return this.error(w.EXPECT_PLURAL_ARGUMENT_OFFSET_VALUE,C(this.clonePosition(),this.clonePosition()));this.bumpSpace();var d=this.tryParseDecimalInteger(w.EXPECT_PLURAL_ARGUMENT_OFFSET_VALUE,w.INVALID_PLURAL_ARGUMENT_OFFSET_VALUE);if(d.err)return d;this.bumpSpace(),S=this.parseIdentifierIfPossible(),O=d.val}var $=this.tryParsePluralOrSelectOptions(t,s,r,S);if($.err)return $;var x=this.tryParseArgumentClose(o);if(x.err)return x;var q=C(o,this.clonePosition());return s==="select"?{val:{type:M.select,value:n,options:ya($.val),location:q},err:null}:{val:{type:M.plural,value:n,options:ya($.val),offset:O,pluralType:s==="plural"?"cardinal":"ordinal",location:q},err:null}}default:return this.error(w.INVALID_ARGUMENT_TYPE,C(a,c))}},e.prototype.tryParseArgumentClose=function(t){return this.isEOF()||this.char()!==125?this.error(w.EXPECT_ARGUMENT_CLOSING_BRACE,C(t,this.clonePosition())):(this.bump(),{val:!0,err:null})},e.prototype.parseSimpleArgStyleIfPossible=function(){for(var t=0,r=this.clonePosition();!this.isEOF();){var n=this.char();switch(n){case 39:{this.bump();var o=this.clonePosition();if(!this.bumpUntil("'"))return this.error(w.UNCLOSED_QUOTE_IN_ARGUMENT_STYLE,C(o,this.clonePosition()));this.bump();break}case 123:{t+=1,this.bump();break}case 125:{if(t>0)t-=1;else return{val:this.message.slice(r.offset,this.offset()),err:null};break}default:this.bump();break}}return{val:this.message.slice(r.offset,this.offset()),err:null}},e.prototype.parseNumberSkeletonFromString=function(t,r){var n=[];try{n=pa(t)}catch{return this.error(w.INVALID_NUMBER_SKELETON,r)}return{val:{type:je.number,tokens:n,location:r,parsedOptions:this.shouldParseSkeletons?ga(n):{}},err:null}},e.prototype.tryParsePluralOrSelectOptions=function(t,r,n,o){for(var i,a=!1,s=[],c=new Set,l=o.value,h=o.location;;){if(l.length===0){var d=this.clonePosition();if(r!=="select"&&this.bumpIf("=")){var p=this.tryParseDecimalInteger(w.EXPECT_PLURAL_ARGUMENT_SELECTOR,w.INVALID_PLURAL_ARGUMENT_SELECTOR);if(p.err)return p;h=C(d,this.clonePosition()),l=this.message.slice(d.offset,this.offset())}else break}if(c.has(l))return this.error(r==="select"?w.DUPLICATE_SELECT_ARGUMENT_SELECTOR:w.DUPLICATE_PLURAL_ARGUMENT_SELECTOR,h);l==="other"&&(a=!0),this.bumpSpace();var m=this.clonePosition();if(!this.bumpIf("{"))return this.error(r==="select"?w.EXPECT_SELECT_ARGUMENT_SELECTOR_FRAGMENT:w.EXPECT_PLURAL_ARGUMENT_SELECTOR_FRAGMENT,C(this.clonePosition(),this.clonePosition()));var x=this.parseMessage(t+1,r,n);if(x.err)return x;var f=this.tryParseArgumentClose(m);if(f.err)return f;s.push([l,{value:x.val,location:C(m,this.clonePosition())}]),c.add(l),this.bumpSpace(),i=this.parseIdentifierIfPossible(),l=i.value,h=i.location}return s.length===0?this.error(r==="select"?w.EXPECT_SELECT_ARGUMENT_SELECTOR:w.EXPECT_PLURAL_ARGUMENT_SELECTOR,C(this.clonePosition(),this.clonePosition())):this.requiresOtherClause&&!a?this.error(w.MISSING_OTHER_CLAUSE,C(this.clonePosition(),this.clonePosition())):{val:s,err:null}},e.prototype.tryParseDecimalInteger=function(t,r){var n=1,o=this.clonePosition();this.bumpIf("+")||this.bumpIf("-")&&(n=-1);for(var i=!1,a=0;!this.isEOF();){var s=this.char();if(s>=48&&s<=57)i=!0,a=a*10+(s-48),this.bump();else break}var c=C(o,this.clonePosition());return i?(a*=n,Kl(a)?{val:a,err:null}:this.error(r,c)):this.error(t,c)},e.prototype.offset=function(){return this.position.offset},e.prototype.isEOF=function(){return this.offset()===this.message.length},e.prototype.clonePosition=function(){return{offset:this.position.offset,line:this.position.line,column:this.position.column}},e.prototype.char=function(){var t=this.position.offset;if(t>=this.message.length)throw Error("out of bound");var r=Ea(this.message,t);if(r===void 0)throw Error("Offset ".concat(t," is at invalid UTF-16 code unit boundary"));return r},e.prototype.error=function(t,r){return{val:null,err:{kind:t,message:this.message,location:r}}},e.prototype.bump=function(){if(!this.isEOF()){var t=this.char();t===10?(this.position.line+=1,this.position.column=1,this.position.offset+=1):(this.position.column+=1,this.position.offset+=t<65536?1:2)}},e.prototype.bumpIf=function(t){if(va(this.message,t,this.offset())){for(var r=0;r<t.length;r++)this.bump();return!0}return!1},e.prototype.bumpUntil=function(t){var r=this.offset(),n=this.message.indexOf(t,r);return n>=0?(this.bumpTo(n),!0):(this.bumpTo(this.message.length),!1)},e.prototype.bumpTo=function(t){if(this.offset()>t)throw Error("targetOffset ".concat(t," must be greater than or equal to the current offset ").concat(this.offset()));for(t=Math.min(t,this.message.length);;){var r=this.offset();if(r===t)break;if(r>t)throw Error("targetOffset ".concat(t," is at invalid UTF-16 code unit boundary"));if(this.bump(),this.isEOF())break}},e.prototype.bumpSpace=function(){for(;!this.isEOF()&&_a(this.char());)this.bump()},e.prototype.peek=function(){if(this.isEOF())return null;var t=this.char(),r=this.offset(),n=this.message.charCodeAt(r+(t>=65536?2:1));return n??null},e}();function Lo(e){return e>=97&&e<=122||e>=65&&e<=90}function Jl(e){return Lo(e)||e===47}function eh(e){return e===45||e===46||e>=48&&e<=57||e===95||e>=97&&e<=122||e>=65&&e<=90||e==183||e>=192&&e<=214||e>=216&&e<=246||e>=248&&e<=893||e>=895&&e<=8191||e>=8204&&e<=8205||e>=8255&&e<=8256||e>=8304&&e<=8591||e>=11264&&e<=12271||e>=12289&&e<=55295||e>=63744&&e<=64975||e>=65008&&e<=65533||e>=65536&&e<=983039}function _a(e){return e>=9&&e<=13||e===32||e===133||e>=8206&&e<=8207||e===8232||e===8233}function th(e){return e>=33&&e<=35||e===36||e>=37&&e<=39||e===40||e===41||e===42||e===43||e===44||e===45||e>=46&&e<=47||e>=58&&e<=59||e>=60&&e<=62||e>=63&&e<=64||e===91||e===92||e===93||e===94||e===96||e===123||e===124||e===125||e===126||e===161||e>=162&&e<=165||e===166||e===167||e===169||e===171||e===172||e===174||e===176||e===177||e===182||e===187||e===191||e===215||e===247||e>=8208&&e<=8213||e>=8214&&e<=8215||e===8216||e===8217||e===8218||e>=8219&&e<=8220||e===8221||e===8222||e===8223||e>=8224&&e<=8231||e>=8240&&e<=8248||e===8249||e===8250||e>=8251&&e<=8254||e>=8257&&e<=8259||e===8260||e===8261||e===8262||e>=8263&&e<=8273||e===8274||e===8275||e>=8277&&e<=8286||e>=8592&&e<=8596||e>=8597&&e<=8601||e>=8602&&e<=8603||e>=8604&&e<=8607||e===8608||e>=8609&&e<=8610||e===8611||e>=8612&&e<=8613||e===8614||e>=8615&&e<=8621||e===8622||e>=8623&&e<=8653||e>=8654&&e<=8655||e>=8656&&e<=8657||e===8658||e===8659||e===8660||e>=8661&&e<=8691||e>=8692&&e<=8959||e>=8960&&e<=8967||e===8968||e===8969||e===8970||e===8971||e>=8972&&e<=8991||e>=8992&&e<=8993||e>=8994&&e<=9e3||e===9001||e===9002||e>=9003&&e<=9083||e===9084||e>=9085&&e<=9114||e>=9115&&e<=9139||e>=9140&&e<=9179||e>=9180&&e<=9185||e>=9186&&e<=9254||e>=9255&&e<=9279||e>=9280&&e<=9290||e>=9291&&e<=9311||e>=9472&&e<=9654||e===9655||e>=9656&&e<=9664||e===9665||e>=9666&&e<=9719||e>=9720&&e<=9727||e>=9728&&e<=9838||e===9839||e>=9840&&e<=10087||e===10088||e===10089||e===10090||e===10091||e===10092||e===10093||e===10094||e===10095||e===10096||e===10097||e===10098||e===10099||e===10100||e===10101||e>=10132&&e<=10175||e>=10176&&e<=10180||e===10181||e===10182||e>=10183&&e<=10213||e===10214||e===10215||e===10216||e===10217||e===10218||e===10219||e===10220||e===10221||e===10222||e===10223||e>=10224&&e<=10239||e>=10240&&e<=10495||e>=10496&&e<=10626||e===10627||e===10628||e===10629||e===10630||e===10631||e===10632||e===10633||e===10634||e===10635||e===10636||e===10637||e===10638||e===10639||e===10640||e===10641||e===10642||e===10643||e===10644||e===10645||e===10646||e===10647||e===10648||e>=10649&&e<=10711||e===10712||e===10713||e===10714||e===10715||e>=10716&&e<=10747||e===10748||e===10749||e>=10750&&e<=11007||e>=11008&&e<=11055||e>=11056&&e<=11076||e>=11077&&e<=11078||e>=11079&&e<=11084||e>=11085&&e<=11123||e>=11124&&e<=11125||e>=11126&&e<=11157||e===11158||e>=11159&&e<=11263||e>=11776&&e<=11777||e===11778||e===11779||e===11780||e===11781||e>=11782&&e<=11784||e===11785||e===11786||e===11787||e===11788||e===11789||e>=11790&&e<=11798||e===11799||e>=11800&&e<=11801||e===11802||e===11803||e===11804||e===11805||e>=11806&&e<=11807||e===11808||e===11809||e===11810||e===11811||e===11812||e===11813||e===11814||e===11815||e===11816||e===11817||e>=11818&&e<=11822||e===11823||e>=11824&&e<=11833||e>=11834&&e<=11835||e>=11836&&e<=11839||e===11840||e===11841||e===11842||e>=11843&&e<=11855||e>=11856&&e<=11857||e===11858||e>=11859&&e<=11903||e>=12289&&e<=12291||e===12296||e===12297||e===12298||e===12299||e===12300||e===12301||e===12302||e===12303||e===12304||e===12305||e>=12306&&e<=12307||e===12308||e===12309||e===12310||e===12311||e===12312||e===12313||e===12314||e===12315||e===12316||e===12317||e>=12318&&e<=12319||e===12320||e===12336||e===64830||e===64831||e>=65093&&e<=65094}function Ro(e){e.forEach(function(t){if(delete t.location,Zr(t)||Jr(t))for(var r in t.options)delete t.options[r].location,Ro(t.options[r].value);else Xr(t)&&tn(t.style)||(Kr(t)||Qr(t))&&tr(t.style)?delete t.style.location:en(t)&&Ro(t.children)})}function Sa(e,t){t===void 0&&(t={}),t=T({shouldParseSkeletons:!0,requiresOtherClause:!0},t);var r=new wa(e,t).parse();if(r.err){var n=SyntaxError(w[r.err.kind]);throw n.location=r.err.location,n.originalMessage=r.err.message,n}return t?.captureLocation||Ro(r.val),r.val}function nr(e,t){var r=t&&t.cache?t.cache:sh,n=t&&t.serializer?t.serializer:ah,o=t&&t.strategy?t.strategy:nh;return o(e,{cache:r,serializer:n})}function rh(e){return e==null||typeof e=="number"||typeof e=="boolean"}function Ta(e,t,r,n){var o=rh(n)?n:r(n),i=t.get(o);return typeof i>"u"&&(i=e.call(this,n),t.set(o,i)),i}function Ca(e,t,r){var n=Array.prototype.slice.call(arguments,3),o=r(n),i=t.get(o);return typeof i>"u"&&(i=e.apply(this,n),t.set(o,i)),i}function Oo(e,t,r,n,o){return r.bind(t,e,n,o)}function nh(e,t){var r=e.length===1?Ta:Ca;return Oo(e,this,r,t.cache.create(),t.serializer)}function oh(e,t){return Oo(e,this,Ca,t.cache.create(),t.serializer)}function ih(e,t){return Oo(e,this,Ta,t.cache.create(),t.serializer)}var ah=function(){return JSON.stringify(arguments)};function No(){this.cache=Object.create(null)}No.prototype.get=function(e){return this.cache[e]};No.prototype.set=function(e,t){this.cache[e]=t};var sh={create:function(){return new No}},rn={variadic:oh,monadic:ih};var qe;(function(e){e.MISSING_VALUE="MISSING_VALUE",e.INVALID_VALUE="INVALID_VALUE",e.MISSING_INTL_API="MISSING_INTL_API"})(qe||(qe={}));var or=function(e){er(t,e);function t(r,n,o){var i=e.call(this,r)||this;return i.code=n,i.originalMessage=o,i}return t.prototype.toString=function(){return"[formatjs Error: ".concat(this.code,"] ").concat(this.message)},t}(Error);var Mo=function(e){er(t,e);function t(r,n,o,i){return e.call(this,'Invalid values for "'.concat(r,'": "').concat(n,'". Options are "').concat(Object.keys(o).join('", "'),'"'),qe.INVALID_VALUE,i)||this}return t}(or);var Pa=function(e){er(t,e);function t(r,n,o){return e.call(this,'Value for "'.concat(r,'" must be of type ').concat(n),qe.INVALID_VALUE,o)||this}return t}(or);var ka=function(e){er(t,e);function t(r,n){return e.call(this,'The intl string context variable "'.concat(r,'" was not provided to the string "').concat(n,'"'),qe.MISSING_VALUE,n)||this}return t}(or);var X;(function(e){e[e.literal=0]="literal",e[e.object=1]="object"})(X||(X={}));function ch(e){return e.length<2?e:e.reduce(function(t,r){var n=t[t.length-1];return!n||n.type!==X.literal||r.type!==X.literal?t.push(r):n.value+=r.value,t},[])}function lh(e){return typeof e=="function"}function ir(e,t,r,n,o,i,a){if(e.length===1&&wo(e[0]))return[{type:X.literal,value:e[0].value}];for(var s=[],c=0,l=e;c<l.length;c++){var h=l[c];if(wo(h)){s.push({type:X.literal,value:h.value});continue}if(aa(h)){typeof i=="number"&&s.push({type:X.literal,value:r.getNumberFormat(t).format(i)});continue}var d=h.value;if(!(o&&d in o))throw new ka(d,a);var p=o[d];if(ia(h)){(!p||typeof p=="string"||typeof p=="number")&&(p=typeof p=="string"||typeof p=="number"?String(p):""),s.push({type:typeof p=="string"?X.literal:X.object,value:p});continue}if(Kr(h)){var m=typeof h.style=="string"?n.date[h.style]:tr(h.style)?h.style.parsedOptions:void 0;s.push({type:X.literal,value:r.getDateTimeFormat(t,m).format(p)});continue}if(Qr(h)){var m=typeof h.style=="string"?n.time[h.style]:tr(h.style)?h.style.parsedOptions:n.time.medium;s.push({type:X.literal,value:r.getDateTimeFormat(t,m).format(p)});continue}if(Xr(h)){var m=typeof h.style=="string"?n.number[h.style]:tn(h.style)?h.style.parsedOptions:void 0;m&&m.scale&&(p=p*(m.scale||1)),s.push({type:X.literal,value:r.getNumberFormat(t,m).format(p)});continue}if(en(h)){var x=h.children,f=h.value,v=o[f];if(!lh(v))throw new Pa(f,"function",a);var E=ir(x,t,r,n,o,i),R=v(E.map(function(O){return O.value}));Array.isArray(R)||(R=[R]),s.push.apply(s,R.map(function(O){return{type:typeof O=="string"?X.literal:X.object,value:O}}))}if(Zr(h)){var _=h.options[p]||h.options.other;if(!_)throw new Mo(h.value,p,Object.keys(h.options),a);s.push.apply(s,ir(_.value,t,r,n,o));continue}if(Jr(h)){var _=h.options["=".concat(p)];if(!_){if(!Intl.PluralRules)throw new or(`Intl.PluralRules is not available in this environment.
-Try polyfilling it using "@formatjs/intl-pluralrules"
-`,qe.MISSING_INTL_API,a);var S=r.getPluralRules(t,{type:h.pluralType}).select(p-(h.offset||0));_=h.options[S]||h.options.other}if(!_)throw new Mo(h.value,p,Object.keys(h.options),a);s.push.apply(s,ir(_.value,t,r,n,o,p-(h.offset||0)));continue}}return ch(s)}function hh(e,t){return t?T(T(T({},e||{}),t||{}),Object.keys(e).reduce(function(r,n){return r[n]=T(T({},e[n]),t[n]||{}),r},{})):e}function dh(e,t){return t?Object.keys(e).reduce(function(r,n){return r[n]=hh(e[n],t[n]),r},T({},e)):e}function $o(e){return{create:function(){return{get:function(t){return e[t]},set:function(t,r){e[t]=r}}}}}function ph(e){return e===void 0&&(e={number:{},dateTime:{},pluralRules:{}}),{getNumberFormat:nr(function(){for(var t,r=[],n=0;n<arguments.length;n++)r[n]=arguments[n];return new((t=Intl.NumberFormat).bind.apply(t,Yr([void 0],r,!1)))},{cache:$o(e.number),strategy:rn.variadic}),getDateTimeFormat:nr(function(){for(var t,r=[],n=0;n<arguments.length;n++)r[n]=arguments[n];return new((t=Intl.DateTimeFormat).bind.apply(t,Yr([void 0],r,!1)))},{cache:$o(e.dateTime),strategy:rn.variadic}),getPluralRules:nr(function(){for(var t,r=[],n=0;n<arguments.length;n++)r[n]=arguments[n];return new((t=Intl.PluralRules).bind.apply(t,Yr([void 0],r,!1)))},{cache:$o(e.pluralRules),strategy:rn.variadic})}}var La=function(){function e(t,r,n,o){var i=this;if(r===void 0&&(r=e.defaultLocale),this.formatterCache={number:{},dateTime:{},pluralRules:{}},this.format=function(a){var s=i.formatToParts(a);if(s.length===1)return s[0].value;var c=s.reduce(function(l,h){return!l.length||h.type!==X.literal||typeof l[l.length-1]!="string"?l.push(h.value):l[l.length-1]+=h.value,l},[]);return c.length<=1?c[0]||"":c},this.formatToParts=function(a){return ir(i.ast,i.locales,i.formatters,i.formats,a,void 0,i.message)},this.resolvedOptions=function(){return{locale:i.resolvedLocale.toString()}},this.getAst=function(){return i.ast},this.locales=r,this.resolvedLocale=e.resolveLocale(r),typeof t=="string"){if(this.message=t,!e.__parse)throw new TypeError("IntlMessageFormat.__parse must be set to process `message` of type `string`");this.ast=e.__parse(t,{ignoreTag:o?.ignoreTag,locale:this.resolvedLocale})}else this.ast=t;if(!Array.isArray(this.ast))throw new TypeError("A message must be provided as a String or AST.");this.formats=dh(e.formats,n),this.formatters=o&&o.formatters||ph(this.formatterCache)}return Object.defineProperty(e,"defaultLocale",{get:function(){return e.memoizedDefaultLocale||(e.memoizedDefaultLocale=new Intl.NumberFormat().resolvedOptions().locale),e.memoizedDefaultLocale},enumerable:!1,configurable:!0}),e.memoizedDefaultLocale=null,e.resolveLocale=function(t){var r=Intl.NumberFormat.supportedLocalesOf(t);return r.length>0?new Intl.Locale(r[0]):new Intl.Locale(typeof t=="string"?t:t[0])},e.__parse=Sa,e.formats={number:{integer:{maximumFractionDigits:0},currency:{style:"currency"},percent:{style:"percent"}},date:{short:{month:"numeric",day:"numeric",year:"2-digit"},medium:{month:"short",day:"numeric",year:"numeric"},long:{month:"long",day:"numeric",year:"numeric"},full:{weekday:"long",month:"long",day:"numeric",year:"numeric"}},time:{short:{hour:"numeric",minute:"numeric"},medium:{hour:"numeric",minute:"numeric",second:"numeric"},long:{hour:"numeric",minute:"numeric",second:"numeric",timeZoneName:"short"},full:{hour:"numeric",minute:"numeric",second:"numeric",timeZoneName:"short"}}},e}();var Ra=La;var mh=/[0-9\-+#]/,uh=/[^\d\-+#]/g;function Oa(e){return e.search(mh)}function fh(e="#.##"){let t={},r=e.length,n=Oa(e);t.prefix=n>0?e.substring(0,n):"";let o=Oa(e.split("").reverse().join("")),i=r-o,a=e.substring(i,i+1),s=i+(a==="."||a===","?1:0);t.suffix=o>0?e.substring(s,r):"",t.mask=e.substring(n,s),t.maskHasNegativeSign=t.mask.charAt(0)==="-",t.maskHasPositiveSign=t.mask.charAt(0)==="+";let c=t.mask.match(uh);return t.decimal=c&&c[c.length-1]||".",t.separator=c&&c[1]&&c[0]||",",c=t.mask.split(t.decimal),t.integer=c[0],t.fraction=c[1],t}function gh(e,t,r){let n=!1,o={value:e};e<0&&(n=!0,o.value=-o.value),o.sign=n?"-":"",o.value=Number(o.value).toFixed(t.fraction&&t.fraction.length),o.value=Number(o.value).toString();let i=t.fraction&&t.fraction.lastIndexOf("0"),[a="0",s=""]=o.value.split(".");return(!s||s&&s.length<=i)&&(s=i<0?"":(+("0."+s)).toFixed(i+1).replace("0.","")),o.integer=a,o.fraction=s,xh(o,t),(o.result==="0"||o.result==="")&&(n=!1,o.sign=""),!n&&t.maskHasPositiveSign?o.sign="+":n&&t.maskHasPositiveSign?o.sign="-":n&&(o.sign=r&&r.enforceMaskSign&&!t.maskHasNegativeSign?"":"-"),o}function xh(e,t){e.result="";let r=t.integer.split(t.separator),n=r.join(""),o=n&&n.indexOf("0");if(o>-1)for(;e.integer.length<n.length-o;)e.integer="0"+e.integer;else Number(e.integer)===0&&(e.integer="");let i=r[1]&&r[r.length-1].length;if(i){let a=e.integer.length,s=a%i;for(let c=0;c<a;c++)e.result+=e.integer.charAt(c),!((c-s+1)%i)&&c<a-i&&(e.result+=t.separator)}else e.result=e.integer;return e.result+=t.fraction&&e.fraction?t.decimal+e.fraction:"",e}function bh(e,t,r={}){if(!e||isNaN(Number(t)))return t;let n=fh(e),o=gh(t,n,r);return n.prefix+o.sign+o.result+n.suffix}var Na=bh;var Ma=".",vh=",",Ia=/^\s+/,Ha=/\s+$/,$a="&nbsp;",Io=e=>e*12,Ua=(e,t)=>{let{start:r,end:n,displaySummary:{amount:o,duration:i,minProductQuantity:a,outcomeType:s}={}}=e;if(!(o&&i&&s&&a))return!1;let c=t?new Date(t):new Date;if(!r||!n)return!1;let l=new Date(r),h=new Date(n);return c>=l&&c<=h},We={MONTH:"MONTH",YEAR:"YEAR"},yh={[ie.ANNUAL]:12,[ie.MONTHLY]:1,[ie.THREE_YEARS]:36,[ie.TWO_YEARS]:24},Ho=(e,t)=>({accept:e,round:t}),Eh=[Ho(({divisor:e,price:t})=>t%e==0,({divisor:e,price:t})=>t/e),Ho(({usePrecision:e})=>e,({divisor:e,price:t})=>Math.round(t/e*100)/100),Ho(()=>!0,({divisor:e,price:t})=>Math.ceil(Math.floor(t*100/e)/100))],Uo={[De.YEAR]:{[ie.MONTHLY]:We.MONTH,[ie.ANNUAL]:We.YEAR},[De.MONTH]:{[ie.MONTHLY]:We.MONTH}},Ah=(e,t)=>e.indexOf(`'${t}'`)===0,wh=(e,t=!0)=>{let r=e.replace(/'.*?'/,"").trim(),n=Ba(r);return!!n?t||(r=r.replace(/[,\.]0+/,n)):r=r.replace(/\s?(#.*0)(?!\s)?/,"$&"+Sh(e)),r},_h=e=>{let t=Th(e),r=Ah(e,t),n=e.replace(/'.*?'/,""),o=Ia.test(n)||Ha.test(n);return{currencySymbol:t,isCurrencyFirst:r,hasCurrencySpace:o}},Da=e=>e.replace(Ia,$a).replace(Ha,$a),Sh=e=>e.match(/#(.?)#/)?.[1]===Ma?vh:Ma,Th=e=>e.match(/'(.*?)'/)?.[1]??"",Ba=e=>e.match(/0(.?)0/)?.[1]??"";function yt({formatString:e,price:t,usePrecision:r,isIndianPrice:n=!1},o,i=a=>a){let{currencySymbol:a,isCurrencyFirst:s,hasCurrencySpace:c}=_h(e),l=r?Ba(e):"",h=wh(e,r),d=r?2:0,p=i(t,{currencySymbol:a}),m=n?p.toLocaleString("hi-IN",{minimumFractionDigits:d,maximumFractionDigits:d}):Na(h,p),x=r?m.lastIndexOf(l):m.length,f=m.substring(0,x),v=m.substring(x+1);return{accessiblePrice:e.replace(/'.*?'/,"SYMBOL").replace(/#.*0/,m).replace(/SYMBOL/,a),currencySymbol:a,decimals:v,decimalsDelimiter:l,hasCurrencySpace:c,integer:f,isCurrencyFirst:s,recurrenceTerm:o}}var za=e=>{let{commitment:t,term:r,usePrecision:n}=e,o=yh[r]??1;return yt(e,o>1?We.MONTH:Uo[t]?.[r],i=>{let a={divisor:o,price:i,usePrecision:n},{round:s}=Eh.find(({accept:c})=>c(a));if(!s)throw new Error(`Missing rounding rule for: ${JSON.stringify(a)}`);return s(a)})},Fa=({commitment:e,term:t,...r})=>yt(r,Uo[e]?.[t]),Ga=e=>{let{commitment:t,instant:r,price:n,originalPrice:o,priceWithoutDiscount:i,promotion:a,quantity:s=1,term:c}=e;if(t===De.YEAR&&c===ie.MONTHLY){if(!a)return yt(e,We.YEAR,Io);let{displaySummary:{outcomeType:l,duration:h,minProductQuantity:d=1}={}}=a;switch(l){case"PERCENTAGE_DISCOUNT":if(s>=d&&Ua(a,r)){let p=parseInt(h.replace("P","").replace("M",""));if(isNaN(p))return Io(n);let m=s*o*p,x=s*i*(12-p),f=Math.round((m+x)*100)/100;return yt({...e,price:f},We.YEAR)}default:return yt(e,We.YEAR,()=>Io(i??n))}}return yt(e,Uo[t]?.[c])};var Do={recurrenceLabel:"{recurrenceTerm, select, MONTH {/mo} YEAR {/yr} other {}}",recurrenceAriaLabel:"{recurrenceTerm, select, MONTH {per month} YEAR {per year} other {}}",perUnitLabel:"{perUnit, select, LICENSE {per license} other {}}",perUnitAriaLabel:"{perUnit, select, LICENSE {per license} other {}}",freeLabel:"Free",freeAriaLabel:"Free",taxExclusiveLabel:"{taxTerm, select, GST {excl. GST} VAT {excl. VAT} TAX {excl. tax} IVA {excl. IVA} SST {excl. SST} KDV {excl. KDV} other {}}",taxInclusiveLabel:"{taxTerm, select, GST {incl. GST} VAT {incl. VAT} TAX {incl. tax} IVA {incl. IVA} SST {incl. SST} KDV {incl. KDV} other {}}",alternativePriceAriaLabel:"Alternatively at",strikethroughAriaLabel:"Regularly at",planTypeLabel:"{planType, select, ABM {Annual, paid monthly.} other {}}"},Ch=Ui("ConsonantTemplates/price"),Ph=/<\/?[^>]+(>|$)/g,D={container:"price",containerOptical:"price-optical",containerStrikethrough:"price-strikethrough",containerAlternative:"price-alternative",containerAnnual:"price-annual",containerAnnualPrefix:"price-annual-prefix",containerAnnualSuffix:"price-annual-suffix",disabled:"disabled",currencySpace:"price-currency-space",currencySymbol:"price-currency-symbol",decimals:"price-decimals",decimalsDelimiter:"price-decimals-delimiter",integer:"price-integer",recurrence:"price-recurrence",taxInclusivity:"price-tax-inclusivity",unitType:"price-unit-type"},Oe={perUnitLabel:"perUnitLabel",perUnitAriaLabel:"perUnitAriaLabel",recurrenceLabel:"recurrenceLabel",recurrenceAriaLabel:"recurrenceAriaLabel",taxExclusiveLabel:"taxExclusiveLabel",taxInclusiveLabel:"taxInclusiveLabel",strikethroughAriaLabel:"strikethroughAriaLabel",alternativePriceAriaLabel:"alternativePriceAriaLabel"},Bo="TAX_EXCLUSIVE",kh=e=>$i(e)?Object.entries(e).filter(([,t])=>xt(t)||Ir(t)||t===!0).reduce((t,[r,n])=>t+` ${r}${n===!0?"":'="'+Mi(n)+'"'}`,""):"",z=(e,t,r,n=!1)=>`<span class="${e}${t?"":" "+D.disabled}"${kh(r)}>${n?Da(t):t??""}</span>`;function ye(e,t,r,n){let o=e[r];if(o==null)return"";try{return new Ra(o.replace(Ph,""),t).format(n)}catch{return Ch.error("Failed to format literal:",o),""}}function Lh(e,{accessibleLabel:t,altAccessibleLabel:r,currencySymbol:n,decimals:o,decimalsDelimiter:i,hasCurrencySpace:a,integer:s,isCurrencyFirst:c,recurrenceLabel:l,perUnitLabel:h,taxInclusivityLabel:d},p={}){let m=z(D.currencySymbol,n),x=z(D.currencySpace,a?"&nbsp;":""),f="";return t?f=`<sr-only class="strikethrough-aria-label">${t}</sr-only>`:r&&(f=`<sr-only class="alt-aria-label">${r}</sr-only>`),c&&(f+=m+x),f+=z(D.integer,s),f+=z(D.decimalsDelimiter,i),f+=z(D.decimals,o),c||(f+=x+m),f+=z(D.recurrence,l,null,!0),f+=z(D.unitType,h,null,!0),f+=z(D.taxInclusivity,d,!0),z(e,f,{...p})}var ee=({isAlternativePrice:e=!1,displayOptical:t=!1,displayStrikethrough:r=!1,displayAnnual:n=!1,instant:o=void 0}={})=>({country:i,displayFormatted:a=!0,displayRecurrence:s=!0,displayPerUnit:c=!1,displayTax:l=!1,language:h,literals:d={},quantity:p=1}={},{commitment:m,offerSelectorIds:x,formatString:f,price:v,priceWithoutDiscount:E,taxDisplay:R,taxTerm:_,term:S,usePrecision:O,promotion:$}={},q={})=>{Object.entries({country:i,formatString:f,language:h,price:v}).forEach(([Hc,Uc])=>{if(Uc==null)throw new Error(`Argument "${Hc}" is missing for osi ${x?.toString()}, country ${i}, language ${h}`)});let U={...Do,...d},F=`${h.toLowerCase()}-${i.toUpperCase()}`,K=r&&E?E:v,Z=t?za:Fa;n&&(Z=Ga);let{accessiblePrice:ht,recurrenceTerm:Pe,...Ue}=Z({commitment:m,formatString:f,instant:o,isIndianPrice:i==="IN",originalPrice:v,priceWithoutDiscount:E,price:t?v:K,promotion:$,quantity:p,term:S,usePrecision:O}),dt="",jt="",Rn="";A(s)&&Pe&&(Rn=ye(U,F,Oe.recurrenceLabel,{recurrenceTerm:Pe}));let On="";A(c)&&(On=ye(U,F,Oe.perUnitLabel,{perUnit:"LICENSE"}));let Nn="";A(l)&&_&&(Nn=ye(U,F,R===Bo?Oe.taxExclusiveLabel:Oe.taxInclusiveLabel,{taxTerm:_})),r&&(dt=ye(U,F,Oe.strikethroughAriaLabel,{strikethroughPrice:dt})),e&&(jt=ye(U,F,Oe.alternativePriceAriaLabel,{alternativePrice:jt}));let pt=D.container;if(t&&(pt+=" "+D.containerOptical),r&&(pt+=" "+D.containerStrikethrough),e&&(pt+=" "+D.containerAlternative),n&&(pt+=" "+D.containerAnnual),A(a))return Lh(pt,{...Ue,accessibleLabel:dt,altAccessibleLabel:jt,recurrenceLabel:Rn,perUnitLabel:On,taxInclusivityLabel:Nn},q);let{currencySymbol:ki,decimals:Oc,decimalsDelimiter:Nc,hasCurrencySpace:Li,integer:Mc,isCurrencyFirst:$c}=Ue,mt=[Mc,Nc,Oc];$c?(mt.unshift(Li?"\xA0":""),mt.unshift(ki)):(mt.push(Li?"\xA0":""),mt.push(ki)),mt.push(Rn,On,Nn);let Ic=mt.join("");return z(pt,Ic,q)},Va=()=>(e,t,r)=>{let o=(e.displayOldPrice===void 0||A(e.displayOldPrice))&&t.priceWithoutDiscount&&t.priceWithoutDiscount!=t.price;return`${o?ee({displayStrikethrough:!0})(e,t,r)+"&nbsp;":""}${ee({isAlternativePrice:o})(e,t,r)}`},ja=()=>(e,t,r)=>{let{instant:n}=e;try{n||(n=new URLSearchParams(document.location.search).get("instant")),n&&(n=new Date(n))}catch{n=void 0}let o={...e,displayTax:!1,displayPerUnit:!1},a=(e.displayOldPrice===void 0||A(e.displayOldPrice))&&t.priceWithoutDiscount&&t.priceWithoutDiscount!=t.price;return`${a?ee({displayStrikethrough:!0})(o,t,r)+"&nbsp;":""}${ee({isAlternativePrice:a})(e,t,r)}${z(D.containerAnnualPrefix,"&nbsp;(")}${ee({displayAnnual:!0,instant:n})(o,t,r)}${z(D.containerAnnualSuffix,")")}`},qa=()=>(e,t,r)=>{let n={...e,displayTax:!1,displayPerUnit:!1};return`${ee({isAlternativePrice:e.displayOldPrice})(e,t,r)}${z(D.containerAnnualPrefix,"&nbsp;(")}${ee({displayAnnual:!0})(n,t,r)}${z(D.containerAnnualSuffix,")")}`};var ar={...D,containerLegal:"price-legal",planType:"price-plan-type"},nn={...Oe,planTypeLabel:"planTypeLabel"};function Rh(e,{perUnitLabel:t,taxInclusivityLabel:r,planTypeLabel:n},o={}){let i="";return i+=z(ar.unitType,t,null,!0),t&&(r||n)&&(i+=" ("),r&&n&&(r+=". "),i+=z(ar.taxInclusivity,r,!0),i+=z(ar.planType,n,null),t&&(r||n)&&(i+=")"),z(e,i,{...o})}var Wa=({country:e,displayPerUnit:t=!1,displayTax:r=!1,displayPlanType:n=!1,language:o,literals:i={}}={},{taxDisplay:a,taxTerm:s,planType:c}={},l={})=>{let h={...Do,...i},d=`${o.toLowerCase()}-${e.toUpperCase()}`,p="";A(t)&&(p=ye(h,d,nn.perUnitLabel,{perUnit:"LICENSE"}));let m="";e==="US"&&o==="en"&&(r=!1),A(r)&&s&&(m=ye(h,d,a===Bo?nn.taxExclusiveLabel:nn.taxInclusiveLabel,{taxTerm:s}));let x="";A(n)&&c&&(x=ye(h,d,nn.planTypeLabel,{planType:c}));let f=ar.container;return f+=" "+ar.containerLegal,Rh(f,{perUnitLabel:p,taxInclusivityLabel:m,planTypeLabel:x},l)};var Ya=ee(),Xa=Va(),Ka=ee({displayOptical:!0}),Qa=ee({displayStrikethrough:!0}),Za=ee({displayAnnual:!0}),Ja=ee({displayOptical:!0,isAlternativePrice:!0}),es=ee({isAlternativePrice:!0}),ts=qa(),rs=ja(),ns=Wa;var Oh=(e,t)=>{if(!(!Xt(e)||!Xt(t)))return Math.floor((t-e)/t*100)},os=()=>(e,t)=>{let{price:r,priceWithoutDiscount:n}=t,o=Oh(r,n);return o===void 0?'<span class="no-discount"></span>':`<span class="discount">${o}%</span>`};var is=os();var as=["GB_en","AU_en","FR_fr","AT_de","BE_en","BE_fr","BE_nl","BG_bg","CH_de","CH_fr","CH_it","CZ_cs","DE_de","DK_da","EE_et","EG_ar","EG_en","ES_es","FI_fi","FR_fr","GR_el","GR_en","HU_hu","IE_en","IT_it","LU_de","LU_en","LU_fr","NL_nl","NO_nb","PL_pl","PT_pt","RO_ro","SE_sv","SI_sl","SK_sk","TR_tr","UA_uk","ID_en","ID_in","IN_en","IN_hi","JP_ja","MY_en","MY_ms","NZ_en","TH_en","TH_th"],Nh={INDIVIDUAL_COM:["ZA_en","LT_lt","LV_lv","NG_en","SA_ar","SA_en","ZA_en","SG_en","KR_ko"],TEAM_COM:["ZA_en","LT_lt","LV_lv","NG_en","ZA_en","CO_es","KR_ko"],INDIVIDUAL_EDU:["LT_lt","LV_lv","SA_en","SG_en"],TEAM_EDU:["SG_en","KR_ko"]},sr=class sr extends HTMLSpanElement{constructor(){super();u(this,"masElement",new vt(this));this.handleClick=this.handleClick.bind(this)}static get observedAttributes(){return["data-display-old-price","data-display-per-unit","data-display-recurrence","data-display-tax","data-display-plan-type","data-display-annual","data-perpetual","data-promotion-code","data-tax-exclusive","data-template","data-wcs-osi"]}static createInlinePrice(r){let n=Q();if(!n)return null;let{displayOldPrice:o,displayPerUnit:i,displayRecurrence:a,displayTax:s,displayPlanType:c,displayAnnual:l,forceTaxExclusive:h,perpetual:d,promotionCode:p,quantity:m,alternativePrice:x,template:f,wcsOsi:v}=n.collectPriceOptions(r);return Vr(sr,{displayOldPrice:o,displayPerUnit:i,displayRecurrence:a,displayTax:s,displayPlanType:c,displayAnnual:l,forceTaxExclusive:h,perpetual:d,promotionCode:p,quantity:m,alternativePrice:x,template:f,wcsOsi:v})}get isInlinePrice(){return!0}attributeChangedCallback(r,n,o){this.masElement.attributeChangedCallback(r,n,o)}connectedCallback(){this.masElement.connectedCallback(),this.addEventListener("click",this.handleClick)}disconnectedCallback(){this.masElement.disconnectedCallback(),this.removeEventListener("click",this.handleClick)}handleClick(r){r.target!==this&&(r.stopImmediatePropagation(),this.dispatchEvent(new MouseEvent("click",{bubbles:!0,cancelable:!0,view:window})))}onceSettled(){return this.masElement.onceSettled()}get value(){return this.masElement.value}get options(){return this.masElement.options}requestUpdate(r=!1){return this.masElement.requestUpdate(r)}resolveDisplayTaxForGeoAndSegment(r,n,o,i){let a=`${r}_${n}`;if(as.includes(r)||as.includes(a))return!0;let s=Nh[`${o}_${i}`];return s?!!(s.includes(r)||s.includes(a)):!1}async resolveDisplayTax(r,n){let[o]=await r.resolveOfferSelectors(n),i=Qt(await o,n);if(i?.length){let{country:a,language:s}=n,c=i[0],[l=""]=c.marketSegments;return this.resolveDisplayTaxForGeoAndSegment(a,s,c.customerSegment,l)}}async render(r={}){if(!this.isConnected)return!1;let n=Q();if(!n)return!1;let o=n.collectPriceOptions(r,this);if(!o.wcsOsi.length)return!1;let i=this.masElement.togglePending(o);this.innerHTML="";let[a]=n.resolveOfferSelectors(o);return this.renderOffers(Qt(await a,o),o,i)}renderOffers(r,n={},o=void 0){if(!this.isConnected)return;let i=Q();if(!i)return!1;let a=i.collectPriceOptions({...this.dataset,...n},this);if(o??(o=this.masElement.togglePending(a)),r.length){if(this.masElement.toggleResolved(o,r,a)){this.innerHTML=i.buildPriceHTML(r,a);let s=this.closest("p, h3, div");if(!s||!s.querySelector('span[data-template="strikethrough"]')||s.querySelector(".alt-aria-label"))return!0;let c=s?.querySelectorAll('span[is="inline-price"]');return c.length>1&&c.length===s.querySelectorAll('span[data-template="strikethrough"]').length*2&&c.forEach(l=>{l.dataset.template!=="strikethrough"&&l.options&&!l.options.alternativePrice&&(l.options.alternativePrice=!0,l.innerHTML=i.buildPriceHTML(r,l.options))}),!0}}else{let s=new Error(`Not provided: ${a?.wcsOsi??"-"}`);if(this.masElement.toggleFailed(o,s,a))return this.innerHTML="",!0}return!1}updateOptions(r){let n=Q();if(!n)return!1;let{alternativePrice:o,displayOldPrice:i,displayPerUnit:a,displayRecurrence:s,displayTax:c,forceTaxExclusive:l,perpetual:h,promotionCode:d,quantity:p,template:m,wcsOsi:x}=n.collectPriceOptions(r);return jr(this,{alternativePrice:o,displayOldPrice:i,displayPerUnit:a,displayRecurrence:s,displayTax:c,forceTaxExclusive:l,perpetual:h,promotionCode:d,quantity:p,template:m,wcsOsi:x}),!0}};u(sr,"is","inline-price"),u(sr,"tag","span");var Ee=sr;window.customElements.get(Ee.is)||window.customElements.define(Ee.is,Ee,{extends:Ee.tag});function ss({literals:e,providers:t,settings:r}){function n(a,s=null){let c=structuredClone(r);if(s)for(let $ of t.price)$(s,c);let{displayOldPrice:l,displayPerUnit:h,displayRecurrence:d,displayTax:p,displayPlanType:m,forceTaxExclusive:x,perpetual:f,displayAnnual:v,promotionCode:E,quantity:R,alternativePrice:_,wcsOsi:S,...O}=Object.assign(c,s?.dataset??{},a??{});return Object.assign(c,Kt({...O,displayOldPrice:A(l),displayPerUnit:A(h),displayRecurrence:A(d),displayTax:A(p),displayPlanType:A(m),forceTaxExclusive:A(x),perpetual:A(f),displayAnnual:A(v),promotionCode:Ur(E).effectivePromoCode,quantity:bt(R,L.quantity),alternativePrice:A(_),wcsOsi:zr(S)})),c}function o(a,s){if(!Array.isArray(a)||!a.length||!s)return"";let{template:c}=s,l;switch(c){case"discount":l=is;break;case"strikethrough":l=Qa;break;case"annual":l=Za;break;case"legal":l=ns;break;default:s.template==="optical"&&s.alternativePrice?l=Ja:s.template==="optical"?l=Ka:s.displayAnnual&&a[0].planType==="ABM"?l=s.promotionCode?rs:ts:s.alternativePrice?l=es:l=s.promotionCode?Xa:Ya}let h=n(s);h.literals=Object.assign({},e.price,Kt(s.literals??{}));let[d]=a;return d={...d,...d.priceDetails},l(h,d)}let i=Ee.createInlinePrice;return{InlinePrice:Ee,buildPriceHTML:o,collectPriceOptions:n,createInlinePrice:i}}var Mh={"wcms-commerce-ims-ro.+":"acom","CreativeCloud_.+":"ccd","CCHome.+":"adobe-home"};function $h({locale:e=void 0,country:t=void 0,language:r=void 0}={}){return r??(r=e?.split("_")?.[0]||L.language),t??(t=e?.split("_")?.[1]||L.country),e??(e=`${r}_${t}`),{locale:e,country:t,language:r}}function Ih(e,t){for(let[r,n]of Object.entries(Mh))if(new RegExp(r).test(e))return n;return t??e}function cs(e={}){let{commerce:t={}}=e,r=xe.PRODUCTION,n=Qn,o=H("checkoutClientId",t)??L.checkoutClientId,i=Ge(H("checkoutWorkflow",t),se,L.checkoutWorkflow),a=W.CHECKOUT;i===se.V3&&(a=Ge(H("checkoutWorkflowStep",t),W,L.checkoutWorkflowStep));let s=A(H("displayOldPrice",t),L.displayOldPrice),c=A(H("displayPerUnit",t),L.displayPerUnit),l=A(H("displayRecurrence",t),L.displayRecurrence),h=A(H("displayTax",t),L.displayTax),d=A(H("displayPlanType",t),L.displayPlanType),p=A(H("entitlement",t),L.entitlement),m=A(H("modal",t),L.modal),x=A(H("forceTaxExclusive",t),L.forceTaxExclusive),f=H("promotionCode",t)??L.promotionCode,v=bt(H("quantity",t)),E=H("wcsApiKey",t)??L.wcsApiKey,R=t?.env==="stage",_=Le.PUBLISHED;["true",""].includes(t.allowOverride)&&(R=(H(Xn,t,{metadata:!1})?.toLowerCase()??t?.env)==="stage",_=Ge(H(Kn,t),Le,_)),R&&(r=xe.STAGE,n=Zn);let O=H(Yn)??e.preview,$={},q=typeof O<"u"&&O!=="off"&&O!=="false";q&&($.preview=q,$.previewSurface=Ih(E,O));let U=H("mas-io-url")??e.masIOUrl??`https://www${r===xe.STAGE?".stage":""}.adobe.com/mas/io`;return{...$h(e),...$,displayOldPrice:s,checkoutClientId:o,checkoutWorkflow:i,checkoutWorkflowStep:a,displayPerUnit:c,displayRecurrence:l,displayTax:h,displayPlanType:d,entitlement:p,extraOptions:L.extraOptions,modal:m,env:r,forceTaxExclusive:x,promotionCode:f,quantity:v,alternativePrice:L.alternativePrice,wcsApiKey:E,wcsURL:n,landscape:_,masIOUrl:U}}async function on(e,t={},r=2,n=100){let o;for(let i=0;i<=r;i++)try{return await fetch(e,t)}catch(a){if(o=a,i>r)break;await new Promise(s=>setTimeout(s,n*(i+1)))}throw o}var zo="wcs";function ls({settings:e}){let t=ne.module(zo),{env:r,wcsApiKey:n}=e,o=new Map,i=new Map,a,s=new Map;async function c(p,m,x=!0){let f=Q(),v=jn;t.debug("Fetching:",p);let E="",R;if(p.offerSelectorIds.length>1)throw new Error("Multiple OSIs are not supported anymore");let _=new Map(m),[S]=p.offerSelectorIds,O=Date.now()+Math.random().toString(36).substring(2,7),$=`${zo}:${S}:${O}${Re}`,q=`${zo}:${S}:${O}${Yt}`,U,F;try{if(performance.mark($),E=new URL(e.wcsURL),E.searchParams.set("offer_selector_ids",S),E.searchParams.set("country",p.country),E.searchParams.set("locale",p.locale),E.searchParams.set("landscape",r===xe.STAGE?"ALL":e.landscape),E.searchParams.set("api_key",n),p.language&&E.searchParams.set("language",p.language),p.promotionCode&&E.searchParams.set("promotion_code",p.promotionCode),p.currency&&E.searchParams.set("currency",p.currency),R=await on(E.toString(),{credentials:"omit"}),R.ok){let K=[];try{let Z=await R.json();t.debug("Fetched:",p,Z),K=Z.resolvedOffers??[]}catch(Z){t.error(`Error parsing JSON: ${Z.message}`,{...Z.context,...f?.duration})}K=K.map(Dr),m.forEach(({resolve:Z},ht)=>{let Pe=K.filter(({offerSelectorIds:Ue})=>Ue.includes(ht)).flat();Pe.length&&(_.delete(ht),m.delete(ht),Z(Pe))})}else v=Vn}catch(K){v=`Network error: ${K.message}`}finally{({startTime:U,duration:F}=performance.measure(q,$)),performance.clearMarks($),performance.clearMeasures(q)}x&&m.size&&(t.debug("Missing:",{offerSelectorIds:[...m.keys()]}),m.forEach(K=>{K.reject(new be(v,{...p,response:R,startTime:U,duration:F,...f?.duration}))}))}function l(){clearTimeout(a);let p=[...i.values()];i.clear(),p.forEach(({options:m,promises:x})=>c(m,x))}function h(){let p=o.size;s=new Map(o),o.clear(),t.debug(`Moved ${p} cache entries to stale cache`)}function d({country:p,language:m,perpetual:x=!1,promotionCode:f="",wcsOsi:v=[]}){let E=`${m}_${p}`;p!=="GB"&&(m=x?"EN":"MULT");let R=[p,m,f].filter(_=>_).join("-").toLowerCase();return v.map(_=>{let S=`${_}-${R}`;if(o.has(S))return o.get(S);let O=new Promise(($,q)=>{let U=i.get(R);if(!U){let F={country:p,locale:E,offerSelectorIds:[]};p!=="GB"&&(F.language=m),U={options:F,promises:new Map},i.set(R,U)}f&&(U.options.promotionCode=f),U.options.offerSelectorIds.push(_),U.promises.set(_,{resolve:$,reject:q}),l()}).catch($=>{if(s.has(S))return s.get(S);throw $});return o.set(S,O),O})}return{Commitment:De,PlanType:Bi,Term:ie,applyPlanType:Dr,resolveOfferSelectors:d,flushWcsCacheInternal:h}}var hs="mas-commerce-service",ds="mas:start",ps="mas:ready",ms="mas-commerce-service:initTime",cr,an,us,Fo=class extends HTMLElement{constructor(){super(...arguments);P(this,an);P(this,cr);u(this,"lastLoggingTime",0)}async registerCheckoutAction(r){typeof r=="function"&&(this.buildCheckoutAction=async(n,o,i)=>{let a=await r?.(n,o,this.imsSignedInPromise,i);return a||null})}activate(){let r=b(this,an,us),n=cs(r);Fr(r.lana);let o=ne.init(r.hostEnv).module("service");o.debug("Activating:",r);let a={price:oa(n)},s={checkout:new Set,price:new Set},c={literals:a,providers:s,settings:n};Object.defineProperties(this,Object.getOwnPropertyDescriptors({...ta(c),...ra(c),...ss(c),...ls(c),...ro,Log:ne,get defaults(){return L},get log(){return ne},get providers(){return{checkout(h){return s.checkout.add(h),()=>s.checkout.delete(h)},price(h){return s.price.add(h),()=>s.price.delete(h)},has:h=>s.price.has(h)||s.checkout.has(h)}},get settings(){return n}})),o.debug("Activated:",{literals:a,settings:n});let l=new CustomEvent(Nr,{bubbles:!0,cancelable:!1,detail:this});performance.mark(ps),k(this,cr,performance.measure(ms,ds,ps)?.duration),this.dispatchEvent(l),setTimeout(()=>{this.logFailedRequests()},1e4)}connectedCallback(){performance.mark(ds),this.activate()}flushWcsCache(){this.flushWcsCacheInternal(),this.log.debug("Flushed WCS cache")}refreshOffers(){this.flushWcsCacheInternal(),document.querySelectorAll(qt).forEach(r=>r.requestUpdate(!0)),this.log.debug("Refreshed WCS offers"),this.logFailedRequests()}refreshFragments(){this.flushWcsCacheInternal(),document.querySelectorAll("aem-fragment").forEach(r=>r.refresh()),this.log.debug("Refreshed AEM fragments"),this.logFailedRequests()}get duration(){return{[ms]:b(this,cr)}}logFailedRequests(){let r=[...performance.getEntriesByType("resource")].filter(({startTime:o})=>o>this.lastLoggingTime).filter(({transferSize:o,duration:i,responseStatus:a})=>o===0&&i===0&&a<200||a>=400),n=Array.from(new Map(r.map(o=>[o.name,o])).values());if(n.some(({name:o})=>/(\/fragments\/|web_commerce_artifact)/.test(o))){let o=n.map(({name:i})=>i);this.log.error("Failed requests:",{failedUrls:o,...this.duration})}this.lastLoggingTime=performance.now().toFixed(3)}};cr=new WeakMap,an=new WeakSet,us=function(){let r=this.getAttribute("env")??"prod",n={commerce:{env:r},hostEnv:{name:r},lana:{tags:this.getAttribute("lana-tags"),sampleRate:parseInt(this.getAttribute("lana-sample-rate")??1,10),isProdDomain:r==="prod"},masIOUrl:this.getAttribute("mas-io-url")};return["locale","country","language","preview"].forEach(o=>{let i=this.getAttribute(o);i&&(n[o]=i)}),["checkout-workflow-step","force-tax-exclusive","checkout-client-id","allow-override","wcs-api-key"].forEach(o=>{let i=this.getAttribute(o);if(i!=null){let a=o.replace(/-([a-z])/g,s=>s[1].toUpperCase());n.commerce[a]=i}}),n};window.customElements.get(hs)||window.customElements.define(hs,Fo);var lr=class lr extends Wr(HTMLButtonElement){static createCheckoutButton(t={},r=""){return qr(lr,t,r)}setCheckoutUrl(t){this.setAttribute("data-href",t)}get href(){return this.getAttribute("data-href")}get isCheckoutButton(){return!0}clickHandler(t){if(this.checkoutActionHandler){this.checkoutActionHandler?.(t);return}this.href&&(window.location.href=this.href)}};u(lr,"is","checkout-button"),u(lr,"tag","button");var Et=lr;window.customElements.get(Et.is)||window.customElements.define(Et.is,Et,{extends:Et.tag});var Hh="mas-commerce-service";function sn(e,t){let r;return function(){let n=this,o=arguments;clearTimeout(r),r=setTimeout(()=>e.apply(n,o),t)}}function te(e,t={},r=null,n=null){let o=n?document.createElement(e,{is:n}):document.createElement(e);r instanceof HTMLElement?o.appendChild(r):o.innerHTML=r;for(let[i,a]of Object.entries(t))o.setAttribute(i,a);return o}function cn(){return window.matchMedia("(max-width: 767px)")}function At(){return cn().matches}function fs(){return window.matchMedia("(max-width: 1024px)").matches}function wt(){return document.getElementsByTagName(Hh)?.[0]}function Uh(e){return`https://${e==="PRODUCTION"?"www.adobe.com":"www.stage.adobe.com"}/offers/promo-terms.html`}var hr,Ye=class Ye extends HTMLAnchorElement{constructor(){super();P(this,hr,!1);this.setAttribute("is",Ye.is)}get isUptLink(){return!0}initializeWcsData(r,n){this.setAttribute("data-wcs-osi",r),n&&this.setAttribute("data-promotion-code",n),k(this,hr,!0),this.composePromoTermsUrl()}attributeChangedCallback(r,n,o){b(this,hr)&&this.composePromoTermsUrl()}composePromoTermsUrl(){let r=this.getAttribute("data-wcs-osi");if(!r){let d=this.closest("merch-card").querySelector("aem-fragment").getAttribute("fragment");console.error(`Missing 'data-wcs-osi' attribute on upt-link. Fragment: ${d}`);return}let n=wt(),o=[r],i=this.getAttribute("data-promotion-code"),{country:a,language:s,env:c}=n.settings,l={country:a,language:s,wcsOsi:o,promotionCode:i},h=n.resolveOfferSelectors(l);Promise.all(h).then(([[d]])=>{let p=`locale=${s}_${a}&country=${a}&offer_id=${d.offerId}`;i&&(p+=`&promotion_code=${encodeURIComponent(i)}`),this.href=`${Uh(c)}?${p}`}).catch(d=>{console.error(`Could not resolve offer selectors for id: ${r}.`,d.message)})}static createFrom(r){let n=new Ye;for(let o of r.attributes)o.name!=="is"&&(o.name==="class"&&o.value.includes("upt-link")?n.setAttribute("class",o.value.replace("upt-link","").trim()):n.setAttribute(o.name,o.value));return n.innerHTML=r.innerHTML,n.setAttribute("tabindex",0),n}};hr=new WeakMap,u(Ye,"is","upt-link"),u(Ye,"tag","a"),u(Ye,"observedAttributes",["data-wcs-osi","data-promotion-code"]);var Ne=Ye;window.customElements.get(Ne.is)||window.customElements.define(Ne.is,Ne,{extends:Ne.tag});var ln=window,dn=ln.ShadowRoot&&(ln.ShadyCSS===void 0||ln.ShadyCSS.nativeShadow)&&"adoptedStyleSheets"in Document.prototype&&"replace"in CSSStyleSheet.prototype,xs=Symbol(),gs=new WeakMap,hn=class{constructor(t,r,n){if(this._$cssResult$=!0,n!==xs)throw Error("CSSResult is not constructable. Use `unsafeCSS` or `css` instead.");this.cssText=t,this.t=r}get styleSheet(){let t=this.o,r=this.t;if(dn&&t===void 0){let n=r!==void 0&&r.length===1;n&&(t=gs.get(r)),t===void 0&&((this.o=t=new CSSStyleSheet).replaceSync(this.cssText),n&&gs.set(r,t))}return t}toString(){return this.cssText}},bs=e=>new hn(typeof e=="string"?e:e+"",void 0,xs);var Go=(e,t)=>{dn?e.adoptedStyleSheets=t.map(r=>r instanceof CSSStyleSheet?r:r.styleSheet):t.forEach(r=>{let n=document.createElement("style"),o=ln.litNonce;o!==void 0&&n.setAttribute("nonce",o),n.textContent=r.cssText,e.appendChild(n)})},pn=dn?e=>e:e=>e instanceof CSSStyleSheet?(t=>{let r="";for(let n of t.cssRules)r+=n.cssText;return bs(r)})(e):e;var Vo,mn=window,vs=mn.trustedTypes,Dh=vs?vs.emptyScript:"",ys=mn.reactiveElementPolyfillSupport,qo={toAttribute(e,t){switch(t){case Boolean:e=e?Dh:null;break;case Object:case Array:e=e==null?e:JSON.stringify(e)}return e},fromAttribute(e,t){let r=e;switch(t){case Boolean:r=e!==null;break;case Number:r=e===null?null:Number(e);break;case Object:case Array:try{r=JSON.parse(e)}catch{r=null}}return r}},Es=(e,t)=>t!==e&&(t==t||e==e),jo={attribute:!0,type:String,converter:qo,reflect:!1,hasChanged:Es},Wo="finalized",Xe=class extends HTMLElement{constructor(){super(),this._$Ei=new Map,this.isUpdatePending=!1,this.hasUpdated=!1,this._$El=null,this._$Eu()}static addInitializer(t){var r;this.finalize(),((r=this.h)!==null&&r!==void 0?r:this.h=[]).push(t)}static get observedAttributes(){this.finalize();let t=[];return this.elementProperties.forEach((r,n)=>{let o=this._$Ep(n,r);o!==void 0&&(this._$Ev.set(o,n),t.push(o))}),t}static createProperty(t,r=jo){if(r.state&&(r.attribute=!1),this.finalize(),this.elementProperties.set(t,r),!r.noAccessor&&!this.prototype.hasOwnProperty(t)){let n=typeof t=="symbol"?Symbol():"__"+t,o=this.getPropertyDescriptor(t,n,r);o!==void 0&&Object.defineProperty(this.prototype,t,o)}}static getPropertyDescriptor(t,r,n){return{get(){return this[r]},set(o){let i=this[t];this[r]=o,this.requestUpdate(t,i,n)},configurable:!0,enumerable:!0}}static getPropertyOptions(t){return this.elementProperties.get(t)||jo}static finalize(){if(this.hasOwnProperty(Wo))return!1;this[Wo]=!0;let t=Object.getPrototypeOf(this);if(t.finalize(),t.h!==void 0&&(this.h=[...t.h]),this.elementProperties=new Map(t.elementProperties),this._$Ev=new Map,this.hasOwnProperty("properties")){let r=this.properties,n=[...Object.getOwnPropertyNames(r),...Object.getOwnPropertySymbols(r)];for(let o of n)this.createProperty(o,r[o])}return this.elementStyles=this.finalizeStyles(this.styles),!0}static finalizeStyles(t){let r=[];if(Array.isArray(t)){let n=new Set(t.flat(1/0).reverse());for(let o of n)r.unshift(pn(o))}else t!==void 0&&r.push(pn(t));return r}static _$Ep(t,r){let n=r.attribute;return n===!1?void 0:typeof n=="string"?n:typeof t=="string"?t.toLowerCase():void 0}_$Eu(){var t;this._$E_=new Promise(r=>this.enableUpdating=r),this._$AL=new Map,this._$Eg(),this.requestUpdate(),(t=this.constructor.h)===null||t===void 0||t.forEach(r=>r(this))}addController(t){var r,n;((r=this._$ES)!==null&&r!==void 0?r:this._$ES=[]).push(t),this.renderRoot!==void 0&&this.isConnected&&((n=t.hostConnected)===null||n===void 0||n.call(t))}removeController(t){var r;(r=this._$ES)===null||r===void 0||r.splice(this._$ES.indexOf(t)>>>0,1)}_$Eg(){this.constructor.elementProperties.forEach((t,r)=>{this.hasOwnProperty(r)&&(this._$Ei.set(r,this[r]),delete this[r])})}createRenderRoot(){var t;let r=(t=this.shadowRoot)!==null&&t!==void 0?t:this.attachShadow(this.constructor.shadowRootOptions);return Go(r,this.constructor.elementStyles),r}connectedCallback(){var t;this.renderRoot===void 0&&(this.renderRoot=this.createRenderRoot()),this.enableUpdating(!0),(t=this._$ES)===null||t===void 0||t.forEach(r=>{var n;return(n=r.hostConnected)===null||n===void 0?void 0:n.call(r)})}enableUpdating(t){}disconnectedCallback(){var t;(t=this._$ES)===null||t===void 0||t.forEach(r=>{var n;return(n=r.hostDisconnected)===null||n===void 0?void 0:n.call(r)})}attributeChangedCallback(t,r,n){this._$AK(t,n)}_$EO(t,r,n=jo){var o;let i=this.constructor._$Ep(t,n);if(i!==void 0&&n.reflect===!0){let a=(((o=n.converter)===null||o===void 0?void 0:o.toAttribute)!==void 0?n.converter:qo).toAttribute(r,n.type);this._$El=t,a==null?this.removeAttribute(i):this.setAttribute(i,a),this._$El=null}}_$AK(t,r){var n;let o=this.constructor,i=o._$Ev.get(t);if(i!==void 0&&this._$El!==i){let a=o.getPropertyOptions(i),s=typeof a.converter=="function"?{fromAttribute:a.converter}:((n=a.converter)===null||n===void 0?void 0:n.fromAttribute)!==void 0?a.converter:qo;this._$El=i,this[i]=s.fromAttribute(r,a.type),this._$El=null}}requestUpdate(t,r,n){let o=!0;t!==void 0&&(((n=n||this.constructor.getPropertyOptions(t)).hasChanged||Es)(this[t],r)?(this._$AL.has(t)||this._$AL.set(t,r),n.reflect===!0&&this._$El!==t&&(this._$EC===void 0&&(this._$EC=new Map),this._$EC.set(t,n))):o=!1),!this.isUpdatePending&&o&&(this._$E_=this._$Ej())}async _$Ej(){this.isUpdatePending=!0;try{await this._$E_}catch(r){Promise.reject(r)}let t=this.scheduleUpdate();return t!=null&&await t,!this.isUpdatePending}scheduleUpdate(){return this.performUpdate()}performUpdate(){var t;if(!this.isUpdatePending)return;this.hasUpdated,this._$Ei&&(this._$Ei.forEach((o,i)=>this[i]=o),this._$Ei=void 0);let r=!1,n=this._$AL;try{r=this.shouldUpdate(n),r?(this.willUpdate(n),(t=this._$ES)===null||t===void 0||t.forEach(o=>{var i;return(i=o.hostUpdate)===null||i===void 0?void 0:i.call(o)}),this.update(n)):this._$Ek()}catch(o){throw r=!1,this._$Ek(),o}r&&this._$AE(n)}willUpdate(t){}_$AE(t){var r;(r=this._$ES)===null||r===void 0||r.forEach(n=>{var o;return(o=n.hostUpdated)===null||o===void 0?void 0:o.call(n)}),this.hasUpdated||(this.hasUpdated=!0,this.firstUpdated(t)),this.updated(t)}_$Ek(){this._$AL=new Map,this.isUpdatePending=!1}get updateComplete(){return this.getUpdateComplete()}getUpdateComplete(){return this._$E_}shouldUpdate(t){return!0}update(t){this._$EC!==void 0&&(this._$EC.forEach((r,n)=>this._$EO(n,this[n],r)),this._$EC=void 0),this._$Ek()}updated(t){}firstUpdated(t){}};Xe[Wo]=!0,Xe.elementProperties=new Map,Xe.elementStyles=[],Xe.shadowRootOptions={mode:"open"},ys?.({ReactiveElement:Xe}),((Vo=mn.reactiveElementVersions)!==null&&Vo!==void 0?Vo:mn.reactiveElementVersions=[]).push("1.6.3");var Yo,un=window,_t=un.trustedTypes,As=_t?_t.createPolicy("lit-html",{createHTML:e=>e}):void 0,Ko="$lit$",Me=`lit$${(Math.random()+"").slice(9)}$`,ks="?"+Me,Bh=`<${ks}>`,Ze=document,fn=()=>Ze.createComment(""),pr=e=>e===null||typeof e!="object"&&typeof e!="function",Ls=Array.isArray,zh=e=>Ls(e)||typeof e?.[Symbol.iterator]=="function",Xo=`[ 	
-\f\r]`,dr=/<(?:(!--|\/[^a-zA-Z])|(\/?[a-zA-Z][^>\s]*)|(\/?$))/g,ws=/-->/g,_s=/>/g,Ke=RegExp(`>|${Xo}(?:([^\\s"'>=/]+)(${Xo}*=${Xo}*(?:[^ 	
-\f\r"'\`<>=]|("|')|))|$)`,"g"),Ss=/'/g,Ts=/"/g,Rs=/^(?:script|style|textarea|title)$/i,Os=e=>(t,...r)=>({_$litType$:e,strings:t,values:r}),zu=Os(1),Fu=Os(2),mr=Symbol.for("lit-noChange"),G=Symbol.for("lit-nothing"),Cs=new WeakMap,Qe=Ze.createTreeWalker(Ze,129,null,!1);function Ns(e,t){if(!Array.isArray(e)||!e.hasOwnProperty("raw"))throw Error("invalid template strings array");return As!==void 0?As.createHTML(t):t}var Fh=(e,t)=>{let r=e.length-1,n=[],o,i=t===2?"<svg>":"",a=dr;for(let s=0;s<r;s++){let c=e[s],l,h,d=-1,p=0;for(;p<c.length&&(a.lastIndex=p,h=a.exec(c),h!==null);)p=a.lastIndex,a===dr?h[1]==="!--"?a=ws:h[1]!==void 0?a=_s:h[2]!==void 0?(Rs.test(h[2])&&(o=RegExp("</"+h[2],"g")),a=Ke):h[3]!==void 0&&(a=Ke):a===Ke?h[0]===">"?(a=o??dr,d=-1):h[1]===void 0?d=-2:(d=a.lastIndex-h[2].length,l=h[1],a=h[3]===void 0?Ke:h[3]==='"'?Ts:Ss):a===Ts||a===Ss?a=Ke:a===ws||a===_s?a=dr:(a=Ke,o=void 0);let m=a===Ke&&e[s+1].startsWith("/>")?" ":"";i+=a===dr?c+Bh:d>=0?(n.push(l),c.slice(0,d)+Ko+c.slice(d)+Me+m):c+Me+(d===-2?(n.push(void 0),s):m)}return[Ns(e,i+(e[r]||"<?>")+(t===2?"</svg>":"")),n]},ur=class e{constructor({strings:t,_$litType$:r},n){let o;this.parts=[];let i=0,a=0,s=t.length-1,c=this.parts,[l,h]=Fh(t,r);if(this.el=e.createElement(l,n),Qe.currentNode=this.el.content,r===2){let d=this.el.content,p=d.firstChild;p.remove(),d.append(...p.childNodes)}for(;(o=Qe.nextNode())!==null&&c.length<s;){if(o.nodeType===1){if(o.hasAttributes()){let d=[];for(let p of o.getAttributeNames())if(p.endsWith(Ko)||p.startsWith(Me)){let m=h[a++];if(d.push(p),m!==void 0){let x=o.getAttribute(m.toLowerCase()+Ko).split(Me),f=/([.?@])?(.*)/.exec(m);c.push({type:1,index:i,name:f[2],strings:x,ctor:f[1]==="."?Zo:f[1]==="?"?Jo:f[1]==="@"?ei:Tt})}else c.push({type:6,index:i})}for(let p of d)o.removeAttribute(p)}if(Rs.test(o.tagName)){let d=o.textContent.split(Me),p=d.length-1;if(p>0){o.textContent=_t?_t.emptyScript:"";for(let m=0;m<p;m++)o.append(d[m],fn()),Qe.nextNode(),c.push({type:2,index:++i});o.append(d[p],fn())}}}else if(o.nodeType===8)if(o.data===ks)c.push({type:2,index:i});else{let d=-1;for(;(d=o.data.indexOf(Me,d+1))!==-1;)c.push({type:7,index:i}),d+=Me.length-1}i++}}static createElement(t,r){let n=Ze.createElement("template");return n.innerHTML=t,n}};function St(e,t,r=e,n){var o,i,a,s;if(t===mr)return t;let c=n!==void 0?(o=r._$Co)===null||o===void 0?void 0:o[n]:r._$Cl,l=pr(t)?void 0:t._$litDirective$;return c?.constructor!==l&&((i=c?._$AO)===null||i===void 0||i.call(c,!1),l===void 0?c=void 0:(c=new l(e),c._$AT(e,r,n)),n!==void 0?((a=(s=r)._$Co)!==null&&a!==void 0?a:s._$Co=[])[n]=c:r._$Cl=c),c!==void 0&&(t=St(e,c._$AS(e,t.values),c,n)),t}var Qo=class{constructor(t,r){this._$AV=[],this._$AN=void 0,this._$AD=t,this._$AM=r}get parentNode(){return this._$AM.parentNode}get _$AU(){return this._$AM._$AU}u(t){var r;let{el:{content:n},parts:o}=this._$AD,i=((r=t?.creationScope)!==null&&r!==void 0?r:Ze).importNode(n,!0);Qe.currentNode=i;let a=Qe.nextNode(),s=0,c=0,l=o[0];for(;l!==void 0;){if(s===l.index){let h;l.type===2?h=new gn(a,a.nextSibling,this,t):l.type===1?h=new l.ctor(a,l.name,l.strings,this,t):l.type===6&&(h=new ti(a,this,t)),this._$AV.push(h),l=o[++c]}s!==l?.index&&(a=Qe.nextNode(),s++)}return Qe.currentNode=Ze,i}v(t){let r=0;for(let n of this._$AV)n!==void 0&&(n.strings!==void 0?(n._$AI(t,n,r),r+=n.strings.length-2):n._$AI(t[r])),r++}},gn=class e{constructor(t,r,n,o){var i;this.type=2,this._$AH=G,this._$AN=void 0,this._$AA=t,this._$AB=r,this._$AM=n,this.options=o,this._$Cp=(i=o?.isConnected)===null||i===void 0||i}get _$AU(){var t,r;return(r=(t=this._$AM)===null||t===void 0?void 0:t._$AU)!==null&&r!==void 0?r:this._$Cp}get parentNode(){let t=this._$AA.parentNode,r=this._$AM;return r!==void 0&&t?.nodeType===11&&(t=r.parentNode),t}get startNode(){return this._$AA}get endNode(){return this._$AB}_$AI(t,r=this){t=St(this,t,r),pr(t)?t===G||t==null||t===""?(this._$AH!==G&&this._$AR(),this._$AH=G):t!==this._$AH&&t!==mr&&this._(t):t._$litType$!==void 0?this.g(t):t.nodeType!==void 0?this.$(t):zh(t)?this.T(t):this._(t)}k(t){return this._$AA.parentNode.insertBefore(t,this._$AB)}$(t){this._$AH!==t&&(this._$AR(),this._$AH=this.k(t))}_(t){this._$AH!==G&&pr(this._$AH)?this._$AA.nextSibling.data=t:this.$(Ze.createTextNode(t)),this._$AH=t}g(t){var r;let{values:n,_$litType$:o}=t,i=typeof o=="number"?this._$AC(t):(o.el===void 0&&(o.el=ur.createElement(Ns(o.h,o.h[0]),this.options)),o);if(((r=this._$AH)===null||r===void 0?void 0:r._$AD)===i)this._$AH.v(n);else{let a=new Qo(i,this),s=a.u(this.options);a.v(n),this.$(s),this._$AH=a}}_$AC(t){let r=Cs.get(t.strings);return r===void 0&&Cs.set(t.strings,r=new ur(t)),r}T(t){Ls(this._$AH)||(this._$AH=[],this._$AR());let r=this._$AH,n,o=0;for(let i of t)o===r.length?r.push(n=new e(this.k(fn()),this.k(fn()),this,this.options)):n=r[o],n._$AI(i),o++;o<r.length&&(this._$AR(n&&n._$AB.nextSibling,o),r.length=o)}_$AR(t=this._$AA.nextSibling,r){var n;for((n=this._$AP)===null||n===void 0||n.call(this,!1,!0,r);t&&t!==this._$AB;){let o=t.nextSibling;t.remove(),t=o}}setConnected(t){var r;this._$AM===void 0&&(this._$Cp=t,(r=this._$AP)===null||r===void 0||r.call(this,t))}},Tt=class{constructor(t,r,n,o,i){this.type=1,this._$AH=G,this._$AN=void 0,this.element=t,this.name=r,this._$AM=o,this.options=i,n.length>2||n[0]!==""||n[1]!==""?(this._$AH=Array(n.length-1).fill(new String),this.strings=n):this._$AH=G}get tagName(){return this.element.tagName}get _$AU(){return this._$AM._$AU}_$AI(t,r=this,n,o){let i=this.strings,a=!1;if(i===void 0)t=St(this,t,r,0),a=!pr(t)||t!==this._$AH&&t!==mr,a&&(this._$AH=t);else{let s=t,c,l;for(t=i[0],c=0;c<i.length-1;c++)l=St(this,s[n+c],r,c),l===mr&&(l=this._$AH[c]),a||(a=!pr(l)||l!==this._$AH[c]),l===G?t=G:t!==G&&(t+=(l??"")+i[c+1]),this._$AH[c]=l}a&&!o&&this.j(t)}j(t){t===G?this.element.removeAttribute(this.name):this.element.setAttribute(this.name,t??"")}},Zo=class extends Tt{constructor(){super(...arguments),this.type=3}j(t){this.element[this.name]=t===G?void 0:t}},Gh=_t?_t.emptyScript:"",Jo=class extends Tt{constructor(){super(...arguments),this.type=4}j(t){t&&t!==G?this.element.setAttribute(this.name,Gh):this.element.removeAttribute(this.name)}},ei=class extends Tt{constructor(t,r,n,o,i){super(t,r,n,o,i),this.type=5}_$AI(t,r=this){var n;if((t=(n=St(this,t,r,0))!==null&&n!==void 0?n:G)===mr)return;let o=this._$AH,i=t===G&&o!==G||t.capture!==o.capture||t.once!==o.once||t.passive!==o.passive,a=t!==G&&(o===G||i);i&&this.element.removeEventListener(this.name,this,o),a&&this.element.addEventListener(this.name,this,t),this._$AH=t}handleEvent(t){var r,n;typeof this._$AH=="function"?this._$AH.call((n=(r=this.options)===null||r===void 0?void 0:r.host)!==null&&n!==void 0?n:this.element,t):this._$AH.handleEvent(t)}},ti=class{constructor(t,r,n){this.element=t,this.type=6,this._$AN=void 0,this._$AM=r,this.options=n}get _$AU(){return this._$AM._$AU}_$AI(t){St(this,t)}};var Ps=un.litHtmlPolyfillSupport;Ps?.(ur,gn),((Yo=un.litHtmlVersions)!==null&&Yo!==void 0?Yo:un.litHtmlVersions=[]).push("2.8.0");var xn=window,bn=xn.ShadowRoot&&(xn.ShadyCSS===void 0||xn.ShadyCSS.nativeShadow)&&"adoptedStyleSheets"in Document.prototype&&"replace"in CSSStyleSheet.prototype,ri=Symbol(),Ms=new WeakMap,fr=class{constructor(t,r,n){if(this._$cssResult$=!0,n!==ri)throw Error("CSSResult is not constructable. Use `unsafeCSS` or `css` instead.");this.cssText=t,this.t=r}get styleSheet(){let t=this.o,r=this.t;if(bn&&t===void 0){let n=r!==void 0&&r.length===1;n&&(t=Ms.get(r)),t===void 0&&((this.o=t=new CSSStyleSheet).replaceSync(this.cssText),n&&Ms.set(r,t))}return t}toString(){return this.cssText}},$e=e=>new fr(typeof e=="string"?e:e+"",void 0,ri),y=(e,...t)=>{let r=e.length===1?e[0]:t.reduce((n,o,i)=>n+(a=>{if(a._$cssResult$===!0)return a.cssText;if(typeof a=="number")return a;throw Error("Value passed to 'css' function must be a 'css' function result: "+a+". Use 'unsafeCSS' to pass non-literal values, but take care to ensure page security.")})(o)+e[i+1],e[0]);return new fr(r,e,ri)},ni=(e,t)=>{bn?e.adoptedStyleSheets=t.map(r=>r instanceof CSSStyleSheet?r:r.styleSheet):t.forEach(r=>{let n=document.createElement("style"),o=xn.litNonce;o!==void 0&&n.setAttribute("nonce",o),n.textContent=r.cssText,e.appendChild(n)})},vn=bn?e=>e:e=>e instanceof CSSStyleSheet?(t=>{let r="";for(let n of t.cssRules)r+=n.cssText;return $e(r)})(e):e;var oi,yn=window,$s=yn.trustedTypes,Vh=$s?$s.emptyScript:"",Is=yn.reactiveElementPolyfillSupport,ai={toAttribute(e,t){switch(t){case Boolean:e=e?Vh:null;break;case Object:case Array:e=e==null?e:JSON.stringify(e)}return e},fromAttribute(e,t){let r=e;switch(t){case Boolean:r=e!==null;break;case Number:r=e===null?null:Number(e);break;case Object:case Array:try{r=JSON.parse(e)}catch{r=null}}return r}},Hs=(e,t)=>t!==e&&(t==t||e==e),ii={attribute:!0,type:String,converter:ai,reflect:!1,hasChanged:Hs},si="finalized",Ae=class extends HTMLElement{constructor(){super(),this._$Ei=new Map,this.isUpdatePending=!1,this.hasUpdated=!1,this._$El=null,this._$Eu()}static addInitializer(t){var r;this.finalize(),((r=this.h)!==null&&r!==void 0?r:this.h=[]).push(t)}static get observedAttributes(){this.finalize();let t=[];return this.elementProperties.forEach((r,n)=>{let o=this._$Ep(n,r);o!==void 0&&(this._$Ev.set(o,n),t.push(o))}),t}static createProperty(t,r=ii){if(r.state&&(r.attribute=!1),this.finalize(),this.elementProperties.set(t,r),!r.noAccessor&&!this.prototype.hasOwnProperty(t)){let n=typeof t=="symbol"?Symbol():"__"+t,o=this.getPropertyDescriptor(t,n,r);o!==void 0&&Object.defineProperty(this.prototype,t,o)}}static getPropertyDescriptor(t,r,n){return{get(){return this[r]},set(o){let i=this[t];this[r]=o,this.requestUpdate(t,i,n)},configurable:!0,enumerable:!0}}static getPropertyOptions(t){return this.elementProperties.get(t)||ii}static finalize(){if(this.hasOwnProperty(si))return!1;this[si]=!0;let t=Object.getPrototypeOf(this);if(t.finalize(),t.h!==void 0&&(this.h=[...t.h]),this.elementProperties=new Map(t.elementProperties),this._$Ev=new Map,this.hasOwnProperty("properties")){let r=this.properties,n=[...Object.getOwnPropertyNames(r),...Object.getOwnPropertySymbols(r)];for(let o of n)this.createProperty(o,r[o])}return this.elementStyles=this.finalizeStyles(this.styles),!0}static finalizeStyles(t){let r=[];if(Array.isArray(t)){let n=new Set(t.flat(1/0).reverse());for(let o of n)r.unshift(vn(o))}else t!==void 0&&r.push(vn(t));return r}static _$Ep(t,r){let n=r.attribute;return n===!1?void 0:typeof n=="string"?n:typeof t=="string"?t.toLowerCase():void 0}_$Eu(){var t;this._$E_=new Promise(r=>this.enableUpdating=r),this._$AL=new Map,this._$Eg(),this.requestUpdate(),(t=this.constructor.h)===null||t===void 0||t.forEach(r=>r(this))}addController(t){var r,n;((r=this._$ES)!==null&&r!==void 0?r:this._$ES=[]).push(t),this.renderRoot!==void 0&&this.isConnected&&((n=t.hostConnected)===null||n===void 0||n.call(t))}removeController(t){var r;(r=this._$ES)===null||r===void 0||r.splice(this._$ES.indexOf(t)>>>0,1)}_$Eg(){this.constructor.elementProperties.forEach((t,r)=>{this.hasOwnProperty(r)&&(this._$Ei.set(r,this[r]),delete this[r])})}createRenderRoot(){var t;let r=(t=this.shadowRoot)!==null&&t!==void 0?t:this.attachShadow(this.constructor.shadowRootOptions);return ni(r,this.constructor.elementStyles),r}connectedCallback(){var t;this.renderRoot===void 0&&(this.renderRoot=this.createRenderRoot()),this.enableUpdating(!0),(t=this._$ES)===null||t===void 0||t.forEach(r=>{var n;return(n=r.hostConnected)===null||n===void 0?void 0:n.call(r)})}enableUpdating(t){}disconnectedCallback(){var t;(t=this._$ES)===null||t===void 0||t.forEach(r=>{var n;return(n=r.hostDisconnected)===null||n===void 0?void 0:n.call(r)})}attributeChangedCallback(t,r,n){this._$AK(t,n)}_$EO(t,r,n=ii){var o;let i=this.constructor._$Ep(t,n);if(i!==void 0&&n.reflect===!0){let a=(((o=n.converter)===null||o===void 0?void 0:o.toAttribute)!==void 0?n.converter:ai).toAttribute(r,n.type);this._$El=t,a==null?this.removeAttribute(i):this.setAttribute(i,a),this._$El=null}}_$AK(t,r){var n;let o=this.constructor,i=o._$Ev.get(t);if(i!==void 0&&this._$El!==i){let a=o.getPropertyOptions(i),s=typeof a.converter=="function"?{fromAttribute:a.converter}:((n=a.converter)===null||n===void 0?void 0:n.fromAttribute)!==void 0?a.converter:ai;this._$El=i,this[i]=s.fromAttribute(r,a.type),this._$El=null}}requestUpdate(t,r,n){let o=!0;t!==void 0&&(((n=n||this.constructor.getPropertyOptions(t)).hasChanged||Hs)(this[t],r)?(this._$AL.has(t)||this._$AL.set(t,r),n.reflect===!0&&this._$El!==t&&(this._$EC===void 0&&(this._$EC=new Map),this._$EC.set(t,n))):o=!1),!this.isUpdatePending&&o&&(this._$E_=this._$Ej())}async _$Ej(){this.isUpdatePending=!0;try{await this._$E_}catch(r){Promise.reject(r)}let t=this.scheduleUpdate();return t!=null&&await t,!this.isUpdatePending}scheduleUpdate(){return this.performUpdate()}performUpdate(){var t;if(!this.isUpdatePending)return;this.hasUpdated,this._$Ei&&(this._$Ei.forEach((o,i)=>this[i]=o),this._$Ei=void 0);let r=!1,n=this._$AL;try{r=this.shouldUpdate(n),r?(this.willUpdate(n),(t=this._$ES)===null||t===void 0||t.forEach(o=>{var i;return(i=o.hostUpdate)===null||i===void 0?void 0:i.call(o)}),this.update(n)):this._$Ek()}catch(o){throw r=!1,this._$Ek(),o}r&&this._$AE(n)}willUpdate(t){}_$AE(t){var r;(r=this._$ES)===null||r===void 0||r.forEach(n=>{var o;return(o=n.hostUpdated)===null||o===void 0?void 0:o.call(n)}),this.hasUpdated||(this.hasUpdated=!0,this.firstUpdated(t)),this.updated(t)}_$Ek(){this._$AL=new Map,this.isUpdatePending=!1}get updateComplete(){return this.getUpdateComplete()}getUpdateComplete(){return this._$E_}shouldUpdate(t){return!0}update(t){this._$EC!==void 0&&(this._$EC.forEach((r,n)=>this._$EO(n,this[n],r)),this._$EC=void 0),this._$Ek()}updated(t){}firstUpdated(t){}};Ae[si]=!0,Ae.elementProperties=new Map,Ae.elementStyles=[],Ae.shadowRootOptions={mode:"open"},Is?.({ReactiveElement:Ae}),((oi=yn.reactiveElementVersions)!==null&&oi!==void 0?oi:yn.reactiveElementVersions=[]).push("1.6.3");var ci,En=window,Ct=En.trustedTypes,Us=Ct?Ct.createPolicy("lit-html",{createHTML:e=>e}):void 0,hi="$lit$",Ie=`lit$${(Math.random()+"").slice(9)}$`,js="?"+Ie,jh=`<${js}>`,tt=document,xr=()=>tt.createComment(""),br=e=>e===null||typeof e!="object"&&typeof e!="function",qs=Array.isArray,qh=e=>qs(e)||typeof e?.[Symbol.iterator]=="function",li=`[ 	
-\f\r]`,gr=/<(?:(!--|\/[^a-zA-Z])|(\/?[a-zA-Z][^>\s]*)|(\/?$))/g,Ds=/-->/g,Bs=/>/g,Je=RegExp(`>|${li}(?:([^\\s"'>=/]+)(${li}*=${li}*(?:[^ 	
-\f\r"'\`<>=]|("|')|))|$)`,"g"),zs=/'/g,Fs=/"/g,Ws=/^(?:script|style|textarea|title)$/i,Ys=e=>(t,...r)=>({_$litType$:e,strings:t,values:r}),g=Ys(1),Yu=Ys(2),rt=Symbol.for("lit-noChange"),V=Symbol.for("lit-nothing"),Gs=new WeakMap,et=tt.createTreeWalker(tt,129,null,!1);function Xs(e,t){if(!Array.isArray(e)||!e.hasOwnProperty("raw"))throw Error("invalid template strings array");return Us!==void 0?Us.createHTML(t):t}var Wh=(e,t)=>{let r=e.length-1,n=[],o,i=t===2?"<svg>":"",a=gr;for(let s=0;s<r;s++){let c=e[s],l,h,d=-1,p=0;for(;p<c.length&&(a.lastIndex=p,h=a.exec(c),h!==null);)p=a.lastIndex,a===gr?h[1]==="!--"?a=Ds:h[1]!==void 0?a=Bs:h[2]!==void 0?(Ws.test(h[2])&&(o=RegExp("</"+h[2],"g")),a=Je):h[3]!==void 0&&(a=Je):a===Je?h[0]===">"?(a=o??gr,d=-1):h[1]===void 0?d=-2:(d=a.lastIndex-h[2].length,l=h[1],a=h[3]===void 0?Je:h[3]==='"'?Fs:zs):a===Fs||a===zs?a=Je:a===Ds||a===Bs?a=gr:(a=Je,o=void 0);let m=a===Je&&e[s+1].startsWith("/>")?" ":"";i+=a===gr?c+jh:d>=0?(n.push(l),c.slice(0,d)+hi+c.slice(d)+Ie+m):c+Ie+(d===-2?(n.push(void 0),s):m)}return[Xs(e,i+(e[r]||"<?>")+(t===2?"</svg>":"")),n]},vr=class e{constructor({strings:t,_$litType$:r},n){let o;this.parts=[];let i=0,a=0,s=t.length-1,c=this.parts,[l,h]=Wh(t,r);if(this.el=e.createElement(l,n),et.currentNode=this.el.content,r===2){let d=this.el.content,p=d.firstChild;p.remove(),d.append(...p.childNodes)}for(;(o=et.nextNode())!==null&&c.length<s;){if(o.nodeType===1){if(o.hasAttributes()){let d=[];for(let p of o.getAttributeNames())if(p.endsWith(hi)||p.startsWith(Ie)){let m=h[a++];if(d.push(p),m!==void 0){let x=o.getAttribute(m.toLowerCase()+hi).split(Ie),f=/([.?@])?(.*)/.exec(m);c.push({type:1,index:i,name:f[2],strings:x,ctor:f[1]==="."?pi:f[1]==="?"?mi:f[1]==="@"?ui:kt})}else c.push({type:6,index:i})}for(let p of d)o.removeAttribute(p)}if(Ws.test(o.tagName)){let d=o.textContent.split(Ie),p=d.length-1;if(p>0){o.textContent=Ct?Ct.emptyScript:"";for(let m=0;m<p;m++)o.append(d[m],xr()),et.nextNode(),c.push({type:2,index:++i});o.append(d[p],xr())}}}else if(o.nodeType===8)if(o.data===js)c.push({type:2,index:i});else{let d=-1;for(;(d=o.data.indexOf(Ie,d+1))!==-1;)c.push({type:7,index:i}),d+=Ie.length-1}i++}}static createElement(t,r){let n=tt.createElement("template");return n.innerHTML=t,n}};function Pt(e,t,r=e,n){var o,i,a,s;if(t===rt)return t;let c=n!==void 0?(o=r._$Co)===null||o===void 0?void 0:o[n]:r._$Cl,l=br(t)?void 0:t._$litDirective$;return c?.constructor!==l&&((i=c?._$AO)===null||i===void 0||i.call(c,!1),l===void 0?c=void 0:(c=new l(e),c._$AT(e,r,n)),n!==void 0?((a=(s=r)._$Co)!==null&&a!==void 0?a:s._$Co=[])[n]=c:r._$Cl=c),c!==void 0&&(t=Pt(e,c._$AS(e,t.values),c,n)),t}var di=class{constructor(t,r){this._$AV=[],this._$AN=void 0,this._$AD=t,this._$AM=r}get parentNode(){return this._$AM.parentNode}get _$AU(){return this._$AM._$AU}u(t){var r;let{el:{content:n},parts:o}=this._$AD,i=((r=t?.creationScope)!==null&&r!==void 0?r:tt).importNode(n,!0);et.currentNode=i;let a=et.nextNode(),s=0,c=0,l=o[0];for(;l!==void 0;){if(s===l.index){let h;l.type===2?h=new yr(a,a.nextSibling,this,t):l.type===1?h=new l.ctor(a,l.name,l.strings,this,t):l.type===6&&(h=new fi(a,this,t)),this._$AV.push(h),l=o[++c]}s!==l?.index&&(a=et.nextNode(),s++)}return et.currentNode=tt,i}v(t){let r=0;for(let n of this._$AV)n!==void 0&&(n.strings!==void 0?(n._$AI(t,n,r),r+=n.strings.length-2):n._$AI(t[r])),r++}},yr=class e{constructor(t,r,n,o){var i;this.type=2,this._$AH=V,this._$AN=void 0,this._$AA=t,this._$AB=r,this._$AM=n,this.options=o,this._$Cp=(i=o?.isConnected)===null||i===void 0||i}get _$AU(){var t,r;return(r=(t=this._$AM)===null||t===void 0?void 0:t._$AU)!==null&&r!==void 0?r:this._$Cp}get parentNode(){let t=this._$AA.parentNode,r=this._$AM;return r!==void 0&&t?.nodeType===11&&(t=r.parentNode),t}get startNode(){return this._$AA}get endNode(){return this._$AB}_$AI(t,r=this){t=Pt(this,t,r),br(t)?t===V||t==null||t===""?(this._$AH!==V&&this._$AR(),this._$AH=V):t!==this._$AH&&t!==rt&&this._(t):t._$litType$!==void 0?this.g(t):t.nodeType!==void 0?this.$(t):qh(t)?this.T(t):this._(t)}k(t){return this._$AA.parentNode.insertBefore(t,this._$AB)}$(t){this._$AH!==t&&(this._$AR(),this._$AH=this.k(t))}_(t){this._$AH!==V&&br(this._$AH)?this._$AA.nextSibling.data=t:this.$(tt.createTextNode(t)),this._$AH=t}g(t){var r;let{values:n,_$litType$:o}=t,i=typeof o=="number"?this._$AC(t):(o.el===void 0&&(o.el=vr.createElement(Xs(o.h,o.h[0]),this.options)),o);if(((r=this._$AH)===null||r===void 0?void 0:r._$AD)===i)this._$AH.v(n);else{let a=new di(i,this),s=a.u(this.options);a.v(n),this.$(s),this._$AH=a}}_$AC(t){let r=Gs.get(t.strings);return r===void 0&&Gs.set(t.strings,r=new vr(t)),r}T(t){qs(this._$AH)||(this._$AH=[],this._$AR());let r=this._$AH,n,o=0;for(let i of t)o===r.length?r.push(n=new e(this.k(xr()),this.k(xr()),this,this.options)):n=r[o],n._$AI(i),o++;o<r.length&&(this._$AR(n&&n._$AB.nextSibling,o),r.length=o)}_$AR(t=this._$AA.nextSibling,r){var n;for((n=this._$AP)===null||n===void 0||n.call(this,!1,!0,r);t&&t!==this._$AB;){let o=t.nextSibling;t.remove(),t=o}}setConnected(t){var r;this._$AM===void 0&&(this._$Cp=t,(r=this._$AP)===null||r===void 0||r.call(this,t))}},kt=class{constructor(t,r,n,o,i){this.type=1,this._$AH=V,this._$AN=void 0,this.element=t,this.name=r,this._$AM=o,this.options=i,n.length>2||n[0]!==""||n[1]!==""?(this._$AH=Array(n.length-1).fill(new String),this.strings=n):this._$AH=V}get tagName(){return this.element.tagName}get _$AU(){return this._$AM._$AU}_$AI(t,r=this,n,o){let i=this.strings,a=!1;if(i===void 0)t=Pt(this,t,r,0),a=!br(t)||t!==this._$AH&&t!==rt,a&&(this._$AH=t);else{let s=t,c,l;for(t=i[0],c=0;c<i.length-1;c++)l=Pt(this,s[n+c],r,c),l===rt&&(l=this._$AH[c]),a||(a=!br(l)||l!==this._$AH[c]),l===V?t=V:t!==V&&(t+=(l??"")+i[c+1]),this._$AH[c]=l}a&&!o&&this.j(t)}j(t){t===V?this.element.removeAttribute(this.name):this.element.setAttribute(this.name,t??"")}},pi=class extends kt{constructor(){super(...arguments),this.type=3}j(t){this.element[this.name]=t===V?void 0:t}},Yh=Ct?Ct.emptyScript:"",mi=class extends kt{constructor(){super(...arguments),this.type=4}j(t){t&&t!==V?this.element.setAttribute(this.name,Yh):this.element.removeAttribute(this.name)}},ui=class extends kt{constructor(t,r,n,o,i){super(t,r,n,o,i),this.type=5}_$AI(t,r=this){var n;if((t=(n=Pt(this,t,r,0))!==null&&n!==void 0?n:V)===rt)return;let o=this._$AH,i=t===V&&o!==V||t.capture!==o.capture||t.once!==o.once||t.passive!==o.passive,a=t!==V&&(o===V||i);i&&this.element.removeEventListener(this.name,this,o),a&&this.element.addEventListener(this.name,this,t),this._$AH=t}handleEvent(t){var r,n;typeof this._$AH=="function"?this._$AH.call((n=(r=this.options)===null||r===void 0?void 0:r.host)!==null&&n!==void 0?n:this.element,t):this._$AH.handleEvent(t)}},fi=class{constructor(t,r,n){this.element=t,this.type=6,this._$AN=void 0,this._$AM=r,this.options=n}get _$AU(){return this._$AM._$AU}_$AI(t){Pt(this,t)}};var Vs=En.litHtmlPolyfillSupport;Vs?.(vr,yr),((ci=En.litHtmlVersions)!==null&&ci!==void 0?ci:En.litHtmlVersions=[]).push("2.8.0");var Ks=(e,t,r)=>{var n,o;let i=(n=r?.renderBefore)!==null&&n!==void 0?n:t,a=i._$litPart$;if(a===void 0){let s=(o=r?.renderBefore)!==null&&o!==void 0?o:null;i._$litPart$=a=new yr(t.insertBefore(xr(),s),s,void 0,r??{})}return a._$AI(e),a};var gi,xi;var I=class extends Ae{constructor(){super(...arguments),this.renderOptions={host:this},this._$Do=void 0}createRenderRoot(){var t,r;let n=super.createRenderRoot();return(t=(r=this.renderOptions).renderBefore)!==null&&t!==void 0||(r.renderBefore=n.firstChild),n}update(t){let r=this.render();this.hasUpdated||(this.renderOptions.isConnected=this.isConnected),super.update(t),this._$Do=Ks(r,this.renderRoot,this.renderOptions)}connectedCallback(){var t;super.connectedCallback(),(t=this._$Do)===null||t===void 0||t.setConnected(!0)}disconnectedCallback(){var t;super.disconnectedCallback(),(t=this._$Do)===null||t===void 0||t.setConnected(!1)}render(){return rt}};I.finalized=!0,I._$litElement$=!0,(gi=globalThis.litElementHydrateSupport)===null||gi===void 0||gi.call(globalThis,{LitElement:I});var Qs=globalThis.litElementPolyfillSupport;Qs?.({LitElement:I});((xi=globalThis.litElementVersions)!==null&&xi!==void 0?xi:globalThis.litElementVersions=[]).push("3.3.3");var He="(max-width: 767px)",An="(max-width: 1199px)",j="(min-width: 768px)",B="(min-width: 1200px)",de="(min-width: 1600px)";var Zs=y`
+var __defProp = Object.defineProperty;
+var __typeError = (msg) => {
+  throw TypeError(msg);
+};
+var __defNormalProp = (obj, key, value) => key in obj ? __defProp(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
+var __export = (target, all) => {
+  for (var name in all)
+    __defProp(target, name, { get: all[name], enumerable: true });
+};
+var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "symbol" ? key + "" : key, value);
+var __accessCheck = (obj, member, msg) => member.has(obj) || __typeError("Cannot " + msg);
+var __privateGet = (obj, member, getter) => (__accessCheck(obj, member, "read from private field"), getter ? getter.call(obj) : member.get(obj));
+var __privateAdd = (obj, member, value) => member.has(obj) ? __typeError("Cannot add the same private member more than once") : member instanceof WeakSet ? member.add(obj) : member.set(obj, value);
+var __privateSet = (obj, member, value, setter) => (__accessCheck(obj, member, "write to private field"), setter ? setter.call(obj, value) : member.set(obj, value), value);
+var __privateMethod = (obj, member, method) => (__accessCheck(obj, member, "access private method"), method);
+
+// ../../utils/lana.js
+(function iife() {
+  const MSG_LIMIT = 2e3;
+  const defaultOptions = {
+    clientId: "",
+    endpoint: "https://www.adobe.com/lana/ll",
+    endpointStage: "https://www.stage.adobe.com/lana/ll",
+    errorType: "e",
+    sampleRate: 1,
+    tags: "",
+    implicitSampleRate: 1,
+    useProd: true,
+    isProdDomain: false
+  };
+  const VALID_SEVERITIES = /* @__PURE__ */ new Set(["d", "debug", "i", "info", "w", "warn", "e", "error", "c", "critical"]);
+  const w3 = window;
+  function isProd() {
+    const { host } = window.location;
+    if (host.substring(host.length - 10) === ".adobe.com" && host.substring(host.length - 15) !== ".corp.adobe.com" && host.substring(host.length - 16) !== ".stage.adobe.com") {
+      return true;
+    }
+    return false;
+  }
+  function mergeOptions(op1, op2) {
+    if (!op1) {
+      op1 = {};
+    }
+    if (!op2) {
+      op2 = {};
+    }
+    function getOpt(key) {
+      if (op1[key] !== void 0) {
+        return op1[key];
+      }
+      if (op2[key] !== void 0) {
+        return op2[key];
+      }
+      return defaultOptions[key];
+    }
+    return Object.keys(defaultOptions).reduce((options, key) => {
+      options[key] = getOpt(key);
+      return options;
+    }, {});
+  }
+  function hasDebugParam() {
+    return w3.location.search.toLowerCase().indexOf("lanadebug") !== -1;
+  }
+  function isLocalhost() {
+    return w3.location.host.toLowerCase().indexOf("localhost") !== -1;
+  }
+  function log2(msg, options) {
+    msg = msg && msg.stack ? msg.stack : msg || "";
+    if (msg.length > MSG_LIMIT) {
+      msg = `${msg.slice(0, MSG_LIMIT)}<trunc>`;
+    }
+    const o8 = mergeOptions(options, w3.lana.options);
+    if (!o8.clientId) {
+      console.warn("LANA ClientID is not set in options.");
+      return;
+    }
+    let severity;
+    if (options && options.severity !== void 0) {
+      if (VALID_SEVERITIES.has(options.severity)) {
+        severity = options.severity;
+      } else {
+        const isDebugMode = hasDebugParam() || w3.lana.debug;
+        const defaultSeverity = isDebugMode ? "d" : "i";
+        console.warn(`LANA: Invalid severity '${options.severity}'. Defaulting to '${defaultSeverity}'.`);
+        severity = defaultSeverity;
+      }
+    } else if (w3.lana.debug) {
+      severity = "d";
+    }
+    const sampleRateParam = parseInt(new URL(window.location).searchParams.get("lana-sample"), 10);
+    const sampleRate = sampleRateParam || (o8.errorType === "i" ? o8.implicitSampleRate : o8.sampleRate);
+    if (!w3.lana.debug && !w3.lana.localhost && sampleRate <= Math.random() * 100) return;
+    const isProdDomain = isProd() || o8.isProdDomain;
+    const endpoint = !isProdDomain || !o8.useProd ? o8.endpointStage : o8.endpoint;
+    const queryParams = [
+      `m=${encodeURIComponent(msg)}`,
+      `c=${encodeURI(o8.clientId)}`,
+      `s=${sampleRate}`,
+      `t=${encodeURI(o8.errorType)}`
+    ];
+    if (severity) {
+      queryParams.push(`r=${encodeURI(severity)}`);
+    }
+    if (o8.tags) {
+      queryParams.push(`tags=${encodeURI(o8.tags)}`);
+    }
+    if (!isProdDomain || w3.lana.debug || w3.lana.localhost) console.log("LANA Msg: ", msg, "\nOpts:", o8);
+    if (!w3.lana.localhost || w3.lana.debug) {
+      const xhr = new XMLHttpRequest();
+      if (w3.lana.debug) {
+        queryParams.push("d");
+        xhr.addEventListener("load", () => {
+          console.log("LANA response:", xhr.responseText);
+        });
+      }
+      xhr.open("GET", `${endpoint}?${queryParams.join("&")}`);
+      xhr.send();
+      return xhr;
+    }
+  }
+  function sendUnhandledError(e7) {
+    log2(e7.reason || e7.error || e7.message, { errorType: "i" });
+  }
+  w3.lana = {
+    debug: false,
+    log: log2,
+    options: mergeOptions(w3.lana && w3.lana.options)
+  };
+  if (hasDebugParam()) w3.lana.debug = true;
+  if (isLocalhost()) w3.lana.localhost = true;
+  w3.addEventListener("error", sendUnhandledError);
+  w3.addEventListener("unhandledrejection", sendUnhandledError);
+})();
+
+// src/constants.js
+var constants_exports = {};
+__export(constants_exports, {
+  CLASS_NAME_FAILED: () => CLASS_NAME_FAILED,
+  CLASS_NAME_HIDDEN: () => CLASS_NAME_HIDDEN,
+  CLASS_NAME_PENDING: () => CLASS_NAME_PENDING,
+  CLASS_NAME_RESOLVED: () => CLASS_NAME_RESOLVED,
+  CheckoutWorkflow: () => CheckoutWorkflow,
+  CheckoutWorkflowStep: () => CheckoutWorkflowStep,
+  Commitment: () => Commitment,
+  ERROR_MESSAGE_BAD_REQUEST: () => ERROR_MESSAGE_BAD_REQUEST,
+  ERROR_MESSAGE_MISSING_LITERALS_URL: () => ERROR_MESSAGE_MISSING_LITERALS_URL,
+  ERROR_MESSAGE_OFFER_NOT_FOUND: () => ERROR_MESSAGE_OFFER_NOT_FOUND,
+  EVENT_AEM_ERROR: () => EVENT_AEM_ERROR,
+  EVENT_AEM_LOAD: () => EVENT_AEM_LOAD,
+  EVENT_MAS_ERROR: () => EVENT_MAS_ERROR,
+  EVENT_MAS_READY: () => EVENT_MAS_READY,
+  EVENT_MERCH_ADDON_AND_QUANTITY_UPDATE: () => EVENT_MERCH_ADDON_AND_QUANTITY_UPDATE,
+  EVENT_MERCH_CARD_ACTION_MENU_TOGGLE: () => EVENT_MERCH_CARD_ACTION_MENU_TOGGLE,
+  EVENT_MERCH_CARD_COLLECTION_SHOWMORE: () => EVENT_MERCH_CARD_COLLECTION_SHOWMORE,
+  EVENT_MERCH_CARD_COLLECTION_SORT: () => EVENT_MERCH_CARD_COLLECTION_SORT,
+  EVENT_MERCH_CARD_QUANTITY_CHANGE: () => EVENT_MERCH_CARD_QUANTITY_CHANGE,
+  EVENT_MERCH_CARD_READY: () => EVENT_MERCH_CARD_READY,
+  EVENT_MERCH_OFFER_READY: () => EVENT_MERCH_OFFER_READY,
+  EVENT_MERCH_OFFER_SELECT_READY: () => EVENT_MERCH_OFFER_SELECT_READY,
+  EVENT_MERCH_QUANTITY_SELECTOR_CHANGE: () => EVENT_MERCH_QUANTITY_SELECTOR_CHANGE,
+  EVENT_MERCH_SEARCH_CHANGE: () => EVENT_MERCH_SEARCH_CHANGE,
+  EVENT_MERCH_SIDENAV_SELECT: () => EVENT_MERCH_SIDENAV_SELECT,
+  EVENT_MERCH_STOCK_CHANGE: () => EVENT_MERCH_STOCK_CHANGE,
+  EVENT_MERCH_STORAGE_CHANGE: () => EVENT_MERCH_STORAGE_CHANGE,
+  EVENT_OFFER_SELECTED: () => EVENT_OFFER_SELECTED,
+  EVENT_TYPE_FAILED: () => EVENT_TYPE_FAILED,
+  EVENT_TYPE_READY: () => EVENT_TYPE_READY,
+  EVENT_TYPE_RESOLVED: () => EVENT_TYPE_RESOLVED,
+  Env: () => Env,
+  HEADER_X_REQUEST_ID: () => HEADER_X_REQUEST_ID,
+  LOG_NAMESPACE: () => LOG_NAMESPACE,
+  Landscape: () => Landscape,
+  MARK_DURATION_SUFFIX: () => MARK_DURATION_SUFFIX,
+  MARK_START_SUFFIX: () => MARK_START_SUFFIX,
+  MODAL_TYPE_3_IN_1: () => MODAL_TYPE_3_IN_1,
+  NAMESPACE: () => NAMESPACE,
+  PARAM_AOS_API_KEY: () => PARAM_AOS_API_KEY,
+  PARAM_ENV: () => PARAM_ENV,
+  PARAM_LANDSCAPE: () => PARAM_LANDSCAPE,
+  PARAM_MAS_PREVIEW: () => PARAM_MAS_PREVIEW,
+  PARAM_WCS_API_KEY: () => PARAM_WCS_API_KEY,
+  PROVIDER_ENVIRONMENT: () => PROVIDER_ENVIRONMENT,
+  SELECTOR_MAS_CHECKOUT_LINK: () => SELECTOR_MAS_CHECKOUT_LINK,
+  SELECTOR_MAS_ELEMENT: () => SELECTOR_MAS_ELEMENT,
+  SELECTOR_MAS_INLINE_PRICE: () => SELECTOR_MAS_INLINE_PRICE,
+  SELECTOR_MAS_SP_BUTTON: () => SELECTOR_MAS_SP_BUTTON,
+  STATE_FAILED: () => STATE_FAILED,
+  STATE_PENDING: () => STATE_PENDING,
+  STATE_RESOLVED: () => STATE_RESOLVED,
+  TAG_NAME_SERVICE: () => TAG_NAME_SERVICE,
+  TEMPLATE_PRICE: () => TEMPLATE_PRICE,
+  TEMPLATE_PRICE_ANNUAL: () => TEMPLATE_PRICE_ANNUAL,
+  TEMPLATE_PRICE_LEGAL: () => TEMPLATE_PRICE_LEGAL,
+  TEMPLATE_PRICE_STRIKETHROUGH: () => TEMPLATE_PRICE_STRIKETHROUGH,
+  Term: () => Term,
+  WCS_PROD_URL: () => WCS_PROD_URL,
+  WCS_STAGE_URL: () => WCS_STAGE_URL
+});
+var Commitment = Object.freeze({
+  MONTH: "MONTH",
+  YEAR: "YEAR",
+  TWO_YEARS: "TWO_YEARS",
+  THREE_YEARS: "THREE_YEARS",
+  PERPETUAL: "PERPETUAL",
+  TERM_LICENSE: "TERM_LICENSE",
+  ACCESS_PASS: "ACCESS_PASS",
+  THREE_MONTHS: "THREE_MONTHS",
+  SIX_MONTHS: "SIX_MONTHS"
+});
+var Term = Object.freeze({
+  ANNUAL: "ANNUAL",
+  MONTHLY: "MONTHLY",
+  TWO_YEARS: "TWO_YEARS",
+  THREE_YEARS: "THREE_YEARS",
+  P1D: "P1D",
+  P1Y: "P1Y",
+  P3Y: "P3Y",
+  P10Y: "P10Y",
+  P15Y: "P15Y",
+  P3D: "P3D",
+  P7D: "P7D",
+  P30D: "P30D",
+  HALF_YEARLY: "HALF_YEARLY",
+  QUARTERLY: "QUARTERLY"
+});
+var NAMESPACE = "merch";
+var CLASS_NAME_HIDDEN = "hidden";
+var EVENT_TYPE_READY = "wcms:commerce:ready";
+var TAG_NAME_SERVICE = "mas-commerce-service";
+var SELECTOR_MAS_INLINE_PRICE = 'span[is="inline-price"][data-wcs-osi]';
+var SELECTOR_MAS_CHECKOUT_LINK = 'a[is="checkout-link"][data-wcs-osi],button[is="checkout-button"][data-wcs-osi]';
+var SELECTOR_MAS_SP_BUTTON = "sp-button[data-wcs-osi]";
+var SELECTOR_MAS_ELEMENT = `${SELECTOR_MAS_INLINE_PRICE},${SELECTOR_MAS_CHECKOUT_LINK}`;
+var EVENT_MERCH_OFFER_READY = "merch-offer:ready";
+var EVENT_MERCH_OFFER_SELECT_READY = "merch-offer-select:ready";
+var EVENT_MERCH_CARD_READY = "merch-card:ready";
+var EVENT_MERCH_CARD_ACTION_MENU_TOGGLE = "merch-card:action-menu-toggle";
+var EVENT_OFFER_SELECTED = "merch-offer:selected";
+var EVENT_MERCH_STOCK_CHANGE = "merch-stock:change";
+var EVENT_MERCH_STORAGE_CHANGE = "merch-storage:change";
+var EVENT_MERCH_QUANTITY_SELECTOR_CHANGE = "merch-quantity-selector:change";
+var EVENT_MERCH_CARD_QUANTITY_CHANGE = "merch-card-quantity:change";
+var EVENT_MERCH_ADDON_AND_QUANTITY_UPDATE = "merch-modal:addon-and-quantity-update";
+var EVENT_MERCH_SEARCH_CHANGE = "merch-search:change";
+var EVENT_MERCH_CARD_COLLECTION_SORT = "merch-card-collection:sort";
+var EVENT_MERCH_CARD_COLLECTION_SHOWMORE = "merch-card-collection:showmore";
+var EVENT_MERCH_SIDENAV_SELECT = "merch-sidenav:select";
+var EVENT_AEM_LOAD = "aem:load";
+var EVENT_AEM_ERROR = "aem:error";
+var EVENT_MAS_READY = "mas:ready";
+var EVENT_MAS_ERROR = "mas:error";
+var CLASS_NAME_FAILED = "placeholder-failed";
+var CLASS_NAME_PENDING = "placeholder-pending";
+var CLASS_NAME_RESOLVED = "placeholder-resolved";
+var ERROR_MESSAGE_BAD_REQUEST = "Bad WCS request";
+var ERROR_MESSAGE_OFFER_NOT_FOUND = "Commerce offer not found";
+var ERROR_MESSAGE_MISSING_LITERALS_URL = "Literals URL not provided";
+var EVENT_TYPE_FAILED = "mas:failed";
+var EVENT_TYPE_RESOLVED = "mas:resolved";
+var LOG_NAMESPACE = "mas/commerce";
+var PARAM_MAS_PREVIEW = "mas.preview";
+var PARAM_ENV = "commerce.env";
+var PARAM_LANDSCAPE = "commerce.landscape";
+var PARAM_AOS_API_KEY = "commerce.aosKey";
+var PARAM_WCS_API_KEY = "commerce.wcsKey";
+var WCS_PROD_URL = "https://www.adobe.com/web_commerce_artifact";
+var WCS_STAGE_URL = "https://www.stage.adobe.com/web_commerce_artifact_stage";
+var STATE_FAILED = "failed";
+var STATE_PENDING = "pending";
+var STATE_RESOLVED = "resolved";
+var Landscape = {
+  DRAFT: "DRAFT",
+  PUBLISHED: "PUBLISHED"
+};
+var HEADER_X_REQUEST_ID = "X-Request-Id";
+var CheckoutWorkflowStep = Object.freeze({
+  CHECKOUT: "checkout",
+  CHECKOUT_EMAIL: "checkout/email",
+  SEGMENTATION: "segmentation",
+  BUNDLE: "bundle",
+  COMMITMENT: "commitment",
+  RECOMMENDATION: "recommendation",
+  EMAIL: "email",
+  PAYMENT: "payment",
+  CHANGE_PLAN_TEAM_PLANS: "change-plan/team-upgrade/plans",
+  CHANGE_PLAN_TEAM_PAYMENT: "change-plan/team-upgrade/payment"
+});
+var CheckoutWorkflow = Object.freeze({ V2: "UCv2", V3: "UCv3" });
+var Env = Object.freeze({
+  STAGE: "STAGE",
+  PRODUCTION: "PRODUCTION",
+  LOCAL: "LOCAL"
+});
+var PROVIDER_ENVIRONMENT = {
+  PRODUCTION: "PRODUCTION"
+};
+var MODAL_TYPE_3_IN_1 = {
+  TWP: "twp",
+  D2P: "d2p",
+  CRM: "crm"
+};
+var MARK_START_SUFFIX = ":start";
+var MARK_DURATION_SUFFIX = ":duration";
+var TEMPLATE_PRICE = "price";
+var TEMPLATE_PRICE_STRIKETHROUGH = "price-strikethrough";
+var TEMPLATE_PRICE_ANNUAL = "annual";
+var TEMPLATE_PRICE_LEGAL = "legal";
+
+// node_modules/@dexter/tacocat-core/src/utilities.js
+var namespace = "tacocat.js";
+var equalsCaseInsensitive = (value1, value2) => String(value1 ?? "").toLowerCase() == String(value2 ?? "").toLowerCase();
+var escapeHtml = (html) => `${html ?? ""}`.replace(
+  /[&<>'"]/g,
+  (tag) => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    "'": "&#39;",
+    '"': "&quot;"
+  })[tag] ?? tag
+) ?? "";
+function getParameter(key, defaults = {}, { metadata = true, search = true, storage = true } = {}) {
+  let param;
+  if (search && param == null) {
+    const params = new URLSearchParams(window.location.search);
+    const searchKey = isString(search) ? search : key;
+    param = params.get(searchKey);
+  }
+  if (storage && param == null) {
+    const storageKey = isString(storage) ? storage : key;
+    param = window.sessionStorage.getItem(storageKey) ?? window.localStorage.getItem(storageKey);
+  }
+  if (metadata && param == null) {
+    const metadataKey = toKebabCase(isString(metadata) ? metadata : key);
+    const element = document.documentElement.querySelector(
+      `meta[name="${metadataKey}"]`
+    );
+    param = element?.content;
+  }
+  return param == null ? defaults[key] : param;
+}
+var isBoolean = (value) => typeof value === "boolean";
+var isFunction = (value) => typeof value === "function";
+var isNumber = (value) => typeof value === "number";
+var isObject = (value) => value != null && typeof value === "object";
+var isString = (value) => typeof value === "string";
+var isNotEmptyString = (value) => isString(value) && value;
+var isPositiveFiniteNumber = (value) => isNumber(value) && Number.isFinite(value) && value > 0;
+function omitProperties(target, test = (value) => value == null || value === "") {
+  if (target != null) {
+    Object.entries(target).forEach(([key, value]) => {
+      if (test(value)) delete target[key];
+    });
+  }
+  return target;
+}
+function toBoolean(value, defaultValue) {
+  if (isBoolean(value)) return value;
+  const string = String(value);
+  if (string === "1" || string === "true") return true;
+  if (string === "0" || string === "false") return false;
+  return defaultValue;
+}
+function toEnumeration(value, enumeration, defaultValue) {
+  const values = Object.values(enumeration);
+  return values.find((candidate) => equalsCaseInsensitive(candidate, value)) ?? defaultValue ?? values[0];
+}
+function toKebabCase(value = "") {
+  return String(value).replace(
+    /(\p{Lowercase_Letter})(\p{Uppercase_Letter})/gu,
+    (_3, p1, p22) => `${p1}-${p22}`
+  ).replace(/\W+/gu, "-").toLowerCase();
+}
+function toPositiveFiniteInteger(value, defaultValue = 1) {
+  if (!isNumber(value)) {
+    value = Number.parseInt(value, 10);
+  }
+  if (!Number.isNaN(value) && value > 0 && Number.isFinite(value)) {
+    return value;
+  }
+  return defaultValue;
+}
+
+// node_modules/@dexter/tacocat-core/src/log.js
+var epoch = Date.now();
+var suffix = () => `(+${Date.now() - epoch}ms)`;
+var loggers = /* @__PURE__ */ new Set();
+var isDebugEnabled = toBoolean(
+  getParameter("tacocat.debug", {}, { metadata: false }),
+  typeof process !== "undefined" && process.env?.DEBUG
+);
+function createLog(source) {
+  const prefix = `[${namespace}/${source}]`;
+  const assert = (condition, message, ...args) => {
+    if (!condition) {
+      error(message, ...args);
+      return false;
+    }
+    return true;
+  };
+  const debug = isDebugEnabled ? (message, ...args) => {
+    console.debug(`${prefix} ${message}`, ...args, suffix());
+  } : () => {
+  };
+  const error = (message, ...args) => {
+    const prefixedMessage = `${prefix} ${message}`;
+    loggers.forEach(
+      ([errorLogger]) => errorLogger(prefixedMessage, ...args)
+    );
+  };
+  const warn = (message, ...args) => {
+    const prefixedMessage = `${prefix} ${message}`;
+    loggers.forEach(
+      ([, warnLogger]) => warnLogger(prefixedMessage, ...args)
+    );
+  };
+  return { assert, debug, error, warn };
+}
+function registerLogger(errorLogger, warnLogger) {
+  const logger = [errorLogger, warnLogger];
+  loggers.add(logger);
+  return () => {
+    loggers.delete(logger);
+  };
+}
+registerLogger(
+  (message, ...args) => {
+    console.error(message, ...args, suffix());
+  },
+  (message, ...args) => {
+    console.warn(message, ...args, suffix());
+  }
+);
+
+// node_modules/@dexter/tacocat-core/src/promotion.js
+var NO_PROMO_TEXT = "no promo";
+var CLASS = "promo-tag";
+var PROMO_VARIANT = "yellow";
+var NOPROMO_VARIANT = "neutral";
+var fullPromoText = (promo, old, isOverriden) => {
+  const promoText = (promo2) => promo2 || NO_PROMO_TEXT;
+  const suffix2 = isOverriden ? ` (was "${promoText(old)}")` : "";
+  return `${promoText(promo)}${suffix2}`;
+};
+var PROMO_CONTEXT_CANCEL_VALUE = "cancel-context";
+var computePromoStatus = (overriden, configured) => {
+  const localPromoUnset = overriden === PROMO_CONTEXT_CANCEL_VALUE;
+  const localPromoSet = !localPromoUnset && overriden?.length > 0;
+  const isOverriden = (localPromoSet || localPromoUnset) && //in case configured equals override, we consider no override
+  (configured && configured != overriden || //in case it does not have been configured, if overriden to cancel,
+  // we consider no override
+  !configured && !localPromoUnset);
+  const isPromo = isOverriden && localPromoSet || !isOverriden && !!configured;
+  const effectivePromoCode = isPromo ? overriden || configured : void 0;
+  return {
+    effectivePromoCode,
+    overridenPromoCode: overriden,
+    className: isPromo ? CLASS : `${CLASS} no-promo`,
+    text: fullPromoText(effectivePromoCode, configured, isOverriden),
+    variant: isPromo ? PROMO_VARIANT : NOPROMO_VARIANT,
+    isOverriden
+  };
+};
+
+// node_modules/@pandora/data-models-odm/esm/businessDimensions.js
+var OfferType;
+(function(OfferType2) {
+  OfferType2["BASE"] = "BASE";
+  OfferType2["TRIAL"] = "TRIAL";
+  OfferType2["PROMOTION"] = "PROMOTION";
+})(OfferType || (OfferType = {}));
+var Commitment2;
+(function(Commitment3) {
+  Commitment3["MONTH"] = "MONTH";
+  Commitment3["YEAR"] = "YEAR";
+  Commitment3["TWO_YEARS"] = "TWO_YEARS";
+  Commitment3["THREE_YEARS"] = "THREE_YEARS";
+  Commitment3["PERPETUAL"] = "PERPETUAL";
+  Commitment3["TERM_LICENSE"] = "TERM_LICENSE";
+  Commitment3["ACCESS_PASS"] = "ACCESS_PASS";
+  Commitment3["THREE_MONTHS"] = "THREE_MONTHS";
+  Commitment3["SIX_MONTHS"] = "SIX_MONTHS";
+})(Commitment2 || (Commitment2 = {}));
+var Term2;
+(function(Term3) {
+  Term3["ANNUAL"] = "ANNUAL";
+  Term3["MONTHLY"] = "MONTHLY";
+  Term3["TWO_YEARS"] = "TWO_YEARS";
+  Term3["THREE_YEARS"] = "THREE_YEARS";
+  Term3["P1D"] = "P1D";
+  Term3["P1Y"] = "P1Y";
+  Term3["P3Y"] = "P3Y";
+  Term3["P10Y"] = "P10Y";
+  Term3["P15Y"] = "P15Y";
+  Term3["P3D"] = "P3D";
+  Term3["P7D"] = "P7D";
+  Term3["P30D"] = "P30D";
+  Term3["HALF_YEARLY"] = "HALF_YEARLY";
+  Term3["QUARTERLY"] = "QUARTERLY";
+})(Term2 || (Term2 = {}));
+var CustomerSegment;
+(function(CustomerSegment2) {
+  CustomerSegment2["INDIVIDUAL"] = "INDIVIDUAL";
+  CustomerSegment2["TEAM"] = "TEAM";
+  CustomerSegment2["ENTERPRISE"] = "ENTERPRISE";
+})(CustomerSegment || (CustomerSegment = {}));
+var MarketSegment;
+(function(MarketSegment2) {
+  MarketSegment2["COM"] = "COM";
+  MarketSegment2["EDU"] = "EDU";
+  MarketSegment2["GOV"] = "GOV";
+})(MarketSegment || (MarketSegment = {}));
+var SalesChannel;
+(function(SalesChannel2) {
+  SalesChannel2["DIRECT"] = "DIRECT";
+  SalesChannel2["INDIRECT"] = "INDIRECT";
+})(SalesChannel || (SalesChannel = {}));
+var BuyingProgram;
+(function(BuyingProgram2) {
+  BuyingProgram2["ENTERPRISE_PRODUCT"] = "ENTERPRISE_PRODUCT";
+  BuyingProgram2["ETLA"] = "ETLA";
+  BuyingProgram2["RETAIL"] = "RETAIL";
+  BuyingProgram2["VIP"] = "VIP";
+  BuyingProgram2["VIPMP"] = "VIPMP";
+  BuyingProgram2["FREE"] = "FREE";
+})(BuyingProgram || (BuyingProgram = {}));
+
+// node_modules/@dexter/tacocat-core/src/wcsUtils.js
+var ABM = "ABM";
+var PUF = "PUF";
+var M2M = "M2M";
+var PERPETUAL = "PERPETUAL";
+var P3Y = "P3Y";
+var TAX_INCLUSIVE_DETAILS = "TAX_INCLUSIVE_DETAILS";
+var TAX_EXCLUSIVE = "TAX_EXCLUSIVE";
+var PlanType = {
+  ABM,
+  PUF,
+  M2M,
+  PERPETUAL,
+  P3Y
+};
+var planTypes = {
+  [ABM]: { commitment: Commitment2.YEAR, term: Term2.MONTHLY },
+  [PUF]: { commitment: Commitment2.YEAR, term: Term2.ANNUAL },
+  [M2M]: { commitment: Commitment2.MONTH, term: Term2.MONTHLY },
+  [PERPETUAL]: { commitment: Commitment2.PERPETUAL, term: void 0 },
+  [P3Y]: { commitment: Commitment2.THREE_MONTHS, term: Term2.P3Y }
+};
+var errorValueNotOffer = "Value is not an offer";
+var applyPlanType = (offer) => {
+  if (typeof offer !== "object") return errorValueNotOffer;
+  const { commitment, term } = offer;
+  const planType = getPlanType(commitment, term);
+  return { ...offer, planType };
+};
+var getPlanType = (commitment, term) => {
+  switch (commitment) {
+    case void 0:
+      return errorValueNotOffer;
+    case "":
+      return "";
+    case Commitment2.YEAR:
+      return term === Term2.MONTHLY ? ABM : term === Term2.ANNUAL ? PUF : "";
+    case Commitment2.MONTH:
+      return term === Term2.MONTHLY ? M2M : "";
+    case Commitment2.PERPETUAL:
+      return PERPETUAL;
+    case Commitment2.TERM_LICENSE:
+      return term === Term2.P3Y ? P3Y : "";
+    default:
+      return "";
+  }
+};
+function forceTaxExclusivePrice(offer) {
+  const { priceDetails } = offer;
+  const {
+    price: price2,
+    priceWithoutDiscount,
+    priceWithoutTax,
+    priceWithoutDiscountAndTax,
+    taxDisplay
+  } = priceDetails;
+  if (taxDisplay !== TAX_INCLUSIVE_DETAILS) return offer;
+  const amendedOffer = {
+    ...offer,
+    priceDetails: {
+      ...priceDetails,
+      price: priceWithoutTax ?? price2,
+      priceWithoutDiscount: priceWithoutDiscountAndTax ?? priceWithoutDiscount,
+      taxDisplay: TAX_EXCLUSIVE
+    }
+  };
+  if (amendedOffer.offerType === "TRIAL" && amendedOffer.priceDetails.price === 0) {
+    amendedOffer.priceDetails.price = amendedOffer.priceDetails.priceWithoutDiscount;
+  }
+  return amendedOffer;
+}
+
+// src/utilities.js
+var MAS_COMMERCE_SERVICE = "mas-commerce-service";
+function selectOffers(offers, { country, forceTaxExclusive, perpetual }) {
+  let selected;
+  if (offers.length < 2) selected = offers;
+  else {
+    const language = country === "GB" || perpetual ? "EN" : "MULT";
+    const [first, second] = offers;
+    selected = [first.language === language ? first : second];
+  }
+  if (forceTaxExclusive) {
+    selected = selected.map(forceTaxExclusivePrice);
+  }
+  return selected;
+}
+var setImmediate = (getConfig) => window.setTimeout(getConfig);
+function toQuantity(value, defaultValue = 1) {
+  if (value == null) return [defaultValue];
+  let quantity = (Array.isArray(value) ? value : String(value).split(",")).map(toPositiveFiniteInteger).filter(isPositiveFiniteNumber);
+  if (!quantity.length) quantity = [defaultValue];
+  return quantity;
+}
+function toOfferSelectorIds(value) {
+  if (value == null) return [];
+  const ids = Array.isArray(value) ? value : String(value).split(",");
+  return ids.filter(isNotEmptyString);
+}
+function getService() {
+  return document.getElementsByTagName(MAS_COMMERCE_SERVICE)?.[0];
+}
+
+// src/lana.js
+var config = {
+  clientId: "merch-at-scale",
+  delimiter: "\xB6",
+  ignoredProperties: ["analytics", "literals", "element"],
+  serializableTypes: ["Array", "Object"],
+  sampleRate: 1,
+  tags: "acom",
+  isProdDomain: false
+};
+var PAGE_LIMIT = 1e3;
+function isError(value) {
+  return value instanceof Error || typeof value?.originatingRequest === "string";
+}
+function serializeValue(value) {
+  if (value == null) return void 0;
+  const type = typeof value;
+  if (type === "function") {
+    return value.name ? `function ${value.name}` : "function";
+  }
+  if (type === "object") {
+    if (value instanceof Error) return value.message;
+    if (typeof value.originatingRequest === "string") {
+      const { message, originatingRequest, status } = value;
+      return [message, status, originatingRequest].filter(Boolean).join(" ");
+    }
+    const objectType = value[Symbol.toStringTag] ?? Object.getPrototypeOf(value).constructor.name;
+    if (!config.serializableTypes.includes(objectType)) return objectType;
+  }
+  return value;
+}
+function serializeParam(key, value) {
+  if (config.ignoredProperties.includes(key)) return void 0;
+  return serializeValue(value);
+}
+var lanaAppender = {
+  append(entry) {
+    if (entry.level !== "error") return;
+    const { message, params } = entry;
+    const errors = [];
+    const values = [];
+    let payload = message;
+    params.forEach((param) => {
+      if (param != null) {
+        (isError(param) ? errors : values).push(param);
+      }
+    });
+    if (errors.length) {
+      payload += " " + errors.map(serializeValue).join(" ");
+    }
+    const { pathname, search } = window.location;
+    let page = `${config.delimiter}page=${pathname}${search}`;
+    if (page.length > PAGE_LIMIT) {
+      page = `${page.slice(0, PAGE_LIMIT)}<trunc>`;
+    }
+    payload += page;
+    if (values.length) {
+      payload += `${config.delimiter}facts=`;
+      payload += JSON.stringify(values, serializeParam);
+    }
+    window.lana?.log(payload, config);
+  }
+};
+function updateConfig(newConfig) {
+  Object.assign(
+    config,
+    Object.fromEntries(
+      Object.entries(newConfig).filter(
+        ([key, value]) => key in config && value !== "" && value !== null && value !== void 0 && !Number.isNaN(value)
+        // Correctly exclude NaN
+      )
+    )
+  );
+}
+
+// src/log.js
+var HostEnv = {
+  LOCAL: "local",
+  PROD: "prod",
+  STAGE: "stage"
+};
+var LogLevels = {
+  DEBUG: "debug",
+  ERROR: "error",
+  INFO: "info",
+  WARN: "warn"
+};
+var appenders = /* @__PURE__ */ new Set();
+var filters = /* @__PURE__ */ new Set();
+var loggerIndexes = /* @__PURE__ */ new Map();
+var consoleAppender = {
+  append({ level, message, params, timestamp, source }) {
+    console[level](
+      `${timestamp}ms [${source}] %c${message}`,
+      "font-weight: bold;",
+      ...params
+    );
+  }
+};
+var debugFilter = { filter: ({ level }) => level !== LogLevels.DEBUG };
+var quietFilter = { filter: () => false };
+function createEntry(level, message, namespace2, params, source) {
+  return {
+    level,
+    message,
+    namespace: namespace2,
+    get params() {
+      if (params.length === 1 && isFunction(params[0])) {
+        params = params[0]();
+        if (!Array.isArray(params)) params = [params];
+      }
+      return params;
+    },
+    source,
+    timestamp: performance.now().toFixed(3)
+  };
+}
+function handleEntry(entry) {
+  if ([...filters].every((filter) => filter(entry))) {
+    appenders.forEach((appender) => appender(entry));
+  }
+}
+function createLog2(namespace2) {
+  const index = (loggerIndexes.get(namespace2) ?? 0) + 1;
+  loggerIndexes.set(namespace2, index);
+  const id = `${namespace2} #${index}`;
+  const log2 = {
+    id,
+    namespace: namespace2,
+    module: (name) => createLog2(`${log2.namespace}/${name}`),
+    updateConfig
+  };
+  Object.values(LogLevels).forEach((level) => {
+    log2[level] = (message, ...params) => handleEntry(createEntry(level, message, namespace2, params, id));
+  });
+  return Object.seal(log2);
+}
+function use(...plugins) {
+  plugins.forEach((plugin) => {
+    const { append, filter } = plugin;
+    if (isFunction(filter)) filters.add(filter);
+    if (isFunction(append)) appenders.add(append);
+  });
+}
+function init(env = {}) {
+  const { name } = env;
+  const debug = toBoolean(
+    getParameter("commerce.debug", { search: true, storage: true }),
+    name === HostEnv.LOCAL
+  );
+  if (debug) use(consoleAppender);
+  else use(debugFilter);
+  if (name === HostEnv.PROD) use(lanaAppender);
+  return Log;
+}
+function reset() {
+  appenders.clear();
+  filters.clear();
+}
+var Log = {
+  ...createLog2(LOG_NAMESPACE),
+  Level: LogLevels,
+  Plugins: { consoleAppender, debugFilter, quietFilter, lanaAppender },
+  init,
+  reset,
+  use
+};
+
+// src/mas-error.js
+var MasError = class _MasError extends Error {
+  /**
+   * Creates a new MasError instance
+   * @param {string} message - The error message
+   * @param {Object} context - Additional context information about the error
+   * @param {unknown} cause - The original error that caused this error
+   */
+  constructor(message, context, cause) {
+    super(message, { cause });
+    this.name = "MasError";
+    if (context.response) {
+      const requestId = context.response.headers?.get(HEADER_X_REQUEST_ID);
+      if (requestId) {
+        context.requestId = requestId;
+      }
+      if (context.response.status) {
+        context.status = context.response.status;
+        context.statusText = context.response.statusText;
+      }
+      if (context.response.url) {
+        context.url = context.response.url;
+      }
+    }
+    delete context.response;
+    this.context = context;
+    if (Error.captureStackTrace) {
+      Error.captureStackTrace(this, _MasError);
+    }
+  }
+  /**
+   * Returns a string representation of the error including context
+   * @returns {string} String representation of the error
+   */
+  toString() {
+    const contextStr = Object.entries(this.context || {}).map(([key, value]) => `${key}: ${JSON.stringify(value)}`).join(", ");
+    let errorString = `${this.name}: ${this.message}`;
+    if (contextStr) {
+      errorString += ` (${contextStr})`;
+    }
+    if (this.cause) {
+      errorString += `
+Caused by: ${this.cause}`;
+    }
+    return errorString;
+  }
+};
+
+// src/mas-element.js
+var StateClassName = {
+  [STATE_FAILED]: CLASS_NAME_FAILED,
+  [STATE_PENDING]: CLASS_NAME_PENDING,
+  [STATE_RESOLVED]: CLASS_NAME_RESOLVED
+};
+var StateEventType = {
+  [STATE_FAILED]: EVENT_TYPE_FAILED,
+  [STATE_RESOLVED]: EVENT_TYPE_RESOLVED
+};
+var _service;
+var MasElement = class {
+  constructor(wrapperElement) {
+    __privateAdd(this, _service);
+    __publicField(this, "changes", /* @__PURE__ */ new Map());
+    __publicField(this, "connected", false);
+    __publicField(this, "error");
+    __publicField(this, "log");
+    __publicField(this, "options");
+    __publicField(this, "promises", []);
+    __publicField(this, "state", STATE_PENDING);
+    __publicField(this, "timer", null);
+    __publicField(this, "value");
+    __publicField(this, "version", 0);
+    __publicField(this, "wrapperElement");
+    this.wrapperElement = wrapperElement;
+    this.log = Log.module("mas-element");
+  }
+  update() {
+    [STATE_FAILED, STATE_PENDING, STATE_RESOLVED].forEach((state) => {
+      this.wrapperElement.classList.toggle(
+        StateClassName[state],
+        state === this.state
+      );
+    });
+  }
+  notify() {
+    if (this.state === STATE_RESOLVED || this.state === STATE_FAILED) {
+      if (this.state === STATE_RESOLVED) {
+        this.promises.forEach(
+          ({ resolve }) => resolve(this.wrapperElement)
+        );
+      } else if (this.state === STATE_FAILED) {
+        this.promises.forEach(({ reject }) => reject(this.error));
+      }
+      this.promises = [];
+    }
+    let detail = this.error;
+    if (this.error instanceof MasError) {
+      detail = {
+        message: this.error.message,
+        ...this.error.context
+      };
+    }
+    this.wrapperElement.dispatchEvent(
+      new CustomEvent(StateEventType[this.state], {
+        bubbles: true,
+        detail
+      })
+    );
+  }
+  /**
+   * Adds name/value of the updated attribute to the `changes` map,
+   * requests placeholder update.
+   */
+  attributeChangedCallback(name, _3, value) {
+    this.changes.set(name, value);
+    this.requestUpdate();
+  }
+  /**
+   * Triggers when this component is connected to DOM.
+   * Subscribes to the `ready` event of the commerce service,
+   * requests placeholder update.
+   */
+  connectedCallback() {
+    __privateSet(this, _service, getService());
+    this.requestUpdate(true);
+  }
+  /**
+   * Triggers when this component is disconnected from DOM.
+   * Runs and then erases all disposers.
+   */
+  disconnectedCallback() {
+    if (this.connected) {
+      this.connected = false;
+      this.log?.debug("Disconnected:", { element: this.wrapperElement });
+    }
+  }
+  /**
+   * Returns a promise resolving to this placeholder
+   * when its value is resolved or rejected.
+   * If placeholder is not pending for completion of an async operation
+   * the returned promise is already resolved or rejected.
+   */
+  onceSettled() {
+    const { error, promises, state } = this;
+    if (STATE_RESOLVED === state)
+      return Promise.resolve(this.wrapperElement);
+    if (STATE_FAILED === state) return Promise.reject(error);
+    return new Promise((resolve, reject) => {
+      promises.push({ resolve, reject });
+    });
+  }
+  /**
+   * Sets component state to "RESOLVED".
+   * Updates its class list and stored value, notifies observers and fires "RESOLVED" event.
+   */
+  toggleResolved(version, value, options) {
+    if (version !== this.version) return false;
+    if (options !== void 0) this.options = options;
+    this.state = STATE_RESOLVED;
+    this.value = value;
+    this.update();
+    this.log?.debug("Resolved:", { element: this.wrapperElement, value });
+    setImmediate(() => this.notify());
+    return true;
+  }
+  /**
+   * Sets component state to "FAILED".
+   * Updates its class list and stored error, notifies observers and fires "FAILED" event.
+   */
+  toggleFailed(version, error, options) {
+    if (version !== this.version) return false;
+    if (options !== void 0) this.options = options;
+    this.error = error;
+    this.state = STATE_FAILED;
+    this.update();
+    const wcName = this.wrapperElement.getAttribute("is");
+    this.log?.error(`${wcName}: Failed to render: ${error.message}`, {
+      element: this.wrapperElement,
+      ...error.context,
+      ...__privateGet(this, _service)?.duration
+    });
+    setImmediate(() => this.notify());
+    return true;
+  }
+  /**
+   * Sets component state to "PENDING".
+   * Increments its version, updates CSS classes, notifies observers and fires "PENDING" event.
+   */
+  togglePending(options) {
+    this.version++;
+    if (options) this.options = options;
+    this.state = STATE_PENDING;
+    this.update();
+    this.log?.debug("Pending:", {
+      osi: this.wrapperElement?.options?.wcsOsi
+    });
+    return this.version;
+  }
+  /**
+   * Queues task to update this component.
+   * Skips rendering if update is not forced and no changes were accumulated since the previous update.
+   * Calls `render` method to perform the update.
+   * Restores previous state of the component if the `render` method returned `false`.
+   */
+  requestUpdate(force = false) {
+    if (!this.wrapperElement.isConnected || !getService()) return;
+    if (this.timer) return;
+    const { error, options, state, value, version } = this;
+    this.state = STATE_PENDING;
+    this.timer = setImmediate(async () => {
+      this.timer = null;
+      let changes = null;
+      if (this.changes.size) {
+        changes = Object.fromEntries(this.changes.entries());
+        this.changes.clear();
+      }
+      if (this.connected) {
+        this.log?.debug("Updated:", {
+          element: this.wrapperElement,
+          changes
+        });
+      } else {
+        this.connected = true;
+        this.log?.debug("Connected:", {
+          element: this.wrapperElement,
+          changes
+        });
+      }
+      if (changes || force) {
+        try {
+          const result = await this.wrapperElement.render?.();
+          if (result === false && this.state === STATE_PENDING && this.version === version) {
+            this.state = state;
+            this.error = error;
+            this.value = value;
+            this.update();
+            this.notify();
+          }
+        } catch (error2) {
+          this.toggleFailed(this.version, error2, options);
+        }
+      }
+    });
+  }
+};
+_service = new WeakMap();
+function cleanupDataset(dataset = {}) {
+  Object.entries(dataset).forEach(([key, value]) => {
+    const remove = value == null || value === "" || value?.length === 0;
+    if (remove) delete dataset[key];
+  });
+  return dataset;
+}
+function createMasElement(Class, dataset = {}) {
+  const { tag, is } = Class;
+  const element = document.createElement(tag, { is });
+  element.setAttribute("is", is);
+  Object.assign(element.dataset, cleanupDataset(dataset));
+  return element;
+}
+function updateMasElement(element, dataset = {}) {
+  if (element instanceof HTMLElement) {
+    Object.assign(element.dataset, cleanupDataset(dataset));
+    return element;
+  }
+  return null;
+}
+
+// src/checkout-mixin.js
+var CLASS_NAME_DOWNLOAD = "download";
+var CLASS_NAME_UPGRADE = "upgrade";
+function createCheckoutElement(Class, options = {}, innerHTML = "") {
+  const service = getService();
+  if (!service) return null;
+  const {
+    checkoutMarketSegment,
+    checkoutWorkflow,
+    checkoutWorkflowStep,
+    entitlement,
+    upgrade,
+    modal,
+    perpetual,
+    promotionCode,
+    quantity,
+    wcsOsi,
+    extraOptions,
+    analyticsId
+  } = service.collectCheckoutOptions(options);
+  const element = createMasElement(Class, {
+    checkoutMarketSegment,
+    checkoutWorkflow,
+    checkoutWorkflowStep,
+    entitlement,
+    upgrade,
+    modal,
+    perpetual,
+    promotionCode,
+    quantity,
+    wcsOsi,
+    extraOptions,
+    analyticsId
+  });
+  if (innerHTML)
+    element.innerHTML = `<span style="pointer-events: none;">${innerHTML}</span>`;
+  return element;
+}
+function CheckoutMixin(Base) {
+  return class CheckoutBase extends Base {
+    constructor() {
+      super(...arguments);
+      /* c8 ignore next 1 */
+      __publicField(this, "checkoutActionHandler");
+      __publicField(this, "masElement", new MasElement(this));
+    }
+    attributeChangedCallback(name, oldValue, value) {
+      this.masElement.attributeChangedCallback(name, oldValue, value);
+    }
+    connectedCallback() {
+      this.masElement.connectedCallback();
+      this.addEventListener("click", this.clickHandler);
+    }
+    disconnectedCallback() {
+      this.masElement.disconnectedCallback();
+      this.removeEventListener("click", this.clickHandler);
+    }
+    onceSettled() {
+      return this.masElement.onceSettled();
+    }
+    get value() {
+      return this.masElement.value;
+    }
+    get options() {
+      return this.masElement.options;
+    }
+    get isOpen3in1Modal() {
+      const masFF3in1 = document.querySelector("meta[name=mas-ff-3in1]");
+      return Object.values(MODAL_TYPE_3_IN_1).includes(this.getAttribute("data-modal")) && (!masFF3in1 || masFF3in1.content !== "off");
+    }
+    requestUpdate(force = false) {
+      return this.masElement.requestUpdate(force);
+    }
+    static get observedAttributes() {
+      return [
+        "data-checkout-workflow",
+        "data-checkout-workflow-step",
+        "data-extra-options",
+        "data-ims-country",
+        "data-perpetual",
+        "data-promotion-code",
+        "data-quantity",
+        "data-template",
+        "data-wcs-osi",
+        "data-entitlement",
+        "data-upgrade",
+        "data-modal"
+      ];
+    }
+    async render(overrides = {}) {
+      const service = getService();
+      if (!service) return false;
+      if (!this.dataset.imsCountry) {
+        service.imsCountryPromise.then((countryCode) => {
+          if (countryCode) this.dataset.imsCountry = countryCode;
+        });
+      }
+      overrides.imsCountry = null;
+      const options = service.collectCheckoutOptions(overrides, this);
+      if (!options.wcsOsi.length) return false;
+      let extraOptions;
+      try {
+        extraOptions = JSON.parse(options.extraOptions ?? "{}");
+      } catch (e7) {
+        this.masElement.log?.error(
+          "cannot parse exta checkout options",
+          e7
+        );
+      }
+      const version = this.masElement.togglePending(options);
+      this.setCheckoutUrl("");
+      const promises = service.resolveOfferSelectors(options);
+      let offers = await Promise.all(promises);
+      offers = offers.map((offer) => selectOffers(offer, options));
+      options.country = this.dataset.imsCountry || options.country;
+      const checkoutAction = await service.buildCheckoutAction?.(
+        offers.flat(),
+        { ...extraOptions, ...options },
+        this
+      );
+      return this.renderOffers(
+        offers.flat(),
+        options,
+        {},
+        checkoutAction,
+        version
+      );
+    }
+    /**
+     * Renders checkout link href for provided offers into this component.
+     * @param {Commerce.Wcs.Offer[]} offers
+     * @param {Commerce.Checkout.Options} options
+     * @param {Commerce.Checkout.AnyOptions} overrides
+     * @param {Commerce.Checkout.CheckoutAction} checkoutAction
+     * @param {number} version
+     */
+    renderOffers(offers, options, overrides = {}, checkoutAction = void 0, version = void 0) {
+      const service = getService();
+      if (!service) return false;
+      const extraOptions = JSON.parse(
+        this.dataset.extraOptions ?? "null"
+      );
+      options = { ...extraOptions, ...options, ...overrides };
+      version ?? (version = this.masElement.togglePending(options));
+      if (this.checkoutActionHandler) {
+        this.checkoutActionHandler = void 0;
+      }
+      if (checkoutAction) {
+        this.classList.remove(CLASS_NAME_DOWNLOAD, CLASS_NAME_UPGRADE);
+        this.masElement.toggleResolved(version, offers, options);
+        const { url, text, className, handler } = checkoutAction;
+        if (url) {
+          this.setCheckoutUrl(url);
+        }
+        if (text) this.firstElementChild.innerHTML = text;
+        if (className) this.classList.add(...className.split(" "));
+        if (handler) {
+          this.setCheckoutUrl("#");
+          this.checkoutActionHandler = handler.bind(this);
+        }
+      }
+      if (offers.length) {
+        if (this.masElement.toggleResolved(version, offers, options)) {
+          if (!this.classList.contains(CLASS_NAME_DOWNLOAD) && !this.classList.contains(CLASS_NAME_UPGRADE)) {
+            const url = service.buildCheckoutURL(offers, options);
+            this.setCheckoutUrl(options.modal === "true" ? "#" : url);
+          }
+          return true;
+        }
+      } else {
+        const error = new Error(
+          `Not provided: ${options?.wcsOsi ?? "-"}`
+        );
+        if (this.masElement.toggleFailed(version, error, options)) {
+          this.setCheckoutUrl("#");
+          return true;
+        }
+      }
+    }
+    setCheckoutUrl() {
+    }
+    clickHandler(e7) {
+    }
+    updateOptions(options = {}) {
+      const service = getService();
+      if (!service) return false;
+      const {
+        checkoutMarketSegment,
+        checkoutWorkflow,
+        checkoutWorkflowStep,
+        entitlement,
+        upgrade,
+        modal,
+        perpetual,
+        promotionCode,
+        quantity,
+        wcsOsi
+      } = service.collectCheckoutOptions(options);
+      updateMasElement(this, {
+        checkoutMarketSegment,
+        checkoutWorkflow,
+        checkoutWorkflowStep,
+        entitlement,
+        upgrade,
+        modal,
+        perpetual,
+        promotionCode,
+        quantity,
+        wcsOsi
+      });
+      return true;
+    }
+  };
+}
+
+// src/checkout-link.js
+var _CheckoutLink = class _CheckoutLink extends CheckoutMixin(HTMLAnchorElement) {
+  static createCheckoutLink(options = {}, innerHTML = "") {
+    return createCheckoutElement(_CheckoutLink, options, innerHTML);
+  }
+  setCheckoutUrl(value) {
+    this.setAttribute("href", value);
+  }
+  get isCheckoutLink() {
+    return true;
+  }
+  clickHandler(e7) {
+    if (this.checkoutActionHandler) {
+      this.checkoutActionHandler?.(e7);
+      return;
+    }
+  }
+};
+__publicField(_CheckoutLink, "is", "checkout-link");
+__publicField(_CheckoutLink, "tag", "a");
+var CheckoutLink = _CheckoutLink;
+if (!window.customElements.get(CheckoutLink.is)) {
+  window.customElements.define(CheckoutLink.is, CheckoutLink, {
+    extends: CheckoutLink.tag
+  });
+}
+
+// src/buildCheckoutUrl.js
+var AF_DRAFT_LANDSCAPE = "p_draft_landscape";
+var UCV3_PREFIX = "/store/";
+var PARAMETERS = /* @__PURE__ */ new Map([
+  ["countrySpecific", "cs"],
+  ["customerSegment", "cs"],
+  ["quantity", "q"],
+  ["authCode", "code"],
+  ["checkoutPromoCode", "apc"],
+  ["rurl", "rUrl"],
+  ["curl", "cUrl"],
+  ["ctxrturl", "ctxRtUrl"],
+  ["country", "co"],
+  ["language", "lang"],
+  ["clientId", "cli"],
+  ["context", "ctx"],
+  ["productArrangementCode", "pa"],
+  ["offerType", "ot"],
+  ["marketSegment", "ms"]
+]);
+var ALLOWED_KEYS = /* @__PURE__ */ new Set([
+  "af",
+  "ai",
+  "apc",
+  "appctxid",
+  "cli",
+  "co",
+  "cs",
+  "csm",
+  "ctx",
+  "ctxRtUrl",
+  "DCWATC",
+  "dp",
+  // Enable digital payments for iframe context
+  "fr",
+  // represents the commerce app redirecting to UC
+  "gsp",
+  "ijt",
+  "lang",
+  "lo",
+  "mal",
+  "ms",
+  "mv",
+  "mv2",
+  "nglwfdata",
+  "ot",
+  "otac",
+  "pa",
+  "pcid",
+  // Unified Paywall configuration ID for analytics
+  "promoid",
+  "q",
+  "rf",
+  "sc",
+  "scl",
+  "sdid",
+  "sid",
+  // x-adobe-clientsession
+  "spint",
+  "svar",
+  "th",
+  "thm",
+  "trackingid",
+  "usid",
+  "workflowid",
+  "context.guid",
+  "so.ca",
+  "so.su",
+  "so.tr",
+  "so.va"
+]);
+var REQUIRED_KEYS = ["env", "workflowStep", "clientId", "country"];
+var mapParameterName = (field) => PARAMETERS.get(field) ?? field;
+function addParameters(inputParameters, resultParameters, allowedKeys) {
+  for (const [key, value] of Object.entries(inputParameters)) {
+    const mappedKey = mapParameterName(key);
+    if (value != null && allowedKeys.has(mappedKey)) {
+      resultParameters.set(mappedKey, value);
+    }
+  }
+}
+function getHostName(env) {
+  switch (env) {
+    case PROVIDER_ENVIRONMENT.PRODUCTION:
+      return "https://commerce.adobe.com";
+    default:
+      return "https://commerce-stg.adobe.com";
+  }
+}
+function setItemsParameter(items, parameters) {
+  for (const idx in items) {
+    const item = items[idx];
+    for (const [key, value] of Object.entries(item)) {
+      if (value == null) continue;
+      const parameterName = mapParameterName(key);
+      parameters.set(`items[${idx}][${parameterName}]`, value);
+    }
+  }
+}
+function add3in1Parameters({ url, modal, customerSegment, cs, ms, marketSegment, quantity, productArrangementCode, addonProductArrangementCode }) {
+  const masFF3in1 = document.querySelector("meta[name=mas-ff-3in1]");
+  if (!Object.values(MODAL_TYPE_3_IN_1).includes(modal) || !url?.searchParams || !customerSegment || !marketSegment || masFF3in1 && masFF3in1.content === "off") return url;
+  url.searchParams.set("rtc", "t");
+  url.searchParams.set("lo", "sl");
+  url.searchParams.set("af", "uc_new_user_iframe,uc_new_system_close");
+  if (url.searchParams.get("cli") !== "doc_cloud") {
+    url.searchParams.set("cli", modal === MODAL_TYPE_3_IN_1.CRM ? "creative" : "mini_plans");
+  }
+  if (modal === MODAL_TYPE_3_IN_1.TWP || modal === MODAL_TYPE_3_IN_1.D2P) {
+    if (customerSegment === "INDIVIDUAL" && marketSegment === "EDU") {
+      url.searchParams.set("ms", "e");
+    }
+    if (customerSegment === "TEAM" && marketSegment === "COM") {
+      url.searchParams.set("cs", "t");
+    }
+  }
+  if (quantity) url.searchParams.set("q", quantity);
+  if (addonProductArrangementCode) url.searchParams.set("ao", addonProductArrangementCode);
+  if (productArrangementCode) url.searchParams.set("pa", productArrangementCode);
+  if (cs) url.searchParams.set("cs", cs);
+  if (ms) url.searchParams.set("ms", ms);
+  if (url.searchParams.get("ot") === "PROMOTION") url.searchParams.delete("ot");
+  return url;
+}
+function buildCheckoutUrl(checkoutData) {
+  validateCheckoutData(checkoutData);
+  const { env, items, workflowStep, ms, cs, marketSegment, customerSegment, ot, offerType, pa, productArrangementCode, landscape, modal, ...rest } = checkoutData;
+  const segmentationParameters = {
+    marketSegment: marketSegment ?? ms,
+    offerType: offerType ?? ot,
+    productArrangementCode: productArrangementCode ?? pa
+  };
+  let url = new URL(getHostName(env));
+  url.pathname = `${UCV3_PREFIX}${workflowStep}`;
+  if (workflowStep !== CheckoutWorkflowStep.SEGMENTATION && workflowStep !== CheckoutWorkflowStep.CHANGE_PLAN_TEAM_PLANS) {
+    setItemsParameter(items, url.searchParams);
+  }
+  addParameters({ cs, ...rest }, url.searchParams, ALLOWED_KEYS);
+  if (landscape === Landscape.DRAFT) {
+    addParameters({ af: AF_DRAFT_LANDSCAPE }, url.searchParams, ALLOWED_KEYS);
+  }
+  if (workflowStep === CheckoutWorkflowStep.SEGMENTATION) {
+    addParameters(segmentationParameters, url.searchParams, ALLOWED_KEYS);
+    url = add3in1Parameters({
+      url,
+      modal,
+      customerSegment,
+      marketSegment,
+      cs,
+      ms,
+      quantity: items?.[0]?.quantity > 1 && items?.[0]?.quantity,
+      productArrangementCode,
+      addonProductArrangementCode: productArrangementCode ? items?.find((item) => item.productArrangementCode !== productArrangementCode)?.productArrangementCode : items?.[1]?.productArrangementCode
+    });
+  }
+  return url.toString();
+}
+function validateCheckoutData(checkoutData) {
+  for (const key of REQUIRED_KEYS) {
+    if (!checkoutData[key]) {
+      throw new Error('Argument "checkoutData" is not valid, missing: ' + key);
+    }
+  }
+  if (checkoutData.workflowStep !== CheckoutWorkflowStep.SEGMENTATION && checkoutData.workflowStep !== CheckoutWorkflowStep.CHANGE_PLAN_TEAM_PLANS && !checkoutData.items) {
+    throw new Error('Argument "checkoutData" is not valid, missing: items');
+  }
+  return true;
+}
+
+// src/defaults.js
+var Defaults = Object.freeze({
+  checkoutClientId: "adobe_com",
+  checkoutWorkflow: CheckoutWorkflow.V3,
+  checkoutWorkflowStep: CheckoutWorkflowStep.EMAIL,
+  country: "US",
+  displayOldPrice: true,
+  displayPerUnit: false,
+  displayRecurrence: true,
+  displayTax: false,
+  displayPlanType: false,
+  env: Env.PRODUCTION,
+  forceTaxExclusive: false,
+  language: "en",
+  entitlement: false,
+  extraOptions: {},
+  modal: false,
+  promotionCode: "",
+  quantity: 1,
+  alternativePrice: false,
+  wcsApiKey: "wcms-commerce-ims-ro-user-milo",
+  wcsURL: "https://www.adobe.com/web_commerce_artifact",
+  landscape: Landscape.PUBLISHED
+});
+
+// src/checkout.js
+function Checkout({ providers, settings }) {
+  function collectCheckoutOptions(overrides, placeholder) {
+    const {
+      checkoutClientId,
+      checkoutWorkflow: defaultWorkflow,
+      checkoutWorkflowStep: defaultWorkflowStep,
+      country: defaultCountry,
+      language: defaultLanguage,
+      promotionCode: defaultPromotionCode,
+      quantity: defaultQuantity
+    } = settings;
+    const {
+      checkoutMarketSegment,
+      checkoutWorkflow = defaultWorkflow,
+      checkoutWorkflowStep = defaultWorkflowStep,
+      imsCountry: imsCountry2,
+      country = imsCountry2 ?? defaultCountry,
+      language = defaultLanguage,
+      quantity = defaultQuantity,
+      entitlement,
+      upgrade,
+      modal,
+      perpetual,
+      promotionCode = defaultPromotionCode,
+      wcsOsi,
+      extraOptions,
+      ...rest
+    } = Object.assign({}, placeholder?.dataset ?? {}, overrides ?? {});
+    const workflow = toEnumeration(
+      checkoutWorkflow,
+      CheckoutWorkflow,
+      Defaults.checkoutWorkflow
+    );
+    let workflowStep = CheckoutWorkflowStep.CHECKOUT;
+    if (workflow === CheckoutWorkflow.V3) {
+      workflowStep = toEnumeration(
+        checkoutWorkflowStep,
+        CheckoutWorkflowStep,
+        Defaults.checkoutWorkflowStep
+      );
+    }
+    const options = omitProperties({
+      ...rest,
+      extraOptions,
+      checkoutClientId,
+      checkoutMarketSegment,
+      country,
+      quantity: toQuantity(quantity, Defaults.quantity),
+      checkoutWorkflow: workflow,
+      checkoutWorkflowStep: workflowStep,
+      language,
+      entitlement: toBoolean(entitlement),
+      upgrade: toBoolean(upgrade),
+      modal,
+      perpetual: toBoolean(perpetual),
+      promotionCode: computePromoStatus(promotionCode).effectivePromoCode,
+      wcsOsi: toOfferSelectorIds(wcsOsi)
+    });
+    if (placeholder) {
+      for (const provider of providers.checkout) {
+        provider(placeholder, options);
+      }
+    }
+    return options;
+  }
+  function buildCheckoutURL(offers, options) {
+    if (!Array.isArray(offers) || !offers.length || !options) {
+      return "";
+    }
+    const { env, landscape } = settings;
+    const {
+      checkoutClientId: clientId,
+      checkoutMarketSegment,
+      checkoutWorkflow: workflow,
+      checkoutWorkflowStep: workflowStep,
+      country,
+      promotionCode: checkoutPromoCode,
+      quantity,
+      ...rest
+    } = collectCheckoutOptions(options);
+    const masFF3in1 = document.querySelector("meta[name=mas-ff-3in1]");
+    const is3in1 = Object.values(MODAL_TYPE_3_IN_1).includes(options.modal) && (!masFF3in1 || masFF3in1.content !== "off");
+    const context = window.frameElement || is3in1 ? "if" : "fp";
+    const data = {
+      checkoutPromoCode,
+      clientId,
+      context,
+      country,
+      env,
+      items: [],
+      marketSegment: checkoutMarketSegment,
+      workflowStep,
+      landscape,
+      ...rest
+    };
+    const [{ productArrangementCode, marketSegments: [marketSegment], customerSegment, offerType }] = offers;
+    Object.assign(data, {
+      productArrangementCode,
+      marketSegment,
+      customerSegment,
+      offerType
+    });
+    if (offers.length === 1) {
+      const { offerId } = offers[0];
+      data.items.push(
+        quantity[0] === 1 ? { id: offerId } : { id: offerId, quantity: quantity[0] }
+      );
+    } else {
+      data.items.push(
+        ...offers.map(({ offerId, productArrangementCode: productArrangementCode2 }, index) => ({
+          id: offerId,
+          quantity: quantity[index] ?? Defaults.quantity,
+          ...is3in1 ? { productArrangementCode: productArrangementCode2 } : {}
+        }))
+      );
+    }
+    return buildCheckoutUrl(data);
+  }
+  const { createCheckoutLink } = CheckoutLink;
+  return {
+    CheckoutLink,
+    CheckoutWorkflow,
+    CheckoutWorkflowStep,
+    buildCheckoutURL,
+    collectCheckoutOptions,
+    createCheckoutLink
+  };
+}
+
+// src/ims.js
+function imsReady({ interval = 200, maxAttempts = 25 } = {}) {
+  const log2 = Log.module("ims");
+  return new Promise((resolve) => {
+    log2.debug("Waing for IMS to be ready");
+    let count = 0;
+    function poll() {
+      if (window.adobeIMS?.initialized) {
+        resolve();
+      } else if (++count > maxAttempts) {
+        log2.debug("Timeout");
+        resolve();
+      } else {
+        setTimeout(poll, interval);
+      }
+    }
+    poll();
+  });
+}
+function imsSignedIn(imsReadyPromise) {
+  return imsReadyPromise.then(
+    () => window.adobeIMS?.isSignedInUser() ?? false
+  );
+}
+function imsCountry(imsSignedInPromise) {
+  const log2 = Log.module("ims");
+  return imsSignedInPromise.then((signedIn) => {
+    if (!signedIn) return null;
+    return window.adobeIMS.getProfile().then(
+      ({ countryCode }) => {
+        log2.debug("Got user country:", countryCode);
+        return countryCode;
+      },
+      (error) => {
+        log2.error("Unable to get user country:", error);
+        return void 0;
+      }
+    );
+  });
+}
+function Ims({}) {
+  const imsReadyPromise = imsReady();
+  const imsSignedInPromise = imsSignedIn(imsReadyPromise);
+  const imsCountryPromise = imsCountry(imsSignedInPromise);
+  return { imsReadyPromise, imsSignedInPromise, imsCountryPromise };
+}
+
+// src/literals.js
+var priceLiterals = window.masPriceLiterals;
+function getPriceLiterals(settings) {
+  if (Array.isArray(priceLiterals)) {
+    const find = (language) => priceLiterals.find(
+      (candidate) => equalsCaseInsensitive(candidate.lang, language)
+    );
+    const literals = find(settings.language) ?? find(Defaults.language);
+    if (literals) return Object.freeze(literals);
+  }
+  return {};
+}
+
+// node_modules/tslib/tslib.es6.mjs
+var extendStatics = function(d5, b3) {
+  extendStatics = Object.setPrototypeOf || { __proto__: [] } instanceof Array && function(d6, b4) {
+    d6.__proto__ = b4;
+  } || function(d6, b4) {
+    for (var p3 in b4) if (Object.prototype.hasOwnProperty.call(b4, p3)) d6[p3] = b4[p3];
+  };
+  return extendStatics(d5, b3);
+};
+function __extends(d5, b3) {
+  if (typeof b3 !== "function" && b3 !== null)
+    throw new TypeError("Class extends value " + String(b3) + " is not a constructor or null");
+  extendStatics(d5, b3);
+  function __() {
+    this.constructor = d5;
+  }
+  d5.prototype = b3 === null ? Object.create(b3) : (__.prototype = b3.prototype, new __());
+}
+var __assign = function() {
+  __assign = Object.assign || function __assign2(t5) {
+    for (var s8, i5 = 1, n8 = arguments.length; i5 < n8; i5++) {
+      s8 = arguments[i5];
+      for (var p3 in s8) if (Object.prototype.hasOwnProperty.call(s8, p3)) t5[p3] = s8[p3];
+    }
+    return t5;
+  };
+  return __assign.apply(this, arguments);
+};
+function __spreadArray(to, from, pack) {
+  if (pack || arguments.length === 2) for (var i5 = 0, l6 = from.length, ar; i5 < l6; i5++) {
+    if (ar || !(i5 in from)) {
+      if (!ar) ar = Array.prototype.slice.call(from, 0, i5);
+      ar[i5] = from[i5];
+    }
+  }
+  return to.concat(ar || Array.prototype.slice.call(from));
+}
+
+// node_modules/@formatjs/icu-messageformat-parser/lib/error.js
+var ErrorKind;
+(function(ErrorKind2) {
+  ErrorKind2[ErrorKind2["EXPECT_ARGUMENT_CLOSING_BRACE"] = 1] = "EXPECT_ARGUMENT_CLOSING_BRACE";
+  ErrorKind2[ErrorKind2["EMPTY_ARGUMENT"] = 2] = "EMPTY_ARGUMENT";
+  ErrorKind2[ErrorKind2["MALFORMED_ARGUMENT"] = 3] = "MALFORMED_ARGUMENT";
+  ErrorKind2[ErrorKind2["EXPECT_ARGUMENT_TYPE"] = 4] = "EXPECT_ARGUMENT_TYPE";
+  ErrorKind2[ErrorKind2["INVALID_ARGUMENT_TYPE"] = 5] = "INVALID_ARGUMENT_TYPE";
+  ErrorKind2[ErrorKind2["EXPECT_ARGUMENT_STYLE"] = 6] = "EXPECT_ARGUMENT_STYLE";
+  ErrorKind2[ErrorKind2["INVALID_NUMBER_SKELETON"] = 7] = "INVALID_NUMBER_SKELETON";
+  ErrorKind2[ErrorKind2["INVALID_DATE_TIME_SKELETON"] = 8] = "INVALID_DATE_TIME_SKELETON";
+  ErrorKind2[ErrorKind2["EXPECT_NUMBER_SKELETON"] = 9] = "EXPECT_NUMBER_SKELETON";
+  ErrorKind2[ErrorKind2["EXPECT_DATE_TIME_SKELETON"] = 10] = "EXPECT_DATE_TIME_SKELETON";
+  ErrorKind2[ErrorKind2["UNCLOSED_QUOTE_IN_ARGUMENT_STYLE"] = 11] = "UNCLOSED_QUOTE_IN_ARGUMENT_STYLE";
+  ErrorKind2[ErrorKind2["EXPECT_SELECT_ARGUMENT_OPTIONS"] = 12] = "EXPECT_SELECT_ARGUMENT_OPTIONS";
+  ErrorKind2[ErrorKind2["EXPECT_PLURAL_ARGUMENT_OFFSET_VALUE"] = 13] = "EXPECT_PLURAL_ARGUMENT_OFFSET_VALUE";
+  ErrorKind2[ErrorKind2["INVALID_PLURAL_ARGUMENT_OFFSET_VALUE"] = 14] = "INVALID_PLURAL_ARGUMENT_OFFSET_VALUE";
+  ErrorKind2[ErrorKind2["EXPECT_SELECT_ARGUMENT_SELECTOR"] = 15] = "EXPECT_SELECT_ARGUMENT_SELECTOR";
+  ErrorKind2[ErrorKind2["EXPECT_PLURAL_ARGUMENT_SELECTOR"] = 16] = "EXPECT_PLURAL_ARGUMENT_SELECTOR";
+  ErrorKind2[ErrorKind2["EXPECT_SELECT_ARGUMENT_SELECTOR_FRAGMENT"] = 17] = "EXPECT_SELECT_ARGUMENT_SELECTOR_FRAGMENT";
+  ErrorKind2[ErrorKind2["EXPECT_PLURAL_ARGUMENT_SELECTOR_FRAGMENT"] = 18] = "EXPECT_PLURAL_ARGUMENT_SELECTOR_FRAGMENT";
+  ErrorKind2[ErrorKind2["INVALID_PLURAL_ARGUMENT_SELECTOR"] = 19] = "INVALID_PLURAL_ARGUMENT_SELECTOR";
+  ErrorKind2[ErrorKind2["DUPLICATE_PLURAL_ARGUMENT_SELECTOR"] = 20] = "DUPLICATE_PLURAL_ARGUMENT_SELECTOR";
+  ErrorKind2[ErrorKind2["DUPLICATE_SELECT_ARGUMENT_SELECTOR"] = 21] = "DUPLICATE_SELECT_ARGUMENT_SELECTOR";
+  ErrorKind2[ErrorKind2["MISSING_OTHER_CLAUSE"] = 22] = "MISSING_OTHER_CLAUSE";
+  ErrorKind2[ErrorKind2["INVALID_TAG"] = 23] = "INVALID_TAG";
+  ErrorKind2[ErrorKind2["INVALID_TAG_NAME"] = 25] = "INVALID_TAG_NAME";
+  ErrorKind2[ErrorKind2["UNMATCHED_CLOSING_TAG"] = 26] = "UNMATCHED_CLOSING_TAG";
+  ErrorKind2[ErrorKind2["UNCLOSED_TAG"] = 27] = "UNCLOSED_TAG";
+})(ErrorKind || (ErrorKind = {}));
+
+// node_modules/@formatjs/icu-messageformat-parser/lib/types.js
+var TYPE;
+(function(TYPE2) {
+  TYPE2[TYPE2["literal"] = 0] = "literal";
+  TYPE2[TYPE2["argument"] = 1] = "argument";
+  TYPE2[TYPE2["number"] = 2] = "number";
+  TYPE2[TYPE2["date"] = 3] = "date";
+  TYPE2[TYPE2["time"] = 4] = "time";
+  TYPE2[TYPE2["select"] = 5] = "select";
+  TYPE2[TYPE2["plural"] = 6] = "plural";
+  TYPE2[TYPE2["pound"] = 7] = "pound";
+  TYPE2[TYPE2["tag"] = 8] = "tag";
+})(TYPE || (TYPE = {}));
+var SKELETON_TYPE;
+(function(SKELETON_TYPE2) {
+  SKELETON_TYPE2[SKELETON_TYPE2["number"] = 0] = "number";
+  SKELETON_TYPE2[SKELETON_TYPE2["dateTime"] = 1] = "dateTime";
+})(SKELETON_TYPE || (SKELETON_TYPE = {}));
+function isLiteralElement(el) {
+  return el.type === TYPE.literal;
+}
+function isArgumentElement(el) {
+  return el.type === TYPE.argument;
+}
+function isNumberElement(el) {
+  return el.type === TYPE.number;
+}
+function isDateElement(el) {
+  return el.type === TYPE.date;
+}
+function isTimeElement(el) {
+  return el.type === TYPE.time;
+}
+function isSelectElement(el) {
+  return el.type === TYPE.select;
+}
+function isPluralElement(el) {
+  return el.type === TYPE.plural;
+}
+function isPoundElement(el) {
+  return el.type === TYPE.pound;
+}
+function isTagElement(el) {
+  return el.type === TYPE.tag;
+}
+function isNumberSkeleton(el) {
+  return !!(el && typeof el === "object" && el.type === SKELETON_TYPE.number);
+}
+function isDateTimeSkeleton(el) {
+  return !!(el && typeof el === "object" && el.type === SKELETON_TYPE.dateTime);
+}
+
+// node_modules/@formatjs/icu-messageformat-parser/lib/regex.generated.js
+var SPACE_SEPARATOR_REGEX = /[ \xA0\u1680\u2000-\u200A\u202F\u205F\u3000]/;
+
+// node_modules/@formatjs/icu-skeleton-parser/lib/date-time.js
+var DATE_TIME_REGEX = /(?:[Eec]{1,6}|G{1,5}|[Qq]{1,5}|(?:[yYur]+|U{1,5})|[ML]{1,5}|d{1,2}|D{1,3}|F{1}|[abB]{1,5}|[hkHK]{1,2}|w{1,2}|W{1}|m{1,2}|s{1,2}|[zZOvVxX]{1,4})(?=([^']*'[^']*')*[^']*$)/g;
+function parseDateTimeSkeleton(skeleton) {
+  var result = {};
+  skeleton.replace(DATE_TIME_REGEX, function(match) {
+    var len = match.length;
+    switch (match[0]) {
+      // Era
+      case "G":
+        result.era = len === 4 ? "long" : len === 5 ? "narrow" : "short";
+        break;
+      // Year
+      case "y":
+        result.year = len === 2 ? "2-digit" : "numeric";
+        break;
+      case "Y":
+      case "u":
+      case "U":
+      case "r":
+        throw new RangeError("`Y/u/U/r` (year) patterns are not supported, use `y` instead");
+      // Quarter
+      case "q":
+      case "Q":
+        throw new RangeError("`q/Q` (quarter) patterns are not supported");
+      // Month
+      case "M":
+      case "L":
+        result.month = ["numeric", "2-digit", "short", "long", "narrow"][len - 1];
+        break;
+      // Week
+      case "w":
+      case "W":
+        throw new RangeError("`w/W` (week) patterns are not supported");
+      case "d":
+        result.day = ["numeric", "2-digit"][len - 1];
+        break;
+      case "D":
+      case "F":
+      case "g":
+        throw new RangeError("`D/F/g` (day) patterns are not supported, use `d` instead");
+      // Weekday
+      case "E":
+        result.weekday = len === 4 ? "short" : len === 5 ? "narrow" : "short";
+        break;
+      case "e":
+        if (len < 4) {
+          throw new RangeError("`e..eee` (weekday) patterns are not supported");
+        }
+        result.weekday = ["short", "long", "narrow", "short"][len - 4];
+        break;
+      case "c":
+        if (len < 4) {
+          throw new RangeError("`c..ccc` (weekday) patterns are not supported");
+        }
+        result.weekday = ["short", "long", "narrow", "short"][len - 4];
+        break;
+      // Period
+      case "a":
+        result.hour12 = true;
+        break;
+      case "b":
+      // am, pm, noon, midnight
+      case "B":
+        throw new RangeError("`b/B` (period) patterns are not supported, use `a` instead");
+      // Hour
+      case "h":
+        result.hourCycle = "h12";
+        result.hour = ["numeric", "2-digit"][len - 1];
+        break;
+      case "H":
+        result.hourCycle = "h23";
+        result.hour = ["numeric", "2-digit"][len - 1];
+        break;
+      case "K":
+        result.hourCycle = "h11";
+        result.hour = ["numeric", "2-digit"][len - 1];
+        break;
+      case "k":
+        result.hourCycle = "h24";
+        result.hour = ["numeric", "2-digit"][len - 1];
+        break;
+      case "j":
+      case "J":
+      case "C":
+        throw new RangeError("`j/J/C` (hour) patterns are not supported, use `h/H/K/k` instead");
+      // Minute
+      case "m":
+        result.minute = ["numeric", "2-digit"][len - 1];
+        break;
+      // Second
+      case "s":
+        result.second = ["numeric", "2-digit"][len - 1];
+        break;
+      case "S":
+      case "A":
+        throw new RangeError("`S/A` (second) patterns are not supported, use `s` instead");
+      // Zone
+      case "z":
+        result.timeZoneName = len < 4 ? "short" : "long";
+        break;
+      case "Z":
+      // 1..3, 4, 5: The ISO8601 varios formats
+      case "O":
+      // 1, 4: miliseconds in day short, long
+      case "v":
+      // 1, 4: generic non-location format
+      case "V":
+      // 1, 2, 3, 4: time zone ID or city
+      case "X":
+      // 1, 2, 3, 4: The ISO8601 varios formats
+      case "x":
+        throw new RangeError("`Z/O/v/V/X/x` (timeZone) patterns are not supported, use `z` instead");
+    }
+    return "";
+  });
+  return result;
+}
+
+// node_modules/@formatjs/icu-skeleton-parser/lib/regex.generated.js
+var WHITE_SPACE_REGEX = /[\t-\r \x85\u200E\u200F\u2028\u2029]/i;
+
+// node_modules/@formatjs/icu-skeleton-parser/lib/number.js
+function parseNumberSkeletonFromString(skeleton) {
+  if (skeleton.length === 0) {
+    throw new Error("Number skeleton cannot be empty");
+  }
+  var stringTokens = skeleton.split(WHITE_SPACE_REGEX).filter(function(x3) {
+    return x3.length > 0;
+  });
+  var tokens = [];
+  for (var _i = 0, stringTokens_1 = stringTokens; _i < stringTokens_1.length; _i++) {
+    var stringToken = stringTokens_1[_i];
+    var stemAndOptions = stringToken.split("/");
+    if (stemAndOptions.length === 0) {
+      throw new Error("Invalid number skeleton");
+    }
+    var stem = stemAndOptions[0], options = stemAndOptions.slice(1);
+    for (var _a2 = 0, options_1 = options; _a2 < options_1.length; _a2++) {
+      var option = options_1[_a2];
+      if (option.length === 0) {
+        throw new Error("Invalid number skeleton");
+      }
+    }
+    tokens.push({ stem, options });
+  }
+  return tokens;
+}
+function icuUnitToEcma(unit) {
+  return unit.replace(/^(.*?)-/, "");
+}
+var FRACTION_PRECISION_REGEX = /^\.(?:(0+)(\*)?|(#+)|(0+)(#+))$/g;
+var SIGNIFICANT_PRECISION_REGEX = /^(@+)?(\+|#+)?[rs]?$/g;
+var INTEGER_WIDTH_REGEX = /(\*)(0+)|(#+)(0+)|(0+)/g;
+var CONCISE_INTEGER_WIDTH_REGEX = /^(0+)$/;
+function parseSignificantPrecision(str) {
+  var result = {};
+  if (str[str.length - 1] === "r") {
+    result.roundingPriority = "morePrecision";
+  } else if (str[str.length - 1] === "s") {
+    result.roundingPriority = "lessPrecision";
+  }
+  str.replace(SIGNIFICANT_PRECISION_REGEX, function(_3, g1, g22) {
+    if (typeof g22 !== "string") {
+      result.minimumSignificantDigits = g1.length;
+      result.maximumSignificantDigits = g1.length;
+    } else if (g22 === "+") {
+      result.minimumSignificantDigits = g1.length;
+    } else if (g1[0] === "#") {
+      result.maximumSignificantDigits = g1.length;
+    } else {
+      result.minimumSignificantDigits = g1.length;
+      result.maximumSignificantDigits = g1.length + (typeof g22 === "string" ? g22.length : 0);
+    }
+    return "";
+  });
+  return result;
+}
+function parseSign(str) {
+  switch (str) {
+    case "sign-auto":
+      return {
+        signDisplay: "auto"
+      };
+    case "sign-accounting":
+    case "()":
+      return {
+        currencySign: "accounting"
+      };
+    case "sign-always":
+    case "+!":
+      return {
+        signDisplay: "always"
+      };
+    case "sign-accounting-always":
+    case "()!":
+      return {
+        signDisplay: "always",
+        currencySign: "accounting"
+      };
+    case "sign-except-zero":
+    case "+?":
+      return {
+        signDisplay: "exceptZero"
+      };
+    case "sign-accounting-except-zero":
+    case "()?":
+      return {
+        signDisplay: "exceptZero",
+        currencySign: "accounting"
+      };
+    case "sign-never":
+    case "+_":
+      return {
+        signDisplay: "never"
+      };
+  }
+}
+function parseConciseScientificAndEngineeringStem(stem) {
+  var result;
+  if (stem[0] === "E" && stem[1] === "E") {
+    result = {
+      notation: "engineering"
+    };
+    stem = stem.slice(2);
+  } else if (stem[0] === "E") {
+    result = {
+      notation: "scientific"
+    };
+    stem = stem.slice(1);
+  }
+  if (result) {
+    var signDisplay = stem.slice(0, 2);
+    if (signDisplay === "+!") {
+      result.signDisplay = "always";
+      stem = stem.slice(2);
+    } else if (signDisplay === "+?") {
+      result.signDisplay = "exceptZero";
+      stem = stem.slice(2);
+    }
+    if (!CONCISE_INTEGER_WIDTH_REGEX.test(stem)) {
+      throw new Error("Malformed concise eng/scientific notation");
+    }
+    result.minimumIntegerDigits = stem.length;
+  }
+  return result;
+}
+function parseNotationOptions(opt) {
+  var result = {};
+  var signOpts = parseSign(opt);
+  if (signOpts) {
+    return signOpts;
+  }
+  return result;
+}
+function parseNumberSkeleton(tokens) {
+  var result = {};
+  for (var _i = 0, tokens_1 = tokens; _i < tokens_1.length; _i++) {
+    var token = tokens_1[_i];
+    switch (token.stem) {
+      case "percent":
+      case "%":
+        result.style = "percent";
+        continue;
+      case "%x100":
+        result.style = "percent";
+        result.scale = 100;
+        continue;
+      case "currency":
+        result.style = "currency";
+        result.currency = token.options[0];
+        continue;
+      case "group-off":
+      case ",_":
+        result.useGrouping = false;
+        continue;
+      case "precision-integer":
+      case ".":
+        result.maximumFractionDigits = 0;
+        continue;
+      case "measure-unit":
+      case "unit":
+        result.style = "unit";
+        result.unit = icuUnitToEcma(token.options[0]);
+        continue;
+      case "compact-short":
+      case "K":
+        result.notation = "compact";
+        result.compactDisplay = "short";
+        continue;
+      case "compact-long":
+      case "KK":
+        result.notation = "compact";
+        result.compactDisplay = "long";
+        continue;
+      case "scientific":
+        result = __assign(__assign(__assign({}, result), { notation: "scientific" }), token.options.reduce(function(all, opt2) {
+          return __assign(__assign({}, all), parseNotationOptions(opt2));
+        }, {}));
+        continue;
+      case "engineering":
+        result = __assign(__assign(__assign({}, result), { notation: "engineering" }), token.options.reduce(function(all, opt2) {
+          return __assign(__assign({}, all), parseNotationOptions(opt2));
+        }, {}));
+        continue;
+      case "notation-simple":
+        result.notation = "standard";
+        continue;
+      // https://github.com/unicode-org/icu/blob/master/icu4c/source/i18n/unicode/unumberformatter.h
+      case "unit-width-narrow":
+        result.currencyDisplay = "narrowSymbol";
+        result.unitDisplay = "narrow";
+        continue;
+      case "unit-width-short":
+        result.currencyDisplay = "code";
+        result.unitDisplay = "short";
+        continue;
+      case "unit-width-full-name":
+        result.currencyDisplay = "name";
+        result.unitDisplay = "long";
+        continue;
+      case "unit-width-iso-code":
+        result.currencyDisplay = "symbol";
+        continue;
+      case "scale":
+        result.scale = parseFloat(token.options[0]);
+        continue;
+      // https://unicode-org.github.io/icu/userguide/format_parse/numbers/skeletons.html#integer-width
+      case "integer-width":
+        if (token.options.length > 1) {
+          throw new RangeError("integer-width stems only accept a single optional option");
+        }
+        token.options[0].replace(INTEGER_WIDTH_REGEX, function(_3, g1, g22, g3, g4, g5) {
+          if (g1) {
+            result.minimumIntegerDigits = g22.length;
+          } else if (g3 && g4) {
+            throw new Error("We currently do not support maximum integer digits");
+          } else if (g5) {
+            throw new Error("We currently do not support exact integer digits");
+          }
+          return "";
+        });
+        continue;
+    }
+    if (CONCISE_INTEGER_WIDTH_REGEX.test(token.stem)) {
+      result.minimumIntegerDigits = token.stem.length;
+      continue;
+    }
+    if (FRACTION_PRECISION_REGEX.test(token.stem)) {
+      if (token.options.length > 1) {
+        throw new RangeError("Fraction-precision stems only accept a single optional option");
+      }
+      token.stem.replace(FRACTION_PRECISION_REGEX, function(_3, g1, g22, g3, g4, g5) {
+        if (g22 === "*") {
+          result.minimumFractionDigits = g1.length;
+        } else if (g3 && g3[0] === "#") {
+          result.maximumFractionDigits = g3.length;
+        } else if (g4 && g5) {
+          result.minimumFractionDigits = g4.length;
+          result.maximumFractionDigits = g4.length + g5.length;
+        } else {
+          result.minimumFractionDigits = g1.length;
+          result.maximumFractionDigits = g1.length;
+        }
+        return "";
+      });
+      var opt = token.options[0];
+      if (opt === "w") {
+        result = __assign(__assign({}, result), { trailingZeroDisplay: "stripIfInteger" });
+      } else if (opt) {
+        result = __assign(__assign({}, result), parseSignificantPrecision(opt));
+      }
+      continue;
+    }
+    if (SIGNIFICANT_PRECISION_REGEX.test(token.stem)) {
+      result = __assign(__assign({}, result), parseSignificantPrecision(token.stem));
+      continue;
+    }
+    var signOpts = parseSign(token.stem);
+    if (signOpts) {
+      result = __assign(__assign({}, result), signOpts);
+    }
+    var conciseScientificAndEngineeringOpts = parseConciseScientificAndEngineeringStem(token.stem);
+    if (conciseScientificAndEngineeringOpts) {
+      result = __assign(__assign({}, result), conciseScientificAndEngineeringOpts);
+    }
+  }
+  return result;
+}
+
+// node_modules/@formatjs/icu-messageformat-parser/lib/time-data.generated.js
+var timeData = {
+  "AX": [
+    "H"
+  ],
+  "BQ": [
+    "H"
+  ],
+  "CP": [
+    "H"
+  ],
+  "CZ": [
+    "H"
+  ],
+  "DK": [
+    "H"
+  ],
+  "FI": [
+    "H"
+  ],
+  "ID": [
+    "H"
+  ],
+  "IS": [
+    "H"
+  ],
+  "ML": [
+    "H"
+  ],
+  "NE": [
+    "H"
+  ],
+  "RU": [
+    "H"
+  ],
+  "SE": [
+    "H"
+  ],
+  "SJ": [
+    "H"
+  ],
+  "SK": [
+    "H"
+  ],
+  "AS": [
+    "h",
+    "H"
+  ],
+  "BT": [
+    "h",
+    "H"
+  ],
+  "DJ": [
+    "h",
+    "H"
+  ],
+  "ER": [
+    "h",
+    "H"
+  ],
+  "GH": [
+    "h",
+    "H"
+  ],
+  "IN": [
+    "h",
+    "H"
+  ],
+  "LS": [
+    "h",
+    "H"
+  ],
+  "PG": [
+    "h",
+    "H"
+  ],
+  "PW": [
+    "h",
+    "H"
+  ],
+  "SO": [
+    "h",
+    "H"
+  ],
+  "TO": [
+    "h",
+    "H"
+  ],
+  "VU": [
+    "h",
+    "H"
+  ],
+  "WS": [
+    "h",
+    "H"
+  ],
+  "001": [
+    "H",
+    "h"
+  ],
+  "AL": [
+    "h",
+    "H",
+    "hB"
+  ],
+  "TD": [
+    "h",
+    "H",
+    "hB"
+  ],
+  "ca-ES": [
+    "H",
+    "h",
+    "hB"
+  ],
+  "CF": [
+    "H",
+    "h",
+    "hB"
+  ],
+  "CM": [
+    "H",
+    "h",
+    "hB"
+  ],
+  "fr-CA": [
+    "H",
+    "h",
+    "hB"
+  ],
+  "gl-ES": [
+    "H",
+    "h",
+    "hB"
+  ],
+  "it-CH": [
+    "H",
+    "h",
+    "hB"
+  ],
+  "it-IT": [
+    "H",
+    "h",
+    "hB"
+  ],
+  "LU": [
+    "H",
+    "h",
+    "hB"
+  ],
+  "NP": [
+    "H",
+    "h",
+    "hB"
+  ],
+  "PF": [
+    "H",
+    "h",
+    "hB"
+  ],
+  "SC": [
+    "H",
+    "h",
+    "hB"
+  ],
+  "SM": [
+    "H",
+    "h",
+    "hB"
+  ],
+  "SN": [
+    "H",
+    "h",
+    "hB"
+  ],
+  "TF": [
+    "H",
+    "h",
+    "hB"
+  ],
+  "VA": [
+    "H",
+    "h",
+    "hB"
+  ],
+  "CY": [
+    "h",
+    "H",
+    "hb",
+    "hB"
+  ],
+  "GR": [
+    "h",
+    "H",
+    "hb",
+    "hB"
+  ],
+  "CO": [
+    "h",
+    "H",
+    "hB",
+    "hb"
+  ],
+  "DO": [
+    "h",
+    "H",
+    "hB",
+    "hb"
+  ],
+  "KP": [
+    "h",
+    "H",
+    "hB",
+    "hb"
+  ],
+  "KR": [
+    "h",
+    "H",
+    "hB",
+    "hb"
+  ],
+  "NA": [
+    "h",
+    "H",
+    "hB",
+    "hb"
+  ],
+  "PA": [
+    "h",
+    "H",
+    "hB",
+    "hb"
+  ],
+  "PR": [
+    "h",
+    "H",
+    "hB",
+    "hb"
+  ],
+  "VE": [
+    "h",
+    "H",
+    "hB",
+    "hb"
+  ],
+  "AC": [
+    "H",
+    "h",
+    "hb",
+    "hB"
+  ],
+  "AI": [
+    "H",
+    "h",
+    "hb",
+    "hB"
+  ],
+  "BW": [
+    "H",
+    "h",
+    "hb",
+    "hB"
+  ],
+  "BZ": [
+    "H",
+    "h",
+    "hb",
+    "hB"
+  ],
+  "CC": [
+    "H",
+    "h",
+    "hb",
+    "hB"
+  ],
+  "CK": [
+    "H",
+    "h",
+    "hb",
+    "hB"
+  ],
+  "CX": [
+    "H",
+    "h",
+    "hb",
+    "hB"
+  ],
+  "DG": [
+    "H",
+    "h",
+    "hb",
+    "hB"
+  ],
+  "FK": [
+    "H",
+    "h",
+    "hb",
+    "hB"
+  ],
+  "GB": [
+    "H",
+    "h",
+    "hb",
+    "hB"
+  ],
+  "GG": [
+    "H",
+    "h",
+    "hb",
+    "hB"
+  ],
+  "GI": [
+    "H",
+    "h",
+    "hb",
+    "hB"
+  ],
+  "IE": [
+    "H",
+    "h",
+    "hb",
+    "hB"
+  ],
+  "IM": [
+    "H",
+    "h",
+    "hb",
+    "hB"
+  ],
+  "IO": [
+    "H",
+    "h",
+    "hb",
+    "hB"
+  ],
+  "JE": [
+    "H",
+    "h",
+    "hb",
+    "hB"
+  ],
+  "LT": [
+    "H",
+    "h",
+    "hb",
+    "hB"
+  ],
+  "MK": [
+    "H",
+    "h",
+    "hb",
+    "hB"
+  ],
+  "MN": [
+    "H",
+    "h",
+    "hb",
+    "hB"
+  ],
+  "MS": [
+    "H",
+    "h",
+    "hb",
+    "hB"
+  ],
+  "NF": [
+    "H",
+    "h",
+    "hb",
+    "hB"
+  ],
+  "NG": [
+    "H",
+    "h",
+    "hb",
+    "hB"
+  ],
+  "NR": [
+    "H",
+    "h",
+    "hb",
+    "hB"
+  ],
+  "NU": [
+    "H",
+    "h",
+    "hb",
+    "hB"
+  ],
+  "PN": [
+    "H",
+    "h",
+    "hb",
+    "hB"
+  ],
+  "SH": [
+    "H",
+    "h",
+    "hb",
+    "hB"
+  ],
+  "SX": [
+    "H",
+    "h",
+    "hb",
+    "hB"
+  ],
+  "TA": [
+    "H",
+    "h",
+    "hb",
+    "hB"
+  ],
+  "ZA": [
+    "H",
+    "h",
+    "hb",
+    "hB"
+  ],
+  "af-ZA": [
+    "H",
+    "h",
+    "hB",
+    "hb"
+  ],
+  "AR": [
+    "H",
+    "h",
+    "hB",
+    "hb"
+  ],
+  "CL": [
+    "H",
+    "h",
+    "hB",
+    "hb"
+  ],
+  "CR": [
+    "H",
+    "h",
+    "hB",
+    "hb"
+  ],
+  "CU": [
+    "H",
+    "h",
+    "hB",
+    "hb"
+  ],
+  "EA": [
+    "H",
+    "h",
+    "hB",
+    "hb"
+  ],
+  "es-BO": [
+    "H",
+    "h",
+    "hB",
+    "hb"
+  ],
+  "es-BR": [
+    "H",
+    "h",
+    "hB",
+    "hb"
+  ],
+  "es-EC": [
+    "H",
+    "h",
+    "hB",
+    "hb"
+  ],
+  "es-ES": [
+    "H",
+    "h",
+    "hB",
+    "hb"
+  ],
+  "es-GQ": [
+    "H",
+    "h",
+    "hB",
+    "hb"
+  ],
+  "es-PE": [
+    "H",
+    "h",
+    "hB",
+    "hb"
+  ],
+  "GT": [
+    "H",
+    "h",
+    "hB",
+    "hb"
+  ],
+  "HN": [
+    "H",
+    "h",
+    "hB",
+    "hb"
+  ],
+  "IC": [
+    "H",
+    "h",
+    "hB",
+    "hb"
+  ],
+  "KG": [
+    "H",
+    "h",
+    "hB",
+    "hb"
+  ],
+  "KM": [
+    "H",
+    "h",
+    "hB",
+    "hb"
+  ],
+  "LK": [
+    "H",
+    "h",
+    "hB",
+    "hb"
+  ],
+  "MA": [
+    "H",
+    "h",
+    "hB",
+    "hb"
+  ],
+  "MX": [
+    "H",
+    "h",
+    "hB",
+    "hb"
+  ],
+  "NI": [
+    "H",
+    "h",
+    "hB",
+    "hb"
+  ],
+  "PY": [
+    "H",
+    "h",
+    "hB",
+    "hb"
+  ],
+  "SV": [
+    "H",
+    "h",
+    "hB",
+    "hb"
+  ],
+  "UY": [
+    "H",
+    "h",
+    "hB",
+    "hb"
+  ],
+  "JP": [
+    "H",
+    "h",
+    "K"
+  ],
+  "AD": [
+    "H",
+    "hB"
+  ],
+  "AM": [
+    "H",
+    "hB"
+  ],
+  "AO": [
+    "H",
+    "hB"
+  ],
+  "AT": [
+    "H",
+    "hB"
+  ],
+  "AW": [
+    "H",
+    "hB"
+  ],
+  "BE": [
+    "H",
+    "hB"
+  ],
+  "BF": [
+    "H",
+    "hB"
+  ],
+  "BJ": [
+    "H",
+    "hB"
+  ],
+  "BL": [
+    "H",
+    "hB"
+  ],
+  "BR": [
+    "H",
+    "hB"
+  ],
+  "CG": [
+    "H",
+    "hB"
+  ],
+  "CI": [
+    "H",
+    "hB"
+  ],
+  "CV": [
+    "H",
+    "hB"
+  ],
+  "DE": [
+    "H",
+    "hB"
+  ],
+  "EE": [
+    "H",
+    "hB"
+  ],
+  "FR": [
+    "H",
+    "hB"
+  ],
+  "GA": [
+    "H",
+    "hB"
+  ],
+  "GF": [
+    "H",
+    "hB"
+  ],
+  "GN": [
+    "H",
+    "hB"
+  ],
+  "GP": [
+    "H",
+    "hB"
+  ],
+  "GW": [
+    "H",
+    "hB"
+  ],
+  "HR": [
+    "H",
+    "hB"
+  ],
+  "IL": [
+    "H",
+    "hB"
+  ],
+  "IT": [
+    "H",
+    "hB"
+  ],
+  "KZ": [
+    "H",
+    "hB"
+  ],
+  "MC": [
+    "H",
+    "hB"
+  ],
+  "MD": [
+    "H",
+    "hB"
+  ],
+  "MF": [
+    "H",
+    "hB"
+  ],
+  "MQ": [
+    "H",
+    "hB"
+  ],
+  "MZ": [
+    "H",
+    "hB"
+  ],
+  "NC": [
+    "H",
+    "hB"
+  ],
+  "NL": [
+    "H",
+    "hB"
+  ],
+  "PM": [
+    "H",
+    "hB"
+  ],
+  "PT": [
+    "H",
+    "hB"
+  ],
+  "RE": [
+    "H",
+    "hB"
+  ],
+  "RO": [
+    "H",
+    "hB"
+  ],
+  "SI": [
+    "H",
+    "hB"
+  ],
+  "SR": [
+    "H",
+    "hB"
+  ],
+  "ST": [
+    "H",
+    "hB"
+  ],
+  "TG": [
+    "H",
+    "hB"
+  ],
+  "TR": [
+    "H",
+    "hB"
+  ],
+  "WF": [
+    "H",
+    "hB"
+  ],
+  "YT": [
+    "H",
+    "hB"
+  ],
+  "BD": [
+    "h",
+    "hB",
+    "H"
+  ],
+  "PK": [
+    "h",
+    "hB",
+    "H"
+  ],
+  "AZ": [
+    "H",
+    "hB",
+    "h"
+  ],
+  "BA": [
+    "H",
+    "hB",
+    "h"
+  ],
+  "BG": [
+    "H",
+    "hB",
+    "h"
+  ],
+  "CH": [
+    "H",
+    "hB",
+    "h"
+  ],
+  "GE": [
+    "H",
+    "hB",
+    "h"
+  ],
+  "LI": [
+    "H",
+    "hB",
+    "h"
+  ],
+  "ME": [
+    "H",
+    "hB",
+    "h"
+  ],
+  "RS": [
+    "H",
+    "hB",
+    "h"
+  ],
+  "UA": [
+    "H",
+    "hB",
+    "h"
+  ],
+  "UZ": [
+    "H",
+    "hB",
+    "h"
+  ],
+  "XK": [
+    "H",
+    "hB",
+    "h"
+  ],
+  "AG": [
+    "h",
+    "hb",
+    "H",
+    "hB"
+  ],
+  "AU": [
+    "h",
+    "hb",
+    "H",
+    "hB"
+  ],
+  "BB": [
+    "h",
+    "hb",
+    "H",
+    "hB"
+  ],
+  "BM": [
+    "h",
+    "hb",
+    "H",
+    "hB"
+  ],
+  "BS": [
+    "h",
+    "hb",
+    "H",
+    "hB"
+  ],
+  "CA": [
+    "h",
+    "hb",
+    "H",
+    "hB"
+  ],
+  "DM": [
+    "h",
+    "hb",
+    "H",
+    "hB"
+  ],
+  "en-001": [
+    "h",
+    "hb",
+    "H",
+    "hB"
+  ],
+  "FJ": [
+    "h",
+    "hb",
+    "H",
+    "hB"
+  ],
+  "FM": [
+    "h",
+    "hb",
+    "H",
+    "hB"
+  ],
+  "GD": [
+    "h",
+    "hb",
+    "H",
+    "hB"
+  ],
+  "GM": [
+    "h",
+    "hb",
+    "H",
+    "hB"
+  ],
+  "GU": [
+    "h",
+    "hb",
+    "H",
+    "hB"
+  ],
+  "GY": [
+    "h",
+    "hb",
+    "H",
+    "hB"
+  ],
+  "JM": [
+    "h",
+    "hb",
+    "H",
+    "hB"
+  ],
+  "KI": [
+    "h",
+    "hb",
+    "H",
+    "hB"
+  ],
+  "KN": [
+    "h",
+    "hb",
+    "H",
+    "hB"
+  ],
+  "KY": [
+    "h",
+    "hb",
+    "H",
+    "hB"
+  ],
+  "LC": [
+    "h",
+    "hb",
+    "H",
+    "hB"
+  ],
+  "LR": [
+    "h",
+    "hb",
+    "H",
+    "hB"
+  ],
+  "MH": [
+    "h",
+    "hb",
+    "H",
+    "hB"
+  ],
+  "MP": [
+    "h",
+    "hb",
+    "H",
+    "hB"
+  ],
+  "MW": [
+    "h",
+    "hb",
+    "H",
+    "hB"
+  ],
+  "NZ": [
+    "h",
+    "hb",
+    "H",
+    "hB"
+  ],
+  "SB": [
+    "h",
+    "hb",
+    "H",
+    "hB"
+  ],
+  "SG": [
+    "h",
+    "hb",
+    "H",
+    "hB"
+  ],
+  "SL": [
+    "h",
+    "hb",
+    "H",
+    "hB"
+  ],
+  "SS": [
+    "h",
+    "hb",
+    "H",
+    "hB"
+  ],
+  "SZ": [
+    "h",
+    "hb",
+    "H",
+    "hB"
+  ],
+  "TC": [
+    "h",
+    "hb",
+    "H",
+    "hB"
+  ],
+  "TT": [
+    "h",
+    "hb",
+    "H",
+    "hB"
+  ],
+  "UM": [
+    "h",
+    "hb",
+    "H",
+    "hB"
+  ],
+  "US": [
+    "h",
+    "hb",
+    "H",
+    "hB"
+  ],
+  "VC": [
+    "h",
+    "hb",
+    "H",
+    "hB"
+  ],
+  "VG": [
+    "h",
+    "hb",
+    "H",
+    "hB"
+  ],
+  "VI": [
+    "h",
+    "hb",
+    "H",
+    "hB"
+  ],
+  "ZM": [
+    "h",
+    "hb",
+    "H",
+    "hB"
+  ],
+  "BO": [
+    "H",
+    "hB",
+    "h",
+    "hb"
+  ],
+  "EC": [
+    "H",
+    "hB",
+    "h",
+    "hb"
+  ],
+  "ES": [
+    "H",
+    "hB",
+    "h",
+    "hb"
+  ],
+  "GQ": [
+    "H",
+    "hB",
+    "h",
+    "hb"
+  ],
+  "PE": [
+    "H",
+    "hB",
+    "h",
+    "hb"
+  ],
+  "AE": [
+    "h",
+    "hB",
+    "hb",
+    "H"
+  ],
+  "ar-001": [
+    "h",
+    "hB",
+    "hb",
+    "H"
+  ],
+  "BH": [
+    "h",
+    "hB",
+    "hb",
+    "H"
+  ],
+  "DZ": [
+    "h",
+    "hB",
+    "hb",
+    "H"
+  ],
+  "EG": [
+    "h",
+    "hB",
+    "hb",
+    "H"
+  ],
+  "EH": [
+    "h",
+    "hB",
+    "hb",
+    "H"
+  ],
+  "HK": [
+    "h",
+    "hB",
+    "hb",
+    "H"
+  ],
+  "IQ": [
+    "h",
+    "hB",
+    "hb",
+    "H"
+  ],
+  "JO": [
+    "h",
+    "hB",
+    "hb",
+    "H"
+  ],
+  "KW": [
+    "h",
+    "hB",
+    "hb",
+    "H"
+  ],
+  "LB": [
+    "h",
+    "hB",
+    "hb",
+    "H"
+  ],
+  "LY": [
+    "h",
+    "hB",
+    "hb",
+    "H"
+  ],
+  "MO": [
+    "h",
+    "hB",
+    "hb",
+    "H"
+  ],
+  "MR": [
+    "h",
+    "hB",
+    "hb",
+    "H"
+  ],
+  "OM": [
+    "h",
+    "hB",
+    "hb",
+    "H"
+  ],
+  "PH": [
+    "h",
+    "hB",
+    "hb",
+    "H"
+  ],
+  "PS": [
+    "h",
+    "hB",
+    "hb",
+    "H"
+  ],
+  "QA": [
+    "h",
+    "hB",
+    "hb",
+    "H"
+  ],
+  "SA": [
+    "h",
+    "hB",
+    "hb",
+    "H"
+  ],
+  "SD": [
+    "h",
+    "hB",
+    "hb",
+    "H"
+  ],
+  "SY": [
+    "h",
+    "hB",
+    "hb",
+    "H"
+  ],
+  "TN": [
+    "h",
+    "hB",
+    "hb",
+    "H"
+  ],
+  "YE": [
+    "h",
+    "hB",
+    "hb",
+    "H"
+  ],
+  "AF": [
+    "H",
+    "hb",
+    "hB",
+    "h"
+  ],
+  "LA": [
+    "H",
+    "hb",
+    "hB",
+    "h"
+  ],
+  "CN": [
+    "H",
+    "hB",
+    "hb",
+    "h"
+  ],
+  "LV": [
+    "H",
+    "hB",
+    "hb",
+    "h"
+  ],
+  "TL": [
+    "H",
+    "hB",
+    "hb",
+    "h"
+  ],
+  "zu-ZA": [
+    "H",
+    "hB",
+    "hb",
+    "h"
+  ],
+  "CD": [
+    "hB",
+    "H"
+  ],
+  "IR": [
+    "hB",
+    "H"
+  ],
+  "hi-IN": [
+    "hB",
+    "h",
+    "H"
+  ],
+  "kn-IN": [
+    "hB",
+    "h",
+    "H"
+  ],
+  "ml-IN": [
+    "hB",
+    "h",
+    "H"
+  ],
+  "te-IN": [
+    "hB",
+    "h",
+    "H"
+  ],
+  "KH": [
+    "hB",
+    "h",
+    "H",
+    "hb"
+  ],
+  "ta-IN": [
+    "hB",
+    "h",
+    "hb",
+    "H"
+  ],
+  "BN": [
+    "hb",
+    "hB",
+    "h",
+    "H"
+  ],
+  "MY": [
+    "hb",
+    "hB",
+    "h",
+    "H"
+  ],
+  "ET": [
+    "hB",
+    "hb",
+    "h",
+    "H"
+  ],
+  "gu-IN": [
+    "hB",
+    "hb",
+    "h",
+    "H"
+  ],
+  "mr-IN": [
+    "hB",
+    "hb",
+    "h",
+    "H"
+  ],
+  "pa-IN": [
+    "hB",
+    "hb",
+    "h",
+    "H"
+  ],
+  "TW": [
+    "hB",
+    "hb",
+    "h",
+    "H"
+  ],
+  "KE": [
+    "hB",
+    "hb",
+    "H",
+    "h"
+  ],
+  "MM": [
+    "hB",
+    "hb",
+    "H",
+    "h"
+  ],
+  "TZ": [
+    "hB",
+    "hb",
+    "H",
+    "h"
+  ],
+  "UG": [
+    "hB",
+    "hb",
+    "H",
+    "h"
+  ]
+};
+
+// node_modules/@formatjs/icu-messageformat-parser/lib/date-time-pattern-generator.js
+function getBestPattern(skeleton, locale) {
+  var skeletonCopy = "";
+  for (var patternPos = 0; patternPos < skeleton.length; patternPos++) {
+    var patternChar = skeleton.charAt(patternPos);
+    if (patternChar === "j") {
+      var extraLength = 0;
+      while (patternPos + 1 < skeleton.length && skeleton.charAt(patternPos + 1) === patternChar) {
+        extraLength++;
+        patternPos++;
+      }
+      var hourLen = 1 + (extraLength & 1);
+      var dayPeriodLen = extraLength < 2 ? 1 : 3 + (extraLength >> 1);
+      var dayPeriodChar = "a";
+      var hourChar = getDefaultHourSymbolFromLocale(locale);
+      if (hourChar == "H" || hourChar == "k") {
+        dayPeriodLen = 0;
+      }
+      while (dayPeriodLen-- > 0) {
+        skeletonCopy += dayPeriodChar;
+      }
+      while (hourLen-- > 0) {
+        skeletonCopy = hourChar + skeletonCopy;
+      }
+    } else if (patternChar === "J") {
+      skeletonCopy += "H";
+    } else {
+      skeletonCopy += patternChar;
+    }
+  }
+  return skeletonCopy;
+}
+function getDefaultHourSymbolFromLocale(locale) {
+  var hourCycle = locale.hourCycle;
+  if (hourCycle === void 0 && // @ts-ignore hourCycle(s) is not identified yet
+  locale.hourCycles && // @ts-ignore
+  locale.hourCycles.length) {
+    hourCycle = locale.hourCycles[0];
+  }
+  if (hourCycle) {
+    switch (hourCycle) {
+      case "h24":
+        return "k";
+      case "h23":
+        return "H";
+      case "h12":
+        return "h";
+      case "h11":
+        return "K";
+      default:
+        throw new Error("Invalid hourCycle");
+    }
+  }
+  var languageTag = locale.language;
+  var regionTag;
+  if (languageTag !== "root") {
+    regionTag = locale.maximize().region;
+  }
+  var hourCycles = timeData[regionTag || ""] || timeData[languageTag || ""] || timeData["".concat(languageTag, "-001")] || timeData["001"];
+  return hourCycles[0];
+}
+
+// node_modules/@formatjs/icu-messageformat-parser/lib/parser.js
+var _a;
+var SPACE_SEPARATOR_START_REGEX = new RegExp("^".concat(SPACE_SEPARATOR_REGEX.source, "*"));
+var SPACE_SEPARATOR_END_REGEX = new RegExp("".concat(SPACE_SEPARATOR_REGEX.source, "*$"));
+function createLocation(start, end) {
+  return { start, end };
+}
+var hasNativeStartsWith = !!String.prototype.startsWith;
+var hasNativeFromCodePoint = !!String.fromCodePoint;
+var hasNativeFromEntries = !!Object.fromEntries;
+var hasNativeCodePointAt = !!String.prototype.codePointAt;
+var hasTrimStart = !!String.prototype.trimStart;
+var hasTrimEnd = !!String.prototype.trimEnd;
+var hasNativeIsSafeInteger = !!Number.isSafeInteger;
+var isSafeInteger = hasNativeIsSafeInteger ? Number.isSafeInteger : function(n8) {
+  return typeof n8 === "number" && isFinite(n8) && Math.floor(n8) === n8 && Math.abs(n8) <= 9007199254740991;
+};
+var REGEX_SUPPORTS_U_AND_Y = true;
+try {
+  re = RE("([^\\p{White_Space}\\p{Pattern_Syntax}]*)", "yu");
+  REGEX_SUPPORTS_U_AND_Y = ((_a = re.exec("a")) === null || _a === void 0 ? void 0 : _a[0]) === "a";
+} catch (_3) {
+  REGEX_SUPPORTS_U_AND_Y = false;
+}
+var re;
+var startsWith = hasNativeStartsWith ? (
+  // Native
+  function startsWith2(s8, search, position) {
+    return s8.startsWith(search, position);
+  }
+) : (
+  // For IE11
+  function startsWith3(s8, search, position) {
+    return s8.slice(position, position + search.length) === search;
+  }
+);
+var fromCodePoint = hasNativeFromCodePoint ? String.fromCodePoint : (
+  // IE11
+  function fromCodePoint2() {
+    var codePoints = [];
+    for (var _i = 0; _i < arguments.length; _i++) {
+      codePoints[_i] = arguments[_i];
+    }
+    var elements = "";
+    var length = codePoints.length;
+    var i5 = 0;
+    var code;
+    while (length > i5) {
+      code = codePoints[i5++];
+      if (code > 1114111)
+        throw RangeError(code + " is not a valid code point");
+      elements += code < 65536 ? String.fromCharCode(code) : String.fromCharCode(((code -= 65536) >> 10) + 55296, code % 1024 + 56320);
+    }
+    return elements;
+  }
+);
+var fromEntries = (
+  // native
+  hasNativeFromEntries ? Object.fromEntries : (
+    // Ponyfill
+    function fromEntries2(entries) {
+      var obj = {};
+      for (var _i = 0, entries_1 = entries; _i < entries_1.length; _i++) {
+        var _a2 = entries_1[_i], k3 = _a2[0], v3 = _a2[1];
+        obj[k3] = v3;
+      }
+      return obj;
+    }
+  )
+);
+var codePointAt = hasNativeCodePointAt ? (
+  // Native
+  function codePointAt2(s8, index) {
+    return s8.codePointAt(index);
+  }
+) : (
+  // IE 11
+  function codePointAt3(s8, index) {
+    var size = s8.length;
+    if (index < 0 || index >= size) {
+      return void 0;
+    }
+    var first = s8.charCodeAt(index);
+    var second;
+    return first < 55296 || first > 56319 || index + 1 === size || (second = s8.charCodeAt(index + 1)) < 56320 || second > 57343 ? first : (first - 55296 << 10) + (second - 56320) + 65536;
+  }
+);
+var trimStart = hasTrimStart ? (
+  // Native
+  function trimStart2(s8) {
+    return s8.trimStart();
+  }
+) : (
+  // Ponyfill
+  function trimStart3(s8) {
+    return s8.replace(SPACE_SEPARATOR_START_REGEX, "");
+  }
+);
+var trimEnd = hasTrimEnd ? (
+  // Native
+  function trimEnd2(s8) {
+    return s8.trimEnd();
+  }
+) : (
+  // Ponyfill
+  function trimEnd3(s8) {
+    return s8.replace(SPACE_SEPARATOR_END_REGEX, "");
+  }
+);
+function RE(s8, flag) {
+  return new RegExp(s8, flag);
+}
+var matchIdentifierAtIndex;
+if (REGEX_SUPPORTS_U_AND_Y) {
+  IDENTIFIER_PREFIX_RE_1 = RE("([^\\p{White_Space}\\p{Pattern_Syntax}]*)", "yu");
+  matchIdentifierAtIndex = function matchIdentifierAtIndex2(s8, index) {
+    var _a2;
+    IDENTIFIER_PREFIX_RE_1.lastIndex = index;
+    var match = IDENTIFIER_PREFIX_RE_1.exec(s8);
+    return (_a2 = match[1]) !== null && _a2 !== void 0 ? _a2 : "";
+  };
+} else {
+  matchIdentifierAtIndex = function matchIdentifierAtIndex2(s8, index) {
+    var match = [];
+    while (true) {
+      var c5 = codePointAt(s8, index);
+      if (c5 === void 0 || _isWhiteSpace(c5) || _isPatternSyntax(c5)) {
+        break;
+      }
+      match.push(c5);
+      index += c5 >= 65536 ? 2 : 1;
+    }
+    return fromCodePoint.apply(void 0, match);
+  };
+}
+var IDENTIFIER_PREFIX_RE_1;
+var Parser = (
+  /** @class */
+  function() {
+    function Parser2(message, options) {
+      if (options === void 0) {
+        options = {};
+      }
+      this.message = message;
+      this.position = { offset: 0, line: 1, column: 1 };
+      this.ignoreTag = !!options.ignoreTag;
+      this.locale = options.locale;
+      this.requiresOtherClause = !!options.requiresOtherClause;
+      this.shouldParseSkeletons = !!options.shouldParseSkeletons;
+    }
+    Parser2.prototype.parse = function() {
+      if (this.offset() !== 0) {
+        throw Error("parser can only be used once");
+      }
+      return this.parseMessage(0, "", false);
+    };
+    Parser2.prototype.parseMessage = function(nestingLevel, parentArgType, expectingCloseTag) {
+      var elements = [];
+      while (!this.isEOF()) {
+        var char = this.char();
+        if (char === 123) {
+          var result = this.parseArgument(nestingLevel, expectingCloseTag);
+          if (result.err) {
+            return result;
+          }
+          elements.push(result.val);
+        } else if (char === 125 && nestingLevel > 0) {
+          break;
+        } else if (char === 35 && (parentArgType === "plural" || parentArgType === "selectordinal")) {
+          var position = this.clonePosition();
+          this.bump();
+          elements.push({
+            type: TYPE.pound,
+            location: createLocation(position, this.clonePosition())
+          });
+        } else if (char === 60 && !this.ignoreTag && this.peek() === 47) {
+          if (expectingCloseTag) {
+            break;
+          } else {
+            return this.error(ErrorKind.UNMATCHED_CLOSING_TAG, createLocation(this.clonePosition(), this.clonePosition()));
+          }
+        } else if (char === 60 && !this.ignoreTag && _isAlpha(this.peek() || 0)) {
+          var result = this.parseTag(nestingLevel, parentArgType);
+          if (result.err) {
+            return result;
+          }
+          elements.push(result.val);
+        } else {
+          var result = this.parseLiteral(nestingLevel, parentArgType);
+          if (result.err) {
+            return result;
+          }
+          elements.push(result.val);
+        }
+      }
+      return { val: elements, err: null };
+    };
+    Parser2.prototype.parseTag = function(nestingLevel, parentArgType) {
+      var startPosition = this.clonePosition();
+      this.bump();
+      var tagName = this.parseTagName();
+      this.bumpSpace();
+      if (this.bumpIf("/>")) {
+        return {
+          val: {
+            type: TYPE.literal,
+            value: "<".concat(tagName, "/>"),
+            location: createLocation(startPosition, this.clonePosition())
+          },
+          err: null
+        };
+      } else if (this.bumpIf(">")) {
+        var childrenResult = this.parseMessage(nestingLevel + 1, parentArgType, true);
+        if (childrenResult.err) {
+          return childrenResult;
+        }
+        var children = childrenResult.val;
+        var endTagStartPosition = this.clonePosition();
+        if (this.bumpIf("</")) {
+          if (this.isEOF() || !_isAlpha(this.char())) {
+            return this.error(ErrorKind.INVALID_TAG, createLocation(endTagStartPosition, this.clonePosition()));
+          }
+          var closingTagNameStartPosition = this.clonePosition();
+          var closingTagName = this.parseTagName();
+          if (tagName !== closingTagName) {
+            return this.error(ErrorKind.UNMATCHED_CLOSING_TAG, createLocation(closingTagNameStartPosition, this.clonePosition()));
+          }
+          this.bumpSpace();
+          if (!this.bumpIf(">")) {
+            return this.error(ErrorKind.INVALID_TAG, createLocation(endTagStartPosition, this.clonePosition()));
+          }
+          return {
+            val: {
+              type: TYPE.tag,
+              value: tagName,
+              children,
+              location: createLocation(startPosition, this.clonePosition())
+            },
+            err: null
+          };
+        } else {
+          return this.error(ErrorKind.UNCLOSED_TAG, createLocation(startPosition, this.clonePosition()));
+        }
+      } else {
+        return this.error(ErrorKind.INVALID_TAG, createLocation(startPosition, this.clonePosition()));
+      }
+    };
+    Parser2.prototype.parseTagName = function() {
+      var startOffset = this.offset();
+      this.bump();
+      while (!this.isEOF() && _isPotentialElementNameChar(this.char())) {
+        this.bump();
+      }
+      return this.message.slice(startOffset, this.offset());
+    };
+    Parser2.prototype.parseLiteral = function(nestingLevel, parentArgType) {
+      var start = this.clonePosition();
+      var value = "";
+      while (true) {
+        var parseQuoteResult = this.tryParseQuote(parentArgType);
+        if (parseQuoteResult) {
+          value += parseQuoteResult;
+          continue;
+        }
+        var parseUnquotedResult = this.tryParseUnquoted(nestingLevel, parentArgType);
+        if (parseUnquotedResult) {
+          value += parseUnquotedResult;
+          continue;
+        }
+        var parseLeftAngleResult = this.tryParseLeftAngleBracket();
+        if (parseLeftAngleResult) {
+          value += parseLeftAngleResult;
+          continue;
+        }
+        break;
+      }
+      var location = createLocation(start, this.clonePosition());
+      return {
+        val: { type: TYPE.literal, value, location },
+        err: null
+      };
+    };
+    Parser2.prototype.tryParseLeftAngleBracket = function() {
+      if (!this.isEOF() && this.char() === 60 && (this.ignoreTag || // If at the opening tag or closing tag position, bail.
+      !_isAlphaOrSlash(this.peek() || 0))) {
+        this.bump();
+        return "<";
+      }
+      return null;
+    };
+    Parser2.prototype.tryParseQuote = function(parentArgType) {
+      if (this.isEOF() || this.char() !== 39) {
+        return null;
+      }
+      switch (this.peek()) {
+        case 39:
+          this.bump();
+          this.bump();
+          return "'";
+        // '{', '<', '>', '}'
+        case 123:
+        case 60:
+        case 62:
+        case 125:
+          break;
+        case 35:
+          if (parentArgType === "plural" || parentArgType === "selectordinal") {
+            break;
+          }
+          return null;
+        default:
+          return null;
+      }
+      this.bump();
+      var codePoints = [this.char()];
+      this.bump();
+      while (!this.isEOF()) {
+        var ch = this.char();
+        if (ch === 39) {
+          if (this.peek() === 39) {
+            codePoints.push(39);
+            this.bump();
+          } else {
+            this.bump();
+            break;
+          }
+        } else {
+          codePoints.push(ch);
+        }
+        this.bump();
+      }
+      return fromCodePoint.apply(void 0, codePoints);
+    };
+    Parser2.prototype.tryParseUnquoted = function(nestingLevel, parentArgType) {
+      if (this.isEOF()) {
+        return null;
+      }
+      var ch = this.char();
+      if (ch === 60 || ch === 123 || ch === 35 && (parentArgType === "plural" || parentArgType === "selectordinal") || ch === 125 && nestingLevel > 0) {
+        return null;
+      } else {
+        this.bump();
+        return fromCodePoint(ch);
+      }
+    };
+    Parser2.prototype.parseArgument = function(nestingLevel, expectingCloseTag) {
+      var openingBracePosition = this.clonePosition();
+      this.bump();
+      this.bumpSpace();
+      if (this.isEOF()) {
+        return this.error(ErrorKind.EXPECT_ARGUMENT_CLOSING_BRACE, createLocation(openingBracePosition, this.clonePosition()));
+      }
+      if (this.char() === 125) {
+        this.bump();
+        return this.error(ErrorKind.EMPTY_ARGUMENT, createLocation(openingBracePosition, this.clonePosition()));
+      }
+      var value = this.parseIdentifierIfPossible().value;
+      if (!value) {
+        return this.error(ErrorKind.MALFORMED_ARGUMENT, createLocation(openingBracePosition, this.clonePosition()));
+      }
+      this.bumpSpace();
+      if (this.isEOF()) {
+        return this.error(ErrorKind.EXPECT_ARGUMENT_CLOSING_BRACE, createLocation(openingBracePosition, this.clonePosition()));
+      }
+      switch (this.char()) {
+        // Simple argument: `{name}`
+        case 125: {
+          this.bump();
+          return {
+            val: {
+              type: TYPE.argument,
+              // value does not include the opening and closing braces.
+              value,
+              location: createLocation(openingBracePosition, this.clonePosition())
+            },
+            err: null
+          };
+        }
+        // Argument with options: `{name, format, ...}`
+        case 44: {
+          this.bump();
+          this.bumpSpace();
+          if (this.isEOF()) {
+            return this.error(ErrorKind.EXPECT_ARGUMENT_CLOSING_BRACE, createLocation(openingBracePosition, this.clonePosition()));
+          }
+          return this.parseArgumentOptions(nestingLevel, expectingCloseTag, value, openingBracePosition);
+        }
+        default:
+          return this.error(ErrorKind.MALFORMED_ARGUMENT, createLocation(openingBracePosition, this.clonePosition()));
+      }
+    };
+    Parser2.prototype.parseIdentifierIfPossible = function() {
+      var startingPosition = this.clonePosition();
+      var startOffset = this.offset();
+      var value = matchIdentifierAtIndex(this.message, startOffset);
+      var endOffset = startOffset + value.length;
+      this.bumpTo(endOffset);
+      var endPosition = this.clonePosition();
+      var location = createLocation(startingPosition, endPosition);
+      return { value, location };
+    };
+    Parser2.prototype.parseArgumentOptions = function(nestingLevel, expectingCloseTag, value, openingBracePosition) {
+      var _a2;
+      var typeStartPosition = this.clonePosition();
+      var argType = this.parseIdentifierIfPossible().value;
+      var typeEndPosition = this.clonePosition();
+      switch (argType) {
+        case "":
+          return this.error(ErrorKind.EXPECT_ARGUMENT_TYPE, createLocation(typeStartPosition, typeEndPosition));
+        case "number":
+        case "date":
+        case "time": {
+          this.bumpSpace();
+          var styleAndLocation = null;
+          if (this.bumpIf(",")) {
+            this.bumpSpace();
+            var styleStartPosition = this.clonePosition();
+            var result = this.parseSimpleArgStyleIfPossible();
+            if (result.err) {
+              return result;
+            }
+            var style = trimEnd(result.val);
+            if (style.length === 0) {
+              return this.error(ErrorKind.EXPECT_ARGUMENT_STYLE, createLocation(this.clonePosition(), this.clonePosition()));
+            }
+            var styleLocation = createLocation(styleStartPosition, this.clonePosition());
+            styleAndLocation = { style, styleLocation };
+          }
+          var argCloseResult = this.tryParseArgumentClose(openingBracePosition);
+          if (argCloseResult.err) {
+            return argCloseResult;
+          }
+          var location_1 = createLocation(openingBracePosition, this.clonePosition());
+          if (styleAndLocation && startsWith(styleAndLocation === null || styleAndLocation === void 0 ? void 0 : styleAndLocation.style, "::", 0)) {
+            var skeleton = trimStart(styleAndLocation.style.slice(2));
+            if (argType === "number") {
+              var result = this.parseNumberSkeletonFromString(skeleton, styleAndLocation.styleLocation);
+              if (result.err) {
+                return result;
+              }
+              return {
+                val: { type: TYPE.number, value, location: location_1, style: result.val },
+                err: null
+              };
+            } else {
+              if (skeleton.length === 0) {
+                return this.error(ErrorKind.EXPECT_DATE_TIME_SKELETON, location_1);
+              }
+              var dateTimePattern = skeleton;
+              if (this.locale) {
+                dateTimePattern = getBestPattern(skeleton, this.locale);
+              }
+              var style = {
+                type: SKELETON_TYPE.dateTime,
+                pattern: dateTimePattern,
+                location: styleAndLocation.styleLocation,
+                parsedOptions: this.shouldParseSkeletons ? parseDateTimeSkeleton(dateTimePattern) : {}
+              };
+              var type = argType === "date" ? TYPE.date : TYPE.time;
+              return {
+                val: { type, value, location: location_1, style },
+                err: null
+              };
+            }
+          }
+          return {
+            val: {
+              type: argType === "number" ? TYPE.number : argType === "date" ? TYPE.date : TYPE.time,
+              value,
+              location: location_1,
+              style: (_a2 = styleAndLocation === null || styleAndLocation === void 0 ? void 0 : styleAndLocation.style) !== null && _a2 !== void 0 ? _a2 : null
+            },
+            err: null
+          };
+        }
+        case "plural":
+        case "selectordinal":
+        case "select": {
+          var typeEndPosition_1 = this.clonePosition();
+          this.bumpSpace();
+          if (!this.bumpIf(",")) {
+            return this.error(ErrorKind.EXPECT_SELECT_ARGUMENT_OPTIONS, createLocation(typeEndPosition_1, __assign({}, typeEndPosition_1)));
+          }
+          this.bumpSpace();
+          var identifierAndLocation = this.parseIdentifierIfPossible();
+          var pluralOffset = 0;
+          if (argType !== "select" && identifierAndLocation.value === "offset") {
+            if (!this.bumpIf(":")) {
+              return this.error(ErrorKind.EXPECT_PLURAL_ARGUMENT_OFFSET_VALUE, createLocation(this.clonePosition(), this.clonePosition()));
+            }
+            this.bumpSpace();
+            var result = this.tryParseDecimalInteger(ErrorKind.EXPECT_PLURAL_ARGUMENT_OFFSET_VALUE, ErrorKind.INVALID_PLURAL_ARGUMENT_OFFSET_VALUE);
+            if (result.err) {
+              return result;
+            }
+            this.bumpSpace();
+            identifierAndLocation = this.parseIdentifierIfPossible();
+            pluralOffset = result.val;
+          }
+          var optionsResult = this.tryParsePluralOrSelectOptions(nestingLevel, argType, expectingCloseTag, identifierAndLocation);
+          if (optionsResult.err) {
+            return optionsResult;
+          }
+          var argCloseResult = this.tryParseArgumentClose(openingBracePosition);
+          if (argCloseResult.err) {
+            return argCloseResult;
+          }
+          var location_2 = createLocation(openingBracePosition, this.clonePosition());
+          if (argType === "select") {
+            return {
+              val: {
+                type: TYPE.select,
+                value,
+                options: fromEntries(optionsResult.val),
+                location: location_2
+              },
+              err: null
+            };
+          } else {
+            return {
+              val: {
+                type: TYPE.plural,
+                value,
+                options: fromEntries(optionsResult.val),
+                offset: pluralOffset,
+                pluralType: argType === "plural" ? "cardinal" : "ordinal",
+                location: location_2
+              },
+              err: null
+            };
+          }
+        }
+        default:
+          return this.error(ErrorKind.INVALID_ARGUMENT_TYPE, createLocation(typeStartPosition, typeEndPosition));
+      }
+    };
+    Parser2.prototype.tryParseArgumentClose = function(openingBracePosition) {
+      if (this.isEOF() || this.char() !== 125) {
+        return this.error(ErrorKind.EXPECT_ARGUMENT_CLOSING_BRACE, createLocation(openingBracePosition, this.clonePosition()));
+      }
+      this.bump();
+      return { val: true, err: null };
+    };
+    Parser2.prototype.parseSimpleArgStyleIfPossible = function() {
+      var nestedBraces = 0;
+      var startPosition = this.clonePosition();
+      while (!this.isEOF()) {
+        var ch = this.char();
+        switch (ch) {
+          case 39: {
+            this.bump();
+            var apostrophePosition = this.clonePosition();
+            if (!this.bumpUntil("'")) {
+              return this.error(ErrorKind.UNCLOSED_QUOTE_IN_ARGUMENT_STYLE, createLocation(apostrophePosition, this.clonePosition()));
+            }
+            this.bump();
+            break;
+          }
+          case 123: {
+            nestedBraces += 1;
+            this.bump();
+            break;
+          }
+          case 125: {
+            if (nestedBraces > 0) {
+              nestedBraces -= 1;
+            } else {
+              return {
+                val: this.message.slice(startPosition.offset, this.offset()),
+                err: null
+              };
+            }
+            break;
+          }
+          default:
+            this.bump();
+            break;
+        }
+      }
+      return {
+        val: this.message.slice(startPosition.offset, this.offset()),
+        err: null
+      };
+    };
+    Parser2.prototype.parseNumberSkeletonFromString = function(skeleton, location) {
+      var tokens = [];
+      try {
+        tokens = parseNumberSkeletonFromString(skeleton);
+      } catch (e7) {
+        return this.error(ErrorKind.INVALID_NUMBER_SKELETON, location);
+      }
+      return {
+        val: {
+          type: SKELETON_TYPE.number,
+          tokens,
+          location,
+          parsedOptions: this.shouldParseSkeletons ? parseNumberSkeleton(tokens) : {}
+        },
+        err: null
+      };
+    };
+    Parser2.prototype.tryParsePluralOrSelectOptions = function(nestingLevel, parentArgType, expectCloseTag, parsedFirstIdentifier) {
+      var _a2;
+      var hasOtherClause = false;
+      var options = [];
+      var parsedSelectors = /* @__PURE__ */ new Set();
+      var selector = parsedFirstIdentifier.value, selectorLocation = parsedFirstIdentifier.location;
+      while (true) {
+        if (selector.length === 0) {
+          var startPosition = this.clonePosition();
+          if (parentArgType !== "select" && this.bumpIf("=")) {
+            var result = this.tryParseDecimalInteger(ErrorKind.EXPECT_PLURAL_ARGUMENT_SELECTOR, ErrorKind.INVALID_PLURAL_ARGUMENT_SELECTOR);
+            if (result.err) {
+              return result;
+            }
+            selectorLocation = createLocation(startPosition, this.clonePosition());
+            selector = this.message.slice(startPosition.offset, this.offset());
+          } else {
+            break;
+          }
+        }
+        if (parsedSelectors.has(selector)) {
+          return this.error(parentArgType === "select" ? ErrorKind.DUPLICATE_SELECT_ARGUMENT_SELECTOR : ErrorKind.DUPLICATE_PLURAL_ARGUMENT_SELECTOR, selectorLocation);
+        }
+        if (selector === "other") {
+          hasOtherClause = true;
+        }
+        this.bumpSpace();
+        var openingBracePosition = this.clonePosition();
+        if (!this.bumpIf("{")) {
+          return this.error(parentArgType === "select" ? ErrorKind.EXPECT_SELECT_ARGUMENT_SELECTOR_FRAGMENT : ErrorKind.EXPECT_PLURAL_ARGUMENT_SELECTOR_FRAGMENT, createLocation(this.clonePosition(), this.clonePosition()));
+        }
+        var fragmentResult = this.parseMessage(nestingLevel + 1, parentArgType, expectCloseTag);
+        if (fragmentResult.err) {
+          return fragmentResult;
+        }
+        var argCloseResult = this.tryParseArgumentClose(openingBracePosition);
+        if (argCloseResult.err) {
+          return argCloseResult;
+        }
+        options.push([
+          selector,
+          {
+            value: fragmentResult.val,
+            location: createLocation(openingBracePosition, this.clonePosition())
+          }
+        ]);
+        parsedSelectors.add(selector);
+        this.bumpSpace();
+        _a2 = this.parseIdentifierIfPossible(), selector = _a2.value, selectorLocation = _a2.location;
+      }
+      if (options.length === 0) {
+        return this.error(parentArgType === "select" ? ErrorKind.EXPECT_SELECT_ARGUMENT_SELECTOR : ErrorKind.EXPECT_PLURAL_ARGUMENT_SELECTOR, createLocation(this.clonePosition(), this.clonePosition()));
+      }
+      if (this.requiresOtherClause && !hasOtherClause) {
+        return this.error(ErrorKind.MISSING_OTHER_CLAUSE, createLocation(this.clonePosition(), this.clonePosition()));
+      }
+      return { val: options, err: null };
+    };
+    Parser2.prototype.tryParseDecimalInteger = function(expectNumberError, invalidNumberError) {
+      var sign = 1;
+      var startingPosition = this.clonePosition();
+      if (this.bumpIf("+")) {
+      } else if (this.bumpIf("-")) {
+        sign = -1;
+      }
+      var hasDigits = false;
+      var decimal = 0;
+      while (!this.isEOF()) {
+        var ch = this.char();
+        if (ch >= 48 && ch <= 57) {
+          hasDigits = true;
+          decimal = decimal * 10 + (ch - 48);
+          this.bump();
+        } else {
+          break;
+        }
+      }
+      var location = createLocation(startingPosition, this.clonePosition());
+      if (!hasDigits) {
+        return this.error(expectNumberError, location);
+      }
+      decimal *= sign;
+      if (!isSafeInteger(decimal)) {
+        return this.error(invalidNumberError, location);
+      }
+      return { val: decimal, err: null };
+    };
+    Parser2.prototype.offset = function() {
+      return this.position.offset;
+    };
+    Parser2.prototype.isEOF = function() {
+      return this.offset() === this.message.length;
+    };
+    Parser2.prototype.clonePosition = function() {
+      return {
+        offset: this.position.offset,
+        line: this.position.line,
+        column: this.position.column
+      };
+    };
+    Parser2.prototype.char = function() {
+      var offset = this.position.offset;
+      if (offset >= this.message.length) {
+        throw Error("out of bound");
+      }
+      var code = codePointAt(this.message, offset);
+      if (code === void 0) {
+        throw Error("Offset ".concat(offset, " is at invalid UTF-16 code unit boundary"));
+      }
+      return code;
+    };
+    Parser2.prototype.error = function(kind, location) {
+      return {
+        val: null,
+        err: {
+          kind,
+          message: this.message,
+          location
+        }
+      };
+    };
+    Parser2.prototype.bump = function() {
+      if (this.isEOF()) {
+        return;
+      }
+      var code = this.char();
+      if (code === 10) {
+        this.position.line += 1;
+        this.position.column = 1;
+        this.position.offset += 1;
+      } else {
+        this.position.column += 1;
+        this.position.offset += code < 65536 ? 1 : 2;
+      }
+    };
+    Parser2.prototype.bumpIf = function(prefix) {
+      if (startsWith(this.message, prefix, this.offset())) {
+        for (var i5 = 0; i5 < prefix.length; i5++) {
+          this.bump();
+        }
+        return true;
+      }
+      return false;
+    };
+    Parser2.prototype.bumpUntil = function(pattern) {
+      var currentOffset = this.offset();
+      var index = this.message.indexOf(pattern, currentOffset);
+      if (index >= 0) {
+        this.bumpTo(index);
+        return true;
+      } else {
+        this.bumpTo(this.message.length);
+        return false;
+      }
+    };
+    Parser2.prototype.bumpTo = function(targetOffset) {
+      if (this.offset() > targetOffset) {
+        throw Error("targetOffset ".concat(targetOffset, " must be greater than or equal to the current offset ").concat(this.offset()));
+      }
+      targetOffset = Math.min(targetOffset, this.message.length);
+      while (true) {
+        var offset = this.offset();
+        if (offset === targetOffset) {
+          break;
+        }
+        if (offset > targetOffset) {
+          throw Error("targetOffset ".concat(targetOffset, " is at invalid UTF-16 code unit boundary"));
+        }
+        this.bump();
+        if (this.isEOF()) {
+          break;
+        }
+      }
+    };
+    Parser2.prototype.bumpSpace = function() {
+      while (!this.isEOF() && _isWhiteSpace(this.char())) {
+        this.bump();
+      }
+    };
+    Parser2.prototype.peek = function() {
+      if (this.isEOF()) {
+        return null;
+      }
+      var code = this.char();
+      var offset = this.offset();
+      var nextCode = this.message.charCodeAt(offset + (code >= 65536 ? 2 : 1));
+      return nextCode !== null && nextCode !== void 0 ? nextCode : null;
+    };
+    return Parser2;
+  }()
+);
+function _isAlpha(codepoint) {
+  return codepoint >= 97 && codepoint <= 122 || codepoint >= 65 && codepoint <= 90;
+}
+function _isAlphaOrSlash(codepoint) {
+  return _isAlpha(codepoint) || codepoint === 47;
+}
+function _isPotentialElementNameChar(c5) {
+  return c5 === 45 || c5 === 46 || c5 >= 48 && c5 <= 57 || c5 === 95 || c5 >= 97 && c5 <= 122 || c5 >= 65 && c5 <= 90 || c5 == 183 || c5 >= 192 && c5 <= 214 || c5 >= 216 && c5 <= 246 || c5 >= 248 && c5 <= 893 || c5 >= 895 && c5 <= 8191 || c5 >= 8204 && c5 <= 8205 || c5 >= 8255 && c5 <= 8256 || c5 >= 8304 && c5 <= 8591 || c5 >= 11264 && c5 <= 12271 || c5 >= 12289 && c5 <= 55295 || c5 >= 63744 && c5 <= 64975 || c5 >= 65008 && c5 <= 65533 || c5 >= 65536 && c5 <= 983039;
+}
+function _isWhiteSpace(c5) {
+  return c5 >= 9 && c5 <= 13 || c5 === 32 || c5 === 133 || c5 >= 8206 && c5 <= 8207 || c5 === 8232 || c5 === 8233;
+}
+function _isPatternSyntax(c5) {
+  return c5 >= 33 && c5 <= 35 || c5 === 36 || c5 >= 37 && c5 <= 39 || c5 === 40 || c5 === 41 || c5 === 42 || c5 === 43 || c5 === 44 || c5 === 45 || c5 >= 46 && c5 <= 47 || c5 >= 58 && c5 <= 59 || c5 >= 60 && c5 <= 62 || c5 >= 63 && c5 <= 64 || c5 === 91 || c5 === 92 || c5 === 93 || c5 === 94 || c5 === 96 || c5 === 123 || c5 === 124 || c5 === 125 || c5 === 126 || c5 === 161 || c5 >= 162 && c5 <= 165 || c5 === 166 || c5 === 167 || c5 === 169 || c5 === 171 || c5 === 172 || c5 === 174 || c5 === 176 || c5 === 177 || c5 === 182 || c5 === 187 || c5 === 191 || c5 === 215 || c5 === 247 || c5 >= 8208 && c5 <= 8213 || c5 >= 8214 && c5 <= 8215 || c5 === 8216 || c5 === 8217 || c5 === 8218 || c5 >= 8219 && c5 <= 8220 || c5 === 8221 || c5 === 8222 || c5 === 8223 || c5 >= 8224 && c5 <= 8231 || c5 >= 8240 && c5 <= 8248 || c5 === 8249 || c5 === 8250 || c5 >= 8251 && c5 <= 8254 || c5 >= 8257 && c5 <= 8259 || c5 === 8260 || c5 === 8261 || c5 === 8262 || c5 >= 8263 && c5 <= 8273 || c5 === 8274 || c5 === 8275 || c5 >= 8277 && c5 <= 8286 || c5 >= 8592 && c5 <= 8596 || c5 >= 8597 && c5 <= 8601 || c5 >= 8602 && c5 <= 8603 || c5 >= 8604 && c5 <= 8607 || c5 === 8608 || c5 >= 8609 && c5 <= 8610 || c5 === 8611 || c5 >= 8612 && c5 <= 8613 || c5 === 8614 || c5 >= 8615 && c5 <= 8621 || c5 === 8622 || c5 >= 8623 && c5 <= 8653 || c5 >= 8654 && c5 <= 8655 || c5 >= 8656 && c5 <= 8657 || c5 === 8658 || c5 === 8659 || c5 === 8660 || c5 >= 8661 && c5 <= 8691 || c5 >= 8692 && c5 <= 8959 || c5 >= 8960 && c5 <= 8967 || c5 === 8968 || c5 === 8969 || c5 === 8970 || c5 === 8971 || c5 >= 8972 && c5 <= 8991 || c5 >= 8992 && c5 <= 8993 || c5 >= 8994 && c5 <= 9e3 || c5 === 9001 || c5 === 9002 || c5 >= 9003 && c5 <= 9083 || c5 === 9084 || c5 >= 9085 && c5 <= 9114 || c5 >= 9115 && c5 <= 9139 || c5 >= 9140 && c5 <= 9179 || c5 >= 9180 && c5 <= 9185 || c5 >= 9186 && c5 <= 9254 || c5 >= 9255 && c5 <= 9279 || c5 >= 9280 && c5 <= 9290 || c5 >= 9291 && c5 <= 9311 || c5 >= 9472 && c5 <= 9654 || c5 === 9655 || c5 >= 9656 && c5 <= 9664 || c5 === 9665 || c5 >= 9666 && c5 <= 9719 || c5 >= 9720 && c5 <= 9727 || c5 >= 9728 && c5 <= 9838 || c5 === 9839 || c5 >= 9840 && c5 <= 10087 || c5 === 10088 || c5 === 10089 || c5 === 10090 || c5 === 10091 || c5 === 10092 || c5 === 10093 || c5 === 10094 || c5 === 10095 || c5 === 10096 || c5 === 10097 || c5 === 10098 || c5 === 10099 || c5 === 10100 || c5 === 10101 || c5 >= 10132 && c5 <= 10175 || c5 >= 10176 && c5 <= 10180 || c5 === 10181 || c5 === 10182 || c5 >= 10183 && c5 <= 10213 || c5 === 10214 || c5 === 10215 || c5 === 10216 || c5 === 10217 || c5 === 10218 || c5 === 10219 || c5 === 10220 || c5 === 10221 || c5 === 10222 || c5 === 10223 || c5 >= 10224 && c5 <= 10239 || c5 >= 10240 && c5 <= 10495 || c5 >= 10496 && c5 <= 10626 || c5 === 10627 || c5 === 10628 || c5 === 10629 || c5 === 10630 || c5 === 10631 || c5 === 10632 || c5 === 10633 || c5 === 10634 || c5 === 10635 || c5 === 10636 || c5 === 10637 || c5 === 10638 || c5 === 10639 || c5 === 10640 || c5 === 10641 || c5 === 10642 || c5 === 10643 || c5 === 10644 || c5 === 10645 || c5 === 10646 || c5 === 10647 || c5 === 10648 || c5 >= 10649 && c5 <= 10711 || c5 === 10712 || c5 === 10713 || c5 === 10714 || c5 === 10715 || c5 >= 10716 && c5 <= 10747 || c5 === 10748 || c5 === 10749 || c5 >= 10750 && c5 <= 11007 || c5 >= 11008 && c5 <= 11055 || c5 >= 11056 && c5 <= 11076 || c5 >= 11077 && c5 <= 11078 || c5 >= 11079 && c5 <= 11084 || c5 >= 11085 && c5 <= 11123 || c5 >= 11124 && c5 <= 11125 || c5 >= 11126 && c5 <= 11157 || c5 === 11158 || c5 >= 11159 && c5 <= 11263 || c5 >= 11776 && c5 <= 11777 || c5 === 11778 || c5 === 11779 || c5 === 11780 || c5 === 11781 || c5 >= 11782 && c5 <= 11784 || c5 === 11785 || c5 === 11786 || c5 === 11787 || c5 === 11788 || c5 === 11789 || c5 >= 11790 && c5 <= 11798 || c5 === 11799 || c5 >= 11800 && c5 <= 11801 || c5 === 11802 || c5 === 11803 || c5 === 11804 || c5 === 11805 || c5 >= 11806 && c5 <= 11807 || c5 === 11808 || c5 === 11809 || c5 === 11810 || c5 === 11811 || c5 === 11812 || c5 === 11813 || c5 === 11814 || c5 === 11815 || c5 === 11816 || c5 === 11817 || c5 >= 11818 && c5 <= 11822 || c5 === 11823 || c5 >= 11824 && c5 <= 11833 || c5 >= 11834 && c5 <= 11835 || c5 >= 11836 && c5 <= 11839 || c5 === 11840 || c5 === 11841 || c5 === 11842 || c5 >= 11843 && c5 <= 11855 || c5 >= 11856 && c5 <= 11857 || c5 === 11858 || c5 >= 11859 && c5 <= 11903 || c5 >= 12289 && c5 <= 12291 || c5 === 12296 || c5 === 12297 || c5 === 12298 || c5 === 12299 || c5 === 12300 || c5 === 12301 || c5 === 12302 || c5 === 12303 || c5 === 12304 || c5 === 12305 || c5 >= 12306 && c5 <= 12307 || c5 === 12308 || c5 === 12309 || c5 === 12310 || c5 === 12311 || c5 === 12312 || c5 === 12313 || c5 === 12314 || c5 === 12315 || c5 === 12316 || c5 === 12317 || c5 >= 12318 && c5 <= 12319 || c5 === 12320 || c5 === 12336 || c5 === 64830 || c5 === 64831 || c5 >= 65093 && c5 <= 65094;
+}
+
+// node_modules/@formatjs/icu-messageformat-parser/lib/index.js
+function pruneLocation(els) {
+  els.forEach(function(el) {
+    delete el.location;
+    if (isSelectElement(el) || isPluralElement(el)) {
+      for (var k3 in el.options) {
+        delete el.options[k3].location;
+        pruneLocation(el.options[k3].value);
+      }
+    } else if (isNumberElement(el) && isNumberSkeleton(el.style)) {
+      delete el.style.location;
+    } else if ((isDateElement(el) || isTimeElement(el)) && isDateTimeSkeleton(el.style)) {
+      delete el.style.location;
+    } else if (isTagElement(el)) {
+      pruneLocation(el.children);
+    }
+  });
+}
+function parse(message, opts) {
+  if (opts === void 0) {
+    opts = {};
+  }
+  opts = __assign({ shouldParseSkeletons: true, requiresOtherClause: true }, opts);
+  var result = new Parser(message, opts).parse();
+  if (result.err) {
+    var error = SyntaxError(ErrorKind[result.err.kind]);
+    error.location = result.err.location;
+    error.originalMessage = result.err.message;
+    throw error;
+  }
+  if (!(opts === null || opts === void 0 ? void 0 : opts.captureLocation)) {
+    pruneLocation(result.val);
+  }
+  return result.val;
+}
+
+// node_modules/@formatjs/fast-memoize/lib/index.js
+function memoize(fn, options) {
+  var cache2 = options && options.cache ? options.cache : cacheDefault;
+  var serializer = options && options.serializer ? options.serializer : serializerDefault;
+  var strategy = options && options.strategy ? options.strategy : strategyDefault;
+  return strategy(fn, {
+    cache: cache2,
+    serializer
+  });
+}
+function isPrimitive(value) {
+  return value == null || typeof value === "number" || typeof value === "boolean";
+}
+function monadic(fn, cache2, serializer, arg) {
+  var cacheKey = isPrimitive(arg) ? arg : serializer(arg);
+  var computedValue = cache2.get(cacheKey);
+  if (typeof computedValue === "undefined") {
+    computedValue = fn.call(this, arg);
+    cache2.set(cacheKey, computedValue);
+  }
+  return computedValue;
+}
+function variadic(fn, cache2, serializer) {
+  var args = Array.prototype.slice.call(arguments, 3);
+  var cacheKey = serializer(args);
+  var computedValue = cache2.get(cacheKey);
+  if (typeof computedValue === "undefined") {
+    computedValue = fn.apply(this, args);
+    cache2.set(cacheKey, computedValue);
+  }
+  return computedValue;
+}
+function assemble(fn, context, strategy, cache2, serialize) {
+  return strategy.bind(context, fn, cache2, serialize);
+}
+function strategyDefault(fn, options) {
+  var strategy = fn.length === 1 ? monadic : variadic;
+  return assemble(fn, this, strategy, options.cache.create(), options.serializer);
+}
+function strategyVariadic(fn, options) {
+  return assemble(fn, this, variadic, options.cache.create(), options.serializer);
+}
+function strategyMonadic(fn, options) {
+  return assemble(fn, this, monadic, options.cache.create(), options.serializer);
+}
+var serializerDefault = function() {
+  return JSON.stringify(arguments);
+};
+function ObjectWithoutPrototypeCache() {
+  this.cache = /* @__PURE__ */ Object.create(null);
+}
+ObjectWithoutPrototypeCache.prototype.get = function(key) {
+  return this.cache[key];
+};
+ObjectWithoutPrototypeCache.prototype.set = function(key, value) {
+  this.cache[key] = value;
+};
+var cacheDefault = {
+  create: function create() {
+    return new ObjectWithoutPrototypeCache();
+  }
+};
+var strategies = {
+  variadic: strategyVariadic,
+  monadic: strategyMonadic
+};
+
+// node_modules/intl-messageformat/lib/src/error.js
+var ErrorCode;
+(function(ErrorCode2) {
+  ErrorCode2["MISSING_VALUE"] = "MISSING_VALUE";
+  ErrorCode2["INVALID_VALUE"] = "INVALID_VALUE";
+  ErrorCode2["MISSING_INTL_API"] = "MISSING_INTL_API";
+})(ErrorCode || (ErrorCode = {}));
+var FormatError = (
+  /** @class */
+  function(_super) {
+    __extends(FormatError2, _super);
+    function FormatError2(msg, code, originalMessage) {
+      var _this = _super.call(this, msg) || this;
+      _this.code = code;
+      _this.originalMessage = originalMessage;
+      return _this;
+    }
+    FormatError2.prototype.toString = function() {
+      return "[formatjs Error: ".concat(this.code, "] ").concat(this.message);
+    };
+    return FormatError2;
+  }(Error)
+);
+var InvalidValueError = (
+  /** @class */
+  function(_super) {
+    __extends(InvalidValueError2, _super);
+    function InvalidValueError2(variableId, value, options, originalMessage) {
+      return _super.call(this, 'Invalid values for "'.concat(variableId, '": "').concat(value, '". Options are "').concat(Object.keys(options).join('", "'), '"'), ErrorCode.INVALID_VALUE, originalMessage) || this;
+    }
+    return InvalidValueError2;
+  }(FormatError)
+);
+var InvalidValueTypeError = (
+  /** @class */
+  function(_super) {
+    __extends(InvalidValueTypeError2, _super);
+    function InvalidValueTypeError2(value, type, originalMessage) {
+      return _super.call(this, 'Value for "'.concat(value, '" must be of type ').concat(type), ErrorCode.INVALID_VALUE, originalMessage) || this;
+    }
+    return InvalidValueTypeError2;
+  }(FormatError)
+);
+var MissingValueError = (
+  /** @class */
+  function(_super) {
+    __extends(MissingValueError2, _super);
+    function MissingValueError2(variableId, originalMessage) {
+      return _super.call(this, 'The intl string context variable "'.concat(variableId, '" was not provided to the string "').concat(originalMessage, '"'), ErrorCode.MISSING_VALUE, originalMessage) || this;
+    }
+    return MissingValueError2;
+  }(FormatError)
+);
+
+// node_modules/intl-messageformat/lib/src/formatters.js
+var PART_TYPE;
+(function(PART_TYPE2) {
+  PART_TYPE2[PART_TYPE2["literal"] = 0] = "literal";
+  PART_TYPE2[PART_TYPE2["object"] = 1] = "object";
+})(PART_TYPE || (PART_TYPE = {}));
+function mergeLiteral(parts) {
+  if (parts.length < 2) {
+    return parts;
+  }
+  return parts.reduce(function(all, part) {
+    var lastPart = all[all.length - 1];
+    if (!lastPart || lastPart.type !== PART_TYPE.literal || part.type !== PART_TYPE.literal) {
+      all.push(part);
+    } else {
+      lastPart.value += part.value;
+    }
+    return all;
+  }, []);
+}
+function isFormatXMLElementFn(el) {
+  return typeof el === "function";
+}
+function formatToParts(els, locales, formatters, formats, values, currentPluralValue, originalMessage) {
+  if (els.length === 1 && isLiteralElement(els[0])) {
+    return [
+      {
+        type: PART_TYPE.literal,
+        value: els[0].value
+      }
+    ];
+  }
+  var result = [];
+  for (var _i = 0, els_1 = els; _i < els_1.length; _i++) {
+    var el = els_1[_i];
+    if (isLiteralElement(el)) {
+      result.push({
+        type: PART_TYPE.literal,
+        value: el.value
+      });
+      continue;
+    }
+    if (isPoundElement(el)) {
+      if (typeof currentPluralValue === "number") {
+        result.push({
+          type: PART_TYPE.literal,
+          value: formatters.getNumberFormat(locales).format(currentPluralValue)
+        });
+      }
+      continue;
+    }
+    var varName = el.value;
+    if (!(values && varName in values)) {
+      throw new MissingValueError(varName, originalMessage);
+    }
+    var value = values[varName];
+    if (isArgumentElement(el)) {
+      if (!value || typeof value === "string" || typeof value === "number") {
+        value = typeof value === "string" || typeof value === "number" ? String(value) : "";
+      }
+      result.push({
+        type: typeof value === "string" ? PART_TYPE.literal : PART_TYPE.object,
+        value
+      });
+      continue;
+    }
+    if (isDateElement(el)) {
+      var style = typeof el.style === "string" ? formats.date[el.style] : isDateTimeSkeleton(el.style) ? el.style.parsedOptions : void 0;
+      result.push({
+        type: PART_TYPE.literal,
+        value: formatters.getDateTimeFormat(locales, style).format(value)
+      });
+      continue;
+    }
+    if (isTimeElement(el)) {
+      var style = typeof el.style === "string" ? formats.time[el.style] : isDateTimeSkeleton(el.style) ? el.style.parsedOptions : formats.time.medium;
+      result.push({
+        type: PART_TYPE.literal,
+        value: formatters.getDateTimeFormat(locales, style).format(value)
+      });
+      continue;
+    }
+    if (isNumberElement(el)) {
+      var style = typeof el.style === "string" ? formats.number[el.style] : isNumberSkeleton(el.style) ? el.style.parsedOptions : void 0;
+      if (style && style.scale) {
+        value = value * (style.scale || 1);
+      }
+      result.push({
+        type: PART_TYPE.literal,
+        value: formatters.getNumberFormat(locales, style).format(value)
+      });
+      continue;
+    }
+    if (isTagElement(el)) {
+      var children = el.children, value_1 = el.value;
+      var formatFn = values[value_1];
+      if (!isFormatXMLElementFn(formatFn)) {
+        throw new InvalidValueTypeError(value_1, "function", originalMessage);
+      }
+      var parts = formatToParts(children, locales, formatters, formats, values, currentPluralValue);
+      var chunks = formatFn(parts.map(function(p3) {
+        return p3.value;
+      }));
+      if (!Array.isArray(chunks)) {
+        chunks = [chunks];
+      }
+      result.push.apply(result, chunks.map(function(c5) {
+        return {
+          type: typeof c5 === "string" ? PART_TYPE.literal : PART_TYPE.object,
+          value: c5
+        };
+      }));
+    }
+    if (isSelectElement(el)) {
+      var opt = el.options[value] || el.options.other;
+      if (!opt) {
+        throw new InvalidValueError(el.value, value, Object.keys(el.options), originalMessage);
+      }
+      result.push.apply(result, formatToParts(opt.value, locales, formatters, formats, values));
+      continue;
+    }
+    if (isPluralElement(el)) {
+      var opt = el.options["=".concat(value)];
+      if (!opt) {
+        if (!Intl.PluralRules) {
+          throw new FormatError('Intl.PluralRules is not available in this environment.\nTry polyfilling it using "@formatjs/intl-pluralrules"\n', ErrorCode.MISSING_INTL_API, originalMessage);
+        }
+        var rule = formatters.getPluralRules(locales, { type: el.pluralType }).select(value - (el.offset || 0));
+        opt = el.options[rule] || el.options.other;
+      }
+      if (!opt) {
+        throw new InvalidValueError(el.value, value, Object.keys(el.options), originalMessage);
+      }
+      result.push.apply(result, formatToParts(opt.value, locales, formatters, formats, values, value - (el.offset || 0)));
+      continue;
+    }
+  }
+  return mergeLiteral(result);
+}
+
+// node_modules/intl-messageformat/lib/src/core.js
+function mergeConfig(c1, c22) {
+  if (!c22) {
+    return c1;
+  }
+  return __assign(__assign(__assign({}, c1 || {}), c22 || {}), Object.keys(c1).reduce(function(all, k3) {
+    all[k3] = __assign(__assign({}, c1[k3]), c22[k3] || {});
+    return all;
+  }, {}));
+}
+function mergeConfigs(defaultConfig, configs) {
+  if (!configs) {
+    return defaultConfig;
+  }
+  return Object.keys(defaultConfig).reduce(function(all, k3) {
+    all[k3] = mergeConfig(defaultConfig[k3], configs[k3]);
+    return all;
+  }, __assign({}, defaultConfig));
+}
+function createFastMemoizeCache(store) {
+  return {
+    create: function() {
+      return {
+        get: function(key) {
+          return store[key];
+        },
+        set: function(key, value) {
+          store[key] = value;
+        }
+      };
+    }
+  };
+}
+function createDefaultFormatters(cache2) {
+  if (cache2 === void 0) {
+    cache2 = {
+      number: {},
+      dateTime: {},
+      pluralRules: {}
+    };
+  }
+  return {
+    getNumberFormat: memoize(function() {
+      var _a2;
+      var args = [];
+      for (var _i = 0; _i < arguments.length; _i++) {
+        args[_i] = arguments[_i];
+      }
+      return new ((_a2 = Intl.NumberFormat).bind.apply(_a2, __spreadArray([void 0], args, false)))();
+    }, {
+      cache: createFastMemoizeCache(cache2.number),
+      strategy: strategies.variadic
+    }),
+    getDateTimeFormat: memoize(function() {
+      var _a2;
+      var args = [];
+      for (var _i = 0; _i < arguments.length; _i++) {
+        args[_i] = arguments[_i];
+      }
+      return new ((_a2 = Intl.DateTimeFormat).bind.apply(_a2, __spreadArray([void 0], args, false)))();
+    }, {
+      cache: createFastMemoizeCache(cache2.dateTime),
+      strategy: strategies.variadic
+    }),
+    getPluralRules: memoize(function() {
+      var _a2;
+      var args = [];
+      for (var _i = 0; _i < arguments.length; _i++) {
+        args[_i] = arguments[_i];
+      }
+      return new ((_a2 = Intl.PluralRules).bind.apply(_a2, __spreadArray([void 0], args, false)))();
+    }, {
+      cache: createFastMemoizeCache(cache2.pluralRules),
+      strategy: strategies.variadic
+    })
+  };
+}
+var IntlMessageFormat = (
+  /** @class */
+  function() {
+    function IntlMessageFormat2(message, locales, overrideFormats, opts) {
+      var _this = this;
+      if (locales === void 0) {
+        locales = IntlMessageFormat2.defaultLocale;
+      }
+      this.formatterCache = {
+        number: {},
+        dateTime: {},
+        pluralRules: {}
+      };
+      this.format = function(values) {
+        var parts = _this.formatToParts(values);
+        if (parts.length === 1) {
+          return parts[0].value;
+        }
+        var result = parts.reduce(function(all, part) {
+          if (!all.length || part.type !== PART_TYPE.literal || typeof all[all.length - 1] !== "string") {
+            all.push(part.value);
+          } else {
+            all[all.length - 1] += part.value;
+          }
+          return all;
+        }, []);
+        if (result.length <= 1) {
+          return result[0] || "";
+        }
+        return result;
+      };
+      this.formatToParts = function(values) {
+        return formatToParts(_this.ast, _this.locales, _this.formatters, _this.formats, values, void 0, _this.message);
+      };
+      this.resolvedOptions = function() {
+        return {
+          locale: _this.resolvedLocale.toString()
+        };
+      };
+      this.getAst = function() {
+        return _this.ast;
+      };
+      this.locales = locales;
+      this.resolvedLocale = IntlMessageFormat2.resolveLocale(locales);
+      if (typeof message === "string") {
+        this.message = message;
+        if (!IntlMessageFormat2.__parse) {
+          throw new TypeError("IntlMessageFormat.__parse must be set to process `message` of type `string`");
+        }
+        this.ast = IntlMessageFormat2.__parse(message, {
+          ignoreTag: opts === null || opts === void 0 ? void 0 : opts.ignoreTag,
+          locale: this.resolvedLocale
+        });
+      } else {
+        this.ast = message;
+      }
+      if (!Array.isArray(this.ast)) {
+        throw new TypeError("A message must be provided as a String or AST.");
+      }
+      this.formats = mergeConfigs(IntlMessageFormat2.formats, overrideFormats);
+      this.formatters = opts && opts.formatters || createDefaultFormatters(this.formatterCache);
+    }
+    Object.defineProperty(IntlMessageFormat2, "defaultLocale", {
+      get: function() {
+        if (!IntlMessageFormat2.memoizedDefaultLocale) {
+          IntlMessageFormat2.memoizedDefaultLocale = new Intl.NumberFormat().resolvedOptions().locale;
+        }
+        return IntlMessageFormat2.memoizedDefaultLocale;
+      },
+      enumerable: false,
+      configurable: true
+    });
+    IntlMessageFormat2.memoizedDefaultLocale = null;
+    IntlMessageFormat2.resolveLocale = function(locales) {
+      var supportedLocales = Intl.NumberFormat.supportedLocalesOf(locales);
+      if (supportedLocales.length > 0) {
+        return new Intl.Locale(supportedLocales[0]);
+      }
+      return new Intl.Locale(typeof locales === "string" ? locales : locales[0]);
+    };
+    IntlMessageFormat2.__parse = parse;
+    IntlMessageFormat2.formats = {
+      number: {
+        integer: {
+          maximumFractionDigits: 0
+        },
+        currency: {
+          style: "currency"
+        },
+        percent: {
+          style: "percent"
+        }
+      },
+      date: {
+        short: {
+          month: "numeric",
+          day: "numeric",
+          year: "2-digit"
+        },
+        medium: {
+          month: "short",
+          day: "numeric",
+          year: "numeric"
+        },
+        long: {
+          month: "long",
+          day: "numeric",
+          year: "numeric"
+        },
+        full: {
+          weekday: "long",
+          month: "long",
+          day: "numeric",
+          year: "numeric"
+        }
+      },
+      time: {
+        short: {
+          hour: "numeric",
+          minute: "numeric"
+        },
+        medium: {
+          hour: "numeric",
+          minute: "numeric",
+          second: "numeric"
+        },
+        long: {
+          hour: "numeric",
+          minute: "numeric",
+          second: "numeric",
+          timeZoneName: "short"
+        },
+        full: {
+          hour: "numeric",
+          minute: "numeric",
+          second: "numeric",
+          timeZoneName: "short"
+        }
+      }
+    };
+    return IntlMessageFormat2;
+  }()
+);
+
+// node_modules/intl-messageformat/lib/index.js
+var lib_default = IntlMessageFormat;
+
+// src/price/numberFormat.js
+var maskRegex = /[0-9\-+#]/;
+var notMaskRegex = /[^\d\-+#]/g;
+function getIndex(mask) {
+  return mask.search(maskRegex);
+}
+function processMask(mask = "#.##") {
+  const maskObj = {};
+  const len = mask.length;
+  const start = getIndex(mask);
+  maskObj.prefix = start > 0 ? mask.substring(0, start) : "";
+  const end = getIndex(mask.split("").reverse().join(""));
+  const offset = len - end;
+  const substr = mask.substring(offset, offset + 1);
+  const indx = offset + (substr === "." || substr === "," ? 1 : 0);
+  maskObj.suffix = end > 0 ? mask.substring(indx, len) : "";
+  maskObj.mask = mask.substring(start, indx);
+  maskObj.maskHasNegativeSign = maskObj.mask.charAt(0) === "-";
+  maskObj.maskHasPositiveSign = maskObj.mask.charAt(0) === "+";
+  let result = maskObj.mask.match(notMaskRegex);
+  maskObj.decimal = result && result[result.length - 1] || ".";
+  maskObj.separator = result && result[1] && result[0] || ",";
+  result = maskObj.mask.split(maskObj.decimal);
+  maskObj.integer = result[0];
+  maskObj.fraction = result[1];
+  return maskObj;
+}
+function processValue(value, maskObj, options) {
+  let isNegative = false;
+  const valObj = {
+    value
+  };
+  if (value < 0) {
+    isNegative = true;
+    valObj.value = -valObj.value;
+  }
+  valObj.sign = isNegative ? "-" : "";
+  valObj.value = Number(valObj.value).toFixed(
+    maskObj.fraction && maskObj.fraction.length
+  );
+  valObj.value = Number(valObj.value).toString();
+  const posTrailZero = maskObj.fraction && maskObj.fraction.lastIndexOf("0");
+  let [valInteger = "0", valFraction = ""] = valObj.value.split(".");
+  if (!valFraction || valFraction && valFraction.length <= posTrailZero) {
+    valFraction = posTrailZero < 0 ? "" : Number("0." + valFraction).toFixed(posTrailZero + 1).replace("0.", "");
+  }
+  valObj.integer = valInteger;
+  valObj.fraction = valFraction;
+  addSeparators(valObj, maskObj);
+  if (valObj.result === "0" || valObj.result === "") {
+    isNegative = false;
+    valObj.sign = "";
+  }
+  if (!isNegative && maskObj.maskHasPositiveSign) {
+    valObj.sign = "+";
+  } else if (isNegative && maskObj.maskHasPositiveSign) {
+    valObj.sign = "-";
+  } else if (isNegative) {
+    valObj.sign = options && options.enforceMaskSign && !maskObj.maskHasNegativeSign ? "" : "-";
+  }
+  return valObj;
+}
+function addSeparators(valObj, maskObj) {
+  valObj.result = "";
+  const szSep = maskObj.integer.split(maskObj.separator);
+  const maskInteger = szSep.join("");
+  const posLeadZero = maskInteger && maskInteger.indexOf("0");
+  if (posLeadZero > -1) {
+    while (valObj.integer.length < maskInteger.length - posLeadZero) {
+      valObj.integer = "0" + valObj.integer;
+    }
+  } else if (Number(valObj.integer) === 0) {
+    valObj.integer = "";
+  }
+  const posSeparator = szSep[1] && szSep[szSep.length - 1].length;
+  if (posSeparator) {
+    const len = valObj.integer.length;
+    const offset = len % posSeparator;
+    for (let indx = 0; indx < len; indx++) {
+      valObj.result += valObj.integer.charAt(indx);
+      if (!((indx - offset + 1) % posSeparator) && indx < len - posSeparator) {
+        valObj.result += maskObj.separator;
+      }
+    }
+  } else {
+    valObj.result = valObj.integer;
+  }
+  valObj.result += maskObj.fraction && valObj.fraction ? maskObj.decimal + valObj.fraction : "";
+  return valObj;
+}
+function formatNumber(mask, value, options = {}) {
+  if (!mask || isNaN(Number(value))) {
+    return value;
+  }
+  const maskObj = processMask(mask);
+  const valObj = processValue(value, maskObj, options);
+  return maskObj.prefix + valObj.sign + valObj.result + maskObj.suffix;
+}
+var numberFormat_default = formatNumber;
+
+// src/price/utilities.js
+var DECIMAL_POINT = ".";
+var DECIMAL_COMMA = ",";
+var SPACE_START_PATTERN = /^\s+/;
+var SPACE_END_PATTERN = /\s+$/;
+var NBSP = "&nbsp;";
+var getAnnualPrice = (price2) => price2 * 12;
+var isPromotionActive = (promotion, instant) => {
+  const {
+    start,
+    end,
+    displaySummary: {
+      amount,
+      duration,
+      minProductQuantity,
+      outcomeType
+    } = {}
+  } = promotion;
+  if (!(amount && duration && outcomeType && minProductQuantity)) {
+    return false;
+  }
+  const now = instant ? new Date(instant) : /* @__PURE__ */ new Date();
+  if (!start || !end) {
+    return false;
+  }
+  const startDate = new Date(start);
+  const endDate = new Date(end);
+  return now >= startDate && now <= endDate;
+};
+var RecurrenceTerm = {
+  MONTH: "MONTH",
+  YEAR: "YEAR"
+};
+var opticalPriceDivisors = {
+  [Term.ANNUAL]: 12,
+  [Term.MONTHLY]: 1,
+  [Term.THREE_YEARS]: 36,
+  [Term.TWO_YEARS]: 24
+};
+var opticalPriceRoundingRule = (accept, round) => ({ accept, round });
+var opticalPriceRoundingRules = [
+  opticalPriceRoundingRule(
+    // optical price for the term is a multiple of the initial price
+    ({ divisor, price: price2 }) => price2 % divisor == 0,
+    ({ divisor, price: price2 }) => price2 / divisor
+  ),
+  opticalPriceRoundingRule(
+    // round optical price up to 2 decimals
+    ({ usePrecision }) => usePrecision,
+    ({ divisor, price: price2 }) => Math.round(price2 / divisor * 100) / 100
+  ),
+  opticalPriceRoundingRule(
+    // round optical price up to integer
+    () => true,
+    ({ divisor, price: price2 }) => Math.ceil(Math.floor(price2 * 100 / divisor) / 100)
+  )
+];
+var recurrenceTerms = {
+  [Commitment.YEAR]: {
+    [Term.MONTHLY]: RecurrenceTerm.MONTH,
+    [Term.ANNUAL]: RecurrenceTerm.YEAR
+  },
+  [Commitment.MONTH]: {
+    [Term.MONTHLY]: RecurrenceTerm.MONTH
+  }
+};
+var currencyIsFirstChar = (formatString, currencySymbol) => formatString.indexOf(`'${currencySymbol}'`) === 0;
+var extractNumberMask = (formatString, usePrecision = true) => {
+  let numberMask = formatString.replace(/'.*?'/, "").trim();
+  const decimalsDelimiter = findDecimalsDelimiter(numberMask);
+  const hasDecimalDelimiter = !!decimalsDelimiter;
+  if (!hasDecimalDelimiter) {
+    numberMask = numberMask.replace(
+      /\s?(#.*0)(?!\s)?/,
+      "$&" + getPossibleDecimalsDelimiter(formatString)
+    );
+  } else if (!usePrecision) {
+    numberMask = numberMask.replace(/[,\.]0+/, decimalsDelimiter);
+  }
+  return numberMask;
+};
+var getCurrencySymbolDetails = (formatString) => {
+  const currencySymbol = findCurrencySymbol(formatString);
+  const isCurrencyFirst = currencyIsFirstChar(formatString, currencySymbol);
+  const formatStringWithoutSymbol = formatString.replace(/'.*?'/, "");
+  const hasCurrencySpace = SPACE_START_PATTERN.test(formatStringWithoutSymbol) || SPACE_END_PATTERN.test(formatStringWithoutSymbol);
+  return { currencySymbol, isCurrencyFirst, hasCurrencySpace };
+};
+var makeSpacesAroundNonBreaking = (text) => {
+  return text.replace(SPACE_START_PATTERN, NBSP).replace(SPACE_END_PATTERN, NBSP);
+};
+var getPossibleDecimalsDelimiter = (formatString) => formatString.match(/#(.?)#/)?.[1] === DECIMAL_POINT ? DECIMAL_COMMA : DECIMAL_POINT;
+var findCurrencySymbol = (formatString) => formatString.match(/'(.*?)'/)?.[1] ?? "";
+var findDecimalsDelimiter = (formatString) => formatString.match(/0(.?)0/)?.[1] ?? "";
+function formatPrice({ formatString, price: price2, usePrecision, isIndianPrice = false }, recurrenceTerm, transformPrice = (formattedPrice) => formattedPrice) {
+  const { currencySymbol, isCurrencyFirst, hasCurrencySpace } = getCurrencySymbolDetails(formatString);
+  const decimalsDelimiter = usePrecision ? findDecimalsDelimiter(formatString) : "";
+  const numberMask = extractNumberMask(formatString, usePrecision);
+  const fractionDigits = usePrecision ? 2 : 0;
+  const transformedPrice = transformPrice(price2, { currencySymbol });
+  const formattedPrice = isIndianPrice ? transformedPrice.toLocaleString("hi-IN", {
+    minimumFractionDigits: fractionDigits,
+    maximumFractionDigits: fractionDigits
+  }) : numberFormat_default(numberMask, transformedPrice);
+  const decimalIndex = usePrecision ? formattedPrice.lastIndexOf(decimalsDelimiter) : formattedPrice.length;
+  const integer = formattedPrice.substring(0, decimalIndex);
+  const decimals = formattedPrice.substring(decimalIndex + 1);
+  const accessiblePrice = formatString.replace(/'.*?'/, "SYMBOL").replace(/#.*0/, formattedPrice).replace(/SYMBOL/, currencySymbol);
+  return {
+    accessiblePrice,
+    currencySymbol,
+    decimals,
+    decimalsDelimiter,
+    hasCurrencySpace,
+    integer,
+    isCurrencyFirst,
+    recurrenceTerm
+  };
+}
+var formatOpticalPrice = (data) => {
+  const { commitment, term, usePrecision } = data;
+  const divisor = opticalPriceDivisors[term] ?? 1;
+  return formatPrice(
+    data,
+    divisor > 1 ? RecurrenceTerm.MONTH : recurrenceTerms[commitment]?.[term],
+    (price2) => {
+      const priceData = {
+        divisor,
+        price: price2,
+        usePrecision
+      };
+      const { round } = opticalPriceRoundingRules.find(
+        ({ accept }) => accept(priceData)
+      );
+      if (!round)
+        throw new Error(
+          `Missing rounding rule for: ${JSON.stringify(priceData)}`
+        );
+      return round(priceData);
+    }
+  );
+};
+var formatRegularPrice = ({ commitment, term, ...data }) => formatPrice(data, recurrenceTerms[commitment]?.[term]);
+var formatAnnualPrice = (data) => {
+  const {
+    commitment,
+    instant,
+    price: price2,
+    originalPrice,
+    priceWithoutDiscount,
+    promotion,
+    quantity = 1,
+    term
+  } = data;
+  if (commitment === Commitment.YEAR && term === Term.MONTHLY) {
+    if (!promotion) {
+      return formatPrice(data, RecurrenceTerm.YEAR, getAnnualPrice);
+    }
+    const {
+      displaySummary: { outcomeType, duration, minProductQuantity = 1 } = {}
+    } = promotion;
+    switch (outcomeType) {
+      case "PERCENTAGE_DISCOUNT": {
+        if (quantity >= minProductQuantity && isPromotionActive(promotion, instant)) {
+          const durationInMonths = parseInt(
+            duration.replace("P", "").replace("M", "")
+          );
+          if (isNaN(durationInMonths)) return getAnnualPrice(price2);
+          const discountPrice = quantity * originalPrice * durationInMonths;
+          const regularPrice = quantity * priceWithoutDiscount * (12 - durationInMonths);
+          const totalPrice = Math.round((discountPrice + regularPrice) * 100) / 100;
+          return formatPrice(
+            { ...data, price: totalPrice },
+            RecurrenceTerm.YEAR
+          );
+        }
+      }
+      default:
+        return formatPrice(
+          data,
+          RecurrenceTerm.YEAR,
+          () => getAnnualPrice(priceWithoutDiscount ?? price2)
+        );
+    }
+  }
+  return formatPrice(data, recurrenceTerms[commitment]?.[term]);
+};
+
+// src/price/template.js
+var defaultLiterals = {
+  recurrenceLabel: "{recurrenceTerm, select, MONTH {/mo} YEAR {/yr} other {}}",
+  recurrenceAriaLabel: "{recurrenceTerm, select, MONTH {per month} YEAR {per year} other {}}",
+  perUnitLabel: "{perUnit, select, LICENSE {per license} other {}}",
+  perUnitAriaLabel: "{perUnit, select, LICENSE {per license} other {}}",
+  freeLabel: "Free",
+  freeAriaLabel: "Free",
+  taxExclusiveLabel: "{taxTerm, select, GST {excl. GST} VAT {excl. VAT} TAX {excl. tax} IVA {excl. IVA} SST {excl. SST} KDV {excl. KDV} other {}}",
+  taxInclusiveLabel: "{taxTerm, select, GST {incl. GST} VAT {incl. VAT} TAX {incl. tax} IVA {incl. IVA} SST {incl. SST} KDV {incl. KDV} other {}}",
+  alternativePriceAriaLabel: "Alternatively at",
+  strikethroughAriaLabel: "Regularly at",
+  planTypeLabel: "{planType, select, ABM {Annual, paid monthly.} other {}}"
+};
+var log = createLog("ConsonantTemplates/price");
+var htmlPattern = /<\/?[^>]+(>|$)/g;
+var cssClassNames = {
+  container: "price",
+  containerOptical: "price-optical",
+  containerStrikethrough: "price-strikethrough",
+  containerAlternative: "price-alternative",
+  containerAnnual: "price-annual",
+  containerAnnualPrefix: "price-annual-prefix",
+  containerAnnualSuffix: "price-annual-suffix",
+  disabled: "disabled",
+  currencySpace: "price-currency-space",
+  currencySymbol: "price-currency-symbol",
+  decimals: "price-decimals",
+  decimalsDelimiter: "price-decimals-delimiter",
+  integer: "price-integer",
+  recurrence: "price-recurrence",
+  taxInclusivity: "price-tax-inclusivity",
+  unitType: "price-unit-type"
+};
+var literalKeys = {
+  perUnitLabel: "perUnitLabel",
+  perUnitAriaLabel: "perUnitAriaLabel",
+  recurrenceLabel: "recurrenceLabel",
+  recurrenceAriaLabel: "recurrenceAriaLabel",
+  taxExclusiveLabel: "taxExclusiveLabel",
+  taxInclusiveLabel: "taxInclusiveLabel",
+  strikethroughAriaLabel: "strikethroughAriaLabel",
+  alternativePriceAriaLabel: "alternativePriceAriaLabel"
+};
+var WCS_TAX_DISPLAY_EXCLUSIVE = "TAX_EXCLUSIVE";
+var renderAttributes = (attributes) => isObject(attributes) ? Object.entries(attributes).filter(
+  ([, value]) => isString(value) || isNumber(value) || value === true
+).reduce(
+  (html, [key, value]) => html + ` ${key}${value === true ? "" : '="' + escapeHtml(value) + '"'}`,
+  ""
+) : "";
+var renderSpan = (cssClass, content, attributes, convertSpaces = false) => {
+  return `<span class="${cssClass}${content ? "" : " " + cssClassNames.disabled}"${renderAttributes(attributes)}>${convertSpaces ? makeSpacesAroundNonBreaking(content) : content ?? ""}</span>`;
+};
+function formatLiteral(literals, locale, key, parameters) {
+  const literal = literals[key];
+  if (literal == void 0) {
+    return "";
+  }
+  try {
+    return new lib_default(
+      literal.replace(htmlPattern, ""),
+      locale
+    ).format(parameters);
+  } catch {
+    log.error("Failed to format literal:", literal);
+    return "";
+  }
+}
+function renderContainer(cssClass, {
+  accessibleLabel,
+  altAccessibleLabel,
+  currencySymbol,
+  decimals,
+  decimalsDelimiter,
+  hasCurrencySpace,
+  integer,
+  isCurrencyFirst,
+  recurrenceLabel,
+  perUnitLabel,
+  taxInclusivityLabel
+}, attributes = {}) {
+  const currencyMarkup = renderSpan(
+    cssClassNames.currencySymbol,
+    currencySymbol
+  );
+  const currencySpaceMarkup = renderSpan(
+    cssClassNames.currencySpace,
+    hasCurrencySpace ? "&nbsp;" : ""
+  );
+  let markup = "";
+  if (accessibleLabel)
+    markup = `<sr-only class="strikethrough-aria-label">${accessibleLabel}</sr-only>`;
+  else if (altAccessibleLabel)
+    markup = `<sr-only class="alt-aria-label">${altAccessibleLabel}</sr-only>`;
+  if (isCurrencyFirst) markup += currencyMarkup + currencySpaceMarkup;
+  markup += renderSpan(cssClassNames.integer, integer);
+  markup += renderSpan(cssClassNames.decimalsDelimiter, decimalsDelimiter);
+  markup += renderSpan(cssClassNames.decimals, decimals);
+  if (!isCurrencyFirst) markup += currencySpaceMarkup + currencyMarkup;
+  markup += renderSpan(cssClassNames.recurrence, recurrenceLabel, null, true);
+  markup += renderSpan(cssClassNames.unitType, perUnitLabel, null, true);
+  markup += renderSpan(
+    cssClassNames.taxInclusivity,
+    taxInclusivityLabel,
+    true
+  );
+  return renderSpan(cssClass, markup, {
+    ...attributes
+  });
+}
+var createPriceTemplate = ({
+  isAlternativePrice = false,
+  displayOptical = false,
+  displayStrikethrough = false,
+  displayAnnual = false,
+  instant = void 0
+} = {}) => ({
+  country,
+  displayFormatted = true,
+  displayRecurrence = true,
+  displayPerUnit = false,
+  displayTax = false,
+  language,
+  literals: priceLiterals2 = {},
+  quantity = 1
+} = {}, {
+  commitment,
+  offerSelectorIds,
+  formatString,
+  price: price2,
+  priceWithoutDiscount,
+  taxDisplay,
+  taxTerm,
+  term,
+  usePrecision,
+  promotion
+} = {}, attributes = {}) => {
+  Object.entries({
+    country,
+    formatString,
+    language,
+    price: price2
+  }).forEach(([key, value]) => {
+    if (value == null) {
+      throw new Error(
+        `Argument "${key}" is missing for osi ${offerSelectorIds?.toString()}, country ${country}, language ${language}`
+      );
+    }
+  });
+  const literals = {
+    ...defaultLiterals,
+    ...priceLiterals2
+  };
+  const locale = `${language.toLowerCase()}-${country.toUpperCase()}`;
+  const displayPrice = displayStrikethrough && priceWithoutDiscount ? priceWithoutDiscount : price2;
+  let method = displayOptical ? formatOpticalPrice : formatRegularPrice;
+  if (displayAnnual) {
+    method = formatAnnualPrice;
+  }
+  const { accessiblePrice, recurrenceTerm, ...formattedPrice } = method({
+    commitment,
+    formatString,
+    instant,
+    isIndianPrice: country === "IN",
+    originalPrice: price2,
+    priceWithoutDiscount,
+    price: displayOptical ? price2 : displayPrice,
+    promotion,
+    quantity,
+    term,
+    usePrecision
+  });
+  let accessibleLabel = "", altAccessibleLabel = "";
+  let recurrenceLabel = "";
+  if (toBoolean(displayRecurrence) && recurrenceTerm) {
+    recurrenceLabel = formatLiteral(
+      literals,
+      locale,
+      literalKeys.recurrenceLabel,
+      {
+        recurrenceTerm
+      }
+    );
+  }
+  let perUnitLabel = "";
+  if (toBoolean(displayPerUnit)) {
+    perUnitLabel = formatLiteral(
+      literals,
+      locale,
+      literalKeys.perUnitLabel,
+      {
+        perUnit: "LICENSE"
+      }
+    );
+  }
+  let taxInclusivityLabel = "";
+  if (toBoolean(displayTax) && taxTerm) {
+    taxInclusivityLabel = formatLiteral(
+      literals,
+      locale,
+      taxDisplay === WCS_TAX_DISPLAY_EXCLUSIVE ? literalKeys.taxExclusiveLabel : literalKeys.taxInclusiveLabel,
+      { taxTerm }
+    );
+  }
+  if (displayStrikethrough) {
+    accessibleLabel = formatLiteral(
+      literals,
+      locale,
+      literalKeys.strikethroughAriaLabel,
+      {
+        strikethroughPrice: accessibleLabel
+      }
+    );
+  }
+  if (isAlternativePrice) {
+    altAccessibleLabel = formatLiteral(
+      literals,
+      locale,
+      literalKeys.alternativePriceAriaLabel,
+      {
+        alternativePrice: altAccessibleLabel
+      }
+    );
+  }
+  let cssClass = cssClassNames.container;
+  if (displayOptical) {
+    cssClass += " " + cssClassNames.containerOptical;
+  }
+  if (displayStrikethrough) {
+    cssClass += " " + cssClassNames.containerStrikethrough;
+  }
+  if (isAlternativePrice) {
+    cssClass += " " + cssClassNames.containerAlternative;
+  }
+  if (displayAnnual) {
+    cssClass += " " + cssClassNames.containerAnnual;
+  }
+  if (toBoolean(displayFormatted)) {
+    return renderContainer(
+      cssClass,
+      {
+        ...formattedPrice,
+        accessibleLabel,
+        altAccessibleLabel,
+        recurrenceLabel,
+        perUnitLabel,
+        taxInclusivityLabel
+      },
+      attributes
+    );
+  }
+  const {
+    currencySymbol,
+    decimals,
+    decimalsDelimiter,
+    hasCurrencySpace,
+    integer,
+    isCurrencyFirst
+  } = formattedPrice;
+  const unformattedPrice = [integer, decimalsDelimiter, decimals];
+  if (isCurrencyFirst) {
+    unformattedPrice.unshift(hasCurrencySpace ? "\xA0" : "");
+    unformattedPrice.unshift(currencySymbol);
+  } else {
+    unformattedPrice.push(hasCurrencySpace ? "\xA0" : "");
+    unformattedPrice.push(currencySymbol);
+  }
+  unformattedPrice.push(
+    recurrenceLabel,
+    perUnitLabel,
+    taxInclusivityLabel
+  );
+  const content = unformattedPrice.join("");
+  return renderSpan(cssClass, content, attributes);
+};
+var createPromoPriceTemplate = () => (context, value, attributes) => {
+  const displayOldPrice = context.displayOldPrice === void 0 || toBoolean(context.displayOldPrice);
+  const shouldDisplayOldPrice = displayOldPrice && value.priceWithoutDiscount && value.priceWithoutDiscount != value.price;
+  return `${shouldDisplayOldPrice ? createPriceTemplate({
+    displayStrikethrough: true
+  })(context, value, attributes) + "&nbsp;" : ""}${createPriceTemplate({ isAlternativePrice: shouldDisplayOldPrice })(context, value, attributes)}`;
+};
+var createPromoPriceWithAnnualTemplate = () => (context, value, attributes) => {
+  let { instant } = context;
+  try {
+    if (!instant) {
+      instant = new URLSearchParams(document.location.search).get(
+        "instant"
+      );
+    }
+    if (instant) {
+      instant = new Date(instant);
+    }
+  } catch (e7) {
+    instant = void 0;
+  }
+  const ctxStAnnual = {
+    ...context,
+    displayTax: false,
+    displayPerUnit: false
+  };
+  const displayOldPrice = context.displayOldPrice === void 0 || toBoolean(context.displayOldPrice);
+  const shouldDisplayOldPrice = displayOldPrice && value.priceWithoutDiscount && value.priceWithoutDiscount != value.price;
+  return `${shouldDisplayOldPrice ? createPriceTemplate({
+    displayStrikethrough: true
+  })(ctxStAnnual, value, attributes) + "&nbsp;" : ""}${createPriceTemplate({ isAlternativePrice: shouldDisplayOldPrice })(context, value, attributes)}${renderSpan(cssClassNames.containerAnnualPrefix, "&nbsp;(")}${createPriceTemplate(
+    {
+      displayAnnual: true,
+      instant
+    }
+  )(
+    ctxStAnnual,
+    value,
+    attributes
+  )}${renderSpan(cssClassNames.containerAnnualSuffix, ")")}`;
+};
+var createPriceWithAnnualTemplate = () => (context, value, attributes) => {
+  const ctxAnnual = {
+    ...context,
+    displayTax: false,
+    displayPerUnit: false
+  };
+  return `${createPriceTemplate({ isAlternativePrice: context.displayOldPrice })(context, value, attributes)}${renderSpan(cssClassNames.containerAnnualPrefix, "&nbsp;(")}${createPriceTemplate(
+    {
+      displayAnnual: true
+    }
+  )(
+    ctxAnnual,
+    value,
+    attributes
+  )}${renderSpan(cssClassNames.containerAnnualSuffix, ")")}`;
+};
+
+// src/price/legal.js
+var cssClassNames2 = {
+  ...cssClassNames,
+  containerLegal: "price-legal",
+  planType: "price-plan-type"
+};
+var literalKeys2 = {
+  ...literalKeys,
+  planTypeLabel: "planTypeLabel"
+};
+function renderContainer2(cssClass, { perUnitLabel, taxInclusivityLabel, planTypeLabel }, attributes = {}) {
+  let markup = "";
+  markup += renderSpan(cssClassNames2.unitType, perUnitLabel, null, true);
+  if (perUnitLabel && (taxInclusivityLabel || planTypeLabel)) {
+    markup += " (";
+  }
+  if (taxInclusivityLabel && planTypeLabel) {
+    taxInclusivityLabel += ". ";
+  }
+  markup += renderSpan(
+    cssClassNames2.taxInclusivity,
+    taxInclusivityLabel,
+    true
+  );
+  markup += renderSpan(cssClassNames2.planType, planTypeLabel, null);
+  if (perUnitLabel && (taxInclusivityLabel || planTypeLabel)) {
+    markup += ")";
+  }
+  return renderSpan(cssClass, markup, {
+    ...attributes
+  });
+}
+var legalTemplate = ({
+  country,
+  displayPerUnit = false,
+  displayTax = false,
+  displayPlanType = false,
+  language,
+  literals: priceLiterals2 = {}
+} = {}, { taxDisplay, taxTerm, planType } = {}, attributes = {}) => {
+  const literals = {
+    ...defaultLiterals,
+    ...priceLiterals2
+  };
+  const locale = `${language.toLowerCase()}-${country.toUpperCase()}`;
+  let perUnitLabel = "";
+  if (toBoolean(displayPerUnit)) {
+    perUnitLabel = formatLiteral(
+      literals,
+      locale,
+      literalKeys2.perUnitLabel,
+      {
+        perUnit: "LICENSE"
+      }
+    );
+  }
+  let taxInclusivityLabel = "";
+  if (country === "US" && language === "en") {
+    displayTax = false;
+  }
+  if (toBoolean(displayTax) && taxTerm) {
+    taxInclusivityLabel = formatLiteral(
+      literals,
+      locale,
+      taxDisplay === WCS_TAX_DISPLAY_EXCLUSIVE ? literalKeys2.taxExclusiveLabel : literalKeys2.taxInclusiveLabel,
+      { taxTerm }
+    );
+  }
+  let planTypeLabel = "";
+  if (toBoolean(displayPlanType) && planType) {
+    planTypeLabel = formatLiteral(
+      literals,
+      locale,
+      literalKeys2.planTypeLabel,
+      {
+        planType
+      }
+    );
+  }
+  let cssClass = cssClassNames2.container;
+  cssClass += " " + cssClassNames2.containerLegal;
+  return renderContainer2(
+    cssClass,
+    {
+      perUnitLabel,
+      taxInclusivityLabel,
+      planTypeLabel
+    },
+    attributes
+  );
+};
+
+// src/price/index.js
+var price = createPriceTemplate();
+var pricePromo = createPromoPriceTemplate();
+var priceOptical = createPriceTemplate({
+  displayOptical: true
+});
+var priceStrikethrough = createPriceTemplate({
+  displayStrikethrough: true
+});
+var priceAnnual = createPriceTemplate({
+  displayAnnual: true
+});
+var priceOpticalAlternative = createPriceTemplate({
+  displayOptical: true,
+  isAlternativePrice: true
+});
+var priceAlternative = createPriceTemplate({
+  isAlternativePrice: true
+});
+var priceWithAnnual = createPriceWithAnnualTemplate();
+var pricePromoWithAnnual = createPromoPriceWithAnnualTemplate();
+var legal = legalTemplate;
+
+// src/discount/template.js
+var getDiscount = (price2, priceWithoutDiscount) => {
+  if (!isPositiveFiniteNumber(price2) || !isPositiveFiniteNumber(priceWithoutDiscount))
+    return;
+  return Math.floor(
+    (priceWithoutDiscount - price2) / priceWithoutDiscount * 100
+  );
+};
+var createDiscountTemplate = () => (context, value) => {
+  const { price: price2, priceWithoutDiscount } = value;
+  const discount2 = getDiscount(price2, priceWithoutDiscount);
+  return discount2 === void 0 ? `<span class="no-discount"></span>` : `<span class="discount">${discount2}%</span>`;
+};
+
+// src/discount/index.js
+var discount = createDiscountTemplate();
+
+// src/inline-price.js
+var DISPLAY_ALL_TAX_COUNTRIES = [
+  "GB_en",
+  "AU_en",
+  "FR_fr",
+  "AT_de",
+  "BE_en",
+  "BE_fr",
+  "BE_nl",
+  "BG_bg",
+  "CH_de",
+  "CH_fr",
+  "CH_it",
+  "CZ_cs",
+  "DE_de",
+  "DK_da",
+  "EE_et",
+  "EG_ar",
+  "EG_en",
+  "ES_es",
+  "FI_fi",
+  "FR_fr",
+  "GR_el",
+  "GR_en",
+  "HU_hu",
+  "IE_en",
+  "IT_it",
+  "LU_de",
+  "LU_en",
+  "LU_fr",
+  "NL_nl",
+  "NO_nb",
+  "PL_pl",
+  "PT_pt",
+  "RO_ro",
+  "SE_sv",
+  "SI_sl",
+  "SK_sk",
+  "TR_tr",
+  "UA_uk",
+  "ID_en",
+  "ID_in",
+  "IN_en",
+  "IN_hi",
+  "JP_ja",
+  "MY_en",
+  "MY_ms",
+  "NZ_en",
+  "TH_en",
+  "TH_th"
+];
+var DISPLAY_TAX_MAP = {
+  // individual
+  INDIVIDUAL_COM: [
+    "ZA_en",
+    "LT_lt",
+    "LV_lv",
+    "NG_en",
+    "SA_ar",
+    "SA_en",
+    "ZA_en",
+    "SG_en",
+    "KR_ko"
+  ],
+  // business
+  TEAM_COM: ["ZA_en", "LT_lt", "LV_lv", "NG_en", "ZA_en", "CO_es", "KR_ko"],
+  // student
+  INDIVIDUAL_EDU: ["LT_lt", "LV_lv", "SA_en", "SG_en"],
+  // school and uni
+  TEAM_EDU: ["SG_en", "KR_ko"]
+};
+var _InlinePrice = class _InlinePrice extends HTMLSpanElement {
+  constructor() {
+    super();
+    __publicField(this, "masElement", new MasElement(this));
+    this.handleClick = this.handleClick.bind(this);
+  }
+  static get observedAttributes() {
+    return [
+      "data-display-old-price",
+      "data-display-per-unit",
+      "data-display-recurrence",
+      "data-display-tax",
+      "data-display-plan-type",
+      "data-display-annual",
+      "data-perpetual",
+      "data-promotion-code",
+      "data-tax-exclusive",
+      "data-template",
+      "data-wcs-osi"
+    ];
+  }
+  static createInlinePrice(options) {
+    const service = getService();
+    if (!service) return null;
+    const {
+      displayOldPrice,
+      displayPerUnit,
+      displayRecurrence,
+      displayTax,
+      displayPlanType,
+      displayAnnual,
+      forceTaxExclusive,
+      perpetual,
+      promotionCode,
+      quantity,
+      alternativePrice,
+      template,
+      wcsOsi
+    } = service.collectPriceOptions(options);
+    const element = createMasElement(_InlinePrice, {
+      displayOldPrice,
+      displayPerUnit,
+      displayRecurrence,
+      displayTax,
+      displayPlanType,
+      displayAnnual,
+      forceTaxExclusive,
+      perpetual,
+      promotionCode,
+      quantity,
+      alternativePrice,
+      template,
+      wcsOsi
+    });
+    return element;
+  }
+  get isInlinePrice() {
+    return true;
+  }
+  attributeChangedCallback(name, _3, value) {
+    this.masElement.attributeChangedCallback(name, _3, value);
+  }
+  connectedCallback() {
+    this.masElement.connectedCallback();
+    this.addEventListener("click", this.handleClick);
+  }
+  disconnectedCallback() {
+    this.masElement.disconnectedCallback();
+    this.removeEventListener("click", this.handleClick);
+  }
+  handleClick(event) {
+    if (event.target === this) return;
+    event.stopImmediatePropagation();
+    this.dispatchEvent(
+      new MouseEvent("click", {
+        bubbles: true,
+        cancelable: true,
+        view: window
+      })
+    );
+  }
+  onceSettled() {
+    return this.masElement.onceSettled();
+  }
+  get value() {
+    return this.masElement.value;
+  }
+  get options() {
+    return this.masElement.options;
+  }
+  requestUpdate(force = false) {
+    return this.masElement.requestUpdate(force);
+  }
+  /**
+   * Resolves default value of displayTax property, based on provided geo info and segments.
+   * @returns {boolean}
+   */
+  /* c8 ignore next 26 */
+  resolveDisplayTaxForGeoAndSegment(country, language, customerSegment, marketSegment) {
+    const locale = `${country}_${language}`;
+    if (DISPLAY_ALL_TAX_COUNTRIES.includes(country) || DISPLAY_ALL_TAX_COUNTRIES.includes(locale)) {
+      return true;
+    }
+    const segmentConfig = DISPLAY_TAX_MAP[`${customerSegment}_${marketSegment}`];
+    if (!segmentConfig) {
+      return false;
+    }
+    if (segmentConfig.includes(country) || segmentConfig.includes(locale)) {
+      return true;
+    }
+    return false;
+  }
+  /**
+   * Resolves default value of displayTax property, based on provided geo info and segments extracted from offers object.
+   * @returns {boolean}
+   */
+  /* c8 ignore next 15 */
+  async resolveDisplayTax(service, options) {
+    const [offerSelectors] = await service.resolveOfferSelectors(options);
+    const offers = selectOffers(await offerSelectors, options);
+    if (offers?.length) {
+      const { country, language } = options;
+      const offer = offers[0];
+      const [marketSegment = ""] = offer.marketSegments;
+      return this.resolveDisplayTaxForGeoAndSegment(
+        country,
+        language,
+        offer.customerSegment,
+        marketSegment
+      );
+    }
+  }
+  /**
+   * Resolves associated osi via Wcs and renders price offer.
+   * @param {Record<string, any>} overrides
+   */
+  async render(overrides = {}) {
+    if (!this.isConnected) return false;
+    const service = getService();
+    if (!service) return false;
+    const options = service.collectPriceOptions(overrides, this);
+    if (!options.wcsOsi.length) return false;
+    const version = this.masElement.togglePending(options);
+    this.innerHTML = "";
+    const [promise] = service.resolveOfferSelectors(options);
+    return this.renderOffers(
+      selectOffers(await promise, options),
+      options,
+      version
+    );
+  }
+  // TODO: can be extended to accept array of offers and compute subtotal price
+  /**
+   * Renders price offer as HTML of this component
+   * using consonant price template functions
+   * @param {Offer[]} offers
+   * @param {Record<string, any>} overrides
+   * Optional object with properties to use as overrides
+   * over those collected from dataset of this component.
+   */
+  renderOffers(offers, overrides = {}, version = void 0) {
+    if (!this.isConnected) return;
+    const service = getService();
+    if (!service) return false;
+    const options = service.collectPriceOptions(
+      {
+        ...this.dataset,
+        ...overrides
+      },
+      this
+    );
+    version ?? (version = this.masElement.togglePending(options));
+    if (offers.length) {
+      if (this.masElement.toggleResolved(version, offers, options)) {
+        this.innerHTML = service.buildPriceHTML(offers, options);
+        const parentEl = this.closest("p, h3, div");
+        if (!parentEl || !parentEl.querySelector('span[data-template="strikethrough"]') || parentEl.querySelector(".alt-aria-label")) return true;
+        const inlinePrices = parentEl?.querySelectorAll('span[is="inline-price"]');
+        if (inlinePrices.length > 1 && inlinePrices.length === parentEl.querySelectorAll('span[data-template="strikethrough"]').length * 2) {
+          inlinePrices.forEach((price2) => {
+            if (price2.dataset.template !== "strikethrough" && price2.options && !price2.options.alternativePrice) {
+              price2.options.alternativePrice = true;
+              price2.innerHTML = service.buildPriceHTML(offers, price2.options);
+            }
+          });
+        }
+        return true;
+      }
+    } else {
+      const error = new Error(`Not provided: ${options?.wcsOsi ?? "-"}`);
+      if (this.masElement.toggleFailed(version, error, options)) {
+        this.innerHTML = "";
+        return true;
+      }
+    }
+    return false;
+  }
+  updateOptions(options) {
+    const service = getService();
+    if (!service) return false;
+    const {
+      alternativePrice,
+      displayOldPrice,
+      displayPerUnit,
+      displayRecurrence,
+      displayTax,
+      forceTaxExclusive,
+      perpetual,
+      promotionCode,
+      quantity,
+      template,
+      wcsOsi
+    } = service.collectPriceOptions(options);
+    updateMasElement(this, {
+      alternativePrice,
+      displayOldPrice,
+      displayPerUnit,
+      displayRecurrence,
+      displayTax,
+      forceTaxExclusive,
+      perpetual,
+      promotionCode,
+      quantity,
+      template,
+      wcsOsi
+    });
+    return true;
+  }
+};
+__publicField(_InlinePrice, "is", "inline-price");
+__publicField(_InlinePrice, "tag", "span");
+var InlinePrice = _InlinePrice;
+if (!window.customElements.get(InlinePrice.is)) {
+  window.customElements.define(InlinePrice.is, InlinePrice, {
+    extends: InlinePrice.tag
+  });
+}
+
+// src/price.js
+function Price({ literals, providers, settings }) {
+  function collectPriceOptions(overrides, placeholder = null) {
+    const options = structuredClone(settings);
+    if (placeholder) {
+      for (const provider of providers.price) {
+        provider(placeholder, options);
+      }
+    }
+    const {
+      displayOldPrice,
+      displayPerUnit,
+      displayRecurrence,
+      displayTax,
+      displayPlanType,
+      forceTaxExclusive,
+      perpetual,
+      displayAnnual,
+      promotionCode,
+      quantity,
+      alternativePrice,
+      wcsOsi,
+      ...rest
+    } = Object.assign(options, placeholder?.dataset ?? {}, overrides ?? {});
+    Object.assign(
+      options,
+      omitProperties({
+        ...rest,
+        displayOldPrice: toBoolean(displayOldPrice),
+        displayPerUnit: toBoolean(displayPerUnit),
+        displayRecurrence: toBoolean(displayRecurrence),
+        displayTax: toBoolean(displayTax),
+        displayPlanType: toBoolean(displayPlanType),
+        forceTaxExclusive: toBoolean(forceTaxExclusive),
+        perpetual: toBoolean(perpetual),
+        displayAnnual: toBoolean(displayAnnual),
+        promotionCode: computePromoStatus(promotionCode).effectivePromoCode,
+        quantity: toQuantity(quantity, Defaults.quantity),
+        alternativePrice: toBoolean(alternativePrice),
+        wcsOsi: toOfferSelectorIds(wcsOsi)
+      })
+    );
+    return options;
+  }
+  function buildPriceHTML(offers, options) {
+    if (!Array.isArray(offers) || !offers.length || !options) {
+      return "";
+    }
+    const { template } = options;
+    let method;
+    switch (template) {
+      // TODO: use price template name constants, export them from `consonant-templates`
+      case "discount":
+        method = discount;
+        break;
+      case "strikethrough":
+        method = priceStrikethrough;
+        break;
+      case "annual":
+        method = priceAnnual;
+        break;
+      case "legal":
+        method = legal;
+        break;
+      default:
+        if (options.template === "optical" && options.alternativePrice) {
+          method = priceOpticalAlternative;
+        } else if (options.template === "optical") {
+          method = priceOptical;
+        } else if (options.displayAnnual && offers[0].planType === "ABM") {
+          method = options.promotionCode ? pricePromoWithAnnual : priceWithAnnual;
+        } else if (options.alternativePrice) {
+          method = priceAlternative;
+        } else {
+          method = options.promotionCode ? pricePromo : price;
+        }
+    }
+    const context = collectPriceOptions(options);
+    context.literals = Object.assign(
+      {},
+      literals.price,
+      omitProperties(options.literals ?? {})
+    );
+    let [offer] = offers;
+    offer = { ...offer, ...offer.priceDetails };
+    return method(context, offer);
+  }
+  const createInlinePrice = InlinePrice.createInlinePrice;
+  return {
+    InlinePrice,
+    buildPriceHTML,
+    collectPriceOptions,
+    createInlinePrice
+  };
+}
+
+// src/settings.js
+var PREVIEW_REGISTERED_SURFACE = { "wcms-commerce-ims-ro.+": "acom", "CreativeCloud_.+": "ccd", "CCHome.+": "adobe-home" };
+function getLocaleSettings({
+  locale = void 0,
+  country = void 0,
+  language = void 0
+} = {}) {
+  language ?? (language = locale?.split("_")?.[0] || Defaults.language);
+  country ?? (country = locale?.split("_")?.[1] || Defaults.country);
+  locale ?? (locale = `${language}_${country}`);
+  return { locale, country, language };
+}
+function getPreviewSurface(wcsApiKey, previewParam) {
+  for (const [key, value] of Object.entries(PREVIEW_REGISTERED_SURFACE)) {
+    const pattern = new RegExp(key);
+    if (pattern.test(wcsApiKey)) {
+      return value;
+    }
+  }
+  return previewParam ?? wcsApiKey;
+}
+function getSettings(config2 = {}) {
+  const { commerce = {} } = config2;
+  let env = Env.PRODUCTION;
+  let wcsURL = WCS_PROD_URL;
+  const checkoutClientId = getParameter("checkoutClientId", commerce) ?? Defaults.checkoutClientId;
+  const checkoutWorkflow = toEnumeration(
+    getParameter("checkoutWorkflow", commerce),
+    CheckoutWorkflow,
+    Defaults.checkoutWorkflow
+  );
+  let checkoutWorkflowStep = CheckoutWorkflowStep.CHECKOUT;
+  if (checkoutWorkflow === CheckoutWorkflow.V3) {
+    checkoutWorkflowStep = toEnumeration(
+      getParameter("checkoutWorkflowStep", commerce),
+      CheckoutWorkflowStep,
+      Defaults.checkoutWorkflowStep
+    );
+  }
+  const displayOldPrice = toBoolean(
+    getParameter("displayOldPrice", commerce),
+    Defaults.displayOldPrice
+  );
+  const displayPerUnit = toBoolean(
+    getParameter("displayPerUnit", commerce),
+    Defaults.displayPerUnit
+  );
+  const displayRecurrence = toBoolean(
+    getParameter("displayRecurrence", commerce),
+    Defaults.displayRecurrence
+  );
+  const displayTax = toBoolean(
+    getParameter("displayTax", commerce),
+    Defaults.displayTax
+  );
+  const displayPlanType = toBoolean(
+    getParameter("displayPlanType", commerce),
+    Defaults.displayPlanType
+  );
+  const entitlement = toBoolean(
+    getParameter("entitlement", commerce),
+    Defaults.entitlement
+  );
+  const modal = toBoolean(getParameter("modal", commerce), Defaults.modal);
+  const forceTaxExclusive = toBoolean(
+    getParameter("forceTaxExclusive", commerce),
+    Defaults.forceTaxExclusive
+  );
+  const promotionCode = getParameter("promotionCode", commerce) ?? Defaults.promotionCode;
+  const quantity = toQuantity(getParameter("quantity", commerce));
+  const wcsApiKey = getParameter("wcsApiKey", commerce) ?? Defaults.wcsApiKey;
+  let isStage = commerce?.env === "stage";
+  let landscape = Landscape.PUBLISHED;
+  const allowOverride = ["true", ""].includes(commerce.allowOverride);
+  if (allowOverride) {
+    isStage = (getParameter(PARAM_ENV, commerce, {
+      metadata: false
+    })?.toLowerCase() ?? commerce?.env) === "stage";
+    landscape = toEnumeration(
+      getParameter(PARAM_LANDSCAPE, commerce),
+      Landscape,
+      landscape
+    );
+  }
+  if (isStage) {
+    env = Env.STAGE;
+    wcsURL = WCS_STAGE_URL;
+  }
+  const previewParam = getParameter(PARAM_MAS_PREVIEW) ?? config2.preview;
+  const previewSettings = {};
+  const preview = typeof previewParam != "undefined" && previewParam !== "off" && previewParam !== "false";
+  if (preview) {
+    previewSettings.preview = preview;
+    previewSettings.previewSurface = getPreviewSurface(wcsApiKey, previewParam);
+  }
+  const masIOUrl = getParameter("mas-io-url") ?? config2.masIOUrl ?? `https://www${env === Env.STAGE ? ".stage" : ""}.adobe.com/mas/io`;
+  return {
+    ...getLocaleSettings(config2),
+    ...previewSettings,
+    displayOldPrice,
+    checkoutClientId,
+    checkoutWorkflow,
+    checkoutWorkflowStep,
+    displayPerUnit,
+    displayRecurrence,
+    displayTax,
+    displayPlanType,
+    entitlement,
+    extraOptions: Defaults.extraOptions,
+    modal,
+    env,
+    forceTaxExclusive,
+    promotionCode,
+    quantity,
+    alternativePrice: Defaults.alternativePrice,
+    wcsApiKey,
+    wcsURL,
+    landscape,
+    masIOUrl
+  };
+}
+
+// src/utils/mas-fetch.js
+async function masFetch(resource, options = {}, retries = 2, baseDelay = 100) {
+  let lastError;
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    try {
+      const response = await fetch(resource, options);
+      return response;
+    } catch (error) {
+      lastError = error;
+      if (attempt > retries) break;
+      await new Promise(
+        (resolve) => setTimeout(resolve, baseDelay * (attempt + 1))
+      );
+    }
+  }
+  throw lastError;
+}
+
+// src/wcs.js
+var NAMESPACE2 = "wcs";
+function Wcs({ settings }) {
+  const log2 = Log.module(NAMESPACE2);
+  const { env, wcsApiKey: apiKey } = settings;
+  const cache2 = /* @__PURE__ */ new Map();
+  const queue = /* @__PURE__ */ new Map();
+  let timer;
+  let staleCache = /* @__PURE__ */ new Map();
+  async function resolveWcsOffers(options, promises, reject = true) {
+    const service = getService();
+    let message = ERROR_MESSAGE_OFFER_NOT_FOUND;
+    log2.debug("Fetching:", options);
+    let url = "";
+    let response;
+    if (options.offerSelectorIds.length > 1)
+      throw new Error("Multiple OSIs are not supported anymore");
+    const unresolvedPromises = new Map(promises);
+    const [osi] = options.offerSelectorIds;
+    const uniqueId = Date.now() + Math.random().toString(36).substring(2, 7);
+    const startMark = `${NAMESPACE2}:${osi}:${uniqueId}${MARK_START_SUFFIX}`;
+    const measureName = `${NAMESPACE2}:${osi}:${uniqueId}${MARK_DURATION_SUFFIX}`;
+    let startTime;
+    let duration;
+    try {
+      performance.mark(startMark);
+      url = new URL(settings.wcsURL);
+      url.searchParams.set("offer_selector_ids", osi);
+      url.searchParams.set("country", options.country);
+      url.searchParams.set("locale", options.locale);
+      url.searchParams.set(
+        "landscape",
+        env === Env.STAGE ? "ALL" : settings.landscape
+      );
+      url.searchParams.set("api_key", apiKey);
+      if (options.language) {
+        url.searchParams.set("language", options.language);
+      }
+      if (options.promotionCode) {
+        url.searchParams.set("promotion_code", options.promotionCode);
+      }
+      if (options.currency) {
+        url.searchParams.set("currency", options.currency);
+      }
+      response = await masFetch(url.toString(), {
+        credentials: "omit"
+      });
+      if (response.ok) {
+        let offers = [];
+        try {
+          const data = await response.json();
+          log2.debug("Fetched:", options, data);
+          offers = data.resolvedOffers ?? [];
+        } catch (e7) {
+          log2.error(`Error parsing JSON: ${e7.message}`, {
+            ...e7.context,
+            ...service?.duration
+          });
+        }
+        offers = offers.map(applyPlanType);
+        promises.forEach(({ resolve }, offerSelectorId) => {
+          const resolved = offers.filter(
+            ({ offerSelectorIds }) => offerSelectorIds.includes(offerSelectorId)
+          ).flat();
+          if (resolved.length) {
+            unresolvedPromises.delete(offerSelectorId);
+            promises.delete(offerSelectorId);
+            resolve(resolved);
+          }
+        });
+      } else {
+        message = ERROR_MESSAGE_BAD_REQUEST;
+      }
+    } catch (e7) {
+      message = `Network error: ${e7.message}`;
+    } finally {
+      ({ startTime, duration } = performance.measure(
+        measureName,
+        startMark
+      ));
+      performance.clearMarks(startMark);
+      performance.clearMeasures(measureName);
+    }
+    if (reject && promises.size) {
+      log2.debug("Missing:", { offerSelectorIds: [...promises.keys()] });
+      promises.forEach((promise) => {
+        promise.reject(
+          new MasError(message, {
+            ...options,
+            response,
+            startTime,
+            duration,
+            ...service?.duration
+          })
+        );
+      });
+    }
+  }
+  function flushQueue() {
+    clearTimeout(timer);
+    const pending = [...queue.values()];
+    queue.clear();
+    pending.forEach(
+      ({ options, promises }) => resolveWcsOffers(options, promises)
+    );
+  }
+  function flushWcsCacheInternal() {
+    const size = cache2.size;
+    staleCache = new Map(cache2);
+    cache2.clear();
+    log2.debug(`Moved ${size} cache entries to stale cache`);
+  }
+  function resolveOfferSelectors({
+    country,
+    language,
+    perpetual = false,
+    promotionCode = "",
+    wcsOsi = []
+  }) {
+    const locale = `${language}_${country}`;
+    if (country !== "GB") language = perpetual ? "EN" : "MULT";
+    const groupKey = [country, language, promotionCode].filter((val) => val).join("-").toLowerCase();
+    return wcsOsi.map((osi) => {
+      const cacheKey = `${osi}-${groupKey}`;
+      if (cache2.has(cacheKey)) {
+        return cache2.get(cacheKey);
+      }
+      const promiseWithFallback = new Promise((resolve, reject) => {
+        let group = queue.get(groupKey);
+        if (!group) {
+          const options = {
+            country,
+            locale,
+            offerSelectorIds: []
+          };
+          if (country !== "GB") options.language = language;
+          const promises = /* @__PURE__ */ new Map();
+          group = { options, promises };
+          queue.set(groupKey, group);
+        }
+        if (promotionCode) {
+          group.options.promotionCode = promotionCode;
+        }
+        group.options.offerSelectorIds.push(osi);
+        group.promises.set(osi, {
+          resolve,
+          reject
+        });
+        flushQueue();
+      }).catch((error) => {
+        if (staleCache.has(cacheKey)) {
+          return staleCache.get(cacheKey);
+        }
+        throw error;
+      });
+      cache2.set(cacheKey, promiseWithFallback);
+      return promiseWithFallback;
+    });
+  }
+  return {
+    Commitment,
+    PlanType,
+    Term,
+    applyPlanType,
+    resolveOfferSelectors,
+    flushWcsCacheInternal
+  };
+}
+
+// src/mas-commerce-service.js
+var TAG_NAME_SERVICE2 = "mas-commerce-service";
+var MARK_START = "mas:start";
+var MARK_READY = "mas:ready";
+var MEASURE_INIT_TIME = "mas-commerce-service:initTime";
+var _initDuration, _MasCommerceService_instances, config_get;
+var MasCommerceService = class extends HTMLElement {
+  constructor() {
+    super(...arguments);
+    __privateAdd(this, _MasCommerceService_instances);
+    __privateAdd(this, _initDuration);
+    __publicField(this, "lastLoggingTime", 0);
+  }
+  async registerCheckoutAction(action) {
+    if (typeof action != "function") return;
+    this.buildCheckoutAction = async (offers, options, el) => {
+      const checkoutAction = await action?.(
+        offers,
+        options,
+        this.imsSignedInPromise,
+        el
+      );
+      if (checkoutAction) {
+        return checkoutAction;
+      }
+      return null;
+    };
+  }
+  activate() {
+    const config2 = __privateGet(this, _MasCommerceService_instances, config_get);
+    const settings = getSettings(config2);
+    updateConfig(config2.lana);
+    const log2 = Log.init(config2.hostEnv).module("service");
+    log2.debug("Activating:", config2);
+    const price2 = getPriceLiterals(settings);
+    const literals = { price: price2 };
+    const providers = {
+      checkout: /* @__PURE__ */ new Set(),
+      price: /* @__PURE__ */ new Set()
+    };
+    const startup = { literals, providers, settings };
+    Object.defineProperties(
+      this,
+      Object.getOwnPropertyDescriptors({
+        // Activate modules and expose their API as combined flat object
+        ...Checkout(startup),
+        ...Ims(startup),
+        ...Price(startup),
+        ...Wcs(startup),
+        ...constants_exports,
+        // Defined serviceweb  component API
+        Log,
+        get defaults() {
+          return Defaults;
+        },
+        get log() {
+          return Log;
+        },
+        /* c8 ignore next 11 */
+        get providers() {
+          return {
+            checkout(provider) {
+              providers.checkout.add(provider);
+              return () => providers.checkout.delete(provider);
+            },
+            price(provider) {
+              providers.price.add(provider);
+              return () => providers.price.delete(provider);
+            },
+            has: (providerFunction) => providers.price.has(providerFunction) || providers.checkout.has(providerFunction)
+          };
+        },
+        get settings() {
+          return settings;
+        }
+      })
+    );
+    log2.debug("Activated:", { literals, settings });
+    const event = new CustomEvent(EVENT_TYPE_READY, {
+      bubbles: true,
+      cancelable: false,
+      detail: this
+    });
+    performance.mark(MARK_READY);
+    __privateSet(this, _initDuration, performance.measure(
+      MEASURE_INIT_TIME,
+      MARK_START,
+      MARK_READY
+    )?.duration);
+    this.dispatchEvent(event);
+    setTimeout(() => {
+      this.logFailedRequests();
+    }, 1e4);
+  }
+  connectedCallback() {
+    performance.mark(MARK_START);
+    this.activate();
+  }
+  flushWcsCache() {
+    this.flushWcsCacheInternal();
+    this.log.debug("Flushed WCS cache");
+  }
+  refreshOffers() {
+    this.flushWcsCacheInternal();
+    document.querySelectorAll(SELECTOR_MAS_ELEMENT).forEach((el) => el.requestUpdate(true));
+    this.log.debug("Refreshed WCS offers");
+    this.logFailedRequests();
+  }
+  refreshFragments() {
+    this.flushWcsCacheInternal();
+    document.querySelectorAll("aem-fragment").forEach((el) => el.refresh());
+    this.log.debug("Refreshed AEM fragments");
+    this.logFailedRequests();
+  }
+  get duration() {
+    return {
+      [MEASURE_INIT_TIME]: __privateGet(this, _initDuration)
+    };
+  }
+  /**
+   * Logs failed network requests related to AEM fragments and WCS commerce artifacts.
+   * Identifies failed resources by checking for zero transfer size, zero duration,
+   * response status less than 200, or response status greater than or equal to 400.
+   * Only logs errors if any of the failed resources are fragment or commerce artifact requests.
+   */
+  /* c8 ignore next 21 */
+  logFailedRequests() {
+    const failedResources = [...performance.getEntriesByType("resource")].filter(({ startTime }) => startTime > this.lastLoggingTime).filter(
+      ({ transferSize, duration, responseStatus }) => transferSize === 0 && duration === 0 && responseStatus < 200 || responseStatus >= 400
+    );
+    const uniqueFailedResources = Array.from(
+      new Map(
+        failedResources.map((resource) => [resource.name, resource])
+      ).values()
+    );
+    if (uniqueFailedResources.some(
+      ({ name }) => /(\/fragments\/|web_commerce_artifact)/.test(name)
+    )) {
+      const failedUrls = uniqueFailedResources.map(({ name }) => name);
+      this.log.error("Failed requests:", {
+        failedUrls,
+        ...this.duration
+      });
+    }
+    this.lastLoggingTime = performance.now().toFixed(3);
+  }
+};
+_initDuration = new WeakMap();
+_MasCommerceService_instances = new WeakSet();
+config_get = function() {
+  const env = this.getAttribute("env") ?? "prod";
+  const config2 = {
+    commerce: { env },
+    hostEnv: { name: env },
+    lana: {
+      tags: this.getAttribute("lana-tags"),
+      sampleRate: parseInt(
+        this.getAttribute("lana-sample-rate") ?? 1,
+        10
+      ),
+      isProdDomain: env === "prod"
+    },
+    masIOUrl: this.getAttribute("mas-io-url")
+  };
+  ["locale", "country", "language", "preview"].forEach((attribute) => {
+    const value = this.getAttribute(attribute);
+    if (value) {
+      config2[attribute] = value;
+    }
+  });
+  [
+    "checkout-workflow-step",
+    "force-tax-exclusive",
+    "checkout-client-id",
+    "allow-override",
+    "wcs-api-key"
+  ].forEach((attribute) => {
+    const value = this.getAttribute(attribute);
+    if (value != null) {
+      const camelCaseAttribute = attribute.replace(
+        /-([a-z])/g,
+        (g3) => g3[1].toUpperCase()
+      );
+      config2.commerce[camelCaseAttribute] = value;
+    }
+  });
+  return config2;
+};
+if (!window.customElements.get(TAG_NAME_SERVICE2)) {
+  window.customElements.define(TAG_NAME_SERVICE2, MasCommerceService);
+}
+
+// src/checkout-button.js
+var _CheckoutButton = class _CheckoutButton extends CheckoutMixin(HTMLButtonElement) {
+  static createCheckoutButton(options = {}, innerHTML = "") {
+    return createCheckoutElement(_CheckoutButton, options, innerHTML);
+  }
+  setCheckoutUrl(value) {
+    this.setAttribute("data-href", value);
+  }
+  get href() {
+    return this.getAttribute("data-href");
+  }
+  get isCheckoutButton() {
+    return true;
+  }
+  clickHandler(e7) {
+    if (this.checkoutActionHandler) {
+      this.checkoutActionHandler?.(e7);
+      return;
+    }
+    if (this.href) {
+      window.location.href = this.href;
+    }
+  }
+};
+__publicField(_CheckoutButton, "is", "checkout-button");
+__publicField(_CheckoutButton, "tag", "button");
+var CheckoutButton = _CheckoutButton;
+if (!window.customElements.get(CheckoutButton.is)) {
+  window.customElements.define(CheckoutButton.is, CheckoutButton, {
+    extends: CheckoutButton.tag
+  });
+}
+
+// src/utils.js
+var MAS_COMMERCE_SERVICE2 = "mas-commerce-service";
+function debounce(func, delay) {
+  let debounceTimer;
+  return function() {
+    const context = this;
+    const args = arguments;
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(() => func.apply(context, args), delay);
+  };
+}
+function createTag(tag, attributes = {}, content = null, is = null) {
+  const element = is ? document.createElement(tag, { is }) : document.createElement(tag);
+  if (content instanceof HTMLElement) {
+    element.appendChild(content);
+  } else {
+    element.innerHTML = content;
+  }
+  for (const [key, value] of Object.entries(attributes)) {
+    element.setAttribute(key, value);
+  }
+  return element;
+}
+function matchMobile() {
+  return window.matchMedia("(max-width: 767px)");
+}
+function isMobile() {
+  return matchMobile().matches;
+}
+function isMobileOrTablet() {
+  return window.matchMedia("(max-width: 1024px)").matches;
+}
+function getService2() {
+  return document.getElementsByTagName(MAS_COMMERCE_SERVICE2)?.[0];
+}
+
+// src/upt-link.js
+function getPromoTermsUrl(env) {
+  const host = env === "PRODUCTION" ? "www.adobe.com" : "www.stage.adobe.com";
+  return `https://${host}/offers/promo-terms.html`;
+}
+var _initialized;
+var _UptLink = class _UptLink extends HTMLAnchorElement {
+  constructor() {
+    super();
+    __privateAdd(this, _initialized, false);
+    this.setAttribute("is", _UptLink.is);
+  }
+  get isUptLink() {
+    return true;
+  }
+  /**
+   * @param {string} osi 
+   * @param {string} promotionCode 
+   */
+  initializeWcsData(osi, promotionCode) {
+    this.setAttribute("data-wcs-osi", osi);
+    if (promotionCode)
+      this.setAttribute("data-promotion-code", promotionCode);
+    __privateSet(this, _initialized, true);
+    this.composePromoTermsUrl();
+  }
+  attributeChangedCallback(_name, _oldValue, _newValue) {
+    if (!__privateGet(this, _initialized)) return;
+    this.composePromoTermsUrl();
+  }
+  composePromoTermsUrl() {
+    const osi = this.getAttribute("data-wcs-osi");
+    if (!osi) {
+      const fragmentId = this.closest("merch-card").querySelector("aem-fragment").getAttribute("fragment");
+      console.error(`Missing 'data-wcs-osi' attribute on upt-link. Fragment: ${fragmentId}`);
+      return;
+    }
+    const service = getService2();
+    const wcsOsi = [osi];
+    const promotionCode = this.getAttribute("data-promotion-code");
+    const { country, language, env } = service.settings;
+    const options = { country, language, wcsOsi, promotionCode };
+    const promises = service.resolveOfferSelectors(options);
+    Promise.all(promises).then(([[offer]]) => {
+      let params = `locale=${language}_${country}&country=${country}&offer_id=${offer.offerId}`;
+      if (promotionCode) params += `&promotion_code=${encodeURIComponent(promotionCode)}`;
+      this.href = `${getPromoTermsUrl(env)}?${params}`;
+    }).catch((error) => {
+      console.error(`Could not resolve offer selectors for id: ${osi}.`, error.message);
+    });
+  }
+  /**
+   * @param {HTMLElement} element 
+   */
+  static createFrom(element) {
+    const uptLink = new _UptLink();
+    for (const attribute of element.attributes) {
+      if (attribute.name === "is") continue;
+      if (attribute.name === "class" && attribute.value.includes("upt-link"))
+        uptLink.setAttribute("class", attribute.value.replace("upt-link", "").trim());
+      else
+        uptLink.setAttribute(attribute.name, attribute.value);
+    }
+    uptLink.innerHTML = element.innerHTML;
+    uptLink.setAttribute("tabindex", 0);
+    return uptLink;
+  }
+};
+_initialized = new WeakMap();
+__publicField(_UptLink, "is", "upt-link");
+__publicField(_UptLink, "tag", "a");
+__publicField(_UptLink, "observedAttributes", ["data-wcs-osi", "data-promotion-code"]);
+var UptLink = _UptLink;
+if (!window.customElements.get(UptLink.is)) {
+  window.customElements.define(UptLink.is, UptLink, {
+    extends: UptLink.tag
+  });
+}
+
+// node_modules/lit/node_modules/@lit/reactive-element/css-tag.js
+var t = window;
+var e = t.ShadowRoot && (void 0 === t.ShadyCSS || t.ShadyCSS.nativeShadow) && "adoptedStyleSheets" in Document.prototype && "replace" in CSSStyleSheet.prototype;
+var s = Symbol();
+var n = /* @__PURE__ */ new WeakMap();
+var o = class {
+  constructor(t5, e7, n8) {
+    if (this._$cssResult$ = true, n8 !== s) throw Error("CSSResult is not constructable. Use `unsafeCSS` or `css` instead.");
+    this.cssText = t5, this.t = e7;
+  }
+  get styleSheet() {
+    let t5 = this.o;
+    const s8 = this.t;
+    if (e && void 0 === t5) {
+      const e7 = void 0 !== s8 && 1 === s8.length;
+      e7 && (t5 = n.get(s8)), void 0 === t5 && ((this.o = t5 = new CSSStyleSheet()).replaceSync(this.cssText), e7 && n.set(s8, t5));
+    }
+    return t5;
+  }
+  toString() {
+    return this.cssText;
+  }
+};
+var r = (t5) => new o("string" == typeof t5 ? t5 : t5 + "", void 0, s);
+var S = (s8, n8) => {
+  e ? s8.adoptedStyleSheets = n8.map((t5) => t5 instanceof CSSStyleSheet ? t5 : t5.styleSheet) : n8.forEach((e7) => {
+    const n9 = document.createElement("style"), o8 = t.litNonce;
+    void 0 !== o8 && n9.setAttribute("nonce", o8), n9.textContent = e7.cssText, s8.appendChild(n9);
+  });
+};
+var c = e ? (t5) => t5 : (t5) => t5 instanceof CSSStyleSheet ? ((t6) => {
+  let e7 = "";
+  for (const s8 of t6.cssRules) e7 += s8.cssText;
+  return r(e7);
+})(t5) : t5;
+
+// node_modules/lit/node_modules/@lit/reactive-element/reactive-element.js
+var s2;
+var e2 = window;
+var r2 = e2.trustedTypes;
+var h = r2 ? r2.emptyScript : "";
+var o2 = e2.reactiveElementPolyfillSupport;
+var n2 = { toAttribute(t5, i5) {
+  switch (i5) {
+    case Boolean:
+      t5 = t5 ? h : null;
+      break;
+    case Object:
+    case Array:
+      t5 = null == t5 ? t5 : JSON.stringify(t5);
+  }
+  return t5;
+}, fromAttribute(t5, i5) {
+  let s8 = t5;
+  switch (i5) {
+    case Boolean:
+      s8 = null !== t5;
+      break;
+    case Number:
+      s8 = null === t5 ? null : Number(t5);
+      break;
+    case Object:
+    case Array:
+      try {
+        s8 = JSON.parse(t5);
+      } catch (t6) {
+        s8 = null;
+      }
+  }
+  return s8;
+} };
+var a = (t5, i5) => i5 !== t5 && (i5 == i5 || t5 == t5);
+var l = { attribute: true, type: String, converter: n2, reflect: false, hasChanged: a };
+var d = "finalized";
+var u = class extends HTMLElement {
+  constructor() {
+    super(), this._$Ei = /* @__PURE__ */ new Map(), this.isUpdatePending = false, this.hasUpdated = false, this._$El = null, this._$Eu();
+  }
+  static addInitializer(t5) {
+    var i5;
+    this.finalize(), (null !== (i5 = this.h) && void 0 !== i5 ? i5 : this.h = []).push(t5);
+  }
+  static get observedAttributes() {
+    this.finalize();
+    const t5 = [];
+    return this.elementProperties.forEach((i5, s8) => {
+      const e7 = this._$Ep(s8, i5);
+      void 0 !== e7 && (this._$Ev.set(e7, s8), t5.push(e7));
+    }), t5;
+  }
+  static createProperty(t5, i5 = l) {
+    if (i5.state && (i5.attribute = false), this.finalize(), this.elementProperties.set(t5, i5), !i5.noAccessor && !this.prototype.hasOwnProperty(t5)) {
+      const s8 = "symbol" == typeof t5 ? Symbol() : "__" + t5, e7 = this.getPropertyDescriptor(t5, s8, i5);
+      void 0 !== e7 && Object.defineProperty(this.prototype, t5, e7);
+    }
+  }
+  static getPropertyDescriptor(t5, i5, s8) {
+    return { get() {
+      return this[i5];
+    }, set(e7) {
+      const r7 = this[t5];
+      this[i5] = e7, this.requestUpdate(t5, r7, s8);
+    }, configurable: true, enumerable: true };
+  }
+  static getPropertyOptions(t5) {
+    return this.elementProperties.get(t5) || l;
+  }
+  static finalize() {
+    if (this.hasOwnProperty(d)) return false;
+    this[d] = true;
+    const t5 = Object.getPrototypeOf(this);
+    if (t5.finalize(), void 0 !== t5.h && (this.h = [...t5.h]), this.elementProperties = new Map(t5.elementProperties), this._$Ev = /* @__PURE__ */ new Map(), this.hasOwnProperty("properties")) {
+      const t6 = this.properties, i5 = [...Object.getOwnPropertyNames(t6), ...Object.getOwnPropertySymbols(t6)];
+      for (const s8 of i5) this.createProperty(s8, t6[s8]);
+    }
+    return this.elementStyles = this.finalizeStyles(this.styles), true;
+  }
+  static finalizeStyles(i5) {
+    const s8 = [];
+    if (Array.isArray(i5)) {
+      const e7 = new Set(i5.flat(1 / 0).reverse());
+      for (const i6 of e7) s8.unshift(c(i6));
+    } else void 0 !== i5 && s8.push(c(i5));
+    return s8;
+  }
+  static _$Ep(t5, i5) {
+    const s8 = i5.attribute;
+    return false === s8 ? void 0 : "string" == typeof s8 ? s8 : "string" == typeof t5 ? t5.toLowerCase() : void 0;
+  }
+  _$Eu() {
+    var t5;
+    this._$E_ = new Promise((t6) => this.enableUpdating = t6), this._$AL = /* @__PURE__ */ new Map(), this._$Eg(), this.requestUpdate(), null === (t5 = this.constructor.h) || void 0 === t5 || t5.forEach((t6) => t6(this));
+  }
+  addController(t5) {
+    var i5, s8;
+    (null !== (i5 = this._$ES) && void 0 !== i5 ? i5 : this._$ES = []).push(t5), void 0 !== this.renderRoot && this.isConnected && (null === (s8 = t5.hostConnected) || void 0 === s8 || s8.call(t5));
+  }
+  removeController(t5) {
+    var i5;
+    null === (i5 = this._$ES) || void 0 === i5 || i5.splice(this._$ES.indexOf(t5) >>> 0, 1);
+  }
+  _$Eg() {
+    this.constructor.elementProperties.forEach((t5, i5) => {
+      this.hasOwnProperty(i5) && (this._$Ei.set(i5, this[i5]), delete this[i5]);
+    });
+  }
+  createRenderRoot() {
+    var t5;
+    const s8 = null !== (t5 = this.shadowRoot) && void 0 !== t5 ? t5 : this.attachShadow(this.constructor.shadowRootOptions);
+    return S(s8, this.constructor.elementStyles), s8;
+  }
+  connectedCallback() {
+    var t5;
+    void 0 === this.renderRoot && (this.renderRoot = this.createRenderRoot()), this.enableUpdating(true), null === (t5 = this._$ES) || void 0 === t5 || t5.forEach((t6) => {
+      var i5;
+      return null === (i5 = t6.hostConnected) || void 0 === i5 ? void 0 : i5.call(t6);
+    });
+  }
+  enableUpdating(t5) {
+  }
+  disconnectedCallback() {
+    var t5;
+    null === (t5 = this._$ES) || void 0 === t5 || t5.forEach((t6) => {
+      var i5;
+      return null === (i5 = t6.hostDisconnected) || void 0 === i5 ? void 0 : i5.call(t6);
+    });
+  }
+  attributeChangedCallback(t5, i5, s8) {
+    this._$AK(t5, s8);
+  }
+  _$EO(t5, i5, s8 = l) {
+    var e7;
+    const r7 = this.constructor._$Ep(t5, s8);
+    if (void 0 !== r7 && true === s8.reflect) {
+      const h5 = (void 0 !== (null === (e7 = s8.converter) || void 0 === e7 ? void 0 : e7.toAttribute) ? s8.converter : n2).toAttribute(i5, s8.type);
+      this._$El = t5, null == h5 ? this.removeAttribute(r7) : this.setAttribute(r7, h5), this._$El = null;
+    }
+  }
+  _$AK(t5, i5) {
+    var s8;
+    const e7 = this.constructor, r7 = e7._$Ev.get(t5);
+    if (void 0 !== r7 && this._$El !== r7) {
+      const t6 = e7.getPropertyOptions(r7), h5 = "function" == typeof t6.converter ? { fromAttribute: t6.converter } : void 0 !== (null === (s8 = t6.converter) || void 0 === s8 ? void 0 : s8.fromAttribute) ? t6.converter : n2;
+      this._$El = r7, this[r7] = h5.fromAttribute(i5, t6.type), this._$El = null;
+    }
+  }
+  requestUpdate(t5, i5, s8) {
+    let e7 = true;
+    void 0 !== t5 && (((s8 = s8 || this.constructor.getPropertyOptions(t5)).hasChanged || a)(this[t5], i5) ? (this._$AL.has(t5) || this._$AL.set(t5, i5), true === s8.reflect && this._$El !== t5 && (void 0 === this._$EC && (this._$EC = /* @__PURE__ */ new Map()), this._$EC.set(t5, s8))) : e7 = false), !this.isUpdatePending && e7 && (this._$E_ = this._$Ej());
+  }
+  async _$Ej() {
+    this.isUpdatePending = true;
+    try {
+      await this._$E_;
+    } catch (t6) {
+      Promise.reject(t6);
+    }
+    const t5 = this.scheduleUpdate();
+    return null != t5 && await t5, !this.isUpdatePending;
+  }
+  scheduleUpdate() {
+    return this.performUpdate();
+  }
+  performUpdate() {
+    var t5;
+    if (!this.isUpdatePending) return;
+    this.hasUpdated, this._$Ei && (this._$Ei.forEach((t6, i6) => this[i6] = t6), this._$Ei = void 0);
+    let i5 = false;
+    const s8 = this._$AL;
+    try {
+      i5 = this.shouldUpdate(s8), i5 ? (this.willUpdate(s8), null === (t5 = this._$ES) || void 0 === t5 || t5.forEach((t6) => {
+        var i6;
+        return null === (i6 = t6.hostUpdate) || void 0 === i6 ? void 0 : i6.call(t6);
+      }), this.update(s8)) : this._$Ek();
+    } catch (t6) {
+      throw i5 = false, this._$Ek(), t6;
+    }
+    i5 && this._$AE(s8);
+  }
+  willUpdate(t5) {
+  }
+  _$AE(t5) {
+    var i5;
+    null === (i5 = this._$ES) || void 0 === i5 || i5.forEach((t6) => {
+      var i6;
+      return null === (i6 = t6.hostUpdated) || void 0 === i6 ? void 0 : i6.call(t6);
+    }), this.hasUpdated || (this.hasUpdated = true, this.firstUpdated(t5)), this.updated(t5);
+  }
+  _$Ek() {
+    this._$AL = /* @__PURE__ */ new Map(), this.isUpdatePending = false;
+  }
+  get updateComplete() {
+    return this.getUpdateComplete();
+  }
+  getUpdateComplete() {
+    return this._$E_;
+  }
+  shouldUpdate(t5) {
+    return true;
+  }
+  update(t5) {
+    void 0 !== this._$EC && (this._$EC.forEach((t6, i5) => this._$EO(i5, this[i5], t6)), this._$EC = void 0), this._$Ek();
+  }
+  updated(t5) {
+  }
+  firstUpdated(t5) {
+  }
+};
+u[d] = true, u.elementProperties = /* @__PURE__ */ new Map(), u.elementStyles = [], u.shadowRootOptions = { mode: "open" }, null == o2 || o2({ ReactiveElement: u }), (null !== (s2 = e2.reactiveElementVersions) && void 0 !== s2 ? s2 : e2.reactiveElementVersions = []).push("1.6.3");
+
+// node_modules/lit/node_modules/lit-html/lit-html.js
+var t2;
+var i2 = window;
+var s3 = i2.trustedTypes;
+var e3 = s3 ? s3.createPolicy("lit-html", { createHTML: (t5) => t5 }) : void 0;
+var o3 = "$lit$";
+var n3 = `lit$${(Math.random() + "").slice(9)}$`;
+var l2 = "?" + n3;
+var h2 = `<${l2}>`;
+var r3 = document;
+var u2 = () => r3.createComment("");
+var d2 = (t5) => null === t5 || "object" != typeof t5 && "function" != typeof t5;
+var c2 = Array.isArray;
+var v = (t5) => c2(t5) || "function" == typeof (null == t5 ? void 0 : t5[Symbol.iterator]);
+var a2 = "[ 	\n\f\r]";
+var f = /<(?:(!--|\/[^a-zA-Z])|(\/?[a-zA-Z][^>\s]*)|(\/?$))/g;
+var _ = /-->/g;
+var m = />/g;
+var p = RegExp(`>|${a2}(?:([^\\s"'>=/]+)(${a2}*=${a2}*(?:[^ 	
+\f\r"'\`<>=]|("|')|))|$)`, "g");
+var g = /'/g;
+var $ = /"/g;
+var y = /^(?:script|style|textarea|title)$/i;
+var w = (t5) => (i5, ...s8) => ({ _$litType$: t5, strings: i5, values: s8 });
+var x = w(1);
+var b = w(2);
+var T = Symbol.for("lit-noChange");
+var A = Symbol.for("lit-nothing");
+var E = /* @__PURE__ */ new WeakMap();
+var C = r3.createTreeWalker(r3, 129, null, false);
+function P(t5, i5) {
+  if (!Array.isArray(t5) || !t5.hasOwnProperty("raw")) throw Error("invalid template strings array");
+  return void 0 !== e3 ? e3.createHTML(i5) : i5;
+}
+var V = (t5, i5) => {
+  const s8 = t5.length - 1, e7 = [];
+  let l6, r7 = 2 === i5 ? "<svg>" : "", u5 = f;
+  for (let i6 = 0; i6 < s8; i6++) {
+    const s9 = t5[i6];
+    let d5, c5, v3 = -1, a5 = 0;
+    for (; a5 < s9.length && (u5.lastIndex = a5, c5 = u5.exec(s9), null !== c5); ) a5 = u5.lastIndex, u5 === f ? "!--" === c5[1] ? u5 = _ : void 0 !== c5[1] ? u5 = m : void 0 !== c5[2] ? (y.test(c5[2]) && (l6 = RegExp("</" + c5[2], "g")), u5 = p) : void 0 !== c5[3] && (u5 = p) : u5 === p ? ">" === c5[0] ? (u5 = null != l6 ? l6 : f, v3 = -1) : void 0 === c5[1] ? v3 = -2 : (v3 = u5.lastIndex - c5[2].length, d5 = c5[1], u5 = void 0 === c5[3] ? p : '"' === c5[3] ? $ : g) : u5 === $ || u5 === g ? u5 = p : u5 === _ || u5 === m ? u5 = f : (u5 = p, l6 = void 0);
+    const w3 = u5 === p && t5[i6 + 1].startsWith("/>") ? " " : "";
+    r7 += u5 === f ? s9 + h2 : v3 >= 0 ? (e7.push(d5), s9.slice(0, v3) + o3 + s9.slice(v3) + n3 + w3) : s9 + n3 + (-2 === v3 ? (e7.push(void 0), i6) : w3);
+  }
+  return [P(t5, r7 + (t5[s8] || "<?>") + (2 === i5 ? "</svg>" : "")), e7];
+};
+var N = class _N {
+  constructor({ strings: t5, _$litType$: i5 }, e7) {
+    let h5;
+    this.parts = [];
+    let r7 = 0, d5 = 0;
+    const c5 = t5.length - 1, v3 = this.parts, [a5, f3] = V(t5, i5);
+    if (this.el = _N.createElement(a5, e7), C.currentNode = this.el.content, 2 === i5) {
+      const t6 = this.el.content, i6 = t6.firstChild;
+      i6.remove(), t6.append(...i6.childNodes);
+    }
+    for (; null !== (h5 = C.nextNode()) && v3.length < c5; ) {
+      if (1 === h5.nodeType) {
+        if (h5.hasAttributes()) {
+          const t6 = [];
+          for (const i6 of h5.getAttributeNames()) if (i6.endsWith(o3) || i6.startsWith(n3)) {
+            const s8 = f3[d5++];
+            if (t6.push(i6), void 0 !== s8) {
+              const t7 = h5.getAttribute(s8.toLowerCase() + o3).split(n3), i7 = /([.?@])?(.*)/.exec(s8);
+              v3.push({ type: 1, index: r7, name: i7[2], strings: t7, ctor: "." === i7[1] ? H : "?" === i7[1] ? L : "@" === i7[1] ? z : k });
+            } else v3.push({ type: 6, index: r7 });
+          }
+          for (const i6 of t6) h5.removeAttribute(i6);
+        }
+        if (y.test(h5.tagName)) {
+          const t6 = h5.textContent.split(n3), i6 = t6.length - 1;
+          if (i6 > 0) {
+            h5.textContent = s3 ? s3.emptyScript : "";
+            for (let s8 = 0; s8 < i6; s8++) h5.append(t6[s8], u2()), C.nextNode(), v3.push({ type: 2, index: ++r7 });
+            h5.append(t6[i6], u2());
+          }
+        }
+      } else if (8 === h5.nodeType) if (h5.data === l2) v3.push({ type: 2, index: r7 });
+      else {
+        let t6 = -1;
+        for (; -1 !== (t6 = h5.data.indexOf(n3, t6 + 1)); ) v3.push({ type: 7, index: r7 }), t6 += n3.length - 1;
+      }
+      r7++;
+    }
+  }
+  static createElement(t5, i5) {
+    const s8 = r3.createElement("template");
+    return s8.innerHTML = t5, s8;
+  }
+};
+function S2(t5, i5, s8 = t5, e7) {
+  var o8, n8, l6, h5;
+  if (i5 === T) return i5;
+  let r7 = void 0 !== e7 ? null === (o8 = s8._$Co) || void 0 === o8 ? void 0 : o8[e7] : s8._$Cl;
+  const u5 = d2(i5) ? void 0 : i5._$litDirective$;
+  return (null == r7 ? void 0 : r7.constructor) !== u5 && (null === (n8 = null == r7 ? void 0 : r7._$AO) || void 0 === n8 || n8.call(r7, false), void 0 === u5 ? r7 = void 0 : (r7 = new u5(t5), r7._$AT(t5, s8, e7)), void 0 !== e7 ? (null !== (l6 = (h5 = s8)._$Co) && void 0 !== l6 ? l6 : h5._$Co = [])[e7] = r7 : s8._$Cl = r7), void 0 !== r7 && (i5 = S2(t5, r7._$AS(t5, i5.values), r7, e7)), i5;
+}
+var M = class {
+  constructor(t5, i5) {
+    this._$AV = [], this._$AN = void 0, this._$AD = t5, this._$AM = i5;
+  }
+  get parentNode() {
+    return this._$AM.parentNode;
+  }
+  get _$AU() {
+    return this._$AM._$AU;
+  }
+  u(t5) {
+    var i5;
+    const { el: { content: s8 }, parts: e7 } = this._$AD, o8 = (null !== (i5 = null == t5 ? void 0 : t5.creationScope) && void 0 !== i5 ? i5 : r3).importNode(s8, true);
+    C.currentNode = o8;
+    let n8 = C.nextNode(), l6 = 0, h5 = 0, u5 = e7[0];
+    for (; void 0 !== u5; ) {
+      if (l6 === u5.index) {
+        let i6;
+        2 === u5.type ? i6 = new R(n8, n8.nextSibling, this, t5) : 1 === u5.type ? i6 = new u5.ctor(n8, u5.name, u5.strings, this, t5) : 6 === u5.type && (i6 = new Z(n8, this, t5)), this._$AV.push(i6), u5 = e7[++h5];
+      }
+      l6 !== (null == u5 ? void 0 : u5.index) && (n8 = C.nextNode(), l6++);
+    }
+    return C.currentNode = r3, o8;
+  }
+  v(t5) {
+    let i5 = 0;
+    for (const s8 of this._$AV) void 0 !== s8 && (void 0 !== s8.strings ? (s8._$AI(t5, s8, i5), i5 += s8.strings.length - 2) : s8._$AI(t5[i5])), i5++;
+  }
+};
+var R = class _R {
+  constructor(t5, i5, s8, e7) {
+    var o8;
+    this.type = 2, this._$AH = A, this._$AN = void 0, this._$AA = t5, this._$AB = i5, this._$AM = s8, this.options = e7, this._$Cp = null === (o8 = null == e7 ? void 0 : e7.isConnected) || void 0 === o8 || o8;
+  }
+  get _$AU() {
+    var t5, i5;
+    return null !== (i5 = null === (t5 = this._$AM) || void 0 === t5 ? void 0 : t5._$AU) && void 0 !== i5 ? i5 : this._$Cp;
+  }
+  get parentNode() {
+    let t5 = this._$AA.parentNode;
+    const i5 = this._$AM;
+    return void 0 !== i5 && 11 === (null == t5 ? void 0 : t5.nodeType) && (t5 = i5.parentNode), t5;
+  }
+  get startNode() {
+    return this._$AA;
+  }
+  get endNode() {
+    return this._$AB;
+  }
+  _$AI(t5, i5 = this) {
+    t5 = S2(this, t5, i5), d2(t5) ? t5 === A || null == t5 || "" === t5 ? (this._$AH !== A && this._$AR(), this._$AH = A) : t5 !== this._$AH && t5 !== T && this._(t5) : void 0 !== t5._$litType$ ? this.g(t5) : void 0 !== t5.nodeType ? this.$(t5) : v(t5) ? this.T(t5) : this._(t5);
+  }
+  k(t5) {
+    return this._$AA.parentNode.insertBefore(t5, this._$AB);
+  }
+  $(t5) {
+    this._$AH !== t5 && (this._$AR(), this._$AH = this.k(t5));
+  }
+  _(t5) {
+    this._$AH !== A && d2(this._$AH) ? this._$AA.nextSibling.data = t5 : this.$(r3.createTextNode(t5)), this._$AH = t5;
+  }
+  g(t5) {
+    var i5;
+    const { values: s8, _$litType$: e7 } = t5, o8 = "number" == typeof e7 ? this._$AC(t5) : (void 0 === e7.el && (e7.el = N.createElement(P(e7.h, e7.h[0]), this.options)), e7);
+    if ((null === (i5 = this._$AH) || void 0 === i5 ? void 0 : i5._$AD) === o8) this._$AH.v(s8);
+    else {
+      const t6 = new M(o8, this), i6 = t6.u(this.options);
+      t6.v(s8), this.$(i6), this._$AH = t6;
+    }
+  }
+  _$AC(t5) {
+    let i5 = E.get(t5.strings);
+    return void 0 === i5 && E.set(t5.strings, i5 = new N(t5)), i5;
+  }
+  T(t5) {
+    c2(this._$AH) || (this._$AH = [], this._$AR());
+    const i5 = this._$AH;
+    let s8, e7 = 0;
+    for (const o8 of t5) e7 === i5.length ? i5.push(s8 = new _R(this.k(u2()), this.k(u2()), this, this.options)) : s8 = i5[e7], s8._$AI(o8), e7++;
+    e7 < i5.length && (this._$AR(s8 && s8._$AB.nextSibling, e7), i5.length = e7);
+  }
+  _$AR(t5 = this._$AA.nextSibling, i5) {
+    var s8;
+    for (null === (s8 = this._$AP) || void 0 === s8 || s8.call(this, false, true, i5); t5 && t5 !== this._$AB; ) {
+      const i6 = t5.nextSibling;
+      t5.remove(), t5 = i6;
+    }
+  }
+  setConnected(t5) {
+    var i5;
+    void 0 === this._$AM && (this._$Cp = t5, null === (i5 = this._$AP) || void 0 === i5 || i5.call(this, t5));
+  }
+};
+var k = class {
+  constructor(t5, i5, s8, e7, o8) {
+    this.type = 1, this._$AH = A, this._$AN = void 0, this.element = t5, this.name = i5, this._$AM = e7, this.options = o8, s8.length > 2 || "" !== s8[0] || "" !== s8[1] ? (this._$AH = Array(s8.length - 1).fill(new String()), this.strings = s8) : this._$AH = A;
+  }
+  get tagName() {
+    return this.element.tagName;
+  }
+  get _$AU() {
+    return this._$AM._$AU;
+  }
+  _$AI(t5, i5 = this, s8, e7) {
+    const o8 = this.strings;
+    let n8 = false;
+    if (void 0 === o8) t5 = S2(this, t5, i5, 0), n8 = !d2(t5) || t5 !== this._$AH && t5 !== T, n8 && (this._$AH = t5);
+    else {
+      const e8 = t5;
+      let l6, h5;
+      for (t5 = o8[0], l6 = 0; l6 < o8.length - 1; l6++) h5 = S2(this, e8[s8 + l6], i5, l6), h5 === T && (h5 = this._$AH[l6]), n8 || (n8 = !d2(h5) || h5 !== this._$AH[l6]), h5 === A ? t5 = A : t5 !== A && (t5 += (null != h5 ? h5 : "") + o8[l6 + 1]), this._$AH[l6] = h5;
+    }
+    n8 && !e7 && this.j(t5);
+  }
+  j(t5) {
+    t5 === A ? this.element.removeAttribute(this.name) : this.element.setAttribute(this.name, null != t5 ? t5 : "");
+  }
+};
+var H = class extends k {
+  constructor() {
+    super(...arguments), this.type = 3;
+  }
+  j(t5) {
+    this.element[this.name] = t5 === A ? void 0 : t5;
+  }
+};
+var I = s3 ? s3.emptyScript : "";
+var L = class extends k {
+  constructor() {
+    super(...arguments), this.type = 4;
+  }
+  j(t5) {
+    t5 && t5 !== A ? this.element.setAttribute(this.name, I) : this.element.removeAttribute(this.name);
+  }
+};
+var z = class extends k {
+  constructor(t5, i5, s8, e7, o8) {
+    super(t5, i5, s8, e7, o8), this.type = 5;
+  }
+  _$AI(t5, i5 = this) {
+    var s8;
+    if ((t5 = null !== (s8 = S2(this, t5, i5, 0)) && void 0 !== s8 ? s8 : A) === T) return;
+    const e7 = this._$AH, o8 = t5 === A && e7 !== A || t5.capture !== e7.capture || t5.once !== e7.once || t5.passive !== e7.passive, n8 = t5 !== A && (e7 === A || o8);
+    o8 && this.element.removeEventListener(this.name, this, e7), n8 && this.element.addEventListener(this.name, this, t5), this._$AH = t5;
+  }
+  handleEvent(t5) {
+    var i5, s8;
+    "function" == typeof this._$AH ? this._$AH.call(null !== (s8 = null === (i5 = this.options) || void 0 === i5 ? void 0 : i5.host) && void 0 !== s8 ? s8 : this.element, t5) : this._$AH.handleEvent(t5);
+  }
+};
+var Z = class {
+  constructor(t5, i5, s8) {
+    this.element = t5, this.type = 6, this._$AN = void 0, this._$AM = i5, this.options = s8;
+  }
+  get _$AU() {
+    return this._$AM._$AU;
+  }
+  _$AI(t5) {
+    S2(this, t5);
+  }
+};
+var B = i2.litHtmlPolyfillSupport;
+null == B || B(N, R), (null !== (t2 = i2.litHtmlVersions) && void 0 !== t2 ? t2 : i2.litHtmlVersions = []).push("2.8.0");
+
+// node_modules/lit-element/node_modules/@lit/reactive-element/css-tag.js
+var t3 = window;
+var e4 = t3.ShadowRoot && (void 0 === t3.ShadyCSS || t3.ShadyCSS.nativeShadow) && "adoptedStyleSheets" in Document.prototype && "replace" in CSSStyleSheet.prototype;
+var s4 = Symbol();
+var n4 = /* @__PURE__ */ new WeakMap();
+var o4 = class {
+  constructor(t5, e7, n8) {
+    if (this._$cssResult$ = true, n8 !== s4) throw Error("CSSResult is not constructable. Use `unsafeCSS` or `css` instead.");
+    this.cssText = t5, this.t = e7;
+  }
+  get styleSheet() {
+    let t5 = this.o;
+    const s8 = this.t;
+    if (e4 && void 0 === t5) {
+      const e7 = void 0 !== s8 && 1 === s8.length;
+      e7 && (t5 = n4.get(s8)), void 0 === t5 && ((this.o = t5 = new CSSStyleSheet()).replaceSync(this.cssText), e7 && n4.set(s8, t5));
+    }
+    return t5;
+  }
+  toString() {
+    return this.cssText;
+  }
+};
+var r4 = (t5) => new o4("string" == typeof t5 ? t5 : t5 + "", void 0, s4);
+var i3 = (t5, ...e7) => {
+  const n8 = 1 === t5.length ? t5[0] : e7.reduce((e8, s8, n9) => e8 + ((t6) => {
+    if (true === t6._$cssResult$) return t6.cssText;
+    if ("number" == typeof t6) return t6;
+    throw Error("Value passed to 'css' function must be a 'css' function result: " + t6 + ". Use 'unsafeCSS' to pass non-literal values, but take care to ensure page security.");
+  })(s8) + t5[n9 + 1], t5[0]);
+  return new o4(n8, t5, s4);
+};
+var S3 = (s8, n8) => {
+  e4 ? s8.adoptedStyleSheets = n8.map((t5) => t5 instanceof CSSStyleSheet ? t5 : t5.styleSheet) : n8.forEach((e7) => {
+    const n9 = document.createElement("style"), o8 = t3.litNonce;
+    void 0 !== o8 && n9.setAttribute("nonce", o8), n9.textContent = e7.cssText, s8.appendChild(n9);
+  });
+};
+var c3 = e4 ? (t5) => t5 : (t5) => t5 instanceof CSSStyleSheet ? ((t6) => {
+  let e7 = "";
+  for (const s8 of t6.cssRules) e7 += s8.cssText;
+  return r4(e7);
+})(t5) : t5;
+
+// node_modules/lit-element/node_modules/@lit/reactive-element/reactive-element.js
+var s5;
+var e5 = window;
+var r5 = e5.trustedTypes;
+var h3 = r5 ? r5.emptyScript : "";
+var o5 = e5.reactiveElementPolyfillSupport;
+var n5 = { toAttribute(t5, i5) {
+  switch (i5) {
+    case Boolean:
+      t5 = t5 ? h3 : null;
+      break;
+    case Object:
+    case Array:
+      t5 = null == t5 ? t5 : JSON.stringify(t5);
+  }
+  return t5;
+}, fromAttribute(t5, i5) {
+  let s8 = t5;
+  switch (i5) {
+    case Boolean:
+      s8 = null !== t5;
+      break;
+    case Number:
+      s8 = null === t5 ? null : Number(t5);
+      break;
+    case Object:
+    case Array:
+      try {
+        s8 = JSON.parse(t5);
+      } catch (t6) {
+        s8 = null;
+      }
+  }
+  return s8;
+} };
+var a3 = (t5, i5) => i5 !== t5 && (i5 == i5 || t5 == t5);
+var l3 = { attribute: true, type: String, converter: n5, reflect: false, hasChanged: a3 };
+var d3 = "finalized";
+var u3 = class extends HTMLElement {
+  constructor() {
+    super(), this._$Ei = /* @__PURE__ */ new Map(), this.isUpdatePending = false, this.hasUpdated = false, this._$El = null, this._$Eu();
+  }
+  static addInitializer(t5) {
+    var i5;
+    this.finalize(), (null !== (i5 = this.h) && void 0 !== i5 ? i5 : this.h = []).push(t5);
+  }
+  static get observedAttributes() {
+    this.finalize();
+    const t5 = [];
+    return this.elementProperties.forEach((i5, s8) => {
+      const e7 = this._$Ep(s8, i5);
+      void 0 !== e7 && (this._$Ev.set(e7, s8), t5.push(e7));
+    }), t5;
+  }
+  static createProperty(t5, i5 = l3) {
+    if (i5.state && (i5.attribute = false), this.finalize(), this.elementProperties.set(t5, i5), !i5.noAccessor && !this.prototype.hasOwnProperty(t5)) {
+      const s8 = "symbol" == typeof t5 ? Symbol() : "__" + t5, e7 = this.getPropertyDescriptor(t5, s8, i5);
+      void 0 !== e7 && Object.defineProperty(this.prototype, t5, e7);
+    }
+  }
+  static getPropertyDescriptor(t5, i5, s8) {
+    return { get() {
+      return this[i5];
+    }, set(e7) {
+      const r7 = this[t5];
+      this[i5] = e7, this.requestUpdate(t5, r7, s8);
+    }, configurable: true, enumerable: true };
+  }
+  static getPropertyOptions(t5) {
+    return this.elementProperties.get(t5) || l3;
+  }
+  static finalize() {
+    if (this.hasOwnProperty(d3)) return false;
+    this[d3] = true;
+    const t5 = Object.getPrototypeOf(this);
+    if (t5.finalize(), void 0 !== t5.h && (this.h = [...t5.h]), this.elementProperties = new Map(t5.elementProperties), this._$Ev = /* @__PURE__ */ new Map(), this.hasOwnProperty("properties")) {
+      const t6 = this.properties, i5 = [...Object.getOwnPropertyNames(t6), ...Object.getOwnPropertySymbols(t6)];
+      for (const s8 of i5) this.createProperty(s8, t6[s8]);
+    }
+    return this.elementStyles = this.finalizeStyles(this.styles), true;
+  }
+  static finalizeStyles(i5) {
+    const s8 = [];
+    if (Array.isArray(i5)) {
+      const e7 = new Set(i5.flat(1 / 0).reverse());
+      for (const i6 of e7) s8.unshift(c3(i6));
+    } else void 0 !== i5 && s8.push(c3(i5));
+    return s8;
+  }
+  static _$Ep(t5, i5) {
+    const s8 = i5.attribute;
+    return false === s8 ? void 0 : "string" == typeof s8 ? s8 : "string" == typeof t5 ? t5.toLowerCase() : void 0;
+  }
+  _$Eu() {
+    var t5;
+    this._$E_ = new Promise((t6) => this.enableUpdating = t6), this._$AL = /* @__PURE__ */ new Map(), this._$Eg(), this.requestUpdate(), null === (t5 = this.constructor.h) || void 0 === t5 || t5.forEach((t6) => t6(this));
+  }
+  addController(t5) {
+    var i5, s8;
+    (null !== (i5 = this._$ES) && void 0 !== i5 ? i5 : this._$ES = []).push(t5), void 0 !== this.renderRoot && this.isConnected && (null === (s8 = t5.hostConnected) || void 0 === s8 || s8.call(t5));
+  }
+  removeController(t5) {
+    var i5;
+    null === (i5 = this._$ES) || void 0 === i5 || i5.splice(this._$ES.indexOf(t5) >>> 0, 1);
+  }
+  _$Eg() {
+    this.constructor.elementProperties.forEach((t5, i5) => {
+      this.hasOwnProperty(i5) && (this._$Ei.set(i5, this[i5]), delete this[i5]);
+    });
+  }
+  createRenderRoot() {
+    var t5;
+    const s8 = null !== (t5 = this.shadowRoot) && void 0 !== t5 ? t5 : this.attachShadow(this.constructor.shadowRootOptions);
+    return S3(s8, this.constructor.elementStyles), s8;
+  }
+  connectedCallback() {
+    var t5;
+    void 0 === this.renderRoot && (this.renderRoot = this.createRenderRoot()), this.enableUpdating(true), null === (t5 = this._$ES) || void 0 === t5 || t5.forEach((t6) => {
+      var i5;
+      return null === (i5 = t6.hostConnected) || void 0 === i5 ? void 0 : i5.call(t6);
+    });
+  }
+  enableUpdating(t5) {
+  }
+  disconnectedCallback() {
+    var t5;
+    null === (t5 = this._$ES) || void 0 === t5 || t5.forEach((t6) => {
+      var i5;
+      return null === (i5 = t6.hostDisconnected) || void 0 === i5 ? void 0 : i5.call(t6);
+    });
+  }
+  attributeChangedCallback(t5, i5, s8) {
+    this._$AK(t5, s8);
+  }
+  _$EO(t5, i5, s8 = l3) {
+    var e7;
+    const r7 = this.constructor._$Ep(t5, s8);
+    if (void 0 !== r7 && true === s8.reflect) {
+      const h5 = (void 0 !== (null === (e7 = s8.converter) || void 0 === e7 ? void 0 : e7.toAttribute) ? s8.converter : n5).toAttribute(i5, s8.type);
+      this._$El = t5, null == h5 ? this.removeAttribute(r7) : this.setAttribute(r7, h5), this._$El = null;
+    }
+  }
+  _$AK(t5, i5) {
+    var s8;
+    const e7 = this.constructor, r7 = e7._$Ev.get(t5);
+    if (void 0 !== r7 && this._$El !== r7) {
+      const t6 = e7.getPropertyOptions(r7), h5 = "function" == typeof t6.converter ? { fromAttribute: t6.converter } : void 0 !== (null === (s8 = t6.converter) || void 0 === s8 ? void 0 : s8.fromAttribute) ? t6.converter : n5;
+      this._$El = r7, this[r7] = h5.fromAttribute(i5, t6.type), this._$El = null;
+    }
+  }
+  requestUpdate(t5, i5, s8) {
+    let e7 = true;
+    void 0 !== t5 && (((s8 = s8 || this.constructor.getPropertyOptions(t5)).hasChanged || a3)(this[t5], i5) ? (this._$AL.has(t5) || this._$AL.set(t5, i5), true === s8.reflect && this._$El !== t5 && (void 0 === this._$EC && (this._$EC = /* @__PURE__ */ new Map()), this._$EC.set(t5, s8))) : e7 = false), !this.isUpdatePending && e7 && (this._$E_ = this._$Ej());
+  }
+  async _$Ej() {
+    this.isUpdatePending = true;
+    try {
+      await this._$E_;
+    } catch (t6) {
+      Promise.reject(t6);
+    }
+    const t5 = this.scheduleUpdate();
+    return null != t5 && await t5, !this.isUpdatePending;
+  }
+  scheduleUpdate() {
+    return this.performUpdate();
+  }
+  performUpdate() {
+    var t5;
+    if (!this.isUpdatePending) return;
+    this.hasUpdated, this._$Ei && (this._$Ei.forEach((t6, i6) => this[i6] = t6), this._$Ei = void 0);
+    let i5 = false;
+    const s8 = this._$AL;
+    try {
+      i5 = this.shouldUpdate(s8), i5 ? (this.willUpdate(s8), null === (t5 = this._$ES) || void 0 === t5 || t5.forEach((t6) => {
+        var i6;
+        return null === (i6 = t6.hostUpdate) || void 0 === i6 ? void 0 : i6.call(t6);
+      }), this.update(s8)) : this._$Ek();
+    } catch (t6) {
+      throw i5 = false, this._$Ek(), t6;
+    }
+    i5 && this._$AE(s8);
+  }
+  willUpdate(t5) {
+  }
+  _$AE(t5) {
+    var i5;
+    null === (i5 = this._$ES) || void 0 === i5 || i5.forEach((t6) => {
+      var i6;
+      return null === (i6 = t6.hostUpdated) || void 0 === i6 ? void 0 : i6.call(t6);
+    }), this.hasUpdated || (this.hasUpdated = true, this.firstUpdated(t5)), this.updated(t5);
+  }
+  _$Ek() {
+    this._$AL = /* @__PURE__ */ new Map(), this.isUpdatePending = false;
+  }
+  get updateComplete() {
+    return this.getUpdateComplete();
+  }
+  getUpdateComplete() {
+    return this._$E_;
+  }
+  shouldUpdate(t5) {
+    return true;
+  }
+  update(t5) {
+    void 0 !== this._$EC && (this._$EC.forEach((t6, i5) => this._$EO(i5, this[i5], t6)), this._$EC = void 0), this._$Ek();
+  }
+  updated(t5) {
+  }
+  firstUpdated(t5) {
+  }
+};
+u3[d3] = true, u3.elementProperties = /* @__PURE__ */ new Map(), u3.elementStyles = [], u3.shadowRootOptions = { mode: "open" }, null == o5 || o5({ ReactiveElement: u3 }), (null !== (s5 = e5.reactiveElementVersions) && void 0 !== s5 ? s5 : e5.reactiveElementVersions = []).push("1.6.3");
+
+// node_modules/lit-element/node_modules/lit-html/lit-html.js
+var t4;
+var i4 = window;
+var s6 = i4.trustedTypes;
+var e6 = s6 ? s6.createPolicy("lit-html", { createHTML: (t5) => t5 }) : void 0;
+var o6 = "$lit$";
+var n6 = `lit$${(Math.random() + "").slice(9)}$`;
+var l4 = "?" + n6;
+var h4 = `<${l4}>`;
+var r6 = document;
+var u4 = () => r6.createComment("");
+var d4 = (t5) => null === t5 || "object" != typeof t5 && "function" != typeof t5;
+var c4 = Array.isArray;
+var v2 = (t5) => c4(t5) || "function" == typeof (null == t5 ? void 0 : t5[Symbol.iterator]);
+var a4 = "[ 	\n\f\r]";
+var f2 = /<(?:(!--|\/[^a-zA-Z])|(\/?[a-zA-Z][^>\s]*)|(\/?$))/g;
+var _2 = /-->/g;
+var m2 = />/g;
+var p2 = RegExp(`>|${a4}(?:([^\\s"'>=/]+)(${a4}*=${a4}*(?:[^ 	
+\f\r"'\`<>=]|("|')|))|$)`, "g");
+var g2 = /'/g;
+var $2 = /"/g;
+var y2 = /^(?:script|style|textarea|title)$/i;
+var w2 = (t5) => (i5, ...s8) => ({ _$litType$: t5, strings: i5, values: s8 });
+var x2 = w2(1);
+var b2 = w2(2);
+var T2 = Symbol.for("lit-noChange");
+var A2 = Symbol.for("lit-nothing");
+var E2 = /* @__PURE__ */ new WeakMap();
+var C2 = r6.createTreeWalker(r6, 129, null, false);
+function P2(t5, i5) {
+  if (!Array.isArray(t5) || !t5.hasOwnProperty("raw")) throw Error("invalid template strings array");
+  return void 0 !== e6 ? e6.createHTML(i5) : i5;
+}
+var V2 = (t5, i5) => {
+  const s8 = t5.length - 1, e7 = [];
+  let l6, r7 = 2 === i5 ? "<svg>" : "", u5 = f2;
+  for (let i6 = 0; i6 < s8; i6++) {
+    const s9 = t5[i6];
+    let d5, c5, v3 = -1, a5 = 0;
+    for (; a5 < s9.length && (u5.lastIndex = a5, c5 = u5.exec(s9), null !== c5); ) a5 = u5.lastIndex, u5 === f2 ? "!--" === c5[1] ? u5 = _2 : void 0 !== c5[1] ? u5 = m2 : void 0 !== c5[2] ? (y2.test(c5[2]) && (l6 = RegExp("</" + c5[2], "g")), u5 = p2) : void 0 !== c5[3] && (u5 = p2) : u5 === p2 ? ">" === c5[0] ? (u5 = null != l6 ? l6 : f2, v3 = -1) : void 0 === c5[1] ? v3 = -2 : (v3 = u5.lastIndex - c5[2].length, d5 = c5[1], u5 = void 0 === c5[3] ? p2 : '"' === c5[3] ? $2 : g2) : u5 === $2 || u5 === g2 ? u5 = p2 : u5 === _2 || u5 === m2 ? u5 = f2 : (u5 = p2, l6 = void 0);
+    const w3 = u5 === p2 && t5[i6 + 1].startsWith("/>") ? " " : "";
+    r7 += u5 === f2 ? s9 + h4 : v3 >= 0 ? (e7.push(d5), s9.slice(0, v3) + o6 + s9.slice(v3) + n6 + w3) : s9 + n6 + (-2 === v3 ? (e7.push(void 0), i6) : w3);
+  }
+  return [P2(t5, r7 + (t5[s8] || "<?>") + (2 === i5 ? "</svg>" : "")), e7];
+};
+var N2 = class _N {
+  constructor({ strings: t5, _$litType$: i5 }, e7) {
+    let h5;
+    this.parts = [];
+    let r7 = 0, d5 = 0;
+    const c5 = t5.length - 1, v3 = this.parts, [a5, f3] = V2(t5, i5);
+    if (this.el = _N.createElement(a5, e7), C2.currentNode = this.el.content, 2 === i5) {
+      const t6 = this.el.content, i6 = t6.firstChild;
+      i6.remove(), t6.append(...i6.childNodes);
+    }
+    for (; null !== (h5 = C2.nextNode()) && v3.length < c5; ) {
+      if (1 === h5.nodeType) {
+        if (h5.hasAttributes()) {
+          const t6 = [];
+          for (const i6 of h5.getAttributeNames()) if (i6.endsWith(o6) || i6.startsWith(n6)) {
+            const s8 = f3[d5++];
+            if (t6.push(i6), void 0 !== s8) {
+              const t7 = h5.getAttribute(s8.toLowerCase() + o6).split(n6), i7 = /([.?@])?(.*)/.exec(s8);
+              v3.push({ type: 1, index: r7, name: i7[2], strings: t7, ctor: "." === i7[1] ? H2 : "?" === i7[1] ? L2 : "@" === i7[1] ? z2 : k2 });
+            } else v3.push({ type: 6, index: r7 });
+          }
+          for (const i6 of t6) h5.removeAttribute(i6);
+        }
+        if (y2.test(h5.tagName)) {
+          const t6 = h5.textContent.split(n6), i6 = t6.length - 1;
+          if (i6 > 0) {
+            h5.textContent = s6 ? s6.emptyScript : "";
+            for (let s8 = 0; s8 < i6; s8++) h5.append(t6[s8], u4()), C2.nextNode(), v3.push({ type: 2, index: ++r7 });
+            h5.append(t6[i6], u4());
+          }
+        }
+      } else if (8 === h5.nodeType) if (h5.data === l4) v3.push({ type: 2, index: r7 });
+      else {
+        let t6 = -1;
+        for (; -1 !== (t6 = h5.data.indexOf(n6, t6 + 1)); ) v3.push({ type: 7, index: r7 }), t6 += n6.length - 1;
+      }
+      r7++;
+    }
+  }
+  static createElement(t5, i5) {
+    const s8 = r6.createElement("template");
+    return s8.innerHTML = t5, s8;
+  }
+};
+function S4(t5, i5, s8 = t5, e7) {
+  var o8, n8, l6, h5;
+  if (i5 === T2) return i5;
+  let r7 = void 0 !== e7 ? null === (o8 = s8._$Co) || void 0 === o8 ? void 0 : o8[e7] : s8._$Cl;
+  const u5 = d4(i5) ? void 0 : i5._$litDirective$;
+  return (null == r7 ? void 0 : r7.constructor) !== u5 && (null === (n8 = null == r7 ? void 0 : r7._$AO) || void 0 === n8 || n8.call(r7, false), void 0 === u5 ? r7 = void 0 : (r7 = new u5(t5), r7._$AT(t5, s8, e7)), void 0 !== e7 ? (null !== (l6 = (h5 = s8)._$Co) && void 0 !== l6 ? l6 : h5._$Co = [])[e7] = r7 : s8._$Cl = r7), void 0 !== r7 && (i5 = S4(t5, r7._$AS(t5, i5.values), r7, e7)), i5;
+}
+var M2 = class {
+  constructor(t5, i5) {
+    this._$AV = [], this._$AN = void 0, this._$AD = t5, this._$AM = i5;
+  }
+  get parentNode() {
+    return this._$AM.parentNode;
+  }
+  get _$AU() {
+    return this._$AM._$AU;
+  }
+  u(t5) {
+    var i5;
+    const { el: { content: s8 }, parts: e7 } = this._$AD, o8 = (null !== (i5 = null == t5 ? void 0 : t5.creationScope) && void 0 !== i5 ? i5 : r6).importNode(s8, true);
+    C2.currentNode = o8;
+    let n8 = C2.nextNode(), l6 = 0, h5 = 0, u5 = e7[0];
+    for (; void 0 !== u5; ) {
+      if (l6 === u5.index) {
+        let i6;
+        2 === u5.type ? i6 = new R2(n8, n8.nextSibling, this, t5) : 1 === u5.type ? i6 = new u5.ctor(n8, u5.name, u5.strings, this, t5) : 6 === u5.type && (i6 = new Z2(n8, this, t5)), this._$AV.push(i6), u5 = e7[++h5];
+      }
+      l6 !== (null == u5 ? void 0 : u5.index) && (n8 = C2.nextNode(), l6++);
+    }
+    return C2.currentNode = r6, o8;
+  }
+  v(t5) {
+    let i5 = 0;
+    for (const s8 of this._$AV) void 0 !== s8 && (void 0 !== s8.strings ? (s8._$AI(t5, s8, i5), i5 += s8.strings.length - 2) : s8._$AI(t5[i5])), i5++;
+  }
+};
+var R2 = class _R {
+  constructor(t5, i5, s8, e7) {
+    var o8;
+    this.type = 2, this._$AH = A2, this._$AN = void 0, this._$AA = t5, this._$AB = i5, this._$AM = s8, this.options = e7, this._$Cp = null === (o8 = null == e7 ? void 0 : e7.isConnected) || void 0 === o8 || o8;
+  }
+  get _$AU() {
+    var t5, i5;
+    return null !== (i5 = null === (t5 = this._$AM) || void 0 === t5 ? void 0 : t5._$AU) && void 0 !== i5 ? i5 : this._$Cp;
+  }
+  get parentNode() {
+    let t5 = this._$AA.parentNode;
+    const i5 = this._$AM;
+    return void 0 !== i5 && 11 === (null == t5 ? void 0 : t5.nodeType) && (t5 = i5.parentNode), t5;
+  }
+  get startNode() {
+    return this._$AA;
+  }
+  get endNode() {
+    return this._$AB;
+  }
+  _$AI(t5, i5 = this) {
+    t5 = S4(this, t5, i5), d4(t5) ? t5 === A2 || null == t5 || "" === t5 ? (this._$AH !== A2 && this._$AR(), this._$AH = A2) : t5 !== this._$AH && t5 !== T2 && this._(t5) : void 0 !== t5._$litType$ ? this.g(t5) : void 0 !== t5.nodeType ? this.$(t5) : v2(t5) ? this.T(t5) : this._(t5);
+  }
+  k(t5) {
+    return this._$AA.parentNode.insertBefore(t5, this._$AB);
+  }
+  $(t5) {
+    this._$AH !== t5 && (this._$AR(), this._$AH = this.k(t5));
+  }
+  _(t5) {
+    this._$AH !== A2 && d4(this._$AH) ? this._$AA.nextSibling.data = t5 : this.$(r6.createTextNode(t5)), this._$AH = t5;
+  }
+  g(t5) {
+    var i5;
+    const { values: s8, _$litType$: e7 } = t5, o8 = "number" == typeof e7 ? this._$AC(t5) : (void 0 === e7.el && (e7.el = N2.createElement(P2(e7.h, e7.h[0]), this.options)), e7);
+    if ((null === (i5 = this._$AH) || void 0 === i5 ? void 0 : i5._$AD) === o8) this._$AH.v(s8);
+    else {
+      const t6 = new M2(o8, this), i6 = t6.u(this.options);
+      t6.v(s8), this.$(i6), this._$AH = t6;
+    }
+  }
+  _$AC(t5) {
+    let i5 = E2.get(t5.strings);
+    return void 0 === i5 && E2.set(t5.strings, i5 = new N2(t5)), i5;
+  }
+  T(t5) {
+    c4(this._$AH) || (this._$AH = [], this._$AR());
+    const i5 = this._$AH;
+    let s8, e7 = 0;
+    for (const o8 of t5) e7 === i5.length ? i5.push(s8 = new _R(this.k(u4()), this.k(u4()), this, this.options)) : s8 = i5[e7], s8._$AI(o8), e7++;
+    e7 < i5.length && (this._$AR(s8 && s8._$AB.nextSibling, e7), i5.length = e7);
+  }
+  _$AR(t5 = this._$AA.nextSibling, i5) {
+    var s8;
+    for (null === (s8 = this._$AP) || void 0 === s8 || s8.call(this, false, true, i5); t5 && t5 !== this._$AB; ) {
+      const i6 = t5.nextSibling;
+      t5.remove(), t5 = i6;
+    }
+  }
+  setConnected(t5) {
+    var i5;
+    void 0 === this._$AM && (this._$Cp = t5, null === (i5 = this._$AP) || void 0 === i5 || i5.call(this, t5));
+  }
+};
+var k2 = class {
+  constructor(t5, i5, s8, e7, o8) {
+    this.type = 1, this._$AH = A2, this._$AN = void 0, this.element = t5, this.name = i5, this._$AM = e7, this.options = o8, s8.length > 2 || "" !== s8[0] || "" !== s8[1] ? (this._$AH = Array(s8.length - 1).fill(new String()), this.strings = s8) : this._$AH = A2;
+  }
+  get tagName() {
+    return this.element.tagName;
+  }
+  get _$AU() {
+    return this._$AM._$AU;
+  }
+  _$AI(t5, i5 = this, s8, e7) {
+    const o8 = this.strings;
+    let n8 = false;
+    if (void 0 === o8) t5 = S4(this, t5, i5, 0), n8 = !d4(t5) || t5 !== this._$AH && t5 !== T2, n8 && (this._$AH = t5);
+    else {
+      const e8 = t5;
+      let l6, h5;
+      for (t5 = o8[0], l6 = 0; l6 < o8.length - 1; l6++) h5 = S4(this, e8[s8 + l6], i5, l6), h5 === T2 && (h5 = this._$AH[l6]), n8 || (n8 = !d4(h5) || h5 !== this._$AH[l6]), h5 === A2 ? t5 = A2 : t5 !== A2 && (t5 += (null != h5 ? h5 : "") + o8[l6 + 1]), this._$AH[l6] = h5;
+    }
+    n8 && !e7 && this.j(t5);
+  }
+  j(t5) {
+    t5 === A2 ? this.element.removeAttribute(this.name) : this.element.setAttribute(this.name, null != t5 ? t5 : "");
+  }
+};
+var H2 = class extends k2 {
+  constructor() {
+    super(...arguments), this.type = 3;
+  }
+  j(t5) {
+    this.element[this.name] = t5 === A2 ? void 0 : t5;
+  }
+};
+var I2 = s6 ? s6.emptyScript : "";
+var L2 = class extends k2 {
+  constructor() {
+    super(...arguments), this.type = 4;
+  }
+  j(t5) {
+    t5 && t5 !== A2 ? this.element.setAttribute(this.name, I2) : this.element.removeAttribute(this.name);
+  }
+};
+var z2 = class extends k2 {
+  constructor(t5, i5, s8, e7, o8) {
+    super(t5, i5, s8, e7, o8), this.type = 5;
+  }
+  _$AI(t5, i5 = this) {
+    var s8;
+    if ((t5 = null !== (s8 = S4(this, t5, i5, 0)) && void 0 !== s8 ? s8 : A2) === T2) return;
+    const e7 = this._$AH, o8 = t5 === A2 && e7 !== A2 || t5.capture !== e7.capture || t5.once !== e7.once || t5.passive !== e7.passive, n8 = t5 !== A2 && (e7 === A2 || o8);
+    o8 && this.element.removeEventListener(this.name, this, e7), n8 && this.element.addEventListener(this.name, this, t5), this._$AH = t5;
+  }
+  handleEvent(t5) {
+    var i5, s8;
+    "function" == typeof this._$AH ? this._$AH.call(null !== (s8 = null === (i5 = this.options) || void 0 === i5 ? void 0 : i5.host) && void 0 !== s8 ? s8 : this.element, t5) : this._$AH.handleEvent(t5);
+  }
+};
+var Z2 = class {
+  constructor(t5, i5, s8) {
+    this.element = t5, this.type = 6, this._$AN = void 0, this._$AM = i5, this.options = s8;
+  }
+  get _$AU() {
+    return this._$AM._$AU;
+  }
+  _$AI(t5) {
+    S4(this, t5);
+  }
+};
+var B2 = i4.litHtmlPolyfillSupport;
+null == B2 || B2(N2, R2), (null !== (t4 = i4.litHtmlVersions) && void 0 !== t4 ? t4 : i4.litHtmlVersions = []).push("2.8.0");
+var D = (t5, i5, s8) => {
+  var e7, o8;
+  const n8 = null !== (e7 = null == s8 ? void 0 : s8.renderBefore) && void 0 !== e7 ? e7 : i5;
+  let l6 = n8._$litPart$;
+  if (void 0 === l6) {
+    const t6 = null !== (o8 = null == s8 ? void 0 : s8.renderBefore) && void 0 !== o8 ? o8 : null;
+    n8._$litPart$ = l6 = new R2(i5.insertBefore(u4(), t6), t6, void 0, null != s8 ? s8 : {});
+  }
+  return l6._$AI(t5), l6;
+};
+
+// node_modules/lit-element/lit-element.js
+var l5;
+var o7;
+var s7 = class extends u3 {
+  constructor() {
+    super(...arguments), this.renderOptions = { host: this }, this._$Do = void 0;
+  }
+  createRenderRoot() {
+    var t5, e7;
+    const i5 = super.createRenderRoot();
+    return null !== (t5 = (e7 = this.renderOptions).renderBefore) && void 0 !== t5 || (e7.renderBefore = i5.firstChild), i5;
+  }
+  update(t5) {
+    const i5 = this.render();
+    this.hasUpdated || (this.renderOptions.isConnected = this.isConnected), super.update(t5), this._$Do = D(i5, this.renderRoot, this.renderOptions);
+  }
+  connectedCallback() {
+    var t5;
+    super.connectedCallback(), null === (t5 = this._$Do) || void 0 === t5 || t5.setConnected(true);
+  }
+  disconnectedCallback() {
+    var t5;
+    super.disconnectedCallback(), null === (t5 = this._$Do) || void 0 === t5 || t5.setConnected(false);
+  }
+  render() {
+    return T2;
+  }
+};
+s7.finalized = true, s7._$litElement$ = true, null === (l5 = globalThis.litElementHydrateSupport) || void 0 === l5 || l5.call(globalThis, { LitElement: s7 });
+var n7 = globalThis.litElementPolyfillSupport;
+null == n7 || n7({ LitElement: s7 });
+(null !== (o7 = globalThis.litElementVersions) && void 0 !== o7 ? o7 : globalThis.litElementVersions = []).push("3.3.3");
+
+// src/media.js
+var MOBILE_LANDSCAPE = "(max-width: 767px)";
+var TABLET_DOWN = "(max-width: 1199px)";
+var TABLET_UP = "(min-width: 768px)";
+var DESKTOP_UP = "(min-width: 1200px)";
+var LARGE_DESKTOP = "(min-width: 1600px)";
+
+// src/merch-card.css.js
+var styles = i3`
     :host {
         --consonant-merch-card-background-color: #fff;
         --consonant-merch-card-border: 1px solid var(--consonant-merch-card-border-color);
@@ -245,9 +8061,12 @@ Try polyfilling it using "@formatjs/intl-pluralrules"
     ::slotted([slot='price']) {
       color: var(--consonant-merch-card-price-color);
     }
-`,Js=()=>[y`
+`;
+var sizeStyles = () => {
+  const styles5 = [
+    i3`
       /* Tablet */
-      @media screen and ${$e(j)} {
+      @media screen and ${r4(TABLET_UP)} {
           :host([size='wide']),
           :host([size='super-wide']) {
               width: 100%;
@@ -256,14 +8075,39 @@ Try polyfilling it using "@formatjs/intl-pluralrules"
       }
 
       /* Laptop */
-      @media screen and ${$e(B)} {
+      @media screen and ${r4(DESKTOP_UP)} {
           :host([size='wide']) {
               grid-column: span 2;
           }
       }
-      `];var Lt=class extends I{constructor(){super(),this.size="m",this.alt="",this.loading="lazy"}render(){let{href:t}=this;return t?g`<a href="${t}">
+      `
+  ];
+  return styles5;
+};
+
+// src/merch-icon.js
+var MerchIcon = class extends s7 {
+  constructor() {
+    super();
+    this.size = "m";
+    this.alt = "";
+    this.loading = "lazy";
+  }
+  render() {
+    const { href } = this;
+    return href ? x2`<a href="${href}">
                   <img src="${this.src}" alt="${this.alt}" loading="${this.loading}" />
-              </a>`:g` <img src="${this.src}" alt="${this.alt}" loading="${this.loading}" />`}};u(Lt,"properties",{size:{type:String,attribute:!0},src:{type:String,attribute:!0},alt:{type:String,attribute:!0},href:{type:String,attribute:!0},loading:{type:String,attribute:!0}}),u(Lt,"styles",y`
+              </a>` : x2` <img src="${this.src}" alt="${this.alt}" loading="${this.loading}" />`;
+  }
+};
+__publicField(MerchIcon, "properties", {
+  size: { type: String, attribute: true },
+  src: { type: String, attribute: true },
+  alt: { type: String, attribute: true },
+  href: { type: String, attribute: true },
+  loading: { type: String, attribute: true }
+});
+__publicField(MerchIcon, "styles", i3`
         :host {
             --img-width: 32px;
             --img-height: 32px;
@@ -291,7 +8135,100 @@ Try polyfilling it using "@formatjs/intl-pluralrules"
             width: var(--mod-img-width, var(--img-width));
             height: var(--mod-img-height, var(--img-height));
         }
-    `);customElements.define("merch-icon",Lt);var Er,nt,Ar,wr,Rt,wn=class extends HTMLElement{constructor(){super();P(this,Er,"");P(this,nt);P(this,Ar,[]);P(this,wr,[]);P(this,Rt);k(this,Rt,sn(()=>{this.isConnected&&(this.parentElement.style.background=this.value,b(this,nt)?this.parentElement.style.borderRadius=b(this,nt):b(this,nt)===""&&(this.parentElement.style.borderRadius=""))},1))}static get observedAttributes(){return["colors","positions","angle","border-radius"]}get value(){let r=b(this,Ar).map((n,o)=>{let i=b(this,wr)[o]||"";return`${n} ${i}`}).join(", ");return`linear-gradient(${b(this,Er)}, ${r})`}connectedCallback(){b(this,Rt).call(this)}attributeChangedCallback(r,n,o){r==="border-radius"&&k(this,nt,o?.trim()),r==="colors"&&o?k(this,Ar,o?.split(",").map(i=>i.trim())??[]):r==="positions"&&o?k(this,wr,o?.split(",").map(i=>i.trim())??[]):r==="angle"&&k(this,Er,o?.trim()??""),b(this,Rt).call(this)}};Er=new WeakMap,nt=new WeakMap,Ar=new WeakMap,wr=new WeakMap,Rt=new WeakMap;customElements.define("merch-gradient",wn);var Ot=class extends I{constructor(){super(),this.planType=void 0,this.checked=!1,this.updatePlanType=this.updatePlanType.bind(this),this.handleChange=this.handleChange.bind(this)}connectedCallback(){super.connectedCallback(),this.addEventListener(gt,this.updatePlanType)}disconnectedCallback(){super.disconnectedCallback(),this.removeEventListener(gt,this.updatePlanType)}updatePlanType(t){if(t.target.tagName!=="SPAN")return;let r=t.target,n=r?.value?.[0];n&&(r.setAttribute("data-offer-type",n.offerType),r.closest("p").setAttribute("data-plan-type",n.planType))}handleChange(t){this.checked=t.target.checked,this.dispatchEvent(new CustomEvent("change",{detail:{checked:this.checked},bubbles:!0,composed:!0}))}render(){return g`<input
+    `);
+customElements.define("merch-icon", MerchIcon);
+
+// src/merch-gradient.js
+var _angle, _borderRadius, _colors, _positions, _updateParentBackground;
+var MerchGradient = class extends HTMLElement {
+  constructor() {
+    super();
+    __privateAdd(this, _angle, "");
+    __privateAdd(this, _borderRadius);
+    __privateAdd(this, _colors, []);
+    __privateAdd(this, _positions, []);
+    __privateAdd(this, _updateParentBackground);
+    __privateSet(this, _updateParentBackground, debounce(() => {
+      if (!this.isConnected) return;
+      this.parentElement.style.background = this.value;
+      if (__privateGet(this, _borderRadius)) {
+        this.parentElement.style.borderRadius = __privateGet(this, _borderRadius);
+      } else if (__privateGet(this, _borderRadius) === "") {
+        this.parentElement.style.borderRadius = "";
+      }
+    }, 1));
+  }
+  static get observedAttributes() {
+    return ["colors", "positions", "angle", "border-radius"];
+  }
+  get value() {
+    const stops = __privateGet(this, _colors).map((color, index) => {
+      const position = __privateGet(this, _positions)[index] || "";
+      return `${color} ${position}`;
+    }).join(", ");
+    return `linear-gradient(${__privateGet(this, _angle)}, ${stops})`;
+  }
+  connectedCallback() {
+    __privateGet(this, _updateParentBackground).call(this);
+  }
+  attributeChangedCallback(name, oldValue, newValue) {
+    if (name === "border-radius") {
+      __privateSet(this, _borderRadius, newValue?.trim());
+    }
+    if (name === "colors" && newValue) {
+      __privateSet(this, _colors, newValue?.split(",").map((color) => color.trim()) ?? []);
+    } else if (name === "positions" && newValue) {
+      __privateSet(this, _positions, newValue?.split(",").map((position) => position.trim()) ?? []);
+    } else if (name === "angle") {
+      __privateSet(this, _angle, newValue?.trim() ?? "");
+    }
+    __privateGet(this, _updateParentBackground).call(this);
+  }
+};
+_angle = new WeakMap();
+_borderRadius = new WeakMap();
+_colors = new WeakMap();
+_positions = new WeakMap();
+_updateParentBackground = new WeakMap();
+customElements.define("merch-gradient", MerchGradient);
+
+// src/merch-addon.js
+var MerchAddon = class extends s7 {
+  constructor() {
+    super();
+    this.planType = void 0;
+    this.checked = false;
+    this.updatePlanType = this.updatePlanType.bind(this);
+    this.handleChange = this.handleChange.bind(this);
+  }
+  connectedCallback() {
+    super.connectedCallback();
+    this.addEventListener(EVENT_TYPE_RESOLVED, this.updatePlanType);
+  }
+  disconnectedCallback() {
+    super.disconnectedCallback();
+    this.removeEventListener(EVENT_TYPE_RESOLVED, this.updatePlanType);
+  }
+  updatePlanType(e7) {
+    if (e7.target.tagName !== "SPAN") return;
+    const price2 = e7.target;
+    const offer = price2?.value?.[0];
+    if (!offer) return;
+    price2.setAttribute("data-offer-type", offer.offerType);
+    price2.closest("p").setAttribute("data-plan-type", offer.planType);
+  }
+  handleChange(e7) {
+    this.checked = e7.target.checked;
+    this.dispatchEvent(
+      new CustomEvent("change", {
+        detail: { checked: this.checked },
+        bubbles: true,
+        composed: true
+      })
+    );
+  }
+  render() {
+    return x2`<input
                 type="checkbox"
                 id="addon-checkbox"
                 part="checkbox"
@@ -300,7 +8237,14 @@ Try polyfilling it using "@formatjs/intl-pluralrules"
             />
             <label for="addon-checkbox" part="label">
                 <slot></slot>
-            </label>`}};u(Ot,"properties",{planType:{type:String,attribute:"plan-type",reflect:!0},checked:{type:Boolean,reflect:!0}}),u(Ot,"styles",y`
+            </label>`;
+  }
+};
+__publicField(MerchAddon, "properties", {
+  planType: { type: String, attribute: "plan-type", reflect: true },
+  checked: { type: Boolean, reflect: true }
+});
+__publicField(MerchAddon, "styles", i3`
         :host {
             display: flex;
             gap: 9px;
@@ -328,22 +8272,127 @@ Try polyfilling it using "@formatjs/intl-pluralrules"
         :host([plan-type='M2M']) ::slotted(p[data-plan-type='M2M']) {
             display: block;
         }
-    `);customElements.define("merch-addon",Ot);var Nt,_r=class _r{constructor(t){u(this,"card");P(this,Nt);this.card=t,this.insertVariantStyle()}getContainer(){return k(this,Nt,b(this,Nt)??this.card.closest('[class*="-merch-cards"]')??this.card.parentElement),b(this,Nt)}insertVariantStyle(){if(!_r.styleMap[this.card.variant]){_r.styleMap[this.card.variant]=!0;let t=document.createElement("style");t.innerHTML=this.getGlobalCSS(),document.head.appendChild(t)}}updateCardElementMinHeight(t,r){if(!t)return;let n=`--consonant-merch-card-${this.card.variant}-${r}-height`,o=Math.max(0,parseInt(window.getComputedStyle(t).height)||0),i=parseInt(this.getContainer().style.getPropertyValue(n))||0;o>i&&this.getContainer().style.setProperty(n,`${o}px`)}get badge(){let t;if(!(!this.card.badgeBackgroundColor||!this.card.badgeColor||!this.card.badgeText))return this.evergreen&&(t=`border: 1px solid ${this.card.badgeBackgroundColor}; border-right: none;`),g`
+    `);
+customElements.define("merch-addon", MerchAddon);
+
+// src/variants/variant-layout.js
+var _container;
+var _VariantLayout = class _VariantLayout {
+  constructor(card) {
+    __publicField(this, "card");
+    __privateAdd(this, _container);
+    this.card = card;
+    this.insertVariantStyle();
+  }
+  getContainer() {
+    __privateSet(this, _container, __privateGet(this, _container) ?? this.card.closest('[class*="-merch-cards"]') ?? this.card.parentElement);
+    return __privateGet(this, _container);
+  }
+  insertVariantStyle() {
+    if (!_VariantLayout.styleMap[this.card.variant]) {
+      _VariantLayout.styleMap[this.card.variant] = true;
+      const styles5 = document.createElement("style");
+      styles5.innerHTML = this.getGlobalCSS();
+      document.head.appendChild(styles5);
+    }
+  }
+  updateCardElementMinHeight(el, name) {
+    if (!el) return;
+    const elMinHeightPropertyName = `--consonant-merch-card-${this.card.variant}-${name}-height`;
+    const height = Math.max(
+      0,
+      parseInt(window.getComputedStyle(el).height) || 0
+    );
+    const maxMinHeight = parseInt(
+      this.getContainer().style.getPropertyValue(
+        elMinHeightPropertyName
+      )
+    ) || 0;
+    if (height > maxMinHeight) {
+      this.getContainer().style.setProperty(
+        elMinHeightPropertyName,
+        `${height}px`
+      );
+    }
+  }
+  get badge() {
+    let additionalStyles;
+    if (!this.card.badgeBackgroundColor || !this.card.badgeColor || !this.card.badgeText) {
+      return;
+    }
+    if (this.evergreen) {
+      additionalStyles = `border: 1px solid ${this.card.badgeBackgroundColor}; border-right: none;`;
+    }
+    return x2`
             <div
                 id="badge"
                 class="${this.card.variant}-badge"
                 style="background-color: ${this.card.badgeBackgroundColor};
                 color: ${this.card.badgeColor};
-                ${t}"
+                ${additionalStyles}"
             >
                 ${this.card.badgeText}
             </div>
-        `}get cardImage(){return g` <div class="image">
+        `;
+  }
+  get cardImage() {
+    return x2` <div class="image">
             <slot name="bg-image"></slot>
             ${this.badge}
-        </div>`}getGlobalCSS(){return""}get theme(){return document.querySelector("sp-theme")}get evergreen(){return this.card.classList.contains("intro-pricing")}get promoBottom(){return this.card.classList.contains("promo-bottom")}get headingSelector(){return'[slot="heading-xs"]'}get secureLabelFooter(){let t=this.card.secureLabel?g`<span class="secure-transaction-label"
+        </div>`;
+  }
+  /* c8 ignore next 3 */
+  getGlobalCSS() {
+    return "";
+  }
+  /* c8 ignore next 3 */
+  get theme() {
+    return document.querySelector("sp-theme");
+  }
+  get evergreen() {
+    return this.card.classList.contains("intro-pricing");
+  }
+  get promoBottom() {
+    return this.card.classList.contains("promo-bottom");
+  }
+  get headingSelector() {
+    return '[slot="heading-xs"]';
+  }
+  get secureLabelFooter() {
+    const secureLabel = this.card.secureLabel ? x2`<span class="secure-transaction-label"
                   >${this.card.secureLabel}</span
-              >`:"";return g`<footer>${t}<slot name="footer"></slot></footer>`}async adjustTitleWidth(){let t=this.card.getBoundingClientRect().width,r=this.card.badgeElement?.getBoundingClientRect().width||0;t===0||r===0||this.card.style.setProperty("--consonant-merch-card-heading-xs-max-width",`${Math.round(t-r-16)}px`)}postCardUpdateHook(){}connectedCallbackHook(){}disconnectedCallbackHook(){}renderLayout(){}get aemFragmentMapping(){return _n(this.card.variant)}};Nt=new WeakMap,u(_r,"styleMap",{});var N=_r;var ec=`
+              >` : "";
+    return x2`<footer>${secureLabel}<slot name="footer"></slot></footer>`;
+  }
+  async adjustTitleWidth() {
+    const cardWidth = this.card.getBoundingClientRect().width;
+    const badgeWidth = this.card.badgeElement?.getBoundingClientRect().width || 0;
+    if (cardWidth === 0 || badgeWidth === 0) return;
+    this.card.style.setProperty(
+      "--consonant-merch-card-heading-xs-max-width",
+      `${Math.round(cardWidth - badgeWidth - 16)}px`
+      // consonant-merch-spacing-xs
+    );
+  }
+  postCardUpdateHook() {
+  }
+  connectedCallbackHook() {
+  }
+  disconnectedCallbackHook() {
+  }
+  /* c8 ignore next 3 */
+  renderLayout() {
+  }
+  get aemFragmentMapping() {
+    return getFragmentMapping(this.card.variant);
+  }
+};
+_container = new WeakMap();
+__publicField(_VariantLayout, "styleMap", {});
+var VariantLayout = _VariantLayout;
+
+// src/variants/catalog.css.js
+var CSS = `
 :root {
   --consonant-merch-card-catalog-width: 276px;
   --consonant-merch-card-catalog-icon-size: 40px;
@@ -355,7 +8404,7 @@ Try polyfilling it using "@formatjs/intl-pluralrules"
     grid-template-columns: var(--consonant-merch-card-catalog-width);
 }
 
-@media screen and ${j} {
+@media screen and ${TABLET_UP} {
     :root {
       --consonant-merch-card-catalog-width: 302px;
     }
@@ -367,7 +8416,7 @@ Try polyfilling it using "@formatjs/intl-pluralrules"
     }
 }
 
-@media screen and ${B} {
+@media screen and ${DESKTOP_UP} {
     :root {
       --consonant-merch-card-catalog-width: 276px;
     }
@@ -378,7 +8427,7 @@ Try polyfilling it using "@formatjs/intl-pluralrules"
     }
 }
 
-@media screen and ${de} {
+@media screen and ${LARGE_DESKTOP} {
     .four-merch-cards.catalog {
         grid-template-columns: repeat(4, var(--consonant-merch-card-catalog-width));
     }
@@ -429,13 +8478,69 @@ merch-card[variant="catalog"] .payment-details {
   font-style: italic;
   font-weight: 400;
   line-height: var(--consonant-merch-card-body-line-height);
-}`;var tc={badge:!0,ctas:{slot:"footer",size:"m"},description:{tag:"div",slot:"body-xs"},mnemonics:{size:"l"},prices:{tag:"h3",slot:"heading-xs"},size:["wide","super-wide"],title:{tag:"h3",slot:"heading-xs"}},Mt=class extends N{constructor(r){super(r);u(this,"dispatchActionMenuToggle",()=>{this.card.dispatchEvent(new CustomEvent(Hn,{bubbles:!0,composed:!0,detail:{card:this.card.name,type:"action-menu"}}))});u(this,"toggleActionMenu",r=>{if(!this.actionMenuContentSlot||!r||r.type!=="click"&&r.code!=="Space"&&r.code!=="Enter")return;r.preventDefault(),this.actionMenuContentSlot.classList.toggle("hidden");let n=this.actionMenuContentSlot.classList.contains("hidden");n||this.dispatchActionMenuToggle(),this.setAriaExpanded(this.actionMenu,(!n).toString())});u(this,"toggleActionMenuFromCard",r=>{let n=r?.type==="mouseleave"?!0:void 0;this.card.blur(),this.actionMenu?.classList.remove("always-visible"),this.actionMenuContentSlot&&(n||this.dispatchActionMenuToggle(),this.actionMenuContentSlot.classList.toggle("hidden",n),this.setAriaExpanded(this.actionMenu,"false"))});u(this,"hideActionMenu",r=>{this.actionMenuContentSlot?.classList.add("hidden"),this.setAriaExpanded(this.actionMenu,"false")})}get actionMenu(){return this.card.shadowRoot.querySelector(".action-menu")}get actionMenuContentSlot(){return this.card.shadowRoot.querySelector('slot[name="action-menu-content"]')}renderLayout(){return g` <div class="body">
+}`;
+
+// src/variants/catalog.js
+var CATALOG_AEM_FRAGMENT_MAPPING = {
+  badge: true,
+  ctas: { slot: "footer", size: "m" },
+  description: { tag: "div", slot: "body-xs" },
+  mnemonics: { size: "l" },
+  prices: { tag: "h3", slot: "heading-xs" },
+  size: ["wide", "super-wide"],
+  title: { tag: "h3", slot: "heading-xs" }
+};
+var Catalog = class extends VariantLayout {
+  constructor(card) {
+    super(card);
+    __publicField(this, "dispatchActionMenuToggle", () => {
+      this.card.dispatchEvent(
+        new CustomEvent(EVENT_MERCH_CARD_ACTION_MENU_TOGGLE, {
+          bubbles: true,
+          composed: true,
+          detail: {
+            card: this.card.name,
+            type: "action-menu"
+          }
+        })
+      );
+    });
+    __publicField(this, "toggleActionMenu", (e7) => {
+      if (!this.actionMenuContentSlot || !e7 || e7.type !== "click" && e7.code !== "Space" && e7.code !== "Enter") return;
+      e7.preventDefault();
+      this.actionMenuContentSlot.classList.toggle("hidden");
+      const isHidden = this.actionMenuContentSlot.classList.contains("hidden");
+      if (!isHidden) this.dispatchActionMenuToggle();
+      this.setAriaExpanded(this.actionMenu, (!isHidden).toString());
+    });
+    __publicField(this, "toggleActionMenuFromCard", (e7) => {
+      const retract = e7?.type === "mouseleave" ? true : void 0;
+      this.card.blur();
+      this.actionMenu?.classList.remove("always-visible");
+      if (!this.actionMenuContentSlot) return;
+      if (!retract) this.dispatchActionMenuToggle();
+      this.actionMenuContentSlot.classList.toggle("hidden", retract);
+      this.setAriaExpanded(this.actionMenu, "false");
+    });
+    __publicField(this, "hideActionMenu", (e7) => {
+      this.actionMenuContentSlot?.classList.add("hidden");
+      this.setAriaExpanded(this.actionMenu, "false");
+    });
+  }
+  get actionMenu() {
+    return this.card.shadowRoot.querySelector(".action-menu");
+  }
+  get actionMenuContentSlot() {
+    return this.card.shadowRoot.querySelector('slot[name="action-menu-content"]');
+  }
+  renderLayout() {
+    return x2` <div class="body">
                 <div class="top-section">
                     <slot name="icons"></slot> ${this.badge}
                     <div
                         class="action-menu
-                ${fs()&&this.card.actionMenu?"always-visible":""}
-                ${this.card.actionMenu?"invisible":"hidden"}"
+                ${isMobileOrTablet() && this.card.actionMenu ? "always-visible" : ""}
+                ${!this.card.actionMenu ? "hidden" : "invisible"}"
                         @click="${this.toggleActionMenu}"
                         @keypress="${this.toggleActionMenu}"
                         tabindex="0"
@@ -446,21 +8551,36 @@ merch-card[variant="catalog"] .payment-details {
                 <slot
                     name="action-menu-content"
                     class="action-menu-content
-            ${this.card.actionMenuContent?"":"hidden"}"
+            ${!this.card.actionMenuContent ? "hidden" : ""}"
                     @focusout="${this.hideActionMenu}"
                     >${this.card.actionMenuContent}
                 </slot>
                 <slot name="heading-xs"></slot>
                 <slot name="heading-m"></slot>
                 <slot name="body-xxs"></slot>
-                ${this.promoBottom?"":g`<slot name="promo-text"></slot
-                          ><slot name="callout-content"></slot>`}
+                ${!this.promoBottom ? x2`<slot name="promo-text"></slot
+                          ><slot name="callout-content"></slot>` : ""}
                 <slot name="body-xs"></slot>
-                ${this.promoBottom?g`<slot name="promo-text"></slot
-                          ><slot name="callout-content"></slot>`:""}
+                ${this.promoBottom ? x2`<slot name="promo-text"></slot
+                          ><slot name="callout-content"></slot>` : ""}
             </div>
             ${this.secureLabelFooter}
-            <slot></slot>`}getGlobalCSS(){return ec}setAriaExpanded(r,n){r.setAttribute("aria-expanded",n)}connectedCallbackHook(){this.card.addEventListener("mouseleave",this.toggleActionMenuFromCard)}disconnectedCallbackHook(){this.card.removeEventListener("mouseleave",this.toggleActionMenuFromCard)}};u(Mt,"variantStyle",y`
+            <slot></slot>`;
+  }
+  getGlobalCSS() {
+    return CSS;
+  }
+  setAriaExpanded(element, value) {
+    element.setAttribute("aria-expanded", value);
+  }
+  connectedCallbackHook() {
+    this.card.addEventListener("mouseleave", this.toggleActionMenuFromCard);
+  }
+  disconnectedCallbackHook() {
+    this.card.removeEventListener("mouseleave", this.toggleActionMenuFromCard);
+  }
+};
+__publicField(Catalog, "variantStyle", i3`
         :host([variant='catalog']) {
             min-height: 330px;
             width: var(--consonant-merch-card-catalog-width);
@@ -478,7 +8598,10 @@ merch-card[variant="catalog"] .payment-details {
             margin-left: var(--consonant-merch-spacing-xxs);
             box-sizing: border-box;
         }
-    `);var rc=`
+    `);
+
+// src/variants/image.css.js
+var CSS2 = `
 :root {
   --consonant-merch-card-image-width: 300px;
 }
@@ -490,7 +8613,7 @@ merch-card[variant="catalog"] .payment-details {
   grid-template-columns: var(--consonant-merch-card-image-width);
 }
 
-@media screen and ${j} {
+@media screen and ${TABLET_UP} {
   .two-merch-cards.image,
   .three-merch-cards.image,
   .four-merch-cards.image {
@@ -498,7 +8621,7 @@ merch-card[variant="catalog"] .payment-details {
   }
 }
 
-@media screen and ${B} {
+@media screen and ${DESKTOP_UP} {
   :root {
     --consonant-merch-card-image-width: 378px;
     --consonant-merch-card-image-width-4clm: 276px;
@@ -512,24 +8635,40 @@ merch-card[variant="catalog"] .payment-details {
       grid-template-columns: repeat(4, var(--consonant-merch-card-image-width-4clm));
   }
 }
-`;var Sn=class extends N{constructor(t){super(t)}getGlobalCSS(){return rc}renderLayout(){return g`${this.cardImage}
+`;
+
+// src/variants/image.js
+var Image2 = class extends VariantLayout {
+  constructor(card) {
+    super(card);
+  }
+  getGlobalCSS() {
+    return CSS2;
+  }
+  renderLayout() {
+    return x2`${this.cardImage}
     <div class="body">
         <slot name="icons"></slot>
         <slot name="heading-xs"></slot>
         <slot name="body-xxs"></slot>
-        ${this.promoBottom?g`<slot name="body-xs"></slot><slot name="promo-text"></slot>`:g`<slot name="promo-text"></slot><slot name="body-xs"></slot>`}
+        ${this.promoBottom ? x2`<slot name="body-xs"></slot><slot name="promo-text"></slot>` : x2`<slot name="promo-text"></slot><slot name="body-xs"></slot>`}
     </div>
-    ${this.evergreen?g`
+    ${this.evergreen ? x2`
               <div
                   class="detail-bg-container"
-                  style="background: ${this.card.detailBg}"
+                  style="background: ${this.card["detailBg"]}"
               >
                   <slot name="detail-bg"></slot>
               </div>
-          `:g`
+          ` : x2`
               <hr />
               ${this.secureLabelFooter}
-          `}`}};var nc=`
+          `}`;
+  }
+};
+
+// src/variants/inline-heading.css.js
+var CSS3 = `
 :root {
   --consonant-merch-card-inline-heading-width: 300px;
 }
@@ -541,7 +8680,7 @@ merch-card[variant="catalog"] .payment-details {
     grid-template-columns: var(--consonant-merch-card-inline-heading-width);
 }
 
-@media screen and ${j} {
+@media screen and ${TABLET_UP} {
   .two-merch-cards.inline-heading,
   .three-merch-cards.inline-heading,
   .four-merch-cards.inline-heading {
@@ -549,7 +8688,7 @@ merch-card[variant="catalog"] .payment-details {
   }
 }
 
-@media screen and ${B} {
+@media screen and ${DESKTOP_UP} {
   :root {
     --consonant-merch-card-inline-heading-width: 378px;
   }
@@ -560,12 +8699,23 @@ merch-card[variant="catalog"] .payment-details {
   }
 }
 
-@media screen and ${de} {
+@media screen and ${LARGE_DESKTOP} {
   .four-merch-cards.inline-heading {
       grid-template-columns: repeat(4, var(--consonant-merch-card-inline-heading-width));
   }
 }
-`;var Tn=class extends N{constructor(t){super(t)}getGlobalCSS(){return nc}renderLayout(){return g` ${this.badge}
+`;
+
+// src/variants/inline-heading.js
+var InlineHeading = class extends VariantLayout {
+  constructor(card) {
+    super(card);
+  }
+  getGlobalCSS() {
+    return CSS3;
+  }
+  renderLayout() {
+    return x2` ${this.badge}
     <div class="body">
         <div class="top-section">
             <slot name="icons"></slot>
@@ -573,7 +8723,12 @@ merch-card[variant="catalog"] .payment-details {
         </div>
         <slot name="body-xs"></slot>
     </div>
-    ${this.card.customHr?"":g`<hr />`} ${this.secureLabelFooter}`}};var oc=`
+    ${!this.card.customHr ? x2`<hr />` : ""} ${this.secureLabelFooter}`;
+  }
+};
+
+// src/variants/mini-compare-chart.css.js
+var CSS4 = `
   :root {
     --consonant-merch-card-mini-compare-chart-icon-size: 32px;
     --consonant-merch-card-mini-compare-mobile-cta-font-size: 15px;
@@ -799,7 +8954,7 @@ merch-card[variant="catalog"] .payment-details {
 }
 
 /* mini compare mobile */ 
-@media screen and ${He} {
+@media screen and ${MOBILE_LANDSCAPE} {
   :root {
     --consonant-merch-card-mini-compare-chart-width: 302px;
     --consonant-merch-card-mini-compare-chart-wide-width: 302px;
@@ -842,7 +8997,7 @@ merch-card[variant="catalog"] .payment-details {
   }
 }
 
-@media screen and ${An} {
+@media screen and ${TABLET_DOWN} {
   merch-card[variant="mini-compare-chart"] [slot='heading-m'] {
     font-size: var(--consonant-merch-card-body-s-font-size);
     line-height: var(--consonant-merch-card-body-s-line-height);
@@ -868,7 +9023,7 @@ merch-card[variant="catalog"] .payment-details {
     line-height: var(--consonant-merch-card-body-xs-line-height);
   }
 }
-@media screen and ${j} {
+@media screen and ${TABLET_UP} {
   :root {
     --consonant-merch-card-mini-compare-chart-width: 302px;
     --consonant-merch-card-mini-compare-chart-wide-width: 302px;
@@ -886,7 +9041,7 @@ merch-card[variant="catalog"] .payment-details {
 }
 
 /* desktop */
-@media screen and ${B} {
+@media screen and ${DESKTOP_UP} {
   :root {
     --consonant-merch-card-mini-compare-chart-width: 378px;
     --consonant-merch-card-mini-compare-chart-wide-width: 484px;  
@@ -907,7 +9062,7 @@ merch-card[variant="catalog"] .payment-details {
   }
 }
 
-@media screen and ${de} {
+@media screen and ${LARGE_DESKTOP} {
   .four-merch-cards.mini-compare-chart {
       grid-template-columns: repeat(4, var(--consonant-merch-card-mini-compare-chart-width));
   }
@@ -944,16 +9099,162 @@ merch-card .footer-row-cell:nth-child(7) {
 merch-card .footer-row-cell:nth-child(8) {
   min-height: var(--consonant-merch-card-footer-row-8-min-height);
 }
-`;var Xh=32,$t=class extends N{constructor(r){super(r);u(this,"getRowMinHeightPropertyName",r=>`--consonant-merch-card-footer-row-${r}-min-height`);u(this,"getMiniCompareFooter",()=>{let r=this.card.secureLabel?g`<slot name="secure-transaction-label">
+`;
+
+// src/variants/mini-compare-chart.js
+var FOOTER_ROW_MIN_HEIGHT = 32;
+var MiniCompareChart = class extends VariantLayout {
+  constructor(card) {
+    super(card);
+    __publicField(this, "getRowMinHeightPropertyName", (index) => `--consonant-merch-card-footer-row-${index}-min-height`);
+    // For addon tiitle is it ok if we hardocde it in card settings?
+    // For addon is it ok if we hardcode it as placeholder key?
+    // How to add the price?
+    __publicField(this, "getMiniCompareFooter", () => {
+      const secureLabel = this.card.secureLabel ? x2`<slot name="secure-transaction-label">
               <span class="secure-transaction-label"
                   >${this.card.secureLabel}</span
               ></slot
-          >`:g`<slot name="secure-transaction-label"></slot>`;return g`<footer>${r}<slot name="footer"></slot></footer>`})}getGlobalCSS(){return oc}adjustMiniCompareBodySlots(){if(this.card.getBoundingClientRect().width<=2)return;this.updateCardElementMinHeight(this.card.shadowRoot.querySelector(".top-section"),"top-section");let r=["heading-m","body-m","heading-m-price","body-xxs","price-commitment","offers","promo-text","callout-content","addon"];this.card.classList.contains("bullet-list")&&r.push("footer-rows"),r.forEach(o=>this.updateCardElementMinHeight(this.card.shadowRoot.querySelector(`slot[name="${o}"]`),o)),this.updateCardElementMinHeight(this.card.shadowRoot.querySelector("footer"),"footer");let n=this.card.shadowRoot.querySelector(".mini-compare-chart-badge");n&&n.textContent!==""&&this.getContainer().style.setProperty("--consonant-merch-card-mini-compare-chart-top-section-mobile-height","32px")}adjustMiniCompareFooterRows(){if(this.card.getBoundingClientRect().width===0)return;let r=this.card.querySelector('[slot="footer-rows"] ul');!r||!r.children||[...r.children].forEach((n,o)=>{let i=Math.max(Xh,parseFloat(window.getComputedStyle(n).height)||0),a=parseFloat(this.getContainer().style.getPropertyValue(this.getRowMinHeightPropertyName(o+1)))||0;i>a&&this.getContainer().style.setProperty(this.getRowMinHeightPropertyName(o+1),`${i}px`)})}removeEmptyRows(){this.card.querySelectorAll(".footer-row-cell").forEach(n=>{let o=n.querySelector(".footer-row-cell-description");o&&!o.textContent.trim()&&n.remove()})}get mainPrice(){return this.card.querySelector(`[slot="heading-m-price"] ${J}[data-template="price"]`)}get headingMPriceSlot(){return this.card.shadowRoot.querySelector('slot[name="heading-m-price"]')?.assignedElements()[0]}toggleAddon(r){let n=this.mainPrice,o=this.headingMPriceSlot;if(!n&&o){let i=r?.getAttribute("plan-type"),a=null;if(r&&i&&(a=r.querySelector(`p[data-plan-type="${i}"]`)?.querySelector('span[is="inline-price"]')),this.card.querySelectorAll('p[slot="heading-m-price"]').forEach(s=>s.remove()),r.checked){if(a){let s=te("p",{class:"addon-heading-m-price-addon",slot:"heading-m-price"},a.innerHTML);this.card.appendChild(s)}}else{let s=te("p",{class:"card-heading",id:"free",slot:"heading-m-price"},"Free");this.card.appendChild(s)}}}async adjustAddon(){await this.card.updateComplete;let r=this.card.addon;if(!r)return;let n=this.mainPrice,o=this.card.planType;n&&(await n.onceSettled(),o=n.value?.[0]?.planType),o&&(r.planType=o)}renderLayout(){return g` <div class="top-section${this.badge?" badge":""}">
+          >` : x2`<slot name="secure-transaction-label"></slot>`;
+      return x2`<footer>${secureLabel}<slot name="footer"></slot></footer>`;
+    });
+  }
+  getGlobalCSS() {
+    return CSS4;
+  }
+  adjustMiniCompareBodySlots() {
+    if (this.card.getBoundingClientRect().width <= 2) return;
+    this.updateCardElementMinHeight(
+      this.card.shadowRoot.querySelector(".top-section"),
+      "top-section"
+    );
+    let slots = [
+      "heading-m",
+      "body-m",
+      "heading-m-price",
+      "body-xxs",
+      "price-commitment",
+      "offers",
+      "promo-text",
+      "callout-content",
+      "addon"
+    ];
+    if (this.card.classList.contains("bullet-list")) {
+      slots.push("footer-rows");
+    }
+    slots.forEach(
+      (slot) => this.updateCardElementMinHeight(
+        this.card.shadowRoot.querySelector(`slot[name="${slot}"]`),
+        slot
+      )
+    );
+    this.updateCardElementMinHeight(
+      this.card.shadowRoot.querySelector("footer"),
+      "footer"
+    );
+    const badge = this.card.shadowRoot.querySelector(
+      ".mini-compare-chart-badge"
+    );
+    if (badge && badge.textContent !== "") {
+      this.getContainer().style.setProperty(
+        "--consonant-merch-card-mini-compare-chart-top-section-mobile-height",
+        "32px"
+      );
+    }
+  }
+  adjustMiniCompareFooterRows() {
+    if (this.card.getBoundingClientRect().width === 0) return;
+    const footerRows = this.card.querySelector('[slot="footer-rows"] ul');
+    if (!footerRows || !footerRows.children) return;
+    [...footerRows.children].forEach((el, index) => {
+      const height = Math.max(
+        FOOTER_ROW_MIN_HEIGHT,
+        parseFloat(window.getComputedStyle(el).height) || 0
+      );
+      const maxMinHeight = parseFloat(
+        this.getContainer().style.getPropertyValue(
+          this.getRowMinHeightPropertyName(index + 1)
+        )
+      ) || 0;
+      if (height > maxMinHeight) {
+        this.getContainer().style.setProperty(
+          this.getRowMinHeightPropertyName(index + 1),
+          `${height}px`
+        );
+      }
+    });
+  }
+  removeEmptyRows() {
+    const footerRows = this.card.querySelectorAll(".footer-row-cell");
+    footerRows.forEach((row) => {
+      const rowDescription = row.querySelector(".footer-row-cell-description");
+      if (rowDescription) {
+        const isEmpty = !rowDescription.textContent.trim();
+        if (isEmpty) {
+          row.remove();
+        }
+      }
+    });
+  }
+  get mainPrice() {
+    const price2 = this.card.querySelector(
+      `[slot="heading-m-price"] ${SELECTOR_MAS_INLINE_PRICE}[data-template="price"]`
+    );
+    return price2;
+  }
+  get headingMPriceSlot() {
+    return this.card.shadowRoot.querySelector('slot[name="heading-m-price"]')?.assignedElements()[0];
+  }
+  toggleAddon(merchAddon) {
+    const mainPrice = this.mainPrice;
+    const headingMPriceSlot = this.headingMPriceSlot;
+    if (!mainPrice && headingMPriceSlot) {
+      const planType = merchAddon?.getAttribute("plan-type");
+      let visibleSpan = null;
+      if (merchAddon && planType) {
+        const matchingP = merchAddon.querySelector(`p[data-plan-type="${planType}"]`);
+        visibleSpan = matchingP?.querySelector('span[is="inline-price"]');
+      }
+      this.card.querySelectorAll('p[slot="heading-m-price"]').forEach((p3) => p3.remove());
+      if (merchAddon.checked) {
+        if (visibleSpan) {
+          const replacementP = createTag(
+            "p",
+            { class: "addon-heading-m-price-addon", slot: "heading-m-price" },
+            visibleSpan.innerHTML
+          );
+          this.card.appendChild(replacementP);
+        }
+      } else {
+        const freeP = createTag(
+          "p",
+          { class: "card-heading", id: "free", slot: "heading-m-price" },
+          "Free"
+        );
+        this.card.appendChild(freeP);
+      }
+    }
+  }
+  async adjustAddon() {
+    await this.card.updateComplete;
+    const addon = this.card.addon;
+    if (!addon) return;
+    const price2 = this.mainPrice;
+    let planType = this.card.planType;
+    if (price2) {
+      await price2.onceSettled();
+      planType = price2.value?.[0]?.planType;
+    }
+    if (!planType) return;
+    addon.planType = planType;
+  }
+  renderLayout() {
+    return x2` <div class="top-section${this.badge ? " badge" : ""}">
             <slot name="icons"></slot> ${this.badge}
         </div>
         <slot name="heading-m"></slot>
-        ${this.card.classList.contains("bullet-list")?g`<slot name="heading-m-price"></slot>
-          <slot name="body-m"></slot>`:g`<slot name="body-m"></slot>
+        ${this.card.classList.contains("bullet-list") ? x2`<slot name="heading-m-price"></slot>
+          <slot name="body-m"></slot>` : x2`<slot name="body-m"></slot>
           <slot name="heading-m-price"></slot>`}
         <slot name="body-xxs"></slot>
         <slot name="price-commitment"></slot>
@@ -962,7 +9263,20 @@ merch-card .footer-row-cell:nth-child(8) {
         <slot name="callout-content"></slot>
         <slot name="addon"></slot>
         ${this.getMiniCompareFooter()}
-        <slot name="footer-rows"><slot name="body-s"></slot></slot>`}async postCardUpdateHook(){await Promise.all(this.card.prices.map(r=>r.onceSettled())),await this.adjustAddon(),At()?this.removeEmptyRows():(this.adjustMiniCompareBodySlots(),this.adjustMiniCompareFooterRows())}};u($t,"variantStyle",y`
+        <slot name="footer-rows"><slot name="body-s"></slot></slot>`;
+  }
+  async postCardUpdateHook() {
+    await Promise.all(this.card.prices.map((price2) => price2.onceSettled()));
+    await this.adjustAddon();
+    if (!isMobile()) {
+      this.adjustMiniCompareBodySlots();
+      this.adjustMiniCompareFooterRows();
+    } else {
+      this.removeEmptyRows();
+    }
+  }
+};
+__publicField(MiniCompareChart, "variantStyle", i3`
     :host([variant='mini-compare-chart']) > slot:not([name='icons']) {
         display: block;
     }
@@ -995,7 +9309,7 @@ merch-card .footer-row-cell:nth-child(8) {
       color: var(--merch-color-grey-700);
     }
 
-    @media screen and ${$e(An)} {
+    @media screen and ${r4(TABLET_DOWN)} {
         [class*'-merch-cards'] :host([variant='mini-compare-chart']) footer {
             flex-direction: column;
             align-items: stretch;
@@ -1003,7 +9317,7 @@ merch-card .footer-row-cell:nth-child(8) {
         }
     }
 
-    @media screen and ${$e(B)} {
+    @media screen and ${r4(DESKTOP_UP)} {
         :host([variant='mini-compare-chart']) footer {
             padding: var(--consonant-merch-spacing-xs)
                 var(--consonant-merch-spacing-s)
@@ -1059,7 +9373,10 @@ merch-card .footer-row-cell:nth-child(8) {
     :host([variant='mini-compare-chart']) slot[name='footer-rows'] {
         justify-content: flex-start;
     }
-  `);var ic=`
+  `);
+
+// src/variants/plans.css.js
+var CSS5 = `
 :root {
     --consonant-merch-card-plans-width: 300px;
     --consonant-merch-card-plans-icon-size: 40px;
@@ -1233,7 +9550,7 @@ merch-card[variant^="plans"] merch-addon span[data-template="price"] {
 }
 
 /* Mobile */
-@media screen and ${He} {
+@media screen and ${MOBILE_LANDSCAPE} {
     merch-whats-included merch-mnemonic-list,
     merch-whats-included [slot="heading"] {
         width: 100%;
@@ -1261,7 +9578,7 @@ merch-card[variant^="plans"]:not([size]) {
 }
 
 /* Tablet */
-@media screen and ${j} {
+@media screen and ${TABLET_UP} {
   :root {
     --consonant-merch-card-plans-width: 302px;
   }
@@ -1276,7 +9593,7 @@ merch-card[variant^="plans"]:not([size]) {
 }
 
 /* desktop */
-@media screen and ${B} {
+@media screen and ${DESKTOP_UP} {
   :root {
     --consonant-merch-card-plans-width: 276px;
   }
@@ -1287,16 +9604,174 @@ merch-card[variant^="plans"]:not([size]) {
 }
 
 /* Large desktop */
-    @media screen and ${de} {
+    @media screen and ${LARGE_DESKTOP} {
     .four-merch-cards.plans {
         grid-template-columns: repeat(4, var(--consonant-merch-card-plans-width));
     }
 }
-`;var Cn={title:{tag:"p",slot:"heading-xs"},prices:{tag:"p",slot:"heading-m"},promoText:{tag:"p",slot:"promo-text"},description:{tag:"div",slot:"body-xs"},mnemonics:{size:"l"},callout:{tag:"div",slot:"callout-content"},quantitySelect:{tag:"div",slot:"quantity-select"},stockOffer:!0,addon:!0,secureLabel:!0,planType:!0,badge:{tag:"div",slot:"badge"},allowedBadgeColors:["spectrum-yellow-300-plans","spectrum-gray-300-plans","spectrum-gray-700-plans","spectrum-green-900-plans",,],allowedBorderColors:["spectrum-yellow-300-plans","spectrum-gray-300-plans",,],borderColor:{attribute:"border-color"},size:["wide","super-wide"],whatsIncluded:{tag:"div",slot:"whats-included"},ctas:{slot:"footer",size:"m"},style:"consonant"},ac={...function(){let{whatsIncluded:e,...t}=Cn;return t}(),title:{tag:"p",slot:"heading-s"},subtitle:{tag:"p",slot:"subtitle"},secureLabel:!1},sc={...function(){let{whatsIncluded:e,size:t,quantitySelect:r,...n}=Cn;return n}()},pe=class extends N{constructor(t){super(t),this.adaptForMobile=this.adaptForMobile.bind(this)}priceOptionsProvider(t,r){t.dataset.template===to&&(r.displayPlanType=this.card?.settings?.displayPlanType??!1)}getGlobalCSS(){return ic}adaptForMobile(){if(!this.card.closest("merch-card-collection,overlay-trigger,.two-merch-cards,.three-merch-cards,.four-merch-cards")){this.card.removeAttribute("size");return}let t=this.card.shadowRoot,r=t.querySelector("footer"),n=this.card.getAttribute("size"),o=t.querySelector("footer #stock-checkbox"),i=t.querySelector(".body #stock-checkbox"),a=t.querySelector(".body");if(!n){r?.classList.remove("wide-footer"),o&&o.remove();return}let s=At();if(r?.classList.toggle("wide-footer",!s),s&&o){i?o.remove():a.appendChild(o);return}!s&&i&&(o?i.remove():r.prepend(i))}postCardUpdateHook(){this.adaptForMobile(),this.adjustTitleWidth(),this.adjustLegal(),this.adjustAddon()}get headingM(){return this.card.querySelector('[slot="heading-m"]')}get mainPrice(){return this.headingM.querySelector(`${J}[data-template="price"]`)}get divider(){return this.card.variant==="plans-education"?g`<div class="divider"></div>`:""}async adjustLegal(){if(await this.card.updateComplete,this.legal)return;let t=this.card.querySelector('[slot="heading-m"]');if(!t)return;let r=t.querySelector(`${J}[data-template="price"]`),n=r.cloneNode(!0);this.legal=n,await r.onceSettled(),r?.options&&(r.options.displayPerUnit&&(r.dataset.displayPerUnit="false"),r.options.displayTax&&(r.dataset.displayTax="false"),r.options.displayPlanType&&(r.dataset.displayPlanType="false"),n.setAttribute("data-template","legal"),t.appendChild(n))}async adjustAddon(){await this.card.updateComplete;let t=this.card.addon;if(!t)return;let r=this.mainPrice;if(!r)return;await r.onceSettled();let n=r.value?.[0]?.planType;n&&(t.planType=n)}get stockCheckbox(){return this.card.checkboxLabel?g`<label id="stock-checkbox">
+`;
+
+// src/variants/plans.js
+var PLANS_AEM_FRAGMENT_MAPPING = {
+  title: { tag: "p", slot: "heading-xs" },
+  prices: { tag: "p", slot: "heading-m" },
+  promoText: { tag: "p", slot: "promo-text" },
+  description: { tag: "div", slot: "body-xs" },
+  mnemonics: { size: "l" },
+  callout: { tag: "div", slot: "callout-content" },
+  quantitySelect: { tag: "div", slot: "quantity-select" },
+  stockOffer: true,
+  addon: true,
+  secureLabel: true,
+  planType: true,
+  badge: { tag: "div", slot: "badge" },
+  allowedBadgeColors: [
+    "spectrum-yellow-300-plans",
+    "spectrum-gray-300-plans",
+    "spectrum-gray-700-plans",
+    "spectrum-green-900-plans",
+    ,
+  ],
+  allowedBorderColors: [
+    "spectrum-yellow-300-plans",
+    "spectrum-gray-300-plans",
+    ,
+  ],
+  borderColor: { attribute: "border-color" },
+  size: ["wide", "super-wide"],
+  whatsIncluded: { tag: "div", slot: "whats-included" },
+  ctas: { slot: "footer", size: "m" },
+  style: "consonant"
+};
+var PLANS_EDUCATION_AEM_FRAGMENT_MAPPING = {
+  ...function() {
+    const { whatsIncluded, ...rest } = PLANS_AEM_FRAGMENT_MAPPING;
+    return rest;
+  }(),
+  title: { tag: "p", slot: "heading-s" },
+  subtitle: { tag: "p", slot: "subtitle" },
+  secureLabel: false
+};
+var PLANS_STUDENTS_AEM_FRAGMENT_MAPPING = {
+  ...function() {
+    const { whatsIncluded, size, quantitySelect, ...rest } = PLANS_AEM_FRAGMENT_MAPPING;
+    return rest;
+  }()
+};
+var Plans = class extends VariantLayout {
+  constructor(card) {
+    super(card);
+    this.adaptForMobile = this.adaptForMobile.bind(this);
+  }
+  priceOptionsProvider(element, options) {
+    if (element.dataset.template !== TEMPLATE_PRICE_LEGAL) return;
+    options.displayPlanType = this.card?.settings?.displayPlanType ?? false;
+  }
+  getGlobalCSS() {
+    return CSS5;
+  }
+  adaptForMobile() {
+    if (!this.card.closest(
+      "merch-card-collection,overlay-trigger,.two-merch-cards,.three-merch-cards,.four-merch-cards"
+    )) {
+      this.card.removeAttribute("size");
+      return;
+    }
+    const shadowRoot = this.card.shadowRoot;
+    const footer = shadowRoot.querySelector("footer");
+    const size = this.card.getAttribute("size");
+    const stockInFooter = shadowRoot.querySelector(
+      "footer #stock-checkbox"
+    );
+    const stockInBody = shadowRoot.querySelector(".body #stock-checkbox");
+    const body = shadowRoot.querySelector(".body");
+    if (!size) {
+      footer?.classList.remove("wide-footer");
+      if (stockInFooter) stockInFooter.remove();
+      return;
+    }
+    const mobile = isMobile();
+    footer?.classList.toggle("wide-footer", !mobile);
+    if (mobile && stockInFooter) {
+      stockInBody ? stockInFooter.remove() : body.appendChild(stockInFooter);
+      return;
+    }
+    if (!mobile && stockInBody) {
+      stockInFooter ? stockInBody.remove() : footer.prepend(stockInBody);
+    }
+  }
+  postCardUpdateHook() {
+    this.adaptForMobile();
+    this.adjustTitleWidth();
+    this.adjustLegal();
+    this.adjustAddon();
+  }
+  get headingM() {
+    return this.card.querySelector('[slot="heading-m"]');
+  }
+  get mainPrice() {
+    const price2 = this.headingM.querySelector(
+      `${SELECTOR_MAS_INLINE_PRICE}[data-template="price"]`
+    );
+    return price2;
+  }
+  get divider() {
+    return this.card.variant === "plans-education" ? x2`<div class="divider"></div>` : "";
+  }
+  async adjustLegal() {
+    await this.card.updateComplete;
+    if (this.legal) return;
+    const headingM = this.card.querySelector('[slot="heading-m"]');
+    if (!headingM) return;
+    const price2 = headingM.querySelector(
+      `${SELECTOR_MAS_INLINE_PRICE}[data-template="price"]`
+    );
+    const legal2 = price2.cloneNode(true);
+    this.legal = legal2;
+    await price2.onceSettled();
+    if (!price2?.options) return;
+    if (price2.options.displayPerUnit)
+      price2.dataset.displayPerUnit = "false";
+    if (price2.options.displayTax) price2.dataset.displayTax = "false";
+    if (price2.options.displayPlanType)
+      price2.dataset.displayPlanType = "false";
+    legal2.setAttribute("data-template", "legal");
+    headingM.appendChild(legal2);
+  }
+  async adjustAddon() {
+    await this.card.updateComplete;
+    const addon = this.card.addon;
+    if (!addon) return;
+    const price2 = this.mainPrice;
+    if (!price2) return;
+    await price2.onceSettled();
+    const planType = price2.value?.[0]?.planType;
+    if (!planType) return;
+    addon.planType = planType;
+  }
+  get stockCheckbox() {
+    return this.card.checkboxLabel ? x2`<label id="stock-checkbox">
                 <input type="checkbox" @change=${this.card.toggleStockOffer}></input>
                 <span></span>
                 ${this.card.checkboxLabel}
-            </label>`:""}get icons(){return this.card.querySelector('[slot="icons"]')?g`<slot name="icons"></slot>`:""}connectedCallbackHook(){let t=cn();t?.addEventListener&&t.addEventListener("change",this.adaptForMobile)}disconnectedCallbackHook(){let t=cn();t?.removeEventListener&&t.removeEventListener("change",this.adaptForMobile)}renderLayout(){return g` ${this.badge}
+            </label>` : "";
+  }
+  get icons() {
+    if (!this.card.querySelector('[slot="icons"]')) return "";
+    return x2`<slot name="icons"></slot>`;
+  }
+  connectedCallbackHook() {
+    const match = matchMobile();
+    if (match?.addEventListener)
+      match.addEventListener("change", this.adaptForMobile);
+  }
+  disconnectedCallbackHook() {
+    const match = matchMobile();
+    if (match?.removeEventListener)
+      match.removeEventListener("change", this.adaptForMobile);
+  }
+  renderLayout() {
+    return x2` ${this.badge}
             <div class="body">
                 ${this.icons}
                 <slot name="heading-xs"></slot>
@@ -1316,7 +9791,10 @@ merch-card[variant^="plans"]:not([size]) {
                 <slot name="badge"></slot>
                 <slot name="quantity-select"></slot>
             </div>
-            ${this.secureLabelFooter}`}};u(pe,"variantStyle",y`
+            ${this.secureLabelFooter}`;
+  }
+};
+__publicField(Plans, "variantStyle", i3`
         :host([variant^='plans']) {
             min-height: 273px;
             border: 1px solid var(--merch-card-custom-border-color, #dadada);
@@ -1398,7 +9876,10 @@ merch-card[variant^="plans"]:not([size]) {
             line-height: 21px;
             padding: 2px 10px 3px;
         }
-    `);var cc=`
+    `);
+
+// src/variants/product.css.js
+var CSS6 = `
 :root {
   --consonant-merch-card-product-width: 300px;
 }
@@ -1441,7 +9922,7 @@ merch-card[variant^="plans"]:not([size]) {
 }
 
 /* Tablet */
-@media screen and ${j} {
+@media screen and ${TABLET_UP} {
     .two-merch-cards.product,
     .three-merch-cards.product,
     .four-merch-cards.product {
@@ -1450,7 +9931,7 @@ merch-card[variant^="plans"]:not([size]) {
 }
 
 /* desktop */
-@media screen and ${B} {
+@media screen and ${DESKTOP_UP} {
   :root {
     --consonant-merch-card-product-width: 378px;
     --consonant-merch-card-product-width-4clm: 276px;
@@ -1464,19 +9945,118 @@ merch-card[variant^="plans"]:not([size]) {
       grid-template-columns: repeat(4, var(--consonant-merch-card-product-width-4clm));
   }
 }
-`;var ot=class extends N{constructor(t){super(t),this.postCardUpdateHook=this.postCardUpdateHook.bind(this)}getGlobalCSS(){return cc}adjustProductBodySlots(){if(this.card.getBoundingClientRect().width===0)return;["heading-xs","body-xxs","body-xs","promo-text","callout-content","addon","body-lower"].forEach(r=>this.updateCardElementMinHeight(this.card.shadowRoot.querySelector(`slot[name="${r}"]`),r))}renderLayout(){return g` ${this.badge}
+`;
+
+// src/variants/product.js
+var Product = class extends VariantLayout {
+  constructor(card) {
+    super(card);
+    this.postCardUpdateHook = this.postCardUpdateHook.bind(this);
+  }
+  getGlobalCSS() {
+    return CSS6;
+  }
+  adjustProductBodySlots() {
+    if (this.card.getBoundingClientRect().width === 0) return;
+    const slots = [
+      "heading-xs",
+      "body-xxs",
+      "body-xs",
+      "promo-text",
+      "callout-content",
+      "addon",
+      "body-lower"
+    ];
+    slots.forEach(
+      (slot) => this.updateCardElementMinHeight(
+        this.card.shadowRoot.querySelector(`slot[name="${slot}"]`),
+        slot
+      )
+    );
+  }
+  renderLayout() {
+    return x2` ${this.badge}
             <div class="body" aria-live="polite">
                 <slot name="icons"></slot>
                 <slot name="heading-xs"></slot>
                 <slot name="body-xxs"></slot>
-                ${this.promoBottom?"":g`<slot name="promo-text"></slot>`}
+                ${!this.promoBottom ? x2`<slot name="promo-text"></slot>` : ""}
                 <slot name="body-xs"></slot>
-                ${this.promoBottom?g`<slot name="promo-text"></slot>`:""}
+                ${this.promoBottom ? x2`<slot name="promo-text"></slot>` : ""}
                 <slot name="callout-content"></slot>
                 <slot name="addon"></slot>
                 <slot name="body-lower"></slot>
             </div>
-            ${this.secureLabelFooter}`}connectedCallbackHook(){window.addEventListener("resize",this.postCardUpdateHook)}disconnectedCallbackHook(){window.removeEventListener("resize",this.postCardUpdateHook)}postCardUpdateHook(){this.card.isConnected&&(this.adjustAddon(),At()||this.adjustProductBodySlots(),this.adjustTitleWidth())}get headingXSSlot(){return this.card.shadowRoot.querySelector('slot[name="heading-xs"]').assignedElements()[0]}get mainPrice(){return this.card.querySelector(`[slot="heading-xs"] ${J}[data-template="price"]`)}toggleAddon(t){let r=this.mainPrice,n=this.headingXSSlot;if(!r&&n){let o=t?.getAttribute("plan-type"),i=null;if(t&&o&&(i=t.querySelector(`p[data-plan-type="${o}"]`)?.querySelector('span[is="inline-price"]')),this.card.querySelectorAll('p[slot="heading-xs"]').forEach(a=>a.remove()),t.checked){if(i){let a=te("p",{class:"addon-heading-xs-price-addon",slot:"heading-xs"},i.innerHTML);this.card.appendChild(a)}}else{let a=te("p",{class:"card-heading",id:"free",slot:"heading-xs"},"Free");this.card.appendChild(a)}}}async adjustAddon(){await this.card.updateComplete;let t=this.card.addon;if(!t)return;let r=this.mainPrice,n=this.card.planType;r&&(await r.onceSettled(),n=r.value?.[0]?.planType),n&&(t.planType=n)}};u(ot,"variantStyle",y`
+            ${this.secureLabelFooter}`;
+  }
+  connectedCallbackHook() {
+    window.addEventListener("resize", this.postCardUpdateHook);
+  }
+  disconnectedCallbackHook() {
+    window.removeEventListener("resize", this.postCardUpdateHook);
+  }
+  postCardUpdateHook() {
+    if (!this.card.isConnected) return;
+    this.adjustAddon();
+    if (!isMobile()) {
+      this.adjustProductBodySlots();
+    }
+    this.adjustTitleWidth();
+  }
+  get headingXSSlot() {
+    return this.card.shadowRoot.querySelector('slot[name="heading-xs"]').assignedElements()[0];
+  }
+  get mainPrice() {
+    const price2 = this.card.querySelector(
+      `[slot="heading-xs"] ${SELECTOR_MAS_INLINE_PRICE}[data-template="price"]`
+    );
+    return price2;
+  }
+  toggleAddon(merchAddon) {
+    const mainPrice = this.mainPrice;
+    const headingXSSlot = this.headingXSSlot;
+    if (!mainPrice && headingXSSlot) {
+      const planType = merchAddon?.getAttribute("plan-type");
+      let visibleSpan = null;
+      if (merchAddon && planType) {
+        const matchingP = merchAddon.querySelector(`p[data-plan-type="${planType}"]`);
+        visibleSpan = matchingP?.querySelector('span[is="inline-price"]');
+      }
+      this.card.querySelectorAll('p[slot="heading-xs"]').forEach((p3) => p3.remove());
+      if (merchAddon.checked) {
+        if (visibleSpan) {
+          const replacementP = createTag(
+            "p",
+            { class: "addon-heading-xs-price-addon", slot: "heading-xs" },
+            visibleSpan.innerHTML
+          );
+          this.card.appendChild(replacementP);
+        }
+      } else {
+        const freeP = createTag(
+          "p",
+          { class: "card-heading", id: "free", slot: "heading-xs" },
+          "Free"
+        );
+        this.card.appendChild(freeP);
+      }
+    }
+  }
+  async adjustAddon() {
+    await this.card.updateComplete;
+    const addon = this.card.addon;
+    if (!addon) return;
+    const price2 = this.mainPrice;
+    let planType = this.card.planType;
+    if (price2) {
+      await price2.onceSettled();
+      planType = price2.value?.[0]?.planType;
+    }
+    if (!planType) return;
+    addon.planType = planType;
+  }
+};
+__publicField(Product, "variantStyle", i3`
         :host([variant='product']) > slot:not([name='icons']) {
             display: block;
         }
@@ -1511,7 +10091,10 @@ merch-card[variant^="plans"]:not([size]) {
         :host([variant='product']) ::slotted([slot='heading-xs']) {
             max-width: var(--consonant-merch-card-heading-xs-max-width, 100%);
         }
-    `);var lc=`
+    `);
+
+// src/variants/segment.css.js
+var CSS7 = `
 :root {
   --consonant-merch-card-segment-width: 378px;
 }
@@ -1525,13 +10108,13 @@ merch-card[variant^="plans"]:not([size]) {
 }
 
 /* Mobile */
-@media screen and ${He} {
+@media screen and ${MOBILE_LANDSCAPE} {
   :root {
     --consonant-merch-card-segment-width: 276px;
   }
 }
 
-@media screen and ${j} {
+@media screen and ${TABLET_UP} {
   :root {
     --consonant-merch-card-segment-width: 276px;
   }
@@ -1544,7 +10127,7 @@ merch-card[variant^="plans"]:not([size]) {
 }
 
 /* desktop */
-@media screen and ${B} {
+@media screen and ${DESKTOP_UP} {
   :root {
     --consonant-merch-card-segment-width: 302px;
   }
@@ -1557,23 +10140,43 @@ merch-card[variant^="plans"]:not([size]) {
       grid-template-columns: repeat(4, minmax(276px, var(--consonant-merch-card-segment-width)));
   }
 }
-`;var It=class extends N{constructor(t){super(t)}getGlobalCSS(){return lc}postCardUpdateHook(){this.adjustTitleWidth()}renderLayout(){return g` ${this.badge}
+`;
+
+// src/variants/segment.js
+var Segment = class extends VariantLayout {
+  constructor(card) {
+    super(card);
+  }
+  getGlobalCSS() {
+    return CSS7;
+  }
+  postCardUpdateHook() {
+    this.adjustTitleWidth();
+  }
+  renderLayout() {
+    return x2` ${this.badge}
     <div class="body">
         <slot name="heading-xs"></slot>
         <slot name="body-xxs"></slot>
-        ${this.promoBottom?"":g`<slot name="promo-text"></slot><slot name="callout-content"></slot>`}
+        ${!this.promoBottom ? x2`<slot name="promo-text"></slot><slot name="callout-content"></slot>` : ""}
         <slot name="body-xs"></slot>
-        ${this.promoBottom?g`<slot name="promo-text"></slot><slot name="callout-content"></slot>`:""}
+        ${this.promoBottom ? x2`<slot name="promo-text"></slot><slot name="callout-content"></slot>` : ""}
     </div>
     <hr />
-    ${this.secureLabelFooter}`}};u(It,"variantStyle",y`
+    ${this.secureLabelFooter}`;
+  }
+};
+__publicField(Segment, "variantStyle", i3`
     :host([variant='segment']) {
       min-height: 214px;
     }
     :host([variant='segment']) ::slotted([slot='heading-xs']) {
       max-width: var(--consonant-merch-card-heading-xs-max-width, 100%);
     }
-  `);var hc=`
+  `);
+
+// src/variants/special-offer.css.js
+var CSS8 = `
 :root {
   --consonant-merch-card-special-offers-width: 378px;
 }
@@ -1590,13 +10193,13 @@ merch-card[variant="special-offers"] span[is="inline-price"][data-template="stri
   grid-template-columns: minmax(300px, var(--consonant-merch-card-special-offers-width));
 }
 
-@media screen and ${He} {
+@media screen and ${MOBILE_LANDSCAPE} {
   :root {
     --consonant-merch-card-special-offers-width: 302px;
   }
 } 
   
-@media screen and ${j} {
+@media screen and ${TABLET_UP} {
   :root {
     --consonant-merch-card-special-offers-width: 302px;
   }
@@ -1609,36 +10212,61 @@ merch-card[variant="special-offers"] span[is="inline-price"][data-template="stri
 }
 
 /* desktop */
-@media screen and ${B} {
+@media screen and ${DESKTOP_UP} {
   .three-merch-cards.special-offers,
   .four-merch-cards.special-offers {
     grid-template-columns: repeat(3, minmax(300px, var(--consonant-merch-card-special-offers-width)));
   }
 }
 
-@media screen and ${de} {
+@media screen and ${LARGE_DESKTOP} {
   .four-merch-cards.special-offers {
     grid-template-columns: repeat(4, minmax(300px, var(--consonant-merch-card-special-offers-width)));
   }
 }
-`;var dc={name:{tag:"h4",slot:"detail-m"},title:{tag:"h4",slot:"detail-m"},backgroundImage:{tag:"div",slot:"bg-image"},prices:{tag:"h3",slot:"heading-xs"},description:{tag:"div",slot:"body-xs"},ctas:{slot:"footer",size:"l"}},Ht=class extends N{constructor(t){super(t)}getGlobalCSS(){return hc}get headingSelector(){return'[slot="detail-m"]'}renderLayout(){return g`${this.cardImage}
+`;
+
+// src/variants/special-offer.js
+var SPECIAL_OFFERS_AEM_FRAGMENT_MAPPING = {
+  name: { tag: "h4", slot: "detail-m" },
+  title: { tag: "h4", slot: "detail-m" },
+  backgroundImage: { tag: "div", slot: "bg-image" },
+  prices: { tag: "h3", slot: "heading-xs" },
+  description: { tag: "div", slot: "body-xs" },
+  ctas: { slot: "footer", size: "l" }
+};
+var SpecialOffer = class extends VariantLayout {
+  constructor(card) {
+    super(card);
+  }
+  getGlobalCSS() {
+    return CSS8;
+  }
+  get headingSelector() {
+    return '[slot="detail-m"]';
+  }
+  renderLayout() {
+    return x2`${this.cardImage}
             <div class="body">
                 <slot name="detail-m"></slot>
                 <slot name="heading-xs"></slot>
                 <slot name="body-xs"></slot>
             </div>
-            ${this.evergreen?g`
+            ${this.evergreen ? x2`
                       <div
                           class="detail-bg-container"
-                          style="background: ${this.card.detailBg}"
+                          style="background: ${this.card["detailBg"]}"
                       >
                           <slot name="detail-bg"></slot>
                       </div>
-                  `:g`
+                  ` : x2`
                       <hr />
                       ${this.secureLabelFooter}
                   `}
-            <slot></slot>`}};u(Ht,"variantStyle",y`
+            <slot></slot>`;
+  }
+};
+__publicField(SpecialOffer, "variantStyle", i3`
         :host([variant='special-offers']) {
             min-height: 439px;
         }
@@ -1650,7 +10278,62 @@ merch-card[variant="special-offers"] span[is="inline-price"][data-template="stri
         :host([variant='special-offers'].center) {
             text-align: center;
         }
-    `);var bi=new Map,Y=(e,t,r=null,n=null)=>{bi.set(e,{class:t,fragmentMapping:r,style:n})};Y("catalog",Mt,tc,Mt.variantStyle);Y("image",Sn);Y("inline-heading",Tn);Y("mini-compare-chart",$t,null,$t.variantStyle);Y("plans",pe,Cn,pe.variantStyle);Y("plans-students",pe,sc,pe.variantStyle);Y("plans-education",pe,ac,pe.variantStyle);Y("product",ot,null,ot.variantStyle);Y("segment",It,null,It.variantStyle);Y("special-offers",Ht,dc,Ht.variantStyle);var vi=(e,t=!1)=>{let r=bi.get(e.variant);if(!r)return t?void 0:new ot(e);let{class:n,style:o}=r;if(o){let i=new CSSStyleSheet;i.replaceSync(o.cssText),e.shadowRoot.adoptedStyleSheets.push(i)}return new n(e)};function _n(e){return bi.get(e)?.fragmentMapping}var pc=document.createElement("style");pc.innerHTML=`
+    `);
+
+// src/variants/variants.js
+var variantRegistry = /* @__PURE__ */ new Map();
+var registerVariant = (name, variantClass, fragmentMapping = null, style = null) => {
+  variantRegistry.set(name, {
+    class: variantClass,
+    fragmentMapping,
+    style
+  });
+};
+registerVariant(
+  "catalog",
+  Catalog,
+  CATALOG_AEM_FRAGMENT_MAPPING,
+  Catalog.variantStyle
+);
+registerVariant("image", Image2);
+registerVariant("inline-heading", InlineHeading);
+registerVariant(
+  "mini-compare-chart",
+  MiniCompareChart,
+  null,
+  MiniCompareChart.variantStyle
+);
+registerVariant("plans", Plans, PLANS_AEM_FRAGMENT_MAPPING, Plans.variantStyle);
+registerVariant("plans-students", Plans, PLANS_STUDENTS_AEM_FRAGMENT_MAPPING, Plans.variantStyle);
+registerVariant("plans-education", Plans, PLANS_EDUCATION_AEM_FRAGMENT_MAPPING, Plans.variantStyle);
+registerVariant("product", Product, null, Product.variantStyle);
+registerVariant("segment", Segment, null, Segment.variantStyle);
+registerVariant(
+  "special-offers",
+  SpecialOffer,
+  SPECIAL_OFFERS_AEM_FRAGMENT_MAPPING,
+  SpecialOffer.variantStyle
+);
+var getVariantLayout = (card, mustMatch = false) => {
+  const variantInfo = variantRegistry.get(card.variant);
+  if (!variantInfo) {
+    return mustMatch ? void 0 : new Product(card);
+  }
+  const { class: VariantClass, style } = variantInfo;
+  if (style) {
+    const sheet2 = new CSSStyleSheet();
+    sheet2.replaceSync(style.cssText);
+    card.shadowRoot.adoptedStyleSheets.push(sheet2);
+  }
+  return new VariantClass(card);
+};
+function getFragmentMapping(variant) {
+  return variantRegistry.get(variant)?.fragmentMapping;
+}
+
+// src/global.css.js
+var styles2 = document.createElement("style");
+styles2.innerHTML = `
 :root {
     --consonant-merch-card-detail-font-size: 12px;
     --consonant-merch-card-detail-font-weight: 500;
@@ -2176,9 +10859,311 @@ sr-only {
   white-space: nowrap;
   border: 0;
 }
-`;document.head.appendChild(pc);var fc=new CSSStyleSheet;fc.replaceSync(":host { display: contents; }");var mc="fragment",uc="author",Pn="aem-fragment",we,yi=class{constructor(){P(this,we,new Map)}clear(){b(this,we).clear()}addByRequestedId(t,r){b(this,we).set(t,r)}add(...t){t.forEach(r=>{let{id:n}=r;n&&b(this,we).set(n,r)})}has(t){return b(this,we).has(t)}get(t){return b(this,we).get(t)}remove(t){b(this,we).delete(t)}};we=new WeakMap;var Sr=new yi,Tr,me,_e,Ut,Dt,ce,oe,Se,Cr,Pr,Ai,Ei=class extends HTMLElement{constructor(){super();P(this,Pr);u(this,"cache",Sr);P(this,Tr);P(this,me,null);P(this,_e,null);P(this,Ut,!1);P(this,Dt,null);P(this,ce,null);P(this,oe);P(this,Se);P(this,Cr,!1);this.attachShadow({mode:"open"}),this.shadowRoot.adoptedStyleSheets=[fc]}static get observedAttributes(){return[mc,uc]}attributeChangedCallback(r,n,o){r===mc&&k(this,oe,o),r===uc&&k(this,Cr,["","true"].includes(o))}connectedCallback(){if(!b(this,Se)){if(k(this,ce,wt(this)),k(this,Tr,b(this,ce).log.module(Pn)),k(this,Dt,`${Pn}:${b(this,oe)}${Re}`),performance.mark(b(this,Dt)),!b(this,oe)){le(this,Pr,Ai).call(this,{message:"Missing fragment id"});return}this.refresh(!1)}}async getFragmentById(r,n,o,i){let a=`${Pn}:${n}${Yt}`;if(i)return await this.generatePreview();let s;try{if(s=await on(r,{cache:"default",credentials:"omit"}),!s?.ok){let{startTime:c,duration:l}=performance.measure(a,o);throw new be("Unexpected fragment response",{response:s,startTime:c,duration:l,...b(this,ce).duration})}return s.json()}catch{let{startTime:l,duration:h}=performance.measure(a,o);throw s||(s={url:r}),new be("Failed to fetch fragment",{response:s,startTime:l,duration:h,...b(this,ce).duration})}}async refresh(r=!0){if(!(b(this,Se)&&!await Promise.race([b(this,Se),Promise.resolve(!1)])))return r&&Sr.remove(b(this,oe)),k(this,Se,this.fetchData().then(()=>{let{references:n,referencesTree:o,placeholders:i}=b(this,me)||{};return this.dispatchEvent(new CustomEvent(ze,{detail:{...this.data,stale:b(this,Ut),references:n,referencesTree:o,placeholders:i},bubbles:!0,composed:!0})),!0}).catch(n=>b(this,me)?(Sr.addByRequestedId(b(this,oe),b(this,me)),!0):(le(this,Pr,Ai).call(this,n),!1))),b(this,Se)}async fetchData(){this.classList.remove("error"),k(this,_e,null);let r=Sr.get(b(this,oe));if(r){k(this,me,r);return}k(this,Ut,!0);let{masIOUrl:n,locale:o,preview:i,wcsApiKey:a}=b(this,ce).settings,s=`${n}/fragment?id=${b(this,oe)}&api_key=${a}&locale=${o}`;r=await this.getFragmentById(s,b(this,oe),b(this,Dt),i),Sr.addByRequestedId(b(this,oe),r),k(this,me,r),k(this,Ut,!1)}get updateComplete(){return b(this,Se)??Promise.reject(new Error("AEM fragment cannot be loaded"))}get data(){return b(this,_e)?b(this,_e):(b(this,Cr)?this.transformAuthorData():this.transformPublishData(),b(this,_e))}transformAuthorData(){let{fields:r,id:n,tags:o,settings:i={}}=b(this,me);k(this,_e,r.reduce((a,{name:s,multiple:c,values:l})=>(a.fields[s]=c?l:l[0],a),{fields:{},id:n,tags:o,settings:i}))}transformPublishData(){let{fields:r,id:n,tags:o,settings:i={}}=b(this,me);k(this,_e,Object.entries(r).reduce((a,[s,c])=>(a.fields[s]=c?.mimeType?c.value:c??"",a),{fields:{},id:n,tags:o,settings:i}))}async generatePreview(){let{previewFragment:r}=await import("https://mas.adobe.com/studio/libs/fragment-client.js");return await r(b(this,oe),{surface:b(this,ce).settings.previewSurface,locale:b(this,ce).settings.locale,apiKey:b(this,ce).settings.wcsApiKey})}};Tr=new WeakMap,me=new WeakMap,_e=new WeakMap,Ut=new WeakMap,Dt=new WeakMap,ce=new WeakMap,oe=new WeakMap,Se=new WeakMap,Cr=new WeakMap,Pr=new WeakSet,Ai=function({message:r,context:n}){this.classList.add("error"),b(this,Tr).error(`aem-fragment: ${r}`,n),this.dispatchEvent(new CustomEvent(Fe,{detail:{message:r,...n},bubbles:!0,composed:!0}))};customElements.define(Pn,Ei);var Bt=class extends I{constructor(){super(),this.color="",this.variant="",this.backgroundColor="",this.borderColor="",this.text=this.textContent}connectedCallback(){this.borderColor&&this.borderColor!=="Transparent"?this.style.setProperty("--merch-badge-border",`1px solid var(--${this.borderColor})`):this.style.setProperty("--merch-badge-border",`1px solid var(--${this.backgroundColor})`),this.style.setProperty("--merch-badge-background-color",`var(--${this.backgroundColor})`),this.style.setProperty("--merch-badge-color",this.color),this.style.setProperty("--merch-badge-padding","2px 10px 3px 10px"),this.style.setProperty("--merch-badge-border-radius","4px 0 0 4px"),this.style.setProperty("--merch-badge-font-size","var(--consonant-merch-card-body-xs-font-size)"),this.textContent="",super.connectedCallback()}render(){return g`<div class="plans-badge">
+`;
+document.head.appendChild(styles2);
+
+// src/aem-fragment.js
+var sheet = new CSSStyleSheet();
+sheet.replaceSync(":host { display: contents; }");
+var ATTRIBUTE_FRAGMENT = "fragment";
+var ATTRIBUTE_AUTHOR = "author";
+var ATTRIBUTE_PREVIEW = "preview";
+var AEM_FRAGMENT_TAG_NAME = "aem-fragment";
+var _fragmentCache;
+var FragmentCache = class {
+  constructor() {
+    __privateAdd(this, _fragmentCache, /* @__PURE__ */ new Map());
+  }
+  clear() {
+    __privateGet(this, _fragmentCache).clear();
+  }
+  /**
+   * Add fragment to cache
+   * @param {string} fragmentId requested id.
+   * requested id can differe from returned fragment.id because of translation
+   */
+  addByRequestedId(fragmentId, fragment) {
+    __privateGet(this, _fragmentCache).set(fragmentId, fragment);
+  }
+  add(...fragments) {
+    fragments.forEach((fragment) => {
+      const { id: fragmentId } = fragment;
+      if (fragmentId) {
+        __privateGet(this, _fragmentCache).set(fragmentId, fragment);
+      }
+    });
+  }
+  has(fragmentId) {
+    return __privateGet(this, _fragmentCache).has(fragmentId);
+  }
+  get(key) {
+    return __privateGet(this, _fragmentCache).get(key);
+  }
+  remove(fragmentId) {
+    __privateGet(this, _fragmentCache).delete(fragmentId);
+  }
+};
+_fragmentCache = new WeakMap();
+var cache = new FragmentCache();
+var _log, _rawData, _data, _stale, _startMark, _service2, _fragmentId, _fetchPromise, _author, _preview, _AemFragment_instances, fail_fn;
+var AemFragment = class extends HTMLElement {
+  constructor() {
+    super();
+    __privateAdd(this, _AemFragment_instances);
+    __publicField(this, "cache", cache);
+    __privateAdd(this, _log);
+    __privateAdd(this, _rawData, null);
+    __privateAdd(this, _data, null);
+    __privateAdd(this, _stale, false);
+    __privateAdd(this, _startMark, null);
+    __privateAdd(this, _service2, null);
+    /**
+     * @type {string} fragment id
+     */
+    __privateAdd(this, _fragmentId);
+    /**
+     * Internal promise to track if fetching is in progress.
+     */
+    __privateAdd(this, _fetchPromise);
+    __privateAdd(this, _author, false);
+    __privateAdd(this, _preview);
+    this.attachShadow({ mode: "open" });
+    this.shadowRoot.adoptedStyleSheets = [sheet];
+  }
+  static get observedAttributes() {
+    return [ATTRIBUTE_FRAGMENT, ATTRIBUTE_AUTHOR, ATTRIBUTE_PREVIEW];
+  }
+  attributeChangedCallback(name, oldValue, newValue) {
+    if (name === ATTRIBUTE_FRAGMENT) {
+      __privateSet(this, _fragmentId, newValue);
+    }
+    if (name === ATTRIBUTE_AUTHOR) {
+      __privateSet(this, _author, ["", "true"].includes(newValue));
+    }
+    if (name === ATTRIBUTE_PREVIEW) {
+      __privateSet(this, _preview, newValue);
+    }
+  }
+  connectedCallback() {
+    if (__privateGet(this, _fetchPromise)) return;
+    __privateSet(this, _service2, getService2(this));
+    __privateSet(this, _log, __privateGet(this, _service2).log.module(AEM_FRAGMENT_TAG_NAME));
+    __privateSet(this, _startMark, `${AEM_FRAGMENT_TAG_NAME}:${__privateGet(this, _fragmentId)}${MARK_START_SUFFIX}`);
+    performance.mark(__privateGet(this, _startMark));
+    if (!__privateGet(this, _fragmentId)) {
+      __privateMethod(this, _AemFragment_instances, fail_fn).call(this, { message: "Missing fragment id" });
+      return;
+    }
+    this.refresh(false);
+  }
+  /**
+   * Get fragment by ID
+   * @param {string} endpoint url to fetch fragment from
+   * @param {string} id fragment id
+   * @param {string} startMark performance mark to measure duration
+   * @returns {Promise<Object>} the raw fragment item
+   */
+  async getFragmentById(endpoint, id, startMark) {
+    const measureName = `${AEM_FRAGMENT_TAG_NAME}:${id}${MARK_DURATION_SUFFIX}`;
+    if (__privateGet(this, _preview)) {
+      return await this.generatePreview();
+    }
+    let response;
+    try {
+      response = await masFetch(endpoint, {
+        cache: "default",
+        credentials: "omit"
+      });
+      if (!response?.ok) {
+        const { startTime, duration } = performance.measure(
+          measureName,
+          startMark
+        );
+        throw new MasError("Unexpected fragment response", {
+          response,
+          startTime,
+          duration,
+          ...__privateGet(this, _service2).duration
+        });
+      }
+      return response.json();
+    } catch (e7) {
+      const { startTime, duration } = performance.measure(
+        measureName,
+        startMark
+      );
+      if (!response) {
+        response = { url: endpoint };
+      }
+      throw new MasError("Failed to fetch fragment", {
+        response,
+        startTime,
+        duration,
+        ...__privateGet(this, _service2).duration
+      });
+    }
+  }
+  async refresh(flushCache = true) {
+    if (__privateGet(this, _fetchPromise)) {
+      const ready = await Promise.race([
+        __privateGet(this, _fetchPromise),
+        Promise.resolve(false)
+      ]);
+      if (!ready) return;
+    }
+    if (flushCache) {
+      cache.remove(__privateGet(this, _fragmentId));
+    }
+    __privateSet(this, _fetchPromise, this.fetchData().then(() => {
+      const { references, referencesTree, placeholders } = __privateGet(this, _rawData) || {};
+      this.dispatchEvent(
+        new CustomEvent(EVENT_AEM_LOAD, {
+          detail: {
+            ...this.data,
+            stale: __privateGet(this, _stale),
+            references,
+            referencesTree,
+            placeholders
+          },
+          bubbles: true,
+          composed: true
+        })
+      );
+      return true;
+    }).catch((e7) => {
+      if (__privateGet(this, _rawData)) {
+        cache.addByRequestedId(__privateGet(this, _fragmentId), __privateGet(this, _rawData));
+        return true;
+      }
+      __privateMethod(this, _AemFragment_instances, fail_fn).call(this, e7);
+      return false;
+    }));
+    return __privateGet(this, _fetchPromise);
+  }
+  async fetchData() {
+    this.classList.remove("error");
+    __privateSet(this, _data, null);
+    let fragment = cache.get(__privateGet(this, _fragmentId));
+    if (fragment) {
+      __privateSet(this, _rawData, fragment);
+      return;
+    }
+    __privateSet(this, _stale, true);
+    const { masIOUrl, locale, preview, wcsApiKey } = __privateGet(this, _service2).settings;
+    __privateSet(this, _preview, preview);
+    const endpoint = `${masIOUrl}/fragment?id=${__privateGet(this, _fragmentId)}&api_key=${wcsApiKey}&locale=${locale}`;
+    fragment = await this.getFragmentById(
+      endpoint,
+      __privateGet(this, _fragmentId),
+      __privateGet(this, _startMark)
+    );
+    cache.addByRequestedId(__privateGet(this, _fragmentId), fragment);
+    __privateSet(this, _rawData, fragment);
+    __privateSet(this, _stale, false);
+  }
+  get updateComplete() {
+    return __privateGet(this, _fetchPromise) ?? Promise.reject(new Error("AEM fragment cannot be loaded"));
+  }
+  get data() {
+    if (__privateGet(this, _data)) return __privateGet(this, _data);
+    if (__privateGet(this, _author)) {
+      this.transformAuthorData();
+    } else {
+      this.transformPublishData();
+    }
+    return __privateGet(this, _data);
+  }
+  transformAuthorData() {
+    const { fields, id, tags, settings = {} } = __privateGet(this, _rawData);
+    __privateSet(this, _data, fields.reduce(
+      (acc, { name, multiple, values }) => {
+        acc.fields[name] = multiple ? values : values[0];
+        return acc;
+      },
+      { fields: {}, id, tags, settings }
+    ));
+  }
+  transformPublishData() {
+    const { fields, id, tags, settings = {} } = __privateGet(this, _rawData);
+    __privateSet(this, _data, Object.entries(fields).reduce(
+      (acc, [key, value]) => {
+        acc.fields[key] = value?.mimeType ? value.value : value ?? "";
+        return acc;
+      },
+      { fields: {}, id, tags, settings }
+    ));
+  }
+  async generatePreview() {
+    const { previewFragment } = await import("https://mas.adobe.com/studio/libs/fragment-client.js");
+    const data = await previewFragment(__privateGet(this, _fragmentId), {
+      surface: __privateGet(this, _service2).settings.previewSurface,
+      locale: __privateGet(this, _service2).settings.locale,
+      apiKey: __privateGet(this, _service2).settings.wcsApiKey
+    });
+    return data;
+  }
+};
+_log = new WeakMap();
+_rawData = new WeakMap();
+_data = new WeakMap();
+_stale = new WeakMap();
+_startMark = new WeakMap();
+_service2 = new WeakMap();
+_fragmentId = new WeakMap();
+_fetchPromise = new WeakMap();
+_author = new WeakMap();
+_preview = new WeakMap();
+_AemFragment_instances = new WeakSet();
+fail_fn = function({ message, context }) {
+  this.classList.add("error");
+  __privateGet(this, _log).error(`aem-fragment: ${message}`, context);
+  this.dispatchEvent(
+    new CustomEvent(EVENT_AEM_ERROR, {
+      detail: { message, ...context },
+      bubbles: true,
+      composed: true
+    })
+  );
+};
+customElements.define(AEM_FRAGMENT_TAG_NAME, AemFragment);
+
+// src/merch-badge.js
+var MerchBadge = class extends s7 {
+  constructor() {
+    super();
+    this.color = "";
+    this.variant = "";
+    this.backgroundColor = "";
+    this.borderColor = "";
+    this.text = this.textContent;
+  }
+  connectedCallback() {
+    if (this.borderColor && this.borderColor !== "Transparent") {
+      this.style.setProperty("--merch-badge-border", `1px solid var(--${this.borderColor})`);
+    } else {
+      this.style.setProperty("--merch-badge-border", `1px solid var(--${this.backgroundColor})`);
+    }
+    this.style.setProperty("--merch-badge-background-color", `var(--${this.backgroundColor})`);
+    this.style.setProperty("--merch-badge-color", this.color);
+    this.style.setProperty("--merch-badge-padding", "2px 10px 3px 10px");
+    this.style.setProperty("--merch-badge-border-radius", "4px 0 0 4px");
+    this.style.setProperty("--merch-badge-font-size", "var(--consonant-merch-card-body-xs-font-size)");
+    this.textContent = "";
+    super.connectedCallback();
+  }
+  render() {
+    return x2`<div class="plans-badge">
             ${this.text}
-        </div>`}};u(Bt,"properties",{color:{type:String},variant:{type:String},backgroundColor:{type:String,attribute:"background-color"},borderColor:{type:String,attribute:"border-color"}}),u(Bt,"styles",y`
+        </div>`;
+  }
+};
+__publicField(MerchBadge, "properties", {
+  color: { type: String },
+  variant: { type: String },
+  backgroundColor: { type: String, attribute: "background-color" },
+  borderColor: { type: String, attribute: "border-color" }
+});
+__publicField(MerchBadge, "styles", i3`
         :host {
             display: block;
             background-color: var(--merch-badge-background-color);
@@ -2191,10 +11176,22 @@ sr-only {
             position: relative;
             left: 1px;
         }
-    `);customElements.define("merch-badge",Bt);var kr=class extends I{constructor(){super()}render(){return g`
+    `);
+customElements.define("merch-badge", MerchBadge);
+
+// src/merch-mnemonic-list.js
+var MerchMnemonicList = class extends s7 {
+  constructor() {
+    super();
+  }
+  render() {
+    return x2`
             <slot name="icon"></slot>
             <slot name="description">${this.description}</slot>
-        `}};u(kr,"styles",y`
+        `;
+  }
+};
+__publicField(MerchMnemonicList, "styles", i3`
         :host {
             display: flex;
             flex-wrap: nowrap;
@@ -2219,11 +11216,56 @@ sr-only {
         :host .hidden {
             display: none;
         }
-    `),u(kr,"properties",{description:{type:String,attribute:!0}});customElements.define("merch-mnemonic-list",kr);var Lr=class extends I{updated(){this.hideSeeMoreEls()}hideSeeMoreEls(){this.isMobile&&this.rows.forEach((t,r)=>{r>=5&&(t.style.display=this.showAll?"flex":"none")})}constructor(){super(),this.showAll=!1,this.mobileRows=this.mobileRows===void 0?5:this.mobileRows}toggle(){this.showAll=!this.showAll,this.dispatchEvent(new CustomEvent("hide-see-more-elements",{bubbles:!0,composed:!0})),this.requestUpdate()}render(){return g`<slot name="heading"></slot>
+    `);
+__publicField(MerchMnemonicList, "properties", {
+  description: { type: String, attribute: true }
+});
+customElements.define("merch-mnemonic-list", MerchMnemonicList);
+
+// src/merch-whats-included.js
+var MerchWhatsIncluded = class extends s7 {
+  updated() {
+    this.hideSeeMoreEls();
+  }
+  hideSeeMoreEls() {
+    if (this.isMobile) {
+      this.rows.forEach((node, index) => {
+        if (index >= 5) {
+          node.style.display = this.showAll ? "flex" : "none";
+        }
+      });
+    }
+  }
+  constructor() {
+    super();
+    this.showAll = false;
+    this.mobileRows = this.mobileRows === void 0 ? 5 : this.mobileRows;
+  }
+  toggle() {
+    this.showAll = !this.showAll;
+    this.dispatchEvent(
+      new CustomEvent("hide-see-more-elements", {
+        bubbles: true,
+        composed: true
+      })
+    );
+    this.requestUpdate();
+  }
+  render() {
+    return x2`<slot name="heading"></slot>
             <slot name="content"></slot>
-            ${this.isMobile&&this.rows.length>this.mobileRows?g`<div @click=${this.toggle} class="see-more">
-                      ${this.showAll?"- See less":"+ See more"}
-                  </div>`:g``}`}get isMobile(){return window.matchMedia("(max-width: 767px)").matches}get rows(){return this.querySelectorAll("merch-mnemonic-list")}};u(Lr,"styles",y`
+            ${this.isMobile && this.rows.length > this.mobileRows ? x2`<div @click=${this.toggle} class="see-more">
+                      ${this.showAll ? "- See less" : "+ See more"}
+                  </div>` : x2``}`;
+  }
+  get isMobile() {
+    return window.matchMedia("(max-width: 767px)").matches;
+  }
+  get rows() {
+    return this.querySelectorAll("merch-mnemonic-list");
+  }
+};
+__publicField(MerchWhatsIncluded, "styles", i3`
         :host {
             display: flex;
             flex-wrap: wrap;
@@ -2252,7 +11294,1168 @@ sr-only {
             text-decoration: underline;
             color: var(--link-color-dark);
         }
-    `),u(Lr,"properties",{heading:{type:String,attribute:!0},mobileRows:{type:Number,attribute:!0}});customElements.define("merch-whats-included",Lr);var Kh="#000000",gc="spectrum-yellow-300-plans",xc="#F8D904",Qh="#EAEAEA",Zh=/(accent|primary|secondary)(-(outline|link))?/,Jh="mas:product_code/",ed="daa-ll",kn="daa-lh",td=["XL","L","M","S"],wi="...";function Te(e,t,r,n){let o=n[e];if(t[e]&&o){let i={slot:o?.slot},a=t[e];if(o.maxCount&&typeof a=="string"){let[c,l]=ud(a,o.maxCount,o.withSuffix);c!==a&&(i.title=l,a=c)}let s=te(o.tag,i,a);r.append(s)}}function rd(e,t,r){e.mnemonicIcon?.map((o,i)=>({icon:o,alt:e.mnemonicAlt[i]??"",link:e.mnemonicLink[i]??""}))?.forEach(({icon:o,alt:i,link:a})=>{if(a&&!/^https?:/.test(a))try{a=new URL(`https://${a}`).href.toString()}catch{a="#"}let s={slot:"icons",src:o,loading:t.loading,size:r?.size??"l"};i&&(s.alt=i),a&&(s.href=a);let c=te("merch-icon",s);t.append(c)})}function nd(e,t,r){if(e.variant.startsWith("plans")){e.badge?.length&&!e.badge?.startsWith("<merch-badge")&&(e.badge=`<merch-badge variant="${e.variant}" background-color="${gc}">${e.badge}</merch-badge>`,e.borderColor||(e.borderColor=gc)),Te("badge",e,t,r);return}e.badge?(t.setAttribute("badge-text",e.badge),t.setAttribute("badge-color",e.badgeColor||Kh),t.setAttribute("badge-background-color",e.badgeBackgroundColor||xc),t.setAttribute("border-color",e.badgeBackgroundColor||xc)):t.setAttribute("border-color",e.borderColor||Qh)}function od(e,t,r){r?.includes(e.size)&&t.setAttribute("size",e.size)}function id(e,t,r){Te("cardTitle",e,t,{cardTitle:r})}function ad(e,t,r){Te("subtitle",e,t,r)}function sd(e,t,r){if(!e.backgroundColor||e.backgroundColor.toLowerCase()==="default"){t.style.removeProperty("--merch-card-custom-background-color"),t.removeAttribute("background-color");return}r?.[e.backgroundColor]&&(t.style.setProperty("--merch-card-custom-background-color",`var(${r[e.backgroundColor]})`),t.setAttribute("background-color",e.backgroundColor))}function cd(e,t,r){let n="--merch-card-custom-border-color";e.borderColor?.toLowerCase()==="transparent"?(t.style.removeProperty(n),e.variant==="plans"&&t.style.setProperty(n,"transparent")):e.borderColor&&r&&(/-gradient/.test(e.borderColor)?(t.setAttribute("gradient-border","true"),t.style.removeProperty(n)):t.style.setProperty(n,`var(--${e.borderColor})`))}function ld(e,t,r){if(e.backgroundImage){let n={loading:t.loading??"lazy",src:e.backgroundImage};if(e.backgroundImageAltText?n.alt=e.backgroundImageAltText:n.role="none",!r)return;if(r?.attribute){t.setAttribute(r.attribute,e.backgroundImage);return}t.append(te(r.tag,{slot:r.slot},te("img",n)))}}function hd(e,t,r){Te("prices",e,t,r)}function dd(e,t,r){Te("promoText",e,t,r),Te("description",e,t,r),Te("callout",e,t,r),Te("quantitySelect",e,t,r),Te("whatsIncluded",e,t,r)}function pd(e,t,r){if(!r.addon)return;let n=e.addon?.replace(/[{}]/g,"");if(!n||/disabled/.test(n))return;let o=te("merch-addon",{slot:"addon"},n);[...o.querySelectorAll(J)].forEach(i=>{let a=i.parentElement;a?.nodeName==="P"&&a.setAttribute("data-plan-type","")}),t.append(o)}function md(e,t,r,n){e.showStockCheckbox&&r.stockOffer&&(t.setAttribute("checkbox-label",n?.stockCheckboxLabel?n.stockCheckboxLabel:""),t.setAttribute("stock-offer-osis",n?.stockOfferOsis?n.stockOfferOsis:"")),n?.secureLabel&&r?.secureLabel&&t.setAttribute("secure-label",n.secureLabel)}function ud(e,t,r=!0){try{let n=typeof e!="string"?"":e,o=bc(n);if(o.length<=t)return[n,o];let i=0,a=!1,s=r?t-wi.length<1?1:t-wi.length:t,c=[];for(let d of n){if(i++,d==="<")if(a=!0,n[i]==="/")c.pop();else{let p="";for(let m of n.substring(i)){if(m===" "||m===">")break;p+=m}c.push(p)}if(d==="/"&&n[i]===">"&&c.pop(),d===">"){a=!1;continue}if(!a&&(s--,s===0))break}let l=n.substring(0,i).trim();if(c.length>0){c[0]==="p"&&c.shift();for(let d of c.reverse())l+=`</${d}>`}return[`${l}${r?wi:""}`,o]}catch{let o=typeof e=="string"?e:"",i=bc(o);return[o,i]}}function bc(e){if(!e)return"";let t="",r=!1;for(let n of e){if(n==="<"&&(r=!0),n===">"){r=!1;continue}r||(t+=n)}return t}function fd(e,t){t.querySelectorAll("a.upt-link").forEach(n=>{let o=Ne.createFrom(n);n.replaceWith(o),o.initializeWcsData(e.osi,e.promoCode)})}function gd(e,t,r,n,o){let i=e;o?i=customElements.get("checkout-button").createCheckoutButton({},e.innerHTML):i.innerHTML=`<span>${i.textContent}</span>`,i.setAttribute("tabindex",0);for(let h of e.attributes)["class","is"].includes(h.name)||i.setAttribute(h.name,h.value);i.firstElementChild?.classList.add("spectrum-Button-label");let a=t.ctas.size??"M",s=`spectrum-Button--${n}`,c=td.includes(a)?`spectrum-Button--size${a}`:"spectrum-Button--sizeM",l=["spectrum-Button",s,c];return r&&l.push("spectrum-Button--outline"),i.classList.add(...l),i}function xd(e,t,r,n,o){let i=e;o&&(i=customElements.get("checkout-button").createCheckoutButton(e.dataset),i.connectedCallback(),i.render());let a="fill";r&&(a="outline");let s=te("sp-button",{treatment:a,variant:n,tabIndex:0,size:t.ctas.size??"m",...e.dataset.analyticsId&&{"data-analytics-id":e.dataset.analyticsId}},e.innerHTML);return s.source=i,(o?i.onceSettled():Promise.resolve(i)).then(c=>{s.setAttribute("data-navigation-url",c.href)}),s.addEventListener("click",c=>{c.defaultPrevented||i.click()}),s}function bd(e,t,r){let n=e;return r&&(n=customElements.get("checkout-link").createCheckoutLink(e.dataset,e.innerHTML)),n.classList.add("con-button"),t&&n.classList.add("blue"),n}function vd(e,t,r,n){if(e.ctas){let{slot:o}=r.ctas,i=te("div",{slot:o},e.ctas),a=[...i.querySelectorAll("a")].map(s=>{let c=s.hasAttribute("data-wcs-osi")&&!!s.getAttribute("data-wcs-osi"),l=Zh.exec(s.className)?.[0]??"accent",h=l.includes("accent"),d=l.includes("primary"),p=l.includes("secondary"),m=l.includes("-outline"),x=l.includes("-link");if(s.classList.remove("accent","primary","secondary"),t.consonant)return bd(s,h,c);if(x)return s;let f;return h?f="accent":d?f="primary":p&&(f="secondary"),t.spectrum==="swc"?xd(s,r,m,f,c):gd(s,r,m,f,c)});i.innerHTML="",i.append(...a),t.append(i)}}function yd(e,t){let{tags:r}=e,n=r?.find(i=>i.startsWith(Jh))?.split("/").pop();if(!n)return;t.setAttribute(kn,n),[...t.shadowRoot.querySelectorAll("a[data-analytics-id],button[data-analytics-id]"),...t.querySelectorAll("a[data-analytics-id],button[data-analytics-id]")].forEach((i,a)=>{i.setAttribute(ed,`${i.dataset.analyticsId}-${a+1}`)})}function Ed(e){e.spectrum==="css"&&[["primary-link","primary"],["secondary-link","secondary"]].forEach(([t,r])=>{e.querySelectorAll(`a.${t}`).forEach(n=>{n.classList.remove(t),n.classList.add("spectrum-Link",`spectrum-Link--${r}`)})})}function Ad(e){e.querySelectorAll("[slot]").forEach(n=>{n.remove()}),e.variant=void 0,["checkbox-label","stock-offer-osis","secure-label","background-image","background-color","border-color","badge-background-color","badge-color","badge-text","gradient-border","size",kn].forEach(n=>e.removeAttribute(n));let r=["wide-strip","thin-strip"];e.classList.remove(...r)}async function vc(e,t){let{id:r,fields:n,settings:o={}}=e,{variant:i}=n;if(!i)throw new Error(`hydrate: no variant found in payload ${r}`);Ad(t),t.settings=o,t.id??(t.id=e.id),t.variant=i,await t.updateComplete;let{aemFragmentMapping:a}=t.variantLayout;if(!a)throw new Error(`hydrate: aemFragmentMapping found for ${r}`);a.style==="consonant"&&t.setAttribute("consonant",!0),rd(n,t,a.mnemonics),nd(n,t,a),od(n,t,a.size),id(n,t,a.title),ad(n,t,a),hd(n,t,a),ld(n,t,a.backgroundImage),sd(n,t,a.allowedColors),cd(n,t,a.borderColor),dd(n,t,a),pd(n,t,a),md(n,t,a,o),fd(n,t),vd(n,t,a,i),yd(n,t),Ed(t)}var Si="merch-card",wd=":ready",_d=":error",_i=2e4,Ln="merch-card:";function yc(e,t){let r=e.closest(Si);if(!r)return t;r.variantLayout?.priceOptionsProvider?.(e,t)}function Sd(e){e.providers.has(yc)||e.providers.price(yc)}var zt,st,Ce,at,it=class extends I{constructor(){super();P(this,Ce);u(this,"customerSegment");u(this,"marketSegment");u(this,"variantLayout");P(this,zt);P(this,st);u(this,"readyEventDispatched",!1);this.id=null,this.failed=!1,this.filters={},this.types="",this.selected=!1,this.spectrum="css",this.loading="lazy",this.handleAemFragmentEvents=this.handleAemFragmentEvents.bind(this)}firstUpdated(){this.variantLayout=vi(this,!1),this.variantLayout?.connectedCallbackHook(),this.aemFragment?.updateComplete.catch(r=>{le(this,Ce,at).call(this,r,{},!1),this.style.display="none"})}willUpdate(r){(r.has("variant")||!this.variantLayout)&&(this.variantLayout=vi(this),this.variantLayout.connectedCallbackHook())}updated(r){(r.has("badgeBackgroundColor")||r.has("borderColor"))&&this.style.setProperty("--consonant-merch-card-border",this.computedBorderStyle);try{this.variantLayout?.postCardUpdateHook(r)}catch(n){le(this,Ce,at).call(this,`Error in postCardUpdateHook: ${n.message}`,{},!1)}}get theme(){return this.closest("sp-theme")}get dir(){return this.closest("[dir]")?.getAttribute("dir")??"ltr"}get prices(){return Array.from(this.querySelectorAll('span[is="inline-price"][data-wcs-osi]'))}render(){if(!(!this.isConnected||!this.variantLayout||this.style.display==="none"))return this.variantLayout.renderLayout()}get computedBorderStyle(){return["ccd-slice","ccd-suggested","ah-promoted-plans"].includes(this.variant)?"":`1px solid ${this.borderColor?this.borderColor:this.badgeBackgroundColor}`}get badgeElement(){return this.shadowRoot.getElementById("badge")}get headingmMSlot(){return this.shadowRoot.querySelector('slot[name="heading-m"]').assignedElements()[0]}get footerSlot(){return this.shadowRoot.querySelector('slot[name="footer"]')?.assignedElements()[0]}get price(){return this.headingmMSlot?.querySelector(J)}get checkoutLinks(){return[...this.footerSlot?.querySelectorAll(Be)??[]]}async toggleStockOffer({target:r}){if(!this.stockOfferOsis)return;let n=this.checkoutLinks;if(n.length!==0)for(let o of n){await o.onceSettled();let i=o.value?.[0]?.planType;if(!i)return;let a=this.stockOfferOsis[i];if(!a)return;let s=o.dataset.wcsOsi.split(",").filter(c=>c!==a);r.checked&&s.push(a),o.dataset.wcsOsi=s.join(",")}}changeHandler(r){r.target.tagName==="MERCH-ADDON"&&this.toggleAddon(r.target)}toggleAddon(r){let n=this.checkoutLinks;if(this.variantLayout?.toggleAddon?.(r),n.length!==0)for(let o of n){let{offerType:i,planType:a}=o.value?.[0];if(!i||!a)return;let s=r.querySelector(`p[data-plan-type="${a}"] ${J}[data-offer-type="${i}"]`)?.dataset?.wcsOsi,c=o.dataset.wcsOsi.split(",").filter(l=>l!==s);r.checked&&c.push(s),o.dataset.wcsOsi=c.join(",")}}handleQuantitySelection(r){let n=this.checkoutLinks;for(let o of n)o.dataset.quantity=r.detail.option}get titleElement(){return this.querySelector(this.variantLayout?.headingSelector||".card-heading")}get title(){return this.titleElement?.textContent?.trim()}get description(){return this.querySelector('[slot="body-xs"]')?.textContent?.trim()}updateFilters(r){let n={...this.filters};Object.keys(n).forEach(o=>{if(r){n[o].order=Math.min(n[o].order||2,2);return}let i=n[o].order;i===1||isNaN(i)||(n[o].order=Number(i)+1)}),this.filters=n}includes(r){return this.textContent.match(new RegExp(r,"i"))!==null}connectedCallback(){super.connectedCallback(),k(this,st,wt()),Sd(b(this,st)),k(this,zt,b(this,st).Log.module(Si)),this.id??(this.id=this.querySelector("aem-fragment")?.getAttribute("fragment")),performance.mark(`${Ln}${this.id}${Re}`),this.addEventListener(ue,this.handleQuantitySelection),this.addEventListener(Mr,this.handleAddonAndQuantityUpdate),this.addEventListener(Wt,this.merchCardReady,{once:!0}),this.updateComplete.then(()=>{this.merchCardReady()}),this.addEventListener(Fe,this.handleAemFragmentEvents),this.addEventListener(ze,this.handleAemFragmentEvents),this.addEventListener("change",this.changeHandler),this.aemFragment||setTimeout(()=>this.checkReady(),0)}disconnectedCallback(){super.disconnectedCallback(),this.variantLayout?.disconnectedCallbackHook(),this.removeEventListener(ue,this.handleQuantitySelection),this.removeEventListener(Fe,this.handleAemFragmentEvents),this.removeEventListener(ze,this.handleAemFragmentEvents),this.removeEventListener("change",this.changeHandler),this.removeEventListener(Mr,this.handleAddonAndQuantityUpdate)}async handleAemFragmentEvents(r){if(this.isConnected&&(r.type===Fe&&le(this,Ce,at).call(this,`AEM fragment cannot be loaded: ${r.detail.message}`,r.detail),r.type===ze&&r.target.nodeName==="AEM-FRAGMENT")){let n=r.detail;vc(n,this).then(()=>this.checkReady()).catch(o=>b(this,zt).error(o))}}async checkReady(){if(!this.isConnected)return;let r=new Promise(a=>setTimeout(()=>a("timeout"),_i));if(this.aemFragment){let a=await Promise.race([this.aemFragment.updateComplete,r]);if(a===!1){let s=a==="timeout"?`AEM fragment was not resolved within ${_i} timeout`:"AEM fragment cannot be loaded";le(this,Ce,at).call(this,s,{},!1);return}}let n=[...this.querySelectorAll(qt)];n.push(...[...this.querySelectorAll($n)].map(a=>a.source));let o=Promise.all(n.map(a=>a.onceSettled().catch(()=>a))).then(a=>a.every(s=>s.classList.contains("placeholder-resolved"))),i=await Promise.race([o,r]);if(i===!0)return performance.mark(`${Ln}${this.id}${wd}`),this.readyEventDispatched||(this.readyEventDispatched=!0,this.dispatchEvent(new CustomEvent(Dn,{bubbles:!0,composed:!0}))),this;{let{duration:a,startTime:s}=performance.measure(`${Ln}${this.id}${_d}`,`${Ln}${this.id}${Re}`),c={duration:a,startTime:s,...b(this,st).duration};i==="timeout"?le(this,Ce,at).call(this,`Contains offers that were not resolved within ${_i} timeout`,c):le(this,Ce,at).call(this,"Contains unresolved offers",c)}}get aemFragment(){return this.querySelector("aem-fragment")}get addon(){return this.querySelector("merch-addon")}get quantitySelect(){return this.querySelector("merch-quantity-select")}get addonCheckbox(){return this.querySelector("merch-addon")}displayFooterElementsInColumn(){if(!this.classList.contains("product"))return;let r=this.shadowRoot.querySelector(".secure-transaction-label");(this.footerSlot?.querySelectorAll(Be)).length===2&&r&&r.parentElement.classList.add("footer-column")}merchCardReady(){this.offerSelect&&!this.offerSelect.planType||(this.dispatchEvent(new CustomEvent(In,{bubbles:!0})),this.displayFooterElementsInColumn())}get dynamicPrice(){return this.querySelector('[slot="price"]')}handleAddonAndQuantityUpdate({detail:{id:r,items:n}}){if(!r||!n?.length)return;let o=this.checkoutLinks.find(l=>l.getAttribute("data-modal-id")===r);if(!o)return;let a=new URL(o.getAttribute("href")).searchParams.get("pa"),s=n.find(l=>l.productArrangementCode===a)?.quantity,c=!!n.find(l=>l.productArrangementCode!==a);if(s&&this.quantitySelect?.dispatchEvent(new CustomEvent(ft,{detail:{quantity:s},bubbles:!0,composed:!0})),this.addonCheckbox?.checked!==c){this.toggleStockOffer({target:this.addonCheckbox});let l=new Event("change",{bubbles:!0,cancelable:!0});Object.defineProperty(l,"target",{writable:!1,value:{checked:c}}),this.addonCheckbox.handleChange(l)}}};zt=new WeakMap,st=new WeakMap,Ce=new WeakSet,at=function(r,n={},o=!0){b(this,zt).error(`merch-card: ${r}`,n),this.failed=!0,o&&this.dispatchEvent(new CustomEvent(Bn,{detail:{...n,message:r},bubbles:!0,composed:!0}))},u(it,"properties",{id:{type:String,attribute:"id",reflect:!0},name:{type:String,attribute:"name",reflect:!0},variant:{type:String,reflect:!0},size:{type:String,attribute:"size",reflect:!0},badgeColor:{type:String,attribute:"badge-color",reflect:!0},borderColor:{type:String,attribute:"border-color",reflect:!0},badgeBackgroundColor:{type:String,attribute:"badge-background-color",reflect:!0},backgroundImage:{type:String,attribute:"background-image",reflect:!0},badgeText:{type:String,attribute:"badge-text"},actionMenu:{type:Boolean,attribute:"action-menu"},actionMenuLabel:{type:String,attribute:"action-menu-label"},customHr:{type:Boolean,attribute:"custom-hr"},consonant:{type:Boolean,attribute:"consonant"},failed:{type:Boolean,attribute:"failed",reflect:!0},spectrum:{type:String,attribute:"spectrum"},detailBg:{type:String,attribute:"detail-bg"},secureLabel:{type:String,attribute:"secure-label"},checkboxLabel:{type:String,attribute:"checkbox-label"},addonTitle:{type:String,attribute:"addon-title"},addonOffers:{type:Object,attribute:"addon-offers"},selected:{type:Boolean,attribute:"aria-selected",reflect:!0},storageOption:{type:String,attribute:"storage",reflect:!0},planType:{type:String,attribute:"plan-type",reflect:!0},settings:{type:Object,attribute:!1},stockOfferOsis:{type:Object,attribute:"stock-offer-osis",converter:{fromAttribute:r=>{if(!r)return;let[n,o,i]=r.split(",");return{PUF:n,ABM:o,M2M:i}}}},filters:{type:String,reflect:!0,converter:{fromAttribute:r=>Object.fromEntries(r.split(",").map(n=>{let[o,i,a]=n.split(":"),s=Number(i);return[o,{order:isNaN(s)?void 0:s,size:a}]})),toAttribute:r=>Object.entries(r).map(([n,{order:o,size:i}])=>[n,o,i].filter(a=>a!=null).join(":")).join(",")}},types:{type:String,attribute:"types",reflect:!0},merchOffer:{type:Object},analyticsId:{type:String,attribute:kn,reflect:!0},loading:{type:String}}),u(it,"styles",[Zs,...Js()]),u(it,"registerVariant",Y),u(it,"getFragmentMapping",_n);customElements.define(Si,it);var Ft,Rr=class extends I{constructor(){super();P(this,Ft);this.defaults={},this.variant="plans"}saveContainerDefaultValues(){let r=this.closest(this.getAttribute("container")),n=r?.querySelector('[slot="description"]:not(merch-offer > *)')?.cloneNode(!0),o=r?.badgeText;return{description:n,badgeText:o}}getSlottedElement(r,n){return(n||this.closest(this.getAttribute("container"))).querySelector(`[slot="${r}"]:not(merch-offer > *)`)}updateSlot(r,n){let o=this.getSlottedElement(r,n);if(!o)return;let i=this.selectedOffer.getOptionValue(r)?this.selectedOffer.getOptionValue(r):this.defaults[r];i&&o.replaceWith(i.cloneNode(!0))}handleOfferSelection(r){let n=r.detail;this.selectOffer(n)}handleOfferSelectionByQuantity(r){let n=r.detail.option,o=Number.parseInt(n),i=this.findAppropriateOffer(o);this.selectOffer(i),this.getSlottedElement("cta").setAttribute("data-quantity",o)}selectOffer(r){if(!r)return;let n=this.selectedOffer;n&&(n.selected=!1),r.selected=!0,this.selectedOffer=r,this.planType=r.planType,this.updateContainer(),this.updateComplete.then(()=>{this.dispatchEvent(new CustomEvent(Un,{detail:this,bubbles:!0}))})}findAppropriateOffer(r){let n=null;return this.offers.find(i=>{let a=Number.parseInt(i.getAttribute("value"));if(a===r)return!0;if(a>r)return!1;n=i})||n}updateBadgeText(r){this.selectedOffer.badgeText===""?r.badgeText=null:this.selectedOffer.badgeText?r.badgeText=this.selectedOffer.badgeText:r.badgeText=this.defaults.badgeText}updateContainer(){let r=this.closest(this.getAttribute("container"));!r||!this.selectedOffer||(this.updateSlot("cta",r),this.updateSlot("secondary-cta",r),this.updateSlot("price",r),!this.manageableMode&&(this.updateSlot("description",r),this.updateBadgeText(r)))}render(){return g`<fieldset><slot class="${this.variant}"></slot></fieldset>`}connectedCallback(){super.connectedCallback(),this.addEventListener("focusin",this.handleFocusin),this.addEventListener("click",this.handleFocusin),this.addEventListener(ut,this.handleOfferSelectReady);let r=this.closest("merch-quantity-select");this.manageableMode=r,this.offers=[...this.querySelectorAll("merch-offer")],k(this,Ft,this.handleOfferSelectionByQuantity.bind(this)),this.manageableMode?r.addEventListener(ue,b(this,Ft)):this.defaults=this.saveContainerDefaultValues(),this.selectedOffer=this.offers[0],this.planType&&this.updateContainer()}get miniCompareMobileCard(){return this.merchCard?.variant==="mini-compare-chart"&&this.isMobile}get merchCard(){return this.closest("merch-card")}get isMobile(){return window.matchMedia("(max-width: 767px)").matches}disconnectedCallback(){super.disconnectedCallback(),this.removeEventListener(ue,b(this,Ft)),this.removeEventListener(ut,this.handleOfferSelectReady),this.removeEventListener("focusin",this.handleFocusin),this.removeEventListener("click",this.handleFocusin)}get price(){return this.querySelector('merch-offer[aria-selected] [is="inline-price"]')}get customerSegment(){return this.selectedOffer?.customerSegment}get marketSegment(){return this.selectedOffer?.marketSegment}handleFocusin(r){r.target?.nodeName==="MERCH-OFFER"&&(r.preventDefault(),r.stopImmediatePropagation(),this.selectOffer(r.target))}async handleOfferSelectReady(){this.planType||this.querySelector("merch-offer:not([plan-type])")||(this.planType=this.selectedOffer.planType,await this.updateComplete,this.selectOffer(this.selectedOffer??this.querySelector("merch-offer[aria-selected]")??this.querySelector("merch-offer")),this.dispatchEvent(new CustomEvent(Wt,{bubbles:!0})))}};Ft=new WeakMap,u(Rr,"styles",y`
+    `);
+__publicField(MerchWhatsIncluded, "properties", {
+  heading: { type: String, attribute: true },
+  mobileRows: { type: Number, attribute: true }
+});
+customElements.define("merch-whats-included", MerchWhatsIncluded);
+
+// src/hydrate.js
+var DEFAULT_BADGE_COLOR = "#000000";
+var DEFAULT_PLANS_BADGE_COLOR = "spectrum-yellow-300-plans";
+var DEFAULT_BADGE_BACKGROUND_COLOR = "#F8D904";
+var DEFAULT_BORDER_COLOR = "#EAEAEA";
+var CHECKOUT_STYLE_PATTERN = /(accent|primary|secondary)(-(outline|link))?/;
+var ANALYTICS_TAG = "mas:product_code/";
+var ANALYTICS_LINK_ATTR = "daa-ll";
+var ANALYTICS_SECTION_ATTR = "daa-lh";
+var SPECTRUM_BUTTON_SIZES = ["XL", "L", "M", "S"];
+var TEXT_TRUNCATE_SUFFIX = "...";
+function appendSlot(fieldName, fields, el, mapping) {
+  const config2 = mapping[fieldName];
+  if (fields[fieldName] && config2) {
+    const attributes = { slot: config2?.slot };
+    let content = fields[fieldName];
+    if (config2.maxCount && typeof content === "string") {
+      const [truncatedContent, cleanContent] = getTruncatedTextData(
+        content,
+        config2.maxCount,
+        config2.withSuffix
+      );
+      if (truncatedContent !== content) {
+        attributes.title = cleanContent;
+        content = truncatedContent;
+      }
+    }
+    const tag = createTag(config2.tag, attributes, content);
+    el.append(tag);
+  }
+}
+function processMnemonics(fields, merchCard, mnemonicsConfig) {
+  const mnemonics = fields.mnemonicIcon?.map((icon, index) => ({
+    icon,
+    alt: fields.mnemonicAlt[index] ?? "",
+    link: fields.mnemonicLink[index] ?? ""
+  }));
+  mnemonics?.forEach(({ icon: src, alt, link: href }) => {
+    if (href && !/^https?:/.test(href)) {
+      try {
+        href = new URL(`https://${href}`).href.toString();
+      } catch (e7) {
+        href = "#";
+      }
+    }
+    const attrs = {
+      slot: "icons",
+      src,
+      loading: merchCard.loading,
+      size: mnemonicsConfig?.size ?? "l"
+    };
+    if (alt) attrs.alt = alt;
+    if (href) attrs.href = href;
+    const merchIcon = createTag("merch-icon", attrs);
+    merchCard.append(merchIcon);
+  });
+}
+function processBadge(fields, merchCard, mapping) {
+  if (fields.variant.startsWith("plans")) {
+    if (fields.badge?.length && !fields.badge?.startsWith("<merch-badge")) {
+      fields.badge = `<merch-badge variant="${fields.variant}" background-color="${DEFAULT_PLANS_BADGE_COLOR}">${fields.badge}</merch-badge>`;
+      if (!fields.borderColor)
+        fields.borderColor = DEFAULT_PLANS_BADGE_COLOR;
+    }
+    appendSlot("badge", fields, merchCard, mapping);
+    return;
+  }
+  if (fields.badge) {
+    merchCard.setAttribute("badge-text", fields.badge);
+    merchCard.setAttribute(
+      "badge-color",
+      fields.badgeColor || DEFAULT_BADGE_COLOR
+    );
+    merchCard.setAttribute(
+      "badge-background-color",
+      fields.badgeBackgroundColor || DEFAULT_BADGE_BACKGROUND_COLOR
+    );
+    merchCard.setAttribute(
+      "border-color",
+      fields.badgeBackgroundColor || DEFAULT_BADGE_BACKGROUND_COLOR
+    );
+  } else {
+    merchCard.setAttribute(
+      "border-color",
+      fields.borderColor || DEFAULT_BORDER_COLOR
+    );
+  }
+}
+function processSize(fields, merchCard, sizeConfig) {
+  if (sizeConfig?.includes(fields.size)) {
+    merchCard.setAttribute("size", fields.size);
+  }
+}
+function processTitle(fields, merchCard, titleConfig) {
+  appendSlot("cardTitle", fields, merchCard, { cardTitle: titleConfig });
+}
+function processSubtitle(fields, merchCard, mapping) {
+  appendSlot("subtitle", fields, merchCard, mapping);
+}
+function processBackgroundColor(fields, merchCard, allowedColors) {
+  if (!fields.backgroundColor || fields.backgroundColor.toLowerCase() === "default") {
+    merchCard.style.removeProperty("--merch-card-custom-background-color");
+    merchCard.removeAttribute("background-color");
+    return;
+  }
+  if (allowedColors?.[fields.backgroundColor]) {
+    merchCard.style.setProperty(
+      "--merch-card-custom-background-color",
+      `var(${allowedColors[fields.backgroundColor]})`
+    );
+    merchCard.setAttribute("background-color", fields.backgroundColor);
+  }
+}
+function processBorderColor(fields, merchCard, borderColorConfig) {
+  const customBorderColor = "--merch-card-custom-border-color";
+  if (fields.borderColor?.toLowerCase() === "transparent") {
+    merchCard.style.removeProperty(customBorderColor);
+    if (fields.variant === "plans")
+      merchCard.style.setProperty(customBorderColor, "transparent");
+  } else if (fields.borderColor && borderColorConfig) {
+    if (/-gradient/.test(fields.borderColor)) {
+      merchCard.setAttribute("gradient-border", "true");
+      merchCard.style.removeProperty(customBorderColor);
+    } else {
+      merchCard.style.setProperty(
+        customBorderColor,
+        `var(--${fields.borderColor})`
+      );
+    }
+  }
+}
+function processBackgroundImage(fields, merchCard, backgroundImageConfig) {
+  if (fields.backgroundImage) {
+    const imgAttributes = {
+      loading: merchCard.loading ?? "lazy",
+      src: fields.backgroundImage
+    };
+    if (fields.backgroundImageAltText) {
+      imgAttributes.alt = fields.backgroundImageAltText;
+    } else {
+      imgAttributes.role = "none";
+    }
+    if (!backgroundImageConfig) return;
+    if (backgroundImageConfig?.attribute) {
+      merchCard.setAttribute(
+        backgroundImageConfig.attribute,
+        fields.backgroundImage
+      );
+      return;
+    }
+    merchCard.append(
+      createTag(
+        backgroundImageConfig.tag,
+        { slot: backgroundImageConfig.slot },
+        createTag("img", imgAttributes)
+      )
+    );
+  }
+}
+function processPrices(fields, merchCard, mapping) {
+  appendSlot("prices", fields, merchCard, mapping);
+}
+function processDescription(fields, merchCard, mapping) {
+  appendSlot("promoText", fields, merchCard, mapping);
+  appendSlot("description", fields, merchCard, mapping);
+  appendSlot("callout", fields, merchCard, mapping);
+  appendSlot("quantitySelect", fields, merchCard, mapping);
+  appendSlot("whatsIncluded", fields, merchCard, mapping);
+}
+function processAddon(fields, merchCard, mapping) {
+  if (!mapping.addon) return;
+  let addonField = fields.addon?.replace(/[{}]/g, "");
+  if (!addonField) return;
+  if (/disabled/.test(addonField)) return;
+  const addon = createTag("merch-addon", { slot: "addon" }, addonField);
+  [...addon.querySelectorAll(SELECTOR_MAS_INLINE_PRICE)].forEach((span) => {
+    const parent = span.parentElement;
+    if (parent?.nodeName !== "P") return;
+    parent.setAttribute("data-plan-type", "");
+  });
+  merchCard.append(addon);
+}
+function processStockOffersAndSecureLabel(fields, merchCard, aemFragmentMapping, settings) {
+  if (fields.showStockCheckbox && aemFragmentMapping.stockOffer) {
+    merchCard.setAttribute(
+      "checkbox-label",
+      settings?.stockCheckboxLabel ? settings.stockCheckboxLabel : ""
+    );
+    merchCard.setAttribute(
+      "stock-offer-osis",
+      settings?.stockOfferOsis ? settings.stockOfferOsis : ""
+    );
+  }
+  if (settings?.secureLabel && aemFragmentMapping?.secureLabel) {
+    merchCard.setAttribute("secure-label", settings.secureLabel);
+  }
+}
+function getTruncatedTextData(text, limit, withSuffix = true) {
+  try {
+    const _text = typeof text !== "string" ? "" : text;
+    const cleanText = clearTags(_text);
+    if (cleanText.length <= limit) return [_text, cleanText];
+    let index = 0;
+    let inTag = false;
+    let remaining = withSuffix ? limit - TEXT_TRUNCATE_SUFFIX.length < 1 ? 1 : limit - TEXT_TRUNCATE_SUFFIX.length : limit;
+    let openTags = [];
+    for (const char of _text) {
+      index++;
+      if (char === "<") {
+        inTag = true;
+        if (_text[index] === "/") {
+          openTags.pop();
+        } else {
+          let tagName = "";
+          for (const tagChar of _text.substring(index)) {
+            if (tagChar === " " || tagChar === ">") break;
+            tagName += tagChar;
+          }
+          openTags.push(tagName);
+        }
+      }
+      if (char === "/") {
+        if (_text[index] === ">") {
+          openTags.pop();
+        }
+      }
+      if (char === ">") {
+        inTag = false;
+        continue;
+      }
+      if (inTag) continue;
+      remaining--;
+      if (remaining === 0) break;
+    }
+    let trimmedText = _text.substring(0, index).trim();
+    if (openTags.length > 0) {
+      if (openTags[0] === "p") openTags.shift();
+      for (const tag of openTags.reverse()) {
+        trimmedText += `</${tag}>`;
+      }
+    }
+    let truncatedText = `${trimmedText}${withSuffix ? TEXT_TRUNCATE_SUFFIX : ""}`;
+    return [truncatedText, cleanText];
+  } catch (error) {
+    const fallbackText = typeof text === "string" ? text : "";
+    const cleanFallback = clearTags(fallbackText);
+    return [fallbackText, cleanFallback];
+  }
+}
+function clearTags(text) {
+  if (!text) return "";
+  let result = "";
+  let inTag = false;
+  for (const char of text) {
+    if (char === "<") inTag = true;
+    if (char === ">") {
+      inTag = false;
+      continue;
+    }
+    if (inTag) continue;
+    result += char;
+  }
+  return result;
+}
+function processUptLinks(fields, merchCard) {
+  const placeholders = merchCard.querySelectorAll("a.upt-link");
+  placeholders.forEach((placeholder) => {
+    const uptLink = UptLink.createFrom(placeholder);
+    placeholder.replaceWith(uptLink);
+    uptLink.initializeWcsData(fields.osi, fields.promoCode);
+  });
+}
+function createSpectrumCssButton(cta, aemFragmentMapping, isOutline, variant, isCheckout) {
+  let button = cta;
+  if (isCheckout) {
+    const CheckoutButton2 = customElements.get("checkout-button");
+    button = CheckoutButton2.createCheckoutButton({}, cta.innerHTML);
+  } else {
+    button.innerHTML = `<span>${button.textContent}</span>`;
+  }
+  button.setAttribute("tabindex", 0);
+  for (const attr of cta.attributes) {
+    if (["class", "is"].includes(attr.name)) continue;
+    button.setAttribute(attr.name, attr.value);
+  }
+  button.firstElementChild?.classList.add("spectrum-Button-label");
+  const size = aemFragmentMapping.ctas.size ?? "M";
+  const variantClass = `spectrum-Button--${variant}`;
+  const sizeClass = SPECTRUM_BUTTON_SIZES.includes(size) ? `spectrum-Button--size${size}` : "spectrum-Button--sizeM";
+  const spectrumClass = ["spectrum-Button", variantClass, sizeClass];
+  if (isOutline) {
+    spectrumClass.push("spectrum-Button--outline");
+  }
+  button.classList.add(...spectrumClass);
+  return button;
+}
+function createSpectrumSwcButton(cta, aemFragmentMapping, isOutline, variant, isCheckout) {
+  let button = cta;
+  if (isCheckout) {
+    const CheckoutButton2 = customElements.get("checkout-button");
+    button = CheckoutButton2.createCheckoutButton(cta.dataset);
+    button.connectedCallback();
+    button.render();
+  }
+  let treatment = "fill";
+  if (isOutline) {
+    treatment = "outline";
+  }
+  const spectrumCta = createTag(
+    "sp-button",
+    {
+      treatment,
+      variant,
+      tabIndex: 0,
+      size: aemFragmentMapping.ctas.size ?? "m",
+      ...cta.dataset.analyticsId && {
+        "data-analytics-id": cta.dataset.analyticsId
+      }
+    },
+    cta.innerHTML
+  );
+  spectrumCta.source = button;
+  (isCheckout ? button.onceSettled() : Promise.resolve(button)).then((target) => {
+    spectrumCta.setAttribute("data-navigation-url", target.href);
+  });
+  spectrumCta.addEventListener("click", (e7) => {
+    if (e7.defaultPrevented) return;
+    button.click();
+  });
+  return spectrumCta;
+}
+function createConsonantButton(cta, isAccent, isCheckout) {
+  let button = cta;
+  if (isCheckout) {
+    const CheckoutLink2 = customElements.get("checkout-link");
+    button = CheckoutLink2.createCheckoutLink(
+      cta.dataset,
+      cta.innerHTML
+    );
+  }
+  button.classList.add("con-button");
+  if (isAccent) {
+    button.classList.add("blue");
+  }
+  return button;
+}
+function processCTAs(fields, merchCard, aemFragmentMapping, variant) {
+  if (fields.ctas) {
+    const { slot } = aemFragmentMapping.ctas;
+    const footer = createTag("div", { slot }, fields.ctas);
+    const ctas = [...footer.querySelectorAll("a")].map((cta) => {
+      const isCheckout = cta.hasAttribute("data-wcs-osi") && Boolean(cta.getAttribute("data-wcs-osi"));
+      const checkoutLinkStyle = CHECKOUT_STYLE_PATTERN.exec(cta.className)?.[0] ?? "accent";
+      const isAccent = checkoutLinkStyle.includes("accent");
+      const isPrimary = checkoutLinkStyle.includes("primary");
+      const isSecondary = checkoutLinkStyle.includes("secondary");
+      const isOutline = checkoutLinkStyle.includes("-outline");
+      const isLink = checkoutLinkStyle.includes("-link");
+      cta.classList.remove("accent", "primary", "secondary");
+      if (merchCard.consonant)
+        return createConsonantButton(cta, isAccent, isCheckout);
+      if (isLink) {
+        return cta;
+      }
+      let variant2;
+      if (isAccent) {
+        variant2 = "accent";
+      } else if (isPrimary) {
+        variant2 = "primary";
+      } else if (isSecondary) {
+        variant2 = "secondary";
+      }
+      return merchCard.spectrum === "swc" ? createSpectrumSwcButton(
+        cta,
+        aemFragmentMapping,
+        isOutline,
+        variant2,
+        isCheckout
+      ) : createSpectrumCssButton(
+        cta,
+        aemFragmentMapping,
+        isOutline,
+        variant2,
+        isCheckout
+      );
+    });
+    footer.innerHTML = "";
+    footer.append(...ctas);
+    merchCard.append(footer);
+  }
+}
+function processAnalytics(fields, merchCard) {
+  const { tags } = fields;
+  const cardAnalyticsId = tags?.find((tag) => tag.startsWith(ANALYTICS_TAG))?.split("/").pop();
+  if (!cardAnalyticsId) return;
+  merchCard.setAttribute(ANALYTICS_SECTION_ATTR, cardAnalyticsId);
+  const elements = [
+    ...merchCard.shadowRoot.querySelectorAll(
+      `a[data-analytics-id],button[data-analytics-id]`
+    ),
+    ...merchCard.querySelectorAll(
+      `a[data-analytics-id],button[data-analytics-id]`
+    )
+  ];
+  elements.forEach((el, index) => {
+    el.setAttribute(
+      ANALYTICS_LINK_ATTR,
+      `${el.dataset.analyticsId}-${index + 1}`
+    );
+  });
+}
+function updateLinksCSS(merchCard) {
+  if (merchCard.spectrum !== "css") return;
+  [
+    ["primary-link", "primary"],
+    ["secondary-link", "secondary"]
+  ].forEach(([className, variant]) => {
+    merchCard.querySelectorAll(`a.${className}`).forEach((link) => {
+      link.classList.remove(className);
+      link.classList.add("spectrum-Link", `spectrum-Link--${variant}`);
+    });
+  });
+}
+function cleanup(merchCard) {
+  merchCard.querySelectorAll("[slot]").forEach((el) => {
+    el.remove();
+  });
+  merchCard.variant = void 0;
+  const attributesToRemove = [
+    "checkbox-label",
+    "stock-offer-osis",
+    "secure-label",
+    "background-image",
+    "background-color",
+    "border-color",
+    "badge-background-color",
+    "badge-color",
+    "badge-text",
+    "gradient-border",
+    "size",
+    ANALYTICS_SECTION_ATTR
+  ];
+  attributesToRemove.forEach((attr) => merchCard.removeAttribute(attr));
+  const classesToRemove = ["wide-strip", "thin-strip"];
+  merchCard.classList.remove(...classesToRemove);
+}
+async function hydrate(fragment, merchCard) {
+  const { id, fields, settings = {} } = fragment;
+  const { variant } = fields;
+  if (!variant) throw new Error(`hydrate: no variant found in payload ${id}`);
+  cleanup(merchCard);
+  merchCard.settings = settings;
+  merchCard.id ?? (merchCard.id = fragment.id);
+  merchCard.variant = variant;
+  await merchCard.updateComplete;
+  const { aemFragmentMapping } = merchCard.variantLayout;
+  if (!aemFragmentMapping)
+    throw new Error(`hydrate: aemFragmentMapping found for ${id}`);
+  if (aemFragmentMapping.style === "consonant") {
+    merchCard.setAttribute("consonant", true);
+  }
+  processMnemonics(fields, merchCard, aemFragmentMapping.mnemonics);
+  processBadge(fields, merchCard, aemFragmentMapping);
+  processSize(fields, merchCard, aemFragmentMapping.size);
+  processTitle(fields, merchCard, aemFragmentMapping.title);
+  processSubtitle(fields, merchCard, aemFragmentMapping);
+  processPrices(fields, merchCard, aemFragmentMapping);
+  processBackgroundImage(
+    fields,
+    merchCard,
+    aemFragmentMapping.backgroundImage
+  );
+  processBackgroundColor(fields, merchCard, aemFragmentMapping.allowedColors);
+  processBorderColor(fields, merchCard, aemFragmentMapping.borderColor);
+  processDescription(fields, merchCard, aemFragmentMapping);
+  processAddon(fields, merchCard, aemFragmentMapping);
+  processStockOffersAndSecureLabel(
+    fields,
+    merchCard,
+    aemFragmentMapping,
+    settings
+  );
+  processUptLinks(fields, merchCard);
+  processCTAs(fields, merchCard, aemFragmentMapping, variant);
+  processAnalytics(fields, merchCard);
+  updateLinksCSS(merchCard);
+}
+
+// src/merch-card.js
+var MERCH_CARD = "merch-card";
+var MARK_READY_SUFFIX = ":ready";
+var MARK_ERROR_SUFFIX = ":error";
+var MERCH_CARD_LOAD_TIMEOUT = 2e4;
+var MARK_MERCH_CARD_PREFIX = "merch-card:";
+function priceOptionsProvider(element, options) {
+  const card = element.closest(MERCH_CARD);
+  if (!card) return options;
+  card.variantLayout?.priceOptionsProvider?.(element, options);
+}
+function registerPriceOptionsProvider(masCommerceService) {
+  if (masCommerceService.providers.has(priceOptionsProvider)) return;
+  masCommerceService.providers.price(priceOptionsProvider);
+}
+var _log2, _service3, _MerchCard_instances, fail_fn2;
+var MerchCard = class extends s7 {
+  constructor() {
+    super();
+    __privateAdd(this, _MerchCard_instances);
+    __publicField(this, "customerSegment");
+    __publicField(this, "marketSegment");
+    /**
+     * @type {VariantLayout}
+     */
+    __publicField(this, "variantLayout");
+    __privateAdd(this, _log2);
+    __privateAdd(this, _service3);
+    __publicField(this, "readyEventDispatched", false);
+    this.id = null;
+    this.failed = false;
+    this.filters = {};
+    this.types = "";
+    this.selected = false;
+    this.spectrum = "css";
+    this.loading = "lazy";
+    this.handleAemFragmentEvents = this.handleAemFragmentEvents.bind(this);
+  }
+  firstUpdated() {
+    this.variantLayout = getVariantLayout(this, false);
+    this.variantLayout?.connectedCallbackHook();
+    this.aemFragment?.updateComplete.catch((e7) => {
+      __privateMethod(this, _MerchCard_instances, fail_fn2).call(this, e7, {}, false);
+      this.style.display = "none";
+    });
+  }
+  willUpdate(changedProperties) {
+    if (changedProperties.has("variant") || !this.variantLayout) {
+      this.variantLayout = getVariantLayout(this);
+      this.variantLayout.connectedCallbackHook();
+    }
+  }
+  updated(changedProperties) {
+    if (changedProperties.has("badgeBackgroundColor") || changedProperties.has("borderColor")) {
+      this.style.setProperty(
+        "--consonant-merch-card-border",
+        this.computedBorderStyle
+      );
+    }
+    try {
+      this.variantLayout?.postCardUpdateHook(changedProperties);
+    } catch (e7) {
+      __privateMethod(this, _MerchCard_instances, fail_fn2).call(this, `Error in postCardUpdateHook: ${e7.message}`, {}, false);
+    }
+  }
+  get theme() {
+    return this.closest("sp-theme");
+  }
+  get dir() {
+    return this.closest("[dir]")?.getAttribute("dir") ?? "ltr";
+  }
+  get prices() {
+    return Array.from(
+      this.querySelectorAll('span[is="inline-price"][data-wcs-osi]')
+    );
+  }
+  render() {
+    if (!this.isConnected || !this.variantLayout || this.style.display === "none")
+      return;
+    return this.variantLayout.renderLayout();
+  }
+  get computedBorderStyle() {
+    if (!["ccd-slice", "ccd-suggested", "ah-promoted-plans"].includes(
+      this.variant
+    )) {
+      return `1px solid ${this.borderColor ? this.borderColor : this.badgeBackgroundColor}`;
+    }
+    return "";
+  }
+  get badgeElement() {
+    return this.shadowRoot.getElementById("badge");
+  }
+  get headingmMSlot() {
+    return this.shadowRoot.querySelector('slot[name="heading-m"]').assignedElements()[0];
+  }
+  get footerSlot() {
+    return this.shadowRoot.querySelector('slot[name="footer"]')?.assignedElements()[0];
+  }
+  get price() {
+    return this.headingmMSlot?.querySelector(SELECTOR_MAS_INLINE_PRICE);
+  }
+  get checkoutLinks() {
+    return [
+      ...this.footerSlot?.querySelectorAll(SELECTOR_MAS_CHECKOUT_LINK) ?? []
+    ];
+  }
+  async toggleStockOffer({ target }) {
+    if (!this.stockOfferOsis) return;
+    const elements = this.checkoutLinks;
+    if (elements.length === 0) return;
+    for (const element of elements) {
+      await element.onceSettled();
+      const planType = element.value?.[0]?.planType;
+      if (!planType) return;
+      const stockOfferOsi = this.stockOfferOsis[planType];
+      if (!stockOfferOsi) return;
+      const osis = element.dataset.wcsOsi.split(",").filter((osi) => osi !== stockOfferOsi);
+      if (target.checked) {
+        osis.push(stockOfferOsi);
+      }
+      element.dataset.wcsOsi = osis.join(",");
+    }
+  }
+  changeHandler(event) {
+    if (event.target.tagName === "MERCH-ADDON") {
+      this.toggleAddon(event.target);
+    }
+  }
+  toggleAddon(merchAddon) {
+    const elements = this.checkoutLinks;
+    this.variantLayout?.toggleAddon?.(merchAddon);
+    if (elements.length === 0) return;
+    for (const element of elements) {
+      const { offerType, planType } = element.value?.[0];
+      if (!offerType || !planType) return;
+      const addonOsi = merchAddon.querySelector(
+        `p[data-plan-type="${planType}"] ${SELECTOR_MAS_INLINE_PRICE}[data-offer-type="${offerType}"]`
+      )?.dataset?.wcsOsi;
+      const osis = element.dataset.wcsOsi.split(",").filter((osi) => osi !== addonOsi);
+      if (merchAddon.checked) {
+        osis.push(addonOsi);
+      }
+      element.dataset.wcsOsi = osis.join(",");
+    }
+  }
+  handleQuantitySelection(event) {
+    const elements = this.checkoutLinks;
+    for (const element of elements) {
+      element.dataset.quantity = event.detail.option;
+    }
+  }
+  get titleElement() {
+    return this.querySelector(
+      this.variantLayout?.headingSelector || ".card-heading"
+    );
+  }
+  get title() {
+    return this.titleElement?.textContent?.trim();
+  }
+  /* c8 ignore next 3 */
+  get description() {
+    return this.querySelector('[slot="body-xs"]')?.textContent?.trim();
+  }
+  /**
+   * If the card is the single app, set the order for all filters to 2.
+   * If not, increment the order for all filters after the second card by 1.
+   * @param {*} singleApp
+   */
+  updateFilters(singleApp) {
+    const newFilters = { ...this.filters };
+    Object.keys(newFilters).forEach((key) => {
+      if (singleApp) {
+        newFilters[key].order = Math.min(newFilters[key].order || 2, 2);
+        return;
+      }
+      const value = newFilters[key].order;
+      if (value === 1 || isNaN(value)) return;
+      newFilters[key].order = Number(value) + 1;
+    });
+    this.filters = newFilters;
+  }
+  /* c8 ignore next 3 */
+  includes(text) {
+    return this.textContent.match(new RegExp(text, "i")) !== null;
+  }
+  connectedCallback() {
+    super.connectedCallback();
+    __privateSet(this, _service3, getService2());
+    registerPriceOptionsProvider(__privateGet(this, _service3));
+    __privateSet(this, _log2, __privateGet(this, _service3).Log.module(MERCH_CARD));
+    this.id ?? (this.id = this.querySelector("aem-fragment")?.getAttribute("fragment"));
+    performance.mark(
+      `${MARK_MERCH_CARD_PREFIX}${this.id}${MARK_START_SUFFIX}`
+    );
+    this.addEventListener(
+      EVENT_MERCH_QUANTITY_SELECTOR_CHANGE,
+      this.handleQuantitySelection
+    );
+    this.addEventListener(
+      EVENT_MERCH_ADDON_AND_QUANTITY_UPDATE,
+      this.handleAddonAndQuantityUpdate
+    );
+    this.addEventListener(
+      EVENT_MERCH_OFFER_SELECT_READY,
+      this.merchCardReady,
+      { once: true }
+    );
+    this.updateComplete.then(() => {
+      this.merchCardReady();
+    });
+    this.addEventListener(EVENT_AEM_ERROR, this.handleAemFragmentEvents);
+    this.addEventListener(EVENT_AEM_LOAD, this.handleAemFragmentEvents);
+    this.addEventListener("change", this.changeHandler);
+    if (!this.aemFragment) {
+      setTimeout(() => this.checkReady(), 0);
+    }
+  }
+  disconnectedCallback() {
+    super.disconnectedCallback();
+    this.variantLayout?.disconnectedCallbackHook();
+    this.removeEventListener(
+      EVENT_MERCH_QUANTITY_SELECTOR_CHANGE,
+      this.handleQuantitySelection
+    );
+    this.removeEventListener(EVENT_AEM_ERROR, this.handleAemFragmentEvents);
+    this.removeEventListener(EVENT_AEM_LOAD, this.handleAemFragmentEvents);
+    this.removeEventListener("change", this.changeHandler);
+    this.removeEventListener(EVENT_MERCH_ADDON_AND_QUANTITY_UPDATE, this.handleAddonAndQuantityUpdate);
+  }
+  // custom methods
+  async handleAemFragmentEvents(e7) {
+    if (!this.isConnected) return;
+    if (e7.type === EVENT_AEM_ERROR) {
+      __privateMethod(this, _MerchCard_instances, fail_fn2).call(this, `AEM fragment cannot be loaded: ${e7.detail.message}`, e7.detail);
+    }
+    if (e7.type === EVENT_AEM_LOAD) {
+      if (e7.target.nodeName === "AEM-FRAGMENT") {
+        const fragment = e7.detail;
+        hydrate(fragment, this).then(() => this.checkReady()).catch((e8) => __privateGet(this, _log2).error(e8));
+      }
+    }
+  }
+  async checkReady() {
+    if (!this.isConnected) return;
+    const timeoutPromise = new Promise(
+      (resolve) => setTimeout(() => resolve("timeout"), MERCH_CARD_LOAD_TIMEOUT)
+    );
+    if (this.aemFragment) {
+      const result2 = await Promise.race([
+        this.aemFragment.updateComplete,
+        timeoutPromise
+      ]);
+      if (result2 === false) {
+        const errorMessage = result2 === "timeout" ? `AEM fragment was not resolved within ${MERCH_CARD_LOAD_TIMEOUT} timeout` : "AEM fragment cannot be loaded";
+        __privateMethod(this, _MerchCard_instances, fail_fn2).call(this, errorMessage, {}, false);
+        return;
+      }
+    }
+    const masElements = [...this.querySelectorAll(SELECTOR_MAS_ELEMENT)];
+    masElements.push(
+      ...[...this.querySelectorAll(SELECTOR_MAS_SP_BUTTON)].map(
+        (element) => element.source
+      )
+    );
+    const successPromise = Promise.all(
+      masElements.map(
+        (element) => element.onceSettled().catch(() => element)
+      )
+    ).then(
+      (elements) => elements.every(
+        (el) => el.classList.contains("placeholder-resolved")
+      )
+    );
+    const result = await Promise.race([successPromise, timeoutPromise]);
+    if (result === true) {
+      performance.mark(
+        `${MARK_MERCH_CARD_PREFIX}${this.id}${MARK_READY_SUFFIX}`
+      );
+      if (!this.readyEventDispatched) {
+        this.readyEventDispatched = true;
+        this.dispatchEvent(
+          new CustomEvent(EVENT_MAS_READY, {
+            bubbles: true,
+            composed: true
+          })
+        );
+      }
+      return this;
+    } else {
+      const { duration, startTime } = performance.measure(
+        `${MARK_MERCH_CARD_PREFIX}${this.id}${MARK_ERROR_SUFFIX}`,
+        `${MARK_MERCH_CARD_PREFIX}${this.id}${MARK_START_SUFFIX}`
+      );
+      const details = {
+        duration,
+        startTime,
+        ...__privateGet(this, _service3).duration
+      };
+      if (result === "timeout") {
+        __privateMethod(this, _MerchCard_instances, fail_fn2).call(this, `Contains offers that were not resolved within ${MERCH_CARD_LOAD_TIMEOUT} timeout`, details);
+      } else {
+        __privateMethod(this, _MerchCard_instances, fail_fn2).call(this, `Contains unresolved offers`, details);
+      }
+    }
+  }
+  get aemFragment() {
+    return this.querySelector("aem-fragment");
+  }
+  get addon() {
+    return this.querySelector("merch-addon");
+  }
+  /* c8 ignore next 3 */
+  get quantitySelect() {
+    return this.querySelector("merch-quantity-select");
+  }
+  get addonCheckbox() {
+    return this.querySelector("merch-addon");
+    return this.querySelector("merch-addon");
+  }
+  displayFooterElementsInColumn() {
+    if (!this.classList.contains("product")) return;
+    const secureTransactionLabel = this.shadowRoot.querySelector(
+      ".secure-transaction-label"
+    );
+    const checkoutLinkCtas = this.footerSlot?.querySelectorAll(
+      SELECTOR_MAS_CHECKOUT_LINK
+    );
+    if (checkoutLinkCtas.length === 2 && secureTransactionLabel) {
+      secureTransactionLabel.parentElement.classList.add("footer-column");
+    }
+  }
+  merchCardReady() {
+    if (this.offerSelect && !this.offerSelect.planType) return;
+    this.dispatchEvent(
+      new CustomEvent(EVENT_MERCH_CARD_READY, { bubbles: true })
+    );
+    this.displayFooterElementsInColumn();
+  }
+  /* c8 ignore next 3 */
+  get dynamicPrice() {
+    return this.querySelector('[slot="price"]');
+  }
+  handleAddonAndQuantityUpdate({ detail: { id, items } }) {
+    if (!id || !items?.length) return;
+    const cta = this.checkoutLinks.find((link) => link.getAttribute("data-modal-id") === id);
+    if (!cta) return;
+    const url = new URL(cta.getAttribute("href"));
+    const pa = url.searchParams.get("pa");
+    const mainProductQuantity = items.find((item) => item.productArrangementCode === pa)?.quantity;
+    const isAddonIncluded = !!items.find((item) => item.productArrangementCode !== pa);
+    if (mainProductQuantity) {
+      this.quantitySelect?.dispatchEvent(new CustomEvent(EVENT_MERCH_CARD_QUANTITY_CHANGE, {
+        detail: { quantity: mainProductQuantity },
+        bubbles: true,
+        composed: true
+      }));
+    }
+    if (this.addonCheckbox?.checked !== isAddonIncluded) {
+      this.toggleStockOffer({ target: this.addonCheckbox });
+      const checkboxEvent = new Event("change", {
+        bubbles: true,
+        cancelable: true
+      });
+      Object.defineProperty(checkboxEvent, "target", {
+        writable: false,
+        value: { checked: isAddonIncluded }
+      });
+      this.addonCheckbox.handleChange(checkboxEvent);
+    }
+  }
+};
+_log2 = new WeakMap();
+_service3 = new WeakMap();
+_MerchCard_instances = new WeakSet();
+fail_fn2 = function(error, details = {}, dispatch = true) {
+  __privateGet(this, _log2).error(`merch-card: ${error}`, details);
+  this.failed = true;
+  if (!dispatch) return;
+  this.dispatchEvent(
+    new CustomEvent(EVENT_MAS_ERROR, {
+      detail: { ...details, message: error },
+      bubbles: true,
+      composed: true
+    })
+  );
+};
+__publicField(MerchCard, "properties", {
+  id: { type: String, attribute: "id", reflect: true },
+  name: { type: String, attribute: "name", reflect: true },
+  variant: { type: String, reflect: true },
+  size: { type: String, attribute: "size", reflect: true },
+  badgeColor: { type: String, attribute: "badge-color", reflect: true },
+  borderColor: { type: String, attribute: "border-color", reflect: true },
+  badgeBackgroundColor: {
+    type: String,
+    attribute: "badge-background-color",
+    reflect: true
+  },
+  backgroundImage: {
+    type: String,
+    attribute: "background-image",
+    reflect: true
+  },
+  badgeText: { type: String, attribute: "badge-text" },
+  actionMenu: { type: Boolean, attribute: "action-menu" },
+  actionMenuLabel: { type: String, attribute: "action-menu-label" },
+  customHr: { type: Boolean, attribute: "custom-hr" },
+  consonant: { type: Boolean, attribute: "consonant" },
+  failed: { type: Boolean, attribute: "failed", reflect: true },
+  spectrum: { type: String, attribute: "spectrum" },
+  detailBg: { type: String, attribute: "detail-bg" },
+  secureLabel: { type: String, attribute: "secure-label" },
+  checkboxLabel: { type: String, attribute: "checkbox-label" },
+  addonTitle: { type: String, attribute: "addon-title" },
+  addonOffers: { type: Object, attribute: "addon-offers" },
+  selected: { type: Boolean, attribute: "aria-selected", reflect: true },
+  storageOption: { type: String, attribute: "storage", reflect: true },
+  planType: { type: String, attribute: "plan-type", reflect: true },
+  settings: {
+    type: Object,
+    attribute: false
+  },
+  stockOfferOsis: {
+    type: Object,
+    attribute: "stock-offer-osis",
+    converter: {
+      fromAttribute: (value) => {
+        if (!value) return;
+        const [PUF2, ABM2, M2M2] = value.split(",");
+        return { PUF: PUF2, ABM: ABM2, M2M: M2M2 };
+      }
+    }
+  },
+  filters: {
+    type: String,
+    reflect: true,
+    converter: {
+      fromAttribute: (value) => {
+        return Object.fromEntries(
+          value.split(",").map((filter) => {
+            const [key, order, size] = filter.split(":");
+            const value2 = Number(order);
+            return [
+              key,
+              {
+                order: isNaN(value2) ? void 0 : value2,
+                size
+              }
+            ];
+          })
+        );
+      },
+      toAttribute: (value) => {
+        return Object.entries(value).map(
+          ([key, { order, size }]) => [key, order, size].filter((v3) => v3 != void 0).join(":")
+        ).join(",");
+      }
+    }
+  },
+  types: {
+    type: String,
+    attribute: "types",
+    reflect: true
+  },
+  merchOffer: { type: Object },
+  analyticsId: {
+    type: String,
+    attribute: ANALYTICS_SECTION_ATTR,
+    reflect: true
+  },
+  loading: { type: String }
+});
+__publicField(MerchCard, "styles", [styles, ...sizeStyles()]);
+__publicField(MerchCard, "registerVariant", registerVariant);
+__publicField(MerchCard, "getFragmentMapping", getFragmentMapping);
+customElements.define(MERCH_CARD, MerchCard);
+
+// src/merch-offer-select.js
+var _handleOfferSelectionByQuantityFn;
+var MerchOfferSelect = class extends s7 {
+  constructor() {
+    super();
+    __privateAdd(this, _handleOfferSelectionByQuantityFn);
+    this.defaults = {};
+    this.variant = "plans";
+  }
+  /** Returns the default values for the price, cta, and description slots.
+   * These are the values coming from the container itself, not from the merch-offer elements.
+   * E.g. initial merch-card description text. There is no default price or cta in the container.
+   */
+  saveContainerDefaultValues() {
+    const container = this.closest(this.getAttribute("container"));
+    const description = container?.querySelector('[slot="description"]:not(merch-offer > *)')?.cloneNode(true);
+    const badgeText = container?.badgeText;
+    return {
+      description,
+      badgeText
+    };
+  }
+  getSlottedElement(slotName, container) {
+    const containerEl = container || this.closest(this.getAttribute("container"));
+    return containerEl.querySelector(
+      `[slot="${slotName}"]:not(merch-offer > *)`
+    );
+  }
+  updateSlot(slotName, container) {
+    const slot = this.getSlottedElement(slotName, container);
+    if (!slot) return;
+    const node = this.selectedOffer.getOptionValue(slotName) ? this.selectedOffer.getOptionValue(slotName) : this.defaults[slotName];
+    if (node) {
+      slot.replaceWith(node.cloneNode(true));
+    }
+  }
+  handleOfferSelection(e7) {
+    const newOffer = e7.detail;
+    this.selectOffer(newOffer);
+  }
+  handleOfferSelectionByQuantity(event) {
+    const selected = event.detail.option;
+    const selectedValue = Number.parseInt(selected);
+    const newOffer = this.findAppropriateOffer(selectedValue);
+    this.selectOffer(newOffer);
+    const cta = this.getSlottedElement("cta");
+    cta.setAttribute("data-quantity", selectedValue);
+  }
+  selectOffer(newOffer) {
+    if (!newOffer) {
+      return;
+    }
+    const previousOffer = this.selectedOffer;
+    if (previousOffer) {
+      previousOffer.selected = false;
+    }
+    newOffer.selected = true;
+    this.selectedOffer = newOffer;
+    this.planType = newOffer.planType;
+    this.updateContainer();
+    this.updateComplete.then(() => {
+      this.dispatchEvent(
+        new CustomEvent(EVENT_OFFER_SELECTED, {
+          detail: this,
+          bubbles: true
+        })
+      );
+    });
+  }
+  findAppropriateOffer(selectedValue) {
+    let previousOfferWithValue = null;
+    const foundOffer = this.offers.find((offer) => {
+      const offerAttribute = Number.parseInt(offer.getAttribute("value"));
+      if (offerAttribute === selectedValue) {
+        return true;
+      } else if (offerAttribute > selectedValue) {
+        return false;
+      } else {
+        previousOfferWithValue = offer;
+      }
+    });
+    return foundOffer || previousOfferWithValue;
+  }
+  /**
+   * If badge text is empty string - delete the badge.
+   * If badge text is present - set the badge.
+   * If badge text is null or undefined - set default badge. */
+  updateBadgeText(container) {
+    if (this.selectedOffer.badgeText === "") {
+      container.badgeText = null;
+    } else if (this.selectedOffer.badgeText) {
+      container.badgeText = this.selectedOffer.badgeText;
+    } else {
+      container.badgeText = this.defaults.badgeText;
+    }
+  }
+  /** Will update price, cta, and other slots/properties in parent container (e.g. merch-card) */
+  updateContainer() {
+    const container = this.closest(this.getAttribute("container"));
+    if (!container || !this.selectedOffer) return;
+    this.updateSlot("cta", container);
+    this.updateSlot("secondary-cta", container);
+    this.updateSlot("price", container);
+    if (this.manageableMode) return;
+    this.updateSlot("description", container);
+    this.updateBadgeText(container);
+  }
+  render() {
+    return x2`<fieldset><slot class="${this.variant}"></slot></fieldset>`;
+  }
+  connectedCallback() {
+    super.connectedCallback();
+    this.addEventListener("focusin", this.handleFocusin);
+    this.addEventListener("click", this.handleFocusin);
+    this.addEventListener(
+      EVENT_MERCH_OFFER_READY,
+      this.handleOfferSelectReady
+    );
+    const quantitySelect = this.closest("merch-quantity-select");
+    this.manageableMode = quantitySelect;
+    this.offers = [...this.querySelectorAll("merch-offer")];
+    __privateSet(this, _handleOfferSelectionByQuantityFn, this.handleOfferSelectionByQuantity.bind(this));
+    if (this.manageableMode) {
+      quantitySelect.addEventListener(
+        EVENT_MERCH_QUANTITY_SELECTOR_CHANGE,
+        __privateGet(this, _handleOfferSelectionByQuantityFn)
+      );
+    } else {
+      this.defaults = this.saveContainerDefaultValues();
+    }
+    this.selectedOffer = this.offers[0];
+    if (this.planType) {
+      this.updateContainer();
+    }
+  }
+  get miniCompareMobileCard() {
+    return this.merchCard?.variant === "mini-compare-chart" && this.isMobile;
+  }
+  get merchCard() {
+    return this.closest("merch-card");
+  }
+  get isMobile() {
+    return window.matchMedia("(max-width: 767px)").matches;
+  }
+  disconnectedCallback() {
+    super.disconnectedCallback();
+    this.removeEventListener(
+      EVENT_MERCH_QUANTITY_SELECTOR_CHANGE,
+      __privateGet(this, _handleOfferSelectionByQuantityFn)
+    );
+    this.removeEventListener(
+      EVENT_MERCH_OFFER_READY,
+      this.handleOfferSelectReady
+    );
+    this.removeEventListener("focusin", this.handleFocusin);
+    this.removeEventListener("click", this.handleFocusin);
+  }
+  get price() {
+    return this.querySelector(
+      'merch-offer[aria-selected] [is="inline-price"]'
+    );
+  }
+  get customerSegment() {
+    return this.selectedOffer?.customerSegment;
+  }
+  get marketSegment() {
+    return this.selectedOffer?.marketSegment;
+  }
+  handleFocusin(event) {
+    if (event.target?.nodeName === "MERCH-OFFER") {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      this.selectOffer(event.target);
+    }
+  }
+  async handleOfferSelectReady() {
+    if (this.planType) return;
+    if (this.querySelector("merch-offer:not([plan-type])")) return;
+    this.planType = this.selectedOffer.planType;
+    await this.updateComplete;
+    this.selectOffer(
+      this.selectedOffer ?? this.querySelector("merch-offer[aria-selected]") ?? this.querySelector("merch-offer")
+    );
+    this.dispatchEvent(
+      new CustomEvent(EVENT_MERCH_OFFER_SELECT_READY, { bubbles: true })
+    );
+  }
+};
+_handleOfferSelectionByQuantityFn = new WeakMap();
+__publicField(MerchOfferSelect, "styles", i3`
         :host {
             display: inline-block;
         }
@@ -2271,7 +12474,19 @@ sr-only {
             flex-direction: column;
             gap: var(--consonant-merch-spacing-xs);
         }
-    `),u(Rr,"properties",{offers:{type:Array},selectedOffer:{type:Object},defaults:{type:Object},variant:{type:String,attribute:"variant",reflect:!0},planType:{type:String,attribute:"plan-type",reflect:!0},stock:{type:Boolean,reflect:!0}});customElements.define("merch-offer-select",Rr);var Ec=y`
+    `);
+__publicField(MerchOfferSelect, "properties", {
+  offers: { type: Array },
+  selectedOffer: { type: Object },
+  defaults: { type: Object },
+  variant: { type: String, attribute: "variant", reflect: true },
+  planType: { type: String, attribute: "plan-type", reflect: true },
+  stock: { type: Boolean, reflect: true }
+});
+customElements.define("merch-offer-select", MerchOfferSelect);
+
+// src/merch-offer.css.js
+var styles3 = i3`
     :host {
         --merch-radio: rgba(82, 88, 228);
         --merch-radio-hover: rgba(64, 70, 202);
@@ -2482,11 +12697,41 @@ sr-only {
         position: relative;
         height: 40px;
     }
-`;var Td="merch-offer",Or=class extends I{constructor(){super();u(this,"tr");this.type="radio",this.selected=!1}getOptionValue(r){return this.querySelector(`[slot="${r}"]`)}connectedCallback(){super.connectedCallback(),this.initOffer(),this.configuration=this.closest("quantity-selector"),!this.hasAttribute("tabindex")&&!this.configuration&&(this.tabIndex=0),!this.hasAttribute("role")&&!this.configuration&&(this.role="radio")}get asRadioOption(){return g` <div class="merch-Radio">
+`;
+
+// src/merch-offer.js
+var TAG_NAME = "merch-offer";
+var MerchOffer = class extends s7 {
+  constructor() {
+    super();
+    __publicField(this, "tr");
+    this.type = "radio";
+    this.selected = false;
+  }
+  getOptionValue(slotName) {
+    return this.querySelector(`[slot="${slotName}"]`);
+  }
+  // setting attributes can't be done in constructor, so using connectedCallback
+  connectedCallback() {
+    super.connectedCallback();
+    this.initOffer();
+    this.configuration = this.closest("quantity-selector");
+    if (!this.hasAttribute("tabindex") && !this.configuration) {
+      this.tabIndex = 0;
+    }
+    if (!this.hasAttribute("role") && !this.configuration) {
+      this.role = "radio";
+    }
+  }
+  get asRadioOption() {
+    return x2` <div class="merch-Radio">
             <input tabindex="-1" type="radio" class="merch-Radio-input" />
             <span class="merch-Radio-button"></span>
             <span class="merch-Radio-label">${this.text}</span>
-        </div>`}get asSubscriptionOption(){return g`<slot name="commitment"></slot>
+        </div>`;
+  }
+  get asSubscriptionOption() {
+    return x2`<slot name="commitment"></slot>
             <slot name="price"></slot>
             <slot name="teaser"></slot>
             <div id="condition">
@@ -2499,7 +12744,60 @@ sr-only {
                         ><slot name="condition-tooltip"></slot
                     ></sp-tooltip>
                 </sp-overlay>
-            </div>`}render(){return this.configuration||!this.price?"":this.type==="subscription-option"?this.asSubscriptionOption:this.asRadioOption}get price(){return this.querySelector('span[is="inline-price"]:not([data-template="strikethrough"])')}get cta(){return this.querySelector(Be)}get prices(){return this.querySelectorAll('span[is="inline-price"]')}get customerSegment(){return this.price?.value?.[0].customerSegment}get marketSegment(){return this.price?.value?.[0].marketSegments[0]}async initOffer(){if(!this.price)return;this.prices.forEach(n=>n.setAttribute("slot","price")),await this.updateComplete,await Promise.all([...this.prices].map(n=>n.onceSettled()));let{value:[r]}=this.price;this.planType=r.planType,await this.updateComplete,this.dispatchEvent(new CustomEvent(ut,{bubbles:!0}))}};u(Or,"properties",{text:{type:String},selected:{type:Boolean,attribute:"aria-selected",reflect:!0},badgeText:{type:String,attribute:"badge-text"},type:{type:String,attribute:"type",reflect:!0},planType:{type:String,attribute:"plan-type",reflect:!0}}),u(Or,"styles",[Ec]);customElements.define(Td,Or);var Ac=y`
+            </div>`;
+  }
+  render() {
+    if (this.configuration) return "";
+    if (!this.price) return "";
+    if (this.type === "subscription-option")
+      return this.asSubscriptionOption;
+    return this.asRadioOption;
+  }
+  get price() {
+    return this.querySelector(
+      'span[is="inline-price"]:not([data-template="strikethrough"])'
+    );
+  }
+  get cta() {
+    return this.querySelector(SELECTOR_MAS_CHECKOUT_LINK);
+  }
+  get prices() {
+    return this.querySelectorAll('span[is="inline-price"]');
+  }
+  get customerSegment() {
+    return this.price?.value?.[0].customerSegment;
+  }
+  get marketSegment() {
+    return this.price?.value?.[0].marketSegments[0];
+  }
+  async initOffer() {
+    if (!this.price) return;
+    this.prices.forEach((el) => el.setAttribute("slot", "price"));
+    await this.updateComplete;
+    await Promise.all([...this.prices].map((price2) => price2.onceSettled()));
+    const {
+      value: [offer]
+    } = this.price;
+    this.planType = offer.planType;
+    await this.updateComplete;
+    this.dispatchEvent(
+      new CustomEvent(EVENT_MERCH_OFFER_READY, { bubbles: true })
+    );
+  }
+};
+__publicField(MerchOffer, "properties", {
+  text: { type: String },
+  selected: { type: Boolean, attribute: "aria-selected", reflect: true },
+  badgeText: { type: String, attribute: "badge-text" },
+  type: { type: String, attribute: "type", reflect: true },
+  // values: radio, subscription-option
+  planType: { type: String, attribute: "plan-type", reflect: true }
+});
+__publicField(MerchOffer, "styles", [styles3]);
+customElements.define(TAG_NAME, MerchOffer);
+
+// src/merch-quantity-select.css.js
+var styles4 = i3`
     :host {
         box-sizing: border-box;
         --background-color: var(--qs-background-color, #f6f6f6);
@@ -2629,17 +12927,202 @@ sr-only {
     .item.highlighted {
         background-color: var(--background-color);
     }
-`;var[Dx,Bx,wc,_c,Sc,zx]=["ArrowLeft","ArrowRight","ArrowUp","ArrowDown","Enter","Tab"];var Ti=class extends I{static get properties(){return{closed:{type:Boolean,reflect:!0},selected:{type:Number},min:{type:Number},max:{type:Number},step:{type:Number},maxInput:{type:Number,attribute:"max-input"},options:{type:Array},highlightedIndex:{type:Number},defaultValue:{type:Number,attribute:"default-value",reflect:!0},title:{type:String}}}static get styles(){return Ac}constructor(){super(),this.options=[],this.title="",this.closed=!0,this.min=0,this.max=0,this.step=0,this.maxInput=void 0,this.defaultValue=void 0,this.selectedValue=0,this.highlightedIndex=0,this.toggleMenu=this.toggleMenu.bind(this),this.handleClickOutside=this.handleClickOutside.bind(this),this.boundKeydownListener=this.handleKeydown.bind(this),this.addEventListener("keydown",this.boundKeydownListener),window.addEventListener("mousedown",this.handleClickOutside),this.handleKeyupDebounced=sn(this.handleKeyup.bind(this),500),this.handleQuantityUpdate=this.handleQuantityUpdate.bind(this),this.addEventListener(ft,this.handleQuantityUpdate)}handleKeyup(){this.handleInput(),this.sendEvent()}handleKeydown(t){switch(t.key){case _c:this.closed||(t.preventDefault(),this.highlightedIndex=(this.highlightedIndex+1)%this.options.length);break;case wc:this.closed||(t.preventDefault(),this.highlightedIndex=(this.highlightedIndex-1+this.options.length)%this.options.length);break;case Sc:if(this.closed)this.closePopover(),this.blur();else{let r=this.options[this.highlightedIndex];if(!r)break;this.selectedValue=r,this.handleMenuOption(this.selectedValue),this.toggleMenu()}break}t.composedPath().includes(this)&&t.stopPropagation()}adjustInput(t,r){this.selectedValue=r,t.value=r,this.highlightedIndex=this.options.indexOf(r)}handleInput(){let t=this.shadowRoot.querySelector(".text-field-input"),r=parseInt(t.value);if(!isNaN(r))if(r>0&&r!==this.selectedValue){let n=r;this.maxInput&&r>this.maxInput&&(n=this.maxInput),this.min&&n<this.min&&(n=this.min),this.adjustInput(t,n)}else this.adjustInput(t,this.min||1)}disconnectedCallback(){super.disconnectedCallback(),window.removeEventListener("mousedown",this.handleClickOutside),this.removeEventListener("keydown",this.boundKeydownListener),this.removeEventListener(ft,this.handleQuantityUpdate)}generateOptionsArray(){let t=[];if(this.step>0)for(let r=this.min;r<=this.max;r+=this.step)t.push(r);return t}update(t){(t.has("min")||t.has("max")||t.has("step")||t.has("defaultValue"))&&(this.options=this.generateOptionsArray(),this.highlightedIndex=this.defaultValue?this.options.indexOf(this.defaultValue):0,this.handleMenuOption(this.defaultValue?this.defaultValue:this.options[0])),super.update(t)}handleClickOutside(t){t.composedPath().includes(this)||this.closePopover()}toggleMenu(){this.closed=!this.closed}handleMouseEnter(t){this.highlightedIndex=t}handleMenuOption(t){t===this.max&&this.shadowRoot.querySelector(".text-field-input")?.focus(),this.selectedValue=t,this.sendEvent(),this.closePopover()}sendEvent(){let t=new CustomEvent(ue,{detail:{option:this.selectedValue},bubbles:!0});this.dispatchEvent(t)}closePopover(){this.closed||this.toggleMenu()}get offerSelect(){return this.querySelector("merch-offer-select")}get popover(){return g` <div class="popover ${this.closed?"closed":"open"}">
-            ${this.options.map((t,r)=>g`
+`;
+
+// src/focus.js
+var [ARROW_LEFT, ARROW_RIGHT, ARROW_UP, ARROW_DOWN, ENTER, TAB] = [
+  "ArrowLeft",
+  "ArrowRight",
+  "ArrowUp",
+  "ArrowDown",
+  "Enter",
+  "Tab"
+];
+
+// src/merch-quantity-select.js
+var MerchQuantitySelect = class extends s7 {
+  static get properties() {
+    return {
+      closed: { type: Boolean, reflect: true },
+      selected: { type: Number },
+      min: { type: Number },
+      max: { type: Number },
+      step: { type: Number },
+      maxInput: { type: Number, attribute: "max-input" },
+      options: { type: Array },
+      highlightedIndex: { type: Number },
+      defaultValue: {
+        type: Number,
+        attribute: "default-value",
+        reflect: true
+      },
+      title: { type: String }
+    };
+  }
+  static get styles() {
+    return styles4;
+  }
+  constructor() {
+    super();
+    this.options = [];
+    this.title = "";
+    this.closed = true;
+    this.min = 0;
+    this.max = 0;
+    this.step = 0;
+    this.maxInput = void 0;
+    this.defaultValue = void 0;
+    this.selectedValue = 0;
+    this.highlightedIndex = 0;
+    this.toggleMenu = this.toggleMenu.bind(this);
+    this.handleClickOutside = this.handleClickOutside.bind(this);
+    this.boundKeydownListener = this.handleKeydown.bind(this);
+    this.addEventListener("keydown", this.boundKeydownListener);
+    window.addEventListener("mousedown", this.handleClickOutside);
+    this.handleKeyupDebounced = debounce(this.handleKeyup.bind(this), 500);
+    this.handleQuantityUpdate = this.handleQuantityUpdate.bind(this);
+    this.addEventListener(EVENT_MERCH_CARD_QUANTITY_CHANGE, this.handleQuantityUpdate);
+  }
+  handleKeyup() {
+    this.handleInput();
+    this.sendEvent();
+  }
+  handleKeydown(e7) {
+    switch (e7.key) {
+      case ARROW_DOWN:
+        if (!this.closed) {
+          e7.preventDefault();
+          this.highlightedIndex = (this.highlightedIndex + 1) % this.options.length;
+        }
+        break;
+      case ARROW_UP:
+        if (!this.closed) {
+          e7.preventDefault();
+          this.highlightedIndex = (this.highlightedIndex - 1 + this.options.length) % this.options.length;
+        }
+        break;
+      case ENTER:
+        if (!this.closed) {
+          const option = this.options[this.highlightedIndex];
+          if (!option) break;
+          this.selectedValue = option;
+          this.handleMenuOption(this.selectedValue);
+          this.toggleMenu();
+        } else {
+          this.closePopover();
+          this.blur();
+        }
+        break;
+    }
+    if (e7.composedPath().includes(this)) e7.stopPropagation();
+  }
+  adjustInput(inputField, value) {
+    this.selectedValue = value;
+    inputField.value = value;
+    this.highlightedIndex = this.options.indexOf(value);
+  }
+  handleInput() {
+    const inputField = this.shadowRoot.querySelector(".text-field-input");
+    const inputValue = parseInt(inputField.value);
+    if (isNaN(inputValue)) return;
+    if (inputValue > 0 && inputValue !== this.selectedValue) {
+      let adjustedInputValue = inputValue;
+      if (this.maxInput && inputValue > this.maxInput)
+        adjustedInputValue = this.maxInput;
+      if (this.min && adjustedInputValue < this.min)
+        adjustedInputValue = this.min;
+      this.adjustInput(inputField, adjustedInputValue);
+    } else this.adjustInput(inputField, this.min || 1);
+  }
+  disconnectedCallback() {
+    super.disconnectedCallback();
+    window.removeEventListener("mousedown", this.handleClickOutside);
+    this.removeEventListener("keydown", this.boundKeydownListener);
+    this.removeEventListener(EVENT_MERCH_CARD_QUANTITY_CHANGE, this.handleQuantityUpdate);
+  }
+  generateOptionsArray() {
+    const options = [];
+    if (this.step > 0) {
+      for (let value = this.min; value <= this.max; value += this.step) {
+        options.push(value);
+      }
+    }
+    return options;
+  }
+  update(changedProperties) {
+    if (changedProperties.has("min") || changedProperties.has("max") || changedProperties.has("step") || changedProperties.has("defaultValue")) {
+      this.options = this.generateOptionsArray();
+      this.highlightedIndex = this.defaultValue ? this.options.indexOf(this.defaultValue) : 0;
+      this.handleMenuOption(
+        this.defaultValue ? this.defaultValue : this.options[0]
+      );
+    }
+    super.update(changedProperties);
+  }
+  handleClickOutside(event) {
+    const path = event.composedPath();
+    if (!path.includes(this)) {
+      this.closePopover();
+    }
+  }
+  toggleMenu() {
+    this.closed = !this.closed;
+  }
+  handleMouseEnter(index) {
+    this.highlightedIndex = index;
+  }
+  handleMenuOption(option) {
+    if (option === this.max)
+      this.shadowRoot.querySelector(".text-field-input")?.focus();
+    this.selectedValue = option;
+    this.sendEvent();
+    this.closePopover();
+  }
+  sendEvent() {
+    const customEvent = new CustomEvent(
+      EVENT_MERCH_QUANTITY_SELECTOR_CHANGE,
+      {
+        detail: { option: this.selectedValue },
+        bubbles: true
+      }
+    );
+    this.dispatchEvent(customEvent);
+  }
+  closePopover() {
+    if (!this.closed) {
+      this.toggleMenu();
+    }
+  }
+  get offerSelect() {
+    return this.querySelector("merch-offer-select");
+  }
+  get popover() {
+    return x2` <div class="popover ${this.closed ? "closed" : "open"}">
+            ${this.options.map(
+      (option, index) => x2`
                     <div
-                        class="item ${r===this.highlightedIndex?"highlighted":""}"
-                        @click="${()=>this.handleMenuOption(t)}"
-                        @mouseenter="${()=>this.handleMouseEnter(r)}"
+                        class="item ${index === this.highlightedIndex ? "highlighted" : ""}"
+                        @click="${() => this.handleMenuOption(option)}"
+                        @mouseenter="${() => this.handleMouseEnter(index)}"
                     >
-                        ${t===this.max?`${t}+`:t}
+                        ${option === this.max ? `${option}+` : option}
                     </div>
-                `)}
-        </div>`}handleQuantityUpdate({detail:{quantity:t}}){if(t&&t!==this.selectedValue){this.selectedValue=t;let r=this.shadowRoot.querySelector(".text-field-input");r&&(r.value=t),this.sendEvent()}}render(){return g`
+                `
+    )}
+        </div>`;
+  }
+  handleQuantityUpdate({ detail: { quantity } }) {
+    if (quantity && quantity !== this.selectedValue) {
+      this.selectedValue = quantity;
+      const inputField = this.shadowRoot.querySelector(".text-field-input");
+      if (inputField) {
+        inputField.value = quantity;
+      }
+      this.sendEvent();
+    }
+  }
+  render() {
+    return x2`
             <div class="label">${this.title}</div>
             <div class="text-field">
                 <input
@@ -2652,12 +13135,18 @@ sr-only {
                 />
                 <button class="picker-button" @click="${this.toggleMenu}">
                     <div
-                        class="picker-button-fill ${this.closed?"open":"closed"}"
+                        class="picker-button-fill ${this.closed ? "open" : "closed"}"
                     ></div>
                 </button>
                 ${this.popover}
             </div>
-        `}};customElements.define("merch-quantity-select",Ti);var Tc=`
+        `;
+  }
+};
+customElements.define("merch-quantity-select", MerchQuantitySelect);
+
+// src/variants/ccd-suggested.css.js
+var CSS9 = `
 
   merch-card[variant="ccd-suggested"] [slot="heading-xs"] {
     font-size: var(--consonant-merch-card-heading-xxs-font-size);
@@ -2687,12 +13176,35 @@ sr-only {
 .spectrum--darkest  merch-card[variant="ccd-suggested"]:hover {
   --consonant-merch-card-border-color:rgb(73, 73, 73);
 }
-`;var Cc={backgroundImage:{attribute:"background-image"},badge:!0,ctas:{slot:"cta",size:"M"},description:{tag:"div",slot:"body-xs"},mnemonics:{size:"l"},prices:{tag:"p",slot:"price"},size:[],subtitle:{tag:"h4",slot:"detail-s"},title:{tag:"h3",slot:"heading-xs"}},Gt=class extends N{getGlobalCSS(){return Tc}get stripStyle(){return this.card.backgroundImage?`
+`;
+
+// src/variants/ccd-suggested.js
+var CCD_SUGGESTED_AEM_FRAGMENT_MAPPING = {
+  backgroundImage: { attribute: "background-image" },
+  badge: true,
+  ctas: { slot: "cta", size: "M" },
+  description: { tag: "div", slot: "body-xs" },
+  mnemonics: { size: "l" },
+  prices: { tag: "p", slot: "price" },
+  size: [],
+  subtitle: { tag: "h4", slot: "detail-s" },
+  title: { tag: "h3", slot: "heading-xs" }
+};
+var CCDSuggested = class extends VariantLayout {
+  getGlobalCSS() {
+    return CSS9;
+  }
+  get stripStyle() {
+    if (!this.card.backgroundImage) return "";
+    return `
             background: url("${this.card.backgroundImage}");
         background-size: auto 100%;
         background-repeat: no-repeat;
-        background-position: ${this.card.dir==="ltr"?"left":"right"};
-        `:""}renderLayout(){return g` <div style="${this.stripStyle}" class="body">
+        background-position: ${this.card.dir === "ltr" ? "left" : "right"};
+        `;
+  }
+  renderLayout() {
+    return x2` <div style="${this.stripStyle}" class="body">
                 <div class="header">
                     <div class="top-section">
                         <slot name="icons"></slot>
@@ -2709,7 +13221,30 @@ sr-only {
                     <slot name="cta"></slot>
                 </div>
             </div>
-            <slot></slot>`}postCardUpdateHook(t){t.has("backgroundImage")&&this.styleBackgroundImage()}styleBackgroundImage(){if(this.card.classList.remove("thin-strip"),this.card.classList.remove("wide-strip"),!this.card.backgroundImage)return;let t=new Image;t.src=this.card.backgroundImage,t.onload=()=>{t.width>8?this.card.classList.add("wide-strip"):t.width===8&&this.card.classList.add("thin-strip")}}};u(Gt,"variantStyle",y`
+            <slot></slot>`;
+  }
+  postCardUpdateHook(changedProperties) {
+    if (changedProperties.has("backgroundImage"))
+      this.styleBackgroundImage();
+  }
+  styleBackgroundImage() {
+    this.card.classList.remove("thin-strip");
+    this.card.classList.remove("wide-strip");
+    if (!this.card.backgroundImage) {
+      return;
+    }
+    const img = new Image();
+    img.src = this.card.backgroundImage;
+    img.onload = () => {
+      if (img.width > 8) {
+        this.card.classList.add("wide-strip");
+      } else if (img.width === 8) {
+        this.card.classList.add("thin-strip");
+      }
+    };
+  }
+};
+__publicField(CCDSuggested, "variantStyle", i3`
         :host([variant='ccd-suggested']) {
             --consonant-merch-card-background-color: rgb(245, 245, 245);
             --consonant-merch-card-body-xs-color: rgb(75, 75, 75);
@@ -2817,7 +13352,10 @@ sr-only {
         :host([variant='ccd-suggested']) .top-section {
             align-items: center;
         }
-    `);var Pc=`
+    `);
+
+// src/variants/ccd-slice.css.js
+var CSS10 = `
 
 merch-card[variant="ccd-slice"] [slot='image'] img {
   overflow: hidden;
@@ -2837,7 +13375,23 @@ merch-card[variant="ccd-slice"] [slot='body-s'] a.spectrum-Link {
   --consonant-merch-card-border-color:rgb(48, 48, 48);
   --consonant-merch-card-detail-s-color:rgb(235, 235, 235);
 }
-`;var kc={backgroundImage:{tag:"div",slot:"image"},badge:!0,ctas:{slot:"footer",size:"S"},description:{tag:"div",slot:"body-s"},mnemonics:{size:"m"},size:["wide"]},Vt=class extends N{getGlobalCSS(){return Pc}renderLayout(){return g` <div class="content">
+`;
+
+// src/variants/ccd-slice.js
+var CCD_SLICE_AEM_FRAGMENT_MAPPING = {
+  backgroundImage: { tag: "div", slot: "image" },
+  badge: true,
+  ctas: { slot: "footer", size: "S" },
+  description: { tag: "div", slot: "body-s" },
+  mnemonics: { size: "m" },
+  size: ["wide"]
+};
+var CCDSlice = class extends VariantLayout {
+  getGlobalCSS() {
+    return CSS10;
+  }
+  renderLayout() {
+    return x2` <div class="content">
                 <div class="top-section">
                     <slot name="icons"></slot>
                     ${this.badge}
@@ -2846,7 +13400,10 @@ merch-card[variant="ccd-slice"] [slot='body-s'] a.spectrum-Link {
                 <slot name="footer"></slot>
             </div>
             <slot name="image"></slot>
-            <slot></slot>`}};u(Vt,"variantStyle",y`
+            <slot></slot>`;
+  }
+};
+__publicField(CCDSlice, "variantStyle", i3`
         :host([variant='ccd-slice']) {
             --consonant-merch-card-background-color: rgb(248, 248, 248);
             --consonant-merch-card-border-color: rgb(230, 230, 230);
@@ -2949,7 +13506,10 @@ merch-card[variant="ccd-slice"] [slot='body-s'] a.spectrum-Link {
             align-items: center;
             gap: 8px;
         }
-    `);var Lc=`
+    `);
+
+// src/variants/ah-try-buy-widget.css.js
+var CSS11 = `
     merch-card[variant="ah-try-buy-widget"] [slot="body-xxs"] {
         letter-spacing: normal;
         margin-bottom: 16px;
@@ -3074,7 +13634,38 @@ merch-card[variant="ccd-slice"] [slot='body-s'] a.spectrum-Link {
     .spectrum--darkest merch-card[variant="ah-try-buy-widget"]:hover {
       --consonant-merch-card-border-color:rgb(73, 73, 73);
     }
-`;var Ci={mnemonics:{size:"s"},title:{tag:"h3",slot:"heading-xxxs",maxCount:40,withSuffix:!0},description:{tag:"div",slot:"body-xxs",maxCount:200,withSuffix:!1},prices:{tag:"p",slot:"price"},ctas:{slot:"cta",size:"S"},backgroundImage:{tag:"div",slot:"image"},backgroundColor:{attribute:"background-color"},borderColor:{attribute:"border-color",specialValues:{}},allowedColors:{gray:"--spectrum-gray-100"},size:["single","double","triple"]},ct=class extends N{getGlobalCSS(){return Lc}get aemFragmentMapping(){return Ci}renderLayout(){return g`
+`;
+
+// src/variants/ah-try-buy-widget.js
+var AH_TRY_BUY_WIDGET_AEM_FRAGMENT_MAPPING = {
+  mnemonics: { size: "s" },
+  title: { tag: "h3", slot: "heading-xxxs", maxCount: 40, withSuffix: true },
+  description: {
+    tag: "div",
+    slot: "body-xxs",
+    maxCount: 200,
+    withSuffix: false
+  },
+  prices: { tag: "p", slot: "price" },
+  ctas: { slot: "cta", size: "S" },
+  backgroundImage: { tag: "div", slot: "image" },
+  backgroundColor: { attribute: "background-color" },
+  borderColor: { attribute: "border-color", specialValues: {} },
+  allowedColors: {
+    gray: "--spectrum-gray-100"
+  },
+  size: ["single", "double", "triple"]
+};
+var AHTryBuyWidget = class extends VariantLayout {
+  getGlobalCSS() {
+    return CSS11;
+  }
+  /* c8 ignore next 3 */
+  get aemFragmentMapping() {
+    return AH_TRY_BUY_WIDGET_AEM_FRAGMENT_MAPPING;
+  }
+  renderLayout() {
+    return x2`
             <div class="content">
                 <div class="header">
                     <slot name="icons"></slot>
@@ -3090,7 +13681,10 @@ merch-card[variant="ccd-slice"] [slot='body-s'] a.spectrum-Link {
             </div>
             <slot name="image"></slot>
             <slot></slot>
-        `}};u(ct,"variantStyle",y`
+        `;
+  }
+};
+__publicField(AHTryBuyWidget, "variantStyle", i3`
         :host([variant='ah-try-buy-widget']) {
             --merch-card-ah-try-buy-widget-min-width: 156px;
             --merch-card-ah-try-buy-widget-content-min-width: 132px;
@@ -3169,7 +13763,11 @@ merch-card[variant="ccd-slice"] [slot='body-s'] a.spectrum-Link {
             gap: 8px;
             flex-direction: row;
         }
-    `);customElements.define("ah-try-buy-widget",ct);var Rc=`
+    `);
+customElements.define("ah-try-buy-widget", AHTryBuyWidget);
+
+// src/variants/ah-promoted-plans.css.js
+var CSS12 = `
     merch-card[variant="ah-promoted-plans"] [slot="body-xxs"] {
         letter-spacing: normal;
         box-sizing: border-box;
@@ -3256,7 +13854,38 @@ merch-card[variant="ccd-slice"] [slot='body-s'] a.spectrum-Link {
       --consonant-merch-card-body-xxs-color:rgb(219, 219, 219);
       --merch-card-ah-promoted-plans-strikethrough-color:rgb(138, 138, 138);
     }
-`;var Pi={mnemonics:{size:"s"},title:{tag:"h3",slot:"heading-xxxs",maxCount:40,withSuffix:!0},description:{tag:"div",slot:"body-xxs",maxCount:200,withSuffix:!1},prices:{tag:"p",slot:"price"},ctas:{slot:"cta",size:"S"},backgroundImage:{tag:"div",slot:"image"},backgroundColor:{attribute:"background-color"},borderColor:{attribute:"border-color",specialValues:{gradient:"linear-gradient(135deg, #ff4885 0%, #b272eb 50%, #5d89ff 100%)"}}},lt=class extends N{getGlobalCSS(){return Rc}get aemFragmentMapping(){return Pi}renderLayout(){return g`
+`;
+
+// src/variants/ah-promoted-plans.js
+var AH_PROMOTED_PLANS_AEM_FRAGMENT_MAPPING = {
+  mnemonics: { size: "s" },
+  title: { tag: "h3", slot: "heading-xxxs", maxCount: 40, withSuffix: true },
+  description: {
+    tag: "div",
+    slot: "body-xxs",
+    maxCount: 200,
+    withSuffix: false
+  },
+  prices: { tag: "p", slot: "price" },
+  ctas: { slot: "cta", size: "S" },
+  backgroundImage: { tag: "div", slot: "image" },
+  backgroundColor: { attribute: "background-color" },
+  borderColor: {
+    attribute: "border-color",
+    specialValues: {
+      gradient: "linear-gradient(135deg, #ff4885 0%, #b272eb 50%, #5d89ff 100%)"
+    }
+  }
+};
+var AHPromotedPlans = class extends VariantLayout {
+  getGlobalCSS() {
+    return CSS12;
+  }
+  get aemFragmentMapping() {
+    return AH_PROMOTED_PLANS_AEM_FRAGMENT_MAPPING;
+  }
+  renderLayout() {
+    return x2`
             <div class="content">
                 <div class="header">
                     <slot name="icons"></slot>
@@ -3271,7 +13900,10 @@ merch-card[variant="ccd-slice"] [slot='body-s'] a.spectrum-Link {
                 </div>
             </div>
             <slot></slot>
-        `}};u(lt,"variantStyle",y`
+        `;
+  }
+};
+__publicField(AHPromotedPlans, "variantStyle", i3`
         /* Default styles for the component */
         :host([variant='ah-promoted-plans']) {
             --merch-card-ah-promoted-plans-min-width: 211px;
@@ -3359,7 +13991,34 @@ merch-card[variant="ccd-slice"] [slot='body-s'] a.spectrum-Link {
             justify-content: space-between;
             align-items: center;
         }
-    `);customElements.define("ah-promoted-plans",lt);Y("ccd-suggested",Gt,Cc,Gt.variantStyle);Y("ccd-slice",Vt,kc,Vt.variantStyle);Y("ah-try-buy-widget",ct,Ci,ct.variantStyle);Y("ah-promoted-plans",lt,Pi,lt.variantStyle);
+    `);
+customElements.define("ah-promoted-plans", AHPromotedPlans);
+
+// src/mas.js
+registerVariant(
+  "ccd-suggested",
+  CCDSuggested,
+  CCD_SUGGESTED_AEM_FRAGMENT_MAPPING,
+  CCDSuggested.variantStyle
+);
+registerVariant(
+  "ccd-slice",
+  CCDSlice,
+  CCD_SLICE_AEM_FRAGMENT_MAPPING,
+  CCDSlice.variantStyle
+);
+registerVariant(
+  "ah-try-buy-widget",
+  AHTryBuyWidget,
+  AH_TRY_BUY_WIDGET_AEM_FRAGMENT_MAPPING,
+  AHTryBuyWidget.variantStyle
+);
+registerVariant(
+  "ah-promoted-plans",
+  AHPromotedPlans,
+  AH_PROMOTED_PLANS_AEM_FRAGMENT_MAPPING,
+  AHPromotedPlans.variantStyle
+);
 /*! Bundled license information:
 
 @lit/reactive-element/css-tag.js:
@@ -3418,3 +14077,4 @@ lit-html/is-server.js:
    * SPDX-License-Identifier: BSD-3-Clause
    *)
 */
+//# sourceMappingURL=mas.js.map
