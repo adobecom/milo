@@ -595,12 +595,16 @@
   align-items: center;
 }
 
-.aside.promobar.popup .mobile-up.promo-text .text-area:has(.milo-tooltip) {
-  width: 100%;
+.aside.promobar.popup .mobile-up.promo-text:has(.milo-tooltip) {
+  position: relative;
 }
 
 .aside.promobar.popup .mobile-up.promo-text .milo-tooltip {
-  float: right;
+  position: absolute;
+  bottom: var(--spacing-xs);
+  left: var(--spacing-xs);
+  margin-inline-start: 0;
+  justify-content: unset;
 }
 
 .aside.promobar.popup {

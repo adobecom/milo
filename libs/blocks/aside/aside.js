@@ -121,7 +121,8 @@ async function addTooltip(foreground) {
     const appendTarget = viewPortEl.querySelector('.text-area').lastElementChild;
     const iconWrapper = createTag('em');
     iconWrapper.style.display = 'none';
-    iconWrapper.textContent = `left|${desktopContentText}`;
+    const tooltipPosition = viewPortEl.classList.contains('mobile-up') ? 'right' : 'left';
+    iconWrapper.textContent = `${tooltipPosition}|${desktopContentText}`;
     const tooltipSpan = createTag('span', { class: 'icon icon-tooltip' });
     iconWrapper.appendChild(tooltipSpan);
     toolTipIcons.push(tooltipSpan);
