@@ -226,6 +226,8 @@ p.preflight-date-wrapper .disabled-publish {
 
 .preflight-group-row a {
   color: #FFF;
+  word-break: break-all;
+  overflow-wrap: anywhere;
 }
 
 span.preflight-time {
