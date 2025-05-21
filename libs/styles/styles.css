@@ -2,7 +2,9 @@
 
  :root {
   --global-height-nav: 64px;
+  --feds-height-nav: 63px;
   --global-height-breadcrumbs: 33px;
+  --scroll-padding-block: 0;
   /* stylelint-disable-next-line custom-property-pattern */
   --global-height-navPromo: 72px;
   --feds-totalheight-nav: calc(var(--feds-height-nav, --global-height-nav) + var(--feds-height-breadcrumbs, --global-height-breadcrumbs));
@@ -683,6 +685,21 @@ div[class*='-up'] .con-block.has-bg.no-spacing { padding: 0; }
     local('TrebuchetMS');
 }
 
+html {
+  scroll-padding-block: var(--scroll-padding-block);
+}
+
+body:has(footer:focus-within) #onetrust-consent-sdk:not(:has(#ot-cookie-button.show)) {
+  position: sticky;
+  bottom: 0;
+  /* #onetrust-banner-sdk z-index value */
+  z-index: 2147483645;
+}
+
+body:has(footer:focus-within) #onetrust-consent-sdk:not(:has(#ot-cookie-button.show)) #onetrust-banner-sdk {
+  position: sticky;
+}
+
 body {
   display: block;
   font-family: var(--body-font-family);
@@ -694,6 +711,10 @@ body {
   word-wrap: break-word;
   -webkit-font-smoothing: antialiased;
   opacity: 1 !important; /* Fix Target hiding */
+}
+
+body:has(.dialog-modal) #onetrust-consent-sdk {
+  display: none;
 }
 
 header.gnav {
@@ -791,6 +812,10 @@ header.global-navigation.new-nav.local-nav {
 
 h1, h2, h3, h4, h5, h6 {
   scroll-margin-top: var(--feds-totalheight-nav);
+}
+
+:is(h1, h2, h3, h4, h5, h6) strong {
+  font-weight: inherit;
 }
 
 h1 {

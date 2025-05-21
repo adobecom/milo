@@ -128,7 +128,12 @@ describe('breadcrumbs', () => {
             name: 'Actors',
             item: 'http://www.adobe.com/',
           },
-          { '@type': 'ListItem', position: 4, name: 'Players' },
+          {
+            '@type': 'ListItem',
+            position: 4,
+            name: 'Players',
+            item: window.location.href,
+          },
         ],
       },
     );
@@ -201,7 +206,12 @@ describe('breadcrumbs', () => {
             name: 'Actors',
             item: 'http://www.adobe.com/',
           },
-          { '@type': 'ListItem', position: 4, name: 'Players' },
+          {
+            '@type': 'ListItem',
+            position: 4,
+            name: 'Players',
+            item: window.location.href,
+          },
         ],
       },
     );
