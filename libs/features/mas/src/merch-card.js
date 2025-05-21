@@ -508,7 +508,7 @@ export class MerchCard extends LitElement {
         const result = await Promise.race([successPromise, timeoutPromise]);
 
         if (result === true) {
-            let measure = performance.measure(
+            this.measure = performance.measure(
                 this.#durationMarkName,
                 this.#startMarkName,
             );
@@ -517,7 +517,7 @@ export class MerchCard extends LitElement {
                 const detail = {
                     ...this.aemFragment?.fetchInfo,
                     ...this.#service.duration,
-                    measure: printMeasure(measure),
+                    measure: printMeasure(this.measure),
                 };
                 this.dispatchEvent(
                     new CustomEvent(EVENT_MAS_READY, {
@@ -529,12 +529,12 @@ export class MerchCard extends LitElement {
             }
             return this;
         } else {
-            const measure = performance.measure(
+            this.measure = performance.measure(
                 this.#durationMarkName,
                 this.#startMarkName,
             );
             const details = {
-                measure: printMeasure(measure),
+                measure: printMeasure(this.measure),
                 ...this.#service.duration,
             };
             if (result === 'timeout') {

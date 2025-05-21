@@ -142,6 +142,7 @@ export class MasCommerceService extends HTMLElement {
             cancelable: false,
             detail: this,
         });
+        performance.mark(MEASURE_READY);
         this.#measure = performance.measure(MEASURE_READY, MARK_START);
         this.dispatchEvent(event);
         setTimeout(() => {
