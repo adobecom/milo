@@ -5,6 +5,7 @@ import {
   createIntersectionObserver,
   getFederatedContentRoot,
   getFedsPlaceholderConfig,
+  shouldBlockFreeTrialLinks,
 } from './utils.js';
 
 const { miloLibs, codeRoot } = getConfig();
@@ -18,18 +19,6 @@ let videoLabels = {
   hasFetched: false,
 };
 let videoCounter = 0;
-
-const shouldBlockFreeTrialLinks = ({ button, localePrefix, parent }) => {
-  if (localePrefix !== '/kr' || (!button.dataset?.modalPath?.includes('/kr/cc-shared/fragments/trial-modals')
-    && !['free-trial', 'free trial', '무료 체험판', '무료 체험하기', '{{try-for-free}}']
-      .some((pattern) => button.textContent?.toLowerCase()?.includes(pattern.toLowerCase())))) {
-    return false;
-  }
-
-  const elementToRemove = (parent.tagName === 'STRONG' || parent.tagName === 'EM') && parent.children.length === 1 ? parent : button;
-  elementToRemove.remove();
-  return true;
-};
 
 export function decorateButtons(el, size) {
   const buttons = el.querySelectorAll('em a, strong a, p > a strong');
