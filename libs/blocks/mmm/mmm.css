@@ -24,6 +24,10 @@ dl.mmm {
   border-bottom: 1px solid var(--color-gray-500);
 }
 
+dl.mmm.target-metadata-lookup {
+  border: 0;
+}
+
 .mmm-container.no-borders dl.mmm {
   border: none;
 }
@@ -443,6 +447,109 @@ dd .mep-popup-header .mep-close {
   display: flex;
   justify-content: flex-end;
   padding: 0 0;
+}
+
+main > .section > .share-mmm.inline {
+  margin: 0 auto;
+}
+
+main > .section > .inline-wrapper > .share-mmm.inline {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+.mmm-metadata-lookup {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  
+}
+.mmm-metadata-lookup .mmm-form-container {
+  flex-direction: column;
+  margin-bottom: 4rem;
+}
+
+.mmm-metadata-url-pod-container span {
+  color: #333;
+}
+.mmm-metadata-url-pod-container h3 {
+  margin-top: 0px;
+}
+
+.mmm-metadata-lookup__button.primary {
+  background-color: #333 !important;
+  color: #fff;
+}
+
+.mmm-metadata-lookup__button.primary:hover {
+  background-color: #222 !important;
+}
+
+.mmm-metadata-lookup__button:hover {
+  background-color: #333;
+  color: #fff;
+}
+
+.mmm-metadata-lookup__button:active {
+  background-color: #111 !important;
+  color: #fff;
+}
+
+.mmm-metadata-lookup__button {
+  position: relative;
+  padding: .5rem 1rem;
+  border-radius: .5rem;
+  border: 1px solid #ddd;
+  background-color: #fff;
+  color: #333;
+  font-size: 1rem;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.mmm-metadata-url-pod-container {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  margin: 1rem;
+  padding: 1rem 3rem 1rem 1rem;
+  border-radius: 1rem;
+  background-color: #00000005;
+  gap: 1rem;
+}
+
+.mmm-metadata-url-pod__item {
+  word-break: break-word;
+}
+
+#mmm-copy-metadata-report {
+  margin: 2rem 0 4rem;
+}
+
+.mmm-metadata-lookup__button.success:after {
+  opacity: 1;
+}
+
+.mmm-metadata-lookup__button:after {
+  transition: all 0.3s ease;
+  content: "✅";
+  position: absolute;
+  top: 7px;
+  opacity: 0;
+  bottom: 0;
+  right: -35px;
+  margin: auto;
+}
+
+@media (max-width: 900px) {
+  .share-mmm {
+    left: 0;
+    right: 0 !important;
+    top: -1rem !important;
+    margin: auto;
+  }
 }
 
 @media (max-width: 700px) {

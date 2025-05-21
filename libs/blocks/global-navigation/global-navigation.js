@@ -99,6 +99,7 @@ const {
   setAsyncDropdownCount,
   branchBannerLoadCheck,
   getBranchBannerInfo,
+  loaderMegaMenu,
   logPerformance,
 } = utilities;
 
@@ -511,11 +512,25 @@ class Gnav {
       this.block.after(localNav);
     }
     localNav.setAttribute('daa-lh', `${title}_localNav`);
-    localNav.append(toFragment`<button class="feds-navLink--hoverCaret feds-localnav-title" aria-haspopup="true" aria-expanded="false" daa-ll="${title}_localNav|open"></button>`, toFragment` <div class="feds-localnav-curtain"></div>`, toFragment` <div class="feds-localnav-items"></div>`, toFragment`<a href="#" class="feds-sr-only feds-localnav-exit">.</a>`);
+    const localNavBtn = toFragment`<button class="feds-navLink--hoverCaret feds-localnav-title" aria-haspopup="true" aria-expanded="false" daa-ll="${title}_localNav|open"></button>`;
+    const localNavCurtain = toFragment` <div class="feds-localnav-curtain"></div>`;
+    // Skip keyboard navigation on localnav items if it is closed
+    localNav.append(localNavBtn, localNavCurtain, toFragment` <div class="feds-localnav-items"></div>`, toFragment`<a href="#" class="feds-sr-only feds-localnav-exit">.</a>`);
 
     const itemWrapper = localNav.querySelector('.feds-localnav-items');
-    const titleLabel = await replaceKey('overview', getFedsPlaceholderConfig());
+    const localNavTitle = document.querySelector('.feds-localnav-title');
+    // Skip keyboard navigation on localnav items if it is closed
+    const observer = new MutationObserver(() => {
+      const isExpanded = localNavTitle.getAttribute('aria-expanded') === 'true';
+      itemWrapper.toggleAttribute('aria-hidden', !isExpanded);
+      [...itemWrapper.childNodes].forEach((node) => {
+        node.querySelector('a, button').toggleAttribute('aria-hidden', !isExpanded);
+        node.querySelector('a, button').setAttribute('tabindex', isExpanded ? '0' : '-1');
+      });
+    });
+    observer.observe(localNavTitle, { attributes: true, attributeFilter: ['aria-expanded'] });
 
+    const titleLabel = await replaceKey('overview', getFedsPlaceholderConfig());
     localNavItems.forEach((elem, idx) => {
       const clonedItem = elem.cloneNode(true);
       const link = clonedItem.querySelector('a, button');
@@ -1215,6 +1230,7 @@ class Gnav {
     const activeModifier = itemHasActiveLink ? ` ${selectors.activeNavItem.slice(1)}` : '';
 
     const makeTabActive = (popup) => {
+      if (popup.classList.contains('loading')) return;
       const tabbuttons = popup.querySelectorAll('.global-navigation .tabs button');
       const tabpanels = popup.querySelectorAll('.global-navigation .tab-content [role="tabpanel"]');
       closeAllTabs(tabbuttons, tabpanels);
@@ -1227,9 +1243,9 @@ class Gnav {
         const tabIndex = activeLink ? +activeLink.parentNode.id : 0;
         const selectTab = popup.querySelectorAll('.tab')[tabIndex];
         const daallTab = selectTab.getAttribute('daa-ll');
-        selectTab.setAttribute('daa-ll', `${daallTab.replace('click', 'open')}`);
+        selectTab.setAttribute('daa-ll', `${daallTab?.replace('click', 'open')}`);
         selectTab?.click();
-        selectTab.setAttribute('daa-ll', `${daallTab.replace('open', 'click')}`);
+        selectTab.setAttribute('daa-ll', `${daallTab?.replace('open', 'click')}`);
         selectTab?.focus();
       }, 100);
     };
@@ -1248,6 +1264,8 @@ class Gnav {
       const elements = [...document.querySelectorAll('.feds-localnav .feds-navItem')].find(
         (el) => {
           const link = el.querySelector('a, button');
+          link.setAttribute('tabindex', '-1');
+          link.setAttribute('aria-hidden', true);
           return link.dataset.title?.trim() === navItem.textContent;
         },
       );
@@ -1284,45 +1302,84 @@ class Gnav {
     // All dropdown decoration is delayed
     const delayDropdownDecoration = ({ template } = {}) => {
       let decorationTimeout;
+      let desktopMegaMenuHTML = null;
+      let mobileNavCleanup = () => {};
 
       const decorateDropdown = () => logErrorFor(async () => {
         template.removeEventListener('click', decorateDropdown);
         clearTimeout(decorationTimeout);
 
+        const loadingDesktopMegaMenuHTML = template.querySelector('.feds-popup.loading')?.innerHTML;
         const menuLogic = await loadDecorateMenu();
 
-        await menuLogic.decorateMenu({
+        menuLogic.decorateMenu({
           item,
           template,
           type: itemType,
+        }).then(async () => {
+          // There are two calls to transformTemplateToMobile
+          // One without awaiting decorateMenu, and one after
+          // decorateMenu is complete
+          if (!this.newMobileNav) return;
+          const popup = template.querySelector('.feds-popup');
+          if (isDesktop.matches || !popup) return;
+          desktopMegaMenuHTML = popup.innerHTML;
+          mobileNavCleanup();
+          mobileNavCleanup = await transformTemplateToMobile({
+            popup,
+            item,
+            localnav: this.isLocalNav(),
+            toggleMenu: this.toggleMenuMobile,
+          });
+          if (popup.closest('section.feds-dropdown--active')) makeTabActive(popup);
+        }).finally(() => {
+          if (this.isLocalNav()) {
+            decorateLocalNavItems(item, template);
+          }
         });
 
         if (this.newMobileNav) {
           const popup = template.querySelector('.feds-popup');
-          let originalContent = popup.innerHTML;
-
           if (!isDesktop.matches && popup) {
-            originalContent = await transformTemplateToMobile(popup, item, this.isLocalNav());
-            popup.querySelector('.close-icon')?.addEventListener('click', this.toggleMenuMobile);
+            mobileNavCleanup();
+            mobileNavCleanup = await transformTemplateToMobile({
+              popup,
+              item,
+              localnav: this.isLocalNav(),
+              toggleMenu: this.toggleMenuMobile,
+            });
+            popup.style.removeProperty('visibility');
+          } else if (isDesktop.matches) {
+            popup?.style.removeProperty('visibility');
           }
           isDesktop.addEventListener('change', async () => {
+            const newPopup = template.querySelector('.feds-popup');
+            if (!newPopup) return;
             enableMobileScroll();
             if (isDesktop.matches) {
-              popup.innerHTML = originalContent;
+              newPopup.innerHTML = desktopMegaMenuHTML ?? loadingDesktopMegaMenuHTML;
               this.block.classList.remove('new-nav');
             } else {
-              originalContent = await transformTemplateToMobile(popup, item, this.isLocalNav());
-              popup.querySelector('.close-icon')?.addEventListener('click', this.toggleMenuMobile);
+              mobileNavCleanup();
+              mobileNavCleanup = await transformTemplateToMobile({
+                popup: newPopup,
+                item,
+                localnav: this.isLocalNav(),
+                toggleMenu: this.toggleMenuMobile,
+              });
               this.block.classList.add('new-nav');
             }
           });
-          if (this.isLocalNav()) {
-            decorateLocalNavItems(item, template);
-          }
         }
       }, 'Decorate dropdown failed', 'gnav', 'i');
 
       template.addEventListener('click', decorateDropdown);
+      const newMobileNavActive = this.newMobileNav && !isDesktop.matches;
+      if (itemType === 'asyncDropdownTrigger' && (newMobileNavActive || isDesktop.matches)) {
+        const loadingMegaMenu = loaderMegaMenu();
+        loadingMegaMenu.style.visibility = 'hidden';
+        template.append(loadingMegaMenu);
+      }
       decorationTimeout = setTimeout(decorateDropdown, CONFIG.delays.mainNavDropdowns);
     };
 
