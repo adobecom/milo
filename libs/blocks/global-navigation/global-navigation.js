@@ -884,6 +884,20 @@ class Gnav {
     // Exposing UNAV config for consumers
     CONFIG.universalNav.universalNavConfig = getConfiguration();
     await window.UniversalNav(CONFIG.universalNav.universalNavConfig);
+    const target = document.querySelector('.feds-promo-aside-wrapper');
+    const container = document.querySelector('.feds-utilities');
+    
+    if (target) {
+      const updateZIndex = () => {
+        const isOpen = container.querySelector('.unav-comp-app-switcher-open');
+        target.style.zIndex = isOpen ? 0 : 11;
+      };
+    
+      new MutationObserver(updateZIndex)
+        .observe(container, { childList: true, subtree: true, attributes: true, attributeFilter: ['class'] });
+    
+      updateZIndex(); // initial run in case it's already open
+    }
     performance.mark('Unav-End');
     logPerformance('Unav-Time', 'Unav-Start', 'Unav-End');
     this.decorateAppPrompt({ getAnchorState: () => window.UniversalNav.getComponent?.('app-switcher') });
@@ -1123,7 +1137,6 @@ class Gnav {
     }
     performance.mark('Gnav-Aside-End');
     logPerformance('Gnav-Aside-Time', 'Gnav-Aside-Start', 'Gnav-Aside-End');
-
     return this.elements.aside;
   };
 
