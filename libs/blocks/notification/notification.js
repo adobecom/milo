@@ -94,7 +94,7 @@ function addCloseAction(el, btn) {
     if (el.classList.contains('focus')) {
       document.body.classList.remove('mobile-disable-scroll');
       el.closest('.section').querySelector('.notification-curtain').remove();
-      document.body.querySelector('main').querySelector('a[href], button, textarea, input, select, details, [tabindex]:not([tabindex="-1"])')
+      document.body.querySelector('a[href], button, textarea, input, select, details, [tabindex]:not([tabindex="-1"])')
         .focus({ focusVisible: true });
     }
     document.dispatchEvent(new CustomEvent('milo:sticky:closed'));
