@@ -33,7 +33,7 @@ import {
 } from './constants.js';
 import { VariantLayout } from './variants/variant-layout.js';
 import { hydrate, ANALYTICS_SECTION_ATTR } from './hydrate.js';
-import { getService, roundMeasure } from './utils.js';
+import { getService } from './utils.js';
 
 const MERCH_CARD = 'merch-card';
 
@@ -183,10 +183,6 @@ export class MerchCard extends LitElement {
     firstUpdated() {
         this.variantLayout = getVariantLayout(this, false);
         this.variantLayout?.connectedCallbackHook();
-        this.aemFragment?.updateComplete.catch((e) => {
-            this.#fail(e, {}, false);
-            this.style.display = 'none';
-        });
     }
 
     willUpdate(changedProperties) {
@@ -375,6 +371,7 @@ export class MerchCard extends LitElement {
     }
 
     connectedCallback() {
+        super.connectedCallback();
         if (!this.#internalId) {
             this.#internalId = idCounter++;
         }
@@ -386,7 +383,6 @@ export class MerchCard extends LitElement {
         this.#startMarkName = `${MARK_MERCH_CARD_PREFIX}${logId}${MARK_START_SUFFIX}`;
         this.#durationMarkName = `${MARK_MERCH_CARD_PREFIX}${logId}${MARK_DURATION_SUFFIX}`;
         performance.mark(this.#startMarkName);
-        super.connectedCallback();
         this.#service = getService();
         registerPriceOptionsProvider(this.#service);
         this.#log = this.#service.Log.module(MERCH_CARD);
@@ -437,45 +433,47 @@ export class MerchCard extends LitElement {
     // custom methods
     async handleAemFragmentEvents(e) {
         if (!this.isConnected) return;
-        const { duration: fragmentDuration, startTime: fragmentStartTime } =
-            e.detail;
         if (e.type === EVENT_AEM_ERROR) {
-            this.#fail(
-                `AEM fragment cannot be loaded: ${e.detail.message}`,
-                { ...e.detail, fragmentDuration, fragmentStartTime },
-            );
+            this.#fail(`AEM fragment cannot be loaded`);
         }
         if (e.type === EVENT_AEM_LOAD) {
+            this.failed = false;
             if (e.target.nodeName === 'AEM-FRAGMENT') {
                 const fragment = e.detail;
                 try {
                     await hydrate(fragment, this);
                 } catch (e) {
-                    this.#fail(
-                        `hydration has failed: ${e.detail.message}`,
-                        e.detail,
-                    );
+                    this.#fail(`hydration has failed: ${e.message}`);
                 }
-                this.checkReady({ fragmentDuration, fragmentStartTime });
+                this.checkReady();
             }
         }
     }
 
     #fail(error, details = {}, dispatch = true) {
         if (!this.isConnected) return;
-        this.#log.error(`merch-card: ${error}`, details);
+        const aemFragment = this.aemFragment;
+        let fragmentId = aemFragment?.getAttribute('fragment');
+        fragmentId = `[${fragmentId}]`;
+        const detail = {
+            ...this.aemFragment.fetchInfo,
+            ...this.#service.duration,
+            ...details,
+            message: error,
+        };
+        this.#log.error(`merch-card${fragmentId}: ${error}`, detail);
         this.failed = true;
         if (!dispatch) return;
         this.dispatchEvent(
             new CustomEvent(EVENT_MAS_ERROR, {
-                detail: { ...details, message: error },
                 bubbles: true,
                 composed: true,
+                detail,
             }),
         );
     }
 
-    async checkReady({ fragmentDuration, fragmentStartTime } = {}) {
+    async checkReady() {
         if (!this.isConnected) return;
         const timeoutPromise = new Promise((resolve) =>
             setTimeout(() => resolve('timeout'), MERCH_CARD_LOAD_TIMEOUT),
@@ -512,17 +510,17 @@ export class MerchCard extends LitElement {
         const result = await Promise.race([successPromise, timeoutPromise]);
 
         if (result === true) {
-            let { duration, startTime } = roundMeasure(
-                performance.measure(this.#durationMarkName, this.#startMarkName),
+            let { duration, startTime } = performance.measure(
+                this.#durationMarkName,
+                this.#startMarkName,
             );
             if (!this.readyEventDispatched) {
                 this.readyEventDispatched = true;
                 const detail = {
-                    duration,
-                    startTime,
-                    fragmentDuration,
-                    fragmentStartTime,
+                    ...this.aemFragment?.fetchInfo,
                     ...this.#service.duration,
+                    duration: parseFloat(duration.toFixed(2)),
+                    startTime: parseFloat(startTime.toFixed(2)),
                 };
                 this.dispatchEvent(
                     new CustomEvent(EVENT_MAS_READY, {
@@ -534,17 +532,13 @@ export class MerchCard extends LitElement {
             }
             return this;
         } else {
-            const { duration, startTime } = roundMeasure(
-                performance.measure(
+            const { duration, startTime } = performance.measure(
                 this.#durationMarkName,
                 this.#startMarkName,
-                ),
             );
             const details = {
-                duration,
-                startTime,
-                fragmentDuration,
-                fragmentStartTime,
+                duration: parseFloat(duration).toFixed(2),
+                startTime: parseFloat(startTime).toFixed(2),
                 ...this.#service.duration,
             };
             if (result === 'timeout') {

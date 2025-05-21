@@ -89,16 +89,3 @@ export function discoverService(getConfig, { once = false } = {}) {
 export function getService() {
   return document.getElementsByTagName(MAS_COMMERCE_SERVICE)?.[0];
 }
-
-/**
- *
- * @param {PerformanceMeasure} measure
- */
-export function roundMeasure(measure) {
-    const { startTime, duration } = measure;
-    const roundTo = 1000;
-  return {
-        startTime: Math.round(startTime * roundTo) / roundTo,
-        duration: Math.round(duration * roundTo) / roundTo,
-  };
-}

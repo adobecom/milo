@@ -9,20 +9,17 @@ import { Price } from './price.js';
 import { getSettings } from './settings.js';
 import { Wcs } from './wcs.js';
 import { updateConfig as updateLanaConfig } from './lana.js';
-import { roundMeasure } from './utils.js';
 
 export const TAG_NAME_SERVICE = 'mas-commerce-service';
 
-const MARK_START = 'mas:start';
-const MARK_READY = 'mas:ready';
-
-export const MEASURE_INIT_TIME = 'mas-commerce-service:initTime';
+const MARK_START = 'mas-commerce-service:start';
+const MEASURE_READY = 'mas-commerce-service:ready';
 
 /**
  * web component to provide commerce and fragment service to consumers.
  */
 export class MasCommerceService extends HTMLElement {
-    #initDuration;
+    #measure;
 
     lastLoggingTime = 0;
     get #config() {
@@ -144,10 +141,7 @@ export class MasCommerceService extends HTMLElement {
             cancelable: false,
             detail: this,
         });
-        performance.mark(MARK_READY);
-        this.#initDuration = roundMeasure(
-            performance.measure(MEASURE_INIT_TIME, MARK_START, MARK_READY),
-        )?.duration;
+        this.#measure = performance.measure(MEASURE_READY, MARK_START);
         this.dispatchEvent(event);
         setTimeout(() => {
             this.logFailedRequests();
@@ -183,7 +177,8 @@ export class MasCommerceService extends HTMLElement {
 
     get duration() {
         return {
-            [MEASURE_INIT_TIME]: this.#initDuration,
+            'mas-commerce-service:startTime': parseFloat(this.#measure.startTime.toFixed(2)),
+            'mas-commerce-service:duration': parseFloat(this.#measure.duration.toFixed(2)),
         };
     }
 

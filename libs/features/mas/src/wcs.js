@@ -13,7 +13,6 @@ import { Log } from './log.js';
 import { MasError } from './mas-error.js';
 import { masFetch } from './utils/mas-fetch.js';
 import { getService } from './utilities.js';
-import { roundMeasure } from './utils.js';
 
 const NAMESPACE = 'wcs';
 
@@ -186,8 +185,9 @@ export function Wcs({ settings }) {
             /* c8 ignore next 2 */
             message = `Network error: ${e.message}`;
         } finally {
-            ({ startTime, duration } = roundMeasure(
-                performance.measure(measureName, startMark),
+            ({ startTime, duration } = performance.measure(
+                measureName,
+                startMark,
             ));
             // Clean up marks
             performance.clearMarks(startMark);
@@ -197,13 +197,22 @@ export function Wcs({ settings }) {
         if (reject && promises.size) {
             // reject pending promises, their offers weren't provided by WCS
             log.debug('Missing:', { offerSelectorIds: [...promises.keys()] });
+
+            const headers = {
+                requestId: response.headers.get('X-Request-Id'),
+                etag: response.headers.get('Etag'),
+                lastModified: response.headers.get('Last-Modified'),
+                serverTiming: response.headers.get('server-timing'),
+            };
+
             promises.forEach((promise) => {
                 promise.reject(
                     new MasError(message, {
                         ...options,
+                        // ...headers, TODO enable this once access-control-expose-headers is fixed
                         response,
-                        startTime,
-                        duration,
+                        startTime: parseFloat(startTime.toFixed(2)),
+                        duration: parseFloat(duration.toFixed(2)),
                         ...service?.duration,
                     }),
                 );

@@ -242,10 +242,6 @@ The reason is that some merch cards are resolved very quickly and event could di
             event.<span class="hljs-property">target</span>.<span class="hljs-property">classList</span>.<span class="hljs-title function_">add</span>(<span class="hljs-string">&#x27;error&#x27;</span>);
             <span class="hljs-title function_">log</span>(<span class="hljs-variable language_">document</span>.<span class="hljs-title function_">getElementById</span>(<span class="hljs-string">&#x27;log-mas-error&#x27;</span>), <span class="hljs-title function_">message</span>(event, <span class="hljs-string">&#x27;mas:error&#x27;</span>));
         });
-        <span class="hljs-comment">// success events</span>
-        <span class="hljs-variable language_">document</span>.<span class="hljs-title function_">addEventListener</span>(<span class="hljs-string">&#x27;aem:ready&#x27;</span>, <span class="hljs-function">(<span class="hljs-params">event</span>) =&gt;</span>
-            <span class="hljs-title function_">log</span>(logReady, <span class="hljs-title function_">message</span>(event, <span class="hljs-string">&#x27;aem:ready&#x27;</span>)),
-        );
         <span class="hljs-variable language_">document</span>.<span class="hljs-title function_">addEventListener</span>(<span class="hljs-string">&#x27;mas:ready&#x27;</span>, <span class="hljs-function">(<span class="hljs-params">event</span>) =&gt;</span> {
             event.<span class="hljs-property">target</span>.<span class="hljs-property">classList</span>.<span class="hljs-title function_">add</span>(<span class="hljs-string">&#x27;ready&#x27;</span>);
             event.<span class="hljs-property">target</span>.<span class="hljs-property">classList</span>.<span class="hljs-title function_">remove</span>(<span class="hljs-string">&#x27;error&#x27;</span>);
@@ -388,12 +384,6 @@ aemFragment.<span class="hljs-title function_">addEventListener</span>(<span cla
     <span class="hljs-comment">// event.detail contains { message, context }</span>
     <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">error</span>(<span class="hljs-string">&#x27;AEM fragment error message:&#x27;</span>, event.<span class="hljs-property">detail</span>.<span class="hljs-property">message</span>);
     <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">error</span>(<span class="hljs-string">&#x27;AEM fragment error context:&#x27;</span>, event.<span class="hljs-property">detail</span>.<span class="hljs-property">context</span>);
-});
-
-<span class="hljs-comment">// Listen for AEM fragment load event</span>
-aemFragment.<span class="hljs-title function_">addEventListener</span>(<span class="hljs-string">&#x27;aem:load&#x27;</span>, <span class="hljs-function">(<span class="hljs-params">event</span>) =&gt;</span> {
-    <span class="hljs-comment">// event.detail contains the fragment data</span>
-    <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">&#x27;AEM fragment loaded:&#x27;</span>, event.<span class="hljs-property">detail</span>);
 });
 </code></pre>
 <h3 id="spectrum-%3D-%E2%80%98swc%E2%80%99" tabindex="-1">spectrum = ‘swc’ <a class="header-anchor" href="#spectrum-%3D-%E2%80%98swc%E2%80%99" href="#spectrum-%3D-%E2%80%98swc%E2%80%99" title="Permalink to this heading">#</a></h3>

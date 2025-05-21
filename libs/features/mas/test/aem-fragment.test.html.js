@@ -97,19 +97,20 @@ runTests(async () => {
             const aemFragment = ccCard.querySelector('aem-fragment');
 
             await aemFragment.updateComplete;
-            await ccCard.updateComplete;
+            await ccCard.checkReady();
 
             const before = ccCard.innerHTML;
 
-            const footerSlot = getSlotElement(ccCard, 'footer');
+            let footerSlot = getSlotElement(ccCard, 'footer');
             expect(footerSlot).to.exist;
             footerSlot.setAttribute('test', 'true');
 
             await aemFragment.refresh();
+            await ccCard.checkReady();
+            footerSlot = getSlotElement(ccCard, 'footer');
             const after = ccCard.innerHTML;
-
             expect(before).to.equal(after);
-            expect(footerSlot.getAttribute('test')).to.equal('true');
+            expect(footerSlot.getAttribute('test')).to.be.null;
             expect(aemMock.count).to.equal(2);
         });
 
@@ -200,8 +201,6 @@ runTests(async () => {
             const { detail } = await masReady;
             expect(detail).to.have.property('duration');
             expect(detail).to.have.property('startTime');
-            expect(detail).to.have.property('fragmentDuration');
-            expect(detail).to.have.property('fragmentStartTime');
         });
     });
 
@@ -227,12 +226,13 @@ runTests(async () => {
         it('throws an error if response is not ok', async () => {
             addFragment('notfound');
             const event = oneEvent(aemFragment, 'aem:error');
-            const { detail: error } = await event;
-            expect(error).to.have.property('duration');
-            expect(error).to.have.property('startTime');
-            expect(error).to.include({
-                status: 404,
-                url: 'http://localhost:2023/mas/io/fragment',
+            const { detail } = await event;
+            expect(detail.message).to.equal(
+                'Failed to fetch fragment: Unexpected fragment response',
+            );
+            expect(aemFragment.fetchInfo).to.include({
+                'aem-fragment:status': 404,
+                'aem-fragment:url': 'http://localhost:2023/mas/io/fragment?id=notfound&api_key=wcms-commerce-ims-ro-user-milo&locale=en_US',
             });
         });
 
