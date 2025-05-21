@@ -102,7 +102,7 @@ export const logPerformance = (
       sampleRate: 0.01,
     });
   } catch (e) {
-    console.error(e);
+    // eslint-disable-next-line no-empty
   }
 };
 
