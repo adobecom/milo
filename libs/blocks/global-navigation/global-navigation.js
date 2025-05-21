@@ -1320,10 +1320,10 @@ class Gnav {
           // There are two calls to transformTemplateToMobile
           // One without awaiting decorateMenu, and one after
           // decorateMenu is complete
-          if (!this.newMobileNav) return;
           const popup = template.querySelector('.feds-popup');
-          if (isDesktop.matches || !popup) return;
           desktopMegaMenuHTML = popup.innerHTML;
+          if (!this.newMobileNav) return;
+          if (isDesktop.matches || !popup) return;
           mobileNavCleanup();
           mobileNavCleanup = await transformTemplateToMobile({
             popup,
