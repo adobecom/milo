@@ -723,18 +723,21 @@ html[dir="rtl"] .carousel .move-indicators {
   }
 }
 
+.carousel.dark.disable-buttons .carousel-button,
+.dark .carousel.disable-buttons .carousel-button {
+  height: 38px;
+  width: 38px;
+}
+
 .carousel.dark.disable-buttons .carousel-button.disabled,
-.dark .carousel.disable-buttons .carousel-button.disabled,
-.carousel.disable-buttons .carousel-button.disabled {
+.dark .carousel.disable-buttons .carousel-button.disabled {
   background-color: #E9E9E9;
 }
 
 .carousel.dark.disable-buttons .carousel-button.disabled:hover,
 .carousel.dark.disable-buttons .carousel-button.disabled:active,
 .dark .carousel.disable-buttons .carousel-button.disabled:hover,
-.dark .carousel.disable-buttons .carousel-button.disabled:active,
-.carousel.disable-buttons .carousel-button.disabled:hover,
-.carousel.disable-buttons .carousel-button.disabled:active {
+.dark .carousel.disable-buttons .carousel-button.disabled:active {
   background-color: #E9E9E9;
 }
 
