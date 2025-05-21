@@ -199,8 +199,7 @@ runTests(async () => {
                 : sliceCard.querySelector('div#badge');
             expect(badge).to.exist;
             const { detail } = await masReady;
-            expect(detail).to.have.property('duration');
-            expect(detail).to.have.property('startTime');
+            expect(detail).to.have.property('measure');
         });
     });
 

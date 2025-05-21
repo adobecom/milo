@@ -33,7 +33,7 @@ import {
 } from './constants.js';
 import { VariantLayout } from './variants/variant-layout.js';
 import { hydrate, ANALYTICS_SECTION_ATTR } from './hydrate.js';
-import { getService } from './utils.js';
+import { getService, printMeasure } from './utils.js';
 
 const MERCH_CARD = 'merch-card';
 
@@ -508,7 +508,7 @@ export class MerchCard extends LitElement {
         const result = await Promise.race([successPromise, timeoutPromise]);
 
         if (result === true) {
-            let { duration, startTime } = performance.measure(
+            let measure = performance.measure(
                 this.#durationMarkName,
                 this.#startMarkName,
             );
@@ -517,8 +517,7 @@ export class MerchCard extends LitElement {
                 const detail = {
                     ...this.aemFragment?.fetchInfo,
                     ...this.#service.duration,
-                    duration: parseFloat(duration.toFixed(2)),
-                    startTime: parseFloat(startTime.toFixed(2)),
+                    measure: printMeasure(measure),
                 };
                 this.dispatchEvent(
                     new CustomEvent(EVENT_MAS_READY, {
@@ -530,13 +529,12 @@ export class MerchCard extends LitElement {
             }
             return this;
         } else {
-            const { duration, startTime } = performance.measure(
+            const measure = performance.measure(
                 this.#durationMarkName,
                 this.#startMarkName,
             );
             const details = {
-                duration: parseFloat(duration).toFixed(2),
-                startTime: parseFloat(startTime).toFixed(2),
+                measure: printMeasure(measure),
                 ...this.#service.duration,
             };
             if (result === 'timeout') {

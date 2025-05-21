@@ -5,7 +5,7 @@ import {
     MARK_DURATION_SUFFIX,
 } from './constants.js';
 import { MasError } from './mas-error.js';
-import { getService } from './utils.js';
+import { getService, printMeasure } from './utils.js';
 import { masFetch } from './utils/mas-fetch.js';
 
 const sheet = new CSSStyleSheet();
@@ -154,13 +154,11 @@ export class AemFragment extends HTMLElement {
                 credentials: 'omit',
             });
             this.#applyHeaders(response);
-            this.#fetchInfo.status = response?.status;
-            const { startTime, duration } = performance.measure(
+            this.#fetchInfo.status = response?.status;        
+            this.#fetchInfo.measure = printMeasure(performance.measure(
                 measureName,
                 startMarkName,
-            );
-            this.#fetchInfo.startTime = parseFloat(startTime.toFixed(2));
-            this.#fetchInfo.duration = parseFloat(duration.toFixed(2));
+            ));
             this.#fetchInfo.url = response.url;
             this.#fetchInfo.retryCount = response.retryCount;
             if (!response?.ok) {
@@ -171,13 +169,11 @@ export class AemFragment extends HTMLElement {
             }
             return await response.json();
         } catch (e) {
-            const { startTime, duration } = performance.measure(
+            this.#fetchInfo.url = endpoint;
+            this.#fetchInfo.measure = printMeasure(performance.measure(
                 measureName,
                 startMarkName,
-            );
-            this.#fetchInfo.url = endpoint;
-            this.#fetchInfo.startTime = parseFloat(startTime.toFixed(2));
-            this.#fetchInfo.duration = parseFloat(duration.toFixed(2));
+            ));
             this.#fetchInfo.retryCount = e.retryCount;
             if (this.#rawData) {
                 this.#fetchInfo.stale = true;

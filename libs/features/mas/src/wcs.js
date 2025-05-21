@@ -13,6 +13,7 @@ import { Log } from './log.js';
 import { MasError } from './mas-error.js';
 import { masFetch } from './utils/mas-fetch.js';
 import { getService } from './utilities.js';
+import { printMeasure } from './utils.js';
 
 const NAMESPACE = 'wcs';
 
@@ -123,8 +124,7 @@ export function Wcs({ settings }) {
             Date.now() + Math.random().toString(36).substring(2, 7);
         const startMark = `${NAMESPACE}:${osi}:${uniqueId}${MARK_START_SUFFIX}`;
         const measureName = `${NAMESPACE}:${osi}:${uniqueId}${MARK_DURATION_SUFFIX}`;
-        let startTime;
-        let duration;
+        let measure;
         try {
             performance.mark(startMark);
             url = new URL(settings.wcsURL);
@@ -185,7 +185,7 @@ export function Wcs({ settings }) {
             /* c8 ignore next 2 */
             message = `Network error: ${e.message}`;
         } finally {
-            ({ startTime, duration } = performance.measure(
+            (measure = performance.measure(
                 measureName,
                 startMark,
             ));
@@ -211,8 +211,7 @@ export function Wcs({ settings }) {
                         ...options,
                         // ...headers, TODO enable this once access-control-expose-headers is fixed
                         response,
-                        startTime: parseFloat(startTime.toFixed(2)),
-                        duration: parseFloat(duration.toFixed(2)),
+                        measure: printMeasure(measure),
                         ...service?.duration,
                     }),
                 );

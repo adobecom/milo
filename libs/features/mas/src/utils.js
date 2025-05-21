@@ -51,6 +51,10 @@ export function isMobile() {
   return matchMobile().matches;
 }
 
+export function printMeasure(measure) {
+  return `startTime: ${measure.startTime.toFixed(2)}, duration: ${measure.duration.toFixed(2)}`;
+}
+
 /**
  * Checks if the current device is mobile or tablet based on the screen width.
  * @returns {boolean} True if the device is mobile, otherwise false.
