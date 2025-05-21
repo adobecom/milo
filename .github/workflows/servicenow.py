@@ -10,12 +10,9 @@ import requests
 APPLICATION_JSON = "application/json"
 CMR_RETRIEVAL_ERROR = "CMR ID Retrieval Operation failed..."
 POST_FAILURE_MESSAGE = "POST failed with response code: "
-#IMS_URL = 'https://ims-na1.adobelogin.com/ims/token'
-IMS_URL = 'https://ims-na1-stg1.adobelogin.com/ims/token'
-#SERVICENOW_CMR_URL = 'https://ipaasapi.adobe-services.com/change_management/changes'
-SERVICENOW_CMR_URL = 'https://ipaasapi-stage.adobe-services.com/change_management/changes'
-#SERVICENOW_GET_CMR_URL = 'https://ipaasapi.adobe-services.com/change_management/transactions/'
-SERVICENOW_GET_CMR_URL = 'https://ipaasapi-stage.adobe-services.com/change_management/transactions/'
+IMS_URL = 'https://ims-na1.adobelogin.com/ims/token'
+SERVICENOW_CMR_URL = 'https://ipaasapi.adobe-services.com/change_management/changes'
+SERVICENOW_GET_CMR_URL = 'https://ipaasapi.adobe-services.com/change_management/transactions/'
 
 def _search_value(value, target_string):
     if isinstance(value, str):
@@ -35,11 +32,11 @@ def find_string_in_json(json_data, target_string):
     Returns:
         bool: True if the string is found, False otherwise.
     """
-    if isinstance(json_data, dict):
-        return any(_search_value(value, target_string) for value in json_data.values())
-    if isinstance(json_data, list):
-        return any(_search_value(item, target_string) for item in json_data)
-    return False
+  if isinstance(json_data, dict):
+      return any(_search_value(value, target_string) for value in json_data.values())
+  if isinstance(json_data, list):
+      return any(_search_value(item, target_string) for item in json_data)
+  return False
 
 def backoff_with_timeout(operation, max_retries=5, base_delay=1, max_delay=60, timeout=300):
   """
