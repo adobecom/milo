@@ -72,8 +72,9 @@ function findLinks(selector) {
   return [...document.body.querySelectorAll(selector)]
     .reduce((links, el) => {
       const url = getUrl(el);
-      if (!hrefs.includes(url.href)) {
-        hrefs.push(url.href);
+      const baseUrl = url.origin + url.pathname;
+      if (!hrefs.includes(baseUrl)) {
+        hrefs.push(baseUrl);
         links.push({ url, edit: null, preview: 'Fetching', live: 'Fetching' });
       }
       return links;
