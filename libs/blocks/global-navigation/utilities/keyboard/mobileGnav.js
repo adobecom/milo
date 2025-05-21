@@ -17,7 +17,7 @@ const MobileGnav = {
             this.eventInitialized = true;
             const popupTabs = document.querySelectorAll('.feds-nav-wrapper .feds-popup .tabs .tab');
             const popupTabContents = document.querySelectorAll('.feds-nav-wrapper .feds-popup .tab-content');
-            const popupLinks = document.querySelectorAll('.feds-nav-wrapper .feds-popup .tab-content .feds-navLink');
+            const popupLinks = document.querySelectorAll('.feds-nav-wrapper .feds-popup .tab-content .feds-navLink, .feds-promo a');
             popupTabs.forEach((tab) => {
               tab.addEventListener('keydown', (e) => {
                 if (e.code === 'ArrowUp') {
@@ -36,7 +36,7 @@ const MobileGnav = {
                   const activeTabIndex = activeTab.getAttribute('aria-controls');
                   const currentTabContent = [...popupTabContents].find((currentTab) => currentTab.closest('.feds-dropdown--active'));
                   if (currentTabContent && currentTabContent.children[activeTabIndex]) {
-                    currentTabContent.children[activeTabIndex].querySelector('.feds-navLink').focus();
+                    currentTabContent.children[activeTabIndex].querySelector('.feds-navLink, .feds-promo a').focus();
                   }
                 }
               });
@@ -44,14 +44,31 @@ const MobileGnav = {
             popupLinks.forEach((link) => {
               link.addEventListener('keydown', (e) => {
                 if (e.code === 'ArrowUp') {
-                  const prevLink = link.previousElementSibling;
+                  let prevLink = link.previousElementSibling;
+                  console.log(prevLink);
                   if (prevLink) {
+                    if (prevLink.classList.contains('feds-promo-wrapper')) {
+                      prevLink = prevLink.querySelector('a.feds-cta');
+                    }
                     prevLink.focus();
+                  } else if (link.classList.contains('feds-cta')) {
+                    link.closest('.feds-promo-content').previousElementSibling.focus();
+                  } else {
+                    link.closest('.feds-promo-wrapper').previousElementSibling.focus();
                   }
                 } else if (e.code === 'ArrowDown') {
-                  const nextLink = link.nextElementSibling;
+                  let nextLink = link.nextElementSibling;
+                  console.log(nextLink);
                   if (nextLink) {
+                    if (nextLink.classList.contains('feds-promo-content')) {
+                      nextLink = nextLink.querySelector('a');
+                    }
+                    if (nextLink.classList.contains('feds-promo-wrapper')) {
+                      nextLink = nextLink.querySelector('a');
+                    }
                     nextLink.focus();
+                  } else {
+                    link.closest('.feds-promo-wrapper').nextElementSibling.focus();
                   }
                 } else if (e.code === 'ArrowLeft') {
                   const currentTabs = [...popupTabs].filter((currentTab) => currentTab.closest('.feds-dropdown--active'));
