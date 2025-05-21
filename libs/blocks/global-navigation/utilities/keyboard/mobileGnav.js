@@ -45,7 +45,6 @@ const MobileGnav = {
               link.addEventListener('keydown', (e) => {
                 if (e.code === 'ArrowUp') {
                   let prevLink = link.previousElementSibling;
-                  console.log(prevLink);
                   if (prevLink) {
                     if (prevLink.classList.contains('feds-promo-wrapper')) {
                       prevLink = prevLink.querySelector('a.feds-cta');
@@ -58,7 +57,6 @@ const MobileGnav = {
                   }
                 } else if (e.code === 'ArrowDown') {
                   let nextLink = link.nextElementSibling;
-                  console.log(nextLink);
                   if (nextLink) {
                     if (nextLink.classList.contains('feds-promo-content')) {
                       nextLink = nextLink.querySelector('a');
