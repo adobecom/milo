@@ -16,10 +16,19 @@ export default class MerchAddon extends LitElement {
     }
 
     getOsi(planType, offerType) {
-      let el = this.querySelector(`p[data-plan-type="${planType}"] ${SELECTOR_MAS_INLINE_PRICE}[data-offer-type="${offerType}"]`);
-      if (!el && offerType !== 'TRIAL') {
-        el = this.querySelector(`p[data-plan-type="${planType}"] ${SELECTOR_MAS_INLINE_PRICE}:not([data-offer-type="TRIAL"])`);
-      }
+      const offerTypeOptions = {
+        'TRIAL': ['TRIAL'],
+        'BASE': ['BASE', 'PROMOTION'],
+        'PROMOTION': ['PROMOTION', 'BASE']
+      };
+      // Get the priority list for this offer type
+      const priorityList = offerTypeOptions[offerType] || [offerType];
+      // Build the selector by joining the options with comma
+      const selector = priorityList
+        .map(type => `p[data-plan-type="${planType}"] ${SELECTOR_MAS_INLINE_PRICE}[data-offer-type="${type}"]`)
+        .join(', ');
+      
+      const el = this.querySelector(selector);
       return el?.dataset?.wcsOsi;
     }
 
