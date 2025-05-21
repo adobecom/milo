@@ -726,10 +726,7 @@ html[dir="rtl"] .carousel .move-indicators {
 .carousel.dark.disable-buttons .carousel-button.disabled,
 .dark .carousel.disable-buttons .carousel-button.disabled,
 .carousel.disable-buttons .carousel-button.disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-  pointer-events: none;
-  background-color: #c0c0c0;
+  background-color: #E9E9E9;
 }
 
 .carousel.dark.disable-buttons .carousel-button.disabled:hover,
@@ -738,7 +735,7 @@ html[dir="rtl"] .carousel .move-indicators {
 .dark .carousel.disable-buttons .carousel-button.disabled:active,
 .carousel.disable-buttons .carousel-button.disabled:hover,
 .carousel.disable-buttons .carousel-button.disabled:active {
-  background-color: #c0c0c0;
+  background-color: #E9E9E9;
 }
 
 .carousel.dark.disable-buttons .carousel-button-container,
