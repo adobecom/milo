@@ -1,30 +1,4 @@
-var __defProp = Object.defineProperty;
-var __typeError = (msg) => {
-  throw TypeError(msg);
-};
-var __defNormalProp = (obj, key, value) => key in obj ? __defProp(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
-var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "symbol" ? key + "" : key, value);
-var __accessCheck = (obj, member, msg) => member.has(obj) || __typeError("Cannot " + msg);
-var __privateGet = (obj, member, getter) => (__accessCheck(obj, member, "read from private field"), getter ? getter.call(obj) : member.get(obj));
-var __privateAdd = (obj, member, value) => member.has(obj) ? __typeError("Cannot add the same private member more than once") : member instanceof WeakSet ? member.add(obj) : member.set(obj, value);
-var __privateSet = (obj, member, value, setter) => (__accessCheck(obj, member, "write to private field"), setter ? setter.call(obj, value) : member.set(obj, value), value);
-var __privateMethod = (obj, member, method) => (__accessCheck(obj, member, "access private method"), method);
-
-// src/merch-card.js
-import { LitElement as LitElement6 } from "../lit-all.min.js";
-
-// src/merch-card.css.js
-import { css, unsafeCSS } from "../lit-all.min.js";
-
-// src/media.js
-var MOBILE_LANDSCAPE = "(max-width: 767px)";
-var TABLET_DOWN = "(max-width: 1199px)";
-var TABLET_UP = "(min-width: 768px)";
-var DESKTOP_UP = "(min-width: 1200px)";
-var LARGE_DESKTOP = "(min-width: 1600px)";
-
-// src/merch-card.css.js
-var styles = css`
+var qe=Object.defineProperty;var Zt=o=>{throw TypeError(o)};var Ge=(o,e,t)=>e in o?qe(o,e,{enumerable:!0,configurable:!0,writable:!0,value:t}):o[e]=t;var d=(o,e,t)=>Ge(o,typeof e!="symbol"?e+"":e,t),Ot=(o,e,t)=>e.has(o)||Zt("Cannot "+t);var s=(o,e,t)=>(Ot(o,e,"read from private field"),t?t.call(o):e.get(o)),p=(o,e,t)=>e.has(o)?Zt("Cannot add the same private member more than once"):e instanceof WeakSet?e.add(o):e.set(o,t),m=(o,e,t,r)=>(Ot(o,e,"write to private field"),r?r.call(o,t):e.set(o,t),t),A=(o,e,t)=>(Ot(o,e,"access private method"),t);import{LitElement as Ur}from"../lit-all.min.js";import{css as te,unsafeCSS as Jt}from"../lit-all.min.js";var z="(max-width: 767px)",wt="(max-width: 1199px)",u="(min-width: 768px)",g="(min-width: 1200px)",T="(min-width: 1600px)";var ee=te`
     :host {
         --consonant-merch-card-background-color: #fff;
         --consonant-merch-card-border: 1px solid var(--consonant-merch-card-border-color);
@@ -261,12 +235,9 @@ var styles = css`
     ::slotted([slot='price']) {
       color: var(--consonant-merch-card-price-color);
     }
-`;
-var sizeStyles = () => {
-  const styles3 = [
-    css`
+`,re=()=>[te`
       /* Tablet */
-      @media screen and ${unsafeCSS(TABLET_UP)} {
+      @media screen and ${Jt(u)} {
           :host([size='wide']),
           :host([size='super-wide']) {
               width: 100%;
@@ -275,40 +246,14 @@ var sizeStyles = () => {
       }
 
       /* Laptop */
-      @media screen and ${unsafeCSS(DESKTOP_UP)} {
+      @media screen and ${Jt(g)} {
           :host([size='wide']) {
               grid-column: span 2;
           }
       }
-      `
-  ];
-  return styles3;
-};
-
-// src/merch-icon.js
-import { LitElement, html, css as css2 } from "../lit-all.min.js";
-var MerchIcon = class extends LitElement {
-  constructor() {
-    super();
-    this.size = "m";
-    this.alt = "";
-    this.loading = "lazy";
-  }
-  render() {
-    const { href } = this;
-    return href ? html`<a href="${href}">
+      `];import{LitElement as Ve,html as oe,css as je}from"../lit-all.min.js";var q=class extends Ve{constructor(){super(),this.size="m",this.alt="",this.loading="lazy"}render(){let{href:e}=this;return e?oe`<a href="${e}">
                   <img src="${this.src}" alt="${this.alt}" loading="${this.loading}" />
-              </a>` : html` <img src="${this.src}" alt="${this.alt}" loading="${this.loading}" />`;
-  }
-};
-__publicField(MerchIcon, "properties", {
-  size: { type: String, attribute: true },
-  src: { type: String, attribute: true },
-  alt: { type: String, attribute: true },
-  href: { type: String, attribute: true },
-  loading: { type: String, attribute: true }
-});
-__publicField(MerchIcon, "styles", css2`
+              </a>`:oe` <img src="${this.src}" alt="${this.alt}" loading="${this.loading}" />`}};d(q,"properties",{size:{type:String,attribute:!0},src:{type:String,attribute:!0},alt:{type:String,attribute:!0},href:{type:String,attribute:!0},loading:{type:String,attribute:!0}}),d(q,"styles",je`
         :host {
             --img-width: 32px;
             --img-height: 32px;
@@ -336,203 +281,7 @@ __publicField(MerchIcon, "styles", css2`
             width: var(--mod-img-width, var(--img-width));
             height: var(--mod-img-height, var(--img-height));
         }
-    `);
-customElements.define("merch-icon", MerchIcon);
-
-// src/constants.js
-var Commitment = Object.freeze({
-  MONTH: "MONTH",
-  YEAR: "YEAR",
-  TWO_YEARS: "TWO_YEARS",
-  THREE_YEARS: "THREE_YEARS",
-  PERPETUAL: "PERPETUAL",
-  TERM_LICENSE: "TERM_LICENSE",
-  ACCESS_PASS: "ACCESS_PASS",
-  THREE_MONTHS: "THREE_MONTHS",
-  SIX_MONTHS: "SIX_MONTHS"
-});
-var Term = Object.freeze({
-  ANNUAL: "ANNUAL",
-  MONTHLY: "MONTHLY",
-  TWO_YEARS: "TWO_YEARS",
-  THREE_YEARS: "THREE_YEARS",
-  P1D: "P1D",
-  P1Y: "P1Y",
-  P3Y: "P3Y",
-  P10Y: "P10Y",
-  P15Y: "P15Y",
-  P3D: "P3D",
-  P7D: "P7D",
-  P30D: "P30D",
-  HALF_YEARLY: "HALF_YEARLY",
-  QUARTERLY: "QUARTERLY"
-});
-var SELECTOR_MAS_INLINE_PRICE = 'span[is="inline-price"][data-wcs-osi]';
-var SELECTOR_MAS_CHECKOUT_LINK = 'a[is="checkout-link"][data-wcs-osi],button[is="checkout-button"][data-wcs-osi]';
-var SELECTOR_MAS_SP_BUTTON = "sp-button[data-wcs-osi]";
-var SELECTOR_MAS_ELEMENT = `${SELECTOR_MAS_INLINE_PRICE},${SELECTOR_MAS_CHECKOUT_LINK}`;
-var EVENT_MERCH_OFFER_SELECT_READY = "merch-offer-select:ready";
-var EVENT_MERCH_CARD_READY = "merch-card:ready";
-var EVENT_MERCH_CARD_ACTION_MENU_TOGGLE = "merch-card:action-menu-toggle";
-var EVENT_MERCH_QUANTITY_SELECTOR_CHANGE = "merch-quantity-selector:change";
-var EVENT_MERCH_CARD_QUANTITY_CHANGE = "merch-card-quantity:change";
-var EVENT_MERCH_ADDON_AND_QUANTITY_UPDATE = "merch-modal:addon-and-quantity-update";
-var EVENT_AEM_LOAD = "aem:load";
-var EVENT_AEM_ERROR = "aem:error";
-var EVENT_MAS_READY = "mas:ready";
-var EVENT_MAS_ERROR = "mas:error";
-var EVENT_TYPE_RESOLVED = "mas:resolved";
-var HEADER_X_REQUEST_ID = "X-Request-Id";
-var CheckoutWorkflowStep = Object.freeze({
-  CHECKOUT: "checkout",
-  CHECKOUT_EMAIL: "checkout/email",
-  SEGMENTATION: "segmentation",
-  BUNDLE: "bundle",
-  COMMITMENT: "commitment",
-  RECOMMENDATION: "recommendation",
-  EMAIL: "email",
-  PAYMENT: "payment",
-  CHANGE_PLAN_TEAM_PLANS: "change-plan/team-upgrade/plans",
-  CHANGE_PLAN_TEAM_PAYMENT: "change-plan/team-upgrade/payment"
-});
-var CheckoutWorkflow = Object.freeze({ V2: "UCv2", V3: "UCv3" });
-var Env = Object.freeze({
-  STAGE: "STAGE",
-  PRODUCTION: "PRODUCTION",
-  LOCAL: "LOCAL"
-});
-var MARK_START_SUFFIX = ":start";
-var MARK_DURATION_SUFFIX = ":duration";
-var TEMPLATE_PRICE_LEGAL = "legal";
-
-// src/utils.js
-var MAS_COMMERCE_SERVICE = "mas-commerce-service";
-function debounce(func, delay) {
-  let debounceTimer;
-  return function() {
-    const context = this;
-    const args = arguments;
-    clearTimeout(debounceTimer);
-    debounceTimer = setTimeout(() => func.apply(context, args), delay);
-  };
-}
-function createTag(tag, attributes = {}, content = null, is = null) {
-  const element = is ? document.createElement(tag, { is }) : document.createElement(tag);
-  if (content instanceof HTMLElement) {
-    element.appendChild(content);
-  } else {
-    element.innerHTML = content;
-  }
-  for (const [key, value] of Object.entries(attributes)) {
-    element.setAttribute(key, value);
-  }
-  return element;
-}
-function matchMobile() {
-  return window.matchMedia("(max-width: 767px)");
-}
-function isMobile() {
-  return matchMobile().matches;
-}
-function isMobileOrTablet() {
-  return window.matchMedia("(max-width: 1024px)").matches;
-}
-function getService() {
-  return document.getElementsByTagName(MAS_COMMERCE_SERVICE)?.[0];
-}
-
-// src/merch-gradient.js
-var _angle, _borderRadius, _colors, _positions, _updateParentBackground;
-var MerchGradient = class extends HTMLElement {
-  constructor() {
-    super();
-    __privateAdd(this, _angle, "");
-    __privateAdd(this, _borderRadius);
-    __privateAdd(this, _colors, []);
-    __privateAdd(this, _positions, []);
-    __privateAdd(this, _updateParentBackground);
-    __privateSet(this, _updateParentBackground, debounce(() => {
-      if (!this.isConnected) return;
-      this.parentElement.style.background = this.value;
-      if (__privateGet(this, _borderRadius)) {
-        this.parentElement.style.borderRadius = __privateGet(this, _borderRadius);
-      } else if (__privateGet(this, _borderRadius) === "") {
-        this.parentElement.style.borderRadius = "";
-      }
-    }, 1));
-  }
-  static get observedAttributes() {
-    return ["colors", "positions", "angle", "border-radius"];
-  }
-  get value() {
-    const stops = __privateGet(this, _colors).map((color, index) => {
-      const position = __privateGet(this, _positions)[index] || "";
-      return `${color} ${position}`;
-    }).join(", ");
-    return `linear-gradient(${__privateGet(this, _angle)}, ${stops})`;
-  }
-  connectedCallback() {
-    __privateGet(this, _updateParentBackground).call(this);
-  }
-  attributeChangedCallback(name, oldValue, newValue) {
-    if (name === "border-radius") {
-      __privateSet(this, _borderRadius, newValue?.trim());
-    }
-    if (name === "colors" && newValue) {
-      __privateSet(this, _colors, newValue?.split(",").map((color) => color.trim()) ?? []);
-    } else if (name === "positions" && newValue) {
-      __privateSet(this, _positions, newValue?.split(",").map((position) => position.trim()) ?? []);
-    } else if (name === "angle") {
-      __privateSet(this, _angle, newValue?.trim() ?? "");
-    }
-    __privateGet(this, _updateParentBackground).call(this);
-  }
-};
-_angle = new WeakMap();
-_borderRadius = new WeakMap();
-_colors = new WeakMap();
-_positions = new WeakMap();
-_updateParentBackground = new WeakMap();
-customElements.define("merch-gradient", MerchGradient);
-
-// src/merch-addon.js
-import { LitElement as LitElement2, html as html2, css as css3 } from "../lit-all.min.js";
-var MerchAddon = class extends LitElement2 {
-  constructor() {
-    super();
-    this.planType = void 0;
-    this.checked = false;
-    this.updatePlanType = this.updatePlanType.bind(this);
-    this.handleChange = this.handleChange.bind(this);
-  }
-  connectedCallback() {
-    super.connectedCallback();
-    this.addEventListener(EVENT_TYPE_RESOLVED, this.updatePlanType);
-  }
-  disconnectedCallback() {
-    super.disconnectedCallback();
-    this.removeEventListener(EVENT_TYPE_RESOLVED, this.updatePlanType);
-  }
-  updatePlanType(e) {
-    if (e.target.tagName !== "SPAN") return;
-    const price = e.target;
-    const offer = price?.value?.[0];
-    if (!offer) return;
-    price.setAttribute("data-offer-type", offer.offerType);
-    price.closest("p").setAttribute("data-plan-type", offer.planType);
-  }
-  handleChange(e) {
-    this.checked = e.target.checked;
-    this.dispatchEvent(
-      new CustomEvent("change", {
-        detail: { checked: this.checked },
-        bubbles: true,
-        composed: true
-      })
-    );
-  }
-  render() {
-    return html2`<input
+    `);customElements.define("merch-icon",q);var Zr=Object.freeze({MONTH:"MONTH",YEAR:"YEAR",TWO_YEARS:"TWO_YEARS",THREE_YEARS:"THREE_YEARS",PERPETUAL:"PERPETUAL",TERM_LICENSE:"TERM_LICENSE",ACCESS_PASS:"ACCESS_PASS",THREE_MONTHS:"THREE_MONTHS",SIX_MONTHS:"SIX_MONTHS"}),Jr=Object.freeze({ANNUAL:"ANNUAL",MONTHLY:"MONTHLY",TWO_YEARS:"TWO_YEARS",THREE_YEARS:"THREE_YEARS",P1D:"P1D",P1Y:"P1Y",P3Y:"P3Y",P10Y:"P10Y",P15Y:"P15Y",P3D:"P3D",P7D:"P7D",P30D:"P30D",HALF_YEARLY:"HALF_YEARLY",QUARTERLY:"QUARTERLY"});var x='span[is="inline-price"][data-wcs-osi]',St='a[is="checkout-link"][data-wcs-osi],button[is="checkout-button"][data-wcs-osi]',ae="sp-button[data-wcs-osi]",ne=`${x},${St}`;var ie="merch-offer-select:ready",ce="merch-card:ready",se="merch-card:action-menu-toggle";var $t="merch-quantity-selector:change",de="merch-card-quantity:change",It="merch-modal:addon-and-quantity-update";var G="aem:load",V="aem:error",le="mas:ready",he="mas:error";var Dt="mas:resolved";var me="X-Request-Id",to=Object.freeze({CHECKOUT:"checkout",CHECKOUT_EMAIL:"checkout/email",SEGMENTATION:"segmentation",BUNDLE:"bundle",COMMITMENT:"commitment",RECOMMENDATION:"recommendation",EMAIL:"email",PAYMENT:"payment",CHANGE_PLAN_TEAM_PLANS:"change-plan/team-upgrade/plans",CHANGE_PLAN_TEAM_PAYMENT:"change-plan/team-upgrade/payment"}),eo=Object.freeze({V2:"UCv2",V3:"UCv3"}),ro=Object.freeze({STAGE:"STAGE",PRODUCTION:"PRODUCTION",LOCAL:"LOCAL"});var st=":start",pe=":duration";var ge="legal";var Ye="mas-commerce-service";function ue(o,e){let t;return function(){let r=this,a=arguments;clearTimeout(t),t=setTimeout(()=>o.apply(r,a),e)}}function b(o,e={},t=null,r=null){let a=r?document.createElement(o,{is:r}):document.createElement(o);t instanceof HTMLElement?a.appendChild(t):a.innerHTML=t;for(let[n,i]of Object.entries(e))a.setAttribute(n,i);return a}function At(){return window.matchMedia("(max-width: 767px)")}function j(){return At().matches}function fe(){return window.matchMedia("(max-width: 1024px)").matches}function Y(){return document.getElementsByTagName(Ye)?.[0]}var dt,$,lt,ht,K,Tt=class extends HTMLElement{constructor(){super();p(this,dt,"");p(this,$);p(this,lt,[]);p(this,ht,[]);p(this,K);m(this,K,ue(()=>{this.isConnected&&(this.parentElement.style.background=this.value,s(this,$)?this.parentElement.style.borderRadius=s(this,$):s(this,$)===""&&(this.parentElement.style.borderRadius=""))},1))}static get observedAttributes(){return["colors","positions","angle","border-radius"]}get value(){let t=s(this,lt).map((r,a)=>{let n=s(this,ht)[a]||"";return`${r} ${n}`}).join(", ");return`linear-gradient(${s(this,dt)}, ${t})`}connectedCallback(){s(this,K).call(this)}attributeChangedCallback(t,r,a){t==="border-radius"&&m(this,$,a?.trim()),t==="colors"&&a?m(this,lt,a?.split(",").map(n=>n.trim())??[]):t==="positions"&&a?m(this,ht,a?.split(",").map(n=>n.trim())??[]):t==="angle"&&m(this,dt,a?.trim()??""),s(this,K).call(this)}};dt=new WeakMap,$=new WeakMap,lt=new WeakMap,ht=new WeakMap,K=new WeakMap;customElements.define("merch-gradient",Tt);import{LitElement as Ke,html as We,css as Xe}from"../lit-all.min.js";var W=class extends Ke{constructor(){super(),this.planType=void 0,this.checked=!1,this.updatePlanType=this.updatePlanType.bind(this),this.handleChange=this.handleChange.bind(this)}getOsi(e,t){let n=({TRIAL:["TRIAL"],BASE:["BASE","PROMOTION"],PROMOTION:["PROMOTION","BASE"]}[t]||[t]).map(c=>`p[data-plan-type="${e}"] ${x}[data-offer-type="${c}"]`).join(", ");return this.querySelector(n)?.dataset?.wcsOsi}connectedCallback(){super.connectedCallback(),this.addEventListener(Dt,this.updatePlanType)}disconnectedCallback(){super.disconnectedCallback(),this.removeEventListener(Dt,this.updatePlanType)}updatePlanType(e){if(e.target.tagName!=="SPAN")return;let t=e.target,r=t?.value?.[0];r&&(t.setAttribute("data-offer-type",r.offerType),t.closest("p").setAttribute("data-plan-type",r.planType))}handleChange(e){this.checked=e.target.checked,this.dispatchEvent(new CustomEvent("change",{detail:{checked:this.checked},bubbles:!0,composed:!0}))}render(){return We`<input
                 type="checkbox"
                 id="addon-checkbox"
                 part="checkbox"
@@ -541,14 +290,7 @@ var MerchAddon = class extends LitElement2 {
             />
             <label for="addon-checkbox" part="label">
                 <slot></slot>
-            </label>`;
-  }
-};
-__publicField(MerchAddon, "properties", {
-  planType: { type: String, attribute: "plan-type", reflect: true },
-  checked: { type: Boolean, reflect: true }
-});
-__publicField(MerchAddon, "styles", css3`
+            </label>`}};d(W,"properties",{planType:{type:String,attribute:"plan-type",reflect:!0},checked:{type:Boolean,reflect:!0}}),d(W,"styles",Xe`
         :host {
             display: flex;
             gap: 9px;
@@ -576,131 +318,22 @@ __publicField(MerchAddon, "styles", css3`
         :host([plan-type='M2M']) ::slotted(p[data-plan-type='M2M']) {
             display: block;
         }
-    `);
-customElements.define("merch-addon", MerchAddon);
-
-// src/variants/variant-layout.js
-import { html as html3 } from "../lit-all.min.js";
-var _container;
-var _VariantLayout = class _VariantLayout {
-  constructor(card) {
-    __publicField(this, "card");
-    __privateAdd(this, _container);
-    this.card = card;
-    this.insertVariantStyle();
-  }
-  getContainer() {
-    __privateSet(this, _container, __privateGet(this, _container) ?? this.card.closest('[class*="-merch-cards"]') ?? this.card.parentElement);
-    return __privateGet(this, _container);
-  }
-  insertVariantStyle() {
-    if (!_VariantLayout.styleMap[this.card.variant]) {
-      _VariantLayout.styleMap[this.card.variant] = true;
-      const styles3 = document.createElement("style");
-      styles3.innerHTML = this.getGlobalCSS();
-      document.head.appendChild(styles3);
-    }
-  }
-  updateCardElementMinHeight(el, name) {
-    if (!el) return;
-    const elMinHeightPropertyName = `--consonant-merch-card-${this.card.variant}-${name}-height`;
-    const height = Math.max(
-      0,
-      parseInt(window.getComputedStyle(el).height) || 0
-    );
-    const maxMinHeight = parseInt(
-      this.getContainer().style.getPropertyValue(
-        elMinHeightPropertyName
-      )
-    ) || 0;
-    if (height > maxMinHeight) {
-      this.getContainer().style.setProperty(
-        elMinHeightPropertyName,
-        `${height}px`
-      );
-    }
-  }
-  get badge() {
-    let additionalStyles;
-    if (!this.card.badgeBackgroundColor || !this.card.badgeColor || !this.card.badgeText) {
-      return;
-    }
-    if (this.evergreen) {
-      additionalStyles = `border: 1px solid ${this.card.badgeBackgroundColor}; border-right: none;`;
-    }
-    return html3`
+    `);customElements.define("merch-addon",W);import{html as kt}from"../lit-all.min.js";var X,mt=class mt{constructor(e){d(this,"card");p(this,X);this.card=e,this.insertVariantStyle()}getContainer(){return m(this,X,s(this,X)??this.card.closest('[class*="-merch-cards"]')??this.card.parentElement),s(this,X)}insertVariantStyle(){if(!mt.styleMap[this.card.variant]){mt.styleMap[this.card.variant]=!0;let e=document.createElement("style");e.innerHTML=this.getGlobalCSS(),document.head.appendChild(e)}}updateCardElementMinHeight(e,t){if(!e)return;let r=`--consonant-merch-card-${this.card.variant}-${t}-height`,a=Math.max(0,parseInt(window.getComputedStyle(e).height)||0),n=parseInt(this.getContainer().style.getPropertyValue(r))||0;a>n&&this.getContainer().style.setProperty(r,`${a}px`)}get badge(){let e;if(!(!this.card.badgeBackgroundColor||!this.card.badgeColor||!this.card.badgeText))return this.evergreen&&(e=`border: 1px solid ${this.card.badgeBackgroundColor}; border-right: none;`),kt`
             <div
                 id="badge"
                 class="${this.card.variant}-badge"
                 style="background-color: ${this.card.badgeBackgroundColor};
                 color: ${this.card.badgeColor};
-                ${additionalStyles}"
+                ${e}"
             >
                 ${this.card.badgeText}
             </div>
-        `;
-  }
-  get cardImage() {
-    return html3` <div class="image">
+        `}get cardImage(){return kt` <div class="image">
             <slot name="bg-image"></slot>
             ${this.badge}
-        </div>`;
-  }
-  /* c8 ignore next 3 */
-  getGlobalCSS() {
-    return "";
-  }
-  /* c8 ignore next 3 */
-  get theme() {
-    return document.querySelector("sp-theme");
-  }
-  get evergreen() {
-    return this.card.classList.contains("intro-pricing");
-  }
-  get promoBottom() {
-    return this.card.classList.contains("promo-bottom");
-  }
-  get headingSelector() {
-    return '[slot="heading-xs"]';
-  }
-  get secureLabelFooter() {
-    const secureLabel = this.card.secureLabel ? html3`<span class="secure-transaction-label"
+        </div>`}getGlobalCSS(){return""}get theme(){return document.querySelector("sp-theme")}get evergreen(){return this.card.classList.contains("intro-pricing")}get promoBottom(){return this.card.classList.contains("promo-bottom")}get headingSelector(){return'[slot="heading-xs"]'}get secureLabelFooter(){let e=this.card.secureLabel?kt`<span class="secure-transaction-label"
                   >${this.card.secureLabel}</span
-              >` : "";
-    return html3`<footer>${secureLabel}<slot name="footer"></slot></footer>`;
-  }
-  async adjustTitleWidth() {
-    const cardWidth = this.card.getBoundingClientRect().width;
-    const badgeWidth = this.card.badgeElement?.getBoundingClientRect().width || 0;
-    if (cardWidth === 0 || badgeWidth === 0) return;
-    this.card.style.setProperty(
-      "--consonant-merch-card-heading-xs-max-width",
-      `${Math.round(cardWidth - badgeWidth - 16)}px`
-      // consonant-merch-spacing-xs
-    );
-  }
-  postCardUpdateHook() {
-  }
-  connectedCallbackHook() {
-  }
-  disconnectedCallbackHook() {
-  }
-  /* c8 ignore next 3 */
-  renderLayout() {
-  }
-  get aemFragmentMapping() {
-    return getFragmentMapping(this.card.variant);
-  }
-};
-_container = new WeakMap();
-__publicField(_VariantLayout, "styleMap", {});
-var VariantLayout = _VariantLayout;
-
-// src/variants/catalog.js
-import { html as html4, css as css4 } from "../lit-all.min.js";
-
-// src/variants/catalog.css.js
-var CSS = `
+              >`:"";return kt`<footer>${e}<slot name="footer"></slot></footer>`}async adjustTitleWidth(){let e=this.card.getBoundingClientRect().width,t=this.card.badgeElement?.getBoundingClientRect().width||0;e===0||t===0||this.card.style.setProperty("--consonant-merch-card-heading-xs-max-width",`${Math.round(e-t-16)}px`)}postCardUpdateHook(){}connectedCallbackHook(){}disconnectedCallbackHook(){}renderLayout(){}get aemFragmentMapping(){return Ct(this.card.variant)}};X=new WeakMap,d(mt,"styleMap",{});var f=mt;import{html as Ht,css as Qe}from"../lit-all.min.js";var xe=`
 :root {
   --consonant-merch-card-catalog-width: 276px;
   --consonant-merch-card-catalog-icon-size: 40px;
@@ -712,7 +345,7 @@ var CSS = `
     grid-template-columns: var(--consonant-merch-card-catalog-width);
 }
 
-@media screen and ${TABLET_UP} {
+@media screen and ${u} {
     :root {
       --consonant-merch-card-catalog-width: 302px;
     }
@@ -724,7 +357,7 @@ var CSS = `
     }
 }
 
-@media screen and ${DESKTOP_UP} {
+@media screen and ${g} {
     :root {
       --consonant-merch-card-catalog-width: 276px;
     }
@@ -735,7 +368,7 @@ var CSS = `
     }
 }
 
-@media screen and ${LARGE_DESKTOP} {
+@media screen and ${T} {
     .four-merch-cards.catalog {
         grid-template-columns: repeat(4, var(--consonant-merch-card-catalog-width));
     }
@@ -786,69 +419,13 @@ merch-card[variant="catalog"] .payment-details {
   font-style: italic;
   font-weight: 400;
   line-height: var(--consonant-merch-card-body-line-height);
-}`;
-
-// src/variants/catalog.js
-var CATALOG_AEM_FRAGMENT_MAPPING = {
-  badge: true,
-  ctas: { slot: "footer", size: "m" },
-  description: { tag: "div", slot: "body-xs" },
-  mnemonics: { size: "l" },
-  prices: { tag: "h3", slot: "heading-xs" },
-  size: ["wide", "super-wide"],
-  title: { tag: "h3", slot: "heading-xs" }
-};
-var Catalog = class extends VariantLayout {
-  constructor(card) {
-    super(card);
-    __publicField(this, "dispatchActionMenuToggle", () => {
-      this.card.dispatchEvent(
-        new CustomEvent(EVENT_MERCH_CARD_ACTION_MENU_TOGGLE, {
-          bubbles: true,
-          composed: true,
-          detail: {
-            card: this.card.name,
-            type: "action-menu"
-          }
-        })
-      );
-    });
-    __publicField(this, "toggleActionMenu", (e) => {
-      if (!this.actionMenuContentSlot || !e || e.type !== "click" && e.code !== "Space" && e.code !== "Enter") return;
-      e.preventDefault();
-      this.actionMenuContentSlot.classList.toggle("hidden");
-      const isHidden = this.actionMenuContentSlot.classList.contains("hidden");
-      if (!isHidden) this.dispatchActionMenuToggle();
-      this.setAriaExpanded(this.actionMenu, (!isHidden).toString());
-    });
-    __publicField(this, "toggleActionMenuFromCard", (e) => {
-      const retract = e?.type === "mouseleave" ? true : void 0;
-      this.card.blur();
-      this.actionMenu?.classList.remove("always-visible");
-      if (!this.actionMenuContentSlot) return;
-      if (!retract) this.dispatchActionMenuToggle();
-      this.actionMenuContentSlot.classList.toggle("hidden", retract);
-      this.setAriaExpanded(this.actionMenu, "false");
-    });
-    __publicField(this, "hideActionMenu", (e) => {
-      this.actionMenuContentSlot?.classList.add("hidden");
-      this.setAriaExpanded(this.actionMenu, "false");
-    });
-  }
-  get actionMenu() {
-    return this.card.shadowRoot.querySelector(".action-menu");
-  }
-  get actionMenuContentSlot() {
-    return this.card.shadowRoot.querySelector('slot[name="action-menu-content"]');
-  }
-  renderLayout() {
-    return html4` <div class="body">
+}`;var be={badge:!0,ctas:{slot:"footer",size:"m"},description:{tag:"div",slot:"body-xs"},mnemonics:{size:"l"},prices:{tag:"h3",slot:"heading-xs"},size:["wide","super-wide"],title:{tag:"h3",slot:"heading-xs"}},Q=class extends f{constructor(t){super(t);d(this,"dispatchActionMenuToggle",()=>{this.card.dispatchEvent(new CustomEvent(se,{bubbles:!0,composed:!0,detail:{card:this.card.name,type:"action-menu"}}))});d(this,"toggleActionMenu",t=>{if(!this.actionMenuContentSlot||!t||t.type!=="click"&&t.code!=="Space"&&t.code!=="Enter")return;t.preventDefault(),this.actionMenuContentSlot.classList.toggle("hidden");let r=this.actionMenuContentSlot.classList.contains("hidden");r||this.dispatchActionMenuToggle(),this.setAriaExpanded(this.actionMenu,(!r).toString())});d(this,"toggleActionMenuFromCard",t=>{let r=t?.type==="mouseleave"?!0:void 0;this.card.blur(),this.actionMenu?.classList.remove("always-visible"),this.actionMenuContentSlot&&(r||this.dispatchActionMenuToggle(),this.actionMenuContentSlot.classList.toggle("hidden",r),this.setAriaExpanded(this.actionMenu,"false"))});d(this,"hideActionMenu",t=>{this.actionMenuContentSlot?.classList.add("hidden"),this.setAriaExpanded(this.actionMenu,"false")})}get actionMenu(){return this.card.shadowRoot.querySelector(".action-menu")}get actionMenuContentSlot(){return this.card.shadowRoot.querySelector('slot[name="action-menu-content"]')}renderLayout(){return Ht` <div class="body">
                 <div class="top-section">
                     <slot name="icons"></slot> ${this.badge}
                     <div
                         class="action-menu
-                ${isMobileOrTablet() && this.card.actionMenu ? "always-visible" : ""}
-                ${!this.card.actionMenu ? "hidden" : "invisible"}"
+                ${fe()&&this.card.actionMenu?"always-visible":""}
+                ${this.card.actionMenu?"invisible":"hidden"}"
                         @click="${this.toggleActionMenu}"
                         @keypress="${this.toggleActionMenu}"
                         tabindex="0"
@@ -859,36 +436,21 @@ var Catalog = class extends VariantLayout {
                 <slot
                     name="action-menu-content"
                     class="action-menu-content
-            ${!this.card.actionMenuContent ? "hidden" : ""}"
+            ${this.card.actionMenuContent?"":"hidden"}"
                     @focusout="${this.hideActionMenu}"
                     >${this.card.actionMenuContent}
                 </slot>
                 <slot name="heading-xs"></slot>
                 <slot name="heading-m"></slot>
                 <slot name="body-xxs"></slot>
-                ${!this.promoBottom ? html4`<slot name="promo-text"></slot
-                          ><slot name="callout-content"></slot>` : ""}
+                ${this.promoBottom?"":Ht`<slot name="promo-text"></slot
+                          ><slot name="callout-content"></slot>`}
                 <slot name="body-xs"></slot>
-                ${this.promoBottom ? html4`<slot name="promo-text"></slot
-                          ><slot name="callout-content"></slot>` : ""}
+                ${this.promoBottom?Ht`<slot name="promo-text"></slot
+                          ><slot name="callout-content"></slot>`:""}
             </div>
             ${this.secureLabelFooter}
-            <slot></slot>`;
-  }
-  getGlobalCSS() {
-    return CSS;
-  }
-  setAriaExpanded(element, value) {
-    element.setAttribute("aria-expanded", value);
-  }
-  connectedCallbackHook() {
-    this.card.addEventListener("mouseleave", this.toggleActionMenuFromCard);
-  }
-  disconnectedCallbackHook() {
-    this.card.removeEventListener("mouseleave", this.toggleActionMenuFromCard);
-  }
-};
-__publicField(Catalog, "variantStyle", css4`
+            <slot></slot>`}getGlobalCSS(){return xe}setAriaExpanded(t,r){t.setAttribute("aria-expanded",r)}connectedCallbackHook(){this.card.addEventListener("mouseleave",this.toggleActionMenuFromCard)}disconnectedCallbackHook(){this.card.removeEventListener("mouseleave",this.toggleActionMenuFromCard)}};d(Q,"variantStyle",Qe`
         :host([variant='catalog']) {
             min-height: 330px;
             width: var(--consonant-merch-card-catalog-width);
@@ -906,13 +468,7 @@ __publicField(Catalog, "variantStyle", css4`
             margin-left: var(--consonant-merch-spacing-xxs);
             box-sizing: border-box;
         }
-    `);
-
-// src/variants/image.js
-import { html as html5 } from "../lit-all.min.js";
-
-// src/variants/image.css.js
-var CSS2 = `
+    `);import{html as pt}from"../lit-all.min.js";var ve=`
 :root {
   --consonant-merch-card-image-width: 300px;
 }
@@ -924,7 +480,7 @@ var CSS2 = `
   grid-template-columns: var(--consonant-merch-card-image-width);
 }
 
-@media screen and ${TABLET_UP} {
+@media screen and ${u} {
   .two-merch-cards.image,
   .three-merch-cards.image,
   .four-merch-cards.image {
@@ -932,7 +488,7 @@ var CSS2 = `
   }
 }
 
-@media screen and ${DESKTOP_UP} {
+@media screen and ${g} {
   :root {
     --consonant-merch-card-image-width: 378px;
     --consonant-merch-card-image-width-4clm: 276px;
@@ -946,43 +502,24 @@ var CSS2 = `
       grid-template-columns: repeat(4, var(--consonant-merch-card-image-width-4clm));
   }
 }
-`;
-
-// src/variants/image.js
-var Image = class extends VariantLayout {
-  constructor(card) {
-    super(card);
-  }
-  getGlobalCSS() {
-    return CSS2;
-  }
-  renderLayout() {
-    return html5`${this.cardImage}
+`;var _t=class extends f{constructor(e){super(e)}getGlobalCSS(){return ve}renderLayout(){return pt`${this.cardImage}
     <div class="body">
         <slot name="icons"></slot>
         <slot name="heading-xs"></slot>
         <slot name="body-xxs"></slot>
-        ${this.promoBottom ? html5`<slot name="body-xs"></slot><slot name="promo-text"></slot>` : html5`<slot name="promo-text"></slot><slot name="body-xs"></slot>`}
+        ${this.promoBottom?pt`<slot name="body-xs"></slot><slot name="promo-text"></slot>`:pt`<slot name="promo-text"></slot><slot name="body-xs"></slot>`}
     </div>
-    ${this.evergreen ? html5`
+    ${this.evergreen?pt`
               <div
                   class="detail-bg-container"
-                  style="background: ${this.card["detailBg"]}"
+                  style="background: ${this.card.detailBg}"
               >
                   <slot name="detail-bg"></slot>
               </div>
-          ` : html5`
+          `:pt`
               <hr />
               ${this.secureLabelFooter}
-          `}`;
-  }
-};
-
-// src/variants/inline-heading.js
-import { html as html6 } from "../lit-all.min.js";
-
-// src/variants/inline-heading.css.js
-var CSS3 = `
+          `}`}};import{html as Ee}from"../lit-all.min.js";var ye=`
 :root {
   --consonant-merch-card-inline-heading-width: 300px;
 }
@@ -994,7 +531,7 @@ var CSS3 = `
     grid-template-columns: var(--consonant-merch-card-inline-heading-width);
 }
 
-@media screen and ${TABLET_UP} {
+@media screen and ${u} {
   .two-merch-cards.inline-heading,
   .three-merch-cards.inline-heading,
   .four-merch-cards.inline-heading {
@@ -1002,7 +539,7 @@ var CSS3 = `
   }
 }
 
-@media screen and ${DESKTOP_UP} {
+@media screen and ${g} {
   :root {
     --consonant-merch-card-inline-heading-width: 378px;
   }
@@ -1013,23 +550,12 @@ var CSS3 = `
   }
 }
 
-@media screen and ${LARGE_DESKTOP} {
+@media screen and ${T} {
   .four-merch-cards.inline-heading {
       grid-template-columns: repeat(4, var(--consonant-merch-card-inline-heading-width));
   }
 }
-`;
-
-// src/variants/inline-heading.js
-var InlineHeading = class extends VariantLayout {
-  constructor(card) {
-    super(card);
-  }
-  getGlobalCSS() {
-    return CSS3;
-  }
-  renderLayout() {
-    return html6` ${this.badge}
+`;var Lt=class extends f{constructor(e){super(e)}getGlobalCSS(){return ye}renderLayout(){return Ee` ${this.badge}
     <div class="body">
         <div class="top-section">
             <slot name="icons"></slot>
@@ -1037,15 +563,7 @@ var InlineHeading = class extends VariantLayout {
         </div>
         <slot name="body-xs"></slot>
     </div>
-    ${!this.card.customHr ? html6`<hr />` : ""} ${this.secureLabelFooter}`;
-  }
-};
-
-// src/variants/mini-compare-chart.js
-import { html as html7, css as css5, unsafeCSS as unsafeCSS2 } from "../lit-all.min.js";
-
-// src/variants/mini-compare-chart.css.js
-var CSS4 = `
+    ${this.card.customHr?"":Ee`<hr />`} ${this.secureLabelFooter}`}};import{html as Z,css as Ze,unsafeCSS as Se}from"../lit-all.min.js";var we=`
   :root {
     --consonant-merch-card-mini-compare-chart-icon-size: 32px;
     --consonant-merch-card-mini-compare-mobile-cta-font-size: 15px;
@@ -1271,7 +789,7 @@ var CSS4 = `
 }
 
 /* mini compare mobile */ 
-@media screen and ${MOBILE_LANDSCAPE} {
+@media screen and ${z} {
   :root {
     --consonant-merch-card-mini-compare-chart-width: 302px;
     --consonant-merch-card-mini-compare-chart-wide-width: 302px;
@@ -1314,7 +832,7 @@ var CSS4 = `
   }
 }
 
-@media screen and ${TABLET_DOWN} {
+@media screen and ${wt} {
   merch-card[variant="mini-compare-chart"] [slot='heading-m'] {
     font-size: var(--consonant-merch-card-body-s-font-size);
     line-height: var(--consonant-merch-card-body-s-line-height);
@@ -1340,7 +858,7 @@ var CSS4 = `
     line-height: var(--consonant-merch-card-body-xs-line-height);
   }
 }
-@media screen and ${TABLET_UP} {
+@media screen and ${u} {
   :root {
     --consonant-merch-card-mini-compare-chart-width: 302px;
     --consonant-merch-card-mini-compare-chart-wide-width: 302px;
@@ -1358,7 +876,7 @@ var CSS4 = `
 }
 
 /* desktop */
-@media screen and ${DESKTOP_UP} {
+@media screen and ${g} {
   :root {
     --consonant-merch-card-mini-compare-chart-width: 378px;
     --consonant-merch-card-mini-compare-chart-wide-width: 484px;  
@@ -1379,7 +897,7 @@ var CSS4 = `
   }
 }
 
-@media screen and ${LARGE_DESKTOP} {
+@media screen and ${T} {
   .four-merch-cards.mini-compare-chart {
       grid-template-columns: repeat(4, var(--consonant-merch-card-mini-compare-chart-width));
   }
@@ -1416,162 +934,16 @@ merch-card .footer-row-cell:nth-child(7) {
 merch-card .footer-row-cell:nth-child(8) {
   min-height: var(--consonant-merch-card-footer-row-8-min-height);
 }
-`;
-
-// src/variants/mini-compare-chart.js
-var FOOTER_ROW_MIN_HEIGHT = 32;
-var MiniCompareChart = class extends VariantLayout {
-  constructor(card) {
-    super(card);
-    __publicField(this, "getRowMinHeightPropertyName", (index) => `--consonant-merch-card-footer-row-${index}-min-height`);
-    // For addon tiitle is it ok if we hardocde it in card settings?
-    // For addon is it ok if we hardcode it as placeholder key?
-    // How to add the price?
-    __publicField(this, "getMiniCompareFooter", () => {
-      const secureLabel = this.card.secureLabel ? html7`<slot name="secure-transaction-label">
+`;var Je=32,J=class extends f{constructor(t){super(t);d(this,"getRowMinHeightPropertyName",t=>`--consonant-merch-card-footer-row-${t}-min-height`);d(this,"getMiniCompareFooter",()=>{let t=this.card.secureLabel?Z`<slot name="secure-transaction-label">
               <span class="secure-transaction-label"
                   >${this.card.secureLabel}</span
               ></slot
-          >` : html7`<slot name="secure-transaction-label"></slot>`;
-      return html7`<footer>${secureLabel}<slot name="footer"></slot></footer>`;
-    });
-  }
-  getGlobalCSS() {
-    return CSS4;
-  }
-  adjustMiniCompareBodySlots() {
-    if (this.card.getBoundingClientRect().width <= 2) return;
-    this.updateCardElementMinHeight(
-      this.card.shadowRoot.querySelector(".top-section"),
-      "top-section"
-    );
-    let slots = [
-      "heading-m",
-      "body-m",
-      "heading-m-price",
-      "body-xxs",
-      "price-commitment",
-      "offers",
-      "promo-text",
-      "callout-content",
-      "addon"
-    ];
-    if (this.card.classList.contains("bullet-list")) {
-      slots.push("footer-rows");
-    }
-    slots.forEach(
-      (slot) => this.updateCardElementMinHeight(
-        this.card.shadowRoot.querySelector(`slot[name="${slot}"]`),
-        slot
-      )
-    );
-    this.updateCardElementMinHeight(
-      this.card.shadowRoot.querySelector("footer"),
-      "footer"
-    );
-    const badge = this.card.shadowRoot.querySelector(
-      ".mini-compare-chart-badge"
-    );
-    if (badge && badge.textContent !== "") {
-      this.getContainer().style.setProperty(
-        "--consonant-merch-card-mini-compare-chart-top-section-mobile-height",
-        "32px"
-      );
-    }
-  }
-  adjustMiniCompareFooterRows() {
-    if (this.card.getBoundingClientRect().width === 0) return;
-    const footerRows = this.card.querySelector('[slot="footer-rows"] ul');
-    if (!footerRows || !footerRows.children) return;
-    [...footerRows.children].forEach((el, index) => {
-      const height = Math.max(
-        FOOTER_ROW_MIN_HEIGHT,
-        parseFloat(window.getComputedStyle(el).height) || 0
-      );
-      const maxMinHeight = parseFloat(
-        this.getContainer().style.getPropertyValue(
-          this.getRowMinHeightPropertyName(index + 1)
-        )
-      ) || 0;
-      if (height > maxMinHeight) {
-        this.getContainer().style.setProperty(
-          this.getRowMinHeightPropertyName(index + 1),
-          `${height}px`
-        );
-      }
-    });
-  }
-  removeEmptyRows() {
-    const footerRows = this.card.querySelectorAll(".footer-row-cell");
-    footerRows.forEach((row) => {
-      const rowDescription = row.querySelector(".footer-row-cell-description");
-      if (rowDescription) {
-        const isEmpty = !rowDescription.textContent.trim();
-        if (isEmpty) {
-          row.remove();
-        }
-      }
-    });
-  }
-  get mainPrice() {
-    const price = this.card.querySelector(
-      `[slot="heading-m-price"] ${SELECTOR_MAS_INLINE_PRICE}[data-template="price"]`
-    );
-    return price;
-  }
-  get headingMPriceSlot() {
-    return this.card.shadowRoot.querySelector('slot[name="heading-m-price"]')?.assignedElements()[0];
-  }
-  toggleAddon(merchAddon) {
-    const mainPrice = this.mainPrice;
-    const headingMPriceSlot = this.headingMPriceSlot;
-    if (!mainPrice && headingMPriceSlot) {
-      const planType = merchAddon?.getAttribute("plan-type");
-      let visibleSpan = null;
-      if (merchAddon && planType) {
-        const matchingP = merchAddon.querySelector(`p[data-plan-type="${planType}"]`);
-        visibleSpan = matchingP?.querySelector('span[is="inline-price"]');
-      }
-      this.card.querySelectorAll('p[slot="heading-m-price"]').forEach((p) => p.remove());
-      if (merchAddon.checked) {
-        if (visibleSpan) {
-          const replacementP = createTag(
-            "p",
-            { class: "addon-heading-m-price-addon", slot: "heading-m-price" },
-            visibleSpan.innerHTML
-          );
-          this.card.appendChild(replacementP);
-        }
-      } else {
-        const freeP = createTag(
-          "p",
-          { class: "card-heading", id: "free", slot: "heading-m-price" },
-          "Free"
-        );
-        this.card.appendChild(freeP);
-      }
-    }
-  }
-  async adjustAddon() {
-    await this.card.updateComplete;
-    const addon = this.card.addon;
-    if (!addon) return;
-    const price = this.mainPrice;
-    let planType = this.card.planType;
-    if (price) {
-      await price.onceSettled();
-      planType = price.value?.[0]?.planType;
-    }
-    if (!planType) return;
-    addon.planType = planType;
-  }
-  renderLayout() {
-    return html7` <div class="top-section${this.badge ? " badge" : ""}">
+          >`:Z`<slot name="secure-transaction-label"></slot>`;return Z`<footer>${t}<slot name="footer"></slot></footer>`})}getGlobalCSS(){return we}adjustMiniCompareBodySlots(){if(this.card.getBoundingClientRect().width<=2)return;this.updateCardElementMinHeight(this.card.shadowRoot.querySelector(".top-section"),"top-section");let t=["heading-m","body-m","heading-m-price","body-xxs","price-commitment","offers","promo-text","callout-content","addon"];this.card.classList.contains("bullet-list")&&t.push("footer-rows"),t.forEach(a=>this.updateCardElementMinHeight(this.card.shadowRoot.querySelector(`slot[name="${a}"]`),a)),this.updateCardElementMinHeight(this.card.shadowRoot.querySelector("footer"),"footer");let r=this.card.shadowRoot.querySelector(".mini-compare-chart-badge");r&&r.textContent!==""&&this.getContainer().style.setProperty("--consonant-merch-card-mini-compare-chart-top-section-mobile-height","32px")}adjustMiniCompareFooterRows(){if(this.card.getBoundingClientRect().width===0)return;let t=this.card.querySelector('[slot="footer-rows"] ul');!t||!t.children||[...t.children].forEach((r,a)=>{let n=Math.max(Je,parseFloat(window.getComputedStyle(r).height)||0),i=parseFloat(this.getContainer().style.getPropertyValue(this.getRowMinHeightPropertyName(a+1)))||0;n>i&&this.getContainer().style.setProperty(this.getRowMinHeightPropertyName(a+1),`${n}px`)})}removeEmptyRows(){this.card.querySelectorAll(".footer-row-cell").forEach(r=>{let a=r.querySelector(".footer-row-cell-description");a&&!a.textContent.trim()&&r.remove()})}get mainPrice(){return this.card.querySelector(`[slot="heading-m-price"] ${x}[data-template="price"]`)}get headingMPriceSlot(){return this.card.shadowRoot.querySelector('slot[name="heading-m-price"]')?.assignedElements()[0]}toggleAddon(t){let r=this.mainPrice,a=this.headingMPriceSlot;if(!r&&a){let n=t?.getAttribute("plan-type"),i=null;if(t&&n&&(i=t.querySelector(`p[data-plan-type="${n}"]`)?.querySelector('span[is="inline-price"]')),this.card.querySelectorAll('p[slot="heading-m-price"]').forEach(c=>c.remove()),t.checked){if(i){let c=b("p",{class:"addon-heading-m-price-addon",slot:"heading-m-price"},i.innerHTML);this.card.appendChild(c)}}else{let c=b("p",{class:"card-heading",id:"free",slot:"heading-m-price"},"Free");this.card.appendChild(c)}}}async adjustAddon(){await this.card.updateComplete;let t=this.card.addon;if(!t)return;let r=this.mainPrice,a=this.card.planType;r&&(await r.onceSettled(),a=r.value?.[0]?.planType),a&&(t.planType=a)}renderLayout(){return Z` <div class="top-section${this.badge?" badge":""}">
             <slot name="icons"></slot> ${this.badge}
         </div>
         <slot name="heading-m"></slot>
-        ${this.card.classList.contains("bullet-list") ? html7`<slot name="heading-m-price"></slot>
-          <slot name="body-m"></slot>` : html7`<slot name="body-m"></slot>
+        ${this.card.classList.contains("bullet-list")?Z`<slot name="heading-m-price"></slot>
+          <slot name="body-m"></slot>`:Z`<slot name="body-m"></slot>
           <slot name="heading-m-price"></slot>`}
         <slot name="body-xxs"></slot>
         <slot name="price-commitment"></slot>
@@ -1580,20 +952,7 @@ var MiniCompareChart = class extends VariantLayout {
         <slot name="callout-content"></slot>
         <slot name="addon"></slot>
         ${this.getMiniCompareFooter()}
-        <slot name="footer-rows"><slot name="body-s"></slot></slot>`;
-  }
-  async postCardUpdateHook() {
-    await Promise.all(this.card.prices.map((price) => price.onceSettled()));
-    await this.adjustAddon();
-    if (!isMobile()) {
-      this.adjustMiniCompareBodySlots();
-      this.adjustMiniCompareFooterRows();
-    } else {
-      this.removeEmptyRows();
-    }
-  }
-};
-__publicField(MiniCompareChart, "variantStyle", css5`
+        <slot name="footer-rows"><slot name="body-s"></slot></slot>`}async postCardUpdateHook(){await Promise.all(this.card.prices.map(t=>t.onceSettled())),await this.adjustAddon(),j()?this.removeEmptyRows():(this.adjustMiniCompareBodySlots(),this.adjustMiniCompareFooterRows())}};d(J,"variantStyle",Ze`
     :host([variant='mini-compare-chart']) > slot:not([name='icons']) {
         display: block;
     }
@@ -1626,7 +985,7 @@ __publicField(MiniCompareChart, "variantStyle", css5`
       color: var(--merch-color-grey-700);
     }
 
-    @media screen and ${unsafeCSS2(TABLET_DOWN)} {
+    @media screen and ${Se(wt)} {
         [class*'-merch-cards'] :host([variant='mini-compare-chart']) footer {
             flex-direction: column;
             align-items: stretch;
@@ -1634,7 +993,7 @@ __publicField(MiniCompareChart, "variantStyle", css5`
         }
     }
 
-    @media screen and ${unsafeCSS2(DESKTOP_UP)} {
+    @media screen and ${Se(g)} {
         :host([variant='mini-compare-chart']) footer {
             padding: var(--consonant-merch-spacing-xs)
                 var(--consonant-merch-spacing-s)
@@ -1690,13 +1049,7 @@ __publicField(MiniCompareChart, "variantStyle", css5`
     :host([variant='mini-compare-chart']) slot[name='footer-rows'] {
         justify-content: flex-start;
     }
-  `);
-
-// src/variants/plans.js
-import { html as html8, css as css6 } from "../lit-all.min.js";
-
-// src/variants/plans.css.js
-var CSS5 = `
+  `);import{html as Rt,css as tr}from"../lit-all.min.js";var Ae=`
 :root {
     --consonant-merch-card-plans-width: 300px;
     --consonant-merch-card-plans-icon-size: 40px;
@@ -1717,7 +1070,7 @@ merch-card[variant^="plans"] [slot="icons"] {
     --img-width: 41.5px;
 }
 
-merch-card[variant="plans-education"] [slot="body-xs"] span.price {
+merch-card[variant="plans-education"] [slot="body-xs"] span.price:not(.price-legal) {
   display: inline-block;
   font-size: var(--consonant-merch-card-heading-xs-font-size);
   font-weight: 700;
@@ -1870,7 +1223,7 @@ merch-card[variant^="plans"] merch-addon span[data-template="price"] {
 }
 
 /* Mobile */
-@media screen and ${MOBILE_LANDSCAPE} {
+@media screen and ${z} {
     merch-whats-included merch-mnemonic-list,
     merch-whats-included [slot="heading"] {
         width: 100%;
@@ -1898,7 +1251,7 @@ merch-card[variant^="plans"]:not([size]) {
 }
 
 /* Tablet */
-@media screen and ${TABLET_UP} {
+@media screen and ${u} {
   :root {
     --consonant-merch-card-plans-width: 302px;
   }
@@ -1913,7 +1266,7 @@ merch-card[variant^="plans"]:not([size]) {
 }
 
 /* desktop */
-@media screen and ${DESKTOP_UP} {
+@media screen and ${g} {
   :root {
     --consonant-merch-card-plans-width: 276px;
   }
@@ -1924,174 +1277,16 @@ merch-card[variant^="plans"]:not([size]) {
 }
 
 /* Large desktop */
-    @media screen and ${LARGE_DESKTOP} {
+    @media screen and ${T} {
     .four-merch-cards.plans {
         grid-template-columns: repeat(4, var(--consonant-merch-card-plans-width));
     }
 }
-`;
-
-// src/variants/plans.js
-var PLANS_AEM_FRAGMENT_MAPPING = {
-  title: { tag: "p", slot: "heading-xs" },
-  prices: { tag: "p", slot: "heading-m" },
-  promoText: { tag: "p", slot: "promo-text" },
-  description: { tag: "div", slot: "body-xs" },
-  mnemonics: { size: "l" },
-  callout: { tag: "div", slot: "callout-content" },
-  quantitySelect: { tag: "div", slot: "quantity-select" },
-  stockOffer: true,
-  addon: true,
-  secureLabel: true,
-  planType: true,
-  badge: { tag: "div", slot: "badge" },
-  allowedBadgeColors: [
-    "spectrum-yellow-300-plans",
-    "spectrum-gray-300-plans",
-    "spectrum-gray-700-plans",
-    "spectrum-green-900-plans",
-    ,
-  ],
-  allowedBorderColors: [
-    "spectrum-yellow-300-plans",
-    "spectrum-gray-300-plans",
-    ,
-  ],
-  borderColor: { attribute: "border-color" },
-  size: ["wide", "super-wide"],
-  whatsIncluded: { tag: "div", slot: "whats-included" },
-  ctas: { slot: "footer", size: "m" },
-  style: "consonant"
-};
-var PLANS_EDUCATION_AEM_FRAGMENT_MAPPING = {
-  ...function() {
-    const { whatsIncluded, ...rest } = PLANS_AEM_FRAGMENT_MAPPING;
-    return rest;
-  }(),
-  title: { tag: "p", slot: "heading-s" },
-  subtitle: { tag: "p", slot: "subtitle" },
-  secureLabel: false
-};
-var PLANS_STUDENTS_AEM_FRAGMENT_MAPPING = {
-  ...function() {
-    const { whatsIncluded, size, quantitySelect, ...rest } = PLANS_AEM_FRAGMENT_MAPPING;
-    return rest;
-  }()
-};
-var Plans = class extends VariantLayout {
-  constructor(card) {
-    super(card);
-    this.adaptForMobile = this.adaptForMobile.bind(this);
-  }
-  priceOptionsProvider(element, options) {
-    if (element.dataset.template !== TEMPLATE_PRICE_LEGAL) return;
-    options.displayPlanType = this.card?.settings?.displayPlanType ?? false;
-  }
-  getGlobalCSS() {
-    return CSS5;
-  }
-  adaptForMobile() {
-    if (!this.card.closest(
-      "merch-card-collection,overlay-trigger,.two-merch-cards,.three-merch-cards,.four-merch-cards"
-    )) {
-      this.card.removeAttribute("size");
-      return;
-    }
-    const shadowRoot = this.card.shadowRoot;
-    const footer = shadowRoot.querySelector("footer");
-    const size = this.card.getAttribute("size");
-    const stockInFooter = shadowRoot.querySelector(
-      "footer #stock-checkbox"
-    );
-    const stockInBody = shadowRoot.querySelector(".body #stock-checkbox");
-    const body = shadowRoot.querySelector(".body");
-    if (!size) {
-      footer?.classList.remove("wide-footer");
-      if (stockInFooter) stockInFooter.remove();
-      return;
-    }
-    const mobile = isMobile();
-    footer?.classList.toggle("wide-footer", !mobile);
-    if (mobile && stockInFooter) {
-      stockInBody ? stockInFooter.remove() : body.appendChild(stockInFooter);
-      return;
-    }
-    if (!mobile && stockInBody) {
-      stockInFooter ? stockInBody.remove() : footer.prepend(stockInBody);
-    }
-  }
-  postCardUpdateHook() {
-    this.adaptForMobile();
-    this.adjustTitleWidth();
-    this.adjustLegal();
-    this.adjustAddon();
-  }
-  get headingM() {
-    return this.card.querySelector('[slot="heading-m"]');
-  }
-  get mainPrice() {
-    const price = this.headingM.querySelector(
-      `${SELECTOR_MAS_INLINE_PRICE}[data-template="price"]`
-    );
-    return price;
-  }
-  get divider() {
-    return this.card.variant === "plans-education" ? html8`<div class="divider"></div>` : "";
-  }
-  async adjustLegal() {
-    await this.card.updateComplete;
-    if (this.legal) return;
-    const headingM = this.card.querySelector('[slot="heading-m"]');
-    if (!headingM) return;
-    const price = headingM.querySelector(
-      `${SELECTOR_MAS_INLINE_PRICE}[data-template="price"]`
-    );
-    const legal = price.cloneNode(true);
-    this.legal = legal;
-    await price.onceSettled();
-    if (!price?.options) return;
-    if (price.options.displayPerUnit)
-      price.dataset.displayPerUnit = "false";
-    if (price.options.displayTax) price.dataset.displayTax = "false";
-    if (price.options.displayPlanType)
-      price.dataset.displayPlanType = "false";
-    legal.setAttribute("data-template", "legal");
-    headingM.appendChild(legal);
-  }
-  async adjustAddon() {
-    await this.card.updateComplete;
-    const addon = this.card.addon;
-    if (!addon) return;
-    const price = this.mainPrice;
-    if (!price) return;
-    await price.onceSettled();
-    const planType = price.value?.[0]?.planType;
-    if (!planType) return;
-    addon.planType = planType;
-  }
-  get stockCheckbox() {
-    return this.card.checkboxLabel ? html8`<label id="stock-checkbox">
+`;var Mt={title:{tag:"p",slot:"heading-xs"},prices:{tag:"p",slot:"heading-m"},promoText:{tag:"p",slot:"promo-text"},description:{tag:"div",slot:"body-xs"},mnemonics:{size:"l"},callout:{tag:"div",slot:"callout-content"},quantitySelect:{tag:"div",slot:"quantity-select"},stockOffer:!0,addon:!0,secureLabel:!0,planType:!0,badge:{tag:"div",slot:"badge"},allowedBadgeColors:["spectrum-yellow-300-plans","spectrum-gray-300-plans","spectrum-gray-700-plans","spectrum-green-900-plans"],allowedBorderColors:["spectrum-yellow-300-plans","spectrum-gray-300-plans"],borderColor:{attribute:"border-color"},size:["wide","super-wide"],whatsIncluded:{tag:"div",slot:"whats-included"},ctas:{slot:"footer",size:"m"},style:"consonant"},Te={...function(){let{whatsIncluded:o,...e}=Mt;return e}(),title:{tag:"p",slot:"heading-s"},subtitle:{tag:"p",slot:"subtitle"},secureLabel:!1},ke={...function(){let{whatsIncluded:o,size:e,quantitySelect:t,...r}=Mt;return r}()},k=class extends f{constructor(e){super(e),this.adaptForMobile=this.adaptForMobile.bind(this)}priceOptionsProvider(e,t){e.dataset.template===ge&&(t.displayPlanType=this.card?.settings?.displayPlanType??!1)}getGlobalCSS(){return Ae}adaptForMobile(){if(!this.card.closest("merch-card-collection,overlay-trigger,.two-merch-cards,.three-merch-cards,.four-merch-cards")){this.card.removeAttribute("size");return}let e=this.card.shadowRoot,t=e.querySelector("footer"),r=this.card.getAttribute("size"),a=e.querySelector("footer #stock-checkbox"),n=e.querySelector(".body #stock-checkbox"),i=e.querySelector(".body");if(!r){t?.classList.remove("wide-footer"),a&&a.remove();return}let c=j();if(t?.classList.toggle("wide-footer",!c),c&&a){n?a.remove():i.appendChild(a);return}!c&&n&&(a?n.remove():t.prepend(n))}postCardUpdateHook(){this.adaptForMobile(),this.adjustTitleWidth(),this.adjustLegal(),this.adjustAddon()}get headingM(){return this.card.querySelector('[slot="heading-m"]')}get mainPrice(){return this.headingM.querySelector(`${x}[data-template="price"]`)}get divider(){return this.card.variant==="plans-education"?Rt`<div class="divider"></div>`:""}async adjustLegal(){if(await this.card.updateComplete,this.legal)return;let e=[],t=this.card.querySelector(`[slot="heading-m"] ${x}[data-template="price"]`);t&&e.push(t),this.card.querySelectorAll(`[slot="body-xs"] ${x}[data-template="price"]`).forEach(n=>e.push(n));let a=e.map(async n=>{let i=n.cloneNode(!0);n===t&&(this.legal=i),await n.onceSettled(),n?.options&&(n.options.displayPerUnit&&(n.dataset.displayPerUnit="false"),n.options.displayTax&&(n.dataset.displayTax="false"),n.options.displayPlanType&&(n.dataset.displayPlanType="false"),i.setAttribute("data-template","legal"),n.parentNode.insertBefore(i,n.nextSibling))});await Promise.all(a)}async adjustAddon(){await this.card.updateComplete;let e=this.card.addon;if(!e)return;let t=this.mainPrice;if(!t)return;await t.onceSettled();let r=t.value?.[0]?.planType;r&&(e.planType=r)}get stockCheckbox(){return this.card.checkboxLabel?Rt`<label id="stock-checkbox">
                 <input type="checkbox" @change=${this.card.toggleStockOffer}></input>
                 <span></span>
                 ${this.card.checkboxLabel}
-            </label>` : "";
-  }
-  get icons() {
-    if (!this.card.querySelector('[slot="icons"]')) return "";
-    return html8`<slot name="icons"></slot>`;
-  }
-  connectedCallbackHook() {
-    const match = matchMobile();
-    if (match?.addEventListener)
-      match.addEventListener("change", this.adaptForMobile);
-  }
-  disconnectedCallbackHook() {
-    const match = matchMobile();
-    if (match?.removeEventListener)
-      match.removeEventListener("change", this.adaptForMobile);
-  }
-  renderLayout() {
-    return html8` ${this.badge}
+            </label>`:""}get icons(){return this.card.querySelector('[slot="icons"]')?Rt`<slot name="icons"></slot>`:""}connectedCallbackHook(){let e=At();e?.addEventListener&&e.addEventListener("change",this.adaptForMobile)}disconnectedCallbackHook(){let e=At();e?.removeEventListener&&e.removeEventListener("change",this.adaptForMobile)}renderLayout(){return Rt` ${this.badge}
             <div class="body">
                 ${this.icons}
                 <slot name="heading-xs"></slot>
@@ -2111,10 +1306,7 @@ var Plans = class extends VariantLayout {
                 <slot name="badge"></slot>
                 <slot name="quantity-select"></slot>
             </div>
-            ${this.secureLabelFooter}`;
-  }
-};
-__publicField(Plans, "variantStyle", css6`
+            ${this.secureLabelFooter}`}};d(k,"variantStyle",tr`
         :host([variant^='plans']) {
             min-height: 273px;
             border: 1px solid var(--merch-card-custom-border-color, #dadada);
@@ -2196,13 +1388,7 @@ __publicField(Plans, "variantStyle", css6`
             line-height: 21px;
             padding: 2px 10px 3px;
         }
-    `);
-
-// src/variants/product.js
-import { html as html9, css as css7 } from "../lit-all.min.js";
-
-// src/variants/product.css.js
-var CSS6 = `
+    `);import{html as Ut,css as er}from"../lit-all.min.js";var Ce=`
 :root {
   --consonant-merch-card-product-width: 300px;
 }
@@ -2245,7 +1431,7 @@ var CSS6 = `
 }
 
 /* Tablet */
-@media screen and ${TABLET_UP} {
+@media screen and ${u} {
     .two-merch-cards.product,
     .three-merch-cards.product,
     .four-merch-cards.product {
@@ -2254,7 +1440,7 @@ var CSS6 = `
 }
 
 /* desktop */
-@media screen and ${DESKTOP_UP} {
+@media screen and ${g} {
   :root {
     --consonant-merch-card-product-width: 378px;
     --consonant-merch-card-product-width-4clm: 276px;
@@ -2268,118 +1454,19 @@ var CSS6 = `
       grid-template-columns: repeat(4, var(--consonant-merch-card-product-width-4clm));
   }
 }
-`;
-
-// src/variants/product.js
-var Product = class extends VariantLayout {
-  constructor(card) {
-    super(card);
-    this.postCardUpdateHook = this.postCardUpdateHook.bind(this);
-  }
-  getGlobalCSS() {
-    return CSS6;
-  }
-  adjustProductBodySlots() {
-    if (this.card.getBoundingClientRect().width === 0) return;
-    const slots = [
-      "heading-xs",
-      "body-xxs",
-      "body-xs",
-      "promo-text",
-      "callout-content",
-      "addon",
-      "body-lower"
-    ];
-    slots.forEach(
-      (slot) => this.updateCardElementMinHeight(
-        this.card.shadowRoot.querySelector(`slot[name="${slot}"]`),
-        slot
-      )
-    );
-  }
-  renderLayout() {
-    return html9` ${this.badge}
+`;var I=class extends f{constructor(e){super(e),this.postCardUpdateHook=this.postCardUpdateHook.bind(this)}getGlobalCSS(){return Ce}adjustProductBodySlots(){if(this.card.getBoundingClientRect().width===0)return;["heading-xs","body-xxs","body-xs","promo-text","callout-content","addon","body-lower"].forEach(t=>this.updateCardElementMinHeight(this.card.shadowRoot.querySelector(`slot[name="${t}"]`),t))}renderLayout(){return Ut` ${this.badge}
             <div class="body" aria-live="polite">
                 <slot name="icons"></slot>
                 <slot name="heading-xs"></slot>
                 <slot name="body-xxs"></slot>
-                ${!this.promoBottom ? html9`<slot name="promo-text"></slot>` : ""}
+                ${this.promoBottom?"":Ut`<slot name="promo-text"></slot>`}
                 <slot name="body-xs"></slot>
-                ${this.promoBottom ? html9`<slot name="promo-text"></slot>` : ""}
+                ${this.promoBottom?Ut`<slot name="promo-text"></slot>`:""}
                 <slot name="callout-content"></slot>
                 <slot name="addon"></slot>
                 <slot name="body-lower"></slot>
             </div>
-            ${this.secureLabelFooter}`;
-  }
-  connectedCallbackHook() {
-    window.addEventListener("resize", this.postCardUpdateHook);
-  }
-  disconnectedCallbackHook() {
-    window.removeEventListener("resize", this.postCardUpdateHook);
-  }
-  postCardUpdateHook() {
-    if (!this.card.isConnected) return;
-    this.adjustAddon();
-    if (!isMobile()) {
-      this.adjustProductBodySlots();
-    }
-    this.adjustTitleWidth();
-  }
-  get headingXSSlot() {
-    return this.card.shadowRoot.querySelector('slot[name="heading-xs"]').assignedElements()[0];
-  }
-  get mainPrice() {
-    const price = this.card.querySelector(
-      `[slot="heading-xs"] ${SELECTOR_MAS_INLINE_PRICE}[data-template="price"]`
-    );
-    return price;
-  }
-  toggleAddon(merchAddon) {
-    const mainPrice = this.mainPrice;
-    const headingXSSlot = this.headingXSSlot;
-    if (!mainPrice && headingXSSlot) {
-      const planType = merchAddon?.getAttribute("plan-type");
-      let visibleSpan = null;
-      if (merchAddon && planType) {
-        const matchingP = merchAddon.querySelector(`p[data-plan-type="${planType}"]`);
-        visibleSpan = matchingP?.querySelector('span[is="inline-price"]');
-      }
-      this.card.querySelectorAll('p[slot="heading-xs"]').forEach((p) => p.remove());
-      if (merchAddon.checked) {
-        if (visibleSpan) {
-          const replacementP = createTag(
-            "p",
-            { class: "addon-heading-xs-price-addon", slot: "heading-xs" },
-            visibleSpan.innerHTML
-          );
-          this.card.appendChild(replacementP);
-        }
-      } else {
-        const freeP = createTag(
-          "p",
-          { class: "card-heading", id: "free", slot: "heading-xs" },
-          "Free"
-        );
-        this.card.appendChild(freeP);
-      }
-    }
-  }
-  async adjustAddon() {
-    await this.card.updateComplete;
-    const addon = this.card.addon;
-    if (!addon) return;
-    const price = this.mainPrice;
-    let planType = this.card.planType;
-    if (price) {
-      await price.onceSettled();
-      planType = price.value?.[0]?.planType;
-    }
-    if (!planType) return;
-    addon.planType = planType;
-  }
-};
-__publicField(Product, "variantStyle", css7`
+            ${this.secureLabelFooter}`}connectedCallbackHook(){window.addEventListener("resize",this.postCardUpdateHook)}disconnectedCallbackHook(){window.removeEventListener("resize",this.postCardUpdateHook)}postCardUpdateHook(){this.card.isConnected&&(this.adjustAddon(),j()||this.adjustProductBodySlots(),this.adjustTitleWidth())}get headingXSSlot(){return this.card.shadowRoot.querySelector('slot[name="heading-xs"]').assignedElements()[0]}get mainPrice(){return this.card.querySelector(`[slot="heading-xs"] ${x}[data-template="price"]`)}toggleAddon(e){let t=this.mainPrice,r=this.headingXSSlot;if(!t&&r){let a=e?.getAttribute("plan-type"),n=null;if(e&&a&&(n=e.querySelector(`p[data-plan-type="${a}"]`)?.querySelector('span[is="inline-price"]')),this.card.querySelectorAll('p[slot="heading-xs"]').forEach(i=>i.remove()),e.checked){if(n){let i=b("p",{class:"addon-heading-xs-price-addon",slot:"heading-xs"},n.innerHTML);this.card.appendChild(i)}}else{let i=b("p",{class:"card-heading",id:"free",slot:"heading-xs"},"Free");this.card.appendChild(i)}}}async adjustAddon(){await this.card.updateComplete;let e=this.card.addon;if(!e)return;let t=this.mainPrice,r=this.card.planType;t&&(await t.onceSettled(),r=t.value?.[0]?.planType),r&&(e.planType=r)}};d(I,"variantStyle",er`
         :host([variant='product']) > slot:not([name='icons']) {
             display: block;
         }
@@ -2414,13 +1501,7 @@ __publicField(Product, "variantStyle", css7`
         :host([variant='product']) ::slotted([slot='heading-xs']) {
             max-width: var(--consonant-merch-card-heading-xs-max-width, 100%);
         }
-    `);
-
-// src/variants/segment.js
-import { html as html10, css as css8 } from "../lit-all.min.js";
-
-// src/variants/segment.css.js
-var CSS7 = `
+    `);import{html as Ft,css as rr}from"../lit-all.min.js";var _e=`
 :root {
   --consonant-merch-card-segment-width: 378px;
 }
@@ -2434,13 +1515,13 @@ var CSS7 = `
 }
 
 /* Mobile */
-@media screen and ${MOBILE_LANDSCAPE} {
+@media screen and ${z} {
   :root {
     --consonant-merch-card-segment-width: 276px;
   }
 }
 
-@media screen and ${TABLET_UP} {
+@media screen and ${u} {
   :root {
     --consonant-merch-card-segment-width: 276px;
   }
@@ -2453,7 +1534,7 @@ var CSS7 = `
 }
 
 /* desktop */
-@media screen and ${DESKTOP_UP} {
+@media screen and ${g} {
   :root {
     --consonant-merch-card-segment-width: 302px;
   }
@@ -2466,46 +1547,23 @@ var CSS7 = `
       grid-template-columns: repeat(4, minmax(276px, var(--consonant-merch-card-segment-width)));
   }
 }
-`;
-
-// src/variants/segment.js
-var Segment = class extends VariantLayout {
-  constructor(card) {
-    super(card);
-  }
-  getGlobalCSS() {
-    return CSS7;
-  }
-  postCardUpdateHook() {
-    this.adjustTitleWidth();
-  }
-  renderLayout() {
-    return html10` ${this.badge}
+`;var tt=class extends f{constructor(e){super(e)}getGlobalCSS(){return _e}postCardUpdateHook(){this.adjustTitleWidth()}renderLayout(){return Ft` ${this.badge}
     <div class="body">
         <slot name="heading-xs"></slot>
         <slot name="body-xxs"></slot>
-        ${!this.promoBottom ? html10`<slot name="promo-text"></slot><slot name="callout-content"></slot>` : ""}
+        ${this.promoBottom?"":Ft`<slot name="promo-text"></slot><slot name="callout-content"></slot>`}
         <slot name="body-xs"></slot>
-        ${this.promoBottom ? html10`<slot name="promo-text"></slot><slot name="callout-content"></slot>` : ""}
+        ${this.promoBottom?Ft`<slot name="promo-text"></slot><slot name="callout-content"></slot>`:""}
     </div>
     <hr />
-    ${this.secureLabelFooter}`;
-  }
-};
-__publicField(Segment, "variantStyle", css8`
+    ${this.secureLabelFooter}`}};d(tt,"variantStyle",rr`
     :host([variant='segment']) {
       min-height: 214px;
     }
     :host([variant='segment']) ::slotted([slot='heading-xs']) {
       max-width: var(--consonant-merch-card-heading-xs-max-width, 100%);
     }
-  `);
-
-// src/variants/special-offer.js
-import { html as html11, css as css9 } from "../lit-all.min.js";
-
-// src/variants/special-offer.css.js
-var CSS8 = `
+  `);import{html as Bt,css as or}from"../lit-all.min.js";var Le=`
 :root {
   --consonant-merch-card-special-offers-width: 378px;
 }
@@ -2522,13 +1580,13 @@ merch-card[variant="special-offers"] span[is="inline-price"][data-template="stri
   grid-template-columns: minmax(300px, var(--consonant-merch-card-special-offers-width));
 }
 
-@media screen and ${MOBILE_LANDSCAPE} {
+@media screen and ${z} {
   :root {
     --consonant-merch-card-special-offers-width: 302px;
   }
 } 
   
-@media screen and ${TABLET_UP} {
+@media screen and ${u} {
   :root {
     --consonant-merch-card-special-offers-width: 302px;
   }
@@ -2541,61 +1599,36 @@ merch-card[variant="special-offers"] span[is="inline-price"][data-template="stri
 }
 
 /* desktop */
-@media screen and ${DESKTOP_UP} {
+@media screen and ${g} {
   .three-merch-cards.special-offers,
   .four-merch-cards.special-offers {
     grid-template-columns: repeat(3, minmax(300px, var(--consonant-merch-card-special-offers-width)));
   }
 }
 
-@media screen and ${LARGE_DESKTOP} {
+@media screen and ${T} {
   .four-merch-cards.special-offers {
     grid-template-columns: repeat(4, minmax(300px, var(--consonant-merch-card-special-offers-width)));
   }
 }
-`;
-
-// src/variants/special-offer.js
-var SPECIAL_OFFERS_AEM_FRAGMENT_MAPPING = {
-  name: { tag: "h4", slot: "detail-m" },
-  title: { tag: "h4", slot: "detail-m" },
-  backgroundImage: { tag: "div", slot: "bg-image" },
-  prices: { tag: "h3", slot: "heading-xs" },
-  description: { tag: "div", slot: "body-xs" },
-  ctas: { slot: "footer", size: "l" }
-};
-var SpecialOffer = class extends VariantLayout {
-  constructor(card) {
-    super(card);
-  }
-  getGlobalCSS() {
-    return CSS8;
-  }
-  get headingSelector() {
-    return '[slot="detail-m"]';
-  }
-  renderLayout() {
-    return html11`${this.cardImage}
+`;var Re={name:{tag:"h4",slot:"detail-m"},title:{tag:"h4",slot:"detail-m"},backgroundImage:{tag:"div",slot:"bg-image"},prices:{tag:"h3",slot:"heading-xs"},description:{tag:"div",slot:"body-xs"},ctas:{slot:"footer",size:"l"}},et=class extends f{constructor(e){super(e)}getGlobalCSS(){return Le}get headingSelector(){return'[slot="detail-m"]'}renderLayout(){return Bt`${this.cardImage}
             <div class="body">
                 <slot name="detail-m"></slot>
                 <slot name="heading-xs"></slot>
                 <slot name="body-xs"></slot>
             </div>
-            ${this.evergreen ? html11`
+            ${this.evergreen?Bt`
                       <div
                           class="detail-bg-container"
-                          style="background: ${this.card["detailBg"]}"
+                          style="background: ${this.card.detailBg}"
                       >
                           <slot name="detail-bg"></slot>
                       </div>
-                  ` : html11`
+                  `:Bt`
                       <hr />
                       ${this.secureLabelFooter}
                   `}
-            <slot></slot>`;
-  }
-};
-__publicField(SpecialOffer, "variantStyle", css9`
+            <slot></slot>`}};d(et,"variantStyle",or`
         :host([variant='special-offers']) {
             min-height: 439px;
         }
@@ -2607,62 +1640,7 @@ __publicField(SpecialOffer, "variantStyle", css9`
         :host([variant='special-offers'].center) {
             text-align: center;
         }
-    `);
-
-// src/variants/variants.js
-var variantRegistry = /* @__PURE__ */ new Map();
-var registerVariant = (name, variantClass, fragmentMapping = null, style = null) => {
-  variantRegistry.set(name, {
-    class: variantClass,
-    fragmentMapping,
-    style
-  });
-};
-registerVariant(
-  "catalog",
-  Catalog,
-  CATALOG_AEM_FRAGMENT_MAPPING,
-  Catalog.variantStyle
-);
-registerVariant("image", Image);
-registerVariant("inline-heading", InlineHeading);
-registerVariant(
-  "mini-compare-chart",
-  MiniCompareChart,
-  null,
-  MiniCompareChart.variantStyle
-);
-registerVariant("plans", Plans, PLANS_AEM_FRAGMENT_MAPPING, Plans.variantStyle);
-registerVariant("plans-students", Plans, PLANS_STUDENTS_AEM_FRAGMENT_MAPPING, Plans.variantStyle);
-registerVariant("plans-education", Plans, PLANS_EDUCATION_AEM_FRAGMENT_MAPPING, Plans.variantStyle);
-registerVariant("product", Product, null, Product.variantStyle);
-registerVariant("segment", Segment, null, Segment.variantStyle);
-registerVariant(
-  "special-offers",
-  SpecialOffer,
-  SPECIAL_OFFERS_AEM_FRAGMENT_MAPPING,
-  SpecialOffer.variantStyle
-);
-var getVariantLayout = (card, mustMatch = false) => {
-  const variantInfo = variantRegistry.get(card.variant);
-  if (!variantInfo) {
-    return mustMatch ? void 0 : new Product(card);
-  }
-  const { class: VariantClass, style } = variantInfo;
-  if (style) {
-    const sheet2 = new CSSStyleSheet();
-    sheet2.replaceSync(style.cssText);
-    card.shadowRoot.adoptedStyleSheets.push(sheet2);
-  }
-  return new VariantClass(card);
-};
-function getFragmentMapping(variant) {
-  return variantRegistry.get(variant)?.fragmentMapping;
-}
-
-// src/global.css.js
-var styles2 = document.createElement("style");
-styles2.innerHTML = `
+    `);var qt=new Map,E=(o,e,t=null,r=null)=>{qt.set(o,{class:e,fragmentMapping:t,style:r})};E("catalog",Q,be,Q.variantStyle);E("image",_t);E("inline-heading",Lt);E("mini-compare-chart",J,null,J.variantStyle);E("plans",k,Mt,k.variantStyle);E("plans-students",k,ke,k.variantStyle);E("plans-education",k,Te,k.variantStyle);E("product",I,null,I.variantStyle);E("segment",tt,null,tt.variantStyle);E("special-offers",et,Re,et.variantStyle);var Gt=(o,e=!1)=>{let t=qt.get(o.variant);if(!t)return e?void 0:new I(o);let{class:r,style:a}=t;if(a){let n=new CSSStyleSheet;n.replaceSync(a.cssText),o.shadowRoot.adoptedStyleSheets.push(n)}return new r(o)};function Ct(o){return qt.get(o)?.fragmentMapping}var Me=document.createElement("style");Me.innerHTML=`
 :root {
     --consonant-merch-card-detail-font-size: 12px;
     --consonant-merch-card-detail-font-weight: 500;
@@ -3188,378 +2166,10 @@ sr-only {
   white-space: nowrap;
   border: 0;
 }
-`;
-document.head.appendChild(styles2);
-
-// src/mas-error.js
-var MasError = class _MasError extends Error {
-  /**
-   * Creates a new MasError instance
-   * @param {string} message - The error message
-   * @param {Object} context - Additional context information about the error
-   * @param {unknown} cause - The original error that caused this error
-   */
-  constructor(message, context, cause) {
-    super(message, { cause });
-    this.name = "MasError";
-    if (context.response) {
-      const requestId = context.response.headers?.get(HEADER_X_REQUEST_ID);
-      if (requestId) {
-        context.requestId = requestId;
-      }
-      if (context.response.status) {
-        context.status = context.response.status;
-        context.statusText = context.response.statusText;
-      }
-      if (context.response.url) {
-        context.url = context.response.url;
-      }
-    }
-    delete context.response;
-    this.context = context;
-    if (Error.captureStackTrace) {
-      Error.captureStackTrace(this, _MasError);
-    }
-  }
-  /**
-   * Returns a string representation of the error including context
-   * @returns {string} String representation of the error
-   */
-  toString() {
-    const contextStr = Object.entries(this.context || {}).map(([key, value]) => `${key}: ${JSON.stringify(value)}`).join(", ");
-    let errorString = `${this.name}: ${this.message}`;
-    if (contextStr) {
-      errorString += ` (${contextStr})`;
-    }
-    if (this.cause) {
-      errorString += `
-Caused by: ${this.cause}`;
-    }
-    return errorString;
-  }
-};
-
-// src/utils/mas-fetch.js
-async function masFetch(resource, options = {}, retries = 2, baseDelay = 100) {
-  let lastError;
-  for (let attempt = 0; attempt <= retries; attempt++) {
-    try {
-      const response = await fetch(resource, options);
-      return response;
-    } catch (error) {
-      lastError = error;
-      if (attempt > retries) break;
-      await new Promise(
-        (resolve) => setTimeout(resolve, baseDelay * (attempt + 1))
-      );
-    }
-  }
-  throw lastError;
-}
-
-// src/aem-fragment.js
-var sheet = new CSSStyleSheet();
-sheet.replaceSync(":host { display: contents; }");
-var ATTRIBUTE_FRAGMENT = "fragment";
-var ATTRIBUTE_AUTHOR = "author";
-var ATTRIBUTE_PREVIEW = "preview";
-var AEM_FRAGMENT_TAG_NAME = "aem-fragment";
-var _fragmentCache;
-var FragmentCache = class {
-  constructor() {
-    __privateAdd(this, _fragmentCache, /* @__PURE__ */ new Map());
-  }
-  clear() {
-    __privateGet(this, _fragmentCache).clear();
-  }
-  /**
-   * Add fragment to cache
-   * @param {string} fragmentId requested id.
-   * requested id can differe from returned fragment.id because of translation
-   */
-  addByRequestedId(fragmentId, fragment) {
-    __privateGet(this, _fragmentCache).set(fragmentId, fragment);
-  }
-  add(...fragments) {
-    fragments.forEach((fragment) => {
-      const { id: fragmentId } = fragment;
-      if (fragmentId) {
-        __privateGet(this, _fragmentCache).set(fragmentId, fragment);
-      }
-    });
-  }
-  has(fragmentId) {
-    return __privateGet(this, _fragmentCache).has(fragmentId);
-  }
-  get(key) {
-    return __privateGet(this, _fragmentCache).get(key);
-  }
-  remove(fragmentId) {
-    __privateGet(this, _fragmentCache).delete(fragmentId);
-  }
-};
-_fragmentCache = new WeakMap();
-var cache = new FragmentCache();
-var _log, _rawData, _data, _stale, _startMark, _service, _fragmentId, _fetchPromise, _author, _preview, _AemFragment_instances, fail_fn;
-var AemFragment = class extends HTMLElement {
-  constructor() {
-    super();
-    __privateAdd(this, _AemFragment_instances);
-    __publicField(this, "cache", cache);
-    __privateAdd(this, _log);
-    __privateAdd(this, _rawData, null);
-    __privateAdd(this, _data, null);
-    __privateAdd(this, _stale, false);
-    __privateAdd(this, _startMark, null);
-    __privateAdd(this, _service, null);
-    /**
-     * @type {string} fragment id
-     */
-    __privateAdd(this, _fragmentId);
-    /**
-     * Internal promise to track if fetching is in progress.
-     */
-    __privateAdd(this, _fetchPromise);
-    __privateAdd(this, _author, false);
-    __privateAdd(this, _preview);
-    this.attachShadow({ mode: "open" });
-    this.shadowRoot.adoptedStyleSheets = [sheet];
-  }
-  static get observedAttributes() {
-    return [ATTRIBUTE_FRAGMENT, ATTRIBUTE_AUTHOR, ATTRIBUTE_PREVIEW];
-  }
-  attributeChangedCallback(name, oldValue, newValue) {
-    if (name === ATTRIBUTE_FRAGMENT) {
-      __privateSet(this, _fragmentId, newValue);
-    }
-    if (name === ATTRIBUTE_AUTHOR) {
-      __privateSet(this, _author, ["", "true"].includes(newValue));
-    }
-    if (name === ATTRIBUTE_PREVIEW) {
-      __privateSet(this, _preview, newValue);
-    }
-  }
-  connectedCallback() {
-    if (__privateGet(this, _fetchPromise)) return;
-    __privateSet(this, _service, getService(this));
-    __privateSet(this, _log, __privateGet(this, _service).log.module(AEM_FRAGMENT_TAG_NAME));
-    __privateSet(this, _startMark, `${AEM_FRAGMENT_TAG_NAME}:${__privateGet(this, _fragmentId)}${MARK_START_SUFFIX}`);
-    performance.mark(__privateGet(this, _startMark));
-    if (!__privateGet(this, _fragmentId)) {
-      __privateMethod(this, _AemFragment_instances, fail_fn).call(this, { message: "Missing fragment id" });
-      return;
-    }
-    this.refresh(false);
-  }
-  /**
-   * Get fragment by ID
-   * @param {string} endpoint url to fetch fragment from
-   * @param {string} id fragment id
-   * @param {string} startMark performance mark to measure duration
-   * @returns {Promise<Object>} the raw fragment item
-   */
-  async getFragmentById(endpoint, id, startMark) {
-    const measureName = `${AEM_FRAGMENT_TAG_NAME}:${id}${MARK_DURATION_SUFFIX}`;
-    if (__privateGet(this, _preview)) {
-      return await this.generatePreview();
-    }
-    let response;
-    try {
-      response = await masFetch(endpoint, {
-        cache: "default",
-        credentials: "omit"
-      });
-      if (!response?.ok) {
-        const { startTime, duration } = performance.measure(
-          measureName,
-          startMark
-        );
-        throw new MasError("Unexpected fragment response", {
-          response,
-          startTime,
-          duration,
-          ...__privateGet(this, _service).duration
-        });
-      }
-      return response.json();
-    } catch (e) {
-      const { startTime, duration } = performance.measure(
-        measureName,
-        startMark
-      );
-      if (!response) {
-        response = { url: endpoint };
-      }
-      throw new MasError("Failed to fetch fragment", {
-        response,
-        startTime,
-        duration,
-        ...__privateGet(this, _service).duration
-      });
-    }
-  }
-  async refresh(flushCache = true) {
-    if (__privateGet(this, _fetchPromise)) {
-      const ready = await Promise.race([
-        __privateGet(this, _fetchPromise),
-        Promise.resolve(false)
-      ]);
-      if (!ready) return;
-    }
-    if (flushCache) {
-      cache.remove(__privateGet(this, _fragmentId));
-    }
-    __privateSet(this, _fetchPromise, this.fetchData().then(() => {
-      const { references, referencesTree, placeholders } = __privateGet(this, _rawData) || {};
-      this.dispatchEvent(
-        new CustomEvent(EVENT_AEM_LOAD, {
-          detail: {
-            ...this.data,
-            stale: __privateGet(this, _stale),
-            references,
-            referencesTree,
-            placeholders
-          },
-          bubbles: true,
-          composed: true
-        })
-      );
-      return true;
-    }).catch((e) => {
-      if (__privateGet(this, _rawData)) {
-        cache.addByRequestedId(__privateGet(this, _fragmentId), __privateGet(this, _rawData));
-        return true;
-      }
-      __privateMethod(this, _AemFragment_instances, fail_fn).call(this, e);
-      return false;
-    }));
-    return __privateGet(this, _fetchPromise);
-  }
-  async fetchData() {
-    this.classList.remove("error");
-    __privateSet(this, _data, null);
-    let fragment = cache.get(__privateGet(this, _fragmentId));
-    if (fragment) {
-      __privateSet(this, _rawData, fragment);
-      return;
-    }
-    __privateSet(this, _stale, true);
-    const { masIOUrl, locale, preview, wcsApiKey } = __privateGet(this, _service).settings;
-    __privateSet(this, _preview, preview);
-    const endpoint = `${masIOUrl}/fragment?id=${__privateGet(this, _fragmentId)}&api_key=${wcsApiKey}&locale=${locale}`;
-    fragment = await this.getFragmentById(
-      endpoint,
-      __privateGet(this, _fragmentId),
-      __privateGet(this, _startMark)
-    );
-    cache.addByRequestedId(__privateGet(this, _fragmentId), fragment);
-    __privateSet(this, _rawData, fragment);
-    __privateSet(this, _stale, false);
-  }
-  get updateComplete() {
-    return __privateGet(this, _fetchPromise) ?? Promise.reject(new Error("AEM fragment cannot be loaded"));
-  }
-  get data() {
-    if (__privateGet(this, _data)) return __privateGet(this, _data);
-    if (__privateGet(this, _author)) {
-      this.transformAuthorData();
-    } else {
-      this.transformPublishData();
-    }
-    return __privateGet(this, _data);
-  }
-  transformAuthorData() {
-    const { fields, id, tags, settings = {} } = __privateGet(this, _rawData);
-    __privateSet(this, _data, fields.reduce(
-      (acc, { name, multiple, values }) => {
-        acc.fields[name] = multiple ? values : values[0];
-        return acc;
-      },
-      { fields: {}, id, tags, settings }
-    ));
-  }
-  transformPublishData() {
-    const { fields, id, tags, settings = {} } = __privateGet(this, _rawData);
-    __privateSet(this, _data, Object.entries(fields).reduce(
-      (acc, [key, value]) => {
-        acc.fields[key] = value?.mimeType ? value.value : value ?? "";
-        return acc;
-      },
-      { fields: {}, id, tags, settings }
-    ));
-  }
-  async generatePreview() {
-    const { previewFragment } = await import("https://mas.adobe.com/studio/libs/fragment-client.js");
-    const data = await previewFragment(__privateGet(this, _fragmentId), {
-      surface: __privateGet(this, _service).settings.previewSurface,
-      locale: __privateGet(this, _service).settings.locale,
-      apiKey: __privateGet(this, _service).settings.wcsApiKey
-    });
-    return data;
-  }
-};
-_log = new WeakMap();
-_rawData = new WeakMap();
-_data = new WeakMap();
-_stale = new WeakMap();
-_startMark = new WeakMap();
-_service = new WeakMap();
-_fragmentId = new WeakMap();
-_fetchPromise = new WeakMap();
-_author = new WeakMap();
-_preview = new WeakMap();
-_AemFragment_instances = new WeakSet();
-fail_fn = function({ message, context }) {
-  this.classList.add("error");
-  __privateGet(this, _log).error(`aem-fragment: ${message}`, context);
-  this.dispatchEvent(
-    new CustomEvent(EVENT_AEM_ERROR, {
-      detail: { message, ...context },
-      bubbles: true,
-      composed: true
-    })
-  );
-};
-customElements.define(AEM_FRAGMENT_TAG_NAME, AemFragment);
-
-// src/merch-badge.js
-import { LitElement as LitElement3, html as html12, css as css10 } from "../lit-all.min.js";
-var MerchBadge = class extends LitElement3 {
-  constructor() {
-    super();
-    this.color = "";
-    this.variant = "";
-    this.backgroundColor = "";
-    this.borderColor = "";
-    this.text = this.textContent;
-  }
-  connectedCallback() {
-    if (this.borderColor && this.borderColor !== "Transparent") {
-      this.style.setProperty("--merch-badge-border", `1px solid var(--${this.borderColor})`);
-    } else {
-      this.style.setProperty("--merch-badge-border", `1px solid var(--${this.backgroundColor})`);
-    }
-    this.style.setProperty("--merch-badge-background-color", `var(--${this.backgroundColor})`);
-    this.style.setProperty("--merch-badge-color", this.color);
-    this.style.setProperty("--merch-badge-padding", "2px 10px 3px 10px");
-    this.style.setProperty("--merch-badge-border-radius", "4px 0 0 4px");
-    this.style.setProperty("--merch-badge-font-size", "var(--consonant-merch-card-body-xs-font-size)");
-    this.textContent = "";
-    super.connectedCallback();
-  }
-  render() {
-    return html12`<div class="plans-badge">
+`;document.head.appendChild(Me);var gt=class o extends Error{constructor(e,t,r){if(super(e,{cause:r}),this.name="MasError",t.response){let a=t.response.headers?.get(me);a&&(t.requestId=a),t.response.status&&(t.status=t.response.status,t.statusText=t.response.statusText),t.response.url&&(t.url=t.response.url)}delete t.response,this.context=t,Error.captureStackTrace&&Error.captureStackTrace(this,o)}toString(){let e=Object.entries(this.context||{}).map(([r,a])=>`${r}: ${JSON.stringify(a)}`).join(", "),t=`${this.name}: ${this.message}`;return e&&(t+=` (${e})`),this.cause&&(t+=`
+Caused by: ${this.cause}`),t}};async function Pe(o,e={},t=2,r=100){let a;for(let n=0;n<=t;n++)try{return await fetch(o,e)}catch(i){if(a=i,n>t)break;await new Promise(c=>setTimeout(c,r*(n+1)))}throw a}var $e=new CSSStyleSheet;$e.replaceSync(":host { display: contents; }");var ze="fragment",Ne="author",Oe="preview",Pt="aem-fragment",_,Vt=class{constructor(){p(this,_,new Map)}clear(){s(this,_).clear()}addByRequestedId(e,t){s(this,_).set(e,t)}add(...e){e.forEach(t=>{let{id:r}=t;r&&s(this,_).set(r,t)})}has(e){return s(this,_).has(e)}get(e){return s(this,_).get(e)}remove(e){s(this,_).delete(e)}};_=new WeakMap;var ut=new Vt,ft,C,L,rt,ot,w,y,R,xt,at,bt,Yt,jt=class extends HTMLElement{constructor(){super();p(this,bt);d(this,"cache",ut);p(this,ft);p(this,C,null);p(this,L,null);p(this,rt,!1);p(this,ot,null);p(this,w,null);p(this,y);p(this,R);p(this,xt,!1);p(this,at);this.attachShadow({mode:"open"}),this.shadowRoot.adoptedStyleSheets=[$e]}static get observedAttributes(){return[ze,Ne,Oe]}attributeChangedCallback(t,r,a){t===ze&&m(this,y,a),t===Ne&&m(this,xt,["","true"].includes(a)),t===Oe&&m(this,at,a)}connectedCallback(){if(!s(this,R)){if(m(this,w,Y(this)),m(this,at,s(this,w).settings?.preview),m(this,ft,s(this,w).log.module(Pt)),m(this,ot,`${Pt}:${s(this,y)}${st}`),performance.mark(s(this,ot)),!s(this,y)){A(this,bt,Yt).call(this,{message:"Missing fragment id"});return}this.refresh(!1)}}async getFragmentById(t,r,a){let n=`${Pt}:${r}${pe}`;if(s(this,at))return await this.generatePreview();let i;try{if(i=await Pe(t,{cache:"default",credentials:"omit"}),!i?.ok){let{startTime:c,duration:l}=performance.measure(n,a);throw new gt("Unexpected fragment response",{response:i,startTime:c,duration:l,...s(this,w).duration})}return i.json()}catch{let{startTime:l,duration:h}=performance.measure(n,a);throw i||(i={url:t}),new gt("Failed to fetch fragment",{response:i,startTime:l,duration:h,...s(this,w).duration})}}async refresh(t=!0){if(!(s(this,R)&&!await Promise.race([s(this,R),Promise.resolve(!1)])))return t&&ut.remove(s(this,y)),m(this,R,this.fetchData().then(()=>{let{references:r,referencesTree:a,placeholders:n}=s(this,C)||{};return this.dispatchEvent(new CustomEvent(G,{detail:{...this.data,stale:s(this,rt),references:r,referencesTree:a,placeholders:n},bubbles:!0,composed:!0})),!0}).catch(r=>s(this,C)?(ut.addByRequestedId(s(this,y),s(this,C)),!0):(A(this,bt,Yt).call(this,r),!1))),s(this,R)}async fetchData(){this.classList.remove("error"),m(this,L,null);let t=ut.get(s(this,y));if(t){m(this,C,t);return}m(this,rt,!0);let{masIOUrl:r,locale:a,wcsApiKey:n}=s(this,w).settings,i=`${r}/fragment?id=${s(this,y)}&api_key=${n}&locale=${a}`;t=await this.getFragmentById(i,s(this,y),s(this,ot)),ut.addByRequestedId(s(this,y),t),m(this,C,t),m(this,rt,!1)}get updateComplete(){return s(this,R)??Promise.reject(new Error("AEM fragment cannot be loaded"))}get data(){return s(this,L)?s(this,L):(s(this,xt)?this.transformAuthorData():this.transformPublishData(),s(this,L))}transformAuthorData(){let{fields:t,id:r,tags:a,settings:n={}}=s(this,C);m(this,L,t.reduce((i,{name:c,multiple:l,values:h})=>(i.fields[c]=l?h:h[0],i),{fields:{},id:r,tags:a,settings:n}))}transformPublishData(){let{fields:t,id:r,tags:a,settings:n={}}=s(this,C);m(this,L,Object.entries(t).reduce((i,[c,l])=>(i.fields[c]=l?.mimeType?l.value:l??"",i),{fields:{},id:r,tags:a,settings:n}))}async generatePreview(){let{previewFragment:t}=await import("https://mas.adobe.com/studio/libs/fragment-client.js");return await t(s(this,y),{locale:s(this,w).settings.locale,apiKey:s(this,w).settings.wcsApiKey})}};ft=new WeakMap,C=new WeakMap,L=new WeakMap,rt=new WeakMap,ot=new WeakMap,w=new WeakMap,y=new WeakMap,R=new WeakMap,xt=new WeakMap,at=new WeakMap,bt=new WeakSet,Yt=function({message:t,context:r}){this.classList.add("error"),s(this,ft).error(`aem-fragment: ${t}`,r),this.dispatchEvent(new CustomEvent(V,{detail:{message:t,...r},bubbles:!0,composed:!0}))};customElements.define(Pt,jt);import{LitElement as ar,html as nr,css as ir}from"../lit-all.min.js";var nt=class extends ar{constructor(){super(),this.color="",this.variant="",this.backgroundColor="",this.borderColor="",this.text=this.textContent}connectedCallback(){this.borderColor&&this.borderColor!=="Transparent"?this.style.setProperty("--merch-badge-border",`1px solid var(--${this.borderColor})`):this.style.setProperty("--merch-badge-border",`1px solid var(--${this.backgroundColor})`),this.style.setProperty("--merch-badge-background-color",`var(--${this.backgroundColor})`),this.style.setProperty("--merch-badge-color",this.color),this.style.setProperty("--merch-badge-padding","2px 10px 3px 10px"),this.style.setProperty("--merch-badge-border-radius","4px 0 0 4px"),this.style.setProperty("--merch-badge-font-size","var(--consonant-merch-card-body-xs-font-size)"),this.textContent="",super.connectedCallback()}render(){return nr`<div class="plans-badge">
             ${this.text}
-        </div>`;
-  }
-};
-__publicField(MerchBadge, "properties", {
-  color: { type: String },
-  variant: { type: String },
-  backgroundColor: { type: String, attribute: "background-color" },
-  borderColor: { type: String, attribute: "border-color" }
-});
-__publicField(MerchBadge, "styles", css10`
+        </div>`}};d(nt,"properties",{color:{type:String},variant:{type:String},backgroundColor:{type:String,attribute:"background-color"},borderColor:{type:String,attribute:"border-color"}}),d(nt,"styles",ir`
         :host {
             display: block;
             background-color: var(--merch-badge-background-color);
@@ -3572,23 +2182,10 @@ __publicField(MerchBadge, "styles", css10`
             position: relative;
             left: 1px;
         }
-    `);
-customElements.define("merch-badge", MerchBadge);
-
-// src/merch-mnemonic-list.js
-import { html as html13, css as css11, LitElement as LitElement4 } from "../lit-all.min.js";
-var MerchMnemonicList = class extends LitElement4 {
-  constructor() {
-    super();
-  }
-  render() {
-    return html13`
+    `);customElements.define("merch-badge",nt);import{html as cr,css as sr,LitElement as dr}from"../lit-all.min.js";var vt=class extends dr{constructor(){super()}render(){return cr`
             <slot name="icon"></slot>
             <slot name="description">${this.description}</slot>
-        `;
-  }
-};
-__publicField(MerchMnemonicList, "styles", css11`
+        `}};d(vt,"styles",sr`
         :host {
             display: flex;
             flex-wrap: nowrap;
@@ -3613,57 +2210,11 @@ __publicField(MerchMnemonicList, "styles", css11`
         :host .hidden {
             display: none;
         }
-    `);
-__publicField(MerchMnemonicList, "properties", {
-  description: { type: String, attribute: true }
-});
-customElements.define("merch-mnemonic-list", MerchMnemonicList);
-
-// src/merch-whats-included.js
-import { html as html14, css as css12, LitElement as LitElement5 } from "../lit-all.min.js";
-var MerchWhatsIncluded = class extends LitElement5 {
-  updated() {
-    this.hideSeeMoreEls();
-  }
-  hideSeeMoreEls() {
-    if (this.isMobile) {
-      this.rows.forEach((node, index) => {
-        if (index >= 5) {
-          node.style.display = this.showAll ? "flex" : "none";
-        }
-      });
-    }
-  }
-  constructor() {
-    super();
-    this.showAll = false;
-    this.mobileRows = this.mobileRows === void 0 ? 5 : this.mobileRows;
-  }
-  toggle() {
-    this.showAll = !this.showAll;
-    this.dispatchEvent(
-      new CustomEvent("hide-see-more-elements", {
-        bubbles: true,
-        composed: true
-      })
-    );
-    this.requestUpdate();
-  }
-  render() {
-    return html14`<slot name="heading"></slot>
+    `),d(vt,"properties",{description:{type:String,attribute:!0}});customElements.define("merch-mnemonic-list",vt);import{html as Kt,css as lr,LitElement as hr}from"../lit-all.min.js";var yt=class extends hr{updated(){this.hideSeeMoreEls()}hideSeeMoreEls(){this.isMobile&&this.rows.forEach((e,t)=>{t>=5&&(e.style.display=this.showAll?"flex":"none")})}constructor(){super(),this.showAll=!1,this.mobileRows=this.mobileRows===void 0?5:this.mobileRows}toggle(){this.showAll=!this.showAll,this.dispatchEvent(new CustomEvent("hide-see-more-elements",{bubbles:!0,composed:!0})),this.requestUpdate()}render(){return Kt`<slot name="heading"></slot>
             <slot name="content"></slot>
-            ${this.isMobile && this.rows.length > this.mobileRows ? html14`<div @click=${this.toggle} class="see-more">
-                      ${this.showAll ? "- See less" : "+ See more"}
-                  </div>` : html14``}`;
-  }
-  get isMobile() {
-    return window.matchMedia("(max-width: 767px)").matches;
-  }
-  get rows() {
-    return this.querySelectorAll("merch-mnemonic-list");
-  }
-};
-__publicField(MerchWhatsIncluded, "styles", css12`
+            ${this.isMobile&&this.rows.length>this.mobileRows?Kt`<div @click=${this.toggle} class="see-more">
+                      ${this.showAll?"- See less":"+ See more"}
+                  </div>`:Kt``}`}get isMobile(){return window.matchMedia("(max-width: 767px)").matches}get rows(){return this.querySelectorAll("merch-mnemonic-list")}};d(yt,"styles",lr`
         :host {
             display: flex;
             flex-wrap: wrap;
@@ -3692,1057 +2243,4 @@ __publicField(MerchWhatsIncluded, "styles", css12`
             text-decoration: underline;
             color: var(--link-color-dark);
         }
-    `);
-__publicField(MerchWhatsIncluded, "properties", {
-  heading: { type: String, attribute: true },
-  mobileRows: { type: Number, attribute: true }
-});
-customElements.define("merch-whats-included", MerchWhatsIncluded);
-
-// src/upt-link.js
-function getPromoTermsUrl(env) {
-  const host = env === "PRODUCTION" ? "www.adobe.com" : "www.stage.adobe.com";
-  return `https://${host}/offers/promo-terms.html`;
-}
-var _initialized;
-var _UptLink = class _UptLink extends HTMLAnchorElement {
-  constructor() {
-    super();
-    __privateAdd(this, _initialized, false);
-    this.setAttribute("is", _UptLink.is);
-  }
-  get isUptLink() {
-    return true;
-  }
-  /**
-   * @param {string} osi 
-   * @param {string} promotionCode 
-   */
-  initializeWcsData(osi, promotionCode) {
-    this.setAttribute("data-wcs-osi", osi);
-    if (promotionCode)
-      this.setAttribute("data-promotion-code", promotionCode);
-    __privateSet(this, _initialized, true);
-    this.composePromoTermsUrl();
-  }
-  attributeChangedCallback(_name, _oldValue, _newValue) {
-    if (!__privateGet(this, _initialized)) return;
-    this.composePromoTermsUrl();
-  }
-  composePromoTermsUrl() {
-    const osi = this.getAttribute("data-wcs-osi");
-    if (!osi) {
-      const fragmentId = this.closest("merch-card").querySelector("aem-fragment").getAttribute("fragment");
-      console.error(`Missing 'data-wcs-osi' attribute on upt-link. Fragment: ${fragmentId}`);
-      return;
-    }
-    const service = getService();
-    const wcsOsi = [osi];
-    const promotionCode = this.getAttribute("data-promotion-code");
-    const { country, language, env } = service.settings;
-    const options = { country, language, wcsOsi, promotionCode };
-    const promises = service.resolveOfferSelectors(options);
-    Promise.all(promises).then(([[offer]]) => {
-      let params = `locale=${language}_${country}&country=${country}&offer_id=${offer.offerId}`;
-      if (promotionCode) params += `&promotion_code=${encodeURIComponent(promotionCode)}`;
-      this.href = `${getPromoTermsUrl(env)}?${params}`;
-    }).catch((error) => {
-      console.error(`Could not resolve offer selectors for id: ${osi}.`, error.message);
-    });
-  }
-  /**
-   * @param {HTMLElement} element 
-   */
-  static createFrom(element) {
-    const uptLink = new _UptLink();
-    for (const attribute of element.attributes) {
-      if (attribute.name === "is") continue;
-      if (attribute.name === "class" && attribute.value.includes("upt-link"))
-        uptLink.setAttribute("class", attribute.value.replace("upt-link", "").trim());
-      else
-        uptLink.setAttribute(attribute.name, attribute.value);
-    }
-    uptLink.innerHTML = element.innerHTML;
-    uptLink.setAttribute("tabindex", 0);
-    return uptLink;
-  }
-};
-_initialized = new WeakMap();
-__publicField(_UptLink, "is", "upt-link");
-__publicField(_UptLink, "tag", "a");
-__publicField(_UptLink, "observedAttributes", ["data-wcs-osi", "data-promotion-code"]);
-var UptLink = _UptLink;
-if (!window.customElements.get(UptLink.is)) {
-  window.customElements.define(UptLink.is, UptLink, {
-    extends: UptLink.tag
-  });
-}
-
-// src/hydrate.js
-var DEFAULT_BADGE_COLOR = "#000000";
-var DEFAULT_PLANS_BADGE_COLOR = "spectrum-yellow-300-plans";
-var DEFAULT_BADGE_BACKGROUND_COLOR = "#F8D904";
-var DEFAULT_BORDER_COLOR = "#EAEAEA";
-var CHECKOUT_STYLE_PATTERN = /(accent|primary|secondary)(-(outline|link))?/;
-var ANALYTICS_TAG = "mas:product_code/";
-var ANALYTICS_LINK_ATTR = "daa-ll";
-var ANALYTICS_SECTION_ATTR = "daa-lh";
-var SPECTRUM_BUTTON_SIZES = ["XL", "L", "M", "S"];
-var TEXT_TRUNCATE_SUFFIX = "...";
-function appendSlot(fieldName, fields, el, mapping) {
-  const config = mapping[fieldName];
-  if (fields[fieldName] && config) {
-    const attributes = { slot: config?.slot };
-    let content = fields[fieldName];
-    if (config.maxCount && typeof content === "string") {
-      const [truncatedContent, cleanContent] = getTruncatedTextData(
-        content,
-        config.maxCount,
-        config.withSuffix
-      );
-      if (truncatedContent !== content) {
-        attributes.title = cleanContent;
-        content = truncatedContent;
-      }
-    }
-    const tag = createTag(config.tag, attributes, content);
-    el.append(tag);
-  }
-}
-function processMnemonics(fields, merchCard, mnemonicsConfig) {
-  const mnemonics = fields.mnemonicIcon?.map((icon, index) => ({
-    icon,
-    alt: fields.mnemonicAlt[index] ?? "",
-    link: fields.mnemonicLink[index] ?? ""
-  }));
-  mnemonics?.forEach(({ icon: src, alt, link: href }) => {
-    if (href && !/^https?:/.test(href)) {
-      try {
-        href = new URL(`https://${href}`).href.toString();
-      } catch (e) {
-        href = "#";
-      }
-    }
-    const attrs = {
-      slot: "icons",
-      src,
-      loading: merchCard.loading,
-      size: mnemonicsConfig?.size ?? "l"
-    };
-    if (alt) attrs.alt = alt;
-    if (href) attrs.href = href;
-    const merchIcon = createTag("merch-icon", attrs);
-    merchCard.append(merchIcon);
-  });
-}
-function processBadge(fields, merchCard, mapping) {
-  if (fields.variant.startsWith("plans")) {
-    if (fields.badge?.length && !fields.badge?.startsWith("<merch-badge")) {
-      fields.badge = `<merch-badge variant="${fields.variant}" background-color="${DEFAULT_PLANS_BADGE_COLOR}">${fields.badge}</merch-badge>`;
-      if (!fields.borderColor)
-        fields.borderColor = DEFAULT_PLANS_BADGE_COLOR;
-    }
-    appendSlot("badge", fields, merchCard, mapping);
-    return;
-  }
-  if (fields.badge) {
-    merchCard.setAttribute("badge-text", fields.badge);
-    merchCard.setAttribute(
-      "badge-color",
-      fields.badgeColor || DEFAULT_BADGE_COLOR
-    );
-    merchCard.setAttribute(
-      "badge-background-color",
-      fields.badgeBackgroundColor || DEFAULT_BADGE_BACKGROUND_COLOR
-    );
-    merchCard.setAttribute(
-      "border-color",
-      fields.badgeBackgroundColor || DEFAULT_BADGE_BACKGROUND_COLOR
-    );
-  } else {
-    merchCard.setAttribute(
-      "border-color",
-      fields.borderColor || DEFAULT_BORDER_COLOR
-    );
-  }
-}
-function processSize(fields, merchCard, sizeConfig) {
-  if (sizeConfig?.includes(fields.size)) {
-    merchCard.setAttribute("size", fields.size);
-  }
-}
-function processTitle(fields, merchCard, titleConfig) {
-  appendSlot("cardTitle", fields, merchCard, { cardTitle: titleConfig });
-}
-function processSubtitle(fields, merchCard, mapping) {
-  appendSlot("subtitle", fields, merchCard, mapping);
-}
-function processBackgroundColor(fields, merchCard, allowedColors) {
-  if (!fields.backgroundColor || fields.backgroundColor.toLowerCase() === "default") {
-    merchCard.style.removeProperty("--merch-card-custom-background-color");
-    merchCard.removeAttribute("background-color");
-    return;
-  }
-  if (allowedColors?.[fields.backgroundColor]) {
-    merchCard.style.setProperty(
-      "--merch-card-custom-background-color",
-      `var(${allowedColors[fields.backgroundColor]})`
-    );
-    merchCard.setAttribute("background-color", fields.backgroundColor);
-  }
-}
-function processBorderColor(fields, merchCard, borderColorConfig) {
-  const customBorderColor = "--merch-card-custom-border-color";
-  if (fields.borderColor?.toLowerCase() === "transparent") {
-    merchCard.style.removeProperty(customBorderColor);
-    if (fields.variant === "plans")
-      merchCard.style.setProperty(customBorderColor, "transparent");
-  } else if (fields.borderColor && borderColorConfig) {
-    if (/-gradient/.test(fields.borderColor)) {
-      merchCard.setAttribute("gradient-border", "true");
-      merchCard.style.removeProperty(customBorderColor);
-    } else {
-      merchCard.style.setProperty(
-        customBorderColor,
-        `var(--${fields.borderColor})`
-      );
-    }
-  }
-}
-function processBackgroundImage(fields, merchCard, backgroundImageConfig) {
-  if (fields.backgroundImage) {
-    const imgAttributes = {
-      loading: merchCard.loading ?? "lazy",
-      src: fields.backgroundImage
-    };
-    if (fields.backgroundImageAltText) {
-      imgAttributes.alt = fields.backgroundImageAltText;
-    } else {
-      imgAttributes.role = "none";
-    }
-    if (!backgroundImageConfig) return;
-    if (backgroundImageConfig?.attribute) {
-      merchCard.setAttribute(
-        backgroundImageConfig.attribute,
-        fields.backgroundImage
-      );
-      return;
-    }
-    merchCard.append(
-      createTag(
-        backgroundImageConfig.tag,
-        { slot: backgroundImageConfig.slot },
-        createTag("img", imgAttributes)
-      )
-    );
-  }
-}
-function processPrices(fields, merchCard, mapping) {
-  appendSlot("prices", fields, merchCard, mapping);
-}
-function processDescription(fields, merchCard, mapping) {
-  appendSlot("promoText", fields, merchCard, mapping);
-  appendSlot("description", fields, merchCard, mapping);
-  appendSlot("callout", fields, merchCard, mapping);
-  appendSlot("quantitySelect", fields, merchCard, mapping);
-  appendSlot("whatsIncluded", fields, merchCard, mapping);
-}
-function processAddon(fields, merchCard, mapping) {
-  if (!mapping.addon) return;
-  let addonField = fields.addon?.replace(/[{}]/g, "");
-  if (!addonField) return;
-  if (/disabled/.test(addonField)) return;
-  const addon = createTag("merch-addon", { slot: "addon" }, addonField);
-  [...addon.querySelectorAll(SELECTOR_MAS_INLINE_PRICE)].forEach((span) => {
-    const parent = span.parentElement;
-    if (parent?.nodeName !== "P") return;
-    parent.setAttribute("data-plan-type", "");
-  });
-  merchCard.append(addon);
-}
-function processStockOffersAndSecureLabel(fields, merchCard, aemFragmentMapping, settings) {
-  if (fields.showStockCheckbox && aemFragmentMapping.stockOffer) {
-    merchCard.setAttribute(
-      "checkbox-label",
-      settings?.stockCheckboxLabel ? settings.stockCheckboxLabel : ""
-    );
-    merchCard.setAttribute(
-      "stock-offer-osis",
-      settings?.stockOfferOsis ? settings.stockOfferOsis : ""
-    );
-  }
-  if (settings?.secureLabel && aemFragmentMapping?.secureLabel) {
-    merchCard.setAttribute("secure-label", settings.secureLabel);
-  }
-}
-function getTruncatedTextData(text, limit, withSuffix = true) {
-  try {
-    const _text = typeof text !== "string" ? "" : text;
-    const cleanText = clearTags(_text);
-    if (cleanText.length <= limit) return [_text, cleanText];
-    let index = 0;
-    let inTag = false;
-    let remaining = withSuffix ? limit - TEXT_TRUNCATE_SUFFIX.length < 1 ? 1 : limit - TEXT_TRUNCATE_SUFFIX.length : limit;
-    let openTags = [];
-    for (const char of _text) {
-      index++;
-      if (char === "<") {
-        inTag = true;
-        if (_text[index] === "/") {
-          openTags.pop();
-        } else {
-          let tagName = "";
-          for (const tagChar of _text.substring(index)) {
-            if (tagChar === " " || tagChar === ">") break;
-            tagName += tagChar;
-          }
-          openTags.push(tagName);
-        }
-      }
-      if (char === "/") {
-        if (_text[index] === ">") {
-          openTags.pop();
-        }
-      }
-      if (char === ">") {
-        inTag = false;
-        continue;
-      }
-      if (inTag) continue;
-      remaining--;
-      if (remaining === 0) break;
-    }
-    let trimmedText = _text.substring(0, index).trim();
-    if (openTags.length > 0) {
-      if (openTags[0] === "p") openTags.shift();
-      for (const tag of openTags.reverse()) {
-        trimmedText += `</${tag}>`;
-      }
-    }
-    let truncatedText = `${trimmedText}${withSuffix ? TEXT_TRUNCATE_SUFFIX : ""}`;
-    return [truncatedText, cleanText];
-  } catch (error) {
-    const fallbackText = typeof text === "string" ? text : "";
-    const cleanFallback = clearTags(fallbackText);
-    return [fallbackText, cleanFallback];
-  }
-}
-function clearTags(text) {
-  if (!text) return "";
-  let result = "";
-  let inTag = false;
-  for (const char of text) {
-    if (char === "<") inTag = true;
-    if (char === ">") {
-      inTag = false;
-      continue;
-    }
-    if (inTag) continue;
-    result += char;
-  }
-  return result;
-}
-function processUptLinks(fields, merchCard) {
-  const placeholders = merchCard.querySelectorAll("a.upt-link");
-  placeholders.forEach((placeholder) => {
-    const uptLink = UptLink.createFrom(placeholder);
-    placeholder.replaceWith(uptLink);
-    uptLink.initializeWcsData(fields.osi, fields.promoCode);
-  });
-}
-function createSpectrumCssButton(cta, aemFragmentMapping, isOutline, variant, isCheckout) {
-  let button = cta;
-  if (isCheckout) {
-    const CheckoutButton = customElements.get("checkout-button");
-    button = CheckoutButton.createCheckoutButton({}, cta.innerHTML);
-  } else {
-    button.innerHTML = `<span>${button.textContent}</span>`;
-  }
-  button.setAttribute("tabindex", 0);
-  for (const attr of cta.attributes) {
-    if (["class", "is"].includes(attr.name)) continue;
-    button.setAttribute(attr.name, attr.value);
-  }
-  button.firstElementChild?.classList.add("spectrum-Button-label");
-  const size = aemFragmentMapping.ctas.size ?? "M";
-  const variantClass = `spectrum-Button--${variant}`;
-  const sizeClass = SPECTRUM_BUTTON_SIZES.includes(size) ? `spectrum-Button--size${size}` : "spectrum-Button--sizeM";
-  const spectrumClass = ["spectrum-Button", variantClass, sizeClass];
-  if (isOutline) {
-    spectrumClass.push("spectrum-Button--outline");
-  }
-  button.classList.add(...spectrumClass);
-  return button;
-}
-function createSpectrumSwcButton(cta, aemFragmentMapping, isOutline, variant, isCheckout) {
-  let button = cta;
-  if (isCheckout) {
-    const CheckoutButton = customElements.get("checkout-button");
-    button = CheckoutButton.createCheckoutButton(cta.dataset);
-    button.connectedCallback();
-    button.render();
-  }
-  let treatment = "fill";
-  if (isOutline) {
-    treatment = "outline";
-  }
-  const spectrumCta = createTag(
-    "sp-button",
-    {
-      treatment,
-      variant,
-      tabIndex: 0,
-      size: aemFragmentMapping.ctas.size ?? "m",
-      ...cta.dataset.analyticsId && {
-        "data-analytics-id": cta.dataset.analyticsId
-      }
-    },
-    cta.innerHTML
-  );
-  spectrumCta.source = button;
-  (isCheckout ? button.onceSettled() : Promise.resolve(button)).then((target) => {
-    spectrumCta.setAttribute("data-navigation-url", target.href);
-  });
-  spectrumCta.addEventListener("click", (e) => {
-    if (e.defaultPrevented) return;
-    button.click();
-  });
-  return spectrumCta;
-}
-function createConsonantButton(cta, isAccent, isCheckout) {
-  let button = cta;
-  if (isCheckout) {
-    const CheckoutLink = customElements.get("checkout-link");
-    button = CheckoutLink.createCheckoutLink(
-      cta.dataset,
-      cta.innerHTML
-    );
-  }
-  button.classList.add("con-button");
-  if (isAccent) {
-    button.classList.add("blue");
-  }
-  return button;
-}
-function processCTAs(fields, merchCard, aemFragmentMapping, variant) {
-  if (fields.ctas) {
-    const { slot } = aemFragmentMapping.ctas;
-    const footer = createTag("div", { slot }, fields.ctas);
-    const ctas = [...footer.querySelectorAll("a")].map((cta) => {
-      const isCheckout = cta.hasAttribute("data-wcs-osi") && Boolean(cta.getAttribute("data-wcs-osi"));
-      const checkoutLinkStyle = CHECKOUT_STYLE_PATTERN.exec(cta.className)?.[0] ?? "accent";
-      const isAccent = checkoutLinkStyle.includes("accent");
-      const isPrimary = checkoutLinkStyle.includes("primary");
-      const isSecondary = checkoutLinkStyle.includes("secondary");
-      const isOutline = checkoutLinkStyle.includes("-outline");
-      const isLink = checkoutLinkStyle.includes("-link");
-      cta.classList.remove("accent", "primary", "secondary");
-      if (merchCard.consonant)
-        return createConsonantButton(cta, isAccent, isCheckout);
-      if (isLink) {
-        return cta;
-      }
-      let variant2;
-      if (isAccent) {
-        variant2 = "accent";
-      } else if (isPrimary) {
-        variant2 = "primary";
-      } else if (isSecondary) {
-        variant2 = "secondary";
-      }
-      return merchCard.spectrum === "swc" ? createSpectrumSwcButton(
-        cta,
-        aemFragmentMapping,
-        isOutline,
-        variant2,
-        isCheckout
-      ) : createSpectrumCssButton(
-        cta,
-        aemFragmentMapping,
-        isOutline,
-        variant2,
-        isCheckout
-      );
-    });
-    footer.innerHTML = "";
-    footer.append(...ctas);
-    merchCard.append(footer);
-  }
-}
-function processAnalytics(fields, merchCard) {
-  const { tags } = fields;
-  const cardAnalyticsId = tags?.find((tag) => tag.startsWith(ANALYTICS_TAG))?.split("/").pop();
-  if (!cardAnalyticsId) return;
-  merchCard.setAttribute(ANALYTICS_SECTION_ATTR, cardAnalyticsId);
-  const elements = [
-    ...merchCard.shadowRoot.querySelectorAll(
-      `a[data-analytics-id],button[data-analytics-id]`
-    ),
-    ...merchCard.querySelectorAll(
-      `a[data-analytics-id],button[data-analytics-id]`
-    )
-  ];
-  elements.forEach((el, index) => {
-    el.setAttribute(
-      ANALYTICS_LINK_ATTR,
-      `${el.dataset.analyticsId}-${index + 1}`
-    );
-  });
-}
-function updateLinksCSS(merchCard) {
-  if (merchCard.spectrum !== "css") return;
-  [
-    ["primary-link", "primary"],
-    ["secondary-link", "secondary"]
-  ].forEach(([className, variant]) => {
-    merchCard.querySelectorAll(`a.${className}`).forEach((link) => {
-      link.classList.remove(className);
-      link.classList.add("spectrum-Link", `spectrum-Link--${variant}`);
-    });
-  });
-}
-function cleanup(merchCard) {
-  merchCard.querySelectorAll("[slot]").forEach((el) => {
-    el.remove();
-  });
-  merchCard.variant = void 0;
-  const attributesToRemove = [
-    "checkbox-label",
-    "stock-offer-osis",
-    "secure-label",
-    "background-image",
-    "background-color",
-    "border-color",
-    "badge-background-color",
-    "badge-color",
-    "badge-text",
-    "gradient-border",
-    "size",
-    ANALYTICS_SECTION_ATTR
-  ];
-  attributesToRemove.forEach((attr) => merchCard.removeAttribute(attr));
-  const classesToRemove = ["wide-strip", "thin-strip"];
-  merchCard.classList.remove(...classesToRemove);
-}
-async function hydrate(fragment, merchCard) {
-  const { id, fields, settings = {} } = fragment;
-  const { variant } = fields;
-  if (!variant) throw new Error(`hydrate: no variant found in payload ${id}`);
-  cleanup(merchCard);
-  merchCard.settings = settings;
-  merchCard.id ?? (merchCard.id = fragment.id);
-  merchCard.variant = variant;
-  await merchCard.updateComplete;
-  const { aemFragmentMapping } = merchCard.variantLayout;
-  if (!aemFragmentMapping)
-    throw new Error(`hydrate: aemFragmentMapping found for ${id}`);
-  if (aemFragmentMapping.style === "consonant") {
-    merchCard.setAttribute("consonant", true);
-  }
-  processMnemonics(fields, merchCard, aemFragmentMapping.mnemonics);
-  processBadge(fields, merchCard, aemFragmentMapping);
-  processSize(fields, merchCard, aemFragmentMapping.size);
-  processTitle(fields, merchCard, aemFragmentMapping.title);
-  processSubtitle(fields, merchCard, aemFragmentMapping);
-  processPrices(fields, merchCard, aemFragmentMapping);
-  processBackgroundImage(
-    fields,
-    merchCard,
-    aemFragmentMapping.backgroundImage
-  );
-  processBackgroundColor(fields, merchCard, aemFragmentMapping.allowedColors);
-  processBorderColor(fields, merchCard, aemFragmentMapping.borderColor);
-  processDescription(fields, merchCard, aemFragmentMapping);
-  processAddon(fields, merchCard, aemFragmentMapping);
-  processStockOffersAndSecureLabel(
-    fields,
-    merchCard,
-    aemFragmentMapping,
-    settings
-  );
-  processUptLinks(fields, merchCard);
-  processCTAs(fields, merchCard, aemFragmentMapping, variant);
-  processAnalytics(fields, merchCard);
-  updateLinksCSS(merchCard);
-}
-
-// src/merch-card.js
-var MERCH_CARD = "merch-card";
-var MARK_READY_SUFFIX = ":ready";
-var MARK_ERROR_SUFFIX = ":error";
-var MERCH_CARD_LOAD_TIMEOUT = 2e4;
-var MARK_MERCH_CARD_PREFIX = "merch-card:";
-function priceOptionsProvider(element, options) {
-  const card = element.closest(MERCH_CARD);
-  if (!card) return options;
-  card.variantLayout?.priceOptionsProvider?.(element, options);
-}
-function registerPriceOptionsProvider(masCommerceService) {
-  if (masCommerceService.providers.has(priceOptionsProvider)) return;
-  masCommerceService.providers.price(priceOptionsProvider);
-}
-var _log2, _service2, _MerchCard_instances, fail_fn2;
-var MerchCard = class extends LitElement6 {
-  constructor() {
-    super();
-    __privateAdd(this, _MerchCard_instances);
-    __publicField(this, "customerSegment");
-    __publicField(this, "marketSegment");
-    /**
-     * @type {VariantLayout}
-     */
-    __publicField(this, "variantLayout");
-    __privateAdd(this, _log2);
-    __privateAdd(this, _service2);
-    __publicField(this, "readyEventDispatched", false);
-    this.id = null;
-    this.failed = false;
-    this.filters = {};
-    this.types = "";
-    this.selected = false;
-    this.spectrum = "css";
-    this.loading = "lazy";
-    this.handleAemFragmentEvents = this.handleAemFragmentEvents.bind(this);
-  }
-  firstUpdated() {
-    this.variantLayout = getVariantLayout(this, false);
-    this.variantLayout?.connectedCallbackHook();
-    this.aemFragment?.updateComplete.catch((e) => {
-      __privateMethod(this, _MerchCard_instances, fail_fn2).call(this, e, {}, false);
-      this.style.display = "none";
-    });
-  }
-  willUpdate(changedProperties) {
-    if (changedProperties.has("variant") || !this.variantLayout) {
-      this.variantLayout = getVariantLayout(this);
-      this.variantLayout.connectedCallbackHook();
-    }
-  }
-  updated(changedProperties) {
-    if (changedProperties.has("badgeBackgroundColor") || changedProperties.has("borderColor")) {
-      this.style.setProperty(
-        "--consonant-merch-card-border",
-        this.computedBorderStyle
-      );
-    }
-    try {
-      this.variantLayout?.postCardUpdateHook(changedProperties);
-    } catch (e) {
-      __privateMethod(this, _MerchCard_instances, fail_fn2).call(this, `Error in postCardUpdateHook: ${e.message}`, {}, false);
-    }
-  }
-  get theme() {
-    return this.closest("sp-theme");
-  }
-  get dir() {
-    return this.closest("[dir]")?.getAttribute("dir") ?? "ltr";
-  }
-  get prices() {
-    return Array.from(
-      this.querySelectorAll('span[is="inline-price"][data-wcs-osi]')
-    );
-  }
-  render() {
-    if (!this.isConnected || !this.variantLayout || this.style.display === "none")
-      return;
-    return this.variantLayout.renderLayout();
-  }
-  get computedBorderStyle() {
-    if (!["ccd-slice", "ccd-suggested", "ah-promoted-plans"].includes(
-      this.variant
-    )) {
-      return `1px solid ${this.borderColor ? this.borderColor : this.badgeBackgroundColor}`;
-    }
-    return "";
-  }
-  get badgeElement() {
-    return this.shadowRoot.getElementById("badge");
-  }
-  get headingmMSlot() {
-    return this.shadowRoot.querySelector('slot[name="heading-m"]').assignedElements()[0];
-  }
-  get footerSlot() {
-    return this.shadowRoot.querySelector('slot[name="footer"]')?.assignedElements()[0];
-  }
-  get price() {
-    return this.headingmMSlot?.querySelector(SELECTOR_MAS_INLINE_PRICE);
-  }
-  get checkoutLinks() {
-    return [
-      ...this.footerSlot?.querySelectorAll(SELECTOR_MAS_CHECKOUT_LINK) ?? []
-    ];
-  }
-  async toggleStockOffer({ target }) {
-    if (!this.stockOfferOsis) return;
-    const elements = this.checkoutLinks;
-    if (elements.length === 0) return;
-    for (const element of elements) {
-      await element.onceSettled();
-      const planType = element.value?.[0]?.planType;
-      if (!planType) return;
-      const stockOfferOsi = this.stockOfferOsis[planType];
-      if (!stockOfferOsi) return;
-      const osis = element.dataset.wcsOsi.split(",").filter((osi) => osi !== stockOfferOsi);
-      if (target.checked) {
-        osis.push(stockOfferOsi);
-      }
-      element.dataset.wcsOsi = osis.join(",");
-    }
-  }
-  changeHandler(event) {
-    if (event.target.tagName === "MERCH-ADDON") {
-      this.toggleAddon(event.target);
-    }
-  }
-  toggleAddon(merchAddon) {
-    const elements = this.checkoutLinks;
-    this.variantLayout?.toggleAddon?.(merchAddon);
-    if (elements.length === 0) return;
-    for (const element of elements) {
-      const { offerType, planType } = element.value?.[0];
-      if (!offerType || !planType) return;
-      const addonOsi = merchAddon.querySelector(
-        `p[data-plan-type="${planType}"] ${SELECTOR_MAS_INLINE_PRICE}[data-offer-type="${offerType}"]`
-      )?.dataset?.wcsOsi;
-      const osis = element.dataset.wcsOsi.split(",").filter((osi) => osi !== addonOsi);
-      if (merchAddon.checked) {
-        osis.push(addonOsi);
-      }
-      element.dataset.wcsOsi = osis.join(",");
-    }
-  }
-  handleQuantitySelection(event) {
-    const elements = this.checkoutLinks;
-    for (const element of elements) {
-      element.dataset.quantity = event.detail.option;
-    }
-  }
-  get titleElement() {
-    return this.querySelector(
-      this.variantLayout?.headingSelector || ".card-heading"
-    );
-  }
-  get title() {
-    return this.titleElement?.textContent?.trim();
-  }
-  /* c8 ignore next 3 */
-  get description() {
-    return this.querySelector('[slot="body-xs"]')?.textContent?.trim();
-  }
-  /**
-   * If the card is the single app, set the order for all filters to 2.
-   * If not, increment the order for all filters after the second card by 1.
-   * @param {*} singleApp
-   */
-  updateFilters(singleApp) {
-    const newFilters = { ...this.filters };
-    Object.keys(newFilters).forEach((key) => {
-      if (singleApp) {
-        newFilters[key].order = Math.min(newFilters[key].order || 2, 2);
-        return;
-      }
-      const value = newFilters[key].order;
-      if (value === 1 || isNaN(value)) return;
-      newFilters[key].order = Number(value) + 1;
-    });
-    this.filters = newFilters;
-  }
-  /* c8 ignore next 3 */
-  includes(text) {
-    return this.textContent.match(new RegExp(text, "i")) !== null;
-  }
-  connectedCallback() {
-    super.connectedCallback();
-    __privateSet(this, _service2, getService());
-    registerPriceOptionsProvider(__privateGet(this, _service2));
-    __privateSet(this, _log2, __privateGet(this, _service2).Log.module(MERCH_CARD));
-    this.id ?? (this.id = this.querySelector("aem-fragment")?.getAttribute("fragment"));
-    performance.mark(
-      `${MARK_MERCH_CARD_PREFIX}${this.id}${MARK_START_SUFFIX}`
-    );
-    this.addEventListener(
-      EVENT_MERCH_QUANTITY_SELECTOR_CHANGE,
-      this.handleQuantitySelection
-    );
-    this.addEventListener(
-      EVENT_MERCH_ADDON_AND_QUANTITY_UPDATE,
-      this.handleAddonAndQuantityUpdate
-    );
-    this.addEventListener(
-      EVENT_MERCH_OFFER_SELECT_READY,
-      this.merchCardReady,
-      { once: true }
-    );
-    this.updateComplete.then(() => {
-      this.merchCardReady();
-    });
-    this.addEventListener(EVENT_AEM_ERROR, this.handleAemFragmentEvents);
-    this.addEventListener(EVENT_AEM_LOAD, this.handleAemFragmentEvents);
-    this.addEventListener("change", this.changeHandler);
-    if (!this.aemFragment) {
-      setTimeout(() => this.checkReady(), 0);
-    }
-  }
-  disconnectedCallback() {
-    super.disconnectedCallback();
-    this.variantLayout?.disconnectedCallbackHook();
-    this.removeEventListener(
-      EVENT_MERCH_QUANTITY_SELECTOR_CHANGE,
-      this.handleQuantitySelection
-    );
-    this.removeEventListener(EVENT_AEM_ERROR, this.handleAemFragmentEvents);
-    this.removeEventListener(EVENT_AEM_LOAD, this.handleAemFragmentEvents);
-    this.removeEventListener("change", this.changeHandler);
-    this.removeEventListener(EVENT_MERCH_ADDON_AND_QUANTITY_UPDATE, this.handleAddonAndQuantityUpdate);
-  }
-  // custom methods
-  async handleAemFragmentEvents(e) {
-    if (!this.isConnected) return;
-    if (e.type === EVENT_AEM_ERROR) {
-      __privateMethod(this, _MerchCard_instances, fail_fn2).call(this, `AEM fragment cannot be loaded: ${e.detail.message}`, e.detail);
-    }
-    if (e.type === EVENT_AEM_LOAD) {
-      if (e.target.nodeName === "AEM-FRAGMENT") {
-        const fragment = e.detail;
-        hydrate(fragment, this).then(() => this.checkReady()).catch((e2) => __privateGet(this, _log2).error(e2));
-      }
-    }
-  }
-  async checkReady() {
-    if (!this.isConnected) return;
-    const timeoutPromise = new Promise(
-      (resolve) => setTimeout(() => resolve("timeout"), MERCH_CARD_LOAD_TIMEOUT)
-    );
-    if (this.aemFragment) {
-      const result2 = await Promise.race([
-        this.aemFragment.updateComplete,
-        timeoutPromise
-      ]);
-      if (result2 === false) {
-        const errorMessage = result2 === "timeout" ? `AEM fragment was not resolved within ${MERCH_CARD_LOAD_TIMEOUT} timeout` : "AEM fragment cannot be loaded";
-        __privateMethod(this, _MerchCard_instances, fail_fn2).call(this, errorMessage, {}, false);
-        return;
-      }
-    }
-    const masElements = [...this.querySelectorAll(SELECTOR_MAS_ELEMENT)];
-    masElements.push(
-      ...[...this.querySelectorAll(SELECTOR_MAS_SP_BUTTON)].map(
-        (element) => element.source
-      )
-    );
-    const successPromise = Promise.all(
-      masElements.map(
-        (element) => element.onceSettled().catch(() => element)
-      )
-    ).then(
-      (elements) => elements.every(
-        (el) => el.classList.contains("placeholder-resolved")
-      )
-    );
-    const result = await Promise.race([successPromise, timeoutPromise]);
-    if (result === true) {
-      performance.mark(
-        `${MARK_MERCH_CARD_PREFIX}${this.id}${MARK_READY_SUFFIX}`
-      );
-      if (!this.readyEventDispatched) {
-        this.readyEventDispatched = true;
-        this.dispatchEvent(
-          new CustomEvent(EVENT_MAS_READY, {
-            bubbles: true,
-            composed: true
-          })
-        );
-      }
-      return this;
-    } else {
-      const { duration, startTime } = performance.measure(
-        `${MARK_MERCH_CARD_PREFIX}${this.id}${MARK_ERROR_SUFFIX}`,
-        `${MARK_MERCH_CARD_PREFIX}${this.id}${MARK_START_SUFFIX}`
-      );
-      const details = {
-        duration,
-        startTime,
-        ...__privateGet(this, _service2).duration
-      };
-      if (result === "timeout") {
-        __privateMethod(this, _MerchCard_instances, fail_fn2).call(this, `Contains offers that were not resolved within ${MERCH_CARD_LOAD_TIMEOUT} timeout`, details);
-      } else {
-        __privateMethod(this, _MerchCard_instances, fail_fn2).call(this, `Contains unresolved offers`, details);
-      }
-    }
-  }
-  get aemFragment() {
-    return this.querySelector("aem-fragment");
-  }
-  get addon() {
-    return this.querySelector("merch-addon");
-  }
-  /* c8 ignore next 3 */
-  get quantitySelect() {
-    return this.querySelector("merch-quantity-select");
-  }
-  get addonCheckbox() {
-    return this.querySelector("merch-addon");
-    return this.querySelector("merch-addon");
-  }
-  displayFooterElementsInColumn() {
-    if (!this.classList.contains("product")) return;
-    const secureTransactionLabel = this.shadowRoot.querySelector(
-      ".secure-transaction-label"
-    );
-    const checkoutLinkCtas = this.footerSlot?.querySelectorAll(
-      SELECTOR_MAS_CHECKOUT_LINK
-    );
-    if (checkoutLinkCtas.length === 2 && secureTransactionLabel) {
-      secureTransactionLabel.parentElement.classList.add("footer-column");
-    }
-  }
-  merchCardReady() {
-    if (this.offerSelect && !this.offerSelect.planType) return;
-    this.dispatchEvent(
-      new CustomEvent(EVENT_MERCH_CARD_READY, { bubbles: true })
-    );
-    this.displayFooterElementsInColumn();
-  }
-  /* c8 ignore next 3 */
-  get dynamicPrice() {
-    return this.querySelector('[slot="price"]');
-  }
-  handleAddonAndQuantityUpdate({ detail: { id, items } }) {
-    if (!id || !items?.length) return;
-    const cta = this.checkoutLinks.find((link) => link.getAttribute("data-modal-id") === id);
-    if (!cta) return;
-    const url = new URL(cta.getAttribute("href"));
-    const pa = url.searchParams.get("pa");
-    const mainProductQuantity = items.find((item) => item.productArrangementCode === pa)?.quantity;
-    const isAddonIncluded = !!items.find((item) => item.productArrangementCode !== pa);
-    if (mainProductQuantity) {
-      this.quantitySelect?.dispatchEvent(new CustomEvent(EVENT_MERCH_CARD_QUANTITY_CHANGE, {
-        detail: { quantity: mainProductQuantity },
-        bubbles: true,
-        composed: true
-      }));
-    }
-    if (this.addonCheckbox?.checked !== isAddonIncluded) {
-      this.toggleStockOffer({ target: this.addonCheckbox });
-      const checkboxEvent = new Event("change", {
-        bubbles: true,
-        cancelable: true
-      });
-      Object.defineProperty(checkboxEvent, "target", {
-        writable: false,
-        value: { checked: isAddonIncluded }
-      });
-      this.addonCheckbox.handleChange(checkboxEvent);
-    }
-  }
-};
-_log2 = new WeakMap();
-_service2 = new WeakMap();
-_MerchCard_instances = new WeakSet();
-fail_fn2 = function(error, details = {}, dispatch = true) {
-  __privateGet(this, _log2).error(`merch-card: ${error}`, details);
-  this.failed = true;
-  if (!dispatch) return;
-  this.dispatchEvent(
-    new CustomEvent(EVENT_MAS_ERROR, {
-      detail: { ...details, message: error },
-      bubbles: true,
-      composed: true
-    })
-  );
-};
-__publicField(MerchCard, "properties", {
-  id: { type: String, attribute: "id", reflect: true },
-  name: { type: String, attribute: "name", reflect: true },
-  variant: { type: String, reflect: true },
-  size: { type: String, attribute: "size", reflect: true },
-  badgeColor: { type: String, attribute: "badge-color", reflect: true },
-  borderColor: { type: String, attribute: "border-color", reflect: true },
-  badgeBackgroundColor: {
-    type: String,
-    attribute: "badge-background-color",
-    reflect: true
-  },
-  backgroundImage: {
-    type: String,
-    attribute: "background-image",
-    reflect: true
-  },
-  badgeText: { type: String, attribute: "badge-text" },
-  actionMenu: { type: Boolean, attribute: "action-menu" },
-  actionMenuLabel: { type: String, attribute: "action-menu-label" },
-  customHr: { type: Boolean, attribute: "custom-hr" },
-  consonant: { type: Boolean, attribute: "consonant" },
-  failed: { type: Boolean, attribute: "failed", reflect: true },
-  spectrum: { type: String, attribute: "spectrum" },
-  detailBg: { type: String, attribute: "detail-bg" },
-  secureLabel: { type: String, attribute: "secure-label" },
-  checkboxLabel: { type: String, attribute: "checkbox-label" },
-  addonTitle: { type: String, attribute: "addon-title" },
-  addonOffers: { type: Object, attribute: "addon-offers" },
-  selected: { type: Boolean, attribute: "aria-selected", reflect: true },
-  storageOption: { type: String, attribute: "storage", reflect: true },
-  planType: { type: String, attribute: "plan-type", reflect: true },
-  settings: {
-    type: Object,
-    attribute: false
-  },
-  stockOfferOsis: {
-    type: Object,
-    attribute: "stock-offer-osis",
-    converter: {
-      fromAttribute: (value) => {
-        if (!value) return;
-        const [PUF, ABM, M2M] = value.split(",");
-        return { PUF, ABM, M2M };
-      }
-    }
-  },
-  filters: {
-    type: String,
-    reflect: true,
-    converter: {
-      fromAttribute: (value) => {
-        return Object.fromEntries(
-          value.split(",").map((filter) => {
-            const [key, order, size] = filter.split(":");
-            const value2 = Number(order);
-            return [
-              key,
-              {
-                order: isNaN(value2) ? void 0 : value2,
-                size
-              }
-            ];
-          })
-        );
-      },
-      toAttribute: (value) => {
-        return Object.entries(value).map(
-          ([key, { order, size }]) => [key, order, size].filter((v) => v != void 0).join(":")
-        ).join(",");
-      }
-    }
-  },
-  types: {
-    type: String,
-    attribute: "types",
-    reflect: true
-  },
-  merchOffer: { type: Object },
-  analyticsId: {
-    type: String,
-    attribute: ANALYTICS_SECTION_ATTR,
-    reflect: true
-  },
-  loading: { type: String }
-});
-__publicField(MerchCard, "styles", [styles, ...sizeStyles()]);
-__publicField(MerchCard, "registerVariant", registerVariant);
-__publicField(MerchCard, "getFragmentMapping", getFragmentMapping);
-customElements.define(MERCH_CARD, MerchCard);
-export {
-  MerchCard
-};
-//# sourceMappingURL=merch-card.js.map
+    `),d(yt,"properties",{heading:{type:String,attribute:!0},mobileRows:{type:Number,attribute:!0}});customElements.define("merch-whats-included",yt);function mr(o){return`https://${o==="PRODUCTION"?"www.adobe.com":"www.stage.adobe.com"}/offers/promo-terms.html`}var Et,D=class D extends HTMLAnchorElement{constructor(){super();p(this,Et,!1);this.setAttribute("is",D.is)}get isUptLink(){return!0}initializeWcsData(t,r){this.setAttribute("data-wcs-osi",t),r&&this.setAttribute("data-promotion-code",r),m(this,Et,!0),this.composePromoTermsUrl()}attributeChangedCallback(t,r,a){s(this,Et)&&this.composePromoTermsUrl()}composePromoTermsUrl(){let t=this.getAttribute("data-wcs-osi");if(!t){let v=this.closest("merch-card").querySelector("aem-fragment").getAttribute("fragment");console.error(`Missing 'data-wcs-osi' attribute on upt-link. Fragment: ${v}`);return}let r=Y(),a=[t],n=this.getAttribute("data-promotion-code"),{country:i,language:c,env:l}=r.settings,h={country:i,language:c,wcsOsi:a,promotionCode:n},S=r.resolveOfferSelectors(h);Promise.all(S).then(([[v]])=>{let O=`locale=${c}_${i}&country=${i}&offer_id=${v.offerId}`;n&&(O+=`&promotion_code=${encodeURIComponent(n)}`),this.href=`${mr(l)}?${O}`}).catch(v=>{console.error(`Could not resolve offer selectors for id: ${t}.`,v.message)})}static createFrom(t){let r=new D;for(let a of t.attributes)a.name!=="is"&&(a.name==="class"&&a.value.includes("upt-link")?r.setAttribute("class",a.value.replace("upt-link","").trim()):r.setAttribute(a.name,a.value));return r.innerHTML=t.innerHTML,r.setAttribute("tabindex",0),r}};Et=new WeakMap,d(D,"is","upt-link"),d(D,"tag","a"),d(D,"observedAttributes",["data-wcs-osi","data-promotion-code"]);var N=D;window.customElements.get(N.is)||window.customElements.define(N.is,N,{extends:N.tag});var pr="#000000",Ie="spectrum-yellow-300-plans",De="#F8D904",gr="#EAEAEA",ur=/(accent|primary|secondary)(-(outline|link))?/,fr="mas:product_code/",xr="daa-ll",zt="daa-lh",br=["XL","L","M","S"],Wt="...";function M(o,e,t,r){let a=r[o];if(e[o]&&a){let n={slot:a?.slot},i=e[o];if(a.maxCount&&typeof i=="string"){let[l,h]=Mr(i,a.maxCount,a.withSuffix);l!==i&&(n.title=h,i=l)}let c=b(a.tag,n,i);t.append(c)}}function vr(o,e,t){o.mnemonicIcon?.map((a,n)=>({icon:a,alt:o.mnemonicAlt[n]??"",link:o.mnemonicLink[n]??""}))?.forEach(({icon:a,alt:n,link:i})=>{if(i&&!/^https?:/.test(i))try{i=new URL(`https://${i}`).href.toString()}catch{i="#"}let c={slot:"icons",src:a,loading:e.loading,size:t?.size??"l"};n&&(c.alt=n),i&&(c.href=i);let l=b("merch-icon",c);e.append(l)})}function yr(o,e,t){if(o.variant.startsWith("plans")){o.badge?.length&&!o.badge?.startsWith("<merch-badge")&&(o.badge=`<merch-badge variant="${o.variant}" background-color="${Ie}">${o.badge}</merch-badge>`,o.borderColor||(o.borderColor=Ie)),M("badge",o,e,t);return}o.badge?(e.setAttribute("badge-text",o.badge),e.setAttribute("badge-color",o.badgeColor||pr),e.setAttribute("badge-background-color",o.badgeBackgroundColor||De),e.setAttribute("border-color",o.badgeBackgroundColor||De)):e.setAttribute("border-color",o.borderColor||gr)}function Er(o,e,t){t?.includes(o.size)&&e.setAttribute("size",o.size)}function wr(o,e,t){M("cardTitle",o,e,{cardTitle:t})}function Sr(o,e,t){M("subtitle",o,e,t)}function Ar(o,e,t){if(!o.backgroundColor||o.backgroundColor.toLowerCase()==="default"){e.style.removeProperty("--merch-card-custom-background-color"),e.removeAttribute("background-color");return}t?.[o.backgroundColor]&&(e.style.setProperty("--merch-card-custom-background-color",`var(${t[o.backgroundColor]})`),e.setAttribute("background-color",o.backgroundColor))}function Tr(o,e,t){let r="--merch-card-custom-border-color";o.borderColor?.toLowerCase()==="transparent"?(e.style.removeProperty(r),o.variant==="plans"&&e.style.setProperty(r,"transparent")):o.borderColor&&t&&(/-gradient/.test(o.borderColor)?(e.setAttribute("gradient-border","true"),e.style.removeProperty(r)):e.style.setProperty(r,`var(--${o.borderColor})`))}function kr(o,e,t){if(o.backgroundImage){let r={loading:e.loading??"lazy",src:o.backgroundImage};if(o.backgroundImageAltText?r.alt=o.backgroundImageAltText:r.role="none",!t)return;if(t?.attribute){e.setAttribute(t.attribute,o.backgroundImage);return}e.append(b(t.tag,{slot:t.slot},b("img",r)))}}function Cr(o,e,t){M("prices",o,e,t)}function _r(o,e,t){M("promoText",o,e,t),M("description",o,e,t),M("callout",o,e,t),M("quantitySelect",o,e,t),M("whatsIncluded",o,e,t)}function Lr(o,e,t){if(!t.addon)return;let r=o.addon?.replace(/[{}]/g,"");if(!r||/disabled/.test(r))return;let a=b("merch-addon",{slot:"addon"},r);[...a.querySelectorAll(x)].forEach(n=>{let i=n.parentElement;i?.nodeName==="P"&&i.setAttribute("data-plan-type","")}),e.append(a)}function Rr(o,e,t,r){o.showStockCheckbox&&t.stockOffer&&(e.setAttribute("checkbox-label",r?.stockCheckboxLabel?r.stockCheckboxLabel:""),e.setAttribute("stock-offer-osis",r?.stockOfferOsis?r.stockOfferOsis:"")),r?.secureLabel&&t?.secureLabel&&e.setAttribute("secure-label",r.secureLabel)}function Mr(o,e,t=!0){try{let r=typeof o!="string"?"":o,a=He(r);if(a.length<=e)return[r,a];let n=0,i=!1,c=t?e-Wt.length<1?1:e-Wt.length:e,l=[];for(let v of r){if(n++,v==="<")if(i=!0,r[n]==="/")l.pop();else{let O="";for(let B of r.substring(n)){if(B===" "||B===">")break;O+=B}l.push(O)}if(v==="/"&&r[n]===">"&&l.pop(),v===">"){i=!1;continue}if(!i&&(c--,c===0))break}let h=r.substring(0,n).trim();if(l.length>0){l[0]==="p"&&l.shift();for(let v of l.reverse())h+=`</${v}>`}return[`${h}${t?Wt:""}`,a]}catch{let a=typeof o=="string"?o:"",n=He(a);return[a,n]}}function He(o){if(!o)return"";let e="",t=!1;for(let r of o){if(r==="<"&&(t=!0),r===">"){t=!1;continue}t||(e+=r)}return e}function Pr(o,e){e.querySelectorAll("a.upt-link").forEach(r=>{let a=N.createFrom(r);r.replaceWith(a),a.initializeWcsData(o.osi,o.promoCode)})}function zr(o,e,t,r,a){let n=o;a?n=customElements.get("checkout-button").createCheckoutButton({},o.innerHTML):n.innerHTML=`<span>${n.textContent}</span>`,n.setAttribute("tabindex",0);for(let S of o.attributes)["class","is"].includes(S.name)||n.setAttribute(S.name,S.value);n.firstElementChild?.classList.add("spectrum-Button-label");let i=e.ctas.size??"M",c=`spectrum-Button--${r}`,l=br.includes(i)?`spectrum-Button--size${i}`:"spectrum-Button--sizeM",h=["spectrum-Button",c,l];return t&&h.push("spectrum-Button--outline"),n.classList.add(...h),n}function Nr(o,e,t,r,a){let n=o;a&&(n=customElements.get("checkout-button").createCheckoutButton(o.dataset),n.connectedCallback(),n.render());let i="fill";t&&(i="outline");let c=b("sp-button",{treatment:i,variant:r,tabIndex:0,size:e.ctas.size??"m",...o.dataset.analyticsId&&{"data-analytics-id":o.dataset.analyticsId}},o.innerHTML);return c.source=n,(a?n.onceSettled():Promise.resolve(n)).then(l=>{c.setAttribute("data-navigation-url",l.href)}),c.addEventListener("click",l=>{l.defaultPrevented||n.click()}),c}function Or(o,e,t){let r=o;return t&&(r=customElements.get("checkout-link").createCheckoutLink(o.dataset,o.innerHTML)),r.classList.add("con-button"),e&&r.classList.add("blue"),r}function $r(o,e,t,r){if(o.ctas){let{slot:a}=t.ctas,n=b("div",{slot:a},o.ctas),i=[...n.querySelectorAll("a")].map(c=>{let l=c.hasAttribute("data-wcs-osi")&&!!c.getAttribute("data-wcs-osi"),h=ur.exec(c.className)?.[0]??"accent",S=h.includes("accent"),v=h.includes("primary"),O=h.includes("secondary"),B=h.includes("-outline"),Be=h.includes("-link");if(c.classList.remove("accent","primary","secondary"),e.consonant)return Or(c,S,l);if(Be)return c;let ct;return S?ct="accent":v?ct="primary":O&&(ct="secondary"),e.spectrum==="swc"?Nr(c,t,B,ct,l):zr(c,t,B,ct,l)});n.innerHTML="",n.append(...i),e.append(n)}}function Ir(o,e){let{tags:t}=o,r=t?.find(n=>n.startsWith(fr))?.split("/").pop();if(!r)return;e.setAttribute(zt,r),[...e.shadowRoot.querySelectorAll("a[data-analytics-id],button[data-analytics-id]"),...e.querySelectorAll("a[data-analytics-id],button[data-analytics-id]")].forEach((n,i)=>{n.setAttribute(xr,`${n.dataset.analyticsId}-${i+1}`)})}function Dr(o){o.spectrum==="css"&&[["primary-link","primary"],["secondary-link","secondary"]].forEach(([e,t])=>{o.querySelectorAll(`a.${e}`).forEach(r=>{r.classList.remove(e),r.classList.add("spectrum-Link",`spectrum-Link--${t}`)})})}function Hr(o){o.querySelectorAll("[slot]").forEach(r=>{r.remove()}),o.variant=void 0,["checkbox-label","stock-offer-osis","secure-label","background-image","background-color","border-color","badge-background-color","badge-color","badge-text","gradient-border","size",zt].forEach(r=>o.removeAttribute(r));let t=["wide-strip","thin-strip"];o.classList.remove(...t)}async function Ue(o,e){let{id:t,fields:r,settings:a={}}=o,{variant:n}=r;if(!n)throw new Error(`hydrate: no variant found in payload ${t}`);Hr(e),e.settings=a,e.id??(e.id=o.id),e.variant=n,await e.updateComplete;let{aemFragmentMapping:i}=e.variantLayout;if(!i)throw new Error(`hydrate: aemFragmentMapping found for ${t}`);i.style==="consonant"&&e.setAttribute("consonant",!0),vr(r,e,i.mnemonics),yr(r,e,i),Er(r,e,i.size),wr(r,e,i.title),Sr(r,e,i),Cr(r,e,i),kr(r,e,i.backgroundImage),Ar(r,e,i.allowedColors),Tr(r,e,i.borderColor),_r(r,e,i),Lr(r,e,i),Rr(r,e,i,a),Pr(r,e),$r(r,e,i,n),Ir(r,e),Dr(e)}var Qt="merch-card",Fr=":ready",Br=":error",Xt=2e4,Nt="merch-card:";function Fe(o,e){let t=o.closest(Qt);if(!t)return e;t.variantLayout?.priceOptionsProvider?.(o,e)}function qr(o){o.providers.has(Fe)||o.providers.price(Fe)}var it,F,P,U,H=class extends Ur{constructor(){super();p(this,P);d(this,"customerSegment");d(this,"marketSegment");d(this,"variantLayout");p(this,it);p(this,F);d(this,"readyEventDispatched",!1);this.id=null,this.failed=!1,this.filters={},this.types="",this.selected=!1,this.spectrum="css",this.loading="lazy",this.handleAemFragmentEvents=this.handleAemFragmentEvents.bind(this)}firstUpdated(){this.variantLayout=Gt(this,!1),this.variantLayout?.connectedCallbackHook(),this.aemFragment?.updateComplete.catch(t=>{A(this,P,U).call(this,t,{},!1),this.style.display="none"})}willUpdate(t){(t.has("variant")||!this.variantLayout)&&(this.variantLayout=Gt(this),this.variantLayout.connectedCallbackHook())}updated(t){(t.has("badgeBackgroundColor")||t.has("borderColor"))&&this.style.setProperty("--consonant-merch-card-border",this.computedBorderStyle);try{this.variantLayout?.postCardUpdateHook(t)}catch(r){A(this,P,U).call(this,`Error in postCardUpdateHook: ${r.message}`,{},!1)}}get theme(){return this.closest("sp-theme")}get dir(){return this.closest("[dir]")?.getAttribute("dir")??"ltr"}get prices(){return Array.from(this.querySelectorAll('span[is="inline-price"][data-wcs-osi]'))}render(){if(!(!this.isConnected||!this.variantLayout||this.style.display==="none"))return this.variantLayout.renderLayout()}get computedBorderStyle(){return["ccd-slice","ccd-suggested","ah-promoted-plans"].includes(this.variant)?"":`1px solid ${this.borderColor?this.borderColor:this.badgeBackgroundColor}`}get badgeElement(){return this.shadowRoot.getElementById("badge")}get headingmMSlot(){return this.shadowRoot.querySelector('slot[name="heading-m"]').assignedElements()[0]}get footerSlot(){return this.shadowRoot.querySelector('slot[name="footer"]')?.assignedElements()[0]}get price(){return this.headingmMSlot?.querySelector(x)}get checkoutLinks(){return[...this.footerSlot?.querySelectorAll(St)??[]]}async toggleStockOffer({target:t}){if(!this.stockOfferOsis)return;let r=this.checkoutLinks;if(r.length!==0)for(let a of r){await a.onceSettled();let n=a.value?.[0]?.planType;if(!n)return;let i=this.stockOfferOsis[n];if(!i)return;let c=a.dataset.wcsOsi.split(",").filter(l=>l!==i);t.checked&&c.push(i),a.dataset.wcsOsi=c.join(",")}}changeHandler(t){t.target.tagName==="MERCH-ADDON"&&this.toggleAddon(t.target)}toggleAddon(t){let r=this.checkoutLinks;if(this.variantLayout?.toggleAddon?.(t),r.length!==0)for(let a of r){let{offerType:n,planType:i}=a.value?.[0];if(!n||!i)return;let c=t.getOsi(i,n),l=a.dataset.wcsOsi.split(",").filter(h=>h!==c);t.checked&&l.push(c),a.dataset.wcsOsi=l.join(",")}}handleQuantitySelection(t){let r=this.checkoutLinks;for(let a of r)a.dataset.quantity=t.detail.option}get titleElement(){return this.querySelector(this.variantLayout?.headingSelector||".card-heading")}get title(){return this.titleElement?.textContent?.trim()}get description(){return this.querySelector('[slot="body-xs"]')?.textContent?.trim()}updateFilters(t){let r={...this.filters};Object.keys(r).forEach(a=>{if(t){r[a].order=Math.min(r[a].order||2,2);return}let n=r[a].order;n===1||isNaN(n)||(r[a].order=Number(n)+1)}),this.filters=r}includes(t){return this.textContent.match(new RegExp(t,"i"))!==null}connectedCallback(){super.connectedCallback(),m(this,F,Y()),qr(s(this,F)),m(this,it,s(this,F).Log.module(Qt)),this.id??(this.id=this.querySelector("aem-fragment")?.getAttribute("fragment")),performance.mark(`${Nt}${this.id}${st}`),this.addEventListener($t,this.handleQuantitySelection),this.addEventListener(It,this.handleAddonAndQuantityUpdate),this.addEventListener(ie,this.merchCardReady,{once:!0}),this.updateComplete.then(()=>{this.merchCardReady()}),this.addEventListener(V,this.handleAemFragmentEvents),this.addEventListener(G,this.handleAemFragmentEvents),this.addEventListener("change",this.changeHandler),this.aemFragment||setTimeout(()=>this.checkReady(),0)}disconnectedCallback(){super.disconnectedCallback(),this.variantLayout?.disconnectedCallbackHook(),this.removeEventListener($t,this.handleQuantitySelection),this.removeEventListener(V,this.handleAemFragmentEvents),this.removeEventListener(G,this.handleAemFragmentEvents),this.removeEventListener("change",this.changeHandler),this.removeEventListener(It,this.handleAddonAndQuantityUpdate)}async handleAemFragmentEvents(t){if(this.isConnected&&(t.type===V&&A(this,P,U).call(this,`AEM fragment cannot be loaded: ${t.detail.message}`,t.detail),t.type===G&&t.target.nodeName==="AEM-FRAGMENT")){let r=t.detail;Ue(r,this).then(()=>this.checkReady()).catch(a=>s(this,it).error(a))}}async checkReady(){if(!this.isConnected)return;let t=new Promise(i=>setTimeout(()=>i("timeout"),Xt));if(this.aemFragment){let i=await Promise.race([this.aemFragment.updateComplete,t]);if(i===!1){let c=i==="timeout"?`AEM fragment was not resolved within ${Xt} timeout`:"AEM fragment cannot be loaded";A(this,P,U).call(this,c,{},!1);return}}let r=[...this.querySelectorAll(ne)];r.push(...[...this.querySelectorAll(ae)].map(i=>i.source));let a=Promise.all(r.map(i=>i.onceSettled().catch(()=>i))).then(i=>i.every(c=>c.classList.contains("placeholder-resolved"))),n=await Promise.race([a,t]);if(n===!0)return performance.mark(`${Nt}${this.id}${Fr}`),this.readyEventDispatched||(this.readyEventDispatched=!0,this.dispatchEvent(new CustomEvent(le,{bubbles:!0,composed:!0}))),this;{let{duration:i,startTime:c}=performance.measure(`${Nt}${this.id}${Br}`,`${Nt}${this.id}${st}`),l={duration:i,startTime:c,...s(this,F).duration};n==="timeout"?A(this,P,U).call(this,`Contains offers that were not resolved within ${Xt} timeout`,l):A(this,P,U).call(this,"Contains unresolved offers",l)}}get aemFragment(){return this.querySelector("aem-fragment")}get addon(){return this.querySelector("merch-addon")}get quantitySelect(){return this.querySelector("merch-quantity-select")}get addonCheckbox(){return this.querySelector("merch-addon")}displayFooterElementsInColumn(){if(!this.classList.contains("product"))return;let t=this.shadowRoot.querySelector(".secure-transaction-label");(this.footerSlot?.querySelectorAll(St)).length===2&&t&&t.parentElement.classList.add("footer-column")}merchCardReady(){this.offerSelect&&!this.offerSelect.planType||(this.dispatchEvent(new CustomEvent(ce,{bubbles:!0})),this.displayFooterElementsInColumn())}get dynamicPrice(){return this.querySelector('[slot="price"]')}handleAddonAndQuantityUpdate({detail:{id:t,items:r}}){if(!t||!r?.length)return;let a=this.checkoutLinks.find(h=>h.getAttribute("data-modal-id")===t);if(!a)return;let i=new URL(a.getAttribute("href")).searchParams.get("pa"),c=r.find(h=>h.productArrangementCode===i)?.quantity,l=!!r.find(h=>h.productArrangementCode!==i);if(c&&this.quantitySelect?.dispatchEvent(new CustomEvent(de,{detail:{quantity:c},bubbles:!0,composed:!0})),this.addonCheckbox?.checked!==l){this.toggleStockOffer({target:this.addonCheckbox});let h=new Event("change",{bubbles:!0,cancelable:!0});Object.defineProperty(h,"target",{writable:!1,value:{checked:l}}),this.addonCheckbox.handleChange(h)}}};it=new WeakMap,F=new WeakMap,P=new WeakSet,U=function(t,r={},a=!0){s(this,it).error(`merch-card: ${t}`,r),this.failed=!0,a&&this.dispatchEvent(new CustomEvent(he,{detail:{...r,message:t},bubbles:!0,composed:!0}))},d(H,"properties",{id:{type:String,attribute:"id",reflect:!0},name:{type:String,attribute:"name",reflect:!0},variant:{type:String,reflect:!0},size:{type:String,attribute:"size",reflect:!0},badgeColor:{type:String,attribute:"badge-color",reflect:!0},borderColor:{type:String,attribute:"border-color",reflect:!0},badgeBackgroundColor:{type:String,attribute:"badge-background-color",reflect:!0},backgroundImage:{type:String,attribute:"background-image",reflect:!0},badgeText:{type:String,attribute:"badge-text"},actionMenu:{type:Boolean,attribute:"action-menu"},actionMenuLabel:{type:String,attribute:"action-menu-label"},customHr:{type:Boolean,attribute:"custom-hr"},consonant:{type:Boolean,attribute:"consonant"},failed:{type:Boolean,attribute:"failed",reflect:!0},spectrum:{type:String,attribute:"spectrum"},detailBg:{type:String,attribute:"detail-bg"},secureLabel:{type:String,attribute:"secure-label"},checkboxLabel:{type:String,attribute:"checkbox-label"},addonTitle:{type:String,attribute:"addon-title"},addonOffers:{type:Object,attribute:"addon-offers"},selected:{type:Boolean,attribute:"aria-selected",reflect:!0},storageOption:{type:String,attribute:"storage",reflect:!0},planType:{type:String,attribute:"plan-type",reflect:!0},settings:{type:Object,attribute:!1},stockOfferOsis:{type:Object,attribute:"stock-offer-osis",converter:{fromAttribute:t=>{if(!t)return;let[r,a,n]=t.split(",");return{PUF:r,ABM:a,M2M:n}}}},filters:{type:String,reflect:!0,converter:{fromAttribute:t=>Object.fromEntries(t.split(",").map(r=>{let[a,n,i]=r.split(":"),c=Number(n);return[a,{order:isNaN(c)?void 0:c,size:i}]})),toAttribute:t=>Object.entries(t).map(([r,{order:a,size:n}])=>[r,a,n].filter(i=>i!=null).join(":")).join(",")}},types:{type:String,attribute:"types",reflect:!0},merchOffer:{type:Object},analyticsId:{type:String,attribute:zt,reflect:!0},loading:{type:String}}),d(H,"styles",[ee,...re()]),d(H,"registerVariant",E),d(H,"getFragmentMapping",Ct);customElements.define(Qt,H);export{H as MerchCard};
