@@ -10,7 +10,7 @@ import Assets from './panels/assets.js';
 const HEADING = 'Milo Preflight';
 const IMG_PATH = '/blocks/preflight/img';
 
-const CHECK_API = 'https://spacecat.experiencecloud.live/api/ci';
+const CHECK_API = 'https://spacecat.experiencecloud.live/api/v1';
 const CHECK_KEY = (() => {
   const storedKey = sessionStorage.getItem('preflight-key');
   if (storedKey) return storedKey;
@@ -132,7 +132,13 @@ async function getJobId() {
         'x-api-key': CHECK_KEY,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ pageUrl: window.location.href }),
+      body: JSON.stringify(
+        {
+          step: 'IDENTIFY',
+          urls: [window.location.href,
+          ],
+        },
+      ),
     });
     const data = await res.json();
     return data.jobId;
