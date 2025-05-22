@@ -230,7 +230,7 @@ p.preflight-date-wrapper .disabled-publish {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 40em;
+  max-width: 30em;
   width: 100%;
 }
 
@@ -241,7 +241,6 @@ span.preflight-time {
 .preflight-actions {
   display: grid;
   grid-template-areas: 'select empty preview publish';
-  grid-template-columns: auto 1fr 140px 140px;
   position: absolute;
   bottom: 0;
   left: 0;
