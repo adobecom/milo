@@ -74,8 +74,7 @@ export class AemFragment extends HTMLElement {
         url: null,
         retryCount: 0,
         stale: false,
-        startTime: null,
-        duration: null,
+        measure: null,
         status: null,
     };
     #service = null;
@@ -149,6 +148,7 @@ export class AemFragment extends HTMLElement {
         let response;
         try {
             this.#fetchInfo.stale = false;
+            this.#fetchInfo.url = endpoint;
             response = await masFetch(endpoint, {
                 cache: 'default',
                 credentials: 'omit',
@@ -159,7 +159,6 @@ export class AemFragment extends HTMLElement {
                 measureName,
                 startMarkName,
             ));
-            this.#fetchInfo.url = response.url;
             this.#fetchInfo.retryCount = response.retryCount;
             if (!response?.ok) {
                 throw new MasError('Unexpected fragment response', {
@@ -169,7 +168,6 @@ export class AemFragment extends HTMLElement {
             }
             return await response.json();
         } catch (e) {
-            this.#fetchInfo.url = endpoint;
             this.#fetchInfo.measure = printMeasure(performance.measure(
                 measureName,
                 startMarkName,
