@@ -5,16 +5,10 @@ const API_DOMAIN = 'https://jvdtssh5lkvwwi4y3kbletjmvu0qctxj.lambda-url.us-west-
 
 export const API_URLS = {
   pageList: `${API_DOMAIN}/get-pages`,
-  pageDetails: `${API_DOMAIN}/get-page?id=`,
+  pageDetails: `${API_DOMAIN}/get-page`,
   pageDataByURL: `${API_DOMAIN}/get-page?url=`,
   save: `${API_DOMAIN}/save-mep-call`,
   report: `${API_DOMAIN}/get-report`,
-  metadata: {
-    cc: 'https://main--cc--adobecom.aem.live/metadata-optimization.json',
-    dc: 'https://main--dc--adobecom.aem.live/metadata-optimization.json',
-    express: 'https://main--express-milo--adobecom.aem.live/metadata-optimization.json',
-    bacom: 'https://main--bacom--adobecom.aem.live/metadata-optimization.json',
-  },
 };
 
 function updatePreviewButton(popup, pageId) {

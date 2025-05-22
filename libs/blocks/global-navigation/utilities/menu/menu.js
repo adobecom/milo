@@ -145,12 +145,20 @@ const decorateGnavImage = (elem) => {
 const decoratePromo = (elem, index) => {
   const isDarkTheme = elem.matches('.dark');
   const isImageOnly = elem.matches('.image-only');
+  const promoHeader = elem.querySelector('p > strong');
   const imageElem = elem.querySelector('picture');
 
   if (!isImageOnly) {
     const content = [...elem.querySelectorAll(':scope > div')]
       .find((section) => !(section.querySelector('picture') instanceof HTMLElement));
     content?.classList.add('feds-promo-content');
+  }
+
+  if (promoHeader?.textContent.trim()) {
+    const headingElem = toFragment`<h2 class="feds-promo-header">
+        ${promoHeader.textContent.trim()}
+      </h2>`;
+    promoHeader.parentElement.replaceWith(headingElem);
   }
 
   decorateElements({ elem, className: 'feds-promo-link', index });

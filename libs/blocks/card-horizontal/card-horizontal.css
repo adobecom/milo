@@ -72,7 +72,6 @@
   border-radius: 4px;
   gap: var(--spacing-s);
   border: 1px solid #EAEAEA;
-  max-height: 130px;
   max-width: 600px;
   margin: 0 auto;
 }
@@ -90,7 +89,6 @@
 
 .card-horizontal .foreground .card-block .card-content {
   padding-right: var(--spacing-s);
-  margin: 16px 0;
   /* stylelint-disable-next-line value-no-vendor-prefix */
   display: -webkit-box;
   -webkit-line-clamp: 5;
