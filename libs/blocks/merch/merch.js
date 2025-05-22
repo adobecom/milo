@@ -806,6 +806,10 @@ export function reopenModal(cta) {
   }
 }
 
+export function resetReopenStatus() {
+  modalReopened = false;
+}
+
 export async function buildCta(el, params) {
   const large = !!el.closest('.marquee');
   const strong = el.firstElementChild?.tagName === 'STRONG' || el.parentElement?.tagName === 'STRONG';
