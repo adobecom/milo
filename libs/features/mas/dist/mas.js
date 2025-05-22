@@ -3539,7 +3539,7 @@ merch-card[variant="ccd-slice"] [slot='body-s'] a.spectrum-Link {
             --merch-card-fries-price-line-height: 17px;
             --merch-card-fries-outline: transparent;
             --merch-card-custom-border-width: 1px;
-            max-width: var(--merch-card-fries-min-width);
+            max-width: var(--merch-card-fries-max-width);
             min-height: var(--merch-card-fries-min-height);
             background-color: var(
                 --merch-card-custom-background-color,
