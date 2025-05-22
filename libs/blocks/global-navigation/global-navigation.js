@@ -960,6 +960,7 @@ class Gnav {
     } else if (isExpanded && this.isLocalNav()) {
       enableMobileScroll();
     }
+    ['main', 'footer'].forEach((ele) => document.querySelector(ele)?.setAttribute('aria-hidden', !isExpanded));
     toggle?.setAttribute('aria-expanded', !isExpanded);
     document.body.classList.toggle('disable-scroll', !isExpanded);
     this.elements.navWrapper?.classList?.toggle('feds-nav-wrapper--expanded', !isExpanded);
