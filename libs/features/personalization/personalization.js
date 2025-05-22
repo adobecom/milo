@@ -1416,12 +1416,25 @@ const awaitMartech = () => new Promise((resolve) => {
   window.addEventListener(MARTECH_RETURNED_EVENT, listener, { once: true });
 });
 
+function getMmmSave({ config, manifests, mepSampleRate }) {
+  if (config.env?.name !== 'prod' || !config.mep || mepSampleRate === 'off') return false;
+  const { preview, target } = config.mep;
+  if (preview) return true;
+  if (!target || !manifests?.length) return false;
+  let sampleRateDenom = 1000;
+  const mepSampleRateNum = Number(mepSampleRate);
+  if (!Number.isNaN(mepSampleRateNum) && mepSampleRate > sampleRateDenom) {
+    sampleRateDenom = mepSampleRateNum;
+  }
+  if (Math.random() < 1 / sampleRateDenom) return true;
+  return false;
+}
 export async function init(enablements = {}) {
   let manifests = [];
   const {
     mepParam, mepHighlight, mepButton, pzn, promo, enablePersV2,
     target, ajo, countryIPPromise, mepgeolocation, targetInteractionPromise, calculatedTimeout,
-    postLCP,
+    postLCP, mepSampleRate,
   } = enablements;
   const config = getConfig();
   if (postLCP) {
@@ -1466,7 +1479,7 @@ export async function init(enablements = {}) {
   }
   try {
     if (manifests?.length) await applyPers({ manifests });
-    if (config.mep?.preview) await import('./preview.js').then(({ saveToMmm }) => saveToMmm());
+    config.mep.mmmSave = getMmmSave({ config, manifests, mepSampleRate });
   } catch (e) {
     log(`MEP Error: ${e.toString()}`);
     window.lana?.log(`MEP Error: ${e.toString()}`);

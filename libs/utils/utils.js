@@ -1361,6 +1361,7 @@ async function checkForPageMods() {
   const xlg = martech === 'off' ? false : getMepEnablement('xlg');
   const ajo = martech === 'off' ? false : getMepEnablement('ajo');
   const mepgeolocation = martech === 'off' ? false : getMepEnablement('mepgeolocation');
+  const mepSampleRate = getMepEnablement('mepSampleRate');
 
   if (!(pzn || target || promo || mepParam
     || mepHighlight || mepButton || mepParam === '' || xlg || ajo)) return;
@@ -1418,6 +1419,7 @@ async function checkForPageMods() {
     targetInteractionPromise,
     calculatedTimeout,
     enablePersV2,
+    mepSampleRate,
   });
 }
 
@@ -1515,6 +1517,10 @@ export async function loadDeferred(area, blocks, config) {
   if (config.mep?.preview) {
     import('../features/personalization/preview.js')
       .then(({ default: decoratePreviewMode }) => decoratePreviewMode());
+  }
+  if (config.mep?.mmmSave) {
+    import('../features/personalization/mmm.js')
+      .then(({ default: saveToMmm }) => saveToMmm());
   }
   if (config?.dynamicNavKey && config?.env?.name !== 'prod') {
     const { miloLibs } = config;
