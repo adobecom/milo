@@ -1004,7 +1004,7 @@ class Gnav {
       if (this.isToggleExpanded()) setHamburgerPadding();
     };
 
-    toggle.addEventListener('click', () => logErrorFor(onToggleClick, 'Toggle click failed', 'gnav', 'e'));
+    toggle.addEventListener('click', () => logErrorFor(onToggleClick, 'Toggle click failed!', 'gnav', 'e'));
 
     const onDeviceChange = () => {
       if (isDesktop.matches) {
