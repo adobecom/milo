@@ -87,6 +87,11 @@
                         ai.planType = 'PUF';
                         await ai.updateComplete;
                         expect(ai.innerText).to.contain('US$599.88/yr');
+                        expect(ai.getOsi('ABM', 'BASE')).to.be.equal('abm');
+                        // fallback to base, if PROMOTION is not available
+                        expect(ai.getOsi('ABM', 'PROMOTION')).to.be.equal(
+                            'abm',
+                        );
                         ai.planType = 'ABM';
                         await ai.updateComplete;
                         expect(ai.innerText).to.contain('US$54.99/mo');
