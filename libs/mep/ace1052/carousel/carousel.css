@@ -723,6 +723,8 @@ html[dir="rtl"] .carousel .move-indicators {
   }
 }
 
+/* ##mweb changes## */
+
 .carousel.dark.disable-buttons .carousel-button,
 .dark .carousel.disable-buttons .carousel-button {
   height: 38px;
