@@ -354,8 +354,9 @@ function mobileSwipeDetect(carouselElements) {
 
     // ##mweb## Get current active slide index for mweb
     const activeSlideIndex = [...slides].findIndex((slide) => slide.classList.contains('active'));
-    if ((activeSlideIndex === 0 && carouselElements.direction === 'right')
-        || (activeSlideIndex === slides.length - 1 && carouselElements.direction === 'left')) {
+    if (carouselElements.el.classList.contains('disable-buttons')
+      && ((activeSlideIndex === 0 && carouselElements.direction === 'right')
+      || (activeSlideIndex === slides.length - 1 && carouselElements.direction === 'left'))) {
       swipe.xStart = 0;
       swipe.xEnd = 0;
       return;
