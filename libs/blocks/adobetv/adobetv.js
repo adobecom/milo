@@ -29,8 +29,9 @@ export default function init(a) {
     if (videoId) {
       window.fetch(`https://video.tv.adobe.com/v/${videoId}?format=json-ld`)
         .then((res) => res.json())
-        .then((info) => {
-          iframe.setAttribute('title', `${info?.jsonLinkedData?.name}`);
+        .then(async (info) => {
+          const { setDialogAndElementAttributes } = await import('../../scripts/accessibility.js');
+          setDialogAndElementAttributes({ element: iframe, title: `${info?.jsonLinkedData?.name}` });
         });
     }
 

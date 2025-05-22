@@ -13,9 +13,12 @@ function sendToLana(lanaData) {
     downlink: window.navigator?.connection?.downlink || '',
     loggedIn: window.adobeIMS?.isSignedInUser() || false,
     os: (ua.match(/Windows/) && 'win')
+      || (ua.match(/CriOS/) && 'iOS')
       || (ua.match(/Mac/) && 'mac')
       || (ua.match(/Android/) && 'android')
       || (ua.match(/Linux/) && 'linux')
+      || '',
+    tablet: (ua.match(/(ipad|iPad|tablet|(android(?!.*mobile))|(windows(?!.*phone).*touch))/) && 'yes')
       || '',
     windowHeight: window.innerHeight,
     windowWidth: window.innerWidth,
@@ -85,7 +88,7 @@ function observeLCP(lanaData, delay, mep) {
     const lastEntry = entries[entries.length - 1]; // Use the latest LCP candidate
     lanaData.lcp = parseInt(lastEntry.startTime, 10);
     const lcpEl = lastEntry.element;
-    lanaData.lcpElType = lcpEl.nodeName.toLowerCase();
+    lanaData.lcpElType = lcpEl?.nodeName?.toLowerCase() || 'Element Was Replaced';
     lanaData.lcpEl = getElementInfo(lcpEl);
     lanaData.lcpSectionOne = boolStr(sectionOne.contains(lcpEl));
     const closestFrag = lcpEl.closest('.fragment');
@@ -115,8 +118,11 @@ function logMepExperiments(lanaData, mep) {
 export default function webVitals(mep, { delay = 1000, sampleRate = 50 } = {}) {
   const isChrome = () => {
     const nav = window.navigator;
-    return nav.userAgent.includes('Chrome') && nav.vendor.includes('Google');
+    const desktopChrome = nav.userAgent.includes('Chrome') && nav.vendor.includes('Google');
+    const iOSChrome = nav.userAgent.includes('CriOS') && nav.vendor.includes('Google');
+    return desktopChrome || iOSChrome;
   };
+
   if (!isChrome() || Math.random() * 100 > sampleRate) return;
   const getConsent = () => window.adobePrivacy?.activeCookieGroups().indexOf('C0002') !== -1;
   function handleEvent() {
