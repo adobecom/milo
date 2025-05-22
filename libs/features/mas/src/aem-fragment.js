@@ -200,7 +200,6 @@ export class AemFragment extends HTMLElement {
                 this.#fetchPromise,
                 Promise.resolve(false),
             ]);
-            console.log('ready', ready);
             if (!ready) return; // already fetching data
         }
         if (flushCache) {
@@ -256,7 +255,7 @@ export class AemFragment extends HTMLElement {
         let fragment = cache.get(this.#fragmentId);
         if (fragment) {
             this.#rawData = fragment;
-            return true;
+            return;
         }
         const { masIOUrl, wcsApiKey, locale } = this.#service.settings;
         const endpoint = `${masIOUrl}/fragment?id=${this.#fragmentId}&api_key=${wcsApiKey}&locale=${locale}`;
