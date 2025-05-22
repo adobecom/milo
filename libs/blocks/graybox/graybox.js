@@ -380,7 +380,11 @@ export default function init(grayboxEl) {
   const grayboxParam = url.searchParams.get('graybox');
 
   /* c8 ignore next 9 */
-  const enableGraybox = grayboxParam === 'on' || url.hostname.includes('graybox.adobe.com') || url.hostname.includes('localhost') || url.hostname.includes('-graybox--') || getMetadata('project') === 'graybox';
+  const enableGraybox = grayboxParam === 'on'
+    || url.hostname.endsWith('graybox.adobe.com')
+    || url.hostname.includes('localhost')
+    || url.hostname.includes('-graybox--')
+    || getMetadata('project') === 'graybox';
 
   if (grayboxParam === 'off' || !enableGraybox) {
     return;
