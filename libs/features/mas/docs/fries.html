@@ -1,0 +1,144 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="UTF-8" />
+        <title>Fries Gallery</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <link rel="stylesheet" href="spectrum.css" />
+        <link rel="stylesheet" href="styles.css" />
+        <link
+            rel="stylesheet"
+            href="https://p.typekit.net/p.css?s=1&k=hah7vzn&ht=tk&f=7180.7181.7182.7183.22474.22749.22750.22751.22753&a=8634977&app=typekit&e=css"
+        />
+        <link rel="stylesheet" href="https://use.typekit.net/hah7vzn.css" />
+        <script src="/libs/deps/lit-all.min.js" type="module"></script>
+
+        <script>
+            function toggleTheme(theme) {
+                document.body.className = 'spectrum spectrum--medium';
+                document.body.classList.add(`spectrum--${theme}`);
+                document
+                    .querySelector('sp-theme')
+                    ?.setAttribute('color', theme);
+
+                const url = new URL(window.location.href);
+                url.searchParams.set('theme', theme);
+
+                window.location.href = url.toString();
+            }
+        </script>
+        <script type="module" src="./mas-sidenav.js"></script>
+        <script type="module">
+            import { init } from './common.js';
+            init();
+        </script>
+        <script
+            type="module"
+            src="../../../features/spectrum-web-components/dist/button.js"
+        ></script>
+        <script
+            type="module"
+            src="../../../features/spectrum-web-components/dist/tooltip.js"
+        ></script>
+        <script
+            type="module"
+            src="../../../features/spectrum-web-components/dist/overlay.js"
+        ></script>
+        <script
+            type="module"
+            src="../../../features/spectrum-web-components/dist/theme.js"
+        ></script>
+    </head>
+
+<body class="spectrum spectrum--medium spectrum--light">
+  <sp-theme scale="medium" color="light" style="display: contents">
+    <aside is="mas-sidenav"></aside>
+    <main>
+      <div class="fries-gallery-content gallery-content">
+        <h1 id="ah-gallery" tabindex="-1">
+            Fries Gallery
+            <a
+                class="header-anchor"
+                href="#ah-gallery"
+                title="Permalink to this heading"
+                >#</a
+            >
+        </h1>
+        <div class="theme-selection">
+            Switch Theme:
+            <a
+                class="spectrum-Link spectrum-Link--secondary theme-toggle"
+                href="#"
+                onclick="toggleTheme('dark'); return false;"
+                >Dark</a
+            >
+            OR
+            <a
+                class="spectrum-Link spectrum-Link--secondary theme-toggle"
+                href="#"
+                onclick="toggleTheme('light'); return false;"
+                >Light</a
+            >
+        </div>
+        <div>
+            Switch Locale:
+            <a
+                class="spectrum-Link spectrum-Link--secondary"
+                href="?locale=en_US"
+                >en_US</a
+            >
+            OR
+            <a
+                class="spectrum-Link spectrum-Link--secondary"
+                href="?locale=fr_FR"
+                >fr_FR</a
+            >
+        </div>
+        <div>
+            Switch country/language:
+            <a
+                class="spectrum-Link spectrum-Link--secondary"
+                href="?country=US&language=en"
+                >Country: US, language: en</a
+            >
+            OR
+            <a
+                class="spectrum-Link spectrum-Link--secondary"
+                href="?country=FR&language=fr"
+                >Country: FR, language: fr</a
+            >
+        </div>
+            <div class="fries-gallery-content">
+                <h1 id="fries-gallery">Fries Gallery</h1>
+                <a class="fries-link" target="_blank" href="https://main--milo--adobecom.aem.page/merch/mas/fries">Test Fries collection page ↗</a>
+                
+                <h2 id="crd-mrch-fries">Fries Cards <a class="header-anchor" href="#crd-mrch-fries" title="Permalink to this heading">#</a></h2>
+                <div class="fries-merch-cards">
+                    <merch-card><aem-fragment fragment="8bd9c722-8b3c-4c65-b135-7f6a1b84f800" title="Creative Cloud All Apps — with Acrobat Pro"></aem-fragment></merch-card>
+                    <merch-card><aem-fragment fragment="06b88745-45eb-42a0-ab5d-f779b18525bf" title="Photography plan 1TB"></aem-fragment></merch-card>
+                    <merch-card><aem-fragment fragment="a7179d35-1dd2-4f9a-9223-2f8c7062acc7" title="Adobe Stock — access 700M+ images, videos, and more, plus Gen AI all in one plan"></aem-fragment></merch-card>
+                    <merch-card><aem-fragment fragment="e243cb07-cb53-439d-bb62-d80f0fd719e5" title="AI Assistant for Acrobat — try it for 7 days"></aem-fragment></merch-card>
+                </div>
+            </div>  
+      </div>
+      </main>
+  </sp-theme>
+    <script type="module">
+        document.querySelectorAll('code.demo').forEach(el => {
+            const targetContainer = document.createElement('div');
+            targetContainer.classList.toggle('light', el.classList.contains('light'));
+            targetContainer.innerHTML = `<h4>Demo: </h4><div class="demo-container">${el.textContent}</div>`;
+            el.parentElement.after(targetContainer);
+            // Extract and evaluate <script> tags
+            const scriptTags = targetContainer.getElementsByTagName('script');
+            for (let i = 0; i < scriptTags.length; i++) {
+                const script = document.createElement('script');
+                script.type = 'module';
+                script.text = scriptTags[i].text;
+                document.body.appendChild(script); // Appends to the document to execute
+                scriptTags[i].remove(); // Remove the script tag
+            }
+        });
+    </script>
+</body>
+</html> 
