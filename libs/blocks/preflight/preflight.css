@@ -231,6 +231,7 @@ p.preflight-date-wrapper .disabled-publish {
   overflow: hidden;
   text-overflow: ellipsis;
   max-width: 40em;
+  width: 100%;
 }
 
 span.preflight-time {
