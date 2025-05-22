@@ -47,12 +47,12 @@ describe('Cross Cloud Menu', () => {
   });
 
   describe('small desktop', () => {
-    it('should not render the Cross Cloud Menu', async () => {
+    it('should render the Cross Cloud Menu', async () => {
       await createFullGlobalNavigation({ globalNavigation: globalNavigationCrossCloud, viewport: 'smallDesktop' });
       document.querySelector(`${selectors.largeMenu} ${selectors.navLink}`).click();
 
       expect(isElementVisible(document.querySelector(selectors.crossCloudMenuWrapper)))
-        .to.equal(false);
+        .to.equal(true);
     });
   });
 

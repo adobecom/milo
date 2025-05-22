@@ -306,9 +306,7 @@ export class MerchCard extends LitElement {
         for (const element of elements) {
             const { offerType, planType } = element.value?.[0];
             if (!offerType || !planType) return;
-            const addonOsi = merchAddon.querySelector(
-                `p[data-plan-type="${planType}"] ${SELECTOR_MAS_INLINE_PRICE}[data-offer-type="${offerType}"]`,
-            )?.dataset?.wcsOsi;
+            const addonOsi = merchAddon.getOsi(planType, offerType);
             const osis = element.dataset.wcsOsi
                 .split(',')
                 .filter((osi) => osi !== addonOsi);

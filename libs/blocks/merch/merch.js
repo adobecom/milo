@@ -259,6 +259,18 @@ export const CHECKOUT_ALLOWED_KEYS = [
   'marketSegment',
 ];
 
+/**
+ * Used when 3in1 modals are configured with ms=e or cs=t extra paramter, but 3in1 is disabled.
+ * Dexter modals should deeplink to plan=edu or plan=team tabs.
+ * @type {Record<string, string>}
+ */
+const TAB_DEEPLINK_MAPPING = {
+  ms: 'plan',
+  cs: 'plan',
+  e: 'edu',
+  t: 'team',
+};
+
 export const CC_SINGLE_APPS_ALL = CC_SINGLE_APPS.flatMap((item) => item);
 
 export const CC_ALL_APPS = ['CC_ALL_APPS',
@@ -516,7 +528,11 @@ export function appendExtraOptions(url, extraOptions) {
   }
   Object.keys(extraOptionsObj).forEach((key) => {
     if (CHECKOUT_ALLOWED_KEYS.includes(key)) {
-      urlWithExtraOptions.searchParams.set(key, extraOptionsObj[key]);
+      const value = extraOptionsObj[key];
+      urlWithExtraOptions.searchParams.set(
+        TAB_DEEPLINK_MAPPING[key] ?? key,
+        TAB_DEEPLINK_MAPPING[value] ?? value,
+      );
     }
   });
   return urlWithExtraOptions.href;
@@ -525,10 +541,10 @@ export function appendExtraOptions(url, extraOptions) {
 async function openExternalModal(url, getModal, extraOptions) {
   await loadStyle(`${getConfig().base}/blocks/iframe/iframe.css`);
   const root = createTag('div', { class: 'milo-iframe' });
-  const urlWithTabName = appendTabName(url);
-  const urlWithExtraOptions = appendExtraOptions(urlWithTabName, extraOptions);
+  const urlWithExtraOptions = appendExtraOptions(url, extraOptions);
+  const urlWithTabName = appendTabName(urlWithExtraOptions);
   createTag('iframe', {
-    src: urlWithExtraOptions,
+    src: urlWithTabName,
     frameborder: '0',
     marginwidth: '0',
     marginheight: '0',
@@ -828,6 +844,12 @@ export async function buildCta(el, params) {
       cta.setAttribute('aria-label', ariaLabel);
     });
   }
+
+  // @see https://jira.corp.adobe.com/browse/MWPW-173470
+  cta.onceSettled().then(() => {
+    if (getConfig()?.locale?.prefix === '/kr' && cta.value[0]?.offerType === OFFER_TYPE_TRIAL) cta.remove();
+  });
+
   return cta;
 }
 

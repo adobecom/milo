@@ -25,6 +25,12 @@ const decorateHeadline = (elem, index) => {
       ${elem.textContent.trim()}
     </div>`;
 
+  const headlineClickHandler = (e) => {
+    if (isDesktop.matches) return;
+    trigger({ element: headline, event: e, type: 'headline' });
+    setActiveDropdown(headline);
+  };
+
   const setHeadlineAttributes = () => {
     if (isDesktop.matches) {
       headline.setAttribute('role', 'heading');
@@ -33,6 +39,7 @@ const decorateHeadline = (elem, index) => {
       headline.removeAttribute('aria-haspopup', true);
       headline.removeAttribute('aria-expanded', false);
       headline.removeAttribute('daa-ll');
+      headline.removeEventListener('click', headlineClickHandler);
     } else {
       headline.setAttribute('role', 'button');
       headline.setAttribute('tabindex', 0);
@@ -40,18 +47,12 @@ const decorateHeadline = (elem, index) => {
       headline.setAttribute('aria-haspopup', true);
       headline.setAttribute('aria-expanded', false);
       headline.setAttribute('daa-ll', getAnalyticsValue(headline.textContent, index));
+      headline.addEventListener('click', headlineClickHandler);
     }
   };
 
   setHeadlineAttributes();
   isDesktop.addEventListener('change', setHeadlineAttributes);
-
-  headline.addEventListener('click', (e) => {
-    if (isDesktop.matches) return;
-
-    trigger({ element: headline, event: e, type: 'headline' });
-    setActiveDropdown(headline);
-  });
 
   // Since heading is turned into a div, it can be safely removed
   elem.remove();
@@ -144,12 +145,20 @@ const decorateGnavImage = (elem) => {
 const decoratePromo = (elem, index) => {
   const isDarkTheme = elem.matches('.dark');
   const isImageOnly = elem.matches('.image-only');
+  const promoHeader = elem.querySelector('p > strong');
   const imageElem = elem.querySelector('picture');
 
   if (!isImageOnly) {
     const content = [...elem.querySelectorAll(':scope > div')]
       .find((section) => !(section.querySelector('picture') instanceof HTMLElement));
     content?.classList.add('feds-promo-content');
+  }
+
+  if (promoHeader?.textContent.trim()) {
+    const headingElem = toFragment`<h2 class="feds-promo-header">
+        ${promoHeader.textContent.trim()}
+      </h2>`;
+    promoHeader.parentElement.replaceWith(headingElem);
   }
 
   decorateElements({ elem, className: 'feds-promo-link', index });
@@ -387,4 +396,4 @@ const decorateMenu = (config) => logErrorFor(async () => {
   }
 }, 'Decorate menu failed', 'gnav-menu', 'i');
 
-export default { decorateMenu, decorateLinkGroup };
+export default { decorateMenu, decorateLinkGroup, decorateHeadline };

@@ -150,14 +150,14 @@ export default class Carousel {
  * @param {string} tagOrClass - The tag name or class name of the element containing the text.
  * @returns {Promise<string>} The text content of the specified carousel slide.
  */
-  async getSlideText(index, tagOrClass, elVisibility = 'visible') {
+  async getSlideText(index, tagOrClass) {
     let slideSelector = `.carousel-slide:nth-child(${index}) `;
     if (tagOrClass.startsWith('.')) {
       slideSelector += tagOrClass;
     } else {
       slideSelector += `${tagOrClass}`;
     }
-    await this.page.waitForSelector(slideSelector, { state: elVisibility });
+    await this.page.waitForSelector(slideSelector);
     const slide = await this.page.$(slideSelector);
     const text = await slide.textContent();
     return text;

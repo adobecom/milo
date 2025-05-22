@@ -204,19 +204,22 @@ function getOrGenerateUserId() {
 This function constructs the page name that will be used for analytics, taking into account the page's locale and the modified URL structure.
 
 **Logic:**
-- The `pathname` is split by the `locale.prefix` and cleaned up by removing unnecessary segments (like language prefixes).
-- It then combines the host and the modified path to form a page name, which is returned for analytics tracking.
+- Extracts the `hostname` and `pathname` from the current URL.
+- Removes unnecessary segments (like language prefixes) from the `pathname`.
+- Combines the `hostname` and the cleaned-up `pathname` to form a page name.
 
 ```javascript
-function getPageNameForAnalytics({ locale }) {
-  const { host, pathname } = new URL(window.location.href);
-  const [modifiedPath] = pathname.split('/').filter((x) => x !== locale.prefix).join(':').split('.');
-  return `${host.replace('www.', '')}:${modifiedPath}`;
+function getPageNameForAnalytics() {
+  const { hostname, pathname } = new URL(window.location.href);
+  const urlRegions = Object.fromEntries(['ae_ar', 'ae_en', 'africa', 'apac', ...].map((r) => [r, 1]));
+
+  const path = pathname.replace(/\.(aspx|php|html)/g, '').split('/').filter((s) => s && !urlRegions[s.toLowerCase()]).join(':');
+  return `${hostname.replace('www.', '')}${path ? `:${path}` : ''}`;
 }
 ```
 
 **Returns:**
-- `String`: A formatted page name based on the current URL, cleaned up by removing language-specific prefixes.
+- `String`:  A formatted page name based on the current URL, cleaned up by removing language-specific prefixes.
 
 ---
 
@@ -255,7 +258,219 @@ export const getUpdatedContext = () => ({
 **Returns:**
 - `Object`: Returns a detailed context object with information about the device, environment, and place.
 
+---
 
+## **9. `resolveAgiCampaignAndFlag()`**
+
+**Description:**
+This function resolves the AGI campaign and flag based on the current page, cookies, and user consent. It determines whether the user is part of a specific campaign or domain and sets the appropriate cookie values.
+
+**Logic:**
+- Checks if the user has consented to tracking using the `OptanonConsent` cookie.
+- Determines if the user is on a specific campaign page or domain (e.g., Acrobat campaign pages).
+- Sets or updates the `agiCamp` cookie with the appropriate value based on the campaign or domain.
+
+```javascript
+function resolveAgiCampaignAndFlag() {
+  const { hostname, pathname, href } = window.location;
+  const consentValue = getCookie('OptanonConsent');
+  const EXPIRY_TIME_IN_DAYS = 90;
+  const CAMPAIGN_PAGE_VALUE = '1';
+  const ACROBAT_DOMAIN_VALUE = '2';
+
+  if (!consentValue?.includes('C0002:1')) {
+    return { agiCampaign: false, setAgICampVal: false };
+  }
+
+  const agiCookie = getCookie('agiCamp');
+  const setAgiCookie = (value) => {
+    setCookie('agiCamp', value, {
+      expires: EXPIRY_TIME_IN_DAYS,
+      domain: getDomainWithoutWWW(),
+    });
+  };
+
+  const campaignRegex = /ttid=(all-in-one|reliable|versatile|combine-organize-e-sign|webforms-edit-e-sign)/;
+  const isGotItPage = pathname.includes('/acrobat/campaign/acrobats-got-it.html') && campaignRegex.test(href);
+  const isAcrobatDomain = hostname === 'acrobat.adobe.com' || (hostname === 'www.adobe.com' && pathname.includes('/acrobat'));
+
+  let agiCampaign = false;
+
+  if (isGotItPage && (!agiCookie || agiCookie !== ACROBAT_DOMAIN_VALUE)) {
+    setAgiCookie(CAMPAIGN_PAGE_VALUE);
+    agiCampaign = CAMPAIGN_PAGE_VALUE;
+  } else if (isAcrobatDomain && (!agiCookie || agiCookie !== CAMPAIGN_PAGE_VALUE)) {
+    if (agiCookie === ACROBAT_DOMAIN_VALUE) return { agiCampaign: false, setAgICampVal: false };
+    setAgiCookie(ACROBAT_DOMAIN_VALUE);
+    agiCampaign = ACROBAT_DOMAIN_VALUE;
+  }
+
+  const setAgICampVal = agiCampaign === CAMPAIGN_PAGE_VALUE || agiCampaign === ACROBAT_DOMAIN_VALUE;
+  return { agiCampaign, setAgICampVal };
+}
+```
+
+**Returns:**
+- `Object`: An object containing -
+        agiCampaign (String|Boolean): The campaign value or false if no campaign is active.
+        setAgICampVal (Boolean): Whether the campaign value was set.
+
+---
+
+## **10. `getGlobalPrivacyControl()`**
+
+**Description:**
+This function checks if the browser's Global Privacy Control (GPC) signal is enabled and returns its value.
+
+**Logic:**
+- Checks if the `navigator.globalPrivacyControl` property exists.
+- If it exists, returns its value as a string (`'true'` or `'false'`).
+- If it does not exist, returns an empty string.
+
+```javascript
+function getGlobalPrivacyControl() {
+  if (!navigator || !navigator.globalPrivacyControl) return '';
+  return navigator.globalPrivacyControl.toString();
+}
+``` 
+
+**Returns:**
+- String: 'true' if GPC is enabled, 'false' if disabled, or an empty string if not supported.
+---
+
+## **11. `getEntityId()`**
+
+**Description:**
+This function retrieves the entity ID from the meta tag or returns a hardcoded value for specific URLs.
+
+**Logic:**
+- If the current URL matches `https://www.adobe.com/express/`, it returns a hardcoded entity ID.
+- Otherwise, it searches for a meta tag with the name `entity_id` and retrieves its `content` attribute.
+
+```javascript
+function getEntityId() {
+  if (window.location.href === 'https://www.adobe.com/express/') {
+    return 'a2c4e4e4-eaa9-11ed-a05b-0242ac120003';
+  }
+  const metaTag = document.querySelector('meta[name="entity_id"]');
+  return metaTag ? metaTag.getAttribute('content') : null;
+}
+
+**Returns:**
+- String: The entity ID from the meta tag or a hardcoded value for specific URLs.
+---
+
+## **12. `getProcessedPageNameForAnalytics()`**
+
+**Description:**
+This function processes the page name further by applying specific filters for different Adobe domains and their associated paths.
+
+**Logic:**
+- Retrieves the page name using `getPageNameForAnalytics()`.
+- Splits the page name into an array and applies filters based on predefined rules for specific domains (e.g., `lightroom.adobe.com`, `stock.adobe.com`).
+- Returns the filtered page name.
+
+```javascript
+function getProcessedPageNameForAnalytics() {
+  const pageName = getPageNameForAnalytics().toLowerCase();
+  const pageArray = pageName.split(':');
+
+  const FILTERS = {
+    lightroom: ['lightroom.adobe.com', 'embed', 'shares', ...],
+    stock: ['stock.adobe.com', '3d-assets', 'aaid', ...],
+    ...
+  };
+
+  for (const [, filter] of Object.entries(FILTERS)) {
+    if (pageName.startsWith(filter[0])) {
+      const filtered = pageArray.filter((value) => filter.includes(value)).join(':');
+      return filtered;
+    }
+  }
+
+  return pageName;
+}
+```
+
+**Returns:**
+- `String`:  A processed page name based on predefined filters for specific domains.
+
+---
+
+## **13. `getPrimaryProduct()`**
+
+**Description:**
+This function retrieves the primary product name from the meta tag `primaryproductname`.
+
+**Logic:**
+- Searches for a meta tag with the name `primaryproductname`.
+- Returns the `content` attribute of the meta tag if it exists, or `null` otherwise.
+
+```javascript
+function getPrimaryProduct() {
+  const productNameMeta = document.querySelector('meta[name="primaryproductname"]');
+  return productNameMeta?.content || null;
+}
+```
+
+**Returns:**
+- `String`:  The primary product name or null if the meta tag is not found.
+
+---
+
+## **14. `getLanguageCode()`**
+
+**Description:**
+This function determines the language code based on the provided locale object. It falls back to `'en-US'` if the locale or region is undefined.
+
+**Logic:**
+- Extracts the `region` property from the `locale` object.
+- Maps the region to a language code using the `LOCALE_MAPPINGS` constant.
+- Falls back to `'en-US'` if the region is not found.
+
+```javascript
+function getLanguageCode(locale) {
+  const region = locale?.region || '';
+  return LOCALE_MAPPINGS[region] || LOCALE_MAPPINGS[''];
+}
+```
+
+**Returns:**
+- `String`:  The language code corresponding to the region, or 'en-US' as a fallback.
+
+---
+
+## **15. `getUpdatedAcrobatVisitAttempt()`**
+
+**Description:**
+This function tracks and updates the number of visits to Acrobat-related pages on Adobe domains.
+
+**Logic:**
+- Checks if the user is on an Acrobat-related page on Adobe domains.
+- If the user has consented to tracking (via the `OptanonConsent` cookie), increments the visit count stored in `localStorage`.
+- Returns the updated visit count.
+
+```javascript
+function getUpdatedAcrobatVisitAttempt() {
+  const { hostname, pathname } = window.location;
+  const secondVisitAttempt = Number(localStorage.getItem('acrobatSecondHit')) || 0;
+
+  const isAdobeDomain = (hostname === 'www.adobe.com' || hostname === 'www.stage.adobe.com') && /\/acrobat/.test(pathname);
+  const consentCookieValue = getCookie('OptanonConsent');
+
+  if (consentCookieValue?.includes('C0002:1') && isAdobeDomain) {
+    const updatedVisitAttempt = secondVisitAttempt === 0 ? 1 : secondVisitAttempt + 1;
+    localStorage.setItem('acrobatSecondHit', updatedVisitAttempt);
+    return updatedVisitAttempt;
+  }
+
+  return secondVisitAttempt;
+}
+```
+
+**Returns:**
+- `Number:`: The updated visit count for Acrobat-related pages.
+---
 ## **`loadAnalyticsAndInteractionData` Function**
 
 **Description:**
@@ -401,7 +616,7 @@ export const loadAnalyticsAndInteractionData = async (
     setTTMetaAndAlloyTarget(resultPayload);
   
 
-    // Update cookies for tracking and personalization
+    // Update cookies for tracking and personalization 
     updateAMCVCookie(ECID);
     updateMartechCookies(extractedData);
 

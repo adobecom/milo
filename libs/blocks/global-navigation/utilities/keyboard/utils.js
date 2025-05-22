@@ -2,6 +2,7 @@ import { selectors as baseSelectors } from '../utilities.js';
 
 const selectors = {
   ...baseSelectors,
+  globalFooterTag: 'footer',
   globalFooter: '.global-footer',
   mainNavItems:
     '.feds-navItem > a, .feds-navItem > button, .feds-navItem > .feds-cta-wrapper > .feds-cta',
@@ -28,6 +29,7 @@ const selectors = {
   column: '.feds-menu-column:not(.feds-menu-column--group)',
   cta: '.feds-cta',
   openSearch: '.feds-search-trigger[aria-expanded = "true"]',
+  featuredProducts: '.feds-featuredProducts',
   regionPicker: '.feds-regionPicker',
   socialLink: '.feds-social-link',
   privacyLink: '.feds-footer-privacyLink',
@@ -46,6 +48,8 @@ const selectors = {
   localNavActive: '.feds-localnav--active',
   localNavTitle: '.feds-localnav-title',
   localNavExit: '.feds-localnav-exit',
+  localNavItem: '.feds-localnav-items .feds-navItem',
+  localNavItems: '.feds-navItem .feds-menu-column > a, .feds-navItem > a, .feds-navItem > button, .feds-navItem > .feds-cta-wrapper > .feds-cta',
 };
 
 selectors.profileDropdown = `

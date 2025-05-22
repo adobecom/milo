@@ -289,7 +289,7 @@
   width: 100%;
 }
 
-.section[class*="-up"] .text-block:not(.legal, .link-farm) .foreground > div:not(:has(> strong)) {
+.section[class*="-up"] .text-block:not(.legal, .link-farm) .foreground > div {
   display: flex;
   flex-direction: column;
   width: 100%;
@@ -335,11 +335,11 @@
   .text-block.center .foreground > .tablet-up {
     justify-content: center;
   }
-  
+
   .text-block.right .foreground > .tablet-up {
     justify-content: end;
   }
-  
+
   .text-block .foreground > .mobile-up,
   .text-block .foreground > .desktop-up,
   .text-block.icon-inline .foreground > .mobile-up,
@@ -363,15 +363,49 @@
   .text-block.center .foreground > .desktop-up {
     justify-content: center;
   }
-  
+
   .text-block.right .foreground > .desktop-up {
     justify-content: end;
   }
-  
+
   .text-block .foreground > .mobile-up,
   .text-block .foreground > .tablet-up,
   .text-block.icon-inline .foreground > .mobile-up,
   .text-block.icon-inline .foreground > .tablet-up {
     display: none;
+  }
+}
+
+/* Mweb specific */
+@media screen and (max-width: 599px) {
+  /* General */
+  :root {
+    --type-heading-all-weight: 800;
+  }
+
+  [class^="heading-"] {
+    font-weight: var(--type-heading-all-weight);
+  }
+
+  [class^="detail-"] {
+    text-transform: unset;
+  }
+
+  [class^="detail-"] strong {
+    font-weight: 500;
+  }
+
+  /* Block specific */
+  .text.text-block.center {
+    text-align: start;
+  }
+
+  .text.text-block.center .action-area:not(:has(> a:only-child)),
+  .text.text-block.center .icon-area {
+    justify-content: start;
+  }
+
+  .text.text-block.center .icon-area {
+    margin-block-end: var(--spacing-xs);
   }
 }

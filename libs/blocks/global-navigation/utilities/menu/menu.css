@@ -85,10 +85,6 @@
   border-bottom: solid 1px var(--feds-borderColor-menu);
 }
 
-.feds-promo {
-  display: none;
-}
-
 .feds-crossCloudMenu-wrapper {
   display: none;
 }
@@ -100,6 +96,79 @@
 .gnav-image {
   width: 316px;
   box-sizing: content-box;
+}
+
+.feds-promo-wrapper {
+  max-width: 260px;
+  box-sizing: content-box;
+  margin: 5px 0 15px 10px;
+}
+
+.feds-promo {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  border: 1px solid var(--feds-borderColor);
+  background: var(--feds-background-promo);
+  white-space: normal;
+  box-sizing: content-box;
+}
+
+.feds-promo-header {
+  margin: 0;
+  font-size: inherit;
+  line-height: inherit;
+}
+
+.feds-promo--dark {
+  background: var(--feds-background-promo--dark);
+}
+
+.feds-promo-image,
+.feds-promo picture,
+.feds-promo img {
+  width: 100%;
+  display: block;
+}
+
+/* Next two sets of rules are a compromise between
+content auhtored manually and AEM-imported content */
+.feds-promo > div {
+  padding: 8px 32px;
+}
+
+.feds-promo div {
+  display: flex;
+  flex-direction: column;
+  row-gap: 12px;
+}
+
+.feds-promo .feds-promo-image {
+  padding: 0;
+}
+
+.feds-promo .feds-cta-wrapper {
+  padding: 0;
+  align-items: flex-start;
+}
+
+.feds-promo a.feds-cta,
+.feds-promo a.feds-cta:hover {
+  text-decoration: none;
+}
+
+.feds-promo--dark,
+.feds-promo--dark a:not(.feds-cta) {
+  color: var(--feds-background-nav);
+}
+
+.feds-promo--dark a,
+.feds-promo--dark a:hover {
+  text-decoration: underline;
+}
+
+.feds-promo-wrapper {
+  display: none;
 }
 
 @media (min-width: 900px) {
@@ -169,70 +238,13 @@
   }
 
   .feds-promo-wrapper {
+    display: flex;
     width: 260px;
     padding: 0 32px;
-    box-sizing: content-box;
+    margin: 0;
   }
 
-  .feds-promo {
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-    border: 1px solid var(--feds-borderColor);
-    background: var(--feds-background-promo);
-    white-space: normal;
-    box-sizing: content-box;
-  }
-
-  .feds-promo--dark {
-    background: var(--feds-background-promo--dark);
-  }
-
-  .feds-promo-image,
-  .feds-promo picture,
-  .feds-promo img {
-    width: 100%;
-    display: block;
-  }
-
-  /* Next two sets of rules are a compromise between
-  content auhtored manually and AEM-imported content */
-  .feds-promo > div {
-    padding: 8px 32px;
-  }
-
-  .feds-promo div {
-    display: flex;
-    flex-direction: column;
-    row-gap: 12px;
-  }
-
-  .feds-promo .feds-promo-image {
-    padding: 0;
-  }
-
-  .feds-promo .feds-cta-wrapper {
-    padding: 0;
-    align-items: flex-start;
-  }
-
-  .feds-promo a.feds-cta,
-  .feds-promo a.feds-cta:hover {
-    text-decoration: none;
-  }
-
-  .feds-promo--dark,
-  .feds-promo--dark a:not(.feds-cta) {
-    color: var(--feds-background-nav);
-  }
-
-  .feds-promo--dark a,
-  .feds-promo--dark a:hover {
-    text-decoration: underline;
-  }
-}
-
-@media (min-width: 1200px) {
+  /* cross cloud menu */
   .feds-crossCloudMenu-wrapper {
     width: 100%;
     display: flex;
@@ -240,35 +252,35 @@
     border-top: solid 1px var(--feds-borderColor);
     background-color: var(--feds-background-nav);
   }
-
+  
   .feds-crossCloudMenu {
     width: 100%;
     max-width: var(--feds-maxWidth-nav);
   }
-
+  
   .feds-crossCloudMenu ul {
     padding: 20px 0;
     display: flex;
   }
-
+  
   .feds-crossCloudMenu-item:not(:last-child):after {
     content: '|';
   }
-
+  
   .feds-crossCloudMenu-item {
     display: flex;
     align-items: center;
     list-style: none;
   }
-
+  
   .feds-crossCloudMenu-item u {
    text-decoration: none;
   }
-
+  
   .feds-crossCloudMenu .feds-navLink:hover {
     background-color: transparent;
   }
-
+  
   .feds-crossCloudMenu .feds-navLink {
     padding: 0 28px;
   }

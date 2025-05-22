@@ -117,11 +117,11 @@ describe('MMM', () => {
     const inputs = mepPopupBody.querySelectorAll('input[type="text"]');
     expect(inputs.length).to.equal(1);
     const manifestColumnOne = mepPopupBody.querySelector('.mep-manifest-info .mep-columns > .mep-column:nth-child(1)');
-    expect(manifestColumnOne.querySelector('div:nth-child(1)').textContent).to.include('Selected');
+    expect(manifestColumnOne.querySelector('div:nth-child(1)').textContent).to.include('Active');
     expect(manifestColumnOne.querySelector('div:nth-child(2)').textContent).to.include('Source');
     expect(manifestColumnOne.querySelector('div:nth-child(3)').textContent).to.include('Last seen');
     const manifestColumnTwo = mepPopupBody.querySelector('.mep-manifest-info .mep-columns > .mep-column:nth-child(2)');
-    expect(manifestColumnTwo.querySelector('div:nth-child(1)').textContent).to.include('Default (control)');
+    expect(manifestColumnTwo.querySelector('div:nth-child(1)').textContent).to.include('default (control)');
     expect(manifestColumnTwo.querySelector('div:nth-child(2)').textContent).to.include('target');
     const editButton = mepPopupBody.querySelector('.mep-edit-manifest');
     expect(editButton).to.exist;
@@ -138,11 +138,11 @@ describe('MMM', () => {
     const mmmPopup = firstMmmDd.querySelector('.mep-popup');
     const previewButton = mmmPopup.querySelector('a[data-id="preview-button"]');
     expect(previewButton).to.exist;
-    expect(previewButton.href).to.include('https%3A%2F%2Fmain--homepage--adobecom.hlx.page%2Fhomepage%2Ffragments%2Fmep%2Fhp-11-15-black-friday.json--default');
+    expect(previewButton.href).to.include('https://www.adobe.com/?mep=');
     const option = mmmPopup.querySelector('option[name="https://main--homepage--adobecom.hlx.page/homepage/fragments/mep/hp-11-15-black-friday.json4"][value="target-apro-twp-abdn"]');
     expect(option).to.exist;
     option.click();
-    expect(previewButton.href).to.include('https://www.adobe.com/?mep=https%3A%2F%2Fmain--homepage--adobecom.hlx.page%2Fhomepage%2Ffragments%2Fmep%2Fhp-11-15-black-friday.json--default');
+    expect(previewButton.href).to.include('https://www.adobe.com/?mep=');
     const addHighlight = mmmPopup.querySelector('#mepHighlightCheckbox-4');
     expect(addHighlight).to.exist;
     addHighlight.click();

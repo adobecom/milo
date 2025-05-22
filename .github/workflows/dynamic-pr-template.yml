@@ -1,7 +1,7 @@
 name: Dynamic PR Template
 
 on:
-  pull_request:
+  pull_request_target:
     types: [opened, synchronize, reopened]
 
 # Add permissions block
@@ -23,6 +23,9 @@ jobs:
           files: |
             libs/blocks/global-navigation/**
             libs/blocks/global-footer/**
+            libs/blocks/region-nav/**
+            libs/navigation/**
+            libs/styles/styles.css
 
       - name: Debug Changed Files
         run: |
@@ -42,9 +45,13 @@ jobs:
           BRANCH_NAME="$BRANCH_NAME"
           REPO_OWNER="$REPO_OWNER"
           
-          # Check if changes are in either global navigation or footer
-          if [[ "${{ steps.changed-files.outputs.all_changed_files }}" == *"libs/blocks/global-navigation/"* ]] || [[ "${{ steps.changed-files.outputs.all_changed_files }}" == *"libs/blocks/global-footer/"* ]]; then
-            echo "Changes detected in global navigation or footer"
+          # Check if changes are in either global navigation or footer components
+          if [[ "${{ steps.changed-files.outputs.all_changed_files }}" == *"libs/blocks/global-navigation/"* ]] || \
+             [[ "${{ steps.changed-files.outputs.all_changed_files }}" == *"libs/blocks/global-footer/"* ]] || \
+             [[ "${{ steps.changed-files.outputs.all_changed_files }}" == *"libs/blocks/region-nav/"* ]] || \
+             [[ "${{ steps.changed-files.outputs.all_changed_files }}" == *"libs/navigation/"* ]] || \
+             [[ "${{ steps.changed-files.outputs.all_changed_files }}" == *"libs/styles/styles.css"* ]]; then
+            echo "Changes detected in global navigation or footer components"
             TEST_URLS=(
               "## GNav Test URLs"
               ""
@@ -77,6 +84,7 @@ jobs:
               ""
               "**Sticky Branch Banner:**"
               "- URL: https://main--federal--adobecom.aem.page/drafts/blaishram/banner/branch-banner-sticky?martech=off&milolibs=${BRANCH_NAME}--milo--${REPO_OWNER}"
+              ""
               "**Inline Branch Banner:**"
               "- URL: https://main--federal--adobecom.aem.page/drafts/blaishram/banner/branch-banner-inline?martech=off&milolibs=${BRANCH_NAME}--milo--${REPO_OWNER}"
               ""   

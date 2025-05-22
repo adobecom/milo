@@ -145,8 +145,8 @@ test.describe('Footer Block Test Suite', () => {
 
       // updated the footer section and heading content equal or greater
       // than 6, to pass tests on cc pages.
-      expect([4, 6, 9].includes(await Footer.footerSections.count())).toBeTruthy();
-      expect([4, 6, 9].includes(await Footer.footerHeadings.count())).toBeTruthy();
+      expect([4, 7, 9].includes(await Footer.footerSections.count())).toBeTruthy();
+      expect([4, 7, 9].includes(await Footer.footerHeadings.count())).toBeTruthy();
       expect([3, 4].includes(await Footer.featuredProducts.count())).toBeTruthy();
       expect([1, 2].includes(await Footer.legalSections.count())).toBeTruthy();
       expect([4].includes(await Footer.socialIcons.count())).toBeTruthy();

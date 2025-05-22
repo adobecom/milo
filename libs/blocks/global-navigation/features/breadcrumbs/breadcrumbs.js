@@ -20,14 +20,19 @@ const setBreadcrumbSEO = (breadcrumbs) => {
     '@type': 'BreadcrumbList',
     itemListElement: [],
   };
-  breadcrumbs.querySelectorAll('ul > li').forEach((item, idx) => {
+
+  breadcrumbs.querySelectorAll('ul > li').forEach((item, idx, list) => {
     const link = item.querySelector('a');
     const name = link ? link.innerText.trim() : [...item.childNodes].filter((node) => !node.matches?.('span[aria-hidden="true"]')).map((node) => node.textContent.trim()).join('');
+    let itemUrl = link?.href;
+    if (!itemUrl && idx === list.length - 1) {
+      itemUrl = window.location.href;
+    }
     breadcrumbsSEO.itemListElement.push({
       '@type': 'ListItem',
       position: idx + 1,
       name,
-      item: link?.href,
+      item: itemUrl,
     });
   });
   const script = toFragment`<script type="application/ld+json">${JSON.stringify(

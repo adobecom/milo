@@ -515,3 +515,29 @@ html[dir="rtl"] .hero-marquee li.icon-item span.icon {
   .hero-marquee .order-2-desktop { order: 2; }
   .hero-marquee .order-3-desktop { order: 3; }
 }
+
+/* Mweb specific */
+@media screen and (max-width: 599px) {
+  /* General */
+  :root {
+    --type-heading-all-weight: 800;
+  }
+
+  [class^="heading-"] {
+    font-weight: var(--type-heading-all-weight);
+  }
+
+  [class^="detail-"] {
+    text-transform: unset;
+  }
+
+  [class^="detail-"] strong {
+    font-weight: 500;
+  }
+
+  /* Block specific */
+  .hero-marquee .action-area a:not(.con-button) {
+    align-self: center;
+    font-size: 17px;
+  }
+}

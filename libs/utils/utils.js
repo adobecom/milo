@@ -415,6 +415,18 @@ export const getFedsPlaceholderConfig = ({ useCache = true } = {}) => {
   return fedsPlaceholderConfig;
 };
 
+export const shouldBlockFreeTrialLinks = ({ button, localePrefix, parent }) => {
+  if (localePrefix !== '/kr' || (!button.dataset?.modalPath?.includes('/kr/cc-shared/fragments/trial-modals')
+    && !['free-trial', 'free trial', '무료 체험판', '무료 체험하기', '{{try-for-free}}']
+      .some((pattern) => button.textContent?.toLowerCase()?.includes(pattern.toLowerCase())))) {
+    return false;
+  }
+
+  const elementToRemove = (parent?.tagName === 'STRONG' || parent?.tagName === 'EM') && parent?.children?.length === 1 ? parent : button;
+  elementToRemove.remove();
+  return true;
+};
+
 export function isInTextNode(node) {
   return (node.parentElement.childNodes.length > 1 && node.parentElement.firstChild.tagName === 'A') || node.parentElement.firstChild.nodeType === Node.TEXT_NODE;
 }
@@ -1410,8 +1422,7 @@ async function checkForPageMods() {
 }
 
 async function loadPostLCP(config) {
-  const { default: loadFavIcon } = await import('./favicon.js');
-  loadFavIcon(createTag, getConfig(), getMetadata);
+  import('./favicon.js').then(({ default: loadFavIcon }) => loadFavIcon(createTag, getConfig(), getMetadata));
   await decoratePlaceholders(document.body.querySelector('header'), config);
   const sk = document.querySelector('aem-sidekick, helix-sidekick');
   if (sk) import('./sidekick-decorate.js').then((mod) => { mod.default(sk); });
@@ -1423,12 +1434,14 @@ async function loadPostLCP(config) {
   } else if (!isMartechLoaded) loadMartech();
 
   const georouting = getMetadata('georouting') || config.geoRouting;
+  config.georouting = { loadedPromise: Promise.resolve() };
   if (georouting === 'on') {
     const jsonPromise = fetch(`${config.contentRoot ?? ''}/georoutingv2.json`);
-    import('../features/georoutingv2/georoutingv2.js')
-      .then(({ default: loadGeoRouting }) => {
-        loadGeoRouting(config, createTag, getMetadata, loadBlock, loadStyle, jsonPromise);
-      });
+    config.georouting.loadedPromise = (async () => {
+      const { default: loadGeoRouting } = await import('../features/georoutingv2/georoutingv2.js');
+      await loadGeoRouting(config, createTag, getMetadata, loadBlock, loadStyle, jsonPromise);
+    })();
+    // This is used only in webapp-prompt.js
   }
   const header = document.querySelector('header');
   if (header) {
@@ -1623,10 +1636,10 @@ async function resolveInlineFrags(section) {
   section.preloadLinks = newlyDecoratedSection.preloadLinks;
 }
 
-async function processSection(section, config, isDoc) {
+async function processSection(section, config, isDoc, lcpSectionId) {
   await resolveInlineFrags(section);
-  const firstSection = section.el.dataset.idx === '0';
-  const stylePromises = firstSection ? preloadBlockResources(section.blocks) : [];
+  const isLcpSection = lcpSectionId === section.idx;
+  const stylePromises = isLcpSection ? preloadBlockResources(section.blocks) : [];
   preloadBlockResources(section.preloadLinks);
   await Promise.all([
     decoratePlaceholders(section.el, config),
@@ -1645,7 +1658,7 @@ async function processSection(section, config, isDoc) {
   await Promise.all(loadBlocks);
 
   delete section.el.dataset.status;
-  if (isDoc && firstSection) await loadPostLCP(config);
+  if (isDoc && isLcpSection) await loadPostLCP(config);
   delete section.el.dataset.idx;
   return section.blocks;
 }
@@ -1670,8 +1683,14 @@ export async function loadArea(area = document) {
   const sections = decorateSections(area, isDoc);
 
   const areaBlocks = [];
+  let lcpSectionId = null;
+
   for (const section of sections) {
-    const sectionBlocks = await processSection(section, config, isDoc);
+    const isLastSection = section.idx === sections.length - 1;
+    if (lcpSectionId === null && (section.blocks.length !== 0 || isLastSection)) {
+      lcpSectionId = section.idx;
+    }
+    const sectionBlocks = await processSection(section, config, isDoc, lcpSectionId);
     areaBlocks.push(...sectionBlocks);
 
     areaBlocks.forEach((block) => {

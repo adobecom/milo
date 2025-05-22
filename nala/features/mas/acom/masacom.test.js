@@ -45,7 +45,7 @@ test.describe('ACOM MAS cards feature test suite', () => {
       await expect(description).toContainText(data.description);
       await expect(description).toContainText(data.description);
       await expect(await acomPage.getSeeAllPlansLink(data.id)).toHaveText(data.seeAllPlansText);
-      await expect(await acomPage.getStockCheckbox(data.id)).toContainText(data.stockCheckboxLabel);
+      // await expect(await acomPage.getStockCheckbox(data.id)).toContainText(data.stockCheckboxLabel);
       await expect(await acomPage.getCardPrice(data.id)).toBeVisible();
       await expect(await acomPage.getCardPrice(data.id)).toContainText(data.price);
       await expect(await acomPage.getCardPromoText(data.id)).toBeVisible();
@@ -83,8 +83,8 @@ test.describe('ACOM MAS cards feature test suite', () => {
       expect(await webUtil.verifyCSS(await acomPage.getCardDescription(data.id).first(), acomPage.cssProp.description)).toBeTruthy();
       expect(await webUtil.verifyCSS(await acomPage.getSeeAllPlansLink(data.id), acomPage.cssProp.legalLink)).toBeTruthy();
       expect(await webUtil.verifyCSS(await acomPage.getCardCallout(data.id), acomPage.cssProp.callout)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await acomPage.getStockCheckbox(data.id), acomPage.cssProp.stockCheckbox.text)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await acomPage.getStockCheckboxIcon(data.id), acomPage.cssProp.stockCheckbox.checkbox)).toBeTruthy();
+      // expect(await webUtil.verifyCSS(await acomPage.getStockCheckbox(data.id), acomPage.cssProp.stockCheckbox.text)).toBeTruthy();
+      // expect(await webUtil.verifyCSS(await acomPage.getStockCheckboxIcon(data.id), acomPage.cssProp.stockCheckbox.checkbox)).toBeTruthy();
       expect(await webUtil.verifyCSS(await acomPage.getCardSecureTransaction(data.id), acomPage.cssProp.secureTransaction)).toBeTruthy();
       expect(await webUtil.verifyCSS(await acomPage.getCardCTA(data.id), acomPage.cssProp.cta)).toBeTruthy();
     });

@@ -672,7 +672,7 @@ describe('Merch Block', () => {
       document.querySelector('.modal-curtain').click();
     });
 
-    it('renders TWP modal with preselected plan', async () => {
+    it('renders TWP modal with preselected plan that overrides extra options', async () => {
       mockIms();
       const meta = document.createElement('meta');
       meta.setAttribute('name', 'preselect-plan');
@@ -836,10 +836,22 @@ describe('Merch Block', () => {
       });
     });
 
-    it('appends extra options to URL', () => {
+    it('appends extra options to legacy modal URL', () => {
       const url = 'https://www.adobe.com/plans-fragments/modals/individual/modals-content-rich/all-apps/master.modal.html';
       const resultUrl = appendExtraOptions(url, JSON.stringify({ promoid: 'test' }));
       expect(resultUrl).to.equal('https://www.adobe.com/plans-fragments/modals/individual/modals-content-rich/all-apps/master.modal.html?promoid=test');
+    });
+
+    it('appends plan=edu if extra options contains ms=e', () => {
+      const url = 'https://www.adobe.com/plans-fragments/modals/individual/modals-content-rich/all-apps/master.modal.html';
+      const resultUrl = appendExtraOptions(url, JSON.stringify({ ms: 'e' }));
+      expect(resultUrl).to.equal('https://www.adobe.com/plans-fragments/modals/individual/modals-content-rich/all-apps/master.modal.html?plan=edu');
+    });
+
+    it('appends plan=team if extra options contains cs=t', () => {
+      const url = 'https://www.adobe.com/plans-fragments/modals/individual/modals-content-rich/all-apps/master.modal.html';
+      const resultUrl = appendExtraOptions(url, JSON.stringify({ cs: 't' }));
+      expect(resultUrl).to.equal('https://www.adobe.com/plans-fragments/modals/individual/modals-content-rich/all-apps/master.modal.html?plan=team');
     });
 
     it('does not append extra options to URL if invalid URL or params not provided', () => {

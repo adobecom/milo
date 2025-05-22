@@ -2,6 +2,7 @@
 
  :root {
   --global-height-nav: 64px;
+  --feds-height-nav: 63px;
   --global-height-breadcrumbs: 33px;
   --scroll-padding-block: 0;
   /* stylelint-disable-next-line custom-property-pattern */
@@ -710,6 +711,10 @@ body {
   word-wrap: break-word;
   -webkit-font-smoothing: antialiased;
   opacity: 1 !important; /* Fix Target hiding */
+}
+
+body:has(.dialog-modal) #onetrust-consent-sdk {
+  display: none;
 }
 
 header.gnav {
