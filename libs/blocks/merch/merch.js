@@ -827,22 +827,28 @@ export async function buildCta(el, params) {
       // after opening a modal, navigating to another page and back we need to reopen the modal
       reopenModal(cta);
     });
-  }
 
-  // Adding aria-label for checkout-link using productFamily and customerSegment as placeholder key.
-  if (el.ariaLabel) {
+    // Adding aria-label for checkout-link using productFamily and customerSegment
+    // as placeholder key.
+    if (el.ariaLabel) {
     // If Milo aria-label available from sharepoint doc, just use it.
-    cta.setAttribute('aria-label', el.ariaLabel);
-  } else if (!cta.ariaLabel) {
-    cta.onceSettled().then(async () => {
-      const productFamily = cta.value[0]?.productArrangement?.productFamily;
-      const marketSegment = cta.value[0]?.marketSegments[0];
-      const customerSegment = marketSegment === 'EDU' ? marketSegment : cta.value[0]?.customerSegment;
-      let ariaLabel = cta.textContent;
-      ariaLabel = productFamily ? `${ariaLabel} - ${await replaceKey(productFamily, getConfig())}` : ariaLabel;
-      ariaLabel = customerSegment ? `${ariaLabel} - ${await replaceKey(customerSegment, getConfig())}` : ariaLabel;
-      cta.setAttribute('aria-label', ariaLabel);
-    });
+      cta.setAttribute('aria-label', el.ariaLabel);
+    } else if (!cta.ariaLabel) {
+      cta.onceSettled().then(async () => {
+        const productFamily = cta.value[0]?.productArrangement?.productFamily;
+        const marketSegment = cta.value[0]?.marketSegments[0];
+        const customerSegment = marketSegment === 'EDU' ? marketSegment : cta.value[0]?.customerSegment;
+        let ariaLabel = cta.textContent;
+        ariaLabel = productFamily ? `${ariaLabel} - ${await replaceKey(productFamily, getConfig())}` : ariaLabel;
+        ariaLabel = customerSegment ? `${ariaLabel} - ${await replaceKey(customerSegment, getConfig())}` : ariaLabel;
+        cta.setAttribute('aria-label', ariaLabel);
+      });
+    }
+
+    if (getMetadata('mas-ff-copy-cta') === 'on') {
+      const { default: addCopyToClipboard } = await import('./copy-to-clipboard.js');
+      return addCopyToClipboard(el, cta);
+    }
   }
 
   // @see https://jira.corp.adobe.com/browse/MWPW-173470
