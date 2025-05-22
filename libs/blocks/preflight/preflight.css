@@ -226,8 +226,11 @@ p.preflight-date-wrapper .disabled-publish {
 
 .preflight-group-row a {
   color: #FFF;
-  word-break: break-all;
-  overflow-wrap: anywhere;
+  display: inline-block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 40em;
 }
 
 span.preflight-time {
