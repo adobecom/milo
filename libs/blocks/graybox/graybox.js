@@ -10,6 +10,7 @@ const OPTION = {
 const CLASS = {
   CHANGED: 'gb-changed',
   GRAYBOX_BODY: 'gb-graybox-body',
+  MODAL_CURTAIN: 'gb-modal-curtain',
   NO_BORDER: 'gb-no-border',
   NO_CHANGE: 'gb-no-change',
   NO_CLICK: 'gb-no-click',
@@ -207,21 +208,29 @@ const setupIframe = (iFrame, isMobile, isTablet) => {
 };
 
 const openDeviceModal = async (e) => {
+  const buttonEl = e.target;
+  const parentEl = buttonEl.parentElement;
+
+  const isDesktop = buttonEl.classList.contains('graybox-desktop');
+
   if (deviceModal) {
     closeModal(deviceModal);
+    if (!isDesktop) document.body.classList.add(CLASS.MODAL_CURTAIN);
     await sleep(300);
     deviceModal = null;
   }
 
-  e.target.parentElement.querySelector('.graybox-desktop').classList.remove(CLASS.SELECTED_BUTTON);
-  e.target.classList.add(CLASS.SELECTED_BUTTON);
+  parentEl.querySelector('.graybox-desktop').classList.remove(CLASS.SELECTED_BUTTON);
+  buttonEl.classList.add(CLASS.SELECTED_BUTTON);
 
-  if (e.target.classList.contains('graybox-desktop')) {
+  if (isDesktop) {
     return;
   }
 
-  const isMobile = e.target.classList.contains('graybox-mobile');
-  const isTablet = e.target.classList.contains('graybox-tablet');
+  document.body.classList.add(CLASS.MODAL_CURTAIN);
+
+  const isMobile = buttonEl.classList.contains('graybox-mobile');
+  const isTablet = buttonEl.classList.contains('graybox-tablet');
   const docFrag = new DocumentFragment();
   const iFrameUrl = new URL(window.location.href);
   iFrameUrl.searchParams.set('graybox', 'menu-off');
@@ -249,11 +258,13 @@ const openDeviceModal = async (e) => {
     setupIframe(iFrame, isMobile, isTablet);
   }
 
-  const removeBodyPreviewClasses = () => {
-    e.target.parentElement.querySelectorAll(':scope > a')
+  const onDeviceModalClose = () => {
+    document.body.classList.remove(CLASS.MODAL_CURTAIN);
+
+    parentEl.querySelectorAll(':scope > a')
       .forEach((el) => el.classList.remove(CLASS.SELECTED_BUTTON));
 
-    e.target.parentElement.querySelector('.graybox-desktop').classList.add(CLASS.SELECTED_BUTTON);
+    parentEl.querySelector('.graybox-desktop').classList.add(CLASS.SELECTED_BUTTON);
 
     document.body.classList.remove(
       CLASS.PHONE_PREVIEW,
@@ -261,7 +272,7 @@ const openDeviceModal = async (e) => {
     );
   };
 
-  window.addEventListener('milo:modal:closed', removeBodyPreviewClasses, { once: true });
+  window.addEventListener('milo:modal:closed', onDeviceModalClose, { once: true });
 
   const curtain = deviceModal.nextElementSibling;
   curtain.classList.add('graybox-curtain');
