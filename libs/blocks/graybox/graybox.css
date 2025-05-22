@@ -194,6 +194,11 @@
   cursor: default;
 }
 
+.graybox-devices > a.gb-selected-button {
+  background: gray;
+  pointer-events: none;
+}
+
 .graybox-devices > a:hover {
   background-color: var(--gb-container-btn-bg);
   text-decoration: none;

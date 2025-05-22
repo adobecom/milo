@@ -16,6 +16,7 @@ const CLASS = {
   PAGE_OVERLAY: 'gb-page-overlay',
   PHONE_PREVIEW: 'gb-phone-preview',
   TABLET_PREVIEW: 'gb-tablet-preview',
+  SELECTED_BUTTON: 'gb-selected-button',
 };
 
 const METADATA = {
@@ -212,6 +213,9 @@ const openDeviceModal = async (e) => {
     deviceModal = null;
   }
 
+  e.target.parentElement.querySelector('.graybox-desktop').classList.remove(CLASS.SELECTED_BUTTON);
+  e.target.classList.add(CLASS.SELECTED_BUTTON);
+
   if (e.target.classList.contains('graybox-desktop')) {
     return;
   }
@@ -245,10 +249,17 @@ const openDeviceModal = async (e) => {
     setupIframe(iFrame, isMobile, isTablet);
   }
 
-  const removeBodyPreviewClasses = () => document.body.classList.remove(
-    CLASS.PHONE_PREVIEW,
-    CLASS.TABLET_PREVIEW,
-  );
+  const removeBodyPreviewClasses = () => {
+    e.target.parentElement.querySelectorAll(':scope > a')
+      .forEach((el) => el.classList.remove(CLASS.SELECTED_BUTTON));
+
+    e.target.parentElement.querySelector('.graybox-desktop').classList.add(CLASS.SELECTED_BUTTON);
+
+    document.body.classList.remove(
+      CLASS.PHONE_PREVIEW,
+      CLASS.TABLET_PREVIEW,
+    );
+  };
 
   window.addEventListener('milo:modal:closed', removeBodyPreviewClasses, { once: true });
 
@@ -273,6 +284,9 @@ const createGrayboxMenu = (options, { isOpen = false } = {}) => {
 
   ['mobile', 'tablet', 'desktop'].forEach((device) => {
     const button = createTag('a', { class: `graybox-${device} con-button` }, capitalizeFirstLetter(device), { parent: grayboxDevices });
+    if (device === 'desktop') {
+      button.classList.add(CLASS.SELECTED_BUTTON);
+    }
     button.addEventListener('click', openDeviceModal);
   });
 
