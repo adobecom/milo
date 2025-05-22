@@ -521,7 +521,8 @@ export function appendExtraOptions(url, extraOptions) {
   const extraOptionsObj = JSON.parse(extraOptions);
   let urlWithExtraOptions;
   try {
-    urlWithExtraOptions = new URL(url);
+    const fullUrl = url.startsWith('/') ? `${window.location.origin}${url}` : url;
+    urlWithExtraOptions = new URL(fullUrl);
   } catch (err) {
     window.lana?.log(`Invalid URL ${url} : ${err}`);
     return url;
@@ -539,7 +540,7 @@ export function appendExtraOptions(url, extraOptions) {
 }
 
 async function openExternalModal(url, getModal, extraOptions) {
-  await loadStyle(`${getConfig().base}/blocks/iframe/iframe.css`);
+  loadStyle(`${getConfig().base}/blocks/iframe/iframe.css`);
   const root = createTag('div', { class: 'milo-iframe' });
   const urlWithExtraOptions = appendExtraOptions(url, extraOptions);
   const urlWithTabName = appendTabName(urlWithExtraOptions);
