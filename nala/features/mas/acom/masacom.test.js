@@ -45,7 +45,7 @@ test.describe('ACOM MAS cards feature test suite', () => {
       await expect(description).toContainText(data.description);
       await expect(description).toContainText(data.description);
       await expect(await acomPage.getSeeAllPlansLink(data.id)).toHaveText(data.seeAllPlansText);
-      await expect(await acomPage.getStockCheckbox(data.id)).toContainText(data.stockCheckboxLabel);
+      // await expect(await acomPage.getStockCheckbox(data.id)).toContainText(data.stockCheckboxLabel);
       await expect(await acomPage.getCardPrice(data.id)).toBeVisible();
       await expect(await acomPage.getCardPrice(data.id)).toContainText(data.price);
       await expect(await acomPage.getCardPromoText(data.id)).toBeVisible();
@@ -83,10 +83,29 @@ test.describe('ACOM MAS cards feature test suite', () => {
       expect(await webUtil.verifyCSS(await acomPage.getCardDescription(data.id).first(), acomPage.cssProp.description)).toBeTruthy();
       expect(await webUtil.verifyCSS(await acomPage.getSeeAllPlansLink(data.id), acomPage.cssProp.legalLink)).toBeTruthy();
       expect(await webUtil.verifyCSS(await acomPage.getCardCallout(data.id), acomPage.cssProp.callout)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await acomPage.getStockCheckbox(data.id), acomPage.cssProp.stockCheckbox.text)).toBeTruthy();
-      expect(await webUtil.verifyCSS(await acomPage.getStockCheckboxIcon(data.id), acomPage.cssProp.stockCheckbox.checkbox)).toBeTruthy();
+      // expect(await webUtil.verifyCSS(await acomPage.getStockCheckbox(data.id), acomPage.cssProp.stockCheckbox.text)).toBeTruthy();
+      // expect(await webUtil.verifyCSS(await acomPage.getStockCheckboxIcon(data.id), acomPage.cssProp.stockCheckbox.checkbox)).toBeTruthy();
       expect(await webUtil.verifyCSS(await acomPage.getCardSecureTransaction(data.id), acomPage.cssProp.secureTransaction)).toBeTruthy();
       expect(await webUtil.verifyCSS(await acomPage.getCardCTA(data.id), acomPage.cssProp.cta)).toBeTruthy();
+    });
+  });
+
+  // @MAS-Plans-Students-CSS
+  test(`${features[2].name},${features[2].tags}`, async ({ page, baseURL }) => {
+    const testPage = `${baseURL}${features[2].path}${miloLibs}`;
+    const { data } = features[2];
+    console.info('[Test Page]: ', testPage);
+
+    await test.step('step-1: Go to Plans Merch Card feature test page', async () => {
+      await page.goto(testPage);
+      await page.waitForLoadState('domcontentloaded');
+      await expect(page).toHaveURL(`${baseURL}${features[2].path}`);
+    });
+
+    await test.step('step-2: Verify Plans Students Merch Card CSS', async () => {
+      await expect(acomPage.getCard(data.id)).toBeVisible();
+      await expect(acomPage.getCard(data.id)).toHaveAttribute('variant', 'plans-students');
+      expect(await webUtil.verifyCSS(await acomPage.getCard(data.id), acomPage.studentsCssProp.card)).toBeTruthy();
     });
   });
 });

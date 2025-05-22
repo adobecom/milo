@@ -116,7 +116,7 @@ function handleEqualHeight(table, tag) {
   });
   columns.forEach(({ children }) => {
     [...children].forEach((row, i) => {
-      row.style.height = height[i] > 0 ? `${height[i]}px` : 'auto';
+      row.style.minHeight = height[i] > 0 ? `${height[i]}px` : 'unset';
     });
   });
 }
@@ -271,6 +271,13 @@ function handleTitleText(cell) {
     nodeToInsert = titleRowSpan;
   }
 
+  const blockquote = nodeToInsert.querySelector('blockquote');
+  if (blockquote) {
+    const quoteReplacement = createTag('div', { class: 'blockquote' });
+    while (blockquote.firstChild) quoteReplacement.appendChild(blockquote.firstChild);
+    blockquote.replaceWith(quoteReplacement);
+  }
+
   cell.insertBefore(nodeToInsert, cell.firstChild);
 }
 
@@ -335,6 +342,12 @@ function handleSection(sectionParams) {
     }
   } else if (!row.classList.contains('row-1') && (!isHighlightTable || !row.classList.contains('row-2'))) {
     row.classList.add('section-row');
+    rowCols.forEach((col) => {
+      if (col.querySelector('a') && !col.querySelector('span')) {
+        const textSpan = createTag('span', { class: 'col-text' }, [...col.childNodes]);
+        col.appendChild(textSpan);
+      }
+    });
     if (isMerch && !row.classList.contains('divider')) {
       rowCols.forEach((merchCol) => {
         merchCol.classList.add('col-merch');
@@ -592,6 +605,11 @@ function applyStylesBasedOnScreenSize(table, originTable) {
   setRowStyle();
 }
 
+function handleStickyHeader(el) {
+  if (!el.classList.value.includes('sticky')) return;
+  setTimeout(() => el.classList.toggle('cancel-sticky', !(el.querySelector('.row-heading').offsetHeight / window.innerHeight < 0.45)));
+}
+
 export default function init(el) {
   el.setAttribute('role', 'table');
   if (el.parentElement.classList.contains('section')) {
@@ -651,10 +669,12 @@ export default function init(el) {
       setTooltipPosition(el);
     };
     handleResize();
+    handleStickyHeader(el);
 
     let deviceBySize = defineDeviceByScreenSize();
     window.addEventListener('resize', () => {
       debounce(handleEqualHeight(el, '.row-heading'), 300);
+      handleStickyHeader(el);
       if (deviceBySize === defineDeviceByScreenSize()) return;
       deviceBySize = defineDeviceByScreenSize();
       handleResize();

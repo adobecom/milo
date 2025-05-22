@@ -253,6 +253,43 @@ runTests(async () => {
             expect(merchCard.getAttribute('filters')).to.equal('all:4:wide,cloud:2:wide,subcategory:1:wide');
         });
     })
+
+    describe('merch-card-collection override feature', () => {
+      let individualPlansFragment, collectionElement;
+
+      before(async () => {
+          individualPlansFragment = await fetch('mocks/sites/fragments/fragment-individual-plans-collection.json')
+              .then(
+                  (res) => res.json(),
+              );
+      });
+
+      beforeEach(async () => {
+          document.location.hash = '';
+          [collectionElement, render] = prepareTemplate('override', false);
+      });
+
+      it('should hydrate from child aem-fragment, with overriden ids', async () => {
+        render();
+        const aemFragment = collectionElement.querySelector('aem-fragment');
+        aemFragment.dispatchEvent(new CustomEvent(EVENT_AEM_LOAD, { 
+            detail: individualPlansFragment
+         }))
+        await collectionElement.checkReady();
+        const fragment1 = collectionElement.querySelector('aem-fragment[fragment="cafe-bebebe"]');
+        expect(fragment1).to.exist;
+        const filters1 = fragment1.parentNode.filters;
+        expect(filters1).to.exist;
+        expect(filters1.all?.order).to.equal(1);
+        const fragment2 = collectionElement.querySelector('aem-fragment[fragment="bebe-cafe"]');
+        const filters2 = fragment2.parentNode.filters;
+        expect(filters2).to.exist;
+        expect(filters2.all?.order).to.equal(3);
+        expect(filters2.cloud?.order).to.equal(1);
+        expect(collectionElement.querySelector('merch-card > aem-fragment[fragment="e58f8f75-b882-409a-9ff8-8826b36a8368"]')).to.not.exist;
+        expect(collectionElement.querySelector('merch-card > aem-fragment[fragment="e58f8f75-b882-409a-9ff8-8826b36a8368"]')).to.not.exist;
+    });
+  })
 });
 
 document.getElementById('showMore').addEventListener('click', () => {

@@ -52,7 +52,7 @@ export default class MasAcom {
         'text-decoration-line': 'line-through',
       },
       promoText: {
-        color: 'rgb(0, 122, 77)',
+        color: 'rgb(5, 131, 78)',
         'font-size': '14px',
         'font-weight': '700',
         'line-height': '21px',
@@ -106,6 +106,9 @@ export default class MasAcom {
         'line-height': '19px',
       },
     };
+
+    // Plans students card properties:
+    this.studentsCssProp = { card: { width: '568px' } };
   }
 
   getCard(id) {

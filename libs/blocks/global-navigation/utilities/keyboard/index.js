@@ -82,7 +82,7 @@ class KeyboardNavigation {
       }
       this.desktop = window.matchMedia('(min-width: 900px)');
     } catch (e) {
-      lanaLog({ message: 'Keyboard Navigation failed to load', e, tags: 'gnav-keyboard', errorType: 'error' });
+      lanaLog({ message: 'Keyboard Navigation failed to load', e, tags: 'gnav-keyboard', errorType: 'e' });
     }
   }
 
@@ -93,7 +93,7 @@ class KeyboardNavigation {
           const { default: LnavNavigation } = await import('./localNav.js');
           return new LnavNavigation();
         } catch (e) {
-          lanaLog({ message: 'Keyboard Navigation failed to load for LNAV', e, tags: 'gnav-keyboard', errorType: 'info' });
+          lanaLog({ message: 'Keyboard Navigation failed to load for LNAV', e, tags: 'gnav-keyboard', errorType: 'i' });
           return null;
         }
       })();
@@ -102,9 +102,10 @@ class KeyboardNavigation {
   };
 
   addEventListeners = () => {
-    [...document.querySelectorAll(`${selectors.globalNav}, ${selectors.globalFooter}`)]
+    [...document.querySelectorAll(`${selectors.globalNavTag}, ${selectors.globalFooterTag}`)]
       .forEach((el) => {
         el.addEventListener('keydown', (e) => logErrorFor(() => {
+          if (!e.target.closest(`${selectors.globalNav}, ${selectors.globalFooter}`)) return;
           switch (e.code) {
             case 'Tab': {
               const isNewNav = !!document.querySelector('header.new-nav');
@@ -153,7 +154,7 @@ class KeyboardNavigation {
             default:
               break;
           }
-        }, `KeyboardNavigation index failed. ${e.code}`, 'gnav-keyboard', 'error'));
+        }, `KeyboardNavigation index failed. ${e.code}`, 'gnav-keyboard', 'e'));
       });
   };
 }

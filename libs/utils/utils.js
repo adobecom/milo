@@ -92,6 +92,7 @@ const MILO_BLOCKS = [
   'youtube',
   'z-pattern',
   'share',
+  'susi-light-login',
   'reading-time',
 ];
 const AUTO_BLOCKS = [
@@ -284,6 +285,7 @@ export const [setConfig, updateConfig, getConfig] = (() => {
       config.base = config.miloLibs || config.codeRoot;
       config.locale = conf.languages
         ? getLanguage(conf.languages, conf.locales, pathname) : getLocale(conf.locales, pathname);
+      config.pathname = pathname;
       config.autoBlocks = conf.autoBlocks ? [...AUTO_BLOCKS, ...conf.autoBlocks] : AUTO_BLOCKS;
       config.signInContext = conf.signInContext || {};
       config.doNotInline = conf.doNotInline
@@ -372,6 +374,8 @@ export function hasLanguageLinks(area, paths = LANGUAGE_BASED_PATHS) {
 }
 
 export async function loadLanguageConfig() {
+  if (localeToLanguageMap && siteLanguages) return { siteLanguages, localeToLanguageMap };
+
   const parseList = (str) => str.split(/[\n,]+/).map((t) => t.trim()).filter(Boolean);
   try {
     const response = await fetch(`${getFederatedContentRoot()}/federal/assets/data/languages-config.json`);
@@ -384,9 +388,13 @@ export async function loadLanguageConfig() {
       pathMatches: parseList(site.pathMatches),
       languages: parseList(site.languages),
     }));
+
+    return { siteLanguages, localeToLanguageMap };
   } catch (e) {
     window.lana?.log('Failed to load language-config.json:', e);
   }
+
+  return {};
 }
 
 let fedsPlaceholderConfig;
@@ -405,6 +413,18 @@ export const getFedsPlaceholderConfig = ({ useCache = true } = {}) => {
   };
 
   return fedsPlaceholderConfig;
+};
+
+export const shouldBlockFreeTrialLinks = ({ button, localePrefix, parent }) => {
+  if (localePrefix !== '/kr' || (!button.dataset?.modalPath?.includes('/kr/cc-shared/fragments/trial-modals')
+    && !['free-trial', 'free trial', '무료 체험판', '무료 체험하기', '{{try-for-free}}']
+      .some((pattern) => button.textContent?.toLowerCase()?.includes(pattern.toLowerCase())))) {
+    return false;
+  }
+
+  const elementToRemove = (parent?.tagName === 'STRONG' || parent?.tagName === 'EM') && parent?.children?.length === 1 ? parent : button;
+  elementToRemove.remove();
+  return true;
 };
 
 export function isInTextNode(node) {
@@ -461,13 +481,15 @@ function getPrefixBySite(locale, url, relative) {
 
 function isLocalizedPath(path, locales) {
   const langstorePath = path.startsWith(`/${LANGSTORE}`);
+  const isMerchLink = path === '/tools/ost';
   const previewPath = path.startsWith(`/${PREVIEW}`);
   const anyTypeOfLocaleOrLanguagePath = localeToLanguageMap
     && (localeToLanguageMap.some((l) => l.locale !== '' && (path.startsWith(`/${l.locale}/`) || path === `/${l.locale}`))
-      || (localeToLanguageMap.some((l) => path.startsWith(`/${l.langaugePath}/`) || path === `/${l.langaugePath}`)));
+      || (localeToLanguageMap.some((l) => path.startsWith(`/${l.languagePath}/`) || path === `/${l.languagePath}`)));
   const legacyLocalePath = locales && Object.keys(locales).some((loc) => loc !== '' && (path.startsWith(`/${loc}/`)
     || path.endsWith(`/${loc}`)));
   return langstorePath
+    || isMerchLink
     || previewPath
     || anyTypeOfLocaleOrLanguagePath
     || legacyLocalePath;
@@ -504,11 +526,14 @@ export function localizeLink(
   }
 }
 
-export function loadLink(href, { as, callback, crossorigin, rel, fetchpriority } = {}) {
+export function loadLink(href, {
+  id, as, callback, crossorigin, rel, fetchpriority,
+} = {}) {
   let link = document.head.querySelector(`link[href="${href}"]`);
   if (!link) {
     link = document.createElement('link');
     link.setAttribute('rel', rel);
+    if (id) link.setAttribute('id', id);
     if (as) link.setAttribute('as', as);
     if (crossorigin) link.setAttribute('crossorigin', crossorigin);
     if (fetchpriority) link.setAttribute('fetchpriority', fetchpriority);
@@ -1071,7 +1096,8 @@ const findReplaceableNodes = (area) => {
 function getPlaceholderPaths(config) {
   const root = `${config.locale?.contentRoot}/placeholders`;
   const paths = [`${root}.json`];
-  if (config.env.name !== 'prod') paths.push(`${root}-stage.json`);
+  if (config.env.name !== 'prod'
+    && getMetadata('placeholders-stage') === 'on') paths.push(`${root}-stage.json`);
   return paths;
 }
 
@@ -1298,7 +1324,7 @@ export async function loadMartech({
  *
  * @returns {boolean} True if the user is signed out, otherwise false.
  */
-function isSignedOut() {
+export function isSignedOut() {
   const serverTiming = window.performance?.getEntriesByType('navigation')?.[0]?.serverTiming?.reduce(
     (acc, { name, description }) => ({ ...acc, [name]: description }),
     {},
@@ -1396,8 +1422,7 @@ async function checkForPageMods() {
 }
 
 async function loadPostLCP(config) {
-  const { default: loadFavIcon } = await import('./favicon.js');
-  loadFavIcon(createTag, getConfig(), getMetadata);
+  import('./favicon.js').then(({ default: loadFavIcon }) => loadFavIcon(createTag, getConfig(), getMetadata));
   await decoratePlaceholders(document.body.querySelector('header'), config);
   const sk = document.querySelector('aem-sidekick, helix-sidekick');
   if (sk) import('./sidekick-decorate.js').then((mod) => { mod.default(sk); });
@@ -1409,16 +1434,19 @@ async function loadPostLCP(config) {
   } else if (!isMartechLoaded) loadMartech();
 
   const georouting = getMetadata('georouting') || config.geoRouting;
+  config.georouting = { loadedPromise: Promise.resolve() };
   if (georouting === 'on') {
     const jsonPromise = fetch(`${config.contentRoot ?? ''}/georoutingv2.json`);
-    import('../features/georoutingv2/georoutingv2.js')
-      .then(({ default: loadGeoRouting }) => {
-        loadGeoRouting(config, createTag, getMetadata, loadBlock, loadStyle, jsonPromise);
-      });
+    config.georouting.loadedPromise = (async () => {
+      const { default: loadGeoRouting } = await import('../features/georoutingv2/georoutingv2.js');
+      await loadGeoRouting(config, createTag, getMetadata, loadBlock, loadStyle, jsonPromise);
+    })();
+    // This is used only in webapp-prompt.js
   }
   const header = document.querySelector('header');
   if (header) {
     header.classList.add('gnav-hide');
+    performance.mark('Gnav-Start');
     loadBlock(header);
     header.classList.remove('gnav-hide');
   }
@@ -1542,6 +1570,11 @@ function decorateDocumentExtras() {
 }
 
 async function documentPostSectionLoading(config) {
+  const injectBlock = getMetadata('injectblock');
+  if (injectBlock) {
+    import('./injectblock.js').then((module) => module.default(injectBlock));
+  }
+
   decorateFooterPromo();
   import('../scripts/accessibility.js').then((accessibility) => {
     accessibility.default();
@@ -1603,10 +1636,10 @@ async function resolveInlineFrags(section) {
   section.preloadLinks = newlyDecoratedSection.preloadLinks;
 }
 
-async function processSection(section, config, isDoc) {
+async function processSection(section, config, isDoc, lcpSectionId) {
   await resolveInlineFrags(section);
-  const firstSection = section.el.dataset.idx === '0';
-  const stylePromises = firstSection ? preloadBlockResources(section.blocks) : [];
+  const isLcpSection = lcpSectionId === section.idx;
+  const stylePromises = isLcpSection ? preloadBlockResources(section.blocks) : [];
   preloadBlockResources(section.preloadLinks);
   await Promise.all([
     decoratePlaceholders(section.el, config),
@@ -1625,15 +1658,15 @@ async function processSection(section, config, isDoc) {
   await Promise.all(loadBlocks);
 
   delete section.el.dataset.status;
-  if (isDoc && firstSection) await loadPostLCP(config);
+  if (isDoc && isLcpSection) await loadPostLCP(config);
   delete section.el.dataset.idx;
   return section.blocks;
 }
 
 export async function loadArea(area = document) {
   const isDoc = area === document;
-
   if (isDoc) {
+    if (document.getElementById('page-load-ok-milo')) return;
     await checkForPageMods();
     appendHtmlToCanonicalUrl();
     appendSuffixToTitles();
@@ -1650,8 +1683,14 @@ export async function loadArea(area = document) {
   const sections = decorateSections(area, isDoc);
 
   const areaBlocks = [];
+  let lcpSectionId = null;
+
   for (const section of sections) {
-    const sectionBlocks = await processSection(section, config, isDoc);
+    const isLastSection = section.idx === sections.length - 1;
+    if (lcpSectionId === null && (section.blocks.length !== 0 || isLastSection)) {
+      lcpSectionId = section.idx;
+    }
+    const sectionBlocks = await processSection(section, config, isDoc, lcpSectionId);
     areaBlocks.push(...sectionBlocks);
 
     areaBlocks.forEach((block) => {

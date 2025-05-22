@@ -3,7 +3,7 @@ import { styles } from './merch-quantity-select.css.js';
 import { debounce } from './utils.js';
 
 import { ARROW_DOWN, ARROW_UP, ENTER } from './focus.js';
-import { EVENT_MERCH_QUANTITY_SELECTOR_CHANGE } from './constants.js';
+import { EVENT_MERCH_QUANTITY_SELECTOR_CHANGE, EVENT_MERCH_CARD_QUANTITY_CHANGE } from './constants.js';
 
 export class MerchQuantitySelect extends LitElement {
     static get properties() {
@@ -47,6 +47,8 @@ export class MerchQuantitySelect extends LitElement {
         this.addEventListener('keydown', this.boundKeydownListener);
         window.addEventListener('mousedown', this.handleClickOutside);
         this.handleKeyupDebounced = debounce(this.handleKeyup.bind(this), 500);
+        this.handleQuantityUpdate = this.handleQuantityUpdate.bind(this);
+        this.addEventListener(EVENT_MERCH_CARD_QUANTITY_CHANGE, this.handleQuantityUpdate);
     }
 
     handleKeyup() {
@@ -111,6 +113,7 @@ export class MerchQuantitySelect extends LitElement {
         super.disconnectedCallback();
         window.removeEventListener('mousedown', this.handleClickOutside);
         this.removeEventListener('keydown', this.boundKeydownListener);
+        this.removeEventListener(EVENT_MERCH_CARD_QUANTITY_CHANGE, this.handleQuantityUpdate);
     }
 
     generateOptionsArray() {
@@ -201,6 +204,17 @@ export class MerchQuantitySelect extends LitElement {
                 `,
             )}
         </div>`;
+    }
+
+    handleQuantityUpdate({ detail: { quantity } }) {
+        if (quantity && quantity !== this.selectedValue) {
+            this.selectedValue = quantity;
+            const inputField = this.shadowRoot.querySelector('.text-field-input');
+            if (inputField) {
+                inputField.value = quantity;
+            }
+            this.sendEvent();
+        }
     }
 
     render() {

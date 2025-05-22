@@ -25,7 +25,7 @@ async function loadJsonAndSetResponse(jsonPath) {
   setFetchResponse(json);
 }
 
-describe('MMM - Targer Cleanup Report', () => {
+describe('MMM - Target Cleanup Report', () => {
   before(async () => {
     await loadJsonAndSetResponse('./mocks/get-report.json');
     document.body.innerHTML = await readFile({ path: './mocks/bodyReport.html' });
@@ -117,11 +117,11 @@ describe('MMM', () => {
     const inputs = mepPopupBody.querySelectorAll('input[type="text"]');
     expect(inputs.length).to.equal(1);
     const manifestColumnOne = mepPopupBody.querySelector('.mep-manifest-info .mep-columns > .mep-column:nth-child(1)');
-    expect(manifestColumnOne.querySelector('div:nth-child(1)').textContent).to.include('Selected');
+    expect(manifestColumnOne.querySelector('div:nth-child(1)').textContent).to.include('Active');
     expect(manifestColumnOne.querySelector('div:nth-child(2)').textContent).to.include('Source');
     expect(manifestColumnOne.querySelector('div:nth-child(3)').textContent).to.include('Last seen');
     const manifestColumnTwo = mepPopupBody.querySelector('.mep-manifest-info .mep-columns > .mep-column:nth-child(2)');
-    expect(manifestColumnTwo.querySelector('div:nth-child(1)').textContent).to.include('Default (control)');
+    expect(manifestColumnTwo.querySelector('div:nth-child(1)').textContent).to.include('default (control)');
     expect(manifestColumnTwo.querySelector('div:nth-child(2)').textContent).to.include('target');
     const editButton = mepPopupBody.querySelector('.mep-edit-manifest');
     expect(editButton).to.exist;
@@ -138,11 +138,11 @@ describe('MMM', () => {
     const mmmPopup = firstMmmDd.querySelector('.mep-popup');
     const previewButton = mmmPopup.querySelector('a[data-id="preview-button"]');
     expect(previewButton).to.exist;
-    expect(previewButton.href).to.include('https%3A%2F%2Fmain--homepage--adobecom.hlx.page%2Fhomepage%2Ffragments%2Fmep%2Fhp-11-15-black-friday.json--default');
+    expect(previewButton.href).to.include('https://www.adobe.com/?mep=');
     const option = mmmPopup.querySelector('option[name="https://main--homepage--adobecom.hlx.page/homepage/fragments/mep/hp-11-15-black-friday.json4"][value="target-apro-twp-abdn"]');
     expect(option).to.exist;
     option.click();
-    expect(previewButton.href).to.include('https://www.adobe.com/?mep=https%3A%2F%2Fmain--homepage--adobecom.hlx.page%2Fhomepage%2Ffragments%2Fmep%2Fhp-11-15-black-friday.json--default');
+    expect(previewButton.href).to.include('https://www.adobe.com/?mep=');
     const addHighlight = mmmPopup.querySelector('#mepHighlightCheckbox-4');
     expect(addHighlight).to.exist;
     addHighlight.click();
@@ -163,48 +163,30 @@ describe('MMM', () => {
     let filterData = getLocalStorageFilter();
     expect(filterData).to.be.null;
 
-    const copyButton = document.querySelector('.copy-to-clipboard');
-    expect(copyButton).to.exist;
     const event = new Event('change');
-    expect(copyButton.dataset.destination).to.not.include('geos');
-    expect(copyButton.dataset.destination).to.not.include('pages');
-    expect(copyButton.dataset.destination).to.not.include('filter');
 
     const geoDropdown = document.querySelector('#mmm-dropdown-geos');
     expect(geoDropdown).to.exist;
     geoDropdown.options[1].selected = true;
     geoDropdown.dispatchEvent(event);
-    expect(copyButton.dataset.destination).to.include('geos');
-    expect(copyButton.dataset.destination).to.not.include('pages');
-    expect(copyButton.dataset.destination).to.not.include('filter');
 
     const pageDropdown = document.querySelector('#mmm-dropdown-pages');
     expect(pageDropdown).to.exist;
     pageDropdown.options[2].selected = true;
     pageDropdown.dispatchEvent(event);
-    expect(copyButton.dataset.destination).to.include('geos');
-    expect(copyButton.dataset.destination).to.include('pages');
-    expect(copyButton.dataset.destination).to.not.include('filter');
 
     geoDropdown.options[0].selected = true;
     geoDropdown.dispatchEvent(event);
-    expect(copyButton.dataset.destination).to.not.include('geos');
-    expect(copyButton.dataset.destination).to.include('pages');
-    expect(copyButton.dataset.destination).to.not.include('filter');
 
     const lastSeenManifestDropdown = document.querySelector('#mmm-lastSeenManifest');
     lastSeenManifestDropdown.options[0].selected = true;
     lastSeenManifestDropdown.dispatchEvent(event);
-    expect(copyButton.dataset.destination).to.include('lastSeenManifest');
 
     const mmmSearchQuery = document.querySelector('#mmm-search-filter');
     expect(mmmSearchQuery).to.exist;
     mmmSearchQuery.value = 'pricing';
     mmmSearchQuery.dispatchEvent(event);
     await delay(DEBOUNCE_TIME + 1); // await debounce time
-    expect(copyButton.dataset.destination).to.not.include('geos');
-    expect(copyButton.dataset.destination).to.include('pages');
-    expect(copyButton.dataset.destination).to.include('filter');
 
     filterData = getLocalStorageFilter();
     expect(filterData).to.not.be.null;

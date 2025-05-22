@@ -67,7 +67,7 @@ class Footer {
       observer.disconnect();
       this.decorateContent();
     }, CONFIG.delays.decoration);
-  }, 'Error in global footer init', 'global-footer', 'error');
+  }, 'Error in global footer init', 'global-footer', 'e');
 
   decorateContent = () => logErrorFor(async () => {
     // Fetch footer content
@@ -81,7 +81,7 @@ class Footer {
       const error = new Error('Could not create global footer. Content not found!');
       error.tags = 'global-footer';
       error.url = url;
-      error.errorType = 'error';
+      error.errorType = 'e';
       lanaLog({ message: error.message, ...error });
       const { onFooterError } = getConfig();
       onFooterError?.(error);
@@ -128,13 +128,14 @@ class Footer {
     this.block.append(this.elements.footer);
     const { onFooterReady } = getConfig();
     onFooterReady?.();
-  }, 'Failed to decorate footer content', 'global-footer', 'error');
+  }, 'Failed to decorate footer content', 'global-footer', 'e');
 
   loadMenuLogic = async () => {
     this.menuLogic = this.menuLogic || new Promise(async (resolve) => {
       const menuLogic = await loadDecorateMenu();
       this.decorateMenu = menuLogic.decorateMenu;
       this.decorateLinkGroup = menuLogic.decorateLinkGroup;
+      this.decorateHeadline = menuLogic.decorateHeadline;
       resolve();
     });
 
@@ -169,7 +170,7 @@ class Footer {
         message: 'Issue with loadIcons',
         e: `${file.statusText} url: ${file.url}`,
         tags: 'global-footer',
-        errorType: 'info',
+        errorType: 'i',
       });
     }
     const content = await file.text();
@@ -186,6 +187,8 @@ class Footer {
 
     const featuredProductsContent = featuredProductElem.parentElement;
     this.elements.featuredProducts = toFragment`<div class="feds-featuredProducts"></div>`;
+    const featureProductsSection = toFragment`<div class="feds-menu-section"></div>`;
+    this.elements.featuredProducts.append(featureProductsSection);
 
     const [placeholder] = await Promise.all([
       replaceKey('featured-products', getFedsPlaceholderConfig()),
@@ -193,14 +196,16 @@ class Footer {
     ]);
 
     if (placeholder && placeholder.length) {
-      this.elements.featuredProducts
-        .append(toFragment`<span class="feds-featuredProducts-label" role="heading" aria-level="2">${placeholder}</span>`);
+      const headline = toFragment`<div class="feds-menu-headline">${placeholder}</div>`;
+      featureProductsSection.append(this.decorateHeadline(headline, 0));
     }
 
+    const featuredProductsList = toFragment`<ul></ul>`;
     featuredProductsContent.querySelectorAll('.link-group').forEach((linkGroup) => {
-      this.elements.featuredProducts.append(this.decorateLinkGroup(linkGroup));
+      featuredProductsList.append(toFragment`<li>${this.decorateLinkGroup(linkGroup)}</li>`);
     });
-
+    const featuredProductsContainer = toFragment`<div class="feds-menu-items">${featuredProductsList}</div>`;
+    featureProductsSection.append(featuredProductsContainer);
     return this.elements.featuredProducts;
   };
 
@@ -214,7 +219,7 @@ class Footer {
     try {
       url = new URL(regionSelector.href);
     } catch (e) {
-      lanaLog({ message: `Could not create URL for region picker; href: ${regionSelector.href}`, tags: 'global-footer', errorType: 'error' });
+      lanaLog({ message: `Could not create URL for region picker; href: ${regionSelector.href}`, tags: 'global-footer', errorType: 'e' });
       return this.elements.regionPicker;
     }
 

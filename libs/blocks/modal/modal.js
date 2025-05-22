@@ -14,6 +14,7 @@ const CLOSE_ICON = `<svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" w
 
 let isDelayedModal = false;
 let prevHash = '';
+let isDeepLink = false;
 const dialogLoadingSet = new Set();
 
 export function findDetails(hash, el) {
@@ -78,6 +79,11 @@ export function closeModal(modal) {
     window.location.hash = prevHash;
     prevHash = '';
   }
+
+  if (isDeepLink) {
+    document.querySelector('#onetrust-banner-sdk')?.focus();
+    isDeepLink = false;
+  }
 }
 
 function isElementInView(element) {
@@ -119,10 +125,11 @@ async function getPathModal(path, dialog) {
 
 export async function getModal(details, custom) {
   if (!((details?.path && details?.id) || custom)) return null;
-  const { id } = details || custom;
+  const { id, deepLink } = details || custom;
+  isDeepLink = deepLink;
 
   dialogLoadingSet.add(id);
-  const dialog = createTag('div', { class: 'dialog-modal', id });
+  const dialog = createTag('div', { class: 'dialog-modal', id, role: 'dialog', 'aria-modal': true });
   const loadedEvent = new Event('milo:modal:loaded');
 
   if (custom) getCustomModal(custom, dialog);
@@ -210,6 +217,26 @@ export async function getModal(details, custom) {
   if (iframe) {
     if (details?.title) iframe.setAttribute('title', details.title);
 
+    if (iframe.title) {
+      dialog.setAttribute('aria-label', iframe.title);
+    } else {
+      iframe.onload = () => {
+        try {
+          if ((new URL(iframe.src).origin !== window.location.origin) && iframe.title) {
+            dialog.setAttribute('aria-label', iframe.title);
+            return;
+          }
+
+          const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+          const iframeHeading = iframeDoc.querySelector('h1, h2, h3, h4, h5, h6')?.textContent.trim();
+          if (iframeHeading) dialog.setAttribute('aria-label', iframeHeading);
+          if (!iframe.title && iframeHeading) iframe.title = iframeHeading;
+        } catch (e) {
+          // Cross-origin iframe, can't access content
+        }
+      };
+    }
+
     if (dialog.classList.contains('commerce-frame') || dialog.classList.contains('dynamic-height')) {
       const { default: enableCommerceFrameFeatures } = await import('./modal.merch.js');
       await enableCommerceFrameFeatures({ dialog, iframe });
@@ -226,6 +253,9 @@ export async function getModal(details, custom) {
       iframe.style.height = '100%';
     }
     if (!custom?.closeEvent) dialog.addEventListener('iframe:modal:closed', () => closeModal(dialog));
+  } else {
+    const firstHeading = dialog.querySelector('h1, h2, h3, h4, h5, h6');
+    if (firstHeading) dialog.setAttribute('aria-label', firstHeading.textContent.trim());
   }
 
   return dialog;
@@ -271,6 +301,7 @@ export default function init(el) {
   if (delayedModal(el) || window.location.hash !== modalHash || document.querySelector(`div.dialog-modal${modalHash}`)) return null;
   if (dialogLoadingSet.has(modalHash?.replace('#', ''))) return null; // prevent duplicate modal loading
   const details = findDetails(window.location.hash, el);
+  details.deepLink = true;
   return details ? getModal(details) : null;
 }
 

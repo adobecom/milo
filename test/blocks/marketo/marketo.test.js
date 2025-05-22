@@ -142,18 +142,32 @@ describe('Marketo ungated one page experience', () => {
     expect(document.querySelector('#success-section').classList.contains('hide-block')).to.be.false;
   });
 
-  it('logs error if success section is not provided', async () => {
-    document.querySelector('#success-data').remove();
+  it('hides success hide section that appears after marketo', () => {
+    document.querySelector('#success-hide-section').classList.remove('form-success-hide');
     init(document.querySelector('.marketo'));
-    expect(window.lana.log.args[0][0]).to.equal('Error showing Marketo success section');
+    expect(document.querySelector('#success-hide-section').classList.contains('hide-block')).to.be.false;
+    document.querySelector('#success-hide-section').classList.add('form-success-hide');
+    document.dispatchEvent(new Event(MILO_EVENTS.DEFERRED));
+    clock.tick(500);
+    expect(document.querySelector('#success-hide-section').classList.contains('hide-block')).to.be.true;
   });
 
-  it('logs error if success section does not appear after maximum intervals', async () => {
-    document.querySelector('#success-section').classList.remove('form-success');
+  it('logs error if success section is not provided', () => {
+    document.querySelector('#success-data').remove();
+    document.querySelector('#success-hide-data').remove();
+    init(document.querySelector('.marketo'));
+    expect(window.lana.log.args[0][0]).to.equal('Error showing Marketo success section');
+    expect(window.lana.log.args[1][0]).to.equal('Error hiding Marketo success section');
+  });
 
+  it('logs error if success section does not toggle after maximum intervals', () => {
+    document.querySelector('#success-section').classList.remove('form-success');
+    document.querySelector('#success-hide-section').classList.remove('form-success-hide');
     init(document.querySelector('.marketo'));
     expect(document.querySelector('#success-section').classList.contains('hide-block')).to.be.true;
+    expect(document.querySelector('#success-hide-section').classList.contains('hide-block')).to.be.false;
     clock.runAll();
     expect(window.lana.log.args[0][0]).to.equal('Error showing Marketo success section');
+    expect(window.lana.log.args[1][0]).to.equal('Error hiding Marketo success section');
   });
 });
