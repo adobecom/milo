@@ -8,7 +8,7 @@ export const FRIES_AEM_FRAGMENT_MAPPING = {
     description: {
         tag: 'div',
         slot: 'body-s',
-        maxCount: 300,
+        maxCount: 2000,
         withSuffix: false,
     },
     badge: { tag: 'div', slot: 'badge' , default: 'spectrum-yellow-300'},
