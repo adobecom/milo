@@ -269,6 +269,18 @@ describe('processCTAs', async () => {
         expect(link.tagName.toLowerCase()).to.equal('a');
         expect(link.classList.contains('primary-link')).to.be.true;
     });
+
+    it('should handle regular footer links', async () => {
+        const fields = {
+            ctas: `<a href="#">Regular link</a>`,
+        };
+        processCTAs(fields, merchCard, aemFragmentMapping);
+        const footer = getFooterElement(merchCard);
+        expect(footer).to.exist;
+        const link = footer.firstChild;
+        expect(link.tagName.toLowerCase()).to.equal('a');
+        expect(link.getAttribute('is')).to.be.null;
+    });
 });
 
 describe('processSubtitle', () => {
