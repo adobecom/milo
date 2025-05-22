@@ -200,6 +200,7 @@ export class AemFragment extends HTMLElement {
                 this.#fetchPromise,
                 Promise.resolve(false),
             ]);
+            console.log('ready', ready);
             if (!ready) return; // already fetching data
         }
         if (flushCache) {
@@ -255,7 +256,7 @@ export class AemFragment extends HTMLElement {
         let fragment = cache.get(this.#fragmentId);
         if (fragment) {
             this.#rawData = fragment;
-            return;
+            return true;
         }
         const { masIOUrl, wcsApiKey, locale } = this.#service.settings;
         const endpoint = `${masIOUrl}/fragment?id=${this.#fragmentId}&api_key=${wcsApiKey}&locale=${locale}`;
@@ -264,7 +265,7 @@ export class AemFragment extends HTMLElement {
         // TODO add all references to cache
         cache.addByRequestedId(this.#fragmentId, fragment);
         this.#rawData = fragment;
-        return fragment;
+        return true;
     }
 
     get updateComplete() {
