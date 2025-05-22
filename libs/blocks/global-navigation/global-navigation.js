@@ -371,7 +371,6 @@ const convertToPascalCase = (str) => str
   ?.split('-')
   .map((s) => s.charAt(0).toUpperCase() + s.slice(1))
   .join(' ');
-  
 class Gnav {
   constructor({ content, block, newMobileNav } = {}) {
     this.content = content;
