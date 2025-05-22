@@ -236,6 +236,7 @@ async adjustAddon() {
       align-self: flex-start;
       flex: none;
       color: var(--merch-color-grey-700);
+      font-size: var(--consonant-merch-card-body-xs-font-size);
     }
 
     @media screen and ${unsafeCSS(TABLET_DOWN)} {
