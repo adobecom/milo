@@ -255,7 +255,7 @@ export class AemFragment extends HTMLElement {
         let fragment = cache.get(this.#fragmentId);
         if (fragment) {
             this.#rawData = fragment;
-            return;
+            return true;
         }
         const { masIOUrl, wcsApiKey, locale } = this.#service.settings;
         const endpoint = `${masIOUrl}/fragment?id=${this.#fragmentId}&api_key=${wcsApiKey}&locale=${locale}`;
