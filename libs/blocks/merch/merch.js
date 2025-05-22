@@ -519,10 +519,9 @@ export function appendTabName(url) {
 export function appendExtraOptions(url, extraOptions) {
   if (!extraOptions) return url;
   const extraOptionsObj = JSON.parse(extraOptions);
-  const isRelative = url.startsWith('/');
   let urlWithExtraOptions;
   try {
-    const fullUrl = isRelative ? `${window.location.origin}${url}` : url;
+    const fullUrl = url.startsWith('/') ? `${window.location.origin}${url}` : url;
     urlWithExtraOptions = new URL(fullUrl);
   } catch (err) {
     window.lana?.log(`Invalid URL ${url} : ${err}`);
@@ -537,10 +536,6 @@ export function appendExtraOptions(url, extraOptions) {
       );
     }
   });
-  if (isRelative) {
-    const originRegex = new RegExp(window.location.origin, 'g');
-    return urlWithExtraOptions.href.replace(originRegex, '');
-  }
   return urlWithExtraOptions.href;
 }
 
@@ -802,9 +797,12 @@ export async function getPriceContext(el, params) {
   };
 }
 
+let modalReopened = false;
 export function reopenModal(cta) {
+  if (modalReopened) return;
   if (cta && cta.getAttribute('data-modal-id') === window.location.hash.replace('#', '')) {
     cta.click();
+    modalReopened = true;
   }
 }
 
