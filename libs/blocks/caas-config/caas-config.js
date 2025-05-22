@@ -78,6 +78,7 @@ const defaultOptions = {
     'icon-card': 'Icon Card',
     'news-card': 'News Card',
     'custom-card': 'Custom Card',
+    'slide-card': 'Slide Card',
   },
   collectionBtnStyle: {
     primary: 'Primary',
