@@ -12,7 +12,7 @@ function getDynamicElements(merchCard, merchOfferSelect) {
     const price = merchOfferSelect.price;
     const cta = merchOfferSelect.getSlottedElement('cta');
     const description = merchOfferSelect.getSlottedElement('description');
-    const badge = merchCard.shadowRoot.querySelector('div.plans-badge');
+    const badge = merchCard.shadowRoot.querySelector('div#badge');
     return { price, cta, description, badge };
 }
 
