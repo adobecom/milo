@@ -93,6 +93,7 @@ function decorateSlideIndicators(slides, jumpTo) {
   return indicatorDots;
 }
 
+// ##mweb changes ##
 function updateButtonStates(carouselElements) {
   const { slides, nextPreviousBtns } = carouselElements;
   const activeSlideIndex = [...slides].findIndex((slide) => slide.classList.contains('active'));
@@ -296,7 +297,7 @@ function moveSlides(event, carouselElements, jumpToIndex) {
     referenceSlide.style.order = i;
   }
 
-  // Update button states after slide movement
+  // ##mweb## Update button states after slide movement for mweb
   if (carouselElements.el.classList.contains('disable-buttons') && window.innerWidth < 900) {
     updateButtonStates(carouselElements);
   }
@@ -333,7 +334,7 @@ export function getSwipeDirection(swipe, swipeDistance) {
   * Mobile swipe/touch direction detection
   */
 function mobileSwipeDetect(carouselElements) {
-  const { el } = carouselElements;
+  const { el, slides } = carouselElements;
   const swipe = { xMin: 50 };
   /* c8 ignore start */
   el.addEventListener('touchstart', (event) => {
@@ -350,6 +351,16 @@ function mobileSwipeDetect(carouselElements) {
     const swipeDistance = {};
     swipeDistance.xDistance = getSwipeDistance(swipe.xStart, swipe.xEnd);
     carouselElements.direction = getSwipeDirection(swipe, swipeDistance);
+
+    // ##mweb## Get current active slide index for mweb
+    const activeSlideIndex = [...slides].findIndex((slide) => slide.classList.contains('active'));
+    if (carouselElements.el.classList.contains('disable-buttons')
+      && ((activeSlideIndex === 0 && carouselElements.direction === 'right')
+      || (activeSlideIndex === slides.length - 1 && carouselElements.direction === 'left'))) {
+      swipe.xStart = 0;
+      swipe.xEnd = 0;
+      return;
+    }
 
     // reset end swipe values
     swipe.xStart = 0;
@@ -502,6 +513,7 @@ export default function init(el) {
     NoOfVisibleSlides = parseInt(el.classList[IndexOfShowClass].split('-')[1], 10);
   }
   slides.slice(NoOfVisibleSlides).forEach((slide) => slide.querySelectorAll('a').forEach((focusableElement) => { focusableElement.setAttribute('tabindex', -1); }));
+  // ##mweb## Update button states after slide movement for mweb
   if (el.classList.contains('disable-buttons') && window.innerWidth < 900) {
     updateButtonStates(carouselElements);
   }
