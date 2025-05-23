@@ -134,6 +134,16 @@ p.preflight-content-heading-edit {
   cursor: pointer;
 }
 
+.preflight-group-row p:first-child a{
+  color: #FFF;
+  display: inline-block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 30em;
+  width: 100%;
+}
+
 .preflight-group-row.preflight-group-heading:hover {
   cursor: pointer;
 }
@@ -226,13 +236,9 @@ p.preflight-date-wrapper .disabled-publish {
 
 .preflight-group-row a {
   color: #FFF;
-  display: inline-block;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 30em;
-  width: 100%;
 }
+
+
 
 span.preflight-time {
   font-size: 14px;
