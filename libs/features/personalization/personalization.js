@@ -1247,14 +1247,29 @@ export async function applyPers({ manifests }) {
   config.mep.martech = `|${pznVariants.join('--')}|${pznManifests.join('--')}`;
 }
 
-export const combineMepSources = async (persEnabled, promoEnabled, mepParam) => {
+function parseManifestUrlAndAddSource(manifestString, source) {
+  if (!manifestString) return [];
+  return manifestString.toLowerCase()
+    .split(/,|(\s+)|(\\n)/g)
+    .filter((path) => path?.trim())
+    .map((manifestPath) => ({ manifestPath, source: [source] }));
+}
+
+export const combineMepSources = async (
+  persEnabled,
+  rocPersEnabled,
+  promoEnabled,
+  mepParam,
+) => {
   let persManifests = [];
 
   if (persEnabled) {
-    persManifests = persEnabled.toLowerCase()
-      .split(/,|(\s+)|(\\n)/g)
-      .filter((path) => path?.trim())
-      .map((manifestPath) => ({ manifestPath, source: ['pzn'] }));
+    persManifests = parseManifestUrlAndAddSource(persEnabled, 'pzn');
+  }
+
+  if (rocPersEnabled) {
+    const rocPersManifest = parseManifestUrlAndAddSource(rocPersEnabled, 'pzn-roc');
+    persManifests = persManifests.concat(rocPersManifest);
   }
 
   if (promoEnabled) {
@@ -1419,7 +1434,7 @@ const awaitMartech = () => new Promise((resolve) => {
 export async function init(enablements = {}) {
   let manifests = [];
   const {
-    mepParam, mepHighlight, mepButton, pzn, promo, enablePersV2,
+    mepParam, mepHighlight, mepButton, pzn, pznroc, promo, enablePersV2,
     target, ajo, countryIPPromise, mepgeolocation, targetInteractionPromise, calculatedTimeout,
     postLCP,
   } = enablements;
@@ -1443,13 +1458,13 @@ export async function init(enablements = {}) {
       targetInteractionPromise,
     };
 
-    manifests = manifests.concat(await combineMepSources(pzn, promo, mepParam));
+    manifests = manifests.concat(await combineMepSources(pzn, pznroc, promo, mepParam));
     manifests?.forEach((manifest) => {
       if (manifest.disabled) return;
       const normalizedURL = normalizePath(manifest.manifestPath);
       loadLink(normalizedURL, { as: 'fetch', crossorigin: 'anonymous', rel: 'preload' });
     });
-    if (pzn) loadLink(getXLGListURL(config), { as: 'fetch', crossorigin: 'anonymous', rel: 'preload' });
+    if (pzn || pznroc) loadLink(getXLGListURL(config), { as: 'fetch', crossorigin: 'anonymous', rel: 'preload' });
   }
 
   if (enablePersV2 && target === true) {
