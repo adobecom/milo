@@ -317,6 +317,8 @@ export const [setConfig, updateConfig, getConfig] = (() => {
 
 let federatedContentRoot;
 export const getFederatedContentRoot = () => {
+  if (federatedContentRoot) return federatedContentRoot;
+
   const cdnWhitelistedOrigins = [
     'https://www.adobe.com',
     'https://business.adobe.com',
