@@ -102,9 +102,10 @@ class KeyboardNavigation {
   };
 
   addEventListeners = () => {
-    [...document.querySelectorAll(`${selectors.globalNav}, ${selectors.globalFooter}`)]
+    [...document.querySelectorAll(`${selectors.globalNavTag}, ${selectors.globalFooterTag}`)]
       .forEach((el) => {
         el.addEventListener('keydown', (e) => logErrorFor(() => {
+          if (!e.target.closest(`${selectors.globalNav}, ${selectors.globalFooter}`)) return;
           switch (e.code) {
             case 'Tab': {
               const isNewNav = !!document.querySelector('header.new-nav');
@@ -114,7 +115,12 @@ class KeyboardNavigation {
               if (isNewNav && isOpen) {
                 if (e.target.classList.contains(selectors.mainNavToggle.slice(1))) {
                   e.preventDefault();
-                  document.querySelector(`${selectors.mainMenuItems}, ${selectors.mainMenuLinks}`).focus();
+                  if (e.shiftKey) {
+                    const menuItems = [...document.querySelectorAll(`${selectors.mainMenuItems}, ${selectors.mainMenuLinks}`)];
+                    menuItems.at(-1)?.focus();
+                  } else {
+                    document.querySelector(`${selectors.mainMenuItems}, ${selectors.mainMenuLinks}`)?.focus();
+                  }
                 }
               } else {
                 cycleOnOpenSearch({ e, isDesktop: this.desktop.matches });
@@ -126,6 +132,14 @@ class KeyboardNavigation {
                   e.stopPropagation();
                   closeProfile();
                 }
+              }
+              break;
+            }
+            case 'Escape': {
+              const toggle = document.querySelector('header.new-nav .feds-toggle');
+              if (toggle && toggle === e.target && toggle.getAttribute('aria-expanded') === 'true') {
+                toggle.click();
+                toggle.focus();
               }
               break;
             }
