@@ -61,7 +61,8 @@ function getUrl(el) {
   try {
     return new URL(dataPath);
   } catch {
-    const elPath = el.href || (el.src && el.nodeName === 'IFRAME' ? el?.parentElement.dataset.pdfSrc : el.src);
+    const isPdfIframe = el.src && el.nodeName === 'IFRAME' && el.parentElement?.dataset.pdfSrc;
+    const elPath = el.href || (isPdfIframe ? el.parentElement.dataset.pdfSrc : el.src);
     const path = dataPath ? `${window.location.origin}${dataPath}` : elPath;
     return new URL(path);
   }
