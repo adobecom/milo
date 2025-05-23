@@ -14,10 +14,12 @@ async function masFetch(resource, options = {}, retries = 2, baseDelay = 100) {
         try {
             const response = await fetch(resource, options);
             // Don't retry on server errors (HTTP status codes)
+            response.retryCount = attempt;
             return response;
         } catch (error) {
             // Only retry on network errors
             lastError = error;
+            lastError.retryCount = attempt;
 
             // If we've used all our retries, throw the error
             if (attempt > retries) break;
