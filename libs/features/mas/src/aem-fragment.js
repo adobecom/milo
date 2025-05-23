@@ -233,11 +233,11 @@ export class AemFragment extends HTMLElement {
 
     #fail(message) {
         this.#fetchPromise = null;
+        this.#fetchInfo.message = message;
         this.classList.add('error');
         const detail = {
             ...this.#fetchInfo,
             ...this.#service.duration,
-            message,
         };
         this.#log.error(message, detail);
         this.dispatchEvent(
