@@ -518,6 +518,14 @@ function appendTabName(url, el) {
 function appendExtraOptions(url, extraOptions) {
   if (!extraOptions) return url;
   const extraOptionsObj = JSON.parse(extraOptions);
+  let urlWithExtraOptions;
+  try {
+    const fullUrl = url.startsWith('/') ? `${window.location.origin}${url}` : url;
+    urlWithExtraOptions = new URL(fullUrl);
+  } catch (err) {
+    window.lana?.log(`Invalid URL ${url} : ${err}`);
+    return url;
+  }
   Object.keys(extraOptionsObj).forEach((key) => {
     if (CHECKOUT_ALLOWED_KEYS.includes(key)) {
       const value = extraOptionsObj[key];
@@ -530,22 +538,7 @@ function appendExtraOptions(url, extraOptions) {
   return url;
 }
 
-// TODO this should migrate to checkout.js buildCheckoutURL
-export function appendDexterParameters(url, extraOptions, el) {
-  const isRelativePath = url.startsWith('/');
-  let absoluteUrl;
-  try {
-    absoluteUrl = new URL(isRelativePath ? `${window.location.origin}${url}` : url);
-  } catch (err) {
-    window.lana?.log(`Invalid URL ${url} : ${err}`);
-    return url;
-  }
-  absoluteUrl = appendExtraOptions(absoluteUrl, extraOptions);
-  absoluteUrl = appendTabName(absoluteUrl, el);
-  return isRelativePath ? absoluteUrl.href.replace(window.location.origin, '') : absoluteUrl.href;
-}
-
-async function openExternalModal(url, getModal, extraOptions, el) {
+async function openExternalModal(url, getModal, extraOptions) {
   loadStyle(`${getConfig().base}/blocks/iframe/iframe.css`);
   const root = createTag('div', { class: 'milo-iframe' });
   const absoluteUrl = appendDexterParameters(url, extraOptions, el);
