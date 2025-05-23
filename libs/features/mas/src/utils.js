@@ -52,7 +52,7 @@ export function isMobile() {
 }
 
 export function printMeasure(measure) {
-  return `startTime: ${measure.startTime.toFixed(2)}, duration: ${measure.duration.toFixed(2)}`;
+  return `startTime:${measure.startTime.toFixed(2)}|duration:${measure.duration.toFixed(2)}`;
 }
 
 /**

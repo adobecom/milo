@@ -14,6 +14,12 @@ sheet.replaceSync(':host { display: contents; }');
 const ATTRIBUTE_FRAGMENT = 'fragment';
 const ATTRIBUTE_AUTHOR = 'author';
 const AEM_FRAGMENT_TAG_NAME = 'aem-fragment';
+const FETCH_INFO_HEADERS = {
+  requestId: 'X-Request-Id',
+  etag: 'Etag',
+  lastModified: 'Last-Modified',
+  serverTiming: 'server-timing',
+}
 
 class FragmentCache {
     #fragmentCache = new Map();
@@ -186,12 +192,13 @@ export class AemFragment extends HTMLElement {
     #applyHeaders(response) {
         if (!response?.headers) return;
         const headers = response.headers;
-        Object.assign(this.#fetchInfo, {
-            requestId: headers.get('X-Request-Id'),
-            etag: headers.get('Etag'),
-            lastModified: headers.get('Last-Modified'),
-            serverTiming: headers.get('server-timing'),
-        });
+        for (const [key, value] of Object.entries(FETCH_INFO_HEADERS)) {
+            let headerValue = headers.get(value);
+            if (headerValue) {
+                headerValue = headerValue.replace(/[,;]/g, '|');
+                this.#fetchInfo[key] = headerValue;
+            }
+        }
     }
 
     async refresh(flushCache = true) {
