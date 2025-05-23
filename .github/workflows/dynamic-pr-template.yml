@@ -53,7 +53,7 @@ jobs:
              [[ "${{ steps.changed-files.outputs.all_changed_files }}" == *"libs/styles/styles.css"* ]]; then
             echo "Changes detected in global navigation or footer components"
             TEST_URLS=(
-              "## GNav Test URLs"
+              "<details><summary><strong>GNav Test URLs</strong></summary>"
               ""
               "**Gnav + Footer + Region Picker modal:**"
               "- Acrobat: https://main--dc--adobecom.hlx.live/acrobat?martech=off&milolibs=${BRANCH_NAME}--milo--${REPO_OWNER}"
@@ -92,7 +92,8 @@ jobs:
               "- URL: https://main--blog--adobecom.aem.page/?martech=off&milolibs=${BRANCH_NAME}--milo--${REPO_OWNER}"
               ""
               "**RTL Locale**"
-              "- URL: https://main--homepage--adobecom.aem.live/mena_ar/homepage/index-loggedout?martech=off&milolibs=${BRANCH_NAME}--milo--${REPO_OWNER}"   
+              "- URL: https://main--homepage--adobecom.aem.live/mena_ar/homepage/index-loggedout?martech=off&milolibs=${BRANCH_NAME}--milo--${REPO_OWNER}"
+              "</details>"
             )
           else
             echo "No changes detected in global navigation or footer"
