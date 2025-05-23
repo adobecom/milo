@@ -283,11 +283,11 @@ const startInitialization = async (config, event, onDemand) => {
 let eventListenerAdded = false;
 const addEventListeners = () => {
   if (eventListenerAdded) return;
-  document.addEventListener("keydown", function(event) {
+  document.addEventListener('keydown', (event) => {
     if (event.key === 'Escape') {
       const tooltipMessage = document.querySelector('.adbmsg-tooltip');
       if (tooltipMessage && tooltipMessage.style.display !== 'none') {
-          tooltipMessage.style.display = 'none';
+        tooltipMessage.style.display = 'none';
       }
     }
   });
