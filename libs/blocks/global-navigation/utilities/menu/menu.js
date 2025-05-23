@@ -95,7 +95,7 @@ const decorateElements = ({ elem, className = 'feds-navLink', itemIndex = { posi
 
     // Decorate link group
     if (link.matches('.link-group')) {
-      return decorateLinkGroup(link, itemIndex.position);
+      return toFragment`<li>${decorateLinkGroup(link, itemIndex.position)}</li>`;
     }
 
     // If the link is wrapped in a 'strong' or 'em' tag, make it a CTA
@@ -282,14 +282,28 @@ const decorateColumns = async ({ content, separatorTagName = 'H5' } = {}) => {
 
         itemDestination.append(imageElem);
       } else {
-        const decoratedElem = decorateElements({ elem: columnElem, itemIndex });
+        let decoratedElem = decorateElements({ elem: columnElem, itemIndex });
         columnElem.remove();
 
         // If an items template has been previously created,
         // add the current element to it;
         // otherwise append the element to the section
         const elemDestination = menuItems || itemDestination;
-        elemDestination.append(decoratedElem);
+        let menuList = null;
+        if (decoratedElem.tagName === 'P') {
+          const li = toFragment`<li></li>`;
+          li.innerHTML = decoratedElem.innerHTML;
+          decoratedElem = li;
+        }
+        if (decoratedElem.tagName === 'LI') {
+          if (!elemDestination.querySelector('ul')) {
+            elemDestination.append(toFragment`<ul></ul>`);
+          }
+          menuList = elemDestination.querySelector('ul');
+        } else {
+          menuList = elemDestination;
+        }
+        menuList.append(decoratedElem);
       }
     }
 
