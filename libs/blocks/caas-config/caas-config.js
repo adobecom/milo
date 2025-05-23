@@ -370,7 +370,7 @@ const UiPanel = () => html`
   <${Input} label="Show Total Count" prop="showTotalResults" type="checkbox" />
   <${Input} label="Show Card Borders" prop="setCardBorders" type="checkbox" />
   <${Input} label="Show Footer Dividers" prop="showFooterDivider" type="checkbox" />
-  <${Input} label="Show Card Badges" prop="showCardBadges" type="checkbox" />
+  <${Input} label="Show Card Badges / BadgeImage" prop="showCardBadges" type="checkbox" />
   <${Input} label="Show Different CTA for Live Events" prop="dynamicCTAForLiveEvents" type="checkbox" />
   <${Input} label="Hide Date for On-Demand Content" prop="hideDateInterval" type="checkbox" />
   <${Input} label="Hide Card Banners" prop="disableBanners" type="checkbox" />
