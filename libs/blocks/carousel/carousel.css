@@ -209,7 +209,7 @@ html[dir="rtl"] .carousel-slides .section.carousel-slide {
 }
 
 .carousel .carousel-controls {
-  display: flex;
+  display: none;
   position: relative;
   max-width: 88px;
   overflow: hidden;
@@ -721,4 +721,11 @@ html[dir="rtl"] .carousel .move-indicators {
 
     transform: translateX(calc(round(down, (var(--offset) / (var(--slides) - 1)), 2px) * -1));
   }
+}
+
+.carousel .aria-live-container {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
 }

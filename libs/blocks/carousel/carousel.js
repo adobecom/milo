@@ -23,6 +23,7 @@ const KEY_CODES = {
   ARROW_LEFT: 'ArrowLeft',
   ARROW_RIGHT: 'ArrowRight',
 };
+const FOCUSABLE_SELECTOR = 'a, :not(.video-container, .pause-play-wrapper) > video';
 
 function decorateNextPreviousBtns() {
   const previousBtn = createTag(
@@ -179,6 +180,47 @@ function setIndicatorMultiplyer(carouselElements, activeSlideIndicator, event) {
   }
 }
 
+function updateAriaLive(ariaLive, slide) {
+  let text = '';
+  slide.querySelectorAll(':scope > :not(.section-metadata').forEach((el, index) => {
+    text += `${index ? ' ' : ''}${el.textContent.trim()}`;
+  });
+  if (text) {
+    ariaLive.textContent = text;
+  } else {
+    const img = slide.querySelector('img[alt]');
+    const video = slide.querySelectorAll('video[title], iframe[title]');
+    ariaLive.textContent = img?.getAttribute('alt') || video?.getAttribute('title') || '';
+  }
+}
+
+function setAriaHiddenAndTabIndex(carouselElements, activeSlide) {
+  const { el: carouselBlock, slides } = carouselElements;
+  const active = activeSlide ?? carouselBlock.querySelector('.carousel-slide.active');
+  const activeSlideIndex = slides
+    .findIndex((el) => active === el);
+  const indexOfShowClass = [...carouselBlock.classList].findIndex((ele) => ele.includes('show-'));
+  let tempSlides = slides;
+  let noOfVisibleSlides = 1;
+  const mediaQueryMatches = window.matchMedia('(min-width: 900px)').matches;
+  if (indexOfShowClass >= 0 && mediaQueryMatches) {
+    noOfVisibleSlides = parseInt(carouselBlock.classList[indexOfShowClass].split('-')[1], 10);
+  }
+  if (activeSlideIndex > 0) {
+    tempSlides = [...slides.slice(activeSlideIndex), ...slides.slice(0, activeSlideIndex)];
+  }
+  tempSlides.forEach((slide, index) => {
+    let tabIndex = -1;
+    if (index < noOfVisibleSlides) {
+      tabIndex = 0;
+      slide.removeAttribute('aria-hidden');
+    } else {
+      slide.setAttribute('aria-hidden', true);
+    }
+    slide.querySelectorAll(FOCUSABLE_SELECTOR).forEach((focusableElement) => { focusableElement.setAttribute('tabindex', tabIndex); });
+  });
+}
+
 function moveSlides(event, carouselElements, jumpToIndex) {
   const {
     slideContainer,
@@ -187,8 +229,11 @@ function moveSlides(event, carouselElements, jumpToIndex) {
     slideIndicators,
     controlsContainer,
     direction,
+    ariaLive,
     jumpTo,
   } = carouselElements;
+
+  ariaLive.textContent = '';
 
   let referenceSlide = slideContainer.querySelector('.reference-slide');
   let activeSlide = slideContainer.querySelector('.active');
@@ -208,7 +253,6 @@ function moveSlides(event, carouselElements, jumpToIndex) {
   referenceSlide.classList.remove('reference-slide');
   referenceSlide.style.order = null;
   activeSlide.classList.remove('active');
-  activeSlide.querySelectorAll('a, video').forEach((focusableElement) => focusableElement.setAttribute('tabindex', -1));
   activeSlideIndicator.classList.remove('active');
   if (jumpTo) activeSlideIndicator.setAttribute('tabindex', -1);
 
@@ -257,26 +301,11 @@ function moveSlides(event, carouselElements, jumpToIndex) {
   referenceSlide.classList.add('reference-slide');
   referenceSlide.style.order = '1';
 
+  updateAriaLive(ariaLive, activeSlide);
+
   // Update active slide and indicator dot attributes
   activeSlide.classList.add('active');
-  const indexOfActive = [...activeSlide.parentElement.children]
-    .findIndex((ele) => activeSlide.isSameNode(ele));
-  const IndexOfShowClass = [...carouselElements.el.classList].findIndex((ele) => ele.includes('show-'));
-  const tempSlides = [...slides.slice(indexOfActive), ...slides.slice(0, indexOfActive)];
-  if (IndexOfShowClass >= 0) {
-    const show = parseInt(carouselElements.el.classList[IndexOfShowClass].split('-')[1], 10);
-    tempSlides.forEach((slide, index) => {
-      let tabIndex = -1;
-      if (index < show) {
-        tabIndex = 0;
-      }
-      slide.querySelectorAll('a,:not(.video-container, .pause-play-wrapper) > video')
-        .forEach((focusableElement) => { focusableElement.setAttribute('tabindex', tabIndex); });
-    });
-  } else {
-    activeSlide.querySelectorAll('a,:not(.video-container, .pause-play-wrapper) > video')
-      .forEach((focusableElement) => { focusableElement.setAttribute('tabindex', 0); });
-  }
+  setAriaHiddenAndTabIndex(carouselElements, activeSlide);
   activeSlideIndicator.classList.add('active');
   if (jumpTo) activeSlideIndicator.setAttribute('tabindex', 0);
   setIndicatorMultiplyer(carouselElements, activeSlideIndicator, event);
@@ -431,6 +460,11 @@ export default function init(el) {
   convertMpcMp4(slides);
   fragment.append(...slides);
   const slideWrapper = createTag('div', { class: 'carousel-wrapper' });
+  const ariaLive = createTag('div', {
+    class: 'aria-live-container',
+    'aria-live': 'polite',
+  });
+  slideWrapper.appendChild(ariaLive);
   const slideContainer = createTag('div', { class: 'carousel-slides' }, fragment);
   const carouselElements = {
     el,
@@ -441,6 +475,7 @@ export default function init(el) {
     controlsContainer,
     direction: undefined,
     jumpTo,
+    ariaLive,
   };
 
   if (el.classList.contains('lightbox')) {
@@ -482,13 +517,9 @@ export default function init(el) {
   parentArea.addEventListener(MILO_EVENTS.DEFERRED, handleDeferredImages, true);
 
   slides[0].classList.add('active');
-  const IndexOfShowClass = [...el.classList].findIndex((ele) => ele.includes('show-'));
-  let NoOfVisibleSlides = 1;
-  if (IndexOfShowClass >= 0) {
-    NoOfVisibleSlides = parseInt(el.classList[IndexOfShowClass].split('-')[1], 10);
-  }
-  slides.slice(NoOfVisibleSlides).forEach((slide) => slide.querySelectorAll('a').forEach((focusableElement) => { focusableElement.setAttribute('tabindex', -1); }));
   handleChangingSlides(carouselElements);
+  setAriaHiddenAndTabIndex(carouselElements, slides[0]);
+  window.addEventListener('resize', () => setAriaHiddenAndTabIndex(carouselElements));
 
   function handleLateLoadingNavigation() {
     [...el.querySelectorAll('.is-delayed')].forEach((item) => item.classList.remove('is-delayed'));
