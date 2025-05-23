@@ -2,6 +2,7 @@
 import { getNextVisibleItemPosition, getPreviousVisibleItemPosition, selectors } from './utils.js';
 import MainNav from './mainNav.js';
 import { closeAllDropdowns, lanaLog, logErrorFor } from '../utilities.js';
+import MobileGnav from './mobileGnav.js';
 
 const cycleOnOpenSearch = ({ e, isDesktop }) => {
   const withoutBreadcrumbs = [
@@ -77,6 +78,7 @@ class KeyboardNavigation {
     try {
       this.addEventListeners();
       this.mainNav = new MainNav();
+      this.mobileGnav = MobileGnav.init();
       if (newNavWithLnav) {
         this.loadLnavNavigation();
       }
