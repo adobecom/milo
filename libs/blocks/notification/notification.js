@@ -128,6 +128,8 @@ function addCloseAction(el, btn) {
     if (el.classList.contains('focus')) {
       document.body.classList.remove('mobile-disable-scroll');
       el.closest('.section').querySelector('.notification-curtain').remove();
+      document.body.querySelector('a[href], button, textarea, input, select, details, [tabindex]:not([tabindex="-1"])')
+        .focus({ focusVisible: true });
     }
     document.dispatchEvent(new CustomEvent('milo:sticky:closed'));
 
@@ -203,6 +205,11 @@ function curtainCallback(el) {
   const curtain = createTag('div', { class: 'notification-curtain' });
   document.body.classList.add('mobile-disable-scroll');
   el.insertAdjacentElement('afterend', curtain);
+  if (!document.body.classList.contains('disable-scroll') && document.body.classList.contains('mobile-disable-scroll')) {
+    const firstFocusable = el.querySelector('a, button, input, select, textarea');
+    firstFocusable.setAttribute('autofocus', '');
+    firstFocusable.focus({ focusVisible: true });
+  }
 }
 
 function decorateSplitList(el, listContent) {
@@ -258,6 +265,29 @@ async function decorateForegroundText(el, container) {
   if (iconArea?.textContent.trim()) await decorateLockup(iconArea, el);
 }
 
+function trapFocusWithElement(el, focusableElements) {
+  const updatedFocusableElements = focusableElements || [...el.querySelectorAll('a, button, input, select, textarea')];
+  const firstFocusable = updatedFocusableElements.shift();
+  const lastFocusable = updatedFocusableElements.pop();
+  const closeButton = el.querySelector('.close, a[href="#_evt-close"]');
+  el.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' || event.key === 'Esc') {
+      closeButton.click();
+    }
+    if (event.key === 'Tab') {
+      if (event.target.isEqualNode(firstFocusable) && event.shiftKey) {
+        lastFocusable.focus({ focusVisible: true });
+        event.preventDefault();
+        return;
+      }
+      if (lastFocusable.isEqualNode(event.target)) {
+        event.preventDefault();
+        firstFocusable.focus({ focusVisible: true });
+      }
+    }
+  });
+}
+
 async function decorateLayout(el) {
   const [background, ...rest] = el.querySelectorAll(':scope > div');
   const foreground = rest.pop();
@@ -294,4 +324,5 @@ export default async function init(el) {
     wrapCopy(blockText);
     decorateMultiViewport(el);
   }
+  trapFocusWithElement(el);
 }
