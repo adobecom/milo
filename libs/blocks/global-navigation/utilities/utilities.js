@@ -101,7 +101,7 @@ export const logPerformance = (
       sampleRate: 0.01,
     });
   } catch (e) {
-    // eslint-disable-next-line no-empty
+    console.error(e);
   }
 };
 
@@ -234,6 +234,19 @@ export async function loadDecorateMenu() {
 
   resolve(menu.default);
   return cachedDecorateMenu;
+}
+
+export function decorateCta({ elem, type = 'primaryCta', index } = {}) {
+  const modifier = type === 'secondaryCta' ? 'secondary' : 'primary';
+
+  const clone = elem.cloneNode(true);
+  clone.className = `feds-cta feds-cta--${modifier}`;
+  clone.setAttribute('daa-ll', getAnalyticsValue(clone.textContent, index));
+
+  return toFragment`
+    <div class="feds-cta-wrapper">
+      ${clone}
+    </div>`;
 }
 
 let curtainElem;

@@ -864,27 +864,6 @@ export async function buildCta(el, params) {
       cta.setAttribute('aria-label', ariaLabel);
     });
   }
-
-  if (getMetadata('mas-ff-copy-cta') === 'on') {
-    const { default: addCopyToClipboard } = await import('./copy-to-clipboard.js');
-    return addCopyToClipboard(el, cta);
-  }
-
-  /**
-   * TODO: This code block will be deprecated and removed in a future version.
-   * @see https://jira.corp.adobe.com/browse/MWPW-173470
-   * @see https://jira.corp.adobe.com/browse/MWPW-174411
-  */
-  cta.onceSettled().then(() => {
-    const prefix = getConfig()?.locale?.prefix;
-    if (!(prefix === '/kr' && cta.value[0]?.offerType === OFFER_TYPE_TRIAL)) return;
-    if (shouldAllowKrTrial(el, prefix)) {
-      cta.classList.remove('hidden-osi-trial-link');
-      return;
-    }
-    cta.remove();
-  });
-
   return cta;
 }
 
