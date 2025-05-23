@@ -116,11 +116,20 @@ export class Plans extends VariantLayout {
         }
     }
 
+    adjustCallout() {
+        const tooltipIcon = this.card.querySelector('[slot="callout-content"] .icon-button');
+        if (tooltipIcon && tooltipIcon.title) {
+            tooltipIcon.dataset.tooltip = tooltipIcon.title;
+            tooltipIcon.removeAttribute('title');
+        }
+    }
+
     postCardUpdateHook() {
         this.adaptForMobile();
         this.adjustTitleWidth();
         this.adjustLegal();
         this.adjustAddon();
+        this.adjustCallout();
     }
 
     get headingM() {

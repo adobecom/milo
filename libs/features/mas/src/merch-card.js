@@ -537,7 +537,6 @@ export class MerchCard extends LitElement {
 
     get addonCheckbox() {
       return this.querySelector('merch-addon');
-      return this.querySelector('merch-addon');
   }
 
     displayFooterElementsInColumn() {

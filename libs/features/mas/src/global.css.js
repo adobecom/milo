@@ -294,19 +294,6 @@ merch-card [slot='callout-content'] > p {
     line-height: var(--consonant-merch-card-callout-line-height);
 }
 
-merch-card [slot='callout-content'] .icon-button {
-    position: relative;
-    top: 3px;
-}
-
-merch-card [slot='callout-content'] .icon-button:before {
-    display: inline-block;
-    content: '';
-    width: 14px;
-    height: 14px;
-    background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" height="14" width="14"><path d="M7 .778A6.222 6.222 0 1 0 13.222 7 6.222 6.222 0 0 0 7 .778zM6.883 2.45a1.057 1.057 0 0 1 1.113.998q.003.05.001.1a1.036 1.036 0 0 1-1.114 1.114A1.052 1.052 0 0 1 5.77 3.547 1.057 1.057 0 0 1 6.784 2.45q.05-.002.1.001zm1.673 8.05a.389.389 0 0 1-.39.389H5.834a.389.389 0 0 1-.389-.389v-.778a.389.389 0 0 1 .39-.389h.388V7h-.389a.389.389 0 0 1-.389-.389v-.778a.389.389 0 0 1 .39-.389h1.555a.389.389 0 0 1 .389.39v3.5h.389a.389.389 0 0 1 .389.388z"/></svg>')
-}
-
 merch-card [slot='callout-content'] > div {
     display: flex;
     flex-direction: column;
@@ -525,6 +512,69 @@ sr-only {
   clip: rect(0, 0, 0, 0);
   white-space: nowrap;
   border: 0;
+}
+
+merch-card [slot='callout-content'] .icon-button {
+  position: relative;
+  top: 3px;
+  text-decoration: none;
+  border-bottom: none;
+  min-width: 14px;
+  display: inline-flex;
+  min-height: 14px;
+  align-items: center;
+  justify-content: center;
+  background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" height="14" width="14"><path d="M7 .778A6.222 6.222 0 1 0 13.222 7 6.222 6.222 0 0 0 7 .778zM6.883 2.45a1.057 1.057 0 0 1 1.113.998q.003.05.001.1a1.036 1.036 0 0 1-1.114 1.114A1.052 1.052 0 0 1 5.77 3.547 1.057 1.057 0 0 1 6.784 2.45q.05-.002.1.001zm1.673 8.05a.389.389 0 0 1-.39.389H5.834a.389.389 0 0 1-.389-.389v-.778a.389.389 0 0 1 .39-.389h.388V7h-.389a.389.389 0 0 1-.389-.389v-.778a.389.389 0 0 1 .39-.389h1.555a.389.389 0 0 1 .389.39v3.5h.389a.389.389 0 0 1 .389.388z"/></svg>')
+}
+
+merch-card [slot='callout-content'] .icon-button::before {
+  content: attr(data-tooltip);
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  left: 100%;
+  margin-left: 8px;
+  max-width: 140px;
+  padding: 10px;
+  border-radius: 5px;
+  background: #0469E3;
+  color: #fff;
+  text-align: left;
+  display: none;
+  z-index: 10;
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 16px;
+  width: max-content;
+}
+
+merch-card [slot='callout-content'] .icon-button::after {
+  content: "";
+  position: absolute;
+  left: 100%;
+  margin-left: -8px;
+  top: 50%;
+  transform: translateY(-50%);
+  border: 8px solid #0469E3;
+  border-color: transparent #0469E3 transparent transparent;
+  display: none;
+  z-index: 10;
+}
+
+merch-card [slot='callout-content'] .icon-button:hover::before,
+merch-card [slot='callout-content'] .icon-button:focus::before,
+merch-card [slot='callout-content'] .icon-button:active::before,
+merch-card [slot='callout-content'] .icon-button:hover::after,
+merch-card [slot='callout-content'] .icon-button:focus::after,
+merch-card [slot='callout-content'] .icon-button:active::after {
+  display: block; 
+}
+
+@media (max-width: 600px) {
+merch-card [slot='callout-content'] .icon-button::before { 
+    max-width: 180px;
+  }
 }
 `;
 document.head.appendChild(styles);
