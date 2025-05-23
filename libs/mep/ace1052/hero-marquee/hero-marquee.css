@@ -334,10 +334,6 @@ html[dir="rtl"] .hero-marquee li.icon-item span.icon {
 
   .hero-marquee.media-hidden-mobile .foreground .asset,
   .hero-marquee.media-hidden-mobile .foreground-media { display: none; }
-
-  .hero-marquee .con-block.row-text:has(.action-area) + .con-block.row-text .row-wrapper {
-    text-align: center;
-  }
 }
 
 /* Tablet ONLY */
@@ -536,7 +532,8 @@ html[dir="rtl"] .hero-marquee li.icon-item span.icon {
   }
 
   /* Block specific */
-  .hero-marquee .action-area a:not(.con-button) {
+  .hero-marquee .action-area a:not(.con-button),
+  .hero-marquee .con-block.row-text:has(.action-area) + .con-block.row-text .row-wrapper {
     align-self: center;
     font-size: 17px;
   }
