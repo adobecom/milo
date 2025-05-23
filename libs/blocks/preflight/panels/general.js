@@ -73,6 +73,9 @@ function findLinks(selector) {
     .reduce((links, el) => {
       const url = getUrl(el);
       const baseUrl = url.origin + url.pathname;
+      if (url.pathname.includes('/tools/caas')) {
+        return links;
+      }
       if (!hrefs.includes(baseUrl)) {
         hrefs.push(baseUrl);
         links.push({ url, edit: null, preview: 'Fetching', live: 'Fetching' });
