@@ -16,6 +16,8 @@ SERVICENOW_CMR_URL = 'https://ipaasapi-stage.adobe-services.com/change_managemen
 #SERVICENOW_GET_CMR_URL = 'https://ipaasapi.adobe-services.com/change_management/transactions/'
 SERVICENOW_GET_CMR_URL = 'https://ipaasapi-stage.adobe-services.com/change_management/transactions/'
 
+output_file = open(os.environ['GITHUB_OUTPUT'], 'a')
+
 def _search_value(value, target_string):
   if isinstance(value, str):
     return target_string in value
@@ -112,144 +114,176 @@ def get_cmr_id_operation():
 # Execute Script logic:
 # python3 servicenow.py
 if __name__ == "__main__":
-  print("Starting CMR Action...")
+  if os.environ['PR_STATE'] == 'open':
+    print("Starting CMR Action...")
 
-  print("Setting Planned Maintenance Time Windows for CMR...")
-  start_time = int((datetime.datetime.now() + datetime.timedelta(seconds = 10)).timestamp())
-  end_time = int((datetime.datetime.now() + datetime.timedelta(minutes = 10)).timestamp())
+    print("Setting Planned Maintenance Time Windows for CMR...")
+    start_time = int((datetime.datetime.now() + datetime.timedelta(seconds = 10)).timestamp())
+    end_time = int((datetime.datetime.now() + datetime.timedelta(minutes = 10)).timestamp())
 
-  print(f"Set start time for CMR: {start_time}")
-  print(f"Set end time for CMR: {end_time}")
+    print(f"Set start time for CMR: {start_time}")
+    print(f"Set end time for CMR: {end_time}")
 
-  print("Set Release Summary for CMR...")
-  release_title = os.environ['PR_TITLE']
-  release_details = os.environ['PR_BODY']
-  pr_num = os.environ['PR_NUMBER']
-  pr_link = os.environ['PR_LINK']
-  pr_created = os.environ['PR_CREATED_AT']
-  pr_merged = os.environ['PR_MERGED_AT']
-  release_summary = f"Release_Details: {release_details} \n\nPull Request Number: {pr_num} \nPull Request Link: {pr_link} \nPull Request Created At: {pr_created} \nPull Request Merged At: {pr_merged}"
+    print("Set Release Summary for CMR...")
+    release_title = os.environ['PR_TITLE']
+    release_details = os.environ['PR_BODY']
+    pr_num = os.environ['PR_NUMBER']
+    pr_link = os.environ['PR_LINK']
+    pr_created = os.environ['PR_CREATED_AT']
+    pr_merged = os.environ['PR_MERGED_AT']
+    release_summary = f"Release_Details: {release_details} \n\nPull Request Number: {pr_num} \nPull Request Link: {pr_link} \nPull Request Created At: {pr_created} \nPull Request Merged At: {pr_merged}"
 
-  print("Getting IMS Token")
-  headers = {"Content-Type":"multipart/form-data"}
-  data = {
-    'client_id': os.environ['IMSACCESS_CLIENT_ID'],
-    'client_secret': os.environ['IMSACCESS_CLIENT_SECRET'],
-    'grant_type': "authorization_code",
-    'code': os.environ['IMSACCESS_AUTH_CODE']
-  }
-  response = requests.post(IMS_URL, data=data)
-  json_parse = json.loads(response.text)
+    print("Getting IMS Token")
+    headers = {"Content-Type":"multipart/form-data"}
+    data = {
+      'client_id': os.environ['IMSACCESS_CLIENT_ID'],
+      'client_secret': os.environ['IMSACCESS_CLIENT_SECRET'],
+      'grant_type': "authorization_code",
+      'code': os.environ['IMSACCESS_AUTH_CODE']
+    }
+    response = requests.post(IMS_URL, data=data)
+    json_parse = json.loads(response.text)
 
-  if response.status_code != 200:
-    print(f"{POST_FAILURE_MESSAGE} {response.status_code}")
-    print(response.text)
-    sys.exit(1)
-  elif find_string_in_json(json_parse, "error"):
-    print(f"IMS token request failed with response code: {response.status_code}")
-    print(response.text)
-    sys.exit(1)
+    if response.status_code != 200:
+      print(f"{POST_FAILURE_MESSAGE} {response.status_code}")
+      print(response.text)
+      sys.exit(1)
+    elif find_string_in_json(json_parse, "error"):
+      print(f"IMS token request failed with response code: {response.status_code}")
+      print(response.text)
+      sys.exit(1)
+    else:
+      print(f"IMS token request was successful: {response.status_code}")
+      token = json_parse["access_token"]
+
+    print("Create CMR in ServiceNow...")
+
+    headers = {
+      "Accept": APPLICATION_JSON,
+      "Authorization":token,
+      "Content-Type": APPLICATION_JSON,
+      "api_key":os.environ['IPAAS_KEY']
+    }
+    data = {
+      "title":release_title,
+      "description":release_summary,
+      "instanceIds": [ os.environ['SNOW_INSTANCE_ID'] ],
+      "plannedStartDate": start_time,
+      "plannedEndDate": end_time,
+      "coordinator": "narcis@adobe.com",
+      "customerImpact": "No Impact",
+      "changeReason": [ "New Features", "Bug Fixes", "Enhancement", "Maintenance", "Security" ],
+      "preProductionTestingType": [ "End-to-End", "Functional", "Integrations", "QA", "Regression", "UAT", "Unit Test" ],
+      "backoutPlanType": "Roll back",
+      "approvedBy": [  "casalino@adobe.com", "jmichnow@adobe.com", "mauchley@adobe.com", "bbalakrishna@adobe.com", "tuscany@adobe.com", "brahmbha@adobe.com" ],
+      "testPlan": "Test plan is documented in the PR link in the Milo repository above. See the PR's merge checks to see Unit and Nala testing.",
+      "implementationPlan": "The change will be released as part of the continuous deployment of Milo's production branch, i.e., \"main\"",
+      "backoutPlan": "Revert merge to the Milo production branch by creating a revert commit.", "testResults": "Changes are tested and validated successfully in staging environment. Please see the link of the PR in the description for the test results and/or the \"#nala-test-results\" slack channel."
+    }
+    response = requests.post(SERVICENOW_CMR_URL, headers=headers, json=data)
+    json_parse = json.loads(response.text)
+
+    if response.status_code != 200:
+      print(f"{POST_FAILURE_MESSAGE} {response.status_code}")
+      print(response.text)
+      sys.exit(1)
+    elif find_string_in_json(json_parse, "error"):
+      print(f"CMR creation failed with response code: {response.status_code}")
+      print(response.text)
+      sys.exit(1)
+    else:
+      print(f"CMR creation was successful: {response.status_code}")
+      print(response.text)
+      transaction_id = json_parse["id"]
+      output_file.write(f"transaction_id={transaction_id}\n")
+      output_file.write(f"planned_start_time={datetime.datetime.fromtimestamp(start_time)}\n")
+      output_file.write(f"planned_end_time={datetime.datetime.fromtimestamp(end_time)}\n")
+      output_file.close()
   else:
-    print(f"IMS token request was successful: {response.status_code}")
-    token = json_parse["access_token"]
+    print("Waiting for Transaction from Queue to ServiceNow then Retrieve CMR ID...")
 
-  print("Create CMR in ServiceNow...")
+    print("Getting IMS Token")
+    headers = {"Content-Type":"multipart/form-data"}
+    data = {
+      'client_id': os.environ['IMSACCESS_CLIENT_ID'],
+      'client_secret': os.environ['IMSACCESS_CLIENT_SECRET'],
+      'grant_type': "authorization_code",
+      'code': os.environ['IMSACCESS_AUTH_CODE']
+    }
+    response = requests.post(IMS_URL, data=data)
+    json_parse = json.loads(response.text)
 
-  headers = {
-    "Accept": APPLICATION_JSON,
-    "Authorization":token,
-    "Content-Type": APPLICATION_JSON,
-    "api_key":os.environ['IPAAS_KEY']
-  }
-  data = {
-    "title":release_title,
-    "description":release_summary,
-    "instanceIds": [ os.environ['SNOW_INSTANCE_ID'] ],
-    "plannedStartDate": start_time,
-    "plannedEndDate": end_time,
-    "coordinator": "narcis@adobe.com",
-    "customerImpact": "No Impact",
-    "changeReason": [ "New Features", "Bug Fixes", "Enhancement", "Maintenance", "Security" ],
-    "preProductionTestingType": [ "End-to-End", "Functional", "Integrations", "QA", "Regression", "UAT", "Unit Test" ],
-    "backoutPlanType": "Roll back",
-    "approvedBy": [  "casalino@adobe.com", "jmichnow@adobe.com", "mauchley@adobe.com", "bbalakrishna@adobe.com", "tuscany@adobe.com", "brahmbha@adobe.com" ],
-    "testPlan": "Test plan is documented in the PR link in the Milo repository above. See the PR's merge checks to see Unit and Nala testing.",
-    "implementationPlan": "The change will be released as part of the continuous deployment of Milo's production branch, i.e., \"main\"",
-    "backoutPlan": "Revert merge to the Milo production branch by creating a revert commit.", "testResults": "Changes are tested and validated successfully in staging environment. Please see the link of the PR in the description for the test results and/or the \"#nala-test-results\" slack channel."
-  }
-  response = requests.post(SERVICENOW_CMR_URL, headers=headers, json=data)
-  json_parse = json.loads(response.text)
+    if response.status_code != 200:
+      print(f"{POST_FAILURE_MESSAGE} {response.status_code}")
+      print(response.text)
+      sys.exit(1)
+    elif find_string_in_json(json_parse, "error"):
+      print(f"IMS token request failed with response code: {response.status_code}")
+      print(response.text)
+      sys.exit(1)
+    else:
+      print(f"IMS token request was successful: {response.status_code}")
+      token = json_parse["access_token"]
 
-  if response.status_code != 200:
-    print(f"{POST_FAILURE_MESSAGE} {response.status_code}")
-    print(response.text)
-    sys.exit(1)
-  elif find_string_in_json(json_parse, "error"):
-    print(f"CMR creation failed with response code: {response.status_code}")
-    print(response.text)
-    sys.exit(1)
-  else:
-    print(f"CMR creation was successful: {response.status_code}")
-    print(response.text)
-    transaction_id = json_parse["id"]
+    servicenow_get_cmr_url = f'{SERVICENOW_GET_CMR_URL}{os.environ["TRANSACTION_ID"]}'
+    headers = {
+      "Accept": APPLICATION_JSON,
+      "Authorization":token,
+      "api_key":os.environ['IPAAS_KEY']
+    }
 
-  print("Waiting for Transaction from Queue to ServiceNow then Retrieve CMR ID...")
+    # Wait 10 seconds to provide time for the transaction to exit the queue and be saved into ServiceNow as a CMR record.
+    time.sleep(10)
 
-  servicenow_get_cmr_url = f'{SERVICENOW_GET_CMR_URL}{transaction_id}'
-  headers = {
-    "Accept": APPLICATION_JSON,
-    "Authorization":token,
-    "api_key":os.environ['IPAAS_KEY']
-  }
+    try:
+      cmr_id = backoff_with_timeout(get_cmr_id_operation, max_retries=30, base_delay=1, max_delay=60, timeout=900)
+      print(f"CMR ID found and validated: {cmr_id}")
+      output_file.write(f"change_id={cmr_id}\n")
+      output_file.close()
+    except Exception as e:
+      print(f"All CMR ID retrieval attempts failed: {e}")
+      cmr_id = None
+      output_file.write(f"change_id={cmr_id}\n")
+      output_file.close()
 
-  # Wait 10 seconds to provide time for the transaction to exit the queue and be saved into ServiceNow as a CMR record.
-  time.sleep(10)
+    print("Setting Actual Maintenance Time Windows for CMR...")
+    actual_start_time = int((datetime.datetime.now() - datetime.timedelta(seconds = 10)).timestamp())
+    actual_end_time = int(datetime.datetime.now().timestamp())
 
-  try:
-    cmr_id = backoff_with_timeout(get_cmr_id_operation, max_retries=300, base_delay=1, max_delay=60, timeout=3600)
-    print(f"CMR ID found and validated: {cmr_id}")
-  except Exception as e:
-    print(f"All CMR ID retrieval attempts failed: {e}")
-    cmr_id = None
+    print("Closing CMR in ServiceNow...")
 
-  print("Setting Actual Maintenance Time Windows for CMR...")
-  actual_start_time = int((datetime.datetime.now() - datetime.timedelta(seconds = 10)).timestamp())
-  actual_end_time = int(datetime.datetime.now().timestamp())
+    headers = {
+      "Accept": APPLICATION_JSON,
+      "Authorization":token,
+      "Content-Type": APPLICATION_JSON,
+      "api_key":os.environ['IPAAS_KEY']
+    }
+    data = {
+      "id": os.environ['TRANSACTION_ID'],
+      "actualStartDate": actual_start_time,
+      "actualEndDate": actual_end_time,
+      "state": "Closed",
+      "closeCode": "Successful",
+      "notes": "The change request is closed as the change was released successfully"
+    }
+    response = requests.post(SERVICENOW_CMR_URL, headers=headers, json=data)
+    json_parse = json.loads(response.text)
 
-  print("Closing CMR in ServiceNow...")
+    if response.status_code != 200:
+      print(f"{POST_FAILURE_MESSAGE} {response.status_code}")
+      print(response.text)
+      sys.exit(1)
+    elif find_string_in_json(json_parse, "error"):
+      print(f"CMR closure failed with response code: {response.status_code}")
+      print(response.text)
+      sys.exit(1)
+    else:
+      print(f"CMR closure was successful: {response.status_code}")
+      print(response.text)
 
-  headers = {
-    "Accept": APPLICATION_JSON,
-    "Authorization":token,
-    "Content-Type": APPLICATION_JSON,
-    "api_key":os.environ['IPAAS_KEY']
-  }
-  data = {
-    "id": transaction_id,
-    "actualStartDate": actual_start_time,
-    "actualEndDate": actual_end_time,
-    "state": "Closed",
-    "closeCode": "Successful",
-    "notes": "The change request is closed as the change was released successfully"
-  }
-  response = requests.post(SERVICENOW_CMR_URL, headers=headers, json=data)
-  json_parse = json.loads(response.text)
-
-  if response.status_code != 200:
-    print(f"{POST_FAILURE_MESSAGE} {response.status_code}")
-    print(response.text)
-    sys.exit(1)
-  elif find_string_in_json(json_parse, "error"):
-    print(f"CMR closure failed with response code: {response.status_code}")
-    print(response.text)
-    sys.exit(1)
-  else:
-    print(f"CMR closure was successful: {response.status_code}")
-    print(response.text)
-
-  print("Change Management Request has been sent to the queue and is being processed.")
-  print(f"You can find the change record in ServiceNow https://adobe.service-now.com/now/change-launchpad/homepage, by searching for this ID: {cmr_id}")
-  print("")
-  print(f"If the CMR ID is not found, search for the change record in ServiceNow by the planned start time {datetime.datetime.fromtimestamp(start_time)} and/or planned end time {datetime.datetime.fromtimestamp(end_time)}.")
-  print("")
-  print(f"If all else fails, please check the ServiceNow queue for transaction ID '{transaction_id}' and validate that the CMR was created successfully by reaching out to the Change Management team in the #unified-change-management-support slack channel.")
+    print("Change Management Request has been sent to the queue and is being processed.")
+    print(f"You can find the change record in ServiceNow https://adobe.service-now.com/now/change-launchpad/homepage, by searching for this ID: {cmr_id}")
+    print("")
+    print(f"If the CMR ID is not found, search for the change record in ServiceNow by the planned start time {os.environ['PLANNED_START_TIME']} and/or planned end time {os.environ['PLANNED_END_TIME']}.")
+    print("")
+    print(f"If all else fails, please check the ServiceNow queue for transaction ID '{os.environ['TRANSACTION_ID']}' and validate that the CMR was created successfully by reaching out to the Change Management team in the #unified-change-management-support slack channel.")

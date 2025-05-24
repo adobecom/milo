@@ -6,6 +6,7 @@ name: Create CMR in ServiceNow
 on:
   pull_request_target:
     types:
+      - opened
       - closed
     branches:
       - servicenow-cmr-test
@@ -25,12 +26,19 @@ env:
   PR_CREATED_AT: ${{ github.event.pull_request.created_at }}
   PR_MERGED_AT: ${{ github.event.pull_request.merged_at }}
   PR_LINK: ${{ github.event.pull_request.html_url }}
+  PR_STATE: ${{ github.event.pull_request.state }}
+  MILO_RELEASE_SLACK_WH: ${{ secrets.MILO_RELEASE_SLACK_WH }}
 
 jobs:
-  build:
-    # Only run this workflow on pull requests that have merged and not manually closed by user
-    if: github.event.pull_request.merged == true
+  create-cmr:
+    # Only run this workflow on pull requests that have been newly opened
+    if:  ${{ (github.event.pull_request.merged == true || github.event.pull_request.state == 'open') && (github.event.pull_request.base.ref == 'stage' || github.event.pull_request.base.ref == 'main') }}
     runs-on: ubuntu-latest
+    outputs:
+      TRANSACTION_ID: ${{ steps.create-cmr.outputs.transaction_id }}
+      CHANGE_ID: ${{ steps.create-cmr.outputs.change_id }}
+      PLANNED_START_TIME: ${{ steps.create-cmr.outputs.planned_start_time }}
+      PLANNED_END_TIME: ${{ steps.create-cmr.outputs.planned_end_time }}
 
     steps:
     - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
@@ -41,6 +49,18 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip requests timedelta
+
     - name: Execute script for creating and closing CMR
       run: |
         python ./.github/workflows/servicenow.py
+
+    - name: Execute script for notifying of CMR state
+      uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea
+      with:
+        script: |
+          const notifySnowCr = require('./.github/workflows/snow-cr-notification.js');
+          if (process.env.PR_STATE == 'open') {
+            await notifySnowCr({ github, context, transaction_id: process.env.TRANSACTION_ID, change_id: null, planned_start_time:  null, planned_end_time: null });
+          } else {
+            await notifySnowCr({ github, context, transaction_id: process.env.TRANSACTION_ID, change_id: process.env.CHANGE_ID, planned_start_time: process.env.PLANNED_START_TIME, planned_end_time: process.env.PLANNED_END_TIME });
+          }
