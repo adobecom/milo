@@ -2,6 +2,7 @@
 
  :root {
   --global-height-nav: 64px;
+  --feds-height-nav: 63px;
   --global-height-breadcrumbs: 33px;
   --scroll-padding-block: 0;
   /* stylelint-disable-next-line custom-property-pattern */
@@ -712,6 +713,10 @@ body {
   opacity: 1 !important; /* Fix Target hiding */
 }
 
+body:has(.dialog-modal) #onetrust-consent-sdk {
+  display: none;
+}
+
 header.gnav {
   height: 57px;
   position: fixed;
@@ -925,7 +930,12 @@ a.static:active  {
 }
 
 /* mobile only */
-@media (max-width: 600px) {
+@media (max-width: 599px) {
+  :root:not(:lang(ja-JP), :lang(ja)) :is(.heading-xxxl, .heading-xxl) {
+    hyphens: auto;
+    hyphenate-limit-chars: 15 5 5;
+  }
+
   .con-button.button-justified-mobile {
     display: block;
     text-align: center;
