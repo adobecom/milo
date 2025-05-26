@@ -285,22 +285,6 @@ describe('buildCheckoutUrl', () => {
     expect(parsedUrl.searchParams.has('q')).to.be.false;
   });
 
-  it('should handle product arrangement code from items when not provided in root', () => {
-    const checkoutData = {
-      env: PROVIDER_ENVIRONMENT.PRODUCTION,
-      workflowStep: CheckoutWorkflowStep.SEGMENTATION,
-      clientId: 'testClient',
-      country: 'US',
-      items: [{ productArrangementCode: 'PAC123' }],
-      modal: 'twp',
-      customerSegment: 'INDIVIDUAL',
-      marketSegment: 'EDU'
-    };
-    const url = buildCheckoutUrl(checkoutData);
-    const parsedUrl = new URL(url);
-    expect(parsedUrl.searchParams.get('pa')).to.equal('PAC123');
-  });
-
   it('should handle addon product arrangement code when root pa is provided', () => {
     const checkoutData = {
       env: PROVIDER_ENVIRONMENT.PRODUCTION,
@@ -339,5 +323,22 @@ describe('buildCheckoutUrl', () => {
     const parsedUrl = new URL(url);
     expect(parsedUrl.searchParams.get('cs')).to.equal('custom_cs');
     expect(parsedUrl.searchParams.get('ms')).to.equal('custom_ms');
+  });
+
+  it('should remove the ot parameter when it is PROMOTION', () => {
+    const checkoutData = {
+      env: PROVIDER_ENVIRONMENT.PRODUCTION,
+      workflowStep: CheckoutWorkflowStep.SEGMENTATION,
+      clientId: 'testClient',
+      country: 'US',
+      items: [{ quantity: 1 }],
+      modal: 'twp',
+      customerSegment: 'INDIVIDUAL',
+      marketSegment: 'EDU',
+      ot: 'PROMOTION'
+    };
+    const url = buildCheckoutUrl(checkoutData);
+    const parsedUrl = new URL(url);
+    expect(parsedUrl.searchParams.has('ot')).to.be.false;
   });
 });

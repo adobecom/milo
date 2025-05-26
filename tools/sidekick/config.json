@@ -1,12 +1,7 @@
 {
   "project": "Milo",
   "host": "milo.adobe.com",
-  "libraries": [
-    {
-      "text": "Blocks",
-      "paths": ["https://main--milo--adobecom.aem.page/docs/library/blocks.json"]
-    }
-  ],
+  "trustedHosts": ["milo.adobe.com", "*--milo--adobecom.aem.page", "*--milo--adobecom.aem.live"],
   "plugins": [
     {
       "id": "publish",

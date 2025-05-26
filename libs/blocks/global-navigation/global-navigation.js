@@ -371,12 +371,6 @@ const convertToPascalCase = (str) => str
   ?.split('-')
   .map((s) => s.charAt(0).toUpperCase() + s.slice(1))
   .join(' ');
-
-const removeLocalNav = () => {
-  lanaLog({ message: 'Gnav Localnav was removed, potential CLS', tags: 'gnav-localnav', errorType: 'i' });
-  document.querySelector('.feds-localnav')?.remove();
-};
-
 class Gnav {
   constructor({ content, block, newMobileNav } = {}) {
     this.content = content;
@@ -490,7 +484,11 @@ class Gnav {
 
   decorateLocalNav = async () => {
     if (!this.isLocalNav()) {
-      removeLocalNav();
+      const localNavWrapper = document.querySelector('.feds-localnav');
+      if (localNavWrapper) {
+        lanaLog({ message: 'Gnav Localnav was removed, potential CLS', tags: 'gnav-localnav,warn' });
+        localNavWrapper.remove();
+      }
       return;
     }
     const localNavItems = this.elements.navWrapper.querySelector('.feds-nav').querySelectorAll('.feds-navItem:not(.feds-navItem--section, .feds-navItem--mobile-only)');
@@ -511,11 +509,25 @@ class Gnav {
       this.block.after(localNav);
     }
     localNav.setAttribute('daa-lh', `${title}_localNav`);
-    localNav.append(toFragment`<button class="feds-navLink--hoverCaret feds-localnav-title" aria-haspopup="true" aria-expanded="false" daa-ll="${title}_localNav|open"></button>`, toFragment` <div class="feds-localnav-curtain"></div>`, toFragment` <div class="feds-localnav-items"></div>`, toFragment`<a href="#" class="feds-sr-only feds-localnav-exit">.</a>`);
+    const localNavBtn = toFragment`<button class="feds-navLink--hoverCaret feds-localnav-title" aria-haspopup="true" aria-expanded="false" daa-ll="${title}_localNav|open"></button>`;
+    const localNavCurtain = toFragment` <div class="feds-localnav-curtain"></div>`;
+    // Skip keyboard navigation on localnav items if it is closed
+    localNav.append(localNavBtn, localNavCurtain, toFragment` <div class="feds-localnav-items"></div>`, toFragment`<a href="#" class="feds-sr-only feds-localnav-exit">.</a>`);
 
     const itemWrapper = localNav.querySelector('.feds-localnav-items');
-    const titleLabel = await replaceKey('overview', getFedsPlaceholderConfig());
+    const localNavTitle = document.querySelector('.feds-localnav-title');
+    // Skip keyboard navigation on localnav items if it is closed
+    const observer = new MutationObserver(() => {
+      const isExpanded = localNavTitle.getAttribute('aria-expanded') === 'true';
+      itemWrapper.toggleAttribute('aria-hidden', !isExpanded);
+      [...itemWrapper.childNodes].forEach((node) => {
+        node.querySelector('a, button').toggleAttribute('aria-hidden', !isExpanded);
+        node.querySelector('a, button').setAttribute('tabindex', isExpanded ? '0' : '-1');
+      });
+    });
+    observer.observe(localNavTitle, { attributes: true, attributeFilter: ['aria-expanded'] });
 
+    const titleLabel = await replaceKey('overview', getFedsPlaceholderConfig());
     localNavItems.forEach((elem, idx) => {
       const clonedItem = elem.cloneNode(true);
       const link = clonedItem.querySelector('a, button');
@@ -948,6 +960,7 @@ class Gnav {
     } else if (isExpanded && this.isLocalNav()) {
       enableMobileScroll();
     }
+    ['main', 'footer'].forEach((ele) => document.querySelector(ele)?.setAttribute('aria-hidden', !isExpanded));
     toggle?.setAttribute('aria-expanded', !isExpanded);
     document.body.classList.toggle('disable-scroll', !isExpanded);
     this.elements.navWrapper?.classList?.toggle('feds-nav-wrapper--expanded', !isExpanded);
@@ -1248,6 +1261,8 @@ class Gnav {
       const elements = [...document.querySelectorAll('.feds-localnav .feds-navItem')].find(
         (el) => {
           const link = el.querySelector('a, button');
+          link.setAttribute('tabindex', '-1');
+          link.setAttribute('aria-hidden', true);
           return link.dataset.title?.trim() === navItem.textContent;
         },
       );
