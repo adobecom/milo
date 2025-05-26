@@ -315,7 +315,9 @@ const getMartechCookies = () => document.cookie.split(';')
   .filter(([key]) => KNDCTR_COOKIE_KEYS.includes(key))
   .map(([key, value]) => ({ key, value }));
 
-function createRequestPayload({ updatedContext, pageName, processedPageName, locale, hitType }) {
+function createRequestPayload({
+  updatedContext, pageName, processedPageName, locale, hitType, eventMergeId,
+}) {
   const prevPageName = getCookie('gpv');
   const isCollectCall = hitType === 'propositionDisplay';
   const isPageViewCall = hitType === 'pageView';
@@ -351,7 +353,7 @@ function createRequestPayload({ updatedContext, pageName, processedPageName, loc
       },
       timestamp: new Date().toISOString(),
       eventType: hitTypeEventTypeMap[hitType],
-      eventMergeId: generateUUIDv4(),
+      eventMergeId,
       ...(getPrimaryProduct() && { productListItems: [{ SKU: getPrimaryProduct() }] }),
     },
     data: {
@@ -366,7 +368,7 @@ function createRequestPayload({ updatedContext, pageName, processedPageName, loc
           ...(getEntityId() ? { 'entity.id': getEntityId() } : {}),
         },
       },
-      eventMergeId: generateUUIDv4(),
+      eventMergeId,
       _adobe_corpnew: {
         configuration: { edgeConfigId: dataStreamId },
         digitalData: {
@@ -673,8 +675,9 @@ export const loadAnalyticsAndInteractionData = async (
     env,
     hitType,
   });
+  const eventMergeId = generateUUIDv4();
   const requestPayload = {
-    updatedContext, pageName, processedPageName, locale, env, hitType,
+    updatedContext, pageName, processedPageName, locale, env, hitType, eventMergeId,
   };
   const requestBody = createRequestPayload(requestPayload);
 
