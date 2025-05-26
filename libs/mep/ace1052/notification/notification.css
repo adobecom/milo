@@ -30,13 +30,6 @@
   background: var(--color-white);
 }
 
-.notification.button-full-width .foreground .action-area,
-.notification.button-full-width .foreground .con-button {
-  width: 100%;
-  max-width: 328px;
-  align-self: center;
-}
-
 .notification.ribbon {
   min-block-size: var(--min-block-size-ribbon);
 }
@@ -484,6 +477,14 @@
   left: 0;
   background: rgb(50 50 50 / 80%);
   z-index: var(--modal-z-index-curtain);
+}
+
+/* mweb-test: notification sticky CTA */
+.notification.button-full-width .foreground .action-area,
+.notification.button-full-width .foreground .con-button {
+  width: 100%;
+  max-width: 328px;
+  align-self: center;
 }
 
 @media screen and (max-width: 600px) {
