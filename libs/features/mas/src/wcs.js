@@ -12,7 +12,7 @@ import { PlanType, applyPlanType } from '@dexter/tacocat-core';
 import { Log } from './log.js';
 import { MasError } from './mas-error.js';
 import { masFetch } from './utils/mas-fetch.js';
-import { getService } from './utilities.js';
+import { getLogHeaders, getService } from './utilities.js';
 import { printMeasure } from './utils.js';
 
 const NAMESPACE = 'wcs';
@@ -198,18 +198,13 @@ export function Wcs({ settings }) {
             // reject pending promises, their offers weren't provided by WCS
             log.debug('Missing:', { offerSelectorIds: [...promises.keys()] });
 
-            const headers = {
-                requestId: response.headers.get('X-Request-Id'),
-                etag: response.headers.get('Etag'),
-                lastModified: response.headers.get('Last-Modified'),
-                serverTiming: response.headers.get('server-timing'),
-            };
+            const headers = getLogHeaders(response);
 
             promises.forEach((promise) => {
                 promise.reject(
                     new MasError(message, {
                         ...options,
-                        // ...headers, TODO enable this once access-control-expose-headers is fixed
+                        ...headers,
                         response,
                         measure: printMeasure(measure),
                         ...service?.duration,

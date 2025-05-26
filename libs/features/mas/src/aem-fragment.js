@@ -5,6 +5,7 @@ import {
     MARK_DURATION_SUFFIX,
 } from './constants.js';
 import { MasError } from './mas-error.js';
+import { getLogHeaders } from './utilities.js';
 import { getService, printMeasure } from './utils.js';
 import { masFetch } from './utils/mas-fetch.js';
 
@@ -14,12 +15,6 @@ sheet.replaceSync(':host { display: contents; }');
 const ATTRIBUTE_FRAGMENT = 'fragment';
 const ATTRIBUTE_AUTHOR = 'author';
 const AEM_FRAGMENT_TAG_NAME = 'aem-fragment';
-const FETCH_INFO_HEADERS = {
-  requestId: 'X-Request-Id',
-  etag: 'Etag',
-  lastModified: 'Last-Modified',
-  serverTiming: 'server-timing',
-}
 
 class FragmentCache {
     #fragmentCache = new Map();
@@ -119,8 +114,8 @@ export class AemFragment extends HTMLElement {
 
     connectedCallback() {
         if (this.#fetchPromise) return;
-        this.#service = getService(this);
-        this.#log = this.#service.log.module(
+        this.#service ??= getService(this);
+        this.#log ??= this.#service.log.module(
             `${AEM_FRAGMENT_TAG_NAME}[${this.#fragmentId}]`,
         );
         // TODO get rid of the special case for #
@@ -160,7 +155,7 @@ export class AemFragment extends HTMLElement {
                 credentials: 'omit',
             });
             this.#applyHeaders(response);
-            this.#fetchInfo.status = response?.status;        
+            this.#fetchInfo.status = response?.status;
             this.#fetchInfo.measure = printMeasure(performance.measure(
                 measureName,
                 startMarkName,
@@ -190,15 +185,7 @@ export class AemFragment extends HTMLElement {
     }
 
     #applyHeaders(response) {
-        if (!response?.headers) return;
-        const headers = response.headers;
-        for (const [key, value] of Object.entries(FETCH_INFO_HEADERS)) {
-            let headerValue = headers.get(value);
-            if (headerValue) {
-                headerValue = headerValue.replace(/[,;]/g, '|');
-                this.#fetchInfo[key] = headerValue;
-            }
-        }
+        Object.assign(this.#fetchInfo, getLogHeaders(response));
     }
 
     async refresh(flushCache = true) {

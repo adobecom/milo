@@ -106,9 +106,9 @@ export const getTemplateContent = (template) => {
 };
 
 export const oneEvent = (element, eventName, timeout = 1000) => {
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
         const timer = setTimeout(() => {
-            throw new Error('timeout');
+            reject(new Error('timeout'));
         }, timeout);
         element.addEventListener(
             eventName,

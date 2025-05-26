@@ -31,6 +31,7 @@ describe('resolveOfferSelectors', () => {
             status: 200,
             statusText: undefined,
             url: 'https://www.adobe.com//web_commerce_artifact?offer_selector_ids=no-offer&country=undefined&locale=undefined_undefined&landscape=PUBLISHED&api_key=wcms-commerce-ims-ro-user-milo&language=MULT',
+            serverTiming: 'cdn-cache|desc=MISS|edge|dur=12|origin|dur=427|sis|desc=0|ak_p|desc="1748272635433_390603879_647362112_45054_10750_42_0_219"|dur=1',
         });
         expect(results[2].status).to.equal('fulfilled');
         expect(results[3].status).to.equal('rejected');

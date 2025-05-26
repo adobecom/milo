@@ -16,7 +16,6 @@ import './merch-mnemonic-list.js';
 import './merch-whats-included.js';
 import {
     EVENT_AEM_LOAD,
-    EVENT_MERCH_CARD_READY,
     EVENT_MERCH_OFFER_SELECT_READY,
     EVENT_MERCH_QUANTITY_SELECTOR_CHANGE,
     EVENT_MAS_READY,
@@ -165,8 +164,6 @@ export class MerchCard extends LitElement {
      */
     variantLayout;
 
-    readyEventDispatched = false;
-
     constructor() {
         super();
         this.id = null;
@@ -177,6 +174,7 @@ export class MerchCard extends LitElement {
         this.spectrum = 'css';
         this.loading = 'lazy';
         this.handleAemFragmentEvents = this.handleAemFragmentEvents.bind(this);
+        this.handleMerchOfferSelectReady = this.handleMerchOfferSelectReady.bind(this);
     }
 
     static getFragmentMapping = getFragmentMapping;
@@ -399,14 +397,7 @@ export class MerchCard extends LitElement {
             EVENT_MERCH_ADDON_AND_QUANTITY_UPDATE,
             this.handleAddonAndQuantityUpdate,
         );
-        this.addEventListener(
-            EVENT_MERCH_OFFER_SELECT_READY,
-            this.merchCardReady,
-            { once: true },
-        );
-        this.updateComplete.then(() => {
-            this.merchCardReady();
-        });
+        this.addEventListener(EVENT_MERCH_OFFER_SELECT_READY, this.handleMerchOfferSelectReady);
 
         // aem-fragment logic
         this.addEventListener(EVENT_AEM_ERROR, this.handleAemFragmentEvents);
@@ -498,11 +489,6 @@ export class MerchCard extends LitElement {
             }
         }
         const masElements = [...this.querySelectorAll(SELECTOR_MAS_ELEMENT)];
-        masElements.push(
-            ...[...this.querySelectorAll(SELECTOR_MAS_SP_BUTTON)].map(
-                (element) => element.source,
-            ),
-        );
         const successPromise = Promise.all(
             masElements.map((element) =>
                 element.onceSettled().catch(() => element),
@@ -519,21 +505,18 @@ export class MerchCard extends LitElement {
                 this.#durationMarkName,
                 this.#startMarkName,
             );
-            if (!this.readyEventDispatched) {
-                this.readyEventDispatched = true;
-                const detail = {
-                    ...this.aemFragment?.fetchInfo,
-                    ...this.#service.duration,
-                    measure: printMeasure(this.measure),
-                };
-                this.dispatchEvent(
-                    new CustomEvent(EVENT_MAS_READY, {
-                        bubbles: true,
-                        composed: true,
-                        detail,
-                    }),
-                );
-            }
+            const detail = {
+                ...this.aemFragment?.fetchInfo,
+                ...this.#service.duration,
+                measure: printMeasure(this.measure),
+            };
+            this.dispatchEvent(
+                new CustomEvent(EVENT_MAS_READY, {
+                    bubbles: true,
+                    composed: true,
+                    detail,
+                }),
+            );
             return this;
         } else {
             this.measure = performance.measure(
@@ -586,12 +569,8 @@ export class MerchCard extends LitElement {
         }
     }
 
-    merchCardReady() {
+    handleMerchOfferSelectReady() {
         if (this.offerSelect && !this.offerSelect.planType) return;
-        // add checks for other properties if needed
-        this.dispatchEvent(
-            new CustomEvent(EVENT_MERCH_CARD_READY, { bubbles: true }),
-        );
         this.displayFooterElementsInColumn();
     }
 
@@ -601,33 +580,33 @@ export class MerchCard extends LitElement {
     }
 
     handleAddonAndQuantityUpdate({ detail: { id, items } }) {
-      if (!id || !items?.length) return;
+        if (!id || !items?.length) return;
       const cta = this.checkoutLinks.find(link => link.getAttribute('data-modal-id') === id);
-      if (!cta) return;
-      const url = new URL(cta.getAttribute('href'));
-      const pa = url.searchParams.get('pa');
+        if (!cta) return;
+        const url = new URL(cta.getAttribute('href'));
+        const pa = url.searchParams.get('pa');
       const mainProductQuantity = items.find(item => item.productArrangementCode === pa)?.quantity;
       const isAddonIncluded = !!items.find(item => item.productArrangementCode !== pa);
-      if (mainProductQuantity) {
+        if (mainProductQuantity) {
         this.quantitySelect?.dispatchEvent(new CustomEvent(EVENT_MERCH_CARD_QUANTITY_CHANGE, {
-          detail: { quantity: mainProductQuantity },
-          bubbles: true,
+                    detail: { quantity: mainProductQuantity },
+                    bubbles: true,
           composed: true
         }));
-      }
-      if (this.addonCheckbox?.checked !== isAddonIncluded) {
-        this.toggleStockOffer({ target: this.addonCheckbox });
-        const checkboxEvent = new Event('change', {
-          bubbles: true,
+        }
+        if (this.addonCheckbox?.checked !== isAddonIncluded) {
+            this.toggleStockOffer({ target: this.addonCheckbox });
+            const checkboxEvent = new Event('change', {
+                bubbles: true,
           cancelable: true
-        });
+            });
 
-        Object.defineProperty(checkboxEvent, 'target', {
-          writable: false,
+            Object.defineProperty(checkboxEvent, 'target', {
+                writable: false,
           value: { checked: isAddonIncluded }
-        });
-        this.addonCheckbox.handleChange(checkboxEvent);
-      }
+            });
+            this.addonCheckbox.handleChange(checkboxEvent);
+        }
     }
 }
 
