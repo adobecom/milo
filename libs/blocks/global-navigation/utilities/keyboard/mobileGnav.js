@@ -7,12 +7,17 @@ const MobileGnav = {
     this.addEventListeners();
   },
   addEventListeners() {
+    this.toggleButton.addEventListener('keydown', (e) => {
+      const gnavWrapper = document.querySelector('.feds-nav-wrapper');
+      if (e.code === 'ArrowDown' && gnavWrapper && gnavWrapper.classList.contains('feds-nav-wrapper--expanded')) {
+        const firstNavLink = gnavWrapper.querySelector('.feds-nav .feds-navLink');
+        firstNavLink.focus();
+      }
+    });
     this.toggleButton.addEventListener('click', () => {
       if (this.isMobile) {
         const gnavWrapper = document.querySelector('.feds-nav-wrapper');
         if (gnavWrapper && gnavWrapper.classList.contains('feds-nav-wrapper--expanded')) {
-          const firstNavLink = gnavWrapper.querySelector('.feds-nav .feds-navLink');
-          firstNavLink.focus();
           if (!this.eventInitialized) {
             this.eventInitialized = true;
             const popupTabs = document.querySelectorAll('.feds-nav-wrapper .feds-popup .tabs .tab');
@@ -89,6 +94,8 @@ const MobileGnav = {
             const prevLink = this.menuItemLinks[index - 1];
             if (prevLink) {
               prevLink.focus();
+            } else {
+              this.toggleButton.focus();
             }
           } else if (e.code === 'ArrowDown') {
             const nextLink = this.menuItemLinks[index + 1];
