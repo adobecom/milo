@@ -457,7 +457,7 @@ const createFirstRow = async (firstRow, isMobile, checkmarkCopyContainer, defaul
       <rect id="Canvas" fill="#ff13dc" opacity="0" width="28" height="28" />
       <path class="fill" d="M14 2a12 12 0 1 0 12 12A12 12 0 0 0 14 2Zm6.5 12.5a.5.5 0 0 1-.5.5H15v5a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-5h-5a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5h5v-5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 .5.5Z"/>
     </svg>`;
-    const removeIcon = `<svg xmlns="http://www.w3.org/2000/svg" height="28" id="S_RemoveCircle_28_N" viewBox="0 0 28 28" width="28">
+    const removeIcon = `<svg xmlns="http://www.w3.org/2000/svg" height="28" width="28" viewBox="0 0 28 28" id="S_RemoveCircle_28_N">
       <defs>
         <style>
           .fill {
@@ -466,7 +466,7 @@ const createFirstRow = async (firstRow, isMobile, checkmarkCopyContainer, defaul
         </style>
       </defs>
       <rect id="Canvas" fill="#ff13dc" opacity="0" width="28" height="28" />
-      <path class="fill" d="M14,2.545a11.455,11.455,0,1,0,11.455,11.455A11.455,11.455,0,0,0,14,2.545Zm7,12.728a.636.636,0,0,1-.636.636H6.636a.636.636,0,0,1-.636-.636V13a.636.636,0,0,1,.636-.636H20.364a.636.636,0,0,1,.636.636Z" />
+      <path class="fill" d="M14 2a12 12 0 1 0 12 12A12 12 0 0 0 14 2Zm6.5 12.5a.5.5 0 0 1-.5.5H8a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5h12a.5.5 0 0 1 .5.5Z"/>
     </svg>`;
     const toggleIcon = createTag('span', { class: 'toggle-icon' }, addIcon);
     firstRowTextParagraph = createTag('div', { class: 'footer-rows-title' }, firstRowText);
