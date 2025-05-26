@@ -371,12 +371,6 @@ const convertToPascalCase = (str) => str
   ?.split('-')
   .map((s) => s.charAt(0).toUpperCase() + s.slice(1))
   .join(' ');
-
-const removeLocalNav = () => {
-  lanaLog({ message: 'Gnav Localnav was removed, potential CLS', tags: 'gnav-localnav', errorType: 'i' });
-  document.querySelector('.feds-localnav')?.remove();
-};
-
 class Gnav {
   constructor({ content, block, newMobileNav } = {}) {
     this.content = content;
@@ -490,7 +484,11 @@ class Gnav {
 
   decorateLocalNav = async () => {
     if (!this.isLocalNav()) {
-      removeLocalNav();
+      const localNavWrapper = document.querySelector('.feds-localnav');
+      if (localNavWrapper) {
+        lanaLog({ message: 'Gnav Localnav was removed, potential CLS', tags: 'gnav-localnav,warn' });
+        localNavWrapper.remove();
+      }
       return;
     }
     const localNavItems = this.elements.navWrapper.querySelector('.feds-nav').querySelectorAll('.feds-navItem:not(.feds-navItem--section, .feds-navItem--mobile-only)');
@@ -962,6 +960,7 @@ class Gnav {
     } else if (isExpanded && this.isLocalNav()) {
       enableMobileScroll();
     }
+    ['main', 'footer'].forEach((ele) => document.querySelector(ele)?.setAttribute('aria-hidden', !isExpanded));
     toggle?.setAttribute('aria-expanded', !isExpanded);
     document.body.classList.toggle('disable-scroll', !isExpanded);
     this.elements.navWrapper?.classList?.toggle('feds-nav-wrapper--expanded', !isExpanded);
