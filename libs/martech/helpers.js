@@ -1,4 +1,6 @@
 /* eslint-disable no-underscore-dangle */
+import { loadIms } from '../utils/utils.js';
+
 const AMCV_COOKIE = 'AMCV_9E1005A551ED61CA0A490D45@AdobeOrg';
 const KNDCTR_COOKIE_KEYS = [
   'kndctr_9E1005A551ED61CA0A490D45_AdobeOrg_identity',
@@ -118,6 +120,159 @@ function getOrGenerateUserId() {
       primary: true,
     }],
   };
+}
+
+const sha256 = function (b) {
+  function c(a, b) {
+    return (a >>> b) | (a << (32 - b));
+  }
+  for (
+    var d, e, f = Math.pow, g = 2 ** 32, h = 'length', i = '', j = [], k = 8 * b[h], l = sha256.h = sha256.h || [], m = sha256.k = sha256.k || [], n = m[h], o = {}, p = 2;
+    n < 64;
+    p++
+  ) {
+    if (!o[p]) {
+      for (d = 0; d < 313; d += p) o[d] = p;
+      l[n] = p ** 0.5 * g | 0;
+      m[n++] = p ** (1 / 3) * g | 0;
+    }
+  }
+  for (b += '\x80'; b[h] % 64 - 56;) b += '\x00';
+  for (d = 0; d < b[h]; d++) {
+    if (((e = b.charCodeAt(d)), e >> 8)) return;
+    j[d >> 2] |= e << ((3 - d) % 4) * 8;
+  }
+  for (j[j[h]] = k / g | 0, j[j[h]] = k, e = 0; e < j[h];) {
+    const q = j.slice(e, (e += 16)); const
+      r = l;
+    for (l = l.slice(0, 8), d = 0; d < 64; d++) {
+      const s = q[d - 15];
+      const t = q[d - 2];
+      const u = l[0];
+      const v = l[4];
+      const w = l[7] + (c(v, 6) ^ c(v, 11) ^ c(v, 25)) + ((v & l[5]) ^ (~v & l[6])) + m[d] + (q[d] = d < 16 ? q[d] : (q[d - 16] + (c(s, 7) ^ c(s, 18) ^ (s >>> 3)) + q[d - 7] + (c(t, 17) ^ c(t, 19) ^ (t >>> 10))) | 0);
+      const x = (c(u, 2) ^ c(u, 13) ^ c(u, 22)) + ((u & l[1]) ^ (u & l[2]) ^ (l[1] & l[2]));
+      l = [w + x | 0].concat(l);
+      l[4] = l[4] + w | 0;
+    }
+    for (d = 0; d < 8; d++) l[d] = l[d] + r[d] | 0;
+  }
+  for (d = 0; d < 8; d++) {
+    for (e = 3; e + 1; e--) {
+      const y = (l[d] >> (8 * e)) & 255;
+      i += (y < 16 ? 0 : '') + y.toString(16);
+    }
+  }
+  return i;
+};
+
+function getDomain() {
+  let effectiveDomain = '';
+  if (effectiveDomain) {
+    return effectiveDomain;
+  }
+  const parts = window.location.hostname.toLowerCase().split('.');
+  const domain = [];
+  let part = '';
+  let successfullySet = false;
+  part = parts.pop();
+  domain.unshift(part);
+  while (parts.length > 0) {
+    part = parts.pop();
+    domain.unshift(part);
+    const date = new Date();
+    date.setTime(date.getTime() + 1000);
+
+    try {
+      setCookie('sat_domain', 'A', {
+        expires: date,
+        domain: domain.join('.'),
+      });
+    } catch (err) {
+      break;
+    }
+    if (getCookie('sat_domain') === 'A') {
+      successfullySet = true;
+      effectiveDomain = domain.join('.');
+      break;
+    }
+  }
+  return successfullySet ? effectiveDomain : '';
+}
+
+async function getEntitlementCreativeCloud(profile) {
+  const { scope } = await window.adobeIMS.adobeIdData;
+  if (
+    scope
+    && scope.indexOf('creative_cloud') !== -1
+    && profile
+    && profile.serviceAccounts
+  ) {
+    const serviceAccount = profile.serviceAccounts.find(
+      (sa) => sa.serviceCode === 'creative_cloud',
+    );
+
+    if (!serviceAccount) {
+      return 'notEntitled';
+    }
+
+    if (serviceAccount.serviceLevel === 'CS_LVL_2') {
+      return 'paid';
+    } if (serviceAccount.serviceLevel === 'CS_LVL_1') {
+      return 'free';
+    }
+    return 'notEntitled';
+  }
+  return 'unknown';
+}
+
+async function getEntitlementStatusCreativeCloud(profile) {
+  const { scope } = await window.adobeIMS.adobeIdData;
+  if (
+    scope
+    && scope.indexOf('creative_cloud') !== -1
+    && profile
+    && profile.serviceAccounts
+  ) {
+    const serviceAccount = profile.serviceAccounts.find(
+      (sa) => sa.serviceCode === 'creative_cloud',
+    );
+    return serviceAccount?.serviceStatus || 'none';
+  }
+  return 'unknown';
+}
+
+async function createProfileInfo(profile, returningStatus) {
+  const adobeIMSUserProfile = {
+    account_type: profile?.account_type || 'unknown',
+    preferred_languages: profile?.preferred_languages || null,
+    countryCode: profile?.countryCode || 'unknown',
+    toua: profile?.toua || 'unknown',
+    email: sha256(profile?.email?.toLowerCase() || 'unknown'),
+    first_name: sha256(profile?.first_name?.toLowerCase() || 'unknown'),
+    last_name: sha256(profile?.last_name?.toLowerCase() || 'unknown'),
+    phoneNumber: sha256(profile?.phoneNumber?.replace('+', '') || 'unknown'),
+    roles: profile?.roles || [],
+    tags: profile?.tags || [],
+  };
+
+  return {
+    authState: 'authenticated',
+    entitlementCreativeCloud: await getEntitlementCreativeCloud(profile),
+    entitlementStatusCreativeCloud: await getEntitlementStatusCreativeCloud(profile),
+    returningStatus: returningStatus || 'Repeat',
+    profileID: profile?.userId?.split('@')[0] || 'unknown',
+    authID: profile?.authId?.split('@')[0] || 'unknown',
+    fullProfileID: profile?.userId || 'unknown',
+    fullAuthID: profile?.authId || 'unknown',
+    adobeIMSUserProfile,
+  };
+}
+
+async function getProfileInfo() {
+  const profile = await window.adobeIMS.getProfile();
+  const returningStatus = getVisitorStatus(365, 's_nr', getDomain());
+  return createProfileInfo(profile, returningStatus);
 }
 
 function getUpdatedVisitAttempt() {
@@ -315,7 +470,12 @@ const getMartechCookies = () => document.cookie.split(';')
   .filter(([key]) => KNDCTR_COOKIE_KEYS.includes(key))
   .map(([key, value]) => ({ key, value }));
 
-function createRequestPayload({ updatedContext, pageName, processedPageName, locale, hitType }) {
+async function createRequestPayload({
+  updatedContext, pageName, processedPageName, locale,
+  hitType, userStatus,
+  // updatedContext, pageName, processedPageName, locale,
+  // hitType,
+}) {
   const prevPageName = getCookie('gpv');
   const isCollectCall = hitType === 'propositionDisplay';
   const isPageViewCall = hitType === 'pageView';
@@ -335,6 +495,10 @@ function createRequestPayload({ updatedContext, pageName, processedPageName, loc
     if (!hasOptOnCookie) return 'unknown';
     return getCookie(KNDCTR_CONSENT_COOKIE) ? 'post' : 'pre';
   })();
+
+  const primaryUser = userStatus
+    ? { primaryProfile: { profileInfo: await getProfileInfo() } }
+    : { primaryProfile: { profileInfo: { authState: 'loggedOut', returningStatus: getVisitorStatus({}) } } };
 
   const eventObj = {
     xdm: {
@@ -373,7 +537,8 @@ function createRequestPayload({ updatedContext, pageName, processedPageName, loc
           page: { pageInfo: { language: getLanguageCode(locale) } },
           diagnostic: { franklin: { implementation: 'milo' } },
           previousPage: { pageInfo: { pageName: prevPageName } },
-          primaryUser: { primaryProfile: { profileInfo: { authState: 'loggedOut', returningStatus: getVisitorStatus({}) } } },
+          // primaryUser: { primaryProfile: { profileInfo: { authState: 'loggedOut', returningStatus: getVisitorStatus({}) } } },
+          primaryUser,
         },
         otherConsents: { configuration: { advertising: consentCookie && consentCookie.includes('C0004:0') ? 'false' : 'true' } },
         cmp: { state: consentState },
@@ -404,11 +569,7 @@ function createRequestPayload({ updatedContext, pageName, processedPageName, loc
     };
     pageInfo.siteSection = webPageDetails.siteSection;
     digitalData.diagnostic.franklin.implementation = 'milo';
-    digitalData.primaryUser.primaryProfile.profileInfo = {
-      ...digitalData.primaryUser.primaryProfile.profileInfo,
-      entitlementCreativeCloud: 'unknown',
-      entitlementStatusCreativeCloud: 'unknown',
-    };
+    digitalData.primaryUser.primaryProfile.profileInfo = { ...digitalData.primaryUser.primaryProfile.profileInfo };
     data.web = {
       webPageDetails,
       webReferrer: { URL: document.referrer },
@@ -646,13 +807,15 @@ function sendPropositionDisplayRequest(filteredPayload, env, requestPayload) {
 }
 
 export const loadAnalyticsAndInteractionData = async (
-  { locale, env, calculatedTimeout },
+  { locale, env, calculatedTimeout, userStatus },
+  // { locale, env, calculatedTimeout },
 ) => {
   const value = getCookie(KNDCTR_CONSENT_COOKIE);
 
   if (value === 'general=out') {
     return {};
   }
+  if (userStatus) await loadIms();
   const getLocalISOString = () => {
     const date = new Date();
     const tzOffset = -date.getTimezoneOffset();
@@ -674,9 +837,10 @@ export const loadAnalyticsAndInteractionData = async (
     hitType,
   });
   const requestPayload = {
-    updatedContext, pageName, processedPageName, locale, env, hitType,
+    updatedContext, pageName, processedPageName, locale, env, hitType, userStatus,
+    // updatedContext, pageName, processedPageName, locale, env, hitType,
   };
-  const requestBody = createRequestPayload(requestPayload);
+  const requestBody = await createRequestPayload(requestPayload);
 
   try {
     const targetResp = await Promise.race([
@@ -711,7 +875,7 @@ export const loadAnalyticsAndInteractionData = async (
     const resultPayload = getPayloadsByType(targetRespJson, 'personalization:decisions');
     const filteredPayload = filterPropositionInJson(resultPayload);
     if (filteredPayload.length) {
-      sendPropositionDisplayRequest(filteredPayload, env, requestPayload);
+      await sendPropositionDisplayRequest(filteredPayload, env, requestPayload);
     }
     const alloyData = {
       destinations: getPayloadsByType(targetRespJson, 'activation:pull'),
