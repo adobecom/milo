@@ -226,7 +226,7 @@ export function getLanguage(languages, locales, pathname = window.location.pathn
   }
 
   const isLegacyLocaleRoutingMode = !language
-  || (language.languageBased === false && !language.region);
+      || (language.languageBased === false && !language.region);
   if (isLegacyLocaleRoutingMode) {
     const locale = getLocale(locales, pathname);
     const englishLang = languages.en;
