@@ -8,7 +8,7 @@ function sendToLana(lanaData) {
 
   Object.assign(lanaData, {
     chromeVer: ua.match(/Chrome\/(\d+\.\d+\.\d+\.\d+)/)?.[1] || '',
-    country: sessionStorage.getItem('akamai') || '',
+    country: sessionStorage.getItem('akamai') || sessionStorage.getItem('feds_location') || '',
     // eslint-disable-next-line compat/compat
     downlink: window.navigator?.connection?.downlink || '',
     loggedIn: window.adobeIMS?.isSignedInUser() || false,
@@ -19,7 +19,7 @@ function sendToLana(lanaData) {
       || (ua.match(/Linux/) && 'linux')
       || '',
     tablet: (ua.match(/(ipad|iPad|tablet|(android(?!.*mobile))|(windows(?!.*phone).*touch))/) && 'yes')
-      || '',
+      || 'no',
     windowHeight: window.innerHeight,
     windowWidth: window.innerWidth,
     url: `${window.location.host}${window.location.pathname}`,
@@ -88,15 +88,19 @@ function observeLCP(lanaData, delay, mep) {
     const lastEntry = entries[entries.length - 1]; // Use the latest LCP candidate
     lanaData.lcp = parseInt(lastEntry.startTime, 10);
     const lcpEl = lastEntry.element;
-    lanaData.lcpElType = lcpEl?.nodeName?.toLowerCase() || 'Element Was Replaced';
-    lanaData.lcpEl = getElementInfo(lcpEl);
-    lanaData.lcpSectionOne = boolStr(sectionOne.contains(lcpEl));
-    const closestFrag = lcpEl.closest('.fragment');
-    lanaData.isFrag = boolStr(closestFrag);
-    if (closestFrag) {
-      lanaData.isMep = boolStr(isFragmentFromMep(closestFrag.dataset.path, mep));
+    lanaData.lcpElType = lcpEl?.nodeName?.toLowerCase();
+    if (lanaData.lcpElType) {
+      lanaData.lcpEl = getElementInfo(lcpEl);
+      lanaData.lcpSectionOne = boolStr(sectionOne.contains(lcpEl));
+      const closestFrag = lcpEl.closest('.fragment');
+      lanaData.isFrag = boolStr(closestFrag);
+      if (closestFrag) {
+        lanaData.isMep = boolStr(isFragmentFromMep(closestFrag.dataset.path, mep));
+      } else {
+        lanaData.isMep = 'false';
+      }
     } else {
-      lanaData.isMep = 'false';
+      lanaData.lcpElType = 'Element Was Replaced';
     }
 
     setTimeout(() => {

@@ -33,7 +33,7 @@ export default class MerchBadge extends LitElement {
     }
 
     render() {
-        return html`<div class="plans-badge">
+        return html`<div class="badge">
             ${this.text}
         </div>`;
     }

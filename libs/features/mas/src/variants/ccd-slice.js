@@ -36,7 +36,6 @@ export class CCDSlice extends VariantLayout {
             --consonant-merch-card-body-s-color: rgb(34, 34, 34);
             --merch-color-inline-price-strikethrough: var(--spectrum-gray-600);
             --mod-img-height: 29px;
-
             box-sizing: border-box;
             min-width: 290px;
             max-width: 322px;

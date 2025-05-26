@@ -50,7 +50,7 @@ describe('Log Web Vitals Utils', () => {
 
         expect(vitals.loggedIn).to.equal('false');
         expect(vitals.os).to.be.oneOf(['mac', 'iOS', 'win', 'android', 'linux', '']);
-        expect(vitals.tablet).to.be.oneOf(['yes', '']);
+        expect(vitals.tablet).to.be.oneOf(['yes', 'no']);
         expect(vitals.url).to.equal('localhost:2000/');
         expect(parseInt(vitals.windowHeight, 10)).to.be.greaterThan(200);
         expect(parseInt(vitals.windowWidth, 10)).to.be.greaterThan(200);

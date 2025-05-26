@@ -45,6 +45,7 @@
 /libs/blocks/quiz-results/ @colloyd @sabyamon @fullcolorcoder @JackySun9
 /libs/blocks/quote/ @ryanmparrish
 /libs/blocks/recommended-articles/ @meganthecoder @JasonHowellSlavin @Brandon32 @rgclayton
+/libs/blocks/region-nav/ @salonijain3 @bandana147 @sharmrj @nishantka @Deva309 @sonawanesnehal3
 /libs/blocks/review/ @nkthakur48 @chrischrischris @auniverseaway
 /libs/blocks/table-of-contents/ @Brandon32 @meganthecoder @JasonHowellSlavin
 /libs/blocks/tabs/ @ryanmparrish
@@ -57,3 +58,7 @@
 # Milo Tools (alphabetical order)
 /tools/caas-import/ @chrischrischris
 /tools/send-to-caas/ @chrischrischris
+
+# Standalone Gnav
+/libs/navigation/ @salonijain3 @bandana147 @sharmrj @nishantka @Deva309 @sonawanesnehal3
+
