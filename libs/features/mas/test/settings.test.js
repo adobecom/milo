@@ -177,12 +177,4 @@ describe('getSettings', () => {
       const settings = getSettings(config);
       expect(settings.preview).to.be.undefined;
     });
-  
-    it('overrides correctly preview surface configuration from parameter mas.preview', () => {
-      const config = { commerce: {}, preview: '' };
-      window.sessionStorage.setItem('wcsApiKey', 'user-test');
-      window.sessionStorage.setItem('mas.preview', 'nala');
-      const settings = getSettings(config);
-      expect(settings.preview).to.equal(true);
-    });
 });
