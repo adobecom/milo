@@ -903,42 +903,6 @@ async function setMepCountry(config) {
     }
   }
 }
-const ALLOY_SEND_EVENT = 'alloy_sendEvent';
-const ENTITLEMENT_TIMEOUT = 3000;
-
-const waitForEventOrTimeout = (eventName, timeout, defaultValue) => new Promise((resolve) => {
-  let timer;
-
-  const listener = (event) => {
-    clearTimeout(timer);
-    resolve(event.detail);
-  };
-
-  timer = setTimeout(() => {
-    window.removeEventListener(eventName, listener);
-    resolve(defaultValue);
-  }, timeout);
-
-  window.addEventListener(eventName, listener, { once: true });
-});
-
-const setupEntitlementCallback = () => {
-  const resolveEntitlements = getConfig().entitlements;
-
-  const handleEntitlements = async (detail) => {
-    if (detail?.result?.destinations?.length) {
-      return getEntitlements(detail.result.destinations);
-    }
-    return [];
-  };
-
-  waitForEventOrTimeout(ALLOY_SEND_EVENT, ENTITLEMENT_TIMEOUT, [])
-    .then(handleEntitlements)
-    .then(resolveEntitlements)
-    .catch(() => resolveEntitlements([]));
-};
-
-setupEntitlementCallback();
 
 async function getPersonalizationVariant(
   manifestPath,
