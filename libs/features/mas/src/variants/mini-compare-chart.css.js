@@ -147,6 +147,9 @@ export const CSS = `
   }
 
   merch-card[variant="mini-compare-chart"] .footer-rows-title {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
     font-color: var(--merch-color-grey-80);
     font-weight: 700;
     padding-block-end: var(--consonant-merch-spacing-xxs);
@@ -202,8 +205,8 @@ export const CSS = `
     color: var(--color-accent);
   }
 
-  merch-card[variant="mini-compare-chart"] .chevron-icon {
-    margin-left: 8px;
+  merch-card[variant="mini-compare-chart"] .toggle-icon {
+    display: flex;
   }
 
   merch-card[variant="mini-compare-chart"] .checkmark-copy-container {
