@@ -8,7 +8,7 @@
     window.commercePromise = new Promise((resolve) => {
       document.addEventListener('wcms:commerce:ready', () => {
         //we measure the time it takes to load the commerce bundle and store it in a global variable
-        window.initTime = performance.measure('initTime', 'benchmark:start', 'mas:ready').duration;
+        window.initTime = performance.measure('initTime', 'benchmark:start', 'mas-commerce-service:ready').duration;
         console.log(`Commerce loaded in ${window.initTime}ms`);
         resolve();
       });
@@ -39,8 +39,7 @@
       let timeoutId;
       const onReady = () => {
         clearTimeout(timeoutId);
-        const mark = (suffix) => `merch-card:${fragmentId}:${suffix}`;
-        result.duration = performance.measure(fragmentId, mark('start'), mark('ready')).duration;
+        result.duration = card.measure.duration;
         console.log(`Card ${fragmentId} loaded in ${result.duration}ms`);
         resolve(result);
       };
