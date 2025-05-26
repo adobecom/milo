@@ -94,7 +94,7 @@ p.preflight-content-heading-edit {
 
 .preflight-group-row {
   display: grid;
-  grid-template-columns: 1fr 80px 140px 140px;
+  grid-template-columns: minmax(0, 1fr) 80px 140px 140px;
   padding: 12px 24px;
   align-items: center;
 }
@@ -134,13 +134,11 @@ p.preflight-content-heading-edit {
   cursor: pointer;
 }
 
-.preflight-group-row p:first-child a{
-  color: #FFF;
+.preflight-group-row p:first-child a {
   display: inline-block;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 30em;
   width: 100%;
 }
 
