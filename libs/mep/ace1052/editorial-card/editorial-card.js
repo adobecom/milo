@@ -166,7 +166,7 @@ const init = async (el) => {
   if (section) {
     const elem = section.querySelector('.section-metadata');
     const metadata = getMetadata(elem);
-    const hideShowButton = metadata['hide-show-button'].text === 'on';
+    const hideShowButton = metadata['hide-show-button']?.text === 'on';
     const cards = section.querySelectorAll('.editorial-card');
     const existingShowMoreButton = section.querySelector('.show-more-button');
     if (hideShowButton && cards.length > 3 && !existingShowMoreButton) {
