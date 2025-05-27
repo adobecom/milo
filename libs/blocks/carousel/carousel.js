@@ -188,36 +188,25 @@ function updateAriaLive(ariaLive, slide) {
   if (text) {
     ariaLive.textContent = text;
   } else {
-    const img = slide.querySelector('img[alt]');
-    const video = slide.querySelectorAll('video[title], iframe[title]');
-    ariaLive.textContent = img?.getAttribute('alt') || video?.getAttribute('title') || '';
+    const el = slide.querySelector('img[alt], video[title], iframe[title]');
+    ariaLive.textContent = el?.getAttribute('alt') || el?.getAttribute('title') || '';
   }
 }
 
-function setAriaHiddenAndTabIndex(carouselElements, activeSlide) {
-  const { el: carouselBlock, slides } = carouselElements;
-  const active = activeSlide ?? carouselBlock.querySelector('.carousel-slide.active');
-  const activeSlideIndex = slides
-    .findIndex((el) => active === el);
-  const indexOfShowClass = [...carouselBlock.classList].findIndex((ele) => ele.includes('show-'));
-  let tempSlides = slides;
-  let noOfVisibleSlides = 1;
-  const mediaQueryMatches = window.matchMedia('(min-width: 900px)').matches;
-  if (indexOfShowClass >= 0 && mediaQueryMatches) {
-    noOfVisibleSlides = parseInt(carouselBlock.classList[indexOfShowClass].split('-')[1], 10);
-  }
-  if (activeSlideIndex > 0) {
-    tempSlides = [...slides.slice(activeSlideIndex), ...slides.slice(0, activeSlideIndex)];
-  }
-  tempSlides.forEach((slide, index) => {
-    let tabIndex = -1;
-    if (index < noOfVisibleSlides) {
-      tabIndex = 0;
-      slide.removeAttribute('aria-hidden');
-    } else {
-      slide.setAttribute('aria-hidden', true);
-    }
-    slide.querySelectorAll(FOCUSABLE_SELECTOR).forEach((focusableElement) => { focusableElement.setAttribute('tabindex', tabIndex); });
+function setAriaHiddenAndTabIndex({ el: block, slides }, activeEl) {
+  const active = activeEl ?? block.querySelector('.carousel-slide.active');
+  const activeIdx = slides.findIndex((el) => el === active);
+  const isWide = window.matchMedia('(min-width: 900px)').matches;
+  const showClass = [...block.classList].find((cls) => cls.startsWith('show-'));
+  const visible = isWide && showClass ? showClass.split('-')[1] : 1;
+  const ordered = activeIdx > 0
+    ? [...slides.slice(activeIdx), ...slides.slice(0, activeIdx)] : slides;
+  ordered.forEach((slide, i) => {
+    const isVisible = i < visible;
+    slide.setAttribute('aria-hidden', !isVisible);
+    slide.querySelectorAll(FOCUSABLE_SELECTOR).forEach((el) => {
+      el.setAttribute('tabindex', isVisible ? 0 : -1);
+    });
   });
 }
 
