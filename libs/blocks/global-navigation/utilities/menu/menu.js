@@ -76,13 +76,23 @@ const decorateLinkGroup = (elem, index) => {
       <div class="feds-navLink-title">${link.textContent}</div>
       ${descriptionElem}
     </div>` : '';
-  const linkGroup = toFragment`<a
+  let linkGroup = toFragment`<a
     href="${link.href}"
     class="feds-navLink${modifierClasses.length ? ` ${modifierClasses.join(' ')}` : ''}"
     daa-ll="${getAnalyticsValue(link.textContent, index)}">
       ${imageElem}
       ${contentElem}
     </a>`;
+  if (linkGroup.classList.contains('feds-navLink--header')) {
+    linkGroup = toFragment`<div
+      role="heading"
+      aria-level="3"
+      class="feds-navLink${modifierClasses.length ? ` ${modifierClasses.join(' ')}` : ''}"
+      daa-ll="${getAnalyticsValue(link.textContent, index)}">
+        ${imageElem}
+        ${contentElem}
+      </div>`;
+  }
   if (link?.target) linkGroup.target = link.target;
 
   return linkGroup;
