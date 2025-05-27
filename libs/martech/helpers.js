@@ -473,8 +473,6 @@ const getMartechCookies = () => document.cookie.split(';')
 async function createRequestPayload({
   updatedContext, pageName, processedPageName, locale,
   hitType, userStatus,
-  // updatedContext, pageName, processedPageName, locale,
-  // hitType,
 }) {
   const prevPageName = getCookie('gpv');
   const isCollectCall = hitType === 'propositionDisplay';
@@ -500,6 +498,8 @@ async function createRequestPayload({
     ? { primaryProfile: { profileInfo: await getProfileInfo() } }
     : { primaryProfile: { profileInfo: { authState: 'loggedOut', returningStatus: getVisitorStatus({}) } } };
 
+  const eventMergeId = generateUUIDv4();
+
   const eventObj = {
     xdm: {
       ...updatedContext,
@@ -515,14 +515,14 @@ async function createRequestPayload({
       },
       timestamp: new Date().toISOString(),
       eventType: hitTypeEventTypeMap[hitType],
-      eventMergeId: generateUUIDv4(),
+      eventMergeId,
       ...(getPrimaryProduct() && { productListItems: [{ SKU: getPrimaryProduct() }] }),
     },
     data: {
       __adobe: {
         target: {
           is404: false,
-          authState: 'loggedOut',
+          authState: userStatus ? 'authenticated' : 'loggedOut',
           hitType,
           isMilo: true,
           adobeLocale: getLanguageCode(locale),
@@ -530,17 +530,16 @@ async function createRequestPayload({
           ...(getEntityId() ? { 'entity.id': getEntityId() } : {}),
         },
       },
-      eventMergeId: generateUUIDv4(),
+      eventMergeId,
       _adobe_corpnew: {
         configuration: { edgeConfigId: dataStreamId },
         digitalData: {
           page: { pageInfo: { language: getLanguageCode(locale) } },
           diagnostic: { franklin: { implementation: 'milo' } },
           previousPage: { pageInfo: { pageName: prevPageName } },
-          // primaryUser: { primaryProfile: { profileInfo: { authState: 'loggedOut', returningStatus: getVisitorStatus({}) } } },
           primaryUser,
         },
-        otherConsents: { configuration: { advertising: consentCookie && consentCookie.includes('C0004:0') ? 'false' : 'true' } },
+        otherConsents: { configuration: { advertising: consentCookie?.includes('C0004:1') ? 'true' : 'false' } },
         cmp: { state: consentState },
       },
       marketingtech: {
@@ -808,7 +807,6 @@ function sendPropositionDisplayRequest(filteredPayload, env, requestPayload) {
 
 export const loadAnalyticsAndInteractionData = async (
   { locale, env, calculatedTimeout, userStatus },
-  // { locale, env, calculatedTimeout },
 ) => {
   const value = getCookie(KNDCTR_CONSENT_COOKIE);
 
@@ -838,7 +836,6 @@ export const loadAnalyticsAndInteractionData = async (
   });
   const requestPayload = {
     updatedContext, pageName, processedPageName, locale, env, hitType, userStatus,
-    // updatedContext, pageName, processedPageName, locale, env, hitType,
   };
   const requestBody = await createRequestPayload(requestPayload);
 
