@@ -1328,7 +1328,8 @@ export function isSignedOut() {
  */
 export function enablePersonalizationV2() {
   const enablePersV2 = getMepEnablement('personalization-v2');
-  return !!enablePersV2 && isSignedOut();
+  // return !!enablePersV2 && isSignedOut();
+  return !!enablePersV2;
 }
 
 async function checkForPageMods() {
@@ -1372,9 +1373,10 @@ async function checkForPageMods() {
     targetInteractionPromise = (async () => {
       const { loadAnalyticsAndInteractionData } = await import('../martech/helpers.js');
       const now = performance.now();
+      const userStatus = isSignedOut();
       performance.mark('interaction-start');
       const data = await loadAnalyticsAndInteractionData(
-        { locale, env: getEnv({})?.name, calculatedTimeout },
+        { locale, env: getEnv({})?.name, calculatedTimeout, userStatus },
       );
       performance.mark('interaction-end');
       performance.measure('total-time', 'interaction-start', 'interaction-end');
