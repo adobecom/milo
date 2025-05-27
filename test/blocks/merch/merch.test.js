@@ -25,6 +25,7 @@ import merch, {
   appendExtraOptions,
   getMiloLocaleSettings,
   reopenModal,
+  resetReopenStatus,
   setCtaHash,
   openModal,
   PRICE_TEMPLATE_LEGAL,
@@ -494,6 +495,29 @@ describe('Merch Block', () => {
         reopenModal(cta);
         expect(clickSpy.called).to.be.true;
         window.location.hash = prevHash;
+        resetReopenStatus();
+      });
+
+      it('only reopens one modal if multiples hashes match', async () => {
+        const prevHash = window.location.hash;
+        window.location.hash = '#try-photoshop';
+
+        const cta1 = document.createElement('a');
+        cta1.setAttribute('data-modal-id', 'try-photoshop');
+        const clickSpy1 = sinon.spy(cta1, 'click');
+
+        const cta2 = document.createElement('a');
+        cta1.setAttribute('data-modal-id', 'try-photoshop');
+        const clickSpy2 = sinon.spy(cta2, 'click');
+
+        reopenModal(cta1);
+        reopenModal(cta2);
+
+        expect(clickSpy1.called).to.be.true;
+        expect(clickSpy2.called).to.be.false;
+
+        window.location.hash = prevHash;
+        resetReopenStatus();
       });
     });
 
@@ -672,7 +696,7 @@ describe('Merch Block', () => {
       document.querySelector('.modal-curtain').click();
     });
 
-    it('renders TWP modal with preselected plan', async () => {
+    it('renders TWP modal with preselected plan that overrides extra options', async () => {
       mockIms();
       const meta = document.createElement('meta');
       meta.setAttribute('name', 'preselect-plan');
@@ -836,10 +860,22 @@ describe('Merch Block', () => {
       });
     });
 
-    it('appends extra options to URL', () => {
+    it('appends extra options to legacy modal URL', () => {
       const url = 'https://www.adobe.com/plans-fragments/modals/individual/modals-content-rich/all-apps/master.modal.html';
       const resultUrl = appendExtraOptions(url, JSON.stringify({ promoid: 'test' }));
       expect(resultUrl).to.equal('https://www.adobe.com/plans-fragments/modals/individual/modals-content-rich/all-apps/master.modal.html?promoid=test');
+    });
+
+    it('appends plan=edu if extra options contains ms=e', () => {
+      const url = 'https://www.adobe.com/plans-fragments/modals/individual/modals-content-rich/all-apps/master.modal.html';
+      const resultUrl = appendExtraOptions(url, JSON.stringify({ ms: 'e' }));
+      expect(resultUrl).to.equal('https://www.adobe.com/plans-fragments/modals/individual/modals-content-rich/all-apps/master.modal.html?plan=edu');
+    });
+
+    it('appends plan=team if extra options contains cs=t', () => {
+      const url = 'https://www.adobe.com/plans-fragments/modals/individual/modals-content-rich/all-apps/master.modal.html';
+      const resultUrl = appendExtraOptions(url, JSON.stringify({ cs: 't' }));
+      expect(resultUrl).to.equal('https://www.adobe.com/plans-fragments/modals/individual/modals-content-rich/all-apps/master.modal.html?plan=team');
     });
 
     it('does not append extra options to URL if invalid URL or params not provided', () => {
@@ -848,6 +884,12 @@ describe('Merch Block', () => {
       expect(resultUrl).to.equal(invalidUrl);
       const resultUrl2 = appendExtraOptions(invalidUrl);
       expect(resultUrl2).to.equal(invalidUrl);
+    });
+
+    it('appends extra options if the provided url is relative', () => {
+      const relativeUrl = '/plans-fragments/modals/individual/modals-content-rich/all-apps/master.modal.html';
+      const resultUrl = appendExtraOptions(relativeUrl, JSON.stringify({ promoid: 'test' }));
+      expect(resultUrl).to.include('?promoid=test');
     });
   });
 

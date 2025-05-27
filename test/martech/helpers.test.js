@@ -1,6 +1,6 @@
 import { expect } from 'chai';
 import sinon from 'sinon';
-import { getTargetPropertyBasedOnPageRegion, getVisitorStatus, loadAnalyticsAndInteractionData } from '../../libs/martech/helpers.js';
+import { getVisitorStatus, loadAnalyticsAndInteractionData } from '../../libs/martech/helpers.js';
 
 describe('loadAnalyticsAndInteractionData', () => {
   beforeEach(() => {
@@ -319,46 +319,6 @@ describe('loadAnalyticsAndInteractionData', () => {
     }
 
     document.cookie = 'kndctr_9E1005A551ED61CA0A490D45_AdobeOrg_consent=general=in';
-  });
-
-  describe('getTargetPropertyBasedOnPageRegion', () => {
-    it('should return "bc8dfa27-29cc-625c-22ea-f7ccebfc6231" when env is not "prod"', () => {
-      const result = getTargetPropertyBasedOnPageRegion({ env: 'dev', pathname: '/fr/' });
-      expect(result).to.equal('bc8dfa27-29cc-625c-22ea-f7ccebfc6231');
-    });
-
-    it('should return "488edf5f-3cbe-f410-0953-8c0c5c323772" for EMEA & LATAM regions when env is "prod"', () => {
-      const result1 = getTargetPropertyBasedOnPageRegion({ env: 'prod', pathname: '/fr/' });
-      const result2 = getTargetPropertyBasedOnPageRegion({ env: 'prod', pathname: '/uk/' });
-      const result3 = getTargetPropertyBasedOnPageRegion({ env: 'prod', pathname: '/br/' });
-
-      expect(result1).to.equal('488edf5f-3cbe-f410-0953-8c0c5c323772');
-      expect(result2).to.equal('488edf5f-3cbe-f410-0953-8c0c5c323772');
-      expect(result3).to.equal('488edf5f-3cbe-f410-0953-8c0c5c323772');
-    });
-
-    it('should return "3de509ee-bbc7-58a3-0851-600d1c2e2918" for APAC regions when env is "prod"', () => {
-      const result1 = getTargetPropertyBasedOnPageRegion({ env: 'prod', pathname: '/au/' });
-      const result2 = getTargetPropertyBasedOnPageRegion({ env: 'prod', pathname: '/hk_en/' });
-      const result3 = getTargetPropertyBasedOnPageRegion({ env: 'prod', pathname: '/in/' });
-
-      expect(result1).to.equal('3de509ee-bbc7-58a3-0851-600d1c2e2918');
-      expect(result2).to.equal('3de509ee-bbc7-58a3-0851-600d1c2e2918');
-      expect(result3).to.equal('3de509ee-bbc7-58a3-0851-600d1c2e2918');
-    });
-
-    it('should return "ba5bc9e8-8fb4-037a-12c8-682384720007" for JP region when env is "prod"', () => {
-      const result = getTargetPropertyBasedOnPageRegion({ env: 'prod', pathname: '/jp/' });
-      expect(result).to.equal('ba5bc9e8-8fb4-037a-12c8-682384720007');
-    });
-
-    it('should return "4db35ee5-63ad-59f6-cec6-82ef8863b22d" when no region matches and env is "prod"', () => {
-      const result1 = getTargetPropertyBasedOnPageRegion({ env: 'prod', pathname: '/us/' });
-      const result2 = getTargetPropertyBasedOnPageRegion({ env: 'prod', pathname: '/ca/' });
-
-      expect(result1).to.equal('4db35ee5-63ad-59f6-cec6-82ef8863b22d');
-      expect(result2).to.equal('4db35ee5-63ad-59f6-cec6-82ef8863b22d');
-    });
   });
 
   describe('getVisitorStatus', () => {
