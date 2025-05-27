@@ -34,6 +34,11 @@ export default class MerchIcon extends LitElement {
             height: var(--mod-img-height, var(--img-height));
         }
 
+        :host([size='xs']) {
+            --img-width: 20px;
+            --img-height: 20px;
+        }
+
         :host([size='s']) {
             --img-width: 24px;
             --img-height: 24px;

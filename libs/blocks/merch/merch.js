@@ -259,6 +259,18 @@ export const CHECKOUT_ALLOWED_KEYS = [
   'marketSegment',
 ];
 
+/**
+ * Used when 3in1 modals are configured with ms=e or cs=t extra paramter, but 3in1 is disabled.
+ * Dexter modals should deeplink to plan=edu or plan=team tabs.
+ * @type {Record<string, string>}
+ */
+const TAB_DEEPLINK_MAPPING = {
+  ms: 'plan',
+  cs: 'plan',
+  e: 'edu',
+  t: 'team',
+};
+
 export const CC_SINGLE_APPS_ALL = CC_SINGLE_APPS.flatMap((item) => item);
 
 export const CC_ALL_APPS = ['CC_ALL_APPS',
@@ -509,26 +521,31 @@ export function appendExtraOptions(url, extraOptions) {
   const extraOptionsObj = JSON.parse(extraOptions);
   let urlWithExtraOptions;
   try {
-    urlWithExtraOptions = new URL(url);
+    const fullUrl = url.startsWith('/') ? `${window.location.origin}${url}` : url;
+    urlWithExtraOptions = new URL(fullUrl);
   } catch (err) {
     window.lana?.log(`Invalid URL ${url} : ${err}`);
     return url;
   }
   Object.keys(extraOptionsObj).forEach((key) => {
     if (CHECKOUT_ALLOWED_KEYS.includes(key)) {
-      urlWithExtraOptions.searchParams.set(key, extraOptionsObj[key]);
+      const value = extraOptionsObj[key];
+      urlWithExtraOptions.searchParams.set(
+        TAB_DEEPLINK_MAPPING[key] ?? key,
+        TAB_DEEPLINK_MAPPING[value] ?? value,
+      );
     }
   });
   return urlWithExtraOptions.href;
 }
 
 async function openExternalModal(url, getModal, extraOptions) {
-  await loadStyle(`${getConfig().base}/blocks/iframe/iframe.css`);
+  loadStyle(`${getConfig().base}/blocks/iframe/iframe.css`);
   const root = createTag('div', { class: 'milo-iframe' });
-  const urlWithTabName = appendTabName(url);
-  const urlWithExtraOptions = appendExtraOptions(urlWithTabName, extraOptions);
+  const urlWithExtraOptions = appendExtraOptions(url, extraOptions);
+  const urlWithTabName = appendTabName(urlWithExtraOptions);
   createTag('iframe', {
-    src: urlWithExtraOptions,
+    src: urlWithTabName,
     frameborder: '0',
     marginwidth: '0',
     marginheight: '0',
@@ -780,10 +797,17 @@ export async function getPriceContext(el, params) {
   };
 }
 
+let modalReopened = false;
 export function reopenModal(cta) {
+  if (modalReopened) return;
   if (cta && cta.getAttribute('data-modal-id') === window.location.hash.replace('#', '')) {
     cta.click();
+    modalReopened = true;
   }
+}
+
+export function resetReopenStatus() {
+  modalReopened = false;
 }
 
 export async function buildCta(el, params) {

@@ -33,8 +33,8 @@ const MANIFESTSRC_OPTIONS = {
   personalization: { label: 'PZN', value: 'pzn' },
   promo: { label: 'Promo', value: 'promo' },
   target: { label: 'Target', value: 'target' },
-  ajo: { label: 'AJO', value: 'ajo' },
-  placeholder: { label: 'Placeholders', value: 'placeholders' },
+  // ajo: { label: 'AJO', value: 'ajo' },
+  // placeholder: { label: 'Placeholders', value: 'placeholders' },
 };
 
 const GRID_FORMAT = {
@@ -44,8 +44,8 @@ const GRID_FORMAT = {
     row2: ['mmm-checkbox-filter-targetSetting', 'mmm-checkbox-filter-manifestSrc'],
     row3: ['mmm-search-filter-container'],
   },
-  report: {
-    row1: ['mmm-dropdown-lastSeen'],
+  targetCleanUp: {
+    row1: ['mmm-dropdown-lastSeen', 'mmm-container-dropdown-geos'],
     row2: ['mmm-search-filter-container'],
   },
 };
@@ -57,6 +57,28 @@ const METADATA_URLS_CATEGORIES = {
   postLCP: { display: 'PostLCP', key: 'postLCP' },
 };
 
+const TARGET_METADATA_OPTIONS = {
+  cc: {
+    name: 'CC',
+    metadata: 'https://main--cc--adobecom.aem.live/metadata-optimization.json',
+    source: 'https://adobe.sharepoint.com/:x:/r/sites/adobecom/_layouts/15/Doc.aspx?sourcedoc=%7B818b8ad2-72db-4726-85a6-5238d6715069%7D&action=edit&activeCell=%27helix-default%27!A16&wdinitialsession=11b36a4d-a08b-0def-1294-1fcf497cfc1a&wdrldsc=4&wdrldc=1&wdrldr=AccessTokenExpiredWarningUnauthenticated%2CRefreshin',
+  },
+  dc: {
+    name: 'DC',
+    metadata: 'https://main--dc--adobecom.aem.live/metadata-optimization.json',
+    source: 'https://adobe.sharepoint.com/:x:/r/sites/adobecom/_layouts/15/Doc.aspx?sourcedoc=%7B8F5A8CD0-7979-41CE-894A-CC465B293C1A%7D&file=metadata-optimization.xlsx&action=default&mobileredirect=true&wdsle=0',
+  },
+  express: {
+    name: 'Express',
+    metadata: 'https://main--express-milo--adobecom.aem.live/metadata-optimization.json',
+    source: 'https://adobe.sharepoint.com/:x:/r/sites/adobecom/_layouts/15/Doc.aspx?sourcedoc=%7BEC96D2B9-9F25-48AF-B88A-A6926A340D3A%7D&file=metadata-optimization.xlsx&action=default&mobileredirect=true',
+  },
+  bacom: {
+    name: 'BACOM',
+    metadata: 'https://main--bacom--adobecom.aem.live/metadata-optimization.json',
+    source: 'https://adobe.sharepoint.com/:x:/r/sites/adobecom/_layouts/15/Doc.aspx?sourcedoc=%7BEE70634D-C16E-45E7-B16E-718C5022413E%7D&file=metadata-optimization.xlsx&action=default&mobileredirect=true&wdsle=0',
+  },
+};
 let isReport = false;
 let mmmPageVer = GRID_FORMAT.base;
 let isMetadataLookup = false;
@@ -81,7 +103,7 @@ const setLocalStorageFilter = (obj) => {
   localStorage.setItem(getStorageKey(), JSON.stringify(obj));
 };
 
-const SEARCH_INITIAL_VALUES = () => getLocalStorageFilter() ?? {
+const SEARCH = () => getLocalStorageFilter() ?? {
   lastSeenManifest: isReport ? LAST_SEEN_OPTIONS.week.key : LAST_SEEN_OPTIONS.threeMonths.key,
   pageNum: 1,
   subdomain: SUBDOMAIN_OPTIONS.www.key,
@@ -109,7 +131,7 @@ async function toggleDrawer(target, dd, pageId) {
     dd.removeAttribute('hidden');
     const loading = dd.querySelector('.loading');
     if (dd.classList.contains('placeholder-resolved') || !loading) return;
-    const pageData = await fetchData(`${API_URLS.pageDetails}${pageId}`, DATA_TYPE.JSON);
+    const pageData = await fetchData(`${API_URLS.pageDetails}?id=${pageId}&lastSeen=${SEARCH().lastSeenManifest}&manifestSrc=${SEARCH().manifestSrc}`, DATA_TYPE.JSON);
     loading.replaceWith(getMepPopup(pageData, true));
     dd.classList.add('placeholder-resolved');
   }
@@ -192,7 +214,7 @@ function filterPageList(pageNum, perPage, filterEvent, sortingEvent) {
   }
   // add pageNum and perPage to args for api call
   searchValues.pageNum = pageNum || 1;
-  searchValues.perPage = perPage || SEARCH_INITIAL_VALUES()?.perPage;
+  searchValues.perPage = perPage || SEARCH()?.perPage;
 
   // add orderBy and order to args for api call
   if (isReport) {
@@ -268,7 +290,7 @@ function createDropdowns(data) {
     Object.keys(options).forEach((option) => {
       const optionEl = createTag('option', { value: option }, options[option]);
       select.append(optionEl);
-      const startingVal = SEARCH_INITIAL_VALUES()[key];
+      const startingVal = SEARCH()[key];
       if (startingVal === option) optionEl.setAttribute('selected', 'selected');
     });
     select.addEventListener('change', () => filterPageList());
@@ -294,7 +316,7 @@ function createSearchField() {
     </div>`,
   );
   const searchField = searchForm.querySelector('textarea');
-  searchField.innerHTML = SEARCH_INITIAL_VALUES().filter || '';
+  searchField.innerHTML = SEARCH().filter || '';
 
   searchField.addEventListener('keyup', debounce((event) => filterPageList(null, null, event)));
   searchField.addEventListener('change', debounce((event) => filterPageList(null, null, event)));
@@ -312,7 +334,7 @@ function createLastSeenManifestAndDomainDD() {
     'div',
     { id: 'mmm-dropdown-lastSeen', class: 'mmm-form-container' },
     `<div>
-      <label for="mmm-lastSeenManifest">Target manifests ${isReport ? 'not ' : ''}seen in the last:</label>
+      <label for="mmm-lastSeenManifest">${isReport ? 'Target manifests not' : 'Manifests'} seen in the last:</label>
       <select id="mmm-lastSeenManifest" type="text" name="mmm-lastSeenManifest" class="text-field-input">
       
       </select>
@@ -325,7 +347,7 @@ function createLastSeenManifestAndDomainDD() {
     const lastSeenSelect = dropdownLastSeen.querySelector('select');
     const newEl = createTag(
       'option',
-      { value: LAST_SEEN_OPTIONS[key].key, ...(SEARCH_INITIAL_VALUES().lastSeenManifest === LAST_SEEN_OPTIONS[key].key ? { selected: 'selected' } : {}) },
+      { value: LAST_SEEN_OPTIONS[key].key, ...(SEARCH().lastSeenManifest === LAST_SEEN_OPTIONS[key].key ? { selected: 'selected' } : {}) },
       LAST_SEEN_OPTIONS[key].value,
     );
     lastSeenSelect.append(newEl);
@@ -339,7 +361,7 @@ function createLastSeenManifestAndDomainDD() {
         <label for="mmm-subdomain">Subdomain:</label>
         <select id="mmm-subdomain" type="text" name="mmm-subdomain" class="text-field-input">
           ${Object.keys(SUBDOMAIN_OPTIONS).map((key) => `
-            <option value="${SUBDOMAIN_OPTIONS[key].key}" ${SEARCH_INITIAL_VALUES().subdomain === SUBDOMAIN_OPTIONS[key].key ? 'selected' : ''}>${SUBDOMAIN_OPTIONS[key].value}</option>
+            <option value="${SUBDOMAIN_OPTIONS[key].key}" ${SEARCH().subdomain === SUBDOMAIN_OPTIONS[key].key ? 'selected' : ''}>${SUBDOMAIN_OPTIONS[key].value}</option>
           `)}
         </select>
       </div>`,
@@ -354,7 +376,7 @@ function createCheckBoxFilterGroup(checkBoxId, legendLabel, optionsObj) {
   const checkBoxFieldset = createTag('fieldset', { id: `mmm-${checkBoxId}-fieldset` }, checkBoxLegend);
   // helper function only ran during filter build. consider moving to outter lex scope
   function createCheckBox(groupName, checkboxLabel, checkboxValue) {
-    const initValueCheck = SEARCH_INITIAL_VALUES()?.[groupName]?.split(', ').includes(checkboxValue);
+    const initValueCheck = !SEARCH()?.[groupName] || SEARCH()?.[groupName]?.split(', ').includes(checkboxValue);
     const checkDiv = createTag('div', { class: 'mmm-checkbox-option' });
     const checkLabel = createTag('label', { for: `mmm-${groupName}-${checkboxValue}` }, checkboxLabel);
     const checkBox = createTag('input', {
@@ -537,7 +559,7 @@ function createReportButton() {
     'a',
     {
       class: 'con-button outline button-l button-justified-mobile mmm-report-slack',
-      href: 'https://adobe.enterprise.slack.com/archives/C08LXEQ735W',
+      href: 'https://adobe.enterprise.slack.com/archives/C08SA7JUW3F',
     },
     'Open Slack',
   );
@@ -705,17 +727,11 @@ function handleMetadataFilterInput(event) {
 }
 
 function createMetadataLookup(el) {
+  const openMetadataSheetBtn = document.querySelector('.text.instructions .cta-container a');
   const dropdown = {
     id: 'mmm-metadata-lookup-repo-cc',
     label: 'Choose Repo',
-    selected: SEARCH_INITIAL_VALUES().selectedRepo,
-    options: {
-      cc: 'CC',
-      dc: 'DC',
-      express: 'Express',
-      bacom: 'BACOM',
-    },
-
+    selected: SEARCH().selectedRepo,
   };
 
   const search = createTag('div', { class: 'mmm-metadata-lookup' }, `
@@ -723,8 +739,8 @@ function createMetadataLookup(el) {
       <div>
         <label for="${dropdown.id}">${dropdown.label}:</label>
         <select id="${dropdown.id}" class="text-field-input">
-          ${Object.keys(dropdown.options).map((key) => `
-            <option value="${key}" ${dropdown.selected === key ? 'selected' : ''}>${dropdown.options[key]}</option>
+          ${Object.keys(TARGET_METADATA_OPTIONS).map((key) => `
+            <option value="${key}" ${dropdown.selected === key ? 'selected' : ''}>${TARGET_METADATA_OPTIONS[key].name}</option>
           `).join('')}
         </select>
       </div>
@@ -737,6 +753,10 @@ function createMetadataLookup(el) {
     <button id="mmm-copy-metadata-report" class="mmm-metadata-lookup__button primary mmm-hide" style="align-self: center">Copy Report</button>
   `);
   el.append(search);
+  // Edit REP button label and URL
+  const { name, source } = TARGET_METADATA_OPTIONS[dropdown.selected];
+  openMetadataSheetBtn.innerHTML = `Open ${name} Spreadsheet`;
+  openMetadataSheetBtn.href = source;
 
   // Handle REPO change
   // eslint-disable-next-line no-use-before-define
@@ -747,7 +767,7 @@ function createMetadataLookup(el) {
     const filterResultObj = JSON.parse(filterResult);
     filterResultObj.off = filterResultObj.off.concat(filterResultObj.notFound);
     filterResultObj.notFound = [];
-    const reportText = `Date: ${getDate()}\nRepo: ${SEARCH_INITIAL_VALUES().selectedRepo.toUpperCase()}\nRequested pages are grouped below by their Target setting.
+    const reportText = `Date: ${getDate()}\nRepo: ${SEARCH().selectedRepo.toUpperCase()}\nRequested pages are grouped below by their Target setting.
       ${Object.keys(filterResultObj).map((key) => {
     const urls = filterResultObj[key].map((item) => item.url || item);
     return urls.length ? `\n\n${METADATA_URLS_CATEGORIES[key].display}:\n${urls.join('\n')}\n` : null;
@@ -762,7 +782,7 @@ function createMetadataLookup(el) {
   // Handle Filter input
   const textarea = search.querySelector('textarea');
   textarea.addEventListener('input', debounce((event) => handleMetadataFilterInput(event)));
-  textarea.innerHTML = SEARCH_INITIAL_VALUES().metadataFilter;
+  textarea.innerHTML = SEARCH().metadataFilter;
   textarea.dispatchEvent(new CustomEvent('input', { detail: textarea }));
 }
 
@@ -781,11 +801,11 @@ async function createView(el, search) {
 
   let url = '';
   let method = 'POST';
-  let body = JSON.stringify(search ?? SEARCH_INITIAL_VALUES());
+  let body = JSON.stringify(search ?? SEARCH());
   switch (true) {
     case isReport: url = API_URLS.report; break;
     case isMetadataLookup: {
-      url = API_URLS.metadata[SEARCH_INITIAL_VALUES().selectedRepo];
+      url = TARGET_METADATA_OPTIONS[SEARCH().selectedRepo].metadata;
       method = 'GET';
       body = null;
       break;
@@ -865,7 +885,7 @@ function handleRepoChange() {
 
 export default async function init(el) {
   isReport = el.classList.contains('target-cleanup');
-  mmmPageVer = isReport ? GRID_FORMAT.report : GRID_FORMAT.base;
+  mmmPageVer = isReport ? GRID_FORMAT.targetCleanUp : GRID_FORMAT.base;
   isMetadataLookup = el.classList.contains('target-metadata-lookup');
   await createView(el);
   if (!isMetadataLookup) {

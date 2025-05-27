@@ -266,9 +266,9 @@ main > .section[class*='-up'] > .content {
   }
 
   .section[class*='grid-width-'] {
-    display: block;
+    display: flex;
+    flex-direction: column;
   }
-
 }
 
 @media screen and (min-width: 600px) and (max-width: 1200px) {
