@@ -9,10 +9,10 @@ const MobileGnav = {
     this.addEventListeners();
   },
   addEventListeners() {
-    this.toggleButton.addEventListener('keydown', (e) => {
+    this.toggleButton.addEventListener('keydown', ({ code }) => {
       if (this.isMobile) {
         const gnavWrapper = document.querySelector('.feds-nav-wrapper');
-        if (e.code === 'ArrowDown' && gnavWrapper && gnavWrapper.classList.contains('feds-nav-wrapper--expanded')) {
+        if (code === 'ArrowDown' && gnavWrapper && gnavWrapper.classList.contains('feds-nav-wrapper--expanded')) {
           const firstNavLink = gnavWrapper.querySelector('.feds-nav .feds-navLink');
           firstNavLink.focus();
         }
@@ -28,14 +28,14 @@ const MobileGnav = {
             const popupTabContents = document.querySelectorAll('.feds-nav-wrapper .feds-popup .tab-content');
             const popupLinks = document.querySelectorAll('.feds-nav-wrapper .feds-popup .tab-content .feds-navLink, .feds-promo a');
             popupTabs.forEach((tab) => {
-              tab.addEventListener('keydown', (e) => {
-                if (e.code === 'ArrowUp') {
+              tab.addEventListener('keydown', ({ code }) => {
+                if (code === 'ArrowUp') {
                   const prevTab = tab.previousElementSibling;
                   if (prevTab) prevTab.focus();
-                } else if (e.code === 'ArrowDown') {
+                } else if (code === 'ArrowDown') {
                   const nextTab = tab.nextElementSibling;
                   if (nextTab) nextTab.focus();
-                } else if (e.code === 'ArrowRight') {
+                } else if (code === 'ArrowRight') {
                   const currentTabs = [...popupTabs].filter((currentTab) => currentTab.closest('.feds-dropdown--active'));
                   const activeTab = currentTabs.find((currentTab) => currentTab.getAttribute('aria-selected') === 'true');
                   const activeTabIndex = activeTab.getAttribute('aria-controls');
@@ -47,8 +47,8 @@ const MobileGnav = {
               });
             });
             popupLinks.forEach((link) => {
-              link.addEventListener('keydown', (e) => {
-                if (e.code === 'ArrowUp') {
+              link.addEventListener('keydown', ({ code }) => {
+                if (code === 'ArrowUp') {
                   let prevLink = link.previousElementSibling;
                   if (prevLink) {
                     if (prevLink.classList.contains('feds-promo-wrapper')) {
@@ -60,7 +60,7 @@ const MobileGnav = {
                   } else {
                     link.closest('.feds-promo-wrapper').previousElementSibling.focus();
                   }
-                } else if (e.code === 'ArrowDown') {
+                } else if (code === 'ArrowDown') {
                   let nextLink = link.nextElementSibling;
                   if (nextLink) {
                     if (nextLink.classList.contains('feds-promo-content')) {
@@ -73,7 +73,7 @@ const MobileGnav = {
                   } else {
                     link.closest('.feds-promo-wrapper').nextElementSibling.focus();
                   }
-                } else if (e.code === 'ArrowLeft') {
+                } else if (code === 'ArrowLeft') {
                   const currentTabs = [...popupTabs].filter((currentTab) => currentTab.closest('.feds-dropdown--active'));
                   const activeTab = currentTabs.find((currentTab) => currentTab.getAttribute('aria-selected') === 'true');
                   if (activeTab) activeTab.focus();
@@ -86,13 +86,13 @@ const MobileGnav = {
     });
 
     this.menuItemLinks.forEach((menulink, index) => {
-      menulink.addEventListener('keydown', (e) => {
+      menulink.addEventListener('keydown', ({ code }) => {
         if (this.isMobile) {
-          if (e.code === 'ArrowUp') {
+          if (code === 'ArrowUp') {
             const prevLink = this.menuItemLinks[index - 1];
             if (prevLink) prevLink.focus();
             else this.toggleButton.focus();
-          } else if (e.code === 'ArrowDown') {
+          } else if (code === 'ArrowDown') {
             const nextLink = this.menuItemLinks[index + 1];
             if (nextLink) nextLink.focus();
           }
