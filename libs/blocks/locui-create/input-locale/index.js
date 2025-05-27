@@ -15,22 +15,20 @@ import {
 import { ENG_LANG_CODE, PROJECT_ACTION, PROJECT_TYPES, TRANSCREATION_WORKFLOW, WORKFLOW } from '../utils/constant.js';
 
 function initialLanguageList() {
-  const updatedLocales = locales.value.map((locItem) => {
-    return {
-      ...locItem,
-      livecopies: locItem.workflow === TRANSCREATION_WORKFLOW
-        ? locItem.livecopies
-            .split(',')
-            .map(char => `TR-${char}`)
-            .join(',')
-        : locItem.livecopies
-    };
-  });
+  const updatedLocales = locales.value.map((locItem) => ({
+    ...locItem,
+    livecopies: locItem.workflow === TRANSCREATION_WORKFLOW
+      ? locItem.livecopies
+        .split(',')
+        .map((char) => `TR-${char}`)
+        .join(',')
+      : locItem.livecopies,
+  }));
   if (
     project.value.type === PROJECT_TYPES.translation) {
     return updatedLocales.filter((locItem) => locItem.languagecode !== ENG_LANG_CODE);
   }
-  return updatedLocales
+  return updatedLocales;
 }
 
 function initialRegions() {
@@ -80,9 +78,9 @@ function prefillActionAndWorkflow(languages) {
   const prefilledLanguages = languages.map((lang) => {
     const { langCode } = lang;
     const { action, workflow = '' } = languageByCode[langCode] || {};
-      const cleanedLocales = Array.isArray(lang.locales)
-    ? lang.locales.map(locale => locale.replace(/^TR-/, ''))
-    : lang.locales;
+    const cleanedLocales = Array.isArray(lang.locales)
+      ? lang.locales.map((locale) => locale.replace(/^TR-/, ''))
+      : lang.locales;
     const prefillLanguage = {
       ...lang,
       locales: cleanedLocales,
@@ -214,10 +212,11 @@ export default function useInputLocale() {
     });
 
     languagesList.forEach((lang) => {
-      if(lang.workflow === TRANSCREATION_WORKFLOW) {
+      if (lang.workflow === TRANSCREATION_WORKFLOW) {
         lang.livecopies.split(',').forEach((locale) => {
-        allLocales.push(locale)
-      })}
+          allLocales.push(locale);
+        });
+      }
       lang.livecopies.split(',').forEach((locale) => {
         allActiveLocales[locale] = lang.language;
       });
