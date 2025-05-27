@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>Merch Card Fries Variant Web Component demo page</title>
+        <script>
+            window.process = {
+                env: {},
+            };
+        </script>
+        <style>
+            main {
+                display: flex;
+                align-items: center;
+                gap: 20px;
+                flex-direction: column;
+                padding-top: 80px;
+                width: 100%;
+                height: 100%;
+            }
+            merch-card {
+                margin-bottom: 20px;
+            }
+        </style>
+        <mas-commerce-service env="stage"></mas-commerce-service>
+    </head>
+
+    <body>
+        <script type="module" src="./merch-card.fries.test.html.js"></script>
+        <main>
+            <merch-card
+                id="7a679b0a-512a-4129-9e47-9cbfa3a185da"
+                variant="fries"
+                style="--merch-card-custom-border-color: var(--spectrum-gray-300);"
+            >
+                <merch-icon
+                    slot="icons"
+                    src="./img/illustrator.svg"
+                    size="s"
+                ></merch-icon>
+                <div slot="badge">
+                    <merch-badge
+                        background-color="spectrum-yellow-300"
+                        variant="fries"
+                    ></merch-badge>
+                </div>
+                <div slot="trial-badge">
+                    <merch-badge
+                        background-color="spectrum-green-800"
+                        border-color="spectrum-green-800"
+                        variant="fries"
+                    ></merch-badge>
+                </div>
+                <h3 slot="heading-xxs">
+                    Creative Cloud All Apps —&nbsp;with Acrobat Pro
+                </h3>
+                <p slot="price">
+                    <span
+                        is="inline-price"
+                        data-wcs-osi="Mutn1LYoGojkrcMdCLO7LQlx1FyTHw27ETsfLv0h8DQ"
+                    ></span
+                ></p>
+                <div slot="body-s">
+                    <p>
+                        Save big when you bundle our favorite apps into the
+                        ultimate creative toolkit. Includes: Acrobat Pro,
+                        Photoshop, Illustrator, Premier Pro, and more.
+                    </p>
+                    <p>
+                        <span class="mnemonic"
+                            ><merch-icon
+                                src="./img/premiere.svg"
+                                size="xs"
+                                alt="Adobe Photoshop"
+                            ></merch-icon
+                        ></span>
+                        <span class="mnemonic"
+                            ><merch-icon
+                                src="./img/illustrator.svg"
+                                size="xs"
+                                alt="Adobe Illustrator"
+                            ></merch-icon
+                        ></span>
+                        <span class="mnemonic"
+                            ><merch-icon
+                                src="./img/lightroom.svg"
+                                size="xs"
+                                alt="Adobe Acrobat Pro"
+                            ></merch-icon
+                        ></span>
+                        <span class="mnemonic"
+                            ><merch-icon
+                                src="./img/premiere.svg"
+                                size="xs"
+                                alt="Adobe Premiere Pro"
+                            ></merch-icon
+                        ></span>
+                        <span class="mnemonic-text">+ more apps</span>
+                    </p>
+                </div>
+                <div slot="cta">
+                    <button
+                        is="checkout-button"
+                        class="spectrum-Button spectrum-Button--primary spectrum-Button--sizeM"
+                    >
+                        <span class="spectrum-Button-label"
+                            >1-month free trial</span
+                        >
+                    </button>
+                </div>
+            </merch-card>
+            <merch-card
+                id="fries-card-background-color"
+                variant="fries"
+                background-color="spectrum-seafoam-100"
+            >
+                <merch-icon
+                    slot="icons"
+                    src="./img/premiere.svg"
+                    size="s"
+                ></merch-icon>
+                <h3 slot="heading-xxs">Photoshop</h3>
+                 <div slot="body-s">
+                    <p>Test body</p>
+                </div>
+                <div slot="cta">
+                    <button
+                        is="checkout-button"
+                        class="spectrum-Button spectrum-Button--primary spectrum-Button--sizeM"
+                    >
+                        <span class="spectrum-Button-label"
+                            >Buy now</span
+                        >
+                    </button>
+                </div>
+            </merch-card>
+        </main>
+    </body>
+</html> 
