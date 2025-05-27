@@ -12,14 +12,25 @@ import {
   initByParams,
   userWorkflowType,
 } from '../store.js';
-import { ENG_LANG_CODE, PROJECT_ACTION, PROJECT_TYPES, WORKFLOW } from '../utils/constant.js';
+import { ENG_LANG_CODE, PROJECT_ACTION, PROJECT_TYPES, TRANSCREATION_WORKFLOW, WORKFLOW } from '../utils/constant.js';
 
 function initialLanguageList() {
+  const updatedLocales = locales.value.map((locItem) => {
+    return {
+      ...locItem,
+      livecopies: locItem.workflow === TRANSCREATION_WORKFLOW
+        ? locItem.livecopies
+            .split(',')
+            .map(char => `TR-${char}`)
+            .join(',')
+        : locItem.livecopies
+    };
+  });
   if (
     project.value.type === PROJECT_TYPES.translation) {
-    return locales.value.filter((locItem) => locItem.languagecode !== ENG_LANG_CODE);
+    return updatedLocales.filter((locItem) => locItem.languagecode !== ENG_LANG_CODE);
   }
-  return locales.value;
+  return updatedLocales
 }
 
 function initialRegions() {
@@ -69,8 +80,12 @@ function prefillActionAndWorkflow(languages) {
   const prefilledLanguages = languages.map((lang) => {
     const { langCode } = lang;
     const { action, workflow = '' } = languageByCode[langCode] || {};
+      const cleanedLocales = Array.isArray(lang.locales)
+    ? lang.locales.map(locale => locale.replace(/^TR-/, ''))
+    : lang.locales;
     const prefillLanguage = {
       ...lang,
+      locales: cleanedLocales,
       action,
       workflow,
     };
@@ -199,6 +214,10 @@ export default function useInputLocale() {
     });
 
     languagesList.forEach((lang) => {
+      if(lang.workflow === TRANSCREATION_WORKFLOW) {
+        lang.livecopies.split(',').forEach((locale) => {
+        allLocales.push(locale)
+      })}
       lang.livecopies.split(',').forEach((locale) => {
         allActiveLocales[locale] = lang.language;
       });

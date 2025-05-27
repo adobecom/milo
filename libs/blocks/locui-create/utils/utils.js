@@ -74,7 +74,7 @@ export function setSelectedLocalesAndRegions() {
     acc[language] = curr;
     return acc;
   }, {});
-  const selectedLocale = [];
+  let selectedLocale = [];
   const activeLocales = {};
   languages.forEach((loc) => {
     const { language, locales } = loc;
@@ -94,6 +94,7 @@ export function setSelectedLocalesAndRegions() {
     }
     selectedLocale.push(...livecopiesArr);
   });
+  selectedLocale = [...new Set(selectedLocale)]
   selectedLocale.sort((a, b) => a.localeCompare(b));
   locSelected.value = { selectedLocale, activeLocales };
 }
