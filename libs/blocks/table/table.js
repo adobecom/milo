@@ -669,7 +669,6 @@ export default function init(el) {
       setTooltipPosition(el);
     };
     handleResize();
-    handleStickyHeader(el);
 
     let deviceBySize = defineDeviceByScreenSize();
     window.addEventListener('resize', () => {
@@ -691,6 +690,8 @@ export default function init(el) {
   }, true);
 
   const observer = new window.IntersectionObserver((entries) => {
+    handleStickyHeader(el);
+
     if (entries.some((entry) => entry.isIntersecting)) {
       observer.disconnect();
       handleTable();
