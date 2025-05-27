@@ -190,7 +190,7 @@ async function getLivePaths(entries) {
   );
   if (!LOCAL_RUN)
     await slackNotification(
-      `Importing ${livePaths.length} published documents from ${entries.length} log entries. Log Link: https://admin.hlx.page/log/adobecom/${ROLLING_IMPORT_REPO}?from=${FROM_PARAM}`,
+      `Importing ${livePaths.length} published documents from ${entries.length} log entries. Log Link: https://admin.hlx.page/log/adobecom/${ROLLING_IMPORT_IMPORT_FROM}?from=${FROM_PARAM}`,
     );
   if (livePaths.length < 10 && !LOCAL_RUN)
     console.log(
