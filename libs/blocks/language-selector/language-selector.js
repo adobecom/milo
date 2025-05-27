@@ -64,7 +64,7 @@ function createDropdownElements(regionPickerTextElem) {
     'aria-controls': 'language-selector-listbox',
     type: 'button',
   });
-  selectedLangButton.innerHTML = regionPickerTextElem.textContent;
+  selectedLangButton.textContent = regionPickerTextElem.textContent;
   regionPickerTextElem.style.display = 'none';
   regionPickerTextElem.parentNode.insertBefore(selectedLangButton, regionPickerTextElem);
 
