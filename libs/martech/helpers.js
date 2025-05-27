@@ -252,8 +252,6 @@ async function createProfileInfo(profile, returningStatus) {
     first_name: sha256(profile?.first_name?.toLowerCase() || 'unknown'),
     last_name: sha256(profile?.last_name?.toLowerCase() || 'unknown'),
     phoneNumber: sha256(profile?.phoneNumber?.replace('+', '') || 'unknown'),
-    roles: profile?.roles || [],
-    tags: profile?.tags || [],
   };
 
   return {
