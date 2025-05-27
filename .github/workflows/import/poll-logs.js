@@ -68,9 +68,9 @@ function getWorkflowRunUrl() {
 const slackNotification = (text) => {
   console.log(text);
   const workflowUrl = getWorkflowRunUrl();
-  let message = `${text}\n- Importer ran for: \`adobecom/${ROLLING_IMPORT_REPO}\``;
+  let message = `${text}\n• Importer fetched logs from: \`adobecom/${ROLLING_IMPORT_POLL_LOGS_FROM_REPO}\`\n• Importing into: \`adobecom/${ROLLING_IMPORT_REPO}\``;
   if (workflowUrl) {
-    message += `\n- <${workflowUrl}|Workflow Run>`;
+    message += `\n• <${workflowUrl}|Workflow Run>`;
   }
   return fetch(ROLLING_IMPORT_SLACK, {
     method: 'POST',
@@ -202,7 +202,7 @@ async function getLivePaths(entries) {
 async function main() {
   await getImsToken();
   const entries = await fetchLogsForSite(
-    ROLLING_IMPORT_REPO,
+    ROLLING_IMPORT_POLL_LOGS_FROM_REPO,
     `https://admin.hlx.page/log/adobecom/${ROLLING_IMPORT_POLL_LOGS_FROM_REPO}`,
     FROM_PARAM
   );
