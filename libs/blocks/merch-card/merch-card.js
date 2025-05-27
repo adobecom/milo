@@ -446,28 +446,12 @@ const createFirstRow = async (firstRow, isMobile, checkmarkCopyContainer, defaul
   let firstRowTextParagraph;
 
   if (isMobile) {
-    const addIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 28 28" id="S_AddCircle_28_N">
-    <defs>
-      <style>
-        .fill {
-          fill: #464646;
-        }
-      </style>
-      </defs>
-      <rect id="Canvas" fill="#ff13dc" opacity="0" width="28" height="28" />
-      <path class="fill" d="M14 2a12 12 0 1 0 12 12A12 12 0 0 0 14 2Zm6.5 12.5a.5.5 0 0 1-.5.5H15v5a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-5h-5a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5h5v-5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 .5.5Z"/>
-    </svg>`;
-    const removeIcon = `<svg xmlns="http://www.w3.org/2000/svg" height="28" width="28" viewBox="0 0 28 28" id="S_RemoveCircle_28_N">
-      <defs>
-        <style>
-          .fill {
-            fill: #464646;
-          }
-        </style>
-      </defs>
-      <rect id="Canvas" fill="#ff13dc" opacity="0" width="28" height="28" />
-      <path class="fill" d="M14 2a12 12 0 1 0 12 12A12 12 0 0 0 14 2Zm6.5 12.5a.5.5 0 0 1-.5.5H8a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5h12a.5.5 0 0 1 .5.5Z"/>
-    </svg>`;
+    const addIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 28 28" fill="none">
+      <circle cx="14" cy="14" r="12" fill="#F8F8F8"/><path d="M14 26C7.38258 26 2 20.6174 2 14C2 7.38258 7.38258 2 14 2C20.6174 2 26 7.38258 26 14C26 20.6174 20.6174 26 14 26ZM14 4.05714C8.51696 4.05714 4.05714 8.51696 4.05714 14C4.05714 19.483 8.51696 23.9429 14 23.9429C19.483 23.9429 23.9429 19.483 23.9429 14C23.9429 8.51696 19.483 4.05714 14 4.05714Z" fill="#292929"/>
+      <path d="M18.55 12.95H15.05V9.45002C15.05 8.87034 14.5797 8.40002 14 8.40002C13.4203 8.40002 12.95 8.87034 12.95 9.45002V12.95H9.44999C8.87031 12.95 8.39999 13.4203 8.39999 14C8.39999 14.5797 8.87031 15.05 9.44999 15.05H12.95V18.55C12.95 19.1297 13.4203 19.6 14 19.6C14.5797 19.6 15.05 19.1297 15.05 18.55V15.05H18.55C19.1297 15.05 19.6 14.5797 19.6 14C19.6 13.4203 19.1297 12.95 18.55 12.95Z" fill="#292929"/></svg>`;
+    const removeIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 28 28" fill="none">
+      <circle cx="14" cy="14" r="12" fill="#292929"/><path d="M14 26C7.38258 26 2 20.6174 2 14C2 7.38258 7.38258 2 14 2C20.6174 2 26 7.38258 26 14C26 20.6174 20.6174 26 14 26ZM14 4.05714C8.51696 4.05714 4.05714 8.51696 4.05714 14C4.05714 19.483 8.51696 23.9429 14 23.9429C19.483 23.9429 23.9429 19.483 23.9429 14C23.9429 8.51696 19.483 4.05714 14 4.05714Z" fill="#292929"/>
+      <path d="M9 14L19 14" stroke="white" stroke-width="2" stroke-linecap="round"/></svg>`;
     const toggleIcon = createTag('span', { class: 'toggle-icon' }, addIcon);
     firstRowTextParagraph = createTag('div', { class: 'footer-rows-title' }, firstRowText);
     firstRowTextParagraph.appendChild(toggleIcon);
