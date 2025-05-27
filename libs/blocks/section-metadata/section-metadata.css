@@ -265,9 +265,9 @@ main > .section[class*='-up'] > .content {
   }
 
   .section[class*='grid-width-'] {
-    display: block;
+    display: flex;
+    flex-direction: column;
   }
-
 }
 
 @media (min-width: 600px) {
