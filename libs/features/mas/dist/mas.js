@@ -1301,9 +1301,9 @@ merch-card[variant^="plans"]:not([size]) {
                 <input type="checkbox" @change=${this.card.toggleStockOffer}></input>
                 <span></span>
                 ${this.card.checkboxLabel}
-            </label>`:""}get icons(){return this.card.querySelector('[slot="icons"]')?g`<slot name="icons"></slot>`:""}connectedCallbackHook(){let t=co();t?.addEventListener&&t.addEventListener("change",this.adaptForMobile)}disconnectedCallbackHook(){let t=co();t?.removeEventListener&&t.removeEventListener("change",this.adaptForMobile)}renderLayout(){return g` ${this.badge}
+            </label>`:""}connectedCallbackHook(){let t=co();t?.addEventListener&&t.addEventListener("change",this.adaptForMobile)}disconnectedCallbackHook(){let t=co();t?.removeEventListener&&t.removeEventListener("change",this.adaptForMobile)}renderLayout(){return g` ${this.badge}
             <div class="body">
-                ${this.icons}
+                <slot name="icons"></slot>
                 <slot name="heading-xs"></slot>
                 <slot name="heading-s"></slot>
                 <slot name="subtitle"></slot>
