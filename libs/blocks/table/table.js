@@ -639,7 +639,11 @@ export default function init(el) {
     cols.forEach((col, cdx) => {
       col.dataset.colIndex = cdx + 1;
       col.classList.add('col', `col-${cdx + 1}`);
-      col.setAttribute('role', 'cell');
+      if (col.classList.contains('section-head-title')) {
+        col.setAttribute('role', 'columnheader');
+      } else {
+        col.setAttribute('role', 'cell');
+      }
     });
 
     expandSection = handleSection(sectionParams);
