@@ -128,9 +128,8 @@ async function addTooltip(foreground) {
     const childContentText = childContent.textContent.trim();
     if (childContentText === desktopContentText) return;
     const appendTarget = viewPortEl.querySelector('.text-area').lastElementChild;
-    const iconWrapper = createTag('em');
+    const iconWrapper = createTag('em', {}, `${toolTipPosition(viewPortEl)}|${desktopContentText}`);
     iconWrapper.style.display = 'none';
-    iconWrapper.textContent = `${toolTipPosition(viewPortEl)}|${desktopContentText}`;
     const tooltipSpan = createTag('span', { class: 'icon icon-tooltip' });
     iconWrapper.appendChild(tooltipSpan);
     toolTipIcons.push(tooltipSpan);
