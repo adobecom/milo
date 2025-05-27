@@ -1,8 +1,6 @@
 import {
-  decorateCta,
   fetchAndProcessPlainHtml,
   getActiveLink,
-  getAnalyticsValue,
   icons,
   isDesktop,
   logErrorFor,
@@ -17,6 +15,7 @@ import {
   getDisableAEDState,
   hasActiveLink,
 } from '../utilities.js';
+import { getAnalyticsValue, decorateCta } from '../../global-navigation.js';
 
 const decorateHeadline = (elem, index) => {
   if (!(elem instanceof HTMLElement)) return null;
