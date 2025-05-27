@@ -270,9 +270,21 @@ function trapFocusWithElement(el, focusableElements) {
   const firstFocusable = updatedFocusableElements.shift();
   const lastFocusable = updatedFocusableElements.pop();
   const closeButton = el.querySelector('.close, a[href="#_evt-close"]');
+  let lastFocusedElement = firstFocusable;
+  const externalClickHandler = (event) => {
+    if (!el.contains(event.target) && !el.isEqualNode(event.target)) {
+      window.scrollTo(0, 0);
+      lastFocusedElement.focus({ focusVisible: true });
+    }
+  };
+  const updateLastFocused = (event) => { lastFocusedElement = event.target; };
+  document.addEventListener('click', externalClickHandler);
+  el.addEventListener('focusin', updateLastFocused);
   el.addEventListener('keydown', (event) => {
     if (event.key === 'Escape' || event.key === 'Esc') {
       closeButton.click();
+      document.removeEventListener('click', externalClickHandler);
+      el.removeEventListener('focusin', updateLastFocused);
     }
     if (event.key === 'Tab') {
       if (event.target.isEqualNode(firstFocusable) && event.shiftKey) {
