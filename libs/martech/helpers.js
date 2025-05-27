@@ -336,6 +336,8 @@ function createRequestPayload({ updatedContext, pageName, processedPageName, loc
     return getCookie(KNDCTR_CONSENT_COOKIE) ? 'post' : 'pre';
   })();
 
+  const eventMergeId = generateUUIDv4();
+
   const eventObj = {
     xdm: {
       ...updatedContext,
@@ -351,7 +353,7 @@ function createRequestPayload({ updatedContext, pageName, processedPageName, loc
       },
       timestamp: new Date().toISOString(),
       eventType: hitTypeEventTypeMap[hitType],
-      eventMergeId: generateUUIDv4(),
+      eventMergeId,
       ...(getPrimaryProduct() && { productListItems: [{ SKU: getPrimaryProduct() }] }),
     },
     data: {
@@ -366,7 +368,7 @@ function createRequestPayload({ updatedContext, pageName, processedPageName, loc
           ...(getEntityId() ? { 'entity.id': getEntityId() } : {}),
         },
       },
-      eventMergeId: generateUUIDv4(),
+      eventMergeId,
       _adobe_corpnew: {
         configuration: { edgeConfigId: dataStreamId },
         digitalData: {
@@ -375,7 +377,7 @@ function createRequestPayload({ updatedContext, pageName, processedPageName, loc
           previousPage: { pageInfo: { pageName: prevPageName } },
           primaryUser: { primaryProfile: { profileInfo: { authState: 'loggedOut', returningStatus: getVisitorStatus({}) } } },
         },
-        otherConsents: { configuration: { advertising: consentCookie && consentCookie.includes('C0004:0') ? 'false' : 'true' } },
+        otherConsents: { configuration: { advertising: consentCookie?.includes('C0004:1') ? 'true' : 'false' } },
         cmp: { state: consentState },
       },
       marketingtech: {
