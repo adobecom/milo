@@ -55,7 +55,7 @@ const scrollSelectedIntoView = (selectedLangItem, languageList) => {
   }
 };
 
-function createDropdownElements(regionPickerTextElem) {
+function createDropdownElements(regionPickerTextElem, wrapper) {
   const selectedLangButton = createTag('button', {
     class: 'feds-regionPicker',
     id: 'language-selector-combobox',
@@ -66,7 +66,7 @@ function createDropdownElements(regionPickerTextElem) {
   });
   selectedLangButton.textContent = regionPickerTextElem.textContent;
   regionPickerTextElem.style.display = 'none';
-  regionPickerTextElem.parentNode.insertBefore(selectedLangButton, regionPickerTextElem);
+  wrapper.appendChild(selectedLangButton);
 
   const dropdown = createTag('div');
   dropdown.className = 'language-dropdown';
@@ -201,6 +201,7 @@ function setupDropdownEvents({
   }
 
   selectedLangButton.addEventListener('click', (e) => {
+    e.preventDefault();
     e.stopPropagation();
     if (isDropdownOpen) {
       closeDropdown();
@@ -326,7 +327,7 @@ export default async function init(block) {
     dropdown,
     searchContainer,
     languageList,
-  } = createDropdownElements(regionPickerTextElem);
+  } = createDropdownElements(regionPickerTextElem, wrapper);
   dropdown.appendChild(searchContainer);
   dropdown.appendChild(languageList);
   wrapper.appendChild(dropdown);
