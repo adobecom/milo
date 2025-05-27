@@ -644,8 +644,6 @@ export default function init(el) {
       } else {
         col.setAttribute('role', 'cell');
       }
-
-      if (!col.textContent.trim() && !col.children.length) col.setAttribute('aria-hidden', 'true');
     });
 
     expandSection = handleSection(sectionParams);
