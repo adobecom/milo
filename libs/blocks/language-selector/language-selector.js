@@ -56,6 +56,7 @@ const scrollSelectedIntoView = (selectedLangItem, languageList) => {
 };
 
 function createDropdownElements(regionPickerTextElem) {
+  const globeIcon = regionPickerTextElem.parentNode.querySelector('.feds-regionPicker-globe');
   const selectedLangButton = createTag('button', {
     class: 'feds-regionPicker',
     id: 'language-selector-combobox',
@@ -64,7 +65,8 @@ function createDropdownElements(regionPickerTextElem) {
     'aria-controls': 'language-selector-listbox',
     type: 'button',
   });
-  selectedLangButton.textContent = regionPickerTextElem.textContent;
+  if (globeIcon) selectedLangButton.appendChild(globeIcon);
+  selectedLangButton.appendChild(document.createTextNode(regionPickerTextElem.textContent));
   regionPickerTextElem.parentNode.replaceChild(selectedLangButton, regionPickerTextElem);
 
   const dropdown = createTag('div');
