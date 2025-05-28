@@ -64,7 +64,7 @@
   align-items: center;
   justify-content: space-between;
   width: 100%;
-  padding: var(--spacing-xs) var(--spacing-s);
+  padding: 0 16px;
   text-decoration: none;
   color: var(--text-color);
   transition: background-color 0.2s ease;
