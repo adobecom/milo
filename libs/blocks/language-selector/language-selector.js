@@ -7,13 +7,13 @@ function handleEvent({ prefix, link, callback } = {}) {
   if (typeof callback !== 'function') return;
   const existingPage = queriedPages.find((page) => page.href === link.href);
   if (existingPage) {
-    callback(existingPage.resp.ok
+    callback(existingPage.ok
       ? link.href
       : `${prefix ? `/${prefix}` : ''}/`);
     return;
   }
   fetch(link.href, { method: 'HEAD' }).then((resp) => {
-    queriedPages.push({ href: link.href, resp });
+    queriedPages.push({ href: link.href, ok: resp.ok });
     if (!resp.ok) throw new Error('request failed');
     callback(link.href);
   }).catch(() => {
