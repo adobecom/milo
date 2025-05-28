@@ -1,4 +1,4 @@
-// node --env-file=.env .github/workflows/poll-logs.js (node >= 21)
+// node --env-file=.env .github/workflows/import/poll-logs.js (node >= 21)
 import PQueue from 'p-queue';
 import fs from 'fs';
 import importUrl from './index.js';
@@ -26,6 +26,9 @@ const {
   ROLLING_IMPORT_POLL_LOGS_FROM_REPO,
 } = env;
 
+const toOrg = "adobecom";
+const toRepo = process.env.ROLLING_IMPORT_REPO;
+
 if (!LOCAL_RUN)
   console.log({
     AEM_LIVE_ADMIN_TOKEN: !!AEM_LIVE_ADMIN_TOKEN,
@@ -49,7 +52,7 @@ if (!LOCAL_RUN)
 
 const queue = new PQueue({ concurrency: 10 });
 const FROM_PARAM = LOCAL_RUN
-  ? getISOSinceXDaysAgo(5)
+  ? getISOSinceXDaysAgo(1)
   : encodeURIComponent(LAST_RUN_ISO || getISOSinceXDaysAgo(1));
 
 function getISOSinceXDaysAgo(days) {
@@ -190,7 +193,7 @@ async function getLivePaths(entries) {
   );
   if (!LOCAL_RUN)
     await slackNotification(
-      `Importing ${livePaths.length} published documents from ${entries.length} log entries. Log Link: https://admin.hlx.page/log/adobecom/${ROLLING_IMPORT_IMPORT_FROM}?from=${FROM_PARAM}`,
+      `Importing ${livePaths.length} published documents from ${entries.length} log entries. Log Link: https://admin.hlx.page/log/adobecom/${ROLLING_IMPORT_POLL_LOGS_FROM_REPO}?from=${FROM_PARAM}`,
     );
   if (livePaths.length < 10 && !LOCAL_RUN)
     console.log(
@@ -212,30 +215,38 @@ async function main() {
     success: 0,
     error: 0,
     errorPaths: [],
+    successPaths: [],
   };
   for (const path of livePaths) {
     queue.add(() =>
       importUrl(path, importedMedia)
         .then(() => {
           result.success++;
+          result.successPaths.push(path);
           if (result.success % 20 === 0)
             console.log(
               `Progress: Success: ${result.success} | Error: ${result.error}`
             );
+            
         })
         .catch(() => {
+          result.error++;
+          result.errorPaths.push(path);
           if (result.error % 10 === 0)
             console.log(
               `Progress: Success: ${result.success} | Error: ${result.error}`
             );
-          result.error++;
-          result.errorPaths.push(path);
+          
         })
     );
   }
   await queue.onIdle();
 
-  console.log({ result });
+  
+  if (result.successPaths.length)
+    result.successPaths.forEach((path) => {
+      console.log(`Successful import, live-link: https://main--${toRepo}--${toOrg}.aem.live${path}`);
+    });
   if (result.errorPaths.length)
     result.errorPaths.forEach((path) => {
       console.log(`Erroring path: ${path}`);
