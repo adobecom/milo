@@ -506,7 +506,7 @@ export function appendTabName(url, el) {
     }
   }
   const metaPreselectPlan = document.querySelector('meta[name="preselect-plan"]');
-  if (!metaPreselectPlan?.content) return url;
+  if (!metaPreselectPlan?.content) return urlWithPlan;
   urlWithPlan.searchParams.set('plan', metaPreselectPlan.content);
   return isRelativePath ? urlWithPlan.href.replace(window.location.origin, '') : urlWithPlan.href;
 }
