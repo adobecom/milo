@@ -55,15 +55,15 @@ const scrollSelectedIntoView = (selectedLangItem, languageList) => {
   }
 };
 
-function createDropdownElements(regionPickerTextElem) {
-  const selectedLangSpan = regionPickerTextElem;
-  selectedLangSpan.setAttribute('id', 'language-selector-combobox');
-  selectedLangSpan.setAttribute('class', 'feds-regionPicker-text');
-  selectedLangSpan.setAttribute('aria-haspopup', 'listbox');
-  selectedLangSpan.setAttribute('aria-expanded', 'false');
-  selectedLangSpan.setAttribute('aria-controls', 'language-selector-listbox');
-  selectedLangSpan.setAttribute('tabindex', '0');
-
+function createDropdownElements(regionPickerTextElem, setAriaOnSpan = true) {
+  if (setAriaOnSpan) {
+    regionPickerTextElem.setAttribute('id', 'language-selector-combobox');
+    regionPickerTextElem.setAttribute('class', 'feds-regionPicker-text');
+    regionPickerTextElem.setAttribute('aria-haspopup', 'listbox');
+    regionPickerTextElem.setAttribute('aria-expanded', 'false');
+    regionPickerTextElem.setAttribute('aria-controls', 'language-selector-listbox');
+    regionPickerTextElem.setAttribute('tabindex', '0');
+  }
   const dropdown = createTag('div');
   dropdown.className = 'language-dropdown';
   dropdown.style.display = 'none';
@@ -86,7 +86,7 @@ function createDropdownElements(regionPickerTextElem) {
     tabindex: '-1',
   });
 
-  return { selectedLangButton: selectedLangSpan, dropdown, searchContainer, languageList };
+  return { dropdown, searchContainer, languageList };
 }
 
 function renderLanguages({
@@ -325,15 +325,21 @@ export default async function init(block) {
   const languagesList = getLanguages(links, languages, locales);
   const currentLang = getCurrentLanguage(languagesList);
   const wrapper = block.closest('.feds-regionPicker-wrapper');
-  const regionPickerTextElem = wrapper.querySelector('.feds-regionPicker-text');
+  const regionPickerElem = wrapper.querySelector('.feds-regionPicker');
+  const regionPickerTextElem = regionPickerElem.querySelector('.feds-regionPicker-text');
   regionPickerTextElem.textContent = currentLang.name;
 
+  regionPickerElem.setAttribute('id', 'language-selector-combobox');
+  regionPickerElem.setAttribute('aria-haspopup', 'listbox');
+  regionPickerElem.setAttribute('aria-expanded', 'false');
+  regionPickerElem.setAttribute('aria-controls', 'language-selector-listbox');
+  regionPickerElem.setAttribute('tabindex', '0');
+
   const {
-    selectedLangButton,
     dropdown,
     searchContainer,
     languageList,
-  } = createDropdownElements(regionPickerTextElem);
+  } = createDropdownElements(regionPickerTextElem, false);
   dropdown.appendChild(searchContainer);
   dropdown.appendChild(languageList);
   wrapper.appendChild(dropdown);
@@ -344,7 +350,7 @@ export default async function init(block) {
   searchInput.setAttribute('aria-activedescendant', '');
 
   setupDropdownEvents({
-    selectedLangButton,
+    selectedLangButton: regionPickerElem,
     dropdown,
     searchInput,
     languageList,
