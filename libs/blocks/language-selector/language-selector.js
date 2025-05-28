@@ -8,8 +8,6 @@ function normalizeUrl(url) {
     const u = new URL(url, window.location.origin);
     u.hash = '';
     u.search = '';
-    // Remove trailing slash except for root
-    u.pathname = u.pathname.replace(/\/+$/, '') || '/';
     return u.toString();
   } catch {
     return url;
