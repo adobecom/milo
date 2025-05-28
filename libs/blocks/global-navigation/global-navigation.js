@@ -367,7 +367,7 @@ export const getUniversalNavLocale = (locale) => {
   return `${prefix.toLowerCase()}_${prefix.toUpperCase()}`;
 };
 
-setMenuState = () => {
+const setMenuState = () => {
   const toggle = document.querySelector('.feds-toggle');
   const navWrapper = document.querySelector('.feds-nav-wrapper');
   const isExpanded = toggle?.getAttribute('aria-expanded') === 'true';
