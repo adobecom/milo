@@ -145,9 +145,7 @@ export default async function loadBlock(configs, customLib) {
       if (block.key === 'header') {
         try {
           const { default: init, closeGnavOptions } = await import('../blocks/global-navigation/global-navigation.js');
-          const mobileToggle = document.querySelector('.feds-toggle');
-          const navWrapper = document.querySelector('.feds-nav-wrapper');
-          window.closeGnav = closeGnavOptions.bind({ mobileToggle, navWrapper });
+          window.closeGnav = closeGnavOptions;
           await bootstrapBlock(init, {
             ...block,
             gnavSource,

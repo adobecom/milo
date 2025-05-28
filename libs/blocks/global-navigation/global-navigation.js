@@ -367,9 +367,10 @@ export const getUniversalNavLocale = (locale) => {
   return `${prefix.toLowerCase()}_${prefix.toUpperCase()}`;
 };
 
-export const closeGnavOptions = ({ mobileToggle, navWrapper }) => {
-  const toggle = mobileToggle;
-  const isExpanded = mobileToggle?.getAttribute('aria-expanded') === 'true';
+export const closeGnavOptions = () => {
+  const toggle = document.querySelector('.feds-toggle');
+  const navWrapper = document.querySelector('.feds-nav-wrapper');
+  const isExpanded = toggle?.getAttribute('aria-expanded') === 'true';
   enableMobileScroll();
   ['main', 'footer'].forEach((ele) => document.querySelector(ele)?.setAttribute('aria-hidden', !isExpanded));
   toggle?.setAttribute('aria-expanded', !isExpanded);
