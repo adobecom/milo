@@ -176,7 +176,7 @@ export function buildCheckoutUrl(checkoutData) {
       offerType: ot ?? offerType,
       customerSegment: cs ?? customerSegment,
       productArrangementCode: pa ?? productArrangementCode,
-      quantity: items?.[0]?.quantity > 1 && items?.[0]?.quantity,
+      quantity: items?.[0]?.quantity > 1 ? items?.[0]?.quantity : undefined,
       addonProductArrangementCode: productArrangementCode 
         ? items?.find((item) => item.productArrangementCode !== productArrangementCode)?.productArrangementCode 
         : items?.[1]?.productArrangementCode,
