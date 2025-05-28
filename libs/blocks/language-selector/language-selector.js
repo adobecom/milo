@@ -56,16 +56,13 @@ const scrollSelectedIntoView = (selectedLangItem, languageList) => {
 };
 
 function createDropdownElements(regionPickerTextElem) {
-  const selectedLangButton = createTag('button', {
-    class: 'feds-regionPicker',
-    id: 'language-selector-combobox',
-    'aria-haspopup': 'listbox',
-    'aria-expanded': 'false',
-    'aria-controls': 'language-selector-listbox',
-    type: 'button',
-  });
-  selectedLangButton.textContent = regionPickerTextElem.textContent;
-  regionPickerTextElem.parentNode.replaceChild(selectedLangButton, regionPickerTextElem);
+  const selectedLangSpan = regionPickerTextElem;
+  selectedLangSpan.setAttribute('id', 'language-selector-combobox');
+  selectedLangSpan.setAttribute('class', 'feds-regionPicker-text');
+  selectedLangSpan.setAttribute('aria-haspopup', 'listbox');
+  selectedLangSpan.setAttribute('aria-expanded', 'false');
+  selectedLangSpan.setAttribute('aria-controls', 'language-selector-listbox');
+  selectedLangSpan.setAttribute('tabindex', '0');
 
   const dropdown = createTag('div');
   dropdown.className = 'language-dropdown';
@@ -89,7 +86,7 @@ function createDropdownElements(regionPickerTextElem) {
     tabindex: '-1',
   });
 
-  return { selectedLangButton, dropdown, searchContainer, languageList };
+  return { selectedLangButton: selectedLangSpan, dropdown, searchContainer, languageList };
 }
 
 function renderLanguages({
@@ -200,12 +197,22 @@ function setupDropdownEvents({
   }
 
   selectedLangButton.addEventListener('click', (e) => {
-    e.preventDefault();
     e.stopPropagation();
     if (isDropdownOpen) {
       closeDropdown();
     } else {
       openDropdown();
+    }
+  });
+
+  selectedLangButton.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      if (isDropdownOpen) {
+        closeDropdown();
+      } else {
+        openDropdown();
+      }
     }
   });
 
@@ -347,3 +354,4 @@ export default async function init(block) {
     locales,
   });
 }
+
