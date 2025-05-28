@@ -1492,6 +1492,8 @@ class Gnav {
   };
 }
 
+export { toggleMenuMobile };
+
 export default async function init(block) {
   const { mep } = getConfig();
   const sourceUrl = await getGnavSource();
