@@ -367,6 +367,19 @@ export const getUniversalNavLocale = (locale) => {
   return `${prefix.toLowerCase()}_${prefix.toUpperCase()}`;
 };
 
+export const closeGnavOptions = ({ mobileToggle, navWrapper }) => {
+  const toggle = mobileToggle;
+  const isExpanded = mobileToggle?.getAttribute('aria-expanded') === 'true';
+  enableMobileScroll();
+  ['main', 'footer'].forEach((ele) => document.querySelector(ele)?.setAttribute('aria-hidden', !isExpanded));
+  toggle?.setAttribute('aria-expanded', !isExpanded);
+  document.body.classList.toggle('disable-scroll', !isExpanded);
+  navWrapper?.classList?.toggle('feds-nav-wrapper--expanded', !isExpanded);
+  closeAllDropdowns();
+  setCurtainState(!isExpanded);
+  toggle?.setAttribute('daa-ll', `hamburgermenu|${isExpanded ? 'open' : 'close'}`);
+};
+
 const convertToPascalCase = (str) => str
   ?.split('-')
   .map((s) => s.charAt(0).toUpperCase() + s.slice(1))
@@ -1491,8 +1504,6 @@ class Gnav {
     return this.elements.search;
   };
 }
-
-export { toggleMenuMobile };
 
 export default async function init(block) {
   const { mep } = getConfig();

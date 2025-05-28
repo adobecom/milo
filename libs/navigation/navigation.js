@@ -144,7 +144,10 @@ export default async function loadBlock(configs, customLib) {
       const footerSource = `${config?.locale?.contentRoot}/footer`;
       if (block.key === 'header') {
         try {
-          const { default: init, toggleMenuMobile } = await import('../blocks/global-navigation/global-navigation.js');
+          const { default: init, closeGnavOptions } = await import('../blocks/global-navigation/global-navigation.js');
+          const mobileToggle = document.querySelector('.feds-toggle');
+          const navWrapper = document.querySelector('.feds-nav-wrapper');
+          window.closeGnav = closeGnavOptions.bind({ mobileToggle, navWrapper });
           await bootstrapBlock(init, {
             ...block,
             gnavSource,
@@ -157,7 +160,7 @@ export default async function loadBlock(configs, customLib) {
             mobileGnavV2: configBlock.mobileGnavV2 || 'on',
           });
           configBlock.onReady?.();
-          window.closeGnav = toggleMenuMobile;
+          window.closeGnav = closeAllDropdowns;
         } catch (e) {
           configBlock.onError?.(e);
           window.lana.log(`${e.message} | gnav-source: ${gnavSource} | href: ${window.location.href}`, {
