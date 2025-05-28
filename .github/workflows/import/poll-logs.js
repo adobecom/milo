@@ -241,21 +241,18 @@ async function main() {
     );
   }
   await queue.onIdle();
-
-  
-  if (result.successPaths.length)
-    result.successPaths.forEach((path) => {
-      console.log(`Successful import, live-link: https://main--${toRepo}--${toOrg}.aem.live${path}`);
-    });
-  if (result.errorPaths.length)
-    result.errorPaths.forEach((path) => {
-      console.log(`Erroring path: ${path}`);
-    });
-
   if (!LOCAL_RUN)
     await slackNotification(
       `Succcessful: ${result.success} paths | Failed: ${result.error} paths.`
     );
+  if (result.successPaths.length && result.successPaths.length < 500)
+    result.successPaths.forEach((path) => {
+      console.log(`Successful import, live-link: https://main--${toRepo}--${toOrg}.aem.live${path}`);
+    });
+  if (result.errorPaths.length && result.errorPaths.length < 500)
+    result.errorPaths.forEach((path) => {
+      console.log(`Erroring path: ${path}`);
+    });
 }
 
 main().catch(async (e) => {
