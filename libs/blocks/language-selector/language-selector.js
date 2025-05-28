@@ -111,8 +111,6 @@ function renderLanguages({
   currentLang,
   selectedLangItemRef,
   activeIndexRef,
-  languages,
-  locales,
 }) {
   return (searchTerm = '') => {
     if (!languagesList.length) return [];
@@ -134,22 +132,14 @@ function renderLanguages({
         if (activeIndexRef.current === -1) activeIndexRef.current = idx;
       }
       const langLink = createTag('a');
-      langLink.href = lang.url;
+      const currentPath = window.location.pathname.replace(/^\/[a-zA-Z-]+/, '');
+      const newPath = lang.prefix ? `/${lang.prefix}${currentPath}` : currentPath;
+      langLink.href = `${window.location.origin}${newPath}`;
       langLink.className = 'language-link';
       langLink.innerHTML = `
         <span class="language-name">${lang.name}</span>
         ${lang.name === currentLang.name ? CHECKMARK_SVG : ''}
       `;
-      let pathname = langLink.getAttribute('href');
-      if (pathname.startsWith('http')) {
-        try { pathname = new URL(pathname).pathname; } catch (e) { /* ignore */ }
-      }
-      let { href } = langLink;
-      if (href.endsWith('/')) href = href.slice(0, -1);
-      const currentLangObj = getLanguage(languages, locales, window.location.pathname);
-      const urlLangcode = currentLangObj.prefix.replace('/', '');
-      const path = window.location.href.replace(`${window.location.origin}/${urlLangcode}`, '').replace('#langnav', '');
-      langLink.href = urlLangcode === '' ? `${href}/${path}` : `${href}${path}`;
       langItem.appendChild(langLink);
       languageList.appendChild(langItem);
     });
@@ -180,21 +170,17 @@ function setupDropdownEvents({
   languageList,
   languagesList,
   currentLang,
-  languages,
-  locales,
+  selectedLangItemRef,
+  activeIndexRef,
 }) {
   let isDropdownOpen = false;
-  const selectedLangItemRef = { current: null };
-  const activeIndexRef = { current: -1 };
   let filteredLanguages = languagesList;
   const doRenderLanguages = renderLanguages({
     languageList,
     languagesList,
     currentLang,
     selectedLangItemRef,
-    activeIndexRef,
-    languages,
-    locales,
+    activeIndexRef
   });
 
   function openDropdown() {
@@ -365,6 +351,8 @@ export default async function init(block) {
   const searchInput = searchContainer.querySelector('.search-input');
   searchInput.setAttribute('aria-activedescendant', '');
 
+  const selectedLangItemRef = { current: null };
+  const activeIndexRef = { current: -1 };
   setupDropdownEvents({
     selectedLangButton: regionPickerElem,
     dropdown,
@@ -372,7 +360,7 @@ export default async function init(block) {
     languageList,
     languagesList,
     currentLang,
-    languages,
-    locales,
+    selectedLangItemRef,
+    activeIndexRef,
   });
 }
