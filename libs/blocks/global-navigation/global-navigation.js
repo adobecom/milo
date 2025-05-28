@@ -367,6 +367,24 @@ export const getUniversalNavLocale = (locale) => {
   return `${prefix.toLowerCase()}_${prefix.toUpperCase()}`;
 };
 
+const setMenuState = () => {
+  const toggle = document.querySelector('.feds-toggle');
+  const navWrapper = document.querySelector('.feds-nav-wrapper');
+  const isExpanded = toggle?.getAttribute('aria-expanded') === 'true';
+  ['main', 'footer'].forEach((ele) => document.querySelector(ele)?.setAttribute('aria-hidden', !isExpanded));
+  toggle?.setAttribute('aria-expanded', !isExpanded);
+  document.body.classList.toggle('disable-scroll', !isExpanded);
+  navWrapper?.classList?.toggle('feds-nav-wrapper--expanded', !isExpanded);
+  closeAllDropdowns();
+  setCurtainState(!isExpanded);
+  toggle?.setAttribute('daa-ll', `hamburgermenu|${isExpanded ? 'open' : 'close'}`);
+}
+
+export const closeGnavOptions = () => {
+  enableMobileScroll();
+  setMenuState();
+};
+
 const convertToPascalCase = (str) => str
   ?.split('-')
   .map((s) => s.charAt(0).toUpperCase() + s.slice(1))
@@ -947,7 +965,6 @@ class Gnav {
     ?.length >= 1;
 
   toggleMenuMobile = () => {
-    const toggle = this.elements.mobileToggle;
     const isExpanded = this.isToggleExpanded();
     if (!isExpanded && this.newMobileNav) {
       const sections = document.querySelectorAll('header.new-nav .feds-nav > section.feds-navItem > button.feds-navLink');
@@ -960,13 +977,7 @@ class Gnav {
     } else if (isExpanded && this.isLocalNav()) {
       enableMobileScroll();
     }
-    ['main', 'footer'].forEach((ele) => document.querySelector(ele)?.setAttribute('aria-hidden', !isExpanded));
-    toggle?.setAttribute('aria-expanded', !isExpanded);
-    document.body.classList.toggle('disable-scroll', !isExpanded);
-    this.elements.navWrapper?.classList?.toggle('feds-nav-wrapper--expanded', !isExpanded);
-    closeAllDropdowns();
-    setCurtainState(!isExpanded);
-    toggle?.setAttribute('daa-ll', `hamburgermenu|${isExpanded ? 'open' : 'close'}`);
+    setMenuState();
   };
 
   decorateToggle = () => {
