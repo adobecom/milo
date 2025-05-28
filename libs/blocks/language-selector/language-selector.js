@@ -354,4 +354,3 @@ export default async function init(block) {
     locales,
   });
 }
-
