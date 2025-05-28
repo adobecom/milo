@@ -51,16 +51,12 @@
 
 .language-item {
   display: flex;
-  min-height: 30px;
-  padding: 0px 16px;
-  flex-direction: column;
-  justify-content: center;
-  align-items: flex-start;
-  gap: 10px;
-  align-self: stretch;
-  font-size: var(--type-body-s-size);
-  font-family: var(--body-font-family);
+  align-items: center;
+  justify-content: space-between;
+  padding: 0;
   cursor: pointer;
+  font-size: var(--type-body-xs-size);
+  font-family: var(--body-font-family);
 }
 
 .language-link {
