@@ -56,7 +56,6 @@
   padding: 0;
   cursor: pointer;
   font-size: var(--type-body-xs-size);
-  line-height: var(--type-body-xs-lh);
   font-family: var(--body-font-family);
 }
 
@@ -69,7 +68,7 @@
   text-decoration: none;
   color: var(--text-color);
   transition: background-color 0.2s ease;
-  font-size: var(--type-body-s-size);
+  font-size: var(--type-body-xs-size);
   font-family: var(--body-font-family);
 }
 
@@ -169,6 +168,5 @@
 
   .language-link {
     padding: 18px 16px;
-    font-size: 18px;
   }
 }
