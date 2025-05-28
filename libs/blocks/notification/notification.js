@@ -272,6 +272,7 @@ function trapFocusWithElement(el, focusableElements) {
   const closeButton = el.querySelector('.close, a[href="#_evt-close"]');
   let lastFocusedElement = firstFocusable;
   const externalClickHandler = (event) => {
+    if (document.querySelector('.georouting-wrapper')) return;
     if (!el.contains(event.target) && !el.isEqualNode(event.target)) {
       window.scrollTo(0, 0);
       lastFocusedElement.focus({ focusVisible: true });
