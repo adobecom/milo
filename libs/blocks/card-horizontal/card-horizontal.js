@@ -34,7 +34,7 @@ function decorateImage(block) {
 
 function decorateContent(block) {
   if (!block) return;
-  const card = block.querySelector('h1, h2, h3, h4, h5, h6')?.closest('div');
+  const card = block.querySelector('h1, h2, h3, h4, h5, h6, p')?.closest('div');
   card?.classList.add('card-block');
   const content = createTag('div', { class: 'card-content' });
   const elems = card?.querySelectorAll('h1, h2, h3, h4, h5, h6, p');
