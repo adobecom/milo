@@ -163,7 +163,7 @@ header.global-navigation.feds--dark,
 
 /* Desktop styles */
 @media (min-width: 900px) {
-  /* Popup */
+  /* Popup  */
   .feds--dark .feds-popup {
     background-color: var(--feds-background-popup);
     box-shadow: 0 3px 3px 0 rgb(255 255 255 / 20%);
