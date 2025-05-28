@@ -68,6 +68,10 @@ function createDropdownElements(regionPickerTextElem, setAriaOnSpan = true) {
   dropdown.className = 'language-dropdown';
   dropdown.style.display = 'none';
 
+  // Add drag handle for mobile modal
+  const dragHandle = createTag('div', { class: 'drag-handle' });
+  dropdown.appendChild(dragHandle);
+
   const searchContainer = createTag('div');
   searchContainer.className = 'search-container';
   searchContainer.innerHTML = `
