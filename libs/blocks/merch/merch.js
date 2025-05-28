@@ -259,16 +259,6 @@ export const CHECKOUT_ALLOWED_KEYS = [
   'marketSegment',
 ];
 
-/**
- * Used when 3in1 modals are configured with ms=e or cs=t extra paramter, but 3in1 is disabled.
- * Dexter modals should deeplink to plan=edu or plan=team tabs.
- * @type {Record<string, string>}
- */
-const TAB_DEEPLINK_MAPPING = {
-  EDU: 'edu',
-  TEAM: 'team',
-};
-
 export const CC_SINGLE_APPS_ALL = CC_SINGLE_APPS.flatMap((item) => item);
 
 export const CC_ALL_APPS = ['CC_ALL_APPS',
@@ -510,9 +500,9 @@ export function appendTabName(url, el) {
   }
   if (el?.is3in1Modal) {
     if (el.marketSegment === 'EDU') {
-      urlWithPlan.searchParams.set('plan', 'EDU');
+      urlWithPlan.searchParams.set('plan', 'edu');
     } else if (el.marketSegment === 'TEAM') {
-      urlWithPlan.searchParams.set('plan', 'TEAM');
+      urlWithPlan.searchParams.set('plan', 'team');
     }
   }
   const metaPreselectPlan = document.querySelector('meta[name="preselect-plan"]');
@@ -534,11 +524,7 @@ export function appendExtraOptions(url, extraOptions) {
   }
   Object.keys(extraOptionsObj).forEach((key) => {
     if (CHECKOUT_ALLOWED_KEYS.includes(key)) {
-      const value = extraOptionsObj[key];
-      urlWithExtraOptions.searchParams.set(
-        TAB_DEEPLINK_MAPPING[key] ?? key,
-        TAB_DEEPLINK_MAPPING[value] ?? value,
-      );
+      urlWithExtraOptions.searchParams.set(key, extraOptionsObj[key]);
     }
   });
   return urlWithExtraOptions.href;
