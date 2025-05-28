@@ -34,7 +34,7 @@ function decorateImage(block) {
 
 function decorateContent(block) {
   if (!block) return;
-  const card = block.querySelector('h1, h2, h3, h4, h5, h6, p')?.closest('div');
+  const card = block.querySelector('h1, h2, h3, h4, h5, h6')?.closest('div');
   card?.classList.add('card-block');
   const content = createTag('div', { class: 'card-content' });
   const elems = card?.querySelectorAll('h1, h2, h3, h4, h5, h6, p');
@@ -43,6 +43,7 @@ function decorateContent(block) {
   const headings = content?.querySelectorAll('h1, h2, h3, h4, h5, h6');
   const heading = headings?.[headings.length - 1];
   heading?.classList?.add('heading-xs');
+  heading?.setAttribute("role", "presentation");
   const paragraphs = content.querySelectorAll(':scope > p');
   paragraphs.forEach((item) => item.classList.add('body-xs'));
   const image = decorateImage(block);
