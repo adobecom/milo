@@ -174,8 +174,4 @@
   .language-link {
     padding: 8px 16px;
   }
-
-  .language-list .language-item:last-child {
-    margin-bottom: 4px;
-  }
 }
