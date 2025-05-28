@@ -145,6 +145,7 @@ export default async function loadBlock(configs, customLib) {
       if (block.key === 'header') {
         try {
           const { default: init } = await import('../blocks/global-navigation/global-navigation.js');
+          const { closeAllDropdowns } = await('../blocks/global-navigation/utilities.js');
           await bootstrapBlock(init, {
             ...block,
             gnavSource,
@@ -157,6 +158,7 @@ export default async function loadBlock(configs, customLib) {
             mobileGnavV2: configBlock.mobileGnavV2 || 'on',
           });
           configBlock.onReady?.();
+          window.closeGnav = closeAllDropdowns;
         } catch (e) {
           configBlock.onError?.(e);
           window.lana.log(`${e.message} | gnav-source: ${gnavSource} | href: ${window.location.href}`, {
