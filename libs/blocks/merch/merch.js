@@ -501,7 +501,7 @@ export function appendTabName(url, el) {
   if (el?.is3in1Modal) {
     if (el.marketSegment === 'EDU') {
       urlWithPlan.searchParams.set('plan', 'edu');
-    } else if (el.marketSegment === 'TEAM') {
+    } else if (el.customerSegment === 'TEAM') {
       urlWithPlan.searchParams.set('plan', 'team');
     }
   }
