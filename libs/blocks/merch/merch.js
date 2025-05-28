@@ -265,10 +265,8 @@ export const CHECKOUT_ALLOWED_KEYS = [
  * @type {Record<string, string>}
  */
 const TAB_DEEPLINK_MAPPING = {
-  ms: 'plan',
-  cs: 'plan',
-  e: 'edu',
-  t: 'team',
+  EDU: 'edu',
+  TEAM: 'team',
 };
 
 export const CC_SINGLE_APPS_ALL = CC_SINGLE_APPS.flatMap((item) => item);
@@ -501,17 +499,24 @@ async function openFragmentModal(path, getModal) {
   return modal;
 }
 
-export function appendTabName(url) {
-  const metaPreselectPlan = document.querySelector('meta[name="preselect-plan"]');
-  if (!metaPreselectPlan?.content) return url;
-  const isRelativePath = url.startsWith('/');
+export function appendTabName(url, el) {
   let urlWithPlan;
+  const isRelativePath = url.startsWith('/');
   try {
     urlWithPlan = isRelativePath ? new URL(`${window.location.origin}${url}`) : new URL(url);
   } catch (err) {
     window.lana?.log(`Invalid URL ${url} : ${err}`);
     return url;
   }
+  if (el?.is3in1Modal) {
+    if (el.marketSegment === 'EDU') {
+      urlWithPlan.searchParams.set('plan', 'EDU');
+    } else if (el.marketSegment === 'TEAM') {
+      urlWithPlan.searchParams.set('plan', 'TEAM');
+    }
+  }
+  const metaPreselectPlan = document.querySelector('meta[name="preselect-plan"]');
+  if (!metaPreselectPlan?.content) return url;
   urlWithPlan.searchParams.set('plan', metaPreselectPlan.content);
   return isRelativePath ? urlWithPlan.href.replace(window.location.origin, '') : urlWithPlan.href;
 }
@@ -539,11 +544,11 @@ export function appendExtraOptions(url, extraOptions) {
   return urlWithExtraOptions.href;
 }
 
-async function openExternalModal(url, getModal, extraOptions) {
+async function openExternalModal(url, getModal, extraOptions, el) {
   loadStyle(`${getConfig().base}/blocks/iframe/iframe.css`);
   const root = createTag('div', { class: 'milo-iframe' });
   const urlWithExtraOptions = appendExtraOptions(url, extraOptions);
-  const urlWithTabName = appendTabName(urlWithExtraOptions);
+  const urlWithTabName = appendTabName(urlWithExtraOptions, el);
   createTag('iframe', {
     src: urlWithTabName,
     frameborder: '0',

@@ -154,7 +154,7 @@ describe('buildCheckoutUrl', () => {
     };
     const url = buildCheckoutUrl(checkoutData);
     const parsedUrl = new URL(url);
-    expect(parsedUrl.searchParams.get('cs')).to.equal('t');
+    expect(parsedUrl.searchParams.get('cs')).to.equal('TEAM');
   });
 
   it('should handle addon product arrangement code for 3-in-1 modal', () => {
