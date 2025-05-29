@@ -629,11 +629,6 @@ merch-card[variant="catalog"] .payment-details {
     width: 100%;
   }
 
-  merch-card[variant="mini-compare-chart"].bullet-list {
-    border-radius: var(--consonant-merch-spacing-xxs);
-    border-color: var(--consonant-merch-card-mini-compare-mobile-border-color-light);
-  }
-
   merch-card[variant="mini-compare-chart"].bullet-list [slot="heading-m"] {
     padding: var(--consonant-merch-spacing-xxs) var(--consonant-merch-spacing-xs);
     font-size: var(--consonant-merch-card-heading-xs-font-size);
@@ -854,6 +849,11 @@ merch-card[variant="catalog"] .payment-details {
 
   merch-card[variant="mini-compare-chart"] merch-addon {
     box-sizing: border-box;
+  }
+
+  merch-card[variant="mini-compare-chart"].bullet-list {
+    border-radius: var(--consonant-merch-spacing-xxs);
+    border-color: var(--consonant-merch-card-mini-compare-mobile-border-color-light);
   }
 
   merch-card[variant="mini-compare-chart"].bullet-list [slot='heading-m-price'] {
