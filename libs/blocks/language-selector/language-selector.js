@@ -189,10 +189,12 @@ function setupDropdownEvents({
     selectedLangButton.setAttribute('aria-expanded', 'true');
     filteredLanguages = doRenderLanguages(searchInput.value);
 
-    // Set initial height as CSS variable
-    const listHeight = languageList.offsetHeight;
-    dropdown.style.setProperty('--dropdown-initial-height', `${listHeight}px`);
-    dropdown.classList.add('fixed-height');
+    // Set initial height as CSS variable (full dropdown, not just list)
+    requestAnimationFrame(() => {
+      const dropdownHeight = dropdown.offsetHeight;
+      dropdown.style.setProperty('--dropdown-initial-height', `${dropdownHeight}px`);
+      dropdown.classList.add('fixed-height');
+    });
 
     setTimeout(() => searchInput.focus(), 0);
   }
