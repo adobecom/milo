@@ -585,6 +585,7 @@ merch-card[variant="catalog"] .payment-details {
     --consonant-merch-card-mini-compare-mobile-cta-width: 75px;
     --consonant-merch-card-mini-compare-badge-mobile-max-width: 50px;
     --consonant-merch-card-mini-compare-mobile-price-font-size: 32px;
+    --consonant-merch-card-mini-compare-mobile-border-color-light: #F3F3F3;
   }
   
   merch-card[variant="mini-compare-chart"] [slot="heading-m"] {
@@ -624,6 +625,11 @@ merch-card[variant="catalog"] .payment-details {
     flex-direction: column;
     padding: 8px 4px 8px 0;
     width: 100%;
+  }
+
+  merch-card[variant="mini-compare-chart"].bullet-list {
+    border-radius: var(--consonant-merch-spacing-xxs);
+    border-color: var(--consonant-merch-card-mini-compare-mobile-border-color-light);
   }
 
   merch-card[variant="mini-compare-chart"].bullet-list [slot="heading-m"] {
