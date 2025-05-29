@@ -586,6 +586,8 @@ merch-card[variant="catalog"] .payment-details {
     --consonant-merch-card-mini-compare-badge-mobile-max-width: 50px;
     --consonant-merch-card-mini-compare-mobile-price-font-size: 32px;
     --consonant-merch-card-mini-compare-mobile-border-color-light: #F3F3F3;
+    --consonant-merch-card-card-mini-compare-mobile-background-color: #F8F8F8;
+    --consonant-merch-card-card-mini-compare-mobile-spacing-xs: 12px;
   }
   
   merch-card[variant="mini-compare-chart"] [slot="heading-m"] {
@@ -634,7 +636,8 @@ merch-card[variant="catalog"] .payment-details {
 
   merch-card[variant="mini-compare-chart"].bullet-list [slot="heading-m"] {
     padding: var(--consonant-merch-spacing-xxs) var(--consonant-merch-spacing-xs);
-    font-size: var(--consonant-merch-card-heading-xxs-font-size);
+    font-size: var(--consonant-merch-card-heading-xs-font-size);
+    line-height: var(--consonant-merch-card-heading-xs-line-height);
   }
 
   merch-card[variant="mini-compare-chart"].bullet-list [slot='heading-m-price'] {
@@ -643,12 +646,19 @@ merch-card[variant="catalog"] .payment-details {
     font-weight: 800;
   }
 
+  merch-card[variant="mini-compare-chart"].bullet-list [slot='heading-m-price'] span.price-strikethrough {
+    font-size: var(--consonant-merch-card-body-s-font-size);
+    line-height: var(--consonant-merch-card-body-s-line-height);
+  }
+
   merch-card[variant="mini-compare-chart"] [slot="body-m"] {
     padding: var(--consonant-merch-spacing-xs) var(--consonant-merch-spacing-s);
   }
 
   merch-card[variant="mini-compare-chart"].bullet-list [slot="body-m"] {
     padding: var(--consonant-merch-spacing-xs);
+    font-size: var(--consonant-merch-card-body-s-font-size);
+    line-height: var(--consonant-merch-card-body-s-line-height);
   }
 
   merch-card[variant="mini-compare-chart"].bullet-list .action-area {
@@ -741,7 +751,6 @@ merch-card[variant="catalog"] .payment-details {
     justify-content: space-between;
     font-color: var(--merch-color-grey-80);
     font-weight: 700;
-    padding-block-end: var(--consonant-merch-spacing-xxs);
     line-height: var(--consonant-merch-card-body-xs-line-height);
     font-size: var(--consonant-merch-card-body-s-font-size);
   }
@@ -791,6 +800,7 @@ merch-card[variant="catalog"] .payment-details {
   }
 
   merch-card[variant="mini-compare-chart"] .footer-row-cell-description a {
+    text-decoration: none;
     color: var(--color-accent);
   }
 
@@ -804,6 +814,8 @@ merch-card[variant="catalog"] .payment-details {
 
   merch-card[variant="mini-compare-chart"] .checkmark-copy-container.open {
     display: block;
+    padding-block-start: var(--consonant-merch-card-card-mini-compare-mobile-spacing-xs);
+    padding-block-end: 4px;
   }
   
 .one-merch-card.mini-compare-chart {
@@ -882,10 +894,19 @@ merch-card[variant="catalog"] .payment-details {
     font-size: var(--consonant-merch-card-body-xs-font-size);
     line-height: var(--consonant-merch-card-body-xs-line-height);
   }
+
+  merch-card[variant="mini-compare-chart"].bullet-list [slot="footer-rows"] {
+    background-color: var(--consonant-merch-card-card-mini-compare-mobile-background-color);
+  }
   
   merch-card[variant="mini-compare-chart"] .footer-row-cell-description {
     font-size: var(--consonant-merch-card-body-xs-font-size);
     line-height: var(--consonant-merch-card-body-xs-line-height);
+  }
+
+  merch-card[variant="mini-compare-chart"].bullet-list .footer-row-cell-description {
+    font-size: var(--consonant-merch-card-body-s-font-size);
+    line-height: var(--consonant-merch-card-body-s-line-height);
   }
 }
 @media screen and ${j} {
@@ -1007,6 +1028,12 @@ merch-card .footer-row-cell:nth-child(8) {
     :host([variant='mini-compare-chart'].bullet-list) .top-section {
         padding-top: var(--consonant-merch-spacing-xs);
         padding-inline-start: var(--consonant-merch-spacing-xs);
+    }
+
+    :host([variant='mini-compare-chart'].bullet-list) .mini-compare-chart-badge {
+        padding: 2px 10px;
+        font-size: var(--consonant-merch-card-body-xs-font-size);
+        line-height: var(--consonant-merch-card-body-xs-line-height);
     }
 
     :host([variant='mini-compare-chart'].bullet-list) .secure-transaction-label {

@@ -499,21 +499,14 @@ const decorateFooterRows = async (merchCard, footerRows) => {
   if (isCheckmark) {
     const firstRow = footerRows[0];
     const firstRowContent = firstRow.querySelector('div > div:first-child').innerHTML.split(',');
-    let bgStyle = '#E8E8E8';
     let defaultChevronState = 'close';
 
     firstRowContent.forEach((item) => {
       const trimmedItem = item.trim();
-      if (trimmedItem.startsWith('#')) {
-        bgStyle = trimmedItem;
-      } else if (trimmedItem === 'open' || trimmedItem === 'close') {
+      if (trimmedItem === 'open' || trimmedItem === 'close') {
         defaultChevronState = trimmedItem;
       }
     });
-
-    const hrElem = createTag('hr', { style: `background: ${bgStyle};` });
-    footerRowsSlot.appendChild(hrElem);
-    merchCard.classList.add('has-divider');
 
     ulContainer.classList.add('checkmark-copy-container');
     const firstRowTextParagraph = await createFirstRow(
@@ -526,8 +519,7 @@ const decorateFooterRows = async (merchCard, footerRows) => {
     footerRowsSlot.appendChild(firstRowTextParagraph);
 
     footerRows.splice(0, 1);
-    footerRowsSlot.style.padding = '0px var(--consonant-merch-spacing-xs)';
-    footerRowsSlot.style.marginBlockEnd = 'var(--consonant-merch-spacing-xs)';
+    footerRowsSlot.style.padding = 'var(--consonant-merch-card-card-mini-compare-mobile-spacing-xs) var(--consonant-merch-spacing-xs)';
   }
   footerRowsSlot.appendChild(ulContainer);
 

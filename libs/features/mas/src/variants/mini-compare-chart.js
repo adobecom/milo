@@ -232,6 +232,12 @@ async adjustAddon() {
         padding-inline-start: var(--consonant-merch-spacing-xs);
     }
 
+    :host([variant='mini-compare-chart'].bullet-list) .mini-compare-chart-badge {
+        padding: 2px 10px;
+        font-size: var(--consonant-merch-card-body-xs-font-size);
+        line-height: var(--consonant-merch-card-body-xs-line-height);
+    }
+
     :host([variant='mini-compare-chart'].bullet-list) .secure-transaction-label {
       align-self: flex-start;
       flex: none;
