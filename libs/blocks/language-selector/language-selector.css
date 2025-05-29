@@ -22,8 +22,8 @@
   background: var(--color-gray-100);
   border-radius: 20px;
   padding: 8px 12px;
-  border: 2px solid #D1D5DB;
-  transition: border-color 0.2s, box-shadow 0.2s;
+  border: 2px solid #C6C6C6;
+  transition: border-color 0.2s;
 }
 
 .search-icon {
@@ -181,9 +181,9 @@
   min-height: var(--dropdown-initial-height, 0);
 }
 
-/* Focused state: blue border and glow */
+/* Focused state: blue border and blue focus ring */
 .search-input-wrapper:focus-within {
-  border-color: #2B4EFF;
-  box-shadow: 0 0 0 2px #2B4EFF, 0 0 0 4px #fff;
+  border-color: #131313;
+  box-shadow: none;
   outline: none;
 }
