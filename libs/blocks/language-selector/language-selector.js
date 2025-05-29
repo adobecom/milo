@@ -358,8 +358,8 @@ function setupDropdownEvents({
     }
   });
 
-  document.addEventListener('click', () => {
-    if (isDropdownOpen) closeDropdown();
+  document.addEventListener('click', (e) => {
+    if (isDropdownOpen && !dropdown.contains(e.target)) closeDropdown();
   });
 }
 
