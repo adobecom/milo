@@ -7,17 +7,30 @@ function handleEvent({ prefix, link, callback } = {}) {
   if (typeof callback !== 'function') return;
   const existingPage = queriedPages.find((page) => page.href === link.href);
   if (existingPage) {
-    callback(existingPage.ok
-      ? link.href
-      : `${prefix ? `/${prefix}` : ''}/`);
+    if (existingPage.ok) {
+      callback(link.href);
+    } else if (prefix) {
+      callback(`/${prefix}/`);
+    } else {
+      callback('/');
+    }
     return;
   }
   fetch(link.href, { method: 'HEAD' }).then((resp) => {
     queriedPages.push({ href: link.href, ok: resp.ok });
-    if (!resp.ok) throw new Error('request failed');
-    callback(link.href);
+    if (resp.ok) {
+      callback(link.href);
+    } else if (prefix) {
+      callback(`/${prefix}/`);
+    } else {
+      callback('/');
+    }
   }).catch(() => {
-    callback(`${prefix ? `/${prefix}` : ''}/`);
+    if (prefix) {
+      callback(`/${prefix}/`);
+    } else {
+      callback('/');
+    }
   });
 }
 
@@ -237,8 +250,8 @@ function setupDropdownEvents({
         handleEvent({
           prefix: lang.prefix,
           link: { href: lang.url },
-          callback: (newHref) => {
-            window.location.href = newHref;
+          callback: (url) => {
+            window.location.href = url;
           },
         });
       }
@@ -273,8 +286,8 @@ function setupDropdownEvents({
         handleEvent({
           prefix: lang.prefix,
           link: { href: lang.url },
-          callback: (newHref) => {
-            window.location.href = newHref;
+          callback: (url) => {
+            window.location.href = url;
           },
         });
       }
@@ -295,8 +308,8 @@ function setupDropdownEvents({
       handleEvent({
         prefix: lang.prefix,
         link: { href: fullUrl },
-        callback: (newHref) => {
-          window.location.href = newHref;
+        callback: (url) => {
+          window.location.href = url;
         },
       });
     }
