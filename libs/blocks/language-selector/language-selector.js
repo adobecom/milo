@@ -297,6 +297,7 @@ function setupDropdownEvents({
   });
 
   languageList.addEventListener('click', (e) => {
+    e.preventDefault();
     const li = e.target.closest('li.language-item');
     if (li) {
       const idx = Array.from(languageList.children).indexOf(li);
