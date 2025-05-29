@@ -194,9 +194,10 @@ function setupDropdownEvents({
       const dropdownHeight = dropdown.offsetHeight;
       dropdown.style.setProperty('--dropdown-initial-height', `${dropdownHeight}px`);
       dropdown.classList.add('fixed-height');
+      // Make dropdown focusable and focus it for accessibility
+      dropdown.setAttribute('tabindex', '-1');
+      dropdown.focus();
     });
-
-    setTimeout(() => searchInput.focus(), 0);
   }
   function closeDropdown() {
     isDropdownOpen = false;
