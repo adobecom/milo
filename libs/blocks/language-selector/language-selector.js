@@ -328,6 +328,36 @@ function setupDropdownEvents({
     e.stopPropagation();
   });
 
+  languageList.addEventListener('mouseover', (e) => {
+    const li = e.target.closest('li.language-item');
+    if (li) {
+      const idx = Array.from(languageList.children).indexOf(li);
+      const lang = filteredLanguages[idx];
+      const { pathname, search, hash } = window.location;
+      const config = getConfig();
+      const languages = config.languages || {};
+      let currentPath = pathname;
+      for (const code of Object.keys(languages)) {
+        const prefix = `/${code}`;
+        if (pathname.startsWith(`${prefix}/`)) {
+          currentPath = pathname.slice(prefix.length);
+          if (!currentPath.startsWith('/')) currentPath = `/${currentPath}`;
+          break;
+        }
+      }
+      const newPath = lang.prefix ? `/${lang.prefix}${currentPath}` : currentPath;
+      const fullUrl = `${window.location.origin}${newPath}${search}${hash}`;
+      handleEvent({
+        prefix: lang.prefix,
+        link: { href: fullUrl },
+        callback: (url) => {
+          const langLink = li.querySelector('a.language-link');
+          if (langLink) langLink.href = url;
+        },
+      });
+    }
+  });
+
   document.addEventListener('click', () => {
     if (isDropdownOpen) closeDropdown();
   });
