@@ -302,12 +302,9 @@ function setupDropdownEvents({
     if (li) {
       const idx = Array.from(languageList.children).indexOf(li);
       const lang = filteredLanguages[idx];
-      const config = getConfig();
-      const languages = config.languages || {};
-      const locales = config.locales || {};
       const { pathname, href } = window.location;
-      const currentLangObj = getLanguage(languages, locales, pathname);
-      const currentPrefix = currentLangObj && currentLangObj.prefix ? currentLangObj.prefix : '';
+      const currentLangForPath = getCurrentLanguage(filteredLanguages);
+      const currentPrefix = currentLangForPath && currentLangForPath.prefix ? `/${currentLangForPath.prefix}` : '';
       const hasPrefix = currentPrefix && pathname.startsWith(`${currentPrefix}/`);
       const path = href.replace(window.location.origin + (hasPrefix ? currentPrefix : ''), '').replace('#langnav', '');
       const newPath = lang.prefix ? `/${lang.prefix}${path}` : path;
@@ -328,12 +325,9 @@ function setupDropdownEvents({
     if (li) {
       const idx = Array.from(languageList.children).indexOf(li);
       const lang = filteredLanguages[idx];
-      const config = getConfig();
-      const languages = config.languages || {};
-      const locales = config.locales || {};
       const { pathname, href } = window.location;
-      const currentLangObj = getLanguage(languages, locales, pathname);
-      const currentPrefix = currentLangObj && currentLangObj.prefix ? currentLangObj.prefix : '';
+      const currentLangForPath = getCurrentLanguage(filteredLanguages);
+      const currentPrefix = currentLangForPath && currentLangForPath.prefix ? `/${currentLangForPath.prefix}` : '';
       const hasPrefix = currentPrefix && pathname.startsWith(`${currentPrefix}/`);
       const path = href.replace(window.location.origin + (hasPrefix ? currentPrefix : ''), '').replace('#langnav', '');
       const newPath = lang.prefix ? `/${lang.prefix}${path}` : path;
