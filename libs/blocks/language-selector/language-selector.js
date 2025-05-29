@@ -366,6 +366,7 @@ export default async function init(block) {
   if (!links.length) return;
 
   const languagesList = getLanguages(links, languages, locales);
+  console.log(languagesList, window.location.pathname)
   const currentLang = getCurrentLanguage(languagesList);
   const wrapper = block.closest('.feds-regionPicker-wrapper');
   const regionPickerElem = wrapper.querySelector('.feds-regionPicker');
