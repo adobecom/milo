@@ -95,7 +95,7 @@ const decorateElements = ({ elem, className = 'feds-navLink', itemIndex = { posi
 
     // Decorate link group
     if (link.matches('.link-group')) {
-      return toFragment`<li>${decorateLinkGroup(link, itemIndex.position)}</li>`;
+      return decorateLinkGroup(link, itemIndex.position);
     }
 
     // If the link is wrapped in a 'strong' or 'em' tag, make it a CTA
@@ -118,7 +118,7 @@ const decorateElements = ({ elem, className = 'feds-navLink', itemIndex = { posi
 
   // If the element is a link, decorate it and return it directly
   if (elem.matches(linkSelector)) {
-    return decorateLink(elem);
+    return toFragment`<li>${decorateLink(elem)}</li>`;
   }
 
   // Otherwise, this might be a collection of elements;
