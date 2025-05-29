@@ -174,3 +174,7 @@
     padding: 8px 16px;
   }
 }
+
+.language-dropdown.fixed-height {
+  min-height: var(--dropdown-initial-height, 0);
+}
