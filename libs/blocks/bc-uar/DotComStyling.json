@@ -1,0 +1,122 @@
+{
+  "zIndex": 3000000000,
+  "chatButton": {
+    "label": "Concierge",
+    "width": "720px",
+    "height": "64px",
+    "borderRadius": "64px",
+    "background": {
+      "color": "#5258E4",
+      "hover": {
+        "color": "#000000"
+      }
+    },
+    "font": {
+      "color": "white",
+      "family": "'Adobe Clean', adobe-clean, 'Trebuchet MS', sans-serif",
+      "size": "16px",
+      "weight": 400,
+      "hover": {
+        "textDecoration": "underline"
+      }
+    }
+  },
+  "chatInterface": {
+    "width": "730px",
+    "height": "100%",
+    "borderRadius": "64px",
+    "background": {
+      "color": "none"
+    },
+    "link": {
+      "color": "#292929"
+    },
+    "chatHeader": {
+      "label": "Ask Build Buddy",
+      "height": "48px",
+      "background": {
+        "color": "#F96302"
+      },
+      "font": {
+        "color": "white",
+        "family": "'Adobe Clean', adobe-clean, 'Trebuchet MS', sans-serif",
+        "size": "14px",
+        "weight": "bold"
+      }
+    },
+    "chatBody": {
+      "height": "476px",
+      "response": {
+        "borderRadius": "16px",
+        "font": {
+          "family": "'Adobe Clean', adobe-clean, 'Trebuchet MS', sans-serif",
+          "size": "16px"
+        },
+        "concierge": {
+          "loading": {
+            "color": "#7E84FC"
+          },
+          "background": {
+            "color": "#FFFFFF"
+          },
+          "font": {
+            "color": "black"
+          }
+        },
+        "user": {
+          "background": {
+            "color": "#5258E4"
+          },
+          "font": {
+            "color": "white"
+          }
+        }
+      }
+    },
+    "chatControls": {
+      "borderRadius": "64px",
+      "input": {
+        "background": {
+          "color": "rgba(255, 255, 255, 0.6)"
+        },
+        "borderColor": "rgba(255, 255, 255, 0.6)",
+        "font": {
+          "color": "#333333",
+          "family": "'Adobe Clean', adobe-clean, 'Trebuchet MS', sans-serif",
+          "size": "16px",
+          "weight": "bold"
+        },
+        "placeholder": {
+          "label": "Describe what you want to create",
+          "font": {
+            "color": "#292929"
+          }
+        },
+        "disabled": {
+          "background": {
+            "color": "transparent"
+          }
+        }
+      },
+      "button": {
+        "background": {
+          "color": "rgba(85, 91, 231, 1)",
+          "hover": {
+            "color": "black"
+          }
+        },
+        "font": {
+          "color": "white",
+          "family": "'Adobe Clean', adobe-clean, 'Trebuchet MS', sans-serif",
+          "size": "16px",
+          "weight": "bold"
+        },
+        "disabled": {
+          "background": {
+            "color": "rgba(85, 91, 231, 1)"
+          }
+        }
+      }
+    }
+  }
+}
