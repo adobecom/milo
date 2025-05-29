@@ -208,6 +208,9 @@ function setupDropdownEvents({
     // Remove fixed height
     dropdown.classList.remove('fixed-height');
     dropdown.style.removeProperty('--dropdown-initial-height');
+
+    // Clear the search input when closing
+    searchInput.value = '';
   }
 
   selectedLangButton.addEventListener('click', (e) => {
