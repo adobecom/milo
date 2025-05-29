@@ -599,20 +599,20 @@
   position: relative;
 }
 
-.aside.promobar.popup .promo-text .milo-tooltip {
-  font-size: 18px;
+.aside.promobar.popup .promo-text span[data-tooltip] .icon-milo {
+  height: 16px;
 }
 
 .aside.promobar.popup .mobile-up.promo-text .milo-tooltip {
   position: absolute;
-  left: calc(var(--spacing-xs) - 4px);
+  left: calc(var(--spacing-xs) - 5px);
   bottom: var(--spacing-xs);
   margin-inline-start: 0;
 }
 
 [dir="rtl"] .aside.promobar.popup .mobile-up.promo-text .milo-tooltip {
   left: unset;
-  right: calc(var(--spacing-xs) - 3px);
+  right: calc(var(--spacing-xs) - 5px);
 }
 
 .aside.promobar.popup {
