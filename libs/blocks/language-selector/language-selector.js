@@ -302,23 +302,13 @@ function setupDropdownEvents({
     if (li) {
       const idx = Array.from(languageList.children).indexOf(li);
       const lang = filteredLanguages[idx];
-      const { pathname, search, hash } = window.location;
       const config = getConfig();
-      const languages = config.languages || {};
-      const locales = config.locales || {};
-      const currentLangObj = getLanguage(languages, locales, pathname);
-      let currentPath = pathname;
-      if (
-        currentLangObj
-        && currentLangObj.prefix
-        && currentLangObj.prefix !== '/'
-        && pathname.startsWith(`${currentLangObj.prefix}/`)
-      ) {
-        currentPath = pathname.slice(currentLangObj.prefix.length);
-        if (!currentPath.startsWith('/')) currentPath = `/${currentPath}`;
-      }
-      const newPath = lang.prefix ? `/${lang.prefix}${currentPath}` : currentPath;
-      const fullUrl = `${window.location.origin}${newPath}${search}${hash}`;
+      const { prefix } = config.locale;
+      const { location } = window;
+      const hasPrefix = location.pathname.startsWith(`${prefix}/`);
+      const path = location.href.replace(location.origin + (hasPrefix ? prefix : ''), '').replace('#langnav', '');
+      const newPath = lang.prefix ? `/${lang.prefix}${path}` : path;
+      const fullUrl = `${window.location.origin}${newPath}`;
       handleEvent({
         prefix: lang.prefix,
         link: { href: fullUrl },
@@ -335,23 +325,13 @@ function setupDropdownEvents({
     if (li) {
       const idx = Array.from(languageList.children).indexOf(li);
       const lang = filteredLanguages[idx];
-      const { pathname, search, hash } = window.location;
       const config = getConfig();
-      const languages = config.languages || {};
-      const locales = config.locales || {};
-      const currentLangObj = getLanguage(languages, locales, pathname);
-      let currentPath = pathname;
-      if (
-        currentLangObj
-        && currentLangObj.prefix
-        && currentLangObj.prefix !== '/'
-        && pathname.startsWith(`${currentLangObj.prefix}/`)
-      ) {
-        currentPath = pathname.slice(currentLangObj.prefix.length);
-        if (!currentPath.startsWith('/')) currentPath = `/${currentPath}`;
-      }
-      const newPath = lang.prefix ? `/${lang.prefix}${currentPath}` : currentPath;
-      const fullUrl = `${window.location.origin}${newPath}${search}${hash}`;
+      const { prefix } = config.locale;
+      const { location } = window;
+      const hasPrefix = location.pathname.startsWith(`${prefix}/`);
+      const path = location.href.replace(location.origin + (hasPrefix ? prefix : ''), '').replace('#langnav', '');
+      const newPath = lang.prefix ? `/${lang.prefix}${path}` : path;
+      const fullUrl = `${window.location.origin}${newPath}`;
       handleEvent({
         prefix: lang.prefix,
         link: { href: fullUrl },
