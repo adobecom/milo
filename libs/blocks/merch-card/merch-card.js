@@ -745,7 +745,9 @@ export default async function init(el) {
     const footer = createTag('div', { slot: 'footer' });
     if (ctas) {
       let buttonSize;
-      if (merchCard.variant === MINI_COMPARE_CHART && merchCard.classList.contains('bullet-list')) {
+      if (merchCard.variant === MINI_COMPARE_CHART
+        && merchCard.classList.contains('bullet-list')
+        && window.matchMedia('(max-width: 767px)').matches) {
         buttonSize = 'button-xl';
       } else if (merchCard.variant === MINI_COMPARE_CHART) {
         buttonSize = 'button-l';
