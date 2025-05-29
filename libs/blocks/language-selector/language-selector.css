@@ -5,7 +5,7 @@
   width: 196px;
   background: var(--background-color);
   border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 10px rgba(0 0 0 / 10%);
   display: none;
   z-index: 1000;
 }
@@ -88,7 +88,7 @@
   left: 50%;
   transform: translateX(-50%);
   padding: var(--spacing-xxs) var(--spacing-xs);
-  background: rgba(0, 0, 0, 0.8);
+  background: rgba(0 0 0 / 80%);
   color: var(--color-white);
   border-radius: 4px;
   font-size: var(--type-body-xs-size, 12px);
@@ -137,7 +137,7 @@
     height: auto;
     border-radius: 24px 24px 0 0;
     background: var(--background-color);
-    box-shadow: 0 -2px 24px rgba(0,0,0,0.18);
+    box-shadow: 0 -2px 24px rgba(0 0 0 / 18%);
     z-index: 9999;
     display: none; /* will be set to block when open */
     overflow: visible;
