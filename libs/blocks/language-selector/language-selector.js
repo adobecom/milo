@@ -308,7 +308,12 @@ function setupDropdownEvents({
       const locales = config.locales || {};
       const currentLangObj = getLanguage(languages, locales, pathname);
       let currentPath = pathname;
-      if (currentLangObj && currentLangObj.prefix && pathname.startsWith(`${currentLangObj.prefix}/`)) {
+      if (
+        currentLangObj
+        && currentLangObj.prefix
+        && currentLangObj.prefix !== '/'
+        && pathname.startsWith(`${currentLangObj.prefix}/`)
+      ) {
         currentPath = pathname.slice(currentLangObj.prefix.length);
         if (!currentPath.startsWith('/')) currentPath = `/${currentPath}`;
       }
@@ -336,7 +341,12 @@ function setupDropdownEvents({
       const locales = config.locales || {};
       const currentLangObj = getLanguage(languages, locales, pathname);
       let currentPath = pathname;
-      if (currentLangObj && currentLangObj.prefix && pathname.startsWith(`${currentLangObj.prefix}/`)) {
+      if (
+        currentLangObj
+        && currentLangObj.prefix
+        && currentLangObj.prefix !== '/'
+        && pathname.startsWith(`${currentLangObj.prefix}/`)
+      ) {
         currentPath = pathname.slice(currentLangObj.prefix.length);
         if (!currentPath.startsWith('/')) currentPath = `/${currentPath}`;
       }
@@ -366,7 +376,6 @@ export default async function init(block) {
   if (!links.length) return;
 
   const languagesList = getLanguages(links, languages, locales);
-  console.log(languagesList, window.location.pathname)
   const currentLang = getCurrentLanguage(languagesList);
   const wrapper = block.closest('.feds-regionPicker-wrapper');
   const regionPickerElem = wrapper.querySelector('.feds-regionPicker');
