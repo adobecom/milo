@@ -83,21 +83,6 @@
   background: var(--color-gray-200);
 }
 
-.language-item:hover .language-name::after {
-  content: attr(title);
-  position: absolute;
-  bottom: 100%;
-  left: 50%;
-  transform: translateX(-50%);
-  padding: var(--spacing-xxs) var(--spacing-xs);
-  background: rgba(0 0 0 / 80%);
-  color: var(--color-white);
-  border-radius: 4px;
-  font-size: var(--type-body-xs-size, 12px);
-  white-space: nowrap;
-  z-index: 1001;
-}
-
 .check-icon {
   width: 16px;
   height: 16px;
