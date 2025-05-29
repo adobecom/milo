@@ -134,14 +134,13 @@
     top: unset;
     width: 100vw;
     max-width: 100vw;
-    min-height: 60vh;
-    max-height: 90vh;
+    height: auto;
     border-radius: 24px 24px 0 0;
     background: var(--background-color);
     box-shadow: 0 -2px 24px rgba(0,0,0,0.18);
     z-index: 9999;
     display: none; /* will be set to block when open */
-    overflow: hidden;
+    overflow: visible;
     margin: 0;
     padding-bottom: env(safe-area-inset-bottom, 0);
   }
