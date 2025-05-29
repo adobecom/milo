@@ -152,6 +152,22 @@ function getUpdatedAcrobatVisitAttempt() {
   return secondVisitAttempt;
 }
 
+function getUpdatedDxVisitAttempt() {
+  const { hostname } = window.location;
+  const secondVisitAttempt = Number(localStorage.getItem('dxHit')) || 0;
+
+  const isAdobeDomain = (hostname === 'business.adobe.com' || hostname === 'business.stage.adobe.com' || hostname === 'www.marketo.com' || hostname === 'engage.marketo.com');
+  const consentCookieValue = getCookie(OPT_ON_AND_CONSENT_COOKIE);
+
+  if (!consentCookieValue?.includes('C0002:0') && isAdobeDomain && secondVisitAttempt <= 2) {
+    const updatedVisitAttempt = secondVisitAttempt === 0 ? 1 : secondVisitAttempt + 1;
+    localStorage.setItem('dxHit', updatedVisitAttempt);
+    return updatedVisitAttempt;
+  }
+
+  return secondVisitAttempt;
+}
+
 export function getPageNameForAnalytics() {
   const { hostname, pathname } = new URL(window.location.href);
   const urlRegions = Object.fromEntries(['ae_ar', 'ae_en', 'africa', 'apac', 'ar', 'at', 'au', 'be', 'be_en', 'be_fr', 'be_nl',
@@ -310,6 +326,16 @@ function getUpdatedContext({
   };
 }
 
+function isFirstVisit() {
+  const identityCookie = getCookie(KNDCTR_COOKIE_KEYS[0]);
+  if (!identityCookie) {
+    window.marketingtech = window.marketingtech || {};
+    window.marketingtech.isFirstVisit = true;
+    return true;
+  }
+  return false;
+}
+
 const getMartechCookies = () => document.cookie.split(';')
   .map((x) => x.trim().split('='))
   .filter(([key]) => KNDCTR_COOKIE_KEYS.includes(key))
@@ -378,6 +404,7 @@ function createRequestPayload({ updatedContext, pageName, processedPageName, loc
           primaryUser: { primaryProfile: { profileInfo: { authState: 'loggedOut', returningStatus: getVisitorStatus({}) } } },
         },
         otherConsents: { configuration: { advertising: (!!consentCookie?.includes('C0004:1')).toString() } },
+        user: { firstVisit: isFirstVisit() },
         cmp: { state: consentState },
       },
       marketingtech: {
@@ -433,6 +460,16 @@ function createRequestPayload({ updatedContext, pageName, processedPageName, loc
         experienceCloud: {
           ...digitalData.adobe?.experienceCloud,
           acrobatSecondVisits: 'setEvent',
+        },
+      };
+    }
+    if (getUpdatedDxVisitAttempt() === 2) {
+      digitalData.adobe = {
+        ...digitalData.adobe,
+        libraryVersions: 'alloy-api',
+        experienceCloud: {
+          ...digitalData.adobe?.experienceCloud,
+          dxVisits: 'setEvent',
         },
       };
     }
@@ -657,11 +694,19 @@ export const loadAnalyticsAndInteractionData = async (
   }
   const getLocalISOString = () => {
     const date = new Date();
-    const tzOffset = -date.getTimezoneOffset();
-    const diff = `${(tzOffset >= 0 ? '+' : '-')
-                 + String(Math.floor(Math.abs(tzOffset) / 60)).padStart(2, '0')}:${
-      String(Math.abs(tzOffset) % 60).padStart(2, '0')}`;
-    return date.toISOString().replace('Z', diff);
+    const padStart = (string, targetLength, padString) => (`${string}`).padStart(targetLength, padString);
+    const YYYY = date.getFullYear();
+    const MM = padStart(date.getMonth() + 1, 2, '0');
+    const DD = padStart(date.getDate(), 2, '0');
+    const hh = padStart(date.getHours(), 2, '0');
+    const mm = padStart(date.getMinutes(), 2, '0');
+    const ss = padStart(date.getSeconds(), 2, '0');
+    const mmm = padStart(date.getMilliseconds(), 3, '0');
+    const timezoneOffset = Number(date.getTimezoneOffset()) || 0;
+    const ts = timezoneOffset > 0 ? '-' : '+';
+    const th = padStart(Math.floor(Math.abs(timezoneOffset) / 60), 2, '0');
+    const tm = padStart(Math.abs(timezoneOffset) % 60, 2, '0');
+    return `${YYYY}-${MM}-${DD}T${hh}:${mm}:${ss}.${mmm}${ts}${th}:${tm}`;
   };
   const localTime = getLocalISOString();
   const CURRENT_DATE = new Date();
