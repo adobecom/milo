@@ -8,6 +8,7 @@ import { getGnavHeight } from '../global-navigation/utilities/utilities.js';
 const DESKTOP_SIZE = 900;
 const MOBILE_SIZE = 768;
 const tableHighlightLoadedEvent = new Event('milo:table:highlight:loaded');
+const TAB_CHANGE_EVENT = 'milo:tab:changed';
 let tableIndex = 0;
 let isExpandEventsAssigned = false;
 
@@ -646,6 +647,7 @@ export default function init(el) {
   });
 
   handleHighlight(el);
+  handleStickyHeader(el);
   if (isMerch) formatMerchTable(el);
 
   let isDecorated = false;
@@ -690,14 +692,13 @@ export default function init(el) {
   }, true);
 
   const observer = new window.IntersectionObserver((entries) => {
-    handleStickyHeader(el);
-
     if (entries.some((entry) => entry.isIntersecting)) {
       observer.disconnect();
       handleTable();
     }
   });
 
+  window.addEventListener(TAB_CHANGE_EVENT, () => handleStickyHeader(el));
   observer.observe(el);
 
   tableIndex++;
