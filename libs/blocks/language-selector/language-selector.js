@@ -188,6 +188,12 @@ function setupDropdownEvents({
     dropdown.style.display = 'block';
     selectedLangButton.setAttribute('aria-expanded', 'true');
     filteredLanguages = doRenderLanguages(searchInput.value);
+
+    // Set initial height as CSS variable
+    const listHeight = languageList.offsetHeight;
+    dropdown.style.setProperty('--dropdown-initial-height', `${listHeight}px`);
+    dropdown.classList.add('fixed-height');
+
     setTimeout(() => searchInput.focus(), 0);
   }
   function closeDropdown() {
@@ -196,6 +202,10 @@ function setupDropdownEvents({
     selectedLangButton.setAttribute('aria-expanded', 'false');
     activeIndexRef.current = filteredLanguages.findIndex((lang) => lang.name === currentLang.name);
     selectedLangButton.focus();
+
+    // Remove fixed height
+    dropdown.classList.remove('fixed-height');
+    dropdown.style.removeProperty('--dropdown-initial-height');
   }
 
   selectedLangButton.addEventListener('click', (e) => {
