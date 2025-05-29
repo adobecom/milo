@@ -3,34 +3,33 @@ import { createTag, getConfig, getLanguage } from '../../utils/utils.js';
 const queriedPages = [];
 const CHECKMARK_SVG = '<svg class="check-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M13.3337 4L6.00033 11.3333L2.66699 8" stroke="#5258E4" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 
+function stripQueryAndHash(url) {
+  try {
+    const u = new URL(url);
+    u.search = '';
+    u.hash = '';
+    return u.toString();
+  } catch {
+    return url.split('?')[0].split('#')[0];
+  }
+}
+
 function handleEvent({ prefix, link, callback } = {}) {
   if (typeof callback !== 'function') return;
-  const existingPage = queriedPages.find((page) => page.href === link.href);
+  const urlForCheck = stripQueryAndHash(link.href);
+  const existingPage = queriedPages.find((page) => page.href === urlForCheck);
   if (existingPage) {
-    if (existingPage.ok) {
-      callback(link.href);
-    } else if (prefix) {
-      callback(`/${prefix}/`);
-    } else {
-      callback('/');
-    }
+    callback(existingPage.ok
+      ? link.href
+      : `${prefix ? `/${prefix}` : ''}/`);
     return;
   }
-  fetch(link.href, { method: 'HEAD' }).then((resp) => {
-    queriedPages.push({ href: link.href, ok: resp.ok });
-    if (resp.ok) {
-      callback(link.href);
-    } else if (prefix) {
-      callback(`/${prefix}/`);
-    } else {
-      callback('/');
-    }
+  fetch(urlForCheck, { method: 'HEAD' }).then((resp) => {
+    queriedPages.push({ href: urlForCheck, ok: resp.ok });
+    if (!resp.ok) throw new Error('request failed');
+    callback(link.href);
   }).catch(() => {
-    if (prefix) {
-      callback(`/${prefix}/`);
-    } else {
-      callback('/');
-    }
+    callback(`${prefix ? `/${prefix}` : ''}/`);
   });
 }
 
@@ -302,9 +301,10 @@ function setupDropdownEvents({
     if (li) {
       const idx = Array.from(languageList.children).indexOf(li);
       const lang = filteredLanguages[idx];
-      const currentPath = window.location.pathname.replace(/^\/[a-zA-Z-]+/, '');
+      const { pathname, search, hash } = window.location;
+      const currentPath = pathname.replace(/^\/[a-zA-Z-]+/, '');
       const newPath = lang.prefix ? `/${lang.prefix}${currentPath}` : currentPath;
-      const fullUrl = `${window.location.origin}${newPath}`;
+      const fullUrl = `${window.location.origin}${newPath}${search}${hash}`;
       handleEvent({
         prefix: lang.prefix,
         link: { href: fullUrl },
