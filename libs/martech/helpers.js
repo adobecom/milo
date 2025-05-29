@@ -152,22 +152,6 @@ function getUpdatedAcrobatVisitAttempt() {
   return secondVisitAttempt;
 }
 
-function getUpdatedDxVisitAttempt() {
-  const { hostname } = window.location;
-  const secondVisitAttempt = Number(localStorage.getItem('dxHit')) || 0;
-
-  const isAdobeDomain = (hostname === 'business.adobe.com' || hostname === 'business.stage.adobe.com' || 'www.marketo.com' || 'engage.marketo.com');
-  const consentCookieValue = getCookie(OPT_ON_AND_CONSENT_COOKIE);
-
-  if (!consentCookieValue?.includes('C0002:0') && isAdobeDomain && secondVisitAttempt <= 2) {
-    const updatedVisitAttempt = secondVisitAttempt === 0 ? 1 : secondVisitAttempt + 1;
-    localStorage.setItem('dxHit', updatedVisitAttempt);
-    return updatedVisitAttempt;
-  }
-
-  return secondVisitAttempt;
-}
-
 export function getPageNameForAnalytics() {
   const { hostname, pathname } = new URL(window.location.href);
   const urlRegions = Object.fromEntries(['ae_ar', 'ae_en', 'africa', 'apac', 'ar', 'at', 'au', 'be', 'be_en', 'be_fr', 'be_nl',
@@ -449,16 +433,6 @@ function createRequestPayload({ updatedContext, pageName, processedPageName, loc
         experienceCloud: {
           ...digitalData.adobe?.experienceCloud,
           acrobatSecondVisits: 'setEvent',
-        },
-      };
-    }
-    if (getUpdatedDxVisitAttempt() === 2) {
-      digitalData.adobe = {
-        ...digitalData.adobe,
-        libraryVersions: 'alloy-api',
-        experienceCloud: {
-          ...digitalData.adobe?.experienceCloud,
-          dxVisits: 'setEvent',
         },
       };
     }
