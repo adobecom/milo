@@ -302,7 +302,13 @@ function setupDropdownEvents({
       const idx = Array.from(languageList.children).indexOf(li);
       const lang = filteredLanguages[idx];
       const { pathname, search, hash } = window.location;
-      const currentPath = pathname.replace(/^\/[a-zA-Z-]+/, '');
+      const config = getConfig();
+      const currentPrefix = config.locale && config.locale.prefix ? config.locale.prefix : '';
+      let currentPath = pathname;
+      if (currentPrefix && pathname.startsWith(`${currentPrefix}/`)) {
+        currentPath = pathname.slice(currentPrefix.length);
+        if (!currentPath.startsWith('/')) currentPath = `/${currentPath}`;
+      }
       const newPath = lang.prefix ? `/${lang.prefix}${currentPath}` : currentPath;
       const fullUrl = `${window.location.origin}${newPath}${search}${hash}`;
       handleEvent({
