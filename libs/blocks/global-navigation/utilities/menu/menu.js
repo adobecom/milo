@@ -291,15 +291,15 @@ const decorateColumns = async ({ content, separatorTagName = 'H5' } = {}) => {
         const elemDestination = menuItems || itemDestination;
         let menuList = null;
         if (decoratedElem.tagName === 'P') {
-          const li = toFragment`<li></li>`;
-          li.innerHTML = decoratedElem.innerHTML;
-          decoratedElem = li;
+          decoratedElem = toFragment`<li>${decoratedElem.innerHTML}</li>`;
         }
         if (decoratedElem.tagName === 'LI') {
-          if (!elemDestination.querySelector('ul')) {
-            elemDestination.append(toFragment`<ul></ul>`);
+          let ul = elemDestination.querySelector('ul');
+          if (!ul) {
+            ul = toFragment`<ul></ul>`;
+            elemDestination.append(ul);
           }
-          menuList = elemDestination.querySelector('ul');
+          menuList = ul;
         } else {
           menuList = elemDestination;
         }
