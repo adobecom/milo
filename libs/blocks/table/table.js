@@ -8,7 +8,7 @@ import { getGnavHeight } from '../global-navigation/utilities/utilities.js';
 const DESKTOP_SIZE = 900;
 const MOBILE_SIZE = 768;
 const tableHighlightLoadedEvent = new Event('milo:table:highlight:loaded');
-const TAB_CHANGE_EVENT = 'milo:tab:changed';
+const tabChangeEvent = 'milo:tab:changed';
 let tableIndex = 0;
 let isExpandEventsAssigned = false;
 
@@ -698,7 +698,7 @@ export default function init(el) {
     }
   });
 
-  window.addEventListener(TAB_CHANGE_EVENT, () => handleStickyHeader(el));
+  window.addEventListener(tabChangeEvent, () => handleStickyHeader(el));
   observer.observe(el);
 
   tableIndex++;
