@@ -305,15 +305,12 @@ function setupDropdownEvents({
       const { pathname, search, hash } = window.location;
       const config = getConfig();
       const languages = config.languages || {};
+      const locales = config.locales || {};
+      const currentLangObj = getLanguage(languages, locales, pathname);
       let currentPath = pathname;
-      // Remove the prefix if it matches any language code
-      for (const code of Object.keys(languages)) {
-        const prefix = `/${code}`;
-        if (pathname.startsWith(`${prefix}/`)) {
-          currentPath = pathname.slice(prefix.length);
-          if (!currentPath.startsWith('/')) currentPath = `/${currentPath}`;
-          break;
-        }
+      if (currentLangObj && currentLangObj.prefix && pathname.startsWith(`${currentLangObj.prefix}/`)) {
+        currentPath = pathname.slice(currentLangObj.prefix.length);
+        if (!currentPath.startsWith('/')) currentPath = `/${currentPath}`;
       }
       const newPath = lang.prefix ? `/${lang.prefix}${currentPath}` : currentPath;
       const fullUrl = `${window.location.origin}${newPath}${search}${hash}`;
@@ -336,14 +333,12 @@ function setupDropdownEvents({
       const { pathname, search, hash } = window.location;
       const config = getConfig();
       const languages = config.languages || {};
+      const locales = config.locales || {};
+      const currentLangObj = getLanguage(languages, locales, pathname);
       let currentPath = pathname;
-      for (const code of Object.keys(languages)) {
-        const prefix = `/${code}`;
-        if (pathname.startsWith(`${prefix}/`)) {
-          currentPath = pathname.slice(prefix.length);
-          if (!currentPath.startsWith('/')) currentPath = `/${currentPath}`;
-          break;
-        }
+      if (currentLangObj && currentLangObj.prefix && pathname.startsWith(`${currentLangObj.prefix}/`)) {
+        currentPath = pathname.slice(currentLangObj.prefix.length);
+        if (!currentPath.startsWith('/')) currentPath = `/${currentPath}`;
       }
       const newPath = lang.prefix ? `/${lang.prefix}${currentPath}` : currentPath;
       const fullUrl = `${window.location.origin}${newPath}${search}${hash}`;
