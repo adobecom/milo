@@ -752,7 +752,13 @@ export default async function init(el) {
 
     const footer = createTag('div', { slot: 'footer' });
     if (ctas) {
-      decorateButtons(ctas, (merchCard.variant === MINI_COMPARE_CHART) ? 'button-l' : undefined);
+      let buttonSize;
+      if (merchCard.variant === MINI_COMPARE_CHART && merchCard.classList.contains('bullet-list')) {
+        buttonSize = 'button-xl';
+      } else if (merchCard.variant === MINI_COMPARE_CHART) {
+        buttonSize = 'button-l';
+      }
+      decorateButtons(ctas, buttonSize);
       footer.append(ctas);
     }
     merchCard.appendChild(footer);

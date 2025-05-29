@@ -641,6 +641,10 @@ merch-card[variant="catalog"] .payment-details {
     padding: var(--consonant-merch-spacing-xs);
   }
 
+  merch-card[variant="mini-compare-chart"].bullet-list .action-area {
+    justify-content: flex-start;
+  }
+
   merch-card[variant="mini-compare-chart"] [is="inline-price"] {
     display: inline-block;
     min-height: 30px;
