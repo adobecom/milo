@@ -8,8 +8,8 @@ const KNDCTR_COOKIE_KEYS = [
 const KNDCTR_CONSENT_COOKIE = 'kndctr_9E1005A551ED61CA0A490D45_AdobeOrg_consent';
 const OPT_ON_AND_CONSENT_COOKIE = 'OptanonConsent';
 
-const DATA_STREAM_IDS_PROD = { default: '913eac4d-900b-45e8-9ee7-306216765cd2' };
-const DATA_STREAM_IDS_STAGE = { default: 'e065836d-be57-47ef-b8d1-999e1657e8fd' };
+const DATA_STREAM_IDS_PROD = { default: '913eac4d-900b-45e8-9ee7-306216765cd2', business: '0fd7a243-507d-4035-9c75-e42e42f866a0' };
+const DATA_STREAM_IDS_STAGE = { default: 'e065836d-be57-47ef-b8d1-999e1657e8fd', business: '2eedf777-b932-4f2a-a0c5-b559788929bf' };
 
 let dataStreamId = '';
 
@@ -567,7 +567,17 @@ export const createRequestUrl = ({
   hitType,
 }) => {
   const TARGET_API_URL = getUrl(hitType === 'propositionDisplay');
-  dataStreamId = env === 'prod' ? DATA_STREAM_IDS_PROD.default : DATA_STREAM_IDS_STAGE.default;
+  const { hostname } = window.location;
+  if (hostname.includes('business.adobe')) {
+    dataStreamId = DATA_STREAM_IDS_PROD.business;
+  } else if (
+    hostname.includes('business.stage.adobe')
+    || hostname.includes('bacom--adobecom.hlx')
+  ) {
+    dataStreamId = DATA_STREAM_IDS_STAGE.business;
+  } else {
+    dataStreamId = env === 'prod' ? DATA_STREAM_IDS_PROD.default : DATA_STREAM_IDS_STAGE.default;
+  }
   return `${TARGET_API_URL}?dataStreamId=${dataStreamId}&requestId=${generateUUIDv4()}`;
 };
 
