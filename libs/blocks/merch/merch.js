@@ -1,5 +1,6 @@
 import {
-  createTag, getConfig, loadArea, loadScript, loadStyle, localizeLink, SLD,
+  createTag, getConfig, loadArea, loadScript, loadStyle, localizeLink, SLD, getMetadata,
+  loadLink,
 } from '../../utils/utils.js';
 import { replaceKey } from '../../features/placeholders.js';
 
@@ -11,6 +12,7 @@ export const PRICE_TEMPLATE_OPTICAL = 'optical';
 export const PRICE_TEMPLATE_REGULAR = 'price';
 export const PRICE_TEMPLATE_STRIKETHROUGH = 'strikethrough';
 export const PRICE_TEMPLATE_ANNUAL = 'annual';
+export const PRICE_TEMPLATE_LEGAL = 'legal';
 
 const PRICE_TEMPLATE_MAPPING = new Map([
   ['priceDiscount', PRICE_TEMPLATE_DISCOUNT],
@@ -21,6 +23,7 @@ const PRICE_TEMPLATE_MAPPING = new Map([
   [PRICE_TEMPLATE_STRIKETHROUGH, PRICE_TEMPLATE_STRIKETHROUGH],
   ['priceAnnual', PRICE_TEMPLATE_ANNUAL],
   [PRICE_TEMPLATE_ANNUAL, PRICE_TEMPLATE_ANNUAL],
+  [PRICE_TEMPLATE_LEGAL, PRICE_TEMPLATE_LEGAL],
 ]);
 
 export const PLACEHOLDER_KEY_DOWNLOAD = 'download';
@@ -45,6 +48,34 @@ export const CC_SINGLE_APPS = [
   ['RUSH'],
   ['XD'],
 ];
+
+const LanguageMap = {
+  en: 'US',
+  'en-gb': 'GB',
+  'es-mx': 'MX',
+  'fr-ca': 'CA',
+  da: 'DK',
+  et: 'EE',
+  ar: 'DZ',
+  el: 'GR',
+  iw: 'IL',
+  he: 'IL',
+  id: 'ID',
+  ms: 'MY',
+  nb: 'NO',
+  sl: 'SI',
+  sv: 'SE',
+  cs: 'CZ',
+  uk: 'UA',
+  hi: 'IN',
+  'zh-hans': 'CN',
+  'zh-hant': 'TW',
+  ja: 'JP',
+  ko: 'KR',
+  fil: 'PH',
+  th: 'TH',
+  vi: 'VN',
+};
 
 const GeoMap = {
   ar: 'AR_es',
@@ -128,12 +159,32 @@ const GeoMap = {
   th_th: 'TH_th',
 };
 
+const LANG_STORE_PREFIX = 'langstore/';
+
+function getDefaultLangstoreCountry(language) {
+  let country = LanguageMap[language];
+  if (!country && GeoMap[language]) {
+    country = language; // es, fr, pt, de
+  }
+  if (!country && language.includes('-')) {
+    [country] = language.split('-'); // variations like es-419, pt-PT
+  }
+
+  return country || 'US';
+}
+
 export function getMiloLocaleSettings(locale) {
   const localePrefix = locale?.prefix || 'US_en';
   const geo = localePrefix.replace('/', '') ?? '';
   let [country = 'US', language = 'en'] = (
     GeoMap[geo] ?? geo
   ).split('_', 2);
+
+  if (geo.startsWith(LANG_STORE_PREFIX) || window.location.pathname.startsWith(`/${LANG_STORE_PREFIX}`)) {
+    const localeLang = geo.replace(LANG_STORE_PREFIX, '').toLowerCase();
+    country = getDefaultLangstoreCountry(localeLang);
+    language = localeLang;
+  }
 
   country = country.toUpperCase();
   language = language.toLowerCase();
@@ -165,6 +216,7 @@ export const CHECKOUT_ALLOWED_KEYS = [
   'lo',
   'mal',
   'ms',
+  'cs',
   'mv',
   'mv2',
   'nglwfdata',
@@ -207,6 +259,18 @@ export const CHECKOUT_ALLOWED_KEYS = [
   'marketSegment',
 ];
 
+/**
+ * Used when 3in1 modals are configured with ms=e or cs=t extra paramter, but 3in1 is disabled.
+ * Dexter modals should deeplink to plan=edu or plan=team tabs.
+ * @type {Record<string, string>}
+ */
+const TAB_DEEPLINK_MAPPING = {
+  ms: 'plan',
+  cs: 'plan',
+  e: 'edu',
+  t: 'team',
+};
+
 export const CC_SINGLE_APPS_ALL = CC_SINGLE_APPS.flatMap((item) => item);
 
 export const CC_ALL_APPS = ['CC_ALL_APPS',
@@ -248,6 +312,14 @@ export function getMasBase(hostname, maslibs) {
     getMasBase.baseUrl = baseUrl;
   }
   return baseUrl;
+}
+
+function getCommercePreloadUrl() {
+  const { env } = getConfig();
+  if (env === 'prod') {
+    return 'https://commerce.adobe.com/store/iframe/preload.js';
+  }
+  return 'https://commerce-stg.adobe.com/store/iframe/preload.js';
 }
 
 export async function polyfills() {
@@ -449,26 +521,31 @@ export function appendExtraOptions(url, extraOptions) {
   const extraOptionsObj = JSON.parse(extraOptions);
   let urlWithExtraOptions;
   try {
-    urlWithExtraOptions = new URL(url);
+    const fullUrl = url.startsWith('/') ? `${window.location.origin}${url}` : url;
+    urlWithExtraOptions = new URL(fullUrl);
   } catch (err) {
     window.lana?.log(`Invalid URL ${url} : ${err}`);
     return url;
   }
   Object.keys(extraOptionsObj).forEach((key) => {
     if (CHECKOUT_ALLOWED_KEYS.includes(key)) {
-      urlWithExtraOptions.searchParams.set(key, extraOptionsObj[key]);
+      const value = extraOptionsObj[key];
+      urlWithExtraOptions.searchParams.set(
+        TAB_DEEPLINK_MAPPING[key] ?? key,
+        TAB_DEEPLINK_MAPPING[value] ?? value,
+      );
     }
   });
   return urlWithExtraOptions.href;
 }
 
 async function openExternalModal(url, getModal, extraOptions) {
-  await loadStyle(`${getConfig().base}/blocks/iframe/iframe.css`);
+  loadStyle(`${getConfig().base}/blocks/iframe/iframe.css`);
   const root = createTag('div', { class: 'milo-iframe' });
-  const urlWithTabName = appendTabName(url);
-  const urlWithExtraOptions = appendExtraOptions(urlWithTabName, extraOptions);
+  const urlWithExtraOptions = appendExtraOptions(url, extraOptions);
+  const urlWithTabName = appendTabName(urlWithExtraOptions);
   createTag('iframe', {
-    src: urlWithExtraOptions,
+    src: urlWithTabName,
     frameborder: '0',
     marginwidth: '0',
     marginheight: '0',
@@ -534,6 +611,15 @@ const isProdModal = (url) => {
 
 export async function getModalAction(offers, options, el) {
   if (!options.modal) return undefined;
+
+  if (el?.isOpen3in1Modal) {
+    const baseUrl = getCommercePreloadUrl();
+    // The script can preload more, based on clientId, but for the ones in use
+    // ('mini-plans', 'creative') there is no difference, so we can just use either one.
+    const client = 'creative';
+    loadLink(`${baseUrl}?cli=${client}`, 'text/javascript', { id: 'ucv3-preload-script', as: 'script', crossorigin: 'anonymous', rel: 'preload' });
+  }
+
   const [{
     offerType,
     productArrangementCode,
@@ -686,10 +772,13 @@ export async function getCheckoutContext(el, params) {
 export async function getPriceContext(el, params) {
   const context = await getCommerceContext(el, params);
   if (!context) return null;
+  const annualEnabled = getMetadata('mas-ff-annual-price');
   const displayOldPrice = context.promotionCode ? params.get('old') : undefined;
   const displayPerUnit = params.get('seat');
   const displayRecurrence = params.get('term');
   const displayTax = params.get('tax');
+  const displayPlanType = params.get('planType');
+  const displayAnnual = (annualEnabled && params.get('annual') !== 'false') || undefined;
   const forceTaxExclusive = params.get('exclusive');
   const alternativePrice = params.get('alt');
   // The PRICE_TEMPLATE_MAPPING supports legacy OST links
@@ -700,16 +789,25 @@ export async function getPriceContext(el, params) {
     displayPerUnit,
     displayRecurrence,
     displayTax,
+    displayPlanType,
+    displayAnnual,
     forceTaxExclusive,
     alternativePrice,
     template,
   };
 }
 
+let modalReopened = false;
 export function reopenModal(cta) {
+  if (modalReopened) return;
   if (cta && cta.getAttribute('data-modal-id') === window.location.hash.replace('#', '')) {
     cta.click();
+    modalReopened = true;
   }
+}
+
+export function resetReopenStatus() {
+  modalReopened = false;
 }
 
 export async function buildCta(el, params) {
@@ -744,7 +842,7 @@ export async function buildCta(el, params) {
     // If Milo aria-label available from sharepoint doc, just use it.
     cta.setAttribute('aria-label', el.ariaLabel);
   } else if (!cta.ariaLabel) {
-    cta.onceSettled().finally(async () => {
+    cta.onceSettled().then(async () => {
       const productFamily = cta.value[0]?.productArrangement?.productFamily;
       const marketSegment = cta.value[0]?.marketSegments[0];
       const customerSegment = marketSegment === 'EDU' ? marketSegment : cta.value[0]?.customerSegment;
@@ -763,6 +861,32 @@ async function buildPrice(el, params) {
   const service = await initService();
   const price = service.createInlinePrice(context);
   return price;
+}
+
+export const MEP_SELECTOR = 'mas';
+
+export function overrideOptions(fragment, options) {
+  const { mep } = getConfig();
+  const fragments = mep?.inBlock?.[MEP_SELECTOR]?.fragments;
+  if (fragments) {
+    const command = fragments[fragment];
+    if (command && command.action === 'replace') {
+      return { ...options, fragment: command.content };
+    }
+  }
+  return options;
+}
+
+export function getOptions(el) {
+  const { hash } = new URL(el.href);
+  const hashValue = hash.startsWith('#') ? hash.substring(1) : hash;
+  const searchParams = new URLSearchParams(hashValue);
+  const options = {};
+  for (const [key, value] of searchParams.entries()) {
+    if (key === 'sidenav') options.sidenav = value === 'true';
+    else if (key === 'fragment' || key === 'query') options.fragment = value;
+  }
+  return options;
 }
 
 export default async function init(el) {

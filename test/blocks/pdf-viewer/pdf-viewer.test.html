@@ -17,8 +17,8 @@
     import { expect } from '@esm-bundle/chai';
     import { stub } from 'sinon';
     import { waitForElement } from '../../helpers/waitfor.js';
-    import { setConfig, getConfig, loadScript } from '../../../libs/utils/utils.js';
-    import { default as pdfViewer } from "../../../libs/blocks/pdf-viewer/pdf-viewer.js"
+    import { setConfig, getConfig, loadScript, createTag } from '../../../libs/utils/utils.js';
+    import { default as pdfViewer, getPdfEmbedConfig } from "../../../libs/blocks/pdf-viewer/pdf-viewer.js"
 
     runTests(() => {
       describe('PDF Viewer', () => {
@@ -37,6 +37,12 @@
         it('renders PDFs embedded onto the page', async () => {
           await pdfViewer(document.querySelector('a'));
           expect(document.querySelector('.pdf-container')).to.exist;
+        });
+
+        it('gets pdf preview config', () => {
+          const metaEl = createTag('meta', { name: 'pdf-embed-mode', content: 'full-window' });
+          document.head.append(metaEl);
+          expect(getPdfEmbedConfig().defaultViewMode).to.exist;
         });
 
         it('initializes viewer when hidden section becomes visible', async () => {

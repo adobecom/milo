@@ -6,21 +6,28 @@ import { decorateSectionAnalytics } from '../../martech/attributes.js';
 const FOCUSABLES = 'a:not(.hide-video), button:not([disabled], .locale-modal-v2 .paddle), input, textarea, select, details, [tabindex]:not([tabindex="-1"])';
 const CLOSE_ICON = `<svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20">
   <g transform="translate(-10500 3403)">
-    <circle cx="10" cy="10" r="10" transform="translate(10500 -3403)" fill="#707070"/>
-    <line y1="8" x2="8" transform="translate(10506 -3397)" fill="none" stroke="#fff" stroke-width="2"/>
-    <line x1="8" y1="8" transform="translate(10506 -3397)" fill="none" stroke="#fff" stroke-width="2"/>
+    <circle cx="10" cy="10" r="10" transform="translate(10500 -3403)"/>
+    <line y1="8" x2="8" transform="translate(10506 -3397)" fill="none" stroke-width="2"/>
+    <line x1="8" y1="8" transform="translate(10506 -3397)" fill="none" stroke-width="2"/>
   </g>
 </svg>`;
 
 let isDelayedModal = false;
 let prevHash = '';
+let isDeepLink = false;
 const dialogLoadingSet = new Set();
 
 export function findDetails(hash, el) {
   const id = hash.replace('#', '');
   const a = el || document.querySelector(`a[data-modal-hash="${hash}"]`);
   const path = a?.dataset.modalPath || localizeLink(getMetadata(`-${id}`));
-  return { id, path, isHash: hash === window.location.hash };
+  const ariaLabel = a?.getAttribute('aria-label') || document.querySelector(`a[data-modal-id="${id}"]`)?.getAttribute('aria-label');
+  return {
+    id,
+    path,
+    isHash: hash === window.location.hash,
+    title: ariaLabel ? `Modal: ${ariaLabel}` : null,
+  };
 }
 
 function fireAnalyticsEvent(event) {
@@ -72,6 +79,11 @@ export function closeModal(modal) {
     window.location.hash = prevHash;
     prevHash = '';
   }
+
+  if (isDeepLink) {
+    document.querySelector('#onetrust-banner-sdk')?.focus();
+    isDeepLink = false;
+  }
 }
 
 function isElementInView(element) {
@@ -113,10 +125,11 @@ async function getPathModal(path, dialog) {
 
 export async function getModal(details, custom) {
   if (!((details?.path && details?.id) || custom)) return null;
-  const { id } = details || custom;
+  const { id, deepLink } = details || custom;
+  isDeepLink = deepLink;
 
   dialogLoadingSet.add(id);
-  const dialog = createTag('div', { class: 'dialog-modal', id });
+  const dialog = createTag('div', { class: 'dialog-modal', id, role: 'dialog', 'aria-modal': true });
   const loadedEvent = new Event('milo:modal:loaded');
 
   if (custom) getCustomModal(custom, dialog);
@@ -202,9 +215,37 @@ export async function getModal(details, custom) {
 
   const iframe = dialog.querySelector('iframe');
   if (iframe) {
+    if (details?.title) iframe.setAttribute('title', details.title);
+
+    if (iframe.title) {
+      dialog.setAttribute('aria-label', iframe.title);
+    } else {
+      iframe.onload = () => {
+        try {
+          if ((new URL(iframe.src).origin !== window.location.origin) && iframe.title) {
+            dialog.setAttribute('aria-label', iframe.title);
+            return;
+          }
+
+          const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+          const iframeHeading = iframeDoc.querySelector('h1, h2, h3, h4, h5, h6')?.textContent.trim();
+          if (iframeHeading) dialog.setAttribute('aria-label', iframeHeading);
+          if (!iframe.title && iframeHeading) iframe.title = iframeHeading;
+        } catch (e) {
+          // Cross-origin iframe, can't access content
+        }
+      };
+    }
+
     if (dialog.classList.contains('commerce-frame') || dialog.classList.contains('dynamic-height')) {
       const { default: enableCommerceFrameFeatures } = await import('./modal.merch.js');
       await enableCommerceFrameFeatures({ dialog, iframe });
+
+      if (!details?.title) {
+        const commerceDetails = findDetails(window.location.hash, null);
+        const commerceFrameTitle = commerceDetails?.title || null;
+        if (commerceFrameTitle) iframe.setAttribute('title', commerceFrameTitle);
+      }
     } else {
       /* Initially iframe height is set to 0% in CSS for the height auto adjustment feature.
       The height auto adjustment feature is applicable only to dialogs
@@ -212,6 +253,9 @@ export async function getModal(details, custom) {
       iframe.style.height = '100%';
     }
     if (!custom?.closeEvent) dialog.addEventListener('iframe:modal:closed', () => closeModal(dialog));
+  } else {
+    const firstHeading = dialog.querySelector('h1, h2, h3, h4, h5, h6');
+    if (firstHeading) dialog.setAttribute('aria-label', firstHeading.textContent.trim());
   }
 
   return dialog;
@@ -257,6 +301,7 @@ export default function init(el) {
   if (delayedModal(el) || window.location.hash !== modalHash || document.querySelector(`div.dialog-modal${modalHash}`)) return null;
   if (dialogLoadingSet.has(modalHash?.replace('#', ''))) return null; // prevent duplicate modal loading
   const details = findDetails(window.location.hash, el);
+  details.deepLink = true;
   return details ? getModal(details) : null;
 }
 

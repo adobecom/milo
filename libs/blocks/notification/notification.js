@@ -15,7 +15,7 @@
 */
 
 import { decorateBlockText, decorateBlockBg, decorateTextOverrides, decorateMultiViewport, loadCDT } from '../../utils/decorate.js';
-import { createTag, getConfig, loadStyle } from '../../utils/utils.js';
+import { createTag, getConfig, loadStyle, createIntersectionObserver } from '../../utils/utils.js';
 
 const { miloLibs, codeRoot } = getConfig();
 const base = miloLibs || codeRoot;
@@ -86,17 +86,80 @@ function wrapCopy(foreground) {
   });
 }
 
+const focusableSelector = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
+const selectedSelector = '[aria-selected="true"], [aria-checked="true"]';
+
+export function findFocusableInSection(section, selSelector, focSelector) {
+  if (!section) return null;
+
+  const selectedElement = section.querySelector(selSelector);
+  if (selectedElement) return selectedElement;
+
+  const focusableElements = [...section.querySelectorAll(focSelector)];
+  return focusableElements.length > 0
+    ? focusableElements[focusableElements.length - 1]
+    : null;
+}
+
 function addCloseAction(el, btn) {
   btn.addEventListener('click', (e) => {
     if (btn.nodeName === 'A') e.preventDefault();
+
+    const liveRegion = createTag('div', {
+      class: 'notification-visibility-hidden',
+      'aria-live': 'assertive',
+      'aria-atomic': 'true',
+      role: 'status',
+      tabindex: '-1',
+    }, 'Banner closed');
+    document.body.appendChild(liveRegion);
+    liveRegion.focus();
+    let isSticky = false;
+    let rect;
+    const sectionElement = el.closest('.section');
+
+    if (sectionElement?.className.includes('sticky')) {
+      isSticky = true;
+      rect = sectionElement.getBoundingClientRect();
+    }
+
     el.style.display = 'none';
     el.closest('.section')?.classList.add('close-sticky-section');
+    if (el.classList.contains('focus')) {
+      document.body.classList.remove('mobile-disable-scroll');
+      el.closest('.section').querySelector('.notification-curtain').remove();
+    }
     document.dispatchEvent(new CustomEvent('milo:sticky:closed'));
+
+    setTimeout(() => {
+      let focusTarget;
+
+      if (isSticky) {
+        const elementAtPosition = document.elementFromPoint(rect.left, rect.top);
+        const stickySection = elementAtPosition.closest('.section');
+        focusTarget = findFocusableInSection(stickySection, selectedSelector, focusableSelector);
+      }
+
+      let currentSection = el.closest('.section')?.previousElementSibling;
+      while (currentSection && !focusTarget) {
+        focusTarget = findFocusableInSection(currentSection, selectedSelector, focusableSelector);
+        if (!focusTarget) currentSection = currentSection.previousElementSibling;
+      }
+
+      const header = document.querySelector('header');
+      if (!focusTarget && header) {
+        const headerFocusable = [...header.querySelectorAll(focusableSelector)];
+        focusTarget = headerFocusable[headerFocusable.length - 1];
+      }
+
+      liveRegion?.remove();
+      if (focusTarget) focusTarget.focus({ preventScroll: true });
+    }, 2000);
   });
 }
 
 function decorateClose(el) {
-  const btn = createTag('button', { 'aria-label': 'close', class: 'close' }, closeSvg);
+  const btn = createTag('button', { 'aria-label': 'Close Promo Banner', class: 'close' }, closeSvg);
   addCloseAction(el, btn);
   el.appendChild(btn);
 }
@@ -136,6 +199,12 @@ async function decorateLockup(lockupArea, el) {
   if (pre && pre[2] === 'icon') el.classList.replace(pre[0], `${pre[1]}-lockup`);
 }
 
+function curtainCallback(el) {
+  const curtain = createTag('div', { class: 'notification-curtain' });
+  document.body.classList.add('mobile-disable-scroll');
+  el.insertAdjacentElement('afterend', curtain);
+}
+
 function decorateSplitList(el, listContent) {
   const closeEvent = '#_evt-close';
   const listContainer = createTag('div', { class: 'split-list-area' });
@@ -160,6 +229,18 @@ function decorateSplitList(el, listContent) {
     pic.querySelector('img').loading = 'eager';
   });
   listContent.replaceWith(listContainer);
+
+  if (el.classList.contains('focus')) {
+    if (el.classList.contains('no-delay')) {
+      curtainCallback(el);
+      return;
+    }
+    createIntersectionObserver({
+      el,
+      option: { once: true },
+      callback: () => curtainCallback(el),
+    });
+  }
 }
 
 async function decorateForegroundText(el, container) {
@@ -199,6 +280,8 @@ async function decorateLayout(el) {
 
 export default async function init(el) {
   el.classList.add('con-block');
+  el.setAttribute('aria-label', 'Promo Banner');
+  el.setAttribute('role', 'region');
   const { fontSizes, options } = getBlockData(el);
   const blockText = await decorateLayout(el);
   decorateBlockText(blockText, fontSizes);

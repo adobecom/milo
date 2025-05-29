@@ -14,27 +14,28 @@
         <script src="/libs/deps/lit-all.min.js" type="module"></script>
 
         <script>
-            const params = new URLSearchParams(document.location.search);
             function toggleTheme(theme) {
                 document.body.className = 'spectrum spectrum--medium';
                 document.body.classList.add(`spectrum--${theme}`);
                 document
                     .querySelector('sp-theme')
                     ?.setAttribute('color', theme);
-                params.set('theme', theme);
-                history.replaceState(
-                    null,
-                    '',
-                    `${location.pathname}?${params}`,
-                );
+
+                const url = new URL(window.location.href);
+                url.searchParams.set('theme', theme);
+
+                window.location.href = url.toString();
             }
         </script>
         <script type="module" src="./mas-sidenav.js"></script>
         <script type="module">
-          import { init } from './common.js';
-          init();
+            import { init } from './common.js';
+            init();
         </script>
-        <script type="module" src="../../../features/spectrum-web-components/dist/button.js"></script>
+        <script
+            type="module"
+            src="../../../features/spectrum-web-components/dist/button.js"
+        ></script>
     </head>
 
     <body class="spectrum spectrum--medium spectrum--light">
@@ -55,20 +56,45 @@
                         Switch Theme:
                         <a
                             class="spectrum-Link spectrum-Link--secondary theme-toggle"
-                            href="javascript:toggleTheme('dark');"
+                            href="#"
+                            onclick="toggleTheme('dark'); return false;"
                             >Dark</a
                         >
                         OR
                         <a
                             class="spectrum-Link spectrum-Link--secondary theme-toggle"
-                            href="javascript:toggleTheme('light');"
+                            href="#"
+                            onclick="toggleTheme('light'); return false;"
                             >Light</a
                         >
                     </div>
                     <div>
-                      Switch Locale: <a class="spectrum-Link spectrum-Link--secondary" href="?locale=en_US">en_US</a> OR <a class="spectrum-Link spectrum-Link--secondary" href="?locale=fr_FR">fr_FR</a>
+                        Switch Locale:
+                        <a
+                            class="spectrum-Link spectrum-Link--secondary"
+                            href="?locale=en_US"
+                            >en_US</a
+                        >
+                        OR
+                        <a
+                            class="spectrum-Link spectrum-Link--secondary"
+                            href="?locale=fr_FR"
+                            >fr_FR</a
+                        >
                     </div>
-                    <div>Switch country/language: <a class="spectrum-Link spectrum-Link--secondary" href="?country=US&language=en">Country: US, language: en</a> OR <a class="spectrum-Link spectrum-Link--secondary" href="?country=FR&language=fr">Country: FR, language: fr</a>
+                    <div>
+                        Switch country/language:
+                        <a
+                            class="spectrum-Link spectrum-Link--secondary"
+                            href="?country=US&language=en"
+                            >Country: US, language: en</a
+                        >
+                        OR
+                        <a
+                            class="spectrum-Link spectrum-Link--secondary"
+                            href="?country=FR&language=fr"
+                            >Country: FR, language: fr</a
+                        >
                     </div>
                     <div class="adobe-home-container">
                         <h2 id="ah-try-buy-widget" tabindex="-1">
@@ -131,15 +157,35 @@
                                 ></merch-card>
                             </div>
                         </div>
+                        <div>
+                            <div class="one-merch-card ah-promoted-plans">
+                                <h3 class="size-header" tabindex="-1">
+                                    Promoted Plans
+                                </h3>
+                                <merch-card
+                                    ><aem-fragment
+                                        fragment="031e2f50-5cbc-4e4b-af9b-c63f0e4f2a93"
+                                        title="Creative Cloud All Apps"
+                                    ></aem-fragment
+                                ></merch-card>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </main>
         </sp-theme>
         <script>
-            const theme = params.get('theme');
+            // Get theme from URL on page load
+            const theme = new URL(window.location.href).searchParams.get(
+                'theme',
+            );
             if (theme) {
-                toggleTheme(theme);
-                document.querySelector('sp-theme').setAttribute('color', theme);
+                // Apply theme without changing URL again
+                document.body.className = 'spectrum spectrum--medium';
+                document.body.classList.add(`spectrum--${theme}`);
+                document
+                    .querySelector('sp-theme')
+                    ?.setAttribute('color', theme);
             }
         </script>
     </body>

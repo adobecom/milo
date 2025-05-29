@@ -1,21 +1,26 @@
 import { html, css, unsafeCSS } from 'lit';
-import { isMobile } from '../utils.js';
+import { isMobile, createTag } from '../utils.js';
 import { VariantLayout } from './variant-layout.js';
 import { CSS } from './mini-compare-chart.css.js';
 import { DESKTOP_UP, TABLET_DOWN } from '../media.js';
+import { SELECTOR_MAS_INLINE_PRICE } from '../constants.js';
 const FOOTER_ROW_MIN_HEIGHT = 32; // as per the XD.
 
 export class MiniCompareChart extends VariantLayout {
   constructor(card) {
     super(card);
   }
-
+  
   getRowMinHeightPropertyName = (index) =>
     `--consonant-merch-card-footer-row-${index}-min-height`;
 
   getGlobalCSS() {
     return CSS;
   }
+
+  // For addon tiitle is it ok if we hardocde it in card settings?
+  // For addon is it ok if we hardcode it as placeholder key?
+  // How to add the price?
 
   getMiniCompareFooter = () => {
     const secureLabel = this.card.secureLabel
@@ -45,11 +50,12 @@ export class MiniCompareChart extends VariantLayout {
         'offers',
         'promo-text',
         'callout-content',
+        'addon',
     ];
     if (this.card.classList.contains('bullet-list')) {
         slots.push('footer-rows');
     }
-  
+
     slots.forEach((slot) =>
         this.updateCardElementMinHeight(
             this.card.shadowRoot.querySelector(`slot[name="${slot}"]`),
@@ -110,6 +116,64 @@ export class MiniCompareChart extends VariantLayout {
     });
   }
 
+  get mainPrice() {
+    const price = this.card.querySelector(
+        `[slot="heading-m-price"] ${SELECTOR_MAS_INLINE_PRICE}[data-template="price"]`,
+    );
+    return price;
+}
+
+get headingMPriceSlot() {
+    return this.card.shadowRoot
+        .querySelector('slot[name="heading-m-price"]')
+        ?.assignedElements()[0];
+}
+
+toggleAddon(merchAddon) {
+    const mainPrice = this.mainPrice;
+    const headingMPriceSlot = this.headingMPriceSlot;
+        if (!mainPrice && headingMPriceSlot) {
+            const planType = merchAddon?.getAttribute('plan-type');
+            let visibleSpan = null;
+            if (merchAddon && planType) {
+                const matchingP = merchAddon.querySelector(`p[data-plan-type="${planType}"]`);
+                visibleSpan = matchingP?.querySelector('span[is="inline-price"]');
+            }
+            this.card.querySelectorAll('p[slot="heading-m-price"]').forEach(p => p.remove());
+            if (merchAddon.checked) {
+                if (visibleSpan) {
+                    const replacementP = createTag(
+                        'p',
+                        { class: 'addon-heading-m-price-addon', slot: 'heading-m-price' },
+                        visibleSpan.innerHTML
+                    );
+                    this.card.appendChild(replacementP);
+                }
+            } else {
+                const freeP = createTag(
+                    'p',
+                    { class: 'card-heading', id: 'free', slot: 'heading-m-price' },
+                    'Free'
+                );
+                this.card.appendChild(freeP);
+            }
+     }
+}
+
+async adjustAddon() {
+    await this.card.updateComplete;
+    const addon = this.card.addon;
+    if (!addon) return;
+    const price = this.mainPrice;
+    let planType = this.card.planType;
+    if (price) {
+        await price.onceSettled();
+        planType = price.value?.[0]?.planType;
+    }
+    if (!planType) return;
+    addon.planType = planType;
+}
+
   renderLayout() {
     return html` <div class="top-section${this.badge ? ' badge' : ''}">
             <slot name="icons"></slot> ${this.badge}
@@ -127,12 +191,14 @@ export class MiniCompareChart extends VariantLayout {
         <slot name="offers"></slot>
         <slot name="promo-text"></slot>
         <slot name="callout-content"></slot>
+        <slot name="addon"></slot>
         ${this.getMiniCompareFooter()}
         <slot name="footer-rows"><slot name="body-s"></slot></slot>`;
   }
   async postCardUpdateHook() {
-    if (!isMobile()) {
-      await Promise.all(this.card.prices.map((price) => price.onceSettled()));
+    await Promise.all(this.card.prices.map((price) => price.onceSettled()));
+    await this.adjustAddon();
+    if (!isMobile()) {   
       this.adjustMiniCompareBodySlots();
       this.adjustMiniCompareFooterRows();
     } else {
@@ -226,6 +292,11 @@ export class MiniCompareChart extends VariantLayout {
     :host([variant='mini-compare-chart']) slot[name='callout-content'] {
         min-height: var(
             --consonant-merch-card-mini-compare-chart-callout-content-height
+        );
+    }
+    :host([variant='mini-compare-chart']) slot[name='addon'] {
+        min-height: var(
+            --consonant-merch-card-mini-compare-chart-addon-height
         );
     }
     :host([variant='mini-compare-chart']) slot[name='footer-rows'] {

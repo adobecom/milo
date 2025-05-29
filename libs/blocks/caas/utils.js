@@ -514,6 +514,23 @@ const getFilterArray = async (state, country, lang, strs) => {
 
 export function getCountryAndLang({ autoCountryLang, country, language }) {
   const locales = getMetadata('caas-locales') || '';
+  const langFirst = getMetadata('langfirst');
+  /* if it is a language first localized page don't use the milo locales.
+    This can be changed after lang-first localization is supported from the milo utils */
+  if (langFirst && autoCountryLang) {
+    const pathArr = pageConfigHelper()?.pathname?.split('/') || [];
+    const langStr = LANGS[pathArr[1]] ?? LANGS[''] ?? 'en';
+    let countryStr = LOCALES[pathArr[2]] ?? 'xx';
+    if (typeof countryStr === 'object') {
+      countryStr = countryStr.ietf?.split('-')[1] ?? 'xx';
+    }
+
+    return {
+      country: countryStr,
+      language: langStr,
+      locales,
+    };
+  }
   if (autoCountryLang) {
     const prefix = pageConfigHelper()?.locale?.prefix?.replace('/', '') || '';
     const locale = LOCALES[prefix]?.ietf || 'en-US';

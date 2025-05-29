@@ -20,12 +20,15 @@ import merch, {
   getCheckoutAction,
   PRICE_TEMPLATE_REGULAR,
   getMasBase,
+  getOptions,
   appendTabName,
   appendExtraOptions,
   getMiloLocaleSettings,
   reopenModal,
+  resetReopenStatus,
   setCtaHash,
   openModal,
+  PRICE_TEMPLATE_LEGAL,
 } from '../../../libs/blocks/merch/merch.js';
 
 import { mockFetch, unmockFetch, readMockText } from './mocks/fetch.js';
@@ -200,6 +203,17 @@ describe('Merch Block', () => {
         { prefix: '/africa', expectedLocale: 'en_MU' },
         { prefix: '', expectedLocale: 'en_US' },
         { prefix: '/ae_ar', expectedLocale: 'ar_AE' },
+        { prefix: '/langstore/en', expectedLocale: 'en_US' },
+        { prefix: '/langstore/es', expectedLocale: 'es_ES' },
+        { prefix: '/langstore/de', expectedLocale: 'de_DE' },
+        { prefix: '/langstore/id', expectedLocale: 'id_ID' },
+        { prefix: '/langstore/hi', expectedLocale: 'hi_IN' },
+        { prefix: '/langstore/ar', expectedLocale: 'ar_DZ' },
+        { prefix: '/langstore/nb', expectedLocale: 'nb_NO' },
+        { prefix: '/langstore/zh-hant', expectedLocale: 'zh-hant_TW' },
+        { prefix: '/langstore/el', expectedLocale: 'el_GR' },
+        { prefix: '/langstore/uk', expectedLocale: 'uk_UA' },
+        { prefix: '/langstore/es-419', expectedLocale: 'es-419_ES' },
       ].forEach(({ prefix, expectedLocale }) => {
         const computedLocale = getMiloLocaleSettings({ prefix })?.locale;
         expect(computedLocale).to.equal(expectedLocale);
@@ -297,6 +311,13 @@ describe('Merch Block', () => {
 
     it('renders merch link to full promo price', async () => {
       await validatePriceSpan('.fragment .merch.price.promo', { promotionCode: 'nicopromo' });
+    });
+  });
+
+  describe('Prices: legal template', () => {
+    it('renders merch link with legal template', async () => {
+      const el = await validatePriceSpan('.merch.price.legal', { template: PRICE_TEMPLATE_LEGAL });
+      expect(el.textContent).to.equal('per license (Annual, paid monthly.)');
     });
   });
 
@@ -474,6 +495,29 @@ describe('Merch Block', () => {
         reopenModal(cta);
         expect(clickSpy.called).to.be.true;
         window.location.hash = prevHash;
+        resetReopenStatus();
+      });
+
+      it('only reopens one modal if multiples hashes match', async () => {
+        const prevHash = window.location.hash;
+        window.location.hash = '#try-photoshop';
+
+        const cta1 = document.createElement('a');
+        cta1.setAttribute('data-modal-id', 'try-photoshop');
+        const clickSpy1 = sinon.spy(cta1, 'click');
+
+        const cta2 = document.createElement('a');
+        cta1.setAttribute('data-modal-id', 'try-photoshop');
+        const clickSpy2 = sinon.spy(cta2, 'click');
+
+        reopenModal(cta1);
+        reopenModal(cta2);
+
+        expect(clickSpy1.called).to.be.true;
+        expect(clickSpy2.called).to.be.false;
+
+        window.location.hash = prevHash;
+        resetReopenStatus();
       });
     });
 
@@ -652,7 +696,7 @@ describe('Merch Block', () => {
       document.querySelector('.modal-curtain').click();
     });
 
-    it('renders TWP modal with preselected plan', async () => {
+    it('renders TWP modal with preselected plan that overrides extra options', async () => {
       mockIms();
       const meta = document.createElement('meta');
       meta.setAttribute('name', 'preselect-plan');
@@ -816,10 +860,22 @@ describe('Merch Block', () => {
       });
     });
 
-    it('appends extra options to URL', () => {
+    it('appends extra options to legacy modal URL', () => {
       const url = 'https://www.adobe.com/plans-fragments/modals/individual/modals-content-rich/all-apps/master.modal.html';
       const resultUrl = appendExtraOptions(url, JSON.stringify({ promoid: 'test' }));
       expect(resultUrl).to.equal('https://www.adobe.com/plans-fragments/modals/individual/modals-content-rich/all-apps/master.modal.html?promoid=test');
+    });
+
+    it('appends plan=edu if extra options contains ms=e', () => {
+      const url = 'https://www.adobe.com/plans-fragments/modals/individual/modals-content-rich/all-apps/master.modal.html';
+      const resultUrl = appendExtraOptions(url, JSON.stringify({ ms: 'e' }));
+      expect(resultUrl).to.equal('https://www.adobe.com/plans-fragments/modals/individual/modals-content-rich/all-apps/master.modal.html?plan=edu');
+    });
+
+    it('appends plan=team if extra options contains cs=t', () => {
+      const url = 'https://www.adobe.com/plans-fragments/modals/individual/modals-content-rich/all-apps/master.modal.html';
+      const resultUrl = appendExtraOptions(url, JSON.stringify({ cs: 't' }));
+      expect(resultUrl).to.equal('https://www.adobe.com/plans-fragments/modals/individual/modals-content-rich/all-apps/master.modal.html?plan=team');
     });
 
     it('does not append extra options to URL if invalid URL or params not provided', () => {
@@ -828,6 +884,12 @@ describe('Merch Block', () => {
       expect(resultUrl).to.equal(invalidUrl);
       const resultUrl2 = appendExtraOptions(invalidUrl);
       expect(resultUrl2).to.equal(invalidUrl);
+    });
+
+    it('appends extra options if the provided url is relative', () => {
+      const relativeUrl = '/plans-fragments/modals/individual/modals-content-rich/all-apps/master.modal.html';
+      const resultUrl = appendExtraOptions(relativeUrl, JSON.stringify({ promoid: 'test' }));
+      expect(resultUrl).to.include('?promoid=test');
     });
   });
 
@@ -842,6 +904,26 @@ describe('Merch Block', () => {
         const wcsLocale = getMiloLocaleSettings({ prefix }).locale;
         expect(wcsLocale).to.be.equal(expectedLocale);
       });
+    });
+  });
+
+  describe('getOptions method', () => {
+    it('gets fragment id', () => {
+      const a = document.createElement('a');
+      a.setAttribute('href', 'https://mas.adobe.com/studio.html#content-type=merch-card-collection&path=acom&fragment=07b8be51-492a-4814-9953-a657fd3d9f67');
+      expect(getOptions(a).fragment).to.equal('07b8be51-492a-4814-9953-a657fd3d9f67');
+    });
+
+    it('gets fragment id from query', () => {
+      const a = document.createElement('a');
+      a.setAttribute('href', 'https://mas.adobe.com/studio.html#content-type=merch-card-collection&path=acom&query=07b8be51-492a-4814-9953-a657fd3d9f67');
+      expect(getOptions(a).fragment).to.equal('07b8be51-492a-4814-9953-a657fd3d9f67');
+    });
+
+    it('handles missing fragment id', () => {
+      const a = document.createElement('a');
+      a.setAttribute('href', 'https://mas.adobe.com/studio.html#content-type=merch-card-collection&path=acom');
+      expect(getOptions(a).fragment).to.be.undefined;
     });
   });
 });
