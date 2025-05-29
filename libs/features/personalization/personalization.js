@@ -363,10 +363,10 @@ const setMetadata = (metadata) => {
 
 function toLowerAlpha(str) {
   const modifiedStr = str.toLowerCase();
-  if (!modifiedStr.includes('countryip') && !modifiedStr.includes('countrychoice')) {
+  if (!modifiedStr.includes('countryip') && !modifiedStr.includes('countrychoice') && !modifiedStr.includes('previouspage')) {
     return modifiedStr.replace(RE_KEY_REPLACE, '');
   }
-  return modifiedStr.replace(RE_KEY_REPLACE, (char) => (['(', ')'].includes(char) ? char : ''));
+  return modifiedStr.replace(RE_KEY_REPLACE, (char) => (['(', ')', '/', '*'].includes(char) ? char : ''));
 }
 
 function normalizeKeys(obj) {
@@ -827,6 +827,15 @@ const checkForParamMatch = (paramStr) => {
   return false;
 };
 
+const checkForPreviousPageMatch = (paramStr) => {
+  if (document.referrer === '' || !document.referrer) return false;
+  const previousPageString = paramStr.toLowerCase().split('previouspage-')[1];
+  const refValue = new URL(document.referrer);
+  if (!previousPageString.includes('**')) return (refValue.href === previousPageString || refValue.pathname === previousPageString);
+  if (previousPageString.includes('**')) return matchGlob(previousPageString, refValue.pathname);
+  return false;
+};
+
 function trimNames(arr) {
   return arr.map((v) => v.trim()).filter(Boolean);
 }
@@ -932,6 +941,7 @@ async function getPersonalizationVariant(
     if (!name) return true;
     if (name === variantLabel?.toLowerCase()) return true;
     if (name.startsWith('param-')) return checkForParamMatch(name);
+    if (name.toLowerCase().startsWith('previouspage-')) return checkForPreviousPageMatch(name);
     if (hasCountryMatch(name, config)) return true;
     if (userEntitlements?.includes(name)) return true;
     return PERSONALIZATION_KEYS.includes(name) && PERSONALIZATION_TAGS[name]();
