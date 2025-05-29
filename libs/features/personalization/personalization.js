@@ -94,7 +94,8 @@ export const normalizePath = (p, localize = true) => {
     if (path.startsWith(config.codeRoot)
       || path.includes('.hlx.')
       || path.includes('.aem.')
-      || path.includes('.adobe.')) {
+      || path.includes('.adobe.')
+      || path.includes('localhost:')) {
       if (!localize
         || config.locale.ietf === 'en-US'
         || hash.includes(mepHash)
@@ -827,13 +828,10 @@ const checkForParamMatch = (paramStr) => {
   return false;
 };
 
-const checkForPreviousPageMatch = (paramStr) => {
-  if (document.referrer === '' || !document.referrer) return false;
-  const previousPageString = paramStr.toLowerCase().split('previouspage-')[1];
-  const refValue = new URL(document.referrer);
-  if (!previousPageString.includes('**')) return (refValue.href === previousPageString || refValue.pathname === previousPageString);
-  if (previousPageString.includes('**')) return matchGlob(previousPageString, refValue.pathname);
-  return false;
+const checkForPreviousPageMatch = (previousPageStr) => {
+  if (!document.referrer) return false;
+  const previousPageString = previousPageStr.toLowerCase().split('previouspage-')[1];
+  return matchGlob(previousPageString, new URL(document.referrer).pathname);
 };
 
 function trimNames(arr) {
