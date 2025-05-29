@@ -630,29 +630,12 @@ merch-card[variant="catalog"] .payment-details {
     line-height: var(--consonant-merch-card-heading-xs-line-height);
   }
 
-  merch-card[variant="mini-compare-chart"].bullet-list [slot='heading-m-price'] {
-    padding: 0 var(--consonant-merch-spacing-xs);
-    font-size: var(--consonant-merch-card-mini-compare-mobile-price-font-size);
-    font-weight: 800;
-  }
-
-  merch-card[variant="mini-compare-chart"].bullet-list [slot='heading-m-price'] span.price-strikethrough {
-    font-size: var(--consonant-merch-card-body-s-font-size);
-    line-height: var(--consonant-merch-card-body-s-line-height);
-  }
-
   merch-card[variant="mini-compare-chart"] [slot="body-m"] {
     padding: var(--consonant-merch-spacing-xs) var(--consonant-merch-spacing-s);
   }
 
   merch-card[variant="mini-compare-chart"].bullet-list [slot="body-m"] {
     padding: var(--consonant-merch-spacing-xs);
-    font-size: var(--consonant-merch-card-body-s-font-size);
-    line-height: var(--consonant-merch-card-body-s-line-height);
-  }
-
-  merch-card[variant="mini-compare-chart"].bullet-list .action-area {
-    justify-content: flex-start;
   }
 
   merch-card[variant="mini-compare-chart"] [is="inline-price"] {
@@ -862,6 +845,26 @@ merch-card[variant="catalog"] .payment-details {
   merch-card[variant="mini-compare-chart"] merch-addon {
     box-sizing: border-box;
   }
+
+  merch-card[variant="mini-compare-chart"].bullet-list [slot='heading-m-price'] {
+    padding: 0 var(--consonant-merch-spacing-xs);
+    font-size: var(--consonant-merch-card-mini-compare-mobile-price-font-size);
+    font-weight: 800;
+  }
+
+  merch-card[variant="mini-compare-chart"].bullet-list [slot='heading-m-price'] span.price-strikethrough {
+    font-size: var(--consonant-merch-card-body-s-font-size);
+    line-height: var(--consonant-merch-card-body-s-line-height);
+  }
+
+  merch-card[variant="mini-compare-chart"].bullet-list [slot="body-m"] {
+    font-size: var(--consonant-merch-card-body-s-font-size);
+    line-height: var(--consonant-merch-card-body-s-line-height);
+  }
+
+  merch-card[variant="mini-compare-chart"].bullet-list .action-area {
+    justify-content: flex-start;
+  }
 }
 
 @media screen and ${Et} {
@@ -1020,17 +1023,10 @@ merch-card .footer-row-cell:nth-child(8) {
         padding-inline-start: var(--consonant-merch-spacing-xs);
     }
 
-    :host([variant='mini-compare-chart'].bullet-list) .mini-compare-chart-badge {
-        padding: 2px 10px;
-        font-size: var(--consonant-merch-card-body-xs-font-size);
-        line-height: var(--consonant-merch-card-body-xs-line-height);
-    }
-
     :host([variant='mini-compare-chart'].bullet-list) .secure-transaction-label {
       align-self: flex-start;
       flex: none;
       color: var(--merch-color-grey-700);
-      font-size: var(--consonant-merch-card-body-xs-font-size);
     }
 
     @media screen and ${Se(Et)} {
@@ -1038,6 +1034,16 @@ merch-card .footer-row-cell:nth-child(8) {
             flex-direction: column;
             align-items: stretch;
             text-align: center;
+        }
+
+        :host([variant='mini-compare-chart'].bullet-list) .mini-compare-chart-badge {
+          padding: 2px 10px;
+          font-size: var(--consonant-merch-card-body-xs-font-size);
+          line-height: var(--consonant-merch-card-body-xs-line-height);
+        }
+
+        :host([variant='mini-compare-chart'].bullet-list) .secure-transaction-label {
+          font-size: var(--consonant-merch-card-body-xs-font-size);
         }
     }
 

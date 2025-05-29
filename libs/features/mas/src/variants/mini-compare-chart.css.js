@@ -61,29 +61,12 @@ export const CSS = `
     line-height: var(--consonant-merch-card-heading-xs-line-height);
   }
 
-  merch-card[variant="mini-compare-chart"].bullet-list [slot='heading-m-price'] {
-    padding: 0 var(--consonant-merch-spacing-xs);
-    font-size: var(--consonant-merch-card-mini-compare-mobile-price-font-size);
-    font-weight: 800;
-  }
-
-  merch-card[variant="mini-compare-chart"].bullet-list [slot='heading-m-price'] span.price-strikethrough {
-    font-size: var(--consonant-merch-card-body-s-font-size);
-    line-height: var(--consonant-merch-card-body-s-line-height);
-  }
-
   merch-card[variant="mini-compare-chart"] [slot="body-m"] {
     padding: var(--consonant-merch-spacing-xs) var(--consonant-merch-spacing-s);
   }
 
   merch-card[variant="mini-compare-chart"].bullet-list [slot="body-m"] {
     padding: var(--consonant-merch-spacing-xs);
-    font-size: var(--consonant-merch-card-body-s-font-size);
-    line-height: var(--consonant-merch-card-body-s-line-height);
-  }
-
-  merch-card[variant="mini-compare-chart"].bullet-list .action-area {
-    justify-content: flex-start;
   }
 
   merch-card[variant="mini-compare-chart"] [is="inline-price"] {
@@ -292,6 +275,26 @@ export const CSS = `
 
   merch-card[variant="mini-compare-chart"] merch-addon {
     box-sizing: border-box;
+  }
+
+  merch-card[variant="mini-compare-chart"].bullet-list [slot='heading-m-price'] {
+    padding: 0 var(--consonant-merch-spacing-xs);
+    font-size: var(--consonant-merch-card-mini-compare-mobile-price-font-size);
+    font-weight: 800;
+  }
+
+  merch-card[variant="mini-compare-chart"].bullet-list [slot='heading-m-price'] span.price-strikethrough {
+    font-size: var(--consonant-merch-card-body-s-font-size);
+    line-height: var(--consonant-merch-card-body-s-line-height);
+  }
+
+  merch-card[variant="mini-compare-chart"].bullet-list [slot="body-m"] {
+    font-size: var(--consonant-merch-card-body-s-font-size);
+    line-height: var(--consonant-merch-card-body-s-line-height);
+  }
+
+  merch-card[variant="mini-compare-chart"].bullet-list .action-area {
+    justify-content: flex-start;
   }
 }
 
