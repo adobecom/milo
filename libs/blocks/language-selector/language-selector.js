@@ -303,11 +303,16 @@ function setupDropdownEvents({
       const lang = filteredLanguages[idx];
       const { pathname, search, hash } = window.location;
       const config = getConfig();
-      const currentPrefix = config.locale && config.locale.prefix ? config.locale.prefix : '';
+      const languages = config.languages || {};
       let currentPath = pathname;
-      if (currentPrefix && pathname.startsWith(`${currentPrefix}/`)) {
-        currentPath = pathname.slice(currentPrefix.length);
-        if (!currentPath.startsWith('/')) currentPath = `/${currentPath}`;
+      // Remove the prefix if it matches any language code
+      for (const code of Object.keys(languages)) {
+        const prefix = `/${code}`;
+        if (pathname.startsWith(`${prefix}/`)) {
+          currentPath = pathname.slice(prefix.length);
+          if (!currentPath.startsWith('/')) currentPath = `/${currentPath}`;
+          break;
+        }
       }
       const newPath = lang.prefix ? `/${lang.prefix}${currentPath}` : currentPath;
       const fullUrl = `${window.location.origin}${newPath}${search}${hash}`;
