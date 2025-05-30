@@ -22,7 +22,7 @@ function scrollTabFocusedElIntoView() {
     if (e.key === 'Tab') {
       isFocused = false;
       setTimeout(() => {
-        if (isFocused) return;
+        if (isFocused || document.body.classList.contains('mobile-disable-scroll')) return;
         setScrollPadding();
         isPadding = true;
       });
