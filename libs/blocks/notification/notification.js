@@ -282,15 +282,15 @@ function trapFocusWithElement(el, focusableElements) {
   document.addEventListener('click', externalClickHandler);
   el.addEventListener('focusin', updateLastFocused);
   el.addEventListener('keydown', (event) => {
-    if (event.key === 'Escape' || event.key === 'Esc') {
+    if (event.key === 'Escape') {
       closeButton.click();
       document.removeEventListener('click', externalClickHandler);
       el.removeEventListener('focusin', updateLastFocused);
     }
     if (event.key === 'Tab') {
       if (event.target.isEqualNode(firstFocusable) && event.shiftKey) {
-        lastFocusable.focus({ focusVisible: true });
         event.preventDefault();
+        lastFocusable.focus({ focusVisible: true });
         return;
       }
       if (lastFocusable.isEqualNode(event.target)) {
