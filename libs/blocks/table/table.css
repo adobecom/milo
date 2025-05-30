@@ -131,6 +131,12 @@
   visibility: hidden;
 }
 
+.table .highlight-text {
+  overflow: hidden;
+  width: 0;
+  height: 0;
+}
+
 /* heading */
 .table .col-heading.hidden {
   border-top: none !important;
