@@ -18,6 +18,7 @@ export default function init(el, a, btnFormat) {
   el.insertBefore(imgLinkContainer, pic);
   if (btnSize) a.classList.add(btnSize);
   a.classList.add('consonant-play-btn');
+  a.setAttribute('role', 'button');
   a.setAttribute('aria-label', `Play${alt ? ` ${alt}` : ''}`);
   a.append(playIcon);
   imgLinkContainer.append(pic, a);
