@@ -103,18 +103,6 @@ It will also fallback to last successfully loaded offers for the same OSI if ava
 <td><code>false</code></td>
 </tr>
 <tr>
-<td><code>language</code></td>
-<td>language of the price literal, e.g: per license</td>
-<td>en or locale langauge if set</td>
-<td><code>false</code></td>
-</tr>
-<tr>
-<td><code>wcs-api-key</code></td>
-<td>api key used for making WCS calls</td>
-<td><code>wcms-commerce-ims-ro-user-milo</code></td>
-<td><code>false</code></td>
-</tr>
-<tr>
 <td><code>lana-tags</code></td>
 <td>Enables logging via lana<a href="https://github.com/adobecom/milo/blob/stage/libs/utils/lana.js">^1</a> with the given tags. e.g:<code>ccd</code>.</td>
 <td></td>
@@ -124,6 +112,24 @@ It will also fallback to last successfully loaded offers for the same OSI if ava
 <td><code>lana-sample-rate</code></td>
 <td>Sets the sampling rate, see <a href="https://wiki.corp.adobe.com/pages/viewpage.action?spaceKey=WCMSOps&amp;title=LANA+-+Log+Always+Never+Assume">^1</a> for details.</td>
 <td>1</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>language</code></td>
+<td>language of the price literal, e.g: per license</td>
+<td>en or locale language if set</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>preview</code></td>
+<td>enable preview (will only work on corp network), can be overriden with parameter <code>mas.preview=off</code></td>
+<td>false / off</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>wcs-api-key</code></td>
+<td>api key used for making WCS calls</td>
+<td><code>wcms-commerce-ims-ro-user-milo</code></td>
 <td><code>false</code></td>
 </tr>
 </tbody>
