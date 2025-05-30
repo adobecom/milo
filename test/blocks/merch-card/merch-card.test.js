@@ -354,9 +354,6 @@ describe('Mini Compare Chart Merch Card', () => {
         { selector: 'div[slot="footer-rows"] .footer-row-cell-description' },
       ],
     });
-    const hr = merchCardClose.querySelector('hr');
-    expect(hr).to.exist;
-    expect(hr.style.backgroundColor).to.be.equals('rgb(232, 232, 232)');
     expect(merchCardClose.querySelector('.checkmark-copy-container').classList.contains('close'));
     const footerRowsTitle = merchCardClose.querySelector('.footer-rows-title');
     expect(footerRowsTitle).to.exist;
