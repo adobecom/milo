@@ -244,6 +244,16 @@ async adjustAddon() {
             align-items: stretch;
             text-align: center;
         }
+
+        :host([variant='mini-compare-chart'].bullet-list) .mini-compare-chart-badge {
+          padding: 2px 10px;
+          font-size: var(--consonant-merch-card-body-xs-font-size);
+          line-height: var(--consonant-merch-card-body-xs-line-height);
+        }
+
+        :host([variant='mini-compare-chart'].bullet-list) .secure-transaction-label {
+          font-size: var(--consonant-merch-card-body-xs-font-size);
+        }
     }
 
     @media screen and ${unsafeCSS(DESKTOP_UP)} {
