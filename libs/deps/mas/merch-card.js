@@ -848,6 +848,7 @@ merch-card[variant="catalog"] .payment-details {
   merch-card[variant="mini-compare-chart"].bullet-list [slot='heading-m-price'] {
     padding: 0 var(--consonant-merch-spacing-xs);
     font-size: var(--consonant-merch-card-mini-compare-mobile-price-font-size);
+    line-height: var(--consonant-merch-card-body-xl-line-height);
     font-weight: 800;
   }
 
