@@ -259,8 +259,13 @@ async function checkLinks() {
     badResults.push(...spidyResults);
   }
 
-  badLinks.value = badResults.map((result) => links.find((link) => compareResults(result, link)))
-    .filter(Boolean);
+  const uniqueBadResults = badResults.reduce((acc, result) => {
+    if (!acc.some((item) => item.url === result.url)) acc.push(result);
+    return acc;
+  }, []);
+
+  badLinks.value = links.filter((link) => uniqueBadResults
+    .some((result) => compareResults(result, link)));
 
   // Format the results for display
   const count = badLinks.value.length;
