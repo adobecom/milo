@@ -7,5 +7,11 @@ module.exports = {
       browserParams: '?georouting=off&martech=off',
       tags: '@three-in-one @smoke @regression @milo',
     },
+    {
+      name: '@ThreeInOneFallback',
+      path: '/drafts/nala/blocks/merch/three-in-one-fallback',
+      browserParams: '?georouting=off&martech=off',
+      tags: '@three-in-one @smoke @regression @milo',
+    },
   ],
 };

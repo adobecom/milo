@@ -8,6 +8,10 @@ import { MODAL_TYPE_3_IN_1 } from '../src/constants.js';
 
 export const CLASS_NAME_DOWNLOAD = 'download';
 export const CLASS_NAME_UPGRADE = 'upgrade';
+const CHECKOUT_PARAM_VALUE_MAPPING = {
+  e: 'EDU',
+  t: 'TEAM',
+};
 
 export function createCheckoutElement(Class, options = {}, innerHTML = '') {
     // eslint-disable-next-line react-hooks/rules-of-hooks
@@ -80,9 +84,23 @@ export function CheckoutMixin(Base) {
             return this.masElement.options;
         }
 
+        get marketSegment() {
+          const value = this.options?.ms ?? this.value?.[0].marketSegments?.[0];
+          return CHECKOUT_PARAM_VALUE_MAPPING[value] ?? value;
+        }
+
+        get customerSegment() {
+          const value = this.options?.cs ?? this.value?.[0]?.customerSegment;
+          return CHECKOUT_PARAM_VALUE_MAPPING[value] ?? value;
+        }
+
+        get is3in1Modal() {
+          return Object.values(MODAL_TYPE_3_IN_1).includes(this.getAttribute('data-modal'));
+        }
+        
         get isOpen3in1Modal() {
           const masFF3in1 = document.querySelector('meta[name=mas-ff-3in1]');
-          return Object.values(MODAL_TYPE_3_IN_1).includes(this.getAttribute('data-modal')) && (!masFF3in1 || masFF3in1.content !== 'off');
+          return this.is3in1Modal && (!masFF3in1 || masFF3in1.content !== 'off');
         }
 
         requestUpdate(force = false) {
