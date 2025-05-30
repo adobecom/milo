@@ -849,11 +849,11 @@ export async function buildCta(el, params) {
   } else if (!cta.ariaLabel) {
     cta.onceSettled().then(async () => {
       const productFamily = cta.value[0]?.productArrangement?.productFamily;
-      const marketSegment = cta.value[0]?.marketSegments[0];
-      const customerSegment = marketSegment === 'EDU' ? marketSegment : cta.value[0]?.customerSegment;
+      const { marketSegment, customerSegment } = cta;
+      const segment = marketSegment === 'EDU' ? marketSegment : customerSegment;
       let ariaLabel = cta.textContent;
       ariaLabel = productFamily ? `${ariaLabel} - ${await replaceKey(productFamily, getConfig())}` : ariaLabel;
-      ariaLabel = customerSegment ? `${ariaLabel} - ${await replaceKey(customerSegment, getConfig())}` : ariaLabel;
+      ariaLabel = segment ? `${ariaLabel} - ${await replaceKey(segment, getConfig())}` : ariaLabel;
       cta.setAttribute('aria-label', ariaLabel);
     });
   }
