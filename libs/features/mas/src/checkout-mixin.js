@@ -85,7 +85,7 @@ export function CheckoutMixin(Base) {
         }
 
         get marketSegment() {
-          const value = this.options?.ms ?? el.value?.[0].marketSegments?.[0];
+          const value = this.options?.ms ?? this.value?.[0].marketSegments?.[0];
           return CHECKOUT_PARAM_VALUE_MAPPING[value] ?? value;
         }
 
