@@ -184,6 +184,11 @@ export class Plans extends VariantLayout {
             match.addEventListener('change', this.adaptForMobile);
     }
 
+    get icons() {
+        if (!this.card.querySelector('[slot="icons"]') && !this.card.getAttribute('id')) return '';
+        return html`<slot name="icons"></slot>`;
+    }
+
     disconnectedCallbackHook() {
         const match = matchMobile();
         if (match?.removeEventListener)
@@ -193,7 +198,7 @@ export class Plans extends VariantLayout {
     renderLayout() {
         return html` ${this.badge}
             <div class="body">
-                <slot name="icons"></slot>
+                ${this.icons}
                 <slot name="heading-xs"></slot>
                 <slot name="heading-s"></slot>
                 <slot name="subtitle"></slot>
