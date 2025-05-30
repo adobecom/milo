@@ -1,0 +1,17 @@
+.mweb-floating-button.no-margin .cta-container{
+    margin: 0px;
+}
+
+.mweb-floating-button.sticky-bottom {
+    position: static;
+    transition: all 0.3s ease;
+}
+
+.mweb-floating-button.sticky-bottom.sticky-fixed {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 3;
+  margin-bottom: 4px;
+}
