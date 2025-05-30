@@ -920,6 +920,17 @@ export function decorateLinks(el) {
       a.setAttribute('target', '_blank');
       a.href = a.href.replace('#_blank', '');
     }
+    if (a.href.includes('#_alloy')) {
+      const alloyData = a.href.split('#_')?.find((s) => s.startsWith('alloy:')) || '';
+      a.href = a.href.replace(/#_alloy:.+:\w+/, '');
+      a.addEventListener('click', () => {
+        const [, profile, businessSegment, value] = alloyData?.split(/:|\./g) || [];
+        if (window.alloy && profile && businessSegment && value) {
+          const data = { __adobe: { target: { [`${profile}.${businessSegment}`]: value } } };
+          window.alloy('sendEvent', { data });
+        }
+      });
+    }
     if (a.href.includes('#_nofollow')) {
       a.setAttribute('rel', 'nofollow');
       a.href = a.href.replace('#_nofollow', '');

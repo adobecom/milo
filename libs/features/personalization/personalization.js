@@ -237,8 +237,9 @@ const COMMANDS = {
     cmd.content = replacePlaceholders(cmd.content);
 
     let value;
-
-    if (attribute === 'href' && parameter) {
+    if (attribute === '#') {
+      el.href += cmd.content;
+    } else if (attribute === 'href' && parameter) {
       const href = el.getAttribute('href');
       try {
         const url = new URL(href);
