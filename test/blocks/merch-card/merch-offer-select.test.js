@@ -29,9 +29,9 @@ function validateMerchOffer(offer, selected, text, badgeText, osi, description) 
 
 function validateMerchCard(card, badge, description, osi) {
   if (badge) {
-    expect(card.shadowRoot.querySelector('div.plans-badge').innerText).to.equal(badge);
+    expect(card.shadowRoot.querySelector('div#badge').innerText).to.equal(badge);
   } else {
-    expect(card.shadowRoot.querySelector('div.plans-badge')).not.to.exist;
+    expect(card.shadowRoot.querySelector('div#badge')).not.to.exist;
   }
   expect(card.querySelector('div[slot="body-xs"] p[slot="description"]').innerText).to.equal(description);
   expect(card.querySelector('div[slot="footer"] a[slot="cta"]').dataset.wcsOsi).to.equal(osi);
