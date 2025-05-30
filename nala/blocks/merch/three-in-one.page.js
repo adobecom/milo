@@ -46,5 +46,6 @@ export default class ThreeInOne {
       },
     };
     this.props = {};
+    this.getFallbackCta = (sectionId) => this.page.locator(`#${sectionId} [is="checkout-link"]`);
   }
 }
