@@ -199,7 +199,6 @@ export const CSS = `
   }
 
   merch-card[variant="mini-compare-chart"] .footer-row-cell-description a {
-    text-decoration: none;
     color: var(--color-accent);
   }
 

@@ -778,7 +778,6 @@ merch-card[variant="catalog"] .payment-details {
   }
 
   merch-card[variant="mini-compare-chart"] .footer-row-cell-description a {
-    text-decoration: none;
     color: var(--color-accent);
   }
 
