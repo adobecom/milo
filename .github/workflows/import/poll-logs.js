@@ -58,6 +58,7 @@ const FROM_PARAM = LOCAL_RUN
 function getISOSinceXDaysAgo(days) {
   const now = new Date();
   now.setDate(now.getDate() - days);
+  //now.setHours(now.getHours() - 4);
   return now.toISOString();
 }
 
@@ -247,18 +248,17 @@ async function main() {
     );
   }
   await queue.onIdle();
-  if (!LOCAL_RUN)
+  if (!LOCAL_RUN) {
     await slackNotification(
       `Succcessful: ${result.success} paths | Failed: ${result.error} paths.`
     );
-  if (result.successPaths.length && result.successPaths.length < 500)
-    result.successPaths.forEach((path) => {
-      console.log(`Successful import, live-link: https://main--${toRepo}--${toOrg}.aem.live${path}`);
-    });
-  if (result.errorPaths.length && result.errorPaths.length < 500)
-    result.errorPaths.forEach((path) => {
-      console.log(`Erroring path: ${path}`);
-    });
+  }
+  result.successPaths.slice(0, 500).forEach((path) => {
+    console.log(`Successful import, live-link: https://main--${toRepo}--${toOrg}.aem.live${path}`);
+  });
+  result.errorPaths.slice(0, 500).forEach((path) => {
+    console.log(`Erroring path: ${path}`);
+  });
 }
 
 main().catch(async (e) => {
