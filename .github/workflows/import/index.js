@@ -1,4 +1,4 @@
-import { DA_ORIGIN } from './constants.js';
+import { DA_ORIGIN, AEM_ORIGIN } from './constants.js';
 import { replaceHtml, daFetch } from './daFetch.js';
 import { mdToDocDom, docDomToAemHtml } from './converters.js';
 import { JSDOM } from 'jsdom';
@@ -15,7 +15,6 @@ const excludedFiles = [
   '/redirects.json',
   '/metadata.json',
   '/metadata-seo.json',
-  '/redirects_fancy.json',
 ];
 const LINK_SELECTORS = [
   'a[href*="/fragments/"]',
@@ -117,7 +116,7 @@ async function saveAllToDa(url, blob) {
 }
 
 async function previewOrPublish({ path, action }) {
-  const previewUrl = `https://admin.hlx.page/${action}/${toOrg}/${toRepo}/main${path}`;
+  const previewUrl = `${AEM_ORIGIN}/${action}/${toOrg}/${toRepo}/main${path}`;
   const opts = { method: 'POST' };
   const resp = await fetch(previewUrl, opts);
   if (resp.ok && ROLLING_IMPORT_ENABLE_DEBUG_LOGS)

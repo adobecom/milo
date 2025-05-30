@@ -23,6 +23,7 @@ const {
   ROLLING_IMPORT_LIVE_DOMAIN,
   ROLLING_IMPORT_ENABLE_DEBUG_LOGS,
   ROLLING_IMPORT_POLL_LOGS_FROM_REPO,
+  USE_LOCAL_DEBUG_ENTRIES
 } = env;
 
 const toOrg = "adobecom";
@@ -46,6 +47,7 @@ if (!LOCAL_RUN)
     ROLLING_IMPORT_LIVE_DOMAIN: !!ROLLING_IMPORT_LIVE_DOMAIN,
     ROLLING_IMPORT_ENABLE_DEBUG_LOGS: !!ROLLING_IMPORT_ENABLE_DEBUG_LOGS,
     ROLLING_IMPORT_POLL_LOGS_FROM_REPO: !!ROLLING_IMPORT_POLL_LOGS_FROM_REPO,
+    USE_LOCAL_DEBUG_ENTRIES: !!USE_LOCAL_DEBUG_ENTRIES,
   });
 
 const queue = new PQueue({ concurrency: 10 });
@@ -88,7 +90,7 @@ const slackNotification = (text) => {
  * @param {string} baseUrl - The base URL for the log endpoint (e.g., 'https://admin.hlx.page/log/adobecom/da-bacom/main').
  */
 async function fetchLogsForSite(siteName, baseUrl, fromParam) {
-  if (LOCAL_DEBUG_ENTRIES.length) {
+  if (LOCAL_DEBUG_ENTRIES.length && USE_LOCAL_DEBUG_ENTRIES) {
     console.log('Using local entries from LOCAL_DEBUG_ENTRIES.js');
     return LOCAL_DEBUG_ENTRIES;
   }
@@ -189,6 +191,7 @@ async function getLivePaths(entries) {
         .filter(Boolean)
     )
   );
+  if(LOCAL_RUN) console.log("Live paths found: ", livePaths.length);
   if (!LOCAL_RUN)
     await slackNotification(
       `Importing ${livePaths.length} published documents from ${entries.length} log entries. Log Link: https://admin.hlx.page/log/adobecom/${ROLLING_IMPORT_POLL_LOGS_FROM_REPO}?from=${FROM_PARAM}`,
@@ -198,6 +201,10 @@ async function getLivePaths(entries) {
       'First 10 paths to import:\n' + livePaths.slice(0, 10).join('\n')
     );
   return livePaths;
+}
+
+const saveLivePaths = (livePaths) => {
+  fs.writeFileSync(".github/workflows/import/importingPaths.js", livePaths.join('\n'));
 }
 
 async function main() {
@@ -215,6 +222,7 @@ async function main() {
     errorPaths: [],
     successPaths: [],
   };
+  if(LOCAL_RUN) saveLivePaths(livePaths)
   for (const path of livePaths) {
     queue.add(() =>
       importUrl(path, importedMedia)
