@@ -178,15 +178,15 @@ export class Plans extends VariantLayout {
             : '';
     }
 
+    get icons() {
+        if (!this.card.querySelector('[slot="icons"]') && !this.card.getAttribute('id')) return '';
+        return html`<slot name="icons"></slot>`;
+    }
+
     connectedCallbackHook() {
         const match = matchMobile();
         if (match?.addEventListener)
             match.addEventListener('change', this.adaptForMobile);
-    }
-
-    get icons() {
-        if (!this.card.querySelector('[slot="icons"]') && !this.card.getAttribute('id')) return '';
-        return html`<slot name="icons"></slot>`;
     }
 
     disconnectedCallbackHook() {
