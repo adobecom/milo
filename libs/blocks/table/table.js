@@ -377,8 +377,10 @@ function handleSection(sectionParams) {
   }
 
   rowCols.forEach((col) => {
-    const formattingTags = col.querySelector(':scope > :is(strong, em, del, code, sub, sup)');
-    if (formattingTags && col.childNodes.length > 1 && !col.querySelector('picture')) col.replaceChildren(createTag('p', {}, [...col.childNodes]));
+    if (col.querySelector(':scope > :is(strong, em, del, code, sub, sup)')
+      && col.childNodes.length > 1 && !col.querySelector('picture')) {
+      col.replaceChildren(createTag('p', {}, [...col.childNodes]));
+    }
   });
 
   return expandSection;
