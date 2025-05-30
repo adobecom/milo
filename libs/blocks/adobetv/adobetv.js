@@ -1,19 +1,116 @@
 import { decorateAnchorVideo } from '../../utils/decorate.js';
-import { createTag } from '../../utils/utils.js';
+import { getConfig, createTag } from '../../utils/utils.js';
+
+const CaptionMap = {
+  ae_ar: 'eng',
+  ae_en: 'eng',
+  africa: 'eng',
+  au: 'eng',
+  be_en: 'eng',
+  bg: 'eng',
+  ca: 'eng',
+  cz: 'eng',
+  dk: 'eng',
+  ee: 'eng',
+  gr_en: 'eng',
+  hk_en: 'eng',
+  hu: 'eng',
+  id_en: 'eng',
+  id_id: 'eng',
+  ie: 'eng',
+  il_en: 'eng',
+  il_he: 'eng',
+  in: 'eng',
+  lt: 'eng',
+  lu_en: 'eng',
+  lv: 'eng',
+  mena_ar: 'eng',
+  mena_en: 'eng',
+  my_en: 'eng',
+  my_ms: 'eng',
+  no: 'eng',
+  nz: 'eng',
+  ph_en: 'eng',
+  ph_fil: 'eng',
+  pl: 'eng',
+  ro: 'eng',
+  ru: 'eng',
+  sa_ar: 'eng',
+  sa_en: 'eng',
+  sg: 'eng',
+  si: 'eng',
+  sk: 'eng',
+  th_en: 'eng',
+  tr: 'eng',
+  ua: 'eng',
+  uk: 'eng',
+  vn_en: 'eng',
+  vn_vi: 'eng',
+  fi: 'eng',
+
+  be_fr: 'fre_fr',
+  ch_fr: 'fre_fr',
+  fr: 'fre_fr',
+  lu_fr: 'fre_fr',
+  ca_fr: 'fre_fr',
+
+  at: 'ger',
+  ch_de: 'ger',
+  lu_de: 'ger',
+  de: 'ger',
+
+  jp: 'jpn',
+
+  it: 'ita',
+  ch_it: 'ita',
+
+  es: 'spa',
+
+  br: 'por_br',
+  pt: 'por_br',
+
+  th_th: 'tha',
+
+  ar: 'spa_la',
+  cl: 'spa_la',
+  co: 'spa_la',
+  la: 'spa_la',
+  mx: 'spa_la',
+  pe: 'spa_la',
+
+  nl: 'dut',
+  be_nl: 'dut',
+
+  se: 'swe',
+
+  cn: 'chi_hans',
+
+  hk: 'chi_hant',
+  tw: 'chi_hant',
+
+  in_hi: 'hin',
+
+  kr: 'kor'
+};
 
 export default function init(a) {
+  const config = getConfig();
+  
+  const localePrefix = config?.locale?.prefix || 'US_en';
+  const geo = localePrefix.replace('/', '') ?? '';
+  const captionHref = updateCaptionsParam(a.href, geo);
   a.classList.add('hide-video');
   const bgBlocks = ['aside', 'marquee', 'hero-marquee', 'long-form'];
   if (a.href.includes('.mp4') && bgBlocks.some((b) => a.closest(`.${b}`))) {
     a.classList.add('hide');
     if (!a.parentNode) return;
     decorateAnchorVideo({
-      src: a.href,
+      src: captionHref,
       anchorTag: a,
     });
   } else {
     const iframe = createTag('iframe', {
-      src: a.href,
+      src: captionHref,
       class: 'adobetv',
       scrolling: 'no',
       allow: 'encrypted-media; fullscreen',
@@ -57,3 +154,15 @@ export default function init(a) {
     a.remove();
   }
 }
+const updateCaptionsParam = (urlStr, geo) => {
+  const url = new URL(urlStr);
+
+  if (url.searchParams.has('captions')) {
+    const newCaption = CaptionMap[geo];
+    if (newCaption) {
+      url.searchParams.set('captions', newCaption);
+    }
+  }
+
+  return url.toString();
+};
