@@ -100,6 +100,7 @@ function createDropdownElements(regionPickerTextElem, setAriaOnSpan = true) {
     id: 'language-selector-listbox',
     role: 'listbox',
     tabindex: '0',
+    'aria-label': 'Select language',
   });
 
   return { dropdown, searchContainer, languageList };
