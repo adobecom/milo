@@ -99,7 +99,7 @@ function createDropdownElements(regionPickerTextElem, setAriaOnSpan = true) {
     class: 'language-list',
     id: 'language-selector-listbox',
     role: 'listbox',
-    tabindex: '-1',
+    tabindex: '0',
   });
 
   return { dropdown, searchContainer, languageList };
