@@ -123,6 +123,7 @@ function renderLanguages({
       const langItem = createTag('li', {
         class: 'language-item',
         id: `language-option-${idx}`,
+        role: 'none',
       });
       if (lang.name === currentLang.name) {
         langItem.classList.add('selected');
