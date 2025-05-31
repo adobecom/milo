@@ -90,13 +90,23 @@ const CaptionMap = {
 
   in_hi: 'hin',
 
-  kr: 'kor'
+  kr: 'kor',
 };
+export const updateCaptionsParam = (urlStr, geo) => {
+  const url = new URL(urlStr);
 
+  if (url.searchParams.has('captions')) {
+    const newCaption = CaptionMap[geo];
+    if (newCaption) {
+      url.searchParams.set('captions', newCaption);
+    }
+  }
+
+  return url.toString();
+};
 export default function init(a) {
   const config = getConfig();
-  
-  const localePrefix = config?.locale?.prefix || 'US_en';
+  const localePrefix = config?.locale?.prefix || '';
   const geo = localePrefix.replace('/', '') ?? '';
   const captionHref = updateCaptionsParam(a.href, geo);
   a.classList.add('hide-video');
@@ -154,15 +164,3 @@ export default function init(a) {
     a.remove();
   }
 }
-const updateCaptionsParam = (urlStr, geo) => {
-  const url = new URL(urlStr);
-
-  if (url.searchParams.has('captions')) {
-    const newCaption = CaptionMap[geo];
-    if (newCaption) {
-      url.searchParams.set('captions', newCaption);
-    }
-  }
-
-  return url.toString();
-};
