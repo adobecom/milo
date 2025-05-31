@@ -122,20 +122,19 @@ function renderLanguages({
       const langItem = createTag('li', {
         class: 'language-item',
         id: `language-option-${idx}`,
-        role: 'option',
-        'aria-selected': lang.name === currentLang.name ? 'true' : 'false',
-        tabindex: '-1',
       });
       if (lang.name === currentLang.name) {
         langItem.classList.add('selected');
         selectedLangItemRef.current = langItem;
         if (activeIndexRef.current === -1) activeIndexRef.current = idx;
       }
-      const langLink = createTag('a');
-      const currentPath = window.location.pathname.replace(/^\/[a-zA-Z-]+/, '');
-      const newPath = lang.prefix ? `/${lang.prefix}${currentPath}` : currentPath;
-      langLink.href = `${window.location.origin}${newPath}`;
-      langLink.className = 'language-link';
+      const langLink = createTag('a', {
+        href: `${window.location.origin}${lang.prefix ? `/${lang.prefix}${window.location.pathname.replace(/^\/[a-zA-Z-]+/, '')}` : window.location.pathname.replace(/^\/[a-zA-Z-]+/, '')}`,
+        class: 'language-link',
+        role: 'option',
+        'aria-selected': lang.name === currentLang.name ? 'true' : 'false',
+        tabindex: '-1',
+      });
       langLink.innerHTML = `
         <span class="language-name">${lang.name}</span>
         ${lang.name === currentLang.name ? CHECKMARK_SVG : ''}
