@@ -67,7 +67,7 @@ const scrollSelectedIntoView = (selectedLangItem, languageList) => {
   }
 };
 
-function createDropdownElements(regionPickerTextElem, setAriaOnSpan = true) {
+function createDropdownElements(regionPickerTextElem, placeholderText, setAriaOnSpan = true) {
   if (setAriaOnSpan) {
     regionPickerTextElem.setAttribute('id', 'language-selector-combobox');
     regionPickerTextElem.setAttribute('class', 'feds-regionPicker-text');
@@ -79,8 +79,6 @@ function createDropdownElements(regionPickerTextElem, setAriaOnSpan = true) {
   const dropdown = createTag('div');
   dropdown.className = 'language-dropdown';
   dropdown.style.display = 'none';
-
-  // Add drag handle for mobile modal
   const dragHandle = createTag('div', { class: 'drag-handle' });
   dropdown.appendChild(dragHandle);
 
@@ -91,7 +89,7 @@ function createDropdownElements(regionPickerTextElem, setAriaOnSpan = true) {
       <svg class="search-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
         <path d="M14.8243 13.9758L10.7577 9.90923C11.5332 8.94809 12 7.72807 12 6.40005C12 3.31254 9.48755 0.800049 6.40005 0.800049C3.31254 0.800049 0.800049 3.31254 0.800049 6.40004C0.800049 9.48755 3.31254 12 6.40005 12C7.72807 12 8.9481 11.5331 9.90922 10.7577L13.9758 14.8243C14.093 14.9414 14.2461 15 14.4 15C14.5539 15 14.7071 14.9414 14.8243 14.8243C15.0586 14.5899 15.0586 14.2102 14.8243 13.9758ZM6.40005 10.8C3.97426 10.8 2.00005 8.82582 2.00005 6.40004C2.00005 3.97426 3.97426 2.00004 6.40005 2.00004C8.82583 2.00004 10.8 3.97426 10.8 6.40004C10.8 8.82582 8.82583 10.8 6.40005 10.8Z" fill="#666"/>
       </svg>
-      <input type="text" placeholder="Search" class="search-input" id="language-selector-search" aria-autocomplete="list" aria-controls="language-selector-listbox" autocomplete="off" />
+      <input type="text" placeholder="${placeholderText}" class="search-input" id="language-selector-search" aria-autocomplete="list" aria-controls="language-selector-listbox" autocomplete="off" />
     </div>
   `;
 
@@ -189,13 +187,10 @@ function setupDropdownEvents({
     dropdown.style.display = 'block';
     selectedLangButton.setAttribute('aria-expanded', 'true');
     filteredLanguages = doRenderLanguages(searchInput.value);
-
-    // Set initial height as CSS variable (full dropdown, not just list)
     requestAnimationFrame(() => {
       const dropdownHeight = dropdown.offsetHeight;
       dropdown.style.setProperty('--dropdown-initial-height', `${dropdownHeight}px`);
       dropdown.classList.add('fixed-height');
-      // Make dropdown focusable and focus it for accessibility
       dropdown.setAttribute('tabindex', '-1');
       dropdown.focus();
     });
@@ -206,12 +201,8 @@ function setupDropdownEvents({
     selectedLangButton.setAttribute('aria-expanded', 'false');
     activeIndexRef.current = filteredLanguages.findIndex((lang) => lang.name === currentLang.name);
     selectedLangButton.focus();
-
-    // Remove fixed height
     dropdown.classList.remove('fixed-height');
     dropdown.style.removeProperty('--dropdown-initial-height');
-
-    // Clear the search input when closing
     searchInput.value = '';
   }
 
@@ -370,6 +361,7 @@ export default async function init(block) {
   const { languages, locales } = config;
   const divs = block.querySelectorAll(':scope > div');
   const links = divs[0].querySelectorAll('a');
+  const placeholderText = divs[0].querySelector('p').textContent.trim();
   if (!links.length) return;
 
   const languagesList = getLanguages(links, languages, locales);
@@ -389,7 +381,7 @@ export default async function init(block) {
     dropdown,
     searchContainer,
     languageList,
-  } = createDropdownElements(regionPickerTextElem, false);
+  } = createDropdownElements(regionPickerTextElem, placeholderText, false);
   dropdown.appendChild(searchContainer);
   dropdown.appendChild(languageList);
   wrapper.appendChild(dropdown);
