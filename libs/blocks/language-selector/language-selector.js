@@ -139,6 +139,23 @@ function renderLanguages({
         <span class="language-name">${lang.name}</span>
         ${lang.name === currentLang.name ? CHECKMARK_SVG : ''}
       `;
+      langLink.addEventListener('click', (e) => {
+        e.preventDefault();
+        const { pathname, href } = window.location;
+        const currentLangForPath = getCurrentLanguage(filteredLanguages);
+        const currentPrefix = currentLangForPath && currentLangForPath.prefix ? `/${currentLangForPath.prefix}` : '';
+        const hasPrefix = currentPrefix && pathname.startsWith(`${currentPrefix}/`);
+        const path = href.replace(window.location.origin + (hasPrefix ? currentPrefix : ''), '').replace('#langnav', '');
+        const newPath = lang.prefix ? `/${lang.prefix}${path}` : path;
+        const fullUrl = `${window.location.origin}${newPath}`;
+        handleEvent({
+          prefix: lang.prefix,
+          link: { href: fullUrl },
+          callback: (url) => {
+            window.open(url, e.ctrlKey || e.metaKey ? '_blank' : '_self');
+          },
+        });
+      });
       langItem.appendChild(langLink);
       languageList.appendChild(langItem);
     });
@@ -258,7 +275,7 @@ function setupDropdownEvents({
           prefix: lang.prefix,
           link: { href: lang.url },
           callback: (url) => {
-            window.location.href = url;
+            window.open(url, '_self');
           },
         });
       }
@@ -294,7 +311,7 @@ function setupDropdownEvents({
           prefix: lang.prefix,
           link: { href: lang.url },
           callback: (url) => {
-            window.location.href = url;
+            window.open(url, '_self');
           },
         });
       }
@@ -302,30 +319,6 @@ function setupDropdownEvents({
       e.preventDefault();
       closeDropdown();
     }
-  });
-
-  languageList.addEventListener('click', (e) => {
-    e.preventDefault();
-    const li = e.target.closest('li.language-item');
-    if (li) {
-      const idx = Array.from(languageList.children).indexOf(li);
-      const lang = filteredLanguages[idx];
-      const { pathname, href } = window.location;
-      const currentLangForPath = getCurrentLanguage(filteredLanguages);
-      const currentPrefix = currentLangForPath && currentLangForPath.prefix ? `/${currentLangForPath.prefix}` : '';
-      const hasPrefix = currentPrefix && pathname.startsWith(`${currentPrefix}/`);
-      const path = href.replace(window.location.origin + (hasPrefix ? currentPrefix : ''), '').replace('#langnav', '');
-      const newPath = lang.prefix ? `/${lang.prefix}${path}` : path;
-      const fullUrl = `${window.location.origin}${newPath}`;
-      handleEvent({
-        prefix: lang.prefix,
-        link: { href: fullUrl },
-        callback: (url) => {
-          window.location.href = url;
-        },
-      });
-    }
-    e.stopPropagation();
   });
 
   languageList.addEventListener('mouseover', (e) => {
