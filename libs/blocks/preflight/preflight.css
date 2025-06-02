@@ -824,3 +824,15 @@ img:hover ~ .picture-meta {
 .lcp-tooltip-modal.show {
   visibility: visible;
 }
+
+.ai-suggestion{
+  display: flex;
+  margin: 0;
+  font-style: italic;
+
+  & .result-icon {
+    width: 30px;
+    height: 30px;
+    background-size: contain;
+  }
+}

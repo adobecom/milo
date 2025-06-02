@@ -10,21 +10,6 @@ import Assets from './panels/assets.js';
 const HEADING = 'Milo Preflight';
 const IMG_PATH = '/blocks/preflight/img';
 
-const CHECK_API = 'https://spacecat.experiencecloud.live/api/v1';
-const CHECK_KEY = (() => {
-  const storedKey = sessionStorage.getItem('preflight-key');
-  if (storedKey) return storedKey;
-
-  const params = new URLSearchParams(window.location.search);
-  const queryKey = params.get('preflight-key');
-  if (queryKey) {
-    sessionStorage.setItem('preflight-key', queryKey);
-    return queryKey;
-  }
-
-  return null;
-})();
-
 const tabs = signal([
   { title: 'General', selected: true },
   { title: 'SEO' },
@@ -41,12 +26,12 @@ function setTab(active) {
   });
 }
 
-function setPanel(title, checks) {
+function setPanel(title) {
   switch (title) {
     case 'General':
       return html`<${General} />`;
     case 'SEO':
-      return html`<${SEO} checks=${checks} />`;
+      return html`<${SEO} />`;
     case 'Martech':
       return html`<${Martech} />`;
     case 'Accessibility':
@@ -87,11 +72,11 @@ function TabPanel(props) {
       key=${props.tab.title}
       aria-selected=${selected}
       role="tabpanel">
-      ${setPanel(props.tab.title, props.checks)}
+      ${setPanel(props.tab.title)}
     </div>`;
 }
 
-function Preflight(data) {
+function Preflight() {
   return html`
     <div class=preflight-heading>
       <p id=preflight-title>${HEADING}</p>
@@ -100,7 +85,7 @@ function Preflight(data) {
       </div>
     </div>
     <div class=preflight-content>
-      ${tabs.value.map((tab, idx) => html`<${TabPanel} tab=${tab} idx=${idx} checks=${data.checks} />`)}
+      ${tabs.value.map((tab, idx) => html`<${TabPanel} tab=${tab} idx=${idx} />`)}
     </div>
   `;
 }
@@ -123,70 +108,7 @@ function preloadAssets(el) {
   });
 }
 
-async function getJobId() {
-  try {
-    if (!CHECK_KEY) throw new Error('No preflight key found');
-    const res = await fetch(`${CHECK_API}/preflight/jobs`, {
-      method: 'POST',
-      headers: {
-        'x-api-key': CHECK_KEY,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(
-        {
-          step: 'IDENTIFY',
-          urls: [window.location.href,
-          ],
-        },
-      ),
-    });
-    const data = await res.json();
-    return data.jobId;
-  } catch (err) {
-    // TODO: handle error
-    return null;
-  }
-}
-
-async function getJobResults(jobId) {
-  const MAX_RETRIES = 50;
-  const POLL_INTERVAL = 2500;
-  let retries = 0;
-
-  while (retries < MAX_RETRIES) {
-    try {
-      if (!CHECK_KEY) throw new Error('No preflight key found');
-      const res = await fetch(`${CHECK_API}/preflight/jobs/${jobId}`, { headers: { 'x-api-key': CHECK_KEY } });
-      const data = await res.json();
-      if (data.status === 'COMPLETED') return data;
-      await new Promise((resolve) => {
-        setTimeout(resolve, POLL_INTERVAL);
-      });
-      retries += 1;
-    } catch (err) {
-      // TODO: handle error
-      return null;
-    }
-  }
-
-  // Max retries exceeded
-  return null;
-}
-
-function formatChecks(checks) {
-  return checks.result;
-}
-
-async function getChecks() {
-  const jobId = await getJobId();
-  if (!jobId) return null;
-  const checks = await getJobResults(jobId);
-  if (!checks) return null;
-  return formatChecks(checks);
-}
-
 export default async function init(el) {
   await preloadAssets(el);
-  const checks = await getChecks();
-  render(html`<${Preflight} checks=${checks} />`, el);
+  render(html`<${Preflight} />`, el);
 }

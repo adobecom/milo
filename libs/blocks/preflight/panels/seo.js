@@ -1,300 +1,164 @@
 import { html, signal, useEffect } from '../../../deps/htm-preact.js';
-import getServiceConfig from '../../../utils/service-config.js';
+import getChecks from '../checks/asoApi.js';
 
 const DEF_ICON = 'purple';
 const DEF_DESC = 'Checking...';
 const pass = 'green';
 const fail = 'red';
-const limbo = 'orange';
 
-const KNOWN_BAD_URLS = ['news.adobe.com'];
-const SPIDY_URL_FALLBACK = 'https://spidy.corp.adobe.com';
+const defaultResults = {
+  title: { icon: DEF_ICON, title: 'Title size', description: DEF_DESC, aiSuggestion: null, supportsAi: true },
+  h1: { icon: DEF_ICON, title: 'H1 count', description: DEF_DESC, aiSuggestion: null, supportsAi: false },
+  canon: { icon: DEF_ICON, title: 'Canonical', description: DEF_DESC, aiSuggestion: null, supportsAi: false },
+  desc: { icon: DEF_ICON, title: 'Meta description', description: DEF_DESC, aiSuggestion: null, supportsAi: true },
+  body: { icon: DEF_ICON, title: 'Body size', description: DEF_DESC, aiSuggestion: null, supportsAi: false },
+  lorem: { icon: DEF_ICON, title: 'Lorem Ipsum', description: DEF_DESC, aiSuggestion: null, supportsAi: false },
+  links: { icon: DEF_ICON, title: 'Links', description: DEF_DESC, aiSuggestion: null, supportsAi: false },
+};
 
-const h1Result = signal({ icon: DEF_ICON, title: 'H1 count', description: DEF_DESC });
-const titleResult = signal({ icon: DEF_ICON, title: 'Title size', description: DEF_DESC });
-const canonResult = signal({ icon: DEF_ICON, title: 'Canonical', description: DEF_DESC });
-const descResult = signal({ icon: DEF_ICON, title: 'Meta description', description: DEF_DESC });
-const bodyResult = signal({ icon: DEF_ICON, title: 'Body size', description: DEF_DESC });
-const loremResult = signal({ icon: DEF_ICON, title: 'Lorem Ipsum', description: DEF_DESC });
-const linksResult = signal({ icon: DEF_ICON, title: 'Links', description: DEF_DESC });
+const seoResults = signal({ ...defaultResults });
+const aiLoading = signal({});
 const badLinks = signal([]);
-const checksData = signal(null);
+const aiSuggestionVisibleState = signal({});
+const suggestChecksCache = signal(null);
 
 function findOpportunity(data, where, what) {
   const desiredItem = data.find((item) => item.name === where);
   if (!desiredItem) return null;
-
-  return desiredItem.opportunities.find((opp) => opp.tagName === what);
+  return desiredItem.opportunities.find(({ tagName, check }) => [tagName, check].includes(what));
 }
 
-function checkH1s() {
-  const h1s = document.querySelectorAll('h1');
-  const result = { ...h1Result.value };
-  if (h1s.length === 1) {
-    result.icon = pass;
-    result.description = 'Only one H1 on the page.';
-  } else {
-    result.icon = fail;
-    if (h1s.length > 1) {
-      result.description = 'Reason: More than one H1 on the page.';
-    } else {
-      result.description = 'Reason: No H1 on the page.';
-    }
-  }
-  h1Result.value = result;
-  return result.icon;
-}
-
-async function checkTitle() {
-  const opportunity = findOpportunity(checksData.value.audits, 'metatags', 'title');
-
-  const result = { ...titleResult.value };
-  if (opportunity.issue) {
-    result.icon = fail;
-    result.description = `${opportunity.issue}; ${opportunity.issueDetails}`;
-  } else {
-    result.icon = pass;
-    result.description = 'Title size is good.';
-  }
-
-  titleResult.value = result;
-  return result.icon;
-}
-
-async function checkCanon() {
-  const result = { ...canonResult.value };
-  const canon = document.querySelector("link[rel='canonical']");
-  if (!canon) {
-    result.icon = pass;
-    result.description = 'Canonical is self-referencing.';
-  } else {
-    const { href } = canon;
-    try {
-      const resp = await fetch(href, { method: 'HEAD' });
-      if (!resp.ok) {
-        result.icon = fail;
-        result.description = 'Reason: Error with canonical reference.';
-      }
-      if (resp.ok) {
-        if (resp.status >= 300 && resp.status <= 308) {
-          result.icon = fail;
-          result.description = 'Reason: Canonical reference redirects.';
-        } else {
-          result.icon = pass;
-          result.description = 'Canonical referenced is valid.';
-        }
-      }
-    } catch (e) {
-      result.icon = limbo;
-      result.description = 'Canonical cannot be crawled.';
-    }
-  }
-  canonResult.value = result;
-  return result.icon;
-}
-
-async function checkDescription() {
-  const opportunity = findOpportunity(checksData.value.audits, 'metatags', 'description');
-
-  const result = { ...descResult.value };
-
-  if (opportunity.issue) {
-    result.icon = fail;
-    result.description = `${opportunity.issue}; ${opportunity.issueDetails}`;
-  } else {
-    result.icon = pass;
-    result.description = 'Meta description is good.';
-  }
-
-  descResult.value = result;
-  return result.icon;
-}
-
-async function checkBody() {
-  const nonContentEls = '#preflight, .picture-meta, aem-sidekick';
-  const result = { ...bodyResult.value };
-  const bodyClone = document.body.cloneNode(true);
-  bodyClone.querySelectorAll(nonContentEls).forEach((el) => el.remove());
-  const { length } = bodyClone.innerText.replace(/\n/g, '').trim();
-
-  if (length > 100) {
-    result.icon = pass;
-    result.description = 'Body content has a good length.';
-  } else {
-    result.icon = fail;
-    result.description = 'Reson: Not enough content.';
-  }
-  bodyResult.value = result;
-  return result.icon;
-}
-
-async function checkLorem() {
-  const result = { ...loremResult.value };
-  const { innerHTML } = document.documentElement;
-  const htmlWithoutPreflight = innerHTML.replace(document.getElementById('preflight')?.outerHTML, '');
-  if (htmlWithoutPreflight.toLowerCase().includes('lorem ipsum')) {
-    result.icon = fail;
-    result.description = 'Reason: Lorem ipsum is used on the page.';
-  } else {
-    result.icon = pass;
-    result.description = 'No Lorem ipsum is used on the page.';
-  }
-  loremResult.value = result;
-  return result.icon;
-}
-
-function makeGroups(arr, n = 20) {
-  const batchSize = Math.ceil(arr.length / n);
-  const size = Math.ceil(arr.length / batchSize);
-  return Array.from({ length: batchSize }, (v, i) => arr.slice(i * size, i * size + size));
-}
-
-const connectionError = () => {
-  linksResult.value = {
-    icon: fail,
-    title: 'Links',
-    description: `A VPN connection is required to use the link check service.
-    Please turn on VPN and refresh the page. If VPN is running contact your site engineers for help.`,
+function updateResult(key, updates) {
+  seoResults.value = {
+    ...seoResults.value,
+    [key]: { ...seoResults.value[key], ...updates },
   };
-};
+}
 
-async function spidyCheck(url) {
-  try {
-    const resp = await fetch(url, { method: 'HEAD' });
-    if (resp.ok) return true;
-    connectionError();
-  } catch (e) {
-    connectionError();
-    window.lana.log(`There was a problem connecting to the link check API ${url}. ${e}`, { tags: 'preflight', errorType: 'i' });
+function checkH1s(audits) {
+  const opportunity = findOpportunity(audits, 'h1-count', 'multiple-h1')
+    || findOpportunity(audits, 'h1-count', 'missing-h1');
+  if (opportunity?.issue) {
+    updateResult('h1', { icon: fail, description: opportunity.issue });
+    return fail;
   }
-  return false;
+  updateResult('h1', { icon: pass, description: 'Only one H1 on the page.' });
+  return pass;
 }
 
-async function getSpidyResults(url, opts) {
-  try {
-    const resp = await fetch(`${url}/api/url-http-status`, opts);
-    if (!resp.ok) return [];
-
-    const json = await resp.json();
-    if (!json.data || json.data.length === 0) return [];
-
-    return json.data.reduce((acc, result) => {
-      const status = result.status === 'ECONNREFUSED' ? 503 : result.status;
-      if (status >= 399) {
-        result.status = status;
-        acc.push(result);
-      }
-      return acc;
-    }, []);
-  } catch (e) {
-    window.lana.log(`There was a problem connecting to the link check API ${url}/api/url-http-status. ${e}`, { tags: 'preflight', errorType: 'i' });
-    return [];
-  }
-}
-
-function compareResults(result, link) {
-  const match = link.liveHref === result.url;
-  if (!match) return false;
-  if (link.closest('header')) link.parent = 'gnav';
-  if (link.closest('main')) link.parent = 'main';
-  if (link.closest('footer')) link.parent = 'footer';
-  link.classList.add('problem-link');
-  link.status = result.status;
-  link.dataset.status = link.status;
-  return true;
-}
-
-async function checkLinks() {
-  const { spidy, preflight } = await getServiceConfig(window.location.origin);
-  // Do not re-check if the page has already been checked
-  if (linksResult.value.checked) return;
-
-  // Check to see if Spidy is available.
-  const spidyUrl = spidy?.url || SPIDY_URL_FALLBACK;
-  const canSpidy = await spidyCheck(spidyUrl);
-  if (!canSpidy) return;
-
-  /**
-   * Find all links with an href.
-   * Filter out any local or existing preflight links.
-   * Set link to use hlx.live so the service can see them without auth
-   * */
-  const knownBadUrls = preflight?.ignoreDomains
-    ? preflight?.ignoreDomains.split(',').map((url) => url.trim())
-    : KNOWN_BAD_URLS;
-
-  const links = [...document.querySelectorAll('a')]
-    .filter((link) => {
-      if (
-        link.href // Has an href tag
-        && !link.href.includes('local') // Is not a local link
-        && !link.closest('.preflight') // Is not inside preflight
-        && !knownBadUrls.some((url) => url === link.hostname) // Is not a known bad url
-      ) {
-        link.liveHref = link.href;
-        if (link.href.includes('hlx.page')) link.liveHref = link.href.replace('hlx.page', 'hlx.live');
-        if (link.href.includes('aem.page')) link.liveHref = link.href.replace('aem.page', 'aem.live');
-        return true;
-      }
-      return false;
+function checkTitle(audits) {
+  const opportunity = findOpportunity(audits, 'metatags', 'title');
+  if (opportunity?.issue) {
+    updateResult('title', {
+      icon: fail,
+      description: `${opportunity.issue}; ${opportunity.issueDetails}`,
+      aiSuggestion: opportunity.aiSuggestion || null,
     });
-
-  const groups = makeGroups(links);
-  const baseOpts = { method: 'POST', headers: { 'Content-Type': 'application/json' } };
-  const badResults = [];
-
-  [...document.querySelectorAll('a')].forEach((link) => {
-    if (link.dataset?.httpLink) {
-      const httpLink = {
-        url: link.liveHref,
-        status: 'authored as http',
-      };
-      badResults.push(httpLink);
-    }
-  });
-
-  for (const group of groups) {
-    const urls = group.map((link) => link.liveHref);
-    const opts = { ...baseOpts, body: JSON.stringify({ urls }) };
-    const spidyResults = await getSpidyResults(spidyUrl, opts);
-    badResults.push(...spidyResults);
+    return fail;
   }
+  updateResult('title', { icon: pass, description: 'Title size is good.', aiSuggestion: null });
+  return pass;
+}
 
-  badLinks.value = badResults.map((result) => links.find((link) => compareResults(result, link)))
-    .filter(Boolean);
+function checkCanon(audits) {
+  const opportunity = findOpportunity(audits, 'canonical', 'canonical-url-4xx')
+    || findOpportunity(audits, 'canonical', 'canonical-redirect');
+  if (opportunity?.issue) {
+    updateResult('canon', {
+      icon: fail,
+      description: opportunity.issue,
+      aiSuggestion: opportunity.aiSuggestion || null,
+    });
+    return fail;
+  }
+  updateResult('canon', { icon: pass, description: 'Canonical is valid.', aiSuggestion: null });
+  return pass;
+}
 
-  // Format the results for display
-  const count = badLinks.value.length;
-  const linkText = count > 1 || count === 0 ? 'links' : 'link';
-  const badDesc = `Reason: ${count} problem ${linkText}. Use the list below to fix them.`;
-  const goodDesc = 'Links are valid.';
+function checkDescription(audits) {
+  const opportunity = findOpportunity(audits, 'metatags', 'description');
+  if (opportunity?.issue) {
+    updateResult('desc', {
+      icon: fail,
+      description: `${opportunity.issue}; ${opportunity.issueDetails}`,
+      aiSuggestion: opportunity.aiSuggestion || null,
+    });
+    return fail;
+  }
+  updateResult('desc', { icon: pass, description: 'Meta description is good.', aiSuggestion: null });
+  return pass;
+}
 
-  // Build the result display object
-  linksResult.value = {
-    title: linksResult.value.title,
-    checked: true,
-    icon: count > 0 ? fail : pass,
-    description: count > 0 ? badDesc : goodDesc,
-  };
+function checkBody(audits) {
+  const opportunity = findOpportunity(audits, 'body-size', 'content-length');
+  if (opportunity?.issue) {
+    updateResult('body', { icon: fail, description: opportunity.issue });
+    return fail;
+  }
+  updateResult('body', { icon: pass, description: 'Body content has a good length.' });
+  return pass;
+}
+
+function checkLorem(audits) {
+  const opportunity = findOpportunity(audits, 'lorem-ipsum', 'placeholder-text');
+  if (opportunity?.issue) {
+    updateResult('lorem', { icon: fail, description: opportunity.issue });
+    return fail;
+  }
+  updateResult('lorem', { icon: pass, description: 'No Lorem ipsum is used on the page.' });
+  return pass;
+}
+
+function checkLinks(audits) {
+  const badLinksMaybe = findOpportunity(audits, 'links', 'bad-links');
+  const brokenLinksMaybe = findOpportunity(audits, 'links', 'broken-internal-links');
+  const opportunities = [badLinksMaybe, brokenLinksMaybe].filter(Boolean);
+  const issues = opportunities.flatMap(({ issue }) => issue);
+  let aiSuggestion = null;
+  if (brokenLinksMaybe && brokenLinksMaybe.aiSuggestion) {
+    aiSuggestion = brokenLinksMaybe.aiSuggestion;
+  }
+  if (issues.length > 0) {
+    updateResult('links', {
+      icon: fail,
+      description: issues[0].issue,
+      aiSuggestion: aiSuggestion || null,
+    });
+    badLinks.value = issues.map((issue) => ({
+      liveHref: issue.url,
+      status: issue.issue,
+      parent: 'main',
+    }));
+    return fail;
+  }
+  updateResult('links', { icon: pass, description: 'Links are valid.', aiSuggestion: null });
+  badLinks.value = [];
+  return pass;
+}
+
+function updateAllAiSuggestionsFromAudits(audits) {
+  const titleOpp = findOpportunity(audits, 'metatags', 'title');
+  if (titleOpp && titleOpp.aiSuggestion) updateResult('title', { aiSuggestion: titleOpp.aiSuggestion });
+
+  const descOpp = findOpportunity(audits, 'metatags', 'description');
+  if (descOpp && descOpp.aiSuggestion) updateResult('desc', { aiSuggestion: descOpp.aiSuggestion });
 }
 
 export async function sendResults() {
-  const robots = document.querySelector('meta[name="robots"]').content || 'all';
-
+  const robots = document.querySelector('meta[name="robots"]')?.content || 'all';
   const data = {
     dateTime: new Date().toLocaleString(),
     url: window.location.href,
-    H1: h1Result.value.description,
-    httpsLinks: linksResult.value.description,
-    title: titleResult.value.description,
-    canon: canonResult.value.description,
-    metaDescription: descResult.value.description,
-    loremIpsum: loremResult.value.description,
-    bodyLength: bodyResult.value.description,
+    H1: seoResults.value.h1.description,
+    httpsLinks: seoResults.value.links.description,
+    title: seoResults.value.title.description,
+    canon: seoResults.value.canon.description,
+    metaDescription: seoResults.value.desc.description,
+    loremIpsum: seoResults.value.lorem.description,
+    bodyLength: seoResults.value.body.description,
     https: window.location.protocol === 'https:' ? 'HTTPS' : 'HTTP',
     robots,
   };
-
   await fetch(
     'https://main--milo--adobecom.aem.page/seo/preflight',
     {
@@ -308,29 +172,27 @@ export async function sendResults() {
   );
 }
 
-function SeoItem({ icon, title, description }) {
-  return html`
-    <div class=preflight-item>
-      <div class="result-icon ${icon}"></div>
-      <div class=preflight-item-text>
-        <p class=preflight-item-title>${title}</p>
-        <p class=preflight-item-description>${description}</p>
-      </div>
-    </div>`;
-}
-
 async function getResults(checks) {
-  checksData.value = checks;
-  const h1 = checkH1s();
-  const title = checkTitle();
-  const canon = await checkCanon();
-  const desc = checkDescription();
-  const body = checkBody();
-  const lorem = checkLorem();
-  const links = await checkLinks();
+  if (!checks) return;
+  const [checkData] = checks;
+  const { audits } = checkData;
+  checkH1s(audits);
+  checkTitle(audits);
+  checkCanon(audits);
+  checkDescription(audits);
+  checkBody(audits);
+  checkLorem(audits);
+  checkLinks(audits);
 
-  const icons = [h1, title, canon, desc, body, lorem, links];
-
+  const icons = [
+    seoResults.value.h1.icon,
+    seoResults.value.title.icon,
+    seoResults.value.canon.icon,
+    seoResults.value.desc.icon,
+    seoResults.value.body.icon,
+    seoResults.value.lorem.icon,
+    seoResults.value.links.icon,
+  ];
   const red = icons.find((icon) => icon === 'red');
   if (!red) return;
 
@@ -347,39 +209,92 @@ async function getResults(checks) {
   });
 }
 
-export default function Panel(data) {
-  useEffect(() => { getResults(data.checks); }, []);
+function SeoItem({ data, loading, onAiSuggestion, aiSuggestionVisible }) {
+  const { icon, title, description, aiSuggestion, supportsAi } = data;
+  const showAiButton = supportsAi && icon === 'red' && !aiSuggestionVisible;
+  return html`
+    <div class=preflight-item>
+      <div class="result-icon ${icon}"></div>
+      <div class=preflight-item-text>
+        <p class=preflight-item-title>${title}</p>
+        <p class=preflight-item-description>${description}</p>
+        ${showAiButton && (loading ? html`<p class="ai-suggestion">AI suggestion: <div class="result-icon purple"></div></p>` : html`<button class="preflight-action" onclick=${onAiSuggestion}>AI suggestion</button>`)}
+        ${aiSuggestionVisible && aiSuggestion && html`<p class="ai-suggestion">AI suggestion: ${aiSuggestion}</p>`}
+      </div>
+    </div>`;
+}
+
+export default function Panel() {
+  useEffect(() => {
+    const waitForChecks = async () => {
+      const checks = await getChecks('IDENTIFY');
+      getResults(checks);
+    };
+    waitForChecks();
+  }, []);
+
+  async function handleAiSuggestion(key) {
+    aiLoading.value = { ...aiLoading.value, [key]: true };
+    // If already visible, don't do anything
+    if (aiSuggestionVisibleState.value[key]) {
+      aiLoading.value = { ...aiLoading.value, [key]: false };
+      return;
+    }
+    // If we already have SUGGEST data, use it
+    if (suggestChecksCache.value) {
+      const [checkData] = suggestChecksCache.value;
+      const { audits } = checkData;
+      updateAllAiSuggestionsFromAudits(audits);
+      aiSuggestionVisibleState.value = { ...aiSuggestionVisibleState.value, [key]: true };
+      aiLoading.value = { ...aiLoading.value, [key]: false };
+      return;
+    }
+    // Otherwise, fetch and cache
+    const checks = await getChecks('SUGGEST');
+    suggestChecksCache.value = checks;
+    const [checkData] = checks;
+    const { audits } = checkData;
+    updateAllAiSuggestionsFromAudits(audits);
+    aiSuggestionVisibleState.value = { ...aiSuggestionVisibleState.value, [key]: true };
+    aiLoading.value = { ...aiLoading.value, [key]: false };
+  }
+
   return html`
     <div class=preflight-columns>
       <div class=preflight-column>
-        <${SeoItem} icon=${titleResult.value.icon} title=${titleResult.value.title} description=${titleResult.value.description} />
-        <${SeoItem} icon=${h1Result.value.icon} title=${h1Result.value.title} description=${h1Result.value.description} />
-        <${SeoItem} icon=${canonResult.value.icon} title=${canonResult.value.title} description=${canonResult.value.description} />
-        <${SeoItem} icon=${linksResult.value.icon} title=${linksResult.value.title} description=${linksResult.value.description} />
+        ${['title', 'h1', 'canon', 'links'].map((key) => html`<${SeoItem}
+            data=${seoResults.value[key]}
+            loading=${!!aiLoading.value[key]}
+            onAiSuggestion=${() => handleAiSuggestion(key)}
+            aiSuggestionVisible=${!!aiSuggestionVisibleState.value[key]}
+          />`)}
       </div>
       <div class=preflight-column>
-        <${SeoItem} icon=${bodyResult.value.icon} title=${bodyResult.value.title} description=${bodyResult.value.description} />
-        <${SeoItem} icon=${loremResult.value.icon} title=${loremResult.value.title} description=${loremResult.value.description} />
-        <${SeoItem} icon=${descResult.value.icon} title=${descResult.value.title} description=${descResult.value.description} />
+        ${['body', 'lorem', 'desc'].map((key) => html`<${SeoItem}
+            data=${seoResults.value[key]}
+            loading=${!!aiLoading.value[key]}
+            onAiSuggestion=${() => handleAiSuggestion(key)}
+            aiSuggestionVisible=${!!aiSuggestionVisibleState.value[key]}
+          />`)}
       </div>
     </div>
     <div class='problem-links'>
-    ${badLinks.value.length > 0 && html`
-      <p class="note">Close preflight to see problem links highlighted on page.</p>
-      <table>
-        <tr>
-          <th></th>
-          <th>Problematic URLs</th>
-          <th>Located in</th>
-          <th>Status</th>
-        </tr>
-        ${badLinks.value.map((link, idx) => html`
+      ${badLinks.value.length > 0 && html`
+        <p class="note">Close preflight to see problem links highlighted on page.</p>
+        <table>
           <tr>
-            <td>${idx + 1}.</td>
-            <td><a href='${link?.liveHref}' target='_blank'>${link?.liveHref}</a></td>
-            <td><span>${link?.parent}</span></td>
-            <td><span>${link?.status}</span></td>
-          </tr>`)}
-      </table>`}
+            <th></th>
+            <th>Problematic URLs</th>
+            <th>Located in</th>
+            <th>Status</th>
+          </tr>
+          ${badLinks.value.map((link, idx) => html`
+            <tr>
+              <td>${idx + 1}.</td>
+              <td><a href='${link?.liveHref}' target='_blank'>${link?.liveHref}</a></td>
+              <td><span>${link?.parent}</span></td>
+              <td><span>${link?.status}</span></td>
+            </tr>`)}
+        </table>`}
     </div>`;
 }
