@@ -243,8 +243,10 @@ function setupDropdownEvents({
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
       if (isDropdownOpen) {
+        console.log('Closing dropdown');
         closeDropdown();
       } else {
+        console.log('Opening dropdown');
         openDropdown();
       }
     }
