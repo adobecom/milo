@@ -101,6 +101,17 @@ function updateButtonStates(carouselElements) {
   nextPreviousBtns[0].classList.toggle('disabled', activeSlideIndex === 0);
   nextPreviousBtns[1].disabled = activeSlideIndex === slides.length - 1;
   nextPreviousBtns[1].classList.toggle('disabled', activeSlideIndex === slides.length - 1);
+
+  const prevSlide = slides[slides.length - 1];
+  const nextSlide = slides[0];
+  if (activeSlideIndex === 0) {
+    if (prevSlide) prevSlide.classList.add('hide-left-hint');
+  } else if (activeSlideIndex === slides.length - 1) {
+    if (nextSlide) nextSlide.classList.add('hide-left-hint');
+  } else {
+    if (prevSlide) prevSlide.classList.remove('hide-left-hint');
+    if (nextSlide) nextSlide.classList.remove('hide-left-hint');
+  }
 }
 
 function handleNext(nextElement, elements) {
@@ -273,6 +284,18 @@ function moveSlides(event, carouselElements, jumpToIndex) {
     .findIndex((ele) => activeSlide.isSameNode(ele));
   const IndexOfShowClass = [...carouselElements.el.classList].findIndex((ele) => ele.includes('show-'));
   const tempSlides = [...slides.slice(indexOfActive), ...slides.slice(0, indexOfActive)];
+
+  // Update heights dynamically
+  const maxHeight = Math.max(...slides.map((slide) => slide.offsetHeight));
+  const nextSlide = handleNext(activeSlide, slides);
+  slides.forEach((slide) => {
+    if (slide === nextSlide) {
+      slide.style.height = `${maxHeight - 40}px`;
+    } else {
+      slide.style.height = `${maxHeight}px`;
+    }
+  });
+
   if (IndexOfShowClass >= 0) {
     const show = parseInt(carouselElements.el.classList[IndexOfShowClass].split('-')[1], 10);
     tempSlides.forEach((slide, index) => {
@@ -428,6 +451,23 @@ function readySlides(slides, slideContainer) {
   });
 }
 
+// mweb-dev changes
+function setEqualHeight(slides) {
+  const maxHeight = Math.max(...slides.map((slide) => slide.offsetHeight));
+  const activeSlide = slides.find((slide) => slide.classList.contains('active')) || slides[0];
+  const activeIndex = slides.indexOf(activeSlide);
+  const nextIndex = (activeIndex + 1) % slides.length;
+  slides.forEach((section, index) => {
+    if (section) {
+      if (index === nextIndex) {
+        section.style.height = `${maxHeight - 40}px`;
+      } else {
+        section.style.height = `${maxHeight}px`;
+      }
+    }
+  });
+}
+
 export default function init(el) {
   const carouselSection = el.closest('.section');
   if (!carouselSection) return;
@@ -514,8 +554,14 @@ export default function init(el) {
   }
   slides.slice(NoOfVisibleSlides).forEach((slide) => slide.querySelectorAll('a').forEach((focusableElement) => { focusableElement.setAttribute('tabindex', -1); }));
   // ##mweb## Update button states after slide movement for mweb
+  function handleEqualHeight() {
+    setEqualHeight(slides);
+    parentArea.removeEventListener(MILO_EVENTS.DEFERRED, handleEqualHeight, true);
+  }
+
   if (el.classList.contains('disable-buttons') && window.innerWidth < 900) {
     updateButtonStates(carouselElements);
+    parentArea.addEventListener(MILO_EVENTS.DEFERRED, handleEqualHeight, true);
   }
   handleChangingSlides(carouselElements);
 
@@ -525,4 +571,11 @@ export default function init(el) {
   }
 
   parentArea.addEventListener(MILO_EVENTS.DEFERRED, handleLateLoadingNavigation, true);
+
+  // mweb-dev changes
+  // function handleEqualHeight() {
+  //   setEqualHeight(slides);
+  //   parentArea.removeEventListener(MILO_EVENTS.DEFERRED, handleEqualHeight, true);
+  // }
+  // parentArea.addEventListener(MILO_EVENTS.DEFERRED, handleEqualHeight, true);
 }
