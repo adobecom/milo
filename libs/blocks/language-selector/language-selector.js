@@ -231,7 +231,7 @@ function setupDropdownEvents({
   }
 
   selectedLangButton.addEventListener('click', (e) => {
-    if (selectedLangButton.tagName === 'A') e.preventDefault();
+    e.stopPropagation();
     if (isDropdownOpen) {
       closeDropdown();
     } else {
