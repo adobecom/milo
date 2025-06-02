@@ -90,17 +90,15 @@ export default function InputLocales() {
 
   const RenderLocales = () => {
     const groupedLocales = selectedLocale.reduce((acc, localeKey) => {
-      const [langCode, locale] = localeKey.includes("|") ? localeKey.split("|") : [null, localeKey]
-      const language = languagesList.find((lang) =>
-        langCode 
-          ? lang.languagecode === langCode 
-          : lang.livecopies.split(",").includes(locale)
-      );
+      const [langCode, locale] = localeKey.includes('|') ? localeKey.split('|') : [null, localeKey];
+      const language = languagesList.find((lang) => (langCode
+        ? lang.languagecode === langCode
+        : lang.livecopies.split(',').includes(locale)));
       if (language) {
         if (!acc[language.language]) {
           acc[language.language] = [];
         }
-        acc[language.language].push(localeKey)
+        acc[language.language].push(localeKey);
       }
       return acc;
     }, {});
