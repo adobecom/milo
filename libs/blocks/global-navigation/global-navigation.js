@@ -381,6 +381,8 @@ const setMenuState = () => {
 };
 
 export const closeGnavOptions = () => {
+  const isExpanded = document.querySelector('.feds-toggle')?.getAttribute('aria-expanded') === 'true';
+  if (!isExpanded) return;
   enableMobileScroll();
   setMenuState();
 };
