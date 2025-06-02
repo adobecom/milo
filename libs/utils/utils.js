@@ -415,6 +415,18 @@ export const getFedsPlaceholderConfig = ({ useCache = true } = {}) => {
   return fedsPlaceholderConfig;
 };
 
+export const shouldBlockFreeTrialLinks = ({ button, localePrefix, parent }) => {
+  if (localePrefix !== '/kr' || (!button.dataset?.modalPath?.includes('/kr/cc-shared/fragments/trial-modals')
+    && !['free-trial', 'free trial', '무료 체험판', '무료 체험하기', '{{try-for-free}}']
+      .some((pattern) => button.textContent?.toLowerCase()?.includes(pattern.toLowerCase())))) {
+    return false;
+  }
+
+  const elementToRemove = (parent?.tagName === 'STRONG' || parent?.tagName === 'EM') && parent?.children?.length === 1 ? parent : button;
+  elementToRemove.remove();
+  return true;
+};
+
 export function isInTextNode(node) {
   return (node.parentElement.childNodes.length > 1 && node.parentElement.firstChild.tagName === 'A') || node.parentElement.firstChild.nodeType === Node.TEXT_NODE;
 }
@@ -745,7 +757,7 @@ export function decorateImageLinks(el) {
     try {
       const url = new URL(source.trim());
       const href = (url.hostname.includes('.aem.') || url.hostname.includes('.hlx.')) ? `${url.pathname}${url.search}${url.hash}` : url.href;
-      if (alt?.trim().length) img.alt = alt.trim();
+      img.alt = alt?.trim() || '';
       const pic = img.closest('picture');
       const picParent = pic.parentElement;
       if (href.includes('.mp4')) {
