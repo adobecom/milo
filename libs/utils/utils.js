@@ -757,7 +757,7 @@ export function decorateImageLinks(el) {
     try {
       const url = new URL(source.trim());
       const href = (url.hostname.includes('.aem.') || url.hostname.includes('.hlx.')) ? `${url.pathname}${url.search}${url.hash}` : url.href;
-      if (alt?.trim().length) img.alt = alt.trim();
+      img.alt = alt?.trim() || '';
       const pic = img.closest('picture');
       const picParent = pic.parentElement;
       if (href.includes('.mp4')) {
