@@ -7,7 +7,7 @@ import { createTag } from '../../utils/utils.js';
  */
 function addCopyToClipboard(ostLink, cta) {
   if (!ostLink || !cta) return cta;
-  const copyToClipboard = `<button onclick="navigator.clipboard.writeText('${ostLink}')" style="background: none; border: none; padding: 0; cursor: pointer;">
+  const copyToClipboard = `<button onclick="navigator.clipboard.writeText('${ostLink}')" style="background: none; border: none; padding: 0; cursor: pointer;" title="Copy">
     <svg xmlns="http://www.w3.org/2000/svg" height="30" width="30" id="S_AddTo_22_N" viewBox="0 0 22 22">
       <defs>
         <style>

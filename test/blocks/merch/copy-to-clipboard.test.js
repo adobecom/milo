@@ -31,6 +31,7 @@ describe('Copy to Clipboard', () => {
     expect(wrapper.style.gap).to.equal('14px');
     const button = wrapper.querySelector('button');
     expect(button).to.exist;
+    expect(button.title).to.equal('Copy');
     expect(button.style.background).to.equal('none');
     expect(button.style.border).to.equal('none');
     expect(button.style.padding).to.equal('0px');
