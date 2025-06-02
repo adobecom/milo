@@ -393,4 +393,10 @@
     color: var(--text-color);
     border-color: var(--color-gray-300);
   }
+
+  .section:has(.editorial-card ~ .show-more-button),
+  .section.show-all:has(.editorial-card) {
+    margin-inline: var(--spacing-xs);
+    padding: var(--spacing-xs);
+  }
 }
