@@ -52,7 +52,7 @@ if (!LOCAL_RUN)
 
 const queue = new PQueue({ concurrency: 10 });
 const FROM_PARAM = LOCAL_RUN
-  ? getISOSinceXDaysAgo(1)
+  ? (LAST_RUN_ISO || getISOSinceXDaysAgo(1))
   : encodeURIComponent(LAST_RUN_ISO || getISOSinceXDaysAgo(1));
 
 function getISOSinceXDaysAgo(days) {
