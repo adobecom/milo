@@ -101,6 +101,17 @@ function updateButtonStates(carouselElements) {
   nextPreviousBtns[0].classList.toggle('disabled', activeSlideIndex === 0);
   nextPreviousBtns[1].disabled = activeSlideIndex === slides.length - 1;
   nextPreviousBtns[1].classList.toggle('disabled', activeSlideIndex === slides.length - 1);
+
+  const prevSlide = slides[slides.length - 1];
+  const nextSlide = slides[0];
+  if (activeSlideIndex === 0) {
+    if (prevSlide) prevSlide.classList.add('hide-left-hint');
+  } else if (activeSlideIndex === slides.length - 1) {
+    if (nextSlide) nextSlide.classList.add('hide-left-hint');
+  } else {
+    if (prevSlide) prevSlide.classList.remove('hide-left-hint');
+    if (nextSlide) nextSlide.classList.remove('hide-left-hint');
+  }
 }
 
 function handleNext(nextElement, elements) {
@@ -428,6 +439,14 @@ function readySlides(slides, slideContainer) {
   });
 }
 
+// mweb-dev changes
+function setEqualHeight(slides) {
+  const maxHeight = Math.max(...slides.map((slide) => slide.offsetHeight));
+  slides.forEach((section) => {
+    if (section) section.style.height = `${maxHeight}px`;
+  });
+}
+
 export default function init(el) {
   const carouselSection = el.closest('.section');
   if (!carouselSection) return;
@@ -525,4 +544,11 @@ export default function init(el) {
   }
 
   parentArea.addEventListener(MILO_EVENTS.DEFERRED, handleLateLoadingNavigation, true);
+
+  // mweb-dev changes for equal height of cards
+  function handleEqualHeight() {
+    setEqualHeight(slides);
+    parentArea.removeEventListener(MILO_EVENTS.DEFERRED, handleEqualHeight, true);
+  }
+  parentArea.addEventListener(MILO_EVENTS.DEFERRED, handleEqualHeight, true);
 }
