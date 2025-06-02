@@ -106,10 +106,11 @@ const readyForm = (form, totalSteps) => {
 
   const debouncedOnRender = debounce(() => onRender(formEl, totalSteps), 50);
   const observer = new MutationObserver(debouncedOnRender);
+  const fieldLoadTimeOnSlowDevice = 12000;
   observer.observe(formEl, { childList: true, subtree: true });
   setTimeout(() => {
     observer.disconnect();
-  }, 12000);
+  }, fieldLoadTimeOnSlowDevice);
   debouncedOnRender();
 };
 
