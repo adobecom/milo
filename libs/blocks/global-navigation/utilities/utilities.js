@@ -10,6 +10,7 @@ import {
   getFederatedContentRoot,
   getFederatedUrl,
   getFedsPlaceholderConfig,
+  shouldBlockFreeTrialLinks,
 } from '../../../utils/utils.js';
 import { replaceKey, replaceText } from '../../../features/placeholders.js';
 import { PERSONALIZATION_TAGS } from '../../../features/personalization/personalization.js';
@@ -101,7 +102,7 @@ export const logPerformance = (
       sampleRate: 0.01,
     });
   } catch (e) {
-    console.error(e);
+    // eslint-disable-next-line no-empty
   }
 };
 
@@ -237,6 +238,11 @@ export async function loadDecorateMenu() {
 }
 
 export function decorateCta({ elem, type = 'primaryCta', index } = {}) {
+  if (shouldBlockFreeTrialLinks({
+    button: elem,
+    localePrefix: getConfig()?.locale?.prefix,
+    parent: elem.parentElement,
+  })) return null;
   const modifier = type === 'secondaryCta' ? 'secondary' : 'primary';
 
   const clone = elem.cloneNode(true);
