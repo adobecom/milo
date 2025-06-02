@@ -202,7 +202,6 @@ function setupDropdownEvents({
   function openDropdown() {
     isDropdownOpen = true;
     dropdown.style.display = 'block';
-    console.log('Dropdown element:', dropdown, 'Display:', dropdown.style.display);
     selectedLangButton.setAttribute('aria-expanded', 'true');
     filteredLanguages = doRenderLanguages(searchInput.value);
     requestAnimationFrame(() => {
