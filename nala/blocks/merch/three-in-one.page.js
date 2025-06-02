@@ -47,5 +47,11 @@ export default class ThreeInOne {
     };
     this.props = {};
     this.getFallbackCta = (sectionId) => this.page.locator(`#${sectionId} [is="checkout-link"]`);
+    this.getModal = () => this.page.locator('.dialog-modal');
+    this.closeModal = async () => {
+      const modal = this.getModal();
+      modal.dispatchEvent('closeModal');
+      await this.page.waitForTimeout(500);
+    };
   }
 }
