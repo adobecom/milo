@@ -173,7 +173,7 @@
   outline: none;
 }
 
-.language-list:focus {
+/*.language-list:focus {
   outline: 2px solid var(--color-accent, #5258E4);
   outline-offset: 2px;
-}
+}*/
