@@ -256,7 +256,7 @@ function setExpandEvents(el) {
 
 function handleTitleText(cell) {
   if (cell.querySelector('.table-title-text')) return;
-  const textSpan = createTag('span', { class: 'table-title-text' });
+  const textSpan = createTag('span', { class: 'table-title-text', role: 'heading', aria-level='1'});
   while (cell.firstChild) textSpan.append(cell.firstChild);
 
   const iconTooltip = textSpan.querySelector('.icon-info, .icon-tooltip, .milo-tooltip');
