@@ -117,6 +117,7 @@ function renderLanguages({
     const filteredLanguages = languagesList.filter(
       (lang) => lang.name.toLowerCase().includes(searchTerm.toLowerCase()),
     );
+    const fragment = document.createDocumentFragment();
     filteredLanguages.forEach((lang, idx) => {
       const langItem = createTag('li', {
         class: 'language-item',
@@ -157,8 +158,9 @@ function renderLanguages({
         });
       });
       langItem.appendChild(langLink);
-      languageList.appendChild(langItem);
+      fragment.appendChild(langItem);
     });
+    languageList.appendChild(fragment);
     if (activeIndexRef.current >= 0 && filteredLanguages[activeIndexRef.current]) {
       languageList.setAttribute('aria-activedescendant', `language-option-${activeIndexRef.current}`);
     } else {
@@ -199,11 +201,31 @@ function setupDropdownEvents({
     activeIndexRef,
   });
 
+  let documentClickHandler = null;
+
+  function closeDropdown() {
+    isDropdownOpen = false;
+    dropdown.style.display = 'none';
+    selectedLangButton.setAttribute('aria-expanded', 'false');
+    selectedLangButton.focus();
+    dropdown.classList.remove('fixed-height');
+    dropdown.style.removeProperty('--dropdown-initial-height');
+    searchInput.value = '';
+    if (documentClickHandler) {
+      document.removeEventListener('click', documentClickHandler);
+      documentClickHandler = null;
+    }
+  }
+
   function openDropdown() {
     isDropdownOpen = true;
     dropdown.style.display = 'block';
     selectedLangButton.setAttribute('aria-expanded', 'true');
     filteredLanguages = doRenderLanguages(searchInput.value);
+    documentClickHandler = (e) => {
+      if (isDropdownOpen && !dropdown.contains(e.target)) closeDropdown();
+    };
+    document.addEventListener('click', documentClickHandler);
     requestAnimationFrame(() => {
       const dropdownHeight = dropdown.offsetHeight;
       dropdown.style.setProperty('--dropdown-initial-height', `${dropdownHeight}px`);
@@ -218,15 +240,6 @@ function setupDropdownEvents({
         languageList.setAttribute('aria-activedescendant', toFocus.parentElement.id);
       }
     });
-  }
-  function closeDropdown() {
-    isDropdownOpen = false;
-    dropdown.style.display = 'none';
-    selectedLangButton.setAttribute('aria-expanded', 'false');
-    selectedLangButton.focus();
-    dropdown.classList.remove('fixed-height');
-    dropdown.style.removeProperty('--dropdown-initial-height');
-    searchInput.value = '';
   }
 
   selectedLangButton.addEventListener('click', (e) => {
@@ -300,10 +313,6 @@ function setupDropdownEvents({
         },
       });
     }
-  });
-
-  document.addEventListener('click', (e) => {
-    if (isDropdownOpen && !dropdown.contains(e.target)) closeDropdown();
   });
 }
 
