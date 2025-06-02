@@ -33,17 +33,24 @@ function handleEvent({ prefix, link, callback } = {}) {
   });
 }
 
+// Helper function to construct language URL
+function constructLanguageUrl(lang, currentPath, windowLocation) {
+  const prefix = lang.prefix ? `/${lang.prefix}` : '';
+  return `${windowLocation.origin}${prefix}${currentPath.replace(/^\/[a-zA-Z-]+/, '')}`;
+}
+
 const getLanguages = (links, languages, locales) => Array.from(links).map((link) => {
   let pathname = link.getAttribute('href');
   if (pathname.startsWith('http')) {
     try { pathname = new URL(pathname).pathname; } catch (e) { /* ignore */ }
   }
   const langObj = getLanguage(languages, locales, pathname);
+  const langCode = langObj.prefix.replace('/', '');
   return {
     name: link.innerText,
     url: link.href,
-    langCode: langObj.prefix.replace('/', ''),
-    prefix: langObj.prefix.replace('/', ''),
+    langCode,
+    prefix: langCode,
     langObj,
   };
 });
@@ -79,8 +86,7 @@ function createDropdownElements(regionPickerTextElem, placeholderText, setAriaOn
   const dropdown = createTag('div');
   dropdown.className = 'language-dropdown';
   dropdown.style.display = 'none';
-  const dragHandle = createTag('div', { class: 'drag-handle' });
-  dropdown.appendChild(dragHandle);
+  dropdown.appendChild(createTag('div', { class: 'drag-handle' }));
 
   const searchContainer = createTag('div');
   searchContainer.className = 'search-container';
@@ -117,6 +123,7 @@ function renderLanguages({
     const filteredLanguages = languagesList.filter(
       (lang) => lang.name.toLowerCase().includes(searchTerm.toLowerCase()),
     );
+    const fragment = document.createDocumentFragment();
     filteredLanguages.forEach((lang, idx) => {
       const langItem = createTag('li', {
         class: 'language-item',
@@ -129,7 +136,7 @@ function renderLanguages({
         if (activeIndexRef.current === -1) activeIndexRef.current = idx;
       }
       const langLink = createTag('a', {
-        href: `${window.location.origin}${lang.prefix ? `/${lang.prefix}${window.location.pathname.replace(/^\/[a-zA-Z-]+/, '')}` : window.location.pathname.replace(/^\/[a-zA-Z-]+/, '')}`,
+        href: constructLanguageUrl(lang, window.location.pathname, window.location),
         class: 'language-link',
         role: 'option',
         'aria-selected': lang.name === currentLang.name ? 'true' : 'false',
@@ -146,8 +153,7 @@ function renderLanguages({
         const currentPrefix = currentLangForPath && currentLangForPath.prefix ? `/${currentLangForPath.prefix}` : '';
         const hasPrefix = currentPrefix && pathname.startsWith(`${currentPrefix}/`);
         const path = href.replace(window.location.origin + (hasPrefix ? currentPrefix : ''), '').replace('#langnav', '');
-        const newPath = lang.prefix ? `/${lang.prefix}${path}` : path;
-        const fullUrl = `${window.location.origin}${newPath}`;
+        const fullUrl = constructLanguageUrl(lang, path, window.location);
         handleEvent({
           prefix: lang.prefix,
           link: { href: fullUrl },
@@ -157,8 +163,9 @@ function renderLanguages({
         });
       });
       langItem.appendChild(langLink);
-      languageList.appendChild(langItem);
+      fragment.appendChild(langItem);
     });
+    languageList.appendChild(fragment);
     if (activeIndexRef.current >= 0 && filteredLanguages[activeIndexRef.current]) {
       languageList.setAttribute('aria-activedescendant', `language-option-${activeIndexRef.current}`);
     } else {
@@ -199,11 +206,31 @@ function setupDropdownEvents({
     activeIndexRef,
   });
 
+  let documentClickHandler = null;
+
+  const closeDropdown = () => {
+    isDropdownOpen = false;
+    dropdown.style.display = 'none';
+    selectedLangButton.setAttribute('aria-expanded', 'false');
+    selectedLangButton.focus();
+    dropdown.classList.remove('fixed-height');
+    dropdown.style.removeProperty('--dropdown-initial-height');
+    searchInput.value = '';
+    if (documentClickHandler) {
+      document.removeEventListener('click', documentClickHandler);
+      documentClickHandler = null;
+    }
+  };
+
   function openDropdown() {
     isDropdownOpen = true;
     dropdown.style.display = 'block';
     selectedLangButton.setAttribute('aria-expanded', 'true');
     filteredLanguages = doRenderLanguages(searchInput.value);
+    documentClickHandler = (e) => {
+      if (isDropdownOpen && !dropdown.contains(e.target)) closeDropdown();
+    };
+    document.addEventListener('click', documentClickHandler);
     requestAnimationFrame(() => {
       const dropdownHeight = dropdown.offsetHeight;
       dropdown.style.setProperty('--dropdown-initial-height', `${dropdownHeight}px`);
@@ -218,15 +245,6 @@ function setupDropdownEvents({
         languageList.setAttribute('aria-activedescendant', toFocus.parentElement.id);
       }
     });
-  }
-  function closeDropdown() {
-    isDropdownOpen = false;
-    dropdown.style.display = 'none';
-    selectedLangButton.setAttribute('aria-expanded', 'false');
-    selectedLangButton.focus();
-    dropdown.classList.remove('fixed-height');
-    dropdown.style.removeProperty('--dropdown-initial-height');
-    searchInput.value = '';
   }
 
   selectedLangButton.addEventListener('click', (e) => {
@@ -289,8 +307,7 @@ function setupDropdownEvents({
       const currentPrefix = currentLangForPath && currentLangForPath.prefix ? `/${currentLangForPath.prefix}` : '';
       const hasPrefix = currentPrefix && pathname.startsWith(`${currentPrefix}/`);
       const path = href.replace(window.location.origin + (hasPrefix ? currentPrefix : ''), '').replace('#langnav', '');
-      const newPath = lang.prefix ? `/${lang.prefix}${path}` : path;
-      const fullUrl = `${window.location.origin}${newPath}`;
+      const fullUrl = constructLanguageUrl(lang, path, window.location);
       handleEvent({
         prefix: lang.prefix,
         link: { href: fullUrl },
@@ -300,10 +317,6 @@ function setupDropdownEvents({
         },
       });
     }
-  });
-
-  document.addEventListener('click', (e) => {
-    if (isDropdownOpen && !dropdown.contains(e.target)) closeDropdown();
   });
 }
 
