@@ -480,6 +480,11 @@
 }
 
 /* mweb-test: notification sticky CTA */
+.notification.button-full-width {
+  min-block-size: 90px;
+  block-size: 90px;
+}
+
 .notification.button-full-width .foreground .action-area,
 .notification.button-full-width .foreground .con-button {
   width: 100%;
