@@ -64,7 +64,7 @@ function getISOSinceXDaysAgo(days) {
 
 function getWorkflowRunUrl() {
   if (GITHUB_SERVER_URL && toRepo && GITHUB_RUN_ID) {
-    return `${GITHUB_SERVER_URL}/${toOrg}/${toRepo}/actions/runs/${GITHUB_RUN_ID}`;
+    return `${GITHUB_SERVER_URL}/adobecom/milo/actions/runs/${GITHUB_RUN_ID}`;
   }
   return null;
 }
