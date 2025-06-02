@@ -180,7 +180,7 @@ async function fetchLogsForSite(siteName, baseUrl, fromParam) {
   }
 }
 
-async function getLivePaths(entries) {
+async function getLivePaths(entries, logLink) {
   const livePaths = Array.from(
     new Set(
       entries
@@ -195,7 +195,7 @@ async function getLivePaths(entries) {
   if(LOCAL_RUN) console.log("Live paths found: ", livePaths.length);
   if (!LOCAL_RUN)
     await slackNotification(
-      `Importing ${livePaths.length} published documents from ${entries.length} log entries. Log Link: https://admin.hlx.page/log/adobecom/${ROLLING_IMPORT_POLL_LOGS_FROM_REPO}?from=${FROM_PARAM}`,
+      `Importing ${livePaths.length} published documents from ${entries.length} log entries. ${logLink}`,
     );
   if (livePaths.length < 10 && !LOCAL_RUN)
     console.log(
@@ -215,7 +215,13 @@ async function main() {
     `https://admin.hlx.page/log/adobecom/${ROLLING_IMPORT_POLL_LOGS_FROM_REPO}`,
     FROM_PARAM
   );
-  const livePaths = await getLivePaths(entries);
+  const logLink = `Log Link: https://admin.hlx.page/log/adobecom/${ROLLING_IMPORT_POLL_LOGS_FROM_REPO}?from=${FROM_PARAM}`
+  if(!entries?.length) {
+    console.log(`No entries found in the logs, exiting. ${logLink}`);
+    await slackNotification(`No entries found, exiting ${logLink}`);
+    return;
+  }
+  const livePaths = await getLivePaths(entries, logLink);
   const importedMedia = new Set();
   let result = {
     success: 0,
