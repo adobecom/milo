@@ -52,7 +52,7 @@ if (!LOCAL_RUN)
 
 const queue = new PQueue({ concurrency: 10 });
 const FROM_PARAM = LOCAL_RUN
-  ? getISOSinceXDaysAgo(1)
+  ? (LAST_RUN_ISO || getISOSinceXDaysAgo(1))
   : encodeURIComponent(LAST_RUN_ISO || getISOSinceXDaysAgo(1));
 
 function getISOSinceXDaysAgo(days) {
@@ -64,7 +64,7 @@ function getISOSinceXDaysAgo(days) {
 
 function getWorkflowRunUrl() {
   if (GITHUB_SERVER_URL && toRepo && GITHUB_RUN_ID) {
-    return `${GITHUB_SERVER_URL}/${toOrg}/${toRepo}/actions/runs/${GITHUB_RUN_ID}`;
+    return `${GITHUB_SERVER_URL}/adobecom/milo/actions/runs/${GITHUB_RUN_ID}`;
   }
   return null;
 }
