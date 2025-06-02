@@ -239,6 +239,7 @@ function setupDropdownEvents({
   });
 
   selectedLangButton.addEventListener('keydown', (e) => {
+    console.log('keydown on region picker:', e.key);
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
       if (isDropdownOpen) {
