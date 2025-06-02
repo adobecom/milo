@@ -428,6 +428,14 @@ function readySlides(slides, slideContainer) {
   });
 }
 
+// mweb-dev changes
+function setEqualHeight(slides) {
+  const maxHeight = Math.max(...slides.map((slide) => slide.offsetHeight));
+  slides.forEach((section) => {
+    if (section) section.style.height = `${maxHeight}px`;
+  });
+}
+
 export default function init(el) {
   const carouselSection = el.closest('.section');
   if (!carouselSection) return;
@@ -525,4 +533,11 @@ export default function init(el) {
   }
 
   parentArea.addEventListener(MILO_EVENTS.DEFERRED, handleLateLoadingNavigation, true);
+
+  // mweb-dev changes for equal height of cards
+  function handleEqualHeight() {
+    setEqualHeight(slides);
+    parentArea.removeEventListener(MILO_EVENTS.DEFERRED, handleEqualHeight, true);
+  }
+  parentArea.addEventListener(MILO_EVENTS.DEFERRED, handleEqualHeight, true);
 }
