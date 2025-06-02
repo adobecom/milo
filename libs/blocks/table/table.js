@@ -256,7 +256,7 @@ function setExpandEvents(el) {
 
 function handleTitleText(cell) {
   if (cell.querySelector('.table-title-text')) return;
-  const textSpan = createTag('span', { class: 'table-title-text', role: 'heading', 'aria-level': '4' });
+  const textSpan = createTag('span', { class: 'table-title-text' });
   while (cell.firstChild) textSpan.append(cell.firstChild);
 
   const iconTooltip = textSpan.querySelector('.icon-info, .icon-tooltip, .milo-tooltip');
@@ -311,6 +311,11 @@ function handleSection(sectionParams) {
       handleTitleText(sectionHeadTitle);
       sectionHeadTitle.classList.add('section-head-title');
       sectionHeadTitle.setAttribute('role', 'rowheader');
+      const sectionHeadText = sectionHeadTitle.querySelector('.table-title-text');
+      if (sectionHeadText) {
+        sectionHeadText.setAttribute('role', 'heading');
+        sectionHeadText.setAttribute('aria-level', '4');
+      }
     }
 
     if (isCollapseTable) {
