@@ -135,14 +135,16 @@
   height: 8px;
   margin-left: 8px;
   scale: 85%;
-  transform: rotate(140deg) scaleX(-1);
+  transform: rotate(140deg) scaleX(-1) translate3d(0, 0, 0);
+  transform-style: preserve-3d;
   transition: transform 0.2s ease-in-out, margin-left 0.2s ease-in-out;
   width: 8px;
+  will-change: transform;
 }
 
 .graybox-container.open .gb-toggle::before {
   margin-left: 3px;
-  transform: rotate(225deg) scaleX(1);
+  transform: rotate(225deg) scaleX(1) translate3d(0, 0, 0);
 }
 
 .graybox-container .graybox-menu {
