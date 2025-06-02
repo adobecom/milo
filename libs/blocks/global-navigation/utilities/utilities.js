@@ -236,7 +236,6 @@ export async function loadDecorateMenu() {
   return cachedDecorateMenu;
 }
 
-
 let curtainElem;
 export function setCurtainState(state) {
   if (typeof state !== 'boolean') return;
