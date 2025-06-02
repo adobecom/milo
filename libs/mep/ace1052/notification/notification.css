@@ -514,6 +514,10 @@
     --padding-inline-flexible: 80px;
   }
 
+  .notification.button-full-width {
+    display: none;
+  }
+
   .notification.ribbon.in-line {
     display: none;
   }
