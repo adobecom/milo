@@ -187,11 +187,13 @@ async function getLivePaths(entries, logLink) {
         .filter(Boolean)
     )
   );
-  if(LOCAL_RUN) console.log("Live paths found: ", livePaths.length);
-  if (!LOCAL_RUN)
+  if(LOCAL_RUN) {
+    console.log("Live paths found: ", livePaths.length);
+  } else {
     await slackNotification(
       `Importing ${livePaths.length} published documents from ${entries.length} log entries. ${logLink}`,
     );
+  }
   if (livePaths.length < 10 && !LOCAL_RUN)
     console.log(
       'First 10 paths to import:\n' + livePaths.slice(0, 10).join('\n')

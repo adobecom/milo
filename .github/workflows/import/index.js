@@ -259,17 +259,7 @@ async function importUrl(aemPath, importedMedia) {
     await previewOrPublish({ path: pathname, action: 'preview' });
     await previewOrPublish({ path: pathname, action: 'live' });
   } catch (e) {
-    if (ROLLING_IMPORT_ENABLE_DEBUG_LOGS)
-      console.log(
-        'Failed to import resource to DA ' +
-          toOrg +
-          '/' +
-          toRepo +
-          ' | destination: ' +
-          url.pathname +
-          ' | error: ' +
-          e.message
-      );
+    if (ROLLING_IMPORT_ENABLE_DEBUG_LOGS) console.log(`Failed to import resource to DA ${toOrg}/${toRepo} | destination: ${url.pathname} | error: ${e.message}`);
     throw e;
   }
 }
