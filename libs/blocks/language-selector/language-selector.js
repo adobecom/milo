@@ -231,22 +231,11 @@ function setupDropdownEvents({
   }
 
   selectedLangButton.addEventListener('click', (e) => {
-    e.stopPropagation();
+    e.preventDefault();
     if (isDropdownOpen) {
       closeDropdown();
     } else {
       openDropdown();
-    }
-  });
-
-  selectedLangButton.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault();
-      if (isDropdownOpen) {
-        closeDropdown();
-      } else {
-        openDropdown();
-      }
     }
   });
 
