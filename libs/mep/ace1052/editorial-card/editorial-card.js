@@ -180,5 +180,3 @@ const init = async (el) => {
 };
 
 export default init;
-
-// making simple edit
