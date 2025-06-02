@@ -378,7 +378,7 @@ const setMenuState = () => {
   closeAllDropdowns();
   setCurtainState(!isExpanded);
   toggle?.setAttribute('daa-ll', `hamburgermenu|${isExpanded ? 'open' : 'close'}`);
-}
+};
 
 export const closeGnavOptions = () => {
   enableMobileScroll();
