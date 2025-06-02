@@ -40,8 +40,8 @@ function handleHeading(table, headingCols) {
     if (!elements.length) {
       col.innerHTML = `<p class="tracking-header">${col.innerHTML}</p>`;
     } else {
-      let textStartIndex = 0;
-      const iconTile = elements[0]?.querySelector('img');
+      let textStartIndex = col.querySelector('.highlight-text') ? 1 : 0;
+      const iconTile = elements[textStartIndex]?.querySelector('img');
       if (iconTile) {
         textStartIndex += 1;
         if (!(table.classList.contains('merch'))) iconTile.closest('p').classList.add('header-product-tile');
@@ -200,6 +200,7 @@ function handleHighlight(table) {
 
   if (isHighlightTable) {
     firstRow.classList.add('row-highlight');
+    firstRow.setAttribute('aria-hidden', 'true');
     secondRow.classList.add('row-heading');
     secondRowCols.forEach((col) => col.classList.add('col-heading'));
     headingCols = secondRowCols;
@@ -208,6 +209,8 @@ function handleHighlight(table) {
       col.classList.add('col-highlight');
       if (col.innerText) {
         headingCols[i]?.classList.add('no-rounded');
+        const highlightText = createTag('div', { class: 'highlight-text' }, col.innerText);
+        headingCols[i]?.insertBefore(highlightText, headingCols[i].firstChild);
       } else {
         col.classList.add('hidden');
       }
