@@ -285,16 +285,18 @@ function moveSlides(event, carouselElements, jumpToIndex) {
   const IndexOfShowClass = [...carouselElements.el.classList].findIndex((ele) => ele.includes('show-'));
   const tempSlides = [...slides.slice(indexOfActive), ...slides.slice(0, indexOfActive)];
 
-  // Update heights dynamically
-  const maxHeight = Math.max(...slides.map((slide) => slide.offsetHeight));
-  const nextSlide = handleNext(activeSlide, slides);
-  slides.forEach((slide) => {
-    if (slide === nextSlide) {
-      slide.style.height = `${maxHeight - 40}px`;
-    } else {
-      slide.style.height = `${maxHeight}px`;
-    }
-  });
+  // mweb Update heights dynamically
+  if (carouselElements.el.classList.contains('disable-buttons') && window.innerWidth < 900) {
+    const maxHeight = Math.max(...slides.map((slide) => slide.offsetHeight));
+    const nextSlide = handleNext(activeSlide, slides);
+    slides.forEach((slide) => {
+      if (slide === nextSlide) {
+        slide.style.height = `${maxHeight - 40}px`;
+      } else {
+        slide.style.height = `${maxHeight}px`;
+      }
+    });
+  }
 
   if (IndexOfShowClass >= 0) {
     const show = parseInt(carouselElements.el.classList[IndexOfShowClass].split('-')[1], 10);
@@ -571,11 +573,4 @@ export default function init(el) {
   }
 
   parentArea.addEventListener(MILO_EVENTS.DEFERRED, handleLateLoadingNavigation, true);
-
-  // mweb-dev changes
-  // function handleEqualHeight() {
-  //   setEqualHeight(slides);
-  //   parentArea.removeEventListener(MILO_EVENTS.DEFERRED, handleEqualHeight, true);
-  // }
-  // parentArea.addEventListener(MILO_EVENTS.DEFERRED, handleEqualHeight, true);
 }
