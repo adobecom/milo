@@ -400,6 +400,10 @@
     text-align: start;
   }
 
+  .text.text-block.center .action-area {
+    gap: var(--spacing-xxs);
+  }
+
   .text.text-block.center .action-area:not(:has(> a:only-child)),
   .text.text-block.center .icon-area {
     justify-content: start;
