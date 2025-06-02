@@ -828,10 +828,10 @@ const checkForParamMatch = (paramStr) => {
   return false;
 };
 
-const checkForPreviousPageMatch = (previousPageStr) => {
-  if (!document.referrer) return false;
+export const checkForPreviousPageMatch = (previousPageStr, refPageUrl = document.referrer) => {
+  if (!refPageUrl) return false;
   const previousPageString = previousPageStr.toLowerCase().split('previouspage-')[1];
-  return matchGlob(previousPageString, new URL(document.referrer).pathname);
+  return matchGlob(previousPageString, new URL(refPageUrl).pathname);
 };
 
 function trimNames(arr) {
