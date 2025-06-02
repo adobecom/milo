@@ -5,14 +5,11 @@ const KNDCTR_COOKIE_KEYS = [
   'kndctr_9E1005A551ED61CA0A490D45_AdobeOrg_cluster',
 ];
 
-const DATA_STREAM_IDS_PROD = {
-  excludeDS: '57c20bab-94c3-425e-95cb-0b9948b1fdd4',
-  default: '913eac4d-900b-45e8-9ee7-306216765cd2',
-};
-const DATA_STREAM_IDS_STAGE = {
-  excludeDS: 'a44f0037-2ada-441f-a012-243832ce5ff9',
-  default: 'e065836d-be57-47ef-b8d1-999e1657e8fd',
-};
+const KNDCTR_CONSENT_COOKIE = 'kndctr_9E1005A551ED61CA0A490D45_AdobeOrg_consent';
+const OPT_ON_AND_CONSENT_COOKIE = 'OptanonConsent';
+
+const DATA_STREAM_IDS_PROD = { default: '913eac4d-900b-45e8-9ee7-306216765cd2' };
+const DATA_STREAM_IDS_STAGE = { default: 'e065836d-be57-47ef-b8d1-999e1657e8fd' };
 
 let dataStreamId = '';
 
@@ -42,32 +39,6 @@ function generateUUIDv4() {
   });
 
   return uuid;
-}
-
-export function getTargetPropertyBasedOnPageRegion({ env, pathname }) {
-  if (env !== 'prod') return 'bc8dfa27-29cc-625c-22ea-f7ccebfc6231';
-
-  // EMEA & LATAM
-  if (
-    pathname.search(
-      /(\/africa\/|\/be_en\/|\/be_fr\/|\/be_nl\/|\/cis_en\/|\/cy_en\/|\/dk\/|\/de\/|\/ee\/|\/es\/|\/fr\/|\/gr_en\/|\/ie\/|\/il_en\/|\/it\/|\/lv\/|\/lu_de\/|\/lu_en\/|\/lu_fr\/|\/hu\/|\/mt\/|\/mena_en\/|\/nl\/|\/no\/|\/pl\/|\/pt\/|\/ro\/|\/ch_de\/|\/si\/|\/sk\/|\/ch_fr\/|\/fi\/|\/se\/|\/ch_it\/|\/tr\/|\/uk\/|\/at\/|\/cz\/|\/bg\/|\/ru\/|\/cis_ru\/|\/ua\/|\/il_he\/|\/mena_ar\/|\/lt\/|\/sa_en\/|\/ae_en\/|\/ae_ar\/|\/sa_ar\/|\/ng\/|\/za\/|\/qa_ar\/|\/eg_en\/|\/eg_ar\/|\/kw_ar\/|\/eg_ar\/|\/qa_en\/|\/kw_en\/|\/gr_el\/|\/br\/|\/cl\/|\/la\/|\/mx\/|\/co\/|\/ar\/|\/pe\/|\/gt\/|\/pr\/|\/ec\/|\/cr\/)/,
-    ) !== -1
-  ) {
-    return '488edf5f-3cbe-f410-0953-8c0c5c323772';
-  }
-  if ( // APAC
-    pathname.search(
-      /(\/au\/|\/hk_en\/|\/in\/|\/nz\/|\/sea\/|\/cn\/|\/hk_zh\/|\/tw\/|\/kr\/|\/sg\/|\/th_en\/|\/th_th\/|\/my_en\/|\/my_ms\/|\/ph_en\/|\/ph_fil\/|\/vn_en\/|\/vn_vi\/|\/in_hi\/|\/id_id\/|\/id_en\/)/,
-    ) !== -1
-  ) {
-    return '3de509ee-bbc7-58a3-0851-600d1c2e2918';
-  }
-  // JP
-  if (pathname.indexOf('/jp/') !== -1) {
-    return 'ba5bc9e8-8fb4-037a-12c8-682384720007';
-  }
-
-  return '4db35ee5-63ad-59f6-cec6-82ef8863b22d'; // Default
 }
 
 function getDeviceInfo() {
@@ -154,9 +125,9 @@ function getUpdatedVisitAttempt() {
   const secondVisitAttempt = Number(localStorage.getItem('secondHit')) || 0;
 
   const isAdobeDomain = hostname === 'www.adobe.com' || hostname === 'www.stage.adobe.com';
-  const consentCookieValue = getCookie('OptanonConsent');
+  const consentCookieValue = getCookie(OPT_ON_AND_CONSENT_COOKIE);
 
-  if (consentCookieValue?.includes('C0002:1') && isAdobeDomain) {
+  if (!consentCookieValue?.includes('C0002:0') && isAdobeDomain && secondVisitAttempt <= 2) {
     const updatedVisitAttempt = secondVisitAttempt === 0 ? 1 : secondVisitAttempt + 1;
     localStorage.setItem('secondHit', updatedVisitAttempt);
     return updatedVisitAttempt;
@@ -165,10 +136,154 @@ function getUpdatedVisitAttempt() {
   return secondVisitAttempt;
 }
 
-function getPageNameForAnalytics({ locale }) {
-  const { host, pathname } = new URL(window.location.href);
-  const [modifiedPath] = pathname.split('/').filter((x) => x !== locale.prefix).join(':').split('.');
-  return `${host.replace('www.', '')}:${modifiedPath}`;
+function getUpdatedAcrobatVisitAttempt() {
+  const { hostname, pathname } = window.location;
+  const secondVisitAttempt = Number(localStorage.getItem('acrobatSecondHit')) || 0;
+
+  const isAdobeDomain = (hostname === 'www.adobe.com' || hostname === 'www.stage.adobe.com') && /\/acrobat/.test(pathname);
+  const consentCookieValue = getCookie(OPT_ON_AND_CONSENT_COOKIE);
+
+  if (!consentCookieValue?.includes('C0002:0') && isAdobeDomain && secondVisitAttempt <= 2) {
+    const updatedVisitAttempt = secondVisitAttempt === 0 ? 1 : secondVisitAttempt + 1;
+    localStorage.setItem('acrobatSecondHit', updatedVisitAttempt);
+    return updatedVisitAttempt;
+  }
+
+  return secondVisitAttempt;
+}
+
+export function getPageNameForAnalytics() {
+  const { hostname, pathname } = new URL(window.location.href);
+  const urlRegions = Object.fromEntries(['ae_ar', 'ae_en', 'africa', 'apac', 'ar', 'at', 'au', 'be', 'be_en', 'be_fr', 'be_nl',
+    'bg', 'br', 'ca', 'ca_es', 'ca_fr', 'ch', 'ch_de', 'ch_fr', 'ch_it', 'cin', 'cis_en', 'cis_ru', 'cl', 'cn', 'co', 'cr', 'cs',
+    'cs_cz', 'cy', 'cy_en', 'cz', 'da', 'da_dk', 'de', 'de_de', 'dk', 'ec', 'ee', 'eeurope', 'eg_ar', 'eg_en', 'en', 'en_gb',
+    'en_us', 'es', 'es_es', 'eu_es', 'fi', 'fi_fi', 'fr', 'fr_fr', 'gr', 'gr_el', 'gr_en', 'gt', 'hk', 'hk_en', 'hk_zh', 'hr',
+    'hr_hr', 'hu', 'hu_hu', 'id_en', 'id_id', 'ie', 'il', 'il_en', 'il_he', 'in', 'in_hi', 'it', 'it_it', 'ja', 'ja_jp', 'jp',
+    'ko', 'ko_kr', 'kr', 'kw_ar', 'kw_en', 'la', 'lt', 'lu', 'lu_de', 'lu_en', 'lu_fr', 'lv', 'mena', 'mena_ar', 'mena_en',
+    'mena_fr', 'mt', 'mx', 'my_en', 'my_ms', 'na', 'nb', 'nb_no', 'ng', 'nl', 'nl_nl', 'no', 'nz', 'pe', 'ph_en', 'ph_fil',
+    'pl', 'pl_pl', 'pr', 'pt', 'pt_br', 'qa_ar', 'qa_en', 'ro', 'ro_ro', 'rs', 'ru', 'ru_ru', 'sa_ar', 'sa_en', 'se', 'sea',
+    'sg', 'si', 'sk', 'sk_sk', 'sl_si', 'sv', 'sv_se', 'th', 'th_en', 'th_th', 'tr', 'tr_tr', 'tw', 'tw_cn', 'ua', 'uk', 'uk_ua',
+    'us', 'vn_en', 'vn_vi', 'za', 'zh-Hans', 'zh-Hant', 'zh-tw', 'zh_cn', 'zh_tw'].map((r) => [r, 1]));
+
+  const path = pathname.replace(/\.(aspx|php|html)/g, '').split('/').filter((s) => s && !urlRegions[s.toLowerCase()]).join(':');
+  return `${hostname.replace('www.', '')}${path ? `:${path}` : ''}`;
+}
+
+export function getProcessedPageNameForAnalytics() {
+  const pageName = getPageNameForAnalytics().toLowerCase();
+  const pageArray = pageName.split(':');
+
+  const FILTERS = {
+    lightroom: ['lightroom.adobe.com', 'embed', 'shares', 'libraries', 'gallery', 'learn', 'tutorial', 'discover', 'remix', 'api', 'feedback', 'lrdesktop', 'albums', 'shared-with-you', 'search', 'gallery', 'incomplete', 'assets', 'u', 'slideshow'],
+    stock: ['stock.adobe.com', '3d-assets', 'aaid', 'category', 'collections', 'contributor', 'download', 'downloadfiledirectly', 'id', 'images', 'Library', 'pages', 'sc', 'search', 'stock-photo', 'templates', 'urn', 'video', 'editorial', 'free', 'audio', 'premium', 'login', 'generate', 'artisthub'],
+    xd: ['xd.adobe.com', 'embed', 'grid', 'screen', 'specs', 'view', 'spec'],
+    express: ['express.adobe.com', 'aaid', 'accept-invite', 'branding', 'design', 'design-remix', 'folders', 'libraries', 'manage-access', 'page', 'post', 'remix', 'sc', 'sp', 'urn', 'video', 'new', 'projects', 'app-licensing', 'app-licensing-homepage'],
+    account: ['accounts.adobe.com', 'account.adobe.com', '30_free_days', '60_free_days', '90_free_days', 'agent_chat', 'cancel-plan', 'change-plan', 'change reason selected modal', 'complete', 'cs_help', 'edit-payment', 'modal', 'new-change-plan-offers-loaded', 'no_offershown', 'offer_search', 'plans', 'promotion', 'review', 'save_offer', 'switch', 'temp_license_prod', 'billing-history', 'cancel-reason', 'change reason selected modal', 'cs_help', 'details', 'manage plan modal', 'modal', 'offer_search', 'orders', 'other', 'plan-benefits-modal', 'plan-details', 'returns', 'save_offer', 'downloads'],
+    adminconsole: ['adminconsole.adobe.com', 'account', 'administrators', 'add-products', 'all-packages', 'billing-history', 'contract', 'contracts-and-agreements', 'enterprise', 'identity', 'packages', 'products', 'profile', 'profiles', 'overview', 'quick-assign-products', 'renew-products', 'requests', 'review-user-introductions', 'settings', 'storage', 'support', 'user-management', 'users', 'version.xml', 'all-users', 'directories', 'summary', 'user-groups'],
+    community: ['community.adobe.com', 'account-payment-plan-discussions', 'acrobat-discussions', 'acrobat-reader-discussions', 'acrobat-reader-mobile-discussions', 'acrobat-sdk-discussions', 'acrobat-services-api-discussions', 'adobe-acrobat-online-discussions', 'adobe-acrobat-sign-discussions', 'adobe-aero-bugs', 'adobe-aero-discussions', 'adobe-color-discussions', 'adobe-express-bugs', 'adobe-express-discussions', 'adobe-firefly-bugs', 'adobe-firefly-discussions', 'adobe-firefly-ideas', 'adobe-fonts-discussions', 'adobe-learning-manager-discussions', 'adobe-media-encoder-discussions', 'adobe-scan-discussions', 'adobe-xd-discussions', 'after-effects-beta-discussions', 'after-effects-bugs', 'after-effects-discussions', 'after-effects-ideas', 'air-discussions', 'animate-discussions', 'audition-discussions', 'badges', 'bridge-discussions', 'business-catalyst-discussions-read-only', 'camera-raw-discussions', 'captivate-discussions', 'character-animator-discussions', 'coldfusion-discussions', 'color-management-discussions', 'connect-discussions', 'contentarchivals', 'creative-cloud-desktop-discussions', 'creative-cloud-services-discussions', 'digital-editions-discussions', 'dimension-discussions', 'download-install-discussions', 'dreamweaver-discussions', 'enterprise-teams-discussions', 'exchange-discussions', 'fireworks-discussions', 'flash-player-discussions', 'forums', 'framemaker-discussions', 'fresco-discussions', 'illustrator-discussions', 'illustrator-draw-discussions', 'illustrator-on-the-ipad-discussions', 'incopy-discussions', 'indesign-discussions', 'kudos', 'lightroom-classic-bugs', 'lightroom-classic-discussions', 'lightroom-classic-ideas', 'lightroom-ecosystem-cloud-based-bugs', 'lightroom-ecosystem-cloud-based-discussions', 'lightroom-ecosystem-cloud-based-ideas', 'mixamo-discussions', 'muse-discussions', 'photoshop-beta-bugs', 'photoshop-beta-discussions', 'photoshop-discussions', 'photoshop-ecosystem-bugs', 'photoshop-ecosystem-discussions', 'photoshop-ecosystem-ideas', 'photoshop-elements-discussions', 'photoshop-express-discussions', 'photoshop-sketch-discussions', 'postscript-discussions', 'premiere-elements-discussions', 'premiere-pro-beta-bugs', 'premiere-pro-beta-discussions', 'premiere-pro-bugs', 'premiere-pro-discussions', 'premiere-pro-ideas', 'premiere-rush-discussions', 'robohelp-discussions', 'stock-contributors-discussions', 'stock-discussions', 'substance-3d-designer-discussions', 'substance-3d-painter-bugs', 'substance-3d-painter-discussions', 'substance-3d-plugins-discussions', 'substance-3d-sampler-discussions', 'substance-3d-stager-discussions', 't5', 'team-projects-discussions', 'the-lounge-discussions', 'type-typography-discussions', 'user', 'using-the-community-discussions', 'video', 'video-hardware-discussions', 'video-lounge-discussions', 'xd-discussions'],
+    acrobat: ['acrobat.adobe.com', 'aaid', 'documents', 'gdrive', 'id', 'link', 'onedrive', 'sc', 'urn'],
+    behance: ['behance.net', 'appreciated', 'collection', 'collections', 'dailycc', 'discover', 'drafts', 'editor', 'followers', 'following', 'font', 'gallery', 'inbox', 'info', 'insights', 'joblist', 'live', 'loggedout', 'moodboard', 'profile', 'projects', 'report', 'resume', 'search', 'talent'],
+    fonts: ['fonts.adobe.com', 'confirm', 'fonts', 'results', 'select', 'upload', 'vs'],
+    photoshop: ['photoshop.adobe.com', 'id', 'urn', 'aaid', 'sc', 'us', 'ap', 'eu', 'va6c2', 'va7'],
+    plan: ['plan.adobe.com', 'cancel', 'cancel-reason', 'change', 'entitlements', 'interest', 'learn-more', 'loss-aversion-page', 'offers', 'offers-loaded', 'quiz', 'reasons', 'review', 'select-licenses', 'switch', 'switch-plan', 'view', 'plans', 'view-offer-details', 'saved', 'results'],
+    color: ['color.adobe.com', 'cloud', 'color', 'color-accessibility', 'color-contrast-analyzer', 'color-wheel', 'color-wheel-game', 'image', 'image-gradient', 'mythemes', 'urn', 'aaid', 'sc', 'library', 'trends', 'create'],
+    creative: ['creative.adobe.com', 'code', 'redeem', 'share'],
+    portfolio: ['portfolio.adobe.com', 'account-swaps', 'admin', 'preview', 'editor', 'firsteditor', 'switch-theme', 'user'],
+    schedule: ['schedule.adobe.com', 'calendar', 'connect', 'finalise'],
+    newexpress: ['new.express.adobe.com', 'aaid', 'branding', 'brands', 'design', 'design-remix', 'id', 'libraries', 'link', 'page', 'post', 'sc', 'sp', 'template', 'urn', 'video', 'webpage', 'your-stuff'],
+  };
+
+  const SPECIAL_DOMAINS = [
+    'lightroom.adobe.com', 'stock.adobe.com', 'xd.adobe.com', 'express.adobe.com',
+    'accounts.adobe.com', 'account.adobe.com', 'adminconsole.adobe.com',
+    'community.adobe.com', 'acrobat.adobe.com', 'behance.net', 'fonts.adobe.com',
+    'photoshop.adobe.com', 'plan.adobe.com', 'color.adobe.com', 'creative.adobe.com',
+    'portfolio.adobe.com', 'schedule.adobe.com', 'new.express.adobe.com',
+  ];
+
+  const signMatch = pageName.match(/.*\.echosign\..*|.*\.adobesign\..*|.*documents\.adobe\.com.*/);
+  if (signMatch) {
+    return signMatch[1];
+  }
+  if (document.title && document.title.includes('404')) {
+    return 'adobe.com:404';
+  }
+  if (pageName.match(/^stock\.adobe\.com:..:(1|2|3[^\d]|4|5|6|7|8|9)|^stock\.adobe\.com:(1|2|3[^\d]|4|5|6|7|8|9)/)) {
+    return 'stock.adobe.com:file';
+  }
+  for (const [, filter] of Object.entries(FILTERS)) {
+    if (pageName.startsWith(filter[0])) {
+      const filtered = pageArray.filter((value) => filter.includes(value)).join(':');
+      return SPECIAL_DOMAINS.includes(filtered) ? pageName : filtered;
+    }
+  }
+
+  return pageName;
+}
+
+function resolveAgiCampaignAndFlag() {
+  const { hostname, pathname, href } = window.location;
+  const consentValue = getCookie('OptanonConsent');
+  const EXPIRY_TIME_IN_DAYS = 90;
+  const CAMPAIGN_PAGE_VALUE = '1';
+  const ACROBAT_DOMAIN_VALUE = '2';
+
+  if (!consentValue?.includes('C0002:1')) {
+    return { agiCampaign: false, setAgICampVal: false };
+  }
+
+  const agiCookie = getCookie('agiCamp');
+  const setAgiCookie = (value) => {
+    setCookie('agiCamp', value, {
+      expires: EXPIRY_TIME_IN_DAYS,
+      domain: getDomainWithoutWWW(),
+    });
+  };
+
+  const campaignRegex = /ttid=(all-in-one|reliable|versatile|combine-organize-e-sign|webforms-edit-e-sign)/;
+  const isGotItPage = pathname.includes('/acrobat/campaign/acrobats-got-it.html') && campaignRegex.test(href);
+  const isAcrobatDomain = hostname === 'acrobat.adobe.com' || (hostname === 'www.adobe.com' && pathname.includes('/acrobat'));
+
+  let agiCampaign = false;
+
+  if (isGotItPage && (!agiCookie || agiCookie !== ACROBAT_DOMAIN_VALUE)) {
+    setAgiCookie(CAMPAIGN_PAGE_VALUE);
+    agiCampaign = CAMPAIGN_PAGE_VALUE;
+  } else if (isAcrobatDomain && (!agiCookie || agiCookie !== CAMPAIGN_PAGE_VALUE)) {
+    if (agiCookie === ACROBAT_DOMAIN_VALUE) return { agiCampaign: false, setAgICampVal: false };
+    setAgiCookie(ACROBAT_DOMAIN_VALUE);
+    agiCampaign = ACROBAT_DOMAIN_VALUE;
+  }
+
+  const setAgICampVal = agiCampaign === CAMPAIGN_PAGE_VALUE || agiCampaign === ACROBAT_DOMAIN_VALUE;
+  return { agiCampaign, setAgICampVal };
+}
+
+function getGlobalPrivacyControl() {
+  if (!navigator || !navigator.globalPrivacyControl) return '';
+  return navigator.globalPrivacyControl.toString();
+}
+
+function getEntityId() {
+  if (window.location.href === 'https://www.adobe.com/express/') {
+    return 'a2c4e4e4-eaa9-11ed-a05b-0242ac120003';
+  }
+  const metaTag = document.querySelector('meta[name="entity_id"]');
+  return metaTag ? metaTag.getAttribute('content') : null;
+}
+
+function getPrimaryProduct() {
+  const productNameMeta = document.querySelector('meta[name="primaryproductname"]');
+  return productNameMeta?.content || null;
+}
+
+const LOCALE_MAPPINGS = {
+  '': 'en-US', ar: 'es-AR', br: 'pt-BR', ca: 'en-CA', ca_fr: 'fr-CA', cl: 'es-CL', co: 'es-CO', la: 'es-LA', mx: 'es-MX', pe: 'es-PE', africa: 'en-AFRICA', be_fr: 'fr-BE', be_en: 'en-BE', be_nl: 'nl-BE', cy_en: 'en-CY', dk: 'da-DK', de: 'de-DE', ee: 'et-EE', es: 'es-ES', fr: 'fr-FR', gr_en: 'en-GR', ie: 'en-IE', il_en: 'en-IL', it: 'it-IT', lv: 'lv-LV', lt: 'lt-LT', lu_de: 'de-LU', lu_en: 'en-LU', lu_fr: 'fr-LU', hu: 'hu-HU', mt: 'en-MT', mena_en: 'en-MENA', nl: 'nl-NL', no: 'no-NO', pl: 'pl-PL', pt: 'pt-PT', ro: 'ro-RO', sa_en: 'en-SA', ch_de: 'de-CH', si: 'sl-SI', sk: 'sk-SK', ch_fr: 'fr-CH', fi: 'fi-FI', se: 'sv-SE', ch_it: 'it-CH', tr: 'tr-TR', ae_en: 'en-AE', uk: 'en-UK', at: 'de-AT', cz: 'cs-CZ', bg: 'bg-BG', ru: 'ru-RU', ua: 'uk-UA', il_he: 'iw-IL', ae_ar: 'ar-AE', mena_ar: 'ar-MENA', sa_ar: 'ar-SA', au: 'en-AU', hk_en: 'en-HK', in: 'en-IN', id_id: 'in-ID', id_en: 'en-ID', my_ms: 'ms-MY', my_en: 'en-MY', nz: 'en-NZ', ph_en: 'en-PH', ph_fil: 'fil-PH', sg: 'en-SG', th_en: 'en-TH', in_hi: 'hi-IN', th_th: 'th-TH', cn: 'zh-CN', hk_zh: 'zh-HK', tw: 'zh-hant-TW', jp: 'ja-JP', kr: 'ko-KR', langstore: 'en-US', za: 'en-ZA', ng: 'en-NG', cr: 'es-CR', ec: 'es-EC', pr: 'es-PR', gt: 'es-GT', eg_ar: 'ar-EG', kw_ar: 'ar-KW', qa_ar: 'ar-QA', eg_en: 'en-EG', kw_en: 'en-KW', qa_en: 'en-QA', gr_el: 'el-GR', vn_en: 'en-VN', vn_vi: 'vi-VN', cis_ru: 'ru-CIS', cis_en: 'en-CIS',
+};
+
+export function getLanguageCode(locale) {
+  const prefix = locale?.prefix?.replace(/^\//, '') || '';
+  return LOCALE_MAPPINGS[prefix] || LOCALE_MAPPINGS[''];
 }
 
 function getUpdatedContext({
@@ -200,16 +315,10 @@ const getMartechCookies = () => document.cookie.split(';')
   .filter(([key]) => KNDCTR_COOKIE_KEYS.includes(key))
   .map(([key, value]) => ({ key, value }));
 
-function createRequestPayload({ updatedContext, pageName, locale, env, hitType }) {
+function createRequestPayload({ updatedContext, pageName, processedPageName, locale, hitType }) {
   const prevPageName = getCookie('gpv');
   const isCollectCall = hitType === 'propositionDisplay';
   const isPageViewCall = hitType === 'pageView';
-
-  const REPORT_SUITES_ID = env === 'prod' ? ['adbadobenonacdcprod', 'adbadobeprototype'] : ['adbadobenonacdcqa'];
-  const AT_PROPERTY_VAL = getTargetPropertyBasedOnPageRegion(
-    { env, pathname: window.location?.pathname },
-  );
-
   const webPageDetails = {
     URL: window.location.href,
     siteSection: window.location.hostname,
@@ -217,8 +326,15 @@ function createRequestPayload({ updatedContext, pageName, locale, env, hitType }
     isErrorPage: false,
     isHomePage: false,
     name: pageName,
-    pageViews: { value: isPageViewCall ? 1 : 0 },
+    pageViews: { value: Number(isPageViewCall) },
   };
+  const consentCookie = getCookie(OPT_ON_AND_CONSENT_COOKIE) || '';
+
+  const consentState = (() => {
+    const hasOptOnCookie = getCookie(OPT_ON_AND_CONSENT_COOKIE);
+    if (!hasOptOnCookie) return 'unknown';
+    return getCookie(KNDCTR_CONSENT_COOKIE) ? 'post' : 'pre';
+  })();
 
   const eventObj = {
     xdm: {
@@ -235,27 +351,37 @@ function createRequestPayload({ updatedContext, pageName, locale, env, hitType }
       },
       timestamp: new Date().toISOString(),
       eventType: hitTypeEventTypeMap[hitType],
+      eventMergeId: generateUUIDv4(),
+      ...(getPrimaryProduct() && { productListItems: [{ SKU: getPrimaryProduct() }] }),
     },
     data: {
       __adobe: {
         target: {
-          is404: false, authState: 'loggedOut', hitType, isMilo: true, adobeLocale: locale.ietf, hasGnav: true,
+          is404: false,
+          authState: 'loggedOut',
+          hitType,
+          isMilo: true,
+          adobeLocale: getLanguageCode(locale),
+          hasGnav: true,
+          ...(getEntityId() ? { 'entity.id': getEntityId() } : {}),
         },
       },
+      eventMergeId: generateUUIDv4(),
       _adobe_corpnew: {
+        configuration: { edgeConfigId: dataStreamId },
         digitalData: {
-          page: { pageInfo: { language: locale.ietf } },
+          page: { pageInfo: { language: getLanguageCode(locale) } },
           diagnostic: { franklin: { implementation: 'milo' } },
           previousPage: { pageInfo: { pageName: prevPageName } },
           primaryUser: { primaryProfile: { profileInfo: { authState: 'loggedOut', returningStatus: getVisitorStatus({}) } } },
         },
+        otherConsents: { configuration: { advertising: consentCookie && consentCookie.includes('C0004:0') ? 'false' : 'true' } },
+        cmp: { state: consentState },
       },
       marketingtech: {
         adobe: {
           alloy: {
             approach: 'martech-API',
-            edgeConfigIdLaunch: dataStreamId,
-            edgeConfigId: dataStreamId,
             personalisation: 'hybrid',
           },
         },
@@ -270,8 +396,9 @@ function createRequestPayload({ updatedContext, pageName, locale, env, hitType }
     const { data, xdm } = eventObj;
     const { digitalData } = data._adobe_corpnew;
     const { pageInfo } = digitalData.page;
+    const { agiCampaign, setAgICampVal } = resolveAgiCampaignAndFlag();
     pageInfo.pageName = pageName;
-    pageInfo.processedPageName = pageName;
+    pageInfo.processedPageName = processedPageName;
     pageInfo.location = {
       href, origin, protocol, host, hostname, port, pathname, search, hash,
     };
@@ -282,16 +409,39 @@ function createRequestPayload({ updatedContext, pageName, locale, env, hitType }
       entitlementCreativeCloud: 'unknown',
       entitlementStatusCreativeCloud: 'unknown',
     };
-    digitalData.target = { at_property_val: AT_PROPERTY_VAL };
-    data.web = { webPageDetails };
+    data.web = {
+      webPageDetails,
+      webReferrer: { URL: document.referrer },
+    };
     data.eventType = hitTypeEventTypeMap[hitType];
 
     if (getUpdatedVisitAttempt() === 2) {
       digitalData.adobe = {
+        ...digitalData.adobe,
         libraryVersions: 'alloy-api',
-        experienceCloud: { secondVisits: 'setEvent' },
+        experienceCloud: {
+          ...digitalData.adobe?.experienceCloud,
+          secondVisits: 'setEvent',
+        },
       };
     }
+    if (getUpdatedAcrobatVisitAttempt() === 2) {
+      digitalData.adobe = {
+        ...digitalData.adobe,
+        experienceCloud: {
+          ...digitalData.adobe?.experienceCloud,
+          acrobatSecondVisits: 'setEvent',
+        },
+      };
+    }
+    digitalData.adobe = {
+      ...digitalData.adobe,
+      experienceCloud: {
+        ...digitalData.adobe?.experienceCloud,
+        agiCampaign: setAgICampVal ? agiCampaign : '',
+      },
+      gpc: getGlobalPrivacyControl(),
+    };
     xdm.implementationDetails = {
       name: 'https://ns.adobe.com/experience/alloy/reactor',
       version: '2.0',
@@ -322,10 +472,6 @@ function createRequestPayload({ updatedContext, pageName, locale, env, hitType }
     },
     meta: {
       target: { migration: true },
-      configOverrides: {
-        com_adobe_analytics: { reportSuites: REPORT_SUITES_ID },
-        com_adobe_target: { propertyToken: AT_PROPERTY_VAL },
-      },
       state: {
         domain: getDomainWithoutWWW(),
         cookiesEnabled: true,
@@ -383,15 +529,6 @@ export const createRequestUrl = ({
 }) => {
   const TARGET_API_URL = getUrl(hitType === 'propositionDisplay');
   dataStreamId = env === 'prod' ? DATA_STREAM_IDS_PROD.default : DATA_STREAM_IDS_STAGE.default;
-  if (hitType === 'pageView' || hitType === 'propositionDisplay') {
-    const isFirstVisit = !getCookie(AMCV_COOKIE);
-    const consentCookie = getCookie('OptanonConsent') || '';
-    if (isFirstVisit || !consentCookie || consentCookie.includes('C0004:0')) {
-      dataStreamId = env === 'prod' ? DATA_STREAM_IDS_PROD.excludeDS : DATA_STREAM_IDS_STAGE.excludeDS;
-    }
-    return `${TARGET_API_URL}?dataStreamId=${dataStreamId}&requestId=${generateUUIDv4()}`;
-  }
-
   return `${TARGET_API_URL}?dataStreamId=${dataStreamId}&requestId=${generateUUIDv4()}`;
 };
 
@@ -511,24 +648,34 @@ function sendPropositionDisplayRequest(filteredPayload, env, requestPayload) {
 export const loadAnalyticsAndInteractionData = async (
   { locale, env, calculatedTimeout },
 ) => {
-  const value = getCookie('kndctr_9E1005A551ED61CA0A490D45_AdobeOrg_consent');
+  const value = getCookie(KNDCTR_CONSENT_COOKIE);
 
   if (value === 'general=out') {
     return {};
   }
-
+  const getLocalISOString = () => {
+    const date = new Date();
+    const tzOffset = -date.getTimezoneOffset();
+    const diff = `${(tzOffset >= 0 ? '+' : '-')
+                 + String(Math.floor(Math.abs(tzOffset) / 60)).padStart(2, '0')}:${
+      String(Math.abs(tzOffset) % 60).padStart(2, '0')}`;
+    return date.toISOString().replace('Z', diff);
+  };
+  const localTime = getLocalISOString();
   const CURRENT_DATE = new Date();
-  const localTime = CURRENT_DATE.toISOString();
   const timezoneOffset = CURRENT_DATE.getTimezoneOffset();
   window.hybridPers = true;
   const hitType = 'pageView';
-  const pageName = getPageNameForAnalytics({ locale });
+  const pageName = getPageNameForAnalytics();
+  const processedPageName = getProcessedPageNameForAnalytics();
   const updatedContext = getUpdatedContext({ ...getDeviceInfo(), localTime, timezoneOffset });
   const requestUrl = createRequestUrl({
     env,
     hitType,
   });
-  const requestPayload = { updatedContext, pageName, locale, env, hitType };
+  const requestPayload = {
+    updatedContext, pageName, processedPageName, locale, env, hitType,
+  };
   const requestBody = createRequestPayload(requestPayload);
 
   try {

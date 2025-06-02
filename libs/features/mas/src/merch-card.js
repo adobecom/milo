@@ -62,6 +62,7 @@ export class MerchCard extends LitElement {
         size: { type: String, attribute: 'size', reflect: true },
         badgeColor: { type: String, attribute: 'badge-color', reflect: true },
         borderColor: { type: String, attribute: 'border-color', reflect: true },
+        backgroundColor: { type: String, attribute: 'background-color', reflect: true },
         badgeBackgroundColor: {
             type: String,
             attribute: 'badge-background-color',
@@ -200,6 +201,12 @@ export class MerchCard extends LitElement {
                 this.computedBorderStyle,
             );
         }
+        if (changedProperties.has('backgroundColor')) {
+            this.style.setProperty(
+                '--merch-card-custom-background-color',
+                this.backgroundColor ? `var(--${this.backgroundColor})` : '',
+            );
+        }
         try {
             this.variantLayout?.postCardUpdateHook(changedProperties);
         } catch (e) {
@@ -306,9 +313,7 @@ export class MerchCard extends LitElement {
         for (const element of elements) {
             const { offerType, planType } = element.value?.[0];
             if (!offerType || !planType) return;
-            const addonOsi = merchAddon.querySelector(
-                `p[data-plan-type="${planType}"] ${SELECTOR_MAS_INLINE_PRICE}[data-offer-type="${offerType}"]`,
-            )?.dataset?.wcsOsi;
+            const addonOsi = merchAddon.getOsi(planType, offerType);
             const osis = element.dataset.wcsOsi
                 .split(',')
                 .filter((osi) => osi !== addonOsi);
