@@ -168,11 +168,6 @@ async function fetchLogsForSite(siteName, baseUrl, fromParam) {
       );
     }
 
-    if (!entries.length) {
-      await slackNotification(`No log entries found for from ${FROM_PARAM}`);
-      return;
-    }
-
     return entries;
   } catch (err) {
     console.error(`Error fetching or writing logs for site ${siteName}:`, err);
