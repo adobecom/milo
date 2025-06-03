@@ -4,7 +4,7 @@ import { Env } from '../src/constants.js';
 import { getSettings } from '../src/settings.js';
 
 import { expect } from './utilities.js';
-import { PARAM_ENV, PARAM_LANDSCAPE } from '../src/constants.js';
+import { PARAM_ENV, PARAM_LANDSCAPE, FF_DISPLAY_PER_UNIT_FALSE, FF_DISPLAY_OLD_PRICE_TRUE } from '../src/constants.js';
 
 describe('getSettings', () => {
     let href;
@@ -23,11 +23,11 @@ describe('getSettings', () => {
         ({ href } = window.location);
 
         const metaPerUnit = document.createElement('meta');
-        metaPerUnit.name = 'mas-ff-def-display-per-unit-false';
+        metaPerUnit.name = FF_DISPLAY_PER_UNIT_FALSE;
         metaPerUnit.content = 'true';
         document.head.appendChild(metaPerUnit);
         const metaOld = document.createElement('meta');
-        metaOld.name = 'mas-ff-def-display-old-price-true';
+        metaOld.name = FF_DISPLAY_OLD_PRICE_TRUE;
         metaOld.content = 'true';
         document.head.appendChild(metaOld);
     });

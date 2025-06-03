@@ -4,6 +4,8 @@ import {
     Landscape,
     WCS_PROD_URL,
     WCS_STAGE_URL,
+    FF_DISPLAY_PER_UNIT_FALSE,
+    FF_DISPLAY_OLD_PRICE_TRUE,
 } from './constants.js';
 import { Defaults } from './defaults.js';
 import { Env, CheckoutWorkflow, CheckoutWorkflowStep } from './constants.js';
@@ -28,8 +30,8 @@ function getLocaleSettings({
 }
 
 function getSettings(config = {}) {
-    const defaultDisplayOldPriceTrue = getMetadata('mas-ff-def-display-old-price-true') === 'true';
-    const defaultDisplayPerUnitFalse = getMetadata('mas-ff-def-display-per-unit-false') === 'true';
+    const defaultDisplayOldPriceTrue = getMetadata(FF_DISPLAY_OLD_PRICE_TRUE) === 'true';
+    const defaultDisplayPerUnitFalse = getMetadata(FF_DISPLAY_PER_UNIT_FALSE) === 'true';
     // Always use `prod` env by default, regardless Milo env
     // but allow overriding it in metadata, location.search or storage
     // See https://github.com/adobecom/milo/pull/923

@@ -1,6 +1,7 @@
 import Sinon from 'sinon';
 
 import '../../../utils/lana.js';
+import { FF_DISPLAY_PER_UNIT_FALSE, FF_DISPLAY_OLD_PRICE_TRUE } from '../src/constants.js';
 import { Defaults } from '../src/defaults.js';
 import { TAG_NAME_SERVICE } from '../src/mas-commerce-service.js';
 
@@ -120,11 +121,11 @@ describe('commerce service', () => {
 
             it('generates some default with no attributes', async () => {
                 const metaPerUnit = document.createElement('meta');
-                metaPerUnit.name = 'mas-ff-def-display-per-unit-false';
+                metaPerUnit.name = FF_DISPLAY_PER_UNIT_FALSE
                 metaPerUnit.content = 'true';
                 document.head.appendChild(metaPerUnit);
                 const metaOld = document.createElement('meta');
-                metaOld.name = 'mas-ff-def-display-old-price-true';
+                metaOld.name = FF_DISPLAY_OLD_PRICE_TRUE;
                 metaOld.content = 'true';
                 document.head.appendChild(metaOld);
 

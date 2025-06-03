@@ -4,7 +4,7 @@ import { Price } from '../src/price.js';
 import { getSettings } from '../src/settings.js';
 import priceLiteralsJson from '../price-literals.json' with { type: 'json' };
 import { equalsCaseInsensitive } from '@dexter/tacocat-core';
-
+import { FF_DISPLAY_PER_UNIT_FALSE, FF_DISPLAY_OLD_PRICE_TRUE, FF_VAT_LABEL_PER_LOCALE } from '../src/constants.js';
 import { mockFetch } from './mocks/fetch.js';
 import { mockLana, unmockLana } from './mocks/lana.js';
 import * as snapshots from './price/__snapshots__/price.snapshots.js';
@@ -34,15 +34,15 @@ function mockInlinePrice(id, wcsOsi = '', options = {}) {
 
 before(() => {
     const metaPerUnit = document.createElement('meta');
-    metaPerUnit.name = 'mas-ff-def-display-per-unit-false';
+    metaPerUnit.name = FF_DISPLAY_PER_UNIT_FALSE;
     metaPerUnit.content = 'true';
     document.head.appendChild(metaPerUnit);
     const metaOld = document.createElement('meta');
-    metaOld.name = 'mas-ff-def-display-old-price-true';
+    metaOld.name = FF_DISPLAY_OLD_PRICE_TRUE;
     metaOld.content = 'true';
     document.head.appendChild(metaOld);
     const metaVat = document.createElement('meta');
-    metaVat.name = 'mas-ff-vat-label-per-locale';
+    metaVat.name = FF_VAT_LABEL_PER_LOCALE;
     metaVat.content = 'true';
     document.head.appendChild(metaVat);
 });
