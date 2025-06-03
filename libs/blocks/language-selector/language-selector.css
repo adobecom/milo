@@ -11,8 +11,7 @@
 }
 
 .search-container {
-  padding: var(--spacing-xs);
-  margin-bottom: 4px;
+  padding: 8px 16px 6px;
 }
 
 .search-input-wrapper {
