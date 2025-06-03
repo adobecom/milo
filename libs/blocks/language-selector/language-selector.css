@@ -77,8 +77,12 @@
 
 .language-link:hover {
   color: inherit !important;
-  background: #E9E9E9;
+  background: var(--color-gray-100);
   text-decoration: none;
+}
+
+.language-item.selected .language-link {
+  background: #E9E9E9;
 }
 
 .check-icon {
