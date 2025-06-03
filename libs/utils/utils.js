@@ -441,7 +441,7 @@ export function isInTextNode(node) {
 export function createTag(tag, attributes, html, options = {}) {
   const el = document.createElement(tag);
   if (html) {
-    if (html instanceof HTMLElement
+    if (html.nodeType === Node.ELEMENT_NODE
       || html instanceof SVGElement
       || html instanceof DocumentFragment) {
       el.append(html);
