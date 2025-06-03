@@ -258,6 +258,49 @@ async function decorateForegroundText(el, container) {
   if (iconArea?.textContent.trim()) await decorateLockup(iconArea, el);
 }
 
+function toolTipPosition(el, allViewPorts) {
+  const elIndex = [...allViewPorts].indexOf(el);
+  const isRtl = document.documentElement.getAttribute('dir') === 'rtl';
+  const isTablet = allViewPorts.length === 3 && elIndex === 1;
+  const isMobile = allViewPorts.length > 1 && elIndex === 0;
+  if (isMobile) el.classList.add('notification-pill-mobile');
+  if ((isRtl && isTablet) || (isMobile && !isRtl)) return 'right';
+
+  return 'left';
+}
+
+function getViewPortTextContent(viewPortEl) {
+  const viewPortClone = viewPortEl.cloneNode(true);
+  const buttons = viewPortClone.querySelectorAll('.action-area');
+  buttons.forEach((btn) => btn.remove());
+  return viewPortClone.textContent.trim();
+}
+
+async function addTooltip(el) {
+  const allViewPorts = el.querySelectorAll('.foreground > div');
+  const desktopView = [...allViewPorts].pop();
+  const desktopContentText = getViewPortTextContent(desktopView);
+  const toolTipIcons = [];
+  allViewPorts.forEach((viewPortEl) => {
+    const viewPortTextContent = getViewPortTextContent(viewPortEl);
+    if (viewPortTextContent === desktopContentText) return;
+    const childrenNoBtn = viewPortEl.querySelectorAll(':scope > *:not(.action-area)');
+    const lastChild = [...childrenNoBtn].pop();
+    const tooltipSpan = createTag('span', { class: 'icon icon-tooltip' });
+    const iconWrapper = createTag('em', {}, `${toolTipPosition(viewPortEl, allViewPorts)}|${desktopContentText}`);
+    iconWrapper.appendChild(tooltipSpan);
+    toolTipIcons.push(tooltipSpan);
+    lastChild.appendChild(iconWrapper);
+  });
+
+  if (!toolTipIcons.length) return;
+
+  const config = getConfig();
+  const { default: loadIcons } = await import('../../features/icons/icons.js');
+  loadStyle(`${base}/features/icons/icons.css`);
+  loadIcons(toolTipIcons, config);
+}
+
 async function decorateLayout(el) {
   const [background, ...rest] = el.querySelectorAll(':scope > div');
   const foreground = rest.pop();
@@ -285,6 +328,7 @@ export default async function init(el) {
   const { fontSizes, options } = getBlockData(el);
   const blockText = await decorateLayout(el);
   decorateBlockText(blockText, fontSizes);
+  if (el.classList.contains('pill')) addTooltip(el);
   if (options.borderBottom) {
     el.append(createTag('div', { style: `background: ${options.borderBottom};`, class: 'border' }));
   }
