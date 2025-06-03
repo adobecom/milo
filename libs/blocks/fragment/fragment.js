@@ -90,9 +90,11 @@ export default async function init(a) {
   }
 
   if (a.href.includes('#_inline')) {
-    inline = true;
-    a.href = a.href.replace('#_inline', '');
-    relHref = relHref.replace('#_inline', '');
+    inline = !a.href.includes('#_replacecell');
+    ['#_inline', '#_replacecell'].forEach((flag) => {
+      a.href = a.href.replace(flag, '');
+      relHref = relHref.replace(flag, '');
+    });
   }
 
   if (isCircularRef(relHref)) {
