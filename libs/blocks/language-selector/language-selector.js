@@ -417,6 +417,8 @@ export default async function init(block) {
     };
 
     dragHandle.addEventListener('touchstart', (e) => {
+      dropdown.classList.remove('fixed-height');
+      dropdown.style.minHeight = '0';
       const touch = e.touches[0];
       startY = touch.clientY;
       startHeight = dropdown.offsetHeight;
@@ -425,6 +427,7 @@ export default async function init(block) {
         if (parseInt(dropdown.style.height, 10) <= 1) {
           dropdown.style.display = 'none';
           dropdown.style.height = '';
+          dropdown.classList.add('fixed-height');
         }
         document.removeEventListener('touchmove', onTouchMove);
       }, { once: true });
