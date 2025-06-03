@@ -1286,6 +1286,12 @@
     gap: unset;
   }
 
+  .section:has(.aside:nth-child(3)) .aside [class^="detail-"],
+  .section:has(.aside:nth-child(3)) .aside [class^="heading-"]:only-of-type,
+  .section:has(.aside:nth-child(3)) .aside [class^="heading-"]:last-of-type {
+    margin-bottom: var(--spacing-xxs);
+  }
+
   .section:has(.aside:nth-child(3)) .aside .foreground.container .text {
     padding-inline: var(--spacing-xs);
   }
