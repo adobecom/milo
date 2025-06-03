@@ -98,7 +98,7 @@ function createDropdownElements(regionPickerTextElem, placeholderText, setAriaOn
     id: 'language-selector-listbox',
     role: 'listbox',
     tabindex: '0',
-    'aria-label': 'Select language',
+    'aria-label': placeholderText,
   });
 
   return { dropdown, searchContainer, languageList };
