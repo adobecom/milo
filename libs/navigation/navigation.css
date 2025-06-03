@@ -12,6 +12,8 @@
   --feds-height-nav: 55px;
   --color-white: #FFF;
   --modal-close-accent-color: #707070;
+  --text-color: #2c2c2c;
+  --body-font-family: 'Adobe Clean', adobe-clean, 'Trebuchet MS', sans-serif;
 }
 
 .global-navigation, .global-footer, .dialog-modal {
@@ -53,6 +55,7 @@ header.global-navigation, header.global-navigation.feds--dark {
 header.global-navigation + .feds-localnav {
   display: block;
   height: var(--feds-localnav-height);
+  font-family: 'Adobe Clean', adobe-clean, 'Trebuchet MS', sans-serif;
 }
 
 .feds-promo-aside-wrapper {
