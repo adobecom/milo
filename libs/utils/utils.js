@@ -316,23 +316,30 @@ export const [setConfig, updateConfig, getConfig] = (() => {
 })();
 
 let federatedContentRoot;
-/* eslint-disable import/prefer-default-export */
 export const getFederatedContentRoot = () => {
+  if (federatedContentRoot) return federatedContentRoot;
+
   const cdnWhitelistedOrigins = [
     'https://www.adobe.com',
     'https://business.adobe.com',
     'https://blog.adobe.com',
     'https://milo.adobe.com',
     'https://news.adobe.com',
+    'graybox.adobe.com',
   ];
   const { allowedOrigins = [], origin: configOrigin } = getConfig();
   if (federatedContentRoot) return federatedContentRoot;
   // Non milo consumers will have its origin from config
   const origin = configOrigin || window.location.origin;
 
-  federatedContentRoot = [...allowedOrigins, ...cdnWhitelistedOrigins].some((o) => origin.replace('.stage', '') === o)
-    ? origin
-    : 'https://www.adobe.com';
+  const isAllowedOrigin = [...allowedOrigins, ...cdnWhitelistedOrigins].some((o) => {
+    const originNoStage = origin.replace('.stage', '');
+    return o.startsWith('https://')
+      ? originNoStage === o
+      : originNoStage.endsWith(o);
+  });
+
+  federatedContentRoot = isAllowedOrigin ? origin : 'https://www.adobe.com';
 
   if (origin.includes('localhost') || origin.includes(`.${SLD}.`)) {
     federatedContentRoot = `https://main--federal--adobecom.aem.${origin.endsWith('.live') ? 'live' : 'page'}`;
