@@ -315,6 +315,11 @@ function handleSection(sectionParams) {
       handleTitleText(sectionHeadTitle);
       sectionHeadTitle.classList.add('section-head-title');
       sectionHeadTitle.setAttribute('role', 'rowheader');
+      const sectionHeadText = sectionHeadTitle.querySelector('.table-title-text');
+      if (sectionHeadText) {
+        sectionHeadText.setAttribute('role', 'heading');
+        sectionHeadText.setAttribute('aria-level', '4');
+      }
     }
 
     if (isCollapseTable) {
