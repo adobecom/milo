@@ -339,7 +339,7 @@ const getBrandImage = (image, brandImageOnly) => {
 
 const closeOnClickOutside = (e, isLocalNav, navWrapper) => {
   if (isLocalNav && navWrapper.classList.contains('feds-nav-wrapper--expanded')) return;
-  const newMobileNav = getMetadata('mobile-gnav-v2') !== 'false';
+  const newMobileNav = getMetadata('mobile-gnav-v2') !== 'off';
   if (!isDesktop.matches && !newMobileNav) return;
 
   const openElemSelector = `${selectors.globalNav} [aria-expanded = "true"]:not(.universal-nav-container *), ${selectors.localNav} [aria-expanded = "true"]`;
