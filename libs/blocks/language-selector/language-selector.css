@@ -90,7 +90,6 @@
   flex-shrink: 0;
 }
 
-/* Custom scrollbar */
 .language-list::-webkit-scrollbar {
   width: 6px;
 }
@@ -110,6 +109,27 @@
 
 .language-list .language-item:last-child {
   margin-bottom: 4px;
+}
+
+.language-dropdown.fixed-height {
+  min-height: var(--dropdown-initial-height, 0);
+}
+
+.search-input-wrapper:focus-within {
+  border-color: #131313;
+  box-shadow: none;
+  outline: none;
+}
+
+.search-input-wrapper.focus-visible {
+  outline: 2px solid #4B75FF;
+  outline-offset: 2px;
+}
+
+.search-input:focus,
+.search-input:focus-visible {
+  outline: none;
+  box-shadow: none;
 }
 
 @media (max-width: 600px) {
@@ -160,33 +180,4 @@
   .language-link {
     padding: 8px 16px;
   }
-}
-
-.language-dropdown.fixed-height {
-  min-height: var(--dropdown-initial-height, 0);
-}
-
-/* Always show black border on focus (mouse or keyboard) */
-.search-input-wrapper:focus-within {
-  border-color: #131313;
-  box-shadow: none;
-  outline: none;
-}
-
-/* Show blue ring with a gap on keyboard focus only (when .focus-visible class is present) */
-.search-input-wrapper.focus-visible {
-  outline: 2px solid #5258E4;
-  outline-offset: 2px;
-}
-
-/* Remove focus ring from the input itself */
-.search-input:focus,
-.search-input:focus-visible {
-  outline: none;
-  box-shadow: none;
-}
-
-.language-list:focus {
-  outline: 2px solid var(--color-accent, #5258E4);
-  outline-offset: 2px;
 }
