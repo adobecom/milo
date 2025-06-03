@@ -284,6 +284,21 @@ function moveSlides(event, carouselElements, jumpToIndex) {
     .findIndex((ele) => activeSlide.isSameNode(ele));
   const IndexOfShowClass = [...carouselElements.el.classList].findIndex((ele) => ele.includes('show-'));
   const tempSlides = [...slides.slice(indexOfActive), ...slides.slice(0, indexOfActive)];
+
+  // mweb Update heights dynamically
+  if (carouselElements.el.classList.contains('disable-buttons') && window.innerWidth < 900) {
+    const maxHeight = Math.max(...slides.map((slide) => slide.offsetHeight));
+    const nextSlide = handleNext(activeSlide, slides);
+    const prevSlide = handlePrevious(activeSlide, slides);
+    slides.forEach((slide) => {
+      if (slide === nextSlide || slide === prevSlide) {
+        slide.style.height = `${maxHeight - 40}px`;
+      } else {
+        slide.style.height = `${maxHeight}px`;
+      }
+    });
+  }
+
   if (IndexOfShowClass >= 0) {
     const show = parseInt(carouselElements.el.classList[IndexOfShowClass].split('-')[1], 10);
     tempSlides.forEach((slide, index) => {
@@ -442,8 +457,15 @@ function readySlides(slides, slideContainer) {
 // mweb-dev changes
 function setEqualHeight(slides) {
   const maxHeight = Math.max(...slides.map((slide) => slide.offsetHeight));
-  slides.forEach((section) => {
-    if (section) section.style.height = `${maxHeight}px`;
+  const activeSlide = slides.find((slide) => slide.classList.contains('active')) || slides[0];
+  const nextSlide = handleNext(activeSlide, slides);
+  const prevSlide = handlePrevious(activeSlide, slides);
+  slides.forEach((slide) => {
+    if (slide === nextSlide || slide === prevSlide) {
+      slide.style.height = `${maxHeight - 40}px`;
+    } else {
+      slide.style.height = `${maxHeight}px`;
+    }
   });
 }
 
@@ -533,8 +555,14 @@ export default function init(el) {
   }
   slides.slice(NoOfVisibleSlides).forEach((slide) => slide.querySelectorAll('a').forEach((focusableElement) => { focusableElement.setAttribute('tabindex', -1); }));
   // ##mweb## Update button states after slide movement for mweb
+  function handleEqualHeight() {
+    setEqualHeight(slides);
+    parentArea.removeEventListener(MILO_EVENTS.DEFERRED, handleEqualHeight, true);
+  }
+
   if (el.classList.contains('disable-buttons') && window.innerWidth < 900) {
     updateButtonStates(carouselElements);
+    parentArea.addEventListener(MILO_EVENTS.DEFERRED, handleEqualHeight, true);
   }
   handleChangingSlides(carouselElements);
 
@@ -544,11 +572,4 @@ export default function init(el) {
   }
 
   parentArea.addEventListener(MILO_EVENTS.DEFERRED, handleLateLoadingNavigation, true);
-
-  // mweb-dev changes for equal height of cards
-  function handleEqualHeight() {
-    setEqualHeight(slides);
-    parentArea.removeEventListener(MILO_EVENTS.DEFERRED, handleEqualHeight, true);
-  }
-  parentArea.addEventListener(MILO_EVENTS.DEFERRED, handleEqualHeight, true);
 }
