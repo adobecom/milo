@@ -183,11 +183,6 @@ html[dir="rtl"] .carousel-slides {
   visibility: hidden !important;
 }
 
-/* Show slides when neither hide class is present */
-.carousel-slide:not(.hide-left-hint):not(.hide-right-hint) {
-  display: flex !important;
-}
-
 html[dir="rtl"] .carousel-slides .section.carousel-slide {
   direction: rtl;
 }
@@ -737,6 +732,17 @@ html[dir="rtl"] .carousel .move-indicators {
 }
 
 /* ##mweb changes## */
+.carousel.carousel.disable-buttons .carousel-slide.hide-left-hint {
+  visibility: hidden !important;
+}
+
+.carousel.carousel.disable-buttons .carousel-slide.hide-right-hint {
+  visibility: hidden !important;
+}
+
+.carousel.carousel.disable-buttons .carousel-slides {
+  align-items: center;
+}
 
 .carousel.dark.disable-buttons .carousel-button,
 .dark .carousel.disable-buttons .carousel-button {
