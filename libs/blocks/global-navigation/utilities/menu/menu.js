@@ -118,7 +118,7 @@ const decorateElements = ({ elem, className = 'feds-navLink', itemIndex = { posi
 
   // If the element is a link, decorate it and return it directly
   if (elem.matches(linkSelector)) {
-    return decorateLink(elem);
+    return toFragment`<li>${decorateLink(elem)}</li>`;
   }
 
   // Otherwise, this might be a collection of elements;
@@ -145,12 +145,20 @@ const decorateGnavImage = (elem) => {
 const decoratePromo = (elem, index) => {
   const isDarkTheme = elem.matches('.dark');
   const isImageOnly = elem.matches('.image-only');
+  const promoHeader = elem.querySelector('p > strong');
   const imageElem = elem.querySelector('picture');
 
   if (!isImageOnly) {
     const content = [...elem.querySelectorAll(':scope > div')]
       .find((section) => !(section.querySelector('picture') instanceof HTMLElement));
     content?.classList.add('feds-promo-content');
+  }
+
+  if (promoHeader?.textContent.trim()) {
+    const headingElem = toFragment`<h2 class="feds-promo-header">
+        ${promoHeader.textContent.trim()}
+      </h2>`;
+    promoHeader.parentElement.replaceWith(headingElem);
   }
 
   decorateElements({ elem, className: 'feds-promo-link', index });
@@ -274,14 +282,28 @@ const decorateColumns = async ({ content, separatorTagName = 'H5' } = {}) => {
 
         itemDestination.append(imageElem);
       } else {
-        const decoratedElem = decorateElements({ elem: columnElem, itemIndex });
+        let decoratedElem = decorateElements({ elem: columnElem, itemIndex });
         columnElem.remove();
 
         // If an items template has been previously created,
         // add the current element to it;
         // otherwise append the element to the section
         const elemDestination = menuItems || itemDestination;
-        elemDestination.append(decoratedElem);
+        let menuList = null;
+        if (decoratedElem.tagName === 'P') {
+          decoratedElem = toFragment`<li>${decoratedElem.innerHTML}</li>`;
+        }
+        if (decoratedElem.tagName === 'LI') {
+          let ul = elemDestination.querySelector('ul');
+          if (!ul) {
+            ul = toFragment`<ul></ul>`;
+            elemDestination.append(ul);
+          }
+          menuList = ul;
+        } else {
+          menuList = elemDestination;
+        }
+        menuList.append(decoratedElem);
       }
     }
 
@@ -382,6 +404,8 @@ const decorateMenu = (config) => logErrorFor(async () => {
     await decorateColumns({ content: config.item, separatorTagName: 'H2' });
   }
 
+  // Remove the loading state created in delayDropdownDecoration
+  config.template?.querySelector('.feds-popup.loading')?.remove();
   config.template?.append(menuTemplate);
   if (config.type === 'asyncDropdownTrigger') {
     performance.mark(`DecorateMenu-${asyncDropDownCount}-End`);
