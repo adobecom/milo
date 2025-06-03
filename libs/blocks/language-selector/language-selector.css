@@ -81,10 +81,6 @@
   text-decoration: none;
 }
 
-.language-item.selected .language-link {
-  background: none;
-}
-
 .check-icon {
   width: 16px;
   height: 16px;
