@@ -83,7 +83,7 @@ jobs:
         script: |
           const notifySnowCr = require('./.github/workflows/snow-cr-notification.js');
           if (process.env.PR_STATE == 'open') {
-            await notifySnowCr({ github, context, transaction_id: process.env.TRANSACTION_ID, change_id: null, planned_start_time:  null, planned_end_time: null });
+            await notifySnowCr({ github, context, transaction_id: process.env.TRANSACTION_ID, change_id: null, planned_start_time:  process.env.PLANNED_START_TIME, planned_end_time: process.env.PLANNED_END_TIME });
           } else {
             await notifySnowCr({ github, context, transaction_id: process.env.TRANSACTION_ID, change_id: process.env.CHANGE_ID, planned_start_time: process.env.PLANNED_START_TIME, planned_end_time: process.env.PLANNED_END_TIME });
           }
