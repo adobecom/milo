@@ -2,7 +2,7 @@
   position: absolute;
   bottom: calc(100% + 5px);
   left: 0;
-  width: 196px;
+  width: 230px;
   background: var(--background-color);
   border-radius: 8px;
   box-shadow: 0 2px 10px rgba(0 0 0 / 10%);
@@ -166,14 +166,25 @@
   min-height: var(--dropdown-initial-height, 0);
 }
 
-/* Focused state: blue border and blue focus ring */
 .search-input-wrapper:focus-within {
   border-color: #131313;
   box-shadow: none;
   outline: none;
 }
 
-/*.language-list:focus {
+.search-input-wrapper:focus-visible {
+  box-shadow: 0 0 0 2px #5258E4;
+  outline: none;
+}
+
+/* Remove focus ring from the input itself */
+.search-input:focus,
+.search-input:focus-visible {
+  outline: none;
+  box-shadow: none;
+}
+
+.language-list:focus {
   outline: 2px solid var(--color-accent, #5258E4);
   outline-offset: 2px;
-}*/
+}
