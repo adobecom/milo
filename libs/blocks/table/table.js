@@ -207,12 +207,11 @@ function setTooltipPosition(el) {
       }
     }
 
-    if (isRtl ? willOverflowLeft : willOverflowRight) {
+    const shouldPositionLeft = isRtl ? willOverflowLeft : willOverflowRight;
+    const shouldPositionRight = isRtl ? willOverflowRight : willOverflowLeft;
+    if (shouldPositionLeft || shouldPositionRight) {
       tooltip.classList.remove(...positionClasses);
-      tooltip.classList.add('left');
-    } else if (isRtl ? willOverflowRight : willOverflowLeft) {
-      tooltip.classList.remove(...positionClasses);
-      tooltip.classList.add('right');
+      tooltip.classList.add(shouldPositionLeft ? 'left' : 'right');
     }
   });
 }
