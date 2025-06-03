@@ -5,8 +5,6 @@ import { iphoneFrame, ipadFrame } from './mobileFrames.js';
 const URL_MAP = new Map([
   ['business.adobe.com', 'business-graybox.adobe.com'],
   ['www.adobe.com', 'graybox.adobe.com'],
-  // not in use yet
-  // ['www.adobe.com/creativecloud', 'cc-graybox.adobe.com'],
 ]);
 
 const OPTION = {
