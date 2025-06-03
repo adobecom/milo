@@ -219,9 +219,84 @@ export function processPrices(fields, merchCard, mapping) {
     appendSlot('prices', fields, merchCard, mapping);
 }
 
+// Helper function to encapsulate link-to-button transformation logic
+function transformLinkToButton(linkElement, merchCard, aemFragmentMapping) {
+    const isCheckoutLink = linkElement.hasAttribute('data-wcs-osi') && Boolean(linkElement.getAttribute('data-wcs-osi'));
+
+    const originalClassName = linkElement.className || '';
+    const checkoutLinkStyle = CHECKOUT_STYLE_PATTERN.exec(originalClassName)?.[0] ?? 'accent';
+    const isAccent = checkoutLinkStyle.includes('accent');
+    const isPrimary = checkoutLinkStyle.includes('primary');
+    const isSecondary = checkoutLinkStyle.includes('secondary');
+    const isOutline = checkoutLinkStyle.includes('-outline');
+    const isLinkStyle = checkoutLinkStyle.includes('-link');
+
+    linkElement.classList.remove('accent', 'primary', 'secondary');
+
+    let newButtonElement;
+
+    if (merchCard.consonant) {
+        newButtonElement = createConsonantButton(linkElement, isAccent, isCheckoutLink);
+    } else if (isLinkStyle) {
+        newButtonElement = linkElement;
+    } else {
+        let variant;
+        if (isAccent) {
+            variant = 'accent';
+        } else if (isPrimary) {
+            variant = 'primary';
+        } else if (isSecondary) {
+            variant = 'secondary';
+        }
+
+        newButtonElement = merchCard.spectrum === 'swc'
+            ? createSpectrumSwcButton(
+                  linkElement,
+                  aemFragmentMapping, 
+                  isOutline,
+                  variant,
+                  isCheckoutLink
+              )
+            : createSpectrumCssButton(
+                  linkElement,
+                  aemFragmentMapping,
+                  isOutline,
+                  variant,
+                  isCheckoutLink
+              );
+    }
+    return newButtonElement;
+}
+
+function processDescriptionHTML(originalHtmlString, merchCard, aemFragmentMapping) {
+    if (!originalHtmlString) return '';
+
+    const tempContainer = document.createElement('div');
+    tempContainer.innerHTML = originalHtmlString;
+
+    const links = tempContainer.querySelectorAll('a');
+
+    links.forEach(link => {
+        const isPotentiallyAButton = link.hasAttribute('data-wcs-osi') && Boolean(link.getAttribute('data-wcs-osi'));
+
+        if (isPotentiallyAButton) {
+            const newElement = transformLinkToButton(link, merchCard, aemFragmentMapping);
+
+            if (newElement && newElement !== link && link.parentNode) {
+                // newElement.className = ''; // Removed per previous discussion; handle classes in transformLinkToButton/create... functions
+                link.parentNode.replaceChild(newElement, link);
+            }
+        } 
+    });
+
+    return tempContainer.innerHTML;
+}
+
 export function processDescription(fields, merchCard, mapping) {
+    const modifiedDescriptionHtml = processDescriptionHTML(fields.description, merchCard, mapping);
+    const tempFieldsForDescription = { ...fields, description: modifiedDescriptionHtml };
     appendSlot('promoText', fields, merchCard, mapping);
-    appendSlot('description', fields, merchCard, mapping);
+    appendSlot('description', tempFieldsForDescription, merchCard, mapping); // Use modified HTML
     appendSlot('callout', fields, merchCard, mapping);
     appendSlot('quantitySelect', fields, merchCard, mapping);
     appendSlot('whatsIncluded', fields, merchCard, mapping);
