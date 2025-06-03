@@ -1,5 +1,5 @@
-import { createTag, getConfig, MILO_EVENTS } from '../../../utils/utils.js';
-import { decorateAnchorVideo, syncPausePlayIcon } from '../../../utils/decorate.js';
+import { createTag, getConfig, MILO_EVENTS } from '../../utils/utils.js';
+import { decorateAnchorVideo, syncPausePlayIcon } from '../../utils/decorate.js';
 
 const { miloLibs, codeRoot } = getConfig();
 const base = miloLibs || codeRoot;
@@ -289,8 +289,9 @@ function moveSlides(event, carouselElements, jumpToIndex) {
   if (carouselElements.el.classList.contains('disable-buttons') && window.innerWidth < 900) {
     const maxHeight = Math.max(...slides.map((slide) => slide.offsetHeight));
     const nextSlide = handleNext(activeSlide, slides);
+    const prevSlide = handlePrevious(activeSlide, slides);
     slides.forEach((slide) => {
-      if (slide === nextSlide) {
+      if (slide === nextSlide || slide === prevSlide) {
         slide.style.height = `${maxHeight - 40}px`;
       } else {
         slide.style.height = `${maxHeight}px`;
@@ -457,15 +458,13 @@ function readySlides(slides, slideContainer) {
 function setEqualHeight(slides) {
   const maxHeight = Math.max(...slides.map((slide) => slide.offsetHeight));
   const activeSlide = slides.find((slide) => slide.classList.contains('active')) || slides[0];
-  const activeIndex = slides.indexOf(activeSlide);
-  const nextIndex = (activeIndex + 1) % slides.length;
-  slides.forEach((section, index) => {
-    if (section) {
-      if (index === nextIndex) {
-        section.style.height = `${maxHeight - 40}px`;
-      } else {
-        section.style.height = `${maxHeight}px`;
-      }
+  const nextSlide = handleNext(activeSlide, slides);
+  const prevSlide = handlePrevious(activeSlide, slides);
+  slides.forEach((slide) => {
+    if (slide === nextSlide || slide === prevSlide) {
+      slide.style.height = `${maxHeight - 40}px`;
+    } else {
+      slide.style.height = `${maxHeight}px`;
     }
   });
 }
