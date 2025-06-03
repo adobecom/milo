@@ -2,7 +2,7 @@ import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import { waitForElement } from '../../helpers/waitfor.js';
 import { setConfig } from '../../../libs/utils/utils.js';
-import { updateCaptionsParam } from '../../../libs/blocks/adobetv/adobetv.js';
+import { updateCaptionsLang } from '../../../libs/blocks/adobetv/adobetv.js';
 
 document.body.innerHTML = await readFile({ path: './mocks/body.html' });
 setConfig({});
@@ -33,31 +33,31 @@ describe('adobetv autoblock', () => {
 describe('updateCaptionsParam', () => {
   it('should update captions parameter for known geo', () => {
     const url = 'https://video.tv.adobe.com/v/123456?captions=eng';
-    const result = updateCaptionsParam(url, 'fr');
+    const result = updateCaptionsLang(url, 'fr');
     expect(result).to.equal('https://video.tv.adobe.com/v/123456?captions=fre_fr');
   });
 
   it('should not modify captions for unknown geo', () => {
     const url = 'https://video.tv.adobe.com/v/123456?captions=eng';
-    const result = updateCaptionsParam(url, 'unknown_geo');
+    const result = updateCaptionsLang(url, 'unknown_geo');
     expect(result).to.equal(url);
   });
 
   it('should not add captions parameter if not present', () => {
     const url = 'https://video.tv.adobe.com/v/123456';
-    const result = updateCaptionsParam(url, 'fr');
+    const result = updateCaptionsLang(url, 'fr');
     expect(result).to.equal(url);
   });
 
   it('should handle multiple query parameters', () => {
     const url = 'https://video.tv.adobe.com/v/123456?autoplay=true&captions=eng';
-    const result = updateCaptionsParam(url, 'jp');
+    const result = updateCaptionsLang(url, 'jp');
     expect(result).to.equal('https://video.tv.adobe.com/v/123456?autoplay=true&captions=jpn');
   });
 
   it('should preserve other query parameters when updating captions', () => {
     const url = 'https://video.tv.adobe.com/v/123456?captions=eng&quality=hd&autoplay=true';
-    const result = updateCaptionsParam(url, 'de');
+    const result = updateCaptionsLang(url, 'de');
     expect(result).to.equal('https://video.tv.adobe.com/v/123456?captions=ger&quality=hd&autoplay=true');
   });
 });

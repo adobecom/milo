@@ -1,126 +1,79 @@
 import { decorateAnchorVideo } from '../../utils/decorate.js';
 import { getConfig, createTag } from '../../utils/utils.js';
 
-const CaptionMap = {
-  ae_ar: 'eng',
-  ae_en: 'eng',
-  africa: 'eng',
-  au: 'eng',
-  be_en: 'eng',
-  bg: 'eng',
-  ca: 'eng',
-  cz: 'eng',
-  dk: 'eng',
-  ee: 'eng',
-  gr_en: 'eng',
-  hk_en: 'eng',
-  hu: 'eng',
-  id_en: 'eng',
-  id_id: 'eng',
-  ie: 'eng',
-  il_en: 'eng',
-  il_he: 'eng',
-  in: 'eng',
-  lt: 'eng',
-  lu_en: 'eng',
-  lv: 'eng',
-  mena_ar: 'eng',
-  mena_en: 'eng',
-  my_en: 'eng',
-  my_ms: 'eng',
-  no: 'eng',
-  nz: 'eng',
-  ph_en: 'eng',
-  ph_fil: 'eng',
-  pl: 'eng',
-  ro: 'eng',
-  ru: 'eng',
-  sa_ar: 'eng',
-  sa_en: 'eng',
-  sg: 'eng',
-  si: 'eng',
-  sk: 'eng',
-  th_en: 'eng',
-  tr: 'eng',
-  ua: 'eng',
-  uk: 'eng',
-  vn_en: 'eng',
-  vn_vi: 'eng',
-  fi: 'eng',
-
-  be_fr: 'fre_fr',
-  ch_fr: 'fre_fr',
-  fr: 'fre_fr',
-  lu_fr: 'fre_fr',
-  ca_fr: 'fre_fr',
-
-  at: 'ger',
-  ch_de: 'ger',
-  lu_de: 'ger',
-  de: 'ger',
-
-  jp: 'jpn',
-
-  it: 'ita',
-  ch_it: 'ita',
-
-  es: 'spa',
-
-  br: 'por_br',
-  pt: 'por_br',
-
-  th_th: 'tha',
-
-  ar: 'spa_la',
-  cl: 'spa_la',
-  co: 'spa_la',
-  la: 'spa_la',
-  mx: 'spa_la',
-  pe: 'spa_la',
-
-  nl: 'dut',
-  be_nl: 'dut',
-
-  se: 'swe',
-
-  cn: 'chi_hans',
-
-  hk: 'chi_hant',
-  tw: 'chi_hant',
-
-  in_hi: 'hin',
-
-  kr: 'kor',
+const CaptionsLangMap = {
+  eng: [
+    'ae_ar', 'ae_en', 'africa', 'au', 'be_en', 'bg', 'ca', 'cz', 'dk', 'ee', 'gr_en',
+    'hk_en', 'hu', 'id_en', 'id_id', 'ie', 'il_en', 'il_he', 'in', 'lt', 'lu_en',
+    'lv', 'mena_ar', 'mena_en', 'my_en', 'my_ms', 'no', 'nz', 'ph_en', 'ph_fil',
+    'pl', 'ro', 'ru', 'sa_ar', 'sa_en', 'sg', 'si', 'sk', 'th_en', 'tr', 'ua', 'uk',
+    'vn_en', 'vn_vi', 'fi',
+  ],
+  fre_fr: ['be_fr', 'ch_fr', 'fr', 'lu_fr', 'ca_fr'],
+  ger: ['at', 'ch_de', 'lu_de', 'de'],
+  jpn: ['jp'],
+  ita: ['it', 'ch_it'],
+  spa: ['es'],
+  por_br: ['br', 'pt'],
+  tha: ['th_th'],
+  spa_la: ['ar', 'cl', 'co', 'la', 'mx', 'pe'],
+  dut: ['nl', 'be_nl'],
+  swe: ['se'],
+  chi_hans: ['cn'],
+  chi_hant: ['hk', 'tw'],
+  hin: ['in_hi'],
+  kor: ['kr'],
 };
-export const updateCaptionsParam = (urlStr, geo) => {
-  const url = new URL(urlStr);
+
+/**
+ * Maps a video URL's captions parameter to the appropriate language code based on geo location.
+ *
+ * @param {string} videoUrl - The URL of the Adobe TV video
+ * @param {string} geo - The geographic location code (e.g. 'fr', 'jp', 'de')
+ * @returns {string} The updated video URL with the correct captions language parameter
+*
+ * @example
+ * // Updates captions to French for French geo
+ * updateCaptionsLang('https://video.tv.adobe.com/v/123456?captions=eng', 'fr')
+ * // Returns: 'https://video.tv.adobe.com/v/123456?captions=fre_fr'
+ *
+ * @example
+ * // Preserves URL if captions param not present
+ * updateCaptionsLang('https://video.tv.adobe.com/v/123456', 'fr')
+ * // Returns: 'https://video.tv.adobe.com/v/123456'
+ */
+
+export const updateCaptionsLang = (videoUrl, geo) => {
+  const url = new URL(videoUrl);
 
   if (url.searchParams.has('captions')) {
-    const newCaption = CaptionMap[geo];
-    if (newCaption) {
-      url.searchParams.set('captions', newCaption);
+    for (const [langCode, geos] of Object.entries(CaptionsLangMap)) {
+      if (geos.includes(geo)) {
+        url.searchParams.set('captions', langCode);
+        break;
+      }
     }
   }
 
   return url.toString();
 };
+
 export default function init(a) {
   const config = getConfig();
-  const localePrefix = config?.locale?.prefix || '';
-  const geo = localePrefix.replace('/', '') ?? '';
-  const captionHref = updateCaptionsParam(a.href, geo);
+  const geo = (config?.locale?.prefix || '').replace('/', '');
+  const videoHref = updateCaptionsLang(a.href, geo);
   a.classList.add('hide-video');
   const bgBlocks = ['aside', 'marquee', 'hero-marquee', 'long-form'];
   if (a.href.includes('.mp4') && bgBlocks.some((b) => a.closest(`.${b}`))) {
     a.classList.add('hide');
     if (!a.parentNode) return;
     decorateAnchorVideo({
-      src: captionHref,
+      src: videoHref,
       anchorTag: a,
     });
   } else {
     const iframe = createTag('iframe', {
-      src: captionHref,
+      src: videoHref,
       class: 'adobetv',
       scrolling: 'no',
       allow: 'encrypted-media; fullscreen',
