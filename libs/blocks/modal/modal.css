@@ -464,6 +464,6 @@
   overflow: hidden;
 }
 
-body:has(.dialog-modal) #adbMsgClientWrapper #adbmsgContainer #adbmsgCta {
+body:has(.dialog-modal) #adbMsgClientWrapper #adbmsgContainer > * {
   z-index: var(--jarvis-z-index-override);
 }
