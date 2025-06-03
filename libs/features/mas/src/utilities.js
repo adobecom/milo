@@ -65,3 +65,7 @@ export function toOfferSelectorIds(value) {
 export function getService() {
     return document.getElementsByTagName(MAS_COMMERCE_SERVICE)?.[0];
 }
+
+export function getMetadata(name) {
+  return document.head.querySelector(`meta[name="${name}"]`)?.getAttribute('content');
+}

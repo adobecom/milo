@@ -119,6 +119,15 @@ describe('commerce service', () => {
             });
 
             it('generates some default with no attributes', async () => {
+                const metaPerUnit = document.createElement('meta');
+                metaPerUnit.name = 'mas-ff-def-display-per-unit-false';
+                metaPerUnit.content = 'true';
+                document.head.appendChild(metaPerUnit);
+                const metaOld = document.createElement('meta');
+                metaOld.name = 'mas-ff-def-display-old-price-true';
+                metaOld.content = 'true';
+                document.head.appendChild(metaOld);
+
                 const el = await initMasCommerceService({});
                 expect(el.settings).to.deep.equal({
                     checkoutClientId: 'adobe_com',

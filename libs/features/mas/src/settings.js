@@ -14,7 +14,7 @@ import {
     toEnumeration,
 } from '@dexter/tacocat-core';
 
-import { toQuantity } from './utilities.js';
+import { toQuantity, getMetadata } from './utilities.js';
 
 function getLocaleSettings({
     locale = undefined,
@@ -28,6 +28,8 @@ function getLocaleSettings({
 }
 
 function getSettings(config = {}) {
+    const defaultDisplayOldPriceTrue = getMetadata('mas-ff-def-display-old-price-true') === 'true';
+    const defaultDisplayPerUnitFalse = getMetadata('mas-ff-def-display-per-unit-false') === 'true';
     // Always use `prod` env by default, regardless Milo env
     // but allow overriding it in metadata, location.search or storage
     // See https://github.com/adobecom/milo/pull/923
@@ -54,11 +56,11 @@ function getSettings(config = {}) {
     }
     const displayOldPrice = toBoolean(
         getParameter('displayOldPrice', commerce),
-        Defaults.displayOldPrice,
+        defaultDisplayOldPriceTrue ? Defaults.displayOldPrice : !Defaults.displayOldPrice,
     );
     const displayPerUnit = toBoolean(
         getParameter('displayPerUnit', commerce),
-        Defaults.displayPerUnit,
+        defaultDisplayPerUnitFalse ? Defaults.displayPerUnit : !Defaults.displayPerUnit,
     );
     const displayRecurrence = toBoolean(
         getParameter('displayRecurrence', commerce),

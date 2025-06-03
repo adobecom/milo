@@ -122,7 +122,7 @@ describe('processPrices', async () => {
         };
         processPrices(fields, merchCard, mapping);
         await merchCard.querySelector('span[is="inline-price"]').onceSettled();
-        expect(merchCard.textContent).to.equal('Starting at  US$22.19/moper license');
+        expect(merchCard.textContent).to.equal('Starting at  US$22.19/mo');
     });
 });
 

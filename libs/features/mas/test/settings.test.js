@@ -21,6 +21,15 @@ describe('getSettings', () => {
 
     before(() => {
         ({ href } = window.location);
+
+        const metaPerUnit = document.createElement('meta');
+        metaPerUnit.name = 'mas-ff-def-display-per-unit-false';
+        metaPerUnit.content = 'true';
+        document.head.appendChild(metaPerUnit);
+        const metaOld = document.createElement('meta');
+        metaOld.name = 'mas-ff-def-display-old-price-true';
+        metaOld.content = 'true';
+        document.head.appendChild(metaOld);
     });
 
     it('returns default settings, if called without arguments', () => {
