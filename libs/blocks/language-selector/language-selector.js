@@ -98,7 +98,7 @@ function createDropdownElements(regionPickerTextElem, placeholderText, setAriaOn
     id: 'language-selector-listbox',
     role: 'listbox',
     tabindex: '0',
-    'aria-label': 'Select language',
+    'aria-label': placeholderText,
   });
 
   return { dropdown, searchContainer, languageList };
@@ -350,6 +350,34 @@ export default async function init(block) {
 
   const searchInput = searchContainer.querySelector('.search-input');
   searchInput.setAttribute('aria-activedescendant', '');
+
+  const searchInputWrapper = searchContainer.querySelector('.search-input-wrapper');
+  let lastInteractionWasKeyboard = false;
+
+  searchInput.addEventListener('keydown', (e) => {
+    if ([
+      'Tab',
+      'ArrowLeft',
+      'ArrowRight',
+      'ArrowUp',
+      'ArrowDown',
+    ].includes(e.key)) {
+      lastInteractionWasKeyboard = true;
+    }
+  });
+  searchInput.addEventListener('mousedown', () => {
+    lastInteractionWasKeyboard = false;
+  });
+  searchInput.addEventListener('focus', () => {
+    if (lastInteractionWasKeyboard) {
+      searchInputWrapper.classList.add('focus-visible');
+    } else {
+      searchInputWrapper.classList.remove('focus-visible');
+    }
+  });
+  searchInput.addEventListener('blur', () => {
+    searchInputWrapper.classList.remove('focus-visible');
+  });
 
   const selectedLangItemRef = { current: null };
   const activeIndexRef = { current: -1 };
