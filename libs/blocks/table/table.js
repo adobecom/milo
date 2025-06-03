@@ -177,7 +177,7 @@ function setTooltipPosition(el) {
   const selector = positionClasses.map((cls) => `.milo-tooltip.${cls}`).join(',');
   const tooltips = el.querySelectorAll(selector);
   const viewportWidth = window.innerWidth;
-  const tooltipMaxWidth = viewportWidth <= 600 ? 180 : 140;
+  const tooltipMaxWidth = viewportWidth <= 600 ? 200 : 160;
   const tooltipMargin = 12;
 
   tooltips.forEach((tooltip) => {
@@ -206,7 +206,7 @@ function setTooltipPosition(el) {
       } else if (originalPosition === 'left') {
         wouldOverflow = willOverflowLeft;
       } else if (isVerticalPosition) {
-        wouldOverflow = willOverflowRight && willOverflowLeft;
+        wouldOverflow = willOverflowRight || willOverflowLeft;
       }
       if (!wouldOverflow) {
         tooltip.classList.remove(...positionClasses);
@@ -746,8 +746,8 @@ export default function init(el) {
     const handleResize = () => {
       applyStylesBasedOnScreenSize(el, originTable);
       if (isStickyHeader(el)) handleScrollEffect(el);
+      setTooltipPosition(el);
     };
-    setTooltipPosition(el);
     handleResize();
 
     let deviceBySize = defineDeviceByScreenSize();
