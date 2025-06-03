@@ -166,15 +166,16 @@
   min-height: var(--dropdown-initial-height, 0);
 }
 
+/* Always show black border on focus (mouse or keyboard) */
 .search-input-wrapper:focus-within {
   border-color: #131313;
   box-shadow: none;
   outline: none;
 }
 
-.search-input-wrapper:focus-visible {
+/* Show blue ring on keyboard focus only (when input inside is :focus-visible) */
+.search-input-wrapper:focus-within:has(.search-input:focus-visible) {
   box-shadow: 0 0 0 2px #5258E4;
-  outline: none;
 }
 
 /* Remove focus ring from the input itself */
