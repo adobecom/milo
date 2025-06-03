@@ -66,7 +66,13 @@ const getLanguages = (links, languages, locales) => Array.from(links).map((link)
 
 const getCurrentLanguage = (languagesList, path) => {
   const currentPath = path || window.location.pathname;
-  return languagesList.find((lang) => new RegExp(`^/${lang.langCode}(/|$)`).test(currentPath)) || languagesList[0];
+  const found = languagesList.find((lang) => {
+    if (!lang.langCode) {
+      return !languagesList.some((l) => l.langCode && currentPath.startsWith(`/${l.langCode}/`));
+    }
+    return new RegExp(`^/${lang.langCode}(/|$)`).test(currentPath);
+  });
+  return found || languagesList[0];
 };
 
 const scrollSelectedIntoView = (selectedLangItem, languageList) => {
