@@ -82,7 +82,7 @@
 }
 
 .language-item.selected .language-link {
-  background: var(--color-gray-200);
+  background: none;
 }
 
 .check-icon {
