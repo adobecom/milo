@@ -19,7 +19,7 @@
   position: relative;
   display: flex;
   align-items: center;
-  background: var(--color-gray-100);
+  background: #FFF;
   border-radius: 20px;
   padding: 8px 12px;
   border: 2px solid #C6C6C6;
@@ -38,7 +38,7 @@
   background: transparent;
   width: 100%;
   outline: none;
-  font-size: var(--type-body-s-size);
+  font-size: var(--type-body-xs-size);
   font-family: var(--body-font-family);
 }
 
@@ -77,7 +77,7 @@
 
 .language-link:hover {
   color: inherit !important;
-  background: var(--color-gray-100);
+  background: #E9E9E9;
   text-decoration: none;
 }
 
