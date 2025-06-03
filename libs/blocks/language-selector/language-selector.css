@@ -172,12 +172,6 @@
   outline: none;
 }
 
-.search-input-wrapper:focus-visible,
-.search-input:focus-visible {
-  box-shadow: 0 0 0 2px #5258E4;
-  outline: none;
-}
-
 .language-list:focus {
   outline: 2px solid var(--color-accent, #5258E4);
   outline-offset: 2px;
