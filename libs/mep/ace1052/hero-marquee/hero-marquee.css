@@ -502,6 +502,10 @@ html[dir="rtl"] .hero-marquee li.icon-item span.icon {
   }
 
   /* Block specific */
+  .hero-marquee .action-area:has(a:not(.con-button)) {
+    gap: var(--spacing-xs);
+  }
+
   .hero-marquee .action-area a:not(.con-button),
   .hero-marquee .con-block.row-text:has(.action-area) + .con-block.row-text .row-wrapper {
     align-self: center;
@@ -510,7 +514,6 @@ html[dir="rtl"] .hero-marquee li.icon-item span.icon {
 }
 
 /* Mweb changes test ACE-1052 */
-
 .hero-marquee .icon-list.has-svg-bullet {
   padding-inline-start: 0;
   display: flex;
@@ -537,8 +540,7 @@ html[dir="rtl"] .hero-marquee li.icon-item span.icon {
   height: auto;
 }
 
- @media (max-width: 600px) {
-
+@media (max-width: 600px) {
   .hero-marquee .body-bold {
     font-weight: 700;
   }
@@ -546,4 +548,4 @@ html[dir="rtl"] .hero-marquee li.icon-item span.icon {
   .hero-marquee .row-supplemental.center {
     text-align: center;
   }
- }
+}
