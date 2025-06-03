@@ -123,7 +123,6 @@ const DO_NOT_INLINE = [
   'columns',
   'z-pattern',
 ];
-const OVERRIDE_AUTO_INLINE = '#_replacecell';
 
 const ENVS = {
   stage: {
@@ -844,7 +843,7 @@ export function decorateAutoBlock(a) {
       }
 
       // Modals
-      if (url.hash !== '' && !isInlineFrag && !url.hash.includes(OVERRIDE_AUTO_INLINE)) {
+      if (url.hash !== '' && !isInlineFrag && !url.hash.includes('#_replacecell')) {
         a.dataset.modalPath = url.pathname;
         a.dataset.modalHash = url.hash;
         a.href = url.hash;
@@ -1168,8 +1167,8 @@ function decorateSection(section, idx) {
     const blockName = block.classList[0];
     links.filter((link) => block.contains(link))
       .forEach((link) => {
-        if (link.classList.contains('fragment') && link.href.includes(OVERRIDE_AUTO_INLINE)) {
-          link.href = link.href.replace(OVERRIDE_AUTO_INLINE, '');
+        if (link.classList.contains('fragment') && link.href.includes('#_replacecell')) {
+          link.href = link.href.replace('#_replacecell', '');
         } else if (link.classList.contains('fragment')
           && MILO_BLOCKS.includes(blockName) // do not inline consumer blocks (for now)
           && !doNotInline.includes(blockName)) {
