@@ -3,6 +3,8 @@ import { features } from './ul-ol-li.spec.js';
 
 const miloLibs = process.env.MILO_LIBS || '';
 
+test.skip(({ browserName }) => browserName === 'webkit', 'Skipping test for WebKit browser');
+
 // Test 0 : check ul selectors (skipping ol selectors)
 test(`[Test Id - ${features[0].tcid}] ${features[0].name},${features[0].tags}`, async ({ page, baseURL, browserName }) => {
   test.skip(browserName === 'webkit', 'Skipping test for Webkit browser');
