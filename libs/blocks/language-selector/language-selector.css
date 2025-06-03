@@ -173,8 +173,8 @@
   outline: none;
 }
 
-/* Show blue ring with a gap on keyboard focus only (when input inside is :focus-visible) */
-.search-input-wrapper:focus-within:has(.search-input:focus-visible) {
+/* Show blue ring with a gap on keyboard focus only (when .focus-visible class is present) */
+.search-input-wrapper.focus-visible {
   outline: 2px solid #5258E4;
   outline-offset: 2px;
 }
