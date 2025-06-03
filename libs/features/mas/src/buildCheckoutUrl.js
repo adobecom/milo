@@ -178,8 +178,8 @@ export function buildCheckoutUrl(checkoutData) {
     const segmentationParameters = {
       marketSegment: ms ?? marketSegment,
       offerType: ot ?? offerType,
-      productArrangementCode: pa ?? productArrangementCode,
       customerSegment: cs ?? offerCs,
+      productArrangementCode: pa ?? productArrangementCode,
       quantity: q > 1 ? q : undefined,
       addonProductArrangementCode: productArrangementCode 
         ? items?.find((item) => item.productArrangementCode !== productArrangementCode)?.productArrangementCode 
