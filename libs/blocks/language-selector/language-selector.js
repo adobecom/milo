@@ -68,7 +68,8 @@ const getCurrentLanguage = (languagesList, path) => {
   const currentPath = path || window.location.pathname;
   const found = languagesList.find((lang) => {
     if (!lang.langCode) {
-      return !languagesList.some((l) => l.langCode && currentPath.startsWith(`/${l.langCode}/`));
+      return !languagesList.some((l) => l.langCode
+        && currentPath.startsWith(`/${l.langCode}/`));
     }
     return new RegExp(`^/${lang.langCode}(/|$)`).test(currentPath);
   });
@@ -397,4 +398,33 @@ export default async function init(block) {
     selectedLangItemRef,
     activeIndexRef,
   });
+
+  // Simplified drag-to-resize for drag handle (mobile only)
+  const dragHandle = dropdown.querySelector('.drag-handle');
+  if (dragHandle) {
+    let startY;
+    let startHeight;
+    const minHeight = 100;
+    const maxHeight = window.innerHeight * 0.9;
+
+    const onTouchMove = (e) => {
+      const touch = e.touches[0];
+      const newHeight = Math.max(
+        minHeight,
+        Math.min(maxHeight, startHeight + (startY - touch.clientY)),
+      );
+      dropdown.style.height = `${newHeight}px`;
+      dropdown.style.overflow = 'auto';
+    };
+
+    dragHandle.addEventListener('touchstart', (e) => {
+      const touch = e.touches[0];
+      startY = touch.clientY;
+      startHeight = dropdown.offsetHeight;
+      document.addEventListener('touchmove', onTouchMove);
+      document.addEventListener('touchend', () => {
+        document.removeEventListener('touchmove', onTouchMove);
+      }, { once: true });
+    });
+  }
 }
