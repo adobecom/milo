@@ -183,11 +183,6 @@ html[dir="rtl"] .carousel-slides {
   visibility: hidden !important;
 }
 
-/* Show slides when neither hide class is present */
-.carousel-slide:not(.hide-left-hint):not(.hide-right-hint) {
-  display: flex !important;
-}
-
 html[dir="rtl"] .carousel-slides .section.carousel-slide {
   direction: rtl;
 }
@@ -743,11 +738,6 @@ html[dir="rtl"] .carousel .move-indicators {
 
 .carousel.carousel.disable-buttons .carousel-slide.hide-right-hint {
   visibility: hidden !important;
-}
-
-/* Show slides when neither hide class is present */
-.carousel.carousel.disable-buttons .carousel-slide:not(.hide-left-hint):not(.hide-right-hint) {
-  display: flex !important;
 }
 
 .carousel.carousel.disable-buttons .carousel-slides {
