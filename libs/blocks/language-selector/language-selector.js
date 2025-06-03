@@ -424,7 +424,8 @@ export default async function init(block) {
       startHeight = dropdown.offsetHeight;
       document.addEventListener('touchmove', onTouchMove);
       document.addEventListener('touchend', () => {
-        if (parseInt(dropdown.style.height, 10) <= 1) {
+        const dragHandleHeight = dragHandle.offsetHeight;
+        if (dropdown.offsetHeight <= dragHandleHeight + 2) {
           dropdown.style.display = 'none';
           dropdown.style.height = '';
           dropdown.classList.add('fixed-height');
