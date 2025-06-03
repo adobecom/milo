@@ -203,6 +203,37 @@ function setupDropdownEvents({
 
   let documentClickHandler = null;
 
+  // Focus-visible logic: only attach global listeners when dropdown is open
+  let lastInteractionWasKeyboard = false;
+  let keydownListener = null;
+  let mousedownListener = null;
+
+  function addGlobalListeners() {
+    keydownListener = (e) => {
+      if (
+        e.key === 'Tab'
+        || e.key === 'ArrowLeft'
+        || e.key === 'ArrowRight'
+        || e.key === 'ArrowUp'
+        || e.key === 'ArrowDown'
+      ) {
+        lastInteractionWasKeyboard = true;
+      }
+    };
+    mousedownListener = () => {
+      lastInteractionWasKeyboard = false;
+    };
+    document.addEventListener('keydown', keydownListener);
+    document.addEventListener('mousedown', mousedownListener);
+  }
+
+  function removeGlobalListeners() {
+    if (keydownListener) document.removeEventListener('keydown', keydownListener);
+    if (mousedownListener) document.removeEventListener('mousedown', mousedownListener);
+    keydownListener = null;
+    mousedownListener = null;
+  }
+
   function closeDropdown() {
     isDropdownOpen = false;
     dropdown.style.display = 'none';
@@ -215,6 +246,7 @@ function setupDropdownEvents({
       document.removeEventListener('click', documentClickHandler);
       documentClickHandler = null;
     }
+    removeGlobalListeners();
   }
 
   function openDropdown() {
@@ -240,6 +272,7 @@ function setupDropdownEvents({
         languageList.setAttribute('aria-activedescendant', toFocus.parentElement.id);
       }
     });
+    addGlobalListeners();
   }
 
   selectedLangButton.addEventListener('click', (e) => {
@@ -314,6 +347,20 @@ function setupDropdownEvents({
       });
     }
   });
+
+  searchInput.addEventListener('focus', () => {
+    if (lastInteractionWasKeyboard) {
+      const searchInputWrapper = searchInput.closest('.search-input-wrapper');
+      if (searchInputWrapper) searchInputWrapper.classList.add('focus-visible');
+    } else {
+      const searchInputWrapper = searchInput.closest('.search-input-wrapper');
+      if (searchInputWrapper) searchInputWrapper.classList.remove('focus-visible');
+    }
+  });
+  searchInput.addEventListener('blur', () => {
+    const searchInputWrapper = searchInput.closest('.search-input-wrapper');
+    if (searchInputWrapper) searchInputWrapper.classList.remove('focus-visible');
+  });
 }
 
 export default async function init(block) {
@@ -347,38 +394,8 @@ export default async function init(block) {
   wrapper.appendChild(dropdown);
   const element = wrapper.querySelector('.fragment');
   element.remove();
-
   const searchInput = searchContainer.querySelector('.search-input');
   searchInput.setAttribute('aria-activedescendant', '');
-
-  const searchInputWrapper = searchContainer.querySelector('.search-input-wrapper');
-  let lastInteractionWasKeyboard = false;
-
-  searchInput.addEventListener('keydown', (e) => {
-    if ([
-      'Tab',
-      'ArrowLeft',
-      'ArrowRight',
-      'ArrowUp',
-      'ArrowDown',
-    ].includes(e.key)) {
-      lastInteractionWasKeyboard = true;
-    }
-  });
-  searchInput.addEventListener('mousedown', () => {
-    lastInteractionWasKeyboard = false;
-  });
-  searchInput.addEventListener('focus', () => {
-    if (lastInteractionWasKeyboard) {
-      searchInputWrapper.classList.add('focus-visible');
-    } else {
-      searchInputWrapper.classList.remove('focus-visible');
-    }
-  });
-  searchInput.addEventListener('blur', () => {
-    searchInputWrapper.classList.remove('focus-visible');
-  });
-
   const selectedLangItemRef = { current: null };
   const activeIndexRef = { current: -1 };
   setupDropdownEvents({
