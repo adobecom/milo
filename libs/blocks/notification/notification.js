@@ -278,14 +278,11 @@ function trapFocusWithElement(el, focusableElements) {
       lastFocusedElement.focus({ focusVisible: true });
     }
   };
+  const scrollEvent = (event) => event.preventDefault();
   const updateLastFocused = (event) => { lastFocusedElement = event.target; };
-  document.addEventListener('click', externalClickHandler);
-  el.addEventListener('focusin', updateLastFocused);
-  el.addEventListener('keydown', (event) => {
+  const keydownEvent = (event) => {
     if (event.key === 'Escape') {
       closeButton.click();
-      document.removeEventListener('click', externalClickHandler);
-      el.removeEventListener('focusin', updateLastFocused);
     }
     if (event.key === 'Tab') {
       if (event.target.isEqualNode(firstFocusable) && event.shiftKey) {
@@ -298,6 +295,16 @@ function trapFocusWithElement(el, focusableElements) {
         firstFocusable.focus({ focusVisible: true });
       }
     }
+  };
+  document.addEventListener('scroll', scrollEvent);
+  document.addEventListener('click', externalClickHandler);
+  el.addEventListener('focusin', updateLastFocused);
+  el.addEventListener('keydown', keydownEvent);
+  closeButton.addEventListener('click', () => {
+    document.removeEventListener('click', externalClickHandler);
+    el.removeEventListener('focusin', updateLastFocused);
+    document.removeEventListener('scroll', scrollEvent);
+    el.removeEventListener('keydown', keydownEvent);
   });
 }
 
