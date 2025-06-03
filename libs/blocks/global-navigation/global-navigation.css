@@ -298,15 +298,25 @@ header.global-navigation {
 }
 
 .feds-cta--secondary {
-  background-color: rgb(255, 255, 255);
-  border-color: rgb(75, 75, 75);
-  color: rgb(75, 75, 75);
+  border-radius: 1rem;
+  background-color: transparent;
+  border: .125rem solid var(--profile-cta-secondary-border, #DADADA);
+  color: var(--alias-icon-background-neutral-default, #292929);
+  font-size: .875rem;
+  font-style: normal;
+  font-weight: 700;
+  line-height: normal;
+  white-space: nowrap;
 }
 
-.feds-cta--secondary:hover,
-.feds-cta--secondary:focus {
-  background-color: rgb(75, 75, 75);
-  color: rgb(255, 255, 255);
+.feds-cta--secondary:hover {
+  border-color: var(--profile-cta-hover-border, #C6C6C6);
+  background: var(--icon-palette-gray-100, #E9E9E9);
+  color: var(--alias-icon-background-neutral-default, #292929);
+}
+.feds-cta--secondary:focus-visible {
+  outline: 2px solid var(--alias-icon-neutral-key-focus, #507BFF);
+  background: var(--icon-palette-gray-100, #E9E9E9);
 }
 
 /* Search */
