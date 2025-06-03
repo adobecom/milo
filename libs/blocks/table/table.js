@@ -173,7 +173,7 @@ function handleAddOnContent(table) {
 
 function setTooltipPosition(el) {
   const isRtl = document.documentElement.dir === 'rtl';
-  const classesToCheck = isRtl ? ['top', 'bottom', 'left'] : ['top', 'bottom', 'right'];
+  const classesToCheck = ['top', 'bottom', 'right', 'left'];
   const selector = classesToCheck.map((cls) => `.milo-tooltip.${cls}`).join(',');
   const tooltips = el.querySelectorAll(selector);
   const viewportWidth = window.innerWidth;
@@ -181,6 +181,15 @@ function setTooltipPosition(el) {
   const tooltipMargin = 12;
 
   tooltips.forEach((tooltip) => {
+    const currentPosition = Array.from(tooltip.classList)
+      .find((cls) => ['top', 'bottom', 'left', 'right'].includes(cls));
+
+    if (!tooltip.dataset.originalPosition) {
+      const originalPosition = Array.from(tooltip.classList)
+        .find((cls) => ['top', 'bottom', 'left', 'right'].includes(cls));
+      if (originalPosition) tooltip.dataset.originalPosition = originalPosition;
+    }
+
     const rect = tooltip.getBoundingClientRect();
     const tooltipLeft = rect.left;
     const tooltipRight = rect.right;
@@ -190,6 +199,22 @@ function setTooltipPosition(el) {
 
     const shouldGoLeft = isRtl ? willOverflowLeft : willOverflowRight;
     const shouldGoRight = isRtl ? willOverflowRight : willOverflowLeft;
+
+    const { originalPosition } = tooltip.dataset;
+
+    if (originalPosition !== currentPosition) {
+      let wouldOverflow = false;
+      if (originalPosition === 'right') {
+        wouldOverflow = willOverflowRight;
+      } else if (originalPosition === 'left') {
+        wouldOverflow = willOverflowLeft;
+      }
+      if (!wouldOverflow) {
+        tooltip.classList.remove('top', 'bottom', 'left', 'right');
+        tooltip.classList.add(originalPosition);
+        return;
+      }
+    }
 
     if (shouldGoLeft) {
       tooltip.classList.remove('top', 'bottom', 'right');
@@ -722,14 +747,15 @@ export default function init(el) {
     const handleResize = () => {
       applyStylesBasedOnScreenSize(el, originTable);
       if (isStickyHeader(el)) handleScrollEffect(el);
-      setTooltipPosition(el);
     };
+    setTooltipPosition(el);
     handleResize();
 
     let deviceBySize = defineDeviceByScreenSize();
     window.addEventListener('resize', () => {
       debounce(handleEqualHeight(el, '.row-heading'));
       handleStickyHeader(el);
+      setTooltipPosition(el);
       if (deviceBySize === defineDeviceByScreenSize()) return;
       deviceBySize = defineDeviceByScreenSize();
       handleResize();
