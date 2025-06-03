@@ -3,6 +3,22 @@ import { createTag, getConfig, getLanguage } from '../../utils/utils.js';
 const queriedPages = [];
 const CHECKMARK_SVG = '<svg class="check-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M13.3337 4L6.00033 11.3333L2.66699 8" stroke="#5258E4" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 
+let miloLangIsKeyboard = false;
+document.addEventListener('keydown', (e) => {
+  if (
+    e.key === 'Tab'
+    || e.key === 'ArrowLeft'
+    || e.key === 'ArrowRight'
+    || e.key === 'ArrowUp'
+    || e.key === 'ArrowDown'
+  ) {
+    miloLangIsKeyboard = true;
+  }
+});
+document.addEventListener('mousedown', () => {
+  miloLangIsKeyboard = false;
+});
+
 function stripQueryAndHash(url) {
   try {
     const u = new URL(url);
@@ -203,37 +219,6 @@ function setupDropdownEvents({
 
   let documentClickHandler = null;
 
-  // Focus-visible logic: only attach global listeners when dropdown is open
-  let lastInteractionWasKeyboard = false;
-  let keydownListener = null;
-  let mousedownListener = null;
-
-  function addGlobalListeners() {
-    keydownListener = (e) => {
-      if (
-        e.key === 'Tab'
-        || e.key === 'ArrowLeft'
-        || e.key === 'ArrowRight'
-        || e.key === 'ArrowUp'
-        || e.key === 'ArrowDown'
-      ) {
-        lastInteractionWasKeyboard = true;
-      }
-    };
-    mousedownListener = () => {
-      lastInteractionWasKeyboard = false;
-    };
-    document.addEventListener('keydown', keydownListener);
-    document.addEventListener('mousedown', mousedownListener);
-  }
-
-  function removeGlobalListeners() {
-    if (keydownListener) document.removeEventListener('keydown', keydownListener);
-    if (mousedownListener) document.removeEventListener('mousedown', mousedownListener);
-    keydownListener = null;
-    mousedownListener = null;
-  }
-
   function closeDropdown() {
     isDropdownOpen = false;
     dropdown.style.display = 'none';
@@ -246,7 +231,6 @@ function setupDropdownEvents({
       document.removeEventListener('click', documentClickHandler);
       documentClickHandler = null;
     }
-    removeGlobalListeners();
   }
 
   function openDropdown() {
@@ -272,7 +256,6 @@ function setupDropdownEvents({
         languageList.setAttribute('aria-activedescendant', toFocus.parentElement.id);
       }
     });
-    addGlobalListeners();
   }
 
   selectedLangButton.addEventListener('click', (e) => {
@@ -349,7 +332,7 @@ function setupDropdownEvents({
   });
 
   searchInput.addEventListener('focus', () => {
-    if (lastInteractionWasKeyboard) {
+    if (miloLangIsKeyboard) {
       const searchInputWrapper = searchInput.closest('.search-input-wrapper');
       if (searchInputWrapper) searchInputWrapper.classList.add('focus-visible');
     } else {
