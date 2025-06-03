@@ -573,11 +573,4 @@ export default function init(el) {
   }
 
   parentArea.addEventListener(MILO_EVENTS.DEFERRED, handleLateLoadingNavigation, true);
-
-  // mweb-dev changes for equal height of cards
-  function handleEqualHeight() {
-    setEqualHeight(slides);
-    parentArea.removeEventListener(MILO_EVENTS.DEFERRED, handleEqualHeight, true);
-  }
-  parentArea.addEventListener(MILO_EVENTS.DEFERRED, handleEqualHeight, true);
 }
