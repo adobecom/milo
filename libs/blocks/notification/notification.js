@@ -269,28 +269,22 @@ function toolTipPosition(el, allViewPorts) {
   return 'left';
 }
 
-function getViewPortTextContent(viewPortEl) {
-  const viewPortClone = viewPortEl.cloneNode(true);
-  const buttons = viewPortClone.querySelectorAll('.action-area');
-  buttons.forEach((btn) => btn.remove());
-  return viewPortClone.textContent.trim();
-}
-
 async function addTooltip(el) {
   const allViewPorts = el.querySelectorAll('.foreground > div');
   const desktopView = [...allViewPorts].pop();
-  const desktopContentText = getViewPortTextContent(desktopView);
+  const desktopContentText = desktopView.querySelector('.copy-wrap')?.textContent.trim();
   const toolTipIcons = [];
   allViewPorts.forEach((viewPortEl) => {
-    const viewPortTextContent = getViewPortTextContent(viewPortEl);
+    if (viewPortEl === desktopView || !desktopContentText) return;
+    const textContainer = viewPortEl.querySelector('.copy-wrap');
+    const viewPortTextContent = textContainer?.textContent.trim();
     if (viewPortTextContent === desktopContentText) return;
-    const childrenNoBtn = viewPortEl.querySelectorAll(':scope > *:not(.action-area)');
-    const lastChild = [...childrenNoBtn].pop();
+    const appendTarget = textContainer?.lastElementChild ?? viewPortEl.firstElementChild;
     const tooltipSpan = createTag('span', { class: 'icon icon-tooltip' });
     const iconWrapper = createTag('em', {}, `${toolTipPosition(viewPortEl, allViewPorts)}|${desktopContentText}`);
     iconWrapper.appendChild(tooltipSpan);
     toolTipIcons.push(tooltipSpan);
-    lastChild.appendChild(iconWrapper);
+    appendTarget?.appendChild(iconWrapper);
   });
 
   if (!toolTipIcons.length) return;
@@ -328,7 +322,6 @@ export default async function init(el) {
   const { fontSizes, options } = getBlockData(el);
   const blockText = await decorateLayout(el);
   decorateBlockText(blockText, fontSizes);
-  if (el.classList.contains('pill')) addTooltip(el);
   if (options.borderBottom) {
     el.append(createTag('div', { style: `background: ${options.borderBottom};`, class: 'border' }));
   }
@@ -336,6 +329,7 @@ export default async function init(el) {
   el.querySelectorAll('a:not([class])').forEach((staticLink) => staticLink.classList.add('static'));
   if (el.matches(`:is(.${ribbon}, .${pill})`)) {
     wrapCopy(blockText);
+    if (el.matches(`.${pill}`)) addTooltip(el);
     decorateMultiViewport(el);
   }
 }
