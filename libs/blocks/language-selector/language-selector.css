@@ -166,10 +166,15 @@
   min-height: var(--dropdown-initial-height, 0);
 }
 
-/* Focused state: blue border and blue focus ring */
 .search-input-wrapper:focus-within {
   border-color: #131313;
   box-shadow: none;
+  outline: none;
+}
+
+.search-input-wrapper:focus-visible,
+.search-input:focus-visible {
+  box-shadow: 0 0 0 2px #5258E4;
   outline: none;
 }
 
