@@ -174,8 +174,7 @@ function handleAddOnContent(table) {
 function setTooltipPosition(el) {
   const isRtl = document.documentElement.dir === 'rtl';
   const positionClasses = ['top', 'bottom', 'right', 'left'];
-  const selector = positionClasses.map((cls) => `.milo-tooltip.${cls}`).join(',');
-  const tooltips = el.querySelectorAll(selector);
+  const tooltips = el.querySelectorAll(positionClasses.map((cls) => `.milo-tooltip.${cls}`).join(','));
   const viewportWidth = window.innerWidth;
   const tooltipMaxWidth = viewportWidth <= 600 ? 200 : 160;
   const tooltipMargin = 12;
@@ -186,18 +185,11 @@ function setTooltipPosition(el) {
       && currentPosition) tooltip.dataset.originalPosition = currentPosition;
 
     const rect = tooltip.getBoundingClientRect();
-    const tooltipLeft = rect.left;
-    const tooltipRight = rect.right;
-
     const { originalPosition } = tooltip.dataset;
     const isVerticalPosition = originalPosition === 'top' || originalPosition === 'bottom';
     const effectiveMaxWidth = isVerticalPosition ? tooltipMaxWidth / 2 : tooltipMaxWidth;
-
-    const willOverflowRight = tooltipRight + effectiveMaxWidth + tooltipMargin > viewportWidth;
-    const willOverflowLeft = tooltipLeft - effectiveMaxWidth - tooltipMargin < 0;
-
-    const shouldGoLeft = isRtl ? willOverflowLeft : willOverflowRight;
-    const shouldGoRight = isRtl ? willOverflowRight : willOverflowLeft;
+    const willOverflowRight = rect.right + effectiveMaxWidth + tooltipMargin > viewportWidth;
+    const willOverflowLeft = rect.left - effectiveMaxWidth - tooltipMargin < 0;
 
     if (originalPosition !== currentPosition) {
       let wouldOverflow = false;
@@ -215,10 +207,10 @@ function setTooltipPosition(el) {
       }
     }
 
-    if (shouldGoLeft) {
+    if (isRtl ? willOverflowLeft : willOverflowRight) {
       tooltip.classList.remove(...positionClasses);
       tooltip.classList.add('left');
-    } else if (shouldGoRight) {
+    } else if (isRtl ? willOverflowRight : willOverflowLeft) {
       tooltip.classList.remove(...positionClasses);
       tooltip.classList.add('right');
     }
