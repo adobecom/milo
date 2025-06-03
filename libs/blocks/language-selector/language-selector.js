@@ -399,12 +399,13 @@ export default async function init(block) {
     activeIndexRef,
   });
 
-  // Simplified drag-to-resize for drag handle (mobile only)
+  // Enhanced drag-to-resize for drag handle (mobile only)
   const dragHandle = dropdown.querySelector('.drag-handle');
   if (dragHandle) {
     let startY;
     let startHeight;
-    const minHeight = 100;
+    const minHeight = 0; // allow reducing to 0
+    const closeThreshold = 30; // px, below which the dropdown closes
     const maxHeight = window.innerHeight * 0.9;
 
     const onTouchMove = (e) => {
@@ -423,6 +424,10 @@ export default async function init(block) {
       startHeight = dropdown.offsetHeight;
       document.addEventListener('touchmove', onTouchMove);
       document.addEventListener('touchend', () => {
+        if (parseInt(dropdown.style.height, 10) <= closeThreshold) {
+          dropdown.style.display = 'none';
+          dropdown.style.height = '';
+        }
         document.removeEventListener('touchmove', onTouchMove);
       }, { once: true });
     });
