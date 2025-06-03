@@ -170,13 +170,17 @@ export function buildCheckoutUrl(checkoutData) {
     addParameters({ af: AF_DRAFT_LANDSCAPE }, url.searchParams, ALLOWED_KEYS);
   }
   if (workflowStep === CheckoutWorkflowStep.SEGMENTATION) {
+    // first item is always primary offer, second - addon offer
+    const q = items?.[0]?.quantity;
+    // only add wcs offers' customerSegment if it's TEAM, commerce campaign might break with 'INDIVIDUAL'
+    const offerCs = customerSegment === 'TEAM' ? 'TEAM' : undefined;
     // ms, ot, cs, pa are params manually set by authors, they should take precedence over 'marketSegment', etc
     const segmentationParameters = {
       marketSegment: ms ?? marketSegment,
       offerType: ot ?? offerType,
-      customerSegment: cs ?? customerSegment,
       productArrangementCode: pa ?? productArrangementCode,
-      quantity: items?.[0]?.quantity > 1 ? items?.[0]?.quantity : undefined,
+      customerSegment: cs ?? offerCs,
+      quantity: q > 1 ? q : undefined,
       addonProductArrangementCode: productArrangementCode 
         ? items?.find((item) => item.productArrangementCode !== productArrangementCode)?.productArrangementCode 
         : items?.[1]?.productArrangementCode,
