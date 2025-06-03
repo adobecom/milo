@@ -189,19 +189,24 @@ function setTooltipPosition(el) {
     const tooltipLeft = rect.left;
     const tooltipRight = rect.right;
 
-    const willOverflowRight = tooltipRight + tooltipMaxWidth + tooltipMargin > viewportWidth;
-    const willOverflowLeft = tooltipLeft - tooltipMaxWidth - tooltipMargin < 0;
+    const { originalPosition } = tooltip.dataset;
+    const isVerticalPosition = originalPosition === 'top' || originalPosition === 'bottom';
+    const effectiveMaxWidth = isVerticalPosition ? tooltipMaxWidth / 2 : tooltipMaxWidth;
+
+    const willOverflowRight = tooltipRight + effectiveMaxWidth + tooltipMargin > viewportWidth;
+    const willOverflowLeft = tooltipLeft - effectiveMaxWidth - tooltipMargin < 0;
 
     const shouldGoLeft = isRtl ? willOverflowLeft : willOverflowRight;
     const shouldGoRight = isRtl ? willOverflowRight : willOverflowLeft;
 
-    const { originalPosition } = tooltip.dataset;
     if (originalPosition !== currentPosition) {
       let wouldOverflow = false;
       if (originalPosition === 'right') {
         wouldOverflow = willOverflowRight;
       } else if (originalPosition === 'left') {
         wouldOverflow = willOverflowLeft;
+      } else if (isVerticalPosition) {
+        wouldOverflow = willOverflowRight && willOverflowLeft;
       }
       if (!wouldOverflow) {
         tooltip.classList.remove(...positionClasses);
