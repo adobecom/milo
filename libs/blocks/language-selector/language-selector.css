@@ -2,7 +2,7 @@
   position: absolute;
   bottom: calc(100% + 5px);
   left: 0;
-  width: 196px;
+  width: 230px;
   background: var(--background-color);
   border-radius: 8px;
   box-shadow: 0 2px 10px rgba(0 0 0 / 10%);
