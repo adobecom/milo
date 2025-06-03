@@ -15,11 +15,12 @@ permissions:
   contents: read
 
 env:
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   IMSACCESS_CLIENT_ID: ${{ secrets.IMSACCESS_CLIENT_ID }}
   IMSACCESS_CLIENT_SECRET: ${{ secrets.IMSACCESS_CLIENT_SECRET_STAGE }}
   IMSACCESS_AUTH_CODE: ${{ secrets.IMSACCESS_AUTH_CODE_STAGE }}
   IPAAS_KEY: ${{ secrets.IPAAS_KEY_STAGE }}
-  SNOW_INSTANCE_ID: ${{ secrets.SNOW_INSTANCE_ID }}
+  MILO_RELEASE_SLACK_WH: ${{ secrets.MILO_RELEASE_SLACK_WH }}
   PR_TITLE: ${{ github.event.pull_request.title }}
   PR_BODY: ${{ github.event.pull_request.body }}
   PR_NUMBER: ${{ github.event.pull_request.number }}
@@ -27,12 +28,12 @@ env:
   PR_MERGED_AT: ${{ github.event.pull_request.merged_at }}
   PR_LINK: ${{ github.event.pull_request.html_url }}
   PR_STATE: ${{ github.event.pull_request.state }}
-  MILO_RELEASE_SLACK_WH: ${{ secrets.MILO_RELEASE_SLACK_WH }}
+  SNOW_INSTANCE_ID: ${{ secrets.SNOW_INSTANCE_ID }}
 
 jobs:
   create-cmr:
     # Only run this workflow on pull requests that have been newly opened
-    if:  ${{ (github.event.pull_request.merged == true || github.event.pull_request.state == 'open') && (github.event.pull_request.base.ref == 'stage' || github.event.pull_request.base.ref == 'main') }}
+    if:  ${{ (github.event.pull_request.merged == true || github.event.pull_request.state == 'open') }}
     runs-on: ubuntu-latest
     outputs:
       TRANSACTION_ID: ${{ steps.create-cmr.outputs.transaction_id }}
@@ -50,9 +51,31 @@ jobs:
       run: |
         python -m pip install --upgrade pip requests timedelta
 
+    - name: Retrieve transaction ID from PR Comments
+      uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea
+      with:
+        script: |
+          const main = require('./.github/workflows/snow-pr-comment.js')
+          if (process.env.PR_STATE == 'closed') {
+            main({ github, context })
+          } else {
+            console.log('PR is not in an closed state. Skipping...');
+          }
+
     - name: Execute script for creating and closing CMR
       run: |
         python ./.github/workflows/servicenow.py
+
+    - name: Save transaction ID in PR Comments
+      uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea
+      with:
+        script: |
+          const main = require('./.github/workflows/snow-pr-comment.js')
+          if (process.env.PR_STATE == 'open') {
+            main({ github, context })
+          } else {
+            console.log('PR is not in an opened state. Skipping...');
+          }
 
     - name: Execute script for notifying of CMR state
       uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea

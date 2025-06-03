@@ -21,8 +21,8 @@ async function main({ github, context, transaction_id, change_id, planned_start_
     const { number, title, html_url } = pull_request;
     const isOpen = process.env.PR_STATE === 'open';
     const prefix = isOpen
-        ? ':exclamation: ServiceNow Change Request Created and in progress: Transaction ID: ' + transaction_id + '\n:'
-        : ':exclamation: ServiceNow Change Request Closed: Search for Change Record by Change ID: ' + change_id + '\n or Planned Start Time: ' + planned_start_time + '\n and/or Planned End Time: ' + planned_end_time + '\n:';
+        ? ':exclamation: TESTING ServiceNow Change Request Created and in progress: Transaction ID: ' + transaction_id + '\n:'
+        : ':exclamation: TESTING ServiceNow Change Request Closed: Search for Change Record by Change ID: ' + change_id + '\n or Planned Start Time: ' + planned_start_time + '\n and/or Planned End Time: ' + planned_end_time + '\n:';
 
     console.log(`Sending SNOW CR notification for PR #${number}: ${title}`);
 
