@@ -50,5 +50,4 @@ describe('checkForPreviousPageMatch function', () => {
     const globMatchCheck = checkForPreviousPageMatch('previousPage-/products/photoshop', refUrls.blankReferrer);
     expect(globMatchCheck).to.be.false;
   });
-  // could error handling be added? keyword is previousPage-
 });
