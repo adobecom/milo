@@ -242,7 +242,7 @@ function setupDropdownEvents({
 
   function openDropdown() {
     isDropdownOpen = true;
-    dropdown.style.display = 'block';
+    dropdown.style.display = 'flex';
     selectedLangButton.setAttribute('aria-expanded', 'true');
     filteredLanguages = doRenderLanguages(searchInput.value);
     documentClickHandler = (e) => {
