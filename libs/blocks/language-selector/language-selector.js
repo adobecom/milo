@@ -350,29 +350,19 @@ function setupDropdownEvents({
   let dragging = false;
   const DRAG_CLOSE_THRESHOLD = 40; // px
 
-  // Wrap dropdown content in an inner container for scaleY effect
-  let inner = dropdown.querySelector('.language-dropdown-inner');
-  if (!inner) {
-    inner = createTag('div', { class: 'language-dropdown-inner' });
-    // Move all children except inner into inner
-    while (dropdown.firstChild) {
-      inner.appendChild(dropdown.firstChild);
-    }
-    dropdown.appendChild(inner);
-  }
-
-  function setDropdownScale(scale) {
-    inner.style.transform = `scaleY(${scale})`;
-    inner.style.transformOrigin = 'top';
-    if (scale < 0.2) {
+  function setDropdownHeight(h) {
+    dropdown.style.height = `${h}px`;
+    dropdown.classList.add('fixed-height');
+    if (h < 60) {
       dropdown.classList.add('dropdown-shrinking');
     } else {
       dropdown.classList.remove('dropdown-shrinking');
     }
   }
 
-  function resetDropdownScale() {
-    inner.style.transform = '';
+  function resetDropdownHeight() {
+    dropdown.style.height = '';
+    dropdown.classList.remove('fixed-height');
     dropdown.classList.remove('dropdown-shrinking');
   }
 
@@ -382,8 +372,7 @@ function setupDropdownEvents({
     const touch = e.touches[0];
     const deltaY = touch.clientY - startY;
     if (deltaY > 0) {
-      const scale = Math.max(0, 1 - deltaY / startHeight);
-      setDropdownScale(scale);
+      setDropdownHeight(Math.max(0, startHeight - deltaY));
     }
   }
 
@@ -393,10 +382,10 @@ function setupDropdownEvents({
     const deltaY = touch.clientY - startY;
     dragging = false;
     if (deltaY > DRAG_CLOSE_THRESHOLD) {
-      resetDropdownScale();
+      resetDropdownHeight();
       closeDropdown();
     } else {
-      resetDropdownScale();
+      resetDropdownHeight();
     }
     document.removeEventListener('touchmove', onTouchMove);
     document.removeEventListener('touchend', onTouchEnd);
@@ -407,8 +396,7 @@ function setupDropdownEvents({
     e.preventDefault();
     const deltaY = e.clientY - startY;
     if (deltaY > 0) {
-      const scale = Math.max(0, 1 - deltaY / startHeight);
-      setDropdownScale(scale);
+      setDropdownHeight(Math.max(0, startHeight - deltaY));
     }
   }
 
@@ -417,10 +405,10 @@ function setupDropdownEvents({
     const deltaY = e.clientY - startY;
     dragging = false;
     if (deltaY > DRAG_CLOSE_THRESHOLD) {
-      resetDropdownScale();
+      resetDropdownHeight();
       closeDropdown();
     } else {
-      resetDropdownScale();
+      resetDropdownHeight();
     }
     document.removeEventListener('mousemove', onMouseMove);
     document.removeEventListener('mouseup', onMouseUp);
@@ -430,7 +418,7 @@ function setupDropdownEvents({
     dragging = true;
     const touch = e.touches[0];
     startY = touch.clientY;
-    startHeight = inner.offsetHeight;
+    startHeight = dropdown.offsetHeight;
     document.addEventListener('touchmove', onTouchMove);
     document.addEventListener('touchend', onTouchEnd);
   }
@@ -438,12 +426,12 @@ function setupDropdownEvents({
   function handleMouseDown(e) {
     dragging = true;
     startY = e.clientY;
-    startHeight = inner.offsetHeight;
+    startHeight = dropdown.offsetHeight;
     document.addEventListener('mousemove', onMouseMove);
     document.addEventListener('mouseup', onMouseUp);
   }
 
-  const dragHandle = inner.querySelector('.drag-handle');
+  const dragHandle = dropdown.querySelector('.drag-handle');
   if (dragHandle) {
     dragHandle.addEventListener('touchstart', handleTouchStart);
     dragHandle.addEventListener('mousedown', handleMouseDown);
