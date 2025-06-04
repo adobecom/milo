@@ -7,6 +7,7 @@
   border-radius: 8px;
   box-shadow: 0 2px 10px rgba(0 0 0 / 10%);
   display: none;
+  flex-direction: column;
   z-index: 1000;
   overflow: hidden;
   transition: height 0.2s;
@@ -15,6 +16,7 @@
 
 .search-container {
   padding: 8px 8px 6px;
+  flex-shrink: 0;
 }
 
 .search-input-wrapper {
@@ -61,10 +63,11 @@
 }
 
 .language-list {
-  max-height: 250px;
+  flex: 1 1 auto;
+  min-height: 0;
+  max-height: 290px;
   overflow-y: auto;
   padding: var(--spacing-xxs) 0;
-  height: 100%;
 }
 
 .language-item {
