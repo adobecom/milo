@@ -370,6 +370,7 @@ function setupDropdownEvents({
 
   function onTouchMove(e) {
     if (!dragging) return;
+    e.preventDefault();
     const touch = e.touches[0];
     const deltaY = touch.clientY - startY;
     if (deltaY > 0) {
@@ -394,6 +395,7 @@ function setupDropdownEvents({
 
   function onMouseMove(e) {
     if (!dragging) return;
+    e.preventDefault();
     const deltaY = e.clientY - startY;
     if (deltaY > 0) {
       setDropdownHeight(Math.max(0, startHeight - deltaY));
