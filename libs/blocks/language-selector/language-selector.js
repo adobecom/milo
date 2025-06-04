@@ -453,8 +453,8 @@ export default async function init(block) {
   const divs = block.querySelectorAll(':scope > div');
   const links = divs[0].querySelectorAll('a');
   const placeholders = divs[0].querySelectorAll('p');
-  const ariaLabel = placeholders[0].textContent.trim();
-  const placeholderText = placeholders[1].textContent.trim();
+  const ariaLabel = placeholders[0]?.textContent.trim();
+  const placeholderText = placeholders[1]?.textContent.trim();
   if (!links.length) return;
 
   const languagesList = getLanguages(links, languages, locales);
@@ -469,7 +469,7 @@ export default async function init(block) {
   regionPickerElem.setAttribute('aria-expanded', 'false');
   regionPickerElem.setAttribute('aria-controls', 'language-selector-listbox');
   regionPickerElem.setAttribute('tabindex', '0');
-
+  regionPickerElem.setAttribute('aria-label', ariaLabel);
   const {
     dropdown,
     searchContainer,
