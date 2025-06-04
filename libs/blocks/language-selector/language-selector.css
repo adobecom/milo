@@ -11,19 +11,23 @@
 }
 
 .search-container {
-  padding: var(--spacing-xs);
-  margin-bottom: 4px;
+  padding: 8px 8px 6px;
 }
 
 .search-input-wrapper {
-  position: relative;
   display: flex;
   align-items: center;
-  background: var(--color-gray-100);
-  border-radius: 20px;
-  padding: 8px 12px;
-  border: 2px solid #C6C6C6;
+  height: 32px;
+  box-sizing: border-box;
+  border-radius: 16px;
+  border: 2px solid #DADADA;
+  background: #FFF;
+  padding: 0 14px;
   transition: border-color 0.2s;
+}
+
+.search-input-wrapper:hover {
+  border-color: #C6C6C6;
 }
 
 .search-icon {
@@ -34,16 +38,23 @@
 }
 
 .search-input {
+  height: 100%;
+  width: 100%;
   border: none;
   background: transparent;
-  width: 100%;
   outline: none;
-  font-size: var(--type-body-s-size);
+  font-size: var(--type-body-xs-size);
   font-family: var(--body-font-family);
+  box-sizing: border-box;
+  padding: 0;
+  display: flex;
+  align-items: center;
 }
 
 .search-input::placeholder {
   color: var(--color-gray-500);
+  line-height: 32px;
+  vertical-align: middle;
 }
 
 .language-list {
@@ -76,13 +87,13 @@
 }
 
 .language-link:hover {
-  color: inherit !important;
-  background: var(--color-gray-100);
+  color: var(--text-color);
+  background: #E9E9E9;
   text-decoration: none;
 }
 
 .language-item.selected .language-link {
-  background: var(--color-gray-200);
+  background: #E9E9E9;
 }
 
 .check-icon {
@@ -154,18 +165,8 @@
     padding-bottom: env(safe-area-inset-bottom, 0);
   }
 
-  .language-dropdown .drag-handle {
-    width: 56px;
-    height: 6px;
-    background: var(--color-gray-200);
-    border-radius: 3px;
-    margin: 12px auto 16px;
-    display: block;
-  }
-
   .search-container {
-    padding: 0 16px 12px;
-    margin-bottom: 4px;
+    padding: 0 8px 8px;
   }
 
   .language-list {
@@ -181,5 +182,15 @@
 
   .language-link {
     padding: 8px 16px;
+  }
+
+  .language-dropdown .drag-handle {
+    width: 56px;
+    height: 6px;
+    background: var(--color-gray-200);
+    border-radius: 3px;
+    margin: 12px auto 16px;
+    display: block;
+    touch-action: none;
   }
 }
