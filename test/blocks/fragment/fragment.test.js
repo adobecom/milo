@@ -85,6 +85,11 @@ describe('Fragments', () => {
     expect(window.lana.log.args[2][0]).to.equal('ERROR: Fragment Circular Reference loading http://localhost:2000/test/blocks/fragment/mocks/fragments/frag-a');
   });
 
+  it('Removes #_replacecell from fragment', async () => {
+    const marquee = document.querySelector('.marquee-section');
+    await loadArea(marquee);
+  });
+
   it('Inlines fragments inside a block', async () => {
     const marquee = document.querySelector('.marquee-section');
     await loadArea(marquee);
