@@ -1281,6 +1281,7 @@ export const combineMepSources = async (
   rocPersEnabled,
   promoEnabled,
   mepParam,
+  mph,
 ) => {
   let persManifests = [];
 
@@ -1293,11 +1294,8 @@ export const combineMepSources = async (
     persManifests = persManifests.concat(rocPersManifest);
   }
 
-export const combineMepSources = async (persEnabled, promoEnabled, mepParam, mph) => {
-  let persManifests = [];
+  if (mph) persManifests = persManifests.concat(parseManifestUrlAndAddSource(mph, 'mph'));
 
-  if (persEnabled) persManifests = createPersManifests(persEnabled, 'pzn');
-  if (mph) persManifests = persManifests.concat(createPersManifests(mph, 'mph'));
   if (promoEnabled) {
     const { default: getPromoManifests } = await import('./promo-utils.js');
     persManifests = persManifests.concat(getPromoManifests(promoEnabled, PAGE_URL.searchParams));
