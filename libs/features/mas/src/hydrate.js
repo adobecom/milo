@@ -276,7 +276,7 @@ function processDescriptionHTML(originalHtmlString, merchCard, aemFragmentMappin
         const isPotentiallyAnOffer = link.hasAttribute('data-wcs-osi') && Boolean(link.getAttribute('data-wcs-osi'));
         if (isPotentiallyAnOffer) {
             const checkoutLink = transformLinkToButton(link, merchCard, aemFragmentMapping);
-            if (checkoutLink && checkoutLink !== link) {
+            if (checkoutLink && checkoutLink !== link && link.parentNode) {
                 checkoutLink.classList.remove('con-button', 'blue');
                 checkoutLink.classList.add(link.className);
                 link.parentNode.replaceChild(checkoutLink, link);
