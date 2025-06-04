@@ -1153,5 +1153,32 @@
           "salesChannel": "DIRECT",
           "offerType": "BASE"
       }
+  ],
+  "success-after-fail-mult": [
+    {
+      "offerId": "1234567890",
+      "priceDetails": {
+        "price": 1.99,
+        "priceWithoutTax": 0.0,
+        "priceWithoutDiscountAndTax": 1.99,
+        "usePrecision": true,
+        "formatString": "'US$'#,##0.00",
+        "taxDisplay": "TAX_EXCLUSIVE",
+        "taxTerm": "TAX"
+      },
+      "productArrangementCode": "test",
+      "productArrangement": {
+        "productFamily": "TEST"
+      },
+      "buyingProgram": "RETAIL",
+      "commitment": "YEAR",
+      "term": "MONTHLY",
+      "customerSegment": "INDIVIDUAL",
+      "marketSegments": ["COM"],
+      "salesChannel": "DIRECT",
+      "offerType": "BASE",
+      "pricePoint": "REGULAR",
+      "language": "MULT"
+    }
   ]
 }

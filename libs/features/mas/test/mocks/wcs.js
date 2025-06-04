@@ -5,6 +5,8 @@ export async function withWcs(originalFetch) {
     const offers = JSON.parse(
         await originalFetch('/test/mocks/offers.json').then((r) => r.text()),
     );
+    const callCountsByOsi = {};
+
     return async ({ pathname, searchParams, headers }) => {
         // mock Wcs responses
         if (
@@ -57,6 +59,14 @@ export async function withWcs(originalFetch) {
                     json: async () => new Error(),
                     text: async () => 'Some osis were not found',
                 });
+            }
+
+            if (osi === 'success-after-fail') {
+                callCountsByOsi[osi] = (callCountsByOsi[osi] || 0) + 1;
+                if (callCountsByOsi[osi] < 4) {
+                    // First 3 calls, simulate a failure
+                    return Promise.reject(new TypeError('Failed to fetch'));
+                }
             }
 
             // 200, all osis were found

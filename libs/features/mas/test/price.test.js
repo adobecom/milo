@@ -1,4 +1,4 @@
-import { ERROR_MESSAGE_OFFER_NOT_FOUND } from '../src/constants.js';
+import { ERROR_MESSAGE_OFFER_NOT_FOUND, STATE_FAILED, STATE_RESOLVED } from '../src/constants.js';
 import { InlinePrice } from '../src/inline-price.js';
 import { Price } from '../src/price.js';
 import { getSettings } from '../src/settings.js';
@@ -219,6 +219,21 @@ describe('class "InlinePrice"', () => {
         inlinePrice.dataset.template = 'discount';
         await inlinePrice.onceSettled();
         expect(inlinePrice.outerHTML).to.be.html(snapshots.noDiscount);
+    });
+
+    it('it recovers after first request fails', async () => {
+        const commerce = await initMasCommerceService();
+        const inlinePrice = mockInlinePrice('successAfterFail', 'success-after-fail');
+        try {
+            await inlinePrice.onceSettled();
+            expect.fail('Promise should have been rejected');
+        } catch (error) {
+            // expected
+        }
+        expect(inlinePrice.masElement.state).to.equal(STATE_FAILED);
+        commerce.refreshOffers();
+        await inlinePrice.onceSettled();
+        expect(inlinePrice.masElement.state).to.equal(STATE_RESOLVED);
     });
 
     describe('property "isInlinePrice"', () => {
