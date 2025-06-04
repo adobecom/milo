@@ -168,6 +168,10 @@
     display: none;
     margin: 0;
     padding-bottom: env(safe-area-inset-bottom, 0);
+    min-height: 0 !important;
+    height: unset !important;
+    overflow: hidden !important;
+    flex-direction: column !important;
   }
 
   .search-container {
@@ -176,8 +180,9 @@
 
   .language-list {
     padding: 0 0 16px;
-    max-height: 60vh;
-    overflow-y: auto;
+    max-height: 60vh !important;
+    flex: 1 1 auto !important;
+    overflow-y: auto !important;
   }
 
   .language-item {
