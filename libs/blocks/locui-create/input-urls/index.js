@@ -110,6 +110,7 @@ export function getInitialName(type) {
 }
 
 export function formatDateTime(dueDate) {
+  if (!dueDate) return '';
   const date = new Date(dueDate);
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, '0');
