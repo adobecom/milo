@@ -399,39 +399,29 @@ export default async function init(block) {
     activeIndexRef,
   });
 
+  // Drag handle close logic (Canva-style)
+  let startY;
+  const onTouchEnd = function () {
+    document.removeEventListener('touchmove', onTouchMove);
+    document.removeEventListener('touchend', onTouchEnd);
+  };
+  const onTouchMove = function (e) {
+    const touch = e.touches[0];
+    if (touch.clientY > startY) {
+      dropdown.style.display = 'none';
+      dropdown.style.height = '';
+      dropdown.classList.add('fixed-height');
+      document.removeEventListener('touchmove', onTouchMove);
+      document.removeEventListener('touchend', onTouchEnd);
+    }
+  };
   const dragHandle = dropdown.querySelector('.drag-handle');
   if (dragHandle) {
-    let startY;
-    let startHeight;
-    const minHeight = 0;
-    const maxHeight = window.innerHeight * 0.9;
-
-    const onTouchMove = (e) => {
-      const touch = e.touches[0];
-      const newHeight = Math.max(
-        minHeight,
-        Math.min(maxHeight, startHeight + (startY - touch.clientY)),
-      );
-      dropdown.style.height = `${newHeight}px`;
-      dropdown.style.overflow = 'auto';
-    };
-
     dragHandle.addEventListener('touchstart', (e) => {
-      dropdown.classList.remove('fixed-height');
-      dropdown.style.minHeight = '0';
       const touch = e.touches[0];
       startY = touch.clientY;
-      startHeight = dropdown.offsetHeight;
       document.addEventListener('touchmove', onTouchMove);
-      document.addEventListener('touchend', () => {
-        const dragHandleHeight = dragHandle.offsetHeight;
-        if (dropdown.offsetHeight <= dragHandleHeight + 2) {
-          dropdown.style.display = 'none';
-          dropdown.style.height = '';
-          dropdown.classList.add('fixed-height');
-        }
-        document.removeEventListener('touchmove', onTouchMove);
-      }, { once: true });
+      document.addEventListener('touchend', onTouchEnd);
     });
   }
 }
