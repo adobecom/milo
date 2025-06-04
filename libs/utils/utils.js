@@ -1375,7 +1375,7 @@ export async function getSpectraLOB(lastVisitedPage) {
       body: null,
     });
     const content = await rawResponse.json();
-    return content.modelLineOfBusiness;
+    return content.modelLineOfBusiness.toLowerCase(); // added lowercase
   } catch (error) {
     if (error.name === 'TimeoutError') {
       // This exception is from the abort signal

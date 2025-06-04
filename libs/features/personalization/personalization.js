@@ -942,7 +942,8 @@ async function getPersonalizationVariant(
     if (hasCountryMatch(name, config)) return true;
     if (userEntitlements?.includes(name)) return true;
     console.log('Checking config.mep.meplob:', config.mep?.meplob);
-    if (name.startsWith('lob-') && name.split('-')[1].toLowerCase() === config.mep?.meplob?.toLowerCase()) return true;
+    // if (name.startsWith('lob-') && config.mep?.meplob && name.split('-')[1].toLowerCase() === config.mep.meplob) return true;
+    if (name.startsWith('lob-') && config.mep?.meplob === name.split('-')[1].toLowerCase()) return true;
     return PERSONALIZATION_KEYS.includes(name) && PERSONALIZATION_TAGS[name]();
   };
 
