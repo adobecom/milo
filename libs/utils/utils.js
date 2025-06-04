@@ -429,6 +429,11 @@ export const shouldBlockFreeTrialLinks = ({ button, localePrefix, parent }) => {
     return false;
   }
 
+  if (button.href?.includes('#_allow-kr-trial')) {
+    button.href = button.href.replace('#_allow-kr-trial', '');
+    return false;
+  }
+
   const elementToRemove = (parent?.tagName === 'STRONG' || parent?.tagName === 'EM') && parent?.children?.length === 1 ? parent : button;
   elementToRemove.remove();
   return true;
