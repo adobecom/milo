@@ -76,7 +76,6 @@ const getVariantLayout = (card, mustMatch = false) => {
     }
     const { class: VariantClass, style } = variantInfo;
     if (style) {
-        // Check for adoptedStyleSheets support first, before creating CSSStyleSheet
         try {
             const sheet = new CSSStyleSheet();
             sheet.replaceSync(style.cssText);
