@@ -90,15 +90,15 @@ function handleBtnState(
 }
 
 function handleNavigation(el) {
-  const isRtl = document.documentElement.getAttribute('dir') === 'rtl';
+  const isRtl = document.documentElement.dir === 'rtl';
   const prev = createTag('div', { class: 'nav-grad previous' }, PREVBUTTON);
   const next = createTag('div', { class: 'nav-grad next' }, NEXTBUTTON);
-  const buttons = [prev, next];
+  const buttons = isRtl ? [next, prev] : [prev, next];
   buttons.forEach((btn) => {
     const button = btn.childNodes[0];
     button.addEventListener('click', () => handleScroll(el, button.classList));
   });
-  return isRtl ? buttons.reverse() : buttons;
+  return buttons;
 }
 
 export default function init(el) {
