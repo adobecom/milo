@@ -25,24 +25,6 @@ const CaptionsLangMap = {
   kor: ['kr'],
 };
 
-/**
- * Maps a video URL's captions parameter to the appropriate language code based on geo location.
- *
- * @param {string} videoUrl - The URL of the Adobe TV video
- * @param {string} geo - The geographic location code (e.g. 'fr', 'jp', 'de')
- * @returns {string} The updated video URL with the correct captions language parameter
-*
- * @example
- * // Updates captions to French for French geo
- * updateCaptionsLang('https://video.tv.adobe.com/v/123456?captions=eng', 'fr')
- * // Returns: 'https://video.tv.adobe.com/v/123456?captions=fre_fr'
- *
- * @example
- * // Preserves URL if captions param not present
- * updateCaptionsLang('https://video.tv.adobe.com/v/123456', 'fr')
- * // Returns: 'https://video.tv.adobe.com/v/123456'
- */
-
 export const updateCaptionsLang = (videoUrl, geo) => {
   const url = new URL(videoUrl);
 
