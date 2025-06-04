@@ -21,9 +21,13 @@
   background: #FFF;
   border-radius: 20px;
   padding: 8px 12px;
-  border: 2px solid #C6C6C6;
+  border: 2px solid #DADADA;
   transition: border-color 0.2s;
   height: 12px;
+}
+
+.search-input-wrapper:hover {
+  border-color: #C6C6C6;
 }
 
 .search-icon {
@@ -34,6 +38,10 @@
 }
 
 .search-input {
+  height: 18px;
+  line-height: 18px;
+  padding-top: 0;
+  padding-bottom: 0;
   border: none;
   background: transparent;
   width: 100%;
