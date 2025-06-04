@@ -184,35 +184,37 @@ function setTooltipPosition(el) {
     if (!tooltip.dataset.originalPosition
       && currentPosition) tooltip.dataset.originalPosition = currentPosition;
 
-    const rect = tooltip.getBoundingClientRect();
-    const { originalPosition } = tooltip.dataset;
-    const isVerticalPosition = originalPosition === 'top' || originalPosition === 'bottom';
-    const effectiveMaxWidth = isVerticalPosition ? tooltipMaxWidth / 2 : tooltipMaxWidth;
-    const willOverflowRight = rect.right + effectiveMaxWidth + tooltipMargin > viewportWidth;
-    const willOverflowLeft = rect.left - effectiveMaxWidth - tooltipMargin < 0;
+    setTimeout(() => {
+      const rect = tooltip.getBoundingClientRect();
+      const { originalPosition } = tooltip.dataset;
+      const isVerticalPosition = originalPosition === 'top' || originalPosition === 'bottom';
+      const effectiveMaxWidth = isVerticalPosition ? tooltipMaxWidth / 2 : tooltipMaxWidth;
+      const willOverflowRight = rect.right + effectiveMaxWidth + tooltipMargin > viewportWidth;
+      const willOverflowLeft = rect.left - effectiveMaxWidth - tooltipMargin < 0;
 
-    if (originalPosition !== currentPosition) {
-      let wouldOverflow = false;
-      if (originalPosition === 'right') {
-        wouldOverflow = willOverflowRight;
-      } else if (originalPosition === 'left') {
-        wouldOverflow = willOverflowLeft;
-      } else if (isVerticalPosition) {
-        wouldOverflow = willOverflowRight || willOverflowLeft;
+      if (originalPosition !== currentPosition) {
+        let wouldOverflow = false;
+        if (originalPosition === 'right') {
+          wouldOverflow = willOverflowRight;
+        } else if (originalPosition === 'left') {
+          wouldOverflow = willOverflowLeft;
+        } else if (isVerticalPosition) {
+          wouldOverflow = willOverflowRight || willOverflowLeft;
+        }
+        if (!wouldOverflow) {
+          tooltip.classList.remove(...positionClasses);
+          tooltip.classList.add(originalPosition);
+          return;
+        }
       }
-      if (!wouldOverflow) {
+
+      const shouldPositionLeft = isRtl ? willOverflowLeft : willOverflowRight;
+      const shouldPositionRight = isRtl ? willOverflowRight : willOverflowLeft;
+      if (shouldPositionLeft || shouldPositionRight) {
         tooltip.classList.remove(...positionClasses);
-        tooltip.classList.add(originalPosition);
-        return;
+        tooltip.classList.add(shouldPositionLeft ? 'left' : 'right');
       }
-    }
-
-    const shouldPositionLeft = isRtl ? willOverflowLeft : willOverflowRight;
-    const shouldPositionRight = isRtl ? willOverflowRight : willOverflowLeft;
-    if (shouldPositionLeft || shouldPositionRight) {
-      tooltip.classList.remove(...positionClasses);
-      tooltip.classList.add(shouldPositionLeft ? 'left' : 'right');
-    }
+    });
   });
 }
 
