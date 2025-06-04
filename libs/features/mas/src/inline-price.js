@@ -268,11 +268,19 @@ export class InlinePrice extends HTMLSpanElement {
         const version = this.masElement.togglePending(options);
         this.innerHTML = '';
         const [promise] = service.resolveOfferSelectors(options);
-        return this.renderOffers(
-            selectOffers(await promise, options),
-            options,
-            version,
-        );
+        try {
+            const offers = await promise;
+            return this.renderOffers(
+                selectOffers(offers, options),
+                options,
+                version,
+            );
+        }
+        catch(error) {
+            this.innerHTML = '';
+            this.setAttribute('data-error', '');
+            throw error;
+        }
     }
 
     // TODO: can be extended to accept array of offers and compute subtotal price
@@ -307,7 +315,11 @@ export class InlinePrice extends HTMLSpanElement {
                 const inlinePrices = parentEl?.querySelectorAll('span[is="inline-price"]');
                 if (inlinePrices.length > 1 && inlinePrices.length === parentEl.querySelectorAll('span[data-template="strikethrough"]').length * 2) {
                     inlinePrices.forEach((price) => {
-                        if (price.dataset.template !== 'strikethrough' && price.options && !price.options.alternativePrice) {
+                        if (price.dataset.template !== 'strikethrough' && 
+                            price.options && 
+                            !price.options.alternativePrice && 
+                            !price.hasAttribute('data-error')
+                        ) {
                             price.options.alternativePrice = true;
                             price.innerHTML = service.buildPriceHTML(offers, price.options);
                         }
