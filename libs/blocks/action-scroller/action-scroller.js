@@ -99,6 +99,13 @@ function handleNavigation(el) {
   return buttons;
 }
 
+const allActionScrollers = [];
+function handleResize() {
+  allActionScrollers.forEach(({ scroller, buttons }) => {
+    handleBtnState(scroller, buttons);
+  });
+}
+
 export default function init(el) {
   const hasNav = el.classList.contains(NAV);
   const actions = el.parentElement.querySelectorAll('.action-item');
@@ -109,6 +116,8 @@ export default function init(el) {
   el.replaceChildren(items, ...buttons);
   if (hasNav) {
     items.addEventListener('scroll', () => handleBtnState(items, buttons));
+    allActionScrollers.push({ scroller: items, buttons });
+    window.addEventListener('resize', handleResize);
     handleBtnState(items, buttons);
   }
 }
