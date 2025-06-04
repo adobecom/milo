@@ -399,13 +399,14 @@ export default async function init(block) {
     activeIndexRef,
   });
 
-  // Drag handle close logic (Canva-style)
+  // Drag handle close logic (Canva-style, touch and mouse)
   let startY;
-  const onTouchEnd = function () {
+  let onTouchMove;
+  const onTouchEnd = function onTouchEnd() {
     document.removeEventListener('touchmove', onTouchMove);
     document.removeEventListener('touchend', onTouchEnd);
   };
-  const onTouchMove = function (e) {
+  onTouchMove = function (e) {
     const touch = e.touches[0];
     if (touch.clientY > startY) {
       dropdown.style.display = 'none';
@@ -415,13 +416,36 @@ export default async function init(block) {
       document.removeEventListener('touchend', onTouchEnd);
     }
   };
+  let onMouseMove;
+  const onMouseUp = function onMouseUp() {
+    document.removeEventListener('mousemove', onMouseMove);
+    document.removeEventListener('mouseup', onMouseUp);
+  };
+  onMouseMove = function (e) {
+    if (e.clientY > startY) {
+      dropdown.style.display = 'none';
+      dropdown.style.height = '';
+      dropdown.classList.add('fixed-height');
+      document.removeEventListener('mousemove', onMouseMove);
+      document.removeEventListener('mouseup', onMouseUp);
+    }
+  };
+
+  const handleTouchStart = function handleTouchStart(e) {
+    const touch = e.touches[0];
+    startY = touch.clientY;
+    document.addEventListener('touchmove', onTouchMove);
+    document.addEventListener('touchend', onTouchEnd);
+  };
+  const handleMouseDown = function handleMouseDown(e) {
+    startY = e.clientY;
+    document.addEventListener('mousemove', onMouseMove);
+    document.addEventListener('mouseup', onMouseUp);
+  };
+
   const dragHandle = dropdown.querySelector('.drag-handle');
   if (dragHandle) {
-    dragHandle.addEventListener('touchstart', (e) => {
-      const touch = e.touches[0];
-      startY = touch.clientY;
-      document.addEventListener('touchmove', onTouchMove);
-      document.addEventListener('touchend', onTouchEnd);
-    });
+    dragHandle.addEventListener('touchstart', handleTouchStart);
+    dragHandle.addEventListener('mousedown', handleMouseDown);
   }
 }
