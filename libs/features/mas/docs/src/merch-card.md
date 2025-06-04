@@ -163,7 +163,7 @@ The reason is that some merch cards are resolved very quickly and event could di
     { 
         const logReady = document.getElementById('log-mas-ready');
         const message = (e, type) => {
-          const id = e.target.getAttribute('id') || e.target.getAttribute('data-wcs-osi');
+          const id = e.target.getAttribute('id') || e.target.getAttribute('fragment') || e.target.getAttribute('data-wcs-osi');
           const detail = e.detail ? `: ${JSON.stringify(e.detail, null, 2)}` : '';
           return `'${type}' on ${e.target.nodeName} #${id}${detail}`;
         };
@@ -181,10 +181,6 @@ The reason is that some merch cards are resolved very quickly and event could di
             event.target.classList.add('error');
             log(document.getElementById('log-mas-error'), message(event, 'mas:error'));
         });
-        // success events
-        document.addEventListener('aem:ready', (event) =>
-            log(logReady, message(event, 'aem:ready')),
-        );
         document.addEventListener('mas:ready', (event) => {
             event.target.classList.add('ready');
             event.target.classList.remove('error');
@@ -298,12 +294,6 @@ aemFragment.addEventListener('aem:error', (event) => {
     console.error('AEM fragment error message:', event.detail.message);
     console.error('AEM fragment error context:', event.detail.context);
 });
-
-// Listen for AEM fragment load event
-aemFragment.addEventListener('aem:load', (event) => {
-    // event.detail contains the fragment data
-    console.log('AEM fragment loaded:', event.detail);
-});
 ```
 
 ### spectrum = 'swc'
@@ -324,7 +314,6 @@ However, it can be accessed via `e.target.source` property.
       const target = document.getElementById('log3');
 
       const cardSwc = document.getElementById('cardSwc');
-      console.log('cardSwc', cardSwc);
       cardSwc.addEventListener(
           'click',
           (e) => {
