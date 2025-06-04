@@ -122,7 +122,7 @@ function createDropdownElements(regionPickerTextElem, phText, ariaLabel, setAria
     id: 'language-selector-listbox',
     role: 'listbox',
     tabindex: '0',
-    'aria-label': placeholderText,
+    'aria-label': phText,
   });
 
   return { dropdown, searchContainer, languageList };
@@ -452,8 +452,9 @@ export default async function init(block) {
   const { languages, locales } = config;
   const divs = block.querySelectorAll(':scope > div');
   const links = divs[0].querySelectorAll('a');
-  const ariaLabel = divs[0].querySelectorAll('p')[0].textContent.trim();
-  const placeholderText = divs[0].querySelectorAll('p')[1].textContent.trim();
+  const placeholders = divs[0].querySelectorAll('p');
+  const ariaLabel = placeholders[0].textContent.trim();
+  const placeholderText = placeholders[1].textContent.trim();
   if (!links.length) return;
 
   const languagesList = getLanguages(links, languages, locales);
