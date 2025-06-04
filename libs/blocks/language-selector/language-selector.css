@@ -1,6 +1,7 @@
 .language-dropdown {
   position: absolute;
-  bottom: calc(100% + 5px);
+  top: 100%;
+  margin-top: 5px;
   left: 0;
   width: 230px;
   background: var(--background-color);
