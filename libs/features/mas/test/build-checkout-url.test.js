@@ -84,6 +84,7 @@ describe('buildCheckoutUrl', () => {
       customerSegment: 'INDIVIDUAL',
       marketSegment: 'EDU',
       modal: 'crm',
+      is3in1: true,
     };
     const url = buildCheckoutUrl(checkoutData);
     const parsedUrl = new URL(url);
@@ -101,6 +102,7 @@ describe('buildCheckoutUrl', () => {
       customerSegment: 'INDIVIDUAL',
       marketSegment: 'EDU',
       modal: 'twp',
+      is3in1: true,
     };
     const url = buildCheckoutUrl(checkoutData);
     const parsedUrl = new URL(url);
@@ -118,6 +120,7 @@ describe('buildCheckoutUrl', () => {
       customerSegment: 'INDIVIDUAL',
       marketSegment: 'EDU',
       modal: 'd2p',
+      is3in1: true,
     };
     const url = buildCheckoutUrl(checkoutData);
     const parsedUrl = new URL(url);
@@ -135,10 +138,11 @@ describe('buildCheckoutUrl', () => {
       customerSegment: 'INDIVIDUAL',
       marketSegment: 'EDU',
       modal: 'twp',
+      is3in1: true,
     };
     const url = buildCheckoutUrl(checkoutData);    
     const parsedUrl = new URL(url);
-    expect(parsedUrl.searchParams.get('ms')).to.equal('e');
+    expect(parsedUrl.searchParams.get('ms')).to.equal('EDU');
   });
 
   it('should set customer segment for COM team customer', () => {
@@ -151,10 +155,11 @@ describe('buildCheckoutUrl', () => {
       customerSegment: 'TEAM',
       marketSegment: 'COM',
       modal: 'twp',
+      is3in1: true,
     };
     const url = buildCheckoutUrl(checkoutData);
     const parsedUrl = new URL(url);
-    expect(parsedUrl.searchParams.get('cs')).to.equal('t');
+    expect(parsedUrl.searchParams.get('cs')).to.equal('TEAM');
   });
 
   it('should handle addon product arrangement code for 3-in-1 modal', () => {
@@ -169,14 +174,15 @@ describe('buildCheckoutUrl', () => {
       ],
       modal: 'twp',
       customerSegment: 'INDIVIDUAL',
-      marketSegment: 'EDU'
+      marketSegment: 'EDU',
+      is3in1: true,
     };
     const url = buildCheckoutUrl(checkoutData);
     const parsedUrl = new URL(url);
     expect(parsedUrl.searchParams.get('ao')).to.equal('ADDON123');
   });
   
-  it('should respect mas-ff-3in1 meta tag when off', () => {
+  it('should not set 3in1 parameters when 3in1 is disabled', () => {
     const meta = document.createElement('meta');
     meta.name = 'mas-ff-3in1';
     meta.content = 'off';
@@ -190,7 +196,8 @@ describe('buildCheckoutUrl', () => {
       items: [{ quantity: 1 }],
       modal: 'twp',
       customerSegment: 'INDIVIDUAL',
-      marketSegment: 'EDU'
+      marketSegment: 'EDU',
+      is3in1: false,
     };
     const url = buildCheckoutUrl(checkoutData);
     const parsedUrl = new URL(url);
@@ -210,7 +217,8 @@ describe('buildCheckoutUrl', () => {
       items: [{ quantity: 1 }],
       modal: 'twp',
       customerSegment: 'INDIVIDUAL',
-      marketSegment: 'EDU'
+      marketSegment: 'EDU',
+      is3in1: true,
     };
     const url = buildCheckoutUrl(checkoutData);
     const parsedUrl = new URL(url);
@@ -278,27 +286,12 @@ describe('buildCheckoutUrl', () => {
       items: [{ quantity: 1 }],
       modal: 'twp',
       customerSegment: 'INDIVIDUAL',
-      marketSegment: 'EDU'
+      marketSegment: 'EDU',
+      is3in1: true,
     };
     const url = buildCheckoutUrl(checkoutData);
     const parsedUrl = new URL(url);
     expect(parsedUrl.searchParams.has('q')).to.be.false;
-  });
-
-  it('should handle product arrangement code from items when not provided in root', () => {
-    const checkoutData = {
-      env: PROVIDER_ENVIRONMENT.PRODUCTION,
-      workflowStep: CheckoutWorkflowStep.SEGMENTATION,
-      clientId: 'testClient',
-      country: 'US',
-      items: [{ productArrangementCode: 'PAC123' }],
-      modal: 'twp',
-      customerSegment: 'INDIVIDUAL',
-      marketSegment: 'EDU'
-    };
-    const url = buildCheckoutUrl(checkoutData);
-    const parsedUrl = new URL(url);
-    expect(parsedUrl.searchParams.get('pa')).to.equal('PAC123');
   });
 
   it('should handle addon product arrangement code when root pa is provided', () => {
@@ -339,5 +332,22 @@ describe('buildCheckoutUrl', () => {
     const parsedUrl = new URL(url);
     expect(parsedUrl.searchParams.get('cs')).to.equal('custom_cs');
     expect(parsedUrl.searchParams.get('ms')).to.equal('custom_ms');
+  });
+
+  it('should remove the ot parameter when it is PROMOTION', () => {
+    const checkoutData = {
+      env: PROVIDER_ENVIRONMENT.PRODUCTION,
+      workflowStep: CheckoutWorkflowStep.SEGMENTATION,
+      clientId: 'testClient',
+      country: 'US',
+      items: [{ quantity: 1 }],
+      modal: 'twp',
+      customerSegment: 'INDIVIDUAL',
+      marketSegment: 'EDU',
+      ot: 'PROMOTION'
+    };
+    const url = buildCheckoutUrl(checkoutData);
+    const parsedUrl = new URL(url);
+    expect(parsedUrl.searchParams.has('ot')).to.be.false;
   });
 });

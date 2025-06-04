@@ -1,5 +1,6 @@
 import {
   createTag, getConfig, loadArea, loadScript, loadStyle, localizeLink, SLD, getMetadata,
+  loadLink,
 } from '../../utils/utils.js';
 import { replaceKey } from '../../features/placeholders.js';
 
@@ -158,6 +159,18 @@ const GeoMap = {
   th_th: 'TH_th',
 };
 
+/**
+ * Used when 3in1 modals are configured with ms=e or cs=t extra paramter, but 3in1 is disabled.
+ * Dexter modals should deeplink to plan=edu or plan=team tabs.
+ * @type {Record<string, string>}
+ */
+const TAB_DEEPLINK_MAPPING = {
+  ms: 'plan',
+  cs: 'plan',
+  e: 'edu',
+  t: 'team',
+};
+
 const LANG_STORE_PREFIX = 'langstore/';
 
 function getDefaultLangstoreCountry(language) {
@@ -299,6 +312,14 @@ export function getMasBase(hostname, maslibs) {
     getMasBase.baseUrl = baseUrl;
   }
   return baseUrl;
+}
+
+function getCommercePreloadUrl() {
+  const { env } = getConfig();
+  if (env === 'prod') {
+    return 'https://commerce.adobe.com/store/iframe/preload.js';
+  }
+  return 'https://commerce-stg.adobe.com/store/iframe/preload.js';
 }
 
 export async function polyfills() {
@@ -480,46 +501,56 @@ async function openFragmentModal(path, getModal) {
   return modal;
 }
 
-export function appendTabName(url) {
+function appendTabName(url, el) {
+  if (el?.is3in1Modal) {
+    if (el.marketSegment === 'EDU') {
+      url.searchParams.set('plan', 'edu');
+    } else if (el.customerSegment === 'TEAM') {
+      url.searchParams.set('plan', 'team');
+    }
+  }
   const metaPreselectPlan = document.querySelector('meta[name="preselect-plan"]');
   if (!metaPreselectPlan?.content) return url;
-  const isRelativePath = url.startsWith('/');
-  let urlWithPlan;
-  try {
-    urlWithPlan = isRelativePath ? new URL(`${window.location.origin}${url}`) : new URL(url);
-  } catch (err) {
-    window.lana?.log(`Invalid URL ${url} : ${err}`);
-    return url;
-  }
-  urlWithPlan.searchParams.set('plan', metaPreselectPlan.content);
-  return isRelativePath ? urlWithPlan.href.replace(window.location.origin, '') : urlWithPlan.href;
+  url.searchParams.set('plan', metaPreselectPlan.content);
+  return url;
 }
 
-export function appendExtraOptions(url, extraOptions) {
+function appendExtraOptions(url, extraOptions) {
   if (!extraOptions) return url;
   const extraOptionsObj = JSON.parse(extraOptions);
-  let urlWithExtraOptions;
+  Object.keys(extraOptionsObj).forEach((key) => {
+    if (CHECKOUT_ALLOWED_KEYS.includes(key)) {
+      const value = extraOptionsObj[key];
+      url.searchParams.set(
+        TAB_DEEPLINK_MAPPING[key] ?? key,
+        TAB_DEEPLINK_MAPPING[value] ?? value,
+      );
+    }
+  });
+  return url;
+}
+
+// TODO this should migrate to checkout.js buildCheckoutURL
+export function appendDexterParameters(url, extraOptions, el) {
+  const isRelativePath = url.startsWith('/');
+  let absoluteUrl;
   try {
-    urlWithExtraOptions = new URL(url);
+    absoluteUrl = new URL(isRelativePath ? `${window.location.origin}${url}` : url);
   } catch (err) {
     window.lana?.log(`Invalid URL ${url} : ${err}`);
     return url;
   }
-  Object.keys(extraOptionsObj).forEach((key) => {
-    if (CHECKOUT_ALLOWED_KEYS.includes(key)) {
-      urlWithExtraOptions.searchParams.set(key, extraOptionsObj[key]);
-    }
-  });
-  return urlWithExtraOptions.href;
+  absoluteUrl = appendExtraOptions(absoluteUrl, extraOptions);
+  absoluteUrl = appendTabName(absoluteUrl, el);
+  return isRelativePath ? absoluteUrl.href.replace(window.location.origin, '') : absoluteUrl.href;
 }
 
-async function openExternalModal(url, getModal, extraOptions) {
-  await loadStyle(`${getConfig().base}/blocks/iframe/iframe.css`);
+async function openExternalModal(url, getModal, extraOptions, el) {
+  loadStyle(`${getConfig().base}/blocks/iframe/iframe.css`);
   const root = createTag('div', { class: 'milo-iframe' });
-  const urlWithTabName = appendTabName(url);
-  const urlWithExtraOptions = appendExtraOptions(urlWithTabName, extraOptions);
+  const absoluteUrl = appendDexterParameters(url, extraOptions, el);
   createTag('iframe', {
-    src: urlWithExtraOptions,
+    src: absoluteUrl,
     frameborder: '0',
     marginwidth: '0',
     marginheight: '0',
@@ -585,6 +616,15 @@ const isProdModal = (url) => {
 
 export async function getModalAction(offers, options, el) {
   if (!options.modal) return undefined;
+
+  if (el?.isOpen3in1Modal) {
+    const baseUrl = getCommercePreloadUrl();
+    // The script can preload more, based on clientId, but for the ones in use
+    // ('mini-plans', 'creative') there is no difference, so we can just use either one.
+    const client = 'creative';
+    loadLink(`${baseUrl}?cli=${client}`, 'text/javascript', { id: 'ucv3-preload-script', as: 'script', crossorigin: 'anonymous', rel: 'preload' });
+  }
+
   const [{
     offerType,
     productArrangementCode,
@@ -762,10 +802,17 @@ export async function getPriceContext(el, params) {
   };
 }
 
+let modalReopened = false;
 export function reopenModal(cta) {
+  if (modalReopened) return;
   if (cta && cta.getAttribute('data-modal-id') === window.location.hash.replace('#', '')) {
     cta.click();
+    modalReopened = true;
   }
+}
+
+export function resetReopenStatus() {
+  modalReopened = false;
 }
 
 export async function buildCta(el, params) {
@@ -802,14 +849,20 @@ export async function buildCta(el, params) {
   } else if (!cta.ariaLabel) {
     cta.onceSettled().then(async () => {
       const productFamily = cta.value[0]?.productArrangement?.productFamily;
-      const marketSegment = cta.value[0]?.marketSegments[0];
-      const customerSegment = marketSegment === 'EDU' ? marketSegment : cta.value[0]?.customerSegment;
+      const { marketSegment, customerSegment } = cta;
+      const segment = marketSegment === 'EDU' ? marketSegment : customerSegment;
       let ariaLabel = cta.textContent;
       ariaLabel = productFamily ? `${ariaLabel} - ${await replaceKey(productFamily, getConfig())}` : ariaLabel;
-      ariaLabel = customerSegment ? `${ariaLabel} - ${await replaceKey(customerSegment, getConfig())}` : ariaLabel;
+      ariaLabel = segment ? `${ariaLabel} - ${await replaceKey(segment, getConfig())}` : ariaLabel;
       cta.setAttribute('aria-label', ariaLabel);
     });
   }
+
+  // @see https://jira.corp.adobe.com/browse/MWPW-173470
+  cta.onceSettled().then(() => {
+    if (getConfig()?.locale?.prefix === '/kr' && cta.value[0]?.offerType === OFFER_TYPE_TRIAL) cta.remove();
+  });
+
   return cta;
 }
 

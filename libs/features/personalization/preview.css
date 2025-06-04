@@ -87,6 +87,7 @@
   bottom: 5px;
 }
 
+.mep-popup-header a,
 .mep-popup-header svg {
   height: 20px;
 }
@@ -267,6 +268,19 @@
   flex-direction: column;
 }
 
+.mep-popup.in-page .mep-manifest-list.mmm-list {
+  display: none;
+}
+
+.mep-popup.in-page .mep-manifest-list.mmm-list.mep-show {
+  display: flex;
+}
+
+.mep-popup.in-page .mep-import-weekly-manifests {
+  cursor: pointer;
+  align-self: center;
+}
+
 .mep-popup.in-page .mep-section {
   flex: 1 1 auto;
 }
@@ -286,10 +300,10 @@
 .mep-popup.in-page .mep-popup-header {
   background-color: #222;
 }
-.mep-popup.in-page .mep-divider {
-  border-bottom: 1px solid #fff;
-}
 
+.mep-popup .mmm-list .mep-active {
+  display: none;
+}
 
 /* Media Queries */
 @media screen and (max-width: 599px) {
