@@ -90,16 +90,7 @@ const scrollSelectedIntoView = (selectedLangItem, languageList) => {
   }
 };
 
-function createDropdownElements(regionPickerTextElem, phText, ariaLabel, setAriaOnSpan = true) {
-  if (setAriaOnSpan) {
-    regionPickerTextElem.setAttribute('id', 'language-selector-combobox');
-    regionPickerTextElem.setAttribute('class', 'feds-regionPicker-text');
-    regionPickerTextElem.setAttribute('aria-haspopup', 'listbox');
-    regionPickerTextElem.setAttribute('aria-expanded', 'false');
-    regionPickerTextElem.setAttribute('aria-controls', 'language-selector-listbox');
-    regionPickerTextElem.setAttribute('tabindex', '0');
-    regionPickerTextElem.setAttribute('aria-label', ariaLabel);
-  }
+function createDropdownElements(phText) {
   const dropdown = createTag('div');
   dropdown.className = 'language-dropdown';
   dropdown.style.display = 'none';
@@ -359,19 +350,29 @@ function setupDropdownEvents({
   let dragging = false;
   const DRAG_CLOSE_THRESHOLD = 40; // px
 
-  function setDropdownHeight(h) {
-    dropdown.style.height = `${h}px`;
-    dropdown.classList.add('fixed-height');
-    if (h < 60) {
+  // Wrap dropdown content in an inner container for scaleY effect
+  let inner = dropdown.querySelector('.language-dropdown-inner');
+  if (!inner) {
+    inner = createTag('div', { class: 'language-dropdown-inner' });
+    // Move all children except inner into inner
+    while (dropdown.firstChild) {
+      inner.appendChild(dropdown.firstChild);
+    }
+    dropdown.appendChild(inner);
+  }
+
+  function setDropdownScale(scale) {
+    inner.style.transform = `scaleY(${scale})`;
+    inner.style.transformOrigin = 'top';
+    if (scale < 0.2) {
       dropdown.classList.add('dropdown-shrinking');
     } else {
       dropdown.classList.remove('dropdown-shrinking');
     }
   }
 
-  function resetDropdownHeight() {
-    dropdown.style.height = '';
-    dropdown.classList.remove('fixed-height');
+  function resetDropdownScale() {
+    inner.style.transform = '';
     dropdown.classList.remove('dropdown-shrinking');
   }
 
@@ -381,7 +382,8 @@ function setupDropdownEvents({
     const touch = e.touches[0];
     const deltaY = touch.clientY - startY;
     if (deltaY > 0) {
-      setDropdownHeight(Math.max(0, startHeight - deltaY));
+      const scale = Math.max(0, 1 - deltaY / startHeight);
+      setDropdownScale(scale);
     }
   }
 
@@ -391,10 +393,10 @@ function setupDropdownEvents({
     const deltaY = touch.clientY - startY;
     dragging = false;
     if (deltaY > DRAG_CLOSE_THRESHOLD) {
-      resetDropdownHeight();
+      resetDropdownScale();
       closeDropdown();
     } else {
-      resetDropdownHeight();
+      resetDropdownScale();
     }
     document.removeEventListener('touchmove', onTouchMove);
     document.removeEventListener('touchend', onTouchEnd);
@@ -405,7 +407,8 @@ function setupDropdownEvents({
     e.preventDefault();
     const deltaY = e.clientY - startY;
     if (deltaY > 0) {
-      setDropdownHeight(Math.max(0, startHeight - deltaY));
+      const scale = Math.max(0, 1 - deltaY / startHeight);
+      setDropdownScale(scale);
     }
   }
 
@@ -414,10 +417,10 @@ function setupDropdownEvents({
     const deltaY = e.clientY - startY;
     dragging = false;
     if (deltaY > DRAG_CLOSE_THRESHOLD) {
-      resetDropdownHeight();
+      resetDropdownScale();
       closeDropdown();
     } else {
-      resetDropdownHeight();
+      resetDropdownScale();
     }
     document.removeEventListener('mousemove', onMouseMove);
     document.removeEventListener('mouseup', onMouseUp);
@@ -427,7 +430,7 @@ function setupDropdownEvents({
     dragging = true;
     const touch = e.touches[0];
     startY = touch.clientY;
-    startHeight = dropdown.offsetHeight;
+    startHeight = inner.offsetHeight;
     document.addEventListener('touchmove', onTouchMove);
     document.addEventListener('touchend', onTouchEnd);
   }
@@ -435,12 +438,12 @@ function setupDropdownEvents({
   function handleMouseDown(e) {
     dragging = true;
     startY = e.clientY;
-    startHeight = dropdown.offsetHeight;
+    startHeight = inner.offsetHeight;
     document.addEventListener('mousemove', onMouseMove);
     document.addEventListener('mouseup', onMouseUp);
   }
 
-  const dragHandle = dropdown.querySelector('.drag-handle');
+  const dragHandle = inner.querySelector('.drag-handle');
   if (dragHandle) {
     dragHandle.addEventListener('touchstart', handleTouchStart);
     dragHandle.addEventListener('mousedown', handleMouseDown);
@@ -474,7 +477,7 @@ export default async function init(block) {
     dropdown,
     searchContainer,
     languageList,
-  } = createDropdownElements(regionPickerTextElem, placeholderText, ariaLabel, false);
+  } = createDropdownElements(placeholderText);
   dropdown.appendChild(searchContainer);
   dropdown.appendChild(languageList);
   wrapper.appendChild(dropdown);
