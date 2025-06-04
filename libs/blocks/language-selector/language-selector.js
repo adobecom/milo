@@ -1,7 +1,7 @@
 import { createTag, getConfig, getLanguage } from '../../utils/utils.js';
 
 const queriedPages = [];
-const CHECKMARK_SVG = '<svg class="check-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M13.3337 4L6.00033 11.3333L2.66699 8" stroke="#5258E4" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+const CHECKMARK_SVG = '<svg class="check-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M13.3337 4L6.00033 11.3333L2.66699 8" stroke="#274DEA" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 
 let miloLangIsKeyboard = false;
 document.addEventListener('keydown', (e) => {
@@ -351,6 +351,91 @@ function setupDropdownEvents({
     const searchInputWrapper = searchInput.closest('.search-input-wrapper');
     if (searchInputWrapper) searchInputWrapper.classList.remove('focus-visible');
   });
+
+  // Drag handle close logic (Canva-style, touch and mouse)
+  let startY;
+  let startHeight;
+  let dragging = false;
+  const DRAG_CLOSE_THRESHOLD = 40; // px
+
+  function setDropdownHeight(h) {
+    dropdown.style.height = `${h}px`;
+    dropdown.classList.add('fixed-height');
+  }
+
+  function resetDropdownHeight() {
+    dropdown.style.height = '';
+    dropdown.classList.remove('fixed-height');
+  }
+
+  function onTouchMove(e) {
+    if (!dragging) return;
+    const touch = e.touches[0];
+    const deltaY = touch.clientY - startY;
+    if (deltaY > 0) {
+      setDropdownHeight(Math.max(0, startHeight - deltaY));
+    }
+  }
+
+  function onTouchEnd(e) {
+    if (!dragging) return;
+    const touch = e.changedTouches[0];
+    const deltaY = touch.clientY - startY;
+    dragging = false;
+    if (deltaY > DRAG_CLOSE_THRESHOLD) {
+      resetDropdownHeight();
+      closeDropdown();
+    } else {
+      resetDropdownHeight();
+    }
+    document.removeEventListener('touchmove', onTouchMove);
+    document.removeEventListener('touchend', onTouchEnd);
+  }
+
+  function onMouseMove(e) {
+    if (!dragging) return;
+    const deltaY = e.clientY - startY;
+    if (deltaY > 0) {
+      setDropdownHeight(Math.max(0, startHeight - deltaY));
+    }
+  }
+
+  function onMouseUp(e) {
+    if (!dragging) return;
+    const deltaY = e.clientY - startY;
+    dragging = false;
+    if (deltaY > DRAG_CLOSE_THRESHOLD) {
+      resetDropdownHeight();
+      closeDropdown();
+    } else {
+      resetDropdownHeight();
+    }
+    document.removeEventListener('mousemove', onMouseMove);
+    document.removeEventListener('mouseup', onMouseUp);
+  }
+
+  function handleTouchStart(e) {
+    dragging = true;
+    const touch = e.touches[0];
+    startY = touch.clientY;
+    startHeight = dropdown.offsetHeight;
+    document.addEventListener('touchmove', onTouchMove);
+    document.addEventListener('touchend', onTouchEnd);
+  }
+
+  function handleMouseDown(e) {
+    dragging = true;
+    startY = e.clientY;
+    startHeight = dropdown.offsetHeight;
+    document.addEventListener('mousemove', onMouseMove);
+    document.addEventListener('mouseup', onMouseUp);
+  }
+
+  const dragHandle = dropdown.querySelector('.drag-handle');
+  if (dragHandle) {
+    dragHandle.addEventListener('touchstart', handleTouchStart);
+    dragHandle.addEventListener('mousedown', handleMouseDown);
+  }
 }
 
 export default async function init(block) {
@@ -398,54 +483,4 @@ export default async function init(block) {
     selectedLangItemRef,
     activeIndexRef,
   });
-
-  // Drag handle close logic (Canva-style, touch and mouse)
-  let startY;
-  let onTouchMove;
-  const onTouchEnd = function onTouchEnd() {
-    document.removeEventListener('touchmove', onTouchMove);
-    document.removeEventListener('touchend', onTouchEnd);
-  };
-  onTouchMove = function (e) {
-    const touch = e.touches[0];
-    if (touch.clientY > startY) {
-      dropdown.style.display = 'none';
-      dropdown.style.height = '';
-      dropdown.classList.add('fixed-height');
-      document.removeEventListener('touchmove', onTouchMove);
-      document.removeEventListener('touchend', onTouchEnd);
-    }
-  };
-  let onMouseMove;
-  const onMouseUp = function onMouseUp() {
-    document.removeEventListener('mousemove', onMouseMove);
-    document.removeEventListener('mouseup', onMouseUp);
-  };
-  onMouseMove = function (e) {
-    if (e.clientY > startY) {
-      dropdown.style.display = 'none';
-      dropdown.style.height = '';
-      dropdown.classList.add('fixed-height');
-      document.removeEventListener('mousemove', onMouseMove);
-      document.removeEventListener('mouseup', onMouseUp);
-    }
-  };
-
-  const handleTouchStart = function handleTouchStart(e) {
-    const touch = e.touches[0];
-    startY = touch.clientY;
-    document.addEventListener('touchmove', onTouchMove);
-    document.addEventListener('touchend', onTouchEnd);
-  };
-  const handleMouseDown = function handleMouseDown(e) {
-    startY = e.clientY;
-    document.addEventListener('mousemove', onMouseMove);
-    document.addEventListener('mouseup', onMouseUp);
-  };
-
-  const dragHandle = dropdown.querySelector('.drag-handle');
-  if (dragHandle) {
-    dragHandle.addEventListener('touchstart', handleTouchStart);
-    dragHandle.addEventListener('mousedown', handleMouseDown);
-  }
 }
