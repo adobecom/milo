@@ -49,7 +49,8 @@ export function hideNavigation(el) {
   const elHasWidth = !!el.clientWidth;
   const scrollWidth = itemWidth * columns + gridGap * (columns - 1) + 2 * padding;
   const screenWidth = window.innerWidth < 1200 ? window.innerWidth : 1200;
-  const horizontalScroll = Math.ceil(el.scrollLeft) === Math.ceil(el.scrollWidth - el.clientWidth);
+  const scrollLeft = Math.ceil(Math.abs(el.scrollLeft));
+  const horizontalScroll = scrollLeft === Math.ceil(el.scrollWidth - el.clientWidth);
 
   return elHasWidth ? horizontalScroll : scrollWidth < screenWidth;
 }
@@ -89,6 +90,7 @@ function handleBtnState(
 }
 
 function handleNavigation(el) {
+  const isRtl = document.documentElement.getAttribute('dir') === 'rtl';
   const prev = createTag('div', { class: 'nav-grad previous' }, PREVBUTTON);
   const next = createTag('div', { class: 'nav-grad next' }, NEXTBUTTON);
   const buttons = [prev, next];
@@ -96,7 +98,7 @@ function handleNavigation(el) {
     const button = btn.childNodes[0];
     button.addEventListener('click', () => handleScroll(el, button.classList));
   });
-  return buttons;
+  return isRtl ? buttons.reverse() : buttons;
 }
 
 export default function init(el) {
