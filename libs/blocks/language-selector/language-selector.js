@@ -361,11 +361,17 @@ function setupDropdownEvents({
   function setDropdownHeight(h) {
     dropdown.style.height = `${h}px`;
     dropdown.classList.add('fixed-height');
+    if (h < 60) {
+      dropdown.classList.add('dropdown-shrinking');
+    } else {
+      dropdown.classList.remove('dropdown-shrinking');
+    }
   }
 
   function resetDropdownHeight() {
     dropdown.style.height = '';
     dropdown.classList.remove('fixed-height');
+    dropdown.classList.remove('dropdown-shrinking');
   }
 
   function onTouchMove(e) {
