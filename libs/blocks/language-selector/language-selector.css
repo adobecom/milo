@@ -232,3 +232,9 @@
     display: none !important;
   }
 }
+
+.language-dropdown-inner {
+  transition: transform 0.1s;
+  transform-origin: top;
+  will-change: transform;
+}
