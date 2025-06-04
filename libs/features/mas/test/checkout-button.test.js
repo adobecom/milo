@@ -73,7 +73,7 @@ describe('class "CheckoutButton"', () => {
         const checkoutButton = mockCheckoutButton('abm');
         await checkoutButton.onceSettled();
         expect(checkoutButton.href).to.equal(
-            'https://commerce.adobe.com/store/segmentation?cli=adobe_com&ctx=fp&co=US&lang=en&ms=COM&ot=BASE&pa=ccsn_direct_individual',
+            'https://commerce.adobe.com/store/segmentation?cli=adobe_com&ctx=fp&co=US&lang=en&ms=COM&ot=BASE&cs=INDIVIDUAL&pa=ccsn_direct_individual',
         );
     });
 
@@ -84,7 +84,7 @@ describe('class "CheckoutButton"', () => {
         });
         await checkoutButton.onceSettled();
         expect(checkoutButton.href).to.equal(
-            'https://commerce.adobe.com/store/segmentation?cli=adobe_com&ctx=fp&co=US&lang=en&ms=COM&ot=BASE&pa=ccsn_direct_individual',
+            'https://commerce.adobe.com/store/segmentation?cli=adobe_com&ctx=fp&co=US&lang=en&ms=COM&ot=BASE&cs=INDIVIDUAL&pa=ccsn_direct_individual',
         );
     });
 

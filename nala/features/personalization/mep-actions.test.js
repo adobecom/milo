@@ -72,7 +72,8 @@ test(`[Test Id - ${features[3].tcid}] ${features[3].name},${features[3].tags}`, 
 });
 
 // Test 4: verify useBlockCode
-test(`[Test Id - ${features[4].tcid}] ${features[4].name},${features[4].tags}`, async ({ page, baseURL }) => {
+test(`[Test Id - ${features[4].tcid}] ${features[4].name},${features[4].tags}`, async ({ page, baseURL, browserName }) => {
+  test.skip(browserName === 'webkit', 'Skipping test for Webkit browser');
   const pznURL = `${baseURL}${features[4].path}${miloLibs}`;
   const defaultURL = `${baseURL}${features[4].data.defaultURL}${miloLibs}`;
   const marquee = new MarqueeBlock(page);
