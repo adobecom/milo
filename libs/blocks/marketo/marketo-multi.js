@@ -1,5 +1,6 @@
-import { createTag } from '../../utils/utils.js';
+import { createTag, getConfig } from '../../utils/utils.js';
 import { debounce } from '../../utils/action.js';
+import { replaceKey } from '../../features/placeholders.js';
 
 const VALIDATION_STEP = {
   name: '2',
@@ -29,7 +30,7 @@ function updateStepDetails(formEl, step, totalSteps) {
   formEl.classList.add('hide-errors');
   formEl.classList.remove('show-warnings');
   formEl.dataset.step = step;
-  formEl.querySelector('.step-details .step').textContent = `Step ${step} of ${totalSteps}`;
+  formEl.querySelector('.step-details .step-count').textContent = `${step} / ${totalSteps}`;
   formEl.querySelector('#mktoButton_new')?.classList.toggle('mktoHidden', step !== totalSteps);
   formEl.querySelector('#mktoButton_next')?.classList.toggle('mktoHidden', step === totalSteps);
   setTimeout(() => {
@@ -47,13 +48,14 @@ function showPreviousStep(formEl, totalSteps) {
   if (previousStep === 1) backBtn?.remove();
 }
 
-const showNextStep = (formEl, currentStep, totalSteps) => {
+const showNextStep = async (formEl, currentStep, totalSteps) => {
   if (currentStep === totalSteps) return;
   const nextStep = currentStep + 1;
   const stepDetails = formEl.querySelector('.step-details');
 
   if (!stepDetails.querySelector('.back-btn')) {
-    const backBtn = createTag('button', { class: 'back-btn', type: 'button' }, 'Back');
+    const backText = await replaceKey('back', getConfig());
+    const backBtn = createTag('button', { class: 'back-btn', type: 'button' }, backText);
     backBtn.addEventListener('click', () => showPreviousStep(formEl, totalSteps));
     stepDetails.prepend(backBtn);
   }
@@ -89,18 +91,19 @@ function onRender(formEl, totalSteps) {
   const currentStep = parseInt(formEl.dataset.step, 10);
   const submitButton = formEl.querySelector('#mktoButton_new');
   submitButton?.classList.toggle('mktoHidden', currentStep !== totalSteps);
-  formEl.querySelector('.step-details .step').textContent = `Step ${currentStep} of ${totalSteps}`;
+  formEl.querySelector('.step-details .step-count').textContent = `${currentStep} / ${totalSteps}`;
   setValidationSteps(formEl, totalSteps, currentStep);
 }
 
-const readyForm = (form, totalSteps) => {
+const readyForm = async (form, totalSteps) => {
   const formEl = form.getFormElem().get(0);
   form.onValidate(() => formValidate(formEl));
 
   const nextButton = createTag('button', { type: 'button', id: 'mktoButton_next', class: 'mktoButton mktoUpdatedBTN mktoVisible' }, 'Next');
   nextButton.addEventListener('click', () => form.validate());
   const nextContainer = createTag('div', { class: 'mktoButtonRow' }, nextButton);
-  const stepEl = createTag('p', { class: 'step' }, `Step 1 of ${totalSteps}`);
+  const stepText = await replaceKey('step', getConfig());
+  const stepEl = createTag('p', { class: 'step' }, `${stepText} <span class="step-count">1 / ${totalSteps}</span>`);
   const stepDetails = createTag('div', { class: 'step-details' }, stepEl);
   formEl.append(nextContainer, stepDetails);
 
