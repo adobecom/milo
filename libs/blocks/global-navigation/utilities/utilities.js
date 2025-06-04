@@ -20,7 +20,7 @@ loadLana();
 
 const FEDERAL_PATH_KEY = 'federal';
 // Set a default height for LocalNav,
-// as sticky blocks position themselves before LocalNav loads into the DOM.
+// as sticky blocks position themselves before LocalNav loads into the document object model(DOM).
 const DEFAULT_LOCALNAV_HEIGHT = 40;
 const LANA_CLIENT_ID = 'feds-milo';
 
