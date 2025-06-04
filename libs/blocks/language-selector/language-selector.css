@@ -84,7 +84,7 @@
 }
 
 .language-link:hover {
-  color: inherit !important;
+  color: var(--text-color);
   background: var(--color-gray-100);
   text-decoration: none;
 }
