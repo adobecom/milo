@@ -62,9 +62,11 @@
   gap: 10px;
 }
 
-.carousel.no-buttons .carousel-button-container {
+/* The no-buttons variant is temporarily disabled because slide indicators are currently hidden by default, which makes the no-buttons carousel unusable. */
+/* When the slide indicator color issue is resolved and they are enabled again, this should be re-enabled as well. */
+/* .carousel.no-buttons .carousel-button-container {
   min-width: auto;
-}
+} */
 
 .carousel .carousel-button-container button {
   position: relative;
@@ -100,9 +102,9 @@
   order: 3;
 }
 
-.carousel.no-buttons .carousel-button {
+/* .carousel.no-buttons .carousel-button {
   display: none;
-}
+} */
 
 .carousel .carousel-previous:hover,
 .carousel .carousel-next:hover {
@@ -209,7 +211,7 @@ html[dir="rtl"] .carousel-slides .section.carousel-slide {
 }
 
 .carousel .carousel-controls {
-  display: flex;
+  display: none;
   position: relative;
   max-width: 88px;
   overflow: hidden;
@@ -217,9 +219,9 @@ html[dir="rtl"] .carousel-slides .section.carousel-slide {
   justify-content: inherit;
 }
 
-.carousel.no-buttons .carousel-controls {
+/* .carousel.no-buttons .carousel-controls {
   padding: 0 var(--spacing-xxs);
-}
+} */
 
 .carousel .carousel-indicators {
   list-style: none;
@@ -721,4 +723,11 @@ html[dir="rtl"] .carousel .move-indicators {
 
     transform: translateX(calc(round(down, (var(--offset) / (var(--slides) - 1)), 2px) * -1));
   }
+}
+
+.carousel .aria-live-container {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
 }
