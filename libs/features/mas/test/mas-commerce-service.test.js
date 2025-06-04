@@ -1,7 +1,7 @@
 import Sinon from 'sinon';
 
 import '../../../utils/lana.js';
-import { FF_DISPLAY_PER_UNIT_FALSE, FF_DISPLAY_OLD_PRICE_TRUE } from '../src/constants.js';
+import { FF_DEFAULT_FLAG } from '../src/constants.js';
 import { Defaults } from '../src/defaults.js';
 import { TAG_NAME_SERVICE } from '../src/mas-commerce-service.js';
 
@@ -120,14 +120,10 @@ describe('commerce service', () => {
             });
 
             it('generates some default with no attributes', async () => {
-                const metaPerUnit = document.createElement('meta');
-                metaPerUnit.name = FF_DISPLAY_PER_UNIT_FALSE
-                metaPerUnit.content = 'true';
-                document.head.appendChild(metaPerUnit);
-                const metaOld = document.createElement('meta');
-                metaOld.name = FF_DISPLAY_OLD_PRICE_TRUE;
-                metaOld.content = 'true';
-                document.head.appendChild(metaOld);
+                const metaDefaultFlag = document.createElement('meta');
+                metaDefaultFlag.name = FF_DEFAULT_FLAG
+                metaDefaultFlag.content = 'true';
+                document.head.appendChild(metaDefaultFlag);
 
                 const el = await initMasCommerceService({});
                 expect(el.settings).to.deep.equal({

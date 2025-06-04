@@ -5,7 +5,7 @@ import {
 } from './mas-element.js';
 import { selectOffers, getService, getMetadata } from './utilities.js';
 import { Defaults } from './defaults.js';
-import { FF_VAT_LABEL_PER_LOCALE } from './constants.js';
+import { FF_DEFAULT_FLAG } from './constants.js';
 
 const INDIVIDUAL = 'INDIVIDUAL_COM';
 const BUSINESS = 'TEAM_COM';
@@ -290,8 +290,8 @@ export class InlinePrice extends HTMLSpanElement {
         const options = service.collectPriceOptions(overrides, this);
         if (!options.wcsOsi.length) return false;
 
-        const vatLabelPerLocale = getMetadata(FF_VAT_LABEL_PER_LOCALE) === 'true';
-        if (vatLabelPerLocale && (!this.dataset.displayTax || !this.dataset.forceTaxExclusive)) {
+        const ffDefaultFlag = getMetadata(FF_DEFAULT_FLAG) === 'true';
+        if (ffDefaultFlag && (!this.dataset.displayTax || !this.dataset.forceTaxExclusive)) {
             const [offerSelectors] = await service.resolveOfferSelectors(options);
             const offers = selectOffers(await offerSelectors, options);
             if (offers?.length) {

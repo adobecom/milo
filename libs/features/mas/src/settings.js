@@ -4,8 +4,7 @@ import {
     Landscape,
     WCS_PROD_URL,
     WCS_STAGE_URL,
-    FF_DISPLAY_PER_UNIT_FALSE,
-    FF_DISPLAY_OLD_PRICE_TRUE,
+    FF_DEFAULT_FLAG,
 } from './constants.js';
 import { Defaults } from './defaults.js';
 import { Env, CheckoutWorkflow, CheckoutWorkflowStep } from './constants.js';
@@ -30,8 +29,7 @@ function getLocaleSettings({
 }
 
 function getSettings(config = {}) {
-    const defaultDisplayOldPriceTrue = getMetadata(FF_DISPLAY_OLD_PRICE_TRUE) === 'true';
-    const defaultDisplayPerUnitFalse = getMetadata(FF_DISPLAY_PER_UNIT_FALSE) === 'true';
+    const ffDefaultflag = getMetadata(FF_DEFAULT_FLAG) === 'true';
     // Always use `prod` env by default, regardless Milo env
     // but allow overriding it in metadata, location.search or storage
     // See https://github.com/adobecom/milo/pull/923
@@ -58,11 +56,11 @@ function getSettings(config = {}) {
     }
     const displayOldPrice = toBoolean(
         getParameter('displayOldPrice', commerce),
-        defaultDisplayOldPriceTrue ? Defaults.displayOldPrice : !Defaults.displayOldPrice,
+        ffDefaultflag ? Defaults.displayOldPrice : !Defaults.displayOldPrice,
     );
     const displayPerUnit = toBoolean(
         getParameter('displayPerUnit', commerce),
-        defaultDisplayPerUnitFalse ? Defaults.displayPerUnit : !Defaults.displayPerUnit,
+        ffDefaultflag ? Defaults.displayPerUnit : !Defaults.displayPerUnit,
     );
     const displayRecurrence = toBoolean(
         getParameter('displayRecurrence', commerce),

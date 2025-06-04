@@ -167,6 +167,4 @@ export const TEMPLATE_PRICE_STRIKETHROUGH = 'price-strikethrough';
 export const TEMPLATE_PRICE_ANNUAL = 'annual';
 export const TEMPLATE_PRICE_LEGAL = 'legal';
 
-export const FF_DISPLAY_PER_UNIT_FALSE = 'mas-ff-per-unit-false';
-export const FF_DISPLAY_OLD_PRICE_TRUE = 'mas-ff-old-price-true';
-export const FF_VAT_LABEL_PER_LOCALE = 'mas-ff-vat-label';
+export const FF_DEFAULT_FLAG = 'mas-ff-default-flag';
