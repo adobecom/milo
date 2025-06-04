@@ -206,7 +206,7 @@
 
   .language-dropdown .search-container,
   .language-dropdown .drag-handle {
-    transition: opacity 0.2s, height 0.2s;
+    transition: opacity 0.2s, height 0.2s, margin 0.2s, padding 0.2s;
   }
 
   .language-dropdown.dropdown-shrinking .search-container,
@@ -215,5 +215,7 @@
     height: 0 !important;
     overflow: hidden;
     pointer-events: none;
+    margin: 0 !important;
+    padding: 0 !important;
   }
 }
