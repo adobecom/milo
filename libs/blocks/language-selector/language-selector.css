@@ -203,4 +203,17 @@
     display: block;
     touch-action: none;
   }
+
+  .language-dropdown .search-container,
+  .language-dropdown .drag-handle {
+    transition: opacity 0.2s, height 0.2s;
+  }
+
+  .language-dropdown.dropdown-shrinking .search-container,
+  .language-dropdown.dropdown-shrinking .drag-handle {
+    opacity: 0;
+    height: 0 !important;
+    overflow: hidden;
+    pointer-events: none;
+  }
 }
