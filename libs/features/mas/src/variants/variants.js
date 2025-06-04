@@ -62,8 +62,16 @@ const getVariantLayout = (card, mustMatch = false) => {
     const { class: VariantClass, style } = variantInfo;
     if (style) {
         const sheet = new CSSStyleSheet();
-        sheet.replaceSync(style.cssText);
-        card.shadowRoot.adoptedStyleSheets.push(sheet);
+        // Compatibility fallback for Safari iOS 16.1 and older browsers
+        if (sheet.replaceSync) {
+            sheet.replaceSync(style.cssText);
+            card.shadowRoot.adoptedStyleSheets.push(sheet);
+        } else {
+            // Fallback for browsers that don't support replaceSync
+            const styleElement = document.createElement('style');
+            styleElement.textContent = style.cssText;
+            card.shadowRoot.appendChild(styleElement);
+        }
     }
     return new VariantClass(card);
 };
