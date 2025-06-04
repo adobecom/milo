@@ -184,37 +184,35 @@ function setTooltipPosition(el) {
     if (!tooltip.dataset.originalPosition
       && currentPosition) tooltip.dataset.originalPosition = currentPosition;
 
-    setTimeout(() => {
-      const rect = tooltip.getBoundingClientRect();
-      const { originalPosition } = tooltip.dataset;
-      const isVerticalPosition = originalPosition === 'top' || originalPosition === 'bottom';
-      const effectiveMaxWidth = isVerticalPosition ? tooltipMaxWidth / 2 : tooltipMaxWidth;
-      const willOverflowRight = rect.right + effectiveMaxWidth + tooltipMargin > viewportWidth;
-      const willOverflowLeft = rect.left - effectiveMaxWidth - tooltipMargin < 0;
+    const rect = tooltip.getBoundingClientRect();
+    const { originalPosition } = tooltip.dataset;
+    const isVerticalPosition = originalPosition === 'top' || originalPosition === 'bottom';
+    const effectiveMaxWidth = isVerticalPosition ? tooltipMaxWidth / 2 : tooltipMaxWidth;
+    const willOverflowRight = rect.right + effectiveMaxWidth + tooltipMargin > viewportWidth;
+    const willOverflowLeft = rect.left - effectiveMaxWidth - tooltipMargin < 0;
 
-      if (originalPosition !== currentPosition) {
-        let wouldOverflow = false;
-        if (originalPosition === 'right') {
-          wouldOverflow = willOverflowRight;
-        } else if (originalPosition === 'left') {
-          wouldOverflow = willOverflowLeft;
-        } else if (isVerticalPosition) {
-          wouldOverflow = willOverflowRight || willOverflowLeft;
-        }
-        if (!wouldOverflow) {
-          tooltip.classList.remove(...positionClasses);
-          tooltip.classList.add(originalPosition);
-          return;
-        }
+    if (originalPosition !== currentPosition) {
+      let wouldOverflow = false;
+      if (originalPosition === 'right') {
+        wouldOverflow = willOverflowRight;
+      } else if (originalPosition === 'left') {
+        wouldOverflow = willOverflowLeft;
+      } else if (isVerticalPosition) {
+        wouldOverflow = willOverflowRight || willOverflowLeft;
       }
-
-      const shouldPositionLeft = isRtl ? willOverflowLeft : willOverflowRight;
-      const shouldPositionRight = isRtl ? willOverflowRight : willOverflowLeft;
-      if (shouldPositionLeft || shouldPositionRight) {
+      if (!wouldOverflow) {
         tooltip.classList.remove(...positionClasses);
-        tooltip.classList.add(shouldPositionLeft ? 'left' : 'right');
+        tooltip.classList.add(originalPosition);
+        return;
       }
-    });
+    }
+
+    const shouldPositionLeft = isRtl ? willOverflowLeft : willOverflowRight;
+    const shouldPositionRight = isRtl ? willOverflowRight : willOverflowLeft;
+    if (shouldPositionLeft || shouldPositionRight) {
+      tooltip.classList.remove(...positionClasses);
+      tooltip.classList.add(shouldPositionLeft ? 'left' : 'right');
+    }
   });
 }
 
@@ -739,7 +737,7 @@ export default function init(el) {
     const handleResize = () => {
       applyStylesBasedOnScreenSize(el, originTable);
       if (isStickyHeader(el)) handleScrollEffect(el);
-      setTooltipPosition(el);
+      setTimeout(() => setTooltipPosition(el));
     };
     handleResize();
 
@@ -747,7 +745,7 @@ export default function init(el) {
     window.addEventListener('resize', () => {
       debounce(handleEqualHeight(el, '.row-heading'));
       handleStickyHeader(el);
-      setTooltipPosition(el);
+      setTimeout(() => setTooltipPosition(el));
       if (deviceBySize === defineDeviceByScreenSize()) return;
       deviceBySize = defineDeviceByScreenSize();
       handleResize();
