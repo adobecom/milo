@@ -9,6 +9,7 @@ import {
   loadScript,
   localizeLink,
   getFederatedUrl,
+  getSpectraLOB,
 } from '../../utils/utils.js';
 
 /* c8 ignore start */
@@ -877,7 +878,7 @@ export const getEntitlements = async (data) => {
 function normCountry(country) {
   return (country.toLowerCase() === 'uk' ? 'gb' : country.toLowerCase()).split('_')[0];
 }
-async function setMepCountry(config) {
+async function setMepCountry(config) { // return
   const urlParams = new URLSearchParams(window.location.search);
   const country = urlParams.get('country') || (document.cookie.split('; ').find((row) => row.startsWith('international='))?.split('=')[1]);
   const akamaiCode = urlParams.get('akamaiLocale')?.toLowerCase() || sessionStorage.getItem('akamai');
@@ -902,6 +903,12 @@ async function setMepCountry(config) {
       log('MEP Error: Unable to get user country');
     }
   }
+}
+
+async function setMepLob(config) {
+  if (config.mep.userLOBPromise) config.mep.meplob = await getSpectraLOB(document.referrer);
+  // if (config.mep.meplob || !config.mep.userLOBPromise) return;
+  // config.mep.meplob = await getSpectraLOB(document.referrer);
 }
 
 async function getPersonalizationVariant(
@@ -934,6 +941,8 @@ async function getPersonalizationVariant(
     if (name.startsWith('param-')) return checkForParamMatch(name);
     if (hasCountryMatch(name, config)) return true;
     if (userEntitlements?.includes(name)) return true;
+    console.log('Checking config.mep.meplob:', config.mep?.meplob);
+    if (name.startsWith('lob-') && name.split('-')[1].toLowerCase() === config.mep?.meplob?.toLowerCase()) return true;
     return PERSONALIZATION_KEYS.includes(name) && PERSONALIZATION_TAGS[name]();
   };
 
@@ -951,6 +960,9 @@ async function getPersonalizationVariant(
 
   if (config.mep?.geoLocation) {
     await setMepCountry(config);
+  }
+  if (config.mep?.meplob) {
+    await setMepLob(config);
   }
 
   const matchingVariant = variantNames.find((variant) => variantInfo[variant].some(matchVariant));
@@ -1432,11 +1444,13 @@ const awaitMartech = () => new Promise((resolve) => {
 });
 
 export async function init(enablements = {}) {
+  console.log('personzalization: init');
+  console.log(enablements);
   let manifests = [];
   const {
     mepParam, mepHighlight, mepButton, pzn, pznroc, promo, enablePersV2,
     target, ajo, countryIPPromise, mepgeolocation, targetInteractionPromise, calculatedTimeout,
-    postLCP,
+    postLCP, meplob, userLOBPromise,
   } = enablements;
   const config = getConfig();
   if (postLCP) {
@@ -1456,6 +1470,8 @@ export async function init(enablements = {}) {
       countryIPPromise,
       geoLocation: mepgeolocation,
       targetInteractionPromise,
+      meplob,
+      userLOBPromise,
     };
 
     manifests = manifests.concat(await combineMepSources(pzn, pznroc, promo, mepParam));

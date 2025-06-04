@@ -1351,7 +1351,45 @@ export function enablePersonalizationV2() {
   return !!enablePersV2 && isSignedOut();
 }
 
+export function getCookie(key) {
+  const cookie = document.cookie.split(';')
+    .map((x) => decodeURIComponent(x.trim()).split(/=(.*)/s))
+    .find(([k]) => k === key);
+  return cookie ? cookie[1] : null;
+}
+export async function getSpectraLOB(lastVisitedPage) {
+  const getECID = getCookie('AMCV_9E1005A551ED61CA0A490D45@AdobeOrg');
+  if (!getECID) return false;
+  const [, ECID] = getECID.split('|');
+  console.log('ECID:', ECID); // remove this in production
+  let url = `https://cchome-stage.adobe.io/int/v1/aep/events/webpage?ecid=${ECID}`;
+  if (lastVisitedPage) url = `${url}&lastVisitedPage=${lastVisitedPage}`;
+
+  try {
+    const rawResponse = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'x-api-key': 'MarketingTech',
+        'Content-Type': 'application/json',
+      },
+      body: null,
+    });
+    const content = await rawResponse.json();
+    return content.modelLineOfBusiness;
+  } catch (error) {
+    if (error.name === 'TimeoutError') {
+      // This exception is from the abort signal
+      window.lana?.log.log('Spectra Timeout');
+    } else {
+      // A network error, or some other problem.
+      window.lana?.log(`Error: type: ${error.name}, message: ${error.message}`);
+    }
+    return false;
+  }
+}
+
 async function checkForPageMods() {
+  console.log('utils: checkForPageMods'); // remove this in production
   const {
     mep: mepParam,
     mepHighlight,
@@ -1360,6 +1398,7 @@ async function checkForPageMods() {
   } = Object.fromEntries(PAGE_URL.searchParams);
   let targetInteractionPromise = null;
   let countryIPPromise = null;
+  let userLOBPromise = null;
 
   let calculatedTimeout = null;
   if (mepParam === 'off') return;
@@ -1370,6 +1409,7 @@ async function checkForPageMods() {
   const xlg = martech === 'off' ? false : getMepEnablement('xlg');
   const ajo = martech === 'off' ? false : getMepEnablement('ajo');
   const mepgeolocation = martech === 'off' ? false : getMepEnablement('mepgeolocation');
+  const meplob = martech === 'off' ? false : getMepEnablement('aicslob', 'lob');
 
   if (!(pzn || pznroc || target || promo || mepParam
     || mepHighlight || mepButton || mepParam === '' || xlg || ajo)) return;
@@ -1382,6 +1422,11 @@ async function checkForPageMods() {
       countryIPPromise = getAkamaiCode(true);
     }
   }
+
+  console.log(`meplob: ${meplob}`); // remove this in production
+  if (meplob === true) userLOBPromise = getSpectraLOB(document.referrer);
+  console.log(`userLOBPromise: ${userLOBPromise}`); // remove this in production
+
   const enablePersV2 = enablePersonalizationV2();
   if ((target || xlg) && enablePersV2) {
     const params = new URL(window.location.href).searchParams;
@@ -1428,6 +1473,8 @@ async function checkForPageMods() {
     targetInteractionPromise,
     calculatedTimeout,
     enablePersV2,
+    userLOBPromise,
+    meplob,
   });
 }
 
