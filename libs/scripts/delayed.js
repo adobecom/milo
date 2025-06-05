@@ -47,7 +47,9 @@ export const loadPrivacy = async (getConfig, loadScript) => {
   if (env?.name !== 'prod') {
     privacyEnv = new URLSearchParams(window.location.search).get('privacyEnv') || '';
   }
-  loadScript(`https://www.${privacyEnv && `${privacyEnv}.`}adobe.com/etc.clientlibs/globalnav/clientlibs/base/privacy-standalone.js`);
+
+  // loadScript('/libs/privacy/privacy-standalone.js');
+  loadScript('https://adobecomprivacy--federal--adobecom.aem.page/libs/privacy/privacy-standalone.js');
 
   // Privacy triggers can exist anywhere on the page and can be added at any time
   document.addEventListener('click', (event) => {
