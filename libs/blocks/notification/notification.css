@@ -108,6 +108,30 @@
   inline-size: 100%;
 }
 
+.notification.pill {
+  overflow: unset;
+}
+
+.notification.pill .background {
+  border-radius: inherit;
+}
+
+.notification.pill .foreground .text.notification-pill-mobile .milo-tooltip {
+  position: absolute;
+  left: calc(var(--spacing-xs) - 4px);
+  bottom: var(--spacing-xs);
+  margin-inline-start: 0;
+}
+
+[dir="rtl"] .notification.pill .foreground .text.notification-pill-mobile .milo-tooltip {
+  left: unset;
+  right: calc(var(--spacing-xs) - 4px);
+}
+
+.notification.pill .foreground .text span[data-tooltip] .icon-milo {
+  height: 16px;
+}
+
 .notification.ribbon.xxs-padding .foreground {
   padding-block: var(--spacing-xxs);
 }
