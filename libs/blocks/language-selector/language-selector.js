@@ -249,12 +249,16 @@ function setupDropdownEvents({
     if (diff > 100) {
       dropdown.style.transform = 'translateY(100%)';
       dropdown.style.opacity = '0';
-      setTimeout(() => {
-        dropdown.style.display = 'none';
-        dropdown.style.transform = 'translateY(0)';
-        dropdown.style.opacity = '1';
-        closeDropdown();
-      }, 300);
+      const onTransitionEnd = (e) => {
+        if (e.propertyName === 'transform') {
+          dropdown.style.display = 'none';
+          dropdown.style.transform = 'translateY(0)';
+          dropdown.style.opacity = '1';
+          closeDropdown();
+          dropdown.removeEventListener('transitionend', onTransitionEnd);
+        }
+      };
+      dropdown.addEventListener('transitionend', onTransitionEnd);
     } else {
       dropdown.style.transform = 'translateY(0)';
     }
