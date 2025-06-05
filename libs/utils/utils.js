@@ -1361,7 +1361,6 @@ export async function getSpectraLOB(lastVisitedPage) {
   const getECID = getCookie('AMCV_9E1005A551ED61CA0A490D45@AdobeOrg');
   if (!getECID) return false;
   const [, ECID] = getECID.split('|');
-  console.log('ECID:', ECID); // remove this in production
   let url = `https://cchome-stage.adobe.io/int/v1/aep/events/webpage?ecid=${ECID}`;
   if (lastVisitedPage) url = `${url}&lastVisitedPage=${lastVisitedPage}`;
 
@@ -1389,7 +1388,6 @@ export async function getSpectraLOB(lastVisitedPage) {
 }
 
 async function checkForPageMods() {
-  console.log('utils: checkForPageMods'); // remove this in production
   const {
     mep: mepParam,
     mepHighlight,
@@ -1422,10 +1420,7 @@ async function checkForPageMods() {
       countryIPPromise = getAkamaiCode(true);
     }
   }
-
-  console.log(`meplob: ${meplob}`); // remove this in production
   if (meplob === true) userLOBPromise = getSpectraLOB(document.referrer);
-  console.log(`userLOBPromise: ${userLOBPromise}`); // remove this in production
 
   const enablePersV2 = enablePersonalizationV2();
   if ((target || xlg) && enablePersV2) {

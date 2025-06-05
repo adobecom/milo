@@ -9,7 +9,6 @@ import {
   loadScript,
   localizeLink,
   getFederatedUrl,
-  getSpectraLOB,
 } from '../../utils/utils.js';
 
 /* c8 ignore start */
@@ -914,14 +913,6 @@ async function setMepLob(config) {
   }
 }
 
-// async function setMepLob(config) { // old version
-  // bad bc it's 2 separate calls
-  // if (config.mep.userLOBPromise) config.mep.meplob = await getSpectraLOB(document.referrer);
-  
-  // good, because we're awaiting the original promise with no delay
-  // if (config.mep.userLOBPromise) config.mep.meplob = await config.mep.userLOBPromise;
-// }
-
 async function getPersonalizationVariant(
   manifestPath,
   variantNames = [],
@@ -952,7 +943,6 @@ async function getPersonalizationVariant(
     if (name.startsWith('param-')) return checkForParamMatch(name);
     if (hasCountryMatch(name, config)) return true;
     if (userEntitlements?.includes(name)) return true;
-    console.log('Checking config.mep.meplob:', config.mep?.meplob);
     if (config.mep?.meplob === name.split('lob-')[1]?.toLowerCase()) return true;
     return PERSONALIZATION_KEYS.includes(name) && PERSONALIZATION_TAGS[name]();
   };
@@ -1455,8 +1445,6 @@ const awaitMartech = () => new Promise((resolve) => {
 });
 
 export async function init(enablements = {}) {
-  console.log('personzalization: init');
-  console.log(enablements);
   let manifests = [];
   const {
     mepParam, mepHighlight, mepButton, pzn, pznroc, promo, enablePersV2,
