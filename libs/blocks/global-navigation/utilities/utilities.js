@@ -18,7 +18,7 @@ loadLana();
 
 const FEDERAL_PATH_KEY = 'federal';
 // Set a default height for LocalNav,
-// as sticky blocks position themselves before LocalNav loads into the DOM.
+// as sticky blocks position themselves before LocalNav loads into the document object model(DOM).
 const DEFAULT_LOCALNAV_HEIGHT = 40;
 const LANA_CLIENT_ID = 'feds-milo';
 
@@ -352,7 +352,6 @@ export function closeAllDropdowns({
 
   if (animatedElement && animationType) {
     animatedElement.addEventListener(`${animationType}end`, closeAllOpenElements, { once: true });
-    animatedElement.setAttribute('aria-expanded', 'false');
   } else {
     closeAllOpenElements();
   }
@@ -503,7 +502,7 @@ const parseTabsFromMenuSection = (section) => {
   const daallTab = headline?.getAttribute('daa-ll');
   const daalhTabContent = section.querySelector('.feds-menu-items')?.getAttribute('daa-lh');
   const content = section.querySelector('.feds-menu-items') ?? section;
-  const links = [...content.querySelectorAll('a.feds-navLink, .feds-cta--secondary')].map((x) => x.outerHTML).join('');
+  const links = [...content.querySelectorAll('a.feds-navLink, .feds-navLink.feds-navLink--header, .feds-cta--secondary')].map((x) => x.outerHTML).join('');
   return { name, links, daallTab, daalhTabContent };
 };
 
