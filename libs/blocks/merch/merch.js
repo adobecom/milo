@@ -159,6 +159,18 @@ const GeoMap = {
   th_th: 'TH_th',
 };
 
+/**
+ * Used when 3in1 modals are configured with ms=e or cs=t extra paramter, but 3in1 is disabled.
+ * Dexter modals should deeplink to plan=edu or plan=team tabs.
+ * @type {Record<string, string>}
+ */
+const TAB_DEEPLINK_MAPPING = {
+  ms: 'plan',
+  cs: 'plan',
+  e: 'edu',
+  t: 'team',
+};
+
 const LANG_STORE_PREFIX = 'langstore/';
 
 function getDefaultLangstoreCountry(language) {
@@ -258,18 +270,6 @@ export const CHECKOUT_ALLOWED_KEYS = [
   'offerType',
   'marketSegment',
 ];
-
-/**
- * Used when 3in1 modals are configured with ms=e or cs=t extra paramter, but 3in1 is disabled.
- * Dexter modals should deeplink to plan=edu or plan=team tabs.
- * @type {Record<string, string>}
- */
-const TAB_DEEPLINK_MAPPING = {
-  ms: 'plan',
-  cs: 'plan',
-  e: 'edu',
-  t: 'team',
-};
 
 export const CC_SINGLE_APPS_ALL = CC_SINGLE_APPS.flatMap((item) => item);
 
@@ -501,50 +501,56 @@ async function openFragmentModal(path, getModal) {
   return modal;
 }
 
-export function appendTabName(url) {
+function appendTabName(url, el) {
+  if (el?.is3in1Modal) {
+    if (el.marketSegment === 'EDU') {
+      url.searchParams.set('plan', 'edu');
+    } else if (el.customerSegment === 'TEAM') {
+      url.searchParams.set('plan', 'team');
+    }
+  }
   const metaPreselectPlan = document.querySelector('meta[name="preselect-plan"]');
   if (!metaPreselectPlan?.content) return url;
-  const isRelativePath = url.startsWith('/');
-  let urlWithPlan;
-  try {
-    urlWithPlan = isRelativePath ? new URL(`${window.location.origin}${url}`) : new URL(url);
-  } catch (err) {
-    window.lana?.log(`Invalid URL ${url} : ${err}`);
-    return url;
-  }
-  urlWithPlan.searchParams.set('plan', metaPreselectPlan.content);
-  return isRelativePath ? urlWithPlan.href.replace(window.location.origin, '') : urlWithPlan.href;
+  url.searchParams.set('plan', metaPreselectPlan.content);
+  return url;
 }
 
-export function appendExtraOptions(url, extraOptions) {
+function appendExtraOptions(url, extraOptions) {
   if (!extraOptions) return url;
   const extraOptionsObj = JSON.parse(extraOptions);
-  let urlWithExtraOptions;
-  try {
-    urlWithExtraOptions = new URL(url);
-  } catch (err) {
-    window.lana?.log(`Invalid URL ${url} : ${err}`);
-    return url;
-  }
   Object.keys(extraOptionsObj).forEach((key) => {
     if (CHECKOUT_ALLOWED_KEYS.includes(key)) {
       const value = extraOptionsObj[key];
-      urlWithExtraOptions.searchParams.set(
+      url.searchParams.set(
         TAB_DEEPLINK_MAPPING[key] ?? key,
         TAB_DEEPLINK_MAPPING[value] ?? value,
       );
     }
   });
-  return urlWithExtraOptions.href;
+  return url;
 }
 
-async function openExternalModal(url, getModal, extraOptions) {
-  await loadStyle(`${getConfig().base}/blocks/iframe/iframe.css`);
+// TODO this should migrate to checkout.js buildCheckoutURL
+export function appendDexterParameters(url, extraOptions, el) {
+  const isRelativePath = url.startsWith('/');
+  let absoluteUrl;
+  try {
+    absoluteUrl = new URL(isRelativePath ? `${window.location.origin}${url}` : url);
+  } catch (err) {
+    window.lana?.log(`Invalid URL ${url} : ${err}`);
+    return url;
+  }
+  absoluteUrl = appendExtraOptions(absoluteUrl, extraOptions);
+  absoluteUrl = appendTabName(absoluteUrl, el);
+  return isRelativePath ? absoluteUrl.href.replace(window.location.origin, '') : absoluteUrl.href;
+}
+
+async function openExternalModal(url, getModal, extraOptions, el) {
+  loadStyle(`${getConfig().base}/blocks/iframe/iframe.css`);
   const root = createTag('div', { class: 'milo-iframe' });
-  const urlWithExtraOptions = appendExtraOptions(url, extraOptions);
-  const urlWithTabName = appendTabName(urlWithExtraOptions);
+  const absoluteUrl = appendDexterParameters(url, extraOptions, el);
   createTag('iframe', {
-    src: urlWithTabName,
+    src: absoluteUrl,
     frameborder: '0',
     marginwidth: '0',
     marginheight: '0',
@@ -796,10 +802,17 @@ export async function getPriceContext(el, params) {
   };
 }
 
+let modalReopened = false;
 export function reopenModal(cta) {
+  if (modalReopened) return;
   if (cta && cta.getAttribute('data-modal-id') === window.location.hash.replace('#', '')) {
     cta.click();
+    modalReopened = true;
   }
+}
+
+export function resetReopenStatus() {
+  modalReopened = false;
 }
 
 export async function buildCta(el, params) {
@@ -836,11 +849,11 @@ export async function buildCta(el, params) {
   } else if (!cta.ariaLabel) {
     cta.onceSettled().then(async () => {
       const productFamily = cta.value[0]?.productArrangement?.productFamily;
-      const marketSegment = cta.value[0]?.marketSegments[0];
-      const customerSegment = marketSegment === 'EDU' ? marketSegment : cta.value[0]?.customerSegment;
+      const { marketSegment, customerSegment } = cta;
+      const segment = marketSegment === 'EDU' ? marketSegment : customerSegment;
       let ariaLabel = cta.textContent;
       ariaLabel = productFamily ? `${ariaLabel} - ${await replaceKey(productFamily, getConfig())}` : ariaLabel;
-      ariaLabel = customerSegment ? `${ariaLabel} - ${await replaceKey(customerSegment, getConfig())}` : ariaLabel;
+      ariaLabel = segment ? `${ariaLabel} - ${await replaceKey(segment, getConfig())}` : ariaLabel;
       cta.setAttribute('aria-label', ariaLabel);
     });
   }

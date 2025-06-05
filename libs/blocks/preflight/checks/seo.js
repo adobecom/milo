@@ -117,7 +117,10 @@ export async function checkDescription(area) {
 }
 
 export async function checkBody(area) {
-  const { length } = area.documentElement.innerText;
+  const nonContentEls = '#preflight, .picture-meta, aem-sidekick';
+  const bodyClone = area.body.cloneNode(true);
+  bodyClone.querySelectorAll(nonContentEls).forEach((el) => el.remove());
+  const { length } = bodyClone.innerText.replace(/\n/g, '').trim();
   let status;
   let description;
 
@@ -276,8 +279,14 @@ export async function checkLinks({ area, urlHash, envName }) {
     badResults.push(...spidyResults);
   }
 
-  const badLinks = badResults.map((result) => links.find((link) => compareResults(result, link)))
-    .filter(Boolean);
+  const uniqueBadResults = badResults.reduce((acc, result) => {
+    if (!acc.some((item) => item.url === result.url)) acc.push(result);
+    return acc;
+  }, []);
+
+  const badLinks = links.filter(
+    (link) => uniqueBadResults.some((result) => compareResults(result, link)),
+  );
 
   const count = badLinks.length;
   const linkText = count > 1 || count === 0 ? 'links' : 'link';

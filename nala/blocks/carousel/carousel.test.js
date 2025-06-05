@@ -28,11 +28,15 @@ test.describe('Milo Carousel Block test suite', () => {
       // verify carousel slides count and active slide index
       expect(await carousel.getNumberOfSlides()).toBe(4);
       expect(await carousel.getCurrentSlideIndex()).toBe('0');
+      expect(await carousel.validateAriaHidden()).toBeTruthy();
+      expect(await carousel.areAllSlidesVisible()).toBeTruthy();
+      expect(await carousel.validateSlideFocusableElements()).toBeTruthy();
 
       // verify carousel indictor and active indicator
-      expect(await carousel.areIndicatorsDisplayed()).toBeTruthy();
-      expect(await carousel.getNumberOfIndicators()).toBe(4);
-      expect(await carousel.getCurrentIndicatorIndex()).toBeNull();
+      // Disabled because indicators are currently hidden by default
+      // expect(await carousel.areIndicatorsDisplayed()).toBeTruthy();
+      // expect(await carousel.getNumberOfIndicators()).toBe(4);
+      // expect(await carousel.getCurrentIndicatorIndex()).toBeNull();
 
       // verify carousel next and previous buttons
       expect(await carousel.isNextButtonlVisible()).toBeTruthy();
@@ -44,11 +48,18 @@ test.describe('Milo Carousel Block test suite', () => {
       await carousel.moveToNextSlide();
       expect(await carousel.getCurrentSlideIndex()).toBe('1');
       expect(await carousel.getSlideText(1, 'h2', 'Orange Slices')).toBeTruthy();
+      expect(await carousel.validateAriaHidden()).toBeTruthy();
+      expect(await carousel.areAllSlidesVisible()).toBeTruthy();
+      expect(await carousel.validateSlideFocusableElements()).toBeTruthy();
 
       // move to 3rd slide by clicking indicator and verify h2 tag header
-      await carousel.moveToIndicator(3);
-      expect(await carousel.getCurrentIndicatorIndex()).toBeNull();
-      expect(await carousel.getSlideText(3, 'h2', 'Apples')).toBeTruthy();
+      // Disabled because indicators are currently hidden by default
+      // await carousel.moveToIndicator(3);
+      // expect(await carousel.getCurrentIndicatorIndex()).toBeNull;
+      // expect(await carousel.getSlideText(3, 'h2', 'Apples')).toBeTruthy();
+      // expect(await carousel.validateAriaHidden()).toBeTruthy();
+      // expect(await carousel.areAllSlidesVisible()).toBeTruthy();
+      // expect(await carousel.validateSlideFocusableElements()).toBeTruthy();
     });
 
     await test.step('step-4: Verify the accessibility test on the carousel block', async () => {
@@ -72,11 +83,15 @@ test.describe('Milo Carousel Block test suite', () => {
       // verify active slide and slides count
       expect(await carousel.getNumberOfSlides()).toBe(4);
       expect(await carousel.getCurrentSlideIndex()).toBe('0');
+      expect(await carousel.validateAriaHidden()).toBeTruthy();
+      expect(await carousel.areAllSlidesVisible()).toBeTruthy();
+      expect(await carousel.validateSlideFocusableElements()).toBeTruthy();
 
       // verify indicator visibility, count and index of active slide
-      expect(await carousel.areIndicatorsDisplayed()).toBeTruthy();
-      expect(await carousel.getNumberOfIndicators()).toBe(4);
-      expect(await carousel.getCurrentIndicatorIndex()).toBeNull();
+      // Disabled because indicators are currently hidden by default
+      // expect(await carousel.areIndicatorsDisplayed()).toBeTruthy();
+      // expect(await carousel.getNumberOfIndicators()).toBe(4);
+      // expect(await carousel.getCurrentIndicatorIndex()).toBeNull();
 
       expect(await carousel.isNextButtonlVisible()).toBeTruthy();
       expect(await carousel.isPreviousButtonlVisible()).toBeTruthy();
@@ -109,9 +124,13 @@ test.describe('Milo Carousel Block test suite', () => {
       // In multi-slide 2 number of slides will be n-slides +1 so it will be 5
       expect(await carousel.getNumberOfSlides()).toBe(5);
       expect(await carousel.getCurrentSlideIndex()).toBe('0');
+      expect(await carousel.validateAriaHidden(2)).toBeTruthy();
+      expect(await carousel.areAllSlidesVisible()).toBeTruthy();
+      expect(await carousel.validateSlideFocusableElements()).toBeTruthy();
 
       // In multi-slide carousel indicators are not shown
-      expect(await carousel.areIndicatorsDisplayed()).toBeFalsy();
+      // Disabled because indicators are currently hidden by default
+      // expect(await carousel.areIndicatorsDisplayed()).toBeFalsy();
       expect(await carousel.isNextButtonlVisible()).toBeTruthy();
       expect(await carousel.isPreviousButtonlVisible()).toBeTruthy();
     });
@@ -120,6 +139,9 @@ test.describe('Milo Carousel Block test suite', () => {
       // move to next slide by clicking next button and verify h2 tag header
       await carousel.moveToNextSlide();
       expect(await carousel.getSlideText(1, 'h2', 'Melon')).toBeTruthy();
+      expect(await carousel.validateAriaHidden(2)).toBeTruthy();
+      expect(await carousel.areAllSlidesVisible()).toBeTruthy();
+      expect(await carousel.validateSlideFocusableElements()).toBeTruthy();
     });
 
     await test.step('step-3: Verify the accessibility test on the carousel show-2 container block', async () => {
@@ -142,11 +164,15 @@ test.describe('Milo Carousel Block test suite', () => {
       // verify active slide and slides count
       expect(await carousel.getNumberOfSlides()).toBe(4);
       expect(await carousel.getCurrentSlideIndex()).toBe('0');
+      expect(await carousel.validateAriaHidden()).toBeTruthy();
+      expect(await carousel.areAllSlidesVisible()).toBeTruthy();
+      expect(await carousel.validateSlideFocusableElements()).toBeTruthy();
 
       // verify indicator visibility, count and index of active slide
-      expect(await carousel.areIndicatorsDisplayed()).toBeTruthy();
-      expect(await carousel.getNumberOfIndicators()).toBe(4);
-      expect(await carousel.getCurrentIndicatorIndex()).toBe('0');
+      // Disabled because indicators are currently hidden by default
+      // expect(await carousel.areIndicatorsDisplayed()).toBeTruthy();
+      // expect(await carousel.getNumberOfIndicators()).toBe(4);
+      // expect(await carousel.getCurrentIndicatorIndex()).toBe('0');
 
       expect(await carousel.isNextButtonlVisible()).toBeTruthy();
       expect(await carousel.isPreviousButtonlVisible()).toBeTruthy();

@@ -101,6 +101,7 @@ export function Checkout({ providers, settings }) {
         const is3in1 = Object.values(MODAL_TYPE_3_IN_1).includes(options.modal) && (!masFF3in1 || masFF3in1.content !== 'off');
         const context = window.frameElement || is3in1 ? 'if' : 'fp';
         const data = {
+            is3in1,
             checkoutPromoCode,
             clientId,
             context,
