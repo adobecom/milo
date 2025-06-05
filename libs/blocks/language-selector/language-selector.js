@@ -208,6 +208,7 @@ function setupDropdownEvents({
   let isDraggingDropdown = false;
   let dragStartY = 0;
   let dragCurrentY = 0;
+  let hasDragged = false;
   let isDropdownOpen = false;
   let documentClickHandler = null;
 
@@ -228,6 +229,8 @@ function setupDropdownEvents({
   function startDropdownDrag(y) {
     isDraggingDropdown = true;
     dragStartY = y;
+    dragCurrentY = y;
+    hasDragged = false;
     dropdown.style.transition = 'none';
   }
 
@@ -235,6 +238,9 @@ function setupDropdownEvents({
     if (!isDraggingDropdown) return;
     dragCurrentY = y;
     const diff = dragCurrentY - dragStartY;
+    if (Math.abs(diff) > 5) {
+      hasDragged = true;
+    }
     if (diff > 0) {
       dropdown.style.transform = `translateY(${diff}px)`;
     }
@@ -245,8 +251,7 @@ function setupDropdownEvents({
     isDraggingDropdown = false;
     const diff = dragCurrentY - dragStartY;
     dropdown.style.transition = 'transform 0.3s ease';
-
-    if (diff > 100) {
+    if (hasDragged && diff > 100) {
       dropdown.style.transform = 'translateY(100%)';
       dropdown.style.opacity = '0';
       const onTransitionEnd = (e) => {
