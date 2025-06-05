@@ -649,19 +649,19 @@
   }
 
   /* Block specific */
-  .tabs .tabList {
+  .tabs:has(merch-card) .tabList {
     background: none;
     box-shadow: none;
   }
 
-  .tabs .tabList .tab-list-container {
+  .tabs:has(merch-card) .tabList .tab-list-container {
     padding: 1px;
     border-radius: var(--m-rounded-corners);
     background: #f8f8f8;
     overflow: hidden;
   }
 
-  .tabs .tabList button {
+  .tabs:has(merch-card) .tabList button {
     padding: 10px 18px;
     border-radius: var(--m-rounded-corners);
     border: none;
@@ -669,19 +669,19 @@
     color: var(--tabs-pill-bg-color);
   }
 
-  .tabs .tabList button[aria-selected="true"],
-  .tabs .tabList button[aria-checked="true"] {
+  .tabs:has(merch-card) .tabList button[aria-selected="true"],
+  .tabs:has(merch-card) .tabList button[aria-checked="true"] {
     background: var(--tabs-pill-bg-color);
     color: var(--color-white);
     box-shadow: 0 2px 8px 0 #00000029;
   }
 
-  .tabs .paddle {
+  .tabs:has(merch-card) .paddle {
     height: 38px;
     border-bottom: none;
   }
 
-  .tabs .paddle:disabled {
+  .tabs:has(merch-card) .paddle:disabled {
     background: none;
   }
 }
