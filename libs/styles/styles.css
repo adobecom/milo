@@ -930,7 +930,14 @@ a.static:active  {
 }
 
 /* mobile only */
-@media (max-width: 600px) {
+@media (max-width: 599px) {
+  :root:not(:lang(ja-JP), :lang(ja)) :is(.heading-xxxl, .heading-xxl) {
+    hyphens: auto;
+    hyphenate-limit-chars: 15 5 5;
+    -webkit-hyphenate-limit-before: 7;
+    -webkit-hyphenate-limit-after: 7;
+  }
+
   .con-button.button-justified-mobile {
     display: block;
     text-align: center;
