@@ -545,7 +545,7 @@ function getSelectedElements(sel, rootEl, forceRootEl, action) {
   } catch (e) {
     /* eslint-disable-next-line no-console */
     log('Invalid selector: ', selector);
-    return null;
+    return {};
   }
   if (modifiers.includes(FLAGS.all) || !els.length) return { els, modifiers, attribute };
   els = [els[0]];
@@ -906,10 +906,21 @@ async function setMepCountry(config) { // return
 }
 
 async function setMepLob(config) {
-  if (config.mep.userLOBPromise) config.mep.meplob = await getSpectraLOB(document.referrer);
-  // if (config.mep.meplob || !config.mep.userLOBPromise) return;
-  // config.mep.meplob = await getSpectraLOB(document.referrer);
+  try {
+    const lobPromise = await config.mep.userLOBPromise;
+    if (lobPromise) config.mep.meplob = lobPromise;
+  } catch (e) {
+    log('MEP Error: Unable to get user line of business');
+  }
 }
+
+// async function setMepLob(config) { // old version
+  // bad bc it's 2 separate calls
+  // if (config.mep.userLOBPromise) config.mep.meplob = await getSpectraLOB(document.referrer);
+  
+  // good, because we're awaiting the original promise with no delay
+  // if (config.mep.userLOBPromise) config.mep.meplob = await config.mep.userLOBPromise;
+// }
 
 async function getPersonalizationVariant(
   manifestPath,
@@ -942,8 +953,7 @@ async function getPersonalizationVariant(
     if (hasCountryMatch(name, config)) return true;
     if (userEntitlements?.includes(name)) return true;
     console.log('Checking config.mep.meplob:', config.mep?.meplob);
-    // if (name.startsWith('lob-') && config.mep?.meplob && name.split('-')[1].toLowerCase() === config.mep.meplob) return true;
-    if (name.startsWith('lob-') && config.mep?.meplob === name.split('-')[1].toLowerCase()) return true;
+    if (config.mep?.meplob === name.split('lob-')[1]?.toLowerCase()) return true;
     return PERSONALIZATION_KEYS.includes(name) && PERSONALIZATION_TAGS[name]();
   };
 
@@ -962,7 +972,7 @@ async function getPersonalizationVariant(
   if (config.mep?.geoLocation) {
     await setMepCountry(config);
   }
-  if (config.mep?.meplob) {
+  if (config.mep?.meplob === true) {
     await setMepLob(config);
   }
 

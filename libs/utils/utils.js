@@ -1375,14 +1375,14 @@ export async function getSpectraLOB(lastVisitedPage) {
       body: null,
     });
     const content = await rawResponse.json();
-    return content.modelLineOfBusiness.toLowerCase(); // added lowercase
-  } catch (error) {
-    if (error.name === 'TimeoutError') {
+    return content.modelLineOfBusiness?.toLowerCase();
+  } catch (e) {
+    if (e.name === 'TimeoutError') {
       // This exception is from the abort signal
-      window.lana?.log.log('Spectra Timeout');
+      window.lana?.log('Spectra Timeout');
     } else {
       // A network error, or some other problem.
-      window.lana?.log(`Error: type: ${error.name}, message: ${error.message}`);
+      window.lana?.log(e.reason || e.error || e.message, { errorType: 'i' });
     }
     return false;
   }
