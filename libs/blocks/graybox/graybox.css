@@ -18,6 +18,18 @@
   position: relative;
 }
 
+.gb-modal-curtain::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: var(--gb-modal-bg);
+  z-index: calc(var(--base-z-index) + 2);
+
+}
+
 .gb-graybox-body:not(.gb-no-border)::before {
   content: '';
   position: fixed;
@@ -192,6 +204,11 @@
   color: var(--gb-container-btn-bg);
   border-color: var(--gb-container-btn-bg);
   cursor: default;
+}
+
+.graybox-devices > a.gb-selected-button {
+  background: gray;
+  pointer-events: none;
 }
 
 .graybox-devices > a:hover {
