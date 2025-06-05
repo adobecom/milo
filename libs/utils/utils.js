@@ -1364,14 +1364,13 @@ async function checkForPageMods() {
   let calculatedTimeout = null;
   if (mepParam === 'off') return;
   const pzn = getMepEnablement('personalization');
-  const pznroc = getMepEnablement('personalization-roc');
   const promo = getMepEnablement('manifestnames', PROMO_PARAM);
   const target = martech === 'off' ? false : getMepEnablement('target');
   const xlg = martech === 'off' ? false : getMepEnablement('xlg');
   const ajo = martech === 'off' ? false : getMepEnablement('ajo');
   const mepgeolocation = martech === 'off' ? false : getMepEnablement('mepgeolocation');
 
-  if (!(pzn || pznroc || target || promo || mepParam
+  if (!(pzn || target || promo || mepParam
     || mepHighlight || mepButton || mepParam === '' || xlg || ajo)) return;
 
   if (mepgeolocation) {
@@ -1404,7 +1403,7 @@ async function checkForPageMods() {
       return { targetInteractionData: data, respTime, respStartTime: now };
     })();
   } else if ((target || xlg || ajo) && !isMartechLoaded) loadMartech();
-  else if ((pzn || pznroc) && martech !== 'off') {
+  else if (pzn && martech !== 'off') {
     loadIms()
       .then(() => {
         /* c8 ignore next */
@@ -1419,7 +1418,6 @@ async function checkForPageMods() {
     mepHighlight,
     mepButton,
     pzn,
-    pznroc,
     promo,
     target,
     ajo,

@@ -378,7 +378,7 @@ export function getMepPopup(mepConfig, isMmm = false) {
       </div>
     </div>
     `;
-  const showManifestsCheckbox = config.env?.name === 'prod' && !isMmm
+  const hasProdManifests = config.env?.name === 'prod'
     ? `<div>
         <input type="checkbox" name="mepHighlight${pageId}"
         id="mepManifestsCheckbox" value="false">
@@ -393,7 +393,7 @@ export function getMepPopup(mepConfig, isMmm = false) {
         id="mepHighlightCheckbox${pageId}" ${mepHighlightChecked} value="true">
         <label for="mepHighlightCheckbox${pageId}">Highlight changes</label>
       </div>
-      ${showManifestsCheckbox}
+      ${hasProdManifests}
       <div>
         <input type="checkbox" name="mepPreviewButtonCheckbox${pageId}"
         id="mepPreviewButtonCheckbox${pageId}" value="off">

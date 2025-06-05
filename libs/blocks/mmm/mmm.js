@@ -84,11 +84,6 @@ let mmmPageVer = GRID_FORMAT.base;
 let isMetadataLookup = false;
 let metadataLookupData = null;
 
-const VARIANTS = {
-  targetCleanup: 'target-cleanup',
-  metadataLookup: 'target-metadata-lookup',
-};
-
 function getStorageKey() {
   if (isReport) {
     return MMM_REPORT_LOCAL_STORAGE_KEY;
@@ -795,18 +790,10 @@ function creastePageList(el, data) {
   data?.result.map((page) => createButtonDetailsPair(el, page));
 }
 
-function addVariantClass() {
-  switch (true) {
-    case isMetadataLookup: return VARIANTS.metadataLookup;
-    case isReport: return VARIANTS.targetCleanup;
-    default: return '';
-  }
-}
-
 async function createView(el, search) {
   const mmmElContainer = createTag('div', { class: 'mmm-container max-width-12-desktop' });
   const mmmEl = createTag('dl', {
-    class: `mmm foreground ${addVariantClass()}`,
+    class: `mmm foreground ${el.classList[1]}`,
     id: 'mmm',
     role: 'presentation',
   });
@@ -844,7 +831,10 @@ async function createView(el, search) {
   } else {
     creastePageList(mmmEl, response);
   }
+  const section = createTag('div', { id: 'mep-section', class: 'section' });
+  const main = document.querySelector('main');
   el.replaceWith(mmmElContainer);
+  main.append(section);
   if (!isMetadataLookup) {
     createPaginationEl({
       data: response,
@@ -894,9 +884,9 @@ function handleRepoChange() {
 }
 
 export default async function init(el) {
-  isReport = el.classList.contains(VARIANTS.targetCleanup);
+  isReport = el.classList.contains('target-cleanup');
   mmmPageVer = isReport ? GRID_FORMAT.targetCleanUp : GRID_FORMAT.base;
-  isMetadataLookup = el.classList.contains(VARIANTS.metadataLookup);
+  isMetadataLookup = el.classList.contains('target-metadata-lookup');
   await createView(el);
   if (!isMetadataLookup) {
     createSearchRows();
