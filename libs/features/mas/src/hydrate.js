@@ -65,6 +65,11 @@ export function processMnemonics(fields, merchCard, mnemonicsConfig) {
         const merchIcon = createTag('merch-icon', attrs);
         merchCard.append(merchIcon);
     });
+
+    const slotIcons = merchCard.shadowRoot.querySelector('slot[name="icons"]');
+    if (!mnemonics?.length && slotIcons) {
+      slotIcons.remove();
+    }
 }
 
 function processBadge(fields, merchCard, mapping) {
