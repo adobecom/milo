@@ -840,6 +840,7 @@ export async function buildCta(el, params) {
       // after opening a modal, navigating to another page and back we need to reopen the modal
       reopenModal(cta);
     });
+  }
 
   // Adding aria-label for checkout-link using productCode and customerSegment as placeholder key.
   if (el.ariaLabel) {
