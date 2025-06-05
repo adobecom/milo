@@ -1,7 +1,7 @@
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import sinon, { stub } from 'sinon';
-import init, { formValidate } from '../../../libs/blocks/marketo/marketo-multi.js';
+import init, { formValidate, updateTabIndex } from '../../../libs/blocks/marketo/marketo-multi.js';
 
 const innerHTML = await readFile({ path: './mocks/multi-step-2.html' });
 
@@ -74,5 +74,33 @@ describe('marketo multi-step', () => {
     expect(formEl.dataset.step).to.equal('1');
     expect(formEl.querySelector('.back-btn')).to.be.null;
     expect(formEl.querySelector('.step-details .step').textContent).to.equal('Step 1 of 2');
+  });
+
+  it('sets initial tabindex for fields', () => {
+    const formEl = document.querySelector('form');
+    const step1Field = formEl.querySelector('.mktoFormRowTop[data-validate="1"] input');
+    const step2Field = formEl.querySelector('.mktoFormRowTop[data-validate="2"] input');
+    expect(step1Field.tabIndex).to.equal(0);
+    expect(step2Field.tabIndex).to.equal(-1);
+  });
+
+  it('updates tabindex when switching steps', () => {
+    const formEl = document.querySelector('form');
+    const step1Field = formEl.querySelector('.mktoFormRowTop[data-validate="1"] input');
+    const step2Field = formEl.querySelector('.mktoFormRowTop[data-validate="2"] input');
+
+    // Initial state
+    expect(step1Field.tabIndex).to.equal(0);
+    expect(step2Field.tabIndex).to.equal(-1);
+
+    // Switch to step 2
+    updateTabIndex(formEl, 2, 1);
+    expect(step1Field.tabIndex).to.equal(-1);
+    expect(step2Field.tabIndex).to.equal(0);
+
+    // Switch back to step 1
+    updateTabIndex(formEl, 1, 2);
+    expect(step1Field.tabIndex).to.equal(0);
+    expect(step2Field.tabIndex).to.equal(-1);
   });
 });
