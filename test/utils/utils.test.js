@@ -1,3 +1,4 @@
+/* eslint-disable no-underscore-dangle */
 import { readFile, setViewport } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
@@ -429,7 +430,7 @@ describe('Utils', () => {
       expect(newTabLink.href).to.equal('https://www.adobe.com/test');
     });
     it('Should send analytics alloy event', async () => {
-      window.alloy = sinon.spy();
+      window._satellite = { track: sinon.spy() };
       const alloyMarquee = await readFile({ path: './mocks/body-marquee-alloy-cta.html' });
       document.body.innerHTML = alloyMarquee;
       await waitForElement('.marquee');
@@ -441,10 +442,10 @@ describe('Utils', () => {
       expect(alloyLink.href).to.not.contain('#_alloy:');
       alloyLink.click();
       const [, profile, business, value] = alloyString.split(/:|\./g);
-      expect(window.alloy.calledOnce).to.be.true;
-      const eventName = window.alloy.args[0][0];
-      const eventPayload = window.alloy.args[0][1];
-      expect(eventName).to.equal('sendEvent');
+      expect(window._satellite.track.calledOnce).to.be.true;
+      const eventName = window._satellite.track.args[0][0];
+      const eventPayload = window._satellite.track.args[0][1];
+      expect(eventName).to.equal('event');
       // eslint-disable-next-line no-underscore-dangle
       expect(eventPayload.data.__adobe.target).to.deep.equal({ [`${profile}.${business}`]: value });
     });
