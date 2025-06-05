@@ -24,9 +24,13 @@ function getLinkAttrs(link) {
 
 function wrapCopy(div) {
   const copy = Object.assign(document.createElement('div'), { className: 'copy' });
-  [...div.children].forEach(el =>
-    el.classList.contains('main-image') ? null : copy.appendChild(el)
-  );
+
+  [...div.children].forEach((el) => {
+    if (!el.classList.contains('main-image')) {
+      copy.appendChild(el);
+    }
+  });
+
   div.appendChild(copy);
 }
 
