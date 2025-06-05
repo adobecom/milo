@@ -3,6 +3,45 @@ import { createTag, getConfig, getLanguage } from '../../utils/utils.js';
 const queriedPages = [];
 const CHECKMARK_SVG = '<svg class="check-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M13.3337 4L6.00033 11.3333L2.66699 8" stroke="#274DEA" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 
+let isDraggingDropdown = false;
+let dragStartY = 0;
+let dragCurrentY = 0;
+
+function startDropdownDrag(y, dropdown) {
+  isDraggingDropdown = true;
+  dragStartY = y;
+  dropdown.style.transition = 'none';
+}
+
+function continueDropdownDrag(y, dropdown) {
+  if (!isDraggingDropdown) return;
+  dragCurrentY = y;
+  const diff = dragCurrentY - dragStartY;
+  if (diff > 0) {
+    dropdown.style.transform = `translateY(${diff}px)`;
+  }
+}
+
+function endDropdownDrag(dropdown, closeDropdown) {
+  if (!isDraggingDropdown) return;
+  isDraggingDropdown = false;
+  const diff = dragCurrentY - dragStartY;
+  dropdown.style.transition = 'transform 0.3s ease';
+
+  if (diff > 100) {
+    dropdown.style.transform = 'translateY(100%)';
+    dropdown.style.opacity = '0';
+    setTimeout(() => {
+      dropdown.style.display = 'none';
+      dropdown.style.transform = 'translateY(0)';
+      dropdown.style.opacity = '1';
+      closeDropdown(); // Triggers existing logic
+    }, 300);
+  } else {
+    dropdown.style.transform = 'translateY(0)';
+  }
+}
+
 let miloLangIsKeyboard = false;
 document.addEventListener('keydown', (e) => {
   if (
@@ -89,15 +128,7 @@ const scrollSelectedIntoView = (selectedLangItem, languageList) => {
   }
 };
 
-function createDropdownElements(regionPickerTextElem, placeholderText, setAriaOnSpan = true) {
-  if (setAriaOnSpan) {
-    regionPickerTextElem.setAttribute('id', 'language-selector-combobox');
-    regionPickerTextElem.setAttribute('class', 'feds-regionPicker-text');
-    regionPickerTextElem.setAttribute('aria-haspopup', 'listbox');
-    regionPickerTextElem.setAttribute('aria-expanded', 'false');
-    regionPickerTextElem.setAttribute('aria-controls', 'language-selector-listbox');
-    regionPickerTextElem.setAttribute('tabindex', '0');
-  }
+function createDropdownElements(placeholderText) {
   const dropdown = createTag('div');
   dropdown.className = 'language-dropdown';
   dropdown.style.display = 'none';
@@ -350,6 +381,39 @@ function setupDropdownEvents({
     const searchInputWrapper = searchInput.closest('.search-input-wrapper');
     if (searchInputWrapper) searchInputWrapper.classList.remove('focus-visible');
   });
+
+  const dragHandle = dropdown.querySelector('.drag-handle');
+  if (dragHandle) {
+    dragHandle.addEventListener('touchstart', (e) => {
+      startDropdownDrag(e.touches[0].clientY, dropdown);
+    });
+
+    dragHandle.addEventListener('touchmove', (e) => {
+      continueDropdownDrag(e.touches[0].clientY, dropdown);
+    });
+
+    dragHandle.addEventListener('touchend', () => {
+      endDropdownDrag(dropdown, closeDropdown);
+    });
+
+    dragHandle.addEventListener('mousedown', (e) => {
+      e.preventDefault();
+      startDropdownDrag(e.clientY, dropdown);
+
+      const onMouseMove = (moveEvent) => {
+        continueDropdownDrag(moveEvent.clientY, dropdown);
+      };
+
+      const onMouseUp = () => {
+        endDropdownDrag(dropdown, closeDropdown);
+        window.removeEventListener('mousemove', onMouseMove);
+        window.removeEventListener('mouseup', onMouseUp);
+      };
+
+      window.addEventListener('mousemove', onMouseMove);
+      window.addEventListener('mouseup', onMouseUp);
+    });
+  }
 }
 
 export default async function init(block) {
@@ -357,7 +421,9 @@ export default async function init(block) {
   const { languages, locales } = config;
   const divs = block.querySelectorAll(':scope > div');
   const links = divs[0].querySelectorAll('a');
-  const placeholderText = divs[0].querySelector('p').textContent.trim();
+  const placeholders = divs[0].querySelectorAll('p');
+  const ariaLabel = placeholders[0]?.textContent.trim();
+  const placeholderText = placeholders[1]?.textContent.trim();
   if (!links.length) return;
 
   const languagesList = getLanguages(links, languages, locales);
@@ -372,12 +438,12 @@ export default async function init(block) {
   regionPickerElem.setAttribute('aria-expanded', 'false');
   regionPickerElem.setAttribute('aria-controls', 'language-selector-listbox');
   regionPickerElem.setAttribute('tabindex', '0');
-
+  regionPickerElem.setAttribute('aria-label', ariaLabel);
   const {
     dropdown,
     searchContainer,
     languageList,
-  } = createDropdownElements(regionPickerTextElem, placeholderText, false);
+  } = createDropdownElements(placeholderText);
   dropdown.appendChild(searchContainer);
   dropdown.appendChild(languageList);
   wrapper.appendChild(dropdown);
