@@ -1,5 +1,5 @@
 import { html, signal, useEffect } from '../../../deps/htm-preact.js';
-import getChecks from '../checks/asoApi.js';
+import { preflightCache } from '../checks/asoApi.js';
 
 const DEF_ICON = 'purple';
 const DEF_DESC = 'Checking...';
@@ -12,7 +12,7 @@ const defaultResults = {
   canon: { icon: DEF_ICON, title: 'Canonical', description: DEF_DESC, aiSuggestion: null, supportsAi: false },
   desc: { icon: DEF_ICON, title: 'Meta description', description: DEF_DESC, aiSuggestion: null, supportsAi: true },
   body: { icon: DEF_ICON, title: 'Body size', description: DEF_DESC, aiSuggestion: null, supportsAi: false },
-  lorem: { icon: DEF_ICON, title: 'Lorem Ipsum', description: DEF_DESC, aiSuggestion: null, supportsAi: false },
+  lorem: { icon: DEF_ICON, title: 'Lorem Ipsum', description: DEF_DESC, aiSuggestion: null, supportsAi: true },
   links: { icon: DEF_ICON, title: 'Links', description: DEF_DESC, aiSuggestion: null, supportsAi: false },
 };
 
@@ -102,7 +102,7 @@ function checkBody(audits) {
 function checkLorem(audits) {
   const opportunity = findOpportunity(audits, 'lorem-ipsum', 'placeholder-text');
   if (opportunity?.issue) {
-    updateResult('lorem', { icon: fail, description: opportunity.issue });
+    updateResult('lorem', { icon: fail, description: opportunity.issue, aiSuggestion: opportunity?.seoRecommendation });
     return fail;
   }
   updateResult('lorem', { icon: pass, description: 'No Lorem ipsum is used on the page.' });
@@ -209,55 +209,51 @@ async function getResults(checks) {
   });
 }
 
-function SeoItem({ data, loading, onAiSuggestion, aiSuggestionVisible }) {
+function SeoItem({ data, loading, aiSuggestionVisible }) {
   const { icon, title, description, aiSuggestion, supportsAi } = data;
-  const showAiButton = supportsAi && icon === 'red' && !aiSuggestionVisible;
   return html`
     <div class=preflight-item>
       <div class="result-icon ${icon}"></div>
       <div class=preflight-item-text>
         <p class=preflight-item-title>${title}</p>
         <p class=preflight-item-description>${description}</p>
-        ${showAiButton && (loading ? html`<p class="ai-suggestion">AI suggestion: <div class="result-icon purple"></div></p>` : html`<button class="preflight-action" onclick=${onAiSuggestion}>AI suggestion</button>`)}
+        ${supportsAi && loading && icon !== 'green' && html`<p class="ai-suggestion">AI suggestion: <div class="result-icon purple"></div></p>`}
         ${aiSuggestionVisible && aiSuggestion && html`<p class="ai-suggestion">AI suggestion: ${aiSuggestion}</p>`}
       </div>
     </div>`;
 }
 
+async function waitForPromise(obj, key, timeout = 5000) {
+  const start = Date.now();
+  while (!obj[key]) {
+    if (Date.now() - start > timeout) throw new Error('Timeout waiting for preflight promise');
+    // eslint-disable-next-line
+    await new Promise((r) => setTimeout(r, 50));
+  }
+  return obj[key];
+}
+
 export default function Panel() {
   useEffect(() => {
-    const waitForChecks = async () => {
-      const checks = await getChecks('IDENTIFY');
+    const runChecks = async () => {
+      const checks = await waitForPromise(preflightCache, 'identifyPromise').then((p) => p);
       getResults(checks);
-    };
-    waitForChecks();
-  }, []);
+      // Set loading for AI suggestions for all supportsAi keys
+      const aiKeys = Object.keys(seoResults.value).filter((k) => seoResults.value[k].supportsAi);
+      aiLoading.value = aiKeys.reduce((acc, k) => ({ ...acc, [k]: true }), {});
 
-  async function handleAiSuggestion(key) {
-    aiLoading.value = { ...aiLoading.value, [key]: true };
-    // If already visible, don't do anything
-    if (aiSuggestionVisibleState.value[key]) {
-      aiLoading.value = { ...aiLoading.value, [key]: false };
-      return;
-    }
-    // If we already have SUGGEST data, use it
-    if (suggestChecksCache.value) {
-      const [checkData] = suggestChecksCache.value;
+      const suggestChecks = await preflightCache.suggestPromise;
+      suggestChecksCache.value = suggestChecks;
+      const [checkData] = suggestChecks;
       const { audits } = checkData;
       updateAllAiSuggestionsFromAudits(audits);
-      aiSuggestionVisibleState.value = { ...aiSuggestionVisibleState.value, [key]: true };
-      aiLoading.value = { ...aiLoading.value, [key]: false };
-      return;
-    }
-    // Otherwise, fetch and cache
-    const checks = await getChecks('SUGGEST');
-    suggestChecksCache.value = checks;
-    const [checkData] = checks;
-    const { audits } = checkData;
-    updateAllAiSuggestionsFromAudits(audits);
-    aiSuggestionVisibleState.value = { ...aiSuggestionVisibleState.value, [key]: true };
-    aiLoading.value = { ...aiLoading.value, [key]: false };
-  }
+      // Show AI suggestions for all supportsAi keys
+      aiSuggestionVisibleState.value = aiKeys.reduce((acc, k) => ({ ...acc, [k]: true }), {});
+      // Remove loading
+      aiLoading.value = aiKeys.reduce((acc, k) => ({ ...acc, [k]: false }), {});
+    };
+    runChecks();
+  }, []);
 
   return html`
     <div class=preflight-columns>
@@ -265,7 +261,6 @@ export default function Panel() {
         ${['title', 'h1', 'canon', 'links'].map((key) => html`<${SeoItem}
             data=${seoResults.value[key]}
             loading=${!!aiLoading.value[key]}
-            onAiSuggestion=${() => handleAiSuggestion(key)}
             aiSuggestionVisible=${!!aiSuggestionVisibleState.value[key]}
           />`)}
       </div>
@@ -273,7 +268,6 @@ export default function Panel() {
         ${['body', 'lorem', 'desc'].map((key) => html`<${SeoItem}
             data=${seoResults.value[key]}
             loading=${!!aiLoading.value[key]}
-            onAiSuggestion=${() => handleAiSuggestion(key)}
             aiSuggestionVisible=${!!aiSuggestionVisibleState.value[key]}
           />`)}
       </div>

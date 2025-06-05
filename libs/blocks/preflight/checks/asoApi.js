@@ -25,8 +25,7 @@ async function getJobId(step) {
       body: JSON.stringify(
         {
           step,
-          urls: [window.location.href,
-          ],
+          urls: [window.location.href],
         },
       ),
     });
@@ -69,4 +68,26 @@ export default async function getChecks(step) {
   const checks = await getJobResults(jobId);
   if (!checks) return null;
   return checks.result;
+}
+
+export const preflightCache = {
+  identify: null,
+  suggest: null,
+  identifyPromise: null,
+  suggestPromise: null,
+};
+
+export async function prefetchPreflightChecks() {
+  if (!preflightCache.identifyPromise) {
+    preflightCache.identifyPromise = getChecks('IDENTIFY').then((result) => {
+      preflightCache.identify = result;
+      return result;
+    });
+  }
+  if (!preflightCache.suggestPromise) {
+    preflightCache.suggestPromise = getChecks('SUGGEST').then((result) => {
+      preflightCache.suggest = result;
+      return result;
+    });
+  }
 }
