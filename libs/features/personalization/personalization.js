@@ -237,19 +237,21 @@ const COMMANDS = {
     cmd.content = replacePlaceholders(cmd.content);
 
     let value;
-    if (attribute === '#') {
-      el.href += cmd.content;
-    } else if (attribute === 'href' && parameter) {
+    if (attribute === 'href' && parameter) {
       const href = el.getAttribute('href');
-      try {
-        const url = new URL(href);
-        const parameters = new URLSearchParams(url.search);
-        parameters.set(parameter, cmd.content);
-        url.search = parameters.toString();
-        value = url.toString();
-      } catch (error) {
-        /* c8 ignore next 2 */
-        console.log(`Invalid updateAttribute URL: ${href}`, error.message || error);
+      switch (parameter) {
+        case '#': el.href += el.href.includes(cmd.content) ? '' : cmd.content; break;
+        default:
+          try {
+            const url = new URL(href);
+            const parameters = new URLSearchParams(url.search);
+            parameters.set(parameter, cmd.content);
+            url.search = parameters.toString();
+            value = url.toString();
+          } catch (error) {
+            /* c8 ignore next 2 */
+            console.log(`Invalid updateAttribute URL: ${href}`, error.message || error);
+          }
       }
     } else {
       value = cmd.content;
