@@ -381,7 +381,6 @@ export function closeAllDropdowns({
 
   if (animatedElement && animationType) {
     animatedElement.addEventListener(`${animationType}end`, closeAllOpenElements, { once: true });
-    animatedElement.setAttribute('aria-expanded', 'false');
   } else {
     closeAllOpenElements();
   }
