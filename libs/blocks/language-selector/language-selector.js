@@ -389,22 +389,23 @@ function setupDropdownEvents({
     if (searchInputWrapper) searchInputWrapper.classList.remove('focus-visible');
   });
 
+  // Cache dropdown and drag handle elements
   const dropdownEl = dropdown;
-  const dragHandleEl = dropdownEl.querySelector('.drag-handle');
-  if (dragHandleEl) {
-    dragHandleEl.addEventListener('touchstart', (e) => {
+  // Remove dragHandleEl event listeners, attach to dropdownEl instead
+  if (window.innerWidth < 600) {
+    dropdownEl.addEventListener('touchstart', (e) => {
       startDropdownDrag(e.touches[0].clientY);
     });
 
-    dragHandleEl.addEventListener('touchmove', (e) => {
+    dropdownEl.addEventListener('touchmove', (e) => {
       continueDropdownDrag(e.touches[0].clientY);
     });
 
-    dragHandleEl.addEventListener('touchend', () => {
+    dropdownEl.addEventListener('touchend', () => {
       endDropdownDrag();
     });
 
-    dragHandleEl.addEventListener('mousedown', (e) => {
+    dropdownEl.addEventListener('mousedown', (e) => {
       e.preventDefault();
       startDropdownDrag(e.clientY);
 
