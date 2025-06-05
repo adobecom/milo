@@ -234,7 +234,7 @@ function transformLinkToButton(linkElement, merchCard, aemFragmentMapping) {
     let newButtonElement;
 
     if (merchCard.consonant) {
-        newButtonElement = createConsonantButton(linkElement, isAccent, isCheckoutLink);
+        newButtonElement = createConsonantButton(linkElement, isAccent, isCheckoutLink, isLinkStyle);
     } else if (isLinkStyle) {
         newButtonElement = linkElement;
     } else {
@@ -266,31 +266,20 @@ function transformLinkToButton(linkElement, merchCard, aemFragmentMapping) {
     return newButtonElement;
 }
 
-function processDescriptionHTML(originalHtmlString, merchCard, aemFragmentMapping) {
-    if (!originalHtmlString) return '';
-    const tempContainer = document.createElement('div');
-    tempContainer.innerHTML = originalHtmlString;
-    const links = tempContainer.querySelectorAll('a');
-
+function processDescriptionLinks(merchCard, aemFragmentMapping) {
+    const { slot } = aemFragmentMapping?.description
+    const links = merchCard.querySelectorAll(`[slot="${slot}"] a[data-wcs-osi]`);
+    if(!links.length) return;
     links.forEach(link => {
-        const isPotentiallyAnOffer = link.hasAttribute('data-wcs-osi') && Boolean(link.getAttribute('data-wcs-osi'));
-        if (isPotentiallyAnOffer) {
             const checkoutLink = transformLinkToButton(link, merchCard, aemFragmentMapping);
-            if (checkoutLink && checkoutLink !== link && link.parentNode) {
-                checkoutLink.classList.remove('con-button', 'blue');
-                checkoutLink.classList.add(link.className);
-                link.parentNode.replaceChild(checkoutLink, link);
-            }
-        }
+                link.replaceWith(checkoutLink);
     });
-    return tempContainer.innerHTML;
 }
 
 export function processDescription(fields, merchCard, mapping) {
-    const modifiedDescriptionHtml = processDescriptionHTML(fields.description, merchCard, mapping);
-    const tempFieldsForDescription = { ...fields, description: modifiedDescriptionHtml };
     appendSlot('promoText', fields, merchCard, mapping);
-    appendSlot('description', tempFieldsForDescription, merchCard, mapping);
+    appendSlot('description', fields, merchCard, mapping);
+    processDescriptionLinks(merchCard, mapping);
     appendSlot('callout', fields, merchCard, mapping);
     appendSlot('quantitySelect', fields, merchCard, mapping);
     appendSlot('whatsIncluded', fields, merchCard, mapping);
@@ -442,7 +431,7 @@ function createSpectrumCssButton(cta, aemFragmentMapping, isOutline, variant, is
         button.setAttribute(attr.name, attr.value);
     }
     button.firstElementChild?.classList.add('spectrum-Button-label');
-    const size = aemFragmentMapping.ctas.size ?? 'M';
+    const size = aemFragmentMapping?.ctas?.size ?? 'M';
     const variantClass = `spectrum-Button--${variant}`;
     const sizeClass = SPECTRUM_BUTTON_SIZES.includes(size)
         ? `spectrum-Button--size${size}`
@@ -476,7 +465,7 @@ function createSpectrumSwcButton(cta, aemFragmentMapping, isOutline, variant, is
             treatment,
             variant,
             tabIndex: 0,
-            size: aemFragmentMapping.ctas.size ?? 'm',
+            size: aemFragmentMapping?.ctas?.size ?? 'm',
             ...(cta.dataset.analyticsId && {
                 'data-analytics-id': cta.dataset.analyticsId,
             }),
@@ -497,7 +486,7 @@ function createSpectrumSwcButton(cta, aemFragmentMapping, isOutline, variant, is
     return spectrumCta;
 }
 
-function createConsonantButton(cta, isAccent, isCheckout) {
+function createConsonantButton(cta, isAccent, isCheckout, isLinkStyle) {
     let button = cta;
     if (isCheckout) {
         const CheckoutLink = customElements.get('checkout-link');
@@ -506,9 +495,11 @@ function createConsonantButton(cta, isAccent, isCheckout) {
             cta.innerHTML,
         );
     }
-    button.classList.add('con-button');
-    if (isAccent) {
-        button.classList.add('blue');
+    if(!isLinkStyle) {
+        button.classList.add('con-button');
+        if (isAccent) {
+            button.classList.add('blue');
+        }
     }
     return button;
 }
