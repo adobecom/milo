@@ -7,7 +7,7 @@ import init from '../../../libs/blocks/language-selector/language-selector.js';
 describe('Language Selector Block', async () => {
   let block;
   afterEach(() => { sinon.restore(); });
-  before(async () => {
+  beforeEach(async () => {
     document.body.innerHTML = await readFile({ path: './mocks/languages.html' });
     setConfig({
       languages: {
@@ -30,7 +30,6 @@ describe('Language Selector Block', async () => {
     block = document.body.querySelector('.language-selector');
     await init(block);
     await new Promise((resolve) => { setTimeout(resolve, 0); });
-    // Simulate opening the dropdown to populate the language list
     const regionPickerElem = document.querySelector('.feds-regionPicker');
     regionPickerElem.click();
     await new Promise((resolve) => { setTimeout(resolve, 0); });
@@ -105,9 +104,6 @@ describe('Language Selector Block', async () => {
   });
 
   it('filters languages based on search input', async () => {
-    const regionPickerElem = document.querySelector('.feds-regionPicker');
-    regionPickerElem.click();
-    await new Promise((resolve) => { setTimeout(resolve, 0); });
     const searchInput = document.querySelector('.search-input');
     searchInput.value = 'Deutsch';
     searchInput.dispatchEvent(new Event('input', { bubbles: true }));
@@ -156,7 +152,7 @@ describe('Language Selector Block', async () => {
     stub.restore();
   });
 
-  it.skip('falls back on network error during prefetch', async () => {
+  it('falls back on network error during prefetch', async () => {
     sinon.stub(window, 'fetch').callsFake(() => Promise.reject(new Error('fail')));
     const stub = sinon.stub(window, 'open');
     const languageLinks = document.querySelectorAll('.language-link');
@@ -169,6 +165,79 @@ describe('Language Selector Block', async () => {
       expect(stub.firstCall.args[0]).to.include('/fr/');
     }
     stub.restore();
+  });
+
+  it('closes the dropdown when drag handle is dragged down and released (mouse)', async () => {
+    const dropdowns = document.querySelectorAll('.language-dropdown');
+    const dropdown = dropdowns[dropdowns.length - 1];
+    const dragHandle = dropdown && dropdown.querySelector('.drag-handle');
+    await new Promise((resolve) => { setTimeout(resolve, 50); });
+    if (!dropdown || dropdown.style.display !== 'block') {
+      throw new Error('Dropdown did not open after click');
+    }
+    expect(dropdown && dropdown.style.display).to.equal('block');
+
+    const rect = dragHandle.getBoundingClientRect();
+    dragHandle.dispatchEvent(new MouseEvent('mousedown', {
+      clientY: rect.top + 5,
+      bubbles: true,
+    }));
+    dragHandle.dispatchEvent(new MouseEvent('mousemove', {
+      clientY: rect.top + 120,
+      bubbles: true,
+    }));
+    dragHandle.dispatchEvent(new MouseEvent('mouseup', {
+      clientY: rect.top + 120,
+      bubbles: true,
+    }));
+    await new Promise((resolve) => { setTimeout(resolve, 350); });
+    expect(dropdown && dropdown.style.display).to.equal('none');
+  });
+
+  it('closes the dropdown when drag handle is dragged down and released (touch)', async () => {
+    let TouchEventCtor;
+    let TouchCtor;
+    try {
+      TouchEventCtor = TouchEvent;
+      TouchCtor = Touch;
+    } catch (e) {
+      this.skip?.();
+      return;
+    }
+    if (typeof TouchEventCtor === 'undefined' || typeof TouchCtor === 'undefined') {
+      this.skip?.();
+      return;
+    }
+    const dropdowns = document.querySelectorAll('.language-dropdown');
+    const dropdown = dropdowns[dropdowns.length - 1];
+    const dragHandle = dropdown && dropdown.querySelector('.drag-handle');
+    await new Promise((resolve) => { setTimeout(resolve, 50); });
+    if (!dropdown || dropdown.style.display !== 'block') {
+      throw new Error('Dropdown did not open after click');
+    }
+    expect(dropdown && dropdown.style.display).to.equal('block');
+
+    const rect = dragHandle.getBoundingClientRect();
+    dragHandle.dispatchEvent(new TouchEventCtor('touchstart', {
+      touches: [
+        new TouchCtor({ identifier: 0, target: dragHandle, clientY: rect.top + 5 }),
+      ],
+      bubbles: true,
+    }));
+    dragHandle.dispatchEvent(new TouchEventCtor('touchmove', {
+      touches: [
+        new TouchCtor({ identifier: 0, target: dragHandle, clientY: rect.top + 120 }),
+      ],
+      bubbles: true,
+    }));
+    dragHandle.dispatchEvent(new TouchEventCtor('touchend', {
+      changedTouches: [
+        new TouchCtor({ identifier: 0, target: dragHandle, clientY: rect.top + 120 }),
+      ],
+      bubbles: true,
+    }));
+    await new Promise((resolve) => { setTimeout(resolve, 350); });
+    expect(dropdown && dropdown.style.display).to.equal('none');
   });
 });
 
@@ -236,5 +305,14 @@ describe('Language Selector Block - Network Event Handling', () => {
       throw new Error('deLink not found');
     }
     stub.restore();
+  });
+});
+
+afterEach(() => {
+  const dropdowns = document.querySelectorAll('.language-dropdown');
+  dropdowns.forEach((d) => {
+    d.style.display = 'none';
+    d.style.transform = '';
+    d.style.opacity = '';
   });
 });

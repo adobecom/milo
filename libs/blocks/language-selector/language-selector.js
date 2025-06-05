@@ -58,7 +58,6 @@ const getLanguages = (links, languages, locales) => Array.from(links).map((link)
   return {
     name: link.innerText,
     url: link.href,
-    langCode: langObj.prefix.replace('/', ''),
     prefix: langObj.prefix.replace('/', ''),
     langObj,
   };
@@ -67,10 +66,10 @@ const getLanguages = (links, languages, locales) => Array.from(links).map((link)
 const getCurrentLanguage = (languagesList, path) => {
   const currentPath = path || window.location.pathname;
   const found = languagesList.find((lang) => {
-    if (!lang.langCode) {
-      return !languagesList.some((l) => l.langCode && currentPath.startsWith(`/${l.langCode}/`));
+    if (!lang.prefix) {
+      return !languagesList.some((l) => l.prefix && currentPath.startsWith(`/${l.prefix}/`));
     }
-    return new RegExp(`^/${lang.langCode}(/|$)`).test(currentPath);
+    return new RegExp(`^/${lang.prefix}(/|$)`).test(currentPath);
   });
   return found || languagesList[0];
 };
@@ -89,15 +88,7 @@ const scrollSelectedIntoView = (selectedLangItem, languageList) => {
   }
 };
 
-function createDropdownElements(regionPickerTextElem, placeholderText, setAriaOnSpan = true) {
-  if (setAriaOnSpan) {
-    regionPickerTextElem.setAttribute('id', 'language-selector-combobox');
-    regionPickerTextElem.setAttribute('class', 'feds-regionPicker-text');
-    regionPickerTextElem.setAttribute('aria-haspopup', 'listbox');
-    regionPickerTextElem.setAttribute('aria-expanded', 'false');
-    regionPickerTextElem.setAttribute('aria-controls', 'language-selector-listbox');
-    regionPickerTextElem.setAttribute('tabindex', '0');
-  }
+function createDropdownElements(placeholderText) {
   const dropdown = createTag('div');
   dropdown.className = 'language-dropdown';
   dropdown.style.display = 'none';
@@ -213,19 +204,14 @@ function setupDropdownEvents({
   selectedLangItemRef,
   activeIndexRef,
 }) {
+  let isDraggingDropdown = false;
+  let dragStartY = 0;
+  let dragCurrentY = 0;
+  let hasDragged = false;
   let isDropdownOpen = false;
-  let filteredLanguages = languagesList;
-  const doRenderLanguages = renderLanguages({
-    languageList,
-    languagesList,
-    currentLang,
-    selectedLangItemRef,
-    activeIndexRef,
-  });
-
   let documentClickHandler = null;
 
-  function closeDropdown() {
+  const closeDropdown = () => {
     isDropdownOpen = false;
     dropdown.style.display = 'none';
     selectedLangButton.setAttribute('aria-expanded', 'false');
@@ -237,7 +223,59 @@ function setupDropdownEvents({
       document.removeEventListener('click', documentClickHandler);
       documentClickHandler = null;
     }
-  }
+  };
+
+  const startDropdownDrag = (y) => {
+    isDraggingDropdown = true;
+    dragStartY = y;
+    dragCurrentY = y;
+    hasDragged = false;
+    dropdown.style.transition = 'none';
+  };
+
+  const continueDropdownDrag = (y) => {
+    if (!isDraggingDropdown) return;
+    dragCurrentY = y;
+    const diff = dragCurrentY - dragStartY;
+    if (Math.abs(diff) > 5) {
+      hasDragged = true;
+    }
+    if (diff > 0) {
+      dropdown.style.transform = `translateY(${diff}px)`;
+    }
+  };
+
+  const endDropdownDrag = () => {
+    if (!isDraggingDropdown) return;
+    isDraggingDropdown = false;
+    const diff = dragCurrentY - dragStartY;
+    dropdown.style.transition = 'transform 0.3s ease';
+    if (hasDragged && diff > 100) {
+      dropdown.style.transform = 'translateY(100%)';
+      dropdown.style.opacity = '0';
+      const onTransitionEnd = (e) => {
+        if (e.propertyName === 'transform') {
+          dropdown.style.display = 'none';
+          dropdown.style.transform = 'translateY(0)';
+          dropdown.style.opacity = '1';
+          closeDropdown();
+          dropdown.removeEventListener('transitionend', onTransitionEnd);
+        }
+      };
+      dropdown.addEventListener('transitionend', onTransitionEnd);
+    } else {
+      dropdown.style.transform = 'translateY(0)';
+    }
+  };
+
+  let filteredLanguages = languagesList;
+  const doRenderLanguages = renderLanguages({
+    languageList,
+    languagesList,
+    currentLang,
+    selectedLangItemRef,
+    activeIndexRef,
+  });
 
   function openDropdown() {
     isDropdownOpen = true;
@@ -350,6 +388,40 @@ function setupDropdownEvents({
     const searchInputWrapper = searchInput.closest('.search-input-wrapper');
     if (searchInputWrapper) searchInputWrapper.classList.remove('focus-visible');
   });
+
+  const dropdownEl = dropdown;
+  const dragHandleEl = dropdownEl.querySelector('.drag-handle');
+  if (dragHandleEl) {
+    dragHandleEl.addEventListener('touchstart', (e) => {
+      startDropdownDrag(e.touches[0].clientY);
+    });
+
+    dragHandleEl.addEventListener('touchmove', (e) => {
+      continueDropdownDrag(e.touches[0].clientY);
+    });
+
+    dragHandleEl.addEventListener('touchend', () => {
+      endDropdownDrag();
+    });
+
+    dragHandleEl.addEventListener('mousedown', (e) => {
+      e.preventDefault();
+      startDropdownDrag(e.clientY);
+
+      const onMouseMove = (moveEvent) => {
+        continueDropdownDrag(moveEvent.clientY);
+      };
+
+      const onMouseUp = () => {
+        endDropdownDrag();
+        window.removeEventListener('mousemove', onMouseMove);
+        window.removeEventListener('mouseup', onMouseUp);
+      };
+
+      window.addEventListener('mousemove', onMouseMove);
+      window.addEventListener('mouseup', onMouseUp);
+    });
+  }
 }
 
 export default async function init(block) {
@@ -357,7 +429,9 @@ export default async function init(block) {
   const { languages, locales } = config;
   const divs = block.querySelectorAll(':scope > div');
   const links = divs[0].querySelectorAll('a');
-  const placeholderText = divs[0].querySelector('p').textContent.trim();
+  const placeholders = divs[0].querySelectorAll('p');
+  const ariaLabel = placeholders[0]?.textContent.trim();
+  const placeholderText = placeholders[1]?.textContent.trim();
   if (!links.length) return;
 
   const languagesList = getLanguages(links, languages, locales);
@@ -372,12 +446,12 @@ export default async function init(block) {
   regionPickerElem.setAttribute('aria-expanded', 'false');
   regionPickerElem.setAttribute('aria-controls', 'language-selector-listbox');
   regionPickerElem.setAttribute('tabindex', '0');
-
+  regionPickerElem.setAttribute('aria-label', ariaLabel);
   const {
     dropdown,
     searchContainer,
     languageList,
-  } = createDropdownElements(regionPickerTextElem, placeholderText, false);
+  } = createDropdownElements(placeholderText);
   dropdown.appendChild(searchContainer);
   dropdown.appendChild(languageList);
   wrapper.appendChild(dropdown);
