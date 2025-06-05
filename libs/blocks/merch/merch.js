@@ -152,8 +152,8 @@ const GeoMap = {
   ec: 'EC_es',
   pr: 'US_es', // not a typo, should be US
   gt: 'GT_es',
-  cis_en: 'AZ_en',
-  cis_ru: 'AZ_ru',
+  cis_en: 'TM_en',
+  cis_ru: 'TM_ru',
   sea: 'SG_en',
   th_en: 'TH_en',
   th_th: 'TH_th',
