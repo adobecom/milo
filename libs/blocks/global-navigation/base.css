@@ -132,8 +132,7 @@ header.new-nav .feds-nav > section.feds-navItem > .feds-popup .has-subheader .fe
   display: block;
 }
 
-.feds-navLink-image,
-.feds-navLink-description {
+.feds-navLink-image {
   display: none;
 }
 
