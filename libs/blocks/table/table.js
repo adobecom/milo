@@ -384,6 +384,14 @@ function handleSection(sectionParams) {
       sectionRowTitle.setAttribute('scope', 'row');
     }
   }
+
+  rowCols.forEach((col) => {
+    if (col.querySelector(':scope > :is(strong, em, del, code, sub, sup)')
+      && col.childNodes.length > 1 && !col.querySelector('picture')) {
+      col.replaceChildren(createTag('p', {}, [...col.childNodes]));
+    }
+  });
+
   return expandSection;
 }
 
