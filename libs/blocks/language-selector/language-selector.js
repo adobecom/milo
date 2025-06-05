@@ -389,39 +389,44 @@ function setupDropdownEvents({
     if (searchInputWrapper) searchInputWrapper.classList.remove('focus-visible');
   });
 
-  // Cache dropdown and drag handle elements
-  const dropdownEl = dropdown;
-  // Remove dragHandleEl event listeners, attach to dropdownEl instead
+  const dragHandleEl = dropdown.querySelector('.drag-handle');
   if (window.innerWidth < 600) {
-    dropdownEl.addEventListener('touchstart', (e) => {
+    dropdown.addEventListener('touchstart', (e) => {
       startDropdownDrag(e.touches[0].clientY);
+      dropdown.classList.add('dragging');
     });
-
-    dropdownEl.addEventListener('touchmove', (e) => {
-      continueDropdownDrag(e.touches[0].clientY);
-    });
-
-    dropdownEl.addEventListener('touchend', () => {
+    dropdown.addEventListener('touchmove', (e) => {
+      if (dropdown.classList.contains('dragging')) {
+        e.preventDefault();
+        continueDropdownDrag(e.touches[0].clientY);
+      }
+    }, { passive: false });
+    dropdown.addEventListener('touchend', () => {
+      dropdown.classList.remove('dragging');
       endDropdownDrag();
     });
-
-    dropdownEl.addEventListener('mousedown', (e) => {
-      e.preventDefault();
-      startDropdownDrag(e.clientY);
-
-      const onMouseMove = (moveEvent) => {
-        continueDropdownDrag(moveEvent.clientY);
-      };
-
-      const onMouseUp = () => {
-        endDropdownDrag();
-        window.removeEventListener('mousemove', onMouseMove);
-        window.removeEventListener('mouseup', onMouseUp);
-      };
-
-      window.addEventListener('mousemove', onMouseMove);
-      window.addEventListener('mouseup', onMouseUp);
+    dropdown.addEventListener('touchcancel', () => {
+      dropdown.classList.remove('dragging');
+      endDropdownDrag();
     });
+    if (dragHandleEl) {
+      dragHandleEl.addEventListener('mousedown', (e) => {
+        e.preventDefault();
+        startDropdownDrag(e.clientY);
+        dropdown.classList.add('dragging');
+        const onMouseMove = (moveEvent) => {
+          continueDropdownDrag(moveEvent.clientY);
+        };
+        const onMouseUp = () => {
+          dropdown.classList.remove('dragging');
+          endDropdownDrag();
+          window.removeEventListener('mousemove', onMouseMove);
+          window.removeEventListener('mouseup', onMouseUp);
+        };
+        window.addEventListener('mousemove', onMouseMove);
+        window.addEventListener('mouseup', onMouseUp);
+      });
+    }
   }
 }
 
