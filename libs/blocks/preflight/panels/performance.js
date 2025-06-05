@@ -145,7 +145,13 @@ export const checkForPersonalization = () => conditionalItemUpdate({
 });
 
 export const checkVideosWithoutPosterAttribute = () => {
-  const hasVideoUrl = config.lcp.url.match('media_.*.mp4') || config.lcp.url.includes('images-tv.adobe.com') || config.lcp.url.match(/\.mp4/);
+  let hasVideoUrl = config.lcp.url.match('media_.*.mp4') || config.lcp.url.match(/\.mp4/);
+  try {
+    const url = new URL(config.lcp.url);
+    hasVideoUrl = hasVideoUrl || url.hostname === 'images-tv.adobe.com';
+  } catch {
+    // invalid URL, ignore MPC check
+  }
   const videoElement = config.lcp.element.tagName === 'VIDEO' ? config.lcp.element : config.lcp.element.querySelector('video');
 
   conditionalItemUpdate({
