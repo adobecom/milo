@@ -58,7 +58,6 @@ const getLanguages = (links, languages, locales) => Array.from(links).map((link)
   return {
     name: link.innerText,
     url: link.href,
-    langCode: langObj.prefix.replace('/', ''),
     prefix: langObj.prefix.replace('/', ''),
     langObj,
   };
@@ -67,10 +66,10 @@ const getLanguages = (links, languages, locales) => Array.from(links).map((link)
 const getCurrentLanguage = (languagesList, path) => {
   const currentPath = path || window.location.pathname;
   const found = languagesList.find((lang) => {
-    if (!lang.langCode) {
-      return !languagesList.some((l) => l.langCode && currentPath.startsWith(`/${l.langCode}/`));
+    if (!lang.prefix) {
+      return !languagesList.some((l) => l.prefix && currentPath.startsWith(`/${l.prefix}/`));
     }
-    return new RegExp(`^/${lang.langCode}(/|$)`).test(currentPath);
+    return new RegExp(`^/${lang.prefix}(/|$)`).test(currentPath);
   });
   return found || languagesList[0];
 };
@@ -212,7 +211,7 @@ function setupDropdownEvents({
   let isDropdownOpen = false;
   let documentClickHandler = null;
 
-  function closeDropdown() {
+  const closeDropdown = () => {
     isDropdownOpen = false;
     dropdown.style.display = 'none';
     selectedLangButton.setAttribute('aria-expanded', 'false');
@@ -224,17 +223,17 @@ function setupDropdownEvents({
       document.removeEventListener('click', documentClickHandler);
       documentClickHandler = null;
     }
-  }
+  };
 
-  function startDropdownDrag(y) {
+  const startDropdownDrag = (y) => {
     isDraggingDropdown = true;
     dragStartY = y;
     dragCurrentY = y;
     hasDragged = false;
     dropdown.style.transition = 'none';
-  }
+  };
 
-  function continueDropdownDrag(y) {
+  const continueDropdownDrag = (y) => {
     if (!isDraggingDropdown) return;
     dragCurrentY = y;
     const diff = dragCurrentY - dragStartY;
@@ -244,9 +243,9 @@ function setupDropdownEvents({
     if (diff > 0) {
       dropdown.style.transform = `translateY(${diff}px)`;
     }
-  }
+  };
 
-  function endDropdownDrag() {
+  const endDropdownDrag = () => {
     if (!isDraggingDropdown) return;
     isDraggingDropdown = false;
     const diff = dragCurrentY - dragStartY;
@@ -267,7 +266,7 @@ function setupDropdownEvents({
     } else {
       dropdown.style.transform = 'translateY(0)';
     }
-  }
+  };
 
   let filteredLanguages = languagesList;
   const doRenderLanguages = renderLanguages({
@@ -390,21 +389,22 @@ function setupDropdownEvents({
     if (searchInputWrapper) searchInputWrapper.classList.remove('focus-visible');
   });
 
-  const dragHandle = dropdown.querySelector('.drag-handle');
-  if (dragHandle) {
-    dragHandle.addEventListener('touchstart', (e) => {
+  const dropdownEl = dropdown;
+  const dragHandleEl = dropdownEl.querySelector('.drag-handle');
+  if (dragHandleEl) {
+    dragHandleEl.addEventListener('touchstart', (e) => {
       startDropdownDrag(e.touches[0].clientY);
     });
 
-    dragHandle.addEventListener('touchmove', (e) => {
+    dragHandleEl.addEventListener('touchmove', (e) => {
       continueDropdownDrag(e.touches[0].clientY);
     });
 
-    dragHandle.addEventListener('touchend', () => {
+    dragHandleEl.addEventListener('touchend', () => {
       endDropdownDrag();
     });
 
-    dragHandle.addEventListener('mousedown', (e) => {
+    dragHandleEl.addEventListener('mousedown', (e) => {
       e.preventDefault();
       startDropdownDrag(e.clientY);
 
