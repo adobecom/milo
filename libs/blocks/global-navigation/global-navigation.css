@@ -1081,7 +1081,8 @@ header.new-nav .feds-nav > section.feds-navItem > .feds-popup .tab-content .feds
   border-right: 1px solid var(--feds-borderColor-link-v2);
 }
 
-header.new-nav .feds-nav > section.feds-navItem > .feds-popup .tab-content a.feds-navLink {
+header.new-nav .feds-nav > section.feds-navItem > .feds-popup .tab-content a.feds-navLink,
+header.new-nav .feds-nav > section.feds-navItem > .feds-popup .tab-content .feds-navLink--header {
   translate: 0 12px;
   opacity: 0;
   animation: slideup 0.6s ease, fadein 0.8s ease;
@@ -1286,7 +1287,7 @@ header.new-nav .feds-breadcrumbs li:first-child:not(:nth-last-child(-n+3)):after
 
 .feds-localnav .feds-localnav-items .feds-navLink-content .feds-navLink-title,
 .feds-localnav .feds-localnav-items li .feds-navLink {
-    white-space: break-spaces;
+    white-space: normal;
 }
 
 .feds-localnav .feds-localnav-items .feds-navItem--centered {
