@@ -3,9 +3,9 @@ import { decorateTextOverrides } from '../../utils/decorate.js';
 
 const getSrc = (image) => image.src || image.querySelector('[src]')?.src || image.href;
 
-const getStepLd = (count, divId, image, step) => ({
+const getStepLd = (count, image, step) => ({
   '@type': 'HowToStep',
-  url: `${window.location.href}#${divId}`,
+  url: `${window.location.origin}${window.location.pathname}`,
   name: `Step ${count}`,
   ...(image && { image: getSrc(image) }),
   itemListElement: [
@@ -138,7 +138,7 @@ export default function init(el) {
   }
 
   if (isSeo) {
-    const stepsLd = steps.map((step, idx) => getStepLd(idx + 1, heading.id, images[idx], step));
+    const stepsLd = steps.map((step, idx) => getStepLd(idx + 1, images[idx], step));
     setJsonLd(heading?.textContent, desc?.textContent, mainImage, stepsLd);
   }
   decorateTextOverrides(el);
