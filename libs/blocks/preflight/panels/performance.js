@@ -145,9 +145,8 @@ export const checkForPersonalization = () => conditionalItemUpdate({
 });
 
 export const checkVideosWithoutPosterAttribute = () => {
-  const hasVideoUrl = config.lcp.url.match('media_.*.mp4');
-  const lcpElement = config.lcp.element;
-  const videoElement = lcpElement?.tagName === 'VIDEO' ? lcpElement : lcpElement?.closest('video') || lcpElement?.querySelector?.('video') || document.querySelector('main > div.section video');
+  const hasVideoUrl = config.lcp.url.match('media_.*.mp4') || config.lcp.url.includes('images-tv.adobe.com') || config.lcp.url.match(/\.mp4/);
+  const videoElement = config.lcp.element.tagName === 'VIDEO' ? config.lcp.element : config.lcp.element.querySelector('video');
 
   conditionalItemUpdate({
     failsWhen: videoElement && !videoElement.poster,
