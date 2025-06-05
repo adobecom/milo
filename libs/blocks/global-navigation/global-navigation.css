@@ -86,6 +86,10 @@ header.global-navigation {
   z-index: 1;
 }
 
+.feds-promo-aside-wrapper .aside.promobar {
+  min-height: var(--global-height-navPromo);
+}
+
 /* Product Entry CTA */
 .feds-product-entry-cta{
   align-items: center;
@@ -1077,7 +1081,8 @@ header.new-nav .feds-nav > section.feds-navItem > .feds-popup .tab-content .feds
   border-right: 1px solid var(--feds-borderColor-link-v2);
 }
 
-header.new-nav .feds-nav > section.feds-navItem > .feds-popup .tab-content a.feds-navLink {
+header.new-nav .feds-nav > section.feds-navItem > .feds-popup .tab-content a.feds-navLink,
+header.new-nav .feds-nav > section.feds-navItem > .feds-popup .tab-content .feds-navLink--header {
   translate: 0 12px;
   opacity: 0;
   animation: slideup 0.6s ease, fadein 0.8s ease;
@@ -1282,7 +1287,7 @@ header.new-nav .feds-breadcrumbs li:first-child:not(:nth-last-child(-n+3)):after
 
 .feds-localnav .feds-localnav-items .feds-navLink-content .feds-navLink-title,
 .feds-localnav .feds-localnav-items li .feds-navLink {
-    white-space: break-spaces;
+    white-space: normal;
 }
 
 .feds-localnav .feds-localnav-items .feds-navItem--centered {
@@ -1420,6 +1425,112 @@ html:has(body.disable-ios-scroll) { /* this class is only added on iOS */
   position: relative;
   display: block;
 }
+
+/*
+ *
+ *
+ * Skeleton Loader
+ *
+ *
+ */
+
+.feds-popup.loading .tabs *,
+.feds-popup.loading .tab-content *,
+.feds-popup.loading .feds-menu-container *,
+.feds-popup.loading .feds-crossCloudMenu-wrapper * {
+  pointer-events: none;
+}
+
+.feds-popup.loading .feds-promo,
+.feds-popup.loading .first-headline-one,
+.feds-popup.loading .first-headline-two,
+.feds-popup.loading .feds-navLink-content .feds-navLink-title,
+.feds-popup.loading .feds-navLink-content .feds-navLink-description, 
+.feds-popup.loading .feds-cta-wrapper,
+.feds-popup.loading .feds-menu-headline:not(:has(div)),
+.feds-popup.loading .feds-crossCloudMenu-item .feds-navLink,
+header.new-nav .feds-nav > section.feds-navItem > .feds-popup.loading .feds-navLink-content .feds-navLink-title,
+header.new-nav .feds-nav > section.feds-navItem > .feds-popup.loading .feds-navLink-content .feds-navLink-description, 
+header.new-nav .feds-nav > section.feds-navItem > .feds-popup.loading .tabs button > div {
+  border-radius: 2px;
+  opacity: 0.7;
+  background: linear-gradient(270deg, #D3D3D3, #EAEAEA, #D3D3D3);
+  background-size: 200% 200%;
+  animation: mega-menu-skeleton 0.6s infinite alternate linear;
+  animation-direction: alternate;
+}
+
+.feds-popup.loading .feds-promo {
+  height: 318px;
+  width: 260px;
+}
+
+.feds-popup.loading .first-headline-one {
+  height: 14px;
+  width: 172px;
+}
+
+.feds-popup.loading .first-headline-two {
+  height: 25px;
+  width: 242px;
+  margin-top: 5px;
+}
+
+.feds-popup.loading .feds-navLink-content .feds-navLink-title {
+  height: 14px;
+  width: 85px;
+}
+
+.feds-popup.loading .feds-navLink-content .feds-navLink-description {
+  height: 14px;
+  width: 161px;
+  margin-top: 5px;
+}
+
+.feds-popup.loading .feds-cta-wrapper {
+  height: 25px;
+  width: 181px;
+  padding: 0;
+  margin: 60px 32px 6px 32px;
+}
+
+.feds-popup.loading .feds-menu-headline:not(:has(div)) {
+  height: 14px;
+  width: 86px;
+  padding: 0;
+}
+
+/* for compliance with design specs */
+.feds-popup.loading .feds-menu-headline.small {
+  margin-top: 29px;
+  margin-bottom: 0px;
+  height: 14px;
+  width: 56px;
+}
+
+
+.feds-popup.loading .feds-crossCloudMenu-item .feds-navLink {
+  height: 14px;
+  width: 84px;
+  padding: 0px;
+  margin: 0px 28px;
+}
+
+header.new-nav .feds-nav > section.feds-navItem > .feds-popup.loading .tabs button > div {
+  height: 14px;
+  width: 49px;
+}
+
+header.new-nav .feds-nav > section.feds-navItem > .feds-popup.loading .tab-content > div:first-child {
+  display:block;
+}
+
+@keyframes mega-menu-skeleton {
+  from {
+    background-position: 0% 100%;
+  }
+  to {
+    background-position: 100% 0%;
 
 /* Landscape mode for mobile */
 @media (orientation: landscape) and (max-width: 900px) {
