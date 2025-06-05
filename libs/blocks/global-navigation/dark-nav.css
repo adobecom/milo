@@ -75,19 +75,6 @@
   color: #fff;
 }
 
-.feds--dark .feds-cta--secondary {
-  background-color: var(--background-color);
-  border-color: #393939;
-  color: var(--feds-color-link--dark);
-}
-
-.feds--dark .feds-cta--secondary:hover,
-.feds--dark .feds-cta--secondary:focus {
-  border-color: #444;
-  background-color: #2C2C2C;
-  color: var(--feds-color-link--dark);
-}
-
 header.new-nav.feds--dark .feds-nav > section.feds-navItem > .feds-popup .top-bar {
   background-color: var(--feds-background-nav--desktop);
   border-bottom: 1px solid var(--feds-background-nav--desktop);
