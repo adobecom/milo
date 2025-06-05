@@ -58,7 +58,7 @@
 }
 
 .language-list {
-  max-height: 290px;
+  max-height: 250px;
   overflow-y: auto;
   padding: var(--spacing-xxs) 0;
 }
