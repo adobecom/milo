@@ -922,7 +922,7 @@ export function decorateLinks(el) {
     }
     if (a.href.includes('#_alloy')) {
       const alloyData = a.href.split('#_')?.find((s) => s.startsWith('alloy:')) || '';
-    a.href = a.href.replace(/#_alloy:.+:\w+/, '');
+      a.href = a.href.replace(/#_alloy:.+:\w+/, '');
       a.addEventListener('click', () => {
         const [, profile, businessSegment, value] = alloyData?.split(/:|\./g) || [];
         // eslint-disable-next-line no-underscore-dangle
