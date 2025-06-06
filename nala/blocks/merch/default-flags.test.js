@@ -42,7 +42,7 @@ test.describe('DefaultFlags Block test suite', () => {
       await expect(page).toHaveURL(`${baseURL}${features[1].path}${features[1].browserParams}&${miloLibs}`);
     });
 
-    await test.step('Validate if each price is visible and has proper text for EN', async () => {
+    await test.step('Validate if each price is visible and has proper text for FR', async () => {
       for (const { el, textFR } of Object.values(defaultFlags.prices)) {
         if (textFR) {
           await expect(el).toHaveText(textFR);
@@ -63,7 +63,7 @@ test.describe('DefaultFlags Block test suite', () => {
       await expect(page).toHaveURL(`${baseURL}${features[2].path}${features[2].browserParams}&${miloLibs}`);
     });
 
-    await test.step('Validate if each price is visible and has proper text for EN', async () => {
+    await test.step('Validate if each price is visible and has proper text for NG', async () => {
       for (const { el, textNG } of Object.values(defaultFlags.prices)) {
         if (textNG) {
           await expect(el).toHaveText(textNG);
