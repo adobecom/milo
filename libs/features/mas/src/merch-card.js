@@ -222,12 +222,6 @@ export class MerchCard extends LitElement {
         return this.closest('[dir]')?.getAttribute('dir') ?? 'ltr';
     }
 
-    get prices() {
-        return Array.from(
-            this.querySelectorAll('span[is="inline-price"][data-wcs-osi]'),
-        );
-    }
-
     render() {
         if (
             !this.isConnected ||
@@ -607,6 +601,65 @@ export class MerchCard extends LitElement {
             });
             this.addonCheckbox.handleChange(checkboxEvent);
         }
+    }
+
+    get prices() {
+        return Array.from(
+            this.querySelectorAll(SELECTOR_MAS_INLINE_PRICE),
+        );
+    }
+
+    get promoPrice() {
+        if (!this.querySelector(`span.price-strikethrough`)) return;
+        return this.querySelector(`${SELECTOR_MAS_INLINE_PRICE}[data-template="price"] > span`)?.innerText;
+    }
+
+    get regularPrice() {
+        return (this.querySelector(`span.price-strikethrough`) ?? this.querySelector(`${SELECTOR_MAS_INLINE_PRICE}[data-template="price"] > span`))?.innerText;
+    }
+
+    get annualPrice() {
+        return this.querySelector(`${SELECTOR_MAS_INLINE_PRICE}[data-template="annual-price"]`)?.innerText;
+    }
+
+    get taxText() {
+        return this.querySelector('[slot="tax-text"]')?.innerText;
+    }
+
+    get billingFrequencyText() {
+        return this.querySelector('[slot="billing-frequency-text"]')?.innerText;
+    }
+
+    get seeTermsInfo() {
+        const seeTerms = this.querySelector('[slot="see-terms"]');
+        return seeTerms ? {
+            text: seeTerms.innerText,
+            href: seeTerms.getAttribute('href')
+        } : null;
+    }
+
+    get autoRenewalText() {
+      // TODO: not supported yet
+        return undefined;
+    }
+
+    get promoDurationText() {
+      // TODO: not supported yet
+        return undefined;
+    }
+
+    get ctas() {
+        return this.querySelectorAll(SELECTOR_MAS_CHECKOUT_LINK);
+    }
+
+    get buyCta() {
+      // TODO: not supported yet
+        return undefined;
+    }
+
+    get trialCta() {
+      // TODO: not supported yet
+        return undefined;
     }
 }
 

@@ -51,11 +51,9 @@ export class UptLink extends HTMLAnchorElement {
 
         const service = getService();
 
-        const wcsOsi = [osi];
         const promotionCode = this.getAttribute('data-promotion-code');
-        const { country, language, env } = service.settings;
-        const options = { country, language, wcsOsi, promotionCode };
-
+        const options = service.collectCheckoutOptions({}, this);
+        const { country, language, env } = options;
         const promises = service.resolveOfferSelectors(options);
         Promise.all(promises).then(([[offer]]) => {
           let params = `locale=${language}_${country}&country=${country}&offer_id=${offer.offerId}`;

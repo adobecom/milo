@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>Merch Card Mini variant test page</title>
+        <link
+            rel="stylesheet"
+            href="http://localhost:2023/__wds-outside-root__//styles/styles.css"
+        />
+        
+        <link
+            rel="stylesheet"
+            href="/docs/spectrum.css"
+        />
+
+        <style>
+            main {
+                padding: 80px;
+            }
+            mas-commerce-service {
+                display: none;
+            }
+
+            .cards {
+                display: grid;
+                grid-template-columns: repeat(4, 1fr);
+                gap: 20px;
+            }
+        </style>
+        <mas-commerce-service env="stage"></mas-commerce-service>
+    </head>
+
+    <body class="spectrum spectrum--medium spectrum--light">
+        <main>
+          🇺🇸
+          <div id="us" class="cards">
+          </div>
+          🇨🇦
+          <div id="ca" class="cards">
+
+          </div>
+          🇫🇷
+          <div id="fr" class="cards">
+
+          </div>
+        </main>
+        <template id="template-mini-photo">
+          <merch-card>
+            <aem-fragment fragment="mini-photo"></aem-fragment>
+        </merch-card>
+        </template>
+        <template id="template-mini-photo-promo">
+          <merch-card>
+            <aem-fragment fragment="mini-photo-promo"></aem-fragment>
+        </merch-card>
+        </template>
+        <template id="template-mini-photo-fr">
+          <merch-card>
+            <aem-fragment fragment="mini-photo-fr"></aem-fragment>
+        </merch-card>
+        </template>
+        <template id="template-mini-photo-promo-fr">
+          <merch-card>
+            <aem-fragment fragment="mini-photo-promo-fr"></aem-fragment>
+        </merch-card>
+        </template>
+        
+        <script type="module" src="merch-card.mini.test.html.js"></script>
+    </body>
+</html>
