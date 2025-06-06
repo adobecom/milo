@@ -106,13 +106,16 @@ export class VariantLayout {
         return '[slot="heading-xs"]';
     }
 
-    get secureLabelFooter() {
-        const secureLabel = this.card.secureLabel
-            ? html`<span class="secure-transaction-label"
-                  >${this.card.secureLabel}</span
-              >`
+    get secureLabel() {
+        return this.card.secureLabel ? 
+            html`<span class="secure-transaction-label"
+                >${this.card.secureLabel}</span
+            >`
             : '';
-        return html`<footer>${secureLabel}<slot name="footer"></slot></footer>`;
+    }
+
+    get secureLabelFooter() {
+        return html`<footer>${this.secureLabel}<slot name="footer"></slot></footer>`;
     }
 
     async adjustTitleWidth() {
