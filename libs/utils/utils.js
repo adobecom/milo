@@ -843,7 +843,7 @@ export function decorateAutoBlock(a) {
       }
 
       // Modals
-      if (url.hash !== '' && !isInlineFrag) {
+      if (url.hash !== '' && !isInlineFrag && !url.hash.includes('#_replacecell')) {
         a.dataset.modalPath = url.pathname;
         a.dataset.modalHash = url.hash;
         a.href = url.hash;
@@ -1167,7 +1167,9 @@ function decorateSection(section, idx) {
     const blockName = block.classList[0];
     links.filter((link) => block.contains(link))
       .forEach((link) => {
-        if (link.classList.contains('fragment')
+        if (link.classList.contains('fragment') && link.href.includes('#_replacecell')) {
+          link.href = link.href.replace('#_replacecell', '');
+        } else if (link.classList.contains('fragment')
           && MILO_BLOCKS.includes(blockName) // do not inline consumer blocks (for now)
           && !doNotInline.includes(blockName)) {
           if (!link.href.includes('#_inline')) {
