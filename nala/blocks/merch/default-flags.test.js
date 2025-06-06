@@ -23,7 +23,11 @@ test.describe('DefaultFlags Block test suite', () => {
 
     await test.step('Validate if each price is visible and has proper text for EN', async () => {
       for (const { el, textEN } of Object.values(defaultFlags.prices)) {
-        await expect(el?.textContent.trim() || '').toBe(textEN);
+        if (textEN) {
+          await expect(el).toHaveText(textEN);
+        } else {
+          await expect(el).toBeNull();
+        }
       }
     });
   });
@@ -40,7 +44,11 @@ test.describe('DefaultFlags Block test suite', () => {
 
     await test.step('Validate if each price is visible and has proper text for EN', async () => {
       for (const { el, textFR } of Object.values(defaultFlags.prices)) {
-        await expect(el?.textContent.trim() || '').toBe(textFR);
+        if (textFR) {
+          await expect(el).toHaveText(textFR);
+        } else {
+          await expect(el).toBeNull();
+        }
       }
     });
   });
@@ -57,7 +65,11 @@ test.describe('DefaultFlags Block test suite', () => {
 
     await test.step('Validate if each price is visible and has proper text for EN', async () => {
       for (const { el, textNG } of Object.values(defaultFlags.prices)) {
-        await expect(el?.textContent.trim() || '').toBe(textNG);
+        if (textNG) {
+          await expect(el).toHaveText(textNG);
+        } else {
+          await expect(el).toBeNull();
+        }
       }
     });
   });
