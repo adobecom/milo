@@ -748,6 +748,25 @@ html[dir="rtl"] .carousel .move-indicators {
     transform: translateX(calc(-83.4vw - (100vw - 83.4vw) / 2));
   }
 
+  .carousel.disable-buttons.hinting-center-mobile .carousel-slides {
+    left: -83.4vw;
+    transform: translateX(83.4vw);
+    align-items: center;
+  }
+
+  .carousel.disable-buttons.hinting-center-mobile .carousel-slide {
+    min-width: 83.4vw;
+  }
+
+  .carousel.disable-buttons.hinting-center-mobile .carousel-slides.is-reversing {
+    transform: translateX(-83.4vw);
+  }
+
+  .carousel.disable-buttons.hinting-center-mobile .carousel-slides.is-ready,
+  .carousel.disable-buttons.hinting-center-mobile .carousel-slides.is-ready.is-reversing {
+    transform: translateX(calc((8.3vw - 16px)));
+  }
+
   .carousel.disable-buttons .carousel-slide.hide-left-hint {
     visibility: hidden !important;
   }
