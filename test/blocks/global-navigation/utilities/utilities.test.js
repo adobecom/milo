@@ -4,8 +4,6 @@ import {
   fetchAndProcessPlainHtml,
   toFragment,
   federatePictureSources,
-  getAnalyticsValue,
-  decorateCta,
   hasActiveLink,
   setActiveLink,
   getActiveLink,
@@ -18,6 +16,7 @@ import {
   getGnavHeight,
   getBranchBannerInfo,
 } from '../../../../libs/blocks/global-navigation/utilities/utilities.js';
+import { getAnalyticsValue, decorateCta } from '../../../../libs/blocks/global-navigation/global-navigation.js';
 import { setConfig, getConfig, getFedsPlaceholderConfig } from '../../../../libs/utils/utils.js';
 import { createFullGlobalNavigation, config, mockRes } from '../test-utilities.js';
 import gnavWithlocalNav from '../mocks/gnav-with-localnav.plain.js';

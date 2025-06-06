@@ -33,7 +33,7 @@ describe('Cross Cloud Menu', () => {
       expect(crossCloudMenu).to.exist;
       expect(isElementVisible(crossCloudMenu)).to.equal(false);
 
-      document.querySelector(`${selectors.largeMenu} ${selectors.navLink}`).click();
+      document.querySelector(`${selectors.navLink}`).click();
 
       crossCloudMenu.querySelectorAll(selectors.navLink).forEach((el) => {
         expect(isElementVisible(el)).to.equal(true);
