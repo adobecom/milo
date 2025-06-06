@@ -100,6 +100,7 @@ function handleShowMoreButton(section) {
   if (!showMoreBtn) return;
 
   showMoreBtn.innerHTML = getShowMoreButtonContent();
+  showMoreBtn.setAttribute('aria-label', 'See more');
 
   showMoreBtn.addEventListener('click', () => {
     section.classList.add('show-all');
