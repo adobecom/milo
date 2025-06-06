@@ -4,10 +4,10 @@ import { createTag } from '../../../libs/utils/utils.js';
 import addCopyToClipboard from '../../../libs/blocks/merch/copy-to-clipboard.js';
 
 describe('Copy to Clipboard', () => {
-  let navigatorClipboardWriteText;
+  let navigatorClipboardWrite;
 
   beforeEach(() => {
-    navigatorClipboardWriteText = sinon.stub(navigator.clipboard, 'writeText').resolves();
+    navigatorClipboardWrite = sinon.stub(navigator.clipboard, 'write').resolves();
   });
 
   afterEach(() => {
@@ -29,6 +29,7 @@ describe('Copy to Clipboard', () => {
     expect(wrapper.classList.contains('copy-cta-wrapper')).to.be.true;
     expect(wrapper.style.display).to.equal('flex');
     expect(wrapper.style.gap).to.equal('14px');
+
     const button = wrapper.querySelector('button');
     expect(button).to.exist;
     expect(button.title).to.equal('Copy');
@@ -40,19 +41,47 @@ describe('Copy to Clipboard', () => {
     expect(svg).to.exist;
     expect(svg.getAttribute('height')).to.equal('30');
     expect(svg.getAttribute('width')).to.equal('30');
+    expect(svg.getAttribute('viewBox')).to.equal('0 0 22 22');
     const link = wrapper.querySelector('a');
     expect(link).to.exist;
     expect(link.href).to.equal(cta.href);
     expect(link.textContent).to.equal('Test CTA');
   });
 
-  it('should copy link to clipboard when button is clicked', async () => {
+  it('should copy link to clipboard with correct HTML format', async () => {
+    const cta = createTag('a', { href: '#' }, 'Test CTA');
+    const ostLink = 'https://test.com?text=special-offer';
+    const wrapper = addCopyToClipboard(ostLink, cta);
+    const button = wrapper.querySelector('button');
+    await button.click();
+    expect(navigatorClipboardWrite.calledOnce).to.be.true;
+    const clipboardData = navigatorClipboardWrite.firstCall.args[0][0];
+    expect(clipboardData instanceof ClipboardItem).to.be.true;
+    const htmlBlob = await clipboardData.getType('text/html');
+    const htmlText = await new Response(htmlBlob).text();
+    expect(htmlText).to.equal('<a href="https://test.com?text=special-offer" title="Special Link">CTA {{special-offer}}</a>');
+  });
+
+  it('should handle URLs without text parameter', async () => {
     const cta = createTag('a', { href: '#' }, 'Test CTA');
     const ostLink = 'https://test.com';
     const wrapper = addCopyToClipboard(ostLink, cta);
     const button = wrapper.querySelector('button');
     await button.click();
-    expect(navigatorClipboardWriteText.calledOnce).to.be.true;
-    expect(navigatorClipboardWriteText.calledWith(ostLink)).to.be.true;
+    expect(navigatorClipboardWrite.calledOnce).to.be.true;
+    const clipboardData = navigatorClipboardWrite.firstCall.args[0][0];
+    const htmlBlob = await clipboardData.getType('text/html');
+    const htmlText = await new Response(htmlBlob).text();
+    expect(htmlText).to.equal('<a href="https://test.com" title="Special Link">CTA {{null}}</a>');
+  });
+
+  it('should have proper accessibility attributes', () => {
+    const cta = createTag('a', { href: '#' }, 'Test CTA');
+    const ostLink = 'https://test.com';
+    const wrapper = addCopyToClipboard(ostLink, cta);
+    const button = wrapper.querySelector('button');
+    expect(button.title).to.equal('Copy');
+    expect(button.getAttribute('role')).to.not.exist; // button has implicit role
+    expect(button.style.cursor).to.equal('pointer');
   });
 });
