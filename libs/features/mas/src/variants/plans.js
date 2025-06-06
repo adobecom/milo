@@ -4,7 +4,6 @@ import { CSS } from './plans.css.js';
 import { isMobile, matchMobile } from '../utils.js';
 import {
     SELECTOR_MAS_INLINE_PRICE,
-    TEMPLATE_PRICE,
     TEMPLATE_PRICE_LEGAL,
 } from '../constants.js';
 
@@ -16,7 +15,6 @@ export const PLANS_AEM_FRAGMENT_MAPPING = {
     mnemonics: { size: 'l' },
     callout: { tag: 'div', slot: 'callout-content' },
     quantitySelect: { tag: 'div', slot: 'quantity-select' },
-    stockOffer: true /* @deprecated */,
     addon: true,
     secureLabel: true,
     planType: true,
