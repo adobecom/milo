@@ -542,7 +542,6 @@ export class MerchCard extends LitElement {
 
     get addonCheckbox() {
       return this.querySelector('merch-addon');
-      return this.querySelector('merch-addon');
   }
 
     displayFooterElementsInColumn() {
@@ -588,7 +587,7 @@ export class MerchCard extends LitElement {
           composed: true
         }));
       }
-      if (this.addonCheckbox?.checked !== isAddonIncluded) {
+      if (this.addonCheckbox && this.addonCheckbox?.checked !== isAddonIncluded) {
         this.toggleStockOffer({ target: this.addonCheckbox });
         const checkboxEvent = new Event('change', {
           bubbles: true,
