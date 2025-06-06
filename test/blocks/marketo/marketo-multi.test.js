@@ -58,8 +58,10 @@ describe('marketo multi-step', () => {
     expect(stepDetails.textContent).to.equal('Step 1 / 2');
     expect(window.MktoForms2.whenReady.calledOnce).to.be.true;
 
-    const step1 = await waitForElement('.mktoFormRowTop[data-validate="1"]');
-    const step2 = await waitForElement('.mktoFormRowTop[data-validate="2"]');
+    // const step1 = await waitForElement('.mktoFormRowTop[data-validate="1"]');
+    // const step2 = await waitForElement('.mktoFormRowTop[data-validate="2"]');
+    const step1 = el.querySelector('.mktoFormRowTop[data-validate="1"]');
+    const step2 = el.querySelector('.mktoFormRowTop[data-validate="2"]');
     expect(step1).to.exist;
     expect(step2).to.exist;
   });
