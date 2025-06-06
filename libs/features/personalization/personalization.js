@@ -544,7 +544,7 @@ function getSelectedElements(sel, rootEl, forceRootEl, action) {
   } catch (e) {
     /* eslint-disable-next-line no-console */
     log('Invalid selector: ', selector);
-    return null;
+    return {};
   }
   if (modifiers.includes(FLAGS.all) || !els.length) return { els, modifiers, attribute };
   els = [els[0]];
@@ -840,6 +840,23 @@ export function buildVariantInfo(variantNames) {
   }, { allNames: [] });
 }
 
+async function getXlgList(config) {
+  const sheet = config.env?.name === 'prod' ? 'prod' : 'stage';
+  const url = `https://www.adobe.com/federal/assets/data/mep-xlg-tags.json?sheet=${sheet}`;
+  try {
+    const rawResponse = await fetch(url, {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' },
+      body: null,
+    });
+    const content = await rawResponse.json();
+    return content;
+  } catch (e) {
+    window.lana?.log(e.reason || e.error || e.message, { errorType: 'i' });
+    return false;
+  }
+}
+
 const getXLGListURL = (config) => {
   const sheet = config.env?.name === 'prod' ? 'prod' : 'stage';
   return `https://www.adobe.com/federal/assets/data/mep-xlg-tags.json?sheet=${sheet}`;
@@ -848,7 +865,7 @@ const getXLGListURL = (config) => {
 export const getEntitlementMap = async () => {
   const config = getConfig();
   if (config.mep?.entitlementMap) return config.mep.entitlementMap;
-  const entitlementUrl = getXLGListURL(config);
+  const entitlementUrl = await config.mep.xlgPromise;
   const fetchedData = await fetchData(entitlementUrl, DATA_TYPE.JSON);
   if (!fetchedData) return config.consumerEntitlements || {};
   const entitlements = {};
@@ -904,6 +921,15 @@ async function setMepCountry(config) {
   }
 }
 
+async function setMepLob(config) {
+  try {
+    const lobPromise = await config.mep.userLOBPromise;
+    if (lobPromise) config.mep.meplob = lobPromise;
+  } catch (e) {
+    log('MEP Error: Unable to get user line of business');
+  }
+}
+
 async function getPersonalizationVariant(
   manifestPath,
   variantNames = [],
@@ -934,6 +960,7 @@ async function getPersonalizationVariant(
     if (name.startsWith('param-')) return checkForParamMatch(name);
     if (hasCountryMatch(name, config)) return true;
     if (userEntitlements?.includes(name)) return true;
+    if (config.mep?.meplob && config.mep?.meplob === name.split('lob-')[1]?.toLowerCase()) return true;
     return PERSONALIZATION_KEYS.includes(name) && PERSONALIZATION_TAGS[name]();
   };
 
@@ -949,9 +976,8 @@ async function getPersonalizationVariant(
     return !processedList.includes(false);
   };
 
-  if (config.mep?.geoLocation) {
-    await setMepCountry(config);
-  }
+  if (config.mep?.geoLocation) await setMepCountry(config);
+  if (config.mep?.meplob === true) await setMepLob(config);
 
   const matchingVariant = variantNames.find((variant) => variantInfo[variant].some(matchVariant));
   return matchingVariant;
@@ -1436,7 +1462,7 @@ export async function init(enablements = {}) {
   const {
     mepParam, mepHighlight, mepButton, pzn, pznroc, promo, enablePersV2,
     target, ajo, countryIPPromise, mepgeolocation, targetInteractionPromise, calculatedTimeout,
-    postLCP,
+    postLCP, meplob, userLOBPromise,
   } = enablements;
   const config = getConfig();
   if (postLCP) {
@@ -1456,6 +1482,8 @@ export async function init(enablements = {}) {
       countryIPPromise,
       geoLocation: mepgeolocation,
       targetInteractionPromise,
+      meplob,
+      userLOBPromise,
     };
 
     manifests = manifests.concat(await combineMepSources(pzn, pznroc, promo, mepParam));
@@ -1464,7 +1492,7 @@ export async function init(enablements = {}) {
       const normalizedURL = normalizePath(manifest.manifestPath);
       loadLink(normalizedURL, { as: 'fetch', crossorigin: 'anonymous', rel: 'preload' });
     });
-    if (pzn || pznroc) loadLink(getXLGListURL(config), { as: 'fetch', crossorigin: 'anonymous', rel: 'preload' });
+    if (pzn || pznroc) config.mep.xlgPromise = getXlgList(config);
   }
 
   if (enablePersV2 && target === true) {
