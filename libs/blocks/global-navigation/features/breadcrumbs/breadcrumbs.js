@@ -92,7 +92,7 @@ const createWithBase = async (el) => {
 
 const fromUrl = () => {
   if (getMetadata(metadata.fromUrl) !== 'on') return null;
-  const list = toFragment`<ul></ul>`;
+  const list = toFragment`<ul>hello</ul>`;
   const paths = document.location.pathname
     .replace((getConfig().locale?.prefix || ''), '')
     .split('/')
