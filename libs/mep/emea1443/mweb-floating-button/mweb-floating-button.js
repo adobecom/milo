@@ -81,7 +81,6 @@ function addStickyBehavior(el) {
         el.classList.remove('sticky-initial');
         el.classList.add('sticky-fixed');
       }
-
     }
 
     window.addEventListener('scroll', handleScroll, { passive: true });

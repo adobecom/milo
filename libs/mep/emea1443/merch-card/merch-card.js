@@ -115,7 +115,7 @@ function extractQuantitySelect(el, merchCard) {
   if (!attributes.min || !attributes.max || !attributes.step) {
     return null;
   }
-  import('../../deps/mas/merch-quantity-select.js');
+  import('../../../deps/mas/merch-quantity-select.js');
   return createTag('merch-quantity-select', attributes);
 }
 
@@ -563,7 +563,7 @@ const updateBigPrices = (merchCard) => {
 
 const addStartingAt = async (styles, merchCard) => {
   if (styles.includes('starting-at')) {
-    const { replaceKey } = await import('../../features/placeholders.js');
+    const { replaceKey } = await import('../../../features/placeholders.js');
     await replaceKey('starting-at', getConfig()).then((key) => {
       const startingAt = createTag('div', { class: 'starting-at' }, key);
       const price = merchCard.querySelector('span[is="inline-price"]');
@@ -681,7 +681,7 @@ export default async function init(el) {
     ? getActionMenuContent(el)
     : null;
   if (actionMenuContent) {
-    const { replaceKey } = await import('../../features/placeholders.js');
+    const { replaceKey } = await import('../../../features/placeholders.js');
     await replaceKey('action-menu', getConfig()).then((key) => merchCard.setAttribute('action-menu-label', key));
     merchCard.setAttribute('action-menu', true);
     merchCard.append(
@@ -737,7 +737,7 @@ export default async function init(el) {
   addStock(merchCard, styles);
   addAddon(merchCard, styles);
   if (styles.includes('secure')) {
-    const { replaceKey } = await import('../../features/placeholders.js');
+    const { replaceKey } = await import('../../../features/placeholders.js');
     await replaceKey('secure-transaction', getConfig()).then((key) => merchCard.setAttribute('secure-label', key));
   }
   merchCard.setAttribute('filters', categories.join(','));
@@ -791,13 +791,16 @@ export default async function init(el) {
   if (styles.includes('expandable-footer-row')) {
     const ul = merchCard.querySelector('ul');
     const firstLi = ul.querySelector('li');
-    const img = firstLi?.querySelector('img');
 
-    if (!firstLi) return;
+    if (!firstLi) return null;
+
+    const { iconMinusSVG, iconPlusSVG } = await import('./img/collapsible-icon.js');
+    const collapsibleIcon = createTag('picture', { class: 'footer-row-icon' }, iconPlusSVG);
+    firstLi.appendChild(collapsibleIcon);
 
     firstLi.addEventListener('click', () => {
       const expanded = ul.classList.toggle('expanded');
-      img.setAttribute('src', expanded ? 'https://www.adobe.com/cc-shared/fragments/tests/emea-latam/2025/q2/emea1443/assets/card-minus.svg' : 'https://www.adobe.com/cc-shared/fragments/tests/emea-latam/2025/q2/emea1443/assets/card-plus.svg');
+      collapsibleIcon.innerHTML = expanded ? iconMinusSVG : iconPlusSVG;
     });
   }
 

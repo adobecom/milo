@@ -50,8 +50,8 @@ function initButton($block, $sections, index) {
 
     $buttons[index].addEventListener('click', () => {
       const $activeButton = $block.querySelector('button.active');
-      const blockPosition = $block.getBoundingClientRect().top;
-      const offsetPosition = blockPosition + window.scrollY - 80;
+      // const blockPosition = $block.getBoundingClientRect().top;
+      // const offsetPosition = blockPosition + window.scrollY - 80;
 
       if ($activeButton !== $buttons[index]) {
         setActiveButton(index);
@@ -97,7 +97,7 @@ function waitForMarqueeHeight() {
     function check() {
       const marquees = document.querySelectorAll('[class*="marquee"]');
       for (const marquee of marquees) {
-        const {height} = marquee.getBoundingClientRect();
+        const { height } = marquee.getBoundingClientRect();
         if (height > 0) {
           resolve(height);
           return;
@@ -107,6 +107,17 @@ function waitForMarqueeHeight() {
     }
     check();
   });
+}
+
+function getElementsHeightBeforeMain() {
+  const main = document.querySelector('main');
+  if (!main) return 0;
+  const contentToggleEl = document.querySelector('.content-toggle.mweb');
+  const contentToggleStyle = window.getComputedStyle(contentToggleEl);
+  const contentToggleMarginTop = parseInt(contentToggleStyle.marginTop, 10);
+  const beforeMain = main.getBoundingClientRect().top - document.body.getBoundingClientRect().top;
+
+  return beforeMain - contentToggleMarginTop;
 }
 
 function setupStickyBehaviour() {
@@ -128,13 +139,15 @@ function setupStickyBehaviour() {
     });
     toggleWrapper.closest('.section').setAttribute('style', `top: ${marqueeHeight}px`);
 
-    const {scrollY} = window;
+    const { scrollY } = window;
 
     if (scrollY >= initialOffset - 54 && !isFixed) {
       toggleWrapper.classList.add('fixed');
+      toggleWrapper.setAttribute('style', `top: ${getElementsHeightBeforeMain()}px`);
       isFixed = true;
     } else if (scrollY < initialOffset - 54 && isFixed) {
       toggleWrapper.classList.remove('fixed');
+      toggleWrapper.removeAttribute('style');
       isFixed = false;
     }
   });

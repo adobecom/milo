@@ -368,7 +368,7 @@ export function buildUrl(optionUrl, country, language, getConfig, offerId = '') 
 }
 
 export async function formatDynamicCartLink(a, plan) {
-  const { getConfig } = await import('../../utils/utils.js');
+  const { getConfig } = await import('../../../../utils/utils.js');
   try {
     const pattern = /.*commerce.*adobe\.com.*/gm;
     if (pattern.test(a.href)) {

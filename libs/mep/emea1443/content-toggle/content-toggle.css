@@ -26,7 +26,6 @@ main .section:has(.content-toggle.mweb.sticky) {
 
 main .content-toggle-wrapper.fixed:has(.content-toggle.mweb.sticky) {
     position: fixed;
-    top: 54px;
     left: 0px;
     right: 0px;
 }

@@ -51,7 +51,6 @@ const setBasicBranchMetadata = new Set([
 
 export async function getTrackingAppendedURL(url, options = {}) {
   const [{ getConfig }, { replaceKey }] = await Promise.all([import('../../../utils/utils.js'), import('../../../utils/utils.js')]);
-
   const { placement, isSearchOverride } = options;
   const windowParams = new URLSearchParams(window.location.search);
   const [
