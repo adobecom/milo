@@ -26,7 +26,7 @@ test.describe('DefaultFlags Block test suite', () => {
         if (textEN) {
           await expect(el).toHaveText(textEN);
         } else {
-          await expect(el).toHaveCount(0)
+          await expect(el).toHaveCount(0);
         }
       }
     });
@@ -47,7 +47,7 @@ test.describe('DefaultFlags Block test suite', () => {
         if (textFR) {
           await expect(el).toHaveText(textFR);
         } else {
-          await expect(el).toHaveCount(0)
+          await expect(el).toHaveCount(0);
         }
       }
     });
@@ -68,7 +68,7 @@ test.describe('DefaultFlags Block test suite', () => {
         if (textNG) {
           await expect(el).toHaveText(textNG);
         } else {
-          await expect(el).toHaveCount(0)
+          await expect(el).toHaveCount(0);
         }
       }
     });
