@@ -422,15 +422,21 @@ export const getFedsPlaceholderConfig = ({ useCache = true } = {}) => {
   return fedsPlaceholderConfig;
 };
 
-export const shouldBlockFreeTrialLinks = ({ button, localePrefix, parent }) => {
-  if (localePrefix !== '/kr' || (!button.dataset?.modalPath?.includes('/kr/cc-shared/fragments/trial-modals')
-    && !['free-trial', 'free trial', '무료 체험판', '무료 체험하기', '{{try-for-free}}']
-      .some((pattern) => button.textContent?.toLowerCase()?.includes(pattern.toLowerCase())))) {
-    return false;
-  }
-
-  if (button.href?.includes('#_allow-kr-trial')) {
+export const shouldAllowKrTrial = (button, localePrefix) => {
+  const hasAllowKrTrial = button.href?.includes('#_allow-kr-trial');
+  if (hasAllowKrTrial) {
     button.href = button.href.replace('#_allow-kr-trial', '');
+    const modalHash = button.getAttribute('data-modal-hash');
+    if (modalHash) button.setAttribute('data-modal-hash', modalHash.replace('#_allow-kr-trial', ''));
+  }
+  return localePrefix === '/kr' && hasAllowKrTrial;
+};
+
+export const shouldBlockFreeTrialLinks = ({ button, localePrefix, parent }) => {
+  if (button.dataset.wcsOsi || shouldAllowKrTrial(button, localePrefix) || localePrefix !== '/kr'
+      || (!button.dataset?.modalPath?.includes('/kr/cc-shared/fragments/trial-modals')
+       && !['free-trial', 'free trial', '무료 체험판', '무료 체험하기', '{{try-for-free}}']
+         .some((pattern) => button.textContent?.toLowerCase()?.includes(pattern.toLowerCase())))) {
     return false;
   }
 
