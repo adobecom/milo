@@ -182,6 +182,7 @@ async adjustAddon() {
         ${this.card.classList.contains('bullet-list') 
         ?
           html`<slot name="heading-m-price"></slot>
+          <slot name="price-commitment"></slot>
           <slot name="body-m"></slot>`
         :
           html`<slot name="body-m"></slot>
@@ -243,6 +244,16 @@ async adjustAddon() {
             flex-direction: column;
             align-items: stretch;
             text-align: center;
+        }
+
+        :host([variant='mini-compare-chart'].bullet-list) .mini-compare-chart-badge {
+          padding: 2px 10px;
+          font-size: var(--consonant-merch-card-body-xs-font-size);
+          line-height: var(--consonant-merch-card-body-xs-line-height);
+        }
+
+        :host([variant='mini-compare-chart'].bullet-list) .secure-transaction-label {
+          font-size: var(--consonant-merch-card-body-xs-font-size);
         }
     }
 
