@@ -1,7 +1,7 @@
 import Sinon from 'sinon';
 
 import '../../../utils/lana.js';
-import { FF_DEFAULT_FLAG } from '../src/constants.js';
+import { FF_DEFAULTS } from '../src/constants.js';
 import { Defaults } from '../src/defaults.js';
 import { TAG_NAME_SERVICE } from '../src/mas-commerce-service.js';
 
@@ -121,8 +121,8 @@ describe('commerce service', () => {
 
             it('generates some default with no attributes', async () => {
                 const metaDefaultFlag = document.createElement('meta');
-                metaDefaultFlag.name = FF_DEFAULT_FLAG
-                metaDefaultFlag.content = 'true';
+                metaDefaultFlag.name = FF_DEFAULTS
+                metaDefaultFlag.content = 'on';
                 document.head.appendChild(metaDefaultFlag);
 
                 const el = await initMasCommerceService({});

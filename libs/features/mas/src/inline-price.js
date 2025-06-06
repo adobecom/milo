@@ -3,9 +3,10 @@ import {
     updateMasElement,
     MasElement,
 } from './mas-element.js';
-import { selectOffers, getService, getMetadata } from './utilities.js';
+import { selectOffers, getService } from './utilities.js';
 import { Defaults } from './defaults.js';
-import { FF_DEFAULT_FLAG } from './constants.js';
+import { FF_DEFAULTS } from './constants.js';
+import { getParameter } from '@dexter/tacocat-core';
 
 const INDIVIDUAL = 'INDIVIDUAL_COM';
 const BUSINESS = 'TEAM_COM';
@@ -290,8 +291,8 @@ export class InlinePrice extends HTMLSpanElement {
         const options = service.collectPriceOptions(overrides, this);
         if (!options.wcsOsi.length) return false;
 
-        const ffDefaultFlag = getMetadata(FF_DEFAULT_FLAG) === 'true';
-        if (ffDefaultFlag && (!this.dataset.displayTax || !this.dataset.forceTaxExclusive)) {
+        const ffDefaults = getParameter(FF_DEFAULTS) === 'on';
+        if (ffDefaults && (!this.dataset.displayTax || !this.dataset.forceTaxExclusive)) {
             const [offerSelectors] = await service.resolveOfferSelectors(options);
             const offers = selectOffers(await offerSelectors, options);
             if (offers?.length) {

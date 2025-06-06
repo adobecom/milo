@@ -4,7 +4,7 @@ import { Price } from '../src/price.js';
 import { getSettings } from '../src/settings.js';
 import priceLiteralsJson from '../price-literals.json' with { type: 'json' };
 import { equalsCaseInsensitive } from '@dexter/tacocat-core';
-import { FF_DEFAULT_FLAG } from '../src/constants.js';
+import { FF_DEFAULTS } from '../src/constants.js';
 import { mockFetch } from './mocks/fetch.js';
 import { mockLana, unmockLana } from './mocks/lana.js';
 import * as snapshots from './price/__snapshots__/price.snapshots.js';
@@ -34,8 +34,8 @@ function mockInlinePrice(id, wcsOsi = '', options = {}) {
 
 before(() => {
     const metaDefaultFlag = document.createElement('meta');
-    metaDefaultFlag.name = FF_DEFAULT_FLAG
-    metaDefaultFlag.content = 'true';
+    metaDefaultFlag.name = FF_DEFAULTS
+    metaDefaultFlag.content = 'on';
     document.head.appendChild(metaDefaultFlag);
 });
 

@@ -4,7 +4,7 @@ import {
     Landscape,
     WCS_PROD_URL,
     WCS_STAGE_URL,
-    FF_DEFAULT_FLAG,
+    FF_DEFAULTS,
 } from './constants.js';
 import { Defaults } from './defaults.js';
 import { Env, CheckoutWorkflow, CheckoutWorkflowStep } from './constants.js';
@@ -15,7 +15,7 @@ import {
     toEnumeration,
 } from '@dexter/tacocat-core';
 
-import { toQuantity, getMetadata } from './utilities.js';
+import { toQuantity } from './utilities.js';
 
 function getLocaleSettings({
     locale = undefined,
@@ -29,7 +29,7 @@ function getLocaleSettings({
 }
 
 function getSettings(config = {}) {
-    const ffDefaultflag = getMetadata(FF_DEFAULT_FLAG) === 'true';
+    const ffDefaults = getParameter(FF_DEFAULTS) === 'on';
     // Always use `prod` env by default, regardless Milo env
     // but allow overriding it in metadata, location.search or storage
     // See https://github.com/adobecom/milo/pull/923
@@ -56,11 +56,11 @@ function getSettings(config = {}) {
     }
     const displayOldPrice = toBoolean(
         getParameter('displayOldPrice', commerce),
-        ffDefaultflag ? Defaults.displayOldPrice : !Defaults.displayOldPrice,
+        ffDefaults ? Defaults.displayOldPrice : !Defaults.displayOldPrice,
     );
     const displayPerUnit = toBoolean(
         getParameter('displayPerUnit', commerce),
-        ffDefaultflag ? Defaults.displayPerUnit : !Defaults.displayPerUnit,
+        ffDefaults ? Defaults.displayPerUnit : !Defaults.displayPerUnit,
     );
     const displayRecurrence = toBoolean(
         getParameter('displayRecurrence', commerce),
