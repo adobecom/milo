@@ -64,7 +64,7 @@ const showNextStep = async (formEl, currentStep, totalSteps) => {
   updateTabIndex(formEl, nextStep, currentStep);
 };
 
-export const formValidate = (formEl) => {
+export const formValidate = async (formEl) => {
   const currentStep = parseInt(formEl.dataset.step, 10) || 1;
 
   if (formEl.querySelector(`.mktoFormRowTop[data-validate="${currentStep}"] .mktoInvalid`)) {
@@ -72,7 +72,7 @@ export const formValidate = (formEl) => {
   }
 
   const totalSteps = formEl.closest('.marketo').classList.contains('multi-3') ? 3 : 2;
-  showNextStep(formEl, currentStep, totalSteps);
+  await showNextStep(formEl, currentStep, totalSteps);
 
   return currentStep === totalSteps;
 };
@@ -117,12 +117,12 @@ const readyForm = async (form, totalSteps) => {
   debouncedOnRender();
 };
 
-export default (el) => {
+export default async (el) => {
   if (!el.classList.contains('multi-step')) return;
   const formEl = el.querySelector('form');
   const totalSteps = el.classList.contains('multi-3') ? 3 : 2;
   formEl.dataset.step = 1;
 
   const { MktoForms2 } = window;
-  MktoForms2.whenReady((form) => { readyForm(form, totalSteps); });
+  await MktoForms2.whenReady((form) => readyForm(form, totalSteps));
 };
