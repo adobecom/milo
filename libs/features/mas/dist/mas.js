@@ -1788,6 +1788,8 @@ merch-card[variant="special-offers"] span[is="inline-price"][data-template="stri
     --consonant-merch-card-callout-letter-spacing: 0px;
     --consonant-merch-card-callout-icon-padding: 34px;
     --consonant-merch-card-callout-spacing-xxs: 8px;
+
+    --merch-card-ul-padding: 8px;
 }
 
 merch-card-collection {
@@ -2137,6 +2139,16 @@ merch-card span.price.price-strikethrough {
   font-weight: normal;
   text-decoration: line-through;
   color: var(--merch-color-inline-price-strikethrough);
+}
+
+merch-card [slot^="body-"] ul {
+    margin: 0;
+    padding-inline-start: var(--merch-card-ul-padding);
+    list-style-type: "\u2022";
+}
+    
+merch-card [slot^="body-"] ul li {
+    padding-inline-start: var(--merch-card-ul-padding);
 }
 
 /* merch-offer-select */
