@@ -1376,13 +1376,8 @@ export async function getSpectraLOB(lastVisitedPage) {
     const content = await rawResponse.json();
     return content.modelLineOfBusiness?.toLowerCase();
   } catch (e) {
-    if (e.name === 'TimeoutError') {
-      // This exception is from the abort signal
-      window.lana?.log('Spectra Timeout');
-    } else {
-      // A network error, or some other problem.
-      window.lana?.log(e.reason || e.error || e.message, { errorType: 'i' });
-    }
+    if (e.name === 'TimeoutError') window.lana?.log('Spectra Timeout'); // Abort signal
+    else window.lana?.log(e.reason || e.error || e.message, { errorType: 'i' });
     return false;
   }
 }

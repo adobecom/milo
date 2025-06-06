@@ -959,12 +959,8 @@ async function getPersonalizationVariant(
     return !processedList.includes(false);
   };
 
-  if (config.mep?.geoLocation) {
-    await setMepCountry(config);
-  }
-  if (config.mep?.meplob === true) {
-    await setMepLob(config);
-  }
+  if (config.mep?.geoLocation) await setMepCountry(config);
+  if (config.mep?.meplob === true) await setMepLob(config);
 
   const matchingVariant = variantNames.find((variant) => variantInfo[variant].some(matchVariant));
   return matchingVariant;
