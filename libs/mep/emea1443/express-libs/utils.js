@@ -382,3 +382,26 @@ export function lazyLoadLottiePlayer($block = null) {
     }
   }
 }
+
+export function buildAutoBlocks() {
+  if (document.querySelector('main >.section:last-of-type .floating-button')) return;
+  if (['yes', 'y', 'true', 'on'].includes(getMetadata('show-floating-cta')?.toLowerCase())) {
+    const lastDiv = document.querySelector('main > div:last-of-type');
+    const newDiv = document.createElement('div');
+    lastDiv.insertAdjacentElement('afterend', newDiv);
+    const validButtonVersion = ['floating-button', 'multifunction-button', 'mobile-fork-button', 'mobile-fork-button-frictionless'];
+    const device = document.body.dataset?.device;
+    const blockName = getMetadata(`${device}-floating-cta`);
+
+    if (blockName && validButtonVersion.includes(blockName) && newDiv) {
+      const button = createTag('div', { class: blockName });
+      const colEl = createTag('div', {}, device);
+      button.appendChild(colEl);
+      button.classList.add('meta-powered');
+      newDiv.append(button);
+      import('./block-mediator.min.js').then((mod) => {
+        mod.default.set('floatingCtasLoaded', true);
+      });
+    }
+  }
+}
