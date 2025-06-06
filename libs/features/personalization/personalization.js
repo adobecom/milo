@@ -943,7 +943,7 @@ async function getPersonalizationVariant(
     if (name.startsWith('param-')) return checkForParamMatch(name);
     if (hasCountryMatch(name, config)) return true;
     if (userEntitlements?.includes(name)) return true;
-    if (config.mep?.meplob === name.split('lob-')[1]?.toLowerCase()) return true;
+    if (config.mep?.meplob && config.mep?.meplob === name.split('lob-')[1]?.toLowerCase()) return true;
     return PERSONALIZATION_KEYS.includes(name) && PERSONALIZATION_TAGS[name]();
   };
 
