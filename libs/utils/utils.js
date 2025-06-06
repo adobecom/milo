@@ -34,6 +34,7 @@ const MILO_BLOCKS = [
   'featured-article',
   'global-footer',
   'global-navigation',
+  'global-navigation-min',
   'graybox',
   'footer',
   'gnav',
@@ -680,11 +681,17 @@ export async function loadTemplate() {
 }
 
 function getBlockData(block) {
-  const name = block.classList[0];
+  let name = block.classList[0];
+  const useMinified = block.classList.contains('use-minified')
   const { miloLibs, codeRoot, mep } = getConfig();
   const base = miloLibs && MILO_BLOCKS.includes(name) ? miloLibs : codeRoot;
   let path = `${base}/blocks/${name}`;
+
   if (mep?.blocks?.[name]) path = mep.blocks[name];
+  if (name === 'global-navigation' || useMinified) {
+    path = `${base}/blocks/${name}-min`;
+  }
+  debugger
   const blockPath = `${path}/${name}`;
   const hasStyles = AUTO_BLOCKS.find((ab) => Object.keys(ab).includes(name))?.styles ?? true;
 

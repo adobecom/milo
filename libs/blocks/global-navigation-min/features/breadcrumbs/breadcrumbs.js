@@ -1,0 +1,13 @@
+import{getMetadata as e,getConfig as r,getFederatedUrl as t}from"../../../../utils/utils.js";import{toFragment as a,lanaLog as n}from"../../utilities/utilities.js";const i="breadcrumbs-seo",s="breadcrumb-seo",l="breadcrumbs-show-current-page",c="breadcrumbs-hidden-entries",o="breadcrumbs-page-title",u="breadcrumbs-base",d="breadcrumbs-from-url",m=r=>{if(!r)return null;const t=r.querySelector("ul"),n=e(o);(n||"on"===e(l))&&t.append(a`
+      <li>
+        ${n||document.title}
+      </li>
+    `);const i=e(c)?.toLowerCase().split(",").map((e=>e.trim()))||[];t.querySelectorAll("li").forEach(((e,r)=>{i.includes(e.innerText?.toLowerCase().trim())&&e.remove(),r>0&&e.insertAdjacentHTML("afterbegin",'<span aria-hidden="true">/</span>')}));const s=r.classList.contains("no-transform")?" no-transform":"",u=a`
+    <div class="feds-breadcrumbs-wrapper">
+      <nav class="feds-breadcrumbs${s}" aria-label="Breadcrumb">${t}</nav>
+    </div>
+  `;return t.querySelector("li:last-of-type")?.setAttribute("aria-current","page"),u};export default async function p(l){try{const c=await(async r=>{const i=r||a`<div><ul></ul></div>`,s=t(e(u));if(!s)return null;try{const e=await fetch(`${s}.plain.html`),r=await e.text(),t=(new DOMParser).parseFromString(r,"text/html").body;return i.querySelector("ul")?.prepend(...t.querySelectorAll("li")),m(i)}catch(e){return n({e,message:"Breadcrumbs failed fetching base",tags:"gnav-breadcrumbs",errorType:"i"}),null}})(l)||m(l)||(()=>{if("on"!==e(d))return null;const t=a`<ul></ul>`,n=document.location.pathname.replace(r().locale?.prefix||"","").split("/").filter((e=>e));for(let e=0;e<n.length;e+=1)t.append(a`
+      <li>
+        <a href="/${n.slice(0,e+1).join("/")}">${n[e].replaceAll("-"," ")}</a>
+      </li>
+    `);return m(a`<div>${t}</div>`)})();return(r=>{if("off"===(e(i)||e(s))||!r)return;const t={"@context":"https://schema.org","@type":"BreadcrumbList",itemListElement:[]};r.querySelectorAll("ul > li").forEach(((e,r,a)=>{const n=e.querySelector("a"),i=n?n.innerText.trim():[...e.childNodes].filter((e=>!e.matches?.('span[aria-hidden="true"]'))).map((e=>e.textContent.trim())).join("");let s=n?.href;s||r!==a.length-1||(s=window.location.href),t.itemListElement.push({"@type":"ListItem",position:r+1,name:i,item:s})}));const n=a`<script type="application/ld+json">${JSON.stringify(t)}</script>`;document.head.append(n)})(c),c}catch(e){return n({e,message:"Breadcrumbs failed rendering",tags:"gnav-breadcrumbs",errorType:"e"}),null}}

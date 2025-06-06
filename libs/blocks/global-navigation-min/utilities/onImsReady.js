@@ -1,0 +1,1 @@
+let e=!1,n=null;const t="onImsLibInstance";export default(i=3e3)=>(n=n||new Promise(((n,o)=>{const s=setTimeout((()=>{e||o()}),i),w=i=>{const d=i?.detail?.instance;d?(e=!0,window.removeEventListener(t,w),clearTimeout(s),n(d)):o()};window.addEventListener(t,w),window.dispatchEvent(new window.CustomEvent("getImsLibInstance"))})),n);
