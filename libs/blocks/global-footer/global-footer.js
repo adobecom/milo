@@ -296,7 +296,7 @@ class Footer {
       this.elements.regionPicker.append(regionSelector); // add fragment after regionPickerElem
       const { default: initFragment } = await import('../fragment/fragment.js');
       await initFragment(regionSelector); // load fragment and replace original link
-      // Update aria-expanded on click
+      // Update aria-expanded on click!
       regionPickerElem.addEventListener('click', (e) => {
         e.preventDefault();
         const isDialogActive = regionPickerElem.getAttribute('aria-expanded') === 'true';
