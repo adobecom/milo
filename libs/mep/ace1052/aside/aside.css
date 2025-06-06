@@ -112,6 +112,7 @@
 .aside .foreground.container .image {
   position: relative;
   display: flex;
+  width: 100%;
 }
 
 .aside .foreground.container > div {
@@ -595,11 +596,36 @@
   align-items: center;
 }
 
+.aside.promobar.popup .mobile-up.promo-text:has(.milo-tooltip) {
+  position: relative;
+}
+
+.aside.promobar.popup .promo-text span[data-tooltip] .icon-milo {
+  height: 16px;
+}
+
+.aside.promobar.popup .mobile-up.promo-text .milo-tooltip {
+  position: absolute;
+  left: calc(var(--spacing-xs) - 5px);
+  bottom: var(--spacing-xs);
+  margin-inline-start: 0;
+}
+
+[dir="rtl"] .aside.promobar.popup .mobile-up.promo-text .milo-tooltip {
+  left: unset;
+  right: calc(var(--spacing-xs) - 5px);
+}
+
 .aside.promobar.popup {
   border-radius: var(--spacing-xs);
   width: var(--grid-container-width);
   margin: auto;
   box-shadow: 0 3px 6px #707070;
+  overflow: unset;
+}
+
+.aside.promobar.popup .background {
+  border-radius: inherit;
 }
 
 .aside.promobar.popup .foreground.container .promo-text {
