@@ -542,7 +542,6 @@ export class MerchCard extends LitElement {
 
     get addonCheckbox() {
       return this.querySelector('merch-addon');
-      return this.querySelector('merch-addon');
   }
 
     displayFooterElementsInColumn() {
@@ -599,7 +598,7 @@ export class MerchCard extends LitElement {
           writable: false,
           value: { checked: isAddonIncluded }
         });
-        this.addonCheckbox.handleChange(checkboxEvent);
+        this.addonCheckbox?.handleChange(checkboxEvent);
       }
     }
 }
