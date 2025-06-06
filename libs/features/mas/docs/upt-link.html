@@ -1,0 +1,123 @@
+
+    <!DOCTYPE html>
+    <html>
+    <head>
+    <meta charset="UTF-8">
+    <title>M@S Web Components</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="spectrum.css">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://p.typekit.net/p.css?s=1&amp;k=hah7vzn&amp;ht=tk&amp;f=7180.7181.7182.7183.22474.22749.22750.22751.22753&amp;a=8634977&amp;app=typekit&amp;e=css">
+    <link rel="stylesheet" href="https://use.typekit.net/hah7vzn.css">
+  
+  <!-- Include your custom element script as an ES6 module -->
+  <script type="module">
+    import { init } from './common.js';
+    init();
+  </script>
+  <!-- Include Highlight.js stylesheet for syntax highlighting -->
+  <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/default.min.css">
+  <script type="module" src="./mas-sidenav.js"></script>
+</head>
+<body class="spectrum spectrum--medium spectrum--light">
+    <aside is="mas-sidenav"></aside>
+<main>
+<sp-theme color="light" scale="medium">
+<h1 id="upt-link" tabindex="-1">upt-link <a class="header-anchor" href="#upt-link" href="#upt-link" title="Permalink to this heading">#</a></h1>
+<h2 id="introduction" tabindex="-1">Introduction <a class="header-anchor" href="#introduction" href="#introduction" title="Permalink to this heading">#</a></h2>
+<p>This custom element renders a universal promo terms link.
+It extends <code>HTMLAnchorElement</code> and will automatically generate the correct <code>href</code> based on the provided attributes.</p>
+<p>The link will point to the promo terms page with offer information resolved from WCS.</p>
+<p>See <a href="mas.html#terminology">MAS</a> to learn more.</p>
+<h3 id="example" tabindex="-1">Example <a class="header-anchor" href="#example" href="#example" title="Permalink to this heading">#</a></h3>
+<pre><code class="hljs demo language-html"><span class="hljs-tag">&lt;<span class="hljs-name">a</span>
+    <span class="hljs-attr">href</span>=<span class="hljs-string">&quot;#&quot;</span>
+    <span class="hljs-attr">is</span>=<span class="hljs-string">&quot;upt-link&quot;</span>
+    <span class="hljs-attr">data-wcs-osi</span>=<span class="hljs-string">&quot;A1xn6EL4pK93bWjM8flffQpfEL-bnvtoQKQAvkx574M&quot;</span>
+    <span class="hljs-attr">data-promotion-code</span>=<span class="hljs-string">&quot;PROMO123&quot;</span>
+    &gt;</span>See terms&lt;/a
+&gt;
+</code></pre>
+<h2 id="attributes" tabindex="-1">Attributes <a class="header-anchor" href="#attributes" href="#attributes" title="Permalink to this heading">#</a></h2>
+<table>
+<thead>
+<tr>
+<th>Attribute</th>
+<th>Description</th>
+<th>Default Value</th>
+<th>Required</th>
+<th>Provider</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>data-wcs-osi</code></td>
+<td>Offer Selector ID. Can be only one.</td>
+<td></td>
+<td><code>true</code></td>
+<td>mas.js or consumer code</td>
+</tr>
+<tr>
+<td><code>data-promotion-code</code></td>
+<td>Flex promotion code, if applicable.</td>
+<td></td>
+<td><code>false</code></td>
+<td>mas.js or consumer code</td>
+</tr>
+<tr>
+<td><code>data-ims-country</code></td>
+<td>The IMS country to code of the user if signed in, overrides the locale country in the generated checkout url.</td>
+<td></td>
+<td><code>false</code></td>
+<td>mas.js or consumer code</td>
+</tr>
+</tbody>
+</table>
+<h2 id="properties" tabindex="-1">Properties <a class="header-anchor" href="#properties" href="#properties" title="Permalink to this heading">#</a></h2>
+<table>
+<thead>
+<tr>
+<th>Property</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>isUptLink</code></td>
+<td>On UPT link elements, it will return <code>true</code>.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="example-1" tabindex="-1">Example <a class="header-anchor" href="#example-1" href="#example-1" title="Permalink to this heading">#</a></h3>
+<pre><code class="hljs demo language-html"><span class="hljs-tag">&lt;<span class="hljs-name">a</span>
+    <span class="hljs-attr">id</span>=<span class="hljs-string">&quot;upt1&quot;</span>
+    <span class="hljs-attr">href</span>=<span class="hljs-string">&quot;#&quot;</span>
+    <span class="hljs-attr">is</span>=<span class="hljs-string">&quot;upt-link&quot;</span>
+    <span class="hljs-attr">data-wcs-osi</span>=<span class="hljs-string">&quot;A1xn6EL4pK93bWjM8flffQpfEL-bnvtoQKQAvkx574M&quot;</span>
+&gt;</span>See terms<span class="hljs-tag">&lt;/<span class="hljs-name">a</span>&gt;</span>
+</code></pre>
+<h2 id="events" tabindex="-1">Events <a class="header-anchor" href="#events" href="#events" title="Permalink to this heading">#</a></h2>
+<p>This element dispatches <code>mas:pending</code>, <code>mas:resolved</code>, and <code>mas:failed</code> events.
+It will log an error to the console if <code>data-wcs-osi</code> is missing or if the offer cannot be resolved.</p>
+
+</sp-theme>
+</main>
+<script type="module">
+  document.querySelectorAll('code.demo').forEach(el => {
+      const targetContainer = document.createElement('div');
+      targetContainer.classList.toggle('light', el.classList.contains('light'));
+      targetContainer.innerHTML = `<h4>Demo: </h4><div class="demo-container">${el.textContent}</div>`;
+      el.parentElement.after(targetContainer);
+      // Extract and evaluate <script> tags
+      const scriptTags = targetContainer.getElementsByTagName('script');
+      for (let i = 0; i < scriptTags.length; i++) {
+          const script = document.createElement('script');
+          script.type = 'module';
+          script.text = scriptTags[i].text;
+          document.body.appendChild(script); // Appends to the document to execute
+          scriptTags[i].remove(); // Remove the script tag
+      }
+  });
+</script>
+</body>
+</html>

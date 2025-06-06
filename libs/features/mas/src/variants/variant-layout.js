@@ -126,7 +126,7 @@ export class VariantLayout {
         );
     }
 
-    postCardUpdateHook() {
+    async postCardUpdateHook() {
         //nothing to do by default
     }
 

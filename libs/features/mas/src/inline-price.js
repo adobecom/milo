@@ -255,15 +255,14 @@ export class InlinePrice extends HTMLSpanElement {
         const options = service.collectPriceOptions(overrides, this);
         if (!options.wcsOsi.length) return false;
 
-        /*
-        Commented out until issues in content with manually added tax labels are resolved
 
-        if (!this.masElement.dataset.displayTax) {
+        // TODO: wait for PR#4293
+
+        if (!this.masElement.wrapperElement.dataset.displayTax) {
             // set default value for displayTax if not set neither in OST nor in price URL
             options.displayTax =
                 (await this.resolveDisplayTax(service, options)) || false;
         }
-        */
 
         const version = this.masElement.togglePending(options);
         this.innerHTML = '';

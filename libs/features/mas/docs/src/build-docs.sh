@@ -3,6 +3,7 @@
 node ./build-docs.mjs inline-price.md ../inline-price.html
 node ./build-docs.mjs checkout-link.md ../checkout-link.html
 node ./build-docs.mjs checkout-button.md ../checkout-button.html
+node ./build-docs.mjs upt-link.md ../upt-link.html
 node ./build-docs.mjs mas.md ../mas.html
 node ./build-docs.mjs step-by-step.md ../step-by-step.html
 node ./build-docs.mjs mas.js.md ../mas.js.html

@@ -54,7 +54,8 @@ export const SELECTOR_MAS_INLINE_PRICE =
 export const SELECTOR_MAS_CHECKOUT_LINK =
     'a[is="checkout-link"][data-wcs-osi],button[is="checkout-button"][data-wcs-osi]';
 export const SELECTOR_MAS_SP_BUTTON = 'sp-button[data-wcs-osi]';
-export const SELECTOR_MAS_ELEMENT = `${SELECTOR_MAS_INLINE_PRICE},${SELECTOR_MAS_CHECKOUT_LINK}`;
+export const SELECTOR_MAS_UPT_LINK = 'a[is="upt-link"]';
+export const SELECTOR_MAS_ELEMENT = `${SELECTOR_MAS_INLINE_PRICE},${SELECTOR_MAS_CHECKOUT_LINK},${SELECTOR_MAS_UPT_LINK}`;
 
 /** Event to dispatch when a merch-offer is ready */
 export const EVENT_MERCH_OFFER_READY = 'merch-offer:ready';
