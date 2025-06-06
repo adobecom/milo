@@ -22,7 +22,10 @@ test.describe('DefaultFlags Block test suite', () => {
     });
 
     await test.step('Validate if each price is visible and has proper text for EN', async () => {
+      console.info('Default flags: prices EN');
+      console.info(defaultFlags.prices);
       for (const { el, textEN } of Object.values(defaultFlags.prices)) {
+        console.info('Element ', el, ' Text EN: ', textEN);
         if (textEN) {
           await expect(el).toHaveText(textEN);
         } else {
@@ -43,7 +46,10 @@ test.describe('DefaultFlags Block test suite', () => {
     });
 
     await test.step('Validate if each price is visible and has proper text for FR', async () => {
+      console.info('Default flags: prices FR');
+      console.info(defaultFlags.prices);
       for (const { el, textFR } of Object.values(defaultFlags.prices)) {
+        console.info('Element ', el, ' Text FR: ', textFR);
         if (textFR) {
           await expect(el).toHaveText(textFR);
         } else {
@@ -64,7 +70,10 @@ test.describe('DefaultFlags Block test suite', () => {
     });
 
     await test.step('Validate if each price is visible and has proper text for NG', async () => {
+      console.info('Default flags: prices NG');
+      console.info(defaultFlags.prices);
       for (const { el, textNG } of Object.values(defaultFlags.prices)) {
+        console.info('Element ', el, ' Text NG: ', textNG);
         if (textNG) {
           await expect(el).toHaveText(textNG);
         } else {
