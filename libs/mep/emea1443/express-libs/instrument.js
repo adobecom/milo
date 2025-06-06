@@ -215,51 +215,11 @@ export function trackButtonClick(a) {
   const fireEvent = () => {
     let adobeEventName = 'adobe.com:express:cta:';
 
-    const $tutorialContainer = a.closest('.tutorial-card');
     const $contentToggleContainer = a.closest('.content-toggle');
-    // let cardPosition;
 
-    if ($tutorialContainer) {
-      const videoName = textToName(a.querySelector('h3').textContent.trim());
-      adobeEventName = `${adobeEventName}tutorials:${videoName}:tutorialPressed`;
-    } else if ($contentToggleContainer) {
+    if ($contentToggleContainer) {
       const toggleName = textToName(a.textContent.trim());
       adobeEventName = `${adobeEventName}contentToggle:${toggleName}:buttonPressed`;
-    } else if (a.classList.contains('floating-button-lottie')) {
-      adobeEventName = `${adobeEventName}floatingButton:scrollPressed`;
-    } else if (a.classList.contains('video-player-inline-player-overlay')) {
-      const sessionName = a.parentNode.parentNode.parentNode.querySelector('.video-player-session-number').textContent.trim();
-      const videoName = a.parentNode.parentNode.parentNode.querySelector('.video-player-video-title').textContent.trim();
-      adobeEventName = `${adobeEventName}playing:${sessionName}-${videoName}`;
-    } else if (a.classList.contains('notch')) {
-      adobeEventName = `${adobeEventName}splitAction:notch`;
-    } else if (a.classList.contains('underlay')) {
-      adobeEventName = `${adobeEventName}splitAction:background`;
-    } else if (a.parentElement.classList.contains('floating-button')) {
-      adobeEventName = `${adobeEventName}floatingButton:ctaPressed`;
-    } else if (a.closest('.faq')) {
-      adobeEventName = appendLinkText(`${adobeEventName}faq:`, a);
-      // CTA in the hero
-    } else if (a.closest('#hero')) {
-      adobeEventName = appendLinkText(`${adobeEventName}hero:`, a);
-      // Click in the pricing block
-    } else if (expressLandingPageType === 'pricing') {
-      if (a.tagName !== 'A') {
-        adobeEventName += `pricing:pricing:${a.textContent.trim()}:Click`;
-        // Creative cloud learn more
-      } else if (a.id === 'free-trial') {
-        adobeEventName += 'pricing:cta:StartForFree';
-      } else if (a.id === '3-month-trial') {
-        adobeEventName += 'pricing:cta:StartYour3MonthTrial';
-        // View plans
-      } else {
-        adobeEventName = 'adobe.com:express:CTA:pricing:viewPlans:Click';
-      }
-    } else if (a.closest('.template')) {
-      adobeEventName = appendLinkText(adobeEventName, a);
-    } else if (a.closest('.tabs-ax .tab-list-container')) {
-      adobeEventName += `${a.closest('.tabs-ax')?.id}:${a.id}`;
-      // Default clicks
     } else {
       adobeEventName = appendLinkText(adobeEventName, a);
     }
