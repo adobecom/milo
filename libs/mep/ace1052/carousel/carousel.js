@@ -285,7 +285,7 @@ function moveSlides(event, carouselElements, jumpToIndex) {
   const IndexOfShowClass = [...carouselElements.el.classList].findIndex((ele) => ele.includes('show-'));
   const tempSlides = [...slides.slice(indexOfActive), ...slides.slice(0, indexOfActive)];
 
-  // mweb Update cards height dynamically
+  // mweb Update heights dynamically
   if (carouselElements.el.classList.contains('disable-buttons') && window.innerWidth < 900) {
     const maxHeight = Math.max(...slides.map((slide) => slide.offsetHeight));
     const nextSlide = handleNext(activeSlide, slides);
