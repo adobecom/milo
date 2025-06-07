@@ -794,12 +794,24 @@ export default async function init(el) {
 
     if (!firstLi) return null;
 
+    firstLi.innerHTML = `<a class="expandable-footer" daa-ll="expandable-footer-closed">${firstLi.innerHTML}</a>`;
+
+    const firstLiLnk = firstLi.querySelector('a');
     const { iconMinusSVG, iconPlusSVG } = await import('./img/collapsible-icon.js');
     const collapsibleIcon = createTag('picture', { class: 'footer-row-icon' }, iconPlusSVG);
-    firstLi.appendChild(collapsibleIcon);
+    firstLiLnk.appendChild(collapsibleIcon);
 
     firstLi.addEventListener('click', () => {
       const expanded = ul.classList.toggle('expanded');
+      if (ul.classList.contains('expanded')) {
+        const analyticsValue = firstLiLnk.getAttribute('daa-ll');
+        firstLiLnk.setAttribute('aria-expanded', 'true');
+        firstLiLnk.setAttribute('daa-ll', analyticsValue.replace(/closed/, 'open'));
+      } else {
+        const analyticsValue = firstLiLnk.getAttribute('daa-ll');
+        firstLiLnk.setAttribute('aria-expanded', 'false');
+        firstLiLnk.setAttribute('daa-ll', analyticsValue.replace(/open/, 'closed'));
+      }
       collapsibleIcon.innerHTML = expanded ? iconMinusSVG : iconPlusSVG;
     });
   }

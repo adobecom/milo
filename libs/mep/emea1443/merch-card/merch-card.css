@@ -80,9 +80,12 @@ merch-card a[is="checkout-link"].upgrade:not(:first-of-type) {
     border-color: #F3F3F3;
     border-radius: 0px 0px 16px 16px;
   }
-  .merch-card.mini-compare-chart.expandable-footer-row ul>li:first-of-type {
+  .merch-card.mini-compare-chart.expandable-footer-row ul>li:first-of-type>a {
+    width: 100%;
+    display: flex;
     justify-content: space-between;
     cursor: pointer;
+    text-decoration: none;
   }
   .merch-card.mini-compare-chart.expandable-footer-row ul>li:first-of-type>picture {
     order:1;
