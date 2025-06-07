@@ -148,7 +148,6 @@ function setupStickyBehaviour() {
 }
 
 export default async function decorate(block) {
-  console.log(block);
   addTempWrapperDeprecated(block, 'content-toggle');
   decorateSectionsMetadata();
 

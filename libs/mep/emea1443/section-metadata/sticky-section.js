@@ -1,6 +1,6 @@
-import { createTag } from '../../utils/utils.js';
+import { createTag } from '../../../utils/utils.js';
 import { getMetadata, getDelayTime } from './section-metadata.js';
-import { getGnavHeight } from '../global-navigation/utilities/utilities.js';
+import { getGnavHeight } from '../../../blocks/global-navigation/utilities/utilities.js';
 
 function handleTopHeight(section) {
   const topHeight = getGnavHeight();
@@ -53,7 +53,7 @@ export default async function handleStickySection(sticky, section) {
   const main = document.querySelector('main');
   switch (sticky) {
     case 'sticky-top': {
-      const { debounce } = await import('../../utils/action.js');
+      const { debounce } = await import('../../../utils/action.js');
       window.addEventListener('resize', debounce(() => handleTopHeight(section)));
       handleTopHeight(section);
       main.prepend(section);

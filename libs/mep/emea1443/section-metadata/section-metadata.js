@@ -1,4 +1,4 @@
-import { handleFocalpoint } from '../../utils/decorate.js';
+import { handleFocalpoint } from '../../../utils/decorate.js';
 
 export function handleBackground(div, section) {
   const pic = div.background.content?.querySelector('picture');
