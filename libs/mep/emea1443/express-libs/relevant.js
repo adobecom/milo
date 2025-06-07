@@ -1,6 +1,6 @@
 // eslint-disable-next-line import/prefer-default-export
 export async function fetchRelevantRows(path) {
-  const { getConfig } = await import('../utils.js');
+  const { getConfig } = await import('./utils.js');
   if (!window.relevantRows) {
     try {
       const { prefix } = getConfig().locale;

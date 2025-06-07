@@ -1,6 +1,5 @@
 import { readBlockConfig, addTempWrapperDeprecated } from '../express-libs/utils.js';
 import { createTag } from '../../../utils/utils.js';
-import { trackButtonClick } from '../express-libs/instrument.js';
 
 function decorateButton($block, $toggle) {
   const $button = createTag('button', { class: 'content-toggle-button' });
@@ -17,11 +16,6 @@ function decorateButton($block, $toggle) {
     $button.textContent = $toggle.textContent.trim();
     $button.dataset.text = $button.textContent.toLowerCase();
   }
-  // for tracking the content toggle buttons
-  $button.addEventListener('click', () => {
-    trackButtonClick($button);
-  });
-
   $block.append($button);
 }
 

@@ -1,12 +1,6 @@
 import { addTempWrapperDeprecated } from '../express-libs/utils.js';
-import { fetchRelevantRows } from '../express-libs/utils/relevant.js';
+import { fetchRelevantRows } from '../express-libs/relevant.js';
 import { createTag } from '../../../utils/utils.js';
-
-// make change
-function toggleCollapsibleCard($block) {
-  $block.classList.toggle('expanded');
-  $block.classList.remove('initial-expansion');
-}
 
 function setClasses($block) {
   const $divs = $block.querySelectorAll(':scope > div');
@@ -24,13 +18,38 @@ function decorateBackground($block) {
   }
 }
 
-function decorateToggleButton($block) {
-  const $toggleButton = createTag('div', { class: 'toggle-button' });
-  $toggleButton.insertAdjacentHTML('afterBegin', '<img class="icon icon-plus" src="https://main--cc--adobecom.aem.page/cc-shared/fragments/tests/emea-latam/2025/q2/emea1443/assets/card-plus.svg" alt="plus">');
+function setAnalyticsOpen(btn) {
+  const analyticsValue = btn.getAttribute('daa-ll');
+  btn.setAttribute('aria-expanded', 'true');
+  btn.setAttribute('daa-ll', analyticsValue.replace(/closed/, 'open'));
+}
+
+function setAnalyticsClosed(btn) {
+  const analyticsValue = btn.getAttribute('daa-ll');
+  btn.setAttribute('aria-expanded', 'false');
+  btn.setAttribute('daa-ll', analyticsValue.replace(/open/, 'closed'));
+}
+
+async function decorateToggleButton($block) {
+  const $toggleButton = createTag('a', { class: 'toggle-button' });
+  $toggleButton.setAttribute('daa-ll', 'collapsible-card-closed');
+
+  // Add icon
+  const { iconMinusSVG, iconPlusSVG } = await import('./img/collapsible-icon.js');
+  const collapsibleIcon = createTag('picture', { class: 'icon' }, iconPlusSVG);
+  $toggleButton.appendChild(collapsibleIcon);
   $block.prepend($toggleButton);
 
   $toggleButton.addEventListener('click', () => {
-    toggleCollapsibleCard($block);
+    $block.classList.remove('initial-expansion');
+    $block.classList.toggle('expanded');
+    const expanded = $toggleButton.classList.toggle('expanded');
+    collapsibleIcon.innerHTML = expanded ? iconMinusSVG : iconPlusSVG;
+    if ($toggleButton.classList.contains('expanded')) {
+      setAnalyticsOpen($toggleButton);
+    } else {
+      setAnalyticsClosed($toggleButton);
+    }
   });
 }
 
