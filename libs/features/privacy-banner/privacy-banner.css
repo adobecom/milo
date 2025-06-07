@@ -1,0 +1,118 @@
+/* libs/features/privacy-modal/privacy-banner.css */
+.privacy-banner {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: #fafafa;
+  border-top: 1px solid #ececec;
+  box-shadow: 0 -2px 16px 0 rgba(60, 60, 60, 0.07);
+  z-index: 2000;
+  padding: 32px 0 24px 0;
+  font-family: inherit;
+}
+
+.privacy-banner-wrap {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.privacy-banner-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 0 0 10px 0;
+  color: #222;
+}
+
+.privacy-banner-desc {
+  font-size: 1.1rem;
+  margin-bottom: 26px;
+  color: #3d3d3d;
+}
+
+.privacy-banner-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.privacy-banner-btn {
+  padding: 10px 24px;
+  font-size: 1rem;
+  border-radius: 2em;
+  border: 2px solid #222;
+  background: #fff;
+  color: #222;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+
+.privacy-banner-btn.accept {
+  background: #222;
+  color: #fff;
+  border: 2px solid #222;
+}
+
+.privacy-banner-btn.accept:hover,
+.privacy-banner-btn.accept:focus {
+  background: #000;
+  color: #fff;
+}
+
+.privacy-banner-btn.reject {
+  border-color: #222;
+  color: #222;
+  background: #fff;
+}
+
+.privacy-banner-btn.reject:hover,
+.privacy-banner-btn.reject:focus {
+  background: #ececec;
+  color: #111;
+}
+
+.privacy-banner-btn.settings {
+  border-color: #222;
+  color: #222;
+  background: #fff;
+}
+
+.privacy-banner-btn.settings:hover,
+.privacy-banner-btn.settings:focus {
+  background: #ececec;
+  color: #111;
+}
+
+@media (max-width: 700px) {
+  .privacy-banner-wrap {
+    padding: 0 12px;
+  }
+  .privacy-banner-title {
+    font-size: 1.1rem;
+  }
+  .privacy-banner-desc {
+    font-size: 1rem;
+  }
+  .privacy-banner-btn {
+    padding: 9px 14px;
+    font-size: 0.98rem;
+  }
+}
+
+.privacy-banner-actions {
+  width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+/* Group right-aligned buttons together */
+.privacy-banner-action-group {
+  display: flex;
+  gap: 20px;
+}
