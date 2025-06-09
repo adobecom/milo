@@ -45,14 +45,20 @@ export class MerchQuantitySelect extends LitElement {
         this.handleClickOutside = this.handleClickOutside.bind(this);
         this.boundKeydownListener = this.handleKeydown.bind(this);
         this.handleKeyupDebounced = debounce(this.handleKeyup.bind(this), 500);
-        this.handleQuantityUpdate = this.handleQuantityUpdate.bind(this);
+        this.debouncedQuantityUpdate = debounce(
+            this.handleQuantityUpdate.bind(this),
+            500,
+        );
     }
 
     connectedCallback() {
         super.connectedCallback();
         this.addEventListener('keydown', this.boundKeydownListener);
         window.addEventListener('mousedown', this.handleClickOutside);
-        this.addEventListener(EVENT_MERCH_CARD_QUANTITY_CHANGE, this.handleQuantityUpdate);
+        this.addEventListener(
+            EVENT_MERCH_CARD_QUANTITY_CHANGE,
+            this.debouncedQuantityUpdate,
+        );
     }
 
     handleKeyup() {
@@ -117,7 +123,10 @@ export class MerchQuantitySelect extends LitElement {
         super.disconnectedCallback();
         window.removeEventListener('mousedown', this.handleClickOutside);
         this.removeEventListener('keydown', this.boundKeydownListener);
-        this.removeEventListener(EVENT_MERCH_CARD_QUANTITY_CHANGE, this.handleQuantityUpdate);
+        this.removeEventListener(
+            EVENT_MERCH_CARD_QUANTITY_CHANGE,
+            this.debouncedQuantityUpdate,
+        );
     }
 
     generateOptionsArray() {
