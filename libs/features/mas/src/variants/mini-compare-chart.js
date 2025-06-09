@@ -2,7 +2,7 @@ import { html, css, unsafeCSS } from 'lit';
 import { isMobile, createTag } from '../utils.js';
 import { VariantLayout } from './variant-layout.js';
 import { CSS } from './mini-compare-chart.css.js';
-import { DESKTOP_UP, TABLET_DOWN } from '../media.js';
+import { DESKTOP_UP, TABLET_DOWN, MOBILE_LANDSCAPE } from '../media.js';
 import { SELECTOR_MAS_INLINE_PRICE } from '../constants.js';
 const FOOTER_ROW_MIN_HEIGHT = 32; // as per the XD.
 
@@ -239,21 +239,23 @@ async adjustAddon() {
       color: var(--merch-color-grey-700);
     }
 
+    @media screen and ${unsafeCSS(MOBILE_LANDSCAPE)} {
+      :host([variant='mini-compare-chart'].bullet-list) .mini-compare-chart-badge {
+        padding: 2px 10px;
+        font-size: var(--consonant-merch-card-body-xs-font-size);
+        line-height: var(--consonant-merch-card-body-xs-line-height);
+      }
+
+      :host([variant='mini-compare-chart'].bullet-list) .secure-transaction-label {
+        font-size: var(--consonant-merch-card-body-xs-font-size);
+      }
+    }
+
     @media screen and ${unsafeCSS(TABLET_DOWN)} {
         [class*'-merch-cards'] :host([variant='mini-compare-chart']) footer {
             flex-direction: column;
             align-items: stretch;
             text-align: center;
-        }
-
-        :host([variant='mini-compare-chart'].bullet-list) .mini-compare-chart-badge {
-          padding: 2px 10px;
-          font-size: var(--consonant-merch-card-body-xs-font-size);
-          line-height: var(--consonant-merch-card-body-xs-line-height);
-        }
-
-        :host([variant='mini-compare-chart'].bullet-list) .secure-transaction-label {
-          font-size: var(--consonant-merch-card-body-xs-font-size);
         }
     }
 
