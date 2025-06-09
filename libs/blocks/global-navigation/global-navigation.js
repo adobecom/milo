@@ -924,7 +924,7 @@ class Gnav {
     // Exposing UNAV config for consumers
     CONFIG.universalNav.universalNavConfig = getConfiguration();
     await window.UniversalNav(CONFIG.universalNav.universalNavConfig);
-    this.blocks.universalNav?.style.removeProperty('width');
+    if (!signedOut) this.blocks.universalNav?.style.removeProperty('width');
     const fedsPromo = document.querySelector('.feds-promo-aside-wrapper');
     const container = document.querySelector('.feds-utilities');
     const hasAppSwitcher = this.universalNavComponents.includes('appswitcher');
