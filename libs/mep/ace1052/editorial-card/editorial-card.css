@@ -25,6 +25,13 @@
   border-color: var(--color-gray-700);
 }
 
+  /* Block specific */
+.light .editorial-card,
+.editorial-card.light {
+  color: var(--text-color);
+  border-color: var(--color-gray-300);
+}
+
 .editorial-card.no-bg { background: none;}
 .editorial-card.no-border { border: none;}
 
@@ -382,14 +389,6 @@
 
   [class^="detail-"] strong {
     font-weight: 500;
-  }
-
-  /* Block specific */
-  /* Ideally this would be addressed on L22 */
-  .light .editorial-card,
-  .editorial-card.light {
-    color: var(--text-color);
-    border-color: var(--color-gray-300);
   }
 
   .section:has(.editorial-card ~ .show-more-button),
