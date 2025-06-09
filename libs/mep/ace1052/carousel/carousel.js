@@ -1,5 +1,6 @@
 import { createTag, getConfig, MILO_EVENTS } from '../../../utils/utils.js';
 import { decorateAnchorVideo, syncPausePlayIcon } from '../../../utils/decorate.js';
+import { decorateDefaultLinkAnalytics } from '../../../../libs/martech/attributes.js';
 
 const { miloLibs, codeRoot } = getConfig();
 const base = miloLibs || codeRoot;
@@ -293,8 +294,10 @@ function moveSlides(event, carouselElements, jumpToIndex) {
     slides.forEach((slide) => {
       if (slide === nextSlide || slide === prevSlide) {
         slide.style.height = `${maxHeight - 40}px`;
+        slide.style.transition = 'height 0.2s ease-out';
       } else {
         slide.style.height = `${maxHeight}px`;
+        slide.style.transition = 'height 0.2s ease-out';
       }
     });
   }
@@ -536,6 +539,7 @@ export default function init(el) {
   dotsUl.append(...slideIndicators);
   controlsContainer.append(dotsUl);
   nextPreviousContainer.append(...nextPreviousBtns, controlsContainer);
+  decorateDefaultLinkAnalytics(nextPreviousContainer);
   el.append(nextPreviousContainer);
 
   function handleDeferredImages() {
