@@ -1351,37 +1351,6 @@ export function enablePersonalizationV2() {
   return !!enablePersV2 && isSignedOut();
 }
 
-export function getCookie(key) {
-  const cookie = document.cookie.split(';')
-    .map((x) => decodeURIComponent(x.trim()).split(/=(.*)/s))
-    .find(([k]) => k === key);
-  return cookie ? cookie[1] : null;
-}
-export async function getSpectraLOB(lastVisitedPage) {
-  const getECID = getCookie('AMCV_9E1005A551ED61CA0A490D45@AdobeOrg');
-  if (!getECID) return false;
-  const [, ECID] = getECID.split('|');
-  let url = `https://cchome-stage.adobe.io/int/v1/aep/events/webpage?ecid=${ECID}`;
-  if (lastVisitedPage) url = `${url}&lastVisitedPage=${lastVisitedPage}`;
-
-  try {
-    const rawResponse = await fetch(url, {
-      method: 'GET',
-      headers: {
-        'x-api-key': 'MarketingTech',
-        'Content-Type': 'application/json',
-      },
-      body: null,
-    });
-    const content = await rawResponse.json();
-    return content.modelLineOfBusiness?.toLowerCase();
-  } catch (e) {
-    if (e.name === 'TimeoutError') window.lana?.log('Spectra Timeout'); // Abort signal
-    else window.lana?.log(e.reason || e.error || e.message, { errorType: 'i' });
-    return false;
-  }
-}
-
 async function checkForPageMods() {
   const {
     mep: mepParam,
@@ -1389,20 +1358,40 @@ async function checkForPageMods() {
     mepButton,
     martech,
   } = Object.fromEntries(PAGE_URL.searchParams);
+  if (mepParam === 'off') return;
+  const config = getConfig();
   let targetInteractionPromise = null;
   let countryIPPromise = null;
-  let userLOBPromise = null;
-
   let calculatedTimeout = null;
-  if (mepParam === 'off') return;
+
+  const mepAddons = ['lob'];
+  const mepPromises = [];
+  mepAddons.forEach((addon) => {
+    const enablement = getMepEnablement(addon);
+    if (enablement === false) return;
+    config.mep ??= {};
+    const promise = new Promise((resolve) => {
+      (async () => {
+        try {
+          const { default: init } = await import(`../features/personalization/addons/${addon}.js`);
+          await init(addon, enablement, config);
+          /* c8 ignore next 3 */
+        } catch (err) {
+          console.log(`Failed loading MEP ${addon} addon`, err);
+        }
+        resolve();
+      })();
+    });
+    mepPromises.push(promise);
+  });
+
   const pzn = getMepEnablement('personalization');
   const pznroc = getMepEnablement('personalization-roc');
   const promo = getMepEnablement('manifestnames', PROMO_PARAM);
+  const mepgeolocation = getMepEnablement('mepgeolocation');
   const target = martech === 'off' ? false : getMepEnablement('target');
   const xlg = martech === 'off' ? false : getMepEnablement('xlg');
   const ajo = martech === 'off' ? false : getMepEnablement('ajo');
-  const mepgeolocation = martech === 'off' ? false : getMepEnablement('mepgeolocation');
-  const meplob = martech === 'off' ? false : getMepEnablement('aicslob', 'lob');
 
   if (!(pzn || pznroc || target || promo || mepParam
     || mepHighlight || mepButton || mepParam === '' || xlg || ajo)) return;
@@ -1415,7 +1404,6 @@ async function checkForPageMods() {
       countryIPPromise = getAkamaiCode(true);
     }
   }
-  if (meplob === true) userLOBPromise = getSpectraLOB(document.referrer);
 
   const enablePersV2 = enablePersonalizationV2();
   if ((target || xlg) && enablePersV2) {
@@ -1424,7 +1412,7 @@ async function checkForPageMods() {
       || parseInt(getMetadata('target-timeout'), 10)
       || TARGET_TIMEOUT_MS;
 
-    const { locale } = getConfig();
+    const { locale } = config;
     targetInteractionPromise = (async () => {
       const { loadAnalyticsAndInteractionData } = await import('../martech/helpers.js');
       const now = performance.now();
@@ -1463,8 +1451,9 @@ async function checkForPageMods() {
     targetInteractionPromise,
     calculatedTimeout,
     enablePersV2,
-    userLOBPromise,
-    meplob,
+    mepPromises,
+    // userLOBPromise,
+    // meplob,
   });
 }
 

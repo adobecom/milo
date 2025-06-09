@@ -921,14 +921,14 @@ async function setMepCountry(config) {
   }
 }
 
-async function setMepLob(config) {
-  try {
-    const lobPromise = await config.mep.userLOBPromise;
-    if (lobPromise) config.mep.meplob = lobPromise;
-  } catch (e) {
-    log('MEP Error: Unable to get user line of business');
-  }
-}
+// async function setMepLob(config) {
+//   try {
+//     const lobPromise = await config.mep.userLOBPromise;
+//     if (lobPromise) config.mep.meplob = lobPromise;
+//   } catch (e) {
+//     log('MEP Error: Unable to get user line of business');
+//   }
+// }
 
 async function getPersonalizationVariant(
   manifestPath,
@@ -960,7 +960,8 @@ async function getPersonalizationVariant(
     if (name.startsWith('param-')) return checkForParamMatch(name);
     if (hasCountryMatch(name, config)) return true;
     if (userEntitlements?.includes(name)) return true;
-    if (config.mep?.meplob && config.mep?.meplob === name.split('lob-')[1]?.toLowerCase()) return true;
+    // if (config.mep?.meplob && config.mep?.meplob === name.split('lob-')[1]?.toLowerCase()) return true;
+    if (config.mep?.lob && config.mep.lob === name.split('lob-')[1]?.toLowerCase()) return true;
     return PERSONALIZATION_KEYS.includes(name) && PERSONALIZATION_TAGS[name]();
   };
 
@@ -977,7 +978,7 @@ async function getPersonalizationVariant(
   };
 
   if (config.mep?.geoLocation) await setMepCountry(config);
-  if (config.mep?.meplob === true) await setMepLob(config);
+  // if (config.mep?.meplob === true) await setMepLob(config);
 
   const matchingVariant = variantNames.find((variant) => variantInfo[variant].some(matchVariant));
   return matchingVariant;
@@ -1462,13 +1463,15 @@ export async function init(enablements = {}) {
   const {
     mepParam, mepHighlight, mepButton, pzn, pznroc, promo, enablePersV2,
     target, ajo, countryIPPromise, mepgeolocation, targetInteractionPromise, calculatedTimeout,
-    postLCP, meplob, userLOBPromise,
+    postLCP, mepPromises,
   } = enablements;
+  if (mepPromises.length) await Promise.all(mepPromises);
   const config = getConfig();
   if (postLCP) {
     isPostLCP = true;
   } else {
     config.mep = {
+      ...config.mep,
       updateFragDataProps,
       preview: (mepButton !== 'off'
         && (config.env?.name !== 'prod' || mepParam || mepParam === '' || mepButton)),
@@ -1482,8 +1485,6 @@ export async function init(enablements = {}) {
       countryIPPromise,
       geoLocation: mepgeolocation,
       targetInteractionPromise,
-      meplob,
-      userLOBPromise,
     };
 
     manifests = manifests.concat(await combineMepSources(pzn, pznroc, promo, mepParam));
