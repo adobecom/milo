@@ -300,8 +300,8 @@ header.global-navigation {
 .feds-cta--secondary {
   border-radius: 1rem;
   background-color: transparent;
-  border: .125rem solid var(--profile-cta-secondary-border, #DADADA);
-  color: var(--alias-icon-background-neutral-default, #292929);
+  border: .125rem solid #DADADA;
+  color: #292929;
   font-size: .875rem;
   font-style: normal;
   font-weight: 700;
@@ -310,13 +310,13 @@ header.global-navigation {
 }
 
 .feds-cta--secondary:hover {
-  border-color: var(--profile-cta-hover-border, #C6C6C6);
-  background: var(--icon-palette-gray-100, #E9E9E9);
-  color: var(--alias-icon-background-neutral-default, #292929);
+  border-color: #C6C6C6;
+  background: #E9E9E9;
+  color: #292929;
 }
 .feds-cta--secondary:focus-visible {
-  outline: 2px solid var(--alias-icon-neutral-key-focus, #507BFF);
-  background: var(--icon-palette-gray-100, #E9E9E9);
+  outline: 2px solid #507BFF;
+  background: #E9E9E9;
 }
 
 /* Search */
