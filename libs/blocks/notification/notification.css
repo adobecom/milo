@@ -481,6 +481,7 @@
 
 @media screen and (max-width: 600px) {
   .mobile-disable-scroll {
+    touch-action: none;
     overflow: hidden;
   }
 }
