@@ -136,30 +136,37 @@ class GrayboxPromote extends LitElement {
   }
 
   addUrlField() {
-    this.urls.push('');
+    this.urls = [...this.urls, ''];
     this.requestUpdate();
   }
 
   removeUrlField(index) {
     if (this.urls.length > 1) {
-      this.urls.splice(index, 1);
+      this.urls = this.urls.filter((_, i) => i !== index);
       this.requestUpdate();
     }
   }
 
-  updateUrl(index, value) {
-    this.urls[index] = value;
+  async updateUrl(index, value) {
+    this.urls = [...this.urls.slice(0, index), value, ...this.urls.slice(index + 1)];
     if (this.fetchFragments && value.trim()) {
-      this.findFragmentsTask.run().then((fragments) => {
-        this.foundFragments = fragments;
-        if (fragments.length > 0) {
+      try {
+        await this.setupTask.taskComplete;
+        const fragments = await this.findFragments();
+        // Normalize fragments to expected format
+        this.foundFragments = fragments.map((frag) => (
+          typeof frag === 'string'
+            ? [{ pathname: frag, valid: 'found' }]
+            : frag
+        ));
+        if (this.foundFragments && this.foundFragments.length > 0) {
           this.showFragments();
         }
         this.requestUpdate();
-      }).catch((error) => {
+      } catch (error) {
         console.error('Error finding fragments:', error);
         alert('Error finding fragments. Please try again.');
-      });
+      }
     }
     this.requestUpdate();
   }
@@ -183,16 +190,18 @@ class GrayboxPromote extends LitElement {
     // If fetch fragments is enabled, find fragments for the new URLs
     if (this.fetchFragments) {
       try {
-        this.findFragmentsTask.run().then((fragments) => {
-          this.foundFragments = fragments;
-          if (fragments && fragments.length > 0) {
-            this.showFragments();
-          }
-          this.requestUpdate();
-        }).catch((error) => {
-          console.error('Error finding fragments:', error);
-          alert('Error finding fragments. Please try again.');
-        });
+        await this.setupTask.taskComplete;
+        const fragments = await this.findFragments();
+        // Normalize fragments to expected format
+        this.foundFragments = fragments.map((frag) => (
+          typeof frag === 'string'
+            ? [{ pathname: frag, valid: 'found' }]
+            : frag
+        ));
+        if (this.foundFragments && this.foundFragments.length > 0) {
+          this.showFragments();
+        }
+        this.requestUpdate();
       } catch (error) {
         console.error('Error finding fragments:', error);
         alert('Error finding fragments. Please try again.');
@@ -223,22 +232,24 @@ class GrayboxPromote extends LitElement {
     this.fetchFragments = !this.fetchFragments;
     if (this.fetchFragments && this.urls.some((url) => url.trim())) {
       try {
-        this.findFragmentsTask.run().then((fragments) => {
-          this.foundFragments = fragments;
-          if (fragments && fragments.length > 0) {
-            this.showFragments();
-          }
-          this.requestUpdate();
-        }).catch((error) => {
-          console.error('Error finding fragments:', error);
-          alert('Error finding fragments. Please try again.');
-          this.fetchFragments = false;
-          this.requestUpdate();
-        });
+        await this.setupTask.taskComplete;
+        const fragments = await this.findFragments();
+        console.log('fragments in toggleFetchFragments', fragments);
+        // Normalize fragments to expected format
+        this.foundFragments = fragments.map((frag) => (
+          typeof frag === 'string'
+            ? [{ pathname: frag, valid: 'found' }]
+            : frag
+        ));
+        if (this.foundFragments && this.foundFragments.length > 0) {
+          this.showFragments();
+        }
+        this.requestUpdate();
       } catch (error) {
         console.error('Error finding fragments:', error);
         alert('Error finding fragments. Please try again.');
         this.fetchFragments = false;
+        this.requestUpdate();
       }
     } else {
       this.foundFragments = [];
@@ -291,7 +302,41 @@ class GrayboxPromote extends LitElement {
   }
 
   async findFragments() {
-    return this.findFragmentsTask.taskComplete;
+    const filteredUrls = this.urls.filter((url) => url.trim());
+    if (!filteredUrls.length) return [];
+
+    const params = new URLSearchParams({
+      sourcePaths: filteredUrls.join(', '),
+      adminPageUri: this.setup.adminPageUri,
+      driveId: this.setup.driveId,
+      gbRootFolder: this.setup.gbRootFolder,
+      rootFolder: this.setup.rootFolder,
+      experienceName: this.getEffectiveExperienceName(),
+      projectExcelPath: this.configData?.projectExcelPath,
+    });
+
+    const apiUrl = `${this.baseUrl}/find-fragments?${params.toString()}`;
+    const response = await fetch(apiUrl);
+
+    if (!response.ok) {
+      throw new Error(`API request failed: ${response.status} ${response.statusText}`);
+    }
+
+    const data = await response.json();
+
+    // Handle the API response based on the actual format
+    if (data.fragmentLinks && Array.isArray(data.fragmentLinks)) {
+      const frags = data.fragmentLinks;
+      console.log('fragments fetched from server', frags);
+      return frags;
+    }
+
+    if (Array.isArray(data)) {
+      console.log('fragments fetched from server', data);
+      return data;
+    }
+
+    return [];
   }
 
   showFragments() {
@@ -416,12 +461,12 @@ class GrayboxPromote extends LitElement {
       .filter((fragment) => fragment[0].valid !== 'not found')
       .map((fragment) => fragment[0].pathname);
 
-    // Add each fragment URL to the urls array
-    fragmentUrls.forEach((url) => {
-      if (!this.urls.includes(url)) {
-        this.urls.push(url);
-      }
-    });
+    const existingUrls = new Set(this.urls);
+    const urlsToAdd = fragmentUrls.filter((url) => !existingUrls.has(url));
+
+    if (urlsToAdd.length > 0) {
+      this.urls = [...this.urls, ...urlsToAdd];
+    }
 
     // Close the modal
     this.closeFragmentsModal();
@@ -483,6 +528,8 @@ class GrayboxPromote extends LitElement {
       this.requestUpdate();
       return;
     }
+
+    await this.setupTask.taskComplete;
 
     // Run the bulk copy task
     this.bulkCopyTask.run();
@@ -590,16 +637,7 @@ class GrayboxPromote extends LitElement {
           experienceName: this.getEffectiveExperienceName(),
           projectExcelPath: this.configData?.projectExcelPath,
         });
-        // Prepare the API call parameters with hardcoded values for now
-        /* const paramsHardcoded = new URLSearchParams({
-          sourcePaths: this.urls.join(', '),
-          adminPageUri: 'https://milo.adobe.com/tools/graybox-promote?ref=main&repo=bacom&owner=adobecom&project=BACOM',
-          driveId: 'b!rZMb0rzDlki1jv128EwoNOJDPlbbCaJHjZmSthYaBRurbdjrKwiWS7YyVFjPXMsO',
-          gbRootFolder: '/bacom-graybox',
-          rootFolder: '/bacom',
-          experienceName: 'sabya-bulk-copy-drill',
-          projectExcelPath: '/promote-projects/sabya-project-2.xlsx',
-        }); */
+
         const bulkCopyUrl = `${this.baseUrl}/bulk-copy?${params.toString()}`;
         const response = await fetch(bulkCopyUrl);
         const data = await response.json();
@@ -631,44 +669,6 @@ class GrayboxPromote extends LitElement {
         throw new Error(`Could not promote: ${promote.payload}`);
       },
       autoRun: false,
-    });
-
-    this.findFragmentsTask = new Task(this, {
-      task: async () => {
-        const filteredUrls = this.urls.filter((url) => url.trim());
-        if (!filteredUrls.length) return [];
-
-        const params = new URLSearchParams({
-          sourcePaths: filteredUrls.join(', '),
-          adminPageUri: this.setup.adminPageUri,
-          driveId: this.setup.driveId,
-          gbRootFolder: this.setup.gbRootFolder,
-          rootFolder: this.setup.rootFolder,
-          experienceName: this.getEffectiveExperienceName(),
-          projectExcelPath: this.configData?.projectExcelPath,
-        });
-
-        const apiUrl = `${this.baseUrl}/find-fragments?${params.toString()}`;
-        const response = await fetch(apiUrl);
-
-        if (!response.ok) {
-          throw new Error(`API request failed: ${response.status} ${response.statusText}`);
-        }
-
-        const data = await response.json();
-
-        // Transform the API response to match the expected format
-        if (data.fragmentLinks && Array.isArray(data.fragmentLinks)) {
-          return data.fragmentLinks.map((link) => [{
-            pathname: link,
-            valid: 'found', // Assuming found fragments are valid
-          }]);
-        }
-
-        return [];
-      },
-      autoRun: false,
-      args: () => [this.urls, this.setup, this.configData], // Add dependencies
     });
   }
 
@@ -767,17 +767,17 @@ class GrayboxPromote extends LitElement {
         </div>
         <div class="steps-container" style="flex: 1; overflow-y: auto;">
           ${ALL_STATUSES.map((stepStatus, index) => {
-            const isCompleted = isStepCompleted(status, stepStatus);
-            const isCurrent = stepStatus === status;
-            const isLastStepStatus = isLastStep(stepStatus);
-            const isInProgress = isCurrent && !isLastStepStatus
-              && isInProgressStep(stepStatus, status);
-            const stepNumberBg = getStepNumberBg(isCompleted, isCurrent);
-            const stepTitleColor = getStepTitleColor(isCompleted, isCurrent);
-            const stepData = statuses?.find((s) => s?.stepName === stepStatus);
-            const hasFiles = stepData?.files?.length > 0;
+    const isCompleted = isStepCompleted(status, stepStatus);
+    const isCurrent = stepStatus === status;
+    const isLastStepStatus = isLastStep(stepStatus);
+    const isInProgress = isCurrent && !isLastStepStatus
+      && isInProgressStep(stepStatus, status);
+    const stepNumberBg = getStepNumberBg(isCompleted, isCurrent);
+    const stepTitleColor = getStepTitleColor(isCompleted, isCurrent);
+    const stepData = statuses?.find((s) => s?.stepName === stepStatus);
+    const hasFiles = stepData?.files?.length > 0;
 
-            return html`
+    return html`
               <div class="step ${isCurrent ? 'current' : ''} ${isCompleted ? 'completed' : ''} ${isLastStepStatus ? 'last-step' : ''}"
                 style="margin-bottom: 16px; opacity: ${isCompleted ? '0.7' : '1'}; ${isInProgress ? 'animation: pulse 2s infinite;' : ''}">
                 <div style="display: flex; align-items: center; gap: 12px;">
@@ -838,7 +838,7 @@ class GrayboxPromote extends LitElement {
                 </div>
               </div>
             `;
-          })}
+  })}
         </div>
       </div>
       ${renderModal(this.showModal, this.selectedStepData, this.closeModal)}
