@@ -278,7 +278,6 @@ function trapFocusWithElement(el, focusableElements) {
       lastFocusedElement.focus({ focusVisible: true });
     }
   };
-  const scrollEvent = (event) => event.preventDefault();
   const updateLastFocused = (event) => { lastFocusedElement = event.target; };
   const keydownEvent = (event) => {
     if (event.key === 'Escape') {
@@ -296,14 +295,12 @@ function trapFocusWithElement(el, focusableElements) {
       }
     }
   };
-  document.addEventListener('scroll', scrollEvent);
   document.addEventListener('click', externalClickHandler);
   el.addEventListener('focusin', updateLastFocused);
   el.addEventListener('keydown', keydownEvent);
   closeButton.addEventListener('click', () => {
     document.removeEventListener('click', externalClickHandler);
     el.removeEventListener('focusin', updateLastFocused);
-    document.removeEventListener('scroll', scrollEvent);
     el.removeEventListener('keydown', keydownEvent);
   });
 }
