@@ -110,3 +110,62 @@ export const loginToSharepoint = async (context) => login({
   .then(() => {
     context.setup.spToken = accessToken.value || accessTokenExtra.value;
   });
+
+export async function findFragments(baseUrl, params) {
+  const apiUrl = `${baseUrl}/find-fragments?${params.toString()}`;
+  const response = await fetch(apiUrl);
+
+  if (!response.ok) {
+    throw new Error(`API request failed: ${response.status} ${response.statusText}`);
+  }
+
+  const data = await response.json();
+
+  if (data.fragmentLinks && Array.isArray(data.fragmentLinks)) {
+    return data.fragmentLinks;
+  }
+
+  if (Array.isArray(data)) {
+    return data;
+  }
+
+  return [];
+}
+
+export async function fetchBulkCopyStatus(baseUrl, repo, experienceName) {
+  const statusUrl = `${baseUrl}/file-status.json?showContent=graybox_promote/${repo}/${experienceName}/bulk-copy-status.json`;
+  const response = await fetch(statusUrl);
+  if (!response.ok) throw new Error('Failed to fetch bulk copy status');
+  return response.json();
+}
+
+export async function initiateBulkCopy(baseUrl, params) {
+  const bulkCopyUrl = `${baseUrl}/bulk-copy?${params.toString()}`;
+  const response = await fetch(bulkCopyUrl);
+  const data = await response.json();
+
+  if (response.ok) {
+    return data;
+  }
+  throw new Error(data?.payload || 'Failed to initiate bulk copy');
+}
+
+export async function initiatePromotion(baseUrl, setup) {
+  const promote = await fetch(`${baseUrl}/promote.json`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams(setup).toString(),
+  });
+  const promoteRes = await promote.json();
+  if (promoteRes?.code === 200) {
+    return promoteRes;
+  }
+  throw new Error(`Could not promote: ${promoteRes.payload}`);
+}
+
+export async function fetchPromoteStatus(baseUrl, repo, experienceName) {
+  const statusUrl = `${baseUrl}/file-status.json?showContent=graybox_promote/${repo}/${experienceName}/status.json`;
+  const response = await fetch(statusUrl);
+  if (!response.ok) throw new Error('Failed to fetch promote status');
+  return response.json();
+}
