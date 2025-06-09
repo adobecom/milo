@@ -1082,3 +1082,19 @@ a.static:active  {
 @media screen and (min-width: 1440px) {
   .con-block.max-width-12-desktop-large .foreground { max-width: 1200px; }
 }
+
+.privacy-toast {
+  position: fixed;
+  bottom: 2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #28d175;
+  color: #fff;
+  padding: 12px 40px;
+  border-radius: 8px;
+  font-weight: 600;
+  z-index: 10000;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  font-size: 1.1rem;
+  transition: opacity 0.3s;
+}

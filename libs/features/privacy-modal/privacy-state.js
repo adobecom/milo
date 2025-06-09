@@ -3,6 +3,7 @@
 import getCookieValue from './utilities/cookie/getCookieValue.js';
 import setCookieValue from './utilities/cookie/setCookieValue.js';
 import extractRootDomain from './utilities/helpers/extractRootDomain.js';
+import uuid from './utilities/helpers/uuid.js';
 
 const CONSENT_COOKIE = 'OptanonConsent';
 const INTERACTION_COOKIE = 'OptanonAlertBoxClosed';
@@ -28,29 +29,35 @@ function parseConsentCookie(cookie) {
   return [active, available];
 }
 
-function buildConsentCookie(groups) {
-  // groups: array of category strings, e.g. ['C0001', 'C0002']
-  // default all others to :0
-  const all = CATEGORIES_ALL.map(cat => `${cat}:${groups.includes(cat) ? 1 : 0}`);
-  return `groups=${all.join(',')}`;
+function buildConsentCookie(groups, { isGpcEnabled = 0 } = {}) {
+  let consentId = localStorage.getItem('OptanonConsentId');
+  if (!consentId) {
+    consentId = uuid();
+    localStorage.setItem('OptanonConsentId', consentId);
+  }
+  const datestamp = encodeURIComponent(new Date().toString());
+  const landingPath = encodeURIComponent(window.location.pathname);
+  const groupsStr = CATEGORIES_ALL
+    .map((cat) => `${cat}:${groups.includes(cat) ? 1 : 0}`)
+    .join('%2C');
+  return [
+    `isGpcEnabled=${isGpcEnabled}`,
+    `datestamp=${datestamp}`,
+    'version=202311.1.0',
+    `consentId=${consentId}`,
+    'interactionCount=1',
+    `landingPath=${landingPath}`,
+    `groups=${groupsStr}`
+  ].join('&');
 }
 
 function fireEvent(name, detail = {}) {
   window.dispatchEvent(new CustomEvent(`adobePrivacy:${name}`, { detail }));
 }
-
-function setConsent(groups) {
-  const domain = `.${extractRootDomain(window.location.hostname)}`;
-  const cookieValue = buildConsentCookie(groups);
-  const expiration = new Date();
-  expiration.setFullYear(expiration.getFullYear() + 1);
-  setCookieValue(CONSENT_COOKIE, cookieValue, { path: '/', domain, expiration });
-  setCookieValue(INTERACTION_COOKIE, expiration.toISOString(), { path: '/', domain, expiration });
-  fireConsentEvent();
-}
-
 function getConsent() {
-  return parseConsentCookie(getCookieValue(CONSENT_COOKIE));
+  const cookieValue = getCookieValue(CONSENT_COOKIE);
+  const decoded = decodeURIComponent(cookieValue || '');
+  return parseConsentCookie(decoded);
 }
 
 function hasExistingConsent() {
@@ -85,6 +92,16 @@ function fireConsentEvent() {
   }
 }
 
+function setConsent(groups) {
+  const domain = `.${extractRootDomain(window.location.hostname)}`;
+  const cookieValue = buildConsentCookie(groups);
+  const expiration = new Date();
+  expiration.setFullYear(expiration.getFullYear() + 1);
+  setCookieValue(CONSENT_COOKIE, cookieValue, { path: '/', domain, expiration });
+  setCookieValue(INTERACTION_COOKIE, expiration.toISOString(), { path: '/', domain, expiration });
+  fireConsentEvent();
+}
+
 // For implicit consent (ROW)
 function setImplicitConsent() {
   setConsent(CATEGORIES_ALL);
@@ -101,7 +118,6 @@ const privacyState = {
   getConsent, setConsent, hasExistingConsent, hasFullConsent, hasCustomConsent, setImplicitConsent, on,
 };
 
-// Attach to window.adobePrivacy (or export as needed)
-window.adobePrivacy = privacyState;
+privacyState.activeCookieGroups = () => privacyState.getConsent()[0];
 
 export default privacyState;

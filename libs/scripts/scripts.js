@@ -22,6 +22,7 @@ import {
 import locales from '../utils/locales.js';
 import loadPrivacyModal from '../features/privacy-modal/privacy-modal.js';
 import loadPrivacyBanner from '../features/privacy-banner/privacy-banner.js';
+import '../features/privacy-modal/utilities/adobe-privacy.js';
 
 // Production Domain
 const prodDomains = ['milo.adobe.com', 'business.adobe.com', 'www.adobe.com', 'news.adobe.com'];
@@ -103,7 +104,14 @@ const eagerLoad = (img) => {
   performance.mark('loadpage');
   setConfig(config);
   loadLana({ clientId: 'milo' });
+  // loadPrivacyBanner(config, createTag, getMetadata, loadStyle);
+  // loadPrivacyModal(config, createTag, getMetadata, loadBlock, loadStyle);
+  // as soon as config is ready
   loadPrivacyBanner(config, createTag, getMetadata, loadStyle);
-  //loadPrivacyModal(config, createTag, getMetadata, loadBlock, loadStyle);
+
+  // Open modal on event
+  document.addEventListener('adobePrivacy:OpenModal', () => {
+    loadPrivacyModal(config, createTag, getMetadata, loadBlock, loadStyle);
+  });
   await loadArea();
 }());

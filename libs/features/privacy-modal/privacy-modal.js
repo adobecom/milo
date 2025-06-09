@@ -1,6 +1,6 @@
 import { getFederatedContentRoot } from '../../utils/utils.js';
+import privacyState from './privacy-state.js'; // <-- Adjust path if needed
 
-// Utilities
 let config;
 let createTag;
 let getMetadata;
@@ -16,7 +16,17 @@ function fragment(children) {
   return frag;
 }
 
-// Accordion
+// Collect checked checkboxes from modal, always add C0001
+function collectConsentFromModal(modalContent) {
+  const checkboxes = modalContent.querySelectorAll('.privacy-modal-cookiegroup input[type="checkbox"]:not(:disabled)');
+  const checked = Array.from(checkboxes)
+    .map((cb) => (cb.checked ? cb.closest('.privacy-modal-cookiegroup').dataset.cat : null))
+    .filter(Boolean);
+  if (!checked.includes('C0001')) checked.unshift('C0001');
+  return checked;
+}
+
+// Accordion, enable/disable info -- (unchanged)
 function createAccordion(accordion) {
   const accWrap = createTag('div', { class: 'privacy-modal-accordion' });
   accordion.data.forEach((section) => {
@@ -29,45 +39,42 @@ function createAccordion(accordion) {
   });
   return accWrap;
 }
-
-// If enabled/disabled info
 function createEnableInfo({ data = [] }) {
   const infoWrap = createTag('div', { class: 'privacy-modal-enableinfo' });
   const ei = data[0];
   if (!ei) return infoWrap;
-
   const makeList = (bullets) => (bullets ? bullets.split('\n').map((b) => createTag('li', null, b)) : [createTag('li', null, 'No bullets found!')]);
-
   const enabled = createTag('div', { class: 'privacy-modal-enabled' }, [
     createTag('h4', null, ei.enabled_heading),
     createTag('ul', null, fragment(makeList(ei.enabled_bullets))),
   ]);
-
   const disabled = createTag('div', { class: 'privacy-modal-disabled' }, [
     createTag('h4', null, ei.disabled_heading),
     createTag('ul', null, fragment(makeList(ei.disabled_bullets))),
   ]);
-
   infoWrap.append(enabled, disabled);
   return infoWrap;
 }
 
-// Cookie groups with toggles
 function createCookieGroups(cookiegroups) {
+  const activeConsent = privacyState.activeCookieGroups();
   const groupsWrap = createTag('div', { class: 'privacy-modal-cookiegroups' });
   cookiegroups.data.forEach((group, i) => {
-    const groupDiv = createTag('div', { class: 'privacy-modal-cookiegroup' });
+    const cat = group.category || `C000${i + 1}`;
+    const groupDiv = createTag('div', { class: 'privacy-modal-cookiegroup', 'data-cat': cat });
     const groupHeader = createTag('div', { class: 'privacy-modal-cookiegroup-header' });
+
+    const inputAttrs = {
+      type: 'checkbox',
+      'aria-label': group.group_heading,
+    };
+    if (activeConsent.includes(cat)) inputAttrs.checked = true;
+    if (group.always_active === 'true') inputAttrs.disabled = true; // if needed
     groupHeader.append(
       createTag('span', { class: 'privacy-modal-cookiegroup-title' }, group.group_heading),
-      group.always_active === 'true'
-        ? createTag('span', { class: 'privacy-modal-cookiegroup-always' }, 'Always active', createTag('input', { type: 'checkbox', checked: true, disabled: true }))
-        : createTag('input', {
-          type: 'checkbox',
-          checked: group.default_checked === 'true',
-          'aria-label': group.group_heading,
-        }),
+      createTag('input', inputAttrs),
     );
+
     const desc = createTag('div', { class: 'privacy-modal-cookiegroup-desc' }, group.group_description);
     const link = createTag('a', {
       class: 'privacy-modal-cookiegroup-link',
@@ -81,17 +88,66 @@ function createCookieGroups(cookiegroups) {
   return groupsWrap;
 }
 
-// Actions (buttons)
-function createActions(actions) {
+function showPrivacyToaster() {
+  if (document.querySelector('.privacy-toast')) return;
+  const toaster = document.createElement('div');
+  toaster.className = 'privacy-toast';
+  toaster.textContent = 'Your privacy preferences have been saved.';
+  document.body.appendChild(toaster);
+  setTimeout(() => toaster.remove(), 3000);
+}
+
+// --- Actions (unchanged except for accept/reject, see below)
+function createActions(actions, modalContent, cookiegroups) {
   const actionsDiv = createTag('div', { class: 'privacy-modal-actions' });
+  let confirmBtn;
   actions.data.forEach((action) => {
     const btn = createTag('button', {
       class: `privacy-modal-action${action.primary === 'true' ? ' primary' : ''}`,
       'data-action': action.action,
       type: 'button',
+      disabled: action.action === 'confirm' ? true : undefined,
     }, action.label);
+    if (action.action === 'confirm') confirmBtn = btn;
     actionsDiv.appendChild(btn);
   });
+
+  if (confirmBtn && modalContent) {
+    const checkboxes = modalContent.querySelectorAll('.privacy-modal-cookiegroup input[type="checkbox"]:not(:disabled)');
+    const initialState = Array.from(checkboxes).map(cb => cb.checked);
+    checkboxes.forEach((cb, idx) => {
+      cb.addEventListener('change', () => {
+        const changed = Array.from(checkboxes).some((c, i) => c.checked !== initialState[i]);
+        confirmBtn.disabled = !changed;
+      });
+    });
+    confirmBtn.onclick = () => {
+      const checkedCats = collectConsentFromModal(modalContent);
+      window.adobePrivacy.setConsent(checkedCats);
+      showPrivacyToaster();
+      document.querySelector('#privacy-modal-v2')?.remove();
+      document.querySelector('.modal-curtain')?.remove();
+      document.body.classList.remove('disable-scroll');
+    };
+  }
+
+  // Accept/reject for modal: set consent for all or strictly necessary
+  actionsDiv.querySelector('button[data-action="accept"]')?.addEventListener('click', () => {
+    const allCats = cookiegroups.data.map((g, i) => g.category || `C000${i+1}`);
+    privacyState.setConsent(allCats);
+    showPrivacyToaster();
+    document.querySelector('#privacy-modal-v2')?.remove();
+    document.querySelector('.modal-curtain')?.remove();
+    document.body.classList.remove('disable-scroll');
+  });
+  actionsDiv.querySelector('button[data-action="reject"]')?.addEventListener('click', () => {
+    privacyState.setConsent(['C0001']);
+    showPrivacyToaster();
+    document.querySelector('#privacy-modal-v2')?.remove();
+    document.querySelector('.modal-curtain')?.remove();
+    document.body.classList.remove('disable-scroll');
+  });
+
   return actionsDiv;
 }
 
@@ -101,13 +157,16 @@ function buildModalContent(json) {
   const wrap = createTag('div', { class: 'privacy-modal-content', role: 'dialog', 'aria-modal': true, 'aria-labelledby': 'privacy-modal-title' });
 
   wrap.append(
-    createActions(actions),
     createTag('h2', { id: 'privacy-modal-title' }, getValue(privacy, 'modal_title')),
     createTag('h3', null, getValue(privacy, 'main_heading')),
     createAccordion(accordion),
     createEnableInfo(enableinfo),
     createCookieGroups(cookiegroups),
   );
+
+  const actionsDiv = createActions(actions, wrap, cookiegroups);
+  wrap.prepend(actionsDiv);
+
   return wrap;
 }
 
@@ -125,8 +184,7 @@ async function fetchPrivacyJson() {
 
 // Export main function for loading modal
 export default async function loadPrivacyModal(
-  conf, createTagFunc, getMetadataFunc, loadBlockFunc, loadStyleFunc
-) {
+  conf, createTagFunc, getMetadataFunc, loadBlockFunc, loadStyleFunc) {
   config = conf;
   createTag = createTagFunc;
   getMetadata = getMetadataFunc;
@@ -147,10 +205,10 @@ export default async function loadPrivacyModal(
     class: 'privacy-modal-v2',
     id: 'privacy-modal-v2',
     content,
-    closeEvent: 'closePrivacyModal'
+    closeEvent: 'closePrivacyModal',
   });
 
-  content.querySelectorAll('.privacy-modal-action').forEach((btn) => {
+  content.querySelectorAll('.privacy-modal-action:not([data-action="confirm"])').forEach((btn) => {
     btn.onclick = () => {
       document.querySelector('#privacy-modal-v2')?.remove();
       document.querySelector('.modal-curtain')?.remove();

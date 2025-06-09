@@ -1,4 +1,4 @@
-import hasOwnProperty from './hasOwnProperty';
+import hasOwnProperty from './hasOwnProperty.js';
 
 /**
  * Safely retrieves nested object properties without throwing errors

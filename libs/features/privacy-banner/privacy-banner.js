@@ -1,40 +1,104 @@
-// libs/features/privacy-banner/privacy-banner.js
-
 import privacyState from '../privacy-modal/privacy-state.js';
+import getUserLocation from '../privacy-modal/utilities/helpers/getUserLocation.js';
+import getPropertySafely from '../privacy-modal/utilities/lang/getPropertySafely.js';
+import isInSensitiveGroup from '../privacy-modal/utilities/helpers/isInSensitiveGroup.js';
+import isGPCEnabled from '../privacy-modal/utilities/helpers/isGPCEnabled.js';
 
-async function fetchBannerJson(config) {
-  // Default: SharePoint or fallback URL. Adjust as needed for your environment.
-  const root = config.contentRoot ?? '';
-  const url1 = `${root}/privacy/privacy-banner.json`;
-  const url2 = 'https://stage--federal--adobecom.aem.page/federal/dev/snehal/privacy/privacy-banner.json';
-  let resp = await fetch(url1, { cache: 'no-cache' });
-  if (resp.ok) return resp.json();
-  resp = await fetch(url2, { cache: 'no-cache' });
-  if (resp.ok) return resp.json();
-  throw new Error('Privacy banner JSON not found');
+// Helper: fetch OneTrust config
+async function getOneTrustConfig(otDomainId) {
+  if (!otDomainId) return null;
+  try {
+    const resp = await fetch(`https://cdn.cookielaw.org/consent/${otDomainId}/${otDomainId}.json`, { cache: 'no-cache' });
+    if (!resp.ok) return null;
+    return await resp.json();
+  } catch {
+    return null;
+  }
 }
 
-export default async function loadPrivacyBanner(config, createTag, getMetadata, loadStyle) {
-  if (document.querySelector('.privacy-banner')) return; // Prevent duplicates
+function isGdprEnforcedCountry(location, config) {
+  if (!location?.country || !config?.RuleSet) return true;
+  const country = location.country.toLowerCase();
+  const rules = config.RuleSet.filter((rule) =>
+    Array.isArray(rule.Countries) && rule.Countries.includes(country) && !rule.Global);
+  return !!rules.length;
+}
 
-  // Load CSS
-  loadStyle(`${config.miloLibs || config.codeRoot}/features/privacy-banner/privacy-banner.css`);
+async function getInitialConsent({ isGdpr, userProfileTags = [] }) {
+  // Always enable strictly necessary cookies
+  if (isGdpr) return ['C0001'];
 
-  // Fetch banner JSON
-  let bannerData = {
-    title: 'Make It Your Own',
-    description: 'Adobe and its vendors use cookies and similar technologies to improve your experience and measure your interactions with our websites, products and services. We also use them to provide you more relevant information in searches and in ads on this and other sites. If that’s okay, click “Enable all”. Clicking “Don’t enable” will set only cookies that are strictly necessary. You can also view our vendors and customize your choices by clicking "Cookie Settings".'
-  };
+  // For non-GDPR regions:
+  if (isGPCEnabled()) return ['C0001', 'C0002', 'C0003']; // Exclude advertising if GPC is enabled
+
+  const [isSensitive] = isInSensitiveGroup(userProfileTags);
+  if (isSensitive) return ['C0001', 'C0002', 'C0003']; // Exclude advertising for sensitive groups
+
+  // Otherwise, enable all
+  return ['C0001', 'C0002', 'C0003', 'C0004'];
+}
+
+async function fetchBannerData(config) {
+  const url1 = `${config.contentRoot ?? ''}/privacy/privacy-banner.json`;
+  const url2 = 'https://stage--federal--adobecom.aem.page/federal/dev/snehal/privacy/privacy-banner.json';
   try {
-    const json = await fetchBannerJson(config);
-    if (json?.data?.[0]) {
-      bannerData = json.data[0];
+    let resp = await fetch(url1, { cache: 'no-cache' });
+    if (!resp.ok) resp = await fetch(url2, { cache: 'no-cache' });
+    if (resp.ok) {
+      const json = await resp.json();
+      if (json?.data?.[0]) return json.data[0];
     }
-  } catch (e) {
-    // If fetch fails, use defaults
+  } catch {}
+  // Fallback
+  return {
+    title: 'DefaultTitle',
+    description: 'DefaultDescription',
+  };
+}
+
+// ---- MAIN EXPORT ----
+export default async function loadPrivacyBanner(config, createTag, getMetadata, loadStyle) {
+  const urlParams = new URLSearchParams(window.location.search);
+  const customLocation = urlParams.get('customPrivacyLocation');
+  if (customLocation) {
+    const locationData = JSON.stringify({ country: customLocation.toUpperCase() });
+    window.sessionStorage.setItem(config.location, locationData);
   }
 
-  // Banner elements
+  if (document.querySelector('.privacy-banner')) return;
+  loadStyle(`${config.miloLibs || config.codeRoot}/features/privacy-banner/privacy-banner.css`);
+  if (privacyState.hasExistingConsent()) return;
+
+  // GEO/CONFIG/PROFILE/GPC LOGIC
+  const otDomainId = config.privacyId || (config.privacy && config.privacy.otDomainId);
+  const location = await getUserLocation();
+  const otConfig = await getOneTrustConfig(otDomainId);
+  const isGdpr = isGdprEnforcedCountry(location, otConfig);
+
+  // Fetch user tags/profile as needed
+  const userProfileTags = [];
+  // If you have a function to get user profile, do it here and set userProfileTags
+
+  const initialConsent = await getInitialConsent({ isGdpr, userProfileTags });
+
+  if (!isGdpr && !privacyState.hasExistingConsent()) {
+    privacyState.setImplicitConsent();
+  }
+  // Show banner only if GDPR consent is required
+  const showBanner = isGdpr;
+
+  if (!showBanner) {
+    privacyState.setImplicitConsent(); // For non-GDPR
+    return;
+  }
+
+  if (!privacyState.hasExistingConsent()) {
+    privacyState.setConsent(['C0001']);
+  }
+
+  const bannerData = await fetchBannerData(config);
+
+  // --- Banner UI ---
   const banner = createTag('div', { class: 'privacy-banner', role: 'region', 'aria-label': 'Cookie banner' });
   const wrap = createTag('div', { class: 'privacy-banner-wrap' });
 
@@ -44,7 +108,6 @@ export default async function loadPrivacyBanner(config, createTag, getMetadata, 
     createTag('div', { class: 'privacy-banner-desc' }, bannerData.description)
   );
 
-  // Actions
   const btnRow = createTag('div', { class: 'privacy-banner-actions' });
   const btnSettings = createTag('button', { class: 'privacy-banner-btn settings', type: 'button' }, 'Cookie Settings');
   const btnGroup = createTag('div', { class: 'privacy-banner-action-group' });
@@ -56,9 +119,8 @@ export default async function loadPrivacyBanner(config, createTag, getMetadata, 
   wrap.append(content, btnRow);
   banner.append(wrap);
 
-  // Button Actions
   btnAccept.onclick = () => {
-    privacyState.setConsent(['C0001', 'C0002', 'C0003', 'C0004']);
+    privacyState.setConsent(initialConsent);
     banner.remove();
   };
   btnReject.onclick = () => {
@@ -70,8 +132,5 @@ export default async function loadPrivacyBanner(config, createTag, getMetadata, 
     banner.remove();
   };
 
-  // Show banner if no consent
-  if (!privacyState.hasExistingConsent()) {
-    document.body.append(banner);
-  }
+  document.body.append(banner);
 }
