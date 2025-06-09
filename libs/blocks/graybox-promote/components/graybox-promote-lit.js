@@ -150,7 +150,7 @@ class GrayboxPromote extends LitElement {
   updateUrl(index, value) {
     this.urls[index] = value;
     if (this.fetchFragments && value.trim()) {
-      this.findFragments().then((fragments) => {
+      this.findFragmentsTask.run().then((fragments) => {
         this.foundFragments = fragments;
         if (fragments.length > 0) {
           this.showFragments();
@@ -183,10 +183,16 @@ class GrayboxPromote extends LitElement {
     // If fetch fragments is enabled, find fragments for the new URLs
     if (this.fetchFragments) {
       try {
-        this.foundFragments = await this.findFragments();
-        if (this.foundFragments.length > 0) {
-          this.showFragments();
-        }
+        this.findFragmentsTask.run().then((fragments) => {
+          this.foundFragments = fragments;
+          if (fragments && fragments.length > 0) {
+            this.showFragments();
+          }
+          this.requestUpdate();
+        }).catch((error) => {
+          console.error('Error finding fragments:', error);
+          alert('Error finding fragments. Please try again.');
+        });
       } catch (error) {
         console.error('Error finding fragments:', error);
         alert('Error finding fragments. Please try again.');
@@ -217,10 +223,18 @@ class GrayboxPromote extends LitElement {
     this.fetchFragments = !this.fetchFragments;
     if (this.fetchFragments && this.urls.some((url) => url.trim())) {
       try {
-        this.foundFragments = await this.findFragments();
-        if (this.foundFragments.length > 0) {
-          this.showFragments();
-        }
+        this.findFragmentsTask.run().then((fragments) => {
+          this.foundFragments = fragments;
+          if (fragments && fragments.length > 0) {
+            this.showFragments();
+          }
+          this.requestUpdate();
+        }).catch((error) => {
+          console.error('Error finding fragments:', error);
+          alert('Error finding fragments. Please try again.');
+          this.fetchFragments = false;
+          this.requestUpdate();
+        });
       } catch (error) {
         console.error('Error finding fragments:', error);
         alert('Error finding fragments. Please try again.');
@@ -277,42 +291,7 @@ class GrayboxPromote extends LitElement {
   }
 
   async findFragments() {
-    const filteredUrls = this.urls.filter((url) => url.trim());
-    if (!filteredUrls.length) return [];
-
-    try {
-      const params = new URLSearchParams({
-        sourcePaths: filteredUrls.join(', '),
-        adminPageUri: this.setup.adminPageUri,
-        driveId: this.setup.driveId,
-        gbRootFolder: this.setup.gbRootFolder,
-        rootFolder: this.setup.rootFolder,
-        experienceName: this.getEffectiveExperienceName(),
-        projectExcelPath: this.configData?.projectExcelPath,
-      });
-
-      const apiUrl = `${this.baseUrl}/find-fragments?${params.toString()}`;
-      const response = await fetch(apiUrl);
-
-      if (!response.ok) {
-        throw new Error(`API request failed: ${response.status} ${response.statusText}`);
-      }
-
-      const data = await response.json();
-
-      // Transform the API response to match the expected format
-      if (data.fragmentLinks && Array.isArray(data.fragmentLinks)) {
-        return data.fragmentLinks.map((link) => [{
-          pathname: link,
-          valid: 'found', // Assuming found fragments are valid
-        }]);
-      }
-
-      return [];
-    } catch (error) {
-      console.error('Error fetching fragments:', error);
-      throw error;
-    }
+    return this.findFragmentsTask.taskComplete;
   }
 
   showFragments() {
@@ -601,17 +580,7 @@ class GrayboxPromote extends LitElement {
       task: async () => {
         this.showToast('Bulk copy initiated...', 'info', 5000);
 
-        // Prepare the API call parameters
-        const params = new URLSearchParams({
-          sourcePaths: this.urls.join(', '),
-          adminPageUri: this.setup.adminPageUri,
-          driveId: this.setup.driveId,
-          gbRootFolder: this.setup.gbRootFolder,
-          rootFolder: this.setup.rootFolder,
-          experienceName: this.getEffectiveExperienceName(),
-          projectExcelPath: this.configData?.projectExcelPath,
-        });
-
+        // Prepare the API call parameters with hardcoded values for now
         const paramsHardcoded = new URLSearchParams({
           sourcePaths: this.urls.join(', '),
           adminPageUri: 'https://milo.adobe.com/tools/graybox-promote?ref=main&repo=bacom&owner=adobecom&project=BACOM',
@@ -652,6 +621,44 @@ class GrayboxPromote extends LitElement {
         throw new Error(`Could not promote: ${promote.payload}`);
       },
       autoRun: false,
+    });
+
+    this.findFragmentsTask = new Task(this, {
+      task: async () => {
+        const filteredUrls = this.urls.filter((url) => url.trim());
+        if (!filteredUrls.length) return [];
+
+        const params = new URLSearchParams({
+          sourcePaths: filteredUrls.join(', '),
+          adminPageUri: this.setup.adminPageUri,
+          driveId: this.setup.driveId,
+          gbRootFolder: this.setup.gbRootFolder,
+          rootFolder: this.setup.rootFolder,
+          experienceName: this.getEffectiveExperienceName(),
+          projectExcelPath: this.configData?.projectExcelPath,
+        });
+
+        const apiUrl = `${this.baseUrl}/find-fragments?${params.toString()}`;
+        const response = await fetch(apiUrl);
+
+        if (!response.ok) {
+          throw new Error(`API request failed: ${response.status} ${response.statusText}`);
+        }
+
+        const data = await response.json();
+
+        // Transform the API response to match the expected format
+        if (data.fragmentLinks && Array.isArray(data.fragmentLinks)) {
+          return data.fragmentLinks.map((link) => [{
+            pathname: link,
+            valid: 'found', // Assuming found fragments are valid
+          }]);
+        }
+
+        return [];
+      },
+      autoRun: false,
+      args: () => [this.urls, this.setup, this.configData], // Add dependencies
     });
   }
 
