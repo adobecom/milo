@@ -580,8 +580,18 @@ class GrayboxPromote extends LitElement {
       task: async () => {
         this.showToast('Bulk copy initiated...', 'info', 5000);
 
+        // Prepare the API call parameters
+        const params = new URLSearchParams({
+          sourcePaths: this.urls.join(', '),
+          adminPageUri: this.setup.adminPageUri,
+          driveId: this.setup.driveId,
+          gbRootFolder: this.setup.gbRootFolder,
+          rootFolder: this.setup.rootFolder,
+          experienceName: this.getEffectiveExperienceName(),
+          projectExcelPath: this.configData?.projectExcelPath,
+        });
         // Prepare the API call parameters with hardcoded values for now
-        const paramsHardcoded = new URLSearchParams({
+        /* const paramsHardcoded = new URLSearchParams({
           sourcePaths: this.urls.join(', '),
           adminPageUri: 'https://milo.adobe.com/tools/graybox-promote?ref=main&repo=bacom&owner=adobecom&project=BACOM',
           driveId: 'b!rZMb0rzDlki1jv128EwoNOJDPlbbCaJHjZmSthYaBRurbdjrKwiWS7YyVFjPXMsO',
@@ -589,8 +599,8 @@ class GrayboxPromote extends LitElement {
           rootFolder: '/bacom',
           experienceName: 'sabya-bulk-copy-drill',
           projectExcelPath: '/promote-projects/sabya-project-2.xlsx',
-        });
-        const bulkCopyUrl = `${this.baseUrl}/bulk-copy?${paramsHardcoded.toString()}`;
+        }); */
+        const bulkCopyUrl = `${this.baseUrl}/bulk-copy?${params.toString()}`;
         const response = await fetch(bulkCopyUrl);
         const data = await response.json();
 
