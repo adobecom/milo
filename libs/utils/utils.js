@@ -1364,7 +1364,7 @@ async function checkForPageMods() {
   let countryIPPromise = null;
   let calculatedTimeout = null;
 
-  const mepAddons = ['lob'];
+  const mepAddons = ['lob', 'personalization'];
   const mepPromises = [];
   mepAddons.forEach((addon) => {
     const enablement = getMepEnablement(addon);
@@ -1385,7 +1385,7 @@ async function checkForPageMods() {
     mepPromises.push(promise);
   });
 
-  const pzn = getMepEnablement('personalization');
+  //  const pzn = getMepEnablement('personalization');
   const pznroc = getMepEnablement('personalization-roc');
   const promo = getMepEnablement('manifestnames', PROMO_PARAM);
   const mepgeolocation = getMepEnablement('mepgeolocation');
@@ -1393,7 +1393,8 @@ async function checkForPageMods() {
   const xlg = martech === 'off' ? false : getMepEnablement('xlg');
   const ajo = martech === 'off' ? false : getMepEnablement('ajo');
 
-  if (!(pzn || pznroc || target || promo || mepParam
+  // if (!(pzn || pznroc || target || promo || mepParam
+  if (!(pznroc || target || promo || mepParam
     || mepHighlight || mepButton || mepParam === '' || xlg || ajo)) return;
 
   if (mepgeolocation) {
@@ -1427,7 +1428,8 @@ async function checkForPageMods() {
       return { targetInteractionData: data, respTime, respStartTime: now };
     })();
   } else if ((target || xlg || ajo) && !isMartechLoaded) loadMartech();
-  else if ((pzn || pznroc) && martech !== 'off') {
+  // else if ((pzn || pznroc) && martech !== 'off') {
+  else if ((pznroc) && martech !== 'off') {
     loadIms()
       .then(() => {
         /* c8 ignore next */
@@ -1441,7 +1443,7 @@ async function checkForPageMods() {
     mepParam,
     mepHighlight,
     mepButton,
-    pzn,
+    // pzn,
     pznroc,
     promo,
     target,

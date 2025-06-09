@@ -1283,16 +1283,16 @@ function parseManifestUrlAndAddSource(manifestString, source) {
 }
 
 export const combineMepSources = async (
-  persEnabled,
+  //  persEnabled,
   rocPersEnabled,
   promoEnabled,
   mepParam,
 ) => {
   let persManifests = [];
 
-  if (persEnabled) {
-    persManifests = parseManifestUrlAndAddSource(persEnabled, 'pzn');
-  }
+  // if (persEnabled) {
+  //   persManifests = parseManifestUrlAndAddSource(persEnabled, 'pzn');
+  // }
 
   if (rocPersEnabled) {
     const rocPersManifest = parseManifestUrlAndAddSource(rocPersEnabled, 'pzn-roc');
