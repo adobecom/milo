@@ -1101,13 +1101,34 @@ async function getManifestConfig(info, variantOverride) {
     return createDefaultExperiment(info);
   }
   let data = manifestData;
-  if (!data) {
+  const isMph = source?.[0] === 'mph';
+  if (!data && !isMph) {
     const fetchedData = await fetchData(manifestPath, DATA_TYPE.JSON);
     if (fetchData) data = fetchedData;
   }
+  let mepPlaceHolders = null;
+  if (!data && isMph) {
+    const resp = await customFetch({ resource: `${manifestPath}.plain.html`, withCacheRules: true })
+      .catch(() => ({}));
 
-  const persData = data?.experiences?.data || data?.data || data;
-  const isMph = source?.[0] === 'mph';
+    if (!resp?.ok) {
+      window.lana?.log(`Could not get mep placeholders: ${manifestPath}.plain.html`);
+      return null;
+    }
+    const html = await resp.text();
+    const doc = new DOMParser().parseFromString(html, 'text/html');
+    const rows = Array.from(doc.querySelectorAll('.mep-placeholders > div')).slice(1);
+    mepPlaceHolders = rows.map((row) => {
+      const key = row.children[0]?.textContent?.trim();
+      const value = row.children[1].innerHTML;
+      if (key && value) {
+        return { key, value };
+      }
+      return null;
+    }).filter(Boolean);
+  }
+
+  const persData = data?.experiences?.data || data?.data || data || mepPlaceHolders;
   if (!persData || (isMph && !persData.length)) return null;
   if (isMph) {
     return createDefaultExperiment({ manifestPath, isMph, persData });
@@ -1161,8 +1182,8 @@ async function getManifestConfig(info, variantOverride) {
     manifestConfig.variantNames,
     variantLabel,
   );
-
-  manifestConfig.placeholderData = manifestPlaceholders || data?.placeholders?.data;
+  manifestConfig.placeholderData = manifestPlaceholders
+    || data?.placeholders?.data || mepPlaceHolders || {};
   manifestConfig.name = name;
   manifestConfig.manifest = manifestPath;
   manifestConfig.manifestUrl = manifestUrl;
