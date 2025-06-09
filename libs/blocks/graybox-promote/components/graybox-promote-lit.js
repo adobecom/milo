@@ -15,7 +15,6 @@ import {
   getSharepointData,
   loginToSharepoint,
   preview,
-  getServiceUrl,
 } from '../services.js';
 import {
   renderConfigSkeleton,
@@ -270,41 +269,6 @@ class GrayboxPromote extends LitElement {
     return locale.prefix;
   }
 
-  static addFragmentPrefix(fragments, prefix) {
-    if (!fragments) return undefined;
-    return fragments.map((fragment) => ({
-      ...fragment,
-      pathname: prefix + fragment.pathname,
-    }));
-  }
-
-  static async findPageFragments(path, sourceFQDN) {
-    try {
-      const { customFetch } = await import('../../../utils/helpers.js');
-      const response = await customFetch({ resource: `${path}.plain.html`, withCacheRules: false })
-        .catch(() => ({}));
-      if (!response.ok) console.error('Error fetching page:', response);
-      const pageHtml = await response.text();
-      const doc = new DOMParser().parseFromString(pageHtml, 'text/html');
-      const fragments = [];
-      const links = doc.querySelectorAll('a[href*="/fragments/"]');
-      links.forEach(({ href }) => {
-        if (href && !fragments.some((f) => f.pathname === href)) {
-          // Extract the path portion from href
-          const url = new URL(href, sourceFQDN);
-          const pathPart = url.pathname;
-          // Always use the source FQDN
-          const fragmentUrl = `${sourceFQDN}${pathPart}`;
-          fragments.push({ pathname: fragmentUrl });
-        }
-      });
-      return fragments;
-    } catch (error) {
-      console.error('Error finding fragments:', error);
-      return undefined;
-    }
-  }
-
   static getUrls(fragments) {
     return fragments.map((fragment) => ({
       pathname: fragment.pathname,
@@ -312,67 +276,43 @@ class GrayboxPromote extends LitElement {
     }));
   }
 
-  static async findDeepFragments(path, sourceFQDN) {
-    const searched = [];
-    const prefix = GrayboxPromote.getLangstorePrefix();
-    const fragments = GrayboxPromote.addFragmentPrefix(
-      await GrayboxPromote.findPageFragments(path, sourceFQDN),
-      prefix,
-    );
-    if (!fragments) return [];
-    while (fragments.length !== searched.length) {
-      const needsSearch = fragments.filter(
-        (fragment) => !searched.includes(fragment.pathname),
-      );
-      for (const search of needsSearch) {
-        const nestedFragments = GrayboxPromote.addFragmentPrefix(
-          await GrayboxPromote.findPageFragments(search.pathname, sourceFQDN),
-          prefix,
-        );
-        if (nestedFragments === undefined) {
-          search.valid = 'not found';
-        } else {
-          // Ensure nested fragments have the same FQDN
-          const newFragments = nestedFragments
-            .map((fragment) => ({
-              ...fragment,
-              pathname: fragment.pathname.startsWith('http')
-                ? fragment.pathname
-                : `${sourceFQDN}${fragment.pathname}`,
-            }))
-            .filter(
-              (nested) => !searched.includes(nested.pathname)
-                && !fragments.find((f) => f.pathname === nested.pathname),
-            );
-          if (newFragments?.length) fragments.push(...newFragments);
-        }
-        searched.push(search.pathname);
-      }
-    }
-    return fragments.length ? GrayboxPromote.getUrls(fragments) : [];
-  }
-
   async findFragments() {
-    const found = this.urls.map((url) => {
-      try {
-        const urlObj = new URL(url);
-        return GrayboxPromote.findDeepFragments(url, urlObj.origin);
-      } catch (error) {
-        console.error('Invalid URL:', url);
-        return Promise.resolve([]);
+    const filteredUrls = this.urls.filter((url) => url.trim());
+    if (!filteredUrls.length) return [];
+
+    try {
+      const params = new URLSearchParams({
+        sourcePaths: filteredUrls.join(', '),
+        adminPageUri: this.setup.adminPageUri,
+        driveId: this.setup.driveId,
+        gbRootFolder: this.setup.gbRootFolder,
+        rootFolder: this.setup.rootFolder,
+        experienceName: this.getEffectiveExperienceName(),
+        projectExcelPath: this.configData?.projectExcelPath,
+      });
+
+      const apiUrl = `${this.baseUrl}/find-fragments?${params.toString()}`;
+      const response = await fetch(apiUrl);
+
+      if (!response.ok) {
+        throw new Error(`API request failed: ${response.status} ${response.statusText}`);
       }
-    });
-    const pageFragments = await Promise.all(found);
-    const foundFragments = pageFragments.reduce((acc, fragments) => {
-      if (fragments.length > 0) {
-        fragments.forEach((fragment) => {
-          const dupe = acc.some((url) => url[0]?.pathname === fragment.pathname);
-          if (!dupe) acc.push([fragment]);
-        });
+
+      const data = await response.json();
+
+      // Transform the API response to match the expected format
+      if (data.fragmentLinks && Array.isArray(data.fragmentLinks)) {
+        return data.fragmentLinks.map((link) => [{
+          pathname: link,
+          valid: 'found', // Assuming found fragments are valid
+        }]);
       }
-      return acc;
-    }, []);
-    return foundFragments;
+
+      return [];
+    } catch (error) {
+      console.error('Error fetching fragments:', error);
+      throw error;
+    }
   }
 
   showFragments() {
