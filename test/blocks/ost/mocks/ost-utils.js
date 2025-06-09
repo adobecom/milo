@@ -110,6 +110,17 @@ function unmockOstDeps() {
 const customFetch = window.fetch;
 const PAGE_URL = new URL(window.location.href);
 const SLD = PAGE_URL.hostname.includes('.aem.') ? 'aem' : 'hlx';
+
+const shouldAllowKrTrial = (button, localePrefix) => {
+  const hasAllowKrTrial = button.href?.includes('#_allow-kr-trial');
+  if (hasAllowKrTrial) {
+    button.href = button.href.replace('#_allow-kr-trial', '');
+    const modalHash = button.getAttribute('data-modal-hash');
+    if (modalHash) button.setAttribute('data-modal-hash', modalHash.replace('#_allow-kr-trial', ''));
+  }
+  return localePrefix === '/kr' && hasAllowKrTrial;
+};
+
 export {
   createTag,
   getConfig,
@@ -125,4 +136,5 @@ export {
   mockRes,
   customFetch,
   SLD,
+  shouldAllowKrTrial,
 };

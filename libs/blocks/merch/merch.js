@@ -873,6 +873,11 @@ export async function buildCta(el, params) {
   // @see https://jira.corp.adobe.com/browse/MWPW-173470
   cta.onceSettled().then(() => {
     const prefix = getConfig()?.locale?.prefix;
+    if (shouldAllowKrTrial(el, prefix) && prefix === '/kr' && cta.value[0]?.offerType === OFFER_TYPE_TRIAL) {
+      cta.classList.remove('hidden-osi-trial-link');
+      return;
+    }
+
     if (!shouldAllowKrTrial(el, prefix) && prefix === '/kr' && cta.value[0]?.offerType === OFFER_TYPE_TRIAL) cta.remove();
   });
 
