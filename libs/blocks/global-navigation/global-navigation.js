@@ -493,7 +493,7 @@ class Gnav {
       return;
     }
     const localNavItems = this.elements.navWrapper.querySelector('.feds-nav').querySelectorAll('.feds-navItem:not(.feds-navItem--section, .feds-navItem--mobile-only)');
-    const firstElem = localNavItems[0]?.querySelector('a') || localNavItems[0]?.querySelector('button');
+    const firstElem = localNavItems[0]?.querySelector('a, button');
     if (!firstElem) {
       lanaLog({ message: 'GNAV: Incorrect authoring of localnav found.', tags: 'gnav', errorType: 'i' });
       return;
