@@ -1,5 +1,6 @@
 import { createTag, loadStyle, getConfig } from '../../../utils/utils.js';
 import { getMetadata } from '../../../blocks/section-metadata/section-metadata.js';
+import { decorateDefaultLinkAnalytics } from '../../../../libs/martech/attributes.js';
 import { decorateBlockBg, decorateBlockText, decorateBlockHrs, decorateTextOverrides, applyHoverPlay } from '../../../utils/decorate.js';
 
 const { miloLibs, codeRoot } = getConfig();
@@ -176,6 +177,7 @@ const init = async (el) => {
       showMoreButton.append(button);
       section.append(showMoreButton);
       handleShowMoreButton(section);
+      decorateDefaultLinkAnalytics(showMoreButton);
     }
   }
 };
