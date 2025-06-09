@@ -45,3 +45,5 @@ export const localizeLink = stub();
 export const loadLink = stub();
 
 export const reloadPage = stub();
+
+export const shouldAllowKrTrial = stub();
