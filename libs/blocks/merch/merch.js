@@ -152,8 +152,8 @@ const GeoMap = {
   ec: 'EC_es',
   pr: 'US_es', // not a typo, should be US
   gt: 'GT_es',
-  cis_en: 'AZ_en',
-  cis_ru: 'AZ_ru',
+  cis_en: 'TM_en',
+  cis_ru: 'TM_ru',
   sea: 'SG_en',
   th_en: 'TH_en',
   th_th: 'TH_th',
@@ -663,6 +663,12 @@ export async function getCheckoutAction(offers, options, imsSignedInPromise, el)
   }
 }
 
+export function setPreview(attributes) {
+  const { host } = window.location;
+  if (host.includes(`${SLD}.page`) || host.origin === 'https://www.stage.adobe.com') {
+    attributes.preview = 'on';
+  }
+}
 /**
  * Activates commerce service and returns a promise resolving to its ready-to-use instance.
  */
@@ -696,6 +702,7 @@ export async function initService(force = false, attributes = {}) {
     const { language, locale, country } = getMiloLocaleSettings(miloLocale);
     let service = document.head.querySelector('mas-commerce-service');
     if (!service) {
+      setPreview(attributes);
       service = createTag('mas-commerce-service', {
         locale,
         language,
@@ -856,6 +863,11 @@ export async function buildCta(el, params) {
       ariaLabel = segment ? `${ariaLabel} - ${await replaceKey(segment, getConfig())}` : ariaLabel;
       cta.setAttribute('aria-label', ariaLabel);
     });
+  }
+
+  if (getMetadata('mas-ff-copy-cta') === 'on') {
+    const { default: addCopyToClipboard } = await import('./copy-to-clipboard.js');
+    return addCopyToClipboard(el, cta);
   }
 
   // @see https://jira.corp.adobe.com/browse/MWPW-173470
