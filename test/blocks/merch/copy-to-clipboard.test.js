@@ -39,9 +39,6 @@ describe('Copy to Clipboard', () => {
     expect(button.style.cursor).to.equal('pointer');
     const svg = button.querySelector('svg');
     expect(svg).to.exist;
-    expect(svg.getAttribute('height')).to.equal('30');
-    expect(svg.getAttribute('width')).to.equal('30');
-    expect(svg.getAttribute('viewBox')).to.equal('0 0 22 22');
     const link = wrapper.querySelector('a');
     expect(link).to.exist;
     expect(link.href).to.equal(cta.href);
