@@ -13,6 +13,18 @@ const VALIDATION_STEP = {
   mktoFormsCompanyType: '3',
 };
 
+export function updateTabIndex(formEl, stepToAdd, stepToRemove) {
+  const fieldsToAdd = formEl.querySelectorAll(`.mktoFormRowTop[data-validate="${stepToAdd}"]:not(.mktoHidden) input, 
+    .mktoFormRowTop[data-validate="${stepToAdd}"]:not(.mktoHidden) select, 
+    .mktoFormRowTop[data-validate="${stepToAdd}"]:not(.mktoHidden) textarea`);
+  fieldsToAdd.forEach((f) => { f.tabIndex = 0; });
+
+  const fieldsToRemove = formEl.querySelectorAll(`.mktoFormRowTop[data-validate="${stepToRemove}"]:not(.mktoHidden) input, 
+    .mktoFormRowTop[data-validate="${stepToRemove}"]:not(.mktoHidden) select, 
+    .mktoFormRowTop[data-validate="${stepToRemove}"]:not(.mktoHidden) textarea`);
+  fieldsToRemove.forEach((f) => { f.tabIndex = -1; });
+}
+
 function updateStepDetails(formEl, step, totalSteps) {
   formEl.classList.add('hide-errors');
   formEl.classList.remove('show-warnings');
@@ -31,6 +43,7 @@ function showPreviousStep(formEl, totalSteps) {
   const backBtn = formEl.querySelector('.back-btn');
 
   updateStepDetails(formEl, previousStep, totalSteps);
+  updateTabIndex(formEl, previousStep, currentStep);
   if (previousStep === 1) backBtn?.remove();
 }
 
@@ -46,6 +59,7 @@ const showNextStep = (formEl, currentStep, totalSteps) => {
   }
 
   updateStepDetails(formEl, nextStep, totalSteps);
+  updateTabIndex(formEl, nextStep, currentStep);
 };
 
 export const formValidate = (formEl) => {
@@ -61,11 +75,13 @@ export const formValidate = (formEl) => {
   return currentStep === totalSteps;
 };
 
-function setValidationSteps(formEl, totalSteps) {
+function setValidationSteps(formEl, totalSteps, currentStep) {
   formEl.querySelectorAll('.mktoFormRowTop').forEach((row) => {
     const rowAttr = row.getAttribute('data-mktofield') || row.getAttribute('data-mkto_vis_src');
     const step = VALIDATION_STEP[rowAttr] ? Math.min(VALIDATION_STEP[rowAttr], totalSteps) : 1;
     row.dataset.validate = rowAttr?.startsWith('adobe-privacy') ? totalSteps : step;
+    const fields = row.querySelectorAll('input, select, textarea');
+    if (fields.length) fields.forEach((f) => { f.tabIndex = step === currentStep ? 0 : -1; });
   });
 }
 
@@ -74,7 +90,7 @@ function onRender(formEl, totalSteps) {
   const submitButton = formEl.querySelector('#mktoButton_new');
   submitButton?.classList.toggle('mktoHidden', currentStep !== totalSteps);
   formEl.querySelector('.step-details .step').textContent = `Step ${currentStep} of ${totalSteps}`;
-  setValidationSteps(formEl, totalSteps);
+  setValidationSteps(formEl, totalSteps, currentStep);
 }
 
 const readyForm = (form, totalSteps) => {
@@ -88,9 +104,13 @@ const readyForm = (form, totalSteps) => {
   const stepDetails = createTag('div', { class: 'step-details' }, stepEl);
   formEl.append(nextContainer, stepDetails);
 
-  const debouncedOnRender = debounce(() => onRender(formEl, totalSteps), 10);
+  const debouncedOnRender = debounce(() => onRender(formEl, totalSteps), 50);
   const observer = new MutationObserver(debouncedOnRender);
+  const fieldLoadTimeOnSlowDevice = 12000;
   observer.observe(formEl, { childList: true, subtree: true });
+  setTimeout(() => {
+    observer.disconnect();
+  }, fieldLoadTimeOnSlowDevice);
   debouncedOnRender();
 };
 
