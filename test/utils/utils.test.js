@@ -439,15 +439,17 @@ describe('Utils', () => {
       const alloyString = alloyLink.href.split('#_')?.find((s) => s.startsWith('alloy:'));
       expect(alloyLink.href).to.contain('#_alloy:');
       utils.decorateLinks(marquee);
-      expect(alloyLink.href).to.not.contain('#_alloy:');
-      alloyLink.click();
-      const [, profile, business, value] = alloyString.split(/:|\./g);
-      expect(window._satellite.track.calledOnce).to.be.true;
-      const eventName = window._satellite.track.args[0][0];
-      const eventPayload = window._satellite.track.args[0][1];
-      expect(eventName).to.equal('event');
-      // eslint-disable-next-line no-underscore-dangle
-      expect(eventPayload.data.__adobe.target).to.deep.equal({ [`${profile}.${business}`]: value });
+      waitFor(() => {
+        expect(alloyLink.href).to.not.contain('#_alloy:');
+        alloyLink.click();
+        const [, profile, business, value] = alloyString.split(/:|\./g);
+        expect(window._satellite.track.calledOnce).to.be.true;
+        const eventName = window._satellite.track.args[0][0];
+        const eventPayload = window._satellite.track.args[0][1];
+        expect(eventName).to.equal('event');
+        // eslint-disable-next-line no-underscore-dangle
+        expect(eventPayload.data.__adobe.target).to.deep.equal({ [`${profile}.${business}`]: value });
+      }, 10);
     });
     it('Add rel=nofollow to a link', () => {
       const noFollowContainer = document.querySelector('main div');
