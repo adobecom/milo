@@ -800,7 +800,8 @@ class Gnav {
     performance.mark('Unav-Start');
     const signedOut = !window.adobeIMS?.isSignedInUser();
     if (signedOut) {
-      this.blocks.universalNav?.style.setProperty('width', '116px');
+      const width = getUnavWidthCSS(this.universalNavComponents, signedOut);
+      this.blocks.universalNav?.style.setProperty('width', width);
     }
     const config = getConfig();
     const locale = getUniversalNavLocale(config.locale);
@@ -924,6 +925,7 @@ class Gnav {
     // Exposing UNAV config for consumers
     CONFIG.universalNav.universalNavConfig = getConfiguration();
     await window.UniversalNav(CONFIG.universalNav.universalNavConfig);
+    // In case we get it wrong
     if (!signedOut) this.blocks.universalNav?.style.removeProperty('width');
     const fedsPromo = document.querySelector('.feds-promo-aside-wrapper');
     const container = document.querySelector('.feds-utilities');
