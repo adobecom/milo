@@ -161,6 +161,11 @@
   border-bottom: 1px solid var(--tabs-border-color);
 }
 
+/* mweb design */
+.tabs.no-border-bottom .tab-content {
+  border-bottom: none;
+}
+
 /* contained tabs content */
 [role='tabpanel'] > .section > .content,
 .tabs.contained .tab-content .tab-content-container {
