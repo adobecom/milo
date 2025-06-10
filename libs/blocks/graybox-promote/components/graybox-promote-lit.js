@@ -106,10 +106,6 @@ class GrayboxPromote extends LitElement {
 
       if (data?.payload?.fileContent) {
         this.bulkCopyStatus = data;
-        // If status is completed, show the success toast briefly
-        if (data.payload.fileContent.status === 'completed') {
-          this.showToast('Bulk copy completed successfully', 'success');
-        }
       }
       this.requestUpdate();
     } catch (error) {
@@ -117,11 +113,12 @@ class GrayboxPromote extends LitElement {
     }
   }
 
-  toggleTab(tab) {
+  async toggleTab(tab) {
     this.activeTab = tab;
     if (tab === 'promote') {
       this.startStatusPolling();
     } else {
+      await this.setupTask.taskComplete;
       this.stopStatusPolling();
       // Check bulk copy status when switching to bulk tab
       this.fetchInitialBulkCopyStatus();
@@ -442,10 +439,16 @@ class GrayboxPromote extends LitElement {
     this.stopPollingTask('promote');
   }
 
-  async connectedCallback() {
+  connectedCallback() {
     super.connectedCallback();
     this.renderRoot.adoptedStyleSheets = [styleSheet, statusStyles];
-    if (this.activeTab === 'promote') {
+  }
+
+  async firstUpdated() {
+    await this.setupTask.taskComplete;
+    if (this.activeTab === 'bulk') {
+      this.fetchInitialBulkCopyStatus();
+    } else if (this.activeTab === 'promote') {
       this.startStatusPolling();
     }
   }
@@ -484,6 +487,7 @@ class GrayboxPromote extends LitElement {
           draftsOnly: this.setup.draftsOnly,
           promoteIgnorePaths: this.setup.promoteIgnorePaths,
           projectExcelPath: this.setup.projectExcelPath,
+          projectExcelUrl: this.setup.projectExcelUrl,
         };
 
         return true;

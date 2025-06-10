@@ -136,4 +136,4 @@ export const renderModal = (showModal, selectedStepData, closeModal) => {
       </div>
     </div>
   `;
-}; 
+};

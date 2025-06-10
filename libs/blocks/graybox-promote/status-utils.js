@@ -21,4 +21,4 @@ export const isLastStep = (stepStatus) => stepStatus === ALL_STATUSES[ALL_STATUS
 export const getStepNumber = (step) => {
   const stepMatch = step.match(/Step (\d+) of \d+/);
   return stepMatch ? parseInt(stepMatch[1], 10) : 0;
-}; 
+};

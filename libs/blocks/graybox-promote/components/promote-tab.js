@@ -32,8 +32,8 @@ const renderConfigSummary = (component) => {
         </div>
         <div class="config-item">
           <strong>Project File</strong>
-          <a href="${component.referrer}" target="_blank" style="display: inline-flex; align-items: center; gap: 4px; text-decoration: none;">
-            <span style="text-decoration: underline;">${new URL(component.referrer).searchParams.get('file')}</span>
+          <a href="${component.configData.projectExcelUrl}" target="_blank" style="display: inline-flex; align-items: center; gap: 4px; text-decoration: none;">
+            <span style="text-decoration: underline;">${component.configData.projectExcelUrl}</span>
           </a>
         </div>
         <div class="config-item">
@@ -101,17 +101,17 @@ const renderStatusBar = (component) => {
       </div>
       <div class="steps-container" style="flex: 1; overflow-y: auto;">
         ${ALL_STATUSES.map((stepStatus, index) => {
-          const isCompleted = isStepCompleted(status, stepStatus);
-          const isCurrent = stepStatus === status;
-          const isLastStepStatus = isLastStep(stepStatus);
-          const isInProgress = isCurrent && !isLastStepStatus
-            && isInProgressStep(stepStatus, status);
-          const stepNumberBg = getStepNumberBg(isCompleted, isCurrent);
-          const stepTitleColor = getStepTitleColor(isCompleted, isCurrent);
-          const stepData = statuses?.find((s) => s?.stepName === stepStatus);
-          const hasFiles = stepData?.files?.length > 0;
+    const isCompleted = isStepCompleted(status, stepStatus);
+    const isCurrent = stepStatus === status;
+    const isLastStepStatus = isLastStep(stepStatus);
+    const isInProgress = isCurrent && !isLastStepStatus
+      && isInProgressStep(stepStatus, status);
+    const stepNumberBg = getStepNumberBg(isCompleted, isCurrent);
+    const stepTitleColor = getStepTitleColor(isCompleted, isCurrent);
+    const stepData = statuses?.find((s) => s?.stepName === stepStatus);
+    const hasFiles = stepData?.files?.length > 0;
 
-          return html`
+    return html`
             <div class="step ${isCurrent ? 'current' : ''} ${isCompleted ? 'completed' : ''} ${isLastStepStatus ? 'last-step' : ''}"
               style="margin-bottom: 16px; opacity: ${isCompleted ? '0.7' : '1'}; ${isInProgress ? 'animation: pulse 2s infinite;' : ''}">
               <div style="display: flex; align-items: center; gap: 12px;">
@@ -172,11 +172,11 @@ const renderStatusBar = (component) => {
               </div>
             </div>
           `;
-        })}
+  })}
       </div>
     </div>
     ${renderModal(component.showModal, component.selectedStepData, component.closeModal)}
   `;
 };
 
-export { renderConfigSummary, renderStatusBar }; 
+export { renderConfigSummary, renderStatusBar };

@@ -80,9 +80,6 @@ export const getSharepointData = async (context) => {
   context.setup.rootFolder = `/${sharepoint.rootMapping.replace('-graybox', '')}`;
   context.setup.gbRootFolder = `/${sharepoint.rootMapping}`;
   context.setup.driveId = sharepoint.driveId;
-  // context.setup.rootFolder = `/${context.repo.replace('-graybox', '')}`;
-  // context.setup.gbRootFolder = `/${context.repo}`;
-  // context.setup.driveId = 'b!rZMb0rzDlki1jv128EwoNOJDPlbbCaJHjZmSthYaBRurbdjrKwiWS7YyVFjPXMsO';
 };
 
 export const getFilePath = async (context) => {
@@ -92,6 +89,7 @@ export const getFilePath = async (context) => {
   const statusResp = await status.json();
   context.previewUrl = statusResp.preview.status === 200 && new URL(statusResp.preview.url);
   context.setup.projectExcelPath = (new URL(statusResp.preview.url)).pathname.replace('.json', '.xlsx');
+  context.setup.projectExcelUrl = referrer;
 };
 
 export const preview = async (context) => {

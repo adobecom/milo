@@ -114,4 +114,4 @@ const renderBulkTab = (component) => html`
   </div>
 `;
 
-export default renderBulkTab; 
+export default renderBulkTab;

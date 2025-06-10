@@ -106,4 +106,4 @@ const renderFragmentsModal = (component) => {
   `;
 };
 
-export default renderFragmentsModal; 
+export default renderFragmentsModal;
