@@ -1,3 +1,4 @@
+import { STATE_FAILED } from './constants.js';
 import {
     createMasElement,
     updateMasElement,
@@ -186,6 +187,10 @@ export class InlinePrice extends HTMLSpanElement {
         return this.masElement.options;
     }
 
+    get isFailed() {
+        return this.masElement.state === STATE_FAILED;
+    }
+
     requestUpdate(force = false) {
         return this.masElement.requestUpdate(force);
     }
@@ -316,7 +321,8 @@ export class InlinePrice extends HTMLSpanElement {
                     inlinePrices.forEach((price) => {
                         if (price.dataset.template !== 'strikethrough' && 
                             price.options && 
-                            !price.options.alternativePrice
+                            !price.options.alternativePrice &&
+                            !price.isFailed
                         ) {
                             price.options.alternativePrice = true;
                             price.innerHTML = service.buildPriceHTML(offers, price.options);
