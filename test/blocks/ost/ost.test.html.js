@@ -1,7 +1,6 @@
 import { expect } from '@esm-bundle/chai';
 
 import { mockOstDeps, unmockOstDeps } from './mocks/ost-utils.js';
-import { CheckoutWorkflow, CheckoutWorkflowStep } from '../../../libs/deps/mas/commerce.js';
 import { DEFAULT_CTA_TEXT, createLinkMarkup } from '../../../libs/blocks/ost/ost.js';
 
 const perpM2M = {
