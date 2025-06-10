@@ -89,14 +89,10 @@ const scrollSelectedIntoView = (selectedLangItem, languageList) => {
 };
 
 function createDropdownElements(placeholderText) {
-  const dropdown = createTag('div');
-  dropdown.className = 'language-dropdown';
-  dropdown.style.display = 'none';
+  const dropdown = createTag('div', { class: 'language-dropdown', style: 'display: none;' });
   const dragHandle = createTag('div', { class: 'drag-handle' });
   dropdown.appendChild(dragHandle);
-
-  const searchContainer = createTag('div');
-  searchContainer.className = 'search-container';
+  const searchContainer = createTag('div', { class: 'search-container' });
   const searchInputWrapper = createTag('div', { class: 'search-input-wrapper' });
   const searchIcon = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
   Object.entries({
