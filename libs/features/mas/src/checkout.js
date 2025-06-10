@@ -10,7 +10,7 @@ import { MODAL_TYPE_3_IN_1 } from './constants.js';
 /**
  * generate Checkout configuration
  */
-export function Checkout({ providers, settings }) {
+export function Checkout({ settings }) {
     function collectCheckoutOptions(overrides, placeholder) {
         const {
             checkoutClientId,
@@ -55,12 +55,6 @@ export function Checkout({ providers, settings }) {
             wcsOsi: toOfferSelectorIds(wcsOsi),
             preselectPlan,
         });
-        // todo delete, not used
-        if (placeholder) {
-            for (const provider of providers.checkout) {
-                provider(placeholder, options);
-            }
-        }
         return options;
     }
 
