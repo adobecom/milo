@@ -2,8 +2,8 @@
 const { getLocalConfigs } = require('./helpers.js');
 const { fs } = require('fs');
 
-const main = async ({ github, context }) => {
-  const comment = async ({ pr_number, message, comments, transaction_id }) => {
+const main = async ({ github, context, transaction_id }) => {
+  const comment = async ({ pr_number, message, comments, _transaction_id }) => {
     if (comments.some((c) => c.body.includes(message))) {
       console.log(
         `SNOW Transaction Comment exists. Commenting skipped... ${message}`
@@ -12,7 +12,7 @@ const main = async ({ github, context }) => {
     }
     process.env.LOCAL_RUN
       ? console.log(
-          `PR #${pr_number} Local execution commenting SKIPPED message for SNOW Transaction ID ${transaction_id}: ${message}`
+          `PR #${pr_number} Local execution commenting SKIPPED message for SNOW Transaction ID ${_transaction_id}: ${message}`
         )
       : await github.rest.issues
           .createComment({
@@ -21,7 +21,7 @@ const main = async ({ github, context }) => {
             issue_number: pr_number,
             body: message,
           })
-          .then(() => console.log(`PR #${pr_number} Commented for SNOW Transaction ID ${transaction_id}: ${message}`))
+          .then(() => console.log(`PR #${pr_number} Commented for SNOW Transaction ID ${_transaction_id}: ${message}`))
           .catch(console.error);
   };
 
@@ -38,8 +38,8 @@ const main = async ({ github, context }) => {
         if (singleComment.body.includes("SNOW Change Request Transaction ID: ")) {
           console.log(`Found SNOW Transaction ID Comment. Assigning transaction ID for closing SNOW Change Request...`);
           foundTransactionId = true;
-          const transaction_id = singleComment.body.split("SNOW Change Request Transaction ID: ")[1].trim();
-          fs.appendFileSync(process.env.GITHUB_OUTPUT, `TRANSACTION_ID=${transaction_id}\n`);
+          const transactionId = singleComment.body.split("SNOW Change Request Transaction ID: ")[1].trim();
+          fs.appendFileSync(process.env.GITHUB_OUTPUT, `TRANSACTION_ID=${transactionId}\n`);
           break;
         }
       }
@@ -48,13 +48,13 @@ const main = async ({ github, context }) => {
         return;
       }
     }
-    else if (process.env.TRANSACTION_ID) {
+    else if (transaction_id && transaction_id !== 'null') {
       comment({
         pr_number: process.env.PR_NUMBER,
         comments,
-        transaction_id: process.env.TRANSACTION_ID,
+        transaction_id: transaction_id,
         message:
-          'SNOW Change Request Transaction ID: ' + process.env.TRANSACTION_ID,
+          'SNOW Change Request Transaction ID: ' + transaction_id,
       });
     }
     else {

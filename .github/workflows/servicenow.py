@@ -225,7 +225,7 @@ if __name__ == "__main__":
       print(f"IMS token request was successful: {response.status_code}")
       token = json_parse["access_token"]
 
-    servicenow_get_cmr_url = f'{SERVICENOW_GET_CMR_URL}{os.environ["TRANSACTION_ID"]}'
+    servicenow_get_cmr_url = f'{SERVICENOW_GET_CMR_URL}{os.environ["RETRIEVED_TRANSACTION_ID"]}'
     headers = {
       "Accept": APPLICATION_JSON,
       "Authorization":token,
@@ -259,7 +259,7 @@ if __name__ == "__main__":
       "api_key":os.environ['IPAAS_KEY']
     }
     data = {
-      "id": os.environ['TRANSACTION_ID'],
+      "id": os.environ['RETRIEVED_TRANSACTION_ID'],
       "actualStartDate": actual_start_time,
       "actualEndDate": actual_end_time,
       "state": "Closed",
@@ -286,4 +286,4 @@ if __name__ == "__main__":
     print("")
     print(f"If the CMR ID is not found, search for the change record in ServiceNow by the planned start time {os.environ['PLANNED_START_TIME']} and/or planned end time {os.environ['PLANNED_END_TIME']}.")
     print("")
-    print(f"If all else fails, please check the ServiceNow queue for transaction ID '{os.environ['TRANSACTION_ID']}' and validate that the CMR was created successfully by reaching out to the Change Management team in the #unified-change-management-support slack channel.")
+    print(f"If all else fails, please check the ServiceNow queue for transaction ID '{os.environ['RETRIEVED_TRANSACTION_ID']}' and validate that the CMR was created successfully by reaching out to the Change Management team in the #unified-change-management-support slack channel.")

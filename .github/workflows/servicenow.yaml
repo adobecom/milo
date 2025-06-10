@@ -36,10 +36,11 @@ jobs:
     if:  ${{ (github.event.pull_request.merged == true || github.event.pull_request.state == 'open') }}
     runs-on: ubuntu-latest
     outputs:
-      TRANSACTION_ID: ${{ steps.create-cmr.outputs.transaction_id }}
-      CHANGE_ID: ${{ steps.create-cmr.outputs.change_id }}
-      PLANNED_START_TIME: ${{ steps.create-cmr.outputs.planned_start_time }}
-      PLANNED_END_TIME: ${{ steps.create-cmr.outputs.planned_end_time }}
+      RETRIEVED_TRANSACTION_ID: ${{ steps.retrieve-transactionId-step.outputs.transaction_id }}
+      TRANSACTION_ID: ${{ steps.create-close-cmr-step.outputs.transaction_id }}
+      CHANGE_ID: ${{ steps.create-close-cmr-step.outputs.change_id }}
+      PLANNED_START_TIME: ${{ steps.create-close-cmr-step.outputs.planned_start_time }}
+      PLANNED_END_TIME: ${{ steps.create-close-cmr-step.outputs.planned_end_time }}
 
     steps:
     - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
@@ -52,33 +53,46 @@ jobs:
         python -m pip install --upgrade pip requests timedelta
 
     - name: Retrieve transaction ID from PR Comments
+      id: retrieve-transactionId-step
       uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea
       with:
         script: |
           const main = require('./.github/workflows/snow-pr-comment.js')
           if (process.env.PR_STATE == 'closed') {
-            main({ github, context })
+            main({ github, context, transaction_id: null })
           } else {
             console.log('PR is not in an closed state. Skipping...');
           }
 
     - name: Execute script for creating and closing CMR
+      id: create-close-cmr-step
+      env:
+        RETRIEVED_TRANSACTION_ID: ${{ steps.retrieve-transactionId-step.outputs.transaction_id }}
       run: |
         python ./.github/workflows/servicenow.py
 
     - name: Save transaction ID in PR Comments
+      id: pr-comment-snow-cr-step
       uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea
+      env:                                         
+        TRANSACTION_ID: ${{ steps.create-close-cmr-step.outputs.transaction_id }}
       with:
         script: |
           const main = require('./.github/workflows/snow-pr-comment.js')
           if (process.env.PR_STATE == 'open') {
-            main({ github, context })
+            main({ github, context, transaction_id: process.env.TRANSACTION_ID })
           } else {
             console.log('PR is not in an opened state. Skipping...');
           }
 
     - name: Execute script for notifying of CMR state
+      id: slack-snow-cr-step
       uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea
+      env:
+        TRANSACTION_ID: ${{ steps.create-close-cmr-step.outputs.transaction_id }}
+        CHANGE_ID: ${{ steps.create-close-cmr-step.outputs.change_id }}
+        PLANNED_START_TIME: ${{ steps.create-close-cmr-step.outputs.planned_start_time }}
+        PLANNED_END_TIME: ${{ steps.create-close-cmr-step.outputs.planned_end_time }}
       with:
         script: |
           const notifySnowCr = require('./.github/workflows/snow-cr-notification.js');
