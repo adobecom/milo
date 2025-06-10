@@ -1402,7 +1402,7 @@ async function checkForPageMods() {
   const xlg = martech === 'off' ? false : getMepEnablement('xlg');
   const ajo = martech === 'off' ? false : getMepEnablement('ajo');
   const mepgeolocation = martech === 'off' ? false : getMepEnablement('mepgeolocation');
-  const meplob = martech === 'off' ? false : getMepEnablement('aicslob', 'lob');
+  const meplob = martech === 'off' ? false : getMepEnablement('lob');
 
   if (!(pzn || pznroc || target || promo || mepParam
     || mepHighlight || mepButton || mepParam === '' || xlg || ajo)) return;
