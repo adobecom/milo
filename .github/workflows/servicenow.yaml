@@ -12,6 +12,7 @@ on:
       - servicenow-cmr-test-2
 
 permissions:
+  pull-requests: write
   contents: read
 
 env:
