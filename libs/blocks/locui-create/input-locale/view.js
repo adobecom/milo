@@ -23,7 +23,7 @@ export default function InputLocales() {
     selectAll,
     apiError,
     setApiError,
-    getActualLocale,
+    getLocaleFromKey,
   } = useInputLocale();
 
   const RenderRegion = () => {
@@ -116,7 +116,7 @@ export default function InputLocales() {
                   class="locale-button ${activeLocales[localeKey] ? 'active' : ''}"
                   onClick=${() => toggleLocale(localeKey)}
                 >
-                  ${getActualLocale(localeKey).toUpperCase()}
+                  ${getLocaleFromKey(localeKey).toUpperCase()}
                 </button>
               `,
   )}

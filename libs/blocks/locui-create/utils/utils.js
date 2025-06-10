@@ -97,7 +97,6 @@ export function setSelectedLocalesAndRegions() {
     }
     selectedLocale.push(...livecopiesArr);
   });
-  selectedLocale = [...new Set(selectedLocale)];
   selectedLocale.sort((a, b) => a.localeCompare(b));
   locSelected.value = { selectedLocale, activeLocales };
 }
