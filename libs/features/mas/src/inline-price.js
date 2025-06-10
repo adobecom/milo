@@ -278,7 +278,6 @@ export class InlinePrice extends HTMLSpanElement {
         }
         catch(error) {
             this.innerHTML = '';
-            this.masElement.toggleFailed(version, error, options)
             throw error;
         }
     }
