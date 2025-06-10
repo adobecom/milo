@@ -70,16 +70,6 @@ class GrayboxPromote extends LitElement {
 
   experienceName = '';
 
-  selectedRepo = 'bacom-graybox';
-
-  repos = [
-    'bacom-graybox',
-    'cc-graybox',
-    'dc-graybox',
-    'homepage-graybox',
-    'federal-graybox',
-  ];
-
   showFragmentsModal = false;
 
   foundFragments = [];
@@ -111,7 +101,7 @@ class GrayboxPromote extends LitElement {
 
     try {
       const data = await fetchBulkCopyStatus(
-        this.baseUrl, this.selectedRepo, effectiveExperienceName,
+        this.baseUrl, this.repo, effectiveExperienceName,
       );
 
       if (data?.payload?.fileContent) {
@@ -228,7 +218,7 @@ class GrayboxPromote extends LitElement {
   }
 
   updateSelectedRepo(value) {
-    this.selectedRepo = value;
+    this.repo = value;
     this.requestUpdate();
   }
 
@@ -320,7 +310,6 @@ class GrayboxPromote extends LitElement {
     });
 
     const frags = await findFragments(this.baseUrl, params);
-    console.log('fragments fetched from server', frags);
     return frags;
   }
 
@@ -354,9 +343,8 @@ class GrayboxPromote extends LitElement {
 
   async fetchBulkCopyStatus() {
     try {
-      const data = await fetchBulkCopyStatus(
-        this.baseUrl, this.selectedRepo, this.getEffectiveExperienceName(),
-      );
+      // eslint-disable-next-line max-len
+      const data = await fetchBulkCopyStatus(this.baseUrl, this.repo, this.getEffectiveExperienceName());
       this.bulkCopyStatus = data;
 
       // Stop polling if status is completed
@@ -564,15 +552,15 @@ class GrayboxPromote extends LitElement {
               <div class="content-wrapper">
                 <div class="sidebar">
                   ${this.setupTask.render({
-        pending: () => renderConfigSkeleton(),
-        complete: () => renderConfigSummary(this),
-        error: (err) => html`<p>${err}</p>`,
-      })}
-                  ${this.promoteTask.render({
-        pending: () => html`<p>Promoting...</p>`,
-        complete: () => '',
-        error: (err) => html`<p>${err}</p>`,
-      })}
+    pending: () => renderConfigSkeleton(),
+    complete: () => renderConfigSummary(this),
+    error: (err) => html`<p>${err}</p>`,
+  })}
+            ${this.promoteTask.render({
+    pending: () => html`<p>Promoting...</p>`,
+    complete: () => '',
+    error: (err) => html`<p>${err}</p>`,
+  })}
                 </div>
                 <div class="main-content">
                   ${renderStatusBar(this)}
