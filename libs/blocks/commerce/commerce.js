@@ -126,6 +126,8 @@ function detectContext() {
 }
 
 export default async function init(el) {
+  const { loadMasLibs } = await import('../../utils/utils.js');
+  await loadMasLibs();
   detectContext();
   decorateSearch(el);
 }

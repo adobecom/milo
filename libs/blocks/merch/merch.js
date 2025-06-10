@@ -668,6 +668,10 @@ export async function initService(force = false, attributes = {}) {
     fetchEntitlements.promise = undefined;
     fetchCheckoutLinkConfigs.promise = undefined;
   }
+  
+  const { loadMasLibs } = await import('../../utils/utils.js');
+  await loadMasLibs();
+  
   const { commerce, env: miloEnv, locale: miloLocale } = getConfig();
 
   const extraAttrs = [

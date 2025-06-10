@@ -75,7 +75,16 @@ const init = async () => {
 
   // mas-commerce-service
   createMasCommerceService(params);
-  await import('../dist/mas.js');
+  
+  // Load mas.js using maslibs if parameter is present, otherwise use local version
+  const maslibs = params.get('maslibs');
+  if (maslibs !== null) {
+    // Use maslibs functionality from utils
+    const { loadMasLibs } = await import('../../../utils/utils.js');
+    await loadMasLibs();
+  } else {
+    console.log('maslibs not found');
+  }
 
   document.querySelectorAll('a.theme-toggle').forEach((link) => 
     link.addEventListener('click', (event) =>

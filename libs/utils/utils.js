@@ -1744,3 +1744,24 @@ export function loadLana(options = {}) {
 }
 
 export const reloadPage = () => window.location.reload();
+
+const PARAM_MAS_LIBS = 'maslibs';
+
+export const getMasLibs = () => {
+  const searchParams = new URLSearchParams(window.location.search);
+  const maslibs = searchParams?.get(PARAM_MAS_LIBS);
+  
+  if (!maslibs) return 'https://www.adobe.com/mas/libs/mas.js';
+  if (maslibs === 'local') return 'http://localhost:3030/web-components/dist/mas.js';
+  if (maslibs.startsWith('http')) return maslibs;
+  
+  return `https://${maslibs}.aem.live/web-components/dist/mas.js`;
+};
+
+let masLibsPromise;
+export const loadMasLibs = () => {
+  if (masLibsPromise) return masLibsPromise;
+  const masLibsUrl = getMasLibs();
+  masLibsPromise = loadScript(masLibsUrl, { type: 'module' });
+  return masLibsPromise;
+};
