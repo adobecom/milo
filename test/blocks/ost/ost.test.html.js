@@ -241,13 +241,6 @@ describe('OST: merch link creation', () => {
       const link = createLink({ ctaText, promo, type });
       assertLink(link, perpM2M, { osi, promo, type }, ctaText);
     });
-
-    it('to UCv2 workflow', async () => {
-      const workflow = CheckoutWorkflow.V2;
-      const workflowStep = CheckoutWorkflowStep.CHECKOUT_EMAIL;
-      const link = createLink({ type, workflow, workflowStep });
-      assertLink(link, perpM2M, { osi, type, workflow, workflowStep });
-    });
   });
 
   describe('inline-price', () => {

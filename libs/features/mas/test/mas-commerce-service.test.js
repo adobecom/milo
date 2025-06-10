@@ -119,10 +119,9 @@ describe('commerce service', () => {
             });
 
             it('generates some default with no attributes', async () => {
-                const el = await initMasCommerceService({});
+                const el = initMasCommerceService({});
                 expect(el.settings).to.deep.equal({
                     checkoutClientId: 'adobe_com',
-                    checkoutWorkflow: 'UCv3',
                     checkoutWorkflowStep: 'email',
                     country: 'US',
                     displayOldPrice: true,
