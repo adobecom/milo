@@ -72,7 +72,7 @@ export default function InputLocales() {
                 key=${language.languagecode}
                 class="language-button ${language.livecopies
           .split(',')
-          .every((locale) => selectedLocale.includes(`${language.languagecode}|${locale}`))
+          .some((locale) => selectedLocale.includes(`${language.languagecode}|${locale}`))
           ? 'active'
           : ''}"
                 onClick=${() => selectLanguage(language)}

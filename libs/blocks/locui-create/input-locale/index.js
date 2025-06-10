@@ -102,51 +102,62 @@ export default function useInputLocale() {
 
   const getActualLocale = (locale) => (locale.includes('|') ? locale.split('|')[1] : locale);
 
-  const findLanguageForLocale = (locale) => languagesList.find(
+  const findLanguageForLocale = (locale) => languagesList.filter(
     (lang) => lang.livecopies.split(',').includes(getActualLocale(locale))
       && (!locale.includes('|') || lang.languagecode === locale.split('|')[0]),
   );
-
   const transformActiveLocales = () => {
     const groupedLocales = {};
     const languageCodes = {};
     Object.entries(activeLocales).forEach(([localeKey, language]) => {
       const locale = getActualLocale(localeKey);
-      const langObj = findLanguageForLocale(localeKey);
+      const languages = findLanguageForLocale(localeKey);
+      if (!Array.isArray(languages) || languages.length === 0) return;
+      const langObj = languages.find((l) => l.language === language);
       if (!langObj) return;
 
       if (!groupedLocales[language]) {
         groupedLocales[language] = [];
         languageCodes[language] = langObj.languagecode;
       }
-      groupedLocales[language].push(locale);
+      if (!groupedLocales[language].includes(locale)) {
+        groupedLocales[language].push(locale);
+      }
     });
-    return Object.entries(groupedLocales).map(([language, localeList]) => {
-      const languageItem = {
-        language,
-        locales: project.value.type === PROJECT_TYPES.translation ? [] : localeList,
-        langCode: languageCodes[language],
-      };
-      return languageItem;
-    });
+    return Object.entries(groupedLocales).map(([language, localeList]) => ({
+      language,
+      locales: project.value.type === PROJECT_TYPES.translation ? [] : localeList,
+      langCode: languageCodes[language],
+    }));
   };
 
   const updateActiveLocales = (localesToUpdate, isDeselecting = false, languageCode = null) => {
     setActiveLocales((prev) => {
       const updatedActiveLocales = { ...prev };
       localesToUpdate.forEach((locale) => {
-        const language = findLanguageForLocale(locale);
-        let localeKey;
+        const languages = findLanguageForLocale(locale);
         if (languageCode) {
-          localeKey = `${languageCode}|${locale}`;
-        } else if (language) {
-          localeKey = `${language.languagecode}|${locale}`;
+          const localeKey = `${languageCode}|${locale}`;
+          if (isDeselecting) {
+            delete updatedActiveLocales[localeKey];
+          } else {
+            const lang = languages.find((l) => l.languagecode === languageCode);
+            if (lang) updatedActiveLocales[localeKey] = lang.language;
+          }
+        } else if (Array.isArray(languages)) {
+          languages.forEach((lang) => {
+            const localeKey = `${lang.languagecode}|${locale}`;
+            if (isDeselecting) {
+              delete updatedActiveLocales[localeKey];
+            } else {
+              updatedActiveLocales[localeKey] = lang.language;
+            }
+          });
+        } else if (isDeselecting) {
+          delete updatedActiveLocales[locale];
         } else {
-          localeKey = locale;
+          updatedActiveLocales[locale] = locale;
         }
-        if (isDeselecting) {
-          delete updatedActiveLocales[localeKey];
-        } else if (language) updatedActiveLocales[localeKey] = language.language;
       });
       return updatedActiveLocales;
     });
@@ -173,10 +184,10 @@ export default function useInputLocale() {
     }));
     const newLocalesWithLangCode = [];
     regionCountryCodes.forEach((locale) => {
-      const language = findLanguageForLocale(locale);
-      if (language) {
+      const languages = findLanguageForLocale(locale);
+      languages.forEach((language) => {
         newLocalesWithLangCode.push(`${language.languagecode}|${locale}`);
-      }
+      });
     });
     setSelectedLocale((prev) => [
       ...prev,
@@ -295,25 +306,25 @@ export default function useInputLocale() {
     let isLangDeselecting = false;
     const lang = activeLocales[localeKey];
     const updatedActiveLocales = { ...activeLocales };
+    const locale = getActualLocale(localeKey);
+    const languages = findLanguageForLocale(locale);
     if (updatedActiveLocales[localeKey]) {
       delete updatedActiveLocales[localeKey];
       isLangDeselecting = !Object.values(updatedActiveLocales)
-        .some((val) => val.toLowerCase() === lang.toLowerCase());
-    } else {
-      const locale = getActualLocale(localeKey);
-      const language = findLanguageForLocale(locale);
-      if (language) {
-        const newKey = localeKey.includes('|') ? localeKey : `${language.languagecode}|${localeKey}`;
+        .some((val) => val.toLowerCase() === lang?.toLowerCase());
+    } else if (languages?.length) {
+      languages.forEach((language) => {
+        const newKey = `${language.languagecode}|${locale}`;
         updatedActiveLocales[newKey] = language.language;
-      }
+      });
     }
     setActiveLocales(updatedActiveLocales);
     if (isLangDeselecting && WORKFLOW[userWorkflowType.value]?.languages
       && !initByParams.value?.languages
-        ?.some((val) => val.language.toLowerCase() === lang.toLowerCase())) {
+        ?.some((val) => val.language.toLowerCase() === lang?.toLowerCase())) {
       const languageLocales = languagesList
-        .find((l) => l.language.toLowerCase() === lang.toLowerCase());
-      const { livecopies = '' } = languageLocales;
+        .find((l) => l.language.toLowerCase() === lang?.toLowerCase());
+      const { livecopies = '' } = languageLocales || {};
       const updatedSelectedLocale = selectedLocale
         .filter((loc) => !livecopies.split(',').includes(getActualLocale(loc)));
       setSelectedLocale(updatedSelectedLocale);
