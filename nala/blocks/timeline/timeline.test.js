@@ -1,55 +1,83 @@
-// run test:
-// npm run nala stage tag=timeline
-
 import { expect, test } from '@playwright/test';
 import { features } from './timeline.spec.js';
 import TimelineBlock from './timeline.page.js';
+import WebUtil from '../../libs/webutil.js';
 import { runAccessibilityTest } from '../../libs/accessibility.js';
+
+let webUtil;
+let timeline;
 
 const miloLibs = process.env.MILO_LIBS || '';
 
-// Test 0: verify the text in the timeline block
-test(`${features[0].name},${features[0].tags}`, async ({ page, baseURL }) => {
-  const timeline = new TimelineBlock(page);
-  const URL = `${baseURL}${features[0].path}${miloLibs}`;
-  console.info(`[Test Page]: ${URL}`);
-  await page.goto(URL);
+test.describe('Timeline test suite', () => {
+  test.beforeEach(async ({ page }) => {
+    webUtil = new WebUtil(page);
+    timeline = new TimelineBlock(page);
+  });
 
-  await expect(timeline.heading1).toHaveText('Day 1');
-  await expect(timeline.heading2).toHaveText('Day 8');
-  await expect(timeline.heading3).toHaveText('Day 21');
-  await expect(timeline.text1).toHaveText('If you start your free trial today');
-  await expect(timeline.text2).toHaveText('Your subscription starts and billing begins');
-  await expect(timeline.text3).toHaveText('Full refund period ends');
-  await expect(timeline.banner1).toHaveText('7-day free trial');
-  await expect(timeline.banner2).toHaveText('14-day full refund period');
-});
+  test(`[Test Id - ${features[0].tcid}] ${features[0].name}, ${features[0].tags}`, async ({ page, baseURL }) => {
+    console.info(`[Test Page]: ${baseURL}${features[0].path}${miloLibs}`);
+    const { data } = features[0];
 
-// Test 1: verify the CSS style and the analytic
-test(`${features[1].name},${features[1].tags}`, async ({ page, baseURL }) => {
-  const timeline = new TimelineBlock(page);
-  const URL = `${baseURL}${features[1].path}${miloLibs}`;
-  console.info(`[Test Page]: ${URL}`);
-  await page.goto(URL);
+    await test.step('step-1: Go to segment-timeline test page', async () => {
+      await page.goto(`${baseURL}${features[0].path}${miloLibs}`);
+      await page.waitForLoadState('domcontentloaded');
+      await expect(page).toHaveURL(`${baseURL}${features[0].path}${miloLibs}`);
+    });
 
-  await expect(timeline.bar1).toHaveCSS('background-color', 'rgb(230, 56, 136)');
-  await expect(timeline.bar2).toHaveCSS('background-color', 'rgb(233, 116, 154)');
-  await expect(timeline.bar3).toHaveCSS('background-color', 'rgb(255, 206, 46)');
-  await expect(timeline.bar1).toHaveCSS('width', '2px');
-  await expect(timeline.bar2).toHaveCSS('width', '2px');
-  await expect(timeline.bar3).toHaveCSS('width', '2px');
-  await expect(timeline.banner1).toHaveCSS('background-image', 'linear-gradient(to right, rgb(230, 56, 136) 0px, rgb(233, 116, 154) 100%)');
-  await expect(timeline.banner2).toHaveCSS('background-color', 'rgb(255, 206, 46)');
+    await test.step('step-2: Verify segment-timeline specs', async () => {
+      await expect(await timeline.timeline).toBeVisible();
+      await expect(timeline.day1Heading).toContainText(data.day1hText);
+      await expect(timeline.day8HeadingLeft).toContainText(data.day8hLeftText);
+      await expect(timeline.day8HeadingRight).toContainText(data.day8hRightText);
+      await expect(timeline.day21Heading).toContainText(data.day21hText);
 
-  await expect(timeline.timelineBlock).toHaveAttribute('daa-lh', 'b2|timeline');
-  await expect(timeline.timelineBlock).toBeVisible();
-});
+      await expect(timeline.day1Paragraph).toContainText(data.day1pText);
+      await expect(timeline.day8ParagraphLeft).toContainText(data.day8pLeftText);
+      await expect(timeline.day8ParagraphRight).toContainText(data.day8pRightText);
+      await expect(timeline.day21Paragraph).toContainText(data.day21pText);
 
-// Test 2: run Accessibility tests
-test(`${features[2].name},${features[2].tags}`, async ({ page, baseURL }) => {
-  const timeline = new TimelineBlock(page);
-  const URL = `${baseURL}${features[1].path}${miloLibs}`;
-  console.info(`[Test Page]: ${URL}`);
-  await page.goto(URL);
-  await runAccessibilityTest({ page, testScope: timeline.timelineBlock });
+      await expect(timeline.banner1).toContainText(data.banner1Text);
+      await expect(timeline.banner2).toContainText(data.banner2Text);
+
+      expect(
+        await webUtil.verifyAttributes(
+          timeline.banner1,
+          timeline.attributes['segment-timeline'].backgroundLeft,
+        ),
+      ).toBeTruthy();
+      expect(
+        await webUtil.verifyAttributes(
+          timeline.banner2,
+          timeline.attributes['segment-timeline'].backgroundRight,
+        ),
+      ).toBeTruthy();
+      expect(
+        await webUtil.verifyAttributes(
+          timeline.bar1,
+          timeline.attributes['segment-timeline'].backgroundBar1,
+        ),
+      ).toBeTruthy();
+      expect(
+        await webUtil.verifyAttributes(
+          timeline.bar2,
+          timeline.attributes['segment-timeline'].backgroundBar2,
+        ),
+      ).toBeTruthy();
+      expect(
+        await webUtil.verifyAttributes(
+          timeline.bar3,
+          timeline.attributes['segment-timeline'].backgroundBar3,
+        ),
+      ).toBeTruthy();
+    });
+
+    await test.step('step-3: Verify analytics attributes', async () => {
+      await expect(await timeline.timeline).toHaveAttribute('daa-lh', 'b1|timeline');
+    });
+
+    await test.step('step-4: Verify the accessibility test on the segment-timeline', async () => {
+      await runAccessibilityTest({ page, testScope: timeline.timeline });
+    });
+  });
 });

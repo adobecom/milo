@@ -43,6 +43,7 @@ function decorateContent(block) {
   const headings = content?.querySelectorAll('h1, h2, h3, h4, h5, h6');
   const heading = headings?.[headings.length - 1];
   heading?.classList?.add('heading-xs');
+  heading?.setAttribute('role', 'presentation');
   const paragraphs = content.querySelectorAll(':scope > p');
   paragraphs.forEach((item) => item.classList.add('body-xs'));
   const image = decorateImage(block);
