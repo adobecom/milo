@@ -25,13 +25,6 @@
   border-color: var(--color-gray-700);
 }
 
-  /* Block specific */
-.light .editorial-card,
-.editorial-card.light {
-  color: var(--text-color);
-  border-color: var(--color-gray-300);
-}
-
 .editorial-card.no-bg { background: none;}
 .editorial-card.no-border { border: none;}
 
@@ -373,6 +366,12 @@
 }
 
 /* Mweb specific */
+.light .editorial-card,
+.editorial-card.light {
+  color: var(--text-color);
+  border-color: var(--color-gray-300);
+}
+
 @media screen and (max-width: 599px) {
   /* General */
   :root {
@@ -391,6 +390,7 @@
     font-weight: 500;
   }
 
+  /* Block specific */
   .section:has(.editorial-card ~ .show-more-button),
   .section.show-all:has(.editorial-card) {
     margin-inline: var(--spacing-xs);
