@@ -59,6 +59,7 @@ const main = async ({ github, context, transaction_id }) => {
     }
     else {
       console.log(`No SNOW Transaction ID found. Can't make PR comment. Skipping...`);
+      console.log(`transaction_id: ${transaction_id}`);
       return;
     }
   } catch (error) {
