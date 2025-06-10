@@ -52,6 +52,7 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip requests timedelta
+        npm install @actions/core
 
     - name: Retrieve transaction ID from PR Comments
       id: retrieve-transactionId-step
