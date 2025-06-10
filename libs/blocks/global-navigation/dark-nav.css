@@ -75,6 +75,21 @@
   color: #fff;
 }
 
+.feds--dark .feds-cta--secondary {
+  border: .125rem solid #393939;
+  color: #DBDBDB;
+}
+
+.feds--dark .feds-cta--secondary:hover {
+  border-color: #444;
+  background: #2c2c2c;
+}
+
+.feds--dark .feds-cta--secondary:focus-visible {
+  outline: 2px solid #3860FA;
+  background: #2c2c2c;
+}
+
 header.new-nav.feds--dark .feds-nav > section.feds-navItem > .feds-popup .top-bar {
   background-color: var(--feds-background-nav--desktop);
   border-bottom: 1px solid var(--feds-background-nav--desktop);
