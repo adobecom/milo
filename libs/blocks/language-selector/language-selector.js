@@ -97,15 +97,31 @@ function createDropdownElements(placeholderText) {
 
   const searchContainer = createTag('div');
   searchContainer.className = 'search-container';
-  searchContainer.innerHTML = `
-    <div class="search-input-wrapper">
-      <svg class="search-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M14.8243 13.9758L10.7577 9.90923C11.5332 8.94809 12 7.72807 12 6.40005C12 3.31254 9.48755 0.800049 6.40005 0.800049C3.31254 0.800049 0.800049 3.31254 0.800049 6.40004C0.800049 9.48755 3.31254 12 6.40005 12C7.72807 12 8.9481 11.5331 9.90922 10.7577L13.9758 14.8243C14.093 14.9414 14.2461 15 14.4 15C14.5539 15 14.7071 14.9414 14.8243 14.8243C15.0586 14.5899 15.0586 14.2102 14.8243 13.9758ZM6.40005 10.8C3.97426 10.8 2.00005 8.82582 2.00005 6.40004C2.00005 3.97426 3.97426 2.00004 6.40005 2.00004C8.82583 2.00004 10.8 3.97426 10.8 6.40004C10.8 8.82582 8.82583 10.8 6.40005 10.8Z" fill="#666"/>
-      </svg>
-      <input type="text" placeholder="${placeholderText}" class="search-input" id="language-selector-search" aria-autocomplete="list" aria-controls="language-selector-listbox" autocomplete="off" />
-    </div>
+  const searchInputWrapper = createTag('div', { class: 'search-input-wrapper' });
+  const searchIcon = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  Object.entries({
+    class: 'search-icon',
+    width: '16',
+    height: '16',
+    viewBox: '0 0 16 16',
+    fill: 'none',
+    xmlns: 'http://www.w3.org/2000/svg',
+  }).forEach(([k, v]) => searchIcon.setAttribute(k, v));
+  searchIcon.innerHTML = `
+    <path d="M14.8243 13.9758L10.7577 9.90923C11.5332 8.94809 12 7.72807 12 6.40005C12 3.31254 9.48755 0.800049 6.40005 0.800049C3.31254 0.800049 0.800049 3.31254 0.800049 6.40004C0.800049 9.48755 3.31254 12 6.40005 12C7.72807 12 8.9481 11.5331 9.90922 10.7577L13.9758 14.8243C14.093 14.9414 14.2461 15 14.4 15C14.5539 15 14.7071 14.9414 14.8243 14.8243C15.0586 14.5899 15.0586 14.2102 14.8243 13.9758ZM6.40005 10.8C3.97426 10.8 2.00005 8.82582 2.00005 6.40004C2.00005 3.97426 3.97426 2.00004 6.40005 2.00004C8.82583 2.00004 10.8 3.97426 10.8 6.40004C10.8 8.82582 8.82583 10.8 6.40005 10.8Z" fill="#666"/>
   `;
-
+  const searchInput = createTag('input', {
+    type: 'text',
+    placeholder: placeholderText,
+    class: 'search-input',
+    id: 'language-selector-search',
+    'aria-autocomplete': 'list',
+    'aria-controls': 'language-selector-listbox',
+    autocomplete: 'off',
+  });
+  searchInputWrapper.appendChild(searchIcon);
+  searchInputWrapper.appendChild(searchInput);
+  searchContainer.appendChild(searchInputWrapper);
   const languageList = createTag('ul', {
     class: 'language-list',
     id: 'language-selector-listbox',
