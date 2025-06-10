@@ -101,6 +101,14 @@ function handleNavigation(el) {
   return buttons;
 }
 
+const allActionScrollers = [];
+function handleResize() {
+  allActionScrollers.forEach(({ scroller, buttons }) => {
+    handleBtnState(scroller, buttons);
+  });
+}
+
+let attachedResize = false;
 export default function init(el) {
   const hasNav = el.classList.contains(NAV);
   const actions = el.parentElement.querySelectorAll('.action-item');
@@ -110,7 +118,13 @@ export default function init(el) {
   items.append(...actions);
   el.replaceChildren(items, ...buttons);
   if (hasNav) {
-    items.addEventListener('scroll', () => handleBtnState(items, buttons));
     handleBtnState(items, buttons);
+    allActionScrollers.push({ scroller: items, buttons });
+    import('../../utils/action.js').then(({ debounce }) => {
+      items.addEventListener('scroll', debounce(() => handleBtnState(items, buttons), 50));
+      if (attachedResize) return;
+      attachedResize = true;
+      window.addEventListener('resize', debounce(handleResize, 50));
+    });
   }
 }
