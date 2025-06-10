@@ -1,6 +1,6 @@
 // Run from the root of the project for local testing: node --env-file=.env .github/workflows/pr-reminders.js
 const { getLocalConfigs } = require('./helpers.js');
-const { core } = require('@actions/core');
+const fs = require('fs');
 
 const main = async ({ github, context, transaction_id }) => {
   const comment = async ({ pr_number, message, comments, _transaction_id }) => {
@@ -40,7 +40,7 @@ const main = async ({ github, context, transaction_id }) => {
           console.log(`Found SNOW Transaction ID Comment. Assigning transaction ID for closing SNOW Change Request...`);
           foundTransactionId = true;
           const transactionId = singleComment.body.split("SNOW Change Request Transaction ID: ")[1].trim();
-          core.setOutput('RETRIEVED_TRANSACTION_ID', transactionId);
+          fs.writeFileSync(process.env.GITHUB_OUTPUT, `RETRIEVED_TRANSACTION_ID=${transactionId}\n`);
           break;
         }
       }
