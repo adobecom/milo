@@ -175,9 +175,9 @@ async function fetchPrivacyJson() {
   const root = config.contentRoot ?? getFederatedContentRoot();
   const url1 = `${root}/privacy/privacy.json`;
   const url2 = 'https://stage--federal--adobecom.aem.page/federal/dev/snehal/privacy/privacy-modal.json';
-  let resp = await fetch(url1, { cache: 'no-cache' });
+  let resp = await fetch(url2, { cache: 'no-cache' });
   if (resp.ok) return resp.json();
-  resp = await fetch(url2, { cache: 'no-cache' });
+  resp = await fetch(url1, { cache: 'no-cache' });
   if (resp.ok) return resp.json();
   throw new Error('Privacy JSON not found');
 }
