@@ -221,7 +221,10 @@ export default function InputUrls() {
           Localization${' '}
           <span>- ${PROJECT_TYPE_LABELS[type]}</span>
         </div>
-        <div class="locui-form-body">
+        <div class="locui-form-body"
+          role="radiogroup"
+          aria-label="Project Type Selection"
+        >
           ${(WORKFLOW[userWorkflowType.value]?.switcher) && html`
             <div class="segment-ctrl pb-12">
               ${[PROJECT_TYPES.translation, PROJECT_TYPES.rollout].map((pType) => html`
@@ -229,6 +232,15 @@ export default function InputUrls() {
                   key=${pType}
                   class=${`${type === pType && 'active'}`}
                   onclick=${() => handleTypeChange(pType)}
+                  tabindex="0"
+                  role="radio"
+                  aria-checked=${type === pType}
+                  onKeyDown=${(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      handleTypeChange(pType);
+                    }
+                  }}
                 >
                   ${PROJECT_TYPE_LABELS[pType]}
                 </div>
