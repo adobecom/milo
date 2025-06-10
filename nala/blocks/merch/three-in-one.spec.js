@@ -21,6 +21,23 @@ module.exports = {
             'aria-label': 'Free trial - Photoshop - Individuals',
           },
           iframeSrc: 'https://www.adobe.com/mini-plans/photoshop.html?mid=ft&web=1',
+        }, {
+          sectionId: 'modal-d2p-fallback-d2p',
+          attributes: {
+            'data-modal': 'd2p',
+            href: 'https://commerce.adobe.com/store/segmentation?cli=adobe_com&ctx=fp&co=US&lang=en&ms=COM&ot=BASE&cs=INDIVIDUAL&pa=phsp_direct_individual',
+            'aria-label': 'Buy now - Photoshop - Individuals',
+          },
+          iframeSrc: 'https://www.adobe.com/mini-plans/buy/photoshop.html?web=1',
+        },
+        {
+          sectionId: 'modal-d2p-fallback-crm',
+          attributes: {
+            'data-modal': 'd2p',
+            href: 'https://commerce.adobe.com/store/segmentation?cli=adobe_com&ctx=fp&co=US&lang=en&ms=COM&ot=BASE&cs=INDIVIDUAL&pa=ccsn_direct_individual',
+            'aria-label': 'Buy now - Creative Cloud All Apps - Individuals',
+          },
+          iframeSrc: 'https://www.adobe.com/plans-fragments/modals/individual/modals-content-rich/all-apps/master.modal.html',
         },
         {
           sectionId: 'modal-crm-fallback-crm',
@@ -30,6 +47,63 @@ module.exports = {
             'aria-label': 'Buy now - Creative Cloud All Apps - Individuals',
           },
           iframeSrc: 'https://www.adobe.com/plans-fragments/modals/individual/modals-content-rich/all-apps/master.modal.html',
+        },
+        {
+          sectionId: 'modal-crm-fallback-twp',
+          attributes: {
+            'data-modal': 'crm',
+            href: 'https://commerce.adobe.com/store/segmentation?cli=adobe_com&ctx=fp&co=US&lang=en&ms=COM&ot=TRIAL&cs=INDIVIDUAL&pa=phsp_direct_individual',
+            'aria-label': 'Free trial - Photoshop - Individuals',
+          },
+          iframeSrc: 'https://www.adobe.com/mini-plans/photoshop.html?mid=ft&web=1',
+        },
+        {
+          sectionId: 'deeplink-students',
+          attributes: {
+            'data-modal': 'twp',
+            href: 'https://commerce.adobe.com/store/segmentation?cli=adobe_com&ctx=fp&co=US&lang=en&ms=EDU&ot=TRIAL&cs=INDIVIDUAL&pa=ccsn_direct_individual',
+            'aria-label': 'Free trial - Creative Cloud All Apps - Students and teachers',
+          },
+          iframeSrc: 'https://www.adobe.com/mini-plans/creativecloud.html?mid=ft&web=1&plan=edu',
+        },
+        {
+          sectionId: 'deeplink-business',
+          attributes: {
+            'data-modal': 'twp',
+            href: 'https://commerce.adobe.com/store/segmentation?cli=adobe_com&ctx=fp&co=US&lang=en&ms=COM&ot=TRIAL&cs=TEAM&pa=phsp_direct_indirect_team',
+            'aria-label': 'Free trial - Photoshop - Business',
+          },
+          iframeSrc: 'https://www.adobe.com/mini-plans/photoshop.html?mid=ft&web=1&plan=team',
+        },
+        {
+          sectionId: 'deeplink-students-override',
+          attributes: {
+            'data-modal': 'crm',
+            href: 'https://commerce.adobe.com/store/segmentation?cli=adobe_com&ctx=fp&co=US&lang=en&ms=e&ot=BASE&cs=INDIVIDUAL&pa=phsp_direct_individual',
+            'aria-label': 'Buy now - Photoshop - Students and teachers',
+            'data-extra-options': '{"ms":"e"}',
+          },
+          iframeSrc: 'https://www.adobe.com/mini-plans/buy/photoshop.html?web=1&plan=edu',
+        },
+        {
+          sectionId: 'deeplink-business-override',
+          attributes: {
+            'data-modal': 'crm',
+            href: 'https://commerce.adobe.com/store/segmentation?cli=adobe_com&ctx=fp&co=US&lang=en&ms=COM&ot=BASE&cs=t&pa=phsp_direct_individual',
+            'aria-label': 'Buy now - Photoshop - Business',
+            'data-extra-options': '{"cs":"t"}',
+          },
+          iframeSrc: 'https://www.adobe.com/mini-plans/buy/photoshop.html?web=1&plan=team',
+        },
+        {
+          sectionId: 'deeplink-promoid',
+          attributes: {
+            'data-modal': 'crm',
+            href: 'https://commerce.adobe.com/store/segmentation?cli=adobe_com&ctx=fp&co=US&promoid=K42KVSWP&mv=other&lang=en&ms=COM&ot=BASE&cs=INDIVIDUAL&pa=phsp_direct_individual',
+            'aria-label': 'Buy now - Photoshop - Individuals',
+            'data-extra-options': '{"promoid":"K42KVSWP","mv":"other"}',
+          },
+          iframeSrc: 'https://www.adobe.com/mini-plans/buy/photoshop.html?web=1&promoid=K42KVSWP&mv=other',
         },
       ],
     },

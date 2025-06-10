@@ -33,13 +33,10 @@ test.describe('ThreeInOne Block test suite', () => {
     const threeInOne = new ThreeInOne(page);
     console.info(`[Test Page]: ${baseURL}${features[1].path}${miloLibs}`);
 
-    await test.step('Navigate to page with ThreeInOne Fallback CTAs', async () => {
-      await page.goto(`${baseURL}${features[1].path}${features[0].browserParams}&${miloLibs}`);
-      await page.waitForLoadState('domcontentloaded');
-    });
-
     for (const { sectionId, attributes, iframeSrc } of features[1].useCases) {
       await test.step(`Validate ${sectionId} CTA is visible and has proper attributes`, async () => {
+        await page.goto(`${baseURL}${features[1].path}${features[0].browserParams}&${miloLibs}`);
+        await page.waitForLoadState('domcontentloaded');
         const cta = threeInOne.getFallbackCta(sectionId);
         for (const [key, value] of Object.entries(attributes)) {
           await expect(cta).toHaveAttribute(key, value);
