@@ -1364,11 +1364,14 @@ async function checkForPageMods() {
   let countryIPPromise = null;
   let calculatedTimeout = null;
 
-  const mepAddons = ['lob', 'personalization'];
+  const mepSources = ['personalization'];
+  const mepAddons = [...mepSources, 'lob'];
+  let mepSourceFound = false;
   const mepPromises = [];
   mepAddons.forEach((addon) => {
     const enablement = getMepEnablement(addon);
     if (enablement === false) return;
+    if (mepSources.includes(addon)) mepSourceFound = true;
     config.mep ??= {};
     const promise = new Promise((resolve) => {
       (async () => {
@@ -1394,7 +1397,7 @@ async function checkForPageMods() {
   const ajo = martech === 'off' ? false : getMepEnablement('ajo');
 
   // if (!(pzn || pznroc || target || promo || mepParam
-  if (!(pznroc || target || promo || mepParam
+  if (!(mepSourceFound || pznroc || target || promo || mepParam
     || mepHighlight || mepButton || mepParam === '' || xlg || ajo)) return;
 
   if (mepgeolocation) {
