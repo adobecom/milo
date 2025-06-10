@@ -108,6 +108,7 @@ export const EVENT_TYPE_RESOLVED = 'mas:resolved';
 
 export const LOG_NAMESPACE = 'mas/commerce';
 
+export const PARAM_MAS_PREVIEW = "mas.preview";
 export const PARAM_ENV = 'commerce.env';
 export const PARAM_LANDSCAPE = 'commerce.landscape';
 export const PARAM_AOS_API_KEY = 'commerce.aosKey';

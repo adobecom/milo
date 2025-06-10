@@ -94,7 +94,8 @@ export const normalizePath = (p, localize = true) => {
     if (path.startsWith(config.codeRoot)
       || path.includes('.hlx.')
       || path.includes('.aem.')
-      || path.includes('.adobe.')) {
+      || path.includes('.adobe.')
+      || path.includes('localhost:')) {
       if (!localize
         || config.locale.ietf === 'en-US'
         || hash.includes(mepHash)
@@ -363,10 +364,10 @@ const setMetadata = (metadata) => {
 
 function toLowerAlpha(str) {
   const modifiedStr = str.toLowerCase();
-  if (!modifiedStr.includes('countryip') && !modifiedStr.includes('countrychoice')) {
+  if (!modifiedStr.includes('countryip') && !modifiedStr.includes('countrychoice') && !modifiedStr.includes('previouspage')) {
     return modifiedStr.replace(RE_KEY_REPLACE, '');
   }
-  return modifiedStr.replace(RE_KEY_REPLACE, (char) => (['(', ')'].includes(char) ? char : ''));
+  return modifiedStr.replace(RE_KEY_REPLACE, (char) => (['(', ')', '/', '*'].includes(char) ? char : ''));
 }
 
 function normalizeKeys(obj) {
@@ -827,6 +828,12 @@ const checkForParamMatch = (paramStr) => {
   return false;
 };
 
+export const checkForPreviousPageMatch = (previousPageStr, lastVisitedPage = document.referrer) => {
+  if (!lastVisitedPage) return false;
+  const previousPageString = previousPageStr.toLowerCase().split('previouspage-')[1];
+  return matchGlob(previousPageString, new URL(lastVisitedPage).pathname);
+};
+
 function trimNames(arr) {
   return arr.map((v) => v.trim()).filter(Boolean);
 }
@@ -932,6 +939,7 @@ async function getPersonalizationVariant(
     if (!name) return true;
     if (name === variantLabel?.toLowerCase()) return true;
     if (name.startsWith('param-')) return checkForParamMatch(name);
+    if (name.toLowerCase().startsWith('previouspage-')) return checkForPreviousPageMatch(name);
     if (hasCountryMatch(name, config)) return true;
     if (userEntitlements?.includes(name)) return true;
     return PERSONALIZATION_KEYS.includes(name) && PERSONALIZATION_TAGS[name]();

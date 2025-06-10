@@ -1,6 +1,7 @@
 import {
     PARAM_ENV,
     PARAM_LANDSCAPE,
+    PARAM_MAS_PREVIEW,
     Landscape,
     WCS_PROD_URL,
     WCS_STAGE_URL,
@@ -16,6 +17,8 @@ import {
 
 import { toQuantity } from './utilities.js';
 
+const PREVIEW_REGISTERED_SURFACE = { 'wcms-commerce-ims-ro.+': 'acom', 'CreativeCloud_.+': 'ccd', "CCHome.+": 'adobe-home' };
+
 function getLocaleSettings({
     locale = undefined,
     country = undefined,
@@ -25,6 +28,16 @@ function getLocaleSettings({
     country ??= locale?.split('_')?.[1] || Defaults.country;
     locale ??= `${language}_${country}`;
     return { locale, country, language };
+}
+
+function getPreviewSurface(wcsApiKey, previewParam) {
+  for (const [key, value] of Object.entries(PREVIEW_REGISTERED_SURFACE)) {
+    const pattern = new RegExp(key);
+    if (pattern.test(wcsApiKey)) {
+      return value;
+    }
+  }
+  return previewParam ?? wcsApiKey;
 }
 
 function getSettings(config = {}) {
@@ -97,6 +110,11 @@ function getSettings(config = {}) {
         env = Env.STAGE;
         wcsURL = WCS_STAGE_URL;
     }
+
+    const previewParam = getParameter(PARAM_MAS_PREVIEW) ?? config.preview;
+    const preview = (typeof previewParam != 'undefined') && previewParam !== 'off' && previewParam !== 'false';
+    let previewSettings = {};
+    if (preview) previewSettings = { preview };
     const masIOUrl =
         getParameter('mas-io-url') ??
         config.masIOUrl ??
@@ -104,6 +122,7 @@ function getSettings(config = {}) {
     const preselectPlan = getParameter('preselect-plan') ?? undefined;
     return {
         ...getLocaleSettings(config),
+        ...previewSettings,
         displayOldPrice,
         checkoutClientId,
         checkoutWorkflowStep,
@@ -127,4 +146,4 @@ function getSettings(config = {}) {
     };
 }
 
-export { getLocaleSettings, getSettings };
+export { getLocaleSettings, getSettings, getPreviewSurface };
