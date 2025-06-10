@@ -74,7 +74,7 @@ export function setSelectedLocalesAndRegions() {
     acc[language] = curr;
     return acc;
   }, {});
-  let selectedLocale = [];
+  const selectedLocale = [];
   const activeLocales = {};
   languages.forEach((loc) => {
     const { language, locales } = loc;
