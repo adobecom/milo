@@ -52,6 +52,7 @@ export const createPayload = (project) => {
       env: env.value,
       regionalEditBehaviour: project.value.editBehavior,
       useHtmlFlow: project.value.htmlFlow,
+      dueDate: project.value.dueDate,
     },
   };
 };
@@ -125,6 +126,7 @@ export function getProject(resJson, lang) {
     type: projectType,
     name: `${resJson.projectName}${projectNameSuffix}`,
     htmlFlow: resJson.settings?.useHtmlFlow,
+    dueDate: resJson.settings?.dueDate,
     editBehavior: resJson.settings?.regionalEditBehaviour,
     urls: resJson.urls,
     fragments: [],
