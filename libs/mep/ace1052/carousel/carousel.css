@@ -11,6 +11,7 @@
   --carousel-button-border-color: #e1e1e1;
   --carousel-button-border-hover-color: #cacaca;
   --carousel-button-border-focus-color: #378ef0;
+  /* mweb-specific-change for dots */
   --carousel-indicator-background-color: #8F8F8F;
   --carousel-indicator-active-background-color: #242424;
   --carousel-expand-background-color: rgb(255 255 255 / 75%);
