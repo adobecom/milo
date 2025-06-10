@@ -278,7 +278,7 @@ export class InlinePrice extends HTMLSpanElement {
         }
         catch(error) {
             this.innerHTML = '';
-            this.setAttribute('data-error', '');
+            this.masElement.toggleFailed(version, error, options)
             throw error;
         }
     }
@@ -317,8 +317,7 @@ export class InlinePrice extends HTMLSpanElement {
                     inlinePrices.forEach((price) => {
                         if (price.dataset.template !== 'strikethrough' && 
                             price.options && 
-                            !price.options.alternativePrice && 
-                            !price.hasAttribute('data-error')
+                            !price.options.alternativePrice
                         ) {
                             price.options.alternativePrice = true;
                             price.innerHTML = service.buildPriceHTML(offers, price.options);
