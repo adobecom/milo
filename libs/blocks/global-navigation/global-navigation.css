@@ -1532,6 +1532,8 @@ header.new-nav .feds-nav > section.feds-navItem > .feds-popup.loading .tab-conte
   }
   to {
     background-position: 100% 0%;
+  }
+}
 
 /* Landscape mode for mobile */
 @media (orientation: landscape) and (max-width: 900px) {
