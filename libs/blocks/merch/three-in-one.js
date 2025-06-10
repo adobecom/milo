@@ -82,8 +82,7 @@ export const handle3in1IFrameEvents = ({ data: msgData }) => {
       iframe?.classList.remove('loading');
       threeInOne.querySelector('sp-theme')?.remove();
       if (closeBtn) {
-        closeBtn.setAttribute('aria-hidden', 'true');
-        closeBtn.style.opacity = '0';
+        closeBtn.remove();
       }
       break;
     case MSG_SUBTYPE.EXTERNAL:
