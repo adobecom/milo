@@ -20,7 +20,7 @@ const CaptionsLangMap = {
   dut: ['nl', 'be_nl'],
   swe: ['se'],
   chi_hans: ['cn'],
-  chi_hant: ['hk', 'tw'],
+  chi_hant: ['hk_zh', 'tw'],
   hin: ['in_hi'],
   kor: ['kr'],
 };
