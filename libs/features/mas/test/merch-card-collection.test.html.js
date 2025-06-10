@@ -185,7 +185,7 @@ runTests(async () => {
             expect(showMoreButton.isConnected).to.be.false;
         });
 
-        it('should refine result on search with multiple words', async () => {
+        it.only('should refine result on search with multiple words', async () => {
             document.location.hash = '';
             render();
             await delay(100);

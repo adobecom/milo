@@ -395,9 +395,17 @@ export class MerchCardCollection extends LitElement {
         </div>`;
     }
 
-    get resultTextSlotName() {
-        const key = `${this.search ? 'search' : 'filters'}${this.mobileAndTablet.matches ? 'Mobile' : ''}`;
+    computeTextSlotName(forceDesktop = false) {
+        const key = `${this.search ? 'search' : 'filters'}${this.mobileAndTablet.matches && !forceDesktop ? 'Mobile' : ''}`;
         return RESULT_TEXT_SLOT_NAMES[key][Math.min(this.resultCount, 2)];
+    }
+
+    get resultTextSlotName() {
+        const name = this.computeTextSlotName();
+        if (!getSlotText(this, name) && this.mobileAndTablet.matches) {
+            return this.computeTextSlotName(true);
+        }
+        return name;
     }
 
     get showMoreButton() {
