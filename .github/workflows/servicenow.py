@@ -6,7 +6,6 @@ import sys
 import time
 import requests
 
-# Global Variables
 
 APPLICATION_JSON = "application/json"
 CMR_RETRIEVAL_ERROR = "CMR ID Retrieval Operation failed..."
