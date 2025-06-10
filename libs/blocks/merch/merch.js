@@ -870,7 +870,11 @@ export async function buildCta(el, params) {
     return addCopyToClipboard(el, cta);
   }
 
-  // @see https://jira.corp.adobe.com/browse/MWPW-173470
+  /**
+   * TODO: This code block will be deprecated and removed in a future version.
+   * @see https://jira.corp.adobe.com/browse/MWPW-173470
+   * @see https://jira.corp.adobe.com/browse/MWPW-174411
+  */
   cta.onceSettled().then(() => {
     const prefix = getConfig()?.locale?.prefix;
     if (shouldAllowKrTrial(el, prefix) && prefix === '/kr' && cta.value[0]?.offerType === OFFER_TYPE_TRIAL) {

@@ -111,12 +111,18 @@ const customFetch = window.fetch;
 const PAGE_URL = new URL(window.location.href);
 const SLD = PAGE_URL.hostname.includes('.aem.') ? 'aem' : 'hlx';
 
+/**
+ * TODO: This method will be deprecated and removed in a future version.
+ * @see https://jira.corp.adobe.com/browse/MWPW-173470
+ * @see https://jira.corp.adobe.com/browse/MWPW-174411
+*/
 const shouldAllowKrTrial = (button, localePrefix) => {
-  const hasAllowKrTrial = button.href?.includes('#_allow-kr-trial');
+  const allowKrTrialHash = '#_allow-kr-trial';
+  const hasAllowKrTrial = button.href?.includes(allowKrTrialHash);
   if (hasAllowKrTrial) {
-    button.href = button.href.replace('#_allow-kr-trial', '');
+    button.href = button.href.replace(allowKrTrialHash, '');
     const modalHash = button.getAttribute('data-modal-hash');
-    if (modalHash) button.setAttribute('data-modal-hash', modalHash.replace('#_allow-kr-trial', ''));
+    if (modalHash) button.setAttribute('data-modal-hash', modalHash.replace(allowKrTrialHash, ''));
   }
   return localePrefix === '/kr' && hasAllowKrTrial;
 };

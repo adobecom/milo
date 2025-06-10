@@ -422,16 +422,27 @@ export const getFedsPlaceholderConfig = ({ useCache = true } = {}) => {
   return fedsPlaceholderConfig;
 };
 
+/**
+ * TODO: This method will be deprecated and removed in a future version.
+ * @see https://jira.corp.adobe.com/browse/MWPW-173470
+ * @see https://jira.corp.adobe.com/browse/MWPW-174411
+*/
 export const shouldAllowKrTrial = (button, localePrefix) => {
-  const hasAllowKrTrial = button.href?.includes('#_allow-kr-trial');
+  const allowKrTrialHash = '#_allow-kr-trial';
+  const hasAllowKrTrial = button.href?.includes(allowKrTrialHash);
   if (hasAllowKrTrial) {
-    button.href = button.href.replace('#_allow-kr-trial', '');
+    button.href = button.href.replace(allowKrTrialHash, '');
     const modalHash = button.getAttribute('data-modal-hash');
-    if (modalHash) button.setAttribute('data-modal-hash', modalHash.replace('#_allow-kr-trial', ''));
+    if (modalHash) button.setAttribute('data-modal-hash', modalHash.replace(allowKrTrialHash, ''));
   }
   return localePrefix === '/kr' && hasAllowKrTrial;
 };
 
+/**
+ * TODO: This method will be deprecated and removed in a future version.
+ * @see https://jira.corp.adobe.com/browse/MWPW-173470
+ * @see https://jira.corp.adobe.com/browse/MWPW-174411
+*/
 export const shouldBlockFreeTrialLinks = ({ button, localePrefix, parent }) => {
   if (shouldAllowKrTrial(button, localePrefix) || localePrefix !== '/kr'
       || (!button.dataset?.modalPath?.includes('/kr/cc-shared/fragments/trial-modals')
