@@ -62,11 +62,11 @@
   min-width: 114px;
   gap: 10px;
 }
-/* The no-buttons variant is temporarily disabled because slide indicators are currently hidden by default, which makes the no-buttons carousel unusable. */
-/* When the slide indicator color issue is resolved and they are enabled again, this should be re-enabled as well. */
-/* .carousel.no-buttons .carousel-button-container {
+
+/* Mweb-specific, full changes upcoming in main branch */
+.carousel.no-buttons .carousel-button-container {
   min-width: auto;
-} */
+}
 
 .carousel .carousel-button-container button {
   position: relative;
@@ -102,9 +102,10 @@
   order: 3;
 }
 
-/* .carousel.no-buttons .carousel-button {
+/* Mweb-specific, full changes upcoming in main branch */
+.carousel.no-buttons .carousel-button {
   display: none;
-} */
+}
 
 .carousel .carousel-previous:hover,
 .carousel .carousel-next:hover {
@@ -211,7 +212,7 @@ html[dir="rtl"] .carousel-slides .section.carousel-slide {
 }
 
 .carousel .carousel-controls {
-  display: none;
+  display: flex; /* Mweb-specific, full changes upcoming in main branch */
   position: relative;
   max-width: 88px;
   overflow: hidden;
@@ -219,9 +220,10 @@ html[dir="rtl"] .carousel-slides .section.carousel-slide {
   justify-content: inherit;
 }
 
-  /* .carousel.no-buttons .carousel-controls {
+  /* Mweb-specific, full changes upcoming in main branch */
+  .carousel.no-buttons .carousel-controls {
     padding: 0 var(--spacing-xxs);
-  } */
+  }
 
 .carousel .carousel-indicators {
   list-style: none;
