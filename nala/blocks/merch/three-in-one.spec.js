@@ -21,23 +21,6 @@ module.exports = {
             'aria-label': 'Free trial - Photoshop - Individuals',
           },
           iframeSrc: 'https://www.adobe.com/mini-plans/photoshop.html?mid=ft&web=1',
-        }, {
-          sectionId: 'modal-d2p-fallback-d2p',
-          attributes: {
-            'data-modal': 'd2p',
-            href: 'https://commerce.adobe.com/store/segmentation?cli=adobe_com&ctx=fp&co=US&lang=en&ms=COM&ot=BASE&cs=INDIVIDUAL&pa=phsp_direct_individual',
-            'aria-label': 'Buy now - Photoshop - Individuals',
-          },
-          iframeSrc: 'https://www.adobe.com/mini-plans/buy/photoshop.html?web=1',
-        },
-        {
-          sectionId: 'modal-d2p-fallback-crm',
-          attributes: {
-            'data-modal': 'd2p',
-            href: 'https://commerce.adobe.com/store/segmentation?cli=adobe_com&ctx=fp&co=US&lang=en&ms=COM&ot=BASE&cs=INDIVIDUAL&pa=ccsn_direct_individual',
-            'aria-label': 'Buy now - Creative Cloud All Apps - Individuals',
-          },
-          iframeSrc: 'https://www.adobe.com/plans-fragments/modals/individual/modals-content-rich/all-apps/master.modal.html',
         },
         {
           sectionId: 'modal-crm-fallback-crm',
@@ -47,15 +30,6 @@ module.exports = {
             'aria-label': 'Buy now - Creative Cloud All Apps - Individuals',
           },
           iframeSrc: 'https://www.adobe.com/plans-fragments/modals/individual/modals-content-rich/all-apps/master.modal.html',
-        },
-        {
-          sectionId: 'modal-crm-fallback-twp',
-          attributes: {
-            'data-modal': 'crm',
-            href: 'https://commerce.adobe.com/store/segmentation?cli=adobe_com&ctx=fp&co=US&lang=en&ms=COM&ot=TRIAL&cs=INDIVIDUAL&pa=phsp_direct_individual',
-            'aria-label': 'Free trial - Photoshop - Individuals',
-          },
-          iframeSrc: 'https://www.adobe.com/mini-plans/photoshop.html?mid=ft&web=1',
         },
         {
           sectionId: 'deeplink-students',
@@ -106,6 +80,24 @@ module.exports = {
           iframeSrc: 'https://www.adobe.com/mini-plans/buy/photoshop.html?web=1&promoid=K42KVSWP&mv=other',
         },
       ],
+    },
+    {
+      name: '@ThreeInOneCatalog',
+      path: '/drafts/nala/blocks/merch/3in1-catalog-edu',
+      sectionId: 'modal-catalog-edu',
+      iframeSrc: 'https://commerce.adobe.com/store/segmentation?cli=mini_plans&ctx=if&co=US&lang=en&ms=EDU&ot=TRIAL&cs=INDIVIDUAL&pa=phsp_direct_individual&rtc=t&lo=sl&af=uc_new_user_iframe%2Cuc_new_system_close',
+      attributes: { 'aria-label': 'Free trial - Photoshop - Individuals' },
+      browserParams: '?georouting=off&martech=off',
+      tags: '@three-in-one @smoke @regression @milo',
+    },
+    {
+      name: '@ThreeInOneCatalogFallback',
+      path: '/drafts/nala/blocks/merch/3in1-fallback-catalog-edu',
+      sectionId: 'modal-fallback-catalog-edu',
+      iframeSrc: 'https://www.adobe.com/mini-plans/photoshop.html?mid=ft&web=1&plan=edu',
+      attributes: { 'aria-label': 'Free trial - Photoshop - Individuals' },
+      browserParams: '?georouting=off&martech=off',
+      tags: '@three-in-one @smoke @regression @milo',
     },
   ],
 };
