@@ -34,7 +34,11 @@ async function main({ github, context, transaction_id, change_id, planned_start_
 
 if (process.env.LOCAL_RUN) {
     const { github, context } = getLocalConfigs();
-    main({ github, context });
+    if (process.env.PR_STATE === 'open') {
+        main({ github, context, transaction_id: process.env.TRANSACTION_ID, change_id: null, planned_start_time: process.env.PLANNED_START_TIME, planned_end_time: process.env.PLANNED_END_TIME });
+    } else {
+        main({ github, context, transaction_id: process.env.RETRIEVED_TRANSACTION_ID, change_id: process.env.CHANGE_ID, planned_start_time: process.env.PLANNED_START_TIME, planned_end_time: process.env.PLANNED_END_TIME });
+    }
 }
 
 module.exports = main;
