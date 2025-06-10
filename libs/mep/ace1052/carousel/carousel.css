@@ -11,8 +11,7 @@
   --carousel-button-border-color: #e1e1e1;
   --carousel-button-border-hover-color: #cacaca;
   --carousel-button-border-focus-color: #378ef0;
-  --carousel-indicator-background-color: var(--carousel-button-border-hover-color);
-  --carousel-indicator-non-active-background-color: #8F8F8F;
+  --carousel-indicator-background-color: #8F8F8F;
   --carousel-indicator-active-background-color: #242424;
   --carousel-expand-background-color: rgb(255 255 255 / 75%);
   --carousel-expand-border-color: rgb(116 116 116 / 30%);
@@ -256,7 +255,7 @@ html[dir="rtl"] .carousel .move-indicators {
 
 .carousel .carousel-indicator::after {
   content: '';
-  background-color: var(--carousel-indicator-non-active-background-color);
+  background-color: var(--carousel-indicator-background-color);
   border-radius: 50%;
   height: 6px;
   width: 6px;
