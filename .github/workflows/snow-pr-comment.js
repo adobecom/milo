@@ -20,6 +20,7 @@ const main = async ({ github, context, transaction_id }) => {
             repo: context.repo.repo,
             issue_number: pr_number,
             body: message,
+            token: process.env.GITHUB_TOKEN,
           })
           .then(() => console.log(`PR #${pr_number} Commented for SNOW Transaction ID ${_transaction_id}: ${message}`))
           .catch(console.error);
@@ -39,7 +40,7 @@ const main = async ({ github, context, transaction_id }) => {
           console.log(`Found SNOW Transaction ID Comment. Assigning transaction ID for closing SNOW Change Request...`);
           foundTransactionId = true;
           const transactionId = singleComment.body.split("SNOW Change Request Transaction ID: ")[1].trim();
-          fs.appendFileSync(process.env.GITHUB_OUTPUT, `TRANSACTION_ID=${transactionId}\n`);
+          fs.appendFileSync(process.env.GITHUB_OUTPUT, `RETRIEVED_TRANSACTION_ID=${transactionId}\n`);
           break;
         }
       }
