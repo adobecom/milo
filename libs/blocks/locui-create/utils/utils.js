@@ -78,18 +78,21 @@ export function setSelectedLocalesAndRegions() {
   const activeLocales = {};
   languages.forEach((loc) => {
     const { language, locales } = loc;
-    const { livecopies } = localeByLanguage[language] || {};
+    const { livecopies, languagecode } = localeByLanguage[language] || {};
     const livecopiesArr = [];
     if (livecopies) {
-      livecopiesArr.push(...livecopies.split(','));
+      const newLivecopies = livecopies.split(',').map((locale) => `${languagecode}|${locale}`);
+      livecopiesArr.push(...newLivecopies);
     }
     if (locales.length > 0) {
       locales.forEach((locale) => {
-        activeLocales[locale] = language;
+        const localeKey = `${languagecode}|${locale}`;
+        activeLocales[localeKey] = language;
       });
     } else {
       livecopiesArr.forEach((liveCopy) => {
-        activeLocales[liveCopy] = language;
+        const localeKey = `${languagecode}|${liveCopy}`;
+        activeLocales[localeKey] = language;
       });
     }
     selectedLocale.push(...livecopiesArr);
