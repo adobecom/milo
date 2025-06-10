@@ -1,4 +1,4 @@
-import { html } from 'lit';
+import { html, nothing } from 'lit';
 import { getFragmentMapping } from './variants';
 
 export class VariantLayout {
@@ -111,7 +111,7 @@ export class VariantLayout {
             html`<span class="secure-transaction-label"
                 >${this.card.secureLabel}</span
             >`
-            : '';
+            : nothing;
     }
 
     get secureLabelFooter() {

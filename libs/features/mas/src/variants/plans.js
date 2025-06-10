@@ -187,8 +187,9 @@ export class Plans extends VariantLayout {
     }
 
     get plansSecureLabelFooter() {
-        if (this.card.size !== 'super-wide') return this.secureLabelFooter;
-        return html`<footer><slot name="addon"></slot>${this.secureLabel}<slot name="footer"></slot></footer>`
+        if (this.card.size === 'super-wide') 
+            return html`<footer><slot name="addon"></slot>${this.secureLabel}<slot name="footer"></slot></footer>`;
+        return this.secureLabelFooter;
     }
 
     connectedCallbackHook() {
