@@ -4,6 +4,7 @@ import fs from 'fs';
 import importUrl from './index.js';
 import LOCAL_DEBUG_ENTRIES from './LOCAL_DEBUG_ENTRIES.js';
 import { getImsToken } from './daFetch.js';
+import localPathsToImport from './localPathsToImport.js';
 
 const { env, exit } = process;
 const {
@@ -90,14 +91,14 @@ const slackNotification = (text) => {
  * @param {string} siteName - The name of the site (e.g., 'da-bacom', 'bacom'). Used for the filename.
  * @param {string} baseUrl - The base URL for the log endpoint (e.g., 'https://admin.hlx.page/log/adobecom/da-bacom/main').
  */
-async function fetchLogsForSite(siteName, baseUrl, fromParam) {
+async function fetchLogsForSite(siteName, baseUrl, fromParam, toParam) {
   if (LOCAL_DEBUG_ENTRIES.length && USE_LOCAL_DEBUG_ENTRIES) {
     console.log('Using local entries from LOCAL_DEBUG_ENTRIES.js');
     return LOCAL_DEBUG_ENTRIES;
   }
 
   console.log(`Fetching logs for site: ${siteName} from ${baseUrl}...`);
-  const initialUrl = `${baseUrl}?from=${fromParam}`;
+  const initialUrl = `${baseUrl}?from=${fromParam}&to=${toParam}`;
   const entries = [];
   let totalFetched = 0;
 
@@ -207,18 +208,21 @@ const saveLivePaths = (livePaths) => {
 
 async function main() {
   await getImsToken();
-  const entries = await fetchLogsForSite(
+  const TO_PARAM = process.env.LAST_RUN_ISO_TO || new Date().toISOString();
+  if(localPathsToImport.length) console.log("Importing paths from local environment");
+  const entries = localPathsToImport.length ? localPathsToImport : await fetchLogsForSite(
     ROLLING_IMPORT_POLL_LOGS_FROM_REPO,
     `https://admin.hlx.page/log/adobecom/${ROLLING_IMPORT_POLL_LOGS_FROM_REPO}`,
-    FROM_PARAM
+    FROM_PARAM,
+    TO_PARAM
   );
-  const logLink = `Log Link: https://admin.hlx.page/log/adobecom/${ROLLING_IMPORT_POLL_LOGS_FROM_REPO}?from=${FROM_PARAM}`
+  const logLink = `Log Link: https://admin.hlx.page/log/adobecom/${ROLLING_IMPORT_POLL_LOGS_FROM_REPO}?from=${FROM_PARAM}&to=${TO_PARAM}`;
   if(!entries?.length) {
     console.log(`No entries found in the logs, exiting. ${logLink}`);
     await slackNotification(`No entries found, exiting ${logLink}`);
     return;
   }
-  const livePaths = await getLivePaths(entries, logLink);
+  const livePaths = localPathsToImport.length ? localPathsToImport : await getLivePaths(entries, logLink);
   const importedMedia = new Set();
   let result = {
     success: 0,
@@ -227,6 +231,7 @@ async function main() {
     successPaths: [],
   };
   if(LOCAL_RUN) saveLivePaths(livePaths)
+
   for (const path of livePaths) {
     queue.add(() =>
       importUrl(path, importedMedia)
@@ -239,7 +244,7 @@ async function main() {
             );
             
         })
-        .catch(() => {
+        .catch((e) => {
           result.error++;
           result.errorPaths.push(path);
           if (result.error % 10 === 0)
