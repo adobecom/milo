@@ -85,7 +85,7 @@ export const handle3in1IFrameEvents = ({ data: msgData }) => {
         closeBtn.setAttribute('aria-hidden', 'true');
         closeBtn.style.opacity = '0';
         closeBtn.style.height = '1px';
-        closeBtn.style.width = '1px'
+        closeBtn.style.width = '1px';
       }
       break;
     case MSG_SUBTYPE.EXTERNAL:
