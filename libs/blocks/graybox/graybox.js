@@ -10,12 +10,14 @@ const OPTION = {
 const CLASS = {
   CHANGED: 'gb-changed',
   GRAYBOX_BODY: 'gb-graybox-body',
+  MODAL_CURTAIN: 'gb-modal-curtain',
   NO_BORDER: 'gb-no-border',
   NO_CHANGE: 'gb-no-change',
   NO_CLICK: 'gb-no-click',
   PAGE_OVERLAY: 'gb-page-overlay',
   PHONE_PREVIEW: 'gb-phone-preview',
   TABLET_PREVIEW: 'gb-tablet-preview',
+  SELECTED_BUTTON: 'gb-selected-button',
 };
 
 const METADATA = {
@@ -49,27 +51,33 @@ const setMetadata = (metadata) => {
 
 const isMobileDevice = () => /Android|webOS|iPhone|iPad|iPod/i.test(navigator.userAgent);
 
-const getTableValues = (el) => [...el.childNodes].reduce((rdx, row) => {
-  if (!row.children) return rdx;
+const getTableValues = (el) => [...el.childNodes].reduce(
+  (rdx, row) => {
+    if (!row.children) return rdx;
 
-  const key = row.children[0]?.textContent?.trim().toLowerCase();
-  const content = row.children[1];
-  let text = content?.textContent.trim();
-  /* c8 ignore next 3 */
-  if (key !== 'title' && key !== 'desc' && text) {
-    text = text.toLowerCase();
-  }
-  if (key && content) {
-    rdx.keys.push(key);
-    rdx[key] = { content, text };
-  }
-  return rdx;
-}, { keys: [] });
+    const key = row.children[0]?.textContent?.trim().toLowerCase();
+    const content = row.children[1];
+    let text = content?.textContent.trim();
+    /* c8 ignore next 3 */
+    if (key !== 'title' && key !== 'desc' && text) {
+      text = text.toLowerCase();
+    }
+    if (key && content) {
+      rdx.keys.push(key);
+      rdx[key] = { content, text };
+    }
+    return rdx;
+  },
+  { keys: [] },
+);
 
 /* c8 ignore start */
 const getOptions = (text, metadata) => {
   const options = text || getMetadata(metadata);
-  return options?.toLowerCase().split(',').map((opt) => opt.trim());
+  return options
+    ?.toLowerCase()
+    .split(',')
+    .map((opt) => opt.trim());
 };
 
 const decorateFooter = (footer, options) => {
@@ -110,7 +118,7 @@ const checkGnav = (options, globalNoClick) => {
   const gnav = document.querySelector('.global-navigation');
   if (gnav) {
     const gnavOptions = getOptions(options.gnav?.text, METADATA.GNAV);
-    if (!(gnavOptions?.includes(OPTION.CHANGED))) {
+    if (!gnavOptions?.includes(OPTION.CHANGED)) {
       gnav.classList.add(CLASS.NO_CHANGE);
       if (globalNoClick) {
         gnav.classList.add(CLASS.NO_CLICK);
@@ -131,8 +139,7 @@ const checkNoClick = (grayboxEl, noClickOnGray) => {
   if (document.body.classList.contains(CLASS.NO_CHANGE)) {
     document.body.classList.add(CLASS.NO_CLICK);
   } else {
-    document.querySelectorAll(`.${CLASS.NO_CHANGE}`)
-      .forEach((el) => el.classList.add(CLASS.NO_CLICK));
+    document.querySelectorAll(`.${CLASS.NO_CHANGE}`).forEach((el) => el.classList.add(CLASS.NO_CLICK));
   }
 };
 
@@ -169,40 +176,7 @@ const injectCSSIntoIframe = (iframe, cssRules) => {
   });
 };
 
-const openDeviceModal = async (e) => {
-  if (deviceModal) {
-    closeModal(deviceModal);
-    await sleep(300);
-    deviceModal = null;
-  }
-
-  if (e.target.classList.contains('graybox-desktop')) {
-    return;
-  }
-
-  const isMobile = e.target.classList.contains('graybox-mobile');
-  const isTablet = e.target.classList.contains('graybox-tablet');
-  const docFrag = new DocumentFragment();
-  const iFrameUrl = new URL(window.location.href);
-  iFrameUrl.searchParams.set('graybox', 'menu-off');
-  const deviceBorder = createTag('img', { class: 'graybox-device-border', src: isMobile ? iphoneFrame : ipadFrame });
-  const iFrame = createTag('iframe', { src: iFrameUrl.href, width: '100%', height: '100%' });
-  const cssRules = `
-    body > .mep-preview-overlay {
-      display: none !important;
-    }
-  `;
-
-  injectCSSIntoIframe(iFrame, cssRules);
-
-  const modal = createTag('div', null, [deviceBorder, iFrame]);
-  docFrag.append(modal);
-
-  deviceModal = await getModal(null, { class: 'graybox-modal', id: 'graybox-modal', content: docFrag, closeEvent: 'closeGrayboxModal' });
-
-  // Disable modal.js forcing 100% height
-  iFrame.style.height = '';
-
+const setIframeUA = (iFrame, isMobile, isTablet) => {
   if (isMobile) {
     document.body.classList.add(CLASS.PHONE_PREVIEW);
     deviceModal.classList.add('mobile');
@@ -212,19 +186,93 @@ const openDeviceModal = async (e) => {
     deviceModal.classList.add('tablet');
     setUserAgent(iFrame.contentWindow, USER_AGENT.iPad);
   }
+};
+
+const setupIframe = (iFrame, isMobile, isTablet) => {
+  const cssRules = `
+    body > .mep-preview-overlay {
+      display: none !important;
+    }
+  `;
+  injectCSSIntoIframe(iFrame, cssRules);
+
+  iFrame.style.height = '';
+
+  setIframeUA(iFrame, isMobile, isTablet);
 
   // Spoof iFrame dimensions as screen size for MEP
   iFrame.contentWindow.screen = {
-    width: iFrame.clientWidth,
-    height: iFrame.clientHeight,
+    width: isMobile ? 350 : 768,
+    height: isMobile ? 800 : 1024,
   };
+};
 
-  const removeBodyPreviewClasses = () => document.body.classList.remove(
-    CLASS.PHONE_PREVIEW,
-    CLASS.TABLET_PREVIEW,
+const openDeviceModal = async (e) => {
+  const buttonEl = e.target;
+  const parentEl = buttonEl.parentElement;
+
+  const isDesktop = buttonEl.classList.contains('graybox-desktop');
+
+  if (deviceModal) {
+    closeModal(deviceModal);
+    if (!isDesktop) document.body.classList.add(CLASS.MODAL_CURTAIN);
+    await sleep(300);
+    deviceModal = null;
+  }
+
+  parentEl.querySelector('.graybox-desktop').classList.remove(CLASS.SELECTED_BUTTON);
+  buttonEl.classList.add(CLASS.SELECTED_BUTTON);
+
+  if (isDesktop) {
+    return;
+  }
+
+  document.body.classList.add(CLASS.MODAL_CURTAIN);
+
+  const isMobile = buttonEl.classList.contains('graybox-mobile');
+  const isTablet = buttonEl.classList.contains('graybox-tablet');
+  const docFrag = new DocumentFragment();
+  const iFrameUrl = new URL(window.location.href);
+  iFrameUrl.searchParams.set('graybox', 'menu-off');
+  const deviceBorder = createTag('img', { class: 'graybox-device-border', src: isMobile ? iphoneFrame : ipadFrame });
+  const iFrame = createTag('iframe', { src: iFrameUrl.href, width: '100%', height: '100%' });
+
+  const modal = createTag('div', null, [deviceBorder, iFrame]);
+  docFrag.append(modal);
+
+  deviceModal = await getModal(
+    null,
+    { class: 'graybox-modal', id: 'graybox-modal', content: docFrag, closeEvent: 'closeGrayboxModal' },
   );
 
-  window.addEventListener('milo:modal:closed', removeBodyPreviewClasses, { once: true });
+  const isSafari = /Safari/.test(navigator.userAgent) && !/Chrome/.test(navigator.userAgent);
+  if (isSafari) {
+    deviceModal.style.display = 'none';
+    setupIframe(iFrame, isMobile, isTablet);
+    iFrame.addEventListener('load', () => {
+      // safari needs to wait for the iframe to load before setting the user agent
+      setIframeUA(iFrame, isMobile, isTablet);
+      deviceModal.style.display = '';
+    });
+  } else {
+    setupIframe(iFrame, isMobile, isTablet);
+  }
+
+  const onDeviceModalClose = () => {
+    document.body.classList.remove(CLASS.MODAL_CURTAIN);
+
+    parentEl.querySelectorAll(':scope > a')
+      .forEach((el) => el.classList.remove(CLASS.SELECTED_BUTTON));
+
+    parentEl.querySelector('.graybox-desktop').classList.add(CLASS.SELECTED_BUTTON);
+
+    document.body.classList.remove(
+      CLASS.PHONE_PREVIEW,
+      CLASS.TABLET_PREVIEW,
+    );
+  };
+
+  window.addEventListener('milo:modal:closed', onDeviceModalClose, { once: true });
 
   const curtain = deviceModal.nextElementSibling;
   curtain.classList.add('graybox-curtain');
@@ -246,12 +294,10 @@ const createGrayboxMenu = (options, { isOpen = false } = {}) => {
   const grayboxDevices = createTag('div', { class: 'graybox-devices' }, null, { parent: grayboxMenu });
 
   ['mobile', 'tablet', 'desktop'].forEach((device) => {
-    const button = createTag(
-      'a',
-      { class: `graybox-${device} con-button` },
-      capitalizeFirstLetter(device),
-      { parent: grayboxDevices },
-    );
+    const button = createTag('a', { class: `graybox-${device} con-button` }, capitalizeFirstLetter(device), { parent: grayboxDevices });
+    if (device === 'desktop') {
+      button.classList.add(CLASS.SELECTED_BUTTON);
+    }
     button.addEventListener('click', openDeviceModal);
   });
 
@@ -303,7 +349,7 @@ const grayboxThePage = (grayboxEl, grayboxMenuOff) => {
   transformLinks();
   document.body.classList.add(CLASS.GRAYBOX_BODY);
   const globalNoClick = grayboxEl.classList.contains(CLASS.NO_CLICK)
-  || grayboxEl.classList.contains(OPTION.NO_CLICK);
+    || grayboxEl.classList.contains(OPTION.NO_CLICK);
 
   const hasGrayboxChangedEl = !!document.querySelector(`.${CLASS.CHANGED}`);
   if (hasGrayboxChangedEl) {
@@ -312,8 +358,7 @@ const grayboxThePage = (grayboxEl, grayboxMenuOff) => {
     addPageOverlayDiv();
     setupChangedEls(globalNoClick);
   } else if (globalNoClick) {
-    document.querySelectorAll(`.${CLASS.NO_CHANGE}`)
-      .forEach((el) => el.classList.add(CLASS.NO_CLICK));
+    document.querySelectorAll(`.${CLASS.NO_CHANGE}`).forEach((el) => el.classList.add(CLASS.NO_CLICK));
   }
 
   const options = getTableValues(grayboxEl);
@@ -336,7 +381,7 @@ export default function init(grayboxEl) {
 
   /* c8 ignore next 9 */
   const enableGraybox = grayboxParam === 'on'
-    || url.hostname.includes('graybox.adobe.com')
+    || url.hostname.endsWith('graybox.adobe.com')
     || url.hostname.includes('localhost')
     || url.hostname.includes('-graybox--')
     || getMetadata('project') === 'graybox';
