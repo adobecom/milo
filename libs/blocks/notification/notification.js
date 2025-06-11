@@ -272,7 +272,8 @@ function trapFocusWithElement(el, focusableElements) {
   const closeButton = el.querySelector('.close, a[href="#_evt-close"]');
   let lastFocusedElement = firstFocusable;
   const externalClickHandler = (event) => {
-    if (document.querySelector('.georouting-wrapper')) return;
+    event.preventDefault();
+    if (event.target.closest('.feds-localnav') || document.querySelector('.georouting-wrapper')) return;
     if (!el.contains(event.target) && !el.isEqualNode(event.target)) {
       window.scrollTo(0, 0);
       lastFocusedElement.focus({ focusVisible: true });
@@ -295,6 +296,19 @@ function trapFocusWithElement(el, focusableElements) {
       }
     }
   };
+
+  const gnavFocusOutHandler = (e) => {
+    if (e.key === 'Tab') {
+      const lastNavElement = document.querySelector('.feds-localnav-items .feds-navItem:last-child a');
+      if (e.srcElement.isEqualNode(lastNavElement)) {
+        e.preventDefault();
+        firstFocusable.focus({ focusVisible: true });
+      }
+    }
+  };
+
+  const gnav = document.querySelector('.feds-localnav');
+  gnav.addEventListener('keydown', gnavFocusOutHandler);
   document.addEventListener('click', externalClickHandler);
   el.addEventListener('focusin', updateLastFocused);
   el.addEventListener('keydown', keydownEvent);
@@ -302,6 +316,7 @@ function trapFocusWithElement(el, focusableElements) {
     document.removeEventListener('click', externalClickHandler);
     el.removeEventListener('focusin', updateLastFocused);
     el.removeEventListener('keydown', keydownEvent);
+    gnav.removeEventListener('keydown', gnavFocusOutHandler);
   });
 }
 
@@ -341,5 +356,7 @@ export default async function init(el) {
     wrapCopy(blockText);
     decorateMultiViewport(el);
   }
-  trapFocusWithElement(el);
+  if (document.body.classList.contains('mobile-disable-scroll')) {
+    trapFocusWithElement(el);
+  }
 }
