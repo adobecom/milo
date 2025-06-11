@@ -36,10 +36,14 @@ const main = async ({ github, context, transaction_id }) => {
     if (process.env.PR_STATE !== 'open') {
       let foundTransactionId = false;
       for await (const singleComment of comments) {
-        if (singleComment.body.includes("SNOW Change Request Transaction ID: ")) {
+        if (singleComment.body.includes("SNOW Change Request Transaction ID")) {
           console.log(`Found SNOW Transaction ID Comment. Assigning transaction ID for closing SNOW Change Request...`);
           foundTransactionId = true;
+          let transactionComment = singleComment.body.split(":");
           const transactionId = singleComment.body.split("SNOW Change Request Transaction ID: ")[1].trim();
+
+          console.log(`testing: Found Transaction ID comment Array: ${transactionComment}`);
+          console.log(`testing: Found Transaction ID: ${transactionId}`);
           fs.writeFileSync(process.env.GITHUB_OUTPUT, `RETRIEVED_TRANSACTION_ID=${transactionId}\n`);
           break;
         }
