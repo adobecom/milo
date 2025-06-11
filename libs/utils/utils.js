@@ -1754,14 +1754,14 @@ export const getMasLibs = () => {
   if (!maslibs) return 'https://www.adobe.com/mas/libs/mas.js';
   if (maslibs === 'local') return 'http://localhost:3030/web-components/dist/mas.js';
   if (maslibs.startsWith('http')) return maslibs;
-  
-  return `https://${maslibs}.aem.live/web-components/dist/mas.js`;
+  if (maslibs.includes('--mas--')) return `https://${maslibs}.aem.live/web-components/dist/mas.js`;
+  return `https://${maslibs}--mas--adobecom.aem.live/web-components/dist/mas.js`;
 };
 
 let masLibsPromise;
 export const loadMasLibs = () => {
   if (masLibsPromise) return masLibsPromise;
   const masLibsUrl = getMasLibs();
-  masLibsPromise = loadScript(masLibsUrl, { type: 'module' });
+  masLibsPromise = loadScript(masLibsUrl, 'module');
   return masLibsPromise;
 };
