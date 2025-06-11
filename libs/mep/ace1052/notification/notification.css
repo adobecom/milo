@@ -487,6 +487,7 @@
 
 .notification.button-full-width .foreground{
   margin-block: auto;
+  padding-block: initial;
 }
 
 .notification.button-full-width .action-area,
