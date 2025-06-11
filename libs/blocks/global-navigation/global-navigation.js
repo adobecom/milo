@@ -101,6 +101,9 @@ const {
   getBranchBannerInfo,
   loaderMegaMenu,
   logPerformance,
+  setAriaAtributes,
+  addA11YMobileDropdowns,
+  removeA11YMobileDropdowns,
 } = utilities;
 
 const SIGNIN_CONTEXT = getConfig()?.signInContext;
@@ -368,11 +371,22 @@ export const getUniversalNavLocale = (locale) => {
   return `${prefix.toLowerCase()}_${prefix.toUpperCase()}`;
 };
 
+const [disableAriaHidden, enableAriaHidden] = (() => {
+  const targets = ['#branch-banner-iframe', '.feds-promo-aside-wrapper', '.feds-localnav', 'main', 'footer'];
+  return [
+    () => {
+      targets.forEach((ele) => document.querySelector(ele)?.removeAttribute('aria-hidden'));
+    },
+    (isExpanded) => {
+      targets.forEach((ele) => document.querySelector(ele)?.setAttribute('aria-hidden', !isExpanded));
+    }];
+})();
+
 const setMenuState = () => {
   const toggle = document.querySelector('.feds-toggle');
   const navWrapper = document.querySelector('.feds-nav-wrapper');
   const isExpanded = toggle?.getAttribute('aria-expanded') === 'true';
-  ['main', 'footer'].forEach((ele) => document.querySelector(ele)?.setAttribute('aria-hidden', !isExpanded));
+  enableAriaHidden(isExpanded);
   toggle?.setAttribute('aria-expanded', !isExpanded);
   document.body.classList.toggle('disable-scroll', !isExpanded);
   navWrapper?.classList?.toggle('feds-nav-wrapper--expanded', !isExpanded);
@@ -1000,13 +1014,15 @@ class Gnav {
   decorateToggle = () => {
     if (!this.mainNavItemCount || (this.newMobileNav && !this.hasMegaMenu())) return '';
 
+    const isLocalNav = this.isLocalNav();
+
     const toggle = toFragment`<button
       class="feds-toggle"
       daa-ll="hamburgermenu|open"
       aria-expanded="false"
-      aria-haspopup="true"
+      aria-haspopup=${isLocalNav ? 'dialog' : 'true'}
       aria-label="Navigation menu"
-      aria-controls="feds-nav-wrapper"
+      aria-controls=${isLocalNav ? 'feds-popup-1' : 'feds-nav-wrapper'}
       data-feds-preventAutoClose>
       </button>`;
 
@@ -1271,7 +1287,10 @@ class Gnav {
         selectTab.setAttribute('daa-ll', `${daallTab?.replace('click', 'open')}`);
         selectTab?.click();
         selectTab.setAttribute('daa-ll', `${daallTab?.replace('open', 'click')}`);
-        selectTab?.focus();
+        const title = popup.querySelector('.title h2');
+        title?.setAttribute('tabindex', '-1'); // Make title focusable
+        title?.focus();
+        addA11YMobileDropdowns(this.elements.topnav, popup.previousElementSibling);
       }, 100);
     };
 
@@ -1384,6 +1403,8 @@ class Gnav {
             if (isDesktop.matches) {
               newPopup.innerHTML = desktopMegaMenuHTML ?? loadingDesktopMegaMenuHTML;
               this.block.classList.remove('new-nav');
+              disableAriaHidden();
+              removeA11YMobileDropdowns();
             } else {
               mobileNavCleanup();
               mobileNavCleanup = await transformTemplateToMobile({
@@ -1448,6 +1469,8 @@ class Gnav {
             trigger({ element: dropdownTrigger, event: e, type: 'dropdown' });
             setActiveDropdown(dropdownTrigger);
           });
+          // Set aria attributes
+          isDesktop.addEventListener('change', () => setAriaAtributes(dropdownTrigger));
 
           // Update analytics value when dropdown is expanded/collapsed
           observeDropdown(dropdownTrigger);

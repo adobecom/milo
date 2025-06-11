@@ -16,6 +16,7 @@ import {
   setActiveLink,
   getDisableAEDState,
   hasActiveLink,
+  setAriaAtributes,
 } from '../utilities.js';
 
 const decorateHeadline = (elem, index) => {
@@ -397,6 +398,7 @@ const decorateMenu = (config) => logErrorFor(async () => {
     }
 
     asyncDropDownCount += 1;
+    menuTemplate.setAttribute('id', `feds-popup-${asyncDropDownCount}`);
     config.template.classList.add('feds-navItem--megaMenu');
     if (getAsyncDropdownCount() === asyncDropDownCount) {
       if (!hasActiveLink()) {
@@ -418,6 +420,7 @@ const decorateMenu = (config) => logErrorFor(async () => {
   config.template?.querySelector('.feds-popup.loading')?.remove();
   config.template?.append(menuTemplate);
   if (config.type === 'asyncDropdownTrigger') {
+    setAriaAtributes(menuTemplate.previousElementSibling);
     performance.mark(`DecorateMenu-${asyncDropDownCount}-End`);
   }
 }, 'Decorate menu failed', 'gnav-menu', 'i');
