@@ -92,7 +92,6 @@ function createDropdownElements(placeholderText) {
   const dropdown = createTag('div', { class: 'language-dropdown', style: 'display: none;' });
   const dragHandle = createTag('div', { class: 'drag-handle' });
   dropdown.appendChild(dragHandle);
-
   const searchContainer = createTag('div', { class: 'search-container' });
   const searchInputWrapper = createTag('div', { class: 'search-input-wrapper' });
   const searchIcon = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
@@ -377,12 +376,13 @@ function setupDropdownEvents({
       const path = href.replace(window.location.origin + (hasPrefix ? currentPrefix : ''), '').replace('#langnav', '');
       const newPath = lang.prefix ? `/${lang.prefix}${path}` : path;
       const fullUrl = `${window.location.origin}${newPath}`;
+      const langLink = li.querySelector('a.language-link');
+      if (langLink) langLink.href = fullUrl;
       handleEvent({
         prefix: lang.prefix,
         link: { href: fullUrl },
         callback: (url) => {
-          const langLink = li.querySelector('a.language-link');
-          if (langLink) langLink.href = url;
+          if (langLink && langLink.href !== url) langLink.href = url;
         },
       });
     }
