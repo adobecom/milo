@@ -1,6 +1,6 @@
 import { createTag, getConfig, MILO_EVENTS } from '../../../utils/utils.js';
 import { decorateAnchorVideo, syncPausePlayIcon } from '../../../utils/decorate.js';
-import { decorateDefaultLinkAnalytics } from '../../../../libs/martech/attributes.js';
+import { decorateDefaultLinkAnalytics } from '../../../martech/attributes.js';
 
 const { miloLibs, codeRoot } = getConfig();
 const base = miloLibs || codeRoot;
