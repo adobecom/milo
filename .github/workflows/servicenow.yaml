@@ -68,7 +68,10 @@ jobs:
     - name: Execute script for creating and closing CMR
       id: create-close-cmr-step
       env:
-        RETRIEVED_TRANSACTION_ID: ${{ steps.retrieve-transactionId-step.outputs.transaction_id }}
+        RETRIEVED_TRANSACTION_ID: ${{ steps.retrieve-transactionId-step.outputs.retrieved_transaction_id }}
+        PLANNED_START_TIME: ${{ steps.create-close-cmr-step.outputs.planned_start_time }}
+        PLANNED_END_TIME: ${{ steps.create-close-cmr-step.outputs.planned_end_time }}
+        
       run: |
         python ./.github/workflows/servicenow.py
 
@@ -90,7 +93,7 @@ jobs:
       id: slack-snow-cr-step
       uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea
       env:
-        RETRIEVED_TRANSACTION_ID: ${{ steps.retrieve-transactionId-step.outputs.transaction_id }}
+        RETRIEVED_TRANSACTION_ID: ${{ steps.retrieve-transactionId-step.outputs.retrieved_transaction_id }}
         TRANSACTION_ID: ${{ steps.create-close-cmr-step.outputs.transaction_id }}
         CHANGE_ID: ${{ steps.create-close-cmr-step.outputs.change_id }}
         PLANNED_START_TIME: ${{ steps.create-close-cmr-step.outputs.planned_start_time }}
@@ -101,5 +104,5 @@ jobs:
           if (process.env.PR_STATE == 'open') {
             await notifySnowCr({ github, context, transaction_id: process.env.TRANSACTION_ID, change_id: null, planned_start_time:  process.env.PLANNED_START_TIME, planned_end_time: process.env.PLANNED_END_TIME });
           } else {
-            await notifySnowCr({ github, context, transaction_id: process.env.RETRIEVED_TRANSACTION_ID, change_id: process.env.CHANGE_ID, planned_start_time: process.env.PLANNED_START_TIME, planned_end_time: process.env.PLANNED_END_TIME });
+            await notifySnowCr({ github, context, transaction_id: process.env.RETRIEVED_TRANSACTION_ID, change_id: process.env.CHANGE_ID, planned_start_time: null, planned_end_time: null });
           }
