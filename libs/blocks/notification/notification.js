@@ -280,7 +280,7 @@ function trapFocusWithElement(el, focusableElements) {
   };
   const updateLastFocused = (event) => { lastFocusedElement = event.target; };
   const keydownEvent = (event) => {
-    if (event.key === 'Escape') {
+    if (event.key === 'Escape' && !document.querySelector('.dialog-modal')) {
       closeButton.click();
     }
     if (event.key === 'Tab') {

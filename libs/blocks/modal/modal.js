@@ -260,6 +260,21 @@ export async function getModal(details, custom) {
     const firstHeading = dialog.querySelector('h1, h2, h3, h4, h5, h6');
     if (firstHeading) dialog.setAttribute('aria-label', firstHeading.textContent.trim());
   }
+  const tabEvent = (e) => {
+    if ((e.key === 'Escape' || e.key === 'Tab') && document.activeElement.closest('.georouting-wrapper') === null && document.body.classList.contains('disable-scroll')) {
+      e.preventDefault();
+      firstFocusable.focus({ preventScroll: true, ...focusVisible });
+      if (e.key === 'Escape') {
+        closeModal(dialog);
+      }
+    }
+  };
+  const cleanupEventListeners = () => {
+    document.removeEventListener('keydown', tabEvent);
+    window.removeEventListener('milo:modal:closed', cleanupEventListeners);
+  };
+  document.addEventListener('keydown', tabEvent);
+  window.addEventListener('milo:modal:closed', cleanupEventListeners);
 
   return dialog;
 }
