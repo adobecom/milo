@@ -877,12 +877,12 @@ export async function buildCta(el, params) {
   */
   cta.onceSettled().then(() => {
     const prefix = getConfig()?.locale?.prefix;
-    if (shouldAllowKrTrial(el, prefix) && prefix === '/kr' && cta.value[0]?.offerType === OFFER_TYPE_TRIAL) {
+    if (!(prefix === '/kr' && cta.value[0]?.offerType === OFFER_TYPE_TRIAL)) return;
+    if (shouldAllowKrTrial(el, prefix)) {
       cta.classList.remove('hidden-osi-trial-link');
       return;
     }
-
-    if (!shouldAllowKrTrial(el, prefix) && prefix === '/kr' && cta.value[0]?.offerType === OFFER_TYPE_TRIAL) cta.remove();
+    cta.remove();
   });
 
   return cta;
