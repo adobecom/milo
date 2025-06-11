@@ -580,8 +580,10 @@ function applyStylesBasedOnScreenSize(table, originTable) {
       colSelect0.dataset.filterIndex = 0;
       colSelect1.dataset.filterIndex = 1;
       const visibleCols = table.querySelectorAll(`.col-heading:not([style*="display: none"], .hidden${isMerch ? '' : ', .col-1'})`);
-      colSelect0.querySelectorAll('option').item(visibleCols.item(0).dataset.colIndex - (isMerch ? 1 : 2)).selected = true;
-      colSelect1.querySelectorAll('option').item(visibleCols.item(1).dataset.colIndex - (isMerch ? 1 : 2)).selected = true;
+      const option0 = colSelect0.querySelectorAll('option').item(visibleCols.item(0).dataset.colIndex - (isMerch ? 1 : 2));
+      const option1 = colSelect1.querySelectorAll('option').item(visibleCols.item(1).dataset.colIndex - (isMerch ? 1 : 2));
+      if (option0) option0.selected = true;
+      if (option1) option1.selected = true;
       filter1.append(colSelect0);
       filter2.append(colSelect1);
       filters.append(filter1, filter2);
