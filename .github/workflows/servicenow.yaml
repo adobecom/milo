@@ -36,12 +36,6 @@ jobs:
     # Only run this workflow on pull requests that have been newly opened
     if:  ${{ (github.event.pull_request.merged == true || github.event.pull_request.state == 'open') }}
     runs-on: ubuntu-latest
-    outputs:
-      RETRIEVED_TRANSACTION_ID: ${{ steps.retrieve-transactionId-step.outputs.transaction_id }}
-      TRANSACTION_ID: ${{ steps.create-close-cmr-step.outputs.transaction_id }}
-      CHANGE_ID: ${{ steps.create-close-cmr-step.outputs.change_id }}
-      PLANNED_START_TIME: ${{ steps.create-close-cmr-step.outputs.planned_start_time }}
-      PLANNED_END_TIME: ${{ steps.create-close-cmr-step.outputs.planned_end_time }}
 
     steps:
     - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
@@ -71,7 +65,6 @@ jobs:
         RETRIEVED_TRANSACTION_ID: ${{ steps.retrieve-transactionId-step.outputs.retrieved_transaction_id }}
         PLANNED_START_TIME: ${{ steps.create-close-cmr-step.outputs.planned_start_time }}
         PLANNED_END_TIME: ${{ steps.create-close-cmr-step.outputs.planned_end_time }}
-        
       run: |
         python ./.github/workflows/servicenow.py
 
