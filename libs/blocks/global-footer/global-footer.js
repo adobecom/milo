@@ -463,7 +463,7 @@ class Footer {
       const config = { ...getConfig(), jarvis: { ...getConfig().jarvis, onDemand: true } };
       initJarvisChat(config, loadScript, loadStyle, getMetadata);
     }
-  }
+  };
 }
 
 export default function init(block) {

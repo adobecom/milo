@@ -3,7 +3,7 @@ export default ({ regionPickerHash = '/fragments/regions#langnav', hasRegionPick
 <ul>
   <li><a href="https://business.adobe.com/request-consultation/experience-cloud.html">Request a demo</a></li>
   <li><a href="https://www.adobe.com/index.html">Adobe.com</a></li>
-  ${hasJarvisChat ? `<li><a href="#open-jarvis-chat">Open Jarvis</a></li>` : ''}
+  ${hasJarvisChat ? '<li><a href="#open-jarvis-chat">Open Jarvis</a></li>' : ''}
 </ul>
 <h2 id="why-adobe">Why Adobe</h2>
 <ul>
