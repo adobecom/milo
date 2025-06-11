@@ -92,6 +92,7 @@ function createDropdownElements(placeholderText) {
   const dropdown = createTag('div', { class: 'language-dropdown', style: 'display: none;' });
   const dragHandle = createTag('div', { class: 'drag-handle' });
   dropdown.appendChild(dragHandle);
+
   const searchContainer = createTag('div', { class: 'search-container' });
   const searchInputWrapper = createTag('div', { class: 'search-input-wrapper' });
   const searchIcon = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
@@ -434,6 +435,18 @@ function setupDropdownEvents({
       window.addEventListener('mouseup', onMouseUp);
     });
   }
+  dropdown.addEventListener('focusout', (e) => {
+    const nextFocused = e.relatedTarget;
+    if (!dropdown.contains(nextFocused) && nextFocused !== selectedLangButton) {
+      closeDropdown();
+    }
+  });
+  dropdown.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      e.preventDefault();
+      closeDropdown();
+    }
+  });
 }
 
 export default async function init(block) {
