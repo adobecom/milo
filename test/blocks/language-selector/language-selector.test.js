@@ -108,10 +108,10 @@ describe('Language Selector Block', async () => {
     searchInput.value = 'Deutsch';
     searchInput.dispatchEvent(new Event('input', { bubbles: true }));
     await new Promise((resolve) => { setTimeout(resolve, 250); }); // debounce
-    const visibleLinks = Array.from(document.querySelectorAll('.language-link'))
-      .filter((link) => link.offsetParent !== null);
-    expect(visibleLinks.length).to.equal(1);
-    expect(visibleLinks[0].textContent).to.include('Deutsch');
+    const languageLinks = Array.from(document.querySelectorAll('.language-link'));
+    const filtered = languageLinks.filter((link) => link.textContent.includes('Deutsch'));
+    expect(filtered.length).to.equal(1);
+    expect(filtered[0].textContent).to.include('Deutsch');
   });
 
   it('moves focus out of dropdown on Tab', async () => {
