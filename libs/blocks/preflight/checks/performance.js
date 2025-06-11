@@ -104,7 +104,6 @@ export async function checkVideoPoster(url, area, observeLcp) {
   const lcp = await getLcpEntry(url, area, observeLcp);
   const hasVideoUrl = lcp?.url?.match(/\.mp4/);
   const videoElement = lcp?.element?.closest('video') || lcp?.element?.querySelector('video');
-  
   if (!hasVideoUrl && !videoElement) {
     return {
       title: PERFORMANCE_TITLES.VideoPoster,
