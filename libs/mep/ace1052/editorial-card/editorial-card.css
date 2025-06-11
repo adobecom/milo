@@ -395,5 +395,6 @@
   .section.show-all:has(.editorial-card) {
     margin-inline: var(--spacing-xs);
     padding: var(--spacing-xs);
+    margin-bottom: 24px;
   }
 }
