@@ -179,8 +179,8 @@ export class Plans extends VariantLayout {
     }
 
     get icons() {
-      if (!this.card.querySelector('[slot="icons"]')) return '';
-      return html`<slot name="icons"></slot>`;
+        if (!this.card.querySelector('[slot="icons"]') && !this.card.getAttribute('id')) return '';
+        return html`<slot name="icons"></slot>`;
     }
 
     connectedCallbackHook() {

@@ -132,8 +132,7 @@ header.new-nav .feds-nav > section.feds-navItem > .feds-popup .has-subheader .fe
   display: block;
 }
 
-.feds-navLink-image,
-.feds-navLink-description {
+.feds-navLink-image {
   display: none;
 }
 
@@ -148,6 +147,12 @@ header.global-navigation.ready {
 
 .feds-navLink.feds-navLink--header {
   pointer-events: none;
+}
+
+.feds-navLink-description {
+  display: flex;
+  font-size: 12px;
+  color: var(--feds-color-navLink-description);
 }
 
 /* Desktop styles */
@@ -244,12 +249,6 @@ header.global-navigation.ready {
   .feds-navLink-image picture {
     width: max-content;
     max-width: 25px;
-  }
-
-  .feds-navLink-description {
-    display: flex;
-    font-size: 12px;
-    color: var(--feds-color-navLink-description);
   }
 
   .feds-navLink:hover .feds-navLink-description,
