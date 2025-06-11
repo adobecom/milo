@@ -76,7 +76,7 @@ const init = async () => {
   // mas-commerce-service
   createMasCommerceService(params);
   
-  // Load mas.js using maslibs if parameter is present, otherwise use local version
+  // Load mas.js using maslibs if parameter is present
   const maslibs = params.get('maslibs');
   if (maslibs !== null) {
     // Use maslibs functionality from utils
