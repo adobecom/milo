@@ -74,11 +74,17 @@ function getSidenav(collection) {
   let multilevel = false;
   function generateLevelItems(level, parent) {
     for (const node of level) {
-      const value = node.label.toLowerCase();
-      const item = createTag('sp-sidenav-item', { label: node.label, value });
+      const label = node.navigationLabel || node.label;
+      const value = label.toLowerCase();
+      const item = createTag('sp-sidenav-item', { label, value });
       if (node.icon) {
-        const icon = createTag('img', { src: node.icon, slot: 'icon', style: 'height: fit-content;' });
-        item.append(icon);
+        createTag('img', { src: node.icon, slot: 'icon', 'data-type': 'dark', style: 'height: fit-content;' }, { parent: item });
+      }
+      if (node.iconLight) {
+        createTag('img', { src: node.iconLight, 'data-type': 'light', style: 'height: fit-content;' }, { parent: item });
+      }
+      if (node.navigationLabel && node.label) {
+        createTag('var', { 'data-display': node.label }, { parent: item });
       }
       parent.append(item);
       if (node.collections) {

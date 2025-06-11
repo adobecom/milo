@@ -29,7 +29,6 @@ export class MerchSideNav extends LitElement {
                 z-index: 2;
             }
 
-            :host h2 {
               color: var(--spectrum-global-color-gray-900);
             }
 

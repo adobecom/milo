@@ -55,9 +55,12 @@ export class MerchSidenavList extends LitElement {
         if (element.parentNode.tagName === 'SP-SIDENAV-ITEM') {
             this.selectElement(element.parentNode, false);
         }
+        element.querySelector('img[data-type="dark"]')?.setAttribute('slot', selected ? 'icon' : null);
+        element.querySelector('img[data-type="light"]')?.setAttribute('slot', selected ? null : 'icon');
         if (selected) {
             this.selectedElement = element;
-            this.selectedText = element.label;
+            const displayText = element.querySelector('var[data-display]')?.textContent?.trim();
+            this.selectedText = displayText || element.label;
             this.selectedValue = element.value;
             setTimeout(() => {
                 element.selected = true;
@@ -75,6 +78,8 @@ export class MerchSidenavList extends LitElement {
             );
         }
     }
+
+    
 
     /**
      * click handler to manage first level items state of sidenav
