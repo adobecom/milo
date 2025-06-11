@@ -434,6 +434,18 @@ function setupDropdownEvents({
       window.addEventListener('mouseup', onMouseUp);
     });
   }
+  dropdown.addEventListener('focusout', (e) => {
+    const nextFocused = e.relatedTarget;
+    if (!dropdown.contains(nextFocused) && nextFocused !== selectedLangButton) {
+      closeDropdown();
+    }
+  });
+  dropdown.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      e.preventDefault();
+      closeDropdown();
+    }
+  });
 }
 
 export default async function init(block) {
