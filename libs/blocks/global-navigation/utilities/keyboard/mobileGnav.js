@@ -28,54 +28,72 @@ const MobileGnav = {
           const popupLinks = document.querySelectorAll('.feds-nav-wrapper .feds-popup .tab-content .feds-navLink, .feds-promo a');
           popupTabs.forEach((tab) => {
             tab.addEventListener('keydown', ({ code }) => {
-              if (code === 'ArrowUp') {
-                const prevTab = tab.previousElementSibling;
-                if (prevTab) prevTab.focus();
-              } else if (code === 'ArrowDown') {
-                const nextTab = tab.nextElementSibling;
-                if (nextTab) nextTab.focus();
-              } else if (code === 'ArrowRight') {
-                const currentTabs = [...popupTabs].filter((currentTab) => currentTab.closest('.feds-dropdown--active'));
-                const activeTab = currentTabs.find((currentTab) => currentTab.getAttribute('aria-selected') === 'true');
-                const activeTabIndex = activeTab.getAttribute('aria-controls');
-                const currentTabContent = [...popupTabContents].find((currentTab) => currentTab.closest('.feds-dropdown--active'));
-                if (currentTabContent && currentTabContent.children[activeTabIndex]) {
-                  currentTabContent.children[activeTabIndex].querySelector('.feds-navLink, .feds-promo a').focus();
+              switch (code) {
+                case 'ArrowUp': {
+                  const prevTab = tab.previousElementSibling;
+                  if (prevTab) prevTab.focus();
+                  break;
                 }
+                case 'ArrowDown': {
+                  const nextTab = tab.nextElementSibling;
+                  if (nextTab) nextTab.focus();
+                  break;
+                }
+                case 'ArrowRight': {
+                  const currentTabs = [...popupTabs].filter((currentTab) => currentTab.closest('.feds-dropdown--active'));
+                  const activeTab = currentTabs.find((currentTab) => currentTab.getAttribute('aria-selected') === 'true');
+                  const activeTabIndex = activeTab.getAttribute('aria-controls');
+                  const currentTabContent = [...popupTabContents].find((currentTab) => currentTab.closest('.feds-dropdown--active'));
+                  if (currentTabContent && currentTabContent.children[activeTabIndex]) {
+                    currentTabContent.children[activeTabIndex].querySelector('.feds-navLink, .feds-promo a').focus();
+                  }
+                  break;
+                }
+                default:
+                  break;
               }
             });
           });
           popupLinks.forEach((link) => {
             link.addEventListener('keydown', ({ code }) => {
-              if (code === 'ArrowUp') {
-                let prevLink = link.previousElementSibling;
-                if (prevLink) {
-                  if (prevLink.classList.contains('feds-promo-wrapper')) {
-                    prevLink = prevLink.querySelector('a.feds-cta');
+              switch (code) {
+                case 'ArrowUp': {
+                  let prevLink = link.previousElementSibling;
+                  if (prevLink) {
+                    if (prevLink.classList.contains('feds-promo-wrapper')) {
+                      prevLink = prevLink.querySelector('a.feds-cta');
+                    }
+                    prevLink.focus();
+                  } else if (link.classList.contains('feds-cta')) {
+                    link.closest('.feds-promo-content').previousElementSibling.focus();
+                  } else {
+                    link.closest('.feds-promo-wrapper').previousElementSibling.focus();
                   }
-                  prevLink.focus();
-                } else if (link.classList.contains('feds-cta')) {
-                  link.closest('.feds-promo-content').previousElementSibling.focus();
-                } else {
-                  link.closest('.feds-promo-wrapper').previousElementSibling.focus();
+                  break;
                 }
-              } else if (code === 'ArrowDown') {
-                let nextLink = link.nextElementSibling;
-                if (nextLink) {
-                  if (nextLink.classList.contains('feds-promo-content')) {
-                    nextLink = nextLink.querySelector('a');
+                case 'ArrowDown': {
+                  let nextLink = link.nextElementSibling;
+                  if (nextLink) {
+                    if (nextLink.classList.contains('feds-promo-content')) {
+                      nextLink = nextLink.querySelector('a');
+                    }
+                    if (nextLink.classList.contains('feds-promo-wrapper')) {
+                      nextLink = nextLink.querySelector('a');
+                    }
+                    nextLink.focus();
+                  } else {
+                    link.closest('.feds-promo-wrapper').nextElementSibling.focus();
                   }
-                  if (nextLink.classList.contains('feds-promo-wrapper')) {
-                    nextLink = nextLink.querySelector('a');
-                  }
-                  nextLink.focus();
-                } else {
-                  link.closest('.feds-promo-wrapper').nextElementSibling.focus();
+                  break;
                 }
-              } else if (code === 'ArrowLeft') {
-                const currentTabs = [...popupTabs].filter((currentTab) => currentTab.closest('.feds-dropdown--active'));
-                const activeTab = currentTabs.find((currentTab) => currentTab.getAttribute('aria-selected') === 'true');
-                if (activeTab) activeTab.focus();
+                case 'ArrowLeft': {
+                  const currentTabs = [...popupTabs].filter((currentTab) => currentTab.closest('.feds-dropdown--active'));
+                  const activeTab = currentTabs.find((currentTab) => currentTab.getAttribute('aria-selected') === 'true');
+                  if (activeTab) activeTab.focus();
+                  break;
+                }
+                default:
+                  break;
               }
             });
           });
