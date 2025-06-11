@@ -849,17 +849,17 @@ export async function buildCta(el, params) {
     });
   }
 
-  // Adding aria-label for checkout-link using productFamily and customerSegment as placeholder key.
+  // Adding aria-label for checkout-link using productCode and customerSegment as placeholder key.
   if (el.ariaLabel) {
     // If Milo aria-label available from sharepoint doc, just use it.
     cta.setAttribute('aria-label', el.ariaLabel);
   } else if (!cta.ariaLabel) {
     cta.onceSettled().then(async () => {
-      const productFamily = cta.value[0]?.productArrangement?.productFamily;
+      const productCode = cta.value[0]?.productArrangement?.productCode;
       const { marketSegment, customerSegment } = cta;
       const segment = marketSegment === 'EDU' ? marketSegment : customerSegment;
       let ariaLabel = cta.textContent;
-      ariaLabel = productFamily ? `${ariaLabel} - ${await replaceKey(productFamily, getConfig())}` : ariaLabel;
+      ariaLabel = productCode ? `${ariaLabel} - ${await replaceKey(productCode, getConfig())}` : ariaLabel;
       ariaLabel = segment ? `${ariaLabel} - ${await replaceKey(segment, getConfig())}` : ariaLabel;
       cta.setAttribute('aria-label', ariaLabel);
     });
