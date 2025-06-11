@@ -15,6 +15,9 @@ import {
   loadLana,
   setConfig,
   getMetadata,
+  createTag,
+  loadBlock,
+  loadStyle,
 } from '../utils/utils.js';
 import locales from '../utils/locales.js';
 
@@ -98,5 +101,9 @@ const eagerLoad = (img) => {
   performance.mark('loadpage');
   setConfig(config);
   loadLana({ clientId: 'milo' });
+  const { initPrivacy } = await import(
+    'https://adobecomprivacycomp--federal--adobecom.aem.page/features/privacy/privacy-standalone.js'
+  );
+  initPrivacy(config, createTag, getMetadata, loadBlock, loadStyle);
   await loadArea();
 }());

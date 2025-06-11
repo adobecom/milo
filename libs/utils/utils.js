@@ -1473,9 +1473,9 @@ async function loadPostLCP(config) {
   // load privacy here if quick-link is present in first section
   const quickLink = document.querySelector('div.section')?.querySelector('.quick-link');
   if (!quickLink) return;
-  import('../scripts/delayed.js').then(({ loadPrivacy }) => {
-    loadPrivacy(getConfig, loadScript);
-  });
+  // import('../scripts/delayed.js').then(({ loadPrivacy }) => {
+  //   loadPrivacy(getConfig, loadScript);
+  // });
 }
 
 export function scrollToHashedElement(hash) {
