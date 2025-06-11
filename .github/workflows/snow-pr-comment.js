@@ -40,7 +40,7 @@ const main = async ({ github, context, transaction_id }) => {
           console.log(`Found SNOW Transaction ID Comment. Assigning transaction ID for closing SNOW Change Request...`);
           foundTransactionId = true;
           const transactionID = singleComment.body.split("SNOW Change Request Transaction ID: ")[1].trim();
-          console.log(`testing: Found Transaction ID: ${transactionID}`);
+          console.log(`Found Transaction ID: ${transactionID}`);
           fs.appendFileSync(process.env.GITHUB_OUTPUT, `retrieved_transaction_id=${transactionID}\n`);
           break;
         }

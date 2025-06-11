@@ -9,7 +9,7 @@ on:
       - opened
       - closed
     branches:
-      - servicenow-cmr-test-2
+      - main
 
 permissions:
   pull-requests: write
