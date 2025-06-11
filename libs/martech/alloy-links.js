@@ -6,7 +6,7 @@ export default function processAlloyLink(a) {
     // eslint-disable-next-line no-underscore-dangle
     if (window._satellite && profile && businessSegment && value) {
       const payload = {
-        documentUnloading: true,
+        documentUnloading: false,
         data: {
           eventType: 'web.webinteraction.linkClicks',
           web: {
