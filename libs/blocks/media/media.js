@@ -122,8 +122,8 @@ export default async function init(el) {
     if (textBlock) await loadCDT(textBlock, el.classList);
   }
 
-  const checklistLinks = el.querySelectorAll('a');
-  if (el.classList.contains('checklist') && checklistLinks.length > 0) {
+  const checklistLinks = el.classList.contains('checklist') ? el.querySelectorAll('a') : [];
+  if (checklistLinks.length > 0) {
     checklistLinks.forEach((link) => {
       const parent = link.parentElement;
       if (parent?.tagName !== 'LI') return;
