@@ -6,7 +6,6 @@ import sys
 import time
 import requests
 
-# Global Variables
 
 APPLICATION_JSON = "application/json"
 CMR_RETRIEVAL_ERROR = "CMR ID Retrieval Operation failed..."
@@ -286,6 +285,6 @@ if __name__ == "__main__":
     print("Change Management Request has been closed.")
     print(f"You can find the change record in ServiceNow https://adobe.service-now.com/now/change-launchpad/homepage, by searching for this ID: {cmr_id}")
     print("")
-    print(f"If the CMR ID is not found, search for the change record in ServiceNow by the planned start time {os.environ['PLANNED_START_TIME']} and/or planned end time {os.environ['PLANNED_END_TIME']}.")
+    print("If the CMR ID is not found, search for the change record in ServiceNow by the planned start time and/or planned end time found in the slack message sent by the workflow in the #milo-changelog channel.")
     print("")
     print(f"If all else fails, please check the ServiceNow queue for transaction ID '{os.environ['RETRIEVED_TRANSACTION_ID']}' and validate that the CMR was created successfully by reaching out to the Change Management team in the #unified-change-management-support slack channel.")
