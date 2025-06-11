@@ -121,4 +121,16 @@ export default async function init(el) {
     const textBlock = container.querySelector('.text');
     if (textBlock) await loadCDT(textBlock, el.classList);
   }
+
+  const checklistLinks = el.querySelectorAll('a');
+  if (el.classList.contains('checklist') && checklistLinks.length > 0) {
+    checklistLinks.forEach((link) => {
+      const parent = link.parentElement;
+      if (parent?.tagName !== 'LI') return;
+
+      const span = createTag('span');
+      span.append(...parent.childNodes);
+      parent.appendChild(span);
+    });
+  }
 }
