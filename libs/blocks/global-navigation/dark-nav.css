@@ -213,31 +213,22 @@ header.global-navigation.feds--dark,
   background: #1b1b1b;
 }
 
-@media (min-width: 900px) {
-  .feds--dark .feds-promo {
-    border: 1px solid var(--feds-borderColor);
-    background: var(--feds-background-promo);
-  }
-  
-  .feds--dark .feds-promo--dark,
-  .feds--dark .feds-promo--dark a:not(.feds-cta) {
-    color: var(--feds-color-headline);
-  }
-  
-  .feds--dark .feds-promo-link {
-    color: var(--feds-color-blue-link);
-  }
-
-  .feds--dark .feds-promo-link:hover {
-    color: var(--feds-color-link--hover);
-  }
+.feds--dark .feds-promo {
+  border: 1px solid var(--feds-borderColor);
+  background: var(--feds-background-promo);
 }
 
-@media (min-width: 1200px) {
-  .feds--dark .feds-crossCloudMenu-wrapper {
-    border-top: solid 1px var(--feds-borderColor);
-    background-color: var(--feds-background-popup);
-  }
+.feds--dark .feds-promo--dark,
+.feds--dark .feds-promo--dark a:not(.feds-cta) {
+  color: var(--feds-color-headline);
+}
+
+.feds--dark .feds-promo-link {
+  color: var(--feds-color-blue-link);
+}
+
+.feds--dark .feds-promo-link:hover {
+  color: var(--feds-color-link--hover);
 }
 
 /* dropdown.css */
@@ -302,5 +293,10 @@ header.global-navigation.feds--dark {
 @media (min-width: 900px) {
   .global-footer.feds--dark {
     background: var(--feds-background-footer--desktop);
+  }
+
+  .feds--dark .feds-crossCloudMenu-wrapper {
+    border-top: solid 1px var(--feds-borderColor);
+    background-color: var(--feds-background-popup);
   }
 }

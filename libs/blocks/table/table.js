@@ -315,6 +315,11 @@ function handleSection(sectionParams) {
       handleTitleText(sectionHeadTitle);
       sectionHeadTitle.classList.add('section-head-title');
       sectionHeadTitle.setAttribute('role', 'rowheader');
+      const sectionHeadText = sectionHeadTitle.querySelector('.table-title-text');
+      if (sectionHeadText) {
+        sectionHeadText.setAttribute('role', 'heading');
+        sectionHeadText.setAttribute('aria-level', '4');
+      }
     }
 
     if (isCollapseTable) {
@@ -379,6 +384,14 @@ function handleSection(sectionParams) {
       sectionRowTitle.setAttribute('scope', 'row');
     }
   }
+
+  rowCols.forEach((col) => {
+    if (col.querySelector(':scope > :is(strong, em, del, code, sub, sup)')
+      && col.childNodes.length > 1 && !col.querySelector('picture')) {
+      col.replaceChildren(createTag('p', {}, [...col.childNodes]));
+    }
+  });
+
   return expandSection;
 }
 

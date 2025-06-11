@@ -339,7 +339,7 @@ const getBrandImage = (image, brandImageOnly) => {
 
 const closeOnClickOutside = (e, isLocalNav, navWrapper) => {
   if (isLocalNav && navWrapper.classList.contains('feds-nav-wrapper--expanded')) return;
-  const newMobileNav = getMetadata('mobile-gnav-v2') !== 'false';
+  const newMobileNav = getMetadata('mobile-gnav-v2') !== 'off';
   if (!isDesktop.matches && !newMobileNav) return;
 
   const openElemSelector = `${selectors.globalNav} [aria-expanded = "true"]:not(.universal-nav-container *), ${selectors.localNav} [aria-expanded = "true"]`;
@@ -366,6 +366,26 @@ export const getUniversalNavLocale = (locale) => {
   if (customLang) return `${customLang.toLowerCase()}_${prefix.toUpperCase()}`;
 
   return `${prefix.toLowerCase()}_${prefix.toUpperCase()}`;
+};
+
+const setMenuState = () => {
+  const toggle = document.querySelector('.feds-toggle');
+  const navWrapper = document.querySelector('.feds-nav-wrapper');
+  const isExpanded = toggle?.getAttribute('aria-expanded') === 'true';
+  ['main', 'footer'].forEach((ele) => document.querySelector(ele)?.setAttribute('aria-hidden', !isExpanded));
+  toggle?.setAttribute('aria-expanded', !isExpanded);
+  document.body.classList.toggle('disable-scroll', !isExpanded);
+  navWrapper?.classList?.toggle('feds-nav-wrapper--expanded', !isExpanded);
+  closeAllDropdowns();
+  setCurtainState(!isExpanded);
+  toggle?.setAttribute('daa-ll', `hamburgermenu|${isExpanded ? 'open' : 'close'}`);
+};
+
+export const closeGnavOptions = () => {
+  const isExpanded = document.querySelector('.feds-toggle')?.getAttribute('aria-expanded') === 'true';
+  if (!isExpanded) return;
+  enableMobileScroll();
+  setMenuState();
 };
 
 const convertToPascalCase = (str) => str
@@ -513,7 +533,7 @@ class Gnav {
     const localNavBtn = toFragment`<button class="feds-navLink--hoverCaret feds-localnav-title" aria-haspopup="true" aria-expanded="false" daa-ll="${title}_localNav|open"></button>`;
     const localNavCurtain = toFragment` <div class="feds-localnav-curtain"></div>`;
     // Skip keyboard navigation on localnav items if it is closed
-    localNav.append(localNavBtn, localNavCurtain, toFragment` <div class="feds-localnav-items"></div>`, toFragment`<a href="#" class="feds-sr-only feds-localnav-exit">.</a>`);
+    localNav.append(localNavBtn, localNavCurtain, toFragment` <div class="feds-localnav-items" role="list"></div>`, toFragment`<a href="#" class="feds-sr-only feds-localnav-exit">.</a>`);
 
     const itemWrapper = localNav.querySelector('.feds-localnav-items');
     const localNavTitle = document.querySelector('.feds-localnav-title');
@@ -883,11 +903,25 @@ class Gnav {
     // Exposing UNAV config for consumers
     CONFIG.universalNav.universalNavConfig = getConfiguration();
     await window.UniversalNav(CONFIG.universalNav.universalNavConfig);
+    const fedsPromo = document.querySelector('.feds-promo-aside-wrapper');
+    const container = document.querySelector('.feds-utilities');
+    const hasAppSwitcher = this.universalNavComponents.includes('appswitcher');
+    const updatePromoZIndex = () => {
+      const isOpen = container.querySelector('.unav-comp-app-switcher-open');
+      fedsPromo.style.zIndex = isOpen ? 0 : 11;
+    };
+    // Ensure promo appears behind appswitcher on mobile
+    if (fedsPromo && hasAppSwitcher && !isDesktop.matches) {
+      new MutationObserver(updatePromoZIndex)
+        .observe(container, { childList: true, subtree: true, attributes: true, attributeFilter: ['class'] });
+      updatePromoZIndex();
+    }
     performance.mark('Unav-End');
     logPerformance('Unav-Time', 'Unav-Start', 'Unav-End');
     this.decorateAppPrompt({ getAnchorState: () => window.UniversalNav.getComponent?.('app-switcher') });
     isDesktop.addEventListener('change', () => {
       window.UniversalNav.reload(getConfiguration());
+      if (fedsPromo) updatePromoZIndex();
     });
   };
 
@@ -948,7 +982,6 @@ class Gnav {
     ?.length >= 1;
 
   toggleMenuMobile = () => {
-    const toggle = this.elements.mobileToggle;
     const isExpanded = this.isToggleExpanded();
     if (!isExpanded && this.newMobileNav) {
       const sections = document.querySelectorAll('header.new-nav .feds-nav > section.feds-navItem > button.feds-navLink');
@@ -961,13 +994,7 @@ class Gnav {
     } else if (isExpanded && this.isLocalNav()) {
       enableMobileScroll();
     }
-    ['main', 'footer'].forEach((ele) => document.querySelector(ele)?.setAttribute('aria-hidden', !isExpanded));
-    toggle?.setAttribute('aria-expanded', !isExpanded);
-    document.body.classList.toggle('disable-scroll', !isExpanded);
-    this.elements.navWrapper?.classList?.toggle('feds-nav-wrapper--expanded', !isExpanded);
-    closeAllDropdowns();
-    setCurtainState(!isExpanded);
-    toggle?.setAttribute('daa-ll', `hamburgermenu|${isExpanded ? 'open' : 'close'}`);
+    setMenuState();
   };
 
   decorateToggle = () => {
@@ -1123,7 +1150,6 @@ class Gnav {
     }
     performance.mark('Gnav-Aside-End');
     logPerformance('Gnav-Aside-Time', 'Gnav-Aside-Start', 'Gnav-Aside-End');
-
     return this.elements.aside;
   };
 
