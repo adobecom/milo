@@ -10,7 +10,7 @@ export async function withWcs(originalFetch) {
             pathname.endsWith('/web_commerce_artifact') ||
             pathname.endsWith('/web_commerce_artifact_stage')
         ) {
-            const language = searchParams.get('language').toLowerCase();
+            const language = searchParams.get('language')?.toLowerCase() || '';
             const buckets = searchParams
                 .get('offer_selector_ids')
                 .split(',')
