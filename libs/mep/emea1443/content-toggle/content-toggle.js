@@ -106,12 +106,8 @@ function waitForMarqueeHeight() {
 function getElementsHeightBeforeMain() {
   const main = document.querySelector('main');
   if (!main) return 0;
-  const contentToggleEl = document.querySelector('.content-toggle.mweb');
-  const contentToggleStyle = window.getComputedStyle(contentToggleEl);
-  const contentToggleMarginTop = parseInt(contentToggleStyle.marginTop, 10);
   const beforeMain = main.getBoundingClientRect().top - document.body.getBoundingClientRect().top;
-
-  return beforeMain - contentToggleMarginTop;
+  return beforeMain;
 }
 
 function setupStickyBehaviour() {
@@ -135,11 +131,11 @@ function setupStickyBehaviour() {
 
     const { scrollY } = window;
 
-    if (scrollY >= initialOffset - 54 && !isFixed) {
+    if (scrollY >= initialOffset - getElementsHeightBeforeMain() - 6 && !isFixed) {
       toggleWrapper.classList.add('fixed');
       toggleWrapper.setAttribute('style', `top: ${getElementsHeightBeforeMain()}px`);
       isFixed = true;
-    } else if (scrollY < initialOffset - 54 && isFixed) {
+    } else if (scrollY < initialOffset - getElementsHeightBeforeMain() - 6 && isFixed) {
       toggleWrapper.classList.remove('fixed');
       toggleWrapper.removeAttribute('style');
       isFixed = false;
