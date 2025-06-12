@@ -2,6 +2,11 @@ import { createTag, getMetadata } from '../../utils/utils.js';
 import { getModal, closeModal } from '../modal/modal.js';
 import { iphoneFrame, ipadFrame } from './mobileFrames.js';
 
+const URL_MAP = new Map([
+  ['business.adobe.com', 'business-graybox.adobe.com'],
+  ['www.adobe.com', 'graybox.adobe.com'],
+]);
+
 const OPTION = {
   CHANGED: 'changed',
   NO_CLICK: 'no-click',
@@ -32,7 +37,7 @@ const USER_AGENT = {
   iPad: 'Mozilla/5.0 (iPad; CPU OS 13_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.3 Mobile/15E148 Safari/604.1',
 };
 
-const DEFAULT_TITLE = 'Review Update';
+const DEFAULT_TITLE = '';
 
 let deviceModal;
 
@@ -337,16 +342,62 @@ const setupChangedEls = (globalNoClick) => {
   }
 };
 
-const transformLinks = () => {
-  const grayboxHostname = window.location.hostname;
-  const consumerHostname = grayboxHostname.replace(/[^.]+\.(?:([^.]+)-)?graybox\./, (_, sub) => `${sub || 'www'}.`);
-  document.querySelectorAll(`a[href*="${consumerHostname}"]`).forEach((el) => {
-    el.href = el.href.replace(consumerHostname, grayboxHostname);
+export const getGrayboxEnv = (url) => {
+  try {
+    const { hostname } = new URL(url);
+    if (!hostname.endsWith('graybox.adobe.com')) return null;
+
+    const env = hostname.replace('.graybox.adobe.com', '');
+    return env || null;
+  } catch (e) {
+    // ignore
+  }
+  return null;
+};
+
+export const convertToGrayboxDomain = (url, grayboxEnv, urlMap = URL_MAP) => {
+  try {
+    const urlObj = new URL(url);
+    const hostAndPath = urlObj.hostname + urlObj.pathname;
+
+    const matchPredicate = ([fromPattern]) => hostAndPath.startsWith(fromPattern);
+    const matchedPattern = [...urlMap].find(matchPredicate);
+
+    if (!matchedPattern) return url;
+
+    const [fromPattern, toPattern] = matchedPattern;
+    const remainingPath = hostAndPath.slice(fromPattern.length);
+
+    const [toDomain, ...toPathParts] = toPattern.split('/');
+    const toPath = toPathParts.join('/');
+
+    urlObj.hostname = `${grayboxEnv}.${toDomain}`;
+
+    let newPath = '';
+    if (toPath) {
+      newPath += `/${toPath}`;
+    }
+    if (remainingPath && remainingPath !== '/') {
+      newPath += remainingPath;
+    }
+    urlObj.pathname = newPath || '/';
+
+    return urlObj.toString();
+  } catch {
+    return url;
+  }
+};
+
+const transformLinks = (target = document) => {
+  const grayboxEnv = getGrayboxEnv(window.location.href);
+  if (!grayboxEnv) return;
+
+  target.querySelectorAll('a[href*=".adobe.com"]').forEach((el) => {
+    el.href = convertToGrayboxDomain(el.href, grayboxEnv);
   });
 };
 
 const grayboxThePage = (grayboxEl, grayboxMenuOff) => {
-  transformLinks();
   document.body.classList.add(CLASS.GRAYBOX_BODY);
   const globalNoClick = grayboxEl.classList.contains(CLASS.NO_CLICK)
     || grayboxEl.classList.contains(OPTION.NO_CLICK);
@@ -372,6 +423,16 @@ const grayboxThePage = (grayboxEl, grayboxMenuOff) => {
   } else {
     createGrayboxMenu(options, { isOpen: true });
   }
+
+  transformLinks();
+
+  const pollForFeds = setInterval(() => {
+    const isLoading = document.querySelector('header .feds-popup.loading');
+    if (!isLoading) {
+      clearInterval(pollForFeds);
+      transformLinks(document.body.querySelector('header'));
+    }
+  }, 100);
 };
 
 export default function init(grayboxEl) {
