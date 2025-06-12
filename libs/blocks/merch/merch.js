@@ -288,31 +288,25 @@ const LOADING_ENTITLEMENTS = 'loading-entitlements';
 let log;
 let upgradeOffer = null;
 
-/**
- * Given a url, calculates the hostname of MAS platform.
- * Supports, www prod, stage, local and feature branches.
- * if params are missing, it will return the latest calculated or default value.
- * @param {string} hostname optional
- * @param {string} maslibs optional
- * @returns base url for mas platform
- */
-export function getMasBase(hostname, maslibs) {
-  let { baseUrl } = getMasBase;
-  if (!baseUrl) {
-    if (maslibs === 'stage') {
-      baseUrl = 'https://www.stage.adobe.com/mas';
-    } else if (maslibs === 'local') {
-      baseUrl = 'http://localhost:9001';
-    } else if (maslibs) {
-      const extension = /.page$/.test(hostname) ? 'page' : 'live';
-      baseUrl = `https://${maslibs}.${SLD}.${extension}`;
-    } else {
-      baseUrl = 'https://www.adobe.com/mas';
-    }
-    getMasBase.baseUrl = baseUrl;
-  }
-  return baseUrl;
-}
+const PARAM_MAS_LIBS = 'maslibs';
+
+export const getMasLibs = () => {
+  const searchParams = new URLSearchParams(window.location.search);
+  const maslibs = searchParams?.get(PARAM_MAS_LIBS);
+  if (!maslibs) return 'https://www.adobe.com/mas/libs/mas.js';
+  if (maslibs === 'local') return 'http://localhost:3030/web-components/dist/mas.js';
+  if (maslibs.startsWith('http')) return maslibs;
+  if (maslibs.includes('--mas--')) return `https://${maslibs}.aem.live/web-components/dist/mas.js`;
+  return `https://${maslibs}--mas--adobecom.aem.live/web-components/dist/mas.js`;
+};
+
+let masLibsPromise;
+export const loadMasLibs = () => {
+  if (masLibsPromise) return masLibsPromise;
+  const masLibsUrl = getMasLibs();
+  masLibsPromise = loadScript(masLibsUrl, 'module');
+  return masLibsPromise;
+};
 
 function getCommercePreloadUrl() {
   const { env } = getConfig();
@@ -680,7 +674,6 @@ export async function initService(force = false, attributes = {}) {
     fetchCheckoutLinkConfigs.promise = undefined;
   }
   
-  const { loadMasLibs } = await import('../../utils/utils.js');
   await loadMasLibs();
   
   const { commerce, env: miloEnv, locale: miloLocale } = getConfig();

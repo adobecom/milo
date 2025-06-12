@@ -79,8 +79,8 @@ const init = async () => {
   // Load mas.js using maslibs if parameter is present
   const maslibs = params.get('maslibs');
   if (maslibs !== null) {
-    // Use maslibs functionality from utils
-    const { loadMasLibs } = await import('../../../utils/utils.js');
+    // Use maslibs functionality from merch.js
+    const { loadMasLibs } = await import('../../blocks/merch/merch.js');
     await loadMasLibs();
   } else {
     console.log('maslibs not found');
