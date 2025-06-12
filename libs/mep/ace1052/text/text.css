@@ -396,7 +396,7 @@
   }
 
   /* Block specific */
-  .text.text-block.center {
+  .text.text-block.center:not(:has(a:only-child:not(.con-button))) {
     text-align: start;
   }
 
