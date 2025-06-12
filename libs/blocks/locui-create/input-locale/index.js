@@ -96,7 +96,7 @@ export default function useInputLocale() {
     locSelected.value?.activeLocales || {},
   );
   const [selectedLocaleSet, setSelectedLocaleSet] = useState(
-    new Set(selectedLocale)
+    new Set(selectedLocale),
   );
   const [languagesList] = useState(initialLanguageList);
 
@@ -110,9 +110,9 @@ export default function useInputLocale() {
 
   const findLanguageForLocale = (localeKey) => {
     const locale = getLocaleFromKey(localeKey);
-    return languagesList.filter((lang) => {
-      return hasLiveCopyForLocale(lang, locale) && isLanguageCodeMatching(localeKey, lang);
-    });
+    return languagesList.filter(
+      (lang) => hasLiveCopyForLocale(lang, locale) && isLanguageCodeMatching(localeKey, lang),
+    );
   };
   const transformActiveLocales = () => {
     const groupedLocales = {};
@@ -299,9 +299,7 @@ export default function useInputLocale() {
 
   const selectLanguage = (lang) => {
     const languageCodes = lang.livecopies.split(',');
-    const isDeselecting = languageCodes.every((code) => 
-      selectedLocaleSet.has(`${lang.languagecode}|${code}`)
-    );
+    const isDeselecting = languageCodes.every((code) => selectedLocaleSet.has(`${lang.languagecode}|${code}`));
     const updatedLocale = isDeselecting
       ? selectedLocale.filter((localeKey) => {
         const [langCode, locale] = parseLocaleKey(localeKey);

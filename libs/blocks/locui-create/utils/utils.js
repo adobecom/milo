@@ -169,7 +169,7 @@ export function validateOrigin(urlStr) {
 
 export const getLocaleFromKey = (localeKey) => (localeKey.includes('|') ? localeKey.split('|')[1] : localeKey);
 
-export const parseLocaleKey = (localeKey) =>  localeKey.includes('|') ? localeKey.split('|') : [null, localeKey];
+export const parseLocaleKey = (localeKey) => (localeKey.includes('|') ? localeKey.split('|') : [null, localeKey]);
 
 // Returns true if the language has a live copy for the locale
 export const hasLiveCopyForLocale = (lang, locale) => lang.livecopies.split(',').includes(locale);

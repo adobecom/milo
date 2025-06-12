@@ -24,7 +24,7 @@ export default function InputLocales() {
     apiError,
     setApiError,
     getLocaleFromKey,
-    parseLocaleKey
+    parseLocaleKey,
   } = useInputLocale();
 
   const RenderRegion = () => {
