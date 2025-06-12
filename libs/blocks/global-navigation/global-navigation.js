@@ -451,7 +451,7 @@ class Gnav {
     if (this.useUniversalNav) {
       delete this.blocks.profile;
       this.blocks.universalNav = toFragment`<div class="feds-utilities"></div>`;
-      this.blocks.universalNav.style.setProperty('width', getUnavWidthCSS(this.universalNavComponents));
+      this.blocks.universalNav.style.setProperty('min-width', getUnavWidthCSS(this.universalNavComponents));
       this.blocks.universalNav.addEventListener('click', () => {
         if (this.isToggleExpanded()) this.toggleMenuMobile();
       }, true);
@@ -821,7 +821,7 @@ class Gnav {
     const signedOut = !window.adobeIMS?.isSignedInUser();
     if (signedOut) {
       const width = getUnavWidthCSS(this.universalNavComponents, signedOut);
-      this.blocks.universalNav?.style.setProperty('width', width);
+      this.blocks.universalNav?.style.setProperty('min-width', width);
     }
     const config = getConfig();
     const locale = getUniversalNavLocale(config.locale);
@@ -946,7 +946,7 @@ class Gnav {
     CONFIG.universalNav.universalNavConfig = getConfiguration();
     await window.UniversalNav(CONFIG.universalNav.universalNavConfig);
     // In case we get it wrong
-    if (!signedOut) this.blocks.universalNav?.style.removeProperty('width');
+    if (!signedOut) this.blocks.universalNav?.style.removeProperty('min-width');
     const fedsPromo = document.querySelector('.feds-promo-aside-wrapper');
     const container = document.querySelector('.feds-utilities');
     const hasAppSwitcher = this.universalNavComponents.includes('appswitcher');
