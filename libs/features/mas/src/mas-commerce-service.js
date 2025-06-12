@@ -26,8 +26,8 @@ export class MasCommerceService extends HTMLElement {
     get #config() {
         const env = this.getAttribute('env') ?? 'prod';
         const config = {
-            hostEnv: { name: env },
             commerce: { env },
+            hostEnv: { name: env },
             lana: {
                 tags: this.getAttribute('lana-tags'),
                 sampleRate: parseInt(
@@ -39,7 +39,7 @@ export class MasCommerceService extends HTMLElement {
             masIOUrl: this.getAttribute('mas-io-url'),
         };
         //root parameters
-        ['locale', 'country', 'language'].forEach((attribute) => {
+        ['locale', 'country', 'language', 'preview'].forEach((attribute) => {
             const value = this.getAttribute(attribute);
             if (value) {
                 config[attribute] = value;

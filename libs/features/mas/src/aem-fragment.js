@@ -14,6 +14,7 @@ sheet.replaceSync(':host { display: contents; }');
 
 const ATTRIBUTE_FRAGMENT = 'fragment';
 const ATTRIBUTE_AUTHOR = 'author';
+const ATTRIBUTE_PREVIEW = 'preview';
 const AEM_FRAGMENT_TAG_NAME = 'aem-fragment';
 
 class FragmentCache {
@@ -93,8 +94,10 @@ export class AemFragment extends HTMLElement {
     #author = false;
     #fetchCount = 0;
 
+    #preview = undefined;
+
     static get observedAttributes() {
-        return [ATTRIBUTE_FRAGMENT, ATTRIBUTE_AUTHOR];
+        return [ATTRIBUTE_FRAGMENT, ATTRIBUTE_AUTHOR, ATTRIBUTE_PREVIEW];
     }
 
     constructor() {
@@ -105,16 +108,20 @@ export class AemFragment extends HTMLElement {
 
     attributeChangedCallback(name, oldValue, newValue) {
         if (name === ATTRIBUTE_FRAGMENT) {
-            this.#fragmentId = newValue;
+          this.#fragmentId = newValue;
         }
         if (name === ATTRIBUTE_AUTHOR) {
-            this.#author = ['', 'true'].includes(newValue);
+          this.#author = ['', 'true'].includes(newValue);
+        }
+        if (name === ATTRIBUTE_PREVIEW) {
+          this.#preview = newValue;
         }
     }
 
     connectedCallback() {
         if (this.#fetchPromise) return;
         this.#service ??= getService(this);
+        this.#preview = this.#service.settings?.preview;
         this.#log ??= this.#service.log.module(
             `${AEM_FRAGMENT_TAG_NAME}[${this.#fragmentId}]`,
         );
@@ -138,6 +145,7 @@ export class AemFragment extends HTMLElement {
      * Get fragment by ID
      * @param {string} endpoint url to fetch fragment from
      * @param {string} id fragment id
+     * @param {string} startMark performance mark to measure duration
      * @returns {Promise<Object>} the raw fragment item
      */
     async #getFragmentById(endpoint) {
@@ -145,6 +153,9 @@ export class AemFragment extends HTMLElement {
         const markPrefix = `${AEM_FRAGMENT_TAG_NAME}:${this.#fragmentId}:${this.#fetchCount}`;
         const startMarkName = `${markPrefix}${MARK_START_SUFFIX}`;
         const measureName = `${markPrefix}${MARK_DURATION_SUFFIX}`;
+        if (this.#preview) {
+          return await this.generatePreview();
+        }
         performance.mark(startMarkName);
         let response;
         try {
@@ -298,6 +309,15 @@ export class AemFragment extends HTMLElement {
             },
             { fields: {}, id, tags, settings },
         );
+    }
+
+    async generatePreview() {
+        const { previewFragment } = await import('https://mas.adobe.com/studio/libs/fragment-client.js');
+        const data = await previewFragment(this.#fragmentId, {
+          locale: this.#service.settings.locale,
+          apiKey: this.#service.settings.wcsApiKey,
+        });
+        return data;
     }
 }
 
