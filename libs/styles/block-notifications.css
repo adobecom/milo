@@ -33,8 +33,7 @@
 [data-block-alert] .alert-label,
 .con-label {
   padding: 0 8px;
-  min-height: 30px;
-  text-transform: uppercase;
+  text-transform: capitalize;
   color: var(--color-white);
   font-size: 14px;
   font-weight: bold;
@@ -44,7 +43,6 @@
 }
 
 .con-label {
-  display: none;
   background-color: #594CCC;
   border-radius: 5px;
   margin: 5px;
@@ -52,8 +50,14 @@
   z-index: 3;
 }
 
-.block-alerts .con-label {
-  display: block;
+.hide-labels .picture-meta,
+.hide-labels .con-label {
+  display: none;
+}
+
+.block-alerts .con-label,
+.block-alerts .picture-meta {
+  display: flex;
 }
 
 [data-block-alert] {
