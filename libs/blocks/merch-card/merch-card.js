@@ -241,7 +241,7 @@ const parseContent = async (el, merchCard) => {
     if (isHeadingTag(tagName)) {
       let slotName = SLOT_MAP[merchCard.variant]?.[tagName] || SLOT_MAP_DEFAULT[tagName];
       if (slotName) {
-        if (['H2', 'H3', 'H4', 'H5'].includes(tagName)) {
+        if (['H2', 'H3', 'H4', 'H5', 'H6'].includes(tagName)) {
           if (tagName === 'H3') headingXsCount += 1;
           element.classList.add('card-heading');
           if (merchCard.badgeText) {
@@ -446,10 +446,21 @@ const createFirstRow = async (firstRow, isMobile, checkmarkCopyContainer, defaul
   let firstRowTextParagraph;
 
   if (isMobile) {
-    const { chevronDownSVG, chevronUpSVG } = await import('./img/chevron.js');
-    const chevronIcon = createTag('span', { class: 'chevron-icon' }, chevronDownSVG);
+    const addIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 28 28" fill="none">
+    <circle cx="14" cy="14" r="12" fill="#F8F8F8"/><path d="M14 26C7.38258 26 2 20.6174 2 14C2 7.38258 7.38258 2 14 2C20.6174 2 26 7.38258 26 14C26 20.6174 20.6174 26 14 26ZM14 4.05714C8.51696 4.05714 4.05714 8.51696 4.05714 14C4.05714 19.483 8.51696 23.9429 14 23.9429C19.483 23.9429 23.9429 19.483 23.9429 14C23.9429 8.51696 19.483 4.05714 14 4.05714Z" fill="#292929"/>
+    <path d="M18.55 12.95H15.05V9.45002C15.05 8.87034 14.5797 8.40002 14 8.40002C13.4203 8.40002 12.95 8.87034 12.95 9.45002V12.95H9.44999C8.87031 12.95 8.39999 13.4203 8.39999 14C8.39999 14.5797 8.87031 15.05 9.44999 15.05H12.95V18.55C12.95 19.1297 13.4203 19.6 14 19.6C14.5797 19.6 15.05 19.1297 15.05 18.55V15.05H18.55C19.1297 15.05 19.6 14.5797 19.6 14C19.6 13.4203 19.1297 12.95 18.55 12.95Z" fill="#292929"/></svg>`;
+    const removeIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 28 28" fill="none">
+    <circle cx="14" cy="14" r="12" fill="#292929"/><path d="M14 26C7.38258 26 2 20.6174 2 14C2 7.38258 7.38258 2 14 2C20.6174 2 26 7.38258 26 14C26 20.6174 20.6174 26 14 26ZM14 4.05714C8.51696 4.05714 4.05714 8.51696 4.05714 14C4.05714 19.483 8.51696 23.9429 14 23.9429C19.483 23.9429 23.9429 19.483 23.9429 14C23.9429 8.51696 19.483 4.05714 14 4.05714Z" fill="#292929"/>
+    <path d="M9 14L19 14" stroke="white" stroke-width="2" stroke-linecap="round"/></svg>`;
+    const toggleIcon = createTag('button', {
+      class: 'toggle-icon',
+      'aria-label': firstRowText,
+      'aria-expanded': defaultChevronState === 'open',
+      'aria-controls': checkmarkCopyContainer.id,
+      'daa-lh': `${checkmarkCopyContainer.id}-toggle-button`,
+    }, addIcon);
     firstRowTextParagraph = createTag('div', { class: 'footer-rows-title' }, firstRowText);
-    firstRowTextParagraph.appendChild(chevronIcon);
+    firstRowTextParagraph.appendChild(toggleIcon);
 
     if (defaultChevronState === 'open') {
       checkmarkCopyContainer.classList.add('open');
@@ -457,7 +468,8 @@ const createFirstRow = async (firstRow, isMobile, checkmarkCopyContainer, defaul
 
     firstRowTextParagraph.addEventListener('click', () => {
       const isOpen = checkmarkCopyContainer.classList.toggle('open');
-      chevronIcon.innerHTML = isOpen ? chevronUpSVG : chevronDownSVG;
+      toggleIcon.setAttribute('aria-expanded', isOpen);
+      toggleIcon.innerHTML = isOpen ? removeIcon : addIcon;
     });
   } else {
     firstRowTextParagraph = createTag('div', { class: 'footer-rows-title' }, firstRowText);
@@ -476,6 +488,7 @@ const createFooterRowCell = (row, isCheckmark) => {
   const footerRowCell = createTag('li', { class: footerRowCellClass });
 
   if (rowIcon) {
+    rowIcon.querySelector('img')?.removeAttribute('loading');
     rowIcon.classList.add(footerRowIconClass);
     footerRowCell.appendChild(rowIcon);
   }
@@ -507,9 +520,16 @@ const decorateFooterRows = async (merchCard, footerRows) => {
       }
     });
 
-    const hrElem = createTag('hr', { style: `background: ${bgStyle};` });
-    footerRowsSlot.appendChild(hrElem);
-    merchCard.classList.add('has-divider');
+    if (!isMobile) {
+      const hrElem = createTag('hr', { style: `background: ${bgStyle}` });
+      footerRowsSlot.appendChild(hrElem);
+      merchCard.classList.add('has-divider');
+    }
+
+    const merchCardHeading = merchCard.querySelector('h3')?.id;
+    if (merchCardHeading) {
+      ulContainer.setAttribute('id', `${merchCardHeading}-list`);
+    }
 
     ulContainer.classList.add('checkmark-copy-container');
     const firstRowTextParagraph = await createFirstRow(
@@ -522,8 +542,7 @@ const decorateFooterRows = async (merchCard, footerRows) => {
     footerRowsSlot.appendChild(firstRowTextParagraph);
 
     footerRows.splice(0, 1);
-    footerRowsSlot.style.padding = '0px var(--consonant-merch-spacing-xs)';
-    footerRowsSlot.style.marginBlockEnd = 'var(--consonant-merch-spacing-xs)';
+    footerRowsSlot.style.padding = 'var(--consonant-merch-card-card-mini-compare-mobile-spacing-xs) var(--consonant-merch-spacing-xs)';
   }
   footerRowsSlot.appendChild(ulContainer);
 
@@ -748,7 +767,15 @@ export default async function init(el) {
 
     const footer = createTag('div', { slot: 'footer' });
     if (ctas) {
-      decorateButtons(ctas, (merchCard.variant === MINI_COMPARE_CHART) ? 'button-l' : undefined);
+      let buttonSize;
+      if (merchCard.variant === MINI_COMPARE_CHART
+        && merchCard.classList.contains('bullet-list')
+        && window.matchMedia('(max-width: 767px)').matches) {
+        buttonSize = 'button-xl';
+      } else if (merchCard.variant === MINI_COMPARE_CHART) {
+        buttonSize = 'button-l';
+      }
+      decorateButtons(ctas, buttonSize);
       footer.append(ctas);
     }
     merchCard.appendChild(footer);
