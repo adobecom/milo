@@ -482,12 +482,6 @@
 /* mweb-test: notification sticky CTA */
 .notification.button-full-width {
   min-block-size: unset;
-  block-size: 75px;
-}
-
-.notification.button-full-width .foreground{
-  margin-block: auto;
-  padding-block: initial;
 }
 
 .notification.button-full-width .action-area,
@@ -495,6 +489,7 @@
   width: 100%;
   max-width: 328px;
   align-self: center;
+  pointer-events: auto;
 }
 
 @media screen and (max-width: 600px) {
