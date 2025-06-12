@@ -73,6 +73,10 @@ describe('merch-card-autoblock autoblock', () => {
       await init(a);
       const card = document.querySelector('merch-card');
       expect(card.querySelector('[slot="heading-xs"]')?.textContent).to.equal('Creative Cloud All Apps');
+      const openModalLink = card.querySelector('.should-open-modal');
+      expect(openModalLink?.getAttribute('href')).to.equal('#cardmodal');
+      expect(openModalLink?.getAttribute('data-modal-path')).to.equal('/test/fragments/modal');
+      expect(openModalLink?.classList.contains('modal')).to.be.true;
     });
 
     it('override card if mep replace tells to do', async () => {
