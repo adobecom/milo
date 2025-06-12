@@ -31,6 +31,7 @@ const selectors = {
   openSearch: '.feds-search-trigger[aria-expanded = "true"]',
   featuredProducts: '.feds-featuredProducts',
   regionPicker: '.feds-regionPicker',
+  languagePicker: '.language-dropdown',
   socialLink: '.feds-social-link',
   privacyLink: '.feds-footer-privacyLink',
   menuContent: '.feds-menu-content',
