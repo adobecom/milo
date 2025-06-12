@@ -29,7 +29,6 @@
   max-width: var(--feds-maxWidth-nav);
   display: flex;
   flex-direction: column;
-  row-gap: 30px;
   color: var(--feds-color-headline);
 }
 
@@ -40,6 +39,11 @@
 
 .feds-footer-icons {
   display: none;
+}
+
+/* Feature Products */
+.feds-featuredProducts .feds-navLink {
+  padding: 0 32px;
 }
 
 /* Menu */
@@ -59,25 +63,6 @@
   padding-bottom: 0;
 }
 
-/* Featured products */
-.feds-featuredProducts {
-  display: none;
-  justify-content: center;
-  align-items: center;
-  column-gap: 12px;
-  padding: 8px 0;
-  margin: 0 var(--feds-gutter-footer);
-  border-width: 1px 0 1px 0;
-  border-style: solid;
-  border-color: var(--feds-borderColor-featuredProducts);
-}
-
-.feds-featuredProducts-label {
-  flex-shrink: 0;
-  font-size: 14px;
-  font-weight: 700;
-}
-
 /* Options (region selector, social, privacy) */
 .feds-footer-options,
 .feds-footer-miscLinks,
@@ -93,6 +78,7 @@
   flex-wrap: wrap;
   row-gap: 12px;
   column-gap: 40px;
+  margin-top: 30px;
 }
 
 .feds-footer-miscLinks {
@@ -282,6 +268,10 @@ span.feds-footer-privacyLink-divider {
 }
 
 @media (min-width: 900px) {
+  .feds-footer-wrapper {
+    row-gap: 30px;
+  }
+
   /* If there is too much content, float it on multiple rows */
   .feds-footer-wrapper .feds-menu-content {
     flex-wrap: wrap;
@@ -315,11 +305,42 @@ span.feds-footer-privacyLink-divider {
   /* Featured products */
   .feds-featuredProducts {
     display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 8px 0;
+    margin: 0 var(--feds-gutter-footer);
+    border-width: 1px 0 1px 0;
+    border-style: solid;
+    border-color: var(--feds-borderColor-featuredProducts);
+  }
+
+  .feds-featuredProducts .feds-menu-section {
+    display: flex;
+    column-gap: 8px;
+  }
+
+  .feds-featuredProducts .feds-menu-headline {
+    flex-shrink: 0;
+    font-size: 14px;
+    font-weight: 700;
+    padding: 0;
+    margin: 0;
+    line-height: inherit;
+  }
+
+  .feds-featuredProducts .feds-menu-items ul {
+    display: flex;
+    column-gap: 12px;
+  }
+
+  .feds-featuredProducts .feds-navLink {
+    padding: 0 12px;
   }
 
   /* Options (region selector, social, privacy) */
   .feds-footer-options {
     flex-wrap: nowrap;
+    margin-top: 0;
   }
 
   /* Privacy */

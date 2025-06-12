@@ -8,6 +8,7 @@ import { processTrackingLabels } from '../../martech/attributes.js';
 const PADDLE = '<svg aria-hidden="true" viewBox="0 0 8 14" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M1.50001 13.25C1.22022 13.25 0.939945 13.1431 0.726565 12.9292C0.299315 12.5019 0.299315 11.8096 0.726565 11.3823L5.10938 7L0.726565 2.61768C0.299315 2.19043 0.299315 1.49805 0.726565 1.0708C1.15333 0.643068 1.84669 0.643068 2.27345 1.0708L7.4297 6.22656C7.63478 6.43164 7.75001 6.70996 7.75001 7C7.75001 7.29004 7.63478 7.56836 7.4297 7.77344L2.27345 12.9292C2.06007 13.1431 1.7798 13.2495 1.50001 13.25Z" fill="currentColor"/></svg>';
 const tabColor = {};
 const linkedTabs = {};
+const tabChangeEvent = new Event('milo:tab:changed');
 
 const isTabInTabListView = (tab) => {
   const tabList = tab.closest('[role="tablist"], [role="radiogroup"]');
@@ -97,6 +98,7 @@ function changeTabs(e) {
     .forEach((p) => p.setAttribute('hidden', true));
   targetContent?.removeAttribute('hidden');
   if (tabsBlock.classList.contains('stacked-mobile')) scrollStackedMobile(targetContent);
+  window.dispatchEvent(tabChangeEvent);
 }
 
 function getStringKeyName(str) {
@@ -119,7 +121,19 @@ function configTabs(config, rootElem) {
       sel.click();
     }
   }
-  const tabParam = new URLSearchParams(window.location.search).get('tab');
+
+  const params = new URLSearchParams(window.location.search);
+  // Deeplink with a custom id parameter, e.g. ?plans=edu
+  const deeplinkParam = params.get(config.id);
+  if (deeplinkParam) {
+    const tabBtn = rootElem.querySelector(`[data-deeplink="${deeplinkParam}"]`);
+    if (tabBtn) {
+      tabBtn.click();
+      return;
+    }
+  }
+  // Deeplink with tab parameter, e.g. ?tab=plans-2
+  const tabParam = params.get('tab');
   if (!tabParam) return;
   const dashIndex = tabParam.lastIndexOf('-');
   const [tabsId, tabIndex] = [tabParam.substring(0, dashIndex), tabParam.substring(dashIndex + 1)];
@@ -339,7 +353,7 @@ const init = (block) => {
     const metaSettings = {};
     sectionMetadata.querySelectorAll(':scope > div').forEach((row) => {
       const key = getStringKeyName(row.children[0].textContent);
-      if (!['tab', 'tab-background', 'link'].includes(key)) return;
+      if (!['tab', 'tab-background', 'link', 'deeplink'].includes(key)) return;
       const val = row.children[1].textContent;
       if (!val) return;
       metaSettings[key] = val;
@@ -347,6 +361,8 @@ const init = (block) => {
     if (!metaSettings.tab) return;
     let id = tabId;
     let val = getStringKeyName(metaSettings.tab);
+    const assotiatedTabButton = rootElem.querySelector(`#tab-${val}`);
+    assotiatedTabButton?.setAttribute('data-deeplink', metaSettings.deeplink);
     let assocTabItem = rootElem.querySelector(`#tab-panel-${id}-${val}`);
     if (config.id) {
       const values = metaSettings.tab.split(',');

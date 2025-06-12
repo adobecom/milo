@@ -81,6 +81,8 @@ styles.innerHTML = `
     --merch-color-grey-600: #686868;
     --merch-color-grey-700: #464646;
     --merch-color-green-promo: #05834E;
+    --merch-color-red-promo: #D31510;
+    --merch-color-grey-80: #2c2c2c;
     --consonant-merch-card-body-xs-color: var(--spectrum-gray-100, var(--merch-color-grey-80));
     --merch-color-inline-price-strikethrough: initial;
     --consonant-merch-card-detail-s-color: var(--spectrum-gray-600, var(--merch-color-grey-600));
@@ -131,6 +133,8 @@ styles.innerHTML = `
     --consonant-merch-card-callout-letter-spacing: 0px;
     --consonant-merch-card-callout-icon-padding: 34px;
     --consonant-merch-card-callout-spacing-xxs: 8px;
+
+    --merch-card-ul-padding: 8px;
 }
 
 merch-card-collection {
@@ -480,6 +484,16 @@ merch-card span.price.price-strikethrough {
   font-weight: normal;
   text-decoration: line-through;
   color: var(--merch-color-inline-price-strikethrough);
+}
+
+merch-card [slot^="body-"] ul {
+    margin: 0;
+    padding-inline-start: var(--merch-card-ul-padding);
+    list-style-type: "•";
+}
+    
+merch-card [slot^="body-"] ul li {
+    padding-inline-start: var(--merch-card-ul-padding);
 }
 
 /* merch-offer-select */

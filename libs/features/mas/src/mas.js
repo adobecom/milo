@@ -12,9 +12,6 @@ import './merch-badge.js';
 import './merch-whats-included.js';
 
 import { registerVariant } from './variants/variants.js';
-import { updateConfig } from './lana.js';
-
-updateConfig({ sampleRate: 1 });
 
 // Import ccd variants
 import {
@@ -37,6 +34,12 @@ import {
   AH_PROMOTED_PLANS_AEM_FRAGMENT_MAPPING,
   AHPromotedPlans,
 } from './variants/ah-promoted-plans.js'
+
+//Import fries
+import {
+  FRIES_AEM_FRAGMENT_MAPPING,
+  FriesCard,
+} from './variants/fries.js';
 
 // Register dynamic variants
 registerVariant(
@@ -62,4 +65,10 @@ registerVariant(
   AHPromotedPlans,
   AH_PROMOTED_PLANS_AEM_FRAGMENT_MAPPING,
   AHPromotedPlans.variantStyle,
+);
+registerVariant(
+  'fries',
+  FriesCard,
+  FRIES_AEM_FRAGMENT_MAPPING,
+  FriesCard.variantStyle,
 );

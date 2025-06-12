@@ -94,6 +94,8 @@ export default async function init(block) {
   const links = divs[1].querySelectorAll('a');
   if (!links.length) return;
   const { prefix } = config.locale;
-  const path = window.location.href.replace(`${window.location.origin}${prefix}`, '').replace('#langnav', '');
+  const { location } = window;
+  const hasPrefix = location.pathname.startsWith(`${prefix}/`);
+  const path = location.href.replace(location.origin + (hasPrefix ? prefix : ''), '').replace('#langnav', '');
   links.forEach((link) => decorateLink(link, path, localeToLanguageMap));
 }

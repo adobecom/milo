@@ -152,11 +152,23 @@ const GeoMap = {
   ec: 'EC_es',
   pr: 'US_es', // not a typo, should be US
   gt: 'GT_es',
-  cis_en: 'AZ_en',
-  cis_ru: 'AZ_ru',
+  cis_en: 'TM_en',
+  cis_ru: 'TM_ru',
   sea: 'SG_en',
   th_en: 'TH_en',
   th_th: 'TH_th',
+};
+
+/**
+ * Used when 3in1 modals are configured with ms=e or cs=t extra paramter, but 3in1 is disabled.
+ * Dexter modals should deeplink to plan=edu or plan=team tabs.
+ * @type {Record<string, string>}
+ */
+const TAB_DEEPLINK_MAPPING = {
+  ms: 'plan',
+  cs: 'plan',
+  e: 'edu',
+  t: 'team',
 };
 
 const LANG_STORE_PREFIX = 'langstore/';
@@ -489,46 +501,56 @@ async function openFragmentModal(path, getModal) {
   return modal;
 }
 
-export function appendTabName(url) {
+function appendTabName(url, el) {
+  if (el?.is3in1Modal) {
+    if (el.marketSegment === 'EDU') {
+      url.searchParams.set('plan', 'edu');
+    } else if (el.customerSegment === 'TEAM') {
+      url.searchParams.set('plan', 'team');
+    }
+  }
   const metaPreselectPlan = document.querySelector('meta[name="preselect-plan"]');
   if (!metaPreselectPlan?.content) return url;
-  const isRelativePath = url.startsWith('/');
-  let urlWithPlan;
-  try {
-    urlWithPlan = isRelativePath ? new URL(`${window.location.origin}${url}`) : new URL(url);
-  } catch (err) {
-    window.lana?.log(`Invalid URL ${url} : ${err}`);
-    return url;
-  }
-  urlWithPlan.searchParams.set('plan', metaPreselectPlan.content);
-  return isRelativePath ? urlWithPlan.href.replace(window.location.origin, '') : urlWithPlan.href;
+  url.searchParams.set('plan', metaPreselectPlan.content);
+  return url;
 }
 
-export function appendExtraOptions(url, extraOptions) {
+function appendExtraOptions(url, extraOptions) {
   if (!extraOptions) return url;
   const extraOptionsObj = JSON.parse(extraOptions);
-  let urlWithExtraOptions;
+  Object.keys(extraOptionsObj).forEach((key) => {
+    if (CHECKOUT_ALLOWED_KEYS.includes(key)) {
+      const value = extraOptionsObj[key];
+      url.searchParams.set(
+        TAB_DEEPLINK_MAPPING[key] ?? key,
+        TAB_DEEPLINK_MAPPING[value] ?? value,
+      );
+    }
+  });
+  return url;
+}
+
+// TODO this should migrate to checkout.js buildCheckoutURL
+export function appendDexterParameters(url, extraOptions, el) {
+  const isRelativePath = url.startsWith('/');
+  let absoluteUrl;
   try {
-    urlWithExtraOptions = new URL(url);
+    absoluteUrl = new URL(isRelativePath ? `${window.location.origin}${url}` : url);
   } catch (err) {
     window.lana?.log(`Invalid URL ${url} : ${err}`);
     return url;
   }
-  Object.keys(extraOptionsObj).forEach((key) => {
-    if (CHECKOUT_ALLOWED_KEYS.includes(key)) {
-      urlWithExtraOptions.searchParams.set(key, extraOptionsObj[key]);
-    }
-  });
-  return urlWithExtraOptions.href;
+  absoluteUrl = appendExtraOptions(absoluteUrl, extraOptions);
+  absoluteUrl = appendTabName(absoluteUrl, el);
+  return isRelativePath ? absoluteUrl.href.replace(window.location.origin, '') : absoluteUrl.href;
 }
 
-async function openExternalModal(url, getModal, extraOptions) {
-  await loadStyle(`${getConfig().base}/blocks/iframe/iframe.css`);
+async function openExternalModal(url, getModal, extraOptions, el) {
+  loadStyle(`${getConfig().base}/blocks/iframe/iframe.css`);
   const root = createTag('div', { class: 'milo-iframe' });
-  const urlWithTabName = appendTabName(url);
-  const urlWithExtraOptions = appendExtraOptions(urlWithTabName, extraOptions);
+  const absoluteUrl = appendDexterParameters(url, extraOptions, el);
   createTag('iframe', {
-    src: urlWithExtraOptions,
+    src: absoluteUrl,
     frameborder: '0',
     marginwidth: '0',
     marginheight: '0',
@@ -641,6 +663,12 @@ export async function getCheckoutAction(offers, options, imsSignedInPromise, el)
   }
 }
 
+export function setPreview(attributes) {
+  const { host } = window.location;
+  if (host.includes(`${SLD}.page`) || host.origin === 'https://www.stage.adobe.com') {
+    attributes.preview = 'on';
+  }
+}
 /**
  * Activates commerce service and returns a promise resolving to its ready-to-use instance.
  */
@@ -674,6 +702,7 @@ export async function initService(force = false, attributes = {}) {
     const { language, locale, country } = getMiloLocaleSettings(miloLocale);
     let service = document.head.querySelector('mas-commerce-service');
     if (!service) {
+      setPreview(attributes);
       service = createTag('mas-commerce-service', {
         locale,
         language,
@@ -780,10 +809,17 @@ export async function getPriceContext(el, params) {
   };
 }
 
+let modalReopened = false;
 export function reopenModal(cta) {
+  if (modalReopened) return;
   if (cta && cta.getAttribute('data-modal-id') === window.location.hash.replace('#', '')) {
     cta.click();
+    modalReopened = true;
   }
+}
+
+export function resetReopenStatus() {
+  modalReopened = false;
 }
 
 export async function buildCta(el, params) {
@@ -813,21 +849,32 @@ export async function buildCta(el, params) {
     });
   }
 
-  // Adding aria-label for checkout-link using productFamily and customerSegment as placeholder key.
+  // Adding aria-label for checkout-link using productCode and customerSegment as placeholder key.
   if (el.ariaLabel) {
     // If Milo aria-label available from sharepoint doc, just use it.
     cta.setAttribute('aria-label', el.ariaLabel);
   } else if (!cta.ariaLabel) {
     cta.onceSettled().then(async () => {
-      const productFamily = cta.value[0]?.productArrangement?.productFamily;
-      const marketSegment = cta.value[0]?.marketSegments[0];
-      const customerSegment = marketSegment === 'EDU' ? marketSegment : cta.value[0]?.customerSegment;
+      const productCode = cta.value[0]?.productArrangement?.productCode;
+      const { marketSegment, customerSegment } = cta;
+      const segment = marketSegment === 'EDU' ? marketSegment : customerSegment;
       let ariaLabel = cta.textContent;
-      ariaLabel = productFamily ? `${ariaLabel} - ${await replaceKey(productFamily, getConfig())}` : ariaLabel;
-      ariaLabel = customerSegment ? `${ariaLabel} - ${await replaceKey(customerSegment, getConfig())}` : ariaLabel;
+      ariaLabel = productCode ? `${ariaLabel} - ${await replaceKey(productCode, getConfig())}` : ariaLabel;
+      ariaLabel = segment ? `${ariaLabel} - ${await replaceKey(segment, getConfig())}` : ariaLabel;
       cta.setAttribute('aria-label', ariaLabel);
     });
   }
+
+  if (getMetadata('mas-ff-copy-cta') === 'on') {
+    const { default: addCopyToClipboard } = await import('./copy-to-clipboard.js');
+    return addCopyToClipboard(el, cta);
+  }
+
+  // @see https://jira.corp.adobe.com/browse/MWPW-173470
+  cta.onceSettled().then(() => {
+    if (getConfig()?.locale?.prefix === '/kr' && cta.value[0]?.offerType === OFFER_TYPE_TRIAL) cta.remove();
+  });
+
   return cta;
 }
 
