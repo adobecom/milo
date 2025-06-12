@@ -1001,6 +1001,29 @@ export const addMepAnalytics = (config, header) => {
     }
   });
 };
+// I will move this to a separate file later
+export const getMepPlaceHolders = async (manifestPath) => {
+  const resp = await customFetch({ resource: `${manifestPath}.plain.html`, withCacheRules: true })
+    .catch(() => ({}));
+
+  if (!resp?.ok) {
+    window.lana?.log(`Could not get mep placeholders: ${manifestPath}.plain.html`);
+    return null;
+  }
+  const html = await resp.text();
+  const doc = new DOMParser().parseFromString(html, 'text/html');
+  const rows = Array.from(doc.querySelectorAll('.mep-placeholders > div')).slice(1);
+  const mepPlaceHolders = rows.map((row) => {
+    const key = row.children[0]?.textContent?.trim();
+    const value = row.children[1].innerHTML;
+    if (key && value) {
+      return { key, value };
+    }
+    return null;
+  }).filter(Boolean);
+  return mepPlaceHolders;
+};
+
 export async function getManifestConfig(info = {}, variantOverride = false) {
   const {
     name,
@@ -1025,24 +1048,8 @@ export async function getManifestConfig(info = {}, variantOverride = false) {
   }
   let mepPlaceHolders = null;
   if (!data && isMph) {
-    const resp = await customFetch({ resource: `${manifestPath}.plain.html`, withCacheRules: true })
-      .catch(() => ({}));
-
-    if (!resp?.ok) {
-      window.lana?.log(`Could not get mep placeholders: ${manifestPath}.plain.html`);
-      return null;
-    }
-    const html = await resp.text();
-    const doc = new DOMParser().parseFromString(html, 'text/html');
-    const rows = Array.from(doc.querySelectorAll('.mep-placeholders > div')).slice(1);
-    mepPlaceHolders = rows.map((row) => {
-      const key = row.children[0]?.textContent?.trim();
-      const value = row.children[1].innerHTML;
-      if (key && value) {
-        return { key, value };
-      }
-      return null;
-    }).filter(Boolean);
+    const config = getConfig();
+    mepPlaceHolders = await config.mep.mphPromise;
   }
 
   const persData = data?.experiences?.data || data?.data || data || mepPlaceHolders;
@@ -1485,7 +1492,7 @@ const awaitMartech = () => new Promise((resolve) => {
 export async function init(enablements = {}) {
   let manifests = [];
   const {
-    mepParam, mepHighlight, mepButton, pzn, pznroc, mph, promo, enablePersV2,
+    mepParam, mepHighlight, mepButton, pzn, pznroc, mph, mphPromise, promo, enablePersV2,
     target, ajo, countryIPPromise, mepgeolocation, targetInteractionPromise, calculatedTimeout,
     postLCP,
   } = enablements;
@@ -1506,6 +1513,7 @@ export async function init(enablements = {}) {
       enablePersV2,
       countryIPPromise,
       geoLocation: mepgeolocation,
+      mphPromise,
       targetInteractionPromise,
     };
 
