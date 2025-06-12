@@ -1059,7 +1059,7 @@ export const addMepAnalytics = (config, header) => {
   });
 };
 // I will move this to a separate file later
-export const getMepPlaceHolders = async (manifestPath) => {
+export const getMepLocPlaceHolders = async (manifestPath) => {
   const resp = await customFetch({ resource: `${manifestPath}.plain.html`, withCacheRules: true })
     .catch(() => ({}));
 

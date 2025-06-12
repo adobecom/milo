@@ -1458,9 +1458,8 @@ async function checkForPageMods() {
     }
   }
   if (mph) {
-    const { getMepPlaceHolders } = await import('../features/personalization/personalization.js');
-    mphPromise = getMepPlaceHolders(mph);
-    console.log('mph', mph);
+    const { getMepLocPlaceHolders } = await import('../features/personalization/personalization.js');
+    mphPromise = getMepLocPlaceHolders(mph);
   }
   const enablePersV2 = enablePersonalizationV2();
   if ((target || xlg) && enablePersV2) {
