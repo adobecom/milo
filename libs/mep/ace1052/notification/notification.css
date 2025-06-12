@@ -484,11 +484,6 @@
   min-block-size: unset;
 }
 
-.notification.button-full-width .foreground{
-  margin-block: auto;
-  padding-block: initial;
-}
-
 .notification.button-full-width .action-area,
 .notification.button-full-width .con-button {
   width: 100%;
