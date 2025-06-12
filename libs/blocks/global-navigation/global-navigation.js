@@ -952,8 +952,9 @@ class Gnav {
     const container = document.querySelector('.feds-utilities');
     const hasAppSwitcher = this.universalNavComponents.includes('appswitcher');
     const updatePromoZIndex = () => {
-      const isOpen = container.querySelector('.unav-comp-app-switcher-open');
-      document.querySelector('header').style.zIndex = isOpen ? APP_SWITCHER_ZINDEX : 10;
+      const isAppSwitcherOpen = container.querySelector('.unav-comp-app-switcher-open') !== null;
+      document.querySelector('header').style.zIndex = isAppSwitcherOpen ? APP_SWITCHER_ZINDEX : '10';
+      isAppSwitcherOpen ? disableMobileScroll() : enableMobileScroll();
     };
     // Ensure promo appears behind appswitcher on mobile
     if (fedsPromo && hasAppSwitcher && !isDesktop.matches) {
