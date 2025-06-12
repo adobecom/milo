@@ -49,6 +49,7 @@ function decorateAlertControls(element) {
       toggle.textContent = 'Show alerts';
     }
     element.classList.toggle('block-alerts');
+    element.classList.toggle('hide-labels');
   });
 }
 
@@ -66,14 +67,14 @@ export default async function blockNotifications(base) {
 
   const blockQueries = blocksKeyToLowercase.data.reduce((acc, row) => {
     const notConsonant = row.consonant === 'false';
-    const decision = row.decision !== '' ? row.decision.toLowerCase() === 'delist' || 'delisted' || 'obsolete' : undefined;
+    const decision = row.decision !== '' ? row.decision.toLowerCase() === 'obsolete' || 'delist' || 'delisted' : undefined;
     if (row.block && (notConsonant || decision)) {
       const variation = row.variant && row.variant.replaceAll(',', '.').replaceAll(' ', '-').toLowerCase();
       const blockName = row.block.toLowerCase();
       const documentation = row.documentation !== '' ? row.documentation : undefined;
       const name = variation ? `${blockName} ${variation}` : `${blockName}`;
       const queryProps = { selector: variation ? `.${blockName}.${variation}` : `.${blockName}` };
-      if (decision) queryProps.decision = 'Delist';
+      if (decision) queryProps.decision = row.decision.toLowerCase();
       if (notConsonant) queryProps.notConsonant = 'Not Consonant';
       if (documentation) queryProps.documentation = row.documentation;
       if (name) queryProps.name = name;
