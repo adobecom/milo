@@ -1424,6 +1424,8 @@ async function checkForPageMods() {
   } = Object.fromEntries(PAGE_URL.searchParams);
   let targetInteractionPromise = null;
   let countryIPPromise = null;
+  let mphPromise = null;
+
   let calculatedTimeout = null;
 
   if (mepParam === 'off') return;
@@ -1449,6 +1451,11 @@ async function checkForPageMods() {
       const { getAkamaiCode } = await import('../features/georoutingv2/georoutingv2.js');
       countryIPPromise = getAkamaiCode(true);
     }
+  }
+  if (mph) {
+    const { getMepPlaceHolders } = await import('../features/personalization/personalization.js');
+    mphPromise = getMepPlaceHolders(mph);
+    console.log('mph', mph);
   }
   const enablePersV2 = enablePersonalizationV2();
   if ((target || xlg) && enablePersV2) {
@@ -1488,6 +1495,7 @@ async function checkForPageMods() {
     mepButton,
     pzn,
     mph,
+    mphPromise,
     pznroc,
     promo,
     target,
