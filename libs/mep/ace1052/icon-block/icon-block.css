@@ -535,10 +535,26 @@
     height: var(--icon-size-s);
   }
 
+  .icon-block.full-width .foreground .icon-area {
+    margin-bottom: var(--spacing-xs);
+  }
+
   .section:has(.icon-block + .action-scroller) {
     width: var(--grid-container-width);
     margin: auto;
     background: #EEE;
     border-radius: var(--l-rounded-corners);
+  }
+
+  .section:has(.icon-block + .action-scroller) .action-scroller .scroller {
+    --mask-width: var(--grid-margins-width);
+
+    padding-inline: var(--grid-margins-width);
+    gap: var(--spacing-xs);
+  }
+
+  .section:has(.icon-block + .action-scroller) .action-item .main-image {
+    max-width: 60px;
+    margin-inline: auto;
   }
 }

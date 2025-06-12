@@ -26,7 +26,7 @@ const iconBlocks = {
     [variants[3]]: ['s', 's'],
   },
   medium: {
-    [variants[0]]: ['l', 's'], /* Mweb specific */
+    [variants[0]]: ['l', 's'], /* Mweb specific, s was m */
     [variants[1]]: ['m', 'm'],
     [variants[2]]: ['s', 's'],
     [variants[3]]: ['s', 's'],

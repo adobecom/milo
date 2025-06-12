@@ -112,6 +112,7 @@
 .aside .foreground.container .image {
   position: relative;
   display: flex;
+  width: 100%;
 }
 
 .aside .foreground.container > div {
@@ -595,11 +596,36 @@
   align-items: center;
 }
 
+.aside.promobar.popup .mobile-up.promo-text:has(.milo-tooltip) {
+  position: relative;
+}
+
+.aside.promobar.popup .promo-text span[data-tooltip] .icon-milo {
+  height: 16px;
+}
+
+.aside.promobar.popup .mobile-up.promo-text .milo-tooltip {
+  position: absolute;
+  left: calc(var(--spacing-xs) - 5px);
+  bottom: var(--spacing-xs);
+  margin-inline-start: 0;
+}
+
+[dir="rtl"] .aside.promobar.popup .mobile-up.promo-text .milo-tooltip {
+  left: unset;
+  right: calc(var(--spacing-xs) - 5px);
+}
+
 .aside.promobar.popup {
   border-radius: var(--spacing-xs);
   width: var(--grid-container-width);
   margin: auto;
   box-shadow: 0 3px 6px #707070;
+  overflow: unset;
+}
+
+.aside.promobar.popup .background {
+  border-radius: inherit;
 }
 
 .aside.promobar.popup .foreground.container .promo-text {
@@ -1274,20 +1300,25 @@
   }
 
   /* Block specific */
-  .section:has(.aside.large:nth-child(3)) .aside.large {
+  .section:has(.aside:nth-child(3)) .aside {
     width: var(--grid-container-width);
     margin: var(--spacing-s) auto;
     border-radius: var(--l-rounded-corners);
   }
 
-  .section:has(.aside.large:nth-child(3)) .aside.large .foreground.container {
+  .section:has(.aside:nth-child(3)) .aside .foreground.container {
     width: 100%;
-    padding-bottom: 0;
+    padding-block: var(--spacing-xs) 0;
     gap: unset;
   }
 
-  .section:has(.aside.large:nth-child(3)) .aside.large .foreground.container .text {
-    width: var(--grid-container-width);
-    margin: auto;
+  .section:has(.aside:nth-child(3)) .aside [class^="detail-"],
+  .section:has(.aside:nth-child(3)) .aside [class^="heading-"]:only-of-type,
+  .section:has(.aside:nth-child(3)) .aside [class^="heading-"]:last-of-type {
+    margin-bottom: var(--spacing-xxs);
+  }
+
+  .section:has(.aside:nth-child(3)) .aside .foreground.container .text {
+    padding-inline: var(--spacing-xs);
   }
 }

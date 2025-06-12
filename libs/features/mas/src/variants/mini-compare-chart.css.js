@@ -2,9 +2,13 @@ import { MOBILE_LANDSCAPE, TABLET_DOWN, TABLET_UP, DESKTOP_UP, LARGE_DESKTOP } f
 export const CSS = `
   :root {
     --consonant-merch-card-mini-compare-chart-icon-size: 32px;
-    --consonant-merch-card-mini-compare-mobile-cta-font-size: 15px;
+    --consonant-merch-card-mini-compare-mobile-cta-font-size: 16px;
     --consonant-merch-card-mini-compare-mobile-cta-width: 75px;
     --consonant-merch-card-mini-compare-badge-mobile-max-width: 50px;
+    --consonant-merch-card-mini-compare-mobile-price-font-size: 32px;
+    --consonant-merch-card-mini-compare-mobile-border-color-light: #F3F3F3;
+    --consonant-merch-card-card-mini-compare-mobile-background-color: #F8F8F8;
+    --consonant-merch-card-card-mini-compare-mobile-spacing-xs: 12px;
   }
   
   merch-card[variant="mini-compare-chart"] [slot="heading-m"] {
@@ -49,11 +53,7 @@ export const CSS = `
   merch-card[variant="mini-compare-chart"].bullet-list [slot="heading-m"] {
     padding: var(--consonant-merch-spacing-xxs) var(--consonant-merch-spacing-xs);
     font-size: var(--consonant-merch-card-heading-xs-font-size);
-  }
-
-  merch-card[variant="mini-compare-chart"].bullet-list [slot='heading-m-price'] {
-    font-size: var(--consonant-merch-card-body-xxl-font-size);
-    padding: 0 var(--consonant-merch-spacing-xs);
+    line-height: var(--consonant-merch-card-heading-xs-line-height);
   }
 
   merch-card[variant="mini-compare-chart"] [slot="body-m"] {
@@ -85,6 +85,11 @@ export const CSS = `
   merch-card[variant="mini-compare-chart"] [slot="price-commitment"] {
     font-size: var(--consonant-merch-card-body-xs-font-size);
     padding: 0 var(--consonant-merch-spacing-s);
+  }
+
+  merch-card[variant="mini-compare-chart"].bullet-list [slot='heading-m-price'],
+  merch-card[variant="mini-compare-chart"].bullet-list [slot='price-commitment'] {
+    padding: 0 var(--consonant-merch-spacing-xs);
   }
 
   merch-card[variant="mini-compare-chart"] [slot="price-commitment"] a {
@@ -124,7 +129,7 @@ export const CSS = `
     align-items: flex-end;
     flex-wrap: wrap;
     width: 100%;
-    gap: var(--consonant-merch-spacing-xs);
+    gap: var(--consonant-merch-spacing-xxs);
   }
 
   merch-card[variant="mini-compare-chart"] [slot="footer-rows"] ul {
@@ -145,11 +150,13 @@ export const CSS = `
   }
 
   merch-card[variant="mini-compare-chart"] .footer-rows-title {
-    font-color: var(--merch-color-grey-80);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-color: var(--merch-color-grey-60);
     font-weight: 700;
-    padding-block-end: var(--consonant-merch-spacing-xxs);
     line-height: var(--consonant-merch-card-body-xs-line-height);
-    font-size: var(--consonant-merch-card-body-xs-font-size);
+    font-size: var(--consonant-merch-card-body-s-font-size);
   }
 
   merch-card[variant="mini-compare-chart"] .footer-row-cell {
@@ -200,8 +207,15 @@ export const CSS = `
     color: var(--color-accent);
   }
 
-  merch-card[variant="mini-compare-chart"] .chevron-icon {
-    margin-left: 8px;
+  merch-card[variant="mini-compare-chart"] .toggle-icon {
+    display: flex;
+    background-color: transparent;
+    border: none;
+    padding: 0;
+    margin: 0;
+    text-align: inherit;
+    font: inherit;
+    border-radius: 0;
   }
 
   merch-card[variant="mini-compare-chart"] .checkmark-copy-container {
@@ -210,6 +224,8 @@ export const CSS = `
 
   merch-card[variant="mini-compare-chart"] .checkmark-copy-container.open {
     display: block;
+    padding-block-start: var(--consonant-merch-card-card-mini-compare-mobile-spacing-xs);
+    padding-block-end: 4px;
   }
   
 .one-merch-card.mini-compare-chart {
@@ -266,6 +282,49 @@ export const CSS = `
   merch-card[variant="mini-compare-chart"] merch-addon {
     box-sizing: border-box;
   }
+
+  merch-card[variant="mini-compare-chart"].bullet-list {
+    border-radius: var(--consonant-merch-spacing-xxs);
+    border-color: var(--consonant-merch-card-mini-compare-mobile-border-color-light);
+  }
+
+  merch-card[variant="mini-compare-chart"].bullet-list [slot='heading-m-price'] {
+    padding: 0 var(--consonant-merch-spacing-xs);
+    font-size: var(--consonant-merch-card-mini-compare-mobile-price-font-size);
+    line-height: var(--consonant-merch-card-body-xl-line-height);
+    font-weight: 800;
+  }
+
+  merch-card[variant="mini-compare-chart"].bullet-list [slot='heading-m-price'] span.price-strikethrough,
+  merch-card[variant="mini-compare-chart"].bullet-list [slot='heading-m-price'] span[is="inline-price"][data-template="strikethrough"] {
+    font-size: var(--consonant-merch-card-body-s-font-size);
+    line-height: var(--consonant-merch-card-body-s-line-height);
+  }
+
+  merch-card[variant="mini-compare-chart"].bullet-list [slot="price-commitment"] {
+    padding: var(--consonant-merch-spacing-xxxs) var(--consonant-merch-spacing-xs) 0 var(--consonant-merch-spacing-xs);
+    font-size: var(--consonant-merch-card-body-s-font-size);
+    line-height: var(--consonant-merch-card-body-s-line-height);
+  }
+
+  merch-card[variant="mini-compare-chart"].bullet-list [slot="body-m"] {
+    padding: var(--consonant-merch-card-card-mini-compare-mobile-spacing-xs) var(--consonant-merch-spacing-xs) 0 var(--consonant-merch-spacing-xs);
+    font-size: var(--consonant-merch-card-body-s-font-size);
+    line-height: var(--consonant-merch-card-body-s-line-height);
+  }
+
+  merch-card[variant="mini-compare-chart"].bullet-list [slot="offers"] {
+    padding: 0;
+  }
+
+  merch-card[variant="mini-compare-chart"].bullet-list .action-area {
+    justify-content: flex-start;
+  }
+
+  merch-card[variant="mini-compare-chart"].bullet-list [slot="footer-rows"] {
+    background-color: var(--consonant-merch-card-card-mini-compare-mobile-background-color);
+    border-radius: 0 0 var(--consonant-merch-spacing-xxs) var(--consonant-merch-spacing-xxs);
+  }
 }
 
 @media screen and ${TABLET_DOWN} {
@@ -292,6 +351,11 @@ export const CSS = `
   merch-card[variant="mini-compare-chart"] .footer-row-cell-description {
     font-size: var(--consonant-merch-card-body-xs-font-size);
     line-height: var(--consonant-merch-card-body-xs-line-height);
+  }
+
+  merch-card[variant="mini-compare-chart"].bullet-list .footer-row-cell-description {
+    font-size: var(--consonant-merch-card-body-s-font-size);
+    line-height: var(--consonant-merch-card-body-s-line-height);
   }
 }
 @media screen and ${TABLET_UP} {

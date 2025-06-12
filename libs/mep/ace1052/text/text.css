@@ -289,7 +289,7 @@
   width: 100%;
 }
 
-.section[class*="-up"] .text-block:not(.legal, .link-farm) .foreground > div {
+.section[class*="-up"] .text-block:not(.legal, .link-farm) .foreground > div:not(:has(> strong)) {
   display: flex;
   flex-direction: column;
   width: 100%;
@@ -396,8 +396,12 @@
   }
 
   /* Block specific */
-  .text.text-block.center {
+  .text.text-block.center:not(:has(a:only-child:not(.con-button))) {
     text-align: start;
+  }
+
+  .text.text-block.center .action-area {
+    gap: var(--spacing-xxs);
   }
 
   .text.text-block.center .action-area:not(:has(> a:only-child)),

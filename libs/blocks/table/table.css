@@ -82,6 +82,10 @@
   margin-right: 8px;
 }
 
+.table .col picture {
+  display: flex;
+}
+
 .section.table-section,
 .section.table-merch-section {
   background: var(--color-white);
@@ -129,6 +133,12 @@
 
 .table .row-highlight .col-highlight.hidden {
   visibility: hidden;
+}
+
+.table .highlight-text {
+  overflow: hidden;
+  width: 0;
+  height: 0;
 }
 
 /* heading */
@@ -205,7 +215,7 @@
   padding: var(--spacing-s);
 }
 
-.table:not(.merch) .row-heading .col.col-heading .action-area {
+.table .row-heading .col.col-heading .action-area {
   display: flex;
   gap: var(--spacing-xs);
   flex-wrap: wrap;
@@ -790,9 +800,5 @@
 
   .table :is(.heading-button,.action-area) {
     max-width: 100%;
-  }
-
-  .table .action-area .con-button.button-l {
-    overflow: hidden;
   }
 }

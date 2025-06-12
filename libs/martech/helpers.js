@@ -8,8 +8,8 @@ const KNDCTR_COOKIE_KEYS = [
 const KNDCTR_CONSENT_COOKIE = 'kndctr_9E1005A551ED61CA0A490D45_AdobeOrg_consent';
 const OPT_ON_AND_CONSENT_COOKIE = 'OptanonConsent';
 
-const DATA_STREAM_IDS_PROD = { default: '913eac4d-900b-45e8-9ee7-306216765cd2' };
-const DATA_STREAM_IDS_STAGE = { default: 'e065836d-be57-47ef-b8d1-999e1657e8fd' };
+const DATA_STREAM_IDS_PROD = { default: '913eac4d-900b-45e8-9ee7-306216765cd2', business: '0fd7a243-507d-4035-9c75-e42e42f866a0' };
+const DATA_STREAM_IDS_STAGE = { default: 'e065836d-be57-47ef-b8d1-999e1657e8fd', business: '2eedf777-b932-4f2a-a0c5-b559788929bf' };
 
 let dataStreamId = '';
 
@@ -146,6 +146,22 @@ function getUpdatedAcrobatVisitAttempt() {
   if (!consentCookieValue?.includes('C0002:0') && isAdobeDomain && secondVisitAttempt <= 2) {
     const updatedVisitAttempt = secondVisitAttempt === 0 ? 1 : secondVisitAttempt + 1;
     localStorage.setItem('acrobatSecondHit', updatedVisitAttempt);
+    return updatedVisitAttempt;
+  }
+
+  return secondVisitAttempt;
+}
+
+function getUpdatedDxVisitAttempt() {
+  const { hostname } = window.location;
+  const secondVisitAttempt = Number(localStorage.getItem('dxHit')) || 0;
+
+  const isAdobeDomain = (hostname === 'business.adobe.com' || hostname === 'business.stage.adobe.com' || hostname === 'www.marketo.com' || hostname === 'engage.marketo.com');
+  const consentCookieValue = getCookie(OPT_ON_AND_CONSENT_COOKIE);
+
+  if (!consentCookieValue?.includes('C0002:0') && isAdobeDomain && secondVisitAttempt <= 2) {
+    const updatedVisitAttempt = secondVisitAttempt === 0 ? 1 : secondVisitAttempt + 1;
+    localStorage.setItem('dxHit', updatedVisitAttempt);
     return updatedVisitAttempt;
   }
 
@@ -310,6 +326,16 @@ function getUpdatedContext({
   };
 }
 
+function isFirstVisit() {
+  const identityCookie = getCookie(KNDCTR_COOKIE_KEYS[0]);
+  if (!identityCookie) {
+    window.marketingtech = window.marketingtech || {};
+    window.marketingtech.isFirstVisit = true;
+    return true;
+  }
+  return false;
+}
+
 const getMartechCookies = () => document.cookie.split(';')
   .map((x) => x.trim().split('='))
   .filter(([key]) => KNDCTR_COOKIE_KEYS.includes(key))
@@ -336,6 +362,8 @@ function createRequestPayload({ updatedContext, pageName, processedPageName, loc
     return getCookie(KNDCTR_CONSENT_COOKIE) ? 'post' : 'pre';
   })();
 
+  const eventMergeId = generateUUIDv4();
+
   const eventObj = {
     xdm: {
       ...updatedContext,
@@ -351,7 +379,7 @@ function createRequestPayload({ updatedContext, pageName, processedPageName, loc
       },
       timestamp: new Date().toISOString(),
       eventType: hitTypeEventTypeMap[hitType],
-      eventMergeId: generateUUIDv4(),
+      eventMergeId,
       ...(getPrimaryProduct() && { productListItems: [{ SKU: getPrimaryProduct() }] }),
     },
     data: {
@@ -366,7 +394,7 @@ function createRequestPayload({ updatedContext, pageName, processedPageName, loc
           ...(getEntityId() ? { 'entity.id': getEntityId() } : {}),
         },
       },
-      eventMergeId: generateUUIDv4(),
+      eventMergeId,
       _adobe_corpnew: {
         configuration: { edgeConfigId: dataStreamId },
         digitalData: {
@@ -375,7 +403,8 @@ function createRequestPayload({ updatedContext, pageName, processedPageName, loc
           previousPage: { pageInfo: { pageName: prevPageName } },
           primaryUser: { primaryProfile: { profileInfo: { authState: 'loggedOut', returningStatus: getVisitorStatus({}) } } },
         },
-        otherConsents: { configuration: { advertising: consentCookie && consentCookie.includes('C0004:0') ? 'false' : 'true' } },
+        otherConsents: { configuration: { advertising: (!!consentCookie?.includes('C0004:1')).toString() } },
+        user: { firstVisit: isFirstVisit() },
         cmp: { state: consentState },
       },
       marketingtech: {
@@ -431,6 +460,16 @@ function createRequestPayload({ updatedContext, pageName, processedPageName, loc
         experienceCloud: {
           ...digitalData.adobe?.experienceCloud,
           acrobatSecondVisits: 'setEvent',
+        },
+      };
+    }
+    if (getUpdatedDxVisitAttempt() === 2) {
+      digitalData.adobe = {
+        ...digitalData.adobe,
+        libraryVersions: 'alloy-api',
+        experienceCloud: {
+          ...digitalData.adobe?.experienceCloud,
+          dxVisits: 'setEvent',
         },
       };
     }
@@ -528,7 +567,18 @@ export const createRequestUrl = ({
   hitType,
 }) => {
   const TARGET_API_URL = getUrl(hitType === 'propositionDisplay');
-  dataStreamId = env === 'prod' ? DATA_STREAM_IDS_PROD.default : DATA_STREAM_IDS_STAGE.default;
+  const { hostname } = window.location;
+  if (hostname.includes('business.adobe')) {
+    dataStreamId = DATA_STREAM_IDS_PROD.business;
+  } else if (
+    hostname.includes('business.stage.adobe')
+    || hostname.includes('bacom--adobecom.hlx')
+    || hostname.includes('bacom--adobecom.aem')
+  ) {
+    dataStreamId = DATA_STREAM_IDS_STAGE.business;
+  } else {
+    dataStreamId = env === 'prod' ? DATA_STREAM_IDS_PROD.default : DATA_STREAM_IDS_STAGE.default;
+  }
   return `${TARGET_API_URL}?dataStreamId=${dataStreamId}&requestId=${generateUUIDv4()}`;
 };
 
@@ -655,11 +705,19 @@ export const loadAnalyticsAndInteractionData = async (
   }
   const getLocalISOString = () => {
     const date = new Date();
-    const tzOffset = -date.getTimezoneOffset();
-    const diff = `${(tzOffset >= 0 ? '+' : '-')
-                 + String(Math.floor(Math.abs(tzOffset) / 60)).padStart(2, '0')}:${
-      String(Math.abs(tzOffset) % 60).padStart(2, '0')}`;
-    return date.toISOString().replace('Z', diff);
+    const padStart = (string, targetLength, padString) => (`${string}`).padStart(targetLength, padString);
+    const YYYY = date.getFullYear();
+    const MM = padStart(date.getMonth() + 1, 2, '0');
+    const DD = padStart(date.getDate(), 2, '0');
+    const hh = padStart(date.getHours(), 2, '0');
+    const mm = padStart(date.getMinutes(), 2, '0');
+    const ss = padStart(date.getSeconds(), 2, '0');
+    const mmm = padStart(date.getMilliseconds(), 3, '0');
+    const timezoneOffset = Number(date.getTimezoneOffset()) || 0;
+    const ts = timezoneOffset > 0 ? '-' : '+';
+    const th = padStart(Math.floor(Math.abs(timezoneOffset) / 60), 2, '0');
+    const tm = padStart(Math.abs(timezoneOffset) % 60, 2, '0');
+    return `${YYYY}-${MM}-${DD}T${hh}:${mm}:${ss}.${mmm}${ts}${th}:${tm}`;
   };
   const localTime = getLocalISOString();
   const CURRENT_DATE = new Date();

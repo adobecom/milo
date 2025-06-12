@@ -5,6 +5,7 @@ import {
   createIntersectionObserver,
   getFederatedContentRoot,
   getFedsPlaceholderConfig,
+  shouldBlockFreeTrialLinks,
 } from './utils.js';
 
 const { miloLibs, codeRoot } = getConfig();
@@ -23,9 +24,12 @@ export function decorateButtons(el, size) {
   const buttons = el.querySelectorAll('em a, strong a, p > a strong');
   if (buttons.length === 0) return;
   const buttonTypeMap = { STRONG: 'blue', EM: 'outline', A: 'blue' };
+  const localePrefix = getConfig()?.locale?.prefix;
+
   buttons.forEach((button) => {
-    let target = button;
     const parent = button.parentElement;
+    if (shouldBlockFreeTrialLinks({ button, localePrefix, parent })) return;
+    let target = button;
     const buttonType = buttonTypeMap[parent.nodeName] || 'outline';
     if (button.nodeName === 'STRONG') {
       target = parent;

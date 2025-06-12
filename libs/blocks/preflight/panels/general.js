@@ -9,6 +9,7 @@ const NOT_FOUND = {
 };
 const DA_DOMAIN = 'da.live';
 const nonEDSContent = 'Non AEM EDS Content';
+const EXCLUDED_PATHS = ['/tools/caas'];
 
 const content = signal({});
 
@@ -61,19 +62,22 @@ function getUrl(el) {
   try {
     return new URL(dataPath);
   } catch {
-    const elPath = el.href || (el.src && el.nodeName === 'IFRAME' ? el?.parentElement.dataset.pdfSrc : el.src);
+    const isPdfIframe = el.src && el.nodeName === 'IFRAME' && el.parentElement?.dataset.pdfSrc;
+    const elPath = el.href || (isPdfIframe ? el.parentElement.dataset.pdfSrc : el.src);
     const path = dataPath ? `${window.location.origin}${dataPath}` : elPath;
     return new URL(path);
   }
 }
 
 function findLinks(selector) {
-  const hrefs = [];
+  const hrefs = new Set();
   return [...document.body.querySelectorAll(selector)]
     .reduce((links, el) => {
       const url = getUrl(el);
-      if (!hrefs.includes(url.href)) {
-        hrefs.push(url.href);
+      const baseUrl = `${url.origin}${url.pathname}`;
+      if (EXCLUDED_PATHS.some((path) => url.pathname.includes(path))) return links;
+      if (!hrefs.has(baseUrl)) {
+        hrefs.add(baseUrl);
         links.push({ url, edit: null, preview: 'Fetching', live: 'Fetching' });
       }
       return links;

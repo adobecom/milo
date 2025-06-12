@@ -91,21 +91,35 @@
 
 .marketo .mktoFormRowTop {
   display: contents;
+  visibility: visible;
+  position: static;
+  pointer-events: auto;
 }
 
 .marketo.multi-step .mktoFormRow.mktoFormRowTop[data-validate="2"],
 .marketo.multi-step .mktoFormRow.mktoFormRowTop[data-validate="3"] {
-  display: none;
+  display: block;
+  visibility: hidden;
+  position: absolute;
+  left: -100000px;
+  pointer-events: none;
 }
 
 .marketo.multi-step .mktoForm[data-step="2"] .mktoFormRow.mktoFormRowTop[data-validate="2"],
 .marketo.multi-step .mktoForm[data-step="3"] .mktoFormRow.mktoFormRowTop[data-validate="3"] {
   display: contents;
+  visibility: visible;
+  position: static;
+  pointer-events: auto;
 }
 
 .marketo.multi-step .mktoForm[data-step="2"] .mktoFormRow.mktoFormRowTop[data-validate="1"],
 .marketo.multi-step .mktoForm[data-step="3"] .mktoFormRow.mktoFormRowTop[data-validate="1"] {
-  display: none;
+  display: block;
+  visibility: hidden;
+  position: absolute;
+  left: -100000px;
+  pointer-events: none;
 }
 
 .marketo.multi-step .mktoForm[data-step="1"] .mktoFormRow.mktoFormRowTop.adobe-privacy,
@@ -116,6 +130,9 @@
 .marketo.multi-step .mktoForm[data-step="3"] .mktoFormRow.mktoFormRowTop.adobe-privacy,
 .marketo.multi-step.multi-2 .mktoForm[data-step="2"] .mktoFormRow.mktoFormRowTop.adobe-privacy {
   display: grid;
+  visibility: visible;
+  position: static;
+  pointer-events: auto;
 }
 
 .marketo.multi-step .step-details {

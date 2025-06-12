@@ -144,7 +144,7 @@ export default async function loadBlock(configs, customLib) {
       const footerSource = `${config?.locale?.contentRoot}/footer`;
       if (block.key === 'header') {
         try {
-          const { default: init } = await import('../blocks/global-navigation/global-navigation.js');
+          const { default: init, closeGnavOptions } = await import('../blocks/global-navigation/global-navigation.js');
           await bootstrapBlock(init, {
             ...block,
             gnavSource,
@@ -154,8 +154,9 @@ export default async function loadBlock(configs, customLib) {
             noBorder: configBlock.noBorder,
             jarvis: configBlock.jarvis,
             isLocalNav: configBlock.isLocalNav,
-            mobileGnavV2: configBlock.mobileGnavV2 || 'off',
+            mobileGnavV2: configBlock.mobileGnavV2 || 'on',
           });
+          window.closeGnav = closeGnavOptions;
           configBlock.onReady?.();
         } catch (e) {
           configBlock.onError?.(e);

@@ -8,6 +8,12 @@ describe('Federated navigation utilities', () => {
     it('should return the federated content root', () => {
       expect(getFederatedContentRoot('https://adobe.com/federel/footer')).to.equal(baseHost);
     });
+
+    it('should allow for all graybox.adobe.com subdomains', () => {
+      expect(getFederatedContentRoot('https://graybox.adobe.com/federel/footer')).to.equal(baseHost);
+      expect(getFederatedContentRoot('https://mysubdomain.graybox.adobe.com/federel/footer')).to.equal(baseHost);
+      expect(getFederatedContentRoot('https://04-02-25-nab-gen-studio-mweb.graybox.adobe.com/federel/footer')).to.equal(baseHost);
+    });
   });
 
   describe('getFederatedUrl', () => {

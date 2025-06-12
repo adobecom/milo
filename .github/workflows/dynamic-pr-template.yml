@@ -127,11 +127,11 @@ jobs:
               console.log('New test URLs section:', testUrlsSection);
               
               // Check if Test URLs section exists
-              const hasTestUrlsSection = pullRequest.body.includes('## GNav Test URLs');
+              const hasTestUrlsSection = pullRequest.body.includes('<details><summary><strong>GNav Test URLs</strong></summary>');
               let newDescription;
               if (hasTestUrlsSection) {
                 // Replace existing Test URLs section
-                newDescription = pullRequest.body.replace(/## GNav Test URLs[\s\S]*?(?=(^##\s|\Z))/m, testUrlsSection);
+                newDescription = pullRequest.body.replace(/<details><summary><strong>GNav Test URLs<\/strong><\/summary>[\s\S]*?<\/details>/m, testUrlsSection);
               } else {
                 // Add Test URLs section at the end
                 newDescription = `${pullRequest.body}\n\n${testUrlsSection}`;

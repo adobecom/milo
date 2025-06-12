@@ -8,7 +8,7 @@ const { default: videoinit } = await import('../../../libs/blocks/video/video.js
 const { default: adobetv } = await import('../../../libs/blocks/adobetv/adobetv.js');
 const { default: init } = await import('../../../libs/blocks/how-to/how-to.js');
 
-const expectedTest1Script = '{"@context":"http://schema.org","@type":"HowTo","name":"How to compress a PDF online (with schema)","description":"Follow these easy steps to compress a large PDF file online:","publisher":{"@type":"Organization","name":"Adobe","logo":{"@type":"ImageObject","url":"https://www.adobe.com/content/dam/cc/icons/Adobe_Corporate_Horizontal_Red_HEX.svg"}},"step":[{"@type":"HowToStep","url":"http://localhost:2000/?wtr-session-id=3ttlurFnGTxR4QflqCL7t#how-to-compress-a-pdf-online-with-schema","name":"Step 1","itemListElement":[{"@type":"HowToDirection","text":"Select the PDF file you want to make smaller."}]},{"@type":"HowToStep","url":"http://localhost:2000/?wtr-session-id=3ttlurFnGTxR4QflqCL7t#how-to-compress-a-pdf-online-with-schema","name":"Step 2","image":"http://localhost:2000/mock.png","itemListElement":[{"@type":"HowToDirection","text":"After uploading, Acrobat will automatically reduce the PDF size."}]},{"@type":"HowToStep","url":"http://localhost:2000/?wtr-session-id=3ttlurFnGTxR4QflqCL7t#how-to-compress-a-pdf-online-with-schema","name":"Step 3","itemListElement":[{"@type":"HowToDirection","text":"Download your compressed PDF file or sign in to share it. Yay!"}]}],"@image":{"@type":"ImageObject","url":"http://localhost:2000/assets/img/compress-pdf-how-to-400x240.svg"}}';
+const expectedTest1Script = '{"@context":"http://schema.org","@type":"HowTo","name":"How to compress a PDF online (with schema)","description":"Follow these easy steps to compress a large PDF file online:","publisher":{"@type":"Organization","name":"Adobe","logo":{"@type":"ImageObject","url":"https://www.adobe.com/content/dam/cc/icons/Adobe_Corporate_Horizontal_Red_HEX.svg"}},"step":[{"@type":"HowToStep","url":"http://localhost:2000/","name":"Step 1","itemListElement":[{"@type":"HowToDirection","text":"Select the PDF file you want to make smaller."}]},{"@type":"HowToStep","url":"http://localhost:2000/","name":"Step 2","image":"http://localhost:2000/mock.png","itemListElement":[{"@type":"HowToDirection","text":"After uploading, Acrobat will automatically reduce the PDF size."}]},{"@type":"HowToStep","url":"http://localhost:2000/","name":"Step 3","itemListElement":[{"@type":"HowToDirection","text":"Download your compressed PDF file or sign in to share it. Yay!"}]}],"@image":{"@type":"ImageObject","url":"http://localhost:2000/assets/img/compress-pdf-how-to-400x240.svg"}}';
 
 describe('How To', () => {
   it('Renders as an ordered list', async () => {
@@ -25,8 +25,7 @@ describe('How To', () => {
     expect(howToList?.children.length).to.equal(3);
 
     script = document.querySelector('script[type="application/ld+json"]');
-    const wtrSessionRe = /wtr-session-id=.*?#/g;
-    expect(script.innerText.replace(wtrSessionRe, '')).to.equal(expectedTest1Script.replace(wtrSessionRe, ''));
+    expect(script.innerText).to.equal(expectedTest1Script);
     script.remove();
   });
 

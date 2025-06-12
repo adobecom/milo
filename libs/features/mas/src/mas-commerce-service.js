@@ -9,26 +9,25 @@ import { Price } from './price.js';
 import { getSettings } from './settings.js';
 import { Wcs } from './wcs.js';
 import { updateConfig as updateLanaConfig } from './lana.js';
+import { printMeasure } from './utils.js';
 
 export const TAG_NAME_SERVICE = 'mas-commerce-service';
 
-const MARK_START = 'mas:start';
-const MARK_READY = 'mas:ready';
-
-export const MEASURE_INIT_TIME = 'mas-commerce-service:initTime';
+const MARK_START = 'mas-commerce-service:start';
+const MEASURE_READY = 'mas-commerce-service:ready';
 
 /**
  * web component to provide commerce and fragment service to consumers.
  */
 export class MasCommerceService extends HTMLElement {
-    #initDuration;
+    #measure;
 
     lastLoggingTime = 0;
     get #config() {
         const env = this.getAttribute('env') ?? 'prod';
         const config = {
-            hostEnv: { name: env },
             commerce: { env },
+            hostEnv: { name: env },
             lana: {
                 tags: this.getAttribute('lana-tags'),
                 sampleRate: parseInt(
@@ -40,7 +39,7 @@ export class MasCommerceService extends HTMLElement {
             masIOUrl: this.getAttribute('mas-io-url'),
         };
         //root parameters
-        ['locale', 'country', 'language'].forEach((attribute) => {
+        ['locale', 'country', 'language', 'preview'].forEach((attribute) => {
             const value = this.getAttribute(attribute);
             if (value) {
                 config[attribute] = value;
@@ -143,12 +142,8 @@ export class MasCommerceService extends HTMLElement {
             cancelable: false,
             detail: this,
         });
-        performance.mark(MARK_READY);
-        this.#initDuration = performance.measure(
-            MEASURE_INIT_TIME,
-            MARK_START,
-            MARK_READY,
-        )?.duration;
+        performance.mark(MEASURE_READY);
+        this.#measure = performance.measure(MEASURE_READY, MARK_START);
         this.dispatchEvent(event);
         setTimeout(() => {
             this.logFailedRequests();
@@ -184,7 +179,7 @@ export class MasCommerceService extends HTMLElement {
 
     get duration() {
         return {
-            [MEASURE_INIT_TIME]: this.#initDuration,
+            'mas-commerce-service:measure': printMeasure(this.#measure),
         };
     }
 

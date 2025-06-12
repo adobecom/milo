@@ -10,11 +10,9 @@ getConfig().locale.contentRoot = '/test/blocks/media/mocks';
 document.head.innerHTML = '<link rel="stylesheet" href="../../../libs/blocks/media/media.css"><meta name="countdown-timer" content="2024-08-26 12:00:00 PST,2026-08-30 00:00:00 PST">';
 document.body.innerHTML = await readFile({ path: './mocks/body.html' });
 const { default: init } = await import('../../../libs/blocks/media/media.js');
-describe('media', () => {
+describe('media', async () => {
   const medias = document.querySelectorAll('.media');
-  medias.forEach((media) => {
-    init(media);
-  });
+  await Promise.all(medias.map((media) => init(media)));
   describe('default media medium', () => {
     it('has a heading-m', () => {
       const heading = medias[0].querySelector('.heading-m');

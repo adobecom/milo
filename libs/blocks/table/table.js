@@ -8,6 +8,7 @@ import { getGnavHeight } from '../global-navigation/utilities/utilities.js';
 const DESKTOP_SIZE = 900;
 const MOBILE_SIZE = 768;
 const tableHighlightLoadedEvent = new Event('milo:table:highlight:loaded');
+const tabChangeEvent = 'milo:tab:changed';
 let tableIndex = 0;
 let isExpandEventsAssigned = false;
 
@@ -39,8 +40,8 @@ function handleHeading(table, headingCols) {
     if (!elements.length) {
       col.innerHTML = `<p class="tracking-header">${col.innerHTML}</p>`;
     } else {
-      let textStartIndex = 0;
-      const iconTile = elements[0]?.querySelector('img');
+      let textStartIndex = col.querySelector('.highlight-text') ? 1 : 0;
+      const iconTile = elements[textStartIndex]?.querySelector('img');
       if (iconTile) {
         textStartIndex += 1;
         if (!(table.classList.contains('merch'))) iconTile.closest('p').classList.add('header-product-tile');
@@ -199,6 +200,7 @@ function handleHighlight(table) {
 
   if (isHighlightTable) {
     firstRow.classList.add('row-highlight');
+    firstRow.setAttribute('aria-hidden', 'true');
     secondRow.classList.add('row-heading');
     secondRowCols.forEach((col) => col.classList.add('col-heading'));
     headingCols = secondRowCols;
@@ -207,6 +209,8 @@ function handleHighlight(table) {
       col.classList.add('col-highlight');
       if (col.innerText) {
         headingCols[i]?.classList.add('no-rounded');
+        const highlightText = createTag('div', { class: 'highlight-text' }, col.innerText);
+        headingCols[i]?.insertBefore(highlightText, headingCols[i].firstChild);
       } else {
         col.classList.add('hidden');
       }
@@ -311,6 +315,11 @@ function handleSection(sectionParams) {
       handleTitleText(sectionHeadTitle);
       sectionHeadTitle.classList.add('section-head-title');
       sectionHeadTitle.setAttribute('role', 'rowheader');
+      const sectionHeadText = sectionHeadTitle.querySelector('.table-title-text');
+      if (sectionHeadText) {
+        sectionHeadText.setAttribute('role', 'heading');
+        sectionHeadText.setAttribute('aria-level', '4');
+      }
     }
 
     if (isCollapseTable) {
@@ -375,6 +384,14 @@ function handleSection(sectionParams) {
       sectionRowTitle.setAttribute('scope', 'row');
     }
   }
+
+  rowCols.forEach((col) => {
+    if (col.querySelector(':scope > :is(strong, em, del, code, sub, sup)')
+      && col.childNodes.length > 1 && !col.querySelector('picture')) {
+      col.replaceChildren(createTag('p', {}, [...col.childNodes]));
+    }
+  });
+
   return expandSection;
 }
 
@@ -639,13 +656,14 @@ export default function init(el) {
     cols.forEach((col, cdx) => {
       col.dataset.colIndex = cdx + 1;
       col.classList.add('col', `col-${cdx + 1}`);
-      col.setAttribute('role', 'cell');
+      col.setAttribute('role', col.matches('.section-head-title') ? 'columnheader' : 'cell');
     });
 
     expandSection = handleSection(sectionParams);
   });
 
   handleHighlight(el);
+  handleStickyHeader(el);
   if (isMerch) formatMerchTable(el);
 
   let isDecorated = false;
@@ -669,7 +687,6 @@ export default function init(el) {
       setTooltipPosition(el);
     };
     handleResize();
-    handleStickyHeader(el);
 
     let deviceBySize = defineDeviceByScreenSize();
     window.addEventListener('resize', () => {
@@ -697,6 +714,7 @@ export default function init(el) {
     }
   });
 
+  window.addEventListener(tabChangeEvent, () => handleStickyHeader(el));
   observer.observe(el);
 
   tableIndex++;

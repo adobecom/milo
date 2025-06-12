@@ -114,9 +114,3 @@ npm run nala help
 
 #### 3. Nala Documentation
 For detailed guides and documentation on Nala, please visit the [Nala GitHub Wiki](https://github.com/adobecom/milo/wiki/Nala#nala-introduction).
-
-
-  
-
-
-

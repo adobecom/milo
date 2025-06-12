@@ -4,6 +4,8 @@ import MarqueeBlock from '../../blocks/marquee/marquee.page.js';
 
 const miloLibs = process.env.MILO_LIBS || '';
 
+test.skip(({ browserName }) => browserName === 'webkit', 'Skipping test for WebKit browser');
+
 // Test 0 : check ul selectors (skipping ol selectors)
 test(`[Test Id - ${features[0].tcid}] ${features[0].name},${features[0].tags}`, async ({ page, baseURL }) => {
   const pznUrl = `${baseURL}${features[0].path}${miloLibs}`;

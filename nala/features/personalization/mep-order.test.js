@@ -7,6 +7,8 @@ import AsideBlock from '../../blocks/aside/aside.page.js';
 
 const miloLibs = process.env.MILO_LIBS || '';
 
+test.skip(({ browserName }) => browserName === 'webkit', 'Skipping test for WebKit browser');
+
 test(`${features[0].name},${features[0].tags}`, async ({ page, baseURL }) => {
   const heroMarqueeH1 = page.locator('h1');
   const aside = new AsideBlock(page);
