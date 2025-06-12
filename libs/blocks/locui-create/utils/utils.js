@@ -166,3 +166,13 @@ export function validateOrigin(urlStr) {
     return false;
   }
 }
+
+export const getLocaleFromKey = (localeKey) => (localeKey.includes('|') ? localeKey.split('|')[1] : localeKey);
+
+export const parseLocaleKey = (localeKey) =>  localeKey.includes('|') ? localeKey.split('|') : [null, localeKey];
+
+// Returns true if the language has a live copy for the locale
+export const hasLiveCopyForLocale = (lang, locale) => lang.livecopies.split(',').includes(locale);
+
+// Returns true if the locale matches the language code
+export const isLanguageCodeMatching = (localeKey, lang) => (!localeKey.includes('|') || lang.languagecode === localeKey.split('|')[0]);

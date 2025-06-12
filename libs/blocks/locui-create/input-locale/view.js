@@ -24,6 +24,7 @@ export default function InputLocales() {
     apiError,
     setApiError,
     getLocaleFromKey,
+    parseLocaleKey
   } = useInputLocale();
 
   const RenderRegion = () => {
@@ -90,7 +91,7 @@ export default function InputLocales() {
 
   const RenderLocales = () => {
     const groupedLocales = selectedLocale.reduce((acc, localeKey) => {
-      const [langCode, locale] = localeKey.includes('|') ? localeKey.split('|') : [null, localeKey];
+      const [langCode, locale] = parseLocaleKey(localeKey);
       const language = languagesList.find((lang) => (langCode
         ? lang.languagecode === langCode
         : lang.livecopies.split(',').includes(locale)));
