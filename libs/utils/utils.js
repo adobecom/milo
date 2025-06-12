@@ -1461,6 +1461,7 @@ async function loadPostLCP(config) {
     header.classList.add('gnav-hide');
     performance.mark('Gnav-Start');
     loadBlock(header);
+    header.classList.remove('gnav-hide');
   }
   loadTemplate();
   const { default: loadFonts } = await import('./fonts.js');
