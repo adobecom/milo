@@ -10,9 +10,7 @@ import {
   getFederatedContentRoot,
   getFederatedUrl,
   getFedsPlaceholderConfig,
-  shouldBlockFreeTrialLinks,
 } from '../../../utils/utils.js';
-import { processTrackingLabels } from '../../../martech/attributes.js';
 import { replaceKey, replaceText } from '../../../features/placeholders.js';
 import { PERSONALIZATION_TAGS } from '../../../features/personalization/personalization.js';
 
@@ -167,15 +165,6 @@ export const federatePictureSources = ({ section, forceFederate } = {}) => {
     });
 };
 
-export function getAnalyticsValue(str, index) {
-  if (typeof str !== 'string' || !str.length) return str;
-
-  let analyticsValue = processTrackingLabels(str, getConfig(), 30);
-  analyticsValue = typeof index === 'number' ? `${analyticsValue}-${index}` : analyticsValue;
-
-  return analyticsValue;
-}
-
 export function getExperienceName() {
   const experiencePath = getMetadata('gnav-source');
   const explicitExperience = experiencePath?.split('#')[0]?.split('/').pop();
@@ -245,24 +234,6 @@ export async function loadDecorateMenu() {
 
   resolve(menu.default);
   return cachedDecorateMenu;
-}
-
-export function decorateCta({ elem, type = 'primaryCta', index } = {}) {
-  if (shouldBlockFreeTrialLinks({
-    button: elem,
-    localePrefix: getConfig()?.locale?.prefix,
-    parent: elem.parentElement,
-  })) return null;
-  const modifier = type === 'secondaryCta' ? 'secondary' : 'primary';
-
-  const clone = elem.cloneNode(true);
-  clone.className = `feds-cta feds-cta--${modifier}`;
-  clone.setAttribute('daa-ll', getAnalyticsValue(clone.textContent, index));
-
-  return toFragment`
-    <div class="feds-cta-wrapper">
-      ${clone}
-    </div>`;
 }
 
 let curtainElem;
@@ -753,6 +724,22 @@ export function getGnavHeight() {
   }
 
   return topHeight;
+}
+
+const SIGNED_OUT_ICONS = ['appswitcher', 'help'];
+export function getUnavWidthCSS(unavComponents, signedOut = false) {
+  const iconWidth = 32; // px
+  const flexGap = 0.25; // rem
+  const sectionDivider = getConfig()?.unav?.showSectionDivider;
+  const cartEnabled = /uc_carts=/.test(document.cookie);
+  const components = (!cartEnabled ? unavComponents?.filter((x) => x !== 'cart') : unavComponents) ?? [];
+  const n = components.length ?? 3;
+  if (signedOut) {
+    const l = components.filter((c) => SIGNED_OUT_ICONS.includes(c)).length;
+    const signInButton = 92; // px
+    return `calc(${signInButton}px + ${l * iconWidth}px + ${l * flexGap}rem${sectionDivider ? ` + 2px + ${flexGap}rem` : ''})`;
+  }
+  return `calc(${n * iconWidth}px + ${(n - 1) * flexGap}rem${sectionDivider ? ` + 2px + ${flexGap}rem` : ''})`;
 }
 
 /**
