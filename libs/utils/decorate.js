@@ -511,7 +511,7 @@ export function decorateAnchorVideo({ src = '', anchorTag }) {
     }
   }
 
-  videoEl.addEventListener('error', (error) => {
+  parentElement.addEventListener('error', (error) => {
     console.log("error", error);
   });
   applyHoverPlay(videoEl);
