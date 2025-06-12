@@ -545,7 +545,7 @@ function getSelectedElements(sel, rootEl, forceRootEl, action) {
   } catch (e) {
     /* eslint-disable-next-line no-console */
     log('Invalid selector: ', selector);
-    return null;
+    return {};
   }
   if (modifiers.includes(FLAGS.all) || !els.length) return { els, modifiers, attribute };
   els = [els[0]];
@@ -911,6 +911,15 @@ async function setMepCountry(config) {
   }
 }
 
+async function setMepLob(config) {
+  try {
+    const lobPromise = await config.mep.userLOBPromise;
+    if (lobPromise) config.mep.meplob = lobPromise;
+  } catch (e) {
+    log('MEP Error: Unable to get user line of business');
+  }
+}
+
 async function getPersonalizationVariant(
   manifestPath,
   variantNames = [],
@@ -942,6 +951,7 @@ async function getPersonalizationVariant(
     if (name.toLowerCase().startsWith('previouspage-')) return checkForPreviousPageMatch(name);
     if (hasCountryMatch(name, config)) return true;
     if (userEntitlements?.includes(name)) return true;
+    if (config.mep?.meplob && config.mep?.meplob === name.split('lob-')[1]?.toLowerCase()) return true;
     return PERSONALIZATION_KEYS.includes(name) && PERSONALIZATION_TAGS[name]();
   };
 
@@ -957,9 +967,8 @@ async function getPersonalizationVariant(
     return !processedList.includes(false);
   };
 
-  if (config.mep?.geoLocation) {
-    await setMepCountry(config);
-  }
+  if (config.mep?.geoLocation) await setMepCountry(config);
+  if (config.mep?.meplob === true) await setMepLob(config);
 
   const matchingVariant = variantNames.find((variant) => variantInfo[variant].some(matchVariant));
   return matchingVariant;
@@ -1444,7 +1453,7 @@ export async function init(enablements = {}) {
   const {
     mepParam, mepHighlight, mepButton, pzn, pznroc, promo, enablePersV2,
     target, ajo, countryIPPromise, mepgeolocation, targetInteractionPromise, calculatedTimeout,
-    postLCP,
+    postLCP, meplob, userLOBPromise,
   } = enablements;
   const config = getConfig();
   if (postLCP) {
@@ -1464,8 +1473,9 @@ export async function init(enablements = {}) {
       countryIPPromise,
       geoLocation: mepgeolocation,
       targetInteractionPromise,
+      meplob,
+      userLOBPromise,
     };
-
     manifests = manifests.concat(await combineMepSources(pzn, pznroc, promo, mepParam));
     manifests?.forEach((manifest) => {
       if (manifest.disabled) return;
