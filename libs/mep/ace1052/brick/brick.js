@@ -79,7 +79,8 @@ function decorateBrickIconStack(el) {
   decorateIconStack(el);
   const icnStk = el.querySelector('.icon-stack-area');
   if (!icnStk) return;
-  icnStk.classList.add('body-xs');
+  // #mweb specific change
+  icnStk.classList.add('body-s');
   const liELs = icnStk.querySelectorAll('li');
   [...liELs].forEach((liEl) => {
     const aTxt = liEl.querySelector('a')?.textContent?.trim();
