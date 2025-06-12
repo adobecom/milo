@@ -671,7 +671,6 @@ export default async function init(header) {
     header.dispatchEvent(initEvent);
     header.setAttribute('daa-im', 'true');
     header.setAttribute('daa-lh', `gnav${name}`);
-    header.classList.remove('gnav-hide');
     return gnav;
   } catch (e) {
     // eslint-disable-next-line no-console
