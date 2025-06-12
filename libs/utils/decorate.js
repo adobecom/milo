@@ -510,6 +510,10 @@ export function decorateAnchorVideo({ src = '', anchorTag }) {
       decoratePausePlayWrapper(videoEl, attrs);
     }
   }
+
+  videoEl.addEventListener('error', (error) => {
+    console.log("error", error);
+  });
   applyHoverPlay(videoEl);
   applyInViewPortPlay(videoEl);
   anchorTag.remove();
