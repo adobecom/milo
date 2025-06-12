@@ -78,13 +78,16 @@ function getSidenav(collection) {
       const value = label.toLowerCase();
       const item = createTag('sp-sidenav-item', { label, value });
       if (node.icon) {
-        createTag('img', { src: node.icon, slot: 'icon', 'data-type': 'dark', style: 'height: fit-content;' }, { parent: item });
+        createTag('img', { src: node.icon, slot: 'icon', style: 'height: fit-content;' }, null, { parent: item });
       }
-      if (node.iconLight) {
-        createTag('img', { src: node.iconLight, 'data-type': 'light', style: 'height: fit-content;' }, { parent: item });
-      }
-      if (node.navigationLabel && node.label) {
-        createTag('var', { 'data-display': node.label }, { parent: item });
+      if (node.iconLight || (node.navigationLabel && node.label)) {
+        const attributes = {};
+        if (node.navigationLabel && node.label) attributes['data-selected-text'] = node.label;
+        if (node.iconLight) {
+          attributes['data-light'] = node.iconLight;
+          attributes['data-dark'] = node.icon;
+        }
+        createTag('var', attributes, null, { parent: item });
       }
       parent.append(item);
       if (node.collections) {
