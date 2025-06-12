@@ -636,7 +636,7 @@ export class MerchCard extends LitElement {
           composed: true
         }));
       }
-      if (this.addonCheckbox && this.addonCheckbox?.checked !== isAddonIncluded) {
+      if (this.addonCheckbox && this.addonCheckbox.checked !== isAddonIncluded) {
         this.toggleStockOffer({ target: this.addonCheckbox });
         const checkboxEvent = new Event('change', {
           bubbles: true,
