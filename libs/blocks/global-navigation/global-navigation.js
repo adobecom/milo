@@ -105,6 +105,7 @@ const {
 } = utilities;
 
 const SIGNIN_CONTEXT = getConfig()?.signInContext;
+const APP_SWITCHER_ZINDEX = 10000001;
 
 function getHelpChildren() {
   const { unav } = getConfig();
@@ -952,7 +953,7 @@ class Gnav {
     const hasAppSwitcher = this.universalNavComponents.includes('appswitcher');
     const updatePromoZIndex = () => {
       const isOpen = container.querySelector('.unav-comp-app-switcher-open');
-      fedsPromo.style.zIndex = isOpen ? 0 : 11;
+      document.querySelector('header').style.zIndex = isOpen ? APP_SWITCHER_ZINDEX : 10;
     };
     // Ensure promo appears behind appswitcher on mobile
     if (fedsPromo && hasAppSwitcher && !isDesktop.matches) {
