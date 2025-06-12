@@ -952,7 +952,6 @@ class Gnav {
     this.decorateAppPrompt({ getAnchorState: () => window.UniversalNav.getComponent?.('app-switcher') });
     isDesktop.addEventListener('change', () => {
       window.UniversalNav.reload(getConfiguration());
-      if (fedsPromo) updatePromoZIndex();
     });
   };
 
