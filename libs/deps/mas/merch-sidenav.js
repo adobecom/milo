@@ -84,6 +84,7 @@ var V=Object.defineProperty;var S=o=>{throw TypeError(o)};var H=(o,e,t)=>e in o?
                 z-index: 2;
             }
 
+            :host h2 {
               color: var(--spectrum-global-color-gray-900);
             }
 
