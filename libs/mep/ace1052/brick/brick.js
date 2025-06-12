@@ -80,10 +80,7 @@ function decorateBrickIconStack(el) {
   const icnStk = el.querySelector('.icon-stack-area');
   if (!icnStk) return;
   // #mweb specific change
-  const bodyClass = Array.from(el.classList).find((cls) => cls.includes('-body')) || 'body-xs';
-  const reversedClass = bodyClass.includes('-body') ? bodyClass.split('-').reverse().join('-') : bodyClass;
-  icnStk.classList.remove(...Array.from(icnStk.classList).filter((cls) => cls.startsWith('body-')));
-  icnStk.classList.add(reversedClass);
+  icnStk.classList.add('body-s');
   const liELs = icnStk.querySelectorAll('li');
   [...liELs].forEach((liEl) => {
     const aTxt = liEl.querySelector('a')?.textContent?.trim();
