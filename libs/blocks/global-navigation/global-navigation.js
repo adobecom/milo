@@ -105,7 +105,6 @@ const {
 } = utilities;
 
 const SIGNIN_CONTEXT = getConfig()?.signInContext;
-const APP_SWITCHER_ZINDEX = 10000001;
 
 function getHelpChildren() {
   const { unav } = getConfig();
@@ -948,20 +947,6 @@ class Gnav {
     await window.UniversalNav(CONFIG.universalNav.universalNavConfig);
     // In case we get it wrong
     if (!signedOut) this.blocks.universalNav?.style.removeProperty('min-width');
-    const fedsPromo = document.querySelector('.feds-promo-aside-wrapper');
-    const container = document.querySelector('.feds-utilities');
-    const hasAppSwitcher = this.universalNavComponents.includes('appswitcher');
-    const updatePromoZIndex = () => {
-      const isAppSwitcherOpen = container.querySelector('.unav-comp-app-switcher-open') !== null;
-      document.querySelector('header').style.zIndex = isAppSwitcherOpen ? APP_SWITCHER_ZINDEX : '10';
-      isAppSwitcherOpen ? disableMobileScroll() : enableMobileScroll();
-    };
-    // Ensure promo appears behind appswitcher on mobile
-    if (fedsPromo && hasAppSwitcher && !isDesktop.matches) {
-      new MutationObserver(updatePromoZIndex)
-        .observe(container, { childList: true, subtree: true, attributes: true, attributeFilter: ['class'] });
-      updatePromoZIndex();
-    }
     performance.mark('Unav-End');
     logPerformance('Unav-Time', 'Unav-Start', 'Unav-End');
     this.decorateAppPrompt({ getAnchorState: () => window.UniversalNav.getComponent?.('app-switcher') });
