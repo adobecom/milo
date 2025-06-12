@@ -1,4 +1,5 @@
 :root {
+  --base-z-index: 100;
   --gb-container-bg: white;
   --gb-outline-color: #1473E6;
   --gb-container-btn-bg: #505050;
@@ -17,17 +18,34 @@
   position: relative;
 }
 
+.gb-modal-curtain::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: var(--gb-modal-bg);
+  z-index: calc(var(--base-z-index) + 2);
+
+}
+
 .gb-graybox-body:not(.gb-no-border)::before {
   content: '';
-  position: absolute;
-  top: calc(50% + 8px);
+  position: fixed;
+  top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: calc(100% - 15.5px);
-  height: 100%;
+  width: calc(100% - 15px);
+  height: calc(100vh - 16px);
   border: var(--gb-page-outline-border);
-  z-index: calc(var(--above-all) + 1);
+  z-index: calc(var(--base-z-index) + 1);
   pointer-events: none;
+}
+
+.graybox-container:not(.open) .gb-toggle {
+  border-top-left-radius: 5px;
+  border-bottom-left-radius: 5px;
 }
 
 .gb-graybox-body.gb-tablet-preview:not(.gb-no-border)::before,
@@ -49,7 +67,7 @@
   height: 100%;
   position: absolute;
   width: 100%;
-  z-index: var(--above-all);
+  z-index: var(--base-z-index);
   left: 0;
   top: 0;
 }
@@ -68,7 +86,7 @@
   position: fixed;
   top: 0;
   width: 100%;
-  z-index: calc(var(--above-all) - 1);
+  z-index: calc(var(--base-z-index) - 1);
 }
 
 .gb-no-change::before {
@@ -81,20 +99,20 @@
   position: absolute;
   top: 0;
   width: 100%;
-  z-index: calc(var(--above-all) - 1);
+  z-index: calc(var(--base-z-index) - 1);
 }
 
 /* The elements that should appear above the overlay */
 .gb-graybox-body .gb-changed {
   position: relative;
-  z-index: calc(var(--above-all) - 1);
+  z-index: calc(var(--base-z-index) - 1);
 }
 
 .graybox-container {
   position: fixed;
   right: 0;
   top: 15%;
-  z-index: calc(var(--above-all) + 2);
+  z-index: calc(var(--base-z-index) + 50);
 }
 
 .graybox-container .gb-toggle {
@@ -117,28 +135,31 @@
   height: 8px;
   margin-left: 8px;
   scale: 85%;
-  transform: rotate(140deg) scaleX(-1);
+  transform: rotate(140deg) scaleX(-1) translate3d(0, 0, 0);
+  transform-style: preserve-3d;
   transition: transform 0.2s ease-in-out, margin-left 0.2s ease-in-out;
   width: 8px;
+  will-change: transform;
 }
 
 .graybox-container.open .gb-toggle::before {
   margin-left: 3px;
-  transform: rotate(225deg) scaleX(1);
+  transform: rotate(225deg) scaleX(1) translate3d(0, 0, 0);
 }
 
 .graybox-container .graybox-menu {
   background-color: var(--gb-container-bg);
   border-radius: 3px;
   border-top-right-radius: 0;
-  border: 0;
+  border: 4px solid var(--gb-outline-color);
   box-sizing: border-box;
   display: grid;
   grid-template-rows: 1fr 66px;
   overflow: hidden;
   position: absolute;
-  right: 39px;
-  width: 0;
+  right: -320px;
+  width: 320px;
+  transition: right 0.4s ease;
 }
 
 .graybox-container .graybox-menu.hide-devices {
@@ -147,9 +168,9 @@
 }
 
 .graybox-container.open .graybox-menu {
-  border: var(--gb-container-border);
   min-height: 60px;
-  min-width: 320px;
+  right: 39px;
+  width: 320px;
 }
 
 .graybox-text {
@@ -188,13 +209,18 @@
   cursor: default;
 }
 
+.graybox-devices > a.gb-selected-button {
+  background: gray;
+  pointer-events: none;
+}
+
 .graybox-devices > a:hover {
   background-color: var(--gb-container-btn-bg);
   text-decoration: none;
 }
 
 .dialog-modal.graybox-modal {
-  z-index: calc(var(--above-all) + 1);
+  z-index: calc(var(--base-z-index) + 1);
 }
 
 .dialog-modal.graybox-modal.mobile > div {
@@ -264,7 +290,7 @@
 
 .modal-curtain.graybox-curtain.is-open {
   background: var(--gb-modal-bg);
-  z-index: var(--above-all);
+  z-index: var(--base-z-index);
 }
 
 @media (max-height: 910px), (max-width: 420px) {
@@ -277,7 +303,7 @@
     background-color: #f0f0f0;
     color: #000;
     font-size: 16px;
-    z-index: var(--above-all);
+    z-index: var(--base-z-index);
     border-radius: 5px;
   }
 }
@@ -292,7 +318,7 @@
     background-color: #f0f0f0;
     color: #000;
     font-size: 16px;
-    z-index: var(--above-all);
+    z-index: var(--base-z-index);
     border-radius: 5px;
   }
 }

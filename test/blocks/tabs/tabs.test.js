@@ -170,5 +170,23 @@ describe('tabs', () => {
       assignLinkedTabs(linkedTabsList, metaSettings, id, val);
       expect(linkedTabsList).to.deep.equal({ 'tab-1-demo': '/testpage-1' });
     });
+
+    it('tab buttons should have the attribute daa-state="true" and a daa-ll attribute', () => {
+      const tablist = allTabs[0].querySelector('div[role="tablist"]');
+      const buttonList = tablist.querySelectorAll('button');
+      buttonList.forEach((button) => {
+        expect(button.getAttribute('daa-state')).to.equal('true');
+        expect(button.getAttribute('daa-ll')).to.exist;
+      });
+      expect(document.querySelector('#tab-2-tab-b').getAttribute('daa-ll')).to.equal('tab-2-tab-b');
+    });
+  });
+
+  describe('Tabs with custom deeplink', () => {
+    it('sets deeplink attribute to tab buttons', () => {
+      const tabs = document.querySelector('#tabs-demo');
+      expect(tabs.querySelector('button[id="tab-demo-1"]')?.dataset.deeplink).to.equal('custom-deeplink-1');
+      expect(tabs.querySelector('button[id="tab-demo-2"]')?.dataset.deeplink).to.equal('custom-deeplink-2');
+    });
   });
 });

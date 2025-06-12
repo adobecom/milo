@@ -1,15 +1,18 @@
 import {
-  createTag, getConfig, loadArea, loadScript, loadStyle, localizeLink, SLD,
+  createTag, getConfig, loadArea, loadScript, loadStyle, localizeLink, SLD, getMetadata,
+  loadLink,
 } from '../../utils/utils.js';
 import { replaceKey } from '../../features/placeholders.js';
 
 export const CHECKOUT_LINK_CONFIG_PATH = '/commerce/checkout-link.json'; // relative to libs.
+export const CHECKOUT_LINK_SANDBOX_CONFIG_PATH = '/commerce/checkout-link-sandbox.json'; // relative to libs.
 
 export const PRICE_TEMPLATE_DISCOUNT = 'discount';
 export const PRICE_TEMPLATE_OPTICAL = 'optical';
 export const PRICE_TEMPLATE_REGULAR = 'price';
 export const PRICE_TEMPLATE_STRIKETHROUGH = 'strikethrough';
 export const PRICE_TEMPLATE_ANNUAL = 'annual';
+export const PRICE_TEMPLATE_LEGAL = 'legal';
 
 const PRICE_TEMPLATE_MAPPING = new Map([
   ['priceDiscount', PRICE_TEMPLATE_DISCOUNT],
@@ -20,6 +23,7 @@ const PRICE_TEMPLATE_MAPPING = new Map([
   [PRICE_TEMPLATE_STRIKETHROUGH, PRICE_TEMPLATE_STRIKETHROUGH],
   ['priceAnnual', PRICE_TEMPLATE_ANNUAL],
   [PRICE_TEMPLATE_ANNUAL, PRICE_TEMPLATE_ANNUAL],
+  [PRICE_TEMPLATE_LEGAL, PRICE_TEMPLATE_LEGAL],
 ]);
 
 export const PLACEHOLDER_KEY_DOWNLOAD = 'download';
@@ -44,6 +48,34 @@ export const CC_SINGLE_APPS = [
   ['RUSH'],
   ['XD'],
 ];
+
+const LanguageMap = {
+  en: 'US',
+  'en-gb': 'GB',
+  'es-mx': 'MX',
+  'fr-ca': 'CA',
+  da: 'DK',
+  et: 'EE',
+  ar: 'DZ',
+  el: 'GR',
+  iw: 'IL',
+  he: 'IL',
+  id: 'ID',
+  ms: 'MY',
+  nb: 'NO',
+  sl: 'SI',
+  sv: 'SE',
+  cs: 'CZ',
+  uk: 'UA',
+  hi: 'IN',
+  'zh-hans': 'CN',
+  'zh-hant': 'TW',
+  ja: 'JP',
+  ko: 'KR',
+  fil: 'PH',
+  th: 'TH',
+  vi: 'VN',
+};
 
 const GeoMap = {
   ar: 'AR_es',
@@ -104,7 +136,7 @@ const GeoMap = {
   in_en: 'IN_en',
   in_hi: 'IN_hi',
   id_en: 'ID_en',
-  id_id: 'ID_in',
+  id_id: 'ID_id',
   nz: 'NZ_en',
   sa_ar: 'SA_ar',
   sa_en: 'SA_en',
@@ -120,12 +152,38 @@ const GeoMap = {
   ec: 'EC_es',
   pr: 'US_es', // not a typo, should be US
   gt: 'GT_es',
-  cis_en: 'AZ_en',
-  cis_ru: 'AZ_ru',
+  cis_en: 'TM_en',
+  cis_ru: 'TM_ru',
   sea: 'SG_en',
   th_en: 'TH_en',
   th_th: 'TH_th',
 };
+
+/**
+ * Used when 3in1 modals are configured with ms=e or cs=t extra paramter, but 3in1 is disabled.
+ * Dexter modals should deeplink to plan=edu or plan=team tabs.
+ * @type {Record<string, string>}
+ */
+const TAB_DEEPLINK_MAPPING = {
+  ms: 'plan',
+  cs: 'plan',
+  e: 'edu',
+  t: 'team',
+};
+
+const LANG_STORE_PREFIX = 'langstore/';
+
+function getDefaultLangstoreCountry(language) {
+  let country = LanguageMap[language];
+  if (!country && GeoMap[language]) {
+    country = language; // es, fr, pt, de
+  }
+  if (!country && language.includes('-')) {
+    [country] = language.split('-'); // variations like es-419, pt-PT
+  }
+
+  return country || 'US';
+}
 
 export function getMiloLocaleSettings(locale) {
   const localePrefix = locale?.prefix || 'US_en';
@@ -133,6 +191,12 @@ export function getMiloLocaleSettings(locale) {
   let [country = 'US', language = 'en'] = (
     GeoMap[geo] ?? geo
   ).split('_', 2);
+
+  if (geo.startsWith(LANG_STORE_PREFIX) || window.location.pathname.startsWith(`/${LANG_STORE_PREFIX}`)) {
+    const localeLang = geo.replace(LANG_STORE_PREFIX, '').toLowerCase();
+    country = getDefaultLangstoreCountry(localeLang);
+    language = localeLang;
+  }
 
   country = country.toUpperCase();
   language = language.toLowerCase();
@@ -164,6 +228,7 @@ export const CHECKOUT_ALLOWED_KEYS = [
   'lo',
   'mal',
   'ms',
+  'cs',
   'mv',
   'mv2',
   'nglwfdata',
@@ -249,6 +314,14 @@ export function getMasBase(hostname, maslibs) {
   return baseUrl;
 }
 
+function getCommercePreloadUrl() {
+  const { env } = getConfig();
+  if (env === 'prod') {
+    return 'https://commerce.adobe.com/store/iframe/preload.js';
+  }
+  return 'https://commerce-stg.adobe.com/store/iframe/preload.js';
+}
+
 export async function polyfills() {
   if (polyfills.promise) return polyfills.promise;
   let isSupported = false;
@@ -280,9 +353,13 @@ export async function fetchEntitlements() {
   return fetchEntitlements.promise;
 }
 
-export async function fetchCheckoutLinkConfigs(base = '') {
+export async function fetchCheckoutLinkConfigs(base = '', env = '') {
+  const params = new URLSearchParams(window.location.search);
+  const path = params.get('checkout-link-sandbox') === 'on' && env !== 'prod'
+    ? `${base}${CHECKOUT_LINK_SANDBOX_CONFIG_PATH}`
+    : `${base}${CHECKOUT_LINK_CONFIG_PATH}`;
   fetchCheckoutLinkConfigs.promise = fetchCheckoutLinkConfigs.promise
-    ?? fetch(`${base}${CHECKOUT_LINK_CONFIG_PATH}`).catch((e) => {
+    ?? fetch(path).catch((e) => {
       log?.error('Failed to fetch checkout link configs', e);
     }).then((mappings) => {
       if (!mappings?.ok) return { data: [] };
@@ -293,11 +370,12 @@ export async function fetchCheckoutLinkConfigs(base = '') {
 
 export async function getCheckoutLinkConfig(productFamily, productCode, paCode) {
   let { base } = getConfig();
+  const { env } = getConfig();
   if (/\.page$/.test(document.location.origin)) {
     /* c8 ignore next 2 */
     base = base.replace('.live', '.page');
   }
-  const checkoutLinkConfigs = await fetchCheckoutLinkConfigs(base);
+  const checkoutLinkConfigs = await fetchCheckoutLinkConfigs(base, env);
   if (!checkoutLinkConfigs.data.length) return undefined;
   const { locale: { region } } = getConfig();
 
@@ -423,46 +501,56 @@ async function openFragmentModal(path, getModal) {
   return modal;
 }
 
-export function appendTabName(url) {
+function appendTabName(url, el) {
+  if (el?.is3in1Modal) {
+    if (el.marketSegment === 'EDU') {
+      url.searchParams.set('plan', 'edu');
+    } else if (el.customerSegment === 'TEAM') {
+      url.searchParams.set('plan', 'team');
+    }
+  }
   const metaPreselectPlan = document.querySelector('meta[name="preselect-plan"]');
   if (!metaPreselectPlan?.content) return url;
-  const isRelativePath = url.startsWith('/');
-  let urlWithPlan;
-  try {
-    urlWithPlan = isRelativePath ? new URL(`${window.location.origin}${url}`) : new URL(url);
-  } catch (err) {
-    window.lana?.log(`Invalid URL ${url} : ${err}`);
-    return url;
-  }
-  urlWithPlan.searchParams.set('plan', metaPreselectPlan.content);
-  return isRelativePath ? urlWithPlan.href.replace(window.location.origin, '') : urlWithPlan.href;
+  url.searchParams.set('plan', metaPreselectPlan.content);
+  return url;
 }
 
-export function appendExtraOptions(url, extraOptions) {
+function appendExtraOptions(url, extraOptions) {
   if (!extraOptions) return url;
   const extraOptionsObj = JSON.parse(extraOptions);
-  let urlWithExtraOptions;
+  Object.keys(extraOptionsObj).forEach((key) => {
+    if (CHECKOUT_ALLOWED_KEYS.includes(key)) {
+      const value = extraOptionsObj[key];
+      url.searchParams.set(
+        TAB_DEEPLINK_MAPPING[key] ?? key,
+        TAB_DEEPLINK_MAPPING[value] ?? value,
+      );
+    }
+  });
+  return url;
+}
+
+// TODO this should migrate to checkout.js buildCheckoutURL
+export function appendDexterParameters(url, extraOptions, el) {
+  const isRelativePath = url.startsWith('/');
+  let absoluteUrl;
   try {
-    urlWithExtraOptions = new URL(url);
+    absoluteUrl = new URL(isRelativePath ? `${window.location.origin}${url}` : url);
   } catch (err) {
     window.lana?.log(`Invalid URL ${url} : ${err}`);
     return url;
   }
-  Object.keys(extraOptionsObj).forEach((key) => {
-    if (CHECKOUT_ALLOWED_KEYS.includes(key)) {
-      urlWithExtraOptions.searchParams.set(key, extraOptionsObj[key]);
-    }
-  });
-  return urlWithExtraOptions.href;
+  absoluteUrl = appendExtraOptions(absoluteUrl, extraOptions);
+  absoluteUrl = appendTabName(absoluteUrl, el);
+  return isRelativePath ? absoluteUrl.href.replace(window.location.origin, '') : absoluteUrl.href;
 }
 
-async function openExternalModal(url, getModal, extraOptions) {
-  await loadStyle(`${getConfig().base}/blocks/iframe/iframe.css`);
+async function openExternalModal(url, getModal, extraOptions, el) {
+  loadStyle(`${getConfig().base}/blocks/iframe/iframe.css`);
   const root = createTag('div', { class: 'milo-iframe' });
-  const urlWithTabName = appendTabName(url);
-  const urlWithExtraOptions = appendExtraOptions(urlWithTabName, extraOptions);
+  const absoluteUrl = appendDexterParameters(url, extraOptions, el);
   createTag('iframe', {
-    src: urlWithExtraOptions,
+    src: absoluteUrl,
     frameborder: '0',
     marginwidth: '0',
     marginheight: '0',
@@ -493,19 +581,20 @@ export async function openModal(e, url, offerType, hash, extraOptions, el) {
       window.history.pushState({}, document.title, prevHash !== '' ? `#${prevHash}` : `${window.location.pathname}${window.location.search}`);
     }, { once: true });
   }
-  if (isInternalModal(url)) {
-    const fragmentPath = url.split(/(hlx|aem).(page|live)/).pop();
-    modal = await openFragmentModal(fragmentPath, getModal);
-  } else if (el?.opens3in1Modal) {
+
+  if (el?.isOpen3in1Modal) {
     const { default: openThreeInOneModal, handle3in1IFrameEvents } = await import('./three-in-one.js');
     window.addEventListener('message', handle3in1IFrameEvents);
     modal = await openThreeInOneModal(el);
+    return;
+  }
+  if (isInternalModal(url)) {
+    const fragmentPath = url.split(/(hlx|aem).(page|live)/).pop();
+    modal = await openFragmentModal(fragmentPath, getModal);
   } else {
     modal = await openExternalModal(url, getModal, extraOptions, el);
   }
-  if (modal) {
-    modal.classList.add(offerTypeClass);
-  }
+  modal.classList.add(offerTypeClass);
 }
 
 export function setCtaHash(el, checkoutLinkConfig, offerType) {
@@ -526,12 +615,21 @@ const isProdModal = (url) => {
 };
 
 export async function getModalAction(offers, options, el) {
+  if (!options.modal) return undefined;
+
+  if (el?.isOpen3in1Modal) {
+    const baseUrl = getCommercePreloadUrl();
+    // The script can preload more, based on clientId, but for the ones in use
+    // ('mini-plans', 'creative') there is no difference, so we can just use either one.
+    const client = 'creative';
+    loadLink(`${baseUrl}?cli=${client}`, 'text/javascript', { id: 'ucv3-preload-script', as: 'script', crossorigin: 'anonymous', rel: 'preload' });
+  }
+
   const [{
     offerType,
     productArrangementCode,
     productArrangement: { productCode, productFamily: offerFamily } = {},
   }] = offers ?? [{}];
-  if (options.modal !== true) return undefined;
   const checkoutLinkConfig = await getCheckoutLinkConfig(
     offerFamily,
     productCode,
@@ -541,7 +639,7 @@ export async function getModalAction(offers, options, el) {
   const columnName = (offerType === OFFER_TYPE_TRIAL) ? FREE_TRIAL_PATH : BUY_NOW_PATH;
   const hash = setCtaHash(el, checkoutLinkConfig, offerType);
   let url = checkoutLinkConfig[columnName];
-  if (!url) return undefined;
+  if (!url && !el?.isOpen3in1Modal) return undefined;
   url = isInternalModal(url) || isProdModal(url)
     ? localizeLink(checkoutLinkConfig[columnName]) : checkoutLinkConfig[columnName];
   return {
@@ -565,6 +663,12 @@ export async function getCheckoutAction(offers, options, imsSignedInPromise, el)
   }
 }
 
+export function setPreview(attributes) {
+  const { host } = window.location;
+  if (host.includes(`${SLD}.page`) || host.origin === 'https://www.stage.adobe.com') {
+    attributes.preview = 'on';
+  }
+}
 /**
  * Activates commerce service and returns a promise resolving to its ready-to-use instance.
  */
@@ -598,6 +702,7 @@ export async function initService(force = false, attributes = {}) {
     const { language, locale, country } = getMiloLocaleSettings(miloLocale);
     let service = document.head.querySelector('mas-commerce-service');
     if (!service) {
+      setPreview(attributes);
       service = createTag('mas-commerce-service', {
         locale,
         language,
@@ -679,11 +784,15 @@ export async function getCheckoutContext(el, params) {
 export async function getPriceContext(el, params) {
   const context = await getCommerceContext(el, params);
   if (!context) return null;
+  const annualEnabled = getMetadata('mas-ff-annual-price');
   const displayOldPrice = context.promotionCode ? params.get('old') : undefined;
   const displayPerUnit = params.get('seat');
   const displayRecurrence = params.get('term');
   const displayTax = params.get('tax');
+  const displayPlanType = params.get('planType');
+  const displayAnnual = (annualEnabled && params.get('annual') !== 'false') || undefined;
   const forceTaxExclusive = params.get('exclusive');
+  const alternativePrice = params.get('alt');
   // The PRICE_TEMPLATE_MAPPING supports legacy OST links
   const template = PRICE_TEMPLATE_MAPPING.get(params.get('type')) ?? PRICE_TEMPLATE_REGULAR;
   return {
@@ -692,15 +801,25 @@ export async function getPriceContext(el, params) {
     displayPerUnit,
     displayRecurrence,
     displayTax,
+    displayPlanType,
+    displayAnnual,
     forceTaxExclusive,
+    alternativePrice,
     template,
   };
 }
 
+let modalReopened = false;
 export function reopenModal(cta) {
+  if (modalReopened) return;
   if (cta && cta.getAttribute('data-modal-id') === window.location.hash.replace('#', '')) {
     cta.click();
+    modalReopened = true;
   }
+}
+
+export function resetReopenStatus() {
+  modalReopened = false;
 }
 
 export async function buildCta(el, params) {
@@ -730,18 +849,32 @@ export async function buildCta(el, params) {
     });
   }
 
-  // Adding aria-label for checkout-link using productFamily and customerSegment as placeholder key.
-  if (!cta.getAttribute('aria-label')) {
-    cta.onceSettled().finally(async () => {
-      const productFamily = cta.value[0]?.productArrangement?.productFamily;
-      const marketSegment = cta.value[0]?.marketSegments[0];
-      const customerSegment = marketSegment === 'EDU' ? marketSegment : cta.value[0]?.customerSegment;
+  // Adding aria-label for checkout-link using productCode and customerSegment as placeholder key.
+  if (el.ariaLabel) {
+    // If Milo aria-label available from sharepoint doc, just use it.
+    cta.setAttribute('aria-label', el.ariaLabel);
+  } else if (!cta.ariaLabel) {
+    cta.onceSettled().then(async () => {
+      const productCode = cta.value[0]?.productArrangement?.productCode;
+      const { marketSegment, customerSegment } = cta;
+      const segment = marketSegment === 'EDU' ? marketSegment : customerSegment;
       let ariaLabel = cta.textContent;
-      ariaLabel = productFamily ? `${ariaLabel} - ${await replaceKey(productFamily, getConfig())}` : ariaLabel;
-      ariaLabel = customerSegment ? `${ariaLabel} - ${await replaceKey(customerSegment, getConfig())}` : ariaLabel;
+      ariaLabel = productCode ? `${ariaLabel} - ${await replaceKey(productCode, getConfig())}` : ariaLabel;
+      ariaLabel = segment ? `${ariaLabel} - ${await replaceKey(segment, getConfig())}` : ariaLabel;
       cta.setAttribute('aria-label', ariaLabel);
     });
   }
+
+  if (getMetadata('mas-ff-copy-cta') === 'on') {
+    const { default: addCopyToClipboard } = await import('./copy-to-clipboard.js');
+    return addCopyToClipboard(el, cta);
+  }
+
+  // @see https://jira.corp.adobe.com/browse/MWPW-173470
+  cta.onceSettled().then(() => {
+    if (getConfig()?.locale?.prefix === '/kr' && cta.value[0]?.offerType === OFFER_TYPE_TRIAL) cta.remove();
+  });
+
   return cta;
 }
 
@@ -751,6 +884,32 @@ async function buildPrice(el, params) {
   const service = await initService();
   const price = service.createInlinePrice(context);
   return price;
+}
+
+export const MEP_SELECTOR = 'mas';
+
+export function overrideOptions(fragment, options) {
+  const { mep } = getConfig();
+  const fragments = mep?.inBlock?.[MEP_SELECTOR]?.fragments;
+  if (fragments) {
+    const command = fragments[fragment];
+    if (command && command.action === 'replace') {
+      return { ...options, fragment: command.content };
+    }
+  }
+  return options;
+}
+
+export function getOptions(el) {
+  const { hash } = new URL(el.href);
+  const hashValue = hash.startsWith('#') ? hash.substring(1) : hash;
+  const searchParams = new URLSearchParams(hashValue);
+  const options = {};
+  for (const [key, value] of searchParams.entries()) {
+    if (key === 'sidenav') options.sidenav = value === 'true';
+    else if (key === 'fragment' || key === 'query') options.fragment = value;
+  }
+  return options;
 }
 
 export default async function init(el) {

@@ -1,4 +1,4 @@
-import { Landscape, WORKFLOW_STEP, PROVIDER_ENVIRONMENT } from './constants.js';
+import { Landscape, CheckoutWorkflowStep, PROVIDER_ENVIRONMENT, MODAL_TYPE_3_IN_1 } from './constants.js';
 
 const AF_DRAFT_LANDSCAPE = 'p_draft_landscape';
 const UCV3_PREFIX = '/store/';
@@ -16,6 +16,7 @@ const PARAMETERS = new Map([
   ['clientId', 'cli'],
   ['context', 'ctx'],
   ['productArrangementCode', 'pa'],
+  ['addonProductArrangementCode', 'ao'],
   ['offerType', 'ot'],
   ['marketSegment', 'ms'],
 ]);
@@ -27,6 +28,7 @@ const PARAMETERS = new Map([
 const ALLOWED_KEYS = new Set([
   'af',
   'ai',
+  'ao',
   'apc',
   'appctxid',
   'cli',
@@ -119,28 +121,73 @@ export function setItemsParameter(items, parameters) {
 }
 
 /**
+ * Adds 3-in-1 parameters to the URL.
+ * @param {URL} url - The URL object to add parameters to
+ * @param {string} modal - The type of modal: 'crm', 'twp', or 'd2p'
+ * @param {Object} checkoutData - Object containing checkout parameters including:
+ *   @param {string} customerSegment - Customer segment value
+ *   @param {string} cs - Custom customer segment override
+ *   @param {string} ms - Custom market segment override  
+ *   @param {string} marketSegment - Market segment value
+ *   @param {string} quantity - Quantity value
+ *   @param {string} productArrangementCode - Product arrangement code
+ *   @param {string} addonProductArrangementCode - Addon product arrangement code
+ * @returns URL object
+ */
+export function add3in1Parameters({ url, modal, is3in1 }) {
+  if (!is3in1 || !url?.searchParams) return url;
+  url.searchParams.set('rtc', 't');
+  url.searchParams.set('lo', 'sl');
+  url.searchParams.set('af', 'uc_new_user_iframe,uc_new_system_close');
+  if (url.searchParams.get('cli') !== 'doc_cloud') {
+    url.searchParams.set('cli', modal === MODAL_TYPE_3_IN_1.CRM ? 'creative' : 'mini_plans');
+  }
+  // used on catalog page by MEP to preselect plan
+  const metaPreselectPlan = document.querySelector('meta[name="preselect-plan"]');
+  if (metaPreselectPlan?.content?.toLowerCase() === 'edu') {
+    url.searchParams.set('ms', 'EDU');
+  } else if (metaPreselectPlan?.content?.toLowerCase() === 'team') {
+    url.searchParams.set('cs', 'TEAM');
+  }
+  return url;
+}
+
+/**
  * Builds a UCv3 Checkout URL out of given parameters.
  */
 export function buildCheckoutUrl(checkoutData) {
   validateCheckoutData(checkoutData);
-  const { env, items, workflowStep, ms, marketSegment, ot, offerType, pa, productArrangementCode, landscape, ...rest } =
+  const { env, items, workflowStep, ms, cs, marketSegment, customerSegment, ot, offerType, pa, productArrangementCode, landscape, modal, is3in1, ...rest } =
     checkoutData;
-  const segmentationParameters = {
-    marketSegment: marketSegment ?? ms,
-    offerType: offerType ?? ot,
-    productArrangementCode: productArrangementCode ?? pa,
-  };
-  const url = new URL(getHostName(env));
+  
+  let url = new URL(getHostName(env));
   url.pathname = `${UCV3_PREFIX}${workflowStep}`;
-  if (workflowStep !== WORKFLOW_STEP.SEGMENTATION && workflowStep !== WORKFLOW_STEP.CHANGE_PLAN_TEAM_PLANS) {
+  if (workflowStep !== CheckoutWorkflowStep.SEGMENTATION && workflowStep !== CheckoutWorkflowStep.CHANGE_PLAN_TEAM_PLANS) {
     setItemsParameter(items, url.searchParams);
   }
-  if (workflowStep === WORKFLOW_STEP.SEGMENTATION) {
-    addParameters(segmentationParameters, url.searchParams, ALLOWED_KEYS);
-  }
-  addParameters(rest, url.searchParams, ALLOWED_KEYS);
+  addParameters({ ...rest }, url.searchParams, ALLOWED_KEYS);
   if (landscape === Landscape.DRAFT) {
     addParameters({ af: AF_DRAFT_LANDSCAPE }, url.searchParams, ALLOWED_KEYS);
+  }
+  if (workflowStep === CheckoutWorkflowStep.SEGMENTATION) {
+    // ms, ot, cs, pa are params manually set by authors, they should take precedence over 'marketSegment', etc
+    const segmentationParameters = {
+      marketSegment: ms ?? marketSegment,
+      offerType: ot ?? offerType,
+      customerSegment: cs ?? customerSegment,
+      productArrangementCode: pa ?? productArrangementCode,
+      quantity: items?.[0]?.quantity > 1 ? items?.[0]?.quantity : undefined,
+      addonProductArrangementCode: productArrangementCode 
+        ? items?.find((item) => item.productArrangementCode !== productArrangementCode)?.productArrangementCode 
+        : items?.[1]?.productArrangementCode,
+    };
+    addParameters(segmentationParameters, url.searchParams, ALLOWED_KEYS);
+    if (url.searchParams.get('ot') === 'PROMOTION') url.searchParams.delete('ot');
+    url = add3in1Parameters({
+      url,
+      modal,
+      is3in1,
+    });
   }
   return url.toString();
 }
@@ -152,7 +199,7 @@ export function buildCheckoutUrl(checkoutData) {
  * checkout URL returned.
  * Iterates over the list of required fields (REQUIRED_KEYS) and checks that each of them is present in 'checkoutData'.
  * If any of required fields is missing - throws and Error with a specified message.
- * For WORKFLOW_STEP.SEGMENTATION and for WORKFLOW_STEP.CHANGE_PLAN_TEAM_PLANS 'items' property is not required, for rest of WorkflowStep it is.
+ * For CheckoutWorkflowStep.SEGMENTATION and for CheckoutWorkflowStep.CHANGE_PLAN_TEAM_PLANS 'items' property is not required, for rest of WorkflowStep it is.
  * @param checkoutData object holding the data required to build the checkout URL
  */
 function validateCheckoutData(checkoutData) {
@@ -162,8 +209,8 @@ function validateCheckoutData(checkoutData) {
     }
   }
   if (
-    checkoutData.workflowStep !== WORKFLOW_STEP.SEGMENTATION &&
-    checkoutData.workflowStep !== WORKFLOW_STEP.CHANGE_PLAN_TEAM_PLANS &&
+    checkoutData.workflowStep !== CheckoutWorkflowStep.SEGMENTATION &&
+    checkoutData.workflowStep !== CheckoutWorkflowStep.CHANGE_PLAN_TEAM_PLANS &&
     !checkoutData.items
   ) {
     throw new Error('Argument "checkoutData" is not valid, missing: items');

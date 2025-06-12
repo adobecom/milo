@@ -8,7 +8,10 @@ import { getGnavHeight } from '../global-navigation/utilities/utilities.js';
 const DESKTOP_SIZE = 900;
 const MOBILE_SIZE = 768;
 const tableHighlightLoadedEvent = new Event('milo:table:highlight:loaded');
+const tabChangeEvent = 'milo:tab:changed';
 let tableIndex = 0;
+let isExpandEventsAssigned = false;
+
 const isMobileLandscape = () => (window.matchMedia('(orientation: landscape)').matches && window.innerHeight <= MOBILE_SIZE);
 function defineDeviceByScreenSize() {
   const screenWidth = window.innerWidth;
@@ -37,8 +40,8 @@ function handleHeading(table, headingCols) {
     if (!elements.length) {
       col.innerHTML = `<p class="tracking-header">${col.innerHTML}</p>`;
     } else {
-      let textStartIndex = 0;
-      const iconTile = elements[0]?.querySelector('img');
+      let textStartIndex = col.querySelector('.highlight-text') ? 1 : 0;
+      const iconTile = elements[textStartIndex]?.querySelector('img');
       if (iconTile) {
         textStartIndex += 1;
         if (!(table.classList.contains('merch'))) iconTile.closest('p').classList.add('header-product-tile');
@@ -114,7 +117,7 @@ function handleEqualHeight(table, tag) {
   });
   columns.forEach(({ children }) => {
     [...children].forEach((row, i) => {
-      row.style.height = height[i] > 0 ? `${height[i]}px` : 'auto';
+      row.style.minHeight = height[i] > 0 ? `${height[i]}px` : 'unset';
     });
   });
 }
@@ -187,34 +190,6 @@ async function setAriaLabelForIcons(el) {
   });
 }
 
-function setTooltipListeners(el) {
-  document.addEventListener('keydown', (event) => {
-    if (event.key === 'Escape') {
-      el.querySelectorAll('.milo-tooltip').forEach((tooltip) => {
-        tooltip.classList.add('hide-tooltip');
-      });
-    }
-  });
-
-  el.querySelectorAll('.milo-tooltip').forEach((tooltip) => {
-    tooltip.addEventListener('mouseenter', () => {
-      tooltip.classList.remove('hide-tooltip');
-    });
-
-    tooltip.addEventListener('mouseleave', () => {
-      tooltip.classList.add('hide-tooltip');
-    });
-
-    tooltip.addEventListener('focus', () => {
-      tooltip.classList.remove('hide-tooltip');
-    });
-
-    tooltip.addEventListener('blur', () => {
-      tooltip.classList.add('hide-tooltip');
-    });
-  });
-}
-
 function handleHighlight(table) {
   const isHighlightTable = table.classList.contains('highlight');
   const firstRow = table.querySelector('.row-1');
@@ -225,6 +200,7 @@ function handleHighlight(table) {
 
   if (isHighlightTable) {
     firstRow.classList.add('row-highlight');
+    firstRow.setAttribute('aria-hidden', 'true');
     secondRow.classList.add('row-heading');
     secondRowCols.forEach((col) => col.classList.add('col-heading'));
     headingCols = secondRowCols;
@@ -233,6 +209,8 @@ function handleHighlight(table) {
       col.classList.add('col-highlight');
       if (col.innerText) {
         headingCols[i]?.classList.add('no-rounded');
+        const highlightText = createTag('div', { class: 'highlight-text' }, col.innerText);
+        headingCols[i]?.insertBefore(highlightText, headingCols[i].firstChild);
       } else {
         col.classList.add('hidden');
       }
@@ -264,6 +242,22 @@ function handleExpand(e) {
   }
 }
 
+function setExpandEvents(el) {
+  if (isExpandEventsAssigned) return;
+
+  el.querySelectorAll('.icon.expand').forEach((icon) => {
+    isExpandEventsAssigned = true;
+    icon.parentElement.classList.add('point-cursor');
+    icon.parentElement.addEventListener('click', () => handleExpand(icon));
+    icon.parentElement.setAttribute('tabindex', 0);
+    icon.parentElement.addEventListener('keydown', (e) => {
+      if (e.key === ' ') e.preventDefault();
+
+      if (e.key === 'Enter' || e.key === ' ') handleExpand(icon);
+    });
+  });
+}
+
 function handleTitleText(cell) {
   if (cell.querySelector('.table-title-text')) return;
   const textSpan = createTag('span', { class: 'table-title-text' });
@@ -279,6 +273,13 @@ function handleTitleText(cell) {
     const titleRowSpan = createTag('span', { class: 'table-title-row' });
     titleRowSpan.append(firstIcon, textSpan);
     nodeToInsert = titleRowSpan;
+  }
+
+  const blockquote = nodeToInsert.querySelector('blockquote');
+  if (blockquote) {
+    const quoteReplacement = createTag('div', { class: 'blockquote' });
+    while (blockquote.firstChild) quoteReplacement.appendChild(blockquote.firstChild);
+    blockquote.replaceWith(quoteReplacement);
   }
 
   cell.insertBefore(nodeToInsert, cell.firstChild);
@@ -314,6 +315,11 @@ function handleSection(sectionParams) {
       handleTitleText(sectionHeadTitle);
       sectionHeadTitle.classList.add('section-head-title');
       sectionHeadTitle.setAttribute('role', 'rowheader');
+      const sectionHeadText = sectionHeadTitle.querySelector('.table-title-text');
+      if (sectionHeadText) {
+        sectionHeadText.setAttribute('role', 'heading');
+        sectionHeadText.setAttribute('aria-level', '4');
+      }
     }
 
     if (isCollapseTable) {
@@ -345,6 +351,12 @@ function handleSection(sectionParams) {
     }
   } else if (!row.classList.contains('row-1') && (!isHighlightTable || !row.classList.contains('row-2'))) {
     row.classList.add('section-row');
+    rowCols.forEach((col) => {
+      if (col.querySelector('a') && !col.querySelector('span')) {
+        const textSpan = createTag('span', { class: 'col-text' }, [...col.childNodes]);
+        col.appendChild(textSpan);
+      }
+    });
     if (isMerch && !row.classList.contains('divider')) {
       rowCols.forEach((merchCol) => {
         merchCol.classList.add('col-merch');
@@ -372,6 +384,14 @@ function handleSection(sectionParams) {
       sectionRowTitle.setAttribute('scope', 'row');
     }
   }
+
+  rowCols.forEach((col) => {
+    if (col.querySelector(':scope > :is(strong, em, del, code, sub, sup)')
+      && col.childNodes.length > 1 && !col.querySelector('picture')) {
+      col.replaceChildren(createTag('p', {}, [...col.childNodes]));
+    }
+  });
+
   return expandSection;
 }
 
@@ -483,68 +503,67 @@ function applyStylesBasedOnScreenSize(table, originTable) {
     }
   };
 
-  const reAssignEvents = (tableEl) => {
-    tableEl.dispatchEvent(tableHighlightLoadedEvent);
-    tableEl.querySelectorAll('.icon.expand').forEach((icon) => {
-      icon.parentElement.classList.add('point-cursor');
-      icon.parentElement.addEventListener('click', () => handleExpand(icon));
-      icon.parentElement.setAttribute('tabindex', 0);
-      icon.parentElement.addEventListener('keydown', (e) => {
-        if (e.key === ' ') e.preventDefault();
-
-        if (e.key === 'Enter' || e.key === ' ') handleExpand(icon);
-      });
-    });
-    handleHovering(tableEl);
-  };
-
   const mobileRenderer = () => {
     table.dispatchEvent(tableHighlightLoadedEvent);
     const headings = table.querySelectorAll('.row-heading .col');
     const headingsLength = headings.length;
 
+    table.querySelectorAll('.hide-mobile').forEach((col) => { col.classList.remove('hide-mobile'); });
+
     if (isMerch && headingsLength > 2) {
-      table.querySelectorAll('.col:not(.col-1, .col-2)').forEach((col) => col.remove());
+      table.querySelectorAll('.col:not(.col-1, .col-2)').forEach((col) => { col.classList.add('hide-mobile'); });
     } else if (headingsLength > 3) {
-      table.querySelectorAll('.col:not(.col-1, .col-2, .col-3), .col.no-borders').forEach((col) => col.remove());
+      table.querySelectorAll('.col:not(.col-1, .col-2, .col-3), .col.no-borders').forEach((col) => { col.classList.add('hide-mobile'); });
     }
 
     if ((!isMerch && !table.querySelector('.col-3'))
       || (isMerch && !table.querySelector('.col-2'))) return;
 
-    const filterChangeEvent = () => {
-      table.innerHTML = originTable.innerHTML;
-      reAssignEvents(table);
+    const filterChangeEvent = (e) => {
       const filters = Array.from(table.parentElement.querySelectorAll('.filter')).map((f) => parseInt(f.value, 10));
       const rows = table.querySelectorAll('.row');
 
+      table.querySelectorAll('.hide-mobile, .force-last').forEach((col) => { col.classList.remove('hide-mobile', 'force-last'); });
+
+      rows.forEach((row) => {
+        const clonedCols = row.querySelectorAll('.col[data-cloned]');
+        clonedCols.forEach((col) => col.remove());
+      });
+
       if (isMerch) {
-        table.querySelectorAll(`.col:not(.col-${filters[0] + 1}, .col-${filters[1] + 1})`).forEach((col) => col.remove());
+        table.querySelectorAll(`.col:not(.col-${filters[0] + 1}, .col-${filters[1] + 1})`).forEach((col) => { col.classList.add('hide-mobile'); });
       } else {
-        table.querySelectorAll(`.col:not(.col-1, .col-${filters[0] + 1}, .col-${filters[1] + 1}), .col.no-borders`).forEach((col) => col.remove());
+        table.querySelectorAll(`.col:not(.col-1, .col-${filters[0] + 1}, .col-${filters[1] + 1}), .col.no-borders`).forEach((col) => { col.classList.add('hide-mobile'); });
       }
 
-      if (filters[0] > filters[1]) {
-        if (isMerch) {
-          rows.forEach((row) => row.querySelector('.col:not(.section-row-title)')
-            .classList.add('force-last'));
-        } else {
-          rows.forEach((row) => row.querySelector('.col:not(.section-row-title, .col-1)')
-            .classList.add('force-last'));
-        }
-      } else if (filters[0] === filters[1]) {
+      rows.forEach((row) => {
+        const secondFilterCol = row.querySelector(`.col-${filters[1] + 1}`);
+        if (secondFilterCol) secondFilterCol.classList.add('force-last');
+      });
+
+      if (filters[0] === filters[1]) {
+        const selectedCol = filters[0] + 1;
         rows.forEach((row) => {
-          row.append(row.querySelector('.col:last-child').cloneNode(true));
+          const selectedColumn = row.querySelector(`.col-${selectedCol}`);
+          if (!selectedColumn) return;
+
+          selectedColumn.classList.remove('force-last');
+          selectedColumn.classList.remove('rounded-left', 'rounded-right');
+          const clone = selectedColumn.cloneNode(true);
+          clone.setAttribute('data-cloned', 'true');
+          clone.classList.remove('rounded-left', 'rounded-right');
+          row.appendChild(clone);
         });
       }
 
       setRowStyle();
 
       if (table.matches('.sticky')) handleScrollEffect(table);
+      if (e) handleEqualHeight(table, '.row-heading');
     };
 
     // Remove filter if table there are only 2 columns
-    const filter = isMerch ? headingsLength > 2 : headingsLength > 3;
+    const filter = isMerch ? headingsLength > 2 : headingsLength > 2;
     if (!table.parentElement.querySelector('.filters') && filter) {
       const filters = createTag('div', { class: 'filters' });
       const filter1 = createTag('div', { class: 'filter-wrapper' });
@@ -571,9 +590,14 @@ function applyStylesBasedOnScreenSize(table, originTable) {
       filter2.addEventListener('change', filterChangeEvent);
       table.parentElement.insertBefore(filters, table);
       table.parentElement.classList.add(`table-${table.classList.contains('merch') ? 'merch-' : ''}section`);
+      if (!isMerch && headingsLength < 4) { filters.style.display = 'none'; }
       filterChangeEvent();
     }
   };
+
+  const removeClones = () => table
+    .querySelectorAll('.row .col[data-cloned]')
+    .forEach((clonedCol) => clonedCol.remove());
 
   // For Mobile (else: tablet / desktop)
   if (!isMerch && !table.querySelector('.row-heading .col-2')) {
@@ -581,17 +605,26 @@ function applyStylesBasedOnScreenSize(table, originTable) {
     table.querySelector('.row-heading .col-1').style.display = 'flex';
   }
 
+  removeClones();
   if (deviceBySize === 'MOBILE' || (isMerch && deviceBySize === 'TABLET')) {
     mobileRenderer();
   } else {
-    table.innerHTML = originTable.innerHTML;
-    reAssignEvents(table);
+    table.querySelectorAll('.hide-mobile').forEach((col) => { col.classList.remove('hide-mobile'); });
+    [...(table.querySelector('.row-heading')?.children || [])]
+      .forEach((column) => [...column.children].forEach((row) => row.style.removeProperty('height')));
     table.parentElement.querySelectorAll('.filters select').forEach((select, index) => {
       select.querySelectorAll('option').item(index).selected = true;
     });
   }
 
+  table.dispatchEvent(tableHighlightLoadedEvent);
+  handleHovering(table);
   setRowStyle();
+}
+
+function handleStickyHeader(el) {
+  if (!el.classList.value.includes('sticky')) return;
+  setTimeout(() => el.classList.toggle('cancel-sticky', !(el.querySelector('.row-heading').offsetHeight / window.innerHeight < 0.45)));
 }
 
 export default function init(el) {
@@ -623,13 +656,14 @@ export default function init(el) {
     cols.forEach((col, cdx) => {
       col.dataset.colIndex = cdx + 1;
       col.classList.add('col', `col-${cdx + 1}`);
-      col.setAttribute('role', 'cell');
+      col.setAttribute('role', col.matches('.section-head-title') ? 'columnheader' : 'cell');
     });
 
     expandSection = handleSection(sectionParams);
   });
 
   handleHighlight(el);
+  handleStickyHeader(el);
   if (isMerch) formatMerchTable(el);
 
   let isDecorated = false;
@@ -656,17 +690,17 @@ export default function init(el) {
 
     let deviceBySize = defineDeviceByScreenSize();
     window.addEventListener('resize', () => {
-      if (el.classList.contains('has-addon')) {
-        debounce(handleEqualHeight(el, '.row-heading'), 300);
-      }
+      debounce(handleEqualHeight(el, '.row-heading'), 300);
+      handleStickyHeader(el);
       if (deviceBySize === defineDeviceByScreenSize()) return;
       deviceBySize = defineDeviceByScreenSize();
       handleResize();
     });
 
     isDecorated = true;
+
+    setExpandEvents(el);
     setAriaLabelForIcons(el);
-    setTooltipListeners(el);
   };
 
   window.addEventListener(MILO_EVENTS.DEFERRED, () => {
@@ -680,6 +714,7 @@ export default function init(el) {
     }
   });
 
+  window.addEventListener(tabChangeEvent, () => handleStickyHeader(el));
   observer.observe(el);
 
   tableIndex++;

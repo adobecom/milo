@@ -105,4 +105,18 @@ describe('Dynamic nav', () => {
     const url = dynamicNav('gnav/aem-sites', 'bacom');
     expect(url).to.equal('some-source-string');
   });
+
+  // Reset should be the last test in file
+  it('Clears storage and returns the provided url if dynamic nav is set to reset', async () => {
+    document.head.innerHTML = await readFile({ path: './mocks/reset.html' });
+    window.sessionStorage.setItem('gnavSource', 'test');
+    window.sessionStorage.setItem('dynamicNavKey', 'test');
+    window.sessionStorage.setItem('dynamicNavGroup', 'test');
+
+    const url = dynamicNav('gnav/aem-sites', 'bacom');
+    expect(url).to.equal('gnav/aem-sites');
+    expect(window.sessionStorage.getItem('gnavSource')).to.be.null;
+    expect(window.sessionStorage.getItem('dynamicNavKey')).to.be.null;
+    expect(window.sessionStorage.getItem('dynamicNavGroup')).to.be.null;
+  });
 });

@@ -2,7 +2,7 @@ import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import { getConfig, setConfig, createTag, loadDeferred } from '../../../libs/utils/utils.js';
 import dynamicNav from '../../../libs/features/dynamic-navigation/dynamic-navigation.js';
-import status, { tooltipInfo, ACTIVE, INACTIVE, ENABLED } from '../../../libs/features/dynamic-navigation/status.js';
+import status, { tooltipInfo, ACTIVE, INACTIVE, ENABLED, RESET } from '../../../libs/features/dynamic-navigation/status.js';
 
 const statusText = (parentElement) => {
   const info = {
@@ -17,7 +17,7 @@ const statusText = (parentElement) => {
   return info;
 };
 
-const GNAV_SOURCE = 'https://main--milo--adobecom.hlx.live/some-source-string';
+const GNAV_SOURCE = 'https://main--milo--adobecom.aem.live/some-source-string';
 
 describe('Dynamic Nav Status', () => {
   beforeEach(async () => {
@@ -48,15 +48,15 @@ describe('Dynamic Nav Status', () => {
     expect(statusWidget).to.exist;
   });
 
-  it('does not load the widget on when gnav v2 is not present', () => {
-    const feds = document.querySelector('.feds-nav-wrapper');
-    feds.classList.remove('feds-nav-wrapper');
+  it('does not load the widget when gnav v2 is not present', () => {
+    const globalNav = document.querySelector('.global-navigation');
+    globalNav.classList.remove('global-navigation');
     dynamicNav();
     status();
 
     const statusWidget = document.querySelector('.dynamic-nav-status');
     expect(statusWidget).to.be.null;
-    feds.classList.add('feds-nav-wrapper');
+    globalNav.classList.add('global-navigation');
   });
 
   it('loads the status widget', () => {
@@ -86,6 +86,16 @@ describe('Dynamic Nav Status', () => {
 
     const statusWidget = document.querySelector('.dynamic-nav-status');
     expect(statusWidget.classList.contains(ENABLED)).to.be.true;
+  });
+
+  it('loads the status widget in a reset state', () => {
+    document.querySelector('meta[name="dynamic-nav"]').setAttribute('content', 'reset');
+
+    dynamicNav();
+    status();
+
+    const statusWidget = document.querySelector('.dynamic-nav-status');
+    expect(statusWidget.classList.contains(RESET)).to.be.true;
   });
 
   it('loads the status widget in an inactive state', () => {
@@ -118,7 +128,7 @@ describe('Dynamic Nav Status', () => {
 
     it('displays the correct information to the user for the active state "on"', () => {
       document.querySelector('meta[name="dynamic-nav"]').setAttribute('content', 'on');
-      document.querySelector('meta[name="gnav-source"]').setAttribute('content', 'https://main--milo--adobecom.hlx/test');
+      document.querySelector('meta[name="gnav-source"]').setAttribute('content', 'https://main--milo--adobecom.aem.live/test');
       window.sessionStorage.setItem('gnavSource', GNAV_SOURCE);
 
       dynamicNav();
@@ -137,7 +147,7 @@ describe('Dynamic Nav Status', () => {
 
     it('displays the correct information to the user for the active state "off"', () => {
       document.querySelector('meta[name="dynamic-nav"]').setAttribute('content', '');
-      document.querySelector('meta[name="gnav-source"]').setAttribute('content', 'https://main--milo--adobecom.hlx/test');
+      document.querySelector('meta[name="gnav-source"]').setAttribute('content', 'https://main--milo--adobecom.aem.live/test');
       window.sessionStorage.setItem('gnavSource', GNAV_SOURCE);
 
       dynamicNav();
@@ -156,7 +166,7 @@ describe('Dynamic Nav Status', () => {
 
     it('displays the correct information to the user for the enabled state "on"', () => {
       document.querySelector('meta[name="dynamic-nav"]').setAttribute('content', 'on');
-      document.querySelector('meta[name="gnav-source"]').setAttribute('content', 'https://main--milo--adobecom.hlx/test');
+      document.querySelector('meta[name="gnav-source"]').setAttribute('content', 'https://main--milo--adobecom.aem.live/test');
 
       dynamicNav();
       status();
@@ -172,9 +182,27 @@ describe('Dynamic Nav Status', () => {
       expect(info.storedSource).to.equal('/test');
     });
 
+    it('displays the correct information to the user for the enabled state "reset"', () => {
+      document.querySelector('meta[name="dynamic-nav"]').setAttribute('content', 'reset');
+      document.querySelector('meta[name="gnav-source"]').setAttribute('content', 'https://main--milo--adobecom.aem.live/test');
+
+      dynamicNav();
+      status();
+
+      const statusWidget = document.querySelector('.dynamic-nav-status');
+      const info = statusText(statusWidget);
+      expect(info.additionalInfo).to.equal(tooltipInfo[RESET]);
+      expect(info.status).to.equal(RESET);
+      expect(info.setting).to.equal('reset');
+      expect(info.consumerKey).to.equal('bacom');
+      expect(info.match).to.equal('true');
+      expect(info.authoredSource).to.equal('/test');
+      expect(info.storedSource).to.equal('/test');
+    });
+
     it('displays the correct information for a group match', () => {
       document.querySelector('meta[name="dynamic-nav"]').setAttribute('content', 'on');
-      document.querySelector('meta[name="gnav-source"]').setAttribute('content', 'https://main--milo--adobecom.hlx/test');
+      document.querySelector('meta[name="gnav-source"]').setAttribute('content', 'https://main--milo--adobecom.aem.live/test');
 
       dynamicNav();
       status();
@@ -190,7 +218,7 @@ describe('Dynamic Nav Status', () => {
 
     it('displays the correct information for a group mismatch', () => {
       document.querySelector('meta[name="dynamic-nav"]').setAttribute('content', 'on');
-      document.querySelector('meta[name="gnav-source"]').setAttribute('content', 'https://main--milo--adobecom.hlx/test');
+      document.querySelector('meta[name="gnav-source"]').setAttribute('content', 'https://main--milo--adobecom.aem.live/test');
 
       window.sessionStorage.setItem('dynamicNavGroup', 'no-test');
 
@@ -208,7 +236,7 @@ describe('Dynamic Nav Status', () => {
 
     it('displays the correct information for no group being set', () => {
       document.querySelector('meta[name="dynamic-nav"]').setAttribute('content', 'on');
-      document.querySelector('meta[name="gnav-source"]').setAttribute('content', 'https://main--milo--adobecom.hlx/test');
+      document.querySelector('meta[name="gnav-source"]').setAttribute('content', 'https://main--milo--adobecom.aem.live/test');
 
       document.querySelector('meta[name="dynamic-nav-group"]').remove();
       window.sessionStorage.setItem('dynamicNavGroup', 'no-test');
@@ -226,7 +254,7 @@ describe('Dynamic Nav Status', () => {
 
     it('remains active when there is no group match but the nav is active', () => {
       document.querySelector('meta[name="dynamic-nav"]').setAttribute('content', 'on');
-      document.querySelector('meta[name="gnav-source"]').setAttribute('content', 'https://main--milo--adobecom.hlx/test');
+      document.querySelector('meta[name="gnav-source"]').setAttribute('content', 'https://main--milo--adobecom.aem.live/test');
 
       document.querySelector('meta[name="dynamic-nav-group"]').remove();
       window.sessionStorage.setItem('dynamicNavGroup', 'no-test');
@@ -246,7 +274,7 @@ describe('Dynamic Nav Status', () => {
       const ppn = createTag('meta', { name: 'primaryproductname', content: 'Commerce Cloud' });
       document.querySelector('head').append(disableTag, ppn);
       document.querySelector('meta[name="dynamic-nav"]').setAttribute('content', 'on');
-      document.querySelector('meta[name="gnav-source"]').setAttribute('content', 'https://main--milo--adobecom.hlx/test');
+      document.querySelector('meta[name="gnav-source"]').setAttribute('content', 'https://main--milo--adobecom.aem.live/test');
       window.sessionStorage.setItem('gnavSource', GNAV_SOURCE);
 
       dynamicNav();
@@ -263,7 +291,7 @@ describe('Dynamic Nav Status', () => {
       const ppn = createTag('meta', { name: 'primaryproductname', content: 'Commerce Cloud' });
       document.querySelector('head').append(disableTag, ppn);
       document.querySelector('meta[name="dynamic-nav"]').setAttribute('content', 'on');
-      document.querySelector('meta[name="gnav-source"]').setAttribute('content', 'https://main--milo--adobecom.hlx/test');
+      document.querySelector('meta[name="gnav-source"]').setAttribute('content', 'https://main--milo--adobecom.aem.live/test');
       window.sessionStorage.setItem('gnavSource', GNAV_SOURCE);
 
       dynamicNav();
@@ -280,7 +308,7 @@ describe('Dynamic Nav Status', () => {
       const ppn = createTag('meta', { name: 'primaryproductname', content: 'Commerce Cloud' });
       document.querySelector('head').append(disableTag, ppn);
       document.querySelector('meta[name="dynamic-nav"]').setAttribute('content', 'on');
-      document.querySelector('meta[name="gnav-source"]').setAttribute('content', 'https://main--milo--adobecom.hlx/test');
+      document.querySelector('meta[name="gnav-source"]').setAttribute('content', 'https://main--milo--adobecom.aem.live/test');
       window.sessionStorage.setItem('gnavSource', GNAV_SOURCE);
 
       dynamicNav();

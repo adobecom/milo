@@ -18,10 +18,6 @@ export const styles = css`
         text-align: start;
     }
 
-    :host([failed]) {
-        display: none;
-    }
-
     :host(.placeholder) {
         visibility: hidden;
     }
@@ -80,6 +76,14 @@ export const styles = css`
         gap: var(--consonant-merch-spacing-xs);
 
         padding: var(--consonant-merch-spacing-xs);
+    }
+    
+    footer.wide-footer {
+        align-items: center;
+    }
+    
+    footer.wide-footer .secure-transaction-label {
+        flex: 0 1 auto;
     }
     
     footer.footer-column {

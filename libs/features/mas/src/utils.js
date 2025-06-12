@@ -1,4 +1,6 @@
-import { MAS_COMMERCE_SERVICE_INIT_TIME_MEASURE_NAME } from './constants.js';
+import { EVENT_TYPE_READY } from './constants.js';
+
+const MAS_COMMERCE_SERVICE = 'mas-commerce-service';
 
 export function debounce(func, delay) {
     let debounceTimer;
@@ -37,12 +39,16 @@ export function createTag(tag, attributes = {}, content = null, is = null) {
     return element;
 }
 
+export function matchMobile() {
+  return window.matchMedia('(max-width: 767px)');
+}
+
 /**
  * Checks if the current device is mobile based on the screen width.
  * @returns {boolean} True if the device is mobile, otherwise false.
  */
 export function isMobile() {
-    return window.matchMedia('(max-width: 767px)').matches;
+  return matchMobile().matches;
 }
 
 /**
@@ -59,14 +65,27 @@ export function wait(ms = 1000) {
 }
 
 /**
- * Returns the duration of the mas-commerce-service initialization.
- * @returns {number} The duration of the mas-commerce-service initialization.
+ * Calls given `getConfig` every time new instance of the commerce service is activated,
+ * passing new instance as the only argument.
+ * @param {(commerce: Commerce.Instance) => void} getConfig
+ * @param {{ once?: boolean; }} options
+ * @returns {() => void}
+ * A function, stopping notifications when called.
  */
-export function getMasCommerceServiceDurationLog() {
-    const masCommerceService = document.querySelector('mas-commerce-service');
-    if (!masCommerceService) return {};
-    return {
-        [MAS_COMMERCE_SERVICE_INIT_TIME_MEASURE_NAME]:
-            masCommerceService.initDuration,
-    };
+export function discoverService(getConfig, { once = false } = {}) {
+    let latest = null;
+    function discover() {
+        /** @type { Commerce.Instance } */
+        const current = document.querySelector(MAS_COMMERCE_SERVICE);
+        if (current === latest) return;
+        latest = current;
+        if (current) getConfig(current);
+    }
+    document.addEventListener(EVENT_TYPE_READY, discover, { once });
+    setTimeout(discover, 0);
+    return () => document.removeEventListener(EVENT_TYPE_READY, discover);
+}
+
+export function getService() {
+  return document.getElementsByTagName(MAS_COMMERCE_SERVICE)?.[0];
 }

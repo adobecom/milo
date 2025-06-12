@@ -33,7 +33,7 @@ describe('Cross Cloud Menu', () => {
       expect(crossCloudMenu).to.exist;
       expect(isElementVisible(crossCloudMenu)).to.equal(false);
 
-      document.querySelector(`${selectors.largeMenu} ${selectors.navLink}`).click();
+      document.querySelector(`${selectors.navLink}`).click();
 
       crossCloudMenu.querySelectorAll(selectors.navLink).forEach((el) => {
         expect(isElementVisible(el)).to.equal(true);
@@ -47,12 +47,12 @@ describe('Cross Cloud Menu', () => {
   });
 
   describe('small desktop', () => {
-    it('should not render the Cross Cloud Menu', async () => {
+    it('should render the Cross Cloud Menu', async () => {
       await createFullGlobalNavigation({ globalNavigation: globalNavigationCrossCloud, viewport: 'smallDesktop' });
       document.querySelector(`${selectors.largeMenu} ${selectors.navLink}`).click();
 
       expect(isElementVisible(document.querySelector(selectors.crossCloudMenuWrapper)))
-        .to.equal(false);
+        .to.equal(true);
     });
   });
 

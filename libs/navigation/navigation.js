@@ -23,23 +23,22 @@ const envMap = {
   qa: 'https://gnav--milo--adobecom.aem.page',
 };
 
-const getStageDomainsMap = (stageDomainsMap) => (
-  {
-    'www.stage.adobe.com': {
-      'www.adobe.com': 'origin',
-      'helpx.adobe.com': 'helpx.stage.adobe.com',
-      'creativecloud.adobe.com': 'stage.creativecloud.adobe.com',
-      ...stageDomainsMap,
-    },
-    // Test app
-    'adobecom.github.io': {
-      'www.adobe.com': 'www.stage.adobe.com',
-      'helpx.adobe.com': 'helpx.stage.adobe.com',
-      'creativecloud.adobe.com': 'stage.creativecloud.adobe.com',
-      ...stageDomainsMap,
-    },
+const getStageDomainsMap = (stageDomainsMap, env) => {
+  const defaultUrls = {
+    'www.adobe.com': 'origin',
+    'helpx.adobe.com': 'helpx.stage.adobe.com',
+    'creativecloud.adobe.com': 'stage.creativecloud.adobe.com',
+  };
+
+  const merged = { ...defaultUrls, ...stageDomainsMap };
+  const domainMap = { 'www.stage.adobe.com': merged };
+
+  if (env !== 'prod') {
+    domainMap[window.location.host] = { ...merged, 'www.adobe.com': 'www.stage.adobe.com' };
   }
-);
+
+  return domainMap;
+};
 
 // Production Domain
 const prodDomains = [
@@ -128,7 +127,7 @@ export default async function loadBlock(configs, customLib) {
     miloLibs: `${miloLibs}/libs`,
     locales: configs.locales || locales,
     contentRoot: authoringPath || footer?.authoringPath,
-    stageDomainsMap: getStageDomainsMap(stageDomainsMap),
+    stageDomainsMap: getStageDomainsMap(stageDomainsMap, env),
     origin,
     allowedOrigins: [...allowedOrigins, origin],
     onFooterReady: footer?.onReady,
@@ -145,7 +144,7 @@ export default async function loadBlock(configs, customLib) {
       const footerSource = `${config?.locale?.contentRoot}/footer`;
       if (block.key === 'header') {
         try {
-          const { default: init } = await import('../blocks/global-navigation/global-navigation.js');
+          const { default: init, closeGnavOptions } = await import('../blocks/global-navigation/global-navigation.js');
           await bootstrapBlock(init, {
             ...block,
             gnavSource,
@@ -155,8 +154,9 @@ export default async function loadBlock(configs, customLib) {
             noBorder: configBlock.noBorder,
             jarvis: configBlock.jarvis,
             isLocalNav: configBlock.isLocalNav,
-            mobileGnavV2: configBlock.mobileGnavV2 || 'off',
+            mobileGnavV2: configBlock.mobileGnavV2 || 'on',
           });
+          window.closeGnav = closeGnavOptions;
           configBlock.onReady?.();
         } catch (e) {
           configBlock.onError?.(e);

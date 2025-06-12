@@ -74,15 +74,15 @@ export const styles = css`
         }
 
         #searchBar {
-            grid-column: span 1;
+            grid-column: 1;
         }
 
         #filtersButton {
-            grid-column: span 1;
+            grid-column: 2;
         }
 
         #sortButton {
-            grid-column: span 1;
+            grid-column: 3;
         }
     }
 

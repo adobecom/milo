@@ -8,29 +8,27 @@ import { Log } from './log.js';
 import { Price } from './price.js';
 import { getSettings } from './settings.js';
 import { Wcs } from './wcs.js';
-import { setImmediate } from './utilities.js';
 import { updateConfig as updateLanaConfig } from './lana.js';
-import { getMasCommerceServiceDurationLog } from './utils.js';
 
 export const TAG_NAME_SERVICE = 'mas-commerce-service';
 
 const MARK_START = 'mas:start';
 const MARK_READY = 'mas:ready';
 
+export const MEASURE_INIT_TIME = 'mas-commerce-service:initTime';
+
 /**
- * Custom web component to provide active instance of commerce service
- * to consumers, appended to the head section of current document.
+ * web component to provide commerce and fragment service to consumers.
  */
 export class MasCommerceService extends HTMLElement {
-    static instance;
-    readyPromise = null;
+    #initDuration;
 
     lastLoggingTime = 0;
     get #config() {
         const env = this.getAttribute('env') ?? 'prod';
         const config = {
-            hostEnv: { name: env },
             commerce: { env },
+            hostEnv: { name: env },
             lana: {
                 tags: this.getAttribute('lana-tags'),
                 sampleRate: parseInt(
@@ -42,7 +40,7 @@ export class MasCommerceService extends HTMLElement {
             masIOUrl: this.getAttribute('mas-io-url'),
         };
         //root parameters
-        ['locale', 'country', 'language'].forEach((attribute) => {
+        ['locale', 'country', 'language', 'preview'].forEach((attribute) => {
             const value = this.getAttribute(attribute);
             if (value) {
                 config[attribute] = value;
@@ -83,22 +81,17 @@ export class MasCommerceService extends HTMLElement {
         };
     }
 
-    async activate(resolve) {
+    activate() {
         const config = this.#config;
         // Load settings and literals
-        const settings = Object.freeze(getSettings(config));
+        const settings = getSettings(config);
         updateLanaConfig(config.lana);
         const log = Log.init(config.hostEnv).module('service');
         log.debug('Activating:', config);
 
         // Fetch price literals
-        const literals = { price: {} };
-        try {
-            literals.price = await getPriceLiterals(
-                settings,
-                config.commerce.priceLiterals,
-            );
-        } catch (e) {}
+        const price = getPriceLiterals(settings);
+        const literals = { price };
         // Create checkout/price options providers registry
         const providers = {
             checkout: new Set(),
@@ -134,6 +127,9 @@ export class MasCommerceService extends HTMLElement {
                             providers.price.add(provider);
                             return () => providers.price.delete(provider);
                         },
+                        has: (providerFunction) =>
+                            providers.price.has(providerFunction) ||
+                            providers.checkout.has(providerFunction),
                     };
                 },
                 get settings() {
@@ -142,33 +138,26 @@ export class MasCommerceService extends HTMLElement {
             }),
         );
         log.debug('Activated:', { literals, settings });
-        setImmediate(() => {
-            const event = new CustomEvent(EVENT_TYPE_READY, {
-                bubbles: true,
-                cancelable: false,
-                detail: this,
-            });
-            performance.mark(MARK_READY);
-            this.initDuration = performance.measure(
-                Constants.MAS_COMMERCE_SERVICE_INIT_TIME_MEASURE_NAME,
-                MARK_START,
-                MARK_READY,
-            )?.duration;
-            this.dispatchEvent(event);
-            resolve(this);
+        const event = new CustomEvent(EVENT_TYPE_READY, {
+            bubbles: true,
+            cancelable: false,
+            detail: this,
         });
+        performance.mark(MARK_READY);
+        this.#initDuration = performance.measure(
+            MEASURE_INIT_TIME,
+            MARK_START,
+            MARK_READY,
+        )?.duration;
+        this.dispatchEvent(event);
         setTimeout(() => {
             this.logFailedRequests();
         }, 10000);
     }
 
     connectedCallback() {
-      performance.mark(MARK_START);
-      this.readyPromise = new Promise((resolve) => this.activate(resolve));
-    }
-
-    disconnectedCallback() {
-        this.readyPromise = null;
+        performance.mark(MARK_START);
+        this.activate();
     }
 
     flushWcsCache() {
@@ -191,6 +180,12 @@ export class MasCommerceService extends HTMLElement {
         document.querySelectorAll('aem-fragment').forEach((el) => el.refresh());
         this.log.debug('Refreshed AEM fragments');
         this.logFailedRequests();
+    }
+
+    get duration() {
+        return {
+            [MEASURE_INIT_TIME]: this.#initDuration,
+        };
     }
 
     /**
@@ -226,7 +221,7 @@ export class MasCommerceService extends HTMLElement {
             const failedUrls = uniqueFailedResources.map(({ name }) => name);
             this.log.error('Failed requests:', {
                 failedUrls,
-                ...getMasCommerceServiceDurationLog(),
+                ...this.duration,
             });
         }
         this.lastLoggingTime = performance.now().toFixed(3);

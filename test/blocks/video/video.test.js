@@ -174,6 +174,7 @@ describe('video uploaded using franklin bot', () => {
     pausePlayWrapper.click();
     setTimeout(callback, 500);
     await clock.runAllAsync();
+    pausePlayWrapper.click();
     expect(pausePlayWrapper.ariaPressed).to.eql('false');
   });
 
@@ -186,7 +187,6 @@ describe('video uploaded using franklin bot', () => {
     pausePlayWrapper.setAttribute('daa-ll', 'pause-motion');
     setTimeout(callback, 500);
     await clock.runAllAsync();
-    pausePlayWrapper.click();
     expect(pausePlayWrapper.querySelector('.is-playing')).to.exist;
   });
 

@@ -16,11 +16,6 @@ export class CCDSlice extends VariantLayout {
         return CSS;
     }
 
-    /* c8 ignore next 3 */
-    get aemFragmentMapping() {
-        return CCD_SLICE_AEM_FRAGMENT_MAPPING;
-    }
-
     renderLayout() {
         return html` <div class="content">
                 <div class="top-section">
@@ -41,7 +36,6 @@ export class CCDSlice extends VariantLayout {
             --consonant-merch-card-body-s-color: rgb(34, 34, 34);
             --merch-color-inline-price-strikethrough: var(--spectrum-gray-600);
             --mod-img-height: 29px;
-
             box-sizing: border-box;
             min-width: 290px;
             max-width: 322px;

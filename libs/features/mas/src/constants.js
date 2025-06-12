@@ -1,3 +1,32 @@
+export const Commitment = Object.freeze({
+    MONTH: 'MONTH',
+    YEAR: 'YEAR',
+    TWO_YEARS: 'TWO_YEARS',
+    THREE_YEARS: 'THREE_YEARS',
+    PERPETUAL: 'PERPETUAL',
+    TERM_LICENSE: 'TERM_LICENSE',
+    ACCESS_PASS: 'ACCESS_PASS',
+    THREE_MONTHS: 'THREE_MONTHS',
+    SIX_MONTHS: 'SIX_MONTHS',
+});
+
+export const Term = Object.freeze({
+    ANNUAL: 'ANNUAL',
+    MONTHLY: 'MONTHLY',
+    TWO_YEARS: 'TWO_YEARS',
+    THREE_YEARS: 'THREE_YEARS',
+    P1D: 'P1D',
+    P1Y: 'P1Y',
+    P3Y: 'P3Y',
+    P10Y: 'P10Y',
+    P15Y: 'P15Y',
+    P3D: 'P3D',
+    P7D: 'P7D',
+    P30D: 'P30D',
+    HALF_YEARLY: 'HALF_YEARLY',
+    QUARTERLY: 'QUARTERLY',
+});
+
 /**
  * Common namespace prefix for CSS classes and DOM event types.
  * @see https://git.corp.adobe.com/wcms/team/discussions/27
@@ -48,6 +77,10 @@ export const EVENT_MERCH_STORAGE_CHANGE = 'merch-storage:change';
 export const EVENT_MERCH_QUANTITY_SELECTOR_CHANGE =
     'merch-quantity-selector:change';
 
+export const EVENT_MERCH_CARD_QUANTITY_CHANGE = 'merch-card-quantity:change';
+
+export const EVENT_MERCH_ADDON_AND_QUANTITY_UPDATE = 'merch-modal:addon-and-quantity-update';
+
 export const EVENT_MERCH_SEARCH_CHANGE = 'merch-search:change';
 
 export const EVENT_MERCH_CARD_COLLECTION_SORT = 'merch-card-collection:sort';
@@ -75,6 +108,7 @@ export const EVENT_TYPE_RESOLVED = 'mas:resolved';
 
 export const LOG_NAMESPACE = 'mas/commerce';
 
+export const PARAM_MAS_PREVIEW = "mas.preview";
 export const PARAM_ENV = 'commerce.env';
 export const PARAM_LANDSCAPE = 'commerce.landscape';
 export const PARAM_AOS_API_KEY = 'commerce.aosKey';
@@ -95,10 +129,7 @@ export const Landscape = {
 
 export const HEADER_X_REQUEST_ID = 'X-Request-Id';
 
-export const MAS_COMMERCE_SERVICE_INIT_TIME_MEASURE_NAME =
-    'mas-commerce-service:initTime';
-
-export const WORKFLOW_STEP = {
+export const CheckoutWorkflowStep = Object.freeze({
     CHECKOUT: 'checkout',
     CHECKOUT_EMAIL: 'checkout/email',
     SEGMENTATION: 'segmentation',
@@ -109,7 +140,15 @@ export const WORKFLOW_STEP = {
     PAYMENT: 'payment',
     CHANGE_PLAN_TEAM_PLANS: 'change-plan/team-upgrade/plans',
     CHANGE_PLAN_TEAM_PAYMENT: 'change-plan/team-upgrade/payment',
-};
+});
+
+export const CheckoutWorkflow = Object.freeze({ V2: 'UCv2', V3: 'UCv3' });
+
+export const Env = Object.freeze({
+    STAGE: 'STAGE',
+    PRODUCTION: 'PRODUCTION',
+    LOCAL: 'LOCAL',
+});
 
 export const PROVIDER_ENVIRONMENT = {
     PRODUCTION: 'PRODUCTION',
@@ -123,3 +162,8 @@ export const MODAL_TYPE_3_IN_1 = {
 
 export const MARK_START_SUFFIX = ':start';
 export const MARK_DURATION_SUFFIX = ':duration';
+
+export const TEMPLATE_PRICE = 'price';
+export const TEMPLATE_PRICE_STRIKETHROUGH = 'price-strikethrough';
+export const TEMPLATE_PRICE_ANNUAL = 'annual';
+export const TEMPLATE_PRICE_LEGAL = 'legal';

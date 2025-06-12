@@ -4,6 +4,7 @@ import { getMetadata } from '../section-metadata/section-metadata.js';
 import { processTrackingLabels } from '../../martech/attributes.js';
 import '../../deps/mas/merch-card.js';
 import '../../deps/lit-all.min.js';
+import { initService } from '../merch/merch.js';
 
 const TAG_PATTERN = /^[a-zA-Z0-9_-]+:[a-zA-Z0-9_-]+\/[a-zA-Z0-9_-].*$/;
 
@@ -88,25 +89,34 @@ export async function loadMnemonicList(foreground) {
   }
 }
 
-function extractQuantitySelect(el) {
-  const quantitySelectConfig = [...el.querySelectorAll('ul')]
-    .find((ul) => ul.querySelector('li')?.innerText?.includes('Quantity'));
-  const configMarkup = quantitySelectConfig?.querySelector('ul');
-  if (!configMarkup) return null;
-  const config = configMarkup.children;
-  if (config.length !== 2) return null;
+function extractQuantitySelect(el, merchCard) {
   const attributes = {};
-  attributes.title = config[0].textContent.trim();
-  const values = config[1].textContent.split(',')
-    .map((value) => value.trim())
-    .filter((value) => /^\d*$/.test(value))
-    .map((value) => (value === '' ? undefined : Number(value)));
-  quantitySelectConfig.remove();
-  if (![3, 4, 5].includes(values.length)) return null;
+  const quantitySelectLink = merchCard?.querySelector('a[href*="#qs"]');
+  if (quantitySelectLink) {
+    const str = quantitySelectLink.getAttribute('href');
+    attributes.title = quantitySelectLink.textContent.trim();
+    const regex = /min=(\d+)&max=(\d+)&step=(\d+)&default=(\d+)&max-input=(\d+)/;
+    [, attributes.min, attributes.max, attributes.step, attributes['default-value'], attributes['max-input']] = str.match(regex);
+    quantitySelectLink.parentElement.remove();
+  } else { // todo: old approach, remove once backwards compatibility is no longer required
+    const quantitySelectConfig = [...el.querySelectorAll('ul')]
+      .find((ul) => ul.querySelector('li')?.innerText?.includes('Quantity'));
+    const configMarkup = quantitySelectConfig?.querySelector('ul');
+    if (configMarkup?.children?.length !== 2) return null;
+    const config = configMarkup.children;
+    attributes.title = config[0].textContent.trim();
+    const values = config[1].textContent.split(',')
+      .map((value) => value.trim())
+      .filter((value) => /^\d*$/.test(value))
+      .map((value) => (value === '' ? undefined : Number(value)));
+    quantitySelectConfig.remove();
+    [attributes.min, attributes.max, attributes.step, attributes['default-value'], attributes['max-input']] = values;
+  }
+  if (!attributes.min || !attributes.max || !attributes.step) {
+    return null;
+  }
   import('../../deps/mas/merch-quantity-select.js');
-  [attributes.min, attributes.max, attributes.step, attributes['default-value'], attributes['max-input']] = values;
-  const quantitySelect = createTag('merch-quantity-select', attributes);
-  return quantitySelect;
+  return createTag('merch-quantity-select', attributes);
 }
 
 const parseTwpContent = async (el, merchCard) => {
@@ -231,7 +241,7 @@ const parseContent = async (el, merchCard) => {
     if (isHeadingTag(tagName)) {
       let slotName = SLOT_MAP[merchCard.variant]?.[tagName] || SLOT_MAP_DEFAULT[tagName];
       if (slotName) {
-        if (['H2', 'H3', 'H4', 'H5'].includes(tagName)) {
+        if (['H2', 'H3', 'H4', 'H5', 'H6'].includes(tagName)) {
           if (tagName === 'H3') headingXsCount += 1;
           element.classList.add('card-heading');
           if (merchCard.badgeText) {
@@ -268,10 +278,10 @@ const parseContent = async (el, merchCard) => {
     }
     if (isParagraphTag(tagName)) {
       bodySlot.append(element);
-      merchCard.append(bodySlot);
     }
     if (mnemonicList) bodySlot.append(mnemonicList);
   });
+  merchCard.append(bodySlot);
 
   if (merchCard.variant === MINI_COMPARE_CHART && merchCard.childNodes[1]) {
     merchCard.insertBefore(bodySlot, merchCard.childNodes[1]);
@@ -358,6 +368,44 @@ const addStock = (merchCard, styles) => {
   }
 };
 
+const addAddon = (merchCard, styles) => {
+  const genai = /add-addon-genai/.test(merchCard.className) ? 'genai' : null;
+  const stock = /add-addon-stock/.test(merchCard.className) ? 'stock' : null;
+  const addonType = genai || stock;
+  if (addonType) {
+    let selector = `template.addon.${addonType}.individual`;
+    if (styles.includes('edu')) {
+      selector = `template.addon.${addonType}.edu`;
+    } else if (styles.includes('team')) {
+      selector = `template.addon.${addonType}.team`;
+    }
+    let planType = '';
+    if (styles.includes('m2m')) {
+      planType = 'M2M';
+    } else if (styles.includes('abm')) {
+      planType = 'ABM';
+    } else if (styles.includes('puf')) {
+      planType = 'PUF';
+    }
+
+    if (planType) {
+      merchCard.setAttribute('plan-type', planType);
+    }
+    const template = document.querySelector(selector);
+    if (!template) return;
+    const addon = template.content.cloneNode(true).firstElementChild;
+    addon.setAttribute('slot', 'addon');
+    const gradient = createTag('merch-gradient', {
+      colors: '#F5F6FD, #F8F1F8, #F9E9ED',
+      positions: '33.52%, 67.33%, 110.37%',
+      angle: '211deg',
+      'border-radius': '10px',
+    });
+    addon.appendChild(gradient);
+    merchCard.appendChild(addon);
+  }
+};
+
 const simplifyHrs = (el) => {
   const hrs = el.querySelectorAll('hr');
   hrs.forEach((hr) => {
@@ -398,10 +446,21 @@ const createFirstRow = async (firstRow, isMobile, checkmarkCopyContainer, defaul
   let firstRowTextParagraph;
 
   if (isMobile) {
-    const { chevronDownSVG, chevronUpSVG } = await import('./img/chevron.js');
-    const chevronIcon = createTag('span', { class: 'chevron-icon' }, chevronDownSVG);
+    const addIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 28 28" fill="none">
+    <circle cx="14" cy="14" r="12" fill="#F8F8F8"/><path d="M14 26C7.38258 26 2 20.6174 2 14C2 7.38258 7.38258 2 14 2C20.6174 2 26 7.38258 26 14C26 20.6174 20.6174 26 14 26ZM14 4.05714C8.51696 4.05714 4.05714 8.51696 4.05714 14C4.05714 19.483 8.51696 23.9429 14 23.9429C19.483 23.9429 23.9429 19.483 23.9429 14C23.9429 8.51696 19.483 4.05714 14 4.05714Z" fill="#292929"/>
+    <path d="M18.55 12.95H15.05V9.45002C15.05 8.87034 14.5797 8.40002 14 8.40002C13.4203 8.40002 12.95 8.87034 12.95 9.45002V12.95H9.44999C8.87031 12.95 8.39999 13.4203 8.39999 14C8.39999 14.5797 8.87031 15.05 9.44999 15.05H12.95V18.55C12.95 19.1297 13.4203 19.6 14 19.6C14.5797 19.6 15.05 19.1297 15.05 18.55V15.05H18.55C19.1297 15.05 19.6 14.5797 19.6 14C19.6 13.4203 19.1297 12.95 18.55 12.95Z" fill="#292929"/></svg>`;
+    const removeIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 28 28" fill="none">
+    <circle cx="14" cy="14" r="12" fill="#292929"/><path d="M14 26C7.38258 26 2 20.6174 2 14C2 7.38258 7.38258 2 14 2C20.6174 2 26 7.38258 26 14C26 20.6174 20.6174 26 14 26ZM14 4.05714C8.51696 4.05714 4.05714 8.51696 4.05714 14C4.05714 19.483 8.51696 23.9429 14 23.9429C19.483 23.9429 23.9429 19.483 23.9429 14C23.9429 8.51696 19.483 4.05714 14 4.05714Z" fill="#292929"/>
+    <path d="M9 14L19 14" stroke="white" stroke-width="2" stroke-linecap="round"/></svg>`;
+    const toggleIcon = createTag('button', {
+      class: 'toggle-icon',
+      'aria-label': firstRowText,
+      'aria-expanded': defaultChevronState === 'open',
+      'aria-controls': checkmarkCopyContainer.id,
+      'daa-lh': `${checkmarkCopyContainer.id}-toggle-button`,
+    }, addIcon);
     firstRowTextParagraph = createTag('div', { class: 'footer-rows-title' }, firstRowText);
-    firstRowTextParagraph.appendChild(chevronIcon);
+    firstRowTextParagraph.appendChild(toggleIcon);
 
     if (defaultChevronState === 'open') {
       checkmarkCopyContainer.classList.add('open');
@@ -409,7 +468,8 @@ const createFirstRow = async (firstRow, isMobile, checkmarkCopyContainer, defaul
 
     firstRowTextParagraph.addEventListener('click', () => {
       const isOpen = checkmarkCopyContainer.classList.toggle('open');
-      chevronIcon.innerHTML = isOpen ? chevronUpSVG : chevronDownSVG;
+      toggleIcon.setAttribute('aria-expanded', isOpen);
+      toggleIcon.innerHTML = isOpen ? removeIcon : addIcon;
     });
   } else {
     firstRowTextParagraph = createTag('div', { class: 'footer-rows-title' }, firstRowText);
@@ -428,6 +488,7 @@ const createFooterRowCell = (row, isCheckmark) => {
   const footerRowCell = createTag('li', { class: footerRowCellClass });
 
   if (rowIcon) {
+    rowIcon.querySelector('img')?.removeAttribute('loading');
     rowIcon.classList.add(footerRowIconClass);
     footerRowCell.appendChild(rowIcon);
   }
@@ -459,9 +520,16 @@ const decorateFooterRows = async (merchCard, footerRows) => {
       }
     });
 
-    const hrElem = createTag('hr', { style: `background: ${bgStyle};` });
-    footerRowsSlot.appendChild(hrElem);
-    merchCard.classList.add('has-divider');
+    if (!isMobile) {
+      const hrElem = createTag('hr', { style: `background: ${bgStyle}` });
+      footerRowsSlot.appendChild(hrElem);
+      merchCard.classList.add('has-divider');
+    }
+
+    const merchCardHeading = merchCard.querySelector('h3')?.id;
+    if (merchCardHeading) {
+      ulContainer.setAttribute('id', `${merchCardHeading}-list`);
+    }
 
     ulContainer.classList.add('checkmark-copy-container');
     const firstRowTextParagraph = await createFirstRow(
@@ -474,8 +542,7 @@ const decorateFooterRows = async (merchCard, footerRows) => {
     footerRowsSlot.appendChild(firstRowTextParagraph);
 
     footerRows.splice(0, 1);
-    footerRowsSlot.style.padding = '0px var(--consonant-merch-spacing-xs)';
-    footerRowsSlot.style.marginBlockEnd = 'var(--consonant-merch-spacing-xs)';
+    footerRowsSlot.style.padding = 'var(--consonant-merch-card-card-mini-compare-mobile-spacing-xs) var(--consonant-merch-spacing-xs)';
   }
   footerRowsSlot.appendChild(ulContainer);
 
@@ -528,6 +595,7 @@ const addStartingAt = async (styles, merchCard) => {
 
 export default async function init(el) {
   if (!el.querySelector(INNER_ELEMENTS_SELECTOR)) return el;
+  const merchServicePromise = initService();
   // TODO: Remove after bugfix PR adobe/helix-html2md#556 is merged
   const liELs = el.querySelectorAll('ul li');
   if (liELs) {
@@ -632,6 +700,8 @@ export default async function init(el) {
     ? getActionMenuContent(el)
     : null;
   if (actionMenuContent) {
+    const { replaceKey } = await import('../../features/placeholders.js');
+    await replaceKey('action-menu', getConfig()).then((key) => merchCard.setAttribute('action-menu-label', key));
     merchCard.setAttribute('action-menu', true);
     merchCard.append(
       createTag(
@@ -684,6 +754,7 @@ export default async function init(el) {
   }
 
   addStock(merchCard, styles);
+  addAddon(merchCard, styles);
   if (styles.includes('secure')) {
     const { replaceKey } = await import('../../features/placeholders.js');
     await replaceKey('secure-transaction', getConfig()).then((key) => merchCard.setAttribute('secure-label', key));
@@ -696,13 +767,21 @@ export default async function init(el) {
 
     const footer = createTag('div', { slot: 'footer' });
     if (ctas) {
-      decorateButtons(ctas, (merchCard.variant === MINI_COMPARE_CHART) ? 'button-l' : undefined);
+      let buttonSize;
+      if (merchCard.variant === MINI_COMPARE_CHART
+        && merchCard.classList.contains('bullet-list')
+        && window.matchMedia('(max-width: 767px)').matches) {
+        buttonSize = 'button-xl';
+      } else if (merchCard.variant === MINI_COMPARE_CHART) {
+        buttonSize = 'button-l';
+      }
+      decorateButtons(ctas, buttonSize);
       footer.append(ctas);
     }
     merchCard.appendChild(footer);
 
     if (MULTI_OFFER_CARDS.includes(cardType)) {
-      const quantitySelect = extractQuantitySelect(el);
+      const quantitySelect = extractQuantitySelect(el, merchCard);
       const offerSelection = el.querySelector('ul');
       if (merchCard.variant === MINI_COMPARE_CHART) {
         const miniCompareOffers = createTag('div', { slot: 'offers' });
@@ -732,6 +811,7 @@ export default async function init(el) {
   } else {
     parseTwpContent(el, merchCard);
   }
+  await merchServicePromise;
   el.replaceWith(merchCard);
   decorateMerchCardLinkAnalytics(merchCard);
   return merchCard;
