@@ -210,7 +210,7 @@ export class MasCommerceService extends HTMLElement {
 
         if (
             uniqueFailedResources.some(({ name }) =>
-                /(\/fragments\/|web_commerce_artifact)/.test(name),
+                /(\/fragment\?|web_commerce_artifact)/.test(name),
             )
         ) {
             const failedUrls = uniqueFailedResources.map(({ name }) => name);
