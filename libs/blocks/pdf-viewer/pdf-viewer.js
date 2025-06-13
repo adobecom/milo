@@ -11,7 +11,7 @@ export const CLIENT_ID_HLX_LIVE = '96e41871f28349e08b3562747a72dc75';
 const PDF_EMBED_MODE_CONFIG = {
   'full-window': { defaultViewMode: 'FIT_WIDTH' },
   default: { embedMode: 'IN_LINE' },
-  'test': { defaultViewMode: 'FIT_PAGE' },
+  'test': { embedMode: 'SIZED_CONTAINER' },
 };
 
 export const getPdfConfig = (location) => {
