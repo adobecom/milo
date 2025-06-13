@@ -1,4 +1,4 @@
-import { createTag, getConfig } from '../../utils/utils.js';
+import { createTag, getConfig, decorateLinks } from '../../utils/utils.js';
 import { initService, getOptions, MEP_SELECTOR, overrideOptions } from '../merch/merch.js';
 import '../../deps/mas/merch-card-collection.js';
 import '../../deps/mas/merch-card.js';
@@ -146,6 +146,7 @@ export async function createCollection(el, options) {
     }
   }
 
+  decorateLinks(collection);
   collection.requestUpdate();
 }
 

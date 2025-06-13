@@ -1,4 +1,4 @@
-import { createTag } from '../../utils/utils.js';
+import { createTag, decorateLinks } from '../../utils/utils.js';
 import '../../deps/mas/merch-card.js';
 import '../../deps/mas/merch-quantity-select.js';
 import { initService, getOptions, overrideOptions } from '../merch/merch.js';
@@ -38,6 +38,7 @@ export async function createCard(el, options) {
   const merchCard = createTag('merch-card', { consonant: '' }, aemFragment);
   el.replaceWith(merchCard);
   await checkReady(merchCard);
+  decorateLinks(merchCard);
 }
 
 export default async function init(el) {
