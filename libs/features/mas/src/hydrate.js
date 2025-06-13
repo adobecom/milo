@@ -224,9 +224,67 @@ export function processPrices(fields, merchCard, mapping) {
     appendSlot('prices', fields, merchCard, mapping);
 }
 
+function transformLinkToButton(linkElement, merchCard, aemFragmentMapping) {
+    const isCheckoutLink = linkElement.hasAttribute('data-wcs-osi') && Boolean(linkElement.getAttribute('data-wcs-osi'));
+    const originalClassName = linkElement.className || '';
+    const checkoutLinkStyle = CHECKOUT_STYLE_PATTERN.exec(originalClassName)?.[0] ?? 'accent';
+    const isAccent = checkoutLinkStyle.includes('accent');
+    const isPrimary = checkoutLinkStyle.includes('primary');
+    const isSecondary = checkoutLinkStyle.includes('secondary');
+    const isOutline = checkoutLinkStyle.includes('-outline');
+    const isLinkStyle = checkoutLinkStyle.includes('-link');
+
+    linkElement.classList.remove('accent', 'primary', 'secondary');
+
+    let newButtonElement;
+
+    if (merchCard.consonant) {
+        newButtonElement = createConsonantButton(linkElement, isAccent, isCheckoutLink, isLinkStyle);
+    } else if (isLinkStyle) {
+        newButtonElement = linkElement;
+    } else {
+        let variant;
+        if (isAccent) {
+            variant = 'accent';
+        } else if (isPrimary) {
+            variant = 'primary';
+        } else if (isSecondary) {
+            variant = 'secondary';
+        }
+
+        newButtonElement = merchCard.spectrum === 'swc'
+            ? createSpectrumSwcButton(
+                  linkElement,
+                  aemFragmentMapping, 
+                  isOutline,
+                  variant,
+                  isCheckoutLink
+              )
+            : createSpectrumCssButton(
+                  linkElement,
+                  aemFragmentMapping,
+                  isOutline,
+                  variant,
+                  isCheckoutLink
+              );
+    }
+    return newButtonElement;
+}
+
+function processDescriptionLinks(merchCard, aemFragmentMapping) {
+    const { slot } = aemFragmentMapping?.description
+    const links = merchCard.querySelectorAll(`[slot="${slot}"] a[data-wcs-osi]`);
+    if(!links.length) return;
+    links.forEach(link => {
+            const checkoutLink = transformLinkToButton(link, merchCard, aemFragmentMapping);
+                link.replaceWith(checkoutLink);
+    });
+}
+
 export function processDescription(fields, merchCard, mapping) {
     appendSlot('promoText', fields, merchCard, mapping);
     appendSlot('description', fields, merchCard, mapping);
+    processDescriptionLinks(merchCard, mapping);
     appendSlot('callout', fields, merchCard, mapping);
     appendSlot('quantitySelect', fields, merchCard, mapping);
     appendSlot('whatsIncluded', fields, merchCard, mapping);
@@ -367,7 +425,7 @@ function createSpectrumCssButton(cta, aemFragmentMapping, isOutline, variant, is
         button.setAttribute(attr.name, attr.value);
     }
     button.firstElementChild?.classList.add('spectrum-Button-label');
-    const size = aemFragmentMapping.ctas.size ?? 'M';
+    const size = aemFragmentMapping?.ctas?.size ?? 'M';
     const variantClass = `spectrum-Button--${variant}`;
     const sizeClass = SPECTRUM_BUTTON_SIZES.includes(size)
         ? `spectrum-Button--size${size}`
@@ -395,14 +453,13 @@ function createSpectrumSwcButton(cta, aemFragmentMapping, isOutline, variant, is
     if (isOutline) {
         treatment = 'outline';
     }
-
     const spectrumCta = createTag(
         'sp-button',
         {
             treatment,
             variant,
             tabIndex: 0,
-            size: aemFragmentMapping.ctas.size ?? 'm',
+            size: aemFragmentMapping?.ctas?.size ?? 'm',
             ...(cta.dataset.analyticsId && {
                 'data-analytics-id': cta.dataset.analyticsId,
             }),
@@ -423,7 +480,7 @@ function createSpectrumSwcButton(cta, aemFragmentMapping, isOutline, variant, is
     return spectrumCta;
 }
 
-function createConsonantButton(cta, isAccent, isCheckout) {
+function createConsonantButton(cta, isAccent, isCheckout, isLinkStyle) {
     let button = cta;
     if (isCheckout) {
         const CheckoutLink = customElements.get('checkout-link');
@@ -432,9 +489,11 @@ function createConsonantButton(cta, isAccent, isCheckout) {
             cta.innerHTML,
         );
     }
-    button.classList.add('con-button');
-    if (isAccent) {
-        button.classList.add('blue');
+    if(!isLinkStyle) {
+        button.classList.add('con-button');
+        if (isAccent) {
+            button.classList.add('blue');
+        }
     }
     return button;
 }
@@ -443,47 +502,9 @@ export function processCTAs(fields, merchCard, aemFragmentMapping, variant) {
     if (fields.ctas) {
         const { slot } = aemFragmentMapping.ctas;
         const footer = createTag('div', { slot }, fields.ctas);
-
-        // Process buttons while preserving other content
         const ctas = [...footer.querySelectorAll('a')].map((cta) => {
-            const isCheckout = cta.hasAttribute('data-wcs-osi') && Boolean(cta.getAttribute('data-wcs-osi'));
-            const checkoutLinkStyle = CHECKOUT_STYLE_PATTERN.exec(cta.className)?.[0] ?? 'accent';
-            const isAccent = checkoutLinkStyle.includes('accent');
-            const isPrimary = checkoutLinkStyle.includes('primary');
-            const isSecondary = checkoutLinkStyle.includes('secondary');
-            const isOutline = checkoutLinkStyle.includes('-outline');
-            const isLink = checkoutLinkStyle.includes('-link');
-            cta.classList.remove('accent', 'primary', 'secondary');
-            if (merchCard.consonant)
-                return createConsonantButton(cta, isAccent, isCheckout);
-            if (isLink) {
-                return cta;
-            }
-
-            let variant;
-            if (isAccent) {
-                variant = 'accent';
-            } else if (isPrimary) {
-                variant = 'primary';
-            } else if (isSecondary) {
-                variant = 'secondary';
-            }
-
-            return merchCard.spectrum === 'swc'
-                ? createSpectrumSwcButton(
-                      cta,
-                      aemFragmentMapping,
-                      isOutline,
-                      variant,
-                      isCheckout
-                  )
-                : createSpectrumCssButton(
-                      cta,
-                      aemFragmentMapping,
-                      isOutline,
-                      variant,
-                      isCheckout
-                  );
+            const checkoutButton = transformLinkToButton(cta, merchCard, aemFragmentMapping);
+            return checkoutButton;
         });
 
         footer.innerHTML = '';
