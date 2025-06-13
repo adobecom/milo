@@ -5,7 +5,8 @@ import {
     MARK_DURATION_SUFFIX,
 } from './constants.js';
 import { MasError } from './mas-error.js';
-import { getService } from './utils.js';
+import { getLogHeaders } from './utilities.js';
+import { getService, printMeasure } from './utils.js';
 import { masFetch } from './utils/mas-fetch.js';
 
 const sheet = new CSSStyleSheet();
@@ -29,6 +30,10 @@ class FragmentCache {
      * requested id can differe from returned fragment.id because of translation
      */
     addByRequestedId(fragmentId, fragment) {
+        this.#fragmentCache.set(fragmentId, fragment);
+    }
+
+    put(fragmentId, fragment) {
         this.#fragmentCache.set(fragmentId, fragment);
     }
 
@@ -67,8 +72,13 @@ export class AemFragment extends HTMLElement {
 
     #rawData = null;
     #data = null;
-    #stale = false;
-    #startMark = null;
+    #fetchInfo = {
+        url: null,
+        retryCount: 0,
+        stale: false,
+        measure: null,
+        status: null,
+    };
     #service = null;
 
     /**
@@ -82,6 +92,7 @@ export class AemFragment extends HTMLElement {
     #fetchPromise;
 
     #author = false;
+    #fetchCount = 0;
 
     #preview = undefined;
 
@@ -109,16 +120,25 @@ export class AemFragment extends HTMLElement {
 
     connectedCallback() {
         if (this.#fetchPromise) return;
-        this.#service = getService(this);
+        this.#service ??= getService(this);
         this.#preview = this.#service.settings?.preview;
-        this.#log = this.#service.log.module(AEM_FRAGMENT_TAG_NAME);
-        this.#startMark = `${AEM_FRAGMENT_TAG_NAME}:${this.#fragmentId}${MARK_START_SUFFIX}`;
-        performance.mark(this.#startMark);
-        if (!this.#fragmentId) {
-            this.#fail({ message: 'Missing fragment id' });
+        this.#log ??= this.#service.log.module(
+            `${AEM_FRAGMENT_TAG_NAME}[${this.#fragmentId}]`,
+        );
+        // TODO get rid of the special case for #
+        if (!this.#fragmentId || this.#fragmentId === '#') {
+            this.#fail('Missing fragment id');
             return;
         }
         this.refresh(false);
+    }
+
+    get fetchInfo() {
+        return Object.fromEntries(
+            Object.entries(this.#fetchInfo)
+                .filter(([key, value]) => value != undefined)
+                .map(([key, value]) => [`aem-fragment:${key}`, value]),
+        );
     }
 
     /**
@@ -128,46 +148,55 @@ export class AemFragment extends HTMLElement {
      * @param {string} startMark performance mark to measure duration
      * @returns {Promise<Object>} the raw fragment item
      */
-    async getFragmentById(endpoint, id, startMark) {
-        const measureName = `${AEM_FRAGMENT_TAG_NAME}:${id}${MARK_DURATION_SUFFIX}`;
+    async #getFragmentById(endpoint) {
+        this.#fetchCount++;
+        const markPrefix = `${AEM_FRAGMENT_TAG_NAME}:${this.#fragmentId}:${this.#fetchCount}`;
+        const startMarkName = `${markPrefix}${MARK_START_SUFFIX}`;
+        const measureName = `${markPrefix}${MARK_DURATION_SUFFIX}`;
         if (this.#preview) {
           return await this.generatePreview();
         }
+        performance.mark(startMarkName);
         let response;
         try {
+            this.#fetchInfo.stale = false;
+            this.#fetchInfo.url = endpoint;
             response = await masFetch(endpoint, {
                 cache: 'default',
                 credentials: 'omit',
             });
+            this.#applyHeaders(response);
+            this.#fetchInfo.status = response?.status;
+            this.#fetchInfo.measure = printMeasure(performance.measure(
+                measureName,
+                startMarkName,
+            ));
+            this.#fetchInfo.retryCount = response.retryCount;
             if (!response?.ok) {
-                const { startTime, duration } = performance.measure(
-                    measureName,
-                    startMark,
-                );
                 throw new MasError('Unexpected fragment response', {
                     response,
-                    startTime,
-                    duration,
                     ...this.#service.duration,
                 });
             }
-            return response.json();
+            return await response.json();
         } catch (e) {
-            const { startTime, duration } = performance.measure(
+            this.#fetchInfo.measure = printMeasure(performance.measure(
                 measureName,
-                startMark,
-            );
-            if (!response) {
-                response = { url: endpoint };
+                startMarkName,
+            ));
+            this.#fetchInfo.retryCount = e.retryCount;
+            if (this.#rawData) {
+                this.#fetchInfo.stale = true;
+                this.#log.error(`Serving stale data`, this.#fetchInfo);
+                return this.#rawData;
             }
-
-            throw new MasError('Failed to fetch fragment', {
-                response,
-                startTime,
-                duration,
-                ...this.#service.duration,
-            });
+            const reason = e.message ?? 'unknown';
+            throw new MasError(`Failed to fetch fragment: ${reason}`, {});
         }
+    }
+
+    #applyHeaders(response) {
+        Object.assign(this.#fetchInfo, getLogHeaders(response));
     }
 
     async refresh(flushCache = true) {
@@ -181,69 +210,66 @@ export class AemFragment extends HTMLElement {
         if (flushCache) {
             cache.remove(this.#fragmentId);
         }
+        try {
+            this.#fetchPromise = this.#fetchData();
+            await this.#fetchPromise;
+        } catch (e) {
+            this.#fail(e.message);
+            return false;
+        }
+        const { references, referencesTree, placeholders } =
+            this.#rawData || {};
 
-        this.#fetchPromise = this.fetchData()
-            .then(() => {
-                const { references, referencesTree, placeholders } =
-                    this.#rawData || {};
-                this.dispatchEvent(
-                    new CustomEvent(EVENT_AEM_LOAD, {
-                        detail: {
-                            ...this.data,
-                            stale: this.#stale,
-                            references,
-                            referencesTree,
-                            placeholders,
-                        },
-                        bubbles: true,
-                        composed: true,
-                    }),
-                );
-                return true;
-            })
-            .catch((e) => {
-                if (this.#rawData) {
-                    cache.addByRequestedId(this.#fragmentId, this.#rawData);
-                    return true;
-                }
-                this.#fail(e);
-                return false;
-            });
+        this.dispatchEvent(
+            new CustomEvent(EVENT_AEM_LOAD, {
+                detail: {
+                    ...this.data,
+                    references,
+                    referencesTree,
+                    placeholders,
+                    ...this.#fetchInfo, // Spread all fetch info
+                },
+                bubbles: true,
+                composed: true,
+            }),
+        );
         return this.#fetchPromise;
     }
 
-    #fail({ message, context }) {
+    #fail(message) {
+        this.#fetchPromise = null;
+        this.#fetchInfo.message = message;
         this.classList.add('error');
-        this.#log.error(`aem-fragment: ${message}`, context);
+        const detail = {
+            ...this.#fetchInfo,
+            ...this.#service.duration,
+        };
+        this.#log.error(message, detail);
         this.dispatchEvent(
             new CustomEvent(EVENT_AEM_ERROR, {
-                detail: { message, ...context },
+                detail,
                 bubbles: true,
                 composed: true,
             }),
         );
     }
 
-    async fetchData() {
+    async #fetchData() {
         this.classList.remove('error');
         this.#data = null;
         let fragment = cache.get(this.#fragmentId);
         if (fragment) {
             this.#rawData = fragment;
-            return;
+            return true;
         }
-        this.#stale = true;
-        const { masIOUrl, locale, wcsApiKey } = this.#service.settings;
+        const { masIOUrl, wcsApiKey, locale } = this.#service.settings;
         const endpoint = `${masIOUrl}/fragment?id=${this.#fragmentId}&api_key=${wcsApiKey}&locale=${locale}`;
 
-        fragment = await this.getFragmentById(
-            endpoint,
-            this.#fragmentId,
-            this.#startMark
-        );
+        fragment = await this.#getFragmentById(endpoint);
+        // TODO add all references to cache
         cache.addByRequestedId(this.#fragmentId, fragment);
         this.#rawData = fragment;
-        this.#stale = false;
+        return true;
     }
 
     get updateComplete() {

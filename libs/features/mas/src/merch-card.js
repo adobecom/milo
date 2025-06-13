@@ -16,7 +16,6 @@ import './merch-mnemonic-list.js';
 import './merch-whats-included.js';
 import {
     EVENT_AEM_LOAD,
-    EVENT_MERCH_CARD_READY,
     EVENT_MERCH_OFFER_SELECT_READY,
     EVENT_MERCH_QUANTITY_SELECTOR_CHANGE,
     EVENT_MAS_READY,
@@ -27,16 +26,15 @@ import {
     SELECTOR_MAS_INLINE_PRICE,
     SELECTOR_MAS_SP_BUTTON,
     MARK_START_SUFFIX,
+    MARK_DURATION_SUFFIX,
     EVENT_MERCH_ADDON_AND_QUANTITY_UPDATE,
     EVENT_MERCH_CARD_QUANTITY_CHANGE,
 } from './constants.js';
 import { VariantLayout } from './variants/variant-layout.js';
 import { hydrate, ANALYTICS_SECTION_ATTR } from './hydrate.js';
-import { getService } from './utils.js';
+import { getService, printMeasure } from './utils.js';
 
 const MERCH_CARD = 'merch-card';
-const MARK_READY_SUFFIX = ':ready';
-const MARK_ERROR_SUFFIX = ':error';
 
 // if merch card does not initialise in 20 seconds, it will dispatch mas:error event
 const MERCH_CARD_LOAD_TIMEOUT = 20000;
@@ -53,6 +51,8 @@ function registerPriceOptionsProvider(masCommerceService) {
     if (masCommerceService.providers.has(priceOptionsProvider)) return;
     masCommerceService.providers.price(priceOptionsProvider);
 }
+
+let idCounter = 0;
 
 export class MerchCard extends LitElement {
     static properties = {
@@ -151,16 +151,19 @@ export class MerchCard extends LitElement {
 
     static registerVariant = registerVariant;
 
+    #durationMarkName;
+    #internalId; // internal unique card identifier
+    #log;
+    #service;
+    #startMarkName;
+
     customerSegment;
     marketSegment;
     /**
      * @type {VariantLayout}
      */
     variantLayout;
-    #log;
-    #service;
 
-    readyEventDispatched = false;
     constructor() {
         super();
         this.id = null;
@@ -171,6 +174,7 @@ export class MerchCard extends LitElement {
         this.spectrum = 'css';
         this.loading = 'lazy';
         this.handleAemFragmentEvents = this.handleAemFragmentEvents.bind(this);
+        this.handleMerchOfferSelectReady = this.handleMerchOfferSelectReady.bind(this);
     }
 
     static getFragmentMapping = getFragmentMapping;
@@ -178,10 +182,6 @@ export class MerchCard extends LitElement {
     firstUpdated() {
         this.variantLayout = getVariantLayout(this, false);
         this.variantLayout?.connectedCallbackHook();
-        this.aemFragment?.updateComplete.catch((e) => {
-            this.#fail(e, {}, false);
-            this.style.display = 'none';
-        });
     }
 
     willUpdate(changedProperties) {
@@ -375,14 +375,20 @@ export class MerchCard extends LitElement {
 
     connectedCallback() {
         super.connectedCallback();
+        if (!this.#internalId) {
+            this.#internalId = idCounter++;
+        }
+        this.id ??=
+            this.getAttribute('id') ??
+            this.aemFragment?.getAttribute('fragment');
+
+        const logId = this.id ?? this.#internalId;
+        this.#startMarkName = `${MARK_MERCH_CARD_PREFIX}${logId}${MARK_START_SUFFIX}`;
+        this.#durationMarkName = `${MARK_MERCH_CARD_PREFIX}${logId}${MARK_DURATION_SUFFIX}`;
+        performance.mark(this.#startMarkName);
         this.#service = getService();
         registerPriceOptionsProvider(this.#service);
         this.#log = this.#service.Log.module(MERCH_CARD);
-        this.id ??=
-            this.querySelector('aem-fragment')?.getAttribute('fragment');
-        performance.mark(
-            `${MARK_MERCH_CARD_PREFIX}${this.id}${MARK_START_SUFFIX}`,
-        );
         this.addEventListener(
             EVENT_MERCH_QUANTITY_SELECTOR_CHANGE,
             this.handleQuantitySelection,
@@ -391,14 +397,7 @@ export class MerchCard extends LitElement {
             EVENT_MERCH_ADDON_AND_QUANTITY_UPDATE,
             this.handleAddonAndQuantityUpdate,
         );
-        this.addEventListener(
-            EVENT_MERCH_OFFER_SELECT_READY,
-            this.merchCardReady,
-            { once: true },
-        );
-        this.updateComplete.then(() => {
-            this.merchCardReady();
-        });
+        this.addEventListener(EVENT_MERCH_OFFER_SELECT_READY, this.handleMerchOfferSelectReady);
 
         // aem-fragment logic
         this.addEventListener(EVENT_AEM_ERROR, this.handleAemFragmentEvents);
@@ -421,37 +420,51 @@ export class MerchCard extends LitElement {
         this.removeEventListener(EVENT_AEM_ERROR, this.handleAemFragmentEvents);
         this.removeEventListener(EVENT_AEM_LOAD, this.handleAemFragmentEvents);
         this.removeEventListener('change', this.changeHandler);
-        this.removeEventListener(EVENT_MERCH_ADDON_AND_QUANTITY_UPDATE, this.handleAddonAndQuantityUpdate);
+        this.removeEventListener(
+            EVENT_MERCH_ADDON_AND_QUANTITY_UPDATE,
+            this.handleAddonAndQuantityUpdate,
+        );
     }
 
     // custom methods
     async handleAemFragmentEvents(e) {
         if (!this.isConnected) return;
         if (e.type === EVENT_AEM_ERROR) {
-            this.#fail(
-                `AEM fragment cannot be loaded: ${e.detail.message}`,
-                e.detail,
-            );
+            this.#fail(`AEM fragment cannot be loaded`);
         }
         if (e.type === EVENT_AEM_LOAD) {
+            this.failed = false;
             if (e.target.nodeName === 'AEM-FRAGMENT') {
                 const fragment = e.detail;
-                hydrate(fragment, this)
-                    .then(() => this.checkReady())
-                    .catch((e) => this.#log.error(e));
+                try {
+                    await hydrate(fragment, this);
+                } catch (e) {
+                    this.#fail(`hydration has failed: ${e.message}`);
+                }
+                this.checkReady();
             }
         }
     }
 
     #fail(error, details = {}, dispatch = true) {
-        this.#log.error(`merch-card: ${error}`, details);
+        if (!this.isConnected) return;
+        const aemFragment = this.aemFragment;
+        let fragmentId = aemFragment?.getAttribute('fragment');
+        fragmentId = `[${fragmentId}]`;
+        const detail = {
+            ...this.aemFragment.fetchInfo,
+            ...this.#service.duration,
+            ...details,
+            message: error,
+        };
+        this.#log.error(`merch-card${fragmentId}: ${error}`, detail);
         this.failed = true;
         if (!dispatch) return;
         this.dispatchEvent(
             new CustomEvent(EVENT_MAS_ERROR, {
-                detail: { ...details, message: error },
                 bubbles: true,
                 composed: true,
+                detail,
             }),
         );
     }
@@ -466,7 +479,7 @@ export class MerchCard extends LitElement {
                 this.aemFragment.updateComplete,
                 timeoutPromise,
             ]);
-            if (result === false) {
+            if (result === false || result === 'timeout') {
                 const errorMessage =
                     result === 'timeout'
                         ? `AEM fragment was not resolved within ${MERCH_CARD_LOAD_TIMEOUT} timeout`
@@ -476,11 +489,6 @@ export class MerchCard extends LitElement {
             }
         }
         const masElements = [...this.querySelectorAll(SELECTOR_MAS_ELEMENT)];
-        masElements.push(
-            ...[...this.querySelectorAll(SELECTOR_MAS_SP_BUTTON)].map(
-                (element) => element.source,
-            ),
-        );
         const successPromise = Promise.all(
             masElements.map((element) =>
                 element.onceSettled().catch(() => element),
@@ -493,27 +501,30 @@ export class MerchCard extends LitElement {
         const result = await Promise.race([successPromise, timeoutPromise]);
 
         if (result === true) {
-            performance.mark(
-                `${MARK_MERCH_CARD_PREFIX}${this.id}${MARK_READY_SUFFIX}`,
+            this.measure = performance.measure(
+                this.#durationMarkName,
+                this.#startMarkName,
             );
-            if (!this.readyEventDispatched) {
-                this.readyEventDispatched = true;
-                this.dispatchEvent(
-                    new CustomEvent(EVENT_MAS_READY, {
-                        bubbles: true,
-                        composed: true,
-                    }),
-                );
-            }
+            const detail = {
+                ...this.aemFragment?.fetchInfo,
+                ...this.#service.duration,
+                measure: printMeasure(this.measure),
+            };
+            this.dispatchEvent(
+                new CustomEvent(EVENT_MAS_READY, {
+                    bubbles: true,
+                    composed: true,
+                    detail,
+                }),
+            );
             return this;
         } else {
-            const { duration, startTime } = performance.measure(
-                `${MARK_MERCH_CARD_PREFIX}${this.id}${MARK_ERROR_SUFFIX}`,
-                `${MARK_MERCH_CARD_PREFIX}${this.id}${MARK_START_SUFFIX}`,
+            this.measure = performance.measure(
+                this.#durationMarkName,
+                this.#startMarkName,
             );
             const details = {
-                duration,
-                startTime,
+                measure: printMeasure(this.measure),
                 ...this.#service.duration,
             };
             if (result === 'timeout') {
@@ -541,9 +552,8 @@ export class MerchCard extends LitElement {
     }
 
     get addonCheckbox() {
-      return this.querySelector('merch-addon');
-      return this.querySelector('merch-addon');
-  }
+        return this.querySelector('merch-addon');
+    }
 
     displayFooterElementsInColumn() {
         if (!this.classList.contains('product')) return;
@@ -559,12 +569,8 @@ export class MerchCard extends LitElement {
         }
     }
 
-    merchCardReady() {
+    handleMerchOfferSelectReady() {
         if (this.offerSelect && !this.offerSelect.planType) return;
-        // add checks for other properties if needed
-        this.dispatchEvent(
-            new CustomEvent(EVENT_MERCH_CARD_READY, { bubbles: true }),
-        );
         this.displayFooterElementsInColumn();
     }
 
@@ -574,33 +580,33 @@ export class MerchCard extends LitElement {
     }
 
     handleAddonAndQuantityUpdate({ detail: { id, items } }) {
-      if (!id || !items?.length) return;
+        if (!id || !items?.length) return;
       const cta = this.checkoutLinks.find(link => link.getAttribute('data-modal-id') === id);
-      if (!cta) return;
-      const url = new URL(cta.getAttribute('href'));
-      const pa = url.searchParams.get('pa');
+        if (!cta) return;
+        const url = new URL(cta.getAttribute('href'));
+        const pa = url.searchParams.get('pa');
       const mainProductQuantity = items.find(item => item.productArrangementCode === pa)?.quantity;
       const isAddonIncluded = !!items.find(item => item.productArrangementCode !== pa);
-      if (mainProductQuantity) {
+        if (mainProductQuantity) {
         this.quantitySelect?.dispatchEvent(new CustomEvent(EVENT_MERCH_CARD_QUANTITY_CHANGE, {
-          detail: { quantity: mainProductQuantity },
-          bubbles: true,
+                    detail: { quantity: mainProductQuantity },
+                    bubbles: true,
           composed: true
         }));
-      }
-      if (this.addonCheckbox?.checked !== isAddonIncluded) {
-        this.toggleStockOffer({ target: this.addonCheckbox });
-        const checkboxEvent = new Event('change', {
-          bubbles: true,
+        }
+        if (this.addonCheckbox?.checked !== isAddonIncluded) {
+            this.toggleStockOffer({ target: this.addonCheckbox });
+            const checkboxEvent = new Event('change', {
+                bubbles: true,
           cancelable: true
-        });
+            });
 
-        Object.defineProperty(checkboxEvent, 'target', {
-          writable: false,
+            Object.defineProperty(checkboxEvent, 'target', {
+                writable: false,
           value: { checked: isAddonIncluded }
-        });
-        this.addonCheckbox.handleChange(checkboxEvent);
-      }
+            });
+            this.addonCheckbox.handleChange(checkboxEvent);
+        }
     }
 }
 

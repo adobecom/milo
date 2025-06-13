@@ -1,6 +1,6 @@
 import {
   createTag, getConfig, loadArea, loadScript, loadStyle, localizeLink, SLD, getMetadata,
-  loadLink,
+  loadLink, shouldAllowKrTrial,
 } from '../../utils/utils.js';
 import { replaceKey } from '../../features/placeholders.js';
 
@@ -870,9 +870,19 @@ export async function buildCta(el, params) {
     return addCopyToClipboard(el, cta);
   }
 
-  // @see https://jira.corp.adobe.com/browse/MWPW-173470
+  /**
+   * TODO: This code block will be deprecated and removed in a future version.
+   * @see https://jira.corp.adobe.com/browse/MWPW-173470
+   * @see https://jira.corp.adobe.com/browse/MWPW-174411
+  */
   cta.onceSettled().then(() => {
-    if (getConfig()?.locale?.prefix === '/kr' && cta.value[0]?.offerType === OFFER_TYPE_TRIAL) cta.remove();
+    const prefix = getConfig()?.locale?.prefix;
+    if (!(prefix === '/kr' && cta.value[0]?.offerType === OFFER_TYPE_TRIAL)) return;
+    if (shouldAllowKrTrial(el, prefix)) {
+      cta.classList.remove('hidden-osi-trial-link');
+      return;
+    }
+    cta.remove();
   });
 
   return cta;

@@ -20,11 +20,8 @@ main .collapsible-card-wrapper .collapsible-card .header h3,
 main .collapsible-card-wrapper .collapsible-card .header h4,
 main .collapsible-card-wrapper .collapsible-card .header h5,
 main .collapsible-card-wrapper .collapsible-card .header h6 {
-    text-align: center;
+    text-align: start;
     display: flex;
-    min-height: 60px;
-    align-items: center;
-    justify-content: center;
 }
 
 main .collapsible-card-wrapper .collapsible-card .subcopy {

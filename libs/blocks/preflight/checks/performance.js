@@ -102,14 +102,16 @@ export async function checkImageSize(url, area, observeLcp) {
 
 export async function checkVideoPoster(url, area, observeLcp) {
   const lcp = await getLcpEntry(url, area, observeLcp);
-  if (!lcp?.url?.match('media_.*.mp4')) {
+  const hasVideoUrl = lcp?.url?.match(/\.mp4/);
+  const videoElement = lcp?.element?.closest('video') || lcp?.element?.querySelector('video');
+  if (!hasVideoUrl && !videoElement) {
     return {
       title: PERFORMANCE_TITLES.VideoPoster,
       status: STATUS.EMPTY,
       description: 'No video as LCP element.',
     };
   }
-  const hasPoster = !!lcp.element.poster;
+  const hasPoster = !!videoElement?.poster;
   return {
     title: PERFORMANCE_TITLES.VideoPoster,
     status: hasPoster ? STATUS.PASS : STATUS.FAIL,

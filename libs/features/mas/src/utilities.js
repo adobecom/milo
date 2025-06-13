@@ -4,8 +4,16 @@ import {
     isPositiveFiniteNumber,
     toPositiveFiniteInteger,
 } from '@dexter/tacocat-core';
+import { HEADER_X_REQUEST_ID } from './constants';
 
 const MAS_COMMERCE_SERVICE = 'mas-commerce-service';
+
+export const FETCH_INFO_HEADERS = {
+    requestId: HEADER_X_REQUEST_ID,
+    etag: 'Etag',
+    lastModified: 'Last-Modified',
+    serverTiming: 'server-timing',
+};
 
 /**
  * @param {Offer[]} offers
@@ -60,8 +68,28 @@ export function toOfferSelectorIds(value) {
  * This function expects an active instance of commerce service
  * to exist in the current DOM.
  * If commerce service has not been yet activated or was resetted, `null`.
- * @returns 
+ * @returns
  */
 export function getService() {
     return document.getElementsByTagName(MAS_COMMERCE_SERVICE)?.[0];
+}
+
+/**
+ * Returns headers to be logged
+ * @param {Response} response - fetch response
+ * @returns {Object}
+ */
+export function getLogHeaders(response) {
+    const logHeaders = {};
+    if (!response?.headers) return logHeaders;
+    const headers = response.headers;
+    for (const [key, value] of Object.entries(FETCH_INFO_HEADERS)) {
+        let headerValue = headers.get(value);
+        if (headerValue) {
+            headerValue = headerValue.replace(/[,;]/g, '|');
+            headerValue = headerValue.replace(/[| ]+/g, '|');
+            logHeaders[key] = headerValue;
+        }
+    }
+    return logHeaders;
 }

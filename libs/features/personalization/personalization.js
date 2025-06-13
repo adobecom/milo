@@ -545,7 +545,7 @@ function getSelectedElements(sel, rootEl, forceRootEl, action) {
   } catch (e) {
     /* eslint-disable-next-line no-console */
     log('Invalid selector: ', selector);
-    return null;
+    return {};
   }
   if (modifiers.includes(FLAGS.all) || !els.length) return { els, modifiers, attribute };
   els = [els[0]];

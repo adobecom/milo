@@ -49,8 +49,6 @@
     "referencesTree": [],
     "settings": {
         "displayPlanType": true,
-        "stockCheckboxLabel": "Add a 30-day free trial of Adobe Stock.*",
-        "stockOfferOsis": "stock-puf,stock-abm,stock-m2m",
         "secureLabel": "Secure transaction"
     }
 }

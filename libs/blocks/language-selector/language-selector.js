@@ -376,12 +376,13 @@ function setupDropdownEvents({
       const path = href.replace(window.location.origin + (hasPrefix ? currentPrefix : ''), '').replace('#langnav', '');
       const newPath = lang.prefix ? `/${lang.prefix}${path}` : path;
       const fullUrl = `${window.location.origin}${newPath}`;
+      const langLink = li.querySelector('a.language-link');
+      if (langLink) langLink.href = fullUrl;
       handleEvent({
         prefix: lang.prefix,
         link: { href: fullUrl },
         callback: (url) => {
-          const langLink = li.querySelector('a.language-link');
-          if (langLink) langLink.href = url;
+          if (langLink && langLink.href !== url) langLink.href = url;
         },
       });
     }

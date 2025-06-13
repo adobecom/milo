@@ -20,11 +20,13 @@ function decorateButton($block, $toggle) {
 }
 
 function getDefaultToggleIndex($block) {
-  const $enclosingMain = $block.closest('main');
-  const toggleDefaultOption = $enclosingMain.querySelector('[data-toggle-default]');
-  const defaultValue = toggleDefaultOption?.dataset.toggleDefault || toggleDefaultOption?.getAttribute('data-toggle-default');
-  const parsedIndex = parseInt(defaultValue, 10);
-  const defaultIndex = !defaultValue || Number.isNaN(parsedIndex) ? 0 : parsedIndex - 1;
+  const defaultClass = Array.from($block.classList).find((cls) => /^default-\d+$/.test(cls));
+  let defaultIndex;
+  if (defaultClass) {
+    defaultIndex = parseInt(defaultClass.split('-')[1], 10) - 1;
+  } else {
+    defaultIndex = 0;
+  }
   return defaultIndex;
 }
 
@@ -106,12 +108,8 @@ function waitForMarqueeHeight() {
 function getElementsHeightBeforeMain() {
   const main = document.querySelector('main');
   if (!main) return 0;
-  const contentToggleEl = document.querySelector('.content-toggle.mweb');
-  const contentToggleStyle = window.getComputedStyle(contentToggleEl);
-  const contentToggleMarginTop = parseInt(contentToggleStyle.marginTop, 10);
   const beforeMain = main.getBoundingClientRect().top - document.body.getBoundingClientRect().top;
-
-  return beforeMain - contentToggleMarginTop;
+  return beforeMain;
 }
 
 function setupStickyBehaviour() {
@@ -135,11 +133,11 @@ function setupStickyBehaviour() {
 
     const { scrollY } = window;
 
-    if (scrollY >= initialOffset - 54 && !isFixed) {
+    if (scrollY >= initialOffset - getElementsHeightBeforeMain() - 6 && !isFixed) {
       toggleWrapper.classList.add('fixed');
       toggleWrapper.setAttribute('style', `top: ${getElementsHeightBeforeMain()}px`);
       isFixed = true;
-    } else if (scrollY < initialOffset - 54 && isFixed) {
+    } else if (scrollY < initialOffset - getElementsHeightBeforeMain() - 6 && isFixed) {
       toggleWrapper.classList.remove('fixed');
       toggleWrapper.removeAttribute('style');
       isFixed = false;

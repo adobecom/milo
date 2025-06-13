@@ -22,6 +22,10 @@ a[is='checkout-link'].con-button > span {
   min-width: 66px;
 }
 
+.hidden-osi-trial-link {
+  display: none;
+}
+
 .price-unit-type:not(.disabled)::before,
 .price-tax-inclusivity:not(.disabled)::before {
   content: "\00a0";

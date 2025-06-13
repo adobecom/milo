@@ -127,7 +127,7 @@ export default class MasAcom {
 
   getCardTitle(id) {
     const card = this.getCard(id);
-    return card.locator('p[slot="heading-xs"]');
+    return card.locator('h3[slot="heading-xs"]');
   }
 
   getCardPromoText(id) {
