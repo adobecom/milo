@@ -1,0 +1,57 @@
+
+    <!DOCTYPE html>
+    <html>
+    <head>
+    <meta charset="UTF-8">
+    <title>M@S Web Components</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="commerce.env" content="stage" />
+    <link rel="stylesheet" href="spectrum.css">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://p.typekit.net/p.css?s=1&amp;k=hah7vzn&amp;ht=tk&amp;f=7180.7181.7182.7183.22474.22749.22750.22751.22753&amp;a=8634977&amp;app=typekit&amp;e=css">
+    <link rel="stylesheet" href="https://use.typekit.net/hah7vzn.css">
+  
+  <!-- Include your custom element script as an ES6 module -->
+  <script type="module">
+    import { init } from './common.js';
+    init();
+  </script>
+  <!-- Include Highlight.js stylesheet for syntax highlighting -->
+  <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/default.min.css">
+  <script type="module" src="./mas-sidenav.js"></script>
+</head>
+<body class="spectrum spectrum--medium spectrum--light">
+    <aside is="mas-sidenav"></aside>
+<main>
+<div class="gallery-content">
+  <h1 id="ccd-gallery" tabindex="-1">CCD Mini cards <a class="header-anchor" href="#ccd-gallery" href="#ccd-gallery" title="Permalink to this heading">#</a></h1>
+  Switch Theme: <a class="theme-toggle spectrum-Link spectrum-Link--secondary" value="darkest" href="#">Darkest</a> OR <a class="theme-toggle spectrum-Link spectrum-Link--secondary" value="light" href="#">Light</a>
+<p>Switch Locale: <a class="locale-toggle spectrum-Link spectrum-Link--secondary" value="en_US" href="?locale=en_US">en_US</a> OR <a class="locale-toggle spectrum-Link spectrum-Link--secondary" value="fr_FR" href="?locale=fr_FR">fr_FR</a></p>
+<p>Switch country/language: <a class="locale-toggle spectrum-Link spectrum-Link--secondary" value="US,en" href="?country=US&language=en">Country: US, language: en</a> OR <a class="locale-toggle spectrum-Link spectrum-Link--secondary" value="FR,fr" href="?country=FR&language=fr">Country: FR, language: fr</a></p>
+  <h2 id="ccd-mini-card" tabindex="-1">CCD Mini Cards <a class="header-anchor" href="#ccd-mini-card" title="Permalink to this heading">#</a></h2>
+  <div class="three-merch-cards ccd-slice">
+    <merch-card><aem-fragment fragment="522277dc-3361-4363-a4e3-c791962278bc"></aem-fragment></merch-card>  
+    <merch-card><aem-fragment fragment="01e4afa2-f287-4ef7-875c-41b7bbcc8aa6"></aem-fragment></merch-card>
+
+</div>
+
+</main>
+<script type="module">
+  document.querySelectorAll('code.demo').forEach(el => {
+      const targetContainer = document.createElement('div');
+      targetContainer.classList.toggle('light', el.classList.contains('light'));
+      targetContainer.innerHTML = `<h4>Demo: </h4><div class="demo-container">${el.textContent}</div>`;
+      el.parentElement.after(targetContainer);
+      // Extract and evaluate <script> tags
+      const scriptTags = targetContainer.getElementsByTagName('script');
+      for (let i = 0; i < scriptTags.length; i++) {
+          const script = document.createElement('script');
+          script.type = 'module';
+          script.text = scriptTags[i].text;
+          document.body.appendChild(script); // Appends to the document to execute
+          scriptTags[i].remove(); // Remove the script tag
+      }
+  });
+</script>
+</body>
+</html>
