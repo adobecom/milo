@@ -155,7 +155,7 @@ const getStageToMainPR = () => github.rest.pulls
   .list({ owner, repo, state: 'open', base: PROD })
   .then(({ data } = {}) => data.find(({ title } = {}) => title === PR_TITLE))
   .then((pr) => pr && addLabels({ pr, github, owner, repo }))
-  .then((pr) => pr && addFiles({ pr, github, owner, repo }))
+  .then((pr) => pr && addFiles({ pr, github, owner, repo }));
 
 const openStageToMainPR = async () => {
   const { data: comparisonData } = await github.rest.repos.compareCommits({
@@ -228,15 +228,6 @@ const main = async (params) => {
     await merge({ prs: highImpactPRs, type: LABELS.highPriority });
     await merge({ prs: normalPRs, type: 'normal' });
     if (!stageToMainPR) await openStageToMainPR();
-    if (stageToMainPR && body !== stageToMainPR.body) {
-      console.log("Updating PR's body...");
-      await github.rest.pulls.update({
-        owner,
-        repo,
-        pull_number: stageToMainPR.number,
-        body,
-      });
-    }
     console.log('Process successfully executed.');
   } catch (error) {
     console.error(error);
