@@ -683,7 +683,7 @@ export class MerchCard extends LitElement {
         return this.#getCta(seeTerms);
     }
 
-    get autoRenewalText() {
+    get renewalText() {
       return this.querySelector('span.renewal-text')?.innerText;
     }
 

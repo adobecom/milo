@@ -1,0 +1,74 @@
+main .collapsible-card-wrapper .collapsible-card {
+    padding: 16px;
+    background-color: var(--color-gray-200);
+    border-radius: 20px;
+    max-width: 296px;
+    height: 320px;
+    margin: 0 auto;
+    position: relative;
+    text-align: center;
+
+}
+
+main .collapsible-card-wrapper .collapsible-card .image {
+    max-height: 215px;
+}
+
+main .collapsible-card-wrapper .collapsible-card .header h1,
+main .collapsible-card-wrapper .collapsible-card .header h2,
+main .collapsible-card-wrapper .collapsible-card .header h3,
+main .collapsible-card-wrapper .collapsible-card .header h4,
+main .collapsible-card-wrapper .collapsible-card .header h5,
+main .collapsible-card-wrapper .collapsible-card .header h6 {
+    text-align: start;
+    display: flex;
+}
+
+main .collapsible-card-wrapper .collapsible-card .subcopy {
+    max-height: 0;
+    padding-top: 8px;
+    text-align: left;
+    font-size: 16px;
+    line-height: 150%;
+}
+
+main .collapsible-card-wrapper .collapsible-card.expanded .image {
+    max-height: 0px;
+}
+
+main .collapsible-card-wrapper .collapsible-card.expanded .subcopy {
+    max-height: 215px;
+}
+
+main .collapsible-card-wrapper div {
+    overflow: hidden;
+    transition: max-height 0.2s;
+}
+
+main .collapsible-card-wrapper .badge {
+    margin-top: 16px;
+    margin-bottom: 8px;
+    display: inline-block;
+    height: 50px;
+}
+
+main .collapsible-card-wrapper .badge img {
+    height: 100%;
+    margin: 0;
+}
+
+main .collapsible-card-wrapper .toggle-button {
+    position: absolute;
+    bottom: 14px;
+    right: 14px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 50%;
+    transition: 0.2s;
+}
+
+main .collapsible-card-wrapper .toggle-button .icon.icon-plus {
+    height: 20px;
+    width: 20px;
+}

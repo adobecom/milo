@@ -124,22 +124,22 @@ Adobe Home Gallery provides a comprehensive list of all supported card variants 
 
 ### Properties
 
-| Name                   | Description                                                                                                         | Type                           |
-| ---------------------- | ------------------------------------------------------------------------------------------------------------------- | ------------------------------ |
-| `prices`               | inline-price elements that are rendered in the card.                                                                | `Array`                        |
-| `promoPrice`           | An inline-price element that contains the promo price, if applicable.                                               | `inline-price`                 |
-| `regularPrice`         | The regular price of the offer. It could be the strikethrough price if promo price is present or the regular price. | `inline-price`                 |
-| `annualPrice`          | The annual price of the offer.                                                                                      | `inline-price`                 |
-| `planTypeText`         | Plan type text, e.g. Annual, paid monthly.                                                                          | `inline-price`                 |
-| `promoText`            | The promo text, e.g. "Save over 30% with an annual plan.".                                                          | `string`                       |
-| `taxText`              | The text for the tax.                                                                                               | `string`                       |
-| `billingFrequencyText` | The text for the billing frequency.                                                                                 | `string`                       |
-| `seeTermsInfo`         | The see terms text and link href value.                                                                             | `{text: string, href: string}` |
-| `autoRenewalText`      | Placeholer: The auto-renewal text.                                                                                  | `string`                       |
-| `promoDurationText`    | Placeholer: currently not provided by MAS.                                                                          | `string`                       |
-| `ctas`                 | checkout-link (if consonant) / checkout-button elements that are rendered in the card.                              | `Array`                        |
-| `primaryCta`           | Primary CTA element, mostly for checkout buttons for BASE offers                                                    | `checkout-button`              |
-| `secondaryCta`         | Secondary CTA element, mostly for checkout buttons for TRIAL offers                                                 | `checkout-button`              |
+| Name                | Description                                                                                                         | Type                           |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------- | ------------------------------ |
+| `prices`            | inline-price elements that are rendered in the card.                                                                | `Array`                        |
+| `promoPrice`        | An inline-price element that contains the promo price, if applicable.                                               | `inline-price`                 |
+| `regularPrice`      | The regular price of the offer. It could be the strikethrough price if promo price is present or the regular price. | `inline-price`                 |
+| `annualPrice`       | The annual price of the offer.                                                                                      | `inline-price`                 |
+| `planTypeText`      | Plan type text, e.g. Annual, paid monthly.                                                                          | `inline-price`                 |
+| `promoText`         | The promo text, e.g. "Save over 30% with an annual plan.".                                                          | `string`                       |
+| `taxText`           | The text for the tax.                                                                                               | `string`                       |
+| `recurrenceText`    | The text for the billing frequency.                                                                                 | `string`                       |
+| `seeTermsInfo`      | The see terms text and link href value.                                                                             | `{text: string, href: string}` |
+| `renewalText`   | Placeholer: The auto-renewal text.                                                                                  | `string`                       |
+| `promoDurationText` | Placeholer: currently not provided by MAS.                                                                          | `string`                       |
+| `ctas`              | checkout-link (if consonant) / checkout-button elements that are rendered in the card.                              | `Array`                        |
+| `primaryCta`        | Primary CTA element, mostly for checkout buttons for BASE offers                                                    | `checkout-button`              |
+| `secondaryCta`      | Secondary CTA element, mostly for checkout buttons for TRIAL offers                                                 | `checkout-button`              |
 
 ### Events
 
@@ -173,56 +173,62 @@ The reason is that some merch cards are resolved very quickly and event could di
 
 <button id="btnRefreshFragments">Refresh Fragments</button>
 <script type="module">
-    {
-        const logReady = document.getElementById('log-mas-ready');
-        const message = (e, type) => {
-            const id =
-                e.target.getAttribute('id') ||
-                e.target.getAttribute('fragment') ||
-                e.target.getAttribute('data-wcs-osi');
-            const detail = e.detail
-                ? `: ${JSON.stringify(e.detail, null, 2)}`
-                : '';
-            return `'${type}' on ${e.target.nodeName} #${id}${detail}`;
-        };
-        // WCS request failed
-        document.addEventListener('mas:failed', (event) => {
-            log(
-                document.getElementById('log-mas-failed'),
-                message(event, 'mas:failed'),
-            );
-        });
-        // Fragment request failed
-        document.addEventListener('aem:error', (event) =>
-            log(
-                document.getElementById('log-aem-error'),
-                message(event, 'aem:error'),
-            ),
-        );
-        // Error in merch-card (WCS or Frejya request, or any other issue)
-        document.addEventListener('mas:error', (event) => {
-            event.target.classList.remove('ready');
-            event.target.classList.add('error');
-            log(
-                document.getElementById('log-mas-error'),
-                message(event, 'mas:error'),
-            );
-        });
-        document.addEventListener('mas:ready', (event) => {
-            event.target.classList.add('ready');
-            event.target.classList.remove('error');
-            log(logReady, message(event, 'mas:ready'));
-        });
-
-        // refresh btn
-        document
-            .getElementById('btnRefreshFragments')
-            .addEventListener('click', () => {
-                document
-                    .querySelector('mas-commerce-service')
-                    .refreshFragments();
+        {
+            const logReady = document.getElementById('log-mas-ready');
+            const message = (e, type) => {
+    <<<<<<< HEAD
+                const id =
+                    e.target.getAttribute('id') ||
+                    e.target.getAttribute('fragment') ||
+                    e.target.getAttribute('data-wcs-osi');
+                const detail = e.detail
+                    ? `: ${JSON.stringify(e.detail, null, 2)}`
+                    : '';
+                return `'${type}' on ${e.target.nodeName} #${id}${detail}`;
+    =======
+              const id = e.target.getAttribute('id') || e.target.getAttribute('fragment') || e.target.getAttribute('data-wcs-osi');
+              const detail = e.detail ? `: ${JSON.stringify(e.detail, null, 2)}` : '';
+              return `'${type}' on ${e.target.nodeName} #${id}${detail}`;
+    >>>>>>> 5b23fe9cda9d3589bdac8e9a1b92028b658044e3
+            };
+            // WCS request failed
+            document.addEventListener('mas:failed', (event) => {
+                log(
+                    document.getElementById('log-mas-failed'),
+                    message(event, 'mas:failed'),
+                );
             });
-    }
+            // Fragment request failed
+            document.addEventListener('aem:error', (event) =>
+                log(
+                    document.getElementById('log-aem-error'),
+                    message(event, 'aem:error'),
+                ),
+            );
+            // Error in merch-card (WCS or Frejya request, or any other issue)
+            document.addEventListener('mas:error', (event) => {
+                event.target.classList.remove('ready');
+                event.target.classList.add('error');
+                log(
+                    document.getElementById('log-mas-error'),
+                    message(event, 'mas:error'),
+                );
+            });
+            document.addEventListener('mas:ready', (event) => {
+                event.target.classList.add('ready');
+                event.target.classList.remove('error');
+                log(logReady, message(event, 'mas:ready'));
+            });
+
+            // refresh btn
+            document
+                .getElementById('btnRefreshFragments')
+                .addEventListener('click', () => {
+                    document
+                        .querySelector('mas-commerce-service')
+                        .refreshFragments();
+                });
+        }
 </script>
 
 <p>Valid card</p>
@@ -348,33 +354,61 @@ However, it can be accessed via `e.target.source` property.
 </merch-card>
 
 <script type="module">
-    const target = document.getElementById('log3');
+        const target = document.getElementById('log3');
 
-    const cardSwc = document.getElementById('cardSwc');
-    cardSwc.addEventListener(
-        'click',
-        (e) => {
-            e.preventDefault();
-            if (e.target.source?.isCheckoutButton) {
-                log(
-                    target,
-                    'merch-card checkout-button click: ',
-                    '\n\t',
-                    e.target.dataset.navigationUrl,
-                    '\n\t',
-                    e.target.outerHTML,
-                    '\n\t',
-                    e.target.source.outerHTML,
-                    '\n',
-                );
-            } else if (e.target.isInlinePrice) {
-                log(target, 'merch-card price click: ', e.target.innerText);
-            } else {
-                log(target, 'merch-card click: ', e.target);
-            }
-        },
-        { capture: true },
-    );
+    <<<<<<< HEAD
+        const cardSwc = document.getElementById('cardSwc');
+        cardSwc.addEventListener(
+            'click',
+            (e) => {
+                e.preventDefault();
+                if (e.target.source?.isCheckoutButton) {
+                    log(
+                        target,
+                        'merch-card checkout-button click: ',
+                        '\n\t',
+                        e.target.dataset.navigationUrl,
+                        '\n\t',
+                        e.target.outerHTML,
+                        '\n\t',
+                        e.target.source.outerHTML,
+                        '\n',
+                    );
+                } else if (e.target.isInlinePrice) {
+                    log(target, 'merch-card price click: ', e.target.innerText);
+                } else {
+                    log(target, 'merch-card click: ', e.target);
+                }
+            },
+            { capture: true },
+        );
+    =======
+          const cardSwc = document.getElementById('cardSwc');
+          cardSwc.addEventListener(
+              'click',
+              (e) => {
+                  e.preventDefault();
+                  if (e.target.source?.isCheckoutButton) {
+                      log(
+                          target,
+                          'merch-card checkout-button click: ',
+                          '\n\t',
+                          e.target.dataset.navigationUrl,
+                          '\n\t',
+                          e.target.outerHTML,
+                          '\n\t',
+                          e.target.source.outerHTML,
+                          '\n',
+                      );
+                  } else if (e.target.isInlinePrice) {
+                      log(target, 'merch-card price click: ', e.target.innerText);
+                  } else {
+                      log(target, 'merch-card click: ', e.target);
+                  }
+              },
+              { capture: true },
+          );
+    >>>>>>> 5b23fe9cda9d3589bdac8e9a1b92028b658044e3
 </script>
 ```
 

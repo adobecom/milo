@@ -6,8 +6,6 @@
     "description": "",
     "model": { "id": "L2NvbmYvbWFzL3NldHRpbmdzL2RhbS9jZm0vbW9kZWxzL2NhcmQ" },
     "settings": {
-        "stockCheckboxLabel": "{{stock-checkbox-label}}",
-        "stockOfferOsis": "",
         "secureLabel": "{{secure-label}}"
     },
     "fields": {

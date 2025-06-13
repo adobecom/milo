@@ -88,7 +88,7 @@ runTests(async () => {
                         text: 'see terms',
                         href: 'https://www.stage.adobe.com/offers/promo-terms.html?locale=en_US&country=US&offer_id=DDDCDEBA96799A274FA982669CA74623',
                     },
-                    autoRenewalText: undefined,
+                    renewalText: undefined,
                     promoDurationText: undefined,
                     ctas: 2,
                     planTypeText: 'Annual, paid monthly.',
@@ -116,7 +116,7 @@ runTests(async () => {
                         text: 'see terms',
                         href: 'https://www.stage.adobe.com/offers/promo-terms.html?locale=en_US&country=US&offer_id=DDDCDEBA96799A274FA982669CA74623&promotion_code=L_PROMO_10F',
                     },
-                    autoRenewalText:
+                    renewalText:
                         'Renews automatically until canclled. Renews at $54.99/mo after 12 months.',
                     promoDurationText: 'First year only, Ends Mar 3.',
                     ctas: 2,
@@ -145,7 +145,7 @@ runTests(async () => {
                         text: 'see terms',
                         href: 'https://www.stage.adobe.com/offers/promo-terms.html?locale=en_US&country=US&offer_id=DDDCDEBA96799A274FA982669CA74623',
                     },
-                    autoRenewalText: undefined,
+                    renewalText: undefined,
                     promoDurationText: undefined,
                     ctas: 2,
                     planTypeText: 'Annual, paid monthly.',
@@ -177,7 +177,7 @@ runTests(async () => {
                         text: 'see terms',
                         href: 'https://www.stage.adobe.com/offers/promo-terms.html?locale=en_CA&country=CA&offer_id=DDDCDEBA96799A274FA982669CA74623',
                     },
-                    autoRenewalText: undefined,
+                    renewalText: undefined,
                     promoDurationText: undefined,
                     ctas: 2,
                     planTypeText: 'Annual, paid monthly.',
@@ -207,7 +207,7 @@ runTests(async () => {
                         text: 'see terms',
                         href: 'https://www.stage.adobe.com/offers/promo-terms.html?locale=en_CA&country=CA&offer_id=DDDCDEBA96799A274FA982669CA74623&promotion_code=L_PROMO_10F',
                     },
-                    autoRenewalText:
+                    renewalText:
                         'Renews automatically until canclled. Renews at $54.99/mo after 12 months.',
                     promoDurationText: 'First year only, Ends Mar 3.',
                     ctas: 2,
@@ -240,7 +240,7 @@ runTests(async () => {
                         text: 'see terms',
                         href: 'https://www.stage.adobe.com/offers/promo-terms.html?locale=en_AU&country=AU&offer_id=DDDCDEBA96799A274FA982669CA74623',
                     },
-                    autoRenewalText: undefined,
+                    renewalText: undefined,
                     promoDurationText: undefined,
                     ctas: 2,
                     planTypeText: 'Annual, paid monthly.',
@@ -270,7 +270,7 @@ runTests(async () => {
                         text: 'see terms',
                         href: 'https://www.stage.adobe.com/offers/promo-terms.html?locale=en_AU&country=AU&offer_id=DDDCDEBA96799A274FA982669CA74623&promotion_code=L_PROMO_10F',
                     },
-                    autoRenewalText:
+                    renewalText:
                         'Renews automatically until canclled. Renews at $54.99/mo after 12 months.',
                     promoDurationText: 'First year only, Ends Mar 3.',
                     ctas: 2,
@@ -303,7 +303,7 @@ runTests(async () => {
                         text: 'voir les conditions',
                         href: 'https://www.stage.adobe.com/offers/promo-terms.html?locale=fr_FR&country=FR&offer_id=DDDCDEBA96799A274FA982669CA74623',
                     },
-                    autoRenewalText: undefined,
+                    renewalText: undefined,
                     promoDurationText: undefined,
                     ctas: 2,
                     planTypeText: 'Annuel, facturé mensuellement.',
@@ -333,7 +333,7 @@ runTests(async () => {
                         text: 'voir les conditions',
                         href: 'https://www.stage.adobe.com/offers/promo-terms.html?locale=fr_FR&country=FR&offer_id=DDDCDEBA96799A274FA982669CA74623&promotion_code=L_PROMO_10F',
                     },
-                    autoRenewalText:
+                    renewalText:
                         "Renouvellement automatique jusqu'à annulation. Renouvellement à 54,99 $/mois après 12 mois.",
                     promoDurationText:
                         'Première année seulement, Se termine le 3 mars.',
