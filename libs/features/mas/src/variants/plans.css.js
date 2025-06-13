@@ -160,12 +160,6 @@ merch-card[variant^="plans"] [slot="footer"] .con-button > span {
 merch-card[variant^="plans"] merch-addon {
     margin-top: 16px;
     margin-bottom: 16px;
-    font-family: "Adobe Clean";
-    font-size: 12px;
-    font-style: normal;
-    font-weight: 400;
-    line-height: normal;
-    align-items: center;
 }
 
 merch-card[variant^="plans"] merch-addon span[data-template="price"] {

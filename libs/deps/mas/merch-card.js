@@ -286,26 +286,60 @@ var Qe=Object.defineProperty;var ie=o=>{throw TypeError(o)};var Xe=(o,e,t)=>e in
             width: var(--mod-img-width, var(--img-width));
             height: var(--mod-img-height, var(--img-height));
         }
-    `);customElements.define("merch-icon",j);var lo=Object.freeze({MONTH:"MONTH",YEAR:"YEAR",TWO_YEARS:"TWO_YEARS",THREE_YEARS:"THREE_YEARS",PERPETUAL:"PERPETUAL",TERM_LICENSE:"TERM_LICENSE",ACCESS_PASS:"ACCESS_PASS",THREE_MONTHS:"THREE_MONTHS",SIX_MONTHS:"SIX_MONTHS"}),ho=Object.freeze({ANNUAL:"ANNUAL",MONTHLY:"MONTHLY",TWO_YEARS:"TWO_YEARS",THREE_YEARS:"THREE_YEARS",P1D:"P1D",P1Y:"P1Y",P3Y:"P3Y",P10Y:"P10Y",P15Y:"P15Y",P3D:"P3D",P7D:"P7D",P30D:"P30D",HALF_YEARLY:"HALF_YEARLY",QUARTERLY:"QUARTERLY"});var b='span[is="inline-price"][data-wcs-osi]',kt='a[is="checkout-link"][data-wcs-osi],button[is="checkout-button"][data-wcs-osi]';var pe=`${b},${kt}`;var ge="merch-offer-select:ready",ue="merch-card:action-menu-toggle";var Bt="merch-quantity-selector:change",fe="merch-card-quantity:change",Ut="merch-modal:addon-and-quantity-update";var Y="aem:load",K="aem:error",xe="mas:ready",be="mas:error";var qt="mas:resolved";var Ct="X-Request-Id",mo=Object.freeze({CHECKOUT:"checkout",CHECKOUT_EMAIL:"checkout/email",SEGMENTATION:"segmentation",BUNDLE:"bundle",COMMITMENT:"commitment",RECOMMENDATION:"recommendation",EMAIL:"email",PAYMENT:"payment",CHANGE_PLAN_TEAM_PLANS:"change-plan/team-upgrade/plans",CHANGE_PLAN_TEAM_PAYMENT:"change-plan/team-upgrade/payment"}),po=Object.freeze({V2:"UCv2",V3:"UCv3"}),go=Object.freeze({STAGE:"STAGE",PRODUCTION:"PRODUCTION",LOCAL:"LOCAL"});var _t=":start",Lt=":duration";var ve="legal";var tr="mas-commerce-service";function ye(o,e){let t;return function(){let r=this,a=arguments;clearTimeout(t),t=setTimeout(()=>o.apply(r,a),e)}}function v(o,e={},t=null,r=null){let a=r?document.createElement(o,{is:r}):document.createElement(o);t instanceof HTMLElement?a.appendChild(t):a.innerHTML=t;for(let[n,i]of Object.entries(e))a.setAttribute(n,i);return a}function Rt(){return window.matchMedia("(max-width: 767px)")}function W(){return Rt().matches}function Q(o){return`startTime:${o.startTime.toFixed(2)}|duration:${o.duration.toFixed(2)}`}function Ee(){return window.matchMedia("(max-width: 1024px)").matches}function X(){return document.getElementsByTagName(tr)?.[0]}var pt,F,gt,ut,Z,Mt=class extends HTMLElement{constructor(){super();p(this,pt,"");p(this,F);p(this,gt,[]);p(this,ut,[]);p(this,Z);m(this,Z,ye(()=>{this.isConnected&&(this.parentElement.style.background=this.value,c(this,F)?this.parentElement.style.borderRadius=c(this,F):c(this,F)===""&&(this.parentElement.style.borderRadius=""))},1))}static get observedAttributes(){return["colors","positions","angle","border-radius"]}get value(){let t=c(this,gt).map((r,a)=>{let n=c(this,ut)[a]||"";return`${r} ${n}`}).join(", ");return`linear-gradient(${c(this,pt)}, ${t})`}connectedCallback(){c(this,Z).call(this)}attributeChangedCallback(t,r,a){t==="border-radius"&&m(this,F,a?.trim()),t==="colors"&&a?m(this,gt,a?.split(",").map(n=>n.trim())??[]):t==="positions"&&a?m(this,ut,a?.split(",").map(n=>n.trim())??[]):t==="angle"&&m(this,pt,a?.trim()??""),c(this,Z).call(this)}};pt=new WeakMap,F=new WeakMap,gt=new WeakMap,ut=new WeakMap,Z=new WeakMap;customElements.define("merch-gradient",Mt);import{LitElement as er,html as rr,css as or}from"../lit-all.min.js";var J=class extends er{constructor(){super(),this.planType=void 0,this.checked=!1,this.updatePlanType=this.updatePlanType.bind(this),this.handleChange=this.handleChange.bind(this)}getOsi(e,t){let n=({TRIAL:["TRIAL"],BASE:["BASE","PROMOTION"],PROMOTION:["PROMOTION","BASE"]}[t]||[t]).map(s=>`p[data-plan-type="${e}"] ${b}[data-offer-type="${s}"]`).join(", ");return this.querySelector(n)?.dataset?.wcsOsi}connectedCallback(){super.connectedCallback(),this.addEventListener(qt,this.updatePlanType)}disconnectedCallback(){super.disconnectedCallback(),this.removeEventListener(qt,this.updatePlanType)}updatePlanType(e){if(e.target.tagName!=="SPAN")return;let t=e.target,r=t?.value?.[0];r&&(t.setAttribute("data-offer-type",r.offerType),t.closest("p").setAttribute("data-plan-type",r.planType))}handleChange(e){this.checked=e.target.checked,this.dispatchEvent(new CustomEvent("change",{detail:{checked:this.checked},bubbles:!0,composed:!0}))}render(){return rr`<input
-                type="checkbox"
-                id="addon-checkbox"
-                part="checkbox"
-                .checked=${this.checked}
-                @change=${this.handleChange}
-            />
+    `);customElements.define("merch-icon",j);var lo=Object.freeze({MONTH:"MONTH",YEAR:"YEAR",TWO_YEARS:"TWO_YEARS",THREE_YEARS:"THREE_YEARS",PERPETUAL:"PERPETUAL",TERM_LICENSE:"TERM_LICENSE",ACCESS_PASS:"ACCESS_PASS",THREE_MONTHS:"THREE_MONTHS",SIX_MONTHS:"SIX_MONTHS"}),ho=Object.freeze({ANNUAL:"ANNUAL",MONTHLY:"MONTHLY",TWO_YEARS:"TWO_YEARS",THREE_YEARS:"THREE_YEARS",P1D:"P1D",P1Y:"P1Y",P3Y:"P3Y",P10Y:"P10Y",P15Y:"P15Y",P3D:"P3D",P7D:"P7D",P30D:"P30D",HALF_YEARLY:"HALF_YEARLY",QUARTERLY:"QUARTERLY"});var b='span[is="inline-price"][data-wcs-osi]',kt='a[is="checkout-link"][data-wcs-osi],button[is="checkout-button"][data-wcs-osi]';var pe=`${b},${kt}`;var ge="merch-offer-select:ready",ue="merch-card:action-menu-toggle";var Bt="merch-quantity-selector:change",fe="merch-card-quantity:change",Ut="merch-modal:addon-and-quantity-update";var Y="aem:load",K="aem:error",xe="mas:ready",be="mas:error";var qt="mas:resolved";var Ct="X-Request-Id",mo=Object.freeze({CHECKOUT:"checkout",CHECKOUT_EMAIL:"checkout/email",SEGMENTATION:"segmentation",BUNDLE:"bundle",COMMITMENT:"commitment",RECOMMENDATION:"recommendation",EMAIL:"email",PAYMENT:"payment",CHANGE_PLAN_TEAM_PLANS:"change-plan/team-upgrade/plans",CHANGE_PLAN_TEAM_PAYMENT:"change-plan/team-upgrade/payment"}),po=Object.freeze({V2:"UCv2",V3:"UCv3"}),go=Object.freeze({STAGE:"STAGE",PRODUCTION:"PRODUCTION",LOCAL:"LOCAL"});var _t=":start",Lt=":duration";var ve="legal";var tr="mas-commerce-service";function ye(o,e){let t;return function(){let r=this,a=arguments;clearTimeout(t),t=setTimeout(()=>o.apply(r,a),e)}}function v(o,e={},t=null,r=null){let a=r?document.createElement(o,{is:r}):document.createElement(o);t instanceof HTMLElement?a.appendChild(t):a.innerHTML=t;for(let[n,i]of Object.entries(e))a.setAttribute(n,i);return a}function Rt(){return window.matchMedia("(max-width: 767px)")}function W(){return Rt().matches}function Q(o){return`startTime:${o.startTime.toFixed(2)}|duration:${o.duration.toFixed(2)}`}function Ee(){return window.matchMedia("(max-width: 1024px)").matches}function X(){return document.getElementsByTagName(tr)?.[0]}var pt,F,gt,ut,Z,Mt=class extends HTMLElement{constructor(){super();p(this,pt,"");p(this,F);p(this,gt,[]);p(this,ut,[]);p(this,Z);m(this,Z,ye(()=>{this.isConnected&&(this.parentElement.style.background=this.value,c(this,F)?this.parentElement.style.borderRadius=c(this,F):c(this,F)===""&&(this.parentElement.style.borderRadius=""))},1))}static get observedAttributes(){return["colors","positions","angle","border-radius"]}get value(){let t=c(this,gt).map((r,a)=>{let n=c(this,ut)[a]||"";return`${r} ${n}`}).join(", ");return`linear-gradient(${c(this,pt)}, ${t})`}connectedCallback(){c(this,Z).call(this)}attributeChangedCallback(t,r,a){t==="border-radius"&&m(this,F,a?.trim()),t==="colors"&&a?m(this,gt,a?.split(",").map(n=>n.trim())??[]):t==="positions"&&a?m(this,ut,a?.split(",").map(n=>n.trim())??[]):t==="angle"&&m(this,pt,a?.trim()??""),c(this,Z).call(this)}};pt=new WeakMap,F=new WeakMap,gt=new WeakMap,ut=new WeakMap,Z=new WeakMap;customElements.define("merch-gradient",Mt);import{LitElement as er,html as rr,css as or}from"../lit-all.min.js";var J=class extends er{constructor(){super(),this.planType=void 0,this.checked=!1,this.updatePlanType=this.updatePlanType.bind(this),this.handleChange=this.handleChange.bind(this)}getOsi(e,t){let n=({TRIAL:["TRIAL"],BASE:["BASE","PROMOTION","TRIAL"],PROMOTION:["PROMOTION","BASE","TRIAL"]}[t]||[t]).map(s=>`p[data-plan-type="${e}"] ${b}[data-offer-type="${s}"]`).join(", ");return this.querySelector(n)?.dataset?.wcsOsi}connectedCallback(){super.connectedCallback(),this.addEventListener(qt,this.updatePlanType)}disconnectedCallback(){super.disconnectedCallback(),this.removeEventListener(qt,this.updatePlanType)}updatePlanType(e){if(e.target.tagName!=="SPAN")return;let t=e.target,r=t?.value?.[0];r&&(t.setAttribute("data-offer-type",r.offerType),t.closest("p").setAttribute("data-plan-type",r.planType))}handleChange(e){this.checked=e.target.checked,this.dispatchEvent(new CustomEvent("change",{detail:{checked:this.checked},bubbles:!0,composed:!0}))}render(){return rr`
             <label for="addon-checkbox" part="label">
+                <input
+                    type="checkbox"
+                    id="addon-checkbox"
+                    part="checkbox"
+                    .checked=${this.checked}
+                    @change=${this.handleChange}
+                />
+                <span></span>
                 <slot></slot>
             </label>`}};d(J,"properties",{planType:{type:String,attribute:"plan-type",reflect:!0},checked:{type:Boolean,reflect:!0}}),d(J,"styles",or`
         :host {
-            display: flex;
-            gap: 9px;
-            align-items: start;
+            --merch-addon-gap: 10px;
+            --merch-addon-checkbox-size: 12px;
+            --merch-addon-checkbox-border: 2px solid rgb(117, 117, 117);
+            --merch-addon-checkbox-radius: 2px;
+            --merch-addon-checkbox-checked-bg: var(--checkmark-icon);
+            --merch-addon-checkbox-checked-color: var(--color-accent);
+            --merch-addon-label-size: 12px;
+            --merch-addon-label-color: rgb(34, 34, 34);
+        }
+
+        :host > label {
+            display: inline-flex;
+            align-items: center;
+            gap: var(--merch-addon-gap);
             cursor: pointer;
         }
 
-        :host,
-        label {
-            cursor: pointer;
+        :host #addon-checkbox {
+            display: none;
+        }
+
+        :host #addon-checkbox + span {
+            width: var(--merch-addon-checkbox-size);
+            height: var(--merch-addon-checkbox-size);
+            border: var(--merch-addon-checkbox-border);
+            border-radius: var(--merch-addon-checkbox-radius);
+            box-sizing: border-box;
+        }
+
+        :host #addon-checkbox:checked + span {
+            background: var(--merch-addon-checkbox-checked-bg) no-repeat var(--merch-addon-checkbox-checked-color);
+            border-color: var(--merch-addon-checkbox-checked-color);
+        }
+
+        ::slotted(p:not([data-plan-type])) {
+            color: var(--merch-addon-label-color);
+            font-size: var(--merch-addon-label-size);
+            font-family: "Adobe Clean";
+            font-style: normal;
+            font-weight: 400;
+            line-height: normal;
         }
 
         ::slotted(p[data-plan-type]) {
@@ -1292,12 +1326,6 @@ merch-card[variant^="plans"] [slot="footer"] .con-button > span {
 merch-card[variant^="plans"] merch-addon {
     margin-top: 16px;
     margin-bottom: 16px;
-    font-family: "Adobe Clean";
-    font-size: 12px;
-    font-style: normal;
-    font-weight: 400;
-    line-height: normal;
-    align-items: center;
 }
 
 merch-card[variant^="plans"] merch-addon span[data-template="price"] {
