@@ -4,30 +4,37 @@
 name: Create CMR in ServiceNow
 
 on:
-  pull_request:
+  pull_request_target:
     types:
+      - opened
       - closed
     branches:
       - main
 
 permissions:
+  pull-requests: write
   contents: read
 
 env:
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   IMSACCESS_CLIENT_ID: ${{ secrets.IMSACCESS_CLIENT_ID }}
   IMSACCESS_CLIENT_SECRET: ${{ secrets.IMSACCESS_CLIENT_SECRET_PROD }}
   IMSACCESS_AUTH_CODE: ${{ secrets.IMSACCESS_AUTH_CODE_PROD }}
   IPAAS_KEY: ${{ secrets.IPAAS_KEY_PROD }}
+  MILO_RELEASE_SLACK_WH: ${{ secrets.MILO_RELEASE_SLACK_WH }}
   PR_TITLE: ${{ github.event.pull_request.title }}
   PR_BODY: ${{ github.event.pull_request.body }}
   PR_NUMBER: ${{ github.event.pull_request.number }}
   PR_CREATED_AT: ${{ github.event.pull_request.created_at }}
   PR_MERGED_AT: ${{ github.event.pull_request.merged_at }}
+  PR_LINK: ${{ github.event.pull_request.html_url }}
+  PR_STATE: ${{ github.event.pull_request.state }}
+  SNOW_INSTANCE_ID: ${{ secrets.SNOW_INSTANCE_ID }}
 
 jobs:
-  build:
-    # Only run this workflow on pull requests that have merged and not manually closed by user
-    if: github.event.pull_request.merged == true
+  create-cmr:
+    # Only run this workflow on pull requests that have been newly opened
+    if:  ${{ (github.event.pull_request.merged == true || github.event.pull_request.state == 'open') }}
     runs-on: ubuntu-latest
 
     steps:
@@ -39,6 +46,54 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip requests timedelta
+
+    - name: Retrieve transaction ID from PR Comments
+      id: retrieve-transactionId-step
+      uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea
+      with:
+        script: |
+          const main = require('./.github/workflows/snow-pr-comment.js')
+          if (process.env.PR_STATE == 'closed') {
+            main({ github, context, transaction_id: null })
+          } else {
+            console.log('PR is not in an closed state. Skipping...');
+          }
+
     - name: Execute script for creating and closing CMR
+      id: create-close-cmr-step
+      env:
+        RETRIEVED_TRANSACTION_ID: ${{ steps.retrieve-transactionId-step.outputs.retrieved_transaction_id }}
       run: |
         python ./.github/workflows/servicenow.py
+
+    - name: Save transaction ID in PR Comments
+      id: pr-comment-snow-cr-step
+      uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea
+      env:
+        TRANSACTION_ID: ${{ steps.create-close-cmr-step.outputs.transaction_id }}
+      with:
+        script: |
+          const main = require('./.github/workflows/snow-pr-comment.js')
+          if (process.env.PR_STATE == 'open') {
+            main({ github, context })
+          } else {
+            console.log('PR is not in an opened state. Skipping...');
+          }
+
+    - name: Execute script for notifying of CMR state
+      id: slack-snow-cr-step
+      uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea
+      env:
+        RETRIEVED_TRANSACTION_ID: ${{ steps.retrieve-transactionId-step.outputs.retrieved_transaction_id }}
+        TRANSACTION_ID: ${{ steps.create-close-cmr-step.outputs.transaction_id }}
+        CHANGE_ID: ${{ steps.create-close-cmr-step.outputs.change_id }}
+        PLANNED_START_TIME: ${{ steps.create-close-cmr-step.outputs.planned_start_time }}
+        PLANNED_END_TIME: ${{ steps.create-close-cmr-step.outputs.planned_end_time }}
+      with:
+        script: |
+          const main = require('./.github/workflows/snow-cr-notification.js');
+          if (process.env.PR_STATE == 'open') {
+            await main({ github, context });
+          } else {
+            await main({ github, context, transaction_id: process.env.RETRIEVED_TRANSACTION_ID });
+          }
