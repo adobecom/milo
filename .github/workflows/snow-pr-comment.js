@@ -2,7 +2,7 @@
 const { getLocalConfigs } = require('./helpers.js');
 const fs = require('fs');
 
-const main = async ({ github, context, transaction_id }) => {
+const main = async ({ github = getLocalConfigs().github, context = getLocalConfigs().context, transaction_id = process.env.TRANSACTION_ID }) => {
   const comment = async ({ pr_number, message, comments, _transaction_id }) => {
     if (comments.some((c) => c.body.includes(message))) {
       console.log(
@@ -67,14 +67,5 @@ const main = async ({ github, context, transaction_id }) => {
     console.error(error);
   }
 };
-
-if (process.env.LOCAL_RUN) {
-  const { github, context } = getLocalConfigs();
-  main({
-    github,
-    context,
-    transaction_id: process.env.TRANSACTION_ID,
-  });
-}
 
 module.exports = main;

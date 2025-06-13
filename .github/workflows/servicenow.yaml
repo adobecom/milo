@@ -75,7 +75,7 @@ jobs:
         script: |
           const main = require('./.github/workflows/snow-pr-comment.js')
           if (process.env.PR_STATE == 'open') {
-            main({ github, context, transaction_id: process.env.TRANSACTION_ID })
+            main({ github, context })
           } else {
             console.log('PR is not in an opened state. Skipping...');
           }
@@ -91,9 +91,9 @@ jobs:
         PLANNED_END_TIME: ${{ steps.create-close-cmr-step.outputs.planned_end_time }}
       with:
         script: |
-          const notifySnowCr = require('./.github/workflows/snow-cr-notification.js');
+          const main = require('./.github/workflows/snow-cr-notification.js');
           if (process.env.PR_STATE == 'open') {
-            await notifySnowCr({ github, context, transaction_id: process.env.TRANSACTION_ID, change_id: null, planned_start_time:  process.env.PLANNED_START_TIME, planned_end_time: process.env.PLANNED_END_TIME });
+            await main({ github, context });
           } else {
-            await notifySnowCr({ github, context, transaction_id: process.env.RETRIEVED_TRANSACTION_ID, change_id: process.env.CHANGE_ID, planned_start_time: null, planned_end_time: null });
+            await main({ github, context, transaction_id: process.env.RETRIEVED_TRANSACTION_ID });
           }
