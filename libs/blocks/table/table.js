@@ -10,7 +10,6 @@ const MOBILE_SIZE = 768;
 const tableHighlightLoadedEvent = new Event('milo:table:highlight:loaded');
 const tabChangeEvent = 'milo:tab:changed';
 let tableIndex = 0;
-let isExpandEventsAssigned = false;
 
 const isMobileLandscape = () => (window.matchMedia('(orientation: landscape)').matches && window.innerHeight <= MOBILE_SIZE);
 function defineDeviceByScreenSize() {
@@ -243,10 +242,7 @@ function handleExpand(e) {
 }
 
 function setExpandEvents(el) {
-  if (isExpandEventsAssigned) return;
-
   el.querySelectorAll('.icon.expand').forEach((icon) => {
-    isExpandEventsAssigned = true;
     icon.parentElement.classList.add('point-cursor');
     icon.parentElement.addEventListener('click', () => handleExpand(icon));
     icon.parentElement.setAttribute('tabindex', 0);
