@@ -159,16 +159,47 @@ function handleAddOnContent(table) {
 }
 
 function setTooltipPosition(el) {
-  if (!['TABLET', 'MOBILE'].includes(defineDeviceByScreenSize())) return;
-
   const isRtl = document.documentElement.dir === 'rtl';
-  const classesToCheck = isRtl ? ['top', 'bottom', 'left'] : ['top', 'bottom', 'right'];
-  const selector = classesToCheck.map((cls) => `.milo-tooltip.${cls}`).join(',');
-  const tooltips = el.querySelectorAll(selector);
+  const positionClasses = ['top', 'bottom', 'right', 'left'];
+  const tooltips = el.querySelectorAll(positionClasses.map((cls) => `.milo-tooltip.${cls}`).join(','));
+  const viewportWidth = window.innerWidth;
+  const tooltipMaxWidth = viewportWidth <= 600 ? 200 : 160;
+  const tooltipMargin = 12;
 
   tooltips.forEach((tooltip) => {
-    tooltip.classList.remove(...classesToCheck);
-    tooltip.classList.add(isRtl ? 'right' : 'left');
+    const currentPosition = positionClasses.find((cls) => tooltip.classList.contains(cls));
+    if (!tooltip.dataset.originalPosition
+      && currentPosition) tooltip.dataset.originalPosition = currentPosition;
+
+    const rect = tooltip.getBoundingClientRect();
+    const { originalPosition } = tooltip.dataset;
+    const isVerticalPosition = originalPosition === 'top' || originalPosition === 'bottom';
+    const effectiveMaxWidth = isVerticalPosition ? tooltipMaxWidth / 2 : tooltipMaxWidth;
+    const willOverflowRight = rect.right + effectiveMaxWidth + tooltipMargin > viewportWidth;
+    const willOverflowLeft = rect.left - effectiveMaxWidth - tooltipMargin < 0;
+
+    if (originalPosition !== currentPosition) {
+      let wouldOverflow = false;
+      if (originalPosition === 'right') {
+        wouldOverflow = willOverflowRight;
+      } else if (originalPosition === 'left') {
+        wouldOverflow = willOverflowLeft;
+      } else if (isVerticalPosition) {
+        wouldOverflow = willOverflowRight || willOverflowLeft;
+      }
+      if (!wouldOverflow) {
+        tooltip.classList.remove(...positionClasses);
+        tooltip.classList.add(originalPosition);
+        return;
+      }
+    }
+
+    const shouldPositionLeft = isRtl ? willOverflowLeft : willOverflowRight;
+    const shouldPositionRight = isRtl ? willOverflowRight : willOverflowLeft;
+    if (shouldPositionLeft || shouldPositionRight) {
+      tooltip.classList.remove(...positionClasses);
+      tooltip.classList.add(shouldPositionLeft ? 'left' : 'right');
+    }
   });
 }
 
@@ -684,7 +715,7 @@ export default function init(el) {
     const handleResize = () => {
       applyStylesBasedOnScreenSize(el, originTable);
       if (isStickyHeader(el)) handleScrollEffect(el);
-      setTooltipPosition(el);
+      setTimeout(() => setTooltipPosition(el));
     };
     handleResize();
 
@@ -692,6 +723,7 @@ export default function init(el) {
     window.addEventListener('resize', () => {
       debounce(handleEqualHeight(el, '.row-heading'), 300);
       handleStickyHeader(el);
+      setTimeout(() => setTooltipPosition(el));
       if (deviceBySize === defineDeviceByScreenSize()) return;
       deviceBySize = defineDeviceByScreenSize();
       handleResize();
