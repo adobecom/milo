@@ -540,5 +540,9 @@ sr-only {
   white-space: nowrap;
   border: 0;
 }
+
+aem-fragment {
+  display: contents;
+}
 `;
 document.head.appendChild(styles);
