@@ -999,7 +999,13 @@ class Gnav {
 
   isToggleExpanded = () => this.elements.mobileToggle?.getAttribute('aria-expanded') === 'true';
 
-  isLocalNav = () => this.newMobileNav && this
+  isEmptyGnav = () => this
+    .elements
+    .navWrapper
+    ?.querySelector('.feds-nav')
+    ?.childElementCount === 0;
+
+  isLocalNav = () => this.newMobileNav && !this.isEmptyGnav() && this
     .elements
     .navWrapper
     ?.querySelectorAll('.feds-nav > section.feds-navItem')
