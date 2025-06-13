@@ -1,5 +1,6 @@
 import { createTag, getConfig, MILO_EVENTS } from '../../../utils/utils.js';
 import { decorateAnchorVideo, syncPausePlayIcon } from '../../../utils/decorate.js';
+import { decorateDefaultLinkAnalytics } from '../../../martech/attributes.js';
 
 const { miloLibs, codeRoot } = getConfig();
 const base = miloLibs || codeRoot;
@@ -23,6 +24,7 @@ const KEY_CODES = {
   ARROW_LEFT: 'ArrowLeft',
   ARROW_RIGHT: 'ArrowRight',
 };
+const FOCUSABLE_SELECTOR = 'a, :not(.video-container, .pause-play-wrapper) > video';
 
 function decorateNextPreviousBtns() {
   const previousBtn = createTag(
@@ -93,6 +95,7 @@ function decorateSlideIndicators(slides, jumpTo) {
   return indicatorDots;
 }
 
+// ##mweb changes ##
 function updateButtonStates(carouselElements) {
   const { slides, nextPreviousBtns } = carouselElements;
   const activeSlideIndex = [...slides].findIndex((slide) => slide.classList.contains('active'));
@@ -100,6 +103,17 @@ function updateButtonStates(carouselElements) {
   nextPreviousBtns[0].classList.toggle('disabled', activeSlideIndex === 0);
   nextPreviousBtns[1].disabled = activeSlideIndex === slides.length - 1;
   nextPreviousBtns[1].classList.toggle('disabled', activeSlideIndex === slides.length - 1);
+
+  const prevSlide = slides[slides.length - 1];
+  const nextSlide = slides[0];
+  if (activeSlideIndex === 0) {
+    if (prevSlide) prevSlide.classList.add('hide-left-hint');
+  } else if (activeSlideIndex === slides.length - 1) {
+    if (nextSlide) nextSlide.classList.add('hide-left-hint');
+  } else {
+    if (prevSlide) prevSlide.classList.remove('hide-left-hint');
+    if (nextSlide) nextSlide.classList.remove('hide-left-hint');
+  }
 }
 
 function handleNext(nextElement, elements) {
@@ -188,6 +202,36 @@ function setIndicatorMultiplyer(carouselElements, activeSlideIndicator, event) {
   }
 }
 
+function updateAriaLive(ariaLive, slide) {
+  let text = '';
+  slide.querySelectorAll(':scope > :not(.section-metadata').forEach((el, index) => {
+    text += `${index ? ' ' : ''}${el.textContent.trim()}`;
+  });
+  if (text) {
+    ariaLive.textContent = text;
+  } else {
+    const el = slide.querySelector('img[alt], video[title], iframe[title]');
+    ariaLive.textContent = el?.getAttribute('alt') || el?.getAttribute('title') || '';
+  }
+}
+
+function setAriaHiddenAndTabIndex({ el: block, slides }, activeEl) {
+  const active = activeEl ?? block.querySelector('.carousel-slide.active');
+  const activeIdx = slides.findIndex((el) => el === active);
+  const isWide = window.matchMedia('(min-width: 900px)').matches;
+  const showClass = [...block.classList].find((cls) => cls.startsWith('show-'));
+  const visible = isWide && showClass ? showClass.split('-')[1] : 1;
+  const ordered = activeIdx > 0
+    ? [...slides.slice(activeIdx), ...slides.slice(0, activeIdx)] : slides;
+  ordered.forEach((slide, i) => {
+    const isVisible = i < visible;
+    slide.setAttribute('aria-hidden', !isVisible);
+    slide.querySelectorAll(FOCUSABLE_SELECTOR).forEach((el) => {
+      el.setAttribute('tabindex', isVisible ? 0 : -1);
+    });
+  });
+}
+
 function moveSlides(event, carouselElements, jumpToIndex) {
   const {
     slideContainer,
@@ -196,8 +240,11 @@ function moveSlides(event, carouselElements, jumpToIndex) {
     slideIndicators,
     controlsContainer,
     direction,
+    ariaLive,
     jumpTo,
   } = carouselElements;
+
+  ariaLive.textContent = '';
 
   let referenceSlide = slideContainer.querySelector('.reference-slide');
   let activeSlide = slideContainer.querySelector('.active');
@@ -217,7 +264,6 @@ function moveSlides(event, carouselElements, jumpToIndex) {
   referenceSlide.classList.remove('reference-slide');
   referenceSlide.style.order = null;
   activeSlide.classList.remove('active');
-  activeSlide.querySelectorAll('a, video').forEach((focusableElement) => focusableElement.setAttribute('tabindex', -1));
   activeSlideIndicator.classList.remove('active');
   if (jumpTo) activeSlideIndicator.setAttribute('tabindex', -1);
 
@@ -266,26 +312,28 @@ function moveSlides(event, carouselElements, jumpToIndex) {
   referenceSlide.classList.add('reference-slide');
   referenceSlide.style.order = '1';
 
+  updateAriaLive(ariaLive, activeSlide);
+
   // Update active slide and indicator dot attributes
   activeSlide.classList.add('active');
-  const indexOfActive = [...activeSlide.parentElement.children]
-    .findIndex((ele) => activeSlide.isSameNode(ele));
-  const IndexOfShowClass = [...carouselElements.el.classList].findIndex((ele) => ele.includes('show-'));
-  const tempSlides = [...slides.slice(indexOfActive), ...slides.slice(0, indexOfActive)];
-  if (IndexOfShowClass >= 0) {
-    const show = parseInt(carouselElements.el.classList[IndexOfShowClass].split('-')[1], 10);
-    tempSlides.forEach((slide, index) => {
-      let tabIndex = -1;
-      if (index < show) {
-        tabIndex = 0;
+  setAriaHiddenAndTabIndex(carouselElements, activeSlide);
+
+  // mweb Update heights dynamically
+  if (carouselElements.el.classList.contains('disable-buttons') && window.innerWidth < 900) {
+    const maxHeight = Math.max(...slides.map((slide) => slide.offsetHeight));
+    const nextSlide = handleNext(activeSlide, slides);
+    const prevSlide = handlePrevious(activeSlide, slides);
+    slides.forEach((slide) => {
+      if (slide === nextSlide || slide === prevSlide) {
+        slide.style.height = `${maxHeight - 40}px`;
+        slide.style.transition = 'height 0.2s ease-out';
+      } else {
+        slide.style.height = `${maxHeight}px`;
+        slide.style.transition = 'height 0.2s ease-out';
       }
-      slide.querySelectorAll('a,:not(.video-container, .pause-play-wrapper) > video')
-        .forEach((focusableElement) => { focusableElement.setAttribute('tabindex', tabIndex); });
     });
-  } else {
-    activeSlide.querySelectorAll('a,:not(.video-container, .pause-play-wrapper) > video')
-      .forEach((focusableElement) => { focusableElement.setAttribute('tabindex', 0); });
   }
+
   activeSlideIndicator.classList.add('active');
   if (jumpTo) activeSlideIndicator.setAttribute('tabindex', 0);
   setIndicatorMultiplyer(carouselElements, activeSlideIndicator, event);
@@ -296,7 +344,7 @@ function moveSlides(event, carouselElements, jumpToIndex) {
     referenceSlide.style.order = i;
   }
 
-  // Update button states after slide movement
+  // ##mweb## Update button states after slide movement for mweb
   if (carouselElements.el.classList.contains('disable-buttons') && window.innerWidth < 900) {
     updateButtonStates(carouselElements);
   }
@@ -333,7 +381,7 @@ export function getSwipeDirection(swipe, swipeDistance) {
   * Mobile swipe/touch direction detection
   */
 function mobileSwipeDetect(carouselElements) {
-  const { el } = carouselElements;
+  const { el, slides } = carouselElements;
   const swipe = { xMin: 50 };
   /* c8 ignore start */
   el.addEventListener('touchstart', (event) => {
@@ -350,6 +398,16 @@ function mobileSwipeDetect(carouselElements) {
     const swipeDistance = {};
     swipeDistance.xDistance = getSwipeDistance(swipe.xStart, swipe.xEnd);
     carouselElements.direction = getSwipeDirection(swipe, swipeDistance);
+
+    // ##mweb## Get current active slide index for mweb
+    const activeSlideIndex = [...slides].findIndex((slide) => slide.classList.contains('active'));
+    if (carouselElements.el.classList.contains('disable-buttons')
+      && ((activeSlideIndex === 0 && carouselElements.direction === 'right')
+      || (activeSlideIndex === slides.length - 1 && carouselElements.direction === 'left'))) {
+      swipe.xStart = 0;
+      swipe.xEnd = 0;
+      return;
+    }
 
     // reset end swipe values
     swipe.xStart = 0;
@@ -417,6 +475,21 @@ function readySlides(slides, slideContainer) {
   });
 }
 
+// mweb-dev changes
+function setEqualHeight(slides) {
+  const maxHeight = Math.max(...slides.map((slide) => slide.offsetHeight));
+  const activeSlide = slides.find((slide) => slide.classList.contains('active')) || slides[0];
+  const nextSlide = handleNext(activeSlide, slides);
+  const prevSlide = handlePrevious(activeSlide, slides);
+  slides.forEach((slide) => {
+    if (slide === nextSlide || slide === prevSlide) {
+      slide.style.height = `${maxHeight - 40}px`;
+    } else {
+      slide.style.height = `${maxHeight}px`;
+    }
+  });
+}
+
 export default function init(el) {
   const carouselSection = el.closest('.section');
   if (!carouselSection) return;
@@ -445,6 +518,11 @@ export default function init(el) {
   convertMpcMp4(slides);
   fragment.append(...slides);
   const slideWrapper = createTag('div', { class: 'carousel-wrapper' });
+  const ariaLive = createTag('div', {
+    class: 'aria-live-container',
+    'aria-live': 'polite',
+  });
+  slideWrapper.appendChild(ariaLive);
   const slideContainer = createTag('div', { class: 'carousel-slides' }, fragment);
   const carouselElements = {
     el,
@@ -455,6 +533,7 @@ export default function init(el) {
     controlsContainer,
     direction: undefined,
     jumpTo,
+    ariaLive,
   };
 
   if (el.classList.contains('lightbox')) {
@@ -484,6 +563,7 @@ export default function init(el) {
   dotsUl.append(...slideIndicators);
   controlsContainer.append(dotsUl);
   nextPreviousContainer.append(...nextPreviousBtns, controlsContainer);
+  decorateDefaultLinkAnalytics(nextPreviousContainer);
   el.append(nextPreviousContainer);
 
   function handleDeferredImages() {
@@ -496,16 +576,20 @@ export default function init(el) {
   parentArea.addEventListener(MILO_EVENTS.DEFERRED, handleDeferredImages, true);
 
   slides[0].classList.add('active');
-  const IndexOfShowClass = [...el.classList].findIndex((ele) => ele.includes('show-'));
-  let NoOfVisibleSlides = 1;
-  if (IndexOfShowClass >= 0) {
-    NoOfVisibleSlides = parseInt(el.classList[IndexOfShowClass].split('-')[1], 10);
+  // ##mweb## Update button states after slide movement for mweb
+  function handleEqualHeight() {
+    setEqualHeight(slides);
+    parentArea.removeEventListener(MILO_EVENTS.DEFERRED, handleEqualHeight, true);
   }
-  slides.slice(NoOfVisibleSlides).forEach((slide) => slide.querySelectorAll('a').forEach((focusableElement) => { focusableElement.setAttribute('tabindex', -1); }));
+
   if (el.classList.contains('disable-buttons') && window.innerWidth < 900) {
     updateButtonStates(carouselElements);
+    parentArea.addEventListener(MILO_EVENTS.DEFERRED, handleEqualHeight, true);
   }
   handleChangingSlides(carouselElements);
+
+  setAriaHiddenAndTabIndex(carouselElements, slides[0]);
+  window.addEventListener('resize', () => setAriaHiddenAndTabIndex(carouselElements));
 
   function handleLateLoadingNavigation() {
     [...el.querySelectorAll('.is-delayed')].forEach((item) => item.classList.remove('is-delayed'));
