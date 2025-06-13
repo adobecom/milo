@@ -1492,7 +1492,7 @@ async function loadPostLCP(config) {
   }
   loadTemplate();
   const { default: loadFonts } = await import('./fonts.js');
-  loadFonts(config.locale, loadLink);
+  loadFonts(config.locale);
 
   if (config?.mep) {
     import('../features/personalization/personalization.js')
