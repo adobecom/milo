@@ -438,6 +438,7 @@ describe('global footer', () => {
       expect(document.querySelector('footer').classList.contains('feds--dark')).to.be.true;
     });
   });
+
   describe('standalone footer', async () => {
     it('should still load the regionnav if it\'s a standalone footer', async () => {
       await createFullGlobalFooter({
@@ -459,6 +460,27 @@ describe('global footer', () => {
 
       window.dispatchEvent(new Event('milo:modal:closed'));
       expect(regionPickerElem.getAttribute('aria-expanded')).to.equal('false');
+    });
+  });
+
+  describe('jarvis chat tests', () => {
+    it('should add the jarvis attribute if the footer contains a jarvis chat link and jarvis config section metadata', async () => {
+      window.fetch.restore();
+      stub(window, 'fetch').callsFake(async (url) => {
+        if (url.includes('/footer')) {
+          return mockRes({
+            payload: fetchedFooter(
+              { hasJarvisChat: true },
+            ),
+          });
+        }
+        if (url.includes('/placeholders')) return mockRes({ payload: placeholders });
+        if (url.includes('icons.svg')) return mockRes({ payload: icons });
+        if (url.includes('/regions.plain.html')) return mockRes({ payload: await readFile({ path: '../region-nav/mocks/regions.html' }) });
+        return null;
+      });
+      await createFullGlobalFooter({ waitForDecoration: true });
+      expect(document.querySelector('a[href*="#open-jarvis-chat"]').getAttribute('data-jarvis-config')).to.not.be.null;
     });
   });
 });
