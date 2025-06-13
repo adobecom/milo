@@ -11,6 +11,7 @@ import {
   getGnavSource,
   getFederatedUrl,
   getFedsPlaceholderConfig,
+  shouldBlockFreeTrialLinks,
 } from '../../utils/utils.js';
 
 (async () => {
@@ -54,10 +55,11 @@ const asideJsPromise = getMetadata('gnav-promo-source') ? import('./features/asi
 
 const breadCrumbsJsPromise = document.querySelector('header')?.classList.contains('has-breadcrumbs') ? import('./features/breadcrumbs/breadcrumbs.js') : null;
 
-const [utilities, placeholders, merch] = await Promise.all([
+const [utilities, placeholders, merch, { processTrackingLabels }] = await Promise.all([
   import('./utilities/utilities.js'),
   import('../../features/placeholders.js'),
   import('../merch/merch.js'),
+  import('../../martech/attributes.js'),
 ]);
 
 const { replaceKey, replaceKeyArray } = placeholders;
@@ -66,10 +68,8 @@ const { getMiloLocaleSettings } = merch;
 
 const {
   closeAllDropdowns,
-  decorateCta,
   fetchAndProcessPlainHtml,
   getActiveLink,
-  getAnalyticsValue,
   getExperienceName,
   isActiveLink,
   icons,
@@ -101,6 +101,7 @@ const {
   getBranchBannerInfo,
   loaderMegaMenu,
   logPerformance,
+  getUnavWidthCSS,
 } = utilities;
 
 const SIGNIN_CONTEXT = getConfig()?.signInContext;
@@ -111,6 +112,33 @@ function getHelpChildren() {
     { type: 'Support' },
     { type: 'Community' },
   ];
+}
+
+export function getAnalyticsValue(str, index) {
+  if (typeof str !== 'string' || !str.length) return str;
+
+  let analyticsValue = processTrackingLabels(str, getConfig(), 30);
+  analyticsValue = typeof index === 'number' ? `${analyticsValue}-${index}` : analyticsValue;
+
+  return analyticsValue;
+}
+
+export function decorateCta({ elem, type = 'primaryCta', index } = {}) {
+  if (shouldBlockFreeTrialLinks({
+    button: elem,
+    localePrefix: getConfig()?.locale?.prefix,
+    parent: elem.parentElement,
+  })) return null;
+  const modifier = type === 'secondaryCta' ? 'secondary' : 'primary';
+
+  const clone = elem.cloneNode(true);
+  clone.className = `feds-cta feds-cta--${modifier}`;
+  clone.setAttribute('daa-ll', getAnalyticsValue(clone.textContent, index));
+
+  return toFragment`
+    <div class="feds-cta-wrapper">
+      ${clone}
+    </div>`;
 }
 
 const getMessageEventListener = () => {
@@ -423,6 +451,7 @@ class Gnav {
     if (this.useUniversalNav) {
       delete this.blocks.profile;
       this.blocks.universalNav = toFragment`<div class="feds-utilities"></div>`;
+      this.blocks.universalNav.style.setProperty('min-width', getUnavWidthCSS(this.universalNavComponents));
       this.blocks.universalNav.addEventListener('click', () => {
         if (this.isToggleExpanded()) this.toggleMenuMobile();
       }, true);
@@ -447,6 +476,7 @@ class Gnav {
       this.decorateMainNav,
       this.decorateTopNav,
       this.decorateTopnavWrapper,
+      this.revealGnav,
       this.ims,
       this.addChangeEventListeners,
     ];
@@ -465,6 +495,13 @@ class Gnav {
     document.addEventListener('click', (e) => closeOnClickOutside(e, this.isLocalNav(), this.elements.navWrapper));
     isDesktop.addEventListener('change', closeAllDropdowns);
   }, 'Error in global navigation init', 'gnav', 'e');
+
+  revealGnav = () => {
+    this.block.classList.remove('gnav-hide');
+    this.block.classList.add('ready');
+    performance.mark('Gnav-Visible');
+    logPerformance('Gnav-Time-To-Visible', 'Gnav-Start', 'Gnav-Visible');
+  };
 
   ims = async () => (window.adobeIMS?.initialized ? this.imsReady() : loadIms()
     .then(() => this.imsReady())
@@ -781,6 +818,11 @@ class Gnav {
 
   decorateUniversalNav = async () => {
     performance.mark('Unav-Start');
+    const signedOut = !window.adobeIMS?.isSignedInUser();
+    if (signedOut) {
+      const width = getUnavWidthCSS(this.universalNavComponents, signedOut);
+      this.blocks.universalNav?.style.setProperty('min-width', width);
+    }
     const config = getConfig();
     const locale = getUniversalNavLocale(config.locale);
     const environment = config.env.name === 'prod' ? 'prod' : 'stage';
@@ -903,6 +945,8 @@ class Gnav {
     // Exposing UNAV config for consumers
     CONFIG.universalNav.universalNavConfig = getConfiguration();
     await window.UniversalNav(CONFIG.universalNav.universalNavConfig);
+    // In case we get it wrong
+    if (!signedOut) this.blocks.universalNav?.style.removeProperty('min-width');
     const fedsPromo = document.querySelector('.feds-promo-aside-wrapper');
     const container = document.querySelector('.feds-utilities');
     const hasAppSwitcher = this.universalNavComponents.includes('appswitcher');
@@ -1404,6 +1448,7 @@ class Gnav {
         const loadingMegaMenu = loaderMegaMenu();
         loadingMegaMenu.style.visibility = 'hidden';
         template.append(loadingMegaMenu);
+        template.classList.add('feds-navItem--megaMenu');
       }
       decorationTimeout = setTimeout(decorateDropdown, CONFIG.delays.mainNavDropdowns);
     };
@@ -1590,10 +1635,7 @@ export default async function init(block) {
   const mepMartech = mep?.martech || '';
   block.setAttribute('daa-lh', `gnav|${getExperienceName()}${mepMartech}`);
   if (isDarkMode()) block.classList.add('feds--dark');
-  block.classList.add('ready');
-  performance.mark('Gnav-Visible');
   performance.mark('Gnav-Init-End');
   logPerformance('Gnav-Init-Function-Time', 'Gnav-Start', 'Gnav-Init-End');
-  logPerformance('Gnav-Time-To-Visible', 'Gnav-Start', 'Gnav-Visible');
   return gnav;
 }

@@ -1,6 +1,6 @@
 import {
   createTag, getConfig, loadArea, loadScript, loadStyle, localizeLink, SLD, getMetadata,
-  loadLink,
+  loadLink, shouldAllowKrTrial,
 } from '../../utils/utils.js';
 import { replaceKey } from '../../features/placeholders.js';
 
@@ -849,17 +849,17 @@ export async function buildCta(el, params) {
     });
   }
 
-  // Adding aria-label for checkout-link using productFamily and customerSegment as placeholder key.
+  // Adding aria-label for checkout-link using productCode and customerSegment as placeholder key.
   if (el.ariaLabel) {
     // If Milo aria-label available from sharepoint doc, just use it.
     cta.setAttribute('aria-label', el.ariaLabel);
   } else if (!cta.ariaLabel) {
     cta.onceSettled().then(async () => {
-      const productFamily = cta.value[0]?.productArrangement?.productFamily;
+      const productCode = cta.value[0]?.productArrangement?.productCode;
       const { marketSegment, customerSegment } = cta;
       const segment = marketSegment === 'EDU' ? marketSegment : customerSegment;
       let ariaLabel = cta.textContent;
-      ariaLabel = productFamily ? `${ariaLabel} - ${await replaceKey(productFamily, getConfig())}` : ariaLabel;
+      ariaLabel = productCode ? `${ariaLabel} - ${await replaceKey(productCode, getConfig())}` : ariaLabel;
       ariaLabel = segment ? `${ariaLabel} - ${await replaceKey(segment, getConfig())}` : ariaLabel;
       cta.setAttribute('aria-label', ariaLabel);
     });
@@ -870,9 +870,19 @@ export async function buildCta(el, params) {
     return addCopyToClipboard(el, cta);
   }
 
-  // @see https://jira.corp.adobe.com/browse/MWPW-173470
+  /**
+   * TODO: This code block will be deprecated and removed in a future version.
+   * @see https://jira.corp.adobe.com/browse/MWPW-173470
+   * @see https://jira.corp.adobe.com/browse/MWPW-174411
+  */
   cta.onceSettled().then(() => {
-    if (getConfig()?.locale?.prefix === '/kr' && cta.value[0]?.offerType === OFFER_TYPE_TRIAL) cta.remove();
+    const prefix = getConfig()?.locale?.prefix;
+    if (!(prefix === '/kr' && cta.value[0]?.offerType === OFFER_TYPE_TRIAL)) return;
+    if (shouldAllowKrTrial(el, prefix)) {
+      cta.classList.remove('hidden-osi-trial-link');
+      return;
+    }
+    cta.remove();
   });
 
   return cta;
