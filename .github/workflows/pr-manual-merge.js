@@ -1,4 +1,4 @@
-const { slackNotification, getLocalConfigs } = require('./helpers.js');
+const { slackNotification, getLocalConfigs, ZERO_IMPACT_PREFIX } = require('./helpers.js');
 
 const LABELS = {
   zeroImpact: 'zero-impact',
@@ -49,8 +49,8 @@ async function updateStageToMainPR(github, context, mergedPR) {
     return;
   }
   const isZeroImpact = mergedPR.labels?.some(label => label.name === LABELS.zeroImpact);
-  const prefix = isZeroImpact ? '[ZERO IMPACT] ' : '';
-  const body = `-${prefix} ${mergedPR.html_url}\n${stageToMain.body || ''}`;
+  const zeroImpactPrefix = isZeroImpact ? ZERO_IMPACT_PREFIX : '';
+  const body = `-${zeroImpactPrefix} ${mergedPR.html_url}\n${stageToMain.body || ''}`;
   console.log("Updating PR's description");
 
   await github.rest.pulls.update({
