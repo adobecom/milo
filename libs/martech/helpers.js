@@ -377,6 +377,19 @@ function createRequestPayload({ updatedContext, pageName, processedPageName, loc
         },
         otherConsents: { configuration: { advertising: consentCookie && consentCookie.includes('C0004:0') ? 'false' : 'true' } },
         cmp: { state: consentState },
+        web: {
+          location: {
+            href: window.location.href,
+            origin: window.location.origin,
+            protocol: window.location.protocol,
+            host: window.location.host,
+            hostname: window.location.hostname,
+            port: window.location.port,
+            pathname: window.location.pathname,
+            search: window.location.search,
+            hash: window.location.hash,
+          },
+        },
       },
       marketingtech: {
         adobe: {
@@ -443,7 +456,7 @@ function createRequestPayload({ updatedContext, pageName, processedPageName, loc
       gpc: getGlobalPrivacyControl(),
     };
     xdm.implementationDetails = {
-      name: 'https://ns.adobe.com/experience/alloy/reactor',
+      name: 'https://ns.adobe.com/experience/alloy',
       version: '2.0',
       environment: 'browser',
     };
