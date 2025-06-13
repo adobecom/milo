@@ -7,9 +7,8 @@ async function main({ github, context } = {}) {
 
     if (process.env.LOCAL_RUN) {
         console.log("Local run detected. Loading local configurations...");
-        const localConfigs = getLocalConfigs();
-        github = localConfigs.github;
-        context = localConfigs.context;
+        const { github: localGithub, context: localContext } = getLocalConfigs();
+        return main({ github: localGithub, context: localContext });
     }
 
     const { pull_request } = context.payload;
@@ -25,18 +24,12 @@ async function main({ github, context } = {}) {
         : ':rocket: Production release:';
 
     console.log(`Sending notification for PR #${number}: ${title}`);
-
-    try {
-        await slackNotification(
-            `${prefix} <${html_url}|#${number}: ${title}>.`,
-            process.env.MILO_RELEASE_SLACK_WH
-        );
-    } catch (error) {
-        console.error("Error sending Slack notification:", error.message);
-        console.log("Continuing with PR update...");
-    }
+    await slackNotification(
+      `${prefix} <${html_url}|#${number}: ${title}>.`,
+      process.env.MILO_RELEASE_SLACK_WH
+    ).catch(e => console.error("Error sending Slack notification:", e.message))
     
-    if (['stage', 'main'].includes(base.ref)) {
+    if (base.ref === 'stage') {
         await updateStageToMainPR(github, context, pull_request);
     }
 }
@@ -46,29 +39,25 @@ async function updateStageToMainPR(github, context, mergedPR) {
   const repo = context.repo.repo;
   const PR_TITLE = '[Release] Stage to Main';
 
-  try {
-    const stageToMain = await github.rest.pulls
-        .list({owner, repo, state: 'open', base: 'main'})
-        .then(({ data } = {}) => data.find(({ title } = {}) => title === PR_TITLE));
+  const stageToMain = await github.rest.pulls
+      .list({owner, repo, state: 'open', base: 'main'})
+      .then(({ data } = {}) => data.find(({ title } = {}) => title === PR_TITLE));
 
-    if (!stageToMain || stageToMain.body.includes(mergedPR.html_url)) {
-      return;
-    }
-    
-    const body = `- ${mergedPR.html_url}\n${stageToMain.body || ''}`;
-    console.log("Updating PR's description");
-
-    await github.rest.pulls.update({
-      owner,
-      repo,
-      pull_number: stageToMain.number,
-      body,
-    });
-
-    console.log(`Updated Stage to Main PR #${stageToMain.number} with manually merged PR #${mergedPR.number}`);
-  } catch (error) {
-    console.error("Error updating Stage to Main PR:", error.message);
+  if (!stageToMain || stageToMain.body.includes(mergedPR.html_url)) {
+    return;
   }
+  
+  const body = `- ${mergedPR.html_url}\n${stageToMain.body || ''}`;
+  console.log("Updating PR's description");
+
+  await github.rest.pulls.update({
+    owner,
+    repo,
+    pull_number: stageToMain.number,
+    body,
+  });
+
+  console.log(`Updated Stage to Main PR #${stageToMain.number} with manually merged PR #${mergedPR.number}`);
 }
 
 if (process.env.LOCAL_RUN) {
