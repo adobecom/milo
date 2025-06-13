@@ -140,8 +140,10 @@ const merge = async ({ prs, type }) => {
           merge_method: 'squash',
         });
       }
-      existingPRCount++;
-      console.log(`Current number of PRs merged: ${existingPRCount}`);
+      if (type !== LABELS.zeroImpact) {
+        existingPRCount++;
+      }
+      console.log(`Current number of PRs merged: ${existingPRCount} (exluding Zero Impact)`);
       const prefix = type === LABELS.zeroImpact ? ' [ZERO IMPACT]' : '';
       body = `-${prefix} ${html_url}\n${body}`;
       await new Promise((resolve) => setTimeout(resolve, 5000));
