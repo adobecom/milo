@@ -176,7 +176,6 @@ The reason is that some merch cards are resolved very quickly and event could di
         {
             const logReady = document.getElementById('log-mas-ready');
             const message = (e, type) => {
-    <<<<<<< HEAD
                 const id =
                     e.target.getAttribute('id') ||
                     e.target.getAttribute('fragment') ||
@@ -185,11 +184,9 @@ The reason is that some merch cards are resolved very quickly and event could di
                     ? `: ${JSON.stringify(e.detail, null, 2)}`
                     : '';
                 return `'${type}' on ${e.target.nodeName} #${id}${detail}`;
-    =======
               const id = e.target.getAttribute('id') || e.target.getAttribute('fragment') || e.target.getAttribute('data-wcs-osi');
               const detail = e.detail ? `: ${JSON.stringify(e.detail, null, 2)}` : '';
               return `'${type}' on ${e.target.nodeName} #${id}${detail}`;
-    >>>>>>> 5b23fe9cda9d3589bdac8e9a1b92028b658044e3
             };
             // WCS request failed
             document.addEventListener('mas:failed', (event) => {
