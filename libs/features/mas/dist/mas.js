@@ -296,26 +296,60 @@ Try polyfilling it using "@formatjs/intl-pluralrules"
             width: var(--mod-img-width, var(--img-width));
             height: var(--mod-img-height, var(--img-height));
         }
-    `);customElements.define("merch-icon",Nt);var Pr,st,kr,Lr,$t,Ln=class extends HTMLElement{constructor(){super();w(this,Pr,"");w(this,st);w(this,kr,[]);w(this,Lr,[]);w(this,$t);S(this,$t,mn(()=>{this.isConnected&&(this.parentElement.style.background=this.value,u(this,st)?this.parentElement.style.borderRadius=u(this,st):u(this,st)===""&&(this.parentElement.style.borderRadius=""))},1))}static get observedAttributes(){return["colors","positions","angle","border-radius"]}get value(){let r=u(this,kr).map((n,o)=>{let i=u(this,Lr)[o]||"";return`${n} ${i}`}).join(", ");return`linear-gradient(${u(this,Pr)}, ${r})`}connectedCallback(){u(this,$t).call(this)}attributeChangedCallback(r,n,o){r==="border-radius"&&S(this,st,o?.trim()),r==="colors"&&o?S(this,kr,o?.split(",").map(i=>i.trim())??[]):r==="positions"&&o?S(this,Lr,o?.split(",").map(i=>i.trim())??[]):r==="angle"&&S(this,Pr,o?.trim()??""),u(this,$t).call(this)}};Pr=new WeakMap,st=new WeakMap,kr=new WeakMap,Lr=new WeakMap,$t=new WeakMap;customElements.define("merch-gradient",Ln);var It=class extends H{constructor(){super(),this.planType=void 0,this.checked=!1,this.updatePlanType=this.updatePlanType.bind(this),this.handleChange=this.handleChange.bind(this)}getOsi(t,r){let i=({TRIAL:["TRIAL"],BASE:["BASE","PROMOTION"],PROMOTION:["PROMOTION","BASE"]}[r]||[r]).map(s=>`p[data-plan-type="${t}"] ${Q}[data-offer-type="${s}"]`).join(", ");return this.querySelector(i)?.dataset?.wcsOsi}connectedCallback(){super.connectedCallback(),this.addEventListener(yt,this.updatePlanType)}disconnectedCallback(){super.disconnectedCallback(),this.removeEventListener(yt,this.updatePlanType)}updatePlanType(t){if(t.target.tagName!=="SPAN")return;let r=t.target,n=r?.value?.[0];n&&(r.setAttribute("data-offer-type",n.offerType),r.closest("p").setAttribute("data-plan-type",n.planType))}handleChange(t){this.checked=t.target.checked,this.dispatchEvent(new CustomEvent("change",{detail:{checked:this.checked},bubbles:!0,composed:!0}))}render(){return g`<input
-                type="checkbox"
-                id="addon-checkbox"
-                part="checkbox"
-                .checked=${this.checked}
-                @change=${this.handleChange}
-            />
+    `);customElements.define("merch-icon",Nt);var Pr,st,kr,Lr,$t,Ln=class extends HTMLElement{constructor(){super();w(this,Pr,"");w(this,st);w(this,kr,[]);w(this,Lr,[]);w(this,$t);S(this,$t,mn(()=>{this.isConnected&&(this.parentElement.style.background=this.value,u(this,st)?this.parentElement.style.borderRadius=u(this,st):u(this,st)===""&&(this.parentElement.style.borderRadius=""))},1))}static get observedAttributes(){return["colors","positions","angle","border-radius"]}get value(){let r=u(this,kr).map((n,o)=>{let i=u(this,Lr)[o]||"";return`${n} ${i}`}).join(", ");return`linear-gradient(${u(this,Pr)}, ${r})`}connectedCallback(){u(this,$t).call(this)}attributeChangedCallback(r,n,o){r==="border-radius"&&S(this,st,o?.trim()),r==="colors"&&o?S(this,kr,o?.split(",").map(i=>i.trim())??[]):r==="positions"&&o?S(this,Lr,o?.split(",").map(i=>i.trim())??[]):r==="angle"&&S(this,Pr,o?.trim()??""),u(this,$t).call(this)}};Pr=new WeakMap,st=new WeakMap,kr=new WeakMap,Lr=new WeakMap,$t=new WeakMap;customElements.define("merch-gradient",Ln);var It=class extends H{constructor(){super(),this.planType=void 0,this.checked=!1,this.updatePlanType=this.updatePlanType.bind(this),this.handleChange=this.handleChange.bind(this)}getOsi(t,r){let i=({TRIAL:["TRIAL"],BASE:["BASE","PROMOTION","TRIAL"],PROMOTION:["PROMOTION","BASE","TRIAL"]}[r]||[r]).map(s=>`p[data-plan-type="${t}"] ${Q}[data-offer-type="${s}"]`).join(", ");return this.querySelector(i)?.dataset?.wcsOsi}connectedCallback(){super.connectedCallback(),this.addEventListener(yt,this.updatePlanType)}disconnectedCallback(){super.disconnectedCallback(),this.removeEventListener(yt,this.updatePlanType)}updatePlanType(t){if(t.target.tagName!=="SPAN")return;let r=t.target,n=r?.value?.[0];n&&(r.setAttribute("data-offer-type",n.offerType),r.closest("p").setAttribute("data-plan-type",n.planType))}handleChange(t){this.checked=t.target.checked,this.dispatchEvent(new CustomEvent("change",{detail:{checked:this.checked},bubbles:!0,composed:!0}))}render(){return g`
             <label for="addon-checkbox" part="label">
+                <input
+                    type="checkbox"
+                    id="addon-checkbox"
+                    part="checkbox"
+                    .checked=${this.checked}
+                    @change=${this.handleChange}
+                />
+                <span></span>
                 <slot></slot>
             </label>`}};f(It,"properties",{planType:{type:String,attribute:"plan-type",reflect:!0},checked:{type:Boolean,reflect:!0}}),f(It,"styles",y`
         :host {
-            display: flex;
-            gap: 9px;
-            align-items: start;
+            --merch-addon-gap: 10px;
+            --merch-addon-checkbox-size: 12px;
+            --merch-addon-checkbox-border: 2px solid rgb(117, 117, 117);
+            --merch-addon-checkbox-radius: 2px;
+            --merch-addon-checkbox-checked-bg: var(--checkmark-icon);
+            --merch-addon-checkbox-checked-color: var(--color-accent);
+            --merch-addon-label-size: 12px;
+            --merch-addon-label-color: rgb(34, 34, 34);
+        }
+
+        :host > label {
+            display: inline-flex;
+            align-items: center;
+            gap: var(--merch-addon-gap);
             cursor: pointer;
         }
 
-        :host,
-        label {
-            cursor: pointer;
+        :host #addon-checkbox {
+            display: none;
+        }
+
+        :host #addon-checkbox + span {
+            width: var(--merch-addon-checkbox-size);
+            height: var(--merch-addon-checkbox-size);
+            border: var(--merch-addon-checkbox-border);
+            border-radius: var(--merch-addon-checkbox-radius);
+            box-sizing: border-box;
+        }
+
+        :host #addon-checkbox:checked + span {
+            background: var(--merch-addon-checkbox-checked-bg) no-repeat var(--merch-addon-checkbox-checked-color);
+            border-color: var(--merch-addon-checkbox-checked-color);
+        }
+
+        ::slotted(p:not([data-plan-type])) {
+            color: var(--merch-addon-label-color);
+            font-size: var(--merch-addon-label-size);
+            font-family: "Adobe Clean";
+            font-style: normal;
+            font-weight: 400;
+            line-height: normal;
         }
 
         ::slotted(p[data-plan-type]) {
@@ -1306,12 +1340,6 @@ merch-card[variant^="plans"] [slot="footer"] .con-button > span {
 merch-card[variant^="plans"] merch-addon {
     margin-top: 16px;
     margin-bottom: 16px;
-    font-family: "Adobe Clean";
-    font-size: 12px;
-    font-style: normal;
-    font-weight: 400;
-    line-height: normal;
-    align-items: center;
 }
 
 merch-card[variant^="plans"] merch-addon span[data-template="price"] {
