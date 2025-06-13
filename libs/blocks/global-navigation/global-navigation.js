@@ -947,25 +947,11 @@ class Gnav {
     await window.UniversalNav(CONFIG.universalNav.universalNavConfig);
     // In case we get it wrong
     if (!signedOut) this.blocks.universalNav?.style.removeProperty('min-width');
-    const fedsPromo = document.querySelector('.feds-promo-aside-wrapper');
-    const container = document.querySelector('.feds-utilities');
-    const hasAppSwitcher = this.universalNavComponents.includes('appswitcher');
-    const updatePromoZIndex = () => {
-      const isOpen = container.querySelector('.unav-comp-app-switcher-open');
-      fedsPromo.style.zIndex = isOpen ? 0 : 11;
-    };
-    // Ensure promo appears behind appswitcher on mobile
-    if (fedsPromo && hasAppSwitcher && !isDesktop.matches) {
-      new MutationObserver(updatePromoZIndex)
-        .observe(container, { childList: true, subtree: true, attributes: true, attributeFilter: ['class'] });
-      updatePromoZIndex();
-    }
     performance.mark('Unav-End');
     logPerformance('Unav-Time', 'Unav-Start', 'Unav-End');
     this.decorateAppPrompt({ getAnchorState: () => window.UniversalNav.getComponent?.('app-switcher') });
     isDesktop.addEventListener('change', () => {
       window.UniversalNav.reload(getConfiguration());
-      if (fedsPromo) updatePromoZIndex();
     });
   };
 
