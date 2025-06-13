@@ -6,6 +6,7 @@ async function customFetch({ resource, withCacheRules }) {
   }
   return fetch(resource, options);
 }
+
 export default async function getMepLocPlaceHolders(manifestPath) {
   const resp = await customFetch({ resource: `${manifestPath}.plain.html`, withCacheRules: true })
     .catch(() => ({}));

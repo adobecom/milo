@@ -1110,7 +1110,7 @@ async function getManifestConfig(info, variantOverride) {
   let mepPlaceHolders = null;
   if (!data && isMph) {
     const config = getConfig();
-    mepPlaceHolders = await config.mep.mphPromise;
+    if (config.mep.mepPromise) mepPlaceHolders = await config.mep.mphPromise;
   }
 
   const persData = data?.experiences?.data || data?.data || data || mepPlaceHolders;
