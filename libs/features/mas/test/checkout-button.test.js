@@ -163,8 +163,7 @@ describe('class "CheckoutButton"', () => {
         } catch (error) {
             // Verify it's a MasError instance
             expect(error).to.be.instanceOf(MasError);
-            expect(error.context).to.have.property('duration');
-            expect(error.context).to.have.property('startTime');
+            expect(error.context).to.have.property('measure');
             expect(error.context).to.include({
                 status: 404,
                 url: 'https://www.adobe.com//web_commerce_artifact?offer_selector_ids=xyz&country=US&locale=en_US&landscape=PUBLISHED&api_key=wcms-commerce-ims-ro-user-milo&language=MULT',
