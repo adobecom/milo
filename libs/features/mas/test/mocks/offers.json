@@ -322,6 +322,28 @@
           "merchant": "ADOBE"
       }
   ],
+  "perpetual-": [
+      {
+          "offerId": "C5AC20C8AAF4892B67DE2E89B26D8ACA",
+          "priceDetails": {
+              "price": 502.56,
+              "usePrecision": true,
+              "formatString": "# ##0,00 '&euro;'",
+              "taxDisplay": "TAX_INCLUSIVE_DETAILS",
+              "taxTerm": "VAT"
+          },
+          "productArrangementCode": "perpetual_acrobat_standard_2020_perpetual_individual",
+          "buyingProgram": "RETAIL",
+          "commitment": "PERPETUAL",
+          "customerSegment": "INDIVIDUAL",
+          "marketSegments": ["COM"],
+          "salesChannel": "DIRECT",
+          "offerType": "BASE",
+          "pricePoint": "FULL",
+          "language": "FR",
+          "merchant": "ADOBE"
+      }
+  ],
   "perpetual-mult": [],
   "tax-exclusive-mult": [
       {
