@@ -30,6 +30,7 @@ const expectedSelection = (expectedValue) => {
         `${expectedValue} should be selected`,
     );
     expect(item.value).to.equal(expectedValue);
+    return item;
 };
 
 const shouldSkipTests = sessionStorage.getItem('skipTests') ?? false;
@@ -72,13 +73,13 @@ runTests(async () => {
             expectedSelection('all');
         });
 
-        it('clicking on a navigation item expands/fold the section and updates the URL', async () => {
+        it('clicking on a navigation item updates the icon & main nav selected text', async () => {
             await render();
             await click('creativitydesign');
-            expectedSelection('creativitydesign');
+            const item = expectedSelection('creativitydesign');
             expect(window.location.hash).to.equal('#filter=creativitydesign');
-            await click('all');
-            expectedSelection('all');
+            expect(item.label).to.equal('Creativity And Design');
+            expect(item.parentElement.parentElement.selectedText).to.equal('CREATE!');
         });
 
         it('updates the navigation item depending of state', async () => {
