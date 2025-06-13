@@ -183,6 +183,7 @@ describe('getConfig', () => {
         i18n: {
           cardTitleAccessibilityLevel: 6,
           lastModified: 'Last modified {date}',
+          playVideo: 'Play, {cardTitle}',
           prettyDateIntervalFormat: '{ddd}, {LLL} {dd} | {timeRange} {timeZone}',
           totalResultsText: '{total} Results',
           title: '',
@@ -452,6 +453,7 @@ describe('getConfig', () => {
         i18n: {
           cardTitleAccessibilityLevel: 6,
           lastModified: 'Last modified {date}',
+          playVideo: 'Play, {cardTitle}',
           prettyDateIntervalFormat: '{ddd}, {LLL} {dd} | {timeRange} {timeZone}',
           totalResultsText: '{total} Results',
           title: '',
@@ -817,6 +819,7 @@ describe('getFloodgateCaasConfig', () => {
         i18n: {
           cardTitleAccessibilityLevel: 6,
           lastModified: 'Last modified {date}',
+          playVideo: 'Play, {cardTitle}',
           prettyDateIntervalFormat: '{ddd}, {LLL} {dd} | {timeRange} {timeZone}',
           totalResultsText: '{total} Results',
           title: '',
