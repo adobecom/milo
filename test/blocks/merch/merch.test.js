@@ -4,6 +4,68 @@ import { delay } from '../../helpers/waitfor.js';
 
 import { CheckoutWorkflow, CheckoutWorkflowStep, Defaults, Log } from '../../../libs/deps/mas/commerce.js';
 
+// Mock loadScript before importing anything that might use it
+window.loadScript = sinon.stub().callsFake((src) => {
+  if (src.includes('mas.js') || src.includes('mas/libs')) {
+    // Mock MAS library loading by returning a resolved promise
+    return Promise.resolve();
+  }
+  // For other scripts, use original behavior or return resolved promise
+  return Promise.resolve();
+});
+
+// Mock mas-commerce-service custom element before any imports
+if (!customElements.get('mas-commerce-service')) {
+  class MockMasCommerceService extends HTMLElement {
+    constructor() {
+      super();
+      this.readyPromise = Promise.resolve(this);
+      this.imsSignedInPromise = Promise.resolve(false);
+    }
+
+    registerCheckoutAction() {
+      return this;
+    }
+
+    createCheckoutLink(contextParam, text) {
+      const link = document.createElement('a');
+      link.textContent = text;
+      link.href = '#';
+      link.setAttribute('is', 'checkout-link');
+
+      // Mock methods that tests expect
+      link.onceSettled = () => Promise.resolve(link);
+      link.value = [{
+        offerType: 'TRIAL',
+        productArrangement: { productFamily: 'PHOTOSHOP' },
+      }];
+      link.dataset = {};
+
+      return link;
+    }
+
+    createInlinePrice() {
+      const span = document.createElement('span');
+      span.textContent = '$9.99/mo';
+      span.onceSettled = () => Promise.resolve(span);
+      span.dataset = {};
+      return span;
+    }
+
+    get Log() {
+      return {
+        module: () => ({
+          debug: () => {},
+          warn: () => {},
+          error: () => {},
+        }),
+      };
+    }
+  }
+
+  customElements.define('mas-commerce-service', MockMasCommerceService);
+}
+
 import merch, {
   PRICE_TEMPLATE_DISCOUNT,
   PRICE_TEMPLATE_OPTICAL,

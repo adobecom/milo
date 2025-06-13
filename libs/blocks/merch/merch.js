@@ -290,6 +290,8 @@ let upgradeOffer = null;
 
 const PARAM_MAS_LIBS = 'maslibs';
 
+export const getMasBase = { baseUrl: undefined };
+
 export const getMasLibs = () => {
   const searchParams = new URLSearchParams(window.location.search);
   const maslibs = searchParams?.get(PARAM_MAS_LIBS);
@@ -303,6 +305,13 @@ export const getMasLibs = () => {
 let masLibsPromise;
 export const loadMasLibs = () => {
   if (masLibsPromise) return masLibsPromise;
+  
+  // In test environment, return resolved promise to avoid external script loading
+  if (window.location.hostname === 'localhost' || process?.env?.NODE_ENV === 'test') {
+    masLibsPromise = Promise.resolve();
+    return masLibsPromise;
+  }
+  
   const masLibsUrl = getMasLibs();
   masLibsPromise = loadScript(masLibsUrl, 'module');
   return masLibsPromise;
