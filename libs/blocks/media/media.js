@@ -122,15 +122,11 @@ export default async function init(el) {
     if (textBlock) await loadCDT(textBlock, el.classList);
   }
 
-  const checklistLinks = el.classList.contains('checklist') ? el.querySelectorAll('a') : [];
-  if (checklistLinks.length > 0) {
-    checklistLinks.forEach((link) => {
-      const parent = link.parentElement;
-      if (parent?.tagName !== 'LI') return;
-
-      const span = createTag('span');
-      span.append(...parent.childNodes);
-      parent.appendChild(span);
-    });
-  }
+  const checklistLinks = el.classList.contains('checklist') ? el.querySelectorAll('li > a') : [];
+  checklistLinks.forEach((link) => {
+    const parent = link.parentElement;
+    const span = createTag('span');
+    span.append(...parent.childNodes);
+    parent.appendChild(span);
+  });
 }
