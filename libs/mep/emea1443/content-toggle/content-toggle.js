@@ -20,11 +20,13 @@ function decorateButton($block, $toggle) {
 }
 
 function getDefaultToggleIndex($block) {
-  const $enclosingMain = $block.closest('main');
-  const toggleDefaultOption = $enclosingMain.querySelector('[data-toggle-default]');
-  const defaultValue = toggleDefaultOption?.dataset.toggleDefault || toggleDefaultOption?.getAttribute('data-toggle-default');
-  const parsedIndex = parseInt(defaultValue, 10);
-  const defaultIndex = !defaultValue || Number.isNaN(parsedIndex) ? 0 : parsedIndex - 1;
+  const defaultClass = Array.from($block.classList).find((cls) => /^default-\d+$/.test(cls));
+  let defaultIndex;
+  if (defaultClass) {
+    defaultIndex = parseInt(defaultClass.split('-')[1], 10) - 1;
+  } else {
+    defaultIndex = 0;
+  }
   return defaultIndex;
 }
 

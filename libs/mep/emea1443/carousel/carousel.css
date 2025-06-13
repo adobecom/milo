@@ -89,7 +89,7 @@
   cursor: pointer;
   outline: 0;
   height: var(--carousel-slide-button-height);
-  width: var(--carousel-slide-button-width);
+  width:  var(--carousel-slide-button-width);
   transition: background .3s ease, outline .3s ease, border .3s ease, box-shadow .3s ease;
   z-index: 2;
 }
@@ -193,7 +193,7 @@ html[dir="rtl"] .carousel-slides .section.carousel-slide {
 .carousel-slide.active,
 .carousel.fade .carousel-slide.active {
   opacity: 1;
-}
+} 
 
 .carousel-slides.is-ready,
 .carousel-slides.is-ready.is-reversing,
@@ -310,7 +310,7 @@ html[dir="rtl"] .carousel .move-indicators {
   content: '';
   -webkit-backdrop-filter: blur(0.25em);
   backdrop-filter: blur(0.25em);
-  background: rgb(255 255 255 / 90%);
+  background:rgb(255 255 255 / 90%);
   width: 100%;
   height: 100%;
   position: fixed;
@@ -320,7 +320,7 @@ html[dir="rtl"] .carousel .move-indicators {
 }
 
 .dark .carousel-curtain {
-  background: rgb(0 0 0 / 90%);
+  background:rgb(0 0 0 / 90%);
 }
 
 .carousel.lightbox-active .carousel-slides {
@@ -381,7 +381,7 @@ html[dir="rtl"] .carousel .move-indicators {
   background-color: rgb(255 255 255 / 95%);
 }
 
-.carousel.lightbox .carousel-expand:focus-visible>img {
+.carousel.lightbox .carousel-expand:focus-visible > img {
   border-radius: 4px;
   border: 2px solid var(--carousel-focus-color);
   padding: 3px;
@@ -400,7 +400,7 @@ html[dir="rtl"] .carousel .move-indicators {
   outline: none;
 }
 
-.carousel.lightbox .carousel-close:focus-visible>svg {
+.carousel.lightbox .carousel-close:focus-visible > svg {
   border-radius: 50%;
   border: 2px solid var(--carousel-focus-color);
   padding: 3px;
@@ -416,20 +416,13 @@ html[dir="rtl"] .carousel .move-indicators {
 
 /* End Lightbox */
 
-/*  Equal height */
-.carousel.equal-height .carousel-slides {
-  align-items: stretch;
-}
-
 /* Corrects backgournd images coming from section metadata */
 .carousel .carousel-slide.has-background {
   position: relative;
 }
 
 /* Multiple slides reset for nested blocks foreground */
-.carousel[class*='show-'] .carousel-slide .foreground {
-  width: auto;
-}
+.carousel[class*='show-'] .carousel-slide .foreground { width: auto; }
 
 .carousel.container .carousel-slide .foreground:not(.icon-block .foreground) {
   max-width: unset;
@@ -441,37 +434,37 @@ html[dir="rtl"] .carousel .move-indicators {
 }
 
 .carousel:is(.rounded-corners, .m-rounded-corners) .carousel-slide,
-.carousel:is(.rounded-corners, .m-rounded-corners) .carousel-slide>div :is(p > picture img, p > video, p > .milo-video, p > .video-holder video) {
+.carousel:is(.rounded-corners, .m-rounded-corners) .carousel-slide > div :is(p > picture img, p > video, p > .milo-video, p > .video-holder video) {
   border-radius: var(--m-rounded-corners);
 }
 
 .carousel[class*='rounded-corners'] .carousel-slide,
-.carousel[class*='rounded-corners'] .carousel-slide>div :is(p > video, p > .milo-video, p > .video-holder video) {
+.carousel[class*='rounded-corners'] .carousel-slide > div :is(p > video, p > .milo-video, p > .video-holder video) {
   overflow: hidden;
 }
 
 .carousel.s-rounded-corners .carousel-slide,
-.carousel.s-rounded-corners .carousel-slide>div :is(p > picture img, p > video, p > .milo-video, p > .video-holder video) {
+.carousel.s-rounded-corners .carousel-slide > div :is(p > picture img, p > video, p > .milo-video, p > .video-holder video) {
   border-radius: var(--s-rounded-corners);
 }
 
 .carousel.l-rounded-corners .carousel-slide,
-.carousel.l-rounded-corners .carousel-slide>div :is(p > picture img, p > video, p > .milo-video, p > .video-holder video) {
+.carousel.l-rounded-corners .carousel-slide > div :is(p > picture img, p > video, p > .milo-video, p > .video-holder video) {
   border-radius: var(--l-rounded-corners);
 }
 
 .carousel.full-rounded-corners .carousel-slide,
-.carousel.full-rounded-corners .carousel-slide>div :is(p > picture img, p > video, p > .milo-video, p > .video-holder video) {
+.carousel.full-rounded-corners .carousel-slide > div :is(p > picture img, p > video, p > .milo-video, p > .video-holder video) {
   border-radius: var(--full-rounded-corners);
 }
 
-.carousel.video-fill .carousel-slide>div p :is(.video-holder, video),
-.carousel .carousel-slide.video-fill>div p :is(.video-holder, video) {
+.carousel.video-fill .carousel-slide > div p :is(.video-holder, video),
+.carousel .carousel-slide.video-fill > div p :is(.video-holder, video) {
   width: 100%;
   height: auto;
 }
 
-.carousel[class*='rounded-corners'] .carousel-slide>div :is(p):has(> video, > picture, > .milo-video, > .modal-img-link, > .video-holder) {
+.carousel[class*='rounded-corners'] .carousel-slide > div :is(p):has(> video, > picture, > .milo-video, > .modal-img-link, > .video-holder) {
   margin-top: 0;
   margin-bottom: 0;
   line-height: 0;
@@ -484,52 +477,35 @@ html[dir="rtl"] .carousel .move-indicators {
 .carousel.container .carousel-slide.section.l-spacing,
 .carousel.container .carousel-slide.section.xl-spacing,
 .carousel.container .carousel-slide.section.xxl-spacing,
-.carousel.container .carousel-slide.section.xxxl-spacing {
-  padding: 0;
-}
+.carousel.container .carousel-slide.section.xxxl-spacing { padding: 0; }
 
 /* Apply spacing token to block inside of slide */
-.carousel.container .carousel-slide.xs-spacing>div,
-.carousel.container .carousel-slide .xs-spacing {
-  padding: var(--spacing-xs);
-}
+.carousel.container .carousel-slide.xs-spacing > div,
+.carousel.container .carousel-slide .xs-spacing { padding: var(--spacing-xs); }
 
-.carousel.container .carousel-slide.s-spacing>div,
-.carousel.container .carousel-slide .s-spacing {
-  padding: var(--spacing-s);
-}
+.carousel.container .carousel-slide.s-spacing > div,
+.carousel.container .carousel-slide .s-spacing { padding: var(--spacing-s); }
 
-.carousel.container .carousel-slide.m-spacing>div,
-.carousel.container .carousel-slide .m-spacing {
-  padding: var(--spacing-m);
-}
+.carousel.container .carousel-slide.m-spacing > div,
+.carousel.container .carousel-slide .m-spacing { padding: var(--spacing-m); }
 
-.carousel.container .carousel-slide.l-spacing>div,
-.carousel.container .carousel-slide .l-spacing {
-  padding: var(--spacing-l);
-}
+.carousel.container .carousel-slide.l-spacing > div,
+.carousel.container .carousel-slide .l-spacing { padding: var(--spacing-l); }
 
-.carousel.container .carousel-slide.xl-spacing>div,
-.carousel.container .carousel-slide .xl-spacing {
-  padding: var(--spacing-xl);
-}
+.carousel.container .carousel-slide.xl-spacing > div,
+.carousel.container .carousel-slide .xl-spacing { padding: var(--spacing-xl); }
 
-.carousel.container .carousel-slide.xxl-spacing>div,
-.carousel.container .carousel-slide .xxl-spacing {
-  padding: var(--spacing-xxl);
-}
+.carousel.container .carousel-slide.xxl-spacing > div,
+.carousel.container .carousel-slide .xxl-spacing { padding: var(--spacing-xxl); }
 
-.carousel.container .carousel-slide.xxxl-spacing>div,
-.carousel.container .carousel-slide .xxxl-spacing {
-  padding: var(--spacing-xxxl);
-}
+.carousel.container .carousel-slide.xxxl-spacing > div,
+.carousel.container .carousel-slide .xxxl-spacing { padding: var(--spacing-xxxl); }
 
 .carousel.fade .carousel-slide {
   opacity: .3;
 }
 
 @media (max-width: 600px) {
-
   .carousel.container.hinting-mobile,
   .carousel.container.hinting-center-mobile {
     width: 100%;
@@ -555,7 +531,7 @@ html[dir="rtl"] .carousel .move-indicators {
     left: -80%;
     transform: translateX(80%);
   }
-
+  
   .carousel.hinting-mobile .carousel-slides.is-reversing {
     transform: translateX(-80%);
   }
@@ -619,9 +595,7 @@ html[dir="rtl"] .carousel .move-indicators {
     flex-basis: 100%;
   }
 
-  .carousel[class*='show-'] .carousel-slide {
-    opacity: 1;
-  }
+  .carousel[class*='show-'] .carousel-slide { opacity: 1; }
 
   .carousel.show-2 .carousel-slides {
     left: -50%;
@@ -712,9 +686,7 @@ html[dir="rtl"] .carousel .move-indicators {
     flex-basis: calc((100% / var(--slides)) - round(up, (((var(--slides) - 1) / var(--slides)) * var(--spacing-m)), 1px));
   }
 
-  .carousel[class*='show-'] .carousel-controls {
-    display: none;
-  }
+  .carousel[class*='show-'] .carousel-controls { display: none; }
 
   .carousel.m-gap .carousel-slides {
     gap: var(--spacing-m);
