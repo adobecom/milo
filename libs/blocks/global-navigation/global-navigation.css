@@ -157,6 +157,7 @@ header.global-navigation {
 .feds-brand-image.brand-image-only {
   height: 36px;
   width: auto;
+  min-width: 66px;
 }
 
 .feds-brand-image picture, .feds-brand-image img, .feds-brand-image svg,
@@ -1531,6 +1532,8 @@ header.new-nav .feds-nav > section.feds-navItem > .feds-popup.loading .tab-conte
   }
   to {
     background-position: 100% 0%;
+  }
+}
 
 /* Landscape mode for mobile */
 @media (orientation: landscape) and (max-width: 900px) {

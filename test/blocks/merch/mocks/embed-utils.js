@@ -45,3 +45,10 @@ export const localizeLink = stub();
 export const loadLink = stub();
 
 export const reloadPage = stub();
+
+/**
+ * TODO: This method will be deprecated and removed in a future version.
+ * @see https://jira.corp.adobe.com/browse/MWPW-173470
+ * @see https://jira.corp.adobe.com/browse/MWPW-174411
+*/
+export const shouldAllowKrTrial = stub();
