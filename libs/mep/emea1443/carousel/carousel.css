@@ -416,6 +416,11 @@ html[dir="rtl"] .carousel .move-indicators {
 
 /* End Lightbox */
 
+/*  Equal height */
+.carousel.equal-height .carousel-slides {
+  align-items: stretch;
+}
+
 /* Corrects backgournd images coming from section metadata */
 .carousel .carousel-slide.has-background {
   position: relative;
