@@ -8,13 +8,11 @@ async function main({ github, context } = {}) {
     if (!github || !context) {
         throw new Error("GitHub context is missing. Ensure you are running in the correct environment.");
     }
-
     if (process.env.LOCAL_RUN) {
         console.log("Local run detected. Loading local configurations...");
         const { github: localGithub, context: localContext } = getLocalConfigs();
         return main({ github: localGithub, context: localContext });
     }
-
     const { payload = {} } = context;
     const { pull_request } = payload;
     if (!pull_request) {
@@ -28,7 +26,6 @@ async function main({ github, context } = {}) {
     const prefix = isStage
         ? ':merged: PR merged to stage:'
         : ':rocket: Production release:';
-
     console.log(`Sending notification for PR #${number}: ${title}`);
     await slackNotification(
       `${prefix} <${html_url}|#${number}: ${title}>.`,
@@ -44,17 +41,13 @@ async function updateStageToMainPR(github, context, mergedPR) {
   const { repo = {} } = context;
   const { owner, repo: repoName } = repo;
   const PR_TITLE = '[Release] Stage to Main';
-
   const { data: pulls = [] } = await github.rest.pulls
       .list({owner, repo: repoName, state: 'open', base: 'main'});
   
   const stageToMain = pulls.find(({ title } = {}) => title === PR_TITLE);
-
   if (!stageToMain || stageToMain.body?.includes(mergedPR.html_url)) {
     return;
   }
-
-  // Check if PR has zero-impact label
   const isZeroImpact = mergedPR.labels?.some(label => label.name === LABELS.zeroImpact);
   const prefix = isZeroImpact ? '[ZERO IMPACT] ' : '';
   const body = `-${prefix} ${mergedPR.html_url}\n${stageToMain.body || ''}`;
