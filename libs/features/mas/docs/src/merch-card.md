@@ -138,8 +138,8 @@ Adobe Home Gallery provides a comprehensive list of all supported card variants 
 | `renewalText`       | Subscription renewal text.                                                                                          | `string`                       |
 | `promoDurationText` | Promo duration text.                                                                                                | `string`                       |
 | `ctas`              | checkout-link (if consonant) / checkout-button elements that are rendered in the card.                              | `Array`                        |
-| `primaryCta`        | Primary CTA element, mostly for checkout buttons for BASE offers                                                    | `checkout-button`              |
-| `secondaryCta`      | Secondary CTA element, mostly for checkout buttons for TRIAL offers                                                 | `checkout-button`              |
+| `primaryCta`        | Primary CTA element, mostly for checkout buttons for BASE offers                                                    | `{text: string, href: string}` |
+| `secondaryCta`      | Secondary CTA element, mostly for checkout buttons for TRIAL offers                                                 | `{text: string, href: string}` |
 
 ### Events
 
