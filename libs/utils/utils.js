@@ -1458,7 +1458,7 @@ async function checkForPageMods() {
     }
   }
   if (mph) {
-    const { getMepLocPlaceHolders } = await import('../features/personalization/personalization.js');
+    const { default: getMepLocPlaceHolders } = await import('../features/personalization/mepLocPlaceholders.js');
     mphPromise = getMepLocPlaceHolders(mph);
   }
   const enablePersV2 = enablePersonalizationV2();
