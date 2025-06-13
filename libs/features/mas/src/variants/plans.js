@@ -1,22 +1,20 @@
 import { VariantLayout } from './variant-layout';
-import { html, css } from 'lit';
+import { html, css, nothing } from 'lit';
 import { CSS } from './plans.css.js';
 import { isMobile, matchMobile } from '../utils.js';
 import {
     SELECTOR_MAS_INLINE_PRICE,
-    TEMPLATE_PRICE,
     TEMPLATE_PRICE_LEGAL,
 } from '../constants.js';
 
 export const PLANS_AEM_FRAGMENT_MAPPING = {
-    title: { tag: 'p', slot: 'heading-xs' },
+    title: { tag: 'h3', slot: 'heading-xs' },
     prices: { tag: 'p', slot: 'heading-m' },
     promoText: { tag: 'p', slot: 'promo-text' },
     description: { tag: 'div', slot: 'body-xs' },
     mnemonics: { size: 'l' },
     callout: { tag: 'div', slot: 'callout-content' },
     quantitySelect: { tag: 'div', slot: 'quantity-select' },
-    stockOffer: true /* @deprecated */,
     addon: true,
     secureLabel: true,
     planType: true,
@@ -43,7 +41,7 @@ export const PLANS_EDUCATION_AEM_FRAGMENT_MAPPING = {
     const { whatsIncluded, ...rest } = PLANS_AEM_FRAGMENT_MAPPING;
     return rest;
   }()),
-  title: { tag: 'p', slot: 'heading-s' },
+  title: { tag: 'h3', slot: 'heading-s' },
   subtitle: { tag: 'p', slot: 'subtitle' },
   secureLabel: false
 }
@@ -129,7 +127,7 @@ export class Plans extends VariantLayout {
     get divider() {
       return this.card.variant === 'plans-education'
         ? html`<div class="divider"></div>` 
-        : ''
+        : nothing
     }
 
     async adjustLegal() {
@@ -175,12 +173,23 @@ export class Plans extends VariantLayout {
                 <span></span>
                 ${this.card.checkboxLabel}
             </label>`
-            : '';
+            : nothing;
     }
 
     get icons() {
-        if (!this.card.querySelector('[slot="icons"]') && !this.card.getAttribute('id')) return '';
+        if (!this.card.querySelector('[slot="icons"]') && !this.card.getAttribute('id')) return nothing;
         return html`<slot name="icons"></slot>`;
+    }
+
+    get addon() {
+        if (this.card.size === 'super-wide') return nothing;
+        return html`<slot name="addon"></slot>`
+    }
+
+    get plansSecureLabelFooter() {
+        if (this.card.size === 'super-wide') 
+            return html`<footer><slot name="addon"></slot>${this.secureLabel}<slot name="footer"></slot></footer>`;
+        return this.secureLabelFooter;
     }
 
     connectedCallbackHook() {
@@ -212,11 +221,11 @@ export class Plans extends VariantLayout {
                 <slot name="whats-included"></slot>
                 <slot name="callout-content"></slot>
                 ${this.stockCheckbox}
-                <slot name="addon"></slot>
+                ${this.addon}
                 <slot name="badge"></slot>
                 <slot name="quantity-select"></slot>
             </div>
-            ${this.secureLabelFooter}`;
+            ${this.plansSecureLabelFooter}`;
     }
 
     static variantStyle = css`

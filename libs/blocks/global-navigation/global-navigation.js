@@ -451,7 +451,7 @@ class Gnav {
     if (this.useUniversalNav) {
       delete this.blocks.profile;
       this.blocks.universalNav = toFragment`<div class="feds-utilities"></div>`;
-      this.blocks.universalNav.style.setProperty('width', getUnavWidthCSS(this.universalNavComponents));
+      this.blocks.universalNav.style.setProperty('min-width', getUnavWidthCSS(this.universalNavComponents));
       this.blocks.universalNav.addEventListener('click', () => {
         if (this.isToggleExpanded()) this.toggleMenuMobile();
       }, true);
@@ -821,7 +821,7 @@ class Gnav {
     const signedOut = !window.adobeIMS?.isSignedInUser();
     if (signedOut) {
       const width = getUnavWidthCSS(this.universalNavComponents, signedOut);
-      this.blocks.universalNav?.style.setProperty('width', width);
+      this.blocks.universalNav?.style.setProperty('min-width', width);
     }
     const config = getConfig();
     const locale = getUniversalNavLocale(config.locale);
@@ -946,26 +946,12 @@ class Gnav {
     CONFIG.universalNav.universalNavConfig = getConfiguration();
     await window.UniversalNav(CONFIG.universalNav.universalNavConfig);
     // In case we get it wrong
-    if (!signedOut) this.blocks.universalNav?.style.removeProperty('width');
-    const fedsPromo = document.querySelector('.feds-promo-aside-wrapper');
-    const container = document.querySelector('.feds-utilities');
-    const hasAppSwitcher = this.universalNavComponents.includes('appswitcher');
-    const updatePromoZIndex = () => {
-      const isOpen = container.querySelector('.unav-comp-app-switcher-open');
-      fedsPromo.style.zIndex = isOpen ? 0 : 11;
-    };
-    // Ensure promo appears behind appswitcher on mobile
-    if (fedsPromo && hasAppSwitcher && !isDesktop.matches) {
-      new MutationObserver(updatePromoZIndex)
-        .observe(container, { childList: true, subtree: true, attributes: true, attributeFilter: ['class'] });
-      updatePromoZIndex();
-    }
+    if (!signedOut) this.blocks.universalNav?.style.removeProperty('min-width');
     performance.mark('Unav-End');
     logPerformance('Unav-Time', 'Unav-Start', 'Unav-End');
     this.decorateAppPrompt({ getAnchorState: () => window.UniversalNav.getComponent?.('app-switcher') });
     isDesktop.addEventListener('change', () => {
       window.UniversalNav.reload(getConfiguration());
-      if (fedsPromo) updatePromoZIndex();
     });
   };
 
@@ -1186,12 +1172,12 @@ class Gnav {
 
     if (this.elements.aside.clientHeight > fedsPromoWrapper.clientHeight) {
       lanaLog({ message: 'Promo height is more than expected, potential CLS', tags: 'gnav-promo', errorType: 'i' });
-      updateLayout();
-
-      this.promoResizeObserver?.disconnect();
-      this.promoResizeObserver = new ResizeObserver(updateLayout);
-      this.promoResizeObserver.observe(this.elements.aside);
     }
+    this.promoResizeObserver?.disconnect();
+    this.promoResizeObserver = new ResizeObserver(updateLayout);
+    this.promoResizeObserver.observe(this.elements.aside);
+    updateLayout();
+    isDesktop.addEventListener('change', updateLayout);
     performance.mark('Gnav-Aside-End');
     logPerformance('Gnav-Aside-Time', 'Gnav-Aside-Start', 'Gnav-Aside-End');
     return this.elements.aside;
