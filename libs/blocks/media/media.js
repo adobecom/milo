@@ -61,7 +61,7 @@ export default async function init(el) {
     rows = tail;
   }
   let blockType = null;
-  const types = ['merch', 'qr-code'];
+  const types = ['merch', 'qr-code', 'checklist'];
   [...types].forEach((type) => {
     if (!el.classList.contains(type)) return;
     blockType = type;
@@ -122,7 +122,7 @@ export default async function init(el) {
     if (textBlock) await loadCDT(textBlock, el.classList);
   }
 
-  const checklistLinks = el.classList.contains('checklist') ? el.querySelectorAll('li > a') : [];
+  const checklistLinks = blockType === 'checklist' ? el.querySelectorAll('li > a') : [];
   checklistLinks.forEach((link) => {
     const parent = link.parentElement;
     const span = createTag('span');
