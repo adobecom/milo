@@ -105,8 +105,18 @@ export const getTemplateContent = (template) => {
     return [...templateContent.children];
 };
 
-export const oneEvent = (element, eventName) => {
-    return new Promise((resolve) => {
-        element.addEventListener(eventName, resolve, { once: true });
+export const oneEvent = (element, eventName, timeout = 1000) => {
+    return new Promise((resolve, reject) => {
+        const timer = setTimeout(() => {
+            reject(new Error('timeout'));
+        }, timeout);
+        element.addEventListener(
+            eventName,
+            (e) => {
+                clearTimeout(timer);
+                resolve(e);
+            },
+            { once: true },
+        );
     });
 };
