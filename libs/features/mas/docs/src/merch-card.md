@@ -135,8 +135,8 @@ Adobe Home Gallery provides a comprehensive list of all supported card variants 
 | `taxText`           | The text for the tax.                                                                                               | `string`                       |
 | `recurrenceText`    | The text for the billing frequency.                                                                                 | `string`                       |
 | `seeTermsInfo`      | The see terms text and link href value.                                                                             | `{text: string, href: string}` |
-| `renewalText`   | Placeholer: The auto-renewal text.                                                                                  | `string`                       |
-| `promoDurationText` | Placeholer: currently not provided by MAS.                                                                          | `string`                       |
+| `renewalText`       | Subscription renewal text.                                                                                          | `string`                       |
+| `promoDurationText` | Promo duration text.                                                                                                | `string`                       |
 | `ctas`              | checkout-link (if consonant) / checkout-button elements that are rendered in the card.                              | `Array`                        |
 | `primaryCta`        | Primary CTA element, mostly for checkout buttons for BASE offers                                                    | `checkout-button`              |
 | `secondaryCta`      | Secondary CTA element, mostly for checkout buttons for TRIAL offers                                                 | `checkout-button`              |
