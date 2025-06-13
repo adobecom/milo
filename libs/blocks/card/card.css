@@ -8,7 +8,8 @@
   height: unset;
 }
 
-.card .consonant-OneHalfCard-title, .card .consonant-OneHalfCard-text {
+.card [class^="consonant-"]:is([class$="-title"], [class$="-text"]),
+.card [class^="consonant-CardsGrid--"][class$="up"] .consonant-ThreeFourthCard>a>.consonant-ThreeFourthCard-title {
   max-height: unset;
 }
 
