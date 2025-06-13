@@ -4,15 +4,7 @@ const LABELS = {
   zeroImpact: 'zero-impact',
 };
 
-async function main({ github, context } = {}) {
-    if (!github || !context) {
-        throw new Error("GitHub context is missing. Ensure you are running in the correct environment.");
-    }
-    if (process.env.LOCAL_RUN) {
-        console.log("Local run detected. Loading local configurations...");
-        const { github: localGithub, context: localContext } = getLocalConfigs();
-        return main({ github: localGithub, context: localContext });
-    }
+async function main({ github = getLocalConfigs().github, context = getLocalConfigs().context } = {}) {
     const { payload = {} } = context;
     const { pull_request } = payload;
     if (!pull_request) {
@@ -64,8 +56,9 @@ async function updateStageToMainPR(github, context, mergedPR) {
 }
 
 if (process.env.LOCAL_RUN) {
-  const { github, context } = getLocalConfigs();
-  main({ github, context });
+    console.log("Local run detected. Loading local configurations...");
+    const { github, context } = getLocalConfigs();
+    main({ github, context });
 }
 
 module.exports = main;
