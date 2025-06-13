@@ -1199,6 +1199,10 @@ merch-card-collection.plans merch-card {
   height: 100%;
 }
 
+merch-card-collection.plans merch-card aem-fragment + p[slot^="heading-"] {
+    margin-top: calc(40px + var(--consonant-merch-spacing-xxs));
+}
+
 merch-card[variant^='plans'] span[data-template="legal"] {
     display: block;
     color: var(----merch-color-grey-80);
