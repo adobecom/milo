@@ -220,10 +220,10 @@ const main = async (params) => {
     existingPRCount = body.match(/https:\/\/github\.com\/adobecom\/milo\/pull\/\d+/g)?.length || 0;
     console.log(`Number of PRs already in the batch: ${existingPRCount}`);
 
-    if (mergeLimitExceeded()) return console.log('Maximum number of PRs already merged. Stopping execution');
-
     const { zeroImpactPRs, highImpactPRs, normalPRs } = await getPRs();
     await merge({ prs: zeroImpactPRs, type: LABELS.zeroImpact });
+
+    if (mergeLimitExceeded()) return console.log('Maximum number of PRs already merged. Stopping execution');
     if (stageToMainPR?.labels.some((label) => label.includes(LABELS.SOTPrefix))) return console.log('PR exists & testing started. Stopping execution.');
     await merge({ prs: highImpactPRs, type: LABELS.highPriority });
     await merge({ prs: normalPRs, type: 'normal' });

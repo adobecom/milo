@@ -183,6 +183,20 @@ describe('class "InlinePrice"', () => {
         expect(inlinePrice.innerHTML).to.equal('');
     });
 
+    it('does not override missing offer with strikethrough', async () => {
+        initMasCommerceService();
+        const failedPrice = mockInlinePrice('noOffer', 'no-offer');
+        Object.assign(failedPrice.dataset, { template: 'price' });
+        const strikethroughPrice = InlinePrice.createInlinePrice({ wcsOsi: 'puf' });
+        Object.assign(strikethroughPrice.dataset, { template: 'strikethrough' });
+        failedPrice.parentElement.append(strikethroughPrice);
+        await strikethroughPrice.onceSettled();
+        await expect(failedPrice.onceSettled()).to.be.eventually.rejectedWith(
+            ERROR_MESSAGE_OFFER_NOT_FOUND,
+        );
+        expect(failedPrice.innerHTML).to.equal('');
+    });
+
     it('renders perpetual offer', async () => {
         await initMasCommerceService();
         const inlinePrice = mockInlinePrice('perpetual', 'perpetual', { perpetual: true });

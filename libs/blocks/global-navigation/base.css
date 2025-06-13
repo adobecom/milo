@@ -202,6 +202,10 @@ header.global-navigation.ready {
     padding: 0 8px;
   }
 
+  .feds-topnav--overflowing .feds-popup .feds-navLink {
+    padding: 6px 32px;
+  }
+
   .feds-topnav--overflowing .feds-navItem--active > .feds-navLink:before {
     margin: 0 8px;
   }

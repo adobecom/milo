@@ -223,6 +223,12 @@ html[dir="rtl"] .carousel-slides .section.carousel-slide {
   padding: 0 var(--spacing-xxs);
 } */
 
+@media only screen and (max-width: 600px) {
+  .carousel .carousel-controls {
+    display: block;
+  }
+}
+
 .carousel .carousel-indicators {
   list-style: none;
   display: inline-flex;
