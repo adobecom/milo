@@ -1058,28 +1058,6 @@ export const addMepAnalytics = (config, header) => {
     }
   });
 };
-// I will move this to a separate file later
-export const getMepLocPlaceHolders = async (manifestPath) => {
-  const resp = await customFetch({ resource: `${manifestPath}.plain.html`, withCacheRules: true })
-    .catch(() => ({}));
-
-  if (!resp?.ok) {
-    window.lana?.log(`Could not get mep placeholders: ${manifestPath}.plain.html`);
-    return null;
-  }
-  const html = await resp.text();
-  const doc = new DOMParser().parseFromString(html, 'text/html');
-  const rows = Array.from(doc.querySelectorAll('.mep-placeholders > div')).slice(1);
-  const mepPlaceHolders = rows.map((row) => {
-    const key = row.children[0]?.textContent?.trim();
-    const value = row.children[1].innerHTML;
-    if (key && value) {
-      return { key, value };
-    }
-    return null;
-  }).filter(Boolean);
-  return mepPlaceHolders;
-};
 
 
 export function getMepConsentConfig() {
