@@ -18,6 +18,9 @@ let videoLabels = {
   hasFetched: false,
 };
 let videoCounter = 0;
+document.addEventListener('error', (error) => {
+  console.log("error", error);
+});
 
 export function decorateButtons(el, size) {
   const buttons = el.querySelectorAll('em a, strong a, p > a strong');
@@ -329,7 +332,7 @@ export function applyAccessibilityEvents(videoEl) {
   }
   if (videoEl.hasAttribute('autoplay')) {
     videoEl.addEventListener('canplay', () => {
-      videoEl.play().catch((err) => { console.log("error", err); });
+      videoEl.play();
     });
     videoEl.addEventListener('playing', (event) => syncPausePlayIcon(videoEl, event));
     videoEl.addEventListener('ended', () => syncPausePlayIcon(videoEl));
@@ -512,10 +515,6 @@ export function decorateAnchorVideo({ src = '', anchorTag }) {
       decoratePausePlayWrapper(videoEl, attrs);
     }
   }
-
-  parentElement.addEventListener('error', (error) => {
-    console.log("error", error);
-  });
   applyHoverPlay(videoEl);
   applyInViewPortPlay(videoEl);
   anchorTag.remove();
