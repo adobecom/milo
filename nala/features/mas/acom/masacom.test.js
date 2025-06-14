@@ -7,8 +7,6 @@ let acomPage;
 let webUtil;
 const COMMERCE_LINK_REGEX = /https:\/\/commerce\.adobe\.com\/store\/email\?items%5B0%5D%5Bid%5D=([A-F0-9]{32}&apc=FY25PLES256MROW&cli=adobe_com&ctx=fp&co=US&lang=en)/i;
 
-const miloLibs = process.env.MILO_LIBS || '';
-
 test.describe('ACOM MAS cards feature test suite', () => {
   test.beforeEach(async ({ page, browserName }) => {
     test.skip(browserName !== 'chromium', 'Not supported to run on multiple browsers.');
@@ -24,7 +22,7 @@ test.describe('ACOM MAS cards feature test suite', () => {
 
   // @MAS-Plans
   test(`${features[0].name},${features[0].tags}`, async ({ page, baseURL }) => {
-    const testPage = `${baseURL}${features[0].path}${miloLibs}`;
+    const testPage = `${baseURL}${features[0].path}`;
     const { data } = features[0];
     console.info('[Test Page]: ', testPage);
 
@@ -61,7 +59,7 @@ test.describe('ACOM MAS cards feature test suite', () => {
 
   // @MAS-Plans-CSS
   test(`${features[1].name},${features[1].tags}`, async ({ page, baseURL }) => {
-    const testPage = `${baseURL}${features[1].path}${miloLibs}`;
+    const testPage = `${baseURL}${features[1].path}`;
     const { data } = features[1];
     console.info('[Test Page]: ', testPage);
 
@@ -92,7 +90,7 @@ test.describe('ACOM MAS cards feature test suite', () => {
 
   // @MAS-Plans-Students-CSS
   test(`${features[2].name},${features[2].tags}`, async ({ page, baseURL }) => {
-    const testPage = `${baseURL}${features[2].path}${miloLibs}`;
+    const testPage = `${baseURL}${features[2].path}`;
     const { data } = features[2];
     console.info('[Test Page]: ', testPage);
 

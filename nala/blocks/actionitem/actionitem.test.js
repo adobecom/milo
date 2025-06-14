@@ -154,13 +154,12 @@ test.describe('Milo Action-Item block test suite', () => {
       await expect(await actionItem.floatOutlineButton).toBeVisible();
       await expect(await actionItem.floatOutlineButton).toContainText(data.floatButtonText);
     });
-
-    await test.step('step-4: Verify the accessibility test on the Action-Item (Float Button) block', async () => {
-      await runAccessibilityTest({ page, testScope: actionItem.actionItemFloat });
-    });
     await test.step('step-3: Click the float button', async () => {
       await actionItem.floatButton.click();
       expect(await page.url()).not.toBe(testPage);
+    });
+    await test.step('step-4: Verify the accessibility test on the Action-Item (Float Button) block', async () => {
+      await runAccessibilityTest({ page, testScope: actionItem.actionItemFloat });
     });
   });
 

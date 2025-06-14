@@ -594,6 +594,8 @@ const addStartingAt = async (styles, merchCard) => {
 };
 
 export default async function init(el) {
+  const { loadMasLibs } = await import('../merch/merch.js');
+  await loadMasLibs();
   if (!el.querySelector(INNER_ELEMENTS_SELECTOR)) return el;
   const merchServicePromise = initService();
   // TODO: Remove after bugfix PR adobe/helix-html2md#556 is merged
