@@ -305,13 +305,13 @@ export const getMasLibs = () => {
 let masLibsPromise;
 export const loadMasLibs = () => {
   if (masLibsPromise) return masLibsPromise;
-  
+
   // In test environment, return resolved promise to avoid external script loading
   if (window.location.hostname === 'localhost' || process?.env?.NODE_ENV === 'test') {
     masLibsPromise = Promise.resolve();
     return masLibsPromise;
   }
-  
+
   const masLibsUrl = getMasLibs();
   masLibsPromise = loadScript(masLibsUrl, 'module');
   return masLibsPromise;
@@ -682,9 +682,9 @@ export async function initService(force = false, attributes = {}) {
     fetchEntitlements.promise = undefined;
     fetchCheckoutLinkConfigs.promise = undefined;
   }
-  
+
   await loadMasLibs();
-  
+
   const { commerce, env: miloEnv, locale: miloLocale } = getConfig();
 
   const extraAttrs = [

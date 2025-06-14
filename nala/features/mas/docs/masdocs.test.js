@@ -1,8 +1,6 @@
 import { expect, test } from '@playwright/test';
 import { features } from './masdocs.spec.js';
 
-const miloLibs = process.env.MILO_LIBS || '';
-
 test.describe('MAS Docs feature test suite', () => {
   test.beforeEach(async ({ page, browserName }) => {
     test.skip(browserName !== 'chromium', 'Not supported to run on multiple browsers.');
@@ -16,13 +14,13 @@ test.describe('MAS Docs feature test suite', () => {
 
   // @MAS-DOCS-checkout-link
   test(`${features[0].name},${features[0].tags}`, async ({ page, baseURL }) => {
-    const testPage = `${baseURL}${features[0].path}${miloLibs}`;
+    const testPage = `${baseURL}${features[0].path}`;
     console.info('[Test Page]: ', testPage);
 
     await test.step('step-1: Go to MAS Checkout Link Docs page', async () => {
       await page.goto(testPage);
       await page.waitForLoadState('domcontentloaded');
-      await expect(page).toHaveURL(`${baseURL}${features[0].path}`);
+      await expect(page).toHaveURL(testPage);
     });
 
     await test.step('step-2: Verify on load pending & resolved events', async () => {
@@ -40,13 +38,13 @@ test.describe('MAS Docs feature test suite', () => {
 
   // @MAS-DOCS-merch-card
   test(`${features[1].name},${features[1].tags}`, async ({ page, baseURL }) => {
-    const testPage = `${baseURL}${features[1].path}${miloLibs}`;
+    const testPage = `${baseURL}${features[1].path}`;
     console.info('[Test Page]: ', testPage);
 
     await test.step('step-1: Go to MAS Merch Card Docs page', async () => {
       await page.goto(testPage);
       await page.waitForLoadState('domcontentloaded');
-      await expect(page).toHaveURL(`${baseURL}${features[1].path}`);
+      await expect(page).toHaveURL(testPage);
     });
 
     await test.step('step-2: Verify successfull mas:ready events', async () => {
