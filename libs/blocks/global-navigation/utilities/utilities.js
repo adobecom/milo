@@ -334,6 +334,49 @@ export const [hasActiveLink, setActiveLink, isActiveLink, getActiveLink] = (() =
   ];
 })();
 
+export const setAriaAtributes = (dropdownTrigger) => {
+  const popup = dropdownTrigger.nextElementSibling;
+  if (isDesktop.matches) {
+    dropdownTrigger.setAttribute('aria-haspopup', 'true');
+    dropdownTrigger.removeAttribute('aria-controls');
+    popup.removeAttribute('role');
+    popup.removeAttribute('aria-modal');
+    popup.removeAttribute('aria-labelledby');
+  } else {
+    dropdownTrigger.setAttribute('aria-haspopup', 'dialog');
+    dropdownTrigger.setAttribute('aria-controls', popup.id);
+    popup.setAttribute('role', 'dialog');
+    popup.setAttribute('aria-modal', true);
+    popup.setAttribute('aria-labelledby', `${popup.id}-title`);
+  }
+};
+
+export const [addA11YMobileDropdowns, removeA11YMobileDropdowns] = (() => {
+  const elementsToHidden = ['.feds-brand-container', '.feds-utilities', '.feds-nav-wrapper .feds-nav > *'];
+  let topNav = null;
+  return [
+    (container, triggerElement) => {
+      topNav = container;
+      elementsToHidden.forEach((selector) => {
+        const elements = topNav.querySelectorAll(selector);
+        elements.forEach((el) => {
+          el?.setAttribute('aria-hidden', 'true');
+        });
+      });
+      triggerElement.closest('section')?.setAttribute('aria-hidden', 'false');
+    },
+    () => {
+      if (!topNav) return;
+      elementsToHidden.forEach((selector) => {
+        const elements = topNav.querySelectorAll(selector);
+        elements.forEach((el) => {
+          el?.removeAttribute('aria-hidden');
+        });
+      });
+    },
+  ];
+})();
+
 export function closeAllDropdowns({
   type,
   animatedElement = undefined,
@@ -541,16 +584,10 @@ export const transformTemplateToMobile = async ({ popup, item, localnav = false,
   popup.innerHTML = `
     <div class="top-bar">
       ${localnav ? brand : await replaceText(mainMenu, getFedsPlaceholderConfig())}
-      <button class="close-icon" daa-ll="Close button_SubNav" aria-label='Close'>
-        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 14 14" fill="none">
-          <path d="M1.5 1L13 12.5" stroke=${isDarkMode() ? '#f2f2f2' : 'black'} stroke-width="1.7037" stroke-linecap="round"/>
-          <path d="M13 1L1.5 12.5" stroke=${isDarkMode() ? '#f2f2f2' : 'black'} stroke-width="1.7037" stroke-linecap="round"/>
-        </svg>
-      </button>
     </div>
     <div class="title">
       ${breadCrumbs || '<div class="breadcrumbs"></div>'}
-      <h7>${item.textContent.trim()}</h7>
+      <h2 id="${popup.id}-title">${item.textContent.trim()}</h2>
     </div>
     <div class="tabs" role="tablist">
       ${tabs.map(({ name, daallTab }, i) => `
@@ -579,17 +616,25 @@ export const transformTemplateToMobile = async ({ popup, item, localnav = false,
     <div class="sticky-cta">
       ${CTA}
     </div>
+    <button class="close-icon" daa-ll="Close button_SubNav" aria-label='Close'>
+      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 14 14" fill="none">
+        <path d="M1.5 1L13 12.5" stroke=${isDarkMode() ? '#f2f2f2' : 'black'} stroke-width="1.7037" stroke-linecap="round"/>
+        <path d="M13 1L1.5 12.5" stroke=${isDarkMode() ? '#f2f2f2' : 'black'} stroke-width="1.7037" stroke-linecap="round"/>
+      </svg>
+    </button>
     `;
 
   const closeIcon = popup.querySelector('.close-icon');
   const main = popup.querySelector('.main-menu');
   const closeIconClickCallback = () => {
+    removeA11YMobileDropdowns();
     document.querySelector(selectors.mainNavToggle).focus();
     closeAllDropdowns();
     toggleMenu();
     enableMobileScroll();
   };
   const mainMenuClickCallback = (e) => {
+    removeA11YMobileDropdowns();
     e.target.closest(selectors.activeDropdown).querySelector('button').focus();
     enableMobileScroll();
     closeAllDropdowns();
