@@ -508,6 +508,7 @@ class GrayboxPromote extends LitElement {
           rootFolder: this.setup.rootFolder,
           experienceName: this.getEffectiveExperienceName(),
           projectExcelPath: this.configData?.projectExcelPath,
+          spToken: this.setup?.spToken,
         });
 
         await initiateBulkCopy(this.baseUrl, params);
