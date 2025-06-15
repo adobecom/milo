@@ -321,10 +321,9 @@ class GrayboxPromote extends LitElement {
   }
 
   addFragmentsToUrls() {
-    // Get all valid fragment URLs
-    const fragmentUrls = this.foundFragments
-      .filter((fragment) => fragment[0].valid !== 'not found')
-      .map((fragment) => fragment[0].pathname);
+    // Get all valid fragment URLs with status 200
+    const validFragments = this.foundFragments.filter((fragment) => fragment.status === 200);
+    const fragmentUrls = validFragments.map((fragment) => fragment.fragmentPath);
 
     const existingUrls = new Set(this.urls);
     const urlsToAdd = fragmentUrls.filter((url) => !existingUrls.has(url));

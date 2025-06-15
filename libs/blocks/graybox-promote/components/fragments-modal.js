@@ -67,15 +67,17 @@ const renderFragmentsModal = (component) => {
                 width: 8px;
                 height: 8px;
                 border-radius: 50%;
-                background: ${fragment[0].valid === 'not found' ? 'var(--error-color)' : 'var(--accent-color)'};
-              "></div>
+                background: ${fragment.status === 200 ? 'var(--success-color, #4CAF50)' : 'var(--error-color, #f44336)'};
+                cursor: pointer;
+                position: relative;
+              " title="Status: ${fragment.availability}"></div>
               <div style="
                 flex: 1;
                 font-family: 'Adobe Clean Mono', monospace;
                 font-size: 14px;
                 color: var(--text-primary);
                 word-break: break-all;
-              ">${fragment[0].pathname}</div>
+              ">${fragment.fragmentPath}</div>
             </div>
           `)}
         </div>
