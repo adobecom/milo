@@ -59,10 +59,10 @@ const MobileGnav = {
               switch (code) {
                 case 'ArrowUp': {
                   let prevLink = link.previousElementSibling;
+                  if (prevLink?.classList.contains('feds-promo-wrapper')) {
+                    prevLink = prevLink.querySelector('a.feds-cta');
+                  }
                   if (prevLink) {
-                    if (prevLink.classList.contains('feds-promo-wrapper')) {
-                      prevLink = prevLink.querySelector('a.feds-cta');
-                    }
                     prevLink.focus();
                   } else if (link.classList.contains('feds-cta')) {
                     link.closest('.feds-promo-content').previousElementSibling.focus();
@@ -73,13 +73,13 @@ const MobileGnav = {
                 }
                 case 'ArrowDown': {
                   let nextLink = link.nextElementSibling;
+                  if (nextLink?.classList.contains('feds-promo-content')) {
+                    nextLink = nextLink.querySelector('a');
+                  }
+                  if (nextLink?.classList.contains('feds-promo-wrapper')) {
+                    nextLink = nextLink.querySelector('a');
+                  }
                   if (nextLink) {
-                    if (nextLink.classList.contains('feds-promo-content')) {
-                      nextLink = nextLink.querySelector('a');
-                    }
-                    if (nextLink.classList.contains('feds-promo-wrapper')) {
-                      nextLink = nextLink.querySelector('a');
-                    }
                     nextLink.focus();
                   } else {
                     link.closest('.feds-promo-wrapper').nextElementSibling.focus();
