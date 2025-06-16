@@ -51,7 +51,7 @@ const toggleLocale = (event, params) => {
   window.location.reload();
 }
 
-const createMasCommerceService = (params) => {
+const createMasCommerceService = (params, commerceEnv) => {
   const old = document.querySelector('mas-commerce-service');
   if (old) {
     old.remove();
@@ -59,6 +59,9 @@ const createMasCommerceService = (params) => {
   const masCommerceService = document.createElement('mas-commerce-service');
   masCommerceService.setAttribute('lana-tags', 'nala');
   masCommerceService.setAttribute('lana-sample-rate', '100');
+  if (commerceEnv) {
+    masCommerceService.setAttribute('env', commerceEnv);
+  }
   ['locale','country','language','env','lana-tags'].forEach((attribute) => {
     const value = params.get(attribute);
     if (value) masCommerceService.setAttribute(attribute, value);
@@ -69,12 +72,13 @@ const createMasCommerceService = (params) => {
 const init = async () => {
   await polyfills();
   const params = new URLSearchParams(document.location.search);
+  const commerceEnv = document.querySelector('meta[name="commerce.env"]')?.content;
 
   // theme
   toggleTheme(params.get('theme') ?? 'light');
 
   // mas-commerce-service
-  createMasCommerceService(params);
+  createMasCommerceService(params, commerceEnv);
   await import('../dist/mas.js');
 
   document.querySelectorAll('a.theme-toggle').forEach((link) => 
