@@ -35,27 +35,27 @@ export const fetchIcons = (config) => new Promise(async (resolve) => {
 });
 
 let tooltipListenersAdded = false;
-function addTooltipListeners() {	
-  tooltipListenersAdded = true;	
+function addTooltipListeners() {
+  tooltipListenersAdded = true;
 
-  ['keydown', 'mouseenter', 'focus', 'mouseleave', 'blur'].forEach((eventType) => {	
-    document.addEventListener(eventType, (event) => {	
-      const isTooltip = event.target?.matches?.('.milo-tooltip');	
-      if (!isTooltip) return;	
+  ['keydown', 'mouseenter', 'focus', 'mouseleave', 'blur'].forEach((eventType) => {
+    document.addEventListener(eventType, (event) => {
+      const isTooltip = event.target?.matches?.('.milo-tooltip');
+      if (!isTooltip) return;
 
-      if (['mouseenter', 'focus'].includes(eventType)) {	
-        event.target.classList.remove('hide-tooltip');	
-      } else if (['mouseleave', 'blur'].includes(eventType)	
-        || (eventType === 'keydown' && event.key === 'Escape')) {	
-        event.target.classList.add('hide-tooltip');	
-      }	
-    }, true);	
-  });	
-}	
+      if (['mouseenter', 'focus'].includes(eventType)) {
+        event.target.classList.remove('hide-tooltip');
+      } else if (['mouseleave', 'blur'].includes(eventType)
+        || (eventType === 'keydown' && event.key === 'Escape')) {
+        event.target.classList.add('hide-tooltip');
+      }
+    }, true);
+  });
+}
 
-function decorateToolTip(icon, iconName) {	
-  const hasTooltip = icon.closest('em')?.textContent.includes('|') && [...icon.classList].some((cls) => cls.includes('tooltip'));	
-  if (!hasTooltip) return;	
+function decorateToolTip(icon, iconName) {
+  const hasTooltip = icon.closest('em')?.textContent.includes('|') && [...icon.classList].some((cls) => cls.includes('tooltip'));
+  if (!hasTooltip) return;
 
   const wrapper = icon.closest('em');
   wrapper.className = 'tooltip-wrapper';
@@ -68,8 +68,8 @@ function decorateToolTip(icon, iconName) {
   // Position is the next to last part of a tooltip
   const place = conf.pop()?.trim().toLowerCase() || 'right';
   icon.className = `icon icon-${iconName} milo-tooltip ${place}`;
-  icon.setAttribute('tabindex', '0');	
-  icon.setAttribute('aria-label', content);	
+  icon.setAttribute('tabindex', '0');
+  icon.setAttribute('aria-label', content);
   icon.setAttribute('role', 'button');
   wrapper.parentElement.replaceChild(icon, wrapper);
   if (!tooltipListenersAdded) addTooltipListeners();
@@ -83,11 +83,12 @@ export default async function loadIcons(icons, config) {
     let iconName = iconNameInitial === 'tooltip' ? 'info' : iconNameInitial;
     if (iconNameInitial.includes('tooltip-')) iconName = iconNameInitial.replace(/tooltip-/, '');
     decorateToolTip(icon, iconName);
+
     const existingIcon = icon.querySelector('svg');
     if (!iconSVGs[iconName] || existingIcon) return;
     const parent = icon.parentElement;
-    if (parent.childNodes.length > 1) {
-      if (parent?.lastChild === icon) {
+    if (parent?.childNodes.length > 1) {
+      if (parent.lastChild === icon) {
         icon.classList.add('margin-inline-start');
       } else if (parent.firstChild === icon) {
         icon.classList.add('margin-inline-end');

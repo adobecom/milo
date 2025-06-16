@@ -531,21 +531,21 @@ function appendExtraOptions(url, extraOptions) {
 }
 
 // TODO this should migrate to checkout.js buildCheckoutURL	async function openExternalModal(url, getModal, extraOptions) {
-  export function appendDexterParameters(url, extraOptions, el) {	
-    const isRelativePath = url.startsWith('/');	
-    let absoluteUrl;	
-    try {	
-      absoluteUrl = new URL(isRelativePath ? `${window.location.origin}${url}` : url);	
-    } catch (err) {	
-      window.lana?.log(`Invalid URL ${url} : ${err}`);	
-      return url;	
-    }	
-    absoluteUrl = appendExtraOptions(absoluteUrl, extraOptions);	
-    absoluteUrl = appendTabName(absoluteUrl, el);	
-    return isRelativePath ? absoluteUrl.href.replace(window.location.origin, '') : absoluteUrl.href;	
+export function appendDexterParameters(url, extraOptions, el) {	
+  const isRelativePath = url.startsWith('/');	
+  let absoluteUrl;	
+  try {	
+    absoluteUrl = new URL(isRelativePath ? `${window.location.origin}${url}` : url);	
+  } catch (err) {	
+    window.lana?.log(`Invalid URL ${url} : ${err}`);	
+    return url;	
   }	
-  
-  async function openExternalModal(url, getModal, extraOptions, el) {
+  absoluteUrl = appendExtraOptions(absoluteUrl, extraOptions);	
+  absoluteUrl = appendTabName(absoluteUrl, el);	
+  return isRelativePath ? absoluteUrl.href.replace(window.location.origin, '') : absoluteUrl.href;	
+}	
+
+async function openExternalModal(url, getModal, extraOptions, el) {
   loadStyle(`${getConfig().base}/blocks/iframe/iframe.css`);
   const root = createTag('div', { class: 'milo-iframe' });
   const absoluteUrl = appendDexterParameters(url, extraOptions, el);
@@ -865,23 +865,23 @@ export async function buildCta(el, params) {
     });
   }
 
-  if (getMetadata('mas-ff-copy-cta') === 'on') {	  // @see https://jira.corp.adobe.com/browse/MWPW-173470
-    const { default: addCopyToClipboard } = await import('./copy-to-clipboard.js');	
-    return addCopyToClipboard(el, cta);	
-  }	
+  if (getMetadata('mas-ff-copy-cta') === 'on') {
+    const { default: addCopyToClipboard } = await import('./copy-to-clipboard.js');
+    return addCopyToClipboard(el, cta);
+  }
 
   /**	
-   * TODO: This code block will be deprecated and removed in a future version.	
-   * @see https://jira.corp.adobe.com/browse/MWPW-173470	
-   * @see https://jira.corp.adobe.com/browse/MWPW-174411	
+   * TODO: This code block will be deprecated and removed in a future version.
+   * @see https://jira.corp.adobe.com/browse/MWPW-173470
+   * @see https://jira.corp.adobe.com/browse/MWPW-174411
   */
   cta.onceSettled().then(() => {
-    const prefix = getConfig()?.locale?.prefix;	    if (getConfig()?.locale?.prefix === '/kr' && cta.value[0]?.offerType === OFFER_TYPE_TRIAL) cta.remove();
-    if (!(prefix === '/kr' && cta.value[0]?.offerType === OFFER_TYPE_TRIAL)) return;	
-    if (shouldAllowKrTrial(el, prefix)) {	
-      cta.classList.remove('hidden-osi-trial-link');	
-      return;	
-    }	
+    const prefix = getConfig()?.locale?.prefix;
+    if (!(prefix === '/kr' && cta.value[0]?.offerType === OFFER_TYPE_TRIAL)) return;
+    if (shouldAllowKrTrial(el, prefix)) {
+      cta.classList.remove('hidden-osi-trial-link');
+      return;
+    }
     cta.remove();
   });
 

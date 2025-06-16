@@ -291,6 +291,7 @@ function moveSlides(event, carouselElements, jumpToIndex) {
   referenceSlide.style.order = '1';
 
   updateAriaLive(ariaLive, activeSlide);
+  
   // Update active slide and indicator dot attributes
   activeSlide.classList.add('active');
   setAriaHiddenAndTabIndex(carouselElements, activeSlide);
@@ -448,12 +449,12 @@ export default function init(el) {
   convertMpcMp4(slides);
   fragment.append(...slides);
   const slideWrapper = createTag('div', { class: 'carousel-wrapper' });
-  const slideContainer = createTag('div', { class: 'carousel-slides' }, fragment);
   const ariaLive = createTag('div', {
-    class: 'carousel-aria-live',
+    class: 'aria-live-container',
     'aria-live': 'polite',
   });
   slideWrapper.appendChild(ariaLive);
+  const slideContainer = createTag('div', { class: 'carousel-slides' }, fragment);
   const carouselElements = {
     el,
     nextPreviousBtns,
