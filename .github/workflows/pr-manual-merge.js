@@ -23,13 +23,15 @@ async function main({ github = getLocalConfigs().github, context = getLocalConfi
       `${prefix} <${html_url}|#${number}: ${title}>.`,
       process.env.MILO_RELEASE_SLACK_WH
     ).catch(e => console.error("Error sending Slack notification:", e.message))
-    
-    if (baseRef === 'stage') {
-        await updateStageToMainPR(github, context, pull_request);
-    }
+
+    await updateStageToMainPR(github, context, pull_request);
 }
 
 async function updateStageToMainPR(github, context, mergedPR) {
+  const { base = {} } = mergedPR;
+  const { ref: baseRef } = base;
+  if (baseRef !== 'stage') return;
+  
   const { repo = {} } = context;
   const { owner, repo: repoName } = repo;
   const PR_TITLE = '[Release] Stage to Main';
@@ -57,8 +59,7 @@ async function updateStageToMainPR(github, context, mergedPR) {
 
 if (process.env.LOCAL_RUN) {
     console.log("Local run detected. Loading local configurations...");
-    const { github, context } = getLocalConfigs();
-    main({ github, context });
+    main();
 }
 
 module.exports = main;
