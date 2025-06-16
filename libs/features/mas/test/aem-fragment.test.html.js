@@ -41,11 +41,30 @@ function getSelectorElement(root, selector) {
     return root.querySelector(selector);
 }
 
-function addFragment(fragment) {
+function addFragment(fragment, loading) {
     const aemFragment = document.createElement('aem-fragment');
     aemFragment.setAttribute('fragment', fragment);
+    if (loading) {
+        aemFragment.setAttribute('loading', loading);
+    }
     document.body.appendChild(aemFragment);
     return aemFragment;
+}
+
+function compareSettings(fragment, settings) {
+    expect(fragment.settings).include(settings);
+}
+
+function comparePlaceholders(fragment, placeholders) {
+    expect(fragment.placeholders).include(placeholders);
+}
+
+function compareDictionary(fragment, dictionary) {
+    expect(fragment.dictionary).include(dictionary);
+}
+
+function comparePriceLiterals(fragment, priceLiterals) {
+    expect(fragment.priceLiterals).include(priceLiterals);
 }
 
 runTests(async () => {
@@ -69,7 +88,7 @@ runTests(async () => {
             it('has fragment cache', async () => {
                 expect(cache).to.exist;
                 expect(cache.has('id123')).to.false;
-                cache.add('id123', { id: 'id123', test: 1 });
+                cache.add({ id: 'id123', test: 1 });
                 expect(cache.has('id123')).to.true;
                 cache.clear();
                 expect(cache.has('id123')).to.false;
@@ -78,7 +97,7 @@ runTests(async () => {
             it('caches localized fragment by requested(en_US) id', async () => {
                 expect(cache).to.exist;
                 expect(cache.has('id123en_US')).to.false;
-                cache.addByRequestedId('id123en_US', { id: 'id567', test: 1 });
+                cache.add({ id: 'id567', fields: { originalId: 'id123en_US' }, test: 1 });
                 expect(cache.has('id123en_US')).to.true;
                 cache.clear();
                 expect(cache.has('id123en_US')).to.false;
@@ -154,17 +173,18 @@ runTests(async () => {
             });
 
             it('ignores incomplete markup', async () => {
-                const [, , , cardWithMissingPath] = getTemplateContent('cards');
+                const [, , , cardWithMissingFragmentId] =
+                    getTemplateContent('cards');
 
                 let masErrorTriggered = false;
-                cardWithMissingPath.addEventListener('mas:error', (e) => {
+                cardWithMissingFragmentId.addEventListener('mas:error', (e) => {
                     if (e.target.tagName === 'MERCH-CARD') {
                         masErrorTriggered = true;
                     }
                 });
 
                 const aemFragment =
-                    cardWithMissingPath.querySelector('aem-fragment');
+                    cardWithMissingFragmentId.querySelector('aem-fragment');
                 let aemErrorTriggered = false;
                 aemFragment.addEventListener('aem:error', (e) => {
                     if (e.target.tagName === 'AEM-FRAGMENT') {
@@ -172,7 +192,7 @@ runTests(async () => {
                     }
                 });
 
-                spTheme.append(cardWithMissingPath);
+                spTheme.append(cardWithMissingFragmentId);
 
                 await expect(aemFragment.updateComplete).to.be.rejectedWith(
                     'AEM fragment cannot be loaded',
@@ -264,23 +284,100 @@ runTests(async () => {
                     expect(masErrorEvent).to.exist;
                 }
             });
+
+            it('fechInfo is avaiable for a new aem-fragment that is hydrated from cache', async () => {
+                const cache = document.createElement('aem-fragment').cache;
+                cache.clear();
+                const count = aemMock.count;
+                let fragment = addFragment('fragment-cc-all-apps');
+                await fragment.updateComplete;
+                expect(aemMock.count).to.equal(count + 1);
+                expect(fragment.fetchInfo['aem-fragment:measure']).to.exist;
+                fragment.remove();
+                fragment = addFragment('fragment-cc-all-apps');
+                await fragment.updateComplete;
+                expect(aemMock.count).to.equal(count + 1);
+                expect(fragment.fetchInfo['aem-fragment:measure']).to.exist;
+            });
+
+            it('populates the fragment cache from references', async () => {
+                const topCollection = addFragment('collection');
+                await oneEvent(topCollection, 'aem:load');
+                const topCollectionData = cache.get('collection');
+                const settingsBase = {
+                    displayPlanType: true,
+                };
+                const placeholdersBase = {};
+                const dictionaryBase = {};
+                const priceLiteralsBase = {
+                    planTypeLabel:
+                        '{planType, select, ABM {Annual, paid monthly.} other {}}',
+                };
+
+                const childCollection1 = cache.get(
+                    'enUS82d1-0acb-4a6d-8155-e5b002acffdf',
+                );
+                const childCollection2 = cache.get(
+                    'enUSb2de-4963-42f2-a0d0-d158bd78e404',
+                );
+                [topCollectionData, childCollection1, childCollection2].forEach(
+                    (collection) => {
+                        compareSettings(collection, settingsBase);
+                        comparePlaceholders(collection, placeholdersBase);
+                        compareDictionary(collection, dictionaryBase);
+                        comparePriceLiterals(collection, priceLiteralsBase);
+                    },
+                );
+
+                const childCollection3 = cache.get(
+                    'enUSc155-8081-4d9b-8215-a4fb0b8418dd',
+                );
+                compareSettings(childCollection3, {
+                    ...settingsBase,
+                    displayPlanType: false,
+                });
+                comparePlaceholders(childCollection3, placeholdersBase);
+                compareDictionary(childCollection3, dictionaryBase);
+                comparePriceLiterals(childCollection3, priceLiteralsBase);
+
+                const card1 = cache.get('enUS5d11-fe6b-40f8-96d1-50ac800c9f70');
+                const card2 = cache.get('enUS8fc3-578e-44be-be4f-d8be1c45c75b');
+                const card3 = cache.get('enUS1223-be01-4c0e-9a97-f63e8d0458e9');
+                const card4 = cache.get('enUS265d-2542-4533-8089-b75fb19d28d8');
+                const card6 = cache.get('enUS3a5c-b4a4-4305-bda5-92be2662fbab');
+                const card7 = cache.get('enUS0932-c802-49e4-8589-f8bcf6bfe98c');
+                const card8 = cache.get('enUS3a5c-b4a4-4305-bda5-92be2662fbab');
+
+                [card1, card2, card3, card4, card6, card7, card8].forEach(
+                    (card) => {
+                        compareSettings(card, settingsBase);
+                        comparePlaceholders(card, placeholdersBase);
+                        compareDictionary(card, dictionaryBase);
+                        comparePriceLiterals(card, priceLiteralsBase);
+                    },
+                );
+
+                const card5 = cache.get('enUS0b82-24e6-4ca7-a08d-577a3ad6ebda');
+                compareSettings(card5, {
+                    ...settingsBase,
+                    displayPlanType: false,
+                });
+            });
+
+            it('supports hydrating from a collection fragment', async () => {
+                const topCollection = addFragment('collection');
+                const card = addFragment(
+                    'ca835d11-fe6b-40f8-96d1-50ac800c9f70',
+                    'cache',
+                );
+                await oneEvent(card, 'aem:load');
+                expect(aemMock.count).to.equal(1);
+            });
         });
 
         describe('getFragmentById', async () => {
-            let aemFragment;
-            beforeEach(async () => {
-                await mockFetch(withAem);
-                cache.clear();
-                aemFragment = addFragment('fragment-cc-all-apps');
-                await aemFragment.updateComplete;
-            });
-
-            afterEach(() => {
-                document.body.removeChild(aemFragment);
-            });
-
             it('throws an error if response is not ok', async () => {
-                addFragment('notfound');
+                const aemFragment = addFragment('notfound');
                 const event = oneEvent(aemFragment, 'aem:error');
                 const { detail } = await event;
                 expect(detail.message).to.equal(
@@ -296,6 +393,9 @@ runTests(async () => {
             });
 
             it('fetches fragment from freyja on publish', async () => {
+                const aemFragment = addFragment('fragment-cc-all-apps');
+                await aemFragment.updateComplete;
+
                 cache.clear();
                 document.querySelector('meta[name="mas-io-url"]').remove();
                 const masCommerceService = document.querySelector(
@@ -307,23 +407,6 @@ runTests(async () => {
                 expect(fetch.lastCall.firstArg).to.equal(
                     'https://www.stage.adobe.com/mas/io/fragment?id=fragment-cc-all-apps&api_key=wcms-commerce-ims-ro-user-milo&locale=en_US',
                 );
-            });
-        });
-
-        describe('fetchInfo', async () => {
-            it.only('fechInfo is avaiable for a new aem-fragment that is hydrated from cache', async () => {
-                const cache = document.createElement('aem-fragment').cache;
-                cache.clear();
-                const count = aemMock.count;
-                let fragment = addFragment('fragment-cc-all-apps');
-                await fragment.updateComplete;
-                expect(aemMock.count).to.equal(count + 1);
-                expect(fragment.fetchInfo['aem-fragment:measure']).to.exist;
-                fragment.remove();
-                fragment = addFragment('fragment-cc-all-apps');
-                await fragment.updateComplete;
-                expect(aemMock.count).to.equal(count + 1);
-                expect(fragment.fetchInfo['aem-fragment:measure']).to.exist;
             });
         });
     });

@@ -1,6 +1,6 @@
 {
     "name": "@adobecom/mas",
-    "version": "0.5.0-m1",
+    "version": "0.5.0-m2",
     "type": "module",
     "main": "dist/mas.js",
     "private": true,

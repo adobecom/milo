@@ -11,6 +11,7 @@ class MasSidenav extends HTMLElement {
       <a href="/libs/features/mas/docs/checkout-button.html">Checkout Button</a>
       <a href="/libs/features/mas/docs/upt-link.html">UPT Link</a>
       <a href="/libs/features/mas/docs/inline-price.html">Inline Price</a>
+      <a href="/libs/features/mas/docs/aem-fragment.html">AEM Fragment</a>
       <a href="/libs/features/mas/docs/merch-card.html">Merch Card</a>
       <a href="/libs/features/mas/docs/ccd.html">CCD Gallery</a>
       <a href="/libs/features/mas/docs/ccd-mini.html">CCD Mini</a>
