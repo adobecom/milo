@@ -140,6 +140,7 @@ export class AemFragment extends HTMLElement {
       );
       // TODO get rid of the special case for #
       if (!this.#fragmentId || this.#fragmentId === '#') {
+        this.#fetchInfo ??= cache.getFetchInfo('missing-fragment-id');
           this.#fail('Missing fragment id');
           return;
       }

@@ -154,17 +154,17 @@ runTests(async () => {
             });
 
             it('ignores incomplete markup', async () => {
-                const [, , , cardWithMissingPath] = getTemplateContent('cards');
+                const [, , , cardWithMissingFragmentId] = getTemplateContent('cards');
 
                 let masErrorTriggered = false;
-                cardWithMissingPath.addEventListener('mas:error', (e) => {
+                cardWithMissingFragmentId.addEventListener('mas:error', (e) => {
                     if (e.target.tagName === 'MERCH-CARD') {
                         masErrorTriggered = true;
                     }
                 });
 
                 const aemFragment =
-                    cardWithMissingPath.querySelector('aem-fragment');
+                    cardWithMissingFragmentId.querySelector('aem-fragment');
                 let aemErrorTriggered = false;
                 aemFragment.addEventListener('aem:error', (e) => {
                     if (e.target.tagName === 'AEM-FRAGMENT') {
@@ -172,7 +172,7 @@ runTests(async () => {
                     }
                 });
 
-                spTheme.append(cardWithMissingPath);
+                spTheme.append(cardWithMissingFragmentId);
 
                 await expect(aemFragment.updateComplete).to.be.rejectedWith(
                     'AEM fragment cannot be loaded',
@@ -311,7 +311,7 @@ runTests(async () => {
         });
 
         describe('fetchInfo', async () => {
-            it.only('fechInfo is avaiable for a new aem-fragment that is hydrated from cache', async () => {
+            it('fechInfo is avaiable for a new aem-fragment that is hydrated from cache', async () => {
                 const cache = document.createElement('aem-fragment').cache;
                 cache.clear();
                 const count = aemMock.count;
