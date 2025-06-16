@@ -324,7 +324,7 @@ span.preflight-time {
 .tooltip:hover::after {
   opacity: 1;
   visibility: visible;
-  z-index: 9;
+  z-index: 3;
 }
 
 /* SEO */
@@ -742,7 +742,7 @@ picture:has(.picture-meta) {
 picture:hover .picture-meta,
 img:hover ~ .picture-meta {
   opacity: 1;
-  z-index: 9;
+  z-index: 3;
 }
 
 .picture-meta > div,
