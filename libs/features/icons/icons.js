@@ -8,6 +8,53 @@ const iconCache = new Map();
 let miloIconsPromise;
 
 let tooltipListenersAdded = false;
+
+function setTooltipPosition(tooltips) {
+  console.log('setTooltipPosition', tooltips);
+
+  const positionClasses = ['top', 'bottom', 'right', 'left'];
+  const isRtl = document.documentElement.dir === 'rtl';
+  const viewportWidth = window.innerWidth;
+  const tooltipMaxWidth = viewportWidth <= 600 ? 200 : 160;
+  const tooltipMargin = 12;
+
+  tooltips.forEach((tooltip) => {
+    const currentPosition = positionClasses.find((cls) => tooltip.classList.contains(cls));
+    if (!tooltip.dataset.originalPosition
+      && currentPosition) tooltip.dataset.originalPosition = currentPosition;
+
+    const rect = tooltip.getBoundingClientRect();
+    const { originalPosition } = tooltip.dataset;
+    const isVerticalPosition = originalPosition === 'top' || originalPosition === 'bottom';
+    const effectiveMaxWidth = isVerticalPosition ? tooltipMaxWidth / 2 : tooltipMaxWidth;
+    const willOverflowRight = rect.right + effectiveMaxWidth + tooltipMargin > viewportWidth;
+    const willOverflowLeft = rect.left - effectiveMaxWidth - tooltipMargin < 0;
+
+    if (originalPosition !== currentPosition) {
+      let wouldOverflow = false;
+      if (originalPosition === 'right') {
+        wouldOverflow = willOverflowRight;
+      } else if (originalPosition === 'left') {
+        wouldOverflow = willOverflowLeft;
+      } else if (isVerticalPosition) {
+        wouldOverflow = willOverflowRight || willOverflowLeft;
+      }
+      if (!wouldOverflow) {
+        tooltip.classList.remove(...positionClasses);
+        tooltip.classList.add(originalPosition);
+        return;
+      }
+    }
+
+    const shouldPositionLeft = isRtl ? willOverflowLeft : willOverflowRight;
+    const shouldPositionRight = isRtl ? willOverflowRight : willOverflowLeft;
+    if (shouldPositionLeft || shouldPositionRight) {
+      tooltip.classList.remove(...positionClasses);
+      tooltip.classList.add(shouldPositionLeft ? 'left' : 'right');
+    }
+  });
+}
+
 function addTooltipListeners() {
   tooltipListenersAdded = true;
 
@@ -24,6 +71,9 @@ function addTooltipListeners() {
       }
     }, true);
   });
+
+  setTimeout(() => setTooltipPosition(document.querySelectorAll('.milo-tooltip')), 100);
+  window.addEventListener('resize', () => setTooltipPosition(document.querySelectorAll('.milo-tooltip')));
 }
 
 function decorateToolTip(icon, iconName) {
