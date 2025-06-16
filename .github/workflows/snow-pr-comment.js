@@ -1,6 +1,7 @@
 // Run from the root of the project for local testing: node --env-file=.env .github/workflows/pr-reminders.js
 const { getLocalConfigs } = require('./helpers.js');
 const fs = require('fs');
+const SNOW_TRANSACTION_ID_COMMENT = "SNOW Change Request Transaction ID";
 
 const main = async ({ github = getLocalConfigs().github, context = getLocalConfigs().context, transaction_id = process.env.TRANSACTION_ID }) => {
   const comment = async ({ pr_number, message, comments, _transaction_id }) => {
@@ -34,21 +35,20 @@ const main = async ({ github = getLocalConfigs().github, context = getLocalConfi
     });
 
     if (process.env.PR_STATE !== 'open') {
-      let foundTransactionId = false;
-      for await (const singleComment of comments) {
-        if (singleComment.body.includes("SNOW Change Request Transaction ID")) {
-          console.log(`Found SNOW Transaction ID Comment. Assigning transaction ID for closing SNOW Change Request...`);
-          foundTransactionId = true;
-          const transactionID = singleComment.body.split("SNOW Change Request Transaction ID: ")[1].trim();
-          console.log(`Found Transaction ID: ${transactionID}`);
-          fs.appendFileSync(process.env.GITHUB_OUTPUT, `retrieved_transaction_id=${transactionID}\n`);
-          break;
-        }
-      }
-      if (!foundTransactionId) {
+      // find transactionId in a pure way
+      const transactionIdComment = comments.find(singleComment => singleComment.body.includes(SNOW_TRANSACTION_ID_COMMENT));
+
+      // Run the effect
+      if (transactionIdComment === undefined) {
         console.log(`No SNOW Transaction ID Comment found. Skipping...`);
-        return;
+      } else {
+        console.log(`Found SNOW Transaction ID Comment. Assigning transaction ID for closing SNOW Change Request...`);
+        const transactionID = transactionIdComment.body.split(`${SNOW_TRANSACTION_ID_COMMENT}: `)?.[1].trim();
+        console.log(`Found Transaction ID: ${transactionID}`);
+        fs.appendFileSync(process.env.GITHUB_OUTPUT, `retrieved_transaction_id=${transactionID}\n`);
       }
+
+      return;
     }
     else if (transaction_id && transaction_id !== 'null') {
       comment({
@@ -56,7 +56,7 @@ const main = async ({ github = getLocalConfigs().github, context = getLocalConfi
         comments,
         transaction_id: transaction_id,
         message:
-          'SNOW Change Request Transaction ID: ' + transaction_id,
+          `${SNOW_TRANSACTION_ID_COMMENT}: ` + transaction_id,
       });
     }
     else {

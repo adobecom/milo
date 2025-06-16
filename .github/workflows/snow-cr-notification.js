@@ -1,6 +1,13 @@
 const { slackNotification, getLocalConfigs } = require('./helpers.js');
 
-async function main({ github = getLocalConfigs().github, context = getLocalConfigs().context, transaction_id = process.env.TRANSACTION_ID, change_id = process.env.CHANGE_ID, planned_start_time = process.env.PLANNED_START_TIME, planned_end_time = process.env.PLANNED_END_TIME } = {}) {
+async function main({
+  github = getLocalConfigs().github,
+  context = getLocalConfigs().context,
+  transaction_id = process.env.TRANSACTION_ID,
+  change_id = process.env.CHANGE_ID,
+  planned_start_time = process.env.PLANNED_START_TIME,
+  planned_end_time = process.env.PLANNED_END_TIME
+} = {}) {
     if (!github || !context) {
         throw new Error("GitHub context is missing. Ensure you are running in the correct environment.");
     }
