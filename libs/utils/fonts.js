@@ -1,5 +1,3 @@
-import { loadLink } from "./utils";
-
 // A gently modified version of the dynamic subsetting loader from Adobe Fonts
 function dynamicTypekit(kitId, d = document) {
   const config = { kitId, scriptTimeout: 3000, async: true };
@@ -16,7 +14,7 @@ function dynamicTypekit(kitId, d = document) {
  *
  * @param {Object} locale the locale details
  */
-export default function loadFonts(locale) {
+export default function loadFonts(locale, loadLink) {
   const tkSplit = locale.tk.split('.');
   if (tkSplit[1] === 'css') {
     loadLink(`https://use.typekit.net/${locale.tk}`, { rel: 'stylesheet' });
