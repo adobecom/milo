@@ -28,6 +28,7 @@ export const PLANS_AEM_FRAGMENT_MAPPING = {
     allowedBorderColors: [
       'spectrum-yellow-300-plans',
       'spectrum-gray-300-plans',
+      'spectrum-green-900-plans',
     ],
     borderColor: { attribute: 'border-color' },
     size: ['wide', 'super-wide'],
