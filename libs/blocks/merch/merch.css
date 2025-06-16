@@ -22,9 +22,64 @@ a[is='checkout-link'].con-button > span {
   min-width: 66px;
 }
 
+.hidden-osi-trial-link {
+  display: none;
+}
+
 .price-unit-type:not(.disabled)::before,
 .price-tax-inclusivity:not(.disabled)::before {
   content: "\00a0";
+}
+
+.three-in-one {
+  display: flex;
+  height: 100%;
+}
+
+.three-in-one .milo-iframe {
+  padding-bottom: 0;
+}
+
+.three-in-one .loading iframe {
+  visibility: hidden;
+}
+
+.three-in-one sp-theme {
+  height: 100%;
+  width: 100%;
+  align-content: center;
+}
+
+.three-in-one sp-theme sp-progress-circle {
+  inset-inline-start: 50%;
+  transform: translate(-50%);
+}
+
+.error-wrapper {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #d3150f;
+  margin-top: 40px;
+  padding: 0 20px;
+  color: #fff;
+}
+
+.icon-and-text {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.try-again-btn {
+  padding: 10px 16px;
+  background-color: #d3150f;
+  border: 2px solid #fff;
+  border-radius: 20px;
+  font-weight: bold;
+  font-size: 16px;
+  color: #fff;
+  cursor: pointer;
 }
 
 @media (max-width: 1199px) {

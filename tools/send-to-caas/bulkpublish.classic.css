@@ -1,0 +1,55 @@
+#bulkpublish {
+  margin: 20px;
+}
+
+.bulk-publisher {
+  margin: 32px;
+}
+
+.bulk-publisher .title {
+  grid-template-columns: 1fr;
+}
+
+dd.content .field {
+  padding: 0 20px;
+  margin: 20px 0
+}
+
+.results {
+  display: flex;
+}
+
+.results > div {
+  padding: 20px;
+}
+
+.main {
+  display: flex;
+}
+
+.options-panel {
+  min-width: 400px;
+}
+
+.urls {
+  width: 700px;
+}
+
+#urls {
+  width: 100%;
+  height: 520px;
+  margin-top: 6px;
+}
+
+.urls-label {
+  height: 36px;
+  background: #6F9B00;
+  color: #FFF;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+}
+
+.urls-label label {
+  margin-left: 12px;
+}

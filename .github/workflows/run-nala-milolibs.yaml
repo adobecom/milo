@@ -30,7 +30,7 @@ jobs:
 
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
 
       - name: Set environment variables
         run: |
@@ -46,7 +46,7 @@ jobs:
           HLX_TKN: ${{ secrets.HLX_TKN }}
           SLACK_WH: ${{ secrets.SLACK_WH }}          
       - name: Persist JSON Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@4cec3d8aa04e39d1a68397de0c4cd6fb9dce8ec1
         if: always()
         with:
           name: nala-results

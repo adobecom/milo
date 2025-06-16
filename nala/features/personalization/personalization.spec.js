@@ -12,7 +12,7 @@ module.exports = {
         pznFileName: 'pzn1',
         h3Text: 'Text',
       },
-      tags: '@pzn @smoke @regression @milo ',
+      tags: '@pzn0 @mep @smoke @regression @milo ',
     },
     {
       tcid: '1',
@@ -25,7 +25,7 @@ module.exports = {
         pznFileName: 'insert-content-before',
         h3Text: 'Text',
       },
-      tags: '@pzn @smoke @regression @milo ',
+      tags: '@pzn1 @mep @smoke @regression @milo ',
     },
     {
       tcid: '2',
@@ -38,7 +38,7 @@ module.exports = {
         pznFileName: 'insert-content-before',
         h3Text: 'Text',
       },
-      tags: '@pzn @smoke @regression @milo ',
+      tags: '@pzn2 @mep @smoke @regression @milo ',
     },
     {
       tcid: '3',
@@ -46,7 +46,7 @@ module.exports = {
       desc: 'Personalization with action=replaceFragment',
       path: '/drafts/nala/features/personalization/legacy/replace-fragment',
       data: { defaultURLpath: '/drafts/nala/features/personalization/legacy/replace-fragment?mep=%2Fdrafts%2Fnala%2Ffeatures%2Fpersonalization%2Flegacy%2Freplace-fragment.json--default' },
-      tags: '@pzn @pzn3 @smoke @regression @milo ',
+      tags: '@pzn3 @mep @smoke @regression @milo ',
     },
     {
       tcid: '4',
@@ -54,7 +54,7 @@ module.exports = {
       desc: 'Personalization with action=removeContent',
       path: '/drafts/nala/features/personalization/legacy/remove-content',
       data: { defaultURLpath: '/drafts/nala/features/personalization/legacy/remove-content?mep=%2Fdrafts%2Fnala%2Ffeatures%2Fpersonalization%2Flegacy%2Fremove-content.json--default' },
-      tags: '@pzn @pzn4 @smoke @regression @milo ',
+      tags: '@pzn4 @mep @smoke @regression @milo ',
     },
   ],
 };

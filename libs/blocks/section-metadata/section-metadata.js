@@ -55,6 +55,12 @@ function handleDelay(time, section) {
   setTimeout(() => { section.classList.remove('hide-sticky-section'); }, getDelayTime(time));
 }
 
+function handleAnchor(anchor, section) {
+  if (!anchor || !section) return;
+  section.id = anchor.toLowerCase().trim().replaceAll(/\s+/g, '-');
+  section.classList.add('section-anchor');
+}
+
 export const getMetadata = (el) => [...el.childNodes].reduce((rdx, row) => {
   if (row.children) {
     const key = row.children[0].textContent.trim().toLowerCase();
@@ -73,4 +79,5 @@ export default async function init(el) {
   if (metadata.layout) handleLayout(metadata.layout.text, section);
   if (metadata.masonry) handleMasonry(metadata.masonry.text, section);
   if (metadata.delay) handleDelay(metadata.delay.text, section);
+  if (metadata.anchor) handleAnchor(metadata.anchor.text, section);
 }

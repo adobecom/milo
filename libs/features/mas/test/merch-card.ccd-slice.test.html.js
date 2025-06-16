@@ -9,7 +9,7 @@ import './spectrum.js';
 
 import { mockIms } from './mocks/ims.js';
 import { withWcs } from './mocks/wcs.js';
-import mas from './mas.js';
+import '../src/mas.js';
 
 const skipTests = sessionStorage.getItem('skipTests');
 
@@ -17,7 +17,7 @@ runTests(async () => {
     mockIms();
     mockLana();
     await mockFetch(withWcs);
-    await mas();
+
     
     describe('merch-card web component', () => {
       it('should exist in the HTML document', async () => {

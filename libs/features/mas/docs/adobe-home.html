@@ -1,0 +1,192 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="UTF-8" />
+        <title>Adobe Home Gallery</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <link rel="stylesheet" href="spectrum.css" />
+        <link rel="stylesheet" href="styles.css" />
+        <link
+            rel="stylesheet"
+            href="https://p.typekit.net/p.css?s=1&k=hah7vzn&ht=tk&f=7180.7181.7182.7183.22474.22749.22750.22751.22753&a=8634977&app=typekit&e=css"
+        />
+        <link rel="stylesheet" href="https://use.typekit.net/hah7vzn.css" />
+        <script src="/libs/deps/lit-all.min.js" type="module"></script>
+
+        <script>
+            function toggleTheme(theme) {
+                document.body.className = 'spectrum spectrum--medium';
+                document.body.classList.add(`spectrum--${theme}`);
+                document
+                    .querySelector('sp-theme')
+                    ?.setAttribute('color', theme);
+
+                const url = new URL(window.location.href);
+                url.searchParams.set('theme', theme);
+
+                window.location.href = url.toString();
+            }
+        </script>
+        <script type="module" src="./mas-sidenav.js"></script>
+        <script type="module">
+            import { init } from './common.js';
+            init();
+        </script>
+        <script
+            type="module"
+            src="../../../features/spectrum-web-components/dist/button.js"
+        ></script>
+    </head>
+
+    <body class="spectrum spectrum--medium spectrum--light">
+        <sp-theme scale="medium" color="light" style="display: contents">
+            <aside is="mas-sidenav"></aside>
+            <main>
+                <div class="gallery-content">
+                    <h1 id="ah-gallery" tabindex="-1">
+                        Adobe Home Gallery
+                        <a
+                            class="header-anchor"
+                            href="#ah-gallery"
+                            title="Permalink to this heading"
+                            >#</a
+                        >
+                    </h1>
+                    <div class="theme-selection">
+                        Switch Theme:
+                        <a
+                            class="spectrum-Link spectrum-Link--secondary theme-toggle"
+                            href="#"
+                            onclick="toggleTheme('dark'); return false;"
+                            >Dark</a
+                        >
+                        OR
+                        <a
+                            class="spectrum-Link spectrum-Link--secondary theme-toggle"
+                            href="#"
+                            onclick="toggleTheme('light'); return false;"
+                            >Light</a
+                        >
+                    </div>
+                    <div>
+                        Switch Locale:
+                        <a
+                            class="spectrum-Link spectrum-Link--secondary"
+                            href="?locale=en_US"
+                            >en_US</a
+                        >
+                        OR
+                        <a
+                            class="spectrum-Link spectrum-Link--secondary"
+                            href="?locale=fr_FR"
+                            >fr_FR</a
+                        >
+                    </div>
+                    <div>
+                        Switch country/language:
+                        <a
+                            class="spectrum-Link spectrum-Link--secondary"
+                            href="?country=US&language=en"
+                            >Country: US, language: en</a
+                        >
+                        OR
+                        <a
+                            class="spectrum-Link spectrum-Link--secondary"
+                            href="?country=FR&language=fr"
+                            >Country: FR, language: fr</a
+                        >
+                    </div>
+                    <div class="adobe-home-container">
+                        <h2 id="ah-try-buy-widget" tabindex="-1">
+                            Adobe Home Try Buy Widget
+                            <a
+                                class="header-anchor"
+                                href="#ah-try-buy-widget"
+                                title="Permalink to this heading"
+                                >#</a
+                            >
+                        </h2>
+
+                        <h3 class="size-header" tabindex="-1">Triple Plan</h3>
+
+                        <div>
+                            <div class="three-merch-cards ah-try-buy-widget">
+                                <merch-card spectrum="swc"
+                                    ><aem-fragment
+                                        fragment="44520fdc-f6e1-4c21-8978-9cd25a1be158"
+                                    ></aem-fragment
+                                ></merch-card>
+                                <merch-card spectrum="swc"
+                                    ><aem-fragment
+                                        fragment="02ee0d3c-a472-44a1-b15a-f65c24eefc4b"
+                                    ></aem-fragment
+                                ></merch-card>
+                                <merch-card spectrum="swc"
+                                    ><aem-fragment
+                                        fragment="e8518688-2374-467b-93ed-2cf9fdc58e08"
+                                    ></aem-fragment
+                                ></merch-card>
+                            </div>
+                        </div>
+
+                        <h3 class="size-header" tabindex="-1">Double Plan</h3>
+
+                        <div>
+                            <div class="two-merch-cards ah-try-buy-widget">
+                                <merch-card spectrum="swc"
+                                    ><aem-fragment
+                                        fragment="2d9025f7-ea56-4eeb-81b2-a52762358b9d"
+                                    ></aem-fragment
+                                ></merch-card>
+                                <merch-card spectrum="swc"
+                                    ><aem-fragment
+                                        fragment="d35f1e6c-7a63-4377-99ea-20407cc26cd4"
+                                    ></aem-fragment
+                                ></merch-card>
+                            </div>
+                        </div>
+
+                        <h3 class="size-header" tabindex="-1">Single Plan</h3>
+
+                        <div>
+                            <div class="one-merch-card ah-try-buy-widget">
+                                <merch-card spectrum="swc"
+                                    ><aem-fragment
+                                        fragment="a07239e9-7216-403c-b1ee-3b1d0982a64b"
+                                    ></aem-fragment
+                                ></merch-card>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="one-merch-card ah-promoted-plans">
+                                <h3 class="size-header" tabindex="-1">
+                                    Promoted Plans
+                                </h3>
+                                <merch-card
+                                    ><aem-fragment
+                                        fragment="031e2f50-5cbc-4e4b-af9b-c63f0e4f2a93"
+                                        title="Creative Cloud All Apps"
+                                    ></aem-fragment
+                                ></merch-card>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </sp-theme>
+        <script>
+            // Get theme from URL on page load
+            const theme = new URL(window.location.href).searchParams.get(
+                'theme',
+            );
+            if (theme) {
+                // Apply theme without changing URL again
+                document.body.className = 'spectrum spectrum--medium';
+                document.body.classList.add(`spectrum--${theme}`);
+                document
+                    .querySelector('sp-theme')
+                    ?.setAttribute('color', theme);
+            }
+        </script>
+    </body>
+</html>

@@ -1,0 +1,158 @@
+<html>
+  <head>
+    <link rel="stylesheet" href="/libs/ui/controls/accordion.css" />
+    <link rel="stylesheet" href="./bulkpublish.classic.css" />
+    <style>
+      .bpv2 {
+        background: linear-gradient(90deg, #6F9B0033, #6F9B00);
+        font-family: system-ui, sans-serif;
+        text-align: right;
+        padding: 8px;
+        color: white;
+        animation: slide-bg 1.5s;
+      }
+      .bpv2 a {
+        color: white;
+      }
+      @keyframes slide-bg {
+        from {background-position: -1600px}
+        to {background-position: 0}
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="bulk-publisher">
+      <div class="main">
+        <div class="options-panel">
+          <dt class="title is-expanded">
+            <span>CaaS Bulk Publisher</span>
+          </dt>
+          <dd class="content is-expanded">
+            <div class="field">
+              <label for="host">Host:</label>
+              <input id="host" name="host" type="text" />
+            </div>
+            <div class="field">
+              <label for="repo">Repo:</label>
+              <input id="repo" name="repo" type="text" />
+            </div>
+            <div class="field">
+              <label for="owner">Repo Owner:</label>
+              <input id="owner" name="owner" type="text" />
+            </div>
+            <div class="field">
+              <label for="excelFile">Excel File Url (Leave blank if using URLs field):</label>
+              <input id="excelFile" name="excelFile" type="text" />
+            </div>
+            <div class="field">
+              <label for="contentType">ContentType to use (if not in card metadata):</label>
+              <select name="contentType" id="contentType">
+                <option value="">Auto Detect</option>
+                <option value="caas:content-type/announcements">Announcements</option>
+                <option value="caas:content-type/application">Application</option>
+                <option value="caas:content-type/article">Article</option>
+                <option value="caas:content-type/blog">Blog</option>
+                <option value="caas:content-type/certification">Certification</option>
+                <option value="caas:content-type/community">Community</option>
+                <option value="caas:content-type/consulting">Consulting</option>
+                <option value="caas:content-type/course">Course</option>
+                <option value="caas:content-type/customer-story">Customer Story</option>
+                <option value="caas:content-type/demo">Demo</option>
+                <option value="caas:content-type/document">Document</option>
+                <option value="caas:content-type/documentation">Documentation</option>
+                <option value="caas:content-type/ebook">eBook</option>
+                <option value="caas:content-type/event">Event</option>
+                <option value="caas:content-type/event-session">Event Session</option>
+                <option value="caas:content-type/event-speaker">Event Speaker</option>
+                <option value="caas:content-type/features">Features</option>
+                <option value="caas:content-type/financial-services">Financial Services</option>
+                <option value="caas:content-type/guide">Guide</option>
+                <option value="caas:content-type/how-to">How-to</option>
+                <option value="caas:content-type/infographic">Infographic</option>
+                <option value="caas:content-type/interview">Interview</option>
+                <option value="caas:content-type/keynote">Keynote</option>
+                <option value="caas:content-type/new-releases">New Releases</option>
+                <option value="caas:content-type/partner">Partner</option>
+                <option value="caas:content-type/partner-story">Partner Story</option>
+                <option value="caas:content-type/plans-&amp;-pricing">Plans &amp;amp; Pricing</option>
+                <option value="caas:content-type/podcast">Podcast</option>
+                <option value="caas:content-type/product">Product</option>
+                <option value="caas:content-type/product-page">Product Page</option>
+                <option value="caas:content-type/product-tour">Product Tour</option>
+                <option value="caas:content-type/product-updates">Product Updates</option>
+                <option value="caas:content-type/progressive-offer">Progressive Offer</option>
+                <option value="caas:content-type/promotion">Promotion</option>
+                <option value="caas:content-type/quiz">Quiz</option>
+                <option value="caas:content-type/r&amp;d">R&amp;amp;D</option>
+                <option value="caas:content-type/report">Report</option>
+                <option value="caas:content-type/solution">Solution</option>
+                <option value="caas:content-type/solution-brief">Solution brief</option>
+                <option value="caas:content-type/special-offers">Special Offers</option>
+                <option value="caas:content-type/technology">Technology</option>
+                <option value="caas:content-type/template">Template</option>
+                <option value="caas:content-type/tutorial">Tutorial</option>
+                <option value="caas:content-type/video">Video</option>
+                <option value="caas:content-type/webinar">Webinar</option>
+                <option value="caas:content-type/white-paper">White paper</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="caasEnv">CaaS Env</label>
+              <select name="1A" id="caasEnv">
+                <option>Prod</option>
+                <option>Stage</option>
+                <option>Dev</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="publishToFloodgate">Publish to Floodgate</label>
+              <select name="publishToFloodgate" id="publishToFloodgate">
+                <option value="default">--</option>
+                <option value="pink">Pink</option>
+                <option value="blue">Blue</option>
+                <option value="purple">Purple</option>
+              </select>
+            </div>
+            <div id="caas-draft-cb" class="field checkbox">
+              <input type="checkbox" id="draftOnly" name="draftOnly" />
+              <label for="draftOnly">Publish to Draft only</label>
+            </div>
+            <div id="use-preview-cb" class="field checkbox">
+              <input type="checkbox" id="usePreview" name="usePreview" />
+              <label for="usePreview">Use Preview Content</label>
+            </div>
+            <div id="use-html-cb" class="field checkbox">
+              <input type="checkbox" id="useHtml" name="useHtml" />
+              <label for="useHtml">Use .html extension on CTA links</label>
+            </div>
+            <button id="bulkpublish" href="#">Bulk Publish</button>
+          </dd>
+        </div>
+        <dd class="urls">
+          <p>⚠️ <b>WARNING</b>: This version will be decommissioned soon and will no longer be accessible.
+            <br>Please use the new version: <a href="./bulkpublisher.html">CaaS Bulk Publisher</a>
+          </p>
+          <div class="urls-label">
+            <label for="urls">URLs:</label>
+          </div>
+          <textarea id="urls" name="urls" rows="10" cols="50"></textarea>
+        </dd>
+      </div>
+      <dd class="results">
+        <div>
+          <label for="errors">Errors:</label>
+          <textarea id="errors" name="errors" rows="10" cols="50"></textarea>
+        </div>
+        <div>
+          <label for="success">Success:</label>
+          <textarea id="success" name="success" rows="10" cols="50"></textarea>
+        </div>
+      </dd>
+    </div>
+    <script type="module">
+      import init from './bulk-publish-to-caas.classic.js';
+      init();
+    </script>
+  </body>
+</html>

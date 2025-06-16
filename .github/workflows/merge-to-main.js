@@ -1,5 +1,4 @@
 const {
-  slackNotification,
   getLocalConfigs,
   isWithinRCP,
   pulls: { addLabels, addFiles, getChecks, getReviews },
@@ -49,10 +48,6 @@ const main = async (params) => {
         pull_number: stageToMainPR.number,
         merge_method: 'merge',
       });
-
-      await slackNotification(
-        `:rocket: Production release <${stageToMainPR.html_url}|${stageToMainPR.number}>`
-      );
 
       await github.rest.repos.createDispatchEvent({
         owner,

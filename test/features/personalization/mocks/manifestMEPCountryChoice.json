@@ -1,0 +1,18 @@
+{
+  "total": 5,
+  "offset": 0,
+  "limit": 5,
+  "data": [
+    {
+      "action": "replace",
+      "selector": ".how-to",
+      "page filter (optional)": "",
+      "param-newoffer=123": "",
+      "countryChoice(de)": "/test/features/personalization/mocks/fragments/milo-replace-content-firefox-accordion",
+      "countryChoice(jp,sg)": "/test/features/personalization/mocks/fragments/milo-replace-content-firefox-accordion",
+      "android": "",
+      "ios": ""
+    }
+  ],
+  ":type": "sheet"
+}

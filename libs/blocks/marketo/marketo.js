@@ -32,14 +32,18 @@ const MUNCHKIN_ID = 'marketo munckin';
 const SUCCESS_TYPE = 'form.success.type';
 const SUCCESS_CONTENT = 'form.success.content';
 const SUCCESS_SECTION = 'form.success.section';
+const SUCCESS_HIDE_SECTION = 'form.success.hide.section';
 const FORM_MAP = {
   'success-type': SUCCESS_TYPE,
   'destination-type': SUCCESS_TYPE,
   'success-content': SUCCESS_CONTENT,
   'destination-url': SUCCESS_CONTENT,
   'success-section': SUCCESS_SECTION,
+  'success-hide-section': SUCCESS_HIDE_SECTION,
   'co-partner-names': 'program.copartnernames',
   'sfdc-campaign-id': 'program.campaignids.sfdc',
+  'poi-field': 'field_filters.products',
+  'hardcoded-poi': 'program.poi',
 };
 export const FORM_PARAM = 'form';
 
@@ -97,30 +101,67 @@ export const setPreferences = (formData) => {
 };
 
 const showSuccessSection = (formData) => {
-  const show = (sections) => {
+  const show = async (sections) => {
     sections.forEach((section) => section.classList.remove('hide-block'));
-    sections[0]?.scrollIntoView({ behavior: 'smooth' });
+    await new Promise((resolve) => { setTimeout(resolve, 300); });
+    const pageTop = document.querySelector('header')?.offsetHeight ?? 0;
+    const targetPosition = sections[0]?.getBoundingClientRect().top ?? 0;
+    const offsetPosition = targetPosition + window.scrollY - pageTop;
+    window.scrollTo(0, offsetPosition);
   };
-  const successClass = formData[SUCCESS_SECTION]?.toLowerCase().replaceAll(' ', '-');
-  if (!successClass) {
+
+  const showClass = formData[SUCCESS_SECTION]?.toLowerCase().replaceAll(' ', '-');
+  if (!showClass) {
     window.lana?.log('Error showing Marketo success section', { tags: 'warn,marketo' });
     return;
   }
 
-  let successSections = document.querySelectorAll(`.section.${successClass}`);
+  let successSections = document.querySelectorAll(`.section.${showClass}`);
   show(successSections);
   document.addEventListener(
     MILO_EVENTS.DEFERRED,
     () => {
-      successSections = document.querySelectorAll(`.section.${successClass}`);
+      successSections = document.querySelectorAll(`.section.${showClass}`);
       show(successSections);
       /* c8 ignore next 3 */
-      if (!document.querySelector(`.section.${successClass}`)) {
-        window.lana?.log(`Error showing Marketo success section ${successClass}`, { tags: 'warn,marketo' });
+      if (!document.querySelector(`.section.${showClass}`)) {
+        window.lana?.log(`Error showing Marketo success section ${showClass}`, { tags: 'warn,marketo' });
       }
     },
     false,
   );
+};
+
+const hideSuccessSection = (formData) => {
+  const hide = (sections) => {
+    sections.forEach((section) => section.classList.add('hide-block'));
+  };
+
+  const hideClass = formData[SUCCESS_HIDE_SECTION]?.toLowerCase().replaceAll(' ', '-');
+  if (!hideClass) {
+    window.lana?.log('Error hiding Marketo success section', { tags: 'warn,marketo' });
+    return;
+  }
+
+  let hideSections = document.querySelectorAll(`.section.${hideClass}`);
+  hide(hideSections);
+  document.addEventListener(
+    MILO_EVENTS.DEFERRED,
+    () => {
+      hideSections = document.querySelectorAll(`.section.${hideClass}`);
+      hide(hideSections);
+      /* c8 ignore next 3 */
+      if (!document.querySelector(`.section.${hideClass}`)) {
+        window.lana?.log(`Error hiding Marketo success section ${hideClass}`, { tags: 'warn,marketo' });
+      }
+    },
+    false,
+  );
+};
+
+const toggleSuccessSection = (formData) => {
+  showSuccessSection(formData);
+  hideSuccessSection(formData);
 };
 
 export const formSuccess = (formEl, formData) => {
@@ -140,7 +181,7 @@ export const formSuccess = (formEl, formData) => {
   }
 
   if (formData?.[SUCCESS_TYPE] !== 'section') return true;
-  showSuccessSection(formData);
+  toggleSuccessSection(formData);
   setPreference(SUCCESS_TYPE, 'message');
   return false;
 };
@@ -180,6 +221,10 @@ export const loadMarketo = (el, formData) => {
 
       MktoForms2.loadForm(`//${baseURL}`, munchkinID, formID);
       MktoForms2.whenReady((form) => { readyForm(form, formData); });
+      /* c8 ignore next 3 */
+      if (el.classList.contains('multi-step')) {
+        import('./marketo-multi.js').then(({ default: multiStep }) => multiStep(el));
+      }
     })
     .catch(() => {
       /* c8 ignore next 2 */
@@ -226,7 +271,7 @@ export default function init(el) {
 
   if (formData[SUCCESS_TYPE] === 'section' && ungated) {
     el.classList.add('hide-block');
-    showSuccessSection(formData);
+    toggleSuccessSection(formData);
     return;
   }
 
@@ -261,6 +306,10 @@ export default function init(el) {
   fragment.append(formWrapper);
   el.replaceChildren(fragment);
   el.classList.add('loading');
+  /* c8 ignore next 3 */
+  if (el.classList.contains('multi-2') || el.classList.contains('multi-3')) {
+    el.classList.add('multi-step');
+  }
 
   loadLink(`https://${baseURL}`, { rel: 'dns-prefetch' });
 

@@ -27,6 +27,8 @@ styles.innerHTML = `
     --consonant-merch-card-cta-font-size: 15px;
 
     /* headings */
+    --consonant-merch-card-heading-xxxs-font-size: 14px;
+    --consonant-merch-card-heading-xxxs-line-height: 18px;
     --consonant-merch-card-heading-xxs-font-size: 16px;
     --consonant-merch-card-heading-xxs-line-height: 20px;
     --consonant-merch-card-heading-xs-font-size: 18px;
@@ -35,18 +37,17 @@ styles.innerHTML = `
     --consonant-merch-card-heading-s-line-height: 25px;
     --consonant-merch-card-heading-m-font-size: 24px;
     --consonant-merch-card-heading-m-line-height: 30px;
-    --consonant-merch-card-heading-l-font-size: 20px;
-    --consonant-merch-card-heading-l-line-height: 30px;
-    --consonant-merch-card-heading-xl-font-size: 36px;
-    --consonant-merch-card-heading-xl-line-height: 45px;
 
     /* detail */
+    --consonant-merch-card-detail-xs-line-height: 12px;
     --consonant-merch-card-detail-s-font-size: 11px;
     --consonant-merch-card-detail-s-line-height: 14px;
     --consonant-merch-card-detail-m-font-size: 12px;
     --consonant-merch-card-detail-m-line-height: 15px;
     --consonant-merch-card-detail-m-font-weight: 700;
     --consonant-merch-card-detail-m-letter-spacing: 1px;
+    --consonant-merch-card-detail-l-line-height: 18px;
+    --consonant-merch-card-detail-xl-line-height: 23px;
 
     /* body */
     --consonant-merch-card-body-xxs-font-size: 12px;
@@ -73,18 +74,23 @@ styles.innerHTML = `
     --color-accent: rgb(59, 99, 251);
     --merch-color-focus-ring: #1473E6;
     --merch-color-grey-10: #f6f6f6;
+    --merch-color-grey-50: var(--specturm-gray-50);
     --merch-color-grey-60: var(--specturm-gray-600);
     --merch-color-grey-80: #2c2c2c;
     --merch-color-grey-200: #E8E8E8;
     --merch-color-grey-600: #686868;
     --merch-color-grey-700: #464646;
-    --merch-color-green-promo: #2D9D78;
+    --merch-color-green-promo: #05834E;
+    --merch-color-red-promo: #D31510;
+    --merch-color-grey-80: #2c2c2c;
     --consonant-merch-card-body-xs-color: var(--spectrum-gray-100, var(--merch-color-grey-80));
     --merch-color-inline-price-strikethrough: initial;
     --consonant-merch-card-detail-s-color: var(--spectrum-gray-600, var(--merch-color-grey-600));
     --consonant-merch-card-heading-color: var(--spectrum-gray-800, var(--merch-color-grey-80));
     --consonant-merch-card-heading-xs-color: var(--consonant-merch-card-heading-color);
     --consonant-merch-card-price-color: #222222;
+    --consonant-merch-card-heading-xxxs-color: #131313;
+    --consonant-merch-card-body-xxs-color: #292929;
 
     /* ccd colors */
     --ccd-gray-200-light: #E6E6E6;
@@ -92,7 +98,14 @@ styles.innerHTML = `
     --ccd-gray-700-dark: #464646;
     --ccd-gray-600-light: #6D6D6D;
 
+    /* ah colors */
+    --ah-gray-500: #717171;
     
+    /* plans colors */
+    --spectrum-yellow-300-plans: #F5C700;
+    --spectrum-green-900-plans: #05834E;
+    --spectrum-gray-300-plans: #DADADA;
+    --spectrum-gray-700-plans: #505050;
   
     /* merch card generic */
     --consonant-merch-card-max-width: 300px;
@@ -120,6 +133,8 @@ styles.innerHTML = `
     --consonant-merch-card-callout-letter-spacing: 0px;
     --consonant-merch-card-callout-icon-padding: 34px;
     --consonant-merch-card-callout-spacing-xxs: 8px;
+
+    --merch-card-ul-padding: 8px;
 }
 
 merch-card-collection {
@@ -152,6 +167,10 @@ merch-card[variant="ccd-slice"] * {
   box-sizing: border-box;
 }
 
+merch-card * {
+  padding: revert-layer;
+}
+
 merch-card.background-opacity-70 {
     background-color: rgba(255 255 255 / 70%);
 }
@@ -174,12 +193,34 @@ merch-card span[is='inline-price'] {
     display: inline-block;
 }
 
-merch-card [slot^='heading-'] {
+merch-card [slot^='heading-'],
+merch-card span[class^='heading-'] {
     color: var(--consonant-merch-card-heading-color);
     font-weight: 700;
 }
 
-merch-card [slot='heading-xs'] {
+merch-card span[class^='heading-'],
+merch-card span.promo-text {
+    display: block;
+}
+
+merch-card [slot='heading-xxxs'],
+merch-card span.heading-xxxs {
+    font-size: var(--consonant-merch-card-heading-xxxs-font-size);
+    line-height: var(--consonant-merch-card-heading-xxxs-line-height);
+    color: var(--consonant-merch-card-heading-xxxs-color);
+    letter-spacing: normal;
+}
+
+merch-card [slot='heading-xxs'],
+merch-card span.heading-xxs {
+    font-size: var(--consonant-merch-card-heading-xxs-font-size);
+    line-height: var(--consonant-merch-card-heading-xxs-line-height);
+    letter-spacing: normal;
+}
+
+merch-card [slot='heading-xs'],
+merch-card span.heading-xs {
     font-size: var(--consonant-merch-card-heading-xs-font-size);
     line-height: var(--consonant-merch-card-heading-xs-line-height);
     color: var(--consonant-merch-card-heading-xs-color);
@@ -204,13 +245,15 @@ merch-card [slot='heading-xs'] a:not(:hover) {
     text-decoration: inherit;
 }
 
-merch-card [slot='heading-s'] {
+merch-card [slot='heading-s'],
+merch-card span.heading-s {
     font-size: var(--consonant-merch-card-heading-s-font-size);
     line-height: var(--consonant-merch-card-heading-s-line-height);
     margin: 0;
 }
 
-merch-card [slot='heading-m'] {
+merch-card [slot='heading-m'],
+merch-card span.heading-m {
     font-size: var(--consonant-merch-card-heading-m-font-size);
     line-height: var(--consonant-merch-card-heading-m-line-height);
     margin: 0;
@@ -228,16 +271,8 @@ merch-card [slot='offers'] {
     padding: var(--consonant-merch-spacing-xxs) var(--consonant-merch-spacing-s);
 }
 
-merch-card [slot='heading-l'] {
-    font-size: var(--consonant-merch-card-heading-l-font-size);
-    line-height: var(--consonant-merch-card-heading-l-line-height);
-    margin: 0;
-}
-
-merch-card [slot='heading-xl'] {
-    font-size: var(--consonant-merch-card-heading-xl-font-size);
-    line-height: var(--consonant-merch-card-heading-xl-line-height);
-    margin: 0;
+merch-card [slot='whats-included'] {
+    margin: var(--consonant-merch-spacing-xxxs) 0px;
 }
 
 merch-card [slot='callout-content'] {
@@ -245,6 +280,35 @@ merch-card [slot='callout-content'] {
     flex-direction: column;
     margin: var(--consonant-merch-spacing-xxxs) 0px;
     gap: var(--consonant-merch-card-callout-spacing-xxs);
+}
+
+merch-card[variant^='plans'] [slot='badge'] {
+    position: absolute;
+    top: 16px;
+    right: 0;
+    line-height: 16px;
+}
+
+merch-card [slot='callout-content'] > p {
+    background: rgba(203 203 203 / 50%);
+    border-radius: var(--consonant-merch-spacing-xxxs);
+    padding: var(--consonant-merch-spacing-xxxs) var(--consonant-merch-spacing-xxs);
+    width: fit-content;
+    font-size: var(--consonant-merch-card-callout-font-size);
+    line-height: var(--consonant-merch-card-callout-line-height);
+}
+
+merch-card [slot='callout-content'] .icon-button {
+    position: relative;
+    top: 3px;
+}
+
+merch-card [slot='callout-content'] .icon-button:before {
+    display: inline-block;
+    content: '';
+    width: 14px;
+    height: 14px;
+    background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" height="14" width="14"><path d="M7 .778A6.222 6.222 0 1 0 13.222 7 6.222 6.222 0 0 0 7 .778zM6.883 2.45a1.057 1.057 0 0 1 1.113.998q.003.05.001.1a1.036 1.036 0 0 1-1.114 1.114A1.052 1.052 0 0 1 5.77 3.547 1.057 1.057 0 0 1 6.784 2.45q.05-.002.1.001zm1.673 8.05a.389.389 0 0 1-.39.389H5.834a.389.389 0 0 1-.389-.389v-.778a.389.389 0 0 1 .39-.389h.388V7h-.389a.389.389 0 0 1-.389-.389v-.778a.389.389 0 0 1 .39-.389h1.555a.389.389 0 0 1 .389.39v3.5h.389a.389.389 0 0 1 .389.388z"/></svg>')
 }
 
 merch-card [slot='callout-content'] > div {
@@ -356,14 +420,20 @@ merch-card [slot="cce-footer"] p {
     margin: 0;
 }
 
-merch-card [slot="promo-text"] {
+merch-card [slot="promo-text"],
+merch-card span.promo-text {
     color: var(--merch-color-green-promo);
     font-size: var(--consonant-merch-card-promo-text-height);
     font-weight: 700;
-    line-height: var(--consonant-merch-card-promo-text-height);
+    line-height: var(--consonant-merch-card-heading-font-size);
     margin: 0;
     min-height: var(--consonant-merch-card-promo-text-height);
     padding: 0;
+}
+
+merch-card span[data-styling][class^='heading-'],
+merch-card span[data-styling].promo-text {
+    display: block;
 }
 
 merch-card [slot="footer-rows"] {
@@ -416,6 +486,16 @@ merch-card span.price.price-strikethrough {
   color: var(--merch-color-inline-price-strikethrough);
 }
 
+merch-card [slot^="body-"] ul {
+    margin: 0;
+    padding-inline-start: var(--merch-card-ul-padding);
+    list-style-type: "•";
+}
+    
+merch-card [slot^="body-"] ul li {
+    padding-inline-start: var(--merch-card-ul-padding);
+}
+
 /* merch-offer-select */
 merch-offer-select[variant="subscription-options"] merch-offer span[is="inline-price"][data-display-tax='true'] .price-tax-inclusivity {
     font-size: 12px;
@@ -424,6 +504,14 @@ merch-offer-select[variant="subscription-options"] merch-offer span[is="inline-p
     position: absolute;
     left: 0;
     top: 20px;
+}
+
+merch-addon span[data-wcs-osi][data-offer-type="TRIAL"] {
+    display: none;
+}
+
+merch-gradient {
+    display: none;
 }
 
 body.merch-modal {
@@ -441,5 +529,16 @@ merch-sidenav-checkbox-group h3 {
     margin: 0px;
 }
 
+sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
 `;
 document.head.appendChild(styles);

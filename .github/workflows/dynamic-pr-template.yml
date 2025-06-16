@@ -1,0 +1,154 @@
+name: Dynamic PR Template
+
+on:
+  pull_request_target:
+    types: [opened, synchronize, reopened]
+
+# Add permissions block
+permissions:
+  pull-requests: write
+  contents: read
+
+jobs:
+  update-template:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+
+      - name: Get changed files
+        id: changed-files
+        uses: tj-actions/changed-files@823fcebdb31bb35fdf2229d9f769b400309430d0
+        with:
+          files: |
+            libs/blocks/global-navigation/**
+            libs/blocks/global-footer/**
+            libs/blocks/region-nav/**
+            libs/navigation/**
+            libs/styles/styles.css
+
+      - name: Debug Changed Files
+        run: |
+          echo "Changed files:"
+          echo "${{ steps.changed-files.outputs.all_changed_files }}"
+
+      - name: Generate test URLs
+        id: test-urls
+        env:
+          BRANCH_NAME: ${{ github.event.pull_request.head.ref }}
+          REPO_OWNER: ${{ github.repository_owner }}
+        run: |
+          # Initialize test URLs array
+          TEST_URLS=()
+          
+          # Get branch name and owner from PR event
+          BRANCH_NAME="$BRANCH_NAME"
+          REPO_OWNER="$REPO_OWNER"
+          
+          # Check if changes are in either global navigation or footer components
+          if [[ "${{ steps.changed-files.outputs.all_changed_files }}" == *"libs/blocks/global-navigation/"* ]] || \
+             [[ "${{ steps.changed-files.outputs.all_changed_files }}" == *"libs/blocks/global-footer/"* ]] || \
+             [[ "${{ steps.changed-files.outputs.all_changed_files }}" == *"libs/blocks/region-nav/"* ]] || \
+             [[ "${{ steps.changed-files.outputs.all_changed_files }}" == *"libs/navigation/"* ]] || \
+             [[ "${{ steps.changed-files.outputs.all_changed_files }}" == *"libs/styles/styles.css"* ]]; then
+            echo "Changes detected in global navigation or footer components"
+            TEST_URLS=(
+              "<details><summary><strong>GNav Test URLs</strong></summary>"
+              ""
+              "**Gnav + Footer + Region Picker modal:**"
+              "- Acrobat: https://main--dc--adobecom.hlx.live/acrobat?martech=off&milolibs=${BRANCH_NAME}--milo--${REPO_OWNER}"
+              "- BACOM: https://main--bacom--adobecom.hlx.live/?martech=off&milolibs=${BRANCH_NAME}--milo--${REPO_OWNER}"
+              "- CC: https://main--cc--adobecom.aem.live/creativecloud?martech=off&milolibs=${BRANCH_NAME}--milo--${REPO_OWNER}"
+              "- Milo: https://${BRANCH_NAME}--milo--${REPO_OWNER}.aem.page/drafts/blaishram/test-urls/page?martech=off"
+              "- Express: https://main--express-milo--adobecom.aem.live/express/?martech=off&milolibs=${BRANCH_NAME}--milo--${REPO_OWNER}"
+              "- News: https://main--news--adobecom.aem.live/?martech=off&milolibs=${BRANCH_NAME}--milo--${REPO_OWNER}"
+              "- Homepage: https://main--homepage--adobecom.aem.live/homepage/index-loggedout?martech=off&milolibs=${BRANCH_NAME}--milo--${REPO_OWNER}"
+              ""
+              "**Thin Gnav + ThinFooter + Region Picker dropup:**"
+              "- Acrobat: https://main--dc--adobecom.hlx.page/drafts/blaishram/test-urls/page-gnav-footer-thin?martech=off&milolibs=${BRANCH_NAME}--milo--${REPO_OWNER}"
+              "- BACOM: https://main--bacom--adobecom.hlx.page/drafts/blaishram/test-urls/page-gnav-footer-thin?martech=off&milolibs=${BRANCH_NAME}--milo--${REPO_OWNER}"
+              "- CC: https://main--cc--adobecom.hlx.page/drafts/blaishram/test-urls/page-gnav-footer-thin?martech=off&milolibs=${BRANCH_NAME}--milo--${REPO_OWNER}"
+              "- Milo: https://${BRANCH_NAME}--milo--${REPO_OWNER}.hlx.page/drafts/blaishram/test-urls/page-gnav-footer-thin?martech=off"
+              "- Express: https://main--express-milo--adobecom.hlx.page/drafts/blaishram/test-urls/page-gnav-footer-thin?martech=off&milolibs=${BRANCH_NAME}--milo--${REPO_OWNER}"
+              "- News: https://main--news--adobecom.hlx.page/drafts/blaishram/test-urls/page-gnav-footer-thin?martech=off&milolibs=${BRANCH_NAME}--milo--${REPO_OWNER}"
+              "- Homepage: https://main--homepage--adobecom.hlx.page/drafts/blaishram/test-urls/page-gnav-footer-thin?martech=off&milolibs=${BRANCH_NAME}--milo--${REPO_OWNER}"
+              ""
+              "**Localnav + Promo:**"
+              "- Acrobat: https://main--dc--adobecom.hlx.page/drafts/blaishram/test-urls/page-with-promo?martech=off&milolibs=${BRANCH_NAME}--milo--${REPO_OWNER}"
+              "- BACOM: https://main--bacom--adobecom.hlx.page/drafts/blaishram/test-urls/page-with-promo?martech=off&milolibs=${BRANCH_NAME}--milo--${REPO_OWNER}"
+              "- CC: https://main--cc--adobecom.hlx.page/drafts/blaishram/test-urls/page-with-promo?martech=off&milolibs=${BRANCH_NAME}--milo--${REPO_OWNER}"
+              "- Milo: https://${BRANCH_NAME}--milo--${REPO_OWNER}.hlx.page/drafts/blaishram/test-urls/page-with-promo?martech=off"             
+              "- Express: https://main--express-milo--adobecom.hlx.page/drafts/blaishram/test-urls/page-with-promo?martech=off&milolibs=${BRANCH_NAME}--milo--${REPO_OWNER}"
+              "- News: https://main--news--adobecom.hlx.page/drafts/blaishram/test-urls/page-with-promo?martech=off&milolibs=${BRANCH_NAME}--milo--${REPO_OWNER}"
+              "- Homepage: https://main--homepage--adobecom.hlx.page/drafts/blaishram/test-urls/page-with-promo?martech=off&milolibs=${BRANCH_NAME}--milo--${REPO_OWNER}"
+              ""
+              "**Sticky Branch Banner:**"
+              "- URL: https://main--federal--adobecom.aem.page/drafts/blaishram/banner/branch-banner-sticky?martech=off&milolibs=${BRANCH_NAME}--milo--${REPO_OWNER}"
+              ""
+              "**Inline Branch Banner:**"
+              "- URL: https://main--federal--adobecom.aem.page/drafts/blaishram/banner/branch-banner-inline?martech=off&milolibs=${BRANCH_NAME}--milo--${REPO_OWNER}"
+              ""   
+              "**Blog**"     
+              "- URL: https://main--blog--adobecom.aem.page/?martech=off&milolibs=${BRANCH_NAME}--milo--${REPO_OWNER}"
+              ""
+              "**RTL Locale**"
+              "- URL: https://main--homepage--adobecom.aem.live/mena_ar/homepage/index-loggedout?martech=off&milolibs=${BRANCH_NAME}--milo--${REPO_OWNER}"
+              "</details>"
+            )
+          else
+            echo "No changes detected in global navigation or footer"
+          fi
+          
+          # Convert array to JSON and set output
+          echo "test_urls<<EOF" >> $GITHUB_OUTPUT
+          printf '%s\n' "${TEST_URLS[@]}" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Update PR description
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const testUrls = process.env.TEST_URLS.split('\n');
+            const prNumber = context.issue.number;
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            
+            try {
+              // Get current PR description
+              const { data: pullRequest } = await github.rest.pulls.get({
+                owner,
+                repo,
+                pull_number: prNumber,
+              });
+                            
+              // Create new description with test URLs
+              const testUrlsSection = testUrls.join('\n');
+              console.log('New test URLs section:', testUrlsSection);
+              
+              // Check if Test URLs section exists
+              const hasTestUrlsSection = pullRequest.body.includes('<details><summary><strong>GNav Test URLs</strong></summary>');
+              let newDescription;
+              if (hasTestUrlsSection) {
+                // Replace existing Test URLs section
+                newDescription = pullRequest.body.replace(/<details><summary><strong>GNav Test URLs<\/strong><\/summary>[\s\S]*?<\/details>/m, testUrlsSection);
+              } else {
+                // Add Test URLs section at the end
+                newDescription = `${pullRequest.body}\n\n${testUrlsSection}`;
+              }
+              
+              // Update PR description
+              await github.rest.pulls.update({
+                owner,
+                repo,
+                pull_number: prNumber,
+                body: newDescription,
+              });
+              console.log('Successfully updated PR description');
+            } catch (error) {
+              console.log('Error updating PR description:', error.message);
+              console.log('Error details:', error);
+              process.exit(0);
+            }
+        env:
+          TEST_URLS: ${{ steps.test-urls.outputs.test_urls }} 

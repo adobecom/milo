@@ -1,38 +1,24 @@
-import { EVENT_TYPE_READY } from './constants.js';
 import {
     forceTaxExclusivePrice,
     isNotEmptyString,
     isPositiveFiniteNumber,
     toPositiveFiniteInteger,
-} from './external.js';
+} from '@dexter/tacocat-core';
+import { HEADER_X_REQUEST_ID } from './constants';
 
 const MAS_COMMERCE_SERVICE = 'mas-commerce-service';
-/**
- * Calls given `getConfig` every time new instance of the commerce service is activated,
- * passing new instance as the only argument.
- * @param {(commerce: Commerce.Instance) => void} getConfig
- * @param {{ once?: boolean; }} options
- * @returns {() => void}
- * A function, stopping notifications when called.
- */
-export function discoverService(getConfig, { once = false } = {}) {
-    let latest = null;
-    function discover() {
-        /** @type { Commerce.Instance } */
-        const current = document.querySelector(MAS_COMMERCE_SERVICE);
-        if (current === latest) return;
-        latest = current;
-        if (current) getConfig(current);
-    }
-    document.addEventListener(EVENT_TYPE_READY, discover, { once });
-    setImmediate(discover);
-    return () => document.removeEventListener(EVENT_TYPE_READY, discover);
-}
+
+export const FETCH_INFO_HEADERS = {
+    requestId: HEADER_X_REQUEST_ID,
+    etag: 'Etag',
+    lastModified: 'Last-Modified',
+    serverTiming: 'server-timing',
+};
 
 /**
- * @param {Commerce.Wcs.Offer[]} offers
+ * @param {Offer[]} offers
  * @param {Commerce.Options} options
- * @returns {Commerce.Wcs.Offer[]}
+ * @returns {Offer[]}
  */
 export function selectOffers(
     offers,
@@ -82,8 +68,28 @@ export function toOfferSelectorIds(value) {
  * This function expects an active instance of commerce service
  * to exist in the current DOM.
  * If commerce service has not been yet activated or was resetted, `null`.
- * @returns 
+ * @returns
  */
-export function useService() {
+export function getService() {
     return document.getElementsByTagName(MAS_COMMERCE_SERVICE)?.[0];
+}
+
+/**
+ * Returns headers to be logged
+ * @param {Response} response - fetch response
+ * @returns {Object}
+ */
+export function getLogHeaders(response) {
+    const logHeaders = {};
+    if (!response?.headers) return logHeaders;
+    const headers = response.headers;
+    for (const [key, value] of Object.entries(FETCH_INFO_HEADERS)) {
+        let headerValue = headers.get(value);
+        if (headerValue) {
+            headerValue = headerValue.replace(/[,;]/g, '|');
+            headerValue = headerValue.replace(/[| ]+/g, '|');
+            logHeaders[key] = headerValue;
+        }
+    }
+    return logHeaders;
 }

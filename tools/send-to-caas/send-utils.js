@@ -1,6 +1,6 @@
 import getUuid from '../../libs/utils/getUuid.js';
 import { getMetadata } from '../../libs/utils/utils.js';
-import { LOCALES } from '../../libs/blocks/caas/utils.js';
+import { LANGS, LOCALES } from '../../libs/blocks/caas/utils.js';
 
 const CAAS_TAG_URL = 'https://www.adobe.com/chimera-api/tags';
 const HLX_ADMIN_STATUS = 'https://admin.hlx.page/status';
@@ -293,8 +293,25 @@ const isPagePublished = async () => {
   return false;
 };
 
+const getLanguageFirstCountryAndLang = async (path) => {
+  const localeArr = path.split('/');
+  const langStr = LANGS[localeArr[1]] ?? LANGS[''] ?? 'en';
+  let countryStr = LOCALES[localeArr[2]] ?? 'xx';
+  if (typeof countryStr === 'object') {
+    countryStr = countryStr.ietf?.split('-')[1] ?? 'xx';
+  }
+  return {
+    country: countryStr,
+    lang: langStr,
+  };
+};
+
 const getBulkPublishLangAttr = async (options) => {
   let { getLocale } = getConfig();
+  if (options.languageFirst) {
+    const { country, lang } = await getLanguageFirstCountryAndLang(options.prodUrl);
+    return `${lang}-${country}`;
+  }
   if (!getLocale) {
     // This is only imported from the bulk publisher so there is no dependency cycle
     // eslint-disable-next-line import/no-cycle
@@ -306,6 +323,10 @@ const getBulkPublishLangAttr = async (options) => {
 };
 
 const getCountryAndLang = async (options) => {
+  const langFirst = getMetadata('langfirst');
+  if (langFirst) {
+    return getLanguageFirstCountryAndLang(window.location.pathname);
+  }
   /* c8 ignore next */
   const langStr = window.location.pathname.includes('/tools/send-to-caas/bulkpublisher')
     ? await getBulkPublishLangAttr(options)
@@ -341,7 +362,7 @@ const parseCardMetadata = () => {
 };
 
 function checkCtaUrl(s, options, i) {
-  if (s?.trim() === '') return '';
+  if (s?.trim() === '' || s === undefined) return '';
   const url = s || options.prodUrl || window.location.origin + window.location.pathname;
   return checkUrl(url, `Invalid Cta${i}Url: ${url}`);
 }

@@ -127,18 +127,31 @@ div[class*="-up"] .media .foreground > .media-row {
   margin-bottom: var(--spacing-xs);
 }
 
-.media ul > li::before {
-  content: "";
-  display: inline-block;
-  margin-left: 3px;
+[dir="rtl"] .media ul {
+  padding-left: initial;
+  padding-right: 20px;
+}
+
+.media.checklist ul {
+  padding: initial;
+  display: flex;
+  flex-direction: column;
+  row-gap: 1px;
 }
 
 .media.checklist li {
-  background: url("/libs/img/ui/checkmark-green.svg") no-repeat 5px 5px transparent;
   list-style-type: none;
-  margin-left: -25px;
-  padding: 0 0 1px 29px;
-  vertical-align: middle;
+  display: flex;
+  align-items: flex-start;
+  column-gap: 4px;
+}
+
+.media.checklist li::before {
+  content: "";
+  width: 20px;
+  height: 24px;
+  flex-shrink: 0;
+  background: url("/libs/img/ui/checkmark-green.svg") no-repeat 50% calc(50% + 2px) transparent;
 }
 
 .media .subcopy {

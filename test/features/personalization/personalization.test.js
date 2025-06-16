@@ -4,7 +4,7 @@ import { assert, stub } from 'sinon';
 import { getConfig, setConfig } from '../../../libs/utils/utils.js';
 import {
   handleFragmentCommand, applyPers, cleanAndSortManifestList, normalizePath,
-  init, matchGlob, createContent, combineMepSources, buildVariantInfo,
+  init, matchGlob, createContent, combineMepSources, buildVariantInfo, addSectionAnchors,
 } from '../../../libs/features/personalization/personalization.js';
 import mepSettings from './mepSettings.js';
 import mepSettingsPreview from './mepPreviewSettings.js';
@@ -377,6 +377,12 @@ describe('Functional Test', () => {
     expect(document.querySelector('meta[property="og:title"]').content).to.equal('New Title');
     expect(document.querySelector('meta[property="og:image"]').content).to.equal('https://adobe.com/path/to/image.jpg');
   });
+
+  it('will add id to the section div', async () => {
+    addSectionAnchors(document);
+    const sectionWithId = document.querySelector('#marquee-container');
+    expect(sectionWithId).to.exist;
+  });
 });
 
 describe('matchGlob function', () => {
@@ -422,13 +428,13 @@ describe('matchGlob function', () => {
 describe('MEP Utils', () => {
   describe('combineMepSources', async () => {
     it('yields an empty list when everything is undefined', async () => {
-      const manifests = await combineMepSources(undefined, undefined, undefined);
+      const manifests = await combineMepSources(undefined, undefined, undefined, undefined);
       expect(manifests.length).to.equal(0);
     });
     it('combines promos and personalization', async () => {
       document.head.innerHTML = await readFile({ path: '../../utils/mocks/mep/head-promo.html' });
       const promos = { manifestnames: 'pre-black-friday-global,black-friday-global' };
-      const manifests = await combineMepSources('/pers/manifest.json', promos, undefined);
+      const manifests = await combineMepSources('/pers/manifest.json', undefined, promos, undefined);
       expect(manifests.length).to.equal(3);
       expect(manifests[0].manifestPath).to.equal('/pers/manifest.json');
       expect(manifests[1].manifestPath).to.equal('/pre-black-friday.json');
@@ -439,6 +445,7 @@ describe('MEP Utils', () => {
       const promos = { manifestnames: 'pre-black-friday-global,black-friday-global' };
       const manifests = await combineMepSources(
         '/pers/manifest.json',
+        undefined,
         promos,
         '/pers/manifest.json--var1---/mep-param/manifest1.json--all---/mep-param/manifest2.json--all',
       );

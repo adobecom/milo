@@ -39,7 +39,12 @@ div.accordion:not(.descr-list) {
   font-family: var(--body-font-family);
 }
 
-.accordion-expand-all button.disabled {
+.accordion-expand-all button:focus-visible {
+  outline: 2px solid var(--color-accent-focus-ring);
+  outline-offset: 2px;
+}
+
+.accordion-expand-all button:disabled {
   color: var(--color-gray-500);
   border-color: var(--color-gray-500);
   background-color: #fff;

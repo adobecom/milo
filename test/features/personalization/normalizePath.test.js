@@ -33,6 +33,11 @@ describe('normalizePath function', () => {
     expect(path).to.equal('/path/to/manifest.json');
   });
 
+  it('retains a hash if one is passed in', async () => {
+    const path = await normalizePath('https://main--milo--adobecom.hlx.page/path/to/fragment.plain.html#noActiveItem');
+    expect(path).to.equal('/path/to/fragment.plain.html#noActiveItem');
+  });
+
   it('does localize otherwise', async () => {
     config.locales = {
       de: {

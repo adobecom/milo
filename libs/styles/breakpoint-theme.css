@@ -1,14 +1,12 @@
-
-  
 /* Static Links */
 .con-block.static-links[class*="dark-"] a:not(.con-button),
 .static-links .con-block[class*="dark-"] a:not(.con-button),
 .con-block.static-links[class*="light-"] a:not(.con-button),
 .static-links .con-block[class*="light-"] a:not(.con-button),
-.con-block.static-links[class*="dark-"] a:not(.con-button):hover,
-.static-links .con-block[class*="dark-"] a:not(.con-button):hover,
-.con-block.static-links[class*="light-"] a:not(.con-button):hover,
-.static-links .con-block[class*="light-"] a:not(.con-button):hover {
+.con-block.static-links[class*="dark-"] a:not(.con-button):is(:hover, :focus-visible),
+.static-links .con-block[class*="dark-"] a:not(.con-button):is(:hover, :focus-visible),
+.con-block.static-links[class*="light-"] a:not(.con-button):is(:hover, :focus-visible),
+.static-links .con-block[class*="light-"] a:not(.con-button):is(:hover, :focus-visible) {
   color: inherit;
 }
 
@@ -57,16 +55,16 @@
     background-color: var(--color-white);
     color: var(--text-color);
   }
-  
+
   .con-block.light-mobile-only a.con-button.fill:is(:hover, :focus, :active) {
     border-color: var(--color-black);
     background-color: var(--color-black);
   }
-  
+
   .con-block.dark-mobile-only a.con-button.fill:is(:hover, :focus, :active) {
     color: var(--color-black);
   }
-  
+
 }
 
 /* Tablet ONLY */
@@ -115,12 +113,12 @@
     background-color: var(--color-white);
     color: var(--text-color);
   }
-  
+
   .con-block.light-tablet-only a.con-button.fill:is(:hover, :focus, :active) {
     border-color: var(--color-black);
     background-color: var(--color-black);
   }
-  
+
   .con-block.dark-tablet-only a.con-button.fill:is(:hover, :focus, :active) {
     color: var(--color-black);
   }
@@ -172,12 +170,12 @@
     background-color: var(--color-white);
     color: var(--text-color);
   }
-  
+
   .con-block.light-tablet a.con-button.fill:is(:hover, :focus, :active) {
     border-color: var(--color-black);
     background-color: var(--color-black);
   }
-  
+
   .con-block.dark-tablet a.con-button.fill:is(:hover, :focus, :active) {
     color: var(--color-black);
   }
@@ -193,7 +191,7 @@
   .con-block.dark-desktop a:not(.con-button) { color: var(--link-color-dark); }
 
   .con-block.light-desktop a:not(.con-button):is(:hover, :focus, :active) { color: var(--link-hover-color); }
-  
+
   .con-block.dark-desktop a:not(.con-button):is(:hover, :focus, :active) { color: var(--link-hover-color-dark); }
 
   .con-block.light-desktop a.con-button.outline {
@@ -230,12 +228,12 @@
     background-color: var(--color-white);
     color: var(--text-color);
   }
-  
+
   .con-block.light-desktop a.con-button.fill:is(:hover, :focus, :active) {
     border-color: var(--color-black);
     background-color: var(--color-black);
   }
-  
+
   .con-block.dark-desktop a.con-button.fill:is(:hover, :focus, :active) {
     color: var(--color-black);
   }

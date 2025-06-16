@@ -21,8 +21,7 @@ function addLoader(a) {
   return container;
 }
 
-async function decorateQuickLink(a, hasConsent) {
-  if (!window.alloy) return;
+async function decorateQuickLink(a, hasConsent, isNewTab) {
   let ecid = null;
   try {
     const data = await window.alloy_getIdentity;
@@ -31,9 +30,12 @@ async function decorateQuickLink(a, hasConsent) {
     window.lana.log(`Error fetching ECID: ${e}`, { tags: 'branch-quick-links' });
   }
   if (ecid && hasConsent && !a.href.includes('ecid')) {
-    a.href = a.href.concat(`?ecid=${ecid}`);
+    const urlObj = new URL(a.href, window.location.origin);
+    urlObj.searchParams.set('ecid', ecid);
+    a.href = urlObj.href;
   }
-  window.location.href = a.href;
+  if (isNewTab) window.open(a.href, '_blank');
+  else window.location.href = a.href;
 }
 
 export default function processQuickLink(a) {
@@ -71,6 +73,7 @@ export default function processQuickLink(a) {
     if (getMetadata('quick-link-loader') === 'on') loader = addLoader(a);
     const hasConsent = await waitForConsent();
     if (loader) loader.replaceWith(a);
-    decorateQuickLink(a, hasConsent);
+    const isNewTab = (e.metaKey || e.ctrlKey);
+    decorateQuickLink(a, hasConsent, isNewTab);
   });
 }

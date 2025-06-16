@@ -1,8 +1,9 @@
 import { html, LitElement } from 'lit';
 import { styles } from './merch-quantity-select.css.js';
+import { debounce } from './utils.js';
 
 import { ARROW_DOWN, ARROW_UP, ENTER } from './focus.js';
-import { EVENT_MERCH_QUANTITY_SELECTOR_CHANGE } from './constants.js';
+import { EVENT_MERCH_QUANTITY_SELECTOR_CHANGE, EVENT_MERCH_CARD_QUANTITY_CHANGE } from './constants.js';
 
 export class MerchQuantitySelect extends LitElement {
     static get properties() {
@@ -13,6 +14,8 @@ export class MerchQuantitySelect extends LitElement {
             max: { type: Number },
             step: { type: Number },
             maxInput: { type: Number, attribute: 'max-input' },
+            options: { type: Array },
+            highlightedIndex: { type: Number },
             defaultValue: {
                 type: Number,
                 attribute: 'default-value',
@@ -43,6 +46,9 @@ export class MerchQuantitySelect extends LitElement {
         this.boundKeydownListener = this.handleKeydown.bind(this);
         this.addEventListener('keydown', this.boundKeydownListener);
         window.addEventListener('mousedown', this.handleClickOutside);
+        this.handleKeyupDebounced = debounce(this.handleKeyup.bind(this), 500);
+        this.handleQuantityUpdate = this.handleQuantityUpdate.bind(this);
+        this.addEventListener(EVENT_MERCH_CARD_QUANTITY_CHANGE, this.handleQuantityUpdate);
     }
 
     handleKeyup() {
@@ -57,7 +63,6 @@ export class MerchQuantitySelect extends LitElement {
                     e.preventDefault();
                     this.highlightedIndex =
                         (this.highlightedIndex + 1) % this.options.length;
-                    this.requestUpdate();
                 }
                 break;
             case ARROW_UP:
@@ -66,7 +71,6 @@ export class MerchQuantitySelect extends LitElement {
                     this.highlightedIndex =
                         (this.highlightedIndex - 1 + this.options.length) %
                         this.options.length;
-                    this.requestUpdate();
                 }
                 break;
             case ENTER:
@@ -85,28 +89,31 @@ export class MerchQuantitySelect extends LitElement {
         if (e.composedPath().includes(this)) e.stopPropagation();
     }
 
+    adjustInput(inputField, value) {
+        this.selectedValue = value;
+        inputField.value = value;
+        this.highlightedIndex = this.options.indexOf(value);
+    }
+
     handleInput() {
         const inputField = this.shadowRoot.querySelector('.text-field-input');
         const inputValue = parseInt(inputField.value);
-        if (
-            !isNaN(inputValue) &&
-            inputValue > 0 &&
-            inputValue !== this.selectedValue
-        ) {
-            const adjustedInputValue =
-                this.maxInput && inputValue > this.maxInput
-                    ? this.maxInput
-                    : inputValue;
-            this.selectedValue = adjustedInputValue;
-            inputField.value = adjustedInputValue;
-            this.highlightedIndex = this.options.indexOf(adjustedInputValue);
-        }
+        if (isNaN(inputValue)) return;
+        if (inputValue > 0 && inputValue !== this.selectedValue) {
+            let adjustedInputValue = inputValue;
+            if (this.maxInput && inputValue > this.maxInput)
+                adjustedInputValue = this.maxInput;
+            if (this.min && adjustedInputValue < this.min)
+                adjustedInputValue = this.min;
+            this.adjustInput(inputField, adjustedInputValue);
+        } else this.adjustInput(inputField, this.min || 1);
     }
 
     disconnectedCallback() {
         super.disconnectedCallback();
         window.removeEventListener('mousedown', this.handleClickOutside);
         this.removeEventListener('keydown', this.boundKeydownListener);
+        this.removeEventListener(EVENT_MERCH_CARD_QUANTITY_CHANGE, this.handleQuantityUpdate);
     }
 
     generateOptionsArray() {
@@ -119,7 +126,7 @@ export class MerchQuantitySelect extends LitElement {
         return options;
     }
 
-    updated(changedProperties) {
+    update(changedProperties) {
         if (
             changedProperties.has('min') ||
             changedProperties.has('max') ||
@@ -133,8 +140,8 @@ export class MerchQuantitySelect extends LitElement {
             this.handleMenuOption(
                 this.defaultValue ? this.defaultValue : this.options[0],
             );
-            this.requestUpdate();
         }
+        super.update(changedProperties);
     }
 
     handleClickOutside(event) {
@@ -150,7 +157,6 @@ export class MerchQuantitySelect extends LitElement {
 
     handleMouseEnter(index) {
         this.highlightedIndex = index;
-        this.requestUpdate();
     }
 
     handleMenuOption(option) {
@@ -200,6 +206,17 @@ export class MerchQuantitySelect extends LitElement {
         </div>`;
     }
 
+    handleQuantityUpdate({ detail: { quantity } }) {
+        if (quantity && quantity !== this.selectedValue) {
+            this.selectedValue = quantity;
+            const inputField = this.shadowRoot.querySelector('.text-field-input');
+            if (inputField) {
+                inputField.value = quantity;
+            }
+            this.sendEvent();
+        }
+    }
+
     render() {
         return html`
             <div class="label">${this.title}</div>
@@ -210,7 +227,7 @@ export class MerchQuantitySelect extends LitElement {
                     .value="${this.selectedValue}"
                     type="number"
                     @keydown="${this.handleKeydown}"
-                    @keyup="${this.handleKeyup}"
+                    @keyup="${this.handleKeyupDebounced}"
                 />
                 <button class="picker-button" @click="${this.toggleMenu}">
                     <div

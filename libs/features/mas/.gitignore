@@ -4,3 +4,5 @@ mas.json
 stats.json
 *.tgz
 *.js.map
+/.cursor*/
+.cursor\ 2/

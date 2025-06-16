@@ -1,9 +1,10 @@
+import { STATE_FAILED } from './constants.js';
 import {
     createMasElement,
     updateMasElement,
     MasElement,
 } from './mas-element.js';
-import { selectOffers, useService } from './utilities.js';
+import { selectOffers, getService } from './utilities.js';
 
 // countries where tax is displayed for all segments by default
 const DISPLAY_ALL_TAX_COUNTRIES = [
@@ -88,6 +89,8 @@ export class InlinePrice extends HTMLSpanElement {
             'data-display-per-unit',
             'data-display-recurrence',
             'data-display-tax',
+            'data-display-plan-type',
+            'data-display-annual',
             'data-perpetual',
             'data-promotion-code',
             'data-tax-exclusive',
@@ -98,17 +101,20 @@ export class InlinePrice extends HTMLSpanElement {
 
     static createInlinePrice(options) {
         // eslint-disable-next-line react-hooks/rules-of-hooks
-        const service = useService();
+        const service = getService();
         if (!service) return null;
         const {
             displayOldPrice,
             displayPerUnit,
             displayRecurrence,
             displayTax,
+            displayPlanType,
+            displayAnnual,
             forceTaxExclusive,
             perpetual,
             promotionCode,
             quantity,
+            alternativePrice,
             template,
             wcsOsi,
         } = service.collectPriceOptions(options);
@@ -117,10 +123,13 @@ export class InlinePrice extends HTMLSpanElement {
             displayPerUnit,
             displayRecurrence,
             displayTax,
+            displayPlanType,
+            displayAnnual,
             forceTaxExclusive,
             perpetual,
             promotionCode,
             quantity,
+            alternativePrice,
             template,
             wcsOsi,
         });
@@ -176,6 +185,10 @@ export class InlinePrice extends HTMLSpanElement {
 
     get options() {
         return this.masElement.options;
+    }
+
+    get isFailed() {
+        return this.masElement.state === STATE_FAILED;
     }
 
     requestUpdate(force = false) {
@@ -242,7 +255,7 @@ export class InlinePrice extends HTMLSpanElement {
     async render(overrides = {}) {
         if (!this.isConnected) return false;
         // eslint-disable-next-line react-hooks/rules-of-hooks
-        const service = useService();
+        const service = getService();
         if (!service) return false;
         const options = service.collectPriceOptions(overrides, this);
         if (!options.wcsOsi.length) return false;
@@ -260,18 +273,25 @@ export class InlinePrice extends HTMLSpanElement {
         const version = this.masElement.togglePending(options);
         this.innerHTML = '';
         const [promise] = service.resolveOfferSelectors(options);
-        return this.renderOffers(
-            selectOffers(await promise, options),
-            options,
-            version,
-        );
+        try {
+            const offers = await promise;
+            return this.renderOffers(
+                selectOffers(offers, options),
+                options,
+                version,
+            );
+        }
+        catch(error) {
+            this.innerHTML = '';
+            throw error;
+        }
     }
 
     // TODO: can be extended to accept array of offers and compute subtotal price
     /**
      * Renders price offer as HTML of this component
      * using consonant price template functions
-     * @param {Commerce.Wcs.Offer[]} offers
+     * @param {Offer[]} offers
      * @param {Record<string, any>} overrides
      * Optional object with properties to use as overrides
      * over those collected from dataset of this component.
@@ -279,7 +299,7 @@ export class InlinePrice extends HTMLSpanElement {
     renderOffers(offers, overrides = {}, version = undefined) {
         if (!this.isConnected) return;
         // eslint-disable-next-line react-hooks/rules-of-hooks
-        const service = useService();
+        const service = getService();
         if (!service) return false;
         const options = service.collectPriceOptions(
             {
@@ -292,6 +312,23 @@ export class InlinePrice extends HTMLSpanElement {
         if (offers.length) {
             if (this.masElement.toggleResolved(version, offers, options)) {
                 this.innerHTML = service.buildPriceHTML(offers, options);
+
+                // Adding logic for options.alternativePrice to add <sr-only>Alternatively at</sr-only>
+                const parentEl = this.closest('p, h3, div');
+                if (!parentEl || !parentEl.querySelector('span[data-template="strikethrough"]') || parentEl.querySelector('.alt-aria-label')) return true;
+                const inlinePrices = parentEl?.querySelectorAll('span[is="inline-price"]');
+                if (inlinePrices.length > 1 && inlinePrices.length === parentEl.querySelectorAll('span[data-template="strikethrough"]').length * 2) {
+                    inlinePrices.forEach((price) => {
+                        if (price.dataset.template !== 'strikethrough' && 
+                            price.options && 
+                            !price.options.alternativePrice &&
+                            !price.isFailed
+                        ) {
+                            price.options.alternativePrice = true;
+                            price.innerHTML = service.buildPriceHTML(offers, price.options);
+                        }
+                    });
+                }
                 return true;
             }
         } else {
@@ -307,9 +344,10 @@ export class InlinePrice extends HTMLSpanElement {
 
     updateOptions(options) {
         // eslint-disable-next-line react-hooks/rules-of-hooks
-        const service = useService();
+        const service = getService();
         if (!service) return false;
         const {
+            alternativePrice,
             displayOldPrice,
             displayPerUnit,
             displayRecurrence,
@@ -322,6 +360,7 @@ export class InlinePrice extends HTMLSpanElement {
             wcsOsi,
         } = service.collectPriceOptions(options);
         updateMasElement(this, {
+            alternativePrice,
             displayOldPrice,
             displayPerUnit,
             displayRecurrence,

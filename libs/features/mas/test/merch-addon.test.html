@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>Merch addon web component test page</title>
+        <style>
+            main {
+                display: flex;
+                align-items: center;
+                gap: 20px;
+                flex-direction: column;
+                padding-top: 80px;
+            }
+            mas-commerce-service {
+                display: none;
+            }
+        </style>
+    </head>
+
+    <body>
+        <main></main>
+        <template id="ai">
+            <mas-commerce-service env="stage"></mas-commerce-service>
+            <merch-addon>
+                <p><strong>Acrobat AI Assistant</strong></p>
+                <p data-plan-type="">
+                    Add AI Assistant to your free Reader app for
+                    <span
+                        is="inline-price"
+                        data-template="price"
+                        data-wcs-osi="puf"
+                    ></span>
+                </p>
+                <p data-plan-type="">
+                    Add AI Assistant to your free Reader app for
+                    <span
+                        is="inline-price"
+                        data-template="price"
+                        data-wcs-osi="abm"
+                    ></span>
+                </p>
+                <p data-plan-type="">
+                    Add AI Assistant to your free Reader app for
+                    <span
+                        is="inline-price"
+                        data-template="price"
+                        data-wcs-osi="m2m"
+                    ></span>
+                </p>
+                <merch-gradient
+                    colors="#F5F6FD, #F8F1F8, #F9E9ED"
+                    positions="33.52%, 67.33%, 110.37%"
+                    angle="211deg"
+                    border-radius="10px"
+                ></merch-gradient>
+            </merch-addon>
+        </template>
+        <script type="module">
+            import { runTests } from '@web/test-runner-mocha';
+            import { expect } from '@esm-bundle/chai';
+            import { mockFetch } from './mocks/fetch.js';
+            import { mockIms } from './mocks/ims.js';
+            import { withWcs } from './mocks/wcs.js';
+            import { withAem } from './mocks/aem.js';
+            import { delay, getTemplateContent } from './utils.js';
+            import '../src/mas.js';
+
+            runTests(async () => {
+                mockIms();
+                await mockFetch(withWcs, withAem);
+                const container = document.querySelector('main');
+
+                describe('merch-addon web component', async () => {
+                    beforeEach(() => {
+                        container.innerHTML = '';
+                    });
+                    it('should render addon checkbox and update on plan type change', async () => {
+                        const [masCommerceService, ai] =
+                            getTemplateContent('ai');
+                        container.append(masCommerceService, ai);
+                        expect(ai).to.exist;
+                        await delay(50); // time to render prices
+                        expect(ai.innerText).to.contain(
+                            'Acrobat AI Assistant',
+                        );
+                        ai.planType = 'PUF';
+                        await ai.updateComplete;
+                        await delay(50);
+                        expect(ai.innerText).to.contain('US$599.88/yr');
+                        expect(ai.getOsi('ABM', 'BASE')).to.be.equal('abm');
+                        // fallback to base, if PROMOTION is not available
+                        expect(ai.getOsi('ABM', 'PROMOTION')).to.be.equal(
+                            'abm',
+                        );
+                        ai.planType = 'ABM';
+                        await ai.updateComplete;
+                        expect(ai.innerText).to.contain('US$54.99/mo');
+                        ai.planType = 'M2M';
+                        await ai.updateComplete;
+                        expect(ai.innerText).to.contain('US$82.49/mo');
+                    });
+                });
+            });
+        </script>
+    </body>
+</html>

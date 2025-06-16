@@ -1,6 +1,6 @@
 import { html, LitElement } from 'lit';
 import { styles } from './merch-offer.css.js';
-import { EVENT_MERCH_OFFER_READY } from './constants.js';
+import { EVENT_MERCH_OFFER_READY, SELECTOR_MAS_CHECKOUT_LINK } from './constants.js';
 
 const TAG_NAME = 'merch-offer';
 class MerchOffer extends LitElement {
@@ -78,7 +78,7 @@ class MerchOffer extends LitElement {
     }
 
     get cta() {
-        return this.querySelector('a[is="checkout-link"]');
+        return this.querySelector(SELECTOR_MAS_CHECKOUT_LINK);
     }
 
     get prices() {

@@ -1,4 +1,4 @@
-import { writeFileSync } from 'node:fs';
+import { writeFileSync, readFileSync } from 'node:fs';
 import { build } from 'esbuild';
 
 const outfolder = '../../deps/mas';
@@ -6,11 +6,14 @@ const outfolder = '../../deps/mas';
 const defaults = {
     bundle: true,
     format: 'esm',
-    minify: true,
-    sourcemap: true,
+    minify: !process.argv.includes('no-minify'),
+    sourcemap: process.argv.includes('sourcemap'),
     platform: 'browser',
     target: ['es2020'],
 };
+
+// Read the price-literals.js file content
+const priceLiteralsContent = readFileSync('./price-literals.json', 'utf-8');
 
 // commerce.js
 const { metafile } = await build({
@@ -19,9 +22,12 @@ const { metafile } = await build({
         react: 'test/mocks/react.js',
     },
     entryPoints: ['./src/commerce.js'],
-    metafile: true,
     outfile: `${outfolder}/commerce.js`,
+    metafile: true,
     platform: 'browser',
+    banner: {
+        js: `window.masPriceLiterals = ${priceLiteralsContent}.data;`,
+    },
 });
 writeFileSync(`commerce.json`, JSON.stringify(metafile));
 
@@ -30,12 +36,10 @@ await build({
     ...defaults,
     entryPoints: ['./src/mas.js'],
     outfile: './dist/mas.js',
-});
-
-await build({
-    ...defaults,
-    entryPoints: ['./src/mas.js'],
-    outfile: `${outfolder}/mas.js`,
+    plugins: [],
+    banner: {
+        js: `window.masPriceLiterals = ${priceLiteralsContent}.data;`,
+    },
 });
 
 // web components
@@ -43,15 +47,7 @@ Promise.all([
     build({
         ...defaults,
         stdin: { contents: '' },
-        inject: ['./src/merch-card.js', './src/merch-icon.js'],
-        outfile: `${outfolder}/merch-card.js`,
-        plugins: [rewriteImports()],
-    }),
-    build({
-        ...defaults,
-        stdin: { contents: '' },
         inject: ['./src/merch-offer.js', './src/merch-offer-select.js'],
-
         outfile: `${outfolder}/merch-offer-select.js`,
         plugins: [rewriteImports()],
     }),
@@ -68,12 +64,11 @@ Promise.all([
         plugins: [rewriteImportsToLibsFolder()],
         external: ['lit'],
     }),
+    buildLitComponent('merch-card'),
     buildLitComponent('merch-icon'),
     buildLitComponent('merch-quantity-select'),
     buildLitComponent('merch-secure-transaction'),
     buildLitComponent('merch-stock'),
-    buildLitComponent('merch-twp-d2p'),
-    buildLitComponent('merch-subscription-panel'),
     buildLitComponent('merch-whats-included'),
     buildLitComponent('merch-mnemonic-list'),
 ]).catch(() => process.exit(1));

@@ -19,6 +19,7 @@ const value = {
 const valueAbm = {
     formatString: '#0',
     price: 100,
+    planType: 'ABM',
     commitment: 'YEAR',
     term: 'MONTHLY',
 };
@@ -47,7 +48,7 @@ const root = document.createElement('div');
 document.body.append(root);
 
 function renderAndComparePrice(id, html) {
-    const el = document.createElement('div', { id });
+    const el = document.createElement('p', { id });
     el.setAttribute('id', id);
     el.innerHTML = html;
     root.append(el);
@@ -170,6 +171,42 @@ describe('Promotion price display with annual template', () => {
         renderAndComparePrice(
             'annualTemplatePromo',
             template(promoContext, promoValue, {}),
+        );
+    });
+
+    it('displays annual price with promotion applied when promotion is active #2', () => {
+        const promoContext = {
+            ...basePromoContext,
+            instant: '2025-05-02T07:00:00.000Z',
+        };
+        renderAndComparePrice(
+            'annualTemplatePromo2',
+            template(
+                promoContext,
+                {
+                    price: 48.49,
+                    priceWithoutDiscount: 96.99,
+                    priceWithoutTax: 44.08,
+                    priceWithoutDiscountAndTax: 88.17,
+                    usePrecision: true,
+                    formatString: "'A$'#,##0.00",
+                    taxDisplay: 'TAX_INCLUSIVE_DETAILS',
+                    taxTerm: 'GST',
+                    commitment: 'YEAR',
+                    term: 'MONTHLY',
+                    promotion: {
+                        start: '2025-04-02T07:00:00.000Z',
+                        end: '2025-05-31T06:59:00.000Z',
+                        displaySummary: {
+                            outcomeType: 'PERCENTAGE_DISCOUNT',
+                            duration: 'P6M',
+                            amount: 50.0,
+                            minProductQuantity: 1,
+                        },
+                    },
+                },
+                {},
+            ),
         );
     });
 

@@ -14,6 +14,7 @@ import {
 /* c8 ignore start */
 const PHONE_SIZE = window.screen.width < 550 || window.screen.height < 550;
 const safariIpad = navigator.userAgent.includes('Macintosh') && navigator.maxTouchPoints > 1;
+const isGalaxyTab = navigator.userAgent.includes('Linux') && navigator.maxTouchPoints > 1;
 export const US_GEO = 'en-us';
 export const PERSONALIZATION_TAGS = {
   all: () => true,
@@ -21,13 +22,13 @@ export const PERSONALIZATION_TAGS = {
   firefox: () => navigator.userAgent.includes('Firefox'),
   safari: () => navigator.userAgent.includes('Safari') && !navigator.userAgent.includes('Chrome'),
   edge: () => navigator.userAgent.includes('Edg'),
-  android: () => navigator.userAgent.includes('Android'),
+  android: () => navigator.userAgent.includes('Android') || isGalaxyTab,
   ios: () => /iPad|iPhone|iPod/.test(navigator.userAgent) || safariIpad,
   windows: () => navigator.userAgent.includes('Windows'),
   mac: () => navigator.userAgent.includes('Macintosh') && !safariIpad,
   'mobile-device': () => safariIpad
     || /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Touch/i
-      .test(navigator.userAgent),
+      .test(navigator.userAgent) || isGalaxyTab,
   phone: () => PERSONALIZATION_TAGS['mobile-device']() && PHONE_SIZE,
   tablet: () => PERSONALIZATION_TAGS['mobile-device']() && !PHONE_SIZE,
   desktop: () => !PERSONALIZATION_TAGS['mobile-device'](),
@@ -77,32 +78,38 @@ export const normalizePath = (p, localize = true) => {
 
   if (isDamContent(path) || !path?.includes('/')) return path;
 
-  const config = getConfig();
-  if (path.startsWith('https://www.adobe.com/federal/')) {
-    return getFederatedUrl(path);
-  }
+  if (path.includes('/federal/')) return getFederatedUrl(path);
 
-  if (path.startsWith(config.codeRoot)
-    || path.includes('.hlx.')
-    || path.includes('.aem.')
-    || path.includes('.adobe.')) {
-    try {
-      const url = new URL(path);
-      const firstFolder = url.pathname.split('/')[1];
-      if (!localize
-        || config.locale.ietf === 'en-US'
-        || url.hash.includes('#_dnt')
-        || firstFolder in config.locales
-        || path.includes('.json')) {
-        path = url.pathname;
-      } else {
-        path = `${config.locale.prefix}${url.pathname}`;
-      }
-    } catch (e) { /* return path below */ }
-  } else if (!path.startsWith('http') && !path.startsWith('/')) {
+  const config = getConfig();
+  if (!path.startsWith(config.codeRoot) && !path.startsWith('http') && !path.startsWith('/')) {
     path = `/${path}`;
   }
-  return path;
+
+  try {
+    const url = new URL(path);
+    const { hash, pathname } = url;
+    const firstFolder = pathname.split('/')[1];
+    const mepHash = '#_dnt';
+
+    if (path.startsWith(config.codeRoot)
+      || path.includes('.hlx.')
+      || path.includes('.aem.')
+      || path.includes('.adobe.')
+      || path.includes('localhost:')) {
+      if (!localize
+        || config.locale.ietf === 'en-US'
+        || hash.includes(mepHash)
+        || firstFolder in config.locales
+        || path.includes('.json')) {
+        path = pathname;
+      } else {
+        path = `${config.locale.prefix}${pathname}`;
+      }
+    }
+    return `${path}${hash.replace(mepHash, '')}`;
+  } catch (e) {
+    return path;
+  }
 };
 
 export const getFileName = (path) => path?.split('/').pop();
@@ -214,13 +221,8 @@ export const createContent = (el, { content, manifestId, targetManifestId, actio
 };
 
 const COMMANDS = {
-  [COMMANDS_KEYS.remove]: (el, { content, manifestId }) => {
-    if (content === 'false') return;
-    if (manifestId && !el.href?.includes('/tools/ost')) {
-      el.dataset.removedManifestId = manifestId;
-      return;
-    }
-    el.classList.add(CLASS_EL_DELETE);
+  [COMMANDS_KEYS.remove]: (el, { content }) => {
+    if (content !== 'false') el.classList.add(CLASS_EL_DELETE);
   },
   [COMMANDS_KEYS.replace]: (el, cmd) => {
     if (!el || el.classList.contains(CLASS_EL_REPLACE)) return;
@@ -233,6 +235,7 @@ const COMMANDS = {
     const { manifestId, targetManifestId } = cmd;
     if (!cmd.attribute || !cmd.content) return;
     const [attribute, parameter] = cmd.attribute.split('_');
+    cmd.content = replacePlaceholders(cmd.content);
 
     let value;
 
@@ -360,8 +363,11 @@ const setMetadata = (metadata) => {
 };
 
 function toLowerAlpha(str) {
-  const s = str.toLowerCase();
-  return s.replace(RE_KEY_REPLACE, '');
+  const modifiedStr = str.toLowerCase();
+  if (!modifiedStr.includes('countryip') && !modifiedStr.includes('countrychoice') && !modifiedStr.includes('previouspage')) {
+    return modifiedStr.replace(RE_KEY_REPLACE, '');
+  }
+  return modifiedStr.replace(RE_KEY_REPLACE, (char) => (['(', ')', '/', '*'].includes(char) ? char : ''));
 }
 
 function normalizeKeys(obj) {
@@ -385,6 +391,22 @@ function registerInBlockActions(command) {
   if (blockAndSelector.length > 1) {
     blockSelector = blockAndSelector.slice(1).join(' ');
     command.selector = blockSelector;
+    if (blockSelector.startsWith('https://mas.adobe.com/')) {
+      const getFragmentId = (masUrl) => {
+        const { hash } = new URL(masUrl);
+        const hashValue = hash.startsWith('#') ? hash.substring(1) : hash;
+        const searchParams = new URLSearchParams(hashValue);
+        return searchParams.get('fragment') || searchParams.get('query');
+      };
+      blockSelector = getFragmentId(blockSelector);
+      if (blockSelector) {
+        config.mep.inBlock[blockName].fragments ??= {};
+        const { fragments } = config.mep.inBlock[blockName];
+        command.content = getFragmentId(command.content);
+        fragments[blockSelector] = command;
+      }
+      return;
+    }
     if (getSelectorType(blockSelector) === 'fragment') {
       if (blockSelector.includes('/federal/')) blockSelector = getFederatedUrl(blockSelector);
       if (command.content.includes('/federal/')) command.content = getFederatedUrl(command.content);
@@ -523,7 +545,7 @@ function getSelectedElements(sel, rootEl, forceRootEl, action) {
   } catch (e) {
     /* eslint-disable-next-line no-console */
     log('Invalid selector: ', selector);
-    return null;
+    return {};
   }
   if (modifiers.includes(FLAGS.all) || !els.length) return { els, modifiers, attribute };
   els = [els[0]];
@@ -561,6 +583,17 @@ export const deleteMarkedEls = (rootEl = document) => {
     .forEach((el) => el.remove());
 };
 
+export function addSectionAnchors(rootEl = document) {
+  rootEl.querySelectorAll('.section-metadata').forEach((block) => {
+    [...block.children].forEach((row) => {
+      const col1 = row.children[0]?.textContent.toLowerCase().trim();
+      const col2 = row.children[1]?.textContent.toLowerCase().trim().replaceAll(/\s+/g, '-');
+      if (!col1 || !col2 || col1 !== 'anchor') return;
+      block.parentElement.setAttribute('id', col2);
+    });
+  });
+}
+
 export function handleCommands(
   commands,
   rootEl = document,
@@ -568,6 +601,7 @@ export function handleCommands(
   forceRootEl = false,
 ) {
   const section1 = document.querySelector('main > div');
+  addSectionAnchors(rootEl);
   commands.forEach((cmd) => {
     const { action, content, selector } = cmd;
     cmd.content = forceInline && getSelectorType(content) === 'fragment' ? addHash(content, INLINE_HASH) : content;
@@ -729,21 +763,42 @@ export async function createMartechMetadata(placeholders, config, column) {
     });
   });
 }
+const matchesCountryChoiceOrIP = (name, config) => {
+  if (!name.includes('countrychoice') && !name.includes('countryip')) return false;
+  const countryList = name.match(/\(([^)]+)\)/)?.[1]?.split(',').map((c) => (c).trim());
+  if (!countryList?.length) return false;
+  const { countryChoice, countryIP } = config.mep;
+  const testCountry = name.includes('countrychoice') ? countryChoice : countryIP;
+  return countryList.includes(testCountry);
+};
 
+function hasCountryMatch(str, config) {
+  if (str.includes('countrychoice') || str.includes('countryip')) {
+    const modifiedStr = str.replace('uk', 'gb');
+    return matchesCountryChoiceOrIP(modifiedStr, config);
+  }
+  return false;
+}
 /* c8 ignore start */
 export function parsePlaceholders(placeholders, config, selectedVariantName = '') {
   if (!placeholders?.length || selectedVariantName === 'default') return config;
+  const { countryIP, countryChoice } = config.mep || {};
   const valueNames = [
     selectedVariantName.toLowerCase(),
     config.mep?.prefix,
     config.locale.region.toLowerCase(),
+    ...(countryIP ? [`countryip(${countryIP})`] : []),
+    ...(countryChoice ? [`countrychoice(${countryChoice})`] : []),
     config.locale.ietf.toLowerCase(),
     ...config.locale.ietf.toLowerCase().split('-'),
     'value',
     'other',
   ];
   const keys = placeholders?.length ? Object.entries(placeholders[0]) : [];
-  const keyVal = keys.find(([key]) => valueNames.includes(key.toLowerCase()));
+  const keyVal = keys.find(([key]) => {
+    const modifiedStr = key.toLowerCase();
+    return valueNames.includes(modifiedStr) || hasCountryMatch(modifiedStr, config);
+  });
   const key = keyVal?.[0];
 
   if (key) {
@@ -773,15 +828,21 @@ const checkForParamMatch = (paramStr) => {
   return false;
 };
 
+export const checkForPreviousPageMatch = (previousPageStr, lastVisitedPage = document.referrer) => {
+  if (!lastVisitedPage) return false;
+  const previousPageString = previousPageStr.toLowerCase().split('previouspage-')[1];
+  return matchGlob(previousPageString, new URL(lastVisitedPage).pathname);
+};
+
 function trimNames(arr) {
   return arr.map((v) => v.trim()).filter(Boolean);
 }
 export function buildVariantInfo(variantNames) {
   return variantNames.reduce((acc, name) => {
     let nameArr = [name];
-    if (!name.startsWith(TARGET_EXP_PREFIX)) nameArr = name.split(',');
+    if (!name.startsWith(TARGET_EXP_PREFIX)) nameArr = name.split(/,(?![^(]*\))/);
     acc[name] = trimNames(nameArr);
-    acc.allNames = [...acc.allNames, ...trimNames(name.split(/[,&]|\bnot\b/))];
+    acc.allNames = [...acc.allNames, ...trimNames(name.split(/(?:\([^)]*\))?,|&|\bnot\b/))];
     return acc;
   }, { allNames: [] });
 }
@@ -820,6 +881,36 @@ export const getEntitlements = async (data) => {
   });
 };
 
+function normCountry(country) {
+  return (country.toLowerCase() === 'uk' ? 'gb' : country.toLowerCase()).split('_')[0];
+}
+async function setMepCountry(config) {
+  const urlParams = new URLSearchParams(window.location.search);
+  const country = urlParams.get('country') || (document.cookie.split('; ').find((row) => row.startsWith('international='))?.split('=')[1]);
+  const akamaiCode = urlParams.get('akamaiLocale')?.toLowerCase() || sessionStorage.getItem('akamai');
+  config.mep = config.mep || {};
+  if (country) {
+    config.mep.countryChoice = normCountry(country);
+  }
+  if (akamaiCode) {
+    config.mep.countryIP = normCountry(akamaiCode);
+  }
+  if (!config.mep.countryChoice && config.mep.countryIP) {
+    config.mep.countryChoice = config.mep.countryIP;
+  } else if (!config.mep.countryIP && config.mep.countryIPPromise) {
+    try {
+      let countryIP = await config.mep.countryIPPromise;
+      if (countryIP) {
+        countryIP = countryIP === 'uk' ? 'gb' : countryIP.split('_')[0];
+        config.mep.countryIP = countryIP;
+        if (!config.mep.countryChoice) config.mep.countryChoice = countryIP;
+      }
+    } catch (e) {
+      log('MEP Error: Unable to get user country');
+    }
+  }
+}
+
 async function getPersonalizationVariant(
   manifestPath,
   variantNames = [],
@@ -848,6 +939,8 @@ async function getPersonalizationVariant(
     if (!name) return true;
     if (name === variantLabel?.toLowerCase()) return true;
     if (name.startsWith('param-')) return checkForParamMatch(name);
+    if (name.toLowerCase().startsWith('previouspage-')) return checkForPreviousPageMatch(name);
+    if (hasCountryMatch(name, config)) return true;
     if (userEntitlements?.includes(name)) return true;
     return PERSONALIZATION_KEYS.includes(name) && PERSONALIZATION_TAGS[name]();
   };
@@ -863,6 +956,10 @@ async function getPersonalizationVariant(
     });
     return !processedList.includes(false);
   };
+
+  if (config.mep?.geoLocation) {
+    await setMepCountry(config);
+  }
 
   const matchingVariant = variantNames.find((variant) => variantInfo[variant].some(matchVariant));
   return matchingVariant;
@@ -1040,6 +1137,7 @@ export function cleanAndSortManifestList(manifests, conf) {
     try {
       if (!manifest?.manifest) return;
       if (!manifest.manifestPath) manifest.manifestPath = normalizePath(manifest.manifest);
+      if (manifest.source && !manifest.source.includes('target')) manifest.manifest = normalizePath(manifest.manifest);
       if (manifest.manifestPath in manifestObj) {
         let fullManifest = manifestObj[manifest.manifestPath];
         let freshManifest = manifest;
@@ -1072,7 +1170,6 @@ export function cleanAndSortManifestList(manifests, conf) {
         manifestConfig.selectedVariantName = 'default';
         manifestConfig.selectedVariant = 'default';
       }
-
       parsePlaceholders(placeholderData, getConfig(), manifestConfig.selectedVariantName);
     } catch (e) {
       log(`MEP Error parsing manifests: ${e.toString()}`);
@@ -1087,17 +1184,15 @@ export function cleanAndSortManifestList(manifests, conf) {
 
 export function handleFragmentCommand(command, a) {
   const { action, fragment, manifestId, targetManifestId } = command;
+  const addInline = (a.href.includes(INLINE_HASH) && !fragment.includes(INLINE_HASH));
   if (action === COMMANDS_KEYS.replace) {
     a.href = fragment;
+    if (addInline) a.href += `#${INLINE_HASH}`;
     addIds(a, manifestId, targetManifestId);
     return fragment;
   }
   if (action === COMMANDS_KEYS.remove) {
-    if (manifestId) {
-      a.parentElement.dataset.removedManifestId = manifestId;
-    } else {
-      a.parentElement.remove();
-    }
+    a.parentElement.remove();
   }
   return false;
 }
@@ -1119,8 +1214,7 @@ export async function applyPers({ manifests }) {
       config.mep?.variantOverride,
     );
   }
-
-  experiments = cleanAndSortManifestList(experiments);
+  experiments = cleanAndSortManifestList(experiments, config);
   parseNestedPlaceholders(config);
 
   let results = [];
@@ -1161,14 +1255,29 @@ export async function applyPers({ manifests }) {
   config.mep.martech = `|${pznVariants.join('--')}|${pznManifests.join('--')}`;
 }
 
-export const combineMepSources = async (persEnabled, promoEnabled, mepParam) => {
+function parseManifestUrlAndAddSource(manifestString, source) {
+  if (!manifestString) return [];
+  return manifestString.toLowerCase()
+    .split(/,|(\s+)|(\\n)/g)
+    .filter((path) => path?.trim())
+    .map((manifestPath) => ({ manifestPath, source: [source] }));
+}
+
+export const combineMepSources = async (
+  persEnabled,
+  rocPersEnabled,
+  promoEnabled,
+  mepParam,
+) => {
   let persManifests = [];
 
   if (persEnabled) {
-    persManifests = persEnabled.toLowerCase()
-      .split(/,|(\s+)|(\\n)/g)
-      .filter((path) => path?.trim())
-      .map((manifestPath) => ({ manifestPath, source: ['pzn'] }));
+    persManifests = parseManifestUrlAndAddSource(persEnabled, 'pzn');
+  }
+
+  if (rocPersEnabled) {
+    const rocPersManifest = parseManifestUrlAndAddSource(rocPersEnabled, 'pzn-roc');
+    persManifests = persManifests.concat(rocPersManifest);
   }
 
   if (promoEnabled) {
@@ -1199,28 +1308,26 @@ export const combineMepSources = async (persEnabled, promoEnabled, mepParam) => 
 };
 
 async function updateManifestsAndPropositions(
-  { config, targetManifests, targetPropositions },
+  { config, targetAjoManifests, targetAjoPropositions },
 ) {
-  targetManifests.forEach((manifest) => {
-    manifest.source = ['target'];
+  targetAjoManifests.forEach((manifest) => {
+    manifest.source = [config.mep.ajoEnabled ? 'ajo' : 'target'];
   });
-  config.mep.targetManifests = targetManifests;
+  config.mep.targetAjoManifests = targetAjoManifests;
   if (config.mep.enablePersV2) {
-    if (!config.mep.hybridPersEnabled) {
-      window.addEventListener('alloy_sendEvent', () => {
-        if (targetPropositions?.length && window._satellite) {
-          window._satellite.track('propositionDisplay', targetPropositions);
-        }
-      }, { once: true });
-    }
-  } else if (targetPropositions?.length && window._satellite) {
-    window._satellite.track('propositionDisplay', targetPropositions);
+    window.addEventListener('alloy_sendEvent', () => {
+      if (targetAjoPropositions?.length && window._satellite) {
+        window._satellite.track('propositionDisplay', targetAjoPropositions);
+      }
+    }, { once: true });
+  } else if (targetAjoPropositions?.length && window._satellite) {
+    window._satellite.track('propositionDisplay', targetAjoPropositions);
   }
   if (config.mep.targetEnabled === 'postlcp') {
     const event = new CustomEvent(MARTECH_RETURNED_EVENT, { detail: 'Martech returned' });
     window.dispatchEvent(event);
   }
-  return targetManifests;
+  return targetAjoManifests;
 }
 
 function roundToQuarter(num) {
@@ -1259,20 +1366,23 @@ function sendTargetResponseAnalytics(failure, responseStart, timeoutLocal, messa
 }
 
 const handleAlloyResponse = (response) => ((response.propositions || response.decisions))
-  ?.map((i) => i.items)
+  ?.map((i) => {
+    const { id } = i;
+    return i.items.map((item) => ({ ...item, id }));
+  })
   ?.flat()
   ?.map((item) => {
     const content = item?.data?.content;
     if (!content || !(content.manifestLocation || content.manifestContent)) return null;
-
     return {
       manifestPath: content.manifestLocation || content.manifestPath,
       manifestUrl: content.manifestLocation,
       manifestData: content.manifestContent?.experiences?.data || content.manifestContent?.data,
       manifestPlaceholders: content.manifestContent?.placeholders?.data,
       manifestInfo: content.manifestContent?.info.data,
-      name: item.meta['activity.name'],
-      variantLabel: item.meta['experience.name'] && `target-${item.meta['experience.name']}`,
+      name: item.meta?.['activity.name'] || item.id,
+      variantLabel: (item.meta?.['experience.name'] && `target-${item.meta['experience.name']}`)
+        || content.experienceName,
       meta: item.meta,
     };
   })
@@ -1281,8 +1391,9 @@ const handleAlloyResponse = (response) => ((response.propositions || response.de
 async function handleMartechTargetInteraction(
   { config, targetInteractionPromise, calculatedTimeout },
 ) {
-  let targetManifests = [];
-  let targetPropositions = [];
+  const targetAjo = config.mep.ajoEnabled ? 'ajo' : 'target';
+  let targetAjoManifests = [];
+  let targetAjoPropositions = [];
   if (config?.mep?.enablePersV2 && targetInteractionPromise) {
     const { targetInteractionData, respTime, respStartTime } = await targetInteractionPromise;
     sendTargetResponseAnalytics(false, respStartTime, calculatedTimeout);
@@ -1291,33 +1402,35 @@ async function handleMartechTargetInteraction(
       performance.clearMarks();
       performance.clearMeasures();
       try {
-        window.lana.log(`target response time: ${roundedResponseTime}`, {
+        window.lana.log(`${targetAjo} response time: ${roundedResponseTime}`, {
           tags: 'martech',
           errorType: 'e',
           sampleRate: 0.5,
         });
       } catch (e) {
         // eslint-disable-next-line no-console
-        console.error('Error logging target response time:', e);
+        console.error(`Error logging ${targetAjo} response time:`, e);
       }
-      targetManifests = handleAlloyResponse(targetInteractionData.result);
-      targetPropositions = targetInteractionData.result?.propositions || [];
+      targetAjoManifests = handleAlloyResponse(targetInteractionData.result);
+      targetAjoPropositions = targetInteractionData.result?.propositions || [];
     }
   }
 
   return updateManifestsAndPropositions(
-    { config, targetManifests, targetPropositions },
+    { config, targetAjoManifests, targetAjoPropositions },
   );
 }
 
 async function callMartech(config) {
-  const { getTargetPersonalization } = await import('../../martech/martech.js');
+  const { getTargetAjoPersonalization } = await import('../../martech/martech.js');
   const {
-    targetManifests,
-    targetPropositions,
-  } = await getTargetPersonalization({ handleAlloyResponse, sendTargetResponseAnalytics });
+    targetAjoManifests,
+    targetAjoPropositions,
+  } = await getTargetAjoPersonalization(
+    { handleAlloyResponse, config, sendTargetResponseAnalytics },
+  );
   return updateManifestsAndPropositions(
-    { config, targetManifests, targetPropositions },
+    { config, targetAjoManifests, targetAjoPropositions },
   );
 }
 
@@ -1329,8 +1442,9 @@ const awaitMartech = () => new Promise((resolve) => {
 export async function init(enablements = {}) {
   let manifests = [];
   const {
-    mepParam, mepHighlight, mepButton, pzn, promo, enablePersV2, hybridPersEnabled,
-    target, targetInteractionPromise, calculatedTimeout, postLCP,
+    mepParam, mepHighlight, mepButton, pzn, pznroc, promo, enablePersV2,
+    target, ajo, countryIPPromise, mepgeolocation, targetInteractionPromise, calculatedTimeout,
+    postLCP,
   } = enablements;
   const config = getConfig();
   if (postLCP) {
@@ -1343,19 +1457,22 @@ export async function init(enablements = {}) {
       variantOverride: parseMepParam(mepParam),
       highlight: (mepHighlight !== undefined && mepHighlight !== 'false'),
       targetEnabled: target,
+      ajoEnabled: ajo,
       experiments: [],
       prefix: config.locale?.prefix.split('/')[1]?.toLowerCase() || US_GEO,
       enablePersV2,
-      hybridPersEnabled,
+      countryIPPromise,
+      geoLocation: mepgeolocation,
+      targetInteractionPromise,
     };
 
-    manifests = manifests.concat(await combineMepSources(pzn, promo, mepParam));
+    manifests = manifests.concat(await combineMepSources(pzn, pznroc, promo, mepParam));
     manifests?.forEach((manifest) => {
       if (manifest.disabled) return;
       const normalizedURL = normalizePath(manifest.manifestPath);
       loadLink(normalizedURL, { as: 'fetch', crossorigin: 'anonymous', rel: 'preload' });
     });
-    if (pzn) loadLink(getXLGListURL(config), { as: 'fetch', crossorigin: 'anonymous', rel: 'preload' });
+    if (pzn || pznroc) loadLink(getXLGListURL(config), { as: 'fetch', crossorigin: 'anonymous', rel: 'preload' });
   }
 
   if (enablePersV2 && target === true) {
@@ -1363,12 +1480,12 @@ export async function init(enablements = {}) {
       { config, targetInteractionPromise, calculatedTimeout },
     ));
   } else {
-    if (target === true) manifests = manifests.concat(await callMartech(config));
-    if (target === 'postlcp') callMartech(config);
+    if (target === true || ajo === true) manifests = manifests.concat(await callMartech(config));
+    if (target === 'postlcp' || ajo === 'postlcp') callMartech(config);
   }
   if (postLCP) {
-    if (!config.mep.targetManifests) await awaitMartech();
-    manifests = config.mep.targetManifests;
+    if (!config.mep.targetAjoManifests) await awaitMartech();
+    manifests = config.mep.targetAjoManifests;
   }
   try {
     if (manifests?.length) await applyPers({ manifests });

@@ -1,6 +1,7 @@
 import { expect } from '@esm-bundle/chai';
 import { readFile } from '@web/test-runner-commands';
 import { cleanAndSortManifestList } from '../../../libs/features/personalization/personalization.js';
+import { getConfig } from '../../../libs/utils/utils.js';
 
 // Note that the manifestPath doesn't matter as we stub the fetch
 describe('Functional test', () => {
@@ -83,5 +84,19 @@ describe('Functional test', () => {
     expect(first.manifestUrl).to.include('pzn-normal.json');
     expect(second.manifestUrl).to.include('none.json');
     expect(third.manifestUrl).to.include('test-normal.json');
+  });
+
+  it('Should normalize manifest path for non-target manifests', async () => {
+    const config = getConfig();
+    config.locales = ['en-US'];
+    config.locale = { ietf: 'en-US' };
+    let manifestJson = await readFile({ path: './mocks/manifestLists/two-manifests-one-from-target.json' });
+    manifestJson = JSON.parse(manifestJson);
+    const [targetManifest, pznManifest] = manifestJson;
+    expect(pznManifest.manifest).to.include('https');
+    expect(targetManifest.manifest).to.include('https');
+    const [cleanPznManifest, cleanTargetManifest] = cleanAndSortManifestList(manifestJson);
+    expect(cleanPznManifest.manifest).to.not.include('https');
+    expect(cleanTargetManifest.manifest).to.include('https');
   });
 });

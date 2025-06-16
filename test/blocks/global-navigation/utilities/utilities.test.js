@@ -4,8 +4,6 @@ import {
   fetchAndProcessPlainHtml,
   toFragment,
   federatePictureSources,
-  getAnalyticsValue,
-  decorateCta,
   hasActiveLink,
   setActiveLink,
   getActiveLink,
@@ -15,8 +13,10 @@ import {
   logErrorFor,
   takeWhile,
   dropWhile,
+  getGnavHeight,
   getBranchBannerInfo,
 } from '../../../../libs/blocks/global-navigation/utilities/utilities.js';
+import { getAnalyticsValue, decorateCta } from '../../../../libs/blocks/global-navigation/global-navigation.js';
 import { setConfig, getConfig, getFedsPlaceholderConfig } from '../../../../libs/utils/utils.js';
 import { createFullGlobalNavigation, config, mockRes } from '../test-utilities.js';
 import gnavWithlocalNav from '../mocks/gnav-with-localnav.plain.js';
@@ -486,6 +486,17 @@ describe('global navigation utilities', () => {
       const result = dropWhile(array, predicate);
       expect(result).to.deep.equal([]);
       expect(predicate.callCount).to.equal(0);
+    });
+
+    it('should give correct top height when localnav is present', () => {
+      const gnavSourceMeta = toFragment`<meta name="gnav-source" content="http://localhost:2000/ch_de/libs/feds/localnav-gnav">`;
+      const enableMobileGnav = toFragment`<meta name="mobile-gnav-v2" content="on">`;
+      document.head.append(gnavSourceMeta, enableMobileGnav);
+      const gnav = toFragment`<header class="global-navigation"></header>`;
+      const lnav = toFragment`<div class="feds-localnav"></div>`;
+      document.body.append(gnav, lnav);
+      const gnavHeight = getGnavHeight();
+      expect(gnavHeight).to.equal(64);
     });
   });
 
