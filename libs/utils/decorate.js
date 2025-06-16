@@ -236,7 +236,7 @@ export function getVideoAttrs(hash, dataset) {
   const playInViewport = hash?.includes('viewportplay');
   const poster = getImgSrc(dataset.videoPoster);
   const globalAttrs = `playsinline ${poster}`;
-  const autoPlayAttrs = 'autoplay muted';
+  const autoPlayAttrs = 'muted';
   const playInViewportAttrs = playInViewport ? 'data-play-viewport' : '';
 
   if (isAutoplay && !isAutoplayOnce) {
@@ -255,6 +255,7 @@ export function getVideoAttrs(hash, dataset) {
 }
 
 export function syncPausePlayIcon(video, event) {
+  console.log("Sync play pause called");
   if (!video.getAttributeNames().includes('data-hoverplay')) {
     const offsetFiller = video.closest('.video-holder').querySelector('.offset-filler');
     if (event?.type === 'playing' && offsetFiller?.classList.contains('is-playing')) return;
@@ -478,6 +479,7 @@ export function decorateAnchorVideo({ src = '', anchorTag }) {
   if (anchorTag.closest('.marquee, .aside, .hero-marquee, .quiz-marquee') && !anchorTag.hash) anchorTag.hash = '#autoplay';
   const { dataset, parentElement } = anchorTag;
   const attrs = getVideoAttrs(anchorTag.hash, dataset);
+  const isAutoplay = anchorTag.hash?.includes('autoplay');
   const tabIndex = anchorTag.tabIndex || 0;
   const videoIndex = (tabIndex === -1) ? 'tabindex=-1' : '';
   let video = `<video ${attrs} data-video-source=${src} ${videoIndex}></video>`;
@@ -515,9 +517,17 @@ export function decorateAnchorVideo({ src = '', anchorTag }) {
       decoratePausePlayWrapper(videoEl, attrs);
     }
   }
-  videoEl.addEventListener('abort', (event) => {
-    console.log("error", event);
-  });
+  if (isAutoplay) {
+    videoEl.play().catch((error) => {
+      if (error.name === 'AbortError') {
+        console.log("$$$", error);
+      }
+    });
+    syncPausePlayIcon(videoEl);
+  }
+  // videoEl.addEventListener('abort', (event) => {
+  //   console.log("error", event);
+  // });
   applyHoverPlay(videoEl);
   applyInViewPortPlay(videoEl);
   anchorTag.remove();
