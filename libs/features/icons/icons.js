@@ -96,9 +96,6 @@ function addTooltipListeners() {
       }
     }, true);
   });
-
-  setTimeout(() => setTooltipPosition(document.querySelectorAll('.milo-tooltip')), 100);
-  window.addEventListener('resize', () => setTooltipPosition(document.querySelectorAll('.milo-tooltip')));
 }
 
 function decorateToolTip(icon, iconName) {
@@ -147,4 +144,6 @@ export default async function loadIcons(icons, config) {
     }
     icon.insertAdjacentHTML('afterbegin', iconSVGs[iconName].outerHTML);
   });
+  setTimeout(() => setTooltipPosition(Array.from(icons).filter((icon) => icon.classList.contains('milo-tooltip'))), 300);
+  window.addEventListener('resize', () => setTooltipPosition(document.querySelectorAll('.milo-tooltip')));
 }
