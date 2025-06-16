@@ -227,8 +227,9 @@ async function main() {
   let result = {
     success: 0,
     error: 0,
-    errorPaths: [],
+    initiallyFailingPaths: [],
     successPaths: [],
+    errorPaths: []
   };
   if(LOCAL_RUN) saveLivePaths(livePaths)
 
@@ -242,20 +243,36 @@ async function main() {
             console.log(
               `Progress: Success: ${result.success} | Error: ${result.error}`
             );
-            
         })
         .catch((e) => {
           result.error++;
-          result.errorPaths.push(path);
+          result.initiallyFailingPaths.push(path);
           if (result.error % 10 === 0)
             console.log(
               `Progress: Success: ${result.success} | Error: ${result.error}`
             );
-          
         })
     );
   }
+
   await queue.onIdle();
+
+  for (const erroredPath of result.initiallyFailingPaths) {
+    console.log(erroredPath)
+    queue.add(() => importUrl(erroredPath, importedMedia)
+      .then(() => {
+        result.success++;
+        result.successPaths.push(path);
+        result.error--;
+      })
+      .catch((e) => {
+        result.errorPaths.push(erroredPath);
+      })
+    )
+  }
+
+  await queue.onIdle();
+
   if (!LOCAL_RUN) {
     await slackNotification(
       `Succcessful: ${result.success} paths | Failed: ${result.error} paths.`
