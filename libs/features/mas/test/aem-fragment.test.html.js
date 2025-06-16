@@ -48,6 +48,22 @@ function addFragment(fragment) {
     return aemFragment;
 }
 
+function compareSettings(fragment, settings) {
+    expect(fragment.settings).include(settings);
+}
+
+function comparePlaceholders(fragment, placeholders) {
+    expect(fragment.placeholders).include(placeholders);
+}
+
+function compareDictionary(fragment, dictionary) {
+    expect(fragment.dictionary).include(dictionary);
+}
+
+function comparePriceLiterals(fragment, priceLiterals) {
+    expect(fragment.priceLiterals).include(priceLiterals);
+}
+
 runTests(async () => {
     const [cc] = await Promise.all([
         fetch('mocks/sites/fragments/fragment-cc-all-apps.json').then((res) =>
@@ -154,7 +170,8 @@ runTests(async () => {
             });
 
             it('ignores incomplete markup', async () => {
-                const [, , , cardWithMissingFragmentId] = getTemplateContent('cards');
+                const [, , , cardWithMissingFragmentId] =
+                    getTemplateContent('cards');
 
                 let masErrorTriggered = false;
                 cardWithMissingFragmentId.addEventListener('mas:error', (e) => {
@@ -264,23 +281,74 @@ runTests(async () => {
                     expect(masErrorEvent).to.exist;
                 }
             });
+
+            it('fechInfo is avaiable for a new aem-fragment that is hydrated from cache', async () => {
+                const cache = document.createElement('aem-fragment').cache;
+                cache.clear();
+                const count = aemMock.count;
+                let fragment = addFragment('fragment-cc-all-apps');
+                await fragment.updateComplete;
+                expect(aemMock.count).to.equal(count + 1);
+                expect(fragment.fetchInfo['aem-fragment:measure']).to.exist;
+                fragment.remove();
+                fragment = addFragment('fragment-cc-all-apps');
+                await fragment.updateComplete;
+                expect(aemMock.count).to.equal(count + 1);
+                expect(fragment.fetchInfo['aem-fragment:measure']).to.exist;
+            });
+
+            it.only('populates the fragment cache from references', async () => {
+
+                const topCollection = addFragment('collection');
+                await oneEvent(topCollection, 'aem:load');
+                const topCollectionData = cache.get('collection');
+                const settingsBase = {
+                    displayPlanType: true,
+                };
+                const placeholdersBase = {};
+                const dictionaryBase = {};
+                const priceLiteralsBase = {
+                  planTypeLabel: '{planType, select, ABM {Annual, paid monthly.} other {}}',
+                };
+
+                const childCollection1 = cache.get('ed9982d1-0acb-4a6d-8155-e5b002acffdf');
+                const childCollection2 = cache.get('8ef6b2de-4963-42f2-a0d0-d158bd78e404');
+                const childCollection3 = cache.get('1049c155-8081-4d9b-8215-a4fb0b8418dd');
+
+                [
+                    topCollectionData,
+                    childCollection1,
+                    childCollection2,
+                    childCollection3,
+                ].forEach((collection) => {
+                    compareSettings(collection, settingsBase);
+                    comparePlaceholders(collection, placeholdersBase);
+                    compareDictionary(collection, dictionaryBase);
+                    comparePriceLiterals(collection, priceLiteralsBase);
+                });
+
+                const card1 = cache.get('ca835d11-fe6b-40f8-96d1-50ac800c9f70');
+                const card2 = cache.get('d9998fc3-578e-44be-be4f-d8be1c45c75b');
+                const card3 = cache.get('fe2c1223-be01-4c0e-9a97-f63e8d0458e9');
+                const card4 = cache.get('8391265d-2542-4533-8089-b75fb19d28d8');
+                const card5 = cache.get('54860b82-24e6-4ca7-a08d-577a3ad6ebda');
+                const card6 = cache.get('ee0f3a5c-b4a4-4305-bda5-92be2662fbab');
+                const card7 = cache.get('0fea0932-c802-49e4-8589-f8bcf6bfe98c');
+                const card8 = cache.get('ee0f3a5c-b4a4-4305-bda5-92be2662fbab');
+                const card9 = cache.get('54860b82-24e6-4ca7-a08d-577a3ad6ebda');
+
+                [card1, card2, card3, card4, card5, card6, card7, card8, card9].forEach((card) => {
+                    compareSettings(card, settingsBase);
+                    comparePlaceholders(card, placeholdersBase);
+                    compareDictionary(card, dictionaryBase);
+                    comparePriceLiterals(card, priceLiteralsBase);
+                });
+            });
         });
 
         describe('getFragmentById', async () => {
-            let aemFragment;
-            beforeEach(async () => {
-                await mockFetch(withAem);
-                cache.clear();
-                aemFragment = addFragment('fragment-cc-all-apps');
-                await aemFragment.updateComplete;
-            });
-
-            afterEach(() => {
-                document.body.removeChild(aemFragment);
-            });
-
             it('throws an error if response is not ok', async () => {
-                addFragment('notfound');
+                const aemFragment = addFragment('notfound');
                 const event = oneEvent(aemFragment, 'aem:error');
                 const { detail } = await event;
                 expect(detail.message).to.equal(
@@ -296,6 +364,9 @@ runTests(async () => {
             });
 
             it('fetches fragment from freyja on publish', async () => {
+                const aemFragment = addFragment('fragment-cc-all-apps');
+                await aemFragment.updateComplete;
+
                 cache.clear();
                 document.querySelector('meta[name="mas-io-url"]').remove();
                 const masCommerceService = document.querySelector(
@@ -307,23 +378,6 @@ runTests(async () => {
                 expect(fetch.lastCall.firstArg).to.equal(
                     'https://www.stage.adobe.com/mas/io/fragment?id=fragment-cc-all-apps&api_key=wcms-commerce-ims-ro-user-milo&locale=en_US',
                 );
-            });
-        });
-
-        describe('fetchInfo', async () => {
-            it('fechInfo is avaiable for a new aem-fragment that is hydrated from cache', async () => {
-                const cache = document.createElement('aem-fragment').cache;
-                cache.clear();
-                const count = aemMock.count;
-                let fragment = addFragment('fragment-cc-all-apps');
-                await fragment.updateComplete;
-                expect(aemMock.count).to.equal(count + 1);
-                expect(fragment.fetchInfo['aem-fragment:measure']).to.exist;
-                fragment.remove();
-                fragment = addFragment('fragment-cc-all-apps');
-                await fragment.updateComplete;
-                expect(aemMock.count).to.equal(count + 1);
-                expect(fragment.fetchInfo['aem-fragment:measure']).to.exist;
             });
         });
     });
