@@ -41,6 +41,13 @@ function getSelectorElement(root, selector) {
     return root.querySelector(selector);
 }
 
+function addFragment(fragment) {
+    const aemFragment = document.createElement('aem-fragment');
+    aemFragment.setAttribute('fragment', fragment);
+    document.body.appendChild(aemFragment);
+    return aemFragment;
+}
+
 runTests(async () => {
     const [cc] = await Promise.all([
         fetch('mocks/sites/fragments/fragment-cc-all-apps.json').then((res) =>
@@ -258,55 +265,66 @@ runTests(async () => {
                 }
             });
         });
-    });
 
-    describe('getFragmentById', async () => {
-        let aemFragment;
-        const addFragment = (fragment) => {
-            aemFragment = document.createElement('aem-fragment');
-            aemFragment.setAttribute('fragment', fragment);
-            document.body.appendChild(aemFragment);
-            return aemFragment;
-        };
-        beforeEach(async () => {
-            await mockFetch(withAem);
-            cache.clear();
-            aemFragment = addFragment('fragment-cc-all-apps');
-            await aemFragment.updateComplete;
-        });
+        describe('getFragmentById', async () => {
+            let aemFragment;
+            beforeEach(async () => {
+                await mockFetch(withAem);
+                cache.clear();
+                aemFragment = addFragment('fragment-cc-all-apps');
+                await aemFragment.updateComplete;
+            });
 
-        afterEach(() => {
-            document.body.removeChild(aemFragment);
-        });
+            afterEach(() => {
+                document.body.removeChild(aemFragment);
+            });
 
-        it('throws an error if response is not ok', async () => {
-            addFragment('notfound');
-            const event = oneEvent(aemFragment, 'aem:error');
-            const { detail } = await event;
-            expect(detail.message).to.equal(
-                'Failed to fetch fragment: Unexpected fragment response',
-            );
-            expect(aemFragment.fetchInfo).to.include({
-                'aem-fragment:status': 404,
-                'aem-fragment:url':
-                    'http://localhost:2023/mas/io/fragment?id=notfound&api_key=wcms-commerce-ims-ro-user-milo&locale=en_US',
-                'aem-fragment:serverTiming':
-                    'cdn-cache|desc=HIT|edge|dur=1|sis|desc=0|ak_p|desc="1748272422155_390603879_647296830_1088_9412_44_0_219"|dur=1',
+            it('throws an error if response is not ok', async () => {
+                addFragment('notfound');
+                const event = oneEvent(aemFragment, 'aem:error');
+                const { detail } = await event;
+                expect(detail.message).to.equal(
+                    'Failed to fetch fragment: Unexpected fragment response',
+                );
+                expect(aemFragment.fetchInfo).to.include({
+                    'aem-fragment:status': 404,
+                    'aem-fragment:url':
+                        'http://localhost:2023/mas/io/fragment?id=notfound&api_key=wcms-commerce-ims-ro-user-milo&locale=en_US',
+                    'aem-fragment:serverTiming':
+                        'cdn-cache|desc=HIT|edge|dur=1|sis|desc=0|ak_p|desc="1748272422155_390603879_647296830_1088_9412_44_0_219"|dur=1',
+                });
+            });
+
+            it('fetches fragment from freyja on publish', async () => {
+                cache.clear();
+                document.querySelector('meta[name="mas-io-url"]').remove();
+                const masCommerceService = document.querySelector(
+                    'mas-commerce-service',
+                );
+                masCommerceService.activate();
+                addFragment('fragment-cc-all-apps');
+                await aemFragment.updateComplete;
+                expect(fetch.lastCall.firstArg).to.equal(
+                    'https://www.stage.adobe.com/mas/io/fragment?id=fragment-cc-all-apps&api_key=wcms-commerce-ims-ro-user-milo&locale=en_US',
+                );
             });
         });
 
-        it('fetches fragment from freyja on publish', async () => {
-            cache.clear();
-            document.querySelector('meta[name="mas-io-url"]').remove();
-            const masCommerceService = document.querySelector(
-                'mas-commerce-service',
-            );
-            masCommerceService.activate();
-            addFragment('fragment-cc-all-apps');
-            await aemFragment.updateComplete;
-            expect(fetch.lastCall.firstArg).to.equal(
-                'https://www.stage.adobe.com/mas/io/fragment?id=fragment-cc-all-apps&api_key=wcms-commerce-ims-ro-user-milo&locale=en_US',
-            );
+        describe('fetchInfo', async () => {
+            it.only('fechInfo is avaiable for a new aem-fragment that is hydrated from cache', async () => {
+                const cache = document.createElement('aem-fragment').cache;
+                cache.clear();
+                const count = aemMock.count;
+                let fragment = addFragment('fragment-cc-all-apps');
+                await fragment.updateComplete;
+                expect(aemMock.count).to.equal(count + 1);
+                expect(fragment.fetchInfo['aem-fragment:measure']).to.exist;
+                fragment.remove();
+                fragment = addFragment('fragment-cc-all-apps');
+                await fragment.updateComplete;
+                expect(aemMock.count).to.equal(count + 1);
+                expect(fragment.fetchInfo['aem-fragment:measure']).to.exist;
+            });
         });
     });
 });
