@@ -324,7 +324,7 @@ span.preflight-time {
 .tooltip:hover::after {
   opacity: 1;
   visibility: visible;
-  z-index: 9;
+  z-index: 3;
 }
 
 /* SEO */
@@ -822,7 +822,7 @@ img:hover ~ .picture-meta {
   position: fixed;
   border: 2px solid red;
   background-color: white;
-  z-index: 103;
+  z-index: 9;
   overflow: hidden;
   pointer-events: none;
   display: block;
