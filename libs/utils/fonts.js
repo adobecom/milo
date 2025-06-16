@@ -16,6 +16,13 @@ function dynamicTypekit(kitId, d = document) {
  */
 export default function loadFonts(locale, loadLink) {
   const tkSplit = locale.tk.split('.');
+  // Add preload for Typekit resources
+  const preloadLink = document.createElement('link');
+  preloadLink.rel = 'preload';
+  preloadLink.as = tkSplit[1] === 'css' ? 'style' : 'script';
+  preloadLink.href = `https://use.typekit.net/${locale.tk}`;
+  preloadLink.crossOrigin = 'anonymous';
+  document.head.appendChild(preloadLink);
   if (tkSplit[1] === 'css') {
     loadLink(`https://use.typekit.net/${locale.tk}`, { rel: 'stylesheet' });
     return;
