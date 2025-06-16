@@ -180,6 +180,36 @@ function setIndicatorMultiplyer(carouselElements, activeSlideIndicator, event) {
   }
 }
 
+function updateAriaLive(ariaLive, slide) {
+  let text = '';
+  slide.querySelectorAll(':scope > :not(.section-metadata').forEach((el, index) => {
+    text += `${index ? ' ' : ''}${el.textContent.trim()}`;
+  });
+  if (text) {
+    ariaLive.textContent = text;
+  } else {
+    const el = slide.querySelector('img[alt], video[title], iframe[title]');
+    ariaLive.textContent = el?.getAttribute('alt') || el?.getAttribute('title') || '';
+  }
+}
+
+function setAriaHiddenAndTabIndex({ el: block, slides }, activeEl) {
+  const active = activeEl ?? block.querySelector('.carousel-slide.active');
+  const activeIdx = slides.findIndex((el) => el === active);
+  const isWide = window.matchMedia('(min-width: 900px)').matches;
+  const showClass = [...block.classList].find((cls) => cls.startsWith('show-'));
+  const visible = isWide && showClass ? showClass.split('-')[1] : 1;
+  const ordered = activeIdx > 0
+    ? [...slides.slice(activeIdx), ...slides.slice(0, activeIdx)] : slides;
+  ordered.forEach((slide, i) => {
+    const isVisible = i < visible;
+    slide.setAttribute('aria-hidden', !isVisible);
+    slide.querySelectorAll(FOCUSABLE_SELECTOR).forEach((el) => {
+      el.setAttribute('tabindex', isVisible ? 0 : -1);
+    });
+  });
+}
+
 function moveSlides(event, carouselElements, jumpToIndex) {
   const {
     slideContainer,
@@ -188,8 +218,11 @@ function moveSlides(event, carouselElements, jumpToIndex) {
     slideIndicators,
     controlsContainer,
     direction,
+    ariaLive,
     jumpTo,
   } = carouselElements;
+
+  ariaLive.textContent = '';
 
   let referenceSlide = slideContainer.querySelector('.reference-slide');
   let activeSlide = slideContainer.querySelector('.active');
@@ -257,6 +290,7 @@ function moveSlides(event, carouselElements, jumpToIndex) {
   referenceSlide.classList.add('reference-slide');
   referenceSlide.style.order = '1';
 
+  updateAriaLive(ariaLive, activeSlide);
   // Update active slide and indicator dot attributes
   activeSlide.classList.add('active');
   setAriaHiddenAndTabIndex(carouselElements, activeSlide);
@@ -415,6 +449,11 @@ export default function init(el) {
   fragment.append(...slides);
   const slideWrapper = createTag('div', { class: 'carousel-wrapper' });
   const slideContainer = createTag('div', { class: 'carousel-slides' }, fragment);
+  const ariaLive = createTag('div', {
+    class: 'carousel-aria-live',
+    'aria-live': 'polite',
+  });
+  slideWrapper.appendChild(ariaLive);
   const carouselElements = {
     el,
     nextPreviousBtns,
@@ -424,6 +463,7 @@ export default function init(el) {
     controlsContainer,
     direction: undefined,
     jumpTo,
+    ariaLive,
   };
 
   if (el.classList.contains('lightbox')) {

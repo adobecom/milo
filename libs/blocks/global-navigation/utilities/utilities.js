@@ -10,7 +10,6 @@ import {
   getFederatedContentRoot,
   getFederatedUrl,
   getFedsPlaceholderConfig,
-  shouldBlockFreeTrialLinks,
 } from '../../../utils/utils.js';
 import { replaceKey, replaceText } from '../../../features/placeholders.js';
 import { PERSONALIZATION_TAGS } from '../../../features/personalization/personalization.js';
@@ -237,24 +236,6 @@ export async function loadDecorateMenu() {
   return cachedDecorateMenu;
 }
 
-export function decorateCta({ elem, type = 'primaryCta', index } = {}) {
-  if (shouldBlockFreeTrialLinks({
-    button: elem,
-    localePrefix: getConfig()?.locale?.prefix,
-    parent: elem.parentElement,
-  })) return null;
-  const modifier = type === 'secondaryCta' ? 'secondary' : 'primary';
-
-  const clone = elem.cloneNode(true);
-  clone.className = `feds-cta feds-cta--${modifier}`;
-  clone.setAttribute('daa-ll', getAnalyticsValue(clone.textContent, index));
-
-  return toFragment`
-    <div class="feds-cta-wrapper">
-      ${clone}
-    </div>`;
-}
-
 let curtainElem;
 export function setCurtainState(state) {
   if (typeof state !== 'boolean') return;
@@ -411,7 +392,7 @@ export function trigger({
   if (isOpen) return false;
   element.setAttribute('aria-expanded', 'true');
   if (!isDesktop.matches && type === 'dropdown'
-      && !!document.querySelector('header.new-nav')) disableMobileScroll();
+    && !!document.querySelector('header.new-nav')) disableMobileScroll();
   return true;
 }
 
