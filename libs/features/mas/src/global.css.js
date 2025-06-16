@@ -576,6 +576,11 @@ merch-card [slot='callout-content'] .icon-button::after {
   z-index: 10;
 }
 
+merch-card [slot='callout-content'] .icon-button.hide-tooltip::before,
+merch-card [slot='callout-content'] .icon-button.hide-tooltip::after {
+  display: none;
+}
+
 merch-card [slot='callout-content'] .icon-button:hover::before,
 merch-card [slot='callout-content'] .icon-button:focus::before,
 merch-card [slot='callout-content'] .icon-button:active::before,
