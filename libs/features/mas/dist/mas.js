@@ -2214,7 +2214,7 @@ merch-card [slot='callout-content'] .icon-button::before {
 merch-card [slot='callout-content'] .icon-button::after {
   content: "";
   position: absolute;
-  left: 100%;
+  left: 101%;
   margin-left: -8px;
   top: 50%;
   transform: translateY(-50%);
