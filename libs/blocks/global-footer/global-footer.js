@@ -13,7 +13,6 @@ import {
 
 import {
   getExperienceName,
-  getAnalyticsValue,
   loadDecorateMenu,
   fetchAndProcessPlainHtml,
   loadBaseStyles,
@@ -26,6 +25,16 @@ import {
 } from '../global-navigation/utilities/utilities.js';
 
 import { replaceKey } from '../../features/placeholders.js';
+import { processTrackingLabels } from '../../martech/attributes.js';
+
+export function getAnalyticsValue(str, index) {
+  if (typeof str !== 'string' || !str.length) return str;
+
+  let analyticsValue = processTrackingLabels(str, getConfig(), 30);
+  analyticsValue = typeof index === 'number' ? `${analyticsValue}-${index}` : analyticsValue;
+
+  return analyticsValue;
+}
 
 const { miloLibs, codeRoot, locale, mep } = getConfig();
 const base = miloLibs || codeRoot;

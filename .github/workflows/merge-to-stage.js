@@ -141,8 +141,10 @@ const merge = async ({ prs, type }) => {
           merge_method: 'squash',
         });
       }
-      existingPRCount++;
-      console.log(`Current number of PRs merged: ${existingPRCount}`);
+      if (type !== LABELS.zeroImpact) {
+        existingPRCount++;
+      }
+      console.log(`Current number of PRs merged: ${existingPRCount} (exluding Zero Impact)`);
       const prefix = type === LABELS.zeroImpact ? ' [ZERO IMPACT]' : '';
       body = `-${prefix} ${html_url}\n${body}`;
       await new Promise((resolve) => setTimeout(resolve, 5000));
@@ -156,7 +158,7 @@ const getStageToMainPR = () => github.rest.pulls
   .list({ owner, repo, state: 'open', base: PROD })
   .then(({ data } = {}) => data.find(({ title } = {}) => title === PR_TITLE))
   .then((pr) => pr && addLabels({ pr, github, owner, repo }))
-  .then((pr) => pr && addFiles({ pr, github, owner, repo }))
+  .then((pr) => pr && addFiles({ pr, github, owner, repo }));
 
 const openStageToMainPR = async () => {
   const { data: comparisonData } = await github.rest.repos.compareCommits({
@@ -218,26 +220,17 @@ const main = async (params) => {
     const stageToMainPR = await getStageToMainPR();
     console.log('has Stage to Main PR:', !!stageToMainPR);
     if (stageToMainPR) body = stageToMainPR.body;
-    existingPRCount = body.match(/https:\/\/github\.com\/adobecom\/milo\/pull\/\d+/g)?.length || 0;
-    console.log(`Number of PRs already in the batch: ${existingPRCount}`);
-
-    if (mergeLimitExceeded()) return console.log('Maximum number of PRs already merged. Stopping execution');
+    existingPRCount = body.match(/https:\/\/github\.com\/adobecom\/milo\/pull\/\d+/g)?.filter(match => !match.includes("[ZERO-IMPACT]:")).length || 0;
+    console.log(`Number of PRs already in the batch: ${existingPRCount} (excluding Zero Impact)`);
 
     const { zeroImpactPRs, highImpactPRs, normalPRs } = await getPRs();
     await merge({ prs: zeroImpactPRs, type: LABELS.zeroImpact });
+
+    if (mergeLimitExceeded()) return console.log('Maximum number of PRs already merged. Stopping execution');
     if (stageToMainPR?.labels.some((label) => label.includes(LABELS.SOTPrefix))) return console.log('PR exists & testing started. Stopping execution.');
     await merge({ prs: highImpactPRs, type: LABELS.highPriority });
     await merge({ prs: normalPRs, type: 'normal' });
     if (!stageToMainPR) await openStageToMainPR();
-    if (stageToMainPR && body !== stageToMainPR.body) {
-      console.log("Updating PR's body...");
-      await github.rest.pulls.update({
-        owner,
-        repo,
-        pull_number: stageToMainPR.number,
-        body,
-      });
-    }
     console.log('Process successfully executed.');
   } catch (error) {
     console.error(error);
