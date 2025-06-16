@@ -141,8 +141,10 @@ const merge = async ({ prs, type }) => {
           merge_method: 'squash',
         });
       }
-      existingPRCount++;
-      console.log(`Current number of PRs merged: ${existingPRCount}`);
+      if (type !== LABELS.zeroImpact) {
+        existingPRCount++;
+      }
+      console.log(`Current number of PRs merged: ${existingPRCount} (exluding Zero Impact)`);
       const prefix = type === LABELS.zeroImpact ? ' [ZERO IMPACT]' : '';
       body = `-${prefix} ${html_url}\n${body}`;
       await new Promise((resolve) => setTimeout(resolve, 5000));
@@ -218,8 +220,8 @@ const main = async (params) => {
     const stageToMainPR = await getStageToMainPR();
     console.log('has Stage to Main PR:', !!stageToMainPR);
     if (stageToMainPR) body = stageToMainPR.body;
-    existingPRCount = body.match(/https:\/\/github\.com\/adobecom\/milo\/pull\/\d+/g)?.length || 0;
-    console.log(`Number of PRs already in the batch: ${existingPRCount}`);
+    existingPRCount = body.match(/https:\/\/github\.com\/adobecom\/milo\/pull\/\d+/g)?.filter(match => !match.includes("[ZERO-IMPACT]:")).length || 0;
+    console.log(`Number of PRs already in the batch: ${existingPRCount} (excluding Zero Impact)`);
 
     const { zeroImpactPRs, highImpactPRs, normalPRs } = await getPRs();
     await merge({ prs: zeroImpactPRs, type: LABELS.zeroImpact });
