@@ -1365,34 +1365,36 @@ class Gnav {
         clearTimeout(decorationTimeout);
 
         const loadingDesktopMegaMenuHTML = template.querySelector('.feds-popup.loading')?.innerHTML;
-        const menuLogic = await loadDecorateMenu();
+        (async () => {
+          try {
+            const menuLogic = await loadDecorateMenu();
 
-        menuLogic.decorateMenu({
-          item,
-          template,
-          type: itemType,
-        }).then(async () => {
-          // There are two calls to transformTemplateToMobile
-          // One without awaiting decorateMenu, and one after
-          // decorateMenu is complete
-          const popup = template.querySelector('.feds-popup');
-          desktopMegaMenuHTML = popup.innerHTML;
-          if (!this.newMobileNav) return;
-          if (isDesktop.matches || !popup) return;
-          mobileNavCleanup();
-          mobileNavCleanup = await transformTemplateToMobile({
-            popup,
-            item,
-            localnav: this.isLocalNav(),
-            toggleMenu: this.toggleMenuMobile,
-          });
-          if (popup.closest('section.feds-dropdown--active')) makeTabActive(popup);
-        }).finally(() => {
-          if (this.isLocalNav()) {
-            decorateLocalNavItems(item, template);
+            await menuLogic.decorateMenu({
+              item,
+              template,
+              type: itemType,
+            });
+            // There are two calls to transformTemplateToMobile
+            // One without awaiting decorateMenu, and one after
+            // decorateMenu is complete
+            const popup = template.querySelector('.feds-popup');
+            desktopMegaMenuHTML = popup.innerHTML;
+            if (!this.newMobileNav) return;
+            if (isDesktop.matches || !popup) return;
+            mobileNavCleanup();
+            mobileNavCleanup = await transformTemplateToMobile({
+              popup,
+              item,
+              localnav: this.isLocalNav(),
+              toggleMenu: this.toggleMenuMobile,
+            });
+            if (popup.closest('section.feds-dropdown--active')) makeTabActive(popup);
+          } finally {
+            if (this.isLocalNav()) {
+              decorateLocalNavItems(item, template);
+            }
           }
-        });
-
+        })();
         if (this.newMobileNav) {
           const popup = template.querySelector('.feds-popup');
           if (!isDesktop.matches && popup) {
