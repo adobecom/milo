@@ -131,9 +131,6 @@
   --icon-size-s: 32px;
   --icon-size-xs: 24px;
   --icon-size-xxs: 16px;
-
-  /* z-index */
-  --above-all: 9000; /* Used for page tools that overlay page content */
 }
 
 :root:lang(ar) {
@@ -576,6 +573,10 @@ span.icon.margin-inline-end { margin-inline-end: 8px; }
 
 span.icon.margin-inline-start { margin-inline-start: 8px; }
 
+span.icon.milo-tooltip.margin-inline-end { margin-inline-end: 3px; }	
+
+span.icon.milo-tooltip.margin-inline-start { margin-inline-start: 3px; }	
+
 .button-l .con-button span.icon.margin-left,
 .con-button.button-l span.icon.margin-left { margin-left: 12px; }
 
@@ -929,7 +930,14 @@ a.static:active  {
 }
 
 /* mobile only */
-@media (max-width: 600px) {
+@media (max-width: 599px) {
+  :root:not(:lang(ja-JP), :lang(ja)) :is(.heading-xxxl, .heading-xxl) {
+    hyphens: auto;
+    hyphenate-limit-chars: 15 5 5;	
+    -webkit-hyphenate-limit-before: 7;
+    -webkit-hyphenate-limit-after: 7;
+  }	
+
   .con-button.button-justified-mobile {
     display: block;
     text-align: center;

@@ -139,7 +139,7 @@ function getUpdatedVisitAttempt() {
 function getUpdatedAcrobatVisitAttempt() {
   const { hostname, pathname } = window.location;
   const secondVisitAttempt = Number(localStorage.getItem('acrobatSecondHit')) || 0;
-  
+
   const isAdobeDomain = (hostname === 'www.adobe.com' || hostname === 'www.stage.adobe.com') && /\/acrobat/.test(pathname);
   const consentCookieValue = getCookie(OPT_ON_AND_CONSENT_COOKIE);
 
@@ -482,17 +482,17 @@ function createRequestPayload({ updatedContext, pageName, processedPageName, loc
         libraryVersions: 'alloy-api',
         experienceCloud: {
           ...digitalData.adobe?.experienceCloud,
-          dxSecondVisits: 'setEvent',
+          dxVisits: 'setEvent',
         },
       };
     }
-    digitalData.adobe = {	
-      ...digitalData.adobe,	
-      experienceCloud: {	
-        ...digitalData.adobe?.experienceCloud,	
-        agiCampaign: setAgICampVal ? agiCampaign : '',	
-      },	
-      gpc: getGlobalPrivacyControl(),	
+    digitalData.adobe = {
+      ...digitalData.adobe,
+      experienceCloud: {
+        ...digitalData.adobe?.experienceCloud,
+        agiCampaign: setAgICampVal ? agiCampaign : '',
+      },
+      gpc: getGlobalPrivacyControl(),
     };
     xdm.implementationDetails = {
       name: 'https://ns.adobe.com/experience/alloy',
@@ -734,19 +734,19 @@ export const loadAnalyticsAndInteractionData = async (
   };
   const localTime = getLocalISOString();
   const CURRENT_DATE = new Date();
-  const localTime = CURRENT_DATE.toISOString();
   const timezoneOffset = CURRENT_DATE.getTimezoneOffset();
-  if (hybridPersEnabled) {
-    window.hybridPers = true;
-  }
-  const hitType = hybridPersEnabled ? 'pageView' : 'propositionFetch';
-  const pageName = getPageNameForAnalytics({ locale });
+  window.hybridPers = true;
+  const hitType = 'pageView';
+  const pageName = getPageNameForAnalytics( );
+  const processedPageName = getProcessedPageNameForAnalytics();
   const updatedContext = getUpdatedContext({ ...getDeviceInfo(), localTime, timezoneOffset });
   const requestUrl = createRequestUrl({
     env,
     hitType,
   });
-  const requestPayload = { updatedContext, pageName, locale, env, hitType };
+  const requestPayload = {
+    updatedContext, pageName, processedPageName, locale, env, hitType
+  };
   const requestBody = createRequestPayload(requestPayload);
 
   try {

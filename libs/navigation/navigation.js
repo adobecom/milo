@@ -127,7 +127,7 @@ export default async function loadBlock(configs, customLib) {
     miloLibs: `${miloLibs}/libs`,
     locales: configs.locales || locales,
     contentRoot: authoringPath || footer?.authoringPath,
-    stageDomainsMap: getStageDomainsMap(stageDomainsMap),
+    stageDomainsMap: getStageDomainsMap(stageDomainsMap, env),
     origin,
     allowedOrigins: [...allowedOrigins, origin],
     onFooterReady: footer?.onReady,
