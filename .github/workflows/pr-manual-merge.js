@@ -43,7 +43,7 @@ async function updateStageToMainPR(github, context, mergedPR) {
     return;
   }
   const isZeroImpact = mergedPR.labels?.some(label => label.name === LABELS.zeroImpact);
-  const zeroImpactPrefix = isZeroImpact ? ZERO_IMPACT_PREFIX : '';
+  const zeroImpactPrefix = isZeroImpact ? ` ${ZERO_IMPACT_PREFIX}` : '';
   const body = `-${zeroImpactPrefix} ${mergedPR.html_url}\n${stageToMain.body || ''}`;
   console.log("Updating PR's description");
 

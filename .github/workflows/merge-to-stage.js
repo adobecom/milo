@@ -4,6 +4,7 @@ const {
   isWithinRCP,
   isWithinPrePostRCP,
   pulls: { addLabels, addFiles, getChecks, getReviews },
+  ZERO_IMPACT_PREFIX
 } = require('./helpers.js');
 
 // Run from the root of the project for local testing: node --env-file=.env .github/workflows/merge-to-stage.js
@@ -145,7 +146,7 @@ const merge = async ({ prs, type }) => {
         existingPRCount++;
       }
       console.log(`Current number of PRs merged: ${existingPRCount} (exluding Zero Impact)`);
-      const prefix = type === LABELS.zeroImpact ? ' [ZERO IMPACT]' : '';
+      const prefix = type === LABELS.zeroImpact ? ` ${ZERO_IMPACT_PREFIX}` : '';
       body = `-${prefix} ${html_url}\n${body}`;
       await new Promise((resolve) => setTimeout(resolve, 5000));
     } catch (error) {
@@ -215,12 +216,13 @@ const main = async (params) => {
   owner = params.context.repo.owner;
   repo = params.context.repo.repo;
   if (isWithinRCP({ offset: process.env.STAGE_RCP_OFFSET_DAYS || 2, excludeShortRCP: true })) return console.log('Stopped, within RCP period.');
-
   try {
     const stageToMainPR = await getStageToMainPR();
     console.log('has Stage to Main PR:', !!stageToMainPR);
+
     if (stageToMainPR) body = stageToMainPR.body;
-    existingPRCount = body.match(/https:\/\/github\.com\/adobecom\/milo\/pull\/\d+/g)?.filter(match => !match.includes("[ZERO-IMPACT]:")).length || 0;
+
+    existingPRCount = body.match(/(?:\[ZERO IMPACT\]\s*)?https:\/\/github\.com\/adobecom\/milo\/pull\/\d+/g)?.filter(match => !match.includes(ZERO_IMPACT_PREFIX)).length || 0;
     console.log(`Number of PRs already in the batch: ${existingPRCount} (excluding Zero Impact)`);
 
     const { zeroImpactPRs, highImpactPRs, normalPRs } = await getPRs();
