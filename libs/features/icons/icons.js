@@ -37,8 +37,6 @@ export const fetchIcons = (config) => new Promise(async (resolve) => {
 let tooltipListenersAdded = false;
 
 function setTooltipPosition(tooltips) {
-  console.log('setTooltipPosition', tooltips);
-
   const positionClasses = ['top', 'bottom', 'right', 'left'];
   const isRtl = document.documentElement.dir === 'rtl';
   const viewportWidth = window.innerWidth;
