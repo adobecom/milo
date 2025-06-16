@@ -423,36 +423,36 @@ export const getFedsPlaceholderConfig = ({ useCache = true } = {}) => {
   return fedsPlaceholderConfig;
 };
 
-/**	
- * TODO: This method will be deprecated and removed in a future version.	
- * @see https://jira.corp.adobe.com/browse/MWPW-173470	
- * @see https://jira.corp.adobe.com/browse/MWPW-174411	
-*/	
-export const shouldAllowKrTrial = (button, localePrefix) => {	
-  const allowKrTrialHash = '#_allow-kr-trial';	
-  const hasAllowKrTrial = button.href?.includes(allowKrTrialHash);	
-  if (hasAllowKrTrial) {	
-    button.href = button.href.replace(allowKrTrialHash, '');	
-    const modalHash = button.getAttribute('data-modal-hash');	
-    if (modalHash) button.setAttribute('data-modal-hash', modalHash.replace(allowKrTrialHash, ''));	
-  }	
-  return localePrefix === '/kr' && hasAllowKrTrial;	
-};	
+/**
+ * TODO: This method will be deprecated and removed in a future version.
+ * @see https://jira.corp.adobe.com/browse/MWPW-173470
+ * @see https://jira.corp.adobe.com/browse/MWPW-174411
+*/
+export const shouldAllowKrTrial = (button, localePrefix) => {
+  const allowKrTrialHash = '#_allow-kr-trial';
+  const hasAllowKrTrial = button.href?.includes(allowKrTrialHash);
+  if (hasAllowKrTrial) {
+    button.href = button.href.replace(allowKrTrialHash, '');
+    const modalHash = button.getAttribute('data-modal-hash');
+    if (modalHash) button.setAttribute('data-modal-hash', modalHash.replace(allowKrTrialHash, ''));
+  }
+  return localePrefix === '/kr' && hasAllowKrTrial;
+};
 
-/**	
- * TODO: This method will be deprecated and removed in a future version.	
- * @see https://jira.corp.adobe.com/browse/MWPW-173470	
- * @see https://jira.corp.adobe.com/browse/MWPW-174411	
+/**
+ * TODO: This method will be deprecated and removed in a future version.
+ * @see https://jira.corp.adobe.com/browse/MWPW-173470
+ * @see https://jira.corp.adobe.com/browse/MWPW-174411
 */
 export const shouldBlockFreeTrialLinks = ({ button, localePrefix, parent }) => {
   if (shouldAllowKrTrial(button, localePrefix) || localePrefix !== '/kr'
     || (!button.dataset?.modalPath?.includes('/kr/cc-shared/fragments/trial-modals')
-     && !['free-trial', 'free trial', '무료 체험판', '무료 체험하기', '{{try-for-free}}']
-       .some((pattern) => button.textContent?.toLowerCase()?.includes(pattern.toLowerCase())))) {
+      && !['free-trial', 'free trial', '무료 체험판', '무료 체험하기', '{{try-for-free}}']
+        .some((pattern) => button.textContent?.toLowerCase()?.includes(pattern.toLowerCase())))) {
     return false;
-  }	
+  }
 
-  if (button.dataset.wcsOsi) {	
+  if (button.dataset.wcsOsi) {
     button.classList.add('hidden-osi-trial-link');
   }
 
@@ -1092,16 +1092,6 @@ async function decorateIcons(area, config) {
   await loadIcons(icons, config);
 }
 
-async function decorateIcons(area, config) {
-  const icons = area.querySelectorAll('span.icon');
-  if (icons.length === 0) return;
-  const { base } = config;
-  loadStyle(`${base}/features/icons/icons.css`);
-  loadLink(`${base}/img/icons/icons.svg`, { rel: 'preload', as: 'fetch', crossorigin: 'anonymous' });
-  const { default: loadIcons } = await import('../features/icons/icons.js');
-  await loadIcons(icons, config);
-}
-
 export async function customFetch({ resource, withCacheRules }) {
   const options = {};
   if (withCacheRules) {
@@ -1486,14 +1476,15 @@ async function loadPostLCP(config) {
   config.georouting = { loadedPromise: Promise.resolve() };
   if (georouting === 'on') {
     const jsonPromise = fetch(`${config.contentRoot ?? ''}/georoutingv2.json`);
-    import('../features/georoutingv2/georoutingv2.js')
-      .then(({ default: loadGeoRouting }) => {
-        loadGeoRouting(config, createTag, getMetadata, loadBlock, loadStyle, jsonPromise);
-      });
+    config.georouting.loadedPromise = (async () => {
+      const { default: loadGeoRouting } = await import('../features/georoutingv2/georoutingv2.js');
+      await loadGeoRouting(config, createTag, getMetadata, loadBlock, loadStyle, jsonPromise);
+    })();
   }
   const header = document.querySelector('header');
   if (header) {
     header.classList.add('gnav-hide');
+    performance.mark('Gnav-Start');
     loadBlock(header);
     header.classList.remove('gnav-hide');
   }
@@ -1617,11 +1608,9 @@ function decorateDocumentExtras() {
 }
 
 async function documentPostSectionLoading(config) {
-  decorateFooterPromo();
-
-  const appendage = getMetadata('title-append');
-  if (appendage) {
-    import('../features/title-append/title-append.js').then((module) => module.default(appendage));
+  const injectBlock = getMetadata('injectblock');
+  if (injectBlock) {
+    import('./injectblock.js').then((module) => module.default(injectBlock));
   }
 
   decorateFooterPromo();
@@ -1685,7 +1674,7 @@ async function resolveInlineFrags(section) {
   section.preloadLinks = newlyDecoratedSection.preloadLinks;
 }
 
-async function processSection(section, config, isDoc) {
+async function processSection(section, config, isDoc, lcpSectionId) {
   await resolveInlineFrags(section);
   const isLcpSection = lcpSectionId === section.idx;
   const stylePromises = isLcpSection ? preloadBlockResources(section.blocks) : [];
@@ -1753,9 +1742,6 @@ export async function loadArea(area = document) {
   }
 
   if (isDoc) await documentPostSectionLoading(config);
-
-  await loadDeferred(area, areaBlocks, config);
-}
 
   await loadDeferred(area, areaBlocks, config);
 }

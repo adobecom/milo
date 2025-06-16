@@ -737,7 +737,7 @@ export const loadAnalyticsAndInteractionData = async (
   const timezoneOffset = CURRENT_DATE.getTimezoneOffset();
   window.hybridPers = true;
   const hitType = 'pageView';
-  const pageName = getPageNameForAnalytics( );
+  const pageName = getPageNameForAnalytics();
   const processedPageName = getProcessedPageNameForAnalytics();
   const updatedContext = getUpdatedContext({ ...getDeviceInfo(), localTime, timezoneOffset });
   const requestUrl = createRequestUrl({
@@ -745,7 +745,7 @@ export const loadAnalyticsAndInteractionData = async (
     hitType,
   });
   const requestPayload = {
-    updatedContext, pageName, processedPageName, locale, env, hitType
+    updatedContext, pageName, processedPageName, locale, env, hitType,
   };
   const requestBody = createRequestPayload(requestPayload);
 
