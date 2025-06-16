@@ -921,8 +921,7 @@ export function decorateLinks(el) {
       a.href = a.href.replace('#_blank', '');
     }
     if (a.href.includes('#_alloy')) {
-      import('../martech/alloy-links.js').then((response) => {
-        const { default: processAlloyLink } = response;
+      import('../martech/alloy-links.js').then(({ default: processAlloyLink }) => {
         processAlloyLink(a);
       });
     }
