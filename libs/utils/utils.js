@@ -110,7 +110,7 @@ const AUTO_BLOCKS = [
   { vimeo: 'player.vimeo.com' },
   { youtube: 'youtube.com' },
   { youtube: 'youtu.be' },
-  { 'pdf-viewer': '.pdf', styles: false },
+  { 'pdf-viewer': '.pdf' },
   { video: '.mp4' },
   { merch: '/tools/ost?' },
   { merch: '/miniplans' },
