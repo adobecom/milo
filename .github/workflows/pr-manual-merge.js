@@ -52,7 +52,7 @@ async function updateStageToMainPR(github, context, mergedPR) {
     body,
   });
 
-  console.log(`Updated Stage to Main PR #${stageToMain.number} with manually merged PR #${mergedPR.number}`);
+  console.log(`Updated the description of the Stage to Main PR #${stageToMain.number} with manually merged PR #${mergedPR.number}`);
 }
 
 if (process.env.LOCAL_RUN) {
