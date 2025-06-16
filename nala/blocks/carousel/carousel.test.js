@@ -48,17 +48,17 @@ test.describe('Milo Carousel Block test suite', () => {
       await carousel.moveToNextSlide();
       expect(await carousel.getCurrentSlideIndex()).toBe('1');
       expect(await carousel.getSlideText(1, 'h2', 'Orange Slices')).toBeTruthy();
-      expect(await carousel.validateAriaHidden()).toBeTruthy();	
-      expect(await carousel.areAllSlidesVisible()).toBeTruthy();	
+      expect(await carousel.validateAriaHidden()).toBeTruthy();
+      expect(await carousel.areAllSlidesVisible()).toBeTruthy();
       expect(await carousel.validateSlideFocusableElements()).toBeTruthy();
 
       // move to 3rd slide by clicking indicator and verify h2 tag header
       // Disabled because indicators are currently hidden by default
       // await carousel.moveToIndicator(3);
-      // expect(await carousel.getCurrentIndicatorIndex()).toBeNull();
-      // expect(await carousel.getSlideText(3, 'h2', 'Apples')).toBeTruthy();	
-      // expect(await carousel.validateAriaHidden()).toBeTruthy();	
-      // expect(await carousel.areAllSlidesVisible()).toBeTruthy();	
+      // expect(await carousel.getCurrentIndicatorIndex()).toBeNull;
+      // expect(await carousel.getSlideText(3, 'h2', 'Apples')).toBeTruthy();
+      // expect(await carousel.validateAriaHidden()).toBeTruthy();
+      // expect(await carousel.areAllSlidesVisible()).toBeTruthy();
       // expect(await carousel.validateSlideFocusableElements()).toBeTruthy();
     });
 
@@ -139,8 +139,8 @@ test.describe('Milo Carousel Block test suite', () => {
       // move to next slide by clicking next button and verify h2 tag header
       await carousel.moveToNextSlide();
       expect(await carousel.getSlideText(1, 'h2', 'Melon')).toBeTruthy();
-      expect(await carousel.validateAriaHidden(2)).toBeTruthy();	
-      expect(await carousel.areAllSlidesVisible()).toBeTruthy();	
+      expect(await carousel.validateAriaHidden(2)).toBeTruthy();
+      expect(await carousel.areAllSlidesVisible()).toBeTruthy();
       expect(await carousel.validateSlideFocusableElements()).toBeTruthy();
     });
 
