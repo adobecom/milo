@@ -880,7 +880,7 @@ describe('Merch Block', () => {
 
     it('appends extra options if the provided url is relative', () => {
       const relativeUrl = '/plans-fragments/modals/individual/modals-content-rich/all-apps/master.modal.html';
-      const resultUrl = appendExtraOptions(relativeUrl, JSON.stringify({ promoid: 'test' }));
+      const resultUrl = appendDexterParameters(relativeUrl, JSON.stringify({ promoid: 'test' }));
       expect(resultUrl).to.include('?promoid=test');
     });
   });
