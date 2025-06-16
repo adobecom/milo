@@ -14,7 +14,7 @@ function dynamicTypekit(kitId, d = document) {
  *
  * @param {Object} locale the locale details
  */
-export default function loadFonts(locale, loadStyle) {
+export default function loadFonts(locale, loadLink) {
   const tkSplit = locale.tk.split('.');
   // Add preload for Typekit resources
   const preloadLink = document.createElement('link');
@@ -23,11 +23,12 @@ export default function loadFonts(locale, loadStyle) {
   preloadLink.href = `https://use.typekit.net/${locale.tk}`;
   preloadLink.crossOrigin = 'anonymous';
   document.head.appendChild(preloadLink);
-  if (tkSplit[1] === 'css') {
-    return new Promise((resolve) => {
-      loadStyle(`https://use.typekit.net/${locale.tk}`, resolve);
-    });
-  }
-  // eslint-disable-next-line consistent-return
-  return dynamicTypekit(locale.tk);
+
+  preloadLink.onload = () => {
+    if (tkSplit[1] === 'css') {
+      loadLink(`https://use.typekit.net/${locale.tk}`, { rel: 'stylesheet' });
+    } else {
+      dynamicTypekit(locale.tk);
+    }
+  };
 }
