@@ -576,11 +576,6 @@ merch-card [slot='callout-content'] .icon-button::after {
   z-index: 10;
 }
 
-merch-card [slot='callout-content'] .icon-button.hide-tooltip::before,
-merch-card [slot='callout-content'] .icon-button.hide-tooltip::after {
-  display: none;
-}
-
 merch-card [slot='callout-content'] .icon-button:hover::before,
 merch-card [slot='callout-content'] .icon-button:focus::before,
 merch-card [slot='callout-content'] .icon-button:active::before,
@@ -588,6 +583,11 @@ merch-card [slot='callout-content'] .icon-button:hover::after,
 merch-card [slot='callout-content'] .icon-button:focus::after,
 merch-card [slot='callout-content'] .icon-button:active::after {
   display: block; 
+}
+
+merch-card [slot='callout-content'] .icon-button.show-tooltip::before,
+merch-card [slot='callout-content'] .icon-button.show-tooltip::after {
+  display: block;
 }
 
 @media (max-width: 600px) {
