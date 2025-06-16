@@ -69,9 +69,6 @@ function addTooltipListeners() {
       }
     }, true);
   });
-
-  setTimeout(() => setTooltipPosition(document.querySelectorAll('.milo-tooltip')), 100);
-  window.addEventListener('resize', () => setTooltipPosition(document.querySelectorAll('.milo-tooltip')));
 }
 
 function decorateToolTip(icon, iconName) {
