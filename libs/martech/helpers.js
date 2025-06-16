@@ -138,7 +138,8 @@ function getUpdatedVisitAttempt() {
 
 function getUpdatedAcrobatVisitAttempt() {
   const { hostname, pathname } = window.location;
-  const secondVisitAttempt = Number(localStorage.getItem('secondHit')) || 0;
+  const secondVisitAttempt = Number(localStorage.getItem('acrobatSecondHit')) || 0;
+  
   const isAdobeDomain = (hostname === 'www.adobe.com' || hostname === 'www.stage.adobe.com') && /\/acrobat/.test(pathname);
   const consentCookieValue = getCookie(OPT_ON_AND_CONSENT_COOKIE);
 
@@ -479,9 +480,20 @@ function createRequestPayload({ updatedContext, pageName, processedPageName, loc
       digitalData.adobe = {
         ...digitalData.adobe,
         libraryVersions: 'alloy-api',
-        experienceCloud: { secondVisits: 'setEvent' },
+        experienceCloud: {
+          ...digitalData.adobe?.experienceCloud,
+          dxSecondVisits: 'setEvent',
+        },
       };
     }
+    digitalData.adobe = {	
+      ...digitalData.adobe,	
+      experienceCloud: {	
+        ...digitalData.adobe?.experienceCloud,	
+        agiCampaign: setAgICampVal ? agiCampaign : '',	
+      },	
+      gpc: getGlobalPrivacyControl(),	
+    };
     xdm.implementationDetails = {
       name: 'https://ns.adobe.com/experience/alloy',
       version: '2.0',

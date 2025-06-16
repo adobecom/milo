@@ -291,7 +291,7 @@ function moveSlides(event, carouselElements, jumpToIndex) {
   referenceSlide.style.order = '1';
 
   updateAriaLive(ariaLive, activeSlide);
-  
+
   // Update active slide and indicator dot attributes
   activeSlide.classList.add('active');
   setAriaHiddenAndTabIndex(carouselElements, activeSlide);

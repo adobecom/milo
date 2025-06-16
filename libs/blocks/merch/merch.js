@@ -530,20 +530,20 @@ function appendExtraOptions(url, extraOptions) {
   return url;
 }
 
-// TODO this should migrate to checkout.js buildCheckoutURL	async function openExternalModal(url, getModal, extraOptions) {
-export function appendDexterParameters(url, extraOptions, el) {	
-  const isRelativePath = url.startsWith('/');	
-  let absoluteUrl;	
-  try {	
-    absoluteUrl = new URL(isRelativePath ? `${window.location.origin}${url}` : url);	
-  } catch (err) {	
-    window.lana?.log(`Invalid URL ${url} : ${err}`);	
-    return url;	
-  }	
-  absoluteUrl = appendExtraOptions(absoluteUrl, extraOptions);	
-  absoluteUrl = appendTabName(absoluteUrl, el);	
-  return isRelativePath ? absoluteUrl.href.replace(window.location.origin, '') : absoluteUrl.href;	
-}	
+// TODO this should migrate to checkout.js buildCheckoutURL
+export function appendDexterParameters(url, extraOptions, el) {
+  const isRelativePath = url.startsWith('/');
+  let absoluteUrl;
+  try {
+    absoluteUrl = new URL(isRelativePath ? `${window.location.origin}${url}` : url);
+  } catch (err) {
+    window.lana?.log(`Invalid URL ${url} : ${err}`);
+    return url;
+  }
+  absoluteUrl = appendExtraOptions(absoluteUrl, extraOptions);
+  absoluteUrl = appendTabName(absoluteUrl, el);
+  return isRelativePath ? absoluteUrl.href.replace(window.location.origin, '') : absoluteUrl.href;
+}
 
 async function openExternalModal(url, getModal, extraOptions, el) {
   loadStyle(`${getConfig().base}/blocks/iframe/iframe.css`);
@@ -870,7 +870,7 @@ export async function buildCta(el, params) {
     return addCopyToClipboard(el, cta);
   }
 
-  /**	
+  /**
    * TODO: This code block will be deprecated and removed in a future version.
    * @see https://jira.corp.adobe.com/browse/MWPW-173470
    * @see https://jira.corp.adobe.com/browse/MWPW-174411
