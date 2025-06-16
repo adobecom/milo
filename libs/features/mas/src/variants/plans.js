@@ -113,9 +113,8 @@ export class Plans extends VariantLayout {
         if (tooltipIcon && tooltipIcon.title) {
             tooltipIcon.dataset.tooltip = tooltipIcon.title;
             tooltipIcon.removeAttribute('title');
-            tooltipIcon.addEventListener('touchstart', () => {
-                tooltipIcon.classList.toggle('show-tooltip');
-            });
+            tooltipIcon.addEventListener('touchstart', tooltipIcon.classList.add('show-tooltip'));
+            document.addEventListener('touchstart', tooltipIcon.classList.remove('show-tooltip'));
         }
     }
 
