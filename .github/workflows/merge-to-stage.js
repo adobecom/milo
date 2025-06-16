@@ -27,6 +27,7 @@ const TEAM_MENTIONS = [
   '@adobecom/express-sot',
   '@adobecom/homepage-sot',
   '@adobecom/miq-sot',
+  '@adobecom/blog-sot',
 ];
 const SLACK = {
   openedSyncPr: ({ html_url, number }) => `:fast_forward: Created <${html_url}|Stage to Main PR ${number}>`,
