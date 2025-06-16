@@ -20,7 +20,7 @@ const MobileGnav = {
     this.toggleButton.addEventListener('click', () => {
       if (!this.isMobile) return;
       const gnavWrapper = document.querySelector('.feds-nav-wrapper');
-      if (gnavWrapper && gnavWrapper.classList.contains('feds-nav-wrapper--expanded')) {
+      if (gnavWrapper?.classList.contains('feds-nav-wrapper--expanded')) {
         if (!this.eventInitialized) {
           this.eventInitialized = true;
           const popupTabs = document.querySelectorAll('.feds-nav-wrapper .feds-popup .tabs .tab');
