@@ -222,7 +222,8 @@ const main = async (params) => {
 
     if (stageToMainPR) body = stageToMainPR.body;
 
-    existingPRCount = body.match(/(?:\[ZERO IMPACT\]\s*)?https:\/\/github\.com\/adobecom\/milo\/pull\/\d+/g)?.filter(match => !match.includes(ZERO_IMPACT_PREFIX)).length || 0;
+    existingPRCount = body.match(new RegExp(`(?:\\${ZERO_IMPACT_PREFIX}\\s*)?https:\\/\\/github\\.com\\/adobecom\\/milo\\/pull\\/\\d+`, 'g'))
+      ?.filter(match => !match.includes(ZERO_IMPACT_PREFIX)).length || 0
     console.log(`Number of PRs already in the batch: ${existingPRCount} (excluding Zero Impact)`);
 
     const { zeroImpactPRs, highImpactPRs, normalPRs } = await getPRs();
