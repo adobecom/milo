@@ -2,33 +2,59 @@ import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import sinon, { stub } from 'sinon';
 import init, { formValidate, updateTabIndex } from '../../../libs/blocks/marketo/marketo-multi.js';
+import { setConfig } from '../../../libs/utils/utils.js';
 
 const innerHTML = await readFile({ path: './mocks/multi-step-2.html' });
+const mockRes = ({ payload, status = 200, ok = true } = {}) => new Promise((resolve) => {
+  resolve({
+    status,
+    ok,
+    json: () => payload,
+    text: () => payload,
+  });
+});
+const placeholders = {
+  total: 2,
+  offset: 0,
+  limit: 2,
+  data: [
+    { key: 'back', value: 'Back', link: '' },
+    { key: 'step', value: 'Step', link: '' },
+  ],
+  ':type': 'sheet',
+};
+setConfig({});
 
 describe('marketo multi-step', () => {
   let clock;
 
-  beforeEach(() => {
+  beforeEach(async () => {
     document.body.innerHTML = innerHTML;
     clock = sinon.useFakeTimers();
     window.MktoForms2 = { whenReady: stub().callsFake((callback) => callback({ onValidate: () => {}, getFormElem: () => ({ get: () => document.querySelector('form') }) })) };
 
+    stub(window, 'fetch').callsFake((url) => {
+      if (url.includes('/placeholders')) return mockRes({ payload: placeholders });
+      return null;
+    });
+
     const el = document.querySelector('.marketo');
-    init(el);
+    await init(el);
     clock.tick(300);
   });
 
   afterEach(() => {
     window.MktoForms2 = undefined;
     clock.restore();
+    sinon.restore();
   });
 
-  it('initializes multi-step form', () => {
+  it('initializes multi-step form', async () => {
     const el = document.querySelector('.marketo');
     const stepDetails = el.querySelector('.step-details .step');
 
     expect(stepDetails).to.exist;
-    expect(stepDetails.textContent).to.equal('Step 1 of 2');
+    expect(stepDetails.textContent).to.equal('Step 1 / 2');
     expect(window.MktoForms2.whenReady.calledOnce).to.be.true;
 
     const step1 = el.querySelector('.mktoFormRowTop[data-validate="1"]');
@@ -37,10 +63,10 @@ describe('marketo multi-step', () => {
     expect(step2).to.exist;
   });
 
-  it('shows next step on valid form step', () => {
+  it('shows next step on valid form step', async () => {
     const formEl = document.querySelector('form');
 
-    formValidate(formEl);
+    await formValidate(formEl);
     clock.tick(200);
 
     expect(formEl.dataset.step).to.equal('2');
@@ -48,21 +74,21 @@ describe('marketo multi-step', () => {
     expect(formEl.querySelector('.back-btn')).to.exist;
   });
 
-  it('does not show next step on invalid form submission', () => {
+  it('does not show next step on invalid form submission', async () => {
     const formEl = document.querySelector('form');
     formEl.querySelector('.mktoFormRowTop[data-validate="1"] input').classList.add('mktoInvalid');
 
-    const result = formValidate(formEl);
+    const result = await formValidate(formEl);
     clock.tick(200);
 
     expect(result).to.be.false;
     expect(formEl.dataset.step).to.equal('1');
   });
 
-  it('shows previous step on back button click', () => {
+  it('shows previous step on back button click', async () => {
     const formEl = document.querySelector('form');
 
-    formValidate(formEl);
+    await formValidate(formEl);
     clock.tick(200);
 
     expect(formEl.dataset.step).to.equal('2');
@@ -73,7 +99,7 @@ describe('marketo multi-step', () => {
 
     expect(formEl.dataset.step).to.equal('1');
     expect(formEl.querySelector('.back-btn')).to.be.null;
-    expect(formEl.querySelector('.step-details .step').textContent).to.equal('Step 1 of 2');
+    expect(formEl.querySelector('.step-details .step').textContent).to.equal('Step 1 / 2');
   });
 
   it('sets initial tabindex for fields', () => {
