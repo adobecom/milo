@@ -312,7 +312,7 @@ function trapFocusWithElement(el, focusableElements) {
   document.addEventListener('click', externalClickHandler);
   el.addEventListener('focusin', updateLastFocused);
   el.addEventListener('keydown', keydownEvent);
-  closeButton.addEventListener('click', () => {
+  closeButton?.addEventListener('click', () => {
     document.removeEventListener('click', externalClickHandler);
     el.removeEventListener('focusin', updateLastFocused);
     el.removeEventListener('keydown', keydownEvent);
