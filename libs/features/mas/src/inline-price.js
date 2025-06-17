@@ -35,7 +35,6 @@ const DISPLAY_ALL_TAX_COUNTRIES = [
     'EG_en',
     'ES_es',
     'FI_fi',
-    'FR_fr',
     'GR_el',
     'GR_en',
     'HU_hu',
@@ -98,9 +97,7 @@ const TAX_EXCLUDED_MAP = {
   ['SG_en']: [false, false, false, true],
 };
 const TAX_EXCLUDED_MAP_INDEX = [INDIVIDUAL, BUSINESS, STUDENT, UNIVERSITY];
-const defaultTaxExcluded = (segment) => {
-  return (segment in [BUSINESS, UNIVERSITY]);
-}
+const defaultTaxExcluded = (segment) => [BUSINESS, UNIVERSITY].includes(segment);
 
 /**
  * Resolves the default value for forceTaxExclusive for the provided geo info and segments.

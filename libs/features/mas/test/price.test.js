@@ -733,7 +733,7 @@ describe('class "InlinePrice"', () => {
                     if (test.expected[index][0]) {
                         expect(priceTaxElement.classList.contains('disabled')).to.be.false;
                         let taxInclExclLabel
-                        if (priceDecimals === '59') { // forceTaxExclusive: true
+                        if (test.expected[index][1]) { // forceTaxExclusive: true
                             taxInclExclLabel = literals.taxExclusiveLabel;
                         } else {
                             taxInclExclLabel = literals.taxInclusiveLabel;
