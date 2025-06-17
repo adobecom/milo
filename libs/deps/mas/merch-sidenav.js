@@ -86,6 +86,7 @@ var V=Object.defineProperty;var S=o=>{throw TypeError(o)};var H=(o,e,t)=>e in o?
 
             :host h2 {
               color: var(--spectrum-global-color-gray-900);
+              font-size: 12px;
             }
 
             :host(:not([modal])) {
