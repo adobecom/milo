@@ -1361,11 +1361,14 @@ export async function getSpectraLOB(lastVisitedPage) {
   const getECID = getCookie('AMCV_9E1005A551ED61CA0A490D45@AdobeOrg');
   if (!getECID) return false;
   const [, ECID] = getECID.split('|');
-  let url = `https://cchome-stage.adobe.io/int/v1/aep/events/webpage?ecid=${ECID}`;
-  if (lastVisitedPage) url = `${url}&lastVisitedPage=${lastVisitedPage}`;
+  let apiUrl = `https://cchome-stage.adobe.io/int/v1/aep/events/webpage?ecid=${ECID}`;
+  if (lastVisitedPage) {
+    const refWithoutParams = lastVisitedPage.includes('?') ? lastVisitedPage.split('?')[0] : lastVisitedPage;
+    apiUrl = `${apiUrl}&lastVisitedPage=${refWithoutParams}`;
+  }
 
   try {
-    const rawResponse = await fetch(url, {
+    const rawResponse = await fetch(apiUrl, {
       method: 'GET',
       headers: {
         'x-api-key': 'MarketingTech',
