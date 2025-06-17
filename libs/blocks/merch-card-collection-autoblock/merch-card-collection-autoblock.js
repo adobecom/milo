@@ -1,6 +1,5 @@
 import { createTag, getConfig } from '../../utils/utils.js';
 import { initService, getOptions, MEP_SELECTOR, overrideOptions } from '../merch/merch.js';
-import '../../deps/mas/merch-card-collection.js';
 import '../../deps/mas/merch-card.js';
 import '../../deps/mas/merch-quantity-select.js';
 
@@ -26,6 +25,7 @@ async function loadDependencies(options) {
 
   const { base } = getConfig();
   const dependencyPromises = [
+    import('../../deps/mas/merch-card-collection.js'),
     import(`${base}/features/spectrum-web-components/dist/theme.js`),
     import(`${base}/features/spectrum-web-components/dist/button.js`),
     import(`${base}/features/spectrum-web-components/dist/action-button.js`),
