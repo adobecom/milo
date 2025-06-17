@@ -217,8 +217,12 @@ export class AemFragment extends HTMLElement {
             this.#fail(e.message);
             return false;
         }
-        const { references, referencesTree, placeholders } =
+        const { references, referencesTree, placeholders, wcs } =
             this.#rawData || {};
+
+        if (wcs) {
+            this.#service.prefillWcsCache(wcs);
+        }
 
         this.dispatchEvent(
             new CustomEvent(EVENT_AEM_LOAD, {
