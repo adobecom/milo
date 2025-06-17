@@ -34,4 +34,3 @@ var r=Object.defineProperty;var m=(i,t,h)=>t in i?r(i,t,{enumerable:!0,configura
             height: var(--mod-img-height, var(--img-height));
         }
     `);customElements.define("merch-icon",e);export{e as default};
-//# sourceMappingURL=merch-icon.js.map
