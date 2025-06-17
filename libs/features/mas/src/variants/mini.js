@@ -6,7 +6,11 @@ import { CSS } from './mini.css.js';
 export const MINI_AEM_FRAGMENT_MAPPING = {
     title: { tag: 'p', slot: 'title' },
     prices: { tag: 'p', slot: 'prices' },
-    description: { tag: 'p', slot: 'description', marks: 'promo-text,promo-duration-text,renewal-text' },
+    description: {
+        tag: 'p',
+        slot: 'description',
+        marks: 'promo-text,promo-duration-text,renewal-text',
+    },
     planType: true,
     ctas: { slot: 'ctas', size: 'S' },
 };
@@ -33,7 +37,10 @@ export class Mini extends VariantLayout {
             strikethroughAriaLabel: '',
             alternativePriceAriaLabel: '',
         };
-        options.displayAnnual = this.card.settings?.displayAnnual ?? false ;
+        options.displayAnnual = this.card.settings?.displayAnnual ?? false;
+        if (this.card.priceLiterals) {
+            Object.assign(options.literals, this.card.priceLiterals);
+        }
     }
 
     adjustLegal() {

@@ -41,9 +41,12 @@ function getSelectorElement(root, selector) {
     return root.querySelector(selector);
 }
 
-function addFragment(fragment) {
+function addFragment(fragment, collectionId) {
     const aemFragment = document.createElement('aem-fragment');
     aemFragment.setAttribute('fragment', fragment);
+    if (collectionId) {
+        aemFragment.setAttribute('collection', collectionId);
+    }
     document.body.appendChild(aemFragment);
     return aemFragment;
 }
@@ -359,6 +362,16 @@ runTests(async () => {
                     ...settingsBase,
                     displayPlanType: false,
                 });
+            });
+
+            it.only('supports hydrating from a collection fragment', async () => {
+                const topCollection = addFragment('collection');
+                const card = addFragment(
+                    'ca835d11-fe6b-40f8-96d1-50ac800c9f70',
+                    'collection',
+                );
+                await oneEvent(card, 'aem:load');
+                expect(aemMock.count).to.equal(1);
             });
         });
 

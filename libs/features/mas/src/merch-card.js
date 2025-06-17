@@ -145,6 +145,7 @@ export class MerchCard extends LitElement {
             reflect: true,
         },
         loading: { type: String },
+        priceLiterals: { type: Object },
     };
 
     static styles = [styles, ...sizeStyles()];

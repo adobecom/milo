@@ -13,9 +13,11 @@ const sheet = new CSSStyleSheet();
 sheet.replaceSync(':host { display: contents; }');
 
 const ATTRIBUTE_FRAGMENT = 'fragment';
+const ATTRIBUTE_COLLECTION = 'collection';
 const ATTRIBUTE_AUTHOR = 'author';
 const ATTRIBUTE_PREVIEW = 'preview';
 const AEM_FRAGMENT_TAG_NAME = 'aem-fragment';
+const AEM_COLLECTION_FRAGMENT_LOAD_TIMEOUT = 10000;
 
 class FragmentCache {
     #fragmentCache = new Map();
@@ -34,8 +36,8 @@ class FragmentCache {
     add(fragment, parentFragment) {
         if (this.get(fragment.originalId)) return;
         if (this.get(fragment.id)) return;
-        this.#fragmentCache.set(fragment.originalId, fragment);
-        this.#fragmentCache.set(fragment.id, fragment);
+        if (fragment.originalId) this.#fragmentCache.set(fragment.originalId, fragment);
+        if (fragment.id) this.#fragmentCache.set(fragment.id, fragment);
         if (!fragment.references) return;
         Object.entries(fragment.references)
             .filter(([, { type }]) => type === 'content-fragment')
@@ -102,6 +104,7 @@ export class AemFragment extends HTMLElement {
      */
     #fragmentId;
     #fetchInfo;
+    #collectionId;
 
     /**
      * Internal promise to track if fetching is in progress.
@@ -114,7 +117,12 @@ export class AemFragment extends HTMLElement {
     #preview = undefined;
 
     static get observedAttributes() {
-        return [ATTRIBUTE_FRAGMENT, ATTRIBUTE_AUTHOR, ATTRIBUTE_PREVIEW];
+        return [
+            ATTRIBUTE_FRAGMENT,
+            ATTRIBUTE_COLLECTION,
+            ATTRIBUTE_AUTHOR,
+            ATTRIBUTE_PREVIEW,
+        ];
     }
 
     constructor() {
@@ -127,6 +135,9 @@ export class AemFragment extends HTMLElement {
         if (name === ATTRIBUTE_FRAGMENT) {
             this.#fragmentId = newValue;
             this.#fetchInfo = cache.getFetchInfo(newValue);
+        }
+        if (name === ATTRIBUTE_COLLECTION) {
+            this.#collectionId = newValue;
         }
         if (name === ATTRIBUTE_AUTHOR) {
             this.#author = ['', 'true'].includes(newValue);
@@ -226,6 +237,20 @@ export class AemFragment extends HTMLElement {
         }
         if (flushCache) {
             cache.remove(this.#fragmentId);
+        }
+        if (this.#collectionId) {
+            const collectionElement = document.querySelector(
+                `aem-fragment[fragment="${this.#collectionId}"]`,
+            );
+            if (collectionElement) {
+                const timeoutPromise = new Promise((resolve) =>
+                    setTimeout(resolve, AEM_COLLECTION_FRAGMENT_LOAD_TIMEOUT),
+                );
+                await Promise.race([
+                    collectionElement.updateComplete,
+                    timeoutPromise,
+                ]);
+            }
         }
         try {
             this.#fetchPromise = this.#fetchData();
