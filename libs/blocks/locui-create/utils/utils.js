@@ -129,6 +129,7 @@ export function getProject(resJson, lang) {
     type: projectType,
     name: `${resJson.projectName}${projectNameSuffix}`,
     htmlFlow: resJson.settings?.useHtmlFlow,
+    dueDate: resJson.settings?.dueDate,
     editBehavior: resJson.settings?.regionalEditBehaviour,
     urls: resJson.urls,
     fragments: [],

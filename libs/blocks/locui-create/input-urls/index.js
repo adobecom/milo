@@ -54,7 +54,7 @@ export function validateForm({
   if (name.length > 50) {
     errors.name = 'Project name is too long. Please ensure it is no more than 50 characters.';
   }
-  if (type === 'rollout' && editBehavior === '') {
+  if (type === PROJECT_TYPES.rollout && editBehavior === '') {
     errors.editBehavior = 'Edit behavior is required';
   }
   if (urlsStr === '') {
@@ -63,7 +63,7 @@ export function validateForm({
   if (fragmentsEnabled && noOfValidFrag > 0 && fragments.length === 0) {
     errors.fragments = 'Select atleast one fragment to proceed further';
   }
-  if (new Date(`${dueDate}Z`) < new Date()) {
+  if (type === PROJECT_TYPES.translation && new Date(`${dueDate}Z`) < new Date()) {
     errors.dueDate = 'Please select a future date and time';
   }
   return errors;
@@ -110,6 +110,7 @@ export function getInitialName(type) {
 }
 
 export function formatDateTime(dueDate) {
+  if (!dueDate) return '';
   const date = new Date(dueDate);
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, '0');
