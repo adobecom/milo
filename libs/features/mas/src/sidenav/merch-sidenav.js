@@ -31,6 +31,7 @@ export class MerchSideNav extends LitElement {
 
             :host h2 {
               color: var(--spectrum-global-color-gray-900);
+              font-size: 12px;
             }
 
             :host(:not([modal])) {
