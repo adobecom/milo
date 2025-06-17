@@ -535,15 +535,64 @@ describe('processDescription', async () => {
         sinon.restore();
     });
 
-    it('should process merch links', async () => {
+    it('should process regular links', async () => {
         const fields = {
-            description: `Buy <a is="checkout-link" data-wcs-osi="abm" class="primary-link">Link Style</a><a is="checkout-link" data-wcs-osi="abm" class="secondary-link">Link Style</a>`,
+            description: `Buy <a href="#" class="primary-link">Link Style</a>`,
         };
 
         processDescription(fields, merchCard, aemFragmentMapping);
         updateLinksCSS(merchCard);
         expect(merchCard.innerHTML).to.equal(
-            '<div slot="body-xs">Buy <a is="checkout-link" data-wcs-osi="abm" class="spectrum-Link spectrum-Link--primary">Link Style</a><a is="checkout-link" data-wcs-osi="abm" class="spectrum-Link spectrum-Link--secondary">Link Style</a></div>',
+            '<div slot="body-xs">Buy <a href="#" class="spectrum-Link spectrum-Link--primary">Link Style</a></div>',
+        );
+    });
+
+    it('should process merch links', async () => {
+        const fields = {
+            description: `Buy <a data-wcs-osi="abm" class="primary-link">Link Style</a><a data-wcs-osi="abm" class="secondary-link">Link Style</a>`,
+        };
+        processDescription(fields, merchCard, aemFragmentMapping);
+        updateLinksCSS(merchCard);
+        expect(merchCard.innerHTML).to.equal(
+            '<div slot="body-xs">Buy <a data-wcs-osi="abm" class="spectrum-Link spectrum-Link--primary">Link Style</a><a data-wcs-osi="abm" class="spectrum-Link spectrum-Link--secondary">Link Style</a></div>',
+        );
+    });
+
+    it('should process merch links when merchCard.consonant is true', async () => {
+        const fields = {
+            description: `Buy <a data-wcs-osi="abm" class="primary-link">Link Style</a><a data-wcs-osi="abm" class="secondary-link">Link Style</a>`,
+        };
+        merchCard.consonant = true;
+        processDescription(fields, merchCard, aemFragmentMapping);
+        updateLinksCSS(merchCard);
+        expect(merchCard.innerHTML).to.equal(
+            '<div slot="body-xs">Buy <a is="checkout-link" data-checkout-workflow="UCv3" data-checkout-workflow-step="email" data-quantity="1" data-wcs-osi="abm"><span style="pointer-events: none;">Link Style</span></a><a is="checkout-link" data-checkout-workflow="UCv3" data-checkout-workflow-step="email" data-quantity="1" data-wcs-osi="abm"><span style="pointer-events: none;">Link Style</span></a></div>',
+        );
+    });
+    
+    it('should create spectrum css buttons by default (merchCard.spectrum=css)', async () => {
+        const fields = {
+            description: '<a data-wcs-osi="abm" class="accent">Click me</a>',
+        };
+
+        processDescription(fields, merchCard, aemFragmentMapping);
+        updateLinksCSS(merchCard);
+
+        expect(merchCard.innerHTML).to.equal(
+            '<div slot="body-xs"><button is="checkout-button" data-checkout-workflow="UCv3" data-checkout-workflow-step="email" data-quantity="1" tabindex="0" data-wcs-osi="abm" class="spectrum-Button spectrum-Button--accent spectrum-Button--sizeM"><span style="pointer-events: none;" class="spectrum-Button-label">Click me</span></button></div>',
+        );
+    });
+
+    it('should create spectrum swc buttons when merchCard.spectrum="swc"', async () => {
+        const fields = {
+            description: '<a data-wcs-osi="abm" class="accent">Click me</a>',
+        };
+        merchCard.spectrum = 'swc';
+        processDescription(fields, merchCard, aemFragmentMapping);
+        updateLinksCSS(merchCard);
+
+        expect(merchCard.innerHTML).to.equal(
+            '<div slot="body-xs"><sp-button treatment="fill" variant="accent" tabindex="0" size="m" dir="ltr">Click me</sp-button></div>',
         );
     });
 
