@@ -1,6 +1,5 @@
 import { createTag, getConfig } from '../../utils/utils.js';
 import { initService, getOptions, MEP_SELECTOR, overrideOptions } from '../merch/merch.js';
-import '../../deps/mas/merch-card-collection.js';
 import '../../deps/mas/merch-card.js';
 import '../../deps/mas/merch-quantity-select.js';
 
@@ -26,6 +25,7 @@ async function loadDependencies(options) {
 
   const { base } = getConfig();
   const dependencyPromises = [
+    import('../../deps/mas/merch-card-collection.js'),
     import(`${base}/features/spectrum-web-components/dist/theme.js`),
     import(`${base}/features/spectrum-web-components/dist/button.js`),
     import(`${base}/features/spectrum-web-components/dist/action-button.js`),
@@ -77,8 +77,16 @@ function getSidenav(collection) {
       const value = node.label.toLowerCase();
       const item = createTag('sp-sidenav-item', { label: node.label, value });
       if (node.icon) {
-        const icon = createTag('img', { src: node.icon, slot: 'icon', style: 'height: fit-content;' });
-        item.append(icon);
+        createTag('img', { src: node.icon, slot: 'icon', style: 'height: fit-content;' }, null, { parent: item });
+      }
+      if (node.iconLight || node.navigationLabel) {
+        const attributes = { class: 'selection' };
+        if (node.navigationLabel) attributes['data-selected-text'] = node.navigationLabel;
+        if (node.iconLight) {
+          attributes['data-light'] = node.iconLight;
+          attributes['data-dark'] = node.icon;
+        }
+        createTag('var', attributes, null, { parent: item });
       }
       parent.append(item);
       if (node.collections) {

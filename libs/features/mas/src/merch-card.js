@@ -267,6 +267,18 @@ export class MerchCard extends LitElement {
             ?.assignedElements()[0];
     }
 
+    get descriptionSlot() {
+        return this.shadowRoot
+            .querySelector('slot[name="body-xs"')
+            ?.assignedElements()[0];
+    }
+
+    get descriptionSlotCompare() {
+        return this.shadowRoot
+            .querySelector('slot[name="body-m"')
+            ?.assignedElements()[0];
+    }
+
     get price() {
         return this.headingmMSlot?.querySelector(SELECTOR_MAS_INLINE_PRICE);
     }
@@ -276,6 +288,27 @@ export class MerchCard extends LitElement {
             ...(this.footerSlot?.querySelectorAll(SELECTOR_MAS_CHECKOUT_LINK) ??
                 []),
         ];
+    }
+
+    get checkoutLinksDescription() {
+        return [
+            ...(this.descriptionSlot?.querySelectorAll(SELECTOR_MAS_CHECKOUT_LINK) ??
+            []),
+        ]
+    }
+
+    get checkoutLinkDescriptionCompare() {
+        return [
+            ...(this.descriptionSlotCompare?.querySelectorAll(SELECTOR_MAS_CHECKOUT_LINK) ??
+            []),
+        ]
+    }
+
+    get activeDescriptionLinks() {
+        if (this.variant === 'mini-compare-chart') {
+            return this.checkoutLinkDescriptionCompare;
+        }
+        return this.checkoutLinksDescription;
     }
 
     async toggleStockOffer({ target }) {
@@ -306,29 +339,38 @@ export class MerchCard extends LitElement {
     }
 
     toggleAddon(merchAddon) {
-        const elements = this.checkoutLinks;
-        // content toggle should be handled in the variant layout
         this.variantLayout?.toggleAddon?.(merchAddon);
-        if (elements.length === 0) return;
-        for (const element of elements) {
-            const { offerType, planType } = element.value?.[0];
+        const allLinks = [
+            ...this.checkoutLinks,
+            ...(this.activeDescriptionLinks ?? []),
+        ];
+        if (allLinks.length === 0) return;
+
+        const updateOsi = (link) => {
+            const { offerType, planType } = link.value?.[0] ?? {};
             if (!offerType || !planType) return;
             const addonOsi = merchAddon.getOsi(planType, offerType);
-            const osis = element.dataset.wcsOsi
+            const osis = (link.dataset.wcsOsi || '')
                 .split(',')
-                .filter((osi) => osi !== addonOsi);
+                .filter((osi) => osi && osi !== addonOsi);
 
             if (merchAddon.checked) {
                 osis.push(addonOsi);
             }
-            element.dataset.wcsOsi = osis.join(',');
-        }
+            link.dataset.wcsOsi = osis.join(',');
+        };
+        allLinks.forEach(updateOsi);
     }
 
     handleQuantitySelection(event) {
-        const elements = this.checkoutLinks;
-        for (const element of elements) {
-            element.dataset.quantity = event.detail.option;
+        const allLinks = [
+            ...this.checkoutLinks,
+            ...(this.activeDescriptionLinks ?? []),
+        ];
+        if (allLinks.length === 0) return;
+
+        for (const link of allLinks) {
+            link.dataset.quantity = event.detail.option;
         }
     }
 
@@ -593,11 +635,11 @@ export class MerchCard extends LitElement {
                     bubbles: true,
           composed: true
         }));
-        }
-        if (this.addonCheckbox?.checked !== isAddonIncluded) {
-            this.toggleStockOffer({ target: this.addonCheckbox });
-            const checkboxEvent = new Event('change', {
-                bubbles: true,
+      }
+      if (this.addonCheckbox && this.addonCheckbox.checked !== isAddonIncluded) {
+        this.toggleStockOffer({ target: this.addonCheckbox });
+        const checkboxEvent = new Event('change', {
+          bubbles: true,
           cancelable: true
             });
 
