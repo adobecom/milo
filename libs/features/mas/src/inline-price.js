@@ -69,17 +69,16 @@ const DISPLAY_ALL_TAX_COUNTRIES = [
 // countries where tax is displayed for some segments only by default
 const DISPLAY_TAX_MAP = {
     [INDIVIDUAL]: [
-        'ZA_en',
+        'MU_en',
         'LT_lt',
         'LV_lv',
         'NG_en',
         'SA_ar',
         'SA_en',
-        'ZA_en',
         'SG_en',
         'KR_ko',
     ],
-    [BUSINESS]: ['ZA_en', 'LT_lt', 'LV_lv', 'NG_en', 'ZA_en', 'CO_es', 'KR_ko'],
+    [BUSINESS]: ['MU_en', 'LT_lt', 'LV_lv', 'NG_en', 'CO_es', 'KR_ko'],
     [STUDENT]: ['LT_lt', 'LV_lv', 'SA_en', 'SG_en'],
     [UNIVERSITY]: ['SG_en', 'KR_ko'],
 };
@@ -87,14 +86,16 @@ const DISPLAY_TAX_MAP = {
 // For most countries where tax label is displayed the tax is included for Individuals and Students
 // and excluded for Business and Universities. This is the map of TaxExclusive values for other countries
 const TAX_EXCLUDED_MAP = {
-  ['ZA_en']: [false, false, Defaults.forceTaxExclusive, Defaults.forceTaxExclusive],
-  ['AT_de']: [false, false, false, true],
-  ['NG_en']: [false, false, Defaults.forceTaxExclusive, Defaults.forceTaxExclusive],
+  ['MU_en']: [false, false, false, false],
+  ['NG_en']: [false, false, false, false],
   ['AU_en']: [false, false, false, false],
   ['JP_ja']: [false, false, false, false],
   ['NZ_en']: [false, false, false, false],
   ['TH_en']: [false, false, false, false],
   ['TH_th']: [false, false, false, false],
+  ['CO_es']: [false, true, false, false],
+  ['AT_de']: [false, false, false, true],
+  ['SG_en']: [false, false, false, true],
 };
 const TAX_EXCLUDED_MAP_INDEX = [INDIVIDUAL, BUSINESS, STUDENT, UNIVERSITY];
 const defaultTaxExcluded = (segment) => {

@@ -374,10 +374,6 @@ describe('class "InlinePrice"', () => {
             expected: [[false, false], [false, false], [false, false], [false, false]]
           },
           {
-            locale: 'ZA_en',
-            expected: [[true, false], [true, false], [false, false], [false, false]]
-          },
-          {
             locale: 'AT_de',
             expected: [[true, false], [true, false], [true, false], [true, true]]
           },
@@ -582,7 +578,7 @@ describe('class "InlinePrice"', () => {
             expected: [[true, false], [true, true], [true, false], [true, true]]
           },
           {
-            locale: 'ZA_en',
+            locale: 'MU_en',
             expected: [[true, false], [true, false], [false, false], [false, false]]
           },
           {
@@ -639,7 +635,7 @@ describe('class "InlinePrice"', () => {
           },
           {
             locale: 'SG_en',
-            expected: [[true, false], [false, false], [true, false], [true, false]]
+            expected: [[true, false], [false, false], [true, false], [true, true]]
           },
           {
             locale: 'TH_en',
@@ -735,6 +731,7 @@ describe('class "InlinePrice"', () => {
                     );
                     const priceDecimals = inlinePrice.querySelector('.price-decimals').textContent;
                     if (test.expected[index][0]) {
+                        expect(priceTaxElement.classList.contains('disabled')).to.be.false;
                         let taxInclExclLabel
                         if (priceDecimals === '59') { // forceTaxExclusive: true
                             taxInclExclLabel = literals.taxExclusiveLabel;
