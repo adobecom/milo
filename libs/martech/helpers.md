@@ -1,4 +1,4 @@
-# Analytics and Interaction Data Management - Detailed Explanation
+# Analytics and Interaction Data Management - Detailed Explanation 
 
 ### Overview
 This module handles interactions with Adobe's Experience Cloud services, including data collection, analytics tracking, and personalization. It works with cookies, device info, and user behavior data to generate and send requests to Adobe’s marketing and personalization systems.

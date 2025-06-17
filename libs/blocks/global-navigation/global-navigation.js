@@ -550,7 +550,7 @@ class Gnav {
       return;
     }
     const localNavItems = this.elements.navWrapper.querySelector('.feds-nav').querySelectorAll('.feds-navItem:not(.feds-navItem--section, .feds-navItem--mobile-only)');
-    const firstElem = localNavItems[0]?.querySelector('a') || localNavItems[0]?.querySelector('button');
+    const firstElem = localNavItems?.[0]?.querySelector('a, button') || localNavItems?.[0];
     if (!firstElem) {
       lanaLog({ message: 'GNAV: Incorrect authoring of localnav found.', tags: 'gnav', errorType: 'i' });
       return;
@@ -588,7 +588,7 @@ class Gnav {
     const titleLabel = await replaceKey('overview', getFedsPlaceholderConfig());
     localNavItems.forEach((elem, idx) => {
       const clonedItem = elem.cloneNode(true);
-      const link = clonedItem.querySelector('a, button');
+      const link = clonedItem.querySelector('a, button') || clonedItem;
 
       if (link) {
         link.dataset.title = link.textContent;
@@ -999,7 +999,13 @@ class Gnav {
 
   isToggleExpanded = () => this.elements.mobileToggle?.getAttribute('aria-expanded') === 'true';
 
-  isLocalNav = () => this.newMobileNav && this
+  isEmptyGnav = () => this
+    .elements
+    .navWrapper
+    ?.querySelector('.feds-nav')
+    ?.childElementCount === 0;
+
+  isLocalNav = () => this.newMobileNav && !this.isEmptyGnav() && this
     .elements
     .navWrapper
     ?.querySelectorAll('.feds-nav > section.feds-navItem')
