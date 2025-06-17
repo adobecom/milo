@@ -396,5 +396,6 @@
     margin-inline: var(--spacing-xs);
     padding: var(--spacing-xs);
     margin-bottom: 24px;
+    gap: 0px !important;
   }
 }
