@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 import { features } from './plans.spec.js';
-import MasPlans from './plans.page.js'
+import MasPlans from './plans.page.js';
 
 let masPlans;
 
@@ -24,7 +24,7 @@ test.describe('MAS Plans Page test suite', () => {
       await page.goto(testPage);
       await expect(page).toHaveURL(`${baseURL}${features[0].path}`);
       await page.waitForLoadState('domcontentloaded');
-      
+
       await page.waitForSelector('merch-card-collection');
       await expect(await masPlans.getCard(data.cards[0].id)).toBeVisible();
       await expect(await masPlans.getCard(data.cards[1].id)).toBeVisible();
@@ -42,7 +42,7 @@ test.describe('MAS Plans Page test suite', () => {
       await expect(await masPlans.getCardPrice(data.cards[1].id)).toContainText(data.cards[1].price);
 
       await expect(await masPlans.getCardCTA(data.cards[0].id)).toBeVisible();
-      await expect(await masPlans.getCardCTA(data.cards[0].id)).toContainText(data.cards[0].cta)
+      await expect(await masPlans.getCardCTA(data.cards[0].id)).toContainText(data.cards[0].cta);
       expect(await masPlans.getCTAAttribute(data.cards[0].id, 'data-wcs-osi')).toEqual(data.cards[0].osi);
 
       await expect(await masPlans.getCardCTA(data.cards[1].id)).toBeVisible();
@@ -61,14 +61,13 @@ test.describe('MAS Plans Page test suite', () => {
       await photoCategory.click();
       await page.waitForSelector('merch-card:not([style*="display: none"])');
       await expect(page).toHaveURL(`${baseURL}${features[0].path}${data.categories.photo.browserFilter}`);
-      
+
       const visibleCards = page.locator('merch-card:not([style*="display: none"])');
       // await expect(visibleCards).toHaveCount(data.categories.photo.count);
-      
       const productTitles = await visibleCards.locator('h3').allTextContents();
-      data.categories.photo.products.forEach(expectedProduct => {
+      data.categories.photo.products.forEach((expectedProduct) => {
         expect(productTitles).toContain(expectedProduct);
-      })
+      });
     });
 
     await test.step('step-3: Verify Graphic Design category products', async () => {
@@ -76,14 +75,14 @@ test.describe('MAS Plans Page test suite', () => {
       await graphicDesignCategory.click();
       await page.waitForSelector('merch-card:not([style*="display: none"])');
       await expect(page).toHaveURL(`${baseURL}${features[0].path}${data.categories['graphic-design'].browserFilter}`);
-      
+
       const visibleCards = page.locator('merch-card:not([style*="display: none"])');
       // await expect(visibleCards).toHaveCount(data.categories['graphic-design'].count);
-      
+
       const productTitles = await visibleCards.locator('h3').allTextContents();
-      data.categories['graphic-design'].products.forEach(expectedProduct => {
+      data.categories['graphic-design'].products.forEach((expectedProduct) => {
         expect(productTitles).toContain(expectedProduct);
-      })
+      });
     });
 
     await test.step('step-4: Verify Video category products', async () => {
@@ -91,14 +90,14 @@ test.describe('MAS Plans Page test suite', () => {
       await videoCategory.click();
       await page.waitForSelector('merch-card:not([style*="display: none"])');
       await expect(page).toHaveURL(`${baseURL}${features[0].path}${data.categories.video.browserFilter}`);
-      
+
       const visibleCards = page.locator('merch-card:not([style*="display: none"])');
       // await expect(visibleCards).toHaveCount(data.categories.video.count);
-      
+
       const productTitles = await visibleCards.locator('h3').allTextContents();
-      data.categories.video.products.forEach(expectedProduct => {
+      data.categories.video.products.forEach((expectedProduct) => {
         expect(productTitles).toContain(expectedProduct);
-      })
+      });
     });
 
     await test.step('step-5: Verify Illustration category products', async () => {
@@ -106,14 +105,14 @@ test.describe('MAS Plans Page test suite', () => {
       await illustrationCategory.click();
       await page.waitForSelector('merch-card:not([style*="display: none"])');
       await expect(page).toHaveURL(`${baseURL}${features[0].path}${data.categories.illustration.browserFilter}`);
-      
+
       const visibleCards = page.locator('merch-card:not([style*="display: none"])');
       // await expect(visibleCards).toHaveCount(data.categories.illustration.count);
-      
+
       const productTitles = await visibleCards.locator('h3').allTextContents();
-      data.categories.illustration.products.forEach(expectedProduct => {
+      data.categories.illustration.products.forEach((expectedProduct) => {
         expect(productTitles).toContain(expectedProduct);
-      })
+      });
     });
 
     await test.step('step-6: Verify Acrobat and PDF category products', async () => {
@@ -121,14 +120,14 @@ test.describe('MAS Plans Page test suite', () => {
       await acrobatCategory.click();
       await page.waitForSelector('merch-card:not([style*="display: none"])');
       await expect(page).toHaveURL(`${baseURL}${features[0].path}${data.categories['acrobat-pdf'].browserFilter}`);
-      
+
       const visibleCards = page.locator('merch-card:not([style*="display: none"])');
       // await expect(visibleCards).toHaveCount(data.categories['acrobat-pdf'].count);
-      
+
       const productTitles = await visibleCards.locator('h3').allTextContents();
-      data.categories['acrobat-pdf'].products.forEach(expectedProduct => {
+      data.categories['acrobat-pdf'].products.forEach((expectedProduct) => {
         expect(productTitles).toContain(expectedProduct);
-      })
+      });
     });
 
     await test.step('step-7: Verify 3D and AR category products', async () => {
@@ -136,14 +135,14 @@ test.describe('MAS Plans Page test suite', () => {
       await threeDCategory.click();
       await page.waitForSelector('merch-card:not([style*="display: none"])');
       await expect(page).toHaveURL(`${baseURL}${features[0].path}${data.categories['3d-ar'].browserFilter}`);
-      
+
       const visibleCards = page.locator('merch-card:not([style*="display: none"])');
       // await expect(visibleCards).toHaveCount(data.categories['3d-ar'].count);
-      
+
       const productTitles = await visibleCards.locator('h3').allTextContents();
-      data.categories['3d-ar'].products.forEach(expectedProduct => {
+      data.categories['3d-ar'].products.forEach((expectedProduct) => {
         expect(productTitles).toContain(expectedProduct);
-      })
+      });
     });
 
     await test.step('step-8: Verify Social Media category products', async () => {
@@ -151,12 +150,12 @@ test.describe('MAS Plans Page test suite', () => {
       await socialMediaCategory.click();
       await page.waitForSelector('merch-card:not([style*="display: none"])');
       await expect(page).toHaveURL(`${baseURL}${features[0].path}${data.categories['social-media'].browserFilter}`);
-      
+
       const visibleCards = page.locator('merch-card:not([style*="display: none"])');
       // await expect(visibleCards).toHaveCount(data.categories['social-media'].count);
-      
+
       const productTitles = await visibleCards.locator('h3').allTextContents();
-      data.categories['social-media'].products.forEach(expectedProduct => {
+      data.categories['social-media'].products.forEach((expectedProduct) => {
         expect(productTitles).toContain(expectedProduct);
       });
     });
@@ -165,13 +164,13 @@ test.describe('MAS Plans Page test suite', () => {
   test(`${features[1].name},${features[1].tags}`, async ({ page, baseURL }) => {
     const testPage = `${baseURL}${features[1].path}${miloLibs}`;
     console.info('[Test Page]: ', testPage);
-  
+
     await test.step('step-1: Go to Plans page with edu deeplink', async () => {
       await page.goto(`${testPage}${features[1].browserParams}`);
       await page.waitForLoadState('domcontentloaded');
       await expect(page).toHaveURL(`${baseURL}${features[1].path}${features[1].browserParams}`);
     });
-  
+
     await test.step('step-2: Verify edu tab is selected and its content is displayed', async () => {
       const eduTab = masPlans.getTabs('edu');
       await expect(eduTab).toHaveAttribute('aria-selected', 'true');

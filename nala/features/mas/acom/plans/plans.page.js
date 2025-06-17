@@ -175,7 +175,7 @@ export default class MasPlans {
     return this.getCard(id).locator('div[slot="callout-content"] > p');
   }
 
-   getCategoryFilter(label) {
+  getCategoryFilter(label) {
     return this.page.locator(`merch-sidenav-list sp-sidenav-item[label="${label}"]`);
   }
 

@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 import { features } from './plansdocs.spec.js';
-import MasPlans from './plans.page.js'
+import MasPlans from './plans.page.js';
 import WebUtil from '../../../../libs/webutil.js';
 
 let acomPage;

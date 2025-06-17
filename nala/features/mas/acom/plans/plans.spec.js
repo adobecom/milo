@@ -24,19 +24,19 @@ module.exports = {
               'Lightroom',
               'AI Assistant for Acrobat',
               'Audition',
-              'Adobe Substance 3D Collection'
+              'Adobe Substance 3D Collection',
             ],
-            count: 13
+            count: 13,
           },
           photo: {
             products: [
               'Creative Cloud All Apps',
               'Photography',
               'Photoshop',
-              'Lightroom'
+              'Lightroom',
             ],
             count: 4,
-            browserFilter: '#filter=photo'
+            browserFilter: '#filter=photo',
           },
           'graphic-design': {
             products: [
@@ -45,10 +45,10 @@ module.exports = {
               'Illustrator',
               'Adobe Express',
               'InDesign',
-              'Acrobat Pro'
+              'Acrobat Pro',
             ],
             count: 6,
-            browserFilter: '#filter=graphic+design'
+            browserFilter: '#filter=graphic+design',
           },
           video: {
             products: [
@@ -56,35 +56,35 @@ module.exports = {
               'Adobe Premiere Pro',
               'After Effects',
               'Adobe Express',
-              'Audition'
+              'Audition',
             ],
             count: 5,
-            browserFilter: '#filter=video'
+            browserFilter: '#filter=video',
           },
           illustration: {
             products: [
               'Creative Cloud All Apps',
               'Photoshop',
-              'Illustrator'
+              'Illustrator',
             ],
             count: 3,
-            browserFilter: '#filter=illustration'
+            browserFilter: '#filter=illustration',
           },
           'acrobat-pdf': {
             products: [
               'Creative Cloud All Apps',
               'Acrobat Pro',
-              'AI Assistant for Acrobat'
+              'AI Assistant for Acrobat',
             ],
             count: 3,
-            browserFilter: '#filter=acrobat+and+pdf'
+            browserFilter: '#filter=acrobat+and+pdf',
           },
           '3d-ar': {
             products: [
-              'Adobe Substance 3D Collection'
+              'Adobe Substance 3D Collection',
             ],
             count: 1,
-            browserFilter: '#filter=3d+and+ar'
+            browserFilter: '#filter=3d+and+ar',
           },
           'social-media': {
             products: [
@@ -93,8 +93,8 @@ module.exports = {
               'Lightroom',
             ],
             count: 3,
-            browserFilter: '#filter=social+media'
-          }
+            browserFilter: '#filter=social+media',
+          },
         },
         cards: [
           {
@@ -109,7 +109,7 @@ module.exports = {
             linkUrl: 'https://www.adobe.com/plans-fragments/modals/individual/modals-content-rich/all-apps/master.html',
             iconUrl: 'https://www.adobe.com/content/dam/shared/images/product-icons/svg/creative-cloud.svg',
             ctaAnalyticsId: 'select',
-            ctaDaaLL: 'Select-2--Creative Cloud All A'
+            ctaDaaLL: 'Select-2--Creative Cloud All A',
           },
           {
             id: '7819acb2-fb23-46c5-ab7f-f59b2e29ee1e',
@@ -125,8 +125,8 @@ module.exports = {
             iconUrl1: 'https://www.adobe.com/content/dam/shared/images/product-icons/svg/lightroom.svg',
             iconUrl2: 'https://www.adobe.com/cc-shared/assets/img/product-icons/svg/photoshop.svg',
             ctaAnalyticsId: 'select',
-            ctaDaaLL: 'Select-2--Creative Cloud All A'
-          }
+            ctaDaaLL: 'Select-2--Creative Cloud All A',
+          },
         ],
       },
 
@@ -138,6 +138,6 @@ module.exports = {
       path: '/drafts/nala/features/commerce/plans',
       browserParams: '?plans=edu',
       tags: '@mas-acom @mas-plans-card @commerce @smoke @regression @milo @plans-tabs-deeplink',
-    }
+    },
   ],
 };
