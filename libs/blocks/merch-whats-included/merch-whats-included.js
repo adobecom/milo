@@ -1,5 +1,10 @@
-import '../../deps/mas/merch-whats-included.js';
 import { createTag } from '../../utils/utils.js';
+import { loadMasDependency } from '../merch/merch.js';
+
+const searchParams = new URLSearchParams(window.location.search);
+if (!searchParams.has('maslibs')) {
+  await loadMasDependency('merch-whats-included');
+}
 
 const init = async (el) => {
   const styles = Array.from(el.classList);

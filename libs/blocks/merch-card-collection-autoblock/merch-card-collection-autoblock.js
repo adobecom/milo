@@ -1,7 +1,5 @@
 import { createTag, getConfig } from '../../utils/utils.js';
-import { initService, getOptions, MEP_SELECTOR, overrideOptions } from '../merch/merch.js';
-import '../../deps/mas/merch-card.js';
-import '../../deps/mas/merch-quantity-select.js';
+import { initService, getOptions, MEP_SELECTOR, overrideOptions, loadMasDependencies } from '../merch/merch.js';
 
 const COLLECTION_AUTOBLOCK_TIMEOUT = 5000;
 const DEFAULT_OPTIONS = { sidenav: true };
@@ -14,7 +12,18 @@ function getTimeoutPromise() {
 }
 
 async function loadDependencies(options) {
-  /** Load service first */
+  /** Load MAS dependencies first */
+  const searchParams = new URLSearchParams(window.location.search);
+  const masDeps = ['merch-card', 'merch-quantity-select'];
+  if (!searchParams.has('maslibs')) {
+    masDeps.push('merch-card-collection');
+    if (options.sidenav) {
+      masDeps.push('merch-sidenav');
+    }
+    await loadMasDependencies(masDeps);
+  }
+
+  /** Load service */
   const servicePromise = initService();
   const success = await Promise.race([servicePromise, getTimeoutPromise()]);
   if (!success) {
@@ -25,7 +34,6 @@ async function loadDependencies(options) {
 
   const { base } = getConfig();
   const dependencyPromises = [
-    import('../../deps/mas/merch-card-collection.js'),
     import(`${base}/features/spectrum-web-components/dist/theme.js`),
     import(`${base}/features/spectrum-web-components/dist/button.js`),
     import(`${base}/features/spectrum-web-components/dist/action-button.js`),
@@ -35,9 +43,9 @@ async function loadDependencies(options) {
     import(`${base}/features/spectrum-web-components/dist/overlay.js`),
     import(`${base}/features/spectrum-web-components/dist/tray.js`),
   ];
+
   if (options.sidenav) {
     dependencyPromises.push(...[
-      import('../../deps/mas/merch-sidenav.js'),
       import(`${base}/features/spectrum-web-components/dist/base.js`),
       import(`${base}/features/spectrum-web-components/dist/shared.js`),
       import(`${base}/features/spectrum-web-components/dist/sidenav.js`),

@@ -2,9 +2,12 @@ import { decorateButtons, decorateBlockHrs } from '../../utils/decorate.js';
 import { getConfig, createTag, loadStyle } from '../../utils/utils.js';
 import { getMetadata } from '../section-metadata/section-metadata.js';
 import { processTrackingLabels } from '../../martech/attributes.js';
-import '../../deps/mas/merch-card.js';
-import '../../deps/lit-all.min.js';
-import { initService } from '../merch/merch.js';
+import { initService, loadMasDependencies } from '../merch/merch.js';
+
+const searchParams = new URLSearchParams(window.location.search);
+if (!searchParams.has('maslibs')) {
+  await loadMasDependencies(['merch-card', 'lit-all']);
+}
 
 const TAG_PATTERN = /^[a-zA-Z0-9_-]+:[a-zA-Z0-9_-]+\/[a-zA-Z0-9_-].*$/;
 
@@ -53,7 +56,10 @@ const intersectionObserver = new IntersectionObserver((entries) => {
   entries.forEach((entry) => {
     if (entry.target.clientHeight === 0) return;
     intersectionObserver.unobserve(entry.target);
-    entry.target.requestUpdate();
+    // Check if the element has been upgraded to a web component
+    if (typeof entry.target.requestUpdate === 'function') {
+      entry.target.requestUpdate();
+    }
   });
 });
 
@@ -115,7 +121,10 @@ function extractQuantitySelect(el, merchCard) {
   if (!attributes.min || !attributes.max || !attributes.step) {
     return null;
   }
-  import('../../deps/mas/merch-quantity-select.js');
+  const urlParams = new URLSearchParams(window.location.search);
+  if (!urlParams.has('maslibs')) {
+    import('../merch/merch.js').then(({ loadMasDependency }) => loadMasDependency('merch-quantity-select'));
+  }
   return createTag('merch-quantity-select', attributes);
 }
 

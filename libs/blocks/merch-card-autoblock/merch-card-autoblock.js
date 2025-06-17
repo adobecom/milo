@@ -1,7 +1,5 @@
 import { createTag } from '../../utils/utils.js';
-import '../../deps/mas/merch-card.js';
-import '../../deps/mas/merch-quantity-select.js';
-import { initService, getOptions, overrideOptions } from '../merch/merch.js';
+import { initService, getOptions, overrideOptions, loadMasDependencies } from '../merch/merch.js';
 
 const CARD_AUTOBLOCK_TIMEOUT = 5000;
 let log;
@@ -13,7 +11,13 @@ function getTimeoutPromise() {
 }
 
 async function loadDependencies() {
-  /** Load service first */
+  /** Load MAS dependencies first */
+  const searchParams = new URLSearchParams(window.location.search);
+  if (!searchParams.has('maslibs')) {
+    await loadMasDependencies(['merch-card', 'merch-quantity-select']);
+  }
+
+  /** Load service */
   const servicePromise = initService();
   const success = await Promise.race([servicePromise, getTimeoutPromise()]);
   if (!success) {

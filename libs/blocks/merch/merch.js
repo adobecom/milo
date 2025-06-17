@@ -4,6 +4,54 @@ import {
 } from '../../utils/utils.js';
 import { replaceKey } from '../../features/placeholders.js';
 
+// Centralized MAS dependency management
+const MAS_DEPS = {
+  'merch-card': () => import('../../deps/mas/merch-card.js'),
+  'lit-all': () => import('../../deps/lit-all.min.js'),
+  'merch-offer-select': () => import('../../deps/mas/merch-offer-select.js'),
+  'merch-quantity-select': () => import('../../deps/mas/merch-quantity-select.js'),
+  'merch-whats-included': () => import('../../deps/mas/merch-whats-included.js'),
+  'merch-mnemonic-list': () => import('../../deps/mas/merch-mnemonic-list.js'),
+  'merch-card-collection': () => import('../../deps/mas/merch-card-collection.js'),
+  'merch-sidenav': () => import('../../deps/mas/merch-sidenav.js'),
+};
+
+const loadedDeps = new Set();
+
+export async function loadMasDependency(depName) {
+  const searchParams = new URLSearchParams(window.location.search);
+  if (searchParams.has('maslibs') || window.masLibrariesLoaded) {
+    return Promise.resolve();
+  }
+
+  if (loadedDeps.has(depName)) {
+    return Promise.resolve();
+  }
+
+  const loader = MAS_DEPS[depName];
+  if (!loader) {
+    throw new Error(`Unknown MAS dependency: ${depName}`);
+  }
+
+  loadedDeps.add(depName);
+  return loader();
+}
+
+export async function loadMasDependencies(deps) {
+  const searchParams = new URLSearchParams(window.location.search);
+  if (searchParams.has('maslibs') || window.masLibrariesLoaded) {
+    return Promise.resolve();
+  }
+
+  const toLoad = deps.filter((dep) => !loadedDeps.has(dep));
+  if (toLoad.length === 0) {
+    return Promise.resolve();
+  }
+
+  const promises = toLoad.map((dep) => loadMasDependency(dep));
+  return Promise.all(promises);
+}
+
 export const CHECKOUT_LINK_CONFIG_PATH = '/commerce/checkout-link.json'; // relative to libs.
 export const CHECKOUT_LINK_SANDBOX_CONFIG_PATH = '/commerce/checkout-link-sandbox.json'; // relative to libs.
 
@@ -698,6 +746,9 @@ export function setPreview(attributes) {
 export async function initService(force = false, attributes = {}) {
   if (force) {
     initService.promise = undefined;
+    window.masLibrariesLoaded = false;
+    window.masComponentsLoaded = undefined;
+    loadedDeps.clear();
     document.head.querySelector('mas-commerce-service')?.remove();
     fetchEntitlements.promise = undefined;
     fetchCheckoutLinkConfigs.promise = undefined;
@@ -722,10 +773,15 @@ export async function initService(force = false, attributes = {}) {
   });
   initService.promise = initService.promise ?? polyfills().then(async () => {
     const masLibsUrl = getMasLibs();
-    if (masLibsUrl) {
-      await import(masLibsUrl);
-    } else {
-      await import('../../deps/mas/commerce.js');
+
+    if (!window.masLibrariesLoaded) {
+      window.masLibrariesLoaded = true;
+      if (masLibsUrl) {
+        window.masComponentsLoaded = import(masLibsUrl);
+        await window.masComponentsLoaded;
+      } else {
+        await import('../../deps/mas/commerce.js');
+      }
     }
     const { language, locale, country } = getMiloLocaleSettings(miloLocale);
     let service = document.head.querySelector('mas-commerce-service');

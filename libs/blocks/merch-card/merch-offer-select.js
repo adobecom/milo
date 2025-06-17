@@ -1,6 +1,11 @@
 import { createTag } from '../../utils/utils.js';
 import { decorateButtons } from '../../utils/decorate.js';
-import '../../deps/mas/merch-offer-select.js';
+import { loadMasDependency } from '../merch/merch.js';
+
+const searchParams = new URLSearchParams(window.location.search);
+if (!searchParams.has('maslibs')) {
+  await loadMasDependency('merch-offer-select');
+}
 
 const TWP = 'twp';
 const MINI_COMPARE_CHART = 'mini-compare-chart';
