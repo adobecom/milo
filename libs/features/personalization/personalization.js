@@ -1150,9 +1150,10 @@ export function cleanAndSortManifestList(manifests, conf) {
         freshManifest.selectedVariantName = fullManifest.selectedVariantName;
         targetManifestWinsOverServerManifest = config?.env?.name === 'prod' && fullManifest.selectedVariantName.startsWith('target-');
 
-        freshManifest.variants = targetManifestWinsOverServerManifest
-          ? fullManifest.variants
-          : freshManifest.variants;
+        if (targetManifestWinsOverServerManifest) {
+          freshManifest.variants = fullManifest.variants;
+          freshManifest.placeholderData = fullManifest.placeholderData;
+        }
 
         freshManifest.selectedVariant = freshManifest.variants[freshManifest.selectedVariantName];
         manifestObj[manifest.manifestPath] = freshManifest;
