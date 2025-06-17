@@ -972,13 +972,14 @@ header.new-nav .feds-nav > section.feds-navItem > .feds-popup .top-bar .feds-bra
   padding-left: 0;
 }
 
-header.new-nav .feds-nav > section.feds-navItem > .feds-popup .top-bar .close-icon {
-  width:14px;
-  height:14px;
+header.new-nav .feds-nav > section.feds-navItem > .feds-popup .close-icon {
+  position: absolute;
+  border: none;
+  top: 22px;
+  right: 20px;
   padding: 0;
-  border: 0;
+  height: 14px;
   font-family: var(--body-font-family);
-  margin-top: 2px;
 }
 
 header.new-nav .feds-nav > section.feds-navItem > .feds-popup .top-bar .main-menu {
@@ -1016,7 +1017,7 @@ header.new-nav .feds-nav > section.feds-navItem > .feds-popup .title .breadcrumb
   padding-top: 12px;
   box-sizing: inherit;
 }
-header.new-nav .feds-nav > section.feds-navItem > .feds-popup .title h7 {
+header.new-nav .feds-nav > section.feds-navItem > .feds-popup .title h2 {
   min-height: 25px;
   font-size: 28px;
   font-weight: 700;
@@ -1024,6 +1025,11 @@ header.new-nav .feds-nav > section.feds-navItem > .feds-popup .title h7 {
   padding: 8px 0 24px;
   box-sizing: inherit;
   white-space: break-spaces;
+  margin: 0;
+}
+
+header.new-nav .feds-nav > section.feds-navItem > .feds-popup .title h2:focus {
+  outline: none;
 }
 
 header.new-nav .feds-nav > section.feds-navItem > .feds-popup .tabs {

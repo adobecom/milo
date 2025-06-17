@@ -105,10 +105,21 @@ function waitForMarqueeHeight() {
   });
 }
 
+function getHoverCaretHeight() {
+  if (document.querySelector('.feds-navLink--hoverCaret')) {
+    const navLinkHeight = document.querySelector('.feds-navLink--hoverCaret').getBoundingClientRect().height;
+    return navLinkHeight;
+  }
+  return 0;
+}
+
 function getElementsHeightBeforeMain() {
   const main = document.querySelector('main');
   if (!main) return 0;
-  const beforeMain = main.getBoundingClientRect().top - document.body.getBoundingClientRect().top;
+  let beforeMain = main.getBoundingClientRect().top - document.body.getBoundingClientRect().top;
+  if (document.querySelector('.feds-navLink--hoverCaret')) {
+    beforeMain -= document.querySelector('.global-navigation').getBoundingClientRect().height;
+  }
   return beforeMain;
 }
 
@@ -118,7 +129,7 @@ function setupStickyBehaviour() {
 
   let initialOffset;
   waitForMarqueeHeight().then((marqueeHeight) => {
-    toggleWrapper.closest('.section').style.top = `${marqueeHeight}px`;
+    toggleWrapper.closest('.section').style.top = `${marqueeHeight + getHoverCaretHeight()}px`;
     initialOffset = toggleWrapper.getBoundingClientRect().top + window.scrollY;
   });
 
@@ -129,7 +140,8 @@ function setupStickyBehaviour() {
         marqueeHeight = marquee.getBoundingClientRect().height;
       }
     });
-    toggleWrapper.closest('.section').setAttribute('style', `top: ${marqueeHeight}px`);
+
+    toggleWrapper.closest('.section').setAttribute('style', `top: ${marqueeHeight + getHoverCaretHeight()}px`);
 
     const { scrollY } = window;
 
@@ -168,7 +180,8 @@ export default async function decorate(block) {
         }
       });
     }
-
-    setupStickyBehaviour();
+    if (block.classList.contains('sticky')) {
+      setupStickyBehaviour();
+    }
   }
 }
