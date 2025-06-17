@@ -32,6 +32,7 @@
                 "name": "",
                 "title": "plans-test-all",
                 "id": "ed9982d1-0acb-4a6d-8155-e5b002acffdf",
+                "originalId": "enUS82d1-0acb-4a6d-8155-e5b002acffdf",
                 "description": "",
                 "model": {
                     "id": "L2NvbmYvbWFzL3NldHRpbmdzL2RhbS9jZm0vbW9kZWxzL2NvbGxlY3Rpb24"
@@ -58,6 +59,7 @@
                 "name": "",
                 "title": "CCD Slice Wide CC All Apps",
                 "id": "ca835d11-fe6b-40f8-96d1-50ac800c9f70",
+                "originalId": "enUS5d11-fe6b-40f8-96d1-50ac800c9f70",
                 "description": "",
                 "model": {
                     "id": "L2NvbmYvbWFzL3NldHRpbmdzL2RhbS9jZm0vbW9kZWxzL2NhcmQ"
@@ -114,6 +116,7 @@
                 "name": "",
                 "title": "CCD Slice Wide CC All Apps",
                 "id": "d9998fc3-578e-44be-be4f-d8be1c45c75b",
+                "originalId": "enUS8fc3-578e-44be-be4f-d8be1c45c75b",
                 "description": "",
                 "model": {
                     "id": "L2NvbmYvbWFzL3NldHRpbmdzL2RhbS9jZm0vbW9kZWxzL2NhcmQ"
@@ -137,6 +140,7 @@
                 "name": "",
                 "title": "CCD Slice Wide CC All Apps",
                 "id": "fe2c1223-be01-4c0e-9a97-f63e8d0458e9",
+                "originalId": "enUS1223-be01-4c0e-9a97-f63e8d0458e9",
                 "description": "",
                 "model": {
                     "id": "L2NvbmYvbWFzL3NldHRpbmdzL2RhbS9jZm0vbW9kZWxzL2NhcmQ"
@@ -169,6 +173,7 @@
                 "name": "",
                 "title": "CCD Slice Wide CC All Apps",
                 "id": "8391265d-2542-4533-8089-b75fb19d28d8",
+                "originalId": "enUS265d-2542-4533-8089-b75fb19d28d8",
                 "description": "",
                 "model": {
                     "id": "L2NvbmYvbWFzL3NldHRpbmdzL2RhbS9jZm0vbW9kZWxzL2NhcmQ"
@@ -189,16 +194,14 @@
                 "name": "",
                 "title": "CCD Slice Wide CC All Apps",
                 "id": "54860b82-24e6-4ca7-a08d-577a3ad6ebda",
+                "originalId": "enUS0b82-24e6-4ca7-a08d-577a3ad6ebda",
                 "description": "",
                 "model": {
                     "id": "L2NvbmYvbWFzL3NldHRpbmdzL2RhbS9jZm0vbW9kZWxzL2NhcmQ"
                 },
                 "fields": { "variant": "plans" },
                 "settings": {
-                    "stockCheckboxLabel": "Add a 30-day free trial of Adobe Stock.",
-                    "stockOfferOsis": "",
-                    "secureLabel": "Secure transaction",
-                    "displayPlanType": true
+                    "displayPlanType": false
                 }
             }
         },
@@ -209,6 +212,7 @@
                 "name": "",
                 "title": "CCD Slice Wide CC All Apps",
                 "id": "ee0f3a5c-b4a4-4305-bda5-92be2662fbab",
+                "originalId": "enUS3a5c-b4a4-4305-bda5-92be2662fbab",
                 "description": "",
                 "model": {
                     "id": "L2NvbmYvbWFzL3NldHRpbmdzL2RhbS9jZm0vbW9kZWxzL2NhcmQ"
@@ -229,6 +233,7 @@
                 "name": "",
                 "title": "plans-test-photo",
                 "id": "8ef6b2de-4963-42f2-a0d0-d158bd78e404",
+                "originalId": "enUSb2de-4963-42f2-a0d0-d158bd78e404",
                 "description": "",
                 "model": {
                     "id": "L2NvbmYvbWFzL3NldHRpbmdzL2RhbS9jZm0vbW9kZWxzL2NvbGxlY3Rpb24"
@@ -248,6 +253,7 @@
                 "name": "",
                 "title": "plans-test-cloud",
                 "id": "1049c155-8081-4d9b-8215-a4fb0b8418dd",
+                "originalId": "enUSc155-8081-4d9b-8215-a4fb0b8418dd",
                 "description": "",
                 "model": {
                     "id": "L2NvbmYvbWFzL3NldHRpbmdzL2RhbS9jZm0vbW9kZWxzL2NvbGxlY3Rpb24"
@@ -274,6 +280,7 @@
                 "name": "",
                 "title": "CCD Slice Wide CC All Apps",
                 "id": "0fea0932-c802-49e4-8589-f8bcf6bfe98c",
+                "originalId": "enUS0932-c802-49e4-8589-f8bcf6bfe98c",
                 "description": "",
                 "model": {
                     "id": "L2NvbmYvbWFzL3NldHRpbmdzL2RhbS9jZm0vbW9kZWxzL2NhcmQ"
@@ -283,10 +290,6 @@
                     "addon": "<p>Add a 30-day free trial of Adobe Stock.*</p><p><span is=\"inline-price\" data-template=\"price\" data-wcs-osi=\"FWEdmk_LYpoGnCR0gQMaS5Rbq9a5vFbVFoNaRT0m7NU\"></span></p><p><span is=\"inline-price\" data-template=\"price\" data-wcs-osi=\"JWIwpOv5nOckxDEBJeQWHa8spk7iEo4EEnQNQ1_YbmE\"></span></p><p><span is=\"inline-price\" data-template=\"price\" data-wcs-osi=\"RoV3wydweldSG5HWZUaytO-du3WA8S32alL4GzK6Ssw\"></span></p>"
                 },
                 "settings": {
-                    "stockCheckboxLabel": "Add a 30-day free trial of Adobe Stock.",
-                    "stockOfferOsis": "",
-                    "secureLabel": "Secure transaction",
-                    "displayPlanType": true
                 }
             }
         },
@@ -297,6 +300,7 @@
                 "name": "",
                 "title": "plans-test-cloud-subcategory",
                 "id": "afa05e50-40cf-4c87-b5bf-4ce405633d82",
+                "originalId": "enUS5e50-40cf-4c87-b5bf-4ce405633d82",
                 "description": "",
                 "model": {
                     "id": "L2NvbmYvbWFzL3NldHRpbmdzL2RhbS9jZm0vbW9kZWxzL2NvbGxlY3Rpb24"

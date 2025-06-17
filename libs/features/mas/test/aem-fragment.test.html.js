@@ -85,7 +85,7 @@ runTests(async () => {
             it('has fragment cache', async () => {
                 expect(cache).to.exist;
                 expect(cache.has('id123')).to.false;
-                cache.add('id123', { id: 'id123', test: 1 });
+                cache.add({ id: 'id123', test: 1 });
                 expect(cache.has('id123')).to.true;
                 cache.clear();
                 expect(cache.has('id123')).to.false;
@@ -94,7 +94,7 @@ runTests(async () => {
             it('caches localized fragment by requested(en_US) id', async () => {
                 expect(cache).to.exist;
                 expect(cache.has('id123en_US')).to.false;
-                cache.addByRequestedId('id123en_US', { id: 'id567', test: 1 });
+                cache.add({ id: 'id567', originalId: 'id123en_US', test: 1 });
                 expect(cache.has('id123en_US')).to.true;
                 cache.clear();
                 expect(cache.has('id123en_US')).to.false;
@@ -297,8 +297,7 @@ runTests(async () => {
                 expect(fragment.fetchInfo['aem-fragment:measure']).to.exist;
             });
 
-            it.only('populates the fragment cache from references', async () => {
-
+            it('populates the fragment cache from references', async () => {
                 const topCollection = addFragment('collection');
                 await oneEvent(topCollection, 'aem:load');
                 const topCollectionData = cache.get('collection');
@@ -308,40 +307,57 @@ runTests(async () => {
                 const placeholdersBase = {};
                 const dictionaryBase = {};
                 const priceLiteralsBase = {
-                  planTypeLabel: '{planType, select, ABM {Annual, paid monthly.} other {}}',
+                    planTypeLabel:
+                        '{planType, select, ABM {Annual, paid monthly.} other {}}',
                 };
 
-                const childCollection1 = cache.get('ed9982d1-0acb-4a6d-8155-e5b002acffdf');
-                const childCollection2 = cache.get('8ef6b2de-4963-42f2-a0d0-d158bd78e404');
-                const childCollection3 = cache.get('1049c155-8081-4d9b-8215-a4fb0b8418dd');
+                const childCollection1 = cache.get(
+                    'enUS82d1-0acb-4a6d-8155-e5b002acffdf',
+                );
+                const childCollection2 = cache.get(
+                    'enUSb2de-4963-42f2-a0d0-d158bd78e404',
+                );
+                [topCollectionData, childCollection1, childCollection2].forEach(
+                    (collection) => {
+                        compareSettings(collection, settingsBase);
+                        comparePlaceholders(collection, placeholdersBase);
+                        compareDictionary(collection, dictionaryBase);
+                        comparePriceLiterals(collection, priceLiteralsBase);
+                    },
+                );
 
-                [
-                    topCollectionData,
-                    childCollection1,
-                    childCollection2,
-                    childCollection3,
-                ].forEach((collection) => {
-                    compareSettings(collection, settingsBase);
-                    comparePlaceholders(collection, placeholdersBase);
-                    compareDictionary(collection, dictionaryBase);
-                    comparePriceLiterals(collection, priceLiteralsBase);
+                const childCollection3 = cache.get(
+                    'enUSc155-8081-4d9b-8215-a4fb0b8418dd',
+                );
+                compareSettings(childCollection3, {
+                    ...settingsBase,
+                    displayPlanType: false,
                 });
+                comparePlaceholders(childCollection3, placeholdersBase);
+                compareDictionary(childCollection3, dictionaryBase);
+                comparePriceLiterals(childCollection3, priceLiteralsBase);
 
-                const card1 = cache.get('ca835d11-fe6b-40f8-96d1-50ac800c9f70');
-                const card2 = cache.get('d9998fc3-578e-44be-be4f-d8be1c45c75b');
-                const card3 = cache.get('fe2c1223-be01-4c0e-9a97-f63e8d0458e9');
-                const card4 = cache.get('8391265d-2542-4533-8089-b75fb19d28d8');
-                const card5 = cache.get('54860b82-24e6-4ca7-a08d-577a3ad6ebda');
-                const card6 = cache.get('ee0f3a5c-b4a4-4305-bda5-92be2662fbab');
-                const card7 = cache.get('0fea0932-c802-49e4-8589-f8bcf6bfe98c');
-                const card8 = cache.get('ee0f3a5c-b4a4-4305-bda5-92be2662fbab');
-                const card9 = cache.get('54860b82-24e6-4ca7-a08d-577a3ad6ebda');
+                const card1 = cache.get('enUS5d11-fe6b-40f8-96d1-50ac800c9f70');
+                const card2 = cache.get('enUS8fc3-578e-44be-be4f-d8be1c45c75b');
+                const card3 = cache.get('enUS1223-be01-4c0e-9a97-f63e8d0458e9');
+                const card4 = cache.get('enUS265d-2542-4533-8089-b75fb19d28d8');
+                const card6 = cache.get('enUS3a5c-b4a4-4305-bda5-92be2662fbab');
+                const card7 = cache.get('enUS0932-c802-49e4-8589-f8bcf6bfe98c');
+                const card8 = cache.get('enUS3a5c-b4a4-4305-bda5-92be2662fbab');
 
-                [card1, card2, card3, card4, card5, card6, card7, card8, card9].forEach((card) => {
-                    compareSettings(card, settingsBase);
-                    comparePlaceholders(card, placeholdersBase);
-                    compareDictionary(card, dictionaryBase);
-                    comparePriceLiterals(card, priceLiteralsBase);
+                [card1, card2, card3, card4, card6, card7, card8].forEach(
+                    (card) => {
+                        compareSettings(card, settingsBase);
+                        comparePlaceholders(card, placeholdersBase);
+                        compareDictionary(card, dictionaryBase);
+                        comparePriceLiterals(card, priceLiteralsBase);
+                    },
+                );
+
+                const card5 = cache.get('enUS0b82-24e6-4ca7-a08d-577a3ad6ebda');
+                compareSettings(card5, {
+                    ...settingsBase,
+                    displayPlanType: false,
                 });
             });
         });

@@ -28,33 +28,33 @@ class FragmentCache {
 
     /**
      * Add fragment to cache
-     * @param {string} fragmentId requested id.
-     * requested id can differe from returned fragment.id because of translation
+     * @param {Object} fragment fragment object.
+     * @param {Object?} parentFragment parent fragment object, optional.
      */
-    addByRequestedId(fragmentId, fragment) {
-        if (this.get(fragmentId)) return;
-        this.#fragmentCache.set(fragmentId, fragment);
-        Object.entries(fragment.references).forEach(([key, { value }]) => {
+    add(fragment, parentFragment) {
+        if (this.get(fragment.originalId)) return;
+        if (this.get(fragment.id)) return;
+        this.#fragmentCache.set(fragment.originalId, fragment);
+        this.#fragmentCache.set(fragment.id, fragment);
+        if (!fragment.references) return;
+        Object.entries(fragment.references)
+            .filter(([, { type }]) => type === 'content-fragment')
+            .forEach(([, { value }]) => {
             value.references = fragment.references;
-            this.addByRequestedId(value.id, value);
-        });
-    }
-
-    put(fragmentId, fragment) {
-        this.#fragmentCache.set(fragmentId, fragment);
-    }
-
-    add(...fragments) {
-        fragments.forEach((fragment) => {
-            const { id: fragmentId } = fragment;
-            if (fragmentId) {
-                this.#fragmentCache.set(fragmentId, fragment);
-            }
+            value.settings = { ...parentFragment?.settings, ...value.settings };
+            value.placeholders = { ...parentFragment?.placeholders, ...value.placeholders };
+            value.dictionary = { ...parentFragment?.dictionary, ...value.dictionary };
+            value.priceLiterals = { ...parentFragment?.priceLiterals, ...value.priceLiterals };
+            this.add(value, (parentFragment ?? fragment));
         });
     }
 
     has(fragmentId) {
         return this.#fragmentCache.has(fragmentId);
+    }
+
+    entries() {
+        return this.#fragmentCache.entries();
     }
 
     get(key) {
@@ -186,10 +186,9 @@ export class AemFragment extends HTMLElement {
             });
             this.#applyHeaders(response);
             this.#fetchInfo.status = response?.status;
-          this.#fetchInfo.measure = printMeasure(performance.measure(
-              measureName,
-              startMarkName,
-          ));
+            this.#fetchInfo.measure = printMeasure(
+                performance.measure(measureName, startMarkName),
+            );
             this.#fetchInfo.retryCount = response.retryCount;
             if (!response?.ok) {
                 throw new MasError('Unexpected fragment response', {
@@ -199,10 +198,9 @@ export class AemFragment extends HTMLElement {
             }
             return await response.json();
         } catch (e) {
-          this.#fetchInfo.measure = printMeasure(performance.measure(
-              measureName,
-              startMarkName,
-          ));
+            this.#fetchInfo.measure = printMeasure(
+                performance.measure(measureName, startMarkName),
+            );
             this.#fetchInfo.retryCount = e.retryCount;
             if (this.#rawData) {
                 this.#fetchInfo.stale = true;
@@ -285,8 +283,8 @@ export class AemFragment extends HTMLElement {
         const endpoint = `${masIOUrl}/fragment?id=${this.#fragmentId}&api_key=${wcsApiKey}&locale=${locale}`;
 
         fragment = await this.#getFragmentById(endpoint);
-        // TODO add all references to cache
-        cache.addByRequestedId(this.#fragmentId, fragment);
+        fragment.originalId ??= this.#fragmentId;
+        cache.add(fragment);
         this.#rawData = fragment;
         return true;
     }
@@ -363,7 +361,9 @@ export class AemFragment extends HTMLElement {
     }
 
     async generatePreview() {
-      const { previewFragment } = await import('https://mas.adobe.com/studio/libs/fragment-client.js');
+        const { previewFragment } = await import(
+            'https://mas.adobe.com/studio/libs/fragment-client.js'
+        );
         const data = await previewFragment(this.#fragmentId, {
             locale: this.#service.settings.locale,
             apiKey: this.#service.settings.wcsApiKey,
