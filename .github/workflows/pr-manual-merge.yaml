@@ -1,4 +1,4 @@
-name: Slack notification on Merge
+name: Manual Merge
 
 on:
   pull_request_target:
@@ -18,7 +18,7 @@ jobs:
         uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea
         with:
           script: |
-            const notifyMerge = require('./.github/workflows/pr-merge-notification.js');
+            const notifyMerge = require('./.github/workflows/pr-manual-merge.js');
             await notifyMerge({ github, context });
         env:
           MILO_RELEASE_SLACK_WH: ${{ secrets.MILO_RELEASE_SLACK_WH }}

@@ -1,3 +1,4 @@
+import { STATE_FAILED } from './constants.js';
 import {
     createMasElement,
     updateMasElement,
@@ -186,6 +187,10 @@ export class InlinePrice extends HTMLSpanElement {
         return this.masElement.options;
     }
 
+    get isFailed() {
+        return this.masElement.state === STATE_FAILED;
+    }
+
     requestUpdate(force = false) {
         return this.masElement.requestUpdate(force);
     }
@@ -268,11 +273,18 @@ export class InlinePrice extends HTMLSpanElement {
         const version = this.masElement.togglePending(options);
         this.innerHTML = '';
         const [promise] = service.resolveOfferSelectors(options);
-        return this.renderOffers(
-            selectOffers(await promise, options),
-            options,
-            version,
-        );
+        try {
+            const offers = await promise;
+            return this.renderOffers(
+                selectOffers(offers, options),
+                options,
+                version,
+            );
+        }
+        catch(error) {
+            this.innerHTML = '';
+            throw error;
+        }
     }
 
     // TODO: can be extended to accept array of offers and compute subtotal price
@@ -307,7 +319,11 @@ export class InlinePrice extends HTMLSpanElement {
                 const inlinePrices = parentEl?.querySelectorAll('span[is="inline-price"]');
                 if (inlinePrices.length > 1 && inlinePrices.length === parentEl.querySelectorAll('span[data-template="strikethrough"]').length * 2) {
                     inlinePrices.forEach((price) => {
-                        if (price.dataset.template !== 'strikethrough' && price.options && !price.options.alternativePrice) {
+                        if (price.dataset.template !== 'strikethrough' && 
+                            price.options && 
+                            !price.options.alternativePrice &&
+                            !price.isFailed
+                        ) {
                             price.options.alternativePrice = true;
                             price.innerHTML = service.buildPriceHTML(offers, price.options);
                         }

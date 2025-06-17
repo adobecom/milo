@@ -12,7 +12,8 @@ import { PlanType, applyPlanType } from '@dexter/tacocat-core';
 import { Log } from './log.js';
 import { MasError } from './mas-error.js';
 import { masFetch } from './utils/mas-fetch.js';
-import { getService } from './utilities.js';
+import { getLogHeaders, getService } from './utilities.js';
+import { printMeasure } from './utils.js';
 
 const NAMESPACE = 'wcs';
 
@@ -123,8 +124,7 @@ export function Wcs({ settings }) {
             Date.now() + Math.random().toString(36).substring(2, 7);
         const startMark = `${NAMESPACE}:${osi}:${uniqueId}${MARK_START_SUFFIX}`;
         const measureName = `${NAMESPACE}:${osi}:${uniqueId}${MARK_DURATION_SUFFIX}`;
-        let startTime;
-        let duration;
+        let measure;
         try {
             performance.mark(startMark);
             url = new URL(settings.wcsURL);
@@ -185,7 +185,7 @@ export function Wcs({ settings }) {
             /* c8 ignore next 2 */
             message = `Network error: ${e.message}`;
         } finally {
-            ({ startTime, duration } = performance.measure(
+            (measure = performance.measure(
                 measureName,
                 startMark,
             ));
@@ -197,13 +197,16 @@ export function Wcs({ settings }) {
         if (reject && promises.size) {
             // reject pending promises, their offers weren't provided by WCS
             log.debug('Missing:', { offerSelectorIds: [...promises.keys()] });
+
+            const headers = getLogHeaders(response);
+
             promises.forEach((promise) => {
                 promise.reject(
                     new MasError(message, {
                         ...options,
+                        ...headers,
                         response,
-                        startTime,
-                        duration,
+                        measure: printMeasure(measure),
                         ...service?.duration,
                     }),
                 );

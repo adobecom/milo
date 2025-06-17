@@ -6,7 +6,14 @@ import {
   getOpenPopup,
   selectors,
 } from './utils.js';
-import { closeAllDropdowns, dropWhile, logErrorFor, setActiveDropdown, takeWhile } from '../utilities.js';
+import {
+  closeAllDropdowns,
+  removeA11YMobileDropdowns,
+  dropWhile,
+  logErrorFor,
+  setActiveDropdown,
+  takeWhile,
+} from '../utilities.js';
 
 const closeHeadlines = () => {
   const open = [...document.querySelectorAll(`${selectors.headline}[aria-expanded="true"]`)];
@@ -172,6 +179,7 @@ class Popup {
     const activeLinks = [...activePopup.querySelectorAll(selectors.activeLinks)];
     const stickyCTA = activePopup.querySelector(selectors.stickyCta);
     const topBarLinks = activePopup.querySelectorAll(selectors.topBarLinks);
+    const closeIcon = activePopup.querySelector(selectors.closeLink);
     const breadcrumbLinks = activePopup.querySelectorAll(selectors.breadCrumbItems);
     return [
       ...anteActiveTab,
@@ -180,6 +188,7 @@ class Popup {
       stickyCTA,
       ...postActiveTab,
       ...topBarLinks,
+      closeIcon,
       ...breadcrumbLinks,
     ].filter(Boolean);
   };
@@ -210,6 +219,7 @@ class Popup {
         closeAllDropdowns();
         this.focusMainNav(isFooter);
         if (newNav && isLocalNav && !isFooter) {
+          removeA11YMobileDropdowns();
           const toggle = document.querySelector('header.new-nav .feds-toggle');
           toggle?.click();
           toggle?.focus();
