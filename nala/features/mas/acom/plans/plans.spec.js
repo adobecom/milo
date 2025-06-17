@@ -101,7 +101,7 @@ module.exports = {
             id: '5c781778-24bd-4d3e-b0eb-810525ea3442',
             title: 'Creative Cloud All Apps',
             description: 'Get 20+ Creative Cloud apps including Photoshop, Illustrator, Adobe Express, Premiere Pro, and Acrobat Pro. (Substance 3D apps are not included.)',
-            price: 'US$59.99/mo',
+            price: 'US$69.99/mo',
             abmLabel: 'Annual, paid monthly.',
             cta: 'Select',
             osi: 'r_JXAnlFI7xD6FxWKl2ODvZriLYBoSL701Kd1hRyhe8',

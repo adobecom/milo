@@ -20,31 +20,37 @@ test.describe('MAS Plans Page test suite', () => {
     const { data } = features[0];
     console.info('[Test Page]: ', testPage);
 
-    await test.step('step-1: Go to Plans page and verify initial state', async () => {
+    await test.step('step-1: Go to Plans page and verify initial state and two cards', async () => {
       await page.goto(testPage);
       await expect(page).toHaveURL(`${baseURL}${features[0].path}`);
       await page.waitForLoadState('domcontentloaded');
       
       await page.waitForSelector('merch-card-collection');
-      expect(await masPlans.getCard(data.cards[0].id)).toBeVisible();
-      expect(await masPlans.getCard(data.cards[1].id)).toBeVisible();
+      await expect(await masPlans.getCard(data.cards[0].id)).toBeVisible();
+      await expect(await masPlans.getCard(data.cards[1].id)).toBeVisible();
 
-      expect(await masPlans.getCardIcon(data.cards[0].id)).toBeVisible();
+      await expect(await masPlans.getCardIcon(data.cards[0].id)).toBeVisible();
       const card2Icons = await masPlans.getCardIcon(data.cards[1].id);
       expect(await card2Icons.count()).toBe(2);
-      expect(await card2Icons.nth(0)).toBeVisible();
-      expect(await card2Icons.nth(1)).toBeVisible();
+      await expect(await card2Icons.nth(0)).toBeVisible();
+      await expect(await card2Icons.nth(1)).toBeVisible();
 
-      expect(await masPlans.getCardTitle(data.cards[0].id)).toHaveText(data.cards[0].title);
-      expect(await masPlans.getCardTitle(data.cards[1].id)).toHaveText(data.cards[1].title);
+      await expect(await masPlans.getCardTitle(data.cards[0].id)).toHaveText(data.cards[0].title);
+      await expect(await masPlans.getCardTitle(data.cards[1].id)).toHaveText(data.cards[1].title);
 
-      expect(await masPlans.getCardCTA(data.cards[0].id)).toBeVisible();
-      expect(await masPlans.getCardCTA(data.cards[0].id)).toContainText(data.cards[0].cta)
-      expect(await masPlans.getOsiValue(data.cards[0].id)).toEqual(data.cards[0].osi);
+      await expect(await masPlans.getCardPrice(data.cards[0].id)).toContainText(data.cards[0].price);
+      await expect(await masPlans.getCardPrice(data.cards[1].id)).toContainText(data.cards[1].price);
 
-      expect(await masPlans.getCardCTA(data.cards[1].id)).toBeVisible();
-      expect(await masPlans.getCardCTA(data.cards[1].id)).toContainText(data.cards[1].cta);
-      expect(await masPlans.getOsiValue(data.cards[1].id)).toEqual(data.cards[1].osi);
+      await expect(await masPlans.getCardCTA(data.cards[0].id)).toBeVisible();
+      await expect(await masPlans.getCardCTA(data.cards[0].id)).toContainText(data.cards[0].cta)
+      expect(await masPlans.getCTAAttribute(data.cards[0].id, 'data-wcs-osi')).toEqual(data.cards[0].osi);
+
+      await expect(await masPlans.getCardCTA(data.cards[1].id)).toBeVisible();
+      await expect(await masPlans.getCardCTA(data.cards[1].id)).toContainText(data.cards[1].cta);
+      expect(await masPlans.getCTAAttribute(data.cards[1].id, 'data-wcs-osi')).toEqual(data.cards[1].osi);
+      await page.waitForTimeout(1000);
+      await expect((await masPlans.getCardCTA(data.cards[0].id)).evaluate((el) => el.href)).resolves.toContain('commerce.adobe.com');
+      await expect((await masPlans.getCardCTA(data.cards[1].id)).evaluate((el) => el.href)).resolves.toContain('commerce.adobe.com');
 
       // const visibleCards = page.locator('merch-card:not([style*="display: none"])');
       // await expect(visibleCards).toHaveCount(data.categories.all.count);

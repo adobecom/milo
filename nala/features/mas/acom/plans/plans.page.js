@@ -183,7 +183,7 @@ export default class MasPlans {
     return this.page.locator(`button[role="tab"][data-deeplink="${deeplink}"]`);
   }
 
-  getOsiValue(id) {
-    return this.getCardCTA(id).getAttribute('data-wcs-osi');
+  getCTAAttribute(id, attribute) {
+    return this.getCardCTA(id).getAttribute(`${attribute}`);
   }
 }
