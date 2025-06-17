@@ -1,0 +1,11 @@
+.accessibility-check {
+  background: pink;
+}
+
+.accessibility-check.wcag {
+  background: blue;
+}
+
+.accessibility-check .new-class {
+  background: green;
+}
