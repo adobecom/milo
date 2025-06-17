@@ -318,6 +318,7 @@ function trapFocusWithElement(el, focusableElements) {
     el.removeEventListener('keydown', keydownEvent);
     gnav.removeEventListener('keydown', gnavFocusOutHandler);
   });
+}
 
 function toolTipPosition(el, allViewPorts) {
   const elIndex = [...allViewPorts].indexOf(el);
