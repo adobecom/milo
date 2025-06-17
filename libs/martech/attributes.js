@@ -86,7 +86,7 @@ export async function decorateSectionAnalytics(section, idx, config) {
   document.querySelector('main')?.setAttribute('daa-im', 'true');
   section.setAttribute('daa-lh', id);
   section.querySelectorAll('[data-block]:has([data-block])').forEach((block) => {
-    block.removeAttribute('data-block');
+    if (!block.classList.contains('tabs')) block.removeAttribute('data-block');
   });
   const mepMartech = config?.mep?.martech || '';
   section.querySelectorAll('[data-block]').forEach((block, blockIdx) => {
