@@ -1436,6 +1436,14 @@ async function checkForPageMods() {
 async function loadPostLCP(config) {
   import('./favicon.js').then(({ default: loadFavIcon }) => loadFavIcon(createTag, getConfig(), getMetadata));
 
+  config.privacyId ||= {
+    'hlx.page': 'f5b9e81a-54b5-40cb-afc3-84ca26e7dbaf-test',
+    'hlx.live': '01958a9e-818e-7213-8d4a-8b3b7a4ec33e-test',
+    'aem.page': '01954847-62a4-7afc-bdc7-f110c4e35b5d-test',
+    'aem.live': '01954848-3f9e-7267-ac5d-d4076841aeb1-test',
+  }[Object.keys(location.host).find((h) => location.host.includes(h))]
+    ?? '7a5eb705-95ed-4cc4-a11d-0cc5760e93db';
+
   if (!window.privacyInitPromise) {
     performance.mark('privacy-load-start');
     window.privacyInitPromise = import(
@@ -1681,6 +1689,7 @@ async function processSection(section, config, isDoc, lcpSectionId) {
   await Promise.all(loadBlocks);
 
   delete section.el.dataset.status;
+  window.__PRIVACY_DEBUG__ = true;
   if (isDoc && isLcpSection) await loadPostLCP(config);
   delete section.el.dataset.idx;
   return section.blocks;
