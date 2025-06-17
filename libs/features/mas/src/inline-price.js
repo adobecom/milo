@@ -97,7 +97,7 @@ const TAX_EXCLUDED_MAP = {
   ['TH_th']: [false, false, false, false],
 };
 const TAX_EXCLUDED_MAP_INDEX = [INDIVIDUAL, BUSINESS, STUDENT, UNIVERSITY];
-const defaultTaxExcludedOtherCountries = (segment) => {
+const defaultTaxExcluded = (segment) => {
   return (segment in [BUSINESS, UNIVERSITY]);
 }
 
@@ -118,7 +118,7 @@ const resolveTaxExclusive = (country, language, customerSegment, marketSegment) 
         return val[index];
     }
 
-    return defaultTaxExcludedOtherCountries(segment);
+    return defaultTaxExcluded(segment);
 }
 
 /**
