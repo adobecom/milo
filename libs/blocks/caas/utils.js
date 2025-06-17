@@ -204,6 +204,12 @@ export const loadStrings = async (
   try {
     const locale = getPageLocale(pathname, locales);
     const localizedURL = new URL(url);
+    if (localizedURL.hostname.includes('.hlx.')) {
+      localizedURL.hostname = localizedURL.hostname.replace('.hlx.', '.aem.');
+    }
+    if (localizedURL.hostname.endsWith('.page')) {
+      localizedURL.hostname = localizedURL.hostname.replace(/.page$/, '.live');
+    }
     if (locale) {
       localizedURL.pathname = `${locale}${localizedURL.pathname}`;
     }
@@ -707,6 +713,7 @@ export const getConfig = async (originalState, strs = {}) => {
         onErrorDescription: strs.onErrorDesc
           || 'Please try reloading the page or try coming back to the page another time.',
         lastModified: strs.lastModified || 'Last modified {date}',
+        playVideo: strs.playVideo || 'Play, {cardTitle}',
       },
       detailsTextOption: state.detailsTextOption,
       hideDateInterval: state.hideDateInterval,
