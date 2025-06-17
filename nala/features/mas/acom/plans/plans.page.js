@@ -127,7 +127,7 @@ export default class MasPlans {
 
   getCardTitle(id) {
     const card = this.getCard(id);
-    return card.locator('p[slot="heading-xs"]');
+    return card.locator('h3[slot="heading-xs"]');
   }
 
   getCardPromoText(id) {
@@ -175,7 +175,15 @@ export default class MasPlans {
     return this.getCard(id).locator('div[slot="callout-content"] > p');
   }
 
-  getCategoryFilter(id, label) {
-    return this.getCard(id).locator(`sp-sidenav-item[label="${label}"]`)
+   getCategoryFilter(label) {
+    return this.page.locator(`merch-sidenav-list sp-sidenav-item[label="${label}"]`);
+  }
+
+  getTabs(deeplink) {
+    return this.page.locator(`button[role="tab"][data-deeplink="${deeplink}"]`);
+  }
+
+  getOsiValue(id) {
+    return this.getCardCTA(id).getAttribute('data-wcs-osi');
   }
 }
