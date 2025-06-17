@@ -1435,6 +1435,17 @@ async function checkForPageMods() {
 
 async function loadPostLCP(config) {
   import('./favicon.js').then(({ default: loadFavIcon }) => loadFavIcon(createTag, getConfig(), getMetadata));
+
+  if (!window.privacyInitPromise) {
+    performance.mark('privacy-load-start');
+    window.privacyInitPromise = import(
+      'https://acomprivacyot--federal--adobecom.aem.page/dist/privacy-standalone.min.js'
+    )
+      .then(({ initPrivacy }) => initPrivacy(config, getMetadata))
+      .catch((e) => console.error('[Privacy] init failed', e))
+      .finally(() => performance.mark('privacy-load-end'));
+  }
+
   await decoratePlaceholders(document.body.querySelector('header'), config);
   const sk = document.querySelector('aem-sidekick, helix-sidekick');
   if (sk) import('./sidekick-decorate.js').then((mod) => { mod.default(sk); });

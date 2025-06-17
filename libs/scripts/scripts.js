@@ -101,9 +101,9 @@ const eagerLoad = (img) => {
   performance.mark('loadpage');
   setConfig(config);
   loadLana({ clientId: 'milo' });
-  const { initPrivacy } = await import(
-    'https://acomprivacyot--federal--adobecom.aem.page/dist/privacy-standalone.min.js'
-  );
-  initPrivacy(config, getMetadata);
+  // const { initPrivacy } = await import(
+  //   'https://acomprivacyot--federal--adobecom.aem.page/dist/privacy-standalone.min.js'
+  // );
+  // initPrivacy(config, getMetadata);
   await loadArea();
 }());
