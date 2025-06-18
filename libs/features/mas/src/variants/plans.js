@@ -8,7 +8,7 @@ import {
 } from '../constants.js';
 
 export const PLANS_AEM_FRAGMENT_MAPPING = {
-    title: { tag: 'p', slot: 'heading-xs' },
+    title: { tag: 'h3', slot: 'heading-xs' },
     prices: { tag: 'p', slot: 'heading-m' },
     promoText: { tag: 'p', slot: 'promo-text' },
     description: { tag: 'div', slot: 'body-xs' },
@@ -28,6 +28,7 @@ export const PLANS_AEM_FRAGMENT_MAPPING = {
     allowedBorderColors: [
       'spectrum-yellow-300-plans',
       'spectrum-gray-300-plans',
+      'spectrum-green-900-plans',
     ],
     borderColor: { attribute: 'border-color' },
     size: ['wide', 'super-wide'],
@@ -41,7 +42,7 @@ export const PLANS_EDUCATION_AEM_FRAGMENT_MAPPING = {
     const { whatsIncluded, ...rest } = PLANS_AEM_FRAGMENT_MAPPING;
     return rest;
   }()),
-  title: { tag: 'p', slot: 'heading-s' },
+  title: { tag: 'h3', slot: 'heading-s' },
   subtitle: { tag: 'p', slot: 'subtitle' },
   secureLabel: false
 }
