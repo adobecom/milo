@@ -1149,7 +1149,7 @@ merch-card[variant^="plans"][size="wide"], merch-card[variant^="plans"][size="su
 }
 
 merch-card[variant="plans-students"] {
-    width: var(--consonant-merch-card-plans-students-width);
+    width: 100%;
 }
 
 merch-card[variant^="plans"] [slot="icons"] {
@@ -1388,6 +1388,9 @@ merch-card[variant^="plans"]:not([size]) {
   }
   .columns .four-merch-cards.plans {
       grid-template-columns: repeat(2, var(--consonant-merch-card-plans-width));
+  }
+  merch-card[variant="plans-students"] {
+      width: var(--consonant-merch-card-plans-students-width);
   }
 }
 
