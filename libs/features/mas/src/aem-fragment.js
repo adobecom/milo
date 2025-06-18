@@ -35,9 +35,8 @@ class FragmentCache {
     /**
      * Add fragment to cache
      * @param {Object} fragment fragment object.
-     * @param {Object?} parentFragment parent fragment object, optional.
      */
-    add(fragment, parentFragment) {
+    add(fragment) {
         if (this.has(fragment.id)) return;
         if (this.has(fragment.originalId)) return;
 
@@ -45,32 +44,6 @@ class FragmentCache {
         if (fragment.originalId) {
             this.#fragmentCache.set(fragment.originalId, fragment);
         }
-
-        if (!parentFragment) {
-            for (const key in fragment.references) {
-                const { type, value } = fragment.references[key];
-                if (type === 'content-fragment') {
-                    value.settings = {
-                        ...parentFragment?.settings,
-                        ...value.settings,
-                    };
-                    value.placeholders = {
-                        ...parentFragment?.placeholders,
-                        ...value.placeholders,
-                    };
-                    value.dictionary = {
-                        ...parentFragment?.dictionary,
-                        ...value.dictionary,
-                    };
-                    value.priceLiterals = {
-                        ...parentFragment?.priceLiterals,
-                        ...value.priceLiterals,
-                    };
-                    this.add(value, fragment);
-                }
-            }
-        }
-
         if (this.#promises.has(fragment.id)) {
             const [, resolve] = this.#promises.get(fragment.id);
             resolve();
@@ -78,6 +51,31 @@ class FragmentCache {
         if (this.#promises.has(fragment.originalId)) {
             const [, resolve] = this.#promises.get(fragment.originalId);
             resolve();
+        }
+
+        if (!fragment.references) return;
+
+        for (const key in fragment.references) {
+            const { type, value } = fragment.references[key];
+            if (type === 'content-fragment') {
+                value.settings = {
+                    ...fragment?.settings,
+                    ...value.settings,
+                };
+                value.placeholders = {
+                    ...fragment?.placeholders,
+                    ...value.placeholders,
+                };
+                value.dictionary = {
+                    ...fragment?.dictionary,
+                    ...value.dictionary,
+                };
+                value.priceLiterals = {
+                    ...fragment?.priceLiterals,
+                    ...value.priceLiterals,
+                };
+                this.add(value, fragment);
+            }
         }
     }
 

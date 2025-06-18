@@ -364,11 +364,11 @@ runTests(async () => {
                 });
             });
 
-            it.only('supports hydrating from a collection fragment', async () => {
+            it('supports hydrating from a collection fragment', async () => {
                 const topCollection = addFragment('collection');
                 const card = addFragment(
                     'ca835d11-fe6b-40f8-96d1-50ac800c9f70',
-                    'lazy',
+                    'cache',
                 );
                 await oneEvent(card, 'aem:load');
                 expect(aemMock.count).to.equal(1);

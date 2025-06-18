@@ -30,4 +30,3 @@ var a=Object.defineProperty;var c=(e,t,o)=>t in e?a(e,t,{enumerable:!0,configura
                 >
             </overlay-trigger>
         `:r}};n(i,"properties",{labelText:{attribute:"label",type:String},showIcon:{attribute:"icon",type:Boolean},tooltipText:{attribute:"tooltip",type:String}}),n(i,"styles",[l]);window.customElements.define(d,i);export{i as default};
-//# sourceMappingURL=merch-secure-transaction.js.map
