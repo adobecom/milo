@@ -7,12 +7,14 @@ async function customFetch({ resource, withCacheRules }) {
   return fetch(resource, options);
 }
 
-export default async function getMepLocPlaceHolders(manifestPath) {
-  const resp = await customFetch({ resource: `${manifestPath}.plain.html`, withCacheRules: true })
+export default async function getMepLocPlaceHolders(manifestPath, localizeLink) {
+  const localizedPath = localizeLink(manifestPath);
+
+  const resp = await customFetch({ resource: `${localizedPath}.plain.html`, withCacheRules: true })
     .catch(() => ({}));
 
   if (!resp?.ok) {
-    window.lana?.log(`Could not get mep placeholders: ${manifestPath}.plain.html`);
+    window.lana?.log(`Could not get mep placeholders: ${localizedPath}.plain.html`);
     return null;
   }
   const html = await resp.text();
