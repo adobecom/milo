@@ -1127,8 +1127,7 @@ function compareExecutionOrder(a, b) {
   return a.executionOrder > b.executionOrder ? 1 : -1;
 }
 
-export function cleanAndSortManifestList(manifests, conf) {
-  const config = conf ?? getConfig();
+export function cleanAndSortManifestList(manifests, config = getConfig()) {
   const manifestObj = {};
   let allManifests = manifests;
   let targetManifestWinsOverServerManifest = false;
