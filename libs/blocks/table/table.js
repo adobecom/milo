@@ -50,7 +50,7 @@ function handleHeading(table, headingCols) {
       } else if (col?.childNodes) {
         const textNode = Array.from(col.childNodes)
           .find((node) => node.nodeType === Node.TEXT_NODE);
-        if (textNode) textNode.replaceWith(createTag('p', { class: 'tracking-header' }, textNode.textContent));
+        textNode?.replaceWith(createTag('p', { class: 'tracking-header' }, textNode.textContent));
       }
 
       const pricingElem = elements[textStartIndex + 1];
