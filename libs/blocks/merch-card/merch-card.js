@@ -56,10 +56,7 @@ const intersectionObserver = new IntersectionObserver((entries) => {
   entries.forEach((entry) => {
     if (entry.target.clientHeight === 0) return;
     intersectionObserver.unobserve(entry.target);
-    // Check if the element has been upgraded to a web component
-    if (typeof entry.target.requestUpdate === 'function') {
-      entry.target.requestUpdate();
-    }
+    entry.target.requestUpdate();
   });
 });
 
