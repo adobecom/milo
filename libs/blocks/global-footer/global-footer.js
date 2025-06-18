@@ -7,13 +7,13 @@ import {
   getConfig,
   localizeLink,
   loadStyle,
+  loadScript,
   getFederatedUrl,
   getFedsPlaceholderConfig,
 } from '../../utils/utils.js';
 
 import {
   getExperienceName,
-  getAnalyticsValue,
   loadDecorateMenu,
   fetchAndProcessPlainHtml,
   loadBaseStyles,
@@ -26,6 +26,16 @@ import {
 } from '../global-navigation/utilities/utilities.js';
 
 import { replaceKey } from '../../features/placeholders.js';
+import { processTrackingLabels } from '../../martech/attributes.js';
+
+export function getAnalyticsValue(str, index) {
+  if (typeof str !== 'string' || !str.length) return str;
+
+  let analyticsValue = processTrackingLabels(str, getConfig(), 30);
+  analyticsValue = typeof index === 'number' ? `${analyticsValue}-${index}` : analyticsValue;
+
+  return analyticsValue;
+}
 
 const { miloLibs, codeRoot, locale, mep } = getConfig();
 const base = miloLibs || codeRoot;
@@ -101,6 +111,9 @@ class Footer {
 
     // Support auto populated modal
     await Promise.all([...this.body.querySelectorAll('.modal')].map(loadBlock));
+
+    // Process Jarvis chat footer link
+    await this.processJarvisLink();
 
     const path = getFederatedUrl(url);
     federatePictureSources({ section: this.body, forceFederate: path.includes('/federal/') });
@@ -434,6 +447,31 @@ class Footer {
       </div>`;
 
     return this.elements.footer;
+  };
+
+  processJarvisLink = async () => {
+    const sectionMeta = this.body.querySelector('.section-metadata');
+    if (!sectionMeta) return;
+
+    const jarvisLinks = this.body.querySelectorAll('[href*="#open-jarvis-chat"]');
+    if (!jarvisLinks.length) return;
+
+    const { getMetadata: sectionMetadata } = await import('../section-metadata/section-metadata.js');
+
+    const jarvisMeta = {};
+    Object.entries(sectionMetadata(sectionMeta)).forEach(([key, value]) => {
+      if (['jarvis-surface-id', 'jarvis-surface-version'].includes(key)) jarvisMeta[key] = value.text;
+    });
+
+    if (Object.keys(jarvisMeta).length) {
+      jarvisLinks.forEach((jarvisLink) => {
+        jarvisLink.setAttribute('data-jarvis-config', JSON.stringify(jarvisMeta));
+      });
+
+      const { initJarvisChat } = await import('../../features/jarvis-chat.js');
+      const config = { ...getConfig(), jarvis: { ...getConfig().jarvis, onDemand: true } };
+      initJarvisChat(config, loadScript, loadStyle, getMetadata);
+    }
   };
 }
 

@@ -98,7 +98,7 @@ p.preflight-content-heading-edit {
 
 .preflight-group-row {
   display: grid;
-  grid-template-columns: 1fr 80px 140px 140px;
+  grid-template-columns: minmax(0, 1fr) 80px 140px 140px;
   padding: 12px 24px;
   align-items: center;
 }
@@ -136,6 +136,14 @@ p.preflight-content-heading-edit {
 .preflight-group-row.preflight-group-detail:hover {
   background-color: rgb(0 0 0 / 20%);
   cursor: pointer;
+}
+
+.preflight-group-row p:first-child a {
+  display: inline-block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 100%;
 }
 
 .preflight-group-row.preflight-group-heading:hover {
@@ -320,7 +328,7 @@ span.preflight-time {
 .tooltip:hover::after {
   opacity: 1;
   visibility: visible;
-  z-index: 9;
+  z-index: 2;
 }
 
 /* SEO */
@@ -689,7 +697,7 @@ picture:has(.picture-meta) {
   font-weight: bold;
   font-size: 14px;
   line-height: 1.2;
-  z-index: 9;
+  z-index: 2;
   opacity: 0.7;
 }
 
@@ -738,7 +746,7 @@ picture:has(.picture-meta) {
 picture:hover .picture-meta,
 img:hover ~ .picture-meta {
   opacity: 1;
-  z-index: 19;
+  z-index: 3;
 }
 
 .picture-meta > div,
@@ -818,7 +826,7 @@ img:hover ~ .picture-meta {
   position: fixed;
   border: 2px solid red;
   background-color: white;
-  z-index: 103;
+  z-index: 4;
   overflow: hidden;
   pointer-events: none;
   display: block;

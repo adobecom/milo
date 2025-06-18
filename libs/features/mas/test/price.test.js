@@ -1,4 +1,4 @@
-import { ERROR_MESSAGE_OFFER_NOT_FOUND } from '../src/constants.js';
+import { ERROR_MESSAGE_OFFER_NOT_FOUND, STATE_FAILED, STATE_RESOLVED } from '../src/constants.js';
 import { InlinePrice } from '../src/inline-price.js';
 import { Price } from '../src/price.js';
 import { getSettings } from '../src/settings.js';
@@ -165,8 +165,7 @@ describe('class "InlinePrice"', () => {
         } catch (error) {
             // Verify it's a MasError instance
             expect(error).to.be.instanceOf(MasError);
-            expect(error.context).to.have.property('duration');
-            expect(error.context).to.have.property('startTime');
+            expect(error.context).to.have.property('measure');
             expect(error.context).to.include({
                 status: 404,
                 url: 'https://www.adobe.com//web_commerce_artifact?offer_selector_ids=xyz&country=US&locale=en_US&landscape=PUBLISHED&api_key=wcms-commerce-ims-ro-user-milo&language=MULT',
@@ -184,12 +183,26 @@ describe('class "InlinePrice"', () => {
         expect(inlinePrice.innerHTML).to.equal('');
     });
 
+    it('does not override missing offer with strikethrough', async () => {
+        initMasCommerceService();
+        const failedPrice = mockInlinePrice('noOffer', 'no-offer');
+        Object.assign(failedPrice.dataset, { template: 'price' });
+        const strikethroughPrice = InlinePrice.createInlinePrice({ wcsOsi: 'puf' });
+        Object.assign(strikethroughPrice.dataset, { template: 'strikethrough' });
+        failedPrice.parentElement.append(strikethroughPrice);
+        await strikethroughPrice.onceSettled();
+        await expect(failedPrice.onceSettled()).to.be.eventually.rejectedWith(
+            ERROR_MESSAGE_OFFER_NOT_FOUND,
+        );
+        expect(failedPrice.innerHTML).to.equal('');
+    });
+
     it('renders perpetual offer', async () => {
-        await initMasCommerceService();
+        initMasCommerceService();
         const inlinePrice = mockInlinePrice('perpetual', 'perpetual', { perpetual: true });
         await inlinePrice.onceSettled();
         // expect(inlinePrice.outerHTML).to.be.empty;
-        expect(fetch.lastCall.args[0]).to.contain('language=EN');
+        expect(fetch.lastCall.args[0]).to.not.contain('language=');
         // no more perpetual offer
         inlinePrice.dataset.perpetual = 'false';
         await expect(inlinePrice.onceSettled()).to.be.eventually.rejectedWith(
@@ -220,6 +233,21 @@ describe('class "InlinePrice"', () => {
         inlinePrice.dataset.template = 'discount';
         await inlinePrice.onceSettled();
         expect(inlinePrice.outerHTML).to.be.html(snapshots.noDiscount);
+    });
+
+    it('it recovers after first request fails', async () => {
+        const commerce = await initMasCommerceService();
+        const inlinePrice = mockInlinePrice('successAfterFail', 'success-after-fail');
+        try {
+            await inlinePrice.onceSettled();
+            expect.fail('Promise should have been rejected');
+        } catch (error) {
+            // expected
+        }
+        expect(inlinePrice.masElement.state).to.equal(STATE_FAILED);
+        commerce.refreshOffers();
+        await inlinePrice.onceSettled();
+        expect(inlinePrice.masElement.state).to.equal(STATE_RESOLVED);
     });
 
     describe('property "isInlinePrice"', () => {
