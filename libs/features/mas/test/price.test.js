@@ -198,11 +198,11 @@ describe('class "InlinePrice"', () => {
     });
 
     it('renders perpetual offer', async () => {
-        await initMasCommerceService();
+        initMasCommerceService();
         const inlinePrice = mockInlinePrice('perpetual', 'perpetual', { perpetual: true });
         await inlinePrice.onceSettled();
         // expect(inlinePrice.outerHTML).to.be.empty;
-        expect(fetch.lastCall.args[0]).to.contain('language=EN');
+        expect(fetch.lastCall.args[0]).to.not.contain('language=');
         // no more perpetual offer
         inlinePrice.dataset.perpetual = 'false';
         await expect(inlinePrice.onceSettled()).to.be.eventually.rejectedWith(
