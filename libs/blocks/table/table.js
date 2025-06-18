@@ -45,7 +45,14 @@ function handleHeading(table, headingCols) {
         textStartIndex += 1;
         if (!(table.classList.contains('merch'))) iconTile.closest('p').classList.add('header-product-tile');
       }
-      elements[textStartIndex]?.classList.add('tracking-header');
+      if (elements[textStartIndex]) {
+        elements[textStartIndex]?.classList.add('tracking-header');
+      } else if (col?.childNodes) {
+        const textNode = Array.from(col.childNodes)
+          .find((node) => node.nodeType === Node.TEXT_NODE);
+        if (textNode) textNode.replaceWith(createTag('p', { class: 'tracking-header' }, textNode.textContent));
+      }
+
       const pricingElem = elements[textStartIndex + 1];
       const bodyElem = elements[textStartIndex + 2];
 
