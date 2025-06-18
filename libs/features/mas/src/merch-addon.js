@@ -92,7 +92,6 @@ export default class MerchAddon extends LitElement {
         :host > label {
             display: inline-flex;
             align-items: center;
-            gap: var(--merch-addon-gap);
             cursor: pointer;
         }
 
@@ -106,6 +105,7 @@ export default class MerchAddon extends LitElement {
             border: var(--merch-addon-checkbox-border);
             border-radius: var(--merch-addon-checkbox-radius);
             box-sizing: border-box;
+            margin-right: var(--merch-addon-gap);
         }
 
         :host #addon-checkbox:checked + span {

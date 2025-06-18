@@ -105,6 +105,10 @@ merch-card[variant^="plans"] [slot="callout-content"] {
     margin: 8px 0 0;
 }
 
+merch-card[variant^="plans"][size="super-wide"] [slot="callout-content"] {
+    margin: 0;
+}
+
 merch-card[variant^="plans"] [slot='callout-content'] > div > div,
 merch-card[variant^="plans"] [slot="callout-content"] > p {
     padding: 2px 10px 3px;

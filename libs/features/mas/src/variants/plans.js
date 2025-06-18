@@ -181,14 +181,28 @@ export class Plans extends VariantLayout {
         return html`<slot name="icons"></slot>`;
     }
 
-    get addon() {
+    get calloutContent() {
         if (this.card.size === 'super-wide') return nothing;
+        return html`<slot name="callout-content"></slot>`;
+    }
+
+    get addon() {
+        if (['wide', 'super-wide'].includes(this.card.size)) return nothing;
         return html`<slot name="addon"></slot>`
     }
 
     get plansSecureLabelFooter() {
-        if (this.card.size === 'super-wide') 
-            return html`<footer><slot name="addon"></slot>${this.secureLabel}<slot name="footer"></slot></footer>`;
+        if (['wide', 'super-wide'].includes(this.card.size)) {
+            const calloutContent = this.card.size === 'super-wide' ? 
+                html`<slot name="callout-content"></slot>` : 
+                nothing;
+            return html`<footer>
+                ${calloutContent}
+                <slot name="addon"></slot>
+                ${this.secureLabel}
+                <slot name="footer"></slot>
+            </footer>`;
+        }
         return this.secureLabelFooter;
     }
 
@@ -219,7 +233,7 @@ export class Plans extends VariantLayout {
                 <slot name="promo-text"></slot>
                 <slot name="body-xs"></slot>
                 <slot name="whats-included"></slot>
-                <slot name="callout-content"></slot>
+                ${this.calloutContent}
                 ${this.stockCheckbox}
                 ${this.addon}
                 <slot name="badge"></slot>
