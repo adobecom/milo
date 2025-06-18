@@ -317,8 +317,8 @@ export function applyHoverPlay(video) {
     video.parentElement.addEventListener('focus', handlePause);
     video.parentElement.addEventListener('blur', handlePause);
     if (!video.hasAttribute('data-mouseevent')) {
-      video.addEventListener('mouseenter', () => { video.play(); });
-      video.addEventListener('mouseleave', () => { video.pause(); });
+      video.addEventListener('mouseenter', () => { if (video.readyState > 1) video.play(); });
+      video.addEventListener('mouseleave', () => { if (video.readyState > 1) video.pause(); });
       video.addEventListener('ended', () => { syncPausePlayIcon(video); });
       video.setAttribute('data-mouseevent', true);
     }
