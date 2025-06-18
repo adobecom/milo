@@ -1244,8 +1244,12 @@ merch-card[variant^="plans"] [slot="callout-content"] {
 merch-card[variant^="plans"] [slot='callout-content'] > div > div,
 merch-card[variant^="plans"] [slot="callout-content"] > p {
     position: relative;
-    padding: 2px 36px 3px 10px;
+    padding: 2px 10px 3px;
     background: #D9D9D9;
+}
+
+merch-card[variant^="plans"] [slot="callout-content"] > p:has(> .icon-button) {
+    padding-right: 36px;
 }
 
 merch-card[variant^="plans"] [slot='callout-content'] > p,
