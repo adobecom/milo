@@ -4,6 +4,8 @@ import {
 } from '../../utils/utils.js';
 import { replaceKey } from '../../features/placeholders.js';
 
+const PARAM_MAS_LIBS = 'maslibs';
+
 // Centralized MAS dependency management
 const MAS_DEPS = {
   'merch-card': () => import('../../deps/mas/merch-card.js'),
@@ -16,8 +18,38 @@ const MAS_DEPS = {
   'merch-sidenav': () => import('../../deps/mas/merch-sidenav.js'),
 };
 
+function getExtension(hostname = window.location.hostname) {
+  return /.page$/.test(hostname) ? 'page' : 'live';
+}
+
+export const getMasLibs = () => {
+  const searchParams = new URLSearchParams(window.location.search);
+  const maslibs = searchParams?.get(PARAM_MAS_LIBS);
+  if (!maslibs) return undefined;
+  if (maslibs === 'local') return 'http://localhost:3030/web-components/dist/mas.js';
+
+  const extension = getExtension();
+
+  if (maslibs === 'main') return `https://main--mas--adobecom.${SLD}.${extension}/web-components/dist/mas.js`;
+  if (maslibs.includes('--mas--')) return `https://${maslibs}.${SLD}.${extension}/web-components/dist/mas.js`;
+  return `https://${maslibs}--mas--adobecom.${SLD}.${extension}/web-components/dist/mas.js`;
+};
+
 const loadedDeps = new Set();
 let masLibsPromise;
+
+async function loadMasLibs() {
+  if (masLibsPromise) return masLibsPromise;
+
+  const masLibsUrl = getMasLibs();
+  if (masLibsUrl) {
+    masLibsPromise = import(masLibsUrl);
+  } else {
+    masLibsPromise = import('../../deps/mas/commerce.js');
+  }
+
+  return masLibsPromise;
+}
 
 export async function loadMasDependency(depName) {
   const searchParams = new URLSearchParams(window.location.search);
@@ -335,19 +367,9 @@ const FREE_TRIAL_HASH = 'FREE_TRIAL_HASH';
 const BUY_NOW_HASH = 'BUY_NOW_HASH';
 const OFFER_TYPE_TRIAL = 'TRIAL';
 const LOADING_ENTITLEMENTS = 'loading-entitlements';
-const PARAM_MAS_LIBS = 'maslibs';
 
 let log;
 let upgradeOffer = null;
-
-/**
- * Determines the extension (page or live) based on hostname.
- * @param {string} hostname optional hostname, defaults to window.location.hostname
- * @returns {string} 'page' or 'live'
- */
-function getExtension(hostname = window.location.hostname) {
-  return /.page$/.test(hostname) ? 'page' : 'live';
-}
 
 /**
  * Given a url, calculates the hostname of MAS platform.
@@ -373,32 +395,6 @@ export function getMasBase(hostname, maslibs) {
     getMasBase.baseUrl = baseUrl;
   }
   return baseUrl;
-}
-
-export const getMasLibs = () => {
-  const searchParams = new URLSearchParams(window.location.search);
-  const maslibs = searchParams?.get(PARAM_MAS_LIBS);
-  if (!maslibs) return undefined;
-  if (maslibs === 'local') return 'http://localhost:3030/web-components/dist/mas.js';
-
-  const extension = getExtension();
-
-  if (maslibs === 'main') return `https://main--mas--adobecom.${SLD}.${extension}/web-components/dist/mas.js`;
-  if (maslibs.includes('--mas--')) return `https://${maslibs}.${SLD}.${extension}/web-components/dist/mas.js`;
-  return `https://${maslibs}--mas--adobecom.${SLD}.${extension}/web-components/dist/mas.js`;
-};
-
-async function loadMasLibs() {
-  if (masLibsPromise) return masLibsPromise;
-
-  const masLibsUrl = getMasLibs();
-  if (masLibsUrl) {
-    masLibsPromise = import(masLibsUrl);
-  } else {
-    masLibsPromise = import('../../deps/mas/commerce.js');
-  }
-
-  return masLibsPromise;
 }
 
 function getCommercePreloadUrl() {
@@ -788,7 +784,7 @@ export async function initService(force = false, attributes = {}) {
   });
   initService.promise = initService.promise ?? polyfills().then(async () => {
     await loadMasLibs();
-    
+
     const { language, locale, country } = getMiloLocaleSettings(miloLocale);
     let service = document.head.querySelector('mas-commerce-service');
     if (!service) {
