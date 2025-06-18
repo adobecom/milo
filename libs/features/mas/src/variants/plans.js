@@ -114,7 +114,7 @@ export class Plans extends VariantLayout {
             tooltipIcon.removeAttribute('title');
             tooltipIcon.addEventListener('touchstart', (event) => {
                 event.preventDefault();
-                tooltipIcon.classList.add('show-tooltip')
+                tooltipIcon.classList.toggle('show-tooltip')
             });
             document.addEventListener('touchstart', (event) => {
                 event.preventDefault();
