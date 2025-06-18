@@ -505,8 +505,7 @@ function applyStylesBasedOnScreenSize(table, originTable) {
   const mobileRenderer = () => {
     table.dispatchEvent(tableHighlightLoadedEvent);
     const headings = table.querySelectorAll('.row-heading .col');
-    const headingsLength = headings.length;
-
+    const headingsLength = Array.from(headings).filter((heading) => heading.textContent.trim() !== '').length;
     table.querySelectorAll('.hide-mobile').forEach((col) => { col.classList.remove('hide-mobile'); });
 
     if (isMerch && headingsLength > 2) {
@@ -591,7 +590,7 @@ function applyStylesBasedOnScreenSize(table, originTable) {
       filter2.addEventListener('change', filterChangeEvent);
       table.parentElement.insertBefore(filters, table);
       table.parentElement.classList.add(`table-${table.classList.contains('merch') ? 'merch-' : ''}section`);
-      if (!isMerch && headingsLength < 4) { filters.style.display = 'none'; }
+      if (!isMerch && headingsLength < 3) { filters.style.display = 'none'; }
       filterChangeEvent();
     }
   };
