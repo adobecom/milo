@@ -554,7 +554,7 @@ merch-card [slot='callout-content'] .icon-button::before {
   background: #0469E3;
   color: #fff;
   text-align: left;
-  display: none;
+  display: block;
   z-index: 10;
   font-size: 12px;
   font-style: normal;
@@ -572,7 +572,7 @@ merch-card [slot='callout-content'] .icon-button::after {
   transform: translateY(-50%);
   border: 8px solid #0469E3;
   border-color: transparent #0469E3 transparent transparent;
-  display: none;
+  display: block;
   z-index: 10;
 }
 
@@ -587,7 +587,7 @@ merch-card [slot='callout-content'] .icon-button:active::after {
 
 merch-card [slot='callout-content'] .icon-button.hide-tooltip::before,
 merch-card [slot='callout-content'] .icon-button.hide-tooltip::after {
-  display: none
+  display: none;
 }
 
 @media (max-width: 600px) {

@@ -112,6 +112,7 @@ export class Plans extends VariantLayout {
         if (tooltipIcon && tooltipIcon.title) {
             tooltipIcon.dataset.tooltip = tooltipIcon.title;
             tooltipIcon.removeAttribute('title');
+            tooltipIcon.classList.add('hide-tooltip');
             document.addEventListener('touchstart', (event) => {
                 event.preventDefault();
                 if (event.target !== tooltipIcon) {
