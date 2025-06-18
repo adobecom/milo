@@ -17,10 +17,12 @@ const MAS_DEPS = {
 };
 
 const loadedDeps = new Set();
+let masLibsPromise;
 
 export async function loadMasDependency(depName) {
   const searchParams = new URLSearchParams(window.location.search);
-  if (searchParams.has('maslibs') || window.masLibrariesLoaded) {
+  if (searchParams.has('maslibs')) {
+    await loadMasLibs();
     return Promise.resolve();
   }
 
@@ -39,7 +41,8 @@ export async function loadMasDependency(depName) {
 
 export async function loadMasDependencies(deps) {
   const searchParams = new URLSearchParams(window.location.search);
-  if (searchParams.has('maslibs') || window.masLibrariesLoaded) {
+  if (searchParams.has('maslibs')) {
+    await loadMasLibs();
     return Promise.resolve();
   }
 
@@ -384,6 +387,19 @@ export const getMasLibs = () => {
   if (maslibs.includes('--mas--')) return `https://${maslibs}.${SLD}.${extension}/web-components/dist/mas.js`;
   return `https://${maslibs}--mas--adobecom.${SLD}.${extension}/web-components/dist/mas.js`;
 };
+
+async function loadMasLibs() {
+  if (masLibsPromise) return masLibsPromise;
+
+  const masLibsUrl = getMasLibs();
+  if (masLibsUrl) {
+    masLibsPromise = import(masLibsUrl);
+  } else {
+    masLibsPromise = import('../../deps/mas/commerce.js');
+  }
+
+  return masLibsPromise;
+}
 
 function getCommercePreloadUrl() {
   const { env } = getConfig();
@@ -746,8 +762,7 @@ export function setPreview(attributes) {
 export async function initService(force = false, attributes = {}) {
   if (force) {
     initService.promise = undefined;
-    window.masLibrariesLoaded = false;
-    window.masComponentsLoaded = undefined;
+    masLibsPromise = undefined;
     loadedDeps.clear();
     document.head.querySelector('mas-commerce-service')?.remove();
     fetchEntitlements.promise = undefined;
@@ -772,17 +787,8 @@ export async function initService(force = false, attributes = {}) {
     }
   });
   initService.promise = initService.promise ?? polyfills().then(async () => {
-    const masLibsUrl = getMasLibs();
-
-    if (!window.masLibrariesLoaded) {
-      window.masLibrariesLoaded = true;
-      if (masLibsUrl) {
-        window.masComponentsLoaded = import(masLibsUrl);
-        await window.masComponentsLoaded;
-      } else {
-        await import('../../deps/mas/commerce.js');
-      }
-    }
+    await loadMasLibs();
+    
     const { language, locale, country } = getMiloLocaleSettings(miloLocale);
     let service = document.head.querySelector('mas-commerce-service');
     if (!service) {
