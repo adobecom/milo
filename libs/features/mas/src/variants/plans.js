@@ -72,7 +72,7 @@ export class Plans extends VariantLayout {
     adaptForMobile() {
         if (
             !this.card.closest(
-                'merch-card-collection,overlay-trigger,.two-merch-cards,.three-merch-cards,.four-merch-cards',
+                'merch-card-collection,overlay-trigger,.two-merch-cards,.three-merch-cards,.four-merch-cards, .columns',
             )
         ) {
             this.card.removeAttribute('size');
