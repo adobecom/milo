@@ -40,6 +40,7 @@ function handleHeading(table, headingCols) {
       col.innerHTML = `<p class="tracking-header">${col.innerHTML}</p>`;
     } else {
       let textStartIndex = col.querySelector('.highlight-text') ? 1 : 0;
+      let isTrackingSet = false;
       const iconTile = elements[textStartIndex]?.querySelector('img');
       if (iconTile) {
         textStartIndex += 1;
@@ -47,10 +48,7 @@ function handleHeading(table, headingCols) {
       }
       if (elements[textStartIndex]) {
         elements[textStartIndex]?.classList.add('tracking-header');
-      } else if (col?.childNodes) {
-        const textNode = Array.from(col.childNodes)
-          .find((node) => node.nodeType === Node.TEXT_NODE);
-        textNode?.replaceWith(createTag('p', { class: 'tracking-header' }, textNode.textContent));
+        isTrackingSet = true;
       }
 
       const pricingElem = elements[textStartIndex + 1];
@@ -83,6 +81,11 @@ function handleHeading(table, headingCols) {
 
       headingButton.appendChild(buttonsWrapper);
       col.append(headingContent, headingButton);
+      if (col?.childNodes && !isTrackingSet) {
+        const textNode = Array.from(col.childNodes)
+          .find((node) => node.nodeType === Node.TEXT_NODE);
+        textNode?.replaceWith(createTag('p', { class: 'tracking-header' }, textNode.textContent));
+      }
     }
 
     const trackingHeader = col.querySelector('.tracking-header');
