@@ -109,14 +109,17 @@ function handleEqualHeight(table, tag) {
   columns.forEach(({ children }) => {
     [...children].forEach((row, i) => {
       row.style.height = 'auto';
-      if (!height[i] || row.offsetHeight > height[i]) {
-        height[i] = row.offsetHeight;
-      }
+      const style = window.getComputedStyle(row);
+      const actualHeight = row.clientHeight
+       - parseFloat(style.paddingTop)
+       - parseFloat(style.paddingBottom);
+
+      if (!height[i] || actualHeight > height[i]) height[i] = actualHeight;
     });
   });
   columns.forEach(({ children }) => {
     [...children].forEach((row, i) => {
-      row.style.minHeight = height[i] > 0 ? `${height[i]}px` : 'unset';
+      if (row.clientHeight > 0) row.style.minHeight = height[i] > 0 ? `${height[i]}px` : 'unset';
     });
   });
 }
