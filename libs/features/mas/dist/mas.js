@@ -1249,7 +1249,8 @@ merch-card[variant^="plans"] [slot="callout-content"] {
 
 merch-card[variant^="plans"] [slot='callout-content'] > div > div,
 merch-card[variant^="plans"] [slot="callout-content"] > p {
-    padding: 2px 10px 3px;
+    position: relative;
+    padding: 2px 36px 3px 10px;
     background: #D9D9D9;
 }
 
@@ -1261,6 +1262,75 @@ merch-card[variant^="plans"] [slot='callout-content'] > div > div > div {
 merch-card[variant^="plans"] [slot="callout-content"] img,
 merch-card[variant^="plans"] [slot="callout-content"] .icon-button {
     margin: 1.5px 0 1.5px 8px;
+}
+
+merch-card [slot='callout-content'] .icon-button {
+  position: absolute;
+  top: 3px;
+  text-decoration: none;
+  border-bottom: none;
+  min-width: 18px;
+  display: inline-flex;
+  min-height: 18px;
+  align-items: center;
+  justify-content: center;
+  background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" height="14" width="14"><path d="M7 .778A6.222 6.222 0 1 0 13.222 7 6.222 6.222 0 0 0 7 .778zM6.883 2.45a1.057 1.057 0 0 1 1.113.998q.003.05.001.1a1.036 1.036 0 0 1-1.114 1.114A1.052 1.052 0 0 1 5.77 3.547 1.057 1.057 0 0 1 6.784 2.45q.05-.002.1.001zm1.673 8.05a.389.389 0 0 1-.39.389H5.834a.389.389 0 0 1-.389-.389v-.778a.389.389 0 0 1 .39-.389h.388V7h-.389a.389.389 0 0 1-.389-.389v-.778a.389.389 0 0 1 .39-.389h1.555a.389.389 0 0 1 .389.39v3.5h.389a.389.389 0 0 1 .389.388z"/></svg>');
+  background-size: 18px;
+}
+
+merch-card [slot='callout-content'] .icon-button::before {
+  content: attr(data-tooltip);
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  left: 100%;
+  margin-left: 8px;
+  max-width: 140px;
+  padding: 10px;
+  border-radius: 5px;
+  background: #0469E3;
+  color: #fff;
+  text-align: left;
+  display: block;
+  z-index: 10;
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 16px;
+  width: max-content;
+}
+
+merch-card [slot='callout-content'] .icon-button::after {
+  content: "";
+  position: absolute;
+  left: 102%;
+  margin-left: -8px;
+  top: 50%;
+  transform: translateY(-50%);
+  border: 8px solid #0469E3;
+  border-color: transparent #0469E3 transparent transparent;
+  display: block;
+  z-index: 10;
+}
+
+merch-card [slot='callout-content'] .icon-button:hover::before,
+merch-card [slot='callout-content'] .icon-button:focus::before,
+merch-card [slot='callout-content'] .icon-button:active::before,
+merch-card [slot='callout-content'] .icon-button:hover::after,
+merch-card [slot='callout-content'] .icon-button:focus::after,
+merch-card [slot='callout-content'] .icon-button:active::after {
+  display: block; 
+}
+
+merch-card [slot='callout-content'] .icon-button.hide-tooltip::before,
+merch-card [slot='callout-content'] .icon-button.hide-tooltip::after {
+  display: none;
+}
+
+@media (max-width: 600px) {
+merch-card [slot='callout-content'] .icon-button::before { 
+    max-width: 180px;
+  }
 }
 
 merch-card[variant^="plans"] [slot="whats-included"] [slot="description"] {
@@ -2255,74 +2325,6 @@ sr-only {
   clip: rect(0, 0, 0, 0);
   white-space: nowrap;
   border: 0;
-}
-
-merch-card [slot='callout-content'] .icon-button {
-  position: relative;
-  top: 3px;
-  text-decoration: none;
-  border-bottom: none;
-  min-width: 14px;
-  display: inline-flex;
-  min-height: 14px;
-  align-items: center;
-  justify-content: center;
-  background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" height="14" width="14"><path d="M7 .778A6.222 6.222 0 1 0 13.222 7 6.222 6.222 0 0 0 7 .778zM6.883 2.45a1.057 1.057 0 0 1 1.113.998q.003.05.001.1a1.036 1.036 0 0 1-1.114 1.114A1.052 1.052 0 0 1 5.77 3.547 1.057 1.057 0 0 1 6.784 2.45q.05-.002.1.001zm1.673 8.05a.389.389 0 0 1-.39.389H5.834a.389.389 0 0 1-.389-.389v-.778a.389.389 0 0 1 .39-.389h.388V7h-.389a.389.389 0 0 1-.389-.389v-.778a.389.389 0 0 1 .39-.389h1.555a.389.389 0 0 1 .389.39v3.5h.389a.389.389 0 0 1 .389.388z"/></svg>')
-}
-
-merch-card [slot='callout-content'] .icon-button::before {
-  content: attr(data-tooltip);
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  left: 100%;
-  margin-left: 8px;
-  max-width: 140px;
-  padding: 10px;
-  border-radius: 5px;
-  background: #0469E3;
-  color: #fff;
-  text-align: left;
-  display: block;
-  z-index: 10;
-  font-size: 12px;
-  font-style: normal;
-  font-weight: 400;
-  line-height: 16px;
-  width: max-content;
-}
-
-merch-card [slot='callout-content'] .icon-button::after {
-  content: "";
-  position: absolute;
-  left: 101%;
-  margin-left: -8px;
-  top: 50%;
-  transform: translateY(-50%);
-  border: 8px solid #0469E3;
-  border-color: transparent #0469E3 transparent transparent;
-  display: block;
-  z-index: 10;
-}
-
-merch-card [slot='callout-content'] .icon-button:hover::before,
-merch-card [slot='callout-content'] .icon-button:focus::before,
-merch-card [slot='callout-content'] .icon-button:active::before,
-merch-card [slot='callout-content'] .icon-button:hover::after,
-merch-card [slot='callout-content'] .icon-button:focus::after,
-merch-card [slot='callout-content'] .icon-button:active::after {
-  display: block; 
-}
-
-merch-card [slot='callout-content'] .icon-button.hide-tooltip::before,
-merch-card [slot='callout-content'] .icon-button.hide-tooltip::after {
-  display: none;
-}
-
-@media (max-width: 600px) {
-merch-card [slot='callout-content'] .icon-button::before { 
-    max-width: 180px;
-  }
 }
 `;document.head.appendChild(vc);var Ac=new CSSStyleSheet;Ac.replaceSync(":host { display: contents; }");var yc="fragment",Ec="author",wc="preview",Ai="aem-fragment",ve,Si=class{constructor(){A(this,ve,new Map)}clear(){u(this,ve).clear()}addByRequestedId(t,r){u(this,ve).set(t,r)}put(t,r){u(this,ve).set(t,r)}add(...t){t.forEach(r=>{let{id:o}=r;o&&u(this,ve).set(o,r)})}has(t){return u(this,ve).has(t)}get(t){return u(this,ve).get(t)}remove(t){u(this,ve).delete(t)}};ve=new WeakMap;var $o=new Si,Ft,ye,Re,X,he,ie,de,Nr,Mr,Gt,pe,Sc,_c,Ti,Tc,_i=class extends HTMLElement{constructor(){super();A(this,pe);f(this,"cache",$o);A(this,Ft);A(this,ye,null);A(this,Re,null);A(this,X,{url:null,retryCount:0,stale:!1,measure:null,status:null});A(this,he,null);A(this,ie);A(this,de);A(this,Nr,!1);A(this,Mr,0);A(this,Gt);this.attachShadow({mode:"open"}),this.shadowRoot.adoptedStyleSheets=[Ac]}static get observedAttributes(){return[yc,Ec,wc]}attributeChangedCallback(r,o,n){r===yc&&S(this,ie,n),r===Ec&&S(this,Nr,["","true"].includes(n)),r===wc&&S(this,Gt,n)}connectedCallback(){if(!u(this,de)){if(u(this,he)??S(this,he,Tt(this)),S(this,Gt,u(this,he).settings?.preview),u(this,Ft)??S(this,Ft,u(this,he).log.module(`${Ai}[${u(this,ie)}]`)),!u(this,ie)||u(this,ie)==="#"){re(this,pe,Ti).call(this,"Missing fragment id");return}this.refresh(!1)}}get fetchInfo(){return Object.fromEntries(Object.entries(u(this,X)).filter(([r,o])=>o!=null).map(([r,o])=>[`aem-fragment:${r}`,o]))}async refresh(r=!0){if(u(this,de)&&!await Promise.race([u(this,de),Promise.resolve(!1)]))return;r&&$o.remove(u(this,ie));try{S(this,de,re(this,pe,Tc).call(this)),await u(this,de)}catch(a){return re(this,pe,Ti).call(this,a.message),!1}let{references:o,referencesTree:n,placeholders:i}=u(this,ye)||{};return this.dispatchEvent(new CustomEvent(Fe,{detail:{...this.data,references:o,referencesTree:n,placeholders:i,...u(this,X)},bubbles:!0,composed:!0})),u(this,de)}get updateComplete(){return u(this,de)??Promise.reject(new Error("AEM fragment cannot be loaded"))}get data(){return u(this,Re)?u(this,Re):(u(this,Nr)?this.transformAuthorData():this.transformPublishData(),u(this,Re))}transformAuthorData(){let{fields:r,id:o,tags:n,settings:i={}}=u(this,ye);S(this,Re,r.reduce((a,{name:s,multiple:c,values:l})=>(a.fields[s]=c?l:l[0],a),{fields:{},id:o,tags:n,settings:i}))}transformPublishData(){let{fields:r,id:o,tags:n,settings:i={}}=u(this,ye);S(this,Re,Object.entries(r).reduce((a,[s,c])=>(a.fields[s]=c?.mimeType?c.value:c??"",a),{fields:{},id:o,tags:n,settings:i}))}async generatePreview(){let{previewFragment:r}=await import("https://mas.adobe.com/studio/libs/fragment-client.js");return await r(u(this,ie),{locale:u(this,he).settings.locale,apiKey:u(this,he).settings.wcsApiKey})}};Ft=new WeakMap,ye=new WeakMap,Re=new WeakMap,X=new WeakMap,he=new WeakMap,ie=new WeakMap,de=new WeakMap,Nr=new WeakMap,Mr=new WeakMap,Gt=new WeakMap,pe=new WeakSet,Sc=async function(r){Di(this,Mr)._++;let o=`${Ai}:${u(this,ie)}:${u(this,Mr)}`,n=`${o}${je}`,i=`${o}${qe}`;if(u(this,Gt))return await this.generatePreview();performance.mark(n);let a;try{if(u(this,X).stale=!1,u(this,X).url=r,a=await mo(r,{cache:"default",credentials:"omit"}),re(this,pe,_c).call(this,a),u(this,X).status=a?.status,u(this,X).measure=fe(performance.measure(i,n)),u(this,X).retryCount=a.retryCount,!a?.ok)throw new _e("Unexpected fragment response",{response:a,...u(this,he).duration});return await a.json()}catch(s){if(u(this,X).measure=fe(performance.measure(i,n)),u(this,X).retryCount=s.retryCount,u(this,ye))return u(this,X).stale=!0,u(this,Ft).error("Serving stale data",u(this,X)),u(this,ye);let c=s.message??"unknown";throw new _e(`Failed to fetch fragment: ${c}`,{})}},_c=function(r){Object.assign(u(this,X),Xr(r))},Ti=function(r){S(this,de,null),u(this,X).message=r,this.classList.add("error");let o={...u(this,X),...u(this,he).duration};u(this,Ft).error(r,o),this.dispatchEvent(new CustomEvent(Ge,{detail:o,bubbles:!0,composed:!0}))},Tc=async function(){this.classList.remove("error"),S(this,Re,null);let r=$o.get(u(this,ie));if(r)return S(this,ye,r),!0;let{masIOUrl:o,wcsApiKey:n,locale:i}=u(this,he).settings,a=`${o}/fragment?id=${u(this,ie)}&api_key=${n}&locale=${i}`;return r=await re(this,pe,Sc).call(this,a),$o.addByRequestedId(u(this,ie),r),S(this,ye,r),!0};customElements.define(Ai,_i);var Vt=class extends H{constructor(){super(),this.color="",this.variant="",this.backgroundColor="",this.borderColor="",this.text=this.textContent}connectedCallback(){this.borderColor&&this.borderColor!=="Transparent"?this.style.setProperty("--merch-badge-border",`1px solid var(--${this.borderColor})`):this.style.setProperty("--merch-badge-border",`1px solid var(--${this.backgroundColor})`),this.style.setProperty("--merch-badge-background-color",`var(--${this.backgroundColor})`),this.style.setProperty("--merch-badge-color",this.color),this.style.setProperty("--merch-badge-padding","2px 10px 3px 10px"),this.style.setProperty("--merch-badge-border-radius","4px 0 0 4px"),this.style.setProperty("--merch-badge-font-size","var(--consonant-merch-card-body-xs-font-size)"),this.textContent="",super.connectedCallback()}render(){return g`<div class="badge">
             ${this.text}
