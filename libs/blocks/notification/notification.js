@@ -201,10 +201,66 @@ async function decorateLockup(lockupArea, el) {
   if (pre && pre[2] === 'icon') el.classList.replace(pre[0], `${pre[1]}-lockup`);
 }
 
+function trapFocusWithElement(el, focusableElements) {
+  const updatedFocusableElements = focusableElements || [...el.querySelectorAll('a, button, input, select, textarea')];
+  const firstFocusable = updatedFocusableElements.shift();
+  const lastFocusable = updatedFocusableElements.pop();
+  const closeButton = el.querySelector('.close, a[href="#_evt-close"]');
+  let lastFocusedElement = firstFocusable;
+  const externalClickHandler = (event) => {
+    event.preventDefault();
+    if (event.target.closest('.feds-localnav') || document.querySelector('.georouting-wrapper')) return;
+    if (!el.contains(event.target) && !el.isEqualNode(event.target)) {
+      window.scrollTo(0, 0);
+      lastFocusedElement.focus({ focusVisible: true });
+    }
+  };
+  const updateLastFocused = (event) => { lastFocusedElement = event.target; };
+  const keydownEvent = (event) => {
+    if (event.key === 'Escape' && !document.querySelector('.dialog-modal')) {
+      closeButton.click();
+    }
+    if (event.key === 'Tab') {
+      if (event.target.isEqualNode(firstFocusable) && event.shiftKey) {
+        event.preventDefault();
+        lastFocusable.focus({ focusVisible: true });
+        return;
+      }
+      if (lastFocusable.isEqualNode(event.target)) {
+        event.preventDefault();
+        firstFocusable.focus({ focusVisible: true });
+      }
+    }
+  };
+
+  const gnavFocusOutHandler = (e) => {
+    if (e.key === 'Tab') {
+      const lastNavElement = document.querySelector('.feds-localnav-items .feds-navItem:last-child a');
+      if (e.srcElement.isEqualNode(lastNavElement)) {
+        e.preventDefault();
+        firstFocusable.focus({ focusVisible: true });
+      }
+    }
+  };
+
+  const gnav = document.querySelector('.feds-localnav');
+  gnav?.addEventListener('keydown', gnavFocusOutHandler);
+  document.addEventListener('click', externalClickHandler);
+  el.addEventListener('focusin', updateLastFocused);
+  el.addEventListener('keydown', keydownEvent);
+  closeButton?.addEventListener('click', () => {
+    document.removeEventListener('click', externalClickHandler);
+    el.removeEventListener('focusin', updateLastFocused);
+    el.removeEventListener('keydown', keydownEvent);
+    gnav.removeEventListener('keydown', gnavFocusOutHandler);
+  });
+}
+
 function curtainCallback(el) {
   const curtain = createTag('div', { class: 'notification-curtain' });
   document.body.classList.add('mobile-disable-scroll');
   el.insertAdjacentElement('afterend', curtain);
+  trapFocusWithElement(el);
   if (!document.body.classList.contains('disable-scroll') && document.body.classList.contains('mobile-disable-scroll')) {
     const firstFocusable = el.querySelector('a, button, input, select, textarea');
     firstFocusable.setAttribute('autofocus', '');
@@ -263,61 +319,6 @@ async function decorateForegroundText(el, container) {
   const iconArea = text?.querySelector('p:has(picture)');
   iconArea?.classList.add('icon-area');
   if (iconArea?.textContent.trim()) await decorateLockup(iconArea, el);
-}
-
-function trapFocusWithElement(el, focusableElements) {
-  const updatedFocusableElements = focusableElements || [...el.querySelectorAll('a, button, input, select, textarea')];
-  const firstFocusable = updatedFocusableElements.shift();
-  const lastFocusable = updatedFocusableElements.pop();
-  const closeButton = el.querySelector('.close, a[href="#_evt-close"]');
-  let lastFocusedElement = firstFocusable;
-  const externalClickHandler = (event) => {
-    event.preventDefault();
-    if (event.target.closest('.feds-localnav') || document.querySelector('.georouting-wrapper')) return;
-    if (!el.contains(event.target) && !el.isEqualNode(event.target)) {
-      window.scrollTo(0, 0);
-      lastFocusedElement.focus({ focusVisible: true });
-    }
-  };
-  const updateLastFocused = (event) => { lastFocusedElement = event.target; };
-  const keydownEvent = (event) => {
-    if (event.key === 'Escape' && !document.querySelector('.dialog-modal')) {
-      closeButton.click();
-    }
-    if (event.key === 'Tab') {
-      if (event.target.isEqualNode(firstFocusable) && event.shiftKey) {
-        event.preventDefault();
-        lastFocusable.focus({ focusVisible: true });
-        return;
-      }
-      if (lastFocusable.isEqualNode(event.target)) {
-        event.preventDefault();
-        firstFocusable.focus({ focusVisible: true });
-      }
-    }
-  };
-
-  const gnavFocusOutHandler = (e) => {
-    if (e.key === 'Tab') {
-      const lastNavElement = document.querySelector('.feds-localnav-items .feds-navItem:last-child a');
-      if (e.srcElement.isEqualNode(lastNavElement)) {
-        e.preventDefault();
-        firstFocusable.focus({ focusVisible: true });
-      }
-    }
-  };
-
-  const gnav = document.querySelector('.feds-localnav');
-  gnav.addEventListener('keydown', gnavFocusOutHandler);
-  document.addEventListener('click', externalClickHandler);
-  el.addEventListener('focusin', updateLastFocused);
-  el.addEventListener('keydown', keydownEvent);
-  closeButton?.addEventListener('click', () => {
-    document.removeEventListener('click', externalClickHandler);
-    el.removeEventListener('focusin', updateLastFocused);
-    el.removeEventListener('keydown', keydownEvent);
-    gnav.removeEventListener('keydown', gnavFocusOutHandler);
-  });
 }
 
 function toolTipPosition(el, allViewPorts) {
@@ -393,8 +394,5 @@ export default async function init(el) {
     wrapCopy(blockText);
     if (el.matches(`.${pill}`)) addTooltip(el);
     decorateMultiViewport(el);
-  }
-  if (document.body.classList.contains('mobile-disable-scroll')) {
-    trapFocusWithElement(el);
   }
 }
