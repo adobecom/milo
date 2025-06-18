@@ -587,7 +587,7 @@ merch-card [slot='callout-content'] .icon-button:active::after {
 
 merch-card [slot='callout-content'] .icon-button.hide-tooltip::before,
 merch-card [slot='callout-content'] .icon-button.hide-tooltip::after {
-  display: none;
+  display: none
 }
 
 @media (max-width: 600px) {
