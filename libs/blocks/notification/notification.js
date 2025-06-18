@@ -226,7 +226,7 @@ function trapFocusWithElement(el, focusableElements) {
         lastFocusable.focus({ focusVisible: true });
         return;
       }
-      if (lastFocusable.isEqualNode(event.target)) {
+      if (lastFocusable?.isEqualNode(event.target)) {
         event.preventDefault();
         firstFocusable.focus({ focusVisible: true });
       }
@@ -260,7 +260,6 @@ function curtainCallback(el) {
   const curtain = createTag('div', { class: 'notification-curtain' });
   document.body.classList.add('mobile-disable-scroll');
   el.insertAdjacentElement('afterend', curtain);
-  trapFocusWithElement(el);
   if (!document.body.classList.contains('disable-scroll') && document.body.classList.contains('mobile-disable-scroll')) {
     const firstFocusable = el.querySelector('a, button, input, select, textarea');
     firstFocusable.setAttribute('autofocus', '');
@@ -375,6 +374,10 @@ async function decorateLayout(el) {
   foreground?.classList.toggle('no-image', !media && !el.querySelector('.icon-area'));
   if (el.matches(`:is(.${pill}, .${ribbon}):not(.no-closure)`)) decorateClose(el);
   if (el.matches(`.${pill}.flexible`)) decorateFlexible(el);
+  const sectionMetadata = el.parentElement.querySelector('.section-metadata');
+  if (sectionMetadata?.textContent.toLowerCase().includes('sticky-bottom')) {
+    trapFocusWithElement(el);
+  }
   return foreground;
 }
 
