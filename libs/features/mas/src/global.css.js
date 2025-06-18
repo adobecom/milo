@@ -585,9 +585,9 @@ merch-card [slot='callout-content'] .icon-button:active::after {
   display: block; 
 }
 
-merch-card [slot='callout-content'] .icon-button.show-tooltip::before,
-merch-card [slot='callout-content'] .icon-button.show-tooltip::after {
-  display: block;
+merch-card [slot='callout-content'] .icon-button.hide-tooltip::before,
+merch-card [slot='callout-content'] .icon-button.hide-tooltip::after {
+  display: none;
 }
 
 @media (max-width: 600px) {
