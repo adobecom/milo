@@ -518,9 +518,9 @@ function applyStylesBasedOnScreenSize(table, originTable) {
     const headingsLength = Array.from(headings).filter((heading) => heading.textContent.trim() !== '').length;
     table.querySelectorAll('.hide-mobile').forEach((col) => { col.classList.remove('hide-mobile'); });
 
-    if (isMerch && headingsLength > 2) {
+    if (isMerch && headingsLength >= 2) {
       table.querySelectorAll('.col:not(.col-1, .col-2)').forEach((col) => { col.classList.add('hide-mobile'); });
-    } else if (headingsLength > 3) {
+    } else if (headingsLength >= 3) {
       table.querySelectorAll('.col:not(.col-1, .col-2, .col-3), .col.no-borders').forEach((col) => { col.classList.add('hide-mobile'); });
     }
 
