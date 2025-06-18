@@ -41,11 +41,11 @@ function getSelectorElement(root, selector) {
     return root.querySelector(selector);
 }
 
-function addFragment(fragment, collectionId) {
+function addFragment(fragment, loading) {
     const aemFragment = document.createElement('aem-fragment');
     aemFragment.setAttribute('fragment', fragment);
-    if (collectionId) {
-        aemFragment.setAttribute('collection', collectionId);
+    if (loading) {
+        aemFragment.setAttribute('loading', loading);
     }
     document.body.appendChild(aemFragment);
     return aemFragment;
@@ -368,7 +368,7 @@ runTests(async () => {
                 const topCollection = addFragment('collection');
                 const card = addFragment(
                     'ca835d11-fe6b-40f8-96d1-50ac800c9f70',
-                    'collection',
+                    'lazy',
                 );
                 await oneEvent(card, 'aem:load');
                 expect(aemMock.count).to.equal(1);

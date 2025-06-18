@@ -38,9 +38,6 @@ export class Mini extends VariantLayout {
             alternativePriceAriaLabel: '',
         };
         options.displayAnnual = this.card.settings?.displayAnnual ?? false;
-        if (this.card.priceLiterals) {
-            Object.assign(options.literals, this.card.priceLiterals);
-        }
     }
 
     adjustLegal() {

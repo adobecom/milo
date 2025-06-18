@@ -46,9 +46,15 @@ It features a caching mechanism, supports retrying on fetch errors, and can serv
 <td><code>true</code></td>
 </tr>
 <tr>
-<td><code>collection</code></td>
-<td>The ID of a parent collection fragment. The fragment will wait for the collection to load.</td>
-<td></td>
+<td><code>loading</code></td>
+<td>If a fragment is known to be in a collection, set to <code>cache</code>, so that it can be initialized from the collection cache, falls back to <code>eager</code> after a timeout.</td>
+<td><code>eager</code></td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>timeout</code></td>
+<td>The timeout in milliseconds for <code>loading=cache</code>.</td>
+<td><code>5000</code></td>
 <td><code>false</code></td>
 </tr>
 <tr>

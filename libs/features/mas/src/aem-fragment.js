@@ -13,15 +13,19 @@ const sheet = new CSSStyleSheet();
 sheet.replaceSync(':host { display: contents; }');
 
 const ATTRIBUTE_FRAGMENT = 'fragment';
-const ATTRIBUTE_COLLECTION = 'collection';
 const ATTRIBUTE_AUTHOR = 'author';
 const ATTRIBUTE_PREVIEW = 'preview';
+const ATTRIBUTE_LOADING = 'loading';
+const ATTRIBUTE_TIMEOUT = 'timeout';
 const AEM_FRAGMENT_TAG_NAME = 'aem-fragment';
-const AEM_COLLECTION_FRAGMENT_LOAD_TIMEOUT = 10000;
+const LOADING_EAGER = 'eager';
+const LOADING_CACHE = 'cache';
+const LOADING_VALUES = [LOADING_EAGER, LOADING_CACHE];
 
 class FragmentCache {
     #fragmentCache = new Map();
     #fetchInfos = new Map();
+    #promises = new Map();
 
     clear() {
         this.#fragmentCache.clear();
@@ -34,21 +38,47 @@ class FragmentCache {
      * @param {Object?} parentFragment parent fragment object, optional.
      */
     add(fragment, parentFragment) {
-        if (this.get(fragment.originalId)) return;
-        if (this.get(fragment.id)) return;
-        if (fragment.originalId) this.#fragmentCache.set(fragment.originalId, fragment);
-        if (fragment.id) this.#fragmentCache.set(fragment.id, fragment);
-        if (!fragment.references) return;
-        Object.entries(fragment.references)
-            .filter(([, { type }]) => type === 'content-fragment')
-            .forEach(([, { value }]) => {
-            value.references = fragment.references;
-            value.settings = { ...parentFragment?.settings, ...value.settings };
-            value.placeholders = { ...parentFragment?.placeholders, ...value.placeholders };
-            value.dictionary = { ...parentFragment?.dictionary, ...value.dictionary };
-            value.priceLiterals = { ...parentFragment?.priceLiterals, ...value.priceLiterals };
-            this.add(value, (parentFragment ?? fragment));
-        });
+        if (this.has(fragment.id)) return;
+        if (this.has(fragment.originalId)) return;
+
+        this.#fragmentCache.set(fragment.id, fragment);
+        if (fragment.originalId) {
+            this.#fragmentCache.set(fragment.originalId, fragment);
+        }
+
+        if (!parentFragment) {
+            for (const key in fragment.references) {
+                const { type, value } = fragment.references[key];
+                if (type === 'content-fragment') {
+                    value.settings = {
+                        ...parentFragment?.settings,
+                        ...value.settings,
+                    };
+                    value.placeholders = {
+                        ...parentFragment?.placeholders,
+                        ...value.placeholders,
+                    };
+                    value.dictionary = {
+                        ...parentFragment?.dictionary,
+                        ...value.dictionary,
+                    };
+                    value.priceLiterals = {
+                        ...parentFragment?.priceLiterals,
+                        ...value.priceLiterals,
+                    };
+                    this.add(value, fragment);
+                }
+            }
+        }
+
+        if (this.#promises.has(fragment.id)) {
+            const [, resolve] = this.#promises.get(fragment.id);
+            resolve();
+        }
+        if (this.#promises.has(fragment.originalId)) {
+            const [, resolve] = this.#promises.get(fragment.originalId);
+            resolve();
+        }
     }
 
     has(fragmentId) {
@@ -61,6 +91,22 @@ class FragmentCache {
 
     get(key) {
         return this.#fragmentCache.get(key);
+    }
+
+    getAsPromise(key) {
+        let [promise] = this.#promises.get(key) ?? [];
+        if (promise) {
+            return promise;
+        }
+        let resolveFn;
+        promise = new Promise((resolve) => {
+            resolveFn = resolve;
+            if (this.has(key)) {
+                resolve();
+            }
+        });
+        this.#promises.set(key, [promise, resolveFn]);
+        return promise;
     }
 
     getFetchInfo(fragmentId) {
@@ -104,7 +150,8 @@ export class AemFragment extends HTMLElement {
      */
     #fragmentId;
     #fetchInfo;
-    #collectionId;
+    #loading = LOADING_EAGER;
+    #timeout = 5000;
 
     /**
      * Internal promise to track if fetching is in progress.
@@ -119,7 +166,8 @@ export class AemFragment extends HTMLElement {
     static get observedAttributes() {
         return [
             ATTRIBUTE_FRAGMENT,
-            ATTRIBUTE_COLLECTION,
+            ATTRIBUTE_LOADING,
+            ATTRIBUTE_TIMEOUT,
             ATTRIBUTE_AUTHOR,
             ATTRIBUTE_PREVIEW,
         ];
@@ -136,8 +184,11 @@ export class AemFragment extends HTMLElement {
             this.#fragmentId = newValue;
             this.#fetchInfo = cache.getFetchInfo(newValue);
         }
-        if (name === ATTRIBUTE_COLLECTION) {
-            this.#collectionId = newValue;
+        if (name === ATTRIBUTE_LOADING && LOADING_VALUES.includes(newValue)) {
+            this.#loading = newValue;
+        }
+        if (name === ATTRIBUTE_TIMEOUT) {
+          this.#timeout = parseInt(newValue, 10);
         }
         if (name === ATTRIBUTE_AUTHOR) {
             this.#author = ['', 'true'].includes(newValue);
@@ -238,19 +289,13 @@ export class AemFragment extends HTMLElement {
         if (flushCache) {
             cache.remove(this.#fragmentId);
         }
-        if (this.#collectionId) {
-            const collectionElement = document.querySelector(
-                `aem-fragment[fragment="${this.#collectionId}"]`,
-            );
-            if (collectionElement) {
-                const timeoutPromise = new Promise((resolve) =>
-                    setTimeout(resolve, AEM_COLLECTION_FRAGMENT_LOAD_TIMEOUT),
-                );
-                await Promise.race([
-                    collectionElement.updateComplete,
-                    timeoutPromise,
-                ]);
-            }
+        if (this.#loading === LOADING_CACHE) {
+            await Promise.race([
+                cache.getAsPromise(this.#fragmentId),
+                new Promise((resolve) =>
+                    setTimeout(resolve, this.#timeout),
+                ),
+            ]);
         }
         try {
             this.#fetchPromise = this.#fetchData();

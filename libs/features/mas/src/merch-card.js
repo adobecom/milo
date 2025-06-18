@@ -44,6 +44,10 @@ const MARK_MERCH_CARD_PREFIX = 'merch-card:';
 function priceOptionsProvider(element, options) {
     const card = element.closest(MERCH_CARD);
     if (!card) return options;
+    if (card.priceLiterals) {
+      options.literals ??= {};
+      Object.assign(options.literals, card.priceLiterals);
+    }
     card.variantLayout?.priceOptionsProvider?.(element, options);
 }
 

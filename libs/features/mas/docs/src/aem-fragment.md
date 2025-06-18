@@ -9,13 +9,14 @@ The `aem-fragment` element is headless and does not render any content on its ow
 
 ## Attributes
 
-| Name         | Description                                                                                | Default Value | Required |
-| ------------ | ------------------------------------------------------------------------------------------ | ------------- | -------- |
-| `fragment`   | The ID of the fragment to load.                                                            |               | `true`   |
-| `collection` | The ID of a parent collection fragment. The fragment will wait for the collection to load. |               | `false`  |
-| `author`     | Enables author mode, which affects data transformation.                                    | `false`       | `false`  |
-| `preview`    | Enables preview mode, fetching data from the preview service.                              | `false`       | `false`  |
-| `title`      | An informative title for the fragment.                                                     |               | `false`  |
+| Name       | Description                                                                                                                                                   | Default Value | Required |
+| ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------- | -------- |
+| `fragment` | The ID of the fragment to load.                                                                                                                               |               | `true`   |
+| `loading`  | If a fragment is known to be in a collection, set to `cache`, so that it can be initialized from the collection cache, falls back to `eager` after a timeout. | `eager`       | `false`  |
+| `timeout`  | The timeout in milliseconds for `loading=cache`.                                                                                                              | `5000`        | `false`  |
+| `author`   | Enables author mode, which affects data transformation.                                                                                                       | `false`       | `false`  |
+| `preview`  | Enables preview mode, fetching data from the preview service.                                                                                                 | `false`       | `false`  |
+| `title`    | An informative title for the fragment.                                                                                                                        |               | `false`  |
 
 ## Properties
 
