@@ -6,7 +6,6 @@ import { replaceKey } from '../../features/placeholders.js';
 
 const PARAM_MAS_LIBS = 'maslibs';
 
-// Centralized MAS dependency management
 const MAS_DEPS = {
   'merch-card': () => import('../../deps/mas/merch-card.js'),
   'lit-all': () => import('../../deps/lit-all.min.js'),
@@ -51,40 +50,36 @@ async function loadMasLibs() {
   return masLibsPromise;
 }
 
-export async function loadMasDependency(depName) {
+export async function loadMasDependencies(deps = []) {
+  const depsArray = Array.isArray(deps) ? deps : [deps];
+
+  const toLoad = depsArray.filter((dep) => !loadedDeps.has(dep));
+  if (toLoad.length === 0) return Promise.resolve();
+
   const searchParams = new URLSearchParams(window.location.search);
   if (searchParams.has('maslibs')) {
-    await loadMasLibs();
-    return Promise.resolve();
+    return loadMasLibs();
   }
 
-  if (loadedDeps.has(depName)) {
-    return Promise.resolve();
-  }
+  const promises = toLoad.map(async (dep) => {
+    const loader = MAS_DEPS[dep];
+    if (!loader) throw new Error(`Unknown MAS dependency: ${dep}`);
 
-  const loader = MAS_DEPS[depName];
-  if (!loader) {
-    throw new Error(`Unknown MAS dependency: ${depName}`);
-  }
+    loadedDeps.add(dep);
+    return loader();
+  });
 
-  loadedDeps.add(depName);
-  return loader();
+  return Promise.allSettled(promises).then((results) => {
+    results.forEach((result, index) => {
+      if (result.status === 'rejected') {
+        loadedDeps.delete(toLoad[index]);
+      }
+    });
+  });
 }
 
-export async function loadMasDependencies(deps) {
-  const searchParams = new URLSearchParams(window.location.search);
-  if (searchParams.has('maslibs')) {
-    await loadMasLibs();
-    return Promise.resolve();
-  }
-
-  const toLoad = deps.filter((dep) => !loadedDeps.has(dep));
-  if (toLoad.length === 0) {
-    return Promise.resolve();
-  }
-
-  const promises = toLoad.map((dep) => loadMasDependency(dep));
-  return Promise.all(promises);
+export async function loadMasDependency(depName) {
+  return loadMasDependencies([depName]);
 }
 
 export const CHECKOUT_LINK_CONFIG_PATH = '/commerce/checkout-link.json'; // relative to libs.
@@ -806,7 +801,7 @@ export async function initService(force = false, attributes = {}) {
       });
     }
     if (country === 'AU') {
-      await loadStyle(`${getConfig().base}/blocks/merch/au-merch.css`);
+      loadStyle(`${getConfig().base}/blocks/merch/au-merch.css`);
     }
     return service;
   });
