@@ -1,4 +1,3 @@
-
 import { createTag, getConfig, getLanguage, getFederatedContentRoot } from '../../utils/utils.js';
 
 const queriedPages = [];
