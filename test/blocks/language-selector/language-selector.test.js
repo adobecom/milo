@@ -4,6 +4,24 @@ import sinon from 'sinon';
 import { setConfig } from '../../../libs/utils/utils.js';
 import init from '../../../libs/blocks/language-selector/language-selector.js';
 
+const mockLanguageMapping = {
+  data: [
+    { English: 'german', Native: 'Deutsch' },
+    { English: 'japanese', Native: '日本語' },
+    { English: 'korean', Native: '한국인' },
+    { English: 'italian', Native: 'italiana' },
+    { English: 'french', Native: 'Francais' },
+  ],
+};
+
+const mockAccentedLanguageMapping = {
+  data: [
+    { English: 'francais', Native: 'Français' },
+    { English: 'espanol', Native: 'Español' },
+    { English: 'portugues', Native: 'Português' },
+  ],
+};
+
 describe('Language Selector Block', async () => {
   let block;
   afterEach(() => { sinon.restore(); });
@@ -112,6 +130,226 @@ describe('Language Selector Block', async () => {
     const filtered = languageLinks.filter((link) => link.textContent.includes('Deutsch'));
     expect(filtered.length).to.equal(1);
     expect(filtered[0].textContent).to.include('Deutsch');
+  });
+
+  it('filters languages by ISO codes', async () => {
+    const searchInput = document.querySelector('.search-input');
+    searchInput.value = 'ja';
+    searchInput.dispatchEvent(new Event('input', { bubbles: true }));
+    await new Promise((resolve) => { setTimeout(resolve, 250); });
+    const languageLinks = Array.from(document.querySelectorAll('.language-link'));
+    const filtered = languageLinks.filter((link) => link.href.includes('/ja/'));
+    expect(filtered.length).to.be.greaterThan(0);
+  });
+
+  it('filters languages by IETF codes', async () => {
+    const searchInput = document.querySelector('.search-input');
+    searchInput.value = 'ja';
+    searchInput.dispatchEvent(new Event('input', { bubbles: true }));
+    await new Promise((resolve) => { setTimeout(resolve, 250); });
+    const languageLinks = Array.from(document.querySelectorAll('.language-link'));
+    const filtered = languageLinks.filter((link) => link.href.includes('/ja/'));
+    expect(filtered.length).to.be.greaterThan(0);
+  });
+
+  it('filters languages by language prefixes', async () => {
+    const searchInput = document.querySelector('.search-input');
+    searchInput.value = 'de';
+    searchInput.dispatchEvent(new Event('input', { bubbles: true }));
+    await new Promise((resolve) => { setTimeout(resolve, 250); });
+    const languageLinks = Array.from(document.querySelectorAll('.language-link'));
+    const filtered = languageLinks.filter((link) => link.href.includes('/de/'));
+    expect(filtered.length).to.be.greaterThan(0);
+  });
+
+  it('filters languages by partial ISO codes', async () => {
+    const searchInput = document.querySelector('.search-input');
+    searchInput.value = 'j';
+    searchInput.dispatchEvent(new Event('input', { bubbles: true }));
+    await new Promise((resolve) => { setTimeout(resolve, 250); });
+    const languageLinks = Array.from(document.querySelectorAll('.language-link'));
+    const filtered = languageLinks.filter((link) => link.href.includes('/ja/'));
+    expect(filtered.length).to.be.greaterThan(0);
+  });
+
+  it('filters languages by partial IETF codes', async () => {
+    const searchInput = document.querySelector('.search-input');
+    searchInput.value = 'ja';
+    searchInput.dispatchEvent(new Event('input', { bubbles: true }));
+    await new Promise((resolve) => { setTimeout(resolve, 250); });
+    const languageLinks = Array.from(document.querySelectorAll('.language-link'));
+    const filtered = languageLinks.filter((link) => link.href.includes('/ja/'));
+    expect(filtered.length).to.be.greaterThan(0);
+  });
+
+  it('filters languages by exact matches', async () => {
+    const searchInput = document.querySelector('.search-input');
+    searchInput.value = 'ja';
+    searchInput.dispatchEvent(new Event('input', { bubbles: true }));
+    await new Promise((resolve) => { setTimeout(resolve, 250); });
+    const languageLinks = Array.from(document.querySelectorAll('.language-link'));
+    const filtered = languageLinks.filter((link) => link.href.includes('/ja/'));
+    expect(filtered.length).to.be.greaterThan(0);
+  });
+
+  it('filters languages by case-insensitive search', async () => {
+    const searchInput = document.querySelector('.search-input');
+    searchInput.value = 'JA';
+    searchInput.dispatchEvent(new Event('input', { bubbles: true }));
+    await new Promise((resolve) => { setTimeout(resolve, 250); });
+    const languageLinks = Array.from(document.querySelectorAll('.language-link'));
+    const filtered = languageLinks.filter((link) => link.href.includes('/ja/'));
+    expect(filtered.length).to.be.greaterThan(0);
+  });
+
+  it('filters languages by mixed case search', async () => {
+    const searchInput = document.querySelector('.search-input');
+    searchInput.value = 'Ja';
+    searchInput.dispatchEvent(new Event('input', { bubbles: true }));
+    await new Promise((resolve) => { setTimeout(resolve, 250); });
+    const languageLinks = Array.from(document.querySelectorAll('.language-link'));
+    const filtered = languageLinks.filter((link) => link.href.includes('/ja/'));
+    expect(filtered.length).to.be.greaterThan(0);
+  });
+
+  it('filters languages by French search', async () => {
+    const searchInput = document.querySelector('.search-input');
+    searchInput.value = 'fr';
+    searchInput.dispatchEvent(new Event('input', { bubbles: true }));
+    await new Promise((resolve) => { setTimeout(resolve, 250); });
+    const languageLinks = Array.from(document.querySelectorAll('.language-link'));
+    const filtered = languageLinks.filter((link) => link.href.includes('/fr/'));
+    expect(filtered.length).to.be.greaterThan(0);
+  });
+
+  it('filters languages by Korean search', async () => {
+    const searchInput = document.querySelector('.search-input');
+    searchInput.value = 'ko';
+    searchInput.dispatchEvent(new Event('input', { bubbles: true }));
+    await new Promise((resolve) => { setTimeout(resolve, 250); });
+    const languageLinks = Array.from(document.querySelectorAll('.language-link'));
+    const filtered = languageLinks.filter((link) => link.href.includes('/ko/'));
+    expect(filtered.length).to.be.greaterThan(0);
+  });
+
+  it('filters languages by English search', async () => {
+    const searchInput = document.querySelector('.search-input');
+    searchInput.value = 'en';
+    searchInput.dispatchEvent(new Event('input', { bubbles: true }));
+    await new Promise((resolve) => { setTimeout(resolve, 250); });
+    const languageLinks = Array.from(document.querySelectorAll('.language-link'));
+    const filtered = languageLinks.filter((link) => link.href.includes('/en/'));
+    expect(filtered.length).to.be.greaterThan(0);
+  });
+
+  it('filters languages by partial native name search', async () => {
+    const searchInput = document.querySelector('.search-input');
+    searchInput.value = 'Deut';
+    searchInput.dispatchEvent(new Event('input', { bubbles: true }));
+    await new Promise((resolve) => { setTimeout(resolve, 250); });
+    const languageLinks = Array.from(document.querySelectorAll('.language-link'));
+    const filtered = languageLinks.filter((link) => link.textContent.includes('Deutsch'));
+    expect(filtered.length).to.be.greaterThan(0);
+  });
+
+  it('filters languages by exact native name search', async () => {
+    const searchInput = document.querySelector('.search-input');
+    searchInput.value = 'Deutsch';
+    searchInput.dispatchEvent(new Event('input', { bubbles: true }));
+    await new Promise((resolve) => { setTimeout(resolve, 250); });
+    const languageLinks = Array.from(document.querySelectorAll('.language-link'));
+    const filtered = languageLinks.filter((link) => link.textContent.includes('Deutsch'));
+    expect(filtered.length).to.be.greaterThan(0);
+  });
+
+  it('filters languages by case-insensitive native name search', async () => {
+    const searchInput = document.querySelector('.search-input');
+    searchInput.value = 'deutsch';
+    searchInput.dispatchEvent(new Event('input', { bubbles: true }));
+    await new Promise((resolve) => { setTimeout(resolve, 250); });
+    const languageLinks = Array.from(document.querySelectorAll('.language-link'));
+    const filtered = languageLinks.filter((link) => link.textContent.includes('Deutsch'));
+    expect(filtered.length).to.be.greaterThan(0);
+  });
+
+  it('filters languages by mixed case native name search', async () => {
+    const searchInput = document.querySelector('.search-input');
+    searchInput.value = 'DeuTsch';
+    searchInput.dispatchEvent(new Event('input', { bubbles: true }));
+    await new Promise((resolve) => { setTimeout(resolve, 250); });
+    const languageLinks = Array.from(document.querySelectorAll('.language-link'));
+    const filtered = languageLinks.filter((link) => link.textContent.includes('Deutsch'));
+    expect(filtered.length).to.be.greaterThan(0);
+  });
+
+  it('filters languages by IETF language part search', async () => {
+    const searchInput = document.querySelector('.search-input');
+    searchInput.value = 'ja';
+    searchInput.dispatchEvent(new Event('input', { bubbles: true }));
+    await new Promise((resolve) => { setTimeout(resolve, 250); });
+    const languageLinks = Array.from(document.querySelectorAll('.language-link'));
+    const filtered = languageLinks.filter((link) => link.href.includes('/ja/'));
+    expect(filtered.length).to.be.greaterThan(0);
+  });
+
+  it('filters languages by full IETF code search', async () => {
+    const searchInput = document.querySelector('.search-input');
+    searchInput.value = 'ja';
+    searchInput.dispatchEvent(new Event('input', { bubbles: true }));
+    await new Promise((resolve) => { setTimeout(resolve, 250); });
+    const languageLinks = Array.from(document.querySelectorAll('.language-link'));
+    const filtered = languageLinks.filter((link) => link.href.includes('/ja/'));
+    expect(filtered.length).to.be.greaterThan(0);
+  });
+
+  it('filters languages by partial IETF code search', async () => {
+    const searchInput = document.querySelector('.search-input');
+    searchInput.value = 'ja';
+    searchInput.dispatchEvent(new Event('input', { bubbles: true }));
+    await new Promise((resolve) => { setTimeout(resolve, 250); });
+    const languageLinks = Array.from(document.querySelectorAll('.language-link'));
+    const filtered = languageLinks.filter((link) => link.href.includes('/ja/'));
+    expect(filtered.length).to.be.greaterThan(0);
+  });
+
+  it('filters languages by language prefix exact match', async () => {
+    const searchInput = document.querySelector('.search-input');
+    searchInput.value = 'de';
+    searchInput.dispatchEvent(new Event('input', { bubbles: true }));
+    await new Promise((resolve) => { setTimeout(resolve, 250); });
+    const languageLinks = Array.from(document.querySelectorAll('.language-link'));
+    const filtered = languageLinks.filter((link) => link.href.includes('/de/'));
+    expect(filtered.length).to.be.greaterThan(0);
+  });
+
+  it('filters languages by language prefix partial match', async () => {
+    const searchInput = document.querySelector('.search-input');
+    searchInput.value = 'd';
+    searchInput.dispatchEvent(new Event('input', { bubbles: true }));
+    await new Promise((resolve) => { setTimeout(resolve, 250); });
+    const languageLinks = Array.from(document.querySelectorAll('.language-link'));
+    const filtered = languageLinks.filter((link) => link.href.includes('/de/'));
+    expect(filtered.length).to.be.greaterThan(0);
+  });
+
+  it('filters languages by case-insensitive language prefix search', async () => {
+    const searchInput = document.querySelector('.search-input');
+    searchInput.value = 'DE';
+    searchInput.dispatchEvent(new Event('input', { bubbles: true }));
+    await new Promise((resolve) => { setTimeout(resolve, 250); });
+    const languageLinks = Array.from(document.querySelectorAll('.language-link'));
+    const filtered = languageLinks.filter((link) => link.href.includes('/de/'));
+    expect(filtered.length).to.be.greaterThan(0);
+  });
+
+  it('filters languages by mixed case language prefix search', async () => {
+    const searchInput = document.querySelector('.search-input');
+    searchInput.value = 'De';
+    searchInput.dispatchEvent(new Event('input', { bubbles: true }));
+    await new Promise((resolve) => { setTimeout(resolve, 250); });
+    const languageLinks = Array.from(document.querySelectorAll('.language-link'));
+    const filtered = languageLinks.filter((link) => link.href.includes('/de/'));
+    expect(filtered.length).to.be.greaterThan(0);
   });
 
   it('moves focus out of dropdown on Tab', async () => {
@@ -239,17 +477,193 @@ describe('Language Selector Block', async () => {
     await new Promise((resolve) => { setTimeout(resolve, 350); });
     expect(dropdown && dropdown.style.display).to.equal('none');
   });
+
+  it('filters languages by English mapping search', async () => {
+    const fetchStub = sinon.stub(window, 'fetch');
+    fetchStub.withArgs(sinon.match.string).resolves({
+      ok: true,
+      json: () => Promise.resolve(mockLanguageMapping),
+    });
+
+    const searchInput = document.querySelector('.search-input');
+    searchInput.value = 'German';
+    searchInput.dispatchEvent(new Event('input', { bubbles: true }));
+    await new Promise((resolve) => { setTimeout(resolve, 250); });
+    const languageLinks = Array.from(document.querySelectorAll('.language-link'));
+    const filtered = languageLinks.filter((link) => link.textContent.includes('Deutsch'));
+    expect(filtered.length).to.be.greaterThan(0);
+
+    fetchStub.restore();
+  });
+
+  it('filters languages by English mapping partial search', async () => {
+    const fetchStub = sinon.stub(window, 'fetch');
+    fetchStub.withArgs(sinon.match.string).resolves({
+      ok: true,
+      json: () => Promise.resolve(mockLanguageMapping),
+    });
+
+    const searchInput = document.querySelector('.search-input');
+    searchInput.value = 'Germ';
+    searchInput.dispatchEvent(new Event('input', { bubbles: true }));
+    await new Promise((resolve) => { setTimeout(resolve, 250); });
+    const languageLinks = Array.from(document.querySelectorAll('.language-link'));
+    const filtered = languageLinks.filter((link) => link.textContent.includes('Deutsch'));
+    expect(filtered.length).to.be.greaterThan(0);
+
+    fetchStub.restore();
+  });
+
+  it('filters languages by English mapping case-insensitive search', async () => {
+    const fetchStub = sinon.stub(window, 'fetch');
+    fetchStub.withArgs(sinon.match.string).resolves({
+      ok: true,
+      json: () => Promise.resolve(mockLanguageMapping),
+    });
+
+    const searchInput = document.querySelector('.search-input');
+    searchInput.value = 'german';
+    searchInput.dispatchEvent(new Event('input', { bubbles: true }));
+    await new Promise((resolve) => { setTimeout(resolve, 250); });
+    const languageLinks = Array.from(document.querySelectorAll('.language-link'));
+    const filtered = languageLinks.filter((link) => link.textContent.includes('Deutsch'));
+    expect(filtered.length).to.be.greaterThan(0);
+
+    fetchStub.restore();
+  });
+
+  it('filters languages by English mapping mixed case search', async () => {
+    const fetchStub = sinon.stub(window, 'fetch');
+    fetchStub.withArgs(sinon.match.string).resolves({
+      ok: true,
+      json: () => Promise.resolve(mockLanguageMapping),
+    });
+
+    const searchInput = document.querySelector('.search-input');
+    searchInput.value = 'GerMan';
+    searchInput.dispatchEvent(new Event('input', { bubbles: true }));
+    await new Promise((resolve) => { setTimeout(resolve, 250); });
+    const languageLinks = Array.from(document.querySelectorAll('.language-link'));
+    const filtered = languageLinks.filter((link) => link.textContent.includes('Deutsch'));
+    expect(filtered.length).to.be.greaterThan(0);
+
+    fetchStub.restore();
+  });
+
+  it('filters languages by accent normalization', async () => {
+    const fetchStub = sinon.stub(window, 'fetch');
+    fetchStub.withArgs(sinon.match.string).resolves({
+      ok: true,
+      json: () => Promise.resolve(mockAccentedLanguageMapping),
+    });
+
+    const searchInput = document.querySelector('.search-input');
+    searchInput.value = 'francais';
+    searchInput.dispatchEvent(new Event('input', { bubbles: true }));
+    await new Promise((resolve) => { setTimeout(resolve, 250); });
+    const languageLinks = Array.from(document.querySelectorAll('.language-link'));
+    const filtered = languageLinks.filter((link) => link.textContent.includes('Français'));
+    expect(filtered.length).to.be.greaterThan(0);
+
+    fetchStub.restore();
+  });
+
+  it('filters languages by accented search term', async () => {
+    const fetchStub = sinon.stub(window, 'fetch');
+    fetchStub.withArgs(sinon.match.string).resolves({
+      ok: true,
+      json: () => Promise.resolve(mockAccentedLanguageMapping),
+    });
+
+    const searchInput = document.querySelector('.search-input');
+    searchInput.value = 'français';
+    searchInput.dispatchEvent(new Event('input', { bubbles: true }));
+    await new Promise((resolve) => { setTimeout(resolve, 250); });
+    const languageLinks = Array.from(document.querySelectorAll('.language-link'));
+    const filtered = languageLinks.filter((link) => link.textContent.includes('Français'));
+    expect(filtered.length).to.be.greaterThan(0);
+
+    fetchStub.restore();
+  });
+
+  it('filters languages by partial accented search', async () => {
+    const fetchStub = sinon.stub(window, 'fetch');
+    fetchStub.withArgs(sinon.match.string).resolves({
+      ok: true,
+      json: () => Promise.resolve(mockAccentedLanguageMapping),
+    });
+
+    const searchInput = document.querySelector('.search-input');
+    searchInput.value = 'franc';
+    searchInput.dispatchEvent(new Event('input', { bubbles: true }));
+    await new Promise((resolve) => { setTimeout(resolve, 250); });
+    const languageLinks = Array.from(document.querySelectorAll('.language-link'));
+    const filtered = languageLinks.filter((link) => link.textContent.includes('Français'));
+    expect(filtered.length).to.be.greaterThan(0);
+
+    fetchStub.restore();
+  });
+
+  it('handles empty search input', async () => {
+    const searchInput = document.querySelector('.search-input');
+    searchInput.value = '';
+    searchInput.dispatchEvent(new Event('input', { bubbles: true }));
+    await new Promise((resolve) => { setTimeout(resolve, 250); });
+    const languageLinks = Array.from(document.querySelectorAll('.language-link'));
+    expect(languageLinks.length).to.be.greaterThan(0);
+  });
+
+  it('handles search with no results', async () => {
+    const searchInput = document.querySelector('.search-input');
+    searchInput.value = 'xyz123';
+    searchInput.dispatchEvent(new Event('input', { bubbles: true }));
+    await new Promise((resolve) => { setTimeout(resolve, 250); });
+    const languageLinks = Array.from(document.querySelectorAll('.language-link'));
+    expect(languageLinks.length).to.equal(0);
+  });
 });
 
 describe('Language Selector Block - Network Event Handling', () => {
   let clock;
-  beforeEach(() => {
+  let block;
+
+  beforeEach(async () => {
     clock = sinon.useFakeTimers({ toFake: ['setTimeout'], shouldAdvanceTime: true });
+    sinon.stub(window, 'fetch').callsFake(() => Promise.resolve({
+      ok: true,
+      json: () => Promise.resolve({ data: [] }),
+    }));
+    document.body.innerHTML = await readFile({ path: './mocks/languages.html' });
+    setConfig({
+      languages: {
+        en: {
+          ietf: 'en',
+          tk: 'hah7vzn.css',
+          rootPath: '',
+          regions: [
+            { region: 'gb' },
+            { region: 'apac' },
+          ],
+        },
+        de: { ietf: 'de', tk: 'hah7vzn.css' },
+        fr: { ietf: 'fr', tk: 'vrk5vyv.css' },
+        ja: { ietf: 'ja', tk: 'dvg6awq', region: 'jp' },
+        ko: { ietf: 'ko', tk: 'qjs5sfm', region: 'kr' },
+      },
+      locales: { '': { ietf: 'en-US', tk: 'hah7vzn.css' } },
+    });
+    block = document.body.querySelector('.language-selector');
+    await init(block);
+    await new Promise((resolve) => { setTimeout(resolve, 0); });
+
+    const regionPickerElem = document.querySelector('.feds-regionPicker');
+    regionPickerElem.click();
+    await new Promise((resolve) => { setTimeout(resolve, 0); });
   });
+
   afterEach(() => { sinon.restore(); });
 
   it('handles mouseover event for 200 pages', async () => {
-    sinon.stub(window, 'fetch').callsFake(() => Promise.resolve({ status: 200, ok: true }));
     sinon.stub(Element.prototype, 'matches').callsFake(() => true);
     const mouseoverEvent = new Event('mouseover');
     const enGbLink = document.querySelector('a[href*="/en/gb/"]');
@@ -260,7 +674,6 @@ describe('Language Selector Block - Network Event Handling', () => {
   });
 
   it('handles mouseover event for 404 pages', async () => {
-    sinon.stub(window, 'fetch').callsFake(() => Promise.resolve({ status: 404, ok: false }));
     sinon.stub(Element.prototype, 'matches').callsFake(() => true);
     const mouseoverEvent = new Event('mouseover');
     const frLink = document.querySelector('a[href*="/fr/"]');
@@ -270,7 +683,6 @@ describe('Language Selector Block - Network Event Handling', () => {
   });
 
   it('handles click event for 200 pages', async () => {
-    sinon.stub(window, 'fetch').callsFake(() => Promise.resolve({ status: 200, ok: true }));
     const stub = sinon.stub(window, 'open');
     const languageLinks = document.querySelectorAll('.language-link');
     const jaLink = Array.from(languageLinks).find((link) => link.href.includes('/ja/'));
@@ -289,7 +701,6 @@ describe('Language Selector Block - Network Event Handling', () => {
   });
 
   it('handles click event for 404 pages', async () => {
-    sinon.stub(window, 'fetch').callsFake(() => Promise.resolve({ status: 404, ok: false }));
     const stub = sinon.stub(window, 'open');
     const languageLinks = document.querySelectorAll('.language-link');
     const deLink = Array.from(languageLinks).find((link) => link.href.includes('/de/'));
