@@ -19,10 +19,7 @@ document.addEventListener('mousedown', () => {
   miloLangIsKeyboard = false;
 });
 
-// Global variable to store language mapping
 let langMapToEnglish = [];
-
-// Fetch language mapping on module load
 (async () => {
   try {
     const response = await fetch(`${getFederatedContentRoot()}/federal/assets/data/languages-mapping.json`);
@@ -144,6 +141,15 @@ function createDropdownElements(placeholderText) {
   return { dropdown, searchContainer, languageList };
 }
 
+const normalizeText = (text) => text.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+const normalizedCache = new Map();
+const getNormalizedText = (text) => {
+  if (!normalizedCache.has(text)) {
+    normalizedCache.set(text, normalizeText(text));
+  }
+  return normalizedCache.get(text);
+};
+
 function renderLanguages({
   languageList,
   languagesList,
@@ -154,37 +160,24 @@ function renderLanguages({
   return (searchTerm = '') => {
     if (!languagesList.length) return [];
     languageList.innerHTML = '';
-
-    // Get languages config for ISO code validation
-    const config = getConfig();
-    const { languages: languagesConfig } = config;
-
     const filteredLanguages = languagesList.filter((lang) => {
       const searchLower = searchTerm.toLowerCase();
+      const searchNormalized = getNormalizedText(searchTerm);
       const nativeName = lang.name.toLowerCase();
-
-      // 1. Check if native name matches (e.g., "日本語", "Deutsch")
-      if (nativeName.includes(searchLower)) {
+      const nativeNameNormalized = getNormalizedText(lang.name);
+      if (nativeName === searchLower || nativeNameNormalized === searchNormalized) {
         return true;
       }
-
-      // 2. Check ISO language codes from the languages config
-      if (lang.langObj && lang.langObj.language) {
+      if (nativeName.includes(searchLower) || nativeNameNormalized.includes(searchNormalized)) {
+        return true;
+      }
+      if (lang.langObj?.language) {
         const isoCode = lang.langObj.language.toLowerCase();
-        if (isoCode.includes(searchLower)) {
+        if (isoCode === searchLower || isoCode.includes(searchLower)) {
           return true;
         }
       }
-
-      // 3. Check if the language prefix exists in the languages config
-      if (lang.prefix && languagesConfig && languagesConfig[lang.prefix]) {
-        if (lang.prefix.toLowerCase().includes(searchLower)) {
-          return true;
-        }
-      }
-
-      // 4. Check IETF codes (e.g., "ja-JP" -> "ja" or full "ja-JP")
-      if (lang.langObj && lang.langObj.ietf) {
+      if (lang.langObj?.ietf) {
         const ietfLang = lang.langObj.ietf.split('-')[0].toLowerCase();
         const fullIetf = lang.langObj.ietf.toLowerCase();
         if (searchLower === ietfLang || ietfLang.includes(searchLower)
@@ -192,13 +185,15 @@ function renderLanguages({
           return true;
         }
       }
-
-      // 5. Check English names using the language mapping JSON
-      if (langMapToEnglish && langMapToEnglish.length > 0) {
-        // Check if the search term matches any English mapping and if the native name matches
-        // eslint-disable-next-line max-len
-        const englishMapping = langMapToEnglish.find((mapping) => mapping.English.toLowerCase().includes(searchLower));
-        if (englishMapping && englishMapping.Native.toLowerCase() === nativeName) {
+      if (langMapToEnglish?.length > 0) {
+        const englishMapping = langMapToEnglish.find((mapping) => {
+          const mappingEnglish = mapping.English.toLowerCase();
+          const mappingEnglishNormalized = getNormalizedText(mapping.English);
+          return mappingEnglish.includes(searchLower)
+            || mappingEnglishNormalized.includes(searchNormalized);
+        });
+        if (englishMapping && (englishMapping.Native.toLowerCase() === nativeName
+          || getNormalizedText(englishMapping.Native) === nativeNameNormalized)) {
           return true;
         }
       }
