@@ -1,3 +1,4 @@
+
 import { createTag, getConfig, getLanguage, getFederatedContentRoot } from '../../utils/utils.js';
 
 const queriedPages = [];
@@ -160,8 +161,8 @@ function renderLanguages({
   return (searchTerm = '') => {
     if (!languagesList.length) return [];
     languageList.innerHTML = '';
-    const searchLower = searchTerm.toLowerCase();
-    const searchNormalized = getNormalizedText(searchTerm);
+    const searchLower = searchTerm.trim().toLowerCase();
+    const searchNormalized = getNormalizedText(searchTerm.trim());
     const filteredLanguages = languagesList.filter((lang) => {
       const nativeName = lang.name.toLowerCase();
       const nativeNameNormalized = getNormalizedText(lang.name);
@@ -382,8 +383,10 @@ function setupDropdownEvents({
     filteredLanguages = doRenderLanguages(e.target.value);
   }, 200);
   searchInput.addEventListener('input', debouncedInput);
-
   searchInput.addEventListener('keydown', (e) => {
+    if (e.key === ' ') {
+      e.stopPropagation();
+    }
     if (e.key === 'ArrowDown') {
       e.preventDefault();
       const selected = languageList.querySelector('.language-item.selected .language-link');
