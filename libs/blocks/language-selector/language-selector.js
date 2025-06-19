@@ -160,9 +160,9 @@ function renderLanguages({
   return (searchTerm = '') => {
     if (!languagesList.length) return [];
     languageList.innerHTML = '';
+    const searchLower = searchTerm.toLowerCase();
+    const searchNormalized = getNormalizedText(searchTerm);
     const filteredLanguages = languagesList.filter((lang) => {
-      const searchLower = searchTerm.toLowerCase();
-      const searchNormalized = getNormalizedText(searchTerm);
       const nativeName = lang.name.toLowerCase();
       const nativeNameNormalized = getNormalizedText(lang.name);
       if (nativeName.includes(searchLower) || nativeNameNormalized.includes(searchNormalized)) {
