@@ -430,7 +430,7 @@ html[dir="rtl"] .carousel .move-indicators {
   flex-direction: column;
 }
 
-.carousel.container .foreground >div > *:not(.cta-container) {
+.carousel.container .foreground >div:not(.brick-text) > *:not(.cta-container) {
   margin-top: 0;
 }
 
