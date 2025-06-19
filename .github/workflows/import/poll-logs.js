@@ -4,6 +4,7 @@ import fs from 'fs';
 import importUrl from './index.js';
 import LOCAL_DEBUG_ENTRIES from './LOCAL_DEBUG_ENTRIES.js';
 import { getImsToken } from './daFetch.js';
+import localPathsToImport from './localPathsToImport.js';
 
 const { env, exit } = process;
 const {
@@ -63,7 +64,7 @@ function getISOSinceXDaysAgo(days) {
 }
 
 function getWorkflowRunUrl() {
-  if (GITHUB_SERVER_URL && toRepo && GITHUB_RUN_ID) {
+  if (GITHUB_SERVER_URL && GITHUB_RUN_ID) {
     return `${GITHUB_SERVER_URL}/adobecom/milo/actions/runs/${GITHUB_RUN_ID}`;
   }
   return null;
@@ -90,14 +91,14 @@ const slackNotification = (text) => {
  * @param {string} siteName - The name of the site (e.g., 'da-bacom', 'bacom'). Used for the filename.
  * @param {string} baseUrl - The base URL for the log endpoint (e.g., 'https://admin.hlx.page/log/adobecom/da-bacom/main').
  */
-async function fetchLogsForSite(siteName, baseUrl, fromParam) {
+async function fetchLogsForSite(siteName, baseUrl, fromParam, toParam) {
   if (LOCAL_DEBUG_ENTRIES.length && USE_LOCAL_DEBUG_ENTRIES) {
     console.log('Using local entries from LOCAL_DEBUG_ENTRIES.js');
     return LOCAL_DEBUG_ENTRIES;
   }
 
   console.log(`Fetching logs for site: ${siteName} from ${baseUrl}...`);
-  const initialUrl = `${baseUrl}?from=${fromParam}`;
+  const initialUrl = `${baseUrl}?from=${fromParam}&to=${toParam}`;
   const entries = [];
   let totalFetched = 0;
 
@@ -202,31 +203,36 @@ async function getLivePaths(entries, logLink) {
 }
 
 const saveLivePaths = (livePaths) => {
-  fs.writeFileSync(".github/workflows/import/importingPaths.js", livePaths.join('\n'));
+  fs.writeFileSync(".github/workflows/import/paths-that-are-being-currently-imported.js", livePaths.join('\n'));
 }
 
 async function main() {
   await getImsToken();
-  const entries = await fetchLogsForSite(
+  const TO_PARAM = process.env.LAST_RUN_ISO_TO || new Date().toISOString();
+  if (localPathsToImport.length) console.log("Importing paths from local environment");
+  const entries = localPathsToImport.length ? localPathsToImport : await fetchLogsForSite(
     ROLLING_IMPORT_POLL_LOGS_FROM_REPO,
     `https://admin.hlx.page/log/adobecom/${ROLLING_IMPORT_POLL_LOGS_FROM_REPO}`,
-    FROM_PARAM
+    FROM_PARAM,
+    TO_PARAM
   );
-  const logLink = `Log Link: https://admin.hlx.page/log/adobecom/${ROLLING_IMPORT_POLL_LOGS_FROM_REPO}?from=${FROM_PARAM}`
+  const logLink = `Log Link: https://admin.hlx.page/log/adobecom/${ROLLING_IMPORT_POLL_LOGS_FROM_REPO}?from=${FROM_PARAM}&to=${TO_PARAM}`;
   if(!entries?.length) {
     console.log(`No entries found in the logs, exiting. ${logLink}`);
     await slackNotification(`No entries found, exiting ${logLink}`);
     return;
   }
-  const livePaths = await getLivePaths(entries, logLink);
+  const livePaths = localPathsToImport.length ? localPathsToImport : await getLivePaths(entries, logLink);
   const importedMedia = new Set();
   let result = {
     success: 0,
     error: 0,
-    errorPaths: [],
+    initiallyFailingPaths: [],
     successPaths: [],
+    errorPaths: []
   };
   if(LOCAL_RUN) saveLivePaths(livePaths)
+
   for (const path of livePaths) {
     queue.add(() =>
       importUrl(path, importedMedia)
@@ -237,20 +243,36 @@ async function main() {
             console.log(
               `Progress: Success: ${result.success} | Error: ${result.error}`
             );
-            
         })
-        .catch(() => {
+        .catch((e) => {
           result.error++;
-          result.errorPaths.push(path);
+          result.initiallyFailingPaths.push(path);
           if (result.error % 10 === 0)
             console.log(
               `Progress: Success: ${result.success} | Error: ${result.error}`
             );
-          
         })
     );
   }
+
   await queue.onIdle();
+
+  for (const erroredPath of result.initiallyFailingPaths) {
+    console.log("Retrying erroring-path:" + erroredPath)
+    queue.add(() => importUrl(erroredPath, importedMedia)
+      .then(() => {
+        result.success++;
+        result.successPaths.push(path);
+        result.error--;
+      })
+      .catch(() => {
+        result.errorPaths.push(erroredPath);
+      })
+    )
+  }
+
+  await queue.onIdle();
+
   if (!LOCAL_RUN) {
     await slackNotification(
       `Succcessful: ${result.success} paths | Failed: ${result.error} paths.`

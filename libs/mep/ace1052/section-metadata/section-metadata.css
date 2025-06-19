@@ -208,6 +208,10 @@
   z-index: 4;
 }
 
+.section.sticky-bottom.promo-sticky-section:has(.notification.button-full-width) {
+  pointer-events: none;
+}
+
 .section.sticky-bottom.popup,
 .section.sticky-bottom:has(.notification.pill) {
   bottom: var(--spacing-xs);

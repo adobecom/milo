@@ -14,26 +14,44 @@ describe('Functional test', () => {
     expect(second.manifestUrl).to.include('test-normal.json');
   });
 
-  it('Duplicate manifests, Target version is updated', async () => {
+  it('Duplicate manifests, Target experience chosen and on stage', async () => {
     let manifestJson = await readFile({ path: './mocks/manifestLists/two-duplicate-manifests-one-from-target.json' });
     manifestJson = JSON.parse(manifestJson);
-    const manifestList = cleanAndSortManifestList(manifestJson);
+    const manifestList = cleanAndSortManifestList(manifestJson, { env: { name: 'stage' } });
+    expect(manifestList.length).to.equal(1);
     const [first] = manifestList;
-    const { name, selectedVariantName, selectedVariant } = first;
+    const { name, selectedVariantName, selectedVariant, placeholderData } = first;
     expect(name).to.equal('MILO0013b - use fresh manifest over saved');
-    expect(selectedVariantName).to.equal('all');
-    expect(selectedVariant.commands[0].target).to.include('fresh-from-json-version');
+    expect(selectedVariantName).to.equal('target-challenger');
+    expect(selectedVariant.commands[0].target).to.include('target-version-in-pzn');
+    expect(placeholderData['marquee-title']).to.equal('Value in Pzn');
   });
 
-  it('Duplicate manifests in reverse order, Target version is updated', async () => {
-    let manifestJson = await readFile({ path: './mocks/manifestLists/two-duplicate-manifests-other-one-from-target.json' });
+  it('Duplicate manifests, Target experience chosen and on prod', async () => {
+    let manifestJson = await readFile({ path: './mocks/manifestLists/two-duplicate-manifests-one-from-target.json' });
     manifestJson = JSON.parse(manifestJson);
-    const manifestList = cleanAndSortManifestList(manifestJson);
+    const manifestList = cleanAndSortManifestList(manifestJson, { env: { name: 'prod' } });
+    expect(manifestList.length).to.equal(1);
     const [first] = manifestList;
-    const { name, selectedVariantName, selectedVariant } = first;
+    const { name, selectedVariantName, selectedVariant, placeholderData } = first;
+    expect(name).to.equal('MILO0013b - use fresh manifest over saved');
+    expect(selectedVariantName).to.equal('target-challenger');
+    expect(selectedVariant.commands[0].target).to.include('target-version-in-target');
+    expect(placeholderData['marquee-title']).to.equal('Value in Target');
+  });
+
+  it('Duplicate manifests, pzn experience chosen and on prod', async () => {
+    let manifestJson = await readFile({ path: './mocks/manifestLists/two-duplicate-manifests-one-from-target.json' });
+    manifestJson = JSON.parse(manifestJson);
+    manifestJson[0].selectedVariantName = 'all';
+    const manifestList = cleanAndSortManifestList(manifestJson, { env: { name: 'prod' } });
+    expect(manifestList.length).to.equal(1);
+    const [first] = manifestList;
+    const { name, selectedVariantName, selectedVariant, placeholderData } = first;
     expect(name).to.equal('MILO0013b - use fresh manifest over saved');
     expect(selectedVariantName).to.equal('all');
-    expect(selectedVariant.commands[0].target).to.include('fresh-from-json-version');
+    expect(selectedVariant.commands[0].target).to.include('all-version-in-pzn');
+    expect(placeholderData['marquee-title']).to.equal('Value in Pzn');
   });
 
   it('One of each, all normal', async () => {
