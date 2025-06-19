@@ -186,25 +186,17 @@ function renderLanguages({
       // 4. Check IETF codes (e.g., "ja-JP" -> "ja")
       if (lang.langObj && lang.langObj.ietf) {
         const ietfLang = lang.langObj.ietf.split('-')[0].toLowerCase();
-        if (ietfLang.includes(searchLower)) {
+        if (searchLower === ietfLang || ietfLang.includes(searchLower)) {
           return true;
         }
       }
 
       // 5. Check English names using the language mapping JSON
-      if (lang.langObj && lang.langObj.language) {
-        const isoCode = lang.langObj.language;
-        // Check if this ISO code has an English mapping
+      if (langMapToEnglish && langMapToEnglish.length > 0) {
+        // Check if the search term matches any English mapping and if the native name matches
         // eslint-disable-next-line max-len
-        const englishMapping = langMapToEnglish.find((mapping) => mapping.English.toLowerCase() === isoCode.toLowerCase() || mapping.English.toLowerCase() === searchLower);
-        if (englishMapping && englishMapping.English.toLowerCase().includes(searchLower)) {
-          return true;
-        }
-
-        // Also check if the native name matches any English mapping
-        // eslint-disable-next-line max-len
-        const nativeMapping = langMapToEnglish.find((mapping) => mapping.Native.toLowerCase() === nativeName);
-        if (nativeMapping && nativeMapping.English.toLowerCase().includes(searchLower)) {
+        const englishMapping = langMapToEnglish.find((mapping) => mapping.English.toLowerCase().includes(searchLower));
+        if (englishMapping && englishMapping.Native.toLowerCase() === nativeName) {
           return true;
         }
       }
