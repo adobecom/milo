@@ -496,6 +496,26 @@ export default function init(el) {
   nextPreviousContainer.append(...nextPreviousBtns, controlsContainer);
   el.append(nextPreviousContainer);
 
+  function normalizeVideoHeights() {
+    const videos = el.querySelectorAll('video');
+    if (videos.length === 0) return;
+
+    let maxHeight = 0;
+    videos.forEach((video) => {
+      const height = video.videoHeight || video.offsetHeight || video.clientHeight;
+      if (height > maxHeight) maxHeight = height;
+    });
+
+    if (maxHeight > 0) {
+      videos.forEach((video) => {
+        video.style.height = `${maxHeight}px`;
+        video.style.maxHeight = `${maxHeight}px`;
+      });
+    }
+  }
+
+  setTimeout(normalizeVideoHeights, 100);
+
   function handleDeferredImages() {
     const images = el.querySelectorAll('img[loading="lazy"]');
     images.forEach((img) => {
