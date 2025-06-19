@@ -7,9 +7,8 @@ async function customFetch({ resource, withCacheRules }) {
   return fetch(resource, options);
 }
 
-export default async function getMepLocPlaceHolders(manifestPath, localizeLink) {
-  const localizedPath = localizeLink(manifestPath);
-
+export default async function getMepLocPlaceHolders(localizedPath) {
+  if (!localizedPath) return null;
   const resp = await customFetch({ resource: `${localizedPath}.plain.html`, withCacheRules: true })
     .catch(() => ({}));
 
