@@ -27,9 +27,12 @@ export function selectOffers(
     let selected;
     if (offers.length < 2) selected = offers;
     else {
-        const language = country === 'GB' || perpetual ? 'EN' : 'MULT';
-        const [first, second] = offers;
-        selected = [first.language === language ? first : second];
+        const language = country === 'GB' ? 'EN' : 'MULT';
+        // sort offers by language, so that preferred language is selected first
+        offers.sort((a, b) => a.language === language ? -1 : b.language === language ? 1 : 0);
+        // sort offers, first should be offers that don't have 'term' field
+        offers.sort((a, b) => a.term ? 1 : b.term ? -1 : 0);
+        selected = [offers[0]];
     }
     if (forceTaxExclusive) {
         selected = selected.map(forceTaxExclusivePrice);
