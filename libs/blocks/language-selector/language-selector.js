@@ -1,4 +1,4 @@
-import { createTag, getConfig, getLanguage } from '../../utils/utils.js';
+import { createTag, getConfig, getLanguage, getFederatedContentRoot } from '../../utils/utils.js';
 
 const queriedPages = [];
 const CHECKMARK_SVG = '<svg class="check-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M13.3337 4L6.00033 11.3333L2.66699 8" stroke="#274DEA" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
@@ -18,6 +18,21 @@ document.addEventListener('keydown', (e) => {
 document.addEventListener('mousedown', () => {
   miloLangIsKeyboard = false;
 });
+
+// Global variable to store language mapping
+let langMapToEnglish = [];
+
+// Fetch language mapping on module load
+(async () => {
+  try {
+    const response = await fetch(`${getFederatedContentRoot()}/federal/assets/data/languages-mapping.json`);
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const configJson = await response.json();
+    langMapToEnglish = configJson['locale-to-language-map']?.data || [];
+  } catch (e) {
+    window.lana?.log('Failed to load language-mapping.json:', e);
+  }
+})();
 
 function stripQueryAndHash(url) {
   try {
@@ -139,9 +154,56 @@ function renderLanguages({
   return (searchTerm = '') => {
     if (!languagesList.length) return [];
     languageList.innerHTML = '';
-    const filteredLanguages = languagesList.filter(
-      (lang) => lang.name.toLowerCase().includes(searchTerm.toLowerCase()),
-    );
+
+    // Get languages config for ISO code validation
+    const config = getConfig();
+    const { languages: languagesConfig } = config;
+
+    const filteredLanguages = languagesList.filter((lang) => {
+      const searchLower = searchTerm.toLowerCase();
+      const nativeName = lang.name.toLowerCase();
+
+      // 1. Check if native name matches (e.g., "日本語", "Deutsch")
+      if (nativeName.includes(searchLower)) {
+        return true;
+      }
+
+      // 2. Check ISO language codes from the languages config
+      if (lang.langObj && lang.langObj.language) {
+        const isoCode = lang.langObj.language.toLowerCase();
+        if (isoCode.includes(searchLower)) {
+          return true;
+        }
+      }
+
+      // 3. Check if the language prefix exists in the languages config
+      if (lang.prefix && languagesConfig && languagesConfig[lang.prefix]) {
+        if (lang.prefix.toLowerCase().includes(searchLower)) {
+          return true;
+        }
+      }
+
+      // 4. Check IETF codes (e.g., "ja-JP" -> "ja")
+      if (lang.langObj && lang.langObj.ietf) {
+        const ietfLang = lang.langObj.ietf.split('-')[0].toLowerCase();
+        if (ietfLang.includes(searchLower)) {
+          return true;
+        }
+      }
+
+      // 5. Check English names using the language mapping JSON
+      if (lang.langObj && lang.langObj.language) {
+        const isoCode = lang.langObj.language;
+        // Check if this ISO code has an English mapping
+        // eslint-disable-next-line max-len
+        const englishMapping = langMapToEnglish.find((mapping) => mapping.English.toLowerCase() === isoCode.toLowerCase() || mapping.English.toLowerCase() === searchLower);
+        if (englishMapping && englishMapping.English.toLowerCase().includes(searchLower)) {
+          return true;
+        }
+      }
+
+      return false;
+    });
     const fragment = document.createDocumentFragment();
     filteredLanguages.forEach((lang, idx) => {
       const langItem = createTag('li', {
