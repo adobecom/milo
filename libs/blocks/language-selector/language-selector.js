@@ -156,6 +156,7 @@ function renderLanguages({
   currentLang,
   selectedLangItemRef,
   activeIndexRef,
+  noOptionFound,
 }) {
   return (searchTerm = '') => {
     if (!languagesList.length) return [];
@@ -200,6 +201,17 @@ function renderLanguages({
 
       return false;
     });
+
+    if (filteredLanguages.length === 0 && searchTerm.trim() !== '') {
+      // Show "no results" message when search returns no results
+      const noResultItem = createTag('li', { class: 'language-item no-result', role: 'none' });
+      const noResultText = createTag('span', { class: 'no-result-text' });
+      noResultText.textContent = noOptionFound;
+      noResultItem.appendChild(noResultText);
+      languageList.appendChild(noResultItem);
+      return filteredLanguages;
+    }
+
     const fragment = document.createDocumentFragment();
     filteredLanguages.forEach((lang, idx) => {
       const langItem = createTag('li', {
@@ -273,6 +285,7 @@ function setupDropdownEvents({
   currentLang,
   selectedLangItemRef,
   activeIndexRef,
+  noOptionFound,
 }) {
   let isDraggingDropdown = false;
   let dragStartY = 0;
@@ -345,6 +358,7 @@ function setupDropdownEvents({
     currentLang,
     selectedLangItemRef,
     activeIndexRef,
+    noOptionFound,
   });
 
   function openDropdown() {
@@ -515,6 +529,7 @@ export default async function init(block) {
   const placeholders = divs[0].querySelectorAll('p');
   const ariaLabel = placeholders[0]?.textContent.trim();
   const placeholderText = placeholders[1]?.textContent.trim();
+  const noOptionFound = placeholders[2]?.textContent.trim();
   if (!links.length) return;
 
   const languagesList = getLanguages(links, languages, locales);
@@ -553,5 +568,6 @@ export default async function init(block) {
     currentLang,
     selectedLangItemRef,
     activeIndexRef,
+    noOptionFound,
   });
 }
