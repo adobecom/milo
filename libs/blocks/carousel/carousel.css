@@ -486,7 +486,7 @@ html[dir="rtl"] .carousel .move-indicators {
   max-height: calc(100% - 24px);
 }
 
-.carousel.container .carousel-slide .editorial-card .media-area {
+.carousel.container .carousel-slide .editorial-card {
   height: unset;
 }
 /* Zero out spacing token on carousel-slide */
