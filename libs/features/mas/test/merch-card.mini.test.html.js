@@ -51,7 +51,7 @@ function compareGetters(card, expected) {
         secondaryCta,
     } = card;
 
-    expect(regularPrice, 'regularPrice: ✅').to.equal(expected.regularPrice);
+    expect(regularPrice, '').to.equal(expected.regularPrice);
     expect(promoPrice, '').to.equal(expected.promoPrice);
     expect(annualPrice, '').to.equal(expected.annualPrice);
     expect(taxText, '').to.equal(expected.taxText);

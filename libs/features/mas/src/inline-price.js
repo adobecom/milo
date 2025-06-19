@@ -167,6 +167,7 @@ export const resolvePriceTaxFlags = async (country, language, customerSegment, m
 export class InlinePrice extends HTMLSpanElement {
     static is = 'inline-price';
     static tag = 'span';
+    static #ffDefaults = getParameter(FF_DEFAULTS) === 'on';
     static get observedAttributes() {
         return [
             'data-display-old-price',
@@ -291,8 +292,7 @@ export class InlinePrice extends HTMLSpanElement {
         const options = service.collectPriceOptions(overrides, this);
         if (!options.wcsOsi.length) return false;
 
-        const ffDefaults = getParameter(FF_DEFAULTS) === 'on';
-        if (ffDefaults && (!this.dataset.displayTax || !this.dataset.forceTaxExclusive)) {
+        if (InlinePrice.#ffDefaults && (!this.dataset.displayTax || !this.dataset.forceTaxExclusive)) {
             const [offerSelectors] = await service.resolveOfferSelectors(options);
             const offers = selectOffers(await offerSelectors, options);
             if (offers?.length) {

@@ -45,12 +45,12 @@ export class Mini extends VariantLayout {
         const price = this.card.querySelector(
             `${SELECTOR_MAS_INLINE_PRICE}[data-template="price"]`,
         );
+        price.dataset.displayPerUnit = 'false';
         if (!price) return;
         const legal = price.cloneNode(true);
         this.legal = legal;
         price.dataset.displayTax = 'false';
         legal.dataset.template = 'legal';
-        delete legal.dataset.displayTax;
         legal.dataset.displayPlanType =
             this.card?.settings?.displayPlanType ?? true;
         legal.setAttribute('slot', 'legal');
