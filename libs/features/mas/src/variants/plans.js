@@ -121,6 +121,14 @@ export class Plans extends VariantLayout {
                     event.target.classList.toggle('hide-tooltip');
                 }
             });
+            document.addEventListener('mouseover', (event) => {
+                event.preventDefault();
+                if (event.target !== tooltipIcon) {
+                    tooltipIcon.classList.add('hide-tooltip');
+                } else {
+                    event.target.classList.remove('hide-tooltip');
+                }
+            });
         }
     }
 

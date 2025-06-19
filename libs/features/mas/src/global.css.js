@@ -582,13 +582,6 @@ merch-card [slot='callout-content'] .icon-button.hide-tooltip::after {
   display: none;
 }
 
-merch-card [slot='callout-content'] .icon-button:hover::before,
-merch-card [slot='callout-content'] .icon-button:hover::after,
-merch-card [slot='callout-content'] .icon-button.hide-tootip:hover::before,
-merch-card [slot='callout-content'] .icon-button.hide-tootip:hover::after,
-  display: block; 
-}
-
 @media (max-width: 600px) {
 merch-card [slot='callout-content'] .icon-button::before { 
     max-width: 180px;
