@@ -133,6 +133,8 @@ styles.innerHTML = `
     --consonant-merch-card-callout-letter-spacing: 0px;
     --consonant-merch-card-callout-icon-padding: 34px;
     --consonant-merch-card-callout-spacing-xxs: 8px;
+
+    --merch-card-ul-padding: 8px;
 }
 
 merch-card-collection {
@@ -484,6 +486,16 @@ merch-card span.price.price-strikethrough {
   color: var(--merch-color-inline-price-strikethrough);
 }
 
+merch-card [slot^="body-"] ul {
+    margin: 0;
+    padding-inline-start: var(--merch-card-ul-padding);
+    list-style-type: "•";
+}
+    
+merch-card [slot^="body-"] ul li {
+    padding-inline-start: var(--merch-card-ul-padding);
+}
+
 /* merch-offer-select */
 merch-offer-select[variant="subscription-options"] merch-offer span[is="inline-price"][data-display-tax='true'] .price-tax-inclusivity {
     font-size: 12px;
@@ -527,6 +539,10 @@ sr-only {
   clip: rect(0, 0, 0, 0);
   white-space: nowrap;
   border: 0;
+}
+
+aem-fragment {
+  display: contents;
 }
 `;
 document.head.appendChild(styles);

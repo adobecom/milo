@@ -94,7 +94,8 @@ export const normalizePath = (p, localize = true) => {
     if (path.startsWith(config.codeRoot)
       || path.includes('.hlx.')
       || path.includes('.aem.')
-      || path.includes('.adobe.')) {
+      || path.includes('.adobe.')
+      || path.includes('localhost:')) {
       if (!localize
         || config.locale.ietf === 'en-US'
         || hash.includes(mepHash)
@@ -366,10 +367,10 @@ const setMetadata = (metadata) => {
 
 function toLowerAlpha(str) {
   const modifiedStr = str.toLowerCase();
-  if (!modifiedStr.includes('countryip') && !modifiedStr.includes('countrychoice')) {
+  if (!modifiedStr.includes('countryip') && !modifiedStr.includes('countrychoice') && !modifiedStr.includes('previouspage')) {
     return modifiedStr.replace(RE_KEY_REPLACE, '');
   }
-  return modifiedStr.replace(RE_KEY_REPLACE, (char) => (['(', ')'].includes(char) ? char : ''));
+  return modifiedStr.replace(RE_KEY_REPLACE, (char) => (['(', ')', '/', '*'].includes(char) ? char : ''));
 }
 
 function normalizeKeys(obj) {
@@ -547,7 +548,7 @@ function getSelectedElements(sel, rootEl, forceRootEl, action) {
   } catch (e) {
     /* eslint-disable-next-line no-console */
     log('Invalid selector: ', selector);
-    return null;
+    return {};
   }
   if (modifiers.includes(FLAGS.all) || !els.length) return { els, modifiers, attribute };
   els = [els[0]];
@@ -830,6 +831,12 @@ const checkForParamMatch = (paramStr) => {
   return false;
 };
 
+export const checkForPreviousPageMatch = (previousPageStr, lastVisitedPage = document.referrer) => {
+  if (!lastVisitedPage) return false;
+  const previousPageString = previousPageStr.toLowerCase().split('previouspage-')[1];
+  return matchGlob(previousPageString, new URL(lastVisitedPage).pathname);
+};
+
 function trimNames(arr) {
   return arr.map((v) => v.trim()).filter(Boolean);
 }
@@ -935,6 +942,7 @@ async function getPersonalizationVariant(
     if (!name) return true;
     if (name === variantLabel?.toLowerCase()) return true;
     if (name.startsWith('param-')) return checkForParamMatch(name);
+    if (name.toLowerCase().startsWith('previouspage-')) return checkForPreviousPageMatch(name);
     if (hasCountryMatch(name, config)) return true;
     if (userEntitlements?.includes(name)) return true;
     return PERSONALIZATION_KEYS.includes(name) && PERSONALIZATION_TAGS[name]();
@@ -1122,8 +1130,7 @@ function compareExecutionOrder(a, b) {
   return a.executionOrder > b.executionOrder ? 1 : -1;
 }
 
-export function cleanAndSortManifestList(manifests, conf) {
-  const config = conf ?? getConfig();
+export function cleanAndSortManifestList(manifests, config = getConfig()) {
   const manifestObj = {};
   let allManifests = manifests;
   let targetManifestWinsOverServerManifest = false;
@@ -1145,9 +1152,10 @@ export function cleanAndSortManifestList(manifests, conf) {
         freshManifest.selectedVariantName = fullManifest.selectedVariantName;
         targetManifestWinsOverServerManifest = config?.env?.name === 'prod' && fullManifest.selectedVariantName.startsWith('target-');
 
-        freshManifest.variants = targetManifestWinsOverServerManifest
-          ? fullManifest.variants
-          : freshManifest.variants;
+        if (targetManifestWinsOverServerManifest) {
+          freshManifest.variants = fullManifest.variants;
+          freshManifest.placeholderData = fullManifest.placeholderData;
+        }
 
         freshManifest.selectedVariant = freshManifest.variants[freshManifest.selectedVariantName];
         manifestObj[manifest.manifestPath] = freshManifest;
