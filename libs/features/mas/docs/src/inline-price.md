@@ -26,7 +26,7 @@ See [MAS](mas.html#terminology) to learn more.
 | `data-display-tax`        | Whether to display tax information                                                          | `false`       | `false`  |
 | `data-perpetual`          | Whether this is a perpetual offer                                                           | `false`       | `false`  |
 | `data-promotion-code`     | Flex promotion code to apply, if applicable                                                 |               | `false`  |
-| `data-tax-exclusive`      | Whether to force tax exclusive price, if `false`, it's automatic, driven by country service | `false`       | `false`  |
+| `data-force-tax-exclusive`| Whether to force tax exclusive price, if `false`, it's automatic, driven by country service | `false`       | `false`  |
 | `data-template`           | One of price, discount, optical, strikethrough, priceAnnual                                 | price         | `false`  |
 
 ### data-template values

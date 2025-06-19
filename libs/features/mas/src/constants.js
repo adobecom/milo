@@ -164,3 +164,5 @@ export const TEMPLATE_PRICE = 'price';
 export const TEMPLATE_PRICE_STRIKETHROUGH = 'price-strikethrough';
 export const TEMPLATE_PRICE_ANNUAL = 'annual';
 export const TEMPLATE_PRICE_LEGAL = 'legal';
+
+export const FF_DEFAULTS = 'mas-ff-defaults';

@@ -322,6 +322,28 @@
           "merchant": "ADOBE"
       }
   ],
+  "perpetual-": [
+      {
+          "offerId": "C5AC20C8AAF4892B67DE2E89B26D8ACA",
+          "priceDetails": {
+              "price": 502.56,
+              "usePrecision": true,
+              "formatString": "# ##0,00 '&euro;'",
+              "taxDisplay": "TAX_INCLUSIVE_DETAILS",
+              "taxTerm": "VAT"
+          },
+          "productArrangementCode": "perpetual_acrobat_standard_2020_perpetual_individual",
+          "buyingProgram": "RETAIL",
+          "commitment": "PERPETUAL",
+          "customerSegment": "INDIVIDUAL",
+          "marketSegments": ["COM"],
+          "salesChannel": "DIRECT",
+          "offerType": "BASE",
+          "pricePoint": "FULL",
+          "language": "FR",
+          "merchant": "ADOBE"
+      }
+  ],
   "perpetual-mult": [],
   "tax-exclusive-mult": [
       {
@@ -837,11 +859,10 @@
           "offerId": "DAC628518DDD843D4D19A8BF7D8FF1FA",
           "priceDetails": {
               "price": 1.99,
-              "priceWithoutTax": 0.0,
-              "priceWithoutDiscountAndTax": 1.99,
+              "priceWithoutTax": 1.59,
               "usePrecision": true,
               "formatString": "'US$'#,##0.00",
-              "taxDisplay": "TAX_EXCLUSIVE",
+              "taxDisplay": "TAX_INCLUSIVE_DETAILS",
               "taxTerm": "TAX"
           },
           "productArrangementCode": "ccle_direct_indirect_team",
@@ -865,11 +886,10 @@
           "offerId": "DAC628518DDD843D4D19A8BF7D8FF1FB",
           "priceDetails": {
               "price": 1.99,
-              "priceWithoutTax": 0.0,
-              "priceWithoutDiscountAndTax": 1.99,
+              "priceWithoutTax": 1.59,
               "usePrecision": true,
               "formatString": "'US$'#,##0.00",
-              "taxDisplay": "TAX_EXCLUSIVE",
+              "taxDisplay": "TAX_INCLUSIVE_DETAILS",
               "taxTerm": "TAX"
           },
           "productArrangementCode": "ccle_direct_indirect_team",
@@ -893,11 +913,10 @@
           "offerId": "DAC628518DDD843D4D19A8BF7D8FF1FC",
           "priceDetails": {
               "price": 1.99,
-              "priceWithoutTax": 0.0,
-              "priceWithoutDiscountAndTax": 1.99,
+              "priceWithoutTax": 1.59,
               "usePrecision": true,
               "formatString": "'US$'#,##0.00",
-              "taxDisplay": "TAX_EXCLUSIVE",
+              "taxDisplay": "TAX_INCLUSIVE_DETAILS",
               "taxTerm": "TAX"
           },
           "productArrangementCode": "ccle_direct_indirect_team",
@@ -921,11 +940,10 @@
           "offerId": "DAC628518DDD843D4D19A8BF7D8FF1FD",
           "priceDetails": {
               "price": 1.99,
-              "priceWithoutTax": 0.0,
-              "priceWithoutDiscountAndTax": 1.99,
+              "priceWithoutTax": 1.59,
               "usePrecision": true,
               "formatString": "'US$'#,##0.00",
-              "taxDisplay": "TAX_EXCLUSIVE",
+              "taxDisplay": "TAX_INCLUSIVE_DETAILS",
               "taxTerm": "TAX"
           },
           "productArrangementCode": "ccle_direct_indirect_team",
