@@ -58,7 +58,7 @@
 }
 
 .language-list {
-  max-height: 250px;
+  max-height: 290px;
   overflow-y: auto;
   padding: var(--spacing-xxs) 0;
 }
@@ -159,7 +159,7 @@
     background: var(--background-color);
     box-shadow: 0 -2px 24px rgba(0 0 0 / 18%);
     z-index: 9999;
-    display: none;
+    display: none; /* will be set to block when open */
     overflow: visible;
     margin: 0;
     padding-bottom: env(safe-area-inset-bottom, 0);
@@ -196,4 +196,21 @@
   .language-link {
     padding: 8px 16px;
   }
+}
+
+.language-item.no-result {
+  padding: 8px 16px;
+  color: #666;
+  font-size: var(--type-body-xs-size);
+  font-family: var(--body-font-family);
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+  cursor: default;
+}
+
+.no-result-text {
+  color: #666;
+  font-size: var(--type-body-xs-size);
+  font-family: var(--body-font-family);
 }
