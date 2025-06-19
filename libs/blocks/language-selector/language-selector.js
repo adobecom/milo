@@ -28,7 +28,7 @@ let langMapToEnglish = [];
     const response = await fetch(`${getFederatedContentRoot()}/federal/assets/data/languages-mapping.json`);
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     const configJson = await response.json();
-    langMapToEnglish = configJson['language-mapping']?.data || [];
+    langMapToEnglish = configJson.data || [];
   } catch (e) {
     window.lana?.log('Failed to load language-mapping.json:', e);
   }
