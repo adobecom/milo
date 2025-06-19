@@ -16,7 +16,7 @@ export default function checkImageAltText(elements = [], config = {}) {
     const alt = img.getAttribute('alt');
     const role = (img.getAttribute('role') || '').toLowerCase();
     const ariaHidden = img.getAttribute('aria-hidden') === 'true';
-    const isDecorative = role === 'presentation' || ariaHidden;
+    const isDecorative = role === 'presentation' || ariaHidden || alt === '';
     const style = window.getComputedStyle(img);
     const isHidden = style.display === 'none' || style.visibility === 'hidden' || parseFloat(style.opacity) === 0;
     if (isDecorative || isHidden) return;
