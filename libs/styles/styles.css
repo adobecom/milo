@@ -359,7 +359,6 @@
   line-height: 20px;
   min-height: 21px;
   padding: 7px 18px 8px;
-  --icon-spacing: 12px;
 }
 
 .xl-button .con-button,
@@ -369,7 +368,6 @@
   line-height: 24px;
   min-height: 28px;
   padding: 10px 24px 8px;
-  --icon-spacing: 14px;
 }
 
 .xxl-button .con-button,
@@ -379,7 +377,6 @@
   line-height: 27px;
   min-height: 27px;
   padding: 14px 30px 15px;
-  --icon-spacing: 14px;
 }
 
 .con-button.button-justified {

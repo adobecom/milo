@@ -8,9 +8,7 @@ const iconElements = new Map();
 export default async function iconList(content, list, query) {
   if (!fedIconList) {
     fedIconList = await fetchIconList(content[0].path);
-    if (!fedIconList?.length) {
-      throw new Error('No icons returned from fetchIconList');
-    }
+    if (!fedIconList?.length) throw new Error('No icons returned from fetchIconList');
     fedIconList.forEach((icon) => {
       const svg = createTag('span', { class: `icon icon-${icon.name}` }, createTag('img', { class: `icon-${icon.name}-img icon-fed`, src: `${icon.url}`, width: '18px' }));
       const titleText = createTag('p', { class: 'item-title' }, icon.name);
@@ -35,11 +33,7 @@ export default async function iconList(content, list, query) {
   list.replaceChildren();
 
   iconElements.forEach((element, name) => {
-    if (!query || name.includes(query)) {
-      element.classList.remove('is-hidden');
-    } else {
-      element.classList.add('is-hidden');
-    }
+    element.classList.toggle('is-hidden', query && !name.includes(query));
     list.appendChild(element);
   });
 }
