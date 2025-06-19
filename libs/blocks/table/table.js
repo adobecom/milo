@@ -37,7 +37,7 @@ function handleHeading(table, headingCols) {
 
     const elements = col.children;
     if (!elements.length) {
-      col.innerHTML = `<p class="tracking-header">${col.innerHTML}</p>`;
+      col.innerHTML = `<div class="heading-content"><p class="tracking-header">${col.innerHTML}</p></div>`;
     } else {
       let textStartIndex = col.querySelector('.highlight-text') ? 1 : 0;
       let isTrackingSet = false;
@@ -84,7 +84,8 @@ function handleHeading(table, headingCols) {
       if (col?.childNodes && !isTrackingSet) {
         const textNode = Array.from(col.childNodes)
           .find((node) => node.nodeType === Node.TEXT_NODE);
-        textNode?.replaceWith(createTag('p', { class: 'tracking-header' }, textNode.textContent));
+        headingContent?.append(createTag('p', { class: 'tracking-header' }, textNode.textContent));
+        textNode.remove();
       }
     }
 
