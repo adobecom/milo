@@ -1357,13 +1357,15 @@ export function getCookie(key) {
     .find(([k]) => k === key);
   return cookie ? cookie[1] : null;
 }
-export async function getSpectraLOB(lastVisitedPage) {
+export async function getSpectraLOB(lastVisitedPage, config = getConfig()) {
   const getECID = getCookie('AMCV_9E1005A551ED61CA0A490D45@AdobeOrg');
   if (!getECID) return false;
   const [, ECID] = getECID.split('|');
-  let apiUrl = `https://cchome-stage.adobe.io/int/v1/aep/events/webpage?ecid=${ECID}`;
+  const apiDomain = config?.env.name === 'prod' ? '' : '-stage';
+  let apiUrl = `https://cchome${apiDomain}.adobe.io/int/v1/aep/events/webpage?ecid=${ECID}`;
   if (lastVisitedPage) {
-    const refWithoutParams = lastVisitedPage.includes('?') ? lastVisitedPage.split('?')[0] : lastVisitedPage;
+    const newUrl = new URL(lastVisitedPage);
+    const refWithoutParams = `${newUrl.origin}${newUrl.pathname}`;
     apiUrl = `${apiUrl}&lastVisitedPage=${refWithoutParams}`;
   }
 
