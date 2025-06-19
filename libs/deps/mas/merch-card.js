@@ -2342,17 +2342,9 @@ merch-card [slot='callout-content'] .icon-button.hide-tooltip::after {
 }
 
 merch-card [slot='callout-content'] .icon-button:hover::before,
-merch-card [slot='callout-content'] .icon-button:focus::before,
-merch-card [slot='callout-content'] .icon-button:active::before,
 merch-card [slot='callout-content'] .icon-button:hover::after,
-merch-card [slot='callout-content'] .icon-button:focus::after,
-merch-card [slot='callout-content'] .icon-button:active::after,
 merch-card [slot='callout-content'] .icon-button.hide-tootip:hover::before,
-merch-card [slot='callout-content'] .icon-button.hide-tootip:focus::before,
-merch-card [slot='callout-content'] .icon-button.hide-tootip:active::before,
 merch-card [slot='callout-content'] .icon-button.hide-tootip:hover::after,
-merch-card [slot='callout-content'] .icon-button.hide-tootip:focus::after,
-merch-card [slot='callout-content'] .icon-button.hide-tootip:active::after {
   display: block; 
 }
 
