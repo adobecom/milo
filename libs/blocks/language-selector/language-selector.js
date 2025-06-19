@@ -183,10 +183,12 @@ function renderLanguages({
         }
       }
 
-      // 4. Check IETF codes (e.g., "ja-JP" -> "ja")
+      // 4. Check IETF codes (e.g., "ja-JP" -> "ja" or full "ja-JP")
       if (lang.langObj && lang.langObj.ietf) {
         const ietfLang = lang.langObj.ietf.split('-')[0].toLowerCase();
-        if (searchLower === ietfLang || ietfLang.includes(searchLower)) {
+        const fullIetf = lang.langObj.ietf.toLowerCase();
+        if (searchLower === ietfLang || ietfLang.includes(searchLower)
+          || fullIetf.includes(searchLower)) {
           return true;
         }
       }
