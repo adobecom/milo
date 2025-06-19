@@ -165,9 +165,6 @@ function renderLanguages({
       const searchNormalized = getNormalizedText(searchTerm);
       const nativeName = lang.name.toLowerCase();
       const nativeNameNormalized = getNormalizedText(lang.name);
-      if (nativeName === searchLower || nativeNameNormalized === searchNormalized) {
-        return true;
-      }
       if (nativeName.includes(searchLower) || nativeNameNormalized.includes(searchNormalized)) {
         return true;
       }
