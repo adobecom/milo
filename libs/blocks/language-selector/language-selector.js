@@ -503,12 +503,10 @@ function setupDropdownEvents({
 }
 
 export default async function init(block) {
-  if (!langMapToEnglish) {
-    try {
-      langMapToEnglish = await langMapToEnglishPromise;
-    } catch (error) {
-      langMapToEnglish = [];
-    }
+  try {
+    langMapToEnglish = await langMapToEnglishPromise;
+  } catch (error) {
+    langMapToEnglish = [];
   }
   const config = getConfig();
   const { languages, locales } = config;
