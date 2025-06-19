@@ -31,6 +31,8 @@ const langMapToEnglishPromise = ((async () => {
   }
 }))();
 
+let langMapToEnglish = [];
+
 function stripQueryAndHash(url) {
   try {
     const u = new URL(url);
@@ -162,7 +164,7 @@ function renderLanguages({
     languageList.innerHTML = '';
     const searchLower = searchTerm.trim().toLowerCase();
     const searchNormalized = getNormalizedText(searchTerm.trim());
-    const filteredLanguages = languagesList.filter(async (lang) => {
+    const filteredLanguages = languagesList.filter((lang) => {
       const nativeName = lang.name.toLowerCase();
       const nativeNameNormalized = getNormalizedText(lang.name);
       if (nativeName.includes(searchLower) || nativeNameNormalized.includes(searchNormalized)) {
@@ -178,7 +180,7 @@ function renderLanguages({
         || (fullIetf && fullIetf.includes(searchLower)))) {
         return true;
       }
-      const englishMapping = (await langMapToEnglishPromise)?.find((mapping) => {
+      const englishMapping = langMapToEnglish.find((mapping) => {
         const mappingEnglish = mapping.English.toLowerCase();
         const mappingEnglishNormalized = getNormalizedText(mapping.English);
         return mappingEnglish.includes(searchLower)
@@ -501,6 +503,13 @@ function setupDropdownEvents({
 }
 
 export default async function init(block) {
+  if (!langMapToEnglish) {
+    try {
+      langMapToEnglish = await langMapToEnglishPromise;
+    } catch (error) {
+      langMapToEnglish = [];
+    }
+  }
   const config = getConfig();
   const { languages, locales } = config;
   const divs = block.querySelectorAll(':scope > div');
