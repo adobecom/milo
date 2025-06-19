@@ -528,6 +528,10 @@ sr-only {
   border: 0;
 }
 
+aem-fragment {
+  display: contents;
+}
+
 merch-card [slot='callout-content'] .icon-button {
   position: absolute;
   top: 3px;
