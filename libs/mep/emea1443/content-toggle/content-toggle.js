@@ -20,11 +20,13 @@ function decorateButton($block, $toggle) {
 }
 
 function getDefaultToggleIndex($block) {
-  const $enclosingMain = $block.closest('main');
-  const toggleDefaultOption = $enclosingMain.querySelector('[data-toggle-default]');
-  const defaultValue = toggleDefaultOption?.dataset.toggleDefault || toggleDefaultOption?.getAttribute('data-toggle-default');
-  const parsedIndex = parseInt(defaultValue, 10);
-  const defaultIndex = !defaultValue || Number.isNaN(parsedIndex) ? 0 : parsedIndex - 1;
+  const defaultClass = Array.from($block.classList).find((cls) => /^default-\d+$/.test(cls));
+  let defaultIndex;
+  if (defaultClass) {
+    defaultIndex = parseInt(defaultClass.split('-')[1], 10) - 1;
+  } else {
+    defaultIndex = 0;
+  }
   return defaultIndex;
 }
 
@@ -103,15 +105,22 @@ function waitForMarqueeHeight() {
   });
 }
 
+function getHoverCaretHeight() {
+  if (document.querySelector('.feds-navLink--hoverCaret')) {
+    const navLinkHeight = document.querySelector('.feds-navLink--hoverCaret').getBoundingClientRect().height;
+    return navLinkHeight;
+  }
+  return 0;
+}
+
 function getElementsHeightBeforeMain() {
   const main = document.querySelector('main');
   if (!main) return 0;
-  const contentToggleEl = document.querySelector('.content-toggle.mweb');
-  const contentToggleStyle = window.getComputedStyle(contentToggleEl);
-  const contentToggleMarginTop = parseInt(contentToggleStyle.marginTop, 10);
-  const beforeMain = main.getBoundingClientRect().top - document.body.getBoundingClientRect().top;
-
-  return beforeMain - contentToggleMarginTop;
+  let beforeMain = main.getBoundingClientRect().top - document.body.getBoundingClientRect().top;
+  if (document.querySelector('.feds-navLink--hoverCaret')) {
+    beforeMain -= document.querySelector('.global-navigation').getBoundingClientRect().height;
+  }
+  return beforeMain;
 }
 
 function setupStickyBehaviour() {
@@ -120,7 +129,7 @@ function setupStickyBehaviour() {
 
   let initialOffset;
   waitForMarqueeHeight().then((marqueeHeight) => {
-    toggleWrapper.closest('.section').style.top = `${marqueeHeight}px`;
+    toggleWrapper.closest('.section').style.top = `${marqueeHeight + getHoverCaretHeight()}px`;
     initialOffset = toggleWrapper.getBoundingClientRect().top + window.scrollY;
   });
 
@@ -131,15 +140,16 @@ function setupStickyBehaviour() {
         marqueeHeight = marquee.getBoundingClientRect().height;
       }
     });
-    toggleWrapper.closest('.section').setAttribute('style', `top: ${marqueeHeight}px`);
+
+    toggleWrapper.closest('.section').setAttribute('style', `top: ${marqueeHeight + getHoverCaretHeight()}px`);
 
     const { scrollY } = window;
 
-    if (scrollY >= initialOffset - 54 && !isFixed) {
+    if (scrollY >= initialOffset - getElementsHeightBeforeMain() - 6 && !isFixed) {
       toggleWrapper.classList.add('fixed');
       toggleWrapper.setAttribute('style', `top: ${getElementsHeightBeforeMain()}px`);
       isFixed = true;
-    } else if (scrollY < initialOffset - 54 && isFixed) {
+    } else if (scrollY < initialOffset - getElementsHeightBeforeMain() - 6 && isFixed) {
       toggleWrapper.classList.remove('fixed');
       toggleWrapper.removeAttribute('style');
       isFixed = false;
@@ -170,7 +180,8 @@ export default async function decorate(block) {
         }
       });
     }
-
-    setupStickyBehaviour();
+    if (block.classList.contains('sticky')) {
+      setupStickyBehaviour();
+    }
   }
 }

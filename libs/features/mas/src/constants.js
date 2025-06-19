@@ -62,9 +62,6 @@ export const EVENT_MERCH_OFFER_READY = 'merch-offer:ready';
 /** Event to dispatch when all the offers of a merch-offer-select sont ready */
 export const EVENT_MERCH_OFFER_SELECT_READY = 'merch-offer-select:ready';
 
-/** Event to dispatch when a merch-card is ready */
-export const EVENT_MERCH_CARD_READY = 'merch-card:ready';
-
 export const EVENT_MERCH_CARD_ACTION_MENU_TOGGLE =
     'merch-card:action-menu-toggle';
 
@@ -167,3 +164,5 @@ export const TEMPLATE_PRICE = 'price';
 export const TEMPLATE_PRICE_STRIKETHROUGH = 'price-strikethrough';
 export const TEMPLATE_PRICE_ANNUAL = 'annual';
 export const TEMPLATE_PRICE_LEGAL = 'legal';
+
+export const FF_DEFAULTS = 'mas-ff-defaults';
