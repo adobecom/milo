@@ -12,7 +12,7 @@ test.describe('CCD Mini Cards Feature', () => {
   });
 
   features.forEach((feature) => {
-    test.skip(`${feature.name},${feature.tags}`, async ({ page, baseURL }) => {
+    test(`${feature.name},${feature.tags}`, async ({ page, baseURL }) => {
       const testPage = `${baseURL}${feature.path}${miloLibs}`;
       const { data } = feature;
       console.info('[Test Page]: ', testPage);
@@ -31,8 +31,32 @@ test.describe('CCD Mini Cards Feature', () => {
         const regularPrice = await cardLocator.evaluate((card) => card.regularPrice);
         expect(regularPrice).toBe(data.regularPrice);
 
+        if (data.promoPrice) {
+          const promoPrice = await cardLocator.evaluate((card) => card.promoPrice);
+          expect(promoPrice).toBe(data.promoPrice);
+        }
+
         const planTypeText = await cardLocator.evaluate((card) => card.planTypeText);
         expect(planTypeText).toBe(data.planTypeText);
+
+        const recurrenceText = await cardLocator.evaluate((card) => card.recurrenceText);
+        expect(recurrenceText).toBe(data.recurrenceText);
+
+        if (data.renewalText) {
+          const renewalText = await cardLocator.evaluate((card) => card.renewalText);
+          expect(renewalText).toBe(data.renewalText);
+        }
+
+        if (data.promoDurationText) {
+          const promoDurationText = await cardLocator.evaluate((card) => card.promoDurationText);
+          expect(promoDurationText).toBe(data.promoDurationText);
+        }
+
+        if (data.seeTerms) {
+          const seeTerms = await cardLocator.evaluate((card) => card.seeTermsInfo);
+          expect(seeTerms.text).toBe(data.seeTerms.text);
+          expect(seeTerms.href).toBe(data.seeTerms.href);
+        }
 
         const primaryCta = await cardLocator.evaluate((card) => card.primaryCta);
         expect(primaryCta.text).toBe(data.primaryCta.text);

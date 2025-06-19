@@ -38,18 +38,18 @@ class FragmentCache {
      */
     add(fragment) {
         if (this.has(fragment.id)) return;
-        if (this.has(fragment.originalId)) return;
+        if (this.has(fragment.fields?.originalId)) return;
 
         this.#fragmentCache.set(fragment.id, fragment);
-        if (fragment.originalId) {
-            this.#fragmentCache.set(fragment.originalId, fragment);
+        if (fragment.fields?.originalId) {
+            this.#fragmentCache.set(fragment.fields.originalId, fragment);
         }
         if (this.#promises.has(fragment.id)) {
             const [, resolve] = this.#promises.get(fragment.id);
             resolve();
         }
-        if (this.#promises.has(fragment.originalId)) {
-            const [, resolve] = this.#promises.get(fragment.originalId);
+        if (this.#promises.has(fragment.fields?.originalId)) {
+            const [, resolve] = this.#promises.get(fragment.fields?.originalId);
             resolve();
         }
 
@@ -351,7 +351,7 @@ export class AemFragment extends HTMLElement {
         const endpoint = `${masIOUrl}/fragment?id=${this.#fragmentId}&api_key=${wcsApiKey}&locale=${locale}`;
 
         fragment = await this.#getFragmentById(endpoint);
-        fragment.originalId ??= this.#fragmentId;
+        fragment.fields.originalId ??= this.#fragmentId;
         cache.add(fragment);
         this.#rawData = fragment;
         return true;

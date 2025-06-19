@@ -97,7 +97,7 @@ runTests(async () => {
             it('caches localized fragment by requested(en_US) id', async () => {
                 expect(cache).to.exist;
                 expect(cache.has('id123en_US')).to.false;
-                cache.add({ id: 'id567', originalId: 'id123en_US', test: 1 });
+                cache.add({ id: 'id567', fields: { originalId: 'id123en_US' }, test: 1 });
                 expect(cache.has('id123en_US')).to.true;
                 cache.clear();
                 expect(cache.has('id123en_US')).to.false;

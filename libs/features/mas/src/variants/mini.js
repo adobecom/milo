@@ -47,14 +47,14 @@ export class Mini extends VariantLayout {
         );
         if (!price) return;
         const legal = price.cloneNode(true);
+        this.legal = legal;
         price.dataset.displayTax = 'false';
         legal.dataset.template = 'legal';
         delete legal.dataset.displayTax;
         legal.dataset.displayPlanType =
-            this.card?.settings?.displayPlanType ?? false;
+            this.card?.settings?.displayPlanType ?? true;
         legal.setAttribute('slot', 'legal');
         this.card.appendChild(legal);
-        this.legal = legal;
     }
 
     renderLayout() {
