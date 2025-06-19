@@ -81,7 +81,7 @@ function handleHeading(table, headingCols) {
 
       headingButton.appendChild(buttonsWrapper);
       col.append(headingContent, headingButton);
-      if (col?.childNodes && !isTrackingSet) {
+      if (!isTrackingSet) {
         const textNode = Array.from(col.childNodes)
           .find((node) => node.nodeType === Node.TEXT_NODE);
         headingContent?.append(createTag('p', { class: 'tracking-header' }, textNode.textContent));
@@ -516,7 +516,8 @@ function applyStylesBasedOnScreenSize(table, originTable) {
   const mobileRenderer = () => {
     table.dispatchEvent(tableHighlightLoadedEvent);
     const headings = table.querySelectorAll('.row-heading .col');
-    const headingsLength = Array.from(headings).filter((heading) => heading.textContent.trim() !== '').length;
+    const headingsLength = Array.from(headings)
+      .filter((heading) => heading.textContent.trim()).length;
     table.querySelectorAll('.hide-mobile').forEach((col) => { col.classList.remove('hide-mobile'); });
 
     if (isMerch && headingsLength >= 2) {
