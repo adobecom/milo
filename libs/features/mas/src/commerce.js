@@ -7,6 +7,7 @@ import './inline-price.js';
 import { CheckoutWorkflow, CheckoutWorkflowStep } from './constants.js';
 import { Defaults } from './defaults.js';
 import { Log } from './log.js';
+import { resolvePriceTaxFlags } from './inline-price.js';
 
 import { applyPlanType } from './wcs.js';
-export { CheckoutWorkflow, CheckoutWorkflowStep, Defaults, Log, applyPlanType };
+export { CheckoutWorkflow, CheckoutWorkflowStep, Defaults, Log, applyPlanType, resolvePriceTaxFlags };
