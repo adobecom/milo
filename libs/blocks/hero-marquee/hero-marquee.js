@@ -173,7 +173,7 @@ export function getViewportOrder(viewport, content, previousViewportOrder) {
   orderEls.forEach((el) => {
     let order;
     el.classList.forEach((className) => {
-      if (!className.endsWith(viewport)) return;
+      if (!className.startsWith('order-') || !className.endsWith(viewport)) return;
       order = parseInt(className.split('-')[1], 10);
     });
     if (Number.isInteger(order)) viewportOrder[order] = el;
