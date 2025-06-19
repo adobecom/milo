@@ -502,13 +502,13 @@ export default function init(el) {
 
     let maxHeight = 0;
     videos.forEach((video) => {
-      const videoHeight = video.videoHeight || video.offsetHeight || video.clientHeight;
+      const videoHeight = video.offsetHeight;
 
       const foreground = video.closest('.editorial-card')?.querySelector('.foreground');
       let totalHeight = videoHeight;
 
       if (foreground) {
-        const foregroundHeight = foreground.offsetHeight || foreground.clientHeight;
+        const foregroundHeight = foreground.offsetHeight;
         totalHeight += foregroundHeight;
       }
 
@@ -520,7 +520,7 @@ export default function init(el) {
         const foreground = video.closest('.editorial-card')?.querySelector('.foreground');
 
         if (foreground) {
-          const videoHeight = video.videoHeight || video.offsetHeight || video.clientHeight;
+          const videoHeight = video.offsetHeight;
           video.style.height = `${videoHeight}px`;
           video.style.maxHeight = `${videoHeight}px`;
         } else {
