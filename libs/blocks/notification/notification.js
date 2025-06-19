@@ -201,19 +201,17 @@ async function decorateLockup(lockupArea, el) {
   if (pre && pre[2] === 'icon') el.classList.replace(pre[0], `${pre[1]}-lockup`);
 }
 
-function trapFocusWithElement(el, focusableElements) {
-  const updatedFocusableElements = focusableElements || [...el.querySelectorAll('a, button, input, select, textarea')];
-  const firstFocusable = updatedFocusableElements.shift();
-  const lastFocusable = updatedFocusableElements.pop();
+function trapFocusWithElement(el) {
+  const focusableElements = [...el.querySelectorAll('a, button, input, select, textarea')];
+  const firstFocusable = focusableElements.shift();
+  const lastFocusable = focusableElements.pop();
   const closeButton = el.querySelector('.close, a[href="#_evt-close"]');
   let lastFocusedElement = firstFocusable;
   const externalClickHandler = (event) => {
     event.preventDefault();
     if (event.target.closest('.feds-localnav') || document.querySelector('.georouting-wrapper')) return;
-    if (!el.contains(event.target) && !el.isEqualNode(event.target)) {
-      window.scrollTo(0, 0);
-      lastFocusedElement.focus({ focusVisible: true });
-    }
+    window.scrollTo(0, 0);
+    lastFocusedElement.focus({ focusVisible: true });
   };
   const updateLastFocused = (event) => { lastFocusedElement = event.target; };
   const keydownEvent = (event) => {
@@ -252,7 +250,7 @@ function trapFocusWithElement(el, focusableElements) {
     document.removeEventListener('click', externalClickHandler);
     el.removeEventListener('focusin', updateLastFocused);
     el.removeEventListener('keydown', keydownEvent);
-    gnav.removeEventListener('keydown', gnavFocusOutHandler);
+    gnav?.removeEventListener('keydown', gnavFocusOutHandler);
   });
 }
 
