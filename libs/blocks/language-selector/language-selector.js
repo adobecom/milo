@@ -152,6 +152,41 @@ const getNormalizedText = (text) => {
   return normalizedCache.get(text);
 };
 
+const isIsoCodeMatch = (langObj, searchLower) => {
+  const isoCode = langObj?.language?.toLowerCase();
+  return isoCode && (isoCode === searchLower || isoCode.includes(searchLower));
+};
+
+const isNativeNameMatch = (name, searchLower, searchNormalized) => {
+  const nativeName = name.toLowerCase();
+  const nativeNameNormalized = getNormalizedText(name);
+  return nativeName.includes(searchLower) || nativeNameNormalized.includes(searchNormalized);
+};
+
+const isIetfMatch = (langObj, searchLower) => {
+  const ietfLang = langObj?.ietf?.split('-')[0]?.toLowerCase();
+  const fullIetf = langObj?.ietf?.toLowerCase();
+  return ietfLang && (searchLower === ietfLang || ietfLang.includes(searchLower)
+    || (fullIetf && fullIetf.includes(searchLower)));
+};
+
+const isEnglishMappingMatch = (name, searchLower, searchNormalized, mappingData) => {
+  if (mappingData.length === 0) return false;
+
+  const nativeName = name.toLowerCase();
+  const nativeNameNormalized = getNormalizedText(name);
+
+  const englishMapping = mappingData.find((mapping) => {
+    const mappingEnglish = mapping.English.toLowerCase();
+    const mappingEnglishNormalized = getNormalizedText(mapping.English);
+    return mappingEnglish.includes(searchLower)
+      || mappingEnglishNormalized.includes(searchNormalized);
+  });
+
+  return englishMapping && (englishMapping.Native.toLowerCase() === nativeName
+    || getNormalizedText(englishMapping.Native) === nativeNameNormalized);
+};
+
 function renderLanguages({
   languageList,
   languagesList,
@@ -162,37 +197,15 @@ function renderLanguages({
   return (searchTerm = '') => {
     if (!languagesList.length) return [];
     languageList.innerHTML = '';
+
     const searchLower = searchTerm.trim().toLowerCase();
     const searchNormalized = getNormalizedText(searchTerm.trim());
-    const filteredLanguages = languagesList.filter((lang) => {
-      const nativeName = lang.name.toLowerCase();
-      const nativeNameNormalized = getNormalizedText(lang.name);
-      if (nativeName.includes(searchLower) || nativeNameNormalized.includes(searchNormalized)) {
-        return true;
-      }
-      const isoCode = lang.langObj?.language?.toLowerCase();
-      if (isoCode && (isoCode === searchLower || isoCode.includes(searchLower))) {
-        return true;
-      }
-      const ietfLang = lang.langObj?.ietf?.split('-')[0]?.toLowerCase();
-      const fullIetf = lang.langObj?.ietf?.toLowerCase();
-      if (ietfLang && (searchLower === ietfLang || ietfLang.includes(searchLower)
-        || (fullIetf && fullIetf.includes(searchLower)))) {
-        return true;
-      }
-      const englishMapping = langMapToEnglish.find((mapping) => {
-        const mappingEnglish = mapping.English.toLowerCase();
-        const mappingEnglishNormalized = getNormalizedText(mapping.English);
-        return mappingEnglish.includes(searchLower)
-          || mappingEnglishNormalized.includes(searchNormalized);
-      });
-      if (englishMapping && (englishMapping.Native.toLowerCase() === nativeName
-        || getNormalizedText(englishMapping.Native) === nativeNameNormalized)) {
-        return true;
-      }
 
-      return false;
-    });
+    // eslint-disable-next-line max-len
+    const filteredLanguages = languagesList.filter((lang) => isNativeNameMatch(lang.name, searchLower, searchNormalized)
+      || isIsoCodeMatch(lang.langObj, searchLower)
+      || isIetfMatch(lang.langObj, searchLower)
+      || isEnglishMappingMatch(lang.name, searchLower, searchNormalized, langMapToEnglish));
     const fragment = document.createDocumentFragment();
     filteredLanguages.forEach((lang, idx) => {
       const langItem = createTag('li', {
@@ -340,10 +353,14 @@ function setupDropdownEvents({
     activeIndexRef,
   });
 
-  function openDropdown() {
+  async function openDropdown() {
     isDropdownOpen = true;
     dropdown.style.display = 'block';
     selectedLangButton.setAttribute('aria-expanded', 'true');
+    if (langMapToEnglish.length === 0) {
+      langMapToEnglish = await langMapToEnglishPromise;
+    }
+
     filteredLanguages = doRenderLanguages(searchInput.value);
     documentClickHandler = (e) => {
       if (isDropdownOpen && !dropdown.contains(e.target)) closeDropdown();
@@ -503,11 +520,6 @@ function setupDropdownEvents({
 }
 
 export default async function init(block) {
-  try {
-    langMapToEnglish = await langMapToEnglishPromise;
-  } catch (error) {
-    langMapToEnglish = [];
-  }
   const config = getConfig();
   const { languages, locales } = config;
   const divs = block.querySelectorAll(':scope > div');
