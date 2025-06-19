@@ -1368,10 +1368,7 @@ function parseManifestUrlAndAddSource(manifestString, source) {
   return manifestString.toLowerCase()
     .split(/,|(\s+)|(\\n)/g)
     .filter((path) => path?.trim())
-    .map((manifestPath) => ({
-      manifestPath: source === 'mph' ? localizeLink(manifestPath) : manifestPath,
-      source: [source],
-    }));
+    .map((manifestPath) => ({ manifestPath, source: [source] }));
 }
 
 export const combineMepSources = async (
