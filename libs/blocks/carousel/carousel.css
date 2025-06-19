@@ -421,6 +421,9 @@ html[dir="rtl"] .carousel .move-indicators {
 .carousel.container .carousel-slide .foreground:not(.icon-block .foreground) {
   max-width: unset;
   margin: unset;
+}
+
+.carousel.container .carousel-slide div:not(.editorial-card) .foreground:not(.icon-block .foreground) {
   height: 100%;
 }
 
