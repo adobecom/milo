@@ -200,6 +200,13 @@ function renderLanguages({
         if (englishMapping && englishMapping.English.toLowerCase().includes(searchLower)) {
           return true;
         }
+
+        // Also check if the native name matches any English mapping
+        // eslint-disable-next-line max-len
+        const nativeMapping = langMapToEnglish.find((mapping) => mapping.Native.toLowerCase() === nativeName);
+        if (nativeMapping && nativeMapping.English.toLowerCase().includes(searchLower)) {
+          return true;
+        }
       }
 
       return false;
