@@ -357,9 +357,10 @@
     margin-inline: var(--spacing-xs);
     padding: var(--spacing-xs);
     margin-bottom: 24px;
+    gap: 0 !important;
   }
 
-    /* ##mweb Mobile show/hide functionality */
+  /* ##mweb Mobile show/hide functionality */
   .section .editorial-card:nth-child(n+4) {
     display: none;
   }

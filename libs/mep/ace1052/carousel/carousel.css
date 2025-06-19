@@ -734,7 +734,7 @@ html[dir="rtl"] .carousel .move-indicators {
   overflow: hidden;
 }
 
-@media (max-width: 600px)  {
+@media (max-width: 600px) {
   /* ##mweb changes## */
   .carousel.disable-buttons.hinting-mobile .carousel-slides {
     left: calc(-83.4vw - (100vw - 83.4vw) / 2);
