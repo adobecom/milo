@@ -10,9 +10,6 @@ import { getLogHeaders } from './utilities.js';
 import { getService, printMeasure } from './utils.js';
 import { masFetch } from './utils/mas-fetch.js';
 
-const sheet = new CSSStyleSheet();
-sheet.replaceSync(':host { display: contents; }');
-
 const ATTRIBUTE_FRAGMENT = 'fragment';
 const ATTRIBUTE_AUTHOR = 'author';
 const ATTRIBUTE_PREVIEW = 'preview';
@@ -99,12 +96,6 @@ export class AemFragment extends HTMLElement {
 
     static get observedAttributes() {
         return [ATTRIBUTE_FRAGMENT, ATTRIBUTE_AUTHOR, ATTRIBUTE_PREVIEW];
-    }
-
-    constructor() {
-        super();
-        this.attachShadow({ mode: 'open' });
-        this.shadowRoot.adoptedStyleSheets = [sheet];
     }
 
     attributeChangedCallback(name, oldValue, newValue) {
