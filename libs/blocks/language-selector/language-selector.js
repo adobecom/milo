@@ -19,17 +19,17 @@ document.addEventListener('mousedown', () => {
   miloLangIsKeyboard = false;
 });
 
-let langMapToEnglish = [];
-(async () => {
+const langMapToEnglishPromise = ((async () => {
   try {
     const response = await fetch(`${getFederatedContentRoot()}/federal/assets/data/languages-mapping.json`);
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     const configJson = await response.json();
-    langMapToEnglish = configJson.data || [];
+    return configJson.data || [];
   } catch (e) {
     window.lana?.log('Failed to load language-mapping.json:', e);
+    return [];
   }
-})();
+}))();
 
 function stripQueryAndHash(url) {
   try {
@@ -162,37 +162,31 @@ function renderLanguages({
     languageList.innerHTML = '';
     const searchLower = searchTerm.trim().toLowerCase();
     const searchNormalized = getNormalizedText(searchTerm.trim());
-    const filteredLanguages = languagesList.filter((lang) => {
+    const filteredLanguages = languagesList.filter(async (lang) => {
       const nativeName = lang.name.toLowerCase();
       const nativeNameNormalized = getNormalizedText(lang.name);
       if (nativeName.includes(searchLower) || nativeNameNormalized.includes(searchNormalized)) {
         return true;
       }
-      if (lang.langObj?.language) {
-        const isoCode = lang.langObj.language.toLowerCase();
-        if (isoCode === searchLower || isoCode.includes(searchLower)) {
-          return true;
-        }
+      const isoCode = lang.langObj?.language?.toLowerCase();
+      if (isoCode && (isoCode === searchLower || isoCode.includes(searchLower))) {
+        return true;
       }
-      if (lang.langObj?.ietf) {
-        const ietfLang = lang.langObj.ietf.split('-')[0].toLowerCase();
-        const fullIetf = lang.langObj.ietf.toLowerCase();
-        if (searchLower === ietfLang || ietfLang.includes(searchLower)
-          || fullIetf.includes(searchLower)) {
-          return true;
-        }
+      const ietfLang = lang.langObj?.ietf?.split('-')[0]?.toLowerCase();
+      const fullIetf = lang.langObj?.ietf?.toLowerCase();
+      if (ietfLang && (searchLower === ietfLang || ietfLang.includes(searchLower)
+        || (fullIetf && fullIetf.includes(searchLower)))) {
+        return true;
       }
-      if (langMapToEnglish?.length > 0) {
-        const englishMapping = langMapToEnglish.find((mapping) => {
-          const mappingEnglish = mapping.English.toLowerCase();
-          const mappingEnglishNormalized = getNormalizedText(mapping.English);
-          return mappingEnglish.includes(searchLower)
-            || mappingEnglishNormalized.includes(searchNormalized);
-        });
-        if (englishMapping && (englishMapping.Native.toLowerCase() === nativeName
-          || getNormalizedText(englishMapping.Native) === nativeNameNormalized)) {
-          return true;
-        }
+      const englishMapping = (await langMapToEnglishPromise)?.find((mapping) => {
+        const mappingEnglish = mapping.English.toLowerCase();
+        const mappingEnglishNormalized = getNormalizedText(mapping.English);
+        return mappingEnglish.includes(searchLower)
+          || mappingEnglishNormalized.includes(searchNormalized);
+      });
+      if (englishMapping && (englishMapping.Native.toLowerCase() === nativeName
+        || getNormalizedText(englishMapping.Native) === nativeNameNormalized)) {
+        return true;
       }
 
       return false;
