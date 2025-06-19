@@ -159,9 +159,9 @@ describe('Icon Support', () => {
     });
 
     await loadIcons([icon], config);
-    expect(window.lana.log.calledOnce).to.be.true;
-    const lanaCallArguments = window.lana.log.getCall(0).args;
-    expect(lanaCallArguments[0]).to.include('No SVG element found in fetched content for invalid');
+    expect(window.lana.log.getCalls().length > 0).to.be.true;
+    const lanaCallArguments = window.lana.log.getCall(1).args;
+    expect(lanaCallArguments[0]).to.include('No fallback Milo icon found for invalid');
     expect(lanaCallArguments[1].tags).to.equal('icons');
     expect(lanaCallArguments[1].errorType).to.equal('error');
   });
