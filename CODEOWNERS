@@ -2,63 +2,138 @@
 # When you create a new block or tool please establish ownership in this file.
 # See https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
 
-# Milo Core (alphabetical order)
-/libs/features/seotech/ @hparra
-/libs/features/title-append/ @hparra
-/libs/scripts/taxonomy.js @meganthecoder @JasonHowellSlavin @Brandon32 @rgclayton
+# Milo Features
+/libs/features/branch-quick-links/ @drashti1712 @Ruchika4
+/libs/features/cdt/ @adobecom/tacocat
+/libs/features/dynamic-navigation/ @JasonHowellSlavin
+/libs/features/georouting/ @adobecom/milo-core
+/libs/features/georoutingv2/ @adobecom/milo-core
+/libs/features/icons/ @adobecom/milo-core
+/libs/features/mas/ @adobecom/tacocat
+/libs/features/personalization/ @vgoodric
+/libs/features/seotech/ @adobecom/milo-core
+/libs/features/spectrum-web-components/ @adobecom/tacocat
+/libs/features/webapp-prompt/ @adobecom/feds
+/libs/features/footer-promo.js @meganthecoder @JasonHowellSlavin @Brandon32
+/libs/features/google-login.js @adobecom/feds
+/libs/features/interlinks.js @adobecom/milo-core
+/libs/features/japanese-word-wrap.js @adobecom/milo-core
+/libs/features/jarvis-chat.js @adobecom/feds
+/libs/features/links.js @adobecom/milo-core
+/libs/features/placeholders.js @adobecom/milo-core
+/libs/features/richresults.js @adobecom/milo-core
 
-# Milo Blocks (alphabetical order)
-/libs/blocks/accordion/ @fullcolorcoder @ryanmparrish
-/libs/blocks/article-feed/ @meganthecoder @JasonHowellSlavin @Brandon32 @rgclayton
-/libs/blocks/article-header/ @meganthecoder @JasonHowellSlavin @Brandon32 @rgclayton
-/libs/blocks/aside/ @Sartxi
-/libs/blocks/bulk-publish-v2 @Sartxi
-/libs/blocks/caas/ @chrischrischris
-/libs/blocks/caas-config/ @chrischrischris
+# Milo Blocks
+/libs/blocks/accordion/ @fullcolorcoder @meganthecoder @JasonHowellSlavin
+/libs/blocks/action-item/ @adobecom/milo-core
+/libs/blocks/action-scroller/ @adobecom/milo-core
+/libs/blocks/adobetv/ @adobecom/milo-core
+/libs/blocks/article-feed/ @meganthecoder @JasonHowellSlavin @Brandon32
+/libs/blocks/article-header/ @meganthecoder @JasonHowellSlavin @Brandon32
+/libs/blocks/aside/ @aishwaryamathuria
+/libs/blocks/author-header/ @adobecom/milo-core
+/libs/blocks/brick/ @aishwaryamathuria
+/libs/blocks/bulk-publish-v2 @adobecom/milo-core
+/libs/blocks/caas-config/ @chrischrischris @sanrai @cmiqueo
+/libs/blocks/caas-marquee-metadata/ @chrischrischris @sanrai @cmiqueo
+/libs/blocks/caas-marquee/ @chrischrischris @sanrai @cmiqueo
+/libs/blocks/caas/ @chrischrischris @sanrai @cmiqueo
+/libs/blocks/card-horizontal/ @adobecom/milo-core
+/libs/blocks/card-metadata/ @chrischrischris
+/libs/blocks/card/ @adobecom/milo-core
 /libs/blocks/carousel/ @rgclayton
 /libs/blocks/chart/ @meganthecoder @Brandon32 @JasonHowellSlavin
+/libs/blocks/columns/ @adobecom/milo-core
 /libs/blocks/commerce/ @adobecom/tacocat
-/libs/blocks/faas/ @seanchoi-dev
+/libs/blocks/editorial-card/ @adobecom/milo-core
+/libs/blocks/event-rich-results/ @adobecom/milo-core
 /libs/blocks/faas-config/ @seanchoi-dev
-/libs/blocks/featured-article/ @meganthecoder @JasonHowellSlavin @Brandon32 @rgclayton
-/libs/blocks/form/ @elan-tbx @rgclayton
+/libs/blocks/faas/ @seanchoi-dev
+/libs/blocks/fallback/ @adobecom/milo-core
+/libs/blocks/featured-article/ @meganthecoder @JasonHowellSlavin @Brandon32
+/libs/blocks/figure/ @adobecom/milo-core
+/libs/blocks/footer/ @adobecom/feds
+/libs/blocks/form/ @adobecom/milo-core
 /libs/blocks/fragment-personalization/ @chrischrischris
-/libs/blocks/global-footer/ @salonijain3 @bandana147 @sharmrj @nishantka @Deva309 @sonawanesnehal3
-/libs/blocks/global-navigation/ @salonijain3 @bandana147 @sharmrj @nishantka @Deva309 @sonawanesnehal3
-/libs/blocks/how-to/ @fullcolorcoder @ryanmparrish
-/libs/blocks/icon-block/ @elan-tbx
-/libs/blocks/local-nav/ @seanchoi-dev
-/libs/blocks/marketo/ @Brandon32 @meganthecoder @JasonHowellSlavin
+/libs/blocks/fragment/ @adobecom/milo-core
+/libs/blocks/gist/ @adobecom/milo-core
+/libs/blocks/global-footer/ @adobecom/feds
+/libs/blocks/global-navigation/ @adobecom/feds
+/libs/blocks/gnav/ @adobecom/feds
+/libs/blocks/graybox/ @colloyd
+/libs/blocks/hero-marquee/ @adobecom/milo-core
+/libs/blocks/home/ @adobecom/milo-core
+/libs/blocks/how-to/ @fullcolorcoder
+/libs/blocks/icon-block/ @adobecom/milo-core
+/libs/blocks/iframe/ @Brandon32
+/libs/blocks/instagram/ @adobecom/milo-core
+/libs/blocks/language-selector/ @Ruchika4 @bandana147
+/libs/blocks/library-config/ @adobecom/milo-core
+/libs/blocks/library-container-end/ @adobecom/milo-core
+/libs/blocks/library-container-start/ @adobecom/milo-core
+/libs/blocks/library-metadata/ @adobecom/milo-core
+/libs/blocks/locale-nav/ @chrischrischris @seanchoi-dev
+/libs/blocks/locui-create/ @raga-adbe-gh
+/libs/blocks/m7/ @bozojovicic
 /libs/blocks/marketo-config/ @Brandon32 @meganthecoder @JasonHowellSlavin
-/libs/blocks/marquee/ @ryanmparrish @Sartxi @auniverseaway
-/libs/blocks/media/ @ryanmparrish
-/libs/blocks/merch/ @adobecom/tacocat
-/libs/blocks/merch-card/ @adobecom/tacocat
+/libs/blocks/marketo/ @Brandon32 @meganthecoder @JasonHowellSlavin
+/libs/blocks/marquee-anchors/ @adobecom/milo-core
+/libs/blocks/marquee/ @adobecom/milo-core
+/libs/blocks/martech-metadata/ @vgoodric
+/libs/blocks/media/ @adobecom/milo-core
+/libs/blocks/merch-card-autoblock/ @adobecom/tacocat
+/libs/blocks/merch-card-collection-autoblock/ @adobecom/tacocat
 /libs/blocks/merch-card-collection/ @adobecom/tacocat
+/libs/blocks/merch-card/ @adobecom/tacocat
+/libs/blocks/merch-mnemonic-list/ @adobecom/tacocat
 /libs/blocks/merch-offers/ @adobecom/tacocat
+/libs/blocks/merch-whats-included/ @adobecom/tacocat
+/libs/blocks/merch/ @adobecom/tacocat
+/libs/blocks/milonav/ @adobecom/milo-core
+/libs/blocks/mmm/ @vgoodric
 /libs/blocks/mnemonic-list/ @adobecom/tacocat
-/libs/blocks/notification/ @elan-tbx @Sartxi @ryanmparrish
+/libs/blocks/mobile-app-banner/ @drashti1712 @Ruchika4
+/libs/blocks/modal-metadata/@adobecom/milo-core
+/libs/blocks/modal/ @adobecom/milo-core
+/libs/blocks/notification/ @aishwaryamathuria
 /libs/blocks/ost/ @adobecom/tacocat
+/libs/blocks/path-finder/ @adobecom/milo-core
 /libs/blocks/pdf-vewer/ @meganthecoder @JasonHowellSlavin @Brandon32
-/libs/blocks/quiz/ @colloyd @sabyamon @fullcolorcoder @JackySun9
-/libs/blocks/quiz-marquee/ @ryanmparrish
+/libs/blocks/preflight/ @adobecom/milo-core
+/libs/blocks/promo/ @adobecom/milo-core
+/libs/blocks/quiz-marquee/ @colloyd @sabyamon @fullcolorcoder @JackySun9
 /libs/blocks/quiz-results/ @colloyd @sabyamon @fullcolorcoder @JackySun9
-/libs/blocks/quote/ @ryanmparrish
+/libs/blocks/quiz/ @colloyd @sabyamon @fullcolorcoder @JackySun9
+/libs/blocks/quote/ @adobecom/milo-core
+/libs/blocks/read-more/ @adobecom/milo-core
+/libs/blocks/reading-time/ @adobecom/milo-core
 /libs/blocks/recommended-articles/ @meganthecoder @JasonHowellSlavin @Brandon32 @rgclayton
-/libs/blocks/region-nav/ @salonijain3 @bandana147 @sharmrj @nishantka @Deva309 @sonawanesnehal3
-/libs/blocks/review/ @nkthakur48 @chrischrischris @auniverseaway
+/libs/blocks/redirects-formatter/ @Brandon32 @meganthecoder @JasonHowellSlavin
+/libs/blocks/region-nav/ @adobecom/feds
+/libs/blocks/review/ @adobecom/slytherin
+/libs/blocks/rollout/ @sabyamon @raga-adbe-gh
+/libs/blocks/section-metadata/ @adobecom/milo-core
+/libs/blocks/share/ @adobecom/milo-core
+/libs/blocks/slideshare/ @adobecom/milo-core
+/libs/blocks/susi-light-login/ @adobecom/feds
+/libs/blocks/table-metadata/ @seanchoi-dev
 /libs/blocks/table-of-contents/ @Brandon32 @meganthecoder @JasonHowellSlavin
-/libs/blocks/tabs/ @ryanmparrish
+/libs/blocks/table/ @adobecom/milo-core
+/libs/blocks/tabs/ @adobecom/milo-core
 /libs/blocks/tag-selector/ @meganthecoder @JasonHowellSlavin @Brandon32
 /libs/blocks/tags/ @meganthecoder @JasonHowellSlavin @Brandon32 @rgclayton
-/libs/blocks/text/ @ryanmparrish
-/libs/blocks/video-metadata/ @hparra
-/libs/blocks/z-pattern/ @ryanmparrish
-
-# Milo Tools (alphabetical order)
-/tools/caas-import/ @chrischrischris
-/tools/send-to-caas/ @chrischrischris
+/libs/blocks/text/ @adobecom/milo-core
+/libs/blocks/tiktok/ @adobecom/milo-core
+/libs/blocks/timeline/ @markpadbe
+/libs/blocks/twitter/ @adobecom/milo-core
+/libs/blocks/utils/ @adobecom/milo-core
+/libs/blocks/version-history/ @bandana147
+/libs/blocks/video-metadata/ @adobecom/milo-core
+/libs/blocks/video/ @adobecom/milo-core
+/libs/blocks/vimeo/ @adobecom/milo-core
+/libs/blocks/walls-io/ @adobecom/milo-core
+/libs/blocks/youtube/ @adobecom/milo-core
+/libs/blocks/z-pattern/ @adobecom/milo-core
 
 # Standalone Gnav
-/libs/navigation/ @salonijain3 @bandana147 @sharmrj @nishantka @Deva309 @sonawanesnehal3
-
+/libs/navigation/ @adobecom/feds
