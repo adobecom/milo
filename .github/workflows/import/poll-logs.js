@@ -64,7 +64,7 @@ function getISOSinceXDaysAgo(days) {
 }
 
 function getWorkflowRunUrl() {
-  if (GITHUB_SERVER_URL && toRepo && GITHUB_RUN_ID) {
+  if (GITHUB_SERVER_URL && GITHUB_RUN_ID) {
     return `${GITHUB_SERVER_URL}/adobecom/milo/actions/runs/${GITHUB_RUN_ID}`;
   }
   return null;
@@ -203,13 +203,13 @@ async function getLivePaths(entries, logLink) {
 }
 
 const saveLivePaths = (livePaths) => {
-  fs.writeFileSync(".github/workflows/import/importingPaths.js", livePaths.join('\n'));
+  fs.writeFileSync(".github/workflows/import/paths-that-are-being-currently-imported.js", livePaths.join('\n'));
 }
 
 async function main() {
   await getImsToken();
   const TO_PARAM = process.env.LAST_RUN_ISO_TO || new Date().toISOString();
-  if(localPathsToImport.length) console.log("Importing paths from local environment");
+  if (localPathsToImport.length) console.log("Importing paths from local environment");
   const entries = localPathsToImport.length ? localPathsToImport : await fetchLogsForSite(
     ROLLING_IMPORT_POLL_LOGS_FROM_REPO,
     `https://admin.hlx.page/log/adobecom/${ROLLING_IMPORT_POLL_LOGS_FROM_REPO}`,
@@ -258,14 +258,14 @@ async function main() {
   await queue.onIdle();
 
   for (const erroredPath of result.initiallyFailingPaths) {
-    console.log(erroredPath)
+    console.log("Retrying erroring-path:" + erroredPath)
     queue.add(() => importUrl(erroredPath, importedMedia)
       .then(() => {
         result.success++;
         result.successPaths.push(path);
         result.error--;
       })
-      .catch((e) => {
+      .catch(() => {
         result.errorPaths.push(erroredPath);
       })
     )
