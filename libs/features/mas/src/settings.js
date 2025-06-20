@@ -5,6 +5,7 @@ import {
     Landscape,
     WCS_PROD_URL,
     WCS_STAGE_URL,
+    FF_DEFAULTS,
 } from './constants.js';
 import { Defaults } from './defaults.js';
 import { Env, CheckoutWorkflow, CheckoutWorkflowStep } from './constants.js';
@@ -41,6 +42,7 @@ function getPreviewSurface(wcsApiKey, previewParam) {
 }
 
 function getSettings(config = {}) {
+    const ffDefaults = getParameter(FF_DEFAULTS) === 'on';
     // Always use `prod` env by default, regardless Milo env
     // but allow overriding it in metadata, location.search or storage
     // See https://github.com/adobecom/milo/pull/923
@@ -67,11 +69,11 @@ function getSettings(config = {}) {
     }
     const displayOldPrice = toBoolean(
         getParameter('displayOldPrice', commerce),
-        Defaults.displayOldPrice,
+        ffDefaults ? Defaults.displayOldPrice : !Defaults.displayOldPrice,
     );
     const displayPerUnit = toBoolean(
         getParameter('displayPerUnit', commerce),
-        Defaults.displayPerUnit,
+        ffDefaults ? Defaults.displayPerUnit : !Defaults.displayPerUnit,
     );
     const displayRecurrence = toBoolean(
         getParameter('displayRecurrence', commerce),

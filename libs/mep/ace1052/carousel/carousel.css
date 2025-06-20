@@ -781,7 +781,9 @@ html[dir="rtl"] .carousel .move-indicators {
   .carousel.disable-buttons .carousel-slide.hide-left-hint {
     visibility: hidden !important;
   }
+}
 
+@media (max-width: 900px) {
   .carousel.dark.disable-buttons .carousel-button,
   .dark .carousel.disable-buttons .carousel-button {
     height: 38px;

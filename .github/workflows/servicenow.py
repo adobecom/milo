@@ -127,8 +127,7 @@ if __name__ == "__main__":
     pr_num = os.environ['PR_NUMBER']
     pr_link = os.environ['PR_LINK']
     pr_created = os.environ['PR_CREATED_AT']
-    pr_merged = os.environ['PR_MERGED_AT']
-    release_summary = f"Release_Details: {release_details} \n\nPull Request Number: {pr_num} \nPull Request Link: {pr_link} \nPull Request Created At: {pr_created} \nPull Request Merged At: {pr_merged}"
+    release_summary = f"Release_Details: {release_details} \n\nPull Request Number: {pr_num} \nPull Request Link: {pr_link} \nPull Request Created At: {pr_created} \nSee the closure notes for merge date."
 
     print("Getting IMS Token")
     headers = {"Content-Type":"multipart/form-data"}
@@ -249,6 +248,8 @@ if __name__ == "__main__":
 
     print("Closing CMR in ServiceNow...")
 
+    close_notes = f"The change request is closed as the change was released successfully.\nPull Request Merged At: {os.environ['PR_MERGED_AT']}"
+
     headers = {
       "Accept": APPLICATION_JSON,
       "Authorization":token,
@@ -261,7 +262,7 @@ if __name__ == "__main__":
       "actualEndDate": actual_end_time,
       "state": "Closed",
       "closeCode": "Successful",
-      "notes": "The change request is closed as the change was released successfully"
+      "notes": close_notes
     }
     response = requests.post(SERVICENOW_CMR_URL, headers=headers, json=data)
     json_parse = json.loads(response.text)
