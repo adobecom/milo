@@ -227,10 +227,16 @@ function curtainCallback(el) {
     }
   };
 
+  const handleFocusOut = (e) => {
+    if (!el.contains(e.relatedTarget) && firstFocusable) firstFocusable.focus();
+  };
+
   el.addEventListener('keydown', handleKeyDown);
+  el.addEventListener('focusout', handleFocusOut);
 
   el.focusTrapCleanup = () => {
     el.removeEventListener('keydown', handleKeyDown);
+    el.removeEventListener('focusout', handleFocusOut);
   };
 }
 
