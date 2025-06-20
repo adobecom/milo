@@ -4,6 +4,84 @@ import {
 } from '../../utils/utils.js';
 import { replaceKey } from '../../features/placeholders.js';
 
+const PARAM_MAS_LIBS = 'maslibs';
+
+const MAS_DEPS = {
+  'merch-card': () => import('../../deps/mas/merch-card.js'),
+  'lit-all': () => import('../../deps/lit-all.min.js'),
+  'merch-offer-select': () => import('../../deps/mas/merch-offer-select.js'),
+  'merch-quantity-select': () => import('../../deps/mas/merch-quantity-select.js'),
+  'merch-whats-included': () => import('../../deps/mas/merch-whats-included.js'),
+  'merch-mnemonic-list': () => import('../../deps/mas/merch-mnemonic-list.js'),
+  'merch-card-collection': () => import('../../deps/mas/merch-card-collection.js'),
+  'merch-sidenav': () => import('../../deps/mas/merch-sidenav.js'),
+};
+
+function getExtension(hostname = window.location.hostname) {
+  return /.page$/.test(hostname) ? 'page' : 'live';
+}
+
+export const getMasLibs = () => {
+  const searchParams = new URLSearchParams(window.location.search);
+  const maslibs = searchParams?.get(PARAM_MAS_LIBS);
+  if (!maslibs) return undefined;
+  if (maslibs === 'local') return 'http://localhost:3030/web-components/dist/mas.js';
+
+  const extension = getExtension();
+
+  if (maslibs === 'main') return `https://main--mas--adobecom.${SLD}.${extension}/web-components/dist/mas.js`;
+  if (maslibs.includes('--mas--')) return `https://${maslibs}.${SLD}.${extension}/web-components/dist/mas.js`;
+  return `https://${maslibs}--mas--adobecom.${SLD}.${extension}/web-components/dist/mas.js`;
+};
+
+const loadedDeps = new Set();
+let masLibsPromise;
+
+async function loadMasLibs() {
+  if (masLibsPromise) return masLibsPromise;
+
+  const masLibsUrl = getMasLibs();
+  if (masLibsUrl) {
+    masLibsPromise = import(masLibsUrl);
+  } else {
+    masLibsPromise = import('../../deps/mas/commerce.js');
+  }
+
+  return masLibsPromise;
+}
+
+export async function loadMasDependencies(deps = []) {
+  const depsArray = Array.isArray(deps) ? deps : [deps];
+
+  const toLoad = depsArray.filter((dep) => !loadedDeps.has(dep));
+  if (toLoad.length === 0) return Promise.resolve();
+
+  const searchParams = new URLSearchParams(window.location.search);
+  if (searchParams.has('maslibs')) {
+    return loadMasLibs();
+  }
+
+  const promises = toLoad.map(async (dep) => {
+    const loader = MAS_DEPS[dep];
+    if (!loader) throw new Error(`Unknown MAS dependency: ${dep}`);
+
+    loadedDeps.add(dep);
+    return loader();
+  });
+
+  return Promise.allSettled(promises).then((results) => {
+    results.forEach((result, index) => {
+      if (result.status === 'rejected') {
+        loadedDeps.delete(toLoad[index]);
+      }
+    });
+  });
+}
+
+export async function loadMasDependency(depName) {
+  return loadMasDependencies([depName]);
+}
+
 export const CHECKOUT_LINK_CONFIG_PATH = '/commerce/checkout-link.json'; // relative to libs.
 export const CHECKOUT_LINK_SANDBOX_CONFIG_PATH = '/commerce/checkout-link-sandbox.json'; // relative to libs.
 
@@ -304,7 +382,7 @@ export function getMasBase(hostname, maslibs) {
     } else if (maslibs === 'local') {
       baseUrl = 'http://localhost:9001';
     } else if (maslibs) {
-      const extension = /.page$/.test(hostname) ? 'page' : 'live';
+      const extension = getExtension(hostname);
       baseUrl = `https://${maslibs}.${SLD}.${extension}`;
     } else {
       baseUrl = 'https://www.adobe.com/mas';
@@ -675,6 +753,8 @@ export function setPreview(attributes) {
 export async function initService(force = false, attributes = {}) {
   if (force) {
     initService.promise = undefined;
+    masLibsPromise = undefined;
+    loadedDeps.clear();
     document.head.querySelector('mas-commerce-service')?.remove();
     fetchEntitlements.promise = undefined;
     fetchCheckoutLinkConfigs.promise = undefined;
@@ -698,7 +778,8 @@ export async function initService(force = false, attributes = {}) {
     }
   });
   initService.promise = initService.promise ?? polyfills().then(async () => {
-    await import('../../deps/mas/commerce.js');
+    await loadMasLibs();
+
     const { language, locale, country } = getMiloLocaleSettings(miloLocale);
     let service = document.head.querySelector('mas-commerce-service');
     if (!service) {
@@ -720,7 +801,7 @@ export async function initService(force = false, attributes = {}) {
       });
     }
     if (country === 'AU') {
-      await loadStyle(`${getConfig().base}/blocks/merch/au-merch.css`);
+      loadStyle(`${getConfig().base}/blocks/merch/au-merch.css`);
     }
     return service;
   });

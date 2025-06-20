@@ -1,6 +1,10 @@
-import '../../deps/mas/merch-mnemonic-list.js';
-import '../../deps/mas/merch-card.js';
 import { createTag } from '../../utils/utils.js';
+import { loadMasDependencies } from '../merch/merch.js';
+
+const searchParams = new URLSearchParams(window.location.search);
+if (!searchParams.has('maslibs')) {
+  await loadMasDependencies(['merch-mnemonic-list', 'merch-card']);
+}
 
 const init = async (el) => {
   const rows = el.querySelectorAll(':scope p:not([class])');
