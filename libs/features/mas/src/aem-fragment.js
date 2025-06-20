@@ -1,3 +1,4 @@
+import { getParameter } from '@dexter/tacocat-core';
 import {
     EVENT_AEM_LOAD,
     EVENT_AEM_ERROR,
@@ -208,8 +209,12 @@ export class AemFragment extends HTMLElement {
             this.#fail(e.message);
             return false;
         }
-        const { references, referencesTree, placeholders } =
+        const { references, referencesTree, placeholders, wcs } =
             this.#rawData || {};
+
+        if (wcs && !getParameter('mas.disableWcsCache')) {
+            this.#service.prefillWcsCache(wcs);
+        }
 
         this.dispatchEvent(
             new CustomEvent(EVENT_AEM_LOAD, {
