@@ -205,9 +205,7 @@ function handleViewportOrder(content) {
 
   Object.entries(viewports).forEach(([viewport, { media, elements }]) => {
     const mediaQuery = window.matchMedia(media);
-    if (mediaQuery.matches && viewport !== 'mobile') {
-      content.replaceChildren(...elements);
-    }
+    if (mediaQuery.matches && viewport !== 'mobile') content.replaceChildren(...elements);
     mediaQuery.addEventListener('change', (e) => {
       if (!e.matches) return;
       content.replaceChildren(...elements);

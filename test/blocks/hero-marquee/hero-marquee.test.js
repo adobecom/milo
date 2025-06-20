@@ -57,8 +57,6 @@ describe('Hero Marquee', () => {
     const nonOrderCopy = nonOrderMarquee.querySelector('.copy');
     const mobileOrder = [...nonOrderCopy.children];
     const tabletOrder = getViewportOrder('tablet', nonOrderCopy, mobileOrder);
-    for (const [index, el] of tabletOrder.entries()) {
-      expect(el === mobileOrder[index]).to.be.true;
-    }
+    for (const [index, el] of tabletOrder.entries()) expect(el === mobileOrder[index]).to.be.true;
   });
 });
