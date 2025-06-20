@@ -105,6 +105,8 @@ function addCloseAction(el, btn) {
   btn.addEventListener('click', (e) => {
     if (btn.nodeName === 'A') e.preventDefault();
 
+    console.log('banner closed');
+    
     const liveRegion = createTag('div', {
       class: 'notification-visibility-hidden',
       'aria-live': 'assertive',
@@ -113,6 +115,8 @@ function addCloseAction(el, btn) {
       tabindex: '-1',
     }, 'Banner closed');
     document.body.appendChild(liveRegion);
+    console.log('liveRegion',liveRegion);
+    
     liveRegion.focus();
     let isSticky = false;
     let rect;
@@ -211,7 +215,7 @@ function curtainCallback(el) {
   const firstFocusable = focusableElements[0];
   const lastFocusable = focusableElements[focusableElements.length - 1];
 
-  if (firstFocusable) firstFocusable.focus({ focusVisible: false });
+  if (!document.querySelector('.dialog-modal') && firstFocusable) firstFocusable.focus();
 
   const handleKeyDown = (e) => {
     if (e.key === 'Tab') {

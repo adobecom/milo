@@ -39,6 +39,11 @@ function fireAnalyticsEvent(event) {
   window._satellite?.track('event', data);
 }
 
+const focusNotificationAfterClose = () => {
+  const firstFocusable = document.querySelector('.notification button, .notification [href], .notification input, .notification select, .notification textarea, .notification [tabindex]:not([tabindex="-1"])');
+  if (firstFocusable) firstFocusable.focus();
+};
+
 export function sendAnalytics(event) {
   if (window._satellite?.track) {
     fireAnalyticsEvent(event);
@@ -81,6 +86,8 @@ export function closeModal(modal) {
   if (isDeepLink) {
     document.querySelector('#onetrust-banner-sdk')?.focus();
     isDeepLink = false;
+  } else {
+    focusNotificationAfterClose();
   }
 }
 
@@ -169,12 +176,6 @@ export async function getModal(details, custom) {
   }
 
   let shiftTabOnClose = false;
-
-  close.addEventListener('keydown', (event) => {
-    if (event.key !== 'Tab' || !event.shiftKey) return;
-    shiftTabOnClose = true;
-    focusPlaceholder.focus(focusVisible);
-  });
 
   focusPlaceholder.addEventListener('focus', () => {
     if (!shiftTabOnClose) close.focus(focusVisible);
@@ -292,9 +293,20 @@ export function delayedModal(el) {
   return true;
 }
 
+const addKeydownListener = () => {
+  document.addEventListener('keydown', (event) => {
+    const dialog = document.querySelector('.dialog-modal');
+    if (event.key === 'Escape' && dialog) {
+      closeModal(dialog);
+      focusNotificationAfterClose();
+    }
+  }, true);
+};
+
 // Deep link-based
 export default function init(el) {
   const { modalHash, modalPath } = el.dataset;
+  addKeydownListener();
   if (getConfig().mep?.fragments?.[modalPath]?.action === 'remove') return null;
   if (delayedModal(el) || window.location.hash !== modalHash || document.querySelector(`div.dialog-modal${modalHash}`)) return null;
   if (dialogLoadingSet.has(modalHash?.replace('#', ''))) return null; // prevent duplicate modal loading
