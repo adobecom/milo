@@ -113,7 +113,9 @@ function addCloseAction(el, btn) {
       tabindex: '-1',
     }, 'Banner closed');
     document.body.appendChild(liveRegion);
-    liveRegion.focus();
+
+    setTimeout(() => liveRegion.focus());
+
     let isSticky = false;
     let rect;
     const sectionElement = el.closest('.section');
