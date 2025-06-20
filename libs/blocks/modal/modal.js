@@ -186,11 +186,6 @@ export async function getModal(details, custom) {
     e.preventDefault();
   });
 
-  dialog.addEventListener('keydown', (event) => {
-    if (event.key === 'Escape') {
-      closeModal(dialog);
-    }
-  });
   decorateSectionAnalytics(dialog, `${id}-modal`, getConfig());
   dialog.prepend(close);
   dialog.append(focusPlaceholder);
@@ -294,9 +289,17 @@ export function delayedModal(el) {
   return true;
 }
 
+const addKeydownListener = () => {
+  document.addEventListener('keydown', (event) => {
+    const dialog = document.querySelector('.dialog-modal');
+    if (event.key === 'Escape' && dialog) closeModal(dialog);
+  }, true);
+};
+
 // Deep link-based
 export default function init(el) {
   const { modalHash, modalPath } = el.dataset;
+  addKeydownListener();
   if (getConfig().mep?.fragments?.[modalPath]?.action === 'remove') return null;
   if (delayedModal(el) || window.location.hash !== modalHash || document.querySelector(`div.dialog-modal${modalHash}`)) return null;
   if (dialogLoadingSet.has(modalHash?.replace('#', ''))) return null; // prevent duplicate modal loading
