@@ -387,11 +387,22 @@ function mobileSwipeDetect(carouselElements) {
   el.addEventListener('touchstart', (event) => {
     const touch = event.touches[0];
     swipe.xStart = touch.screenX;
+    swipe.yStart = touch.screenY;
   });
 
   el.addEventListener('touchmove', (event) => {
     const touch = event.touches[0];
     swipe.xEnd = touch.screenX;
+    swipe.yEnd = touch.screenY;
+
+    // Calculate the distance moved
+    const xDistance = Math.abs(swipe.xEnd - swipe.xStart);
+    const yDistance = Math.abs(swipe.yEnd - swipe.yStart);
+
+    // If horizontal movement is greater than vertical, prevent default to stop vertical scrolling
+    if (xDistance > yDistance && xDistance > 10) {
+      event.preventDefault();
+    }
   });
 
   el.addEventListener('touchend', (event) => {
