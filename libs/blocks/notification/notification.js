@@ -125,6 +125,9 @@ function addCloseAction(el, btn) {
 
     el.style.display = 'none';
     el.closest('.section')?.classList.add('close-sticky-section');
+
+    if (el.focusTrapCleanup) el.focusTrapCleanup();
+
     if (el.classList.contains('focus')) {
       document.body.classList.remove('mobile-disable-scroll');
       el.closest('.section').querySelector('.notification-curtain').remove();
@@ -203,6 +206,32 @@ function curtainCallback(el) {
   const curtain = createTag('div', { class: 'notification-curtain' });
   document.body.classList.add('mobile-disable-scroll');
   el.insertAdjacentElement('afterend', curtain);
+
+  const focusableElements = [...el.querySelectorAll(focusableSelector)];
+  const firstFocusable = focusableElements[0];
+  const lastFocusable = focusableElements[focusableElements.length - 1];
+
+  if (firstFocusable) firstFocusable.focus({ focusVisible: false });
+
+  const handleKeyDown = (e) => {
+    if (e.key === 'Tab') {
+      if (e.shiftKey) {
+        if (document.activeElement === firstFocusable) {
+          e.preventDefault();
+          lastFocusable.focus();
+        }
+      } else if (document.activeElement === lastFocusable) {
+        e.preventDefault();
+        firstFocusable.focus();
+      }
+    }
+  };
+
+  el.addEventListener('keydown', handleKeyDown);
+
+  el.focusTrapCleanup = () => {
+    el.removeEventListener('keydown', handleKeyDown);
+  };
 }
 
 function decorateSplitList(el, listContent) {
