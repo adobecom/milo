@@ -236,6 +236,7 @@ export function Wcs({ settings }) {
         const envCache = preloadedCache[envKey];
         if (!envCache || typeof envCache !== 'object') {
             log.warn(`No cache found for environment: ${env}`);
+            return;
         }
         // Fill cache with provided entries
         for (const [key, value] of Object.entries(envCache)) {
