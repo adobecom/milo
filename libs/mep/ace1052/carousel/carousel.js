@@ -290,7 +290,9 @@ function moveSlides(event, carouselElements, jumpToIndex) {
   if ((event.currentTarget).dataset.toggle === 'next'
     || event.key === KEY_CODES.ARROW_RIGHT
     || (direction === 'left' && event.type === 'touchend')) {
-    nextPreviousBtns[1].focus();
+    if (event.type !== 'touchend') {
+      nextPreviousBtns[1].focus();
+    }
     referenceSlide = handleNext(referenceSlide, slides);
     activeSlideIndicator = handleNext(activeSlideIndicator, slideIndicators);
     activeSlide = handleNext(activeSlide, slides);
@@ -301,7 +303,9 @@ function moveSlides(event, carouselElements, jumpToIndex) {
   if ((event.currentTarget).dataset.toggle === 'previous'
     || event.key === KEY_CODES.ARROW_LEFT
     || (direction === 'right' && event.type === 'touchend')) {
-    nextPreviousBtns[0].focus();
+    if (event.type !== 'touchend') {
+      nextPreviousBtns[0].focus();
+    }
     referenceSlide = handlePrevious(referenceSlide, slides);
     activeSlideIndicator = handlePrevious(activeSlideIndicator, slideIndicators);
     activeSlide = handlePrevious(activeSlide, slides);
