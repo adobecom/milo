@@ -508,6 +508,7 @@
   }
 
   .mobile-disable-scroll {
+    touch-action: none;
     overflow: hidden;
   }
 }

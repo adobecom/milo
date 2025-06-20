@@ -128,6 +128,8 @@ function addCloseAction(el, btn) {
     if (el.classList.contains('focus')) {
       document.body.classList.remove('mobile-disable-scroll');
       el.closest('.section').querySelector('.notification-curtain').remove();
+      document.body.querySelector('a[href], button, textarea, input, select, details, [tabindex]:not([tabindex="-1"])')
+        .focus({ focusVisible: true });
     }
     document.dispatchEvent(new CustomEvent('milo:sticky:closed'));
 
@@ -199,10 +201,68 @@ async function decorateLockup(lockupArea, el) {
   if (pre && pre[2] === 'icon') el.classList.replace(pre[0], `${pre[1]}-lockup`);
 }
 
+function trapFocusWithElement(el) {
+  const focusableElements = [...el.querySelectorAll('a, button, input, select, textarea')];
+  const firstFocusable = focusableElements.shift();
+  const lastFocusable = focusableElements.pop();
+  const closeButton = el.querySelector('.close, a[href="#_evt-close"]');
+  let lastFocusedElement = firstFocusable;
+  const externalClickHandler = (event) => {
+    event.preventDefault();
+    if (event.target.closest('.feds-localnav') || document.querySelector('.georouting-wrapper')) return;
+    window.scrollTo(0, 0);
+    lastFocusedElement.focus({ focusVisible: true });
+  };
+  const updateLastFocused = (event) => { lastFocusedElement = event.target; };
+  const keydownEvent = (event) => {
+    if (event.key === 'Escape' && !document.querySelector('.dialog-modal')) {
+      closeButton.click();
+    }
+    if (event.key === 'Tab') {
+      if (event.target.isEqualNode(firstFocusable) && event.shiftKey) {
+        event.preventDefault();
+        lastFocusable.focus({ focusVisible: true });
+        return;
+      }
+      if (lastFocusable?.isEqualNode(event.target)) {
+        event.preventDefault();
+        firstFocusable.focus({ focusVisible: true });
+      }
+    }
+  };
+
+  const gnavFocusOutHandler = (e) => {
+    if (e.key === 'Tab') {
+      const lastNavElement = document.querySelector('.feds-localnav-items .feds-navItem:last-child a');
+      if (e.srcElement.isEqualNode(lastNavElement)) {
+        e.preventDefault();
+        firstFocusable.focus({ focusVisible: true });
+      }
+    }
+  };
+
+  const gnav = document.querySelector('.feds-localnav');
+  gnav?.addEventListener('keydown', gnavFocusOutHandler);
+  document.addEventListener('click', externalClickHandler);
+  el.addEventListener('focusin', updateLastFocused);
+  el.addEventListener('keydown', keydownEvent);
+  closeButton?.addEventListener('click', () => {
+    document.removeEventListener('click', externalClickHandler);
+    el.removeEventListener('focusin', updateLastFocused);
+    el.removeEventListener('keydown', keydownEvent);
+    gnav?.removeEventListener('keydown', gnavFocusOutHandler);
+  });
+}
+
 function curtainCallback(el) {
   const curtain = createTag('div', { class: 'notification-curtain' });
   document.body.classList.add('mobile-disable-scroll');
   el.insertAdjacentElement('afterend', curtain);
+  if (!document.body.classList.contains('disable-scroll') && document.body.classList.contains('mobile-disable-scroll')) {
+    const firstFocusable = el.querySelector('a, button, input, select, textarea');
+    firstFocusable.setAttribute('autofocus', '');
+    firstFocusable.focus({ focusVisible: true });
+  }
 }
 
 function decorateSplitList(el, listContent) {
@@ -312,6 +372,10 @@ async function decorateLayout(el) {
   foreground?.classList.toggle('no-image', !media && !el.querySelector('.icon-area'));
   if (el.matches(`:is(.${pill}, .${ribbon}):not(.no-closure)`)) decorateClose(el);
   if (el.matches(`.${pill}.flexible`)) decorateFlexible(el);
+  const sectionMetadata = el.parentElement.querySelector('.section-metadata');
+  if (sectionMetadata?.textContent.toLowerCase().includes('sticky-bottom')) {
+    trapFocusWithElement(el);
+  }
   return foreground;
 }
 
