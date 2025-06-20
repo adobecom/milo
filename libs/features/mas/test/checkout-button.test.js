@@ -180,7 +180,7 @@ describe('class "CheckoutButton"', () => {
         expect(checkoutButton.href).to.equal(
             'https://commerce.adobe.com/store/email?items%5B0%5D%5Bid%5D=C5AC20C8AAF4892B67DE2E89B26D8ACA&cli=adobe_com&ctx=fp&co=US&lang=en',
         );
-        expect(fetch.lastCall.args[0]).to.contain('language=EN');
+        expect(fetch.lastCall.args[0]).to.not.contain('language=');
 
         // no more perpetual offer
         checkoutButton.dataset.perpetual = 'false';

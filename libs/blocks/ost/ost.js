@@ -96,7 +96,7 @@ export const createLinkMarkup = (
 
 export async function loadOstEnv() {
   /* c8 ignore next */
-  const { Log, Defaults } = await import('../../deps/mas/commerce.js');
+  const { Log, Defaults, resolvePriceTaxFlags } = await import('../../deps/mas/commerce.js');
   const { getMiloLocaleSettings } = await import('../merch/merch.js');
 
   const searchParameters = new URLSearchParams(window.location.search);
@@ -233,6 +233,7 @@ export async function loadOstEnv() {
     defaultPlaceholderOptions,
     wcsApiKey: WCS_API_KEY,
     ctaTextOption,
+    resolvePriceTaxFlags,
   };
 }
 
