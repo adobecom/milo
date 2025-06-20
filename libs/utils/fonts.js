@@ -14,12 +14,21 @@ function dynamicTypekit(kitId, d = document) {
  *
  * @param {Object} locale the locale details
  */
-export default function loadFonts(locale, loadStyle) {
+export default function loadFonts(locale, loadLink) {
   const tkSplit = locale.tk.split('.');
-  if (tkSplit[1] === 'css') {
-    return new Promise((resolve) => {
-      loadStyle(`https://use.typekit.net/${locale.tk}`, resolve);
-    });
-  }
-  return dynamicTypekit(locale.tk);
+  // Add preload for Typekit resources
+  const preloadLink = document.createElement('link');
+  preloadLink.rel = 'preload';
+  preloadLink.as = tkSplit[1] === 'css' ? 'style' : 'script';
+  preloadLink.href = `https://use.typekit.net/${locale.tk}`;
+  preloadLink.crossOrigin = 'anonymous';
+  document.head.appendChild(preloadLink);
+
+  preloadLink.onload = () => {
+    if (tkSplit[1] === 'css') {
+      loadLink(`https://use.typekit.net/${locale.tk}`, { rel: 'stylesheet' });
+    } else {
+      dynamicTypekit(locale.tk);
+    }
+  };
 }
