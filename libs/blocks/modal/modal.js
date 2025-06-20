@@ -177,6 +177,12 @@ export async function getModal(details, custom) {
 
   let shiftTabOnClose = false;
 
+  close.addEventListener('keydown', (event) => {
+    if (event.key !== 'Tab' || !event.shiftKey) return;
+    shiftTabOnClose = true;
+    focusPlaceholder.focus(focusVisible);
+  });
+
   focusPlaceholder.addEventListener('focus', () => {
     if (!shiftTabOnClose) close.focus(focusVisible);
     shiftTabOnClose = false;
@@ -187,11 +193,6 @@ export async function getModal(details, custom) {
     e.preventDefault();
   });
 
-  dialog.addEventListener('keydown', (event) => {
-    if (event.key === 'Escape') {
-      closeModal(dialog);
-    }
-  });
   decorateSectionAnalytics(dialog, `${id}-modal`, getConfig());
   dialog.prepend(close);
   dialog.append(focusPlaceholder);
