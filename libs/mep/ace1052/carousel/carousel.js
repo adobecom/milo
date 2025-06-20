@@ -488,7 +488,7 @@ function readySlides(slides, slideContainer) {
 }
 
 // mweb-dev changes
-function setEqualHeight(slides) {
+function setEqualHeight(slides, slideContainer) {
   const maxHeight = Math.max(...slides.map((slide) => slide.offsetHeight));
   const activeSlide = slides.find((slide) => slide.classList.contains('active')) || slides[0];
   const nextSlide = handleNext(activeSlide, slides);
@@ -500,6 +500,7 @@ function setEqualHeight(slides) {
       slide.style.height = `${maxHeight}px`;
     }
   });
+  slideContainer.style.height = `${maxHeight}px`;
 }
 
 export default function init(el) {
@@ -590,7 +591,7 @@ export default function init(el) {
   slides[0].classList.add('active');
   // ##mweb## Update button states after slide movement for mweb
   function handleEqualHeight() {
-    setEqualHeight(slides);
+    setEqualHeight(slides, slideContainer);
     parentArea.removeEventListener(MILO_EVENTS.DEFERRED, handleEqualHeight, true);
   }
 
