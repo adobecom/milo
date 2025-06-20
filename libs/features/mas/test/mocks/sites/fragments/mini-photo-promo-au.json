@@ -16,7 +16,7 @@
         "badge": { "mimeType": "text/html" },
         "trialBadge": { "mimeType": "text/html" },
         "prices": {
-            "value": "<span is=\"inline-price\" data-promotion-code=\"L_PROMO_10F\" data-template=\"price\" data-wcs-osi=\"mini-photo-promo-au\"></span>",
+            "value": "<span is=\"inline-price\" data-display-per-unit=\"false\" data-display-old-price=\"true\" data-promotion-code=\"L_PROMO_10F\" data-template=\"price\" data-wcs-osi=\"mini-photo-promo-au\"></span>",
             "mimeType": "text/html"
         },
         "shortDescription": { "mimeType": "text/html" },

@@ -295,7 +295,7 @@ runTests(async () => {
                 container.append(card);
                 await card.checkReady();
                 compareGetters(card, {
-                    regularPrice: '71,99\u00a0€/mois',
+                    regularPrice: '71,99 €/mois',
                     promoPrice: undefined,
                     annualPrice: undefined,
                     taxText: 'Toutes taxes comprises.',
@@ -325,8 +325,8 @@ runTests(async () => {
                 container.append(card);
                 await card.checkReady();
                 compareGetters(card, {
-                    regularPrice: '71,99\u00a0€/mois',
-                    promoPrice: '59,99\u00a0€/mois',
+                    regularPrice: '71,99 €/mois',
+                    promoPrice: '59,99 €/mois',
                     annualPrice: undefined,
                     taxText: 'Toutes taxes comprises.',
                     seeTermsInfo: {

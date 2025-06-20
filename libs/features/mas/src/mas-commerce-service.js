@@ -10,6 +10,7 @@ import { getSettings } from './settings.js';
 import { Wcs } from './wcs.js';
 import { updateConfig as updateLanaConfig } from './lana.js';
 import { printMeasure } from './utils.js';
+import { getParameter } from '@dexter/tacocat-core';
 
 export const TAG_NAME_SERVICE = 'mas-commerce-service';
 
@@ -21,6 +22,7 @@ const MEASURE_READY = 'mas-commerce-service:ready';
  */
 export class MasCommerceService extends HTMLElement {
     #measure;
+    #featureFlags;
 
     lastLoggingTime = 0;
     get #config() {
@@ -80,10 +82,23 @@ export class MasCommerceService extends HTMLElement {
         };
     }
 
+    #getFeatureFlag(ff) {
+        return ['', null, undefined, 'on'].includes(this.getAttribute(`data-${ff}`) || getParameter(ff));
+    }
+
+    get featureFlags() {
+        if (!this.#featureFlags) {
+            this.#featureFlags = {
+                ffDefaults: this.#getFeatureFlag(Constants.FF_DEFAULTS),
+            };
+        }
+        return this.#featureFlags;
+    }
+
     activate() {
         const config = this.#config;
         // Load settings and literals
-        const settings = getSettings(config);
+        const settings = getSettings(config, this);
         updateLanaConfig(config.lana);
         const log = Log.init(config.hostEnv).module('service');
         log.debug('Activating:', config);

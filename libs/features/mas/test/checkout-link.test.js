@@ -392,7 +392,7 @@ describe('commerce service', () => {
                         },
                     ],
                 },
-                settings: getSettings(service.config),
+                settings: getSettings(service.config, service),
             });
             const checkoutLink1 = mockCheckoutLink('abm');
             const options = collectCheckoutOptions({}, checkoutLink1);

@@ -782,7 +782,7 @@ describe('commerce service', () => {
                         },
                     ],
                 },
-                settings: getSettings(service.config),
+                settings: getSettings(service.config, service),
             });
             const inlinePrice1 = mockInlinePrice('abm');
             const options = collectPriceOptions({}, inlinePrice1);

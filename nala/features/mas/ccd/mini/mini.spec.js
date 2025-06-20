@@ -73,11 +73,11 @@ module.exports = {
           href: 'https://www.stage.adobe.com/offers/promo-terms.html?locale=fr_FR&country=FR&offer_id=DDDCDEBA96799A274FA982669CA74623',
         },
         primaryCta: {
-          text: 'Buy now',
+          text: 'S\'abonner',
           href: 'https://commerce-stg.adobe.com/store/segmentation?cli=adobe_com&ctx=fp&co=FR&lang=fr&ms=COM&ot=BASE&cs=INDIVIDUAL&pa=PA-130',
         },
         secondaryCta: {
-          text: 'Free trial',
+          text: 'Essai gratuit',
           href: 'https://www.adobe.com/products/catalog.html',
         },
       },
@@ -94,19 +94,19 @@ module.exports = {
         planTypeText: 'Annual, paid monthly.', // TODO update once priceLiterals override is implemented
         recurrenceText: '/mois',
         renewalText:
-          "Renouvellement automatique jusqu'à annulation. Renouvellement à 71,99 €/mois après 12 mois.",
+          "Renouvellement automatique jusqu'à annulation. Renouvellement à 71,99 €/mois TVA comprise après 12 mois.",
         promoDurationText: 'Première année seulement, se termine le 3 mars.',
         seeTerms: {
           text: 'Voir les conditions',
-          href: 'https://www.stage.adobe.com/offers/promo-terms.html?locale=fr_FR&country=FR&offer_id=216485A593A144E5812A7615D345453E',
+          href: 'https://www.stage.adobe.com/offers/promo-terms.html?locale=fr_FR&country=FR&offer_id=DDDCDEBA96799A274FA982669CA74623&promotion_code=L_PROMO_10F',
         },
         primaryCta: {
           text: 'S\'abonner',
-          href: 'https://commerce.adobe.com/store/segmentation?cli=adobe_com&ctx=fp&co=FR&lang=fr&items[0][offerId]=216485A593A144E5812A7615D345453E&items[0][quantity]=1&items[0][perp]=false',
+          href: 'https://commerce-stg.adobe.com/store/segmentation?apc=L_PROMO_10F&cli=adobe_com&ctx=fp&co=FR&lang=fr&ms=COM&ot=BASE&cs=INDIVIDUAL&pa=PA-130',
         },
         secondaryCta: {
           text: 'Essai gratuit',
-          href: 'https://commerce.adobe.com/store/segmentation?cli=adobe_com&ctx=fp&co=FR&lang=fr&items[0][offerId]=216485A593A144E5812A7615D345453E&items[0][trial]=true&items[0][quantity]=1&items[0][perp]=false',
+          href: 'https://commerce-stg.adobe.com/store/segmentation?apc=L_PROMO_10F&cli=adobe_com&ctx=fp&co=FR&lang=fr&ms=COM&ot=BASE&cs=INDIVIDUAL&pa=PA-130',
         },
       },
       tags: '@mas @ccd-mini @smoke',
