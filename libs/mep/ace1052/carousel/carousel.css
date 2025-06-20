@@ -27,8 +27,6 @@
   margin-bottom: 1.8rem;
   display: flex;
   flex-flow: column;
-  /* Control vertical movement during swipes */
-  touch-action: pan-y pinch-zoom;
 }
 
 /* Late loading controls */
@@ -39,8 +37,6 @@
 .carousel .carousel-wrapper {
   position: relative;
   overflow: hidden;
-  /* Allow horizontal swipes, prevent vertical scrolling */
-  touch-action: pan-x;
 }
 
 .carousel .carousel-expand img {
