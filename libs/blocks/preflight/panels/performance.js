@@ -1,5 +1,5 @@
 import { html, signal, useEffect } from '../../../deps/htm-preact.js';
-import preflightApi from '../checks/preflightApi.js';
+import preflightApi, { getPreflightCache } from '../checks/preflightApi.js';
 import { STATUS } from '../checks/constants.js';
 
 const { getLcpEntry, runChecks } = preflightApi.performance;
@@ -28,7 +28,20 @@ async function getResults() {
     placeholdersResult,
     iconsResult,
   ];
-  const checks = runChecks(window.location.pathname, document);
+
+  let checks;
+
+  try {
+    const cachedResults = await getPreflightCache();
+    if (cachedResults?.performance) {
+      checks = cachedResults.performance;
+    } else {
+      checks = runChecks(window.location.pathname, document);
+    }
+  } catch (error) {
+    console.log('Failed to get cached preflight results, running checks directly:', error);
+    checks = runChecks(window.location.pathname, document);
+  }
 
   const checkPromises = checks.map((resultOrPromise, index) => {
     const signalResult = signals[index];

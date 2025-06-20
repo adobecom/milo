@@ -1,6 +1,6 @@
 import { html, signal, useEffect } from '../../../deps/htm-preact.js';
 import { STATUS } from '../checks/constants.js';
-import preflightApi from '../checks/preflightApi.js';
+import preflightApi, { getPreflightCache } from '../checks/preflightApi.js';
 
 const { runChecks } = preflightApi.seo;
 
@@ -90,7 +90,19 @@ async function getResults() {
     linksResult,
   ];
 
-  const checks = runChecks(window.location.pathname);
+  let checks;
+
+  try {
+    const cachedResults = await getPreflightCache();
+    if (cachedResults?.seo) {
+      checks = cachedResults.seo;
+    } else {
+      checks = runChecks(window.location.pathname, document);
+    }
+  } catch (error) {
+    console.log('Failed to get cached preflight results, running checks directly:', error);
+    checks = runChecks(window.location.pathname, document);
+  }
 
   // Update UI as each check resolves
   const icons = [];

@@ -1,4 +1,6 @@
 /* eslint-disable no-console */
+import { prefetchPreflightChecks } from '../blocks/preflight/checks/preflightApi.js';
+
 const MILO_TEMPLATES = [
   '404',
   'featured-story',
@@ -1568,6 +1570,8 @@ function initSidekick() {
   const initPlugins = async () => {
     const { default: init } = await import('./sidekick.js');
     init({ createTag, loadBlock, loadScript, loadStyle });
+    prefetchPreflightChecks();
+    console.log('Preflight was ran at the start ');
   };
 
   if (document.querySelector('aem-sidekick, helix-sidekick')) {
