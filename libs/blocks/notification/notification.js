@@ -105,8 +105,6 @@ function addCloseAction(el, btn) {
   btn.addEventListener('click', (e) => {
     if (btn.nodeName === 'A') e.preventDefault();
 
-    console.log('banner closed');
-    
     const liveRegion = createTag('div', {
       class: 'notification-visibility-hidden',
       'aria-live': 'assertive',
@@ -115,8 +113,6 @@ function addCloseAction(el, btn) {
       tabindex: '-1',
     }, 'Banner closed');
     document.body.appendChild(liveRegion);
-    console.log('liveRegion',liveRegion);
-    
     liveRegion.focus();
     let isSticky = false;
     let rect;
