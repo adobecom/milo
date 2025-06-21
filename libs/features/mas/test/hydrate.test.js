@@ -566,7 +566,7 @@ describe('processDescription', async () => {
         processDescription(fields, merchCard, aemFragmentMapping);
         updateLinksCSS(merchCard);
         expect(merchCard.innerHTML).to.equal(
-            '<div slot="body-xs">Buy <a is="checkout-link" data-checkout-workflow="UCv3" data-checkout-workflow-step="email" data-quantity="1" data-wcs-osi="abm"><span style="pointer-events: none;">Link Style</span></a><a is="checkout-link" data-checkout-workflow="UCv3" data-checkout-workflow-step="email" data-quantity="1" data-wcs-osi="abm"><span style="pointer-events: none;">Link Style</span></a></div>',
+            '<div slot="body-xs">Buy <a is="checkout-link" data-checkout-workflow-step="email" data-quantity="1" data-wcs-osi="abm"><span style="pointer-events: none;">Link Style</span></a><a is="checkout-link" data-checkout-workflow-step="email" data-quantity="1" data-wcs-osi="abm"><span style="pointer-events: none;">Link Style</span></a></div>',
         );
     });
     
@@ -579,7 +579,7 @@ describe('processDescription', async () => {
         updateLinksCSS(merchCard);
 
         expect(merchCard.innerHTML).to.equal(
-            '<div slot="body-xs"><button is="checkout-button" data-checkout-workflow="UCv3" data-checkout-workflow-step="email" data-quantity="1" tabindex="0" data-wcs-osi="abm" class="spectrum-Button spectrum-Button--accent spectrum-Button--sizeM"><span style="pointer-events: none;" class="spectrum-Button-label">Click me</span></button></div>',
+            '<div slot="body-xs"><button is="checkout-button" data-checkout-workflow-step="email" data-quantity="1" tabindex="0" data-wcs-osi="abm" class="spectrum-Button spectrum-Button--accent spectrum-Button--sizeM"><span style="pointer-events: none;" class="spectrum-Button-label">Click me</span></button></div>',
         );
     });
 

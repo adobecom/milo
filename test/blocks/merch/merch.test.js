@@ -2,7 +2,7 @@ import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
 import { delay } from '../../helpers/waitfor.js';
 
-import { CheckoutWorkflow, CheckoutWorkflowStep, Defaults, Log } from '../../../libs/deps/mas/commerce.js';
+import { CheckoutWorkflowStep, Defaults, Log } from '../../../libs/deps/mas/commerce.js';
 
 import merch, {
   PRICE_TEMPLATE_DISCOUNT,
@@ -329,7 +329,6 @@ describe('Merch Block', () => {
       expect(textContent).to.equal('Buy Now');
       expect(el.getAttribute('is')).to.equal('checkout-link');
       expect(dataset.promotionCode).to.equal(undefined);
-      expect(dataset.checkoutWorkflow).to.equal(Defaults.checkoutWorkflow);
       expect(dataset.checkoutWorkflowStep).to.equal(Defaults.checkoutWorkflowStep);
       expect(dataset.checkoutMarketSegment).to.equal(undefined);
       expect(url.searchParams.get('cli')).to.equal(Defaults.checkoutClientId);
@@ -349,14 +348,13 @@ describe('Merch Block', () => {
       expect(textContent).to.equal('Buy Now');
       expect(el.getAttribute('is')).to.equal('checkout-link');
       expect(dataset.promotionCode).to.equal(undefined);
-      expect(dataset.checkoutWorkflow).to.equal(Defaults.checkoutWorkflow);
       expect(dataset.checkoutWorkflowStep).to.equal(Defaults.checkoutWorkflowStep);
       expect(dataset.checkoutMarketSegment).to.equal(undefined);
       expect(url.searchParams.get('cli')).to.equal('dc');
     });
 
     it('renders merch link to CTA, metadata values', async () => {
-      const metadata = createTag('meta', { name: 'checkout-workflow', content: CheckoutWorkflow.V2 });
+      const metadata = createTag('meta', { name: 'checkout-workflow-step', content: CheckoutWorkflowStep.SEGMENTATION });
       document.head.appendChild(metadata);
       await initService(true);
       const el = await merch(document.querySelector(
@@ -368,8 +366,7 @@ describe('Merch Block', () => {
       expect(textContent).to.equal('Buy Now');
       expect(el.getAttribute('is')).to.equal('checkout-link');
       expect(dataset.promotionCode).to.equal(undefined);
-      expect(dataset.checkoutWorkflow).to.equal(CheckoutWorkflow.V2);
-      expect(dataset.checkoutWorkflowStep).to.equal(CheckoutWorkflowStep.CHECKOUT);
+      expect(dataset.checkoutWorkflowStep).to.equal(CheckoutWorkflowStep.SEGMENTATION);
       expect(dataset.checkoutMarketSegment).to.equal(undefined);
       expect(url.searchParams.get('cli')).to.equal(Defaults.checkoutClientId);
       document.head.removeChild(metadata);
