@@ -85,6 +85,7 @@
 .notification.center .foreground > * {
   text-align: center;
   justify-content: center;
+  align-items: center;
 }
 
 .notification.pill .foreground {
