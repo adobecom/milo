@@ -109,6 +109,10 @@ merch-card[variant^="plans"] [slot="callout-content"] {
     margin: 8px 0 0;
 }
 
+merch-card[variant^="plans"][size="super-wide"] [slot="callout-content"] {
+    margin: 0;
+}
+
 merch-card[variant^="plans"] [slot='callout-content'] > div > div,
 merch-card[variant^="plans"] [slot="callout-content"] > p {
     padding: 2px 10px 3px;
@@ -168,12 +172,6 @@ merch-card[variant^="plans"] [slot="footer"] .con-button > span {
 merch-card[variant^="plans"] merch-addon {
     margin-top: 16px;
     margin-bottom: 16px;
-    font-family: "Adobe Clean";
-    font-size: 12px;
-    font-style: normal;
-    font-weight: 400;
-    line-height: normal;
-    align-items: center;
 }
 
 merch-card[variant^="plans"] merch-addon span[data-template="price"] {
