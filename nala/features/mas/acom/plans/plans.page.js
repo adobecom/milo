@@ -1,4 +1,4 @@
-export default class MasAcom {
+export default class MasPlans {
   constructor(page) {
     this.page = page;
     this.price = page.locator('span[data-template="price"]');
@@ -173,5 +173,17 @@ export default class MasAcom {
 
   getCardCallout(id) {
     return this.getCard(id).locator('div[slot="callout-content"] > p');
+  }
+
+  getCategoryFilter(label) {
+    return this.page.locator(`merch-sidenav-list sp-sidenav-item[label="${label}"]`);
+  }
+
+  getTabs(deeplink) {
+    return this.page.locator(`button[role="tab"][data-deeplink="${deeplink}"]`);
+  }
+
+  getCTAAttribute(id, attribute) {
+    return this.getCardCTA(id).getAttribute(`${attribute}`);
   }
 }

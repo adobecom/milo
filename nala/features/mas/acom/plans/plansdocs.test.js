@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
-import { features } from './masacom.spec.js';
-import MasAcom from './masacom.page.js';
-import WebUtil from '../../../libs/webutil.js';
+import { features } from './plansdocs.spec.js';
+import MasPlans from './plans.page.js';
+import WebUtil from '../../../../libs/webutil.js';
 
 let acomPage;
 let webUtil;
@@ -14,7 +14,7 @@ test.describe('ACOM MAS cards feature test suite', () => {
     test.skip(browserName !== 'chromium', 'Not supported to run on multiple browsers.');
 
     webUtil = new WebUtil(page);
-    acomPage = new MasAcom(page);
+    acomPage = new MasPlans(page);
     if (browserName === 'chromium') {
       await page.setExtraHTTPHeaders({ 'sec-ch-ua': '"Chromium";v="123", "Not:A-Brand";v="8"' });
     }
