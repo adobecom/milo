@@ -107,11 +107,37 @@ export class Plans extends VariantLayout {
         }
     }
 
+    adjustCallout() {
+        const tooltipIcon = this.card.querySelector('[slot="callout-content"] .icon-button');
+        if (tooltipIcon && tooltipIcon.title) {
+            tooltipIcon.dataset.tooltip = tooltipIcon.title;
+            tooltipIcon.removeAttribute('title');
+            tooltipIcon.classList.add('hide-tooltip');
+            document.addEventListener('touchstart', (event) => {
+                event.preventDefault();
+                if (event.target !== tooltipIcon) {
+                    tooltipIcon.classList.add('hide-tooltip');
+                } else {
+                    event.target.classList.toggle('hide-tooltip');
+                }
+            });
+            document.addEventListener('mouseover', (event) => {
+                event.preventDefault();
+                if (event.target !== tooltipIcon) {
+                    tooltipIcon.classList.add('hide-tooltip');
+                } else {
+                    event.target.classList.remove('hide-tooltip');
+                }
+            });
+        }
+    }
+
     postCardUpdateHook() {
         this.adaptForMobile();
         this.adjustTitleWidth();
         this.adjustLegal();
         this.adjustAddon();
+        this.adjustCallout();
     }
 
     get headingM() {

@@ -1253,8 +1253,13 @@ merch-card[variant^="plans"] [slot="callout-content"] {
 
 merch-card[variant^="plans"] [slot='callout-content'] > div > div,
 merch-card[variant^="plans"] [slot="callout-content"] > p {
+    position: relative;
     padding: 2px 10px 3px;
     background: #D9D9D9;
+}
+
+merch-card[variant^="plans"] [slot="callout-content"] > p:has(> .icon-button) {
+    padding-right: 36px;
 }
 
 merch-card[variant^="plans"] [slot='callout-content'] > p,
@@ -1265,13 +1270,6 @@ merch-card[variant^="plans"] [slot='callout-content'] > div > div > div {
 merch-card[variant^="plans"] [slot="callout-content"] img,
 merch-card[variant^="plans"] [slot="callout-content"] .icon-button {
     margin: 1.5px 0 1.5px 8px;
-}
-
-merch-card[variant^="plans"] [slot="callout-content"] .icon-button::before {
-    width: 18px;
-    height: 18px;
-    background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" height="14" width="14"><path fill="%232c2c2c" d="M7 .778A6.222 6.222 0 1 0 13.222 7 6.222 6.222 0 0 0 7 .778zM6.883 2.45a1.057 1.057 0 0 1 1.113.998q.003.05.001.1a1.036 1.036 0 0 1-1.114 1.114A1.052 1.052 0 0 1 5.77 3.547 1.057 1.057 0 0 1 6.784 2.45q.05-.002.1.001zm1.673 8.05a.389.389 0 0 1-.39.389H5.834a.389.389 0 0 1-.389-.389v-.778a.389.389 0 0 1 .39-.389h.388V7h-.389a.389.389 0 0 1-.389-.389v-.778a.389.389 0 0 1 .39-.389h1.555a.389.389 0 0 1 .389.39v3.5h.389a.389.389 0 0 1 .389.388z"/></svg>');
-    background-size: 18px 18px;
 }
 
 merch-card[variant^="plans"] [slot="whats-included"] [slot="description"] {
@@ -1413,7 +1411,7 @@ merch-card[variant^="plans"]:not([size]) {
         grid-template-columns: repeat(2, var(--consonant-merch-card-plans-width));
     }
 }
-`;var $n={title:{tag:"h3",slot:"heading-xs"},prices:{tag:"p",slot:"heading-m"},promoText:{tag:"p",slot:"promo-text"},description:{tag:"div",slot:"body-xs"},mnemonics:{size:"l"},callout:{tag:"div",slot:"callout-content"},quantitySelect:{tag:"div",slot:"quantity-select"},addon:!0,secureLabel:!0,planType:!0,badge:{tag:"div",slot:"badge",default:"spectrum-yellow-300-plans"},allowedBadgeColors:["spectrum-yellow-300-plans","spectrum-gray-300-plans","spectrum-gray-700-plans","spectrum-green-900-plans"],allowedBorderColors:["spectrum-yellow-300-plans","spectrum-gray-300-plans","spectrum-green-900-plans"],borderColor:{attribute:"border-color"},size:["wide","super-wide"],whatsIncluded:{tag:"div",slot:"whats-included"},ctas:{slot:"footer",size:"m"},style:"consonant"},vc={...function(){let{whatsIncluded:e,...t}=$n;return t}(),title:{tag:"h3",slot:"heading-s"},subtitle:{tag:"p",slot:"subtitle"},secureLabel:!1},yc={...function(){let{whatsIncluded:e,size:t,quantitySelect:r,...n}=$n;return n}()},be=class extends O{constructor(t){super(t),this.adaptForMobile=this.adaptForMobile.bind(this)}priceOptionsProvider(t,r){t.dataset.template===io&&(r.displayPlanType=this.card?.settings?.displayPlanType??!1)}getGlobalCSS(){return bc}adaptForMobile(){if(!this.card.closest("merch-card-collection,overlay-trigger,.two-merch-cards,.three-merch-cards,.four-merch-cards, .columns")){this.card.removeAttribute("size");return}let t=this.card.shadowRoot,r=t.querySelector("footer"),n=this.card.getAttribute("size"),o=t.querySelector("footer #stock-checkbox"),i=t.querySelector(".body #stock-checkbox"),a=t.querySelector(".body");if(!n){r?.classList.remove("wide-footer"),o&&o.remove();return}let s=St();if(r?.classList.toggle("wide-footer",!s),s&&o){i?o.remove():a.appendChild(o);return}!s&&i&&(o?i.remove():r.prepend(i))}postCardUpdateHook(){this.adaptForMobile(),this.adjustTitleWidth(),this.adjustLegal(),this.adjustAddon()}get headingM(){return this.card.querySelector('[slot="heading-m"]')}get mainPrice(){return this.headingM.querySelector(`${Q}[data-template="price"]`)}get divider(){return this.card.variant==="plans-education"?g`<div class="divider"></div>`:H}async adjustLegal(){if(await this.card.updateComplete,this.legalAdjusted)return;this.legalAdjusted=!0;let t=[],r=this.card.querySelector(`[slot="heading-m"] ${Q}[data-template="price"]`);r&&t.push(r),this.card.querySelectorAll(`[slot="body-xs"] ${Q}[data-template="price"]`).forEach(i=>t.push(i));let o=t.map(async i=>{let a=i.cloneNode(!0);await i.onceSettled(),i?.options&&(i.options.displayPerUnit&&(i.dataset.displayPerUnit="false"),i.options.displayTax&&(i.dataset.displayTax="false"),i.options.displayPlanType&&(i.dataset.displayPlanType="false"),a.setAttribute("data-template","legal"),i.parentNode.insertBefore(a,i.nextSibling))});await Promise.all(o)}async adjustAddon(){await this.card.updateComplete;let t=this.card.addon;if(!t)return;let r=this.mainPrice;if(!r)return;await r.onceSettled();let n=r.value?.[0]?.planType;n&&(t.planType=n)}get stockCheckbox(){return this.card.checkboxLabel?g`<label id="stock-checkbox">
+`;var $n={title:{tag:"h3",slot:"heading-xs"},prices:{tag:"p",slot:"heading-m"},promoText:{tag:"p",slot:"promo-text"},description:{tag:"div",slot:"body-xs"},mnemonics:{size:"l"},callout:{tag:"div",slot:"callout-content"},quantitySelect:{tag:"div",slot:"quantity-select"},addon:!0,secureLabel:!0,planType:!0,badge:{tag:"div",slot:"badge",default:"spectrum-yellow-300-plans"},allowedBadgeColors:["spectrum-yellow-300-plans","spectrum-gray-300-plans","spectrum-gray-700-plans","spectrum-green-900-plans"],allowedBorderColors:["spectrum-yellow-300-plans","spectrum-gray-300-plans","spectrum-green-900-plans"],borderColor:{attribute:"border-color"},size:["wide","super-wide"],whatsIncluded:{tag:"div",slot:"whats-included"},ctas:{slot:"footer",size:"m"},style:"consonant"},vc={...function(){let{whatsIncluded:e,...t}=$n;return t}(),title:{tag:"h3",slot:"heading-s"},subtitle:{tag:"p",slot:"subtitle"},secureLabel:!1},yc={...function(){let{whatsIncluded:e,size:t,quantitySelect:r,...n}=$n;return n}()},be=class extends O{constructor(t){super(t),this.adaptForMobile=this.adaptForMobile.bind(this)}priceOptionsProvider(t,r){t.dataset.template===io&&(r.displayPlanType=this.card?.settings?.displayPlanType??!1)}getGlobalCSS(){return bc}adaptForMobile(){if(!this.card.closest("merch-card-collection,overlay-trigger,.two-merch-cards,.three-merch-cards,.four-merch-cards, .columns")){this.card.removeAttribute("size");return}let t=this.card.shadowRoot,r=t.querySelector("footer"),n=this.card.getAttribute("size"),o=t.querySelector("footer #stock-checkbox"),i=t.querySelector(".body #stock-checkbox"),a=t.querySelector(".body");if(!n){r?.classList.remove("wide-footer"),o&&o.remove();return}let s=St();if(r?.classList.toggle("wide-footer",!s),s&&o){i?o.remove():a.appendChild(o);return}!s&&i&&(o?i.remove():r.prepend(i))}adjustCallout(){let t=this.card.querySelector('[slot="callout-content"] .icon-button');t&&t.title&&(t.dataset.tooltip=t.title,t.removeAttribute("title"),t.classList.add("hide-tooltip"),document.addEventListener("touchstart",r=>{r.preventDefault(),r.target!==t?t.classList.add("hide-tooltip"):r.target.classList.toggle("hide-tooltip")}),document.addEventListener("mouseover",r=>{r.preventDefault(),r.target!==t?t.classList.add("hide-tooltip"):r.target.classList.remove("hide-tooltip")}))}postCardUpdateHook(){this.adaptForMobile(),this.adjustTitleWidth(),this.adjustLegal(),this.adjustAddon(),this.adjustCallout()}get headingM(){return this.card.querySelector('[slot="heading-m"]')}get mainPrice(){return this.headingM.querySelector(`${Q}[data-template="price"]`)}get divider(){return this.card.variant==="plans-education"?g`<div class="divider"></div>`:H}async adjustLegal(){if(await this.card.updateComplete,this.legalAdjusted)return;this.legalAdjusted=!0;let t=[],r=this.card.querySelector(`[slot="heading-m"] ${Q}[data-template="price"]`);r&&t.push(r),this.card.querySelectorAll(`[slot="body-xs"] ${Q}[data-template="price"]`).forEach(i=>t.push(i));let o=t.map(async i=>{let a=i.cloneNode(!0);await i.onceSettled(),i?.options&&(i.options.displayPerUnit&&(i.dataset.displayPerUnit="false"),i.options.displayTax&&(i.dataset.displayTax="false"),i.options.displayPlanType&&(i.dataset.displayPlanType="false"),a.setAttribute("data-template","legal"),i.parentNode.insertBefore(a,i.nextSibling))});await Promise.all(o)}async adjustAddon(){await this.card.updateComplete;let t=this.card.addon;if(!t)return;let r=this.mainPrice;if(!r)return;await r.onceSettled();let n=r.value?.[0]?.planType;n&&(t.planType=n)}get stockCheckbox(){return this.card.checkboxLabel?g`<label id="stock-checkbox">
                 <input type="checkbox" @change=${this.card.toggleStockOffer}></input>
                 <span></span>
                 ${this.card.checkboxLabel}
@@ -2069,19 +2067,6 @@ merch-card [slot='callout-content'] > p {
     line-height: var(--consonant-merch-card-callout-line-height);
 }
 
-merch-card [slot='callout-content'] .icon-button {
-    position: relative;
-    top: 3px;
-}
-
-merch-card [slot='callout-content'] .icon-button:before {
-    display: inline-block;
-    content: '';
-    width: 14px;
-    height: 14px;
-    background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" height="14" width="14"><path d="M7 .778A6.222 6.222 0 1 0 13.222 7 6.222 6.222 0 0 0 7 .778zM6.883 2.45a1.057 1.057 0 0 1 1.113.998q.003.05.001.1a1.036 1.036 0 0 1-1.114 1.114A1.052 1.052 0 0 1 5.77 3.547 1.057 1.057 0 0 1 6.784 2.45q.05-.002.1.001zm1.673 8.05a.389.389 0 0 1-.39.389H5.834a.389.389 0 0 1-.389-.389v-.778a.389.389 0 0 1 .39-.389h.388V7h-.389a.389.389 0 0 1-.389-.389v-.778a.389.389 0 0 1 .39-.389h1.555a.389.389 0 0 1 .389.39v3.5h.389a.389.389 0 0 1 .389.388z"/></svg>')
-}
-
 merch-card [slot='callout-content'] > div {
     display: flex;
     flex-direction: column;
@@ -2314,6 +2299,66 @@ sr-only {
 
 aem-fragment {
   display: contents;
+}
+
+merch-card [slot='callout-content'] .icon-button {
+  position: absolute;
+  top: 3px;
+  text-decoration: none;
+  border-bottom: none;
+  min-width: 18px;
+  display: inline-flex;
+  min-height: 18px;
+  align-items: center;
+  justify-content: center;
+  background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" height="14" width="14"><path d="M7 .778A6.222 6.222 0 1 0 13.222 7 6.222 6.222 0 0 0 7 .778zM6.883 2.45a1.057 1.057 0 0 1 1.113.998q.003.05.001.1a1.036 1.036 0 0 1-1.114 1.114A1.052 1.052 0 0 1 5.77 3.547 1.057 1.057 0 0 1 6.784 2.45q.05-.002.1.001zm1.673 8.05a.389.389 0 0 1-.39.389H5.834a.389.389 0 0 1-.389-.389v-.778a.389.389 0 0 1 .39-.389h.388V7h-.389a.389.389 0 0 1-.389-.389v-.778a.389.389 0 0 1 .39-.389h1.555a.389.389 0 0 1 .389.39v3.5h.389a.389.389 0 0 1 .389.388z"/></svg>');
+  background-size: 18px;
+}
+
+merch-card [slot='callout-content'] .icon-button::before {
+  content: attr(data-tooltip);
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  left: 100%;
+  margin-left: 8px;
+  max-width: 140px;
+  padding: 10px;
+  border-radius: 5px;
+  background: #0469E3;
+  color: #fff;
+  text-align: left;
+  display: block;
+  z-index: 10;
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 16px;
+  width: max-content;
+}
+
+merch-card [slot='callout-content'] .icon-button::after {
+  content: "";
+  position: absolute;
+  left: 102%;
+  margin-left: -8px;
+  top: 50%;
+  transform: translateY(-50%);
+  border: 8px solid #0469E3;
+  border-color: transparent #0469E3 transparent transparent;
+  display: block;
+  z-index: 10;
+}
+
+merch-card [slot='callout-content'] .icon-button.hide-tooltip::before,
+merch-card [slot='callout-content'] .icon-button.hide-tooltip::after {
+  display: none;
+}
+
+@media (max-width: 600px) {
+merch-card [slot='callout-content'] .icon-button::before { 
+    max-width: 180px;
+  }
 }
 `;document.head.appendChild(Sc);var Tc="fragment",Cc="author",Pc="preview",Ti="aem-fragment",ve,Ci=class{constructor(){_(this,ve,new Map)}clear(){u(this,ve).clear()}addByRequestedId(t,r){u(this,ve).set(t,r)}put(t,r){u(this,ve).set(t,r)}add(...t){t.forEach(r=>{let{id:n}=r;n&&u(this,ve).set(n,r)})}has(t){return u(this,ve).has(t)}get(t){return u(this,ve).get(t)}remove(t){u(this,ve).delete(t)}};ve=new WeakMap;var In=new Ci,Ft,ye,Re,X,he,ie,de,Mr,$r,Gt,pe,kc,Lc,ki,Rc,Pi=class extends HTMLElement{constructor(){super(...arguments);_(this,pe);f(this,"cache",In);_(this,Ft);_(this,ye,null);_(this,Re,null);_(this,X,{url:null,retryCount:0,stale:!1,measure:null,status:null});_(this,he,null);_(this,ie);_(this,de);_(this,Mr,!1);_(this,$r,0);_(this,Gt)}static get observedAttributes(){return[Tc,Cc,Pc]}attributeChangedCallback(r,n,o){r===Tc&&S(this,ie,o),r===Cc&&S(this,Mr,["","true"].includes(o)),r===Pc&&S(this,Gt,o)}connectedCallback(){if(!u(this,de)){if(u(this,he)??S(this,he,Tt(this)),S(this,Gt,u(this,he).settings?.preview),u(this,Ft)??S(this,Ft,u(this,he).log.module(`${Ti}[${u(this,ie)}]`)),!u(this,ie)||u(this,ie)==="#"){re(this,pe,ki).call(this,"Missing fragment id");return}this.refresh(!1)}}get fetchInfo(){return Object.fromEntries(Object.entries(u(this,X)).filter(([r,n])=>n!=null).map(([r,n])=>[`aem-fragment:${r}`,n]))}async refresh(r=!0){if(u(this,de)&&!await Promise.race([u(this,de),Promise.resolve(!1)]))return;r&&In.remove(u(this,ie));try{S(this,de,re(this,pe,Rc).call(this)),await u(this,de)}catch(a){return re(this,pe,ki).call(this,a.message),!1}let{references:n,referencesTree:o,placeholders:i}=u(this,ye)||{};return this.dispatchEvent(new CustomEvent(Fe,{detail:{...this.data,references:n,referencesTree:o,placeholders:i,...u(this,X)},bubbles:!0,composed:!0})),u(this,de)}get updateComplete(){return u(this,de)??Promise.reject(new Error("AEM fragment cannot be loaded"))}get data(){return u(this,Re)?u(this,Re):(u(this,Mr)?this.transformAuthorData():this.transformPublishData(),u(this,Re))}transformAuthorData(){let{fields:r,id:n,tags:o,settings:i={}}=u(this,ye);S(this,Re,r.reduce((a,{name:s,multiple:c,values:l})=>(a.fields[s]=c?l:l[0],a),{fields:{},id:n,tags:o,settings:i}))}transformPublishData(){let{fields:r,id:n,tags:o,settings:i={}}=u(this,ye);S(this,Re,Object.entries(r).reduce((a,[s,c])=>(a.fields[s]=c?.mimeType?c.value:c??"",a),{fields:{},id:n,tags:o,settings:i}))}async generatePreview(){let{previewFragment:r}=await import("https://mas.adobe.com/studio/libs/fragment-client.js");return await r(u(this,ie),{locale:u(this,he).settings.locale,apiKey:u(this,he).settings.wcsApiKey})}};Ft=new WeakMap,ye=new WeakMap,Re=new WeakMap,X=new WeakMap,he=new WeakMap,ie=new WeakMap,de=new WeakMap,Mr=new WeakMap,$r=new WeakMap,Gt=new WeakMap,pe=new WeakSet,kc=async function(r){Fi(this,$r)._++;let n=`${Ti}:${u(this,ie)}:${u(this,$r)}`,o=`${n}${je}`,i=`${n}${qe}`;if(u(this,Gt))return await this.generatePreview();performance.mark(o);let a;try{if(u(this,X).stale=!1,u(this,X).url=r,a=await un(r,{cache:"default",credentials:"omit"}),re(this,pe,Lc).call(this,a),u(this,X).status=a?.status,u(this,X).measure=fe(performance.measure(i,o)),u(this,X).retryCount=a.retryCount,!a?.ok)throw new Se("Unexpected fragment response",{response:a,...u(this,he).duration});return await a.json()}catch(s){if(u(this,X).measure=fe(performance.measure(i,o)),u(this,X).retryCount=s.retryCount,u(this,ye))return u(this,X).stale=!0,u(this,Ft).error("Serving stale data",u(this,X)),u(this,ye);let c=s.message??"unknown";throw new Se(`Failed to fetch fragment: ${c}`,{})}},Lc=function(r){Object.assign(u(this,X),Kr(r))},ki=function(r){S(this,de,null),u(this,X).message=r,this.classList.add("error");let n={...u(this,X),...u(this,he).duration};u(this,Ft).error(r,n),this.dispatchEvent(new CustomEvent(Ge,{detail:n,bubbles:!0,composed:!0}))},Rc=async function(){this.classList.remove("error"),S(this,Re,null);let r=In.get(u(this,ie));if(r)return S(this,ye,r),!0;let{masIOUrl:n,wcsApiKey:o,locale:i}=u(this,he).settings,a=`${n}/fragment?id=${u(this,ie)}&api_key=${o}&locale=${i}`;return r=await re(this,pe,kc).call(this,a),In.addByRequestedId(u(this,ie),r),S(this,ye,r),!0};customElements.define(Ti,Pi);var Vt=class extends D{constructor(){super(),this.color="",this.variant="",this.backgroundColor="",this.borderColor="",this.text=this.textContent}connectedCallback(){this.borderColor&&this.borderColor!=="Transparent"?this.style.setProperty("--merch-badge-border",`1px solid var(--${this.borderColor})`):this.style.setProperty("--merch-badge-border",`1px solid var(--${this.backgroundColor})`),this.style.setProperty("--merch-badge-background-color",`var(--${this.backgroundColor})`),this.style.setProperty("--merch-badge-color",this.color),this.style.setProperty("--merch-badge-padding","2px 10px 3px 10px"),this.style.setProperty("--merch-badge-border-radius","4px 0 0 4px"),this.style.setProperty("--merch-badge-font-size","var(--consonant-merch-card-body-xs-font-size)"),this.textContent="",super.connectedCallback()}render(){return g`<div class="badge">
             ${this.text}
