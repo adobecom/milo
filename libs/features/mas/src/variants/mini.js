@@ -9,7 +9,6 @@ export const MINI_AEM_FRAGMENT_MAPPING = {
     description: {
         tag: 'p',
         slot: 'description',
-        marks: 'promo-text,promo-duration-text,renewal-text',
     },
     planType: true,
     ctas: { slot: 'ctas', size: 'S' },
