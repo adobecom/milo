@@ -528,7 +528,7 @@ function applyStylesBasedOnScreenSize(table, originTable) {
       const filters = Array.from(table.parentElement.querySelectorAll('.filter')).map((f) => parseInt(f.value, 10));
       const rows = table.querySelectorAll('.row');
 
-      table.querySelectorAll('.hide-mobile, .force-last').forEach((col) => { col.classList.remove('hide-mobile', 'force-last'); });
+      table.querySelectorAll('.hide-mobile, .force-last, .rounded-left, .rounded-right').forEach((col) => { col.classList.remove('hide-mobile', 'force-last', 'rounded-left', 'rounded-right'); });
 
       rows.forEach((row) => {
         const clonedCols = row.querySelectorAll('.col[data-cloned]');
@@ -542,21 +542,31 @@ function applyStylesBasedOnScreenSize(table, originTable) {
       }
 
       rows.forEach((row) => {
+        const firstFilterCol = row.querySelector(`.col-${filters[0] + 1}`);
         const secondFilterCol = row.querySelector(`.col-${filters[1] + 1}`);
-        if (secondFilterCol) secondFilterCol.classList.add('force-last');
+
+        if (firstFilterCol && firstFilterCol.classList.contains('col-heading')) {
+          firstFilterCol.classList.remove('right-round');
+          firstFilterCol.classList.add('left-round');
+        }
+        if (secondFilterCol && secondFilterCol.classList.contains('col-heading')) {
+          secondFilterCol.classList.remove('left-round');
+          secondFilterCol.classList.add('force-last', 'right-round');
+        }
       });
 
       if (filters[0] === filters[1]) {
         const selectedCol = filters[0] + 1;
         rows.forEach((row) => {
           const selectedColumn = row.querySelector(`.col-${selectedCol}`);
-          if (!selectedColumn) return;
+          if (!selectedColumn || !selectedColumn.classList.contains('col-heading')) return;
 
-          selectedColumn.classList.remove('force-last');
-          selectedColumn.classList.remove('rounded-left', 'rounded-right');
+          selectedColumn.classList.remove('force-last', 'right-round');
+          selectedColumn.classList.add('left-round');
           const clone = selectedColumn.cloneNode(true);
           clone.setAttribute('data-cloned', 'true');
-          clone.classList.remove('rounded-left', 'rounded-right');
+          clone.classList.remove('left-round');
+          clone.classList.add('right-round');
           row.appendChild(clone);
         });
       }

@@ -149,22 +149,24 @@
   border-radius: 0 !important;
 }
 
-.table .col-heading:first-child {
+.table .left-round {
   border-top-left-radius: var(--border-radius);
-}
-
-[dir="rtl"] .table .col-heading:first-child {
-  border-top-left-radius: 0;
-  border-top-right-radius: var(--border-radius);
-}
-
-.table .col-heading:last-child {
-  border-top-right-radius: var(--border-radius);
-}
-
-[dir="rtl"] .table .col-heading:last-child {
   border-top-right-radius: 0;
+}
+
+.table .right-round {
+  border-top-right-radius: var(--border-radius);
+  border-top-left-radius: 0;
+}
+
+[dir="rtl"] .table .left-round {
+  border-top-right-radius: var(--border-radius);
+  border-top-left-radius: 0;
+}
+
+[dir="rtl"] .table .right-round {
   border-top-left-radius: var(--border-radius);
+  border-top-right-radius: 0;
 }
 
 .table .row-heading .col-heading.col.no-rounded,
@@ -396,7 +398,7 @@
 /* rtl */
 [dir="rtl"] .table .col {
   border-right: 1px var(--border-color) solid;
-  border-left: 1px solid transparent;
+  border-left: 1px var(--border-color) solid;
 }
 
 [dir="rtl"] .table.merch .col {
