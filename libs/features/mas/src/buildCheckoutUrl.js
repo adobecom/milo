@@ -124,14 +124,7 @@ export function setItemsParameter(items, parameters) {
  * Adds 3-in-1 parameters to the URL.
  * @param {URL} url - The URL object to add parameters to
  * @param {string} modal - The type of modal: 'crm', 'twp', or 'd2p'
- * @param {Object} checkoutData - Object containing checkout parameters including:
- *   @param {string} customerSegment - Customer segment value
- *   @param {string} cs - Custom customer segment override
- *   @param {string} ms - Custom market segment override  
- *   @param {string} marketSegment - Market segment value
- *   @param {string} quantity - Quantity value
- *   @param {string} productArrangementCode - Product arrangement code
- *   @param {string} addonProductArrangementCode - Addon product arrangement code
+ * @param {boolean} is3in1 - Whether 3-in-1 is enabled
  * @returns URL object
  */
 export function add3in1Parameters({ url, modal, is3in1 }) {
@@ -142,13 +135,6 @@ export function add3in1Parameters({ url, modal, is3in1 }) {
   if (url.searchParams.get('cli') !== 'doc_cloud') {
     url.searchParams.set('cli', modal === MODAL_TYPE_3_IN_1.CRM ? 'creative' : 'mini_plans');
   }
-  // used on catalog page by MEP to preselect plan
-  const metaPreselectPlan = document.querySelector('meta[name="preselect-plan"]');
-  if (metaPreselectPlan?.content?.toLowerCase() === 'edu') {
-    url.searchParams.set('ms', 'EDU');
-  } else if (metaPreselectPlan?.content?.toLowerCase() === 'team') {
-    url.searchParams.set('cs', 'TEAM');
-  }
   return url;
 }
 
@@ -157,7 +143,7 @@ export function add3in1Parameters({ url, modal, is3in1 }) {
  */
 export function buildCheckoutUrl(checkoutData) {
   validateCheckoutData(checkoutData);
-  const { env, items, workflowStep, ms, cs, marketSegment, customerSegment, ot, offerType, pa, productArrangementCode, landscape, modal, is3in1, ...rest } =
+  const { env, items, workflowStep, marketSegment, customerSegment, offerType, productArrangementCode, landscape, modal, is3in1, preselectPlan, ...rest } =
     checkoutData;
   
   let url = new URL(getHostName(env));
@@ -170,17 +156,23 @@ export function buildCheckoutUrl(checkoutData) {
     addParameters({ af: AF_DRAFT_LANDSCAPE }, url.searchParams, ALLOWED_KEYS);
   }
   if (workflowStep === CheckoutWorkflowStep.SEGMENTATION) {
-    // ms, ot, cs, pa are params manually set by authors, they should take precedence over 'marketSegment', etc
+    // first item is always primary offer, second - addon offer
     const segmentationParameters = {
-      marketSegment: ms ?? marketSegment,
-      offerType: ot ?? offerType,
-      customerSegment: cs ?? customerSegment,
-      productArrangementCode: pa ?? productArrangementCode,
-      quantity: items?.[0]?.quantity > 1 ? items?.[0]?.quantity : undefined,
+      marketSegment,
+      offerType,
+      customerSegment,
+      productArrangementCode,
+      quantity: items?.[0]?.quantity,
       addonProductArrangementCode: productArrangementCode 
         ? items?.find((item) => item.productArrangementCode !== productArrangementCode)?.productArrangementCode 
         : items?.[1]?.productArrangementCode,
     };
+    //used on catalog page by MEP to preselect plan
+    if (preselectPlan?.toLowerCase() === 'edu') {
+      url.searchParams.set('ms', 'EDU');
+    } else if (preselectPlan?.toLowerCase() === 'team') {
+      url.searchParams.set('cs', 'TEAM');
+    }
     addParameters(segmentationParameters, url.searchParams, ALLOWED_KEYS);
     if (url.searchParams.get('ot') === 'PROMOTION') url.searchParams.delete('ot');
     url = add3in1Parameters({
