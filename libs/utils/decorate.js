@@ -333,7 +333,7 @@ export function applyAccessibilityEvents(videoEl) {
   }
   if (videoEl.hasAttribute('autoplay')) {
     videoEl.addEventListener('canplay', () => {
-      videoEl.play();
+      if (videoEl.readyState > 1) videoEl.play();
     });
     videoEl.addEventListener('playing', (event) => syncPausePlayIcon(videoEl, event));
     videoEl.addEventListener('ended', () => syncPausePlayIcon(videoEl));
@@ -377,7 +377,7 @@ function getVideoIntersectionObserver() {
         if (intersectionRatio <= 0.8) {
           video.pause();
         } else if ((isHaveLoopAttr || !playedOnce) && !isPlaying) {
-          video.play();
+          if (video.readyState > 1) video.play();
         }
       });
     }, { threshold: [0.8] });
@@ -518,11 +518,13 @@ export function decorateAnchorVideo({ src = '', anchorTag }) {
     }
   }
   if (isAutoplay) {
-    videoEl.play().catch((error) => {
-      if (error.name === 'AbortError') {
-        console.log("$$$", error);
-      }
-    });
+    if (videoEl.readyState > 1) {
+      videoEl.play().catch((error) => {
+        if (error.name === 'AbortError') {
+          console.log("$$$", error);
+        }
+      });
+    }
     syncPausePlayIcon(videoEl);
   }
   // videoEl.addEventListener('abort', (event) => {
