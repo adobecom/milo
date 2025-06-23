@@ -656,6 +656,7 @@ export const transformTemplateToMobile = async ({ popup, item, localnav = false,
   });
 
   tabbuttons.forEach((tab, i) => {
+    tab.addEventListener('pointerdown', (event) => event.preventDefault());
     tab.addEventListener('click', tabbuttonClickCallbacks[i]);
   });
 
