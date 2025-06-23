@@ -2,6 +2,7 @@ import { html, useState, useEffect } from '../../../deps/htm-preact.js';
 import '../../../deps/axe.min.js';
 import { AXE_CORE_CONFIG, CUSTOM_CHECKS_CONFIG } from './accessibility-config.js';
 import customAccessibilityChecks from './accessibility-custom-checks.js';
+import AuditImageAltText from './audit-image-alt-text.js';
 
 /**
  * Runs the accessibility test using axe-core and custom checks.
@@ -80,7 +81,7 @@ export default function Accessibility() {
     return html`
       <div class="preflight-column">
         <div class="preflight-content-group">
-          <div class="preflight-item">
+          <div class="preflight-accessibility-item">
             <div class="result-icon ${results.pass ? 'green' : 'red'}"></div>
             <div class="preflight-item-text">
               <p class="preflight-item-title">
@@ -98,6 +99,9 @@ export default function Accessibility() {
                 <li><strong>Test Scope:</strong> body</li>
                 <li><strong>WCAG Tags:</strong> ${AXE_CORE_CONFIG.runOnly?.values?.join(', ') || 'NONE'}</li>
               </ul>
+              <p class="preflight-accessibility-note">
+                <strong>Note:</strong> This test does not include screen reader behavior, focus order, or voice navigation checks.
+              </p>
             </div>
           </div>
         </div>
@@ -116,7 +120,7 @@ export default function Accessibility() {
     return html`
       <div class="preflight-column">
         <div class="preflight-content-group violations-section">
-          <div class="preflight-item">
+          <div class="preflight-accessibility-item">
             <div class="result-icon red"></div>
             <div class="preflight-item-text">
               <p class="preflight-item-title">Accessibility Violations</p>
@@ -132,10 +136,10 @@ export default function Accessibility() {
     return html`
                 <div class="violation-item">
                   <div
-                    class="preflight-group-row violation-summary ${isExpanded ? 'expanded' : ''}"
+                    class="violation-summary ${isExpanded ? 'expanded' : ''}"
                     onClick=${() => toggleViolation(index)}
                   >
-                    <div class="preflight-group-expand"></div>
+                    <div class="violation-expand"></div>
                     <div class="preflight-content-heading">
                       <span class="violation-index">${index + 1}.</span>
                       Violation [
@@ -183,9 +187,14 @@ export default function Accessibility() {
     `;
   }
   return html`
-    <div class="preflight-columns">
-      ${resultsSummary(testResults, pageURL)}
+  <div class="preflight-columns accessibility-columns">
+    ${resultsSummary(testResults, pageURL)}
+    <div class="preflight-column violations-column">
       ${!testResults.pass && violationsList(testResults.violations)}
     </div>
-  `;
+  </div>
+  <div class="preflight-full-width">
+    <${AuditImageAltText} />
+  </div>
+`;
 }
