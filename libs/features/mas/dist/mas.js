@@ -1213,7 +1213,7 @@ merch-card-collection.plans merch-card {
   height: 100%;
 }
 
-merch-card-collection.plans merch-card aem-fragment + p[slot^="heading-"] {
+merch-card-collection.plans merch-card aem-fragment + [slot^="heading-"] {
     margin-top: calc(40px + var(--consonant-merch-spacing-xxs));
 }
 
