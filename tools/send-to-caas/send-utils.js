@@ -362,8 +362,9 @@ const parseCardMetadata = () => {
 };
 
 function checkCtaUrl(s, options, i) {
-  if ((s?.trim() === '' || s === undefined) && i > 1) return '';
-  const url = (s?.trim() !== '' && s !== undefined) ? s : (options.prodUrl || window.location.origin + window.location.pathname);
+  if (s?.trim() === '') return '';
+  const url = s || options.prodUrl || window.location.origin + window.location.pathname;
+  if (url.includes('/tools/send-to-caas/bulkpublisher.html')) return '';
   return checkUrl(url, `Invalid Cta${i}Url: ${url}`);
 }
 
