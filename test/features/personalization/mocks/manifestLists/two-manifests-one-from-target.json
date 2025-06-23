@@ -51,7 +51,10 @@
       "name": "MILO0013 - manifest order",
       "manifest": "https://main--milo--adobecom.hlx.page/drafts/vgoodrich/fragments/2024/q1/mepmanifestorder/manifests/test-normal.json",
       "manifestUrl": "https://main--milo--adobecom.hlx.page/drafts/vgoodrich/fragments/2024/q1/mepmanifestorder/manifests/test-normal.json",
-      "manifestPath": "/drafts/vgoodrich/fragments/2024/q1/mepmanifestorder/manifests/test-normal.json"
+      "manifestPath": "/drafts/vgoodrich/fragments/2024/q1/mepmanifestorder/manifests/test-normal.json",
+      "placeholderData": {
+          "marquee-title": "Value in Target"
+      }
   },
   {
       "variants": {
@@ -104,6 +107,9 @@
       "source": ["pzn"],
       "manifest": "https://main--milo--adobecom.hlx.page/drafts/vgoodrich/fragments/2024/q1/mepmanifestorder/manifests/pzn-normal.json",
       "manifestUrl": "https://main--milo--adobecom.hlx.page/drafts/vgoodrich/fragments/2024/q1/mepmanifestorder/manifests/pzn-normal.json",
-      "manifestPath": "/drafts/vgoodrich/fragments/2024/q1/mepmanifestorder/manifests/pzn-normal.json"
+      "manifestPath": "/drafts/vgoodrich/fragments/2024/q1/mepmanifestorder/manifests/pzn-normal.json",
+      "placeholderData": {
+          "marquee-title": "Value in Pzn"
+      }
   }
 ]

@@ -10,7 +10,6 @@ const MOBILE_SIZE = 768;
 const tableHighlightLoadedEvent = new Event('milo:table:highlight:loaded');
 const tabChangeEvent = 'milo:tab:changed';
 let tableIndex = 0;
-let isExpandEventsAssigned = false;
 
 const isMobileLandscape = () => (window.matchMedia('(orientation: landscape)').matches && window.innerHeight <= MOBILE_SIZE);
 function defineDeviceByScreenSize() {
@@ -110,14 +109,17 @@ function handleEqualHeight(table, tag) {
   columns.forEach(({ children }) => {
     [...children].forEach((row, i) => {
       row.style.height = 'auto';
-      if (!height[i] || row.offsetHeight > height[i]) {
-        height[i] = row.offsetHeight;
-      }
+      const style = window.getComputedStyle(row);
+      const actualHeight = row.clientHeight
+       - parseFloat(style.paddingTop)
+       - parseFloat(style.paddingBottom);
+
+      if (!height[i] || actualHeight > height[i]) height[i] = actualHeight;
     });
   });
   columns.forEach(({ children }) => {
     [...children].forEach((row, i) => {
-      row.style.minHeight = height[i] > 0 ? `${height[i]}px` : 'unset';
+      if (row.clientHeight > 0) row.style.minHeight = height[i] > 0 ? `${height[i]}px` : 'unset';
     });
   });
 }
@@ -243,10 +245,7 @@ function handleExpand(e) {
 }
 
 function setExpandEvents(el) {
-  if (isExpandEventsAssigned) return;
-
   el.querySelectorAll('.icon.expand').forEach((icon) => {
-    isExpandEventsAssigned = true;
     icon.parentElement.classList.add('point-cursor');
     icon.parentElement.addEventListener('click', () => handleExpand(icon));
     icon.parentElement.setAttribute('tabindex', 0);
@@ -315,11 +314,6 @@ function handleSection(sectionParams) {
       handleTitleText(sectionHeadTitle);
       sectionHeadTitle.classList.add('section-head-title');
       sectionHeadTitle.setAttribute('role', 'rowheader');
-      const sectionHeadText = sectionHeadTitle.querySelector('.table-title-text');
-      if (sectionHeadText) {
-        sectionHeadText.setAttribute('role', 'heading');
-        sectionHeadText.setAttribute('aria-level', '4');
-      }
     }
 
     if (isCollapseTable) {

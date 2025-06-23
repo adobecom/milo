@@ -4,7 +4,7 @@ import { Env } from '../src/constants.js';
 import { getPreviewSurface, getSettings } from '../src/settings.js';
 
 import { expect } from './utilities.js';
-import { PARAM_ENV, PARAM_LANDSCAPE } from '../src/constants.js';
+import { PARAM_ENV, PARAM_LANDSCAPE, FF_DEFAULTS } from '../src/constants.js';
 
 describe('getSettings', () => {
     let href;
@@ -21,6 +21,11 @@ describe('getSettings', () => {
 
     before(() => {
         ({ href } = window.location);
+
+        const metaDefaultFlag = document.createElement('meta');
+        metaDefaultFlag.name = FF_DEFAULTS
+        metaDefaultFlag.content = 'on';
+        document.head.appendChild(metaDefaultFlag);
     });
 
     it('returns default settings, if called without arguments', () => {
