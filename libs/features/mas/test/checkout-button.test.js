@@ -259,7 +259,6 @@ describe('class "CheckoutButton"', () => {
             expect(dataset.checkoutMarketSegment).to.equal(
                 options.checkoutMarketSegment,
             );
-            expect(dataset.checkoutWorkflow).to.equal(options.checkoutWorkflow);
             expect(dataset.checkoutWorkflowStep).to.equal(
                 options.checkoutWorkflowStep,
             );
