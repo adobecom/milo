@@ -721,10 +721,7 @@ export default function init(el) {
     }
   });
 
-  const headingElements = el.querySelectorAll('.col-heading');
-  headingElements.forEach((heading) => {
-    new ResizeObserver(() => handleStickyHeader(el)).observe(heading);
-  });
+  new ResizeObserver(() => handleStickyHeader(el)).observe(el);
 
   window.addEventListener(tabChangeEvent, () => handleStickyHeader(el));
   observer.observe(el);
