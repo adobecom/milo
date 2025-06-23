@@ -264,7 +264,7 @@ export function Wcs({ settings }) {
         wcsOsi = [],
     }) {
         const locale = `${language}_${country}`;
-        if (country !== 'GB') language = perpetual ? 'EN' : 'MULT';
+        if (country !== 'GB' && !perpetual) language = 'MULT';
         const groupKey = [country, language, promotionCode]
             .filter((val) => val)
             .join('-')
@@ -283,7 +283,7 @@ export function Wcs({ settings }) {
                         locale,
                         offerSelectorIds: [],
                     };
-                    if (country !== 'GB') options.language = language;
+                    if (country !== 'GB' && !perpetual) options.language = language;
                     const promises = new Map();
                     group = { options, promises };
                     queue.set(groupKey, group);
