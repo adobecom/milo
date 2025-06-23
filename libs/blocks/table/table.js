@@ -559,14 +559,19 @@ function applyStylesBasedOnScreenSize(table, originTable) {
         const selectedCol = filters[0] + 1;
         rows.forEach((row) => {
           const selectedColumn = row.querySelector(`.col-${selectedCol}`);
-          if (!selectedColumn || !selectedColumn.classList.contains('col-heading')) return;
+          if (!selectedColumn) return;
 
-          selectedColumn.classList.remove('force-last', 'right-round');
-          selectedColumn.classList.add('left-round');
           const clone = selectedColumn.cloneNode(true);
           clone.setAttribute('data-cloned', 'true');
-          clone.classList.remove('left-round');
-          clone.classList.add('right-round');
+          selectedColumn.classList.remove('force-last');
+
+          if (selectedColumn.classList.contains('col-heading')) {
+            selectedColumn.classList.remove('right-round');
+            selectedColumn.classList.add('left-round');
+            clone.classList.remove('left-round');
+            clone.classList.add('right-round');
+          }
+
           row.appendChild(clone);
         });
       }
