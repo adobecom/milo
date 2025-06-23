@@ -41,6 +41,9 @@ test.describe('MAS Plans Page test suite', () => {
       await expect(await masPlans.getCardPrice(data.cards[0].id)).toContainText(data.cards[0].price);
       await expect(await masPlans.getCardPrice(data.cards[1].id)).toContainText(data.cards[1].price);
 
+      await expect(await masPlans.getCardPrice(data.cards[0].id)).toContainText(data.cards[0].abmLabel);
+      await expect(await masPlans.getCardPrice(data.cards[1].id)).toContainText(data.cards[1].abmLabel);
+
       await expect(await masPlans.getCardCTA(data.cards[0].id)).toBeVisible();
       await expect(await masPlans.getCardCTA(data.cards[0].id)).toContainText(data.cards[0].cta);
       expect(await masPlans.getCTAAttribute(data.cards[0].id, 'data-wcs-osi')).toEqual(data.cards[0].osi);
