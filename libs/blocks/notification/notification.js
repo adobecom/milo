@@ -137,6 +137,8 @@ function addCloseAction(el, btn) {
     document.dispatchEvent(new CustomEvent('milo:sticky:closed'));
 
     setTimeout(() => {
+      if (!document.activeElement.classList.contains('notification-visibility-hidden')) return;
+
       let focusTarget;
 
       if (isSticky) {
