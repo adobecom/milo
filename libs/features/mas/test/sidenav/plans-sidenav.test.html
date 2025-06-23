@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Plans Merch Side Nav test page</title>
+        <script type="module" src="../spectrum.js"></script>
+        <script type="module" src="./plans-sidenav.test.html.js"></script>
+        <style>
+            #sidenav {
+                flex: 1;
+                justify-content: stretch;
+                padding-top: 8px;
+                display: flex;
+                position: fixed;
+                bottom: 0;
+                left: 0px;
+                gap: 20px;
+                flex-direction: column;
+                width: 320px;
+            }
+        </style>
+        <mas-commerce-service env="stage"></mas-commerce-service>
+    </head>
+    <body>
+        <main>
+            <div id="sidenav">
+                <button onclick="skipTests()">Skip tests</button>
+                <button onclick="runTests()">Run tests</button>
+            </div>
+            <div id="merch-sidenav"></div>
+        </main>
+        <template id="merch-sidenav-template">
+            <merch-sidenav sidenavTitle="Categories">
+                <merch-sidenav-list deeplink="filter">
+                    <sp-sidenav label="category">
+                        <sp-sidenav-item value="all" label="All" selected></sp-sidenav-item>
+                        <sp-sidenav-item label="Creativity And Design" value="creativitydesign">
+                          <var class="selection" data-selected-text="CREATE!" data-light="https://dummyimage.com/24x24/fff/000&text=LIGHT" data-dark="https://dummyimage.com/24x24/000/fff&text=DARK" data-></var>
+                          <img src="https://dummyimage.com/24x24/000/fff&text=DARK" alt="Creativity and Design icon" data-type="light" slot="icon">
+                        </sp-sidenav-item>
+                        <sp-sidenav-item label="PDF and E-signatures" value="pdfesignature">
+                          <var class="selection" data-light="https://dummyimage.com/24x24/fff/000&text=LIGHT" data-dark="https://dummyimage.com/24x24/000/fff&text=DARK" data-></var>
+                          <img src="https://dummyimage.com/24x24/000/fff&text=DARK" alt="Creativity and Design icon" data-type="light" slot="icon">
+                        </sp-sidenav-item>
+                    </sp-sidenav>
+                </merch-sidenav-list>
+            </merch-sidenav>
+        </template>
+    </body>
+</html>

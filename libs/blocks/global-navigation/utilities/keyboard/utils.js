@@ -44,7 +44,7 @@ const selectors = {
   activeLinks: '.tab-content [role="tabpanel"]:not([hidden="true"]) a',
   stickyCta: 'header.new-nav .feds-popup .sticky-cta a',
   topBarLinks: 'header.new-nav .feds-popup .top-bar a, header.new-nav .feds-popup .top-bar button',
-  closeLink: 'header.new-nav .feds-popup .top-bar .close-icon',
+  closeLink: 'header.new-nav .feds-popup .close-icon',
   localNav: '.feds-localnav',
   localNavActive: '.feds-localnav--active',
   localNavTitle: '.feds-localnav-title',
