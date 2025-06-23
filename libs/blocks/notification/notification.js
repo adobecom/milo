@@ -126,10 +126,7 @@ function addCloseAction(el, btn) {
     el.style.display = 'none';
     el.closest('.section')?.classList.add('close-sticky-section');
     if (el.classList.contains('focus')) {
-      document.body.classList.remove('mobile-disable-scroll');
       el.closest('.section').querySelector('.notification-curtain').remove();
-      document.body.querySelector('a[href], button, textarea, input, select, details, [tabindex]:not([tabindex="-1"])')
-        .focus({ focusVisible: true });
     }
     document.dispatchEvent(new CustomEvent('milo:sticky:closed'));
 
@@ -155,6 +152,11 @@ function addCloseAction(el, btn) {
       }
 
       liveRegion?.remove();
+      if (document.body.classList.contains('mobile-disable-scroll')) {
+        const firstSection = document.querySelector('main .section');
+        focusTarget = firstSection.querySelector('a[href], button, textarea, input, select, details, [tabindex]:not([tabindex="-1"])') || focusTarget;
+        document.body.classList.remove('mobile-disable-scroll');
+      }
       if (focusTarget) focusTarget.focus({ preventScroll: true });
     }, 2000);
   });
