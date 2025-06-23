@@ -872,6 +872,8 @@ img:hover ~ .picture-meta {
 .violations-column {
   overflow-y: auto;
   max-height: 100%;
+  margin-bottom: 32px;
+  padding-bottom: 8px;
 }
 
 .violations-column::-webkit-scrollbar {
