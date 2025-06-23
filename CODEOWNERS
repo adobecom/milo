@@ -10,7 +10,7 @@
 /libs/features/georoutingv2/ @adobecom/milo-core
 /libs/features/icons/ @adobecom/milo-core
 /libs/features/mas/ @adobecom/tacocat
-/libs/features/personalization/ @vgoodric
+/libs/features/personalization/ @adobecom/mep-squad
 /libs/features/seotech/ @adobecom/milo-core
 /libs/features/spectrum-web-components/ @adobecom/tacocat
 /libs/features/webapp-prompt/ @adobecom/feds
@@ -137,3 +137,4 @@
 
 # Standalone Gnav
 /libs/navigation/ @adobecom/feds
+/libs/martech/attributes.js @adobecom/mep-squad
