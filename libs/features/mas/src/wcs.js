@@ -240,7 +240,7 @@ export function Wcs({ settings }) {
         }
         // Fill cache with provided entries
         for (const [key, value] of Object.entries(envCache)) {
-            cache.set(key, Promise.resolve(value));
+            cache.set(key, Promise.resolve(value.map(applyPlanType)));
         }
         log.debug(`Prefilled WCS cache with ${envCache.size} entries`);
     }
