@@ -37,6 +37,8 @@ styles.innerHTML = `
     --consonant-merch-card-heading-s-line-height: 25px;
     --consonant-merch-card-heading-m-font-size: 24px;
     --consonant-merch-card-heading-m-line-height: 30px;
+    --consonant-merch-card-heading-l-font-size: 28px;
+    --consonant-merch-card-heading-l-line-height: 36.4px;
 
     /* detail */
     --consonant-merch-card-detail-xs-line-height: 12px;
@@ -47,7 +49,7 @@ styles.innerHTML = `
     --consonant-merch-card-detail-m-font-weight: 700;
     --consonant-merch-card-detail-m-letter-spacing: 1px;
     --consonant-merch-card-detail-l-line-height: 18px;
-    --consonant-merch-card-detail-xl-line-height: 23px;
+    --consonant-merch-card-detail-l-line-height: 23px;
 
     /* body */
     --consonant-merch-card-body-xxs-font-size: 12px;
@@ -265,6 +267,13 @@ merch-card [slot='heading-m-price'] {
     padding: 0 var(--consonant-merch-spacing-s);
     margin: 0;
     color: var(--spectrum-gray-800, #2c2c2c);
+}
+
+merch-card [slot='heading-l'] {
+    font-size: var(--consonant-merch-card-heading-l-font-size);
+    line-height: var(--consonant-merch-card-heading-l-line-height);
+    font-weight: 900;
+    margin: 0;
 }
 
 merch-card [slot='offers'] {
