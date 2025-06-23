@@ -111,8 +111,13 @@ merch-card[variant^="plans"] [slot="callout-content"] {
 
 merch-card[variant^="plans"] [slot='callout-content'] > div > div,
 merch-card[variant^="plans"] [slot="callout-content"] > p {
+    position: relative;
     padding: 2px 10px 3px;
     background: #D9D9D9;
+}
+
+merch-card[variant^="plans"] [slot="callout-content"] > p:has(> .icon-button) {
+    padding-right: 36px;
 }
 
 merch-card[variant^="plans"] [slot='callout-content'] > p,
@@ -123,13 +128,6 @@ merch-card[variant^="plans"] [slot='callout-content'] > div > div > div {
 merch-card[variant^="plans"] [slot="callout-content"] img,
 merch-card[variant^="plans"] [slot="callout-content"] .icon-button {
     margin: 1.5px 0 1.5px 8px;
-}
-
-merch-card[variant^="plans"] [slot="callout-content"] .icon-button::before {
-    width: 18px;
-    height: 18px;
-    background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" height="14" width="14"><path fill="%232c2c2c" d="M7 .778A6.222 6.222 0 1 0 13.222 7 6.222 6.222 0 0 0 7 .778zM6.883 2.45a1.057 1.057 0 0 1 1.113.998q.003.05.001.1a1.036 1.036 0 0 1-1.114 1.114A1.052 1.052 0 0 1 5.77 3.547 1.057 1.057 0 0 1 6.784 2.45q.05-.002.1.001zm1.673 8.05a.389.389 0 0 1-.39.389H5.834a.389.389 0 0 1-.389-.389v-.778a.389.389 0 0 1 .39-.389h.388V7h-.389a.389.389 0 0 1-.389-.389v-.778a.389.389 0 0 1 .39-.389h1.555a.389.389 0 0 1 .389.39v3.5h.389a.389.389 0 0 1 .389.388z"/></svg>');
-    background-size: 18px 18px;
 }
 
 merch-card[variant^="plans"] [slot="whats-included"] [slot="description"] {
