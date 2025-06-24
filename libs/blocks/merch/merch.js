@@ -953,6 +953,7 @@ export function localizePreviewLinks(el) {
 
 export function postProcessAutoblock(autoblockEl) {
   try {
+    if (2 > 1) return;
     console.log('post process autoblock - decorateLinks');
     decorateLinks(autoblockEl);
     console.log('post process autoblock - localizePreviewLinks');
