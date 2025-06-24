@@ -721,7 +721,8 @@ export default function init(el) {
     }
   });
 
-  new ResizeObserver(() => handleStickyHeader(el)).observe(el);
+  const debouncedStickyHeader = debounce(() => handleStickyHeader(el), 300);
+  new ResizeObserver(debouncedStickyHeader).observe(el);
 
   window.addEventListener(tabChangeEvent, () => handleStickyHeader(el));
   observer.observe(el);
