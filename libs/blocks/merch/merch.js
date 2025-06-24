@@ -342,10 +342,8 @@ export function getMasLibs() {
     return 'https://mas.adobe.com/web-components/dist';
   }
   if (masLibs.includes('--')) {
-    // Fork branch pattern
     return `https://${masLibs}.hlx.live/web-components/dist`;
   }
-  // Regular branch pattern
   return `https://${masLibs}--mas--adobecom.hlx.live/web-components/dist`;
 }
 
@@ -358,15 +356,9 @@ export async function loadMasComponent(componentName) {
   const masLibsBase = getMasLibs();
   if (masLibsBase) {
     try {
-      // Use window.loadScript for better testability, fallback to imported loadScript
       const scriptLoader = window.loadScript || loadScript;
       return await scriptLoader(`${masLibsBase}/${componentName}.js`);
     } catch (error) {
-      if (log) {
-        log.error(`Failed to load ${componentName} from ${masLibsBase}:`, error);
-      } else {
-        console.error(`Failed to load ${componentName} from ${masLibsBase}:`, error);
-      }
       return import(`../../deps/mas/${componentName}.js`);
     }
   } else {
