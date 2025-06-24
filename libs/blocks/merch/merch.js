@@ -341,15 +341,12 @@ export function getMasLibs() {
   if (masLibs === 'main') {
     return 'https://mas.adobe.com/web-components/dist';
   }
-  // Handle patterns like "stage--mas--3ch023a" or "fork-branch--mas--username"
   if (masLibs.includes('--mas--')) {
     return `https://${masLibs}.aem.live/web-components/dist`;
   }
-  // Handle other double-dash patterns
   if (masLibs.includes('--')) {
     return `https://${masLibs}.aem.live/web-components/dist`;
   }
-  // Default pattern for branch names
   return `https://${masLibs}--mas--adobecom.aem.live/web-components/dist`;
 }
 
@@ -382,11 +379,11 @@ const LIT_DEPENDENT_COMPONENTS = new Set([
  */
 export async function loadMasComponent(componentName) {
   const masLibsBase = getMasLibs();
-  
+
   if (masLibsBase) {
     console.log(`Loading ${componentName}, is lit-dependent: ${LIT_DEPENDENT_COMPONENTS.has(componentName)}`);
   }
-  
+
   // Always load lit-dependent components locally to avoid dependency issues
   if (masLibsBase && !LIT_DEPENDENT_COMPONENTS.has(componentName)) {
     const externalUrl = `${masLibsBase}/${componentName}.js`;
