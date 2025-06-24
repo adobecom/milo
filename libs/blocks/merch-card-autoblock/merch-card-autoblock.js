@@ -1,4 +1,4 @@
-import { createTag, decorateLinks, loadBlock } from '../../utils/utils.js';
+import { createTag } from '../../utils/utils.js';
 import '../../deps/mas/merch-card.js';
 import '../../deps/mas/merch-quantity-select.js';
 import { initService, getOptions, overrideOptions, postProcessAutoblock } from '../merch/merch.js';

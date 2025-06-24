@@ -951,8 +951,8 @@ export function localizePreviewLinks(el) {
   }
 }
 
-export function postProcessAutoblock(el) {
-  decorateLinks(el);
-  localizePreviewLinks(el);
-  el.querySelectorAll('.modal.link-block').forEach((el) => loadBlock(el));
+export function postProcessAutoblock(autoblockEl) {
+  decorateLinks(autoblockEl);
+  localizePreviewLinks(autoblockEl);
+  autoblockEl.querySelectorAll('.modal.link-block').forEach((blockEl) => loadBlock(blockEl));
 }
