@@ -131,7 +131,8 @@ export function add3in1Parameters({ url, modal, is3in1 }) {
   if (!is3in1 || !url?.searchParams) return url;
   url.searchParams.set('rtc', 't');
   url.searchParams.set('lo', 'sl');
-  url.searchParams.set('af', 'uc_new_user_iframe,uc_new_system_close');
+  const existingAf = url.searchParams.get('af');
+  url.searchParams.set('af', [existingAf, 'uc_new_user_iframe', 'uc_new_system_close'].filter(Boolean).join(','));
   if (url.searchParams.get('cli') !== 'doc_cloud') {
     url.searchParams.set('cli', modal === MODAL_TYPE_3_IN_1.CRM ? 'creative' : 'mini_plans');
   }

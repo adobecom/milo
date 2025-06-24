@@ -20,6 +20,7 @@ function playVideo(video) {
   if (!video) return;
   if (video.getAttribute('autoplay') === null) return;
   const playBtn = video.nextElementSibling;
+  if (!playBtn) return;
   const isPlaying = playBtn.getAttribute('aria-pressed') === 'true';
   if (isPlaying || video.readyState === 0) return;
   playBtn.click();
