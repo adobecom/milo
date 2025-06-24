@@ -54,8 +54,9 @@ function createMerchOffer(option, quantitySelector, variant) {
 const isHorizontal = (offerSelection) => [...offerSelection.querySelectorAll('merch-offer')].map((o) => o.text).every((t) => /^\d+.B$/.test(t));
 
 export const initOfferSelection = async (merchCard, offerSelection, quantitySelector) => {
-  // Load merch-offer-select component dynamically
-  await loadMasComponent(MAS_MERCH_OFFER_SELECT);
+  if (!customElements.get('merch-offer-select')) {
+    await loadMasComponent(MAS_MERCH_OFFER_SELECT);
+  }
 
   let merchOfferSlot;
   switch (merchCard.variant) {

@@ -333,27 +333,31 @@ export function getMasLibs() {
   const urlParams = new URLSearchParams(window.location.search);
   const masLibs = urlParams.get('maslibs');
 
-  if (!masLibs) return null;
+  if (!masLibs || masLibs.trim() === '') return null;
 
-  if (masLibs === 'local') {
+  const sanitizedMasLibs = masLibs.trim().toLowerCase();
+
+  if (sanitizedMasLibs === 'local') {
     return 'http://localhost:3030/web-components/dist';
   }
-  if (masLibs === 'main') {
+  if (sanitizedMasLibs === 'main') {
     return 'https://mas.adobe.com/web-components/dist';
   }
-  if (masLibs.includes('--mas--')) {
-    return `https://${masLibs}.aem.live/web-components/dist`;
+  if (sanitizedMasLibs.includes('--mas--')) {
+    return `https://${sanitizedMasLibs}.aem.live/web-components/dist`;
   }
-  if (masLibs.includes('--')) {
-    return `https://${masLibs}.aem.live/web-components/dist`;
+  if (sanitizedMasLibs.includes('--')) {
+    return `https://${sanitizedMasLibs}.aem.live/web-components/dist`;
   }
-  return `https://${masLibs}--mas--adobecom.aem.live/web-components/dist`;
+  return `https://${sanitizedMasLibs}--mas--adobecom.aem.live/web-components/dist`;
 }
 
 /**
  * Cache for failed external loads to avoid repeated attempts
  */
 const failedExternalLoads = new Set();
+
+const loadingPromises = new Map();
 
 /**
  * Components that depend on lit-all.min.js and should always load locally
@@ -378,33 +382,39 @@ const LIT_DEPENDENT_COMPONENTS = new Set([
  * @returns {Promise} Promise that resolves when component is loaded
  */
 export async function loadMasComponent(componentName) {
-  const masLibsBase = getMasLibs();
+  if (loadingPromises.has(componentName)) {
+    return loadingPromises.get(componentName);
+  }
 
-  // Always load lit-dependent components locally to avoid dependency issues
-  if (masLibsBase && !LIT_DEPENDENT_COMPONENTS.has(componentName)) {
-    const externalUrl = `${masLibsBase}/${componentName}.js`;
+  if (customElements.get(componentName)) {
+    return Promise.resolve();
+  }
 
-    if (failedExternalLoads.has(externalUrl)) {
-      return import(`../../deps/mas/${componentName}.js`);
-    }
+  const loadPromise = (async () => {
+    const masLibsBase = getMasLibs();
 
-    try {
-      // External components need to be loaded as ES modules
-      return await import(externalUrl);
-    } catch (error) {
-      // Mark this URL as failed to avoid future attempts
-      failedExternalLoads.add(externalUrl);
+    if (masLibsBase && !LIT_DEPENDENT_COMPONENTS.has(componentName)) {
+      const externalUrl = `${masLibsBase}/${componentName}.js`;
+
+      if (failedExternalLoads.has(externalUrl)) {
+        return import(`../../deps/mas/${componentName}.js`);
+      }
 
       try {
-        return await import(`../../deps/mas/${componentName}.js`);
-      } catch (fallbackError) {
-        log?.error(`Failed to load ${componentName} from both external and local sources:`, fallbackError);
-        throw fallbackError;
+        return await import(externalUrl);
+      } catch (error) {
+        failedExternalLoads.add(externalUrl);
+        return import(`../../deps/mas/${componentName}.js`);
       }
+    } else {
+      return import(`../../deps/mas/${componentName}.js`);
     }
-  } else {
-    return import(`../../deps/mas/${componentName}.js`);
-  }
+  })();
+
+  loadingPromises.set(componentName, loadPromise);
+  loadPromise.finally(() => loadingPromises.delete(componentName));
+
+  return loadPromise;
 }
 
 function getCommercePreloadUrl() {

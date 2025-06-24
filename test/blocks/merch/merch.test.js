@@ -967,7 +967,7 @@ describe('Merch Block', () => {
     it('returns branch URL for branch names', () => {
       setMasLibsParam('MWPW-172853');
       window.URLSearchParams = MockURLSearchParams;
-      expect(getMasLibs()).to.equal('https://MWPW-172853--mas--adobecom.aem.live/web-components/dist');
+      expect(getMasLibs()).to.equal('https://mwpw-172853--mas--adobecom.aem.live/web-components/dist');
     });
 
     it('returns fork URL for fork branch names', () => {
@@ -986,6 +986,24 @@ describe('Merch Block', () => {
       setMasLibsParam('stage--mas--3ch023a');
       window.URLSearchParams = MockURLSearchParams;
       expect(getMasLibs()).to.equal('https://stage--mas--3ch023a.aem.live/web-components/dist');
+    });
+
+    it('handles case insensitive maslibs parameter', () => {
+      setMasLibsParam('MWPW-172853');
+      window.URLSearchParams = MockURLSearchParams;
+      expect(getMasLibs()).to.equal('https://mwpw-172853--mas--adobecom.aem.live/web-components/dist');
+    });
+
+    it('handles empty maslibs parameter', () => {
+      setMasLibsParam('');
+      window.URLSearchParams = MockURLSearchParams;
+      expect(getMasLibs()).to.be.null;
+    });
+
+    it('handles whitespace in maslibs parameter', () => {
+      setMasLibsParam('  main  ');
+      window.URLSearchParams = MockURLSearchParams;
+      expect(getMasLibs()).to.equal('https://mas.adobe.com/web-components/dist');
     });
   });
 

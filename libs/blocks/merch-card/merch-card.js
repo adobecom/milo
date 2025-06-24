@@ -3,7 +3,7 @@ import { getConfig, createTag, loadStyle } from '../../utils/utils.js';
 import { getMetadata } from '../section-metadata/section-metadata.js';
 import { processTrackingLabels } from '../../martech/attributes.js';
 import '../../deps/lit-all.min.js';
-import { initService, loadMasComponent, MAS_MERCH_CARD, MAS_MERCH_QUANTITY_SELECT } from '../merch/merch.js';
+import { initService, loadMasComponent, MAS_MERCH_CARD, MAS_MERCH_QUANTITY_SELECT, MAS_MERCH_OFFER_SELECT } from '../merch/merch.js';
 
 const TAG_PATTERN = /^[a-zA-Z0-9_-]+:[a-zA-Z0-9_-]+\/[a-zA-Z0-9_-].*$/;
 
@@ -595,10 +595,22 @@ const addStartingAt = async (styles, merchCard) => {
 export default async function init(el) {
   if (!el.querySelector(INNER_ELEMENTS_SELECTOR)) return el;
 
-  // Load merch-card component dynamically
-  await loadMasComponent(MAS_MERCH_CARD);
+  const styles = [...el.classList];
+  const cardType = getPodType(styles) || PRODUCT;
+  const isMultiOfferCard = MULTI_OFFER_CARDS.includes(cardType);
+  const hasOfferSelection = el.querySelector('ul');
+  const hasQuantitySelect = el.querySelector('.merch-offers');
 
-  const merchServicePromise = initService();
+  const componentPromises = [loadMasComponent(MAS_MERCH_CARD)];
+
+  if (isMultiOfferCard && (hasOfferSelection || hasQuantitySelect)) {
+    componentPromises.push(loadMasComponent(MAS_MERCH_QUANTITY_SELECT));
+    if (hasOfferSelection) {
+      componentPromises.push(loadMasComponent(MAS_MERCH_OFFER_SELECT));
+    }
+  }
+
+  await Promise.all([...componentPromises, initService()]);
   // TODO: Remove after bugfix PR adobe/helix-html2md#556 is merged
   const liELs = el.querySelectorAll('ul li');
   if (liELs) {
@@ -612,8 +624,6 @@ export default async function init(el) {
     });
   }
   // TODO: Remove after bugfix PR adobe/helix-html2md#556 is merged
-  const styles = [...el.classList];
-  const cardType = getPodType(styles) || PRODUCT;
   if (!styles.includes(cardType)) {
     styles.push(cardType);
   }
@@ -814,7 +824,6 @@ export default async function init(el) {
   } else {
     parseTwpContent(el, merchCard);
   }
-  await merchServicePromise;
   el.replaceWith(merchCard);
   decorateMerchCardLinkAnalytics(merchCard);
   return merchCard;
