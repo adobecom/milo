@@ -361,7 +361,10 @@ const loadingPromises = new Map();
 
 /**
  * Components that depend on lit-all.min.js and should always load locally
- * to avoid cross-origin dependency issues
+ * to avoid cross-origin dependency issues.
+ * Note: When using masLibs with production MAS components, you may see
+ * version mismatch errors (e.g., missing methods) which indicate the external
+ * components are older than the local Milo code expects.
  */
 const LIT_DEPENDENT_COMPONENTS = new Set([
   MAS_MERCH_CARD,
@@ -371,6 +374,7 @@ const LIT_DEPENDENT_COMPONENTS = new Set([
   MAS_MERCH_SECURE_TRANSACTION,
   MAS_MERCH_WHATS_INCLUDED,
   MAS_MERCH_MNEMONIC_LIST,
+  MAS_MERCH_SIDENAV,
   'merch-icon',
   'merch-stock',
   'merch-offer',
@@ -821,6 +825,14 @@ export async function initService(force = false, attributes = {}) {
       }
       document.head.append(service);
       await service.readyPromise;
+
+      // Polyfill for older commerce service versions that don't have prefillWcsCache
+      if (typeof service.prefillWcsCache !== 'function') {
+        service.prefillWcsCache = () => {
+          log?.warn('prefillWcsCache not available in this version of commerce service');
+        };
+      }
+
       service.imsSignedInPromise?.then((isSignedIn) => {
         if (isSignedIn) fetchEntitlements();
       });
