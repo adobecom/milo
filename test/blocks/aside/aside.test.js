@@ -184,7 +184,7 @@ describe('aside', () => {
     it('should show element if image is not loaded successfully', async () => {
       const el = await waitForElement('#test-notification-small');
       el.style.visibility = 'hidden';
-      const img = el.querySelector('img');
+      const img = el.querySelector('img:not(.video-icon)');
       expect(img.complete).to.equal(false);
       handleImageLoad(el, img);
       expect(el.style.visibility).to.equal('hidden');
