@@ -326,12 +326,12 @@ export function getMasBase(hostname, maslibs) {
 }
 
 /**
- * Gets the base URL for loading web components based on masLibs parameter
- * @returns {string|null} Base URL for web components or null if masLibs not present
+ * Gets the base URL for loading web components based on maslibs parameter
+ * @returns {string|null} Base URL for web components or null if maslibs not present
  */
 export function getMasLibs() {
   const urlParams = new URLSearchParams(window.location.search);
-  const masLibs = urlParams.get('masLibs');
+  const masLibs = urlParams.get('maslibs');
 
   if (!masLibs) return null;
 
@@ -348,18 +348,60 @@ export function getMasLibs() {
 }
 
 /**
+ * Cache for failed external loads to avoid repeated attempts
+ */
+const failedExternalLoads = new Set();
+
+/**
+ * Components that depend on lit-all.min.js and should always load locally
+ * to avoid cross-origin dependency issues
+ */
+const LIT_DEPENDENT_COMPONENTS = new Set([
+  MAS_MERCH_CARD,
+  MAS_MERCH_CARD_COLLECTION,
+  MAS_MERCH_OFFER_SELECT,
+  MAS_MERCH_QUANTITY_SELECT,
+  MAS_MERCH_SECURE_TRANSACTION,
+  MAS_MERCH_WHATS_INCLUDED,
+  MAS_MERCH_MNEMONIC_LIST,
+  'merch-icon',
+  'merch-stock',
+  'merch-offer'
+]);
+
+/**
  * Loads a MAS component either from external URL (if masLibs present) or local deps
  * @param {string} componentName - Name of the component to load (e.g., 'commerce', 'merch-card')
  * @returns {Promise} Promise that resolves when component is loaded
  */
 export async function loadMasComponent(componentName) {
   const masLibsBase = getMasLibs();
+  
   if (masLibsBase) {
-    try {
-      const scriptLoader = window.loadScript || loadScript;
-      return await scriptLoader(`${masLibsBase}/${componentName}.js`);
-    } catch (error) {
+    console.log(`Loading ${componentName}, is lit-dependent: ${LIT_DEPENDENT_COMPONENTS.has(componentName)}`);
+  }
+  
+  // Always load lit-dependent components locally to avoid dependency issues
+  if (masLibsBase && !LIT_DEPENDENT_COMPONENTS.has(componentName)) {
+    const externalUrl = `${masLibsBase}/${componentName}.js`;
+
+    if (failedExternalLoads.has(externalUrl)) {
       return import(`../../deps/mas/${componentName}.js`);
+    }
+
+    try {
+      // External components need to be loaded as ES modules
+      return await import(externalUrl);
+    } catch (error) {
+      // Mark this URL as failed to avoid future attempts
+      failedExternalLoads.add(externalUrl);
+
+      try {
+        return await import(`../../deps/mas/${componentName}.js`);
+      } catch (fallbackError) {
+        console.error(`Failed to load ${componentName} from both external and local sources:`, fallbackError);
+        throw fallbackError;
+      }
     }
   } else {
     return import(`../../deps/mas/${componentName}.js`);
@@ -764,7 +806,10 @@ export async function initService(force = false, attributes = {}) {
       if (miloEnv?.name !== 'prod') {
         service.setAttribute('allow-override', '');
       }
-      service.registerCheckoutAction(getCheckoutAction);
+      // Register checkout action if method exists (for backward compatibility)
+      if (typeof service.registerCheckoutAction === 'function') {
+        service.registerCheckoutAction(getCheckoutAction);
+      }
       document.head.append(service);
       await service.readyPromise;
       service.imsSignedInPromise?.then((isSignedIn) => {
