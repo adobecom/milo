@@ -314,4 +314,53 @@ describe('buildCheckoutUrl', () => {
     const parsedUrl = new URL(url);
     expect(parsedUrl.searchParams.has('ot')).to.be.false;
   });
+
+  it('should add af parameter when landscape is DRAFT', () => {
+    const checkoutData = {
+      env: PROVIDER_ENVIRONMENT.PRODUCTION,
+      workflowStep: CheckoutWorkflowStep.SEGMENTATION,
+      clientId: 'testClient',
+      country: 'US',
+      items: [{ quantity: 1 }],
+      landscape: 'DRAFT'
+    };
+    const url = buildCheckoutUrl(checkoutData);
+    const parsedUrl = new URL(url);
+    expect(parsedUrl.searchParams.get('af')).to.equal('p_draft_landscape');
+  });
+
+  it('should set af parameter with 3-in-1 values when landscape is not defined', () => {
+    const checkoutData = {
+      env: PROVIDER_ENVIRONMENT.PRODUCTION,
+      workflowStep: CheckoutWorkflowStep.SEGMENTATION,
+      clientId: 'testClient',
+      country: 'US',
+      items: [{ quantity: 1 }],
+      modal: 'twp',
+      is3in1: true,
+      customerSegment: 'INDIVIDUAL',
+      marketSegment: 'EDU',
+    };
+    const url = buildCheckoutUrl(checkoutData);
+    const parsedUrl = new URL(url);
+    expect(parsedUrl.searchParams.get('af')).to.equal('uc_new_user_iframe,uc_new_system_close');
+  });
+  
+  it('should append 3-in-1 af values to existing draft landscape af parameter', () => {
+    const checkoutData = {
+      env: PROVIDER_ENVIRONMENT.PRODUCTION,
+      workflowStep: CheckoutWorkflowStep.SEGMENTATION,
+      clientId: 'testClient',
+      country: 'US',
+      items: [{ quantity: 1 }],
+      landscape: 'DRAFT',
+      modal: 'twp',
+      is3in1: true,
+      customerSegment: 'INDIVIDUAL',
+      marketSegment: 'EDU'
+    };
+    const url = buildCheckoutUrl(checkoutData);
+    const parsedUrl = new URL(url);
+    expect(parsedUrl.searchParams.get('af')).to.equal('p_draft_landscape,uc_new_user_iframe,uc_new_system_close');
+  });
 });
