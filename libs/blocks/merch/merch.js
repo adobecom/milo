@@ -1,6 +1,6 @@
 import {
   createTag, getConfig, loadArea, loadScript, loadStyle, localizeLink, SLD, getMetadata,
-  loadLink, shouldAllowKrTrial, decorateLinks, loadBlock,
+  loadLink, shouldAllowKrTrial, decorateLinks,
 } from '../../utils/utils.js';
 import { replaceKey } from '../../features/placeholders.js';
 
@@ -953,6 +953,6 @@ export function localizePreviewLinks(el) {
 
 export function postProcessAutoblock(autoblockEl) {
   decorateLinks(autoblockEl);
-  localizePreviewLinks(autoblockEl);
-  autoblockEl.querySelectorAll('.modal.link-block').forEach((blockEl) => loadBlock(blockEl));
+  // localizePreviewLinks(autoblockEl);
+  // autoblockEl.querySelectorAll('.modal.link-block').forEach((blockEl) => loadBlock(blockEl));
 }
