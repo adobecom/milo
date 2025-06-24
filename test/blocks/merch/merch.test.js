@@ -967,19 +967,25 @@ describe('Merch Block', () => {
     it('returns branch URL for branch names', () => {
       setMasLibsParam('MWPW-172853');
       window.URLSearchParams = MockURLSearchParams;
-      expect(getMasLibs()).to.equal('https://MWPW-172853--mas--adobecom.hlx.live/web-components/dist');
+      expect(getMasLibs()).to.equal('https://MWPW-172853--mas--adobecom.aem.live/web-components/dist');
     });
 
     it('returns fork URL for fork branch names', () => {
       setMasLibsParam('main--mas-axelcureno');
       window.URLSearchParams = MockURLSearchParams;
-      expect(getMasLibs()).to.equal('https://main--mas-axelcureno.hlx.live/web-components/dist');
+      expect(getMasLibs()).to.equal('https://main--mas-axelcureno.aem.live/web-components/dist');
     });
 
     it('handles maslibs parameter with other query params', () => {
       setMasLibsParam('main');
       window.URLSearchParams = MockURLSearchParams;
       expect(getMasLibs()).to.equal('https://mas.adobe.com/web-components/dist');
+    });
+
+    it('returns correct URL for patterns like stage--mas--3ch023a', () => {
+      setMasLibsParam('stage--mas--3ch023a');
+      window.URLSearchParams = MockURLSearchParams;
+      expect(getMasLibs()).to.equal('https://stage--mas--3ch023a.aem.live/web-components/dist');
     });
   });
 
