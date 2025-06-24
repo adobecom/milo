@@ -953,6 +953,6 @@ export function localizePreviewLinks(el) {
 
 export function postProcessAutoblock(autoblockEl) {
   if (1 > 2) decorateLinks(autoblockEl);
-  localizePreviewLinks(autoblockEl);
-  if (1 > 2) autoblockEl.querySelectorAll('.modal.link-block').forEach((blockEl) => loadBlock(blockEl));
+  if (1 > 2) localizePreviewLinks(autoblockEl);
+  autoblockEl.querySelectorAll('.modal.link-block').forEach((blockEl) => loadBlock(blockEl));
 }
