@@ -302,9 +302,11 @@ export function handlePause(event) {
   if (event.type === 'blur') {
     video.pause();
   } else if (video.paused || video.ended || event.type === 'focus') {
-    video.play().catch((err) => {
-      if (err.name !== 'AbortError') { throw err; }
-    });
+    if (video.readyState > 1) {
+      video.play().catch((err) => {
+        if (err.name !== 'AbortError') { throw err; }
+      });
+    }
   } else {
     video.pause();
   }
