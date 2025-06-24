@@ -948,6 +948,11 @@ export function decorateLinks(el) {
       a.setAttribute('target', '_blank');
       a.href = a.href.replace('#_blank', '');
     }
+    if (a.href.includes('#_alloy')) {
+      import('../martech/alloy-links.js').then(({ default: processAlloyLink }) => {
+        processAlloyLink(a);
+      });
+    }
     if (a.href.includes('#_nofollow')) {
       a.setAttribute('rel', 'nofollow');
       a.href = a.href.replace('#_nofollow', '');
