@@ -34,6 +34,42 @@ const createTab = (content, tabName) => {
   return topDiv;
 };
 
+const [handleOverflow, removeOverflow] = (() => {
+  let geoModal = null;
+  let resizeObserver = null;
+
+  const calcOverflow = () => {
+    if (!geoModal) return;
+    const isOverflowing = geoModal.scrollHeight > geoModal.clientHeight;
+    geoModal.style.overflow = isOverflowing ? 'auto' : 'visible';
+  };
+
+  return [
+    (container) => {
+      if (!container) return;
+      geoModal = container;
+
+      requestAnimationFrame(() => {
+        calcOverflow();
+      });
+
+      resizeObserver = new ResizeObserver(() => {
+        calcOverflow();
+      });
+      resizeObserver.observe(geoModal);
+
+      window.addEventListener('milo:modal:closed', removeOverflow);
+    },
+    () => {
+      if (!geoModal) return;
+      geoModal.removeAttribute('style');
+      if (resizeObserver) resizeObserver.disconnect();
+      geoModal = null;
+      window.removeEventListener('milo:modal:closed', removeOverflow);
+    },
+  ];
+})();
+
 export const getCookie = (name) => document.cookie
   .split('; ')
   .find((row) => row.startsWith(`${name}=`))
@@ -270,43 +306,6 @@ async function showModal(details) {
   sendAnalyticsFunc = sendAnalytics;
   return getModal(null, { class: 'locale-modal-v2', id: 'locale-modal-v2', content: details, closeEvent: 'closeModal' });
 }
-
-const [handleOverflow, removeOverflow] = (() => {
-  let geoModal = null;
-  let resizeObserver = null;
-
-  const calcOverflow = () => {
-    if (!geoModal) return;
-    const isOverflowing = geoModal.scrollHeight > geoModal.clientHeight;
-    geoModal.style.overflow = isOverflowing ? 'auto' : 'visible';
-  };
-
-  return [
-    (container) => {
-      if (!container) return;
-      geoModal = container;
-
-      requestAnimationFrame(() => {
-        calcOverflow();
-      });
-
-      resizeObserver = new ResizeObserver(() => {
-        calcOverflow();
-      });
-      resizeObserver.observe(geoModal);
-
-      window.addEventListener('milo:modal:closed', removeOverflow);
-    },
-    () => {
-      if (!geoModal) return;
-      geoModal.removeAttribute('style');
-      if (resizeObserver) resizeObserver.disconnect();
-      geoModal = null;
-      window.removeEventListener('milo:modal:closed', removeOverflow);
-    },
-  ];
-})();
-
 
 export default async function loadGeoRouting(
   conf,
