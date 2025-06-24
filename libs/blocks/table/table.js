@@ -545,11 +545,11 @@ function applyStylesBasedOnScreenSize(table, originTable) {
         const firstFilterCol = row.querySelector(`.col-${filters[0] + 1}`);
         const secondFilterCol = row.querySelector(`.col-${filters[1] + 1}`);
 
-        if (firstFilterCol && firstFilterCol.classList.contains('col-heading')) {
+        if (firstFilterCol?.classList.contains('col-heading')) {
           firstFilterCol.classList.remove('right-round');
           firstFilterCol.classList.add('left-round');
         }
-        if (secondFilterCol && secondFilterCol.classList.contains('col-heading')) {
+        if (secondFilterCol?.classList.contains('col-heading')) {
           secondFilterCol.classList.remove('left-round');
           secondFilterCol.classList.add('force-last', 'right-round');
         }
