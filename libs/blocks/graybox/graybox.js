@@ -322,7 +322,10 @@ const createGrayboxMenu = (options, { isOpen = false } = {}) => {
 
 const addPageOverlayDiv = () => {
   const overlayDiv = createTag('div', { class: CLASS.PAGE_OVERLAY });
-  document.body.insertBefore(overlayDiv, document.body.firstChild);
+  const main = document.querySelector('main');
+  if (main) {
+    main.insertBefore(overlayDiv, main.firstChild);
+  }
 };
 
 const setupChangedEls = (globalNoClick) => {
