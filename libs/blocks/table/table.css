@@ -663,23 +663,13 @@
   .table.merch {
     margin: 0 30px;
   }
-
-  .table .left-round {
-    border-top-left-radius: var(--border-radius);
-    border-top-right-radius: 0;
-  }
   
-  .table .right-round {
+  .table .right-round, [dir="rtl"] .table .left-round {
     border-top-right-radius: var(--border-radius);
     border-top-left-radius: 0;
   }
   
-  [dir="rtl"] .table .left-round {
-    border-top-right-radius: var(--border-radius);
-    border-top-left-radius: 0;
-  }
-  
-  [dir="rtl"] .table .right-round {
+  .table .left-round, [dir="rtl"] .table .right-round {
     border-top-left-radius: var(--border-radius);
     border-top-right-radius: 0;
   }
