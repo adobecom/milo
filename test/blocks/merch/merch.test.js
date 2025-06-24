@@ -1005,8 +1005,7 @@ describe('Merch Block', () => {
       } catch (e) {
         // Expected to fail in test environment due to dynamic import
       }
-      
-      // No external loading should happen when maslibs is null
+
       expect(getMasLibs()).to.be.null;
     });
 

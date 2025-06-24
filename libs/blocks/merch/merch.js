@@ -369,7 +369,7 @@ const LIT_DEPENDENT_COMPONENTS = new Set([
   MAS_MERCH_MNEMONIC_LIST,
   'merch-icon',
   'merch-stock',
-  'merch-offer'
+  'merch-offer',
 ]);
 
 /**
@@ -379,10 +379,6 @@ const LIT_DEPENDENT_COMPONENTS = new Set([
  */
 export async function loadMasComponent(componentName) {
   const masLibsBase = getMasLibs();
-
-  if (masLibsBase) {
-    console.log(`Loading ${componentName}, is lit-dependent: ${LIT_DEPENDENT_COMPONENTS.has(componentName)}`);
-  }
 
   // Always load lit-dependent components locally to avoid dependency issues
   if (masLibsBase && !LIT_DEPENDENT_COMPONENTS.has(componentName)) {
@@ -402,7 +398,7 @@ export async function loadMasComponent(componentName) {
       try {
         return await import(`../../deps/mas/${componentName}.js`);
       } catch (fallbackError) {
-        console.error(`Failed to load ${componentName} from both external and local sources:`, fallbackError);
+        log?.error(`Failed to load ${componentName} from both external and local sources:`, fallbackError);
         throw fallbackError;
       }
     }
