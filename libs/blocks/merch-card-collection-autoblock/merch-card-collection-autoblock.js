@@ -1,5 +1,5 @@
-import { createTag, getConfig, decorateLinks } from '../../utils/utils.js';
-import { initService, getOptions, MEP_SELECTOR, overrideOptions, localizePreviewLinks } from '../merch/merch.js';
+import { createTag, getConfig } from '../../utils/utils.js';
+import { initService, getOptions, MEP_SELECTOR, overrideOptions, postProcessAutoblock } from '../merch/merch.js';
 import '../../deps/mas/merch-card.js';
 import '../../deps/mas/merch-quantity-select.js';
 
@@ -154,8 +154,7 @@ export async function createCollection(el, options) {
     }
   }
 
-  decorateLinks(collection);
-  localizePreviewLinks(collection);
+  postProcessAutoblock(collection);
   collection.requestUpdate();
 }
 
