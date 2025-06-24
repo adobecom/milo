@@ -120,6 +120,7 @@ function decorateForOnLinkClick(link, urlPrefix, localePrefix, eventType = 'Swit
       || window.location.host.endsWith('.adobe.com') ? 'domain=adobe.com' : '';
     document.cookie = `international=${modPrefix};path=/;${domain}`;
     link.closest('.dialog-modal').dispatchEvent(new Event('closeModal'));
+    removeOverflow();
   });
 }
 
@@ -270,6 +271,43 @@ async function showModal(details) {
   return getModal(null, { class: 'locale-modal-v2', id: 'locale-modal-v2', content: details, closeEvent: 'closeModal' });
 }
 
+const [handleOverflow, removeOverflow] = (() => {
+  let geoModal = null;
+  let resizeObserver = null;
+
+  const calcOverflow = () => {
+    if (!geoModal) return;
+    const isOverflowing = geoModal.scrollHeight > geoModal.clientHeight;
+    geoModal.style.overflow = isOverflowing ? 'auto' : 'visible';
+  };
+
+  return [
+    (container) => {
+      if (!container) return;
+      geoModal = container;
+
+      requestAnimationFrame(() => {
+        calcOverflow();
+      });
+
+      resizeObserver = new ResizeObserver(() => {
+        calcOverflow();
+      });
+      resizeObserver.observe(geoModal);
+
+      window.addEventListener('milo:modal:closed', removeOverflow);
+    },
+    () => {
+      if (!geoModal) return;
+      geoModal.removeAttribute('style');
+      if (resizeObserver) resizeObserver.disconnect();
+      geoModal = null;
+      window.removeEventListener('milo:modal:closed', removeOverflow);
+    },
+  ];
+})();
+
+
 export default async function loadGeoRouting(
   conf,
   createTagFunc,
@@ -324,6 +362,7 @@ export default async function loadGeoRouting(
       const details = await getDetails(urlGeoData, localeMatches, json.geos.data);
       if (details) {
         await showModal(details);
+        handleOverflow(document.querySelector('.dialog-modal.locale-modal-v2'));
         sendAnalyticsFunc(
           new Event(`Load:${storedLocaleGeo || 'us'}-${urlLocaleGeo || 'us'}|Geo_Routing_Modal`),
         );
@@ -340,6 +379,7 @@ export default async function loadGeoRouting(
       const details = await getDetails(urlGeoData, localeMatches, json.geos.data);
       if (details) {
         await showModal(details);
+        handleOverflow(document.querySelector('.dialog-modal.locale-modal-v2'));
         if (akamaiCode === 'gb') akamaiCode = 'uk';
         sendAnalyticsFunc(
           new Event(`Load:${urlLocale || 'us'}-${akamaiCode || 'us'}|Geo_Routing_Modal`),
