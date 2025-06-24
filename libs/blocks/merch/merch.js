@@ -958,7 +958,7 @@ export function postProcessAutoblock(autoblockEl) {
     console.log('post process autoblock - localizePreviewLinks');
     localizePreviewLinks(autoblockEl);
     console.log('post process autoblock - loadBlock');
-    autoblockEl.querySelectorAll('.modal.link-block').forEach(async (blockEl) => await loadBlock(blockEl));
+    autoblockEl.querySelectorAll('.modal.link-block').forEach((blockEl) => loadBlock(blockEl));
     console.log('post process autoblock - end');
   } catch (err) {
     console.log('post process autoblock - error');
