@@ -952,16 +952,7 @@ export function localizePreviewLinks(el) {
 }
 
 export function postProcessAutoblock(autoblockEl) {
-  try {
-    console.log('post process autoblock - decorateLinks');
-    decorateLinks(autoblockEl);
-    console.log('post process autoblock - localizePreviewLinks');
-    localizePreviewLinks(autoblockEl);
-    console.log('post process autoblock - loadBlock');
-    autoblockEl.querySelectorAll('.modal.link-block').forEach((blockEl) => loadBlock(blockEl));
-    console.log('post process autoblock - end');
-  } catch (err) {
-    console.log('post process autoblock - error');
-    console.log(err);
-  }
+  decorateLinks(autoblockEl);
+  localizePreviewLinks(autoblockEl);
+  autoblockEl.querySelectorAll('.modal.link-block').forEach((blockEl) => loadBlock(blockEl));
 }
