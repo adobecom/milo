@@ -341,10 +341,16 @@ export function getMasLibs() {
   if (masLibs === 'main') {
     return 'https://mas.adobe.com/web-components/dist';
   }
-  if (masLibs.includes('--')) {
-    return `https://${masLibs}.hlx.live/web-components/dist`;
+  // Handle patterns like "stage--mas--3ch023a" or "fork-branch--mas--username"
+  if (masLibs.includes('--mas--')) {
+    return `https://${masLibs}.aem.live/web-components/dist`;
   }
-  return `https://${masLibs}--mas--adobecom.hlx.live/web-components/dist`;
+  // Handle other double-dash patterns
+  if (masLibs.includes('--')) {
+    return `https://${masLibs}.aem.live/web-components/dist`;
+  }
+  // Default pattern for branch names
+  return `https://${masLibs}--mas--adobecom.aem.live/web-components/dist`;
 }
 
 /**
