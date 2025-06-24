@@ -1,7 +1,7 @@
 import { createTag, decorateLinks } from '../../utils/utils.js';
 import '../../deps/mas/merch-card.js';
 import '../../deps/mas/merch-quantity-select.js';
-import { initService, getOptions, overrideOptions } from '../merch/merch.js';
+import { initService, getOptions, overrideOptions, localizePreviewLinks } from '../merch/merch.js';
 
 const CARD_AUTOBLOCK_TIMEOUT = 5000;
 let log;
@@ -39,6 +39,7 @@ export async function createCard(el, options) {
   el.replaceWith(merchCard);
   await checkReady(merchCard);
   decorateLinks(merchCard);
+  localizePreviewLinks(merchCard);
 }
 
 export default async function init(el) {
