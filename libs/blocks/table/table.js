@@ -256,6 +256,8 @@ function handleExpand(e) {
 }
 
 function setExpandEvents(el) {
+  if (el.dataset.expandEvents) return; // prevent multiple calls in unit tests
+  el.dataset.expandEvents = 'true';
   el.querySelectorAll('.icon.expand').forEach((icon) => {
     icon.parentElement.classList.add('point-cursor');
     icon.parentElement.addEventListener('click', () => handleExpand(icon));
