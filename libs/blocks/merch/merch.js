@@ -1,6 +1,6 @@
 import {
   createTag, getConfig, loadArea, loadScript, loadStyle, localizeLink, SLD, getMetadata,
-  loadLink, shouldAllowKrTrial, decorateLinks, loadBlock,
+  loadLink, shouldAllowKrTrial,
 } from '../../utils/utils.js';
 import { replaceKey } from '../../features/placeholders.js';
 
@@ -936,32 +936,32 @@ export default async function init(el) {
   return null;
 }
 
-export function localizePreviewLinks(el) {
-  const anchors = el.getElementsByTagName('a');
-  for (const a of anchors) {
-    const { href } = a;
-    if (href?.match(/http[s]?:\/\/\S*\.(hlx|aem).(page|live)\//)) {
-      try {
-        const url = new URL(href);
-        a.href = localizeLink(href, url.hostname);
-      } catch (e) {
-        window.lana?.log(`Invalid URL - ${href}: ${e.toString()}`);
-      }
-    }
-  }
-}
-
-export function postProcessAutoblock(autoblockEl) {
-  try {
-    console.log('post process autoblock - decorateLinks');
-    decorateLinks(autoblockEl);
-    console.log('post process autoblock - localizePreviewLinks');
-    localizePreviewLinks(autoblockEl);
-    console.log('post process autoblock - loadBlock');
-    autoblockEl.querySelectorAll('.modal.link-block').forEach((blockEl) => loadBlock(blockEl));
-    console.log('post process autoblock - end');
-  } catch (err) {
-    console.log('post process autoblock - error');
-    console.log(err);
-  }
-}
+// export function localizePreviewLinks(el) {
+//   const anchors = el.getElementsByTagName('a');
+//   for (const a of anchors) {
+//     const { href } = a;
+//     if (href?.match(/http[s]?:\/\/\S*\.(hlx|aem).(page|live)\//)) {
+//       try {
+//         const url = new URL(href);
+//         a.href = localizeLink(href, url.hostname);
+//       } catch (e) {
+//         window.lana?.log(`Invalid URL - ${href}: ${e.toString()}`);
+//       }
+//     }
+//   }
+// }
+//
+// export function postProcessAutoblock(autoblockEl) {
+//   try {
+//     console.log('post process autoblock - decorateLinks');
+//     decorateLinks(autoblockEl);
+//     console.log('post process autoblock - localizePreviewLinks');
+//     localizePreviewLinks(autoblockEl);
+//     console.log('post process autoblock - loadBlock');
+//     autoblockEl.querySelectorAll('.modal.link-block').forEach((blockEl) => loadBlock(blockEl));
+//     console.log('post process autoblock - end');
+//   } catch (err) {
+//     console.log('post process autoblock - error');
+//     console.log(err);
+//   }
+// }

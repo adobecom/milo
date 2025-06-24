@@ -58,11 +58,11 @@ describe('merch-card-autoblock autoblock', () => {
     });
 
     it('creates card', async () => {
-      const config = {
-        codeRoot: '/libs',
-        autoBlocks: [{ }],
-      };
-      setConfig(config);
+      // const config = {
+      //   codeRoot: '/libs',
+      //   autoBlocks: [{ }],
+      // };
+      // setConfig(config);
       const content = document.createElement('div');
       content.classList.add('content');
       const a = document.createElement('a');
