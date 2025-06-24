@@ -360,8 +360,7 @@ export default async function loadGeoRouting(
       );
       const details = await getDetails(urlGeoData, localeMatches, json.geos.data);
       if (details) {
-        await showModal(details);
-        handleOverflow(document.querySelector('.dialog-modal.locale-modal-v2'));
+        handleOverflow(await showModal(details));
         sendAnalyticsFunc(
           new Event(`Load:${storedLocaleGeo || 'us'}-${urlLocaleGeo || 'us'}|Geo_Routing_Modal`),
         );
@@ -377,8 +376,7 @@ export default async function loadGeoRouting(
       const localeMatches = getMatches(json.georouting.data, akamaiCode);
       const details = await getDetails(urlGeoData, localeMatches, json.geos.data);
       if (details) {
-        await showModal(details);
-        handleOverflow(document.querySelector('.dialog-modal.locale-modal-v2'));
+        handleOverflow(await showModal(details));
         if (akamaiCode === 'gb') akamaiCode = 'uk';
         sendAnalyticsFunc(
           new Event(`Load:${urlLocale || 'us'}-${akamaiCode || 'us'}|Geo_Routing_Modal`),
