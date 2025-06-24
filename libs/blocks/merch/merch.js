@@ -1,6 +1,6 @@
 import {
   createTag, getConfig, loadArea, loadScript, loadStyle, localizeLink, SLD, getMetadata,
-  loadLink,
+  loadLink, shouldAllowKrTrial,
 } from '../../utils/utils.js';
 import { replaceKey } from '../../features/placeholders.js';
 
@@ -152,15 +152,15 @@ const GeoMap = {
   ec: 'EC_es',
   pr: 'US_es', // not a typo, should be US
   gt: 'GT_es',
-  cis_en: 'AZ_en',
-  cis_ru: 'AZ_ru',
+  cis_en: 'TM_en',
+  cis_ru: 'TM_ru',
   sea: 'SG_en',
   th_en: 'TH_en',
   th_th: 'TH_th',
 };
 
 /**
- * Used when 3in1 modals are configured with ms=e or cs=t extra paramter, but 3in1 is disabled.
+ * Used when 3in1 modals are configured with ms=e or cs=t extra parameter, but 3in1 is disabled.
  * Dexter modals should deeplink to plan=edu or plan=team tabs.
  * @type {Record<string, string>}
  */
@@ -663,6 +663,12 @@ export async function getCheckoutAction(offers, options, imsSignedInPromise, el)
   }
 }
 
+export function setPreview(attributes) {
+  const { host } = window.location;
+  if (host.includes(`${SLD}.page`) || host.origin === 'https://www.stage.adobe.com') {
+    attributes.preview = 'on';
+  }
+}
 /**
  * Activates commerce service and returns a promise resolving to its ready-to-use instance.
  */
@@ -696,6 +702,7 @@ export async function initService(force = false, attributes = {}) {
     const { language, locale, country } = getMiloLocaleSettings(miloLocale);
     let service = document.head.querySelector('mas-commerce-service');
     if (!service) {
+      setPreview(attributes);
       service = createTag('mas-commerce-service', {
         locale,
         language,
@@ -748,7 +755,6 @@ export async function getCheckoutContext(el, params) {
   const { settings } = await initService();
   const { checkoutClientId } = settings;
   const checkoutMarketSegment = params.get('marketSegment');
-  const checkoutWorkflow = params.get('workflow') ?? settings.checkoutWorkflow;
   const checkoutWorkflowStep = params?.get('workflowStep') ?? settings.checkoutWorkflowStep;
   const entitlement = params?.get('entitlement');
   const upgrade = params?.get('upgrade');
@@ -764,7 +770,6 @@ export async function getCheckoutContext(el, params) {
   return {
     ...context,
     checkoutClientId,
-    checkoutWorkflow,
     checkoutWorkflowStep,
     checkoutMarketSegment,
     entitlement,
@@ -842,25 +847,40 @@ export async function buildCta(el, params) {
     });
   }
 
-  // Adding aria-label for checkout-link using productFamily and customerSegment as placeholder key.
+  // Adding aria-label for checkout-link using productCode and customerSegment as placeholder key.
   if (el.ariaLabel) {
     // If Milo aria-label available from sharepoint doc, just use it.
     cta.setAttribute('aria-label', el.ariaLabel);
   } else if (!cta.ariaLabel) {
     cta.onceSettled().then(async () => {
-      const productFamily = cta.value[0]?.productArrangement?.productFamily;
+      const productCode = cta.value[0]?.productArrangement?.productCode;
       const { marketSegment, customerSegment } = cta;
       const segment = marketSegment === 'EDU' ? marketSegment : customerSegment;
       let ariaLabel = cta.textContent;
-      ariaLabel = productFamily ? `${ariaLabel} - ${await replaceKey(productFamily, getConfig())}` : ariaLabel;
+      ariaLabel = productCode ? `${ariaLabel} - ${await replaceKey(productCode, getConfig())}` : ariaLabel;
       ariaLabel = segment ? `${ariaLabel} - ${await replaceKey(segment, getConfig())}` : ariaLabel;
       cta.setAttribute('aria-label', ariaLabel);
     });
   }
 
-  // @see https://jira.corp.adobe.com/browse/MWPW-173470
+  if (getMetadata('mas-ff-copy-cta') === 'on') {
+    const { default: addCopyToClipboard } = await import('./copy-to-clipboard.js');
+    return addCopyToClipboard(el, cta);
+  }
+
+  /**
+   * TODO: This code block will be deprecated and removed in a future version.
+   * @see https://jira.corp.adobe.com/browse/MWPW-173470
+   * @see https://jira.corp.adobe.com/browse/MWPW-174411
+  */
   cta.onceSettled().then(() => {
-    if (getConfig()?.locale?.prefix === '/kr' && cta.value[0]?.offerType === OFFER_TYPE_TRIAL) cta.remove();
+    const prefix = getConfig()?.locale?.prefix;
+    if (!(prefix === '/kr' && cta.value[0]?.offerType === OFFER_TYPE_TRIAL)) return;
+    if (shouldAllowKrTrial(el, prefix)) {
+      cta.classList.remove('hidden-osi-trial-link');
+      return;
+    }
+    cta.remove();
   });
 
   return cta;

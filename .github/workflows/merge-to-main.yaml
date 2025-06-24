@@ -36,3 +36,4 @@ jobs:
           script: |
             const main = require('./.github/workflows/merge-to-main.js')
             main({ github, context })
+
