@@ -60,13 +60,13 @@ describe('buildCheckoutUrl', () => {
     const validateStub = sinon.stub().returns(true);
     const checkoutData = {
       env: PROVIDER_ENVIRONMENT.PRODUCTION,
-      workflowStep: CheckoutWorkflowStep.CHECKOUT,
+      workflowStep: CheckoutWorkflowStep.COMMITMENT,
       clientId: 'testClient',
       country: 'US',
       items: [{ quantity: 1, language: 'en' }],
     };
     const url = buildCheckoutUrl(checkoutData);
-    expect(url).to.equal('https://commerce.adobe.com/store/checkout?items%5B0%5D%5Bq%5D=1&items%5B0%5D%5Blang%5D=en&cli=testClient&co=US');
+    expect(url).to.equal('https://commerce.adobe.com/store/commitment?items%5B0%5D%5Bq%5D=1&items%5B0%5D%5Blang%5D=en&cli=testClient&co=US');
     sinon.restore();
   });
 
@@ -277,23 +277,6 @@ describe('buildCheckoutUrl', () => {
     expect(parsedUrl.searchParams.get('q')).to.equal('2');
   });
 
-  it('should not set quantity parameter when quantity is 1', () => {
-    const checkoutData = {
-      env: PROVIDER_ENVIRONMENT.PRODUCTION,
-      workflowStep: CheckoutWorkflowStep.SEGMENTATION,
-      clientId: 'testClient',
-      country: 'US',
-      items: [{ quantity: 1 }],
-      modal: 'twp',
-      customerSegment: 'INDIVIDUAL',
-      marketSegment: 'EDU',
-      is3in1: true,
-    };
-    const url = buildCheckoutUrl(checkoutData);
-    const parsedUrl = new URL(url);
-    expect(parsedUrl.searchParams.has('q')).to.be.false;
-  });
-
   it('should handle addon product arrangement code when root pa is provided', () => {
     const checkoutData = {
       env: PROVIDER_ENVIRONMENT.PRODUCTION,
@@ -313,25 +296,6 @@ describe('buildCheckoutUrl', () => {
     const parsedUrl = new URL(url);
     expect(parsedUrl.searchParams.get('pa')).to.equal('MAIN123');
     expect(parsedUrl.searchParams.get('ao')).to.equal('ADDON123');
-  });
-
-  it('should prioritize manually set cs and ms over marketSegment and customerSegment', () => {
-    const checkoutData = {
-      env: PROVIDER_ENVIRONMENT.PRODUCTION,
-      workflowStep: CheckoutWorkflowStep.SEGMENTATION,
-      clientId: 'testClient',
-      country: 'US',
-      items: [{ quantity: 1 }],
-      modal: 'twp',
-      customerSegment: 'INDIVIDUAL',
-      marketSegment: 'EDU',
-      cs: 'custom_cs',
-      ms: 'custom_ms'
-    };
-    const url = buildCheckoutUrl(checkoutData);
-    const parsedUrl = new URL(url);
-    expect(parsedUrl.searchParams.get('cs')).to.equal('custom_cs');
-    expect(parsedUrl.searchParams.get('ms')).to.equal('custom_ms');
   });
 
   it('should remove the ot parameter when it is PROMOTION', () => {

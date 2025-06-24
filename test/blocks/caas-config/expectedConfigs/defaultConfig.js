@@ -20,6 +20,7 @@ const defaultConfig = {
     i18n: {
       cardTitleAccessibilityLevel: 6,
       lastModified: 'Last modified {date}',
+      playVideo: 'Play, {cardTitle}',
       prettyDateIntervalFormat: '{ddd}, {LLL} {dd} | {timeRange} {timeZone}',
       totalResultsText: '{total} results',
       title: '',

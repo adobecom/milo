@@ -101,6 +101,9 @@ const {
   getBranchBannerInfo,
   loaderMegaMenu,
   logPerformance,
+  setAriaAtributes,
+  addA11YMobileDropdowns,
+  removeA11YMobileDropdowns,
   getUnavWidthCSS,
 } = utilities;
 
@@ -396,11 +399,22 @@ export const getUniversalNavLocale = (locale) => {
   return `${prefix.toLowerCase()}_${prefix.toUpperCase()}`;
 };
 
+const [disableAriaHidden, enableAriaHidden] = (() => {
+  const targets = ['#branch-banner-iframe', '.feds-promo-aside-wrapper', '.feds-localnav', 'main', 'footer'];
+  return [
+    () => {
+      targets.forEach((ele) => document.querySelector(ele)?.removeAttribute('aria-hidden'));
+    },
+    (isExpanded) => {
+      targets.forEach((ele) => document.querySelector(ele)?.setAttribute('aria-hidden', !isExpanded));
+    }];
+})();
+
 const setMenuState = () => {
   const toggle = document.querySelector('.feds-toggle');
   const navWrapper = document.querySelector('.feds-nav-wrapper');
   const isExpanded = toggle?.getAttribute('aria-expanded') === 'true';
-  ['main', 'footer'].forEach((ele) => document.querySelector(ele)?.setAttribute('aria-hidden', !isExpanded));
+  enableAriaHidden(isExpanded);
   toggle?.setAttribute('aria-expanded', !isExpanded);
   document.body.classList.toggle('disable-scroll', !isExpanded);
   navWrapper?.classList?.toggle('feds-nav-wrapper--expanded', !isExpanded);
@@ -550,7 +564,7 @@ class Gnav {
       return;
     }
     const localNavItems = this.elements.navWrapper.querySelector('.feds-nav').querySelectorAll('.feds-navItem:not(.feds-navItem--section, .feds-navItem--mobile-only)');
-    const firstElem = localNavItems[0]?.querySelector('a') || localNavItems[0]?.querySelector('button');
+    const firstElem = localNavItems?.[0]?.querySelector('a, button') || localNavItems?.[0];
     if (!firstElem) {
       lanaLog({ message: 'GNAV: Incorrect authoring of localnav found.', tags: 'gnav', errorType: 'i' });
       return;
@@ -588,7 +602,7 @@ class Gnav {
     const titleLabel = await replaceKey('overview', getFedsPlaceholderConfig());
     localNavItems.forEach((elem, idx) => {
       const clonedItem = elem.cloneNode(true);
-      const link = clonedItem.querySelector('a, button');
+      const link = clonedItem.querySelector('a, button') || clonedItem;
 
       if (link) {
         link.dataset.title = link.textContent;
@@ -947,25 +961,11 @@ class Gnav {
     await window.UniversalNav(CONFIG.universalNav.universalNavConfig);
     // In case we get it wrong
     if (!signedOut) this.blocks.universalNav?.style.removeProperty('min-width');
-    const fedsPromo = document.querySelector('.feds-promo-aside-wrapper');
-    const container = document.querySelector('.feds-utilities');
-    const hasAppSwitcher = this.universalNavComponents.includes('appswitcher');
-    const updatePromoZIndex = () => {
-      const isOpen = container.querySelector('.unav-comp-app-switcher-open');
-      fedsPromo.style.zIndex = isOpen ? 0 : 11;
-    };
-    // Ensure promo appears behind appswitcher on mobile
-    if (fedsPromo && hasAppSwitcher && !isDesktop.matches) {
-      new MutationObserver(updatePromoZIndex)
-        .observe(container, { childList: true, subtree: true, attributes: true, attributeFilter: ['class'] });
-      updatePromoZIndex();
-    }
     performance.mark('Unav-End');
     logPerformance('Unav-Time', 'Unav-Start', 'Unav-End');
     this.decorateAppPrompt({ getAnchorState: () => window.UniversalNav.getComponent?.('app-switcher') });
     isDesktop.addEventListener('change', () => {
       window.UniversalNav.reload(getConfiguration());
-      if (fedsPromo) updatePromoZIndex();
     });
   };
 
@@ -1013,7 +1013,13 @@ class Gnav {
 
   isToggleExpanded = () => this.elements.mobileToggle?.getAttribute('aria-expanded') === 'true';
 
-  isLocalNav = () => this.newMobileNav && this
+  isEmptyGnav = () => this
+    .elements
+    .navWrapper
+    ?.querySelector('.feds-nav')
+    ?.childElementCount === 0;
+
+  isLocalNav = () => this.newMobileNav && !this.isEmptyGnav() && this
     .elements
     .navWrapper
     ?.querySelectorAll('.feds-nav > section.feds-navItem')
@@ -1044,13 +1050,15 @@ class Gnav {
   decorateToggle = () => {
     if (!this.mainNavItemCount || (this.newMobileNav && !this.hasMegaMenu())) return '';
 
+    const isLocalNav = this.isLocalNav();
+
     const toggle = toFragment`<button
       class="feds-toggle"
       daa-ll="hamburgermenu|open"
       aria-expanded="false"
-      aria-haspopup="true"
+      aria-haspopup=${isLocalNav ? 'dialog' : 'true'}
       aria-label="Navigation menu"
-      aria-controls="feds-nav-wrapper"
+      aria-controls=${isLocalNav ? 'feds-popup-1' : 'feds-nav-wrapper'}
       data-feds-preventAutoClose>
       </button>`;
 
@@ -1315,7 +1323,10 @@ class Gnav {
         selectTab.setAttribute('daa-ll', `${daallTab?.replace('click', 'open')}`);
         selectTab?.click();
         selectTab.setAttribute('daa-ll', `${daallTab?.replace('open', 'click')}`);
-        selectTab?.focus();
+        const title = popup.querySelector('.title h2');
+        title?.setAttribute('tabindex', '-1'); // Make title focusable
+        title?.focus();
+        addA11YMobileDropdowns(this.elements.topnav, popup.previousElementSibling);
       }, 100);
     };
 
@@ -1428,6 +1439,8 @@ class Gnav {
             if (isDesktop.matches) {
               newPopup.innerHTML = desktopMegaMenuHTML ?? loadingDesktopMegaMenuHTML;
               this.block.classList.remove('new-nav');
+              disableAriaHidden();
+              removeA11YMobileDropdowns();
             } else {
               mobileNavCleanup();
               mobileNavCleanup = await transformTemplateToMobile({
@@ -1493,6 +1506,8 @@ class Gnav {
             trigger({ element: dropdownTrigger, event: e, type: 'dropdown' });
             setActiveDropdown(dropdownTrigger);
           });
+          // Set aria attributes
+          isDesktop.addEventListener('change', () => setAriaAtributes(dropdownTrigger));
 
           // Update analytics value when dropdown is expanded/collapsed
           observeDropdown(dropdownTrigger);

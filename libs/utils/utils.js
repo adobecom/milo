@@ -423,10 +423,37 @@ export const getFedsPlaceholderConfig = ({ useCache = true } = {}) => {
   return fedsPlaceholderConfig;
 };
 
+/**
+ * TODO: This method will be deprecated and removed in a future version.
+ * @see https://jira.corp.adobe.com/browse/MWPW-173470
+ * @see https://jira.corp.adobe.com/browse/MWPW-174411
+*/
+export const shouldAllowKrTrial = (button, localePrefix) => {
+  const allowKrTrialHash = '#_allow-kr-trial';
+  const hasAllowKrTrial = button.href?.includes(allowKrTrialHash);
+  if (hasAllowKrTrial) {
+    button.href = button.href.replace(allowKrTrialHash, '');
+    const modalHash = button.getAttribute('data-modal-hash');
+    if (modalHash) button.setAttribute('data-modal-hash', modalHash.replace(allowKrTrialHash, ''));
+  }
+  return localePrefix === '/kr' && hasAllowKrTrial;
+};
+
+/**
+ * TODO: This method will be deprecated and removed in a future version.
+ * @see https://jira.corp.adobe.com/browse/MWPW-173470
+ * @see https://jira.corp.adobe.com/browse/MWPW-174411
+*/
 export const shouldBlockFreeTrialLinks = ({ button, localePrefix, parent }) => {
-  if (localePrefix !== '/kr' || (!button.dataset?.modalPath?.includes('/kr/cc-shared/fragments/trial-modals')
-    && !['free-trial', 'free trial', '무료 체험판', '무료 체험하기', '{{try-for-free}}']
-      .some((pattern) => button.textContent?.toLowerCase()?.includes(pattern.toLowerCase())))) {
+  if (shouldAllowKrTrial(button, localePrefix) || localePrefix !== '/kr'
+      || (!button.dataset?.modalPath?.includes('/kr/cc-shared/fragments/trial-modals')
+       && !['free-trial', 'free trial', '무료 체험판', '무료 체험하기', '{{try-for-free}}']
+         .some((pattern) => button.textContent?.toLowerCase()?.includes(pattern.toLowerCase())))) {
+    return false;
+  }
+
+  if (button.dataset.wcsOsi) {
+    button.classList.add('hidden-osi-trial-link');
     return false;
   }
 
@@ -921,6 +948,11 @@ export function decorateLinks(el) {
       a.setAttribute('target', '_blank');
       a.href = a.href.replace('#_blank', '');
     }
+    if (a.href.includes('#_alloy')) {
+      import('../martech/alloy-links.js').then(({ default: processAlloyLink }) => {
+        processAlloyLink(a);
+      });
+    }
     if (a.href.includes('#_nofollow')) {
       a.setAttribute('rel', 'nofollow');
       a.href = a.href.replace('#_nofollow', '');
@@ -1372,7 +1404,7 @@ async function checkForPageMods() {
   const target = martech === 'off' ? false : getMepEnablement('target');
   const xlg = martech === 'off' ? false : getMepEnablement('xlg');
   const ajo = martech === 'off' ? false : getMepEnablement('ajo');
-  const mepgeolocation = martech === 'off' ? false : getMepEnablement('mepgeolocation');
+  const mepgeolocation = getMepEnablement('mepgeolocation');
 
   if (!(pzn || pznroc || target || promo || mepParam
     || mepHighlight || mepButton || mepParam === '' || xlg || ajo)) return;

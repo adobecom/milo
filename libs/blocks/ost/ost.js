@@ -61,11 +61,8 @@ export const createLinkMarkup = (
     if (offer.commitment === 'PERPETUAL') params.set('perp', true);
 
     if (isCta) {
-      const { workflow, workflowStep } = options;
+      const { workflowStep } = options;
       params.set('text', options.ctaText ?? DEFAULT_CTA_TEXT);
-      if (workflow && workflow !== defaults.checkoutWorkflow) {
-        params.set('workflow', workflow);
-      }
       if (workflowStep && workflowStep !== defaults.checkoutWorkflowStep) {
         params.set('workflowStep', workflowStep);
       }
@@ -96,7 +93,7 @@ export const createLinkMarkup = (
 
 export async function loadOstEnv() {
   /* c8 ignore next */
-  const { Log, Defaults } = await import('../../deps/mas/commerce.js');
+  const { Log, Defaults, resolvePriceTaxFlags } = await import('../../deps/mas/commerce.js');
   const { getMiloLocaleSettings } = await import('../merch/merch.js');
 
   const searchParameters = new URLSearchParams(window.location.search);
@@ -233,6 +230,7 @@ export async function loadOstEnv() {
     defaultPlaceholderOptions,
     wcsApiKey: WCS_API_KEY,
     ctaTextOption,
+    resolvePriceTaxFlags,
   };
 }
 
