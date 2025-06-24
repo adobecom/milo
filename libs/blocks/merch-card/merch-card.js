@@ -611,7 +611,6 @@ export default async function init(el) {
   }
 
   await Promise.all([...componentPromises, initService()]);
-  // TODO: Remove after bugfix PR adobe/helix-html2md#556 is merged
   const liELs = el.querySelectorAll('ul li');
   if (liELs) {
     [...liELs].forEach((liEl) => {
@@ -623,7 +622,6 @@ export default async function init(el) {
       });
     });
   }
-  // TODO: Remove after bugfix PR adobe/helix-html2md#556 is merged
   if (!styles.includes(cardType)) {
     styles.push(cardType);
   }
