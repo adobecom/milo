@@ -4,6 +4,17 @@ import {
 } from '../../utils/utils.js';
 import { replaceKey } from '../../features/placeholders.js';
 
+// MAS Component Names
+export const MAS_COMMERCE_SERVICE = 'commerce';
+export const MAS_MERCH_CARD = 'merch-card';
+export const MAS_MERCH_CARD_COLLECTION = 'merch-card-collection';
+export const MAS_MERCH_MNEMONIC_LIST = 'merch-mnemonic-list';
+export const MAS_MERCH_OFFER_SELECT = 'merch-offer-select';
+export const MAS_MERCH_QUANTITY_SELECT = 'merch-quantity-select';
+export const MAS_MERCH_SECURE_TRANSACTION = 'merch-secure-transaction';
+export const MAS_MERCH_SIDENAV = 'merch-sidenav';
+export const MAS_MERCH_WHATS_INCLUDED = 'merch-whats-included';
+
 export const CHECKOUT_LINK_CONFIG_PATH = '/commerce/checkout-link.json'; // relative to libs.
 export const CHECKOUT_LINK_SANDBOX_CONFIG_PATH = '/commerce/checkout-link-sandbox.json'; // relative to libs.
 
@@ -312,6 +323,55 @@ export function getMasBase(hostname, maslibs) {
     getMasBase.baseUrl = baseUrl;
   }
   return baseUrl;
+}
+
+/**
+ * Gets the base URL for loading web components based on masLibs parameter
+ * @returns {string|null} Base URL for web components or null if masLibs not present
+ */
+export function getMasLibs() {
+  const urlParams = new URLSearchParams(window.location.search);
+  const masLibs = urlParams.get('masLibs');
+
+  if (!masLibs) return null;
+
+  if (masLibs === 'local') {
+    return 'http://localhost:3030/web-components/dist';
+  }
+  if (masLibs === 'main') {
+    return 'https://mas.adobe.com/web-components/dist';
+  }
+  if (masLibs.includes('--')) {
+    // Fork branch pattern
+    return `https://${masLibs}.hlx.live/web-components/dist`;
+  }
+  // Regular branch pattern
+  return `https://${masLibs}--mas--adobecom.hlx.live/web-components/dist`;
+}
+
+/**
+ * Loads a MAS component either from external URL (if masLibs present) or local deps
+ * @param {string} componentName - Name of the component to load (e.g., 'commerce', 'merch-card')
+ * @returns {Promise} Promise that resolves when component is loaded
+ */
+export async function loadMasComponent(componentName) {
+  const masLibsBase = getMasLibs();
+  if (masLibsBase) {
+    try {
+      // Use window.loadScript for better testability, fallback to imported loadScript
+      const scriptLoader = window.loadScript || loadScript;
+      return await scriptLoader(`${masLibsBase}/${componentName}.js`);
+    } catch (error) {
+      if (log) {
+        log.error(`Failed to load ${componentName} from ${masLibsBase}:`, error);
+      } else {
+        console.error(`Failed to load ${componentName} from ${masLibsBase}:`, error);
+      }
+      return import(`../../deps/mas/${componentName}.js`);
+    }
+  } else {
+    return import(`../../deps/mas/${componentName}.js`);
+  }
 }
 
 function getCommercePreloadUrl() {
@@ -698,7 +758,7 @@ export async function initService(force = false, attributes = {}) {
     }
   });
   initService.promise = initService.promise ?? polyfills().then(async () => {
-    await import('../../deps/mas/commerce.js');
+    await loadMasComponent(MAS_COMMERCE_SERVICE);
     const { language, locale, country } = getMiloLocaleSettings(miloLocale);
     let service = document.head.querySelector('mas-commerce-service');
     if (!service) {

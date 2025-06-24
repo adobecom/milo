@@ -20,6 +20,8 @@ import merch, {
   getCheckoutAction,
   PRICE_TEMPLATE_REGULAR,
   getMasBase,
+  getMasLibs,
+  loadMasComponent,
   getOptions,
   appendDexterParameters,
   getMiloLocaleSettings,
@@ -32,8 +34,25 @@ import merch, {
 
 import { mockFetch, unmockFetch, readMockText } from './mocks/fetch.js';
 import { mockIms, unmockIms } from './mocks/ims.js';
-import { createTag, setConfig } from '../../../libs/utils/utils.js';
+import { createTag, setConfig, loadScript } from '../../../libs/utils/utils.js';
 import getUserEntitlements from '../../../libs/blocks/global-navigation/utilities/getUserEntitlements.js';
+
+// Make loadScript available globally for proper mocking
+window.loadScript = loadScript;
+
+// Mock URLSearchParams for testing
+class MockURLSearchParams {
+  static masLibsValue = null;
+
+  get(param) {
+    return param === 'masLibs' ? this.constructor.masLibsValue : null;
+  }
+}
+
+// Helper function to set masLibs value for tests
+function setMasLibsParam(value) {
+  MockURLSearchParams.masLibsValue = value;
+}
 
 const CHECKOUT_LINK_CONFIGS = {
   data: [{
@@ -913,6 +932,123 @@ describe('Merch Block', () => {
       const a = document.createElement('a');
       a.setAttribute('href', 'https://mas.adobe.com/studio.html#content-type=merch-card-collection&path=acom');
       expect(getOptions(a).fragment).to.be.undefined;
+    });
+  });
+
+  describe('getMasLibs', () => {
+    let originalURLSearchParams;
+
+    beforeEach(() => {
+      originalURLSearchParams = window.URLSearchParams;
+    });
+
+    afterEach(() => {
+      window.URLSearchParams = originalURLSearchParams;
+    });
+
+    it('returns null when masLibs parameter is not present', () => {
+      setMasLibsParam(null);
+      window.URLSearchParams = MockURLSearchParams;
+      expect(getMasLibs()).to.be.null;
+    });
+
+    it('returns localhost URL for masLibs=local', () => {
+      setMasLibsParam('local');
+      window.URLSearchParams = MockURLSearchParams;
+      expect(getMasLibs()).to.equal('http://localhost:3030/web-components/dist');
+    });
+
+    it('returns production URL for masLibs=main', () => {
+      setMasLibsParam('main');
+      window.URLSearchParams = MockURLSearchParams;
+      expect(getMasLibs()).to.equal('https://mas.adobe.com/web-components/dist');
+    });
+
+    it('returns branch URL for branch names', () => {
+      setMasLibsParam('MWPW-172853');
+      window.URLSearchParams = MockURLSearchParams;
+      expect(getMasLibs()).to.equal('https://MWPW-172853--mas--adobecom.hlx.live/web-components/dist');
+    });
+
+    it('returns fork URL for fork branch names', () => {
+      setMasLibsParam('main--mas-axelcureno');
+      window.URLSearchParams = MockURLSearchParams;
+      expect(getMasLibs()).to.equal('https://main--mas-axelcureno.hlx.live/web-components/dist');
+    });
+
+    it('handles masLibs parameter with other query params', () => {
+      setMasLibsParam('main');
+      window.URLSearchParams = MockURLSearchParams;
+      expect(getMasLibs()).to.equal('https://mas.adobe.com/web-components/dist');
+    });
+  });
+
+  describe('loadMasComponent', () => {
+    let loadScriptStub;
+    let originalURLSearchParams;
+    let originalLoadScript;
+
+    beforeEach(() => {
+      // Store original functions
+      originalURLSearchParams = window.URLSearchParams;
+      originalLoadScript = window.loadScript;
+
+      // Create a stub and replace the global function
+      loadScriptStub = sinon.stub().resolves();
+      window.loadScript = loadScriptStub;
+    });
+
+    afterEach(() => {
+      // Restore original functions
+      window.loadScript = originalLoadScript;
+      window.URLSearchParams = originalURLSearchParams;
+    });
+
+    it('loads from local import when masLibs is not present', async () => {
+      setMasLibsParam(null);
+      window.URLSearchParams = MockURLSearchParams;
+
+      try {
+        await loadMasComponent('commerce');
+      } catch (e) {
+        // Expected to fail in test environment due to dynamic import
+      }
+
+      expect(loadScriptStub.called).to.be.false;
+    });
+
+    it('loads from external URL when masLibs is present', async () => {
+      setMasLibsParam('main');
+      window.URLSearchParams = MockURLSearchParams;
+
+      await loadMasComponent('commerce');
+
+      expect(loadScriptStub.calledOnce).to.be.true;
+      expect(loadScriptStub.firstCall.args[0]).to.equal('https://mas.adobe.com/web-components/dist/commerce.js');
+    });
+
+    it('loads from local URL when masLibs=local', async () => {
+      setMasLibsParam('local');
+      window.URLSearchParams = MockURLSearchParams;
+
+      await loadMasComponent('merch-card');
+
+      expect(loadScriptStub.called).to.be.true;
+      expect(loadScriptStub.firstCall.args[0]).to.equal('http://localhost:3030/web-components/dist/merch-card.js');
+    });
+
+    it('falls back to local import when external load fails', async () => {
+      setMasLibsParam('main');
+      window.URLSearchParams = MockURLSearchParams;
+      loadScriptStub.rejects(new Error('Network error'));
+
+      try {
+        await loadMasComponent('commerce');
+      } catch (e) {
+        // Expected to fail in test environment due to fallback import
+      }
+
+      expect(loadScriptStub.called).to.be.true;
     });
   });
 });

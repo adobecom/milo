@@ -1,6 +1,6 @@
 import { createTag } from '../../utils/utils.js';
 import { decorateButtons } from '../../utils/decorate.js';
-import '../../deps/mas/merch-offer-select.js';
+import { loadMasComponent, MAS_MERCH_OFFER_SELECT } from '../merch/merch.js';
 
 const TWP = 'twp';
 const MINI_COMPARE_CHART = 'mini-compare-chart';
@@ -53,7 +53,10 @@ function createMerchOffer(option, quantitySelector, variant) {
 
 const isHorizontal = (offerSelection) => [...offerSelection.querySelectorAll('merch-offer')].map((o) => o.text).every((t) => /^\d+.B$/.test(t));
 
-export const initOfferSelection = (merchCard, offerSelection, quantitySelector) => {
+export const initOfferSelection = async (merchCard, offerSelection, quantitySelector) => {
+  // Load merch-offer-select component dynamically
+  await loadMasComponent(MAS_MERCH_OFFER_SELECT);
+
   let merchOfferSlot;
   switch (merchCard.variant) {
     case 'mini-compare-chart':
