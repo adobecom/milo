@@ -123,15 +123,8 @@ export class MerchCardCollection extends LitElement {
                 resolve(false);
             }, MERCH_CARD_COLLECTION_LOAD_TIMEOUT),
         );
-        const hydration = async () => {
-            console.log('Hydration...');
-            await aemFragment.updateComplete;
-            console.log('aem-fragment updated');
-            await this.hydrationReady;
-            console.log('Hydration is ready. Data: ', this.data);
-            return true;
-        }
-        return Promise.race([hydration(), timeoutPromise])
+        console.log('Hydration ready? ', this.hydrationReady);
+        return Promise.race([this.hydrationReady, timeoutPromise])
     }
 
     updated(changedProperties) {
