@@ -1,7 +1,6 @@
 import { expect } from '@esm-bundle/chai';
 
 import { mockOstDeps, unmockOstDeps } from './mocks/ost-utils.js';
-import { CheckoutWorkflow, CheckoutWorkflowStep } from '../../../libs/deps/mas/commerce.js';
 import { DEFAULT_CTA_TEXT, createLinkMarkup } from '../../../libs/blocks/ost/ost.js';
 
 const perpM2M = {
@@ -240,13 +239,6 @@ describe('OST: merch link creation', () => {
       const ctaText = texts.try;
       const link = createLink({ ctaText, promo, type });
       assertLink(link, perpM2M, { osi, promo, type }, ctaText);
-    });
-
-    it('to UCv2 workflow', async () => {
-      const workflow = CheckoutWorkflow.V2;
-      const workflowStep = CheckoutWorkflowStep.CHECKOUT_EMAIL;
-      const link = createLink({ type, workflow, workflowStep });
-      assertLink(link, perpM2M, { osi, type, workflow, workflowStep });
     });
   });
 
