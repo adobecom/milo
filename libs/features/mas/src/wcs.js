@@ -228,6 +228,23 @@ export function Wcs({ settings }) {
         );
     }
 
+    function prefillWcsCache(preloadedCache) {        
+        if (!preloadedCache || typeof preloadedCache !== 'object') {
+            throw new TypeError('Cache must be a Map or similar object');
+        }
+        const envKey = env === Env.STAGE ? 'stage' : 'prod';
+        const envCache = preloadedCache[envKey];
+        if (!envCache || typeof envCache !== 'object') {
+            log.warn(`No cache found for environment: ${env}`);
+            return;
+        }
+        // Fill cache with provided entries
+        for (const [key, value] of Object.entries(envCache)) {
+            cache.set(key, Promise.resolve(value.map(applyPlanType)));
+        }
+        log.debug(`Prefilled WCS cache with ${envCache.size} entries`);
+    }
+
     /**
      * Flushes cache but keeps items in stale cache for fallback
      * Used for cache invalidation while maintaining fallback capability
@@ -303,7 +320,6 @@ export function Wcs({ settings }) {
                 }
                 throw error;
             });
-
             cache.set(cacheKey, promiseWithFallback);
             return promiseWithFallback;
         });
@@ -316,6 +332,7 @@ export function Wcs({ settings }) {
         applyPlanType,
         resolveOfferSelectors,
         flushWcsCacheInternal,
+        prefillWcsCache,
     };
 }
 
