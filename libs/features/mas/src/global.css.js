@@ -137,6 +137,33 @@ styles.innerHTML = `
     --merch-card-ul-padding: 8px;
 }
 
+.collection-container {
+    display: grid;
+    justify-content: center;
+    grid-template-columns: min-content min-content;
+    gap: var(--spacing-m);
+}
+
+.collection-container merch-sidenav {
+    grid-row: span 2;
+}
+
+.collection-container merch-card-collection-header {
+    grid-column: 2;
+}
+
+.collection-container merch-card-collection {
+    grid-row: 2;
+    grid-column: 2;
+}
+
+.collection-container .one-merch-card,
+.collection-container .two-merch-cards,
+.collection-container .three-merch-cards,
+.collection-container .four-merch-cards {
+    padding: 0;
+}
+
 merch-card-collection {
     display: contents;
 }
@@ -146,7 +173,9 @@ merch-card-collection > merch-card:not([style]) {
 }
 
 merch-card-collection > p[slot],
-merch-card-collection > div[slot] p {
+merch-card-collection > div[slot] p,
+merch-card-collection-header > p[slot],
+merch-card-collection-header > div[slot] p {
     margin: 0;
 }
 

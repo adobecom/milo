@@ -155,16 +155,6 @@ merch-card[variant^="plans"] [slot="footer"] .con-button > span {
     min-width: unset;
 }
 
-.plans-container {
-    display: flex;
-    justify-content: center;
-    gap: 36px;
-}
-
-.plans-container merch-card-collection {
-    padding: 0;
-}
-
 merch-card[variant^="plans"] merch-addon {
     margin-top: 16px;
     margin-bottom: 16px;
@@ -206,6 +196,11 @@ merch-card[variant^="plans"]:not([size]) {
 .three-merch-cards.plans,
 .four-merch-cards.plans {
     grid-template-columns: var(--consonant-merch-card-plans-width);
+}
+
+merch-card-collection-header.plans {
+    --merch-card-collection-header-columns: 1fr fit-content(100%);
+    --merch-card-collection-header-areas: "result filter";
 }
 
 .columns .text .foreground {
@@ -259,6 +254,11 @@ merch-card[variant^="plans"]:not([size]) {
   }
   merch-card[variant="plans-students"] {
       width: var(--consonant-merch-card-plans-students-width);
+  }
+
+  merch-card-collection-header.plans {
+      --merch-card-collection-header-columns: fit-content(100%);
+      --merch-card-collection-header-areas: "custom";
   }
 }
 
