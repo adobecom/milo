@@ -1,6 +1,8 @@
+<script type="module" src="../../../features/spectrum-web-components/dist/theme.js"></script>
 <script type="module" src="../../../features/spectrum-web-components/dist/button.js"></script>
 <script type="module" src="../../../features/spectrum-web-components/dist/tooltip.js"></script>
 <script type="module" src="../../../features/spectrum-web-components/dist/overlay.js"></script>
+<script type="module" src="../../../features/spectrum-web-components/dist/popover.js"></script>
 <div class="commerce-gallery-content">
   <h1 id="commerce-gallery">Commerce Gallery</h1>
   <div class="commerce-container">
