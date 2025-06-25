@@ -982,6 +982,11 @@ header.new-nav .feds-nav > section.feds-navItem > .feds-popup .close-icon {
   font-family: var(--body-font-family);
 }
 
+[dir = "rtl"] header.new-nav .feds-nav > section.feds-navItem > .feds-popup .close-icon {
+  right: auto;
+  left: 20px;
+}
+
 header.new-nav .feds-nav > section.feds-navItem > .feds-popup .top-bar .main-menu {
   font-size: 14px;
   font-weight: 700;

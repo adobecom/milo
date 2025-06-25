@@ -388,7 +388,8 @@ export function closeAllDropdowns({
     const openElements = document.querySelectorAll(selector);
     if (!openElements) return;
     [...openElements].forEach((el) => {
-      if ('fedsPreventautoclose' in el.dataset || (type === 'localNavItem' && el.classList.contains('feds-localnav-title'))) return;
+      const isUnavAppSwitcher = el.id === 'unav-app-switcher';
+      if ('fedsPreventautoclose' in el.dataset || isUnavAppSwitcher || (type === 'localNavItem' && el.classList.contains('feds-localnav-title'))) return;
       el.setAttribute('aria-expanded', 'false');
     });
   };

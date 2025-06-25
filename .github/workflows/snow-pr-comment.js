@@ -4,7 +4,7 @@ const fs = require('fs');
 const SNOW_TRANSACTION_ID_COMMENT = "SNOW Change Request Transaction ID";
 
 const main = async ({ github = getLocalConfigs().github, context = getLocalConfigs().context, transaction_id = process.env.TRANSACTION_ID }) => {
-  const comment = async ({ pr_number, message, comments, _transaction_id }) => {
+  const comment = async ({ pr_number, message, comments }) => {
     if (comments.some((c) => c.body.includes(message))) {
       console.log(
         `SNOW Transaction Comment exists. Commenting skipped... ${message}`
@@ -13,7 +13,7 @@ const main = async ({ github = getLocalConfigs().github, context = getLocalConfi
     }
     process.env.LOCAL_RUN
       ? console.log(
-          `PR #${pr_number} Local execution commenting SKIPPED message for SNOW Transaction ID ${_transaction_id}: ${message}`
+          `PR #${pr_number} Local execution commenting SKIPPED message for SNOW Change Request: "${message}"`
         )
       : await github.rest.issues
           .createComment({
@@ -23,7 +23,7 @@ const main = async ({ github = getLocalConfigs().github, context = getLocalConfi
             body: message,
             token: process.env.GITHUB_TOKEN,
           })
-          .then(() => console.log(`PR #${pr_number} Commented for SNOW Transaction ID ${_transaction_id}: ${message}`))
+          .then(() => console.log(`PR #${pr_number} Commented for SNOW Change Request: "${message}"`))
           .catch(console.error);
   };
 
@@ -54,7 +54,6 @@ const main = async ({ github = getLocalConfigs().github, context = getLocalConfi
       comment({
         pr_number: process.env.PR_NUMBER,
         comments,
-        transaction_id: transaction_id,
         message:
           `${SNOW_TRANSACTION_ID_COMMENT}: ` + transaction_id,
       });

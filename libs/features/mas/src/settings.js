@@ -5,6 +5,7 @@ import {
     Landscape,
     WCS_PROD_URL,
     WCS_STAGE_URL,
+    FF_DEFAULTS,
 } from './constants.js';
 import { Defaults } from './defaults.js';
 import { Env, CheckoutWorkflow, CheckoutWorkflowStep } from './constants.js';
@@ -41,6 +42,7 @@ function getPreviewSurface(wcsApiKey, previewParam) {
 }
 
 function getSettings(config = {}) {
+    const ffDefaults = getParameter(FF_DEFAULTS) === 'on';
     // Always use `prod` env by default, regardless Milo env
     // but allow overriding it in metadata, location.search or storage
     // See https://github.com/adobecom/milo/pull/923
@@ -52,26 +54,18 @@ function getSettings(config = {}) {
 
     const checkoutClientId =
         getParameter('checkoutClientId', commerce) ?? Defaults.checkoutClientId;
-    const checkoutWorkflow = toEnumeration(
-        getParameter('checkoutWorkflow', commerce),
-        CheckoutWorkflow,
-        Defaults.checkoutWorkflow,
-    );
-    let checkoutWorkflowStep = CheckoutWorkflowStep.CHECKOUT;
-    if (checkoutWorkflow === CheckoutWorkflow.V3) {
-        checkoutWorkflowStep = toEnumeration(
-            getParameter('checkoutWorkflowStep', commerce),
-            CheckoutWorkflowStep,
-            Defaults.checkoutWorkflowStep,
-        );
-    }
+    const checkoutWorkflowStep = toEnumeration(
+      getParameter('checkoutWorkflowStep', commerce),
+      CheckoutWorkflowStep,
+      Defaults.checkoutWorkflowStep,
+  );
     const displayOldPrice = toBoolean(
         getParameter('displayOldPrice', commerce),
-        Defaults.displayOldPrice,
+        ffDefaults ? Defaults.displayOldPrice : !Defaults.displayOldPrice,
     );
     const displayPerUnit = toBoolean(
         getParameter('displayPerUnit', commerce),
-        Defaults.displayPerUnit,
+        ffDefaults ? Defaults.displayPerUnit : !Defaults.displayPerUnit,
     );
     const displayRecurrence = toBoolean(
         getParameter('displayRecurrence', commerce),
@@ -127,12 +121,12 @@ function getSettings(config = {}) {
         getParameter('mas-io-url') ??
         config.masIOUrl ??
         `https://www${env === Env.STAGE ? '.stage' : ''}.adobe.com/mas/io`;
+    const preselectPlan = getParameter('preselect-plan') ?? undefined;
     return {
         ...getLocaleSettings(config),
         ...previewSettings,
         displayOldPrice,
         checkoutClientId,
-        checkoutWorkflow,
         checkoutWorkflowStep,
         displayPerUnit,
         displayRecurrence,
@@ -150,6 +144,7 @@ function getSettings(config = {}) {
         wcsURL,
         landscape,
         masIOUrl,
+        ...(preselectPlan && { preselectPlan }), // only add if defined
     };
 }
 

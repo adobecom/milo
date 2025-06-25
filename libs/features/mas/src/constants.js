@@ -127,8 +127,6 @@ export const Landscape = {
 export const HEADER_X_REQUEST_ID = 'X-Request-Id';
 
 export const CheckoutWorkflowStep = Object.freeze({
-    CHECKOUT: 'checkout',
-    CHECKOUT_EMAIL: 'checkout/email',
     SEGMENTATION: 'segmentation',
     BUNDLE: 'bundle',
     COMMITMENT: 'commitment',
@@ -139,7 +137,7 @@ export const CheckoutWorkflowStep = Object.freeze({
     CHANGE_PLAN_TEAM_PAYMENT: 'change-plan/team-upgrade/payment',
 });
 
-export const CheckoutWorkflow = Object.freeze({ V2: 'UCv2', V3: 'UCv3' });
+export const CheckoutWorkflow = 'UCv3';
 
 export const Env = Object.freeze({
     STAGE: 'STAGE',
@@ -164,3 +162,5 @@ export const TEMPLATE_PRICE = 'price';
 export const TEMPLATE_PRICE_STRIKETHROUGH = 'price-strikethrough';
 export const TEMPLATE_PRICE_ANNUAL = 'annual';
 export const TEMPLATE_PRICE_LEGAL = 'legal';
+
+export const FF_DEFAULTS = 'mas-ff-defaults';

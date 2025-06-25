@@ -45,27 +45,13 @@
   margin-block-end: var(--spacing-xs);
 }
 
-.notification.ribbon.in-line p {
-  margin: initial;
-  inline-size: initial;
-  margin-block-end: initial;
-}
-
 .notification [class*="heading-"] {
   margin-block-end: var(--spacing-xxs);
 }
 
-.notification.ribbon.in-line [class*="heading-"] {
-  margin-block-end: initial;
-}
 
 .notification [class*="heading-"] strong {
   font-weight: unset;
-}
-
-.notification.ribbon.in-line [class*="heading-"] strong {
-  font-size: var(--type-heading-s-size);
-  line-height: var(--type-heading-s-lh);
 }
 
 .notification .text p:not(.icon-area, .action-area) {
@@ -99,6 +85,7 @@
 .notification.center .foreground > * {
   text-align: center;
   justify-content: center;
+  align-items: center;
 }
 
 .notification.pill .foreground {
@@ -180,11 +167,6 @@
   align-items: center;
 }
 
-.notification.ribbon.in-line .action-area {
-  gap: var(--spacing-xs);
-  order: 2;
-  margin-left: auto;
-}
 
 .notification .background img {
   min-block-size: unset;
@@ -205,9 +187,6 @@
   inline-size: 100%;
 }
 
-.notification.ribbon:not(.in-line) [class*="heading-"]:only-child {
-  margin-block-end: var(--spacing-s);
-}
 
 .notification.ribbon.space-between [class*="heading-"]:only-child {
   margin-block-end: 0;
@@ -218,24 +197,12 @@
   inline-size: 100%;
 }
 
-.notification.ribbon.in-line .foreground .text {
-  flex-wrap: nowrap;
-  inline-size: 100%;
-  gap: var(--spacing-xxs);
-}
-
 .notification.ribbon.space-between .foreground .copy-wrap {
   margin-inline-end: var(--spacing-s);
   display: flex;
   flex-direction: column;
   justify-content: center;
   flex-basis: 100%;
-}
-
-.notification.ribbon.in-line .foreground .copy-wrap {
-  order: 1;
-  max-width: 152px;
-  margin: auto 0;
 }
 
 .notification .foreground .image {
@@ -265,10 +232,6 @@
 
 .notification.ribbon .icon-area img {
   max-block-size: var(--icon-size);
-}
-
-.notification.ribbon.in-line .icon-area img {
-  max-block-size: var(--icon-size-m);
 }
 
 .notification .icon-area.lockup-area img {
@@ -336,13 +299,6 @@
   inline-size: auto;
   margin-inline-end: var(--spacing-xs);
   margin-block-end: 0;
-}
-
-.notification.ribbon.in-line .foreground .icon-area {
-  margin: auto 0;
-  width: var(--icon-size-m);
-  order: 0;
-  height: var(--icon-size-m);
 }
 
 
@@ -504,13 +460,61 @@
 }
 
 @media screen and (max-width: 600px) {
+  .notification.ribbon.inline p {
+    margin: initial;
+    inline-size: initial;
+    margin-block-end: initial;
+  }
+
+  .notification.ribbon.inline [class*="heading-"] {
+    margin-block-end: initial;
+  }
+
+  .notification.ribbon.inline [class*="heading-"] strong {
+    font-size: var(--type-heading-s-size);
+    line-height: var(--type-heading-s-lh);
+  }
+
+  .notification.ribbon.inline .action-area {
+    gap: var(--spacing-xs);
+    order: 2;
+    margin-left: auto;
+  }
+
+  .notification.ribbon:not(.inline) [class*="heading-"]:only-child {
+    margin-block-end: var(--spacing-s);
+  }
+
+  .notification.ribbon.inline .foreground .text {
+    flex-wrap: nowrap;
+    inline-size: 100%;
+    gap: var(--spacing-xxs);
+  }
+
+  .notification.ribbon.inline .foreground .copy-wrap {
+    order: 1;
+    max-width: 152px;
+    margin: auto 0;
+  }
+
+  .notification.ribbon.inline .icon-area img {
+    max-block-size: var(--icon-size-m);
+  }
+
+  .notification.ribbon.inline .foreground .icon-area {
+    margin: auto 0;
+    width: var(--icon-size-m);
+    order: 0;
+    height: var(--icon-size-m);
+  }
+
   .mobile-disable-scroll {
     overflow: hidden;
   }
 }
 
 @media screen and (max-width: 359px) {
-  .notification.ribbon.in-line .action-area {
+  .notification.ribbon.inline .action-area {
     flex-wrap: wrap;
   }
 }
@@ -523,10 +527,6 @@
     --inline-size-image: 35%;
     --full-width: 1200px;
     --padding-inline-flexible: 80px;
-  }
-
-  .notification.ribbon.in-line {
-    display: none;
   }
 
   .notification:not(.pill, .ribbon) .foreground {
@@ -614,6 +614,10 @@
   }
 
   .notification.ribbon .copy-wrap :last-child {
+    margin-block-end: 0;
+  }
+
+  .notification.ribbon:not(.inline) [class*="heading-"]:only-child {
     margin-block-end: 0;
   }
 

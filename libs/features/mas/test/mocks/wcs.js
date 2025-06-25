@@ -19,7 +19,7 @@ export async function withWcs(originalFetch) {
                 return Promise.reject(new TypeError('Failed to fetch')); // Simulate network error
             }
 
-            const language = searchParams.get('language').toLowerCase();
+            const language = searchParams.get('language')?.toLowerCase() || '';
             const buckets = osi
                 .split(',') // wcs.js doesn't support multiple osis any more
                 .map((osi) =>
