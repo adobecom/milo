@@ -22,6 +22,7 @@ import {
   checkLinks,
   runChecks as runChecksSeo,
 } from './seo.js';
+import { getMetadata } from '../../../utils/utils.js';
 
 // should import Metadata from utils/utils.js
 export default {
@@ -55,28 +56,62 @@ export default {
   },
 };
 
+function getPreflightMode() {
+  const mode = getMetadata('preflight-mode');
+  return mode === 'aso' ? 'aso' : 'deterministic';
+}
+
+async function runDeterministicChecks(url, area) {
+  return {
+    assets: await runChecksAssets(url, area),
+    performance: await runChecksPerformance(url, area),
+    seo: await runChecksSeo({ url, area }),
+  };
+}
+
+/**
+ * TODO: Implement ASO API integration
+ */
+async function runASOChecks(url, area) {
+  // Placeholder for ASO API implementation
+  // This will be implemented in future iterations
+  console.warn('ASO API mode is not yet implemented, falling back to deterministic mode');
+  return runDeterministicChecks(url, area);
+}
+
+/**
+ * Converts ASO API results to match deterministic format
+ * This ensures consistent cache format regardless of execution mode
+ */
+function convertASOToStandardFormat(asoResults) {
+  // TODO: Implement conversion logic when ASO API is integrated
+  // For now, return results as-is since we're falling back to deterministic
+  return asoResults;
+}
+
 export const prefetchPreflightChecks = async () => {
   console.log('prefetchPreflightChecks starting...');
-  try {
-    const url = window.location.pathname;
-    const area = document;
+  const url = window.location.pathname;
+  const area = document;
+  const mode = getPreflightMode();
+  
+  console.log(`Using preflight mode: ${mode}`);
+  
+  let results;
 
-    window.miloPreflightCache = {
-      assets: await runChecksAssets(url, area),
-      performance: await runChecksPerformance(url, area),
-      seo: await runChecksSeo({ url, area }),
-    };
-    const results = window.miloPreflightCache;
-    console.log('prefetchPreflightChecks results:', results);
-    return results;
-  } catch (error) {
-    console.log('prefetchPreflightChecks failed:', error);
-    throw error;
+  if (mode === 'aso') {
+    const asoResults = await runASOChecks(url, area);
+    // Convert ASO results to standard format for consistent caching
+    results = convertASOToStandardFormat(asoResults);
+  } else {
+    results = await runDeterministicChecks(url, area);
   }
+
+  window.miloPreflightCache = results;
+  console.log('prefetchPreflightChecks results:', results);
+  return results;
 };
 
-// Preflight should check if there is a Cached results
-// Use global cache to persist across module reloads
 if (!window.miloPreflightCache) {
   window.miloPreflightCache = null;
 }
@@ -86,32 +121,22 @@ export const getPreflightCache = async () => {
     console.log('Cache hit:', window.miloPreflightCache);
     return window.miloPreflightCache;
   }
-  console.log('Cache miss, preflightCache is:', window.miloPreflightCache);
-  console.log('Running prefetchPreflightChecks...');
   return (window.miloPreflightCache = await prefetchPreflightChecks());
 };
 
-// Legacy function name for backward compatibility
-export const prefetchAllPreflightChecks = getPreflightCache;
-
-// Check if preflight has any failures
 export function hasPreflightFailures(results = null) {
   const cache = results || window.miloPreflightCache;
   if (!cache) return false;
-
   const allResults = [
     ...(cache.assets || []),
     ...(cache.performance || []),
     ...(cache.seo || []),
   ];
-
   return allResults.some((result) => result.status === 'fail');
 }
 
 export function getPreflightStatus() {
   return window.miloPreflightCache ? 'completed' : 'not-started';
 }
-
-// if not then run Preflight checks
 
 // if failed then return a "Preflight didnt execute" to the Publish button
