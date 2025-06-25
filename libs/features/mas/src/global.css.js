@@ -141,14 +141,15 @@ styles.innerHTML = `
     display: grid;
     justify-content: center;
     grid-template-columns: min-content min-content;
-    gap: var(--spacing-m);
 }
 
 .collection-container merch-sidenav {
     grid-row: span 2;
+    margin-right: var(--spacing-m);
 }
 
 .collection-container merch-card-collection-header {
+    --merch-card-collection-header-margin-bottom: var(--spacing-m);
     grid-column: 2;
 }
 

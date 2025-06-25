@@ -152,6 +152,7 @@ export default class MerchCardCollectionHeader extends LitElement {
 
     get resultLabel() {
         if (!this.getVisibility('result')) return nothing;
+        if (!this.collection.sidenav) return nothing;
         return html`
           <div id="result" aria-live="polite">
               <slot name="${this.resultSlotName}"></slot>
@@ -160,9 +161,11 @@ export default class MerchCardCollectionHeader extends LitElement {
 
     get customArea() {
         if (!this.getVisibility('custom')) return nothing;
-        const customHeaderArea = getCollectionOptions(this.collection.variant)?.customHeaderArea;
-        if (!customHeaderArea) return nothing;
-        return html`<div id="custom">${customHeaderArea()}</div>`;
+        const customHeaderAreaGetter = getCollectionOptions(this.collection.variant)?.customHeaderArea;
+        if (!customHeaderAreaGetter) return nothing;
+        const customHeaderArea = customHeaderAreaGetter(this.collection);
+        if (!customHeaderArea || customHeaderArea === nothing) return nothing;
+        return html`<div id="custom">${customHeaderArea}</div>`;
     }
 
     // #region Handlers
@@ -182,19 +185,14 @@ export default class MerchCardCollectionHeader extends LitElement {
     render() {
         return html`
           <sp-theme color="light" scale="medium">
-            <div id="header">
-              ${this.searchAction}
-              ${this.filterAction}
-              ${this.sortAction}
-              ${this.resultLabel}
-              ${this.customArea}
-            </div>
+            <div id="header">${this.searchAction}${this.filterAction}${this.sortAction}${this.resultLabel}${this.customArea}</div>
           </sp-theme>
         `
     }
 
     static styles = css`
         :host {
+            --merch-card-collection-header-margin-bottom: 32px;
             --merch-card-collection-header-gap: var(--consonant-merch-spacing-xxs);
             --merch-card-collection-header-columns: auto max-content;
             --merch-card-collection-header-areas: "search search" 
@@ -212,6 +210,11 @@ export default class MerchCardCollectionHeader extends LitElement {
             align-items: center;
             grid-template-columns: var(--merch-card-collection-header-columns);
             grid-template-areas: var(--merch-card-collection-header-areas);
+            margin-bottom: var(--merch-card-collection-header-margin-bottom);
+        }
+
+        #header:empty {
+            margin-bottom: 0;
         }
         
         #search {

@@ -340,7 +340,8 @@ export class Plans extends VariantLayout {
     `;
 
     static collectionOptions = {
-        customHeaderArea: () => {
+        customHeaderArea: (collection) => {
+            if (!collection.sidenav) return nothing;
             return html`<slot name="resultsText"></slot>`
         },
         headerVisibility: {
