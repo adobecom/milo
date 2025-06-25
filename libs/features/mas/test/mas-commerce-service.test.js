@@ -1,8 +1,10 @@
 import Sinon from 'sinon';
 
 import '../../../utils/lana.js';
+import { FF_DEFAULTS } from '../src/constants.js';
 import { Defaults } from '../src/defaults.js';
 import { TAG_NAME_SERVICE } from '../src/mas-commerce-service.js';
+import '../src/aem-fragment.js';
 
 import { mockFetch } from './mocks/fetch.js';
 import { mockIms, unmockIms } from './mocks/ims.js';
@@ -119,14 +121,19 @@ describe('commerce service', () => {
             });
 
             it('generates some default with no attributes', async () => {
+                const metaDefaultFlag = document.createElement('meta');
+                metaDefaultFlag.name = FF_DEFAULTS
+                metaDefaultFlag.content = 'on';
+                document.head.appendChild(metaDefaultFlag);
+
                 const el = await initMasCommerceService({});
                 expect(el.settings).to.deep.equal({
                     checkoutClientId: 'adobe_com',
                     checkoutWorkflow: 'UCv3',
                     checkoutWorkflowStep: 'email',
                     country: 'US',
-                    displayOldPrice: true,
-                    displayPerUnit: false,
+                    displayOldPrice: false,
+                    displayPerUnit: true,
                     displayRecurrence: true,
                     displayTax: false,
                     displayPlanType: false,

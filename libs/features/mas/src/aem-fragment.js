@@ -1,3 +1,4 @@
+import { getParameter } from '@dexter/tacocat-core';
 import {
     EVENT_AEM_LOAD,
     EVENT_AEM_ERROR,
@@ -8,9 +9,6 @@ import { MasError } from './mas-error.js';
 import { getLogHeaders } from './utilities.js';
 import { getService, printMeasure } from './utils.js';
 import { masFetch } from './utils/mas-fetch.js';
-
-const sheet = new CSSStyleSheet();
-sheet.replaceSync(':host { display: contents; }');
 
 const ATTRIBUTE_FRAGMENT = 'fragment';
 const ATTRIBUTE_AUTHOR = 'author';
@@ -30,6 +28,7 @@ class FragmentCache {
     clear() {
         this.#fragmentCache.clear();
         this.#fetchInfos.clear();
+        this.#promises.clear();
     }
 
     /**
@@ -124,6 +123,8 @@ class FragmentCache {
 
     remove(fragmentId) {
         this.#fragmentCache.delete(fragmentId);
+        this.#fetchInfos.delete(fragmentId);
+        this.#promises.delete(fragmentId);
     }
 }
 
@@ -136,7 +137,8 @@ const cache = new FragmentCache();
  * @attr {string} fragment - fragment id.
  */
 export class AemFragment extends HTMLElement {
-    cache = cache;
+    cache = cache; // TO be deprecated
+    static cache = cache;
     #log;
 
     #rawData = null;
@@ -169,12 +171,6 @@ export class AemFragment extends HTMLElement {
             ATTRIBUTE_AUTHOR,
             ATTRIBUTE_PREVIEW,
         ];
-    }
-
-    constructor() {
-        super();
-        this.attachShadow({ mode: 'open' });
-        this.shadowRoot.adoptedStyleSheets = [sheet];
     }
 
     attributeChangedCallback(name, oldValue, newValue) {
@@ -302,8 +298,12 @@ export class AemFragment extends HTMLElement {
             this.#fail(e.message);
             return false;
         }
-        const { references, referencesTree, placeholders } =
+        const { references, referencesTree, placeholders, wcs } =
             this.#rawData || {};
+
+        if (wcs && !getParameter('mas.disableWcsCache')) {
+            this.#service.prefillWcsCache(wcs);
+        }
 
         this.dispatchEvent(
             new CustomEvent(EVENT_AEM_LOAD, {

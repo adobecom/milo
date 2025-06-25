@@ -9,7 +9,6 @@ export const MINI_AEM_FRAGMENT_MAPPING = {
     description: {
         tag: 'p',
         slot: 'description',
-        marks: 'promo-text,promo-duration-text,renewal-text',
     },
     planType: true,
     ctas: { slot: 'ctas', size: 'S' },
@@ -37,6 +36,7 @@ export class Mini extends VariantLayout {
             strikethroughAriaLabel: '',
             alternativePriceAriaLabel: '',
         };
+        options.space = true;
         options.displayAnnual = this.card.settings?.displayAnnual ?? false;
     }
 
@@ -50,7 +50,6 @@ export class Mini extends VariantLayout {
         this.legal = legal;
         price.dataset.displayTax = 'false';
         legal.dataset.template = 'legal';
-        delete legal.dataset.displayTax;
         legal.dataset.displayPlanType =
             this.card?.settings?.displayPlanType ?? true;
         legal.setAttribute('slot', 'legal');

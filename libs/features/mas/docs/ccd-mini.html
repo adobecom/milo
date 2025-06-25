@@ -16,9 +16,15 @@
     import { init } from './common.js';
     init();
   </script>
-  <!-- Include Highlight.js stylesheet for syntax highlighting -->
-  <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/default.min.css">
   <script type="module" src="./mas-sidenav.js"></script>
+  <style>
+    .cards {
+      display: flex;
+      gap: 16px;
+      align-items: baseline;
+    }
+
+  </style>
 </head>
 <body class="spectrum spectrum--medium spectrum--light">
   <aside is="mas-sidenav"></aside>
@@ -30,10 +36,9 @@
   <p>Switch Locale: <a class="locale-toggle spectrum-Link spectrum-Link--secondary" value="en_US" href="?locale=en_US">en_US</a> OR <a class="locale-toggle spectrum-Link spectrum-Link--secondary" value="fr_FR" href="?locale=fr_FR">fr_FR</a></p>
   <p>Switch country/language: <a class="locale-toggle spectrum-Link spectrum-Link--secondary" value="US,en" href="?country=US&language=en">Country: US, language: en</a> OR <a class="locale-toggle spectrum-Link spectrum-Link--secondary" value="FR,fr" href="?country=FR&language=fr">Country: FR, language: fr</a></p>
     <h2 id="ccd-mini-card" tabindex="-1">CCD Mini Cards <a class="header-anchor" href="#ccd-mini-card" title="Permalink to this heading">#</a></h2>
-    <div class="three-merch-cards ccd-slice">
+    <div class="cards">
       <merch-card><aem-fragment fragment="03a36f0f-3e5d-4881-ae6b-273c517c9d38" loading="cache"></aem-fragment></merch-card>  
       <merch-card><aem-fragment fragment="df357350-95b2-47f2-844f-df2e491eecef" loading="cache"></aem-fragment></merch-card>
-
   </div>
 
   </main>

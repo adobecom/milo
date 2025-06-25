@@ -712,6 +712,11 @@ export async function initService(force = false, attributes = {}) {
       if (miloEnv?.name !== 'prod') {
         service.setAttribute('allow-override', '');
       }
+      const ffDefaults = getMetadata('mas-ff-defaults');
+      if (!ffDefaults) {
+        // On milo, if ff is not enabled explicitly, disable it by default
+        service.dataset.masFfDefaults = 'off';
+      }
       service.registerCheckoutAction(getCheckoutAction);
       document.head.append(service);
       await service.readyPromise;

@@ -1,6 +1,8 @@
 export const CSS = `
 merch-card[variant="mini"] {
   color: var(--spectrum-body-color);
+  width: 400px;
+  height: 250px;
 }
 
 merch-card[variant="mini"] [slot="title"] {
@@ -14,8 +16,11 @@ merch-card[variant="mini"] [slot="legal"] {
 }
 
 merch-card[variant="mini"] [slot="ctas"] {
-    display: flex;
-    gap: 16px;
+  display: flex;
+  flex: 1;
+  gap: 16px;
+  align-items: end;
+  justify-content: end;
 }
 
 merch-card[variant="mini"] span.promo-duration-text,

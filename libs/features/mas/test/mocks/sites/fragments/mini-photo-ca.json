@@ -15,7 +15,7 @@
         "badge": { "mimeType": "text/html" },
         "trialBadge": { "mimeType": "text/html" },
         "prices": {
-            "value": "<span is=\"inline-price\" data-template=\"price\" data-wcs-osi=\"mini-photo-ca\"></span>",
+            "value": "<span is=\"inline-price\" data-display-per-unit=\"false\" data-template=\"price\" data-wcs-osi=\"mini-photo-ca\"></span>",
             "mimeType": "text/html"
         },
         "shortDescription": { "mimeType": "text/html" },

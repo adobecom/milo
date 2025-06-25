@@ -4,7 +4,11 @@ import { Env } from '../src/constants.js';
 import { getPreviewSurface, getSettings } from '../src/settings.js';
 
 import { expect } from './utilities.js';
-import { PARAM_ENV, PARAM_LANDSCAPE } from '../src/constants.js';
+import { PARAM_ENV, PARAM_LANDSCAPE, FF_DEFAULTS } from '../src/constants.js';
+
+const mockService = {
+  featureFlags: { ffDefaults: true },
+};
 
 describe('getSettings', () => {
     let href;
@@ -24,7 +28,7 @@ describe('getSettings', () => {
     });
 
     it('returns default settings, if called without arguments', () => {
-        expect(getSettings()).to.deep.equal({
+        expect(getSettings(undefined, mockService)).to.deep.equal({
             ...Defaults,
             locale: `${Defaults.language}_${Defaults.country}`,
             masIOUrl: 'https://www.adobe.com/mas/io',
@@ -56,7 +60,7 @@ describe('getSettings', () => {
         window.history.replaceState({}, '', url.toString());
 
         const config = { commerce: { allowOverride: '' } };
-        expect(getSettings(config)).to.deep.equal({
+        expect(getSettings(config, mockService)).to.deep.equal({
             ...Defaults,
             checkoutClientId,
             checkoutWorkflowStep,
@@ -96,7 +100,7 @@ describe('getSettings', () => {
             getSettings({
                 commerce,
                 locale: 'nb_NO',
-            }),
+            }, mockService),
         ).to.deep.equal({
             ...Defaults,
             forceTaxExclusive: true,
@@ -116,21 +120,21 @@ describe('getSettings', () => {
 
     it('host env "local" -> WCS prod origin + prod akamai', () => {
       const config = { commerce: {}, env: { name: 'local' }, };
-        const settings = getSettings(config);
+        const settings = getSettings(config, mockService);
         expect(settings.wcsURL).to.equal(WCS_PROD_URL);
         expect(settings.env).to.equal(Env.PRODUCTION);
     });
 
     it('host env "stage" -> WCS prod origin + prod akamai', () => {
       const config = { commerce: {}, env: { name: 'stage' }, };
-        const settings = getSettings(config);
+        const settings = getSettings(config, mockService);
         expect(settings.wcsURL).to.equal(WCS_PROD_URL);
         expect(settings.env).to.equal(Env.PRODUCTION);
     });
 
     it('host env "prod" -> WCS prod origin + prod akamai', () => {
       const config = { commerce: {}, env: { name: 'prod' }, };
-        const settings = getSettings(config);
+        const settings = getSettings(config, mockService);
         expect(settings.wcsURL).to.equal(WCS_PROD_URL);
         expect(settings.env).to.equal(Env.PRODUCTION);
     });
@@ -139,7 +143,7 @@ describe('getSettings', () => {
         window.sessionStorage.setItem(PARAM_ENV, 'stage');
         window.sessionStorage.setItem(PARAM_LANDSCAPE, 'DRAFT');
         const config = { commerce: { allowOverride: 'true' } };
-        const settings = getSettings(config);
+        const settings = getSettings(config, mockService);
         expect(settings.wcsURL).to.equal(WCS_STAGE_URL);
         expect(settings.landscape).to.equal(Landscape.DRAFT);
         expect(settings.env).to.equal(Env.STAGE);
@@ -149,7 +153,7 @@ describe('getSettings', () => {
         window.sessionStorage.setItem(PARAM_ENV, 'stage');
         window.sessionStorage.setItem(PARAM_LANDSCAPE, 'DRAFT');
         const config = { commerce: {} };
-        const settings = getSettings(config);
+        const settings = getSettings(config, mockService);
         expect(settings.wcsURL).to.equal(WCS_PROD_URL);
         expect(settings.landscape).to.equal(Landscape.PUBLISHED);
         expect(settings.env).to.equal(Env.PRODUCTION);
@@ -158,7 +162,7 @@ describe('getSettings', () => {
     it('sets correctly preview configuration from configuration', () => {
       const config = { commerce: {}, preview: '' };
       window.sessionStorage.setItem('wcsApiKey', 'wcms-commerce-ims-ro-user-milo');
-      const settings = getSettings(config);
+      const settings = getSettings(config, mockService);
       expect(settings.preview).to.equal(true);
     });
   
@@ -166,7 +170,7 @@ describe('getSettings', () => {
       const config = { commerce: {} };
       window.sessionStorage.setItem('wcsApiKey', 'wcms-commerce-ims-ro-user-milo');
       window.sessionStorage.setItem('mas.preview', 'on');
-      const settings = getSettings(config);
+      const settings = getSettings(config, mockService);
       expect(settings.preview).to.equal(true);
     });
   
@@ -174,7 +178,7 @@ describe('getSettings', () => {
       const config = { commerce: {}, preview: '' };
       window.sessionStorage.setItem('wcsApiKey', 'wcms-commerce-ims-ro-user-milo');
       window.sessionStorage.setItem('mas.preview', 'off');
-      const settings = getSettings(config);
+      const settings = getSettings(config, mockService);
       expect(settings.preview).to.be.undefined;
     });
 });
