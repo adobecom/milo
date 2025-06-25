@@ -198,6 +198,7 @@ export default class MerchCardCollectionHeader extends LitElement {
             --merch-card-collection-header-areas: "search search" 
                                                   "filter sort"
                                                   "result result";
+            --merch-card-collection-header-result-font-size: inherit;
         }
 
         sp-theme {
@@ -233,6 +234,7 @@ export default class MerchCardCollectionHeader extends LitElement {
 
         #result {
             grid-area: result;
+            font-size: var(--merch-card-collection-header-result-font-size);
         }
 
         #custom {
