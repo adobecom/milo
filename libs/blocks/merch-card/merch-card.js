@@ -458,7 +458,7 @@ const createFirstRow = async (firstRow, isMobile, checkmarkCopyContainer, defaul
       'aria-expanded': defaultChevronState === 'open',
       'aria-controls': checkmarkCopyContainer.id,
       'daa-lh': `${checkmarkCopyContainer.id}-toggle-button`,
-    }, addIcon);
+    }, defaultChevronState === 'open' ? removeIcon : addIcon);
     firstRowTextParagraph = createTag('div', { class: 'footer-rows-title' }, firstRowText);
     firstRowTextParagraph.appendChild(toggleIcon);
 
