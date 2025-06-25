@@ -426,13 +426,20 @@ const grayboxThePage = (grayboxEl, grayboxMenuOff) => {
 
   transformLinks();
 
-  const pollForFeds = setInterval(() => {
-    const isLoading = document.querySelector('header .feds-popup.loading');
-    if (!isLoading) {
-      clearInterval(pollForFeds);
-      transformLinks(document.body.querySelector('header'));
-    }
-  }, 100);
+  const observer = new MutationObserver((mutations) => {
+    mutations.forEach((mutation) => {
+      mutation.addedNodes.forEach((node) => {
+        if (node.nodeType === Node.ELEMENT_NODE) {
+          transformLinks(node);
+        }
+      });
+    });
+  });
+
+  observer.observe(document.body, {
+    childList: true,
+    subtree: true,
+  });
 };
 
 export default function init(grayboxEl) {
