@@ -1,19 +1,246 @@
-var bt=Object.defineProperty;var X=o=>{throw TypeError(o)};var Et=(o,e,t)=>e in o?bt(o,e,{enumerable:!0,configurable:!0,writable:!0,value:t}):o[e]=t;var c=(o,e,t)=>Et(o,typeof e!="symbol"?e+"":e,t),Q=(o,e,t)=>e.has(o)||X("Cannot "+t);var G=(o,e,t)=>(Q(o,e,"read from private field"),t?t.call(o):e.get(o)),Z=(o,e,t)=>e.has(o)?X("Cannot add the same private member more than once"):e instanceof WeakSet?e.add(o):e.set(o,t),J=(o,e,t,a)=>(Q(o,e,"write to private field"),a?a.call(o,t):e.set(o,t),t);import{html as L,css as Rt,unsafeCSS as vt,LitElement as Pt,nothing as f}from"../lit-all.min.js";var p="(max-width: 767px)",$="(max-width: 1199px)",d="(min-width: 768px)",i="(min-width: 1200px)",g="(min-width: 1600px)";var P=class{constructor(e,t){this.key=Symbol("match-media-key"),this.matches=!1,this.host=e,this.host.addController(this),this.media=window.matchMedia(t),this.matches=this.media.matches,this.onChange=this.onChange.bind(this),e.addController(this)}hostConnected(){var e;(e=this.media)==null||e.addEventListener("change",this.onChange)}hostDisconnected(){var e;(e=this.media)==null||e.removeEventListener("change",this.onChange)}onChange(e){this.matches!==e.matches&&(this.matches=e.matches,this.host.requestUpdate(this.key,!this.matches))}};import{html as D,nothing as yt}from"../lit-all.min.js";var b,N=class N{constructor(e){c(this,"card");Z(this,b);this.card=e,this.insertVariantStyle()}getContainer(){return J(this,b,G(this,b)??this.card.closest('[class*="-merch-cards"]')??this.card.parentElement),G(this,b)}insertVariantStyle(){if(!N.styleMap[this.card.variant]){N.styleMap[this.card.variant]=!0;let e=document.createElement("style");e.innerHTML=this.getGlobalCSS(),document.head.appendChild(e)}}updateCardElementMinHeight(e,t){if(!e)return;let a=`--consonant-merch-card-${this.card.variant}-${t}-height`,r=Math.max(0,parseInt(window.getComputedStyle(e).height)||0),n=parseInt(this.getContainer().style.getPropertyValue(a))||0;r>n&&this.getContainer().style.setProperty(a,`${r}px`)}get badge(){let e;if(!(!this.card.badgeBackgroundColor||!this.card.badgeColor||!this.card.badgeText))return this.evergreen&&(e=`border: 1px solid ${this.card.badgeBackgroundColor}; border-right: none;`),D`
+var __defProp = Object.defineProperty;
+var __typeError = (msg) => {
+  throw TypeError(msg);
+};
+var __defNormalProp = (obj, key, value) => key in obj ? __defProp(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
+var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "symbol" ? key + "" : key, value);
+var __accessCheck = (obj, member, msg) => member.has(obj) || __typeError("Cannot " + msg);
+var __privateGet = (obj, member, getter) => (__accessCheck(obj, member, "read from private field"), getter ? getter.call(obj) : member.get(obj));
+var __privateAdd = (obj, member, value) => member.has(obj) ? __typeError("Cannot add the same private member more than once") : member instanceof WeakSet ? member.add(obj) : member.set(obj, value);
+var __privateSet = (obj, member, value, setter) => (__accessCheck(obj, member, "write to private field"), setter ? setter.call(obj, value) : member.set(obj, value), value);
+
+// src/merch-card-collection-header.js
+import { html as html10, css as css7, unsafeCSS as unsafeCSS2, LitElement, nothing as nothing3 } from "../lit-all.min.js";
+
+// src/media.js
+var MOBILE_LANDSCAPE = "(max-width: 767px)";
+var TABLET_DOWN = "(max-width: 1199px)";
+var TABLET_UP = "(min-width: 768px)";
+var DESKTOP_UP = "(min-width: 1200px)";
+var LARGE_DESKTOP = "(min-width: 1600px)";
+
+// node_modules/@spectrum-web-components/reactive-controllers/src/MatchMedia.js
+var MatchMediaController = class {
+  constructor(e, t) {
+    this.key = Symbol("match-media-key");
+    this.matches = false;
+    this.host = e, this.host.addController(this), this.media = window.matchMedia(t), this.matches = this.media.matches, this.onChange = this.onChange.bind(this), e.addController(this);
+  }
+  hostConnected() {
+    var e;
+    (e = this.media) == null || e.addEventListener("change", this.onChange);
+  }
+  hostDisconnected() {
+    var e;
+    (e = this.media) == null || e.removeEventListener("change", this.onChange);
+  }
+  onChange(e) {
+    this.matches !== e.matches && (this.matches = e.matches, this.host.requestUpdate(this.key, !this.matches));
+  }
+};
+
+// src/variants/variant-layout.js
+import { html, nothing } from "../lit-all.min.js";
+var _container;
+var _VariantLayout = class _VariantLayout {
+  constructor(card) {
+    __publicField(this, "card");
+    __privateAdd(this, _container);
+    this.card = card;
+    this.insertVariantStyle();
+  }
+  getContainer() {
+    __privateSet(this, _container, __privateGet(this, _container) ?? this.card.closest('[class*="-merch-cards"]') ?? this.card.parentElement);
+    return __privateGet(this, _container);
+  }
+  insertVariantStyle() {
+    if (!_VariantLayout.styleMap[this.card.variant]) {
+      _VariantLayout.styleMap[this.card.variant] = true;
+      const styles = document.createElement("style");
+      styles.innerHTML = this.getGlobalCSS();
+      document.head.appendChild(styles);
+    }
+  }
+  updateCardElementMinHeight(el, name) {
+    if (!el) return;
+    const elMinHeightPropertyName = `--consonant-merch-card-${this.card.variant}-${name}-height`;
+    const height = Math.max(
+      0,
+      parseInt(window.getComputedStyle(el).height) || 0
+    );
+    const maxMinHeight = parseInt(
+      this.getContainer().style.getPropertyValue(
+        elMinHeightPropertyName
+      )
+    ) || 0;
+    if (height > maxMinHeight) {
+      this.getContainer().style.setProperty(
+        elMinHeightPropertyName,
+        `${height}px`
+      );
+    }
+  }
+  get badge() {
+    let additionalStyles;
+    if (!this.card.badgeBackgroundColor || !this.card.badgeColor || !this.card.badgeText) {
+      return;
+    }
+    if (this.evergreen) {
+      additionalStyles = `border: 1px solid ${this.card.badgeBackgroundColor}; border-right: none;`;
+    }
+    return html`
             <div
                 id="badge"
                 class="${this.card.variant}-badge"
                 style="background-color: ${this.card.badgeBackgroundColor};
                 color: ${this.card.badgeColor};
-                ${e}"
+                ${additionalStyles}"
             >
                 ${this.card.badgeText}
             </div>
-        `}get cardImage(){return D` <div class="image">
+        `;
+  }
+  get cardImage() {
+    return html` <div class="image">
             <slot name="bg-image"></slot>
             ${this.badge}
-        </div>`}getGlobalCSS(){return""}get theme(){return document.querySelector("sp-theme")}get evergreen(){return this.card.classList.contains("intro-pricing")}get promoBottom(){return this.card.classList.contains("promo-bottom")}get headingSelector(){return'[slot="heading-xs"]'}get secureLabel(){return this.card.secureLabel?D`<span class="secure-transaction-label"
+        </div>`;
+  }
+  /* c8 ignore next 3 */
+  getGlobalCSS() {
+    return "";
+  }
+  /* c8 ignore next 3 */
+  get theme() {
+    return document.querySelector("sp-theme");
+  }
+  get evergreen() {
+    return this.card.classList.contains("intro-pricing");
+  }
+  get promoBottom() {
+    return this.card.classList.contains("promo-bottom");
+  }
+  get headingSelector() {
+    return '[slot="heading-xs"]';
+  }
+  get secureLabel() {
+    return this.card.secureLabel ? html`<span class="secure-transaction-label"
                 >${this.card.secureLabel}</span
-            >`:yt}get secureLabelFooter(){return D`<footer>${this.secureLabel}<slot name="footer"></slot></footer>`}async adjustTitleWidth(){let e=this.card.getBoundingClientRect().width,t=this.card.badgeElement?.getBoundingClientRect().width||0;e===0||t===0||this.card.style.setProperty("--consonant-merch-card-heading-xs-max-width",`${Math.round(e-t-16)}px`)}postCardUpdateHook(){}connectedCallbackHook(){}disconnectedCallbackHook(){}renderLayout(){}get aemFragmentMapping(){return tt(this.card.variant)}};b=new WeakMap,c(N,"styleMap",{});var l=N;import{html as V,css as St}from"../lit-all.min.js";var Gt=Object.freeze({MONTH:"MONTH",YEAR:"YEAR",TWO_YEARS:"TWO_YEARS",THREE_YEARS:"THREE_YEARS",PERPETUAL:"PERPETUAL",TERM_LICENSE:"TERM_LICENSE",ACCESS_PASS:"ACCESS_PASS",THREE_MONTHS:"THREE_MONTHS",SIX_MONTHS:"SIX_MONTHS"}),Vt=Object.freeze({ANNUAL:"ANNUAL",MONTHLY:"MONTHLY",TWO_YEARS:"TWO_YEARS",THREE_YEARS:"THREE_YEARS",P1D:"P1D",P1Y:"P1Y",P3Y:"P3Y",P10Y:"P10Y",P15Y:"P15Y",P3D:"P3D",P7D:"P7D",P30D:"P30D",HALF_YEARLY:"HALF_YEARLY",QUARTERLY:"QUARTERLY"});var x='span[is="inline-price"][data-wcs-osi]',wt='a[is="checkout-link"][data-wcs-osi],button[is="checkout-button"][data-wcs-osi]';var Bt=`${x},${wt}`;var et="merch-card:action-menu-toggle";var at="merch-card-collection:literals-changed";var qt=Object.freeze({SEGMENTATION:"segmentation",BUNDLE:"bundle",COMMITMENT:"commitment",RECOMMENDATION:"recommendation",EMAIL:"email",PAYMENT:"payment",CHANGE_PLAN_TEAM_PLANS:"change-plan/team-upgrade/plans",CHANGE_PLAN_TEAM_PAYMENT:"change-plan/team-upgrade/payment"});var Yt=Object.freeze({STAGE:"STAGE",PRODUCTION:"PRODUCTION",LOCAL:"LOCAL"});var rt="legal";var E={alphabetical:"alphabetical",authored:"authored"};var k=(o,e)=>o?.querySelector(`[slot="${e}"]`)?.textContent?.trim();function y(o,e={},t=null,a=null){let r=a?document.createElement(o,{is:a}):document.createElement(o);t instanceof HTMLElement?r.appendChild(t):r.innerHTML=t;for(let[n,s]of Object.entries(e))r.setAttribute(n,s);return r}function z(){return window.matchMedia("(max-width: 767px)")}function w(){return z().matches}function ot(){return window.matchMedia("(max-width: 1024px)").matches}var nt=`
+            >` : nothing;
+  }
+  get secureLabelFooter() {
+    return html`<footer>${this.secureLabel}<slot name="footer"></slot></footer>`;
+  }
+  async adjustTitleWidth() {
+    const cardWidth = this.card.getBoundingClientRect().width;
+    const badgeWidth = this.card.badgeElement?.getBoundingClientRect().width || 0;
+    if (cardWidth === 0 || badgeWidth === 0) return;
+    this.card.style.setProperty(
+      "--consonant-merch-card-heading-xs-max-width",
+      `${Math.round(cardWidth - badgeWidth - 16)}px`
+      // consonant-merch-spacing-xs
+    );
+  }
+  postCardUpdateHook() {
+  }
+  connectedCallbackHook() {
+  }
+  disconnectedCallbackHook() {
+  }
+  /* c8 ignore next 3 */
+  renderLayout() {
+  }
+  get aemFragmentMapping() {
+    return getFragmentMapping(this.card.variant);
+  }
+};
+_container = new WeakMap();
+__publicField(_VariantLayout, "styleMap", {});
+var VariantLayout = _VariantLayout;
+
+// src/variants/catalog.js
+import { html as html2, css } from "../lit-all.min.js";
+
+// src/constants.js
+var Commitment = Object.freeze({
+  MONTH: "MONTH",
+  YEAR: "YEAR",
+  TWO_YEARS: "TWO_YEARS",
+  THREE_YEARS: "THREE_YEARS",
+  PERPETUAL: "PERPETUAL",
+  TERM_LICENSE: "TERM_LICENSE",
+  ACCESS_PASS: "ACCESS_PASS",
+  THREE_MONTHS: "THREE_MONTHS",
+  SIX_MONTHS: "SIX_MONTHS"
+});
+var Term = Object.freeze({
+  ANNUAL: "ANNUAL",
+  MONTHLY: "MONTHLY",
+  TWO_YEARS: "TWO_YEARS",
+  THREE_YEARS: "THREE_YEARS",
+  P1D: "P1D",
+  P1Y: "P1Y",
+  P3Y: "P3Y",
+  P10Y: "P10Y",
+  P15Y: "P15Y",
+  P3D: "P3D",
+  P7D: "P7D",
+  P30D: "P30D",
+  HALF_YEARLY: "HALF_YEARLY",
+  QUARTERLY: "QUARTERLY"
+});
+var SELECTOR_MAS_INLINE_PRICE = 'span[is="inline-price"][data-wcs-osi]';
+var SELECTOR_MAS_CHECKOUT_LINK = 'a[is="checkout-link"][data-wcs-osi],button[is="checkout-button"][data-wcs-osi]';
+var SELECTOR_MAS_ELEMENT = `${SELECTOR_MAS_INLINE_PRICE},${SELECTOR_MAS_CHECKOUT_LINK}`;
+var EVENT_MERCH_CARD_ACTION_MENU_TOGGLE = "merch-card:action-menu-toggle";
+var EVENT_MERCH_CARD_COLLECTION_LITERALS_CHANGED = "merch-card-collection:literals-changed";
+var CheckoutWorkflowStep = Object.freeze({
+  SEGMENTATION: "segmentation",
+  BUNDLE: "bundle",
+  COMMITMENT: "commitment",
+  RECOMMENDATION: "recommendation",
+  EMAIL: "email",
+  PAYMENT: "payment",
+  CHANGE_PLAN_TEAM_PLANS: "change-plan/team-upgrade/plans",
+  CHANGE_PLAN_TEAM_PAYMENT: "change-plan/team-upgrade/payment"
+});
+var Env = Object.freeze({
+  STAGE: "STAGE",
+  PRODUCTION: "PRODUCTION",
+  LOCAL: "LOCAL"
+});
+var TEMPLATE_PRICE_LEGAL = "legal";
+var SORT_ORDER = {
+  alphabetical: "alphabetical",
+  authored: "authored"
+};
+
+// src/utils.js
+var getSlotText = (element, name) => element?.querySelector(`[slot="${name}"]`)?.textContent?.trim();
+function createTag(tag, attributes = {}, content = null, is = null) {
+  const element = is ? document.createElement(tag, { is }) : document.createElement(tag);
+  if (content instanceof HTMLElement) {
+    element.appendChild(content);
+  } else {
+    element.innerHTML = content;
+  }
+  for (const [key, value] of Object.entries(attributes)) {
+    element.setAttribute(key, value);
+  }
+  return element;
+}
+function matchMobile() {
+  return window.matchMedia("(max-width: 767px)");
+}
+function isMobile() {
+  return matchMobile().matches;
+}
+function isMobileOrTablet() {
+  return window.matchMedia("(max-width: 1024px)").matches;
+}
+
+// src/variants/catalog.css.js
+var CSS = `
 :root {
   --consonant-merch-card-catalog-width: 276px;
   --consonant-merch-card-catalog-icon-size: 40px;
@@ -25,7 +252,7 @@ var bt=Object.defineProperty;var X=o=>{throw TypeError(o)};var Et=(o,e,t)=>e in 
     grid-template-columns: var(--consonant-merch-card-catalog-width);
 }
 
-@media screen and ${d} {
+@media screen and ${TABLET_UP} {
     :root {
       --consonant-merch-card-catalog-width: 302px;
     }
@@ -37,7 +264,7 @@ var bt=Object.defineProperty;var X=o=>{throw TypeError(o)};var Et=(o,e,t)=>e in 
     }
 }
 
-@media screen and ${i} {
+@media screen and ${DESKTOP_UP} {
     :root {
       --consonant-merch-card-catalog-width: 276px;
     }
@@ -48,7 +275,7 @@ var bt=Object.defineProperty;var X=o=>{throw TypeError(o)};var Et=(o,e,t)=>e in 
     }
 }
 
-@media screen and ${g} {
+@media screen and ${LARGE_DESKTOP} {
     .four-merch-cards.catalog {
         grid-template-columns: repeat(4, var(--consonant-merch-card-catalog-width));
     }
@@ -99,13 +326,69 @@ merch-card[variant="catalog"] .payment-details {
   font-style: italic;
   font-weight: 400;
   line-height: var(--consonant-merch-card-body-line-height);
-}`;var ct={badge:!0,ctas:{slot:"footer",size:"m"},description:{tag:"div",slot:"body-xs"},mnemonics:{size:"l"},prices:{tag:"h3",slot:"heading-xs"},size:["wide","super-wide"],title:{tag:"h3",slot:"heading-xs"}},S=class extends l{constructor(t){super(t);c(this,"dispatchActionMenuToggle",()=>{this.card.dispatchEvent(new CustomEvent(et,{bubbles:!0,composed:!0,detail:{card:this.card.name,type:"action-menu"}}))});c(this,"toggleActionMenu",t=>{if(!this.actionMenuContentSlot||!t||t.type!=="click"&&t.code!=="Space"&&t.code!=="Enter")return;t.preventDefault(),this.actionMenuContentSlot.classList.toggle("hidden");let a=this.actionMenuContentSlot.classList.contains("hidden");a||this.dispatchActionMenuToggle(),this.setAriaExpanded(this.actionMenu,(!a).toString())});c(this,"toggleActionMenuFromCard",t=>{let a=t?.type==="mouseleave"?!0:void 0;this.card.blur(),this.actionMenu?.classList.remove("always-visible"),this.actionMenuContentSlot&&(a||this.dispatchActionMenuToggle(),this.actionMenuContentSlot.classList.toggle("hidden",a),this.setAriaExpanded(this.actionMenu,"false"))});c(this,"hideActionMenu",t=>{this.actionMenuContentSlot?.classList.add("hidden"),this.setAriaExpanded(this.actionMenu,"false")})}get actionMenu(){return this.card.shadowRoot.querySelector(".action-menu")}get actionMenuContentSlot(){return this.card.shadowRoot.querySelector('slot[name="action-menu-content"]')}renderLayout(){return V` <div class="body">
+}`;
+
+// src/variants/catalog.js
+var CATALOG_AEM_FRAGMENT_MAPPING = {
+  badge: true,
+  ctas: { slot: "footer", size: "m" },
+  description: { tag: "div", slot: "body-xs" },
+  mnemonics: { size: "l" },
+  prices: { tag: "h3", slot: "heading-xs" },
+  size: ["wide", "super-wide"],
+  title: { tag: "h3", slot: "heading-xs" }
+};
+var Catalog = class extends VariantLayout {
+  constructor(card) {
+    super(card);
+    __publicField(this, "dispatchActionMenuToggle", () => {
+      this.card.dispatchEvent(
+        new CustomEvent(EVENT_MERCH_CARD_ACTION_MENU_TOGGLE, {
+          bubbles: true,
+          composed: true,
+          detail: {
+            card: this.card.name,
+            type: "action-menu"
+          }
+        })
+      );
+    });
+    __publicField(this, "toggleActionMenu", (e) => {
+      if (!this.actionMenuContentSlot || !e || e.type !== "click" && e.code !== "Space" && e.code !== "Enter") return;
+      e.preventDefault();
+      this.actionMenuContentSlot.classList.toggle("hidden");
+      const isHidden = this.actionMenuContentSlot.classList.contains("hidden");
+      if (!isHidden) this.dispatchActionMenuToggle();
+      this.setAriaExpanded(this.actionMenu, (!isHidden).toString());
+    });
+    __publicField(this, "toggleActionMenuFromCard", (e) => {
+      const retract = e?.type === "mouseleave" ? true : void 0;
+      this.card.blur();
+      this.actionMenu?.classList.remove("always-visible");
+      if (!this.actionMenuContentSlot) return;
+      if (!retract) this.dispatchActionMenuToggle();
+      this.actionMenuContentSlot.classList.toggle("hidden", retract);
+      this.setAriaExpanded(this.actionMenu, "false");
+    });
+    __publicField(this, "hideActionMenu", (e) => {
+      this.actionMenuContentSlot?.classList.add("hidden");
+      this.setAriaExpanded(this.actionMenu, "false");
+    });
+  }
+  get actionMenu() {
+    return this.card.shadowRoot.querySelector(".action-menu");
+  }
+  get actionMenuContentSlot() {
+    return this.card.shadowRoot.querySelector('slot[name="action-menu-content"]');
+  }
+  renderLayout() {
+    return html2` <div class="body">
                 <div class="top-section">
                     <slot name="icons"></slot> ${this.badge}
                     <div
                         class="action-menu
-                ${ot()&&this.card.actionMenu?"always-visible":""}
-                ${this.card.actionMenu?"invisible":"hidden"}"
+                ${isMobileOrTablet() && this.card.actionMenu ? "always-visible" : ""}
+                ${!this.card.actionMenu ? "hidden" : "invisible"}"
                         @click="${this.toggleActionMenu}"
                         @keypress="${this.toggleActionMenu}"
                         tabindex="0"
@@ -116,21 +399,36 @@ merch-card[variant="catalog"] .payment-details {
                 <slot
                     name="action-menu-content"
                     class="action-menu-content
-            ${this.card.actionMenuContent?"":"hidden"}"
+            ${!this.card.actionMenuContent ? "hidden" : ""}"
                     @focusout="${this.hideActionMenu}"
                     >${this.card.actionMenuContent}
                 </slot>
                 <slot name="heading-xs"></slot>
                 <slot name="heading-m"></slot>
                 <slot name="body-xxs"></slot>
-                ${this.promoBottom?"":V`<slot name="promo-text"></slot
-                          ><slot name="callout-content"></slot>`}
+                ${!this.promoBottom ? html2`<slot name="promo-text"></slot
+                          ><slot name="callout-content"></slot>` : ""}
                 <slot name="body-xs"></slot>
-                ${this.promoBottom?V`<slot name="promo-text"></slot
-                          ><slot name="callout-content"></slot>`:""}
+                ${this.promoBottom ? html2`<slot name="promo-text"></slot
+                          ><slot name="callout-content"></slot>` : ""}
             </div>
             ${this.secureLabelFooter}
-            <slot></slot>`}getGlobalCSS(){return nt}setAriaExpanded(t,a){t.setAttribute("aria-expanded",a)}connectedCallbackHook(){this.card.addEventListener("mouseleave",this.toggleActionMenuFromCard)}disconnectedCallbackHook(){this.card.removeEventListener("mouseleave",this.toggleActionMenuFromCard)}};c(S,"variantStyle",St`
+            <slot></slot>`;
+  }
+  getGlobalCSS() {
+    return CSS;
+  }
+  setAriaExpanded(element, value) {
+    element.setAttribute("aria-expanded", value);
+  }
+  connectedCallbackHook() {
+    this.card.addEventListener("mouseleave", this.toggleActionMenuFromCard);
+  }
+  disconnectedCallbackHook() {
+    this.card.removeEventListener("mouseleave", this.toggleActionMenuFromCard);
+  }
+};
+__publicField(Catalog, "variantStyle", css`
         :host([variant='catalog']) {
             min-height: 330px;
             width: var(--consonant-merch-card-catalog-width);
@@ -148,7 +446,13 @@ merch-card[variant="catalog"] .payment-details {
             margin-left: var(--consonant-merch-spacing-xxs);
             box-sizing: border-box;
         }
-    `);import{html as O}from"../lit-all.min.js";var it=`
+    `);
+
+// src/variants/image.js
+import { html as html3 } from "../lit-all.min.js";
+
+// src/variants/image.css.js
+var CSS2 = `
 :root {
   --consonant-merch-card-image-width: 300px;
 }
@@ -160,7 +464,7 @@ merch-card[variant="catalog"] .payment-details {
   grid-template-columns: var(--consonant-merch-card-image-width);
 }
 
-@media screen and ${d} {
+@media screen and ${TABLET_UP} {
   .two-merch-cards.image,
   .three-merch-cards.image,
   .four-merch-cards.image {
@@ -168,7 +472,7 @@ merch-card[variant="catalog"] .payment-details {
   }
 }
 
-@media screen and ${i} {
+@media screen and ${DESKTOP_UP} {
   :root {
     --consonant-merch-card-image-width: 378px;
     --consonant-merch-card-image-width-4clm: 276px;
@@ -182,24 +486,43 @@ merch-card[variant="catalog"] .payment-details {
       grid-template-columns: repeat(4, var(--consonant-merch-card-image-width-4clm));
   }
 }
-`;var I=class extends l{constructor(e){super(e)}getGlobalCSS(){return it}renderLayout(){return O`${this.cardImage}
+`;
+
+// src/variants/image.js
+var Image = class extends VariantLayout {
+  constructor(card) {
+    super(card);
+  }
+  getGlobalCSS() {
+    return CSS2;
+  }
+  renderLayout() {
+    return html3`${this.cardImage}
     <div class="body">
         <slot name="icons"></slot>
         <slot name="heading-xs"></slot>
         <slot name="body-xxs"></slot>
-        ${this.promoBottom?O`<slot name="body-xs"></slot><slot name="promo-text"></slot>`:O`<slot name="promo-text"></slot><slot name="body-xs"></slot>`}
+        ${this.promoBottom ? html3`<slot name="body-xs"></slot><slot name="promo-text"></slot>` : html3`<slot name="promo-text"></slot><slot name="body-xs"></slot>`}
     </div>
-    ${this.evergreen?O`
+    ${this.evergreen ? html3`
               <div
                   class="detail-bg-container"
-                  style="background: ${this.card.detailBg}"
+                  style="background: ${this.card["detailBg"]}"
               >
                   <slot name="detail-bg"></slot>
               </div>
-          `:O`
+          ` : html3`
               <hr />
               ${this.secureLabelFooter}
-          `}`}};import{html as dt}from"../lit-all.min.js";var st=`
+          `}`;
+  }
+};
+
+// src/variants/inline-heading.js
+import { html as html4 } from "../lit-all.min.js";
+
+// src/variants/inline-heading.css.js
+var CSS3 = `
 :root {
   --consonant-merch-card-inline-heading-width: 300px;
 }
@@ -211,7 +534,7 @@ merch-card[variant="catalog"] .payment-details {
     grid-template-columns: var(--consonant-merch-card-inline-heading-width);
 }
 
-@media screen and ${d} {
+@media screen and ${TABLET_UP} {
   .two-merch-cards.inline-heading,
   .three-merch-cards.inline-heading,
   .four-merch-cards.inline-heading {
@@ -219,7 +542,7 @@ merch-card[variant="catalog"] .payment-details {
   }
 }
 
-@media screen and ${i} {
+@media screen and ${DESKTOP_UP} {
   :root {
     --consonant-merch-card-inline-heading-width: 378px;
   }
@@ -230,12 +553,23 @@ merch-card[variant="catalog"] .payment-details {
   }
 }
 
-@media screen and ${g} {
+@media screen and ${LARGE_DESKTOP} {
   .four-merch-cards.inline-heading {
       grid-template-columns: repeat(4, var(--consonant-merch-card-inline-heading-width));
   }
 }
-`;var H=class extends l{constructor(e){super(e)}getGlobalCSS(){return st}renderLayout(){return dt` ${this.badge}
+`;
+
+// src/variants/inline-heading.js
+var InlineHeading = class extends VariantLayout {
+  constructor(card) {
+    super(card);
+  }
+  getGlobalCSS() {
+    return CSS3;
+  }
+  renderLayout() {
+    return html4` ${this.badge}
     <div class="body">
         <div class="top-section">
             <slot name="icons"></slot>
@@ -243,7 +577,15 @@ merch-card[variant="catalog"] .payment-details {
         </div>
         <slot name="body-xs"></slot>
     </div>
-    ${this.card.customHr?"":dt`<hr />`} ${this.secureLabelFooter}`}};import{html as T,css as Tt,unsafeCSS as B}from"../lit-all.min.js";var lt=`
+    ${!this.card.customHr ? html4`<hr />` : ""} ${this.secureLabelFooter}`;
+  }
+};
+
+// src/variants/mini-compare-chart.js
+import { html as html5, css as css2, unsafeCSS } from "../lit-all.min.js";
+
+// src/variants/mini-compare-chart.css.js
+var CSS4 = `
   :root {
     --consonant-merch-card-mini-compare-chart-icon-size: 32px;
     --consonant-merch-card-mini-compare-mobile-cta-font-size: 16px;
@@ -485,7 +827,7 @@ merch-card[variant="catalog"] .payment-details {
 }
 
 /* mini compare mobile */ 
-@media screen and ${p} {
+@media screen and ${MOBILE_LANDSCAPE} {
   :root {
     --consonant-merch-card-mini-compare-chart-width: 302px;
     --consonant-merch-card-mini-compare-chart-wide-width: 302px;
@@ -571,7 +913,7 @@ merch-card[variant="catalog"] .payment-details {
   }
 }
 
-@media screen and ${$} {
+@media screen and ${TABLET_DOWN} {
   merch-card[variant="mini-compare-chart"] [slot='heading-m'] {
     font-size: var(--consonant-merch-card-body-s-font-size);
     line-height: var(--consonant-merch-card-body-s-line-height);
@@ -602,7 +944,7 @@ merch-card[variant="catalog"] .payment-details {
     line-height: var(--consonant-merch-card-body-s-line-height);
   }
 }
-@media screen and ${d} {
+@media screen and ${TABLET_UP} {
   :root {
     --consonant-merch-card-mini-compare-chart-width: 302px;
     --consonant-merch-card-mini-compare-chart-wide-width: 302px;
@@ -620,7 +962,7 @@ merch-card[variant="catalog"] .payment-details {
 }
 
 /* desktop */
-@media screen and ${i} {
+@media screen and ${DESKTOP_UP} {
   :root {
     --consonant-merch-card-mini-compare-chart-width: 378px;
     --consonant-merch-card-mini-compare-chart-wide-width: 484px;  
@@ -641,7 +983,7 @@ merch-card[variant="catalog"] .payment-details {
   }
 }
 
-@media screen and ${g} {
+@media screen and ${LARGE_DESKTOP} {
   .four-merch-cards.mini-compare-chart {
       grid-template-columns: repeat(4, var(--consonant-merch-card-mini-compare-chart-width));
   }
@@ -678,17 +1020,163 @@ merch-card .footer-row-cell:nth-child(7) {
 merch-card .footer-row-cell:nth-child(8) {
   min-height: var(--consonant-merch-card-footer-row-8-min-height);
 }
-`;var At=32,A=class extends l{constructor(t){super(t);c(this,"getRowMinHeightPropertyName",t=>`--consonant-merch-card-footer-row-${t}-min-height`);c(this,"getMiniCompareFooter",()=>{let t=this.card.secureLabel?T`<slot name="secure-transaction-label">
+`;
+
+// src/variants/mini-compare-chart.js
+var FOOTER_ROW_MIN_HEIGHT = 32;
+var MiniCompareChart = class extends VariantLayout {
+  constructor(card) {
+    super(card);
+    __publicField(this, "getRowMinHeightPropertyName", (index) => `--consonant-merch-card-footer-row-${index}-min-height`);
+    // For addon tiitle is it ok if we hardocde it in card settings?
+    // For addon is it ok if we hardcode it as placeholder key?
+    // How to add the price?
+    __publicField(this, "getMiniCompareFooter", () => {
+      const secureLabel = this.card.secureLabel ? html5`<slot name="secure-transaction-label">
               <span class="secure-transaction-label"
                   >${this.card.secureLabel}</span
               ></slot
-          >`:T`<slot name="secure-transaction-label"></slot>`;return T`<footer>${t}<slot name="footer"></slot></footer>`})}getGlobalCSS(){return lt}adjustMiniCompareBodySlots(){if(this.card.getBoundingClientRect().width<=2)return;this.updateCardElementMinHeight(this.card.shadowRoot.querySelector(".top-section"),"top-section");let t=["heading-m","body-m","heading-m-price","body-xxs","price-commitment","offers","promo-text","callout-content","addon"];this.card.classList.contains("bullet-list")&&t.push("footer-rows"),t.forEach(r=>this.updateCardElementMinHeight(this.card.shadowRoot.querySelector(`slot[name="${r}"]`),r)),this.updateCardElementMinHeight(this.card.shadowRoot.querySelector("footer"),"footer");let a=this.card.shadowRoot.querySelector(".mini-compare-chart-badge");a&&a.textContent!==""&&this.getContainer().style.setProperty("--consonant-merch-card-mini-compare-chart-top-section-mobile-height","32px")}adjustMiniCompareFooterRows(){if(this.card.getBoundingClientRect().width===0)return;let t=this.card.querySelector('[slot="footer-rows"] ul');!t||!t.children||[...t.children].forEach((a,r)=>{let n=Math.max(At,parseFloat(window.getComputedStyle(a).height)||0),s=parseFloat(this.getContainer().style.getPropertyValue(this.getRowMinHeightPropertyName(r+1)))||0;n>s&&this.getContainer().style.setProperty(this.getRowMinHeightPropertyName(r+1),`${n}px`)})}removeEmptyRows(){this.card.querySelectorAll(".footer-row-cell").forEach(a=>{let r=a.querySelector(".footer-row-cell-description");r&&!r.textContent.trim()&&a.remove()})}get mainPrice(){return this.card.querySelector(`[slot="heading-m-price"] ${x}[data-template="price"]`)}get headingMPriceSlot(){return this.card.shadowRoot.querySelector('slot[name="heading-m-price"]')?.assignedElements()[0]}toggleAddon(t){let a=this.mainPrice,r=this.headingMPriceSlot;if(!a&&r){let n=t?.getAttribute("plan-type"),s=null;if(t&&n&&(s=t.querySelector(`p[data-plan-type="${n}"]`)?.querySelector('span[is="inline-price"]')),this.card.querySelectorAll('p[slot="heading-m-price"]').forEach(m=>m.remove()),t.checked){if(s){let m=y("p",{class:"addon-heading-m-price-addon",slot:"heading-m-price"},s.innerHTML);this.card.appendChild(m)}}else{let m=y("p",{class:"card-heading",id:"free",slot:"heading-m-price"},"Free");this.card.appendChild(m)}}}async adjustAddon(){await this.card.updateComplete;let t=this.card.addon;if(!t)return;let a=this.mainPrice,r=this.card.planType;a&&(await a.onceSettled(),r=a.value?.[0]?.planType),r&&(t.planType=r)}renderLayout(){return T` <div class="top-section${this.badge?" badge":""}">
+          >` : html5`<slot name="secure-transaction-label"></slot>`;
+      return html5`<footer>${secureLabel}<slot name="footer"></slot></footer>`;
+    });
+  }
+  getGlobalCSS() {
+    return CSS4;
+  }
+  adjustMiniCompareBodySlots() {
+    if (this.card.getBoundingClientRect().width <= 2) return;
+    this.updateCardElementMinHeight(
+      this.card.shadowRoot.querySelector(".top-section"),
+      "top-section"
+    );
+    let slots = [
+      "heading-m",
+      "body-m",
+      "heading-m-price",
+      "body-xxs",
+      "price-commitment",
+      "offers",
+      "promo-text",
+      "callout-content",
+      "addon"
+    ];
+    if (this.card.classList.contains("bullet-list")) {
+      slots.push("footer-rows");
+    }
+    slots.forEach(
+      (slot) => this.updateCardElementMinHeight(
+        this.card.shadowRoot.querySelector(`slot[name="${slot}"]`),
+        slot
+      )
+    );
+    this.updateCardElementMinHeight(
+      this.card.shadowRoot.querySelector("footer"),
+      "footer"
+    );
+    const badge = this.card.shadowRoot.querySelector(
+      ".mini-compare-chart-badge"
+    );
+    if (badge && badge.textContent !== "") {
+      this.getContainer().style.setProperty(
+        "--consonant-merch-card-mini-compare-chart-top-section-mobile-height",
+        "32px"
+      );
+    }
+  }
+  adjustMiniCompareFooterRows() {
+    if (this.card.getBoundingClientRect().width === 0) return;
+    const footerRows = this.card.querySelector('[slot="footer-rows"] ul');
+    if (!footerRows || !footerRows.children) return;
+    [...footerRows.children].forEach((el, index) => {
+      const height = Math.max(
+        FOOTER_ROW_MIN_HEIGHT,
+        parseFloat(window.getComputedStyle(el).height) || 0
+      );
+      const maxMinHeight = parseFloat(
+        this.getContainer().style.getPropertyValue(
+          this.getRowMinHeightPropertyName(index + 1)
+        )
+      ) || 0;
+      if (height > maxMinHeight) {
+        this.getContainer().style.setProperty(
+          this.getRowMinHeightPropertyName(index + 1),
+          `${height}px`
+        );
+      }
+    });
+  }
+  removeEmptyRows() {
+    const footerRows = this.card.querySelectorAll(".footer-row-cell");
+    footerRows.forEach((row) => {
+      const rowDescription = row.querySelector(".footer-row-cell-description");
+      if (rowDescription) {
+        const isEmpty = !rowDescription.textContent.trim();
+        if (isEmpty) {
+          row.remove();
+        }
+      }
+    });
+  }
+  get mainPrice() {
+    const price = this.card.querySelector(
+      `[slot="heading-m-price"] ${SELECTOR_MAS_INLINE_PRICE}[data-template="price"]`
+    );
+    return price;
+  }
+  get headingMPriceSlot() {
+    return this.card.shadowRoot.querySelector('slot[name="heading-m-price"]')?.assignedElements()[0];
+  }
+  toggleAddon(merchAddon) {
+    const mainPrice = this.mainPrice;
+    const headingMPriceSlot = this.headingMPriceSlot;
+    if (!mainPrice && headingMPriceSlot) {
+      const planType = merchAddon?.getAttribute("plan-type");
+      let visibleSpan = null;
+      if (merchAddon && planType) {
+        const matchingP = merchAddon.querySelector(`p[data-plan-type="${planType}"]`);
+        visibleSpan = matchingP?.querySelector('span[is="inline-price"]');
+      }
+      this.card.querySelectorAll('p[slot="heading-m-price"]').forEach((p) => p.remove());
+      if (merchAddon.checked) {
+        if (visibleSpan) {
+          const replacementP = createTag(
+            "p",
+            { class: "addon-heading-m-price-addon", slot: "heading-m-price" },
+            visibleSpan.innerHTML
+          );
+          this.card.appendChild(replacementP);
+        }
+      } else {
+        const freeP = createTag(
+          "p",
+          { class: "card-heading", id: "free", slot: "heading-m-price" },
+          "Free"
+        );
+        this.card.appendChild(freeP);
+      }
+    }
+  }
+  async adjustAddon() {
+    await this.card.updateComplete;
+    const addon = this.card.addon;
+    if (!addon) return;
+    const price = this.mainPrice;
+    let planType = this.card.planType;
+    if (price) {
+      await price.onceSettled();
+      planType = price.value?.[0]?.planType;
+    }
+    if (!planType) return;
+    addon.planType = planType;
+  }
+  renderLayout() {
+    return html5` <div class="top-section${this.badge ? " badge" : ""}">
             <slot name="icons"></slot> ${this.badge}
         </div>
         <slot name="heading-m"></slot>
-        ${this.card.classList.contains("bullet-list")?T`<slot name="heading-m-price"></slot>
+        ${this.card.classList.contains("bullet-list") ? html5`<slot name="heading-m-price"></slot>
           <slot name="price-commitment"></slot>
-          <slot name="body-m"></slot>`:T`<slot name="body-m"></slot>
+          <slot name="body-m"></slot>` : html5`<slot name="body-m"></slot>
           <slot name="heading-m-price"></slot>`}
         <slot name="body-xxs"></slot>
         <slot name="price-commitment"></slot>
@@ -697,7 +1185,20 @@ merch-card .footer-row-cell:nth-child(8) {
         <slot name="callout-content"></slot>
         <slot name="addon"></slot>
         ${this.getMiniCompareFooter()}
-        <slot name="footer-rows"><slot name="body-s"></slot></slot>`}async postCardUpdateHook(){await Promise.all(this.card.prices.map(t=>t.onceSettled())),await this.adjustAddon(),w()?this.removeEmptyRows():(this.adjustMiniCompareBodySlots(),this.adjustMiniCompareFooterRows())}};c(A,"variantStyle",Tt`
+        <slot name="footer-rows"><slot name="body-s"></slot></slot>`;
+  }
+  async postCardUpdateHook() {
+    await Promise.all(this.card.prices.map((price) => price.onceSettled()));
+    await this.adjustAddon();
+    if (!isMobile()) {
+      this.adjustMiniCompareBodySlots();
+      this.adjustMiniCompareFooterRows();
+    } else {
+      this.removeEmptyRows();
+    }
+  }
+};
+__publicField(MiniCompareChart, "variantStyle", css2`
     :host([variant='mini-compare-chart']) > slot:not([name='icons']) {
         display: block;
     }
@@ -730,7 +1231,7 @@ merch-card .footer-row-cell:nth-child(8) {
       color: var(--merch-color-grey-700);
     }
 
-    @media screen and ${B(p)} {
+    @media screen and ${unsafeCSS(MOBILE_LANDSCAPE)} {
       :host([variant='mini-compare-chart'].bullet-list) .mini-compare-chart-badge {
         padding: 2px 10px;
         font-size: var(--consonant-merch-card-body-xs-font-size);
@@ -742,7 +1243,7 @@ merch-card .footer-row-cell:nth-child(8) {
       }
     }
 
-    @media screen and ${B($)} {
+    @media screen and ${unsafeCSS(TABLET_DOWN)} {
         [class*'-merch-cards'] :host([variant='mini-compare-chart']) footer {
             flex-direction: column;
             align-items: stretch;
@@ -750,7 +1251,7 @@ merch-card .footer-row-cell:nth-child(8) {
         }
     }
 
-    @media screen and ${B(i)} {
+    @media screen and ${unsafeCSS(DESKTOP_UP)} {
         :host([variant='mini-compare-chart']) footer {
             padding: var(--consonant-merch-spacing-xs)
                 var(--consonant-merch-spacing-s)
@@ -806,7 +1307,13 @@ merch-card .footer-row-cell:nth-child(8) {
     :host([variant='mini-compare-chart']) slot[name='footer-rows'] {
         justify-content: flex-start;
     }
-  `);import{html as v,css as _t,nothing as F}from"../lit-all.min.js";var ht=`
+  `);
+
+// src/variants/plans.js
+import { html as html6, css as css3, nothing as nothing2 } from "../lit-all.min.js";
+
+// src/variants/plans.css.js
+var CSS5 = `
 :root {
     --consonant-merch-card-plans-width: 300px;
     --consonant-merch-card-plans-icon-size: 40px;
@@ -976,7 +1483,7 @@ merch-card[variant^="plans"] merch-addon span[data-template="price"] {
 }
 
 /* Mobile */
-@media screen and ${p} {
+@media screen and ${MOBILE_LANDSCAPE} {
     merch-whats-included merch-mnemonic-list,
     merch-whats-included [slot="heading"] {
         width: 100%;
@@ -1028,7 +1535,7 @@ merch-card-collection-header.plans {
 }
 
 /* Tablet */
-@media screen and ${d} {
+@media screen and ${TABLET_UP} {
   :root {
     --consonant-merch-card-plans-width: 302px;
   }
@@ -1046,7 +1553,7 @@ merch-card-collection-header.plans {
 }
 
 /* desktop */
-@media screen and ${i} {
+@media screen and ${DESKTOP_UP} {
   :root {
     --consonant-merch-card-plans-width: 276px;
   }
@@ -1068,7 +1575,7 @@ merch-card-collection-header.plans {
 }
 
 /* Large desktop */
-    @media screen and ${g} {
+    @media screen and ${LARGE_DESKTOP} {
     .four-merch-cards.plans {
         grid-template-columns: repeat(4, var(--consonant-merch-card-plans-width));
     }
@@ -1076,11 +1583,204 @@ merch-card-collection-header.plans {
         grid-template-columns: repeat(2, var(--consonant-merch-card-plans-width));
     }
 }
-`;var U={title:{tag:"h3",slot:"heading-xs"},prices:{tag:"p",slot:"heading-m"},promoText:{tag:"p",slot:"promo-text"},description:{tag:"div",slot:"body-xs"},mnemonics:{size:"l"},callout:{tag:"div",slot:"callout-content"},quantitySelect:{tag:"div",slot:"quantity-select"},addon:!0,secureLabel:!0,planType:!0,badge:{tag:"div",slot:"badge",default:"spectrum-yellow-300-plans"},allowedBadgeColors:["spectrum-yellow-300-plans","spectrum-gray-300-plans","spectrum-gray-700-plans","spectrum-green-900-plans"],allowedBorderColors:["spectrum-yellow-300-plans","spectrum-gray-300-plans","spectrum-green-900-plans"],borderColor:{attribute:"border-color"},size:["wide","super-wide"],whatsIncluded:{tag:"div",slot:"whats-included"},ctas:{slot:"footer",size:"m"},style:"consonant"},mt={...function(){let{whatsIncluded:o,...e}=U;return e}(),title:{tag:"h3",slot:"heading-s"},subtitle:{tag:"p",slot:"subtitle"},secureLabel:!1},pt={...function(){let{whatsIncluded:o,size:e,quantitySelect:t,...a}=U;return a}()},h=class extends l{constructor(e){super(e),this.adaptForMobile=this.adaptForMobile.bind(this)}priceOptionsProvider(e,t){e.dataset.template===rt&&(t.displayPlanType=this.card?.settings?.displayPlanType??!1)}getGlobalCSS(){return ht}adaptForMobile(){if(!this.card.closest("merch-card-collection,overlay-trigger,.two-merch-cards,.three-merch-cards,.four-merch-cards, .columns")){this.card.removeAttribute("size");return}let e=this.card.shadowRoot,t=e.querySelector("footer"),a=this.card.getAttribute("size"),r=e.querySelector("footer #stock-checkbox"),n=e.querySelector(".body #stock-checkbox"),s=e.querySelector(".body");if(!a){t?.classList.remove("wide-footer"),r&&r.remove();return}let m=w();if(t?.classList.toggle("wide-footer",!m),m&&r){n?r.remove():s.appendChild(r);return}!m&&n&&(r?n.remove():t.prepend(n))}adjustCallout(){let e=this.card.querySelector('[slot="callout-content"] .icon-button');e&&e.title&&(e.dataset.tooltip=e.title,e.removeAttribute("title"),e.classList.add("hide-tooltip"),document.addEventListener("touchstart",t=>{t.preventDefault(),t.target!==e?e.classList.add("hide-tooltip"):t.target.classList.toggle("hide-tooltip")}),document.addEventListener("mouseover",t=>{t.preventDefault(),t.target!==e?e.classList.add("hide-tooltip"):t.target.classList.remove("hide-tooltip")}))}postCardUpdateHook(){this.adaptForMobile(),this.adjustTitleWidth(),this.adjustLegal(),this.adjustAddon(),this.adjustCallout()}get headingM(){return this.card.querySelector('[slot="heading-m"]')}get mainPrice(){return this.headingM.querySelector(`${x}[data-template="price"]`)}get divider(){return this.card.variant==="plans-education"?v`<div class="divider"></div>`:F}async adjustLegal(){if(await this.card.updateComplete,this.legalAdjusted)return;this.legalAdjusted=!0;let e=[],t=this.card.querySelector(`[slot="heading-m"] ${x}[data-template="price"]`);t&&e.push(t),this.card.querySelectorAll(`[slot="body-xs"] ${x}[data-template="price"]`).forEach(n=>e.push(n));let r=e.map(async n=>{let s=n.cloneNode(!0);await n.onceSettled(),n?.options&&(n.options.displayPerUnit&&(n.dataset.displayPerUnit="false"),n.options.displayTax&&(n.dataset.displayTax="false"),n.options.displayPlanType&&(n.dataset.displayPlanType="false"),s.setAttribute("data-template","legal"),n.parentNode.insertBefore(s,n.nextSibling))});await Promise.all(r)}async adjustAddon(){await this.card.updateComplete;let e=this.card.addon;if(!e)return;let t=this.mainPrice;if(!t)return;await t.onceSettled();let a=t.value?.[0]?.planType;a&&(e.planType=a)}get stockCheckbox(){return this.card.checkboxLabel?v`<label id="stock-checkbox">
+`;
+
+// src/variants/plans.js
+var PLANS_AEM_FRAGMENT_MAPPING = {
+  title: { tag: "h3", slot: "heading-xs" },
+  prices: { tag: "p", slot: "heading-m" },
+  promoText: { tag: "p", slot: "promo-text" },
+  description: { tag: "div", slot: "body-xs" },
+  mnemonics: { size: "l" },
+  callout: { tag: "div", slot: "callout-content" },
+  quantitySelect: { tag: "div", slot: "quantity-select" },
+  addon: true,
+  secureLabel: true,
+  planType: true,
+  badge: { tag: "div", slot: "badge", default: "spectrum-yellow-300-plans" },
+  allowedBadgeColors: [
+    "spectrum-yellow-300-plans",
+    "spectrum-gray-300-plans",
+    "spectrum-gray-700-plans",
+    "spectrum-green-900-plans"
+  ],
+  allowedBorderColors: [
+    "spectrum-yellow-300-plans",
+    "spectrum-gray-300-plans",
+    "spectrum-green-900-plans"
+  ],
+  borderColor: { attribute: "border-color" },
+  size: ["wide", "super-wide"],
+  whatsIncluded: { tag: "div", slot: "whats-included" },
+  ctas: { slot: "footer", size: "m" },
+  style: "consonant"
+};
+var PLANS_EDUCATION_AEM_FRAGMENT_MAPPING = {
+  ...function() {
+    const { whatsIncluded, ...rest } = PLANS_AEM_FRAGMENT_MAPPING;
+    return rest;
+  }(),
+  title: { tag: "h3", slot: "heading-s" },
+  subtitle: { tag: "p", slot: "subtitle" },
+  secureLabel: false
+};
+var PLANS_STUDENTS_AEM_FRAGMENT_MAPPING = {
+  ...function() {
+    const { whatsIncluded, size, quantitySelect, ...rest } = PLANS_AEM_FRAGMENT_MAPPING;
+    return rest;
+  }()
+};
+var Plans = class extends VariantLayout {
+  constructor(card) {
+    super(card);
+    this.adaptForMobile = this.adaptForMobile.bind(this);
+  }
+  priceOptionsProvider(element, options) {
+    if (element.dataset.template !== TEMPLATE_PRICE_LEGAL) return;
+    options.displayPlanType = this.card?.settings?.displayPlanType ?? false;
+  }
+  getGlobalCSS() {
+    return CSS5;
+  }
+  adaptForMobile() {
+    if (!this.card.closest(
+      "merch-card-collection,overlay-trigger,.two-merch-cards,.three-merch-cards,.four-merch-cards, .columns"
+    )) {
+      this.card.removeAttribute("size");
+      return;
+    }
+    const shadowRoot = this.card.shadowRoot;
+    const footer = shadowRoot.querySelector("footer");
+    const size = this.card.getAttribute("size");
+    const stockInFooter = shadowRoot.querySelector(
+      "footer #stock-checkbox"
+    );
+    const stockInBody = shadowRoot.querySelector(".body #stock-checkbox");
+    const body = shadowRoot.querySelector(".body");
+    if (!size) {
+      footer?.classList.remove("wide-footer");
+      if (stockInFooter) stockInFooter.remove();
+      return;
+    }
+    const mobile = isMobile();
+    footer?.classList.toggle("wide-footer", !mobile);
+    if (mobile && stockInFooter) {
+      stockInBody ? stockInFooter.remove() : body.appendChild(stockInFooter);
+      return;
+    }
+    if (!mobile && stockInBody) {
+      stockInFooter ? stockInBody.remove() : footer.prepend(stockInBody);
+    }
+  }
+  adjustCallout() {
+    const tooltipIcon = this.card.querySelector('[slot="callout-content"] .icon-button');
+    if (tooltipIcon && tooltipIcon.title) {
+      tooltipIcon.dataset.tooltip = tooltipIcon.title;
+      tooltipIcon.removeAttribute("title");
+      tooltipIcon.classList.add("hide-tooltip");
+      document.addEventListener("touchstart", (event) => {
+        event.preventDefault();
+        if (event.target !== tooltipIcon) {
+          tooltipIcon.classList.add("hide-tooltip");
+        } else {
+          event.target.classList.toggle("hide-tooltip");
+        }
+      });
+      document.addEventListener("mouseover", (event) => {
+        event.preventDefault();
+        if (event.target !== tooltipIcon) {
+          tooltipIcon.classList.add("hide-tooltip");
+        } else {
+          event.target.classList.remove("hide-tooltip");
+        }
+      });
+    }
+  }
+  postCardUpdateHook() {
+    this.adaptForMobile();
+    this.adjustTitleWidth();
+    this.adjustLegal();
+    this.adjustAddon();
+    this.adjustCallout();
+  }
+  get headingM() {
+    return this.card.querySelector('[slot="heading-m"]');
+  }
+  get mainPrice() {
+    const price = this.headingM.querySelector(
+      `${SELECTOR_MAS_INLINE_PRICE}[data-template="price"]`
+    );
+    return price;
+  }
+  get divider() {
+    return this.card.variant === "plans-education" ? html6`<div class="divider"></div>` : nothing2;
+  }
+  async adjustLegal() {
+    await this.card.updateComplete;
+    if (this.legalAdjusted) return;
+    this.legalAdjusted = true;
+    const prices = [];
+    const headingPrice = this.card.querySelector(`[slot="heading-m"] ${SELECTOR_MAS_INLINE_PRICE}[data-template="price"]`);
+    if (headingPrice) prices.push(headingPrice);
+    const bodyPrices = this.card.querySelectorAll(`[slot="body-xs"] ${SELECTOR_MAS_INLINE_PRICE}[data-template="price"]`);
+    bodyPrices.forEach((bodyPrice) => prices.push(bodyPrice));
+    const legalPromises = prices.map(async (price) => {
+      const legal = price.cloneNode(true);
+      await price.onceSettled();
+      if (!price?.options) return;
+      if (price.options.displayPerUnit)
+        price.dataset.displayPerUnit = "false";
+      if (price.options.displayTax) price.dataset.displayTax = "false";
+      if (price.options.displayPlanType)
+        price.dataset.displayPlanType = "false";
+      legal.setAttribute("data-template", "legal");
+      price.parentNode.insertBefore(legal, price.nextSibling);
+    });
+    await Promise.all(legalPromises);
+  }
+  async adjustAddon() {
+    await this.card.updateComplete;
+    const addon = this.card.addon;
+    if (!addon) return;
+    const price = this.mainPrice;
+    if (!price) return;
+    await price.onceSettled();
+    const planType = price.value?.[0]?.planType;
+    if (!planType) return;
+    addon.planType = planType;
+  }
+  get stockCheckbox() {
+    return this.card.checkboxLabel ? html6`<label id="stock-checkbox">
                 <input type="checkbox" @change=${this.card.toggleStockOffer}></input>
                 <span></span>
                 ${this.card.checkboxLabel}
-            </label>`:F}get icons(){return!this.card.querySelector('[slot="icons"]')&&!this.card.getAttribute("id")?F:v`<slot name="icons"></slot>`}get addon(){return this.card.size==="super-wide"?F:v`<slot name="addon"></slot>`}get plansSecureLabelFooter(){return this.card.size==="super-wide"?v`<footer><slot name="addon"></slot>${this.secureLabel}<slot name="footer"></slot></footer>`:this.secureLabelFooter}connectedCallbackHook(){let e=z();e?.addEventListener&&e.addEventListener("change",this.adaptForMobile)}disconnectedCallbackHook(){let e=z();e?.removeEventListener&&e.removeEventListener("change",this.adaptForMobile)}renderLayout(){return v` ${this.badge}
+            </label>` : nothing2;
+  }
+  get icons() {
+    if (!this.card.querySelector('[slot="icons"]') && !this.card.getAttribute("id")) return nothing2;
+    return html6`<slot name="icons"></slot>`;
+  }
+  get addon() {
+    if (this.card.size === "super-wide") return nothing2;
+    return html6`<slot name="addon"></slot>`;
+  }
+  get plansSecureLabelFooter() {
+    if (this.card.size === "super-wide")
+      return html6`<footer><slot name="addon"></slot>${this.secureLabel}<slot name="footer"></slot></footer>`;
+    return this.secureLabelFooter;
+  }
+  connectedCallbackHook() {
+    const match = matchMobile();
+    if (match?.addEventListener)
+      match.addEventListener("change", this.adaptForMobile);
+  }
+  disconnectedCallbackHook() {
+    const match = matchMobile();
+    if (match?.removeEventListener)
+      match.removeEventListener("change", this.adaptForMobile);
+  }
+  renderLayout() {
+    return html6` ${this.badge}
             <div class="body">
                 ${this.icons}
                 <slot name="heading-xs"></slot>
@@ -1100,7 +1800,10 @@ merch-card-collection-header.plans {
                 <slot name="badge"></slot>
                 <slot name="quantity-select"></slot>
             </div>
-            ${this.plansSecureLabelFooter}`}};c(h,"variantStyle",_t`
+            ${this.plansSecureLabelFooter}`;
+  }
+};
+__publicField(Plans, "variantStyle", css3`
         :host([variant^='plans']) {
             min-height: 273px;
             border: 1px solid var(--merch-card-custom-border-color, #dadada);
@@ -1182,7 +1885,23 @@ merch-card-collection-header.plans {
             line-height: 21px;
             padding: 2px 10px 3px;
         }
-    `),c(h,"collectionOptions",{customHeaderArea:()=>v`<slot name="resultsText"></slot>`,headerVisibility:{search:!1,sort:!1,custom:["desktop"]}});import{html as q,css as Ct}from"../lit-all.min.js";var gt=`
+    `);
+__publicField(Plans, "collectionOptions", {
+  customHeaderArea: () => {
+    return html6`<slot name="resultsText"></slot>`;
+  },
+  headerVisibility: {
+    search: false,
+    sort: false,
+    custom: ["desktop"]
+  }
+});
+
+// src/variants/product.js
+import { html as html7, css as css4 } from "../lit-all.min.js";
+
+// src/variants/product.css.js
+var CSS6 = `
 :root {
   --consonant-merch-card-product-width: 300px;
 }
@@ -1225,7 +1944,7 @@ merch-card-collection-header.plans {
 }
 
 /* Tablet */
-@media screen and ${d} {
+@media screen and ${TABLET_UP} {
     .two-merch-cards.product,
     .three-merch-cards.product,
     .four-merch-cards.product {
@@ -1234,7 +1953,7 @@ merch-card-collection-header.plans {
 }
 
 /* desktop */
-@media screen and ${i} {
+@media screen and ${DESKTOP_UP} {
   :root {
     --consonant-merch-card-product-width: 378px;
     --consonant-merch-card-product-width-4clm: 276px;
@@ -1248,19 +1967,118 @@ merch-card-collection-header.plans {
       grid-template-columns: repeat(4, var(--consonant-merch-card-product-width-4clm));
   }
 }
-`;var _=class extends l{constructor(e){super(e),this.postCardUpdateHook=this.postCardUpdateHook.bind(this)}getGlobalCSS(){return gt}adjustProductBodySlots(){if(this.card.getBoundingClientRect().width===0)return;["heading-xs","body-xxs","body-xs","promo-text","callout-content","addon","body-lower"].forEach(t=>this.updateCardElementMinHeight(this.card.shadowRoot.querySelector(`slot[name="${t}"]`),t))}renderLayout(){return q` ${this.badge}
+`;
+
+// src/variants/product.js
+var Product = class extends VariantLayout {
+  constructor(card) {
+    super(card);
+    this.postCardUpdateHook = this.postCardUpdateHook.bind(this);
+  }
+  getGlobalCSS() {
+    return CSS6;
+  }
+  adjustProductBodySlots() {
+    if (this.card.getBoundingClientRect().width === 0) return;
+    const slots = [
+      "heading-xs",
+      "body-xxs",
+      "body-xs",
+      "promo-text",
+      "callout-content",
+      "addon",
+      "body-lower"
+    ];
+    slots.forEach(
+      (slot) => this.updateCardElementMinHeight(
+        this.card.shadowRoot.querySelector(`slot[name="${slot}"]`),
+        slot
+      )
+    );
+  }
+  renderLayout() {
+    return html7` ${this.badge}
             <div class="body" aria-live="polite">
                 <slot name="icons"></slot>
                 <slot name="heading-xs"></slot>
                 <slot name="body-xxs"></slot>
-                ${this.promoBottom?"":q`<slot name="promo-text"></slot>`}
+                ${!this.promoBottom ? html7`<slot name="promo-text"></slot>` : ""}
                 <slot name="body-xs"></slot>
-                ${this.promoBottom?q`<slot name="promo-text"></slot>`:""}
+                ${this.promoBottom ? html7`<slot name="promo-text"></slot>` : ""}
                 <slot name="callout-content"></slot>
                 <slot name="addon"></slot>
                 <slot name="body-lower"></slot>
             </div>
-            ${this.secureLabelFooter}`}connectedCallbackHook(){window.addEventListener("resize",this.postCardUpdateHook)}disconnectedCallbackHook(){window.removeEventListener("resize",this.postCardUpdateHook)}postCardUpdateHook(){this.card.isConnected&&(this.adjustAddon(),w()||this.adjustProductBodySlots(),this.adjustTitleWidth())}get headingXSSlot(){return this.card.shadowRoot.querySelector('slot[name="heading-xs"]').assignedElements()[0]}get mainPrice(){return this.card.querySelector(`[slot="heading-xs"] ${x}[data-template="price"]`)}toggleAddon(e){let t=this.mainPrice,a=this.headingXSSlot;if(!t&&a){let r=e?.getAttribute("plan-type"),n=null;if(e&&r&&(n=e.querySelector(`p[data-plan-type="${r}"]`)?.querySelector('span[is="inline-price"]')),this.card.querySelectorAll('p[slot="heading-xs"]').forEach(s=>s.remove()),e.checked){if(n){let s=y("p",{class:"addon-heading-xs-price-addon",slot:"heading-xs"},n.innerHTML);this.card.appendChild(s)}}else{let s=y("p",{class:"card-heading",id:"free",slot:"heading-xs"},"Free");this.card.appendChild(s)}}}async adjustAddon(){await this.card.updateComplete;let e=this.card.addon;if(!e)return;let t=this.mainPrice,a=this.card.planType;t&&(await t.onceSettled(),a=t.value?.[0]?.planType),a&&(e.planType=a)}};c(_,"variantStyle",Ct`
+            ${this.secureLabelFooter}`;
+  }
+  connectedCallbackHook() {
+    window.addEventListener("resize", this.postCardUpdateHook);
+  }
+  disconnectedCallbackHook() {
+    window.removeEventListener("resize", this.postCardUpdateHook);
+  }
+  postCardUpdateHook() {
+    if (!this.card.isConnected) return;
+    this.adjustAddon();
+    if (!isMobile()) {
+      this.adjustProductBodySlots();
+    }
+    this.adjustTitleWidth();
+  }
+  get headingXSSlot() {
+    return this.card.shadowRoot.querySelector('slot[name="heading-xs"]').assignedElements()[0];
+  }
+  get mainPrice() {
+    const price = this.card.querySelector(
+      `[slot="heading-xs"] ${SELECTOR_MAS_INLINE_PRICE}[data-template="price"]`
+    );
+    return price;
+  }
+  toggleAddon(merchAddon) {
+    const mainPrice = this.mainPrice;
+    const headingXSSlot = this.headingXSSlot;
+    if (!mainPrice && headingXSSlot) {
+      const planType = merchAddon?.getAttribute("plan-type");
+      let visibleSpan = null;
+      if (merchAddon && planType) {
+        const matchingP = merchAddon.querySelector(`p[data-plan-type="${planType}"]`);
+        visibleSpan = matchingP?.querySelector('span[is="inline-price"]');
+      }
+      this.card.querySelectorAll('p[slot="heading-xs"]').forEach((p) => p.remove());
+      if (merchAddon.checked) {
+        if (visibleSpan) {
+          const replacementP = createTag(
+            "p",
+            { class: "addon-heading-xs-price-addon", slot: "heading-xs" },
+            visibleSpan.innerHTML
+          );
+          this.card.appendChild(replacementP);
+        }
+      } else {
+        const freeP = createTag(
+          "p",
+          { class: "card-heading", id: "free", slot: "heading-xs" },
+          "Free"
+        );
+        this.card.appendChild(freeP);
+      }
+    }
+  }
+  async adjustAddon() {
+    await this.card.updateComplete;
+    const addon = this.card.addon;
+    if (!addon) return;
+    const price = this.mainPrice;
+    let planType = this.card.planType;
+    if (price) {
+      await price.onceSettled();
+      planType = price.value?.[0]?.planType;
+    }
+    if (!planType) return;
+    addon.planType = planType;
+  }
+};
+__publicField(Product, "variantStyle", css4`
         :host([variant='product']) > slot:not([name='icons']) {
             display: block;
         }
@@ -1295,7 +2113,13 @@ merch-card-collection-header.plans {
         :host([variant='product']) ::slotted([slot='heading-xs']) {
             max-width: var(--consonant-merch-card-heading-xs-max-width, 100%);
         }
-    `);import{html as Y,css as Mt}from"../lit-all.min.js";var ut=`
+    `);
+
+// src/variants/segment.js
+import { html as html8, css as css5 } from "../lit-all.min.js";
+
+// src/variants/segment.css.js
+var CSS7 = `
 :root {
   --consonant-merch-card-segment-width: 378px;
 }
@@ -1309,13 +2133,13 @@ merch-card-collection-header.plans {
 }
 
 /* Mobile */
-@media screen and ${p} {
+@media screen and ${MOBILE_LANDSCAPE} {
   :root {
     --consonant-merch-card-segment-width: 276px;
   }
 }
 
-@media screen and ${d} {
+@media screen and ${TABLET_UP} {
   :root {
     --consonant-merch-card-segment-width: 276px;
   }
@@ -1328,7 +2152,7 @@ merch-card-collection-header.plans {
 }
 
 /* desktop */
-@media screen and ${i} {
+@media screen and ${DESKTOP_UP} {
   :root {
     --consonant-merch-card-segment-width: 302px;
   }
@@ -1341,23 +2165,46 @@ merch-card-collection-header.plans {
       grid-template-columns: repeat(4, minmax(276px, var(--consonant-merch-card-segment-width)));
   }
 }
-`;var C=class extends l{constructor(e){super(e)}getGlobalCSS(){return ut}postCardUpdateHook(){this.adjustTitleWidth()}renderLayout(){return Y` ${this.badge}
+`;
+
+// src/variants/segment.js
+var Segment = class extends VariantLayout {
+  constructor(card) {
+    super(card);
+  }
+  getGlobalCSS() {
+    return CSS7;
+  }
+  postCardUpdateHook() {
+    this.adjustTitleWidth();
+  }
+  renderLayout() {
+    return html8` ${this.badge}
     <div class="body">
         <slot name="heading-xs"></slot>
         <slot name="body-xxs"></slot>
-        ${this.promoBottom?"":Y`<slot name="promo-text"></slot><slot name="callout-content"></slot>`}
+        ${!this.promoBottom ? html8`<slot name="promo-text"></slot><slot name="callout-content"></slot>` : ""}
         <slot name="body-xs"></slot>
-        ${this.promoBottom?Y`<slot name="promo-text"></slot><slot name="callout-content"></slot>`:""}
+        ${this.promoBottom ? html8`<slot name="promo-text"></slot><slot name="callout-content"></slot>` : ""}
     </div>
     <hr />
-    ${this.secureLabelFooter}`}};c(C,"variantStyle",Mt`
+    ${this.secureLabelFooter}`;
+  }
+};
+__publicField(Segment, "variantStyle", css5`
     :host([variant='segment']) {
       min-height: 214px;
     }
     :host([variant='segment']) ::slotted([slot='heading-xs']) {
       max-width: var(--consonant-merch-card-heading-xs-max-width, 100%);
     }
-  `);import{html as j,css as Lt}from"../lit-all.min.js";var xt=`
+  `);
+
+// src/variants/special-offer.js
+import { html as html9, css as css6 } from "../lit-all.min.js";
+
+// src/variants/special-offer.css.js
+var CSS8 = `
 :root {
   --consonant-merch-card-special-offers-width: 378px;
 }
@@ -1374,13 +2221,13 @@ merch-card[variant="special-offers"] span[is="inline-price"][data-template="stri
   grid-template-columns: minmax(300px, var(--consonant-merch-card-special-offers-width));
 }
 
-@media screen and ${p} {
+@media screen and ${MOBILE_LANDSCAPE} {
   :root {
     --consonant-merch-card-special-offers-width: 302px;
   }
 } 
   
-@media screen and ${d} {
+@media screen and ${TABLET_UP} {
   :root {
     --consonant-merch-card-special-offers-width: 302px;
   }
@@ -1393,36 +2240,61 @@ merch-card[variant="special-offers"] span[is="inline-price"][data-template="stri
 }
 
 /* desktop */
-@media screen and ${i} {
+@media screen and ${DESKTOP_UP} {
   .three-merch-cards.special-offers,
   .four-merch-cards.special-offers {
     grid-template-columns: repeat(3, minmax(300px, var(--consonant-merch-card-special-offers-width)));
   }
 }
 
-@media screen and ${g} {
+@media screen and ${LARGE_DESKTOP} {
   .four-merch-cards.special-offers {
     grid-template-columns: repeat(4, minmax(300px, var(--consonant-merch-card-special-offers-width)));
   }
 }
-`;var ft={name:{tag:"h4",slot:"detail-m"},title:{tag:"h4",slot:"detail-m"},backgroundImage:{tag:"div",slot:"bg-image"},prices:{tag:"h3",slot:"heading-xs"},description:{tag:"div",slot:"body-xs"},ctas:{slot:"footer",size:"l"}},M=class extends l{constructor(e){super(e)}getGlobalCSS(){return xt}get headingSelector(){return'[slot="detail-m"]'}renderLayout(){return j`${this.cardImage}
+`;
+
+// src/variants/special-offer.js
+var SPECIAL_OFFERS_AEM_FRAGMENT_MAPPING = {
+  name: { tag: "h4", slot: "detail-m" },
+  title: { tag: "h4", slot: "detail-m" },
+  backgroundImage: { tag: "div", slot: "bg-image" },
+  prices: { tag: "h3", slot: "heading-xs" },
+  description: { tag: "div", slot: "body-xs" },
+  ctas: { slot: "footer", size: "l" }
+};
+var SpecialOffer = class extends VariantLayout {
+  constructor(card) {
+    super(card);
+  }
+  getGlobalCSS() {
+    return CSS8;
+  }
+  get headingSelector() {
+    return '[slot="detail-m"]';
+  }
+  renderLayout() {
+    return html9`${this.cardImage}
             <div class="body">
                 <slot name="detail-m"></slot>
                 <slot name="heading-xs"></slot>
                 <slot name="body-xs"></slot>
             </div>
-            ${this.evergreen?j`
+            ${this.evergreen ? html9`
                       <div
                           class="detail-bg-container"
-                          style="background: ${this.card.detailBg}"
+                          style="background: ${this.card["detailBg"]}"
                       >
                           <slot name="detail-bg"></slot>
                       </div>
-                  `:j`
+                  ` : html9`
                       <hr />
                       ${this.secureLabelFooter}
                   `}
-            <slot></slot>`}};c(M,"variantStyle",Lt`
+            <slot></slot>`;
+  }
+};
+__publicField(SpecialOffer, "variantStyle", css6`
         :host([variant='special-offers']) {
             min-height: 439px;
         }
@@ -1434,14 +2306,134 @@ merch-card[variant="special-offers"] span[is="inline-price"][data-template="stri
         :host([variant='special-offers'].center) {
             text-align: center;
         }
-    `);var K=new Map,u=(o,e,t=null,a=null,r)=>{K.set(o,{class:e,fragmentMapping:t,style:a,collectionOptions:r})};u("catalog",S,ct,S.variantStyle);u("image",I);u("inline-heading",H);u("mini-compare-chart",A,null,A.variantStyle);u("plans",h,U,h.variantStyle,h.collectionOptions);u("plans-students",h,pt,h.variantStyle,h.collectionOptions);u("plans-education",h,mt,h.variantStyle,h.collectionOptions);u("product",_,null,_.variantStyle);u("segment",C,null,C.variantStyle);u("special-offers",M,ft,M.variantStyle);function tt(o){return K.get(o)?.fragmentMapping}function W(o){return K.get(o)?.collectionOptions}var Nt={filters:["noResultText","resultText","resultsText"],filtersMobile:["noResultText","resultMobileText","resultsMobileText"],search:["noSearchResultsText","searchResultText","searchResultsText"],searchMobile:["noSearchResultsMobileText","searchResultMobileText","searchResultsMobileText"]},kt=(o,e,t)=>{o.querySelectorAll(`[data-placeholder="${e}"]`).forEach(r=>{r.innerText=t})},Ot={search:["mobile","tablet"],filter:["mobile","tablet"],sort:!0,result:["mobile","tablet"],custom:!1},R=class extends Pt{constructor(){super();c(this,"tablet",new P(this,d));c(this,"desktop",new P(this,i));this.collection??(this.collection=null),this.updateLiterals=this.updateLiterals.bind(this)}connectedCallback(){super.connectedCallback(),this.collection.addEventListener(at,this.updateLiterals)}get isMobile(){return!this.isTablet&&!this.isDesktop}get isTablet(){return this.tablet.matches}get isDesktop(){return this.desktop.matches}get currentMedia(){return this.isDesktop?"desktop":this.isTablet?"tablet":"mobile"}parseVisibilityOptions(t,a){if(!t||!Object.hasOwn(t,a))return null;let r=t[a];return r===!1?!1:r===!0?!0:r.includes(this.currentMedia)}getVisibility(t){let a=W(this.collection.variant)?.headerVisibility,r=this.parseVisibilityOptions(a,t);return r!==null?r:this.parseVisibilityOptions(Ot,t)}get searchAction(){if(!this.getVisibility("search"))return f;let t=k(this.collection,"searchText");return t?L`
+    `);
+
+// src/variants/variants.js
+var variantRegistry = /* @__PURE__ */ new Map();
+var registerVariant = (name, variantClass, fragmentMapping = null, style = null, collectionOptions) => {
+  variantRegistry.set(name, {
+    class: variantClass,
+    fragmentMapping,
+    style,
+    collectionOptions
+  });
+};
+registerVariant(
+  "catalog",
+  Catalog,
+  CATALOG_AEM_FRAGMENT_MAPPING,
+  Catalog.variantStyle
+);
+registerVariant("image", Image);
+registerVariant("inline-heading", InlineHeading);
+registerVariant(
+  "mini-compare-chart",
+  MiniCompareChart,
+  null,
+  MiniCompareChart.variantStyle
+);
+registerVariant("plans", Plans, PLANS_AEM_FRAGMENT_MAPPING, Plans.variantStyle, Plans.collectionOptions);
+registerVariant("plans-students", Plans, PLANS_STUDENTS_AEM_FRAGMENT_MAPPING, Plans.variantStyle, Plans.collectionOptions);
+registerVariant("plans-education", Plans, PLANS_EDUCATION_AEM_FRAGMENT_MAPPING, Plans.variantStyle, Plans.collectionOptions);
+registerVariant("product", Product, null, Product.variantStyle);
+registerVariant("segment", Segment, null, Segment.variantStyle);
+registerVariant(
+  "special-offers",
+  SpecialOffer,
+  SPECIAL_OFFERS_AEM_FRAGMENT_MAPPING,
+  SpecialOffer.variantStyle
+);
+function getFragmentMapping(variant) {
+  return variantRegistry.get(variant)?.fragmentMapping;
+}
+function getCollectionOptions(variant) {
+  return variantRegistry.get(variant)?.collectionOptions;
+}
+
+// src/merch-card-collection-header.js
+var RESULT_TEXT_SLOT_NAMES = {
+  // no search
+  filters: ["noResultText", "resultText", "resultsText"],
+  filtersMobile: ["noResultText", "resultMobileText", "resultsMobileText"],
+  // search on desktop
+  search: ["noSearchResultsText", "searchResultText", "searchResultsText"],
+  // search on mobile
+  searchMobile: [
+    "noSearchResultsMobileText",
+    "searchResultMobileText",
+    "searchResultsMobileText"
+  ]
+};
+var updatePlaceholders = (el, key, value) => {
+  const placeholders = el.querySelectorAll(`[data-placeholder="${key}"]`);
+  placeholders.forEach((placeholder) => {
+    placeholder.innerText = value;
+  });
+};
+var defaultVisibility = {
+  search: ["mobile", "tablet"],
+  filter: ["mobile", "tablet"],
+  sort: true,
+  result: ["mobile", "tablet"],
+  custom: false
+};
+var MerchCardCollectionHeader = class extends LitElement {
+  constructor() {
+    super();
+    __publicField(this, "tablet", new MatchMediaController(this, TABLET_UP));
+    __publicField(this, "desktop", new MatchMediaController(this, DESKTOP_UP));
+    this.collection ?? (this.collection = null);
+    this.updateLiterals = this.updateLiterals.bind(this);
+  }
+  connectedCallback() {
+    super.connectedCallback();
+    this.collection.addEventListener(EVENT_MERCH_CARD_COLLECTION_LITERALS_CHANGED, this.updateLiterals);
+  }
+  get isMobile() {
+    return !this.isTablet && !this.isDesktop;
+  }
+  get isTablet() {
+    return this.tablet.matches;
+  }
+  get isDesktop() {
+    return this.desktop.matches;
+  }
+  get currentMedia() {
+    if (this.isDesktop) return "desktop";
+    if (this.isTablet) return "tablet";
+    return "mobile";
+  }
+  parseVisibilityOptions(visibility, type) {
+    if (!visibility) return null;
+    if (!Object.hasOwn(visibility, type)) return null;
+    const typeVisibility = visibility[type];
+    if (typeVisibility === false) return false;
+    if (typeVisibility === true) return true;
+    return typeVisibility.includes(this.currentMedia);
+  }
+  getVisibility(type) {
+    const visibility = getCollectionOptions(this.collection.variant)?.headerVisibility;
+    const typeVisibility = this.parseVisibilityOptions(visibility, type);
+    if (typeVisibility !== null) return typeVisibility;
+    return this.parseVisibilityOptions(defaultVisibility, type);
+  }
+  get searchAction() {
+    if (!this.getVisibility("search")) return nothing3;
+    const searchPlaceholder = getSlotText(this.collection, "searchText");
+    if (!searchPlaceholder) return nothing3;
+    return html10`
             <merch-search deeplink="search" id="search">
                 <sp-search
                     id="search-bar"
-                    placeholder="${t}"
+                    placeholder="${searchPlaceholder}"
                 ></sp-search>
             </merch-search>
-        `:f}get filterAction(){return this.getVisibility("filter")?this.collection.sidenav?L`
+        `;
+  }
+  get filterAction() {
+    if (!this.getVisibility("filter")) return nothing3;
+    if (!this.collection.sidenav) return nothing3;
+    return html10`
             <sp-action-button
               id="filter"
               variant="secondary"
@@ -1449,29 +2441,66 @@ merch-card[variant="special-offers"] span[is="inline-price"][data-template="stri
               @click="${this.openFilters}"
               ><slot name="filtersText"></slot
             ></sp-action-button>
-        `:f:f}get sortAction(){if(!this.getVisibility("sort"))return f;let t=k(this,"sortText");if(!t)return;let a=k(this,"popularityText"),r=k(this,"alphabeticallyText");if(!(a&&r))return;let n=this.sort===E.alphabetical;return L`
+        `;
+  }
+  get sortAction() {
+    if (!this.getVisibility("sort")) return nothing3;
+    const sortText = getSlotText(this, "sortText");
+    if (!sortText) return;
+    const popularityText = getSlotText(this, "popularityText");
+    const alphabeticallyText = getSlotText(this, "alphabeticallyText");
+    if (!(popularityText && alphabeticallyText)) return;
+    const alphabetical = this.sort === SORT_ORDER.alphabetical;
+    return html10`
             <sp-action-menu
                 id="sort"
                 size="m"
                 @change="${this.collection.sortChanged}"
                 selects="single"
-                value="${n?E.alphabetical:E.authored}"
+                value="${alphabetical ? SORT_ORDER.alphabetical : SORT_ORDER.authored}"
             >
                 <span slot="label-only"
-                    >${t}:
-                    ${n?r:a}</span
+                    >${sortText}:
+                    ${alphabetical ? alphabeticallyText : popularityText}</span
                 >
-                <sp-menu-item value="${E.authored}"
-                    >${a}</sp-menu-item
+                <sp-menu-item value="${SORT_ORDER.authored}"
+                    >${popularityText}</sp-menu-item
                 >
-                <sp-menu-item value="${E.alphabetical}"
-                    >${r}</sp-menu-item
+                <sp-menu-item value="${SORT_ORDER.alphabetical}"
+                    >${alphabeticallyText}</sp-menu-item
                 >
             </sp-action-menu>
-        `}get resultSlotName(){let t=`${this.collection.search?"search":"filters"}${this.isMobile||this.isTablet?"Mobile":""}`;return Nt[t][Math.min(this.collection.resultCount,2)]}get resultLabel(){return this.getVisibility("result")?L`
+        `;
+  }
+  get resultSlotName() {
+    const slotType = `${this.collection.search ? "search" : "filters"}${this.isMobile || this.isTablet ? "Mobile" : ""}`;
+    return RESULT_TEXT_SLOT_NAMES[slotType][Math.min(this.collection.resultCount, 2)];
+  }
+  get resultLabel() {
+    if (!this.getVisibility("result")) return nothing3;
+    return html10`
           <div id="result" aria-live="polite">
               <slot name="${this.resultSlotName}"></slot>
-          </div>`:f}get customArea(){if(!this.getVisibility("custom"))return f;let t=W(this.collection.variant)?.customHeaderArea;return t?L`<div id="custom">${t()}</div>`:f}openFilters(t){this.collection.sidenav.showModal(t)}updateLiterals(t){Object.keys(t.detail).forEach(a=>{kt(this,a,t.detail[a])})}render(){return L`
+          </div>`;
+  }
+  get customArea() {
+    if (!this.getVisibility("custom")) return nothing3;
+    const customHeaderArea = getCollectionOptions(this.collection.variant)?.customHeaderArea;
+    if (!customHeaderArea) return nothing3;
+    return html10`<div id="custom">${customHeaderArea()}</div>`;
+  }
+  // #region Handlers
+  openFilters(event) {
+    this.collection.sidenav.showModal(event);
+  }
+  updateLiterals(event) {
+    Object.keys(event.detail).forEach((key) => {
+      updatePlaceholders(this, key, event.detail[key]);
+    });
+  }
+  // #endregion
+  render() {
+    return html10`
           <sp-theme color="light" scale="medium">
             <div id="header">
               ${this.searchAction}
@@ -1481,7 +2510,10 @@ merch-card[variant="special-offers"] span[is="inline-price"][data-template="stri
               ${this.customArea}
             </div>
           </sp-theme>
-        `}};c(R,"styles",Rt`
+        `;
+  }
+};
+__publicField(MerchCardCollectionHeader, "styles", css7`
         :host {
             --merch-card-collection-header-gap: var(--consonant-merch-spacing-xxs);
             --merch-card-collection-header-columns: auto max-content;
@@ -1525,7 +2557,7 @@ merch-card[variant="special-offers"] span[is="inline-price"][data-template="stri
         }
 
         /* tablets */
-        @media screen and ${vt(d)} {
+        @media screen and ${unsafeCSS2(TABLET_UP)} {
             :host {
                 --merch-card-collection-header-columns: 1fr fit-content(100%) fit-content(100%);
                 --merch-card-collection-header-areas: "search filter sort" 
@@ -1534,10 +2566,32 @@ merch-card[variant="special-offers"] span[is="inline-price"][data-template="stri
         }
 
         /* Laptop */
-        @media screen and ${vt(i)} {
+        @media screen and ${unsafeCSS2(DESKTOP_UP)} {
             :host {
                 --merch-card-collection-header-columns: 1fr fit-content(100%);
                 --merch-card-collection-header-areas: ". sort";
             }
         }
-    `),c(R,"placeholderKeys",["searchText","filtersText","sortText","popularityText","alphabeticallyText","noResultsText","resultText","resultsText","resultMobileText","resultsMobileText","noSearchResultsText","searchResultText","searchResultsText","searchResultMobileText","searchResultsMobileText"]);customElements.define("merch-card-collection-header",R);export{R as default};
+    `);
+__publicField(MerchCardCollectionHeader, "placeholderKeys", [
+  "searchText",
+  "filtersText",
+  "sortText",
+  "popularityText",
+  "alphabeticallyText",
+  "noResultsText",
+  "resultText",
+  "resultsText",
+  "resultMobileText",
+  "resultsMobileText",
+  "noSearchResultsText",
+  "searchResultText",
+  "searchResultsText",
+  "searchResultMobileText",
+  "searchResultsMobileText"
+]);
+customElements.define("merch-card-collection-header", MerchCardCollectionHeader);
+export {
+  MerchCardCollectionHeader as default
+};
+//# sourceMappingURL=merch-card-collection-header.js.map
