@@ -81,7 +81,7 @@ export default class MerchAddon extends LitElement {
         :host {
             --merch-addon-gap: 10px;
             --merch-addon-checkbox-size: 12px;
-            --merch-addon-checkbox-border: 2px solid rgb(117, 117, 117);
+            --merch-addon-checkbox-border: 2px solid rgb(109, 109, 109);
             --merch-addon-checkbox-radius: 2px;
             --merch-addon-checkbox-checked-bg: var(--checkmark-icon);
             --merch-addon-checkbox-checked-color: var(--color-accent);
