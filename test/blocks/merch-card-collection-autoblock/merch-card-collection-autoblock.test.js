@@ -1,3 +1,4 @@
+/* eslint-disable no-underscore-dangle */
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
 import { delay } from '../../helpers/waitfor.js';
@@ -79,8 +80,8 @@ describe('merch-card-collection autoblock', () => {
       await init(a);
       const sidenav = document.querySelector('merch-sidenav');
       const qs = document.querySelector('merch-quantity-select');
-      const card = qs.closest('merch-card')
-      const addon = card.querySelector('merch-addon')
+      const card = qs.closest('merch-card');
+      const addon = card.querySelector('merch-addon');
 
       window._satellite.track.called = false;
       sidenav.dispatchEvent(new Event('merch-sidenav:select'));
@@ -90,16 +91,14 @@ describe('merch-card-collection autoblock', () => {
       card.dispatchEvent(new CustomEvent('mas:ready', {
         bubbles: true,
         composed: true,
-        detail: {}
+        detail: {},
       }));
 
       window._satellite.track.called = false;
       qs.dispatchEvent(new CustomEvent('merch-quantity-selector:change', {
         bubbles: true,
         composed: true,
-        detail: {
-          option: 3,
-        },
+        detail: { option: 3 },
       }));
       await delay(100);
       expect(window._satellite.track.called).to.be.true;
@@ -108,9 +107,7 @@ describe('merch-card-collection autoblock', () => {
       addon.dispatchEvent(new CustomEvent('change', {
         bubbles: true,
         composed: true,
-        detail: {
-          checked: true,
-        },
+        detail: { checked: true },
       }));
       await delay(100);
       expect(window._satellite.track.called).to.be.true;
