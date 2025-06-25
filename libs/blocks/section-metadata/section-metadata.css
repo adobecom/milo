@@ -177,7 +177,7 @@
 
 .section.sticky-bottom.promo-sticky-section {
   background: none;
-  z-index: 4; 
+  z-index: 10; 
 }
 
 .section.sticky-bottom.popup,
