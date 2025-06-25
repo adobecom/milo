@@ -4,6 +4,7 @@ import '../../../utils/lana.js';
 import { FF_DEFAULTS } from '../src/constants.js';
 import { Defaults } from '../src/defaults.js';
 import { TAG_NAME_SERVICE } from '../src/mas-commerce-service.js';
+import '../src/aem-fragment.js';
 
 import { mockFetch } from './mocks/fetch.js';
 import { mockIms, unmockIms } from './mocks/ims.js';

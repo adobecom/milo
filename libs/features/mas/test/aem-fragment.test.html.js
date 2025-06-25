@@ -74,7 +74,7 @@ runTests(async () => {
         ),
     ]);
 
-    const { cache } = document.createElement('aem-fragment');
+    const { cache } = customElements.get('aem-fragment');
 
     describe('aem-fragment', () => {
         let aemMock;

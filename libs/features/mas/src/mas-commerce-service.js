@@ -187,7 +187,8 @@ export class MasCommerceService extends HTMLElement {
 
     refreshFragments() {
         this.flushWcsCacheInternal();
-        document.querySelectorAll('aem-fragment').forEach((el) => el.refresh());
+        customElements.get('aem-fragment')?.cache.clear();
+        document.querySelectorAll('aem-fragment').forEach((el) => el.refresh(false));
         this.log.debug('Refreshed AEM fragments');
         this.logFailedRequests();
     }

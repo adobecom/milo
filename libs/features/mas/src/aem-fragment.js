@@ -28,6 +28,7 @@ class FragmentCache {
     clear() {
         this.#fragmentCache.clear();
         this.#fetchInfos.clear();
+        this.#promises.clear();
     }
 
     /**
@@ -122,6 +123,8 @@ class FragmentCache {
 
     remove(fragmentId) {
         this.#fragmentCache.delete(fragmentId);
+        this.#fetchInfos.delete(fragmentId);
+        this.#promises.delete(fragmentId);
     }
 }
 
@@ -134,7 +137,8 @@ const cache = new FragmentCache();
  * @attr {string} fragment - fragment id.
  */
 export class AemFragment extends HTMLElement {
-    cache = cache;
+    cache = cache; // TO be deprecated
+    static cache = cache;
     #log;
 
     #rawData = null;
