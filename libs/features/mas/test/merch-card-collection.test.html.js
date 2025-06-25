@@ -44,11 +44,6 @@ const prepareTemplate = (
                 searchParams.set('template', id);
                 document.location.search = searchParams.toString();
             }
-            if (merchCards) {
-                const sidenav = document.querySelector('merch-sidenav');
-                merchCards.sidenav = sidenav;
-                header?.requestUpdate();
-            }
         },
         header
     ];
@@ -93,14 +88,21 @@ runTests(async () => {
     if (shouldSkipTests === 'true') return;
 
     describe('merch-card-collection-header web component', () => {
+        const renderWithSidenav = async () => {
+            render();
+            await delay(100);
+            const sidenav = document.querySelector('merch-sidenav');
+            merchCards.sidenav = sidenav;
+            header.requestUpdate();
+            await header.updateComplete;
+        }
+
         before(async () => {
             await toggleMobile();
         });
 
-        beforeEach(async () => {
+        beforeEach(() => {
             [merchCards, render, header] = prepareTemplate('catalogCollectionWithHeader', false);
-            render();
-            await delay(100);
         });
 
         afterEach(() => {
@@ -109,6 +111,7 @@ runTests(async () => {
         })
 
         it('sets the class for modal when opening filters in a modal', async () => {
+            await renderWithSidenav();
             expect(document.body.classList.contains('merch-modal')).to.be.false;
             header.shadowRoot.querySelector('#filter').click();
             await delay(100);
@@ -116,6 +119,7 @@ runTests(async () => {
         });
 
         it('removes the class for modal when closing the filters modal by clicking the "Close" button', async () => {
+            await renderWithSidenav();
             header.shadowRoot.querySelector('#filter').click();
             await delay(100);
             document
@@ -127,6 +131,7 @@ runTests(async () => {
         });
 
         it('removes the class for modal when closing the filters modal by clicking outside the modal', async () => {
+            await renderWithSidenav();
             header.shadowRoot.querySelector('#filter').click();
             await delay(100);
             document
@@ -138,6 +143,7 @@ runTests(async () => {
         });
 
         it('should refine result on search with multiple words', async () => {
+            await renderWithSidenav();
             document.location.hash = '';
             pushState({ search: 'Connect' });
             await delay(100);
@@ -145,6 +151,7 @@ runTests(async () => {
         });
 
         it('should refine result on search', async () => {
+            await renderWithSidenav();
             document.location.hash = '';
             pushState({ search: 'acrobat' });
             await delay(100);

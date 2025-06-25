@@ -113,17 +113,11 @@ export class MerchCardCollection extends LitElement {
     }
 
     checkReady() {
-        console.log('Checking ready...');
         const aemFragment = this.querySelector('aem-fragment');
-        console.log('Has aem-fragment: ', Boolean(aemFragment));
         if (!aemFragment) return Promise.resolve(true);
         const timeoutPromise = new Promise((resolve) =>
-            setTimeout(() => {
-                console.log('Timed out...');
-                resolve(false);
-            }, MERCH_CARD_COLLECTION_LOAD_TIMEOUT),
+            setTimeout(() => resolve(false), MERCH_CARD_COLLECTION_LOAD_TIMEOUT),
         );
-        console.log('Hydration ready? ', this.hydrationReady);
         return Promise.race([this.hydrationReady, timeoutPromise])
     }
 
@@ -220,7 +214,7 @@ export class MerchCardCollection extends LitElement {
 
     async init() {
         await this.hydrate();
-        this.sidenav = document.querySelector('merch-sidenav');
+        this.sidenav = this.parentElement.querySelector('merch-sidenav');
         if (this.filtered) {
             this.filter = this.filtered;
                 this.page = 1;
@@ -340,7 +334,6 @@ export class MerchCardCollection extends LitElement {
             this.displayResult = true;
             this.hydrating = false;
             aemFragment.remove();
-            console.log('Finishing hydration...');
             resolveHydration();
         });
         await this.hydrationReady;

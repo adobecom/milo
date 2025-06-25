@@ -22,7 +22,7 @@ const RESULT_TEXT_SLOT_NAMES = {
 const updatePlaceholders = (el, key, value) => {
   const placeholders = el.querySelectorAll(`[data-placeholder="${key}"]`);
   placeholders.forEach(placeholder => {
-      placeholder.innerText = value;
+      placeholder.innerText = value || '';
   });
 };
 
