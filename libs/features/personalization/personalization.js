@@ -703,7 +703,7 @@ const getVariantInfo = (line, variantNames, variants, manifestPath, fTargetId) =
         });
       } else {
         variants[vn][action].push({
-          selector: normalizePath(selector, true, true),
+          selector: normalizePath(selector),
           val: normalizePath(line[vn], true, action === 'updatemetadata'),
           pageFilter,
           manifestId,
