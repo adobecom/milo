@@ -141,21 +141,21 @@ styles.innerHTML = `
     display: grid;
     justify-content: center;
     grid-template-columns: min-content min-content;
+    grid-template-areas: "sidenav header" "sidenav content";
 }
 
 .collection-container merch-sidenav {
-    grid-row: span 2;
+    grid-area: sidenav;
     margin-right: var(--spacing-m);
 }
 
 .collection-container merch-card-collection-header {
     --merch-card-collection-header-margin-bottom: var(--spacing-m);
-    grid-column: 2;
+    grid-area: header;
 }
 
 .collection-container merch-card-collection {
-    grid-row: 2;
-    grid-column: 2;
+    grid-area: content;
 }
 
 .collection-container .one-merch-card,

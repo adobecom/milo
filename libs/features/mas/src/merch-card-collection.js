@@ -1,6 +1,6 @@
 import { html, LitElement } from 'lit';
 import { deeplink, pushState } from './deeplink.js';
-import { EVENT_MAS_ERROR, EVENT_MERCH_CARD_COLLECTION_LITERALS_CHANGED, EVENT_MERCH_SIDENAV_SELECT, SORT_ORDER } from './constants.js';
+import { EVENT_MAS_ERROR, EVENT_MERCH_CARD_COLLECTION_LITERALS_CHANGED, EVENT_MERCH_CARD_COLLECTION_SIDENAV_ATTACHED, EVENT_MERCH_SIDENAV_SELECT, SORT_ORDER } from './constants.js';
 
 import {
     EVENT_MERCH_CARD_COLLECTION_SORT,
@@ -11,6 +11,7 @@ import {
 import { styles } from './merch-card-collection.css.js';
 import { getService } from './utils.js';
 import './mas-commerce-service';
+import MerchCardCollectionHeader from './merch-card-collection-header.js';
 
 const MERCH_CARD_COLLECTION = 'merch-card-collection';
 const MERCH_CARD_COLLECTION_LOAD_TIMEOUT = 20000;
@@ -221,11 +222,52 @@ export class MerchCardCollection extends LitElement {
             } else {
             this.startDeeplink();
         }
+        this.initializeHeader();
+        this.initializePlaceholders();
     }
 
     disconnectedCallback() {
         super.disconnectedCallback();
         this.stopDeeplink?.();
+    }
+
+    initializeHeader() {
+        const header = document.createElement('merch-card-collection-header');
+        header.collection = this;
+        header.classList.add(this.variant);
+        this.parentElement.insertBefore(header, this);
+    }
+
+    initializePlaceholders() {
+        const header = this.parentElement.querySelector('merch-card-collection-header');
+        const existingPlaceholders = this.querySelectorAll('[placeholder]');
+        if (existingPlaceholders.length > 0) {
+            existingPlaceholders.forEach(placeholder => {
+                const key = placeholder.getAttribute('slot');
+                if (MerchCardCollectionHeader.placeholderKeys.includes(key)) {
+                    header?.append(placeholder);
+                }
+            });
+        }
+        else {
+            const placeholders = this.data?.placeholders || {};
+            for (const key of Object.keys(placeholders)) {
+                const value = placeholders[key];
+                const tag = value.includes('<p>') ? 'div' : 'p';
+                const placeholder = document.createElement(tag);
+                placeholder.setAttribute('slot', key);
+                placeholder.innerHTML = value;
+                if (MerchCardCollectionHeader.placeholderKeys.includes(key)) header.append(placeholder);
+                else this.append(placeholder);
+            }
+        }
+    }
+
+    attachSidenav(sidenav) {
+        if (!sidenav) return;
+        this.parentElement.insertBefore(sidenav, this.parentElement.firstChild);
+        this.sidenav = sidenav;
+        this.dispatchEvent(new CustomEvent(EVENT_MERCH_CARD_COLLECTION_SIDENAV_ATTACHED));
     }
 
     #fail(error, details = {}, dispatch = true) {

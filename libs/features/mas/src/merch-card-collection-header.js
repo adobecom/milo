@@ -2,7 +2,7 @@ import { html, css, unsafeCSS, LitElement, nothing } from 'lit';
 import { DESKTOP_UP, TABLET_UP } from './media.js';
 import { MatchMediaController } from '@spectrum-web-components/reactive-controllers/src/MatchMedia.js';
 import { getCollectionOptions } from './variants/variants.js';
-import { EVENT_MERCH_CARD_COLLECTION_LITERALS_CHANGED, SORT_ORDER } from './constants.js';
+import { EVENT_MERCH_CARD_COLLECTION_LITERALS_CHANGED, EVENT_MERCH_CARD_COLLECTION_SIDENAV_ATTACHED, SORT_ORDER } from './constants.js';
 import { getSlotText } from './utils.js';
 
 const RESULT_TEXT_SLOT_NAMES = {
@@ -39,11 +39,19 @@ export default class MerchCardCollectionHeader extends LitElement {
         super();
         this.collection ??= null;
         this.updateLiterals = this.updateLiterals.bind(this);
+        this.handleSidenavAttached = this.handleSidenavAttached.bind(this);
     }
 
     connectedCallback() {
         super.connectedCallback();
         this.collection.addEventListener(EVENT_MERCH_CARD_COLLECTION_LITERALS_CHANGED, this.updateLiterals);
+        this.collection.addEventListener(EVENT_MERCH_CARD_COLLECTION_SIDENAV_ATTACHED, this.handleSidenavAttached);
+    }
+
+    disconnectedCallback() {
+        super.disconnectedCallback();
+        this.collection.removeEventListener(EVENT_MERCH_CARD_COLLECTION_LITERALS_CHANGED, this.updateLiterals);
+        this.collection.removeEventListener(EVENT_MERCH_CARD_COLLECTION_SIDENAV_ATTACHED, this.handleSidenavAttached);
     }
 
     tablet = new MatchMediaController(this, TABLET_UP);
@@ -85,7 +93,7 @@ export default class MerchCardCollectionHeader extends LitElement {
 
     get searchAction() {
         if (!this.getVisibility('search')) return nothing;
-        const searchPlaceholder = getSlotText(this.collection, 'searchText');
+        const searchPlaceholder = getSlotText(this, 'searchText');
         if (!searchPlaceholder) return nothing;
         return html`
             <merch-search deeplink="search" id="search">
@@ -180,6 +188,10 @@ export default class MerchCardCollectionHeader extends LitElement {
         })
     }
 
+    handleSidenavAttached() {
+        this.requestUpdate();
+    }
+
     // #endregion
 
     render() {
@@ -194,6 +206,7 @@ export default class MerchCardCollectionHeader extends LitElement {
         :host {
             --merch-card-collection-header-margin-bottom: 32px;
             --merch-card-collection-header-gap: var(--consonant-merch-spacing-xxs);
+            --merch-card-collection-header-row-gap: var(--consonant-merch-spacing-xxs);
             --merch-card-collection-header-columns: auto max-content;
             --merch-card-collection-header-areas: "search search" 
                                                   "filter sort"
@@ -208,6 +221,7 @@ export default class MerchCardCollectionHeader extends LitElement {
         #header {
             display: grid;
             gap: var(--merch-card-collection-header-gap);
+            row-gap: var(--merch-card-collection-header-row-gap);
             align-items: center;
             grid-template-columns: var(--merch-card-collection-header-columns);
             grid-template-areas: var(--merch-card-collection-header-areas);
@@ -220,7 +234,11 @@ export default class MerchCardCollectionHeader extends LitElement {
         
         #search {
             grid-area: search;
-            margin: 12px;
+        }
+
+        #search sp-search {
+            max-width: 302px;
+            width: 100%;
         }
 
         #filter {
@@ -230,6 +248,7 @@ export default class MerchCardCollectionHeader extends LitElement {
 
         #sort {
             grid-area: sort;
+            justify-self: end;
         }
 
         #result {
@@ -254,7 +273,7 @@ export default class MerchCardCollectionHeader extends LitElement {
         @media screen and ${unsafeCSS(DESKTOP_UP)} {
             :host {
                 --merch-card-collection-header-columns: 1fr fit-content(100%);
-                --merch-card-collection-header-areas: ". sort";
+                --merch-card-collection-header-areas: "result sort";
             }
         }
     `;

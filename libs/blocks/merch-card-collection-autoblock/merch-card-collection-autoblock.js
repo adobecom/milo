@@ -2,7 +2,6 @@ import { createTag, getConfig } from '../../utils/utils.js';
 import { initService, getOptions, MEP_SELECTOR, overrideOptions } from '../merch/merch.js';
 import '../../deps/mas/merch-card.js';
 import '../../deps/mas/merch-quantity-select.js';
-import MerchCardCollectionHeader from '../../deps/mas/merch-card-collection-header.js';
 
 const COLLECTION_AUTOBLOCK_TIMEOUT = 5000;
 const DEFAULT_OPTIONS = { sidenav: true };
@@ -137,25 +136,7 @@ export async function createCollection(el, options) {
   /* Sidenav */
   if (options.sidenav) {
     const sidenav = getSidenav(collection);
-    if (sidenav) {
-      container.insertBefore(sidenav, collection);
-      collection.sidenav = sidenav;
-    }
-  }
-
-  const header = createTag('merch-card-collection-header');
-  header.collection = collection;
-  header.classList.add(collection.variant);
-  container.insertBefore(header, collection);
-
-  /* Placeholders */
-  const placeholders = collection.data?.placeholders || {};
-  for (const key of Object.keys(placeholders)) {
-    const value = placeholders[key];
-    const tag = value.includes('<p>') ? 'div' : 'p';
-    const placeholder = createTag(tag, { slot: key }, value);
-    if (MerchCardCollectionHeader.placeholderKeys.includes(key)) header.append(placeholder);
-    else collection.append(placeholder);
+    collection.attachSidenav(sidenav);
   }
 
   collection.requestUpdate();
