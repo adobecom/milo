@@ -25,7 +25,7 @@ const MobileGnav = {
           this.eventInitialized = true;
           const popupTabs = document.querySelectorAll('.feds-nav-wrapper .feds-popup .tabs .tab');
           const popupTabContents = document.querySelectorAll('.feds-nav-wrapper .feds-popup .tab-content');
-          const popupLinks = document.querySelectorAll('.feds-nav-wrapper .feds-popup .tab-content .feds-navLink, .feds-promo a');
+          const popupLinks = document.querySelectorAll('.feds-nav-wrapper .feds-popup .tab-content a.feds-navLink, .feds-promo a');
           popupTabs.forEach((tab) => {
             tab.addEventListener('keydown', ({ code }) => {
               switch (code) {
@@ -45,7 +45,7 @@ const MobileGnav = {
                   const activeTabIndex = activeTab.getAttribute('aria-controls');
                   const currentTabContent = [...popupTabContents].find((currentTab) => currentTab.closest('.feds-dropdown--active'));
                   if (currentTabContent && currentTabContent.children[activeTabIndex]) {
-                    currentTabContent.children[activeTabIndex].querySelector('.feds-navLink, .feds-promo a').focus();
+                    currentTabContent.children[activeTabIndex].querySelector('a.feds-navLink, .feds-promo a').focus();
                   }
                   break;
                 }
@@ -61,6 +61,9 @@ const MobileGnav = {
                   let prevLink = link.previousElementSibling;
                   if (prevLink?.classList.contains('feds-promo-wrapper')) {
                     prevLink = prevLink.querySelector('a.feds-cta');
+                  }
+                  if (prevLink?.tagName === 'DIV' && prevLink.classList.contains('feds-navLink')) {
+                    prevLink = prevLink.previousElementSibling;
                   }
                   if (prevLink) {
                     prevLink.focus();
@@ -78,6 +81,9 @@ const MobileGnav = {
                   }
                   if (nextLink?.classList.contains('feds-promo-wrapper')) {
                     nextLink = nextLink.querySelector('a');
+                  }
+                  if (nextLink?.tagName === 'DIV' && nextLink.classList.contains('feds-navLink')) {
+                    nextLink = nextLink.nextElementSibling;
                   }
                   if (nextLink) {
                     nextLink.focus();
