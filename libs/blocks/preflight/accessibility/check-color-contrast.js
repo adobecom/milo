@@ -32,6 +32,9 @@ function isZeroAlpha(alpha) {
 function isTransparent(rgbStr) {
   if (!rgbStr) return false;
   const str = rgbStr.trim().toLowerCase();
+  if (str === 'transparent') return true;
+  if (str.startsWith('rgba(0, 0, 0, 0)')) return true;
+  if (str.includes('/ 0')) return true; // CSS4 format like rgb(0 0 0 / 0)
   const modernMatch = str.match(/rgb[a]?\([^)]*\/\s*([\d.]+%?)\s*\)/);
   if (modernMatch) return isZeroAlpha(modernMatch[1]);
   const legacyMatch = str.match(/rgba?\([^)]*,\s*([\d.]+)\s*\)$/);
@@ -73,7 +76,7 @@ export default function checkColorContrast(elements = [], config = {}) {
     const styles = window.getComputedStyle(el);
     const isVisible = styles.display !== 'none' && styles.visibility !== 'hidden' && parseFloat(styles.opacity) > 0;
     const hasText = el.textContent.trim().length > 0;
-    const tagWhitelist = ['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'button'];
+    const tagWhitelist = ['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'button'];
     return isVisible && hasText && tagWhitelist.includes(el.tagName.toLowerCase());
   });
   validElements.forEach((el) => {
@@ -88,6 +91,7 @@ export default function checkColorContrast(elements = [], config = {}) {
     // Large text requires contrast ratio of 3:1, Normal text requires 4.5:1
     const isLargeText = fontSize >= 24 || (fontSize >= 18.66 && fontWeight >= 700);
     const requiredContrast = isLargeText ? 3.0 : minContrast;
+    console.log({ fgColor, bgColor, contrast, fontSize, fontWeight });
     if (contrast < requiredContrast) {
       violations.push({
         description: `Low contrast text (ratio: ${contrast.toFixed(2)}:1) - WCAG AA Minimum is ${requiredContrast}:1`,
