@@ -316,7 +316,7 @@ export function getMasBase(hostname, maslibs) {
 
 function getCommercePreloadUrl() {
   const { env } = getConfig();
-  if (env === 'prod') {
+  if (env.name === 'prod') {
     return 'https://commerce.adobe.com/store/iframe/preload.js';
   }
   return 'https://commerce-stg.adobe.com/store/iframe/preload.js';
