@@ -72,7 +72,7 @@ describe('class "CheckoutLink"', () => {
         const checkoutLink = mockCheckoutLink('abm');
         await checkoutLink.onceSettled();
         expect(checkoutLink.href).to.equal(
-            'https://commerce.adobe.com/store/segmentation?cli=adobe_com&ctx=fp&co=US&lang=en&ms=COM&ot=BASE&pa=ccsn_direct_individual',
+            'https://commerce.adobe.com/store/segmentation?cli=adobe_com&ctx=fp&co=US&lang=en&ms=COM&ot=BASE&cs=INDIVIDUAL&pa=ccsn_direct_individual',
         );
     });
 
@@ -83,7 +83,7 @@ describe('class "CheckoutLink"', () => {
         });
         await checkoutLink.onceSettled();
         expect(checkoutLink.href).to.equal(
-            'https://commerce.adobe.com/store/segmentation?cli=adobe_com&ctx=fp&co=US&lang=en&ms=COM&ot=BASE&pa=ccsn_direct_individual',
+            'https://commerce.adobe.com/store/segmentation?cli=adobe_com&ctx=fp&co=US&lang=en&ms=COM&ot=BASE&cs=INDIVIDUAL&pa=ccsn_direct_individual',
         );
     });
 
@@ -162,8 +162,7 @@ describe('class "CheckoutLink"', () => {
         } catch (error) {
             // Verify it's a MasError instance
             expect(error).to.be.instanceOf(MasError);
-            expect(error.context).to.have.property('duration');
-            expect(error.context).to.have.property('startTime');
+            expect(error.context).to.have.property('measure');
             expect(error.context).to.include({
                 status: 404,
                 url: 'https://www.adobe.com//web_commerce_artifact?offer_selector_ids=xyz&country=US&locale=en_US&landscape=PUBLISHED&api_key=wcms-commerce-ims-ro-user-milo&language=MULT',
@@ -180,7 +179,7 @@ describe('class "CheckoutLink"', () => {
         expect(checkoutLink.href).to.equal(
             'https://commerce.adobe.com/store/email?items%5B0%5D%5Bid%5D=C5AC20C8AAF4892B67DE2E89B26D8ACA&cli=adobe_com&ctx=fp&co=US&lang=en',
         );
-        expect(fetch.lastCall.args[0]).to.contain('language=EN');
+        expect(fetch.lastCall.args[0]).to.not.contain('language=');
 
         // no more perpetual offer
         checkoutLink.dataset.perpetual = 'false';
@@ -268,7 +267,6 @@ describe('class "CheckoutLink"', () => {
             expect(dataset.checkoutMarketSegment).to.equal(
                 options.checkoutMarketSegment,
             );
-            expect(dataset.checkoutWorkflow).to.equal(options.checkoutWorkflow);
             expect(dataset.checkoutWorkflowStep).to.equal(
                 options.checkoutWorkflowStep,
             );

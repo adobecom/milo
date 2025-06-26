@@ -11,7 +11,6 @@ import {
   getFederatedUrl,
   getFedsPlaceholderConfig,
 } from '../../../utils/utils.js';
-import { processTrackingLabels } from '../../../martech/attributes.js';
 import { replaceKey, replaceText } from '../../../features/placeholders.js';
 import { PERSONALIZATION_TAGS } from '../../../features/personalization/personalization.js';
 
@@ -19,7 +18,7 @@ loadLana();
 
 const FEDERAL_PATH_KEY = 'federal';
 // Set a default height for LocalNav,
-// as sticky blocks position themselves before LocalNav loads into the DOM.
+// as sticky blocks position themselves before LocalNav loads into the document object model(DOM).
 const DEFAULT_LOCALNAV_HEIGHT = 40;
 const LANA_CLIENT_ID = 'feds-milo';
 
@@ -102,7 +101,7 @@ export const logPerformance = (
       sampleRate: 0.01,
     });
   } catch (e) {
-    console.error(e);
+    // eslint-disable-next-line no-empty
   }
 };
 
@@ -165,15 +164,6 @@ export const federatePictureSources = ({ section, forceFederate } = {}) => {
       }
     });
 };
-
-export function getAnalyticsValue(str, index) {
-  if (typeof str !== 'string' || !str.length) return str;
-
-  let analyticsValue = processTrackingLabels(str, getConfig(), 30);
-  analyticsValue = typeof index === 'number' ? `${analyticsValue}-${index}` : analyticsValue;
-
-  return analyticsValue;
-}
 
 export function getExperienceName() {
   const experiencePath = getMetadata('gnav-source');
@@ -244,19 +234,6 @@ export async function loadDecorateMenu() {
 
   resolve(menu.default);
   return cachedDecorateMenu;
-}
-
-export function decorateCta({ elem, type = 'primaryCta', index } = {}) {
-  const modifier = type === 'secondaryCta' ? 'secondary' : 'primary';
-
-  const clone = elem.cloneNode(true);
-  clone.className = `feds-cta feds-cta--${modifier}`;
-  clone.setAttribute('daa-ll', getAnalyticsValue(clone.textContent, index));
-
-  return toFragment`
-    <div class="feds-cta-wrapper">
-      ${clone}
-    </div>`;
 }
 
 let curtainElem;
@@ -357,6 +334,49 @@ export const [hasActiveLink, setActiveLink, isActiveLink, getActiveLink] = (() =
   ];
 })();
 
+export const setAriaAtributes = (dropdownTrigger) => {
+  const popup = dropdownTrigger.nextElementSibling;
+  if (isDesktop.matches) {
+    dropdownTrigger.setAttribute('aria-haspopup', 'true');
+    dropdownTrigger.removeAttribute('aria-controls');
+    popup.removeAttribute('role');
+    popup.removeAttribute('aria-modal');
+    popup.removeAttribute('aria-labelledby');
+  } else {
+    dropdownTrigger.setAttribute('aria-haspopup', 'dialog');
+    dropdownTrigger.setAttribute('aria-controls', popup.id);
+    popup.setAttribute('role', 'dialog');
+    popup.setAttribute('aria-modal', true);
+    popup.setAttribute('aria-labelledby', `${popup.id}-title`);
+  }
+};
+
+export const [addA11YMobileDropdowns, removeA11YMobileDropdowns] = (() => {
+  const elementsToHidden = ['.feds-brand-container', '.feds-utilities', '.feds-nav-wrapper .feds-nav > *'];
+  let topNav = null;
+  return [
+    (container, triggerElement) => {
+      topNav = container;
+      elementsToHidden.forEach((selector) => {
+        const elements = topNav.querySelectorAll(selector);
+        elements.forEach((el) => {
+          el?.setAttribute('aria-hidden', 'true');
+        });
+      });
+      triggerElement.closest('section')?.setAttribute('aria-hidden', 'false');
+    },
+    () => {
+      if (!topNav) return;
+      elementsToHidden.forEach((selector) => {
+        const elements = topNav.querySelectorAll(selector);
+        elements.forEach((el) => {
+          el?.removeAttribute('aria-hidden');
+        });
+      });
+    },
+  ];
+})();
+
 export function closeAllDropdowns({
   type,
   animatedElement = undefined,
@@ -368,14 +388,14 @@ export function closeAllDropdowns({
     const openElements = document.querySelectorAll(selector);
     if (!openElements) return;
     [...openElements].forEach((el) => {
-      if ('fedsPreventautoclose' in el.dataset || (type === 'localNavItem' && el.classList.contains('feds-localnav-title'))) return;
+      const isUnavAppSwitcher = el.id === 'unav-app-switcher';
+      if ('fedsPreventautoclose' in el.dataset || isUnavAppSwitcher || (type === 'localNavItem' && el.classList.contains('feds-localnav-title'))) return;
       el.setAttribute('aria-expanded', 'false');
     });
   };
 
   if (animatedElement && animationType) {
     animatedElement.addEventListener(`${animationType}end`, closeAllOpenElements, { once: true });
-    animatedElement.setAttribute('aria-expanded', 'false');
   } else {
     closeAllOpenElements();
   }
@@ -526,7 +546,7 @@ const parseTabsFromMenuSection = (section) => {
   const daallTab = headline?.getAttribute('daa-ll');
   const daalhTabContent = section.querySelector('.feds-menu-items')?.getAttribute('daa-lh');
   const content = section.querySelector('.feds-menu-items') ?? section;
-  const links = [...content.querySelectorAll('a.feds-navLink, .feds-cta--secondary')].map((x) => x.outerHTML).join('');
+  const links = [...content.querySelectorAll('a.feds-navLink, .feds-navLink.feds-navLink--header, .feds-cta--secondary')].map((x) => x.outerHTML).join('');
   return { name, links, daallTab, daalhTabContent };
 };
 
@@ -542,10 +562,10 @@ const promoCrossCloudTab = async (popup) => {
   }];
 };
 
-export const transformTemplateToMobile = async (popup, item, localnav = false) => {
+// returns a cleanup function
+export const transformTemplateToMobile = async ({ popup, item, localnav = false, toggleMenu }) => {
   const notMegaMenu = popup.parentElement.tagName === 'DIV';
-  const originalContent = popup.innerHTML;
-  if (notMegaMenu) return originalContent;
+  if (notMegaMenu) return () => {};
 
   const tabs = [...popup.querySelectorAll('.feds-menu-section')]
     .filter((section) => !section.querySelector('.feds-promo') && section.textContent)
@@ -565,16 +585,10 @@ export const transformTemplateToMobile = async (popup, item, localnav = false) =
   popup.innerHTML = `
     <div class="top-bar">
       ${localnav ? brand : await replaceText(mainMenu, getFedsPlaceholderConfig())}
-      <button class="close-icon" daa-ll="Close button_SubNav" aria-label='Close'>
-        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 14 14" fill="none">
-          <path d="M1.5 1L13 12.5" stroke=${isDarkMode() ? '#f2f2f2' : 'black'} stroke-width="1.7037" stroke-linecap="round"/>
-          <path d="M13 1L1.5 12.5" stroke=${isDarkMode() ? '#f2f2f2' : 'black'} stroke-width="1.7037" stroke-linecap="round"/>
-        </svg>
-      </button>
     </div>
     <div class="title">
       ${breadCrumbs || '<div class="breadcrumbs"></div>'}
-      <h7>${item.textContent.trim()}</h7>
+      <h2 id="${popup.id}-title">${item.textContent.trim()}</h2>
     </div>
     <div class="tabs" role="tablist">
       ${tabs.map(({ name, daallTab }, i) => `
@@ -584,7 +598,7 @@ export const transformTemplateToMobile = async (popup, item, localnav = false) =
           aria-selected="false"
           aria-controls="${i}"
           ${daallTab ? `daa-ll="${daallTab}|click"` : ''}
-        >${name}</button>
+        >${name.trim() === '' ? '<div></div>' : name}</button>
       `).join('')}
     </div>
     <div class="tab-content">
@@ -603,32 +617,129 @@ export const transformTemplateToMobile = async (popup, item, localnav = false) =
     <div class="sticky-cta">
       ${CTA}
     </div>
+    <button class="close-icon" daa-ll="Close button_SubNav" aria-label='Close'>
+      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 14 14" fill="none">
+        <path d="M1.5 1L13 12.5" stroke=${isDarkMode() ? '#f2f2f2' : 'black'} stroke-width="1.7037" stroke-linecap="round"/>
+        <path d="M13 1L1.5 12.5" stroke=${isDarkMode() ? '#f2f2f2' : 'black'} stroke-width="1.7037" stroke-linecap="round"/>
+      </svg>
+    </button>
     `;
-  popup.querySelector('.close-icon')?.addEventListener('click', () => {
+
+  const closeIcon = popup.querySelector('.close-icon');
+  const main = popup.querySelector('.main-menu');
+  const closeIconClickCallback = () => {
+    removeA11YMobileDropdowns();
     document.querySelector(selectors.mainNavToggle).focus();
     closeAllDropdowns();
+    toggleMenu();
     enableMobileScroll();
-  });
-  popup.querySelector('.main-menu')?.addEventListener('click', (e) => {
+  };
+  const mainMenuClickCallback = (e) => {
+    removeA11YMobileDropdowns();
     e.target.closest(selectors.activeDropdown).querySelector('button').focus();
     enableMobileScroll();
     closeAllDropdowns();
-  });
+  };
+
+  closeIcon?.addEventListener('click', closeIconClickCallback);
+  main?.addEventListener('click', mainMenuClickCallback);
+
   const tabbuttons = popup.querySelectorAll('.tabs button');
   const tabpanels = popup.querySelectorAll('.tab-content [role="tabpanel"]');
+  const tabbuttonClickCallbacks = [...tabbuttons].map((tab, i) => () => {
+    closeAllTabs(tabbuttons, tabpanels);
+    tabpanels?.[i]?.removeAttribute('hidden');
+    tab.setAttribute('aria-selected', 'true');
+  });
 
   tabpanels.forEach((panel) => {
     animateInSequence([...panel.children], 0.02);
   });
 
   tabbuttons.forEach((tab, i) => {
-    tab.addEventListener('click', () => {
-      closeAllTabs(tabbuttons, tabpanels);
-      tabpanels?.[i]?.removeAttribute('hidden');
-      tab.setAttribute('aria-selected', 'true');
-    });
+    tab.addEventListener('click', tabbuttonClickCallbacks[i]);
   });
-  return originalContent;
+
+  const cleanup = () => {
+    closeIcon?.removeEventListener('click', closeIconClickCallback);
+    main?.removeEventListener('click', mainMenuClickCallback);
+    tabbuttons.forEach((tab, i) => tab.removeEventListener('click', tabbuttonClickCallbacks[i]));
+  };
+
+  return cleanup;
+};
+
+export const loaderMegaMenu = () => {
+  // create an intermediate loading state.
+  // const loadingMegaMenu = toFragment`<div class="feds-popup loading"></div>`;
+  // WARNING: if you change things in menu.js you may want to check here
+  // and see if you need to make changes here too. In an ideal world we'd
+  // be able to re-use menu.js logic. But doing so would require a rather
+  // large refactor of menu.js.
+  const column = (content) => `
+  <div class="feds-menu-column">
+    <div class="feds-menu-section">
+      ${content}
+    </div>
+  </div>
+  `;
+  const columnItems = (n, desc = true) => new Array(n).fill(0).map(() => `<a href="" class="feds-navLink">
+          <div class="feds-navLink-content">
+            <div class="feds-navLink-title"></div>
+            ${desc ? '<div class="feds-navLink-description"></div>' : ''}
+          </div>
+        </a>`).join('');
+  const columnContent = [
+    `<div class="feds-menu-headline">
+      <div class="first-headline-one"></div>
+      <div class="first-headline-two"></div>
+    </div>
+    <div class="feds-menu-items">
+      ${columnItems(4)}
+      <div class="feds-cta-wrapper"></div>
+    </div>
+    `,
+    `<div class="feds-menu-headline"></div>
+     <div class="feds-menu-items">
+       ${columnItems(6)}
+     </div>
+    `,
+    `<div class="feds-menu-headline"></div>
+     <div class="feds-menu-items">
+       ${columnItems(2)}
+     </div>
+     <div style="padding-top: 29px;"></div>
+     <div class="feds-menu-headline"></div>
+     <div class="feds-menu-headline small"></div>
+     <div class="feds-menu-items">
+       ${columnItems(4, false)}
+     </div>`,
+    `<div class="feds-promo-wrapper">
+       <div class="feds-promo">
+       </div>
+     </div>`,
+  ];
+  return toFragment`
+  <div class="feds-popup loading" aria-hidden="true">
+    <div class="feds-menu-container">
+      <div class="feds-menu-content">
+        ${columnContent.map(column).join('')}
+      </div>
+    </div>
+    <div class="feds-crossCloudMenu-wrapper">
+      <div class="feds-crossCloudMenu">
+        <div>
+          <ul>
+            ${new Array(4).fill(0).map(() => `
+              <li class="feds-crossCloudMenu-item">
+                <a class="feds-navLink"></a>
+              </li>`).join('')}
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+  `;
 };
 
 export const takeWhile = (xs, f) => {
@@ -659,6 +770,22 @@ export function getGnavHeight() {
   }
 
   return topHeight;
+}
+
+const SIGNED_OUT_ICONS = ['appswitcher', 'help'];
+export function getUnavWidthCSS(unavComponents, signedOut = false) {
+  const iconWidth = 32; // px
+  const flexGap = 0.25; // rem
+  const sectionDivider = getConfig()?.unav?.showSectionDivider;
+  const cartEnabled = /uc_carts=/.test(document.cookie);
+  const components = (!cartEnabled ? unavComponents?.filter((x) => x !== 'cart') : unavComponents) ?? [];
+  const n = components.length ?? 3;
+  if (signedOut) {
+    const l = components.filter((c) => SIGNED_OUT_ICONS.includes(c)).length;
+    const signInButton = 92; // px
+    return `calc(${signInButton}px + ${l * iconWidth}px + ${l * flexGap}rem${sectionDivider ? ` + 2px + ${flexGap}rem` : ''})`;
+  }
+  return `calc(${n * iconWidth}px + ${(n - 1) * flexGap}rem${sectionDivider ? ` + 2px + ${flexGap}rem` : ''})`;
 }
 
 /**

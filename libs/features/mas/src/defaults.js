@@ -1,17 +1,15 @@
 import {
     Landscape,
-    CheckoutWorkflow,
     CheckoutWorkflowStep,
     Env,
 } from './constants.js';
 
 export const Defaults = Object.freeze({
     checkoutClientId: 'adobe_com',
-    checkoutWorkflow: CheckoutWorkflow.V3,
     checkoutWorkflowStep: CheckoutWorkflowStep.EMAIL,
     country: 'US',
-    displayOldPrice: true,
-    displayPerUnit: false,
+    displayOldPrice: false,
+    displayPerUnit: true,
     displayRecurrence: true,
     displayTax: false,
     displayPlanType: false,

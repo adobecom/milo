@@ -192,4 +192,5 @@ module.exports = {
   isWithinRCP,
   isWithinPrePostRCP,
   RCPDates,
+  ZERO_IMPACT_PREFIX: '[ZERO IMPACT]',
 };

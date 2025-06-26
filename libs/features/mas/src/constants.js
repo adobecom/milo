@@ -62,9 +62,6 @@ export const EVENT_MERCH_OFFER_READY = 'merch-offer:ready';
 /** Event to dispatch when all the offers of a merch-offer-select sont ready */
 export const EVENT_MERCH_OFFER_SELECT_READY = 'merch-offer-select:ready';
 
-/** Event to dispatch when a merch-card is ready */
-export const EVENT_MERCH_CARD_READY = 'merch-card:ready';
-
 export const EVENT_MERCH_CARD_ACTION_MENU_TOGGLE =
     'merch-card:action-menu-toggle';
 
@@ -108,6 +105,7 @@ export const EVENT_TYPE_RESOLVED = 'mas:resolved';
 
 export const LOG_NAMESPACE = 'mas/commerce';
 
+export const PARAM_MAS_PREVIEW = "mas.preview";
 export const PARAM_ENV = 'commerce.env';
 export const PARAM_LANDSCAPE = 'commerce.landscape';
 export const PARAM_AOS_API_KEY = 'commerce.aosKey';
@@ -129,8 +127,6 @@ export const Landscape = {
 export const HEADER_X_REQUEST_ID = 'X-Request-Id';
 
 export const CheckoutWorkflowStep = Object.freeze({
-    CHECKOUT: 'checkout',
-    CHECKOUT_EMAIL: 'checkout/email',
     SEGMENTATION: 'segmentation',
     BUNDLE: 'bundle',
     COMMITMENT: 'commitment',
@@ -141,7 +137,7 @@ export const CheckoutWorkflowStep = Object.freeze({
     CHANGE_PLAN_TEAM_PAYMENT: 'change-plan/team-upgrade/payment',
 });
 
-export const CheckoutWorkflow = Object.freeze({ V2: 'UCv2', V3: 'UCv3' });
+export const CheckoutWorkflow = 'UCv3';
 
 export const Env = Object.freeze({
     STAGE: 'STAGE',
@@ -166,3 +162,5 @@ export const TEMPLATE_PRICE = 'price';
 export const TEMPLATE_PRICE_STRIKETHROUGH = 'price-strikethrough';
 export const TEMPLATE_PRICE_ANNUAL = 'annual';
 export const TEMPLATE_PRICE_LEGAL = 'legal';
+
+export const FF_DEFAULTS = 'mas-ff-defaults';

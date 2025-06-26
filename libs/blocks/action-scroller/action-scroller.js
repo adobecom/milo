@@ -49,7 +49,8 @@ export function hideNavigation(el) {
   const elHasWidth = !!el.clientWidth;
   const scrollWidth = itemWidth * columns + gridGap * (columns - 1) + 2 * padding;
   const screenWidth = window.innerWidth < 1200 ? window.innerWidth : 1200;
-  const horizontalScroll = Math.ceil(el.scrollLeft) === Math.ceil(el.scrollWidth - el.clientWidth);
+  const scrollLeft = Math.ceil(Math.abs(el.scrollLeft));
+  const horizontalScroll = scrollLeft === Math.ceil(el.scrollWidth - el.clientWidth);
 
   return elHasWidth ? horizontalScroll : scrollWidth < screenWidth;
 }
@@ -89,9 +90,10 @@ function handleBtnState(
 }
 
 function handleNavigation(el) {
+  const isRtl = document.documentElement.dir === 'rtl';
   const prev = createTag('div', { class: 'nav-grad previous' }, PREVBUTTON);
   const next = createTag('div', { class: 'nav-grad next' }, NEXTBUTTON);
-  const buttons = [prev, next];
+  const buttons = isRtl ? [next, prev] : [prev, next];
   buttons.forEach((btn) => {
     const button = btn.childNodes[0];
     button.addEventListener('click', () => handleScroll(el, button.classList));
@@ -99,6 +101,14 @@ function handleNavigation(el) {
   return buttons;
 }
 
+const allActionScrollers = [];
+function handleResize() {
+  allActionScrollers.forEach(({ scroller, buttons }) => {
+    handleBtnState(scroller, buttons);
+  });
+}
+
+let attachedResize = false;
 export default function init(el) {
   const hasNav = el.classList.contains(NAV);
   const actions = el.parentElement.querySelectorAll('.action-item');
@@ -108,7 +118,14 @@ export default function init(el) {
   items.append(...actions);
   el.replaceChildren(items, ...buttons);
   if (hasNav) {
-    items.addEventListener('scroll', () => handleBtnState(items, buttons));
     handleBtnState(items, buttons);
+    if (!items.querySelectorAll('a').length) items.setAttribute('tabindex', 0);
+    allActionScrollers.push({ scroller: items, buttons });
+    import('../../utils/action.js').then(({ debounce }) => {
+      items.addEventListener('scroll', debounce(() => handleBtnState(items, buttons), 50));
+      if (attachedResize) return;
+      attachedResize = true;
+      window.addEventListener('resize', debounce(handleResize, 50));
+    });
   }
 }

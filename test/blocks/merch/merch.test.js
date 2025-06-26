@@ -2,7 +2,7 @@ import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
 import { delay } from '../../helpers/waitfor.js';
 
-import { CheckoutWorkflow, CheckoutWorkflowStep, Defaults, Log } from '../../../libs/deps/mas/commerce.js';
+import { CheckoutWorkflowStep, Defaults, Log } from '../../../libs/deps/mas/commerce.js';
 
 import merch, {
   PRICE_TEMPLATE_DISCOUNT,
@@ -21,8 +21,7 @@ import merch, {
   PRICE_TEMPLATE_REGULAR,
   getMasBase,
   getOptions,
-  appendTabName,
-  appendExtraOptions,
+  appendDexterParameters,
   getMiloLocaleSettings,
   reopenModal,
   resetReopenStatus,
@@ -330,7 +329,6 @@ describe('Merch Block', () => {
       expect(textContent).to.equal('Buy Now');
       expect(el.getAttribute('is')).to.equal('checkout-link');
       expect(dataset.promotionCode).to.equal(undefined);
-      expect(dataset.checkoutWorkflow).to.equal(Defaults.checkoutWorkflow);
       expect(dataset.checkoutWorkflowStep).to.equal(Defaults.checkoutWorkflowStep);
       expect(dataset.checkoutMarketSegment).to.equal(undefined);
       expect(url.searchParams.get('cli')).to.equal(Defaults.checkoutClientId);
@@ -350,14 +348,13 @@ describe('Merch Block', () => {
       expect(textContent).to.equal('Buy Now');
       expect(el.getAttribute('is')).to.equal('checkout-link');
       expect(dataset.promotionCode).to.equal(undefined);
-      expect(dataset.checkoutWorkflow).to.equal(Defaults.checkoutWorkflow);
       expect(dataset.checkoutWorkflowStep).to.equal(Defaults.checkoutWorkflowStep);
       expect(dataset.checkoutMarketSegment).to.equal(undefined);
       expect(url.searchParams.get('cli')).to.equal('dc');
     });
 
     it('renders merch link to CTA, metadata values', async () => {
-      const metadata = createTag('meta', { name: 'checkout-workflow', content: CheckoutWorkflow.V2 });
+      const metadata = createTag('meta', { name: 'checkout-workflow-step', content: CheckoutWorkflowStep.SEGMENTATION });
       document.head.appendChild(metadata);
       await initService(true);
       const el = await merch(document.querySelector(
@@ -369,8 +366,7 @@ describe('Merch Block', () => {
       expect(textContent).to.equal('Buy Now');
       expect(el.getAttribute('is')).to.equal('checkout-link');
       expect(dataset.promotionCode).to.equal(undefined);
-      expect(dataset.checkoutWorkflow).to.equal(CheckoutWorkflow.V2);
-      expect(dataset.checkoutWorkflowStep).to.equal(CheckoutWorkflowStep.CHECKOUT);
+      expect(dataset.checkoutWorkflowStep).to.equal(CheckoutWorkflowStep.SEGMENTATION);
       expect(dataset.checkoutMarketSegment).to.equal(undefined);
       expect(url.searchParams.get('cli')).to.equal(Defaults.checkoutClientId);
       document.head.removeChild(metadata);
@@ -854,41 +850,34 @@ describe('Merch Block', () => {
         meta.setAttribute('content', modalUrl.plan);
         document.getElementsByTagName('head')[0].appendChild(meta);
 
-        const resultUrl = appendTabName(modalUrl.url);
+        const resultUrl = appendDexterParameters(modalUrl.url);
         expect(resultUrl).to.equal(modalUrl.urlWithPlan);
         document.querySelector('meta[name="preselect-plan"]').remove();
       });
     });
 
-    it('appends extra options to legacy modal URL', () => {
-      const url = 'https://www.adobe.com/plans-fragments/modals/individual/modals-content-rich/all-apps/master.modal.html';
-      const resultUrl = appendExtraOptions(url, JSON.stringify({ promoid: 'test' }));
-      expect(resultUrl).to.equal('https://www.adobe.com/plans-fragments/modals/individual/modals-content-rich/all-apps/master.modal.html?promoid=test');
-    });
-
-    it('appends plan=edu if extra options contains ms=e', () => {
-      const url = 'https://www.adobe.com/plans-fragments/modals/individual/modals-content-rich/all-apps/master.modal.html';
-      const resultUrl = appendExtraOptions(url, JSON.stringify({ ms: 'e' }));
-      expect(resultUrl).to.equal('https://www.adobe.com/plans-fragments/modals/individual/modals-content-rich/all-apps/master.modal.html?plan=edu');
-    });
-
-    it('appends plan=team if extra options contains cs=t', () => {
-      const url = 'https://www.adobe.com/plans-fragments/modals/individual/modals-content-rich/all-apps/master.modal.html';
-      const resultUrl = appendExtraOptions(url, JSON.stringify({ cs: 't' }));
-      expect(resultUrl).to.equal('https://www.adobe.com/plans-fragments/modals/individual/modals-content-rich/all-apps/master.modal.html?plan=team');
+    [{ param: 'promoid', value: 'test', result: 'promoid=test' },
+      { param: 'ms', value: 'e', result: 'plan=edu' },
+      { param: 'cs', value: 't', result: 'plan=team' },
+    ].forEach(({ param, value, result }) => {
+      it(`appends extra options with param ${param}=${value} to legacy modal URL`, () => {
+        const url = 'https://www.adobe.com/plans-fragments/modals/individual/modals-content-rich/all-apps/master.modal.html';
+        const resultUrl = appendDexterParameters(url, JSON.stringify({ [param]: value }));
+        expect(resultUrl).to.equal(`${url}?${result}`);
+      });
     });
 
     it('does not append extra options to URL if invalid URL or params not provided', () => {
       const invalidUrl = 'invalid-url';
-      const resultUrl = appendExtraOptions(invalidUrl, JSON.stringify({ promoid: 'test' }));
+      const resultUrl = appendDexterParameters(invalidUrl, JSON.stringify({ promoid: 'test' }));
       expect(resultUrl).to.equal(invalidUrl);
-      const resultUrl2 = appendExtraOptions(invalidUrl);
+      const resultUrl2 = appendDexterParameters(invalidUrl);
       expect(resultUrl2).to.equal(invalidUrl);
     });
 
     it('appends extra options if the provided url is relative', () => {
       const relativeUrl = '/plans-fragments/modals/individual/modals-content-rich/all-apps/master.modal.html';
-      const resultUrl = appendExtraOptions(relativeUrl, JSON.stringify({ promoid: 'test' }));
+      const resultUrl = appendDexterParameters(relativeUrl, JSON.stringify({ promoid: 'test' }));
       expect(resultUrl).to.include('?promoid=test');
     });
   });
