@@ -37,7 +37,9 @@ describe('Hero Marquee', () => {
     expect(hr).to.exist;
   });
   it('sorts con-block elements based on order class and viewport', async () => {
-    const orderMarquee = document.querySelector('#hero-order');
+    const orderHero = await readFile({ path: './mocks/order-marquee.html' });
+    const orderMarquee = document.querySelector('#order-hero');
+    orderMarquee.innerHTML = orderHero;
     const orderCopy = orderMarquee.querySelector('.copy');
     const mobileOrder = [...orderCopy.children];
     const tabletOrder = getViewportOrder('tablet', orderCopy, mobileOrder);
@@ -53,19 +55,21 @@ describe('Hero Marquee', () => {
     expect(desktopOrder[2].classList.contains('order-0-desktop')).to.be.true;
 
     expect(tabletOrder[3].classList.contains('order-1-tablet')).to.be.true;
-    expect(desktopOrder[3].classList.contains('order-1-desktop')).to.be.true;
+    expect(desktopOrder[3].classList.contains('order-1-tablet')).to.be.true;
 
     expect(tabletOrder[4].classList.contains('order-2-tablet')).to.be.true;
-    expect(desktopOrder[4].classList.contains('order-2-desktop')).to.be.true;
+    expect(desktopOrder[4].classList.contains('order-1-desktop')).to.be.true;
 
     expect(tabletOrder[5].classList.contains('order-3-tablet')).to.be.true;
-    expect(desktopOrder[5].classList.contains('order-3-desktop')).to.be.true;
+    expect(desktopOrder[5].classList.contains('order-2-desktop')).to.be.true;
   });
   it('order of con-blocks is the same as mobile if there is no order class', async () => {
-    const nonOrderMarquee = document.querySelector('#hero-all');
-    const nonOrderCopy = nonOrderMarquee.querySelector('.copy');
-    const mobileOrder = [...nonOrderCopy.children];
-    const tabletOrder = getViewportOrder('tablet', nonOrderCopy, mobileOrder);
+    const noOrderHero = await readFile({ path: './mocks/no-order-marquee.html' });
+    const noOrderMarquee = document.querySelector('#no-order-hero');
+    noOrderMarquee.innerHTML = noOrderHero;
+    const noOrderCopy = noOrderMarquee.querySelector('.copy');
+    const mobileOrder = [...noOrderCopy.children];
+    const tabletOrder = getViewportOrder('tablet', noOrderCopy, mobileOrder);
     for (const [index, el] of tabletOrder.entries()) expect(el === mobileOrder[index]).to.be.true;
   });
 });
