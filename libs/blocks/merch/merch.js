@@ -1,6 +1,14 @@
 import {
-  createTag, getConfig, loadArea, loadScript, loadStyle, localizeLink, SLD, getMetadata,
-  loadLink, shouldAllowKrTrial,
+  createTag,
+  getConfig,
+  loadArea,
+  loadScript,
+  loadStyle,
+  localizeLink,
+  SLD,
+  getMetadata,
+  loadLink,
+  shouldAllowKrTrial,
 } from '../../utils/utils.js';
 import { replaceKey } from '../../features/placeholders.js';
 
@@ -16,7 +24,8 @@ export const MAS_MERCH_SIDENAV = 'merch-sidenav';
 export const MAS_MERCH_WHATS_INCLUDED = 'merch-whats-included';
 
 export const CHECKOUT_LINK_CONFIG_PATH = '/commerce/checkout-link.json'; // relative to libs.
-export const CHECKOUT_LINK_SANDBOX_CONFIG_PATH = '/commerce/checkout-link-sandbox.json'; // relative to libs.
+export const CHECKOUT_LINK_SANDBOX_CONFIG_PATH =
+  '/commerce/checkout-link-sandbox.json'; // relative to libs.
 
 export const PRICE_TEMPLATE_DISCOUNT = 'discount';
 export const PRICE_TEMPLATE_OPTICAL = 'optical';
@@ -199,11 +208,12 @@ function getDefaultLangstoreCountry(language) {
 export function getMiloLocaleSettings(locale) {
   const localePrefix = locale?.prefix || 'US_en';
   const geo = localePrefix.replace('/', '') ?? '';
-  let [country = 'US', language = 'en'] = (
-    GeoMap[geo] ?? geo
-  ).split('_', 2);
+  let [country = 'US', language = 'en'] = (GeoMap[geo] ?? geo).split('_', 2);
 
-  if (geo.startsWith(LANG_STORE_PREFIX) || window.location.pathname.startsWith(`/${LANG_STORE_PREFIX}`)) {
+  if (
+    geo.startsWith(LANG_STORE_PREFIX) ||
+    window.location.pathname.startsWith(`/${LANG_STORE_PREFIX}`)
+  ) {
     const localeLang = geo.replace(LANG_STORE_PREFIX, '').toLowerCase();
     country = getDefaultLangstoreCountry(localeLang);
     language = localeLang;
@@ -284,8 +294,11 @@ export const CHECKOUT_ALLOWED_KEYS = [
 
 export const CC_SINGLE_APPS_ALL = CC_SINGLE_APPS.flatMap((item) => item);
 
-export const CC_ALL_APPS = ['CC_ALL_APPS',
-  'CC_ALL_APPS_STOCK_BUNDLE', 'CC_PRO'];
+export const CC_ALL_APPS = [
+  'CC_ALL_APPS',
+  'CC_ALL_APPS_STOCK_BUNDLE',
+  'CC_PRO',
+];
 
 const NAME_LOCALE = 'LOCALE';
 const NAME_PRODUCT_FAMILY = 'PRODUCT_FAMILY';
@@ -397,7 +410,7 @@ export async function loadMasComponent(componentName) {
   const loadPromise = (async () => {
     const masLibsBase = getMasLibs();
 
-    if (masLibsBase) {
+    if (masLibsBase && !LIT_DEPENDENT_COMPONENTS.has(componentName)) {
       const externalUrl = `${masLibsBase}/${componentName}.js`;
 
       if (failedExternalLoads.has(externalUrl)) {
@@ -448,34 +461,42 @@ export async function polyfills() {
 }
 
 export async function fetchEntitlements() {
-  fetchEntitlements.promise = fetchEntitlements.promise ?? import('../global-navigation/utilities/getUserEntitlements.js')
-    .then(({ default: getUserEntitlements }) => getUserEntitlements(
-      {
-        params:
-          [
-            { name: 'include', value: 'OFFER.PRODUCT_ARRANGEMENT' }],
-        format: 'raw',
-      },
-    ));
+  fetchEntitlements.promise =
+    fetchEntitlements.promise ??
+    import('../global-navigation/utilities/getUserEntitlements.js').then(
+      ({ default: getUserEntitlements }) =>
+        getUserEntitlements({
+          params: [{ name: 'include', value: 'OFFER.PRODUCT_ARRANGEMENT' }],
+          format: 'raw',
+        })
+    );
   return fetchEntitlements.promise;
 }
 
 export async function fetchCheckoutLinkConfigs(base = '', env = '') {
   const params = new URLSearchParams(window.location.search);
-  const path = params.get('checkout-link-sandbox') === 'on' && env !== 'prod'
-    ? `${base}${CHECKOUT_LINK_SANDBOX_CONFIG_PATH}`
-    : `${base}${CHECKOUT_LINK_CONFIG_PATH}`;
-  fetchCheckoutLinkConfigs.promise = fetchCheckoutLinkConfigs.promise
-    ?? fetch(path).catch((e) => {
-      log?.error('Failed to fetch checkout link configs', e);
-    }).then((mappings) => {
-      if (!mappings?.ok) return { data: [] };
-      return mappings.json();
-    });
+  const path =
+    params.get('checkout-link-sandbox') === 'on' && env !== 'prod'
+      ? `${base}${CHECKOUT_LINK_SANDBOX_CONFIG_PATH}`
+      : `${base}${CHECKOUT_LINK_CONFIG_PATH}`;
+  fetchCheckoutLinkConfigs.promise =
+    fetchCheckoutLinkConfigs.promise ??
+    fetch(path)
+      .catch((e) => {
+        log?.error('Failed to fetch checkout link configs', e);
+      })
+      .then((mappings) => {
+        if (!mappings?.ok) return { data: [] };
+        return mappings.json();
+      });
   return fetchCheckoutLinkConfigs.promise;
 }
 
-export async function getCheckoutLinkConfig(productFamily, productCode, paCode) {
+export async function getCheckoutLinkConfig(
+  productFamily,
+  productCode,
+  paCode
+) {
   let { base } = getConfig();
   const { env } = getConfig();
   if (/\.page$/.test(document.location.origin)) {
@@ -484,38 +505,43 @@ export async function getCheckoutLinkConfig(productFamily, productCode, paCode) 
   }
   const checkoutLinkConfigs = await fetchCheckoutLinkConfigs(base, env);
   if (!checkoutLinkConfigs.data.length) return undefined;
-  const { locale: { region } } = getConfig();
-
   const {
-    paCodeConfigs,
-    productCodeConfigs,
-    productFamilyConfigs,
-  } = checkoutLinkConfigs.data.reduce((acc, config) => {
-    if (config[NAME_PRODUCT_FAMILY] === paCode) {
-      acc.paCodeConfigs.push(config);
-    } else if (config[NAME_PRODUCT_FAMILY] === productCode) {
-      acc.productCodeConfigs.push(config);
-    } else if (config[NAME_PRODUCT_FAMILY] === productFamily) {
-      acc.productFamilyConfigs.push(config);
-    }
-    return acc;
-  }, { paCodeConfigs: [], productCodeConfigs: [], productFamilyConfigs: [] });
+    locale: { region },
+  } = getConfig();
+
+  const { paCodeConfigs, productCodeConfigs, productFamilyConfigs } =
+    checkoutLinkConfigs.data.reduce(
+      (acc, config) => {
+        if (config[NAME_PRODUCT_FAMILY] === paCode) {
+          acc.paCodeConfigs.push(config);
+        } else if (config[NAME_PRODUCT_FAMILY] === productCode) {
+          acc.productCodeConfigs.push(config);
+        } else if (config[NAME_PRODUCT_FAMILY] === productFamily) {
+          acc.productFamilyConfigs.push(config);
+        }
+        return acc;
+      },
+      { paCodeConfigs: [], productCodeConfigs: [], productFamilyConfigs: [] }
+    );
 
   // helps to fallback to product family config
   // if no locale specific config is found below.
   const productCheckoutLinkConfigs = [
-    ...paCodeConfigs, ...productCodeConfigs, ...productFamilyConfigs,
+    ...paCodeConfigs,
+    ...productCodeConfigs,
+    ...productFamilyConfigs,
   ];
 
   if (!productCheckoutLinkConfigs.length) return undefined;
   const checkoutLinkConfig = productCheckoutLinkConfigs.find(
-    ({ [NAME_LOCALE]: locale }) => locale === '',
+    ({ [NAME_LOCALE]: locale }) => locale === ''
   );
-  const checkoutLinkConfigOverride = productCheckoutLinkConfigs.find(
-    ({ [NAME_LOCALE]: locale }) => locale === region,
-  ) ?? {};
+  const checkoutLinkConfigOverride =
+    productCheckoutLinkConfigs.find(
+      ({ [NAME_LOCALE]: locale }) => locale === region
+    ) ?? {};
   const overrides = Object.fromEntries(
-    Object.entries(checkoutLinkConfigOverride).filter(([, value]) => value),
+    Object.entries(checkoutLinkConfigOverride).filter(([, value]) => value)
   );
   const finalConfig = { ...checkoutLinkConfig, ...overrides };
   Object.entries(finalConfig).forEach(([key, value]) => {
@@ -529,11 +555,13 @@ export async function getCheckoutLinkConfig(productFamily, productCode, paCode) 
 export async function getDownloadAction(
   options,
   imsSignedInPromise,
-  [{
-    offerType,
-    productArrangementCode,
-    productArrangement: { productCode, productFamily: offerFamily } = {},
-  }],
+  [
+    {
+      offerType,
+      productArrangementCode,
+      productArrangement: { productCode, productFamily: offerFamily } = {},
+    },
+  ]
 ) {
   if (options.entitlement !== true) return undefined;
   const loggedIn = await imsSignedInPromise;
@@ -543,22 +571,31 @@ export async function getDownloadAction(
   const checkoutLinkConfig = await getCheckoutLinkConfig(
     offerFamily,
     productCode,
-    productArrangementCode,
+    productArrangementCode
   );
   if (!checkoutLinkConfig?.DOWNLOAD_URL) return undefined;
-  const offer = entitlements.find((
-    { offer: { product_arrangement: { family: subscriptionFamily } } },
-  ) => {
-    if (CC_ALL_APPS.includes(subscriptionFamily)) return true; // has all apps
-    if (CC_ALL_APPS.includes(offerFamily)) return false; // hasn't all apps and cta is all apps
-    const singleAppFamily = CC_SINGLE_APPS // has single and and cta is single app
-      .find((singleAppFamilies) => singleAppFamilies.includes(offerFamily));
-    return singleAppFamily?.includes(subscriptionFamily);
-  });
+  const offer = entitlements.find(
+    ({
+      offer: {
+        product_arrangement: { family: subscriptionFamily },
+      },
+    }) => {
+      if (CC_ALL_APPS.includes(subscriptionFamily)) return true; // has all apps
+      if (CC_ALL_APPS.includes(offerFamily)) return false; // hasn't all apps and cta is all apps
+      const singleAppFamily = CC_SINGLE_APPS.find(
+        (
+          singleAppFamilies // has single and and cta is single app
+        ) => singleAppFamilies.includes(offerFamily)
+      );
+      return singleAppFamily?.includes(subscriptionFamily);
+    }
+  );
   if (!offer) return undefined;
   const config = getConfig();
-  const text = await replaceKey(checkoutLinkConfig.DOWNLOAD_TEXT
-      || PLACEHOLDER_KEY_DOWNLOAD, config);
+  const text = await replaceKey(
+    checkoutLinkConfig.DOWNLOAD_TEXT || PLACEHOLDER_KEY_DOWNLOAD,
+    config
+  );
   const url = localizeLink(checkoutLinkConfig.DOWNLOAD_URL);
   const type = offerType?.toLowerCase() ?? '';
   return { text, className: `download ${type}`, url };
@@ -567,7 +604,7 @@ export async function getDownloadAction(
 export async function getUpgradeAction(
   options,
   imsSignedInPromise,
-  [{ productArrangement: { productFamily: offerFamily } = {} }],
+  [{ productArrangement: { productFamily: offerFamily } = {} }]
 ) {
   if (!options.upgrade) return undefined;
   const loggedIn = await imsSignedInPromise;
@@ -576,7 +613,9 @@ export async function getUpgradeAction(
   if (upgradeOffer === null) {
     upgradeOffer = undefined;
     // will enter only once
-    upgradeOffer = await document.querySelector('.merch-offers.upgrade [data-wcs-osi]');
+    upgradeOffer = await document.querySelector(
+      '.merch-offers.upgrade [data-wcs-osi]'
+    );
   }
   await upgradeOffer?.onceSettled();
   if (upgradeOffer && entitlements?.length && offerFamily) {
@@ -586,7 +625,7 @@ export async function getUpgradeAction(
       upgradeOffer,
       entitlements,
       CC_SINGLE_APPS_ALL,
-      CC_ALL_APPS,
+      CC_ALL_APPS
     );
     return upgradeAction;
   }
@@ -616,7 +655,9 @@ function appendTabName(url, el) {
       url.searchParams.set('plan', 'team');
     }
   }
-  const metaPreselectPlan = document.querySelector('meta[name="preselect-plan"]');
+  const metaPreselectPlan = document.querySelector(
+    'meta[name="preselect-plan"]'
+  );
   if (!metaPreselectPlan?.content) return url;
   url.searchParams.set('plan', metaPreselectPlan.content);
   return url;
@@ -630,7 +671,7 @@ function appendExtraOptions(url, extraOptions) {
       const value = extraOptionsObj[key];
       url.searchParams.set(
         TAB_DEEPLINK_MAPPING[key] ?? key,
-        TAB_DEEPLINK_MAPPING[value] ?? value,
+        TAB_DEEPLINK_MAPPING[value] ?? value
       );
     }
   });
@@ -642,28 +683,37 @@ export function appendDexterParameters(url, extraOptions, el) {
   const isRelativePath = url.startsWith('/');
   let absoluteUrl;
   try {
-    absoluteUrl = new URL(isRelativePath ? `${window.location.origin}${url}` : url);
+    absoluteUrl = new URL(
+      isRelativePath ? `${window.location.origin}${url}` : url
+    );
   } catch (err) {
     window.lana?.log(`Invalid URL ${url} : ${err}`);
     return url;
   }
   absoluteUrl = appendExtraOptions(absoluteUrl, extraOptions);
   absoluteUrl = appendTabName(absoluteUrl, el);
-  return isRelativePath ? absoluteUrl.href.replace(window.location.origin, '') : absoluteUrl.href;
+  return isRelativePath
+    ? absoluteUrl.href.replace(window.location.origin, '')
+    : absoluteUrl.href;
 }
 
 async function openExternalModal(url, getModal, extraOptions, el) {
   loadStyle(`${getConfig().base}/blocks/iframe/iframe.css`);
   const root = createTag('div', { class: 'milo-iframe' });
   const absoluteUrl = appendDexterParameters(url, extraOptions, el);
-  createTag('iframe', {
-    src: absoluteUrl,
-    frameborder: '0',
-    marginwidth: '0',
-    marginheight: '0',
-    allowfullscreen: 'true',
-    loading: 'lazy',
-  }, '', { parent: root });
+  createTag(
+    'iframe',
+    {
+      src: absoluteUrl,
+      frameborder: '0',
+      marginwidth: '0',
+      marginheight: '0',
+      allowfullscreen: 'true',
+      loading: 'lazy',
+    },
+    '',
+    { parent: root }
+  );
   return getModal(null, {
     id: 'checkout-link-modal',
     content: root,
@@ -682,15 +732,29 @@ export async function openModal(e, url, offerType, hash, extraOptions, el) {
   const offerTypeClass = offerType === OFFER_TYPE_TRIAL ? 'twp' : 'crm';
   let modal;
   if (hash) {
-    const prevHash = window.location.hash.replace('#', '') === hash ? '' : window.location.hash;
+    const prevHash =
+      window.location.hash.replace('#', '') === hash
+        ? ''
+        : window.location.hash;
     window.location.hash = hash;
-    window.addEventListener('milo:modal:closed', () => {
-      window.history.pushState({}, document.title, prevHash !== '' ? `#${prevHash}` : `${window.location.pathname}${window.location.search}`);
-    }, { once: true });
+    window.addEventListener(
+      'milo:modal:closed',
+      () => {
+        window.history.pushState(
+          {},
+          document.title,
+          prevHash !== ''
+            ? `#${prevHash}`
+            : `${window.location.pathname}${window.location.search}`
+        );
+      },
+      { once: true }
+    );
   }
 
   if (el?.isOpen3in1Modal) {
-    const { default: openThreeInOneModal, handle3in1IFrameEvents } = await import('./three-in-one.js');
+    const { default: openThreeInOneModal, handle3in1IFrameEvents } =
+      await import('./three-in-one.js');
     window.addEventListener('message', handle3in1IFrameEvents);
     modal = await openThreeInOneModal(el);
     return;
@@ -706,7 +770,10 @@ export async function openModal(e, url, offerType, hash, extraOptions, el) {
 
 export function setCtaHash(el, checkoutLinkConfig, offerType) {
   if (!(el && checkoutLinkConfig && offerType)) return undefined;
-  const hash = checkoutLinkConfig[`${(offerType === OFFER_TYPE_TRIAL) ? FREE_TRIAL_HASH : BUY_NOW_HASH}`];
+  const hash =
+    checkoutLinkConfig[
+      `${offerType === OFFER_TYPE_TRIAL ? FREE_TRIAL_HASH : BUY_NOW_HASH}`
+    ];
   if (hash) {
     el.setAttribute('data-modal-id', hash);
   }
@@ -715,7 +782,7 @@ export function setCtaHash(el, checkoutLinkConfig, offerType) {
 
 const isProdModal = (url) => {
   try {
-    return (new URL(url)).hostname.endsWith('.adobe.com');
+    return new URL(url).hostname.endsWith('.adobe.com');
   } catch (e) {
     return false;
   }
@@ -729,33 +796,49 @@ export async function getModalAction(offers, options, el) {
     // The script can preload more, based on clientId, but for the ones in use
     // ('mini-plans', 'creative') there is no difference, so we can just use either one.
     const client = 'creative';
-    loadLink(`${baseUrl}?cli=${client}`, 'text/javascript', { id: 'ucv3-preload-script', as: 'script', crossorigin: 'anonymous', rel: 'preload' });
+    loadLink(`${baseUrl}?cli=${client}`, 'text/javascript', {
+      id: 'ucv3-preload-script',
+      as: 'script',
+      crossorigin: 'anonymous',
+      rel: 'preload',
+    });
   }
 
-  const [{
-    offerType,
-    productArrangementCode,
-    productArrangement: { productCode, productFamily: offerFamily } = {},
-  }] = offers ?? [{}];
+  const [
+    {
+      offerType,
+      productArrangementCode,
+      productArrangement: { productCode, productFamily: offerFamily } = {},
+    },
+  ] = offers ?? [{}];
   const checkoutLinkConfig = await getCheckoutLinkConfig(
     offerFamily,
     productCode,
-    productArrangementCode,
+    productArrangementCode
   );
   if (!checkoutLinkConfig) return undefined;
-  const columnName = (offerType === OFFER_TYPE_TRIAL) ? FREE_TRIAL_PATH : BUY_NOW_PATH;
+  const columnName =
+    offerType === OFFER_TYPE_TRIAL ? FREE_TRIAL_PATH : BUY_NOW_PATH;
   const hash = setCtaHash(el, checkoutLinkConfig, offerType);
   let url = checkoutLinkConfig[columnName];
   if (!url && !el?.isOpen3in1Modal) return undefined;
-  url = isInternalModal(url) || isProdModal(url)
-    ? localizeLink(checkoutLinkConfig[columnName]) : checkoutLinkConfig[columnName];
+  url =
+    isInternalModal(url) || isProdModal(url)
+      ? localizeLink(checkoutLinkConfig[columnName])
+      : checkoutLinkConfig[columnName];
   return {
     url,
-    handler: (e) => openModal(e, url, offerType, hash, options.extraOptions, el),
+    handler: (e) =>
+      openModal(e, url, offerType, hash, options.extraOptions, el),
   };
 }
 
-export async function getCheckoutAction(offers, options, imsSignedInPromise, el) {
+export async function getCheckoutAction(
+  offers,
+  options,
+  imsSignedInPromise,
+  el
+) {
   try {
     await imsSignedInPromise;
     const [downloadAction, upgradeAction, modalAction] = await Promise.all([
@@ -772,7 +855,10 @@ export async function getCheckoutAction(offers, options, imsSignedInPromise, el)
 
 export function setPreview(attributes) {
   const { host } = window.location;
-  if (host.includes(`${SLD}.page`) || host.origin === 'https://www.stage.adobe.com') {
+  if (
+    host.includes(`${SLD}.page`) ||
+    host.origin === 'https://www.stage.adobe.com'
+  ) {
     attributes.preview = 'on';
   }
 }
@@ -804,44 +890,48 @@ export async function initService(force = false, attributes = {}) {
       commerce[attr] = value;
     }
   });
-  initService.promise = initService.promise ?? polyfills().then(async () => {
-    await loadMasComponent(MAS_COMMERCE_SERVICE);
-    const { language, locale, country } = getMiloLocaleSettings(miloLocale);
-    let service = document.head.querySelector('mas-commerce-service');
-    if (!service) {
-      setPreview(attributes);
-      service = createTag('mas-commerce-service', {
-        locale,
-        language,
-        ...attributes,
-        ...commerce,
-      });
-      if (miloEnv?.name !== 'prod') {
-        service.setAttribute('allow-override', '');
-      }
-      // Register checkout action if method exists (for backward compatibility)
-      if (typeof service.registerCheckoutAction === 'function') {
-        service.registerCheckoutAction(getCheckoutAction);
-      }
-      document.head.append(service);
-      await service.readyPromise;
+  initService.promise =
+    initService.promise ??
+    polyfills().then(async () => {
+      await loadMasComponent(MAS_COMMERCE_SERVICE);
+      const { language, locale, country } = getMiloLocaleSettings(miloLocale);
+      let service = document.head.querySelector('mas-commerce-service');
+      if (!service) {
+        setPreview(attributes);
+        service = createTag('mas-commerce-service', {
+          locale,
+          language,
+          ...attributes,
+          ...commerce,
+        });
+        if (miloEnv?.name !== 'prod') {
+          service.setAttribute('allow-override', '');
+        }
+        // Register checkout action if method exists (for backward compatibility)
+        if (typeof service.registerCheckoutAction === 'function') {
+          service.registerCheckoutAction(getCheckoutAction);
+        }
+        document.head.append(service);
+        await service.readyPromise;
 
-      // Polyfill for older commerce service versions that don't have prefillWcsCache
-      if (typeof service.prefillWcsCache !== 'function') {
-        service.prefillWcsCache = () => {
-          log?.warn('prefillWcsCache not available in this version of commerce service');
-        };
-      }
+        // Polyfill for older commerce service versions that don't have prefillWcsCache
+        if (typeof service.prefillWcsCache !== 'function') {
+          service.prefillWcsCache = () => {
+            log?.warn(
+              'prefillWcsCache not available in this version of commerce service'
+            );
+          };
+        }
 
-      service.imsSignedInPromise?.then((isSignedIn) => {
-        if (isSignedIn) fetchEntitlements();
-      });
-    }
-    if (country === 'AU') {
-      await loadStyle(`${getConfig().base}/blocks/merch/au-merch.css`);
-    }
-    return service;
-  });
+        service.imsSignedInPromise?.then((isSignedIn) => {
+          if (isSignedIn) fetchEntitlements();
+        });
+      }
+      if (country === 'AU') {
+        await loadStyle(`${getConfig().base}/blocks/merch/au-merch.css`);
+      }
+      return service;
+    });
   return initService.promise;
 }
 
@@ -849,9 +939,11 @@ export async function getCommerceContext(el, params) {
   const wcsOsi = params.get('osi');
   if (!wcsOsi) return null;
   const perpetual = params.get('perp') === 'true' || undefined;
-  const promotionCode = (
-    params.get('promo') ?? params.get('promotionCode') ?? el.closest('[data-promotion-code]')?.dataset.promotionCode
-  ) || undefined;
+  const promotionCode =
+    (params.get('promo') ??
+      params.get('promotionCode') ??
+      el.closest('[data-promotion-code]')?.dataset.promotionCode) ||
+    undefined;
   return { promotionCode, perpetual, wcsOsi };
 }
 
@@ -873,7 +965,8 @@ export async function getCheckoutContext(el, params) {
   const { settings } = await initService();
   const { checkoutClientId } = settings;
   const checkoutMarketSegment = params.get('marketSegment');
-  const checkoutWorkflowStep = params?.get('workflowStep') ?? settings.checkoutWorkflowStep;
+  const checkoutWorkflowStep =
+    params?.get('workflowStep') ?? settings.checkoutWorkflowStep;
   const entitlement = params?.get('entitlement');
   const upgrade = params?.get('upgrade');
   const modal = params?.get('modal');
@@ -906,11 +999,13 @@ export async function getPriceContext(el, params) {
   const displayRecurrence = params.get('term');
   const displayTax = params.get('tax');
   const displayPlanType = params.get('planType');
-  const displayAnnual = (annualEnabled && params.get('annual') !== 'false') || undefined;
+  const displayAnnual =
+    (annualEnabled && params.get('annual') !== 'false') || undefined;
   const forceTaxExclusive = params.get('exclusive');
   const alternativePrice = params.get('alt');
   // The PRICE_TEMPLATE_MAPPING supports legacy OST links
-  const template = PRICE_TEMPLATE_MAPPING.get(params.get('type')) ?? PRICE_TEMPLATE_REGULAR;
+  const template =
+    PRICE_TEMPLATE_MAPPING.get(params.get('type')) ?? PRICE_TEMPLATE_REGULAR;
   return {
     ...context,
     displayOldPrice,
@@ -928,7 +1023,10 @@ export async function getPriceContext(el, params) {
 let modalReopened = false;
 export function reopenModal(cta) {
   if (modalReopened) return;
-  if (cta && cta.getAttribute('data-modal-id') === window.location.hash.replace('#', '')) {
+  if (
+    cta &&
+    cta.getAttribute('data-modal-id') === window.location.hash.replace('#', '')
+  ) {
     cta.click();
     modalReopened = true;
   }
@@ -940,7 +1038,9 @@ export function resetReopenStatus() {
 
 export async function buildCta(el, params) {
   const large = !!el.closest('.marquee');
-  const strong = el.firstElementChild?.tagName === 'STRONG' || el.parentElement?.tagName === 'STRONG';
+  const strong =
+    el.firstElementChild?.tagName === 'STRONG' ||
+    el.parentElement?.tagName === 'STRONG';
   if (el.closest('.merch-offers.upgrade')) {
     params.append('entitlement', 'false');
   }
@@ -975,14 +1075,20 @@ export async function buildCta(el, params) {
       const { marketSegment, customerSegment } = cta;
       const segment = marketSegment === 'EDU' ? marketSegment : customerSegment;
       let ariaLabel = cta.textContent;
-      ariaLabel = productCode ? `${ariaLabel} - ${await replaceKey(productCode, getConfig())}` : ariaLabel;
-      ariaLabel = segment ? `${ariaLabel} - ${await replaceKey(segment, getConfig())}` : ariaLabel;
+      ariaLabel = productCode
+        ? `${ariaLabel} - ${await replaceKey(productCode, getConfig())}`
+        : ariaLabel;
+      ariaLabel = segment
+        ? `${ariaLabel} - ${await replaceKey(segment, getConfig())}`
+        : ariaLabel;
       cta.setAttribute('aria-label', ariaLabel);
     });
   }
 
   if (getMetadata('mas-ff-copy-cta') === 'on') {
-    const { default: addCopyToClipboard } = await import('./copy-to-clipboard.js');
+    const { default: addCopyToClipboard } = await import(
+      './copy-to-clipboard.js'
+    );
     return addCopyToClipboard(el, cta);
   }
 
@@ -990,10 +1096,11 @@ export async function buildCta(el, params) {
    * TODO: This code block will be deprecated and removed in a future version.
    * @see https://jira.corp.adobe.com/browse/MWPW-173470
    * @see https://jira.corp.adobe.com/browse/MWPW-174411
-  */
+   */
   cta.onceSettled().then(() => {
     const prefix = getConfig()?.locale?.prefix;
-    if (!(prefix === '/kr' && cta.value[0]?.offerType === OFFER_TYPE_TRIAL)) return;
+    if (!(prefix === '/kr' && cta.value[0]?.offerType === OFFER_TYPE_TRIAL))
+      return;
     if (shouldAllowKrTrial(el, prefix)) {
       cta.classList.remove('hidden-osi-trial-link');
       return;
