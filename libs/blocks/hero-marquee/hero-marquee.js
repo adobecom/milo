@@ -167,19 +167,28 @@ function loadBreakpointThemes() {
 }
 
 export function getViewportOrder(viewport, content, previousViewportOrder) {
-  const orderEls = [...content.querySelectorAll(':scope > div[class*="order-"]')];
-  const nonOrderEls = [...content.querySelectorAll(':scope > div:not([class*="order-"])')];
-  const viewportOrder = Array(orderEls.length).fill(null);
-  orderEls.forEach((el) => {
+  const els = [...content.children];
+  const viewportObject = { 0: [] };
+  els.forEach((el) => {
     let order;
     el.classList.forEach((className) => {
       if (!className.startsWith('order-') || !className.endsWith(viewport)) return;
       order = parseInt(className.split('-')[1], 10);
     });
-    if (Number.isInteger(order)) viewportOrder[order] = el;
+    if (Number.isInteger(order)) {
+      if (!viewportObject[order]) viewportObject[order] = [];
+      viewportObject[order].push(el);
+    } else {
+      viewportObject[0].push(el);
+    }
   });
-  const nonEmpty = viewportOrder.every((el) => el);
-  return nonEmpty ? [...nonOrderEls, ...viewportOrder] : previousViewportOrder;
+
+  const viewportOrder = [];
+  Object.keys(viewportObject).sort((a, b) => a - b).forEach((key) => {
+    viewportOrder.push(...viewportObject[key]);
+  });
+  const usePrevious = Object.keys(viewportObject).length === 1;
+  return usePrevious ? previousViewportOrder : viewportOrder;
 }
 
 function handleViewportOrder(content) {

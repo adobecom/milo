@@ -42,15 +42,24 @@ describe('Hero Marquee', () => {
     const mobileOrder = [...orderCopy.children];
     const tabletOrder = getViewportOrder('tablet', orderCopy, mobileOrder);
     const desktopOrder = getViewportOrder('desktop', orderCopy, tabletOrder);
+
     expect(tabletOrder[0].classList.contains('main-copy')).to.be.true;
     expect(desktopOrder[0].classList.contains('main-copy')).to.be.true;
-    tabletOrder.splice(0, 1);
-    desktopOrder.splice(0, 1);
-    // eslint-disable-next-line no-plusplus
-    for (let i = 0; i < tabletOrder.length; i++) {
-      expect(tabletOrder[i].classList.contains(`order-${i}-tablet`)).to.be.true;
-      expect(desktopOrder[i].classList.contains(`order-${i}-desktop`)).to.be.true;
-    }
+
+    expect(tabletOrder[1].classList.contains('order-0-tablet')).to.be.true;
+    expect(desktopOrder[1].classList.contains('no-order-element')).to.be.true;
+
+    expect(tabletOrder[2].classList.contains('no-order-element')).to.be.true;
+    expect(desktopOrder[2].classList.contains('order-0-desktop')).to.be.true;
+
+    expect(tabletOrder[3].classList.contains('order-1-tablet')).to.be.true;
+    expect(desktopOrder[3].classList.contains('order-1-desktop')).to.be.true;
+
+    expect(tabletOrder[4].classList.contains('order-2-tablet')).to.be.true;
+    expect(desktopOrder[4].classList.contains('order-2-desktop')).to.be.true;
+
+    expect(tabletOrder[5].classList.contains('order-3-tablet')).to.be.true;
+    expect(desktopOrder[5].classList.contains('order-3-desktop')).to.be.true;
   });
   it('order of con-blocks is the same as mobile if there is no order class', async () => {
     const nonOrderMarquee = document.querySelector('#hero-all');
