@@ -662,12 +662,12 @@ export const getGrayboxExperienceId = (
 ) => {
   // Only allow trusted Adobe graybox domains
   const isAdobeGraybox = (
-    hostname.endsWith('.adobe.com') &&
-    /^[^.]+\.([a-z]+-)?graybox\.adobe\.com$/.test(hostname)
+    hostname.endsWith('.adobe.com')
+    && /^[^.]+\.([a-z]+-)?graybox\.adobe\.com$/.test(hostname)
   );
   const isStageGraybox = (
-    (hostname.endsWith('.aem.page') || hostname.endsWith('.aem.live')) &&
-    hostname.includes('graybox')
+    (hostname.endsWith('.aem.page') || hostname.endsWith('.aem.live'))
+    && hostname.includes('graybox')
   );
 
   // Check for graybox.adobe.com format: https://[exn].[pn]-graybox.adobe.com/[path].html
