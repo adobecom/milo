@@ -379,6 +379,12 @@ html[dir="rtl"] .hero-marquee li.icon-item span.icon {
   /* min height */
   .hero-marquee.s-min-height-tablet { min-height: var(--s-min-height);}
   .hero-marquee.l-min-height-tablet { min-height: var(--l-min-height);}
+
+  /* helper classes */
+  .hero-marquee .order-0-tablet { order: 0; }
+  .hero-marquee .order-1-tablet { order: 1; }
+  .hero-marquee .order-2-tablet { order: 2; }
+  .hero-marquee .order-3-tablet { order: 3; }
 }
 
 @media screen and (min-width: 920px) {
@@ -468,4 +474,10 @@ html[dir="rtl"] .hero-marquee li.icon-item span.icon {
   /* min height */
   .hero-marquee.s-min-height-desktop { min-height: var(--s-min-height);}
   .hero-marquee.l-min-height-desktop { min-height: var(--l-min-height);}
+
+  /* helper classes */
+  .hero-marquee .order-0-desktop { order: 0; }
+  .hero-marquee .order-1-desktop { order: 1; }
+  .hero-marquee .order-2-desktop { order: 2; }
+  .hero-marquee .order-3-desktop { order: 3; }
 }
