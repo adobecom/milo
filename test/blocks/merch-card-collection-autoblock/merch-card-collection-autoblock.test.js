@@ -68,7 +68,10 @@ describe('merch-card-collection autoblock', () => {
     });
 
     it('test analytics', async () => {
+      const root = document.createElement('div');
+      root.setAttribute('daa-lh', 'topdaalh');
       const content = document.createElement('div');
+      root.append(content);
       content.setAttribute('daa-lh', 'test-analytics');
       content.classList.add('content');
       content.classList.add('tabs');
@@ -76,7 +79,7 @@ describe('merch-card-collection autoblock', () => {
       a.setAttribute('href', 'https://mas.adobe.com/studio.html#content-type=merch-card-collection&path=acom&query=e58f8f75-b882-409a-9ff8-8826b36a8368');
       a.textContent = 'merch-card-collection: SANDBOX / Individual Plans';
       content.append(a);
-      document.body.append(content);
+      document.body.append(root);
       await init(a);
       const sidenav = document.querySelector('merch-sidenav');
       const qs = document.querySelector('merch-quantity-select');
@@ -112,9 +115,9 @@ describe('merch-card-collection autoblock', () => {
       await delay(100);
       expect(window._satellite.track.called).to.be.true;
 
-      expect(window._satellite.track.args[0][1].data.web.webInteraction.name).to.equal('all--cat|test-analytics');
-      expect(window._satellite.track.args[1][1].data.web.webInteraction.name).to.equal('quantity-3|test-analytics');
-      expect(window._satellite.track.args[2][1].data.web.webInteraction.name).to.equal('addon-checked|test-analytics');
+      expect(window._satellite.track.args[0][1].data.web.webInteraction.name).to.equal('all--cat|topdaalh|test-analytics');
+      expect(window._satellite.track.args[1][1].data.web.webInteraction.name).to.equal('quantity-3|topdaalh|test-analytics');
+      expect(window._satellite.track.args[2][1].data.web.webInteraction.name).to.equal('addon-checked|topdaalh|test-analytics');
     });
 
     it('creates does not create sidenav if specified in the query params', async () => {
