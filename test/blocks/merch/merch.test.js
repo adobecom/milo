@@ -20,8 +20,6 @@ import merch, {
   getCheckoutAction,
   PRICE_TEMPLATE_REGULAR,
   getMasBase,
-  getMasLibs,
-  loadMasComponent,
   getOptions,
   appendDexterParameters,
   getMiloLocaleSettings,
@@ -31,28 +29,12 @@ import merch, {
   openModal,
   PRICE_TEMPLATE_LEGAL,
 } from '../../../libs/blocks/merch/merch.js';
+import { localizePreviewLinks } from '../../../libs/blocks/merch/autoblock.js';
 
 import { mockFetch, unmockFetch, readMockText } from './mocks/fetch.js';
 import { mockIms, unmockIms } from './mocks/ims.js';
-import { createTag, setConfig, loadScript } from '../../../libs/utils/utils.js';
+import { createTag, setConfig } from '../../../libs/utils/utils.js';
 import getUserEntitlements from '../../../libs/blocks/global-navigation/utilities/getUserEntitlements.js';
-
-// Make loadScript available globally for proper mocking
-window.loadScript = loadScript;
-
-// Mock URLSearchParams for testing
-class MockURLSearchParams {
-  static masLibsValue = null;
-
-  get(param) {
-    return param === 'maslibs' ? this.constructor.masLibsValue : null;
-  }
-}
-
-// Helper function to set maslibs value for tests
-function setMasLibsParam(value) {
-  MockURLSearchParams.masLibsValue = value;
-}
 
 const CHECKOUT_LINK_CONFIGS = {
   data: [{
@@ -934,144 +916,33 @@ describe('Merch Block', () => {
       expect(getOptions(a).fragment).to.be.undefined;
     });
   });
+  describe('Localize preview links', () => {
+    it('check if only preview URL is relative', () => {
+      const div = document.createElement('div');
 
-  describe('getMasLibs', () => {
-    let originalURLSearchParams;
+      const a1 = document.createElement('a');
+      a1.classList.add('link1');
+      a1.setAttribute('href', 'https://main--milo--adobecom.aem.page/test/milo/path');
+      div.append(a1);
 
-    beforeEach(() => {
-      originalURLSearchParams = window.URLSearchParams;
-    });
+      const a2 = document.createElement('a');
+      a2.classList.add('link2');
+      a2.setAttribute('href', 'https://main--cc--adobecom.hlx.live/test/cc/path');
+      div.append(a2);
 
-    afterEach(() => {
-      window.URLSearchParams = originalURLSearchParams;
-    });
+      const a3 = document.createElement('a');
+      a3.classList.add('link3');
+      a3.setAttribute('href', 'https://mas.adobe.com/studio.html#content-type=merch-card-collection&path=acom');
+      div.append(a3);
 
-    it('returns null when maslibs parameter is not present', () => {
-      setMasLibsParam(null);
-      window.URLSearchParams = MockURLSearchParams;
-      expect(getMasLibs()).to.be.null;
-    });
+      const aNoHref = document.createElement('a');
+      div.append(aNoHref);
 
-    it('returns localhost URL for maslibs=local', () => {
-      setMasLibsParam('local');
-      window.URLSearchParams = MockURLSearchParams;
-      expect(getMasLibs()).to.equal('http://localhost:3030/web-components/dist');
-    });
+      localizePreviewLinks(div);
 
-    it('returns production URL for maslibs=main', () => {
-      setMasLibsParam('main');
-      window.URLSearchParams = MockURLSearchParams;
-      expect(getMasLibs()).to.equal('https://mas.adobe.com/web-components/dist');
-    });
-
-    it('returns branch URL for branch names', () => {
-      setMasLibsParam('MWPW-172853');
-      window.URLSearchParams = MockURLSearchParams;
-      expect(getMasLibs()).to.equal('https://mwpw-172853--mas--adobecom.aem.live/web-components/dist');
-    });
-
-    it('returns fork URL for fork branch names', () => {
-      setMasLibsParam('main--mas-axelcureno');
-      window.URLSearchParams = MockURLSearchParams;
-      expect(getMasLibs()).to.equal('https://main--mas-axelcureno.aem.live/web-components/dist');
-    });
-
-    it('handles maslibs parameter with other query params', () => {
-      setMasLibsParam('main');
-      window.URLSearchParams = MockURLSearchParams;
-      expect(getMasLibs()).to.equal('https://mas.adobe.com/web-components/dist');
-    });
-
-    it('returns correct URL for patterns like stage--mas--3ch023a', () => {
-      setMasLibsParam('stage--mas--3ch023a');
-      window.URLSearchParams = MockURLSearchParams;
-      expect(getMasLibs()).to.equal('https://stage--mas--3ch023a.aem.live/web-components/dist');
-    });
-
-    it('handles case insensitive maslibs parameter', () => {
-      setMasLibsParam('MWPW-172853');
-      window.URLSearchParams = MockURLSearchParams;
-      expect(getMasLibs()).to.equal('https://mwpw-172853--mas--adobecom.aem.live/web-components/dist');
-    });
-
-    it('handles empty maslibs parameter', () => {
-      setMasLibsParam('');
-      window.URLSearchParams = MockURLSearchParams;
-      expect(getMasLibs()).to.be.null;
-    });
-
-    it('handles whitespace in maslibs parameter', () => {
-      setMasLibsParam('  main  ');
-      window.URLSearchParams = MockURLSearchParams;
-      expect(getMasLibs()).to.equal('https://mas.adobe.com/web-components/dist');
-    });
-  });
-
-  describe('loadMasComponent', () => {
-    let originalURLSearchParams;
-
-    beforeEach(() => {
-      // Store original functions
-      originalURLSearchParams = window.URLSearchParams;
-    });
-
-    afterEach(() => {
-      // Restore original functions
-      window.URLSearchParams = originalURLSearchParams;
-    });
-
-    it('loads from local import when maslibs is not present', async () => {
-      setMasLibsParam(null);
-      window.URLSearchParams = MockURLSearchParams;
-
-      try {
-        await loadMasComponent('commerce');
-      } catch (e) {
-        // Expected to fail in test environment due to dynamic import
-      }
-
-      expect(getMasLibs()).to.be.null;
-    });
-
-    it('attempts to load from external URL when maslibs is present', async () => {
-      setMasLibsParam('main');
-      window.URLSearchParams = MockURLSearchParams;
-
-      try {
-        await loadMasComponent('commerce');
-      } catch (e) {
-        // Expected to fail in test environment due to external URL
-      }
-
-      // Should attempt external loading
-      expect(getMasLibs()).to.equal('https://mas.adobe.com/web-components/dist');
-    });
-
-    it('returns correct URL for maslibs=local', async () => {
-      setMasLibsParam('local');
-      window.URLSearchParams = MockURLSearchParams;
-
-      try {
-        await loadMasComponent('merch-card');
-      } catch (e) {
-        // Expected to fail in test environment
-      }
-
-      expect(getMasLibs()).to.equal('http://localhost:3030/web-components/dist');
-    });
-
-    it('handles external load failure gracefully', async () => {
-      setMasLibsParam('main');
-      window.URLSearchParams = MockURLSearchParams;
-
-      try {
-        await loadMasComponent('commerce');
-      } catch (e) {
-        // Expected to fail and fallback to local import
-      }
-
-      // Should still return the expected base URL for external loading attempt
-      expect(getMasLibs()).to.equal('https://mas.adobe.com/web-components/dist');
+      expect(div.querySelector('.link1').getAttribute('href')).to.equal('/test/milo/path');
+      expect(div.querySelector('.link2').getAttribute('href')).to.equal('/test/cc/path');
+      expect(div.querySelector('.link3').getAttribute('href')).to.equal('https://mas.adobe.com/studio.html#content-type=merch-card-collection&path=acom');
     });
   });
 });

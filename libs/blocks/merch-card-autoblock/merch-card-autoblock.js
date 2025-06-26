@@ -1,12 +1,8 @@
 import { createTag } from '../../utils/utils.js';
-import {
-  initService,
-  getOptions,
-  overrideOptions,
-  loadMasComponent,
-  MAS_MERCH_CARD,
-  MAS_MERCH_QUANTITY_SELECT,
-} from '../merch/merch.js';
+import '../../deps/mas/merch-card.js';
+import '../../deps/mas/merch-quantity-select.js';
+import { initService, getOptions, overrideOptions } from '../merch/merch.js';
+import { postProcessAutoblock } from '../merch/autoblock.js';
 
 const CARD_AUTOBLOCK_TIMEOUT = 5000;
 let log;
@@ -18,12 +14,6 @@ function getTimeoutPromise() {
 }
 
 async function loadDependencies() {
-  // Load MAS components dynamically
-  await Promise.all([
-    loadMasComponent(MAS_MERCH_CARD),
-    loadMasComponent(MAS_MERCH_QUANTITY_SELECT),
-  ]);
-
   /** Load service first */
   const servicePromise = initService();
   const success = await Promise.race([servicePromise, getTimeoutPromise()]);
@@ -49,6 +39,7 @@ export async function createCard(el, options) {
   const merchCard = createTag('merch-card', { consonant: '' }, aemFragment);
   el.replaceWith(merchCard);
   await checkReady(merchCard);
+  postProcessAutoblock(merchCard);
 }
 
 export default async function init(el) {
