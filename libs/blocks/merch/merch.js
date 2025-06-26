@@ -397,7 +397,7 @@ export async function loadMasComponent(componentName) {
   const loadPromise = (async () => {
     const masLibsBase = getMasLibs();
 
-    if (masLibsBase && !LIT_DEPENDENT_COMPONENTS.has(componentName)) {
+    if (masLibsBase) {
       const externalUrl = `${masLibsBase}/${componentName}.js`;
 
       if (failedExternalLoads.has(externalUrl)) {
