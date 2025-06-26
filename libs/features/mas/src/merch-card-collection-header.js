@@ -66,7 +66,7 @@ export default class MerchCardCollectionHeader extends LitElement {
     }
 
     get isTablet() {
-        return this.tablet.matches;
+        return this.tablet.matches && !this.desktop.matches;
     }
 
     get isDesktop() {

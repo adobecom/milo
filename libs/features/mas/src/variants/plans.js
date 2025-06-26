@@ -347,6 +347,7 @@ export class Plans extends VariantLayout {
         headerVisibility: {
             search: false,
             sort: false,
+            result: ['mobile', 'tablet'],
             custom: ['desktop']
         }
     }

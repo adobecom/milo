@@ -1518,7 +1518,7 @@ merch-card-collection-header.plans {
             line-height: 21px;
             padding: 2px 10px 3px;
         }
-    `),f(ne,"collectionOptions",{customHeaderArea:t=>t.sidenav?x`<slot name="resultsText"></slot>`:$,headerVisibility:{search:!1,sort:!1,custom:["desktop"]}});var Ec=`
+    `),f(ne,"collectionOptions",{customHeaderArea:t=>t.sidenav?x`<slot name="resultsText"></slot>`:$,headerVisibility:{search:!1,sort:!1,result:["mobile","tablet"],custom:["desktop"]}});var Ec=`
 :root {
   --consonant-merch-card-product-width: 300px;
 }
