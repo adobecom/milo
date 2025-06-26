@@ -1,8 +1,9 @@
 import { html, signal, useEffect } from '../../../deps/htm-preact.js';
-import preflightApi, { getPreflightCache } from '../checks/preflightApi.js';
 import { STATUS } from '../checks/constants.js';
+import { preflightResults, callPreflight } from '../checks/executor.js';
+import { isViewportTooSmall } from '../checks/assets.js';
 
-const { isViewportTooSmall, runChecks } = preflightApi.assets;
+const { runChecks } = preflightResults.assets;
 
 // Define signals for check results and viewport status
 const imageDimensionsResult = signal({
@@ -20,7 +21,7 @@ async function getResults() {
   let checks;
 
   try {
-    const cachedResults = await getPreflightCache();
+    const cachedResults = await callPreflight();
     if (cachedResults?.assets) {
       checks = cachedResults.assets;
     } else {

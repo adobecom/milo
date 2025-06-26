@@ -1,0 +1,66 @@
+import { runDeterministicChecks } from './preflightApi.js';
+import { getMetadata } from '../../../utils/utils.js';
+
+let preflightResults;
+
+const preflightMode = () => {
+  const mode = getMetadata('preflight-mode');
+  return mode === 'aso' ? 'aso' : 'deterministic';
+};
+
+/**
+ * TODO: Implement ASO API integration
+ */
+const runASOChecks = async (url, area) => {
+  // Placeholder for ASO API implementation
+  // This will be implemented in future iterations
+  console.warn('ASO API mode is not yet implemented, falling back to deterministic mode');
+  return runDeterministicChecks(url, area);
+};
+
+const convertASOToStandardFormat = (asoResults) => asoResults;
+
+const callPreflight = async () => {
+  if (preflightResults) {
+    console.log('Cache hit:', preflightResults);
+    return preflightResults;
+  }
+
+  console.log('prefetchPreflightChecks starting...');
+  const url = window.location.pathname;
+  const area = document;
+  const mode = preflightMode();
+
+  console.log(`Using preflight mode: ${mode}`);
+
+  let results;
+
+  if (mode === 'aso') {
+    const asoResults = await runASOChecks(url, area);
+    // Convert ASO results to standard format for consistent caching
+    results = convertASOToStandardFormat(asoResults);
+  } else {
+    results = await runDeterministicChecks(url, area);
+  }
+
+  preflightResults = results;
+  console.log('prefetchPreflightChecks results:', results);
+  return results;
+};
+
+export function hasPreflightFailures(results = null) {
+  const cache = results || preflightResults;
+  if (!cache) return false;
+  const allResults = [
+    ...(cache.assets || []),
+    ...(cache.performance || []),
+    ...(cache.seo || []),
+  ];
+  return allResults.some((result) => result.status === 'fail');
+}
+
+export function getPreflightStatus() {
+  return preflightResults ? 'completed' : 'not-started';
+}
+
+export { callPreflight, preflightResults };

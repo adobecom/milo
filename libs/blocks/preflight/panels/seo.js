@@ -1,8 +1,8 @@
 import { html, signal, useEffect } from '../../../deps/htm-preact.js';
 import { STATUS } from '../checks/constants.js';
-import preflightApi, { getPreflightCache } from '../checks/preflightApi.js';
+import { preflightResults, callPreflight } from '../checks/executor.js';
 
-const { runChecks } = preflightApi.seo;
+const { runChecks } = preflightResults.seo;
 
 const DEF_ICON = 'purple';
 const DEF_DESC = 'Checking...';
@@ -93,7 +93,7 @@ async function getResults() {
   let checks;
 
   try {
-    const cachedResults = await getPreflightCache();
+    const cachedResults = await callPreflight();
     if (cachedResults?.seo) {
       checks = cachedResults.seo;
     } else {
