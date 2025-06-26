@@ -661,10 +661,7 @@ export const getGrayboxExperienceId = (
   pathname = window.location.pathname,
 ) => {
   // Only allow trusted Adobe graybox domains
-  const isAdobeGraybox = (
-    hostname.endsWith('.adobe.com')
-    && /^[^.]+\.([a-z]+-)?graybox\.adobe\.com$/.test(hostname)
-  );
+  const isAdobeGraybox = /^[^.]+\.([a-z]+-)?graybox\.adobe\.com$/.test(hostname);
   const isStageGraybox = (
     (hostname.endsWith('.aem.page') || hostname.endsWith('.aem.live'))
     && hostname.includes('graybox')
