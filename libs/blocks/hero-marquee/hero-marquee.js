@@ -177,8 +177,8 @@ export function getViewportOrder(viewport, content, previousViewportOrder) {
     el.classList.forEach((className) => {
       if (!className.startsWith('order-')
         || (!className.endsWith('desktop') && !className.endsWith('tablet'))) return;
-      orderClass.tablet = orderClass.tablet || ((className?.endsWith('tablet') && className) || null);
-      orderClass.desktop = orderClass.desktop || ((className?.endsWith('desktop') && className) || null);
+      orderClass.tablet = orderClass.tablet || (className.endsWith('tablet') ? className : null);
+      orderClass.desktop = orderClass.desktop || (className.endsWith('desktop') ? className : null);
     });
     const viewportClass = orderClass[viewport] || orderClass.tablet;
     const order = parseInt(viewportClass?.split('-')[1], 10);
