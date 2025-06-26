@@ -660,8 +660,18 @@ export const getGrayboxExperienceId = (
   hostname = window.location.hostname,
   pathname = window.location.pathname,
 ) => {
+  // Only allow trusted Adobe graybox domains
+  const isAdobeGraybox = (
+    hostname.endsWith('.adobe.com') &&
+    /^[^.]+\.([a-z]+-)?graybox\.adobe\.com$/.test(hostname)
+  );
+  const isStageGraybox = (
+    (hostname.endsWith('.aem.page') || hostname.endsWith('.aem.live')) &&
+    hostname.includes('graybox')
+  );
+
   // Check for graybox.adobe.com format: https://[exn].[pn]-graybox.adobe.com/[path].html
-  if (hostname.includes('graybox.adobe.com')) {
+  if (isAdobeGraybox) {
     const parts = hostname.split('.');
     if (parts.length >= 3 && parts[1].includes('-graybox')) {
       return parts[0]; // Return the experience ID (first part)
@@ -669,7 +679,7 @@ export const getGrayboxExperienceId = (
   }
 
   // Check for stage format: https://stage--[pn]-graybox–adobecom.aem.page/[exn]/[path]
-  if (hostname.includes('graybox') && hostname.includes('aem.')) {
+  if (isStageGraybox) {
     const pathParts = pathname.split('/').filter(Boolean);
     if (pathParts.length > 0) {
       return pathParts[0]; // Return the experience ID (first path segment)
