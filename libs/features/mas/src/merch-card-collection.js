@@ -236,16 +236,16 @@ export class MerchCardCollection extends LitElement {
         header.collection = this;
         header.classList.add(this.variant);
         this.parentElement.insertBefore(header, this);
+        this.header = header;
     }
 
     initializePlaceholders() {
-        const header = this.parentElement.querySelector('merch-card-collection-header');
         const existingPlaceholders = this.querySelectorAll('[placeholder]');
         if (existingPlaceholders.length > 0) {
             existingPlaceholders.forEach(placeholder => {
                 const key = placeholder.getAttribute('slot');
                 if (MerchCardCollectionHeader.placeholderKeys.includes(key)) {
-                    header?.append(placeholder);
+                    this.header?.append(placeholder);
                 }
             });
         }
@@ -257,7 +257,7 @@ export class MerchCardCollection extends LitElement {
                 const placeholder = document.createElement(tag);
                 placeholder.setAttribute('slot', key);
                 placeholder.innerHTML = value;
-                if (MerchCardCollectionHeader.placeholderKeys.includes(key)) header.append(placeholder);
+                if (MerchCardCollectionHeader.placeholderKeys.includes(key)) this.header?.append(placeholder);
                 else this.append(placeholder);
             }
         }

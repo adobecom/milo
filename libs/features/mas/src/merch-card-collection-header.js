@@ -44,14 +44,18 @@ export default class MerchCardCollectionHeader extends LitElement {
 
     connectedCallback() {
         super.connectedCallback();
-        this.collection.addEventListener(EVENT_MERCH_CARD_COLLECTION_LITERALS_CHANGED, this.updateLiterals);
-        this.collection.addEventListener(EVENT_MERCH_CARD_COLLECTION_SIDENAV_ATTACHED, this.handleSidenavAttached);
+        this.collection?.addEventListener(EVENT_MERCH_CARD_COLLECTION_LITERALS_CHANGED, this.updateLiterals);
+        this.collection?.addEventListener(EVENT_MERCH_CARD_COLLECTION_SIDENAV_ATTACHED, this.handleSidenavAttached);
     }
 
     disconnectedCallback() {
         super.disconnectedCallback();
-        this.collection.removeEventListener(EVENT_MERCH_CARD_COLLECTION_LITERALS_CHANGED, this.updateLiterals);
-        this.collection.removeEventListener(EVENT_MERCH_CARD_COLLECTION_SIDENAV_ATTACHED, this.handleSidenavAttached);
+        this.collection?.removeEventListener(EVENT_MERCH_CARD_COLLECTION_LITERALS_CHANGED, this.updateLiterals);
+        this.collection?.removeEventListener(EVENT_MERCH_CARD_COLLECTION_SIDENAV_ATTACHED, this.handleSidenavAttached);
+    }
+
+    get sidenav() {
+        return this.collection?.sidenav;
     }
 
     tablet = new MatchMediaController(this, TABLET_UP);
@@ -85,7 +89,7 @@ export default class MerchCardCollectionHeader extends LitElement {
     }
 
     getVisibility(type) {
-        const visibility = getCollectionOptions(this.collection.variant)?.headerVisibility;
+        const visibility = getCollectionOptions(this.collection?.variant)?.headerVisibility;
         const typeVisibility = this.parseVisibilityOptions(visibility, type);
         if (typeVisibility !== null) return typeVisibility;
         return this.parseVisibilityOptions(defaultVisibility, type);
@@ -107,7 +111,7 @@ export default class MerchCardCollectionHeader extends LitElement {
 
     get filterAction() {
         if (!this.getVisibility('filter')) return nothing;
-        if (!this.collection.sidenav) return nothing;
+        if (!this.sidenav) return nothing;
         return html`
             <sp-action-button
               id="filter"
@@ -133,7 +137,7 @@ export default class MerchCardCollectionHeader extends LitElement {
             <sp-action-menu
                 id="sort"
                 size="m"
-                @change="${this.collection.sortChanged}"
+                @change="${this.collection?.sortChanged}"
                 selects="single"
                 value="${alphabetical
                     ? SORT_ORDER.alphabetical
@@ -154,13 +158,13 @@ export default class MerchCardCollectionHeader extends LitElement {
     }
 
     get resultSlotName() {
-        const slotType = `${this.collection.search ? 'search' : 'filters'}${this.isMobile || this.isTablet ? 'Mobile' : ''}`;
-        return RESULT_TEXT_SLOT_NAMES[slotType][Math.min(this.collection.resultCount, 2)];
+        const slotType = `${this.collection?.search ? 'search' : 'filters'}${this.isMobile || this.isTablet ? 'Mobile' : ''}`;
+        return RESULT_TEXT_SLOT_NAMES[slotType][Math.min(this.collection?.resultCount, 2)];
     }
 
     get resultLabel() {
         if (!this.getVisibility('result')) return nothing;
-        if (!this.collection.sidenav) return nothing;
+        if (!this.sidenav) return nothing;
         return html`
           <div id="result" aria-live="polite">
               <slot name="${this.resultSlotName}"></slot>
@@ -169,7 +173,7 @@ export default class MerchCardCollectionHeader extends LitElement {
 
     get customArea() {
         if (!this.getVisibility('custom')) return nothing;
-        const customHeaderAreaGetter = getCollectionOptions(this.collection.variant)?.customHeaderArea;
+        const customHeaderAreaGetter = getCollectionOptions(this.collection?.variant)?.customHeaderArea;
         if (!customHeaderAreaGetter) return nothing;
         const customHeaderArea = customHeaderAreaGetter(this.collection);
         if (!customHeaderArea || customHeaderArea === nothing) return nothing;
@@ -179,7 +183,7 @@ export default class MerchCardCollectionHeader extends LitElement {
     // #region Handlers
 
     openFilters(event) {
-        this.collection.sidenav.showModal(event);
+        this.sidenav.showModal(event);
     }
 
     updateLiterals(event) {
@@ -284,7 +288,7 @@ export default class MerchCardCollectionHeader extends LitElement {
       'sortText',
       'popularityText',
       'alphabeticallyText',
-      'noResultsText',
+      'noResultText',
       'resultText',
       'resultsText',
       'resultMobileText',
@@ -292,6 +296,7 @@ export default class MerchCardCollectionHeader extends LitElement {
       'noSearchResultsText',
       'searchResultText',
       'searchResultsText',
+      'noSearchResultsMobileText',
       'searchResultMobileText',
       'searchResultsMobileText',
     ]
