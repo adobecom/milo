@@ -94,7 +94,8 @@ const closeBanner = (el) => {
 
   setTimeout(() => {
     liveRegion.textContent = '';
-    document.querySelector(focusableSelector)?.focus();
+    if (el.dataset.keyboardUsedToClose
+      && document.activeElement.tagName === 'BODY') document.querySelector(focusableSelector)?.focus();
   }, 2000);
 
   el.style.display = 'none';
@@ -181,7 +182,10 @@ function curtainCallback(el) {
       }
     }
 
-    if (e.key === 'Escape') closeBanner(el);
+    if (e.key === 'Escape') {
+      el.dataset.keyboardUsedToClose = true;
+      closeBanner(el);
+    }
   };
 
   const handleFocusOut = (e) => {
