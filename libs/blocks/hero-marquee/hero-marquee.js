@@ -170,11 +170,18 @@ export function getViewportOrder(viewport, content, previousViewportOrder) {
   const els = [...content.children];
   const viewportObject = { 0: [] };
   els.forEach((el) => {
-    let order;
+    const orderClass = {
+      tablet: null,
+      desktop: null,
+    };
     el.classList.forEach((className) => {
-      if (!className.startsWith('order-') || !className.endsWith(viewport)) return;
-      order = parseInt(className.split('-')[1], 10);
+      if (!className.startsWith('order-')
+        || (!className.endsWith('desktop') && !className.endsWith('tablet'))) return;
+      orderClass.tablet = orderClass.tablet || ((className?.endsWith('tablet') && className) || null);
+      orderClass.desktop = orderClass.desktop || ((className?.endsWith('desktop') && className) || null);
     });
+    const viewportClass = orderClass[viewport] || orderClass.tablet;
+    const order = parseInt(viewportClass?.split('-')[1], 10);
     if (Number.isInteger(order)) {
       if (!viewportObject[order]) viewportObject[order] = [];
       viewportObject[order].push(el);
