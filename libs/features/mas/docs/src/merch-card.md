@@ -184,14 +184,6 @@ The reason is that some merch cards are resolved very quickly and event could di
                 ? `: ${JSON.stringify(e.detail, null, 2)}`
                 : '';
             return `'${type}' on ${e.target.nodeName} #${id}${detail}`;
-            const id =
-                e.target.getAttribute('id') ||
-                e.target.getAttribute('fragment') ||
-                e.target.getAttribute('data-wcs-osi');
-            const detail = e.detail
-                ? `: ${JSON.stringify(e.detail, null, 2)}`
-                : '';
-            return `'${type}' on ${e.target.nodeName} #${id}${detail}`;
         };
         // WCS request failed
         document.addEventListener('mas:failed', (event) => {
@@ -358,31 +350,6 @@ However, it can be accessed via `e.target.source` property.
 <script type="module">
     const target = document.getElementById('log3');
 
-    const cardSwc = document.getElementById('cardSwc');
-    cardSwc.addEventListener(
-        'click',
-        (e) => {
-            e.preventDefault();
-            if (e.target.source?.isCheckoutButton) {
-                log(
-                    target,
-                    'merch-card checkout-button click: ',
-                    '\n\t',
-                    e.target.dataset.navigationUrl,
-                    '\n\t',
-                    e.target.outerHTML,
-                    '\n\t',
-                    e.target.source.outerHTML,
-                    '\n',
-                );
-            } else if (e.target.isInlinePrice) {
-                log(target, 'merch-card price click: ', e.target.innerText);
-            } else {
-                log(target, 'merch-card click: ', e.target);
-            }
-        },
-        { capture: true },
-    );
     const cardSwc = document.getElementById('cardSwc');
     cardSwc.addEventListener(
         'click',
