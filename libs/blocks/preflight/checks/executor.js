@@ -19,6 +19,7 @@ const runASOChecks = async (url, area) => {
 };
 
 const convertASOToStandardFormat = (asoResults) => asoResults;
+// TODO: Also dependent to the ASO API to be implemented
 
 const callPreflight = async () => {
   if (preflightResults) {
@@ -42,9 +43,7 @@ const callPreflight = async () => {
   } else {
     results = await runDeterministicChecks(url, area);
   }
-
   preflightResults = results;
-  console.log('prefetchPreflightChecks results:', results);
   return results;
 };
 
@@ -62,5 +61,4 @@ export function hasPreflightFailures(results = null) {
 export function getPreflightStatus() {
   return preflightResults ? 'completed' : 'not-started';
 }
-
 export { callPreflight, preflightResults };
