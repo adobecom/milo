@@ -19,7 +19,7 @@ module.exports = {
         },
         primaryCta: {
           text: 'Buy now',
-          href: 'https://commerce-stg.adobe.com/store/segmentation?cli=adobe_com&ctx=fp&co=US&lang=en&ms=COM&ot=BASE&cs=INDIVIDUAL&pa=PA-130',
+          href: 'https://commerce.adobe.com/store/segmentation?cli=adobe_com&ctx=fp&co=US&lang=en&ms=COM&ot=BASE&cs=INDIVIDUAL&pa=PA-130',
         },
         secondaryCta: {
           text: 'Free trial',
@@ -47,11 +47,11 @@ module.exports = {
         },
         primaryCta: {
           text: 'Buy now',
-          href: 'https://commerce-stg.adobe.com/store/segmentation?apc=L_PROMO_10F&cli=adobe_com&ctx=fp&co=US&lang=en&ms=COM&ot=BASE&cs=INDIVIDUAL&pa=PA-130',
+          href: 'https://commerce.adobe.com/store/segmentation?apc=L_PROMO_10F&cli=adobe_com&ctx=fp&co=US&lang=en&ms=COM&ot=BASE&cs=INDIVIDUAL&pa=PA-130',
         },
         secondaryCta: {
           text: 'Free trial',
-          href: 'https://commerce-stg.adobe.com/store/segmentation?apc=L_PROMO_10F&cli=adobe_com&ctx=fp&co=US&lang=en&ms=COM&ot=BASE&cs=INDIVIDUAL&pa=PA-130',
+          href: 'https://commerce.adobe.com/store/segmentation?apc=L_PROMO_10F&cli=adobe_com&ctx=fp&co=US&lang=en&ms=COM&ot=BASE&cs=INDIVIDUAL&pa=PA-130',
         },
       },
       tags: '@mas @ccd-mini @smoke',
@@ -74,7 +74,7 @@ module.exports = {
         },
         primaryCta: {
           text: 'S\'abonner',
-          href: 'https://commerce-stg.adobe.com/store/segmentation?cli=adobe_com&ctx=fp&co=FR&lang=fr&ms=COM&ot=BASE&cs=INDIVIDUAL&pa=PA-130',
+          href: 'https://commerce.adobe.com/store/segmentation?cli=adobe_com&ctx=fp&co=FR&lang=fr&ms=COM&ot=BASE&cs=INDIVIDUAL&pa=PA-130',
         },
         secondaryCta: {
           text: 'Essai gratuit',
@@ -102,11 +102,11 @@ module.exports = {
         },
         primaryCta: {
           text: 'S\'abonner',
-          href: 'https://commerce-stg.adobe.com/store/segmentation?apc=L_PROMO_10F&cli=adobe_com&ctx=fp&co=FR&lang=fr&ms=COM&ot=BASE&cs=INDIVIDUAL&pa=PA-130',
+          href: 'https://commerce.adobe.com/store/segmentation?apc=L_PROMO_10F&cli=adobe_com&ctx=fp&co=FR&lang=fr&ms=COM&ot=BASE&cs=INDIVIDUAL&pa=PA-130',
         },
         secondaryCta: {
           text: 'Essai gratuit',
-          href: 'https://commerce-stg.adobe.com/store/segmentation?apc=L_PROMO_10F&cli=adobe_com&ctx=fp&co=FR&lang=fr&ms=COM&ot=BASE&cs=INDIVIDUAL&pa=PA-130',
+          href: 'https://commerce.adobe.com/store/segmentation?apc=L_PROMO_10F&cli=adobe_com&ctx=fp&co=FR&lang=fr&ms=COM&ot=BASE&cs=INDIVIDUAL&pa=PA-130',
         },
       },
       tags: '@mas @ccd-mini @smoke',
