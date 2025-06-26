@@ -515,20 +515,18 @@ export default function init(el) {
       if (totalHeight > maxHeight) maxHeight = totalHeight;
     });
 
-    if (maxHeight) {
-      videos.forEach((video) => {
-        const foreground = video.closest('.editorial-card')?.querySelector('.foreground');
+    videos.forEach((video) => {
+      const foreground = video.closest('.editorial-card')?.querySelector('.foreground');
 
-        if (foreground) {
-          const videoHeight = video.offsetHeight;
-          video.style.height = `${videoHeight}px`;
-          video.style.maxHeight = `${videoHeight}px`;
-        } else {
-          video.style.height = `${maxHeight}px`;
-          video.style.maxHeight = `${maxHeight}px`;
-        }
-      });
-    }
+      if (foreground) {
+        const videoHeight = video.offsetHeight;
+        video.style.height = `${videoHeight}px`;
+        video.style.maxHeight = `${videoHeight}px`;
+      } else {
+        video.style.height = `${maxHeight}px`;
+        video.style.maxHeight = `${maxHeight}px`;
+      }
+    });
   }
 
   setTimeout(normalizeVideoHeights, 100);
