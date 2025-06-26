@@ -37,15 +37,20 @@ function handleHeading(table, headingCols) {
 
     const elements = col.children;
     if (!elements.length) {
-      col.innerHTML = `<p class="tracking-header">${col.innerHTML}</p>`;
+      col.innerHTML = `<div class="heading-content"><p class="tracking-header">${col.innerHTML}</p></div>`;
     } else {
       let textStartIndex = col.querySelector('.highlight-text') ? 1 : 0;
+      let isTrackingSet = false;
       const iconTile = elements[textStartIndex]?.querySelector('img');
       if (iconTile) {
         textStartIndex += 1;
         if (!(table.classList.contains('merch'))) iconTile.closest('p').classList.add('header-product-tile');
       }
-      elements[textStartIndex]?.classList.add('tracking-header');
+      if (elements[textStartIndex]) {
+        elements[textStartIndex]?.classList.add('tracking-header');
+        isTrackingSet = true;
+      }
+
       const pricingElem = elements[textStartIndex + 1];
       const bodyElem = elements[textStartIndex + 2];
 
@@ -76,6 +81,12 @@ function handleHeading(table, headingCols) {
 
       headingButton.appendChild(buttonsWrapper);
       col.append(headingContent, headingButton);
+      if (!isTrackingSet) {
+        const textNode = Array.from(col.childNodes)
+          .find((node) => node.nodeType === Node.TEXT_NODE);
+        headingContent?.append(createTag('p', { class: 'tracking-header' }, textNode.textContent));
+        textNode.remove();
+      }
     }
 
     const trackingHeader = col.querySelector('.tracking-header');
@@ -500,13 +511,13 @@ function applyStylesBasedOnScreenSize(table, originTable) {
   const mobileRenderer = () => {
     table.dispatchEvent(tableHighlightLoadedEvent);
     const headings = table.querySelectorAll('.row-heading .col');
-    const headingsLength = headings.length;
-
+    const headingsLength = Array.from(headings)
+      .filter((heading) => heading.textContent.trim()).length;
     table.querySelectorAll('.hide-mobile').forEach((col) => { col.classList.remove('hide-mobile'); });
 
-    if (isMerch && headingsLength > 2) {
+    if (isMerch && headingsLength >= 2) {
       table.querySelectorAll('.col:not(.col-1, .col-2)').forEach((col) => { col.classList.add('hide-mobile'); });
-    } else if (headingsLength > 3) {
+    } else if (headingsLength >= 3) {
       table.querySelectorAll('.col:not(.col-1, .col-2, .col-3), .col.no-borders').forEach((col) => { col.classList.add('hide-mobile'); });
     }
 
@@ -575,8 +586,10 @@ function applyStylesBasedOnScreenSize(table, originTable) {
       colSelect0.dataset.filterIndex = 0;
       colSelect1.dataset.filterIndex = 1;
       const visibleCols = table.querySelectorAll(`.col-heading:not([style*="display: none"], .hidden${isMerch ? '' : ', .col-1'})`);
-      colSelect0.querySelectorAll('option').item(visibleCols.item(0).dataset.colIndex - (isMerch ? 1 : 2)).selected = true;
-      colSelect1.querySelectorAll('option').item(visibleCols.item(1).dataset.colIndex - (isMerch ? 1 : 2)).selected = true;
+      const option0 = colSelect0.querySelectorAll('option').item(visibleCols.item(0).dataset.colIndex - (isMerch ? 1 : 2));
+      const option1 = colSelect1.querySelectorAll('option').item(visibleCols.item(1).dataset.colIndex - (isMerch ? 1 : 2));
+      if (option0) option0.selected = true;
+      if (option1) option1.selected = true;
       filter1.append(colSelect0);
       filter2.append(colSelect1);
       filters.append(filter1, filter2);
@@ -584,7 +597,7 @@ function applyStylesBasedOnScreenSize(table, originTable) {
       filter2.addEventListener('change', filterChangeEvent);
       table.parentElement.insertBefore(filters, table);
       table.parentElement.classList.add(`table-${table.classList.contains('merch') ? 'merch-' : ''}section`);
-      if (!isMerch && headingsLength < 4) { filters.style.display = 'none'; }
+      if (!isMerch && headingsLength < 3) { filters.style.display = 'none'; }
       filterChangeEvent();
     }
   };

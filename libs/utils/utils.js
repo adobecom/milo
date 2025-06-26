@@ -991,9 +991,9 @@ export function decorateLinks(el) {
     const pipeRegex = /\s?\|([^|]*)$/;
     if (pipeRegex.test(a.textContent) && !/\.[a-z]+/i.test(a.textContent)) {
       const node = [...a.childNodes].reverse()[0];
-      const ariaLabel = node.textContent.match(pipeRegex)[1];
+      const ariaLabel = node.textContent.match(pipeRegex)?.[1];
       node.textContent = node.textContent.replace(pipeRegex, '');
-      a.setAttribute('aria-label', ariaLabel.trim());
+      a.setAttribute('aria-label', (ariaLabel || '').trim());
     }
 
     return rdx;
