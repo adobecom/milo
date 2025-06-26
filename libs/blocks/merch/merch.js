@@ -622,9 +622,11 @@ export async function getModalAction(offers, options, el) {
     // The script can preload more, based on clientId, but for the ones in use
     // ('mini-plans', 'creative') there is no difference, so we can just use either one.
     const client = 'creative';
-    setTimeout(() => {
-      loadScript(`${baseUrl}?cli=${client}`, 'text/javascript', { mode: 'defer', id: 'ucv3-preload-script' });
-    }, 5000);
+    window.milo.deferredPromise.then(() => {
+      setTimeout(() => {
+        loadScript(`${baseUrl}?cli=${client}`, 'text/javascript', { mode: 'defer', id: 'ucv3-preload-script' });
+      }, 1000);
+    });
   }
 
   const [{
