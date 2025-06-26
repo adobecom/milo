@@ -32,15 +32,15 @@
   cursor: pointer;
 }
 
-.editorial-card.click.hover-scale {
+.editorial-card.click.hover-scale { 
   transition: all .2s ease-in-out;
 }
 
-.editorial-card.click.hover-scale:hover {
+.editorial-card.click.hover-scale:hover { 
   transform: scale(var(--card-scale-default));
 }
 
-.editorial-card:not(.no-bg).click.hover-scale:hover {
+.editorial-card:not(.no-bg).click.hover-scale:hover { 
   box-shadow: 0 3px 6px 0  rgba(0 0 0 / 16%);
 }
 
@@ -77,6 +77,19 @@
   width: 100%;
   height: 100%;
   max-height: var(--card-height-default);
+}
+
+.editorial-card .video-icon-container {
+  position:relative;
+}
+
+.editorial-card .video-icon-container img.video-icon {
+  pointer-events: none;
+  position:absolute;
+  bottom: -15px;
+  right: 15px;
+  height: 50px;
+  width: auto;
 }
 
 .editorial-card.no-foreground,
@@ -149,7 +162,7 @@
   line-height: 0;
 }
 
-.editorial-card.no-foreground {
+.editorial-card.no-foreground { 
   border: none;
 }
 
@@ -160,7 +173,7 @@
 .editorial-card.footer-align-left .card-footer > div { text-align: start; }
 .editorial-card.footer-align-center .card-footer > div { text-align: center; }
 
-.editorial-card.no-bg.no-border .foreground > div {
+.editorial-card.no-bg.no-border .foreground > div { 
   row-gap: var(--spacing-xs);
 }
 
@@ -170,7 +183,7 @@
   height: 100%;
 }
 
-.editorial-card .background .milo-video,
+.editorial-card .background .milo-video, 
 .editorial-card .background .milo-iframe {
   height: 100%;
   padding-bottom: 0;
@@ -194,7 +207,7 @@
   line-height: initial;
 }
 
-.editorial-card .action-area,
+.editorial-card .action-area, 
 .editorial-card .card-footer > .action-area {
   display: flex;
   align-items: center;
@@ -204,7 +217,7 @@
   flex-direction: row;
 }
 
-.editorial-card .action-area .con-button {
+.editorial-card .action-area .con-button { 
   white-space: nowrap;
 }
 
@@ -229,6 +242,7 @@
 
 .editorial-card .media-area {
   overflow: hidden;
+  position: relative;
   width: 100%;
 }
 
@@ -279,9 +293,9 @@
 }
 
 /* Align */
-.editorial-card.center {
-  text-align: center;
-  justify-items: center;
+.editorial-card.center { 
+  text-align: center; 
+  justify-items: center; 
 }
 
 .editorial-card.footer-align-left .action-area { justify-content: start; }
@@ -296,11 +310,6 @@
   }
 
   .editorial-card .vp-media .tablet-only { display: block; }
-
-  /* #mweb Hide show more button on tablet */
-  .section .show-more-button {
-    display: none;
-  }
 }
 
 /* desktop up */
@@ -311,11 +320,6 @@
   }
 
   .editorial-card .vp-media .desktop-only { display: block; }
-
-  /* #mweb Hide show more button on desktop */
-  .section .show-more-button {
-    display: none;
-  }
 }
 
 /* mobile only */
@@ -323,79 +327,5 @@
   .section.two-up-mobile:has(.editorial-card) {
     grid-template-columns: repeat(2, 1fr);
     gap: var(--spacing-xs);
-  }
-}
-
-/* Mweb specific */
-.light .editorial-card,
-.editorial-card.light {
-  color: var(--text-color);
-  border-color: var(--color-gray-300);
-}
-
-@media screen and (max-width: 599px) {
-  /* General */
-  :root {
-    --type-heading-all-weight: 800;
-  }
-
-  [class^="heading-"] {
-    font-weight: var(--type-heading-all-weight);
-  }
-
-  [class^="detail-"] {
-    text-transform: unset;
-  }
-
-  [class^="detail-"] strong {
-    font-weight: 500;
-  }
-
-  /* Block specific */
-  .section:has(.editorial-card ~ .show-more-button),
-  .section.show-all:has(.editorial-card) {
-    margin-inline: var(--spacing-xs);
-    padding: var(--spacing-xs);
-    margin-bottom: 24px;
-    gap: 0 !important;
-  }
-
-  /* ##mweb Mobile show/hide functionality */
-  .section .editorial-card:nth-child(n+4) {
-    display: none;
-  }
-
-  .section.show-all .editorial-card:nth-child(n+4) {
-    display: flex;
-  }
-
-  .section .show-more-button {
-    display: flex;
-    justify-content: center;
-    padding: 6px 0;
-    gap: 10px;
-    border-radius: 8px;
-  }
-
-  .section .show-more-button button {
-    background-color: #F8F8F8;
-    border: none;
-    color: #070707;
-    text-decoration: none;
-    cursor: pointer;
-    font-size: 18px;
-    font-style: normal;
-    font-weight: 700;
-    line-height: 22px;
-    padding: 8px 24px;
-    border-radius: 40px;
-    display: flex;
-    align-items: center;
-    gap: 0.5em;
-  }
-
-  .section .show-more-icon {
-    display: inline-flex;
-    align-items: center;
   }
 }

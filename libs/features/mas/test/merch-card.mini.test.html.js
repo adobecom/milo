@@ -20,14 +20,12 @@ const frLiterals = {
 
 function localeProvider(element, options) {
     const testCountry = element.closest('[data-test-country]')?.dataset
-        .testCountry;
-    if (testCountry) options.country = testCountry;
+        .testCountry || 'US';
+    options.country = testCountry;
     const testLanguage = element.closest('[data-test-language]')?.dataset
-        .testLanguage;
-    if (testLanguage) {
-        options.lang = testLanguage;
-        options.language = testLanguage;
-    }
+        .testLanguage || 'en';
+    options.lang = testLanguage;
+    options.language = testLanguage;
     options.locale = `${testLanguage}_${testCountry}`;
     options.literals = {
         ...getPriceLiterals({ language: options.language }),

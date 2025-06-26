@@ -290,7 +290,9 @@ function moveSlides(event, carouselElements, jumpToIndex) {
   if ((event.currentTarget).dataset.toggle === 'next'
     || event.key === KEY_CODES.ARROW_RIGHT
     || (direction === 'left' && event.type === 'touchend')) {
-    nextPreviousBtns[1].focus();
+    if (event.type !== 'touchend') {
+      nextPreviousBtns[1].focus();
+    }
     referenceSlide = handleNext(referenceSlide, slides);
     activeSlideIndicator = handleNext(activeSlideIndicator, slideIndicators);
     activeSlide = handleNext(activeSlide, slides);
@@ -301,7 +303,9 @@ function moveSlides(event, carouselElements, jumpToIndex) {
   if ((event.currentTarget).dataset.toggle === 'previous'
     || event.key === KEY_CODES.ARROW_LEFT
     || (direction === 'right' && event.type === 'touchend')) {
-    nextPreviousBtns[0].focus();
+    if (event.type !== 'touchend') {
+      nextPreviousBtns[0].focus();
+    }
     referenceSlide = handlePrevious(referenceSlide, slides);
     activeSlideIndicator = handlePrevious(activeSlideIndicator, slideIndicators);
     activeSlide = handlePrevious(activeSlide, slides);
@@ -387,11 +391,19 @@ function mobileSwipeDetect(carouselElements) {
   el.addEventListener('touchstart', (event) => {
     const touch = event.touches[0];
     swipe.xStart = touch.screenX;
+    swipe.yStart = touch.screenY;
   });
 
   el.addEventListener('touchmove', (event) => {
     const touch = event.touches[0];
     swipe.xEnd = touch.screenX;
+    swipe.yEnd = touch.screenY;
+    const xDistance = Math.abs(swipe.xEnd - swipe.xStart);
+    const yDistance = Math.abs(swipe.yEnd - swipe.yStart);
+    // If horizontal movement is greater than vertical, prevent default to stop vertical scrolling
+    if (xDistance > yDistance && xDistance > 10) {
+      event.preventDefault();
+    }
   });
 
   el.addEventListener('touchend', (event) => {
@@ -476,7 +488,7 @@ function readySlides(slides, slideContainer) {
 }
 
 // mweb-dev changes
-function setEqualHeight(slides) {
+function setEqualHeight(slides, slideContainer) {
   const maxHeight = Math.max(...slides.map((slide) => slide.offsetHeight));
   const activeSlide = slides.find((slide) => slide.classList.contains('active')) || slides[0];
   const nextSlide = handleNext(activeSlide, slides);
@@ -488,6 +500,7 @@ function setEqualHeight(slides) {
       slide.style.height = `${maxHeight}px`;
     }
   });
+  slideContainer.style.height = `${maxHeight}px`;
 }
 
 export default function init(el) {
@@ -578,7 +591,7 @@ export default function init(el) {
   slides[0].classList.add('active');
   // ##mweb## Update button states after slide movement for mweb
   function handleEqualHeight() {
-    setEqualHeight(slides);
+    setEqualHeight(slides, slideContainer);
     parentArea.removeEventListener(MILO_EVENTS.DEFERRED, handleEqualHeight, true);
   }
 

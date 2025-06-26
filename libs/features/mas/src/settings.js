@@ -53,19 +53,11 @@ function getSettings(config = {}, service) {
 
     const checkoutClientId =
         getParameter('checkoutClientId', commerce) ?? Defaults.checkoutClientId;
-    const checkoutWorkflow = toEnumeration(
-        getParameter('checkoutWorkflow', commerce),
-        CheckoutWorkflow,
-        Defaults.checkoutWorkflow,
-    );
-    let checkoutWorkflowStep = CheckoutWorkflowStep.CHECKOUT;
-    if (checkoutWorkflow === CheckoutWorkflow.V3) {
-        checkoutWorkflowStep = toEnumeration(
-            getParameter('checkoutWorkflowStep', commerce),
-            CheckoutWorkflowStep,
-            Defaults.checkoutWorkflowStep,
-        );
-    }
+    const checkoutWorkflowStep = toEnumeration(
+      getParameter('checkoutWorkflowStep', commerce),
+      CheckoutWorkflowStep,
+      Defaults.checkoutWorkflowStep,
+  );
     const displayOldPrice = toBoolean(
         getParameter('displayOldPrice', commerce),
         ffDefaults ? Defaults.displayOldPrice : !Defaults.displayOldPrice,
@@ -128,12 +120,12 @@ function getSettings(config = {}, service) {
         getParameter('mas-io-url') ??
         config.masIOUrl ??
         `https://www${env === Env.STAGE ? '.stage' : ''}.adobe.com/mas/io`;
+    const preselectPlan = getParameter('preselect-plan') ?? undefined;
     return {
         ...getLocaleSettings(config),
         ...previewSettings,
         displayOldPrice,
         checkoutClientId,
-        checkoutWorkflow,
         checkoutWorkflowStep,
         displayPerUnit,
         displayRecurrence,
@@ -151,6 +143,7 @@ function getSettings(config = {}, service) {
         wcsURL,
         landscape,
         masIOUrl,
+        ...(preselectPlan && { preselectPlan }), // only add if defined
     };
 }
 
