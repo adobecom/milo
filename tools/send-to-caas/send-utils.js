@@ -471,7 +471,7 @@ const props = {
 const getCaasProps = (p, pageUrl = null) => {
   // Get graybox experience ID if on graybox domain
   let grayboxExperienceId = null;
-  
+
   if (pageUrl) {
     // Extract hostname and pathname from the provided URL
     try {
@@ -485,7 +485,7 @@ const getCaasProps = (p, pageUrl = null) => {
     // Fall back to window.location if no URL provided
     grayboxExperienceId = getGrayboxExperienceId();
   }
-  
+
   const caasProps = {
     entityId: p.entityid,
     contentId: p.contentid,

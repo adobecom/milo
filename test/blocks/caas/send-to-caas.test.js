@@ -85,7 +85,7 @@ describe('getCaasProps function', () => {
 
   it('should fall back to window.location when no pageUrl provided', () => {
     const originalLocation = window.location;
-    
+
     // Mock window.location for graybox domain
     delete window.location;
     window.location = {

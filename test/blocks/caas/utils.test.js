@@ -1058,7 +1058,7 @@ describe('getGrayboxExperienceId', () => {
   it('should extract experience ID from graybox.adobe.com format', () => {
     const hostname = 'test-exp.us-graybox.adobe.com';
     const pathname = '/some/path.html';
-    
+
     const experienceId = getGrayboxExperienceId(hostname, pathname);
     expect(experienceId).to.equal('test-exp');
   });
@@ -1066,7 +1066,7 @@ describe('getGrayboxExperienceId', () => {
   it('should extract experience ID from stage graybox format', () => {
     const hostname = 'stage--us-graybox-adobecom.aem.page';
     const pathname = '/my-experience/some/path';
-    
+
     const experienceId = getGrayboxExperienceId(hostname, pathname);
     expect(experienceId).to.equal('my-experience');
   });
@@ -1074,7 +1074,7 @@ describe('getGrayboxExperienceId', () => {
   it('should return null for non-graybox domains', () => {
     const hostname = 'www.adobe.com';
     const pathname = '/some/path';
-    
+
     const experienceId = getGrayboxExperienceId(hostname, pathname);
     expect(experienceId).to.be.null;
   });
@@ -1082,7 +1082,7 @@ describe('getGrayboxExperienceId', () => {
   it('should return null for malformed graybox URLs', () => {
     const hostname = 'graybox.adobe.com';
     const pathname = '/some/path';
-    
+
     const experienceId = getGrayboxExperienceId(hostname, pathname);
     expect(experienceId).to.be.null;
   });
@@ -1090,7 +1090,7 @@ describe('getGrayboxExperienceId', () => {
   it('should handle empty pathname in stage format', () => {
     const hostname = 'stage--us-graybox-adobecom.aem.page';
     const pathname = '/';
-    
+
     const experienceId = getGrayboxExperienceId(hostname, pathname);
     expect(experienceId).to.be.null;
   });
@@ -1103,10 +1103,10 @@ describe('getGrayboxExperienceId', () => {
       hostname: 'test-exp.us-graybox.adobe.com',
       pathname: '/some/path.html',
     };
-    
+
     const experienceId = getGrayboxExperienceId();
     expect(experienceId).to.equal('test-exp');
-    
+
     // Restore original location
     window.location = originalLocation;
   });

@@ -656,7 +656,10 @@ export const stageMapToCaasTransforms = (config) => {
  * @param {string} [pathname] - Optional pathname, defaults to window.location.pathname
  * @returns {string|null} The experience ID or null if not found
  */
-export const getGrayboxExperienceId = (hostname = window.location.hostname, pathname = window.location.pathname) => {
+export const getGrayboxExperienceId = (
+  hostname = window.location.hostname,
+  pathname = window.location.pathname,
+) => {
   // Check for graybox.adobe.com format: https://[exn].[pn]-graybox.adobe.com/[path].html
   if (hostname.includes('graybox.adobe.com')) {
     const parts = hostname.split('.');
@@ -664,7 +667,7 @@ export const getGrayboxExperienceId = (hostname = window.location.hostname, path
       return parts[0]; // Return the experience ID (first part)
     }
   }
-  
+
   // Check for stage format: https://stage--[pn]-graybox–adobecom.aem.page/[exn]/[path]
   if (hostname.includes('graybox') && hostname.includes('aem.')) {
     const pathParts = pathname.split('/').filter(Boolean);
@@ -672,7 +675,7 @@ export const getGrayboxExperienceId = (hostname = window.location.hostname, path
       return pathParts[0]; // Return the experience ID (first path segment)
     }
   }
-  
+
   return null;
 };
 
