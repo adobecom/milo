@@ -1551,3 +1551,4 @@ merch-card[variant="special-offers"] span[is="inline-price"][data-template="stri
             }
         }
     `),c(R,"placeholderKeys",["searchText","filtersText","sortText","popularityText","alphabeticallyText","noResultText","resultText","resultsText","resultMobileText","resultsMobileText","noSearchResultsText","searchResultText","searchResultsText","noSearchResultsMobileText","searchResultMobileText","searchResultsMobileText"]);customElements.define("merch-card-collection-header",R);export{R as default};
+//# sourceMappingURL=merch-card-collection-header.js.map
