@@ -482,10 +482,6 @@ html[dir="rtl"] .carousel .move-indicators {
   line-height: 0;
 }
 
-.carousel.container .carousel-slide .editorial-card {
-  max-height: calc(100% - 24px);
-}
-
 /* Zero out spacing token on carousel-slide */
 .carousel.container .carousel-slide.section.xs-spacing,
 .carousel.container .carousel-slide.section.s-spacing,
