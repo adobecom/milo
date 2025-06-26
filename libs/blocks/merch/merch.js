@@ -623,8 +623,8 @@ export async function getModalAction(offers, options, el) {
     // ('mini-plans', 'creative') there is no difference, so we can just use either one.
     const client = 'creative';
     setTimeout(() => {
-      loadScript(`${baseUrl}?cli=${client}`, 'text/javascript', { id: 'ucv3-preload-script' });
-    }, 6000);
+      loadScript(`${baseUrl}?cli=${client}`, 'text/javascript', { mode: 'defer', id: 'ucv3-preload-script' });
+    }, 5000);
   }
 
   const [{
