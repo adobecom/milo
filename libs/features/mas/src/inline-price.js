@@ -1,4 +1,4 @@
-import { STATE_FAILED } from './constants.js';
+import { STATE_FAILED, FF_DEFAULTS } from './constants.js';
 import {
     createMasElement,
     updateMasElement,
@@ -290,7 +290,7 @@ export class InlinePrice extends HTMLSpanElement {
         const options = service.collectPriceOptions(overrides, this);
         if (!options.wcsOsi.length) return false;
 
-        if (service.featureFlags.ffDefaults && (!this.dataset.displayTax || !this.dataset.forceTaxExclusive)) {
+        if (service.featureFlags[FF_DEFAULTS] && (!this.dataset.displayTax || !this.dataset.forceTaxExclusive)) {
             const [offerSelectors] = await service.resolveOfferSelectors(options);
             const offers = selectOffers(await offerSelectors, options);
             if (offers?.length) {

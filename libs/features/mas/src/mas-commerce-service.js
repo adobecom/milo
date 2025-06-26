@@ -1,6 +1,6 @@
 import { Checkout } from './checkout.js';
 import * as Constants from './constants.js';
-import { EVENT_TYPE_READY, SELECTOR_MAS_ELEMENT } from './constants.js';
+import { EVENT_TYPE_READY, FF_DEFAULTS, SELECTOR_MAS_ELEMENT } from './constants.js';
 import { Defaults } from './defaults.js';
 import { Ims } from './ims.js';
 import { getPriceLiterals } from './literals.js';
@@ -89,7 +89,7 @@ export class MasCommerceService extends HTMLElement {
     get featureFlags() {
         if (!this.#featureFlags) {
             this.#featureFlags = {
-                ffDefaults: this.#getFeatureFlag(Constants.FF_DEFAULTS),
+                [FF_DEFAULTS]: this.#getFeatureFlag(FF_DEFAULTS),
             };
         }
         return this.#featureFlags;

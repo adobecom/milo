@@ -1,13 +1,12 @@
-import { Landscape, WCS_PROD_URL, WCS_STAGE_URL } from '../src/constants.js';
+import { Landscape, WCS_PROD_URL, WCS_STAGE_URL, PARAM_ENV, PARAM_LANDSCAPE, FF_DEFAULTS } from '../src/constants.js';
 import { Defaults } from '../src/defaults.js';
 import { Env } from '../src/constants.js';
 import { getPreviewSurface, getSettings } from '../src/settings.js';
 
 import { expect } from './utilities.js';
-import { PARAM_ENV, PARAM_LANDSCAPE, FF_DEFAULTS } from '../src/constants.js';
 
 const mockService = {
-  featureFlags: { ffDefaults: true },
+  featureFlags: { [FF_DEFAULTS]: true },
 };
 
 describe('getSettings', () => {

@@ -5,6 +5,7 @@ import {
     Landscape,
     WCS_PROD_URL,
     WCS_STAGE_URL,
+    FF_DEFAULTS,
 } from './constants.js';
 import { Defaults } from './defaults.js';
 import { Env, CheckoutWorkflow, CheckoutWorkflowStep } from './constants.js';
@@ -41,7 +42,7 @@ function getPreviewSurface(wcsApiKey, previewParam) {
 }
 
 function getSettings(config = {}, service) {
-    const ffDefaults = service.featureFlags.ffDefaults;
+    const ffDefaults = service.featureFlags[FF_DEFAULTS];
     // Always use `prod` env by default, regardless Milo env
     // but allow overriding it in metadata, location.search or storage
     // See https://github.com/adobecom/milo/pull/923
