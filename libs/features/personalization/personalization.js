@@ -73,12 +73,12 @@ const IN_BLOCK_SELECTOR_PREFIX = 'in-block:';
 
 const isDamContent = (path) => path?.includes('/content/dam/');
 
-export const normalizePath = (p, localize = true) => {
+export const normalizePath = (p, localize = true, updateMetadata = false) => {
   let path = p;
 
   if (isDamContent(path) || !path?.includes('/')) return path;
 
-  if (path.includes('/federal/')) return getFederatedUrl(path);
+  if (path.includes('/federal/') && !updateMetadata) return getFederatedUrl(path);
 
   const config = getConfig();
   if (!path.startsWith(config.codeRoot) && !path.startsWith('http') && !path.startsWith('/')) {
@@ -703,8 +703,8 @@ const getVariantInfo = (line, variantNames, variants, manifestPath, fTargetId) =
         });
       } else {
         variants[vn][action].push({
-          selector: normalizePath(selector),
-          val: normalizePath(line[vn]),
+          selector: normalizePath(selector, true, true),
+          val: normalizePath(line[vn], true, action === 'updatemetadata'),
           pageFilter,
           manifestId,
           targetManifestId,
