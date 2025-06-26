@@ -30,7 +30,7 @@ const defaultVisibility = {
   search: ['mobile', 'tablet'],
   filter: ['mobile', 'tablet'],
   sort: true,
-  result: ['mobile', 'tablet'],
+  result: true,
   custom: false,
 }
 

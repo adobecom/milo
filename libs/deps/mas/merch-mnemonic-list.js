@@ -27,4 +27,3 @@ var o=Object.defineProperty;var r=(e,t,i)=>t in e?o(e,t,{enumerable:!0,configura
             display: none;
         }
     `),n(s,"properties",{description:{type:String,attribute:!0}});customElements.define("merch-mnemonic-list",s);export{s as MerchMnemonicList};
-//# sourceMappingURL=merch-mnemonic-list.js.map
