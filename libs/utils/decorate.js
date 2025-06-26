@@ -19,9 +19,6 @@ let videoLabels = {
   hasFetched: false,
 };
 let videoCounter = 0;
-document.addEventListener('error', (error) => {
-  console.log("error", error);
-});
 
 export function decorateButtons(el, size) {
   const buttons = el.querySelectorAll('em a, strong a, p > a strong');
@@ -240,7 +237,7 @@ export function getVideoAttrs(hash, dataset) {
   const playInViewport = hash?.includes('viewportplay');
   const poster = getImgSrc(dataset.videoPoster);
   const globalAttrs = `playsinline ${poster}`;
-  const autoPlayAttrs = 'muted';
+  const autoPlayAttrs = 'autoplay muted';
   const playInViewportAttrs = playInViewport ? 'data-play-viewport' : '';
 
   if (isAutoplay && !isAutoplayOnce) {
@@ -259,7 +256,6 @@ export function getVideoAttrs(hash, dataset) {
 }
 
 export function syncPausePlayIcon(video, event) {
-  console.log("Sync play pause called");
   if (!video.getAttributeNames().includes('data-hoverplay')) {
     const offsetFiller = video.closest('.video-holder').querySelector('.offset-filler');
     if (event?.type === 'playing' && offsetFiller?.classList.contains('is-playing')) return;
@@ -306,11 +302,7 @@ export function handlePause(event) {
   if (event.type === 'blur') {
     video.pause();
   } else if (video.paused || video.ended || event.type === 'focus') {
-    if (video.readyState > 1) {
-      video.play().catch((err) => {
-        if (err.name !== 'AbortError') { throw err; }
-      });
-    }
+    if (video.readyState > 1) { video.play(); }
   } else {
     video.pause();
   }
@@ -323,8 +315,8 @@ export function applyHoverPlay(video) {
     video.parentElement.addEventListener('focus', handlePause);
     video.parentElement.addEventListener('blur', handlePause);
     if (!video.hasAttribute('data-mouseevent')) {
-      video.addEventListener('mouseenter', () => { if (video.readyState > 1) video.play(); });
-      video.addEventListener('mouseleave', () => { if (video.readyState > 1) video.pause(); });
+      video.addEventListener('mouseenter', () => { if (video.readyState > 1) { video.play(); } });
+      video.addEventListener('mouseleave', () => { if (video.readyState > 1) { video.pause(); } });
       video.addEventListener('ended', () => { syncPausePlayIcon(video); });
       video.setAttribute('data-mouseevent', true);
     }
@@ -338,9 +330,7 @@ export function applyAccessibilityEvents(videoEl) {
     pausePlayWrapper.addEventListener('keydown', handlePause);
   }
   if (videoEl.hasAttribute('autoplay')) {
-    videoEl.addEventListener('canplay', () => {
-      if (videoEl.readyState > 1) videoEl.play();
-    });
+    videoEl.addEventListener('canplay', () => videoEl.play());
     videoEl.addEventListener('playing', (event) => syncPausePlayIcon(videoEl, event));
     videoEl.addEventListener('ended', () => syncPausePlayIcon(videoEl));
   }
@@ -383,7 +373,7 @@ function getVideoIntersectionObserver() {
         if (intersectionRatio <= 0.8) {
           video.pause();
         } else if ((isHaveLoopAttr || !playedOnce) && !isPlaying) {
-          if (video.readyState > 1) video.play();
+          video.play();
         }
       });
     }, { threshold: [0.8] });
@@ -485,7 +475,6 @@ export function decorateAnchorVideo({ src = '', anchorTag }) {
   if (anchorTag.closest('.marquee, .aside, .hero-marquee, .quiz-marquee') && !anchorTag.hash) anchorTag.hash = '#autoplay';
   const { dataset, parentElement } = anchorTag;
   const attrs = getVideoAttrs(anchorTag.hash, dataset);
-  const isAutoplay = anchorTag.hash?.includes('autoplay');
   const tabIndex = anchorTag.tabIndex || 0;
   const videoIndex = (tabIndex === -1) ? 'tabindex=-1' : '';
   let video = `<video ${attrs} data-video-source=${src} ${videoIndex}></video>`;
@@ -523,19 +512,6 @@ export function decorateAnchorVideo({ src = '', anchorTag }) {
       decoratePausePlayWrapper(videoEl, attrs);
     }
   }
-  if (isAutoplay) {
-    if (videoEl.readyState > 1) {
-      videoEl.play().catch((error) => {
-        if (error.name === 'AbortError') {
-          console.log("$$$", error);
-        }
-      });
-    }
-    syncPausePlayIcon(videoEl);
-  }
-  // videoEl.addEventListener('abort', (event) => {
-  //   console.log("error", event);
-  // });
   applyHoverPlay(videoEl);
   applyInViewPortPlay(videoEl);
   anchorTag.remove();
