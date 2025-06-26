@@ -1,6 +1,6 @@
 import {
   createTag, getConfig, loadArea, loadScript, loadStyle, localizeLink, SLD, getMetadata,
-  loadLink, shouldAllowKrTrial,
+  shouldAllowKrTrial,
 } from '../../utils/utils.js';
 import { replaceKey } from '../../features/placeholders.js';
 
@@ -316,7 +316,7 @@ export function getMasBase(hostname, maslibs) {
 
 function getCommercePreloadUrl() {
   const { env } = getConfig();
-  if (env === 'prod') {
+  if (env.name === 'prod') {
     return 'https://commerce.adobe.com/store/iframe/preload.js';
   }
   return 'https://commerce-stg.adobe.com/store/iframe/preload.js';
@@ -622,7 +622,11 @@ export async function getModalAction(offers, options, el) {
     // The script can preload more, based on clientId, but for the ones in use
     // ('mini-plans', 'creative') there is no difference, so we can just use either one.
     const client = 'creative';
-    loadLink(`${baseUrl}?cli=${client}`, 'text/javascript', { id: 'ucv3-preload-script', as: 'script', crossorigin: 'anonymous', rel: 'preload' });
+    window.milo.deferredPromise.then(() => {
+      setTimeout(() => {
+        loadScript(`${baseUrl}?cli=${client}`, 'text/javascript', { mode: 'defer', id: 'ucv3-preload-script' });
+      }, 1000);
+    });
   }
 
   const [{
