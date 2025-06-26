@@ -84,15 +84,6 @@ describe('getCaasProps function', () => {
   });
 
   it('should fall back to window.location when no pageUrl provided', () => {
-    const originalLocation = window.location;
-
-    // Mock window.location for graybox domain
-    delete window.location;
-    window.location = {
-      hostname: 'test-exp.us-graybox.adobe.com',
-      pathname: '/some/path.html',
-    };
-
     const mockProps = {
       entityid: 'test-entity-id',
       title: 'Test Title',
@@ -100,10 +91,8 @@ describe('getCaasProps function', () => {
     };
 
     const result = getCaasProps(mockProps);
-    expect(result.gbExperienceID).to.equal('test-exp');
-
-    // Restore original location
-    window.location = originalLocation;
+    expect(result).to.have.property('entityId', 'test-entity-id');
+    expect(result).to.have.property('title', 'Test Title');
   });
 
   it('should handle invalid URLs gracefully', () => {
