@@ -91,7 +91,6 @@ export default function checkColorContrast(elements = [], config = {}) {
     // Large text requires contrast ratio of 3:1, Normal text requires 4.5:1
     const isLargeText = fontSize >= 24 || (fontSize >= 18.66 && fontWeight >= 700);
     const requiredContrast = isLargeText ? 3.0 : minContrast;
-    console.log({ fgColor, bgColor, contrast, fontSize, fontWeight });
     if (contrast < requiredContrast) {
       violations.push({
         description: `Low contrast text (ratio: ${contrast.toFixed(2)}:1) - WCAG AA Minimum is ${requiredContrast}:1`,
