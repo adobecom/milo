@@ -166,53 +166,6 @@ function loadBreakpointThemes() {
   loadStyle(`${base}/styles/breakpoint-theme.css`);
 }
 
-export function getViewportOrder(viewport, content, previousViewportOrder) {
-  const orderEls = [...content.querySelectorAll(':scope > div[class*="order-"]')];
-  const nonOrderEls = [...content.querySelectorAll(':scope > div:not([class*="order-"])')];
-  const viewportOrder = Array(orderEls.length).fill(null);
-  orderEls.forEach((el) => {
-    let order;
-    el.classList.forEach((className) => {
-      if (!className.startsWith('order-') || !className.endsWith(viewport)) return;
-      order = parseInt(className.split('-')[1], 10);
-    });
-    if (Number.isInteger(order)) viewportOrder[order] = el;
-  });
-  const nonEmpty = viewportOrder.every((el) => el);
-  return nonEmpty ? [...nonOrderEls, ...viewportOrder] : previousViewportOrder;
-}
-
-function handleViewportOrder(content) {
-  const hasOrder = content.querySelector(':scope > div[class*="order-"]');
-  if (!hasOrder) return;
-
-  const mobileOrder = [...content.children];
-  const tabletOrder = getViewportOrder('tablet', content, mobileOrder);
-  const viewports = {
-    mobile: {
-      media: '(max-width: 599px)',
-      elements: mobileOrder,
-    },
-    tablet: {
-      media: '(min-width: 600px) and (max-width: 1199px)',
-      elements: tabletOrder,
-    },
-    desktop: {
-      media: '(min-width: 1200px)',
-      elements: getViewportOrder('desktop', content, tabletOrder),
-    },
-  };
-
-  Object.entries(viewports).forEach(([viewport, { media, elements }]) => {
-    const mediaQuery = window.matchMedia(media);
-    if (mediaQuery.matches && viewport !== 'mobile') content.replaceChildren(...elements);
-    mediaQuery.addEventListener('change', (e) => {
-      if (!e.matches) return;
-      content.replaceChildren(...elements);
-    });
-  });
-}
-
 export default async function init(el) {
   el.classList.add('con-block');
   let rows = el.querySelectorAll(':scope > div');
@@ -315,7 +268,6 @@ export default async function init(el) {
     }
   });
   decorateTextOverrides(el, ['-heading', '-body', '-detail'], mainCopy);
-  handleViewportOrder(copy);
 
   if (el.classList.contains('countdown-timer')) {
     promiseArr.push(loadCDT(copy, el.classList));
