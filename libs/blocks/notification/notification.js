@@ -88,27 +88,31 @@ function wrapCopy(foreground) {
   });
 }
 
+const closeBanner = (el) => {
+  const liveRegion = document.querySelector('.notification-visibility-hidden');
+  liveRegion.textContent = 'Banner closed';
+
+  setTimeout(() => {
+    liveRegion.textContent = '';
+    document.querySelector(focusableSelector)?.focus();
+  }, 2000);
+
+  el.style.display = 'none';
+  el.closest('.section')?.classList.add('close-sticky-section');
+
+  if (el.focusTrapCleanup) el.focusTrapCleanup();
+
+  if (el.classList.contains('focus')) {
+    document.body.classList.remove('mobile-disable-scroll');
+    el.closest('.section').querySelector('.notification-curtain').remove();
+  }
+  document.dispatchEvent(new CustomEvent('milo:sticky:closed'));
+};
+
 function addCloseAction(el, btn) {
   btn.addEventListener('click', (e) => {
     if (btn.nodeName === 'A') e.preventDefault();
-    const liveRegion = document.querySelector('.notification-visibility-hidden');
-    liveRegion.textContent = 'Banner closed';
-
-    setTimeout(() => {
-      liveRegion.textContent = '';
-      document.querySelector(focusableSelector)?.focus();
-    }, 2000);
-
-    el.style.display = 'none';
-    el.closest('.section')?.classList.add('close-sticky-section');
-
-    if (el.focusTrapCleanup) el.focusTrapCleanup();
-
-    if (el.classList.contains('focus')) {
-      document.body.classList.remove('mobile-disable-scroll');
-      el.closest('.section').querySelector('.notification-curtain').remove();
-    }
-    document.dispatchEvent(new CustomEvent('milo:sticky:closed'));
+    closeBanner(el);
   });
 }
 
@@ -176,18 +180,24 @@ function curtainCallback(el) {
         firstFocusable.focus();
       }
     }
+
+    if (e.key === 'Escape') closeBanner(el);
   };
 
   const handleFocusOut = (e) => {
     if (!el.contains(e.relatedTarget) && firstFocusable) firstFocusable.focus();
   };
 
+  const handleCurtainClick = (e) => { if (e.target === curtain) closeBanner(el); };
+
   el.addEventListener('keydown', handleKeyDown);
   el.addEventListener('focusout', handleFocusOut);
+  curtain.addEventListener('click', handleCurtainClick);
 
   el.focusTrapCleanup = () => {
     el.removeEventListener('keydown', handleKeyDown);
     el.removeEventListener('focusout', handleFocusOut);
+    curtain.removeEventListener('click', handleCurtainClick);
   };
 }
 
