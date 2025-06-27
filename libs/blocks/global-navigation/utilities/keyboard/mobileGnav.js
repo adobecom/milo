@@ -39,7 +39,7 @@ const MobileGnav = {
                   if (nextTab) nextTab.focus();
                   break;
                 }
-                case 'ArrowRight': {
+                case (document.dir !== 'rtl' ? 'ArrowRight' : 'ArrowLeft'): {
                   const currentTabs = [...popupTabs].filter((currentTab) => currentTab.closest('.feds-dropdown--active'));
                   const activeTab = currentTabs.find((currentTab) => currentTab.getAttribute('aria-selected') === 'true');
                   const activeTabIndex = activeTab.getAttribute('aria-controls');
@@ -92,7 +92,7 @@ const MobileGnav = {
                   }
                   break;
                 }
-                case 'ArrowLeft': {
+                case (document.dir === 'rtl' ? 'ArrowRight' : 'ArrowLeft'): {
                   const currentTabs = [...popupTabs].filter((currentTab) => currentTab.closest('.feds-dropdown--active'));
                   const activeTab = currentTabs.find((currentTab) => currentTab.getAttribute('aria-selected') === 'true');
                   if (activeTab) activeTab.focus();
@@ -117,12 +117,6 @@ const MobileGnav = {
         } else if (code === 'ArrowDown') {
           const nextLink = this.menuItemLinks[index + 1];
           if (nextLink) nextLink.focus();
-        } else if (code === 'Space') {
-          const popupTabs = document.querySelectorAll('.feds-nav-wrapper .feds-popup .tabs .tab');
-          setTimeout(() => {
-            const activeTab = [...popupTabs].find((currentTab) => currentTab.closest('.feds-dropdown--active') && currentTab.getAttribute('aria-selected') === 'true');
-            activeTab.focus();
-          }, 150);
         }
       });
     });
