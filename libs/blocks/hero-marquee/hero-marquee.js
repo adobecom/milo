@@ -329,6 +329,7 @@ export default async function init(el) {
   });
   decorateTextOverrides(el, ['-heading', '-body', '-detail'], mainCopy);
   handleViewportOrder(copy);
+
   if (el.classList.contains('countdown-timer')) {
     promiseArr.push(loadCDT(copy, el.classList));
   }
