@@ -618,15 +618,15 @@ export async function getModalAction(offers, options, el) {
   if (!options.modal) return undefined;
 
   if (el?.isOpen3in1Modal) {
-    const baseUrl = getCommercePreloadUrl();
+    // const baseUrl = getCommercePreloadUrl();
     // The script can preload more, based on clientId, but for the ones in use
     // ('mini-plans', 'creative') there is no difference, so we can just use either one.
-    const client = 'creative';
-    window.milo.deferredPromise.then(() => {
-      setTimeout(() => {
-        loadScript(`${baseUrl}?cli=${client}`, 'text/javascript', { mode: 'defer', id: 'ucv3-preload-script' });
-      }, 1000);
-    });
+    // const client = 'creative';
+    // window.milo.deferredPromise.then(() => {
+    //   setTimeout(() => {
+    //     loadScript(`${baseUrl}?cli=${client}`, 'text/javascript', { mode: 'defer', id: 'ucv3-preload-script' });
+    //   }, 1000);
+    // });
   }
 
   const [{
