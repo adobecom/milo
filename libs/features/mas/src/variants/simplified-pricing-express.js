@@ -128,6 +128,19 @@ export class SimplifiedPricingExpress extends VariantLayout {
             margin-top: auto;
         }
 
+        :host([variant='simplified-pricing-express']) .cta {
+            width: 100%;
+            display: flex;
+            flex-direction: row;
+            gap: 8px;
+            margin-top: auto;
+        }
+
+        :host([variant='simplified-pricing-express']) .cta ::slotted(*) {
+            flex: 1;
+            width: 100%;
+        }
+
         :host([variant='simplified-pricing-express']) .footer-text {
             font-size: 12px;
             line-height: 1.4;
