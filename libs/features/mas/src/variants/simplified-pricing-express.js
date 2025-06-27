@@ -29,7 +29,7 @@ export const SIMPLIFIED_PRICING_EXPRESS_AEM_FRAGMENT_MAPPING = {
     },
     "ctas": {
         "slot": "cta",
-        "size": "m"
+        "size": "L"
     },
     "borderColor": {
         "attribute": "border-color",
