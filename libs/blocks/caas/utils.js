@@ -707,8 +707,7 @@ export const getConfig = async (originalState, strs = {}) => {
   const complexQuery = buildComplexQuery(state.andLogicTags, state.orLogicTags, state.notLogicTags);
 
   const caasRequestHeaders = addFloodgateHeader(state);
-
-  // Get graybox experience ID if on graybox domain
+  
   const grayboxExperienceId = getGrayboxExperienceId();
   const grayboxExperienceParam = grayboxExperienceId ? `&gbExperienceID=${grayboxExperienceId}` : '';
 
