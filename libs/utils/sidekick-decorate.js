@@ -1,9 +1,24 @@
 import userCanPublishPage from '../tools/utils/publish.js';
+import { callPreflight, hasPreflightFailures } from '../blocks/preflight/checks/executor.js';
 
 const PUBLISH_BTN = '.publish.plugin button';
 const PROFILE = '.profile-email';
 const CONFIRM_MESSAGE = 'Are you sure? This will publish to production.';
+const PREFLIGHT_FAIL_MESSAGE = 'Preflight checks are failing. Are you sure you want to publish?';
 let stylePublishCalled = false;
+
+async function getPublishMessage() {
+  try {
+    await callPreflight();
+    if (hasPreflightFailures()) {
+      return PREFLIGHT_FAIL_MESSAGE;
+    }
+    return CONFIRM_MESSAGE;
+  } catch (error) {
+    console.warn('Could not run preflight checks:', error);
+    return CONFIRM_MESSAGE;
+  }
+}
 
 function styleHelixPublish(sk) {
   const setupPublishBtn = async (page, btn) => {
@@ -14,7 +29,7 @@ function styleHelixPublish(sk) {
       btn.setAttribute('disabled', true);
     }
     const messageText = btn.querySelector('span');
-    const text = canPublish ? CONFIRM_MESSAGE : message;
+    const text = canPublish ? await getPublishMessage() : message;
     if (messageText) {
       messageText.innerText = text;
     } else {
