@@ -93,10 +93,15 @@ const closeBanner = (el) => {
   liveRegion.textContent = 'Banner closed';
 
   setTimeout(() => {
-    liveRegion.textContent = '';
-    if (el.dataset.keyboardUsedToClose
-      && document.activeElement.tagName === 'BODY') document.querySelector(focusableSelector)?.focus();
-  }, 2000);
+    const tempFocus = createTag('div', { class: 'temp-focus' });
+    tempFocus.tabIndex = 0;
+    document.body.insertBefore(tempFocus, document.body.firstChild);
+    tempFocus.focus();
+    document.body.removeChild(tempFocus);
+  });
+
+  // time needed for screen reader to read the message
+  setTimeout(() => { liveRegion.textContent = ''; }, 2000);
 
   el.style.display = 'none';
   el.closest('.section')?.classList.add('close-sticky-section');
