@@ -1782,13 +1782,22 @@ merch-card[variant="simplified-pricing-express"] [slot="cta"] button {
     width: 100%;
 }
 
+merch-card[variant="simplified-pricing-express"] [slot="price"] {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
 merch-card[variant="simplified-pricing-express"] [slot="price"] span[is="inline-price"] {
   font-size: var(--merch-card-simplified-pricing-express-price-font-size);
   font-weight: var(--merch-card-simplified-pricing-express-price-font-weight);
   line-height: var(--merch-card-simplified-pricing-express-price-line-height);
 }
 merch-card[variant="simplified-pricing-express"] [slot="price"] .price .price-currency-symbol {
-  font-size: var(--merch-card-simplified-pricing-express-price-font-size);
+  font-size: var(--merch-card-simplified-pricing-express-price-currency-font-size);
+  font-weight: var(--merch-card-simplified-pricing-express-price-currency-font-weight);
+  line-height: var(--merch-card-simplified-pricing-express-price-currency-line-height);
+  color: var(--spectrum-gray-700);
 }
 
 merch-card[variant="simplified-pricing-express"] [slot="cta"] sp-button[variant="accent"],
@@ -1820,6 +1829,9 @@ merch-card[variant="simplified-pricing-express"] [slot="footer"] sp-button[varia
             --merch-card-simplified-pricing-express-price-font-size: 28px;
             --merch-card-simplified-pricing-express-price-font-weight: 900;
             --merch-card-simplified-pricing-express-price-line-height: 36.4px;
+            --merch-card-simplified-pricing-express-price-currency-font-size: 22px;
+            --merch-card-simplified-pricing-express-price-currency-font-weight: 700;
+            --merch-card-simplified-pricing-express-price-currency-line-height: 28.6px;
             max-width: var(--merch-card-simplified-pricing-express-max-width);
             min-height: var(--merch-card-simplified-pricing-express-min-height);
             background: var(--spectrum-gray-50);
