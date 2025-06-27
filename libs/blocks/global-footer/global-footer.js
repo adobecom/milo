@@ -429,18 +429,19 @@ class Footer {
     return toFragment`
       <a class="footer-logo">
         <span class="footer-logo-image">${imageEl}</span>
+        <span class="footer-logo-text">Adobe</span>
       </a>`;
   };
 
   decorateFooter = () => {
     this.elements.footer = toFragment`<div class="feds-footer-wrapper">
         ${this.elements.footerMenu}
-        ${this.decorateLogo()}
         ${this.elements.featuredProducts}
         <div class="feds-footer-options">
           <div class="feds-footer-miscLinks">
             ${this.elements.regionPicker}
             ${this.elements.social}
+            ${this.decorateLogo()}
           </div>
           ${this.elements.legal}
         </div>
