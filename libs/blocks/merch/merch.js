@@ -16,8 +16,7 @@ export const MAS_MERCH_SIDENAV = 'merch-sidenav';
 export const MAS_MERCH_WHATS_INCLUDED = 'merch-whats-included';
 
 export const CHECKOUT_LINK_CONFIG_PATH = '/commerce/checkout-link.json'; // relative to libs.
-export const CHECKOUT_LINK_SANDBOX_CONFIG_PATH =
-  '/commerce/checkout-link-sandbox.json'; // relative to libs.
+export const CHECKOUT_LINK_SANDBOX_CONFIG_PATH = '/commerce/checkout-link-sandbox.json'; // relative to libs.
 
 export const PRICE_TEMPLATE_DISCOUNT = 'discount';
 export const PRICE_TEMPLATE_OPTICAL = 'optical';
@@ -203,8 +202,8 @@ export function getMiloLocaleSettings(locale) {
   let [country = 'US', language = 'en'] = (GeoMap[geo] ?? geo).split('_', 2);
 
   if (
-    geo.startsWith(LANG_STORE_PREFIX) ||
-    window.location.pathname.startsWith(`/${LANG_STORE_PREFIX}`)
+    geo.startsWith(LANG_STORE_PREFIX)
+    || window.location.pathname.startsWith(`/${LANG_STORE_PREFIX}`)
   ) {
     const localeLang = geo.replace(LANG_STORE_PREFIX, '').toLowerCase();
     country = getDefaultLangstoreCountry(localeLang);
@@ -320,8 +319,18 @@ export function getMasBase(hostname, maslibs) {
     } else if (maslibs === 'local') {
       baseUrl = 'http://localhost:9001';
     } else if (maslibs) {
+      // Extract SLD (Second Level Domain) from hostname
+      const hostnameParts = hostname.split('.');
+      let sld = 'hlx'; // default
+      if (hostnameParts.length >= 2) {
+        // Get the second-to-last part (before .page or .live)
+        const extensionIndex = hostname.endsWith('.page') ? hostnameParts.length - 1 : hostnameParts.length;
+        if (extensionIndex >= 2) {
+          sld = hostnameParts[extensionIndex - 2];
+        }
+      }
       const extension = /.page$/.test(hostname) ? 'page' : 'live';
-      baseUrl = `https://${maslibs}.${SLD}.${extension}`;
+      baseUrl = `https://${maslibs}.${sld}.${extension}`;
     } else {
       baseUrl = 'https://www.adobe.com/mas';
     }
@@ -348,13 +357,50 @@ export function getMasLibs() {
   if (sanitizedMasLibs === 'main') {
     return 'https://mas.adobe.com/web-components/dist';
   }
+
+  // Detect current domain extension (.page or .live)
+  const { hostname } = window.location;
+  const extension = hostname.endsWith('.page') ? 'page' : 'live';
+
   if (sanitizedMasLibs.includes('--mas--')) {
-    return `https://${sanitizedMasLibs}.aem.live/web-components/dist`;
+    return `https://${sanitizedMasLibs}.aem.${extension}/web-components/dist`;
   }
   if (sanitizedMasLibs.includes('--')) {
-    return `https://${sanitizedMasLibs}.aem.live/web-components/dist`;
+    return `https://${sanitizedMasLibs}.aem.${extension}/web-components/dist`;
   }
-  return `https://${sanitizedMasLibs}--mas--adobecom.aem.live/web-components/dist`;
+  return `https://${sanitizedMasLibs}--mas--adobecom.aem.${extension}/web-components/dist`;
+}
+
+/**
+ * Gets the URL for loading fragment-client.js based on maslibs parameter
+ * @returns {string|null} URL for fragment-client.js or null if maslibs not present
+ */
+function getFragmentClientUrl() {
+  const urlParams = new URLSearchParams(window.location.search);
+  const masLibs = urlParams.get('maslibs');
+
+  if (!masLibs || masLibs.trim() === '') return null;
+
+  const sanitizedMasLibs = masLibs.trim().toLowerCase();
+
+  if (sanitizedMasLibs === 'local') {
+    return 'http://localhost:3030/studio/libs/fragment-client.js';
+  }
+  if (sanitizedMasLibs === 'main') {
+    return 'https://mas.adobe.com/studio/libs/fragment-client.js';
+  }
+
+  // Detect current domain extension (.page or .live)
+  const { hostname } = window.location;
+  const extension = hostname.endsWith('.page') ? 'page' : 'live';
+
+  if (sanitizedMasLibs.includes('--mas--')) {
+    return `https://${sanitizedMasLibs}.aem.${extension}/studio/libs/fragment-client.js`;
+  }
+  if (sanitizedMasLibs.includes('--')) {
+    return `https://${sanitizedMasLibs}.aem.${extension}/studio/libs/fragment-client.js`;
+  }
+  return `https://${sanitizedMasLibs}--mas--adobecom.aem.${extension}/studio/libs/fragment-client.js`;
 }
 
 /**
@@ -453,27 +499,23 @@ export async function polyfills() {
 }
 
 export async function fetchEntitlements() {
-  fetchEntitlements.promise =
-    fetchEntitlements.promise ??
-    import('../global-navigation/utilities/getUserEntitlements.js').then(
-      ({ default: getUserEntitlements }) =>
-        getUserEntitlements({
-          params: [{ name: 'include', value: 'OFFER.PRODUCT_ARRANGEMENT' }],
-          format: 'raw',
-        })
+  fetchEntitlements.promise = fetchEntitlements.promise
+    ?? import('../global-navigation/utilities/getUserEntitlements.js').then(
+      ({ default: getUserEntitlements }) => getUserEntitlements({
+        params: [{ name: 'include', value: 'OFFER.PRODUCT_ARRANGEMENT' }],
+        format: 'raw',
+      }),
     );
   return fetchEntitlements.promise;
 }
 
 export async function fetchCheckoutLinkConfigs(base = '', env = '') {
   const params = new URLSearchParams(window.location.search);
-  const path =
-    params.get('checkout-link-sandbox') === 'on' && env !== 'prod'
-      ? `${base}${CHECKOUT_LINK_SANDBOX_CONFIG_PATH}`
-      : `${base}${CHECKOUT_LINK_CONFIG_PATH}`;
-  fetchCheckoutLinkConfigs.promise =
-    fetchCheckoutLinkConfigs.promise ??
-    fetch(path)
+  const path = params.get('checkout-link-sandbox') === 'on' && env !== 'prod'
+    ? `${base}${CHECKOUT_LINK_SANDBOX_CONFIG_PATH}`
+    : `${base}${CHECKOUT_LINK_CONFIG_PATH}`;
+  fetchCheckoutLinkConfigs.promise = fetchCheckoutLinkConfigs.promise
+    ?? fetch(path)
       .catch((e) => {
         log?.error('Failed to fetch checkout link configs', e);
       })
@@ -487,7 +529,7 @@ export async function fetchCheckoutLinkConfigs(base = '', env = '') {
 export async function getCheckoutLinkConfig(
   productFamily,
   productCode,
-  paCode
+  paCode,
 ) {
   let { base } = getConfig();
   const { env } = getConfig();
@@ -497,24 +539,21 @@ export async function getCheckoutLinkConfig(
   }
   const checkoutLinkConfigs = await fetchCheckoutLinkConfigs(base, env);
   if (!checkoutLinkConfigs.data.length) return undefined;
-  const {
-    locale: { region },
-  } = getConfig();
+  const { locale: { region } } = getConfig();
 
-  const { paCodeConfigs, productCodeConfigs, productFamilyConfigs } =
-    checkoutLinkConfigs.data.reduce(
-      (acc, config) => {
-        if (config[NAME_PRODUCT_FAMILY] === paCode) {
-          acc.paCodeConfigs.push(config);
-        } else if (config[NAME_PRODUCT_FAMILY] === productCode) {
-          acc.productCodeConfigs.push(config);
-        } else if (config[NAME_PRODUCT_FAMILY] === productFamily) {
-          acc.productFamilyConfigs.push(config);
-        }
-        return acc;
-      },
-      { paCodeConfigs: [], productCodeConfigs: [], productFamilyConfigs: [] }
-    );
+  const { paCodeConfigs, productCodeConfigs, productFamilyConfigs } = checkoutLinkConfigs.data.reduce(
+    (acc, config) => {
+      if (config[NAME_PRODUCT_FAMILY] === paCode) {
+        acc.paCodeConfigs.push(config);
+      } else if (config[NAME_PRODUCT_FAMILY] === productCode) {
+        acc.productCodeConfigs.push(config);
+      } else if (config[NAME_PRODUCT_FAMILY] === productFamily) {
+        acc.productFamilyConfigs.push(config);
+      }
+      return acc;
+    },
+    { paCodeConfigs: [], productCodeConfigs: [], productFamilyConfigs: [] },
+  );
 
   // helps to fallback to product family config
   // if no locale specific config is found below.
@@ -526,14 +565,13 @@ export async function getCheckoutLinkConfig(
 
   if (!productCheckoutLinkConfigs.length) return undefined;
   const checkoutLinkConfig = productCheckoutLinkConfigs.find(
-    ({ [NAME_LOCALE]: locale }) => locale === ''
+    ({ [NAME_LOCALE]: locale }) => locale === '',
   );
-  const checkoutLinkConfigOverride =
-    productCheckoutLinkConfigs.find(
-      ({ [NAME_LOCALE]: locale }) => locale === region
-    ) ?? {};
+  const checkoutLinkConfigOverride = productCheckoutLinkConfigs.find(
+    ({ [NAME_LOCALE]: locale }) => locale === region,
+  ) ?? {};
   const overrides = Object.fromEntries(
-    Object.entries(checkoutLinkConfigOverride).filter(([, value]) => value)
+    Object.entries(checkoutLinkConfigOverride).filter(([, value]) => value),
   );
   const finalConfig = { ...checkoutLinkConfig, ...overrides };
   Object.entries(finalConfig).forEach(([key, value]) => {
@@ -553,7 +591,7 @@ export async function getDownloadAction(
       productArrangementCode,
       productArrangement: { productCode, productFamily: offerFamily } = {},
     },
-  ]
+  ],
 ) {
   if (options.entitlement !== true) return undefined;
   const loggedIn = await imsSignedInPromise;
@@ -563,30 +601,26 @@ export async function getDownloadAction(
   const checkoutLinkConfig = await getCheckoutLinkConfig(
     offerFamily,
     productCode,
-    productArrangementCode
+    productArrangementCode,
   );
   if (!checkoutLinkConfig?.DOWNLOAD_URL) return undefined;
   const offer = entitlements.find(
-    ({
-      offer: {
-        product_arrangement: { family: subscriptionFamily },
-      },
-    }) => {
+    ({ offer: { product_arrangement: { family: subscriptionFamily } } }) => {
       if (CC_ALL_APPS.includes(subscriptionFamily)) return true; // has all apps
       if (CC_ALL_APPS.includes(offerFamily)) return false; // hasn't all apps and cta is all apps
       const singleAppFamily = CC_SINGLE_APPS.find(
         (
-          singleAppFamilies // has single and and cta is single app
-        ) => singleAppFamilies.includes(offerFamily)
+          singleAppFamilies, // has single and and cta is single app
+        ) => singleAppFamilies.includes(offerFamily),
       );
       return singleAppFamily?.includes(subscriptionFamily);
-    }
+    },
   );
   if (!offer) return undefined;
   const config = getConfig();
   const text = await replaceKey(
     checkoutLinkConfig.DOWNLOAD_TEXT || PLACEHOLDER_KEY_DOWNLOAD,
-    config
+    config,
   );
   const url = localizeLink(checkoutLinkConfig.DOWNLOAD_URL);
   const type = offerType?.toLowerCase() ?? '';
@@ -596,7 +630,7 @@ export async function getDownloadAction(
 export async function getUpgradeAction(
   options,
   imsSignedInPromise,
-  [{ productArrangement: { productFamily: offerFamily } = {} }]
+  [{ productArrangement: { productFamily: offerFamily } = {} }],
 ) {
   if (!options.upgrade) return undefined;
   const loggedIn = await imsSignedInPromise;
@@ -606,7 +640,7 @@ export async function getUpgradeAction(
     upgradeOffer = undefined;
     // will enter only once
     upgradeOffer = await document.querySelector(
-      '.merch-offers.upgrade [data-wcs-osi]'
+      '.merch-offers.upgrade [data-wcs-osi]',
     );
   }
   await upgradeOffer?.onceSettled();
@@ -617,7 +651,7 @@ export async function getUpgradeAction(
       upgradeOffer,
       entitlements,
       CC_SINGLE_APPS_ALL,
-      CC_ALL_APPS
+      CC_ALL_APPS,
     );
     return upgradeAction;
   }
@@ -648,7 +682,7 @@ function appendTabName(url, el) {
     }
   }
   const metaPreselectPlan = document.querySelector(
-    'meta[name="preselect-plan"]'
+    'meta[name="preselect-plan"]',
   );
   if (!metaPreselectPlan?.content) return url;
   url.searchParams.set('plan', metaPreselectPlan.content);
@@ -663,7 +697,7 @@ function appendExtraOptions(url, extraOptions) {
       const value = extraOptionsObj[key];
       url.searchParams.set(
         TAB_DEEPLINK_MAPPING[key] ?? key,
-        TAB_DEEPLINK_MAPPING[value] ?? value
+        TAB_DEEPLINK_MAPPING[value] ?? value,
       );
     }
   });
@@ -676,7 +710,7 @@ export function appendDexterParameters(url, extraOptions, el) {
   let absoluteUrl;
   try {
     absoluteUrl = new URL(
-      isRelativePath ? `${window.location.origin}${url}` : url
+      isRelativePath ? `${window.location.origin}${url}` : url,
     );
   } catch (err) {
     window.lana?.log(`Invalid URL ${url} : ${err}`);
@@ -704,7 +738,7 @@ async function openExternalModal(url, getModal, extraOptions, el) {
       loading: 'lazy',
     },
     '',
-    { parent: root }
+    { parent: root },
   );
   return getModal(null, {
     id: 'checkout-link-modal',
@@ -724,10 +758,9 @@ export async function openModal(e, url, offerType, hash, extraOptions, el) {
   const offerTypeClass = offerType === OFFER_TYPE_TRIAL ? 'twp' : 'crm';
   let modal;
   if (hash) {
-    const prevHash =
-      window.location.hash.replace('#', '') === hash
-        ? ''
-        : window.location.hash;
+    const prevHash = window.location.hash.replace('#', '') === hash
+      ? ''
+      : window.location.hash;
     window.location.hash = hash;
     window.addEventListener(
       'milo:modal:closed',
@@ -737,16 +770,15 @@ export async function openModal(e, url, offerType, hash, extraOptions, el) {
           document.title,
           prevHash !== ''
             ? `#${prevHash}`
-            : `${window.location.pathname}${window.location.search}`
+            : `${window.location.pathname}${window.location.search}`,
         );
       },
-      { once: true }
+      { once: true },
     );
   }
 
   if (el?.isOpen3in1Modal) {
-    const { default: openThreeInOneModal, handle3in1IFrameEvents } =
-      await import('./three-in-one.js');
+    const { default: openThreeInOneModal, handle3in1IFrameEvents } = await import('./three-in-one.js');
     window.addEventListener('message', handle3in1IFrameEvents);
     modal = await openThreeInOneModal(el);
     return;
@@ -762,10 +794,9 @@ export async function openModal(e, url, offerType, hash, extraOptions, el) {
 
 export function setCtaHash(el, checkoutLinkConfig, offerType) {
   if (!(el && checkoutLinkConfig && offerType)) return undefined;
-  const hash =
-    checkoutLinkConfig[
-      `${offerType === OFFER_TYPE_TRIAL ? FREE_TRIAL_HASH : BUY_NOW_HASH}`
-    ];
+  const hash = checkoutLinkConfig[
+    `${offerType === OFFER_TYPE_TRIAL ? FREE_TRIAL_HASH : BUY_NOW_HASH}`
+  ];
   if (hash) {
     el.setAttribute('data-modal-id', hash);
   }
@@ -805,22 +836,19 @@ export async function getModalAction(offers, options, el) {
   const checkoutLinkConfig = await getCheckoutLinkConfig(
     offerFamily,
     productCode,
-    productArrangementCode
+    productArrangementCode,
   );
   if (!checkoutLinkConfig) return undefined;
-  const columnName =
-    offerType === OFFER_TYPE_TRIAL ? FREE_TRIAL_PATH : BUY_NOW_PATH;
+  const columnName = offerType === OFFER_TYPE_TRIAL ? FREE_TRIAL_PATH : BUY_NOW_PATH;
   const hash = setCtaHash(el, checkoutLinkConfig, offerType);
   let url = checkoutLinkConfig[columnName];
   if (!url && !el?.isOpen3in1Modal) return undefined;
-  url =
-    isInternalModal(url) || isProdModal(url)
-      ? localizeLink(checkoutLinkConfig[columnName])
-      : checkoutLinkConfig[columnName];
+  url = isInternalModal(url) || isProdModal(url)
+    ? localizeLink(checkoutLinkConfig[columnName])
+    : checkoutLinkConfig[columnName];
   return {
     url,
-    handler: (e) =>
-      openModal(e, url, offerType, hash, options.extraOptions, el),
+    handler: (e) => openModal(e, url, offerType, hash, options.extraOptions, el),
   };
 }
 
@@ -828,7 +856,7 @@ export async function getCheckoutAction(
   offers,
   options,
   imsSignedInPromise,
-  el
+  el,
 ) {
   try {
     await imsSignedInPromise;
@@ -847,8 +875,8 @@ export async function getCheckoutAction(
 export function setPreview(attributes) {
   const { host } = window.location;
   if (
-    host.includes(`${SLD}.page`) ||
-    host.origin === 'https://www.stage.adobe.com'
+    host.includes(`${SLD}.page`)
+    || host.origin === 'https://www.stage.adobe.com'
   ) {
     attributes.preview = 'on';
   }
@@ -881,10 +909,21 @@ export async function initService(force = false, attributes = {}) {
       commerce[attr] = value;
     }
   });
-  initService.promise =
-    initService.promise ??
-    polyfills().then(async () => {
+  initService.promise = initService.promise
+    ?? polyfills().then(async () => {
       await loadMasComponent(MAS_COMMERCE_SERVICE);
+
+      // Load fragment-client.js when maslibs is present
+      const fragmentClientUrl = getFragmentClientUrl();
+      if (fragmentClientUrl) {
+        const { loadScript: loadScriptUtil } = await import('../../utils/utils.js');
+        try {
+          await loadScriptUtil(fragmentClientUrl, 'module');
+        } catch (e) {
+          log?.error('Failed to load fragment-client.js:', e);
+        }
+      }
+
       const { language, locale, country } = getMiloLocaleSettings(miloLocale);
       let service = document.head.querySelector('mas-commerce-service');
       if (!service) {
@@ -909,7 +948,7 @@ export async function initService(force = false, attributes = {}) {
         if (typeof service.prefillWcsCache !== 'function') {
           service.prefillWcsCache = () => {
             log?.warn(
-              'prefillWcsCache not available in this version of commerce service'
+              'prefillWcsCache not available in this version of commerce service',
             );
           };
         }
@@ -919,7 +958,7 @@ export async function initService(force = false, attributes = {}) {
         });
       }
       if (country === 'AU') {
-        await loadStyle(`${getConfig().base}/blocks/merch/au-merch.css`);
+        loadStyle(`${getConfig().base}/blocks/merch/au-merch.css`);
       }
       return service;
     });
@@ -930,11 +969,10 @@ export async function getCommerceContext(el, params) {
   const wcsOsi = params.get('osi');
   if (!wcsOsi) return null;
   const perpetual = params.get('perp') === 'true' || undefined;
-  const promotionCode =
-    (params.get('promo') ??
-      params.get('promotionCode') ??
-      el.closest('[data-promotion-code]')?.dataset.promotionCode) ||
-    undefined;
+  const promotionCode = (params.get('promo')
+      ?? params.get('promotionCode')
+      ?? el.closest('[data-promotion-code]')?.dataset.promotionCode)
+    || undefined;
   return { promotionCode, perpetual, wcsOsi };
 }
 
@@ -956,8 +994,7 @@ export async function getCheckoutContext(el, params) {
   const { settings } = await initService();
   const { checkoutClientId } = settings;
   const checkoutMarketSegment = params.get('marketSegment');
-  const checkoutWorkflowStep =
-    params?.get('workflowStep') ?? settings.checkoutWorkflowStep;
+  const checkoutWorkflowStep = params?.get('workflowStep') ?? settings.checkoutWorkflowStep;
   const entitlement = params?.get('entitlement');
   const upgrade = params?.get('upgrade');
   const modal = params?.get('modal');
@@ -990,13 +1027,11 @@ export async function getPriceContext(el, params) {
   const displayRecurrence = params.get('term');
   const displayTax = params.get('tax');
   const displayPlanType = params.get('planType');
-  const displayAnnual =
-    (annualEnabled && params.get('annual') !== 'false') || undefined;
+  const displayAnnual = (annualEnabled && params.get('annual') !== 'false') || undefined;
   const forceTaxExclusive = params.get('exclusive');
   const alternativePrice = params.get('alt');
   // The PRICE_TEMPLATE_MAPPING supports legacy OST links
-  const template =
-    PRICE_TEMPLATE_MAPPING.get(params.get('type')) ?? PRICE_TEMPLATE_REGULAR;
+  const template = PRICE_TEMPLATE_MAPPING.get(params.get('type')) ?? PRICE_TEMPLATE_REGULAR;
   return {
     ...context,
     displayOldPrice,
@@ -1015,8 +1050,8 @@ let modalReopened = false;
 export function reopenModal(cta) {
   if (modalReopened) return;
   if (
-    cta &&
-    cta.getAttribute('data-modal-id') === window.location.hash.replace('#', '')
+    cta
+    && cta.getAttribute('data-modal-id') === window.location.hash.replace('#', '')
   ) {
     cta.click();
     modalReopened = true;
@@ -1029,9 +1064,8 @@ export function resetReopenStatus() {
 
 export async function buildCta(el, params) {
   const large = !!el.closest('.marquee');
-  const strong =
-    el.firstElementChild?.tagName === 'STRONG' ||
-    el.parentElement?.tagName === 'STRONG';
+  const strong = el.firstElementChild?.tagName === 'STRONG'
+    || el.parentElement?.tagName === 'STRONG';
   if (el.closest('.merch-offers.upgrade')) {
     params.append('entitlement', 'false');
   }
@@ -1090,8 +1124,7 @@ export async function buildCta(el, params) {
    */
   cta.onceSettled().then(() => {
     const prefix = getConfig()?.locale?.prefix;
-    if (!(prefix === '/kr' && cta.value[0]?.offerType === OFFER_TYPE_TRIAL))
-      return;
+    if (!(prefix === '/kr' && cta.value[0]?.offerType === OFFER_TYPE_TRIAL)) return;
     if (shouldAllowKrTrial(el, prefix)) {
       cta.classList.remove('hidden-osi-trial-link');
       return;
