@@ -21,6 +21,15 @@ merch-card[variant="simplified-pricing-express"] [slot="cta"] button {
     width: 100%;
 }
 
+merch-card[variant="simplified-pricing-express"] [slot="price"] span[is="inline-price"] {
+  font-size: var(--merch-card-simplified-pricing-express-price-font-size);
+  font-weight: var(--merch-card-simplified-pricing-express-price-font-weight);
+  line-height: var(--merch-card-simplified-pricing-express-price-line-height);
+}
+merch-card[variant="simplified-pricing-express"] [slot="price"] .price .price-currency-symbol {
+  font-size: var(--merch-card-simplified-pricing-express-price-font-size);
+}
+
 merch-card[variant="simplified-pricing-express"] [slot="cta"] sp-button[variant="accent"],
 merch-card[variant="simplified-pricing-express"] [slot="cta"] button.spectrum-Button--accent {
     background-color: var(--spectrum-indigo-900);
