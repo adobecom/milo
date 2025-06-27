@@ -1792,6 +1792,11 @@ merch-card[variant="simplified-pricing-express"] [slot="cta"] button {
     width: 100%;
 }
 
+merch-card[variant="simplified-pricing-express"] [slot="cta"] sp-button[variant="accent"],
+merch-card[variant="simplified-pricing-express"] [slot="cta"] button.spectrum-Button--accent {
+    background-color: var(--spectrum-indigo-900);
+}
+
 merch-card[variant="simplified-pricing-express"] [slot="footer"] sp-button[variant="accent"] {
     background-color: var(--spectrum-indigo-900);
 `;var Si={mnemonics:{size:"s"},title:{tag:"h3",slot:"heading-l",maxCount:250,withSuffix:!0},badge:{tag:"div",slot:"badge"},description:{tag:"div",slot:"body-s",maxCount:2e3,withSuffix:!1},prices:{tag:"p",slot:"price"},ctas:{slot:"cta",size:"L"},borderColor:{attribute:"border-color",specialValues:{gray:"--spectrum-gray-300",blue:"--spectrum-blue-400"}}},ct=class extends O{getGlobalCSS(){return Cc}get aemFragmentMapping(){return Si}renderLayout(){return x`
