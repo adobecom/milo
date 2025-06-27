@@ -1803,10 +1803,17 @@ merch-card[variant="simplified-pricing-express"] [slot="price"] span[is="inline-
   font-weight: var(--merch-card-simplified-pricing-express-price-font-weight);
   line-height: var(--merch-card-simplified-pricing-express-price-line-height);
 }
+
+merch-card[variant="simplified-pricing-express"] [slot="price"] .price p {
+  font-size: var(--merch-card-simplified-pricing-express-price-p-font-size);
+  font-weight: var(--merch-card-simplified-pricing-express-price-p-font-weight);
+  line-height: var(--merch-card-simplified-pricing-express-price-p-line-height);
+}
+
 merch-card[variant="simplified-pricing-express"] [slot="price"] .price .price-currency-symbol {
-  font-size: var(--merch-card-simplified-pricing-express-price-currency-font-size);
-  font-weight: var(--merch-card-simplified-pricing-express-price-currency-font-weight);
-  line-height: var(--merch-card-simplified-pricing-express-price-currency-line-height);
+  font-size: var(--merch-card-simplified-pricing-express-price-currency-symbol-font-size);
+  font-weight: var(--merch-card-simplified-pricing-express-price-currency-symbol-font-weight);
+  line-height: var(--merch-card-simplified-pricing-express-price-currency-symbol-line-height);
   color: var(--spectrum-gray-700);
 }
 
@@ -1842,6 +1849,12 @@ merch-card[variant="simplified-pricing-express"] [slot="footer"] sp-button[varia
             --merch-card-simplified-pricing-express-price-currency-font-size: 22px;
             --merch-card-simplified-pricing-express-price-currency-font-weight: 700;
             --merch-card-simplified-pricing-express-price-currency-line-height: 28.6px;
+            --merch-card-simplified-pricing-express-price-currency-symbol-font-size: 22px;
+            --merch-card-simplified-pricing-express-price-currency-symbol-font-weight: 700;
+            --merch-card-simplified-pricing-express-price-currency-symbol-line-height: 28.6px;
+            --merch-card-simplified-pricing-express-price-p-font-size: 14px;
+            --merch-card-simplified-pricing-express-price-p-font-weight: 400;
+            --merch-card-simplified-pricing-express-price-p-line-height: 15.6px;
             max-width: var(--merch-card-simplified-pricing-express-max-width);
             min-height: var(--merch-card-simplified-pricing-express-min-height);
             background: var(--spectrum-gray-50);
