@@ -923,6 +923,12 @@ a.static:active  {
   scroll-margin-top: var(--global-height-nav);
 }
 
+.temp-focus {
+  position: absolute;
+  left: -9999px;
+  top: -9999px;
+}
+
 @media screen and (min-width: 600px) {
   .global-navigation.has-breadcrumbs + main .section-anchor {
     scroll-margin-top: var(--feds-totalheight-nav);
