@@ -21,6 +21,22 @@ export function Checkout({ settings, providers }) {
             quantity: defaultQuantity,
             preselectPlan,
         } = settings;
+
+        let options = {
+          checkoutClientId,
+          checkoutWorkflowStep: defaultWorkflowStep,
+          country: defaultCountry,
+          language: defaultLanguage,
+          promotionCode: defaultPromotionCode,
+          quantity: defaultQuantity,
+          preselectPlan,
+        };
+
+        if (placeholder) {
+          for (const provider of providers.checkout) {
+              provider(placeholder, options);
+          }
+      }
         const {
             checkoutMarketSegment,
             checkoutWorkflowStep = defaultWorkflowStep,
@@ -36,9 +52,9 @@ export function Checkout({ settings, providers }) {
             wcsOsi,
             extraOptions,
             ...rest
-        } = Object.assign({}, placeholder?.dataset ?? {}, overrides ?? {});  
+        } = Object.assign(options, placeholder?.dataset ?? {}, overrides ?? {});  
         let workflowStep = toEnumeration(checkoutWorkflowStep, CheckoutWorkflowStep, Defaults.checkoutWorkflowStep);
-        const options = omitProperties({
+        options = omitProperties({
             ...rest,
             extraOptions,
             checkoutClientId,
@@ -55,11 +71,6 @@ export function Checkout({ settings, providers }) {
             wcsOsi: toOfferSelectorIds(wcsOsi),
             preselectPlan,
         });
-        if (placeholder) {
-            for (const provider of providers.checkout) {
-                provider(placeholder, options);
-            }
-        }
         return options;
     }
 
