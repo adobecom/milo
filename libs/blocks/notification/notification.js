@@ -175,21 +175,20 @@ function curtainCallback(el) {
   if (!document.querySelector('.dialog-modal') && firstFocusable) firstFocusable.focus();
 
   const handleKeyDown = (e) => {
-    if (e.key === 'Tab') {
-      if (e.shiftKey) {
-        if (document.activeElement === firstFocusable) {
-          e.preventDefault();
-          lastFocusable.focus();
-        }
-      } else if (document.activeElement === lastFocusable) {
-        e.preventDefault();
-        firstFocusable.focus();
-      }
+    if (e.key !== 'Tab') {
+      if (e.key === 'Escape') closeBanner(el);
+      return;
     }
 
-    if (e.key === 'Escape') {
-      el.dataset.keyboardUsedToClose = true;
-      closeBanner(el);
+    if (e.shiftKey && document.activeElement === firstFocusable) {
+      e.preventDefault();
+      lastFocusable.focus();
+      return;
+    }
+
+    if (!e.shiftKey && document.activeElement === lastFocusable) {
+      e.preventDefault();
+      firstFocusable.focus();
     }
   };
 
