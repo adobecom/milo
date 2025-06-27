@@ -166,7 +166,7 @@ function loadBreakpointThemes() {
   loadStyle(`${base}/styles/breakpoint-theme.css`);
 }
 
-export function getViewportOrder(viewport, content, previousViewportOrder) {
+export function getViewportOrder(viewport, content) {
   const els = [...content.children];
   const viewportObject = { 0: [] };
   els.forEach((el) => {
@@ -194,28 +194,25 @@ export function getViewportOrder(viewport, content, previousViewportOrder) {
   Object.keys(viewportObject).sort((a, b) => a - b).forEach((key) => {
     viewportOrder.push(...viewportObject[key]);
   });
-  const usePrevious = Object.keys(viewportObject).length === 1;
-  return usePrevious ? previousViewportOrder : viewportOrder;
+  return viewportOrder;
 }
 
 function handleViewportOrder(content) {
   const hasOrder = content.querySelector(':scope > div[class*="order-"]');
   if (!hasOrder) return;
 
-  const mobileOrder = [...content.children];
-  const tabletOrder = getViewportOrder('tablet', content, mobileOrder);
   const viewports = {
     mobile: {
       media: '(max-width: 599px)',
-      elements: mobileOrder,
+      elements: [...content.children],
     },
     tablet: {
       media: '(min-width: 600px) and (max-width: 1199px)',
-      elements: tabletOrder,
+      elements: getViewportOrder('tablet', content),
     },
     desktop: {
       media: '(min-width: 1200px)',
-      elements: getViewportOrder('desktop', content, tabletOrder),
+      elements: getViewportOrder('desktop', content),
     },
   };
 

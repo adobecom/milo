@@ -41,9 +41,8 @@ describe('Hero Marquee', () => {
     const orderMarquee = document.querySelector('#order-hero');
     orderMarquee.innerHTML = orderHero;
     const orderCopy = orderMarquee.querySelector('.copy');
-    const mobileOrder = [...orderCopy.children];
-    const tabletOrder = getViewportOrder('tablet', orderCopy, mobileOrder);
-    const desktopOrder = getViewportOrder('desktop', orderCopy, tabletOrder);
+    const tabletOrder = getViewportOrder('tablet', orderCopy);
+    const desktopOrder = getViewportOrder('desktop', orderCopy);
 
     expect(tabletOrder[0].classList.contains('main-copy')).to.be.true;
     expect(desktopOrder[0].classList.contains('main-copy')).to.be.true;
@@ -69,7 +68,7 @@ describe('Hero Marquee', () => {
     noOrderMarquee.innerHTML = noOrderHero;
     const noOrderCopy = noOrderMarquee.querySelector('.copy');
     const mobileOrder = [...noOrderCopy.children];
-    const tabletOrder = getViewportOrder('tablet', noOrderCopy, mobileOrder);
+    const tabletOrder = getViewportOrder('tablet', noOrderCopy);
     for (const [index, el] of tabletOrder.entries()) expect(el === mobileOrder[index]).to.be.true;
   });
 });
