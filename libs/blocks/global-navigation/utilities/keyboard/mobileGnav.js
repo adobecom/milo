@@ -117,6 +117,12 @@ const MobileGnav = {
         } else if (code === 'ArrowDown') {
           const nextLink = this.menuItemLinks[index + 1];
           if (nextLink) nextLink.focus();
+        } else if (code === 'Space') {
+          const popupTabs = document.querySelectorAll('.feds-nav-wrapper .feds-popup .tabs .tab');
+          setTimeout(() => {
+            const activeTab = [...popupTabs].find((currentTab) => currentTab.closest('.feds-dropdown--active') && currentTab.getAttribute('aria-selected') === 'true');
+            activeTab.focus();
+          }, 150);
         }
       });
     });
