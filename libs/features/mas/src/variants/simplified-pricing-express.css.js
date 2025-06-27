@@ -9,6 +9,11 @@ merch-card[variant="simplified-pricing-express"] {
     border-radius: 16px;
 }
 
+merch-card[variant="simplified-pricing-express"] [slot="body-s"] {
+    font-size: var(--consonant-merch-card-body-s-font-size);
+    line-height: var(--merch-card-simplified-pricing-express-body-s-line-height);
+}
+
 merch-card[variant="simplified-pricing-express"] [slot="cta"] {
     display: flex;
     flex-direction: row;

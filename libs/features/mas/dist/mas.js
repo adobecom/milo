@@ -1780,6 +1780,11 @@ merch-card[variant="simplified-pricing-express"] {
     border-radius: 16px;
 }
 
+merch-card[variant="simplified-pricing-express"] [slot="body-s"] {
+    font-size: var(--consonant-merch-card-body-s-font-size);
+    line-height: var(--merch-card-simplified-pricing-express-body-s-line-height);
+}
+
 merch-card[variant="simplified-pricing-express"] [slot="cta"] {
     display: flex;
     flex-direction: row;
@@ -1852,6 +1857,7 @@ merch-card[variant="simplified-pricing-express"] [slot="footer"] sp-button[varia
             --merch-card-simplified-pricing-express-price-currency-symbol-font-size: 22px;
             --merch-card-simplified-pricing-express-price-currency-symbol-font-weight: 700;
             --merch-card-simplified-pricing-express-price-currency-symbol-line-height: 28.6px;
+            --merch-card-simplified-pricing-express-body-s-line-height: 20.8px;
             --merch-card-simplified-pricing-express-price-p-font-size: 14px;
             --merch-card-simplified-pricing-express-price-p-font-weight: 400;
             --merch-card-simplified-pricing-express-price-p-line-height: 15.6px;
