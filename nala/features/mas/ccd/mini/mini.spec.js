@@ -9,13 +9,13 @@ module.exports = {
         fragment: '03a36f0f-3e5d-4881-ae6b-273c517c9d38',
         regularPrice: 'US$59.99/mo',
         promoPrice: undefined,
-        planTypeText: 'Annual, paid monthly.',
+        planTypeText: 'Annual, paid monthly',
         recurrenceText: '/mo',
         renewalText: undefined,
         promoDurationText: undefined,
         seeTerms: {
           text: 'See terms',
-          href: 'https://www.stage.adobe.com/offers/promo-terms.html?locale=en_US&country=US&offer_id=DDDCDEBA96799A274FA982669CA74623',
+          href: 'https://www.adobe.com/offers/promo-terms.html?locale=en_US&country=US&offer_id=DDDCDEBA96799A274FA982669CA74623',
         },
         primaryCta: {
           text: 'Buy now',
@@ -34,24 +34,24 @@ module.exports = {
       path: '/libs/features/mas/docs/ccd-mini.html',
       data: {
         fragment: 'df357350-95b2-47f2-844f-df2e491eecef',
-        regularPrice: 'US$59.99/mo',
+        regularPrice: 'US$34.49/mo',
         promoPrice: 'US$49.99/mo',
-        planTypeText: 'Annual, paid monthly.',
+        planTypeText: 'Monthly',
         recurrenceText: '/mo',
         renewalText:
-          'Renews automatically until cancelled. Renews at US$59.99/mo after 12 months.',
+          'Renews automatically until cancelled. Renews at US$34.49/mo after 12 months.',
         promoDurationText: 'First year only, Ends Mar 3.',
         seeTerms: {
           text: 'See terms',
-          href: 'https://www.stage.adobe.com/offers/promo-terms.html?locale=en_US&country=US&offer_id=DDDCDEBA96799A274FA982669CA74623&promotion_code=L_PROMO_10F',
+          href: 'https://www.adobe.com/offers/promo-terms.html?locale=en_US&country=US&offer_id=BD42B3D5BE2D389B3E6E7E4F30F65DE0&promotion_code=UMRM2MUSPr501YOC',
         },
         primaryCta: {
           text: 'Buy now',
-          href: 'https://commerce.adobe.com/store/segmentation?apc=L_PROMO_10F&cli=adobe_com&ctx=fp&co=US&lang=en&ms=COM&ot=BASE&cs=INDIVIDUAL&pa=PA-130',
+          href: 'https://commerce.adobe.com/store/segmentation?apc=UMRM2MUSPr501YOC&cli=adobe_com&ctx=fp&co=US&lang=en&ms=COM&ot=BASE&cs=INDIVIDUAL&pa=ppro_direct_individual',
         },
         secondaryCta: {
           text: 'Free trial',
-          href: 'https://commerce.adobe.com/store/segmentation?apc=L_PROMO_10F&cli=adobe_com&ctx=fp&co=US&lang=en&ms=COM&ot=BASE&cs=INDIVIDUAL&pa=PA-130',
+          href: 'https://commerce.adobe.com/store/segmentation?apc=UMRM2MUSPr501YOC&cli=adobe_com&ctx=fp&co=US&lang=en&ms=COM&ot=BASE&cs=INDIVIDUAL&pa=ppro_direct_individual',
         },
       },
       tags: '@mas @ccd-mini @smoke',
@@ -70,7 +70,7 @@ module.exports = {
         promoDurationText: undefined,
         seeTerms: {
           text: 'Voir les conditions',
-          href: 'https://www.stage.adobe.com/offers/promo-terms.html?locale=fr_FR&country=FR&offer_id=DDDCDEBA96799A274FA982669CA74623',
+          href: 'https://www.adobe.com/offers/promo-terms.html?locale=fr_FR&country=FR&offer_id=DDDCDEBA96799A274FA982669CA74623',
         },
         primaryCta: {
           text: 'S\'abonner',
@@ -90,7 +90,7 @@ module.exports = {
       data: {
         fragment: 'df357350-95b2-47f2-844f-df2e491eecef',
         regularPrice: '71,99 €/mois',
-        promoPrice: '59,99 €/mois',
+        promoPrice: '',
         planTypeText: 'Annual, paid monthly.', // TODO update once priceLiterals override is implemented
         recurrenceText: '/mois',
         renewalText:
@@ -98,15 +98,15 @@ module.exports = {
         promoDurationText: 'Première année seulement, se termine le 3 mars.',
         seeTerms: {
           text: 'Voir les conditions',
-          href: 'https://www.stage.adobe.com/offers/promo-terms.html?locale=fr_FR&country=FR&offer_id=DDDCDEBA96799A274FA982669CA74623&promotion_code=L_PROMO_10F',
+          href: 'https://www.adobe.com/offers/promo-terms.html?locale=fr_FR&country=FR&offer_id=BD42B3D5BE2D389B3E6E7E4F30F65DE0',
         },
         primaryCta: {
           text: 'S\'abonner',
-          href: 'https://commerce.adobe.com/store/segmentation?apc=L_PROMO_10F&cli=adobe_com&ctx=fp&co=FR&lang=fr&ms=COM&ot=BASE&cs=INDIVIDUAL&pa=PA-130',
+          href: 'https://commerce.adobe.com/store/segmentation?apc=UMRM2MUSPr501YOC&cli=adobe_com&ctx=fp&co=FR&lang=fr&ms=COM&ot=BASE&cs=INDIVIDUAL&pa=ppro_direct_individual',
         },
         secondaryCta: {
           text: 'Essai gratuit',
-          href: 'https://commerce.adobe.com/store/segmentation?apc=L_PROMO_10F&cli=adobe_com&ctx=fp&co=FR&lang=fr&ms=COM&ot=BASE&cs=INDIVIDUAL&pa=PA-130',
+          href: 'https://commerce.adobe.com/store/segmentation?apc=UMRM2MUSPr501YOC&cli=adobe_com&ctx=fp&co=FR&lang=fr&ms=COM&ot=BASE&cs=INDIVIDUAL&pa=ppro_direct_individual',
         },
       },
       tags: '@mas @ccd-mini @smoke',

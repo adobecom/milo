@@ -24,7 +24,18 @@ import { toOfferSelectorIds, toQuantity } from './utilities.js';
 
 export function Price({ literals, providers, settings }) {
     function collectPriceOptions(overrides, placeholder = null) {
-        const options = structuredClone(settings);
+        const {
+            country: defaultCountry,
+            language: defaultLanguage,
+            promotionCode: defaultPromotionCode,
+            env,
+        } = settings;
+        const options = {
+            country: defaultCountry,
+            language: defaultLanguage,
+            promotionCode: defaultPromotionCode,
+            env,
+        };
         if (placeholder) {
             for (const provider of providers.price) {
                 provider(placeholder, options);
@@ -40,7 +51,6 @@ export function Price({ literals, providers, settings }) {
             perpetual,
             displayAnnual,
             promotionCode,
-            quantity,
             alternativePrice,
             wcsOsi,
             ...rest
@@ -59,7 +69,6 @@ export function Price({ literals, providers, settings }) {
                 displayAnnual: toBoolean(displayAnnual),
                 promotionCode:
                     computePromoStatus(promotionCode).effectivePromoCode,
-                quantity: toQuantity(quantity, Defaults.quantity),
                 alternativePrice: toBoolean(alternativePrice),
                 wcsOsi: toOfferSelectorIds(wcsOsi),
             }),

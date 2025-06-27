@@ -20,6 +20,7 @@ export function Checkout({ settings, providers }) {
             promotionCode: defaultPromotionCode,
             quantity: defaultQuantity,
             preselectPlan,
+            env,
         } = settings;
 
         let options = {
@@ -30,6 +31,7 @@ export function Checkout({ settings, providers }) {
           promotionCode: defaultPromotionCode,
           quantity: defaultQuantity,
           preselectPlan,
+          env,
         };
 
         if (placeholder) {
