@@ -54,8 +54,6 @@ const closeSvg = `<svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" wid
   </defs>
 </svg>`;
 
-const focusableSelector = 'button, a[href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
-
 let iconographyLoaded = false;
 
 function getOpts(el) {
@@ -168,7 +166,9 @@ function curtainCallback(el) {
   document.body.classList.add('mobile-disable-scroll');
   el.insertAdjacentElement('afterend', curtain);
 
-  const focusableElements = [...el.querySelectorAll(focusableSelector)];
+  const focusableElements = [...el.querySelectorAll(
+    'button, a[href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
+  )];
   const firstFocusable = focusableElements[0];
   const lastFocusable = focusableElements[focusableElements.length - 1];
 
