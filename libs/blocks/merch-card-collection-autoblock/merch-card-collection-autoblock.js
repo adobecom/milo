@@ -1,5 +1,6 @@
 import { createTag, getConfig } from '../../utils/utils.js';
 import { initService, getOptions, MEP_SELECTOR, overrideOptions } from '../merch/merch.js';
+import { postProcessAutoblock } from '../merch/autoblock.js';
 import '../../deps/mas/merch-card.js';
 import '../../deps/mas/merch-quantity-select.js';
 
@@ -77,8 +78,16 @@ function getSidenav(collection) {
       const value = node.label.toLowerCase();
       const item = createTag('sp-sidenav-item', { label: node.label, value });
       if (node.icon) {
-        const icon = createTag('img', { src: node.icon, slot: 'icon', style: 'height: fit-content;' });
-        item.append(icon);
+        createTag('img', { src: node.icon, slot: 'icon', style: 'height: fit-content;' }, null, { parent: item });
+      }
+      if (node.iconLight || node.navigationLabel) {
+        const attributes = { class: 'selection' };
+        if (node.navigationLabel) attributes['data-selected-text'] = node.navigationLabel;
+        if (node.iconLight) {
+          attributes['data-light'] = node.iconLight;
+          attributes['data-dark'] = node.icon;
+        }
+        createTag('var', attributes, null, { parent: item });
       }
       parent.append(item);
       if (node.collections) {
@@ -146,6 +155,7 @@ export async function createCollection(el, options) {
     }
   }
 
+  postProcessAutoblock(collection);
   collection.requestUpdate();
 }
 

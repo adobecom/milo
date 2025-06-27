@@ -61,3 +61,33 @@ describe('resolveOfferSelectors', () => {
         expect(fetch.callCount).to.equal(2);
     });
 });
+
+describe('prefillWcsCache', () => {
+    it('fills WCS cache with artifacts', async () => {
+        await mockFetch(withWcs);
+        const client = Wcs({
+            settings: {
+                ...Defaults,
+                locale: 'en_US',
+            },
+        });
+        client.prefillWcsCache({
+            prod: {
+                "Mutn1LYoGojkrcMdCLO7LQlx1FyTHw27ETsfLv0h8DQ-us-mult":[
+                    { "foo": "bar" }
+                ],
+                "FWEdmk_LYpoGnCR0gQMaS5Rbq9a5vFbVFoNaRT0m7NU-us-mult-nicopromo":[
+                    { "baz": "qux" }
+                ]
+            }
+        });
+
+        const [[ offer1 ]] = await Promise.all(await client.resolveOfferSelectors( { country: 'US', language: 'en', wcsOsi: ['Mutn1LYoGojkrcMdCLO7LQlx1FyTHw27ETsfLv0h8DQ'] } ));
+        expect(fetch.callCount).to.equal(0);
+        expect(offer1).to.deep.equal({ foo: 'bar' , planType: 'Value is not an offer' });
+        const [[ offer2 ]] = await Promise.all(client.resolveOfferSelectors( { country: 'US', language: 'en', promotionCode: 'nicopromo', wcsOsi: ['FWEdmk_LYpoGnCR0gQMaS5Rbq9a5vFbVFoNaRT0m7NU'] } ));
+        expect(fetch.callCount).to.equal(0);
+        expect(offer2).to.deep.equal({ baz: 'qux', planType: 'Value is not an offer' });
+    });
+});
+

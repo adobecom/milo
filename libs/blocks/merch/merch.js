@@ -1,6 +1,6 @@
 import {
   createTag, getConfig, loadArea, loadScript, loadStyle, localizeLink, SLD, getMetadata,
-  loadLink, shouldAllowKrTrial,
+  shouldAllowKrTrial,
 } from '../../utils/utils.js';
 import { replaceKey } from '../../features/placeholders.js';
 
@@ -160,7 +160,7 @@ const GeoMap = {
 };
 
 /**
- * Used when 3in1 modals are configured with ms=e or cs=t extra paramter, but 3in1 is disabled.
+ * Used when 3in1 modals are configured with ms=e or cs=t extra parameter, but 3in1 is disabled.
  * Dexter modals should deeplink to plan=edu or plan=team tabs.
  * @type {Record<string, string>}
  */
@@ -316,7 +316,7 @@ export function getMasBase(hostname, maslibs) {
 
 function getCommercePreloadUrl() {
   const { env } = getConfig();
-  if (env === 'prod') {
+  if (env.name === 'prod') {
     return 'https://commerce.adobe.com/store/iframe/preload.js';
   }
   return 'https://commerce-stg.adobe.com/store/iframe/preload.js';
@@ -622,7 +622,11 @@ export async function getModalAction(offers, options, el) {
     // The script can preload more, based on clientId, but for the ones in use
     // ('mini-plans', 'creative') there is no difference, so we can just use either one.
     const client = 'creative';
-    loadLink(`${baseUrl}?cli=${client}`, 'text/javascript', { id: 'ucv3-preload-script', as: 'script', crossorigin: 'anonymous', rel: 'preload' });
+    window.milo.deferredPromise.then(() => {
+      setTimeout(() => {
+        loadScript(`${baseUrl}?cli=${client}`, 'text/javascript', { mode: 'defer', id: 'ucv3-preload-script' });
+      }, 1000);
+    });
   }
 
   const [{
@@ -755,7 +759,6 @@ export async function getCheckoutContext(el, params) {
   const { settings } = await initService();
   const { checkoutClientId } = settings;
   const checkoutMarketSegment = params.get('marketSegment');
-  const checkoutWorkflow = params.get('workflow') ?? settings.checkoutWorkflow;
   const checkoutWorkflowStep = params?.get('workflowStep') ?? settings.checkoutWorkflowStep;
   const entitlement = params?.get('entitlement');
   const upgrade = params?.get('upgrade');
@@ -771,7 +774,6 @@ export async function getCheckoutContext(el, params) {
   return {
     ...context,
     checkoutClientId,
-    checkoutWorkflow,
     checkoutWorkflowStep,
     checkoutMarketSegment,
     entitlement,
