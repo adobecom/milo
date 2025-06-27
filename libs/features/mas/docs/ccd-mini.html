@@ -18,9 +18,9 @@
     const urlParams = new URLSearchParams(window.location.search);
     const country = urlParams.get('country');
     const language = urlParams.get('language');
-    if (country && language) {
-      document.querySelector(`a[value="${country},${language}"]`).classList.add('active');
-    }
+    let activeLocale = document.querySelector(`a[value="${country},${language}"]`);
+    activeLocale ??= document.querySelector('a.locale-toggle');
+    activeLocale.classList.add('active');
   </script>
   <script type="module" src="./mas-sidenav.js"></script>
   <style>
