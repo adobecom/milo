@@ -3,7 +3,7 @@ export const AXE_CORE_CONFIG = {
   exclude: [['.preflight'], ['aem-sidekick'], ['header'], ['.global-navigation'], ['footer'], ['.global-footer'], ['.mep-preview-overlay'], ['preflight-decoration']],
   runOnly: {
     type: 'tag',
-    values: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'],
+    values: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22a', 'wcag22aa'],
   },
 };
 
