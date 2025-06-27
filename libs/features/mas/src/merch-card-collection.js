@@ -263,9 +263,9 @@ export class MerchCardCollection extends LitElement {
         }
     }
 
-    attachSidenav(sidenav) {
+    attachSidenav(sidenav, append = true) {
         if (!sidenav) return;
-        this.parentElement.insertBefore(sidenav, this.parentElement.firstChild);
+        if (append) this.parentElement.insertBefore(sidenav, this.parentElement.firstChild);
         this.sidenav = sidenav;
         this.dispatchEvent(new CustomEvent(EVENT_MERCH_CARD_COLLECTION_SIDENAV_ATTACHED));
     }
