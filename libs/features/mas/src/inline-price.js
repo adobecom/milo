@@ -1,4 +1,4 @@
-import { STATE_FAILED } from './constants.js';
+import { STATE_FAILED, FF_DEFAULTS } from './constants.js';
 import {
     createMasElement,
     updateMasElement,
@@ -6,7 +6,6 @@ import {
 } from './mas-element.js';
 import { selectOffers, getService } from './utilities.js';
 import { Defaults } from './defaults.js';
-import { FF_DEFAULTS } from './constants.js';
 import { getParameter } from '@dexter/tacocat-core';
 
 const INDIVIDUAL = 'INDIVIDUAL_COM';
@@ -291,8 +290,7 @@ export class InlinePrice extends HTMLSpanElement {
         const options = service.collectPriceOptions(overrides, this);
         if (!options.wcsOsi.length) return false;
 
-        const ffDefaults = getParameter(FF_DEFAULTS) === 'on';
-        if (ffDefaults && (!this.dataset.displayTax || !this.dataset.forceTaxExclusive)) {
+        if (service.featureFlags[FF_DEFAULTS] && (!this.dataset.displayTax || !this.dataset.forceTaxExclusive)) {
             const [offerSelectors] = await service.resolveOfferSelectors(options);
             const offers = selectOffers(await offerSelectors, options);
             if (offers?.length) {
