@@ -193,7 +193,7 @@ describe('Three-in-One Modal', () => {
   });
 
   describe('handleTimeoutError', () => {
-    it.only('should show error message on timeout', () => {
+    it('should show error message on timeout', () => {
       const miloIframe = document.querySelector('.milo-iframe');
       const iframe = document.querySelector('iframe');
       const theme = document.querySelector('sp-theme');

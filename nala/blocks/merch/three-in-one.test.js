@@ -66,6 +66,11 @@ test.describe('ThreeInOne Block test suite', () => {
       const modal = threeInOne.getModal();
       const iframe = await modal.locator('iframe');
       await expect(iframe).toHaveAttribute('src', iframeSrc);
+      await page.goto('https://www.adobe.com');
+      await page.goBack();
+      const newModal = threeInOne.getModal();
+      await expect(newModal).toBeVisible();
+      await threeInOne.closeModal();
     });
   });
 
@@ -85,6 +90,11 @@ test.describe('ThreeInOne Block test suite', () => {
       const modal = threeInOne.getModal();
       const iframe = await modal.locator('iframe');
       await expect(iframe).toHaveAttribute('src', iframeSrc);
+      await page.goto('https://www.adobe.com');
+      await page.goBack();
+      const newModal = threeInOne.getModal();
+      await expect(newModal).toBeVisible();
+      await threeInOne.closeModal();
     });
   });
 });

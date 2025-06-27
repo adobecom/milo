@@ -567,6 +567,19 @@ async function openExternalModal(url, getModal, extraOptions, el) {
 
 const isInternalModal = (url) => /\/fragments\//.test(url);
 
+export const changeHashAndSetPopstateListener = (hash) => {
+  if (!hash) return;
+  window.location.hash = hash;
+  if (!window.hasPopstateListener) {
+    window.addEventListener('popstate', () => {
+      const modalId = window.location.hash.replace('#', '');
+      if (!modalId || modalId.includes('=')) return;
+      document.querySelector(`[data-modal-id="${modalId}"]`)?.click();
+    });
+    window.hasPopstateListener = true;
+  }
+};
+
 export async function openModal(e, url, offerType, hash, extraOptions, el) {
   e.preventDefault();
   e.stopImmediatePropagation();
@@ -574,13 +587,7 @@ export async function openModal(e, url, offerType, hash, extraOptions, el) {
   await import('../modal/modal.merch.js');
   const offerTypeClass = offerType === OFFER_TYPE_TRIAL ? 'twp' : 'crm';
   let modal;
-  if (hash) {
-    const prevHash = window.location.hash.replace('#', '') === hash ? '' : window.location.hash;
-    window.location.hash = hash;
-    window.addEventListener('milo:modal:closed', () => {
-      window.history.pushState({}, document.title, prevHash !== '' ? `#${prevHash}` : `${window.location.pathname}${window.location.search}`);
-    }, { once: true });
-  }
+  changeHashAndSetPopstateListener(hash);
 
   if (el?.isOpen3in1Modal) {
     const { default: openThreeInOneModal, handle3in1IFrameEvents } = await import('./three-in-one.js');
@@ -811,19 +818,6 @@ export async function getPriceContext(el, params) {
   };
 }
 
-let modalReopened = false;
-export function reopenModal(cta) {
-  if (modalReopened) return;
-  if (cta && cta.getAttribute('data-modal-id') === window.location.hash.replace('#', '')) {
-    cta.click();
-    modalReopened = true;
-  }
-}
-
-export function resetReopenStatus() {
-  modalReopened = false;
-}
-
 export async function buildCta(el, params) {
   const large = !!el.closest('.marquee');
   const strong = el.firstElementChild?.tagName === 'STRONG' || el.parentElement?.tagName === 'STRONG';
@@ -846,8 +840,9 @@ export async function buildCta(el, params) {
     cta.classList.add(LOADING_ENTITLEMENTS);
     cta.onceSettled().finally(() => {
       cta.classList.remove(LOADING_ENTITLEMENTS);
-      // after opening a modal, navigating to another page and back we need to reopen the modal
-      reopenModal(cta);
+      if (cta.getAttribute('data-modal-id') === window.location.hash.replace('#', '')) {
+        cta.click();
+      }
     });
   }
 
