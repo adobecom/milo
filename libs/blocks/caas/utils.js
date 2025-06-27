@@ -657,8 +657,8 @@ export const stageMapToCaasTransforms = (config) => {
  * @returns {string|null} The experience ID or null if not found
  */
 export const getGrayboxExperienceId = (
-  hostname = window.location.hostname,
-  pathname = window.location.pathname,
+  hostname = window.location?.hostname || '',
+  pathname = window.location?.pathname || '',
 ) => {
   // Only allow trusted Adobe graybox domains
   const isAdobeGraybox = /^[^.]+\.([a-z]+-)?graybox\.adobe\.com$/.test(hostname);
@@ -707,7 +707,7 @@ export const getConfig = async (originalState, strs = {}) => {
   const complexQuery = buildComplexQuery(state.andLogicTags, state.orLogicTags, state.notLogicTags);
 
   const caasRequestHeaders = addFloodgateHeader(state);
-  
+
   const grayboxExperienceId = getGrayboxExperienceId();
   const grayboxExperienceParam = grayboxExperienceId ? `&gbExperienceID=${grayboxExperienceId}` : '';
 
