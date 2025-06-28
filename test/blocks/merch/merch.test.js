@@ -10,6 +10,7 @@ import merch, {
   PRICE_TEMPLATE_STRIKETHROUGH,
   PRICE_TEMPLATE_ANNUAL,
   buildCta,
+  changeHashAndSetPopstateListener,
   getCheckoutContext,
   initService,
   fetchCheckoutLinkConfigs,
@@ -23,8 +24,6 @@ import merch, {
   getOptions,
   appendDexterParameters,
   getMiloLocaleSettings,
-  reopenModal,
-  resetReopenStatus,
   setCtaHash,
   openModal,
   PRICE_TEMPLATE_LEGAL,
@@ -481,78 +480,6 @@ describe('Merch Block', () => {
       const params = new URLSearchParams();
       expect(await buildCta(el, params)).to.be.null;
     });
-
-    describe('reopenModal', () => {
-      it('clicks the CTA if hashes match', async () => {
-        const prevHash = window.location.hash;
-        window.location.hash = '#try-photoshop';
-        const cta = document.createElement('a');
-        cta.setAttribute('data-modal-id', 'try-photoshop');
-        const clickSpy = sinon.spy(cta, 'click');
-        reopenModal(cta);
-        expect(clickSpy.called).to.be.true;
-        window.location.hash = prevHash;
-        resetReopenStatus();
-      });
-
-      it('only reopens one modal if multiples hashes match', async () => {
-        const prevHash = window.location.hash;
-        window.location.hash = '#try-photoshop';
-
-        const cta1 = document.createElement('a');
-        cta1.setAttribute('data-modal-id', 'try-photoshop');
-        const clickSpy1 = sinon.spy(cta1, 'click');
-
-        const cta2 = document.createElement('a');
-        cta1.setAttribute('data-modal-id', 'try-photoshop');
-        const clickSpy2 = sinon.spy(cta2, 'click');
-
-        reopenModal(cta1);
-        reopenModal(cta2);
-
-        expect(clickSpy1.called).to.be.true;
-        expect(clickSpy2.called).to.be.false;
-
-        window.location.hash = prevHash;
-        resetReopenStatus();
-      });
-    });
-
-    describe('openModal', () => {
-      it('sets the new hash and event listener to restore the hash on close', async () => {
-        const prevHash = window.location.hash;
-        await openModal(new CustomEvent('test'), 'https://www.adobe.com/mini-plans/creativecloud.html?mid=ft&web=1', 'TRIAL', 'try-photoshop');
-        expect(window.location.hash).to.equal('#try-photoshop');
-        const modalCloseEvent = new CustomEvent('milo:modal:closed');
-        window.dispatchEvent(modalCloseEvent);
-        expect(window.location.hash).to.equal(prevHash);
-        document.body.querySelector('.dialog-modal').remove();
-        window.location.hash = prevHash;
-      });
-
-      it('opens the 3-in-1 modal', async () => {
-        const checkoutLink = document.createElement('a');
-        checkoutLink.setAttribute('is', 'checkout-link');
-        checkoutLink.setAttribute('data-checkout-workflow', 'UCv3');
-        checkoutLink.setAttribute('data-checkout-workflow-step', 'segmentation');
-        checkoutLink.setAttribute('data-modal', 'true');
-        checkoutLink.setAttribute('data-quantity', '1');
-        checkoutLink.setAttribute('data-wcs-osi', 'L2C9cKHNNDaFtBVB6GVsyNI88RlyimSlzVfkMM2gH4A');
-        checkoutLink.setAttribute('data-extra-options', '{}');
-        checkoutLink.setAttribute('class', 'con-button placeholder-resolved');
-        checkoutLink.setAttribute('href', 'https://commerce.adobe.com/store/segmentation?ms=COM&ot=TRIAL&pa=phsp_direct_individual&cli=adobe_com&ctx=if&co=US&lang=en');
-        checkoutLink.setAttribute('daa-ll', 'Free trial-1--');
-        checkoutLink.setAttribute('data-modal-id', 'mini-plans-web-cta-photoshop-card');
-        checkoutLink.setAttribute('data-modal-type', 'twp');
-        Object.defineProperty(checkoutLink, 'isOpen3in1Modal', { get: () => true });
-        await openModal(new CustomEvent('test'), 'https://www.adobe.com/mini-plans/creativecloud.html?mid=ft&web=1', 'TRIAL', 'try-photoshop', {}, checkoutLink);
-        const threeInOneModal = document.querySelector('.dialog-modal.three-in-one');
-        expect(threeInOneModal).to.exist;
-        const iFrame = document.querySelector('.dialog-modal.three-in-one iframe');
-        expect(iFrame.src).to.equal('https://commerce.adobe.com/store/segmentation?ms=COM&ot=TRIAL&pa=phsp_direct_individual&cli=adobe_com&ctx=if&co=US&lang=en');
-        threeInOneModal.remove();
-      });
-    });
   });
 
   describe('Download flow', () => {
@@ -657,6 +584,79 @@ describe('Merch Block', () => {
       const sourceCta = await merch(document.querySelector('.merch.cta.upgrade-source'));
       await sourceCta.onceSettled();
       expect(sourceCta.textContent).to.equal('Upgrade Now');
+    });
+  });
+
+  describe('openModal', () => {
+    it('sets the new hash when it is passed as argument, and sets the popstate listener', async () => {
+      const prevHash = window.location.hash;
+      const addEventListenerSpy = sinon.spy(window, 'addEventListener');
+      delete window.hasPopstateListener;
+      await openModal(new CustomEvent('test'), 'https://www.adobe.com/mini-plans/creativecloud.html?mid=ft&web=1', 'TRIAL', 'try-photoshop');
+      expect(window.location.hash).to.equal('#try-photoshop');
+      expect(addEventListenerSpy.calledWith('popstate')).to.be.true;
+      expect(window.hasPopstateListener).to.equal(true);
+      delete window.hasPopstateListener;
+      document.body.querySelector('.dialog-modal').remove();
+      window.location.hash = prevHash;
+    });
+
+    it('opens the 3-in-1 modal', async () => {
+      const prevHash = window.location.hash;
+      const checkoutLink = document.createElement('a');
+      checkoutLink.setAttribute('is', 'checkout-link');
+      checkoutLink.setAttribute('data-checkout-workflow', 'UCv3');
+      checkoutLink.setAttribute('data-checkout-workflow-step', 'segmentation');
+      checkoutLink.setAttribute('data-modal', 'true');
+      checkoutLink.setAttribute('data-quantity', '1');
+      checkoutLink.setAttribute('data-wcs-osi', 'L2C9cKHNNDaFtBVB6GVsyNI88RlyimSlzVfkMM2gH4A');
+      checkoutLink.setAttribute('data-extra-options', '{}');
+      checkoutLink.setAttribute('class', 'con-button placeholder-resolved');
+      checkoutLink.setAttribute('href', 'https://commerce.adobe.com/store/segmentation?ms=COM&ot=TRIAL&pa=phsp_direct_individual&cli=adobe_com&ctx=if&co=US&lang=en');
+      checkoutLink.setAttribute('daa-ll', 'Free trial-1--');
+      checkoutLink.setAttribute('data-modal-id', 'mini-plans-web-cta-photoshop-card');
+      checkoutLink.setAttribute('data-modal-type', 'twp');
+      Object.defineProperty(checkoutLink, 'isOpen3in1Modal', { get: () => true });
+      await openModal(new CustomEvent('test'), 'https://www.adobe.com/mini-plans/creativecloud.html?mid=ft&web=1', 'TRIAL', 'try-photoshop', {}, checkoutLink);
+      const threeInOneModal = document.querySelector('.dialog-modal.three-in-one');
+      expect(threeInOneModal).to.exist;
+      const iFrame = document.querySelector('.dialog-modal.three-in-one iframe');
+      expect(iFrame.src).to.equal('https://commerce.adobe.com/store/segmentation?ms=COM&ot=TRIAL&pa=phsp_direct_individual&cli=adobe_com&ctx=if&co=US&lang=en');
+      threeInOneModal.remove();
+      window.location.hash = prevHash;
+      delete window.hasPopstateListener;
+    });
+  });
+
+  describe('changeHashAndSetPopstateListener', () => {
+    it('does nothing if hash is not passed', async () => {
+      const prevHash = window.location.hash;
+      changeHashAndSetPopstateListener();
+      expect(window.location.hash).to.equal(prevHash);
+      expect(window.hasPopstateListener).to.be.undefined;
+    });
+
+    it('sets the new hash and popstate listener', async () => {
+      const prevHash = window.location.hash;
+      const modalId = 'mini-plans-web-cta-acrobat-pro-card';
+      const cta = document.createElement('a');
+      cta.setAttribute('data-modal-id', modalId);
+      const clickSpy = sinon.spy(cta, 'click');
+      document.body.appendChild(cta);
+
+      changeHashAndSetPopstateListener(modalId);
+
+      expect(window.location.hash).to.equal(`#${modalId}`);
+      expect(window.hasPopstateListener).to.equal(true);
+
+      window.location.href = 'https://www.adobe.com';
+      window.history.back();
+      expect(window.location.hash).to.equal(`#${modalId}`);
+      expect(clickSpy.called).to.be.true;
+
+      cta.remove();
+      window.location.hash = prevHash;
+      delete window.hasPopstateListener;
     });
   });
 
