@@ -35,6 +35,76 @@ export const fetchIcons = (config) => new Promise(async (resolve) => {
 });
 
 let tooltipListenersAdded = false;
+
+function setTooltipPosition(tooltips) {
+  const positionClasses = ['top', 'bottom', 'right', 'left'];
+  const isRtl = document.documentElement.dir === 'rtl';
+  const viewportWidth = window.innerWidth;
+  const tooltipMaxWidth = viewportWidth <= 600 ? 200 : 160;
+  const tooltipMargin = 12;
+  const headerHeight = 64;
+
+  tooltips.forEach((tooltip) => {
+    const currentPosition = positionClasses.find((cls) => tooltip.classList.contains(cls));
+    if (!tooltip.dataset.originalPosition
+      && currentPosition) tooltip.dataset.originalPosition = currentPosition;
+
+    const rect = tooltip.getBoundingClientRect();
+    const { originalPosition } = tooltip.dataset;
+    const isVerticalPosition = originalPosition === 'top' || originalPosition === 'bottom';
+    const effectiveMaxWidth = isVerticalPosition ? tooltipMaxWidth / 2 : tooltipMaxWidth;
+    const willOverflowRight = rect.right + effectiveMaxWidth + tooltipMargin > viewportWidth;
+    const willOverflowLeft = rect.left - effectiveMaxWidth - tooltipMargin < 0;
+    const topMargin = originalPosition === 'top' ? tooltipMargin : 0;
+    const tooltipHeight = rect.height;
+    const effectiveHeight = originalPosition === 'top' ? tooltipHeight + topMargin : tooltipHeight / 2;
+    const willCutoffTop = rect.top - effectiveHeight < headerHeight;
+
+    if (originalPosition !== currentPosition) {
+      let wouldOverflow = false;
+      if (originalPosition === 'right') {
+        wouldOverflow = willOverflowRight || willCutoffTop;
+      } else if (originalPosition === 'left') {
+        wouldOverflow = willOverflowLeft || willCutoffTop;
+      } else if (originalPosition === 'top') {
+        wouldOverflow = willCutoffTop || willOverflowRight || willOverflowLeft;
+      } else if (originalPosition === 'bottom') {
+        wouldOverflow = willOverflowRight || willOverflowLeft;
+      }
+      if (!wouldOverflow) {
+        tooltip.classList.remove(...positionClasses);
+        tooltip.classList.add(originalPosition);
+        return;
+      }
+    }
+
+    if (willOverflowRight && willCutoffTop) {
+      tooltip.classList.remove(...positionClasses);
+      tooltip.classList.add('left');
+      return;
+    }
+
+    if (willOverflowLeft && willCutoffTop) {
+      tooltip.classList.remove(...positionClasses);
+      tooltip.classList.add('right');
+      return;
+    }
+
+    if (willCutoffTop && (originalPosition === 'top' || originalPosition === 'left' || originalPosition === 'right')) {
+      tooltip.classList.remove(...positionClasses);
+      tooltip.classList.add('bottom');
+      return;
+    }
+
+    const shouldPositionLeft = isRtl ? willOverflowLeft : willOverflowRight;
+    const shouldPositionRight = isRtl ? willOverflowRight : willOverflowLeft;
+    if (shouldPositionLeft || shouldPositionRight) {
+      tooltip.classList.remove(...positionClasses);
+      tooltip.classList.add(shouldPositionLeft ? 'left' : 'right');
+    }
+  });
+}
+
 function addTooltipListeners() {
   tooltipListenersAdded = true;
 
@@ -44,6 +114,7 @@ function addTooltipListeners() {
       if (!isTooltip) return;
 
       if (['mouseenter', 'focus'].includes(eventType)) {
+        setTooltipPosition([event.target]);
         event.target.classList.remove('hide-tooltip');
       } else if (['mouseleave', 'blur'].includes(eventType)
         || (eventType === 'keydown' && event.key === 'Escape')) {
