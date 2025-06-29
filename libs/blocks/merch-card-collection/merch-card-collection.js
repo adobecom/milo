@@ -19,6 +19,8 @@ const LITERAL_SLOTS = [
   'noResultText',
   'resultText',
   'resultsText',
+  'resultMobileText',
+  'resultsMobileText',
   'searchResultText',
   'searchResultsText',
   'searchResultMobileText',
@@ -313,6 +315,7 @@ export default async function init(el) {
         slot.setAttribute('slot', LITERAL_SLOTS[index]);
         index += 1;
       }
+      slot.setAttribute('placeholder', '');
       literalSlots.push(slot);
     }
   }
@@ -320,6 +323,7 @@ export default async function init(el) {
   await merchCardCollectionDep;
   performance.mark('merch-card-collection-render:start');
   const merchCardCollection = createTag('merch-card-collection', attributes);
+  merchCardCollection.variant = type;
   el.replaceWith(merchCardCollection);
   if (literalSlots.length > 0) {
     merchCardCollection.append(...literalSlots);

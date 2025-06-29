@@ -128,31 +128,16 @@ export async function createCollection(el, options) {
     attributes = { overrides };
   }
   const collection = createTag('merch-card-collection', attributes, aemFragment);
-  let container = collection;
-  if (options.sidenav) {
-    container = createTag('div', null, collection);
-  }
+  const container = createTag('div', null, collection);
   el.replaceWith(container);
   await checkReady(collection);
 
-  container.classList.add(`${collection.variant}-container`);
-
-  /* Placeholders */
-  const placeholders = collection.data?.placeholders || {};
-  for (const key of Object.keys(placeholders)) {
-    const value = placeholders[key];
-    const tag = value.includes('<p>') ? 'div' : 'p';
-    const placeholder = createTag(tag, { slot: key }, value);
-    collection.append(placeholder);
-  }
+  container.classList.add('collection-container', collection.variant);
 
   /* Sidenav */
   if (options.sidenav) {
     const sidenav = getSidenav(collection);
-    if (sidenav) {
-      container.insertBefore(sidenav, collection);
-      collection.sidenav = sidenav;
-    }
+    collection.attachSidenav(sidenav);
   }
 
   postProcessAutoblock(collection);

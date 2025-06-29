@@ -6,6 +6,7 @@ import './merch-sidenav-list.js';
 import './merch-sidenav-checkbox-group.js';
 import { SPECTRUM_MOBILE_LANDSCAPE, TABLET_DOWN } from '../media.js';
 import { disableBodyScroll, enableBodyScroll } from '../bodyScrollLock.js';
+import { EVENT_MERCH_SIDENAV_SELECT } from '../constants.js';
 
 export class MerchSideNav extends LitElement {
     static properties = {
@@ -20,6 +21,17 @@ export class MerchSideNav extends LitElement {
     constructor() {
         super();
         this.modal = false;
+        this.closeModal = this.closeModal.bind(this);
+    }
+
+    connectedCallback() {
+        super.connectedCallback();
+        this.addEventListener(EVENT_MERCH_SIDENAV_SELECT, this.closeModal)
+    }
+
+    disconnectedCallback() {
+        super.disconnectedCallback();
+        this.removeEventListener(EVENT_MERCH_SIDENAV_SELECT, this.closeModal)
     }
 
     static styles = [
