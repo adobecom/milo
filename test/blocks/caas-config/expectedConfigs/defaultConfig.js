@@ -28,6 +28,8 @@ const defaultConfig = {
       onErrorDescription:
         'Please try reloading the page or try coming back to the page another time.',
       titleHeadingLevel: 'h3',
+      nextCards: 'Next Cards',
+      prevCards: 'Previous Cards',
     },
     detailsTextOption: 'default',
     setCardBorders: false,
