@@ -77,6 +77,18 @@ export const loadAriaAutomation = async () => {
   addAriaLabels();
 };
 
+export const addRUMCampaignTrackingParameters = (usp, { sampleRUM }) => {
+  [
+    { key: 'sdid', utmKey: 'utm_campaign' },
+    { key: 'mv', utmKey: 'utm_source' },
+    { key: 'mv2', utmKey: 'utm_medium' },
+  ].forEach(({ key, utmKey }) => {
+    const val = usp.get(key);
+    if (!val || (key === 'sdid' && val.length > 8)) return;
+    sampleRUM('utm', { source: utmKey, target: val });
+  });
+};
+
 /**
  * Executes everything that happens a lot later, without impacting the user experience.
  */
@@ -100,7 +112,11 @@ const loadDelayed = ([
     } else {
       resolve(null);
     }
-    import('../utils/samplerum.js').then(({ sampleRUM }) => sampleRUM());
+    import('../utils/samplerum.js').then(({ sampleRUM }) => {
+      sampleRUM();
+      const usp = new URLSearchParams(window.location.search);
+      addRUMCampaignTrackingParameters(usp, { sampleRUM });
+    });
   }, DELAY);
 });
 
