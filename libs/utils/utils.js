@@ -1387,6 +1387,42 @@ export function enablePersonalizationV2() {
   return !!enablePersV2 && isSignedOut();
 }
 
+export function getCookie(key) {
+  const cookie = document.cookie.split(';')
+    .map((x) => decodeURIComponent(x.trim()).split(/=(.*)/s))
+    .find(([k]) => k === key);
+  return cookie ? cookie[1] : null;
+}
+export async function getSpectraLOB(lastVisitedPage, config = getConfig()) {
+  const getECID = getCookie('AMCV_9E1005A551ED61CA0A490D45@AdobeOrg');
+  if (!getECID) return false;
+  const [, ECID] = getECID.split('|');
+  const apiDomain = config?.env.name === 'prod' ? '' : '-stage';
+  let apiUrl = `https://cchome${apiDomain}.adobe.io/int/v1/aep/events/webpage?ecid=${ECID}`;
+  if (lastVisitedPage) {
+    const newUrl = new URL(lastVisitedPage);
+    const refWithoutParams = `${newUrl.origin}${newUrl.pathname}`;
+    apiUrl = `${apiUrl}&lastVisitedPage=${refWithoutParams}`;
+  }
+
+  try {
+    const rawResponse = await fetch(apiUrl, {
+      method: 'GET',
+      headers: {
+        'x-api-key': 'MarketingTech',
+        'Content-Type': 'application/json',
+      },
+      body: null,
+    });
+    const content = await rawResponse.json();
+    return content.modelLineOfBusiness?.toLowerCase();
+  } catch (e) {
+    if (e.name === 'TimeoutError') window.lana?.log('Spectra Timeout'); // Abort signal
+    else window.lana?.log(e.reason || e.error || e.message, { errorType: 'i' });
+    return false;
+  }
+}
+
 async function checkForPageMods() {
   const {
     mep: mepParam,
@@ -1396,6 +1432,7 @@ async function checkForPageMods() {
   } = Object.fromEntries(PAGE_URL.searchParams);
   let targetInteractionPromise = null;
   let countryIPPromise = null;
+  let userLOBPromise = null;
 
   let calculatedTimeout = null;
   if (mepParam === 'off') return;
@@ -1406,6 +1443,7 @@ async function checkForPageMods() {
   const xlg = martech === 'off' ? false : getMepEnablement('xlg');
   const ajo = martech === 'off' ? false : getMepEnablement('ajo');
   const mepgeolocation = getMepEnablement('mepgeolocation');
+  const meplob = getMepEnablement('lob');
 
   if (!(pzn || pznroc || target || promo || mepParam
     || mepHighlight || mepButton || mepParam === '' || xlg || ajo)) return;
@@ -1418,6 +1456,8 @@ async function checkForPageMods() {
       countryIPPromise = getAkamaiCode(true);
     }
   }
+  if (meplob === true) userLOBPromise = getSpectraLOB(document.referrer);
+
   const enablePersV2 = enablePersonalizationV2();
   if ((target || xlg) && enablePersV2) {
     const params = new URL(window.location.href).searchParams;
@@ -1464,6 +1504,8 @@ async function checkForPageMods() {
     targetInteractionPromise,
     calculatedTimeout,
     enablePersV2,
+    userLOBPromise,
+    meplob,
   });
 }
 
