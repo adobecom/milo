@@ -1176,6 +1176,7 @@ class Gnav {
     const { default: decorate } = await asideJsPromise;
     if (!decorate) return this.elements.aside;
     this.elements.aside = await decorate({ headerElem: this.block, fedsPromoWrapper, promoPath });
+    if (!(this.elements.aside instanceof HTMLElement)) return this.elements.aside;
     fedsPromoWrapper.append(this.elements.aside);
 
     const updateLayout = () => {
@@ -1194,12 +1195,12 @@ class Gnav {
 
     if (this.elements.aside.clientHeight > fedsPromoWrapper.clientHeight) {
       lanaLog({ message: 'Promo height is more than expected, potential CLS', tags: 'gnav-promo', errorType: 'i' });
-      updateLayout();
-
-      this.promoResizeObserver?.disconnect();
-      this.promoResizeObserver = new ResizeObserver(updateLayout);
-      this.promoResizeObserver.observe(this.elements.aside);
     }
+
+    this.promoResizeObserver?.disconnect();
+    this.promoResizeObserver = new ResizeObserver(updateLayout);
+    this.promoResizeObserver.observe(this.elements.aside);
+    updateLayout();
     performance.mark('Gnav-Aside-End');
     logPerformance('Gnav-Aside-Time', 'Gnav-Aside-Start', 'Gnav-Aside-End');
     return this.elements.aside;
