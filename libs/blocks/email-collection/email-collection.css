@@ -1,0 +1,239 @@
+.email-collection {
+  max-width: 900px;
+  min-height: 444px;
+}
+
+.email-collection .foreground {
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+  padding: 40px 24px;
+  min-height: 444px;
+}
+
+.email-collection .foreground .text {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.email-collection .hidden,
+.email-collection .foreground .image {
+  display: none;
+}
+
+.email-collection .foreground .image picture {
+  display: flex;
+  justify-content: center;
+  height: 100%;
+  width: 100%;
+}
+
+.email-collection .foreground .image img {
+  object-fit: cover;
+}
+
+.email-collection .foreground.success-message {
+  padding: 40px 14px;
+}
+
+.email-collection .foreground.success-message .text {
+  padding: 0 10px;
+}
+
+.email-collection .foreground.success-message .image {
+  display: block;
+}
+
+.email-collection .foreground.success-message .image img {
+  max-height: 200px;
+}
+
+.email-collection .foreground .text .consent-string {
+  margin: 24px 0;
+}
+
+.email-collection .foreground.success-message .action-area {
+  margin: 24px 0 0 0;
+}
+
+.email-collection .foreground .text .consent-string > a {
+  color: inherit;
+}
+
+.email-collection .foreground .text .icon-area {
+  margin-top: 0;
+  margin-bottom: 12px;
+  height: var(--icon-size-m);
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-size: var(--type-heading-xs-size);
+  line-height: var(--type-heading-xs-lh);
+  font-weight: 700;
+}
+
+.email-collection.mailing-list .foreground .text .icon-area,
+.email-collection .foreground.success-message .text .icon-area {
+  margin-bottom: 24px;
+}
+
+.email-collection .foreground .text .heading-l {
+  margin-bottom: 16px;
+}
+
+.email-collection .foreground .text .icon-area :is(picture, img) {
+  height: var(--icon-size-m);
+}
+
+.email-collection .foreground .text form {
+  display: flex;
+  flex-direction: column;
+  margin-top: 12px;
+}
+
+.email-collection.mailing-list .foreground .text form {
+  margin-top: 24px;
+}
+
+.email-collection .foreground .text form label {
+  width: 100%;
+  color: #505050;
+  margin-bottom: 8px;
+  position: relative;
+}
+
+.email-collection .foreground .text form label.required::after {
+  content: '*';
+  color: inherit;
+  font-size: var(--type-body-l-size);
+  line-height: var(--type-body-l-lh);
+  height: 8px;
+  position: absolute;
+  bottom: 50%;
+  right: 0;
+}
+
+.email-collection .foreground .text form :is(input, textarea, select) {
+  box-sizing: border-box;
+  margin-bottom: 12px;
+  border: 2px #DADADA solid;
+  border-radius: 8px;
+  height: 32px;
+  padding: 0 12px;
+}
+
+.email-collection .foreground .text form textarea {
+  padding-top: 6px;
+  padding-bottom: 8px;
+  height: 56px;
+  resize: none;
+}
+
+.email-collection .foreground .text form > *:last-child {
+  margin-bottom: 0;
+}
+
+.email-collection .foreground form .split-row,
+.email-collection .foreground form .split-row > div {
+  display: flex;
+  flex-direction: column;
+}
+
+.email-collection .foreground form .select-wrapper {
+  margin-bottom: 12px;
+  position: relative;
+}
+
+.email-collection .foreground form .select-wrapper select {
+  margin: 0;
+  width: 100%;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+}
+
+.email-collection .foreground form .select-wrapper::after {
+  content: '';
+  background: url('/img/ui/chevron-down.svg') no-repeat center;
+  background-color: #E9E9E9;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  right: 6px;
+  border-radius: 4px;
+  width: 20px;
+  height: 20px;
+  pointer-events: none;
+}
+
+.email-collection .foreground .text .submit-button {
+  margin-bottom: 0;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.email-collection .foreground .text .submit-button button {
+  font-family: inherit;
+}
+
+@media (min-width: 1200px) {
+  .email-collection {
+    width: 900px;
+  }
+
+  .email-collection .foreground,
+  .email-collection .foreground.success-message {
+    padding: 56px;
+    display: flex;
+    flex-direction: row;
+    gap: 40px;
+  }
+
+  .email-collection .foreground .image {
+    flex: 1;
+    display: flex;
+    align-items: center;
+  }
+
+  .email-collection .foreground .image picture {
+    display: flex;
+    height: 100%;
+    width: 100%;
+  }
+
+  .email-collection .foreground .text,
+  .email-collection .foreground form .split-row > div {
+    flex: 1;
+  }
+
+  .email-collection .foreground.success-message .text {
+    padding: unset;
+  }
+
+  .email-collection .foreground form .split-row {
+    flex-direction: row;
+    display: flex;
+    gap: 12px;
+  }
+
+  .email-collection .foreground form .split-row div:first-child {
+    margin-bottom: 0;
+  }
+
+  .email-collection.large-image .foreground {
+    position: relative;
+  }
+
+  .email-collection .foreground.success-message .image img {
+    max-height: unset;
+  }
+
+  .email-collection.large-image .foreground .image img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: calc(50% - 20px);
+  }
+}
