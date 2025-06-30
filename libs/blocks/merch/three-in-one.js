@@ -20,6 +20,8 @@ export const LANA_OPTIONS = {
   tags: 'three-in-one',
 };
 
+let isModalOpened = false;
+
 export const reloadIframe = ({ iframe, theme, msgWrapper, handleTimeoutError }) => {
   if (!msgWrapper || !iframe || !theme || !handleTimeoutError) return;
   msgWrapper.remove();
@@ -141,6 +143,8 @@ export function createContent(iframeUrl) {
 }
 
 export default async function openThreeInOneModal(el) {
+  if (isModalOpened) return undefined;
+  isModalOpened = true;
   const iframeUrl = el?.href;
   const modalType = el?.getAttribute('data-modal');
   const id = el?.getAttribute('data-modal-id');
@@ -150,6 +154,7 @@ export default async function openThreeInOneModal(el) {
   const timeoutId = setTimeout(handleTimeoutError, 15000);
   const clearTimeoutOnClose = () => {
     clearTimeout(timeoutId);
+    isModalOpened = false;
     window.removeEventListener('milo:modal:closed', clearTimeoutOnClose);
   };
   window.addEventListener('milo:modal:closed', clearTimeoutOnClose);
