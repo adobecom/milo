@@ -19,10 +19,18 @@ const CLASS = {
   NO_BORDER: 'gb-no-border',
   NO_CHANGE: 'gb-no-change',
   NO_CLICK: 'gb-no-click',
+  OVERLAY_OFF: 'gb-overlay-off',
   PAGE_OVERLAY: 'gb-page-overlay',
   PHONE_PREVIEW: 'gb-phone-preview',
   TABLET_PREVIEW: 'gb-tablet-preview',
   SELECTED_BUTTON: 'gb-selected-button',
+};
+
+const DISABLED = {
+  CHANGED: 'gb-disabled-changed',
+  NO_CHANGE: 'gb-disabled-no-change',
+  NO_CLICK: 'gb-disabled-no-click',
+  PAGE_OVERLAY: 'gb-disabled-page-overlay',
 };
 
 const METADATA = {
@@ -40,6 +48,7 @@ const USER_AGENT = {
 const DEFAULT_TITLE = '';
 
 let deviceModal;
+let deviceIframe;
 
 const setMetadata = (metadata) => {
   const { selector, val } = metadata;
@@ -168,12 +177,35 @@ function setUserAgent(window, userAgent) {
 // eslint-disable-next-line no-promise-executor-return
 const sleep = (delay) => new Promise((resolve) => setTimeout(resolve, delay));
 
-const injectCSSIntoIframe = (iframe, cssRules) => {
-  iframe.addEventListener('load', () => {
+const toggleGrayboxOverlay = (isChecked) => {
+  if (!isChecked) {
+    document.body.classList.add(CLASS.OVERLAY_OFF);
+  } else {
+    document.body.classList.remove(CLASS.OVERLAY_OFF);
+  }
+
+  const toggleMap = [
+    [CLASS.CHANGED, DISABLED.CHANGED],
+    [CLASS.NO_CHANGE, DISABLED.NO_CHANGE],
+    [CLASS.NO_CLICK, DISABLED.NO_CLICK],
+    [CLASS.PAGE_OVERLAY, DISABLED.PAGE_OVERLAY],
+  ];
+
+  toggleMap.forEach(([enabled, disabled]) => {
+    const from = isChecked ? disabled : enabled;
+    const to = isChecked ? enabled : disabled;
+    document.querySelectorAll(`.${from}`).forEach((el) => {
+      el.classList.replace(from, to);
+    });
+  });
+};
+
+const injectCSSIntoIframe = (cssRules) => {
+  deviceIframe.addEventListener('load', () => {
     try {
       const style = document.createElement('style');
       style.textContent = cssRules;
-      iframe.contentWindow.document.head.appendChild(style);
+      deviceIframe.contentWindow.document.head.appendChild(style);
     } catch (error) {
       // eslint-disable-next-line no-console
       console.warn('Could not inject CSS into iframe. It might be cross-origin.', error);
@@ -181,32 +213,32 @@ const injectCSSIntoIframe = (iframe, cssRules) => {
   });
 };
 
-const setIframeUA = (iFrame, isMobile, isTablet) => {
+const setIframeUA = (isMobile, isTablet) => {
   if (isMobile) {
     document.body.classList.add(CLASS.PHONE_PREVIEW);
     deviceModal.classList.add('mobile');
-    setUserAgent(iFrame.contentWindow, USER_AGENT.iPhone);
+    setUserAgent(deviceIframe.contentWindow, USER_AGENT.iPhone);
   } else if (isTablet) {
     document.body.classList.add(CLASS.TABLET_PREVIEW);
     deviceModal.classList.add('tablet');
-    setUserAgent(iFrame.contentWindow, USER_AGENT.iPad);
+    setUserAgent(deviceIframe.contentWindow, USER_AGENT.iPad);
   }
 };
 
-const setupIframe = (iFrame, isMobile, isTablet) => {
+const setupIframe = (isMobile, isTablet) => {
   const cssRules = `
     body > .mep-preview-overlay {
       display: none !important;
     }
   `;
-  injectCSSIntoIframe(iFrame, cssRules);
+  injectCSSIntoIframe(cssRules);
 
-  iFrame.style.height = '';
+  deviceIframe.style.height = '';
 
-  setIframeUA(iFrame, isMobile, isTablet);
+  setIframeUA(isMobile, isTablet);
 
   // Spoof iFrame dimensions as screen size for MEP
-  iFrame.contentWindow.screen = {
+  deviceIframe.contentWindow.screen = {
     width: isMobile ? 350 : 768,
     height: isMobile ? 800 : 1024,
   };
@@ -239,10 +271,15 @@ const openDeviceModal = async (e) => {
   const docFrag = new DocumentFragment();
   const iFrameUrl = new URL(window.location.href);
   iFrameUrl.searchParams.set('graybox', 'menu-off');
+  if (document.body.classList.contains(CLASS.OVERLAY_OFF)) {
+    iFrameUrl.searchParams.set('graybox-overlay', 'off');
+  } else {
+    iFrameUrl.searchParams.delete('graybox-overlay');
+  }
   const deviceBorder = createTag('img', { class: 'graybox-device-border', src: isMobile ? iphoneFrame : ipadFrame });
-  const iFrame = createTag('iframe', { src: iFrameUrl.href, width: '100%', height: '100%' });
+  deviceIframe = createTag('iframe', { src: iFrameUrl.href, width: '100%', height: '100%' });
 
-  const modal = createTag('div', null, [deviceBorder, iFrame]);
+  const modal = createTag('div', null, [deviceBorder, deviceIframe]);
   docFrag.append(modal);
 
   deviceModal = await getModal(
@@ -253,14 +290,14 @@ const openDeviceModal = async (e) => {
   const isSafari = /Safari/.test(navigator.userAgent) && !/Chrome/.test(navigator.userAgent);
   if (isSafari) {
     deviceModal.style.display = 'none';
-    setupIframe(iFrame, isMobile, isTablet);
-    iFrame.addEventListener('load', () => {
+    setupIframe(isMobile, isTablet);
+    deviceIframe.addEventListener('load', () => {
       // safari needs to wait for the iframe to load before setting the user agent
-      setIframeUA(iFrame, isMobile, isTablet);
+      setIframeUA(isMobile, isTablet);
       deviceModal.style.display = '';
     });
   } else {
-    setupIframe(iFrame, isMobile, isTablet);
+    setupIframe(isMobile, isTablet);
   }
 
   const onDeviceModalClose = () => {
@@ -275,12 +312,38 @@ const openDeviceModal = async (e) => {
       CLASS.PHONE_PREVIEW,
       CLASS.TABLET_PREVIEW,
     );
+
+    deviceIframe = null;
   };
 
   window.addEventListener('milo:modal:closed', onDeviceModalClose, { once: true });
 
   const curtain = deviceModal.nextElementSibling;
   curtain.classList.add('graybox-curtain');
+};
+
+const createGrayboxOverlayToggle = (grayboxMenu) => {
+  const switchDiv = createTag('div', { class: 'spectrum-Switch' }, null, { parent: grayboxMenu });
+  const input = createTag('input', { type: 'checkbox', class: 'spectrum-Switch-input', id: 'gb-overlay-toggle' }, null, { parent: switchDiv });
+  createTag('span', { class: 'spectrum-Switch-switch' }, null, { parent: switchDiv });
+  createTag('label', { class: 'spectrum-Switch-label', for: 'gb-overlay-toggle' }, 'Graybox Overlay', { parent: switchDiv });
+  input.checked = true;
+  input.addEventListener('change', (e) => {
+    const isChecked = e.target.checked;
+    toggleGrayboxOverlay(isChecked);
+    if (deviceIframe) {
+      deviceIframe.contentWindow.postMessage(`gb-overlay-${isChecked ? 'on' : 'off'}`, '*');
+    }
+  });
+
+  if (!document.querySelector(`.${CLASS.CHANGED}, .${CLASS.NO_CHANGE}, .${CLASS.NO_CLICK}, .${CLASS.PAGE_OVERLAY}`)) {
+    switchDiv.classList.add('gb-toggle-disabled');
+  }
+
+  const url = new URL(window.location.href);
+  if (url.searchParams.get('graybox-overlay') === 'off') {
+    setTimeout(() => input.click(), 10);
+  }
 };
 
 const createGrayboxMenu = (options, { isOpen = false } = {}) => {
@@ -306,6 +369,8 @@ const createGrayboxMenu = (options, { isOpen = false } = {}) => {
     button.addEventListener('click', openDeviceModal);
   });
 
+  createGrayboxOverlayToggle(grayboxMenu);
+
   const toggleBtn = document.createElement('button');
   toggleBtn.className = 'gb-toggle';
   toggleBtn.addEventListener('click', () => {
@@ -322,7 +387,10 @@ const createGrayboxMenu = (options, { isOpen = false } = {}) => {
 
 const addPageOverlayDiv = () => {
   const overlayDiv = createTag('div', { class: CLASS.PAGE_OVERLAY });
-  document.body.insertBefore(overlayDiv, document.body.firstChild);
+  const main = document.querySelector('main');
+  if (main) {
+    main.insertBefore(overlayDiv, main.firstChild);
+  }
 };
 
 const setupChangedEls = (globalNoClick) => {
@@ -420,6 +488,10 @@ const grayboxThePage = (grayboxEl, grayboxMenuOff) => {
   /* c8 ignore next 3 */
   if (grayboxMenuOff) {
     document.body.classList.add(CLASS.NO_BORDER);
+    const url = new URL(window.location.href);
+    if (url.searchParams.get('graybox-overlay') === 'off') {
+      toggleGrayboxOverlay(false);
+    }
   } else {
     createGrayboxMenu(options, { isOpen: true });
   }
@@ -439,6 +511,15 @@ const grayboxThePage = (grayboxEl, grayboxMenuOff) => {
   observer.observe(document.body, {
     childList: true,
     subtree: true,
+  });
+
+  // Listen for iframe messages to toggle graybox overlay in device views
+  window.addEventListener('message', (event) => {
+    if (event.data === 'gb-overlay-on') {
+      toggleGrayboxOverlay(true);
+    } else if (event.data === 'gb-overlay-off') {
+      toggleGrayboxOverlay(false);
+    }
   });
 };
 
@@ -461,5 +542,8 @@ export default function init(grayboxEl) {
   setMetadata({ selector: 'georouting', val: 'off' });
   const grayboxMenuOff = url.searchParams.get('graybox') === 'menu-off';
 
-  window.milo.deferredPromise.then(() => grayboxThePage(grayboxEl, grayboxMenuOff));
+  window.milo.deferredPromise.then(() => grayboxThePage(
+    grayboxEl,
+    grayboxMenuOff,
+  ));
 }

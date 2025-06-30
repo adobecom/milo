@@ -1,5 +1,6 @@
 import { createTag, getConfig } from '../../utils/utils.js';
 import { initService, getOptions, MEP_SELECTOR, overrideOptions } from '../merch/merch.js';
+import { postProcessAutoblock } from '../merch/autoblock.js';
 import '../../deps/mas/merch-card.js';
 import '../../deps/mas/merch-quantity-select.js';
 
@@ -154,6 +155,7 @@ export async function createCollection(el, options) {
     }
   }
 
+  postProcessAutoblock(collection);
   collection.requestUpdate();
 }
 
