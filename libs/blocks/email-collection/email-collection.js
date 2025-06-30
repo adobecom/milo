@@ -3,35 +3,51 @@ import { createTag } from '../../utils/utils.js';
 
 const FORM_FIELDS = {
   email: {
-    type: 'email',
-    required: true,
-    autocomplete: true,
+    tag: 'input',
+    attributes: {
+      type: 'email',
+      required: true,
+      autocomplete: true,
+    },
   },
   'first-name': {
-    type: 'text',
-    required: true,
-    autocomplete: true,
+    tag: 'input',
+    attributes: {
+      type: 'text',
+      required: true,
+      autocomplete: true,
+    },
   },
   'last-name': {
-    type: 'text',
-    required: true,
-    autocomplete: true,
+    tag: 'input',
+    attributes: {
+      type: 'text',
+      required: true,
+      autocomplete: true,
+    },
   },
   organization: {
-    type: 'text',
-    required: true,
-    autocomplete: true,
+    tag: 'input',
+    attributes: {
+      type: 'text',
+      required: true,
+      autocomplete: true,
+    },
   },
   occupation: {
-    type: 'text',
-    required: false,
-    autocomplete: true,
+    tag: 'input',
+    attributes: {
+      type: 'text',
+      required: true,
+      autocomplete: true,
+    },
   },
-  state: { type: 'select' },
-  country: { type: 'select' },
-  custom: { type: 'textarea' },
+  state: { tag: 'select', attributes: {} },
+  country: { tag: 'select', attributes: {} },
+  custom: { tag: 'textarea', attributes: {} },
 };
 const FORM_CONFIG = ['consent-string', 'consent-id', 'campaign-id', 'mps-sname'];
+const FORM_ID = 'email-collection-form';
 
 function formatMetadataKey(key) {
   return key?.toLowerCase().trim().replaceAll(/\s+/g, '-');
@@ -46,18 +62,20 @@ function getEmailCollectionMetadata(el) {
   [...metadata.children].forEach((child) => {
     let metadataObject = emailCollectionMetadata.fields;
     const key = formatMetadataKey(child.firstElementChild?.textContent);
-    let value = child.lastElementChild?.textContent.trim();
+    const value = child.lastElementChild;
     if (FORM_CONFIG.includes(key)) {
-      value = child.lastElementChild?.innerHTML.trim();
       metadataObject = emailCollectionMetadata.config;
     }
     metadataObject[key] = value;
   });
 
-  if (Object.keys(emailCollectionMetadata.config).length !== FORM_CONFIG.length) {
+  if (!Object.keys(emailCollectionMetadata.config).every((key) => FORM_CONFIG.includes(key))) {
     throw new Error('Email collection metadata is missing a config field');
   }
-  metadata.remove();
+
+  if (!emailCollectionMetadata.fields.email) {
+    throw new Error('Email collection form is missing email field');
+  }
 
   return emailCollectionMetadata;
 }
@@ -72,9 +90,16 @@ async function decorateSelect(id, url) {
       selectOptions = await selectOptionsReq.json();
     }
     const { [id]: options } = selectOptions;
-    if (!options || !options.data.length) return null;
+    if (!options || !options.data?.length) return null;
     const { data } = options;
-    const select = createTag('select', { id, name: id });
+    const select = createTag(
+      'select',
+      {
+        id,
+        name: id,
+        autocomplete: true,
+      },
+    );
     data.forEach(({ key, value }) => {
       const option = createTag('option', { value: key }, value);
       select.append(option);
@@ -88,19 +113,17 @@ async function decorateSelect(id, url) {
 
 async function decorateInput(fieldConfig, key, value) {
   let input;
-  let tag = 'input';
-  let labelText = value;
-  if (fieldConfig.type === 'select') {
-    const [label, url] = value.split('|');
+  let labelText = value.textContent;
+  if (fieldConfig.tag === 'select') {
+    const [label] = value.textContent.split('|');
+    const url = value.querySelector('a')?.href;
     labelText = label;
     input = await decorateSelect(key, url);
     if (!input) return [];
-  } else if (fieldConfig.type === 'textarea') {
-    tag = 'textarea';
   }
-  input = input ?? createTag(tag, { name: key, id: key });
-  Object.entries(fieldConfig).forEach(([confKey, confValue]) => {
-    if (['select', 'textarea'].includes(confValue)) return;
+
+  input = input ?? createTag(fieldConfig.tag, { name: key, id: key });
+  Object.entries(fieldConfig.attributes).forEach(([confKey, confValue]) => {
     input.setAttribute(confKey, confValue);
   });
   const label = createTag('label', { for: key, class: 'body-xs' }, labelText.trim());
@@ -111,8 +134,12 @@ async function decorateInput(fieldConfig, key, value) {
 
 async function decorateForm(el, text) {
   const emailCollectionMetadata = getEmailCollectionMetadata(el);
+
+  if (Object.keys(emailCollectionMetadata.fields).length === 1
+    && emailCollectionMetadata.fields.email) el.classList.add('mailing-list');
+
   const shouldSplitFirstRow = !el.classList.contains('mailing-list') && !el.classList.contains('large-image');
-  const form = createTag('form', { id: 'email-collection-form' });
+  const form = createTag('form', { id: FORM_ID });
   const inputs = [];
   for (const [key, value] of Object.entries(emailCollectionMetadata.fields)) {
     const fieldConfig = FORM_FIELDS[key];
@@ -137,8 +164,9 @@ async function decorateForm(el, text) {
   // TODO: Will be refactored when form is connected to backend
   form.addEventListener('submit', (e) => {
     e.preventDefault();
-    const formData = new FormData(form);
-    console.log('Form data submitted:', Object.fromEntries(formData));
+    // const formData = new FormData(form);
+    // console.log('Form data submitted:', Object.fromEntries(formData));
+    // Send request to MPS and AEP
 
     const foreground = el.children[0];
     foreground.classList.add('success-message');
@@ -152,7 +180,7 @@ async function decorateForm(el, text) {
     {
       type: 'submit',
       class: 'con-button blue',
-      form: 'email-collection-form',
+      form: FORM_ID,
     },
   );
   const submitText = text.lastElementChild;
@@ -163,7 +191,7 @@ async function decorateForm(el, text) {
   const consentString = createTag(
     'p',
     { class: 'body-xxs consent-string' },
-    emailCollectionMetadata.config['consent-string'],
+    emailCollectionMetadata.config['consent-string'].innerHTML,
   );
   text.append(form, consentString, submitContainer);
 }
