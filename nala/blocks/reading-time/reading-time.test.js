@@ -34,7 +34,7 @@ test.describe('Reading-time feature test suite', () => {
     });
 
     await test.step('step-4: Verify the accessibility test on Reading-time block', async () => {
-      await runAccessibilityTest({ page, testScope: readingTime.readingTime, skipA11yTest: true });
+      await runAccessibilityTest({ page, testScope: readingTime.readingTime });
     });
   });
 
@@ -63,7 +63,7 @@ test.describe('Reading-time feature test suite', () => {
     });
 
     await test.step('step-4: Verify the accessibility test on Reading-time without text block', async () => {
-      await runAccessibilityTest({ page, testScope: readingTime.readingTime, skipA11yTest: true });
+      await runAccessibilityTest({ page, testScope: readingTime.readingTime });
     });
   });
 
@@ -112,7 +112,7 @@ test.describe('Reading-time feature test suite', () => {
     });
 
     await test.step('step-4: Verify the accessibility test on Reading-time with text block', async () => {
-      await runAccessibilityTest({ page, testScope: readingTime.readingTime, skipA11yTest: true });
+      await runAccessibilityTest({ page, testScope: readingTime.readingTime });
     });
   });
 });
