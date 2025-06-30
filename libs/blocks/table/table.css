@@ -417,14 +417,6 @@
     border-right: 1px solid var(--hover-border-color);
   }
 
-  .table .col-heading:first-child {
-    border-top-left-radius: var(--border-radius);
-  }
-
-  .table .col-heading:last-child {
-    border-top-right-radius: var(--border-radius);
-  }
-
   [dir="rtl"] .table .col-heading:first-child {
     border-top-left-radius: 0;
     border-top-right-radius: var(--border-radius);
@@ -587,6 +579,14 @@
 }
 
 @media (min-width: 769px) {
+  .table .col-heading:first-child {
+    border-top-left-radius: var(--border-radius);
+  }
+
+  .table .col-heading:last-child {
+    border-top-right-radius: var(--border-radius);
+  }
+
   .table-section .filters {
     display: none;
   }

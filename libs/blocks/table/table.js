@@ -528,7 +528,7 @@ function applyStylesBasedOnScreenSize(table, originTable) {
       const filters = Array.from(table.parentElement.querySelectorAll('.filter')).map((f) => parseInt(f.value, 10));
       const rows = table.querySelectorAll('.row');
 
-      table.querySelectorAll('.hide-mobile, .force-last, .rounded-left, .rounded-right').forEach((col) => { col.classList.remove('hide-mobile', 'force-last', 'rounded-left', 'rounded-right'); });
+      table.querySelectorAll('.hide-mobile, .force-last').forEach((col) => { col.classList.remove('hide-mobile', 'force-last'); });
 
       rows.forEach((row) => {
         const clonedCols = row.querySelectorAll('.col[data-cloned]');
@@ -551,8 +551,9 @@ function applyStylesBasedOnScreenSize(table, originTable) {
         }
         if (secondFilterCol?.classList.contains('col-heading')) {
           secondFilterCol.classList.remove('left-round');
-          secondFilterCol.classList.add('force-last', 'right-round');
+          secondFilterCol.classList.add('right-round');
         }
+        if (secondFilterCol) secondFilterCol.classList.add('force-last');
       });
 
       if (filters[0] === filters[1]) {
@@ -631,7 +632,7 @@ function applyStylesBasedOnScreenSize(table, originTable) {
   if (deviceBySize === 'MOBILE' || (isMerch && deviceBySize === 'TABLET')) {
     mobileRenderer();
   } else {
-    table.querySelectorAll('.hide-mobile').forEach((col) => { col.classList.remove('hide-mobile'); });
+    table.querySelectorAll('.hide-mobile, .left-round, .right-round').forEach((col) => { col.classList.remove('hide-mobile', 'left-round', 'right-round'); });
     [...(table.querySelector('.row-heading')?.children || [])]
       .forEach((column) => [...column.children].forEach((row) => row.style.removeProperty('height')));
     table.parentElement.querySelectorAll('.filters select').forEach((select, index) => {
