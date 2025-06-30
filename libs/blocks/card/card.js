@@ -42,6 +42,7 @@ const addInner = (el, cardType, card) => {
   }
 
   if (cardType === HALF_HEIGHT) {
+    title?.setAttribute('role', 'presentation');
     text?.remove();
   }
 

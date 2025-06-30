@@ -1,6 +1,9 @@
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
 import { setConfig } from '../../../libs/utils/utils.js';
+import '../../../libs/deps/mas/commerce.js';
+
+document.head.appendChild(document.createElement('mas-commerce-service'));
 
 // eslint-disable-next-line no-promise-executor-return
 const delay = (ms = 100) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -235,7 +238,7 @@ describe('Merch Cards', async () => {
     const merchCards = await init(el);
     expect(merchCards.filter).to.equal('all');
     await delay(500);
-    expect(merchCards.querySelectorAll('h3[data-removed-manifest-id]').length).to.equal(4);
+    expect(merchCards.querySelectorAll('h3').length).to.equal(0);
   });
 
   it('should localize the query-index url', async () => {

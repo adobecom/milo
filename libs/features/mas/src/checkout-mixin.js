@@ -1,17 +1,21 @@
-import { ignore } from './external.js';
 import {
     createMasElement,
     updateMasElement,
     MasElement,
 } from './mas-element.js';
-import { selectOffers, useService } from './utilities.js';
+import { selectOffers, getService } from './utilities.js';
+import { MODAL_TYPE_3_IN_1 } from '../src/constants.js';
 
 export const CLASS_NAME_DOWNLOAD = 'download';
 export const CLASS_NAME_UPGRADE = 'upgrade';
+const CHECKOUT_PARAM_VALUE_MAPPING = {
+  e: 'EDU',
+  t: 'TEAM',
+};
 
 export function createCheckoutElement(Class, options = {}, innerHTML = '') {
     // eslint-disable-next-line react-hooks/rules-of-hooks
-    const service = useService();
+    const service = getService();
     if (!service) return null;
     const {
         checkoutMarketSegment,
@@ -25,6 +29,7 @@ export function createCheckoutElement(Class, options = {}, innerHTML = '') {
         quantity,
         wcsOsi,
         extraOptions,
+        analyticsId,
     } = service.collectCheckoutOptions(options);
 
     const element = createMasElement(Class, {
@@ -39,6 +44,7 @@ export function createCheckoutElement(Class, options = {}, innerHTML = '') {
         quantity,
         wcsOsi,
         extraOptions,
+        analyticsId,
     });
     if (innerHTML)
         element.innerHTML = `<span style="pointer-events: none;">${innerHTML}</span>`;
@@ -78,6 +84,25 @@ export function CheckoutMixin(Base) {
             return this.masElement.options;
         }
 
+        get marketSegment() {
+          const value = this.options?.ms ?? this.value?.[0].marketSegments?.[0];
+          return CHECKOUT_PARAM_VALUE_MAPPING[value] ?? value;
+        }
+
+        get customerSegment() {
+          const value = this.options?.cs ?? this.value?.[0]?.customerSegment;
+          return CHECKOUT_PARAM_VALUE_MAPPING[value] ?? value;
+        }
+
+        get is3in1Modal() {
+          return Object.values(MODAL_TYPE_3_IN_1).includes(this.getAttribute('data-modal'));
+        }
+        
+        get isOpen3in1Modal() {
+          const masFF3in1 = document.querySelector('meta[name=mas-ff-3in1]');
+          return this.is3in1Modal && (!masFF3in1 || masFF3in1.content !== 'off');
+        }
+
         requestUpdate(force = false) {
             return this.masElement.requestUpdate(force);
         }
@@ -100,14 +125,13 @@ export function CheckoutMixin(Base) {
         }
 
         async render(overrides = {}) {
-            if (!this.isConnected) return false;
             // eslint-disable-next-line react-hooks/rules-of-hooks
-            const service = useService();
+            const service = getService();
             if (!service) return false;
             if (!this.dataset.imsCountry) {
                 service.imsCountryPromise.then((countryCode) => {
                     if (countryCode) this.dataset.imsCountry = countryCode;
-                }, ignore);
+                });
             }
             overrides.imsCountry = null;
             const options = service.collectCheckoutOptions(overrides, this);
@@ -158,9 +182,8 @@ export function CheckoutMixin(Base) {
             checkoutAction = undefined,
             version = undefined,
         ) {
-            if (!this.isConnected) return false;
             // eslint-disable-next-line react-hooks/rules-of-hooks
-            const service = useService();
+            const service = getService();
             if (!service) return false;
             const extraOptions = JSON.parse(
                 this.dataset.extraOptions ?? 'null',
@@ -175,18 +198,22 @@ export function CheckoutMixin(Base) {
                 this.classList.remove(CLASS_NAME_DOWNLOAD, CLASS_NAME_UPGRADE);
                 this.masElement.toggleResolved(version, offers, options);
                 const { url, text, className, handler } = checkoutAction;
-                if (url) this.setCheckoutUrl(url);
+                if (url) {
+                  this.setCheckoutUrl(url);
+                }
                 if (text) this.firstElementChild.innerHTML = text;
                 if (className) this.classList.add(...className.split(' '));
                 if (handler) {
                     this.setCheckoutUrl('#');
                     this.checkoutActionHandler = handler.bind(this);
                 }
-                return true;
-            } else if (offers.length) {
+            }
+            if (offers.length) {
                 if (this.masElement.toggleResolved(version, offers, options)) {
-                    const url = service.buildCheckoutURL(offers, options);
-                    this.setCheckoutUrl(url);
+                    if (!this.classList.contains(CLASS_NAME_DOWNLOAD) && !this.classList.contains(CLASS_NAME_UPGRADE)) {
+                      const url = service.buildCheckoutURL(offers, options);
+                      this.setCheckoutUrl(options.modal === 'true' ? '#' : url);
+                    }
                     return true;
                 }
             } else {
@@ -210,7 +237,7 @@ export function CheckoutMixin(Base) {
 
         updateOptions(options = {}) {
             // eslint-disable-next-line react-hooks/rules-of-hooks
-            const service = useService();
+            const service = getService();
             if (!service) return false;
             const {
                 checkoutMarketSegment,

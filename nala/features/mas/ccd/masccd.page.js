@@ -12,17 +12,21 @@ export default class MasCCDPage {
     this.suggestedCardEyebrow = page.locator('h4[slot="detail-s"]');
     this.suggestedCardDescription = page.locator('div[slot="body-xs"] p').first();
     this.suggestedCardLegalLink = page.locator('div[slot="body-xs"] p > a');
+    this.suggestedCardUptLink = page.locator('div[slot="body-xs"] p > a[is="upt-link"]');
     this.suggestedCardPrice = page.locator('p[slot="price"]');
     this.suggestedCardCTA = page.locator('div[slot="cta"] > button');
     this.suggestedCardCTAButton = page.locator('div[slot="cta"] button[is="checkout-button"]');
+    this.suggestedCardFooterLink = page.locator('div[slot="cta"] > a');
     // slice cards
     this.sliceCard = page.locator('merch-card[variant="ccd-slice"]');
     this.sliceCardWide = page.locator('merch-card[variant="ccd-slice"][size="wide"]');
     this.sliceCardImage = page.locator('div[slot="image"] img');
     this.sliceCardDescription = page.locator('div[slot="body-s"] p > strong').first();
     this.sliceCardLegalLink = page.locator('div[slot="body-s"] p > a');
+    this.sliceCardUptLink = page.locator('div[slot="body-s"] p > a[is="upt-link"]');
     this.sliceCardCTA = page.locator('div[slot="footer"] > button');
     this.sliceCardCTAButton = page.locator('div[slot="footer"] button[is="checkout-button"]');
+    this.sliceCardFooterLink = page.locator('div[slot="footer"] > a');
 
     // Suggested card properties:
     this.suggestedCssProp = {
@@ -292,6 +296,11 @@ export default class MasCCDPage {
         slice: this.sliceCardLegalLink,
         'slice-wide': this.sliceCardLegalLink,
       },
+      uptLink: {
+        suggested: this.suggestedCardUptLink,
+        slice: this.sliceCardUptLink,
+        'slice-wide': this.sliceCardUptLink,
+      },
       price: {
         suggested: this.suggestedCardPrice,
         slice: this.price,
@@ -307,6 +316,11 @@ export default class MasCCDPage {
         suggested: this.suggestedCardCTAButton,
         slice: this.sliceCardCTAButton,
         'slice-wide': this.sliceCardCTAButton,
+      },
+      footerLink: {
+        suggested: this.suggestedCardFooterLink,
+        slice: this.sliceCardFooterLink,
+        'slice-wide': this.sliceCardFooterLink,
       },
       image: this.sliceCardImage,
     };
@@ -356,6 +370,10 @@ export default class MasCCDPage {
     return this.getCardField(id, cardType, 'legalLink');
   }
 
+  async getCardUptLink(id, cardType) {
+    return this.getCardField(id, cardType, 'uptLink');
+  }
+
   async getCardPrice(id, cardType) {
     return this.getCardField(id, cardType, 'price');
   }
@@ -382,6 +400,10 @@ export default class MasCCDPage {
 
   async getCardCTALink(id, cardType) {
     return this.getCardField(id, cardType, 'ctaLink');
+  }
+
+  async getCardFooterLink(id, cardType) {
+    return this.getCardField(id, cardType, 'footerLink');
   }
 
   async getCardImage(id, cardType) {

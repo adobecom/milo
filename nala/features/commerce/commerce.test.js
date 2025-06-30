@@ -112,7 +112,7 @@ test.describe('Commerce feature test suite', () => {
 
     await test.step('Validate regular price display', async () => {
       await COMM.price.waitFor({ state: 'visible', timeout: 10000 });
-      expect(await COMM.price.innerText()).toContain('US$');
+      expect(await COMM.price.innerText()).toContain('€');
       expect(await COMM.price.locator('.price-recurrence').innerText()).not.toBe('');
       expect(await COMM.price.locator('.price-unit-type').innerText()).not.toBe('');
       expect(await COMM.price.locator('.price-tax-inclusivity').innerText()).not.toBe('');
@@ -120,7 +120,7 @@ test.describe('Commerce feature test suite', () => {
 
     await test.step('Validate optical price display', async () => {
       await COMM.priceOptical.waitFor({ state: 'visible', timeout: 10000 });
-      expect(await COMM.priceOptical.innerText()).toContain('US$');
+      expect(await COMM.priceOptical.innerText()).toContain('€');
       expect(await COMM.priceOptical.locator('.price-recurrence').innerText()).not.toBe('');
       expect(await COMM.priceOptical.locator('.price-unit-type').innerText()).not.toBe('');
       expect(await COMM.priceOptical.locator('.price-tax-inclusivity').innerText()).not.toBe('');
@@ -128,7 +128,7 @@ test.describe('Commerce feature test suite', () => {
 
     await test.step('Validate strikethrough price display', async () => {
       await COMM.priceStrikethrough.waitFor({ state: 'visible', timeout: 10000 });
-      expect(await COMM.priceStrikethrough.innerText()).toContain('US$');
+      expect(await COMM.priceStrikethrough.innerText()).toContain('€');
       expect(await COMM.priceStrikethrough.locator('.price-recurrence').innerText()).not.toBe('');
       expect(await COMM.priceStrikethrough.locator('.price-unit-type').innerText()).not.toBe('');
       expect(await COMM.priceStrikethrough.locator('.price-tax-inclusivity').innerText()).not.toBe('');

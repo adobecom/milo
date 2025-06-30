@@ -162,7 +162,7 @@ const defaultOptions = {
   },
   paginationType: {
     paginator: 'Paginator',
-    loadMore: 'Load More',
+    loadMore: 'Load more',
   },
   search: {
     'contentArea.title': 'Card Titles',
@@ -214,6 +214,7 @@ const defaultOptions = {
     default: 'Default',
     createdDate: 'Created Date',
     modifiedDate: 'Modified Date',
+    staticDate: 'Static Date',
   },
   cardHoverEffect: {
     default: 'Default',
@@ -345,8 +346,8 @@ const BasicsPanel = ({ tagsData }) => {
   }
 
   const countryLangOptions = html`
-    <${Select} options=${countryTags} prop="country" label="Country" sort />
-    <${Select} options=${languageTags} prop="language" label="Language" sort />`;
+  <${Select} options=${countryTags} prop="country" label="Country" sort />
+  <${Select} options=${languageTags} prop="language" label="Language" sort />`;
 
   const partialLoadOptions = html`
     <${Input} label="Partial Load Count" prop="partialLoadCount" type="number" />`;
@@ -366,15 +367,15 @@ const BasicsPanel = ({ tagsData }) => {
 };
 
 const UiPanel = () => html`
+  <${Input} label="Show Total Count" prop="showTotalResults" type="checkbox" />
   <${Input} label="Show Card Borders" prop="setCardBorders" type="checkbox" />
   <${Input} label="Show Footer Dividers" prop="showFooterDivider" type="checkbox" />
-  <${Input} label="Disable Card Banners" prop="disableBanners" type="checkbox" />
-  <${Input} label="Use Light Text" prop="useLightText" type="checkbox" />
+  <${Input} label="Show Card Badges / BadgeImage" prop="showCardBadges" type="checkbox" />
+  <${Input} label="Show Different CTA for Live Events" prop="dynamicCTAForLiveEvents" type="checkbox" />
+  <${Input} label="Hide Date for On-Demand Content" prop="hideDateInterval" type="checkbox" />
+  <${Input} label="Hide Card Banners" prop="disableBanners" type="checkbox" />
   <${Input} label="Use Overlay Links" prop="useOverlayLinks" type="checkbox" />
-  <${Input} label="Show total card count at top" prop="showTotalResults" type="checkbox" />
-  <${Input} label="Hide date for on-demand content" prop="hideDateInterval" type="checkbox" />
-  <${Input} label="Enable showing card badges (by default hidden)" prop="showCardBadges" type="checkbox" />
-  <${Input} label="Show a different CTA for live events" prop="dynamicCTAForLiveEvents" type="checkbox" />
+  <${Input} label="Use Light Text" prop="useLightText" type="checkbox" />
   <${Select} label="Card Style" prop="cardStyle" options=${defaultOptions.cardStyle} />
   <${Select} options=${defaultOptions.cardTitleAccessibilityLevel} prop="cardTitleAccessibilityLevel" label="Card Accessibility Title Level" />
   <${Select} label="Layout" prop="container" options=${defaultOptions.container} />
@@ -657,6 +658,7 @@ const SearchPanel = () => html`
 const PaginationPanel = () => {
   const { state } = useContext(ConfiguratorContext);
   const paginationOptions = html`
+    <${Input} label="Show Pagination Quantity" prop="paginationQuantityShown" type="checkbox" />
     <${Select}
       label="Load More Button Style"
       prop="loadMoreBtnStyle"
@@ -677,7 +679,6 @@ const PaginationPanel = () => {
 
   return html`
     <${Input} label="Enable Pagination" prop="paginationEnabled" type="checkbox" />
-    <${Input} label="Show Pagination Quantity" prop="paginationQuantityShown" type="checkbox" />
     ${state.paginationEnabled && paginationOptions}
   `;
 };

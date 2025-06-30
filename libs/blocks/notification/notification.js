@@ -15,7 +15,7 @@
 */
 
 import { decorateBlockText, decorateBlockBg, decorateTextOverrides, decorateMultiViewport, loadCDT } from '../../utils/decorate.js';
-import { createTag, getConfig, loadStyle } from '../../utils/utils.js';
+import { createTag, getConfig, loadStyle, createIntersectionObserver } from '../../utils/utils.js';
 
 const { miloLibs, codeRoot } = getConfig();
 const base = miloLibs || codeRoot;
@@ -86,14 +86,81 @@ function wrapCopy(foreground) {
   });
 }
 
-function decorateClose(el) {
-  const btn = createTag('button', { 'aria-label': 'close', class: 'close' }, closeSvg);
-  btn.addEventListener('click', () => {
+const focusableSelector = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
+const selectedSelector = '[aria-selected="true"], [aria-checked="true"]';
+
+export function findFocusableInSection(section, selSelector, focSelector) {
+  if (!section) return null;
+
+  const selectedElement = section.querySelector(selSelector);
+  if (selectedElement) return selectedElement;
+
+  const focusableElements = [...section.querySelectorAll(focSelector)];
+  return focusableElements.length > 0
+    ? focusableElements[focusableElements.length - 1]
+    : null;
+}
+
+function addCloseAction(el, btn) {
+  btn.addEventListener('click', (e) => {
+    if (btn.nodeName === 'A') e.preventDefault();
+
+    const liveRegion = createTag('div', {
+      class: 'notification-visibility-hidden',
+      'aria-live': 'assertive',
+      'aria-atomic': 'true',
+      role: 'status',
+      tabindex: '-1',
+    }, 'Banner closed');
+    document.body.appendChild(liveRegion);
+    liveRegion.focus();
+    let isSticky = false;
+    let rect;
+    const sectionElement = el.closest('.section');
+
+    if (sectionElement?.className.includes('sticky')) {
+      isSticky = true;
+      rect = sectionElement.getBoundingClientRect();
+    }
+
     el.style.display = 'none';
     el.closest('.section')?.classList.add('close-sticky-section');
+    if (el.classList.contains('focus')) {
+      document.body.classList.remove('mobile-disable-scroll');
+      el.closest('.section').querySelector('.notification-curtain').remove();
+    }
     document.dispatchEvent(new CustomEvent('milo:sticky:closed'));
-  });
 
+    setTimeout(() => {
+      let focusTarget;
+
+      if (isSticky) {
+        const elementAtPosition = document.elementFromPoint(rect.left, rect.top);
+        const stickySection = elementAtPosition.closest('.section');
+        focusTarget = findFocusableInSection(stickySection, selectedSelector, focusableSelector);
+      }
+
+      let currentSection = el.closest('.section')?.previousElementSibling;
+      while (currentSection && !focusTarget) {
+        focusTarget = findFocusableInSection(currentSection, selectedSelector, focusableSelector);
+        if (!focusTarget) currentSection = currentSection.previousElementSibling;
+      }
+
+      const header = document.querySelector('header');
+      if (!focusTarget && header) {
+        const headerFocusable = [...header.querySelectorAll(focusableSelector)];
+        focusTarget = headerFocusable[headerFocusable.length - 1];
+      }
+
+      liveRegion?.remove();
+      if (focusTarget) focusTarget.focus({ preventScroll: true });
+    }, 2000);
+  });
+}
+
+function decorateClose(el) {
+  const btn = createTag('button', { 'aria-label': 'Close Promo Banner', class: 'close' }, closeSvg);
+  addCloseAction(el, btn);
   el.appendChild(btn);
 }
 
@@ -132,15 +199,100 @@ async function decorateLockup(lockupArea, el) {
   if (pre && pre[2] === 'icon') el.classList.replace(pre[0], `${pre[1]}-lockup`);
 }
 
+function curtainCallback(el) {
+  const curtain = createTag('div', { class: 'notification-curtain' });
+  document.body.classList.add('mobile-disable-scroll');
+  el.insertAdjacentElement('afterend', curtain);
+}
+
+function decorateSplitList(el, listContent) {
+  const closeEvent = '#_evt-close';
+  const listContainer = createTag('div', { class: 'split-list-area' });
+  listContent?.querySelectorAll('li').forEach((item) => {
+    const listItem = createTag('div', { class: 'split-list-item' });
+    const pic = item.querySelector('picture');
+    if (!pic) return;
+    const textli = ['STRONG', 'EM', 'A'].includes(item.lastElementChild.nodeName)
+      ? item
+      : item.nextElementSibling;
+    const btn = createTag('div', {}, textli.lastElementChild);
+    const btnA = btn.querySelector('a');
+    if (btnA?.href.includes(closeEvent)) {
+      btnA.href = closeEvent;
+      addCloseAction(el, btnA);
+    }
+    const textContent = createTag('div', { class: 'text-content' });
+    const text = createTag('div', {}, textli.innerText.trim());
+    textContent.append(pic, text);
+    listItem.append(textContent, btn);
+    listContainer.append(listItem);
+    pic.querySelector('img').loading = 'eager';
+  });
+  listContent.replaceWith(listContainer);
+
+  if (el.classList.contains('focus')) {
+    if (el.classList.contains('no-delay')) {
+      curtainCallback(el);
+      return;
+    }
+    createIntersectionObserver({
+      el,
+      option: { once: true },
+      callback: () => curtainCallback(el),
+    });
+  }
+}
+
 async function decorateForegroundText(el, container) {
   const text = container?.querySelector('h1, h2, h3, h4, h5, h6, p')?.closest('div');
   text?.classList.add('text');
   if (el.classList.contains('countdown-timer') && !el.classList.contains('pill') && !el.classList.contains('ribbon')) {
     await loadCDT(text, el.classList);
   }
+  if (el.classList.contains('split')) {
+    decorateSplitList(el, text?.querySelector('ul'));
+    return;
+  }
   const iconArea = text?.querySelector('p:has(picture)');
   iconArea?.classList.add('icon-area');
   if (iconArea?.textContent.trim()) await decorateLockup(iconArea, el);
+}
+
+function toolTipPosition(el, allViewPorts) {
+  const elIndex = [...allViewPorts].indexOf(el);
+  const isRtl = document.documentElement.getAttribute('dir') === 'rtl';
+  const isTablet = allViewPorts.length === 3 && elIndex === 1;
+  const isMobile = allViewPorts.length > 1 && elIndex === 0;
+  if (isMobile) el.classList.add('notification-pill-mobile');
+  if ((isRtl && isTablet) || (isMobile && !isRtl)) return 'right';
+
+  return 'left';
+}
+
+async function addTooltip(el) {
+  const allViewPorts = el.querySelectorAll('.foreground > div');
+  const desktopView = [...allViewPorts].pop();
+  const desktopContentText = desktopView.querySelector('.copy-wrap')?.textContent.trim();
+  const toolTipIcons = [];
+  allViewPorts.forEach((viewPortEl) => {
+    if (viewPortEl === desktopView || !desktopContentText) return;
+    const textContainer = viewPortEl.querySelector('.copy-wrap');
+    const viewPortTextContent = textContainer?.textContent.trim();
+    if (viewPortTextContent === desktopContentText) return;
+    const appendTarget = textContainer?.lastElementChild ?? viewPortEl.firstElementChild;
+    const tooltipSpan = createTag('span', { class: 'icon icon-tooltip' });
+    const iconWrapper = createTag('em', {}, `${toolTipPosition(viewPortEl, allViewPorts)}|${desktopContentText}`);
+    iconWrapper.appendChild(tooltipSpan);
+    toolTipIcons.push(tooltipSpan);
+    appendTarget?.appendChild(iconWrapper);
+  });
+
+  if (!toolTipIcons.length) return;
+
+  const config = getConfig();
+  const { default: loadIcons } = await import('../../features/icons/icons.js');
+  loadStyle(`${base}/features/icons/icons.css`);
+  loadIcons(toolTipIcons, config);
 }
 
 async function decorateLayout(el) {
@@ -165,6 +317,8 @@ async function decorateLayout(el) {
 
 export default async function init(el) {
   el.classList.add('con-block');
+  el.setAttribute('aria-label', 'Promo Banner');
+  el.setAttribute('role', 'region');
   const { fontSizes, options } = getBlockData(el);
   const blockText = await decorateLayout(el);
   decorateBlockText(blockText, fontSizes);
@@ -175,6 +329,7 @@ export default async function init(el) {
   el.querySelectorAll('a:not([class])').forEach((staticLink) => staticLink.classList.add('static'));
   if (el.matches(`:is(.${ribbon}, .${pill})`)) {
     wrapCopy(blockText);
+    if (el.matches(`.${pill}`)) addTooltip(el);
     decorateMultiViewport(el);
   }
 }

@@ -1,0 +1,20 @@
+{
+  "total": 21,
+  "offset": 0,
+  "limit": 21,
+  "data": [
+    {
+      "key": "error-refresh",
+      "value": "Something went wrong. Please refresh."
+    },
+    {
+      "key": "error-try-later",
+      "value": "Something went wrong. Please try again later."
+    },
+    {
+      "key": "try-again",
+      "value": "Try again"
+    }
+  ],
+  ":type": "sheet"
+}

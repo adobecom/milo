@@ -1,4 +1,5 @@
-import { html } from 'lit';
+import { html, nothing } from 'lit';
+import { getFragmentMapping } from './variants';
 
 export class VariantLayout {
     static styleMap = {};
@@ -105,13 +106,16 @@ export class VariantLayout {
         return '[slot="heading-xs"]';
     }
 
+    get secureLabel() {
+        return this.card.secureLabel ? 
+            html`<span class="secure-transaction-label"
+                >${this.card.secureLabel}</span
+            >`
+            : nothing;
+    }
+
     get secureLabelFooter() {
-        const secureLabel = this.card.secureLabel
-            ? html`<span class="secure-transaction-label"
-                  >${this.card.secureLabel}</span
-              >`
-            : '';
-        return html`<footer>${secureLabel}<slot name="footer"></slot></footer>`;
+        return html`<footer>${this.secureLabel}<slot name="footer"></slot></footer>`;
     }
 
     async adjustTitleWidth() {
@@ -142,9 +146,7 @@ export class VariantLayout {
         //nothing to do by default
     }
 
-    /* c8 ignore next 4 */
     get aemFragmentMapping() {
-        //nothing to do by default
-        return undefined;
+        return getFragmentMapping(this.card.variant);
     }
 }

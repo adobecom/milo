@@ -1,0 +1,286 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>Merch Card Plans variant test page</title>
+        <link
+            rel="stylesheet"
+            href="http://localhost:2023/__wds-outside-root__/2/styles/styles.css"
+        />
+        <style>
+            main {
+                display: flex;
+                align-items: center;
+                gap: 20px;
+                flex-direction: column;
+                padding-top: 80px;
+            }
+            mas-commerce-service {
+                display: none;
+            }
+        </style>
+    </head>
+
+    <body>
+        <main>
+            <div class="two-merch-cards plans"></div>
+        </main>
+        <template id="photoshop">
+            <mas-commerce-service
+                env="stage"
+                country="CA"
+                language="en"
+            ></mas-commerce-service>
+            <merch-card
+                variant="plans"
+                consonant="true"
+                checkbox-label="Add a 30-day free trial of Adobe Stock.*"
+                stock-offer-osis="stock-puf,stock-abm,stock-m2m"
+                secure-label="Secure transaction"
+            >
+                <merch-icon
+                    slot="icons"
+                    src="/test/mocks/img/photoshop.svg"
+                    loading="lazy"
+                    size="l"
+                    alt="Lightroom"
+                ></merch-icon>
+                <p slot="heading-xs">Photoshop</p>
+                <p slot="heading-m">
+                    <span
+                        is="inline-price"
+                        data-template="price"
+                        data-wcs-osi="caA1xn6EL4pK93bWjM8flffQpfEL-bnvtoQKQAvkx574M"
+                        data-display-tax="true"
+                        data-display-plan-type="true"
+                    ></span>
+                </p>
+                <div slot="body-xs">
+                    <p>
+                        Create beautiful graphics, photos, and art on desktop,
+                        web, and iPad. Comes with Adobe Fresco for drawing and
+                        painting.
+                    </p>
+                </div>
+                <div slot="footer">
+                    <a
+                        is="checkout-link"
+                        data-checkout-workflow-step="commitment"
+                        data-wcs-osi="caA1xn6EL4pK93bWjM8flffQpfEL-bnvtoQKQAvkx574M"
+                        data-template="checkoutUrl"
+                        data-analytics-id="buy-now"
+                        class="con-button blue"
+                        >Buy now</a
+                    >
+                </div></merch-card
+            >
+        </template>
+        <template id="fragment-photography-plans">
+            <mas-commerce-service env="stage"></mas-commerce-service>
+            <merch-card>
+                <aem-fragment fragment="fragment-photography-plans">
+                </aem-fragment>
+            </merch-card>
+        </template>
+        <template id="photoshop-with-addon">
+            <mas-commerce-service
+                env="stage"
+                country="CA"
+                language="en"
+            ></mas-commerce-service>
+            <merch-card
+                variant="plans"
+                consonant="true"
+                secure-label="Secure transaction"
+            >
+                <merch-icon
+                    slot="icons"
+                    src="/test/mocks/img/photoshop.svg"
+                    loading="lazy"
+                    size="l"
+                    alt="Lightroom"
+                ></merch-icon>
+                <p slot="heading-xs">Photoshop</p>
+                <p slot="heading-m">
+                    <span
+                        is="inline-price"
+                        data-template="price"
+                        data-wcs-osi="caA1xn6EL4pK93bWjM8flffQpfEL-bnvtoQKQAvkx574M"
+                        data-display-tax="true"
+                        data-display-plan-type="true"
+                    ></span>
+                </p>
+                <div slot="body-xs">
+                    <p>
+                        Create beautiful graphics, photos, and art on desktop,
+                        web, and iPad. Comes with Adobe Fresco for drawing and
+                        painting.
+                    </p>
+                </div>
+                <merch-addon slot="addon">
+                    <p>Add a 30-day free trial of Adobe Stock.*</p>
+                    <p data-plan-type="">
+                        <span
+                            is="inline-price"
+                            data-template="price"
+                            data-wcs-osi="stock-puf"
+                        ></span>
+                    </p>
+                    <p data-plan-type="">
+                        <span
+                            is="inline-price"
+                            data-template="price"
+                            data-wcs-osi="stock-abm"
+                        ></span>
+                    </p>
+                    <p data-plan-type="">
+                        <span
+                            is="inline-price"
+                            data-template="price"
+                            data-wcs-osi="stock-m2m"
+                        ></span>
+                    </p>
+                </merch-addon>
+                <div slot="footer">
+                    <a
+                        is="checkout-link"
+                        data-checkout-workflow-step="commitment"
+                        data-wcs-osi="caA1xn6EL4pK93bWjM8flffQpfEL-bnvtoQKQAvkx574M"
+                        data-template="checkoutUrl"
+                        data-analytics-id="buy-now"
+                        class="con-button blue"
+                        >Buy now</a
+                    >
+                </div></merch-card
+            >
+        </template>
+        <template id="plans-education-with-body-prices">
+            <mas-commerce-service env="stage"></mas-commerce-service>
+            <merch-card consonant="true" variant="plans-education">
+                <p slot="heading-s">Heading S</p>
+                <p slot="subtitle">Subheading</p>
+                <p slot="heading-m">
+                    <span
+                        is="inline-price"
+                        data-display-per-unit="false"
+                        data-template="price"
+                        data-wcs-osi="Mutn1LYoGojkrcMdCLO7LQlx1FyTHw27ETsfLv0h8DQ"
+                    ></span>
+                </p>
+                <div slot="body-xs">
+                    <p><span class="heading-xs">Heading XS</span></p>
+                    <p>
+                        <span
+                            is="inline-price"
+                            data-display-per-unit="false"
+                            data-template="price"
+                            data-wcs-osi="Mutn1LYoGojkrcMdCLO7LQlx1FyTHw27ETsfLv0h8DQ"
+                        ></span>
+                    </p>
+                    <p>
+                        <span class="heading-xs"
+                            >To order, call:
+                            <a
+                                class="spectrum-Link spectrum-Link--primary"
+                                href="tel:800-685-3638."
+                                title="some link"
+                                target="_self"
+                                daa-ll="800 685 3638-1--"
+                                >800-685-3638.</a
+                            ></span
+                        >
+                    </p>
+                    <p>
+                        Body XS/Regular Includes institutional control —
+                        licenses can be reassigned to new students or courses.
+                    </p>
+                </div>
+                <div slot="footer">
+                    <a
+                        is="checkout-link"
+                        data-checkout-workflow="UCv3"
+                        data-checkout-workflow-step="email"
+                        data-quantity="1"
+                        data-wcs-osi="Mutn1LYoGojkrcMdCLO7LQlx1FyTHw27ETsfLv0h8DQ"
+                        data-analytics-id="buy-now"
+                        class="con-button blue"
+                        >Lorem ipsum</a
+                    >
+                </div></merch-card
+            >
+        </template>
+        <script type="module">
+            import { runTests } from '@web/test-runner-mocha';
+            import { expect } from '@esm-bundle/chai';
+            import { mockFetch } from './mocks/fetch.js';
+            import { mockIms } from './mocks/ims.js';
+            import { withWcs } from './mocks/wcs.js';
+            import { withAem } from './mocks/aem.js';
+            import { delay, getTemplateContent, oneEvent } from './utils.js';
+            import '../src/mas.js';
+
+            runTests(async () => {
+                mockIms();
+                await mockFetch(withWcs, withAem);
+                const container = document.querySelector('main > div');
+
+                describe('merch-card web component with plans variant', () => {
+                    beforeEach(() => {
+                        container.innerHTML = '';
+                    });
+                    it('should render tax text & plans type under price', () => {
+                        const [masCommerceService, photoshop] =
+                            getTemplateContent('photoshop');
+                        container.append(masCommerceService, photoshop);
+                        expect(photoshop).to.exist;
+                    });
+
+                    it('should apply settings from fragment to price', async () => {
+                        const [masCommerceService, ccAllApps] =
+                            getTemplateContent('fragment-photography-plans');
+                        container.append(masCommerceService, ccAllApps);
+                        await oneEvent(ccAllApps, 'mas:ready');
+                        await delay(50);
+                        const [price, legal] = ccAllApps.prices;
+                        expect(price.options.displayPerUnit).to.be.false;
+                        expect(price.options.displayTax).to.be.false;
+                        expect(price.options.displayPlanType).to.be.false;
+                        expect(legal.options.displayTax).to.be.true;
+                        expect(legal.options.displayPlanType).to.be.true;
+                        expect(
+                            legal.querySelector(
+                                '.price-tax-inclusivity.disabled',
+                            ),
+                        ).to.exist;
+                    });
+                    it('should render addon checkbox', () => {
+                        const [masCommerceService, photoshopWithAddon] =
+                            getTemplateContent('photoshop-with-addon');
+                        container.append(
+                            masCommerceService,
+                            photoshopWithAddon,
+                        );
+                        expect(photoshopWithAddon).to.exist;
+                    });
+                    it('should render addon checkbox', async () => {
+                        const [masCommerceService, educationWithBodyPrices] =
+                            getTemplateContent(
+                                'plans-education-with-body-prices',
+                            );
+                        container.append(
+                            masCommerceService,
+                            educationWithBodyPrices,
+                        );
+                        await educationWithBodyPrices.checkReady();
+                        const priceLegals =
+                            educationWithBodyPrices.querySelectorAll(
+                                '[data-template="legal"]',
+                            );
+                        expect(priceLegals.length).to.equal(2);
+                    });
+                });
+            });
+        </script>
+    </body>
+</html>

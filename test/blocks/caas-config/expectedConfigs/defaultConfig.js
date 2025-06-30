@@ -20,6 +20,7 @@ const defaultConfig = {
     i18n: {
       cardTitleAccessibilityLevel: 6,
       lastModified: 'Last modified {date}',
+      playVideo: 'Play, {cardTitle}',
       prettyDateIntervalFormat: '{ddd}, {LLL} {dd} | {timeRange} {timeZone}',
       totalResultsText: '{total} results',
       title: '',
@@ -169,7 +170,7 @@ const defaultConfig = {
     loadMoreButton: { style: 'primary', useThemeThree: false },
     type: 'paginator',
     i18n: {
-      loadMore: { btnText: 'Load More', resultsQuantityText: '{start} of {end} displayed' },
+      loadMore: { btnText: 'Load more', resultsQuantityText: '{start} of {end} displayed' },
       paginator: {
         resultsQuantityText: '{start} - {end} of {total} results',
         prevLabel: 'Prev',

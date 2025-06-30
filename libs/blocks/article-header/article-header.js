@@ -9,7 +9,7 @@ async function validateAuthorUrl(url) {
   const resp = await fetch(`${url.toLowerCase()}.plain.html`);
   if (!resp?.ok) {
     /* c8 ignore next 3 */
-    window.lana?.log(`Could not retrieve metadata for ${url}`, { tags: 'errorType=warn,module=article-header' });
+    window.lana?.log(`Could not retrieve metadata for ${url}`, { tags: 'article-header' });
     return null;
   }
 
@@ -33,8 +33,8 @@ function openPopup(e) {
 
 async function buildAuthorInfo(authorEl, bylineContainer) {
   const { textContent } = authorEl;
-  const link = authorEl.href || authorEl.dataset.authorPage;
   const config = getConfig();
+  const link = authorEl.href || authorEl.dataset.authorPage || `${config.locale.contentRoot}/authors/${textContent.replace(/[^0-9a-z]/gi, '-').toLowerCase()}`;
   const base = config.miloLibs || config.codeRoot;
   const authorImg = createTag('div', { class: 'article-author-image' });
   authorImg.style.backgroundImage = `url(${base}/blocks/article-header/adobe-logo.svg)`;
@@ -62,6 +62,12 @@ async function buildAuthorInfo(authorEl, bylineContainer) {
     } else {
       authorImg.style.backgroundImage = 'none';
     }
+  }
+
+  if (getMetadata('article-author-link') === 'off' && authorEl.nodeName === 'A') {
+    const parent = authorEl.parentElement;
+    authorEl.remove();
+    parent.textContent = textContent;
   }
 }
 
@@ -182,6 +188,15 @@ function decorateFigure(el) {
   el.lastElementChild.remove();
 }
 
+function decorateMedia(el) {
+  if (el.querySelector('picture')) {
+    decorateFigure(el);
+    return;
+  }
+
+  el.classList.add('article-feature-video');
+}
+
 export default async function init(blockEl) {
   const childrenEls = Array.from(blockEl.children);
   const categoryContainer = childrenEls[0];
@@ -202,7 +217,7 @@ export default async function init(blockEl) {
   bylineContainer.firstElementChild.classList.add('article-byline-info');
 
   const authorContainer = bylineContainer.firstElementChild.firstElementChild;
-  const authorEl = authorContainer.firstElementChild;
+  const authorEl = authorContainer.firstElementChild || authorContainer;
   authorContainer.classList.add('article-author');
 
   buildAuthorInfo(authorEl, bylineContainer);
@@ -214,8 +229,8 @@ export default async function init(blockEl) {
   const shareBlock = await buildSharing();
   bylineContainer.append(shareBlock);
 
-  const featureImgContainer = childrenEls[3];
-  decorateFigure(featureImgContainer);
+  const mediaContainer = childrenEls[3];
+  decorateMedia(mediaContainer);
 
   document.addEventListener('milo:deferred', () => updateShareText(shareBlock));
 }

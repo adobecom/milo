@@ -8,10 +8,13 @@ const NOT_FOUND = {
   live: { lastModified: DEF_NOT_FOUND },
 };
 const DA_DOMAIN = 'da.live';
+const nonEDSContent = 'Non AEM EDS Content';
+const EXCLUDED_PATHS = ['/tools/caas'];
 
 const content = signal({});
 
 function getAdminUrl(url, type) {
+  if (!(/adobecom\.(hlx|aem)./.test(url.hostname))) return false;
   const project = url.hostname === 'localhost' ? 'main--milo--adobecom' : url.hostname.split('.')[0];
   const [branch, repo, owner] = project.split('--');
   const base = `https://admin.hlx.page/${type}/${owner}/${repo}/${branch}${url.pathname}`;
@@ -20,6 +23,16 @@ function getAdminUrl(url, type) {
 
 async function getStatus(url) {
   const adminUrl = getAdminUrl(url, 'status');
+  if (!adminUrl) {
+    return {
+      url,
+      edit: null,
+      preview: nonEDSContent,
+      live: nonEDSContent,
+      publish: nonEDSContent,
+      externalUrl: url,
+    };
+  }
   const resp = await fetch(adminUrl);
   if (!resp.ok) return {};
   const json = await resp.json();
@@ -49,19 +62,22 @@ function getUrl(el) {
   try {
     return new URL(dataPath);
   } catch {
-    const elPath = el.href || (el.src && el.nodeName === 'IFRAME' ? el?.parentElement.dataset.pdfSrc : el.src);
+    const isPdfIframe = el.src && el.nodeName === 'IFRAME' && el.parentElement?.dataset.pdfSrc;
+    const elPath = el.href || (isPdfIframe ? el.parentElement.dataset.pdfSrc : el.src);
     const path = dataPath ? `${window.location.origin}${dataPath}` : elPath;
     return new URL(path);
   }
 }
 
 function findLinks(selector) {
-  const hrefs = [];
+  const hrefs = new Set();
   return [...document.body.querySelectorAll(selector)]
     .reduce((links, el) => {
       const url = getUrl(el);
-      if (!hrefs.includes(url.href)) {
-        hrefs.push(url.href);
+      const baseUrl = `${url.origin}${url.pathname}`;
+      if (EXCLUDED_PATHS.some((path) => url.pathname.includes(path))) return links;
+      if (!hrefs.has(baseUrl)) {
+        hrefs.add(baseUrl);
         links.push({ url, edit: null, preview: 'Fetching', live: 'Fetching' });
       }
       return links;
@@ -171,14 +187,15 @@ function usePublishProps(item) {
 function Item({ name, item, idx }) {
   const { publishText, disablePublish } = usePublishProps(item);
   const isChecked = item.checked ? ' is-checked' : '';
-  const isFetching = item.edit ? '' : ' is-fetching';
+  const isFetching = item.edit || item.preview === nonEDSContent ? '' : ' is-fetching';
   const editIcon = item.edit && item.edit.includes(DA_DOMAIN) ? 'da-icon' : 'sharepoint-icon';
+  const prettyUrl = item.externalUrl ? item.externalUrl.href : prettyPath(item.url);
   if (!item.url) return undefined;
 
   return html`
     <div class="preflight-group-row preflight-group-detail${isChecked}${checkPublishing(item, isFetching)}"
       onClick=${(e) => handleChange(e.target, name, idx)}>
-      <p><a href=${item.url.pathname} target=_blank>${prettyPath(item.url)}</a></p>
+      <p><a href=${item.externalUrl || item.url.pathname} target=_blank>${prettyUrl}</a></p>
       <p>${item.edit && html`<a href=${item.edit} class="preflight-edit ${editIcon}" target=_blank>EDIT</a>`}</p>
       <p class=preflight-date-wrapper>${item.action === 'preview' ? 'Previewing' : prettyDate(item.preview)}</p>
       <p class="preflight-date-wrapper">

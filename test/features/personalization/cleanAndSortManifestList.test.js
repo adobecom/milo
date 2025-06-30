@@ -1,6 +1,7 @@
 import { expect } from '@esm-bundle/chai';
 import { readFile } from '@web/test-runner-commands';
 import { cleanAndSortManifestList } from '../../../libs/features/personalization/personalization.js';
+import { getConfig } from '../../../libs/utils/utils.js';
 
 // Note that the manifestPath doesn't matter as we stub the fetch
 describe('Functional test', () => {
@@ -13,26 +14,44 @@ describe('Functional test', () => {
     expect(second.manifestUrl).to.include('test-normal.json');
   });
 
-  it('Duplicate manifests, Target version is updated', async () => {
+  it('Duplicate manifests, Target experience chosen and on stage', async () => {
     let manifestJson = await readFile({ path: './mocks/manifestLists/two-duplicate-manifests-one-from-target.json' });
     manifestJson = JSON.parse(manifestJson);
-    const manifestList = cleanAndSortManifestList(manifestJson);
+    const manifestList = cleanAndSortManifestList(manifestJson, { env: { name: 'stage' } });
+    expect(manifestList.length).to.equal(1);
     const [first] = manifestList;
-    const { name, selectedVariantName, selectedVariant } = first;
+    const { name, selectedVariantName, selectedVariant, placeholderData } = first;
     expect(name).to.equal('MILO0013b - use fresh manifest over saved');
-    expect(selectedVariantName).to.equal('all');
-    expect(selectedVariant.commands[0].target).to.include('fresh-from-json-version');
+    expect(selectedVariantName).to.equal('target-challenger');
+    expect(selectedVariant.commands[0].target).to.include('target-version-in-pzn');
+    expect(placeholderData['marquee-title']).to.equal('Value in Pzn');
   });
 
-  it('Duplicate manifests in reverse order, Target version is updated', async () => {
-    let manifestJson = await readFile({ path: './mocks/manifestLists/two-duplicate-manifests-other-one-from-target.json' });
+  it('Duplicate manifests, Target experience chosen and on prod', async () => {
+    let manifestJson = await readFile({ path: './mocks/manifestLists/two-duplicate-manifests-one-from-target.json' });
     manifestJson = JSON.parse(manifestJson);
-    const manifestList = cleanAndSortManifestList(manifestJson);
+    const manifestList = cleanAndSortManifestList(manifestJson, { env: { name: 'prod' } });
+    expect(manifestList.length).to.equal(1);
     const [first] = manifestList;
-    const { name, selectedVariantName, selectedVariant } = first;
+    const { name, selectedVariantName, selectedVariant, placeholderData } = first;
+    expect(name).to.equal('MILO0013b - use fresh manifest over saved');
+    expect(selectedVariantName).to.equal('target-challenger');
+    expect(selectedVariant.commands[0].target).to.include('target-version-in-target');
+    expect(placeholderData['marquee-title']).to.equal('Value in Target');
+  });
+
+  it('Duplicate manifests, pzn experience chosen and on prod', async () => {
+    let manifestJson = await readFile({ path: './mocks/manifestLists/two-duplicate-manifests-one-from-target.json' });
+    manifestJson = JSON.parse(manifestJson);
+    manifestJson[0].selectedVariantName = 'all';
+    const manifestList = cleanAndSortManifestList(manifestJson, { env: { name: 'prod' } });
+    expect(manifestList.length).to.equal(1);
+    const [first] = manifestList;
+    const { name, selectedVariantName, selectedVariant, placeholderData } = first;
     expect(name).to.equal('MILO0013b - use fresh manifest over saved');
     expect(selectedVariantName).to.equal('all');
-    expect(selectedVariant.commands[0].target).to.include('fresh-from-json-version');
+    expect(selectedVariant.commands[0].target).to.include('all-version-in-pzn');
+    expect(placeholderData['marquee-title']).to.equal('Value in Pzn');
   });
 
   it('One of each, all normal', async () => {
@@ -83,5 +102,19 @@ describe('Functional test', () => {
     expect(first.manifestUrl).to.include('pzn-normal.json');
     expect(second.manifestUrl).to.include('none.json');
     expect(third.manifestUrl).to.include('test-normal.json');
+  });
+
+  it('Should normalize manifest path for non-target manifests', async () => {
+    const config = getConfig();
+    config.locales = ['en-US'];
+    config.locale = { ietf: 'en-US' };
+    let manifestJson = await readFile({ path: './mocks/manifestLists/two-manifests-one-from-target.json' });
+    manifestJson = JSON.parse(manifestJson);
+    const [targetManifest, pznManifest] = manifestJson;
+    expect(pznManifest.manifest).to.include('https');
+    expect(targetManifest.manifest).to.include('https');
+    const [cleanPznManifest, cleanTargetManifest] = cleanAndSortManifestList(manifestJson);
+    expect(cleanPznManifest.manifest).to.not.include('https');
+    expect(cleanTargetManifest.manifest).to.include('https');
   });
 });

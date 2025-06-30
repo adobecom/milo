@@ -1,7 +1,12 @@
 import { LOG_NAMESPACE } from './constants.js';
-import { getParameter, isFunction, toBoolean } from './external.js';
+import { getParameter, isFunction, toBoolean } from '@dexter/tacocat-core';
 import { lanaAppender, updateConfig } from './lana.js';
-import { HostEnv } from './settings.js';
+
+const HostEnv = {
+    LOCAL: 'local',
+    PROD: 'prod',
+    STAGE: 'stage',
+};
 
 const LogLevels = {
     DEBUG: 'debug',
@@ -10,7 +15,6 @@ const LogLevels = {
     WARN: 'warn',
 };
 
-const startTime = Date.now();
 const appenders = new Set();
 const filters = new Set();
 const loggerIndexes = new Map();
@@ -42,7 +46,7 @@ function createEntry(level, message, namespace, params, source) {
             return params;
         },
         source,
-        timestamp: Date.now() - startTime,
+        timestamp: performance.now().toFixed(3),
     };
 }
 

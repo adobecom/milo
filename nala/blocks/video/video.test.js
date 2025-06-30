@@ -116,7 +116,7 @@ test.describe('Milo Video Block test suite', () => {
       await expect(await video.miloVideo).toBeVisible();
       await expect(await video.iframe).toBeVisible();
 
-      await expect(await video.iframe).toHaveAttribute('title', data.iframeTitle);
+      await expect(await video.iframe).toHaveAttribute('title', data.h1Title);
       await expect(await video.iframe).toHaveAttribute('src', data.source);
       expect(await webUtil.verifyAttributes(video.iframe, video.attributes['iframe-mpc'])).toBeTruthy();
     });
@@ -140,7 +140,7 @@ test.describe('Milo Video Block test suite', () => {
 
     await test.step('step-2: Verify video block content/specs', async () => {
       await expect(await video.miloVideo).toBeVisible();
-      await expect(await video.iframe).toHaveAttribute('title', data.iframeTitle);
+      await expect(await video.iframe).toHaveAttribute('title', data.h1Title);
       await expect(await video.iframe).toHaveAttribute('src', data.source);
       expect(await webUtil.verifyAttributes(video.iframe, video.attributes['iframe-mpc'])).toBeTruthy();
     });
@@ -162,9 +162,12 @@ test.describe('Milo Video Block test suite', () => {
       await expect(await video.miloVideo).toBeVisible();
       await expect(await video.youtubePlayButton).toBeVisible();
       await expect(await video.youtubePlayButton).toHaveAttribute('type', 'button');
-
-      await expect(await video.liteYoutube).toHaveAttribute('playlabel', data.playLabel);
       await expect(await video.liteYoutube).toHaveAttribute('videoid', data.videoId);
+      await video.youtubePlayButton.click();
+      await page.waitForTimeout(1000);
+      const iframeTitle = await video.iframe.getAttribute('title');
+      expect(iframeTitle).not.toBeNull();
+      expect(iframeTitle).not.toBe('');
     });
   });
 

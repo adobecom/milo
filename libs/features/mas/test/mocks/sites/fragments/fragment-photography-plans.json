@@ -1,0 +1,54 @@
+{
+    "path": "/content/dam/mas/test/fragment-photography-plans",
+    "name": "",
+    "title": "Photography Plans Card",
+    "id": "86248907-1cb6-4d1e-8b3f-a42dee95d9bc",
+    "description": "some description",
+    "model": {
+        "id": "L2NvbmYvbWFzL3NldHRpbmdzL2RhbS9jZm0vbW9kZWxzL2NhcmQ"
+    },
+    "fields": {
+        "variant": "plans",
+        "mnemonicIcon": [
+            "http://localhost:2023/test/img/lightroom.svg",
+            "http://localhost:2023/test/mocks/img/photoshop.svg"
+        ],
+        "mnemonicAlt": ["Lightroom", "Illustrator"],
+        "mnemonicLink": [
+            "https://www.adobe.com/products/catalog.html",
+            "https://www.adobe.com"
+        ],
+        "badge": {
+            "mimeType": "text/html"
+        },
+        "cardTitle": "Photography  (1TB)",
+        "prices": {
+            "value": "<span is=\"inline-price\" data-template=\"price\" data-wcs-osi=\"abm\" data-display-tax=\"true\"></span>",
+            "mimeType": "text/html"
+        },
+        "shortDescription": {
+            "mimeType": "text/html"
+        },
+        "promoText": "Save over 30% with an annual plan.",
+        "description": {
+            "value": "<p>Edit and organize photos for Fred. Save&nbsp;25% for the first 6 months.&nbsp;Ends Feb 26.&nbsp;<a href=\"https://www.adobe.com/offer-terms/ccpp-1tb-terms.html\" target=\"_blank\" rel=\"noopener\">See terms.</a><br><a href=\"https://www.adobe.com/creativecloud/photography/compare-plans.html\">Compare photography plans</a><br><a class=\"modal-Link\" href=\"https://www.adobe.com/plans-fragments/modals/individual/modals-content-rich/photography1tb/master.html\" target=\"_blank\" rel=\"noopener\">See all plans &amp; pricing details</a></p>",
+            "mimeType": "text/html"
+        },
+        "callout": {
+            "mimeType": "text/html"
+        },
+        "showStockCheckbox": true,
+        "ctas": {
+            "value": "<p><a is=\"checkout-link\" data-wcs-osi=\"abm\" data-template=\"checkoutUrl\" data-analytics-id=\"buy-now\">Buy now</a></p>",
+            "mimeType": "text/html"
+        },
+        "tags": [],
+        "locReady": true
+    },
+    "references": {},
+    "referencesTree": [],
+    "settings": {
+        "displayPlanType": true,
+        "secureLabel": "Secure transaction"
+    }
+}

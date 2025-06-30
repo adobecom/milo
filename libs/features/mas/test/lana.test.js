@@ -1,7 +1,9 @@
 import { Log } from '../src/log.js';
-import { config, lanaAppender } from '../src/lana.js';
+import { lanaAppender, updateConfig } from '../src/lana.js';
 import { mockLana, unmockLana } from './mocks/lana.js';
 import { expect } from './utilities.js';
+
+updateConfig({ isProdDomain: true });
 
 describe('lana', () => {
     let lana;
@@ -41,8 +43,8 @@ describe('lana', () => {
             {
                 clientId: 'merch-at-scale',
                 delimiter: '¶',
-                ignoredProperties: ['analytics', 'literals'],
-                isProdDomain: false,
+                ignoredProperties: ['analytics', 'literals', 'element'],
+                isProdDomain: true,
                 serializableTypes: ['Array', 'Object'],
                 sampleRate: 1,
                 tags: 'acom',
@@ -51,31 +53,31 @@ describe('lana', () => {
     });
 
     it('will trim page length if longer than 1k characters', () => {
-      Log.reset();
-      const page = new Array(1001).join( 'a' );
-      window.history.replaceState({}, '', page);
-      lanaAppender.append({
-          level: Log.Level.ERROR,
-          message: 'Failed to build price, osi 123: ',
-          namespace: 'test',
-          params: [
-            new Error('Uncaught TypeError: Cannot read properties of null'),
-          ],
-          source: 'testModule',
-          timestamp: Date.now(),
-      });
+        Log.reset();
+        const page = new Array(1001).join('a');
+        window.history.replaceState({}, '', page);
+        lanaAppender.append({
+            level: Log.Level.ERROR,
+            message: 'Failed to build price, osi 123: ',
+            namespace: 'test',
+            params: [
+                new Error('Uncaught TypeError: Cannot read properties of null'),
+            ],
+            source: 'testModule',
+            timestamp: Date.now(),
+        });
 
-      expect(lana.log.firstCall.args).to.deep.equal([
-          'Failed to build price, osi 123:  Uncaught TypeError: Cannot read properties of null¶page=/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa<trunc>',
-          {
-              clientId: 'merch-at-scale',
-              delimiter: '¶',
-              ignoredProperties: ['analytics', 'literals'],
-              isProdDomain: false,
-              serializableTypes: ['Array', 'Object'],
-              sampleRate: 1,
-              tags: 'acom',
-          },
-      ]);
-  });
+        expect(lana.log.firstCall.args).to.deep.equal([
+            'Failed to build price, osi 123:  Uncaught TypeError: Cannot read properties of null¶page=/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa<trunc>',
+            {
+                clientId: 'merch-at-scale',
+                delimiter: '¶',
+                ignoredProperties: ['analytics', 'literals', 'element'],
+                isProdDomain: true,
+                serializableTypes: ['Array', 'Object'],
+                sampleRate: 1,
+                tags: 'acom',
+            },
+        ]);
+    });
 });

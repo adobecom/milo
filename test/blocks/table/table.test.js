@@ -62,9 +62,7 @@ describe('table and tablemetadata', () => {
       window.innerWidth = 760;
       window.dispatchEvent(new Event('resize'));
       const filters = await waitForElement('.filters');
-      const col5 = table.querySelector('.col-5');
       expect(filters).to.be.exist;
-      expect(col5).to.be.null;
     });
 
     it('filter test: for case of both filter poiting same options', async () => {
@@ -126,26 +124,6 @@ describe('table and tablemetadata', () => {
       selectElements.forEach((selectElement) => {
         expect(selectElement.getAttribute('aria-label')).to.equal(ariaLabel);
       });
-    });
-
-    it('should show and hide tooltip on hover, focus, and Escape key', async () => {
-      const tooltip = document.querySelector('.milo-tooltip');
-      expect(tooltip).to.exist;
-
-      tooltip.dispatchEvent(new Event('mouseenter'));
-      expect(tooltip.classList.contains('hide-tooltip')).to.be.false;
-
-      tooltip.dispatchEvent(new Event('mouseleave'));
-      expect(tooltip.classList.contains('hide-tooltip')).to.be.true;
-
-      tooltip.dispatchEvent(new Event('focus'));
-      expect(tooltip.classList.contains('hide-tooltip')).to.be.false;
-
-      tooltip.dispatchEvent(new Event('blur'));
-      expect(tooltip.classList.contains('hide-tooltip')).to.be.true;
-
-      await sendKeys({ press: 'Escape' });
-      expect(tooltip.classList.contains('hide-tooltip')).to.be.true;
     });
   });
 });

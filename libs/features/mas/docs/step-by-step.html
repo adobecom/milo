@@ -1,0 +1,78 @@
+
+    <!DOCTYPE html>
+    <html>
+    <head>
+    <meta charset="UTF-8">
+    <title>M@S Web Components</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="spectrum.css">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://p.typekit.net/p.css?s=1&amp;k=hah7vzn&amp;ht=tk&amp;f=7180.7181.7182.7183.22474.22749.22750.22751.22753&amp;a=8634977&amp;app=typekit&amp;e=css">
+    <link rel="stylesheet" href="https://use.typekit.net/hah7vzn.css">
+  
+  <!-- Include your custom element script as an ES6 module -->
+  <script type="module">
+    import { init } from './common.js';
+    init();
+  </script>
+  <!-- Include Highlight.js stylesheet for syntax highlighting -->
+  <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/default.min.css">
+  <script type="module" src="./mas-sidenav.js"></script>
+</head>
+<body class="spectrum spectrum--medium spectrum--light">
+    <aside is="mas-sidenav"></aside>
+<main>
+<sp-theme color="light" scale="medium">
+<h1 id="step-by-step---enable-m%40s" tabindex="-1">Step By Step - Enable M@S <a class="header-anchor" href="#step-by-step---enable-m%40s" href="#step-by-step---enable-m%40s" title="Permalink to this heading">#</a></h1>
+<h2 id="1.-import-polyfills%2C-if-required" tabindex="-1">1. Import polyfills, if required <a class="header-anchor" href="#1.-import-polyfills%2C-if-required" href="#1.-import-polyfills%2C-if-required" title="Permalink to this heading">#</a></h2>
+<pre><code class="hljs language-html"><span class="hljs-tag">&lt;<span class="hljs-name">script</span> <span class="hljs-attr">src</span>=<span class="hljs-string">&quot;https://www.adobe.comlibs/deps/custom-elements.js&quot;</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span>
+</code></pre>
+<p>Example how to load polyfill only if required:</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">let</span> isSupported = <span class="hljs-literal">false</span>;
+<span class="hljs-variable language_">document</span>.<span class="hljs-title function_">createElement</span>(<span class="hljs-string">&#x27;div&#x27;</span>, {
+  <span class="hljs-keyword">get</span> <span class="hljs-title function_">is</span>() {
+    isSupported = <span class="hljs-literal">true</span>;
+  },
+});
+<span class="hljs-keyword">if</span> (!isSupported) {
+  <span class="hljs-keyword">await</span> <span class="hljs-keyword">import</span>(<span class="hljs-string">&#x27;https://www.adobe.com/libs/deps/custom-elements.js&#x27;</span>);
+}
+</code></pre>
+<h2 id="2.-import-mas.js" tabindex="-1">2. Import mas.js <a class="header-anchor" href="#2.-import-mas.js" href="#2.-import-mas.js" title="Permalink to this heading">#</a></h2>
+<pre><code class="hljs language-html"><span class="hljs-tag">&lt;<span class="hljs-name">script</span> <span class="hljs-attr">src</span>=<span class="hljs-string">&quot;https://www.adobe.com/libs/features/mas/dist/mas.js&quot;</span> <span class="hljs-attr">type</span>=<span class="hljs-string">&quot;module&quot;</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span>
+</code></pre>
+<h2 id="3.-add-%3Cmas-commerce-service%3E-element" tabindex="-1">3. Add <code>&lt;mas-commerce-service&gt;</code> element <a class="header-anchor" href="#3.-add-%3Cmas-commerce-service%3E-element" href="#3.-add-%3Cmas-commerce-service%3E-element" title="Permalink to this heading">#</a></h2>
+<p>Preferrably, place it inside the <head> tag.
+(!) Mas Commerce Service should be attached to DOM <em>before</em> <code>&lt;aem-fragment&gt;</code> elements are created.</p>
+<pre><code class="hljs language-html"><span class="hljs-tag">&lt;<span class="hljs-name">head</span>&gt;</span>
+  ...
+  <span class="hljs-tag">&lt;<span class="hljs-name">mas-commerce-service</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">mas-commerce-service</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">head</span>&gt;</span>  
+</code></pre>
+<h2 id="4.-add-%3Cmerch-card%3E-elements." tabindex="-1">4. Add <code>&lt;merch-card&gt;</code> elements. <a class="header-anchor" href="#4.-add-%3Cmerch-card%3E-elements." href="#4.-add-%3Cmerch-card%3E-elements." title="Permalink to this heading">#</a></h2>
+<pre><code class="hljs language-html"><span class="hljs-tag">&lt;<span class="hljs-name">merch-card</span>&gt;</span><span class="hljs-tag">&lt;<span class="hljs-name">aem-fragment</span> <span class="hljs-attr">fragment</span>=<span class="hljs-string">&quot;a1ca4a50-dd85-4cf9-94e2-a9e90ad4bb27&quot;</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">aem-fragment</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">merch-card</span>&gt;</span>
+</code></pre>
+<h2 id="5.-import-styles" tabindex="-1">5. Import styles <a class="header-anchor" href="#5.-import-styles" href="#5.-import-styles" title="Permalink to this heading">#</a></h2>
+<p>Depending on the surface, import spectrum css / spectrum web components / consonant styles</p>
+
+</sp-theme>
+</main>
+<script type="module">
+  document.querySelectorAll('code.demo').forEach(el => {
+      const targetContainer = document.createElement('div');
+      targetContainer.classList.toggle('light', el.classList.contains('light'));
+      targetContainer.innerHTML = `<h4>Demo: </h4><div class="demo-container">${el.textContent}</div>`;
+      el.parentElement.after(targetContainer);
+      // Extract and evaluate <script> tags
+      const scriptTags = targetContainer.getElementsByTagName('script');
+      for (let i = 0; i < scriptTags.length; i++) {
+          const script = document.createElement('script');
+          script.type = 'module';
+          script.text = scriptTags[i].text;
+          document.body.appendChild(script); // Appends to the document to execute
+          scriptTags[i].remove(); // Remove the script tag
+      }
+  });
+</script>
+</body>
+</html>

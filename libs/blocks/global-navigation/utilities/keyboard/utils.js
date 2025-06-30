@@ -2,6 +2,7 @@ import { selectors as baseSelectors } from '../utilities.js';
 
 const selectors = {
   ...baseSelectors,
+  globalFooterTag: 'footer',
   globalFooter: '.global-footer',
   mainNavItems:
     '.feds-navItem > a, .feds-navItem > button, .feds-navItem > .feds-cta-wrapper > .feds-cta',
@@ -28,7 +29,9 @@ const selectors = {
   column: '.feds-menu-column:not(.feds-menu-column--group)',
   cta: '.feds-cta',
   openSearch: '.feds-search-trigger[aria-expanded = "true"]',
+  featuredProducts: '.feds-featuredProducts',
   regionPicker: '.feds-regionPicker',
+  languagePicker: '.language-dropdown',
   socialLink: '.feds-social-link',
   privacyLink: '.feds-footer-privacyLink',
   menuContent: '.feds-menu-content',
@@ -41,11 +44,13 @@ const selectors = {
   activeLinks: '.tab-content [role="tabpanel"]:not([hidden="true"]) a',
   stickyCta: 'header.new-nav .feds-popup .sticky-cta a',
   topBarLinks: 'header.new-nav .feds-popup .top-bar a, header.new-nav .feds-popup .top-bar button',
-  closeLink: 'header.new-nav .feds-popup .top-bar .close-icon',
+  closeLink: 'header.new-nav .feds-popup .close-icon',
   localNav: '.feds-localnav',
   localNavActive: '.feds-localnav--active',
   localNavTitle: '.feds-localnav-title',
   localNavExit: '.feds-localnav-exit',
+  localNavItem: '.feds-localnav-items .feds-navItem',
+  localNavItems: '.feds-navItem .feds-menu-column > a, .feds-navItem > a, .feds-navItem > button, .feds-navItem > .feds-cta-wrapper > .feds-cta',
 };
 
 selectors.profileDropdown = `
@@ -56,7 +61,7 @@ selectors.profileDropdown = `
 `;
 
 selectors.popupItems = `
-  ${selectors.navLink},
+  ${selectors.navLink}:not(.feds-navLink--header),
   ${selectors.promoLink},
   ${selectors.imagePromo},
   ${selectors.cta},

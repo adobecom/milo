@@ -5,6 +5,8 @@ import { initService } from '../../../libs/blocks/merch/merch.js';
 import initCard from '../../../libs/blocks/merch-card/merch-card.js';
 import { setConfig } from '../../../libs/utils/utils.js';
 
+document.head.appendChild(document.createElement('mas-commerce-service'));
+
 const delay = (duration = 100) => new Promise((resolve) => { setTimeout(resolve, duration); });
 
 function validateMerchOffer(offer, selected, text, badgeText, osi, description) {
@@ -27,9 +29,9 @@ function validateMerchOffer(offer, selected, text, badgeText, osi, description) 
 
 function validateMerchCard(card, badge, description, osi) {
   if (badge) {
-    expect(card.shadowRoot.querySelector('div.plans-badge').innerText).to.equal(badge);
+    expect(card.shadowRoot.querySelector('div#badge').innerText).to.equal(badge);
   } else {
-    expect(card.shadowRoot.querySelector('div.plans-badge')).not.to.exist;
+    expect(card.shadowRoot.querySelector('div#badge')).not.to.exist;
   }
   expect(card.querySelector('div[slot="body-xs"] p[slot="description"]').innerText).to.equal(description);
   expect(card.querySelector('div[slot="footer"] a[slot="cta"]').dataset.wcsOsi).to.equal(osi);
@@ -152,6 +154,27 @@ describe('Merch quantity select', () => {
 
     validateMerchCard(merchCard, null, 'Access advanced PDF.', '6WK1gybjBe2EKcq0HI0WvbsoiKOri2yRAwS9t_kGHoE');
     expect(merchCard.querySelector('div[slot="footer"] a[slot="cta"]').dataset.quantity).to.equal('2');
+  });
+});
+
+describe('Merch quantity select: link approach', () => {
+  before(async () => {
+    mockIms();
+    await mockFetch();
+    await initService(true);
+    document.body.innerHTML = await readMockText('/test/blocks/merch-card/mocks/selection-cards.html');
+  });
+
+  after(() => {
+    unmockIms();
+    unmockFetch();
+  });
+
+  it('Should render quantity select with link approach', async () => {
+    const merchCard = await initCard(document.querySelector('.quantity-select-link-approach'));
+    await delay(200);
+    const quantitySelect = merchCard.querySelector('merch-quantity-select');
+    expect(quantitySelect).to.exist;
   });
 });
 

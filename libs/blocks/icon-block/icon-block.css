@@ -69,7 +69,6 @@
   margin: 0 auto var(--spacing-xs);
   max-height: var(--icon-size-xxl);
   max-width: 234px;
-  overflow: hidden;
 }
 
 .icon-block .foreground .icon-area picture {
@@ -238,6 +237,11 @@
 
 .section.five-up  {
   grid-template-columns: repeat(auto-fit, minmax(276px, 1fr)) !important;
+}
+
+.icon-block .wrapper-anchor {
+  display: flex;
+  flex-direction: column;
 }
 
 .icon-block .foreground .text-content > * {

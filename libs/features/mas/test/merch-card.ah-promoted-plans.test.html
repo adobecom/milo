@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>Merch Card AH Promoted Plans Web Component demo page</title>
+        <script>
+            window.process = {
+                env: {},
+            };
+        </script>
+        <style>
+            main {
+                display: flex;
+                align-items: center;
+                gap: 20px;
+                flex-direction: column;
+                padding-top: 80px;
+                width: 100%;
+                height: 100%;
+            }
+            merch-card {
+                margin-bottom: 20px;
+            }
+        </style>
+    </head>
+
+    <body>
+        <script type="module">
+            import { runTests } from '@web/test-runner-mocha';
+            import { expect } from '@esm-bundle/chai';
+
+            import { mockLana } from './mocks/lana.js';
+            import { mockFetch } from './mocks/fetch.js';
+
+            import './spectrum.js';
+            import '../src/merch-offer.js';
+            import '../src/merch-offer-select.js';
+            import '../src/merch-quantity-select.js';
+
+            import { mockIms } from './mocks/ims.js';
+            import { withWcs } from './mocks/wcs.js';
+
+            runTests(async () => {
+                mockIms();
+                mockLana();
+                await mockFetch(withWcs);
+                await import('../src/mas.js');
+
+                describe('merch-card web component', () => {
+                    it('should exist in the HTML document', async () => {
+                        expect(
+                            document.querySelector(
+                                'merch-card[variant="ah-promoted-plans"]',
+                            ),
+                        ).to.exist;
+                    });
+                });
+            });
+        </script>
+        <main>
+            <merch-card
+                id="c802c222-a573-42ed-a217-301daf2e05d2"
+                tabindex="0"
+                variant="ah-promoted-plans"
+                border-color="spectrum-gray-200"
+                style="
+                    --merch-card-custom-border-color: var(--spectrum-gray-200);
+                "
+            >
+                <merch-icon
+                    slot="icons"
+                    src="./img/pixel.png"
+                    alt="Adobe Acrobat"
+                    size="s"
+                ></merch-icon>
+                <h3 slot="heading-xxxs">Adobe Acrobat</h3>
+                <p slot="price">
+                    <strong
+                        ><span
+                            is="inline-price"
+                            data-wcs-osi="r_JXAnlFI7xD6FxWKl2ODvZriLYBoSL701Kd1hRyhe8"
+                        ></span
+                    ></strong>
+                    <em>Annual, paid monthly</em>
+                    <a href="#" class="spectrum-Link spectrum-Link--secondary"
+                        >See terms</a
+                    >
+                </p>
+                <div slot="body-xxs">
+                    <p>
+                        The complete PDF solution for a mobile, connected world.
+                    </p>
+                </div>
+                <div slot="cta">
+                    <button
+                        is="checkout-button"
+                        class="spectrum-Button spectrum-Button--secondary spectrum-Button--sizeS"
+                    >
+                        <span class="spectrum-Button-label">Free trial</span>
+                    </button>
+                    <button
+                        is="checkout-button"
+                        class="spectrum-Button spectrum-Button--primary spectrum-Button--sizeS"
+                    >
+                        <span class="spectrum-Button-label">Buy now</span>
+                    </button>
+                </div>
+            </merch-card>
+            <merch-card
+                id="031e2f50-5cbc-4e4b-af9b-c63f0e4f2a93"
+                tabindex="0"
+                variant="ah-promoted-plans"
+                border-color="linear-gradient(135deg, #ff4885 0%, #b272eb 50%, #5d89ff 100%)"
+                gradient-border="true"
+            >
+                <merch-icon
+                    slot="icons"
+                    src="./img/pixel.png"
+                    alt="Creative Cloud All Apps"
+                    size="s"
+                ></merch-icon>
+                <h3 slot="heading-xxxs">Creative Cloud All Apps</h3>
+                <p slot="price">
+                    <strong
+                        ><span
+                            is="inline-price"
+                            data-wcs-osi="r_JXAnlFI7xD6FxWKl2ODvZriLYBoSL701Kd1hRyhe8"
+                        ></span
+                    ></strong>
+                    <em>Annual, paid monthly</em>
+                    <a href="#" class="spectrum-Link spectrum-Link--secondary"
+                        >See terms</a
+                    >
+                </p>
+                <div slot="body-xxs">
+                    <p>
+                        Create with Adobe on the web. Includes Firefly, Express,
+                        Photoshop, Lightroom, and more.
+                    </p>
+                </div>
+                <div slot="cta">
+                    <button
+                        is="checkout-button"
+                        class="spectrum-Button spectrum-Button--secondary spectrum-Button--sizeS"
+                    >
+                        <span class="spectrum-Button-label">Free trial</span>
+                    </button>
+                    <button
+                        is="checkout-button"
+                        class="spectrum-Button spectrum-Button--accent spectrum-Button--sizeS"
+                    >
+                        <span class="spectrum-Button-label">Buy now</span>
+                    </button>
+                </div>
+            </merch-card>
+            <merch-card
+                id="9ad2656d-e2dc-49b2-9e63-3801bbfcd164"
+                tabindex="0"
+                variant="ah-promoted-plans"
+                border-color="spectrum-gray-200"
+                style="
+                    --merch-card-custom-border-color: var(--spectrum-gray-200);
+                "
+            >
+                <merch-icon
+                    slot="icons"
+                    src="./img/pixel.png"
+                    alt="Photoshop"
+                    size="s"
+                ></merch-icon>
+                <h3 slot="heading-xxxs">Photoshop</h3>
+                <p slot="price">
+                    <strong
+                        ><span
+                            is="inline-price"
+                            data-wcs-osi="r_JXAnlFI7xD6FxWKl2ODvZriLYBoSL701Kd1hRyhe8"
+                        ></span
+                    ></strong>
+                    <em>Annual, paid monthly</em>
+                    <a href="#" class="spectrum-Link spectrum-Link--secondary"
+                        >See terms</a
+                    >
+                </p>
+                <div slot="body-xxs">
+                    <p>
+                        Try new generative AI features with the latest Adobe
+                        Firefly Model.
+                    </p>
+                </div>
+                <div slot="cta">
+                    <button
+                        is="checkout-button"
+                        class="spectrum-Button spectrum-Button--secondary spectrum-Button--sizeS"
+                    >
+                        <span class="spectrum-Button-label">Free trial</span>
+                    </button>
+                    <button
+                        is="checkout-button"
+                        class="spectrum-Button spectrum-Button--primary spectrum-Button--sizeS"
+                    >
+                        <span class="spectrum-Button-label">Buy now</span>
+                    </button>
+                </div>
+            </merch-card>
+        </main>
+    </body>
+</html>

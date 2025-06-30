@@ -1,4 +1,4 @@
-import '../merch/merch.js';
+import { initService } from '../merch/merch.js';
 import { overrideUrlOrigin } from '../../utils/helpers.js';
 import {
   createTag, decorateLinks, getConfig, loadBlock, loadStyle, localizeLink,
@@ -188,6 +188,7 @@ export default async function init(el) {
   if (el.classList.length < 2) {
     return fail(el, 'Missing collection type');
   }
+  const initServicePromise = initService();
   const config = getConfig();
   const type = el.classList[1];
 
@@ -210,6 +211,7 @@ export default async function init(el) {
   try {
     const cardsDataPromise = fetchCardsData(config, endpointElement, type, el);
     deps = [
+      initServicePromise,
       merchCardCollectionDep,
       import('../merch-card/merch-card.js'),
       import('../../deps/mas/merch-card.js'),
@@ -279,10 +281,7 @@ export default async function init(el) {
     }
   }
 
-  // in case of search literals being fragments, data is marked with a data-path attribute,
-  // and shallower
-  const literalsEl = el.lastElementChild?.firstElementChild?.getAttribute('data-path') !== null
-    ? el.lastElementChild : el.lastElementChild?.firstElementChild;
+  const literalsEl = el.lastElementChild?.querySelector('p').parentElement;
   // parse literals
   const literalSlots = [];
   if (literalsEl && FILTER_REGEX.test(literalsEl.querySelector('u')?.innerText)) {

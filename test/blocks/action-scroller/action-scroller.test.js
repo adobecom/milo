@@ -4,7 +4,7 @@ import { loadStyle } from '../../../libs/utils/utils.js';
 import { delay } from '../../helpers/waitfor.js';
 
 document.body.innerHTML = await readFile({ path: './mocks/body.html' });
-const { default: init } = await import('../../../libs/blocks/action-scroller/action-scroller.js');
+const { default: init, getScrollerPropertyValues, hideNavigation } = await import('../../../libs/blocks/action-scroller/action-scroller.js');
 const variants = ['navigation'];
 
 const loadStyles = (path) => new Promise((resolve) => {
@@ -20,7 +20,7 @@ describe('action scrollers', () => {
     ]);
   });
 
-  const actionScroller = document.querySelectorAll('.action-scroller');
+  const actionScroller = document.querySelectorAll('.action-scroller:not(.utility)');
   actionScroller.forEach((scroller) => {
     init(scroller);
 
@@ -61,6 +61,50 @@ describe('action scrollers', () => {
           expect(scrolledBack).to.be.true;
         });
       }
+    });
+  });
+
+  describe('Helper functions', () => {
+    it('Should return element style properties', () => {
+      const el = document.querySelector('.action-scroller.utility');
+      init(el);
+      const scroller = el.querySelector('.scroller');
+      const {
+        itemWidth,
+        columns,
+        gridGap,
+        scrollDistance,
+        padding,
+      } = getScrollerPropertyValues(scroller);
+      expect(itemWidth).to.equal(210);
+      expect(columns).to.equal(3);
+      expect(gridGap).to.equal(32);
+      expect(padding).to.equal(50);
+      expect(scrollDistance).to.equal(itemWidth + gridGap);
+    });
+    it('Should hide navigation when action items fit the container', () => {
+      const el = document.querySelector('.action-scroller.utility');
+      init(el);
+      const scroller = el.querySelector('.scroller');
+      const shouldHide = hideNavigation(scroller);
+      expect(shouldHide).to.be.true;
+    });
+    it('Should show navigation when action items don\'t fit the container', () => {
+      const el = document.querySelector('.action-scroller.utility');
+      init(el);
+      el.style.width = '300px';
+      const scroller = el.querySelector('.scroller');
+      const shouldHide = hideNavigation(scroller);
+      expect(shouldHide).to.be.false;
+    });
+    it('Should show navigation when scroller has display none and action items don\'t fit the container', () => {
+      window.innerWidth = 300;
+      const el = document.querySelector('.action-scroller.utility');
+      el.style.display = 'none';
+      init(el);
+      const scroller = el.querySelector('.scroller');
+      const shouldHide = hideNavigation(scroller);
+      expect(shouldHide).to.be.false;
     });
   });
 });

@@ -2,7 +2,6 @@
 /* eslint-disable import/prefer-default-export */
 import sinon, { stub } from 'sinon';
 import { setViewport } from '@web/test-runner-commands';
-import initGnav, { LANGMAP } from '../../../libs/blocks/global-navigation/global-navigation.js';
 import { setConfig, loadStyle } from '../../../libs/utils/utils.js';
 import defaultPlaceholders from './mocks/placeholders.js';
 import defaultProfile from './mocks/profile.js';
@@ -89,7 +88,7 @@ export const addMetaDataV2 = (value) => {
   return metaTag;
 };
 
-export const unavLocalesTestData = Object.entries(LANGMAP).reduce((acc, curr) => {
+export const unavLocalesTestData = (LANGMAP) => Object.entries(LANGMAP).reduce((acc, curr) => {
   const result = [];
   const [locale, prefixes] = curr;
   prefixes.forEach((prefix) => (result.push({
@@ -227,6 +226,11 @@ export const createFullGlobalNavigation = async ({
       '../../../../libs/blocks/global-navigation/global-navigation.css',
     ),
   ]);
+  // After optimizing the gnav load, certain operations (e.g. getGnavSource) on load of
+  // the js file rather than on init. The queryparamenter supports this by reloading
+  // the module each time we get here.
+  const url = `../../../libs/blocks/global-navigation/global-navigation.js?reimport=${crypto.randomUUID()}`;
+  const { default: initGnav } = await import(url);
   const instancePromise = initGnav(document.body.querySelector('header'));
   await clock.runToLastAsync();
   clock.tick(1000);

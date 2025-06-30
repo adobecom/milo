@@ -23,7 +23,7 @@ export default (deviceSize) => {
   const axisColor = '#767676';
   const options = {
     textStyle: {
-      fontFamily: 'Adobe Clean',
+      fontFamily: 'inherit',
       fontSize: 16,
       fontWeight: 700,
     },

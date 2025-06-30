@@ -1,0 +1,26 @@
+.mweb-floating-button>.foreground {
+  max-width: 100%;
+  margin: 0px 
+}
+
+.mweb-floating-button.no-margin .cta-container{
+    margin: 0px 16px;
+}
+
+.mweb-floating-button .action-area .con-button {
+  width: 100%;
+}
+
+.mweb-floating-button.sticky-bottom {
+    position: static;
+    transition: all 0.3s ease;
+}
+
+.mweb-floating-button.sticky-bottom.sticky-fixed {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 3;
+  margin-bottom: 8px;
+}

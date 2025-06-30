@@ -2,7 +2,7 @@ import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 
 document.body.innerHTML = await readFile({ path: './mocks/body.html' });
-const { default: init } = await import('../../../libs/blocks/icon-block/icon-block.js');
+const { default: init, upAndInline } = await import('../../../libs/blocks/icon-block/icon-block.js');
 
 describe('icon blocks', () => {
   const blocks = document.querySelectorAll('.icon-block');
@@ -51,6 +51,16 @@ describe('icon blocks', () => {
       const parent = document.querySelector('#adjacent-cta-1').parentElement;
       expect(parent.className.includes('cta-container')).to.be.true;
       expect(parent.querySelector('#adjacent-cta-2')).to.exist;
+    });
+  });
+  describe('up and inline', () => {
+    it('is up and inline', () => {
+      const upAndInlineBlock = document.querySelector('.up-and-inline');
+      expect(upAndInline(upAndInlineBlock)).to.be.true;
+    });
+    it('is not up and inline', () => {
+      const upAndInlineBlock = document.querySelector('.not-up-and-inline');
+      expect(upAndInline(upAndInlineBlock)).to.be.false;
     });
   });
 });

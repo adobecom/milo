@@ -57,6 +57,17 @@
       "firefox": "",
       "android": "",
       "ios": ""
+    },
+    {
+      "action": "replace",
+      "selector": "in-block:mas-block https://mas.adobe.com/studio.html#page=content&path=sandbox&query=64e0c5b8-9572-43e6-b0a7-fc68563589de",
+      "page filter (optional)": "",
+      "param-newoffer=123": "",
+      "chrome": "https://mas.adobe.com/studio.html#page=content&path=sandbox&query=aec092ef-d5b5-4271-8b6f-4bbd535fcc56",
+      "target-var1": "https://mas.adobe.com/studio.html#page=content&path=sandbox&query=aec092ef-d5b5-4271-8b6f-4bbd535fcc56",
+      "firefox": "",
+      "android": "",
+      "ios": ""
     }
   ],
   ":type": "sheet"

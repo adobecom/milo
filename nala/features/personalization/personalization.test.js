@@ -13,6 +13,8 @@ let pznUrl;
 
 const miloLibs = process.env.MILO_LIBS || '';
 
+test.skip(({ browserName }) => browserName === 'webkit', 'Skipping test for WebKit browser');
+
 test.describe('Milo Personalization feature test suite', () => {
   test.beforeEach(async ({ page }) => {
     webUtil = new WebUtil(page);

@@ -6,14 +6,9 @@ import { expect } from '@esm-bundle/chai';
 import { mockLana } from './mocks/lana.js';
 import { mockFetch } from './mocks/fetch.js';
 
-import '../src/merch-offer.js';
-import '../src/merch-offer-select.js';
-import '../src/merch-quantity-select.js';
-
 import { appendMiloStyles, delay } from './utils.js';
 import { mockIms } from './mocks/ims.js';
 import { withWcs } from './mocks/wcs.js';
-import mas from './mas.js';
 
 const skipTests = sessionStorage.getItem('skipTests');
 
@@ -21,7 +16,7 @@ runTests(async () => {
     mockIms();
     mockLana();
     await mockFetch(withWcs);
-    await mas();
+    await import('../src/mas.js');
     if (skipTests !== null) {
         appendMiloStyles();
         return;
@@ -52,9 +47,11 @@ runTests(async () => {
 
         it('action menu and card focus for catalog variant', async () => {
             const catalogCard = document.querySelector(
-              'merch-card[variant="catalog"]',
+                'merch-card[variant="catalog"]',
             );
-            const mouseleaveEvent = new MouseEvent('mouseleave', { bubbles: true });
+            const mouseleaveEvent = new MouseEvent('mouseleave', {
+                bubbles: true,
+            });
             const focusoutEvent = new Event('focusout');
             catalogCard.dispatchEvent(mouseleaveEvent);
             await delay(100);
@@ -77,7 +74,11 @@ runTests(async () => {
             });
             await delay(100);
             expect(actionMenuContent.classList.contains('hidden')).to.be.true;
-            Array.from(document.querySelector('merch-card').querySelectorAll('a')).at(-1).focus();
+            Array.from(
+                document.querySelector('merch-card').querySelectorAll('a'),
+            )
+                .at(-1)
+                .focus();
             await delay(100);
             await sendKeys({
                 press: 'Tab',
@@ -92,8 +93,9 @@ runTests(async () => {
             catalogCard.dispatchEvent(
                 new MouseEvent('mouseover', { bubbles: true }),
             );
-            await delay(100);        
-            const actionMenu = catalogCard.shadowRoot.querySelector('.action-menu');
+            await delay(100);
+            const actionMenu =
+                catalogCard.shadowRoot.querySelector('.action-menu');
             const actionMenuContent = catalogCard.shadowRoot.querySelector(
                 '.action-menu-content',
             );
@@ -102,5 +104,4 @@ runTests(async () => {
             expect(actionMenuContent.classList.contains('hidden')).to.be.false;
         });
     });
-
 });

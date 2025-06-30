@@ -1,7 +1,6 @@
 /* Custom properties (variables) */
 :root {
   /* Top navigation - box model */
-  --feds-height-nav: 63px;
   --feds-maxWidth-nav: 1440px;
   --feds-minWidth-menu: 1200px;
   --feds-height-breadcrumbs: 33px;
@@ -61,6 +60,14 @@
   flex-shrink: 0;
 }
 
+.feds-popup .has-subheader .feds-navLink:not(.feds-navLink--header) {
+  padding: 12px 24px;
+}
+
+header.new-nav .feds-nav > section.feds-navItem > .feds-popup .has-subheader .feds-navLink:not(.feds-navLink--header) .feds-navLink-title {
+  font-weight: 500;
+}
+
 .feds-navLink:hover,
 .feds-navLink:focus {
   color: var(--feds-color-link--hover);
@@ -107,7 +114,7 @@
 }
 
 [dir = "rtl"] .feds-navLink--hoverCaret {
-  padding-right: 12px;
+  padding-right: 20px;
   padding-left: 32px;
 }
 
@@ -116,12 +123,16 @@
   left: 18px;
 }
 
-.feds-navLink[class *= '-gradient'] {
+.feds-navLink--gray-gradient {
   display: none;
+  background: #eaeaea;
 }
 
-.feds-navLink-image,
-.feds-navLink-description {
+.global-navigation.new-nav .feds-navLink--gray-gradient {
+  display: block;
+}
+
+.feds-navLink-image {
   display: none;
 }
 
@@ -132,6 +143,16 @@
 
 header.global-navigation.ready {
   visibility: visible !important;
+}
+
+.feds-navLink.feds-navLink--header {
+  pointer-events: none;
+}
+
+.feds-navLink-description {
+  display: flex;
+  font-size: 12px;
+  color: var(--feds-color-navLink-description);
 }
 
 /* Desktop styles */
@@ -179,6 +200,10 @@ header.global-navigation.ready {
   .feds-topnav--overflowing .feds-navLink--hoverCaret,
   [dir = "rtl"] .feds-topnav--overflowing .feds-navLink--hoverCaret {
     padding: 0 8px;
+  }
+
+  .feds-topnav--overflowing .feds-popup .feds-navLink {
+    padding: 6px 32px;
   }
 
   .feds-topnav--overflowing .feds-navItem--active > .feds-navLink:before {
@@ -230,12 +255,6 @@ header.global-navigation.ready {
     max-width: 25px;
   }
 
-  .feds-navLink-description {
-    display: flex;
-    font-size: 12px;
-    color: var(--feds-color-navLink-description);
-  }
-
   .feds-navLink:hover .feds-navLink-description,
   .feds-navLink:focus .feds-navLink-description {
     color: var(--feds-color-navLink-description);
@@ -273,6 +292,10 @@ header.global-navigation.ready {
     content: '';
   }
 
+  .feds-navLink.feds-navLink--header[class *= '-gradient'] .feds-navLink-title:after {
+    display: none;
+  }
+
   [dir = "rtl"] .feds-navLink[class *= '-gradient'] .feds-navLink-title:after {
     transform: rotate(135deg);
   }
@@ -304,9 +327,5 @@ header.global-navigation.ready {
 
   .feds-navLink--ai-gradient {
     background: linear-gradient(90deg, #bce3ff, #ffe9d3, #f8d5e4);
-  }
-
-  .feds-navLink--gray-gradient {
-    background: #eaeaea;
   }
 }

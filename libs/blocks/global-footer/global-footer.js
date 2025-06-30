@@ -1,16 +1,19 @@
 /* eslint-disable no-async-promise-executor */
 import {
+  loadBlock,
   decorateAutoBlock,
   decorateLinks,
   getMetadata,
   getConfig,
   localizeLink,
   loadStyle,
+  loadScript,
+  getFederatedUrl,
+  getFedsPlaceholderConfig,
 } from '../../utils/utils.js';
 
 import {
   getExperienceName,
-  getAnalyticsValue,
   loadDecorateMenu,
   fetchAndProcessPlainHtml,
   loadBaseStyles,
@@ -22,9 +25,17 @@ import {
   isDarkMode,
 } from '../global-navigation/utilities/utilities.js';
 
-import { getFederatedUrl, getFedsPlaceholderConfig } from '../../utils/federated.js';
-
 import { replaceKey } from '../../features/placeholders.js';
+import { processTrackingLabels } from '../../martech/attributes.js';
+
+export function getAnalyticsValue(str, index) {
+  if (typeof str !== 'string' || !str.length) return str;
+
+  let analyticsValue = processTrackingLabels(str, getConfig(), 30);
+  analyticsValue = typeof index === 'number' ? `${analyticsValue}-${index}` : analyticsValue;
+
+  return analyticsValue;
+}
 
 const { miloLibs, codeRoot, locale, mep } = getConfig();
 const base = miloLibs || codeRoot;
@@ -66,7 +77,7 @@ class Footer {
       observer.disconnect();
       this.decorateContent();
     }, CONFIG.delays.decoration);
-  }, 'Error in global footer init', 'global-footer', 'error');
+  }, 'Error in global footer init', 'global-footer', 'e');
 
   decorateContent = () => logErrorFor(async () => {
     // Fetch footer content
@@ -76,7 +87,16 @@ class Footer {
       shouldDecorateLinks: false,
     });
 
-    if (!this.body) return;
+    if (!this.body) {
+      const error = new Error('Could not create global footer. Content not found!');
+      error.tags = 'global-footer';
+      error.url = url;
+      error.errorType = 'e';
+      lanaLog({ message: error.message, ...error });
+      const { onFooterError } = getConfig();
+      onFooterError?.(error);
+      return;
+    }
 
     const [region, social] = ['.region-selector', '.social'].map((selector) => this.body.querySelector(selector));
     const [regionParent, socialParent] = [region?.parentElement, social?.parentElement];
@@ -88,6 +108,12 @@ class Footer {
 
     regionParent?.appendChild(region);
     socialParent?.appendChild(social);
+
+    // Support auto populated modal
+    await Promise.all([...this.body.querySelectorAll('.modal')].map(loadBlock));
+
+    // Process Jarvis chat footer link
+    await this.processJarvisLink();
 
     const path = getFederatedUrl(url);
     federatePictureSources({ section: this.body, forceFederate: path.includes('/federal/') });
@@ -112,15 +138,17 @@ class Footer {
 
     const mepMartech = mep?.martech || '';
     this.block.setAttribute('daa-lh', `gnav|${getExperienceName()}|footer${mepMartech}`);
-
     this.block.append(this.elements.footer);
-  }, 'Failed to decorate footer content', 'global-footer', 'error');
+    const { onFooterReady } = getConfig();
+    onFooterReady?.();
+  }, 'Failed to decorate footer content', 'global-footer', 'e');
 
   loadMenuLogic = async () => {
     this.menuLogic = this.menuLogic || new Promise(async (resolve) => {
       const menuLogic = await loadDecorateMenu();
       this.decorateMenu = menuLogic.decorateMenu;
       this.decorateLinkGroup = menuLogic.decorateLinkGroup;
+      this.decorateHeadline = menuLogic.decorateHeadline;
       resolve();
     });
 
@@ -155,7 +183,7 @@ class Footer {
         message: 'Issue with loadIcons',
         e: `${file.statusText} url: ${file.url}`,
         tags: 'global-footer',
-        errorType: 'info',
+        errorType: 'i',
       });
     }
     const content = await file.text();
@@ -172,6 +200,8 @@ class Footer {
 
     const featuredProductsContent = featuredProductElem.parentElement;
     this.elements.featuredProducts = toFragment`<div class="feds-featuredProducts"></div>`;
+    const featureProductsSection = toFragment`<div class="feds-menu-section"></div>`;
+    this.elements.featuredProducts.append(featureProductsSection);
 
     const [placeholder] = await Promise.all([
       replaceKey('featured-products', getFedsPlaceholderConfig()),
@@ -179,14 +209,16 @@ class Footer {
     ]);
 
     if (placeholder && placeholder.length) {
-      this.elements.featuredProducts
-        .append(toFragment`<span class="feds-featuredProducts-label" role="heading" aria-level="2">${placeholder}</span>`);
+      const headline = toFragment`<div class="feds-menu-headline">${placeholder}</div>`;
+      featureProductsSection.append(this.decorateHeadline(headline, 0));
     }
 
+    const featuredProductsList = toFragment`<ul></ul>`;
     featuredProductsContent.querySelectorAll('.link-group').forEach((linkGroup) => {
-      this.elements.featuredProducts.append(this.decorateLinkGroup(linkGroup));
+      featuredProductsList.append(toFragment`<li>${this.decorateLinkGroup(linkGroup)}</li>`);
     });
-
+    const featuredProductsContainer = toFragment`<div class="feds-menu-items">${featuredProductsList}</div>`;
+    featureProductsSection.append(featuredProductsContainer);
     return this.elements.featuredProducts;
   };
 
@@ -200,7 +232,7 @@ class Footer {
     try {
       url = new URL(regionSelector.href);
     } catch (e) {
-      lanaLog({ message: `Could not create URL for region picker; href: ${regionSelector.href}`, tags: 'global-footer', errorType: 'error' });
+      lanaLog({ message: `Could not create URL for region picker; href: ${regionSelector.href}`, tags: 'global-footer', errorType: 'e' });
       return this.elements.regionPicker;
     }
 
@@ -339,9 +371,7 @@ class Footer {
 
     // Decorate copyright element
     const currentYear = new Date().getFullYear();
-    copyrightElem.replaceWith(toFragment`<span class="feds-footer-copyright">
-        Copyright © ${currentYear} ${copyrightElem.textContent}
-      </span>`);
+    copyrightElem.remove();
 
     // Add Ad Choices icon
     const adChoicesElem = privacyContent.querySelector('a[href*="#interest-based-ads"]');
@@ -350,23 +380,62 @@ class Footer {
       </svg>`);
 
     this.elements.legal = toFragment`<div class="feds-footer-legalWrapper" daa-lh="Legal"></div>`;
+    const linkDivider = '<span class="feds-footer-privacyLink-divider" aria-hidden="true">/</span>';
 
+    let privacyContentIndex = 0;
     while (privacyContent.children.length) {
       const privacySection = privacyContent.firstElementChild;
       privacySection.classList.add('feds-footer-privacySection');
       privacySection.querySelectorAll('a').forEach((link, index) => {
         link.classList.add('feds-footer-privacyLink');
         link.setAttribute('daa-ll', getAnalyticsValue(link.textContent, index + 1));
+        const privacySectionListItem = document.createElement('li');
+        privacySectionListItem.classList.add('feds-footer-privacy-listitem');
+        link.parentNode.insertBefore(privacySectionListItem, link);
+        privacySectionListItem.appendChild(link);
+        if (index !== privacySection.querySelectorAll('a').length - 1) {
+          privacySectionListItem.innerHTML += linkDivider;
+        }
       });
       this.elements.legal.append(privacySection);
+
+      if (privacyContentIndex === 0) {
+        const privacySectionList = document.createElement('ul');
+        [...privacySection.attributes].forEach((attr) => {
+          privacySectionList.setAttribute(attr.name, attr.value);
+        });
+        const copyrightListItem = document.createElement('li');
+        copyrightListItem.classList.add('feds-footer-privacy-listitem');
+        copyrightListItem.innerHTML = linkDivider;
+        copyrightListItem.prepend(copyrightElem);
+        copyrightElem.replaceWith(toFragment`<span class="feds-footer-copyright">Copyright © ${currentYear} ${copyrightElem.textContent}</span>`);
+        privacySectionList.prepend(copyrightListItem);
+        privacySectionList.innerHTML += privacySection.innerHTML.replace(/( \/ )/g, '');
+        privacySection.parentNode.replaceChild(privacySectionList, privacySection);
+      }
+      privacyContentIndex += 1;
     }
 
     return this.elements.legal;
   };
 
+  decorateLogo = () => {
+    const logoContainer = this.body.querySelector('.adobe-logo');
+    if (!logoContainer) return '';
+
+    const imageEl = logoContainer.querySelector('picture img[src$=".svg"]');
+    if (!imageEl) return '';
+
+    return toFragment`
+      <a class="footer-logo">
+        <span class="footer-logo-image">${imageEl}</span>
+      </a>`;
+  };
+
   decorateFooter = () => {
     this.elements.footer = toFragment`<div class="feds-footer-wrapper">
         ${this.elements.footerMenu}
+        ${this.decorateLogo()}
         ${this.elements.featuredProducts}
         <div class="feds-footer-options">
           <div class="feds-footer-miscLinks">
@@ -378,6 +447,31 @@ class Footer {
       </div>`;
 
     return this.elements.footer;
+  };
+
+  processJarvisLink = async () => {
+    const sectionMeta = this.body.querySelector('.section-metadata');
+    if (!sectionMeta) return;
+
+    const jarvisLinks = this.body.querySelectorAll('[href*="#open-jarvis-chat"]');
+    if (!jarvisLinks.length) return;
+
+    const { getMetadata: sectionMetadata } = await import('../section-metadata/section-metadata.js');
+
+    const jarvisMeta = {};
+    Object.entries(sectionMetadata(sectionMeta)).forEach(([key, value]) => {
+      if (['jarvis-surface-id', 'jarvis-surface-version'].includes(key)) jarvisMeta[key] = value.text;
+    });
+
+    if (Object.keys(jarvisMeta).length) {
+      jarvisLinks.forEach((jarvisLink) => {
+        jarvisLink.setAttribute('data-jarvis-config', JSON.stringify(jarvisMeta));
+      });
+
+      const { initJarvisChat } = await import('../../features/jarvis-chat.js');
+      const config = { ...getConfig(), jarvis: { ...getConfig().jarvis, onDemand: true } };
+      initJarvisChat(config, loadScript, loadStyle, getMetadata);
+    }
   };
 }
 
