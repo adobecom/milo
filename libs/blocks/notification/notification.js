@@ -338,10 +338,12 @@ export default async function init(el) {
     decorateMultiViewport(el);
   }
 
-  document.body.appendChild(createTag('div', {
-    class: 'notification-visibility-hidden',
-    'aria-live': 'polite',
-    role: 'status',
-    tabindex: '-1',
-  }, ''));
+  if (!document.querySelector('.notification-visibility-hidden')) {
+    document.body.appendChild(createTag('div', {
+      class: 'notification-visibility-hidden',
+      'aria-live': 'polite',
+      role: 'status',
+      tabindex: '-1',
+    }, ''));
+  }
 }
