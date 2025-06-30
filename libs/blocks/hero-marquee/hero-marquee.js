@@ -166,40 +166,53 @@ function loadBreakpointThemes() {
   loadStyle(`${base}/styles/breakpoint-theme.css`);
 }
 
-export function getViewportOrder(viewport, content, previousViewportOrder) {
-  const orderEls = [...content.querySelectorAll(':scope > div[class*="order-"]')];
-  const nonOrderEls = [...content.querySelectorAll(':scope > div:not([class*="order-"])')];
-  const viewportOrder = Array(orderEls.length).fill(null);
-  orderEls.forEach((el) => {
-    let order;
+export function getViewportOrder(viewport, content) {
+  const els = [...content.children];
+  const viewportObject = { 0: [] };
+  els.forEach((el) => {
+    const orderClass = {
+      tablet: null,
+      desktop: null,
+    };
     el.classList.forEach((className) => {
-      if (!className.startsWith('order-') || !className.endsWith(viewport)) return;
-      order = parseInt(className.split('-')[1], 10);
+      if (!className.startsWith('order-')
+        || (!className.endsWith('desktop') && !className.endsWith('tablet'))) return;
+      orderClass.tablet = orderClass.tablet || (className.endsWith('tablet') ? className : null);
+      orderClass.desktop = orderClass.desktop || (className.endsWith('desktop') ? className : null);
     });
-    if (Number.isInteger(order)) viewportOrder[order] = el;
+    const viewportClass = orderClass[viewport] || orderClass.tablet;
+    const order = parseInt(viewportClass?.split('-')[1], 10);
+    if (Number.isInteger(order)) {
+      if (!viewportObject[order]) viewportObject[order] = [];
+      viewportObject[order].push(el);
+    } else {
+      viewportObject[0].push(el);
+    }
   });
-  const nonEmpty = viewportOrder.every((el) => el);
-  return nonEmpty ? [...nonOrderEls, ...viewportOrder] : previousViewportOrder;
+
+  const viewportOrder = [];
+  Object.keys(viewportObject).sort((a, b) => a - b).forEach((key) => {
+    viewportOrder.push(...viewportObject[key]);
+  });
+  return viewportOrder;
 }
 
 function handleViewportOrder(content) {
   const hasOrder = content.querySelector(':scope > div[class*="order-"]');
   if (!hasOrder) return;
 
-  const mobileOrder = [...content.children];
-  const tabletOrder = getViewportOrder('tablet', content, mobileOrder);
   const viewports = {
     mobile: {
       media: '(max-width: 599px)',
-      elements: mobileOrder,
+      elements: [...content.children],
     },
     tablet: {
       media: '(min-width: 600px) and (max-width: 1199px)',
-      elements: tabletOrder,
+      elements: getViewportOrder('tablet', content),
     },
     desktop: {
       media: '(min-width: 1200px)',
-      elements: getViewportOrder('desktop', content, tabletOrder),
+      elements: getViewportOrder('desktop', content),
     },
   };
 

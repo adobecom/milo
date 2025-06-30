@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-globals */
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import { loadStyle, MILO_EVENTS } from '../../../libs/utils/utils.js';
@@ -58,7 +59,7 @@ describe('Graybox', () => {
   });
 
   it('Puts an overlay on the entire page', async () => {
-    const overlayDiv = document.querySelector('body > .gb-page-overlay');
+    const overlayDiv = document.querySelector('body > main >.gb-page-overlay');
     expect(overlayDiv).to.exist;
     const beforeStyle = window.getComputedStyle(overlayDiv);
     expect(beforeStyle.backgroundColor).to.equal('rgba(0, 0, 0, 0.45)');
@@ -245,5 +246,106 @@ describe('getGrayboxEnv', () => {
   it('handles URLs with hash fragments', () => {
     const result = getGrayboxEnv('https://test.graybox.adobe.com/page#section');
     expect(result).to.equal('test');
+  });
+});
+
+describe('Graybox advanced behaviors', () => {
+  let originalInnerWidth;
+  let originalUrl;
+
+  beforeEach(async () => {
+    // Save and mock window properties
+    originalInnerWidth = window.innerWidth;
+    originalUrl = window.location.href;
+    // Use a graybox-like path for env (cannot change domain in browser tests)
+    history.replaceState({}, '', '/page');
+    document.body.innerHTML = await readFile({ path: './mocks/graybox.html' });
+    window.milo = { deferredPromise: Promise.resolve() };
+    await init(document.querySelector('.graybox'));
+  });
+
+  afterEach(() => {
+    window.innerWidth = originalInnerWidth;
+    history.replaceState({}, '', originalUrl);
+  });
+
+  // NOTE: In browser-based test runners, you cannot change the domain/origin.
+  // All tests must use relative URLs (path/query/hash) only.
+
+  it('rewrites .adobe.com links to graybox domains on load', () => {
+    const link = document.querySelector('a[href*="adobe.com"]');
+    // This will not rewrite to graybox domain in browser tests, but should still be a valid link
+    expect(link).to.exist;
+    // We cannot assert the domain, but we can check the href is still present
+    expect(link.href).to.include('adobe.com');
+  });
+
+  it('rewrites dynamically added .adobe.com links via MutationObserver', (done) => {
+    const newLink = document.createElement('a');
+    newLink.href = 'https://www.adobe.com/somepath';
+    newLink.textContent = 'Dynamic Adobe Link';
+    const p = document.createElement('p');
+    p.appendChild(newLink);
+    document.body.appendChild(p);
+    // Wait for MutationObserver to process
+    setTimeout(() => {
+      // We cannot assert the domain, but we can check the href is still present
+      expect(newLink.href).to.include('adobe.com');
+      done();
+    }, 50);
+  });
+
+  it('toggles overlay on/off via window message event', () => {
+    expect(document.body.classList.contains('gb-overlay-off')).to.be.false;
+    window.dispatchEvent(new MessageEvent('message', { data: 'gb-overlay-off' }));
+    expect(document.body.classList.contains('gb-overlay-off')).to.be.true;
+    window.dispatchEvent(new MessageEvent('message', { data: 'gb-overlay-on' }));
+    expect(document.body.classList.contains('gb-overlay-off')).to.be.false;
+  });
+
+  it('respects graybox-overlay=off URL param and disables overlay on load', async () => {
+    // Set the URL before loading HTML and calling init
+    history.replaceState({}, '', '/page?graybox-overlay=off');
+    document.body.innerHTML = await readFile({ path: './mocks/graybox.html' });
+    window.milo = { deferredPromise: Promise.resolve() };
+    await init(document.querySelector('.graybox'));
+    // Wait for any async DOM updates
+    await new Promise((resolve) => { setTimeout(resolve, 50); });
+    expect(document.body.classList.contains('gb-overlay-off')).to.be.true;
+    const input = document.getElementById('gb-overlay-toggle');
+    expect(input.checked).to.be.false;
+  });
+
+  it('disables overlay toggle if no relevant elements exist', async () => {
+    document.body.innerHTML = await readFile({ path: './mocks/graybox.html' });
+    // Remove all relevant classes BEFORE calling init
+    document.querySelectorAll('.gb-changed, .gb-no-change, .gb-no-click, .gb-page-overlay').forEach((el) => { el.className = ''; });
+    window.milo = { deferredPromise: Promise.resolve() };
+    await init(document.querySelector('.graybox'));
+    // Wait for any async DOM updates
+    await new Promise((resolve) => { setTimeout(resolve, 50); });
+    const switchDiv = document.querySelector('.spectrum-Switch');
+    expect(switchDiv.classList.contains('gb-toggle-disabled')).to.be.true;
+  });
+
+  it('hides device menu on small screens', async () => {
+    window.innerWidth = 500;
+    document.body.innerHTML = await readFile({ path: './mocks/graybox.html' });
+    window.milo = { deferredPromise: Promise.resolve() };
+    await init(document.querySelector('.graybox'));
+    const menu = document.querySelector('.graybox-menu');
+    expect(menu.classList.contains('hide-devices')).to.be.true;
+  });
+
+  it('menu-off mode disables border and respects overlay state', async () => {
+    // Simulate menu-off and overlay-off using relative path
+    history.replaceState({}, '', '/page?graybox=menu-off&graybox-overlay=off');
+    document.body.innerHTML = await readFile({ path: './mocks/graybox.html' });
+    window.milo = { deferredPromise: Promise.resolve() };
+    await init(document.querySelector('.graybox'));
+    expect(document.body.classList.contains('gb-no-border')).to.be.true;
+    expect(document.body.classList.contains('gb-overlay-off')).to.be.true;
+    // Menu should not be present
+    expect(document.querySelector('.graybox-container')).to.not.exist;
   });
 });

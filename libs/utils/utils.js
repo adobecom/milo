@@ -650,12 +650,13 @@ export function appendHtmlToLink(link) {
   }
 }
 
-export const loadScript = (url, type, { mode } = {}) => new Promise((resolve, reject) => {
+export const loadScript = (url, type, { mode, id } = {}) => new Promise((resolve, reject) => {
   let script = document.querySelector(`head > script[src="${url}"]`);
   if (!script) {
     const { head } = document;
     script = document.createElement('script');
     script.setAttribute('src', url);
+    if (id) script.setAttribute('id', id);
     if (type) {
       script.setAttribute('type', type);
     }
@@ -991,9 +992,9 @@ export function decorateLinks(el) {
     const pipeRegex = /\s?\|([^|]*)$/;
     if (pipeRegex.test(a.textContent) && !/\.[a-z]+/i.test(a.textContent)) {
       const node = [...a.childNodes].reverse()[0];
-      const ariaLabel = node.textContent.match(pipeRegex)[1];
+      const ariaLabel = node.textContent.match(pipeRegex)?.[1];
       node.textContent = node.textContent.replace(pipeRegex, '');
-      a.setAttribute('aria-label', ariaLabel.trim());
+      a.setAttribute('aria-label', (ariaLabel || '').trim());
     }
 
     return rdx;
