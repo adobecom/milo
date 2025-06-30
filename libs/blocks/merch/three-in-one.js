@@ -133,7 +133,7 @@ export const handleTimeoutError = () => {
 
 export function createContent(iframeUrl) {
   const content = createTag('div', { class: 'milo-iframe' });
-  content.innerHTML = `<sp-theme system="light" color="light" scale="medium" dir="ltr">
+  content.innerHTML = `<sp-theme system="light" color="light" scale="medium" dir="ltr" style="display: flex; justify-content: center; align-items: center; height: 100%;">
   <sp-progress-circle label="progress circle" indeterminate="" size="l" dir="ltr" role="progressbar" aria-label="progress circle"></sp-progress-circle>
   </sp-theme>
   <iframe src="${iframeUrl}" frameborder="0" marginwidth="0" marginheight="0" allowfullscreen="true" loading="lazy" class="loading" style="height: 100%;"></iframe>`;
