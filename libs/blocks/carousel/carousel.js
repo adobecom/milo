@@ -500,26 +500,19 @@ export default function init(el) {
     const videos = el.querySelectorAll('video');
     if (videos.length === 0) return;
 
+    const videoData = [];
     let maxHeight = 0;
+
     videos.forEach((video) => {
-      const videoHeight = video.offsetHeight;
-
       const foreground = video.closest('.editorial-card')?.querySelector('.foreground');
-      let totalHeight = videoHeight;
-
-      if (foreground) {
-        const foregroundHeight = foreground.offsetHeight;
-        totalHeight += foregroundHeight;
-      }
-
+      const videoHeight = video.offsetHeight;
+      const totalHeight = videoHeight + (foreground ? foreground.offsetHeight : 0);
+      videoData.push({ video, foreground, videoHeight, totalHeight });
       if (totalHeight > maxHeight) maxHeight = totalHeight;
     });
 
-    videos.forEach((video) => {
-      const foreground = video.closest('.editorial-card')?.querySelector('.foreground');
-
+    videoData.forEach(({ video, foreground, videoHeight }) => {
       if (foreground) {
-        const videoHeight = video.offsetHeight;
         video.style.height = `${videoHeight}px`;
         video.style.maxHeight = `${videoHeight}px`;
       } else {
