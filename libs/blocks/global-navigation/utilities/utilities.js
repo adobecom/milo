@@ -657,6 +657,8 @@ export const transformTemplateToMobile = async ({ popup, item, localnav = false,
   });
 
   tabbuttons.forEach((tab, i) => {
+    // pinterdown prevents the default action of the button, which is to scroll the window.
+    // This is needed to prevent the page from jumping when the tab is clicked.
     tab.addEventListener('pointerdown', (event) => event.preventDefault());
     tab.addEventListener('click', tabbuttonClickCallbacks[i]);
   });
@@ -831,6 +833,8 @@ export const [branchBannerLoadCheck, getBranchBannerInfo] = (() => {
                   updatePopupPosition();
                 }
               }, 50);
+              /* 50ms delay to ensure the node is fully rendered with styles before
+              checking its properties */
             });
 
             mutation.removedNodes.forEach((node) => {
