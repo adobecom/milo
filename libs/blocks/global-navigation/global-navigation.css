@@ -676,8 +676,9 @@ header.new-nav.global-navigation:not(:has(.feds-dropdown--active)) .feds-profile
   .global-navigation.mini-gnav .feds-nav-wrapper {
     flex-direction: row-reverse;
   }
-  
-  .global-navigation.mini-gnav .feds-popup {
+
+  /* commenting as per figma for mini Gnav */
+  /* .global-navigation.mini-gnav .feds-popup {
     right: 20;
     left: unset;
   }
@@ -693,7 +694,7 @@ header.new-nav.global-navigation:not(:has(.feds-dropdown--active)) .feds-profile
   
   .global-navigation.mini-gnav .feds-promo-wrapper {
     display: none;
-  }
+  } */
 
   /* Search */
   .feds-search {
