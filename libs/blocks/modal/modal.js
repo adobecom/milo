@@ -39,11 +39,6 @@ function fireAnalyticsEvent(event) {
   window._satellite?.track('event', data);
 }
 
-const focusNotificationAfterClose = () => {
-  const firstFocusable = document.querySelector('.notification button, .notification [href], .notification input, .notification select, .notification textarea, .notification [tabindex]:not([tabindex="-1"])');
-  if (firstFocusable) firstFocusable.focus();
-};
-
 export function sendAnalytics(event) {
   if (window._satellite?.track) {
     fireAnalyticsEvent(event);
@@ -88,9 +83,13 @@ export function closeModal(modal) {
   if (isDeepLink) {
     document.querySelector('#onetrust-banner-sdk')?.focus();
     isDeepLink = false;
-  } else {
-    focusNotificationAfterClose();
+    return;
   }
+
+  document.querySelector(
+    '.notification button, .notification [href], .notification input, .notification select, '
+    + '.notification textarea, .notification [tabindex]:not([tabindex="-1"])',
+  )?.focus();
 }
 
 function isElementInView(element) {
@@ -108,11 +107,7 @@ function getCustomModal(custom, dialog) {
   loadStyle(`${miloLibs || codeRoot}/blocks/modal/modal.css`);
   if (custom.id) dialog.id = custom.id;
   if (custom.class) dialog.classList.add(custom.class);
-  if (custom.closeEvent) {
-    dialog.addEventListener(custom.closeEvent, () => {
-      closeModal(dialog);
-    });
-  }
+  if (custom.closeEvent) dialog.addEventListener(custom.closeEvent, () => closeModal(dialog));
   dialog.append(custom.content);
 }
 
@@ -299,10 +294,7 @@ export function delayedModal(el) {
 const addKeydownListener = () => {
   document.addEventListener('keydown', (event) => {
     const dialog = document.querySelector('.dialog-modal');
-    if (event.key === 'Escape' && dialog) {
-      closeModal(dialog);
-      focusNotificationAfterClose();
-    }
+    if (event.key === 'Escape' && dialog) closeModal(dialog);
   }, true);
 };
 
