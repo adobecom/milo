@@ -166,7 +166,13 @@ function curtainCallback(el) {
   document.body.classList.add('mobile-disable-scroll');
   el.insertAdjacentElement('afterend', curtain);
   el.setAttribute('role', 'dialog');
-  el.setAttribute('aria-modal', 'true');
+
+  document.body.appendChild(createTag('div', {
+    class: 'notification-visibility-hidden',
+    'aria-live': 'polite',
+    role: 'status',
+    tabindex: '-1',
+  }, ''));
 
   const focusableElements = [...el.querySelectorAll(
     'button, a[href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
@@ -338,11 +344,4 @@ export default async function init(el) {
     if (el.matches(`.${pill}`)) addTooltip(el);
     decorateMultiViewport(el);
   }
-
-  document.body.appendChild(createTag('div', {
-    class: 'notification-visibility-hidden',
-    'aria-live': 'polite',
-    role: 'status',
-    tabindex: '-1',
-  }, ''));
 }
