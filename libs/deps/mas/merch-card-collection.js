@@ -1524,7 +1524,7 @@ merch-card[variant="special-offers"] span[is="inline-price"][data-template="stri
               @click="${this.openFilters}"
               ><slot name="filtersText"></slot
             ></sp-action-button>
-        `:ee:ee}get sortAction(){if(!this.getVisibility("sort"))return ee;let r=Xe(this,"sortText");if(!r)return;let n=Xe(this,"popularityText"),i=Xe(this,"alphabeticallyText");if(!(n&&i))return;let a=this.sort===K.alphabetical;return ze`
+        `:ee:ee}get sortAction(){if(!this.getVisibility("sort"))return ee;let r=Xe(this,"sortText");if(!r)return;let n=Xe(this,"popularityText"),i=Xe(this,"alphabeticallyText");if(!(n&&i))return;let a=this.collection?.sort===K.alphabetical;return ze`
             <sp-action-menu
                 id="sort"
                 size="m"

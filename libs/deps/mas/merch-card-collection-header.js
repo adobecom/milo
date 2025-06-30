@@ -1423,7 +1423,7 @@ merch-card[variant="special-offers"] span[is="inline-price"][data-template="stri
               @click="${this.openFilters}"
               ><slot name="filtersText"></slot
             ></sp-action-button>
-        `:m:m}get sortAction(){if(!this.getVisibility("sort"))return m;let t=k(this,"sortText");if(!t)return;let a=k(this,"popularityText"),r=k(this,"alphabeticallyText");if(!(a&&r))return;let n=this.sort===E.alphabetical;return M`
+        `:m:m}get sortAction(){if(!this.getVisibility("sort"))return m;let t=k(this,"sortText");if(!t)return;let a=k(this,"popularityText"),r=k(this,"alphabeticallyText");if(!(a&&r))return;let n=this.collection?.sort===E.alphabetical;return M`
             <sp-action-menu
                 id="sort"
                 size="m"

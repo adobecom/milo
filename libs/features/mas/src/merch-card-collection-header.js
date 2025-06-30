@@ -131,7 +131,7 @@ export default class MerchCardCollectionHeader extends LitElement {
         const alphabeticallyText = getSlotText(this, 'alphabeticallyText');
 
         if (!(popularityText && alphabeticallyText)) return;
-        const alphabetical = this.sort === SORT_ORDER.alphabetical;
+        const alphabetical = this.collection?.sort === SORT_ORDER.alphabetical;
 
         return html`
             <sp-action-menu
