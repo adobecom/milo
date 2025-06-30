@@ -498,7 +498,7 @@ export default function init(el) {
 
   function normalizeVideoHeights() {
     const videos = el.querySelectorAll('video');
-    if (videos.length === 0) return;
+    if (!videos.length) return;
 
     const videoData = [];
     let maxHeight = 0;
