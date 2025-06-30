@@ -1018,12 +1018,14 @@ class Gnav {
     .navWrapper
     ?.querySelector('.feds-nav')
     ?.childElementCount === 0;
+  
+  isMiniGnav = () => this.block.classList.contains('mini-gnav');
 
   isLocalNav = () => this.newMobileNav && !this.isEmptyGnav() && this
     .elements
     .navWrapper
     ?.querySelectorAll('.feds-nav > section.feds-navItem')
-    ?.length <= 1;
+    ?.length <= 1 && !this.isMiniGnav();
 
   hasMegaMenu = () => this
     .elements
