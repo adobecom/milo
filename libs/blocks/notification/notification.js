@@ -87,8 +87,7 @@ function wrapCopy(foreground) {
 }
 
 const closeBanner = (el) => {
-  const { notificationId } = el.dataset;
-  const liveRegion = document.querySelector(`.notification-visibility-hidden[data-notification-id="${notificationId}"]`);
+  const liveRegion = document.querySelector(`.notification-visibility-hidden[data-notification-id="${el.dataset.notificationId}"]`);
   liveRegion.textContent = 'Banner closed';
 
   setTimeout(() => {
