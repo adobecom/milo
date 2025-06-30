@@ -87,7 +87,8 @@ function wrapCopy(foreground) {
 }
 
 const closeBanner = (el) => {
-  const liveRegion = document.querySelector('.notification-visibility-hidden');
+  const { notificationId } = el.dataset;
+  const liveRegion = document.querySelector(`.notification-visibility-hidden[data-notification-id="${notificationId}"]`);
   liveRegion.textContent = 'Banner closed';
 
   setTimeout(() => {
@@ -338,12 +339,13 @@ export default async function init(el) {
     decorateMultiViewport(el);
   }
 
-  if (!document.querySelector('.notification-visibility-hidden')) {
-    document.body.appendChild(createTag('div', {
-      class: 'notification-visibility-hidden',
-      'aria-live': 'polite',
-      role: 'status',
-      tabindex: '-1',
-    }, ''));
-  }
+  const notificationId = `notification-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`;
+  el.dataset.notificationId = notificationId;
+  document.body.appendChild(createTag('div', {
+    class: 'notification-visibility-hidden',
+    'aria-live': 'polite',
+    role: 'status',
+    tabindex: '-1',
+    'data-notification-id': notificationId,
+  }, ''));
 }
