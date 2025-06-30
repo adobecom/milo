@@ -1,6 +1,6 @@
 import {
   createTag, getConfig, loadArea, loadScript, loadStyle, localizeLink, SLD, getMetadata,
-  loadLink,
+  shouldAllowKrTrial,
 } from '../../utils/utils.js';
 import { replaceKey } from '../../features/placeholders.js';
 
@@ -160,7 +160,7 @@ const GeoMap = {
 };
 
 /**
- * Used when 3in1 modals are configured with ms=e or cs=t extra paramter, but 3in1 is disabled.
+ * Used when 3in1 modals are configured with ms=e or cs=t extra parameter, but 3in1 is disabled.
  * Dexter modals should deeplink to plan=edu or plan=team tabs.
  * @type {Record<string, string>}
  */
@@ -316,7 +316,7 @@ export function getMasBase(hostname, maslibs) {
 
 function getCommercePreloadUrl() {
   const { env } = getConfig();
-  if (env === 'prod') {
+  if (env.name === 'prod') {
     return 'https://commerce.adobe.com/store/iframe/preload.js';
   }
   return 'https://commerce-stg.adobe.com/store/iframe/preload.js';
@@ -585,7 +585,9 @@ export async function openModal(e, url, offerType, hash, extraOptions, el) {
   if (el?.isOpen3in1Modal) {
     const { default: openThreeInOneModal, handle3in1IFrameEvents } = await import('./three-in-one.js');
     window.addEventListener('message', handle3in1IFrameEvents);
-    modal = await openThreeInOneModal(el);
+    if (!document.querySelector('.dialog-modal.three-in-one')) {
+      modal = await openThreeInOneModal(el);
+    }
     return;
   }
   if (isInternalModal(url)) {
@@ -622,7 +624,11 @@ export async function getModalAction(offers, options, el) {
     // The script can preload more, based on clientId, but for the ones in use
     // ('mini-plans', 'creative') there is no difference, so we can just use either one.
     const client = 'creative';
-    loadLink(`${baseUrl}?cli=${client}`, 'text/javascript', { id: 'ucv3-preload-script', as: 'script', crossorigin: 'anonymous', rel: 'preload' });
+    window.milo.deferredPromise.then(() => {
+      setTimeout(() => {
+        loadScript(`${baseUrl}?cli=${client}`, 'text/javascript', { mode: 'defer', id: 'ucv3-preload-script' });
+      }, 1000);
+    });
   }
 
   const [{
@@ -755,7 +761,6 @@ export async function getCheckoutContext(el, params) {
   const { settings } = await initService();
   const { checkoutClientId } = settings;
   const checkoutMarketSegment = params.get('marketSegment');
-  const checkoutWorkflow = params.get('workflow') ?? settings.checkoutWorkflow;
   const checkoutWorkflowStep = params?.get('workflowStep') ?? settings.checkoutWorkflowStep;
   const entitlement = params?.get('entitlement');
   const upgrade = params?.get('upgrade');
@@ -771,7 +776,6 @@ export async function getCheckoutContext(el, params) {
   return {
     ...context,
     checkoutClientId,
-    checkoutWorkflow,
     checkoutWorkflowStep,
     checkoutMarketSegment,
     entitlement,
@@ -849,17 +853,17 @@ export async function buildCta(el, params) {
     });
   }
 
-  // Adding aria-label for checkout-link using productFamily and customerSegment as placeholder key.
+  // Adding aria-label for checkout-link using productCode and customerSegment as placeholder key.
   if (el.ariaLabel) {
     // If Milo aria-label available from sharepoint doc, just use it.
     cta.setAttribute('aria-label', el.ariaLabel);
   } else if (!cta.ariaLabel) {
     cta.onceSettled().then(async () => {
-      const productFamily = cta.value[0]?.productArrangement?.productFamily;
+      const productCode = cta.value[0]?.productArrangement?.productCode;
       const { marketSegment, customerSegment } = cta;
       const segment = marketSegment === 'EDU' ? marketSegment : customerSegment;
       let ariaLabel = cta.textContent;
-      ariaLabel = productFamily ? `${ariaLabel} - ${await replaceKey(productFamily, getConfig())}` : ariaLabel;
+      ariaLabel = productCode ? `${ariaLabel} - ${await replaceKey(productCode, getConfig())}` : ariaLabel;
       ariaLabel = segment ? `${ariaLabel} - ${await replaceKey(segment, getConfig())}` : ariaLabel;
       cta.setAttribute('aria-label', ariaLabel);
     });
@@ -870,9 +874,19 @@ export async function buildCta(el, params) {
     return addCopyToClipboard(el, cta);
   }
 
-  // @see https://jira.corp.adobe.com/browse/MWPW-173470
+  /**
+   * TODO: This code block will be deprecated and removed in a future version.
+   * @see https://jira.corp.adobe.com/browse/MWPW-173470
+   * @see https://jira.corp.adobe.com/browse/MWPW-174411
+  */
   cta.onceSettled().then(() => {
-    if (getConfig()?.locale?.prefix === '/kr' && cta.value[0]?.offerType === OFFER_TYPE_TRIAL) cta.remove();
+    const prefix = getConfig()?.locale?.prefix;
+    if (!(prefix === '/kr' && cta.value[0]?.offerType === OFFER_TYPE_TRIAL)) return;
+    if (shouldAllowKrTrial(el, prefix)) {
+      cta.classList.remove('hidden-osi-trial-link');
+      return;
+    }
+    cta.remove();
   });
 
   return cta;

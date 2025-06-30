@@ -258,6 +258,43 @@ async function decorateForegroundText(el, container) {
   if (iconArea?.textContent.trim()) await decorateLockup(iconArea, el);
 }
 
+function toolTipPosition(el, allViewPorts) {
+  const elIndex = [...allViewPorts].indexOf(el);
+  const isRtl = document.documentElement.getAttribute('dir') === 'rtl';
+  const isTablet = allViewPorts.length === 3 && elIndex === 1;
+  const isMobile = allViewPorts.length > 1 && elIndex === 0;
+  if (isMobile) el.classList.add('notification-pill-mobile');
+  if ((isRtl && isTablet) || (isMobile && !isRtl)) return 'right';
+
+  return 'left';
+}
+
+async function addTooltip(el) {
+  const allViewPorts = el.querySelectorAll('.foreground > div');
+  const desktopView = [...allViewPorts].pop();
+  const desktopContentText = desktopView.querySelector('.copy-wrap')?.textContent.trim();
+  const toolTipIcons = [];
+  allViewPorts.forEach((viewPortEl) => {
+    if (viewPortEl === desktopView || !desktopContentText) return;
+    const textContainer = viewPortEl.querySelector('.copy-wrap');
+    const viewPortTextContent = textContainer?.textContent.trim();
+    if (viewPortTextContent === desktopContentText) return;
+    const appendTarget = textContainer?.lastElementChild ?? viewPortEl.firstElementChild;
+    const tooltipSpan = createTag('span', { class: 'icon icon-tooltip' });
+    const iconWrapper = createTag('em', {}, `${toolTipPosition(viewPortEl, allViewPorts)}|${desktopContentText}`);
+    iconWrapper.appendChild(tooltipSpan);
+    toolTipIcons.push(tooltipSpan);
+    appendTarget?.appendChild(iconWrapper);
+  });
+
+  if (!toolTipIcons.length) return;
+
+  const config = getConfig();
+  const { default: loadIcons } = await import('../../features/icons/icons.js');
+  loadStyle(`${base}/features/icons/icons.css`);
+  loadIcons(toolTipIcons, config);
+}
+
 async function decorateLayout(el) {
   const [background, ...rest] = el.querySelectorAll(':scope > div');
   const foreground = rest.pop();
@@ -292,6 +329,7 @@ export default async function init(el) {
   el.querySelectorAll('a:not([class])').forEach((staticLink) => staticLink.classList.add('static'));
   if (el.matches(`:is(.${ribbon}, .${pill})`)) {
     wrapCopy(blockText);
+    if (el.matches(`.${pill}`)) addTooltip(el);
     decorateMultiViewport(el);
   }
 }
