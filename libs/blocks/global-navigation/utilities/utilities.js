@@ -551,7 +551,8 @@ const parseTabsFromMenuSection = (section) => {
 };
 
 const promoCrossCloudTab = async (popup) => {
-  if (!!popup.closest('.global-navigation.mini-gnav')) return [];
+  // commenting as per figma for mini GNAV
+  // if (!!popup.closest('.global-navigation.mini-gnav')) return [];
   const additionalLinks = [...popup.querySelectorAll(`${selectors.gnavPromoWrapper}, ${selectors.crossCloudMenuLinks}`)];
   if (!additionalLinks.length) return [];
   const tabName = await replaceKey('more', getFedsPlaceholderConfig());
