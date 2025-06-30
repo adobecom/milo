@@ -1445,7 +1445,7 @@ merch-card[variant="special-offers"] span[is="inline-price"][data-template="stri
         `}get resultSlotName(){let t=`${this.collection?.search?"search":"filters"}${this.isMobile||this.isTablet?"Mobile":""}`;return kt[t][Math.min(this.collection?.resultCount,2)]}get resultLabel(){return this.getVisibility("result")?this.sidenav?M`
           <div id="result" aria-live="polite">
               <slot name="${this.resultSlotName}"></slot>
-          </div>`:m:m}get customArea(){if(!this.getVisibility("custom"))return m;let t=Q(this.collection?.variant)?.customHeaderArea;if(!t)return m;let a=t(this.collection);return!a||a===m?m:M`<div id="custom">${a}</div>`}openFilters(t){this.sidenav.showModal(t)}updateLiterals(t){Object.keys(t.detail).forEach(a=>{Ot(this,a,t.detail[a])})}handleSidenavAttached(){this.requestUpdate()}render(){return M`
+          </div>`:m:m}get customArea(){if(!this.getVisibility("custom"))return m;let t=Q(this.collection?.variant)?.customHeaderArea;if(!t)return m;let a=t(this.collection);return!a||a===m?m:M`<div id="custom">${a}</div>`}openFilters(t){this.sidenav.showModal(t)}updateLiterals(t){Object.keys(t.detail).forEach(a=>{Ot(this,a,t.detail[a])}),this.requestUpdate()}handleSidenavAttached(){this.requestUpdate()}render(){return M`
           <sp-theme color="light" scale="medium">
             <div id="header">${this.searchAction}${this.filterAction}${this.sortAction}${this.resultLabel}${this.customArea}</div>
           </sp-theme>

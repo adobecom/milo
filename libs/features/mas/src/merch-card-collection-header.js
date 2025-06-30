@@ -189,7 +189,8 @@ export default class MerchCardCollectionHeader extends LitElement {
     updateLiterals(event) {
         Object.keys(event.detail).forEach(key => {
             updatePlaceholders(this, key, event.detail[key]);
-        })
+        });
+        this.requestUpdate();
     }
 
     handleSidenavAttached() {
