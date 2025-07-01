@@ -28,15 +28,17 @@ test.describe('CCD Mini Cards Feature', () => {
         await expect(cardLocator).toBeVisible();
         await cardLocator.evaluate((card) => card.checkReady());
 
+        const title = await cardLocator.evaluate((card) => card.title);
+        expect(title).toBe(data.title);
+
         const regularPrice = await cardLocator.evaluate((card) => card.regularPrice);
         expect(regularPrice).toBe(data.regularPrice);
 
-        /*
-        if (data.promoPrice) {
-          const promoPrice = await cardLocator.evaluate((card) => card.promoPrice);
-          expect(promoPrice).toBe(data.promoPrice);
-        }
-        */
+        const promoPrice = await cardLocator.evaluate((card) => card.promoPrice);
+        expect(promoPrice).toBe(data.promoPrice);
+
+        const promotionCode = await cardLocator.evaluate((card) => card.promotionCode);
+        expect(promotionCode).toBe(data.promotionCode);
 
         const planTypeText = await cardLocator.evaluate((card) => card.planTypeText);
         expect(planTypeText).toBe(data.planTypeText);

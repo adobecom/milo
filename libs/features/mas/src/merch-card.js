@@ -703,6 +703,16 @@ export class MerchCard extends LitElement {
         return this.#regularPrice?.innerText;
     }
 
+    get promotionCode() {
+        const promotionCodes = [...this.querySelectorAll(`${SELECTOR_MAS_INLINE_PRICE}[data-promotion-code],${SELECTOR_MAS_CHECKOUT_LINK}[data-promotion-code]`)].map(el => el.dataset.promotionCode);
+        // Check if all promotion codes are the same
+        const uniqueCodes = [...new Set(promotionCodes)];
+        if (uniqueCodes.length > 1) {
+            this.#log?.warn(`Multiple different promotion codes found: ${uniqueCodes.join(', ')}`);
+        }
+        return promotionCodes[0];
+    }
+
     get annualPrice() {
         const price = this.querySelector(`${SELECTOR_MAS_INLINE_PRICE}[data-template="price"] > .price.price-annual`);
         return price?.innerText;

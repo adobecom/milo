@@ -164,6 +164,7 @@ Adobe Home Gallery provides a comprehensive list of all supported card variants 
 <li><code>ccd-slice</code></li>
 <li><code>ccd-suggested</code></li>
 <li><code>ah-try-buy-widget</code></li>
+<li><code>mini</code>  (a headless card variant that can be used to fetch merch data and to render it with custom code such as React, Vue, etc.)</li>
 </ul>
 <h3 id="properties" tabindex="-1">Properties <a class="header-anchor" href="#properties" href="#properties" title="Permalink to this heading">#</a></h3>
 <table>
@@ -176,6 +177,11 @@ Adobe Home Gallery provides a comprehensive list of all supported card variants 
 </thead>
 <tbody>
 <tr>
+<td><code>title</code></td>
+<td>The title of the card.</td>
+<td><code>string</code></td>
+</tr>
+<tr>
 <td><code>prices</code></td>
 <td>inline-price elements that are rendered in the card.</td>
 <td><code>Array</code></td>
@@ -184,6 +190,11 @@ Adobe Home Gallery provides a comprehensive list of all supported card variants 
 <td><code>promoPrice</code></td>
 <td>An inline-price element that contains the promo price, if applicable.</td>
 <td><code>inline-price</code></td>
+</tr>
+<tr>
+<td><code>promotionCode</code></td>
+<td>The promotion code of the offer.</td>
+<td><code>string</code></td>
 </tr>
 <tr>
 <td><code>regularPrice</code></td>

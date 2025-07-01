@@ -29,6 +29,10 @@ export class Mini extends VariantLayout {
         return CSS;
     }
 
+    get headingSelector() {
+        return '[slot="title"]';
+    }
+
     priceOptionsProvider(element, options) {
         // accessibility texts are not needed as part of price text
         options.literals = {

@@ -7,6 +7,8 @@ import { withAem } from './mocks/aem.js';
 import { getTemplateContent, oneEvent } from './utils.js';
 import '../src/mas.js';
 import { getPriceLiterals } from '../src/literals.js';
+import Sinon from 'sinon';
+import { Log } from '../src/log.js';
 
 const enLiterals = {
     taxInclusiveLabel: 'Inclusive of all taxes',
@@ -35,8 +37,10 @@ function localeProvider(element, options) {
 
 function compareGetters(card, expected) {
     const {
+        title,
         regularPrice,
         promoPrice,
+        promotionCode,
         annualPrice,
         taxText,
         seeTermsInfo,
@@ -49,8 +53,10 @@ function compareGetters(card, expected) {
         secondaryCta,
     } = card;
 
+    expect(title, '').to.equal(expected.title);
     expect(regularPrice, '').to.equal(expected.regularPrice);
     expect(promoPrice, '').to.equal(expected.promoPrice);
+    expect(promotionCode, '').to.equal(expected.promotionCode);
     expect(annualPrice, '').to.equal(expected.annualPrice);
     expect(taxText, '').to.equal(expected.taxText);
     expect(recurrenceText, '').to.equal(expected.recurrenceText);
@@ -71,6 +77,13 @@ runTests(async () => {
     await mockFetch(withWcs, withAem);
 
     describe('merch-card web component with mini variant', () => {
+        before(() => {
+            Log.use(Log.Plugins.consoleAppender);
+        });
+
+        after(() => {
+            Log.reset();
+        });
         const container = document.getElementById('us');
         describe('US', () => {
             it('should render US standard', async () => {
@@ -78,6 +91,7 @@ runTests(async () => {
                 container.append(card);
                 await card.checkReady();
                 compareGetters(card, {
+                    title: 'CCD Apps: Photography',
                     regularPrice: 'US$59.99/mo',
                     promoPrice: undefined,
                     annualPrice: undefined,
@@ -106,8 +120,10 @@ runTests(async () => {
                 container.append(card);
                 await card.checkReady();
                 compareGetters(card, {
+                    title: 'CCD Apps: Photography Promo',
                     regularPrice: 'US$59.99/mo',
                     promoPrice: 'US$49.99/mo',
+                    promotionCode: 'L_PROMO_10F',
                     annualPrice: undefined,
                     taxText: undefined,
                     seeTermsInfo: {
@@ -135,6 +151,7 @@ runTests(async () => {
                 container.append(card);
                 await card.checkReady();
                 compareGetters(card, {
+                    title: 'CCD Apps: Photography',
                     regularPrice: 'US$59.99/mo',
                     promoPrice: undefined,
                     annualPrice: undefined,
@@ -158,6 +175,17 @@ runTests(async () => {
                     },
                 });
             });
+            it('should log a warning if multiple promotion codes are found', async () => {
+                const [card] = getTemplateContent('template-multiple-promo-codes');
+                const logSpy = Sinon.spy(console, 'warn');
+                container.append(card);
+                await card.checkReady();
+                const promoCode = card.promotionCode;
+                expect(promoCode).to.equal('PROMO_ABC');
+                expect(logSpy.calledOnce).to.be.true;
+                expect(logSpy.args[0][0]).to.include('Multiple different promotion codes found: PROMO_ABC, PROMO_XYZ');
+                logSpy.restore();
+            });
         });
 
         describe('CA', () => {
@@ -167,6 +195,7 @@ runTests(async () => {
                 container.append(card);
                 await card.checkReady();
                 compareGetters(card, {
+                    title: 'CCD Apps: Photography',
                     regularPrice: 'CAD $78.99/mo',
                     promoPrice: undefined,
                     annualPrice: undefined,
@@ -197,8 +226,10 @@ runTests(async () => {
                 container.append(card);
                 await card.checkReady();
                 compareGetters(card, {
+                    title: 'CCD Apps: Photography Promo',
                     regularPrice: 'CAD $78.99/mo',
                     promoPrice: 'CAD $68.99/mo',
+                    promotionCode: 'L_PROMO_10F',
                     annualPrice: undefined,
                     taxText: undefined,
                     seeTermsInfo: {
@@ -230,6 +261,7 @@ runTests(async () => {
                 container.append(card);
                 await card.checkReady();
                 compareGetters(card, {
+                    title: 'CCD Apps: Photography',
                     regularPrice: 'A$95.99/mo',
                     promoPrice: undefined,
                     annualPrice: 'A$1,151.88/yr',
@@ -260,8 +292,10 @@ runTests(async () => {
                 container.append(card);
                 await card.checkReady();
                 compareGetters(card, {
+                    title: 'CCD Apps: Photography Promo',
                     regularPrice: 'A$95.99/mo',
                     promoPrice: 'A$47.99/mo',
+                    promotionCode: 'L_PROMO_10F',
                     annualPrice: 'A$1,007.88/yr',
                     taxText: 'Inclusive of all taxes.',
                     seeTermsInfo: {
@@ -293,6 +327,7 @@ runTests(async () => {
                 container.append(card);
                 await card.checkReady();
                 compareGetters(card, {
+                    title: 'CCD Apps: Photography',
                     regularPrice: '71,99 €/mois',
                     promoPrice: undefined,
                     annualPrice: undefined,
@@ -323,8 +358,10 @@ runTests(async () => {
                 container.append(card);
                 await card.checkReady();
                 compareGetters(card, {
+                    title: 'CCD Apps: Photography Promo',
                     regularPrice: '71,99 €/mois',
                     promoPrice: '59,99 €/mois',
+                    promotionCode: 'L_PROMO_10F',
                     annualPrice: undefined,
                     taxText: 'Toutes taxes comprises.',
                     seeTermsInfo: {

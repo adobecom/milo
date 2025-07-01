@@ -121,13 +121,16 @@ Adobe Home Gallery provides a comprehensive list of all supported card variants 
 -   `ccd-slice`
 -   `ccd-suggested`
 -   `ah-try-buy-widget`
+-   `mini`  (a headless card variant that can be used to fetch merch data and to render it with custom code such as React, Vue, etc.)
 
 ### Properties
 
 | Name                | Description                                                                                                         | Type                           |
 | ------------------- | ------------------------------------------------------------------------------------------------------------------- | ------------------------------ |
+| `title`             | The title of the card.                                                                                              | `string`                       |
 | `prices`            | inline-price elements that are rendered in the card.                                                                | `Array`                        |
 | `promoPrice`        | An inline-price element that contains the promo price, if applicable.                                               | `inline-price`                 |
+| `promotionCode`     | The promotion code of the offer.                                                                                    | `string`                       |
 | `regularPrice`      | The regular price of the offer. It could be the strikethrough price if promo price is present or the regular price. | `inline-price`                 |
 | `annualPrice`       | The annual price of the offer.                                                                                      | `inline-price`                 |
 | `planTypeText`      | Plan type text, e.g. Annual, paid monthly.                                                                          | `inline-price`                 |

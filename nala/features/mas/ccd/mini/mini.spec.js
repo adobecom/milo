@@ -7,8 +7,10 @@ module.exports = {
       path: '/libs/features/mas/docs/ccd-mini.html',
       data: {
         fragment: '03a36f0f-3e5d-4881-ae6b-273c517c9d38',
+        title: 'CCD Apps: Photography',
         regularPrice: 'US$59.99/mo',
         promoPrice: undefined,
+        promotionCode: undefined,
         planTypeText: 'Annual, paid monthly',
         recurrenceText: '/mo',
         renewalText: undefined,
@@ -34,8 +36,10 @@ module.exports = {
       path: '/libs/features/mas/docs/ccd-mini.html',
       data: {
         fragment: 'df357350-95b2-47f2-844f-df2e491eecef',
+        title: 'CCD Apps: Photography Promo',
         regularPrice: 'US$34.49/mo',
-        promoPrice: 'US$49.99/mo',
+        promoPrice: 'US$17.24/mo',
+        promotionCode: 'UMRM2MUSPr501YOC',
         planTypeText: 'Monthly',
         recurrenceText: '/mo',
         renewalText:
@@ -62,8 +66,10 @@ module.exports = {
       path: '/libs/features/mas/docs/ccd-mini.html?country=FR&language=fr',
       data: {
         fragment: '03a36f0f-3e5d-4881-ae6b-273c517c9d38',
+        title: 'CCD Apps: Photography',
         regularPrice: '71,99 €/mois',
         promoPrice: undefined,
+        promotionCode: undefined,
         planTypeText: 'Annual, paid monthly.',
         recurrenceText: '/mois',
         renewalText: undefined,
@@ -89,8 +95,10 @@ module.exports = {
       path: '/libs/features/mas/docs/ccd-mini.html?country=FR&language=fr',
       data: {
         fragment: 'df357350-95b2-47f2-844f-df2e491eecef',
+        title: 'CCD Apps: Photography Promo',
         regularPrice: '71,99 €/mois',
-        promoPrice: '',
+        promoPrice: undefined,
+        promotionCode: 'UMRM2MUSPr501YOC',
         planTypeText: 'Annual, paid monthly.', // TODO update once priceLiterals override is implemented
         recurrenceText: '/mois',
         renewalText:
