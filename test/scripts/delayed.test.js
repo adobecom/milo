@@ -1,6 +1,6 @@
 import sinon from 'sinon';
 import { expect } from '@esm-bundle/chai';
-import loadDelayed, { loadPrivacy, loadJarvisChat, loadGoogleLogin } from '../../libs/scripts/delayed.js';
+import loadDelayed, { loadPrivacy, loadJarvisChat, loadGoogleLogin, addRUMCampaignTrackingParameters } from '../../libs/scripts/delayed.js';
 import { getMetadata, getConfig, setConfig, loadIms } from '../../libs/utils/utils.js';
 
 describe('Delayed', () => {
@@ -59,5 +59,48 @@ describe('Delayed', () => {
       });
     await clock.runAllAsync();
     clock.restore();
+  });
+});
+
+describe('addRUMCampaignTrackingParameters', () => {
+  const originalURLSearchParams = window.URLSearchParams;
+  const setURLSearchParamsStub = (params) => {
+    window.URLSearchParams = sinon.stub().returns({ get: (key) => params[key] });
+  };
+
+  afterEach(() => {
+    window.URLSearchParams = originalURLSearchParams;
+  });
+
+  it('should call sampleRUM for valid sdid, mv, and mv2', () => {
+    setURLSearchParamsStub({
+      sdid: '12345678',
+      mv: 'foo',
+      mv2: 'bar',
+    });
+    const sampleRUM = sinon.stub();
+    addRUMCampaignTrackingParameters({ sampleRUM });
+    expect(sampleRUM.calledThrice).to.be.true;
+    expect(sampleRUM.getCall(0).args).to.deep.equal(['utm', { source: 'utm_campaign', target: '12345678' }]);
+    expect(sampleRUM.getCall(1).args).to.deep.equal(['utm', { source: 'utm_source', target: 'foo' }]);
+    expect(sampleRUM.getCall(2).args).to.deep.equal(['utm', { source: 'utm_medium', target: 'bar' }]);
+  });
+
+  it('should NOT call sampleRUM for sdid if too long', () => {
+    setURLSearchParamsStub({
+      sdid: '123456789012345',
+      mv: 'foo',
+    });
+    const sampleRUM = sinon.stub();
+    addRUMCampaignTrackingParameters({ sampleRUM });
+    expect(sampleRUM.calledOnce).to.be.true;
+    expect(sampleRUM.getCall(0).args).to.deep.equal(['utm', { source: 'utm_source', target: 'foo' }]);
+  });
+
+  it('should skip missing params', () => {
+    setURLSearchParamsStub({ irrelevant: 'x' });
+    const sampleRUM = sinon.stub();
+    addRUMCampaignTrackingParameters({ sampleRUM });
+    expect(sampleRUM.notCalled).to.be.true;
   });
 });
