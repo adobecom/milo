@@ -287,10 +287,14 @@ export class InlinePrice extends HTMLSpanElement {
         // eslint-disable-next-line react-hooks/rules-of-hooks
         const service = getService();
         if (!service) return false;
-        const options = service.collectPriceOptions(overrides, this);
+        const priceOptions = service.collectPriceOptions(overrides, this);
+        const options = {
+          ...service.settings,
+          ...priceOptions,
+      };
         if (!options.wcsOsi.length) return false;
 
-        if (service.featureFlags[FF_DEFAULTS] && (!this.dataset.displayTax || !this.dataset.forceTaxExclusive)) {
+        if (service.featureFlags[FF_DEFAULTS] && priceOptions.displayTax === undefined && priceOptions.forceTaxExclusive === undefined) {
             const [offerSelectors] = await service.resolveOfferSelectors(options);
             const offers = selectOffers(await offerSelectors, options);
             if (offers?.length) {
@@ -299,10 +303,10 @@ export class InlinePrice extends HTMLSpanElement {
                 const [marketSegment = ''] = offer.marketSegments;
                 // set default value for displayTax and forceTaxExclusive if not set neither in OST nor in merch link
                 const flags = await resolvePriceTaxFlags(country, language, offer.customerSegment, marketSegment);
-                if (!this.dataset.displayTax) {
+                if (!options.displayTax) {
                     options.displayTax = flags?.displayTax || options.displayTax;
                 }
-                if (!this.dataset.forceTaxExclusive) {
+                if (!options.forceTaxExclusive) {
                     options.forceTaxExclusive = flags?.forceTaxExclusive || options.forceTaxExclusive;
                 }
             }
@@ -315,7 +319,6 @@ export class InlinePrice extends HTMLSpanElement {
             const offers = await promise;
             return this.renderOffers(
                 selectOffers(offers, options),
-                options,
                 version,
             );
         }
@@ -330,26 +333,17 @@ export class InlinePrice extends HTMLSpanElement {
      * Renders price offer as HTML of this component
      * using consonant price template functions
      * @param {Offer[]} offers
-     * @param {Record<string, any>} overrides
-     * Optional object with properties to use as overrides
-     * over those collected from dataset of this component.
+     * @param {number} version
      */
-    renderOffers(offers, overrides = {}, version = undefined) {
+    renderOffers(offers, version = undefined) {
         if (!this.isConnected) return;
         // eslint-disable-next-line react-hooks/rules-of-hooks
         const service = getService();
         if (!service) return false;
-        const options = service.collectPriceOptions(
-            {
-                ...this.dataset,
-                ...overrides,
-            },
-            this,
-        );
-        version ??= this.masElement.togglePending(options);
+        version ??= this.masElement.togglePending();
         if (offers.length) {
-            if (this.masElement.toggleResolved(version, offers, options)) {
-                this.innerHTML = service.buildPriceHTML(offers, options);
+            if (this.masElement.toggleResolved(version, offers)) {
+                this.innerHTML = service.buildPriceHTML(offers, this.options);
 
                 // Adding logic for options.alternativePrice to add <sr-only>Alternatively at</sr-only>
                 const parentEl = this.closest('p, h3, div');
@@ -370,8 +364,8 @@ export class InlinePrice extends HTMLSpanElement {
                 return true;
             }
         } else {
-            const error = new Error(`Not provided: ${options?.wcsOsi ?? '-'}`);
-            if (this.masElement.toggleFailed(version, error, options)) {
+            const error = new Error(`Not provided: ${this.options?.wcsOsi ?? '-'}`);
+            if (this.masElement.toggleFailed(version, error, this.options)) {
                 this.innerHTML = '';
                 return true;
             }

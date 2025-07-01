@@ -5,6 +5,10 @@ merch-card[variant="mini"] {
   height: 250px;
 }
 
+merch-card[variant="mini"] .price-tax-inclusivity::before {
+  content: initial;
+}
+
 merch-card[variant="mini"] [slot="title"] {
     font-size: 16px;
     font-weight: 700;

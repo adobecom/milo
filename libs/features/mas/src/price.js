@@ -24,19 +24,14 @@ import { toOfferSelectorIds, toQuantity } from './utilities.js';
 
 export function Price({ literals, providers, settings }) {
     function collectPriceOptions(overrides, placeholder = null) {
-        const {
-            country: defaultCountry,
-            language: defaultLanguage,
-            promotionCode: defaultPromotionCode,
-            env,
-        } = settings;
-        const options = {
-            country: defaultCountry,
-            language: defaultLanguage,
-            promotionCode: defaultPromotionCode,
-            env,
+        let options = {
+            country: settings.country,
+            language: settings.language,
+            locale: settings.locale,
+            literals: structuredClone(literals.price),
         };
-        if (placeholder) {
+
+        if (placeholder && providers?.price) {
             for (const provider of providers.price) {
                 provider(placeholder, options);
             }
@@ -55,10 +50,11 @@ export function Price({ literals, providers, settings }) {
             wcsOsi,
             ...rest
         } = Object.assign(options, placeholder?.dataset ?? {}, overrides ?? {});
-        Object.assign(
-            options,
-            omitProperties({
-                ...rest,
+
+        options = omitProperties(
+            Object.assign({
+              ...options,
+              ...rest,
                 displayOldPrice: toBoolean(displayOldPrice),
                 displayPerUnit: toBoolean(displayPerUnit),
                 displayRecurrence: toBoolean(displayRecurrence),
@@ -120,15 +116,9 @@ export function Price({ literals, providers, settings }) {
                 }
         }
 
-        const context = collectPriceOptions(options);
-        context.literals = Object.assign(
-            {},
-            literals.price,
-            options.literals ?? {},
-        );
         let [offer] = offers;
         offer = { ...offer, ...offer.priceDetails };
-        return method(context, offer);
+        return method({...settings, ...options}, offer);
     }
 
     const createInlinePrice = InlinePrice.createInlinePrice;
