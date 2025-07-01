@@ -478,10 +478,6 @@ export function decorateAnchorVideo({ src = '', anchorTag }) {
   const accessibilityEnabled = isVideoAccessible(anchorTag);
   anchorTag.hash = anchorTag.hash.replace(`#${HIDE_CONTROLS}`, '');
   if (anchorTag.closest('.marquee, .aside, .hero-marquee, .quiz-marquee') && !anchorTag.hash) anchorTag.hash = '#autoplay';
-  // if (window.matchMedia('(prefers-reduced-motion: reduce)') === true || window.matchMedia('(prefers-reduced-motion: reduce)').matches === true) {
-  //   anchorTag.hash = anchorTag.hash.replace('autoplay1', '');
-  //   anchorTag.hash = anchorTag.hash.replace('autoplay', '');
-  // }
   const { dataset, parentElement } = anchorTag;
   const attrs = getVideoAttrs(anchorTag.hash, dataset);
   const tabIndex = anchorTag.tabIndex || 0;
