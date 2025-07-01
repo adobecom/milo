@@ -11,7 +11,6 @@ let tooltipListenersAdded = false;
 
 function setTooltipPosition(tooltips) {
   const positionClasses = ['top', 'bottom', 'right', 'left'];
-  const isRtl = document.documentElement.dir === 'rtl';
   const viewportWidth = window.innerWidth;
   const tooltipMaxWidth = viewportWidth <= 600 ? 200 : 160;
   const tooltipMargin = 12;
@@ -26,54 +25,45 @@ function setTooltipPosition(tooltips) {
     const { originalPosition } = tooltip.dataset;
     const isVerticalPosition = originalPosition === 'top' || originalPosition === 'bottom';
     const effectiveMaxWidth = isVerticalPosition ? tooltipMaxWidth / 2 : tooltipMaxWidth;
-    const willOverflowRight = rect.right + effectiveMaxWidth + tooltipMargin > viewportWidth;
-    const willOverflowLeft = rect.left - effectiveMaxWidth - tooltipMargin < 0;
     const topMargin = originalPosition === 'top' ? tooltipMargin : 0;
     const tooltipHeight = rect.height;
     const effectiveHeight = originalPosition === 'top' ? tooltipHeight + topMargin : tooltipHeight / 2;
     const willCutoffTop = rect.top - effectiveHeight < headerHeight;
+    const willCutoffBottom = rect.bottom + (originalPosition === 'bottom' ? tooltipHeight + tooltipMargin : 0)
+    > window.innerHeight;
+    const willOverflowRight = rect.right + effectiveMaxWidth + tooltipMargin > viewportWidth;
+    const willOverflowLeft = rect.left - effectiveMaxWidth - tooltipMargin < 0;
+    const willOverflowRightAtBottom = rect.left + tooltipMaxWidth / 2
+     + tooltipMargin > viewportWidth;
+    const willOverflowLeftAtBottom = rect.left - tooltipMaxWidth / 2 - tooltipMargin < 0;
 
-    if (originalPosition !== currentPosition) {
-      let wouldOverflow = false;
-      if (originalPosition === 'right') {
-        wouldOverflow = willOverflowRight || willCutoffTop;
-      } else if (originalPosition === 'left') {
-        wouldOverflow = willOverflowLeft || willCutoffTop;
-      } else if (originalPosition === 'top') {
-        wouldOverflow = willCutoffTop || willOverflowRight || willOverflowLeft;
-      } else if (originalPosition === 'bottom') {
-        wouldOverflow = willOverflowRight || willOverflowLeft;
-      }
-      if (!wouldOverflow) {
-        tooltip.classList.remove(...positionClasses);
-        tooltip.classList.add(originalPosition);
-        return;
-      }
-    }
-
-    if (willOverflowRight && willCutoffTop) {
+    const hasOverflowIssues = willOverflowRight || willOverflowLeft || willCutoffTop
+      || willCutoffBottom || willOverflowRightAtBottom || willOverflowLeftAtBottom;
+    if ((originalPosition !== currentPosition) && !hasOverflowIssues) {
       tooltip.classList.remove(...positionClasses);
-      tooltip.classList.add('left');
+      tooltip.classList.add(originalPosition);
       return;
     }
 
-    if (willOverflowLeft && willCutoffTop) {
-      tooltip.classList.remove(...positionClasses);
-      tooltip.classList.add('right');
-      return;
+    let updatedPosition = originalPosition;
+
+    if (willOverflowRight && willOverflowRightAtBottom) {
+      updatedPosition = 'left';
+    } else if (willOverflowLeft && willOverflowLeftAtBottom) {
+      updatedPosition = 'right';
+    } else if ((willOverflowRight && willCutoffTop) || (willOverflowLeft && willCutoffTop)) {
+      updatedPosition = (willOverflowRightAtBottom && 'left') || (willOverflowLeftAtBottom && 'right') || 'bottom';
+    } else if (willOverflowRight || willOverflowLeft) {
+      updatedPosition = willOverflowRight ? 'left' : 'right';
+    } else if (willCutoffTop && ['top', 'left', 'right'].includes(originalPosition)) {
+      updatedPosition = 'bottom';
+    } else if (willCutoffBottom && ['bottom', 'left', 'right'].includes(originalPosition)) {
+      updatedPosition = 'top';
     }
 
-    if (willCutoffTop && (originalPosition === 'top' || originalPosition === 'left' || originalPosition === 'right')) {
+    if (currentPosition !== updatedPosition) {
       tooltip.classList.remove(...positionClasses);
-      tooltip.classList.add('bottom');
-      return;
-    }
-
-    const shouldPositionLeft = isRtl ? willOverflowLeft : willOverflowRight;
-    const shouldPositionRight = isRtl ? willOverflowRight : willOverflowLeft;
-    if (shouldPositionLeft || shouldPositionRight) {
-      tooltip.classList.remove(...positionClasses);
-      tooltip.classList.add(shouldPositionLeft ? 'left' : 'right');
+      tooltip.classList.add(updatedPosition);
     }
   });
 }
