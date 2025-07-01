@@ -153,7 +153,7 @@ html[dir="rtl"] .carousel .carousel-previous {
 
 .carousel-slides {
   display: flex;
-  align-items: stretch;
+  align-items: start;
   left: -100%;
   position: relative;
   transform: translateX(100%);
@@ -161,6 +161,10 @@ html[dir="rtl"] .carousel .carousel-previous {
   margin-bottom: 1rem;
   scroll-snap-type: x mandatory;
   will-change: transform;
+}
+
+.carousel-slides.align-height {
+  align-items: stretch;
 }
 
 html[dir="rtl"] .carousel-slides {
@@ -423,21 +427,21 @@ html[dir="rtl"] .carousel .move-indicators {
   margin: unset;
 }
 
-.carousel.container .carousel-slide div:not(.editorial-card) .foreground:not(.icon-block .foreground) {
+.carousel.container.align-height .carousel-slide div:not(.editorial-card) .foreground:not(.icon-block .foreground) {
   height: 100%;
 }
 
-.carousel.container .carousel-slide > div:not(.media) .foreground > div {
+.carousel.container.align-height .carousel-slide > div:not(.media) .foreground > div {
   height: 100%;
   display: flex;
   flex-direction: column;
 }
 
-.carousel.container .foreground > div:not(.brick-text) > *:not(.cta-container) {
+.carousel.container.align-height .foreground > div:not(.brick-text) > *:not(.cta-container) {
   margin-top: 0;
 }
 
-.carousel.container .cta-container {
+.carousel.container.align-height .cta-container {
   margin-top: auto;
 }
 
@@ -493,43 +497,64 @@ html[dir="rtl"] .carousel .move-indicators {
 
 /* Apply spacing token to block inside of slide */
 .carousel.container .carousel-slide.xs-spacing > div,
-.carousel.container .carousel-slide .xs-spacing { 
+.carousel.container .carousel-slide .xs-spacing { padding: var(--spacing-xs); }
+
+.carousel.container .carousel-slide.s-spacing > div,
+.carousel.container .carousel-slide .s-spacing { padding: var(--spacing-s); }
+
+.carousel.container .carousel-slide.m-spacing > div,
+.carousel.container .carousel-slide .m-spacing { padding: var(--spacing-m); }
+
+.carousel.container .carousel-slide.l-spacing > div,
+.carousel.container .carousel-slide .l-spacing { padding: var(--spacing-l); }
+
+.carousel.container .carousel-slide.xl-spacing > div,
+.carousel.container .carousel-slide .xl-spacing { padding: var(--spacing-xl); }
+
+.carousel.container .carousel-slide.xxl-spacing > div,
+.carousel.container .carousel-slide .xxl-spacing { padding: var(--spacing-xxl); }
+
+.carousel.container .carousel-slide.xxxl-spacing > div,
+.carousel.container .carousel-slide .xxxl-spacing { padding: var(--spacing-xxxl); }
+
+.carousel.container.align-height .carousel-slide.xs-spacing > div,
+.carousel.container.align-height .carousel-slide .xs-spacing { 
   padding: var(--spacing-xs); 
   height: calc(100% - 2*var(--spacing-xs));
 }
 
-.carousel.container .carousel-slide.s-spacing > div,
-.carousel.container .carousel-slide .s-spacing { 
+.carousel.container.align-height .carousel-slide.s-spacing > div,
+.carousel.container.align-height .carousel-slide .s-spacing { 
   padding: var(--spacing-s);
   height: calc(100% - 2*var(--spacing-s)); 
 }
 
-.carousel.container .carousel-slide.m-spacing > div,
-.carousel.container .carousel-slide .m-spacing { 
+.carousel.container.align-height .carousel-slide.m-spacing > div,
+.carousel.container.align-height .carousel-slide .m-spacing { 
   padding: var(--spacing-m); 
   height: calc(100% - 2*var(--spacing-m));
 }
 
-.carousel.container .carousel-slide.l-spacing > div,
-.carousel.container .carousel-slide .l-spacing { 
+.carousel.container.align-height .carousel-slide.l-spacing > div,
+.carousel.container.align-height .carousel-slide .l-spacing { 
   padding: var(--spacing-l); 
   height: calc(100% - 2*var(--spacing-l));
 }
 
-.carousel.container .carousel-slide.xl-spacing > div,
-.carousel.container .carousel-slide .xl-spacing {
+.carousel.container.align-height .carousel-slide.xl-spacing > div,
+.carousel.container.align-height .carousel-slide .xl-spacing {
   padding: var(--spacing-xl); 
   height: calc(100% - 2*var(--spacing-xl)); 
 }
 
-.carousel.container .carousel-slide.xxl-spacing > div,
-.carousel.container .carousel-slide .xxl-spacing { 
+.carousel.container.align-height .carousel-slide.xxl-spacing > div,
+.carousel.container.align-height .carousel-slide .xxl-spacing { 
   padding: var(--spacing-xxl); 
   height: calc(100% - 2*var(--spacing-xxl)); 
 }
 
-.carousel.container .carousel-slide.xxxl-spacing > div,
-.carousel.container .carousel-slide .xxxl-spacing { 
+.carousel.container.align-height .carousel-slide.xxxl-spacing > div,
+.carousel.container.align-height .carousel-slide .xxxl-spacing { 
   padding: var(--spacing-xxxl);
   height: calc(100% - 2*var(--spacing-xxxl)); 
 }
@@ -615,8 +640,13 @@ html[dir="rtl"] .carousel .move-indicators {
   }
 
   .carousel-slides {
+    align-items: center;
     left: -100%;
     transform: translateX(100%);
+  }
+
+  .carousel.container.align-height .carousel-slides {
+    align-items: stretch;
   }
 
   .carousel-slides.is-reversing {
