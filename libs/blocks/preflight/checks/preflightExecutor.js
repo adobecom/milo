@@ -12,9 +12,7 @@ const preflightMode = () => {
  * TODO: Implement ASO API integration
  */
 const runASOChecks = async (url, area) => {
-  // Placeholder for ASO API implementation
-  // This will be implemented in future iterations
-  console.warn('ASO API mode is not yet implemented, falling back to deterministic mode');
+
   return runDeterministicChecks(url, area);
 };
 
@@ -26,7 +24,6 @@ const executePreflightChecks = async () => {
     return preflightResults;
   }
 
-  console.log('prefetchPreflightChecks starting...');
   const url = window.location.pathname;
   const area = document;
   const mode = preflightMode();
@@ -58,4 +55,4 @@ export function hasPreflightFailures(results = null) {
 export function getPreflightStatus() {
   return preflightResults ? 'completed' : 'not-started';
 }
-export { executePreflightChecks, preflightResults };
+export { executePreflightChecks };

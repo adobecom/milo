@@ -1,8 +1,6 @@
 import { html, signal, useEffect } from '../../../deps/htm-preact.js';
 import { STATUS } from '../checks/constants.js';
-import { preflightResults, executePreflightChecks } from '../checks/preflightExecutor.js';
-
-const { runChecks } = preflightResults.seo;
+import { executePreflightChecks } from '../checks/preflightExecutor.js';
 
 const DEF_ICON = 'purple';
 const DEF_DESC = 'Checking...';
@@ -90,24 +88,24 @@ async function getResults() {
     linksResult,
   ];
 
-  let checks;
+  let runChecks;
 
   try {
     const cachedResults = await executePreflightChecks();
     if (cachedResults?.seo) {
-      checks = cachedResults.seo;
+      runChecks = cachedResults.seo.runChecks;
     } else {
-      checks = runChecks(window.location.pathname, document);
+      runChecks = executePreflightChecks().then((results) => results.seo.runChecks);
     }
   } catch (error) {
     console.log('Failed to get cached preflight results, running checks directly:', error);
-    checks = runChecks(window.location.pathname, document);
+    runChecks = executePreflightChecks().then((results) => results.seo.runChecks);
   }
 
   // Update UI as each check resolves
   const icons = [];
   const checkPromises = [];
-  checks.forEach((resultOrPromise, index) => {
+  runChecks.forEach((resultOrPromise, index) => {
     const signalResult = signals[index];
     const promise = Promise.resolve(resultOrPromise)
       .then((result) => {
