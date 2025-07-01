@@ -496,6 +496,34 @@ export default function init(el) {
   nextPreviousContainer.append(...nextPreviousBtns, controlsContainer);
   el.append(nextPreviousContainer);
 
+  function normalizeVideoHeights() {
+    const videos = el.querySelectorAll('video');
+    if (!videos.length) return;
+
+    const videoData = [];
+    let maxHeight = 0;
+
+    videos.forEach((video) => {
+      const foreground = video.closest('.editorial-card')?.querySelector('.foreground');
+      const videoHeight = video.offsetHeight;
+      const totalHeight = videoHeight + (foreground ? foreground.offsetHeight : 0);
+      videoData.push({ video, foreground, videoHeight, totalHeight });
+      if (totalHeight > maxHeight) maxHeight = totalHeight;
+    });
+
+    videoData.forEach(({ video, foreground, videoHeight }) => {
+      if (foreground) {
+        video.style.height = `${videoHeight}px`;
+        video.style.maxHeight = `${videoHeight}px`;
+      } else {
+        video.style.height = `${maxHeight}px`;
+        video.style.maxHeight = `${maxHeight}px`;
+      }
+    });
+  }
+
+  if (el.classList.contains('align-height')) setTimeout(normalizeVideoHeights, 100);
+
   function handleDeferredImages() {
     const images = el.querySelectorAll('img[loading="lazy"]');
     images.forEach((img) => {
