@@ -121,7 +121,7 @@ Adobe Home Gallery provides a comprehensive list of all supported card variants 
 -   `ccd-slice`
 -   `ccd-suggested`
 -   `ah-try-buy-widget`
--   `mini`  (a headless card variant that can be used to fetch merch data and to render it with custom code such as React, Vue, etc.)
+-   `mini`  (a headless card variant that provides merch data for custom rendering with frameworks like React, Vue, or vanilla JavaScript)
 
 ### Properties
 
