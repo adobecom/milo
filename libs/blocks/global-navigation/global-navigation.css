@@ -1065,6 +1065,7 @@ header.new-nav .feds-nav > section.feds-navItem > .feds-popup .tabs button[aria-
 }
 
 header.new-nav .feds-nav > section.feds-navItem > .feds-popup .tab-content {
+  min-height: 0;
   background-color: var(--feds-backgroundColor-tabContent-v2);
   padding: 10px 13px 25px;
   display: flex;
