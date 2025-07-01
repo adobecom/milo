@@ -1,4 +1,4 @@
-import { createTag, getConfig, getLanguage } from '../../utils/utils.js';
+import { createTag, getConfig, getLanguage, getFederatedContentRoot } from '../../utils/utils.js';
 
 const queriedPages = [];
 const CHECKMARK_SVG = '<svg class="check-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M13.3337 4L6.00033 11.3333L2.66699 8" stroke="#274DEA" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
@@ -18,6 +18,20 @@ document.addEventListener('keydown', (e) => {
 document.addEventListener('mousedown', () => {
   miloLangIsKeyboard = false;
 });
+
+const langMapToEnglishPromise = ((async () => {
+  try {
+    const response = await fetch(`${getFederatedContentRoot()}/federal/assets/data/languages-mapping.json`);
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const configJson = await response.json();
+    return configJson.data || [];
+  } catch (e) {
+    window.lana?.log('Failed to load language-mapping.json:', e);
+    return [];
+  }
+}))();
+
+let langMapToEnglish = [];
 
 function stripQueryAndHash(url) {
   try {
@@ -129,6 +143,50 @@ function createDropdownElements(placeholderText) {
   return { dropdown, searchContainer, languageList };
 }
 
+const normalizeText = (text) => text.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+const normalizedCache = new Map();
+const getNormalizedText = (text) => {
+  if (!normalizedCache.has(text)) {
+    normalizedCache.set(text, normalizeText(text));
+  }
+  return normalizedCache.get(text);
+};
+
+const isIsoCodeMatch = (langObj, searchLower) => {
+  const isoCode = langObj?.language?.toLowerCase();
+  return isoCode && (isoCode === searchLower || isoCode.includes(searchLower));
+};
+
+const isNativeNameMatch = (name, searchLower, searchNormalized) => {
+  const nativeName = name.toLowerCase();
+  const nativeNameNormalized = getNormalizedText(name);
+  return nativeName.includes(searchLower) || nativeNameNormalized.includes(searchNormalized);
+};
+
+const isIetfMatch = (langObj, searchLower) => {
+  const ietfLang = langObj?.ietf?.split('-')[0]?.toLowerCase();
+  const fullIetf = langObj?.ietf?.toLowerCase();
+  return ietfLang && (searchLower === ietfLang || ietfLang.includes(searchLower)
+    || (fullIetf && fullIetf.includes(searchLower)));
+};
+
+const isEnglishMappingMatch = (name, searchLower, searchNormalized, mappingData) => {
+  if (mappingData.length === 0) return false;
+
+  const nativeName = name.toLowerCase();
+  const nativeNameNormalized = getNormalizedText(name);
+
+  const englishMapping = mappingData.find((mapping) => {
+    const mappingEnglish = mapping.English.toLowerCase();
+    const mappingEnglishNormalized = getNormalizedText(mapping.English);
+    return mappingEnglish.includes(searchLower)
+      || mappingEnglishNormalized.includes(searchNormalized);
+  });
+
+  return englishMapping && (englishMapping.Native.toLowerCase() === nativeName
+    || getNormalizedText(englishMapping.Native) === nativeNameNormalized);
+};
+
 function renderLanguages({
   languageList,
   languagesList,
@@ -139,9 +197,15 @@ function renderLanguages({
   return (searchTerm = '') => {
     if (!languagesList.length) return [];
     languageList.innerHTML = '';
-    const filteredLanguages = languagesList.filter(
-      (lang) => lang.name.toLowerCase().includes(searchTerm.toLowerCase()),
-    );
+
+    const searchLower = searchTerm.trim().toLowerCase();
+    const searchNormalized = getNormalizedText(searchTerm.trim());
+
+    // eslint-disable-next-line max-len
+    const filteredLanguages = languagesList.filter((lang) => isNativeNameMatch(lang.name, searchLower, searchNormalized)
+      || isIsoCodeMatch(lang.langObj, searchLower)
+      || isIetfMatch(lang.langObj, searchLower)
+      || isEnglishMappingMatch(lang.name, searchLower, searchNormalized, langMapToEnglish));
     const fragment = document.createDocumentFragment();
     filteredLanguages.forEach((lang, idx) => {
       const langItem = createTag('li', {
@@ -289,10 +353,14 @@ function setupDropdownEvents({
     activeIndexRef,
   });
 
-  function openDropdown() {
+  async function openDropdown() {
     isDropdownOpen = true;
     dropdown.style.display = 'block';
     selectedLangButton.setAttribute('aria-expanded', 'true');
+    if (langMapToEnglish.length === 0) {
+      langMapToEnglish = await langMapToEnglishPromise;
+    }
+
     filteredLanguages = doRenderLanguages(searchInput.value);
     documentClickHandler = (e) => {
       if (isDropdownOpen && !dropdown.contains(e.target)) closeDropdown();
@@ -327,8 +395,10 @@ function setupDropdownEvents({
     filteredLanguages = doRenderLanguages(e.target.value);
   }, 200);
   searchInput.addEventListener('input', debouncedInput);
-
   searchInput.addEventListener('keydown', (e) => {
+    if (e.key === ' ') {
+      e.stopPropagation();
+    }
     if (e.key === 'ArrowDown') {
       e.preventDefault();
       const selected = languageList.querySelector('.language-item.selected .language-link');
