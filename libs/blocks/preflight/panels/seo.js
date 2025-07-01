@@ -1,6 +1,6 @@
 import { html, signal, useEffect } from '../../../deps/htm-preact.js';
 import { STATUS } from '../checks/constants.js';
-import { preflightResults, callPreflight } from '../checks/executor.js';
+import { preflightResults, executePreflightChecks } from '../checks/preflightExecutor.js';
 
 const { runChecks } = preflightResults.seo;
 
@@ -93,7 +93,7 @@ async function getResults() {
   let checks;
 
   try {
-    const cachedResults = await callPreflight();
+    const cachedResults = await executePreflightChecks();
     if (cachedResults?.seo) {
       checks = cachedResults.seo;
     } else {

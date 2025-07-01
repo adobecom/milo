@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-import { callPreflight } from '../blocks/preflight/checks/executor.js';
+import { executePreflightChecks } from '../blocks/preflight/checks/preflightExecutor.js';
 
 const MILO_TEMPLATES = [
   '404',
@@ -1570,7 +1570,7 @@ function initSidekick() {
   const initPlugins = async () => {
     const { default: init } = await import('./sidekick.js');
     init({ createTag, loadBlock, loadScript, loadStyle });
-    callPreflight();
+    executePreflightChecks();
   };
 
   if (document.querySelector('aem-sidekick, helix-sidekick')) {

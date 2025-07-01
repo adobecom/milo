@@ -21,7 +21,7 @@ const runASOChecks = async (url, area) => {
 const convertASOToStandardFormat = (asoResults) => asoResults;
 // TODO: Also dependent to the ASO API to be implemented
 
-const callPreflight = async () => {
+const executePreflightChecks = async () => {
   if (preflightResults) {
     console.log('Cache hit:', preflightResults);
     return preflightResults;
@@ -61,4 +61,4 @@ export function hasPreflightFailures(results = null) {
 export function getPreflightStatus() {
   return preflightResults ? 'completed' : 'not-started';
 }
-export { callPreflight, preflightResults };
+export { executePreflightChecks, preflightResults };
