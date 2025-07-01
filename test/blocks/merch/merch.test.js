@@ -29,6 +29,7 @@ import merch, {
   openModal,
   PRICE_TEMPLATE_LEGAL,
 } from '../../../libs/blocks/merch/merch.js';
+import { localizePreviewLinks } from '../../../libs/blocks/merch/autoblock.js';
 
 import { mockFetch, unmockFetch, readMockText } from './mocks/fetch.js';
 import { mockIms, unmockIms } from './mocks/ims.js';
@@ -913,6 +914,35 @@ describe('Merch Block', () => {
       const a = document.createElement('a');
       a.setAttribute('href', 'https://mas.adobe.com/studio.html#content-type=merch-card-collection&path=acom');
       expect(getOptions(a).fragment).to.be.undefined;
+    });
+  });
+  describe('Localize preview links', () => {
+    it('check if only preview URL is relative', () => {
+      const div = document.createElement('div');
+
+      const a1 = document.createElement('a');
+      a1.classList.add('link1');
+      a1.setAttribute('href', 'https://main--milo--adobecom.aem.page/test/milo/path');
+      div.append(a1);
+
+      const a2 = document.createElement('a');
+      a2.classList.add('link2');
+      a2.setAttribute('href', 'https://main--cc--adobecom.hlx.live/test/cc/path');
+      div.append(a2);
+
+      const a3 = document.createElement('a');
+      a3.classList.add('link3');
+      a3.setAttribute('href', 'https://mas.adobe.com/studio.html#content-type=merch-card-collection&path=acom');
+      div.append(a3);
+
+      const aNoHref = document.createElement('a');
+      div.append(aNoHref);
+
+      localizePreviewLinks(div);
+
+      expect(div.querySelector('.link1').getAttribute('href')).to.equal('/test/milo/path');
+      expect(div.querySelector('.link2').getAttribute('href')).to.equal('/test/cc/path');
+      expect(div.querySelector('.link3').getAttribute('href')).to.equal('https://mas.adobe.com/studio.html#content-type=merch-card-collection&path=acom');
     });
   });
 });
