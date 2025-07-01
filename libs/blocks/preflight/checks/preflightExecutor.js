@@ -23,7 +23,6 @@ const convertASOToStandardFormat = (asoResults) => asoResults;
 
 const executePreflightChecks = async () => {
   if (preflightResults) {
-    console.log('Cache hit:', preflightResults);
     return preflightResults;
   }
 
@@ -31,8 +30,6 @@ const executePreflightChecks = async () => {
   const url = window.location.pathname;
   const area = document;
   const mode = preflightMode();
-
-  console.log(`Using preflight mode: ${mode}`);
 
   let results;
 

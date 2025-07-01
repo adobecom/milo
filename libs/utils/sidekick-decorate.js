@@ -6,6 +6,7 @@ const PUBLISH_BTN = '.publish.plugin button';
 const PROFILE = '.profile-email';
 const CONFIRM_MESSAGE = 'Are you sure? This will publish to production.';
 let stylePublishCalled = false;
+let preflightNotificationDismissed = false;
 
 function openPreflightPanel() {
   const sk = document.querySelector('aem-sidekick, helix-sidekick');
@@ -53,6 +54,7 @@ async function createPreflightNotification() {
   const closeBtn = overlay.querySelector('.notification-close');
   closeBtn.addEventListener('click', () => {
     overlay.remove();
+    preflightNotificationDismissed = true;
   });
 
   document.body.appendChild(overlay);
@@ -67,7 +69,7 @@ async function checkPreflightAndShowNotification() {
       existingNotification.remove();
     }
 
-    if (hasFailures) {
+    if (hasFailures && !preflightNotificationDismissed) {
       await createPreflightNotification();
     }
   } catch (error) {
@@ -89,7 +91,7 @@ function createSidekickVisibilityObserver() {
     const isOpen = sidekick.getAttribute('open') !== 'false';
 
     if (isOpen) {
-      if (!notification) {
+      if (!notification && !preflightNotificationDismissed) {
         try {
           await executePreflightChecks();
           const hasFailures = hasPreflightFailures();
@@ -100,8 +102,11 @@ function createSidekickVisibilityObserver() {
           console.warn('Failed to check preflight status:', error);
         }
       }
-    } else if (notification) {
-      notification.remove();
+    } else {
+      if (notification) {
+        notification.remove();
+      }
+      preflightNotificationDismissed = false;
     }
   });
 
