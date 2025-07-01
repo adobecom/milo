@@ -1,4 +1,4 @@
-var V=Object.defineProperty;var C=o=>{throw TypeError(o)};var H=(o,e,t)=>e in o?V(o,e,{enumerable:!0,configurable:!0,writable:!0,value:t}):o[e]=t;var r=(o,e,t)=>H(o,typeof e!="symbol"?e+"":e,t),R=(o,e,t)=>e.has(o)||C("Cannot "+t);var v=(o,e,t)=>(R(o,e,"read from private field"),t?t.call(o):e.get(o)),N=(o,e,t)=>e.has(o)?C("Cannot add the same private member more than once"):e instanceof WeakSet?e.add(o):e.set(o,t),b=(o,e,t,s)=>(R(o,e,"write to private field"),s?s.call(o,t):e.set(o,t),t);import{html as P,css as Q,LitElement as X}from"/libs/deps/lit-all.min.js";var d=class{constructor(e,t){this.key=Symbol("match-media-key"),this.matches=!1,this.host=e,this.host.addController(this),this.media=window.matchMedia(t),this.matches=this.media.matches,this.onChange=this.onChange.bind(this),e.addController(this)}hostConnected(){var e;(e=this.media)==null||e.addEventListener("change",this.onChange)}hostDisconnected(){var e;(e=this.media)==null||e.removeEventListener("change",this.onChange)}onChange(e){this.matches!==e.matches&&(this.matches=e.matches,this.host.requestUpdate(this.key,!this.matches))}};import{css as Y}from"/libs/deps/lit-all.min.js";var _=Y`
+var V=Object.defineProperty;var C=o=>{throw TypeError(o)};var H=(o,e,t)=>e in o?V(o,e,{enumerable:!0,configurable:!0,writable:!0,value:t}):o[e]=t;var r=(o,e,t)=>H(o,typeof e!="symbol"?e+"":e,t),v=(o,e,t)=>e.has(o)||C("Cannot "+t);var R=(o,e,t)=>(v(o,e,"read from private field"),t?t.call(o):e.get(o)),N=(o,e,t)=>e.has(o)?C("Cannot add the same private member more than once"):e instanceof WeakSet?e.add(o):e.set(o,t),b=(o,e,t,s)=>(v(o,e,"write to private field"),s?s.call(o,t):e.set(o,t),t);import{html as P,css as Q,LitElement as X}from"/libs/deps/lit-all.min.js";var d=class{constructor(e,t){this.key=Symbol("match-media-key"),this.matches=!1,this.host=e,this.host.addController(this),this.media=window.matchMedia(t),this.matches=this.media.matches,this.onChange=this.onChange.bind(this),e.addController(this)}hostConnected(){var e;(e=this.media)==null||e.addEventListener("change",this.onChange)}hostDisconnected(){var e;(e=this.media)==null||e.removeEventListener("change",this.onChange)}onChange(e){this.matches!==e.matches&&(this.matches=e.matches,this.host.requestUpdate(this.key,!this.matches))}};import{css as Y}from"/libs/deps/lit-all.min.js";var _=Y`
     h2 {
         font-size: 11px;
         font-style: normal;
@@ -19,8 +19,8 @@ var V=Object.defineProperty;var C=o=>{throw TypeError(o)};var H=(o,e,t)=>e in o?
             :host {
                 display: block;
                 contain: content;
-                padding-top: 16px;
             }
+
             .right {
                 position: absolute;
                 right: 0;
@@ -78,15 +78,17 @@ var V=Object.defineProperty;var C=o=>{throw TypeError(o)};var H=(o,e,t)=>e in o?
         `}get asAside(){return P`<sp-theme  color="light" scale="medium"
             ><h2>${this.sidenavTitle}</h2>
             <slot></slot
-        ></sp-theme>`}get dialog(){return this.shadowRoot.querySelector("sp-dialog-base")}closeModal(t){t.preventDefault(),this.dialog?.close(),document.body.classList.remove("merch-modal")}openModal(){this.updateComplete.then(async()=>{k(this.dialog),document.body.classList.add("merch-modal");let t={trigger:v(this,u),notImmediatelyClosable:!0,type:"auto"},s=await window.__merch__spectrum_Overlay.open(this.dialog,t);s.addEventListener("close",()=>{this.modal=!1,document.body.classList.remove("merch-modal"),I(this.dialog)}),this.shadowRoot.querySelector("sp-theme").append(s)})}updated(){this.modal&&this.openModal()}showModal({target:t}){b(this,u,t),this.modal=!0}};u=new WeakMap,r(m,"properties",{sidenavTitle:{type:String},closeText:{type:String,attribute:"close-text"},modal:{type:Boolean,attribute:"modal",reflect:!0}}),r(m,"styles",[Q`
+        ></sp-theme>`}get dialog(){return this.shadowRoot.querySelector("sp-dialog-base")}closeModal(t){t.preventDefault(),this.dialog?.close(),document.body.classList.remove("merch-modal")}openModal(){this.updateComplete.then(async()=>{k(this.dialog),document.body.classList.add("merch-modal");let t={trigger:R(this,u),notImmediatelyClosable:!0,type:"auto"},s=await window.__merch__spectrum_Overlay.open(this.dialog,t);s.addEventListener("close",()=>{this.modal=!1,document.body.classList.remove("merch-modal"),I(this.dialog)}),this.shadowRoot.querySelector("sp-theme").append(s)})}updated(){this.modal&&this.openModal()}showModal({target:t}){b(this,u,t),this.modal=!0}};u=new WeakMap,r(m,"properties",{sidenavTitle:{type:String},closeText:{type:String,attribute:"close-text"},modal:{type:Boolean,attribute:"modal",reflect:!0}}),r(m,"styles",[Q`
             :host {
                 display: block;
                 z-index: 2;
+                --merch-sidenav-gap: 8px;
             }
 
             :host h2 {
-              color: var(--spectrum-global-color-gray-900);
-              font-size: 12px;
+                color: var(--spectrum-global-color-gray-900);
+                font-size: 12px;
+                margin: 0 0 var(--merch-sidenav-gap);
             }
 
             :host(:not([modal])) {
@@ -103,6 +105,10 @@ var V=Object.defineProperty;var C=o=>{throw TypeError(o)};var H=(o,e,t)=>e in o?
                 align-items: baseline;
             }
             
+            :host ::slotted(merch-search) {
+                display: block;
+                margin-bottom: var(--merch-sidenav-gap);
+            }
 
             :host([modal]) ::slotted(merch-search) {
                 display: none;

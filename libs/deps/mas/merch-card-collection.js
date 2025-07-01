@@ -123,6 +123,10 @@ Try polyfilling it using "@formatjs/intl-pluralrules"
     --merch-card-collection-card-width: 276px;
 }
 
+.collection-container.catalog merch-sidenav {
+    --merch-sidenav-gap: 10px;
+}
+
 @media screen and ${O} {
     .collection-container.catalog {
         --merch-card-collection-card-width: 302px;

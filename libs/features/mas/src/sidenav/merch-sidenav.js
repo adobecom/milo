@@ -39,11 +39,13 @@ export class MerchSideNav extends LitElement {
             :host {
                 display: block;
                 z-index: 2;
+                --merch-sidenav-gap: 8px;
             }
 
             :host h2 {
-              color: var(--spectrum-global-color-gray-900);
-              font-size: 12px;
+                color: var(--spectrum-global-color-gray-900);
+                font-size: 12px;
+                margin: 0 0 var(--merch-sidenav-gap);
             }
 
             :host(:not([modal])) {
@@ -60,6 +62,10 @@ export class MerchSideNav extends LitElement {
                 align-items: baseline;
             }
             
+            :host ::slotted(merch-search) {
+                display: block;
+                margin-bottom: var(--merch-sidenav-gap);
+            }
 
             :host([modal]) ::slotted(merch-search) {
                 display: none;

@@ -22,6 +22,10 @@ var Et=Object.defineProperty;var Z=o=>{throw TypeError(o)};var yt=(o,e,t)=>e in 
     --merch-card-collection-card-width: 276px;
 }
 
+.collection-container.catalog merch-sidenav {
+    --merch-sidenav-gap: 10px;
+}
+
 @media screen and ${d} {
     .collection-container.catalog {
         --merch-card-collection-card-width: 302px;

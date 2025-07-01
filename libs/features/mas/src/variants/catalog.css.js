@@ -9,6 +9,10 @@ export const CSS = `
     --merch-card-collection-card-width: 276px;
 }
 
+.collection-container.catalog merch-sidenav {
+    --merch-sidenav-gap: 10px;
+}
+
 @media screen and ${TABLET_UP} {
     .collection-container.catalog {
         --merch-card-collection-card-width: 302px;

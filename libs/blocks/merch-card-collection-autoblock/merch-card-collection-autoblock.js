@@ -77,7 +77,7 @@ function getSidenav(collection) {
       const value = node.label.toLowerCase();
       const item = createTag('sp-sidenav-item', { label: node.label, value });
       if (node.icon) {
-        createTag('img', { src: node.icon, slot: 'icon', style: 'height: fit-content;' }, null, { parent: item });
+        createTag('img', { src: node.icon, slot: 'icon' }, null, { parent: item });
       }
       if (node.iconLight || node.navigationLabel) {
         const attributes = { class: 'selection' };

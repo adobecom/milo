@@ -357,6 +357,10 @@ Try polyfilling it using "@formatjs/intl-pluralrules"
     --merch-card-collection-card-width: 276px;
 }
 
+.collection-container.catalog merch-sidenav {
+    --merch-sidenav-gap: 10px;
+}
+
 @media screen and ${G} {
     .collection-container.catalog {
         --merch-card-collection-card-width: 302px;
@@ -1891,13 +1895,13 @@ merch-card[variant="special-offers"] span[is="inline-price"][data-template="stri
     grid-template-columns: min-content min-content;
     grid-template-areas: "sidenav header" "sidenav content";
     --merch-card-collection-card-width: 300px;
-    --merch-card-collection-sidenav-margin: 0;
     --merch-card-collection-card-min-height: auto;
+    --merch-sidenav-collection-gap: 0;
 }
 
 .collection-container merch-sidenav {
     grid-area: sidenav;
-    margin-right: var(--merch-card-collection-sidenav-margin);
+    margin-right: var(--merch-sidenav-collection-gap);
 }
 
 .collection-container merch-card-collection-header {
@@ -2293,6 +2297,11 @@ body.merch-modal {
     height: 100vh;
 }
 
+merch-sidenav-list img[slot="icon"] {
+    height: fit-content;
+    pointer-events: none;
+}
+
 merch-sidenav-checkbox-group h3 {
     font-size: 14px;
     height: 32px;
@@ -2397,7 +2406,7 @@ merch-card [slot='callout-content'] .icon-button::before {
     }
 
     .collection-container {
-        --merch-card-collection-sidenav-margin: var(--spacing-m);
+        --merch-sidenav-collection-gap: var(--spacing-m);
     }
 }
 
