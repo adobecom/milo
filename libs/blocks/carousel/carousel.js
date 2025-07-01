@@ -522,7 +522,7 @@ export default function init(el) {
     });
   }
 
-  setTimeout(normalizeVideoHeights, 100);
+  if (el.classList.contains('align-height')) setTimeout(normalizeVideoHeights, 100);
 
   function handleDeferredImages() {
     const images = el.querySelectorAll('img[loading="lazy"]');
