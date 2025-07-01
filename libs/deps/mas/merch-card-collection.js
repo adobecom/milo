@@ -1108,8 +1108,12 @@ merch-card-collection-header.plans {
 
 /* Tablet */
 @media screen and ${O} {
+  :root {
+    --consonant-merch-card-plans-width: 302px;
+  }
+
   .collection-container.plans {
-       --merch-card-collection-card-width: 302px;
+       --merch-card-collection-card-width: var(--consonant-merch-card-plans-width);
   }
 
   .four-merch-cards.plans .foreground {
@@ -1119,14 +1123,14 @@ merch-card-collection-header.plans {
   .columns.merch-card > .row {
       grid-template-columns: repeat(auto-fit, calc(var(--consonant-merch-card-plans-width) * 2 + var(--consonant-merch-spacing-m)));
   }
-
-  merch-card-collection-header.plans {
-      --merch-card-collection-header-result-font-size: inherit;
-  }
 }
 
 /* desktop */
 @media screen and ${R} {
+  :root {
+    --consonant-merch-card-plans-width: 276px;
+  }
+
   .columns .four-merch-cards.plans {
       grid-template-columns: repeat(2, var(--consonant-merch-card-plans-width));
   }
@@ -1136,12 +1140,13 @@ merch-card-collection-header.plans {
   }
 
   .collection-container.plans {
-      --merch-card-collection-card-width: 276px;
+      --merch-card-collection-card-width: var(--consonant-merch-card-plans-width);
   }
 
   merch-card-collection-header.plans {
       --merch-card-collection-header-columns: fit-content(100%);
       --merch-card-collection-header-areas: "custom";
+      --merch-card-collection-header-result-font-size: inherit;
   }
 }
 

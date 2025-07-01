@@ -146,6 +146,7 @@ styles.innerHTML = `
     grid-template-areas: "sidenav header" "sidenav content";
     --merch-card-collection-card-width: 300px;
     --merch-card-collection-sidenav-margin: 0;
+    --merch-card-collection-card-min-height: auto;
 }
 
 .collection-container merch-sidenav {
@@ -160,6 +161,10 @@ styles.innerHTML = `
 
 .collection-container merch-card-collection {
     grid-area: content;
+}
+
+.collection-container merch-card {
+    min-height: var(--merch-card-collection-card-min-height);
 }
 
 .collection-container .one-merch-card,
