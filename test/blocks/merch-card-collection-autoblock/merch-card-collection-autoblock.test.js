@@ -115,7 +115,7 @@ describe('merch-card-collection autoblock', () => {
       await delay(100);
       expect(window._satellite.track.called).to.be.true;
 
-      expect(window._satellite.track.args[0][1].data.web.webInteraction.name).to.equal('all--cat|topdaalh|test-analytics');
+      expect(window._satellite.track.args[0][1].data.web.webInteraction.name).to.equal('all--cat|topdaalh|test-analytics|b3|filters');
       expect(window._satellite.track.args[1][1].data.web.webInteraction.name).to.equal('quantity-3|topdaalh|test-analytics');
       expect(window._satellite.track.args[2][1].data.web.webInteraction.name).to.equal('addon-checked|topdaalh|test-analytics');
     });
