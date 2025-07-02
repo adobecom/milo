@@ -542,7 +542,17 @@ function applyStylesBasedOnScreenSize(table, originTable) {
       }
 
       rows.forEach((row) => {
+        const firstFilterCol = row.querySelector(`.col-${filters[0] + 1}`);
         const secondFilterCol = row.querySelector(`.col-${filters[1] + 1}`);
+
+        if (firstFilterCol?.classList.contains('col-heading')) {
+          firstFilterCol.classList.remove('right-round');
+          firstFilterCol.classList.add('left-round');
+        }
+        if (secondFilterCol?.classList.contains('col-heading')) {
+          secondFilterCol.classList.remove('left-round');
+          secondFilterCol.classList.add('right-round');
+        }
         if (secondFilterCol) secondFilterCol.classList.add('force-last');
       });
 
@@ -552,11 +562,17 @@ function applyStylesBasedOnScreenSize(table, originTable) {
           const selectedColumn = row.querySelector(`.col-${selectedCol}`);
           if (!selectedColumn) return;
 
-          selectedColumn.classList.remove('force-last');
-          selectedColumn.classList.remove('rounded-left', 'rounded-right');
           const clone = selectedColumn.cloneNode(true);
           clone.setAttribute('data-cloned', 'true');
-          clone.classList.remove('rounded-left', 'rounded-right');
+          selectedColumn.classList.remove('force-last');
+
+          if (selectedColumn.classList.contains('col-heading')) {
+            selectedColumn.classList.remove('right-round');
+            selectedColumn.classList.add('left-round');
+            clone.classList.remove('left-round');
+            clone.classList.add('right-round');
+          }
+
           row.appendChild(clone);
         });
       }
@@ -616,7 +632,7 @@ function applyStylesBasedOnScreenSize(table, originTable) {
   if (deviceBySize === 'MOBILE' || (isMerch && deviceBySize === 'TABLET')) {
     mobileRenderer();
   } else {
-    table.querySelectorAll('.hide-mobile').forEach((col) => { col.classList.remove('hide-mobile'); });
+    table.querySelectorAll('.hide-mobile, .left-round, .right-round').forEach((col) => { col.classList.remove('hide-mobile', 'left-round', 'right-round'); });
     [...(table.querySelector('.row-heading')?.children || [])]
       .forEach((column) => [...column.children].forEach((row) => row.style.removeProperty('height')));
     table.parentElement.querySelectorAll('.filters select').forEach((select, index) => {
