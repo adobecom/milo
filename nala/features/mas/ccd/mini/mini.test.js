@@ -25,7 +25,7 @@ test.describe('CCD Mini Cards Feature', () => {
 
       await test.step('2. Verify CCD Mini Card content', async () => {
         const cardLocator = miniCard.getCard(data.fragment);
-        await expect(cardLocator).toBeVisible();
+        await expect(await cardLocator).toBeVisible();
         await cardLocator.evaluate((card) => card.checkReady());
 
         const title = await cardLocator.evaluate((card) => card.title);
