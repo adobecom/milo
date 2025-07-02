@@ -70,7 +70,7 @@ module.exports = {
         regularPrice: '71,99 €/mois',
         promoPrice: undefined,
         promotionCode: undefined,
-        planTypeText: 'Annual, paid monthly.',
+        planTypeText: 'Annuel, facturé mensuellement',
         recurrenceText: '/mois',
         renewalText: undefined,
         promoDurationText: undefined,
@@ -99,7 +99,7 @@ module.exports = {
         regularPrice: '71,99 €/mois',
         promoPrice: undefined,
         promotionCode: 'UMRM2MUSPr501YOC',
-        planTypeText: 'Annual, paid monthly.', // TODO update once priceLiterals override is implemented
+        planTypeText: 'Annuel, facturé mensuellement',
         recurrenceText: '/mois',
         renewalText:
           "Renouvellement automatique jusqu'à annulation. Renouvellement à 71,99 €/mois TVA comprise après 12 mois.",
