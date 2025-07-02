@@ -105,6 +105,56 @@ function getSidenav(collection) {
   return sidenav;
 }
 
+function handleCustomAnalyticsEvent(eventName, element) {
+  let daaLhValue = '';
+  let daaLhElement = element.closest('[daa-lh]');
+  while (daaLhElement) {
+    if (daaLhValue) {
+      daaLhValue = `|${daaLhValue}`;
+    }
+    const daaLhAttrValue = daaLhElement.getAttribute('daa-lh');
+    daaLhValue = `${daaLhAttrValue}${daaLhValue}`;
+    daaLhElement = daaLhElement.parentElement.closest('[daa-lh]');
+  }
+  if (daaLhValue) {
+    // eslint-disable-next-line no-underscore-dangle
+    window._satellite?.track('event', {
+      xdm: {},
+      data: { web: { webInteraction: { name: `${eventName}|${daaLhValue}` } } },
+    });
+  }
+}
+
+function enableAnalytics(el) {
+  const tabs = el.closest('.tabs');
+  if (!tabs || tabs.analyticsInitiated) return;
+  tabs.analyticsInitiated = true;
+
+  window.addEventListener('merch-sidenav:select', ({ target }) => {
+    if (!target || target.oldValue === target.selectedValue) return;
+    handleCustomAnalyticsEvent(`${target.selectedValue}--cat`, target);
+    target.oldValue = target.selectedValue;
+  });
+
+  window.addEventListener('mas:ready', ({ target }) => {
+    target.querySelectorAll('merch-addon').forEach((ao) => {
+      ao.addEventListener('change', (aoe) => {
+        handleCustomAnalyticsEvent(`addon-${aoe.detail.checked ? 'checked' : 'unchecked'}`, aoe.target);
+      });
+    });
+    target.querySelectorAll('merch-quantity-select').forEach((qs) => {
+      qs.addEventListener('merch-quantity-selector:change', (qse) => {
+        handleCustomAnalyticsEvent(`quantity-${qse.detail.option}`, qse.target);
+      });
+    });
+  });
+
+  window.addEventListener('milo:tab:changed', () => {
+    const tab = tabs.querySelector('button[role="tab"][aria-selected="true"]');
+    if (tab) handleCustomAnalyticsEvent(`tab-change--${tab.getAttribute('daa-ll')}`, tab);
+  });
+}
+
 export async function checkReady(masElement) {
   const readyPromise = masElement.checkReady();
   const success = await Promise.race([readyPromise, getTimeoutPromise()]);
@@ -152,11 +202,13 @@ export async function createCollection(el, options) {
     if (sidenav) {
       container.insertBefore(sidenav, collection);
       collection.sidenav = sidenav;
+      sidenav.setAttribute('daa-lh', 'b3|filters');
     }
   }
 
   postProcessAutoblock(collection);
   collection.requestUpdate();
+  enableAnalytics(collection);
 }
 
 export default async function init(el) {
