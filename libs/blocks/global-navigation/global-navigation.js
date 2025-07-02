@@ -1190,6 +1190,7 @@ class Gnav {
         header.style.top = 0;
         localNav.style.top = promoHeight;
       }
+      if (!isDesktop.matches) this.updatePopupPosition();
     };
 
     if (this.elements.aside.clientHeight > fedsPromoWrapper.clientHeight) {
