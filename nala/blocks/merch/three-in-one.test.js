@@ -31,11 +31,11 @@ test.describe('ThreeInOne Block test suite', () => {
     await test.step('Validate if modal reopens on back navigation', async () => {
       const cta = threeInOne.ctas.illustratorAndAcrobatProTwpSegmentation.el;
       await cta.click();
-      const modal = await threeInOne.getModal();
+      const modal = threeInOne.getModal();
       expect(modal).toBeVisible();
       await page.goto('https://www.adobe.com');
       await page.goBack();
-      const newModal = await threeInOne.getModal();
+      const newModal = threeInOne.getModal();
       await expect(newModal).toBeVisible();
       await threeInOne.closeModal();
     });
@@ -46,7 +46,7 @@ test.describe('ThreeInOne Block test suite', () => {
       });
       const cta = threeInOne.ctas.illustratorAndAcrobatProTwpSegmentation.el;
       await cta.click();
-      const modal = await threeInOne.getModal();
+      const modal = threeInOne.getModal();
       expect(modal).toBeVisible();
       await page.goBack();
       expect(page.url()).toContain('category=photo');
@@ -81,7 +81,7 @@ test.describe('ThreeInOne Block test suite', () => {
           await expect(cta).toHaveAttribute(key, value);
         }
         await cta.click();
-        const modal = await threeInOne.getModal();
+        const modal = threeInOne.getModal();
         const iframe = await modal.locator('iframe');
         await expect(iframe).toHaveAttribute('src', iframeSrc);
         await threeInOne.closeModal();
@@ -102,12 +102,12 @@ test.describe('ThreeInOne Block test suite', () => {
         await expect(cta).toHaveAttribute(key, value);
       }
       await cta.click();
-      const modal = await threeInOne.getModal();
+      const modal = threeInOne.getModal();
       const iframe = await modal.locator('iframe');
       await expect(iframe).toHaveAttribute('src', iframeSrc);
       await page.goto('https://www.adobe.com');
       await page.goBack();
-      const newModal = await threeInOne.getModal();
+      const newModal = threeInOne.getModal();
       await expect(newModal).toBeVisible();
       await threeInOne.closeModal();
     });
@@ -126,12 +126,12 @@ test.describe('ThreeInOne Block test suite', () => {
         await expect(cta).toHaveAttribute(key, value);
       }
       await cta.click();
-      const modal = await threeInOne.getModal();
+      const modal = threeInOne.getModal();
       const iframe = await modal.locator('iframe');
       await expect(iframe).toHaveAttribute('src', iframeSrc);
       await page.goto('https://www.adobe.com');
       await page.goBack();
-      const newModal = await threeInOne.getModal();
+      const newModal = threeInOne.getModal();
       await expect(newModal).toBeVisible();
       await threeInOne.closeModal();
     });
