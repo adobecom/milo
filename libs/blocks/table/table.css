@@ -544,8 +544,9 @@
   line-height: var(--type-body-xs-lh);
 }
 
-.table.has-addon .addon-promo {
-  color: #05834E;
+.table.has-addon .addon-promo,
+.table.has-addon .addon-promo a {
+  color: #2D9D78;
   font-size: var(--type-body-xs-size);
   line-height: var(--type-body-xs-lh);
   margin-bottom: var(--spacing-xxs);
@@ -559,7 +560,7 @@
 .table .row-highlight,
 .table .row-heading {
   position: sticky;
-  z-index: 11;
+  z-index: 1;
   transition: box-shadow 200ms cubic-bezier(0.33, 1, 0.68, 1);
 }
 
