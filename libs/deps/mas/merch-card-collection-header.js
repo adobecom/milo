@@ -26,6 +26,10 @@ var Et=Object.defineProperty;var Z=o=>{throw TypeError(o)};var yt=(o,e,t)=>e in 
     --merch-sidenav-gap: 10px;
 }
 
+merch-card-collection-header.catalog {
+    --merch-card-collection-header-row-gap: var(--consonant-merch-spacing-xs);
+}
+
 @media screen and ${d} {
     .collection-container.catalog {
         --merch-card-collection-card-width: 302px;

@@ -351,6 +351,10 @@ var Qe=Object.defineProperty;var ie=o=>{throw TypeError(o)};var Xe=(o,e,t)=>e in
     --merch-sidenav-gap: 10px;
 }
 
+merch-card-collection-header.catalog {
+    --merch-card-collection-header-row-gap: var(--consonant-merch-spacing-xs);
+}
+
 @media screen and ${u} {
     .collection-container.catalog {
         --merch-card-collection-card-width: 302px;

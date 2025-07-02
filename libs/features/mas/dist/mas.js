@@ -361,6 +361,10 @@ Try polyfilling it using "@formatjs/intl-pluralrules"
     --merch-sidenav-gap: 10px;
 }
 
+merch-card-collection-header.catalog {
+    --merch-card-collection-header-row-gap: var(--consonant-merch-spacing-xs);
+}
+
 @media screen and ${G} {
     .collection-container.catalog {
         --merch-card-collection-card-width: 302px;

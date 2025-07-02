@@ -13,6 +13,10 @@ export const CSS = `
     --merch-sidenav-gap: 10px;
 }
 
+merch-card-collection-header.catalog {
+    --merch-card-collection-header-row-gap: var(--consonant-merch-spacing-xs);
+}
+
 @media screen and ${TABLET_UP} {
     .collection-container.catalog {
         --merch-card-collection-card-width: 302px;

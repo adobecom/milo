@@ -3,25 +3,22 @@ import { initService, getOptions, MEP_SELECTOR, overrideOptions } from '../merch
 import '../../deps/mas/merch-card.js';
 import '../../deps/mas/merch-quantity-select.js';
 
-const COLLECTION_AUTOBLOCK_TIMEOUT = 5000;
+const DEPS_TIMEOUT = 5000;
 const DEFAULT_OPTIONS = { sidenav: true };
-let log;
 
-function getTimeoutPromise() {
+function getTimeoutPromise(timeout) {
   return new Promise((resolve) => {
-    setTimeout(() => resolve(false), COLLECTION_AUTOBLOCK_TIMEOUT);
+    setTimeout(() => resolve(false), timeout);
   });
 }
 
 async function loadDependencies(options) {
   /** Load service first */
   const servicePromise = initService();
-  const success = await Promise.race([servicePromise, getTimeoutPromise()]);
+  const success = await Promise.race([servicePromise, getTimeoutPromise(DEPS_TIMEOUT)]);
   if (!success) {
     throw new Error('Failed to initialize mas commerce service');
   }
-  const service = await servicePromise;
-  log = service.Log.module('merch');
 
   const { base } = getConfig();
   const dependencyPromises = [
@@ -104,15 +101,6 @@ function getSidenav(collection) {
   return sidenav;
 }
 
-export async function checkReady(masElement) {
-  const readyPromise = masElement.checkReady();
-  const success = await Promise.race([readyPromise, getTimeoutPromise()]);
-
-  if (!success) {
-    log.error(`${masElement.tagName} did not initialize withing give timeout`);
-  }
-}
-
 export async function createCollection(el, options) {
   const aemFragment = createTag('aem-fragment', { fragment: options.fragment });
   // Get MEP overrides if available
@@ -129,7 +117,8 @@ export async function createCollection(el, options) {
   const collection = createTag('merch-card-collection', attributes, aemFragment);
   const container = createTag('div', null, collection);
   el.replaceWith(container);
-  await checkReady(collection);
+
+  await collection.checkReady();
 
   container.classList.add('collection-container', collection.variant);
 
