@@ -1,6 +1,7 @@
 import { html, signal, useEffect } from '../../../deps/htm-preact.js';
 import { STATUS } from '../checks/constants.js';
 import { executePreflightChecks } from '../checks/preflightExecutor.js';
+import { getLcpEntry } from '../checks/performance.js';
 
 let runChecks;
 executePreflightChecks().then((results) => {

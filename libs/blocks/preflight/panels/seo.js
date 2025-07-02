@@ -93,13 +93,21 @@ async function getResults() {
   try {
     const cachedResults = await executePreflightChecks();
     if (cachedResults?.seo) {
-      runChecks = cachedResults.seo.runChecks;
+      runChecks = cachedResults.seo;
     } else {
-      runChecks = executePreflightChecks().then((results) => results.seo.runChecks);
+      const results = await executePreflightChecks();
+      runChecks = results?.seo;
     }
   } catch (error) {
     console.log('Failed to get cached preflight results, running checks directly:', error);
-    runChecks = executePreflightChecks().then((results) => results.seo.runChecks);
+    const results = await executePreflightChecks();
+    runChecks = results?.seo;
+  }
+
+  // Check if runChecks is available before proceeding
+  if (!runChecks || !Array.isArray(runChecks)) {
+    console.error('No valid runChecks array found');
+    return;
   }
 
   // Update UI as each check resolves
