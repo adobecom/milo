@@ -18,7 +18,7 @@ let videoLabels = {
   playIcon: 'Play icon',
   hasFetched: false,
 };
-const isReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)') === true || window.matchMedia('(prefers-reduced-motion: reduce)').matches === true;
+const isReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 let videoCounter = 0;
 
 export function decorateButtons(el, size) {
