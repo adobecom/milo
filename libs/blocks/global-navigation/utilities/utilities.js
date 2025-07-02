@@ -807,9 +807,6 @@ export const [branchBannerLoadCheck, getBranchBannerInfo] = (() => {
   };
   return [
     (updatePopupPosition) => {
-      // update the popup position when screen orientation changes
-      window.addEventListener('orientationchange', () => updatePopupPosition());
-
       // Create a MutationObserver instance to monitor the body for new child elements
       const observer = new MutationObserver((mutationsList) => {
         mutationsList.forEach((mutation) => {
