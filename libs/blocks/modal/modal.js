@@ -65,6 +65,11 @@ export function closeModal(modal) {
     delete iframe._iframeKeydownListener;
   }
 
+  if (modal._documentKeydownListener) {
+    document.removeEventListener('keydown', modal._documentKeydownListener);
+    delete modal._documentKeydownListener;
+  }
+
   document.querySelectorAll(`#${id}`).forEach((mod) => {
     if (mod.classList.contains('dialog-modal')) {
       const modalCurtain = document.querySelector(`#${id}~.modal-curtain`);
@@ -135,8 +140,12 @@ async function getPathModal(path, dialog) {
   await getFragment(block);
 }
 
+const isSameOrigin = (iframe) => new URL(iframe.src).origin === window.location.origin;
+
 function addIframeKeydownListener(iframe, dialog) {
   try {
+    if (!isSameOrigin(iframe)) return;
+
     const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
     const iframeKeydownListener = (event) => { if (event.key === 'Escape') closeModal(dialog); };
     iframeDoc.addEventListener('keydown', iframeKeydownListener);
@@ -210,7 +219,9 @@ export async function getModal(details, custom) {
     e.preventDefault();
   });
 
-  document.addEventListener('keydown', (event) => { if (event.key === 'Escape') closeModal(dialog); });
+  const documentKeydownListener = (event) => { if (event.key === 'Escape') closeModal(dialog); };
+  document.addEventListener('keydown', documentKeydownListener);
+  dialog._documentKeydownListener = documentKeydownListener;
 
   decorateSectionAnalytics(dialog, `${id}-modal`, getConfig());
   dialog.prepend(close);
@@ -247,11 +258,9 @@ export async function getModal(details, custom) {
     } else {
       iframe.onload = () => {
         try {
-          if (new URL(iframe.src).origin === window.location.origin) {
-            addIframeKeydownListener(iframe, dialog);
-          }
+          if (isSameOrigin(iframe)) addIframeKeydownListener(iframe, dialog);
 
-          if ((new URL(iframe.src).origin !== window.location.origin) && iframe.title) {
+          if (!isSameOrigin(iframe) && iframe.title) {
             dialog.setAttribute('aria-label', iframe.title);
             return;
           }
@@ -267,8 +276,8 @@ export async function getModal(details, custom) {
     }
 
     iframe.addEventListener('load', () => {
-      if (new URL(iframe.src).origin !== window.location.origin) return;
       try {
+        if (!isSameOrigin(iframe)) return;
         addIframeKeydownListener(iframe, dialog);
       } catch (error) {
         // Cross-origin iframe, can't access content
