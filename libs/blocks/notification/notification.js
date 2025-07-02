@@ -86,75 +86,37 @@ function wrapCopy(foreground) {
   });
 }
 
-const focusableSelector = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
-const selectedSelector = '[aria-selected="true"], [aria-checked="true"]';
+const closeBanner = (el) => {
+  const liveRegion = document.querySelector(`.notification-visibility-hidden[data-notification-id="${el.dataset.notificationId}"]`);
+  liveRegion.textContent = 'Banner closed';
 
-export function findFocusableInSection(section, selSelector, focSelector) {
-  if (!section) return null;
+  setTimeout(() => {
+    const tempFocus = createTag('div', { class: 'temp-focus' });
+    tempFocus.tabIndex = 0;
+    document.body.insertBefore(tempFocus, document.body.firstChild);
+    tempFocus.focus();
+    document.body.removeChild(tempFocus);
+  });
 
-  const selectedElement = section.querySelector(selSelector);
-  if (selectedElement) return selectedElement;
+  // time needed for screen reader to read the message
+  setTimeout(() => { liveRegion.textContent = ''; }, 2000);
 
-  const focusableElements = [...section.querySelectorAll(focSelector)];
-  return focusableElements.length > 0
-    ? focusableElements[focusableElements.length - 1]
-    : null;
-}
+  el.style.display = 'none';
+  el.closest('.section')?.classList.add('close-sticky-section');
+
+  if (el.focusTrapCleanup) el.focusTrapCleanup();
+
+  if (el.classList.contains('focus')) {
+    document.body.classList.remove('mobile-disable-scroll');
+    el.closest('.section').querySelector('.notification-curtain').remove();
+  }
+  document.dispatchEvent(new CustomEvent('milo:sticky:closed'));
+};
 
 function addCloseAction(el, btn) {
   btn.addEventListener('click', (e) => {
     if (btn.nodeName === 'A') e.preventDefault();
-
-    const liveRegion = createTag('div', {
-      class: 'notification-visibility-hidden',
-      'aria-live': 'assertive',
-      'aria-atomic': 'true',
-      role: 'status',
-      tabindex: '-1',
-    }, 'Banner closed');
-    document.body.appendChild(liveRegion);
-    liveRegion.focus();
-    let isSticky = false;
-    let rect;
-    const sectionElement = el.closest('.section');
-
-    if (sectionElement?.className.includes('sticky')) {
-      isSticky = true;
-      rect = sectionElement.getBoundingClientRect();
-    }
-
-    el.style.display = 'none';
-    el.closest('.section')?.classList.add('close-sticky-section');
-    if (el.classList.contains('focus')) {
-      document.body.classList.remove('mobile-disable-scroll');
-      el.closest('.section').querySelector('.notification-curtain').remove();
-    }
-    document.dispatchEvent(new CustomEvent('milo:sticky:closed'));
-
-    setTimeout(() => {
-      let focusTarget;
-
-      if (isSticky) {
-        const elementAtPosition = document.elementFromPoint(rect.left, rect.top);
-        const stickySection = elementAtPosition.closest('.section');
-        focusTarget = findFocusableInSection(stickySection, selectedSelector, focusableSelector);
-      }
-
-      let currentSection = el.closest('.section')?.previousElementSibling;
-      while (currentSection && !focusTarget) {
-        focusTarget = findFocusableInSection(currentSection, selectedSelector, focusableSelector);
-        if (!focusTarget) currentSection = currentSection.previousElementSibling;
-      }
-
-      const header = document.querySelector('header');
-      if (!focusTarget && header) {
-        const headerFocusable = [...header.querySelectorAll(focusableSelector)];
-        focusTarget = headerFocusable[headerFocusable.length - 1];
-      }
-
-      liveRegion?.remove();
-      if (focusTarget) focusTarget.focus({ preventScroll: true });
-    }, 2000);
+    closeBanner(el);
   });
 }
 
@@ -203,6 +165,49 @@ function curtainCallback(el) {
   const curtain = createTag('div', { class: 'notification-curtain' });
   document.body.classList.add('mobile-disable-scroll');
   el.insertAdjacentElement('afterend', curtain);
+  el.setAttribute('role', 'dialog');
+
+  const focusableElements = [...el.querySelectorAll(
+    'button, a[href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
+  )];
+  const firstFocusable = focusableElements[0];
+  const lastFocusable = focusableElements[focusableElements.length - 1];
+
+  if (!document.querySelector('.dialog-modal') && firstFocusable) firstFocusable.focus();
+
+  const handleKeyDown = (e) => {
+    if (e.key !== 'Tab') {
+      if (e.key === 'Escape') closeBanner(el);
+      return;
+    }
+
+    if (e.shiftKey && document.activeElement === firstFocusable) {
+      e.preventDefault();
+      lastFocusable.focus();
+      return;
+    }
+
+    if (!e.shiftKey && document.activeElement === lastFocusable) {
+      e.preventDefault();
+      firstFocusable.focus();
+    }
+  };
+
+  const handleFocusOut = (e) => {
+    if (!el.contains(e.relatedTarget) && firstFocusable) firstFocusable.focus();
+  };
+
+  const handleCurtainClick = (e) => { if (e.target === curtain) closeBanner(el); };
+
+  el.addEventListener('keydown', handleKeyDown);
+  el.addEventListener('focusout', handleFocusOut);
+  curtain.addEventListener('click', handleCurtainClick);
+
+  el.focusTrapCleanup = () => {
+    el.removeEventListener('keydown', handleKeyDown);
+    el.removeEventListener('focusout', handleFocusOut);
+    curtain.removeEventListener('click', handleCurtainClick);
+  };
 }
 
 function decorateSplitList(el, listContent) {
@@ -332,4 +337,14 @@ export default async function init(el) {
     if (el.matches(`.${pill}`)) addTooltip(el);
     decorateMultiViewport(el);
   }
+
+  const notificationId = `notification-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`;
+  el.dataset.notificationId = notificationId;
+  document.body.appendChild(createTag('div', {
+    class: 'notification-visibility-hidden',
+    'aria-live': 'polite',
+    role: 'status',
+    tabindex: '-1',
+    'data-notification-id': notificationId,
+  }, ''));
 }
