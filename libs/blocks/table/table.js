@@ -476,7 +476,7 @@ async function handleScrollEffect(table) {
   }
   const topOffset = gnavHeight + (highlightRow ? highlightRow.offsetHeight : 0);
   headingRow.style.top = `${topOffset}px`;
-
+  headingRow.style.zIndex = 11;
   const intercept = table.querySelector('.intercept') || createTag('div', { class: 'intercept' });
   intercept.setAttribute('data-observer-intercept', '');
   headingRow.insertAdjacentElement('beforebegin', intercept);
