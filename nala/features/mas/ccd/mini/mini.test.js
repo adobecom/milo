@@ -9,6 +9,9 @@ test.describe('CCD Mini Cards Feature', () => {
 
   test.beforeEach(async ({ page }) => {
     miniCard = new MiniCard(page);
+    if (browserName === 'chromium') {
+      await page.setExtraHTTPHeaders({ 'sec-ch-ua': '"Chromium";v="123", "Not:A-Brand";v="8"' });
+    }
   });
 
   features.forEach((feature) => {
