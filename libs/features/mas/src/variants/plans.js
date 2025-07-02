@@ -1,7 +1,7 @@
 import { VariantLayout } from './variant-layout';
 import { html, css, nothing } from 'lit';
 import { CSS } from './plans.css.js';
-import { isMobile, matchMobile } from '../utils.js';
+import { isMobile, matchMobile, isDesktop, matchDesktop } from '../media.js';
 import {
     SELECTOR_MAS_INLINE_PRICE,
     TEMPLATE_PRICE_LEGAL,
@@ -57,7 +57,7 @@ export const PLANS_STUDENTS_AEM_FRAGMENT_MAPPING = {
 export class Plans extends VariantLayout {
     constructor(card) {
         super(card);
-        this.adaptForMobile = this.adaptForMobile.bind(this);
+        this.adaptForMedia = this.adaptForMedia.bind(this);
     }
 
     priceOptionsProvider(element, options) {
@@ -69,7 +69,42 @@ export class Plans extends VariantLayout {
         return CSS;
     }
 
-    adaptForMobile() {
+    /**
+     * Moves a slot to its proper place (body or footer) depending on card size and screen size
+     * @param {string} name 
+     * @param {string[]} sizes 
+     * @param {boolean} shouldBeInFooter 
+     * @returns 
+     */
+    adjustSlotPlacement(name, sizes, shouldBeInFooter) {
+        const shadowRoot = this.card.shadowRoot;
+        const footer = shadowRoot.querySelector('footer');
+        const size = this.card.getAttribute('size');
+        const slotInFooter = shadowRoot.querySelector(
+            `footer slot[name="${name}"]`,
+        );
+        const slotInBody = shadowRoot.querySelector(`.body slot[name="${name}"]`);
+        const body = shadowRoot.querySelector('.body');
+
+        if (!size) footer?.classList.remove('wide-footer');
+        if (!size || !sizes.includes(size)) {
+            if (slotInFooter) slotInFooter.remove();
+            return;
+        }
+
+        footer?.classList.toggle('wide-footer', !isMobile());
+        if (!shouldBeInFooter && slotInFooter) {
+            slotInBody
+                ? slotInFooter.remove()
+                : body.appendChild(slotInFooter);
+            return;
+        }
+        if (shouldBeInFooter && slotInBody) {
+            slotInFooter ? slotInBody.remove() : footer.prepend(slotInBody);
+        }
+    }
+
+    adaptForMedia() {
         if (
             !this.card.closest(
                 'merch-card-collection,overlay-trigger,.two-merch-cards,.three-merch-cards,.four-merch-cards, .columns',
@@ -78,33 +113,9 @@ export class Plans extends VariantLayout {
             this.card.removeAttribute('size');
             return;
         }
-
-        const shadowRoot = this.card.shadowRoot;
-        const footer = shadowRoot.querySelector('footer');
-        const size = this.card.getAttribute('size');
-        const stockInFooter = shadowRoot.querySelector(
-            'footer #stock-checkbox',
-        );
-        const stockInBody = shadowRoot.querySelector('.body #stock-checkbox');
-        const body = shadowRoot.querySelector('.body');
-
-        if (!size) {
-            footer?.classList.remove('wide-footer');
-            if (stockInFooter) stockInFooter.remove();
-            return;
-        }
-
-        const mobile = isMobile();
-        footer?.classList.toggle('wide-footer', !mobile);
-        if (mobile && stockInFooter) {
-            stockInBody
-                ? stockInFooter.remove()
-                : body.appendChild(stockInFooter);
-            return;
-        }
-        if (!mobile && stockInBody) {
-            stockInFooter ? stockInBody.remove() : footer.prepend(stockInBody);
-        }
+        
+        this.adjustSlotPlacement('addon', ['wide', 'super-wide'], !isMobile());
+        this.adjustSlotPlacement('callout-content', ['super-wide'], isDesktop());
     }
 
     adjustCallout() {
@@ -133,7 +144,7 @@ export class Plans extends VariantLayout {
     }
 
     postCardUpdateHook() {
-        this.adaptForMobile();
+        this.adaptForMedia();
         this.adjustTitleWidth();
         this.adjustLegal();
         this.adjustAddon();
@@ -152,9 +163,9 @@ export class Plans extends VariantLayout {
     }
 
     get divider() {
-      return this.card.variant === 'plans-education'
-        ? html`<div class="divider"></div>` 
-        : nothing
+        return this.card.variant === 'plans-education'
+            ? html`<div class="divider"></div>` 
+            : nothing
     }
 
     async adjustLegal() {
@@ -182,16 +193,16 @@ export class Plans extends VariantLayout {
     }
 
     async adjustAddon() {
-      await this.card.updateComplete;
-      const addon = this.card.addon;
-      if (!addon) return;
-      const price = this.mainPrice;
-      if (!price) return;
-      await price.onceSettled();
-      const planType = price.value?.[0]?.planType;
-      if (!planType) return;
-      addon.planType = planType;
-  }
+        await this.card.updateComplete;
+        const addon = this.card.addon;
+        if (!addon) return;
+        const price = this.mainPrice;
+        if (!price) return;
+        await price.onceSettled();
+        const planType = price.value?.[0]?.planType;
+        if (!planType) return;
+        addon.planType = planType;
+    }
 
     get stockCheckbox() {
         return this.card.checkboxLabel
@@ -208,41 +219,22 @@ export class Plans extends VariantLayout {
         return html`<slot name="icons"></slot>`;
     }
 
-    get calloutContent() {
-        if (this.card.size === 'super-wide') return nothing;
-        return html`<slot name="callout-content"></slot>`;
-    }
-
-    get addon() {
-        if (['wide', 'super-wide'].includes(this.card.size)) return nothing;
-        return html`<slot name="addon"></slot>`
-    }
-
-    get plansSecureLabelFooter() {
-        if (['wide', 'super-wide'].includes(this.card.size)) {
-            const calloutContent = this.card.size === 'super-wide' ? 
-                html`<slot name="callout-content"></slot>` : 
-                nothing;
-            return html`<footer>
-                ${calloutContent}
-                <slot name="addon"></slot>
-                ${this.secureLabel}
-                <slot name="footer"></slot>
-            </footer>`;
-        }
-        return this.secureLabelFooter;
-    }
-
     connectedCallbackHook() {
-        const match = matchMobile();
-        if (match?.addEventListener)
-            match.addEventListener('change', this.adaptForMobile);
+        const mobileWatcher = matchMobile();
+        if (mobileWatcher?.addEventListener)
+            mobileWatcher.addEventListener('change', this.adaptForMedia);
+        const desktopWatcher = matchDesktop();
+        if (desktopWatcher?.addEventListener)
+            desktopWatcher.addEventListener('change', this.adaptForMedia);
     }
 
     disconnectedCallbackHook() {
-        const match = matchMobile();
-        if (match?.removeEventListener)
-            match.removeEventListener('change', this.adaptForMobile);
+        const mobileWatcher = matchMobile();
+        if (mobileWatcher?.removeEventListener)
+            mobileWatcher.removeEventListener('change', this.adaptForMedia);
+        const desktopWatcher = matchDesktop();
+        if (desktopWatcher?.removeEventListener)
+            desktopWatcher.removeEventListener('change', this.adaptForMedia);
     }
 
     renderLayout() {
@@ -260,13 +252,13 @@ export class Plans extends VariantLayout {
                 <slot name="promo-text"></slot>
                 <slot name="body-xs"></slot>
                 <slot name="whats-included"></slot>
-                ${this.calloutContent}
+                <slot name="callout-content"></slot>
                 ${this.stockCheckbox}
-                ${this.addon}
+                <slot name="addon"></slot>
                 <slot name="badge"></slot>
                 <slot name="quantity-select"></slot>
             </div>
-            ${this.plansSecureLabelFooter}`;
+            ${this.secureLabelFooter}`;
     }
 
     static variantStyle = css`
