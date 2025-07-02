@@ -32,6 +32,7 @@ const MILO_BLOCKS = [
   'form',
   'fragment',
   'featured-article',
+  'gist',
   'global-footer',
   'global-navigation',
   'graybox',
