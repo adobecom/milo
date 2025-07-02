@@ -114,7 +114,7 @@ describe('processPrices', async () => {
 
     it('should preserve white spaces', async () => {
         const fields = {
-            prices: 'Starting at  <span is="inline-price" data-template="price" data-wcs-osi="nTbB50pS4lLGv_x1l_UKggd-lxxo2zAJ7WYDa2mW19s"></span>',
+            prices: 'Starting at  <span is="inline-price" data-display-per-unit="false" data-template="price" data-wcs-osi="nTbB50pS4lLGv_x1l_UKggd-lxxo2zAJ7WYDa2mW19s"></span>',
         };
         const merchCard = mockMerchCard();
         const mapping = {

@@ -1,0 +1,592 @@
+{
+    "path": "/content/dam/mas/sandbox/en_US/plans-test",
+    "name": "",
+    "title": "plans-test",
+    "id": "collection",
+    "description": "",
+    "model": {
+        "id": "L2NvbmYvbWFzL3NldHRpbmdzL2RhbS9jZm0vbW9kZWxzL2NvbGxlY3Rpb24"
+    },
+    "fields": {
+        "label": "Plans",
+        "cards": [],
+        "collections": [
+            "ed9982d1-0acb-4a6d-8155-e5b002acffdf",
+            "8ef6b2de-4963-42f2-a0d0-d158bd78e404",
+            "1049c155-8081-4d9b-8215-a4fb0b8418dd"
+        ]
+    },
+    "settings": {
+        "displayPlanType": true
+    },
+    "placeholders": {},
+    "dictionary": {},
+    "priceLiterals": {
+        "planTypeLabel": "{planType, select, ABM {Annual, paid monthly.} other {}}"
+    },
+    "references": {
+        "ed9982d1-0acb-4a6d-8155-e5b002acffdf": {
+            "type": "content-fragment",
+            "value": {
+                "path": "/content/dam/mas/sandbox/en_US/plans-test-all",
+                "name": "",
+                "title": "plans-test-all",
+                "id": "ed9982d1-0acb-4a6d-8155-e5b002acffdf",
+                "description": "",
+                "model": {
+                    "id": "L2NvbmYvbWFzL3NldHRpbmdzL2RhbS9jZm0vbW9kZWxzL2NvbGxlY3Rpb24"
+                },
+                "fields": {
+                    "originalId": "enUS82d1-0acb-4a6d-8155-e5b002acffdf",
+                    "label": "All",
+                    "icon": "https://main--milo--adobecom.hlx.page/drafts/astatescu/icons/apps.svg",
+                    "cards": [
+                        "ca835d11-fe6b-40f8-96d1-50ac800c9f70",
+                        "d9998fc3-578e-44be-be4f-d8be1c45c75b",
+                        "fe2c1223-be01-4c0e-9a97-f63e8d0458e9",
+                        "8391265d-2542-4533-8089-b75fb19d28d8",
+                        "54860b82-24e6-4ca7-a08d-577a3ad6ebda",
+                        "ee0f3a5c-b4a4-4305-bda5-92be2662fbab"
+                    ],
+                    "collections": []
+                }
+            }
+        },
+        "ca835d11-fe6b-40f8-96d1-50ac800c9f70": {
+            "type": "content-fragment",
+            "value": {
+                "path": "/content/dam/mas/sandbox/en_US/ccd-slice-wide-cc-all-app311",
+                "name": "",
+                "title": "CCD Slice Wide CC All Apps",
+                "id": "ca835d11-fe6b-40f8-96d1-50ac800c9f70",
+                "description": "",
+                "model": {
+                    "id": "L2NvbmYvbWFzL3NldHRpbmdzL2RhbS9jZm0vbW9kZWxzL2NhcmQ"
+                },
+                "fields": {
+                    "originalId": "enUS5d11-fe6b-40f8-96d1-50ac800c9f70",
+                    "variant": "plans"
+                },
+                "settings": {
+                    "stockCheckboxLabel": "Add a 30-day free trial of Adobe Stock.",
+                    "stockOfferOsis": "",
+                    "secureLabel": "Secure transaction",
+                    "displayPlanType": true
+                }
+            }
+        },
+        "mas:offer_type/base": {
+            "type": "tag",
+            "value": {
+                "path": "/content/cq:tags/mas/offer_type/base",
+                "name": "base",
+                "title": "Base",
+                "id": "mas:offer_type/base",
+                "i18n": [],
+                "titlePath": "Merch at Scale : Offer type / Base",
+                "description": null
+            }
+        },
+        "mas:product_family": {
+            "type": "tag",
+            "value": {
+                "path": "/content/cq:tags/mas/product_family",
+                "name": "product_family",
+                "title": "Product family",
+                "id": "mas:product_family",
+                "i18n": [],
+                "titlePath": "Merch at Scale : Product family",
+                "description": null
+            }
+        },
+        "mas:plan_type/abm": {
+            "type": "tag",
+            "value": {
+                "path": "/content/cq:tags/mas/plan_type/abm",
+                "name": "abm",
+                "title": "ABM",
+                "id": "mas:plan_type/abm",
+                "i18n": [],
+                "titlePath": "Merch at Scale : Plan type / ABM",
+                "description": ""
+            }
+        },
+        "d9998fc3-578e-44be-be4f-d8be1c45c75b": {
+            "type": "content-fragment",
+            "value": {
+                "path": "/content/dam/mas/sandbox/en_US/ccd-slice-wide-cc-all-app31111",
+                "name": "",
+                "title": "CCD Slice Wide CC All Apps",
+                "id": "d9998fc3-578e-44be-be4f-d8be1c45c75b",
+                "description": "",
+                "model": {
+                    "id": "L2NvbmYvbWFzL3NldHRpbmdzL2RhbS9jZm0vbW9kZWxzL2NhcmQ"
+                },
+                "fields": {
+                    "originalId": "enUS8fc3-578e-44be-be4f-d8be1c45c75b",
+                    "variant": "plans",
+                    "quantitySelect": "<merch-quantity-select title=\"\" min=\"1\" max=\"10\" step=\"1\"></merch-quantity-select>"
+                },
+                "settings": {
+                    "stockCheckboxLabel": "Add a 30-day free trial of Adobe Stock.",
+                    "stockOfferOsis": "",
+                    "secureLabel": "Secure transaction",
+                    "displayPlanType": true
+                }
+            }
+        },
+        "fe2c1223-be01-4c0e-9a97-f63e8d0458e9": {
+            "type": "content-fragment",
+            "value": {
+                "path": "/content/dam/mas/sandbox/en_US/mariia/ccd-slice-wide-cc-all-app2211",
+                "name": "",
+                "title": "CCD Slice Wide CC All Apps",
+                "id": "fe2c1223-be01-4c0e-9a97-f63e8d0458e9",
+                "description": "",
+                "model": {
+                    "id": "L2NvbmYvbWFzL3NldHRpbmdzL2RhbS9jZm0vbW9kZWxzL2NhcmQ"
+                },
+                "fields": {
+                    "originalId": "enUS1223-be01-4c0e-9a97-f63e8d0458e9",
+                    "variant": "plans"
+                },
+                "settings": {
+                    "stockCheckboxLabel": "Add a 30-day free trial of Adobe Stock.",
+                    "stockOfferOsis": "",
+                    "secureLabel": "Secure transaction",
+                    "displayPlanType": true
+                }
+            }
+        },
+        "mas:market_segments/edu": {
+            "type": "tag",
+            "value": {
+                "path": "/content/cq:tags/mas/market_segments/edu",
+                "name": "edu",
+                "title": "EDU",
+                "id": "mas:market_segments/edu",
+                "i18n": [],
+                "titlePath": "Merch at Scale : Market segments / EDU",
+                "description": ""
+            }
+        },
+        "8391265d-2542-4533-8089-b75fb19d28d8": {
+            "type": "content-fragment",
+            "value": {
+                "path": "/content/dam/mas/sandbox/en_US/mariia/ccd-slice-wide-cc-all-app221",
+                "name": "",
+                "title": "CCD Slice Wide CC All Apps",
+                "id": "8391265d-2542-4533-8089-b75fb19d28d8",
+                "description": "",
+                "model": {
+                    "id": "L2NvbmYvbWFzL3NldHRpbmdzL2RhbS9jZm0vbW9kZWxzL2NhcmQ"
+                },
+                "fields": {
+                    "originalId": "enUS265d-2542-4533-8089-b75fb19d28d8",
+                    "variant": "plans"
+                },
+                "settings": {
+                    "stockCheckboxLabel": "Add a 30-day free trial of Adobe Stock.",
+                    "stockOfferOsis": "",
+                    "secureLabel": "Secure transaction",
+                    "displayPlanType": true
+                }
+            }
+        },
+        "54860b82-24e6-4ca7-a08d-577a3ad6ebda": {
+            "type": "content-fragment",
+            "value": {
+                "path": "/content/dam/mas/sandbox/en_US/ccd-slice-wide-cc-all-app3",
+                "name": "",
+                "title": "CCD Slice Wide CC All Apps",
+                "id": "54860b82-24e6-4ca7-a08d-577a3ad6ebda",
+                "description": "",
+                "model": {
+                    "id": "L2NvbmYvbWFzL3NldHRpbmdzL2RhbS9jZm0vbW9kZWxzL2NhcmQ"
+                },
+                "fields": {
+                    "originalId": "enUS0b82-24e6-4ca7-a08d-577a3ad6ebda",
+                    "variant": "plans"
+                },
+                "settings": {
+                    "displayPlanType": false
+                }
+            }
+        },
+        "ee0f3a5c-b4a4-4305-bda5-92be2662fbab": {
+            "type": "content-fragment",
+            "value": {
+                "path": "/content/dam/mas/sandbox/en_US/ccd-slice-wide-cc-all-app31",
+                "name": "",
+                "title": "CCD Slice Wide CC All Apps",
+                "id": "ee0f3a5c-b4a4-4305-bda5-92be2662fbab",
+                "description": "",
+                "model": {
+                    "id": "L2NvbmYvbWFzL3NldHRpbmdzL2RhbS9jZm0vbW9kZWxzL2NhcmQ"
+                },
+                "fields": {
+                    "originalId": "enUS3a5c-b4a4-4305-bda5-92be2662fbab",
+                    "variant": "plans"
+                },
+                "settings": {
+                    "stockCheckboxLabel": "Add a 30-day free trial of Adobe Stock.",
+                    "stockOfferOsis": "",
+                    "secureLabel": "Secure transaction",
+                    "displayPlanType": true
+                }
+            }
+        },
+        "8ef6b2de-4963-42f2-a0d0-d158bd78e404": {
+            "type": "content-fragment",
+            "value": {
+                "path": "/content/dam/mas/sandbox/en_US/plans-test-photo",
+                "name": "",
+                "title": "plans-test-photo",
+                "id": "8ef6b2de-4963-42f2-a0d0-d158bd78e404",
+                "description": "",
+                "model": {
+                    "id": "L2NvbmYvbWFzL3NldHRpbmdzL2RhbS9jZm0vbW9kZWxzL2NvbGxlY3Rpb24"
+                },
+                "fields": {
+                    "originalId": "enUSb2de-4963-42f2-a0d0-d158bd78e404",
+                    "label": "Photo",
+                    "icon": "https://main--milo--adobecom.hlx.page/drafts/astatescu/icons/camera.svg",
+                    "cards": ["8391265d-2542-4533-8089-b75fb19d28d8"],
+                    "collections": []
+                }
+            }
+        },
+        "1049c155-8081-4d9b-8215-a4fb0b8418dd": {
+            "type": "content-fragment",
+            "value": {
+                "path": "/content/dam/mas/sandbox/en_US/plans-test-illustration",
+                "name": "",
+                "title": "plans-test-cloud",
+                "id": "1049c155-8081-4d9b-8215-a4fb0b8418dd",
+                "description": "",
+                "model": {
+                    "id": "L2NvbmYvbWFzL3NldHRpbmdzL2RhbS9jZm0vbW9kZWxzL2NvbGxlY3Rpb24"
+                },
+                "fields": {
+                    "originalId": "enUSc155-8081-4d9b-8215-a4fb0b8418dd",
+                    "label": "Cloud",
+                    "icon": "https://main--milo--adobecom.hlx.page/drafts/astatescu/icons/cloud.svg",
+                    "cards": [
+                        "0fea0932-c802-49e4-8589-f8bcf6bfe98c",
+                        "ee0f3a5c-b4a4-4305-bda5-92be2662fbab",
+                        "54860b82-24e6-4ca7-a08d-577a3ad6ebda"
+                    ],
+                    "collections": ["afa05e50-40cf-4c87-b5bf-4ce405633d82"]
+                },
+                "settings": {
+                    "displayPlanType": false
+                }
+            }
+        },
+        "0fea0932-c802-49e4-8589-f8bcf6bfe98c": {
+            "type": "content-fragment",
+            "value": {
+                "path": "/content/dam/mas/sandbox/en_US/ccd-slice-wide-cc-all-app3111",
+                "name": "",
+                "title": "CCD Slice Wide CC All Apps",
+                "id": "0fea0932-c802-49e4-8589-f8bcf6bfe98c",
+                "description": "",
+                "model": {
+                    "id": "L2NvbmYvbWFzL3NldHRpbmdzL2RhbS9jZm0vbW9kZWxzL2NhcmQ"
+                },
+                "fields": {
+                    "originalId": "enUS0932-c802-49e4-8589-f8bcf6bfe98c",
+                    "variant": "plans",
+                    "addon": "<p>Add a 30-day free trial of Adobe Stock.*</p><p><span is=\"inline-price\" data-template=\"price\" data-wcs-osi=\"FWEdmk_LYpoGnCR0gQMaS5Rbq9a5vFbVFoNaRT0m7NU\"></span></p><p><span is=\"inline-price\" data-template=\"price\" data-wcs-osi=\"JWIwpOv5nOckxDEBJeQWHa8spk7iEo4EEnQNQ1_YbmE\"></span></p><p><span is=\"inline-price\" data-template=\"price\" data-wcs-osi=\"RoV3wydweldSG5HWZUaytO-du3WA8S32alL4GzK6Ssw\"></span></p>"
+                },
+                "settings": {}
+            }
+        },
+        "afa05e50-40cf-4c87-b5bf-4ce405633d82": {
+            "type": "content-fragment",
+            "value": {
+                "path": "/content/dam/mas/sandbox/en_US/plans-test-cloud-sub",
+                "name": "",
+                "title": "plans-test-cloud-subcategory",
+                "id": "afa05e50-40cf-4c87-b5bf-4ce405633d82",
+                "description": "",
+                "model": {
+                    "id": "L2NvbmYvbWFzL3NldHRpbmdzL2RhbS9jZm0vbW9kZWxzL2NvbGxlY3Rpb24"
+                },
+                "fields": {
+                    "originalId": "enUS5e50-40cf-4c87-b5bf-4ce405633d82",
+                    "label": "Subcategory",
+                    "cards": ["54860b82-24e6-4ca7-a08d-577a3ad6ebda"],
+                    "collections": []
+                }
+            }
+        }
+    },
+    "referencesTree": [
+        {
+            "fieldName": "collections",
+            "identifier": "ed9982d1-0acb-4a6d-8155-e5b002acffdf",
+            "referencesTree": [
+                {
+                    "fieldName": "cards",
+                    "identifier": "ca835d11-fe6b-40f8-96d1-50ac800c9f70",
+                    "referencesTree": [
+                        {
+                            "fieldName": "tags",
+                            "identifier": "mas:offer_type/base",
+                            "referencesTree": []
+                        },
+                        {
+                            "fieldName": "tags",
+                            "identifier": "mas:product_family",
+                            "referencesTree": []
+                        },
+                        {
+                            "fieldName": "tags",
+                            "identifier": "mas:plan_type/abm",
+                            "referencesTree": []
+                        }
+                    ]
+                },
+                {
+                    "fieldName": "cards",
+                    "identifier": "d9998fc3-578e-44be-be4f-d8be1c45c75b",
+                    "referencesTree": [
+                        {
+                            "fieldName": "tags",
+                            "identifier": "mas:offer_type/base",
+                            "referencesTree": []
+                        },
+                        {
+                            "fieldName": "tags",
+                            "identifier": "mas:product_family",
+                            "referencesTree": []
+                        },
+                        {
+                            "fieldName": "tags",
+                            "identifier": "mas:plan_type/abm",
+                            "referencesTree": []
+                        }
+                    ]
+                },
+                {
+                    "fieldName": "cards",
+                    "identifier": "fe2c1223-be01-4c0e-9a97-f63e8d0458e9",
+                    "referencesTree": [
+                        {
+                            "fieldName": "tags",
+                            "identifier": "mas:market_segments/edu",
+                            "referencesTree": []
+                        },
+                        {
+                            "fieldName": "tags",
+                            "identifier": "mas:offer_type/base",
+                            "referencesTree": []
+                        },
+                        {
+                            "fieldName": "tags",
+                            "identifier": "mas:plan_type/abm",
+                            "referencesTree": []
+                        }
+                    ]
+                },
+                {
+                    "fieldName": "cards",
+                    "identifier": "8391265d-2542-4533-8089-b75fb19d28d8",
+                    "referencesTree": [
+                        {
+                            "fieldName": "tags",
+                            "identifier": "mas:market_segments/edu",
+                            "referencesTree": []
+                        },
+                        {
+                            "fieldName": "tags",
+                            "identifier": "mas:offer_type/base",
+                            "referencesTree": []
+                        },
+                        {
+                            "fieldName": "tags",
+                            "identifier": "mas:plan_type/abm",
+                            "referencesTree": []
+                        }
+                    ]
+                },
+                {
+                    "fieldName": "cards",
+                    "identifier": "54860b82-24e6-4ca7-a08d-577a3ad6ebda",
+                    "referencesTree": [
+                        {
+                            "fieldName": "tags",
+                            "identifier": "mas:product_family",
+                            "referencesTree": []
+                        },
+                        {
+                            "fieldName": "tags",
+                            "identifier": "mas:plan_type/abm",
+                            "referencesTree": []
+                        },
+                        {
+                            "fieldName": "tags",
+                            "identifier": "mas:offer_type/base",
+                            "referencesTree": []
+                        }
+                    ]
+                },
+                {
+                    "fieldName": "cards",
+                    "identifier": "ee0f3a5c-b4a4-4305-bda5-92be2662fbab",
+                    "referencesTree": [
+                        {
+                            "fieldName": "tags",
+                            "identifier": "mas:offer_type/base",
+                            "referencesTree": []
+                        },
+                        {
+                            "fieldName": "tags",
+                            "identifier": "mas:product_family",
+                            "referencesTree": []
+                        },
+                        {
+                            "fieldName": "tags",
+                            "identifier": "mas:plan_type/abm",
+                            "referencesTree": []
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "fieldName": "collections",
+            "identifier": "8ef6b2de-4963-42f2-a0d0-d158bd78e404",
+            "referencesTree": [
+                {
+                    "fieldName": "cards",
+                    "identifier": "8391265d-2542-4533-8089-b75fb19d28d8",
+                    "referencesTree": [
+                        {
+                            "fieldName": "tags",
+                            "identifier": "mas:market_segments/edu",
+                            "referencesTree": []
+                        },
+                        {
+                            "fieldName": "tags",
+                            "identifier": "mas:offer_type/base",
+                            "referencesTree": []
+                        },
+                        {
+                            "fieldName": "tags",
+                            "identifier": "mas:plan_type/abm",
+                            "referencesTree": []
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "fieldName": "collections",
+            "identifier": "1049c155-8081-4d9b-8215-a4fb0b8418dd",
+            "referencesTree": [
+                {
+                    "fieldName": "cards",
+                    "identifier": "0fea0932-c802-49e4-8589-f8bcf6bfe98c",
+                    "referencesTree": [
+                        {
+                            "fieldName": "tags",
+                            "identifier": "mas:plan_type/abm",
+                            "referencesTree": []
+                        },
+                        {
+                            "fieldName": "tags",
+                            "identifier": "mas:product_family",
+                            "referencesTree": []
+                        },
+                        {
+                            "fieldName": "tags",
+                            "identifier": "mas:offer_type/base",
+                            "referencesTree": []
+                        }
+                    ]
+                },
+                {
+                    "fieldName": "cards",
+                    "identifier": "ee0f3a5c-b4a4-4305-bda5-92be2662fbab",
+                    "referencesTree": [
+                        {
+                            "fieldName": "tags",
+                            "identifier": "mas:offer_type/base",
+                            "referencesTree": []
+                        },
+                        {
+                            "fieldName": "tags",
+                            "identifier": "mas:product_family",
+                            "referencesTree": []
+                        },
+                        {
+                            "fieldName": "tags",
+                            "identifier": "mas:plan_type/abm",
+                            "referencesTree": []
+                        }
+                    ]
+                },
+                {
+                    "fieldName": "cards",
+                    "identifier": "54860b82-24e6-4ca7-a08d-577a3ad6ebda",
+                    "referencesTree": [
+                        {
+                            "fieldName": "tags",
+                            "identifier": "mas:product_family",
+                            "referencesTree": []
+                        },
+                        {
+                            "fieldName": "tags",
+                            "identifier": "mas:plan_type/abm",
+                            "referencesTree": []
+                        },
+                        {
+                            "fieldName": "tags",
+                            "identifier": "mas:offer_type/base",
+                            "referencesTree": []
+                        }
+                    ]
+                },
+                {
+                    "fieldName": "collections",
+                    "identifier": "afa05e50-40cf-4c87-b5bf-4ce405633d82",
+                    "referencesTree": [
+                        {
+                            "fieldName": "cards",
+                            "identifier": "54860b82-24e6-4ca7-a08d-577a3ad6ebda",
+                            "referencesTree": [
+                                {
+                                    "fieldName": "tags",
+                                    "identifier": "mas:product_family",
+                                    "referencesTree": []
+                                },
+                                {
+                                    "fieldName": "tags",
+                                    "identifier": "mas:plan_type/abm",
+                                    "referencesTree": []
+                                },
+                                {
+                                    "fieldName": "tags",
+                                    "identifier": "mas:offer_type/base",
+                                    "referencesTree": []
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    ],
+    "modelReferences": {
+        "L2NvbmYvbWFzL3NldHRpbmdzL2RhbS9jZm0vbW9kZWxzL2NvbGxlY3Rpb24": {
+            "id": "L2NvbmYvbWFzL3NldHRpbmdzL2RhbS9jZm0vbW9kZWxzL2NvbGxlY3Rpb24",
+            "path": "/conf/mas/settings/dam/cfm/models/collection"
+        },
+        "L2NvbmYvbWFzL3NldHRpbmdzL2RhbS9jZm0vbW9kZWxzL2NhcmQ": {
+            "id": "L2NvbmYvbWFzL3NldHRpbmdzL2RhbS9jZm0vbW9kZWxzL2NhcmQ",
+            "path": "/conf/mas/settings/dam/cfm/models/card"
+        }
+    }
+}
