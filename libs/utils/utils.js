@@ -786,9 +786,9 @@ export function decorateSVG(a) {
 }
 
 function canUrlParse(url) {
-  if (URL.canParse) return URL.canParse(url);
   try {
-    return !!new URL(url);
+    const parsedUrl = new URL(url);
+    return !!parsedUrl && parsedUrl.protocol.includes('http');
   } catch {
     return false;
   }
