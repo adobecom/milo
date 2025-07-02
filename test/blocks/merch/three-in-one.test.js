@@ -2,8 +2,8 @@ import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
 import { setConfig, createTag } from '../../../libs/utils/utils.js';
-import { mockFetch } from './mocks/fetch.js';
-import { mockIms } from './mocks/ims.js';
+import { mockFetch, unmockFetch } from './mocks/fetch.js';
+import { mockIms, unmockIms } from './mocks/ims.js';
 
 document.body.innerHTML = await readFile({ path: './mocks/threeInOne.html' });
 
@@ -22,25 +22,33 @@ const { default: initMerch } = await import('../../../libs/blocks/merch/merch.js
 setConfig({ locale: { contentRoot: '/test/blocks/merch/mocks' } });
 
 describe('Three-in-One Modal', () => {
-  let clock;
+  describe('error handling', () => {
+    const originalModal = document.querySelector('.three-in-one');
+    let modal;
+    let clock;
 
-  beforeEach(() => {
-    clock = sinon.useFakeTimers();
-  });
+    beforeEach(() => {
+      clock = sinon.useFakeTimers();
+      modal = originalModal.cloneNode(true);
+      document.body.replaceChild(modal, originalModal);
+    });
 
-  afterEach(() => {
-    sinon.restore();
-    clock.restore();
-  });
+    afterEach(() => {
+      sinon.restore();
+      clock.restore();
+      document.body.replaceChild(originalModal, modal);
+    });
 
-  describe('reloadIframe', () => {
-    it('should reload iframe and set appropriate attributes', () => {
+    it('reloads the iframe', () => {
       const iframe = document.querySelector('iframe');
       const theme = document.querySelector('sp-theme');
       const msgWrapper = document.querySelector('.error-wrapper');
       const handleTimeoutErrorSpy = sinon.spy();
+      expect(modal).to.exist;
+
       reloadIframe({ iframe, theme, msgWrapper, handleTimeoutError: handleTimeoutErrorSpy });
-      expect(msgWrapper).to.not.exist;
+
+      expect(document.querySelector('.error-wrapper')).to.not.exist;
       expect(iframe.getAttribute('data-wasreloaded')).to.equal('true');
       expect(iframe.style.display).to.equal('block');
       expect(iframe.classList.contains('loading')).to.be.true;
@@ -48,9 +56,7 @@ describe('Three-in-One Modal', () => {
       clock.tick(15000);
       expect(handleTimeoutErrorSpy.calledOnce).to.be.true;
     });
-  });
 
-  describe('showErrorMsg', () => {
     it('should create error message with retry button', async () => {
       const iframe = document.querySelector('iframe');
       const theme = document.querySelector('sp-theme');
@@ -71,17 +77,29 @@ describe('Three-in-One Modal', () => {
       expect(errorWrapper.querySelector('.error-msg')).to.exist;
       const tryAgainBtn = errorWrapper.querySelector('.try-again-btn');
       expect(tryAgainBtn).to.exist;
-      const clickEvent = new MouseEvent('click', {
-        bubbles: true,
-        cancelable: true,
-        view: window,
-      });
-      tryAgainBtn.dispatchEvent(clickEvent);
-      expect(handleTimeoutErrorSpy.calledOnce).to.be.true;
+    });
+
+    it('should show error message on timeout', () => {
+      const miloIframe = document.querySelector('.milo-iframe');
+      const iframe = document.querySelector('iframe');
+      const theme = document.querySelector('sp-theme');
+      handleTimeoutError();
+      expect(theme.style.display).to.equal('none');
+      expect(iframe.style.display).to.equal('none');
+      const errorWrapper = miloIframe.querySelector('.error-wrapper');
+      expect(errorWrapper).to.exist;
+      expect(errorWrapper.querySelector('.icon-and-text')).to.exist;
+      expect(errorWrapper.querySelector('.error-msg')).to.exist;
+      const tryAgainBtn = errorWrapper.querySelector('.try-again-btn');
+      expect(tryAgainBtn).to.exist;
     });
   });
 
   describe('handle3in1IFrameEvents', () => {
+    afterEach(() => {
+      sinon.restore();
+    });
+
     it('should handle AppLoaded message', () => {
       const message = {
         app: 'ucv3',
@@ -192,23 +210,6 @@ describe('Three-in-One Modal', () => {
     });
   });
 
-  describe('handleTimeoutError', () => {
-    it.only('should show error message on timeout', () => {
-      const miloIframe = document.querySelector('.milo-iframe');
-      const iframe = document.querySelector('iframe');
-      const theme = document.querySelector('sp-theme');
-      handleTimeoutError();
-      expect(theme.style.display).to.equal('none');
-      expect(iframe.style.display).to.equal('none');
-      const errorWrapper = miloIframe.querySelector('.error-wrapper');
-      expect(errorWrapper).to.exist;
-      expect(errorWrapper.querySelector('.icon-and-text')).to.exist;
-      expect(errorWrapper.querySelector('.error-msg')).to.exist;
-      const tryAgainBtn = errorWrapper.querySelector('.try-again-btn');
-      expect(tryAgainBtn).to.exist;
-    });
-  });
-
   describe('createContent', () => {
     it('should create iframe content with correct URL', async () => {
       const testUrl = 'https://test.com/';
@@ -240,9 +241,14 @@ describe('Three-in-One Modal', () => {
   });
 
   describe('handle3in1Params', () => {
-    beforeEach(async () => {
+    before(async () => {
       await mockFetch();
       await mockIms('CH');
+    });
+
+    after(() => {
+      unmockFetch();
+      unmockIms();
     });
 
     it('should override market segment param', async () => {

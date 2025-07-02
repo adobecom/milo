@@ -27,6 +27,45 @@ test.describe('ThreeInOne Block test suite', () => {
         await expect(el).toHaveAttribute('href', href);
       }
     });
+
+    await test.step('Validate if modal reopens on back navigation', async () => {
+      const cta = threeInOne.ctas.illustratorAndAcrobatProTwpSegmentation.el;
+      await cta.click();
+      const modal = threeInOne.getModal();
+      expect(modal).toBeVisible();
+      await page.goto('https://www.adobe.com');
+      await page.goBack();
+      const newModal = threeInOne.getModal();
+      await expect(newModal).toBeVisible();
+      await threeInOne.closeModal();
+    });
+
+    await test.step('Validate if previous hash is preserved after modal is opened and closed', async () => {
+      await page.evaluate(() => {
+        window.location.hash = 'category=photo';
+      });
+      const cta = threeInOne.ctas.illustratorAndAcrobatProTwpSegmentation.el;
+      await cta.click();
+      const modal = threeInOne.getModal();
+      expect(modal).toBeVisible();
+      await page.goBack();
+      expect(page.url()).toContain('category=photo');
+    });
+
+    await test.step('Validate if multiple clicks on the same CTA open only one modal', async () => {
+      const cta = threeInOne.ctas.illustratorAndAcrobatProTwpSegmentation.el;
+      await Promise.all([
+        cta.click(),
+        cta.click(),
+        cta.click(),
+        cta.click(),
+        cta.click(),
+        cta.click(),
+      ]);
+      const modalsCount = await threeInOne.getModalsCount();
+      expect(modalsCount).toBe(1);
+      await threeInOne.closeModal();
+    });
   });
 
   test(`${features[1].name}, ${features[1].tags}`, async ({ page, baseURL }) => {
@@ -66,6 +105,11 @@ test.describe('ThreeInOne Block test suite', () => {
       const modal = threeInOne.getModal();
       const iframe = await modal.locator('iframe');
       await expect(iframe).toHaveAttribute('src', iframeSrc);
+      await page.goto('https://www.adobe.com');
+      await page.goBack();
+      const newModal = threeInOne.getModal();
+      await expect(newModal).toBeVisible();
+      await threeInOne.closeModal();
     });
   });
 
@@ -85,6 +129,11 @@ test.describe('ThreeInOne Block test suite', () => {
       const modal = threeInOne.getModal();
       const iframe = await modal.locator('iframe');
       await expect(iframe).toHaveAttribute('src', iframeSrc);
+      await page.goto('https://www.adobe.com');
+      await page.goBack();
+      const newModal = threeInOne.getModal();
+      await expect(newModal).toBeVisible();
+      await threeInOne.closeModal();
     });
   });
 });
