@@ -7,7 +7,7 @@ const miloLibs = process.env.MILO_LIBS || '';
 test.describe('CCD Mini Cards Feature', () => {
   let miniCard;
 
-  test.beforeEach(async ({ page }) => {
+  test.beforeEach(async ({ page, browserName }) => {
     miniCard = new MiniCard(page);
     if (browserName === 'chromium') {
       await page.setExtraHTTPHeaders({ 'sec-ch-ua': '"Chromium";v="123", "Not:A-Brand";v="8"' });
