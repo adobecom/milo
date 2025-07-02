@@ -657,6 +657,11 @@
   margin-right: 16px;
 }
 
+.table .col-heading:only-child {
+  border-top-right-radius: var(--border-radius);
+  border-top-left-radius: var(--border-radius);
+}
+
 /* Start tablet styles */
 @media (max-width: 899px) {
   .table,
