@@ -1,8 +1,9 @@
 import { VariantLayout } from './variant-layout';
-import { isMobile, createTag } from '../utils.js';
+import { createTag } from '../utils.js';
 import { html, css } from 'lit';
 import { CSS } from './product.css.js';
 import { SELECTOR_MAS_INLINE_PRICE } from '../constants.js';
+import { isMobile } from '../media.js';
 
 export class Product extends VariantLayout {
     constructor(card) {

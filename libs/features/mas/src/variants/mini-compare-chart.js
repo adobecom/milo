@@ -1,8 +1,8 @@
 import { html, css, unsafeCSS } from 'lit';
-import { isMobile, createTag } from '../utils.js';
+import { createTag } from '../utils.js';
 import { VariantLayout } from './variant-layout.js';
 import { CSS } from './mini-compare-chart.css.js';
-import { DESKTOP_UP, TABLET_DOWN, MOBILE_LANDSCAPE } from '../media.js';
+import { DESKTOP_UP, TABLET_DOWN, MOBILE_LANDSCAPE, isMobile } from '../media.js';
 import { SELECTOR_MAS_INLINE_PRICE } from '../constants.js';
 const FOOTER_ROW_MIN_HEIGHT = 32; // as per the XD.
 
