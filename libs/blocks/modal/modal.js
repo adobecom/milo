@@ -54,6 +54,17 @@ export function closeModal(modal) {
   const closeEvent = new Event('milo:modal:closed');
   window.dispatchEvent(closeEvent);
 
+  const iframe = modal.querySelector('iframe');
+  if (iframe?._iframeKeydownListener) {
+    try {
+      const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+      iframeDoc.removeEventListener('keydown', iframe._iframeKeydownListener);
+    } catch (e) {
+      // Cross-origin iframe, can't access content
+    }
+    delete iframe._iframeKeydownListener;
+  }
+
   document.querySelectorAll(`#${id}`).forEach((mod) => {
     if (mod.classList.contains('dialog-modal')) {
       const modalCurtain = document.querySelector(`#${id}~.modal-curtain`);
@@ -122,6 +133,17 @@ async function getPathModal(path, dialog) {
   // eslint-disable-next-line import/no-cycle
   const { default: getFragment } = await import('../fragment/fragment.js');
   await getFragment(block);
+}
+
+function addIframeKeydownListener(iframe, dialog) {
+  try {
+    const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+    const iframeKeydownListener = (event) => { if (event.key === 'Escape') closeModal(dialog); };
+    iframeDoc.addEventListener('keydown', iframeKeydownListener);
+    iframe._iframeKeydownListener = iframeKeydownListener;
+  } catch (e) {
+    // Cross-origin iframe, can't access content
+  }
 }
 
 export async function getModal(details, custom) {
@@ -225,6 +247,10 @@ export async function getModal(details, custom) {
     } else {
       iframe.onload = () => {
         try {
+          if (new URL(iframe.src).origin === window.location.origin) {
+            addIframeKeydownListener(iframe, dialog);
+          }
+
           if ((new URL(iframe.src).origin !== window.location.origin) && iframe.title) {
             dialog.setAttribute('aria-label', iframe.title);
             return;
@@ -239,6 +265,15 @@ export async function getModal(details, custom) {
         }
       };
     }
+
+    iframe.addEventListener('load', () => {
+      if (new URL(iframe.src).origin !== window.location.origin) return;
+      try {
+        addIframeKeydownListener(iframe, dialog);
+      } catch (error) {
+        // Cross-origin iframe, can't access content
+      }
+    });
 
     if (dialog.classList.contains('commerce-frame') || dialog.classList.contains('dynamic-height')) {
       const { default: enableCommerceFrameFeatures } = await import('./modal.merch.js');
