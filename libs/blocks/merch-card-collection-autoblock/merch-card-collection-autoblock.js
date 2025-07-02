@@ -202,6 +202,7 @@ export async function createCollection(el, options) {
     if (sidenav) {
       container.insertBefore(sidenav, collection);
       collection.sidenav = sidenav;
+      sidenav.setAttribute('daa-lh', 'b3|filters');
     }
   }
 
