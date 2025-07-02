@@ -54,5 +54,50 @@ export default class ThreeInOne {
       modal.dispatchEvent('closeModal');
       await this.page.waitForTimeout(500);
     };
+
+    // Debug methods
+    this.debugModalState = async () => {
+      const modalCount = await this.getModalsCount();
+      const hash = await this.page.evaluate(() => window.location.hash);
+      const url = this.page.url();
+
+      console.log('[DEBUG] Modal state:', {
+        modalCount,
+        hash,
+        url,
+        timestamp: new Date().toISOString(),
+      });
+
+      if (modalCount > 0) {
+        const modal = this.getModal();
+        const isVisible = await modal.isVisible();
+        const modalId = await modal.getAttribute('id');
+        console.log('[DEBUG] Modal details:', { isVisible, modalId });
+      }
+
+      return { modalCount, hash, url };
+    };
+
+    this.waitForModalWithRetry = async (maxRetries = 5, delay = 1000) => {
+      for (let i = 0; i < maxRetries; i++) {
+        try {
+          const modal = this.getModal();
+          const isVisible = await modal.isVisible();
+
+          if (isVisible) {
+            console.log(`[DEBUG] Modal found on attempt ${i + 1}`);
+            return modal;
+          }
+
+          console.log(`[DEBUG] Modal not visible on attempt ${i + 1}, waiting...`);
+          await this.page.waitForTimeout(delay);
+        } catch (error) {
+          console.log(`[DEBUG] Error checking modal on attempt ${i + 1}:`, error.message);
+          await this.page.waitForTimeout(delay);
+        }
+      }
+
+      throw new Error(`Modal not found after ${maxRetries} attempts`);
+    };
   }
 }
