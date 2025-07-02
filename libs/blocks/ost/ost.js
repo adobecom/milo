@@ -61,11 +61,8 @@ export const createLinkMarkup = (
     if (offer.commitment === 'PERPETUAL') params.set('perp', true);
 
     if (isCta) {
-      const { workflow, workflowStep } = options;
+      const { workflowStep } = options;
       params.set('text', options.ctaText ?? DEFAULT_CTA_TEXT);
-      if (workflow && workflow !== defaults.checkoutWorkflow) {
-        params.set('workflow', workflow);
-      }
       if (workflowStep && workflowStep !== defaults.checkoutWorkflowStep) {
         params.set('workflowStep', workflowStep);
       }
