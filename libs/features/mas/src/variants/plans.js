@@ -86,11 +86,12 @@ export class Plans extends VariantLayout {
         const slotInBody = shadowRoot.querySelector(`.body slot[name="${name}"]`);
         const body = shadowRoot.querySelector('.body');
 
-        if (!size) footer?.classList.remove('wide-footer');
-        if (!size || !sizes.includes(size)) {
+        if (!size || !size.includes('wide')) {
+            footer?.classList.remove('wide-footer');
             if (slotInFooter) slotInFooter.remove();
-            return;
         }
+        if (!sizes.includes(size)) return;
+        
 
         footer?.classList.toggle('wide-footer', !isMobile());
         if (!shouldBeInFooter && slotInFooter) {
