@@ -16,6 +16,13 @@ function setTooltipPosition(tooltips) {
   const tooltipMargin = 12;
   const headerHeight = 64;
 
+  const getTooltipBeforeHeight = (tooltip) => {
+    const beforeStyle = window.getComputedStyle(tooltip, '::before');
+    return (parseFloat(beforeStyle.getPropertyValue('height')) || 0)
+      + (parseFloat(beforeStyle.getPropertyValue('padding-top')) || 0)
+      + (parseFloat(beforeStyle.getPropertyValue('padding-bottom')) || 0);
+  };
+
   tooltips.forEach((tooltip) => {
     const currentPosition = positionClasses.find((cls) => tooltip.classList.contains(cls));
     if (!tooltip.dataset.originalPosition
@@ -26,7 +33,7 @@ function setTooltipPosition(tooltips) {
     const isVerticalPosition = originalPosition === 'top' || originalPosition === 'bottom';
     const effectiveMaxWidth = isVerticalPosition ? tooltipMaxWidth / 2 : tooltipMaxWidth;
     const topMargin = originalPosition === 'top' ? tooltipMargin : 0;
-    const tooltipHeight = rect.height;
+    const tooltipHeight = getTooltipBeforeHeight(tooltip);
     const effectiveHeight = originalPosition === 'top' ? tooltipHeight + topMargin : tooltipHeight / 2;
     const willCutoffTop = rect.top - effectiveHeight < headerHeight;
     const willCutoffBottom = rect.bottom + (originalPosition === 'bottom' ? tooltipHeight + tooltipMargin : 0)
@@ -46,14 +53,13 @@ function setTooltipPosition(tooltips) {
     }
 
     let updatedPosition = originalPosition;
-
     if (willOverflowRight && willOverflowRightAtBottom) {
       updatedPosition = 'left';
     } else if (willOverflowLeft && willOverflowLeftAtBottom) {
       updatedPosition = 'right';
     } else if ((willOverflowRight && willCutoffTop) || (willOverflowLeft && willCutoffTop)) {
       updatedPosition = (willOverflowRightAtBottom && 'left') || (willOverflowLeftAtBottom && 'right') || 'bottom';
-    } else if (willOverflowRight || willOverflowLeft) {
+    } else if (willOverflowRight !== willOverflowLeft) {
       updatedPosition = willOverflowRight ? 'left' : 'right';
     } else if (willCutoffTop && ['top', 'left', 'right'].includes(originalPosition)) {
       updatedPosition = 'bottom';
@@ -77,8 +83,8 @@ function addTooltipListeners() {
       if (!isTooltip) return;
 
       if (['mouseenter', 'focus'].includes(eventType)) {
-        setTooltipPosition([event.target]);
         event.target.classList.remove('hide-tooltip');
+        setTooltipPosition([event.target]);
       } else if (['mouseleave', 'blur'].includes(eventType)
         || (eventType === 'keydown' && event.key === 'Escape')) {
         event.target.classList.add('hide-tooltip');
