@@ -37,10 +37,19 @@ const defaultVisibility = {
 export default class MerchCardCollectionHeader extends LitElement {
     constructor() {
         super();
-        this.collection ??= null;
+        this.collection = null;
+        this.#visibility = {
+            search: false,
+            filter: false,
+            sort: false,
+            result: false,
+            custom: false
+        }
         this.updateLiterals = this.updateLiterals.bind(this);
         this.handleSidenavAttached = this.handleSidenavAttached.bind(this);
     }
+
+    #visibility;
 
     connectedCallback() {
         super.connectedCallback();
@@ -52,6 +61,30 @@ export default class MerchCardCollectionHeader extends LitElement {
         super.disconnectedCallback();
         this.collection?.removeEventListener(EVENT_MERCH_CARD_COLLECTION_LITERALS_CHANGED, this.updateLiterals);
         this.collection?.removeEventListener(EVENT_MERCH_CARD_COLLECTION_SIDENAV_ATTACHED, this.handleSidenavAttached);
+    }
+
+    willUpdate() {
+        this.#visibility.search = this.getVisibility('search');
+        this.#visibility.filter = this.getVisibility('filter');
+        this.#visibility.sort = this.getVisibility('sort');
+        this.#visibility.result = this.getVisibility('result');
+        this.#visibility.custom = this.getVisibility('custom');
+    }
+
+    parseVisibilityOptions(visibility, type) {
+        if (!visibility) return null;
+        if (!Object.hasOwn(visibility, type)) return null;
+        const typeVisibility = visibility[type];
+        if (typeVisibility === false) return false;
+        if (typeVisibility === true) return true;
+        return typeVisibility.includes(this.currentMedia);
+    }
+
+    getVisibility(type) {
+        const visibility = getCollectionOptions(this.collection?.variant)?.headerVisibility;
+        const typeVisibility = this.parseVisibilityOptions(visibility, type);
+        if (typeVisibility !== null) return typeVisibility;
+        return this.parseVisibilityOptions(defaultVisibility, type);
     }
 
     get sidenav() {
@@ -79,24 +112,8 @@ export default class MerchCardCollectionHeader extends LitElement {
         return 'mobile';
     }
 
-    parseVisibilityOptions(visibility, type) {
-        if (!visibility) return null;
-        if (!Object.hasOwn(visibility, type)) return null;
-        const typeVisibility = visibility[type];
-        if (typeVisibility === false) return false;
-        if (typeVisibility === true) return true;
-        return typeVisibility.includes(this.currentMedia);
-    }
-
-    getVisibility(type) {
-        const visibility = getCollectionOptions(this.collection?.variant)?.headerVisibility;
-        const typeVisibility = this.parseVisibilityOptions(visibility, type);
-        if (typeVisibility !== null) return typeVisibility;
-        return this.parseVisibilityOptions(defaultVisibility, type);
-    }
-
     get searchAction() {
-        if (!this.getVisibility('search')) return nothing;
+        if (!this.#visibility.search) return nothing;
         const searchPlaceholder = getSlotText(this, 'searchText');
         if (!searchPlaceholder) return nothing;
         return html`
@@ -110,7 +127,7 @@ export default class MerchCardCollectionHeader extends LitElement {
     }
 
     get filterAction() {
-        if (!this.getVisibility('filter')) return nothing;
+        if (!this.#visibility.filter) return nothing;
         if (!this.sidenav) return nothing;
         return html`
             <sp-action-button
@@ -124,7 +141,7 @@ export default class MerchCardCollectionHeader extends LitElement {
     }
 
     get sortAction() {
-        if (!this.getVisibility('sort')) return nothing;
+        if (!this.#visibility.sort) return nothing;
         const sortText = getSlotText(this, 'sortText');
         if (!sortText) return;
         const popularityText = getSlotText(this, 'popularityText');
@@ -163,7 +180,7 @@ export default class MerchCardCollectionHeader extends LitElement {
     }
 
     get resultLabel() {
-        if (!this.getVisibility('result')) return nothing;
+        if (!this.#visibility.result) return nothing;
         if (!this.sidenav) return nothing;
         return html`
           <div id="result" aria-live="polite">
@@ -172,7 +189,7 @@ export default class MerchCardCollectionHeader extends LitElement {
     }
 
     get customArea() {
-        if (!this.getVisibility('custom')) return nothing;
+        if (!this.#visibility.custom) return nothing;
         const customHeaderAreaGetter = getCollectionOptions(this.collection?.variant)?.customHeaderArea;
         if (!customHeaderAreaGetter) return nothing;
         const customHeaderArea = customHeaderAreaGetter(this.collection);
@@ -200,6 +217,7 @@ export default class MerchCardCollectionHeader extends LitElement {
     // #endregion
 
     render() {
+        console.log(this.#visibility);
         return html`
           <sp-theme color="light" scale="medium">
             <div id="header">${this.searchAction}${this.filterAction}${this.sortAction}${this.resultLabel}${this.customArea}</div>

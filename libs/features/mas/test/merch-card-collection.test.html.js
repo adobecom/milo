@@ -33,9 +33,6 @@ const prepareTemplate = (
     const templateContent = template.content.cloneNode(true);
     const merchCards = templateContent.querySelector('merch-card-collection');
     const header =  templateContent.querySelector('merch-card-collection-header');
-    if (header) {
-        header.collection = merchCards;
-    }
     return [
         merchCards,
         () => {
@@ -93,6 +90,7 @@ runTests(async () => {
             await delay(100);
             const sidenav = document.querySelector('merch-sidenav');
             merchCards.sidenav = sidenav;
+            header.collection = merchCards;
             header.requestUpdate();
             await header.updateComplete;
         }

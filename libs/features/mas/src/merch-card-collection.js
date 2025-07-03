@@ -256,6 +256,7 @@ export class MerchCardCollection extends LitElement {
                 const tag = value.includes('<p>') ? 'div' : 'p';
                 const placeholder = document.createElement(tag);
                 placeholder.setAttribute('slot', key);
+                placeholder.setAttribute('placeholder', '');
                 placeholder.innerHTML = value;
                 if (MerchCardCollectionHeader.placeholderKeys.includes(key)) this.header?.append(placeholder);
                 else this.append(placeholder);
@@ -265,7 +266,7 @@ export class MerchCardCollection extends LitElement {
 
     attachSidenav(sidenav, append = true) {
         if (!sidenav) return;
-        if (append) this.parentElement.insertBefore(sidenav, this.parentElement.firstChild);
+        if (append) this.parentElement.prepend(sidenav);
         this.sidenav = sidenav;
         this.dispatchEvent(new CustomEvent(EVENT_MERCH_CARD_COLLECTION_SIDENAV_ATTACHED));
     }
