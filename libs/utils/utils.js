@@ -785,14 +785,10 @@ export function decorateSVG(a) {
   }
 }
 
-function canUrlParse(url) {
-  try {
-    const parsedUrl = new URL(url);
-    return !!parsedUrl && parsedUrl.protocol.includes('http');
-  } catch {
-    return false;
-  }
-}
+export const isValidHtmlUrl = (url) => {
+  const regex = /^https:\/\/[^\s]+$/;
+  return regex.test(url);
+};
 
 export function decorateImageLinks(el) {
   const images = el.querySelectorAll('img[alt*="|"]');
@@ -800,7 +796,7 @@ export function decorateImageLinks(el) {
   [...images].forEach((img) => {
     const [source, alt, icon] = img.alt.split('|');
     try {
-      if (!canUrlParse(source.trim())) return;
+      if (!isValidHtmlUrl(source.trim())) return;
       const url = new URL(source.trim());
       const href = (url.hostname.includes('.aem.') || url.hostname.includes('.hlx.')) ? `${url.pathname}${url.search}${url.hash}` : url.href;
       img.alt = alt?.trim() || '';
