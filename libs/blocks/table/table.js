@@ -476,12 +476,12 @@ async function handleScrollEffect(table) {
   }
   const topOffset = gnavHeight + (highlightRow ? highlightRow.offsetHeight : 0);
   headingRow.style.top = `${topOffset}px`;
-  headingRow.style.zIndex = 9;
   const intercept = table.querySelector('.intercept') || createTag('div', { class: 'intercept' });
   intercept.setAttribute('data-observer-intercept', '');
   headingRow.insertAdjacentElement('beforebegin', intercept);
 
   const observer = new IntersectionObserver(([entry]) => {
+    headingRow.style.zIndex = entry.isIntersecting ? 1 : 9;
     headingRow.classList.toggle('active', !entry.isIntersecting);
   }, { rootMargin: `-${topOffset}px` });
   observer.observe(intercept);
