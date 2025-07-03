@@ -1,6 +1,6 @@
 import { html, signal, useEffect } from '../../../deps/htm-preact.js';
 import { STATUS } from '../checks/constants.js';
-import { executePreflightChecks } from '../checks/preflightExecutor.js';
+import { getPreflightResults } from '../checks/preflightApi.js';
 
 const DEF_ICON = 'purple';
 const DEF_DESC = 'Checking...';
@@ -88,25 +88,11 @@ async function getResults() {
     linksResult,
   ];
 
-  let runChecks;
-
-  try {
-    const cachedResults = await executePreflightChecks();
-    if (cachedResults?.seo) {
-      runChecks = cachedResults.seo;
-    } else {
-      const results = await executePreflightChecks();
-      runChecks = results?.seo;
-    }
-  } catch (error) {
-    console.log('Failed to get cached preflight results, running checks directly:', error);
-    const results = await executePreflightChecks();
-    runChecks = results?.seo;
-  }
+  const results = await getPreflightResults(window.location.pathname, document);
+  const runChecks = results.runChecks.seo || [];
 
   // Check if runChecks is available before proceeding
   if (!runChecks || !Array.isArray(runChecks)) {
-    console.error('No valid runChecks array found');
     return;
   }
 
