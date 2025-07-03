@@ -293,11 +293,11 @@ export function addAccessibilityControl(videoString, videoAttrs, indexOfVideo, t
 }
 
 export function handlePause(event) {
-  event.stopPropagation();
   if (event.code !== 'Enter' && event.code !== 'Space' && !['focus', 'click', 'blur'].includes(event.type)) {
     return;
   }
   event.preventDefault();
+  event.stopPropagation();
   const video = event.target.closest('.video-holder').parentElement.querySelector('video');
   if (event.type === 'blur') {
     video.pause();

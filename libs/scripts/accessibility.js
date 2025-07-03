@@ -1,9 +1,16 @@
+function getActiveEl(target) {
+  let active = target.shadowRoot?.activeElement ?? target;
+  while (active.shadowRoot?.activeElement) {
+    active = active.shadowRoot?.activeElement;
+  }
+  return active;
+}
+
 function shouldntScroll(element, elFromPoint) {
   return !elFromPoint
-    || elFromPoint === element
+    || getActiveEl(elFromPoint) === element
     || element.contains(elFromPoint)
-    || elFromPoint.contains(element)
-    || elFromPoint.shadowRoot?.contains(element);
+    || elFromPoint.contains(element);
 }
 
 function setScrollPadding() {
@@ -17,24 +24,17 @@ function removeScrollPadding() {
 function scrollTabFocusedElIntoView() {
   let isFocused = false;
   let isPadding = false;
+  let isTab = false;
 
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Tab') {
-      isFocused = false;
-      setTimeout(() => {
-        if (isFocused) return;
-        setScrollPadding();
-        isPadding = true;
-      });
-    }
-  });
-
-  document.addEventListener('focusin', (e) => {
-    const element = e.target.shadowRoot?.activeElement ?? e.target;
+  function scrollElement(target) {
+    if (!target) return;
 
     if (isPadding) removeScrollPadding();
+    isTab = false;
+    isPadding = false;
     isFocused = true;
 
+    const element = getActiveEl(target);
     const rect = element.getBoundingClientRect();
     const viewportHeight = window.innerHeight;
     const outsideViewport = rect.top < 0 || rect.bottom > viewportHeight;
@@ -54,6 +54,28 @@ function scrollTabFocusedElIntoView() {
       && shouldntScroll(element, elFromPointBottom)) return;
 
     element.scrollIntoView({ behavior: 'instant', block: 'center' });
+  }
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Tab') {
+      isTab = true;
+      isFocused = false;
+      setTimeout(() => {
+        if (isFocused) return;
+        if (e.target.shadowRoot) {
+          scrollElement(e.target);
+          return;
+        }
+        setScrollPadding();
+        isPadding = true;
+        isTab = false;
+      });
+    }
+  });
+
+  document.addEventListener('focusin', (e) => {
+    if (!isTab && !e.target.closest('footer')) return;
+    scrollElement(e.target);
   });
 }
 
