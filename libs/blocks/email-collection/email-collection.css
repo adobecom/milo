@@ -26,6 +26,7 @@
 
 .email-collection .foreground .image img {
   object-fit: cover;
+  height: 100%;
 }
 
 .email-collection .foreground.success-message {
