@@ -819,7 +819,8 @@ async function createView(el, search) {
   switch (true) {
     case isReport: url = API_URLS.report; break;
     case isMetadataLookup: {
-      url = TARGET_METADATA_OPTIONS[SEARCH().selectedRepo].metadata;
+      const rngString = Math.random().toString(36).substring(2, 10);
+      url = `${TARGET_METADATA_OPTIONS[SEARCH().selectedRepo].metadata}?limit=10000&r=${rngString}`;
       method = 'GET';
       body = null;
       break;

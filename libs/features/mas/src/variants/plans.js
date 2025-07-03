@@ -88,7 +88,7 @@ export class Plans extends VariantLayout {
         const stockInBody = shadowRoot.querySelector('.body #stock-checkbox');
         const body = shadowRoot.querySelector('.body');
 
-        if (!size) {
+        if (!size || !size.includes('wide')) {
             footer?.classList.remove('wide-footer');
             if (stockInFooter) stockInFooter.remove();
             return;

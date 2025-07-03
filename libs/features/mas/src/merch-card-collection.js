@@ -19,6 +19,7 @@ const MERCH_CARD_COLLECTION_LOAD_TIMEOUT = 20000;
 const VARIANT_CLASSES = {
     catalog: ['four-merch-cards'],
     plans: ['four-merch-cards'],
+    plansThreeColumns: ['three-merch-cards'],
 }
 
 const categoryFilter = (elements, { filter }) =>
@@ -370,10 +371,12 @@ export class MerchCardCollection extends LitElement {
                 this.append(merchCard);
             }
 
+            let nmbOfColumns = '';
             let variant = cards[0]?.fields.variant;
             if (variant.startsWith('plans')) variant = 'plans';
             this.variant = variant;
-            this.classList.add('merch-card-collection', variant, ...(VARIANT_CLASSES[variant] || []));
+            if (variant === 'plans' && cards.length === 3 && !cards.some((card) => card.fields.size?.includes('wide'))) nmbOfColumns = 'ThreeColumns';
+            this.classList.add('merch-card-collection', variant, ...(VARIANT_CLASSES[`${variant}${nmbOfColumns}`] || []));
             this.displayResult = true;
             this.hydrating = false;
             aemFragment.remove();
