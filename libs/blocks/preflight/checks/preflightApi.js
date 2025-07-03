@@ -23,6 +23,8 @@ import {
   runChecks as runChecksSeo,
 } from './seo.js';
 
+let checks = null;
+
 export default {
   assets: {
     isViewportTooSmall,
@@ -53,3 +55,30 @@ export default {
     runChecks: runChecksSeo,
   },
 };
+
+export async function runDeterministicChecks(url, area) {
+  if (checks) {
+    return checks;
+  }
+
+  checks = (async () => {
+    const assets = await Promise.all(runChecksAssets(url, area));
+    const performance = await Promise.all(runChecksPerformance(url, area));
+    const seo = await Promise.all(runChecksSeo({ url, area }));
+    return {
+      assets,
+      performance,
+      seo,
+    };
+  })();
+
+  return checks;
+}
+
+export async function getPreflightResults(url, area) {
+  const results = await runDeterministicChecks(url, area);
+  return {
+    isViewportTooSmall: isViewportTooSmall(),
+    runChecks: results,
+  };
+}

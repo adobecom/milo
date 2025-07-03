@@ -1,8 +1,7 @@
 import { html, signal, useEffect } from '../../../deps/htm-preact.js';
-import preflightApi from '../checks/preflightApi.js';
 import { STATUS } from '../checks/constants.js';
-
-const { getLcpEntry, runChecks } = preflightApi.performance;
+import { getPreflightResults } from '../checks/preflightApi.js';
+import { getLcpEntry } from '../checks/performance.js';
 
 // Define signals for each performance check result
 const lcpElResult = signal({ icon: 'purple', title: 'Valid LCP', description: 'Checking...' });
@@ -28,7 +27,9 @@ async function getResults() {
     placeholdersResult,
     iconsResult,
   ];
-  const checks = runChecks(window.location.pathname, document);
+
+  const results = await getPreflightResults(window.location.pathname, document);
+  const checks = results.runChecks.performance || [];
 
   const checkPromises = checks.map((resultOrPromise, index) => {
     const signalResult = signals[index];

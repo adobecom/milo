@@ -1,8 +1,6 @@
 import { html, signal, useEffect } from '../../../deps/htm-preact.js';
 import { STATUS } from '../checks/constants.js';
-import preflightApi from '../checks/preflightApi.js';
-
-const { runChecks } = preflightApi.seo;
+import { getPreflightResults } from '../checks/preflightApi.js';
 
 const DEF_ICON = 'purple';
 const DEF_DESC = 'Checking...';
@@ -90,12 +88,18 @@ async function getResults() {
     linksResult,
   ];
 
-  const checks = runChecks(window.location.pathname);
+  const results = await getPreflightResults(window.location.pathname, document);
+  const runChecks = results.runChecks.seo || [];
+
+  // Check if runChecks is available before proceeding
+  if (!runChecks || !Array.isArray(runChecks)) {
+    return;
+  }
 
   // Update UI as each check resolves
   const icons = [];
   const checkPromises = [];
-  checks.forEach((resultOrPromise, index) => {
+  runChecks.forEach((resultOrPromise, index) => {
     const signalResult = signals[index];
     const promise = Promise.resolve(resultOrPromise)
       .then((result) => {
