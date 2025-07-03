@@ -42,7 +42,7 @@ test.describe('ThreeInOne Block test suite', () => {
 
     await test.step('Validate if previous hash is preserved after modal is opened and closed', async () => {
       await page.evaluate(() => {
-        window.location.hash = 'category=photo';
+        window.location.hash = '#category=photo';
       });
       const cta = threeInOne.ctas.illustratorAndAcrobatProTwpSegmentation.el;
       await cta.click();
@@ -50,17 +50,15 @@ test.describe('ThreeInOne Block test suite', () => {
       expect(modal).toBeVisible();
       await page.goBack();
       expect(page.url()).toContain('category=photo');
+      const newModal = threeInOne.getModal();
+      expect(newModal).not.toBeVisible();
     });
 
     await test.step('Validate if multiple clicks on the same CTA open only one modal', async () => {
-      const cta = threeInOne.ctas.illustratorAndAcrobatProTwpSegmentation.el;
+      const { el } = threeInOne.ctas.illustratorAndAcrobatProTwpSegmentation;
       await Promise.all([
-        cta.click(),
-        cta.click(),
-        cta.click(),
-        cta.click(),
-        cta.click(),
-        cta.click(),
+        el.click(),
+        el.click(),
       ]);
       const modalsCount = await threeInOne.getModalsCount();
       expect(modalsCount).toBe(1);
