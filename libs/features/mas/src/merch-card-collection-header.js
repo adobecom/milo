@@ -217,7 +217,6 @@ export default class MerchCardCollectionHeader extends LitElement {
     // #endregion
 
     render() {
-        console.log(this.#visibility);
         return html`
           <sp-theme color="light" scale="medium">
             <div id="header">${this.searchAction}${this.filterAction}${this.sortAction}${this.resultLabel}${this.customArea}</div>

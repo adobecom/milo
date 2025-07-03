@@ -340,11 +340,12 @@ var Qe=Object.defineProperty;var ie=o=>{throw TypeError(o)};var Xe=(o,e,t)=>e in
                 >${this.card.secureLabel}</span
             >`:nr}get secureLabelFooter(){return Mt`<footer>${this.secureLabel}<slot name="footer"></slot></footer>`}async adjustTitleWidth(){let e=this.card.getBoundingClientRect().width,t=this.card.badgeElement?.getBoundingClientRect().width||0;e===0||t===0||this.card.style.setProperty("--consonant-merch-card-heading-xs-max-width",`${Math.round(e-t-16)}px`)}postCardUpdateHook(){}connectedCallbackHook(){}disconnectedCallbackHook(){}renderLayout(){}get aemFragmentMapping(){return Pt(this.card.variant)}};et=new WeakMap,d(ut,"styleMap",{});var f=ut;import{html as qt,css as ar}from"../lit-all.min.js";var we=`
 :root {
-  --consonant-merch-card-catalog-icon-size: 40px;
+    --consonant-merch-card-catalog-width: 276px;
+    --consonant-merch-card-catalog-icon-size: 40px;
 }
 
 .collection-container.catalog {
-    --merch-card-collection-card-width: 276px;
+    --merch-card-collection-card-width: var(--consonant-merch-card-catalog-width);
 }
 
 .collection-container.catalog merch-sidenav {
@@ -356,14 +357,14 @@ merch-card-collection-header.catalog {
 }
 
 @media screen and ${u} {
-    .collection-container.catalog {
-        --merch-card-collection-card-width: 302px;
+    :root {
+        --consonant-merch-card-catalog-width: 302px;
     }
 }
 
 @media screen and ${g} {
-    .collection-container.catalog {
-        --merch-card-collection-card-width: 276px;
+    :root {
+        --consonant-merch-card-catalog-width: 276px;
     }
 }
 
@@ -1341,11 +1342,7 @@ merch-card-collection-header.plans {
 /* Tablet */
 @media screen and ${u} {
   :root {
-    --consonant-merch-card-plans-width: 302px;
-  }
-
-  .collection-container.plans {
-       --merch-card-collection-card-width: var(--consonant-merch-card-plans-width);
+      --consonant-merch-card-plans-width: 302px;
   }
 
   .four-merch-cards.plans .foreground {
@@ -1360,7 +1357,7 @@ merch-card-collection-header.plans {
 /* desktop */
 @media screen and ${g} {
   :root {
-    --consonant-merch-card-plans-width: 276px;
+        --consonant-merch-card-plans-width: 276px;
   }
 
   .columns .four-merch-cards.plans {
@@ -1369,10 +1366,6 @@ merch-card-collection-header.plans {
 
   merch-card[variant="plans-students"] {
       width: var(--consonant-merch-card-plans-students-width);
-  }
-
-  .collection-container.plans {
-      --merch-card-collection-card-width: var(--consonant-merch-card-plans-width);
   }
 
   merch-card-collection-header.plans {

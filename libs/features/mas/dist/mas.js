@@ -350,11 +350,12 @@ Try polyfilling it using "@formatjs/intl-pluralrules"
                 >${this.card.secureLabel}</span
             >`:$}get secureLabelFooter(){return x`<footer>${this.secureLabel}<slot name="footer"></slot></footer>`}async adjustTitleWidth(){let t=this.card.getBoundingClientRect().width,r=this.card.badgeElement?.getBoundingClientRect().width||0;t===0||r===0||this.card.style.setProperty("--consonant-merch-card-heading-xs-max-width",`${Math.round(t-r-16)}px`)}postCardUpdateHook(){}connectedCallbackHook(){}disconnectedCallbackHook(){}renderLayout(){}get aemFragmentMapping(){return Ln(this.card.variant)}};It=new WeakMap,f(Rr,"styleMap",{});var M=Rr;var mc=`
 :root {
-  --consonant-merch-card-catalog-icon-size: 40px;
+    --consonant-merch-card-catalog-width: 276px;
+    --consonant-merch-card-catalog-icon-size: 40px;
 }
 
 .collection-container.catalog {
-    --merch-card-collection-card-width: 276px;
+    --merch-card-collection-card-width: var(--consonant-merch-card-catalog-width);
 }
 
 .collection-container.catalog merch-sidenav {
@@ -366,14 +367,14 @@ merch-card-collection-header.catalog {
 }
 
 @media screen and ${G} {
-    .collection-container.catalog {
-        --merch-card-collection-card-width: 302px;
+    :root {
+        --consonant-merch-card-catalog-width: 302px;
     }
 }
 
 @media screen and ${D} {
-    .collection-container.catalog {
-        --merch-card-collection-card-width: 276px;
+    :root {
+        --consonant-merch-card-catalog-width: 276px;
     }
 }
 
@@ -1351,11 +1352,7 @@ merch-card-collection-header.plans {
 /* Tablet */
 @media screen and ${G} {
   :root {
-    --consonant-merch-card-plans-width: 302px;
-  }
-
-  .collection-container.plans {
-       --merch-card-collection-card-width: var(--consonant-merch-card-plans-width);
+      --consonant-merch-card-plans-width: 302px;
   }
 
   .four-merch-cards.plans .foreground {
@@ -1370,7 +1367,7 @@ merch-card-collection-header.plans {
 /* desktop */
 @media screen and ${D} {
   :root {
-    --consonant-merch-card-plans-width: 276px;
+        --consonant-merch-card-plans-width: 276px;
   }
 
   .columns .four-merch-cards.plans {
@@ -1379,10 +1376,6 @@ merch-card-collection-header.plans {
 
   merch-card[variant="plans-students"] {
       width: var(--consonant-merch-card-plans-students-width);
-  }
-
-  .collection-container.plans {
-      --merch-card-collection-card-width: var(--consonant-merch-card-plans-width);
   }
 
   merch-card-collection-header.plans {

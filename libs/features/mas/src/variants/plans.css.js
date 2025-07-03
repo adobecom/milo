@@ -221,11 +221,7 @@ merch-card-collection-header.plans {
 /* Tablet */
 @media screen and ${TABLET_UP} {
   :root {
-    --consonant-merch-card-plans-width: 302px;
-  }
-
-  .collection-container.plans {
-       --merch-card-collection-card-width: var(--consonant-merch-card-plans-width);
+      --consonant-merch-card-plans-width: 302px;
   }
 
   .four-merch-cards.plans .foreground {
@@ -240,7 +236,7 @@ merch-card-collection-header.plans {
 /* desktop */
 @media screen and ${DESKTOP_UP} {
   :root {
-    --consonant-merch-card-plans-width: 276px;
+        --consonant-merch-card-plans-width: 276px;
   }
 
   .columns .four-merch-cards.plans {
@@ -249,10 +245,6 @@ merch-card-collection-header.plans {
 
   merch-card[variant="plans-students"] {
       width: var(--consonant-merch-card-plans-students-width);
-  }
-
-  .collection-container.plans {
-      --merch-card-collection-card-width: var(--consonant-merch-card-plans-width);
   }
 
   merch-card-collection-header.plans {

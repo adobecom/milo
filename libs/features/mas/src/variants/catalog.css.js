@@ -2,11 +2,12 @@ import { TABLET_UP, DESKTOP_UP } from '../media.js';
 
 export const CSS = `
 :root {
-  --consonant-merch-card-catalog-icon-size: 40px;
+    --consonant-merch-card-catalog-width: 276px;
+    --consonant-merch-card-catalog-icon-size: 40px;
 }
 
 .collection-container.catalog {
-    --merch-card-collection-card-width: 276px;
+    --merch-card-collection-card-width: var(--consonant-merch-card-catalog-width);
 }
 
 .collection-container.catalog merch-sidenav {
@@ -18,14 +19,14 @@ merch-card-collection-header.catalog {
 }
 
 @media screen and ${TABLET_UP} {
-    .collection-container.catalog {
-        --merch-card-collection-card-width: 302px;
+    :root {
+        --consonant-merch-card-catalog-width: 302px;
     }
 }
 
 @media screen and ${DESKTOP_UP} {
-    .collection-container.catalog {
-        --merch-card-collection-card-width: 276px;
+    :root {
+        --consonant-merch-card-catalog-width: 276px;
     }
 }
 
