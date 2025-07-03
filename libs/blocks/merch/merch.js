@@ -597,12 +597,12 @@ export async function updateModalState({ cta, closedByUser } = {}) {
   /* Use-case #2:
   User click and browser back-forward navigation */
   if (hash && !cta && !modalState.isOpen && !modal) {
-    /* When user clicks the CTA to open the modal, we only reflect this in the modal state here */
-    modalState.isOpen = true;
-
     /* When user opened the modal, closed it, and clicked 'Back' in browser,
     the page was not realoaded - we find first CTA matching the hash and click it */
     document.querySelector(`[is=checkout-link][data-modal-id=${hash.replace('#', '')}]`)?.click();
+
+    /* When user clicks the CTA to open the modal, we only reflect this in the modal state here */
+    modalState.isOpen = true;
     return modalState.isOpen;
   }
 
