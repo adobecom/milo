@@ -82,14 +82,3 @@ export async function getPreflightResults(url, area) {
     runChecks: results,
   };
 }
-
-// Cleaner API method following the recommendation pattern
-export async function getResults(url, area) {
-  const results = await runDeterministicChecks(url, area);
-  return {
-    isViewportTooSmall: isViewportTooSmall(),
-    assets: results.assets,
-    performance: results.performance,
-    seo: results.seo,
-  };
-}
