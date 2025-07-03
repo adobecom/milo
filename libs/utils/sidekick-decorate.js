@@ -111,7 +111,6 @@ async function checkAuthorization(page, btn) {
   const { canPublish, message } = await userCanPublishPage(page, false);
   if (canPublish) {
     btn.removeAttribute('disabled');
-    await checkPreflightAndShowNotification();
     return;
   }
 
@@ -125,6 +124,7 @@ export default async function stylePublish(sk) {
   stylePublishCalled = true;
 
   createSidekickVisibilityObserver();
+  await checkPreflightAndShowNotification();
 
   if (sk.nodeName === 'HELIX-SIDEKICK') {
     styleHelixPublish(sk);

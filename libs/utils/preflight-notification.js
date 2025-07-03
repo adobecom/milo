@@ -1,5 +1,6 @@
 import { hasPreflightFailures, executePreflightChecks } from '../blocks/preflight/checks/preflightExecutor.js';
-import { loadStyle } from './utils.js';
+import { loadStyle, getConfig } from './utils.js';
+import { getPreflightResults } from '../blocks/preflight/checks/preflightApi.js';
 
 let preflightNotificationDismissed = false;
 
@@ -15,7 +16,8 @@ async function createPreflightNotification() {
   if (existingNotification) {
     existingNotification.remove();
   }
-  loadStyle('/libs/styles/preflight-notification.css');
+  const { miloLibs } = getConfig();
+  loadStyle(`${miloLibs}/styles/preflight-notification.css`);
 
   const overlay = document.createElement('div');
   overlay.className = 'milo-preflight-overlay';
@@ -28,14 +30,6 @@ async function createPreflightNotification() {
         <button class="notification-close">×</button>
       </div>
     </div>
-  `;
-
-  overlay.style.cssText = `
-    position: fixed;
-    bottom: 120px;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 10000;
   `;
 
   const reviewLink = overlay.querySelector('.preflight-review-link');
@@ -56,19 +50,15 @@ async function createPreflightNotification() {
 }
 
 async function checkPreflightAndShowNotification() {
-  try {
-    await executePreflightChecks();
-    const hasFailures = hasPreflightFailures();
-    const existingNotification = document.querySelector('.milo-preflight-overlay');
-    if (existingNotification) {
-      existingNotification.remove();
-    }
+  await executePreflightChecks();
+  const hasFailures = hasPreflightFailures();
+  const existingNotification = document.querySelector('.milo-preflight-overlay');
+  if (existingNotification) {
+    existingNotification.remove();
+  }
 
-    if (hasFailures && !preflightNotificationDismissed) {
-      await createPreflightNotification();
-    }
-  } catch (error) {
-    console.warn('Failed to check preflight status:', error);
+  if (hasFailures && !preflightNotificationDismissed) {
+    await createPreflightNotification();
   }
 }
 
@@ -87,15 +77,7 @@ function createSidekickVisibilityObserver() {
 
     if (isOpen) {
       if (!notification && !preflightNotificationDismissed) {
-        try {
-          await executePreflightChecks();
-          const hasFailures = hasPreflightFailures();
-          if (hasFailures) {
-            await createPreflightNotification();
-          }
-        } catch (error) {
-          console.warn('Failed to check preflight status:', error);
-        }
+        checkPreflightAndShowNotification();
       }
     } else {
       if (notification) {
@@ -115,4 +97,4 @@ function createSidekickVisibilityObserver() {
   return observer;
 }
 
-export { checkPreflightAndShowNotification, createSidekickVisibilityObserver }; 
+export { checkPreflightAndShowNotification, createSidekickVisibilityObserver };
