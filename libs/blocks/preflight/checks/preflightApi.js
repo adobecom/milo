@@ -23,6 +23,8 @@ import {
   runChecks as runChecksSeo,
 } from './seo.js';
 
+let checks = null;
+
 export default {
   assets: {
     isViewportTooSmall,
@@ -55,9 +57,39 @@ export default {
 };
 
 export async function runDeterministicChecks(url, area) {
+  if (checks) {
+    return checks;
+  }
+
+  checks = (async () => {
+    const assets = await Promise.all(runChecksAssets(url, area));
+    const performance = await Promise.all(runChecksPerformance(url, area));
+    const seo = await Promise.all(runChecksSeo({ url, area }));
+    return {
+      assets,
+      performance,
+      seo,
+    };
+  })();
+
+  return checks;
+}
+
+export async function getPreflightResults(url, area) {
+  const results = await runDeterministicChecks(url, area);
   return {
-    assets: await runChecksAssets(url, area),
-    performance: await runChecksPerformance(url, area),
-    seo: await runChecksSeo({ url, area }),
+    isViewportTooSmall: isViewportTooSmall(),
+    runChecks: results,
+  };
+}
+
+// Cleaner API method following the recommendation pattern
+export async function getResults(url, area) {
+  const results = await runDeterministicChecks(url, area);
+  return {
+    isViewportTooSmall: isViewportTooSmall(),
+    assets: results.assets,
+    performance: results.performance,
+    seo: results.seo,
   };
 }

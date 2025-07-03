@@ -1,5 +1,6 @@
 import stylePublish from './sidekick-decorate.js';
 import { debounce } from './action.js';
+import { executePreflightChecks } from '../blocks/preflight/checks/preflightExecutor.js';
 
 // loadScript and loadStyle are passed in to avoid circular dependencies
 export default function init({ createTag, loadBlock, loadScript, loadStyle }) {
@@ -25,6 +26,7 @@ export default function init({ createTag, loadBlock, loadScript, loadStyle }) {
 
     const { getModal } = await import('../blocks/modal/modal.js');
     getModal(null, { id: 'preflight', content, closeEvent: 'closeModal' });
+    executePreflightChecks();
   };
 
   const sk = document.querySelector('aem-sidekick, helix-sidekick');
