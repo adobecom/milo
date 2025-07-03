@@ -1,6 +1,5 @@
 import { hasPreflightFailures, executePreflightChecks } from '../blocks/preflight/checks/preflightExecutor.js';
 import { loadStyle, getConfig } from './utils.js';
-import { getPreflightResults } from '../blocks/preflight/checks/preflightApi.js';
 
 let preflightNotificationDismissed = false;
 
