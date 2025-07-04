@@ -139,7 +139,19 @@
           "offerType": "BASE",
           "pricePoint": "REGULAR",
           "language": "MULT",
-          "merchant": "ADOBE"
+          "merchant": "ADOBE",
+          "promotion": {
+              "id": "7d221764-f6c4-461a-9f3b-9674d1a33699",
+              "promotionCode": "TEST_PROMO",
+              "start": "2024-04-30T07:00:00.000Z",
+              "end": "2186-05-01T06:59:00.000Z",
+              "displaySummary": {
+                  "outcomeType": "PERCENTAGE_DISCOUNT",
+                  "duration": "P1Y",
+                  "amount": 13.0,
+                  "minProductQuantity": 3
+              }
+          }
       }
   ],
   "20gb-mult": [

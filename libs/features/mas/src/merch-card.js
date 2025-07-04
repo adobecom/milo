@@ -41,6 +41,9 @@ const MERCH_CARD_LOAD_TIMEOUT = 20000;
 
 const MARK_MERCH_CARD_PREFIX = 'merch-card:';
 
+const PROMO_CODE_ATTR = 'data-promotion-code';
+const PROMO_CODE_NA_ATTR = 'data-promotion-code-na';
+
 function priceOptionsProvider(element, options) {
     const card = element.closest(MERCH_CARD);
     if (!card) return options;
@@ -163,6 +166,8 @@ export class MerchCard extends LitElement {
      * @type {VariantLayout}
      */
     variantLayout;
+
+    quantityBasedPromo;
 
     constructor() {
         super();
@@ -372,6 +377,29 @@ export class MerchCard extends LitElement {
         for (const link of allLinks) {
             link.dataset.quantity = event.detail.option;
         }
+
+        if (this.prices.length === 0) return;
+
+        const price = this.prices[0];
+        if (this.quantityBasedPromo?.resolved && this.quantityBasedPromo?.promotionCode && price) {
+            if (event.detail.option >= this.quantityBasedPromo.minProductQuantity) {
+                price.setAttribute(PROMO_CODE_ATTR, this.quantityBasedPromo.promotionCode);
+                for (const link of allLinks) {
+                    if (link.dataset.promotionCodeNa === this.quantityBasedPromo.promotionCode) {
+                        link.setAttribute(PROMO_CODE_ATTR, this.quantityBasedPromo.promotionCode);
+                        link.removeAttribute(PROMO_CODE_NA_ATTR);
+                    }
+                }
+            } else {
+                price.removeAttribute(PROMO_CODE_ATTR);
+                for (const link of allLinks) {
+                    if (link.dataset.promotionCode === this.quantityBasedPromo.promotionCode) {
+                        link.setAttribute(PROMO_CODE_NA_ATTR, this.quantityBasedPromo.promotionCode);
+                        link.removeAttribute(PROMO_CODE_ATTR);
+                    }
+                }
+            }
+        }
     }
 
     get titleElement() {
@@ -415,6 +443,35 @@ export class MerchCard extends LitElement {
         return this.textContent.match(new RegExp(text, 'i')) !== null;
     }
 
+    async resolveQuantityBasedPromotions() {
+        if (this.prices.length === 0 || !this.quantitySelect) return;
+
+        const price = this.prices[0];
+        const promotionCode = price.dataset.promotionCode;
+
+        if (!promotionCode) return;
+
+        const osi = price.dataset.wcsOsi;
+        const options = this.#service.collectPriceOptions({}, this);
+        options.wcsOsi = [osi];
+        options.promotionCode = promotionCode;
+        const [promise] = await this.#service.resolveOfferSelectors(options);
+        const [offer] = await promise;
+        const minProductQuantity = offer?.promotion?.displaySummary?.minProductQuantity || 1;
+
+        this.quantityBasedPromo = {
+            promotionCode,
+            minProductQuantity,
+            resolved: true,
+        }
+
+        this.handleQuantitySelection({
+            detail: {
+                option: this.quantitySelect.getAttribute('default-value')
+            }
+        })
+    }
+
     connectedCallback() {
         super.connectedCallback();
         if (!this.#internalId) {
@@ -449,6 +506,7 @@ export class MerchCard extends LitElement {
         if (!this.aemFragment) {
             setTimeout(() => this.checkReady(), 0);
         }
+        this.resolveQuantityBasedPromotions();
     }
 
     disconnectedCallback() {
