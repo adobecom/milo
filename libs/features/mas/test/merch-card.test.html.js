@@ -86,13 +86,17 @@ runTests(async () => {
 
         it('should support quantity based promotions', async () => {
             const card = document.querySelector('.quantity-based-promotion merch-card');
-            const button = card.querySelector('.con-button');
+            const button = card.querySelector('.con-button.has-promo');
+            const buttonNoPromo = card.querySelector('.con-button.no-promo');
+            const buttonOtherPromo = card.querySelector('.con-button.other-promo');
             const quantitySelect = card.querySelector('merch-quantity-select');
             expect(quantitySelect).to.exist;
             await quantitySelect.updateComplete;
 
             expect(card.price.dataset.promotionCode).to.be.undefined;
             expect(button.getAttribute('data-promotion-code')).to.be.null;
+            expect(buttonNoPromo.getAttribute('data-promotion-code')).to.be.null;
+            expect(buttonOtherPromo.getAttribute('data-promotion-code')).to.equal('OTHER_TEST_PROMO');
 
             quantitySelect.dispatchEvent(new CustomEvent(
                 EVENT_MERCH_QUANTITY_SELECTOR_CHANGE,
@@ -104,6 +108,8 @@ runTests(async () => {
 
             await delay(100);
             expect(button.getAttribute('data-promotion-code')).to.equal('TEST_PROMO');
+            expect(buttonNoPromo.getAttribute('data-promotion-code')).to.be.null;
+            expect(buttonOtherPromo.getAttribute('data-promotion-code')).to.equal('OTHER_TEST_PROMO');
             expect(card.price.dataset.promotionCode).to.equal('TEST_PROMO');
 
             quantitySelect.dispatchEvent(new CustomEvent(
@@ -116,6 +122,8 @@ runTests(async () => {
 
             await delay(100);
             expect(button.getAttribute('data-promotion-code')).to.be.null;
+            expect(buttonNoPromo.getAttribute('data-promotion-code')).to.be.null;
+            expect(buttonOtherPromo.getAttribute('data-promotion-code')).to.equal('OTHER_TEST_PROMO');
             expect(card.price.dataset.promotionCode).to.be.undefined;
         });
     });

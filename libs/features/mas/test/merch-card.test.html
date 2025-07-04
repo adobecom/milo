@@ -849,7 +849,9 @@
                     <merch-quantity-select title="Number of licenses" min="1" max="10" step="1" default-value="2" max-input="180"></merch-quantity-select>
                 </div>
                 <div slot="footer">
-                    <a is="checkout-link" href="#" data-promotion-code="TEST_PROMO" class="con-button blue active" data-wcs-osi="m2m">Save now</a>
+                    <a is="checkout-link" href="#" class="con-button blue active no-promo" data-wcs-osi="m2m">Save now</a>
+                    <a is="checkout-link" href="#" data-promotion-code="OTHER_TEST_PROMO" class="con-button blue active other-promo" data-wcs-osi="m2m">Save now</a>
+                    <a is="checkout-link" href="#" data-promotion-code="TEST_PROMO" class="con-button blue active has-promo" data-wcs-osi="m2m">Save now</a>
                 </div>
             </merch-card>
         </div>
