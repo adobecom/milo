@@ -33,14 +33,13 @@ test.describe('ThreeInOne Block test suite', () => {
       await cta.click();
       await page.waitForSelector('.dialog-modal');
       const modal = threeInOne.getModal();
-      // const modal = page.getByRole('dialog');
       expect(modal).toBeVisible();
       await page.goto('https://www.adobe.com');
       await page.goBack();
       const newModal = threeInOne.getModal();
       await expect(newModal).toBeVisible();
       await threeInOne.closeModal();
-      expect(modal).not.toBeVisible();
+      expect(newModal).not.toBeVisible();
     });
 
     // await test.step('Validate if previous hash is preserved after modal is opened and closed', async () => {
