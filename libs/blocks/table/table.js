@@ -481,7 +481,6 @@ async function handleScrollEffect(table) {
   headingRow.insertAdjacentElement('beforebegin', intercept);
 
   const observer = new IntersectionObserver(([entry]) => {
-    headingRow.style.zIndex = entry.isIntersecting ? 1 : 9;
     headingRow.classList.toggle('active', !entry.isIntersecting);
   }, { rootMargin: `-${topOffset}px` });
   observer.observe(intercept);
