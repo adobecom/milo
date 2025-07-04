@@ -89,7 +89,7 @@ export async function loadMnemonicList(foreground) {
   }
 }
 
-function extractQuantitySelect(el, merchCard) {
+function extractQuantitySelect(el, merchCard) { //
   const attributes = {};
   const quantitySelectLink = merchCard?.querySelector('a[href*="#qs"]');
   if (quantitySelectLink) {
