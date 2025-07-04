@@ -9,6 +9,7 @@ import { mockFetch } from './mocks/fetch.js';
 import { delay } from './utils.js';
 import { mockIms } from './mocks/ims.js';
 import { withWcs } from './mocks/wcs.js';
+import { EVENT_MERCH_QUANTITY_SELECTOR_CHANGE } from '../src/constants';
 
 const skipTests = sessionStorage.getItem('skipTests');
 
@@ -81,6 +82,41 @@ runTests(async () => {
             expect(quantitySelect.selectedValue).to.equal(1);
             const button = plansCard.querySelector('.con-button');
             expect(button.getAttribute('data-quantity')).to.equal('1');
+        });
+
+        it('should support quantity based promotions', async () => {
+            const card = document.querySelector('.quantity-based-promotion merch-card');
+            const button = card.querySelector('.con-button');
+            const quantitySelect = card.querySelector('merch-quantity-select');
+            expect(quantitySelect).to.exist;
+            await quantitySelect.updateComplete;
+
+            expect(card.price.dataset.promotionCode).to.be.undefined;
+            expect(button.getAttribute('data-promotion-code')).to.be.null;
+
+            quantitySelect.dispatchEvent(new CustomEvent(
+                EVENT_MERCH_QUANTITY_SELECTOR_CHANGE,
+                {
+                    detail: { option: 4 },
+                    bubbles: true,
+                },
+            ));
+
+            await delay(100);
+            expect(button.getAttribute('data-promotion-code')).to.equal('TEST_PROMO');
+            expect(card.price.dataset.promotionCode).to.equal('TEST_PROMO');
+
+            quantitySelect.dispatchEvent(new CustomEvent(
+                EVENT_MERCH_QUANTITY_SELECTOR_CHANGE,
+                {
+                    detail: { option: 2 },
+                    bubbles: true,
+                },
+            ));
+
+            await delay(100);
+            expect(button.getAttribute('data-promotion-code')).to.be.null;
+            expect(card.price.dataset.promotionCode).to.be.undefined;
         });
     });
 
