@@ -424,7 +424,10 @@ const setMenuState = () => {
 };
 
 export const closeGnavOptions = () => {
-  const isExpanded = document.querySelector('.feds-toggle')?.getAttribute('aria-expanded') === 'true';
+  let isExpanded = document.querySelector('.feds-toggle')?.getAttribute('aria-expanded') === 'true';
+  if (isDesktop.matches) {
+    isExpanded = !!document.querySelector('.feds-dropdown--active');
+  }
   if (!isExpanded) return;
   enableMobileScroll();
   setMenuState();
