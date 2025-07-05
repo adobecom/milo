@@ -657,6 +657,9 @@ export const transformTemplateToMobile = async ({ popup, item, localnav = false,
   });
 
   tabbuttons.forEach((tab, i) => {
+    // pinterdown prevents the default action of the button, which is to scroll the window.
+    // This is needed to prevent the page from jumping when the tab is clicked.
+    tab.addEventListener('pointerdown', (event) => event.preventDefault());
     tab.addEventListener('click', tabbuttonClickCallbacks[i]);
   });
 
@@ -810,23 +813,28 @@ export const [branchBannerLoadCheck, getBranchBannerInfo] = (() => {
           if (mutation.type === 'childList') {
             mutation.addedNodes.forEach((node) => {
               // Check if the added node has the ID 'branch-banner-iframe'
-              if (node.id === 'branch-banner-iframe') {
-                branchBannerInfo.isPresent = true;
-                // The element is added, now check its height and sticky status
-                // Check if the element has a sticky position
-                branchBannerInfo.isSticky = window.getComputedStyle(node).position === 'fixed';
-                branchBannerInfo.height = node.offsetHeight; // Get the height of the element
-                if (branchBannerInfo.isSticky) {
-                  // Adjust the top position of the lnav to account for the branch banner height
-                  const navElem = document.querySelector(isLocalNav() ? '.feds-localnav' : 'header');
-                  navElem.style.top = `${branchBannerInfo.height}px`;
-                } else {
-                  // Add a class to the body to indicate the presence of a non-sticky branch banner
-                  document.body.classList.add('branch-banner-inline');
+              setTimeout(() => {
+                if (node.id === 'branch-banner-iframe') {
+                  branchBannerInfo.isPresent = true;
+                  // The element is added, now check its height and sticky status
+                  // Check if the element has a sticky position
+                  branchBannerInfo.isSticky = window.getComputedStyle(node).position === 'fixed';
+                  branchBannerInfo.height = node.offsetHeight; // Get the height of the element
+                  if (branchBannerInfo.isSticky) {
+                    // Adjust the top position of the lnav to account for the branch banner height
+                    const navElem = document.querySelector(isLocalNav() ? '.feds-localnav' : 'header');
+                    navElem.style.top = `${branchBannerInfo.height}px`;
+                  } else {
+                    /* Add a class to the body to indicate the presence of a non-sticky
+                    branch banner */
+                    document.body.classList.add('branch-banner-inline');
+                  }
+                  // Update the popup position when the branch banner is added
+                  updatePopupPosition();
                 }
-                // Update the popup position when the branch banner is added
-                updatePopupPosition();
-              }
+              }, 50);
+              /* 50ms delay to ensure the node is fully rendered with styles before
+              checking its properties */
             });
 
             mutation.removedNodes.forEach((node) => {
