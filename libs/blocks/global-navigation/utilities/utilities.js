@@ -567,10 +567,11 @@ export const transformTemplateToMobile = async ({ popup, item, localnav = false,
   const notMegaMenu = popup.parentElement.tagName === 'DIV';
   if (notMegaMenu) return () => {};
 
+  const isLoading = popup.classList.contains('loading');
   const tabs = [...popup.querySelectorAll('.feds-menu-section')]
     .filter((section) => !section.querySelector('.feds-promo') && section.textContent)
     .map(parseTabsFromMenuSection)
-    .concat(await promoCrossCloudTab(popup));
+    .concat(isLoading ? [] : await promoCrossCloudTab(popup));
 
   const CTA = popup.querySelector('.feds-cta--primary')?.outerHTML ?? '';
   const mainMenu = `

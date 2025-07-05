@@ -1477,8 +1477,8 @@ header.new-nav .feds-nav > section.feds-navItem > .feds-popup.loading .feds-navL
 header.new-nav .feds-nav > section.feds-navItem > .feds-popup.loading .feds-navLink-content .feds-navLink-description, 
 header.new-nav .feds-nav > section.feds-navItem > .feds-popup.loading .tabs button > div {
   border-radius: 2px;
-  opacity: 0.7;
-  background: linear-gradient(270deg, #D3D3D3, #EAEAEA, #D3D3D3);
+  opacity: var(--feds-skeleton-opacity);
+  background: linear-gradient(270deg, var(--feds-skeleton-color-1), var(--feds-skeleton-color-2), var(--feds-skeleton-color-3));
   background-size: 200% 200%;
   animation: mega-menu-skeleton 0.6s infinite alternate linear;
   animation-direction: alternate;
