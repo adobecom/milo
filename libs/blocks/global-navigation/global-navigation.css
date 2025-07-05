@@ -299,15 +299,25 @@ header.global-navigation {
 }
 
 .feds-cta--secondary {
-  background-color: rgb(255, 255, 255);
-  border-color: rgb(75, 75, 75);
-  color: rgb(75, 75, 75);
+  border-radius: 1rem;
+  background-color: transparent;
+  border: .125rem solid #DADADA;
+  color: #292929;
+  font-size: .875rem;
+  font-style: normal;
+  font-weight: 700;
+  line-height: normal;
+  white-space: nowrap;
 }
 
-.feds-cta--secondary:hover,
-.feds-cta--secondary:focus {
-  background-color: rgb(75, 75, 75);
-  color: rgb(255, 255, 255);
+.feds-cta--secondary:hover {
+  border-color: #C6C6C6;
+  background: #E9E9E9;
+  color: #292929;
+}
+.feds-cta--secondary:focus-visible {
+  outline: 2px solid #507BFF;
+  background: #E9E9E9;
 }
 
 /* Search */
@@ -916,7 +926,7 @@ header.new-nav .feds-nav > section.feds-navItem > .feds-popup {
   top: calc(-1 * var(--feds-height-nav));
   visibility: hidden;
   width: 100%;
-  height: calc(var(--feds-height-nav) + 100%);
+  height: calc(var(--feds-height-nav) + 100% + 2px);
   background-color: var(--feds-background-nav);
   transition: translate 0.4s ease-out, opacity 0.2s ease, visibility 0s linear 0.5s;
   translate: 300vw 0;
@@ -1065,6 +1075,7 @@ header.new-nav .feds-nav > section.feds-navItem > .feds-popup .tabs button[aria-
 }
 
 header.new-nav .feds-nav > section.feds-navItem > .feds-popup .tab-content {
+  min-height: 0;
   background-color: var(--feds-backgroundColor-tabContent-v2);
   padding: 10px 13px 25px;
   display: flex;
@@ -1094,7 +1105,8 @@ header.new-nav .feds-nav > section.feds-navItem > .feds-popup .tab-content .feds
 }
 
 header.new-nav .feds-nav > section.feds-navItem > .feds-popup .tab-content a.feds-navLink,
-header.new-nav .feds-nav > section.feds-navItem > .feds-popup .tab-content .feds-navLink--header {
+header.new-nav .feds-nav > section.feds-navItem > .feds-popup .tab-content .feds-navLink--header,
+header.new-nav .feds-nav > section.feds-navItem > .feds-popup .tab-content > div[role = "tabpanel"] > a.feds-cta {
   translate: 0 12px;
   opacity: 0;
   animation: slideup 0.6s ease, fadein 0.8s ease;
@@ -1465,8 +1477,8 @@ header.new-nav .feds-nav > section.feds-navItem > .feds-popup.loading .feds-navL
 header.new-nav .feds-nav > section.feds-navItem > .feds-popup.loading .feds-navLink-content .feds-navLink-description, 
 header.new-nav .feds-nav > section.feds-navItem > .feds-popup.loading .tabs button > div {
   border-radius: 2px;
-  opacity: 0.7;
-  background: linear-gradient(270deg, #D3D3D3, #EAEAEA, #D3D3D3);
+  opacity: var(--feds-skeleton-opacity);
+  background: linear-gradient(270deg, var(--feds-skeleton-color-1), var(--feds-skeleton-color-2), var(--feds-skeleton-color-3));
   background-size: 200% 200%;
   animation: mega-menu-skeleton 0.6s infinite alternate linear;
   animation-direction: alternate;

@@ -12,7 +12,7 @@ setConfig(conf);
 const config = getConfig();
 
 describe('table and tablemetadata', () => {
-  beforeEach(() => {
+  before(() => {
     const tables = document.querySelectorAll('.table');
     tables.forEach((t) => init(t));
     window.dispatchEvent(new Event(MILO_EVENTS.DEFERRED));
@@ -114,12 +114,21 @@ describe('table and tablemetadata', () => {
       expect(tooltipHeading.childNodes.length).to.equal(2);
       expect(tooltipHeading.querySelector('.milo-tooltip, .icon-tooltip')).to.exist;
     });
+  });
+
+  describe('mobile aria-label test setup', () => {
+    beforeEach(() => {
+      const tables = document.querySelectorAll('.table');
+      tables.forEach((t) => init(t));
+      window.dispatchEvent(new Event(MILO_EVENTS.DEFERRED));
+    });
 
     it('should apply aria-label to all selects within .filters on mobile', async () => {
       window.innerWidth = 375;
       window.dispatchEvent(new Event('resize'));
+      const filters = await waitForElement('.filters');
+      const selectElements = filters.querySelectorAll('select');
       const ariaLabel = await replaceKey('choose-table-column', config);
-      const selectElements = document.querySelectorAll('.filters select');
 
       selectElements.forEach((selectElement) => {
         expect(selectElement.getAttribute('aria-label')).to.equal(ariaLabel);
