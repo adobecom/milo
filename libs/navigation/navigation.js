@@ -6,7 +6,7 @@ const blockConfig = [
     name: 'global-navigation',
     targetEl: 'header',
     appendType: 'prepend',
-    params: ['imsClientId', 'searchEnabled', 'unav', 'customLinks', 'jarvis', 'selfIntegrateUnav'],
+    params: ['imsClientId', 'searchEnabled', 'unav', 'customLinks', 'jarvis', 'selfIntegrateUnav', 'miniGnav', 'desktopAppsCta'],
   },
   {
     key: 'footer',
@@ -21,6 +21,7 @@ const envMap = {
   prod: 'https://www.adobe.com',
   stage: 'https://www.stage.adobe.com',
   qa: 'https://gnav--milo--adobecom.aem.page',
+  local: 'http://localhost:6456'
 };
 
 const getStageDomainsMap = (stageDomainsMap, env) => {
