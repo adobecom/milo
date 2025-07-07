@@ -550,13 +550,9 @@ export function localizeLink(
     if (!locale || !(locales || languages)) return processedHref;
     const isLocalizable = relative || (prodDomains && prodDomains.includes(url.hostname))
       || overrideDomain;
-    console.log('prodDomains', prodDomains);
-    console.log('prodDomains.includes(url.hostname)', prodDomains.includes(url.hostname));
-    console.log('isLocalizable', isLocalizable);
 
     if (!isLocalizable) return processedHref;
     const isLocalizedLink = isLocalizedPath(path, locales);
-    console.log('isLocalizedLink', isLocalizedLink);
     if (isLocalizedLink) return processedHref;
 
     const prefix = getPrefixBySite(locale, url, relative);

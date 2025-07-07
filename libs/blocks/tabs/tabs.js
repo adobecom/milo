@@ -47,10 +47,6 @@ const scrollStackedMobile = (content) => {
 
 export function shouldRedirectToPage(linkedTabsList, targetId) {
   const targetUrl = linkedTabsList[targetId];
-  console.log('targetUrl', targetUrl);
-  console.log('targetId', targetId);
-  console.log('window.location.pathname', window.location.pathname);
-
   if (!targetId || !targetUrl || window.location.pathname === targetUrl) return false;
 
   const currentUrl = new URL(window.location.href);
@@ -60,10 +56,7 @@ export function shouldRedirectToPage(linkedTabsList, targetId) {
     const url = new URL(targetUrl);
     if (url.protocol && url.hostname) {
       if (tabParam) url.searchParams.set('tab', `${tabParam.split('-')[0]}-${targetId.split('-')[2]}`);
-      // window.location.assign(localizeLink(url));
-      console.log('localized', localizeLink(url.href));
-      
-      return
+      window.location.assign(localizeLink(url));
       return true;
     }
   } catch (e) {
@@ -82,8 +75,6 @@ function changeTabs(e) {
   const { target } = e;
   const targetId = target.getAttribute('id');
 
-  console.log('aloo');
-  
   if (shouldRedirectToPage(linkedTabs, targetId)) return;
 
   const parent = target.parentNode;
