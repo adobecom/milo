@@ -182,7 +182,8 @@ const createFrag = (el, action, content, manifestId, targetManifestId) => {
   }
   const a = createTag('a', { href }, content);
   addIds(a, manifestId, targetManifestId);
-  const frag = createTag('p', undefined, a);
+  const frag = content.includes('#_inline') ? createTag('a', { href: content })
+    : createTag('p', undefined, a);
   const isDelayedModalAnchor = /#.*delay=/.test(href);
   if (isDelayedModalAnchor) frag.classList.add('hide-block');
   if (isInLcpSection(el)) {
