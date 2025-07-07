@@ -82,8 +82,10 @@ export async function loadMnemonicList(foreground) {
 
 function decorateSplit(el, foreground, media) {
   if (foreground && media) {
+    const mediaIndex = [...foreground.children].indexOf(media);
     media.classList.add('bleed');
-    foreground.insertAdjacentElement('beforebegin', media);
+    const position = mediaIndex ? 'afterend' : 'beforebegin';
+    foreground.insertAdjacentElement(position, media);
   }
 
   let mediaCreditInner;
@@ -101,6 +103,60 @@ function decorateSplit(el, foreground, media) {
     el.classList.add('has-credit');
     media?.lastChild?.remove();
   }
+}
+
+function reorderLargeText(text) {
+  const body = text.querySelector('.body-xl');
+  const actionArea = text.querySelector('.action-area');
+  if (!body || !actionArea) return;
+  text.insertBefore(actionArea, body);
+}
+
+function handleViewportOrder(el, foreground, image, size) {
+  const isSplit = el.classList.contains('split');
+  const content = isSplit ? el : foreground;
+  const text = foreground.querySelector(':scope > .text');
+  const mediaCredit = el.querySelector(':scope > .media-credit');
+  const background = el.querySelector(':scope > .background');
+  if (background?.querySelector('video') && !image.children.length) {
+    el.appendChild(background);
+  }
+
+  const desktopOrder = [...content.children];
+  const textContent = isSplit ? foreground : text;
+  const nonDesktopOrder = size === 'small' ? [textContent, image] : [image, textContent];
+  const largeTextOrder = [...text.children];
+
+  const viewports = {
+    mobile: {
+      media: '(max-width: 599px)',
+      elements: nonDesktopOrder,
+    },
+    tablet: {
+      media: '(min-width: 600px) and (max-width: 1199px)',
+      elements: isSplit ? desktopOrder : nonDesktopOrder,
+    },
+    desktop: {
+      media: '(min-width: 1200px)',
+      elements: [...content.children],
+    },
+  };
+
+  Object.entries(viewports).forEach(([viewport, { media, elements }]) => {
+    const mediaQuery = window.matchMedia(media);
+    if (mediaQuery.matches && viewport !== 'desktop') {
+      if (size === 'large') reorderLargeText(text);
+      content.replaceChildren(...elements);
+      if (mediaCredit) el.appendChild(mediaCredit);
+    }
+    mediaQuery.addEventListener('change', (e) => {
+      if (!e.matches) return;
+      if (size === 'large' && viewport !== 'desktop') reorderLargeText(text);
+      if (viewport === 'desktop') text.replaceChildren(...largeTextOrder);
+      content.replaceChildren(...elements);
+      if (mediaCredit) el.appendChild(mediaCredit);
+    });
+  });
 }
 
 export default async function init(el) {
@@ -142,6 +198,7 @@ export default async function init(el) {
   if (el.classList.contains('countdown-timer')) {
     promiseArr.push(loadCDT(text, el.classList));
   }
+  handleViewportOrder(el, foreground, media, size);
 
   await Promise.all(promiseArr);
 }
