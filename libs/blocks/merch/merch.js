@@ -606,7 +606,7 @@ export async function updateModalState({ cta, closedByUser } = {}) {
       ctaToClick.dataset.clickDisabled = 'true';
       ctaToClick.click();
       setTimeout(() => {
-        delete cta.dataset?.clickDisabled;
+        delete ctaToClick.dataset.clickDisabled;
       }, 1000);
     }
     modalState.isOpen = true;
