@@ -56,9 +56,16 @@ export default {
   },
 };
 
-export async function runDeterministicChecks(url, area) {
-  if (checks) {
-    return checks;
+let preflightResults;
+
+export async function getPreflightResults(url, area, useCache = true) {
+  if (useCache && checks) {
+    preflightResults = await checks;
+    const returnValue = {
+      isViewportTooSmall: isViewportTooSmall(),
+      runChecks: preflightResults,
+    };
+    return returnValue;
   }
 
   checks = (async () => {
@@ -72,13 +79,22 @@ export async function runDeterministicChecks(url, area) {
     };
   })();
 
-  return checks;
-}
+  preflightResults = await checks;
 
-export async function getPreflightResults(url, area) {
-  const results = await runDeterministicChecks(url, area);
   return {
     isViewportTooSmall: isViewportTooSmall(),
-    runChecks: results,
+    runChecks: preflightResults,
   };
+}
+
+export function hasPreflightFailures() {
+  if (!preflightResults) return false;
+
+  const runChecks = preflightResults.runChecks || preflightResults;
+  const allResults = [
+    ...(runChecks.assets || []),
+    ...(runChecks.performance || []),
+    ...(runChecks.seo || []),
+  ];
+  return allResults.some((result) => result.status === 'fail');
 }

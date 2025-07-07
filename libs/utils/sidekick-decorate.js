@@ -1,5 +1,5 @@
 import userCanPublishPage from '../tools/utils/publish.js';
-import { checkPreflightAndShowNotification, createSidekickVisibilityObserver } from './preflight-notification.js';
+import checkPreflightAndShowNotification from './preflight-notification.js';
 
 const PUBLISH_BTN = '.publish.plugin button';
 const PROFILE = '.profile-email';
@@ -123,7 +123,6 @@ export default async function stylePublish(sk) {
   if (stylePublishCalled) return;
   stylePublishCalled = true;
 
-  createSidekickVisibilityObserver();
   await checkPreflightAndShowNotification();
 
   if (sk.nodeName === 'HELIX-SIDEKICK') {

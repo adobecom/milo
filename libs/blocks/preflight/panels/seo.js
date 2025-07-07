@@ -91,11 +91,6 @@ async function getResults() {
   const results = await getPreflightResults(window.location.pathname, document);
   const runChecks = results.runChecks.seo || [];
 
-  // Check if runChecks is available before proceeding
-  if (!runChecks || !Array.isArray(runChecks)) {
-    return;
-  }
-
   // Update UI as each check resolves
   const icons = [];
   const checkPromises = [];

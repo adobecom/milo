@@ -2,7 +2,7 @@ import { getPreflightResults } from './preflightApi.js';
 
 let preflightResults;
 
-const executePreflightChecks = async () => {
+export default async function executePreflightChecks() {
   if (preflightResults) {
     return preflightResults;
   }
@@ -18,19 +18,3 @@ const executePreflightChecks = async () => {
   return preflightResults;
 };
 
-export function hasPreflightFailures(results = null) {
-  const cache = results || preflightResults;
-  if (!cache) return false;
-  const allResults = [
-    ...(cache.assets || []),
-    ...(cache.performance || []),
-    ...(cache.seo || []),
-  ];
-  return allResults.some((result) => result.status === 'fail');
-}
-
-export function getPreflightStatus() {
-  return preflightResults ? 'completed' : 'not-started';
-}
-
-export { executePreflightChecks };

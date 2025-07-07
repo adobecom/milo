@@ -1,7 +1,8 @@
-import { hasPreflightFailures, executePreflightChecks } from '../blocks/preflight/checks/preflightExecutor.js';
+import { hasPreflightFailures, getPreflightResults } from '../blocks/preflight/checks/preflightApi.js';
 import { loadStyle, getConfig } from './utils.js';
 
 let preflightNotificationDismissed = false;
+let observerCreated = false;
 
 function openPreflightPanel() {
   const sk = document.querySelector('aem-sidekick, helix-sidekick');
@@ -12,9 +13,7 @@ function openPreflightPanel() {
 
 async function createPreflightNotification() {
   const existingNotification = document.querySelector('.milo-preflight-overlay');
-  if (existingNotification) {
-    existingNotification.remove();
-  }
+  if (existingNotification) existingNotification.remove();
   const { miloLibs } = getConfig();
   loadStyle(`${miloLibs}/styles/preflight-notification.css`);
 
@@ -48,19 +47,6 @@ async function createPreflightNotification() {
   document.body.appendChild(overlay);
 }
 
-async function checkPreflightAndShowNotification() {
-  await executePreflightChecks();
-  const hasFailures = hasPreflightFailures();
-  const existingNotification = document.querySelector('.milo-preflight-overlay');
-  if (existingNotification) {
-    existingNotification.remove();
-  }
-
-  if (hasFailures && !preflightNotificationDismissed) {
-    await createPreflightNotification();
-  }
-}
-
 function createSidekickVisibilityObserver() {
   const observer = new MutationObserver(async () => {
     const sidekick = document.querySelector('aem-sidekick');
@@ -76,7 +62,11 @@ function createSidekickVisibilityObserver() {
 
     if (isOpen) {
       if (!notification && !preflightNotificationDismissed) {
-        checkPreflightAndShowNotification();
+        await getPreflightResults(window.location.href, document);
+        const hasFailures = hasPreflightFailures();
+        if (hasFailures) {
+          await createPreflightNotification();
+        }
       }
     } else {
       if (notification) {
@@ -96,4 +86,21 @@ function createSidekickVisibilityObserver() {
   return observer;
 }
 
-export { checkPreflightAndShowNotification, createSidekickVisibilityObserver };
+export default async function checkPreflightAndShowNotification() {
+  if (!observerCreated) {
+    createSidekickVisibilityObserver();
+    observerCreated = true;
+  }
+
+  await getPreflightResults(window.location.href, document);
+  const hasFailures = hasPreflightFailures();
+  const existingNotification = document.querySelector('.milo-preflight-overlay');
+  if (existingNotification) {
+    existingNotification.remove();
+  }
+
+  if (hasFailures && !preflightNotificationDismissed) {
+    await createPreflightNotification();
+  }
+}
+
