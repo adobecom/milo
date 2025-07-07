@@ -14,8 +14,9 @@ function openPreflightPanel() {
 async function createPreflightNotification() {
   const existingNotification = document.querySelector('.milo-preflight-overlay');
   if (existingNotification) existingNotification.remove();
-  const { miloLibs } = getConfig();
-  loadStyle(`${miloLibs}/styles/preflight-notification.css`);
+  const { miloLibs, codeRoot } = getConfig();
+  const base = miloLibs || codeRoot;
+  loadStyle(`${base}/styles/preflight-notification.css`);
 
   const overlay = document.createElement('div');
   overlay.className = 'milo-preflight-overlay';
