@@ -576,17 +576,33 @@ export async function updateModalState({ cta, closedByUser } = {}) {
   if (hash?.includes('=')) {
     const modal = document.querySelector('.dialog-modal');
     if (!modal) return modalState.isOpen;
-    const { closeModal } = await import('../modal/modal.js');
-    closeModal(modal);
     modalState.isOpen = false;
+    document.querySelectorAll(`#${modal.id}`).forEach((mod) => {
+      if (mod.classList.contains('dialog-modal')) {
+        const modalCurtain = document.querySelector(`#${modal.id}~.modal-curtain`);
+        if (modalCurtain) {
+          modalCurtain.remove();
+        }
+        mod.remove();
+      }
+      document.querySelector(`[data-modal-hash="#${mod.id}"]`)?.focus();
+    });
+
+    if (!document.querySelectorAll('.modal-curtain').length) {
+      document.body.classList.remove('disable-scroll');
+    }
+
+    [...document.querySelectorAll('header, main, footer')]
+      .forEach((element) => element.removeAttribute('aria-disabled'));
+
     return modalState.isOpen;
   }
 
   const modal = document.querySelector(`.dialog-modal${hash}`);
 
   if (hash && !cta && !modalState.isOpen && !modal) {
-    document.querySelector(`[is=checkout-link][data-modal-id=${hash.replace('#', '')}]`)?.click();
     modalState.isOpen = true;
+    document.querySelector(`[is=checkout-link][data-modal-id=${hash.replace('#', '')}]`)?.click();
     return modalState.isOpen;
   }
 
