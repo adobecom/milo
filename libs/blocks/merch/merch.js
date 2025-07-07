@@ -541,19 +541,20 @@ export async function getCheckoutLinkConfig(
   if (!checkoutLinkConfigs.data.length) return undefined;
   const { locale: { region } } = getConfig();
 
-  const { paCodeConfigs, productCodeConfigs, productFamilyConfigs } = checkoutLinkConfigs.data.reduce(
-    (acc, config) => {
-      if (config[NAME_PRODUCT_FAMILY] === paCode) {
-        acc.paCodeConfigs.push(config);
-      } else if (config[NAME_PRODUCT_FAMILY] === productCode) {
-        acc.productCodeConfigs.push(config);
-      } else if (config[NAME_PRODUCT_FAMILY] === productFamily) {
-        acc.productFamilyConfigs.push(config);
-      }
-      return acc;
-    },
-    { paCodeConfigs: [], productCodeConfigs: [], productFamilyConfigs: [] },
-  );
+  const { paCodeConfigs, productCodeConfigs, productFamilyConfigs } = checkoutLinkConfigs
+    .data.reduce(
+      (acc, config) => {
+        if (config[NAME_PRODUCT_FAMILY] === paCode) {
+          acc.paCodeConfigs.push(config);
+        } else if (config[NAME_PRODUCT_FAMILY] === productCode) {
+          acc.productCodeConfigs.push(config);
+        } else if (config[NAME_PRODUCT_FAMILY] === productFamily) {
+          acc.productFamilyConfigs.push(config);
+        }
+        return acc;
+      },
+      { paCodeConfigs: [], productCodeConfigs: [], productFamilyConfigs: [] },
+    );
 
   // helps to fallback to product family config
   // if no locale specific config is found below.
@@ -780,7 +781,9 @@ export async function openModal(e, url, offerType, hash, extraOptions, el) {
   if (el?.isOpen3in1Modal) {
     const { default: openThreeInOneModal, handle3in1IFrameEvents } = await import('./three-in-one.js');
     window.addEventListener('message', handle3in1IFrameEvents);
-    modal = await openThreeInOneModal(el);
+    if (!document.querySelector('.dialog-modal.three-in-one')) {
+      modal = await openThreeInOneModal(el);
+    }
     return;
   }
   if (isInternalModal(url)) {
@@ -874,10 +877,7 @@ export async function getCheckoutAction(
 
 export function setPreview(attributes) {
   const { host } = window.location;
-  if (
-    host.includes(`${SLD}.page`)
-    || host.origin === 'https://www.stage.adobe.com'
-  ) {
+  if (host.includes(`${SLD}.page`) || host === 'www.stage.adobe.com') {
     attributes.preview = 'on';
   }
 }
