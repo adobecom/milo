@@ -567,20 +567,86 @@ async function openExternalModal(url, getModal, extraOptions, el) {
 
 const isInternalModal = (url) => /\/fragments\//.test(url);
 
+export const modalState = { isOpen: false };
+
+export async function updateModalState({ cta, closedByUser } = {}) {
+  const { hash } = window.location;
+  /* Use-case #1:
+  Merch card collection filters
+  User had filters on merch card collection selected, opened the modal and now closed it.
+  The hash has changed to the previous one (with filters), and the modal does not get closed
+  by modal.js, because modal.js closes modals only when there is no hash in the URL.
+  So we need to close the modal here.
+  Example URL with filters in hash:
+  https://main--cc--adobecom.aem.live/products/catalog#category=photo&types=desktop */
+  if (hash?.includes('=')) {
+    /* When hash includes the '=' it is not a valid selector and it throws an error in the console
+    when trying to find the modal by hash,
+    e.g. document.querySelector('.dialog-modal#category=photo&types=desktop').
+    To avoid this error showing, we select the modal only by the class */
+    const modal = document.querySelector('.dialog-modal');
+    if (!modal) return modalState.isOpen;
+    const { closeModal } = await import('../modal/modal.js');
+    closeModal(modal);
+    modalState.isOpen = false;
+    return modalState.isOpen;
+  }
+
+  const modal = document.querySelector(`.dialog-modal${hash}`);
+
+  /* Use-case #2:
+  User click and browser back-forward navigation */
+  if (hash && !cta && !modalState.isOpen && !modal) {
+    /* When user opened the modal, closed it, and clicked 'Back' in browser,
+    the page was not realoaded - we find first CTA matching the hash and click it */
+    document.querySelector(`[is=checkout-link][data-modal-id=${hash.replace('#', '')}]`)?.click();
+
+    /* When user clicks the CTA to open the modal, we only reflect this in the modal state here */
+    modalState.isOpen = true;
+    return modalState.isOpen;
+  }
+
+  /* Use-case #3:
+  Reopening modal on page load if URL contains the hash.
+  We wait for each CTA to be ready and try to reopen the modal
+  by clicking the first CTA with matching data-modal-id attribute */
+  if (hash && hash === `#${cta?.getAttribute('data-modal-id')}` && !modalState.isOpen && !modal) {
+    cta.click();
+    modalState.isOpen = true;
+    return modalState.isOpen;
+  }
+
+  /* Use-case #4:
+  Modal closed by user.
+  We update the modal state to reflect this. */
+  if (closedByUser && modal) {
+    modalState.isOpen = false;
+    return modalState.isOpen;
+  }
+
+  /* Use-case #5:
+  Hash removed from URL.
+  If there is no hash now, but the modal is still open, we need to close it */
+  if (!hash && modal) {
+    modalState.isOpen = false;
+    const { closeModal } = await import('../modal/modal.js');
+    closeModal(modal);
+  }
+  // returning this value is used in tests
+  return modalState.isOpen;
+}
+
 export async function openModal(e, url, offerType, hash, extraOptions, el) {
   e.preventDefault();
   e.stopImmediatePropagation();
+  if (modalState.isOpen) return;
+  modalState.isOpen = true;
   const { getModal } = await import('../modal/modal.js');
   await import('../modal/modal.merch.js');
   const offerTypeClass = offerType === OFFER_TYPE_TRIAL ? 'twp' : 'crm';
   let modal;
-  if (hash) {
-    const prevHash = window.location.hash.replace('#', '') === hash ? '' : window.location.hash;
-    window.location.hash = hash;
-    window.addEventListener('milo:modal:closed', () => {
-      window.history.pushState({}, document.title, prevHash !== '' ? `#${prevHash}` : `${window.location.pathname}${window.location.search}`);
-    }, { once: true });
-  }
+
+  if (hash) window.location.hash = hash;
 
   if (el?.isOpen3in1Modal) {
     const { default: openThreeInOneModal, handle3in1IFrameEvents } = await import('./three-in-one.js');
@@ -813,19 +879,6 @@ export async function getPriceContext(el, params) {
   };
 }
 
-let modalReopened = false;
-export function reopenModal(cta) {
-  if (modalReopened) return;
-  if (cta && cta.getAttribute('data-modal-id') === window.location.hash.replace('#', '')) {
-    cta.click();
-    modalReopened = true;
-  }
-}
-
-export function resetReopenStatus() {
-  modalReopened = false;
-}
-
 export async function buildCta(el, params) {
   const large = !!el.closest('.marquee');
   const strong = el.firstElementChild?.tagName === 'STRONG' || el.parentElement?.tagName === 'STRONG';
@@ -848,8 +901,7 @@ export async function buildCta(el, params) {
     cta.classList.add(LOADING_ENTITLEMENTS);
     cta.onceSettled().finally(() => {
       cta.classList.remove(LOADING_ENTITLEMENTS);
-      // after opening a modal, navigating to another page and back we need to reopen the modal
-      reopenModal(cta);
+      updateModalState({ cta });
     });
   }
 
@@ -941,3 +993,15 @@ export default async function init(el) {
   log.warn('Failed to get context:', { el });
   return null;
 }
+
+window.addEventListener('hashchange', () => {
+  updateModalState();
+});
+
+window.addEventListener('popstate', () => {
+  updateModalState();
+});
+
+window.addEventListener('milo:modal:closed', () => {
+  updateModalState({ closedByUser: true });
+});
