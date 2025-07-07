@@ -1,5 +1,15 @@
 import { createTag, getConfig } from '../../utils/utils.js';
-import { initService, getOptions, MEP_SELECTOR, overrideOptions, loadMasComponent, MAS_MERCH_CARD, MAS_MERCH_QUANTITY_SELECT, MAS_MERCH_CARD_COLLECTION, MAS_MERCH_SIDENAV } from '../merch/merch.js';
+import {
+  initService,
+  getOptions,
+  MEP_SELECTOR,
+  overrideOptions,
+  loadMasComponent,
+  MAS_MERCH_CARD,
+  MAS_MERCH_QUANTITY_SELECT,
+  MAS_MERCH_CARD_COLLECTION,
+  MAS_MERCH_SIDENAV,
+} from '../merch/merch.js';
 import { postProcessAutoblock } from '../merch/autoblock.js';
 
 const COLLECTION_AUTOBLOCK_TIMEOUT = 5000;
