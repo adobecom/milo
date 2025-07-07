@@ -1,5 +1,12 @@
 import { createTag } from '../../utils/utils.js';
-import { initService, getOptions, overrideOptions, loadMasComponent, MAS_MERCH_CARD, MAS_MERCH_QUANTITY_SELECT } from '../merch/merch.js';
+import {
+  initService,
+  getOptions,
+  overrideOptions,
+  loadMasComponent,
+  MAS_MERCH_CARD,
+  MAS_MERCH_QUANTITY_SELECT,
+} from '../merch/merch.js';
 import { postProcessAutoblock } from '../merch/autoblock.js';
 
 const CARD_AUTOBLOCK_TIMEOUT = 5000;
@@ -20,11 +27,11 @@ async function loadDependencies() {
   }
   const service = await servicePromise;
   log = service.Log.module('merch-card');
-  
+
   /** Load required MAS components */
   await Promise.all([
     loadMasComponent(MAS_MERCH_CARD),
-    loadMasComponent(MAS_MERCH_QUANTITY_SELECT)
+    loadMasComponent(MAS_MERCH_QUANTITY_SELECT),
   ]);
 }
 
