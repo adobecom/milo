@@ -193,9 +193,9 @@ const decoratePromo = (elem, index) => {
   }
 
   if (promoHeader?.textContent.trim()) {
-    const headingElem = toFragment`<h2 class="feds-promo-header">
+    const headingElem = toFragment`<div class="feds-promo-header" role="heading" aria-level="2">
         ${promoHeader.textContent.trim()}
-      </h2>`;
+      </div>`;
     promoHeader.parentElement.replaceWith(headingElem);
   }
 

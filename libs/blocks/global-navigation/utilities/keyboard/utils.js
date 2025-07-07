@@ -18,7 +18,7 @@ const selectors = {
   logo: '.feds-logo',
   profileMenu: '.feds-profile-menu',
   profile: '.feds-profile',
-  breadCrumbItems: '.feds-breadcrumbs li > a',
+  breadCrumbItems: '.feds-breadcrumbs li:not(:nth-last-child(n+3):not(:first-child)) > a',
   expandedPopupTrigger: '.feds-navLink[aria-expanded = "true"]',
   promoLink: '.feds-promo-link',
   imagePromo: 'a.feds-promo-image',
