@@ -567,23 +567,13 @@ async function openExternalModal(url, getModal, extraOptions, el) {
 
 const isInternalModal = (url) => /\/fragments\//.test(url);
 
+// Modal state handling: see merch.md
 export const modalState = { isOpen: false };
 
 export async function updateModalState({ cta, closedByUser } = {}) {
   const { hash } = window.location;
-  /* Use-case #1:
-  Merch card collection filters
-  User had filters on merch card collection selected, opened the modal and now closed it.
-  The hash has changed to the previous one (with filters), and the modal does not get closed
-  by modal.js, because modal.js closes modals only when there is no hash in the URL.
-  So we need to close the modal here.
-  Example URL with filters in hash:
-  https://main--cc--adobecom.aem.live/products/catalog#category=photo&types=desktop */
+
   if (hash?.includes('=')) {
-    /* When hash includes the '=' it is not a valid selector and it throws an error in the console
-    when trying to find the modal by hash,
-    e.g. document.querySelector('.dialog-modal#category=photo&types=desktop').
-    To avoid this error showing, we select the modal only by the class */
     const modal = document.querySelector('.dialog-modal');
     if (!modal) return modalState.isOpen;
     const { closeModal } = await import('../modal/modal.js');
@@ -594,45 +584,29 @@ export async function updateModalState({ cta, closedByUser } = {}) {
 
   const modal = document.querySelector(`.dialog-modal${hash}`);
 
-  /* Use-case #2:
-  User click and browser back-forward navigation */
   if (hash && !cta && !modalState.isOpen && !modal) {
-    /* When user opened the modal, closed it, and clicked 'Back' in browser,
-    the page was not realoaded - we find first CTA matching the hash and click it */
     document.querySelector(`[is=checkout-link][data-modal-id=${hash.replace('#', '')}]`)?.click();
-
-    /* When user clicks the CTA to open the modal, we only reflect this in the modal state here */
     modalState.isOpen = true;
     return modalState.isOpen;
   }
 
-  /* Use-case #3:
-  Reopening modal on page load if URL contains the hash.
-  We wait for each CTA to be ready and try to reopen the modal
-  by clicking the first CTA with matching data-modal-id attribute */
   if (hash && hash === `#${cta?.getAttribute('data-modal-id')}` && !modalState.isOpen && !modal) {
     cta.click();
     modalState.isOpen = true;
     return modalState.isOpen;
   }
 
-  /* Use-case #4:
-  Modal closed by user.
-  We update the modal state to reflect this. */
   if (closedByUser && modal) {
     modalState.isOpen = false;
     return modalState.isOpen;
   }
 
-  /* Use-case #5:
-  Hash removed from URL.
-  If there is no hash now, but the modal is still open, we need to close it */
   if (!hash && modal) {
     modalState.isOpen = false;
     const { closeModal } = await import('../modal/modal.js');
     closeModal(modal);
   }
-  // returning this value is used in tests
+
   return modalState.isOpen;
 }
 
@@ -994,13 +968,9 @@ export default async function init(el) {
   return null;
 }
 
-window.addEventListener('hashchange', () => {
-  updateModalState();
-});
+window.addEventListener('hashchange', updateModalState);
 
-window.addEventListener('popstate', () => {
-  updateModalState();
-});
+window.addEventListener('popstate', updateModalState);
 
 window.addEventListener('milo:modal:closed', () => {
   updateModalState({ closedByUser: true });
