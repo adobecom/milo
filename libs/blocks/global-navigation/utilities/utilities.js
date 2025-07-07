@@ -564,7 +564,13 @@ const promoCrossCloudTab = async (popup) => {
 };
 
 // returns a cleanup function
-export const transformTemplateToMobile = async ({ popup, item, localnav = false, toggleMenu, updatePopupPosition }) => {
+export const transformTemplateToMobile = async ({
+  popup,
+  item,
+  localnav = false,
+  toggleMenu,
+  updatePopupPosition,
+}) => {
   const notMegaMenu = popup.parentElement.tagName === 'DIV';
   if (notMegaMenu) return () => {};
 
