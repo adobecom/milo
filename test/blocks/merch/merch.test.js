@@ -860,6 +860,10 @@ describe('Merch Block', () => {
 
     it('closes the modal on back navigation on catalog page when filters were selected', async () => {
       modalState.isOpen = false;
+      const modal = document.createElement('div');
+      modal.classList.add('dialog-modal');
+      modal.id = 'mini-plans-web-cta-creative-cloud-card';
+      document.body.appendChild(modal);
       window.location.hash = '#category=photo&types=desktop';
       modalState.isOpen = true;
       const isModalOpen = await updateModalState();
@@ -875,6 +879,7 @@ describe('Merch Block', () => {
     it('reflects the state when the modal gets closed by user click', async () => {
       const modal = document.createElement('div');
       modal.classList.add('dialog-modal');
+      modal.id = 'mini-plans-web-cta-creative-cloud-card';
       document.body.appendChild(modal);
       const isModalOpen = await updateModalState({ closedByUser: true });
       expect(isModalOpen).to.be.false;
