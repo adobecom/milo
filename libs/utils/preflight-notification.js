@@ -104,4 +104,3 @@ export default async function checkPreflightAndShowNotification() {
     await createPreflightNotification();
   }
 }
-
