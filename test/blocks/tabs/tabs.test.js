@@ -8,7 +8,7 @@ const MOBILE_WIDTH = 375;
 const HEIGHT = 1500;
 
 document.body.innerHTML = await readFile({ path: './mocks/body.html' });
-const { default: init, getRedirectionUrl, assignLinkedTabs } = await import('../../../libs/blocks/tabs/tabs.js');
+const { default: init, shouldRedirectToPage, assignLinkedTabs } = await import('../../../libs/blocks/tabs/tabs.js');
 loadStyle('../../../libs/blocks/tabs/tabs.css');
 
 describe('tabs', () => {
@@ -141,13 +141,12 @@ describe('tabs', () => {
 
   describe('Tabs linked to pages', () => {
     it('returns an empty string when targetId or linked page are not valid', () => {
-      expect(getRedirectionUrl({ 'tab-1': '/testpage-1' }, '')).to.equal('');
-      expect(getRedirectionUrl({ 'tab-1': '/testpage-1' }, 'id-without-linked-page')).to.equal('');
+      expect(shouldRedirectToPage({ 'tab-1': '/testpage-1' }, '')).to.equal(false);
+      expect(shouldRedirectToPage({ 'tab-1': '/testpage-1' }, 'id-without-linked-page')).to.equal(false);
     });
 
     it('replaces window.location.pathname with the linked page url', () => {
-      const url = getRedirectionUrl({ 'tab-1': '/testpage-1' }, 'tab-1');
-      expect(url.pathname).to.equal('/testpage-1');
+      expect(shouldRedirectToPage({ 'tab-1': '/testpage-1' }, 'tab-1')).to.equal(true);
     });
 
     it('does not save any data to linkedTabs object if invalid input', () => {

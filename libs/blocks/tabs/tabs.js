@@ -2,7 +2,7 @@
  * tabs - consonant v6
  * https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA/Roles/Tab_Role
  */
-import { createTag, MILO_EVENTS, getConfig } from '../../utils/utils.js';
+import { createTag, MILO_EVENTS, getConfig, localizeLink } from '../../utils/utils.js';
 import { processTrackingLabels } from '../../martech/attributes.js';
 
 const PADDLE = '<svg aria-hidden="true" viewBox="0 0 8 14" fill="none" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M1.50001 13.25C1.22022 13.25 0.939945 13.1431 0.726565 12.9292C0.299315 12.5019 0.299315 11.8096 0.726565 11.3823L5.10938 7L0.726565 2.61768C0.299315 2.19043 0.299315 1.49805 0.726565 1.0708C1.15333 0.643068 1.84669 0.643068 2.27345 1.0708L7.4297 6.22656C7.63478 6.43164 7.75001 6.70996 7.75001 7C7.75001 7.29004 7.63478 7.56836 7.4297 7.77344L2.27345 12.9292C2.06007 13.1431 1.7798 13.2495 1.50001 13.25Z" fill="currentColor"/></svg>';
@@ -45,27 +45,47 @@ const scrollStackedMobile = (content) => {
   window.scrollTo({ top: topOffset, behavior: 'smooth' });
 };
 
-export function getRedirectionUrl(linkedTabsList, targetId) {
-  if (!targetId || !linkedTabsList[targetId] || window.location.pathname === linkedTabsList[targetId]) return '';
+export function shouldRedirectToPage(linkedTabsList, targetId) {
+  const targetUrl = linkedTabsList[targetId];
+  console.log('targetUrl', targetUrl);
+  console.log('targetId', targetId);
+  console.log('window.location.pathname', window.location.pathname);
+
+  if (!targetId || !targetUrl || window.location.pathname === targetUrl) return false;
+
   const currentUrl = new URL(window.location.href);
-  /* c8 ignore next 4 */
   const tabParam = currentUrl.searchParams.get('tab');
-  if (tabParam) {
-    currentUrl.searchParams.set('tab', `${tabParam.split('-')[0]}-${targetId.split('-')[2]}`);
+
+  try {
+    const url = new URL(targetUrl);
+    if (url.protocol && url.hostname) {
+      if (tabParam) url.searchParams.set('tab', `${tabParam.split('-')[0]}-${targetId.split('-')[2]}`);
+      // window.location.assign(localizeLink(url));
+      console.log('localized', localizeLink(url.href));
+      
+      return
+      return true;
+    }
+  } catch (e) {
+    if (tabParam) currentUrl.searchParams.set('tab', `${tabParam.split('-')[0]}-${targetId.split('-')[2]}`);
+    currentUrl.pathname = targetUrl;
+    if (currentUrl) {
+      window.location.assign(currentUrl);
+      return true;
+    }
   }
-  currentUrl.pathname = linkedTabsList[targetId];
-  return currentUrl;
+
+  return false;
 }
 
 function changeTabs(e) {
   const { target } = e;
   const targetId = target.getAttribute('id');
-  const redirectionUrl = getRedirectionUrl(linkedTabs, targetId);
-  /* c8 ignore next 4 */
-  if (redirectionUrl) {
-    window.location.assign(redirectionUrl);
-    return;
-  }
+
+  console.log('aloo');
+  
+  if (shouldRedirectToPage(linkedTabs, targetId)) return;
+
   const parent = target.parentNode;
   const content = parent.parentNode.parentNode.lastElementChild;
   const tabsBlock = target.closest('.tabs');
@@ -255,11 +275,16 @@ const handlePillSize = (pill) => {
   return `${sizes[size]?.[0] ?? sizes[1]}-pill`;
 };
 
-export function assignLinkedTabs(linkedTabsList, metaSettings, id, val) {
+export function assignLinkedTabs(linkedTabsList, metaSettings, id, val, assotiatedTabButton) {
   if (!metaSettings.link || !id || !val || !linkedTabsList) return;
-  const relativeLinkRegex = /^\/(?:[a-zA-Z0-9-_]+(?:\/[a-zA-Z0-9-_]+)*)?$/;
-  if (relativeLinkRegex.test(metaSettings.link)) {
-    linkedTabsList[`tab-${id}-${val}`] = metaSettings.link;
+  const { link } = metaSettings;
+
+  // assotiatedTabButton.setAttribute('role', 'link');
+  try {
+    const url = new URL(link);
+    if (url.protocol && url.hostname) linkedTabsList[`tab-${id}-${val}`] = localizeLink(url);
+  } catch (e) {
+    if (/^\/(?:[a-zA-Z0-9-_]+(?:\/[a-zA-Z0-9-_]+)*)?$/.test(link)) linkedTabsList[`tab-${id}-${val}`] = link;
   }
 }
 
@@ -374,7 +399,7 @@ const init = (block) => {
       if (metaSettings['tab-background']) {
         tabColor[`tab-${id}-${val}`] = metaSettings['tab-background'];
       }
-      assignLinkedTabs(linkedTabs, metaSettings, id, val);
+      assignLinkedTabs(linkedTabs, metaSettings, id, val, assotiatedTabButton);
       const tabLabel = tabListItems[val - 1]?.innerText;
       if (tabLabel) {
         assocTabItem.setAttribute('data-nested-lh', `t${val}${processTrackingLabels(tabLabel, getConfig(), 3)}`);
