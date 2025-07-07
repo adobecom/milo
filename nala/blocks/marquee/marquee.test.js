@@ -543,7 +543,7 @@ test.describe('Milo Marquee Block test suite', () => {
 
     await test.step('step-3: Verify analytic attributes', async () => {
       await expect(await marquee.marqueeSmallDark).toHaveAttribute('daa-lh', await webUtil.getBlockDaalh('marquee', 1));
-      await expect(await marquee.blueButtonL).toHaveAttribute('daa-ll', await webUtil.getLinkDaall(data.blueButtonText, 2, data.h2Text));
+      await expect(await marquee.blueButtonL).toHaveAttribute('daa-ll', await webUtil.getLinkDaall(data.blueButtonText, 1, data.h2Text));
     });
 
     await test.step('step-4: Verify the accessibility test on the Marquee (small) background video playsinline block', async () => {
