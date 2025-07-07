@@ -601,8 +601,15 @@ export async function updateModalState({ cta, closedByUser } = {}) {
   const modal = document.querySelector(`.dialog-modal${hash}`);
 
   if (hash && !cta && !modalState.isOpen && !modal) {
+    const ctaToClick = document.querySelector(`[is=checkout-link][data-modal-id=${hash.replace('#', '')}]`);
+    if (ctaToClick && !ctaToClick.dataset.clickDisabled) {
+      ctaToClick.dataset.clickDisabled = 'true';
+      ctaToClick.click();
+      setTimeout(() => {
+        delete cta.dataset?.clickDisabled;
+      }, 1000);
+    }
     modalState.isOpen = true;
-    document.querySelector(`[is=checkout-link][data-modal-id=${hash.replace('#', '')}]`)?.click();
     return modalState.isOpen;
   }
 
