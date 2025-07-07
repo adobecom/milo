@@ -23,6 +23,8 @@ export default function InputLocales() {
     selectAll,
     apiError,
     setApiError,
+    getLocaleFromKey,
+    parseLocaleKey,
   } = useInputLocale();
 
   const RenderRegion = () => {
@@ -71,7 +73,7 @@ export default function InputLocales() {
                 key=${language.languagecode}
                 class="language-button ${language.livecopies
           .split(',')
-          .some((locale) => selectedLocale.includes(locale))
+          .some((locale) => selectedLocale.includes(`${language.languagecode}|${locale}`))
           ? 'active'
           : ''}"
                 onClick=${() => selectLanguage(language)}
@@ -88,14 +90,16 @@ export default function InputLocales() {
   };
 
   const RenderLocales = () => {
-    const groupedLocales = selectedLocale.reduce((acc, locale) => {
-      const language = languagesList.find((lang) => lang.livecopies.split(',').includes(locale));
-
+    const groupedLocales = selectedLocale.reduce((acc, localeKey) => {
+      const [langCode, locale] = parseLocaleKey(localeKey);
+      const language = languagesList.find((lang) => (langCode
+        ? lang.languagecode === langCode
+        : lang.livecopies.split(',').includes(locale)));
       if (language) {
         if (!acc[language.language]) {
           acc[language.language] = [];
         }
-        acc[language.language].push(locale);
+        acc[language.language].push(localeKey);
       }
       return acc;
     }, {});
@@ -108,12 +112,12 @@ export default function InputLocales() {
           <p class="language-name"><strong>${languageName}</strong></p>
           <div class="locale-button-container">
             ${localesInLanguage.map(
-    (locale) => html`
+    (localeKey) => html`
                 <button
-                  class="locale-button ${activeLocales[locale] ? 'active' : ''}"
-                  onClick=${() => toggleLocale(locale)}
+                  class="locale-button ${activeLocales[localeKey] ? 'active' : ''}"
+                  onClick=${() => toggleLocale(localeKey)}
                 >
-                  ${locale.toUpperCase()}
+                  ${getLocaleFromKey(localeKey).toUpperCase()}
                 </button>
               `,
   )}
