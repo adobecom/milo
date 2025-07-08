@@ -24,7 +24,7 @@ async function runAccessibilityTest() {
 }
 
 /**
- * Preflight Accessibility Tab/Panel
+ * Preflight Accessibility Tab/Panel.
  */
 export default function Accessibility() {
   const [pageURL, setPageURL] = useState(window.location.href);
