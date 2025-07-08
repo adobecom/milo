@@ -1,5 +1,6 @@
 import { createTag, getConfig, MILO_EVENTS } from '../../utils/utils.js';
 import { decorateAnchorVideo, syncPausePlayIcon } from '../../utils/decorate.js';
+import { debounce } from '../../utils/action.js';
 
 const { miloLibs, codeRoot } = getConfig();
 const base = miloLibs || codeRoot;
@@ -523,6 +524,8 @@ export default function init(el) {
   }
 
   if (el.classList.contains('align-height')) setTimeout(normalizeVideoHeights, 100);
+
+  window.addEventListener('resize', debounce(() => { if (el.classList.contains('align-height')) normalizeVideoHeights(); }));
 
   function handleDeferredImages() {
     const images = el.querySelectorAll('img[loading="lazy"]');
