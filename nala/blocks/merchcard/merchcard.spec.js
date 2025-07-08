@@ -193,7 +193,7 @@ module.exports = {
     {
       tcid: '11',
       name: '@Merch-card (simplified-pricing-express)',
-      path: '/drafts/nala/blocks/merch-card/merch-card-simplified-pricing-express',
+      path: '/fragments/be94c09d-67ef-43fb-973c-b825cc4a930f',
       data: {
         titleH2: 'Express - Create standout content',
         badgeText: 'LIMITED TIME OFFER',
@@ -207,7 +207,7 @@ module.exports = {
     {
       tcid: '12',
       name: '@Merch-card (simplified-pricing-express) with price',
-      path: '/drafts/nala/blocks/merch-card/merch-card-simplified-pricing-express-price',
+      path: '/fragments/496a356c-3f8c-4941-874b-b99f31d115b7',
       data: {
         titleH2: 'Express Premium',
         badgeText: 'BEST VALUE',
