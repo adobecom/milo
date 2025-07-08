@@ -113,7 +113,7 @@ export const handle3in1IFrameEvents = ({ data: msgData }) => {
   }
 };
 
-export const handleTimeoutError = () => {
+export const handleTimeoutError = async () => {
   const modal = document.querySelector('.three-in-one');
   const miloIframe = modal?.querySelector('.milo-iframe');
   const iframe = modal?.querySelector('iframe');
@@ -121,7 +121,7 @@ export const handleTimeoutError = () => {
   if (iframe?.getAttribute('data-pageloaded') || !miloIframe || !iframe || !theme) return;
   const wasReloaded = iframe.getAttribute('data-wasreloaded') === 'true';
 
-  showErrorMsg({ iframe, miloIframe, showBtn: !wasReloaded, theme, handleTimeoutError });
+  await showErrorMsg({ iframe, miloIframe, showBtn: !wasReloaded, theme, handleTimeoutError });
 
   if (wasReloaded) {
     setTimeout(() => {
@@ -133,7 +133,7 @@ export const handleTimeoutError = () => {
 
 export function createContent(iframeUrl) {
   const content = createTag('div', { class: 'milo-iframe' });
-  content.innerHTML = `<sp-theme system="light" color="light" scale="medium" dir="ltr">
+  content.innerHTML = `<sp-theme system="light" color="light" scale="medium" dir="ltr" style="display: flex; justify-content: center; align-items: center; height: 100%;">
   <sp-progress-circle label="progress circle" indeterminate="" size="l" dir="ltr" role="progressbar" aria-label="progress circle"></sp-progress-circle>
   </sp-theme>
   <iframe src="${iframeUrl}" frameborder="0" marginwidth="0" marginheight="0" allowfullscreen="true" loading="lazy" class="loading" style="height: 100%;"></iframe>`;
