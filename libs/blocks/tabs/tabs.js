@@ -52,20 +52,19 @@ export function shouldRedirectToPage(linkedTabsList, targetId) {
   const currentUrl = new URL(window.location.href);
   const tabParam = currentUrl.searchParams.get('tab');
 
-  try {
+  if (targetUrl.includes('.aem.')) {
     const url = new URL(targetUrl);
-    if (url.protocol && url.hostname) {
-      if (tabParam) url.searchParams.set('tab', `${tabParam.split('-')[0]}-${targetId.split('-')[2]}`);
-      window.location.assign(localizeLink(url, null, true));
-      return true;
-    }
-  } catch (e) {
     if (tabParam) currentUrl.searchParams.set('tab', `${tabParam.split('-')[0]}-${targetId.split('-')[2]}`);
-    currentUrl.pathname = targetUrl;
-    if (currentUrl) {
-      window.location.assign(currentUrl);
-      return true;
-    }
+    currentUrl.pathname = url.pathname;
+    window.location.assign(localizeLink(currentUrl.pathname));
+    return true;
+  }
+
+  if (tabParam) currentUrl.searchParams.set('tab', `${tabParam.split('-')[0]}-${targetId.split('-')[2]}`);
+  currentUrl.pathname = targetUrl;
+  if (currentUrl) {
+    window.location.assign(currentUrl);
+    return true;
   }
 
   return false;
@@ -152,7 +151,7 @@ function configTabs(config, rootElem) {
 }
 
 function initTabs(elm, config, rootElem) {
-  const tabs = elm.querySelectorAll('[role="tab"], [role="radio"]');
+  const tabs = elm.querySelectorAll('[role="tab"], [role="radio"], [role="link"]');
   const tabLists = elm.querySelectorAll('[role="tablist"], [role="radiogroup"]');
   let tabFocus = 0;
 
@@ -192,7 +191,7 @@ function nextTab(current, i, arr) {
 }
 
 function initPaddles(tabList, left, right, isRadio) {
-  const tabListItems = tabList.querySelectorAll(isRadio ? '[role="radio"]' : '[role="tab"]');
+  const tabListItems = tabList.querySelectorAll(isRadio ? '[role="radio"]' : '[role="tab"], [role="link"]');
   const tabListItemsArray = [...tabListItems];
   const firstTab = tabListItemsArray[0];
   const lastTab = tabListItemsArray[tabListItemsArray.length - 1];
@@ -271,11 +270,11 @@ export function assignLinkedTabs(linkedTabsList, metaSettings, id, val, assotiat
   const { link } = metaSettings;
 
   assotiatedTabButton.setAttribute('role', 'link');
-  try {
+  if (link.includes('.aem.')) {
     const url = new URL(link);
-    if (url.protocol && url.hostname) linkedTabsList[`tab-${id}-${val}`] = localizeLink(url, null, true);
-  } catch (e) {
-    if (/^\/(?:[a-zA-Z0-9-_]+(?:\/[a-zA-Z0-9-_]+)*)?$/.test(link)) linkedTabsList[`tab-${id}-${val}`] = link;
+    linkedTabsList[`tab-${id}-${val}`] = localizeLink(url.pathname);
+  } else if (/^\/(?:[a-zA-Z0-9-_]+(?:\/[a-zA-Z0-9-_]+)*)?$/.test(link)) {
+    linkedTabsList[`tab-${id}-${val}`] = link;
   }
 }
 
