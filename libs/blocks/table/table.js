@@ -697,7 +697,7 @@ export default function init(el) {
 
     let deviceBySize = defineDeviceByScreenSize();
     window.addEventListener('resize', () => {
-      debounce(handleEqualHeight(el, '.row-heading'), 300);
+      debounce(handleEqualHeight(el, '.row-heading'));
       handleStickyHeader(el);
       if (deviceBySize === defineDeviceByScreenSize()) return;
       deviceBySize = defineDeviceByScreenSize();
@@ -720,6 +720,9 @@ export default function init(el) {
       handleTable();
     }
   });
+
+  const debouncedStickyHeader = debounce(() => handleStickyHeader(el));
+  new ResizeObserver(debouncedStickyHeader).observe(el);
 
   window.addEventListener(tabChangeEvent, () => handleStickyHeader(el));
   observer.observe(el);
