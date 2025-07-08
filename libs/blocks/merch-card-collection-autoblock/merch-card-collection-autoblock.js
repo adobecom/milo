@@ -4,7 +4,7 @@ import { postProcessAutoblock } from '../merch/autoblock.js';
 import '../../deps/mas/merch-card.js';
 import '../../deps/mas/merch-quantity-select.js';
 
-const DEPS_TIMEOUT = 5000;
+const DEPS_TIMEOUT = 10000;
 const DEFAULT_OPTIONS = { sidenav: true };
 
 function getTimeoutPromise(timeout) {
