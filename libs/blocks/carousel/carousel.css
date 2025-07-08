@@ -163,7 +163,7 @@ html[dir="rtl"] .carousel .carousel-previous {
   will-change: transform;
 }
 
-.carousel-slides.align-height {
+.carousel.container.align-height .carousel-slides {
   align-items: stretch;
 }
 
@@ -622,10 +622,6 @@ html[dir="rtl"] .carousel .move-indicators {
     align-items: center;
     left: -100%;
     transform: translateX(100%);
-  }
-
-  .carousel.container.align-height .carousel-slides {
-    align-items: stretch;
   }
 
   .carousel-slides.is-reversing {
