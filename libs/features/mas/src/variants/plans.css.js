@@ -1,4 +1,4 @@
-import { MOBILE_LANDSCAPE, TABLET_UP, DESKTOP_UP, LARGE_DESKTOP } from '../media.js';
+import { MOBILE_LANDSCAPE, TABLET_UP, DESKTOP_UP, LARGE_DESKTOP, TABLET_DOWN } from '../media.js';
 export const CSS = `
 :root {
     --consonant-merch-card-plans-width: 300px;
@@ -241,6 +241,12 @@ merch-card[variant^="plans"]:not([size]) {
   .columns.merch-card > .row {
       grid-template-columns: repeat(auto-fit, calc(var(--consonant-merch-card-plans-width)*2 + var(--consonant-merch-spacing-m)));
   }
+}
+
+@media screen and ${TABLET_DOWN} { 
+    merch-card[variant="plans"][size="wide"] {
+        grid-column: auto;
+    }
 }
 
 /* desktop */
