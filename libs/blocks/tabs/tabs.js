@@ -270,7 +270,7 @@ export function assignLinkedTabs(linkedTabsList, metaSettings, id, val, assotiat
   if (!metaSettings.link || !id || !val || !linkedTabsList) return;
   const { link } = metaSettings;
 
-  // assotiatedTabButton.setAttribute('role', 'link');
+  assotiatedTabButton.setAttribute('role', 'link');
   try {
     const url = new URL(link);
     if (url.protocol && url.hostname) linkedTabsList[`tab-${id}-${val}`] = localizeLink(url, null, true);
