@@ -5,15 +5,6 @@ import { getConfig } from '../../utils/utils.js';
 const iconCache = new Map();
 let miloIconsPromise;
 
-function setNodeIndexClass(icon) {
-  const children = icon.parentNode.childNodes;
-  const nodeIndex = Array.prototype.indexOf.call(children, icon);
-  let indexClass = (nodeIndex === children.length - 1) ? 'last' : 'middle';
-  if (nodeIndex === 0) indexClass = 'first';
-  if (children.length === 1) indexClass = 'only';
-  icon.classList.add(`node-index-${indexClass}`);
-}
-
 let tooltipListenersAdded = false;
 function addTooltipListeners() {
   tooltipListenersAdded = true;
@@ -143,8 +134,6 @@ async function getIcon(iconName) {
 
 export default async function loadIcons(icons) {
   const iconPromises = [...icons].map(async (icon) => {
-    setNodeIndexClass(icon);
-
     const iconNameInitial = icon.classList[1].replace('icon-', '');
     let iconName = iconNameInitial === 'tooltip' ? 'info' : iconNameInitial;
     if (iconNameInitial.includes('tooltip-')) iconName = iconNameInitial.replace(/tooltip-/, '');

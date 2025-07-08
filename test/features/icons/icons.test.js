@@ -123,32 +123,6 @@ describe('Icon Support', () => {
     expect(tooltip).to.exist;
   });
 
-  it('Assigns correct node index classes', async () => {
-    const container = createTag('div');
-    const icon1 = createTag('span', { class: 'icon icon-play' });
-    const icon2 = createTag('span', { class: 'icon icon-play' });
-    const icon3 = createTag('span', { class: 'icon icon-play' });
-
-    [icon1, icon2, icon3].forEach((i) => container.appendChild(i));
-    document.body.appendChild(container);
-
-    await loadIcons([icon1, icon2, icon3], config);
-
-    expect(icon1.classList.contains('node-index-first')).to.be.true;
-    expect(icon2.classList.contains('node-index-middle')).to.be.true;
-    expect(icon3.classList.contains('node-index-last')).to.be.true;
-  });
-
-  it('Handles single icon node index class', async () => {
-    const container = createTag('div');
-    const icon = createTag('span', { class: 'icon icon-play' });
-    container.appendChild(icon);
-    document.body.appendChild(container);
-
-    await loadIcons([icon], config);
-    expect(icon.classList.contains('node-index-only')).to.be.true;
-  });
-
   it('Handles invalid SVG response', async () => {
     const icon = createTag('span', { class: 'icon icon-invalid' });
     document.body.appendChild(icon);
