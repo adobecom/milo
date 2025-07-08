@@ -33,10 +33,11 @@ function addTooltipListeners() {
   });
 }
 
-function decorateToolTip(icon) {
-  const wrapper = icon.closest('em');
-  if (!wrapper) return;
+function decorateToolTip(icon, iconName) {
+  const hasTooltip = icon.closest('em')?.textContent.includes('|') && [...icon.classList].some((cls) => cls.includes('tooltip'));
+  if (!hasTooltip) return;
 
+  const wrapper = icon.closest('em');
   wrapper.className = 'tooltip-wrapper';
   const conf = wrapper.textContent.split('|');
   const content = conf.pop()?.trim();
@@ -44,7 +45,7 @@ function decorateToolTip(icon) {
 
   icon.dataset.tooltip = content;
   const place = conf.pop()?.trim().toLowerCase() || 'right';
-  icon.className = `icon icon-info-outline milo-tooltip ${place}`;
+  icon.className = `icon icon-${iconName} milo-tooltip ${place}`;
 
   [['tabindex', '0'], ['aria-label', content], ['role', 'button']].forEach(([attr, value]) => {
     icon.setAttribute(attr, value);
@@ -52,10 +53,6 @@ function decorateToolTip(icon) {
 
   wrapper.parentElement.replaceChild(icon, wrapper);
   if (!tooltipListenersAdded) addTooltipListeners();
-}
-
-function getIconNameFromElement(element) {
-  return [...element.classList].find((c) => c.startsWith('icon-'))?.substring(5);
 }
 
 async function getSVGsfromFile(path) {
@@ -148,9 +145,10 @@ export default async function loadIcons(icons) {
   const iconPromises = [...icons].map(async (icon) => {
     setNodeIndexClass(icon);
 
-    if (icon.classList.contains('icon-tooltip')) decorateToolTip(icon);
-
-    const iconName = getIconNameFromElement(icon);
+    const iconNameInitial = icon.classList[1].replace('icon-', '');
+    let iconName = iconNameInitial === 'tooltip' ? 'info' : iconNameInitial;
+    if (iconNameInitial.includes('tooltip-')) iconName = iconNameInitial.replace(/tooltip-/, '');
+    decorateToolTip(icon, iconName);
     if (icon.dataset.svgInjected || !iconName) return;
 
     const svgElement = await getIcon(iconName);
@@ -160,7 +158,16 @@ export default async function loadIcons(icons) {
       icon.dataset.svgInjected = 'true';
 
       const parent = icon.parentElement;
-      if (parent?.parentElement?.tagName === 'LI') parent.parentElement.classList.add('icon-list-item');
+      if (parent?.childNodes.length > 1) {
+        if (parent.lastChild === icon) {
+          icon.classList.add('margin-inline-start');
+        } else if (parent.firstChild === icon) {
+          icon.classList.add('margin-inline-end');
+          if (parent.parentElement.tagName === 'LI') parent.parentElement.classList.add('icon-list-item');
+        } else {
+          icon.classList.add('margin-inline-start', 'margin-inline-end');
+        }
+      }
     }
   });
 

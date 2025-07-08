@@ -375,7 +375,6 @@
   cursor: pointer;
   rotate: -90deg;
   background-size: contain;
-  margin-inline: unset;
 }
 
 [dir="rtl"] .table .icon.expand {

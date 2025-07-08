@@ -236,7 +236,7 @@ describe('Tooltip', () => {
 
   it('Should assign correct default icon class and name', async () => {
     await loadIcons([iconTooltip], config);
-    expect(iconTooltip.classList.contains('icon-info-outline')).to.be.true;
+    expect(iconTooltip.classList.contains('icon-info')).to.be.true;
     expect(iconTooltip.dataset.name).to.be.undefined;
   });
 
@@ -247,7 +247,7 @@ describe('Tooltip', () => {
     await loadIcons([customIcon], config);
 
     expect(customIcon.classList.contains('icon-warning')).to.be.true;
-    expect(customIcon.classList.contains('icon-info-outline')).to.be.false;
+    expect(customIcon.classList.contains('icon-info')).to.be.false;
   });
 
   it('Should not add tooltip if data-tooltip is missing', async () => {
