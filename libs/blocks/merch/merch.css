@@ -44,17 +44,6 @@ a[is='checkout-link'].con-button > span {
   visibility: hidden;
 }
 
-.three-in-one sp-theme {
-  height: 100%;
-  width: 100%;
-  align-content: center;
-}
-
-.three-in-one sp-theme sp-progress-circle {
-  inset-inline-start: 50%;
-  transform: translate(-50%);
-}
-
 .error-wrapper {
   display: flex;
   justify-content: space-between;

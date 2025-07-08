@@ -1,5 +1,4 @@
 import { expect } from '@esm-bundle/chai';
-import sinon from 'sinon';
 import { delay } from '../../helpers/waitfor.js';
 
 import { CheckoutWorkflowStep, Defaults, Log } from '../../../libs/deps/mas/commerce.js';
@@ -23,11 +22,11 @@ import merch, {
   getOptions,
   appendDexterParameters,
   getMiloLocaleSettings,
-  reopenModal,
-  resetReopenStatus,
   setCtaHash,
   openModal,
   PRICE_TEMPLATE_LEGAL,
+  modalState,
+  updateModalState,
 } from '../../../libs/blocks/merch/merch.js';
 import { localizePreviewLinks } from '../../../libs/blocks/merch/autoblock.js';
 
@@ -481,78 +480,6 @@ describe('Merch Block', () => {
       const params = new URLSearchParams();
       expect(await buildCta(el, params)).to.be.null;
     });
-
-    describe('reopenModal', () => {
-      it('clicks the CTA if hashes match', async () => {
-        const prevHash = window.location.hash;
-        window.location.hash = '#try-photoshop';
-        const cta = document.createElement('a');
-        cta.setAttribute('data-modal-id', 'try-photoshop');
-        const clickSpy = sinon.spy(cta, 'click');
-        reopenModal(cta);
-        expect(clickSpy.called).to.be.true;
-        window.location.hash = prevHash;
-        resetReopenStatus();
-      });
-
-      it('only reopens one modal if multiples hashes match', async () => {
-        const prevHash = window.location.hash;
-        window.location.hash = '#try-photoshop';
-
-        const cta1 = document.createElement('a');
-        cta1.setAttribute('data-modal-id', 'try-photoshop');
-        const clickSpy1 = sinon.spy(cta1, 'click');
-
-        const cta2 = document.createElement('a');
-        cta1.setAttribute('data-modal-id', 'try-photoshop');
-        const clickSpy2 = sinon.spy(cta2, 'click');
-
-        reopenModal(cta1);
-        reopenModal(cta2);
-
-        expect(clickSpy1.called).to.be.true;
-        expect(clickSpy2.called).to.be.false;
-
-        window.location.hash = prevHash;
-        resetReopenStatus();
-      });
-    });
-
-    describe('openModal', () => {
-      it('sets the new hash and event listener to restore the hash on close', async () => {
-        const prevHash = window.location.hash;
-        await openModal(new CustomEvent('test'), 'https://www.adobe.com/mini-plans/creativecloud.html?mid=ft&web=1', 'TRIAL', 'try-photoshop');
-        expect(window.location.hash).to.equal('#try-photoshop');
-        const modalCloseEvent = new CustomEvent('milo:modal:closed');
-        window.dispatchEvent(modalCloseEvent);
-        expect(window.location.hash).to.equal(prevHash);
-        document.body.querySelector('.dialog-modal').remove();
-        window.location.hash = prevHash;
-      });
-
-      it('opens the 3-in-1 modal', async () => {
-        const checkoutLink = document.createElement('a');
-        checkoutLink.setAttribute('is', 'checkout-link');
-        checkoutLink.setAttribute('data-checkout-workflow', 'UCv3');
-        checkoutLink.setAttribute('data-checkout-workflow-step', 'segmentation');
-        checkoutLink.setAttribute('data-modal', 'true');
-        checkoutLink.setAttribute('data-quantity', '1');
-        checkoutLink.setAttribute('data-wcs-osi', 'L2C9cKHNNDaFtBVB6GVsyNI88RlyimSlzVfkMM2gH4A');
-        checkoutLink.setAttribute('data-extra-options', '{}');
-        checkoutLink.setAttribute('class', 'con-button placeholder-resolved');
-        checkoutLink.setAttribute('href', 'https://commerce.adobe.com/store/segmentation?ms=COM&ot=TRIAL&pa=phsp_direct_individual&cli=adobe_com&ctx=if&co=US&lang=en');
-        checkoutLink.setAttribute('daa-ll', 'Free trial-1--');
-        checkoutLink.setAttribute('data-modal-id', 'mini-plans-web-cta-photoshop-card');
-        checkoutLink.setAttribute('data-modal-type', 'twp');
-        Object.defineProperty(checkoutLink, 'isOpen3in1Modal', { get: () => true });
-        await openModal(new CustomEvent('test'), 'https://www.adobe.com/mini-plans/creativecloud.html?mid=ft&web=1', 'TRIAL', 'try-photoshop', {}, checkoutLink);
-        const threeInOneModal = document.querySelector('.dialog-modal.three-in-one');
-        expect(threeInOneModal).to.exist;
-        const iFrame = document.querySelector('.dialog-modal.three-in-one iframe');
-        expect(iFrame.src).to.equal('https://commerce.adobe.com/store/segmentation?ms=COM&ot=TRIAL&pa=phsp_direct_individual&cli=adobe_com&ctx=if&co=US&lang=en');
-        threeInOneModal.remove();
-      });
-    });
   });
 
   describe('Download flow', () => {
@@ -657,6 +584,45 @@ describe('Merch Block', () => {
       const sourceCta = await merch(document.querySelector('.merch.cta.upgrade-source'));
       await sourceCta.onceSettled();
       expect(sourceCta.textContent).to.equal('Upgrade Now');
+    });
+  });
+
+  describe('openModal', () => {
+    it('sets the new hash when it is passed as argument', async () => {
+      modalState.isOpen = false;
+      const prevHash = window.location.hash;
+      await openModal(new CustomEvent('test'), 'https://www.adobe.com/mini-plans/creativecloud.html?mid=ft&web=1', 'TRIAL', 'mini-plans-web-cta-creative-cloud-card');
+      expect(window.location.hash).to.equal('#mini-plans-web-cta-creative-cloud-card');
+      document.body.querySelector('.dialog-modal').remove();
+      window.location.hash = prevHash;
+      modalState.isOpen = false;
+    });
+
+    it('opens the 3-in-1 modal', async () => {
+      const prevHash = window.location.hash;
+      modalState.isOpen = false;
+      const checkoutLink = document.createElement('a');
+      checkoutLink.setAttribute('is', 'checkout-link');
+      checkoutLink.setAttribute('data-checkout-workflow-step', 'segmentation');
+      checkoutLink.setAttribute('data-modal', 'crm');
+      checkoutLink.setAttribute('data-quantity', '1');
+      checkoutLink.setAttribute('data-wcs-osi', 'JzW8dgW8U1SrgbHDmTE-ABsOKPgtl5jugiW8bA5PtKg');
+      checkoutLink.setAttribute('data-extra-options', '{"rf":"uc_segmentation_hide_tabs_cr"}');
+      checkoutLink.setAttribute('class', 'con-button placeholder-resolved');
+      checkoutLink.setAttribute('href', 'https://commerce.adobe.com/store/segmentation?cli=creative&ctx=if&co=US&rf=uc_segmentation_hide_tabs_cr&lang=en&ms=COM&ot=TRIAL&cs=INDIVIDUAL&pa=ccsn_direct_individual&rtc=t&lo=sl&af=uc_new_user_iframe%2Cuc_new_system_close');
+      checkoutLink.setAttribute('daa-ll', 'Free trial-5--creative-cloud');
+      checkoutLink.setAttribute('data-modal-id', 'mini-plans-web-cta-creative-cloud-card');
+      Object.defineProperty(checkoutLink, 'isOpen3in1Modal', { get: () => true });
+
+      await openModal(new CustomEvent('test'), 'https://www.adobe.com/mini-plans/creativecloud.html?mid=ft&web=1', 'TRIAL', 'mini-plans-web-cta-creative-cloud-card', { rf: 'uc_segmentation_hide_tabs_cr' }, checkoutLink);
+
+      const threeInOneModal = document.querySelector('.dialog-modal.three-in-one');
+      expect(threeInOneModal).to.exist;
+      const iFrame = document.querySelector('.dialog-modal.three-in-one iframe');
+      expect(iFrame.src).to.equal('https://commerce.adobe.com/store/segmentation?cli=creative&ctx=if&co=US&rf=uc_segmentation_hide_tabs_cr&lang=en&ms=COM&ot=TRIAL&cs=INDIVIDUAL&pa=ccsn_direct_individual&rtc=t&lo=sl&af=uc_new_user_iframe%2Cuc_new_system_close');
+      threeInOneModal.remove();
+      window.location.hash = prevHash;
+      modalState.isOpen = false;
     });
   });
 
@@ -880,6 +846,53 @@ describe('Merch Block', () => {
       const relativeUrl = '/plans-fragments/modals/individual/modals-content-rich/all-apps/master.modal.html';
       const resultUrl = appendDexterParameters(relativeUrl, JSON.stringify({ promoid: 'test' }));
       expect(resultUrl).to.include('?promoid=test');
+    });
+  });
+
+  describe('updateModalState', () => {
+    const prevHash = window.location.hash;
+
+    afterEach(() => {
+      modalState.isOpen = false;
+      document.querySelector('.dialog-modal')?.remove();
+      window.location.hash = prevHash;
+    });
+
+    it('closes the modal on back navigation on catalog page when filters were selected', async () => {
+      modalState.isOpen = false;
+      const modal = document.createElement('div');
+      modal.classList.add('dialog-modal');
+      modal.id = 'mini-plans-web-cta-creative-cloud-card';
+      document.body.appendChild(modal);
+      window.location.hash = '#category=photo&types=desktop';
+      modalState.isOpen = true;
+      const isModalOpen = await updateModalState();
+      expect(isModalOpen).to.be.false;
+    });
+
+    it('updates the state when modal was closed by user', async () => {
+      window.location.hash = '#miniplans-buy-all-apps';
+      const isModalOpen = await updateModalState();
+      expect(isModalOpen).to.be.true;
+    });
+
+    it('reflects the state when the modal gets closed by user click', async () => {
+      const modal = document.createElement('div');
+      modal.classList.add('dialog-modal');
+      modal.id = 'mini-plans-web-cta-creative-cloud-card';
+      document.body.appendChild(modal);
+      const isModalOpen = await updateModalState({ closedByUser: true });
+      expect(isModalOpen).to.be.false;
+    });
+
+    it('closes the modal when the hash was removed from the URL', async () => {
+      window.location.hash = '';
+      const modal = document.createElement('div');
+      modal.id = 'mini-plans-web-cta-creative-cloud-card';
+      modal.classList.add('dialog-modal');
+      document.body.appendChild(modal);
+      const isModalOpen = await updateModalState();
+      expect(isModalOpen).to.be.false;
     });
   });
 
