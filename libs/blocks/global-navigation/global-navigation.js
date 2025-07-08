@@ -1185,7 +1185,6 @@ class Gnav {
     const { default: decorate } = await asideJsPromise;
     if (!decorate) return this.elements.aside;
     this.elements.aside = await decorate({ headerElem: this.block, fedsPromoWrapper, promoPath });
-    if (!(this.elements.aside instanceof HTMLElement)) return this.elements.aside;
     fedsPromoWrapper.append(this.elements.aside);
 
     const updateLayout = () => {
@@ -1200,16 +1199,17 @@ class Gnav {
         header.style.top = 0;
         localNav.style.top = promoHeight;
       }
+      if (!isDesktop.matches) this.updatePopupPosition();
     };
 
     if (this.elements.aside.clientHeight > fedsPromoWrapper.clientHeight) {
       lanaLog({ message: 'Promo height is more than expected, potential CLS', tags: 'gnav-promo', errorType: 'i' });
-    }
+      updateLayout();
 
-    this.promoResizeObserver?.disconnect();
-    this.promoResizeObserver = new ResizeObserver(updateLayout);
-    this.promoResizeObserver.observe(this.elements.aside);
-    updateLayout();
+      this.promoResizeObserver?.disconnect();
+      this.promoResizeObserver = new ResizeObserver(updateLayout);
+      this.promoResizeObserver.observe(this.elements.aside);
+    }
     performance.mark('Gnav-Aside-End');
     logPerformance('Gnav-Aside-Time', 'Gnav-Aside-Start', 'Gnav-Aside-End');
     return this.elements.aside;
@@ -1554,7 +1554,7 @@ class Gnav {
               return !this.customLinks.includes(linkHash);
             };
             [...customLinksSection.classList].splice(1).forEach((className) => {
-              customLinkModifier = ` feds-navItem--${className}`;
+              customLinkModifier += ` feds-navItem--${className}`;
             });
             removeCustomLink = removeLink();
           } else if (itemHasActiveLink) {
