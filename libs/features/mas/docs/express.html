@@ -1,0 +1,138 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="UTF-8" />
+        <title>Express Gallery</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <link rel="stylesheet" href="spectrum.css" />
+        <link rel="stylesheet" href="styles.css" />
+        <link
+            rel="stylesheet"
+            href="https://p.typekit.net/p.css?s=1&k=hah7vzn&ht=tk&f=7180.7181.7182.7183.22474.22749.22750.22751.22753&a=8634977&app=typekit&e=css"
+        />
+        <link rel="stylesheet" href="https://use.typekit.net/hah7vzn.css" />
+        <script src="/libs/deps/lit-all.min.js" type="module"></script>
+
+        <script>
+            function toggleTheme(theme) {
+                document.body.className = 'spectrum spectrum--medium';
+                document.body.classList.add(`spectrum--${theme}`);
+                document
+                    .querySelector('sp-theme')
+                    ?.setAttribute('color', theme);
+
+                const url = new URL(window.location.href);
+                url.searchParams.set('theme', theme);
+
+                window.location.href = url.toString();
+            }
+        </script>
+        <script type="module" src="./mas-sidenav.js"></script>
+        <script type="module">
+            import { init } from './common.js';
+            init();
+        </script>
+        <script
+            type="module"
+            src="../../../features/spectrum-web-components/dist/button.js"
+        ></script>
+    </head>
+
+    <body class="spectrum spectrum--medium spectrum--light">
+        <sp-theme scale="medium" color="light" style="display: contents">
+            <aside is="mas-sidenav"></aside>
+            <main>
+                <div class="gallery-content">
+                    <h1 id="express-gallery" tabindex="-1">
+                        Express Gallery
+                        <a
+                            class="header-anchor"
+                            href="#express-gallery"
+                            title="Permalink to this heading"
+                            >#</a
+                        >
+                    </h1>
+                    <div class="theme-selection">
+                        Switch Theme:
+                        <a
+                            class="spectrum-Link spectrum-Link--secondary theme-toggle"
+                            href="#"
+                            onclick="toggleTheme('dark'); return false;"
+                            >Dark</a
+                        >
+                        OR
+                        <a
+                            class="spectrum-Link spectrum-Link--secondary theme-toggle"
+                            href="#"
+                            onclick="toggleTheme('light'); return false;"
+                            >Light</a
+                        >
+                    </div>
+                    <div>
+                        Switch Locale:
+                        <a
+                            class="spectrum-Link spectrum-Link--secondary"
+                            href="?locale=en_US"
+                            >en_US</a
+                        >
+                        OR
+                        <a
+                            class="spectrum-Link spectrum-Link--secondary"
+                            href="?locale=fr_FR"
+                            >fr_FR</a
+                        >
+                    </div>
+                    <div>
+                        Switch country/language:
+                        <a
+                            class="spectrum-Link spectrum-Link--secondary"
+                            href="?country=US&language=en"
+                            >Country: US, language: en</a
+                        >
+                        OR
+                        <a
+                            class="spectrum-Link spectrum-Link--secondary"
+                            href="?country=FR&language=fr"
+                            >Country: FR, language: fr</a
+                        >
+                    </div>
+                    <div class="express-container">
+                        <h2 id="express-card" tabindex="-1">
+                            Express Card
+                            <a
+                                class="header-anchor"
+                                href="#express-card"
+                                title="Permalink to this heading"
+                                >#</a
+                            >
+                        </h2>
+
+                        <div>
+                            <div class="one-merch-card">
+                                <merch-card spectrum="swc"
+                                    ><aem-fragment
+                                        fragment="049b6897-fedf-4bb8-a41f-f42f68667591"
+                                    ></aem-fragment
+                                ></merch-card>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </sp-theme>
+        <script>
+            // Get theme from URL on page load
+            const theme = new URL(window.location.href).searchParams.get(
+                'theme',
+            );
+            if (theme) {
+                // Apply theme without changing URL again
+                document.body.className = 'spectrum spectrum--medium';
+                document.body.classList.add(`spectrum--${theme}`);
+                document
+                    .querySelector('sp-theme')
+                    ?.setAttribute('color', theme);
+            }
+        </script>
+    </body>
+</html>

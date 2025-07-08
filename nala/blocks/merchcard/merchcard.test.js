@@ -414,4 +414,120 @@ test.describe('Milo Merchcard block test suite', () => {
       await runAccessibilityTest({ page, testScope: merchCard.catalog });
     });
   });
+
+  // Test 11 : Merch Card (simplified-pricing-express)
+  test(`[Test Id - ${features[11].tcid}] ${features[11].name},${features[11].tags}`, async ({ page, baseURL }) => {
+    console.info(`[Test Page]: ${baseURL}${features[11].path}${miloLibs}`);
+    const { data } = features[11];
+
+    await test.step('step-1: Go to Merch Card feature test page', async () => {
+      await page.goto(`${baseURL}${features[11].path}${miloLibs}`);
+      await page.waitForLoadState('domcontentloaded');
+      await expect(page).toHaveURL(`${baseURL}${features[11].path}${miloLibs}`);
+    });
+
+    await test.step('step-2: Verify Merch Card simplified-pricing-express content/specs', async () => {
+      await expect(await merchCard.simplifiedPricingExpress).toBeVisible();
+      await expect(await merchCard.simplifiedPricingExpressTitle).toContainText(data.titleH2);
+      await expect(await merchCard.simplifiedPricingExpressBadge).toContainText(data.badgeText);
+      await expect(await merchCard.simplifiedPricingExpressDescription).toContainText(data.description);
+      await expect(await merchCard.footerBlueButton).toContainText(data.footerBlueButtonText);
+    });
+
+    await test.step('step-3: Verify badge attributes', async () => {
+      await expect(await merchCard.simplifiedPricingExpress).toHaveAttribute('badge-background-color', data.badgeBgColor);
+      await expect(await merchCard.simplifiedPricingExpress).toHaveAttribute('badge-color', data.badgeColor);
+      await expect(await merchCard.simplifiedPricingExpress).toHaveAttribute('badge-text', data.badgeText);
+    });
+
+    await test.step('step-4: Verify the accessibility test on the Merch Card (simplified-pricing-express) block', async () => {
+      await runAccessibilityTest({ page, testScope: merchCard.simplifiedPricingExpress });
+    });
+  });
+
+  // Test 12 : Merch Card (simplified-pricing-express) with price
+  test(`[Test Id - ${features[12].tcid}] ${features[12].name},${features[12].tags}`, async ({ page, baseURL }) => {
+    console.info(`[Test Page]: ${baseURL}${features[12].path}${miloLibs}`);
+    const { data } = features[12];
+
+    await test.step('step-1: Go to Merch Card feature test page', async () => {
+      await page.goto(`${baseURL}${features[12].path}${miloLibs}`);
+      await page.waitForLoadState('domcontentloaded');
+      await expect(page).toHaveURL(`${baseURL}${features[12].path}${miloLibs}`);
+    });
+
+    await test.step('step-2: Verify Merch Card with price content/specs', async () => {
+      await expect(await merchCard.simplifiedPricingExpress).toBeVisible();
+      await expect(await merchCard.simplifiedPricingExpressTitle).toContainText(data.titleH2);
+      await expect(await merchCard.simplifiedPricingExpressBadge).toContainText(data.badgeText);
+      await expect(await merchCard.simplifiedPricingExpressDescription).toContainText(data.description);
+      await expect(await merchCard.simplifiedPricingExpressPrice).toContainText(data.price);
+      await expect(await merchCard.footerBlueButton).toContainText(data.footerBlueButtonText);
+    });
+
+    await test.step('step-3: Verify the accessibility test on the Merch Card with price block', async () => {
+      await runAccessibilityTest({ page, testScope: merchCard.simplifiedPricingExpress });
+    });
+  });
+
+  // Test 13 : Merch Card (simplified-pricing-express) with custom border
+  test(`[Test Id - ${features[13].tcid}] ${features[13].name},${features[13].tags}`, async ({ page, baseURL }) => {
+    console.info(`[Test Page]: ${baseURL}${features[13].path}${miloLibs}`);
+    const { data } = features[13];
+
+    await test.step('step-1: Go to Merch Card feature test page', async () => {
+      await page.goto(`${baseURL}${features[13].path}${miloLibs}`);
+      await page.waitForLoadState('domcontentloaded');
+      await expect(page).toHaveURL(`${baseURL}${features[13].path}${miloLibs}`);
+    });
+
+    await test.step('step-2: Verify Merch Card with custom border content/specs', async () => {
+      await expect(await merchCard.simplifiedPricingExpress).toBeVisible();
+      await expect(await merchCard.simplifiedPricingExpressTitle).toContainText(data.titleH2);
+      await expect(await merchCard.simplifiedPricingExpressBadge).toContainText(data.badgeText);
+      await expect(await merchCard.simplifiedPricingExpressDescription).toContainText(data.description);
+      await expect(await merchCard.simplifiedPricingExpressPrice).toContainText(data.price);
+      await expect(await merchCard.simplifiedPricingExpressStrikethroughPrice).toContainText(data.strikethroughPrice);
+      await expect(await merchCard.footerBlueButton).toContainText(data.footerBlueButtonText);
+    });
+
+    await test.step('step-3: Verify custom border color', async () => {
+      await expect(await merchCard.simplifiedPricingExpress).toHaveAttribute('border-color', data.borderColor);
+    });
+
+    await test.step('step-4: Verify the accessibility test on the Merch Card with custom border block', async () => {
+      await runAccessibilityTest({ page, testScope: merchCard.simplifiedPricingExpress });
+    });
+  });
+
+  // Test 14 : Merch Card (simplified-pricing-express) with multiple CTAs
+  test(`[Test Id - ${features[14].tcid}] ${features[14].name},${features[14].tags}`, async ({ page, baseURL }) => {
+    console.info(`[Test Page]: ${baseURL}${features[14].path}${miloLibs}`);
+    const { data } = features[14];
+
+    await test.step('step-1: Go to Merch Card feature test page', async () => {
+      await page.goto(`${baseURL}${features[14].path}${miloLibs}`);
+      await page.waitForLoadState('domcontentloaded');
+      await expect(page).toHaveURL(`${baseURL}${features[14].path}${miloLibs}`);
+    });
+
+    await test.step('step-2: Verify Merch Card with multiple CTAs content/specs', async () => {
+      await expect(await merchCard.simplifiedPricingExpress).toBeVisible();
+      await expect(await merchCard.simplifiedPricingExpressTitle).toContainText(data.titleH2);
+      await expect(await merchCard.simplifiedPricingExpressBadge).toContainText(data.badgeText);
+      await expect(await merchCard.simplifiedPricingExpressDescription).toContainText(data.description);
+      await expect(await merchCard.simplifiedPricingExpressPrice).toContainText(data.price);
+      await expect(await merchCard.footerOutlineButton).toContainText(data.footerOutlineButtonText);
+      await expect(await merchCard.footerBlueButton).toContainText(data.footerBlueButtonText);
+    });
+
+    await test.step('step-3: Verify badge attributes', async () => {
+      await expect(await merchCard.simplifiedPricingExpress).toHaveAttribute('badge-background-color', data.badgeBgColor);
+      await expect(await merchCard.simplifiedPricingExpress).toHaveAttribute('badge-color', data.badgeColor);
+    });
+
+    await test.step('step-4: Verify the accessibility test on the Merch Card with multiple CTAs block', async () => {
+      await runAccessibilityTest({ page, testScope: merchCard.simplifiedPricingExpress });
+    });
+  });
 });
