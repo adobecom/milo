@@ -56,7 +56,7 @@ export function shouldRedirectToPage(linkedTabsList, targetId) {
     const url = new URL(targetUrl);
     if (url.protocol && url.hostname) {
       if (tabParam) url.searchParams.set('tab', `${tabParam.split('-')[0]}-${targetId.split('-')[2]}`);
-      window.location.assign(localizeLink(url));
+      window.location.assign(localizeLink(url, null, true));
       return true;
     }
   } catch (e) {
@@ -273,7 +273,7 @@ export function assignLinkedTabs(linkedTabsList, metaSettings, id, val, assotiat
   // assotiatedTabButton.setAttribute('role', 'link');
   try {
     const url = new URL(link);
-    if (url.protocol && url.hostname) linkedTabsList[`tab-${id}-${val}`] = localizeLink(url);
+    if (url.protocol && url.hostname) linkedTabsList[`tab-${id}-${val}`] = localizeLink(url, null, true);
   } catch (e) {
     if (/^\/(?:[a-zA-Z0-9-_]+(?:\/[a-zA-Z0-9-_]+)*)?$/.test(link)) linkedTabsList[`tab-${id}-${val}`] = link;
   }
