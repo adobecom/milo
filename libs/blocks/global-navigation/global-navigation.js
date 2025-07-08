@@ -1547,7 +1547,7 @@ class Gnav {
               return !this.customLinks.includes(linkHash);
             };
             [...customLinksSection.classList].splice(1).forEach((className) => {
-              customLinkModifier = ` feds-navItem--${className}`;
+              customLinkModifier += ` feds-navItem--${className}`;
             });
             removeCustomLink = removeLink();
           } else if (itemHasActiveLink) {
