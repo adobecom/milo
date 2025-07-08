@@ -8,6 +8,7 @@ import { selectOffers, getService } from './utilities.js';
 import { Defaults } from './defaults.js';
 import { FF_DEFAULTS } from './constants.js';
 import { getParameter } from '@dexter/tacocat-core';
+import { removePromoIfQuantityNotMet } from './checkout-mixin';
 
 const INDIVIDUAL = 'INDIVIDUAL_COM';
 const BUSINESS = 'TEAM_COM';
@@ -177,6 +178,7 @@ export class InlinePrice extends HTMLSpanElement {
             'data-display-annual',
             'data-perpetual',
             'data-promotion-code',
+            'data-quantity',
             'data-force-tax-exclusive',
             'data-template',
             'data-wcs-osi',
@@ -348,6 +350,7 @@ export class InlinePrice extends HTMLSpanElement {
             },
             this,
         );
+        removePromoIfQuantityNotMet(offers.flat(), options);
         version ??= this.masElement.togglePending(options);
         if (offers.length) {
             if (this.masElement.toggleResolved(version, offers, options)) {

@@ -2,13 +2,14 @@
 import { runTests } from '@web/test-runner-mocha';
 import { expect } from '@esm-bundle/chai';
 
-
 import { mockLana } from './mocks/lana.js';
 import { mockFetch } from './mocks/fetch.js';
 
 import { delay } from './utils.js';
 import { mockIms } from './mocks/ims.js';
 import { withWcs } from './mocks/wcs.js';
+
+import { EVENT_MERCH_QUANTITY_SELECTOR_CHANGE } from '../src/constants';
 
 const skipTests = sessionStorage.getItem('skipTests');
 
@@ -82,6 +83,52 @@ runTests(async () => {
             const button = plansCard.querySelector('.con-button');
             expect(button.getAttribute('data-quantity')).to.equal('1');
         });
+    });
+
+    it('should support quantity based promotions', async () => {
+        const card = document.querySelector('.quantity-based-promotion merch-card');
+        const button = card.querySelector('.con-button.has-promo');
+        const buttonNoPromo = card.querySelector('.con-button.no-promo');
+        const buttonOtherPromo = card.querySelector('.con-button.other-promo');
+        const quantitySelect = card.querySelector('merch-quantity-select');
+        expect(quantitySelect).to.exist;
+        await quantitySelect.updateComplete;
+
+        expect(card.price.dataset.promotionCode).to.equal('TEST_PROMO');
+        expect(card.price.querySelector('.price-strikethrough')).not.to.exist;
+        expect(button.getAttribute('href').includes('&apc=TEST_PROMO')).to.be.false;
+        expect(buttonNoPromo.getAttribute('href').includes('&apc=')).to.be.false;
+        expect(buttonOtherPromo.getAttribute('href').includes('&apc=OTHER_TEST_PROMO')).to.be.true;
+
+        quantitySelect.dispatchEvent(new CustomEvent(
+            EVENT_MERCH_QUANTITY_SELECTOR_CHANGE,
+            {
+                detail: { option: 4 },
+                bubbles: true,
+            },
+        ));
+
+        await delay(100);
+        expect(button.getAttribute('href').includes('&apc=TEST_PROMO')).to.be.true;
+        expect(buttonNoPromo.getAttribute('href').includes('&apc=')).to.be.false;
+        expect(buttonOtherPromo.getAttribute('href').includes('&apc=OTHER_TEST_PROMO')).to.be.true;
+        expect(card.price.dataset.promotionCode).to.equal('TEST_PROMO');
+        expect(card.price.querySelector('.price-strikethrough')).to.exist;
+
+        quantitySelect.dispatchEvent(new CustomEvent(
+            EVENT_MERCH_QUANTITY_SELECTOR_CHANGE,
+            {
+                detail: { option: 2 },
+                bubbles: true,
+            },
+        ));
+
+        await delay(100);
+        expect(button.getAttribute('href').includes('&apc=TEST_PROMO')).to.be.false;
+        expect(buttonNoPromo.getAttribute('href').includes('&apc=')).to.be.false;
+        expect(buttonOtherPromo.getAttribute('href').includes('&apc=OTHER_TEST_PROMO')).to.be.true;
+        expect(card.price.dataset.promotionCode).to.equal('TEST_PROMO');
+        expect(card.price.querySelector('.price-strikethrough')).not.to.exist;
     });
 
     it('should return title for segment card', async () => {

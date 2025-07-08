@@ -51,6 +51,16 @@ export function createCheckoutElement(Class, options = {}, innerHTML = '') {
     return element;
 }
 
+export function removePromoIfQuantityNotMet(offers, options = {}) {
+    const quantity = options.quantity?.[0];
+    if (!quantity) return;
+
+    const minProductQuantity = offers?.[0]?.promotion?.displaySummary?.minProductQuantity || 1;
+    if (quantity < minProductQuantity) {
+        delete options.promotionCode;
+    }
+}
+
 export function CheckoutMixin(Base) {
     return class CheckoutBase extends Base {
         /* c8 ignore next 1 */
@@ -152,6 +162,8 @@ export function CheckoutMixin(Base) {
             let offers = await Promise.all(promises);
             // offer is expected to contain one or two offers at max (en, mult)
             offers = offers.map((offer) => selectOffers(offer, options));
+
+            removePromoIfQuantityNotMet(offers.flat(), options);
             options.country = this.dataset.imsCountry || options.country;
             const checkoutAction = await service.buildCheckoutAction?.(
                 offers.flat(),
