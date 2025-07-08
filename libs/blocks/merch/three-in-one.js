@@ -113,7 +113,7 @@ export const handle3in1IFrameEvents = ({ data: msgData }) => {
   }
 };
 
-export const handleTimeoutError = () => {
+export const handleTimeoutError = async () => {
   const modal = document.querySelector('.three-in-one');
   const miloIframe = modal?.querySelector('.milo-iframe');
   const iframe = modal?.querySelector('iframe');
@@ -121,7 +121,7 @@ export const handleTimeoutError = () => {
   if (iframe?.getAttribute('data-pageloaded') || !miloIframe || !iframe || !theme) return;
   const wasReloaded = iframe.getAttribute('data-wasreloaded') === 'true';
 
-  showErrorMsg({ iframe, miloIframe, showBtn: !wasReloaded, theme, handleTimeoutError });
+  await showErrorMsg({ iframe, miloIframe, showBtn: !wasReloaded, theme, handleTimeoutError });
 
   if (wasReloaded) {
     setTimeout(() => {
