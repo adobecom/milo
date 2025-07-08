@@ -7,7 +7,7 @@ export const VIDEO_OBJECT_PROVIDERS = [
   { provider: 'youtube', regex: REGEX_YOUTUBE },
 ];
 
-export function logError(msg, error = null, context = {}) {
+export function logError(msg, context = {}) {
   // Build additional context string with pilcrow delineation
   const additionalInfo = [];
 
@@ -36,7 +36,7 @@ export function logError(msg, error = null, context = {}) {
     debug: false,
     sampleRate: 100,
     tags: 'seotech',
-    severity: 'error'
+    severity: 'error',
   });
 }
 
@@ -125,19 +125,17 @@ export async function appendScriptTag({ locationUrl, getMetadata, createTag, get
     const id = await sha256(url.pathname?.replace('.html', ''));
     promises.push(getStructuredData(bucket, id, { baseUrl })
       .then((obj) => append(obj, 'seotech-structured-data'))
-      .catch((e) => logError('Structured data operation failed', e, {
+      .catch(() => logError('Structured data operation failed', {
         bucket,
         id,
-        pathname: url.pathname
+        pathname: url.pathname,
       })));
   }
   const videoUrl = getMetadata('seotech-video-url');
   if (videoUrl) {
     promises.push(getVideoObject(videoUrl, { baseUrl })
       .then((videoObject) => append(videoObject, 'seotech-video-url'))
-      .catch((e) => logError('Video object operation failed', e, {
-        videoUrl
-      })));
+      .catch(() => logError('Video object operation failed', { videoUrl })));
   }
   return Promise.all(promises);
 }
