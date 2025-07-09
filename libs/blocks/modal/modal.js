@@ -100,10 +100,17 @@ export function closeModal(modal) {
     return;
   }
 
-  document.querySelector(
+  const notificationSplitFocusable = document.querySelector(
     '.notification.split button, .notification.split [href], .notification.split input, .notification.split select, '
     + '.notification.split textarea, .notification.split [tabindex]:not([tabindex="-1"])',
-  )?.focus();
+  );
+
+  if (notificationSplitFocusable) {
+    notificationSplitFocusable.focus();
+    return;
+  }
+
+  document.querySelector(`a[data-modal-id="${id}"].con-button`)?.focus();
 }
 
 function isElementInView(element) {
