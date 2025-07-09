@@ -13,9 +13,11 @@ export default async function bootstrapBlock(initBlock, blockConfig) {
     }
   };
 
-  if (!document.querySelector(targetEl)) {
+  if (!element) {
     const block = createTag(targetEl, { class: name });
     document.body[blockConfig.appendType](block);
+  } else if (!element.classList.contains(name)) {
+    element.classList.add(name);
   }
   // Configure Unav components and redirect uri
   if (blockConfig.targetEl === 'header') {
@@ -43,7 +45,7 @@ export default async function bootstrapBlock(initBlock, blockConfig) {
     }
   }
 
-  await initBlock(document.querySelector(targetEl));
+  await initBlock(document.querySelector(`.${name}`));
   if (blockConfig.targetEl === 'footer') {
     const { loadPrivacy } = await import('../scripts/delayed.js');
     setTimeout(() => {
