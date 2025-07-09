@@ -151,8 +151,6 @@ const isSameOrigin = (iframe) => new URL(iframe.src).origin === window.location.
 
 function addIframeKeydownListener(iframe, dialog) {
   try {
-    if (!isSameOrigin(iframe)) return;
-
     const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
     const iframeKeydownListener = (event) => { if (event.key === 'Escape') closeModal(dialog); };
     iframeDoc.addEventListener('keydown', iframeKeydownListener);
