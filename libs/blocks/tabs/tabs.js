@@ -45,38 +45,28 @@ const scrollStackedMobile = (content) => {
   window.scrollTo({ top: topOffset, behavior: 'smooth' });
 };
 
-export function shouldRedirectToPage(linkedTabsList, targetId) {
-  const targetUrl = linkedTabsList[targetId];
-  if (!targetId || !targetUrl || window.location.pathname === targetUrl) return false;
-
+export function getRedirectionUrl(linkedTabsList, targetId) {
+  if (!targetId || !linkedTabsList[targetId] || window.location.pathname === linkedTabsList[targetId]) return '';
   const currentUrl = new URL(window.location.href);
+  /* c8 ignore next 4 */
   const tabParam = currentUrl.searchParams.get('tab');
-
-  if (targetUrl.includes('.aem.') || targetUrl.includes('.hlx.')) {
-    console.log('should');
-    
-    const url = new URL(targetUrl);
-    if (tabParam) currentUrl.searchParams.set('tab', `${tabParam.split('-')[0]}-${targetId.split('-')[2]}`);
-    currentUrl.pathname = url.pathname;
-    window.location.assign(localizeLink(currentUrl.pathname));
-    return true;
+  if (tabParam) {
+    currentUrl.searchParams.set('tab', `${tabParam.split('-')[0]}-${targetId.split('-')[2]}`);
   }
-
-  if (tabParam) currentUrl.searchParams.set('tab', `${tabParam.split('-')[0]}-${targetId.split('-')[2]}`);
-  currentUrl.pathname = targetUrl;
-  if (currentUrl) {
-    window.location.assign(currentUrl);
-    return true;
-  }
-
-  return false;
+  currentUrl.pathname = linkedTabsList[targetId];
+  return currentUrl;
 }
 
 function changeTabs(e) {
   const { target } = e;
   const targetId = target.getAttribute('id');
 
-  if (shouldRedirectToPage(linkedTabs, targetId)) return;
+  const redirectionUrl = getRedirectionUrl(linkedTabs, targetId);
+  /* c8 ignore next 4 */
+  if (redirectionUrl) {
+    window.location.assign(redirectionUrl);
+    return;
+  }
 
   const parent = target.parentNode;
   const content = parent.parentNode.parentNode.lastElementChild;
@@ -271,16 +261,10 @@ export function assignLinkedTabs(linkedTabsList, metaSettings, id, val, assotiat
   if (!metaSettings.link || !id || !val || !linkedTabsList) return;
   const { link } = metaSettings;
 
-  assotiatedTabButton.setAttribute('role', 'link');
-  if (link.includes('.aem.') || link.includes('.hlx.')) {
-    // const localizedLink = localizeLink(fullUrl);
-    console.log('--------start--------');
-    console.log('link', link);
+  assotiatedTabButton?.setAttribute('role', 'link');
 
-    console.log('link localized link', localizeLink(link));
-    console.log('--------end--------');
-
-    // linkedTabsList[`tab-${id}-${val}`] = localizedLink;
+  if ((link.includes('.aem.') || link.includes('.hlx.'))) {
+    linkedTabsList[`tab-${id}-${val}`] = localizeLink(link, new URL(link).hostname);
   } else if (/^\/(?:[a-zA-Z0-9-_]+(?:\/[a-zA-Z0-9-_]+)*)?$/.test(link)) {
     linkedTabsList[`tab-${id}-${val}`] = link;
   }
