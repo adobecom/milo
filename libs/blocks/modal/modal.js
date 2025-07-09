@@ -101,8 +101,8 @@ export function closeModal(modal) {
   }
 
   document.querySelector(
-    '.notification button, .notification [href], .notification input, .notification select, '
-    + '.notification textarea, .notification [tabindex]:not([tabindex="-1"])',
+    '.notification.split button, .notification.split [href], .notification.split input, .notification.split select, '
+    + '.notification.split textarea, .notification.split [tabindex]:not([tabindex="-1"])',
   )?.focus();
 }
 
