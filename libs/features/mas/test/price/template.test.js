@@ -11,6 +11,19 @@ const context = {
     country: 'US',
     language: 'en',
 };
+
+const contextQuantity2 = {
+  country: 'US',
+  language: 'en',
+  quantity: [2]
+};
+
+const contextQuantity6 = {
+  country: 'US',
+  language: 'en',
+  quantity: [6]
+};
+
 const value = {
     formatString: '#0',
     price: 100,
@@ -28,6 +41,18 @@ const valueDiscount = {
     formatString: '#0',
     price: 80,
     priceWithoutDiscount: 100,
+};
+
+const valueDiscountPromo = {
+  formatString: '#0',
+  price: 80,
+  priceWithoutDiscount: 100,
+  promotion: {
+    displaySummary: {
+      minProductQuantity: 3,
+    },
+    promotionCode: 'TEST_PROMO,'
+  }
 };
 
 const valueDiscountAbm = {
@@ -105,6 +130,40 @@ describe('function "createPromoPriceTemplate"', () => {
         renderAndComparePrice(
             'createPromoPriceTemplate2',
             template(context, valueNotApplicableDiscount, {
+                string: 's',
+                json: '{ "foo" : "bar" }',
+                number: 1,
+                truthy: true,
+                falsy: false,
+                null: null,
+                undefined: undefined,
+                array: [1, 2, 3],
+                object: { foo: 'bar' },
+            }),
+        );
+    });
+    it('displays only regular price when quantity less than min', function () {
+        const template = createPromoPriceTemplate();
+        renderAndComparePrice(
+            'createPriceTemplate1',
+            template(contextQuantity2, valueDiscountPromo, {
+                string: 's',
+                json: '{ "foo" : "bar" }',
+                number: 1,
+                truthy: true,
+                falsy: false,
+                null: null,
+                undefined: undefined,
+                array: [1, 2, 3],
+                object: { foo: 'bar' },
+            }),
+        );
+    });
+    it('displays both new and old prices when quantity larger than min', function () {
+        const template = createPromoPriceTemplate();
+        renderAndComparePrice(
+            'createPromoPriceTemplate1',
+            template(contextQuantity6, valueDiscountPromo, {
                 string: 's',
                 json: '{ "foo" : "bar" }',
                 number: 1,

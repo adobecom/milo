@@ -363,15 +363,15 @@ export class MerchCard extends LitElement {
     }
 
     handleQuantitySelection(event) {
-        const allLinks = [
+        const allMerchElements = [
             ...this.checkoutLinks,
             ...this.prices,
             ...(this.activeDescriptionLinks ?? []),
         ];
-        if (allLinks.length === 0) return;
+        if (allMerchElements.length === 0) return;
 
-        for (const link of allLinks) {
-            link.dataset.quantity = event.detail.option;
+        for (const el of allMerchElements) {
+            el.dataset.quantity = event.detail.option;
         }
     }
 
