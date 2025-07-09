@@ -189,10 +189,6 @@ export function getPageLocale(currentPath, locales = pageLocales) {
   return '';
 }
 
-export const isValidHtmlUrl = (url) => {
-  const regex = /^https:\/\/[^\s]+$/;
-  return regex.test(url);
-};
 export const isValidUuid = (id) => /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(id);
 
 export const loadStrings = async (
@@ -714,6 +710,8 @@ export const getConfig = async (originalState, strs = {}) => {
           || 'Please try reloading the page or try coming back to the page another time.',
         lastModified: strs.lastModified || 'Last modified {date}',
         playVideo: strs.playVideo || 'Play, {cardTitle}',
+        nextCards: strs.nextCards || 'Next Cards',
+        prevCards: strs.prevCards || 'Previous Cards',
       },
       detailsTextOption: state.detailsTextOption,
       hideDateInterval: state.hideDateInterval,

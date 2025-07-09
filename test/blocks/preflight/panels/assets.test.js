@@ -33,7 +33,7 @@ describe('Preflight Assets Panel', () => {
 
     render(html`<${Assets} />`, container);
 
-    expect(container.querySelector('.assets-item-title').textContent).to.equal('Image Dimensions');
+    expect(container.querySelector('.assets-item-title').textContent).to.equal('Asset Dimensions');
     expect(container.querySelector('.assets-item-description').textContent).to.equal('Checking...');
   });
 
