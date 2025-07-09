@@ -710,6 +710,8 @@ export const getConfig = async (originalState, strs = {}) => {
           || 'Please try reloading the page or try coming back to the page another time.',
         lastModified: strs.lastModified || 'Last modified {date}',
         playVideo: strs.playVideo || 'Play, {cardTitle}',
+        nextCards: strs.nextCards || 'Next Cards',
+        prevCards: strs.prevCards || 'Previous Cards',
       },
       detailsTextOption: state.detailsTextOption,
       hideDateInterval: state.hideDateInterval,
