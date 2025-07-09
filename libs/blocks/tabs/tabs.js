@@ -60,14 +60,12 @@ export function getRedirectionUrl(linkedTabsList, targetId) {
 function changeTabs(e) {
   const { target } = e;
   const targetId = target.getAttribute('id');
-
   const redirectionUrl = getRedirectionUrl(linkedTabs, targetId);
   /* c8 ignore next 4 */
   if (redirectionUrl) {
     window.location.assign(redirectionUrl);
     return;
   }
-
   const parent = target.parentNode;
   const content = parent.parentNode.parentNode.lastElementChild;
   const tabsBlock = target.closest('.tabs');
