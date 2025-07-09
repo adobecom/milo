@@ -619,7 +619,7 @@ const isProdModal = (url) => {
 export async function getModalAction(offers, options, el) {
   if (!options.modal) return undefined;
 
-  const preload = new URLSearchParams(window.location.search).get('mas.preload') !== 'off';
+  const preload = new URLSearchParams(window.location.search).get('commerce.preload') !== 'off';
   if (el?.isOpen3in1Modal && preload) {
     const baseUrl = getCommercePreloadUrl();
     // The script can preload more, based on clientId, but for the ones in use
