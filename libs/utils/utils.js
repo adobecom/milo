@@ -551,6 +551,12 @@ export function localizeLink(
     const isLocalizable = relative || (prodDomains && prodDomains.includes(url.hostname))
       || overrideDomain;
 
+    console.log('isLocalizable', isLocalizable);
+    console.log('relative', relative);
+    console.log('prodDomains.includes(url.hostname)', prodDomains.includes(url.hostname));
+    console.log('url.hostname', url.hostname);
+    console.log('originHostName', originHostName);
+
     if (!isLocalizable) return processedHref;
     const isLocalizedLink = isLocalizedPath(path, locales);
     if (isLocalizedLink) return processedHref;
@@ -559,6 +565,7 @@ export function localizeLink(
     const urlPath = `${prefix}${path}${url.search}${hash}`;
     return relative ? urlPath : `${url.origin}${urlPath}`;
   } catch (error) {
+    console.log('error');
     return href;
   }
 }

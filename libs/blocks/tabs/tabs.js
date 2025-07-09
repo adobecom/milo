@@ -52,7 +52,9 @@ export function shouldRedirectToPage(linkedTabsList, targetId) {
   const currentUrl = new URL(window.location.href);
   const tabParam = currentUrl.searchParams.get('tab');
 
-  if (targetUrl.includes('.aem.')) {
+  if (targetUrl.includes('.aem.') || targetUrl.includes('.hlx.')) {
+    console.log('should');
+    
     const url = new URL(targetUrl);
     if (tabParam) currentUrl.searchParams.set('tab', `${tabParam.split('-')[0]}-${targetId.split('-')[2]}`);
     currentUrl.pathname = url.pathname;
@@ -191,7 +193,7 @@ function nextTab(current, i, arr) {
 }
 
 function initPaddles(tabList, left, right, isRadio) {
-  const tabListItems = tabList.querySelectorAll(isRadio ? '[role="radio"]' : '[role="tab"], [role="link"]');
+  const tabListItems = tabList.querySelectorAll(isRadio ? '[role="radio"]' : '[role="tab"]');
   const tabListItemsArray = [...tabListItems];
   const firstTab = tabListItemsArray[0];
   const lastTab = tabListItemsArray[tabListItemsArray.length - 1];
@@ -270,9 +272,15 @@ export function assignLinkedTabs(linkedTabsList, metaSettings, id, val, assotiat
   const { link } = metaSettings;
 
   assotiatedTabButton.setAttribute('role', 'link');
-  if (link.includes('.aem.')) {
-    const url = new URL(link);
-    linkedTabsList[`tab-${id}-${val}`] = localizeLink(url.pathname);
+  if (link.includes('.aem.') || link.includes('.hlx.')) {
+    // const localizedLink = localizeLink(fullUrl);
+    console.log('--------start--------');
+    console.log('link', link);
+
+    console.log('link localized link', localizeLink(link));
+    console.log('--------end--------');
+
+    // linkedTabsList[`tab-${id}-${val}`] = localizedLink;
   } else if (/^\/(?:[a-zA-Z0-9-_]+(?:\/[a-zA-Z0-9-_]+)*)?$/.test(link)) {
     linkedTabsList[`tab-${id}-${val}`] = link;
   }
