@@ -2,7 +2,7 @@
 export default async function bootstrapBlock(initBlock, blockConfig) {
   const { name, targetEl, layout, noBorder, jarvis } = blockConfig;
   const { getConfig, createTag, loadScript } = await import('../utils/utils.js');
-  const element = document.querySelector(targetEl);
+  const element = document.querySelector(`.${name}`);
 
   const setNavLayout = () => {
     if (layout === 'fullWidth') {
@@ -16,8 +16,6 @@ export default async function bootstrapBlock(initBlock, blockConfig) {
   if (!element) {
     const block = createTag(targetEl, { class: name });
     document.body[blockConfig.appendType](block);
-  } else if (!element.classList.contains(name)) {
-    element.classList.add(name);
   }
   // Configure Unav components and redirect uri
   if (blockConfig.targetEl === 'header') {
