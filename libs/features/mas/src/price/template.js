@@ -183,6 +183,7 @@ const createPriceTemplate =
         displayStrikethrough = false,
         displayAnnual = false,
         instant = undefined,
+        ignorePromotion = false,
     } = {}) =>
     (
         {
@@ -231,7 +232,7 @@ const createPriceTemplate =
         const locale = `${language.toLowerCase()}-${country.toUpperCase()}`;
 
         const displayPrice =
-            displayStrikethrough && priceWithoutDiscount
+            (displayStrikethrough || ignorePromotion) && priceWithoutDiscount
                 ? priceWithoutDiscount
                 : price;
 
@@ -379,6 +380,7 @@ const createPriceTemplate =
  */
 const createPromoPriceTemplate = () => (context, value, attributes) => {
     const promotionSupported = isPromotionSupported(value, context);
+    const ignorePromotion = value.promotion && !promotionSupported;
     const displayOldPrice =
         context.displayOldPrice === undefined ||
         toBoolean(context.displayOldPrice);
@@ -392,12 +394,13 @@ const createPromoPriceTemplate = () => (context, value, attributes) => {
           displayStrikethrough: true,
         })(context, value, attributes) + '&nbsp;'
         : ''
-    }${createPriceTemplate({ isAlternativePrice: shouldDisplayOldPrice })(context, value, attributes)}`;
+    }${createPriceTemplate({ isAlternativePrice: shouldDisplayOldPrice, ignorePromotion, })(context, value, attributes)}`;
 };
 
 const createPromoPriceWithAnnualTemplate =
     () => (context, value, attributes) => {
         const promotionSupported = isPromotionSupported(value, context);
+        const ignorePromotion = value.promotion && !promotionSupported;
         let { instant } = context;
         try {
             if (!instant) {
@@ -431,7 +434,7 @@ const createPromoPriceWithAnnualTemplate =
                       displayStrikethrough: true,
                   })(ctxStAnnual, value, attributes) + '&nbsp;'
                 : ''
-        }${createPriceTemplate({ isAlternativePrice: shouldDisplayOldPrice })(context, value, attributes)}${renderSpan(cssClassNames.containerAnnualPrefix, '&nbsp;(')}${createPriceTemplate(
+        }${createPriceTemplate({ isAlternativePrice: shouldDisplayOldPrice, ignorePromotion, })(context, value, attributes)}${renderSpan(cssClassNames.containerAnnualPrefix, '&nbsp;(')}${createPriceTemplate(
             {
                 displayAnnual: true,
                 instant,
