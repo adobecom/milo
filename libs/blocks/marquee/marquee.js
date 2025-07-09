@@ -112,13 +112,13 @@ function reorderLargeText(text) {
   text.insertBefore(actionArea, body);
 }
 
-function handleViewportOrder(el, foreground, image, size) {
+function handleViewportOrder({ el, foreground, media: image, size }) {
   const isSplit = el.classList.contains('split');
   const content = isSplit ? el : foreground;
   const text = foreground.querySelector(':scope > .text');
   const mediaCredit = el.querySelector(':scope > .media-credit');
   const background = el.querySelector(':scope > .background');
-  if (background?.querySelector('video') && !image.children.length) {
+  if (background?.querySelector('video') && !image?.children.length) {
     el.appendChild(background);
   }
 
@@ -198,7 +198,7 @@ export default async function init(el) {
   if (el.classList.contains('countdown-timer')) {
     promiseArr.push(loadCDT(text, el.classList));
   }
-  handleViewportOrder(el, foreground, media, size);
+  handleViewportOrder({ el, foreground, media, size });
 
   await Promise.all(promiseArr);
 }
