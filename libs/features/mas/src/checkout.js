@@ -4,7 +4,7 @@ import { CheckoutWorkflowStep } from './constants.js';
 
 import { buildCheckoutUrl } from './buildCheckoutUrl.js';
 import { Defaults } from './defaults.js';
-import { toOfferSelectorIds, toQuantity } from './utilities.js';
+import { toOfferSelectorIds, toQuantity, isPromotionSupported } from './utilities.js';
 import { MODAL_TYPE_3_IN_1 } from './constants.js';
 
 /**
@@ -88,7 +88,8 @@ export function Checkout({ settings }) {
         const [{ 
           productArrangementCode, 
           marketSegments: [offerMarketSegment], 
-          customerSegment: offerCustomerSegment, 
+          customerSegment: offerCustomerSegment,
+          promotion,
           offerType }] = offers;
         // cleanup checkoutMarketSegment  - not needed
         let marketSegment = ms ?? offerMarketSegment ?? checkoutMarketSegment;
@@ -101,7 +102,7 @@ export function Checkout({ settings }) {
         }
         const data = {
             is3in1,
-            checkoutPromoCode,
+            checkoutPromoCode: isPromotionSupported(offers?.[0], options) ? checkoutPromoCode : null,
             clientId,
             context,
             country,

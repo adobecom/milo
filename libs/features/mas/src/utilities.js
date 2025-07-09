@@ -96,3 +96,17 @@ export function getLogHeaders(response) {
     }
     return logHeaders;
 }
+
+/*
+ * Checks if the promotion is supported based on the offer's minProductQuantity and the selected quantity.
+ * @param {Offer} offer
+ * @param {Commerce.Options} options
+ * @returns {boolean} true if the selected quantity is greater than or equal to the minProductQuantity, false otherwise
+ */
+export function isPromotionSupported(offer = {}, options = {}) {
+  const quantity = options.quantity?.[0];
+  if (!quantity) return true;
+
+  const minProductQuantity = offer.promotion?.displaySummary?.minProductQuantity || 1;
+  return quantity >= minProductQuantity;
+}

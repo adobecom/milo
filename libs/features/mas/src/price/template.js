@@ -13,6 +13,7 @@ import {
     formatAnnualPrice,
     makeSpacesAroundNonBreaking,
 } from './utilities.js';
+import { isPromotionSupported } from '../utilities.js';
 
 export const defaultLiterals = {
     recurrenceLabel:
@@ -377,11 +378,13 @@ const createPriceTemplate =
  * or outdated promotion), or concatenation of new & old prices, old being stroke through.
  */
 const createPromoPriceTemplate = () => (context, value, attributes) => {
+    const promotionSupported = isPromotionSupported(value, context);
     const displayOldPrice =
         context.displayOldPrice === undefined ||
         toBoolean(context.displayOldPrice);
     const shouldDisplayOldPrice =
         displayOldPrice &&
+        promotionSupported &&
         value.priceWithoutDiscount &&
         value.priceWithoutDiscount != value.price;
     return `${shouldDisplayOldPrice
@@ -394,6 +397,7 @@ const createPromoPriceTemplate = () => (context, value, attributes) => {
 
 const createPromoPriceWithAnnualTemplate =
     () => (context, value, attributes) => {
+        const promotionSupported = isPromotionSupported(value, context);
         let { instant } = context;
         try {
             if (!instant) {
@@ -418,6 +422,7 @@ const createPromoPriceWithAnnualTemplate =
             toBoolean(context.displayOldPrice);
         const shouldDisplayOldPrice =
             displayOldPrice &&
+            promotionSupported &&
             value.priceWithoutDiscount &&
             value.priceWithoutDiscount != value.price;
         return `${
