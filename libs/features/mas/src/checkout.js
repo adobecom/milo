@@ -89,7 +89,6 @@ export function Checkout({ settings }) {
           productArrangementCode, 
           marketSegments: [offerMarketSegment], 
           customerSegment: offerCustomerSegment,
-          promotion,
           offerType }] = offers;
         // cleanup checkoutMarketSegment  - not needed
         let marketSegment = ms ?? offerMarketSegment ?? checkoutMarketSegment;
