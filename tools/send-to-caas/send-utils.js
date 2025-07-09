@@ -1,6 +1,6 @@
 import getUuid from '../../libs/utils/getUuid.js';
 import { getMetadata } from '../../libs/utils/utils.js';
-import { LANGS, LOCALES } from '../../libs/blocks/caas/utils.js';
+import { LANGS, LOCALES, getGrayboxExperienceId } from '../../libs/blocks/caas/utils.js';
 
 const CAAS_TAG_URL = 'https://www.adobe.com/chimera-api/tags';
 const HLX_ADMIN_STATUS = 'https://admin.hlx.page/status';
@@ -468,7 +468,24 @@ const props = {
 };
 
 // Map the flat props into the structure needed by CaaS
-const getCaasProps = (p) => {
+const getCaasProps = (p, pageUrl = null) => {
+  // Get graybox experience ID if on graybox domain
+  let grayboxExperienceId = null;
+
+  if (pageUrl) {
+    // Extract hostname and pathname from the provided URL
+    try {
+      const url = new URL(pageUrl);
+      grayboxExperienceId = getGrayboxExperienceId(url.hostname, url.pathname);
+    } catch (e) {
+      // If URL parsing fails, fall back to window.location
+      grayboxExperienceId = getGrayboxExperienceId();
+    }
+  } else {
+    // Fall back to window.location if no URL provided
+    grayboxExperienceId = getGrayboxExperienceId();
+  }
+
   const caasProps = {
     entityId: p.entityid,
     contentId: p.contentid,
@@ -536,6 +553,7 @@ const getCaasProps = (p) => {
     },
     origin: p.origin,
     ...(p.arbitrary?.length && { arbitrary: p.arbitrary }),
+    ...(grayboxExperienceId && { gbExperienceID: grayboxExperienceId }),
   };
   return caasProps;
 };

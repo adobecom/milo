@@ -233,7 +233,7 @@ const processData = async (data, accessToken) => {
         continue;
       }
 
-      const caasProps = getCaasProps(caasMetadata);
+      const caasProps = getCaasProps(caasMetadata, pageUrl);
 
       const response = await postDataToCaaS({
         accessToken,
