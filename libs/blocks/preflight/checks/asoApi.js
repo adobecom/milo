@@ -13,6 +13,13 @@ const CHECK_KEY = (() => {
   return null;
 })();
 
+export const preflightCache = {
+  identify: null,
+  suggest: null,
+  identifyPromise: null,
+  suggestPromise: null,
+};
+
 async function getJobId(step) {
   try {
     if (!CHECK_KEY) throw new Error('No preflight key found');
@@ -37,7 +44,7 @@ async function getJobId(step) {
   }
 }
 
-async function getJobResults(jobId) {
+async function getJobResults(jobId, step) {
   const MAX_RETRIES = 50;
   const POLL_INTERVAL = 2500;
   let retries = 0;
@@ -47,6 +54,21 @@ async function getJobResults(jobId) {
       if (!CHECK_KEY) throw new Error('No preflight key found');
       const res = await fetch(`${CHECK_API}/preflight/jobs/${jobId}`, { headers: { 'x-api-key': CHECK_KEY } });
       const data = await res.json();
+
+      if (step === 'IDENTIFY' && data.result) {
+        preflightCache.identify = {
+          audits: data.result[0].audits,
+          status: data.status,
+          step: 'IDENTIFY',
+        };
+      } else if (step === 'SUGGEST' && data.result) {
+        preflightCache.suggest = {
+          audits: data.result[0].audits,
+          status: data.status,
+          step: 'SUGGEST',
+        };
+      }
+
       if (data.status === 'COMPLETED') return data;
       await new Promise((resolve) => {
         setTimeout(resolve, POLL_INTERVAL);
@@ -65,29 +87,16 @@ async function getJobResults(jobId) {
 export default async function getChecks(step) {
   const jobId = await getJobId(step);
   if (!jobId) return null;
-  const checks = await getJobResults(jobId);
+  const checks = await getJobResults(jobId, step);
   if (!checks) return null;
   return checks.result;
 }
 
-export const preflightCache = {
-  identify: null,
-  suggest: null,
-  identifyPromise: null,
-  suggestPromise: null,
-};
-
 export async function prefetchPreflightChecks() {
   if (!preflightCache.identifyPromise) {
-    preflightCache.identifyPromise = getChecks('IDENTIFY').then((result) => {
-      preflightCache.identify = result;
-      return result;
-    });
+    preflightCache.identifyPromise = getChecks('IDENTIFY');
   }
   if (!preflightCache.suggestPromise) {
-    preflightCache.suggestPromise = getChecks('SUGGEST').then((result) => {
-      preflightCache.suggest = result;
-      return result;
-    });
+    preflightCache.suggestPromise = getChecks('SUGGEST');
   }
 }
