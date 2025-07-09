@@ -431,14 +431,14 @@ export async function loadMasComponent(componentName) {
       const externalUrl = `${masLibsBase}/${componentName}.js`;
 
       if (failedExternalLoads.has(externalUrl)) {
-        return import(`../../deps/mas/${componentName}.js`);
+        throw new Error(`Failed to load component from ${externalUrl}`);
       }
 
       try {
         return await import(externalUrl);
       } catch (error) {
         failedExternalLoads.add(externalUrl);
-        return import(`../../deps/mas/${componentName}.js`);
+        throw error;
       }
     } else {
       return import(`../../deps/mas/${componentName}.js`);
