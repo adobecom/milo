@@ -239,6 +239,7 @@ const createPriceTemplate =
         let method = displayOptical ? formatOpticalPrice : formatRegularPrice;
         if (displayAnnual) {
             method = formatAnnualPrice;
+            quantity = 1;
         }
         const { accessiblePrice, recurrenceTerm, ...formattedPrice } = method({
             commitment,
