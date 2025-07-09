@@ -260,12 +260,13 @@ const handlePillSize = (pill) => {
 export function assignLinkedTabs(linkedTabsList, metaSettings, id, val, assotiatedTabButton) {
   if (!metaSettings.link || !id || !val || !linkedTabsList) return;
   const { link } = metaSettings;
-
   assotiatedTabButton?.setAttribute('role', 'link');
 
-  if ((link.includes('.aem.') || link.includes('.hlx.'))) {
-    linkedTabsList[`tab-${id}-${val}`] = localizeLink(link, new URL(link).hostname);
-  } else if (/^\/(?:[a-zA-Z0-9-_]+(?:\/[a-zA-Z0-9-_]+)*)?$/.test(link)) {
+  try {
+    const url = new URL(link);
+    linkedTabsList[`tab-${id}-${val}`] = localizeLink(link, url.hostname);
+  } catch {
+    if (!/^\/(?:[a-zA-Z0-9-_]+(?:\/[a-zA-Z0-9-_]+)*)?$/.test(link)) return;
     linkedTabsList[`tab-${id}-${val}`] = link;
   }
 }
