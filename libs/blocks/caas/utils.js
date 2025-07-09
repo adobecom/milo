@@ -189,10 +189,6 @@ export function getPageLocale(currentPath, locales = pageLocales) {
   return '';
 }
 
-export const isValidHtmlUrl = (url) => {
-  const regex = /^https:\/\/[^\s]+$/;
-  return regex.test(url);
-};
 export const isValidUuid = (id) => /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(id);
 
 export const loadStrings = async (

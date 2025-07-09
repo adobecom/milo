@@ -46,6 +46,12 @@
 
   /* App banner */
   --app-banner-height: 76px;
+
+  /* Skeleton loading state */
+  --feds-skeleton-color-1: #D3D3D3;
+  --feds-skeleton-color-2: #EAEAEA;
+  --feds-skeleton-color-3: #D3D3D3;
+  --feds-skeleton-opacity: 0.7;
 }
 
 /* Nav Link styles */

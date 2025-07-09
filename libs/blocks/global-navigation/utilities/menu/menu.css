@@ -115,9 +115,7 @@
 }
 
 .feds-promo-header {
-  margin: 0;
-  font-size: inherit;
-  line-height: inherit;
+  font-weight: bold;
 }
 
 .feds-promo--dark {
