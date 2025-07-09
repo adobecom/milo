@@ -1188,7 +1188,6 @@ class Gnav {
 
       fedsPromoWrapper.style.height = promoHeight;
       header.style.top = promoHeight;
-
       if (!isDesktop.matches && localNav) {
         header.style.top = 0;
         localNav.style.top = promoHeight;
@@ -1416,6 +1415,7 @@ class Gnav {
               item,
               localnav: this.isLocalNav(),
               toggleMenu: this.toggleMenuMobile,
+              updatePopupPosition: this.updatePopupPosition,
             });
             if (popup.closest('section.feds-dropdown--active')) makeTabActive(popup);
           } finally {
