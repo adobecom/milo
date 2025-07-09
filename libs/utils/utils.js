@@ -32,6 +32,7 @@ const MILO_BLOCKS = [
   'form',
   'fragment',
   'featured-article',
+  'gist',
   'global-footer',
   'global-navigation',
   'graybox',
@@ -650,12 +651,13 @@ export function appendHtmlToLink(link) {
   }
 }
 
-export const loadScript = (url, type, { mode } = {}) => new Promise((resolve, reject) => {
+export const loadScript = (url, type, { mode, id } = {}) => new Promise((resolve, reject) => {
   let script = document.querySelector(`head > script[src="${url}"]`);
   if (!script) {
     const { head } = document;
     script = document.createElement('script');
     script.setAttribute('src', url);
+    if (id) script.setAttribute('id', id);
     if (type) {
       script.setAttribute('type', type);
     }
@@ -784,13 +786,18 @@ export function decorateSVG(a) {
   }
 }
 
+export const isValidHtmlUrl = (url) => {
+  const regex = /^https:\/\/[^\s]+$/;
+  return regex.test(url);
+};
+
 export function decorateImageLinks(el) {
   const images = el.querySelectorAll('img[alt*="|"]');
   if (!images.length) return;
   [...images].forEach((img) => {
     const [source, alt, icon] = img.alt.split('|');
     try {
-      if (!URL.canParse(source.trim())) return;
+      if (!isValidHtmlUrl(source.trim())) return;
       const url = new URL(source.trim());
       const href = (url.hostname.includes('.aem.') || url.hostname.includes('.hlx.')) ? `${url.pathname}${url.search}${url.hash}` : url.href;
       img.alt = alt?.trim() || '';
