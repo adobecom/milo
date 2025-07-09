@@ -356,6 +356,7 @@ Try polyfilling it using "@formatjs/intl-pluralrules"
 
 .collection-container.catalog {
     --merch-card-collection-card-width: var(--consonant-merch-card-catalog-width);
+    --merch-card-collection-card-min-height: 330px;
 }
 
 .collection-container.catalog merch-sidenav {
@@ -1322,6 +1323,7 @@ merch-card[variant^="plans"]:not([size]) {
 
 .collection-container.plans {
     --merch-card-collection-card-width: var(--consonant-merch-card-plans-width);
+    --merch-card-collection-card-min-height: 273px;
 }
 
 merch-card-collection-header.plans {
@@ -1890,6 +1892,8 @@ merch-card[variant="special-offers"] span[is="inline-price"][data-template="stri
     display: grid;
     justify-content: center;
     grid-template-columns: min-content min-content;
+    grid-template-rows: min-content 1fr;
+    align-items: start;
     grid-template-areas: "sidenav header" "sidenav content";
     --merch-card-collection-card-width: 300px;
     --merch-card-collection-card-min-height: auto;

@@ -8,6 +8,7 @@ export const CSS = `
 
 .collection-container.catalog {
     --merch-card-collection-card-width: var(--consonant-merch-card-catalog-width);
+    --merch-card-collection-card-min-height: 330px;
 }
 
 .collection-container.catalog merch-sidenav {

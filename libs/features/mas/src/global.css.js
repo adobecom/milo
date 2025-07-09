@@ -143,6 +143,8 @@ styles.innerHTML = `
     display: grid;
     justify-content: center;
     grid-template-columns: min-content min-content;
+    grid-template-rows: min-content 1fr;
+    align-items: start;
     grid-template-areas: "sidenav header" "sidenav content";
     --merch-card-collection-card-width: 300px;
     --merch-card-collection-card-min-height: auto;
