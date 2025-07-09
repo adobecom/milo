@@ -513,13 +513,9 @@ export default function init(el) {
     });
 
     videoData.forEach(({ video, foreground, videoHeight }) => {
-      if (foreground) {
-        video.style.height = `${videoHeight}px`;
-        video.style.maxHeight = `${videoHeight}px`;
-      } else {
-        video.style.height = `${maxHeight}px`;
-        video.style.maxHeight = `${maxHeight}px`;
-      }
+      const finalHeight = foreground ? videoHeight : maxHeight;
+      video.style.height = `${finalHeight}px`;
+      video.style.maxHeight = `${finalHeight}px`;
     });
   }
 
