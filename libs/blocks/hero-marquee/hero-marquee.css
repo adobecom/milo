@@ -72,6 +72,14 @@
   color: inherit;
 }
 
+.hero-marquee .lockup-area > p:has(picture) {
+  margin-block: 0;
+}
+
+.hero-marquee .lockup-label {
+  line-height: initial;
+}
+
 .hero-marquee .action-area a:not(.con-button) {
   font-weight: 700;
 }

@@ -82,6 +82,11 @@ async function decorateLockupRow(el, classes) {
     el.classList.remove(usedLockupClass);
   }
   el.classList.add(`${usedLockupClass?.split('-')[0] || 'l'}-lockup`);
+  [...child.children].forEach((node) => {
+    if (node.childElementCount || !node.textContent.trim()) return;
+    const newSpan = createTag('span', { class: 'lockup-label' }, node.textContent.trim());
+    node.parentElement.replaceChild(newSpan, node);
+  });
 }
 
 function decorateBg(el) {
