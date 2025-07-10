@@ -14,7 +14,7 @@ function setTooltipPosition(tooltips) {
   const viewportWidth = window.innerWidth;
   const tooltipMaxWidth = viewportWidth <= 600 ? 200 : 160;
   const tooltipMargin = 12;
-  const headerHeight = 64;
+  const headerHeight = document.querySelector('header')?.getBoundingClientRect().height;
 
   const getTooltipBeforeHeight = (tooltip) => {
     const beforeStyle = window.getComputedStyle(tooltip, '::before');
