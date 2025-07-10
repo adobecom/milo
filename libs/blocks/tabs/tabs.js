@@ -141,7 +141,7 @@ function configTabs(config, rootElem) {
 }
 
 function initTabs(elm, config, rootElem) {
-  const tabs = elm.querySelectorAll('[role="tab"], [role="radio"], [role="link"]');
+  const tabs = elm.querySelectorAll('[role="tab"], [role="radio"]');
   const tabLists = elm.querySelectorAll('[role="tablist"], [role="radiogroup"]');
   let tabFocus = 0;
 
