@@ -1812,20 +1812,20 @@ merch-card[variant="simplified-pricing-express"] [slot="cta"] a[is="checkout-lin
     align-items: center;
     justify-content: center;
     width: 100%;
-    min-height: 32px; /* M size sp-button height */
-    padding: 0 16px; /* M size sp-button padding */
+    min-height: 40px; /* XL size sp-button height */
+    padding: 0 24px; /* XL size sp-button padding */
     box-sizing: border-box;
     
     /* Typography */
-    font-size: 14px; /* M size sp-button font size */
+    font-size: 16px; /* XL size sp-button font size */
     font-weight: 700; /* Bold text as requested */
-    line-height: 20px;
+    line-height: 24px;
     text-decoration: none;
     text-align: center;
     
     /* Border and shape */
     border: 2px solid;
-    border-radius: 16px; /* Spectrum button border radius */
+    border-radius: 24px; /* Spectrum button border radius */
     
     /* Interaction */
     cursor: pointer;
@@ -1838,19 +1838,19 @@ merch-card[variant="simplified-pricing-express"] [slot="cta"] a[is="checkout-lin
 
 /* Accent variant (con-button blue) */
 merch-card[variant="simplified-pricing-express"] [slot="cta"] a[is="checkout-link"].con-button.blue {
-    background-color: var(--spectrum-blue-900, #0062E3); /* Express accent color */
-    border-color: var(--spectrum-blue-900, #0062E3);
+    background-color: var(--spectrum-indigo-900, rgba(82, 88, 228, 1));
+    border-color: var(--spectrum-indigo-900, rgba(82, 88, 228, 1));
     color: white;
 }
 
 merch-card[variant="simplified-pricing-express"] [slot="cta"] a[is="checkout-link"].con-button.blue:hover {
-    background-color: var(--spectrum-blue-1000, #0052CC);
-    border-color: var(--spectrum-blue-1000, #0052CC);
+    background-color: var(--spectrum-indigo-1000, rgba(73, 78, 216, 1));
+    border-color: var(--spectrum-indigo-1000, rgba(73, 78, 216, 1));
 }
 
 merch-card[variant="simplified-pricing-express"] [slot="cta"] a[is="checkout-link"].con-button.blue:active {
-    background-color: var(--spectrum-blue-1100, #0041AC);
-    border-color: var(--spectrum-blue-1100, #0041AC);
+    background-color: var(--spectrum-indigo-1100, rgba(64, 68, 204, 1));
+    border-color: var(--spectrum-indigo-1100, rgba(64, 68, 204, 1));
 }
 
 /* Outline variant (con-button without blue) */
