@@ -169,6 +169,7 @@ function prettyDate(string) {
 }
 
 function prettyPath(url) {
+  if (!url) return '';
   if (url.pathname === window.location.pathname) return url.pathname;
   return url.hash ? `${url.pathname} (${url.hash})` : url.pathname;
 }

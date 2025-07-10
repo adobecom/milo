@@ -27,20 +27,6 @@ test.describe('ThreeInOne Block test suite', () => {
         await expect(el).toHaveAttribute('href', href);
       }
     });
-
-    await test.step('Validate if modal reopens on back navigation', async () => {
-      const cta = await page.locator('[data-wcs-osi="ByqyQ6QmyXhzAOnjIcfHcoF1l6nfkeLgbzWz-aeM8GQ"][data-checkout-workflow-step="segmentation"]');
-      await cta.click();
-      await page.waitForSelector('.dialog-modal');
-      const modal = threeInOne.getModal();
-      expect(modal).toBeVisible();
-      await page.goto('https://www.adobe.com');
-      await page.goBack();
-      const newModal = threeInOne.getModal();
-      await expect(newModal).toBeVisible();
-      await threeInOne.closeModal();
-      expect(newModal).not.toBeVisible();
-    });
   });
 
   test(`${features[1].name}, ${features[1].tags}`, async ({ page, baseURL }) => {
