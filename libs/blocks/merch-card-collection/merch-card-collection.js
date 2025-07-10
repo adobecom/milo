@@ -1,4 +1,4 @@
-import { initService } from '../merch/merch.js';
+import { initService, loadMasComponent, MAS_MERCH_CARD, MAS_MERCH_CARD_COLLECTION } from '../merch/merch.js';
 import { overrideUrlOrigin } from '../../utils/helpers.js';
 import {
   createTag, decorateLinks, getConfig, loadBlock, loadStyle, localizeLink,
@@ -205,16 +205,14 @@ export default async function init(el) {
   let mep;
   let merchStyles;
   let merchCardStyles;
-  const merchCardCollectionDep = import(
-    '../../deps/mas/merch-card-collection.js'
-  );
+  const merchCardCollectionDep = loadMasComponent(MAS_MERCH_CARD_COLLECTION);
   try {
     const cardsDataPromise = fetchCardsData(config, endpointElement, type, el);
     deps = [
       initServicePromise,
       merchCardCollectionDep,
       import('../merch-card/merch-card.js'),
-      import('../../deps/mas/merch-card.js'),
+      loadMasComponent(MAS_MERCH_CARD),
     ];
 
     ({ base, mep } = config);

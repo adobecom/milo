@@ -307,8 +307,43 @@ export class AemFragment extends HTMLElement {
         );
     }
 
+    /**
+     * Gets the URL for loading fragment-client.js based on maslibs parameter
+     * @returns {string} URL for fragment-client.js
+     */
+    getFragmentClientUrl() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const masLibs = urlParams.get('maslibs');
+        
+        if (!masLibs || masLibs.trim() === '') {
+            return 'https://mas.adobe.com/studio/libs/fragment-client.js';
+        }
+        
+        const sanitizedMasLibs = masLibs.trim().toLowerCase();
+        
+        if (sanitizedMasLibs === 'local') {
+            return 'http://localhost:3030/studio/libs/fragment-client.js';
+        }
+        if (sanitizedMasLibs === 'main') {
+            return 'https://mas.adobe.com/studio/libs/fragment-client.js';
+        }
+        
+        // Detect current domain extension (.page or .live)
+        const { hostname } = window.location;
+        const extension = hostname.endsWith('.page') ? 'page' : 'live';
+        
+        if (sanitizedMasLibs.includes('--mas--')) {
+            return `https://${sanitizedMasLibs}.aem.${extension}/studio/libs/fragment-client.js`;
+        }
+        if (sanitizedMasLibs.includes('--')) {
+            return `https://${sanitizedMasLibs}.aem.${extension}/studio/libs/fragment-client.js`;
+        }
+        return `https://${sanitizedMasLibs}--mas--adobecom.aem.${extension}/studio/libs/fragment-client.js`;
+    }
+
     async generatePreview() {
-        const { previewFragment } = await import('https://mas.adobe.com/studio/libs/fragment-client.js');
+        const fragmentClientUrl = this.getFragmentClientUrl();
+        const { previewFragment } = await import(fragmentClientUrl);
         const data = await previewFragment(this.#fragmentId, {
           locale: this.#service.settings.locale,
           apiKey: this.#service.settings.wcsApiKey,

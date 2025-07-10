@@ -1,8 +1,12 @@
-import '../../deps/mas/merch-mnemonic-list.js';
-import '../../deps/mas/merch-card.js';
 import { createTag } from '../../utils/utils.js';
+import { loadMasComponent, MAS_MERCH_MNEMONIC_LIST, MAS_MERCH_CARD } from '../merch/merch.js';
 
 const init = async (el) => {
+  // Load merch components dynamically
+  await Promise.all([
+    loadMasComponent(MAS_MERCH_MNEMONIC_LIST),
+    loadMasComponent(MAS_MERCH_CARD),
+  ]);
   const rows = el.querySelectorAll(':scope p:not([class])');
   if (rows.length < 1) return;
   [...rows].forEach((paragraph) => {
