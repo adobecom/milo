@@ -4,6 +4,196 @@ import { createTag } from '../../../utils/utils.js';
 const maxFullWidth = 1920;
 const assetsCache = new Map();
 
+function loadImage(asset) {
+  if (asset.complete) return Promise.resolve();
+  asset.setAttribute('loading', 'eager');
+
+  return new Promise((resolve) => {
+    ['load', 'error'].forEach((evt) => asset.addEventListener(evt, resolve, { once: true }));
+  });
+}
+
+function loadVideo(asset) {
+  if (asset.querySelector('source')
+    && asset.readyState > 1
+    && asset.videoWidth > 0) return Promise.resolve();
+
+  return new Promise((resolve) => {
+    asset.appendChild(createTag('source', { src: asset.getAttribute('data-video-source'), type: 'video/mp4' }));
+    ['loadedmetadata', 'error'].forEach((evt) => asset.addEventListener(evt, resolve, { once: true }));
+    asset.load();
+  });
+}
+
+function loadMpc(asset) {
+  return new Promise((resolve) => {
+    const idMatch = asset.src.match(/\/v\/(\d+)/);
+    const videoId = idMatch ? idMatch[1] : null;
+    if (!videoId) resolve();
+
+    window.fetch(`https://video.tv.adobe.com/v/${videoId}?format=json`)
+      .then((res) => res.json())
+      .then((info) => {
+        const activeSource = info.sources.find((source) => source.active);
+        asset.setAttribute('data-video-width', activeSource.width);
+        asset.setAttribute('data-video-height', activeSource.height);
+        resolve();
+      });
+  });
+}
+
+async function loadAssets(assets) {
+  const loadedAssets = assets.map((asset) => {
+    if (asset.tagName === 'IMG') return loadImage(asset);
+    if (asset.tagName === 'VIDEO') return loadVideo(asset);
+    if (asset.tagName === 'IFRAME') return loadMpc(asset);
+
+    return Promise.resolve();
+  });
+
+  await Promise.all(loadedAssets);
+
+  return assets.filter((asset) => asset.checkVisibility()
+    && !asset.closest('.icon-area')
+    && !asset.src.includes('.svg'));
+}
+
+function getAssetDimensions(asset, type) {
+  let naturalWidth;
+  let naturalHeight;
+
+  switch (type) {
+    case 'video':
+      naturalWidth = asset.videoWidth;
+      naturalHeight = asset.videoHeight;
+      break;
+    case 'mpc':
+      naturalWidth = asset.getAttribute('data-video-width');
+      naturalHeight = asset.getAttribute('data-video-height');
+      break;
+    default:
+      naturalWidth = asset.getAttribute('width') ? parseInt(asset.getAttribute('width'), 10) : asset.naturalWidth;
+      naturalHeight = asset.getAttribute('height') ? parseInt(asset.getAttribute('height'), 10) : asset.naturalHeight;
+  }
+
+  return { naturalWidth, naturalHeight };
+}
+
+function getAssetData(asset) {
+  // Get the asset type
+  const type = (asset.tagName === 'VIDEO' && 'video') || (asset.tagName === 'IFRAME' && 'mpc') || 'image';
+
+  // Calculate asset dimensions
+  const { naturalWidth, naturalHeight } = getAssetDimensions(asset, type);
+
+  // Get the display dimensions of the asset
+  const { offsetWidth, offsetHeight } = asset;
+
+  // Check if the asset is full width
+  const viewportWidth = document.documentElement.clientWidth;
+  const isFullWidthAsset = offsetWidth >= viewportWidth;
+
+  // Define the ideal factor depending on the asset's display width
+  let idealFactor = isFullWidthAsset ? 1.5 : 2;
+  if (['video', 'mpc'].includes(type)) idealFactor = 1;
+
+  // Get the multiplication factor depending on asset display width; allow 5% tolerance
+  const factorDivisor = isFullWidthAsset ? maxFullWidth : offsetWidth;
+  const actualFactor = Math.round((naturalWidth / factorDivisor) * 100) / 100;
+  const roundedFactor = Math.ceil(actualFactor * 20) / 20;
+
+  // Check if the asset meets the ideal factor
+  const hasMismatch = roundedFactor < idealFactor;
+
+  // Define the recommended dimensions
+  const recommendedDimensions = isFullWidthAsset
+    ? `${maxFullWidth * idealFactor}x${Math.ceil((maxFullWidth * idealFactor * naturalHeight) / naturalWidth)}`
+    : `${Math.ceil(offsetWidth * idealFactor)}x${Math.ceil(offsetHeight * idealFactor)}`;
+
+  // Check if the source is an MPC MP4
+  const sourceElement = asset.querySelector?.('source');
+  const isMpcSrc = sourceElement?.src && new URL(sourceElement.src).hostname === 'images-tv.adobe.com';
+
+  // Define the type label
+  const typeLabel = (type === 'mpc' && 'Video (MPC)')
+    || (isMpcSrc && 'Video (MPC source)')
+    || (type === 'video' && 'Video (Sharepoint)')
+    || 'Image';
+
+  // Perform additional video checks
+  let notes;
+  if (type === 'video'
+    && asset.webkitAudioDecodedByteCount
+    && (asset.controls || !asset.muted)) {
+    notes = 'Has audio, MPC should be used instead.';
+  }
+  if (type === 'video' && asset.closest('.background') && isMpcSrc) {
+    notes = 'MPC MP4 used as background, Sharepoint MP4 should be used instead.';
+  }
+
+  // Return the asset data relevant to the final template
+  return {
+    type,
+    src: asset.getAttribute(type === 'video' ? 'data-video-source' : 'src'),
+    naturalDimensions: `${naturalWidth}x${naturalHeight}`,
+    displayDimensions: `${offsetWidth}x${offsetHeight}`,
+    recommendedDimensions,
+    roundedFactor,
+    hasMismatch,
+    typeLabel,
+    notes,
+  };
+}
+
+function populateAssetMeta(asset, assetData) {
+  // Check for or define an asset meta element to display analysis results
+  let assetMetaParent;
+  switch (assetData.type) {
+    case 'video':
+      if (asset.closest('.video-holder')) {
+        assetMetaParent = '.video-holder';
+      } else {
+        const videoParent = asset.parentElement;
+        videoParent.style.position = 'relative';
+        assetMetaParent = videoParent.tagName;
+      }
+      break;
+    case 'mpc':
+      assetMetaParent = '.milo-video';
+      break;
+    default:
+      assetMetaParent = 'picture';
+      break;
+  }
+  let assetMetaElem = asset.closest(assetMetaParent).querySelector('.asset-meta');
+
+  if (!assetMetaElem) {
+    assetMetaElem = createTag('div', { class: 'asset-meta' });
+    asset.closest(assetMetaParent).insertBefore(assetMetaElem, asset.nextSibling);
+  }
+
+  const sizeMsg = createTag(
+    'div',
+    { class: `asset-meta-entry preflight-decoration ${assetData.hasMismatch ? 'is-invalid' : 'is-valid'}` },
+    assetData.hasMismatch
+      ? `Size: too small, use > ${assetData.recommendedDimensions}`
+      : 'Size: correct',
+  );
+  assetMetaElem.append(sizeMsg);
+
+  if (assetData.type === 'mpc') {
+    const { title } = asset;
+    const titleMsg = createTag(
+      'div',
+      { class: `asset-meta-entry preflight-decoration ${!title.length ? 'is-invalid' : 'is-valid'}` },
+      title.length
+        ? `Title: ${title}`
+        : 'Title: no title',
+    );
+    assetMetaElem.append(titleMsg);
+  }
+}
+
 export function isViewportTooSmall() {
   return !window.matchMedia('(min-width: 1200px)').matches;
 }
@@ -11,9 +201,9 @@ export function isViewportTooSmall() {
 export async function checkImageDimensions(url, area) {
   if (isViewportTooSmall()) {
     return {
-      title: ASSETS_TITLES.ImageDimensions,
+      title: ASSETS_TITLES.AssetDimensions,
       status: STATUS.EMPTY,
-      description: 'Viewport is too small to run image checks (minimum width: 1200px).',
+      description: 'Viewport is too small to run asset checks (minimum width: 1200px).',
     };
   }
 
@@ -22,110 +212,53 @@ export async function checkImageDimensions(url, area) {
     return JSON.parse(JSON.stringify(cachedResult));
   }
 
-  const allImages = [...area.querySelectorAll('main picture img')];
-  if (!allImages.length) {
+  const allAssets = [...area.querySelectorAll('main picture img, main video, main .adobetv')];
+  if (!allAssets.length) {
     return {
-      title: ASSETS_TITLES.ImageDimensions,
+      title: ASSETS_TITLES.AssetDimensions,
       status: STATUS.EMPTY,
-      description: 'No images found in the main content.',
+      description: 'No assets found in the main content.',
     };
   }
 
-  await Promise.all(
-    allImages.map((img) => {
-      if (!img.complete) {
-        img.setAttribute('loading', 'eager');
-        return new Promise((resolve) => {
-          img.addEventListener('load', resolve);
-          img.addEventListener('error', resolve);
-        });
-      }
-      return Promise.resolve();
-    }),
-  );
+  const assets = await loadAssets(allAssets);
 
-  const images = allImages.filter((img) => img.checkVisibility()
-    && !img.closest('.icon-area')
-    && !img.src.includes('.svg'));
-
-  if (!images.length) {
+  if (!assets.length) {
     return {
-      title: ASSETS_TITLES.ImageDimensions,
+      title: ASSETS_TITLES.AssetDimensions,
       status: STATUS.EMPTY,
-      description: 'No eligible images found (visible, non-icon, non-SVG).',
+      description: 'No eligible assets found (visible, non-icon, non-SVG).',
     };
   }
 
-  const viewportWidth = area.documentElement.clientWidth;
-  const imagesWithMismatch = [];
-  const imagesWithMatch = [];
+  const assetsWithMismatch = [];
+  const assetsWithMatch = [];
 
   area.body.classList.add('preflight-assets-analysis');
 
-  for (const img of images) {
-    const naturalWidth = img.getAttribute('width') ? parseInt(img.getAttribute('width'), 10) : img.naturalWidth;
-    const naturalHeight = img.getAttribute('height') ? parseInt(img.getAttribute('height'), 10) : img.naturalHeight;
-    // Get the display dimensions of the image
-    const displayWidth = img.offsetWidth;
-    const displayHeight = img.offsetHeight;
-    // Check if the image is full width
-    const isFullWidthImage = displayWidth >= viewportWidth;
-    // Define the ideal factor depending on the image's display width
-    const idealFactor = isFullWidthImage ? 1.5 : 2;
-    // Get the multiplication factor depending on image display width; allow 5% tolerance
-    const factorDivisor = isFullWidthImage ? maxFullWidth : displayWidth;
-    const actualFactor = Math.round((naturalWidth / factorDivisor) * 100) / 100;
-    const roundedFactor = Math.ceil(actualFactor * 20) / 20;
-    // Check if the image meets the ideal factor
-    const hasMismatch = roundedFactor < idealFactor;
-    // Define the recommended dimensions
-    const recommendedDimensions = isFullWidthImage
-      ? `${maxFullWidth * idealFactor}x${Math.ceil((maxFullWidth * idealFactor * naturalHeight) / naturalWidth)}`
-      : `${Math.ceil(displayWidth * idealFactor)}x${Math.ceil(displayHeight * idealFactor)}`;
-    // Save the image data relevant to the final template
-    const imageData = {
-      src: img.getAttribute('src'),
-      naturalDimensions: `${naturalWidth}x${naturalHeight}`,
-      displayDimensions: `${displayWidth}x${displayHeight}`,
-      recommendedDimensions,
-      roundedFactor,
-      hasMismatch,
-    };
-    // Check for or define a picture meta element to display image analysis results
-    let pictureMetaElem = img.closest('picture').querySelector('.picture-meta');
-    if (!pictureMetaElem) {
-      pictureMetaElem = createTag('div', { class: 'picture-meta' });
-      img.closest('picture').insertBefore(pictureMetaElem, img.nextSibling);
-    }
+  for (const asset of assets) {
+    const assetData = getAssetData(asset);
+    populateAssetMeta(asset, assetData);
 
-    const assetMessage = createTag(
-      'div',
-      { class: `picture-meta-asset preflight-decoration ${hasMismatch ? 'has-mismatch' : 'no-mismatch'}` },
-      hasMismatch
-        ? `Size: too small, use > ${imageData.recommendedDimensions}`
-        : 'Size: correct',
-    );
-    pictureMetaElem.append(assetMessage);
-
-    if (hasMismatch) {
-      imagesWithMismatch.push(imageData);
+    if (assetData.hasMismatch) {
+      assetsWithMismatch.push(assetData);
     } else {
-      imagesWithMatch.push(imageData);
+      assetsWithMatch.push(assetData);
     }
   }
 
   area.body.classList.remove('preflight-assets-analysis');
 
   const result = {
-    title: ASSETS_TITLES.ImageDimensions,
-    status: imagesWithMismatch.length > 0 ? STATUS.FAIL : STATUS.PASS,
+    title: ASSETS_TITLES.AssetDimensions,
+    status: assetsWithMismatch.length > 0 ? STATUS.FAIL : STATUS.PASS,
     description:
-      imagesWithMismatch.length > 0
-        ? `${imagesWithMismatch.length} image(s) have dimension mismatches.`
-        : 'All images have matching dimensions.',
+      assetsWithMismatch.length > 0
+        ? `${assetsWithMismatch.length} asset(s) have dimension mismatches.`
+        : 'All assets have matching dimensions.',
     details: {
-      imagesWithMismatch,
-      imagesWithMatch,
+      assetsWithMismatch,
+      assetsWithMatch,
     },
   };
 
