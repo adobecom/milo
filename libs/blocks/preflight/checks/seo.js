@@ -117,7 +117,7 @@ export async function checkDescription(area) {
 }
 
 export async function checkBody(area) {
-  const nonContentEls = '#preflight, .picture-meta, aem-sidekick';
+  const nonContentEls = '#preflight, .asset-meta, aem-sidekick';
   const bodyClone = area.body.cloneNode(true);
   bodyClone.querySelectorAll(nonContentEls).forEach((el) => el.remove());
   const { length } = bodyClone.innerText.replace(/\n/g, '').trim();

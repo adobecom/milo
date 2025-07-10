@@ -141,6 +141,10 @@
   flex-shrink: 0;
 }
 
+.brick .icon-stack-area li a {
+  flex-shrink: initial;
+}
+
 .brick .icon-stack-area li picture {
   display: flex;
   margin: 0;
