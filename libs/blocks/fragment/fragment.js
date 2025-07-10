@@ -143,7 +143,7 @@ export default async function init(a) {
     if (placeholders) fragment.innerHTML = replacePlaceholders(fragment.innerHTML, placeholders);
   }
   if (inline) {
-    insertInlineFrag(sections, a, relHref, mep);
+    await insertInlineFrag(sections, a, relHref, mep);
   } else {
     a.parentElement.replaceChild(fragment, a);
     await loadArea(fragment);
