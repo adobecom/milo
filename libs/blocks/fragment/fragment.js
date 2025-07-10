@@ -43,9 +43,7 @@ const updateFragMap = (fragment, a, href) => {
 
 const insertInlineFrag = (sections, a, relHref) => {
   // Inline fragments only support one section, other sections are ignored
-  const firstSection = sections[0];
-  // await loadArea(firstSection);
-  const fragChildren = [...firstSection.children];
+  const fragChildren = [...sections[0].children];
   if (a.parentElement.nodeName === 'DIV' && !a.parentElement.attributes.length) {
     a.parentElement.replaceWith(...fragChildren);
   } else {
