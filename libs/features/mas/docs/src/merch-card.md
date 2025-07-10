@@ -137,12 +137,12 @@ Adobe Home Gallery provides a comprehensive list of all supported card variants 
 | `promoText`         | The promo text, e.g. "Save over 30% with an annual plan.".                                                          | `string`                       |
 | `taxText`           | The text for the tax.                                                                                               | `string`                       |
 | `recurrenceText`    | The text for the billing frequency.                                                                                 | `string`                       |
-| `seeTermsInfo`      | The see terms text and link href value.                                                                             | `{text: string, href: string}` |
+| `seeTermsInfo`      | The see terms text and link href value.                                                                             | `{analyticsId: string, href: string, text: string}` |
 | `renewalText`       | Subscription renewal text.                                                                                          | `string`                       |
 | `promoDurationText` | Promo duration text.                                                                                                | `string`                       |
 | `ctas`              | checkout-link (if consonant) / checkout-button elements that are rendered in the card.                              | `Array`                        |
-| `primaryCta`        | Primary CTA element, mostly for checkout buttons for BASE offers                                                    | `{text: string, href: string}` |
-| `secondaryCta`      | Secondary CTA element, mostly for checkout buttons for TRIAL offers                                                 | `{text: string, href: string}` |
+| `primaryCta`        | Primary CTA element, mostly for checkout buttons for BASE offers                                                    | `{analyticsId: string, href: string, text: string}` |
+| `secondaryCta`      | Secondary CTA element, mostly for checkout buttons for TRIAL offers                                                 | `{analyticsId: string, href: string, text: string}` |
 
 ### Events
 
