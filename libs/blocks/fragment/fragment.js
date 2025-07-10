@@ -41,10 +41,10 @@ const updateFragMap = (fragment, a, href) => {
   }
 };
 
-const insertInlineFrag = async (sections, a, relHref) => {
+const insertInlineFrag = (sections, a, relHref) => {
   // Inline fragments only support one section, other sections are ignored
   const firstSection = sections[0];
-  await loadArea(firstSection);
+  // await loadArea(firstSection);
   const fragChildren = [...firstSection.children];
   if (a.parentElement.nodeName === 'DIV' && !a.parentElement.attributes.length) {
     a.parentElement.replaceWith(...fragChildren);
@@ -143,7 +143,8 @@ export default async function init(a) {
     if (placeholders) fragment.innerHTML = replacePlaceholders(fragment.innerHTML, placeholders);
   }
   if (inline) {
-    await insertInlineFrag(sections, a, relHref, mep);
+    await loadArea(fragment);
+    insertInlineFrag(sections, a, relHref, mep);
   } else {
     a.parentElement.replaceChild(fragment, a);
     await loadArea(fragment);
