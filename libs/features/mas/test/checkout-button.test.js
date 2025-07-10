@@ -346,7 +346,7 @@ describe('commerce service', async () => {
                         },
                     ],
                 },
-                settings: getSettings(service.config),
+                settings: getSettings(service.config, service),
             });
             const checkoutButton1 = mockCheckoutButton('abm');
             const options = collectCheckoutOptions({}, checkoutButton1);
