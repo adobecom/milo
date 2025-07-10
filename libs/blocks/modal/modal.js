@@ -77,6 +77,7 @@ export function closeModal(modal) {
     window.history.pushState(window.history.state, document.title, `${window.location.pathname}${window.location.search}`);
   }
   if (prevHash) {
+    window.location.hash = '';
     window.location.hash = prevHash;
     prevHash = '';
   }
