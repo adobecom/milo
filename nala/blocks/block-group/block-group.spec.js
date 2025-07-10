@@ -13,5 +13,5 @@ module.exports = {
       path: '/drafts/nala/blocks/block-group/tabs.plain.html',
       tags: '@group @group-tabs @smoke @regression @milo',
     },
-  ]
-}
+  ],
+};
