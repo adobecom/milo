@@ -1,6 +1,10 @@
 export const CSS = `
 :root {
     --consonant-merch-card-simplified-pricing-express-width: 294px;
+    --merch-card-simplified-pricing-express-cta-color: var(
+        var(--spectrum-gray-50),
+        rgba(255, 255, 255, 1)
+    );
 }
 
 merch-card[variant="simplified-pricing-express"] {
@@ -24,6 +28,86 @@ merch-card[variant="simplified-pricing-express"] [slot="cta"] {
 merch-card[variant="simplified-pricing-express"] [slot="cta"] sp-button,
 merch-card[variant="simplified-pricing-express"] [slot="cta"] button {
     width: 100%;
+    color: var(--merch-card-simplified-pricing-express-cta-color);
+    font-size: 16px;
+    font-weight: 700;
+    line-height: 20.8px;
+}
+
+/* Base styles for all checkout-link buttons */
+merch-card[variant="simplified-pricing-express"] [slot="cta"] a[is="checkout-link"].con-button {
+    /* Display and sizing */
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    min-height: 32px; /* M size sp-button height */
+    padding: 0 16px; /* M size sp-button padding */
+    box-sizing: border-box;
+    
+    /* Typography */
+    font-size: 14px; /* M size sp-button font size */
+    font-weight: 700; /* Bold text as requested */
+    line-height: 20px;
+    text-decoration: none;
+    text-align: center;
+    
+    /* Border and shape */
+    border: 2px solid;
+    border-radius: 16px; /* Spectrum button border radius */
+    
+    /* Interaction */
+    cursor: pointer;
+    transition: background-color 130ms ease-in-out, 
+                border-color 130ms ease-in-out,
+                color 130ms ease-in-out;
+    outline: none;
+    position: relative;
+}
+
+/* Accent variant (con-button blue) */
+merch-card[variant="simplified-pricing-express"] [slot="cta"] a[is="checkout-link"].con-button.blue {
+    background-color: var(--spectrum-blue-900, #0062E3); /* Express accent color */
+    border-color: var(--spectrum-blue-900, #0062E3);
+    color: white;
+}
+
+merch-card[variant="simplified-pricing-express"] [slot="cta"] a[is="checkout-link"].con-button.blue:hover {
+    background-color: var(--spectrum-blue-1000, #0052CC);
+    border-color: var(--spectrum-blue-1000, #0052CC);
+}
+
+merch-card[variant="simplified-pricing-express"] [slot="cta"] a[is="checkout-link"].con-button.blue:active {
+    background-color: var(--spectrum-blue-1100, #0041AC);
+    border-color: var(--spectrum-blue-1100, #0041AC);
+}
+
+/* Outline variant (con-button without blue) */
+merch-card[variant="simplified-pricing-express"] [slot="cta"] a[is="checkout-link"].con-button:not(.blue) {
+    background-color: transparent;
+    border-color: var(--spectrum-gray-700, #464646);
+    color: var(--spectrum-gray-800, #2c2c2c);
+}
+
+merch-card[variant="simplified-pricing-express"] [slot="cta"] a[is="checkout-link"].con-button:not(.blue):hover {
+    background-color: var(--spectrum-gray-200, #E8E8E8);
+    border-color: var(--spectrum-gray-800, #2c2c2c);
+}
+
+merch-card[variant="simplified-pricing-express"] [slot="cta"] a[is="checkout-link"].con-button:not(.blue):active {
+    background-color: var(--spectrum-gray-300, #D3D3D3);
+    border-color: var(--spectrum-gray-900, #1a1a1a);
+}
+
+/* Focus state for both variants */
+merch-card[variant="simplified-pricing-express"] [slot="cta"] a[is="checkout-link"].con-button:focus-visible {
+    outline: 2px solid var(--spectrum-blue-900, #0062E3);
+    outline-offset: 2px;
+}
+
+/* Ensure span inside button doesn't interfere with click */
+merch-card[variant="simplified-pricing-express"] [slot="cta"] a[is="checkout-link"].con-button span {
+    pointer-events: none;
 }
 
 merch-card[variant="simplified-pricing-express"] [slot="price"] {

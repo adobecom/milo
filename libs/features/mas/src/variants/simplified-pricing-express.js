@@ -3,41 +3,40 @@ import { VariantLayout } from './variant-layout.js';
 import { CSS } from './simplified-pricing-express.css.js';
 
 export const SIMPLIFIED_PRICING_EXPRESS_AEM_FRAGMENT_MAPPING = {
-    "mnemonics": {
-        "size": "s"
+    mnemonics: {
+        size: 's',
     },
-    "title": {
-        "tag": "h3",
-        "slot": "heading-l",
-        "maxCount": 250,
-        "withSuffix": true
+    title: {
+        tag: 'h3',
+        slot: 'heading-l',
+        maxCount: 250,
+        withSuffix: true,
     },
-    "badge": {
-        "tag": "div",
-        "slot": "badge",
-
+    badge: {
+        tag: 'div',
+        slot: 'badge',
     },
-    "description": {
-        "tag": "div",
-        "slot": "body-s",
-        "maxCount": 2000,
-        "withSuffix": false
+    description: {
+        tag: 'div',
+        slot: 'body-s',
+        maxCount: 2000,
+        withSuffix: false,
     },
-    "prices": {
-        "tag": "p",
-        "slot": "price"
+    prices: {
+        tag: 'p',
+        slot: 'price',
     },
-    "ctas": {
-        "slot": "cta",
-        "size": "L"
+    ctas: {
+        slot: 'cta',
+        size: 'L',
     },
-    "borderColor": {
-        "attribute": "border-color",
-        "specialValues": {
-            "gray": "--spectrum-gray-300",
-            "blue": "--spectrum-blue-400"
-        }
-    }
+    borderColor: {
+        attribute: 'border-color',
+        specialValues: {
+            gray: '--spectrum-gray-300',
+            blue: '--spectrum-blue-400',
+        },
+    },
 };
 
 export class SimplifiedPricingExpress extends VariantLayout {
@@ -162,4 +161,7 @@ export class SimplifiedPricingExpress extends VariantLayout {
     `;
 }
 
-customElements.define('simplified-pricing-express-card', SimplifiedPricingExpress);
+customElements.define(
+    'simplified-pricing-express-card',
+    SimplifiedPricingExpress,
+);
