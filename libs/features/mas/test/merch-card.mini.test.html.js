@@ -98,6 +98,7 @@ runTests(async () => {
                     taxText: undefined,
                     seeTermsInfo: {
                         text: 'see terms',
+                        analyticsId: 'see-terms',
                         href: 'https://www.stage.adobe.com/offers/promo-terms.html?locale=en_US&country=US&offer_id=DDDCDEBA96799A274FA982669CA74623',
                     },
                     renewalText: undefined,
@@ -107,10 +108,12 @@ runTests(async () => {
                     recurrenceText: '/mo',
                     primaryCta: {
                         text: 'Buy now',
+                        analyticsId: 'buy-now',
                         href: 'https://commerce-stg.adobe.com/store/segmentation?cli=adobe_com&ctx=fp&co=US&lang=en&ms=COM&ot=BASE&cs=INDIVIDUAL&pa=PA-130',
                     },
                     secondaryCta: {
                         text: 'Free trial',
+                        analyticsId: 'free-trial',
                         href: 'https://commerce-stg.adobe.com/store/segmentation?cli=adobe_com&ctx=fp&co=US&lang=en&ms=COM&ot=BASE&cs=INDIVIDUAL&pa=PA-130',
                     },
                 });
@@ -128,6 +131,7 @@ runTests(async () => {
                     taxText: undefined,
                     seeTermsInfo: {
                         text: 'see terms',
+                        analyticsId: 'see-terms',
                         href: 'https://www.stage.adobe.com/offers/promo-terms.html?locale=en_US&country=US&offer_id=DDDCDEBA96799A274FA982669CA74623&promotion_code=L_PROMO_10F',
                     },
                     renewalText:
@@ -138,10 +142,12 @@ runTests(async () => {
                     recurrenceText: '/mo',
                     primaryCta: {
                         text: 'Buy now',
+                        analyticsId: 'buy-now',
                         href: 'https://commerce-stg.adobe.com/store/segmentation?apc=L_PROMO_10F&cli=adobe_com&ctx=fp&co=US&lang=en&ms=COM&ot=BASE&cs=INDIVIDUAL&pa=PA-130',
                     },
                     secondaryCta: {
                         text: 'Free trial',
+                        analyticsId: 'free-trial',
                         href: 'https://commerce-stg.adobe.com/store/segmentation?apc=L_PROMO_10F&cli=adobe_com&ctx=fp&co=US&lang=en&ms=COM&ot=BASE&cs=INDIVIDUAL&pa=PA-130',
                     },
                 });
@@ -158,6 +164,7 @@ runTests(async () => {
                     taxText: undefined,
                     seeTermsInfo: {
                         text: 'see terms',
+                        analyticsId: 'see-terms',
                         href: 'https://www.stage.adobe.com/offers/promo-terms.html?locale=en_US&country=US&offer_id=DDDCDEBA96799A274FA982669CA74623',
                     },
                     renewalText: undefined,
@@ -167,10 +174,12 @@ runTests(async () => {
                     recurrenceText: '/mo',
                     primaryCta: {
                         text: 'Buy now',
+                        analyticsId: 'buy-now',
                         href: 'https://commerce-stg.adobe.com/store/segmentation?cli=adobe_com&ctx=fp&co=US&lang=en&ms=COM&ot=BASE&cs=INDIVIDUAL&pa=PA-130',
                     },
                     secondaryCta: {
                         text: 'Free trial',
+                        analyticsId: 'free-trial',
                         href: 'https://www.adobe.com/products/catalog.html',
                     },
                 });
@@ -202,6 +211,7 @@ runTests(async () => {
                     taxText: undefined,
                     seeTermsInfo: {
                         text: 'see terms',
+                        analyticsId: 'see-terms',
                         href: 'https://www.stage.adobe.com/offers/promo-terms.html?locale=en_CA&country=CA&offer_id=DDDCDEBA96799A274FA982669CA74623',
                     },
                     renewalText: undefined,
@@ -211,10 +221,12 @@ runTests(async () => {
                     recurrenceText: '/mo',
                     primaryCta: {
                         text: 'Buy now',
+                        analyticsId: 'buy-now',
                         href: 'https://commerce-stg.adobe.com/store/segmentation?cli=adobe_com&ctx=fp&co=CA&lang=en&ms=COM&ot=BASE&cs=INDIVIDUAL&pa=PA-130',
                     },
                     secondaryCta: {
                         text: 'Free trial',
+                        analyticsId: 'free-trial',
                         href: 'https://commerce-stg.adobe.com/store/segmentation?cli=adobe_com&ctx=fp&co=CA&lang=en&ms=COM&ot=BASE&cs=INDIVIDUAL&pa=PA-130',
                     },
                 });
@@ -234,6 +246,7 @@ runTests(async () => {
                     taxText: undefined,
                     seeTermsInfo: {
                         text: 'see terms',
+                        analyticsId: 'see-terms',
                         href: 'https://www.stage.adobe.com/offers/promo-terms.html?locale=en_CA&country=CA&offer_id=DDDCDEBA96799A274FA982669CA74623&promotion_code=L_PROMO_10F',
                     },
                     renewalText:
@@ -244,10 +257,12 @@ runTests(async () => {
                     recurrenceText: '/mo',
                     primaryCta: {
                         text: 'Buy now',
-                        href: 'https://commerce-stg.adobe.com/store/segmentation?apc=L_PROMO_10F&cli=adobe_com&ctx=fp&co=CA&lang=en&ms=COM&ot=BASE&cs=INDIVIDUAL&pa=PA-130',
+                        analyticsId: 'buy-now',
+                          href: 'https://commerce-stg.adobe.com/store/segmentation?apc=L_PROMO_10F&cli=adobe_com&ctx=fp&co=CA&lang=en&ms=COM&ot=BASE&cs=INDIVIDUAL&pa=PA-130',
                     },
                     secondaryCta: {
                         text: 'Free trial',
+                        analyticsId: 'free-trial',
                         href: 'https://commerce-stg.adobe.com/store/segmentation?apc=L_PROMO_10F&cli=adobe_com&ctx=fp&co=CA&lang=en&ms=COM&ot=BASE&cs=INDIVIDUAL&pa=PA-130',
                     },
                 });
@@ -268,6 +283,7 @@ runTests(async () => {
                     taxText: 'Inclusive of all taxes.',
                     seeTermsInfo: {
                         text: 'see terms',
+                        analyticsId: 'see-terms',
                         href: 'https://www.stage.adobe.com/offers/promo-terms.html?locale=en_AU&country=AU&offer_id=DDDCDEBA96799A274FA982669CA74623',
                     },
                     renewalText: undefined,
@@ -277,10 +293,12 @@ runTests(async () => {
                     recurrenceText: '/mo',
                     primaryCta: {
                         text: 'Buy now',
+                        analyticsId: 'buy-now',
                         href: 'https://commerce-stg.adobe.com/store/segmentation?cli=adobe_com&ctx=fp&co=AU&lang=en&ms=COM&ot=BASE&cs=INDIVIDUAL&pa=PA-130',
                     },
                     secondaryCta: {
                         text: 'Free trial',
+                        analyticsId: 'free-trial',
                         href: 'https://commerce-stg.adobe.com/store/segmentation?cli=adobe_com&ctx=fp&co=AU&lang=en&ms=COM&ot=BASE&cs=INDIVIDUAL&pa=PA-130',
                     },
                 });
@@ -300,6 +318,7 @@ runTests(async () => {
                     taxText: 'Inclusive of all taxes.',
                     seeTermsInfo: {
                         text: 'see terms',
+                        analyticsId: 'see-terms',
                         href: 'https://www.stage.adobe.com/offers/promo-terms.html?locale=en_AU&country=AU&offer_id=DDDCDEBA96799A274FA982669CA74623&promotion_code=L_PROMO_10F',
                     },
                     renewalText:
@@ -310,10 +329,12 @@ runTests(async () => {
                     recurrenceText: '/mo',
                     primaryCta: {
                         text: 'Buy now',
+                        analyticsId: 'buy-now',
                         href: 'https://commerce-stg.adobe.com/store/segmentation?apc=L_PROMO_10F&cli=adobe_com&ctx=fp&co=AU&lang=en&ms=COM&ot=BASE&cs=INDIVIDUAL&pa=PA-130',
                     },
                     secondaryCta: {
                         text: 'Free trial',
+                        analyticsId: 'free-trial',
                         href: 'https://commerce-stg.adobe.com/store/segmentation?apc=L_PROMO_10F&cli=adobe_com&ctx=fp&co=AU&lang=en&ms=COM&ot=BASE&cs=INDIVIDUAL&pa=PA-130',
                     },
                 });
@@ -334,6 +355,7 @@ runTests(async () => {
                     taxText: 'Toutes taxes comprises.',
                     seeTermsInfo: {
                         text: 'voir les conditions',
+                        analyticsId: 'see-terms',
                         href: 'https://www.stage.adobe.com/offers/promo-terms.html?locale=fr_FR&country=FR&offer_id=DDDCDEBA96799A274FA982669CA74623',
                     },
                     renewalText: undefined,
@@ -343,10 +365,12 @@ runTests(async () => {
                     recurrenceText: '/mois',
                     primaryCta: {
                         text: 'Buy now',
+                        analyticsId: 'buy-now',
                         href: 'https://commerce-stg.adobe.com/store/segmentation?cli=adobe_com&ctx=fp&co=FR&lang=fr&ms=COM&ot=BASE&cs=INDIVIDUAL&pa=PA-130',
                     },
                     secondaryCta: {
                         text: 'Free trial',
+                        analyticsId: 'free-trial',
                         href: 'https://commerce-stg.adobe.com/store/segmentation?cli=adobe_com&ctx=fp&co=FR&lang=fr&ms=COM&ot=BASE&cs=INDIVIDUAL&pa=PA-130',
                     },
                 });
@@ -366,6 +390,7 @@ runTests(async () => {
                     taxText: 'Toutes taxes comprises.',
                     seeTermsInfo: {
                         text: 'voir les conditions',
+                        analyticsId: 'see-terms',
                         href: 'https://www.stage.adobe.com/offers/promo-terms.html?locale=fr_FR&country=FR&offer_id=DDDCDEBA96799A274FA982669CA74623&promotion_code=L_PROMO_10F',
                     },
                     renewalText:
@@ -377,10 +402,12 @@ runTests(async () => {
                     recurrenceText: '/mois',
                     primaryCta: {
                         text: 'Buy now',
+                        analyticsId: 'buy-now',
                         href: 'https://commerce-stg.adobe.com/store/segmentation?apc=L_PROMO_10F&cli=adobe_com&ctx=fp&co=FR&lang=fr&ms=COM&ot=BASE&cs=INDIVIDUAL&pa=PA-130',
                     },
                     secondaryCta: {
                         text: 'Free trial',
+                        analyticsId: 'free-trial',
                         href: 'https://commerce-stg.adobe.com/store/segmentation?apc=L_PROMO_10F&cli=adobe_com&ctx=fp&co=FR&lang=fr&ms=COM&ot=BASE&cs=INDIVIDUAL&pa=PA-130',
                     },
                 });

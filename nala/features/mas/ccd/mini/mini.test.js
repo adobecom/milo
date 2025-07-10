@@ -62,15 +62,18 @@ test.describe('CCD Mini Cards Feature', () => {
         if (data.seeTerms) {
           const seeTerms = await cardLocator.evaluate((card) => card.seeTermsInfo);
           expect(seeTerms.text).toBe(data.seeTerms.text);
+          expect(seeTerms.analyticsId).toBe(data.seeTerms.analyticsId);
           expect(seeTerms.href).toBe(data.seeTerms.href);
         }
 
         const primaryCta = await cardLocator.evaluate((card) => card.primaryCta);
         expect(primaryCta.text).toBe(data.primaryCta.text);
+        expect(primaryCta.analyticsId).toBe(data.primaryCta.analyticsId);
         expect(primaryCta.href).toBe(data.primaryCta.href);
 
         const secondaryCta = await cardLocator.evaluate((card) => card.secondaryCta);
         expect(secondaryCta.text).toBe(data.secondaryCta.text);
+        expect(secondaryCta.analyticsId).toBe(data.secondaryCta.analyticsId);
         expect(secondaryCta.href).toBe(data.secondaryCta.href);
       });
     });

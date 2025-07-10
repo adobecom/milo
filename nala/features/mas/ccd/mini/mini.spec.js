@@ -17,14 +17,17 @@ module.exports = {
         promoDurationText: undefined,
         seeTerms: {
           text: 'See terms',
+          analyticsId: 'see-terms',
           href: 'https://www.adobe.com/offers/promo-terms.html?locale=en_US&country=US&offer_id=DDDCDEBA96799A274FA982669CA74623',
         },
         primaryCta: {
           text: 'Buy now',
+          analyticsId: 'buy-now',
           href: 'https://commerce.adobe.com/store/segmentation?cli=adobe_com&ctx=fp&co=US&lang=en&ms=COM&ot=BASE&cs=INDIVIDUAL&pa=PA-130',
         },
         secondaryCta: {
           text: 'Free trial',
+          analyticsId: 'free-trial',
           href: 'https://www.adobe.com/products/catalog.html',
         },
       },
@@ -47,14 +50,17 @@ module.exports = {
         promoDurationText: 'First year only, Ends Mar 3.',
         seeTerms: {
           text: 'See terms',
+          analyticsId: 'see-terms',
           href: 'https://www.adobe.com/offers/promo-terms.html?locale=en_US&country=US&offer_id=BD42B3D5BE2D389B3E6E7E4F30F65DE0&promotion_code=UMRM2MUSPr501YOC',
         },
         primaryCta: {
           text: 'Buy now',
+          analyticsId: 'buy-now',
           href: 'https://commerce.adobe.com/store/segmentation?apc=UMRM2MUSPr501YOC&cli=adobe_com&ctx=fp&co=US&lang=en&ms=COM&ot=BASE&cs=INDIVIDUAL&pa=ppro_direct_individual',
         },
         secondaryCta: {
           text: 'Free trial',
+          analyticsId: 'free-trial',
           href: 'https://commerce.adobe.com/store/segmentation?apc=UMRM2MUSPr501YOC&cli=adobe_com&ctx=fp&co=US&lang=en&ms=COM&ot=BASE&cs=INDIVIDUAL&pa=ppro_direct_individual',
         },
       },
@@ -76,14 +82,17 @@ module.exports = {
         promoDurationText: undefined,
         seeTerms: {
           text: 'Voir les conditions',
+          analyticsId: 'see-terms',
           href: 'https://www.adobe.com/offers/promo-terms.html?locale=fr_FR&country=FR&offer_id=DDDCDEBA96799A274FA982669CA74623',
         },
         primaryCta: {
           text: 'S\'abonner',
+          analyticsId: 'buy-now',
           href: 'https://commerce.adobe.com/store/segmentation?cli=adobe_com&ctx=fp&co=FR&lang=fr&ms=COM&ot=BASE&cs=INDIVIDUAL&pa=PA-130',
         },
         secondaryCta: {
           text: 'Essai gratuit',
+          analyticsId: 'free-trial',
           href: 'https://www.adobe.com/products/catalog.html',
         },
       },
@@ -106,14 +115,17 @@ module.exports = {
         promoDurationText: 'Première année seulement, se termine le 3 mars.',
         seeTerms: {
           text: 'Voir les conditions',
+          analyticsId: 'see-terms',
           href: 'https://www.adobe.com/offers/promo-terms.html?locale=fr_FR&country=FR&offer_id=BD42B3D5BE2D389B3E6E7E4F30F65DE0',
         },
         primaryCta: {
           text: 'S\'abonner',
+          analyticsId: 'buy-now',
           href: 'https://commerce.adobe.com/store/segmentation?apc=UMRM2MUSPr501YOC&cli=adobe_com&ctx=fp&co=FR&lang=fr&ms=COM&ot=BASE&cs=INDIVIDUAL&pa=ppro_direct_individual',
         },
         secondaryCta: {
           text: 'Essai gratuit',
+          analyticsId: 'free-trial',
           href: 'https://commerce.adobe.com/store/segmentation?apc=UMRM2MUSPr501YOC&cli=adobe_com&ctx=fp&co=FR&lang=fr&ms=COM&ot=BASE&cs=INDIVIDUAL&pa=ppro_direct_individual',
         },
       },

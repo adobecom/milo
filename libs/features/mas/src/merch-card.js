@@ -759,6 +759,7 @@ export class MerchCard extends LitElement {
     #getCta(element) {
       return {
         text: element.innerText.trim(),
+        analyticsId: element.dataset.analyticsId,
         href: element.getAttribute('href') ?? element.dataset.href,
       };
     }
