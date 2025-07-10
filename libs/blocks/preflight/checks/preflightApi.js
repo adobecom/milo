@@ -22,6 +22,7 @@ import {
   checkLinks,
   runChecks as runChecksSeo,
 } from './seo.js';
+import captureMetrics from './captureMetrics.js';
 
 let checks = null;
 
@@ -80,7 +81,8 @@ export async function getPreflightResults(url, area, useCache = true) {
   })();
 
   preflightResults = await checks;
-
+  console.log({ preflightResults });
+  captureMetrics(preflightResults);
   return {
     isViewportTooSmall: isViewportTooSmall(),
     runChecks: preflightResults,

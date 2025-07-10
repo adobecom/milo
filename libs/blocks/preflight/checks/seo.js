@@ -1,4 +1,4 @@
-import { STATUS, SEO_TITLES } from './constants.js';
+import { STATUS, SEO_TITLES, SEO_KEYS } from './constants.js';
 import getServiceConfig from '../../../utils/service-config.js';
 
 const KNOWN_BAD_URLS = ['news.adobe.com'];
@@ -26,6 +26,8 @@ export function checkH1s(area) {
     title: SEO_TITLES.H1Count,
     status,
     description,
+    key: SEO_KEYS.H1Count,
+    length: h1s.length,
   };
 }
 
@@ -49,6 +51,8 @@ export function checkTitle(area) {
     title: SEO_TITLES.TitleSize,
     status,
     description,
+    key: SEO_KEYS.TitleSize,
+    length: titleSize,
   };
 }
 
@@ -56,7 +60,7 @@ export async function checkCanon(area) {
   const canon = area.querySelector("link[rel='canonical']");
   let status;
   let description;
-
+  let canStatus = 0;
   if (!canon) {
     status = STATUS.PASS;
     description = 'Canonical is self-referencing.';
@@ -64,6 +68,7 @@ export async function checkCanon(area) {
     const { href } = canon;
     try {
       const resp = await fetch(href, { method: 'HEAD' });
+      canStatus = resp.status;
       if (!resp.ok) {
         status = STATUS.FAIL;
         description = 'Reason: Error with canonical reference.';
@@ -84,6 +89,8 @@ export async function checkCanon(area) {
     title: SEO_TITLES.Canonical,
     status,
     description,
+    key: SEO_KEYS.CanonicalStatus,
+    length: canStatus,
   };
 }
 
@@ -91,12 +98,12 @@ export async function checkDescription(area) {
   const metaDesc = area.querySelector('meta[name="description"]');
   let status;
   let description;
-
+  let descSize = 0;
   if (!metaDesc) {
     status = STATUS.FAIL;
     description = 'Reason: No meta description found.';
   } else {
-    const descSize = metaDesc.content.replace(/\s/g, '').length;
+    descSize = metaDesc.content.replace(/\s/g, '').length;
     if (descSize < 50) {
       status = STATUS.FAIL;
       description = 'Reason: Meta description too short.';
@@ -113,6 +120,8 @@ export async function checkDescription(area) {
     title: SEO_TITLES.MetaDescription,
     status,
     description,
+    key: SEO_KEYS.MetaDescriptionLength,
+    length: descSize,
   };
 }
 
@@ -136,6 +145,8 @@ export async function checkBody(area) {
     title: SEO_TITLES.BodySize,
     status,
     description,
+    key: SEO_KEYS.BodySize,
+    length,
   };
 }
 
@@ -157,6 +168,7 @@ export async function checkLorem(area) {
     title: SEO_TITLES.Lorem,
     status,
     description,
+    key: SEO_KEYS.HasLoremIpsum,
   };
 }
 
@@ -172,6 +184,7 @@ export function connectionError() {
     status: STATUS.LIMBO,
     description: 'A VPN connection is required to use the link check service. Please turn on VPN and refresh the page.',
     details: { badLinks: [] },
+    key: SEO_KEYS.BadLinksCount,
   };
 }
 
@@ -300,6 +313,8 @@ export async function checkLinks({ area, urlHash, envName }) {
     status,
     description,
     details: { badLinks },
+    key: SEO_KEYS.BadLinksCount,
+    length: count,
   };
 
   if (urlHash) {

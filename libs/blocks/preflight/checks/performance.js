@@ -1,4 +1,4 @@
-import { STATUS, PERFORMANCE_TITLES } from './constants.js';
+import { STATUS, PERFORMANCE_TITLES, PERFORMANCE_KEYS } from './constants.js';
 import { getMetadata } from '../../../utils/utils.js';
 
 const lcpCache = new Map();
@@ -31,6 +31,7 @@ export function checkSingleBlock(area) {
   const firstSection = area.querySelector('main > div.section');
   const hasMultipleBlocks = firstSection && firstSection.childElementCount > 1;
   return {
+    key: PERFORMANCE_KEYS.FirstSectionOneBlock,
     title: PERFORMANCE_TITLES.SingleBlock,
     status: hasMultipleBlocks ? STATUS.FAIL : STATUS.PASS,
     description: hasMultipleBlocks
@@ -44,6 +45,7 @@ export function checkForPersonalization(area) {
   const target = getMetadata('target', area) === 'on';
   const hasPersonalization = personalization || target;
   return {
+    key: PERFORMANCE_KEYS.Personalization,
     title: PERFORMANCE_TITLES.Personalization,
     status: hasPersonalization ? STATUS.FAIL : STATUS.PASS,
     description: hasPersonalization
@@ -56,6 +58,7 @@ export async function checkLcpEl(url, area, observeLcp) {
   const lcp = await getLcpEntry(url, area, observeLcp);
   if (!lcp) {
     return {
+      key: PERFORMANCE_KEYS.ValidLcp,
       title: PERFORMANCE_TITLES.Performance,
       status: STATUS.FAIL,
       description: 'No LCP element found.',
@@ -64,6 +67,7 @@ export async function checkLcpEl(url, area, observeLcp) {
   const firstSection = area.querySelector('main > div.section');
   const validLcp = lcp?.element && lcp?.url && firstSection?.contains(lcp.element);
   return {
+    key: PERFORMANCE_KEYS.ValidLcp,
     title: PERFORMANCE_TITLES.LcpEl,
     status: validLcp ? STATUS.PASS : STATUS.FAIL,
     description: validLcp
@@ -76,26 +80,32 @@ export async function checkImageSize(url, area, observeLcp) {
   const lcp = await getLcpEntry(url, area, observeLcp);
   if (!lcp || !lcp.url || lcp.url.match('media_.*.mp4')) {
     return {
+      key: PERFORMANCE_KEYS.LcpImageSizeKb,
       title: PERFORMANCE_TITLES.ImageSize,
       status: STATUS.EMPTY,
       description: 'No image as LCP element.',
+      length: 0,
     };
   }
   try {
     const blob = await fetch(lcp.url).then((res) => res.blob());
     const isSizeValid = blob.size / 1024 <= 100;
     return {
+      key: PERFORMANCE_KEYS.LcpImageSizeKb,
       title: PERFORMANCE_TITLES.ImageSize,
       status: isSizeValid ? STATUS.PASS : STATUS.FAIL,
       description: isSizeValid
         ? 'LCP image is less than 100KB.'
         : 'LCP image is over 100KB.',
+      length: blob.size / 1024,
     };
   } catch (error) {
     return {
+      key: PERFORMANCE_KEYS.LcpImageSizeKb,
       title: PERFORMANCE_TITLES.ImageSize,
       status: STATUS.EMPTY,
       description: 'Could not fetch LCP image.',
+      length: 0,
     };
   }
 }
@@ -106,6 +116,7 @@ export async function checkVideoPoster(url, area, observeLcp) {
   const videoElement = lcp?.element?.closest('video') || lcp?.element?.querySelector('video');
   if (!hasVideoUrl && !videoElement) {
     return {
+      key: PERFORMANCE_KEYS.VideoAsLcp,
       title: PERFORMANCE_TITLES.VideoPoster,
       status: STATUS.EMPTY,
       description: 'No video as LCP element.',
@@ -113,6 +124,7 @@ export async function checkVideoPoster(url, area, observeLcp) {
   }
   const hasPoster = !!videoElement?.poster;
   return {
+    key: PERFORMANCE_KEYS.VideoAsLcp,
     title: PERFORMANCE_TITLES.VideoPoster,
     status: hasPoster ? STATUS.PASS : STATUS.FAIL,
     description: hasPoster
@@ -125,6 +137,7 @@ export async function checkFragments(url, area, observeLcp) {
   const lcp = await getLcpEntry(url, area, observeLcp);
   if (!lcp?.element) {
     return {
+      key: PERFORMANCE_KEYS.FragmentsWithinLcp,
       title: PERFORMANCE_TITLES.Performance,
       status: STATUS.FAIL,
       description: 'No LCP element found.',
@@ -132,6 +145,7 @@ export async function checkFragments(url, area, observeLcp) {
   }
   const hasFragments = lcp.element.closest('.fragment') || lcp.element.closest('.section')?.querySelector('[data-path*="fragment"]');
   return {
+    key: PERFORMANCE_KEYS.FragmentsWithinLcp,
     title: PERFORMANCE_TITLES.Fragments,
     status: hasFragments ? STATUS.FAIL : STATUS.PASS,
     description: hasFragments
@@ -144,6 +158,7 @@ export async function checkPlaceholders(url, area, observeLcp) {
   const lcp = await getLcpEntry(url, area, observeLcp);
   if (!lcp?.element) {
     return {
+      key: PERFORMANCE_KEYS.PlaceholdersWithinLcp,
       title: PERFORMANCE_TITLES.Performance,
       status: STATUS.FAIL,
       description: 'No LCP element found.',
@@ -152,6 +167,7 @@ export async function checkPlaceholders(url, area, observeLcp) {
   const section = lcp.element.closest('.section');
   const hasPlaceholders = section?.dataset.hasPlaceholders === 'true';
   return {
+    key: PERFORMANCE_KEYS.PlaceholdersWithinLcp,
     title: PERFORMANCE_TITLES.Placeholders,
     status: hasPlaceholders ? STATUS.FAIL : STATUS.PASS,
     description: hasPlaceholders
@@ -164,6 +180,7 @@ export async function checkIcons(url, area, observeLcp) {
   const lcp = await getLcpEntry(url, area, observeLcp);
   if (!lcp?.element) {
     return {
+      key: PERFORMANCE_KEYS.IconsWithinLcp,
       title: PERFORMANCE_TITLES.Icons,
       status: STATUS.FAIL,
       description: 'No LCP element found.',
@@ -171,6 +188,7 @@ export async function checkIcons(url, area, observeLcp) {
   }
   const hasIcons = lcp.element.closest('.section')?.querySelector('.icon-milo');
   return {
+    key: PERFORMANCE_KEYS.IconsWithinLcp,
     title: PERFORMANCE_TITLES.Icons,
     status: hasIcons ? STATUS.FAIL : STATUS.PASS,
     description: hasIcons
