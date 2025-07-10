@@ -105,11 +105,41 @@ function decorateSplit(el, foreground, media) {
   }
 }
 
-function reorderLargeText(text) {
-  const body = text.querySelector('.body-xl');
-  const actionArea = text.querySelector('.action-area');
-  if (!body || !actionArea) return;
-  text.insertBefore(actionArea, body);
+function reorderLargeText({ text, largeTextOrder, viewport, size }) {
+  if (size !== 'large') return;
+  if (viewport === 'desktop') {
+    text.replaceChildren(...largeTextOrder);
+    return;
+  }
+  const orderObject = {};
+  [...text.children].forEach((child) => {
+    let orderNum = 0;
+    if (child.classList.contains('action-area') || child.classList.contains('supplemental-text')) {
+      orderNum = 1;
+    } else if (child.classList.contains('body-xl')) {
+      orderNum = 2;
+    }
+    orderObject[orderNum] = orderObject[orderNum] ?? [];
+    orderObject[orderNum].push(child);
+  });
+  const order = [];
+  Object.keys(orderObject).sort((a, b) => a - b).forEach((key) => {
+    order.push(...orderObject[key]);
+  });
+  text.replaceChildren(...order);
+}
+
+function changeBackgroundOrder({ background, foreground, viewport }) {
+  let hasVideo = false;
+  let videoInViewport = false;
+  [...background.children].forEach((child) => {
+    if (hasVideo && videoInViewport) return;
+    hasVideo = child.querySelector('video');
+    videoInViewport = [...child.classList].some((className) => className.startsWith(viewport));
+  });
+  let position = 'beforebegin';
+  if (hasVideo && (background.children.length === 1 || videoInViewport)) position = 'afterend';
+  foreground.insertAdjacentElement(position, background);
 }
 
 function handleViewportOrder({ el, foreground, media: image, size }) {
@@ -117,14 +147,12 @@ function handleViewportOrder({ el, foreground, media: image, size }) {
   const content = isSplit ? el : foreground;
   const text = foreground.querySelector(':scope > .text');
   const mediaCredit = el.querySelector(':scope > .media-credit');
-  const background = el.querySelector(':scope > .background');
-  if (background?.querySelector('video') && !image?.children.length) {
-    el.appendChild(background);
-  }
 
   const desktopOrder = [...content.children];
   const textContent = isSplit ? foreground : text;
-  const nonDesktopOrder = size === 'small' ? [textContent, image] : [image, textContent];
+  const nonDesktopOrder = size === 'small' ? [textContent, image ?? []] : [image ?? [], textContent];
+  const mnemonic = foreground.querySelector('.product-list');
+  if (mnemonic) nonDesktopOrder.unshift(mnemonic);
   const largeTextOrder = [...text.children];
 
   const viewports = {
@@ -142,19 +170,23 @@ function handleViewportOrder({ el, foreground, media: image, size }) {
     },
   };
 
+  const background = el.querySelector(':scope > .background');
+
+  function applyOrder(viewport, elements) {
+    if (!isSplit && background) changeBackgroundOrder({ background, foreground, viewport });
+    reorderLargeText({ text, largeTextOrder, viewport, size });
+    content.replaceChildren(...elements);
+    if (mediaCredit) el.appendChild(mediaCredit);
+  }
+
   Object.entries(viewports).forEach(([viewport, { media, elements }]) => {
     const mediaQuery = window.matchMedia(media);
-    if (mediaQuery.matches && viewport !== 'desktop') {
-      if (size === 'large') reorderLargeText(text);
-      content.replaceChildren(...elements);
-      if (mediaCredit) el.appendChild(mediaCredit);
+    if (mediaQuery.matches) {
+      applyOrder(viewport, elements);
     }
     mediaQuery.addEventListener('change', (e) => {
       if (!e.matches) return;
-      if (size === 'large' && viewport !== 'desktop') reorderLargeText(text);
-      if (viewport === 'desktop') text.replaceChildren(...largeTextOrder);
-      content.replaceChildren(...elements);
-      if (mediaCredit) el.appendChild(mediaCredit);
+      applyOrder(viewport, elements);
     });
   });
 }
@@ -198,7 +230,7 @@ export default async function init(el) {
   if (el.classList.contains('countdown-timer')) {
     promiseArr.push(loadCDT(text, el.classList));
   }
-  handleViewportOrder({ el, foreground, media, size });
 
   await Promise.all(promiseArr);
+  handleViewportOrder({ el, foreground, media, size });
 }
