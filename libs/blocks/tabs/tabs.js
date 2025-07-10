@@ -263,6 +263,8 @@ export function assignLinkedTabs(linkedTabsList, metaSettings, id, val) {
     const url = new URL(link);
     linkedTabsList[`tab-${id}-${val}`] = localizeLink(link, url.hostname);
   } catch {
+    // @see https://jira.corp.adobe.com/browse/MWPW-170787
+    // TODO support for relative links to be removed after authoring makes full switch
     if (!/^\/(?:[a-zA-Z0-9-_]+(?:\/[a-zA-Z0-9-_]+)*)?$/.test(link)) return;
     linkedTabsList[`tab-${id}-${val}`] = link;
   }
