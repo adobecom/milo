@@ -255,10 +255,9 @@ const handlePillSize = (pill) => {
   return `${sizes[size]?.[0] ?? sizes[1]}-pill`;
 };
 
-export function assignLinkedTabs(linkedTabsList, metaSettings, id, val, assotiatedTabButton) {
+export function assignLinkedTabs(linkedTabsList, metaSettings, id, val) {
   if (!metaSettings.link || !id || !val || !linkedTabsList) return;
   const { link } = metaSettings;
-  assotiatedTabButton?.setAttribute('role', 'link');
 
   try {
     const url = new URL(link);
@@ -380,7 +379,7 @@ const init = (block) => {
       if (metaSettings['tab-background']) {
         tabColor[`tab-${id}-${val}`] = metaSettings['tab-background'];
       }
-      assignLinkedTabs(linkedTabs, metaSettings, id, val, assotiatedTabButton);
+      assignLinkedTabs(linkedTabs, metaSettings, id, val);
       const tabLabel = tabListItems[val - 1]?.innerText;
       if (tabLabel) {
         assocTabItem.setAttribute('data-nested-lh', `t${val}${processTrackingLabels(tabLabel, getConfig(), 3)}`);
