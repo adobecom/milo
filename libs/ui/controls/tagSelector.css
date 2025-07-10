@@ -245,6 +245,11 @@
   background-color: lightblue;
 }
 
+/* MWPW-176102: provide positioning context for the absolutely-positioned .cb checkbox */
+.search-item {
+  position: relative;
+}
+
 .tagselect-item .cb + label::before,
 .search-item .cb + label::before {
   background-size: cover;
