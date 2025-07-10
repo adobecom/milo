@@ -46,6 +46,7 @@ export function Price({ literals, providers, settings }) {
             perpetual,
             displayAnnual,
             promotionCode,
+            quantity,
             alternativePrice,
             wcsOsi,
             ...rest
@@ -65,6 +66,7 @@ export function Price({ literals, providers, settings }) {
                 displayAnnual: toBoolean(displayAnnual),
                 promotionCode:
                     computePromoStatus(promotionCode).effectivePromoCode,
+                quantity: toQuantity(quantity, Defaults.quantity),
                 alternativePrice: toBoolean(alternativePrice),
                 wcsOsi: toOfferSelectorIds(wcsOsi),
             }),

@@ -293,8 +293,8 @@ export class InlinePrice extends HTMLSpanElement {
           ...priceOptions,
       };
         if (!options.wcsOsi.length) return false;
-
-        if (service.featureFlags[FF_DEFAULTS] && priceOptions.displayTax === undefined && priceOptions.forceTaxExclusive === undefined) {
+        // if displayTax or forceTaxExclusive is not set, we need to resolve the values based on the geo and segment
+        if (service.featureFlags[FF_DEFAULTS] && (priceOptions.displayTax === undefined || priceOptions.forceTaxExclusive === undefined)) {
             const [offerSelectors] = await service.resolveOfferSelectors(options);
             const offers = selectOffers(await offerSelectors, options);
             if (offers?.length) {
@@ -303,10 +303,10 @@ export class InlinePrice extends HTMLSpanElement {
                 const [marketSegment = ''] = offer.marketSegments;
                 // set default value for displayTax and forceTaxExclusive if not set neither in OST nor in merch link
                 const flags = await resolvePriceTaxFlags(country, language, offer.customerSegment, marketSegment);
-                if (!options.displayTax) {
+                if (priceOptions.displayTax === undefined) {
                     options.displayTax = flags?.displayTax || options.displayTax;
                 }
-                if (!options.forceTaxExclusive) {
+                if (priceOptions.forceTaxExclusive === undefined) {
                     options.forceTaxExclusive = flags?.forceTaxExclusive || options.forceTaxExclusive;
                 }
             }
