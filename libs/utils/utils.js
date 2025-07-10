@@ -1593,7 +1593,7 @@ function initSidekick() {
 
 function decorateMeta() {
   const { origin } = window.location;
-  const contents = document.head.querySelectorAll('[content*=".hlx."], [content*=".aem."]');
+  const contents = document.head.querySelectorAll('[content*=".hlx."], [content*=".aem."], [content*="/federal/"]');
   contents.forEach((meta) => {
     if (meta.getAttribute('property') === 'hlx:proxyUrl' || meta.getAttribute('name')?.endsWith('schedule')) return;
     try {

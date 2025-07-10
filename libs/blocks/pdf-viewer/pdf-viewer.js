@@ -12,6 +12,7 @@ const PDF_EMBED_MODE_CONFIG = {
   'full-window': { defaultViewMode: 'FIT_WIDTH' },
   default: { embedMode: 'IN_LINE' },
 };
+const PDF_CONTAINER_MIN_HEIGHT = '620px';
 
 export const getPdfConfig = (location) => {
   const { host } = location;
@@ -120,6 +121,7 @@ const init = async (a) => {
 
   const hiddenSection = a.closest('.section.hide-block.form-success');
   if (hiddenSection) {
+    hiddenSection.style.minHeight = PDF_CONTAINER_MIN_HEIGHT;
     const observer = new IntersectionObserver((entries) => {
       entries.forEach(async (entry) => {
         if (entry.isIntersecting) {

@@ -567,20 +567,102 @@ async function openExternalModal(url, getModal, extraOptions, el) {
 
 const isInternalModal = (url) => /\/fragments\//.test(url);
 
+const closeModalWithoutEvent = (modalId) => {
+  if (!modalId) return;
+  document.querySelectorAll(`#${modalId}`).forEach((mod) => {
+    if (mod.classList.contains('dialog-modal')) {
+      const modalCurtain = document.querySelector(`#${modalId}~.modal-curtain`);
+      if (modalCurtain) {
+        modalCurtain.remove();
+      }
+      mod.remove();
+    }
+    document.querySelector(`[data-modal-hash="#${mod.id}"]`)?.focus();
+  });
+
+  if (!document.querySelectorAll('.modal-curtain').length) {
+    document.body.classList.remove('disable-scroll');
+  }
+
+  [...document.querySelectorAll('header, main, footer')]
+    .forEach((element) => element.removeAttribute('aria-disabled'));
+};
+
+// Modal state handling: see merch.md
+export const modalState = { isOpen: false };
+
+export async function updateModalState({ cta, closedByUser } = {}) {
+  const { hash } = window.location;
+
+  if (hash?.includes('=')) {
+    const modal = document.querySelector('.dialog-modal');
+    if (!modal) return modalState.isOpen;
+    modalState.isOpen = false;
+    closeModalWithoutEvent(modal.id);
+    return modalState.isOpen;
+  }
+
+  const openedDialog = document.querySelector(`.dialog-modal${hash}`) || document.querySelector('.dialog-modal#checkout-link-modal');
+  const isLocaleModal = openedDialog?.id?.includes('locale-modal');
+  const modal = isLocaleModal ? null : openedDialog;
+
+  if (hash && !cta && modalState.isOpen && !modal) {
+    const dialog = document.querySelector('.dialog-modal');
+    if (!dialog) return modalState.isOpen;
+    closeModalWithoutEvent(dialog.id);
+    modalState.isOpen = false;
+    return modalState.isOpen;
+  }
+
+  if (hash && !cta && !modalState.isOpen && !modal) {
+    const ctaToClick = document.querySelector(`[is=checkout-link][data-modal-id=${hash.replace('#', '')}]`);
+    if (ctaToClick && !ctaToClick.dataset.clickDisabled) {
+      ctaToClick.dataset.clickDisabled = 'true';
+      ctaToClick.click();
+      modalState.isOpen = true;
+      setTimeout(() => {
+        delete ctaToClick.dataset.clickDisabled;
+      }, 1000);
+    }
+    return modalState.isOpen;
+  }
+
+  if (hash && hash === `#${cta?.getAttribute('data-modal-id')}` && !modalState.isOpen && !modal) {
+    cta.click();
+    modalState.isOpen = true;
+    return modalState.isOpen;
+  }
+
+  if (closedByUser && document.querySelector('#checkout-link-modal')) {
+    modalState.isOpen = false;
+    return modalState.isOpen;
+  }
+
+  if (closedByUser && modal) {
+    modalState.isOpen = false;
+    return modalState.isOpen;
+  }
+
+  if (!hash && modal) {
+    modalState.isOpen = false;
+    const { closeModal } = await import('../modal/modal.js');
+    closeModal(modal);
+  }
+
+  return modalState.isOpen;
+}
+
 export async function openModal(e, url, offerType, hash, extraOptions, el) {
   e.preventDefault();
   e.stopImmediatePropagation();
+  if (modalState.isOpen) return;
+  modalState.isOpen = true;
   const { getModal } = await import('../modal/modal.js');
   await import('../modal/modal.merch.js');
   const offerTypeClass = offerType === OFFER_TYPE_TRIAL ? 'twp' : 'crm';
   let modal;
-  if (hash) {
-    const prevHash = window.location.hash.replace('#', '') === hash ? '' : window.location.hash;
-    window.location.hash = hash;
-    window.addEventListener('milo:modal:closed', () => {
-      window.history.pushState({}, document.title, prevHash !== '' ? `#${prevHash}` : `${window.location.pathname}${window.location.search}`);
-    }, { once: true });
-  }
+
+  if (hash) window.location.hash = hash;
 
   if (el?.isOpen3in1Modal) {
     const { default: openThreeInOneModal, handle3in1IFrameEvents } = await import('./three-in-one.js');
@@ -813,19 +895,6 @@ export async function getPriceContext(el, params) {
   };
 }
 
-let modalReopened = false;
-export function reopenModal(cta) {
-  if (modalReopened) return;
-  if (cta && cta.getAttribute('data-modal-id') === window.location.hash.replace('#', '')) {
-    cta.click();
-    modalReopened = true;
-  }
-}
-
-export function resetReopenStatus() {
-  modalReopened = false;
-}
-
 export async function buildCta(el, params) {
   const large = !!el.closest('.marquee');
   const strong = el.firstElementChild?.tagName === 'STRONG' || el.parentElement?.tagName === 'STRONG';
@@ -848,8 +917,7 @@ export async function buildCta(el, params) {
     cta.classList.add(LOADING_ENTITLEMENTS);
     cta.onceSettled().finally(() => {
       cta.classList.remove(LOADING_ENTITLEMENTS);
-      // after opening a modal, navigating to another page and back we need to reopen the modal
-      reopenModal(cta);
+      updateModalState({ cta });
     });
   }
 
@@ -941,3 +1009,11 @@ export default async function init(el) {
   log.warn('Failed to get context:', { el });
   return null;
 }
+
+window.addEventListener('hashchange', updateModalState);
+
+window.addEventListener('popstate', updateModalState);
+
+window.addEventListener('milo:modal:closed', () => {
+  updateModalState({ closedByUser: true });
+});
