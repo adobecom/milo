@@ -376,7 +376,7 @@ function checkCtaUrl(s, options, i) {
 function localizeCtaUrl(val) {
   if (typeof val !== 'string' || val.trim() === '') return val;
   try {
-    const injectFlag = (getMetadata('caasLocaleInject') || '').toLowerCase() === 'true';
+    const injectFlag = (getMetadata('caaslocaleinject') || '').toLowerCase() === 'true';
     const pageLocale = getPageLocale(window.location.pathname);
     if (!injectFlag || !pageLocale) return val;
     const urlObj = new URL(val, window.location.origin);
