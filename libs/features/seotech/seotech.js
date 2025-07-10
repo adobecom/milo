@@ -7,12 +7,36 @@ export const VIDEO_OBJECT_PROVIDERS = [
   { provider: 'youtube', regex: REGEX_YOUTUBE },
 ];
 
-export function logError(msg) {
-  window.lana?.log(`SEOTECH: ${msg}`, {
+export function logError(msg, context = {}) {
+  // Build additional context string with pilcrow delineation
+  const additionalInfo = [];
+
+  if (context.bucket) {
+    additionalInfo.push(`bucket:${context.bucket}`);
+  }
+
+  if (context.id) {
+    additionalInfo.push(`id:${context.id}`);
+  }
+
+  if (context.videoUrl) {
+    additionalInfo.push(`videoUrl:${context.videoUrl}`);
+  }
+
+  if (context.pathname) {
+    additionalInfo.push(`pathname:${context.pathname}`);
+  }
+
+  // Combine message with additional context using pilcrow
+  const fullMessage = additionalInfo.length > 0
+    ? `${msg} ¶ ${additionalInfo.join(' ¶ ')}`
+    : msg;
+
+  window.lana?.log(`SEOTECH: ${fullMessage}`, {
     debug: false,
-    implicitSampleRate: 100,
     sampleRate: 100,
-    tags: 'errorType=seotech',
+    tags: 'seotech',
+    severity: 'error',
   });
 }
 
@@ -33,11 +57,14 @@ export async function getVideoObject(url, { baseUrl = PROD_BASE_URL } = {}) {
   }
   const { provider, id } = parsedUrl;
   const videoObjectUrl = `${baseUrl}/json-ld/types/video-object/providers/${provider}/${id}`;
+
   const resp = await fetch(videoObjectUrl, { headers: { 'Content-Type': 'application/json' } });
   const body = await resp?.json();
+
   if (!resp.ok) {
-    throw new Error(`Failed to fetch video: ${body?.error}`);
+    throw new Error(`Failed to fetch video: ${body?.error || resp.statusText} (Status: ${resp.status})`);
   }
+
   return body.videoObject;
 }
 
@@ -61,10 +88,21 @@ export async function sha256(message) {
 }
 
 export async function getStructuredData(bucket, id, { baseUrl = PROD_BASE_URL } = {}) {
-  if (!bucket || !id) throw new Error('bucket and id are required');
+  if (!bucket || !id) {
+    throw new Error(`bucket and id are required. Received: bucket=${bucket}, id=${id}`);
+  }
+
   const url = `${baseUrl}/structured-data/${bucket}/${id}`;
   const resp = await fetch(url);
-  if (!resp || !resp.ok) return null;
+
+  if (!resp) {
+    throw new Error('Network error: No response received');
+  }
+
+  if (!resp.ok) {
+    throw new Error(`HTTP ${resp.status}: ${resp.statusText}`);
+  }
+
   const body = await resp.json();
   return body;
 }
@@ -87,13 +125,17 @@ export async function appendScriptTag({ locationUrl, getMetadata, createTag, get
     const id = await sha256(url.pathname?.replace('.html', ''));
     promises.push(getStructuredData(bucket, id, { baseUrl })
       .then((obj) => append(obj, 'seotech-structured-data'))
-      .catch((e) => logError(e.message)));
+      .catch(() => logError('Structured data operation failed', {
+        bucket,
+        id,
+        pathname: url.pathname,
+      })));
   }
   const videoUrl = getMetadata('seotech-video-url');
   if (videoUrl) {
     promises.push(getVideoObject(videoUrl, { baseUrl })
       .then((videoObject) => append(videoObject, 'seotech-video-url'))
-      .catch((e) => logError(e.message)));
+      .catch(() => logError('Video object operation failed', { videoUrl })));
   }
   return Promise.all(promises);
 }
