@@ -115,6 +115,24 @@ function defaultOpen(accordion) {
   handleClick(accordion.querySelector('.accordion-trigger'), accordion.querySelector('.descr-details'), 1);
 }
 
+function createMobileVideo(ogMedia) {
+  const video = ogMedia?.querySelector('video');
+  const videoSrc = video?.getAttribute('data-video-source') || video?.querySelector('source')?.src;
+
+  if (!video || !videoSrc) return ogMedia?.cloneNode(true);
+
+  const mobileMedia = ogMedia?.cloneNode(true);
+  const mobileVideo = mobileMedia?.querySelector('video');
+  if (mobileVideo && !mobileVideo?.querySelector('source')) {
+    const source = createTag('source', { src: videoSrc, type: 'video/mp4' });
+    mobileVideo?.appendChild(source);
+  }
+
+  if (mobileVideo?.hasAttribute('autoplay')) playVideo(mobileVideo);
+
+  return mobileMedia;
+}
+
 function createItem(accordion, id, heading, num, edit) {
   const triggerId = `accordion-${id}-trigger-${num}`;
   const panelId = `accordion-${id}-content-${num}`;
@@ -143,7 +161,7 @@ function createItem(accordion, id, heading, num, edit) {
 
   if (edit) {
     const ogMedia = mediaCollection[id][num - 1];
-    const mobileMedia = ogMedia.cloneNode(true);
+    const mobileMedia = createMobileVideo(ogMedia);
     dm.append(mobileMedia);
     dd.prepend(dm);
   }
