@@ -4,7 +4,7 @@ const MobileGnav = {
   init() {
     this.isMobile = !isDesktop.matches;
     this.toggleButton = document.querySelector('.feds-toggle');
-    this.menuItemLinks = document.querySelectorAll('.feds-nav-wrapper section.feds-navItem > .feds-navLink');
+    this.menuItemLinks = document.querySelectorAll('.feds-nav-wrapper section.feds-navItem > .feds-navLink, .feds-navItem > .feds-cta-wrapper > .feds-cta');
     this.eventInitialized = false;
     this.addEventListeners();
   },
