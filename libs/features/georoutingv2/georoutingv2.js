@@ -172,12 +172,17 @@ function getMatches(data, suppliedCode) {
   }, []);
 }
 
-function removeOnClickOutsideElement(element, event, button) {
-  const func = (evt) => {
-    if (event === evt) return; // ignore initial click event
+const [pickerKeydownHandler, removePicker, removeOnClickOutsideElement] = (() => {
+  let pickerList = null;
+  let pickerButton = null;
+  let pickerLinks = null;
+  let pickerEvent = null;
+
+  const handleOutsideClick = (evt) => {
+    if (pickerEvent === evt) return; // ignore initial click event
     let targetEl = evt.target;
     while (targetEl) {
-      if (targetEl === element) {
+      if (targetEl === pickerList) {
         // click inside
         return;
       }
@@ -185,12 +190,68 @@ function removeOnClickOutsideElement(element, event, button) {
       targetEl = targetEl.parentNode;
     }
     // This is a click outside.
-    element.remove();
-    button.setAttribute('aria-expanded', false);
-    document.removeEventListener('click', func);
+    removePicker();
+    document.removeEventListener('click', handleOutsideClick);
   };
-  document.addEventListener('click', func);
-}
+  const keydownHandler = (e) => {
+    const index = Array.from(pickerLinks).indexOf(e.target);
+    // If the current target is not a link in the picker, do nothing
+    if (index === -1) return;
+    switch (e.code) {
+      case 'ArrowDown': {
+        const next = pickerLinks[index + 1];
+        next?.focus();
+        break;
+      }
+      case 'ArrowUp': {
+        const prev = pickerLinks[index - 1];
+        prev?.focus();
+        break;
+      }
+      case 'Tab': {
+        e.preventDefault();
+        if (e.shiftKey) {
+          const lastElement = pickerLinks[pickerLinks.length - 1];
+          const prev = pickerLinks[index - 1] || lastElement;
+          prev.focus();
+        } else {
+          const next = pickerLinks[index + 1] || pickerLinks[0];
+          next.focus();
+        }
+        break;
+      }
+      case 'Escape': {
+        e.stopPropagation();
+        document.removeEventListener('click', handleOutsideClick);
+        removePicker();
+        break;
+      }
+      default:
+        break;
+    }
+  };
+  return [
+    (list, button) => {
+      pickerList = list;
+      pickerButton = button;
+      pickerLinks = list.querySelectorAll('a');
+      if (pickerLinks.length > 0) {
+        pickerLinks[0].focus();
+        pickerList.addEventListener('keydown', keydownHandler);
+      }
+    },
+    () => {
+      pickerList?.removeEventListener('keydown', keydownHandler);
+      pickerList?.remove();
+      pickerButton?.focus();
+      pickerButton?.setAttribute('aria-expanded', false);
+    },
+    (event) => {
+      pickerEvent = event;
+      document.addEventListener('click', handleOutsideClick);
+    },
+  ];
+})();
 
 function openPicker(button, locales, country, event, dir, currentPage) {
   if (document.querySelector('.locale-modal-v2 .picker')) {
@@ -211,8 +272,10 @@ function openPicker(button, locales, country, event, dir, currentPage) {
     list.classList.add('top');
   }
 
+  pickerKeydownHandler(list, button);
+
   button.setAttribute('aria-expanded', true);
-  removeOnClickOutsideElement(list, event, button);
+  removeOnClickOutsideElement(event);
 }
 
 function buildContent(currentPage, locale, geoData, locales) {
