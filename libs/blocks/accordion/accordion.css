@@ -246,6 +246,14 @@ div.media-p {
   padding: 0;
 }
 
+div.editorial .media-p {
+  width: 100%;
+}
+
+div.editorial .media-p img {
+  width: 100%;
+}
+
 @media screen and (min-width: 600px) {
   .accordion-expand-all .con-button.button-l {
     border-radius: 25px;
