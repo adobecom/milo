@@ -166,15 +166,16 @@ export class MerchQuantitySelect extends LitElement {
 
     toggleMenu() {
         this.closed = !this.closed;
-        if (!this.closed) this.adjustPopoverPlacement();
-        else this.highlightedIndex = this.options.indexOf(this.selectedValue);
+        this.adjustPopoverPlacement();
+        if (this.closed) this.highlightedIndex = this.options.indexOf(this.selectedValue);
     }
 
     adjustPopoverPlacement() {
         const popover = this.shadowRoot.querySelector('.popover');
-        if (popover.getBoundingClientRect().bottom > window.innerHeight)
+        if (this.closed || popover.getBoundingClientRect().bottom <= window.innerHeight)
+            popover.setAttribute('placement', 'bottom');
+        else
             popover.setAttribute('placement', 'top');
-        else popover.setAttribute('placement', 'bottom');
     }
 
     handleMouseEnter(index) {
