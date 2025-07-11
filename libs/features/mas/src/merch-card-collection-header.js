@@ -230,7 +230,7 @@ export default class MerchCardCollectionHeader extends LitElement {
             --merch-card-collection-header-margin-bottom: 32px;
             --merch-card-collection-header-gap: var(--consonant-merch-spacing-xxs);
             --merch-card-collection-header-row-gap: var(--consonant-merch-spacing-xxs);
-            --merch-card-collection-header-columns: auto max-content;
+            --merch-card-collection-header-columns: auto auto;
             --merch-card-collection-header-areas: "search search" 
                                                   "filter sort"
                                                   "result result";
@@ -249,6 +249,7 @@ export default class MerchCardCollectionHeader extends LitElement {
             grid-template-columns: var(--merch-card-collection-header-columns);
             grid-template-areas: var(--merch-card-collection-header-areas);
             margin-bottom: var(--merch-card-collection-header-margin-bottom);
+            max-width: var(--merch-card-collection-header-max-width);
         }
 
         #header:empty {
