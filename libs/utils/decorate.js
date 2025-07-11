@@ -494,13 +494,16 @@ export function decorateAnchorVideo({ src = '', anchorTag }) {
   if (indexOfVideo === 1) {
     firstVideo = videoEl;
   }
+
   createIntersectionObserver({
     el: videoEl,
     options: { rootMargin: '1000px' },
     callback: () => {
-      videoEl?.appendChild(createTag('source', { src, type: 'video/mp4' }));
+      if (videoEl.querySelector('source')) return;
+      videoEl.appendChild(createTag('source', { src, type: 'video/mp4' }));
     },
   });
+
   if (videoEl.controls) {
     const io = new IntersectionObserver((entries) => {
       entries.forEach(({ isIntersecting, target }) => {

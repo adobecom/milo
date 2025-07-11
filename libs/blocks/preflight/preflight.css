@@ -685,13 +685,20 @@ body.preflight-assets-analysis {
   font-weight: bold;
 }
 
-picture:has(.picture-meta) {
+.assets-image-grid-item iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+
+picture:has(.asset-meta),
+.video-holder:has(.asset-meta) {
   position: relative;
   display: block;
   height: 100%;
 }
 
-.picture-meta {
+.asset-meta {
   position: absolute;
   top: 10px;
   left: 10px;
@@ -709,70 +716,74 @@ picture:has(.picture-meta) {
   opacity: 0.7;
 }
 
-.text.center .picture-meta {
+.text.center .asset-meta {
   left: 50%;
   transform: translateX(-50%);
 }
 
-.brick .background .picture-meta,
-.brick .background .picture-meta > div {
+.brick .background .asset-meta,
+.brick .background .asset-meta > div {
   height: unset;
   padding: unset;
   margin: unset;
 }
 
-.brick .foreground div > :is(.video-container, picture, [class^="picture-meta"]) {
+.brick .foreground div > :is(.video-holder, picture, [class^="asset-meta"]) {
   margin: 0;
 }
 
-.brick.split.row .foreground .brick-media picture:has(.picture-meta) img {
+.brick.split.row .foreground .brick-media picture:has(.asset-meta) img {
   width: 100%;
 }
 
-.brick:has(.background) .foreground .icon-area .picture-meta {
+.brick:has(.background) .foreground .icon-area .asset-meta {
   top: unset;
   bottom: -5px;
 }
 
-.brick .icon-stack-area .picture-meta {
+.brick .icon-stack-area .asset-meta {
   flex-direction: row;
   width: max-content;
   column-gap: 5px;
 }
 
-.hero-marquee.media-cover picture:has(.picture-meta) {
+.hero-marquee.media-cover :is(picture, .video-holder):has(.asset-meta) {
   display: block;
 }
 
-.picture-meta.no-picture-tag {
+.asset-meta.no-picture-tag {
   position: relative;
   top: unset;
   left: unset;
   right: unset;
 }
 
-picture:hover .picture-meta,
-img:hover ~ .picture-meta {
+picture:hover .asset-meta,
+img:hover ~ .asset-meta,
+.video-holder:hover .asset-meta {
   opacity: 1;
   z-index: 3;
 }
 
-.picture-meta > div,
-.brick .background .picture-meta > div {
+.asset-meta > div,
+.brick .background .asset-meta > div {
   padding: 5px;
   border-radius: 6px;
 }
 
-.picture-meta-a11y.is-decorative {
+.asset-meta-entry {
+  word-break: break-word;
+}
+
+.asset-meta-entry.needs-attention {
   background: #FFB74D;
 }
 
-.picture-meta-asset.has-mismatch {
+.asset-meta-entry.is-invalid {
   background: #EF5350;
 }
 
-.picture-meta-asset.no-mismatch,
-.picture-meta-a11y.has-alt {
+.asset-meta-entry.is-valid {
   background: #4CAF50;
 }
 
