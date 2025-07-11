@@ -1782,6 +1782,8 @@ merch-card[variant="simplified-pricing-express"] {
     min-width: var(--consonant-merch-card-simplified-pricing-express-width);
     background-color: var(--spectrum-gray-50);
     border-radius: 16px;
+    height: 100%;
+    display: flex;
 }
 
 /* Grid layout for simplified-pricing-express cards */
@@ -1789,7 +1791,7 @@ merch-card[variant="simplified-pricing-express"] {
     display: grid;
     justify-content: center;
     justify-items: center;
-    align-items: normal;
+    align-items: stretch;
     gap: var(--consonant-merch-spacing-m);
     padding: var(--spacing-m);
 }
@@ -1910,6 +1912,7 @@ merch-card[variant="simplified-pricing-express"] [slot="footer"] sp-button[varia
             width: var(--merch-card-simplified-pricing-express-width);
             max-width: var(--merch-card-simplified-pricing-express-width);
             min-height: var(--merch-card-simplified-pricing-express-min-height);
+            height: 100%;
             background: var(--spectrum-gray-50);
             border: 2px solid var(--merch-card-custom-border-color, transparent);
             border-radius: 16px;

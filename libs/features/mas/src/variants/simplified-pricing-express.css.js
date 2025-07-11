@@ -13,6 +13,8 @@ merch-card[variant="simplified-pricing-express"] {
     min-width: var(--consonant-merch-card-simplified-pricing-express-width);
     background-color: var(--spectrum-gray-50);
     border-radius: 16px;
+    height: 100%;
+    display: flex;
 }
 
 /* Grid layout for simplified-pricing-express cards */
@@ -20,7 +22,7 @@ merch-card[variant="simplified-pricing-express"] {
     display: grid;
     justify-content: center;
     justify-items: center;
-    align-items: normal;
+    align-items: stretch;
     gap: var(--consonant-merch-spacing-m);
     padding: var(--spacing-m);
 }
