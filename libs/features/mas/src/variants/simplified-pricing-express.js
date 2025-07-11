@@ -108,8 +108,8 @@ export class SimplifiedPricingExpress extends VariantLayout {
             background-clip: padding-box, border-box;
             background-image: linear-gradient(
                     to bottom,
-                    var(--spectrum-gray-50),
-                    var(--spectrum-gray-50)
+                    #f8f8f8,
+                    #f8f8f8
                 ),
                 linear-gradient(98deg, #FF477B 3.22%, #5C5CE0 52.98%, #318FFF 101.72%);
             border: 2px solid transparent;
