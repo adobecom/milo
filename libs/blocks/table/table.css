@@ -574,7 +574,7 @@
   box-shadow: 0 6px 3px -3px rgb(0 0 0 / 15%);
 }
 
-.table.sticky .row-heading.active {
+.table[class*="sticky"] .row-heading.active {
   z-index: 9;
 }
 
