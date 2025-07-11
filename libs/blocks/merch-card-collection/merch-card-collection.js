@@ -316,6 +316,20 @@ export default async function init(el) {
         index += 1;
       }
       slot.setAttribute('placeholder', '');
+      // To remove after cc filters reauthoring
+      if (type === 'catalog' && LITERAL_SLOTS.length > literalsEl.children.length) {
+        const slotName = LITERAL_SLOTS[index];
+        if (slotName === 'resultText') {
+          const mobileSlot = slot.cloneNode(true);
+          mobileSlot.setAttribute('slot', 'resultMobileText');
+          literalSlots.push(mobileSlot);
+        }
+        if (slotName === 'resultsText') {
+          const mobileSlot = slot.cloneNode(true);
+          mobileSlot.setAttribute('slot', 'resultsMobileText');
+          literalSlots.push(mobileSlot);
+        }
+      }
       literalSlots.push(slot);
     }
   }
