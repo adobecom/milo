@@ -1,4 +1,4 @@
-import { html, css, LitElement } from 'lit';
+import { html, css, LitElement, nothing } from 'lit';
 import { MatchMediaController } from '@spectrum-web-components/reactive-controllers/src/MatchMedia.js';
 import { headingStyles } from './merch-sidenav-heading.css.js';
 import '../merch-search.js';
@@ -6,12 +6,14 @@ import './merch-sidenav-list.js';
 import './merch-sidenav-checkbox-group.js';
 import { SPECTRUM_MOBILE_LANDSCAPE, TABLET_DOWN } from '../media.js';
 import { disableBodyScroll, enableBodyScroll } from '../bodyScrollLock.js';
+import { EVENT_MERCH_SIDENAV_SELECT } from '../constants.js';
 
 export class MerchSideNav extends LitElement {
     static properties = {
         sidenavTitle: { type: String },
         closeText: { type: String, attribute: 'close-text' },
         modal: { type: Boolean, attribute: 'modal', reflect: true },
+        autoclose: { type: Boolean, attribute: 'autoclose', reflect: true }
     };
 
     // modal target
@@ -20,6 +22,19 @@ export class MerchSideNav extends LitElement {
     constructor() {
         super();
         this.modal = false;
+        this.autoclose = false;
+        this.closeModal = this.closeModal.bind(this);
+        this.handleSelection = this.handleSelection.bind(this);
+    }
+
+    connectedCallback() {
+        super.connectedCallback();
+        this.addEventListener(EVENT_MERCH_SIDENAV_SELECT, this.handleSelection);
+    }
+
+    disconnectedCallback() {
+        super.disconnectedCallback();
+        this.removeEventListener(EVENT_MERCH_SIDENAV_SELECT, this.handleSelection);
     }
 
     static styles = [
@@ -27,11 +42,13 @@ export class MerchSideNav extends LitElement {
             :host {
                 display: block;
                 z-index: 2;
+                --merch-sidenav-gap: 8px;
             }
 
             :host h2 {
-              color: var(--spectrum-global-color-gray-900);
-              font-size: 12px;
+                color: var(--spectrum-global-color-gray-900);
+                font-size: 12px;
+                margin: 0 0 var(--merch-sidenav-gap);
             }
 
             :host(:not([modal])) {
@@ -48,6 +65,10 @@ export class MerchSideNav extends LitElement {
                 align-items: baseline;
             }
             
+            :host ::slotted(merch-search) {
+                display: block;
+                margin-bottom: var(--merch-sidenav-gap);
+            }
 
             :host([modal]) ::slotted(merch-search) {
                 display: none;
@@ -99,6 +120,10 @@ export class MerchSideNav extends LitElement {
 
     get asDialog() {
         if (!this.modal) return;
+        const closeButton = !this.autoclose ? 
+            html`<sp-link href="#" @click="${this.closeModal}"
+                >${this.closeText || 'Close'}</sp-link
+            >` : nothing;
         return html`
             <sp-theme  color="light" scale="medium">
                 <sp-dialog-base
@@ -113,9 +138,7 @@ export class MerchSideNav extends LitElement {
                                 <h2>${this.sidenavTitle}</h2>
                                 <slot></slot>
                             </div>
-                            <sp-link href="#" @click="${this.closeModal}"
-                                >${this.closeText || 'Close'}</sp-link
-                            >
+                            ${closeButton}
                         </div>
                     </div>
                 </sp-dialog-base>
@@ -138,6 +161,11 @@ export class MerchSideNav extends LitElement {
         e.preventDefault();
         this.dialog?.close();
         document.body.classList.remove('merch-modal');
+    }
+
+    handleSelection(event) {
+        if (this.hasAttribute('autoclose')) 
+            this.closeModal(event);
     }
 
     openModal() {
