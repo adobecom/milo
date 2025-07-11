@@ -1867,12 +1867,6 @@ merch-card[variant="simplified-pricing-express"] [slot="price"] span[is="inline-
   color: var(--spectrum-gray-800);
 }
 
-merch-card[variant="simplified-pricing-express"] [slot="price"] span[is="inline-price"][data-template="strikethrough"] {
-  font-size: 20px;
-  font-weight: 400;
-  color: var(--spectrum-blue-600);
-}
-
 merch-card[variant="simplified-pricing-express"] [slot="price"] p {
   font-size: var(--merch-card-simplified-pricing-express-price-p-font-size);
   font-weight: var(--merch-card-simplified-pricing-express-price-p-font-weight);
