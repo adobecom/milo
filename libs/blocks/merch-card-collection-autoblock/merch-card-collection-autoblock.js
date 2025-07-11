@@ -1,6 +1,6 @@
 import { createTag, getConfig } from '../../utils/utils.js';
 import { initService, getOptions, MEP_SELECTOR, overrideOptions } from '../merch/merch.js';
-import { postProcessAutoblock } from '../merch/autoblock.js';
+import { postProcessAutoblock, decorateCardCtasWithA11y } from '../merch/autoblock.js';
 import '../../deps/mas/merch-card.js';
 import '../../deps/mas/merch-quantity-select.js';
 
@@ -155,6 +155,12 @@ function enableAnalytics(el) {
   });
 }
 
+function decorateCtasWithA11y(collection) {
+  collection.querySelectorAll('merch-card').forEach((merchCard) => {
+    checkReady(merchCard).then(() => decorateCardCtasWithA11y(merchCard));
+  });
+}
+
 export async function checkReady(masElement) {
   const readyPromise = masElement.checkReady();
   const success = await Promise.race([readyPromise, getTimeoutPromise()]);
@@ -209,6 +215,7 @@ export async function createCollection(el, options) {
   postProcessAutoblock(collection);
   collection.requestUpdate();
   enableAnalytics(collection);
+  decorateCtasWithA11y(collection);
 }
 
 export default async function init(el) {
