@@ -832,8 +832,30 @@
                 </div>
             </merch-card>
         </div>
-</div>
 
+        <div class="one-merch-card inline-heading quantity-based-promotion">
+            <merch-card variant="plans" badge-color="#EDCC2D" badge-background-color="#000000" badge-text=" Best value" secure-label="Secure Transaction" checkbox-label="Add a 30-day free trial of Adobe Stock.*" stock-offer-osis="stock-puf,stock-abm,stock-m2m">
+                <merch-icon slot="icons" size="l" src="/test/mocks/img/creative-cloud.svg" alt="Creative Cloud All Apps"></merch-icon>
+                <h4 slot="heading-xs">Creative Cloud All Apps</h4>
+                <h3 slot="heading-m">
+                    <span is="inline-price" data-promotion-code="TEST_PROMO" data-display-per-unit="false" data-display-recurrence="true" data-display-tax="false" data-wcs-osi="m2m"></span>
+                </h3>
+                <p slot="body-xxs" id="individuals2">Desktop</p>
+                <div slot="body-xs">
+                    <p>Get 20+ Creative Cloud apps including Photoshop, Illustrator, Adobe Express, Premiere Pro, and Acrobat Pro. (Substance 3D apps are not included.)</p>
+                    <p><a href="https://adobe.com">See plans & pricing details</a></p>
+                </div>
+                <div slot="quantity-select">
+                    <merch-quantity-select title="Number of licenses" min="1" max="10" step="1" default-value="2" max-input="180"></merch-quantity-select>
+                </div>
+                <div slot="footer">
+                    <a is="checkout-link" href="#" class="con-button blue active no-promo" data-wcs-osi="m2m">Save now</a>
+                    <a is="checkout-link" href="#" data-promotion-code="OTHER_TEST_PROMO" class="con-button blue active other-promo" data-wcs-osi="puf">Save now</a>
+                    <a is="checkout-link" href="#" data-promotion-code="TEST_PROMO" class="con-button blue active has-promo" data-wcs-osi="m2m">Save now</a>
+                </div>
+            </merch-card>
+        </div>
+    </div>
     </main>
 </body>
 </html>
