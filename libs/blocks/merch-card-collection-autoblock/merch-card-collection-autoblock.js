@@ -155,12 +155,6 @@ function enableAnalytics(el) {
   });
 }
 
-function decorateCtasWithA11y(collection) {
-  collection.querySelectorAll('merch-card').forEach((merchCard) => {
-    checkReady(merchCard).then(() => decorateCardCtasWithA11y(merchCard));
-  });
-}
-
 export async function checkReady(masElement) {
   const readyPromise = masElement.checkReady();
   const success = await Promise.race([readyPromise, getTimeoutPromise()]);
@@ -168,6 +162,12 @@ export async function checkReady(masElement) {
   if (!success) {
     log.error(`${masElement.tagName} did not initialize withing give timeout`);
   }
+}
+
+function decorateCtasWithA11y(collection) {
+  collection.querySelectorAll('merch-card').forEach((merchCard) => {
+    checkReady(merchCard).then(() => decorateCardCtasWithA11y(merchCard));
+  });
 }
 
 export async function createCollection(el, options) {
