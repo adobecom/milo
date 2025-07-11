@@ -22,16 +22,17 @@ export class MerchSideNav extends LitElement {
         super();
         this.modal = false;
         this.closeModal = this.closeModal.bind(this);
+        this.handleSelection = this.handleSelection.bind(this);
     }
 
     connectedCallback() {
         super.connectedCallback();
-        this.addEventListener(EVENT_MERCH_SIDENAV_SELECT, this.closeModal)
+        this.addEventListener(EVENT_MERCH_SIDENAV_SELECT, this.handleSelection);
     }
 
     disconnectedCallback() {
         super.disconnectedCallback();
-        this.removeEventListener(EVENT_MERCH_SIDENAV_SELECT, this.closeModal)
+        this.removeEventListener(EVENT_MERCH_SIDENAV_SELECT, this.handleSelection);
     }
 
     static styles = [
@@ -156,6 +157,11 @@ export class MerchSideNav extends LitElement {
         e.preventDefault();
         this.dialog?.close();
         document.body.classList.remove('merch-modal');
+    }
+
+    handleSelection(event) {
+        if (this.hasAttribute('autoclose')) 
+            this.closeModal(event);
     }
 
     openModal() {

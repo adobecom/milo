@@ -197,7 +197,6 @@ merch-card[variant^="plans"]:not([size]) {
 merch-card-collection-header.plans {
     --merch-card-collection-header-columns: 1fr fit-content(100%);
     --merch-card-collection-header-areas: "result filter";
-    --merch-card-collection-header-result-font-size: 12px;
 }
 
 .columns .text .foreground {
@@ -251,7 +250,6 @@ merch-card-collection-header.plans {
   merch-card-collection-header.plans {
       --merch-card-collection-header-columns: fit-content(100%);
       --merch-card-collection-header-areas: "custom";
-      --merch-card-collection-header-result-font-size: inherit;
   }
 }
 

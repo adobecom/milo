@@ -233,7 +233,7 @@ export default class MerchCardCollectionHeader extends LitElement {
             --merch-card-collection-header-areas: "search search" 
                                                   "filter sort"
                                                   "result result";
-            --merch-card-collection-header-result-font-size: inherit;
+            --merch-card-collection-header-result-font-size: 12px;
         }
 
         sp-theme {
@@ -296,6 +296,7 @@ export default class MerchCardCollectionHeader extends LitElement {
             :host {
                 --merch-card-collection-header-columns: 1fr fit-content(100%);
                 --merch-card-collection-header-areas: "result sort";
+                --merch-card-collection-header-result-font-size: inherit;
             }
         }
     `;

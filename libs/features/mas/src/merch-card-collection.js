@@ -22,6 +22,10 @@ const VARIANT_CLASSES = {
     plansThreeColumns: ['three-merch-cards'],
 }
 
+const SIDENAV_AUTOCLOSE = {
+    plans: true
+}
+
 const categoryFilter = (elements, { filter }) =>
     elements.filter((element) => element.filters.hasOwnProperty(filter));
 
@@ -269,6 +273,8 @@ export class MerchCardCollection extends LitElement {
         if (!sidenav) return;
         if (append) this.parentElement.prepend(sidenav);
         this.sidenav = sidenav;
+        if (SIDENAV_AUTOCLOSE[this.variant]) 
+            this.sidenav.setAttribute('autoclose', '');
         this.dispatchEvent(new CustomEvent(EVENT_MERCH_CARD_COLLECTION_SIDENAV_ATTACHED));
     }
 

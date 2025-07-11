@@ -994,7 +994,6 @@ merch-card[variant^="plans"]:not([size]) {
 merch-card-collection-header.plans {
     --merch-card-collection-header-columns: 1fr fit-content(100%);
     --merch-card-collection-header-areas: "result filter";
-    --merch-card-collection-header-result-font-size: 12px;
 }
 
 .columns .text .foreground {
@@ -1048,7 +1047,6 @@ merch-card-collection-header.plans {
   merch-card-collection-header.plans {
       --merch-card-collection-header-columns: fit-content(100%);
       --merch-card-collection-header-areas: "custom";
-      --merch-card-collection-header-result-font-size: inherit;
   }
 }
 
@@ -1466,7 +1464,7 @@ merch-card[variant="special-offers"] span[is="inline-price"][data-template="stri
             --merch-card-collection-header-areas: "search search" 
                                                   "filter sort"
                                                   "result result";
-            --merch-card-collection-header-result-font-size: inherit;
+            --merch-card-collection-header-result-font-size: 12px;
         }
 
         sp-theme {
@@ -1529,6 +1527,7 @@ merch-card[variant="special-offers"] span[is="inline-price"][data-template="stri
             :host {
                 --merch-card-collection-header-columns: 1fr fit-content(100%);
                 --merch-card-collection-header-areas: "result sort";
+                --merch-card-collection-header-result-font-size: inherit;
             }
         }
     `),c(N,"placeholderKeys",["searchText","filtersText","sortText","popularityText","alphabeticallyText","noResultText","resultText","resultsText","resultMobileText","resultsMobileText","noSearchResultsText","searchResultText","searchResultsText","noSearchResultsMobileText","searchResultMobileText","searchResultsMobileText"]);customElements.define("merch-card-collection-header",N);export{N as default};
