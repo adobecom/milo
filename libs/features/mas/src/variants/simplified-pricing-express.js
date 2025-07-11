@@ -35,6 +35,8 @@ export const SIMPLIFIED_PRICING_EXPRESS_AEM_FRAGMENT_MAPPING = {
         specialValues: {
             gray: '--spectrum-gray-300',
             blue: '--spectrum-blue-400',
+            gradient:
+                'linear-gradient(98deg, #FF477B 3.22%, #5C5CE0 52.98%, #318FFF 101.72%)',
         },
     },
 };
@@ -81,7 +83,7 @@ export class SimplifiedPricingExpress extends VariantLayout {
             --merch-card-simplified-pricing-express-price-currency-symbol-font-weight: 700;
             --merch-card-simplified-pricing-express-price-currency-symbol-line-height: 28.6px;
             --merch-card-simplified-pricing-express-body-s-line-height: 20.8px;
-            --merch-card-simplified-pricing-express-price-p-font-size: 14px;
+            --merch-card-simplified-pricing-express-price-p-font-size: 12px;
             --merch-card-simplified-pricing-express-price-p-font-weight: 400;
             --merch-card-simplified-pricing-express-price-p-line-height: 15.6px;
             width: var(--merch-card-simplified-pricing-express-width);
@@ -97,6 +99,20 @@ export class SimplifiedPricingExpress extends VariantLayout {
             gap: 16px;
             box-sizing: border-box;
             position: relative;
+        }
+
+        :host([variant='simplified-pricing-express'][gradient-border='true']) {
+            border: none;
+            padding: 22px !important;
+            background-origin: padding-box, border-box;
+            background-clip: padding-box, border-box;
+            background-image: linear-gradient(
+                    to bottom,
+                    var(--spectrum-gray-50),
+                    var(--spectrum-gray-50)
+                ),
+                linear-gradient(98deg, #FF477B 3.22%, #5C5CE0 52.98%, #318FFF 101.72%);
+            border: 2px solid transparent;
         }
 
         :host([variant='simplified-pricing-express']) .header {
