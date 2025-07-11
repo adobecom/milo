@@ -369,7 +369,7 @@ function checkCtaUrl(s, options, i) {
 }
 
 /**
- * Optionally injects the page locale into a CTA URL if configured via metadata.
+ * Optionally injects the page locale into a CTA URL if configured via the metadata field.
  * @param {string|object} val - The result from checkCtaUrl (either URL string or error object).
  * @returns {string|object} - Possibly modified URL string or original value.
  */
