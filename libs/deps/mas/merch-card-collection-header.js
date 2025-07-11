@@ -1457,6 +1457,7 @@ merch-card[variant="special-offers"] span[is="inline-price"][data-template="stri
           </sp-theme>
         `}};p=new WeakMap,c(N,"styles",Nt`
         :host {
+            --merch-card-collection-header-max-width: var(--merch-card-collection-card-width);
             --merch-card-collection-header-margin-bottom: 32px;
             --merch-card-collection-header-gap: var(--consonant-merch-spacing-xxs);
             --merch-card-collection-header-row-gap: var(--consonant-merch-spacing-xxs);
@@ -1516,6 +1517,7 @@ merch-card[variant="special-offers"] span[is="inline-price"][data-template="stri
         /* tablets */
         @media screen and ${Et(d)} {
             :host {
+                --merch-card-collection-header-max-width: auto;
                 --merch-card-collection-header-columns: 1fr fit-content(100%) fit-content(100%);
                 --merch-card-collection-header-areas: "search filter sort" 
                                                       "result result result";

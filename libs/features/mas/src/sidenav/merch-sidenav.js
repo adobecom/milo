@@ -1,4 +1,4 @@
-import { html, css, LitElement } from 'lit';
+import { html, css, LitElement, nothing } from 'lit';
 import { MatchMediaController } from '@spectrum-web-components/reactive-controllers/src/MatchMedia.js';
 import { headingStyles } from './merch-sidenav-heading.css.js';
 import '../merch-search.js';
@@ -13,6 +13,7 @@ export class MerchSideNav extends LitElement {
         sidenavTitle: { type: String },
         closeText: { type: String, attribute: 'close-text' },
         modal: { type: Boolean, attribute: 'modal', reflect: true },
+        autoclose: { type: Boolean, attribute: 'autoclose', reflect: true }
     };
 
     // modal target
@@ -21,6 +22,7 @@ export class MerchSideNav extends LitElement {
     constructor() {
         super();
         this.modal = false;
+        this.autoclose = false;
         this.closeModal = this.closeModal.bind(this);
         this.handleSelection = this.handleSelection.bind(this);
     }
@@ -118,6 +120,10 @@ export class MerchSideNav extends LitElement {
 
     get asDialog() {
         if (!this.modal) return;
+        const closeButton = !this.autoclose ? 
+            html`<sp-link href="#" @click="${this.closeModal}"
+                >${this.closeText || 'Close'}</sp-link
+            >` : nothing;
         return html`
             <sp-theme  color="light" scale="medium">
                 <sp-dialog-base
@@ -132,9 +138,7 @@ export class MerchSideNav extends LitElement {
                                 <h2>${this.sidenavTitle}</h2>
                                 <slot></slot>
                             </div>
-                            <sp-link href="#" @click="${this.closeModal}"
-                                >${this.closeText || 'Close'}</sp-link
-                            >
+                            ${closeButton}
                         </div>
                     </div>
                 </sp-dialog-base>

@@ -226,6 +226,7 @@ export default class MerchCardCollectionHeader extends LitElement {
 
     static styles = css`
         :host {
+            --merch-card-collection-header-max-width: var(--merch-card-collection-card-width);
             --merch-card-collection-header-margin-bottom: 32px;
             --merch-card-collection-header-gap: var(--consonant-merch-spacing-xxs);
             --merch-card-collection-header-row-gap: var(--consonant-merch-spacing-xxs);
@@ -285,6 +286,7 @@ export default class MerchCardCollectionHeader extends LitElement {
         /* tablets */
         @media screen and ${unsafeCSS(TABLET_UP)} {
             :host {
+                --merch-card-collection-header-max-width: auto;
                 --merch-card-collection-header-columns: 1fr fit-content(100%) fit-content(100%);
                 --merch-card-collection-header-areas: "search filter sort" 
                                                       "result result result";
