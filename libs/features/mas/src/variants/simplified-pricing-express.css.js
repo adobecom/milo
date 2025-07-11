@@ -79,10 +79,29 @@ merch-card[variant="simplified-pricing-express"] [slot="price"] {
   gap: 8px;
 }
 
+merch-card[variant="simplified-pricing-express"] [slot="price"] > p:first-child {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin: 0;
+}
+
 merch-card[variant="simplified-pricing-express"] [slot="price"] span[is="inline-price"] {
   font-size: var(--merch-card-simplified-pricing-express-price-font-size);
   font-weight: var(--merch-card-simplified-pricing-express-price-font-weight);
   line-height: var(--merch-card-simplified-pricing-express-price-line-height);
+}
+
+merch-card[variant="simplified-pricing-express"] [slot="price"] span[is="inline-price"][data-template="optical"] {
+  font-size: var(--merch-card-simplified-pricing-express-price-font-size);
+  font-weight: var(--merch-card-simplified-pricing-express-price-font-weight);
+  color: var(--spectrum-gray-800);
+}
+
+merch-card[variant="simplified-pricing-express"] [slot="price"] span[is="inline-price"][data-template="strikethrough"] {
+  font-size: 20px;
+  font-weight: 400;
+  color: var(--spectrum-blue-600);
 }
 
 merch-card[variant="simplified-pricing-express"] [slot="price"] p {
@@ -97,6 +116,38 @@ merch-card[variant="simplified-pricing-express"] [slot="price"] .price-currency-
   line-height: var(--merch-card-simplified-pricing-express-price-currency-symbol-line-height);
   color: var(--spectrum-gray-700);
   width: 100%;
+}
+
+/* Remove default strikethrough for simplified-pricing-express */
+merch-card[variant="simplified-pricing-express"] span[is="inline-price"][data-template='strikethrough'] .price,
+merch-card[variant="simplified-pricing-express"] span[is="inline-price"][data-template='strikethrough'] .price-strikethrough, 
+merch-card[variant="simplified-pricing-express"] span.placeholder-resolved[data-template='strikethrough'] {
+  text-decoration: none !important;
+}
+
+/* Apply strikethrough only to price numbers */
+merch-card[variant="simplified-pricing-express"] span[is="inline-price"][data-template='strikethrough'] .price-integer,
+merch-card[variant="simplified-pricing-express"] span[is="inline-price"][data-template='strikethrough'] .price-decimals-delimiter,
+merch-card[variant="simplified-pricing-express"] span[is="inline-price"][data-template='strikethrough'] .price-decimals {
+  text-decoration: line-through;
+  font-size: 28px;
+  font-weight: 900;
+  line-height: 36.4px;
+  text-decoration-thickness: 2px;
+  text-decoration-color: currentColor;
+}
+
+/* Hide screen reader only text */
+merch-card[variant="simplified-pricing-express"] sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 merch-card[variant="simplified-pricing-express"] [slot="cta"] sp-button[variant="accent"],
