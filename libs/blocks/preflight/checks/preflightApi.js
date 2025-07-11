@@ -64,7 +64,8 @@ const runChecks = async (url, area) => {
 };
 
 export async function getPreflightResults(url, area, useCache = true) {
-  if (useCache && checks) {
+  if (useCache) {
+    if (!checks) checks = runChecks(url, area);
     const cachedChecks = await checks;
     const allResults = [
       ...(cachedChecks.assets || []),
@@ -78,18 +79,16 @@ export async function getPreflightResults(url, area, useCache = true) {
     };
   }
 
-  const res = useCache ? (checks = runChecks(url, area)) : runChecks(url, area);
-  const runChecksResult = await res;
-
+  const res = await runChecks(url, area);
   const allResults = [
-    ...(runChecksResult.assets || []),
-    ...(runChecksResult.performance || []),
-    ...(runChecksResult.seo || []),
+    ...(res.assets || []),
+    ...(res.performance || []),
+    ...(res.seo || []),
   ];
 
   return {
     isViewportTooSmall: isViewportTooSmall(),
-    runChecks: runChecksResult,
+    runChecks: res,
     hasFailures: allResults.some((result) => result.status === 'fail'),
   };
 }

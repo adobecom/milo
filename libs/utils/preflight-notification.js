@@ -48,6 +48,14 @@ async function createPreflightNotification() {
   document.body.appendChild(overlay);
 }
 
+async function showNotificationIfAllowed(hasFailures) {
+  const isPublishButtonDisabled = document.querySelector('aem-sidekick')?.shadowRoot?.querySelector('plugin-action-bar')?.shadowRoot?.querySelector('sk-action-button.publish[disabled]');
+  if (!hasFailures || preflightNotificationDismissed || isPublishButtonDisabled) {
+    return;
+  }
+  await createPreflightNotification();
+}
+
 function createSidekickVisibilityObserver() {
   const observer = new MutationObserver(async () => {
     const sidekick = document.querySelector('aem-sidekick');
@@ -64,9 +72,7 @@ function createSidekickVisibilityObserver() {
     if (isOpen) {
       if (!notification && !preflightNotificationDismissed) {
         const { hasFailures } = await getPreflightResults(window.location.href, document);
-        if (hasFailures) {
-          await createPreflightNotification();
-        }
+        await showNotificationIfAllowed(hasFailures);
       }
     } else {
       if (notification) {
@@ -97,7 +103,5 @@ export default async function checkPreflightAndShowNotification() {
   if (existingNotification) {
     existingNotification.remove();
   }
-  if (hasFailures && !preflightNotificationDismissed) {
-    await createPreflightNotification();
-  }
+  await showNotificationIfAllowed(hasFailures);
 }

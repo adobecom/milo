@@ -127,10 +127,7 @@ export default async function stylePublish(sk) {
   const config = getConfig();
   config.onFooterReady = () => {
     window.milo.deferredPromise.then(() => {
-      const isPublishDisabled = document.querySelector('aem-sidekick')?.shadowRoot?.querySelector('plugin-action-bar')?.shadowRoot?.querySelector('sk-action-button.publish[disabled]');
-      if (!isPublishDisabled) {
-        checkPreflightAndShowNotification();
-      }
+      checkPreflightAndShowNotification();
     });
   };
   updateConfig(config);
