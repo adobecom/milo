@@ -76,8 +76,8 @@ styles.innerHTML = `
     --color-accent: rgb(59, 99, 251);
     --merch-color-focus-ring: #1473E6;
     --merch-color-grey-10: #f6f6f6;
-    --merch-color-grey-50: var(--specturm-gray-50);
-    --merch-color-grey-60: var(--specturm-gray-600);
+    --merch-color-grey-50: var(--spectrum-gray-50);
+    --merch-color-grey-60: var(--spectrum-gray-600);
     --merch-color-grey-80: #2c2c2c;
     --merch-color-grey-200: #E8E8E8;
     --merch-color-grey-600: #686868;
@@ -108,6 +108,17 @@ styles.innerHTML = `
     --spectrum-green-900-plans: #05834E;
     --spectrum-gray-300-plans: #DADADA;
     --spectrum-gray-700-plans: #505050;
+
+    /* simplified-pricing-express colors */
+    --spectrum-gray-100: #F8F8F8;
+    --spectrum-gray-200: #E6E6E6;
+    --spectrum-gray-300: #D5D5D5;
+    --spectrum-gray-400: #B8B8B8;
+    --spectrum-gray-500: #909090;
+    --spectrum-gray-600: #6D6D6D;
+    --spectrum-gray-700: #494949;
+    --spectrum-gray-800: #2C2C2C;
+    --spectrum-gray-900: #1C1C1C;
   
     /* merch card generic */
     --consonant-merch-card-max-width: 300px;

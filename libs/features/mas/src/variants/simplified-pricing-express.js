@@ -23,7 +23,7 @@ export const SIMPLIFIED_PRICING_EXPRESS_AEM_FRAGMENT_MAPPING = {
         withSuffix: false,
     },
     prices: {
-        tag: 'p',
+        tag: 'div',
         slot: 'price',
     },
     ctas: {
@@ -68,7 +68,7 @@ export class SimplifiedPricingExpress extends VariantLayout {
 
     static variantStyle = css`
         :host([variant='simplified-pricing-express']) {
-            --merch-card-simplified-pricing-express-max-width: 246px;
+            --merch-card-simplified-pricing-express-width: 294px;
             --merch-card-simplified-pricing-express-padding: 24px;
             --merch-card-simplified-pricing-express-min-height: 341px;
             --merch-card-simplified-pricing-express-price-font-size: 28px;
@@ -84,10 +84,11 @@ export class SimplifiedPricingExpress extends VariantLayout {
             --merch-card-simplified-pricing-express-price-p-font-size: 14px;
             --merch-card-simplified-pricing-express-price-p-font-weight: 400;
             --merch-card-simplified-pricing-express-price-p-line-height: 15.6px;
-            max-width: var(--merch-card-simplified-pricing-express-max-width);
+            width: var(--merch-card-simplified-pricing-express-width);
+            max-width: var(--merch-card-simplified-pricing-express-width);
             min-height: var(--merch-card-simplified-pricing-express-min-height);
             background: var(--spectrum-gray-50);
-            border: 1px solid var(--merch-card-custom-border-color, transparent);
+            border: 2px solid var(--merch-card-custom-border-color, transparent);
             border-radius: 16px;
             display: flex;
             flex-direction: column;
