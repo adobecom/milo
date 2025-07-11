@@ -115,20 +115,20 @@ function defaultOpen(accordion) {
   handleClick(accordion.querySelector('.accordion-trigger'), accordion.querySelector('.descr-details'), 1);
 }
 
-function createMobileVideo(ogMedia) {
-  const video = ogMedia?.querySelector('video');
-  const videoSrc = video?.getAttribute('data-video-source') || video?.querySelector('source')?.src;
+function createMobileMedia(ogMedia) {
+  const video = ogMedia.querySelector('video');
+  const videoSrc = video?.getAttribute('data-video-source');
 
-  if (!video || !videoSrc) return ogMedia?.cloneNode(true);
+  if (!video || !videoSrc) return ogMedia.cloneNode(true);
 
-  const mobileMedia = ogMedia?.cloneNode(true);
-  const mobileVideo = mobileMedia?.querySelector('video');
-  if (mobileVideo && !mobileVideo?.querySelector('source')) {
+  const mobileMedia = ogMedia.cloneNode(true);
+  const mobileVideo = mobileMedia.querySelector('video');
+
+  if (!mobileVideo.querySelector('source')) {
     const source = createTag('source', { src: videoSrc, type: 'video/mp4' });
-    mobileVideo?.appendChild(source);
+    mobileVideo.appendChild(source);
   }
-
-  if (mobileVideo?.hasAttribute('autoplay')) playVideo(mobileVideo);
+  if (mobileVideo.hasAttribute('autoplay')) playVideo(mobileVideo);
 
   return mobileMedia;
 }
@@ -161,7 +161,7 @@ function createItem(accordion, id, heading, num, edit) {
 
   if (edit) {
     const ogMedia = mediaCollection[id][num - 1];
-    const mobileMedia = createMobileVideo(ogMedia);
+    const mobileMedia = createMobileMedia(ogMedia);
     dm.append(mobileMedia);
     dd.prepend(dm);
   }
