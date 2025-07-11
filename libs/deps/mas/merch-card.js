@@ -1893,7 +1893,6 @@ merch-card[variant="simplified-pricing-express"] span[is="inline-price"][data-te
   font-weight: 900;
   line-height: 36.4px;
   text-decoration-thickness: 2px;
-  text-decoration-color: currentColor;
 }
 
 /* Hide screen reader only text */
