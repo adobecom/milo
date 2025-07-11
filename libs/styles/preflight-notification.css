@@ -3,7 +3,7 @@
   bottom: 120px;
   left: 50%;
   transform: translateX(-50%);
-  z-index: 10000;
+  z-index: 101;
   font-family: 'Adobe Clean', adobe-clean, 'Trebuchet MS', sans-serif;
 }
 
@@ -16,7 +16,6 @@
   line-height: 1.4;
   box-shadow: 0 2px 8px rgb(0 0 0 / 30%);
   border: 1px solid rgb(57 57 57);
-  min-width: 320px;
   text-align: center;
   font-weight: 400;
   letter-spacing: 0.02em;

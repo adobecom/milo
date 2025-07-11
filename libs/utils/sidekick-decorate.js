@@ -125,10 +125,9 @@ export default async function stylePublish(sk) {
   stylePublishCalled = true;
 
   const config = getConfig();
-  config.onFooterReady = () => {
-    window.milo.deferredPromise.then(() => {
-      checkPreflightAndShowNotification();
-    });
+  config.onFooterReady = async () => {
+    await window.milo.deferredPromise;
+    checkPreflightAndShowNotification();
   };
   updateConfig(config);
 
