@@ -1,4 +1,4 @@
-import { hasPreflightFailures, getPreflightResults } from '../blocks/preflight/checks/preflightApi.js';
+import { getPreflightResults } from '../blocks/preflight/checks/preflightApi.js';
 import { loadStyle, getConfig } from './utils.js';
 
 let preflightNotificationDismissed = false;
@@ -63,8 +63,7 @@ function createSidekickVisibilityObserver() {
 
     if (isOpen) {
       if (!notification && !preflightNotificationDismissed) {
-        await getPreflightResults(window.location.href, document);
-        const hasFailures = hasPreflightFailures();
+        const { hasFailures } = await getPreflightResults(window.location.href, document);
         if (hasFailures) {
           await createPreflightNotification();
         }
@@ -93,13 +92,11 @@ export default async function checkPreflightAndShowNotification() {
     observerCreated = true;
   }
 
-  await getPreflightResults(window.location.href, document);
-  const hasFailures = hasPreflightFailures();
+  const { hasFailures } = await getPreflightResults(window.location.href, document);
   const existingNotification = document.querySelector('.milo-preflight-overlay');
   if (existingNotification) {
     existingNotification.remove();
   }
-
   if (hasFailures && !preflightNotificationDismissed) {
     await createPreflightNotification();
   }
