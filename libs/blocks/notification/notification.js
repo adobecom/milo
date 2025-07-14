@@ -200,6 +200,12 @@ function curtainCallback(el) {
 
   // Monitor focus changes for VoiceOver and other screen readers
   const handleFocusIn = (e) => {
+    console.log('e', e);
+    console.log('el', el);
+    console.log('curtain', curtain);
+    console.log('el.contains(e.target)', el.contains(e.target));
+    console.log('curtain.contains(e.target)', curtain.contains(e.target));
+
     // If focus moves outside the notification, redirect it back
     if (!el.contains(e.target) && !curtain.contains(e.target)) {
       e.preventDefault();
