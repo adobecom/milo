@@ -94,8 +94,6 @@ const closeBanner = (el) => {
     el.closest('.section').querySelector('.notification-curtain').remove();
   }
 
-  console.log('el', el);
-
   el.removeAttribute('aria-modal');
   el.removeAttribute('role');
   el.style.display = 'none';
