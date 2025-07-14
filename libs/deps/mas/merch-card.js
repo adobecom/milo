@@ -1305,7 +1305,12 @@ merch-card[variant^="plans"] [slot="whats-included"] [slot="description"] {
 }
 
 merch-card[variant^="plans"] [slot="quantity-select"] {
+    margin-top: auto;
     padding-top: 8px;
+}
+
+merch-card[variant^="plans"]:has([slot="quantity-select"]) merch-addon {
+    margin: 0;
 }
 
 merch-card[variant^="plans"] [slot="footer"] a {
@@ -1441,10 +1446,10 @@ merch-card[variant^="plans"]:not([size]) {
                 <slot name="body-xs"></slot>
                 <slot name="whats-included"></slot>
                 <slot name="callout-content"></slot>
+                <slot name="quantity-select"></slot>
                 ${this.stockCheckbox}
                 <slot name="addon"></slot>
                 <slot name="badge"></slot>
-                <slot name="quantity-select"></slot>
             </div>
             ${this.secureLabelFooter}`}};l(P,"variantStyle",lr`
         :host([variant^='plans']) {

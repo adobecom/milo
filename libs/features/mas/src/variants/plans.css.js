@@ -139,7 +139,12 @@ merch-card[variant^="plans"] [slot="whats-included"] [slot="description"] {
 }
 
 merch-card[variant^="plans"] [slot="quantity-select"] {
+    margin-top: auto;
     padding-top: 8px;
+}
+
+merch-card[variant^="plans"]:has([slot="quantity-select"]) merch-addon {
+    margin: 0;
 }
 
 merch-card[variant^="plans"] [slot="footer"] a {
