@@ -100,11 +100,6 @@ const closeBanner = (el) => {
   el.closest('.section')?.classList.add('close-sticky-section');
 
   setTimeout(() => {
-    const liveRegion = document.querySelector(`.notification-visibility-hidden[data-notification-id="${el.dataset.notificationId}"]`);
-    liveRegion.textContent = 'Banner closed';
-  }, 100);
-
-  setTimeout(() => {
     const tempFocus = createTag('div', { class: 'temp-focus' });
     tempFocus.tabIndex = 0;
     document.body.insertBefore(tempFocus, document.body.firstChild);
@@ -114,8 +109,13 @@ const closeBanner = (el) => {
 
   setTimeout(() => {
     const liveRegion = document.querySelector(`.notification-visibility-hidden[data-notification-id="${el.dataset.notificationId}"]`);
+    liveRegion.textContent = 'Banner closed';
+  }, 100);
+
+  setTimeout(() => {
+    const liveRegion = document.querySelector(`.notification-visibility-hidden[data-notification-id="${el.dataset.notificationId}"]`);
     liveRegion.textContent = '';
-  }, 2000);
+  }, 2100);
 
   document.dispatchEvent(new CustomEvent('milo:sticky:closed'));
 };
