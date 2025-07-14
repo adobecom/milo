@@ -73,9 +73,11 @@ export function closeModal(modal) {
     .forEach((element) => element.removeAttribute('aria-disabled'));
 
   const hashId = window.location.hash.replace('#', '');
-  if (hashId === modal.id) window.history.pushState('', document.title, `${window.location.pathname}${window.location.search}`);
-  isDelayedModal = false;
+  if (hashId === modal.id || modal.id === 'checkout-link-modal') {
+    window.history.pushState(window.history.state, document.title, `${window.location.pathname}${window.location.search}`);
+  }
   if (prevHash) {
+    window.location.hash = '';
     window.location.hash = prevHash;
     prevHash = '';
   }
