@@ -123,12 +123,9 @@ function createMobileMedia(ogMedia) {
 
   const mobileMedia = ogMedia.cloneNode(true);
   const mobileVideo = mobileMedia.querySelector('video');
-
-  if (!mobileVideo.querySelector('source')) {
-    const source = createTag('source', { src: videoSrc, type: 'video/mp4' });
-    mobileVideo.appendChild(source);
-  }
-  if (mobileVideo.hasAttribute('autoplay')) playVideo(mobileVideo);
+  const source = createTag('source', { src: videoSrc, type: 'video/mp4' });
+  mobileVideo.appendChild(source);
+  playVideo(mobileVideo);
 
   return mobileMedia;
 }
