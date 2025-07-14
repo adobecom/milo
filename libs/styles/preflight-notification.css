@@ -3,7 +3,7 @@
   bottom: 120px;
   left: 50%;
   transform: translateX(-50%);
-  z-index: 101;
+  z-index: var(--modal-z-index);
   font-family: 'Adobe Clean', adobe-clean, 'Trebuchet MS', sans-serif;
 }
 

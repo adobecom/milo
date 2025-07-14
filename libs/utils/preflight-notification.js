@@ -2,7 +2,7 @@ import { getPreflightResults } from '../blocks/preflight/checks/preflightApi.js'
 import { loadStyle, getConfig } from './utils.js';
 
 let wasDismissed = false;
-let observerCreated = false;
+let sidekickObserver;
 
 function openPreflightPanel() {
   const sk = document.querySelector('aem-sidekick, helix-sidekick');
@@ -46,8 +46,9 @@ async function createPreflightNotification() {
   document.body.appendChild(overlay);
 }
 
-function sidekickObserver() {
-  const observer = new MutationObserver(async () => {
+function createObserver() {
+  if (sidekickObserver) return;
+  sidekickObserver = new MutationObserver(async () => {
     const sidekick = document.querySelector('aem-sidekick');
     const notification = document.querySelector('.milo-preflight-overlay');
 
@@ -66,22 +67,16 @@ function sidekickObserver() {
     }
   });
 
-  observer.observe(document, {
+  sidekickObserver.observe(document, {
     attributes: true,
     childList: true,
     subtree: true,
     attributeFilter: ['open'],
   });
-
-  return observer;
 }
 
 export default async function show() {
-  if (!observerCreated) {
-    sidekickObserver();
-    observerCreated = true;
-  }
-
+  createObserver();
   const { hasFailures } = await getPreflightResults(window.location.href, document);
   const existingNotification = document.querySelector('.milo-preflight-overlay');
   if (existingNotification) return;

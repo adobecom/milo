@@ -10,6 +10,10 @@
   --feds-totalheight-nav: calc(var(--feds-height-nav, --global-height-nav) + var(--feds-height-breadcrumbs, --global-height-breadcrumbs));
   --feds-localnav-height: 40px;
 
+  /* Global Z-Index Variables */
+  --modal-z-index: 102;
+  --modal-z-index-curtain: 101;
+
   /* Colors */
   --link-color: rgb(39, 77, 234);
   --link-hover-color: rgb(29, 62, 207);
