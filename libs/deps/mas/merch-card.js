@@ -1305,13 +1305,7 @@ merch-card[variant^="plans"] [slot="whats-included"] [slot="description"] {
 }
 
 merch-card[variant^="plans"] [slot="quantity-select"] {
-    display: flex;
-    justify-content: flex-start;
-    box-sizing: border-box;
-    width: 100%;
-    padding-top: 16px;
-    flex-grow: 1;
-    align-items: end;
+    padding-top: 8px;
 }
 
 merch-card[variant^="plans"] [slot="footer"] a {
@@ -1331,11 +1325,6 @@ merch-card[variant^="plans"] [slot="footer"] .con-button > span {
 
 .plans-container merch-card-collection {
     padding: 0;
-}
-
-merch-card[variant^="plans"] merch-addon {
-    margin-top: 16px;
-    margin-bottom: 16px;
 }
 
 merch-card[variant^="plans"] merch-addon span[data-template="price"] {
@@ -1498,6 +1487,14 @@ merch-card[variant^="plans"]:not([size]) {
 
         :host([variant='plans'][size]) .body {
             max-width: none;
+        }
+
+        :host([variant^='plans']) ::slotted([slot='addon']) {
+            margin-top: auto;
+        }
+
+        :host([variant^='plans']) footer ::slotted([slot='addon']) {
+            margin: 0;
         }
 
         :host([variant='plans']) .wide-footer #stock-checkbox {

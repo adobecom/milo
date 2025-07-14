@@ -305,6 +305,14 @@ export class Plans extends VariantLayout {
             max-width: none;
         }
 
+        :host([variant^='plans']) ::slotted([slot='addon']) {
+            margin-top: auto;
+        }
+
+        :host([variant^='plans']) footer ::slotted([slot='addon']) {
+            margin: 0;
+        }
+
         :host([variant='plans']) .wide-footer #stock-checkbox {
             margin-top: 0;
         }
