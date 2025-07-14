@@ -166,7 +166,6 @@ function curtainCallback(el) {
   document.body.classList.add('mobile-disable-scroll');
   el.insertAdjacentElement('afterend', curtain);
   el.setAttribute('role', 'dialog');
-  el.setAttribute('aria-modal', 'true');
 
   const focusableElements = [...el.querySelectorAll(
     'button, a[href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
@@ -215,7 +214,7 @@ function curtainCallback(el) {
 
   const handleCurtainClick = (e) => { if (e.target === curtain) closeBanner(el); };
 
-  console.log('heloo');
+  console.log('aria modal removed');
   
   el.addEventListener('keydown', handleKeyDown);
   el.addEventListener('focusout', handleFocusOut);
