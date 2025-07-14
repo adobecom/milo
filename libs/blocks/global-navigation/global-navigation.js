@@ -1188,11 +1188,11 @@ class Gnav {
 
       fedsPromoWrapper.style.height = promoHeight;
       header.style.top = promoHeight;
-
       if (!isDesktop.matches && localNav) {
         header.style.top = 0;
         localNav.style.top = promoHeight;
       }
+      if (!isDesktop.matches) this.updatePopupPosition();
     };
 
     if (this.elements.aside.clientHeight > fedsPromoWrapper.clientHeight) {
@@ -1415,6 +1415,7 @@ class Gnav {
               item,
               localnav: this.isLocalNav(),
               toggleMenu: this.toggleMenuMobile,
+              updatePopupPosition: this.updatePopupPosition,
             });
             if (popup.closest('section.feds-dropdown--active')) makeTabActive(popup);
           } finally {
@@ -1547,7 +1548,7 @@ class Gnav {
               return !this.customLinks.includes(linkHash);
             };
             [...customLinksSection.classList].splice(1).forEach((className) => {
-              customLinkModifier = ` feds-navItem--${className}`;
+              customLinkModifier += ` feds-navItem--${className}`;
             });
             removeCustomLink = removeLink();
           } else if (itemHasActiveLink) {

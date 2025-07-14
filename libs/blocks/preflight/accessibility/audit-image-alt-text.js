@@ -4,7 +4,7 @@ import { createTag } from '../../../utils/utils.js';
 const DEF_DESC = 'Checking...';
 const decorativeImages = signal([]);
 const altTextImages = signal([]);
-const altResult = signal({ title: 'Image alt value', description: DEF_DESC });
+const altResult = signal({ title: 'Audit Image Alt value', description: DEF_DESC });
 const groups = [
   { title: 'Images with alt text', imgArray: altTextImages },
   { title: 'Decorative images (empty alt text)', imgArray: decorativeImages, closed: true },
@@ -58,13 +58,13 @@ async function checkAlt() {
     const picture = img.closest('picture');
 
     if (picture) {
-      pictureMetaElem = picture.querySelector('.asset-meta');
+      pictureMetaElem = picture.querySelector('.picture-meta');
       if (!pictureMetaElem) {
-        pictureMetaElem = createTag('div', { class: 'asset-meta preflight-decoration' });
+        pictureMetaElem = createTag('div', { class: 'picture-meta preflight-decoration' });
         picture.insertBefore(pictureMetaElem, img.nextSibling);
       }
     } else {
-      pictureMetaElem = createTag('div', { class: 'asset-meta preflight-decoration no-picture-tag' });
+      pictureMetaElem = createTag('div', { class: 'picture-meta preflight-decoration no-picture-tag' });
       img.parentNode.insertBefore(pictureMetaElem, img.nextSibling);
     }
 
@@ -75,7 +75,7 @@ async function checkAlt() {
 
       a11yMessage = createTag(
         'div',
-        { class: 'asset-meta-entry preflight-decoration needs-attention' },
+        { class: 'picture-meta-a11y preflight-decoration is-decorative' },
         img.dataset.altCheck,
       );
 
@@ -89,7 +89,7 @@ async function checkAlt() {
     if (alt) {
       a11yMessage = createTag(
         'div',
-        { class: 'asset-meta-entry preflight-decoration is-valid' },
+        { class: 'picture-meta-a11y preflight-decoration has-alt' },
         `Alt: ${alt}`,
       );
 
@@ -104,16 +104,19 @@ async function checkAlt() {
     pictureMetaElem.append(a11yMessage);
     img.dataset.pageLocation = parent;
   });
-  result.description = 'All images listed below. Please validate each alt text has been set appropriately. Decorative images have been highlighted in yellow on the page.';
+  result.description = 'All images from the page are listed below. Please ensure each image has appropriate alt text. Decorative images are highlighted in yellow on the page';
   altResult.value = { ...result, checked: true };
 }
 
 function AccessibilityItem({ title, description }) {
   return html`
-    <div class="access-item">
-      <div class=access-item-text>
-        <p class=access-item-title>${title}</p>
-        <p class=access-item-description>${description}</p>
+    <div class="preflight-content-group">
+      <div class="preflight-item preflight-accessibility-item ">
+        <div class="result-icon alt-text"></div>
+        <div class="preflight-item-text">
+          <p class="preflight-item-title">${title}</p>
+          <p class="preflight-item-description">${description}</p>
+        </div>
       </div>
     </div>`;
 }
@@ -154,7 +157,7 @@ function ImageGroups({ group }) {
   `;
 }
 
-export default function Accessibility() {
+export default function AuditImageAltText() {
   useEffect(() => { checkAlt(); }, []);
 
   return html`
