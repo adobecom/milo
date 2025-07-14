@@ -46,6 +46,7 @@ export class MerchSideNav extends LitElement {
                 display: flex;
                 justify-content: center;
                 align-items: baseline;
+                z-index: 3;
             }
             
 
