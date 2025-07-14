@@ -198,35 +198,16 @@ function curtainCallback(el) {
     if (!el.contains(e.relatedTarget) && firstFocusable) firstFocusable.focus();
   };
 
-  // Monitor focus changes for VoiceOver and other screen readers
-  const handleFocusIn = (e) => {
-    console.log('e', e);
-    console.log('el', el);
-    console.log('curtain', curtain);
-    console.log('el.contains(e.target)', el.contains(e.target));
-    console.log('curtain.contains(e.target)', curtain.contains(e.target));
-
-    // If focus moves outside the notification, redirect it back
-    if (!el.contains(e.target) && !curtain.contains(e.target)) {
-      e.preventDefault();
-      if (firstFocusable) firstFocusable.focus();
-    }
-  };
-
   const handleCurtainClick = (e) => { if (e.target === curtain) closeBanner(el); };
 
-  console.log('aria modal here');
-  
   el.addEventListener('keydown', handleKeyDown);
   el.addEventListener('focusout', handleFocusOut);
   curtain.addEventListener('click', handleCurtainClick);
-  // document.addEventListener('focusin', handleFocusIn);
 
   el.focusTrapCleanup = () => {
     el.removeEventListener('keydown', handleKeyDown);
     el.removeEventListener('focusout', handleFocusOut);
     curtain.removeEventListener('click', handleCurtainClick);
-    // document.removeEventListener('focusin', handleFocusIn);
   };
 }
 
