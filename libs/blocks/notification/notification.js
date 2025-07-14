@@ -87,8 +87,17 @@ function wrapCopy(foreground) {
 }
 
 const closeBanner = (el) => {
-  const liveRegion = document.querySelector(`.notification-visibility-hidden[data-notification-id="${el.dataset.notificationId}"]`);
-  liveRegion.textContent = 'Banner closed';
+  if (el.focusTrapCleanup) el.focusTrapCleanup();
+
+  if (el.classList.contains('focus')) {
+    document.body.classList.remove('mobile-disable-scroll');
+    el.closest('.section').querySelector('.notification-curtain').remove();
+  }
+
+  el.removeAttribute('aria-modal');
+  el.removeAttribute('role');
+  el.style.display = 'none';
+  el.closest('.section')?.classList.add('close-sticky-section');
 
   setTimeout(() => {
     const tempFocus = createTag('div', { class: 'temp-focus' });
@@ -98,18 +107,16 @@ const closeBanner = (el) => {
     document.body.removeChild(tempFocus);
   });
 
-  // time needed for screen reader to read the message
-  setTimeout(() => { liveRegion.textContent = ''; }, 2000);
+  setTimeout(() => {
+    const liveRegion = document.querySelector(`.notification-visibility-hidden[data-notification-id="${el.dataset.notificationId}"]`);
+    liveRegion.textContent = 'Banner closed';
+  }, 100);
 
-  el.style.display = 'none';
-  el.closest('.section')?.classList.add('close-sticky-section');
+  setTimeout(() => {
+    const liveRegion = document.querySelector(`.notification-visibility-hidden[data-notification-id="${el.dataset.notificationId}"]`);
+    liveRegion.textContent = '';
+  }, 2100);
 
-  if (el.focusTrapCleanup) el.focusTrapCleanup();
-
-  if (el.classList.contains('focus')) {
-    document.body.classList.remove('mobile-disable-scroll');
-    el.closest('.section').querySelector('.notification-curtain').remove();
-  }
   document.dispatchEvent(new CustomEvent('milo:sticky:closed'));
 };
 
@@ -166,6 +173,7 @@ function curtainCallback(el) {
   document.body.classList.add('mobile-disable-scroll');
   el.insertAdjacentElement('afterend', curtain);
   el.setAttribute('role', 'dialog');
+  el.setAttribute('aria-modal', 'true');
 
   const focusableElements = [...el.querySelectorAll(
     'button, a[href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
