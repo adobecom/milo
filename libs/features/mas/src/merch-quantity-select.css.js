@@ -90,17 +90,25 @@ export const styles = css`
 
     .popover {
         position: absolute;
-        top: var(--input-height);
         left: 0;
         width: var(--input-width);
         border-radius: var(--radius);
         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         overflow: hidden;
         z-index: 100;
-        margin-top: var(--popover-margin-top, 6px);
         transition: var(--qs-transition);
         opacity: 0;
         box-sizing: border-box;
+    }
+
+    .popover[placement="bottom"] {
+        top: var(--input-height);
+        margin-top: var(--popover-margin-top, 6px);
+    }
+
+    .popover[placement="top"] {
+        bottom: var(--input-height);
+        margin-bottom: var(--popover-margin-bottom, 6px);
     }
 
     .popover.open {
@@ -110,8 +118,9 @@ export const styles = css`
     }
 
     .popover.closed {
-        max-height: 0;
         opacity: 0;
+        pointer-events: none;
+        transition: none;
     }
 
     ::slotted(p) {

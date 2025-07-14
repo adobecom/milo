@@ -5,12 +5,12 @@ import { STATUS } from '../checks/constants.js';
 const { isViewportTooSmall, runChecks } = preflightApi.assets;
 
 // Define signals for check results and viewport status
-const imageDimensionsResult = signal({
-  title: 'Image Dimensions',
+const assetDimensionsResult = signal({
+  title: 'Asset Dimensions',
   description: 'Checking...',
 });
-const imagesWithMismatch = signal([]);
-const imagesWithMatch = signal([]);
+const assetsWithMismatch = signal([]);
+const assetsWithMatch = signal([]);
 const viewportTooSmall = signal(isViewportTooSmall());
 
 /**
@@ -25,14 +25,14 @@ async function getResults() {
     description: `Error: ${error.message}`,
   }));
 
-  imageDimensionsResult.value = {
+  assetDimensionsResult.value = {
     title: result.title.replace('Assets - ', ''),
     description: result.description,
   };
 
   if (result.details) {
-    imagesWithMismatch.value = result.details.imagesWithMismatch || [];
-    imagesWithMatch.value = result.details.imagesWithMatch || [];
+    assetsWithMismatch.value = result.details.assetsWithMismatch || [];
+    assetsWithMatch.value = result.details.assetsWithMatch || [];
   }
 }
 
@@ -50,10 +50,10 @@ function AssetsItem({ title, description }) {
 }
 
 /**
- * Component to display a group of images.
+ * Component to display a group of assets.
  */
-function ImageGroup({ group }) {
-  const { title, imgArray } = group;
+function AssetGroup({ group }) {
+  const { title, assetArray } = group;
   return html`
     <div class="grid-heading">
       <div class="grid-toggle">${title}</div>
@@ -65,23 +65,27 @@ function ImageGroup({ group }) {
       </div>
     `}
 
-    ${!viewportTooSmall.value && imgArray.value.length > 0 && html`
+    ${!viewportTooSmall.value && assetArray.value.length > 0 && html`
     <div class='assets-image-grid'>
-      ${imgArray.value.map((img) => html`
+      ${assetArray.value.map((asset) => html`
       <div class='assets-image-grid-item'>
-        <img src='${img.src}' />
+        ${asset.type === 'image' && html`<img src='${asset.src}' />`}
+        ${asset.type === 'video' && html`<video controls src='${asset.src}' />`}
+        ${asset.type === 'mpc' && html`<iframe src='${asset.src}' />`}
         <div class='assets-image-grid-item-text'>
-          <span>Factor: ${img.roundedFactor}</span>
-          <span>Upload size: ${img.naturalDimensions}</span>
-          <span>Display size: ${img.displayDimensions}</span>
-          ${img.hasMismatch && html`<span>Recommended size: ${img.recommendedDimensions}</span>`}
+          <span>Factor: ${asset.roundedFactor}</span>
+          <span>Upload size: ${asset.naturalDimensions}</span>
+          <span>Display size: ${asset.displayDimensions}</span>
+          ${asset.hasMismatch && html`<span>Recommended size: ${asset.recommendedDimensions}</span>`}
+          <span>Type: ${asset.typeLabel}</span>
+          ${asset.notes && html`<span><strong>Notes:</strong> ${asset.notes}</span>`}
         </div>
       </div>`)}
     </div>`}
 
-    ${!viewportTooSmall.value && !imgArray.value.length && html`
+    ${!viewportTooSmall.value && !assetArray.value.length && html`
       <div class='assets-image-grid'>
-        <div class='assets-image-grid-item full-width'>No images found</div>
+        <div class='assets-image-grid-item full-width'>No assets found</div>
       </div>
     `}
   `;
@@ -115,14 +119,14 @@ export default function Assets() {
   }, []);
 
   const groups = [
-    { title: 'Images with dimension mismatch', imgArray: imagesWithMismatch },
-    { title: 'Images with matching dimensions', imgArray: imagesWithMatch },
+    { title: 'Assets with dimension mismatch', assetArray: assetsWithMismatch },
+    { title: 'Assets with matching dimensions', assetArray: assetsWithMatch },
   ];
 
   return html`
     <div class="assets-columns">
-      <${AssetsItem} ...${imageDimensionsResult.value} />
-      ${groups.map((group) => html`<${ImageGroup} group=${group} />`)}
+      <${AssetsItem} ...${assetDimensionsResult.value} />
+      ${groups.map((group) => html`<${AssetGroup} group=${group} />`)}
     </div>
   `;
 }

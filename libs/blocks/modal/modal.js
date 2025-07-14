@@ -72,11 +72,12 @@ export function closeModal(modal) {
   [...document.querySelectorAll('header, main, footer')]
     .forEach((element) => element.removeAttribute('aria-disabled'));
 
-  if (window.location.hash === `#${modal.id}`) {
+  const hashId = window.location.hash.replace('#', '');
+  if (hashId === modal.id || modal.id === 'checkout-link-modal') {
     window.history.pushState(window.history.state, document.title, `${window.location.pathname}${window.location.search}`);
   }
-  isDelayedModal = false;
   if (prevHash) {
+    window.location.hash = '';
     window.location.hash = prevHash;
     prevHash = '';
   }
