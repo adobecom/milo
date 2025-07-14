@@ -81,7 +81,7 @@ var V=Object.defineProperty;var S=o=>{throw TypeError(o)};var H=(o,e,t)=>e in o?
         ></sp-theme>`}get dialog(){return this.shadowRoot.querySelector("sp-dialog-base")}closeModal(t){t.preventDefault(),this.dialog?.close(),document.body.classList.remove("merch-modal")}openModal(){this.updateComplete.then(async()=>{P(this.dialog),document.body.classList.add("merch-modal");let t={trigger:v(this,m),notImmediatelyClosable:!0,type:"auto"},s=await window.__merch__spectrum_Overlay.open(this.dialog,t);s.addEventListener("close",()=>{this.modal=!1,document.body.classList.remove("merch-modal"),k(this.dialog)}),this.shadowRoot.querySelector("sp-theme").append(s)})}updated(){this.modal&&this.openModal()}showModal({target:t}){g(this,m,t),this.modal=!0}};m=new WeakMap,r(E,"properties",{sidenavTitle:{type:String},closeText:{type:String,attribute:"close-text"},modal:{type:Boolean,attribute:"modal",reflect:!0}}),r(E,"styles",[Q`
             :host {
                 display: block;
-                z-index: 2;
+                z-index: 3;
             }
 
             :host h2 {

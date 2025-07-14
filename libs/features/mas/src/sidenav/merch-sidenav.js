@@ -26,7 +26,7 @@ export class MerchSideNav extends LitElement {
         css`
             :host {
                 display: block;
-                z-index: 2;
+                z-index: 3;
             }
 
             :host h2 {
