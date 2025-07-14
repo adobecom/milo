@@ -39,7 +39,7 @@ export const PLANS_AEM_FRAGMENT_MAPPING = {
 
 export const PLANS_EDUCATION_AEM_FRAGMENT_MAPPING = {
   ...(function(){
-    const { whatsIncluded, ...rest } = PLANS_AEM_FRAGMENT_MAPPING;
+    const { whatsIncluded, size, ...rest } = PLANS_AEM_FRAGMENT_MAPPING;
     return rest;
   }()),
   title: { tag: 'h3', slot: 'heading-s' },
@@ -88,7 +88,7 @@ export class Plans extends VariantLayout {
         const stockInBody = shadowRoot.querySelector('.body #stock-checkbox');
         const body = shadowRoot.querySelector('.body');
 
-        if (!size) {
+        if (!size || !size.includes('wide')) {
             footer?.classList.remove('wide-footer');
             if (stockInFooter) stockInFooter.remove();
             return;
