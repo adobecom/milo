@@ -27,4 +27,4 @@ export const PERFORMANCE_TITLES = {
   Icons: 'Icons',
 };
 
-export const ASSETS_TITLES = { ImageDimensions: 'Image Dimensions' };
+export const ASSETS_TITLES = { AssetDimensions: 'Asset Dimensions' };

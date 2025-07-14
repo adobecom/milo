@@ -567,6 +567,27 @@ async function openExternalModal(url, getModal, extraOptions, el) {
 
 const isInternalModal = (url) => /\/fragments\//.test(url);
 
+const closeModalWithoutEvent = (modalId) => {
+  if (!modalId) return;
+  document.querySelectorAll(`#${modalId}`).forEach((mod) => {
+    if (mod.classList.contains('dialog-modal')) {
+      const modalCurtain = document.querySelector(`#${modalId}~.modal-curtain`);
+      if (modalCurtain) {
+        modalCurtain.remove();
+      }
+      mod.remove();
+    }
+    document.querySelector(`[data-modal-hash="#${mod.id}"]`)?.focus();
+  });
+
+  if (!document.querySelectorAll('.modal-curtain').length) {
+    document.body.classList.remove('disable-scroll');
+  }
+
+  [...document.querySelectorAll('header, main, footer')]
+    .forEach((element) => element.removeAttribute('aria-disabled'));
+};
+
 // Modal state handling: see merch.md
 export const modalState = { isOpen: false };
 
@@ -577,45 +598,43 @@ export async function updateModalState({ cta, closedByUser } = {}) {
     const modal = document.querySelector('.dialog-modal');
     if (!modal) return modalState.isOpen;
     modalState.isOpen = false;
-    document.querySelectorAll(`#${modal.id}`).forEach((mod) => {
-      if (mod.classList.contains('dialog-modal')) {
-        const modalCurtain = document.querySelector(`#${modal.id}~.modal-curtain`);
-        if (modalCurtain) {
-          modalCurtain.remove();
-        }
-        mod.remove();
-      }
-      document.querySelector(`[data-modal-hash="#${mod.id}"]`)?.focus();
-    });
-
-    if (!document.querySelectorAll('.modal-curtain').length) {
-      document.body.classList.remove('disable-scroll');
-    }
-
-    [...document.querySelectorAll('header, main, footer')]
-      .forEach((element) => element.removeAttribute('aria-disabled'));
-
+    closeModalWithoutEvent(modal.id);
     return modalState.isOpen;
   }
 
-  const modal = document.querySelector(`.dialog-modal${hash}`);
+  const openedDialog = document.querySelector(`.dialog-modal${hash}`) || document.querySelector('.dialog-modal#checkout-link-modal');
+  const isLocaleModal = openedDialog?.id?.includes('locale-modal');
+  const modal = isLocaleModal ? null : openedDialog;
+
+  if (hash && !cta && modalState.isOpen && !modal) {
+    const dialog = document.querySelector('.dialog-modal');
+    if (!dialog) return modalState.isOpen;
+    closeModalWithoutEvent(dialog.id);
+    modalState.isOpen = false;
+    return modalState.isOpen;
+  }
 
   if (hash && !cta && !modalState.isOpen && !modal) {
     const ctaToClick = document.querySelector(`[is=checkout-link][data-modal-id=${hash.replace('#', '')}]`);
     if (ctaToClick && !ctaToClick.dataset.clickDisabled) {
       ctaToClick.dataset.clickDisabled = 'true';
       ctaToClick.click();
+      modalState.isOpen = true;
       setTimeout(() => {
         delete ctaToClick.dataset.clickDisabled;
       }, 1000);
     }
-    modalState.isOpen = true;
     return modalState.isOpen;
   }
 
   if (hash && hash === `#${cta?.getAttribute('data-modal-id')}` && !modalState.isOpen && !modal) {
     cta.click();
     modalState.isOpen = true;
+    return modalState.isOpen;
+  }
+
+  if (closedByUser && document.querySelector('#checkout-link-modal')) {
+    modalState.isOpen = false;
     return modalState.isOpen;
   }
 
