@@ -157,9 +157,7 @@ function createItem(accordion, id, heading, num, edit) {
   const dm = createTag('div', { class: 'media-p' });
 
   if (edit) {
-    const ogMedia = mediaCollection[id][num - 1];
-    const mobileMedia = createMobileMedia(ogMedia);
-    dm.append(mobileMedia);
+    dm.append(createMobileMedia(mediaCollection[id][num - 1]));
     dd.prepend(dm);
   }
 
