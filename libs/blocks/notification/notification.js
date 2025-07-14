@@ -215,6 +215,8 @@ function curtainCallback(el) {
 
   const handleCurtainClick = (e) => { if (e.target === curtain) closeBanner(el); };
 
+  console.log('heloo');
+  
   el.addEventListener('keydown', handleKeyDown);
   el.addEventListener('focusout', handleFocusOut);
   curtain.addEventListener('click', handleCurtainClick);
