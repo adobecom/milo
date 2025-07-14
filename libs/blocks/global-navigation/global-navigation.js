@@ -584,7 +584,7 @@ class Gnav {
       this.block.after(localNav);
     }
     localNav.setAttribute('daa-lh', `${title}_localNav`);
-    this.updateGnavTop();
+    document.querySelector('.feds-promo-aside-wrapper') && this.updateGnavTop();
     const localNavBtn = toFragment`<button class="feds-navLink--hoverCaret feds-localnav-title" aria-haspopup="true" aria-expanded="false" daa-ll="${title}_localNav|open"></button>`;
     const localNavCurtain = toFragment` <div class="feds-localnav-curtain"></div>`;
     // Skip keyboard navigation on localnav items if it is closed
@@ -1170,7 +1170,7 @@ class Gnav {
     const header = document.querySelector('header');
     const localNav = document.querySelector('.feds-localnav');
     
-    document.querySelector('.feds-promo-aside-wrapper')?.style.height = promoHeight;
+    document.querySelector('.feds-promo-aside-wrapper').style.height = promoHeight;
     header.style.top = promoHeight;
     if (!isDesktop.matches && localNav) {
       header.style.top = 0;
@@ -1194,6 +1194,7 @@ class Gnav {
     const { default: decorate } = await asideJsPromise;
     if (!decorate) return this.elements.aside;
     this.elements.aside = await decorate({ headerElem: this.block, fedsPromoWrapper, promoPath });
+    if (!(this.elements.aside instanceof HTMLElement)) return;
     fedsPromoWrapper.append(this.elements.aside);
 
     if (this.elements.aside.clientHeight > fedsPromoWrapper.clientHeight) {
