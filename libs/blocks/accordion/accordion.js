@@ -154,12 +154,7 @@ function createItem(accordion, id, heading, num, edit) {
   const dtHtml = hTag ? createTag(hTag.tagName, { class: 'accordion-heading' }, button) : button;
   const dt = createTag('div', dtAttrs, dtHtml);
   const dd = createTag('div', { 'aria-labelledby': triggerId, id: panelId, hidden: true, class: 'descr-details' }, panel);
-  const dm = createTag('div', { class: 'media-p' });
-
-  if (edit) {
-    dm.append(createMobileMedia(mediaCollection[id][num - 1]));
-    dd.prepend(dm);
-  }
+  if (edit) dd.prepend(createTag('div', { class: 'media-p' }, createMobileMedia(mediaCollection[id][num - 1])));
 
   button.addEventListener('click', (e) => { handleClick(e.target, dd, num, id); });
   accordion.append(dt, dd);
