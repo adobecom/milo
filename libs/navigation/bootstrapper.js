@@ -2,9 +2,10 @@
 export default async function bootstrapBlock(initBlock, blockConfig) {
   const { name, targetEl, layout, noBorder, jarvis } = blockConfig;
   const { getConfig, createTag, loadScript } = await import('../utils/utils.js');
-  const element = document.querySelector(`.${name}`);
 
   const setNavLayout = () => {
+    const element = document.querySelector(`.${name}`);
+
     if (layout === 'fullWidth') {
       element.classList.add('feds--full-width');
     }
@@ -13,7 +14,7 @@ export default async function bootstrapBlock(initBlock, blockConfig) {
     }
   };
 
-  if (!element) {
+  if (!document.querySelector(`.${name}`)) {
     const block = createTag(targetEl, { class: name });
     document.body[blockConfig.appendType](block);
   }
