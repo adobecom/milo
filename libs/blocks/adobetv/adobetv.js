@@ -14,7 +14,7 @@ const CaptionsLangMap = {
   jpn: ['jp'],
   ita: ['it', 'ch_it'],
   spa: ['es'],
-  por_br: ['br', 'pt'],
+  'por_br,por_pt': ['br', 'pt'],
   tha: ['th_th'],
   spa_la: ['ar', 'cl', 'co', 'la', 'mx', 'pe'],
   dut: ['nl', 'be_nl'],
@@ -31,7 +31,8 @@ export const updateCaptionsLang = (videoUrl, geo) => {
   if (url.searchParams.has('captions')) {
     for (const [langCode, geos] of Object.entries(CaptionsLangMap)) {
       if (geos.includes(geo)) {
-        url.searchParams.set('captions', langCode);
+        const captionParam = langCode === 'eng' ? langCode : `${langCode},eng`;
+        url.searchParams.set('captions', captionParam);
         break;
       }
     }
