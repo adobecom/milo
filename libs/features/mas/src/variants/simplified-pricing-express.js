@@ -86,6 +86,9 @@ export class SimplifiedPricingExpress extends VariantLayout {
             --merch-card-simplified-pricing-express-price-p-font-size: 12px;
             --merch-card-simplified-pricing-express-price-p-font-weight: 400;
             --merch-card-simplified-pricing-express-price-p-line-height: 15.6px;
+            --merch-card-simplified-pricing-express-cta-font-size: 18px;
+            --merch-card-simplified-pricing-express-cta-font-weight: 700;
+            --merch-card-simplified-pricing-express-cta-line-height: 23.4px;
             width: var(--merch-card-simplified-pricing-express-width);
             max-width: var(--merch-card-simplified-pricing-express-width);
             min-height: var(--merch-card-simplified-pricing-express-min-height);

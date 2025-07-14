@@ -281,7 +281,8 @@ merch-card [slot='heading-m-price'] {
     color: var(--spectrum-gray-800, #2c2c2c);
 }
 
-merch-card [slot='heading-l'] {
+merch-card [slot='heading-l'],
+merch-card span.heading-l {
     font-size: var(--consonant-merch-card-heading-l-font-size);
     line-height: var(--consonant-merch-card-heading-l-line-height);
     font-weight: 900;

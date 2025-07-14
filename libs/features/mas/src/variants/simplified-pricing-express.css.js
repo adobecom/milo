@@ -17,6 +17,10 @@ merch-card[variant="simplified-pricing-express"] {
     display: flex;
 }
 
+merch-card[variant="simplified-pricing-express"] merch-badge {
+    white-space: nowrap;
+}
+
 /* Grid layout for simplified-pricing-express cards */
 .section .content:has(merch-card[variant="simplified-pricing-express"]) {
     display: grid;
@@ -65,23 +69,26 @@ merch-card[variant="simplified-pricing-express"] [slot="cta"] {
 
 merch-card[variant="simplified-pricing-express"] [slot="cta"] sp-button,
 merch-card[variant="simplified-pricing-express"] [slot="cta"] button,
-merch-card[variant="simplified-pricing-express"] [slot="cta"] a[is="checkout-link"] {
+merch-card[variant="simplified-pricing-express"] [slot="cta"] a.button {
     width: 100%;
-    font-weight: 700;
-    line-height: 23.4px;
+    font-weight: var(--merch-card-simplified-pricing-express-cta-font-weight);
+    line-height: var(--merch-card-simplified-pricing-express-cta-line-height);
+    font-size: var(--merch-card-simplified-pricing-express-cta-font-size);
     margin: 0;
+    padding: 12px 24px 13px 24px;
+    border-radius: 26px;
 }
 
 merch-card[variant="simplified-pricing-express"] [slot="price"] {
   display: flex;
   flex-direction: column;
-  gap: 8px;
 }
 
 merch-card[variant="simplified-pricing-express"] [slot="price"] > p:first-child {
   display: flex;
   align-items: baseline;
   gap: 8px;
+  padding-bottom: 8px;
   margin: 0;
 }
 

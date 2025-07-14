@@ -1776,6 +1776,10 @@ merch-card[variant="simplified-pricing-express"] {
     display: flex;
 }
 
+merch-card[variant="simplified-pricing-express"] merch-badge {
+    white-space: nowrap;
+}
+
 /* Grid layout for simplified-pricing-express cards */
 .section .content:has(merch-card[variant="simplified-pricing-express"]) {
     display: grid;
@@ -1824,23 +1828,26 @@ merch-card[variant="simplified-pricing-express"] [slot="cta"] {
 
 merch-card[variant="simplified-pricing-express"] [slot="cta"] sp-button,
 merch-card[variant="simplified-pricing-express"] [slot="cta"] button,
-merch-card[variant="simplified-pricing-express"] [slot="cta"] a[is="checkout-link"] {
+merch-card[variant="simplified-pricing-express"] [slot="cta"] a.button {
     width: 100%;
-    font-weight: 700;
-    line-height: 23.4px;
+    font-weight: var(--merch-card-simplified-pricing-express-cta-font-weight);
+    line-height: var(--merch-card-simplified-pricing-express-cta-line-height);
+    font-size: var(--merch-card-simplified-pricing-express-cta-font-size);
     margin: 0;
+    padding: 12px 24px 13px 24px;
+    border-radius: 26px;
 }
 
 merch-card[variant="simplified-pricing-express"] [slot="price"] {
   display: flex;
   flex-direction: column;
-  gap: 8px;
 }
 
 merch-card[variant="simplified-pricing-express"] [slot="price"] > p:first-child {
   display: flex;
   align-items: baseline;
   gap: 8px;
+  padding-bottom: 8px;
   margin: 0;
 }
 
@@ -1948,6 +1955,9 @@ merch-card[variant="simplified-pricing-express"] [slot="footer"] sp-button[varia
             --merch-card-simplified-pricing-express-price-p-font-size: 12px;
             --merch-card-simplified-pricing-express-price-p-font-weight: 400;
             --merch-card-simplified-pricing-express-price-p-line-height: 15.6px;
+            --merch-card-simplified-pricing-express-cta-font-size: 18px;
+            --merch-card-simplified-pricing-express-cta-font-weight: 700;
+            --merch-card-simplified-pricing-express-cta-line-height: 23.4px;
             width: var(--merch-card-simplified-pricing-express-width);
             max-width: var(--merch-card-simplified-pricing-express-width);
             min-height: var(--merch-card-simplified-pricing-express-min-height);
@@ -2319,7 +2329,8 @@ merch-card [slot='heading-m-price'] {
     color: var(--spectrum-gray-800, #2c2c2c);
 }
 
-merch-card [slot='heading-l'] {
+merch-card [slot='heading-l'],
+merch-card span.heading-l {
     font-size: var(--consonant-merch-card-heading-l-font-size);
     line-height: var(--consonant-merch-card-heading-l-line-height);
     font-weight: 900;
