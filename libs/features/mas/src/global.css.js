@@ -119,6 +119,7 @@ styles.innerHTML = `
     --spectrum-gray-700: #494949;
     --spectrum-gray-800: #2C2C2C;
     --spectrum-gray-900: #1C1C1C;
+    --spectrum-indigo-800: #5c5ce0;
   
     /* merch card generic */
     --consonant-merch-card-max-width: 300px;
