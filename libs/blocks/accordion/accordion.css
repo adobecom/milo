@@ -246,11 +246,7 @@ div.media-p {
   padding: 0;
 }
 
-div.editorial .media-p {
-  width: 100%;
-}
-
-div.editorial .media-p img {
+div.editorial .media-p, div.editorial .media-p img {
   width: 100%;
 }
 
