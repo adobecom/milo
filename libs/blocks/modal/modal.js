@@ -228,6 +228,10 @@ export async function getModal(details, custom) {
     if (title) {
       iframe.setAttribute('title', title);
       dialog.setAttribute('aria-label', returnDialogLabel(title));
+    }
+
+    if (iframe.title) {
+      dialog.setAttribute('aria-label', returnDialogLabel(iframe.title));
     } else {
       iframe.onload = () => {
         try {
