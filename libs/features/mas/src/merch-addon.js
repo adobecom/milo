@@ -5,6 +5,7 @@ export default class MerchAddon extends LitElement {
     static properties = {
         planType: { type: String, attribute: 'plan-type', reflect: true },
         checked: { type: Boolean, reflect: true },
+        customCheckbox: { type: Boolean, attribute: 'custom-checkbox', reflect: true }
     };
 
     constructor() {
@@ -13,13 +14,14 @@ export default class MerchAddon extends LitElement {
         this.checked = false;
         this.updatePlanType = this.updatePlanType.bind(this);
         this.handleChange = this.handleChange.bind(this);
+        this.handleCustomClick = this.handleCustomClick.bind(this);
     }
 
     getOsi(planType, offerType) {
       const offerTypeOptions = {
         'TRIAL': ['TRIAL'],
-        'BASE': ['BASE', 'PROMOTION'],
-        'PROMOTION': ['PROMOTION', 'BASE']
+        'BASE': ['BASE', 'PROMOTION', 'TRIAL'],
+        'PROMOTION': ['PROMOTION', 'BASE', 'TRIAL']
       };
       // Get the priority list for this offer type
       const priorityList = offerTypeOptions[offerType] || [offerType];
@@ -62,14 +64,21 @@ export default class MerchAddon extends LitElement {
         );
     }
 
+    handleCustomClick() {
+        const addonCheckbox = this.shadowRoot.querySelector('input');
+        addonCheckbox.click();
+    }
+
     render() {
-        return html`<input
+        return html`
+            <input
                 type="checkbox"
                 id="addon-checkbox"
                 part="checkbox"
                 .checked=${this.checked}
                 @change=${this.handleChange}
             />
+            <span id="custom-checkbox" @click=${this.handleCustomClick}></span>
             <label for="addon-checkbox" part="label">
                 <slot></slot>
             </label>`;
@@ -77,14 +86,51 @@ export default class MerchAddon extends LitElement {
 
     static styles = css`
         :host {
+            --merch-addon-gap: 9px;
+            --merch-addon-align: start;
+            --merch-addon-checkbox-size: unset;
+            --merch-addon-checkbox-border: unset;
+            --merch-addon-checkbox-radius: unset;
+            --merch-addon-checkbox-checked-bg: unset;
+            --merch-addon-checkbox-checked-color: unset;
+            --merch-addon-label-size: unset;
+            --merch-addon-label-color: unset;
+            --merch-addon-label-line-height: unset;
             display: flex;
-            gap: 9px;
-            align-items: start;
+            gap: var(--merch-addon-gap);
+            align-items: var(--merch-addon-align);
             cursor: pointer;
         }
 
-        :host,
-        label {
+        :host([custom-checkbox]) #addon-checkbox {
+            display: none;
+        }
+
+        :host([custom-checkbox]) #custom-checkbox {
+            display: block;
+        }
+
+        :host #custom-checkbox {
+            display: none;
+            width: var(--merch-addon-checkbox-size);
+            height: var(--merch-addon-checkbox-size);
+            border: var(--merch-addon-checkbox-border);
+            border-radius: var(--merch-addon-checkbox-radius);
+            box-sizing: border-box;
+        }
+
+        :host #addon-checkbox:checked + #custom-checkbox {
+            background: var(--merch-addon-checkbox-checked-bg) no-repeat var(--merch-addon-checkbox-checked-color);
+            border-color: var(--merch-addon-checkbox-checked-color);
+        }
+
+        ::slotted(p:not([data-plan-type])) {
+            color: var(--merch-addon-label-color);
+            font-size: var(--merch-addon-label-size);
+            line-height: var(--merch-addon-label-line-height);
+            font-family: "Adobe Clean";
+            font-style: normal;
+            font-weight: 400;
             cursor: pointer;
         }
 
