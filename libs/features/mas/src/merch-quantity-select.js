@@ -166,6 +166,16 @@ export class MerchQuantitySelect extends LitElement {
 
     toggleMenu() {
         this.closed = !this.closed;
+        this.adjustPopoverPlacement();
+        if (this.closed) this.highlightedIndex = this.options.indexOf(this.selectedValue);
+    }
+
+    adjustPopoverPlacement() {
+        const popover = this.shadowRoot.querySelector('.popover');
+        if (this.closed || popover.getBoundingClientRect().bottom <= window.innerHeight)
+            popover.setAttribute('placement', 'bottom');
+        else
+            popover.setAttribute('placement', 'top');
     }
 
     handleMouseEnter(index) {
@@ -202,7 +212,7 @@ export class MerchQuantitySelect extends LitElement {
     }
 
     get popover() {
-        return html` <div class="popover ${this.closed ? 'closed' : 'open'}">
+        return html` <div class="popover ${this.closed ? "closed" : "open"}" placement="bottom">
             ${this.options.map(
                 (option, index) => html`
                     <div
@@ -237,6 +247,7 @@ export class MerchQuantitySelect extends LitElement {
                 <input
                     class="text-field-input"
                     aria-labelledby="qsLabel"
+                    name="quantity"
                     @focus="${this.closePopover}"
                     .value="${this.selectedValue}"
                     type="number"
