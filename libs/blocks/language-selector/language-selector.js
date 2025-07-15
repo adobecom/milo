@@ -21,10 +21,10 @@ document.addEventListener('mousedown', () => {
 
 const langMapToEnglishPromise = ((async () => {
   try {
-    const response = await fetch(`${getFederatedContentRoot()}/federal/assets/data/languages-config.json?sheet=langmap-native-to-en`);
+    const response = await fetch(`${getFederatedContentRoot()}/federal/assets/data/languages-config.json`);
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     const configJson = await response.json();
-    return configJson.data || [];
+    return configJson['langmap-native-to-en']?.data || [];
   } catch (e) {
     window.lana?.log('Failed to load languages-config.json:', e);
     return [];
