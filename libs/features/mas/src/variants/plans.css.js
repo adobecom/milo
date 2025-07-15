@@ -147,6 +147,19 @@ merch-card[variant^="plans"]:has([slot="quantity-select"]) merch-addon {
     margin: 0;
 }
 
+merch-card[variant^="plans"] merch-addon {
+    --merch-addon-gap: 10px;
+    --merch-addon-align: center;
+    --merch-addon-checkbox-size: 12px;
+    --merch-addon-checkbox-border: 2px solid rgb(109, 109, 109);
+    --merch-addon-checkbox-radius: 2px;
+    --merch-addon-checkbox-checked-bg: var(--checkmark-icon);
+    --merch-addon-checkbox-checked-color: var(--color-accent);
+    --merch-addon-label-size: 12px;
+    --merch-addon-label-color: rgb(34, 34, 34);
+    --merch-addon-label-line-height: normal;
+}
+
 merch-card[variant^="plans"] [slot="footer"] a {
     line-height: 19px;
     padding: 3px 16px 4px;

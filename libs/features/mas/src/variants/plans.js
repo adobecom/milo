@@ -197,6 +197,7 @@ export class Plans extends VariantLayout {
         await this.card.updateComplete;
         const addon = this.card.addon;
         if (!addon) return;
+        addon.setAttribute('custom-checkbox', '');
         const price = this.mainPrice;
         if (!price) return;
         await price.onceSettled();
