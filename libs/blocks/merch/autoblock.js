@@ -26,7 +26,7 @@ export function decorateCardCtasWithA11y(card) {
   card.querySelectorAll('a[href]').forEach((link) => {
     if (link.getAttribute('aria-label')) return;
 
-    if (link.getAttribute('is') === 'checkout-link') {
+    if (link.isCheckoutLink) {
       link.onceSettled().then(() => {
         addAriaLabelToCta(link);
       });
