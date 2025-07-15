@@ -41,7 +41,7 @@ const updateFragMap = (fragment, a, href) => {
   }
 };
 
-const insertInlineFrag = (sections, a, relHref) => {
+const insertInlineFrag = async (sections, a, relHref) => {
   // Inline fragments only support one section, other sections are ignored
   const fragChildren = [...sections[0].children];
   if (a.parentElement.nodeName === 'DIV' && !a.parentElement.attributes.length) {
@@ -49,7 +49,12 @@ const insertInlineFrag = (sections, a, relHref) => {
   } else {
     a.replaceWith(...fragChildren);
   }
-  fragChildren.forEach((child) => child.setAttribute('data-path', relHref));
+  const promises = [];
+  fragChildren.forEach((child) => {
+    child.setAttribute('data-path', relHref);
+    promises.push(loadArea(child));
+  });
+  await Promise.all(promises);
 };
 
 function replaceDotMedia(path, doc) {
@@ -141,7 +146,7 @@ export default async function init(a) {
     if (placeholders) fragment.innerHTML = replacePlaceholders(fragment.innerHTML, placeholders);
   }
   if (inline) {
-    insertInlineFrag(sections, a, relHref, mep);
+    await insertInlineFrag(sections, a, relHref, mep);
   } else {
     a.parentElement.replaceChild(fragment, a);
     await loadArea(fragment);
