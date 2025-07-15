@@ -109,12 +109,12 @@ const closeBanner = (el) => {
 
   setTimeout(() => {
     const liveRegion = document.querySelector(`.notification-visibility-hidden[data-notification-id="${el.dataset.notificationId}"]`);
-    liveRegion.textContent = 'Banner closed';
+    if (liveRegion) liveRegion.textContent = 'Banner closed';
   }, 100);
 
   setTimeout(() => {
     const liveRegion = document.querySelector(`.notification-visibility-hidden[data-notification-id="${el.dataset.notificationId}"]`);
-    liveRegion.textContent = '';
+    if (liveRegion) liveRegion.textContent = '';
   }, 2100);
 
   document.dispatchEvent(new CustomEvent('milo:sticky:closed'));
