@@ -182,8 +182,9 @@ export default class MerchCardCollectionHeader extends LitElement {
     get resultLabel() {
         if (!this.#visibility.result) return nothing;
         if (!this.sidenav) return nothing;
+        const type = this.collection?.search ? 'search' : 'filter';
         return html`
-          <div id="result" aria-live="polite">
+          <div id="result" aria-live="polite" type=${type}>
               <slot name="${this.resultSlotName}"></slot>
           </div>`
     }
@@ -234,7 +235,8 @@ export default class MerchCardCollectionHeader extends LitElement {
             --merch-card-collection-header-areas: "search search" 
                                                   "filter sort"
                                                   "result result";
-            --merch-card-collection-header-result-font-size: 12px;
+            --merch-card-collection-header-result-font-size-search: inherit;
+            --merch-card-collection-header-result-font-size-filter: 14px;
         }
 
         sp-theme {
@@ -277,7 +279,14 @@ export default class MerchCardCollectionHeader extends LitElement {
 
         #result {
             grid-area: result;
-            font-size: var(--merch-card-collection-header-result-font-size);
+        }
+
+        #result[type="search"] {
+            font-size: var(--merch-card-collection-header-result-font-size-search);
+        }
+
+        #result[type="filter"] {
+            font-size: var(--merch-card-collection-header-result-font-size-filter);
         }
 
         #custom {
@@ -299,7 +308,7 @@ export default class MerchCardCollectionHeader extends LitElement {
             :host {
                 --merch-card-collection-header-columns: 1fr fit-content(100%);
                 --merch-card-collection-header-areas: "result sort";
-                --merch-card-collection-header-result-font-size: inherit;
+                --merch-card-collection-header-result-font-size-filter: inherit;
             }
         }
     `;
