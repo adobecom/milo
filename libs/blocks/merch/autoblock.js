@@ -31,7 +31,7 @@ export function decorateCardCtasWithA11y(card) {
         addAriaLabelToCta(link);
       });
     } else {
-      const productName = card.querySelector('h3')?.textContent;
+      const productName = card.querySelector('h3')?.textContent || '';
       link.setAttribute('aria-label', `${link.textContent}${productName ? ' - ' : ''}${productName}`);
     }
   });
