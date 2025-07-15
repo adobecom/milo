@@ -182,7 +182,9 @@ const createFrag = (el, action, content, manifestId, targetManifestId) => {
   }
   const a = createTag('a', { href }, content);
   addIds(a, manifestId, targetManifestId);
-  const frag = createTag('p', undefined, a);
+  const noParagraphWrap = !!el?.parentElement?.closest('p')
+    || (el.nodeName === 'P' && action.includes('pend'));
+  const frag = noParagraphWrap ? a : createTag('p', undefined, a);
   const isDelayedModalAnchor = /#.*delay=/.test(href);
   if (isDelayedModalAnchor) frag.classList.add('hide-block');
   if (isInLcpSection(el)) {
@@ -634,7 +636,7 @@ export function handleCommands(
       const insertAnchor = getSelectorType(selector) === 'fragment' ? el.parentElement : el;
       insertAnchor?.insertAdjacentElement(
         CREATE_CMDS[action],
-        createContent(el, cmd),
+        createContent(insertAnchor, cmd),
       );
     });
     if ((els.length && !cmd.modifiers.includes(FLAGS.all))
