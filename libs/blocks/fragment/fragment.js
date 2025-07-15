@@ -192,7 +192,11 @@ export class Tree {
   insert(parentNodeKey, key, value = key) {
     for (const node of this.traverse()) {
       if (node.key === parentNodeKey) {
-        node.children.push(new Node(key, value, node));
+        if (parentNodeKey === key) {
+          node.isRecursive = true;
+        } else {
+          node.children.push(new Node(key, value, node));
+        }
         return true;
       }
     }

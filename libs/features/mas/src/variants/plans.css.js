@@ -109,6 +109,10 @@ merch-card[variant^="plans"] [slot="callout-content"] {
     margin: 8px 0 0;
 }
 
+merch-card[variant^="plans"][size="super-wide"] [slot="callout-content"] {
+    margin: 0;
+}
+
 merch-card[variant^="plans"] [slot='callout-content'] > div > div,
 merch-card[variant^="plans"] [slot="callout-content"] > p {
     position: relative;
@@ -135,13 +139,25 @@ merch-card[variant^="plans"] [slot="whats-included"] [slot="description"] {
 }
 
 merch-card[variant^="plans"] [slot="quantity-select"] {
-    display: flex;
-    justify-content: flex-start;
-    box-sizing: border-box;
-    width: 100%;
-    padding-top: 16px;
-    flex-grow: 1;
-    align-items: end;
+    margin-top: auto;
+    padding-top: 8px;
+}
+
+merch-card[variant^="plans"]:has([slot="quantity-select"]) merch-addon {
+    margin: 0;
+}
+
+merch-card[variant^="plans"] merch-addon {
+    --merch-addon-gap: 10px;
+    --merch-addon-align: center;
+    --merch-addon-checkbox-size: 12px;
+    --merch-addon-checkbox-border: 2px solid rgb(109, 109, 109);
+    --merch-addon-checkbox-radius: 2px;
+    --merch-addon-checkbox-checked-bg: var(--checkmark-icon);
+    --merch-addon-checkbox-checked-color: var(--color-accent);
+    --merch-addon-label-size: 12px;
+    --merch-addon-label-color: rgb(34, 34, 34);
+    --merch-addon-label-line-height: normal;
 }
 
 merch-card[variant^="plans"] [slot="footer"] a {
@@ -161,17 +177,6 @@ merch-card[variant^="plans"] [slot="footer"] .con-button > span {
 
 .plans-container merch-card-collection {
     padding: 0;
-}
-
-merch-card[variant^="plans"] merch-addon {
-    margin-top: 16px;
-    margin-bottom: 16px;
-    font-family: "Adobe Clean";
-    font-size: 12px;
-    font-style: normal;
-    font-weight: 400;
-    line-height: normal;
-    align-items: center;
 }
 
 merch-card[variant^="plans"] merch-addon span[data-template="price"] {
