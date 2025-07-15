@@ -72,6 +72,17 @@ describe('Placeholders', () => {
     expect(tag.getAttribute('data-attr')).to.equal('/modal/800 12345 6789');
   });
 
+  it('Replaces text that includes html e.g., bold and italics', async () => {
+    const placeholderPath = '/test/features/placeholders.json';
+    const placeholderRequest = customFetch({ resource: placeholderPath, withCacheRules: true })
+      .catch(() => ({}));
+    const p = document.createElement('p');
+    const textNode = document.createTextNode('This is {{bold-italic-adobe-apps}}');
+    p.appendChild(textNode);
+    await decoratePlaceholderArea({ placeholderPath, placeholderRequest, nodes: [textNode] });
+    expect(p.innerHTML).to.equal('This is <strong><em>Adobe Apps</em></strong>');
+  });
+
   it('Replaces geo-specific placeholders when disable-geo-placeholders meta content is "off" or meta tag not defined', async () => {
     config.locale.contentRoot = '/test/features/placeholders/bg';
     let text = '{{add-to-cart}}. {{adobe-apps}}';
