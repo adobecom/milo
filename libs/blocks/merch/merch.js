@@ -701,7 +701,8 @@ const isProdModal = (url) => {
 export async function getModalAction(offers, options, el) {
   if (!options.modal) return undefined;
 
-  if (el?.isOpen3in1Modal) {
+  const preload = new URLSearchParams(window.location.search).get('commerce.preload') !== 'off';
+  if (el?.isOpen3in1Modal && preload) {
     const baseUrl = getCommercePreloadUrl();
     // The script can preload more, based on clientId, but for the ones in use
     // ('mini-plans', 'creative') there is no difference, so we can just use either one.
