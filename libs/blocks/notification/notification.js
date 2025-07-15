@@ -99,7 +99,7 @@ const closeBanner = (el) => {
   el.style.display = 'none';
   el.closest('.section')?.classList.add('close-sticky-section');
 
-  if (window.matchMedia('(max-width: 599px)').matches) {
+  if (el.classList.contains('no-delay')) {
     setTimeout(() => {
       const tempFocus = createTag('div', { class: 'temp-focus' });
       tempFocus.tabIndex = 0;
