@@ -98,10 +98,7 @@ function isElementInView(element) {
   );
 }
 
-const returnDialogLabel = (title) => {
-  if (title) return `Modal: ${title}`;
-  return 'Modal';
-};
+const returnDialogLabel = (title) => `Modal: ${title}`;
 
 function getCustomModal(custom, dialog) {
   const { miloLibs, codeRoot } = getConfig();
