@@ -53,7 +53,8 @@ const closeSvg = `<svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" wid
     </clipPath>
   </defs>
 </svg>`;
-
+const focusableSelector = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
+const selectedSelector = '[aria-selected="true"], [aria-checked="true"]';
 let iconographyLoaded = false;
 
 function getOpts(el) {
@@ -74,6 +75,18 @@ function getBlockData(el) {
   return { fontSizes, options: { ...getOpts(el) } };
 }
 
+export function findFocusableInSection(section, selSelector, focSelector) {
+  if (!section) return null;
+
+  const selectedElement = section.querySelector(selSelector);
+  if (selectedElement) return selectedElement;
+
+  const focusableElements = [...section.querySelectorAll(focSelector)];
+  return focusableElements.length > 0
+    ? focusableElements[focusableElements.length - 1]
+    : null;
+}
+
 function wrapCopy(foreground) {
   const texts = foreground.querySelectorAll('.text');
   if (!texts) return;
@@ -87,6 +100,14 @@ function wrapCopy(foreground) {
 }
 
 const closeBanner = (el) => {
+  let isSticky = false;
+  let rect;
+  const sectionElement = el.closest('.section');
+
+  if (sectionElement?.className.includes('sticky')) {
+    isSticky = true;
+    rect = sectionElement.getBoundingClientRect();
+  }
   if (el.focusTrapCleanup) el.focusTrapCleanup();
 
   if (el.classList.contains('focus')) {
@@ -98,8 +119,8 @@ const closeBanner = (el) => {
   el.removeAttribute('role');
   el.style.display = 'none';
   el.closest('.section')?.classList.add('close-sticky-section');
-
-  if (el.classList.contains('no-delay')) {
+  const noDelay = el.classList.contains('no-delay');
+  if (noDelay) {
     setTimeout(() => {
       const tempFocus = createTag('div', { class: 'temp-focus' });
       tempFocus.tabIndex = 0;
@@ -107,6 +128,30 @@ const closeBanner = (el) => {
       tempFocus.focus();
       document.body.removeChild(tempFocus);
     });
+  }
+
+  if (isSticky && !noDelay) {
+    setTimeout(() => {
+      let focusTarget;
+
+      const elementAtPosition = document.elementFromPoint(rect.left, rect.top);
+      const stickySection = elementAtPosition.closest('.section');
+      focusTarget = findFocusableInSection(stickySection, selectedSelector, focusableSelector);
+
+      let currentSection = el.closest('.section')?.previousElementSibling;
+      while (currentSection && !focusTarget) {
+        focusTarget = findFocusableInSection(currentSection, selectedSelector, focusableSelector);
+        if (!focusTarget) currentSection = currentSection.previousElementSibling;
+      }
+
+      const header = document.querySelector('header');
+      if (!focusTarget && header) {
+        const headerFocusable = [...header.querySelectorAll(focusableSelector)];
+        focusTarget = headerFocusable[headerFocusable.length - 1];
+      }
+
+      if (focusTarget && document.activeElement.tagName === 'BODY') focusTarget.focus({ preventScroll: true });
+    }, 2000);
   }
 
   setTimeout(() => {
