@@ -91,6 +91,14 @@ export default class MerchCardCollectionHeader extends LitElement {
         return this.collection?.sidenav;
     }
 
+    get search() {
+        return this.collection?.search;
+    }
+
+    get resultCount() {
+        return this.collection?.resultCount;
+    }
+
     tablet = new MatchMediaController(this, TABLET_UP);
     desktop = new MatchMediaController(this, DESKTOP_UP);
 
@@ -175,16 +183,17 @@ export default class MerchCardCollectionHeader extends LitElement {
     }
 
     get resultSlotName() {
-        const slotType = `${this.collection?.search ? 'search' : 'filters'}${this.isMobile || this.isTablet ? 'Mobile' : ''}`;
-        return RESULT_TEXT_SLOT_NAMES[slotType][Math.min(this.collection?.resultCount, 2)];
+        const slotType = `${this.search ? 'search' : 'filters'}${this.isMobile || this.isTablet ? 'Mobile' : ''}`;
+        return RESULT_TEXT_SLOT_NAMES[slotType][Math.min(this.resultCount, 2)];
     }
 
     get resultLabel() {
         if (!this.#visibility.result) return nothing;
         if (!this.sidenav) return nothing;
-        const type = this.collection?.search ? 'search' : 'filter';
+        const type = this.search ? 'search' : 'filter';
+        const quantity = !this.resultCount ? 'none' : this.resultCount === 1 ? 'single' : 'multiple';
         return html`
-          <div id="result" aria-live="polite" type=${type}>
+          <div id="result" aria-live="polite" type=${type} quantity=${quantity}>
               <slot name="${this.resultSlotName}"></slot>
           </div>`
     }
@@ -235,8 +244,7 @@ export default class MerchCardCollectionHeader extends LitElement {
             --merch-card-collection-header-areas: "search search" 
                                                   "filter sort"
                                                   "result result";
-            --merch-card-collection-header-result-font-size-search: inherit;
-            --merch-card-collection-header-result-font-size-filter: 14px;
+            --merch-card-collection-header-result-font-size: 14px;
         }
 
         sp-theme {
@@ -279,14 +287,11 @@ export default class MerchCardCollectionHeader extends LitElement {
 
         #result {
             grid-area: result;
+            font-size: var(--merch-card-collection-header-result-font-size);
         }
 
-        #result[type="search"] {
-            font-size: var(--merch-card-collection-header-result-font-size-search);
-        }
-
-        #result[type="filter"] {
-            font-size: var(--merch-card-collection-header-result-font-size-filter);
+        #result[type="search"][quantity="none"] {
+            font-size: inherit;
         }
 
         #custom {
@@ -308,7 +313,7 @@ export default class MerchCardCollectionHeader extends LitElement {
             :host {
                 --merch-card-collection-header-columns: 1fr fit-content(100%);
                 --merch-card-collection-header-areas: "result sort";
-                --merch-card-collection-header-result-font-size-filter: inherit;
+                --merch-card-collection-header-result-font-size: inherit;
             }
         }
     `;
