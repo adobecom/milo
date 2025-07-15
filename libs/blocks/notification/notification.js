@@ -99,13 +99,15 @@ const closeBanner = (el) => {
   el.style.display = 'none';
   el.closest('.section')?.classList.add('close-sticky-section');
 
-  setTimeout(() => {
-    const tempFocus = createTag('div', { class: 'temp-focus' });
-    tempFocus.tabIndex = 0;
-    document.body.insertBefore(tempFocus, document.body.firstChild);
-    tempFocus.focus();
-    document.body.removeChild(tempFocus);
-  });
+  if (window.matchMedia('(max-width: 599px)').matches) {
+    setTimeout(() => {
+      const tempFocus = createTag('div', { class: 'temp-focus' });
+      tempFocus.tabIndex = 0;
+      document.body.insertBefore(tempFocus, document.body.firstChild);
+      tempFocus.focus();
+      document.body.removeChild(tempFocus);
+    });
+  }
 
   setTimeout(() => {
     const liveRegion = document.querySelector(`.notification-visibility-hidden[data-notification-id="${el.dataset.notificationId}"]`);
