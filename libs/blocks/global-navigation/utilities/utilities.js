@@ -13,6 +13,7 @@ import {
 } from '../../../utils/utils.js';
 import { replaceKey, replaceText } from '../../../features/placeholders.js';
 import { PERSONALIZATION_TAGS } from '../../../features/personalization/personalization.js';
+import { processTrackingLabels } from '../../../martech/attributes.js';
 
 loadLana();
 
@@ -541,10 +542,24 @@ export const closeAllTabs = (tabs, tabpanels) => {
   tabs.forEach((t) => t.setAttribute('aria-selected', 'false'));
 };
 
-const parseTabsFromMenuSection = (section) => {
+const getAnalyticsValue = (str, index) => {
+  if (typeof str !== 'string' || !str.length) return str;
+
+  let analyticsValue = processTrackingLabels(str, getConfig(), 30);
+  analyticsValue = typeof index === 'number' ? `${analyticsValue}-${index}` : analyticsValue;
+
+  return analyticsValue;
+};
+
+const parseTabsFromMenuSection = (section, index) => {
   const headline = section.querySelector('.feds-menu-headline');
   const name = headline?.textContent ?? 'Shop For';
-  const daallTab = headline?.getAttribute('daa-ll');
+  let daallTab = headline?.getAttribute('daa-ll');
+  // Below condition is only required if the user is loading the page in desktop mode
+  // and then moving to mobile mode.
+  if (!daallTab) {
+    daallTab = getAnalyticsValue(headline.textContent, index + 1);
+  }
   const daalhTabContent = section.querySelector('.feds-menu-items')?.getAttribute('daa-lh');
   const content = section.querySelector('.feds-menu-items') ?? section;
   const links = [...content.querySelectorAll('a.feds-navLink, .feds-navLink.feds-navLink--header, .feds-cta--secondary')].map((x) => x.outerHTML).join('');
