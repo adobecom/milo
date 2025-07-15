@@ -57,46 +57,39 @@ export default {
   },
 };
 
-let preflightResults;
+const runChecks = async (url, area) => {
+  const assets = await Promise.all(runChecksAssets(url, area));
+  const performance = await Promise.all(runChecksPerformance(url, area));
+  const seo = await Promise.all(runChecksSeo({ url, area }));
+  return { assets, performance, seo };
+};
 
 export async function getPreflightResults(url, area, useCache = true) {
-  if (useCache && checks) {
-    preflightResults = await checks;
-    const returnValue = {
+  if (useCache) {
+    if (!checks) checks = runChecks(url, area);
+    const cachedChecks = await checks;
+    const allResults = [
+      ...(cachedChecks.assets || []),
+      ...(cachedChecks.performance || []),
+      ...(cachedChecks.seo || []),
+    ];
+    return {
       isViewportTooSmall: isViewportTooSmall(),
-      runChecks: preflightResults,
+      runChecks: cachedChecks,
+      hasFailures: allResults.some((result) => result.status === 'fail'),
     };
-    return returnValue;
   }
 
-  checks = (async () => {
-    const assets = await Promise.all(runChecksAssets(url, area));
-    const performance = await Promise.all(runChecksPerformance(url, area));
-    const seo = await Promise.all(runChecksSeo({ url, area }));
-    return {
-      assets,
-      performance,
-      seo,
-    };
-  })();
+  const res = await runChecks(url, area);
+  const allResults = [
+    ...(res.assets || []),
+    ...(res.performance || []),
+    ...(res.seo || []),
+  ];
 
-  preflightResults = await checks;
-  console.log({ preflightResults });
-  captureMetrics(preflightResults);
   return {
     isViewportTooSmall: isViewportTooSmall(),
-    runChecks: preflightResults,
+    runChecks: res,
+    hasFailures: allResults.some((result) => result.status === 'fail'),
   };
-}
-
-export function hasPreflightFailures() {
-  if (!preflightResults) return false;
-
-  const runChecks = preflightResults.runChecks || preflightResults;
-  const allResults = [
-    ...(runChecks.assets || []),
-    ...(runChecks.performance || []),
-    ...(runChecks.seo || []),
-  ];
-  return allResults.some((result) => result.status === 'fail');
 }

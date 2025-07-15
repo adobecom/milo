@@ -1,5 +1,6 @@
 import userCanPublishPage from '../tools/utils/publish.js';
 import checkPreflightAndShowNotification from './preflight-notification.js';
+import { getConfig, updateConfig } from './utils.js';
 
 const PUBLISH_BTN = '.publish.plugin button';
 const PROFILE = '.profile-email';
@@ -123,7 +124,12 @@ export default async function stylePublish(sk) {
   if (stylePublishCalled) return;
   stylePublishCalled = true;
 
-  await checkPreflightAndShowNotification();
+  const config = getConfig();
+  config.onFooterReady = async () => {
+    await window.milo.deferredPromise;
+    checkPreflightAndShowNotification();
+  };
+  updateConfig(config);
 
   if (sk.nodeName === 'HELIX-SIDEKICK') {
     styleHelixPublish(sk);
