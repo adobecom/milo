@@ -12,7 +12,6 @@ let tooltipListenersAdded = false;
 function setTooltipPosition(tooltips) {
   const positionClasses = ['top', 'bottom', 'right', 'left'];
   const viewportWidth = window.innerWidth;
-  const tooltipMaxWidth = viewportWidth <= 600 ? 200 : 160;
   const tooltipMargin = 12;
   const headerHeight = document.querySelector('header')?.getBoundingClientRect().height;
 
@@ -23,6 +22,13 @@ function setTooltipPosition(tooltips) {
       + (parseFloat(beforeStyle.getPropertyValue('padding-bottom')) || 0);
   };
 
+  const getTooltipBeforeWidth = (tooltip) => {
+    const beforeStyle = window.getComputedStyle(tooltip, '::before');
+    return (parseFloat(beforeStyle.getPropertyValue('width')) || 0)
+      + (parseFloat(beforeStyle.getPropertyValue('padding-left')) || 0)
+      + (parseFloat(beforeStyle.getPropertyValue('padding-right')) || 0);
+  };
+
   tooltips.forEach((tooltip) => {
     const currentPosition = positionClasses.find((cls) => tooltip.classList.contains(cls));
     if (!tooltip.dataset.originalPosition
@@ -31,7 +37,8 @@ function setTooltipPosition(tooltips) {
     const rect = tooltip.getBoundingClientRect();
     const { originalPosition } = tooltip.dataset;
     const isVerticalPosition = originalPosition === 'top' || originalPosition === 'bottom';
-    const effectiveMaxWidth = isVerticalPosition ? tooltipMaxWidth / 2 : tooltipMaxWidth;
+    const tooltipWidth = getTooltipBeforeWidth(tooltip);
+    const effectiveMaxWidth = isVerticalPosition ? tooltipWidth / 2 : tooltipWidth;
     const topMargin = originalPosition === 'top' ? tooltipMargin : 0;
     const tooltipHeight = getTooltipBeforeHeight(tooltip);
     const effectiveHeight = originalPosition === 'top' ? tooltipHeight + topMargin : tooltipHeight / 2;
@@ -40,9 +47,9 @@ function setTooltipPosition(tooltips) {
     > window.innerHeight;
     const willOverflowRight = rect.right + effectiveMaxWidth + tooltipMargin > viewportWidth;
     const willOverflowLeft = rect.left - effectiveMaxWidth - tooltipMargin < 0;
-    const willOverflowRightAtBottom = rect.left + tooltipMaxWidth / 2
+    const willOverflowRightAtBottom = rect.left + tooltipWidth / 2
      + tooltipMargin > viewportWidth;
-    const willOverflowLeftAtBottom = rect.left - tooltipMaxWidth / 2 - tooltipMargin < 0;
+    const willOverflowLeftAtBottom = rect.left - tooltipWidth / 2 - tooltipMargin < 0;
 
     const hasOverflowIssues = willOverflowRight || willOverflowLeft || willCutoffTop
       || willCutoffBottom || willOverflowRightAtBottom || willOverflowLeftAtBottom;
@@ -59,7 +66,7 @@ function setTooltipPosition(tooltips) {
       updatedPosition = 'right';
     } else if ((willOverflowRight && willCutoffTop) || (willOverflowLeft && willCutoffTop)) {
       updatedPosition = (willOverflowRightAtBottom && 'left') || (willOverflowLeftAtBottom && 'right') || 'bottom';
-    } else if (willOverflowRight !== willOverflowLeft) {
+    } else if ((willOverflowRight !== willOverflowLeft) && !willCutoffBottom) {
       updatedPosition = willOverflowRight ? 'left' : 'right';
     } else if (willCutoffTop && ['top', 'left', 'right'].includes(originalPosition)) {
       updatedPosition = 'bottom';
