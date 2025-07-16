@@ -1,6 +1,9 @@
 import { createTag } from '../../../utils/utils.js';
 import { decorateButtons } from '../../../utils/decorate.js';
-import '../../../deps/mas/merch-offer-select.js';
+import { loadMasComponent, MAS_MERCH_OFFER_SELECT } from '../../../blocks/merch/merch.js';
+
+// Load merch-offer-select component dynamically at module level
+await loadMasComponent(MAS_MERCH_OFFER_SELECT);
 
 const TWP = 'twp';
 const MINI_COMPARE_CHART = 'mini-compare-chart';

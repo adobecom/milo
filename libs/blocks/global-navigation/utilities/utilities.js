@@ -21,6 +21,7 @@ const FEDERAL_PATH_KEY = 'federal';
 // as sticky blocks position themselves before LocalNav loads into the document object model(DOM).
 const DEFAULT_LOCALNAV_HEIGHT = 40;
 const LANA_CLIENT_ID = 'feds-milo';
+const FEDS_PROMO_HEIGHT = 72;
 
 const selectorMap = {
   headline: '.feds-menu-headline[aria-expanded="true"]',
@@ -563,7 +564,13 @@ const promoCrossCloudTab = async (popup) => {
 };
 
 // returns a cleanup function
-export const transformTemplateToMobile = async ({ popup, item, localnav = false, toggleMenu }) => {
+export const transformTemplateToMobile = async ({
+  popup,
+  item,
+  localnav = false,
+  toggleMenu,
+  updatePopupPosition,
+}) => {
   const notMegaMenu = popup.parentElement.tagName === 'DIV';
   if (notMegaMenu) return () => {};
 
@@ -583,6 +590,9 @@ export const transformTemplateToMobile = async ({ popup, item, localnav = false,
   // Get the outerHTML of the .feds-brand element or use a default empty <span> if it doesn't exist
   const brand = document.querySelector('.feds-brand')?.outerHTML || '<span></span>';
   const breadCrumbs = document.querySelector('.feds-breadcrumbs')?.outerHTML;
+  if (document.querySelector('.feds-promo-aside-wrapper')?.clientHeight > FEDS_PROMO_HEIGHT && updatePopupPosition) {
+    updatePopupPosition();
+  }
   popup.innerHTML = `
     <div class="top-bar">
       ${localnav ? brand : await replaceText(mainMenu, getFedsPlaceholderConfig())}

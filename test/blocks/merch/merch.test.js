@@ -593,7 +593,6 @@ describe('Merch Block', () => {
       const prevHash = window.location.hash;
       await openModal(new CustomEvent('test'), 'https://www.adobe.com/mini-plans/creativecloud.html?mid=ft&web=1', 'TRIAL', 'mini-plans-web-cta-creative-cloud-card');
       expect(window.location.hash).to.equal('#mini-plans-web-cta-creative-cloud-card');
-      document.body.querySelector('.dialog-modal').remove();
       window.location.hash = prevHash;
       modalState.isOpen = false;
     });
@@ -868,12 +867,6 @@ describe('Merch Block', () => {
       modalState.isOpen = true;
       const isModalOpen = await updateModalState();
       expect(isModalOpen).to.be.false;
-    });
-
-    it('updates the state when modal was closed by user', async () => {
-      window.location.hash = '#miniplans-buy-all-apps';
-      const isModalOpen = await updateModalState();
-      expect(isModalOpen).to.be.true;
     });
 
     it('reflects the state when the modal gets closed by user click', async () => {

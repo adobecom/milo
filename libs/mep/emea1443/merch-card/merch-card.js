@@ -2,9 +2,8 @@ import { decorateButtons, decorateBlockHrs } from '../../../utils/decorate.js';
 import { getConfig, createTag, loadStyle } from '../../../utils/utils.js';
 import { getMetadata } from '../../../blocks/section-metadata/section-metadata.js';
 import { processTrackingLabels } from '../../../martech/attributes.js';
-import '../../../deps/mas/merch-card.js';
 import '../../../deps/lit-all.min.js';
-import { initService } from '../../../blocks/merch/merch.js';
+import { initService, loadMasComponent, MAS_MERCH_CARD, MAS_MERCH_QUANTITY_SELECT } from '../../../blocks/merch/merch.js';
 
 const TAG_PATTERN = /^[a-zA-Z0-9_-]+:[a-zA-Z0-9_-]+\/[a-zA-Z0-9_-].*$/;
 
@@ -115,7 +114,7 @@ function extractQuantitySelect(el, merchCard) {
   if (!attributes.min || !attributes.max || !attributes.step) {
     return null;
   }
-  import('../../../deps/mas/merch-quantity-select.js');
+  loadMasComponent(MAS_MERCH_QUANTITY_SELECT);
   return createTag('merch-quantity-select', attributes);
 }
 
@@ -576,6 +575,10 @@ const addStartingAt = async (styles, merchCard) => {
 
 export default async function init(el) {
   if (!el.querySelector(INNER_ELEMENTS_SELECTOR)) return el;
+
+  // Load merch-card component dynamically
+  await loadMasComponent(MAS_MERCH_CARD);
+
   const merchServicePromise = initService();
   // TODO: Remove after bugfix PR adobe/helix-html2md#556 is merged
   const liELs = el.querySelectorAll('ul li');
@@ -763,7 +766,7 @@ export default async function init(el) {
       if (offerSelection) {
         const { initOfferSelection } = await import('./merch-offer-select.js');
         setMiniCompareOfferSlot(merchCard, undefined);
-        initOfferSelection(merchCard, offerSelection, quantitySelect);
+        await initOfferSelection(merchCard, offerSelection, quantitySelect);
       }
       if (quantitySelect) {
         if (merchCard.variant === MINI_COMPARE_CHART) {
