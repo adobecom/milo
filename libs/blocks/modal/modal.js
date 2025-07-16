@@ -26,7 +26,7 @@ export function findDetails(hash, el) {
     id,
     path,
     isHash: hash === window.location.hash,
-    title: ariaLabel,
+    title: `Modal: ${ariaLabel}`,
   };
 }
 
@@ -98,13 +98,11 @@ function isElementInView(element) {
   );
 }
 
-const returnDialogLabel = (title) => `Modal: ${title}`;
-
 function getCustomModal(custom, dialog) {
   const { miloLibs, codeRoot } = getConfig();
   loadStyle(`${miloLibs || codeRoot}/blocks/modal/modal.css`);
   if (custom.id) dialog.id = custom.id;
-  if (custom.title) dialog.setAttribute('aria-label', returnDialogLabel(custom.title));
+  if (custom.title) dialog.setAttribute('aria-label', custom.title);
   if (custom.class) dialog.classList.add(custom.class);
   if (custom.closeEvent) {
     dialog.addEventListener(custom.closeEvent, () => {
@@ -224,16 +222,16 @@ export async function getModal(details, custom) {
     const title = custom?.title || details?.title;
     if (title) {
       iframe.setAttribute('title', title);
-      dialog.setAttribute('aria-label', returnDialogLabel(title));
+      dialog.setAttribute('aria-label', title);
     }
 
     if (iframe.title) {
-      dialog.setAttribute('aria-label', returnDialogLabel(iframe.title));
+      dialog.setAttribute('aria-label', iframe.title);
     } else {
       iframe.onload = () => {
         try {
           if ((new URL(iframe.src).origin !== window.location.origin) && iframe.title) {
-            dialog.setAttribute('aria-label', returnDialogLabel(iframe.title));
+            dialog.setAttribute('aria-label', iframe.title);
             return;
           }
 
