@@ -4,7 +4,8 @@ export default async function bootstrapBlock(initBlock, blockConfig) {
   const { getConfig, createTag, loadScript } = await import('../utils/utils.js');
 
   const setNavLayout = () => {
-    const element = document.querySelector(targetEl);
+    const element = document.querySelector(`.${name}`);
+
     if (layout === 'fullWidth') {
       element.classList.add('feds--full-width');
     }
@@ -13,7 +14,7 @@ export default async function bootstrapBlock(initBlock, blockConfig) {
     }
   };
 
-  if (!document.querySelector(targetEl)) {
+  if (!document.querySelector(`.${name}`)) {
     const block = createTag(targetEl, { class: name });
     document.body[blockConfig.appendType](block);
   }
@@ -43,7 +44,7 @@ export default async function bootstrapBlock(initBlock, blockConfig) {
     }
   }
 
-  await initBlock(document.querySelector(targetEl));
+  await initBlock(document.querySelector(`.${name}`));
   if (blockConfig.targetEl === 'footer') {
     const { loadPrivacy } = await import('../scripts/delayed.js');
     setTimeout(() => {
