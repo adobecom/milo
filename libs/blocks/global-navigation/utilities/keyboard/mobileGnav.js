@@ -2,6 +2,8 @@ import { isDesktop } from '../utilities.js';
 
 const MobileGnav = {
   init() {
+    const isNewNav = document.querySelector('.new-nav');
+    if (!isNewNav) return;
     this.isMobile = !isDesktop.matches;
     this.toggleButton = document.querySelector('.feds-toggle');
     this.menuItemLinks = document.querySelectorAll(
