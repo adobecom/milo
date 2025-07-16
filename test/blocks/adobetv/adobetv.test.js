@@ -34,7 +34,7 @@ describe('updateCaptionsParam', () => {
   it('should update captions parameter for known geo', () => {
     const url = 'https://video.tv.adobe.com/v/123456?captions=eng';
     const result = updateCaptionsLang(url, 'fr');
-    expect(result).to.equal('https://video.tv.adobe.com/v/123456?captions=fre_fr');
+    expect(result).to.equal('https://video.tv.adobe.com/v/123456?captions=fre_fr%2Ceng');
   });
 
   it('should not modify captions for unknown geo', () => {
@@ -52,12 +52,24 @@ describe('updateCaptionsParam', () => {
   it('should handle multiple query parameters', () => {
     const url = 'https://video.tv.adobe.com/v/123456?autoplay=true&captions=eng';
     const result = updateCaptionsLang(url, 'jp');
-    expect(result).to.equal('https://video.tv.adobe.com/v/123456?autoplay=true&captions=jpn');
+    expect(result).to.equal('https://video.tv.adobe.com/v/123456?autoplay=true&captions=jpn%2Ceng');
+  });
+
+  it('should handle caption parameters for Brazil', () => {
+    const url = 'https://video.tv.adobe.com/v/123456?autoplay=true&captions=eng';
+    const result = updateCaptionsLang(url, 'br');
+    expect(result).to.equal('https://video.tv.adobe.com/v/123456?autoplay=true&captions=por_br%2Cpor_pt%2Ceng');
+  });
+
+  it('should handle caption parameters for Portugal', () => {
+    const url = 'https://video.tv.adobe.com/v/123456?autoplay=true&captions=eng';
+    const result = updateCaptionsLang(url, 'pt');
+    expect(result).to.equal('https://video.tv.adobe.com/v/123456?autoplay=true&captions=por_br%2Cpor_pt%2Ceng');
   });
 
   it('should preserve other query parameters when updating captions', () => {
     const url = 'https://video.tv.adobe.com/v/123456?captions=eng&quality=hd&autoplay=true';
     const result = updateCaptionsLang(url, 'de');
-    expect(result).to.equal('https://video.tv.adobe.com/v/123456?captions=ger&quality=hd&autoplay=true');
+    expect(result).to.equal('https://video.tv.adobe.com/v/123456?captions=ger%2Ceng&quality=hd&autoplay=true');
   });
 });
