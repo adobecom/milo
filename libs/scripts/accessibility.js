@@ -8,9 +8,11 @@ function getActiveEl(target) {
 
 function shouldntScroll(element, elFromPoint) {
   return !elFromPoint
-    || getActiveEl(elFromPoint) === element
+    || elFromPoint === element
     || element.contains(elFromPoint)
-    || elFromPoint.contains(element);
+    || elFromPoint.contains(element)
+    || element.shadowRoot?.contains(elFromPoint)
+    || elFromPoint.shadowRoot?.contains(element);
 }
 
 function setScrollPadding() {
@@ -19,6 +21,17 @@ function setScrollPadding() {
 
 function removeScrollPadding() {
   document.documentElement.style.removeProperty('--scroll-padding-block');
+}
+
+function getElementFromPoint(x, y) {
+  let elFromPoint = document.elementFromPoint(x, y);
+  if (!elFromPoint.shadowRoot) return elFromPoint;
+  while (elFromPoint.shadowRoot) {
+    const el = elFromPoint.shadowRoot.elementFromPoint(x, y);
+    if (el === elFromPoint) break;
+    elFromPoint = el;
+  }
+  return elFromPoint;
 }
 
 function scrollTabFocusedElIntoView() {
@@ -47,8 +60,8 @@ function scrollTabFocusedElIntoView() {
     const centerX = rect.left + rect.width / 2;
     const bottomPointY = rect.bottom - rect.height * 0.05;
 
-    const elFromPointTop = document.elementFromPoint(centerX, rect.top);
-    const elFromPointBottom = document.elementFromPoint(centerX, bottomPointY);
+    const elFromPointTop = getElementFromPoint(centerX, rect.top);
+    const elFromPointBottom = getElementFromPoint(centerX, bottomPointY);
 
     if (shouldntScroll(element, elFromPointTop)
       && shouldntScroll(element, elFromPointBottom)) return;
