@@ -5,8 +5,8 @@ const MobileGnav = {
     this.isMobile = !isDesktop.matches;
     this.toggleButton = document.querySelector('.feds-toggle');
     this.menuItemLinks = document.querySelectorAll(
-        '.feds-nav > .feds-navItem > .feds-navLink[href], .feds-nav > .feds-navItem > button.feds-navLink, .feds-nav > .feds-navItem > .feds-cta-wrapper > .feds-cta'
-      );
+      '.feds-nav > .feds-navItem > .feds-navLink[href], .feds-nav > .feds-navItem > button.feds-navLink, .feds-nav > .feds-navItem > .feds-cta-wrapper > .feds-cta',
+    );
     this.eventInitialized = false;
     this.addEventListeners();
   },
