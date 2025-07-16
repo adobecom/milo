@@ -26,7 +26,7 @@ export function findDetails(hash, el) {
     id,
     path,
     isHash: hash === window.location.hash,
-    title: `Modal: ${ariaLabel}`,
+    title: ariaLabel ? `Modal: ${ariaLabel}` : null,
   };
 }
 
