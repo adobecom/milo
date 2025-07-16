@@ -542,7 +542,7 @@ export const closeAllTabs = (tabs, tabpanels) => {
   tabs.forEach((t) => t.setAttribute('aria-selected', 'false'));
 };
 
-const getAnalyticsValue = (str, index) => {
+export const getAnalyticsValue = (str, index) => {
   if (typeof str !== 'string' || !str.length) return str;
 
   let analyticsValue = processTrackingLabels(str, getConfig(), 30);

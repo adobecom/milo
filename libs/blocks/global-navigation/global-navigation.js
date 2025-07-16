@@ -13,6 +13,7 @@ import {
   getFedsPlaceholderConfig,
   shouldBlockFreeTrialLinks,
 } from '../../utils/utils.js';
+import { getAnalyticsValue } from './utilities/utilities.js';
 
 (async () => {
   const { miloLibs, codeRoot, theme } = getConfig();
@@ -55,7 +56,7 @@ const asideJsPromise = getMetadata('gnav-promo-source') ? import('./features/asi
 
 const breadCrumbsJsPromise = document.querySelector('header')?.classList.contains('has-breadcrumbs') ? import('./features/breadcrumbs/breadcrumbs.js') : null;
 
-const [utilities, placeholders, merch, { processTrackingLabels }] = await Promise.all([
+const [utilities, placeholders, merch] = await Promise.all([
   import('./utilities/utilities.js'),
   import('../../features/placeholders.js'),
   import('../merch/merch.js'),
@@ -115,15 +116,6 @@ function getHelpChildren() {
     { type: 'Support' },
     { type: 'Community' },
   ];
-}
-
-export function getAnalyticsValue(str, index) {
-  if (typeof str !== 'string' || !str.length) return str;
-
-  let analyticsValue = processTrackingLabels(str, getConfig(), 30);
-  analyticsValue = typeof index === 'number' ? `${analyticsValue}-${index}` : analyticsValue;
-
-  return analyticsValue;
 }
 
 export function decorateCta({ elem, type = 'primaryCta', index } = {}) {

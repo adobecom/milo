@@ -1,4 +1,3 @@
-import { processTrackingLabels } from '../../../../martech/attributes.js';
 import { getConfig, shouldBlockFreeTrialLinks } from '../../../../utils/utils.js';
 import {
   fetchAndProcessPlainHtml,
@@ -17,16 +16,8 @@ import {
   getDisableAEDState,
   hasActiveLink,
   setAriaAtributes,
+  getAnalyticsValue,
 } from '../utilities.js';
-
-function getAnalyticsValue(str, index) {
-  if (typeof str !== 'string' || !str.length) return str;
-
-  let analyticsValue = processTrackingLabels(str, getConfig(), 30);
-  analyticsValue = typeof index === 'number' ? `${analyticsValue}-${index}` : analyticsValue;
-
-  return analyticsValue;
-}
 
 function decorateCta({ elem, type = 'primaryCta', index } = {}) {
   if (shouldBlockFreeTrialLinks({
