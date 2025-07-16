@@ -1,7 +1,7 @@
 import { createTag } from '../../utils/utils.js';
 import '../../deps/mas/merch-card.js';
 import '../../deps/mas/merch-quantity-select.js';
-import { postProcessAutoblock, decorateCardCtasWithA11y } from '../merch/autoblock.js';
+import { postProcessAutoblock } from '../merch/autoblock.js';
 import {
   initService,
   getOptions,
@@ -52,8 +52,7 @@ export async function createCard(el, options) {
   const merchCard = createTag('merch-card', { consonant: '' }, aemFragment);
   el.replaceWith(merchCard);
   await checkReady(merchCard);
-  postProcessAutoblock(merchCard);
-  decorateCardCtasWithA11y(merchCard);
+  postProcessAutoblock(merchCard, true);
 }
 
 export default async function init(el) {

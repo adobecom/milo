@@ -327,7 +327,7 @@ describe('Merch Block', () => {
         const el = await merch(card.querySelector('.merch.cta'));
         await el?.onceSettled();
         card.checkReady = () => Promise.resolve(true);
-        decorateCardCtasWithA11y(card);
+        decorateCardCtasWithA11y(card, true);
       });
       await delay(100);
       expect(cards[0].querySelector('a').getAttribute('aria-label')).to.equal('CTA1 Buy Now - PHSP - INDIVIDUAL');

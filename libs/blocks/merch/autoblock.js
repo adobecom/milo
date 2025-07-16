@@ -16,24 +16,28 @@ export function localizePreviewLinks(el) {
   }
 }
 
-export function postProcessAutoblock(autoblockEl) {
+export function postProcessAutoblock(autoblockEl, self = false) {
   decorateLinks(autoblockEl);
   localizePreviewLinks(autoblockEl);
   autoblockEl.querySelectorAll('.modal.link-block').forEach((blockEl) => loadBlock(blockEl));
+  decorateCardCtasWithA11y(autoblockEl, self);
 }
 
-export async function decorateCardCtasWithA11y(card) {
-  await card.checkReady();
-  card.querySelectorAll('a[href]').forEach((link) => {
-    if (link.getAttribute('aria-label')) return;
+export async function decorateCardCtasWithA11y(element, self) {
+  const cards = self ? [element] : element.querySelectorAll('merch-card');
+  cards.forEach(async (card) => {
+    await card.checkReady();
+    card.querySelectorAll('a[href]').forEach((link) => {
+      if (link.getAttribute('aria-label')) return;
 
-    if (link.isCheckoutLink) {
-      link.onceSettled().then(() => {
-        addAriaLabelToCta(link);
-      });
-    } else {
-      const productName = card.querySelector('h3')?.textContent || '';
-      link.setAttribute('aria-label', `${link.textContent}${productName ? ' - ' : ''}${productName}`);
-    }
+      if (link.isCheckoutLink) {
+        link.onceSettled().then(() => {
+          addAriaLabelToCta(link);
+        });
+      } else {
+        const productName = card.querySelector('h3')?.textContent || '';
+        link.setAttribute('aria-label', `${link.textContent}${productName ? ' - ' : ''}${productName}`);
+      }
+    });
   });
 }

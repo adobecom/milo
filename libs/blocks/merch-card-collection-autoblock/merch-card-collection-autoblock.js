@@ -1,5 +1,5 @@
 import { createTag, getConfig } from '../../utils/utils.js';
-import { postProcessAutoblock, decorateCardCtasWithA11y } from '../merch/autoblock.js';
+import { postProcessAutoblock } from '../merch/autoblock.js';
 import '../../deps/mas/merch-card.js';
 import '../../deps/mas/merch-quantity-select.js';
 import {
@@ -176,10 +176,6 @@ export async function checkReady(masElement) {
   }
 }
 
-function decorateCtasWithA11y(collection) {
-  collection.querySelectorAll('merch-card').forEach((merchCard) => decorateCardCtasWithA11y(merchCard));
-}
-
 export async function createCollection(el, options) {
   const aemFragment = createTag('aem-fragment', { fragment: options.fragment });
   // Get MEP overrides if available
@@ -222,10 +218,9 @@ export async function createCollection(el, options) {
     }
   }
 
-  postProcessAutoblock(collection);
+  postProcessAutoblock(collection, false);
   collection.requestUpdate();
   enableAnalytics(collection);
-  decorateCtasWithA11y(collection);
 }
 
 export default async function init(el) {
