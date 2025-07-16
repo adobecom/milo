@@ -57,7 +57,7 @@ merch-card[variant="simplified-pricing-express"] p {
 }
 
 merch-card[variant="simplified-pricing-express"] [slot="body-s"] {
-    font-size: var(--consonant-merch-card-body-s-font-size);
+    font-size: var(--merch-card-simplified-pricing-express-body-s-font-size);
     line-height: var(--merch-card-simplified-pricing-express-body-s-line-height);
 }
 
@@ -153,6 +153,123 @@ merch-card[variant="simplified-pricing-express"] sr-only {
   clip: rect(0, 0, 0, 0);
   white-space: nowrap;
   border: 0;
+}
+
+/* Mobile accordion styles */
+@media (max-width: 599px) {
+  merch-card[variant="simplified-pricing-express"] {
+    width: 332px;
+    max-width: 332px;
+  }
+
+  /* Badge alignment on mobile */
+  merch-card[variant="simplified-pricing-express"] [slot="badge"] {
+    font-size: 16px;
+    font-weight: 400;
+    color: var(--spectrum-gray-700);
+  }
+
+  /* By default, hide content sections on mobile until JavaScript sets data-expanded */
+  merch-card[variant="simplified-pricing-express"]:not([data-expanded="true"]) [slot="body-s"],
+  merch-card[variant="simplified-pricing-express"]:not([data-expanded="true"]) [slot="price"],
+  merch-card[variant="simplified-pricing-express"]:not([data-expanded="true"]) [slot="cta"] {
+    display: none;
+    visibility: hidden;
+    height: 0;
+    margin: 0;
+    padding: 0;
+  }
+
+  /* Also apply to cards without data-expanded attribute */
+  merch-card[variant="simplified-pricing-express"]:not([data-expanded]) [slot="body-s"],
+  merch-card[variant="simplified-pricing-express"]:not([data-expanded]) [slot="price"],
+  merch-card[variant="simplified-pricing-express"]:not([data-expanded]) [slot="cta"] {
+    display: none;
+    visibility: hidden;
+    height: 0;
+    margin: 0;
+    padding: 0;
+  }
+
+  /* Fix spacing between cards on mobile */
+  main .section .content p:has(merch-card[variant="simplified-pricing-express"]),
+  main .section p:has(merch-card[variant="simplified-pricing-express"]) {
+    margin: 0;
+  }
+
+  /* Collapsed state - target slotted content */
+  merch-card[variant="simplified-pricing-express"][data-expanded="false"] [slot="body-s"],
+  merch-card[variant="simplified-pricing-express"][data-expanded="false"] [slot="price"],
+  merch-card[variant="simplified-pricing-express"][data-expanded="false"] [slot="cta"] {
+    display: none;
+    visibility: hidden;
+    height: 0;
+    margin: 0;
+    padding: 0;
+  }
+
+  /* Collapsed card should have fixed height and padding */
+  merch-card[variant="simplified-pricing-express"][data-expanded="false"],
+  merch-card[variant="simplified-pricing-express"]:not([data-expanded="true"]) {
+    height: auto;
+    min-height: auto;
+    padding: 16px;
+  }
+}
+
+/* Tablet styles */
+@media (min-width: 600px) and (max-width: 1199px) {
+  merch-card[variant="simplified-pricing-express"] {
+    width: 548px;
+    max-width: 548px;
+  }
+
+  /* Badge alignment on tablet */
+  merch-card[variant="simplified-pricing-express"] [slot="badge"] {
+    font-size: 16px;
+    font-weight: 400;
+    display: flex;
+    align-self: flex-end;
+  }
+
+  /* Apply same collapsed state logic as mobile */
+  merch-card[variant="simplified-pricing-express"]:not([data-expanded="true"]) [slot="body-s"],
+  merch-card[variant="simplified-pricing-express"]:not([data-expanded="true"]) [slot="price"],
+  merch-card[variant="simplified-pricing-express"]:not([data-expanded="true"]) [slot="cta"] {
+    display: none !important;
+    visibility: hidden !important;
+    height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  merch-card[variant="simplified-pricing-express"]:not([data-expanded]) [slot="body-s"],
+  merch-card[variant="simplified-pricing-express"]:not([data-expanded]) [slot="price"],
+  merch-card[variant="simplified-pricing-express"]:not([data-expanded]) [slot="cta"] {
+    display: none !important;
+    visibility: hidden !important;
+    height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  merch-card[variant="simplified-pricing-express"][data-expanded="false"] [slot="body-s"],
+  merch-card[variant="simplified-pricing-express"][data-expanded="false"] [slot="price"],
+  merch-card[variant="simplified-pricing-express"][data-expanded="false"] [slot="cta"] {
+    display: none !important;
+    visibility: hidden !important;
+    height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* Collapsed card height on tablet */
+  merch-card[variant="simplified-pricing-express"][data-expanded="false"],
+  merch-card[variant="simplified-pricing-express"]:not([data-expanded="true"]) {
+    height: 72px !important;
+    min-height: auto !important;
+    padding: 16px !important;
+  }
 }
 
 merch-card[variant="simplified-pricing-express"] [slot="cta"] sp-button[variant="accent"],
