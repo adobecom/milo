@@ -16,13 +16,6 @@ export function localizePreviewLinks(el) {
   }
 }
 
-export function postProcessAutoblock(autoblockEl, self = false) {
-  decorateLinks(autoblockEl);
-  localizePreviewLinks(autoblockEl);
-  autoblockEl.querySelectorAll('.modal.link-block').forEach((blockEl) => loadBlock(blockEl));
-  decorateCardCtasWithA11y(autoblockEl, self);
-}
-
 export async function decorateCardCtasWithA11y(element, self) {
   const cards = self ? [element] : element.querySelectorAll('merch-card');
   cards.forEach(async (card) => {
@@ -40,4 +33,11 @@ export async function decorateCardCtasWithA11y(element, self) {
       }
     });
   });
+}
+
+export function postProcessAutoblock(autoblockEl, self = false) {
+  decorateLinks(autoblockEl);
+  localizePreviewLinks(autoblockEl);
+  autoblockEl.querySelectorAll('.modal.link-block').forEach((blockEl) => loadBlock(blockEl));
+  decorateCardCtasWithA11y(autoblockEl, self);
 }
