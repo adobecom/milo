@@ -10,6 +10,7 @@ export class MerchSideNav extends LitElement {
     static properties = {
         sidenavTitle: { type: String },
         closeText: { type: String, attribute: 'close-text' },
+        modal: { type: Boolean, reflect: true },
         open: { type: Boolean, state: true, reflect: true },
     };
 
@@ -20,8 +21,12 @@ export class MerchSideNav extends LitElement {
     }
 
     updated() {
-        if (!this.mobileAndTablet.matches && this.open)
-            this.closeModal();
+        if (this.mobileAndTablet.matches) 
+            this.modal = true;
+        else {
+            this.modal = false;
+            if (this.open) this.closeModal();
+        }
     }
 
     mobileDevice = new MatchMediaController(this, SPECTRUM_MOBILE_LANDSCAPE);
