@@ -13,9 +13,10 @@ import {
 } from '../../../utils/utils.js';
 import { replaceKey, replaceText } from '../../../features/placeholders.js';
 import { PERSONALIZATION_TAGS } from '../../../features/personalization/personalization.js';
-import { processTrackingLabels } from '../../../martech/attributes.js';
 
 loadLana();
+
+const { processTrackingLabels } = await import('../../../martech/attributes.js');
 
 const FEDERAL_PATH_KEY = 'federal';
 // Set a default height for LocalNav,
@@ -542,7 +543,7 @@ export const closeAllTabs = (tabs, tabpanels) => {
   tabs.forEach((t) => t.setAttribute('aria-selected', 'false'));
 };
 
-export const getAnalyticsValue = (str, index) => {
+const getAnalyticsValue = (str, index) => {
   if (typeof str !== 'string' || !str.length) return str;
 
   let analyticsValue = processTrackingLabels(str, getConfig(), 30);
@@ -555,10 +556,10 @@ const parseTabsFromMenuSection = (section, index) => {
   const headline = section.querySelector('.feds-menu-headline');
   const name = headline?.textContent ?? 'Shop For';
   let daallTab = headline?.getAttribute('daa-ll');
-  // Below condition is only required if the user is loading the page in desktop mode
-  // and then moving to mobile mode.
+  /* Below condition is only required if the user is loading the page in desktop mode
+    and then moving to mobile mode. */
   if (!daallTab) {
-    daallTab = getAnalyticsValue(headline.textContent, index + 1);
+    daallTab = getAnalyticsValue(name, index + 1);
   }
   const daalhTabContent = section.querySelector('.feds-menu-items')?.getAttribute('daa-lh');
   const content = section.querySelector('.feds-menu-items') ?? section;
