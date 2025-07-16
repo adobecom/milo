@@ -301,8 +301,10 @@ describe('Modals', () => {
     }, 'Open Modal');
     document.body.appendChild(ctaWithAriaLabel);
     window.location.hash = '#custom-no-title';
+    const iframe = createTag('iframe', { src: 'about:blank' });
+
     const customContent = createTag('div');
-    customContent.innerHTML = '<p>Custom content without title</p>';
+    customContent.appendChild(iframe);
 
     const custom = {
       id: 'custom-no-title',
@@ -311,6 +313,10 @@ describe('Modals', () => {
     const modal = await getModal(null, custom);
     expect(modal).to.exist;
     expect(modal.getAttribute('aria-label')).to.equal('Modal: Auto Title from CTA');
+
+    const modalIframe = modal.querySelector('iframe');
+    expect(modalIframe).to.exist;
+    expect(modalIframe.getAttribute('title')).to.equal('Modal: Auto Title from CTA');
   });
 });
 
