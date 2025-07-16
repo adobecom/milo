@@ -68,7 +68,7 @@ var g=Object.defineProperty;var b=(n,e,t)=>e in n?g(n,e,{enumerable:!0,configura
                                     <h2>${this.sidenavTitle}</h2>
                                     <slot></slot>
                                 </div>
-                                <sp-link href="#" @click="${this.closeModal}"
+                                <sp-link @click="${this.closeModal}"
                                     >${this.closeText||"Close"}</sp-link
                                 >
                             </div>

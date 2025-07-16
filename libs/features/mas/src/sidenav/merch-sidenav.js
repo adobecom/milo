@@ -59,7 +59,7 @@ export class MerchSideNav extends LitElement {
                                     <h2>${this.sidenavTitle}</h2>
                                     <slot></slot>
                                 </div>
-                                <sp-link href="#" @click="${this.closeModal}"
+                                <sp-link @click="${this.closeModal}"
                                     >${this.closeText || 'Close'}</sp-link
                                 >
                             </div>
