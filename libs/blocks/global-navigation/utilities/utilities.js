@@ -11,7 +11,7 @@ import {
   getFederatedUrl,
   getFedsPlaceholderConfig,
 } from '../../../utils/utils.js';
-import { replaceKey, replaceText } from '../../../features/placeholders.js';
+import { replaceKey, replaceText, fetchPlaceholders } from '../../../features/placeholders.js';
 import { PERSONALIZATION_TAGS } from '../../../features/personalization/personalization.js';
 
 loadLana();
@@ -577,6 +577,14 @@ const promoCrossCloudTab = async (popup) => {
   }];
 };
 
+export async function getMainMenuPlaceholder() {
+  const config = getConfig();
+  const cloudPlaceholders = await fetchPlaceholders({ config });
+  if (cloudPlaceholders['main-menu']) return cloudPlaceholders['main-menu'];
+  const fedsPlaceholders = await fetchPlaceholders({ config: getFedsPlaceholderConfig() });
+  return fedsPlaceholders['main-menu'] || 'main menu';
+}
+
 // returns a cleanup function
 export const transformTemplateToMobile = async ({
   popup,
@@ -596,10 +604,11 @@ export const transformTemplateToMobile = async ({
   )).concat(isLoading ? [] : await promoCrossCloudTab(popup));
 
   const CTA = popup.querySelector('.feds-cta--primary')?.outerHTML ?? '';
+  const mainMenuLabel = await getMainMenuPlaceholder();
   const mainMenu = `
       <button class="main-menu" daa-ll="Main menu_Gnav" aria-label='Main menu'>
         <svg xmlns="http://www.w3.org/2000/svg" width="7" height="12" viewBox="0 0 7 12" fill="none"><path d="M5.55579 1L1.09618 5.45961C1.05728 5.4985 1.0571 5.56151 1.09577 5.60062L5.51027 10.0661" stroke=${isDarkMode() ? '#f2f2f2' : 'black'} stroke-width="2" stroke-linecap="round"/></svg>
-        {{main-menu}}
+        ${mainMenuLabel}
       </button>
   `;
   // Get the outerHTML of the .feds-brand element or use a default empty <span> if it doesn't exist
@@ -610,7 +619,7 @@ export const transformTemplateToMobile = async ({
   }
   popup.innerHTML = `
     <div class="top-bar">
-      ${localnav ? brand : await replaceText(mainMenu, getFedsPlaceholderConfig())}
+      ${localnav ? brand : mainMenu}
     </div>
     <div class="title">
       ${breadCrumbs || '<div class="breadcrumbs"></div>'}
