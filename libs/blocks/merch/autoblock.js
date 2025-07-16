@@ -22,7 +22,8 @@ export function postProcessAutoblock(autoblockEl) {
   autoblockEl.querySelectorAll('.modal.link-block').forEach((blockEl) => loadBlock(blockEl));
 }
 
-export function decorateCardCtasWithA11y(card) {
+export async function decorateCardCtasWithA11y(card) {
+  await card.checkReady();
   card.querySelectorAll('a[href]').forEach((link) => {
     if (link.getAttribute('aria-label')) return;
 

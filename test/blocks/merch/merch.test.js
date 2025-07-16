@@ -326,6 +326,7 @@ describe('Merch Block', () => {
       cards.forEach(async (card) => {
         const el = await merch(card.querySelector('.merch.cta'));
         await el?.onceSettled();
+        card.checkReady = () => { Promise.resolve(true) };
         decorateCardCtasWithA11y(card);
       });
       await delay(100);

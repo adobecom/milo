@@ -177,9 +177,7 @@ export async function checkReady(masElement) {
 }
 
 function decorateCtasWithA11y(collection) {
-  collection.querySelectorAll('merch-card').forEach((merchCard) => {
-    checkReady(merchCard).then(() => decorateCardCtasWithA11y(merchCard));
-  });
+  collection.querySelectorAll('merch-card').forEach((merchCard) => decorateCardCtasWithA11y(merchCard));
 }
 
 export async function createCollection(el, options) {
