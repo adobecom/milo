@@ -279,7 +279,7 @@ describe('Modals', () => {
     const custom = {
       id: 'test-modal',
       content: customContent,
-      title: 'Test Modal Description',
+      title: 'Modal: Test Modal Description',
     };
 
     const modal = await getModal(null, custom);
@@ -289,7 +289,7 @@ describe('Modals', () => {
 
     const modalIframe = modal.querySelector('iframe');
     expect(modalIframe).to.exist;
-    expect(modalIframe.getAttribute('title')).to.equal('Test Modal Description');
+    expect(modalIframe.getAttribute('title')).to.equal('Modal: Test Modal Description');
   });
 
   it('custom modal gets title from findDetails when no title provided', async () => {
