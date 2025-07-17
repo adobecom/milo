@@ -546,10 +546,7 @@ export const closeAllTabs = (tabs, tabpanels) => {
 const getAnalyticsValue = (str, index) => {
   if (typeof str !== 'string' || !str.length) return str;
 
-  let analyticsValue = processTrackingLabels(str, getConfig(), 30);
-  analyticsValue = typeof index === 'number' ? `${analyticsValue}-${index}` : analyticsValue;
-
-  return analyticsValue;
+  return `${processTrackingLabels(str, getConfig(), 30)}-${index}`;
 };
 
 const parseTabsFromMenuSection = (section, index) => {
