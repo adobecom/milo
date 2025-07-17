@@ -82,6 +82,10 @@ export const EVENT_MERCH_SEARCH_CHANGE = 'merch-search:change';
 
 export const EVENT_MERCH_CARD_COLLECTION_SORT = 'merch-card-collection:sort';
 
+export const EVENT_MERCH_CARD_COLLECTION_LITERALS_CHANGED = 'merch-card-collection:literals-changed';
+
+export const EVENT_MERCH_CARD_COLLECTION_SIDENAV_ATTACHED = 'merch-card-collection:sidenav-attached';
+
 export const EVENT_MERCH_CARD_COLLECTION_SHOWMORE =
     'merch-card-collection:showmore';
 
@@ -164,3 +168,8 @@ export const TEMPLATE_PRICE_ANNUAL = 'annual';
 export const TEMPLATE_PRICE_LEGAL = 'legal';
 
 export const FF_DEFAULTS = 'mas-ff-defaults';
+
+export const SORT_ORDER = {
+    alphabetical: 'alphabetical',
+    authored: 'authored',
+};

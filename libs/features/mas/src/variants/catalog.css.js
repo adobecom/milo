@@ -1,43 +1,33 @@
-import { TABLET_UP, DESKTOP_UP, LARGE_DESKTOP,} from '../media.js';
+import { TABLET_UP, DESKTOP_UP } from '../media.js';
 
 export const CSS = `
 :root {
-  --consonant-merch-card-catalog-width: 276px;
-  --consonant-merch-card-catalog-icon-size: 40px;
+    --consonant-merch-card-catalog-width: 276px;
+    --consonant-merch-card-catalog-icon-size: 40px;
 }
-.one-merch-card.catalog,
-.two-merch-cards.catalog,
-.three-merch-cards.catalog,
-.four-merch-cards.catalog {
-    grid-template-columns: var(--consonant-merch-card-catalog-width);
+
+.collection-container.catalog {
+    --merch-card-collection-card-width: var(--consonant-merch-card-catalog-width);
+    --merch-card-collection-card-min-height: 330px;
+}
+
+.collection-container.catalog merch-sidenav {
+    --merch-sidenav-gap: 10px;
+}
+
+merch-card-collection-header.catalog {
+    --merch-card-collection-header-row-gap: var(--consonant-merch-spacing-xs);
 }
 
 @media screen and ${TABLET_UP} {
     :root {
-      --consonant-merch-card-catalog-width: 302px;
-    }
-
-    .two-merch-cards.catalog,
-    .three-merch-cards.catalog,
-    .four-merch-cards.catalog {
-        grid-template-columns: repeat(2, var(--consonant-merch-card-catalog-width));
+        --consonant-merch-card-catalog-width: 302px;
     }
 }
 
 @media screen and ${DESKTOP_UP} {
     :root {
-      --consonant-merch-card-catalog-width: 276px;
-    }
-
-    .three-merch-cards.catalog,
-    .four-merch-cards.catalog {
-        grid-template-columns: repeat(3, var(--consonant-merch-card-catalog-width));
-    }
-}
-
-@media screen and ${LARGE_DESKTOP} {
-    .four-merch-cards.catalog {
-        grid-template-columns: repeat(4, var(--consonant-merch-card-catalog-width));
+        --consonant-merch-card-catalog-width: 276px;
     }
 }
 
