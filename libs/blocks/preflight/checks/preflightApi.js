@@ -59,7 +59,7 @@ export default {
 const runChecks = async (url, area) => {
   const assets = await Promise.all(runChecksAssets(url, area));
   const performance = await Promise.all(runChecksPerformance(url, area));
-  const seo = await Promise.all(runChecksSeo({ url, area }));
+  const seo = runChecksSeo({ url, area });
   return { assets, performance, seo };
 };
 
