@@ -9,7 +9,7 @@ let miloIconsPromise;
 
 let tooltipListenersAdded = false;
 
-async function decorateToolTip(icon, iconName) {
+function decorateToolTip(icon, iconName) {
   const hasTooltip = icon.closest('em')?.textContent.includes('|') && [...icon.classList].some((cls) => cls.includes('tooltip'));
   if (!hasTooltip) return;
 
@@ -29,9 +29,10 @@ async function decorateToolTip(icon, iconName) {
 
   wrapper.parentElement.replaceChild(icon, wrapper);
   if (!tooltipListenersAdded) {
-    const { default: addTooltipListeners } = await import('../../scripts/tooltip.js');
-    addTooltipListeners();
-    tooltipListenersAdded = true;
+    import('../../scripts/tooltip.js').then(({ default: addTooltipListeners }) => {
+      addTooltipListeners();
+      tooltipListenersAdded = true;
+    });
   }
 }
 
