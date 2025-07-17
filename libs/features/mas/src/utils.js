@@ -13,7 +13,7 @@ export function debounce(func, delay) {
 }
 
 export const getSlotText = (element, name) =>
-    element.querySelector(`[slot="${name}"]`)?.textContent?.trim();
+    element?.querySelector(`[slot="${name}"]`)?.textContent?.trim();
 
 /**
  * Helper function to create an element with attributes
@@ -37,18 +37,6 @@ export function createTag(tag, attributes = {}, content = null, is = null) {
         element.setAttribute(key, value);
     }
     return element;
-}
-
-export function matchMobile() {
-  return window.matchMedia('(max-width: 767px)');
-}
-
-/**
- * Checks if the current device is mobile based on the screen width.
- * @returns {boolean} True if the device is mobile, otherwise false.
- */
-export function isMobile() {
-  return matchMobile().matches;
 }
 
 export function printMeasure(measure) {

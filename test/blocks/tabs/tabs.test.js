@@ -1,7 +1,7 @@
 import { readFile, sendKeys, setViewport } from '@web/test-runner-commands';
 import { expect } from 'chai';
 import { delay } from '../../helpers/waitfor.js';
-import { loadStyle } from '../../../libs/utils/utils.js';
+import { loadStyle, setConfig } from '../../../libs/utils/utils.js';
 
 const DESKTOP_WIDTH = 1200;
 const MOBILE_WIDTH = 375;
@@ -162,13 +162,32 @@ describe('tabs', () => {
       expect(linkedTabsList).to.deep.equal({});
     });
 
-    it('saves tab id and tab link into linkedTabs object', () => {
+    it('saves tab id and tab link into linkedTabs object with relative links', () => {
       const linkedTabsList = {};
       const metaSettings = { link: '/testpage-1' };
       const id = '1';
       const val = 'demo';
       assignLinkedTabs(linkedTabsList, metaSettings, id, val);
       expect(linkedTabsList).to.deep.equal({ 'tab-1-demo': '/testpage-1' });
+    });
+
+    it('saves tab id and tab link into linkedTabs object with fully qualified URLs', () => {
+      const linkedTabsList = {};
+      assignLinkedTabs(linkedTabsList, { link: 'https://example.com/testpage-1' }, '1', 'demo');
+      expect(linkedTabsList['tab-1-demo']).to.exist;
+      expect(linkedTabsList['tab-1-demo']).to.be.a('string');
+      expect(linkedTabsList['tab-1-demo']).to.include('/testpage-1');
+
+      setConfig({
+        locales: { uk: { ietf: 'en-GB', tk: 'hah7vzn.css' } },
+        pathname: '/uk/',
+      });
+
+      const linkedTabsListUK = {};
+      assignLinkedTabs(linkedTabsListUK, { link: 'https://example.com/testpage-uk' }, '2', 'uk-demo');
+      expect(linkedTabsListUK['tab-2-uk-demo']).to.exist;
+      expect(linkedTabsListUK['tab-2-uk-demo']).to.be.a('string');
+      expect(linkedTabsListUK['tab-2-uk-demo']).to.equal('/uk/testpage-uk');
     });
 
     it('tab buttons should have the attribute daa-state="true" and a daa-ll attribute', () => {
