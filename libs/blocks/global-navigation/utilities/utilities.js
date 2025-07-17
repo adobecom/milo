@@ -16,8 +16,6 @@ import { PERSONALIZATION_TAGS } from '../../../features/personalization/personal
 
 loadLana();
 
-const { processTrackingLabels } = await import('../../../martech/attributes.js');
-
 const FEDERAL_PATH_KEY = 'federal';
 // Set a default height for LocalNav,
 // as sticky blocks position themselves before LocalNav loads into the document object model(DOM).
@@ -543,20 +541,23 @@ export const closeAllTabs = (tabs, tabpanels) => {
   tabs.forEach((t) => t.setAttribute('aria-selected', 'false'));
 };
 
-const getAnalyticsValue = (str, index) => {
+let processTrackingLabels;
+const getAnalyticsValue = async (str, index) => {
+  processTrackingLabels = processTrackingLabels ?? (await import('../../../martech/attributes.js')).processTrackingLabels;
+
   if (typeof str !== 'string' || !str.length) return str;
 
   return `${processTrackingLabels(str, getConfig(), 30)}-${index}`;
 };
 
-const parseTabsFromMenuSection = (section, index) => {
+const parseTabsFromMenuSection = async (section, index) => {
   const headline = section.querySelector('.feds-menu-headline');
   const name = headline?.textContent ?? 'Shop For';
   let daallTab = headline?.getAttribute('daa-ll');
   /* Below condition is only required if the user is loading the page in desktop mode
     and then moving to mobile mode. */
   if (!daallTab) {
-    daallTab = getAnalyticsValue(name, index + 1);
+    daallTab = await getAnalyticsValue(name, index + 1);
   }
   const daalhTabContent = section.querySelector('.feds-menu-items')?.getAttribute('daa-lh');
   const content = section.querySelector('.feds-menu-items') ?? section;
@@ -588,10 +589,11 @@ export const transformTemplateToMobile = async ({
   if (notMegaMenu) return () => {};
 
   const isLoading = popup.classList.contains('loading');
-  const tabs = [...popup.querySelectorAll('.feds-menu-section')]
-    .filter((section) => !section.querySelector('.feds-promo') && section.textContent)
-    .map(parseTabsFromMenuSection)
-    .concat(isLoading ? [] : await promoCrossCloudTab(popup));
+  const tabs = (await Promise.all(
+    [...popup.querySelectorAll('.feds-menu-section')]
+      .filter((section) => !section.querySelector('.feds-promo') && section.textContent)
+      .map(parseTabsFromMenuSection),
+  )).concat(isLoading ? [] : await promoCrossCloudTab(popup));
 
   const CTA = popup.querySelector('.feds-cta--primary')?.outerHTML ?? '';
   const mainMenu = `
