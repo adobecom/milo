@@ -449,6 +449,7 @@
           "callout": {
             "mimeType": "text/html"
           },
+          "addon": "<p>Add stock</p>",
           "cardTitle": "Heading XS",
           "ctas": {
             "mimeType": "text/html",

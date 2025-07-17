@@ -14,13 +14,13 @@ import {
   getConfig,
   parseEncodedConfig,
   loadStyle,
+  isValidHtmlUrl,
 } from '../../utils/utils.js';
 import Accordion from '../../ui/controls/Accordion.js';
 import {
   decodeCompressedString,
   defaultState,
   initCaas,
-  isValidHtmlUrl,
   isValidUuid,
   loadCaasFiles,
   loadCaasTags,
