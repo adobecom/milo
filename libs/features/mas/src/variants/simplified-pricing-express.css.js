@@ -211,7 +211,7 @@ merch-card[variant="simplified-pricing-express"] sr-only {
   /* Collapsed card should have fixed height and padding */
   merch-card[variant="simplified-pricing-express"][data-expanded="false"],
   merch-card[variant="simplified-pricing-express"]:not([data-expanded="true"]) {
-    height: auto;
+    height: 72px;
     min-height: auto;
     padding: 16px;
   }

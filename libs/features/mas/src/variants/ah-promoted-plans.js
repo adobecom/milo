@@ -143,4 +143,3 @@ export class AHPromotedPlans extends VariantLayout {
     `;
 }
 
-customElements.define('ah-promoted-plans', AHPromotedPlans);

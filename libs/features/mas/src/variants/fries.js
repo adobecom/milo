@@ -119,5 +119,3 @@ export class FriesCard extends VariantLayout {
     `;
 }
 
-customElements.define('fries-card', FriesCard); 
-

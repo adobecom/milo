@@ -352,7 +352,3 @@ export class SimplifiedPricingExpress extends VariantLayout {
     `;
 }
 
-customElements.define(
-    'simplified-pricing-express-card',
-    SimplifiedPricingExpress,
-);
