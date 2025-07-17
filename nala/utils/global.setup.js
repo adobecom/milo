@@ -3,7 +3,7 @@
 const { execSync } = require('child_process');
 const { isBranchURLValid } = require('../libs/baseurl.js');
 
-const MAIN_BRANCH_LIVE_URL = 'https://main--milo--adobecom.aem.live';
+const MAIN_BRANCH_LIVE_URL = 'https://milo.adobe.com';
 const STAGE_BRANCH_URL = 'https://milo.stage.adobe.com';
 
 async function getGitHubPRBranchLiveUrl() {
@@ -29,7 +29,12 @@ async function getGitHubPRBranchLiveUrl() {
   const prFromOrg = process.env.prOrg || toRepoOrg;
   const prFromRepoName = process.env.prRepo || toRepoName;
 
-  const prBranchLiveUrl = `https://${prBranch}--${prFromRepoName}--${prFromOrg}.aem.live`;
+  let prBranchLiveUrl;
+  if (prBranch === 'main') {
+    prBranchLiveUrl = MAIN_BRANCH_LIVE_URL;
+  } else {
+    prBranchLiveUrl = `https://${prBranch}--${prFromRepoName}--${prFromOrg}.aem.live`;
+  }
 
   try {
     if (await isBranchURLValid(prBranchLiveUrl)) {
