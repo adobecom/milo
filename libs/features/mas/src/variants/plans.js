@@ -93,15 +93,25 @@ export class Plans extends VariantLayout {
         if (!sizes.includes(size)) return;
         
 
-        footer?.classList.toggle('wide-footer', !isMobile());
+        footer?.classList.toggle('wide-footer', isDesktop());
         if (!shouldBeInFooter && slotInFooter) {
-            slotInBody
-                ? slotInFooter.remove()
-                : body.appendChild(slotInFooter);
+            if (slotInBody) 
+                slotInFooter.remove();
+            else {
+                const bodyPlaceholder = body.querySelector(`[data-placeholder-for="${name}"]`);
+                if (bodyPlaceholder) bodyPlaceholder.replaceWith(slotInFooter);
+                else body.appendChild(slotInFooter);
+            }
             return;
         }
         if (shouldBeInFooter && slotInBody) {
-            slotInFooter ? slotInBody.remove() : footer.prepend(slotInBody);
+            const bodyPlaceholder = document.createElement('div');
+            bodyPlaceholder.setAttribute('data-placeholder-for', name);
+            if (!slotInFooter) {
+                const slotInBodyClone = slotInBody.cloneNode(true);
+                footer.prepend(slotInBodyClone);
+            }
+            slotInBody.replaceWith(bodyPlaceholder)
         }
     }
 
@@ -115,7 +125,7 @@ export class Plans extends VariantLayout {
             return;
         }
         
-        this.adjustSlotPlacement('addon', ['super-wide'], !isMobile());
+        this.adjustSlotPlacement('addon', ['super-wide'], isDesktop());
         this.adjustSlotPlacement('callout-content', ['super-wide'], isDesktop());
     }
 
