@@ -8,6 +8,7 @@ export default class Merchcard {
     this.specialOffers = this.page.locator('.merch-card.special-offers').nth(nth);
     this.plans = this.page.locator('.merch-card.plans').nth(nth);
     this.catalog = this.page.locator('.merch-card.catalog').nth(nth);
+    this.simplifiedPricingExpress = this.page.locator('.merch-card.simplified-pricing-express').nth(nth);
 
     // inline price and strikethrough price
     this.inlinePrice1 = this.merchCard.locator('span.placeholder-resolved').nth(0);
@@ -87,6 +88,13 @@ export default class Merchcard {
     this.footerOutlineButton2 = this.merchCard.locator('a.con-button.outline').nth(1);
     this.footerBlueButton = this.merchCard.locator('a.con-button.blue').nth(0);
     this.footerBlueButton2 = this.merchCard.locator('a.con-button.blue').nth(1);
+
+    // merch-card simplified-pricing-express locators
+    this.simplifiedPricingExpressBadge = this.simplifiedPricingExpress.locator('.badge');
+    this.simplifiedPricingExpressTitle = this.simplifiedPricingExpress.locator('h2[slot="heading-l"]');
+    this.simplifiedPricingExpressDescription = this.simplifiedPricingExpress.locator('p[slot="body-s"]');
+    this.simplifiedPricingExpressPrice = this.simplifiedPricingExpress.locator('span[slot="price"]');
+    this.simplifiedPricingExpressStrikethroughPrice = this.simplifiedPricingExpress.locator('span[slot="price"] .price-strikethrough');
 
     // merch-card attributes
     this.attributes = {
