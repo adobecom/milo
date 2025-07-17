@@ -54,7 +54,7 @@ var b=Object.defineProperty;var g=(n,e,t)=>e in n?b(n,e,{enumerable:!0,configura
             display: flex;
             flex-direction: column;
         }
-    `);customElements.define("merch-sidenav-checkbox-group",E);var N="(max-width: 700px)";var v="(max-width: 1199px)";var m=class extends U{constructor(){super();r(this,"mobileDevice",new d(this,N));r(this,"mobileAndTablet",new d(this,v));this.open=!1,this.autoclose=!1,this.closeModal=this.closeModal.bind(this),this.handleSelection=this.handleSelection.bind(this)}connectedCallback(){super.connectedCallback(),this.addEventListener(h,this.handleSelection)}disconnectedCallback(){super.disconnectedCallback(),this.removeEventListener(h,this.handleSelection)}updated(){!this.mobileAndTablet.matches&&this.open&&this.closeModal()}get filters(){return this.querySelector("merch-sidenav-list")}get search(){return this.querySelector("merch-search")}render(){return this.mobileAndTablet.matches?this.asDialog:this.asAside}get asDialog(){let t=this.autoclose?F:S`<sp-link href="#" @click="${this.closeModal}"
+    `);customElements.define("merch-sidenav-checkbox-group",E);var N="(max-width: 700px)";var v="(max-width: 1199px)";var m=class extends U{constructor(){super();r(this,"mobileDevice",new d(this,N));r(this,"mobileAndTablet",new d(this,v));this.open=!1,this.autoclose=!1,this.closeModal=this.closeModal.bind(this),this.handleSelection=this.handleSelection.bind(this)}connectedCallback(){super.connectedCallback(),this.addEventListener(h,this.handleSelection)}disconnectedCallback(){super.disconnectedCallback(),this.removeEventListener(h,this.handleSelection)}updated(){this.mobileAndTablet.matches?this.modal=!0:(this.modal=!1,this.open&&this.closeModal())}get filters(){return this.querySelector("merch-sidenav-list")}get search(){return this.querySelector("merch-search")}render(){return this.mobileAndTablet.matches?this.asDialog:this.asAside}get asDialog(){let t=this.autoclose?F:S`<sp-link @click="${this.closeModal}"
                 >${this.closeText||"Close"}</sp-link
             >`;return S`
             <sp-theme  color="light" scale="medium">
@@ -79,7 +79,7 @@ var b=Object.defineProperty;var g=(n,e,t)=>e in n?b(n,e,{enumerable:!0,configura
         `}get asAside(){return S`<sp-theme  color="light" scale="medium"
             ><h2>${this.sidenavTitle}</h2>
             <slot></slot
-        ></sp-theme>`}get dialog(){return this.shadowRoot.querySelector("sp-dialog-base")}handleSelection(){this.autoclose&&this.closeModal()}closeModal(){this.open=!1,document.querySelector("body")?.classList.remove("merch-modal")}showModal(){this.open=!0,document.querySelector("body")?.classList.add("merch-modal")}};r(m,"properties",{sidenavTitle:{type:String},closeText:{type:String,attribute:"close-text"},open:{type:Boolean,state:!0,reflect:!0},autoclose:{type:Boolean,attribute:"autoclose",reflect:!0}}),r(m,"styles",[Y`
+        ></sp-theme>`}get dialog(){return this.shadowRoot.querySelector("sp-dialog-base")}handleSelection(){this.autoclose&&this.closeModal()}closeModal(){this.open=!1,document.querySelector("body")?.classList.remove("merch-modal")}showModal(){this.open=!0,document.querySelector("body")?.classList.add("merch-modal")}};r(m,"properties",{sidenavTitle:{type:String},closeText:{type:String,attribute:"close-text"},modal:{type:Boolean,reflect:!0},open:{type:Boolean,state:!0,reflect:!0},autoclose:{type:Boolean,attribute:"autoclose",reflect:!0}}),r(m,"styles",[Y`
             :host {
                 display: block;
                 z-index: 2;

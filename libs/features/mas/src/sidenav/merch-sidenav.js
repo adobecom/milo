@@ -11,6 +11,7 @@ export class MerchSideNav extends LitElement {
     static properties = {
         sidenavTitle: { type: String },
         closeText: { type: String, attribute: 'close-text' },
+        modal: { type: Boolean, reflect: true },
         open: { type: Boolean, state: true, reflect: true },
         autoclose: { type: Boolean, attribute: 'autoclose', reflect: true }
     };
@@ -34,8 +35,12 @@ export class MerchSideNav extends LitElement {
     }
 
     updated() {
-        if (!this.mobileAndTablet.matches && this.open)
-            this.closeModal();
+        if (this.mobileAndTablet.matches) 
+            this.modal = true;
+        else {
+            this.modal = false;
+            if (this.open) this.closeModal();
+        }
     }
 
     mobileDevice = new MatchMediaController(this, SPECTRUM_MOBILE_LANDSCAPE);
@@ -55,7 +60,7 @@ export class MerchSideNav extends LitElement {
 
     get asDialog() {
         const closeButton = !this.autoclose ? 
-            html`<sp-link href="#" @click="${this.closeModal}"
+            html`<sp-link @click="${this.closeModal}"
                 >${this.closeText || 'Close'}</sp-link
             >` : nothing;
         return html`
