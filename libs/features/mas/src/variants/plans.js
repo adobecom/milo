@@ -115,7 +115,7 @@ export class Plans extends VariantLayout {
             return;
         }
         
-        this.adjustSlotPlacement('addon', ['wide', 'super-wide'], !isMobile());
+        this.adjustSlotPlacement('addon', ['super-wide'], !isMobile());
         this.adjustSlotPlacement('callout-content', ['super-wide'], isDesktop());
     }
 
