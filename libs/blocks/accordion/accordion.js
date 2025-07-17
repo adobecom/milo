@@ -125,7 +125,6 @@ function createMobileMedia(ogMedia) {
   const mobileVideo = mobileMedia.querySelector('video');
   const source = createTag('source', { src: videoSrc, type: 'video/mp4' });
   mobileVideo.appendChild(source);
-  playVideo(mobileVideo);
 
   return mobileMedia;
 }
