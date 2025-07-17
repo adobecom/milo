@@ -24,7 +24,9 @@ function handleManagePlanEvents(message) {
   }
 }
 
-export function handleIFrameEvents({ data }) {
+export function handleIFrameEvents(message) {
+  const { data, origin } = message;
+  if (!ALLOWED_MESSAGE_ORIGINS.includes(origin)) return;
   try {
     const parsedMsg = JSON.parse(data);
     if (parsedMsg.app === 'ManagePlan') handleManagePlanEvents(parsedMsg);
@@ -43,7 +45,7 @@ export default function init(el) {
   if (!linkHref) return;
   const url = new URL(linkHref);
 
-  if (ALLOWED_MESSAGE_ORIGINS.includes(url.origin) || window.location.origin === url.origin) {
+  if (ALLOWED_MESSAGE_ORIGINS.includes(url.origin)) {
     window.addEventListener('message', handleIFrameEvents);
   }
 
