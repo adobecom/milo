@@ -29,7 +29,11 @@ export async function decorateCardCtasWithA11y(element, self) {
         });
       } else {
         const productName = card.querySelector('h3')?.textContent || '';
-        link.setAttribute('aria-label', `${link.textContent}${productName ? ' - ' : ''}${productName}`);
+        const ariaLabel = `${link.textContent}${productName ? ' - ' : ''}${productName}`;
+        link.setAttribute('aria-label', ariaLabel);
+        if (!link.getAttribute('title')) {
+          link.setAttribute('title', ariaLabel);
+        }
       }
     });
   });

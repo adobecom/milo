@@ -488,6 +488,7 @@ function createConsonantButton(cta, isAccent, isCheckout, isLinkStyle) {
             cta.dataset,
             cta.innerHTML,
         );
+        if (cta.title) button.title = cta.title;
     }
     if(!isLinkStyle) {
         button.classList.add('con-button');

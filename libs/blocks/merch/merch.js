@@ -1108,6 +1108,9 @@ export async function addAriaLabelToCta(cta) {
     ? `${ariaLabel} - ${await replaceKey(segment, getConfig())}`
     : ariaLabel;
   cta.setAttribute('aria-label', ariaLabel);
+  if (!cta.getAttribute('title')) {
+    cta.setAttribute('title', ariaLabel);
+  }
 }
 
 export async function buildCta(el, params) {
