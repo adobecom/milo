@@ -29,7 +29,7 @@
                     <span
                         is="inline-price"
                         data-template="price"
-                        data-wcs-osi="puf"
+                        data-wcs-osi="puf-team"
                     ></span>
                 </p>
                 <p data-plan-type="">
@@ -81,17 +81,20 @@
                         container.append(masCommerceService, ai);
                         expect(ai).to.exist;
                         await delay(50); // time to render prices
-                        expect(ai.innerText).to.contain(
-                            'Acrobat AI Assistant',
-                        );
+                        expect(ai.innerText).to.contain('Acrobat AI Assistant');
                         ai.planType = 'PUF';
                         await ai.updateComplete;
                         await delay(50);
-                        expect(ai.innerText).to.contain('US$599.88/yr');
+                        // The inline-price is hidden for TRIAL offer types
+                        expect(ai.innerText).to.contain('free Reader app');
                         expect(ai.getOsi('ABM', 'BASE')).to.be.equal('abm');
-                        // fallback to base, if PROMOTION is not available
+                        // fallback to BASE, if PROMOTION is not available
                         expect(ai.getOsi('ABM', 'PROMOTION')).to.be.equal(
                             'abm',
+                        );
+                        // fallback to TRIAL, if BASE & PROMOTION aren't available
+                        expect(ai.getOsi('PUF', 'BASE')).to.be.equal(
+                            'puf-team',
                         );
                         ai.planType = 'ABM';
                         await ai.updateComplete;

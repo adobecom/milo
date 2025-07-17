@@ -584,6 +584,9 @@ class Gnav {
       this.block.after(localNav);
     }
     localNav.setAttribute('daa-lh', `${title}_localNav`);
+    if (document.querySelector('.feds-promo-aside-wrapper')) {
+      this.updateGnavTop();
+    }
     const localNavBtn = toFragment`<button class="feds-navLink--hoverCaret feds-localnav-title" aria-haspopup="true" aria-expanded="false" daa-ll="${title}_localNav|open"></button>`;
     const localNavCurtain = toFragment` <div class="feds-localnav-curtain"></div>`;
     // Skip keyboard navigation on localnav items if it is closed
@@ -1164,6 +1167,20 @@ class Gnav {
     return decoratedElem;
   };
 
+  updateGnavTop = () => {
+    const promoHeight = `${this.elements.aside.clientHeight}px`;
+    const header = document.querySelector('header');
+    const localNav = document.querySelector('.feds-localnav');
+
+    document.querySelector('.feds-promo-aside-wrapper').style.height = promoHeight;
+    header.style.top = promoHeight;
+    if (!isDesktop.matches && localNav) {
+      header.style.top = 0;
+      localNav.style.top = promoHeight;
+    }
+    if (!isDesktop.matches) this.updatePopupPosition();
+  };
+
   decorateAside = async () => {
     performance.mark('Gnav-Aside-Start');
     this.elements.aside = '';
@@ -1179,30 +1196,16 @@ class Gnav {
     const { default: decorate } = await asideJsPromise;
     if (!decorate) return this.elements.aside;
     this.elements.aside = await decorate({ headerElem: this.block, fedsPromoWrapper, promoPath });
+    if (!(this.elements.aside instanceof HTMLElement)) return this.elements.aside;
     fedsPromoWrapper.append(this.elements.aside);
-
-    const updateLayout = () => {
-      const promoHeight = `${this.elements.aside.clientHeight}px`;
-      const header = document.querySelector('header');
-      const localNav = document.querySelector('.feds-localnav');
-
-      fedsPromoWrapper.style.height = promoHeight;
-      header.style.top = promoHeight;
-      if (!isDesktop.matches && localNav) {
-        header.style.top = 0;
-        localNav.style.top = promoHeight;
-      }
-      if (!isDesktop.matches) this.updatePopupPosition();
-    };
 
     if (this.elements.aside.clientHeight > fedsPromoWrapper.clientHeight) {
       lanaLog({ message: 'Promo height is more than expected, potential CLS', tags: 'gnav-promo', errorType: 'i' });
-      updateLayout();
-
-      this.promoResizeObserver?.disconnect();
-      this.promoResizeObserver = new ResizeObserver(updateLayout);
-      this.promoResizeObserver.observe(this.elements.aside);
     }
+    this.updateGnavTop();
+    this.promoResizeObserver?.disconnect();
+    this.promoResizeObserver = new ResizeObserver(this.updateGnavTop);
+    this.promoResizeObserver.observe(this.elements.aside);
     performance.mark('Gnav-Aside-End');
     logPerformance('Gnav-Aside-Time', 'Gnav-Aside-Start', 'Gnav-Aside-End');
     return this.elements.aside;
