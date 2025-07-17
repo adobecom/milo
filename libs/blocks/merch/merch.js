@@ -751,7 +751,7 @@ const closeModalWithoutEvent = (modalId) => {
     .forEach((element) => element.removeAttribute('aria-disabled'));
 };
 
-// Modal state handling: see merch.md
+// Modal state handling: see merch-modal.md
 export const modalState = { isOpen: false };
 
 export async function updateModalState({ cta, closedByUser } = {}) {
