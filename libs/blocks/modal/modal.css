@@ -1,8 +1,6 @@
 :root {
   --modal-focus-color: #109cde;
   --modal-max-height: calc((100vh - 6px) - 2em);
-  --modal-z-index: 102;
-  --modal-z-index-curtain: 101;
   --modal-close-accent-color: #707070;
   --jarvis-z-index-override: 100;
   --tall-video-padding: var(--spacing-xl);

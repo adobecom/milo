@@ -1,0 +1,62 @@
+.milo-preflight-overlay {
+  position: fixed;
+  bottom: 120px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: var(--modal-z-index);
+  font-family: 'Adobe Clean', adobe-clean, 'Trebuchet MS', sans-serif;
+}
+
+.preflight-notification {
+  background: rgb(34 34 34);
+  color: rgb(242 242 242);
+  padding: 12px 18px;
+  border-radius: 8px;
+  font-size: 14px;
+  line-height: 1.4;
+  box-shadow: 0 2px 8px rgb(0 0 0 / 30%);
+  border: 1px solid rgb(57 57 57);
+  letter-spacing: 0.02em;
+}
+
+.notification-content {
+  display: flex;
+  gap: 12px;
+}
+
+.notification-close {
+  background: none;
+  border: none;
+  color: rgb(242 242 242);
+  font-size: 18px;
+  cursor: pointer;
+  padding: 0;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.7;
+  transition: opacity 0.15s ease;
+}
+
+.notification-close:hover {
+  opacity: 1;
+}
+
+.preflight-review-link {
+  background: none;
+  border: none;
+  color: rgb(59 99 251);
+  text-decoration: underline;
+  cursor: pointer;
+  font-weight: 500;
+  padding: 0;
+  transition: color 0.15s ease;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2px;
+}
+
+.preflight-review-link:hover {
+  color: rgb(90 127 255);
+} 
