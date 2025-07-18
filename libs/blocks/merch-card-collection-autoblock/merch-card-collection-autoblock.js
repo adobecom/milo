@@ -1,4 +1,7 @@
 import { createTag, getConfig } from '../../utils/utils.js';
+import { postProcessAutoblock } from '../merch/autoblock.js';
+import '../../deps/mas/merch-card.js';
+import '../../deps/mas/merch-quantity-select.js';
 import {
   initService,
   getOptions,
@@ -10,7 +13,6 @@ import {
   MAS_MERCH_CARD_COLLECTION,
   MAS_MERCH_SIDENAV,
 } from '../merch/merch.js';
-import { postProcessAutoblock } from '../merch/autoblock.js';
 
 const COLLECTION_AUTOBLOCK_TIMEOUT = 5000;
 const DEFAULT_OPTIONS = { sidenav: true };
@@ -216,7 +218,7 @@ export async function createCollection(el, options) {
     }
   }
 
-  postProcessAutoblock(collection);
+  postProcessAutoblock(collection, false);
   collection.requestUpdate();
   enableAnalytics(collection);
 }

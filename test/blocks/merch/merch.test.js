@@ -28,7 +28,7 @@ import merch, {
   modalState,
   updateModalState,
 } from '../../../libs/blocks/merch/merch.js';
-import { localizePreviewLinks } from '../../../libs/blocks/merch/autoblock.js';
+import { decorateCardCtasWithA11y, localizePreviewLinks } from '../../../libs/blocks/merch/autoblock.js';
 
 import { mockFetch, unmockFetch, readMockText } from './mocks/fetch.js';
 import { mockIms, unmockIms } from './mocks/ims.js';
@@ -317,6 +317,23 @@ describe('Merch Block', () => {
     it('renders merch link with legal template', async () => {
       const el = await validatePriceSpan('.merch.price.legal', { template: PRICE_TEMPLATE_LEGAL });
       expect(el.textContent).to.equal('per license (Annual, paid monthly.)');
+    });
+  });
+
+  describe('CTAs A11Y', () => {
+    it('decorate card ctas with aria label', async () => {
+      const cards = document.querySelectorAll('.cards merch-card');
+      cards.forEach(async (card) => {
+        const el = await merch(card.querySelector('.merch.cta'));
+        await el?.onceSettled();
+        card.checkReady = () => Promise.resolve(true);
+        decorateCardCtasWithA11y(card, true);
+      });
+      await delay(100);
+      expect(cards[0].querySelector('a').getAttribute('aria-label')).to.equal('CTA1 Buy Now - PHSP - INDIVIDUAL');
+      expect(cards[1].querySelector('a').getAttribute('aria-label')).to.equal('CTA2 Buy Now - PHSP - INDIVIDUAL');
+      expect(cards[2].querySelector('a').getAttribute('aria-label')).to.equal('CTA3 Buy Now - Product three');
+      expect(cards[3].querySelector('a').getAttribute('aria-label')).to.equal('CTA4 Buy Now');
     });
   });
 
