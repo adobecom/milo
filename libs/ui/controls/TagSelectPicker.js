@@ -57,7 +57,10 @@ const Picker = ({
   const getSearchResults = () => {
     const lowerSearchTerm = debouncedSearchTerm.toLowerCase();
     return Object.entries(optionMap)
-      .filter(([, { label }]) => label.toLowerCase().includes(lowerSearchTerm))
+      .filter(
+        ([, { label, path }]) => label.toLowerCase().includes(lowerSearchTerm)
+           || path.toLowerCase().includes(lowerSearchTerm),
+      )
       .map(([id, { label, path }]) => {
         const isChecked = selectedTags.includes(id);
         return html`
