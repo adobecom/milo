@@ -176,6 +176,10 @@ styles.innerHTML = `
     padding: 0;
 }
 
+.tabpanel > .four-merch-cards {
+    z-index: 3;
+}
+
 merch-card-collection {
     display: contents;
 }
