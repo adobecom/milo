@@ -246,6 +246,21 @@ export function setCurtainState(state) {
 }
 
 export const isDesktop = window.matchMedia('(min-width: 900px)');
+export const isDesktopForContext = (context = 'viewport') => {
+  if (context === 'footer') {
+    // Check if we have a responsive footer
+    const footerElement = document.querySelector('footer.global-footer');
+    if (footerElement && footerElement.classList.contains('responsive-container')) {
+      const container = footerElement.closest('[style*="container-type"]') || footerElement.parentElement;
+      if (container) {
+        return container.getBoundingClientRect().width >= 900;
+      }
+    }
+  }
+
+  // Default to viewport width for all other contexts
+  return isDesktop.matches;
+};
 export const isTangentToViewport = window.matchMedia('(min-width: 900px) and (max-width: 1440px)');
 
 export function setActiveDropdown(elem, type) {
