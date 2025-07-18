@@ -1,5 +1,18 @@
 import { decorateButtons } from '../../utils/decorate.js';
-import { createTag } from '../../utils/utils.js';
+import { createTag, getConfig, getFederatedUrl, localizeLink } from '../../utils/utils.js';
+import { decorateDefaultLinkAnalytics } from '../../martech/attributes.js';
+
+// Remove consent related
+const FORM_CONFIG = ['campaign-id', 'mps-sname'];
+// Probably don't need this if button is inside the form
+const FORM_ID = 'email-collection-form';
+// const ALL_COUNTRIES_CONSENT_ID = 'cs3;v1;';
+const FEDERAL_ROOT = '/federal/email-collection';
+
+function createFederatedUrl(url) {
+  return localizeLink(getFederatedUrl(url), '', true);
+}
+const ALL_COUNTRIES_CONSENT_URL = createFederatedUrl(`${FEDERAL_ROOT}/consents/cs4.plain.html`);
 
 const FORM_FIELDS = {
   email: {
@@ -42,12 +55,24 @@ const FORM_FIELDS = {
       autocomplete: true,
     },
   },
-  state: { tag: 'select', attributes: {} },
-  country: { tag: 'select', attributes: {} },
+  state: {
+    tag: 'select',
+    url: getFederatedUrl(`${FEDERAL_ROOT}/states.json?limit=1900`),
+    attributes: {
+      required: true,
+      autocomplete: true,
+    },
+  },
+  country: {
+    tag: 'select',
+    url: getFederatedUrl(`${FEDERAL_ROOT}/countries.json`),
+    attributes: {
+      required: true,
+      autocomplete: true,
+    },
+  },
   custom: { tag: 'textarea', attributes: {} },
 };
-const FORM_CONFIG = ['consent-string', 'consent-id', 'campaign-id', 'mps-sname'];
-const FORM_ID = 'email-collection-form';
 
 function formatMetadataKey(key) {
   return key?.toLowerCase().trim().replaceAll(/\s+/g, '-');
@@ -55,97 +80,241 @@ function formatMetadataKey(key) {
 
 function getEmailCollectionMetadata(el) {
   const metadata = el.nextElementSibling;
-  const emailCollectionMetadata = { fields: {}, config: {} };
+  const { fields, config } = { fields: {}, config: {} };
   if (!metadata?.classList.contains('email-collection-metadata')) {
     throw new Error('Email collection metadata is missing');
   }
   [...metadata.children].forEach((child) => {
-    let metadataObject = emailCollectionMetadata.fields;
     const key = formatMetadataKey(child.firstElementChild?.textContent);
+    if (!FORM_FIELDS[key] && !FORM_CONFIG.includes(key)) return;
     const value = child.lastElementChild;
-    if (FORM_CONFIG.includes(key)) {
-      metadataObject = emailCollectionMetadata.config;
-    }
+    // let metadataObject = emailCollectionMetadata.fields;
+    const metadataObject = FORM_CONFIG.includes(key) ? config : fields;
     metadataObject[key] = value;
   });
 
-  if (!Object.keys(emailCollectionMetadata.config).every((key) => FORM_CONFIG.includes(key))) {
-    throw new Error('Email collection metadata is missing a config field');
-  }
-
-  if (!emailCollectionMetadata.fields.email) {
+  if (!fields.email) {
     throw new Error('Email collection form is missing email field');
   }
 
-  return emailCollectionMetadata;
-}
-
-let selectOptions;
-async function decorateSelect(id, url) {
-  try {
-    const selectWrapper = createTag('div', { class: 'select-wrapper' });
-    if (!selectOptions) {
-      const selectOptionsReq = await fetch(url);
-      if (!selectOptionsReq.ok) return null;
-      selectOptions = await selectOptionsReq.json();
-    }
-    const { [id]: options } = selectOptions;
-    if (!options || !options.data?.length) return null;
-    const { data } = options;
-    const select = createTag(
-      'select',
-      {
-        id,
-        name: id,
-        autocomplete: true,
-      },
-    );
-    data.forEach(({ key, value }) => {
-      const option = createTag('option', { value: key }, value);
-      select.append(option);
-    });
-    selectWrapper.append(select);
-    return selectWrapper;
-  } catch (e) {
-    return null;
+  // sname is not required for non newsletter mailing list
+  if (!Object.keys(config).every((key) => FORM_CONFIG.includes(key))) {
+    throw new Error('Email collection metadata is missing a config field');
   }
+
+  return { fields, config };
 }
 
-async function decorateInput(fieldConfig, key, value) {
+function formatStateData(data) {
+  const formattedData = {};
+  data.forEach((state) => {
+    const { countryCode, stateCode, stateName } = state;
+    if (!countryCode) return;
+    formattedData[countryCode] = formattedData[countryCode] ?? [];
+    formattedData[countryCode].push({ stateCode, stateName });
+  });
+  return formattedData;
+}
+
+const selectMapping = {
+  country: {
+    value: 'countryCode',
+    text: 'countryName',
+    format: (data) => data,
+  },
+  state: {
+    value: 'stateCode',
+    text: 'stateName',
+    format: formatStateData,
+    hide: true,
+  },
+};
+
+// Maybe have different for fetch and getState/Country
+const getSelectData = (() => {
+  const dataCache = {};
+  return async (id) => {
+    if (dataCache[id]) return dataCache[id];
+    try {
+      const { url } = FORM_FIELDS[id];
+      const selectReq = await fetch(url);
+      if (!selectReq.ok) return null;
+      const { data } = await selectReq.json();
+      dataCache[id] = selectMapping[id].format(data);
+      return dataCache[id];
+    } catch (e) {
+      return null;
+    }
+  };
+})();
+
+const getConsentString = (() => {
+  const consentCache = {};
+  return async (url, countryCode) => {
+    if (!url && !countryCode) return null;
+    let consentUrl = url;
+    if (!consentUrl) {
+      const countries = await getSelectData('country');
+      const { consentPath } = countries.find((c) => c.countryCode === countryCode);
+      consentUrl = createFederatedUrl(`${consentPath}.plain.html`);
+    }
+    if (consentCache[consentUrl]) return consentCache[consentUrl];
+    const stringReq = await fetch(consentUrl);
+    // Think about this
+    if (!stringReq.ok) throw new Error();
+    const string = await stringReq.text();
+    const doc = new DOMParser().parseFromString(string, 'text/html');
+    const consentDiv = doc.querySelector('body > div');
+    consentCache[consentUrl] = consentDiv;
+    // Possible throw
+    return consentDiv;
+  };
+})();
+
+// Think about localizing links here instead of manually
+// console.log(localizeLink('https://adobe.com/privacy.html', '', true));
+async function decorateConsentString(consentContainer, consentParams) {
+  consentContainer.innerHTML = '';
+  const { url, countryCode } = consentParams;
+  const consentStringEl = await getConsentString(url, countryCode);
+  if (!consentStringEl) return;
+
+  const ul = consentStringEl.querySelector('ul');
+  const container = createTag('div');
+  // Need to think still
+  if (ul) {
+    [...ul.children].forEach((li) => {
+      const checkboxContainer = createTag('div', { class: 'checkbox-container' });
+      const [text, id] = li.textContent.split('|');
+      const required = [...li.querySelectorAll('strong')]
+        .some((strong) => strong.textContent.trim() === id.trim());
+      const label = createTag('label', { for: `mps-${id.trim()}` }, text.trim());
+      const checkbox = createTag(
+        'input',
+        {
+          type: 'checkbox',
+          name: `mps-${id.trim()}`,
+          id: `mps-${id.trim()}`,
+          ...(required && { required: true }),
+        },
+      );
+      checkboxContainer.append(checkbox, label);
+      container.appendChild(checkboxContainer);
+    });
+    ul.replaceWith(container);
+  }
+  consentContainer.appendChild(consentStringEl);
+  decorateDefaultLinkAnalytics(consentContainer, getConfig());
+}
+
+function hideSelect({ selectWrapper, select, label, shouldHide = true }) {
+  selectWrapper.classList.toggle('hide-select', shouldHide);
+  label.classList.toggle('hide-select', shouldHide);
+  select.toggleAttribute('required', !shouldHide);
+}
+
+function populateSelect(select, data) {
+  const id = select.getAttribute('id');
+  const { value, text } = selectMapping[id];
+  const placeholder = select.getAttribute('data-select-placeholder');
+  const placeholderOption = placeholder ? [{ [value]: '', [text]: placeholder.trim() }] : [];
+  [...placeholderOption, ...data].forEach((optionData) => {
+    const option = createTag('option', { value: optionData[value] }, optionData[text]);
+    select.appendChild(option);
+  });
+}
+
+async function decorateSelect(id, label, placeholder) {
+  const data = await getSelectData(id);
+  if (!data) return null;
+  const selectWrapper = createTag('div', { class: 'select-wrapper' });
+  const select = createTag(
+    'select',
+    {
+      id,
+      name: id,
+      'data-select-placeholder': placeholder?.trim() ?? label.textContent.trim(),
+    },
+  );
+
+  if (selectMapping[id].hide) hideSelect({ selectWrapper, select, label });
+  else populateSelect(select, data);
+  selectWrapper.append(select);
+  return selectWrapper;
+}
+
+async function decorateInput(key, value) {
   let input;
-  let labelText = value.textContent;
-  if (fieldConfig.tag === 'select') {
-    const [label] = value.textContent.split('|');
-    const url = value.querySelector('a')?.href;
-    labelText = label;
-    input = await decorateSelect(key, url);
+  const { tag, attributes } = FORM_FIELDS[key];
+  const [labelText, placeholder] = value.textContent.split('|');
+  const label = createTag(
+    'label',
+    {
+      for: key,
+      class: 'body-xs',
+    },
+    labelText.trim(),
+  );
+
+  if (tag === 'select') {
+    input = await decorateSelect(key, label, placeholder);
     if (!input) return [];
   }
 
-  input = input ?? createTag(fieldConfig.tag, { name: key, id: key });
-  Object.entries(fieldConfig.attributes).forEach(([confKey, confValue]) => {
-    input.setAttribute(confKey, confValue);
+  input = input ?? createTag(
+    tag,
+    {
+      name: key,
+      id: key,
+      placeholder: placeholder?.trim() ?? labelText.trim(),
+    },
+  );
+  Object.entries(attributes).forEach(([confKey, confValue]) => {
+    const tempInput = input.querySelector(':scope > select') ?? input;
+    tempInput?.setAttribute(confKey, confValue);
   });
-  const label = createTag('label', { for: key, class: 'body-xs' }, labelText.trim());
-  label.classList.toggle('required', input.getAttribute('required') === 'true');
+  label.classList.toggle('required', attributes.required);
 
   return [label, input];
 }
 
-async function decorateForm(el, text) {
-  const emailCollectionMetadata = getEmailCollectionMetadata(el);
+async function attachCountryListener(form) {
+  const country = form.querySelector(':scope > .select-wrapper #country');
+  const stateWrapper = form.querySelector(':scope > .select-wrapper:has(#state)');
+  const stateSelect = stateWrapper?.querySelector(':scope > select');
+  const label = form.querySelector(':scope > label[for="state"]');
+  const stateData = await getSelectData('state');
+  const consentStringContainer = form.querySelector(':scope > .consent-string');
+  country?.addEventListener('change', (e) => {
+    const { value: countryCode } = e.target;
+    decorateConsentString(consentStringContainer, { countryCode });
+    if (!stateWrapper || !label || !stateData) return;
+    stateSelect.innerHTML = '';
+    hideSelect({
+      selectWrapper: stateWrapper,
+      select: stateSelect,
+      shouldHide: !stateData[countryCode],
+      label,
+    });
+    if (!stateData[countryCode]) return;
+    populateSelect(stateSelect, stateData[countryCode]);
+  });
+}
 
-  if (Object.keys(emailCollectionMetadata.fields).length === 1
-    && emailCollectionMetadata.fields.email) el.classList.add('mailing-list');
+async function decorateForm(el, text) {
+  const { fields } = getEmailCollectionMetadata(el);
+
+  // Think about variants
+  if (Object.keys(fields).length === 1
+    && fields.email) el.classList.add('mailing-list');
 
   const shouldSplitFirstRow = !el.classList.contains('mailing-list') && !el.classList.contains('large-image');
   const form = createTag('form', { id: FORM_ID });
   const inputs = [];
-  for (const [key, value] of Object.entries(emailCollectionMetadata.fields)) {
-    const fieldConfig = FORM_FIELDS[key];
+  for (const [key, value] of Object.entries(fields)) {
     // eslint-disable-next-line no-continue
-    if (!fieldConfig) continue;
-    const input = await decorateInput(fieldConfig, key, value);
+    if (!FORM_FIELDS[key]) continue;
+    const input = await decorateInput(key, value);
     inputs.push(...input);
   }
 
@@ -180,7 +349,7 @@ async function decorateForm(el, text) {
     {
       type: 'submit',
       class: 'con-button blue',
-      form: FORM_ID,
+      form: FORM_ID, // Maybe don't need this
     },
   );
   const submitText = text.lastElementChild;
@@ -188,12 +357,21 @@ async function decorateForm(el, text) {
   submitText.remove();
   submitContainer.append(submitButton);
 
-  const consentString = createTag(
-    'p',
+  const consentStringContainer = createTag(
+    'div',
     { class: 'body-xxs consent-string' },
-    emailCollectionMetadata.config['consent-string'].innerHTML,
   );
-  text.append(form, consentString, submitContainer);
+
+  // Think of a better way to distignuish if we need all country consent string maybe ask about this
+  // Move url
+  if (!fields.country) {
+    await decorateConsentString(consentStringContainer, { url: ALL_COUNTRIES_CONSENT_URL });
+  }
+
+  form.append(consentStringContainer, submitContainer);
+  text.append(form);
+
+  if (fields.country) attachCountryListener(form);
 }
 
 async function decorateText(el) {
@@ -224,6 +402,8 @@ export default async function init(el) {
   }
   successMessage.classList.add('hidden');
   decorateButtons(el);
+  // ACCESSIBILITY
+  // FIX STYLE BUGS
   await decorateText(el);
   const media = foreground.querySelector(':scope > div:not([class])');
   media?.classList.add('image');

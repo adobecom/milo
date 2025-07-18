@@ -46,7 +46,7 @@
 }
 
 .email-collection .foreground .text .consent-string {
-  margin: 24px 0;
+  margin: 12px 0 24px 0;
 }
 
 .email-collection .foreground.success-message .action-area {
@@ -54,6 +54,25 @@
 }
 
 .email-collection .foreground .text .consent-string > a {
+  color: inherit;
+}
+
+.email-collection .foreground .text .consent-string .checkbox-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 10px 0;
+}
+
+.email-collection .foreground .text .consent-string .checkbox-container > input {
+  margin: 0;
+}
+
+.email-collection .foreground .text .consent-string p {
+  margin: 0;
+}
+
+.email-collection .foreground .text .consent-string .checkbox-container > label {
   color: inherit;
 }
 
@@ -139,6 +158,11 @@
 .email-collection .foreground form .select-wrapper {
   margin-bottom: 12px;
   position: relative;
+}
+
+.email-collection .foreground form .select-wrapper.hide-select,
+.email-collection .foreground form label.hide-select {
+  display: none;
 }
 
 .email-collection .foreground form .select-wrapper select {
