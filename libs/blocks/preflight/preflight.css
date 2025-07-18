@@ -861,7 +861,7 @@ img:hover ~ .asset-meta,
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 48px;
-  height: 250px;
+  height: 280px;
 }
 
 .preflight-accessibility-item {
@@ -1012,8 +1012,8 @@ img:hover ~ .asset-meta,
 .preflight-full-width {
   grid-column: 1 / -1;
   width: 100%;
-  margin-top: 34px;
-  padding-top: 36px;
+  margin-top: 24px;
+  padding-top: 16px;
   box-shadow: 0 2px 4px rgba(0,0,0,0.05);
   border-top: 2px rgba(0, 0, 0, 0.2);
 }
