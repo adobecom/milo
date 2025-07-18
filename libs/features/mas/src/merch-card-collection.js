@@ -1,6 +1,7 @@
 import { html, LitElement } from 'lit';
+import { MatchMediaController } from '@spectrum-web-components/reactive-controllers/src/MatchMedia.js';
 import { deeplink, pushState } from './deeplink.js';
-import { EVENT_MAS_ERROR, EVENT_MERCH_CARD_COLLECTION_LITERALS_CHANGED, EVENT_MERCH_CARD_COLLECTION_SIDENAV_ATTACHED, EVENT_MERCH_SIDENAV_SELECT, SORT_ORDER } from './constants.js';
+import { EVENT_MAS_ERROR, EVENT_MERCH_SIDENAV_SELECT } from './constants.js';
 
 import {
     EVENT_MERCH_CARD_COLLECTION_SORT,
@@ -8,13 +9,18 @@ import {
     EVENT_AEM_ERROR,
     EVENT_AEM_LOAD,
 } from './constants.js';
+import { TABLET_DOWN } from './media.js';
 import { styles } from './merch-card-collection.css.js';
-import { getService } from './utils.js';
+import { getService, getSlotText } from './utils.js';
 import './mas-commerce-service';
-import MerchCardCollectionHeader from './merch-card-collection-header.js';
 
 const MERCH_CARD_COLLECTION = 'merch-card-collection';
-const MERCH_CARD_COLLECTION_LOAD_TIMEOUT = 20000;
+const MERCH_CARD_COLLECTION_LOAD_TIMEOUT = 10000;
+
+const SORT_ORDER = {
+    alphabetical: 'alphabetical',
+    authored: 'authored',
+};
 
 const VARIANT_CLASSES = {
     catalog: ['four-merch-cards'],
@@ -22,9 +28,26 @@ const VARIANT_CLASSES = {
     plansThreeColumns: ['three-merch-cards'],
 }
 
-const SIDENAV_AUTOCLOSE = {
-    plans: true
-}
+const RESULT_TEXT_SLOT_NAMES = {
+    // no search
+    filters: ['noResultText', 'resultText', 'resultsText'],
+    filtersMobile: ['noResultText', 'resultMobileText', 'resultsMobileText'],
+    // search on desktop
+    search: ['noSearchResultsText', 'searchResultText', 'searchResultsText'],
+    // search on mobile
+    searchMobile: [
+        'noSearchResultsMobileText',
+        'searchResultMobileText',
+        'searchResultsMobileText',
+    ],
+};
+
+export const updateLiterals = (el, values = {}) => {
+    el.querySelectorAll('span[data-placeholder]').forEach((el) => {
+        const { placeholder } = el.dataset;
+        el.innerText = values[placeholder] ?? '';
+    });
+};
 
 const categoryFilter = (elements, { filter }) =>
     elements.filter((element) => element.filters.hasOwnProperty(filter));
@@ -98,6 +121,8 @@ export class MerchCardCollection extends LitElement {
     #service;
     #log;
 
+    mobileAndTablet = new MatchMediaController(this, TABLET_DOWN);
+
     constructor() {
         super();
         // set defaults
@@ -109,11 +134,10 @@ export class MerchCardCollection extends LitElement {
         this.variant = null;
         this.hydrating = false;
         this.hydrationReady = null;
-        this.literalsHandlerAttached = false;
     }
 
     render() {
-        return html`
+        return html`${this.header}
             <slot></slot>
             ${this.footer}`;
     }
@@ -124,7 +148,12 @@ export class MerchCardCollection extends LitElement {
         const timeoutPromise = new Promise((resolve) =>
             setTimeout(() => resolve(false), MERCH_CARD_COLLECTION_LOAD_TIMEOUT),
         );
-        return Promise.race([this.hydrationReady, timeoutPromise])
+        const hydration = async () => {
+            await aemFragment.updateComplete;
+            await this.hydrationReady;
+            return true;
+        }
+        return Promise.race([hydration(), timeoutPromise])
     }
 
     updated(changedProperties) {
@@ -179,25 +208,26 @@ export class MerchCardCollection extends LitElement {
         window.scrollTo(0, lastScrollTop);
 
         this.updateComplete.then(() => {
-            this.dispatchLiteralsChanged();
-            if (this.sidenav && !this.literalsHandlerAttached) {
-                this.sidenav.addEventListener(EVENT_MERCH_SIDENAV_SELECT, () => {
-                    this.dispatchLiteralsChanged();
-                });
-                this.literalsHandlerAttached = true;
-            }
-        });
-    }
+            // first child element of #resultText > slot
+            const resultTextElement = this.shadowRoot
+                .getElementById('resultText')
+                ?.firstElementChild?.assignedElements?.()?.[0];
+            if (!resultTextElement) return;
 
-    dispatchLiteralsChanged() {
-        this.dispatchEvent(new CustomEvent(EVENT_MERCH_CARD_COLLECTION_LITERALS_CHANGED, 
-        { 
-            detail: {
+            this.sidenav?.filters?.addEventListener(EVENT_MERCH_SIDENAV_SELECT, () => {
+              updateLiterals(resultTextElement, {
                 resultCount: this.resultCount,
                 searchTerm: this.search,
-                filter: this.sidenav?.filters?.selectedText
-            }
-        }));
+                filter: this.sidenav?.filters.selectedText,
+              });
+            });
+
+            updateLiterals(resultTextElement, {
+                resultCount: this.resultCount,
+                searchTerm: this.search,
+                filter: this.sidenav?.filters.selectedText,
+            });
+        });
     }
 
     buildOverrideMap() {
@@ -219,63 +249,19 @@ export class MerchCardCollection extends LitElement {
     }
 
     async init() {
-        await this.hydrate();
-        this.sidenav = this.parentElement.querySelector('merch-sidenav');
-        if (this.filtered) {
-            this.filter = this.filtered;
-                this.page = 1;
-            } else {
-            this.startDeeplink();
-        }
-        this.initializeHeader();
-        this.initializePlaceholders();
+      await this.hydrate();
+      this.sidenav = document.querySelector('merch-sidenav');
+      if (this.filtered) {
+          this.filter = this.filtered;
+            this.page = 1;
+          } else {
+          this.startDeeplink();
+      }
     }
 
     disconnectedCallback() {
         super.disconnectedCallback();
         this.stopDeeplink?.();
-    }
-
-    initializeHeader() {
-        const header = document.createElement('merch-card-collection-header');
-        header.collection = this;
-        header.classList.add(this.variant);
-        this.parentElement.insertBefore(header, this);
-        this.header = header;
-    }
-
-    initializePlaceholders() {
-        const existingPlaceholders = this.querySelectorAll('[placeholder]');
-        if (existingPlaceholders.length > 0) {
-            existingPlaceholders.forEach(placeholder => {
-                const key = placeholder.getAttribute('slot');
-                if (MerchCardCollectionHeader.placeholderKeys.includes(key)) {
-                    this.header?.append(placeholder);
-                }
-            });
-        }
-        else {
-            const placeholders = this.data?.placeholders || {};
-            for (const key of Object.keys(placeholders)) {
-                const value = placeholders[key];
-                const tag = value.includes('<p>') ? 'div' : 'p';
-                const placeholder = document.createElement(tag);
-                placeholder.setAttribute('slot', key);
-                placeholder.setAttribute('placeholder', '');
-                placeholder.innerHTML = value;
-                if (MerchCardCollectionHeader.placeholderKeys.includes(key)) this.header?.append(placeholder);
-                else this.append(placeholder);
-            }
-        }
-    }
-
-    attachSidenav(sidenav, append = true) {
-        if (!sidenav) return;
-        if (append) this.parentElement.prepend(sidenav);
-        this.sidenav = sidenav;
-        if (SIDENAV_AUTOCLOSE[this.variant]) 
-            this.sidenav.setAttribute('autoclose', '');
-        this.dispatchEvent(new CustomEvent(EVENT_MERCH_CARD_COLLECTION_SIDENAV_ATTACHED));
     }
 
     #fail(error, details = {}, dispatch = true) {
@@ -391,6 +377,20 @@ export class MerchCardCollection extends LitElement {
         await this.hydrationReady;
     }
 
+    get header() {
+        if (this.filtered) return;
+        return html`<div id="header">
+                <sp-theme  color="light" scale="medium">
+                    ${this.searchBar} ${this.filtersButton} ${this.sortButton}
+                </sp-theme>
+            </div>
+            <div id="resultText" aria-live="polite">
+                ${this.displayResult
+                    ? html`<slot name="${this.resultTextSlotName}"></slot>`
+                    : ''}
+            </div>`;
+    }
+
     get footer() {
         if (this.filtered) return;
         return html`<div id="footer">
@@ -398,6 +398,19 @@ export class MerchCardCollection extends LitElement {
                 ${this.showMoreButton}
             </sp-theme>
         </div>`;
+    }
+
+    computeTextSlotName(forceDesktop = false) {
+        const key = `${this.search ? 'search' : 'filters'}${this.mobileAndTablet.matches && !forceDesktop ? 'Mobile' : ''}`;
+        return RESULT_TEXT_SLOT_NAMES[key][Math.min(this.resultCount, 2)];
+    }
+
+    get resultTextSlotName() {
+        const name = this.computeTextSlotName();
+        if (!getSlotText(this, name) && this.mobileAndTablet.matches) {
+            return this.computeTextSlotName(true);
+        }
+        return name;
     }
 
     get showMoreButton() {
@@ -410,6 +423,64 @@ export class MerchCardCollection extends LitElement {
         >
             <slot name="showMoreText"></slot>
         </sp-button>`;
+    }
+
+    get filtersButton() {
+        return this.sidenav && this.mobileAndTablet.matches
+            ? html`<sp-action-button
+                  id="filtersButton"
+                  variant="secondary"
+                  treatment="outline"
+                  @click="${this.openFilters}"
+                  ><slot name="filtersText"></slot
+              ></sp-action-button>`
+            : '';
+    }
+
+    get searchBar() {
+        const searchPlaceholder = getSlotText(this, 'searchText');
+        return searchPlaceholder && this.mobileAndTablet.matches
+            ? html`<merch-search deeplink="search">
+                  <sp-search
+                      id="searchBar"
+                      @submit="${this.searchSubmit}"
+                      placeholder="${searchPlaceholder}"
+                  ></sp-search>
+              </merch-search>`
+            : '';
+    }
+
+    get sortButton() {
+        const sortText = getSlotText(this, 'sortText');
+        if (!sortText) return;
+        const popularityText = getSlotText(this, 'popularityText');
+        const alphabeticallyText = getSlotText(this, 'alphabeticallyText');
+
+        if (!(popularityText && alphabeticallyText)) return;
+        const alphabetical = this.sort === SORT_ORDER.alphabetical;
+
+        return html`
+            <sp-action-menu
+                id="sortButton"
+                size="m"
+                @change="${this.sortChanged}"
+                selects="single"
+                value="${alphabetical
+                    ? SORT_ORDER.alphabetical
+                    : SORT_ORDER.authored}"
+            >
+                <span slot="label-only"
+                    >${sortText}:
+                    ${alphabetical ? alphabeticallyText : popularityText}</span
+                >
+                <sp-menu-item value="${SORT_ORDER.authored}"
+                    >${popularityText}</sp-menu-item
+                >
+                <sp-menu-item value="${SORT_ORDER.alphabetical}"
+                    >${alphabeticallyText}</sp-menu-item
+                >
+            </sp-action-menu>
+        `;
     }
 
     sortChanged(event) {
