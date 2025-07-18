@@ -469,6 +469,7 @@ class Footer {
     return this.elements.legal;
   };
 
+  // eslint-disable-next-line class-methods-use-this
   decorateLogo = () => {
     const logoSvg = isDarkMode() ? ADOBE_LOGO_DARK : ADOBE_LOGO_LIGHT;
     return toFragment`
