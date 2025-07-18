@@ -176,8 +176,6 @@ export class Plans extends VariantLayout {
         const prices = [];
         const headingPrice = this.card.querySelector(`[slot="heading-m"] ${SELECTOR_MAS_INLINE_PRICE}[data-template="price"]`);
         if (headingPrice) prices.push(headingPrice);
-        const bodyPrices = this.card.querySelectorAll(`[slot="body-xs"] ${SELECTOR_MAS_INLINE_PRICE}[data-template="price"]`);
-        bodyPrices.forEach(bodyPrice => prices.push(bodyPrice));
         const legalPromises = prices.map(async (price) => {
           const legal = price.cloneNode(true);
           await price.onceSettled();

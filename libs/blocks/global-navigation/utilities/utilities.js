@@ -791,15 +791,16 @@ export function getUnavWidthCSS(unavComponents, signedOut = false) {
   const iconWidth = 32; // px
   const flexGap = 0.25; // rem
   const sectionDivider = getConfig()?.unav?.showSectionDivider;
+  const sectionDividerMargin = 4; // px (left and right margins)
   const cartEnabled = /uc_carts=/.test(document.cookie);
   const components = (!cartEnabled ? unavComponents?.filter((x) => x !== 'cart') : unavComponents) ?? [];
   const n = components.length ?? 3;
   if (signedOut) {
     const l = components.filter((c) => SIGNED_OUT_ICONS.includes(c)).length;
     const signInButton = 92; // px
-    return `calc(${signInButton}px + ${l * iconWidth}px + ${l * flexGap}rem${sectionDivider ? ` + 2px + ${flexGap}rem` : ''})`;
+    return `calc(${signInButton}px + ${l * iconWidth}px + ${l * flexGap}rem${sectionDivider ? ` + 2px + ${2 * sectionDividerMargin}px + ${flexGap}rem` : ''})`;
   }
-  return `calc(${n * iconWidth}px + ${(n - 1) * flexGap}rem${sectionDivider ? ` + 2px + ${flexGap}rem` : ''})`;
+  return `calc(${n * iconWidth}px + ${(n - 1) * flexGap}rem${sectionDivider ? ` + 2px + ${2 * sectionDividerMargin}px + ${flexGap}rem` : ''})`;
 }
 
 /**

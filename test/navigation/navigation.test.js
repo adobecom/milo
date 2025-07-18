@@ -46,6 +46,71 @@ describe('Navigation component', async () => {
     expect(onReady.called).to.be.true;
   });
 
+  it('Renders the mini GNAV', async () => {
+    const onReady = stub();
+    await loadBlock({
+      authoringPath: '/federal/dev',
+      header: {
+        imsClientId: 'fedsmilo',
+        onReady,
+        layout: 'fullWidth',
+        noBorder: 'true',
+        mobileGnavV2: 'on',
+        miniGnav: true,
+      },
+      env: 'prod',
+      theme: 'dark',
+    }, 'http://localhost:2000');
+    const isMiniGnav = !!document.querySelector('.mini-gnav');
+    console.log(isMiniGnav);
+    expect(isMiniGnav).to.be.true;
+    expect(onReady.called).to.be.true;
+  });
+
+  it('Renders the mini GNAV and desktop apps cta placeholder', async () => {
+    const onReady = stub();
+    await loadBlock({
+      authoringPath: '/federal/dev',
+      header: {
+        imsClientId: 'fedsmilo',
+        onReady,
+        desktopAppsCta: true,
+        mobileGnavV2: 'on',
+        miniGnav: true,
+      },
+      env: 'prod',
+      theme: 'dark',
+    }, 'http://localhost:2000');
+    const isMiniGnav = document.querySelector('.mini-gnav');
+    const isDesktopAppsCta = document.querySelector('.feds-client-desktop-apps');
+    expect(isMiniGnav).to.exist;
+    expect(isDesktopAppsCta).to.exist;
+    expect(onReady.called).to.be.true;
+  });
+
+  it('Renders mini GNAV and search placeholder before (.feds-nav-wrapper)', async () => {
+    const onReady = stub();
+    await loadBlock({
+      authoringPath: '/federal/dev',
+      header: {
+        imsClientId: 'fedsmilo',
+        onReady,
+        desktopAppsCta: true,
+        searchEnabled: 'on',
+        mobileGnavV2: 'on',
+        miniGnav: true,
+      },
+      env: 'prod',
+      theme: 'dark',
+    }, 'http://localhost:2000');
+    const isMiniGnav = document.querySelector('.mini-gnav');
+    const searchPlaceholder = document.querySelector('.feds-client-search');
+    expect(isMiniGnav).to.exist;
+    expect(searchPlaceholder).to.exist;
+    expect(searchPlaceholder.nextElementSibling.classList.contains('feds-nav-wrapper')).to.be.true;
+    expect(onReady.called).to.be.true;
+  });
+
   it('Should not render the footer block when config is not passed', async () => {
     try {
       await loadBlock({ env: 'qa', authoringPath: '/federal/dev', footer: {} }, 'http://localhost:2000');

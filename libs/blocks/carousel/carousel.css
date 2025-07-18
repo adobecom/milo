@@ -163,6 +163,10 @@ html[dir="rtl"] .carousel .carousel-previous {
   will-change: transform;
 }
 
+.carousel.container.align-height .carousel-slides {
+  align-items: stretch;
+}
+
 html[dir="rtl"] .carousel-slides {
   flex-direction: row-reverse;
 }
@@ -423,6 +427,24 @@ html[dir="rtl"] .carousel .move-indicators {
   margin: unset;
 }
 
+.carousel.container.align-height .carousel-slide div:not(.editorial-card) .foreground:not(.icon-block .foreground) {
+  height: 100%;
+}
+
+.carousel.container.align-height .carousel-slide > div:not(.media) .foreground > div {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.carousel.container.align-height .foreground > div:not(.brick-text) > *:not(.cta-container) {
+  margin-top: 0;
+}
+
+.carousel.container.align-height .cta-container {
+  margin-top: auto;
+}
+
 .carousel.container .carousel-slide .container {
   width: unset;
 }
@@ -494,6 +516,27 @@ html[dir="rtl"] .carousel .move-indicators {
 
 .carousel.container .carousel-slide.xxxl-spacing > div,
 .carousel.container .carousel-slide .xxxl-spacing { padding: var(--spacing-xxxl); }
+
+.carousel.container.align-height .carousel-slide.xs-spacing > div,
+.carousel.container.align-height .carousel-slide .xs-spacing { height: calc(100% - 2*var(--spacing-xs)); }
+
+.carousel.container.align-height .carousel-slide.s-spacing > div,
+.carousel.container.align-height .carousel-slide .s-spacing { height: calc(100% - 2*var(--spacing-s)); }
+
+.carousel.container.align-height .carousel-slide.m-spacing > div,
+.carousel.container.align-height .carousel-slide .m-spacing { height: calc(100% - 2*var(--spacing-m)); }
+
+.carousel.container.align-height .carousel-slide.l-spacing > div,
+.carousel.container.align-height .carousel-slide .l-spacing { height: calc(100% - 2*var(--spacing-l)); }
+
+.carousel.container.align-height .carousel-slide.xl-spacing > div,
+.carousel.container.align-height .carousel-slide .xl-spacing { height: calc(100% - 2*var(--spacing-xl)); }
+
+.carousel.container.align-height .carousel-slide.xxl-spacing > div,
+.carousel.container.align-height .carousel-slide .xxl-spacing { height: calc(100% - 2*var(--spacing-xxl)); }
+
+.carousel.container.align-height .carousel-slide.xxxl-spacing > div,
+.carousel.container.align-height .carousel-slide .xxxl-spacing { height: calc(100% - 2*var(--spacing-xxxl)); }
 
 .carousel.fade .carousel-slide {
   opacity: .3;

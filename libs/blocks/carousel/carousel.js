@@ -1,5 +1,6 @@
 import { createTag, getConfig, MILO_EVENTS } from '../../utils/utils.js';
 import { decorateAnchorVideo, syncPausePlayIcon } from '../../utils/decorate.js';
+import { debounce } from '../../utils/action.js';
 
 const { miloLibs, codeRoot } = getConfig();
 const base = miloLibs || codeRoot;
@@ -495,6 +496,32 @@ export default function init(el) {
   controlsContainer.append(dotsUl);
   nextPreviousContainer.append(...nextPreviousBtns, controlsContainer);
   el.append(nextPreviousContainer);
+
+  function normalizeVideoHeights() {
+    const videos = el.querySelectorAll('video');
+    if (!videos.length) return;
+
+    const videoData = [];
+    let maxHeight = 0;
+
+    videos.forEach((video) => {
+      const foreground = video.closest('.editorial-card')?.querySelector('.foreground');
+      const videoHeight = video.offsetHeight;
+      const totalHeight = videoHeight + (foreground ? foreground.offsetHeight : 0);
+      videoData.push({ video, foreground, videoHeight, totalHeight });
+      if (totalHeight > maxHeight) maxHeight = totalHeight;
+    });
+
+    videoData.forEach(({ video, foreground, videoHeight }) => {
+      const finalHeight = foreground ? videoHeight : maxHeight;
+      video.style.height = `${finalHeight}px`;
+      video.style.maxHeight = `${finalHeight}px`;
+    });
+  }
+
+  if (el.classList.contains('align-height')) setTimeout(normalizeVideoHeights, 100);
+
+  window.addEventListener('resize', debounce(() => { if (el.classList.contains('align-height')) normalizeVideoHeights(); }));
 
   function handleDeferredImages() {
     const images = el.querySelectorAll('img[loading="lazy"]');

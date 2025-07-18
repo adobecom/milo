@@ -2,9 +2,13 @@ import { isDesktop } from '../utilities.js';
 
 const MobileGnav = {
   init() {
+    const isNewNav = document.querySelector('.new-nav');
+    if (!isNewNav) return;
     this.isMobile = !isDesktop.matches;
     this.toggleButton = document.querySelector('.feds-toggle');
-    this.menuItemLinks = document.querySelectorAll('.feds-nav-wrapper section.feds-navItem > .feds-navLink, .feds-navItem > .feds-cta-wrapper > .feds-cta');
+    this.menuItemLinks = document.querySelectorAll(
+      '.feds-nav > .feds-navItem > .feds-navLink[href], .feds-nav > .feds-navItem > button.feds-navLink, .feds-nav > .feds-navItem > .feds-cta-wrapper > .feds-cta',
+    );
     this.eventInitialized = false;
     this.addEventListeners();
   },
@@ -13,7 +17,7 @@ const MobileGnav = {
       if (!this.isMobile) return;
       const gnavWrapper = document.querySelector('.feds-nav-wrapper');
       if (code === 'ArrowDown' && gnavWrapper?.classList.contains('feds-nav-wrapper--expanded')) {
-        const firstNavLink = gnavWrapper.querySelector('.feds-nav .feds-navLink');
+        const firstNavLink = gnavWrapper.querySelector('.feds-nav .feds-navLink[href], .feds-nav button.feds-navLink');
         firstNavLink.focus();
       }
     });

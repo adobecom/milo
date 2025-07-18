@@ -96,6 +96,9 @@ function parseArgs(args) {
 }
 
 function getLocalTestLiveUrl(env, milolibs, repo = 'milo', owner = 'adobecom') {
+  if (env === 'main') {
+    return 'https://milo.adobe.com';
+  }
   if (milolibs) {
     process.env.MILO_LIBS = `?milolibs=${milolibs}`;
     if (env === 'local') {
