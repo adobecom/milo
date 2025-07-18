@@ -16,6 +16,7 @@
 
 import { decorateBlockText, decorateBlockBg, decorateTextOverrides, decorateMultiViewport, loadCDT } from '../../utils/decorate.js';
 import { createTag, getConfig, loadStyle, createIntersectionObserver } from '../../utils/utils.js';
+import returnFocusableElementsString from '../../utils/notification.js';
 
 const { miloLibs, codeRoot } = getConfig();
 const base = miloLibs || codeRoot;
@@ -53,7 +54,7 @@ const closeSvg = `<svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" wid
     </clipPath>
   </defs>
 </svg>`;
-const focusableSelector = 'button, [href], [tabindex]:not([tabindex="-1"])';
+const focusableSelector = returnFocusableElementsString('.notification.split');
 const selectedSelector = '[aria-selected="true"], [aria-checked="true"]';
 let iconographyLoaded = false;
 
@@ -119,8 +120,9 @@ const closeBanner = (el) => {
   el.removeAttribute('role');
   el.style.display = 'none';
   sectionElement?.classList.add('close-sticky-section');
-  const noDelay = el.classList.contains('no-delay');
-  if (noDelay) {
+  const isFocusable = el.classList.contains('focus');
+
+  if (isFocusable) {
     setTimeout(() => {
       const tempFocus = createTag('div', { class: 'temp-focus' });
       tempFocus.tabIndex = 0;
@@ -130,7 +132,7 @@ const closeBanner = (el) => {
     });
   }
 
-  if (isSticky && !noDelay) {
+  if (isSticky && !isFocusable) {
     setTimeout(() => {
       let focusTarget;
 
@@ -222,9 +224,7 @@ function curtainCallback(el) {
   el.setAttribute('role', 'dialog');
   el.setAttribute('aria-modal', 'true');
 
-  const focusableElements = [...el.querySelectorAll(
-    'button, a[href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
-  )];
+  const focusableElements = [...el.querySelectorAll(focusableSelector)];
   const firstFocusable = focusableElements[0];
   const lastFocusable = focusableElements[focusableElements.length - 1];
 
