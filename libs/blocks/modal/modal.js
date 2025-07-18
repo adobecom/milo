@@ -101,8 +101,7 @@ export function closeModal(modal) {
   }
 
   const notificationSplitFocusable = document.querySelector(
-    '.notification.split button, .notification.split [href], .notification.split input, .notification.split select, '
-    + '.notification.split textarea, .notification.split [tabindex]:not([tabindex="-1"])',
+    '.notification.split button, .notification.split [href], .notification.split [tabindex]:not([tabindex="-1"])',
   );
 
   if (notificationSplitFocusable) {

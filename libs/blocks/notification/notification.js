@@ -53,7 +53,7 @@ const closeSvg = `<svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" wid
     </clipPath>
   </defs>
 </svg>`;
-const focusableSelector = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
+const focusableSelector = 'button, [href], [tabindex]:not([tabindex="-1"])';
 const selectedSelector = '[aria-selected="true"], [aria-checked="true"]';
 let iconographyLoaded = false;
 
@@ -108,17 +108,17 @@ const closeBanner = (el) => {
     isSticky = true;
     rect = sectionElement.getBoundingClientRect();
   }
-  if (el.focusTrapCleanup) el.focusTrapCleanup();
+  el.focusTrapCleanup?.();
 
   if (el.classList.contains('focus')) {
     document.body.classList.remove('mobile-disable-scroll');
-    el.closest('.section').querySelector('.notification-curtain').remove();
+    sectionElement?.querySelector('.notification-curtain')?.remove();
   }
 
   el.removeAttribute('aria-modal');
   el.removeAttribute('role');
   el.style.display = 'none';
-  el.closest('.section')?.classList.add('close-sticky-section');
+  sectionElement?.classList.add('close-sticky-section');
   const noDelay = el.classList.contains('no-delay');
   if (noDelay) {
     setTimeout(() => {
@@ -138,7 +138,7 @@ const closeBanner = (el) => {
       const stickySection = elementAtPosition.closest('.section');
       focusTarget = findFocusableInSection(stickySection, selectedSelector, focusableSelector);
 
-      let currentSection = el.closest('.section')?.previousElementSibling;
+      let currentSection = sectionElement?.previousElementSibling;
       while (currentSection && !focusTarget) {
         focusTarget = findFocusableInSection(currentSection, selectedSelector, focusableSelector);
         if (!focusTarget) currentSection = currentSection.previousElementSibling;
