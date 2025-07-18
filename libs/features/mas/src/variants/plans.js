@@ -354,17 +354,4 @@ export class Plans extends VariantLayout {
             padding: 2px 10px 3px;
         }
     `;
-
-    static collectionOptions = {
-        customHeaderArea: (collection) => {
-            if (!collection.sidenav) return nothing;
-            return html`<slot name="resultsText"></slot>`
-        },
-        headerVisibility: {
-            search: false,
-            sort: false,
-            result: ['mobile', 'tablet'],
-            custom: ['desktop']
-        }
-    }
 }
