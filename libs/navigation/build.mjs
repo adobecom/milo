@@ -52,6 +52,15 @@ const StyleLoader = {
   },
 };
 
+const ExternalLitMinJS = {
+  name: 'external-lit-min-js',
+  setup({ onResolve }) {
+    onResolve({ filter: /.\/lit-all\.min\.js/ }, async ({ path }) => {
+      return { path, external: true };
+    });
+  },
+};
+
 await esbuild.build({
   entryPoints: ['navigation.js'],
   bundle: true,
@@ -59,5 +68,5 @@ await esbuild.build({
   format: 'esm',
   sourcemap: true,
   outdir: './dist/',
-  plugins: [StyleLoader],
+  plugins: [StyleLoader, ExternalLitMinJS],
 });
