@@ -115,6 +115,20 @@ function defaultOpen(accordion) {
   handleClick(accordion.querySelector('.accordion-trigger'), accordion.querySelector('.descr-details'), 1);
 }
 
+function createMobileMedia(ogMedia) {
+  const video = ogMedia.querySelector('video');
+  const videoSrc = video?.getAttribute('data-video-source');
+
+  if (!video || !videoSrc) return ogMedia.cloneNode(true);
+
+  const mobileMedia = ogMedia.cloneNode(true);
+  const mobileVideo = mobileMedia.querySelector('video');
+  const source = createTag('source', { src: videoSrc, type: 'video/mp4' });
+  mobileVideo.appendChild(source);
+
+  return mobileMedia;
+}
+
 function createItem(accordion, id, heading, num, edit) {
   const triggerId = `accordion-${id}-trigger-${num}`;
   const panelId = `accordion-${id}-content-${num}`;
@@ -139,15 +153,7 @@ function createItem(accordion, id, heading, num, edit) {
   const dtHtml = hTag ? createTag(hTag.tagName, { class: 'accordion-heading' }, button) : button;
   const dt = createTag('div', dtAttrs, dtHtml);
   const dd = createTag('div', { 'aria-labelledby': triggerId, id: panelId, hidden: true, class: 'descr-details' }, panel);
-  const dm = createTag('div', { class: 'media-p' });
-
-  const isMobile = window.matchMedia('(max-width: 1199px)').matches;
-
-  if (edit && isMobile) {
-    const ogMedia = mediaCollection[id][num - 1];
-    dm.append(ogMedia);
-    dd.prepend(dm);
-  }
+  if (edit) dd.prepend(createTag('div', { class: 'media-p' }, createMobileMedia(mediaCollection[id][num - 1])));
 
   button.addEventListener('click', (e) => { handleClick(e.target, dd, num, id); });
   accordion.append(dt, dd);
