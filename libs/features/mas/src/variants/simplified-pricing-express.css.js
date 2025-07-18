@@ -155,6 +155,27 @@ merch-card[variant="simplified-pricing-express"] sr-only {
   border: 0;
 }
 
+/* mas-tooltip inline styles for simplified-pricing-express */
+merch-card[variant="simplified-pricing-express"] mas-tooltip {
+  display: inline-flex;
+  align-items: center;
+  vertical-align: middle;
+  margin-left: 4px;
+  overflow: visible;
+}
+
+merch-card[variant="simplified-pricing-express"] mas-tooltip merch-icon {
+  display: inline-block;
+  vertical-align: middle;
+}
+
+/* Ensure tooltip containers allow overflow */
+merch-card[variant="simplified-pricing-express"] [slot="price"],
+merch-card[variant="simplified-pricing-express"] [slot="body-s"],
+merch-card[variant="simplified-pricing-express"] [slot="cta"] {
+  overflow: visible;
+}
+
 /* Mobile accordion styles */
 @media (max-width: 599px) {
   merch-card[variant="simplified-pricing-express"] {

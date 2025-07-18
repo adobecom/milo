@@ -220,7 +220,42 @@ export function processBackgroundImage(
     }
 }
 
+/**
+ * Process tooltips in HTML content
+ * Ensures mas-tooltip elements have proper structure
+ */
+function processTooltips(htmlContent, variant) {
+    if (!htmlContent || typeof htmlContent !== 'string') return htmlContent;
+    
+    // This function ensures mas-tooltip elements are properly formed
+    // The actual parsing happens when the HTML is added to the DOM
+    // and the mas-tooltip web component initializes
+    
+    // Import mas-tooltip to ensure it's loaded when tooltips are used
+    if (htmlContent.includes('<mas-tooltip')) {
+        import('./mas-tooltip.js').catch(console.error);
+        
+        // For simplified-pricing-express variant, set icon size to xxs
+        if (variant === 'simplified-pricing-express') {
+            htmlContent = htmlContent.replace(
+                /<mas-tooltip([^>]*)\ssize="[^"]*"/g,
+                '<mas-tooltip$1 size="xxs"'
+            );
+            // Also add size="xxs" if no size attribute exists
+            htmlContent = htmlContent.replace(
+                /<mas-tooltip(?![^>]*\ssize=)([^>]*)/g,
+                '<mas-tooltip size="xxs"$1'
+            );
+        }
+    }
+    
+    return htmlContent;
+}
+
 export function processPrices(fields, merchCard, mapping) {
+    if (fields.prices) {
+        fields.prices = processTooltips(fields.prices, fields.variant);
+    }
     appendSlot('prices', fields, merchCard, mapping);
 }
 
@@ -282,6 +317,14 @@ function processDescriptionLinks(merchCard, aemFragmentMapping) {
 }
 
 export function processDescription(fields, merchCard, mapping) {
+    // Process tooltips in description field
+    if (fields.description) {
+        fields.description = processTooltips(fields.description, fields.variant);
+    }
+    if (fields.promoText) {
+        fields.promoText = processTooltips(fields.promoText, fields.variant);
+    }
+    
     appendSlot('promoText', fields, merchCard, mapping);
     appendSlot('description', fields, merchCard, mapping);
     processDescriptionLinks(merchCard, mapping);
@@ -503,6 +546,9 @@ function createConsonantButton(cta, isAccent, isCheckout, isLinkStyle, isPrimary
 
 export function processCTAs(fields, merchCard, aemFragmentMapping, variant) {
     if (fields.ctas) {
+        // Process tooltips in CTAs
+        fields.ctas = processTooltips(fields.ctas, variant);
+        
         const { slot } = aemFragmentMapping.ctas;
         const footer = createTag('div', { slot }, fields.ctas);
         const ctas = [...footer.querySelectorAll('a')].map((cta) => {

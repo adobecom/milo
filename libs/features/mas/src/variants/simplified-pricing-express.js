@@ -173,7 +173,7 @@ export class SimplifiedPricingExpress extends VariantLayout {
             border-radius: 16px;
             display: flex;
             flex-direction: column;
-            overflow: hidden;
+            overflow: visible;
             padding: var(--merch-card-simplified-pricing-express-padding);
             gap: 16px;
             box-sizing: border-box;
