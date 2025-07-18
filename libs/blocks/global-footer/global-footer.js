@@ -472,9 +472,9 @@ class Footer {
   decorateLogo = () => {
     const logoSvg = isDarkMode() ? ADOBE_LOGO_DARK : ADOBE_LOGO_LIGHT;
     return toFragment`
-      <a class="footer-logo" aria-label="Adobe">
+      <span class="footer-logo" role="img" aria-label="Adobe">
         <span class="footer-logo-image">${logoSvg}</span>
-      </a>`;
+      </span>`;
   };
 
   decorateFooter = () => {
