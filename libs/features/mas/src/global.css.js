@@ -162,6 +162,10 @@ merch-card-collection > div[slot] p {
     padding: var(--spacing-m);
 }
 
+.tabpanel > .four-merch-cards {
+    z-index: 3;
+}
+
 merch-card[variant="ccd-suggested"] *,
 merch-card[variant="ccd-slice"] * {
   box-sizing: border-box;
