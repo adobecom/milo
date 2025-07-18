@@ -3,6 +3,19 @@ import fs from 'node:fs';
 
 fs.rmSync('./dist/', { recursive: true, force: true });
 
+// Plugin to resolve absolute imports for MAS components
+const absoluteImportResolver = {
+  name: 'absolute-import-resolver',
+  setup(build) {
+    // Resolve absolute imports starting with /libs/deps/
+    build.onResolve({ filter: /^\/libs\/deps\// }, (args) => {
+      // Convert absolute path to relative path from current directory
+      const relativePath = args.path.replace(/^\/libs\/deps\//, '../');
+      return { path: relativePath, external: true };
+    });
+  },
+};
+
 await esbuild.build({
   entryPoints: ['navigation.css', 'footer.css', 'dark-nav.css', 'base.css'],
   bundle: true,
@@ -59,5 +72,5 @@ await esbuild.build({
   format: 'esm',
   sourcemap: true,
   outdir: './dist/',
-  plugins: [StyleLoader],
+  plugins: [StyleLoader, absoluteImportResolver],
 });
