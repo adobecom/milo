@@ -134,7 +134,7 @@ const closeBanner = (el) => {
   if (isSticky && !isFocusable) {
     setTimeout(() => {
       let focusTarget;
-      const allFocusableElements = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
+      const allFocusableElements = 'button, a[href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
 
       const elementAtPosition = document.elementFromPoint(rect.left, rect.top);
       const stickySection = elementAtPosition.closest('.section');
