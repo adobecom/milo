@@ -54,7 +54,7 @@ const closeSvg = `<svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" wid
     </clipPath>
   </defs>
 </svg>`;
-const focusableSelector = returnFocusableElementsString('.notification.split');
+const focusableSelector = returnFocusableElementsString();
 const selectedSelector = '[aria-selected="true"], [aria-checked="true"]';
 let iconographyLoaded = false;
 
