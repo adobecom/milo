@@ -54,7 +54,6 @@ const closeSvg = `<svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" wid
     </clipPath>
   </defs>
 </svg>`;
-const focusableSelector = returnFocusableElementsString();
 const selectedSelector = '[aria-selected="true"], [aria-checked="true"]';
 let iconographyLoaded = false;
 
@@ -135,20 +134,25 @@ const closeBanner = (el) => {
   if (isSticky && !isFocusable) {
     setTimeout(() => {
       let focusTarget;
+      const allFocusableElements = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
 
       const elementAtPosition = document.elementFromPoint(rect.left, rect.top);
       const stickySection = elementAtPosition.closest('.section');
-      focusTarget = findFocusableInSection(stickySection, selectedSelector, focusableSelector);
+      focusTarget = findFocusableInSection(stickySection, selectedSelector, allFocusableElements);
 
       let currentSection = sectionElement?.previousElementSibling;
       while (currentSection && !focusTarget) {
-        focusTarget = findFocusableInSection(currentSection, selectedSelector, focusableSelector);
+        focusTarget = findFocusableInSection(
+          currentSection,
+          selectedSelector,
+          allFocusableElements,
+        );
         if (!focusTarget) currentSection = currentSection.previousElementSibling;
       }
 
       const header = document.querySelector('header');
       if (!focusTarget && header) {
-        const headerFocusable = [...header.querySelectorAll(focusableSelector)];
+        const headerFocusable = [...header.querySelectorAll(allFocusableElements)];
         focusTarget = headerFocusable[headerFocusable.length - 1];
       }
 
@@ -224,7 +228,7 @@ function curtainCallback(el) {
   el.setAttribute('role', 'dialog');
   el.setAttribute('aria-modal', 'true');
 
-  const focusableElements = [...el.querySelectorAll(focusableSelector)];
+  const focusableElements = [...el.querySelectorAll(returnFocusableElementsString())];
   const firstFocusable = focusableElements[0];
   const lastFocusable = focusableElements[focusableElements.length - 1];
 
