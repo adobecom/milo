@@ -7,7 +7,7 @@ const rogueBlocks = ['unity', 'cc-forms', 'interactive-metadata'];
 const iconCache = new Map();
 let miloIconsPromise;
 
-let tooltipListenersAdded = false;
+let tooltipListenersPromise = false;
 
 function decorateToolTip(icon, iconName) {
   const hasTooltip = icon.closest('em')?.textContent.includes('|') && [...icon.classList].some((cls) => cls.includes('tooltip'));
@@ -28,10 +28,10 @@ function decorateToolTip(icon, iconName) {
   });
 
   wrapper.parentElement.replaceChild(icon, wrapper);
-  if (!tooltipListenersAdded) {
-    import('../../scripts/tooltip.js').then(({ default: addTooltipListeners }) => {
+
+  if (!tooltipListenersPromise) {
+    tooltipListenersPromise = import('../../scripts/tooltip.js').then(({ default: addTooltipListeners }) => {
       addTooltipListeners();
-      tooltipListenersAdded = true;
     });
   }
 }
