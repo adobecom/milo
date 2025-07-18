@@ -797,19 +797,19 @@ describe('Utils', () => {
   // MARK: seotech
   describe('seotech', async () => {
     beforeEach(async () => {
-      window.lana = { log: (msg) => console.error(msg) };
+      window.lana = { log: sinon.stub() };
       document.head.innerHTML = await readFile({ path: './mocks/head-seotech-video.html' });
       document.body.innerHTML = body;
     });
     afterEach(() => {
-      window.lana.release?.();
+      window.lana?.log?.restore?.();
+      delete window.lana;
     });
     it('should import feature when metadata is defined and error if invalid', async () => {
-      const expectedError = 'SEOTECH: Invalid video url: FAKE';
+      const expectedError = 'SEOTECH: Video object operation failed ¶ videoUrl:FAKE';
       await utils.loadArea();
-      const lanaStub = sinon.stub(window.lana, 'log');
-      await waitFor(() => lanaStub.calledOnceWith(expectedError), 2000);
-      expect(lanaStub.calledOnceWith(expectedError)).to.be.true;
+      await waitFor(() => window.lana.log.calledWith(expectedError), 2000);
+      expect(window.lana.log.calledWith(expectedError)).to.be.true;
     });
   });
 

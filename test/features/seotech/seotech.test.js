@@ -152,7 +152,9 @@ describe('seotech', () => {
       await appendScriptTag(
         { locationUrl: window.location.href, getMetadata, getConfig, createTag },
       );
-      expect(lanaStub.calledOnceWith('SEOTECH: Invalid video url: fake')).to.be.true;
+      await new Promise((resolve) => { setTimeout(resolve, 0); });
+      expect(lanaStub.calledOnce).to.be.true;
+      expect(lanaStub.firstCall.args[0]).to.equal('SEOTECH: Video object operation failed ¶ videoUrl:fake');
     });
 
     it('should not append JSON-LD if url not found', async () => {
@@ -170,7 +172,7 @@ describe('seotech', () => {
       expect(fetchStub.calledOnceWith(
         'https://www.adobe.com/seotech/api/json-ld/types/video-object/providers/youtube/fake',
       )).to.be.true;
-      expect(lanaStub.calledOnceWith('SEOTECH: Failed to fetch video: ERROR!')).to.be.true;
+      expect(lanaStub.calledOnceWith('SEOTECH: Video object operation failed ¶ videoUrl:https://youtu.be/fake')).to.be.true;
     });
 
     it('should append JSON-LD', async () => {
