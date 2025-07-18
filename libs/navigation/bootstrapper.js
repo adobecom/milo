@@ -41,8 +41,12 @@ export default async function bootstrapBlock(initBlock, blockConfig) {
       const localNavWrapper = createTag('div', { class: 'feds-localnav' });
       document.querySelector('header').after(localNavWrapper);
     }
+  } else {
+    if (blockConfig.isContainerResponsive) {
+      document.querySelector('footer.global-footer').classList.add('responsive-container');
+    }
   }
-
+  
   await initBlock(document.querySelector(targetEl));
   if (blockConfig.targetEl === 'footer') {
     const { loadPrivacy } = await import('../scripts/delayed.js');
