@@ -282,6 +282,11 @@ span.feds-footer-privacyLink-divider {
     order: 3;
     margin-left: auto;
   }
+
+  [dir="rtl"] .feds-footer-miscLinks .footer-logo {
+    margin-left: 0;
+    margin-right: auto;
+  }
 }
 
 @media (min-width: 900px) {
