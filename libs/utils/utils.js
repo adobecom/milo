@@ -1401,10 +1401,12 @@ async function checkForPageMods() {
   } = Object.fromEntries(PAGE_URL.searchParams);
   let targetInteractionPromise = null;
   let countryIPPromise = null;
+  let mphPromise = null;
 
   let calculatedTimeout = null;
   if (mepParam === 'off') return;
   const pzn = getMepEnablement('personalization');
+  const mph = getMepEnablement('mep-placeholders');
   const pznroc = getMepEnablement('personalization-roc');
   const promo = getMepEnablement('manifestnames', PROMO_PARAM);
   const target = martech === 'off' ? false : getMepEnablement('target');
@@ -1412,7 +1414,7 @@ async function checkForPageMods() {
   const ajo = martech === 'off' ? false : getMepEnablement('ajo');
   const mepgeolocation = getMepEnablement('mepgeolocation');
 
-  if (!(pzn || pznroc || target || promo || mepParam
+  if (!(pzn || mph || pznroc || target || promo || mepParam
     || mepHighlight || mepButton || mepParam === '' || xlg || ajo)) return;
 
   if (mepgeolocation) {
@@ -1422,6 +1424,10 @@ async function checkForPageMods() {
       const { getAkamaiCode } = await import('../features/georoutingv2/georoutingv2.js');
       countryIPPromise = getAkamaiCode(true);
     }
+  }
+  if (mph) {
+    const { default: getMepLocPlaceHolders } = await import('../features/personalization/mepLocPlaceholders.js');
+    mphPromise = getMepLocPlaceHolders(localizeLink(mph));
   }
   const enablePersV2 = enablePersonalizationV2();
   if ((target || xlg) && enablePersV2) {
@@ -1460,6 +1466,8 @@ async function checkForPageMods() {
     mepHighlight,
     mepButton,
     pzn,
+    mph,
+    mphPromise,
     pznroc,
     promo,
     target,
