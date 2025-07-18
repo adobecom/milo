@@ -4,7 +4,7 @@ import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
 import { delay, waitForElement, waitForRemoval } from '../../helpers/waitfor.js';
 import { mockFetch } from '../../helpers/generalHelpers.js';
-import { getConfig } from '../../../libs/utils/utils.js';
+import { getConfig, createTag } from '../../../libs/utils/utils.js';
 
 document.body.innerHTML = await readFile({ path: './mocks/body.html' });
 
@@ -262,6 +262,61 @@ describe('Modals', () => {
     config.mep = { fragments: { '/milo': { action: 'remove' } } };
     const modal = init(document.getElementById('milo-modal-link'));
     expect(modal).to.be.null;
+  });
+
+  it('sets modal and iframe title/aria-label from CTA aria-label', async () => {
+    document.body.appendChild(createTag('a', {
+      id: 'cta-with-aria-label',
+      href: '#test-modal',
+      'data-modal-hash': '#test-modal',
+      'aria-label': 'Test Modal Description',
+    }, 'Open Modal'));
+
+    const customContent = createTag('div');
+    const iframe = createTag('iframe', { src: 'about:blank' });
+    customContent.appendChild(iframe);
+
+    const custom = {
+      id: 'test-modal',
+      content: customContent,
+      title: 'Modal: Test Modal Description',
+    };
+
+    const modal = await getModal(null, custom);
+    expect(modal).to.exist;
+
+    expect(modal.getAttribute('aria-label')).to.equal('Modal: Test Modal Description');
+
+    const modalIframe = modal.querySelector('iframe');
+    expect(modalIframe).to.exist;
+    expect(modalIframe.getAttribute('title')).to.equal('Modal: Test Modal Description');
+  });
+
+  it('custom modal gets title from findDetails when no title provided', async () => {
+    const ctaWithAriaLabel = createTag('a', {
+      id: 'cta-for-custom-modal',
+      href: '#custom-no-title',
+      'data-modal-hash': '#custom-no-title',
+      'aria-label': 'Auto Title from CTA',
+    }, 'Open Modal');
+    document.body.appendChild(ctaWithAriaLabel);
+    window.location.hash = '#custom-no-title';
+    const iframe = createTag('iframe', { src: 'about:blank' });
+
+    const customContent = createTag('div');
+    customContent.appendChild(iframe);
+
+    const custom = {
+      id: 'custom-no-title',
+      content: customContent,
+    };
+    const modal = await getModal(null, custom);
+    expect(modal).to.exist;
+    expect(modal.getAttribute('aria-label')).to.equal('Modal: Auto Title from CTA');
+
+    const modalIframe = modal.querySelector('iframe');
+    expect(modalIframe).to.exist;
+    expect(modalIframe.getAttribute('title')).to.equal('Modal: Auto Title from CTA');
   });
 });
 
