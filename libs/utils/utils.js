@@ -1100,7 +1100,6 @@ async function decorateIcons(area, config) {
   if (icons.length === 0) return;
   const { base } = config;
   loadStyle(`${base}/features/icons/icons.css`);
-  loadLink(`${base}/img/icons/icons.svg`, { rel: 'preload', as: 'fetch', crossorigin: 'anonymous' });
   const { default: loadIcons } = await import('../features/icons/icons.js');
   await loadIcons(icons, config);
 }
@@ -1593,7 +1592,7 @@ function initSidekick() {
 
 function decorateMeta() {
   const { origin } = window.location;
-  const contents = document.head.querySelectorAll('[content*=".hlx."], [content*=".aem."]');
+  const contents = document.head.querySelectorAll('[content*=".hlx."], [content*=".aem."], [content*="/federal/"]');
   contents.forEach((meta) => {
     if (meta.getAttribute('property') === 'hlx:proxyUrl' || meta.getAttribute('name')?.endsWith('schedule')) return;
     try {
