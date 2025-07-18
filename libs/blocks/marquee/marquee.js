@@ -114,11 +114,8 @@ function reorderLargeText({ text, largeTextOrder, viewport, size }) {
   const orderObject = {};
   [...text.children].forEach((child) => {
     let orderNum = 0;
-    if (child.classList.contains('action-area') || child.classList.contains('supplemental-text')) {
-      orderNum = 1;
-    } else if (child.classList.contains('body-xl')) {
-      orderNum = 2;
-    }
+    if (child.classList.contains('action-area') || child.classList.contains('supplemental-text')) orderNum = 1;
+    else if (child.classList.contains('body-xl')) orderNum = 2;
     orderObject[orderNum] = orderObject[orderNum] ?? [];
     orderObject[orderNum].push(child);
   });
@@ -181,9 +178,7 @@ function handleViewportOrder({ el, foreground, media: image, size }) {
 
   Object.entries(viewports).forEach(([viewport, { media, elements }]) => {
     const mediaQuery = window.matchMedia(media);
-    if (mediaQuery.matches) {
-      applyOrder(viewport, elements);
-    }
+    if (mediaQuery.matches) applyOrder(viewport, elements);
     mediaQuery.addEventListener('change', (e) => {
       if (!e.matches) return;
       applyOrder(viewport, elements);
