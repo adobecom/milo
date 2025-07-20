@@ -350,7 +350,7 @@ describe('loadAnalyticsAndInteractionData', () => {
       expect(result).to.equal('New');
     });
 
-    it('should return "New" when cookie exists and is within 30 minutes of being set ', () => {
+    it('should return "New" when cookie exists and is within 30 minutes of being set', () => {
       mockCurrentTime(new Date('2025-01-01T00:29:00Z'));
 
       getCookieStub.returns('1704084000000-New');
