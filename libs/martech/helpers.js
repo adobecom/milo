@@ -15,7 +15,7 @@ let dataStreamId = '';
 
 function getDomainWithoutWWW() {
   const parts = window.location.hostname.toLowerCase().split('.');
-  if (parts.length >= 2) {
+  if (parts.length >= 2) { 
     return parts.slice(-2).join('.');
   }
   return window.location.hostname.toLowerCase();
