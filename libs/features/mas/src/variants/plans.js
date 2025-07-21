@@ -144,12 +144,19 @@ export class Plans extends VariantLayout {
         }
     }
 
+    adjustPrices() {
+        if (!this.headingM) return;
+        this.headingM.setAttribute('role', 'heading');
+        this.headingM.setAttribute('aria-level', '2');
+    }
+
     postCardUpdateHook() {
         this.adaptForMedia();
         this.adjustTitleWidth();
         this.adjustLegal();
         this.adjustAddon();
         this.adjustCallout();
+        this.adjustPrices();
     }
 
     get headingM() {
