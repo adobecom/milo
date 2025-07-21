@@ -21,12 +21,12 @@ export default function init({ createTag, loadBlock, loadScript, loadStyle }) {
   };
 
   const preflightListener = async () => {
+    await getPreflightResults(window.location.href, document, true, true);
     const preflight = createTag('div', { class: 'preflight' });
     const content = await loadBlock(preflight);
 
     const { getModal } = await import('../blocks/modal/modal.js');
     getModal(null, { id: 'preflight', content, closeEvent: 'closeModal' });
-    getPreflightResults(window.location.href, document);
   };
 
   const sk = document.querySelector('aem-sidekick, helix-sidekick');

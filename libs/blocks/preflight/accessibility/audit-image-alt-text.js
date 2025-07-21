@@ -1,5 +1,5 @@
 import { html, signal, useEffect } from '../../../deps/htm-preact.js';
-import { createTag } from '../../../utils/utils.js';
+import { addAccessibilityMetadata } from '../visual-metadata.js';
 
 const DEF_DESC = 'Checking...';
 const decorativeImages = signal([]);
@@ -28,15 +28,12 @@ function filterGrid(e) {
 
 function toggleGrid(e) {
   e.preventDefault();
-  const clickArea = e.target.nodeName === 'SPAN' ? e.target.parentElement.parentElement : e.target.parentElement;
-  clickArea.classList.toggle('is-closed');
+  const current = e.target.closest('.grid-heading');
+  current.classList.toggle('is-closed');
 }
 
-function dropdownOptions(props) {
-  const selected = props.option.selected === true;
-  return html`
-      <option value="${props.option.value}" selected="${selected}">${props.option.content}</option>
-  `;
+function dropdownOptions({ option }) {
+  return html`<option value=${option.value} selected=${option.selected}>${option.content}</option>`;
 }
 
 async function checkAlt() {
@@ -54,30 +51,9 @@ async function checkAlt() {
     if (img.closest('main')) parent = 'main-content';
     if (img.closest('footer')) parent = 'footer';
 
-    let pictureMetaElem;
-    const picture = img.closest('picture');
-
-    if (picture) {
-      pictureMetaElem = picture.querySelector('.picture-meta');
-      if (!pictureMetaElem) {
-        pictureMetaElem = createTag('div', { class: 'picture-meta preflight-decoration' });
-        picture.insertBefore(pictureMetaElem, img.nextSibling);
-      }
-    } else {
-      pictureMetaElem = createTag('div', { class: 'picture-meta preflight-decoration no-picture-tag' });
-      img.parentNode.insertBefore(pictureMetaElem, img.nextSibling);
-    }
-
-    let a11yMessage;
-
     if (alt === '') {
       img.dataset.altCheck = 'Decorative';
-
-      a11yMessage = createTag(
-        'div',
-        { class: 'picture-meta-a11y preflight-decoration is-decorative' },
-        img.dataset.altCheck,
-      );
+      addAccessibilityMetadata(img, img.dataset.altCheck, 'is-decorative');
 
       decorativeImages.value = [...decorativeImages.value,
         {
@@ -87,11 +63,7 @@ async function checkAlt() {
         }];
     }
     if (alt) {
-      a11yMessage = createTag(
-        'div',
-        { class: 'picture-meta-a11y preflight-decoration has-alt' },
-        `Alt: ${alt}`,
-      );
+      addAccessibilityMetadata(img, `Alt: ${alt}`, 'has-alt');
 
       altTextImages.value = [...altTextImages.value,
         {
@@ -101,7 +73,6 @@ async function checkAlt() {
         }];
     }
 
-    pictureMetaElem.append(a11yMessage);
     img.dataset.pageLocation = parent;
   });
   result.description = 'All images from the page are listed below. Please ensure each image has appropriate alt text. Decorative images are highlighted in yellow on the page';
