@@ -2,7 +2,6 @@
 /* eslint-disable import/no-cycle */
 import { createTag, getMetadata, localizeLink, loadStyle, getConfig } from '../../utils/utils.js';
 import { decorateSectionAnalytics } from '../../martech/attributes.js';
-import returnFocusableElementsString from '../../utils/notification.js';
 
 const FOCUSABLES = 'a:not(.hide-video), button:not([disabled], .locale-modal-v2 .paddle), input, textarea, select, details, [tabindex]:not([tabindex="-1"])';
 const CLOSE_ICON = `<svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20">
@@ -101,10 +100,8 @@ export function closeModal(modal) {
     return;
   }
 
-  const notificationSplitFocusable = document.querySelector(returnFocusableElementsString('.notification.split'));
-
-  if (notificationSplitFocusable) {
-    notificationSplitFocusable.focus();
+  if (document.querySelector('.notification-curtain')) {
+    window.dispatchEvent(new Event('milo:modal:closed:notification'));
     return;
   }
 
