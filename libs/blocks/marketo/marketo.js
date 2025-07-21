@@ -306,7 +306,10 @@ export default function init(el) {
   fragment.append(formWrapper);
   el.replaceChildren(fragment);
   el.classList.add('loading');
-  /* c8 ignore next 3 */
+  /* c8 ignore next 6 */
+  if (formData['form.fldStepPref']?.[2]?.length > 0) {
+    el.classList.add(formData['form.fldStepPref'][3]?.length > 0 ? 'multi-3' : 'multi-2');
+  }
   if (el.classList.contains('multi-2') || el.classList.contains('multi-3')) {
     el.classList.add('multi-step');
   }
