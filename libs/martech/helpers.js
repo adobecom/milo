@@ -14,38 +14,11 @@ const DATA_STREAM_IDS_STAGE = { default: 'e065836d-be57-47ef-b8d1-999e1657e8fd',
 let dataStreamId = '';
 
 function getDomainWithoutWWW() {
-  if (window._cachedDomain) {
-    return window._cachedDomain;
-  }
   const parts = window.location.hostname.toLowerCase().split('.');
-  const domain = [];
-  let part = '';
-  let date = null;
-  let successfullySet = false;
-  let effectiveDomain = '';
-
-  part = parts.pop();
-  domain.unshift(part);
-
-  while (parts.length > 0) {
-    part = parts.pop();
-    domain.unshift(part);
-
-    date = new Date();
-    date.setTime(date.getTime() + 1000);
-    try {
-      document.cookie = `sat_domain=A; expires=${date.toUTCString()}; path=/; domain=.${domain.join('.')}`;
-    } catch (err) {
-      break;
-    }
-    if (document.cookie.includes('sat_domain=A')) {
-      successfullySet = true;
-      effectiveDomain = domain.join('.');
-      break;
-    }
+  if (parts.length >= 2) {
+    return parts.slice(-2).join('.');
   }
-  window._cachedDomain = successfullySet ? effectiveDomain : '';
-  return window._cachedDomain;
+  return window.location.hostname.toLowerCase();
 }
 
 const hitTypeEventTypeMap = {

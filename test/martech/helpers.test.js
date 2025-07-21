@@ -362,5 +362,18 @@ describe('loadAnalyticsAndInteractionData', () => {
 
       expect(result).to.equal('New');
     });
+
+    it('should return "Repeat" when cookie exists and is older than 30 minutes', () => {
+      mockCurrentTime(new Date('2025-01-01T01:01:00Z'));
+
+      getCookieStub.returns('1704084000000-New');
+
+      const result = getVisitorStatus({
+        getCookie: getCookieStub,
+        setCookie: setCookieStub,
+      });
+
+      expect(result).to.equal('Repeat');
+    });
   });
 });
