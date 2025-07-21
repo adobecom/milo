@@ -65,6 +65,7 @@ async function checkAlt() {
     if (alt) {
       addAccessibilityMetadata(img, `Alt: ${alt}`, 'has-alt');
 
+
       altTextImages.value = [...altTextImages.value,
         {
           src: img.getAttribute('src'),

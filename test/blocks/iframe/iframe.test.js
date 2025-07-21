@@ -57,13 +57,19 @@ describe('iframe', () => {
       window.open = originalOpen;
     });
     it('should open external url if Type External', async () => {
-      const message = { data: '{"app":"ManagePlan","subType":"EXTERNAL","data":{"externalUrl":"https://www.example.com","target":"_blank"}}' };
+      const message = {
+        data: '{"app":"ManagePlan","subType":"EXTERNAL","data":{"externalUrl":"https://www.example.com","target":"_blank"}}',
+        origin: 'https://stage.plan.adobe.com',
+      };
       handleIFrameEvents(message);
       expect(window.open.calledOnceWith('https://www.example.com', '_blank')).to.be.true;
     });
 
     it('should open external url if Type SWITCH', async () => {
-      const message = { data: '{"app":"ManagePlan","subType":"SWITCH","data":{"externalUrl":"https://www.example.com","target":"_self"}}' };
+      const message = {
+        data: '{"app":"ManagePlan","subType":"SWITCH","data":{"externalUrl":"https://www.example.com","target":"_self"}}',
+        origin: 'https://stage.plan.adobe.com',
+      };
       handleIFrameEvents(message);
       expect(window.open.calledOnceWith('https://www.example.com', '_self')).to.be.true;
     });
@@ -73,7 +79,10 @@ describe('iframe', () => {
       dialog.classList.add('dialog-modal');
       document.body.appendChild(dialog);
       const dispatchSpy = sinon.spy(dialog, 'dispatchEvent');
-      const message = { data: '{"app":"ManagePlan","subType":"Close"}' };
+      const message = {
+        data: '{"app":"ManagePlan","subType":"Close"}',
+        origin: 'https://stage.plan.adobe.com',
+      };
       handleIFrameEvents(message);
       expect(dispatchSpy.calledOnce).to.be.true;
     });

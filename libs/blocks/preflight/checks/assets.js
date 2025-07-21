@@ -165,7 +165,12 @@ export async function checkImageDimensions(url, area, injectVisualMetadata = fal
     return JSON.parse(JSON.stringify(cachedResult));
   }
 
-  const allAssets = [...area.querySelectorAll('main picture img, main video, main .adobetv')];
+  const allAssets = [
+    ...area.querySelectorAll(
+      'main picture img, main video, :is(main, .dialog-modal:not(#preflight)) .adobetv',
+    ),
+  ];
+
   if (!allAssets.length) {
     return {
       title: ASSETS_TITLES.AssetDimensions,
