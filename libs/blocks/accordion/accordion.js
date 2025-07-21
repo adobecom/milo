@@ -118,10 +118,10 @@ function defaultOpen(accordion) {
 function createMobileMedia(ogMedia) {
   const video = ogMedia.querySelector('video');
   const videoSrc = video?.getAttribute('data-video-source');
-
-  if (!video || !videoSrc) return ogMedia.cloneNode(true);
-
   const mobileMedia = ogMedia.cloneNode(true);
+
+  if (!video || !videoSrc) return mobileMedia;
+
   const mobileVideo = mobileMedia.querySelector('video');
   const source = createTag('source', { src: videoSrc, type: 'video/mp4' });
   mobileVideo.appendChild(source);
