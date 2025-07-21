@@ -1,5 +1,5 @@
 import {
-  getConfig, loadIms, loadLink, loadScript, getMepEnablement, getMetadata, isSignedOut,
+  getConfig, loadLink, loadScript, getMepEnablement, getMetadata, isSignedOut,
 } from '../utils/utils.js';
 
 const ALLOY_PROPOSITION_FETCH = 'alloy_propositionFetch';
