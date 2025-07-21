@@ -16,7 +16,6 @@
 
 import { decorateBlockText, decorateBlockBg, decorateTextOverrides, decorateMultiViewport, loadCDT } from '../../utils/decorate.js';
 import { createTag, getConfig, loadStyle, createIntersectionObserver } from '../../utils/utils.js';
-import returnFocusableElementsString from '../../utils/notification.js';
 
 const { miloLibs, codeRoot } = getConfig();
 const base = miloLibs || codeRoot;
@@ -56,6 +55,7 @@ const closeSvg = `<svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" wid
 </svg>`;
 const selectedSelector = '[aria-selected="true"], [aria-checked="true"]';
 let iconographyLoaded = false;
+const focusableNotificationElements = 'button, a[href], [tabindex]:not([tabindex="-1"])';
 
 function getOpts(el) {
   const optRows = [...el.querySelectorAll(':scope > div:nth-of-type(n+3)')];
@@ -135,7 +135,6 @@ const closeBanner = (el) => {
     setTimeout(() => {
       let focusTarget;
       const allFocusableElements = 'button, a[href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
-
       const elementAtPosition = document.elementFromPoint(rect.left, rect.top);
       const stickySection = elementAtPosition.closest('.section');
       focusTarget = findFocusableInSection(stickySection, selectedSelector, allFocusableElements);
@@ -228,7 +227,7 @@ function curtainCallback(el) {
   el.setAttribute('role', 'dialog');
   el.setAttribute('aria-modal', 'true');
 
-  const focusableElements = [...el.querySelectorAll(returnFocusableElementsString())];
+  const focusableElements = [...el.querySelectorAll(focusableNotificationElements)];
   const firstFocusable = focusableElements[0];
   const lastFocusable = focusableElements[focusableElements.length - 1];
 
@@ -261,6 +260,9 @@ function curtainCallback(el) {
   el.addEventListener('keydown', handleKeyDown);
   el.addEventListener('focusout', handleFocusOut);
   curtain.addEventListener('click', handleCurtainClick);
+  window.addEventListener('milo:modal:closed:notification', () => {
+    el.querySelector(focusableNotificationElements)?.focus();
+  });
 
   el.focusTrapCleanup = () => {
     el.removeEventListener('keydown', handleKeyDown);
