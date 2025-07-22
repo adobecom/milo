@@ -192,15 +192,11 @@ export async function checkImageDimensions(url, area, injectVisualMetadata = fal
   const assetsWithMismatch = [];
   const assetsWithMatch = [];
 
-  if (injectVisualMetadata) {
-    area.body.classList.add('preflight-assets-analysis');
-  }
+  if (injectVisualMetadata) area.body.classList.add('preflight-assets-analysis');
 
   for (const asset of assets) {
     const assetData = getAssetData(asset);
-    if (injectVisualMetadata) {
-      addAssetMetadata(asset, assetData);
-    }
+    if (injectVisualMetadata) addAssetMetadata(asset, assetData);
     if (assetData.hasMismatch) {
       assetsWithMismatch.push(assetData);
     } else {
@@ -208,9 +204,7 @@ export async function checkImageDimensions(url, area, injectVisualMetadata = fal
     }
   }
 
-  if (injectVisualMetadata) {
-    area.body.classList.remove('preflight-assets-analysis');
-  }
+  if (injectVisualMetadata) area.body.classList.remove('preflight-assets-analysis');
 
   const result = {
     title: ASSETS_TITLES.AssetDimensions,
