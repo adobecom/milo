@@ -1,7 +1,9 @@
-import '../../deps/mas/merch-whats-included.js';
 import { createTag } from '../../utils/utils.js';
+import { loadMasComponent, MAS_MERCH_WHATS_INCLUDED } from '../merch/merch.js';
 
 const init = async (el) => {
+  // Load merch-whats-included component dynamically
+  await loadMasComponent(MAS_MERCH_WHATS_INCLUDED);
   const styles = Array.from(el.classList);
   const mobileRows = styles.find((style) => /\d/.test(style));
   const heading = el.querySelector('h3, h4');

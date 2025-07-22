@@ -1,8 +1,18 @@
 import { createTag, getConfig } from '../../utils/utils.js';
-import { initService, getOptions, MEP_SELECTOR, overrideOptions } from '../merch/merch.js';
 import { postProcessAutoblock } from '../merch/autoblock.js';
 import '../../deps/mas/merch-card.js';
 import '../../deps/mas/merch-quantity-select.js';
+import {
+  initService,
+  getOptions,
+  MEP_SELECTOR,
+  overrideOptions,
+  loadMasComponent,
+  MAS_MERCH_CARD,
+  MAS_MERCH_QUANTITY_SELECT,
+  MAS_MERCH_CARD_COLLECTION,
+  MAS_MERCH_SIDENAV,
+} from '../merch/merch.js';
 
 const COLLECTION_AUTOBLOCK_TIMEOUT = 5000;
 const DEFAULT_OPTIONS = { sidenav: true };
@@ -26,7 +36,9 @@ async function loadDependencies(options) {
 
   const { base } = getConfig();
   const dependencyPromises = [
-    import('../../deps/mas/merch-card-collection.js'),
+    loadMasComponent(MAS_MERCH_CARD),
+    loadMasComponent(MAS_MERCH_QUANTITY_SELECT),
+    loadMasComponent(MAS_MERCH_CARD_COLLECTION),
     import(`${base}/features/spectrum-web-components/dist/theme.js`),
     import(`${base}/features/spectrum-web-components/dist/button.js`),
     import(`${base}/features/spectrum-web-components/dist/action-button.js`),
@@ -38,7 +50,7 @@ async function loadDependencies(options) {
   ];
   if (options.sidenav) {
     dependencyPromises.push(...[
-      import('../../deps/mas/merch-sidenav.js'),
+      loadMasComponent(MAS_MERCH_SIDENAV),
       import(`${base}/features/spectrum-web-components/dist/base.js`),
       import(`${base}/features/spectrum-web-components/dist/shared.js`),
       import(`${base}/features/spectrum-web-components/dist/sidenav.js`),
@@ -105,6 +117,56 @@ function getSidenav(collection) {
   return sidenav;
 }
 
+function handleCustomAnalyticsEvent(eventName, element) {
+  let daaLhValue = '';
+  let daaLhElement = element.closest('[daa-lh]');
+  while (daaLhElement) {
+    if (daaLhValue) {
+      daaLhValue = `|${daaLhValue}`;
+    }
+    const daaLhAttrValue = daaLhElement.getAttribute('daa-lh');
+    daaLhValue = `${daaLhAttrValue}${daaLhValue}`;
+    daaLhElement = daaLhElement.parentElement.closest('[daa-lh]');
+  }
+  if (daaLhValue) {
+    // eslint-disable-next-line no-underscore-dangle
+    window._satellite?.track('event', {
+      xdm: {},
+      data: { web: { webInteraction: { name: `${eventName}|${daaLhValue}` } } },
+    });
+  }
+}
+
+function enableAnalytics(el) {
+  const tabs = el.closest('.tabs');
+  if (!tabs || tabs.analyticsInitiated) return;
+  tabs.analyticsInitiated = true;
+
+  window.addEventListener('merch-sidenav:select', ({ target }) => {
+    if (!target || target.oldValue === target.selectedValue) return;
+    handleCustomAnalyticsEvent(`${target.selectedValue}--cat`, target);
+    target.oldValue = target.selectedValue;
+  });
+
+  window.addEventListener('mas:ready', ({ target }) => {
+    target.querySelectorAll('merch-addon').forEach((ao) => {
+      ao.addEventListener('change', (aoe) => {
+        handleCustomAnalyticsEvent(`addon-${aoe.detail.checked ? 'checked' : 'unchecked'}`, aoe.target);
+      });
+    });
+    target.querySelectorAll('merch-quantity-select').forEach((qs) => {
+      qs.addEventListener('merch-quantity-selector:change', (qse) => {
+        handleCustomAnalyticsEvent(`quantity-${qse.detail.option}`, qse.target);
+      });
+    });
+  });
+
+  window.addEventListener('milo:tab:changed', () => {
+    const tab = tabs.querySelector('button[role="tab"][aria-selected="true"]');
+    if (tab) handleCustomAnalyticsEvent(`tab-change--${tab.getAttribute('daa-ll')}`, tab);
+  });
+}
+
 export async function checkReady(masElement) {
   const readyPromise = masElement.checkReady();
   const success = await Promise.race([readyPromise, getTimeoutPromise()]);
@@ -152,11 +214,13 @@ export async function createCollection(el, options) {
     if (sidenav) {
       container.insertBefore(sidenav, collection);
       collection.sidenav = sidenav;
+      sidenav.setAttribute('daa-lh', 'b3|filters');
     }
   }
 
-  postProcessAutoblock(collection);
+  postProcessAutoblock(collection, false);
   collection.requestUpdate();
+  enableAnalytics(collection);
 }
 
 export default async function init(el) {

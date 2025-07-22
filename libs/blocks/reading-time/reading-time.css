@@ -1,7 +1,7 @@
 @import '../../styles/inline.css';
 
 .reading-time > span {
-  color: #adadad;
+  color: rgb(80 80 80);
   font-style: italic;
   font-weight: 700;
   font-size: var(--type-body-s-size);
@@ -40,7 +40,7 @@ main > .section > .inline-wrapper > .inline.reading-time + .inline.share {
     border-left: none;
     padding-left: 0;
   }
-  
+
   main > .section > .inline-wrapper > .inline + .inline.reading-time {
     border-top: 1px solid #adadad;
   }

@@ -149,24 +149,6 @@
   border-radius: 0 !important;
 }
 
-.table .col-heading:first-child {
-  border-top-left-radius: var(--border-radius);
-}
-
-[dir="rtl"] .table .col-heading:first-child {
-  border-top-left-radius: 0;
-  border-top-right-radius: var(--border-radius);
-}
-
-.table .col-heading:last-child {
-  border-top-right-radius: var(--border-radius);
-}
-
-[dir="rtl"] .table .col-heading:last-child {
-  border-top-right-radius: 0;
-  border-top-left-radius: var(--border-radius);
-}
-
 .table .row-heading .col-heading.col.no-rounded,
 [dir="rtl"] .table .row-heading .col-heading.col.no-rounded {
   border-radius: 0;
@@ -396,7 +378,7 @@
 /* rtl */
 [dir="rtl"] .table .col {
   border-right: 1px var(--border-color) solid;
-  border-left: 1px solid transparent;
+  border-left: 1px var(--border-color) solid;
 }
 
 [dir="rtl"] .table.merch .col {
@@ -433,6 +415,16 @@
     border-top: 1px solid var(--hover-border-color);
     border-left: 1px solid var(--hover-border-color);
     border-right: 1px solid var(--hover-border-color);
+  }
+
+  [dir="rtl"] .table .col-heading:first-child {
+    border-top-left-radius: 0;
+    border-top-right-radius: var(--border-radius);
+  }
+
+  [dir="rtl"] .table .col-heading:last-child {
+    border-top-right-radius: 0;
+    border-top-left-radius: var(--border-radius);
   }
 
   .table .row-heading .col-heading.hover {
@@ -582,11 +574,23 @@
   box-shadow: 0 6px 3px -3px rgb(0 0 0 / 15%);
 }
 
+.table[class*="sticky"] .row-heading.active {
+  z-index: 9;
+}
+
 .top-border-transparent {
   border-top: 1px solid transparent;
 }
 
 @media (min-width: 769px) {
+  .table .col-heading:first-child {
+    border-top-left-radius: var(--border-radius);
+  }
+
+  .table .col-heading:last-child {
+    border-top-right-radius: var(--border-radius);
+  }
+
   .table-section .filters {
     display: none;
   }
@@ -657,11 +661,26 @@
   margin-right: 16px;
 }
 
+.table .col-heading:only-child {
+  border-top-right-radius: var(--border-radius);
+  border-top-left-radius: var(--border-radius);
+}
+
 /* Start tablet styles */
 @media (max-width: 899px) {
   .table,
   .table.merch {
     margin: 0 30px;
+  }
+  
+  .table .right-round, [dir="rtl"] .table .left-round {
+    border-top-right-radius: var(--border-radius);
+    border-top-left-radius: 0;
+  }
+  
+  .table .left-round, [dir="rtl"] .table .right-round {
+    border-top-left-radius: var(--border-radius);
+    border-top-right-radius: 0;
   }
 
   .section[class *= "grid-width-"] .table {
