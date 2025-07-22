@@ -400,9 +400,10 @@ async function buildFilter(type, tax, block, config) {
   const container = createTag('div', { class: 'filter' });
 
   // Use proper button element instead of anchor
-  const button = document.createElement('button');
+  const button = document.createElement('a');
   button.classList.add('filter-button');
   button.id = `${type}-filter-button`;
+  button.setAttribute('tabindex', '0');
   button.setAttribute('aria-haspopup', 'true');
   button.setAttribute('aria-expanded', 'false');
   button.setAttribute('role', 'button');
