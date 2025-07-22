@@ -10,10 +10,10 @@ export const CSS = `
     --merch-card-collection-card-min-height: 330px;
 }
 
-.one-merch-card,
-.two-merch-cards,
-.three-merch-cards,
-.four-merch-cards {
+.one-merch-card.catalog,
+.two-merch-cards.catalog,
+.three-merch-cards.catalog,
+.four-merch-cards.catalog {
     --merch-card-collection-card-width: var(--consonant-merch-card-catalog-width);
 }
 

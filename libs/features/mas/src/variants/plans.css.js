@@ -203,10 +203,10 @@ merch-card-collection-header.plans {
     --merch-card-collection-header-areas: "result filter";
 }
 
-.one-merch-card,
-.two-merch-cards,
-.three-merch-cards,
-.four-merch-cards {
+.one-merch-card.plans,
+.two-merch-cards.plans,
+.three-merch-cards.plans,
+.four-merch-cards.plans {
     --merch-card-collection-card-width: var(--consonant-merch-card-plans-width);
 }
 

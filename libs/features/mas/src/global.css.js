@@ -194,7 +194,7 @@ merch-card-collection-header > div[slot] p {
 .two-merch-cards,
 .three-merch-cards,
 .four-merch-cards {
-    --merch-card-collection-card-width: 300px;
+    --merch-card-collection-card-width: unset;
     display: grid;
     justify-content: center;
     justify-items: stretch;
