@@ -147,14 +147,13 @@ function initTabs(elm, config, rootElem) {
 
   tabLists.forEach((tabList) => {
     tabList.addEventListener('keydown', (e) => {
-      const arrowLeft = document.dir !== 'rtl' ? 'ArrowLeft' : 'ArrowRight';
-      const arrowRight = document.dir !== 'rtl' ? 'ArrowRight' : 'ArrowLeft';
-      if (e.key === arrowRight || e.key === arrowLeft) {
-        if (e.key === arrowRight) {
+      const isRtl = document.dir === 'rtl';
+      if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
+        if (e.key === (isRtl ? 'ArrowLeft' : 'ArrowRight')) {
           tabFocus += 1;
           /* c8 ignore next */
           if (tabFocus >= tabs.length) tabFocus = 0;
-        } else if (e.key === arrowLeft) {
+        } else if (e.key === (isRtl ? 'ArrowRight' : 'ArrowLeft')) {
           tabFocus -= 1;
           /* c8 ignore next */
           if (tabFocus < 0) tabFocus = tabs.length - 1;
