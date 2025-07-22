@@ -160,7 +160,10 @@ function openCurtain() {
 function removeFocusTrap() {
   const dropdowns = document.querySelectorAll('.filter-dropdown');
   dropdowns.forEach((dropdown) => {
-    dropdown.removeEventListener('keydown', handleDropdownKeydown);
+    if (dropdown.keydownHandler) {
+      dropdown.removeEventListener('keydown', dropdown.keydownHandler);
+      dropdown.keydownHandler = null;
+    }
   });
 }
 
@@ -201,6 +204,20 @@ function navigateFilterButtons(currentButton, forward) {
   enableSearch(nextButton.id);
 }
 
+function toggleMenu(e) {
+  const button = e.target.closest('[role=button]');
+  const expanded = button.getAttribute('aria-expanded');
+  if (expanded === 'true') {
+    closeMenu(button);
+    disableSearch(button.id);
+    closeCurtain();
+  } else {
+    openMenu(button);
+    enableSearch(button.id);
+    openCurtain();
+  }
+}
+
 // New accessibility functions - moved up to avoid hoisting issues
 function handleDropdownKeydown(e, firstElement, lastElement, triggerButton) {
   const { key, shiftKey } = e;
@@ -238,7 +255,6 @@ function handleDropdownKeydown(e, firstElement, lastElement, triggerButton) {
 
   // Enter/Space on checkboxes
   if ((key === 'Enter' || key === ' ') && document.activeElement.type === 'checkbox') {
-    console.log('document.activeElement', document.activeElement);
     e.preventDefault();
     document.activeElement.checked = !document.activeElement.checked;
     // Trigger change event for any listeners
@@ -249,6 +265,11 @@ function handleDropdownKeydown(e, firstElement, lastElement, triggerButton) {
 function addFocusTrap(button) {
   const dropdown = document.querySelector(`[aria-labelledby='${button.id}']`);
   if (!dropdown) return;
+
+  // Remove any existing listeners first to prevent duplicates
+  if (dropdown.keydownHandler) {
+    dropdown.removeEventListener('keydown', dropdown.keydownHandler);
+  }
 
   const focusableElements = dropdown.querySelectorAll(
     'input, button, [tabindex]:not([tabindex="-1"]), [role="button"]',
@@ -262,22 +283,9 @@ function addFocusTrap(button) {
   // Focus first element
   firstElement.focus();
 
-  // Add keyboard event listener for trap
-  dropdown.addEventListener('keydown', (e) => handleDropdownKeydown(e, firstElement, lastElement, button));
-}
-
-function toggleMenu(e) {
-  const button = e.target.closest('[role=button]');
-  const expanded = button.getAttribute('aria-expanded');
-  if (expanded === 'true') {
-    closeMenu(button);
-    disableSearch(button.id);
-    closeCurtain();
-  } else {
-    openMenu(button);
-    enableSearch(button.id);
-    openCurtain();
-  }
+  // Create and store the event handler for proper cleanup
+  dropdown.keydownHandler = (e) => handleDropdownKeydown(e, firstElement, lastElement, button);
+  dropdown.addEventListener('keydown', dropdown.keydownHandler);
 }
 
 function buildSelectedFilter(name) {
