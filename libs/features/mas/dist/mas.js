@@ -1,14 +1,7943 @@
 window.masPriceLiterals = {"total":38,"offset":0,"limit":38,"data":[{"lang":"ar","recurrenceLabel":"{recurrenceTerm, select, MONTH {/الشهر} YEAR {/العام} other {}}","recurrenceAriaLabel":"{recurrenceTerm, select, MONTH {كل شهر} YEAR {كل عام} other {}}","perUnitLabel":"{perUnit, select, LICENSE {لكل ترخيص} other {}}","perUnitAriaLabel":"{perUnit, select, LICENSE {لكل ترخيص} other {}}","freeLabel":"مجانًا","freeAriaLabel":"مجانًا","taxExclusiveLabel":"{taxTerm, select, GST {excl. GST} VAT {excl. VAT} TAX {excl. tax} IVA {excl. IVA} SST {excl. SST} KDV {excl. KDV} other {}}","taxInclusiveLabel":"{taxTerm, select, GST {incl. GST} VAT {incl. VAT} TAX {incl. tax} IVA {incl. IVA} SST {incl. SST} KDV {incl. KDV} other {}}","alternativePriceAriaLabel":"أو بدلاً من ذلك بقيمة {alternativePrice}","strikethroughAriaLabel":"بشكل منتظم بقيمة {strikethroughPrice}"},{"lang":"bg","recurrenceLabel":"{recurrenceTerm, select, MONTH {/мес.} YEAR {/год.} other {}}","recurrenceAriaLabel":"{recurrenceTerm, select, MONTH {на месец} YEAR {на година} other {}}","perUnitLabel":"{perUnit, select, LICENSE {на лиценз} other {}}","perUnitAriaLabel":"{perUnit, select, LICENSE {на лиценз} other {}}","freeLabel":"Безплатно","freeAriaLabel":"Безплатно","taxExclusiveLabel":"{taxTerm, select, GST {excl. GST} VAT {excl. VAT} TAX {excl. tax} IVA {excl. IVA} SST {excl. SST} KDV {excl. KDV} other {}}","taxInclusiveLabel":"{taxTerm, select, GST {incl. GST} VAT {incl. VAT} TAX {incl. tax} IVA {incl. IVA} SST {incl. SST} KDV {incl. KDV} other {}}","alternativePriceAriaLabel":"Алтернативно на {alternativePrice}","strikethroughAriaLabel":"Редовно на {strikethroughPrice}"},{"lang":"cs","recurrenceLabel":"{recurrenceTerm, select, MONTH {/měsíc} YEAR {/rok} other {}}","recurrenceAriaLabel":"{recurrenceTerm, select, MONTH {za měsíc} YEAR {za rok} other {}}","perUnitLabel":"{perUnit, select, LICENSE {za licenci} other {}}","perUnitAriaLabel":"{perUnit, select, LICENSE {za licenci} other {}}","freeLabel":"Zdarma","freeAriaLabel":"Zdarma","taxExclusiveLabel":"{taxTerm, select, GST {bez daně ze zboží a služeb} VAT {bez DPH} TAX {bez daně} IVA {bez IVA} SST {bez SST} KDV {bez KDV} other {}}","taxInclusiveLabel":"{taxTerm, select, GST {včetně daně ze zboží a služeb} VAT {včetně DPH} TAX {včetně daně} IVA {včetně IVA} SST {včetně SST} KDV {včetně KDV} other {}}","alternativePriceAriaLabel":"Případně za {alternativePrice}","strikethroughAriaLabel":"Pravidelně za {strikethroughPrice}"},{"lang":"da","recurrenceLabel":"{recurrenceTerm, select, MONTH {/md} YEAR {/år} other {}}","recurrenceAriaLabel":"{recurrenceTerm, select, MONTH {pr. måned} YEAR {pr. år} other {}}","perUnitLabel":"{perUnit, select, LICENSE {pr. licens} other {}}","perUnitAriaLabel":"{perUnit, select, LICENSE {pr. licens} other {}}","freeLabel":"Gratis","freeAriaLabel":"Gratis","taxExclusiveLabel":"{taxTerm, select, GST {ekskl. GST} VAT {ekskl. moms} TAX {ekskl. skat} IVA {ekskl. IVA} SST {ekskl. SST} KDV {ekskl. KDV} other {}}","taxInclusiveLabel":"{taxTerm, select, GST {inkl. GST} VAT {inkl. moms} TAX {inkl. skat} IVA {inkl. IVA} SST {inkl. SST} KDV {inkl. KDV} other {}}","alternativePriceAriaLabel":"Alternativt til {alternativePrice}","strikethroughAriaLabel":"Normalpris {strikethroughPrice}"},{"lang":"de","recurrenceLabel":"{recurrenceTerm, select, MONTH {/Monat} YEAR {/Jahr} other {}}","recurrenceAriaLabel":"{recurrenceTerm, select, MONTH {pro Monat} YEAR {pro Jahr} other {}}","perUnitLabel":"{perUnit, select, LICENSE {pro Lizenz} other {}}","perUnitAriaLabel":"{perUnit, select, LICENSE {pro Lizenz} other {}}","freeLabel":"Kostenlos","freeAriaLabel":"Kostenlos","taxExclusiveLabel":"{taxTerm, select, GST {zzgl. GST} VAT {zzgl. MwSt.} TAX {zzgl. Steuern} IVA {zzgl. IVA} SST {zzgl. SST} KDV {zzgl. KDV} other {}}","taxInclusiveLabel":"{taxTerm, select, GST {inkl. GST} VAT {inkl. MwSt.} TAX {inkl. Steuern} IVA {inkl. IVA} SST {inkl. SST} KDV {inkl. KDV} other {}}","alternativePriceAriaLabel":"Alternativ: {alternativePrice}","strikethroughAriaLabel":"Regulär: {strikethroughPrice}"},{"lang":"en","recurrenceLabel":"{recurrenceTerm, select, MONTH {/mo} YEAR {/yr} other {}}","recurrenceAriaLabel":"{recurrenceTerm, select, MONTH {per month} YEAR {per year} other {}}","perUnitLabel":"{perUnit, select, LICENSE {per license} other {}}","perUnitAriaLabel":"{perUnit, select, LICENSE {per license} other {}}","freeLabel":"Free","freeAriaLabel":"Free","taxExclusiveLabel":"{taxTerm, select, GST {excl. GST} VAT {excl. VAT} TAX {excl. tax} IVA {excl. IVA} SST {excl. SST} KDV {excl. KDV} other {}}","taxInclusiveLabel":"{taxTerm, select, GST {incl. GST} VAT {incl. VAT} TAX {incl. tax} IVA {incl. IVA} SST {incl. SST} KDV {incl. KDV} other {}}","alternativePriceAriaLabel":"Alternatively at {alternativePrice}","strikethroughAriaLabel":"Regularly at {strikethroughPrice}"},{"lang":"et","recurrenceLabel":"{recurrenceTerm, select, MONTH {kuus} YEAR {aastas} other {}}","recurrenceAriaLabel":"{recurrenceTerm, select, MONTH {kuus} YEAR {aastas} other {}}","perUnitLabel":"{perUnit, select, LICENSE {litsentsi kohta} other {}}","perUnitAriaLabel":"{perUnit, select, LICENSE {litsentsi kohta} other {}}","freeLabel":"Tasuta","freeAriaLabel":"Tasuta","taxExclusiveLabel":"{taxTerm, select, GST {excl. GST} VAT {excl. VAT} TAX {excl. tax} IVA {excl. IVA} SST {excl. SST} KDV {excl. KDV} other {}}","taxInclusiveLabel":"{taxTerm, select, GST {incl. GST} VAT {incl. VAT} TAX {incl. tax} IVA {incl. IVA} SST {incl. SST} KDV {incl. KDV} other {}}","alternativePriceAriaLabel":"Teise võimalusena hinnaga {alternativePrice}","strikethroughAriaLabel":"Tavahind {strikethroughPrice}"},{"lang":"fi","recurrenceLabel":"{recurrenceTerm, select, MONTH {/kk} YEAR {/v} other {}}","recurrenceAriaLabel":"{recurrenceTerm, select, MONTH {kuukausittain} YEAR {vuosittain} other {}}","perUnitLabel":"{perUnit, select, LICENSE {käyttöoikeutta kohti} other {}}","perUnitAriaLabel":"{perUnit, select, LICENSE {käyttöoikeutta kohti} other {}}","freeLabel":"Maksuton","freeAriaLabel":"Maksuton","taxExclusiveLabel":"{taxTerm, select, GST {ilman GST:tä} VAT {ilman ALV:tä} TAX {ilman veroja} IVA {ilman IVA:ta} SST {ilman SST:tä} KDV {ilman KDV:tä} other {}}","taxInclusiveLabel":"{taxTerm, select, GST {sis. GST:n} VAT {sis. ALV:n} TAX {sis. verot} IVA {sis. IVA:n} SST {sis. SST:n} KDV {sis. KDV:n} other {}}","alternativePriceAriaLabel":"Vaihtoehtoisesti hintaan {alternativePrice}","strikethroughAriaLabel":"Säännöllisesti hintaan {strikethroughPrice}"},{"lang":"fr","recurrenceLabel":"{recurrenceTerm, select, MONTH {/mois} YEAR {/an} other {}}","recurrenceAriaLabel":"{recurrenceTerm, select, MONTH {par mois} YEAR {par an} other {}}","perUnitLabel":"{perUnit, select, LICENSE {par licence} other {}}","perUnitAriaLabel":"{perUnit, select, LICENSE {par licence} other {}}","freeLabel":"Gratuit","freeAriaLabel":"Gratuit","taxExclusiveLabel":"{taxTerm, select, GST {hors TPS} VAT {hors TVA} TAX {hors taxes} IVA {hors IVA} SST {hors SST} KDV {hors KDV} other {}}","taxInclusiveLabel":"{taxTerm, select, GST {TPS comprise} VAT {TVA comprise} TAX {taxes comprises} IVA {IVA comprise} SST {SST comprise} KDV {KDV comprise} other {}}","alternativePriceAriaLabel":"Autre prix {alternativePrice}","strikethroughAriaLabel":"Prix habituel {strikethroughPrice}"},{"lang":"he","recurrenceLabel":"{recurrenceTerm, select, MONTH {/חודש} YEAR {/שנה} other {}}","recurrenceAriaLabel":"{recurrenceTerm, select, MONTH {לחודש} YEAR {לשנה} other {}}","perUnitLabel":"{perUnit, select, LICENSE {לרישיון} other {}}","perUnitAriaLabel":"{perUnit, select, LICENSE {לרישיון} other {}}","freeLabel":"חינם","freeAriaLabel":"חינם","taxExclusiveLabel":"{taxTerm, select, GST {excl. GST} VAT {excl. VAT} TAX {excl. tax} IVA {excl. IVA} SST {excl. SST} KDV {excl. KDV} other {}}","taxInclusiveLabel":"{taxTerm, select, GST {incl. GST} VAT {incl. VAT} TAX {incl. tax} IVA {incl. IVA} SST {incl. SST} KDV {incl. KDV} other {}}","alternativePriceAriaLabel":"לחלופין ב-{alternativePrice}","strikethroughAriaLabel":"באופן קבוע ב-{strikethroughPrice}"},{"lang":"hu","recurrenceLabel":"{recurrenceTerm, select, MONTH {/hó} YEAR {/év} other {}}","recurrenceAriaLabel":"{recurrenceTerm, select, MONTH {havonta} YEAR {évente} other {}}","perUnitLabel":"{perUnit, select, LICENSE {licencenként} other {}}","perUnitAriaLabel":"{perUnit, select, LICENSE {licencenként} other {}}","freeLabel":"Ingyenes","freeAriaLabel":"Ingyenes","taxExclusiveLabel":"{taxTerm, select, GST {excl. GST} VAT {excl. VAT} TAX {excl. tax} IVA {excl. IVA} SST {excl. SST} KDV {excl. KDV} other {}}","taxInclusiveLabel":"{taxTerm, select, GST {incl. GST} VAT {incl. VAT} TAX {incl. tax} IVA {incl. IVA} SST {incl. SST} KDV {incl. KDV} other {}}","alternativePriceAriaLabel":"Másik lehetőség: {alternativePrice}","strikethroughAriaLabel":"Általában {strikethroughPrice} áron"},{"lang":"it","recurrenceLabel":"{recurrenceTerm, select, MONTH {/mese} YEAR {/anno} other {}}","recurrenceAriaLabel":"{recurrenceTerm, select, MONTH {al mese} YEAR {all'anno} other {}}","perUnitLabel":"{perUnit, select, LICENSE {per licenza} other {}}","perUnitAriaLabel":"{perUnit, select, LICENSE {per licenza} other {}}","freeLabel":"Gratuito","freeAriaLabel":"Gratuito","taxExclusiveLabel":"{taxTerm, select, GST {escl. GST} VAT {escl. IVA.} TAX {escl. imposte} IVA {escl. IVA} SST {escl. SST} KDV {escl. KDV} other {}}","taxInclusiveLabel":"{taxTerm, select, GST {incl. GST} VAT {incl. IVA} TAX {incl. imposte} IVA {incl. IVA} SST {incl. SST} KDV {incl. KDV} other {}}","alternativePriceAriaLabel":"In alternativa a {alternativePrice}","strikethroughAriaLabel":"Regolarmente a {strikethroughPrice}"},{"lang":"ja","recurrenceLabel":"{recurrenceTerm, select, MONTH {/月} YEAR {/年} other {}}","recurrenceAriaLabel":"{recurrenceTerm, select, MONTH {毎月} YEAR {毎年} other {}}","perUnitLabel":"{perUnit, select, LICENSE {ライセンスごと} other {}}","perUnitAriaLabel":"{perUnit, select, LICENSE {ライセンスごと} other {}}","freeLabel":"無料","freeAriaLabel":"無料","taxExclusiveLabel":"{taxTerm, select, GST {GST 別} VAT {VAT 別} TAX {税別} IVA {IVA 別} SST {SST 別} KDV {KDV 別} other {}}","taxInclusiveLabel":"{taxTerm, select, GST {GST 込} VAT {VAT 込} TAX {税込} IVA {IVA 込} SST {SST 込} KDV {KDV 込} other {}}","alternativePriceAriaLabel":"特別価格 : {alternativePrice}","strikethroughAriaLabel":"通常価格 : {strikethroughPrice}"},{"lang":"ko","recurrenceLabel":"{recurrenceTerm, select, MONTH {/월} YEAR {/년} other {}}","recurrenceAriaLabel":"{recurrenceTerm, select, MONTH {월간} YEAR {연간} other {}}","perUnitLabel":"{perUnit, select, LICENSE {라이선스당} other {}}","perUnitAriaLabel":"{perUnit, select, LICENSE {라이선스당} other {}}","freeLabel":"무료","freeAriaLabel":"무료","taxExclusiveLabel":"{taxTerm, select, GST {GST 제외} VAT {VAT 제외} TAX {세금 제외} IVA {IVA 제외} SST {SST 제외} KDV {KDV 제외} other {}}","taxInclusiveLabel":"{taxTerm, select, GST {GST 포함} VAT {VAT 포함} TAX {세금 포함} IVA {IVA 포함} SST {SST 포함} KDV {KDV 포함} other {}}","alternativePriceAriaLabel":"또는 {alternativePrice}에","strikethroughAriaLabel":"또는 {alternativePrice}에"},{"lang":"lt","recurrenceLabel":"{recurrenceTerm, select, MONTH { per mėn.} YEAR { per metus} other {}}","recurrenceAriaLabel":"{recurrenceTerm, select, MONTH {per mėn.} YEAR {per metus} other {}}","perUnitLabel":"{perUnit, select, LICENSE {už licenciją} other {}}","perUnitAriaLabel":"{perUnit, select, LICENSE {už licenciją} other {}}","freeLabel":"Nemokamai","freeAriaLabel":"Nemokamai","taxExclusiveLabel":"{taxTerm, select, GST {excl. GST} VAT {excl. VAT} TAX {excl. tax} IVA {excl. IVA} SST {excl. SST} KDV {excl. KDV} other {}}","taxInclusiveLabel":"{taxTerm, select, GST {incl. GST} VAT {incl. VAT} TAX {incl. tax} IVA {incl. IVA} SST {incl. SST} KDV {incl. KDV} other {}}","alternativePriceAriaLabel":"Arba už {alternativePrice}","strikethroughAriaLabel":"Normaliai už {strikethroughPrice}"},{"lang":"lv","recurrenceLabel":"{recurrenceTerm, select, MONTH {mēnesī} YEAR {gadā} other {}}","recurrenceAriaLabel":"{recurrenceTerm, select, MONTH {mēnesī} YEAR {gadā} other {}}","perUnitLabel":"{perUnit, select, LICENSE {vienai licencei} other {}}","perUnitAriaLabel":"{perUnit, select, LICENSE {vienai licencei} other {}}","freeLabel":"Bezmaksas","freeAriaLabel":"Bezmaksas","taxExclusiveLabel":"{taxTerm, select, GST {excl. GST} VAT {excl. VAT} TAX {excl. tax} IVA {excl. IVA} SST {excl. SST} KDV {excl. KDV} other {}}","taxInclusiveLabel":"{taxTerm, select, GST {incl. GST} VAT {incl. VAT} TAX {incl. tax} IVA {incl. IVA} SST {incl. SST} KDV {incl. KDV} other {}}","alternativePriceAriaLabel":"Alternatīvi par {alternativePrice}","strikethroughAriaLabel":"Regulāri par {strikethroughPrice}"},{"lang":"nb","recurrenceLabel":"{recurrenceTerm, select, MONTH {/mnd.} YEAR {/år} other {}}","recurrenceAriaLabel":"{recurrenceTerm, select, MONTH {per måned} YEAR {per år} other {}}","perUnitLabel":"{perUnit, select, LICENSE {per lisens} other {}}","perUnitAriaLabel":"{perUnit, select, LICENSE {per lisens} other {}}","freeLabel":"Fri","freeAriaLabel":"Fri","taxExclusiveLabel":"{taxTerm, select, GST {ekskl. GST} VAT {ekskl. moms} TAX {ekskl. avgift} IVA {ekskl. IVA} SST {ekskl. SST} KDV {ekskl. KDV} other {}}","taxInclusiveLabel":"{taxTerm, select, GST {inkl. GST} VAT {inkl. moms} TAX {inkl. avgift} IVA {inkl. IVA} SST {inkl. SST} KDV {inkl. KDV} other {}}","alternativePriceAriaLabel":"Alternativt til {alternativePrice}","strikethroughAriaLabel":"Regelmessig til {strikethroughPrice}"},{"lang":"nl","recurrenceLabel":"{recurrenceTerm, select, MONTH {/mnd} YEAR {/jr} other {}}","recurrenceAriaLabel":"{recurrenceTerm, select, MONTH {per maand} YEAR {per jaar} other {}}","perUnitLabel":"{perUnit, select, LICENSE {per licentie} other {}}","perUnitAriaLabel":"{perUnit, select, LICENSE {per licentie} other {}}","freeLabel":"Gratis","freeAriaLabel":"Gratis","taxExclusiveLabel":"{taxTerm, select, GST {excl. GST} VAT {excl. btw} TAX {excl. belasting} IVA {excl. IVA} SST {excl. SST} KDV {excl. KDV} other {}}","taxInclusiveLabel":"{taxTerm, select, GST {incl. GST} VAT {incl. btw} TAX {incl. belasting} IVA {incl. IVA} SST {incl. SST} KDV {incl. KDV} other {}}","alternativePriceAriaLabel":"Nu {alternativePrice}","strikethroughAriaLabel":"Normaal {strikethroughPrice}"},{"lang":"pl","recurrenceLabel":"{recurrenceTerm, select, MONTH { / mies.} YEAR { / rok} other {}}","recurrenceAriaLabel":"{recurrenceTerm, select, MONTH { / miesiąc} YEAR { / rok} other {}}","perUnitLabel":"{perUnit, select, LICENSE {za licencję} other {}}","perUnitAriaLabel":"{perUnit, select, LICENSE {za licencję} other {}}","freeLabel":"Bezpłatne","freeAriaLabel":"Bezpłatne","taxExclusiveLabel":"{taxTerm, select, GST {bez GST} VAT {bez VAT} TAX {netto} IVA {bez IVA} SST {bez SST} KDV {bez KDV} other {}}","taxInclusiveLabel":"{taxTerm, select, GST {z GST} VAT {z VAT} TAX {brutto} IVA {z IVA} SST {z SST} KDV {z KDV} other {}}","alternativePriceAriaLabel":"Lub za {alternativePrice}","strikethroughAriaLabel":"Cena zwykła: {strikethroughPrice}"},{"lang":"pt","recurrenceLabel":"{recurrenceTerm, select, MONTH {/mês} YEAR {/ano} other {}}","recurrenceAriaLabel":"{recurrenceTerm, select, MONTH {por mês} YEAR {por ano} other {}}","perUnitLabel":"{perUnit, select, LICENSE {por licença} other {}}","perUnitAriaLabel":"{perUnit, select, LICENSE {por licença} other {}}","freeLabel":"Gratuito","freeAriaLabel":"Gratuito","taxExclusiveLabel":"{taxTerm, select, GST {ICMS não incluso} VAT {IVA não incluso} TAX {impostos não inclusos} IVA {IVA não incluso} SST { SST não incluso} KDV {KDV não incluso} other {}}","taxInclusiveLabel":"{taxTerm, select, GST {ICMS incluso} VAT {IVA incluso} TAX {impostos inclusos} IVA {IVA incluso} SST {SST incluso} KDV {KDV incluso} other {}}","alternativePriceAriaLabel":"Ou a {alternativePrice}","strikethroughAriaLabel":"Preço normal: {strikethroughPrice}"},{"lang":"ro","recurrenceLabel":"{recurrenceTerm, select, MONTH {/lună} YEAR {/an} other {}}","recurrenceAriaLabel":"{recurrenceTerm, select, MONTH {pe lună} YEAR {pe an} other {}}","perUnitLabel":"{perUnit, select, LICENSE {pe licență} other {}}","perUnitAriaLabel":"{perUnit, select, LICENSE {pe licență} other {}}","freeLabel":"Gratuit","freeAriaLabel":"Gratuit","taxExclusiveLabel":"{taxTerm, select, GST {excl. GST} VAT {excl. VAT} TAX {excl. tax} IVA {excl. IVA} SST {excl. SST} KDV {excl. KDV} other {}}","taxInclusiveLabel":"{taxTerm, select, GST {incl. GST} VAT {incl. VAT} TAX {incl. tax} IVA {incl. IVA} SST {incl. SST} KDV {incl. KDV} other {}}","alternativePriceAriaLabel":"Alternativ, la {alternativePrice}","strikethroughAriaLabel":"În mod normal, la {strikethroughPrice}"},{"lang":"ru","recurrenceLabel":"{recurrenceTerm, select, MONTH {/мес.} YEAR {/г.} other {}}","recurrenceAriaLabel":"{recurrenceTerm, select, MONTH {в месяц} YEAR {в год} other {}}","perUnitLabel":"{perUnit, select, LICENSE {за лицензию} other {}}","perUnitAriaLabel":"{perUnit, select, LICENSE {за лицензию} other {}}","freeLabel":"Бесплатно","freeAriaLabel":"Бесплатно","taxExclusiveLabel":"{taxTerm, select, GST {искл. налог на товары и услуги} VAT {искл. НДС} TAX {искл. налог} IVA {искл. ИВА} SST {искл. SST} KDV {искл. КДВ} other {}}","taxInclusiveLabel":"{taxTerm, select, GST {вкл. налог на товары и услуги} VAT {вкл. НДС} TAX {вкл. налог} IVA {вкл. ИВА} SST {вкл. SST} KDV {вкл. КДВ} other {}}","alternativePriceAriaLabel":"Альтернативный вариант за {alternativePrice}","strikethroughAriaLabel":"Регулярно по цене {strikethroughPrice}"},{"lang":"sk","recurrenceLabel":"{recurrenceTerm, select, MONTH {/mesiac} YEAR {/rok} other {}}","recurrenceAriaLabel":"{recurrenceTerm, select, MONTH {za mesiac} YEAR {za rok} other {}}","perUnitLabel":"{perUnit, select, LICENSE {za licenciu} other {}}","perUnitAriaLabel":"{perUnit, select, LICENSE {za licenciu} other {}}","freeLabel":"Zadarmo","freeAriaLabel":"Zadarmo","taxExclusiveLabel":"{taxTerm, select, GST {excl. GST} VAT {excl. VAT} TAX {excl. tax} IVA {excl. IVA} SST {excl. SST} KDV {excl. KDV} other {}}","taxInclusiveLabel":"{taxTerm, select, GST {incl. GST} VAT {incl. VAT} TAX {incl. tax} IVA {incl. IVA} SST {incl. SST} KDV {incl. KDV} other {}}","alternativePriceAriaLabel":"Prípadne za {alternativePrice}","strikethroughAriaLabel":"Pravidelne za {strikethroughPrice}"},{"lang":"sl","recurrenceLabel":"{recurrenceTerm, select, MONTH {/mesec} YEAR {/leto} other {}}","recurrenceAriaLabel":"{recurrenceTerm, select, MONTH {na mesec} YEAR {na leto} other {}}","perUnitLabel":"{perUnit, select, LICENSE {na licenco} other {}}","perUnitAriaLabel":"{perUnit, select, LICENSE {na licenco} other {}}","freeLabel":"Brezplačno","freeAriaLabel":"Brezplačno","taxExclusiveLabel":"{taxTerm, select, GST {excl. GST} VAT {excl. VAT} TAX {excl. tax} IVA {excl. IVA} SST {excl. SST} KDV {excl. KDV} other {}}","taxInclusiveLabel":"{taxTerm, select, GST {incl. GST} VAT {incl. VAT} TAX {incl. tax} IVA {incl. IVA} SST {incl. SST} KDV {incl. KDV} other {}}","alternativePriceAriaLabel":"Druga možnost je: {alternativePrice}","strikethroughAriaLabel":"Redno po {strikethroughPrice}"},{"lang":"sv","recurrenceLabel":"{recurrenceTerm, select, MONTH {/mån} YEAR {/år} other {}}","recurrenceAriaLabel":"{recurrenceTerm, select, MONTH {per månad} YEAR {per år} other {}}","perUnitLabel":"{perUnit, select, LICENSE {per licens} other {}}","perUnitAriaLabel":"{perUnit, select, LICENSE {per licens} other {}}","freeLabel":"Kostnadsfritt","freeAriaLabel":"Kostnadsfritt","taxExclusiveLabel":"{taxTerm, select, GST {exkl. GST} VAT {exkl. moms} TAX {exkl. skatt} IVA {exkl. IVA} SST {exkl. SST} KDV {exkl. KDV} other {}}","taxInclusiveLabel":"{taxTerm, select, GST {inkl. GST} VAT {inkl. moms} TAX {inkl. skatt} IVA {inkl. IVA} SST {inkl. SST} KDV {inkl. KDV} other {}}","alternativePriceAriaLabel":"Alternativt för {alternativePrice}","strikethroughAriaLabel":"Normalpris {strikethroughPrice}"},{"lang":"tr","recurrenceLabel":"{recurrenceTerm, select, MONTH {/ay} YEAR {/yıl} other {}}","recurrenceAriaLabel":"{recurrenceTerm, select, MONTH {(aylık)} YEAR {(yıllık)} other {}}","perUnitLabel":"{perUnit, select, LICENSE {(lisans başına)} other {}}","perUnitAriaLabel":"{perUnit, select, LICENSE {(lisans başına)} other {}}","freeLabel":"Ücretsiz","freeAriaLabel":"Ücretsiz","taxExclusiveLabel":"{taxTerm, select, GST {GST hariç} VAT {KDV hariç} TAX {vergi hariç} IVA {IVA hariç} SST {SST hariç} KDV {KDV hariç} other {}}","taxInclusiveLabel":"{taxTerm, select, GST {GST dahil} VAT {KDV dahil} TAX {vergi dahil} IVA {IVA dahil} SST {SST dahil} KDV {KDV dahil} other {}}","alternativePriceAriaLabel":"Ya da {alternativePrice}","strikethroughAriaLabel":"Standart fiyat: {strikethroughPrice}"},{"lang":"uk","recurrenceLabel":"{recurrenceTerm, select, MONTH {/міс.} YEAR {/рік} other {}}","recurrenceAriaLabel":"{recurrenceTerm, select, MONTH {на місяць} YEAR {на рік} other {}}","perUnitLabel":"{perUnit, select, LICENSE {за ліцензію} other {}}","perUnitAriaLabel":"{perUnit, select, LICENSE {за ліцензію} other {}}","freeLabel":"Безкоштовно","freeAriaLabel":"Безкоштовно","taxExclusiveLabel":"{taxTerm, select, GST {без GST} VAT {без ПДВ} TAX {без податку} IVA {без IVA} SST {без SST} KDV {без KDV} other {}}","taxInclusiveLabel":"{taxTerm, select, GST {разом із GST} VAT {разом із ПДВ} TAX {разом із податком} IVA {разом з IVA} SST {разом із SST} KDV {разом із KDV} other {}}","alternativePriceAriaLabel":"Або за {alternativePrice}","strikethroughAriaLabel":"Звичайна ціна {strikethroughPrice}"},{"lang":"zh-hans","recurrenceLabel":"{recurrenceTerm, select, MONTH {/月} YEAR {/年} other {}}","recurrenceAriaLabel":"{recurrenceTerm, select, MONTH {每月} YEAR {每年} other {}}","perUnitLabel":"{perUnit, select, LICENSE {每个许可证} other {}}","perUnitAriaLabel":"{perUnit, select, LICENSE {每个许可证} other {}}","freeLabel":"免费","freeAriaLabel":"免费","taxExclusiveLabel":"{taxTerm, select, GST {excl. GST} VAT {excl. VAT} TAX {excl. tax} IVA {excl. IVA} SST {excl. SST} KDV {excl. KDV} other {}}","taxInclusiveLabel":"{taxTerm, select, GST {incl. GST} VAT {incl. VAT} TAX {incl. tax} IVA {incl. IVA} SST {incl. SST} KDV {incl. KDV} other {}}","alternativePriceAriaLabel":"或定价 {alternativePrice}","strikethroughAriaLabel":"正常价 {strikethroughPrice}"},{"lang":"zh-hant","recurrenceLabel":"{recurrenceTerm, select, MONTH {/月} YEAR {/年} other {}}","recurrenceAriaLabel":"{recurrenceTerm, select, MONTH {每月} YEAR {每年} other {}}","perUnitLabel":"{perUnit, select, LICENSE {每個授權} other {}}","perUnitAriaLabel":"{perUnit, select, LICENSE {每個授權} other {}}","freeLabel":"免費","freeAriaLabel":"免費","taxExclusiveLabel":"{taxTerm, select, GST {不含 GST} VAT {不含 VAT} TAX {不含稅} IVA {不含 IVA} SST {不含 SST} KDV {不含 KDV} other {}}","taxInclusiveLabel":"{taxTerm, select, GST {含 GST} VAT {含 VAT} TAX {含稅} IVA {含 IVA} SST {含 SST} KDV {含 KDV} other {}}","alternativePriceAriaLabel":"或者在 {alternativePrice}","strikethroughAriaLabel":"標準價格為 {strikethroughPrice}"},{"lang":"es","recurrenceLabel":"{recurrenceTerm, select, MONTH {/mes} YEAR {/año} other {}}","recurrenceAriaLabel":"{recurrenceTerm, select, MONTH {al mes} YEAR {al año} other {}}","perUnitLabel":"{perUnit, select, LICENSE {por licencia} other {}}","perUnitAriaLabel":"{perUnit, select, LICENSE {por licencia} other {}}","freeLabel":"Gratuito","freeAriaLabel":"Gratuito","taxExclusiveLabel":"{taxTerm, select, GST {GST no incluido} VAT {IVA no incluido} TAX {Impuestos no incluidos} IVA {IVA no incluido} SST {SST no incluido} KDV {KDV no incluido} other {}}","taxInclusiveLabel":"{taxTerm, select, GST {GST incluido} VAT {IVA incluido} TAX {Impuestos incluidos} IVA {IVA incluido} SST {SST incluido} KDV {KDV incluido} other {}}","alternativePriceAriaLabel":"Alternativamente por {alternativePrice}","strikethroughAriaLabel":"Normalmente a {strikethroughPrice}"},{"lang":"in","recurrenceLabel":"{recurrenceTerm, select, MONTH {/bulan} YEAR {/tahun} other {}}","recurrenceAriaLabel":"{recurrenceTerm, select, MONTH {per bulan} YEAR {per tahun} other {}}","perUnitLabel":"{perUnit, select, LICENSE {per lisensi} other {}}","perUnitAriaLabel":"{perUnit, select, LICENSE {per lisensi} other {}}","freeLabel":"Gratis","freeAriaLabel":"Gratis","taxExclusiveLabel":"{taxTerm, select, GST {tidak termasuk PBJ} VAT {tidak termasuk PPN} TAX {tidak termasuk pajak} IVA {tidak termasuk IVA} SST {tidak termasuk SST} KDV {tidak termasuk KDV} other {}}","taxInclusiveLabel":"{taxTerm, select, GST {termasuk PBJ} VAT {termasuk PPN} TAX {termasuk pajak} IVA {termasuk IVA} SST {termasuk SST} KDV {termasuk KDV} other {}}","alternativePriceAriaLabel":"Atau seharga {alternativePrice}","strikethroughAriaLabel":"Normalnya seharga {strikethroughPrice}"},{"lang":"vi","recurrenceLabel":"{recurrenceTerm, select, MONTH {/tháng} YEAR {/năm} other {}}","recurrenceAriaLabel":"{recurrenceTerm, select, MONTH {mỗi tháng} YEAR {mỗi năm} other {}}","perUnitLabel":"{perUnit, select, LICENSE {mỗi giấy phép} other {}}","perUnitAriaLabel":"{perUnit, select, LICENSE {mỗi giấy phép} other {}}","freeLabel":"Miễn phí","freeAriaLabel":"Miễn phí","taxExclusiveLabel":"{taxTerm, select, GST {chưa bao gồm thuế hàng hóa và dịch vụ} VAT {chưa bao gồm thuế GTGT} TAX {chưa bao gồm thuế} IVA {chưa bao gồm IVA} SST {chưa bao gồm SST} KDV {chưa bao gồm KDV} other {}}","taxInclusiveLabel":"{taxTerm, select, GST {(đã bao gồm thuế hàng hóa và dịch vụ)} VAT {(đã bao gồm thuế GTGT)} TAX {(đã bao gồm thuế)} IVA {(đã bao gồm IVA)} SST {(đã bao gồm SST)} KDV {(đã bao gồm KDV)} other {}}","alternativePriceAriaLabel":"Giá ưu đãi {alternativePrice}","strikethroughAriaLabel":"Giá thông thường {strikethroughPrice}"},{"lang":"th","recurrenceLabel":"{recurrenceTerm, select, MONTH {/เดือน} YEAR {/ปี} other {}}","recurrenceAriaLabel":"{recurrenceTerm, select, MONTH {ต่อเดือน} YEAR {ต่อปี} other {}}","perUnitLabel":"{perUnit, select, LICENSE {ต่อสิทธิ์การใช้งาน} other {}}","perUnitAriaLabel":"{perUnit, select, LICENSE {ต่อสิทธิ์การใช้งาน} other {}}","freeLabel":"ฟรี","freeAriaLabel":"ฟรี","taxExclusiveLabel":"{taxTerm, select, GST {ไม่รวมภาษี GST} VAT {ไม่รวม VAT} TAX {ไม่รวมภาษี} IVA {ไม่รวม IVA} SST {ไม่รวม SST} KDV {ไม่รวม KDV} other {}}","taxInclusiveLabel":"{taxTerm, select, GST {รวมภาษี GST} VAT {รวม VAT} TAX {รวมภาษี} IVA {รวม IVA} SST {รวม SST} KDV {รวม KDV} other {}}","alternativePriceAriaLabel":"ราคาพิเศษ {alternativePrice}","strikethroughAriaLabel":"ราคาปกติ {strikethroughPrice}"},{"lang":"el","recurrenceLabel":"{recurrenceTerm, select, MONTH {/μήνα} YEAR {/έτος} other {}}","recurrenceAriaLabel":"{recurrenceTerm, select, MONTH {κάθε μήνα} YEAR {ανά έτος} other {}}","perUnitLabel":"{perUnit, select, LICENSE {ανά άδεια χρήσης} other {}}","perUnitAriaLabel":"{perUnit, select, LICENSE {ανά άδεια χρήσης} other {}}","freeLabel":"Δωρεάν","freeAriaLabel":"Δωρεάν","taxExclusiveLabel":"{taxTerm, select, GST {(μη συμπεριλαμβανομένου GST)} VAT {(μη συμπεριλαμβανομένου ΦΠΑ)} TAX {(μη συμπεριλαμβανομένου φόρο)} IVA {(μη συμπεριλαμβανομένου IVA)} SST {(μη συμπεριλαμβανομένου SST)} KDV {(μη συμπεριλαμβανομένου KDV)} other {}}","taxInclusiveLabel":"{taxTerm, select, GST {(συμπεριλαμβανομένου του GST)} VAT {(συμπεριλαμβανομένου ΦΠΑ)} TAX {(συμπεριλαμβανομένου του φόρου)} IVA {(συμπεριλαμβανομένου του IVA)} SST {(συμπεριλαμβανομένου του SST)} KDV {(συμπεριλαμβανομένου του KDV)} other {}}","alternativePriceAriaLabel":"Διαφορετικά, {alternativePrice}","strikethroughAriaLabel":"Κανονική τιμή {strikethroughPrice}"},{"lang":"fil","recurrenceLabel":"{recurrenceTerm, select, MONTH {/buwan} YEAR {/taon} other {}}","recurrenceAriaLabel":"{recurrenceTerm, select, MONTH {per buwan} YEAR {per taon} other {}}","perUnitLabel":"{perUnit, select, LICENSE {kada lisensya} other {}}","perUnitAriaLabel":"{perUnit, select, LICENSE {kada lisensya} other {}}","freeLabel":"Libre","freeAriaLabel":"Libre","taxExclusiveLabel":"{taxTerm, select, GST {hindi kasama ang GST} VAT {hindi kasama ang VAT} TAX {hindi kasama ang Buwis} IVA {hindi kasama ang IVA} SST {hindi kasama ang SST} KDV {hindi kasama ang KDV} other {}}","taxInclusiveLabel":"{taxTerm, select, GST {kasama ang GST} VAT {kasama ang VAT} TAX {kasama ang Buwis} IVA {kasama ang IVA} SST {kasama ang SST} KDV {kasama ang KDV} other {}}","alternativePriceAriaLabel":"Alternatibong nasa halagang {alternativePrice}","strikethroughAriaLabel":"Regular na nasa halagang {strikethroughPrice}"},{"lang":"ms","recurrenceLabel":"{recurrenceTerm, select, MONTH {/bulan} YEAR {/tahun} other {}}","recurrenceAriaLabel":"{recurrenceTerm, select, MONTH {per bulan} YEAR {per tahun} other {}}","perUnitLabel":"{perUnit, select, LICENSE {setiap lesen} other {}}","perUnitAriaLabel":"{perUnit, select, LICENSE {setiap lesen} other {}}","freeLabel":"Percuma","freeAriaLabel":"Percuma","taxExclusiveLabel":"{taxTerm, select, GST {kecuali GST} VAT {kecuali VAT} TAX {kecuali Cukai} IVA {kecuali IVA} SST {kecuali SST} KDV {kecuali KDV} other {}}","taxInclusiveLabel":"{taxTerm, select, GST {termasuk GST} VAT {termasuk VAT} TAX {termasuk Cukai} IVA {termasuk IVA} SST {termasuk SST} KDV {termasuk KDV} other {}}","alternativePriceAriaLabel":"Secara alternatif pada {alternativePrice}","strikethroughAriaLabel":"Biasanya pada {strikethroughPrice}"},{"lang":"hi","recurrenceLabel":"{recurrenceTerm, select, MONTH {/माह} YEAR {/वर्ष} other {}}","recurrenceAriaLabel":"{recurrenceTerm, select, MONTH {per माह} YEAR {per वर्ष} other {}}","perUnitLabel":"{perUnit, select, LICENSE {प्रति लाइसेंस} other {}}","perUnitAriaLabel":"{perUnit, select, LICENSE {प्रति लाइसेंस} other {}}","freeLabel":"फ़्री","freeAriaLabel":"फ़्री","taxExclusiveLabel":"{taxTerm, select, GST {GST अतिरिक्त} VAT {VAT अतिरिक्त} TAX {कर अतिरिक्त} IVA {IVA अतिरिक्त} SST {SST अतिरिक्त} KDV {KDV अतिरिक्त} other {}}","taxInclusiveLabel":"{taxTerm, select, GST {GST सहित} VAT {VAT सहित} TAX {कर सहित} IVA {IVA सहित} SST {SST सहित} KDV {KDV सहित} other {}}","alternativePriceAriaLabel":"वैकल्पिक रूप से इस पर {alternativePrice}","strikethroughAriaLabel":"नियमित रूप से इस पर {strikethroughPrice}"},{"lang":"iw","recurrenceLabel":"{recurrenceTerm, select, MONTH {/חודש} YEAR {/שנה} other {}}","recurrenceAriaLabel":"{recurrenceTerm, select, MONTH {לחודש} YEAR {לשנה} other {}}","perUnitLabel":"{perUnit, select, LICENSE {לרישיון} other {}}","perUnitAriaLabel":"{perUnit, select, LICENSE {לרישיון} other {}}","freeLabel":"חינם","freeAriaLabel":"חינם","taxExclusiveLabel":"{taxTerm, select, GST {ללא GST} VAT {ללא מע\"מ} TAX {ללא מס} IVA {ללא IVA} SST {ללא SST} KDV {ללא KDV} other {}}","taxInclusiveLabel":"{taxTerm, select, GST {כולל GST} VAT {כולל מע\"מ} TAX {כולל מס} IVA {כולל IVA} SST {כולל SST} KDV {כולל KDV} other {}}","alternativePriceAriaLabel":"לחלופין ב-{alternativePrice}","strikethroughAriaLabel":"באופן קבוע ב-{strikethroughPrice}"}],":type":"sheet"}
 .data;
-var Qi=Object.defineProperty;var Zi=t=>{throw TypeError(t)};var Sl=(t,e,r)=>e in t?Qi(t,e,{enumerable:!0,configurable:!0,writable:!0,value:r}):t[e]=r;var _l=(t,e)=>{for(var r in e)Qi(t,r,{get:e[r],enumerable:!0})};var f=(t,e,r)=>Sl(t,typeof e!="symbol"?e+"":e,r),Jn=(t,e,r)=>e.has(t)||Zi("Cannot "+r);var u=(t,e,r)=>(Jn(t,e,"read from private field"),r?r.call(t):e.get(t)),y=(t,e,r)=>e.has(t)?Zi("Cannot add the same private member more than once"):e instanceof WeakSet?e.add(t):e.set(t,r),v=(t,e,r,n)=>(Jn(t,e,"write to private field"),n?n.call(t,r):e.set(t,r),r),X=(t,e,r)=>(Jn(t,e,"access private method"),r);var Ji=(t,e,r,n)=>({set _(o){v(t,e,o,r)},get _(){return u(t,e,n)}});(function(){let r={clientId:"",endpoint:"https://www.adobe.com/lana/ll",endpointStage:"https://www.stage.adobe.com/lana/ll",errorType:"e",sampleRate:1,tags:"",implicitSampleRate:1,useProd:!0,isProdDomain:!1},n=new Set(["d","debug","i","info","w","warn","e","error","c","critical"]),o=window;function i(){let{host:d}=window.location;return d.endsWith(".adobe.com")&&!d.endsWith(".corp.adobe.com")&&!d.endsWith(".stage.adobe.com")?!0:["sign.ing","edit.ing"].includes(d)}function a(d,m){d||(d={}),m||(m={});function p(g){return d[g]!==void 0?d[g]:m[g]!==void 0?m[g]:r[g]}return Object.keys(r).reduce((g,b)=>(g[b]=p(b),g),{})}function s(){return o.location.search.toLowerCase().indexOf("lanadebug")!==-1}function c(){return o.location.host.toLowerCase().indexOf("localhost")!==-1}function l(d,m){d=d&&d.stack?d.stack:d||"",d.length>2e3&&(d=`${d.slice(0,2e3)}<trunc>`);let p=a(m,o.lana.options);if(!p.clientId){console.warn("LANA ClientID is not set in options.");return}let g;if(m&&m.severity!==void 0)if(n.has(m.severity))g=m.severity;else{let M=s()||o.lana.debug?"d":"i";console.warn(`LANA: Invalid severity '${m.severity}'. Defaulting to '${M}'.`),g=M}else o.lana.debug&&(g="d");let w=parseInt(new URL(window.location).searchParams.get("lana-sample"),10)||(p.errorType==="i"?p.implicitSampleRate:p.sampleRate);if(!o.lana.debug&&!o.lana.localhost&&w<=Math.random()*100)return;let R=i()||p.isProdDomain,k=!R||!p.useProd?p.endpointStage:p.endpoint,S=[`m=${encodeURIComponent(d)}`,`c=${encodeURI(p.clientId)}`,`s=${w}`,`t=${encodeURI(p.errorType)}`];if(g&&S.push(`r=${encodeURI(g)}`),p.tags&&S.push(`tags=${encodeURI(p.tags)}`),(!R||o.lana.debug||o.lana.localhost)&&console.log("LANA Msg: ",d,`
-Opts:`,p),!o.lana.localhost||o.lana.debug){let T=new XMLHttpRequest;return o.lana.debug&&(S.push("d"),T.addEventListener("load",()=>{console.log("LANA response:",T.responseText)})),T.open("GET",`${k}?${S.join("&")}`),T.send(),T}}function h(d){l(d.reason||d.error||d.message,{errorType:"i"})}o.lana={debug:!1,log:l,options:a(o.lana&&o.lana.options)},s()&&(o.lana.debug=!0),c()&&(o.lana.localhost=!0),o.addEventListener("error",h),o.addEventListener("unhandledrejection",h)})();var vo={};_l(vo,{CLASS_NAME_FAILED:()=>oo,CLASS_NAME_HIDDEN:()=>Cl,CLASS_NAME_PENDING:()=>io,CLASS_NAME_RESOLVED:()=>ao,CheckoutWorkflow:()=>ta,CheckoutWorkflowStep:()=>ee,Commitment:()=>We,ERROR_MESSAGE_BAD_REQUEST:()=>so,ERROR_MESSAGE_MISSING_LITERALS_URL:()=>Il,ERROR_MESSAGE_OFFER_NOT_FOUND:()=>co,EVENT_AEM_ERROR:()=>Xe,EVENT_AEM_LOAD:()=>Ye,EVENT_MAS_ERROR:()=>no,EVENT_MAS_READY:()=>ro,EVENT_MERCH_ADDON_AND_QUANTITY_UPDATE:()=>Zr,EVENT_MERCH_CARD_ACTION_MENU_TOGGLE:()=>eo,EVENT_MERCH_CARD_COLLECTION_SHOWMORE:()=>Nl,EVENT_MERCH_CARD_COLLECTION_SORT:()=>Ml,EVENT_MERCH_CARD_QUANTITY_CHANGE:()=>Pt,EVENT_MERCH_OFFER_READY:()=>Ct,EVENT_MERCH_OFFER_SELECT_READY:()=>cr,EVENT_MERCH_QUANTITY_SELECTOR_CHANGE:()=>Ce,EVENT_MERCH_SEARCH_CHANGE:()=>Ol,EVENT_MERCH_SIDENAV_SELECT:()=>$l,EVENT_MERCH_STOCK_CHANGE:()=>Ll,EVENT_MERCH_STORAGE_CHANGE:()=>Rl,EVENT_OFFER_SELECTED:()=>to,EVENT_TYPE_FAILED:()=>lo,EVENT_TYPE_READY:()=>Qr,EVENT_TYPE_RESOLVED:()=>kt,Env:()=>ye,FF_DEFAULTS:()=>Be,HEADER_X_REQUEST_ID:()=>lr,LOG_NAMESPACE:()=>ho,Landscape:()=>De,MARK_DURATION_SUFFIX:()=>Ze,MARK_START_SUFFIX:()=>Qe,MODAL_TYPE_3_IN_1:()=>Ke,NAMESPACE:()=>Tl,PARAM_AOS_API_KEY:()=>Hl,PARAM_ENV:()=>mo,PARAM_LANDSCAPE:()=>uo,PARAM_MAS_PREVIEW:()=>po,PARAM_WCS_API_KEY:()=>Ul,PROVIDER_ENVIRONMENT:()=>xo,SELECTOR_MAS_CHECKOUT_LINK:()=>pe,SELECTOR_MAS_ELEMENT:()=>sr,SELECTOR_MAS_INLINE_PRICE:()=>D,SELECTOR_MAS_SP_BUTTON:()=>kl,SELECTOR_MAS_UPT_LINK:()=>ea,STATE_FAILED:()=>me,STATE_PENDING:()=>Ue,STATE_RESOLVED:()=>Pe,TAG_NAME_SERVICE:()=>Pl,TEMPLATE_PRICE:()=>Dl,TEMPLATE_PRICE_ANNUAL:()=>zl,TEMPLATE_PRICE_LEGAL:()=>bo,TEMPLATE_PRICE_STRIKETHROUGH:()=>Bl,Term:()=>le,WCS_PROD_URL:()=>fo,WCS_STAGE_URL:()=>go});var We=Object.freeze({MONTH:"MONTH",YEAR:"YEAR",TWO_YEARS:"TWO_YEARS",THREE_YEARS:"THREE_YEARS",PERPETUAL:"PERPETUAL",TERM_LICENSE:"TERM_LICENSE",ACCESS_PASS:"ACCESS_PASS",THREE_MONTHS:"THREE_MONTHS",SIX_MONTHS:"SIX_MONTHS"}),le=Object.freeze({ANNUAL:"ANNUAL",MONTHLY:"MONTHLY",TWO_YEARS:"TWO_YEARS",THREE_YEARS:"THREE_YEARS",P1D:"P1D",P1Y:"P1Y",P3Y:"P3Y",P10Y:"P10Y",P15Y:"P15Y",P3D:"P3D",P7D:"P7D",P30D:"P30D",HALF_YEARLY:"HALF_YEARLY",QUARTERLY:"QUARTERLY"}),Tl="merch",Cl="hidden",Qr="wcms:commerce:ready",Pl="mas-commerce-service",D='span[is="inline-price"][data-wcs-osi]',pe='a[is="checkout-link"][data-wcs-osi],button[is="checkout-button"][data-wcs-osi]',kl="sp-button[data-wcs-osi]",ea='a[is="upt-link"]',sr=`${D},${pe},${ea}`,Ct="merch-offer:ready",cr="merch-offer-select:ready",eo="merch-card:action-menu-toggle",to="merch-offer:selected",Ll="merch-stock:change",Rl="merch-storage:change",Ce="merch-quantity-selector:change",Pt="merch-card-quantity:change",Zr="merch-modal:addon-and-quantity-update",Ol="merch-search:change",Ml="merch-card-collection:sort",Nl="merch-card-collection:showmore",$l="merch-sidenav:select",Ye="aem:load",Xe="aem:error",ro="mas:ready",no="mas:error",oo="placeholder-failed",io="placeholder-pending",ao="placeholder-resolved",so="Bad WCS request",co="Commerce offer not found",Il="Literals URL not provided",lo="mas:failed",kt="mas:resolved",ho="mas/commerce",po="mas.preview",mo="commerce.env",uo="commerce.landscape",Hl="commerce.aosKey",Ul="commerce.wcsKey",fo="https://www.adobe.com/web_commerce_artifact",go="https://www.stage.adobe.com/web_commerce_artifact_stage",me="failed",Ue="pending",Pe="resolved",De={DRAFT:"DRAFT",PUBLISHED:"PUBLISHED"},lr="X-Request-Id",ee=Object.freeze({SEGMENTATION:"segmentation",BUNDLE:"bundle",COMMITMENT:"commitment",RECOMMENDATION:"recommendation",EMAIL:"email",PAYMENT:"payment",CHANGE_PLAN_TEAM_PLANS:"change-plan/team-upgrade/plans",CHANGE_PLAN_TEAM_PAYMENT:"change-plan/team-upgrade/payment"}),ta="UCv3",ye=Object.freeze({STAGE:"STAGE",PRODUCTION:"PRODUCTION",LOCAL:"LOCAL"}),xo={PRODUCTION:"PRODUCTION"},Ke={TWP:"twp",D2P:"d2p",CRM:"crm"},Qe=":start",Ze=":duration",Dl="price",Bl="price-strikethrough",zl="annual",bo="legal",Be="mas-ff-defaults";var ra="tacocat.js";var yo=(t,e)=>String(t??"").toLowerCase()==String(e??"").toLowerCase(),na=t=>`${t??""}`.replace(/[&<>'"]/g,e=>({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;",'"':"&quot;"})[e]??e)??"";function N(t,e={},{metadata:r=!0,search:n=!0,storage:o=!0}={}){let i;if(n&&i==null){let a=new URLSearchParams(window.location.search),s=Lt(n)?n:t;i=a.get(s)}if(o&&i==null){let a=Lt(o)?o:t;i=window.sessionStorage.getItem(a)??window.localStorage.getItem(a)}if(r&&i==null){let a=Gl(Lt(r)?r:t);i=document.documentElement.querySelector(`meta[name="${a}"]`)?.content}return i??e[t]}var Fl=t=>typeof t=="boolean",Jr=t=>typeof t=="function",en=t=>typeof t=="number",oa=t=>t!=null&&typeof t=="object";var Lt=t=>typeof t=="string",ia=t=>Lt(t)&&t,hr=t=>en(t)&&Number.isFinite(t)&&t>0;function tn(t,e=r=>r==null||r===""){return t!=null&&Object.entries(t).forEach(([r,n])=>{e(n)&&delete t[r]}),t}function A(t,e){if(Fl(t))return t;let r=String(t);return r==="1"||r==="true"?!0:r==="0"||r==="false"?!1:e}function dr(t,e,r){let n=Object.values(e);return n.find(o=>yo(o,t))??r??n[0]}function Gl(t=""){return String(t).replace(/(\p{Lowercase_Letter})(\p{Uppercase_Letter})/gu,(e,r,n)=>`${r}-${n}`).replace(/\W+/gu,"-").toLowerCase()}function aa(t,e=1){return en(t)||(t=Number.parseInt(t,10)),!Number.isNaN(t)&&t>0&&Number.isFinite(t)?t:e}var Vl=Date.now(),Eo=()=>`(+${Date.now()-Vl}ms)`,rn=new Set,jl=A(N("tacocat.debug",{},{metadata:!1}),!1);function sa(t){let e=`[${ra}/${t}]`,r=(a,s,...c)=>a?!0:(o(s,...c),!1),n=jl?(a,...s)=>{console.debug(`${e} ${a}`,...s,Eo())}:()=>{},o=(a,...s)=>{let c=`${e} ${a}`;rn.forEach(([l])=>l(c,...s))};return{assert:r,debug:n,error:o,warn:(a,...s)=>{let c=`${e} ${a}`;rn.forEach(([,l])=>l(c,...s))}}}function ql(t,e){let r=[t,e];return rn.add(r),()=>{rn.delete(r)}}ql((t,...e)=>{console.error(t,...e,Eo())},(t,...e)=>{console.warn(t,...e,Eo())});var Wl="no promo",ca="promo-tag",Yl="yellow",Xl="neutral",Kl=(t,e,r)=>{let n=i=>i||Wl,o=r?` (was "${n(e)}")`:"";return`${n(t)}${o}`},Ql="cancel-context",nn=(t,e)=>{let r=t===Ql,n=!r&&t?.length>0,o=(n||r)&&(e&&e!=t||!e&&!r),i=o&&n||!o&&!!e,a=i?t||e:void 0;return{effectivePromoCode:a,overridenPromoCode:t,className:i?ca:`${ca} no-promo`,text:Kl(a,e,o),variant:i?Yl:Xl,isOverriden:o}};var Ao;(function(t){t.BASE="BASE",t.TRIAL="TRIAL",t.PROMOTION="PROMOTION"})(Ao||(Ao={}));var ae;(function(t){t.MONTH="MONTH",t.YEAR="YEAR",t.TWO_YEARS="TWO_YEARS",t.THREE_YEARS="THREE_YEARS",t.PERPETUAL="PERPETUAL",t.TERM_LICENSE="TERM_LICENSE",t.ACCESS_PASS="ACCESS_PASS",t.THREE_MONTHS="THREE_MONTHS",t.SIX_MONTHS="SIX_MONTHS"})(ae||(ae={}));var he;(function(t){t.ANNUAL="ANNUAL",t.MONTHLY="MONTHLY",t.TWO_YEARS="TWO_YEARS",t.THREE_YEARS="THREE_YEARS",t.P1D="P1D",t.P1Y="P1Y",t.P3Y="P3Y",t.P10Y="P10Y",t.P15Y="P15Y",t.P3D="P3D",t.P7D="P7D",t.P30D="P30D",t.HALF_YEARLY="HALF_YEARLY",t.QUARTERLY="QUARTERLY"})(he||(he={}));var wo;(function(t){t.INDIVIDUAL="INDIVIDUAL",t.TEAM="TEAM",t.ENTERPRISE="ENTERPRISE"})(wo||(wo={}));var So;(function(t){t.COM="COM",t.EDU="EDU",t.GOV="GOV"})(So||(So={}));var _o;(function(t){t.DIRECT="DIRECT",t.INDIRECT="INDIRECT"})(_o||(_o={}));var To;(function(t){t.ENTERPRISE_PRODUCT="ENTERPRISE_PRODUCT",t.ETLA="ETLA",t.RETAIL="RETAIL",t.VIP="VIP",t.VIPMP="VIPMP",t.FREE="FREE"})(To||(To={}));var Co="ABM",Po="PUF",ko="M2M",Lo="PERPETUAL",Ro="P3Y",Zl="TAX_INCLUSIVE_DETAILS",Jl="TAX_EXCLUSIVE",la={ABM:Co,PUF:Po,M2M:ko,PERPETUAL:Lo,P3Y:Ro},Lp={[Co]:{commitment:ae.YEAR,term:he.MONTHLY},[Po]:{commitment:ae.YEAR,term:he.ANNUAL},[ko]:{commitment:ae.MONTH,term:he.MONTHLY},[Lo]:{commitment:ae.PERPETUAL,term:void 0},[Ro]:{commitment:ae.THREE_MONTHS,term:he.P3Y}},ha="Value is not an offer",pr=t=>{if(typeof t!="object")return ha;let{commitment:e,term:r}=t,n=eh(e,r);return{...t,planType:n}};var eh=(t,e)=>{switch(t){case void 0:return ha;case"":return"";case ae.YEAR:return e===he.MONTHLY?Co:e===he.ANNUAL?Po:"";case ae.MONTH:return e===he.MONTHLY?ko:"";case ae.PERPETUAL:return Lo;case ae.TERM_LICENSE:return e===he.P3Y?Ro:"";default:return""}};function da(t){let{priceDetails:e}=t,{price:r,priceWithoutDiscount:n,priceWithoutTax:o,priceWithoutDiscountAndTax:i,taxDisplay:a}=e;if(a!==Zl)return t;let s={...t,priceDetails:{...e,price:o??r,priceWithoutDiscount:i??n,taxDisplay:Jl}};return s.offerType==="TRIAL"&&s.priceDetails.price===0&&(s.priceDetails.price=s.priceDetails.priceWithoutDiscount),s}var th="mas-commerce-service",rh={requestId:lr,etag:"Etag",lastModified:"Last-Modified",serverTiming:"server-timing"};function mr(t,{country:e,forceTaxExclusive:r,perpetual:n}){let o;if(t.length<2)o=t;else{let i=e==="GB"?"EN":"MULT";t.sort((a,s)=>a.language===i?-1:s.language===i?1:0),t.sort((a,s)=>a.term?1:s.term?-1:0),o=[t[0]]}return r&&(o=o.map(da)),o}var on=t=>window.setTimeout(t);function Rt(t,e=1){if(t==null)return[e];let r=(Array.isArray(t)?t:String(t).split(",")).map(aa).filter(hr);return r.length||(r=[e]),r}function an(t){return t==null?[]:(Array.isArray(t)?t:String(t).split(",")).filter(ia)}function te(){return document.getElementsByTagName(th)?.[0]}function sn(t){let e={};if(!t?.headers)return e;let r=t.headers;for(let[n,o]of Object.entries(rh)){let i=r.get(o);i&&(i=i.replace(/[,;]/g,"|"),i=i.replace(/[| ]+/g,"|"),e[n]=i)}return e}var Je={clientId:"merch-at-scale",delimiter:"\xB6",ignoredProperties:["analytics","literals","element"],serializableTypes:["Array","Object"],sampleRate:1,tags:"acom",isProdDomain:!1},pa=1e3;function nh(t){return t instanceof Error||typeof t?.originatingRequest=="string"}function ma(t){if(t==null)return;let e=typeof t;if(e==="function")return t.name?`function ${t.name}`:"function";if(e==="object"){if(t instanceof Error)return t.message;if(typeof t.originatingRequest=="string"){let{message:n,originatingRequest:o,status:i}=t;return[n,i,o].filter(Boolean).join(" ")}let r=t[Symbol.toStringTag]??Object.getPrototypeOf(t).constructor.name;if(!Je.serializableTypes.includes(r))return r}return t}function oh(t,e){if(!Je.ignoredProperties.includes(t))return ma(e)}var Oo={append(t){if(t.level!=="error")return;let{message:e,params:r}=t,n=[],o=[],i=e;r.forEach(l=>{l!=null&&(nh(l)?n:o).push(l)}),n.length&&(i+=" "+n.map(ma).join(" "));let{pathname:a,search:s}=window.location,c=`${Je.delimiter}page=${a}${s}`;c.length>pa&&(c=`${c.slice(0,pa)}<trunc>`),i+=c,o.length&&(i+=`${Je.delimiter}facts=`,i+=JSON.stringify(o,oh)),window.lana?.log(i,Je)}};function cn(t){Object.assign(Je,Object.fromEntries(Object.entries(t).filter(([e,r])=>e in Je&&r!==""&&r!==null&&r!==void 0&&!Number.isNaN(r))))}var ua={LOCAL:"local",PROD:"prod",STAGE:"stage"},Mo={DEBUG:"debug",ERROR:"error",INFO:"info",WARN:"warn"},No=new Set,$o=new Set,fa=new Map,ga={append({level:t,message:e,params:r,timestamp:n,source:o}){console[t](`${n}ms [${o}] %c${e}`,"font-weight: bold;",...r)}},xa={filter:({level:t})=>t!==Mo.DEBUG},ih={filter:()=>!1};function ah(t,e,r,n,o){return{level:t,message:e,namespace:r,get params(){return n.length===1&&Jr(n[0])&&(n=n[0](),Array.isArray(n)||(n=[n])),n},source:o,timestamp:performance.now().toFixed(3)}}function sh(t){[...$o].every(e=>e(t))&&No.forEach(e=>e(t))}function ba(t){let e=(fa.get(t)??0)+1;fa.set(t,e);let r=`${t} #${e}`,n={id:r,namespace:t,module:o=>ba(`${n.namespace}/${o}`),updateConfig:cn};return Object.values(Mo).forEach(o=>{n[o]=(i,...a)=>sh(ah(o,i,t,a,r))}),Object.seal(n)}function ln(...t){t.forEach(e=>{let{append:r,filter:n}=e;Jr(n)&&$o.add(n),Jr(r)&&No.add(r)})}function ch(t={}){let{name:e}=t,r=A(N("commerce.debug",{search:!0,storage:!0}),e===ua.LOCAL);return ln(r?ga:xa),e===ua.PROD&&ln(Oo),se}function lh(){No.clear(),$o.clear()}var se={...ba(ho),Level:Mo,Plugins:{consoleAppender:ga,debugFilter:xa,quietFilter:ih,lanaAppender:Oo},init:ch,reset:lh,use:ln};var ke=class t extends Error{constructor(e,r,n){if(super(e,{cause:n}),this.name="MasError",r.response){let o=r.response.headers?.get(lr);o&&(r.requestId=o),r.response.status&&(r.status=r.response.status,r.statusText=r.response.statusText),r.response.url&&(r.url=r.response.url)}delete r.response,this.context=r,Error.captureStackTrace&&Error.captureStackTrace(this,t)}toString(){let e=Object.entries(this.context||{}).map(([n,o])=>`${n}: ${JSON.stringify(o)}`).join(", "),r=`${this.name}: ${this.message}`;return e&&(r+=` (${e})`),this.cause&&(r+=`
-Caused by: ${this.cause}`),r}};var hh={[me]:oo,[Ue]:io,[Pe]:ao},dh={[me]:lo,[Pe]:kt},ur,ze=class{constructor(e){y(this,ur);f(this,"changes",new Map);f(this,"connected",!1);f(this,"error");f(this,"log");f(this,"options");f(this,"promises",[]);f(this,"state",Ue);f(this,"timer",null);f(this,"value");f(this,"version",0);f(this,"wrapperElement");this.wrapperElement=e,this.log=se.module("mas-element")}update(){[me,Ue,Pe].forEach(e=>{this.wrapperElement.classList.toggle(hh[e],e===this.state)})}notify(){(this.state===Pe||this.state===me)&&(this.state===Pe?this.promises.forEach(({resolve:r})=>r(this.wrapperElement)):this.state===me&&this.promises.forEach(({reject:r})=>r(this.error)),this.promises=[]);let e=this.error;this.error instanceof ke&&(e={message:this.error.message,...this.error.context}),this.wrapperElement.dispatchEvent(new CustomEvent(dh[this.state],{bubbles:!0,detail:e}))}attributeChangedCallback(e,r,n){this.changes.set(e,n),this.requestUpdate()}connectedCallback(){v(this,ur,te()),this.requestUpdate(!0)}disconnectedCallback(){this.connected&&(this.connected=!1,this.log?.debug("Disconnected:",{element:this.wrapperElement}))}onceSettled(){let{error:e,promises:r,state:n}=this;return Pe===n?Promise.resolve(this.wrapperElement):me===n?Promise.reject(e):new Promise((o,i)=>{r.push({resolve:o,reject:i})})}toggleResolved(e,r,n){return e!==this.version?!1:(n!==void 0&&(this.options=n),this.state=Pe,this.value=r,this.update(),this.log?.debug("Resolved:",{element:this.wrapperElement,value:r}),on(()=>this.notify()),!0)}toggleFailed(e,r,n){if(e!==this.version)return!1;n!==void 0&&(this.options=n),this.error=r,this.state=me,this.update();let o=this.wrapperElement.getAttribute("is");return this.log?.error(`${o}: Failed to render: ${r.message}`,{element:this.wrapperElement,...r.context,...u(this,ur)?.duration}),on(()=>this.notify()),!0}togglePending(e){return this.version++,e&&(this.options=e),this.state=Ue,this.update(),this.log?.debug("Pending:",{osi:this.wrapperElement?.options?.wcsOsi}),this.version}requestUpdate(e=!1){if(!this.wrapperElement.isConnected||!te()||this.timer)return;let{error:r,options:n,state:o,value:i,version:a}=this;this.state=Ue,this.timer=on(async()=>{this.timer=null;let s=null;if(this.changes.size&&(s=Object.fromEntries(this.changes.entries()),this.changes.clear()),this.connected?this.log?.debug("Updated:",{element:this.wrapperElement,changes:s}):(this.connected=!0,this.log?.debug("Connected:",{element:this.wrapperElement,changes:s})),s||e)try{await this.wrapperElement.render?.()===!1&&this.state===Ue&&this.version===a&&(this.state=o,this.error=r,this.value=i,this.update(),this.notify())}catch(c){this.toggleFailed(this.version,c,n)}})}};ur=new WeakMap;function va(t={}){return Object.entries(t).forEach(([e,r])=>{(r==null||r===""||r?.length===0)&&delete t[e]}),t}function hn(t,e={}){let{tag:r,is:n}=t,o=document.createElement(r,{is:n});return o.setAttribute("is",n),Object.assign(o.dataset,va(e)),o}function dn(t,e={}){return t instanceof HTMLElement?(Object.assign(t.dataset,va(e)),t):null}var ya="download",Ea="upgrade",Aa={e:"EDU",t:"TEAM"};function pn(t,e={},r=""){let n=te();if(!n)return null;let{checkoutMarketSegment:o,checkoutWorkflow:i,checkoutWorkflowStep:a,entitlement:s,upgrade:c,modal:l,perpetual:h,promotionCode:d,quantity:m,wcsOsi:p,extraOptions:g,analyticsId:b}=n.collectCheckoutOptions(e),w=hn(t,{checkoutMarketSegment:o,checkoutWorkflow:i,checkoutWorkflowStep:a,entitlement:s,upgrade:c,modal:l,perpetual:h,promotionCode:d,quantity:m,wcsOsi:p,extraOptions:g,analyticsId:b});return r&&(w.innerHTML=`<span style="pointer-events: none;">${r}</span>`),w}function mn(t){return class extends t{constructor(){super(...arguments);f(this,"checkoutActionHandler");f(this,"masElement",new ze(this))}attributeChangedCallback(n,o,i){this.masElement.attributeChangedCallback(n,o,i)}connectedCallback(){this.masElement.connectedCallback(),this.addEventListener("click",this.clickHandler)}disconnectedCallback(){this.masElement.disconnectedCallback(),this.removeEventListener("click",this.clickHandler)}onceSettled(){return this.masElement.onceSettled()}get value(){return this.masElement.value}get options(){return this.masElement.options}get marketSegment(){let n=this.options?.ms??this.value?.[0].marketSegments?.[0];return Aa[n]??n}get customerSegment(){let n=this.options?.cs??this.value?.[0]?.customerSegment;return Aa[n]??n}get is3in1Modal(){return Object.values(Ke).includes(this.getAttribute("data-modal"))}get isOpen3in1Modal(){let n=document.querySelector("meta[name=mas-ff-3in1]");return this.is3in1Modal&&(!n||n.content!=="off")}requestUpdate(n=!1){return this.masElement.requestUpdate(n)}static get observedAttributes(){return["data-checkout-workflow","data-checkout-workflow-step","data-extra-options","data-ims-country","data-perpetual","data-promotion-code","data-quantity","data-template","data-wcs-osi","data-entitlement","data-upgrade","data-modal"]}async render(n={}){let o=te();if(!o)return!1;this.dataset.imsCountry||o.imsCountryPromise.then(d=>{d&&(this.dataset.imsCountry=d)}),n.imsCountry=null;let i=o.collectCheckoutOptions(n,this);if(!i.wcsOsi.length)return!1;let a;try{a=JSON.parse(i.extraOptions??"{}")}catch(d){this.masElement.log?.error("cannot parse exta checkout options",d)}let s=this.masElement.togglePending(i);this.setCheckoutUrl("");let c=o.resolveOfferSelectors(i),l=await Promise.all(c);l=l.map(d=>mr(d,i)),i.country=this.dataset.imsCountry||i.country;let h=await o.buildCheckoutAction?.(l.flat(),{...a,...i},this);return this.renderOffers(l.flat(),i,{},h,s)}renderOffers(n,o,i={},a=void 0,s=void 0){let c=te();if(!c)return!1;if(o={...JSON.parse(this.dataset.extraOptions??"{}"),...o,...i},s??(s=this.masElement.togglePending(o)),this.checkoutActionHandler&&(this.checkoutActionHandler=void 0),a){this.classList.remove(ya,Ea),this.masElement.toggleResolved(s,n,o);let{url:h,text:d,className:m,handler:p}=a;h&&this.setCheckoutUrl(h),d&&(this.firstElementChild.innerHTML=d),m&&this.classList.add(...m.split(" ")),p&&(this.setCheckoutUrl("#"),this.checkoutActionHandler=p.bind(this))}if(n.length){if(this.masElement.toggleResolved(s,n,o)){if(!this.classList.contains(ya)&&!this.classList.contains(Ea)){let h=c.buildCheckoutURL(n,o);this.setCheckoutUrl(o.modal==="true"?"#":h)}return!0}}else{let h=new Error(`Not provided: ${o?.wcsOsi??"-"}`);if(this.masElement.toggleFailed(s,h,o))return this.setCheckoutUrl("#"),!0}}setCheckoutUrl(){}clickHandler(n){}updateOptions(n={}){let o=te();if(!o)return!1;let{checkoutMarketSegment:i,checkoutWorkflow:a,checkoutWorkflowStep:s,entitlement:c,upgrade:l,modal:h,perpetual:d,promotionCode:m,quantity:p,wcsOsi:g}=o.collectCheckoutOptions(n);return dn(this,{checkoutMarketSegment:i,checkoutWorkflow:a,checkoutWorkflowStep:s,entitlement:c,upgrade:l,modal:h,perpetual:d,promotionCode:m,quantity:p,wcsOsi:g}),!0}}}var fr=class fr extends mn(HTMLAnchorElement){static createCheckoutLink(e={},r=""){return pn(fr,e,r)}setCheckoutUrl(e){this.setAttribute("href",e)}get isCheckoutLink(){return!0}clickHandler(e){if(this.checkoutActionHandler){this.checkoutActionHandler?.(e);return}}};f(fr,"is","checkout-link"),f(fr,"tag","a");var Le=fr;window.customElements.get(Le.is)||window.customElements.define(Le.is,Le,{extends:Le.tag});var ph="p_draft_landscape",mh="/store/",uh=new Map([["countrySpecific","cs"],["customerSegment","cs"],["quantity","q"],["authCode","code"],["checkoutPromoCode","apc"],["rurl","rUrl"],["curl","cUrl"],["ctxrturl","ctxRtUrl"],["country","co"],["language","lang"],["clientId","cli"],["context","ctx"],["productArrangementCode","pa"],["addonProductArrangementCode","ao"],["offerType","ot"],["marketSegment","ms"]]),Io=new Set(["af","ai","ao","apc","appctxid","cli","co","cs","csm","ctx","ctxRtUrl","DCWATC","dp","fr","gsp","ijt","lang","lo","mal","ms","mv","mv2","nglwfdata","ot","otac","pa","pcid","promoid","q","rf","sc","scl","sdid","sid","spint","svar","th","thm","trackingid","usid","workflowid","context.guid","so.ca","so.su","so.tr","so.va"]),fh=["env","workflowStep","clientId","country"],wa=t=>uh.get(t)??t;function Ho(t,e,r){for(let[n,o]of Object.entries(t)){let i=wa(n);o!=null&&r.has(i)&&e.set(i,o)}}function gh(t){switch(t){case xo.PRODUCTION:return"https://commerce.adobe.com";default:return"https://commerce-stg.adobe.com"}}function xh(t,e){for(let r in t){let n=t[r];for(let[o,i]of Object.entries(n)){if(i==null)continue;let a=wa(o);e.set(`items[${r}][${a}]`,i)}}}function bh({url:t,modal:e,is3in1:r}){if(!r||!t?.searchParams)return t;t.searchParams.set("rtc","t"),t.searchParams.set("lo","sl");let n=t.searchParams.get("af");return t.searchParams.set("af",[n,"uc_new_user_iframe","uc_new_system_close"].filter(Boolean).join(",")),t.searchParams.get("cli")!=="doc_cloud"&&t.searchParams.set("cli",e===Ke.CRM?"creative":"mini_plans"),t}function Sa(t){vh(t);let{env:e,items:r,workflowStep:n,marketSegment:o,customerSegment:i,offerType:a,productArrangementCode:s,landscape:c,modal:l,is3in1:h,preselectPlan:d,...m}=t,p=new URL(gh(e));if(p.pathname=`${mh}${n}`,n!==ee.SEGMENTATION&&n!==ee.CHANGE_PLAN_TEAM_PLANS&&xh(r,p.searchParams),Ho({...m},p.searchParams,Io),c===De.DRAFT&&Ho({af:ph},p.searchParams,Io),n===ee.SEGMENTATION){let g={marketSegment:o,offerType:a,customerSegment:i,productArrangementCode:s,quantity:r?.[0]?.quantity,addonProductArrangementCode:s?r?.find(b=>b.productArrangementCode!==s)?.productArrangementCode:r?.[1]?.productArrangementCode};d?.toLowerCase()==="edu"?p.searchParams.set("ms","EDU"):d?.toLowerCase()==="team"&&p.searchParams.set("cs","TEAM"),Ho(g,p.searchParams,Io),p.searchParams.get("ot")==="PROMOTION"&&p.searchParams.delete("ot"),p=bh({url:p,modal:l,is3in1:h})}return p.toString()}function vh(t){for(let e of fh)if(!t[e])throw new Error('Argument "checkoutData" is not valid, missing: '+e);if(t.workflowStep!==ee.SEGMENTATION&&t.workflowStep!==ee.CHANGE_PLAN_TEAM_PLANS&&!t.items)throw new Error('Argument "checkoutData" is not valid, missing: items');return!0}var L=Object.freeze({checkoutClientId:"adobe_com",checkoutWorkflowStep:ee.EMAIL,country:"US",displayOldPrice:!1,displayPerUnit:!0,displayRecurrence:!0,displayTax:!1,displayPlanType:!1,env:ye.PRODUCTION,forceTaxExclusive:!1,language:"en",entitlement:!1,extraOptions:{},modal:!1,promotionCode:"",quantity:1,alternativePrice:!1,wcsApiKey:"wcms-commerce-ims-ro-user-milo",wcsURL:"https://www.adobe.com/web_commerce_artifact",landscape:De.PUBLISHED});function _a({settings:t,providers:e}){function r(i,a){let{checkoutClientId:s,checkoutWorkflowStep:c,country:l,language:h,promotionCode:d,quantity:m,preselectPlan:p,env:g}=t,b={checkoutClientId:s,checkoutWorkflowStep:c,country:l,language:h,promotionCode:d,quantity:m,preselectPlan:p,env:g};if(a)for(let St of e.checkout)St(a,b);let{checkoutMarketSegment:w,checkoutWorkflowStep:R=c,imsCountry:k,country:S=k??l,language:T=h,quantity:M=m,entitlement:B,upgrade:V,modal:re,perpetual:z,promotionCode:$=d,wcsOsi:Z,extraOptions:ce,...He}=Object.assign(b,a?.dataset??{},i??{}),ve=dr(R,ee,L.checkoutWorkflowStep);return b=tn({...He,extraOptions:ce,checkoutClientId:s,checkoutMarketSegment:w,country:S,quantity:Rt(M,L.quantity),checkoutWorkflowStep:ve,language:T,entitlement:A(B),upgrade:A(V),modal:re,perpetual:A(z),promotionCode:nn($).effectivePromoCode,wcsOsi:an(Z),preselectPlan:p}),b}function n(i,a){if(!Array.isArray(i)||!i.length||!a)return"";let{env:s,landscape:c}=t,{checkoutClientId:l,checkoutMarketSegment:h,checkoutWorkflowStep:d,country:m,promotionCode:p,quantity:g,preselectPlan:b,ms:w,cs:R,...k}=r(a),S=document.querySelector("meta[name=mas-ff-3in1]"),T=Object.values(Ke).includes(a.modal)&&(!S||S.content!=="off"),M=window.frameElement||T?"if":"fp",[{productArrangementCode:B,marketSegments:[V],customerSegment:re,offerType:z}]=i,$=w??V??h,Z=R??re;b?.toLowerCase()==="edu"?$="EDU":b?.toLowerCase()==="team"&&(Z="TEAM");let ce={is3in1:T,checkoutPromoCode:p,clientId:l,context:M,country:m,env:s,items:[],marketSegment:$,customerSegment:Z,offerType:z,productArrangementCode:B,workflowStep:d,landscape:c,...k},He=g[0]>1?g[0]:void 0;if(i.length===1){let{offerId:ve}=i[0];ce.items.push({id:ve,quantity:He})}else ce.items.push(...i.map(({offerId:ve,productArrangementCode:St})=>({id:ve,quantity:He,...T?{productArrangementCode:St}:{}})));return Sa(ce)}let{createCheckoutLink:o}=Le;return{CheckoutLink:Le,CheckoutWorkflowStep:ee,buildCheckoutURL:n,collectCheckoutOptions:r,createCheckoutLink:o}}function yh({interval:t=200,maxAttempts:e=25}={}){let r=se.module("ims");return new Promise(n=>{r.debug("Waing for IMS to be ready");let o=0;function i(){window.adobeIMS?.initialized?n():++o>e?(r.debug("Timeout"),n()):setTimeout(i,t)}i()})}function Eh(t){return t.then(()=>window.adobeIMS?.isSignedInUser()??!1)}function Ah(t){let e=se.module("ims");return t.then(r=>r?window.adobeIMS.getProfile().then(({countryCode:n})=>(e.debug("Got user country:",n),n),n=>{e.error("Unable to get user country:",n)}):null)}function Ta({}){let t=yh(),e=Eh(t),r=Ah(e);return{imsReadyPromise:t,imsSignedInPromise:e,imsCountryPromise:r}}var Ca=window.masPriceLiterals;function Pa(t){if(Array.isArray(Ca)){let e=n=>Ca.find(o=>yo(o.lang,n)),r=e(t.language)??e(L.language);if(r)return Object.freeze(r)}return{}}var Uo=function(t,e){return Uo=Object.setPrototypeOf||{__proto__:[]}instanceof Array&&function(r,n){r.__proto__=n}||function(r,n){for(var o in n)Object.prototype.hasOwnProperty.call(n,o)&&(r[o]=n[o])},Uo(t,e)};function gr(t,e){if(typeof e!="function"&&e!==null)throw new TypeError("Class extends value "+String(e)+" is not a constructor or null");Uo(t,e);function r(){this.constructor=t}t.prototype=e===null?Object.create(e):(r.prototype=e.prototype,new r)}var C=function(){return C=Object.assign||function(e){for(var r,n=1,o=arguments.length;n<o;n++){r=arguments[n];for(var i in r)Object.prototype.hasOwnProperty.call(r,i)&&(e[i]=r[i])}return e},C.apply(this,arguments)};function un(t,e,r){if(r||arguments.length===2)for(var n=0,o=e.length,i;n<o;n++)(i||!(n in e))&&(i||(i=Array.prototype.slice.call(e,0,n)),i[n]=e[n]);return t.concat(i||Array.prototype.slice.call(e))}var _;(function(t){t[t.EXPECT_ARGUMENT_CLOSING_BRACE=1]="EXPECT_ARGUMENT_CLOSING_BRACE",t[t.EMPTY_ARGUMENT=2]="EMPTY_ARGUMENT",t[t.MALFORMED_ARGUMENT=3]="MALFORMED_ARGUMENT",t[t.EXPECT_ARGUMENT_TYPE=4]="EXPECT_ARGUMENT_TYPE",t[t.INVALID_ARGUMENT_TYPE=5]="INVALID_ARGUMENT_TYPE",t[t.EXPECT_ARGUMENT_STYLE=6]="EXPECT_ARGUMENT_STYLE",t[t.INVALID_NUMBER_SKELETON=7]="INVALID_NUMBER_SKELETON",t[t.INVALID_DATE_TIME_SKELETON=8]="INVALID_DATE_TIME_SKELETON",t[t.EXPECT_NUMBER_SKELETON=9]="EXPECT_NUMBER_SKELETON",t[t.EXPECT_DATE_TIME_SKELETON=10]="EXPECT_DATE_TIME_SKELETON",t[t.UNCLOSED_QUOTE_IN_ARGUMENT_STYLE=11]="UNCLOSED_QUOTE_IN_ARGUMENT_STYLE",t[t.EXPECT_SELECT_ARGUMENT_OPTIONS=12]="EXPECT_SELECT_ARGUMENT_OPTIONS",t[t.EXPECT_PLURAL_ARGUMENT_OFFSET_VALUE=13]="EXPECT_PLURAL_ARGUMENT_OFFSET_VALUE",t[t.INVALID_PLURAL_ARGUMENT_OFFSET_VALUE=14]="INVALID_PLURAL_ARGUMENT_OFFSET_VALUE",t[t.EXPECT_SELECT_ARGUMENT_SELECTOR=15]="EXPECT_SELECT_ARGUMENT_SELECTOR",t[t.EXPECT_PLURAL_ARGUMENT_SELECTOR=16]="EXPECT_PLURAL_ARGUMENT_SELECTOR",t[t.EXPECT_SELECT_ARGUMENT_SELECTOR_FRAGMENT=17]="EXPECT_SELECT_ARGUMENT_SELECTOR_FRAGMENT",t[t.EXPECT_PLURAL_ARGUMENT_SELECTOR_FRAGMENT=18]="EXPECT_PLURAL_ARGUMENT_SELECTOR_FRAGMENT",t[t.INVALID_PLURAL_ARGUMENT_SELECTOR=19]="INVALID_PLURAL_ARGUMENT_SELECTOR",t[t.DUPLICATE_PLURAL_ARGUMENT_SELECTOR=20]="DUPLICATE_PLURAL_ARGUMENT_SELECTOR",t[t.DUPLICATE_SELECT_ARGUMENT_SELECTOR=21]="DUPLICATE_SELECT_ARGUMENT_SELECTOR",t[t.MISSING_OTHER_CLAUSE=22]="MISSING_OTHER_CLAUSE",t[t.INVALID_TAG=23]="INVALID_TAG",t[t.INVALID_TAG_NAME=25]="INVALID_TAG_NAME",t[t.UNMATCHED_CLOSING_TAG=26]="UNMATCHED_CLOSING_TAG",t[t.UNCLOSED_TAG=27]="UNCLOSED_TAG"})(_||(_={}));var I;(function(t){t[t.literal=0]="literal",t[t.argument=1]="argument",t[t.number=2]="number",t[t.date=3]="date",t[t.time=4]="time",t[t.select=5]="select",t[t.plural=6]="plural",t[t.pound=7]="pound",t[t.tag=8]="tag"})(I||(I={}));var et;(function(t){t[t.number=0]="number",t[t.dateTime=1]="dateTime"})(et||(et={}));function Do(t){return t.type===I.literal}function ka(t){return t.type===I.argument}function fn(t){return t.type===I.number}function gn(t){return t.type===I.date}function xn(t){return t.type===I.time}function bn(t){return t.type===I.select}function vn(t){return t.type===I.plural}function La(t){return t.type===I.pound}function yn(t){return t.type===I.tag}function En(t){return!!(t&&typeof t=="object"&&t.type===et.number)}function xr(t){return!!(t&&typeof t=="object"&&t.type===et.dateTime)}var Bo=/[ \xA0\u1680\u2000-\u200A\u202F\u205F\u3000]/;var wh=/(?:[Eec]{1,6}|G{1,5}|[Qq]{1,5}|(?:[yYur]+|U{1,5})|[ML]{1,5}|d{1,2}|D{1,3}|F{1}|[abB]{1,5}|[hkHK]{1,2}|w{1,2}|W{1}|m{1,2}|s{1,2}|[zZOvVxX]{1,4})(?=([^']*'[^']*')*[^']*$)/g;function Ra(t){var e={};return t.replace(wh,function(r){var n=r.length;switch(r[0]){case"G":e.era=n===4?"long":n===5?"narrow":"short";break;case"y":e.year=n===2?"2-digit":"numeric";break;case"Y":case"u":case"U":case"r":throw new RangeError("`Y/u/U/r` (year) patterns are not supported, use `y` instead");case"q":case"Q":throw new RangeError("`q/Q` (quarter) patterns are not supported");case"M":case"L":e.month=["numeric","2-digit","short","long","narrow"][n-1];break;case"w":case"W":throw new RangeError("`w/W` (week) patterns are not supported");case"d":e.day=["numeric","2-digit"][n-1];break;case"D":case"F":case"g":throw new RangeError("`D/F/g` (day) patterns are not supported, use `d` instead");case"E":e.weekday=n===4?"short":n===5?"narrow":"short";break;case"e":if(n<4)throw new RangeError("`e..eee` (weekday) patterns are not supported");e.weekday=["short","long","narrow","short"][n-4];break;case"c":if(n<4)throw new RangeError("`c..ccc` (weekday) patterns are not supported");e.weekday=["short","long","narrow","short"][n-4];break;case"a":e.hour12=!0;break;case"b":case"B":throw new RangeError("`b/B` (period) patterns are not supported, use `a` instead");case"h":e.hourCycle="h12",e.hour=["numeric","2-digit"][n-1];break;case"H":e.hourCycle="h23",e.hour=["numeric","2-digit"][n-1];break;case"K":e.hourCycle="h11",e.hour=["numeric","2-digit"][n-1];break;case"k":e.hourCycle="h24",e.hour=["numeric","2-digit"][n-1];break;case"j":case"J":case"C":throw new RangeError("`j/J/C` (hour) patterns are not supported, use `h/H/K/k` instead");case"m":e.minute=["numeric","2-digit"][n-1];break;case"s":e.second=["numeric","2-digit"][n-1];break;case"S":case"A":throw new RangeError("`S/A` (second) patterns are not supported, use `s` instead");case"z":e.timeZoneName=n<4?"short":"long";break;case"Z":case"O":case"v":case"V":case"X":case"x":throw new RangeError("`Z/O/v/V/X/x` (timeZone) patterns are not supported, use `z` instead")}return""}),e}var Oa=/[\t-\r \x85\u200E\u200F\u2028\u2029]/i;function Ia(t){if(t.length===0)throw new Error("Number skeleton cannot be empty");for(var e=t.split(Oa).filter(function(m){return m.length>0}),r=[],n=0,o=e;n<o.length;n++){var i=o[n],a=i.split("/");if(a.length===0)throw new Error("Invalid number skeleton");for(var s=a[0],c=a.slice(1),l=0,h=c;l<h.length;l++){var d=h[l];if(d.length===0)throw new Error("Invalid number skeleton")}r.push({stem:s,options:c})}return r}function Sh(t){return t.replace(/^(.*?)-/,"")}var Ma=/^\.(?:(0+)(\*)?|(#+)|(0+)(#+))$/g,Ha=/^(@+)?(\+|#+)?[rs]?$/g,_h=/(\*)(0+)|(#+)(0+)|(0+)/g,Ua=/^(0+)$/;function Na(t){var e={};return t[t.length-1]==="r"?e.roundingPriority="morePrecision":t[t.length-1]==="s"&&(e.roundingPriority="lessPrecision"),t.replace(Ha,function(r,n,o){return typeof o!="string"?(e.minimumSignificantDigits=n.length,e.maximumSignificantDigits=n.length):o==="+"?e.minimumSignificantDigits=n.length:n[0]==="#"?e.maximumSignificantDigits=n.length:(e.minimumSignificantDigits=n.length,e.maximumSignificantDigits=n.length+(typeof o=="string"?o.length:0)),""}),e}function Da(t){switch(t){case"sign-auto":return{signDisplay:"auto"};case"sign-accounting":case"()":return{currencySign:"accounting"};case"sign-always":case"+!":return{signDisplay:"always"};case"sign-accounting-always":case"()!":return{signDisplay:"always",currencySign:"accounting"};case"sign-except-zero":case"+?":return{signDisplay:"exceptZero"};case"sign-accounting-except-zero":case"()?":return{signDisplay:"exceptZero",currencySign:"accounting"};case"sign-never":case"+_":return{signDisplay:"never"}}}function Th(t){var e;if(t[0]==="E"&&t[1]==="E"?(e={notation:"engineering"},t=t.slice(2)):t[0]==="E"&&(e={notation:"scientific"},t=t.slice(1)),e){var r=t.slice(0,2);if(r==="+!"?(e.signDisplay="always",t=t.slice(2)):r==="+?"&&(e.signDisplay="exceptZero",t=t.slice(2)),!Ua.test(t))throw new Error("Malformed concise eng/scientific notation");e.minimumIntegerDigits=t.length}return e}function $a(t){var e={},r=Da(t);return r||e}function Ba(t){for(var e={},r=0,n=t;r<n.length;r++){var o=n[r];switch(o.stem){case"percent":case"%":e.style="percent";continue;case"%x100":e.style="percent",e.scale=100;continue;case"currency":e.style="currency",e.currency=o.options[0];continue;case"group-off":case",_":e.useGrouping=!1;continue;case"precision-integer":case".":e.maximumFractionDigits=0;continue;case"measure-unit":case"unit":e.style="unit",e.unit=Sh(o.options[0]);continue;case"compact-short":case"K":e.notation="compact",e.compactDisplay="short";continue;case"compact-long":case"KK":e.notation="compact",e.compactDisplay="long";continue;case"scientific":e=C(C(C({},e),{notation:"scientific"}),o.options.reduce(function(c,l){return C(C({},c),$a(l))},{}));continue;case"engineering":e=C(C(C({},e),{notation:"engineering"}),o.options.reduce(function(c,l){return C(C({},c),$a(l))},{}));continue;case"notation-simple":e.notation="standard";continue;case"unit-width-narrow":e.currencyDisplay="narrowSymbol",e.unitDisplay="narrow";continue;case"unit-width-short":e.currencyDisplay="code",e.unitDisplay="short";continue;case"unit-width-full-name":e.currencyDisplay="name",e.unitDisplay="long";continue;case"unit-width-iso-code":e.currencyDisplay="symbol";continue;case"scale":e.scale=parseFloat(o.options[0]);continue;case"integer-width":if(o.options.length>1)throw new RangeError("integer-width stems only accept a single optional option");o.options[0].replace(_h,function(c,l,h,d,m,p){if(l)e.minimumIntegerDigits=h.length;else{if(d&&m)throw new Error("We currently do not support maximum integer digits");if(p)throw new Error("We currently do not support exact integer digits")}return""});continue}if(Ua.test(o.stem)){e.minimumIntegerDigits=o.stem.length;continue}if(Ma.test(o.stem)){if(o.options.length>1)throw new RangeError("Fraction-precision stems only accept a single optional option");o.stem.replace(Ma,function(c,l,h,d,m,p){return h==="*"?e.minimumFractionDigits=l.length:d&&d[0]==="#"?e.maximumFractionDigits=d.length:m&&p?(e.minimumFractionDigits=m.length,e.maximumFractionDigits=m.length+p.length):(e.minimumFractionDigits=l.length,e.maximumFractionDigits=l.length),""});var i=o.options[0];i==="w"?e=C(C({},e),{trailingZeroDisplay:"stripIfInteger"}):i&&(e=C(C({},e),Na(i)));continue}if(Ha.test(o.stem)){e=C(C({},e),Na(o.stem));continue}var a=Da(o.stem);a&&(e=C(C({},e),a));var s=Th(o.stem);s&&(e=C(C({},e),s))}return e}var br={AX:["H"],BQ:["H"],CP:["H"],CZ:["H"],DK:["H"],FI:["H"],ID:["H"],IS:["H"],ML:["H"],NE:["H"],RU:["H"],SE:["H"],SJ:["H"],SK:["H"],AS:["h","H"],BT:["h","H"],DJ:["h","H"],ER:["h","H"],GH:["h","H"],IN:["h","H"],LS:["h","H"],PG:["h","H"],PW:["h","H"],SO:["h","H"],TO:["h","H"],VU:["h","H"],WS:["h","H"],"001":["H","h"],AL:["h","H","hB"],TD:["h","H","hB"],"ca-ES":["H","h","hB"],CF:["H","h","hB"],CM:["H","h","hB"],"fr-CA":["H","h","hB"],"gl-ES":["H","h","hB"],"it-CH":["H","h","hB"],"it-IT":["H","h","hB"],LU:["H","h","hB"],NP:["H","h","hB"],PF:["H","h","hB"],SC:["H","h","hB"],SM:["H","h","hB"],SN:["H","h","hB"],TF:["H","h","hB"],VA:["H","h","hB"],CY:["h","H","hb","hB"],GR:["h","H","hb","hB"],CO:["h","H","hB","hb"],DO:["h","H","hB","hb"],KP:["h","H","hB","hb"],KR:["h","H","hB","hb"],NA:["h","H","hB","hb"],PA:["h","H","hB","hb"],PR:["h","H","hB","hb"],VE:["h","H","hB","hb"],AC:["H","h","hb","hB"],AI:["H","h","hb","hB"],BW:["H","h","hb","hB"],BZ:["H","h","hb","hB"],CC:["H","h","hb","hB"],CK:["H","h","hb","hB"],CX:["H","h","hb","hB"],DG:["H","h","hb","hB"],FK:["H","h","hb","hB"],GB:["H","h","hb","hB"],GG:["H","h","hb","hB"],GI:["H","h","hb","hB"],IE:["H","h","hb","hB"],IM:["H","h","hb","hB"],IO:["H","h","hb","hB"],JE:["H","h","hb","hB"],LT:["H","h","hb","hB"],MK:["H","h","hb","hB"],MN:["H","h","hb","hB"],MS:["H","h","hb","hB"],NF:["H","h","hb","hB"],NG:["H","h","hb","hB"],NR:["H","h","hb","hB"],NU:["H","h","hb","hB"],PN:["H","h","hb","hB"],SH:["H","h","hb","hB"],SX:["H","h","hb","hB"],TA:["H","h","hb","hB"],ZA:["H","h","hb","hB"],"af-ZA":["H","h","hB","hb"],AR:["H","h","hB","hb"],CL:["H","h","hB","hb"],CR:["H","h","hB","hb"],CU:["H","h","hB","hb"],EA:["H","h","hB","hb"],"es-BO":["H","h","hB","hb"],"es-BR":["H","h","hB","hb"],"es-EC":["H","h","hB","hb"],"es-ES":["H","h","hB","hb"],"es-GQ":["H","h","hB","hb"],"es-PE":["H","h","hB","hb"],GT:["H","h","hB","hb"],HN:["H","h","hB","hb"],IC:["H","h","hB","hb"],KG:["H","h","hB","hb"],KM:["H","h","hB","hb"],LK:["H","h","hB","hb"],MA:["H","h","hB","hb"],MX:["H","h","hB","hb"],NI:["H","h","hB","hb"],PY:["H","h","hB","hb"],SV:["H","h","hB","hb"],UY:["H","h","hB","hb"],JP:["H","h","K"],AD:["H","hB"],AM:["H","hB"],AO:["H","hB"],AT:["H","hB"],AW:["H","hB"],BE:["H","hB"],BF:["H","hB"],BJ:["H","hB"],BL:["H","hB"],BR:["H","hB"],CG:["H","hB"],CI:["H","hB"],CV:["H","hB"],DE:["H","hB"],EE:["H","hB"],FR:["H","hB"],GA:["H","hB"],GF:["H","hB"],GN:["H","hB"],GP:["H","hB"],GW:["H","hB"],HR:["H","hB"],IL:["H","hB"],IT:["H","hB"],KZ:["H","hB"],MC:["H","hB"],MD:["H","hB"],MF:["H","hB"],MQ:["H","hB"],MZ:["H","hB"],NC:["H","hB"],NL:["H","hB"],PM:["H","hB"],PT:["H","hB"],RE:["H","hB"],RO:["H","hB"],SI:["H","hB"],SR:["H","hB"],ST:["H","hB"],TG:["H","hB"],TR:["H","hB"],WF:["H","hB"],YT:["H","hB"],BD:["h","hB","H"],PK:["h","hB","H"],AZ:["H","hB","h"],BA:["H","hB","h"],BG:["H","hB","h"],CH:["H","hB","h"],GE:["H","hB","h"],LI:["H","hB","h"],ME:["H","hB","h"],RS:["H","hB","h"],UA:["H","hB","h"],UZ:["H","hB","h"],XK:["H","hB","h"],AG:["h","hb","H","hB"],AU:["h","hb","H","hB"],BB:["h","hb","H","hB"],BM:["h","hb","H","hB"],BS:["h","hb","H","hB"],CA:["h","hb","H","hB"],DM:["h","hb","H","hB"],"en-001":["h","hb","H","hB"],FJ:["h","hb","H","hB"],FM:["h","hb","H","hB"],GD:["h","hb","H","hB"],GM:["h","hb","H","hB"],GU:["h","hb","H","hB"],GY:["h","hb","H","hB"],JM:["h","hb","H","hB"],KI:["h","hb","H","hB"],KN:["h","hb","H","hB"],KY:["h","hb","H","hB"],LC:["h","hb","H","hB"],LR:["h","hb","H","hB"],MH:["h","hb","H","hB"],MP:["h","hb","H","hB"],MW:["h","hb","H","hB"],NZ:["h","hb","H","hB"],SB:["h","hb","H","hB"],SG:["h","hb","H","hB"],SL:["h","hb","H","hB"],SS:["h","hb","H","hB"],SZ:["h","hb","H","hB"],TC:["h","hb","H","hB"],TT:["h","hb","H","hB"],UM:["h","hb","H","hB"],US:["h","hb","H","hB"],VC:["h","hb","H","hB"],VG:["h","hb","H","hB"],VI:["h","hb","H","hB"],ZM:["h","hb","H","hB"],BO:["H","hB","h","hb"],EC:["H","hB","h","hb"],ES:["H","hB","h","hb"],GQ:["H","hB","h","hb"],PE:["H","hB","h","hb"],AE:["h","hB","hb","H"],"ar-001":["h","hB","hb","H"],BH:["h","hB","hb","H"],DZ:["h","hB","hb","H"],EG:["h","hB","hb","H"],EH:["h","hB","hb","H"],HK:["h","hB","hb","H"],IQ:["h","hB","hb","H"],JO:["h","hB","hb","H"],KW:["h","hB","hb","H"],LB:["h","hB","hb","H"],LY:["h","hB","hb","H"],MO:["h","hB","hb","H"],MR:["h","hB","hb","H"],OM:["h","hB","hb","H"],PH:["h","hB","hb","H"],PS:["h","hB","hb","H"],QA:["h","hB","hb","H"],SA:["h","hB","hb","H"],SD:["h","hB","hb","H"],SY:["h","hB","hb","H"],TN:["h","hB","hb","H"],YE:["h","hB","hb","H"],AF:["H","hb","hB","h"],LA:["H","hb","hB","h"],CN:["H","hB","hb","h"],LV:["H","hB","hb","h"],TL:["H","hB","hb","h"],"zu-ZA":["H","hB","hb","h"],CD:["hB","H"],IR:["hB","H"],"hi-IN":["hB","h","H"],"kn-IN":["hB","h","H"],"ml-IN":["hB","h","H"],"te-IN":["hB","h","H"],KH:["hB","h","H","hb"],"ta-IN":["hB","h","hb","H"],BN:["hb","hB","h","H"],MY:["hb","hB","h","H"],ET:["hB","hb","h","H"],"gu-IN":["hB","hb","h","H"],"mr-IN":["hB","hb","h","H"],"pa-IN":["hB","hb","h","H"],TW:["hB","hb","h","H"],KE:["hB","hb","H","h"],MM:["hB","hb","H","h"],TZ:["hB","hb","H","h"],UG:["hB","hb","H","h"]};function za(t,e){for(var r="",n=0;n<t.length;n++){var o=t.charAt(n);if(o==="j"){for(var i=0;n+1<t.length&&t.charAt(n+1)===o;)i++,n++;var a=1+(i&1),s=i<2?1:3+(i>>1),c="a",l=Ch(e);for((l=="H"||l=="k")&&(s=0);s-- >0;)r+=c;for(;a-- >0;)r=l+r}else o==="J"?r+="H":r+=o}return r}function Ch(t){var e=t.hourCycle;if(e===void 0&&t.hourCycles&&t.hourCycles.length&&(e=t.hourCycles[0]),e)switch(e){case"h24":return"k";case"h23":return"H";case"h12":return"h";case"h11":return"K";default:throw new Error("Invalid hourCycle")}var r=t.language,n;r!=="root"&&(n=t.maximize().region);var o=br[n||""]||br[r||""]||br["".concat(r,"-001")]||br["001"];return o[0]}var zo,Ph=new RegExp("^".concat(Bo.source,"*")),kh=new RegExp("".concat(Bo.source,"*$"));function P(t,e){return{start:t,end:e}}var Lh=!!String.prototype.startsWith,Rh=!!String.fromCodePoint,Oh=!!Object.fromEntries,Mh=!!String.prototype.codePointAt,Nh=!!String.prototype.trimStart,$h=!!String.prototype.trimEnd,Ih=!!Number.isSafeInteger,Hh=Ih?Number.isSafeInteger:function(t){return typeof t=="number"&&isFinite(t)&&Math.floor(t)===t&&Math.abs(t)<=9007199254740991},Go=!0;try{Fa=qa("([^\\p{White_Space}\\p{Pattern_Syntax}]*)","yu"),Go=((zo=Fa.exec("a"))===null||zo===void 0?void 0:zo[0])==="a"}catch{Go=!1}var Fa,Ga=Lh?function(e,r,n){return e.startsWith(r,n)}:function(e,r,n){return e.slice(n,n+r.length)===r},Vo=Rh?String.fromCodePoint:function(){for(var e=[],r=0;r<arguments.length;r++)e[r]=arguments[r];for(var n="",o=e.length,i=0,a;o>i;){if(a=e[i++],a>1114111)throw RangeError(a+" is not a valid code point");n+=a<65536?String.fromCharCode(a):String.fromCharCode(((a-=65536)>>10)+55296,a%1024+56320)}return n},Va=Oh?Object.fromEntries:function(e){for(var r={},n=0,o=e;n<o.length;n++){var i=o[n],a=i[0],s=i[1];r[a]=s}return r},ja=Mh?function(e,r){return e.codePointAt(r)}:function(e,r){var n=e.length;if(!(r<0||r>=n)){var o=e.charCodeAt(r),i;return o<55296||o>56319||r+1===n||(i=e.charCodeAt(r+1))<56320||i>57343?o:(o-55296<<10)+(i-56320)+65536}},Uh=Nh?function(e){return e.trimStart()}:function(e){return e.replace(Ph,"")},Dh=$h?function(e){return e.trimEnd()}:function(e){return e.replace(kh,"")};function qa(t,e){return new RegExp(t,e)}var jo;Go?(Fo=qa("([^\\p{White_Space}\\p{Pattern_Syntax}]*)","yu"),jo=function(e,r){var n;Fo.lastIndex=r;var o=Fo.exec(e);return(n=o[1])!==null&&n!==void 0?n:""}):jo=function(e,r){for(var n=[];;){var o=ja(e,r);if(o===void 0||Ya(o)||Fh(o))break;n.push(o),r+=o>=65536?2:1}return Vo.apply(void 0,n)};var Fo,Wa=function(){function t(e,r){r===void 0&&(r={}),this.message=e,this.position={offset:0,line:1,column:1},this.ignoreTag=!!r.ignoreTag,this.locale=r.locale,this.requiresOtherClause=!!r.requiresOtherClause,this.shouldParseSkeletons=!!r.shouldParseSkeletons}return t.prototype.parse=function(){if(this.offset()!==0)throw Error("parser can only be used once");return this.parseMessage(0,"",!1)},t.prototype.parseMessage=function(e,r,n){for(var o=[];!this.isEOF();){var i=this.char();if(i===123){var a=this.parseArgument(e,n);if(a.err)return a;o.push(a.val)}else{if(i===125&&e>0)break;if(i===35&&(r==="plural"||r==="selectordinal")){var s=this.clonePosition();this.bump(),o.push({type:I.pound,location:P(s,this.clonePosition())})}else if(i===60&&!this.ignoreTag&&this.peek()===47){if(n)break;return this.error(_.UNMATCHED_CLOSING_TAG,P(this.clonePosition(),this.clonePosition()))}else if(i===60&&!this.ignoreTag&&qo(this.peek()||0)){var a=this.parseTag(e,r);if(a.err)return a;o.push(a.val)}else{var a=this.parseLiteral(e,r);if(a.err)return a;o.push(a.val)}}}return{val:o,err:null}},t.prototype.parseTag=function(e,r){var n=this.clonePosition();this.bump();var o=this.parseTagName();if(this.bumpSpace(),this.bumpIf("/>"))return{val:{type:I.literal,value:"<".concat(o,"/>"),location:P(n,this.clonePosition())},err:null};if(this.bumpIf(">")){var i=this.parseMessage(e+1,r,!0);if(i.err)return i;var a=i.val,s=this.clonePosition();if(this.bumpIf("</")){if(this.isEOF()||!qo(this.char()))return this.error(_.INVALID_TAG,P(s,this.clonePosition()));var c=this.clonePosition(),l=this.parseTagName();return o!==l?this.error(_.UNMATCHED_CLOSING_TAG,P(c,this.clonePosition())):(this.bumpSpace(),this.bumpIf(">")?{val:{type:I.tag,value:o,children:a,location:P(n,this.clonePosition())},err:null}:this.error(_.INVALID_TAG,P(s,this.clonePosition())))}else return this.error(_.UNCLOSED_TAG,P(n,this.clonePosition()))}else return this.error(_.INVALID_TAG,P(n,this.clonePosition()))},t.prototype.parseTagName=function(){var e=this.offset();for(this.bump();!this.isEOF()&&zh(this.char());)this.bump();return this.message.slice(e,this.offset())},t.prototype.parseLiteral=function(e,r){for(var n=this.clonePosition(),o="";;){var i=this.tryParseQuote(r);if(i){o+=i;continue}var a=this.tryParseUnquoted(e,r);if(a){o+=a;continue}var s=this.tryParseLeftAngleBracket();if(s){o+=s;continue}break}var c=P(n,this.clonePosition());return{val:{type:I.literal,value:o,location:c},err:null}},t.prototype.tryParseLeftAngleBracket=function(){return!this.isEOF()&&this.char()===60&&(this.ignoreTag||!Bh(this.peek()||0))?(this.bump(),"<"):null},t.prototype.tryParseQuote=function(e){if(this.isEOF()||this.char()!==39)return null;switch(this.peek()){case 39:return this.bump(),this.bump(),"'";case 123:case 60:case 62:case 125:break;case 35:if(e==="plural"||e==="selectordinal")break;return null;default:return null}this.bump();var r=[this.char()];for(this.bump();!this.isEOF();){var n=this.char();if(n===39)if(this.peek()===39)r.push(39),this.bump();else{this.bump();break}else r.push(n);this.bump()}return Vo.apply(void 0,r)},t.prototype.tryParseUnquoted=function(e,r){if(this.isEOF())return null;var n=this.char();return n===60||n===123||n===35&&(r==="plural"||r==="selectordinal")||n===125&&e>0?null:(this.bump(),Vo(n))},t.prototype.parseArgument=function(e,r){var n=this.clonePosition();if(this.bump(),this.bumpSpace(),this.isEOF())return this.error(_.EXPECT_ARGUMENT_CLOSING_BRACE,P(n,this.clonePosition()));if(this.char()===125)return this.bump(),this.error(_.EMPTY_ARGUMENT,P(n,this.clonePosition()));var o=this.parseIdentifierIfPossible().value;if(!o)return this.error(_.MALFORMED_ARGUMENT,P(n,this.clonePosition()));if(this.bumpSpace(),this.isEOF())return this.error(_.EXPECT_ARGUMENT_CLOSING_BRACE,P(n,this.clonePosition()));switch(this.char()){case 125:return this.bump(),{val:{type:I.argument,value:o,location:P(n,this.clonePosition())},err:null};case 44:return this.bump(),this.bumpSpace(),this.isEOF()?this.error(_.EXPECT_ARGUMENT_CLOSING_BRACE,P(n,this.clonePosition())):this.parseArgumentOptions(e,r,o,n);default:return this.error(_.MALFORMED_ARGUMENT,P(n,this.clonePosition()))}},t.prototype.parseIdentifierIfPossible=function(){var e=this.clonePosition(),r=this.offset(),n=jo(this.message,r),o=r+n.length;this.bumpTo(o);var i=this.clonePosition(),a=P(e,i);return{value:n,location:a}},t.prototype.parseArgumentOptions=function(e,r,n,o){var i,a=this.clonePosition(),s=this.parseIdentifierIfPossible().value,c=this.clonePosition();switch(s){case"":return this.error(_.EXPECT_ARGUMENT_TYPE,P(a,c));case"number":case"date":case"time":{this.bumpSpace();var l=null;if(this.bumpIf(",")){this.bumpSpace();var h=this.clonePosition(),d=this.parseSimpleArgStyleIfPossible();if(d.err)return d;var m=Dh(d.val);if(m.length===0)return this.error(_.EXPECT_ARGUMENT_STYLE,P(this.clonePosition(),this.clonePosition()));var p=P(h,this.clonePosition());l={style:m,styleLocation:p}}var g=this.tryParseArgumentClose(o);if(g.err)return g;var b=P(o,this.clonePosition());if(l&&Ga(l?.style,"::",0)){var w=Uh(l.style.slice(2));if(s==="number"){var d=this.parseNumberSkeletonFromString(w,l.styleLocation);return d.err?d:{val:{type:I.number,value:n,location:b,style:d.val},err:null}}else{if(w.length===0)return this.error(_.EXPECT_DATE_TIME_SKELETON,b);var R=w;this.locale&&(R=za(w,this.locale));var m={type:et.dateTime,pattern:R,location:l.styleLocation,parsedOptions:this.shouldParseSkeletons?Ra(R):{}},k=s==="date"?I.date:I.time;return{val:{type:k,value:n,location:b,style:m},err:null}}}return{val:{type:s==="number"?I.number:s==="date"?I.date:I.time,value:n,location:b,style:(i=l?.style)!==null&&i!==void 0?i:null},err:null}}case"plural":case"selectordinal":case"select":{var S=this.clonePosition();if(this.bumpSpace(),!this.bumpIf(","))return this.error(_.EXPECT_SELECT_ARGUMENT_OPTIONS,P(S,C({},S)));this.bumpSpace();var T=this.parseIdentifierIfPossible(),M=0;if(s!=="select"&&T.value==="offset"){if(!this.bumpIf(":"))return this.error(_.EXPECT_PLURAL_ARGUMENT_OFFSET_VALUE,P(this.clonePosition(),this.clonePosition()));this.bumpSpace();var d=this.tryParseDecimalInteger(_.EXPECT_PLURAL_ARGUMENT_OFFSET_VALUE,_.INVALID_PLURAL_ARGUMENT_OFFSET_VALUE);if(d.err)return d;this.bumpSpace(),T=this.parseIdentifierIfPossible(),M=d.val}var B=this.tryParsePluralOrSelectOptions(e,s,r,T);if(B.err)return B;var g=this.tryParseArgumentClose(o);if(g.err)return g;var V=P(o,this.clonePosition());return s==="select"?{val:{type:I.select,value:n,options:Va(B.val),location:V},err:null}:{val:{type:I.plural,value:n,options:Va(B.val),offset:M,pluralType:s==="plural"?"cardinal":"ordinal",location:V},err:null}}default:return this.error(_.INVALID_ARGUMENT_TYPE,P(a,c))}},t.prototype.tryParseArgumentClose=function(e){return this.isEOF()||this.char()!==125?this.error(_.EXPECT_ARGUMENT_CLOSING_BRACE,P(e,this.clonePosition())):(this.bump(),{val:!0,err:null})},t.prototype.parseSimpleArgStyleIfPossible=function(){for(var e=0,r=this.clonePosition();!this.isEOF();){var n=this.char();switch(n){case 39:{this.bump();var o=this.clonePosition();if(!this.bumpUntil("'"))return this.error(_.UNCLOSED_QUOTE_IN_ARGUMENT_STYLE,P(o,this.clonePosition()));this.bump();break}case 123:{e+=1,this.bump();break}case 125:{if(e>0)e-=1;else return{val:this.message.slice(r.offset,this.offset()),err:null};break}default:this.bump();break}}return{val:this.message.slice(r.offset,this.offset()),err:null}},t.prototype.parseNumberSkeletonFromString=function(e,r){var n=[];try{n=Ia(e)}catch{return this.error(_.INVALID_NUMBER_SKELETON,r)}return{val:{type:et.number,tokens:n,location:r,parsedOptions:this.shouldParseSkeletons?Ba(n):{}},err:null}},t.prototype.tryParsePluralOrSelectOptions=function(e,r,n,o){for(var i,a=!1,s=[],c=new Set,l=o.value,h=o.location;;){if(l.length===0){var d=this.clonePosition();if(r!=="select"&&this.bumpIf("=")){var m=this.tryParseDecimalInteger(_.EXPECT_PLURAL_ARGUMENT_SELECTOR,_.INVALID_PLURAL_ARGUMENT_SELECTOR);if(m.err)return m;h=P(d,this.clonePosition()),l=this.message.slice(d.offset,this.offset())}else break}if(c.has(l))return this.error(r==="select"?_.DUPLICATE_SELECT_ARGUMENT_SELECTOR:_.DUPLICATE_PLURAL_ARGUMENT_SELECTOR,h);l==="other"&&(a=!0),this.bumpSpace();var p=this.clonePosition();if(!this.bumpIf("{"))return this.error(r==="select"?_.EXPECT_SELECT_ARGUMENT_SELECTOR_FRAGMENT:_.EXPECT_PLURAL_ARGUMENT_SELECTOR_FRAGMENT,P(this.clonePosition(),this.clonePosition()));var g=this.parseMessage(e+1,r,n);if(g.err)return g;var b=this.tryParseArgumentClose(p);if(b.err)return b;s.push([l,{value:g.val,location:P(p,this.clonePosition())}]),c.add(l),this.bumpSpace(),i=this.parseIdentifierIfPossible(),l=i.value,h=i.location}return s.length===0?this.error(r==="select"?_.EXPECT_SELECT_ARGUMENT_SELECTOR:_.EXPECT_PLURAL_ARGUMENT_SELECTOR,P(this.clonePosition(),this.clonePosition())):this.requiresOtherClause&&!a?this.error(_.MISSING_OTHER_CLAUSE,P(this.clonePosition(),this.clonePosition())):{val:s,err:null}},t.prototype.tryParseDecimalInteger=function(e,r){var n=1,o=this.clonePosition();this.bumpIf("+")||this.bumpIf("-")&&(n=-1);for(var i=!1,a=0;!this.isEOF();){var s=this.char();if(s>=48&&s<=57)i=!0,a=a*10+(s-48),this.bump();else break}var c=P(o,this.clonePosition());return i?(a*=n,Hh(a)?{val:a,err:null}:this.error(r,c)):this.error(e,c)},t.prototype.offset=function(){return this.position.offset},t.prototype.isEOF=function(){return this.offset()===this.message.length},t.prototype.clonePosition=function(){return{offset:this.position.offset,line:this.position.line,column:this.position.column}},t.prototype.char=function(){var e=this.position.offset;if(e>=this.message.length)throw Error("out of bound");var r=ja(this.message,e);if(r===void 0)throw Error("Offset ".concat(e," is at invalid UTF-16 code unit boundary"));return r},t.prototype.error=function(e,r){return{val:null,err:{kind:e,message:this.message,location:r}}},t.prototype.bump=function(){if(!this.isEOF()){var e=this.char();e===10?(this.position.line+=1,this.position.column=1,this.position.offset+=1):(this.position.column+=1,this.position.offset+=e<65536?1:2)}},t.prototype.bumpIf=function(e){if(Ga(this.message,e,this.offset())){for(var r=0;r<e.length;r++)this.bump();return!0}return!1},t.prototype.bumpUntil=function(e){var r=this.offset(),n=this.message.indexOf(e,r);return n>=0?(this.bumpTo(n),!0):(this.bumpTo(this.message.length),!1)},t.prototype.bumpTo=function(e){if(this.offset()>e)throw Error("targetOffset ".concat(e," must be greater than or equal to the current offset ").concat(this.offset()));for(e=Math.min(e,this.message.length);;){var r=this.offset();if(r===e)break;if(r>e)throw Error("targetOffset ".concat(e," is at invalid UTF-16 code unit boundary"));if(this.bump(),this.isEOF())break}},t.prototype.bumpSpace=function(){for(;!this.isEOF()&&Ya(this.char());)this.bump()},t.prototype.peek=function(){if(this.isEOF())return null;var e=this.char(),r=this.offset(),n=this.message.charCodeAt(r+(e>=65536?2:1));return n??null},t}();function qo(t){return t>=97&&t<=122||t>=65&&t<=90}function Bh(t){return qo(t)||t===47}function zh(t){return t===45||t===46||t>=48&&t<=57||t===95||t>=97&&t<=122||t>=65&&t<=90||t==183||t>=192&&t<=214||t>=216&&t<=246||t>=248&&t<=893||t>=895&&t<=8191||t>=8204&&t<=8205||t>=8255&&t<=8256||t>=8304&&t<=8591||t>=11264&&t<=12271||t>=12289&&t<=55295||t>=63744&&t<=64975||t>=65008&&t<=65533||t>=65536&&t<=983039}function Ya(t){return t>=9&&t<=13||t===32||t===133||t>=8206&&t<=8207||t===8232||t===8233}function Fh(t){return t>=33&&t<=35||t===36||t>=37&&t<=39||t===40||t===41||t===42||t===43||t===44||t===45||t>=46&&t<=47||t>=58&&t<=59||t>=60&&t<=62||t>=63&&t<=64||t===91||t===92||t===93||t===94||t===96||t===123||t===124||t===125||t===126||t===161||t>=162&&t<=165||t===166||t===167||t===169||t===171||t===172||t===174||t===176||t===177||t===182||t===187||t===191||t===215||t===247||t>=8208&&t<=8213||t>=8214&&t<=8215||t===8216||t===8217||t===8218||t>=8219&&t<=8220||t===8221||t===8222||t===8223||t>=8224&&t<=8231||t>=8240&&t<=8248||t===8249||t===8250||t>=8251&&t<=8254||t>=8257&&t<=8259||t===8260||t===8261||t===8262||t>=8263&&t<=8273||t===8274||t===8275||t>=8277&&t<=8286||t>=8592&&t<=8596||t>=8597&&t<=8601||t>=8602&&t<=8603||t>=8604&&t<=8607||t===8608||t>=8609&&t<=8610||t===8611||t>=8612&&t<=8613||t===8614||t>=8615&&t<=8621||t===8622||t>=8623&&t<=8653||t>=8654&&t<=8655||t>=8656&&t<=8657||t===8658||t===8659||t===8660||t>=8661&&t<=8691||t>=8692&&t<=8959||t>=8960&&t<=8967||t===8968||t===8969||t===8970||t===8971||t>=8972&&t<=8991||t>=8992&&t<=8993||t>=8994&&t<=9e3||t===9001||t===9002||t>=9003&&t<=9083||t===9084||t>=9085&&t<=9114||t>=9115&&t<=9139||t>=9140&&t<=9179||t>=9180&&t<=9185||t>=9186&&t<=9254||t>=9255&&t<=9279||t>=9280&&t<=9290||t>=9291&&t<=9311||t>=9472&&t<=9654||t===9655||t>=9656&&t<=9664||t===9665||t>=9666&&t<=9719||t>=9720&&t<=9727||t>=9728&&t<=9838||t===9839||t>=9840&&t<=10087||t===10088||t===10089||t===10090||t===10091||t===10092||t===10093||t===10094||t===10095||t===10096||t===10097||t===10098||t===10099||t===10100||t===10101||t>=10132&&t<=10175||t>=10176&&t<=10180||t===10181||t===10182||t>=10183&&t<=10213||t===10214||t===10215||t===10216||t===10217||t===10218||t===10219||t===10220||t===10221||t===10222||t===10223||t>=10224&&t<=10239||t>=10240&&t<=10495||t>=10496&&t<=10626||t===10627||t===10628||t===10629||t===10630||t===10631||t===10632||t===10633||t===10634||t===10635||t===10636||t===10637||t===10638||t===10639||t===10640||t===10641||t===10642||t===10643||t===10644||t===10645||t===10646||t===10647||t===10648||t>=10649&&t<=10711||t===10712||t===10713||t===10714||t===10715||t>=10716&&t<=10747||t===10748||t===10749||t>=10750&&t<=11007||t>=11008&&t<=11055||t>=11056&&t<=11076||t>=11077&&t<=11078||t>=11079&&t<=11084||t>=11085&&t<=11123||t>=11124&&t<=11125||t>=11126&&t<=11157||t===11158||t>=11159&&t<=11263||t>=11776&&t<=11777||t===11778||t===11779||t===11780||t===11781||t>=11782&&t<=11784||t===11785||t===11786||t===11787||t===11788||t===11789||t>=11790&&t<=11798||t===11799||t>=11800&&t<=11801||t===11802||t===11803||t===11804||t===11805||t>=11806&&t<=11807||t===11808||t===11809||t===11810||t===11811||t===11812||t===11813||t===11814||t===11815||t===11816||t===11817||t>=11818&&t<=11822||t===11823||t>=11824&&t<=11833||t>=11834&&t<=11835||t>=11836&&t<=11839||t===11840||t===11841||t===11842||t>=11843&&t<=11855||t>=11856&&t<=11857||t===11858||t>=11859&&t<=11903||t>=12289&&t<=12291||t===12296||t===12297||t===12298||t===12299||t===12300||t===12301||t===12302||t===12303||t===12304||t===12305||t>=12306&&t<=12307||t===12308||t===12309||t===12310||t===12311||t===12312||t===12313||t===12314||t===12315||t===12316||t===12317||t>=12318&&t<=12319||t===12320||t===12336||t===64830||t===64831||t>=65093&&t<=65094}function Wo(t){t.forEach(function(e){if(delete e.location,bn(e)||vn(e))for(var r in e.options)delete e.options[r].location,Wo(e.options[r].value);else fn(e)&&En(e.style)||(gn(e)||xn(e))&&xr(e.style)?delete e.style.location:yn(e)&&Wo(e.children)})}function Xa(t,e){e===void 0&&(e={}),e=C({shouldParseSkeletons:!0,requiresOtherClause:!0},e);var r=new Wa(t,e).parse();if(r.err){var n=SyntaxError(_[r.err.kind]);throw n.location=r.err.location,n.originalMessage=r.err.message,n}return e?.captureLocation||Wo(r.val),r.val}function vr(t,e){var r=e&&e.cache?e.cache:Yh,n=e&&e.serializer?e.serializer:Wh,o=e&&e.strategy?e.strategy:Vh;return o(t,{cache:r,serializer:n})}function Gh(t){return t==null||typeof t=="number"||typeof t=="boolean"}function Ka(t,e,r,n){var o=Gh(n)?n:r(n),i=e.get(o);return typeof i>"u"&&(i=t.call(this,n),e.set(o,i)),i}function Qa(t,e,r){var n=Array.prototype.slice.call(arguments,3),o=r(n),i=e.get(o);return typeof i>"u"&&(i=t.apply(this,n),e.set(o,i)),i}function Yo(t,e,r,n,o){return r.bind(e,t,n,o)}function Vh(t,e){var r=t.length===1?Ka:Qa;return Yo(t,this,r,e.cache.create(),e.serializer)}function jh(t,e){return Yo(t,this,Qa,e.cache.create(),e.serializer)}function qh(t,e){return Yo(t,this,Ka,e.cache.create(),e.serializer)}var Wh=function(){return JSON.stringify(arguments)};function Xo(){this.cache=Object.create(null)}Xo.prototype.get=function(t){return this.cache[t]};Xo.prototype.set=function(t,e){this.cache[t]=e};var Yh={create:function(){return new Xo}},An={variadic:jh,monadic:qh};var tt;(function(t){t.MISSING_VALUE="MISSING_VALUE",t.INVALID_VALUE="INVALID_VALUE",t.MISSING_INTL_API="MISSING_INTL_API"})(tt||(tt={}));var yr=function(t){gr(e,t);function e(r,n,o){var i=t.call(this,r)||this;return i.code=n,i.originalMessage=o,i}return e.prototype.toString=function(){return"[formatjs Error: ".concat(this.code,"] ").concat(this.message)},e}(Error);var Ko=function(t){gr(e,t);function e(r,n,o,i){return t.call(this,'Invalid values for "'.concat(r,'": "').concat(n,'". Options are "').concat(Object.keys(o).join('", "'),'"'),tt.INVALID_VALUE,i)||this}return e}(yr);var Za=function(t){gr(e,t);function e(r,n,o){return t.call(this,'Value for "'.concat(r,'" must be of type ').concat(n),tt.INVALID_VALUE,o)||this}return e}(yr);var Ja=function(t){gr(e,t);function e(r,n){return t.call(this,'The intl string context variable "'.concat(r,'" was not provided to the string "').concat(n,'"'),tt.MISSING_VALUE,n)||this}return e}(yr);var J;(function(t){t[t.literal=0]="literal",t[t.object=1]="object"})(J||(J={}));function Xh(t){return t.length<2?t:t.reduce(function(e,r){var n=e[e.length-1];return!n||n.type!==J.literal||r.type!==J.literal?e.push(r):n.value+=r.value,e},[])}function Kh(t){return typeof t=="function"}function Er(t,e,r,n,o,i,a){if(t.length===1&&Do(t[0]))return[{type:J.literal,value:t[0].value}];for(var s=[],c=0,l=t;c<l.length;c++){var h=l[c];if(Do(h)){s.push({type:J.literal,value:h.value});continue}if(La(h)){typeof i=="number"&&s.push({type:J.literal,value:r.getNumberFormat(e).format(i)});continue}var d=h.value;if(!(o&&d in o))throw new Ja(d,a);var m=o[d];if(ka(h)){(!m||typeof m=="string"||typeof m=="number")&&(m=typeof m=="string"||typeof m=="number"?String(m):""),s.push({type:typeof m=="string"?J.literal:J.object,value:m});continue}if(gn(h)){var p=typeof h.style=="string"?n.date[h.style]:xr(h.style)?h.style.parsedOptions:void 0;s.push({type:J.literal,value:r.getDateTimeFormat(e,p).format(m)});continue}if(xn(h)){var p=typeof h.style=="string"?n.time[h.style]:xr(h.style)?h.style.parsedOptions:n.time.medium;s.push({type:J.literal,value:r.getDateTimeFormat(e,p).format(m)});continue}if(fn(h)){var p=typeof h.style=="string"?n.number[h.style]:En(h.style)?h.style.parsedOptions:void 0;p&&p.scale&&(m=m*(p.scale||1)),s.push({type:J.literal,value:r.getNumberFormat(e,p).format(m)});continue}if(yn(h)){var g=h.children,b=h.value,w=o[b];if(!Kh(w))throw new Za(b,"function",a);var R=Er(g,e,r,n,o,i),k=w(R.map(function(M){return M.value}));Array.isArray(k)||(k=[k]),s.push.apply(s,k.map(function(M){return{type:typeof M=="string"?J.literal:J.object,value:M}}))}if(bn(h)){var S=h.options[m]||h.options.other;if(!S)throw new Ko(h.value,m,Object.keys(h.options),a);s.push.apply(s,Er(S.value,e,r,n,o));continue}if(vn(h)){var S=h.options["=".concat(m)];if(!S){if(!Intl.PluralRules)throw new yr(`Intl.PluralRules is not available in this environment.
-Try polyfilling it using "@formatjs/intl-pluralrules"
-`,tt.MISSING_INTL_API,a);var T=r.getPluralRules(e,{type:h.pluralType}).select(m-(h.offset||0));S=h.options[T]||h.options.other}if(!S)throw new Ko(h.value,m,Object.keys(h.options),a);s.push.apply(s,Er(S.value,e,r,n,o,m-(h.offset||0)));continue}}return Xh(s)}function Qh(t,e){return e?C(C(C({},t||{}),e||{}),Object.keys(t).reduce(function(r,n){return r[n]=C(C({},t[n]),e[n]||{}),r},{})):t}function Zh(t,e){return e?Object.keys(t).reduce(function(r,n){return r[n]=Qh(t[n],e[n]),r},C({},t)):t}function Qo(t){return{create:function(){return{get:function(e){return t[e]},set:function(e,r){t[e]=r}}}}}function Jh(t){return t===void 0&&(t={number:{},dateTime:{},pluralRules:{}}),{getNumberFormat:vr(function(){for(var e,r=[],n=0;n<arguments.length;n++)r[n]=arguments[n];return new((e=Intl.NumberFormat).bind.apply(e,un([void 0],r,!1)))},{cache:Qo(t.number),strategy:An.variadic}),getDateTimeFormat:vr(function(){for(var e,r=[],n=0;n<arguments.length;n++)r[n]=arguments[n];return new((e=Intl.DateTimeFormat).bind.apply(e,un([void 0],r,!1)))},{cache:Qo(t.dateTime),strategy:An.variadic}),getPluralRules:vr(function(){for(var e,r=[],n=0;n<arguments.length;n++)r[n]=arguments[n];return new((e=Intl.PluralRules).bind.apply(e,un([void 0],r,!1)))},{cache:Qo(t.pluralRules),strategy:An.variadic})}}var es=function(){function t(e,r,n,o){var i=this;if(r===void 0&&(r=t.defaultLocale),this.formatterCache={number:{},dateTime:{},pluralRules:{}},this.format=function(a){var s=i.formatToParts(a);if(s.length===1)return s[0].value;var c=s.reduce(function(l,h){return!l.length||h.type!==J.literal||typeof l[l.length-1]!="string"?l.push(h.value):l[l.length-1]+=h.value,l},[]);return c.length<=1?c[0]||"":c},this.formatToParts=function(a){return Er(i.ast,i.locales,i.formatters,i.formats,a,void 0,i.message)},this.resolvedOptions=function(){return{locale:i.resolvedLocale.toString()}},this.getAst=function(){return i.ast},this.locales=r,this.resolvedLocale=t.resolveLocale(r),typeof e=="string"){if(this.message=e,!t.__parse)throw new TypeError("IntlMessageFormat.__parse must be set to process `message` of type `string`");this.ast=t.__parse(e,{ignoreTag:o?.ignoreTag,locale:this.resolvedLocale})}else this.ast=e;if(!Array.isArray(this.ast))throw new TypeError("A message must be provided as a String or AST.");this.formats=Zh(t.formats,n),this.formatters=o&&o.formatters||Jh(this.formatterCache)}return Object.defineProperty(t,"defaultLocale",{get:function(){return t.memoizedDefaultLocale||(t.memoizedDefaultLocale=new Intl.NumberFormat().resolvedOptions().locale),t.memoizedDefaultLocale},enumerable:!1,configurable:!0}),t.memoizedDefaultLocale=null,t.resolveLocale=function(e){var r=Intl.NumberFormat.supportedLocalesOf(e);return r.length>0?new Intl.Locale(r[0]):new Intl.Locale(typeof e=="string"?e:e[0])},t.__parse=Xa,t.formats={number:{integer:{maximumFractionDigits:0},currency:{style:"currency"},percent:{style:"percent"}},date:{short:{month:"numeric",day:"numeric",year:"2-digit"},medium:{month:"short",day:"numeric",year:"numeric"},long:{month:"long",day:"numeric",year:"numeric"},full:{weekday:"long",month:"long",day:"numeric",year:"numeric"}},time:{short:{hour:"numeric",minute:"numeric"},medium:{hour:"numeric",minute:"numeric",second:"numeric"},long:{hour:"numeric",minute:"numeric",second:"numeric",timeZoneName:"short"},full:{hour:"numeric",minute:"numeric",second:"numeric",timeZoneName:"short"}}},t}();var ts=es;var ed=/[0-9\-+#]/,td=/[^\d\-+#]/g;function rs(t){return t.search(ed)}function rd(t="#.##"){let e={},r=t.length,n=rs(t);e.prefix=n>0?t.substring(0,n):"";let o=rs(t.split("").reverse().join("")),i=r-o,a=t.substring(i,i+1),s=i+(a==="."||a===","?1:0);e.suffix=o>0?t.substring(s,r):"",e.mask=t.substring(n,s),e.maskHasNegativeSign=e.mask.charAt(0)==="-",e.maskHasPositiveSign=e.mask.charAt(0)==="+";let c=e.mask.match(td);return e.decimal=c&&c[c.length-1]||".",e.separator=c&&c[1]&&c[0]||",",c=e.mask.split(e.decimal),e.integer=c[0],e.fraction=c[1],e}function nd(t,e,r){let n=!1,o={value:t};t<0&&(n=!0,o.value=-o.value),o.sign=n?"-":"",o.value=Number(o.value).toFixed(e.fraction&&e.fraction.length),o.value=Number(o.value).toString();let i=e.fraction&&e.fraction.lastIndexOf("0"),[a="0",s=""]=o.value.split(".");return(!s||s&&s.length<=i)&&(s=i<0?"":(+("0."+s)).toFixed(i+1).replace("0.","")),o.integer=a,o.fraction=s,od(o,e),(o.result==="0"||o.result==="")&&(n=!1,o.sign=""),!n&&e.maskHasPositiveSign?o.sign="+":n&&e.maskHasPositiveSign?o.sign="-":n&&(o.sign=r&&r.enforceMaskSign&&!e.maskHasNegativeSign?"":"-"),o}function od(t,e){t.result="";let r=e.integer.split(e.separator),n=r.join(""),o=n&&n.indexOf("0");if(o>-1)for(;t.integer.length<n.length-o;)t.integer="0"+t.integer;else Number(t.integer)===0&&(t.integer="");let i=r[1]&&r[r.length-1].length;if(i){let a=t.integer.length,s=a%i;for(let c=0;c<a;c++)t.result+=t.integer.charAt(c),!((c-s+1)%i)&&c<a-i&&(t.result+=e.separator)}else t.result=t.integer;return t.result+=e.fraction&&t.fraction?e.decimal+t.fraction:"",t}function id(t,e,r={}){if(!t||isNaN(Number(e)))return e;let n=rd(t),o=nd(e,n,r);return n.prefix+o.sign+o.result+n.suffix}var ns=id;var os=".",ad=",",as=/^\s+/,ss=/\s+$/,is="&nbsp;",Zo=t=>t*12,cs=(t,e)=>{let{start:r,end:n,displaySummary:{amount:o,duration:i,minProductQuantity:a,outcomeType:s}={}}=t;if(!(o&&i&&s&&a))return!1;let c=e?new Date(e):new Date;if(!r||!n)return!1;let l=new Date(r),h=new Date(n);return c>=l&&c<=h},rt={MONTH:"MONTH",YEAR:"YEAR"},sd={[le.ANNUAL]:12,[le.MONTHLY]:1,[le.THREE_YEARS]:36,[le.TWO_YEARS]:24},Jo=(t,e)=>({accept:t,round:e}),cd=[Jo(({divisor:t,price:e})=>e%t==0,({divisor:t,price:e})=>e/t),Jo(({usePrecision:t})=>t,({divisor:t,price:e})=>Math.round(e/t*100)/100),Jo(()=>!0,({divisor:t,price:e})=>Math.ceil(Math.floor(e*100/t)/100))],ei={[We.YEAR]:{[le.MONTHLY]:rt.MONTH,[le.ANNUAL]:rt.YEAR},[We.MONTH]:{[le.MONTHLY]:rt.MONTH}},ld=(t,e)=>t.indexOf(`'${e}'`)===0,hd=(t,e=!0)=>{let r=t.replace(/'.*?'/,"").trim(),n=hs(r);return!!n?e||(r=r.replace(/[,\.]0+/,n)):r=r.replace(/\s?(#.*0)(?!\s)?/,"$&"+pd(t)),r},dd=t=>{let e=md(t),r=ld(t,e),n=t.replace(/'.*?'/,""),o=as.test(n)||ss.test(n);return{currencySymbol:e,isCurrencyFirst:r,hasCurrencySpace:o}},ls=t=>t.replace(as,is).replace(ss,is),pd=t=>t.match(/#(.?)#/)?.[1]===os?ad:os,md=t=>t.match(/'(.*?)'/)?.[1]??"",hs=t=>t.match(/0(.?)0/)?.[1]??"";function Ot({formatString:t,price:e,usePrecision:r,isIndianPrice:n=!1},o,i=a=>a){let{currencySymbol:a,isCurrencyFirst:s,hasCurrencySpace:c}=dd(t),l=r?hs(t):"",h=hd(t,r),d=r?2:0,m=i(e,{currencySymbol:a}),p=n?m.toLocaleString("hi-IN",{minimumFractionDigits:d,maximumFractionDigits:d}):ns(h,m),g=r?p.lastIndexOf(l):p.length,b=p.substring(0,g),w=p.substring(g+1);return{accessiblePrice:t.replace(/'.*?'/,"SYMBOL").replace(/#.*0/,p).replace(/SYMBOL/,a),currencySymbol:a,decimals:w,decimalsDelimiter:l,hasCurrencySpace:c,integer:b,isCurrencyFirst:s,recurrenceTerm:o}}var ds=t=>{let{commitment:e,term:r,usePrecision:n}=t,o=sd[r]??1;return Ot(t,o>1?rt.MONTH:ei[e]?.[r],i=>{let a={divisor:o,price:i,usePrecision:n},{round:s}=cd.find(({accept:c})=>c(a));if(!s)throw new Error(`Missing rounding rule for: ${JSON.stringify(a)}`);return s(a)})},ps=({commitment:t,term:e,...r})=>Ot(r,ei[t]?.[e]),ms=t=>{let{commitment:e,instant:r,price:n,originalPrice:o,priceWithoutDiscount:i,promotion:a,quantity:s=1,term:c}=t;if(e===We.YEAR&&c===le.MONTHLY){if(!a)return Ot(t,rt.YEAR,Zo);let{displaySummary:{outcomeType:l,duration:h,minProductQuantity:d=1}={}}=a;switch(l){case"PERCENTAGE_DISCOUNT":if(s>=d&&cs(a,r)){let m=parseInt(h.replace("P","").replace("M",""));if(isNaN(m))return Zo(n);let p=s*o*m,g=s*i*(12-m),b=Math.round((p+g)*100)/100;return Ot({...t,price:b},rt.YEAR)}default:return Ot(t,rt.YEAR,()=>Zo(i??n))}}return Ot(t,ei[e]?.[c])};var ti={recurrenceLabel:"{recurrenceTerm, select, MONTH {/mo} YEAR {/yr} other {}}",recurrenceAriaLabel:"{recurrenceTerm, select, MONTH {per month} YEAR {per year} other {}}",perUnitLabel:"{perUnit, select, LICENSE {per license} other {}}",perUnitAriaLabel:"{perUnit, select, LICENSE {per license} other {}}",freeLabel:"Free",freeAriaLabel:"Free",taxExclusiveLabel:"{taxTerm, select, GST {excl. GST} VAT {excl. VAT} TAX {excl. tax} IVA {excl. IVA} SST {excl. SST} KDV {excl. KDV} other {}}",taxInclusiveLabel:"{taxTerm, select, GST {incl. GST} VAT {incl. VAT} TAX {incl. tax} IVA {incl. IVA} SST {incl. SST} KDV {incl. KDV} other {}}",alternativePriceAriaLabel:"Alternatively at",strikethroughAriaLabel:"Regularly at",planTypeLabel:"{planType, select, ABM {Annual, paid monthly.} other {}}"},ud=sa("ConsonantTemplates/price"),fd=/<\/?[^>]+(>|$)/g,G={container:"price",containerOptical:"price-optical",containerStrikethrough:"price-strikethrough",containerAlternative:"price-alternative",containerAnnual:"price-annual",containerAnnualPrefix:"price-annual-prefix",containerAnnualSuffix:"price-annual-suffix",disabled:"disabled",currencySpace:"price-currency-space",currencySymbol:"price-currency-symbol",decimals:"price-decimals",decimalsDelimiter:"price-decimals-delimiter",integer:"price-integer",recurrence:"price-recurrence",taxInclusivity:"price-tax-inclusivity",unitType:"price-unit-type"},Fe={perUnitLabel:"perUnitLabel",perUnitAriaLabel:"perUnitAriaLabel",recurrenceLabel:"recurrenceLabel",recurrenceAriaLabel:"recurrenceAriaLabel",taxExclusiveLabel:"taxExclusiveLabel",taxInclusiveLabel:"taxInclusiveLabel",strikethroughAriaLabel:"strikethroughAriaLabel",alternativePriceAriaLabel:"alternativePriceAriaLabel"},ri="TAX_EXCLUSIVE",gd=t=>oa(t)?Object.entries(t).filter(([,e])=>Lt(e)||en(e)||e===!0).reduce((e,[r,n])=>e+` ${r}${n===!0?"":'="'+na(n)+'"'}`,""):"",j=(t,e,r,n=!1)=>`<span class="${t}${e?"":" "+G.disabled}"${gd(r)}>${n?ls(e):e??""}</span>`;function Re(t,e,r,n){let o=t[r];if(o==null)return"";try{return new ts(o.replace(fd,""),e).format(n)}catch{return ud.error("Failed to format literal:",o),""}}function xd(t,{accessibleLabel:e,altAccessibleLabel:r,currencySymbol:n,decimals:o,decimalsDelimiter:i,hasCurrencySpace:a,integer:s,isCurrencyFirst:c,recurrenceLabel:l,perUnitLabel:h,taxInclusivityLabel:d},m={}){let p=j(G.currencySymbol,n),g=j(G.currencySpace,a?"&nbsp;":""),b="";return e?b=`<sr-only class="strikethrough-aria-label">${e}</sr-only>`:r&&(b=`<sr-only class="alt-aria-label">${r}</sr-only>`),c&&(b+=p+g),b+=j(G.integer,s),b+=j(G.decimalsDelimiter,i),b+=j(G.decimals,o),c||(b+=g+p),b+=j(G.recurrence,l,null,!0),b+=j(G.unitType,h,null,!0),b+=j(G.taxInclusivity,d,!0),j(t,b,{...m})}var ne=({isAlternativePrice:t=!1,displayOptical:e=!1,displayStrikethrough:r=!1,displayAnnual:n=!1,instant:o=void 0}={})=>({country:i,displayFormatted:a=!0,displayRecurrence:s=!0,displayPerUnit:c=!1,displayTax:l=!1,language:h,literals:d={},quantity:m=1,space:p=!1}={},{commitment:g,offerSelectorIds:b,formatString:w,price:R,priceWithoutDiscount:k,taxDisplay:S,taxTerm:T,term:M,usePrecision:B,promotion:V}={},re={})=>{Object.entries({country:i,formatString:w,language:h,price:R}).forEach(([Al,wl])=>{if(wl==null)throw new Error(`Argument "${Al}" is missing for osi ${b?.toString()}, country ${i}, language ${h}`)});let z={...ti,...d},$=`${h.toLowerCase()}-${i.toUpperCase()}`,Z=r&&k?k:R,ce=e?ds:ps;n&&(ce=ms);let{accessiblePrice:He,recurrenceTerm:ve,...St}=ce({commitment:g,formatString:w,instant:o,isIndianPrice:i==="IN",originalPrice:R,priceWithoutDiscount:k,price:e?R:Z,promotion:V,quantity:m,term:M,usePrecision:B}),Kn="",Qn="",Zn="";A(s)&&ve&&(Zn=Re(z,$,Fe.recurrenceLabel,{recurrenceTerm:ve}));let Xr="";A(c)&&(p&&(Xr+=" "),Xr+=Re(z,$,Fe.perUnitLabel,{perUnit:"LICENSE"}));let Kr="";A(l)&&T&&(p&&(Kr+=" "),Kr+=Re(z,$,S===ri?Fe.taxExclusiveLabel:Fe.taxInclusiveLabel,{taxTerm:T})),r&&(Kn=Re(z,$,Fe.strikethroughAriaLabel,{strikethroughPrice:Kn})),t&&(Qn=Re(z,$,Fe.alternativePriceAriaLabel,{alternativePrice:Qn}));let _t=G.container;if(e&&(_t+=" "+G.containerOptical),r&&(_t+=" "+G.containerStrikethrough),t&&(_t+=" "+G.containerAlternative),n&&(_t+=" "+G.containerAnnual),A(a))return xd(_t,{...St,accessibleLabel:Kn,altAccessibleLabel:Qn,recurrenceLabel:Zn,perUnitLabel:Xr,taxInclusivityLabel:Kr},re);let{currencySymbol:Xi,decimals:xl,decimalsDelimiter:bl,hasCurrencySpace:Ki,integer:vl,isCurrencyFirst:yl}=St,Tt=[vl,bl,xl];yl?(Tt.unshift(Ki?"\xA0":""),Tt.unshift(Xi)):(Tt.push(Ki?"\xA0":""),Tt.push(Xi)),Tt.push(Zn,Xr,Kr);let El=Tt.join("");return j(_t,El,re)},us=()=>(t,e,r)=>{let o=(t.displayOldPrice===void 0||A(t.displayOldPrice))&&e.priceWithoutDiscount&&e.priceWithoutDiscount!=e.price;return`${o?ne({displayStrikethrough:!0})(t,e,r)+"&nbsp;":""}${ne({isAlternativePrice:o})(t,e,r)}`},fs=()=>(t,e,r)=>{let{instant:n}=t;try{n||(n=new URLSearchParams(document.location.search).get("instant")),n&&(n=new Date(n))}catch{n=void 0}let o={...t,displayTax:!1,displayPerUnit:!1},a=(t.displayOldPrice===void 0||A(t.displayOldPrice))&&e.priceWithoutDiscount&&e.priceWithoutDiscount!=e.price;return`${a?ne({displayStrikethrough:!0})(o,e,r)+"&nbsp;":""}${ne({isAlternativePrice:a})(t,e,r)}${j(G.containerAnnualPrefix,"&nbsp;(")}${ne({displayAnnual:!0,instant:n})(o,e,r)}${j(G.containerAnnualSuffix,")")}`},gs=()=>(t,e,r)=>{let n={...t,displayTax:!1,displayPerUnit:!1};return`${ne({isAlternativePrice:t.displayOldPrice})(t,e,r)}${j(G.containerAnnualPrefix,"&nbsp;(")}${ne({displayAnnual:!0})(n,e,r)}${j(G.containerAnnualSuffix,")")}`};var Ar={...G,containerLegal:"price-legal",planType:"price-plan-type"},wn={...Fe,planTypeLabel:"planTypeLabel"};function bd(t,{perUnitLabel:e,taxInclusivityLabel:r,planTypeLabel:n},o={}){let i="";return i+=j(Ar.unitType,e,null,!0),e&&(r||n)&&(i+=" ("),r&&n&&(r+=". "),i+=j(Ar.taxInclusivity,r,!0),i+=j(Ar.planType,n,null),e&&(r||n)&&(i+=")"),j(t,i,{...o})}var xs=({country:t,displayPerUnit:e=!1,displayTax:r=!1,displayPlanType:n=!1,language:o,literals:i={}}={},{taxDisplay:a,taxTerm:s,planType:c}={},l={})=>{let h={...ti,...i},d=`${o.toLowerCase()}-${t.toUpperCase()}`,m="";A(e)&&(m=Re(h,d,wn.perUnitLabel,{perUnit:"LICENSE"}));let p="";t==="US"&&o==="en"&&(r=!1),A(r)&&s&&(p=Re(h,d,a===ri?wn.taxExclusiveLabel:wn.taxInclusiveLabel,{taxTerm:s}));let g="";A(n)&&c&&(g=Re(h,d,wn.planTypeLabel,{planType:c}));let b=Ar.container;return b+=" "+Ar.containerLegal,bd(b,{perUnitLabel:m,taxInclusivityLabel:p,planTypeLabel:g},l)};var bs=ne(),vs=us(),ys=ne({displayOptical:!0}),Es=ne({displayStrikethrough:!0}),As=ne({displayAnnual:!0}),ws=ne({displayOptical:!0,isAlternativePrice:!0}),Ss=ne({isAlternativePrice:!0}),_s=gs(),Ts=fs(),Cs=xs;var vd=(t,e)=>{if(!(!hr(t)||!hr(e)))return Math.floor((e-t)/e*100)},Ps=()=>(t,e)=>{let{price:r,priceWithoutDiscount:n}=e,o=vd(r,n);return o===void 0?'<span class="no-discount"></span>':`<span class="discount">${o}%</span>`};var ks=Ps();var Rs="INDIVIDUAL_COM",ni="TEAM_COM",Os="INDIVIDUAL_EDU",oi="TEAM_EDU",Ls=["GB_en","AU_en","FR_fr","AT_de","BE_en","BE_fr","BE_nl","BG_bg","CH_de","CH_fr","CH_it","CZ_cs","DE_de","DK_da","EE_et","EG_ar","EG_en","ES_es","FI_fi","GR_el","GR_en","HU_hu","IE_en","IT_it","LU_de","LU_en","LU_fr","NL_nl","NO_nb","PL_pl","PT_pt","RO_ro","SE_sv","SI_sl","SK_sk","TR_tr","UA_uk","ID_en","ID_in","IN_en","IN_hi","JP_ja","MY_en","MY_ms","NZ_en","TH_en","TH_th"],yd={[Rs]:["MU_en","LT_lt","LV_lv","NG_en","SA_ar","SA_en","SG_en","KR_ko"],[ni]:["MU_en","LT_lt","LV_lv","NG_en","CO_es","KR_ko"],[Os]:["LT_lt","LV_lv","SA_en","SG_en"],[oi]:["SG_en","KR_ko"]},Ed={MU_en:[!1,!1,!1,!1],NG_en:[!1,!1,!1,!1],AU_en:[!1,!1,!1,!1],JP_ja:[!1,!1,!1,!1],NZ_en:[!1,!1,!1,!1],TH_en:[!1,!1,!1,!1],TH_th:[!1,!1,!1,!1],CO_es:[!1,!0,!1,!1],AT_de:[!1,!1,!1,!0],SG_en:[!1,!1,!1,!0]},Ad=[Rs,ni,Os,oi],wd=t=>[ni,oi].includes(t),Sd=(t,e,r,n)=>{let o=`${t}_${e}`,i=`${r}_${n}`,a=Ed[o];if(a){let s=Ad.indexOf(i);return a[s]}return wd(i)},_d=(t,e,r,n)=>{let o=`${t}_${e}`;if(Ls.includes(t)||Ls.includes(o))return!0;let i=yd[`${r}_${n}`];return i?i.includes(t)||i.includes(o)?!0:L.displayTax:L.displayTax},Ms=async(t,e,r,n)=>{let o=_d(t,e,r,n);return{displayTax:o,forceTaxExclusive:o?Sd(t,e,r,n):L.forceTaxExclusive}},wr=class wr extends HTMLSpanElement{constructor(){super();f(this,"masElement",new ze(this));this.handleClick=this.handleClick.bind(this)}static get observedAttributes(){return["data-display-old-price","data-display-per-unit","data-display-recurrence","data-display-tax","data-display-plan-type","data-display-annual","data-perpetual","data-promotion-code","data-force-tax-exclusive","data-template","data-wcs-osi"]}static createInlinePrice(r){let n=te();if(!n)return null;let{displayOldPrice:o,displayPerUnit:i,displayRecurrence:a,displayTax:s,displayPlanType:c,displayAnnual:l,forceTaxExclusive:h,perpetual:d,promotionCode:m,quantity:p,alternativePrice:g,template:b,wcsOsi:w}=n.collectPriceOptions(r);return hn(wr,{displayOldPrice:o,displayPerUnit:i,displayRecurrence:a,displayTax:s,displayPlanType:c,displayAnnual:l,forceTaxExclusive:h,perpetual:d,promotionCode:m,quantity:p,alternativePrice:g,template:b,wcsOsi:w})}get isInlinePrice(){return!0}attributeChangedCallback(r,n,o){this.masElement.attributeChangedCallback(r,n,o)}connectedCallback(){this.masElement.connectedCallback(),this.addEventListener("click",this.handleClick)}disconnectedCallback(){this.masElement.disconnectedCallback(),this.removeEventListener("click",this.handleClick)}handleClick(r){r.target!==this&&(r.stopImmediatePropagation(),this.dispatchEvent(new MouseEvent("click",{bubbles:!0,cancelable:!0,view:window})))}onceSettled(){return this.masElement.onceSettled()}get value(){return this.masElement.value}get options(){return this.masElement.options}get isFailed(){return this.masElement.state===me}requestUpdate(r=!1){return this.masElement.requestUpdate(r)}async render(r={}){if(!this.isConnected)return!1;let n=te();if(!n)return!1;let o=n.collectPriceOptions(r,this),i={...n.settings,...o};if(!i.wcsOsi.length)return!1;if(n.featureFlags[Be]&&(o.displayTax===void 0||o.forceTaxExclusive===void 0)){let[c]=await n.resolveOfferSelectors(i),l=mr(await c,i);if(l?.length){let{country:h,language:d}=i,m=l[0],[p=""]=m.marketSegments,g=await Ms(h,d,m.customerSegment,p);o.displayTax===void 0&&(i.displayTax=g?.displayTax||i.displayTax),o.forceTaxExclusive===void 0&&(i.forceTaxExclusive=g?.forceTaxExclusive||i.forceTaxExclusive)}}let a=this.masElement.togglePending(i);this.innerHTML="";let[s]=n.resolveOfferSelectors(i);try{let c=await s;return this.renderOffers(mr(c,i),a)}catch(c){throw this.innerHTML="",c}}renderOffers(r,n=void 0){if(!this.isConnected)return;let o=te();if(!o)return!1;if(n??(n=this.masElement.togglePending()),r.length){if(this.masElement.toggleResolved(n,r)){this.innerHTML=o.buildPriceHTML(r,this.options);let i=this.closest("p, h3, div");if(!i||!i.querySelector('span[data-template="strikethrough"]')||i.querySelector(".alt-aria-label"))return!0;let a=i?.querySelectorAll('span[is="inline-price"]');return a.length>1&&a.length===i.querySelectorAll('span[data-template="strikethrough"]').length*2&&a.forEach(s=>{s.dataset.template!=="strikethrough"&&s.options&&!s.options.alternativePrice&&!s.isFailed&&(s.options.alternativePrice=!0,s.innerHTML=o.buildPriceHTML(r,s.options))}),!0}}else{let i=new Error(`Not provided: ${this.options?.wcsOsi??"-"}`);if(this.masElement.toggleFailed(n,i,this.options))return this.innerHTML="",!0}return!1}updateOptions(r){let n=te();if(!n)return!1;let{alternativePrice:o,displayOldPrice:i,displayPerUnit:a,displayRecurrence:s,displayTax:c,forceTaxExclusive:l,perpetual:h,promotionCode:d,quantity:m,template:p,wcsOsi:g}=n.collectPriceOptions(r);return dn(this,{alternativePrice:o,displayOldPrice:i,displayPerUnit:a,displayRecurrence:s,displayTax:c,forceTaxExclusive:l,perpetual:h,promotionCode:d,quantity:m,template:p,wcsOsi:g}),!0}};f(wr,"is","inline-price"),f(wr,"tag","span");var Oe=wr;window.customElements.get(Oe.is)||window.customElements.define(Oe.is,Oe,{extends:Oe.tag});function Ns({literals:t,providers:e,settings:r}){function n(a,s=null){let c={country:r.country,language:r.language,locale:r.locale,literals:structuredClone(t.price)};if(s&&e?.price)for(let B of e.price)B(s,c);let{displayOldPrice:l,displayPerUnit:h,displayRecurrence:d,displayTax:m,displayPlanType:p,forceTaxExclusive:g,perpetual:b,displayAnnual:w,promotionCode:R,quantity:k,alternativePrice:S,wcsOsi:T,...M}=Object.assign(c,s?.dataset??{},a??{});return c=tn(Object.assign({...c,...M,displayOldPrice:A(l),displayPerUnit:A(h),displayRecurrence:A(d),displayTax:A(m),displayPlanType:A(p),forceTaxExclusive:A(g),perpetual:A(b),displayAnnual:A(w),promotionCode:nn(R).effectivePromoCode,quantity:Rt(k,L.quantity),alternativePrice:A(S),wcsOsi:an(T)})),c}function o(a,s){if(!Array.isArray(a)||!a.length||!s)return"";let{template:c}=s,l;switch(c){case"discount":l=ks;break;case"strikethrough":l=Es;break;case"annual":l=As;break;case"legal":l=Cs;break;default:s.template==="optical"&&s.alternativePrice?l=ws:s.template==="optical"?l=ys:s.displayAnnual&&a[0].planType==="ABM"?l=s.promotionCode?Ts:_s:s.alternativePrice?l=Ss:l=s.promotionCode?vs:bs}let[h]=a;return h={...h,...h.priceDetails},l({...r,...s},h)}let i=Oe.createInlinePrice;return{InlinePrice:Oe,buildPriceHTML:o,collectPriceOptions:n,createInlinePrice:i}}function Td({locale:t=void 0,country:e=void 0,language:r=void 0}={}){return r??(r=t?.split("_")?.[0]||L.language),e??(e=t?.split("_")?.[1]||L.country),t??(t=`${r}_${e}`),{locale:t,country:e,language:r}}function $s(t={},e){let r=e.featureFlags[Be],{commerce:n={}}=t,o=ye.PRODUCTION,i=fo,a=N("checkoutClientId",n)??L.checkoutClientId,s=dr(N("checkoutWorkflowStep",n),ee,L.checkoutWorkflowStep),c=A(N("displayOldPrice",n),r?L.displayOldPrice:!L.displayOldPrice),l=A(N("displayPerUnit",n),r?L.displayPerUnit:!L.displayPerUnit),h=A(N("displayRecurrence",n),L.displayRecurrence),d=A(N("displayTax",n),L.displayTax),m=A(N("displayPlanType",n),L.displayPlanType),p=A(N("entitlement",n),L.entitlement),g=A(N("modal",n),L.modal),b=A(N("forceTaxExclusive",n),L.forceTaxExclusive),w=N("promotionCode",n)??L.promotionCode,R=Rt(N("quantity",n)),k=N("wcsApiKey",n)??L.wcsApiKey,S=n?.env==="stage",T=De.PUBLISHED;["true",""].includes(n.allowOverride)&&(S=(N(mo,n,{metadata:!1})?.toLowerCase()??n?.env)==="stage",T=dr(N(uo,n),De,T)),S&&(o=ye.STAGE,i=go);let B=N(po)??t.preview,V=typeof B<"u"&&B!=="off"&&B!=="false",re={};V&&(re={preview:V});let z=N("mas-io-url")??t.masIOUrl??`https://www${o===ye.STAGE?".stage":""}.adobe.com/mas/io`,$=N("preselect-plan")??void 0;return{...Td(t),...re,displayOldPrice:c,checkoutClientId:a,checkoutWorkflowStep:s,displayPerUnit:l,displayRecurrence:h,displayTax:d,displayPlanType:m,entitlement:p,extraOptions:L.extraOptions,modal:g,env:o,forceTaxExclusive:b,promotionCode:w,quantity:R,alternativePrice:L.alternativePrice,wcsApiKey:k,wcsURL:i,landscape:T,masIOUrl:z,...$&&{preselectPlan:$}}}async function Sn(t,e={},r=2,n=100){let o;for(let i=0;i<=r;i++)try{let a=await fetch(t,e);return a.retryCount=i,a}catch(a){if(o=a,o.retryCount=i,i>r)break;await new Promise(s=>setTimeout(s,n*(i+1)))}throw o}var Cd="mas-commerce-service";function Sr(t,e){let r;return function(){let n=this,o=arguments;clearTimeout(r),r=setTimeout(()=>t.apply(n,o),e)}}function oe(t,e={},r=null,n=null){let o=n?document.createElement(t,{is:n}):document.createElement(t);r instanceof HTMLElement?o.appendChild(r):o.innerHTML=r;for(let[i,a]of Object.entries(e))o.setAttribute(i,a);return o}function Ee(t){return`startTime:${t.startTime.toFixed(2)}|duration:${t.duration.toFixed(2)}`}function Is(){return window.matchMedia("(max-width: 1024px)").matches}function nt(){return document.getElementsByTagName(Cd)?.[0]}var ii="wcs";function Hs({settings:t}){let e=se.module(ii),{env:r,wcsApiKey:n}=t,o=new Map,i=new Map,a,s=new Map;async function c(p,g,b=!0){let w=te(),R=co;e.debug("Fetching:",p);let k="",S;if(p.offerSelectorIds.length>1)throw new Error("Multiple OSIs are not supported anymore");let T=new Map(g),[M]=p.offerSelectorIds,B=Date.now()+Math.random().toString(36).substring(2,7),V=`${ii}:${M}:${B}${Qe}`,re=`${ii}:${M}:${B}${Ze}`,z;try{if(performance.mark(V),k=new URL(t.wcsURL),k.searchParams.set("offer_selector_ids",M),k.searchParams.set("country",p.country),k.searchParams.set("locale",p.locale),k.searchParams.set("landscape",r===ye.STAGE?"ALL":t.landscape),k.searchParams.set("api_key",n),p.language&&k.searchParams.set("language",p.language),p.promotionCode&&k.searchParams.set("promotion_code",p.promotionCode),p.currency&&k.searchParams.set("currency",p.currency),S=await Sn(k.toString(),{credentials:"omit"}),S.ok){let $=[];try{let Z=await S.json();e.debug("Fetched:",p,Z),$=Z.resolvedOffers??[]}catch(Z){e.error(`Error parsing JSON: ${Z.message}`,{...Z.context,...w?.duration})}$=$.map(pr),g.forEach(({resolve:Z},ce)=>{let He=$.filter(({offerSelectorIds:ve})=>ve.includes(ce)).flat();He.length&&(T.delete(ce),g.delete(ce),Z(He))})}else R=so}catch($){R=`Network error: ${$.message}`}finally{z=performance.measure(re,V),performance.clearMarks(V),performance.clearMeasures(re)}if(b&&g.size){e.debug("Missing:",{offerSelectorIds:[...g.keys()]});let $=sn(S);g.forEach(Z=>{Z.reject(new ke(R,{...p,...$,response:S,measure:Ee(z),...w?.duration}))})}}function l(){clearTimeout(a);let p=[...i.values()];i.clear(),p.forEach(({options:g,promises:b})=>c(g,b))}function h(p){if(!p||typeof p!="object")throw new TypeError("Cache must be a Map or similar object");let g=r===ye.STAGE?"stage":"prod",b=p[g];if(!b||typeof b!="object"){e.warn(`No cache found for environment: ${r}`);return}for(let[w,R]of Object.entries(b))o.set(w,Promise.resolve(R.map(pr)));e.debug(`Prefilled WCS cache with ${b.size} entries`)}function d(){let p=o.size;s=new Map(o),o.clear(),e.debug(`Moved ${p} cache entries to stale cache`)}function m({country:p,language:g,perpetual:b=!1,promotionCode:w="",wcsOsi:R=[]}){let k=`${g}_${p}`;p!=="GB"&&!b&&(g="MULT");let S=[p,g,w].filter(T=>T).join("-").toLowerCase();return R.map(T=>{let M=`${T}-${S}`;if(o.has(M))return o.get(M);let B=new Promise((V,re)=>{let z=i.get(S);if(!z){let $={country:p,locale:k,offerSelectorIds:[]};p!=="GB"&&!b&&($.language=g),z={options:$,promises:new Map},i.set(S,z)}w&&(z.options.promotionCode=w),z.options.offerSelectorIds.push(T),z.promises.set(T,{resolve:V,reject:re}),l()}).catch(V=>{if(s.has(M))return s.get(M);throw V});return o.set(M,B),B})}return{Commitment:We,PlanType:la,Term:le,applyPlanType:pr,resolveOfferSelectors:m,flushWcsCacheInternal:d,prefillWcsCache:h}}var Us="mas-commerce-service",Ds="mas-commerce-service:start",Bs="mas-commerce-service:ready",_r,Mt,Nt,zs,Fs,ai=class extends HTMLElement{constructor(){super(...arguments);y(this,Nt);y(this,_r);y(this,Mt);f(this,"lastLoggingTime",0)}async registerCheckoutAction(r){typeof r=="function"&&(this.buildCheckoutAction=async(n,o,i)=>{let a=await r?.(n,o,this.imsSignedInPromise,i);return a||null})}get featureFlags(){return u(this,Mt)||v(this,Mt,{[Be]:X(this,Nt,Fs).call(this,Be)}),u(this,Mt)}activate(){let r=u(this,Nt,zs),n=$s(r,this);cn(r.lana);let o=se.init(r.hostEnv).module("service");o.debug("Activating:",r);let a={price:Pa(n)},s={checkout:new Set,price:new Set},c={literals:a,providers:s,settings:n};Object.defineProperties(this,Object.getOwnPropertyDescriptors({..._a(c),...Ta(c),...Ns(c),...Hs(c),...vo,Log:se,get defaults(){return L},get log(){return se},get providers(){return{checkout(h){return s.checkout.add(h),()=>s.checkout.delete(h)},price(h){return s.price.add(h),()=>s.price.delete(h)},has:h=>s.price.has(h)||s.checkout.has(h)}},get settings(){return n}})),o.debug("Activated:",{literals:a,settings:n});let l=new CustomEvent(Qr,{bubbles:!0,cancelable:!1,detail:this});performance.mark(Bs),v(this,_r,performance.measure(Bs,Ds)),this.dispatchEvent(l),setTimeout(()=>{this.logFailedRequests()},1e4)}connectedCallback(){performance.mark(Ds),this.activate()}flushWcsCache(){this.flushWcsCacheInternal(),this.log.debug("Flushed WCS cache")}refreshOffers(){this.flushWcsCacheInternal(),document.querySelectorAll(sr).forEach(r=>r.requestUpdate(!0)),this.log.debug("Refreshed WCS offers"),this.logFailedRequests()}refreshFragments(){this.flushWcsCacheInternal(),customElements.get("aem-fragment")?.cache.clear(),document.querySelectorAll("aem-fragment").forEach(r=>r.refresh(!1)),this.log.debug("Refreshed AEM fragments"),this.logFailedRequests()}get duration(){return{"mas-commerce-service:measure":Ee(u(this,_r))}}logFailedRequests(){let r=[...performance.getEntriesByType("resource")].filter(({startTime:o})=>o>this.lastLoggingTime).filter(({transferSize:o,duration:i,responseStatus:a})=>o===0&&i===0&&a<200||a>=400),n=Array.from(new Map(r.map(o=>[o.name,o])).values());if(n.some(({name:o})=>/(\/fragment\?|web_commerce_artifact)/.test(o))){let o=n.map(({name:i})=>i);this.log.error("Failed requests:",{failedUrls:o,...this.duration})}this.lastLoggingTime=performance.now().toFixed(3)}};_r=new WeakMap,Mt=new WeakMap,Nt=new WeakSet,zs=function(){let r=this.getAttribute("env")??"prod",n={commerce:{env:r},hostEnv:{name:r},lana:{tags:this.getAttribute("lana-tags"),sampleRate:parseInt(this.getAttribute("lana-sample-rate")??1,10),isProdDomain:r==="prod"},masIOUrl:this.getAttribute("mas-io-url")};return["locale","country","language","preview"].forEach(o=>{let i=this.getAttribute(o);i&&(n[o]=i)}),["checkout-workflow-step","force-tax-exclusive","checkout-client-id","allow-override","wcs-api-key"].forEach(o=>{let i=this.getAttribute(o);if(i!=null){let a=o.replace(/-([a-z])/g,s=>s[1].toUpperCase());n.commerce[a]=i}}),n},Fs=function(r){return["",null,void 0,"on"].includes(this.getAttribute(`data-${r}`)||N(r))};window.customElements.get(Us)||window.customElements.define(Us,ai);var Tr=class Tr extends mn(HTMLButtonElement){static createCheckoutButton(e={},r=""){return pn(Tr,e,r)}setCheckoutUrl(e){this.setAttribute("data-href",e)}get href(){return this.getAttribute("data-href")}get isCheckoutButton(){return!0}clickHandler(e){if(this.checkoutActionHandler){this.checkoutActionHandler?.(e);return}this.href&&(window.location.href=this.href)}};f(Tr,"is","checkout-button"),f(Tr,"tag","button");var $t=Tr;window.customElements.get($t.is)||window.customElements.define($t.is,$t,{extends:$t.tag});function Pd(t){return`https://${t==="PRODUCTION"?"www.adobe.com":"www.stage.adobe.com"}/offers/promo-terms.html`}var it,ot=class ot extends HTMLAnchorElement{constructor(){super();f(this,"masElement",new ze(this));y(this,it);this.setAttribute("is",ot.is)}get isUptLink(){return!0}initializeWcsData(r,n){this.setAttribute("data-wcs-osi",r),n&&this.setAttribute("data-promotion-code",n)}attributeChangedCallback(r,n,o){this.masElement.attributeChangedCallback(r,n,o)}connectedCallback(){this.masElement.connectedCallback(),v(this,it,nt()),u(this,it)&&(this.log=u(this,it).log.module("upt-link"))}disconnectedCallback(){this.masElement.disconnectedCallback(),v(this,it,void 0)}requestUpdate(r=!1){this.masElement.requestUpdate(r)}onceSettled(){return this.masElement.onceSettled()}async render(){let r=nt();if(!r)return!1;this.dataset.imsCountry||r.imsCountryPromise.then(a=>{a&&(this.dataset.imsCountry=a)});let n=r.collectCheckoutOptions({},this);if(!n.wcsOsi)return this.log.error("Missing 'data-wcs-osi' attribute on upt-link."),!1;let o=this.masElement.togglePending(n),i=r.resolveOfferSelectors(n);try{let[[a]]=await Promise.all(i),{country:s,language:c,env:l}=n,h=`locale=${c}_${s}&country=${s}&offer_id=${a.offerId}`,d=this.getAttribute("data-promotion-code");d&&(h+=`&promotion_code=${encodeURIComponent(d)}`),this.href=`${Pd(l)}?${h}`,this.masElement.toggleResolved(o,a,n)}catch(a){let s=new Error(`Could not resolve offer selectors for id: ${n.wcsOsi}.`,a.message);return this.masElement.toggleFailed(o,s,n),!1}}static createFrom(r){let n=new ot;for(let o of r.attributes)o.name!=="is"&&(o.name==="class"&&o.value.includes("upt-link")?n.setAttribute("class",o.value.replace("upt-link","").trim()):n.setAttribute(o.name,o.value));return n.innerHTML=r.innerHTML,n.setAttribute("tabindex",0),n}};it=new WeakMap,f(ot,"is","upt-link"),f(ot,"tag","a"),f(ot,"observedAttributes",["data-wcs-osi","data-promotion-code","data-ims-country"]);var Ge=ot;window.customElements.get(Ge.is)||window.customElements.define(Ge.is,Ge,{extends:Ge.tag});var _n=window,Cn=_n.ShadowRoot&&(_n.ShadyCSS===void 0||_n.ShadyCSS.nativeShadow)&&"adoptedStyleSheets"in Document.prototype&&"replace"in CSSStyleSheet.prototype,Vs=Symbol(),Gs=new WeakMap,Tn=class{constructor(e,r,n){if(this._$cssResult$=!0,n!==Vs)throw Error("CSSResult is not constructable. Use `unsafeCSS` or `css` instead.");this.cssText=e,this.t=r}get styleSheet(){let e=this.o,r=this.t;if(Cn&&e===void 0){let n=r!==void 0&&r.length===1;n&&(e=Gs.get(r)),e===void 0&&((this.o=e=new CSSStyleSheet).replaceSync(this.cssText),n&&Gs.set(r,e))}return e}toString(){return this.cssText}},js=t=>new Tn(typeof t=="string"?t:t+"",void 0,Vs);var si=(t,e)=>{Cn?t.adoptedStyleSheets=e.map(r=>r instanceof CSSStyleSheet?r:r.styleSheet):e.forEach(r=>{let n=document.createElement("style"),o=_n.litNonce;o!==void 0&&n.setAttribute("nonce",o),n.textContent=r.cssText,t.appendChild(n)})},Pn=Cn?t=>t:t=>t instanceof CSSStyleSheet?(e=>{let r="";for(let n of e.cssRules)r+=n.cssText;return js(r)})(t):t;var ci,kn=window,qs=kn.trustedTypes,kd=qs?qs.emptyScript:"",Ws=kn.reactiveElementPolyfillSupport,hi={toAttribute(t,e){switch(e){case Boolean:t=t?kd:null;break;case Object:case Array:t=t==null?t:JSON.stringify(t)}return t},fromAttribute(t,e){let r=t;switch(e){case Boolean:r=t!==null;break;case Number:r=t===null?null:Number(t);break;case Object:case Array:try{r=JSON.parse(t)}catch{r=null}}return r}},Ys=(t,e)=>e!==t&&(e==e||t==t),li={attribute:!0,type:String,converter:hi,reflect:!1,hasChanged:Ys},di="finalized",at=class extends HTMLElement{constructor(){super(),this._$Ei=new Map,this.isUpdatePending=!1,this.hasUpdated=!1,this._$El=null,this._$Eu()}static addInitializer(e){var r;this.finalize(),((r=this.h)!==null&&r!==void 0?r:this.h=[]).push(e)}static get observedAttributes(){this.finalize();let e=[];return this.elementProperties.forEach((r,n)=>{let o=this._$Ep(n,r);o!==void 0&&(this._$Ev.set(o,n),e.push(o))}),e}static createProperty(e,r=li){if(r.state&&(r.attribute=!1),this.finalize(),this.elementProperties.set(e,r),!r.noAccessor&&!this.prototype.hasOwnProperty(e)){let n=typeof e=="symbol"?Symbol():"__"+e,o=this.getPropertyDescriptor(e,n,r);o!==void 0&&Object.defineProperty(this.prototype,e,o)}}static getPropertyDescriptor(e,r,n){return{get(){return this[r]},set(o){let i=this[e];this[r]=o,this.requestUpdate(e,i,n)},configurable:!0,enumerable:!0}}static getPropertyOptions(e){return this.elementProperties.get(e)||li}static finalize(){if(this.hasOwnProperty(di))return!1;this[di]=!0;let e=Object.getPrototypeOf(this);if(e.finalize(),e.h!==void 0&&(this.h=[...e.h]),this.elementProperties=new Map(e.elementProperties),this._$Ev=new Map,this.hasOwnProperty("properties")){let r=this.properties,n=[...Object.getOwnPropertyNames(r),...Object.getOwnPropertySymbols(r)];for(let o of n)this.createProperty(o,r[o])}return this.elementStyles=this.finalizeStyles(this.styles),!0}static finalizeStyles(e){let r=[];if(Array.isArray(e)){let n=new Set(e.flat(1/0).reverse());for(let o of n)r.unshift(Pn(o))}else e!==void 0&&r.push(Pn(e));return r}static _$Ep(e,r){let n=r.attribute;return n===!1?void 0:typeof n=="string"?n:typeof e=="string"?e.toLowerCase():void 0}_$Eu(){var e;this._$E_=new Promise(r=>this.enableUpdating=r),this._$AL=new Map,this._$Eg(),this.requestUpdate(),(e=this.constructor.h)===null||e===void 0||e.forEach(r=>r(this))}addController(e){var r,n;((r=this._$ES)!==null&&r!==void 0?r:this._$ES=[]).push(e),this.renderRoot!==void 0&&this.isConnected&&((n=e.hostConnected)===null||n===void 0||n.call(e))}removeController(e){var r;(r=this._$ES)===null||r===void 0||r.splice(this._$ES.indexOf(e)>>>0,1)}_$Eg(){this.constructor.elementProperties.forEach((e,r)=>{this.hasOwnProperty(r)&&(this._$Ei.set(r,this[r]),delete this[r])})}createRenderRoot(){var e;let r=(e=this.shadowRoot)!==null&&e!==void 0?e:this.attachShadow(this.constructor.shadowRootOptions);return si(r,this.constructor.elementStyles),r}connectedCallback(){var e;this.renderRoot===void 0&&(this.renderRoot=this.createRenderRoot()),this.enableUpdating(!0),(e=this._$ES)===null||e===void 0||e.forEach(r=>{var n;return(n=r.hostConnected)===null||n===void 0?void 0:n.call(r)})}enableUpdating(e){}disconnectedCallback(){var e;(e=this._$ES)===null||e===void 0||e.forEach(r=>{var n;return(n=r.hostDisconnected)===null||n===void 0?void 0:n.call(r)})}attributeChangedCallback(e,r,n){this._$AK(e,n)}_$EO(e,r,n=li){var o;let i=this.constructor._$Ep(e,n);if(i!==void 0&&n.reflect===!0){let a=(((o=n.converter)===null||o===void 0?void 0:o.toAttribute)!==void 0?n.converter:hi).toAttribute(r,n.type);this._$El=e,a==null?this.removeAttribute(i):this.setAttribute(i,a),this._$El=null}}_$AK(e,r){var n;let o=this.constructor,i=o._$Ev.get(e);if(i!==void 0&&this._$El!==i){let a=o.getPropertyOptions(i),s=typeof a.converter=="function"?{fromAttribute:a.converter}:((n=a.converter)===null||n===void 0?void 0:n.fromAttribute)!==void 0?a.converter:hi;this._$El=i,this[i]=s.fromAttribute(r,a.type),this._$El=null}}requestUpdate(e,r,n){let o=!0;e!==void 0&&(((n=n||this.constructor.getPropertyOptions(e)).hasChanged||Ys)(this[e],r)?(this._$AL.has(e)||this._$AL.set(e,r),n.reflect===!0&&this._$El!==e&&(this._$EC===void 0&&(this._$EC=new Map),this._$EC.set(e,n))):o=!1),!this.isUpdatePending&&o&&(this._$E_=this._$Ej())}async _$Ej(){this.isUpdatePending=!0;try{await this._$E_}catch(r){Promise.reject(r)}let e=this.scheduleUpdate();return e!=null&&await e,!this.isUpdatePending}scheduleUpdate(){return this.performUpdate()}performUpdate(){var e;if(!this.isUpdatePending)return;this.hasUpdated,this._$Ei&&(this._$Ei.forEach((o,i)=>this[i]=o),this._$Ei=void 0);let r=!1,n=this._$AL;try{r=this.shouldUpdate(n),r?(this.willUpdate(n),(e=this._$ES)===null||e===void 0||e.forEach(o=>{var i;return(i=o.hostUpdate)===null||i===void 0?void 0:i.call(o)}),this.update(n)):this._$Ek()}catch(o){throw r=!1,this._$Ek(),o}r&&this._$AE(n)}willUpdate(e){}_$AE(e){var r;(r=this._$ES)===null||r===void 0||r.forEach(n=>{var o;return(o=n.hostUpdated)===null||o===void 0?void 0:o.call(n)}),this.hasUpdated||(this.hasUpdated=!0,this.firstUpdated(e)),this.updated(e)}_$Ek(){this._$AL=new Map,this.isUpdatePending=!1}get updateComplete(){return this.getUpdateComplete()}getUpdateComplete(){return this._$E_}shouldUpdate(e){return!0}update(e){this._$EC!==void 0&&(this._$EC.forEach((r,n)=>this._$EO(n,this[n],r)),this._$EC=void 0),this._$Ek()}updated(e){}firstUpdated(e){}};at[di]=!0,at.elementProperties=new Map,at.elementStyles=[],at.shadowRootOptions={mode:"open"},Ws?.({ReactiveElement:at}),((ci=kn.reactiveElementVersions)!==null&&ci!==void 0?ci:kn.reactiveElementVersions=[]).push("1.6.3");var pi,Ln=window,It=Ln.trustedTypes,Xs=It?It.createPolicy("lit-html",{createHTML:t=>t}):void 0,ui="$lit$",Ve=`lit$${(Math.random()+"").slice(9)}$`,rc="?"+Ve,Ld=`<${rc}>`,lt=document,Rn=()=>lt.createComment(""),Pr=t=>t===null||typeof t!="object"&&typeof t!="function",nc=Array.isArray,Rd=t=>nc(t)||typeof t?.[Symbol.iterator]=="function",mi=`[ 	
-\f\r]`,Cr=/<(?:(!--|\/[^a-zA-Z])|(\/?[a-zA-Z][^>\s]*)|(\/?$))/g,Ks=/-->/g,Qs=/>/g,st=RegExp(`>|${mi}(?:([^\\s"'>=/]+)(${mi}*=${mi}*(?:[^ 	
-\f\r"'\`<>=]|("|')|))|$)`,"g"),Zs=/'/g,Js=/"/g,oc=/^(?:script|style|textarea|title)$/i,ic=t=>(e,...r)=>({_$litType$:t,strings:e,values:r}),jf=ic(1),qf=ic(2),kr=Symbol.for("lit-noChange"),K=Symbol.for("lit-nothing"),ec=new WeakMap,ct=lt.createTreeWalker(lt,129,null,!1);function ac(t,e){if(!Array.isArray(t)||!t.hasOwnProperty("raw"))throw Error("invalid template strings array");return Xs!==void 0?Xs.createHTML(e):e}var Od=(t,e)=>{let r=t.length-1,n=[],o,i=e===2?"<svg>":"",a=Cr;for(let s=0;s<r;s++){let c=t[s],l,h,d=-1,m=0;for(;m<c.length&&(a.lastIndex=m,h=a.exec(c),h!==null);)m=a.lastIndex,a===Cr?h[1]==="!--"?a=Ks:h[1]!==void 0?a=Qs:h[2]!==void 0?(oc.test(h[2])&&(o=RegExp("</"+h[2],"g")),a=st):h[3]!==void 0&&(a=st):a===st?h[0]===">"?(a=o??Cr,d=-1):h[1]===void 0?d=-2:(d=a.lastIndex-h[2].length,l=h[1],a=h[3]===void 0?st:h[3]==='"'?Js:Zs):a===Js||a===Zs?a=st:a===Ks||a===Qs?a=Cr:(a=st,o=void 0);let p=a===st&&t[s+1].startsWith("/>")?" ":"";i+=a===Cr?c+Ld:d>=0?(n.push(l),c.slice(0,d)+ui+c.slice(d)+Ve+p):c+Ve+(d===-2?(n.push(void 0),s):p)}return[ac(t,i+(t[r]||"<?>")+(e===2?"</svg>":"")),n]},Lr=class t{constructor({strings:e,_$litType$:r},n){let o;this.parts=[];let i=0,a=0,s=e.length-1,c=this.parts,[l,h]=Od(e,r);if(this.el=t.createElement(l,n),ct.currentNode=this.el.content,r===2){let d=this.el.content,m=d.firstChild;m.remove(),d.append(...m.childNodes)}for(;(o=ct.nextNode())!==null&&c.length<s;){if(o.nodeType===1){if(o.hasAttributes()){let d=[];for(let m of o.getAttributeNames())if(m.endsWith(ui)||m.startsWith(Ve)){let p=h[a++];if(d.push(m),p!==void 0){let g=o.getAttribute(p.toLowerCase()+ui).split(Ve),b=/([.?@])?(.*)/.exec(p);c.push({type:1,index:i,name:b[2],strings:g,ctor:b[1]==="."?gi:b[1]==="?"?xi:b[1]==="@"?bi:Ut})}else c.push({type:6,index:i})}for(let m of d)o.removeAttribute(m)}if(oc.test(o.tagName)){let d=o.textContent.split(Ve),m=d.length-1;if(m>0){o.textContent=It?It.emptyScript:"";for(let p=0;p<m;p++)o.append(d[p],Rn()),ct.nextNode(),c.push({type:2,index:++i});o.append(d[m],Rn())}}}else if(o.nodeType===8)if(o.data===rc)c.push({type:2,index:i});else{let d=-1;for(;(d=o.data.indexOf(Ve,d+1))!==-1;)c.push({type:7,index:i}),d+=Ve.length-1}i++}}static createElement(e,r){let n=lt.createElement("template");return n.innerHTML=e,n}};function Ht(t,e,r=t,n){var o,i,a,s;if(e===kr)return e;let c=n!==void 0?(o=r._$Co)===null||o===void 0?void 0:o[n]:r._$Cl,l=Pr(e)?void 0:e._$litDirective$;return c?.constructor!==l&&((i=c?._$AO)===null||i===void 0||i.call(c,!1),l===void 0?c=void 0:(c=new l(t),c._$AT(t,r,n)),n!==void 0?((a=(s=r)._$Co)!==null&&a!==void 0?a:s._$Co=[])[n]=c:r._$Cl=c),c!==void 0&&(e=Ht(t,c._$AS(t,e.values),c,n)),e}var fi=class{constructor(e,r){this._$AV=[],this._$AN=void 0,this._$AD=e,this._$AM=r}get parentNode(){return this._$AM.parentNode}get _$AU(){return this._$AM._$AU}u(e){var r;let{el:{content:n},parts:o}=this._$AD,i=((r=e?.creationScope)!==null&&r!==void 0?r:lt).importNode(n,!0);ct.currentNode=i;let a=ct.nextNode(),s=0,c=0,l=o[0];for(;l!==void 0;){if(s===l.index){let h;l.type===2?h=new On(a,a.nextSibling,this,e):l.type===1?h=new l.ctor(a,l.name,l.strings,this,e):l.type===6&&(h=new vi(a,this,e)),this._$AV.push(h),l=o[++c]}s!==l?.index&&(a=ct.nextNode(),s++)}return ct.currentNode=lt,i}v(e){let r=0;for(let n of this._$AV)n!==void 0&&(n.strings!==void 0?(n._$AI(e,n,r),r+=n.strings.length-2):n._$AI(e[r])),r++}},On=class t{constructor(e,r,n,o){var i;this.type=2,this._$AH=K,this._$AN=void 0,this._$AA=e,this._$AB=r,this._$AM=n,this.options=o,this._$Cp=(i=o?.isConnected)===null||i===void 0||i}get _$AU(){var e,r;return(r=(e=this._$AM)===null||e===void 0?void 0:e._$AU)!==null&&r!==void 0?r:this._$Cp}get parentNode(){let e=this._$AA.parentNode,r=this._$AM;return r!==void 0&&e?.nodeType===11&&(e=r.parentNode),e}get startNode(){return this._$AA}get endNode(){return this._$AB}_$AI(e,r=this){e=Ht(this,e,r),Pr(e)?e===K||e==null||e===""?(this._$AH!==K&&this._$AR(),this._$AH=K):e!==this._$AH&&e!==kr&&this._(e):e._$litType$!==void 0?this.g(e):e.nodeType!==void 0?this.$(e):Rd(e)?this.T(e):this._(e)}k(e){return this._$AA.parentNode.insertBefore(e,this._$AB)}$(e){this._$AH!==e&&(this._$AR(),this._$AH=this.k(e))}_(e){this._$AH!==K&&Pr(this._$AH)?this._$AA.nextSibling.data=e:this.$(lt.createTextNode(e)),this._$AH=e}g(e){var r;let{values:n,_$litType$:o}=e,i=typeof o=="number"?this._$AC(e):(o.el===void 0&&(o.el=Lr.createElement(ac(o.h,o.h[0]),this.options)),o);if(((r=this._$AH)===null||r===void 0?void 0:r._$AD)===i)this._$AH.v(n);else{let a=new fi(i,this),s=a.u(this.options);a.v(n),this.$(s),this._$AH=a}}_$AC(e){let r=ec.get(e.strings);return r===void 0&&ec.set(e.strings,r=new Lr(e)),r}T(e){nc(this._$AH)||(this._$AH=[],this._$AR());let r=this._$AH,n,o=0;for(let i of e)o===r.length?r.push(n=new t(this.k(Rn()),this.k(Rn()),this,this.options)):n=r[o],n._$AI(i),o++;o<r.length&&(this._$AR(n&&n._$AB.nextSibling,o),r.length=o)}_$AR(e=this._$AA.nextSibling,r){var n;for((n=this._$AP)===null||n===void 0||n.call(this,!1,!0,r);e&&e!==this._$AB;){let o=e.nextSibling;e.remove(),e=o}}setConnected(e){var r;this._$AM===void 0&&(this._$Cp=e,(r=this._$AP)===null||r===void 0||r.call(this,e))}},Ut=class{constructor(e,r,n,o,i){this.type=1,this._$AH=K,this._$AN=void 0,this.element=e,this.name=r,this._$AM=o,this.options=i,n.length>2||n[0]!==""||n[1]!==""?(this._$AH=Array(n.length-1).fill(new String),this.strings=n):this._$AH=K}get tagName(){return this.element.tagName}get _$AU(){return this._$AM._$AU}_$AI(e,r=this,n,o){let i=this.strings,a=!1;if(i===void 0)e=Ht(this,e,r,0),a=!Pr(e)||e!==this._$AH&&e!==kr,a&&(this._$AH=e);else{let s=e,c,l;for(e=i[0],c=0;c<i.length-1;c++)l=Ht(this,s[n+c],r,c),l===kr&&(l=this._$AH[c]),a||(a=!Pr(l)||l!==this._$AH[c]),l===K?e=K:e!==K&&(e+=(l??"")+i[c+1]),this._$AH[c]=l}a&&!o&&this.j(e)}j(e){e===K?this.element.removeAttribute(this.name):this.element.setAttribute(this.name,e??"")}},gi=class extends Ut{constructor(){super(...arguments),this.type=3}j(e){this.element[this.name]=e===K?void 0:e}},Md=It?It.emptyScript:"",xi=class extends Ut{constructor(){super(...arguments),this.type=4}j(e){e&&e!==K?this.element.setAttribute(this.name,Md):this.element.removeAttribute(this.name)}},bi=class extends Ut{constructor(e,r,n,o,i){super(e,r,n,o,i),this.type=5}_$AI(e,r=this){var n;if((e=(n=Ht(this,e,r,0))!==null&&n!==void 0?n:K)===kr)return;let o=this._$AH,i=e===K&&o!==K||e.capture!==o.capture||e.once!==o.once||e.passive!==o.passive,a=e!==K&&(o===K||i);i&&this.element.removeEventListener(this.name,this,o),a&&this.element.addEventListener(this.name,this,e),this._$AH=e}handleEvent(e){var r,n;typeof this._$AH=="function"?this._$AH.call((n=(r=this.options)===null||r===void 0?void 0:r.host)!==null&&n!==void 0?n:this.element,e):this._$AH.handleEvent(e)}},vi=class{constructor(e,r,n){this.element=e,this.type=6,this._$AN=void 0,this._$AM=r,this.options=n}get _$AU(){return this._$AM._$AU}_$AI(e){Ht(this,e)}};var tc=Ln.litHtmlPolyfillSupport;tc?.(Lr,On),((pi=Ln.litHtmlVersions)!==null&&pi!==void 0?pi:Ln.litHtmlVersions=[]).push("2.8.0");var Mn=window,Nn=Mn.ShadowRoot&&(Mn.ShadyCSS===void 0||Mn.ShadyCSS.nativeShadow)&&"adoptedStyleSheets"in Document.prototype&&"replace"in CSSStyleSheet.prototype,yi=Symbol(),sc=new WeakMap,Rr=class{constructor(e,r,n){if(this._$cssResult$=!0,n!==yi)throw Error("CSSResult is not constructable. Use `unsafeCSS` or `css` instead.");this.cssText=e,this.t=r}get styleSheet(){let e=this.o,r=this.t;if(Nn&&e===void 0){let n=r!==void 0&&r.length===1;n&&(e=sc.get(r)),e===void 0&&((this.o=e=new CSSStyleSheet).replaceSync(this.cssText),n&&sc.set(r,e))}return e}toString(){return this.cssText}},Me=t=>new Rr(typeof t=="string"?t:t+"",void 0,yi),E=(t,...e)=>{let r=t.length===1?t[0]:e.reduce((n,o,i)=>n+(a=>{if(a._$cssResult$===!0)return a.cssText;if(typeof a=="number")return a;throw Error("Value passed to 'css' function must be a 'css' function result: "+a+". Use 'unsafeCSS' to pass non-literal values, but take care to ensure page security.")})(o)+t[i+1],t[0]);return new Rr(r,t,yi)},Ei=(t,e)=>{Nn?t.adoptedStyleSheets=e.map(r=>r instanceof CSSStyleSheet?r:r.styleSheet):e.forEach(r=>{let n=document.createElement("style"),o=Mn.litNonce;o!==void 0&&n.setAttribute("nonce",o),n.textContent=r.cssText,t.appendChild(n)})},$n=Nn?t=>t:t=>t instanceof CSSStyleSheet?(e=>{let r="";for(let n of e.cssRules)r+=n.cssText;return Me(r)})(t):t;var Ai,In=window,cc=In.trustedTypes,Nd=cc?cc.emptyScript:"",lc=In.reactiveElementPolyfillSupport,Si={toAttribute(t,e){switch(e){case Boolean:t=t?Nd:null;break;case Object:case Array:t=t==null?t:JSON.stringify(t)}return t},fromAttribute(t,e){let r=t;switch(e){case Boolean:r=t!==null;break;case Number:r=t===null?null:Number(t);break;case Object:case Array:try{r=JSON.parse(t)}catch{r=null}}return r}},hc=(t,e)=>e!==t&&(e==e||t==t),wi={attribute:!0,type:String,converter:Si,reflect:!1,hasChanged:hc},_i="finalized",Ne=class extends HTMLElement{constructor(){super(),this._$Ei=new Map,this.isUpdatePending=!1,this.hasUpdated=!1,this._$El=null,this._$Eu()}static addInitializer(e){var r;this.finalize(),((r=this.h)!==null&&r!==void 0?r:this.h=[]).push(e)}static get observedAttributes(){this.finalize();let e=[];return this.elementProperties.forEach((r,n)=>{let o=this._$Ep(n,r);o!==void 0&&(this._$Ev.set(o,n),e.push(o))}),e}static createProperty(e,r=wi){if(r.state&&(r.attribute=!1),this.finalize(),this.elementProperties.set(e,r),!r.noAccessor&&!this.prototype.hasOwnProperty(e)){let n=typeof e=="symbol"?Symbol():"__"+e,o=this.getPropertyDescriptor(e,n,r);o!==void 0&&Object.defineProperty(this.prototype,e,o)}}static getPropertyDescriptor(e,r,n){return{get(){return this[r]},set(o){let i=this[e];this[r]=o,this.requestUpdate(e,i,n)},configurable:!0,enumerable:!0}}static getPropertyOptions(e){return this.elementProperties.get(e)||wi}static finalize(){if(this.hasOwnProperty(_i))return!1;this[_i]=!0;let e=Object.getPrototypeOf(this);if(e.finalize(),e.h!==void 0&&(this.h=[...e.h]),this.elementProperties=new Map(e.elementProperties),this._$Ev=new Map,this.hasOwnProperty("properties")){let r=this.properties,n=[...Object.getOwnPropertyNames(r),...Object.getOwnPropertySymbols(r)];for(let o of n)this.createProperty(o,r[o])}return this.elementStyles=this.finalizeStyles(this.styles),!0}static finalizeStyles(e){let r=[];if(Array.isArray(e)){let n=new Set(e.flat(1/0).reverse());for(let o of n)r.unshift($n(o))}else e!==void 0&&r.push($n(e));return r}static _$Ep(e,r){let n=r.attribute;return n===!1?void 0:typeof n=="string"?n:typeof e=="string"?e.toLowerCase():void 0}_$Eu(){var e;this._$E_=new Promise(r=>this.enableUpdating=r),this._$AL=new Map,this._$Eg(),this.requestUpdate(),(e=this.constructor.h)===null||e===void 0||e.forEach(r=>r(this))}addController(e){var r,n;((r=this._$ES)!==null&&r!==void 0?r:this._$ES=[]).push(e),this.renderRoot!==void 0&&this.isConnected&&((n=e.hostConnected)===null||n===void 0||n.call(e))}removeController(e){var r;(r=this._$ES)===null||r===void 0||r.splice(this._$ES.indexOf(e)>>>0,1)}_$Eg(){this.constructor.elementProperties.forEach((e,r)=>{this.hasOwnProperty(r)&&(this._$Ei.set(r,this[r]),delete this[r])})}createRenderRoot(){var e;let r=(e=this.shadowRoot)!==null&&e!==void 0?e:this.attachShadow(this.constructor.shadowRootOptions);return Ei(r,this.constructor.elementStyles),r}connectedCallback(){var e;this.renderRoot===void 0&&(this.renderRoot=this.createRenderRoot()),this.enableUpdating(!0),(e=this._$ES)===null||e===void 0||e.forEach(r=>{var n;return(n=r.hostConnected)===null||n===void 0?void 0:n.call(r)})}enableUpdating(e){}disconnectedCallback(){var e;(e=this._$ES)===null||e===void 0||e.forEach(r=>{var n;return(n=r.hostDisconnected)===null||n===void 0?void 0:n.call(r)})}attributeChangedCallback(e,r,n){this._$AK(e,n)}_$EO(e,r,n=wi){var o;let i=this.constructor._$Ep(e,n);if(i!==void 0&&n.reflect===!0){let a=(((o=n.converter)===null||o===void 0?void 0:o.toAttribute)!==void 0?n.converter:Si).toAttribute(r,n.type);this._$El=e,a==null?this.removeAttribute(i):this.setAttribute(i,a),this._$El=null}}_$AK(e,r){var n;let o=this.constructor,i=o._$Ev.get(e);if(i!==void 0&&this._$El!==i){let a=o.getPropertyOptions(i),s=typeof a.converter=="function"?{fromAttribute:a.converter}:((n=a.converter)===null||n===void 0?void 0:n.fromAttribute)!==void 0?a.converter:Si;this._$El=i,this[i]=s.fromAttribute(r,a.type),this._$El=null}}requestUpdate(e,r,n){let o=!0;e!==void 0&&(((n=n||this.constructor.getPropertyOptions(e)).hasChanged||hc)(this[e],r)?(this._$AL.has(e)||this._$AL.set(e,r),n.reflect===!0&&this._$El!==e&&(this._$EC===void 0&&(this._$EC=new Map),this._$EC.set(e,n))):o=!1),!this.isUpdatePending&&o&&(this._$E_=this._$Ej())}async _$Ej(){this.isUpdatePending=!0;try{await this._$E_}catch(r){Promise.reject(r)}let e=this.scheduleUpdate();return e!=null&&await e,!this.isUpdatePending}scheduleUpdate(){return this.performUpdate()}performUpdate(){var e;if(!this.isUpdatePending)return;this.hasUpdated,this._$Ei&&(this._$Ei.forEach((o,i)=>this[i]=o),this._$Ei=void 0);let r=!1,n=this._$AL;try{r=this.shouldUpdate(n),r?(this.willUpdate(n),(e=this._$ES)===null||e===void 0||e.forEach(o=>{var i;return(i=o.hostUpdate)===null||i===void 0?void 0:i.call(o)}),this.update(n)):this._$Ek()}catch(o){throw r=!1,this._$Ek(),o}r&&this._$AE(n)}willUpdate(e){}_$AE(e){var r;(r=this._$ES)===null||r===void 0||r.forEach(n=>{var o;return(o=n.hostUpdated)===null||o===void 0?void 0:o.call(n)}),this.hasUpdated||(this.hasUpdated=!0,this.firstUpdated(e)),this.updated(e)}_$Ek(){this._$AL=new Map,this.isUpdatePending=!1}get updateComplete(){return this.getUpdateComplete()}getUpdateComplete(){return this._$E_}shouldUpdate(e){return!0}update(e){this._$EC!==void 0&&(this._$EC.forEach((r,n)=>this._$EO(n,this[n],r)),this._$EC=void 0),this._$Ek()}updated(e){}firstUpdated(e){}};Ne[_i]=!0,Ne.elementProperties=new Map,Ne.elementStyles=[],Ne.shadowRootOptions={mode:"open"},lc?.({ReactiveElement:Ne}),((Ai=In.reactiveElementVersions)!==null&&Ai!==void 0?Ai:In.reactiveElementVersions=[]).push("1.6.3");var Ti,Hn=window,Dt=Hn.trustedTypes,dc=Dt?Dt.createPolicy("lit-html",{createHTML:t=>t}):void 0,Pi="$lit$",je=`lit$${(Math.random()+"").slice(9)}$`,bc="?"+je,$d=`<${bc}>`,pt=document,Mr=()=>pt.createComment(""),Nr=t=>t===null||typeof t!="object"&&typeof t!="function",vc=Array.isArray,Id=t=>vc(t)||typeof t?.[Symbol.iterator]=="function",Ci=`[ 	
-\f\r]`,Or=/<(?:(!--|\/[^a-zA-Z])|(\/?[a-zA-Z][^>\s]*)|(\/?$))/g,pc=/-->/g,mc=/>/g,ht=RegExp(`>|${Ci}(?:([^\\s"'>=/]+)(${Ci}*=${Ci}*(?:[^ 	
-\f\r"'\`<>=]|("|')|))|$)`,"g"),uc=/'/g,fc=/"/g,yc=/^(?:script|style|textarea|title)$/i,Ec=t=>(e,...r)=>({_$litType$:t,strings:e,values:r}),x=Ec(1),Zf=Ec(2),mt=Symbol.for("lit-noChange"),H=Symbol.for("lit-nothing"),gc=new WeakMap,dt=pt.createTreeWalker(pt,129,null,!1);function Ac(t,e){if(!Array.isArray(t)||!t.hasOwnProperty("raw"))throw Error("invalid template strings array");return dc!==void 0?dc.createHTML(e):e}var Hd=(t,e)=>{let r=t.length-1,n=[],o,i=e===2?"<svg>":"",a=Or;for(let s=0;s<r;s++){let c=t[s],l,h,d=-1,m=0;for(;m<c.length&&(a.lastIndex=m,h=a.exec(c),h!==null);)m=a.lastIndex,a===Or?h[1]==="!--"?a=pc:h[1]!==void 0?a=mc:h[2]!==void 0?(yc.test(h[2])&&(o=RegExp("</"+h[2],"g")),a=ht):h[3]!==void 0&&(a=ht):a===ht?h[0]===">"?(a=o??Or,d=-1):h[1]===void 0?d=-2:(d=a.lastIndex-h[2].length,l=h[1],a=h[3]===void 0?ht:h[3]==='"'?fc:uc):a===fc||a===uc?a=ht:a===pc||a===mc?a=Or:(a=ht,o=void 0);let p=a===ht&&t[s+1].startsWith("/>")?" ":"";i+=a===Or?c+$d:d>=0?(n.push(l),c.slice(0,d)+Pi+c.slice(d)+je+p):c+je+(d===-2?(n.push(void 0),s):p)}return[Ac(t,i+(t[r]||"<?>")+(e===2?"</svg>":"")),n]},$r=class t{constructor({strings:e,_$litType$:r},n){let o;this.parts=[];let i=0,a=0,s=e.length-1,c=this.parts,[l,h]=Hd(e,r);if(this.el=t.createElement(l,n),dt.currentNode=this.el.content,r===2){let d=this.el.content,m=d.firstChild;m.remove(),d.append(...m.childNodes)}for(;(o=dt.nextNode())!==null&&c.length<s;){if(o.nodeType===1){if(o.hasAttributes()){let d=[];for(let m of o.getAttributeNames())if(m.endsWith(Pi)||m.startsWith(je)){let p=h[a++];if(d.push(m),p!==void 0){let g=o.getAttribute(p.toLowerCase()+Pi).split(je),b=/([.?@])?(.*)/.exec(p);c.push({type:1,index:i,name:b[2],strings:g,ctor:b[1]==="."?Li:b[1]==="?"?Ri:b[1]==="@"?Oi:zt})}else c.push({type:6,index:i})}for(let m of d)o.removeAttribute(m)}if(yc.test(o.tagName)){let d=o.textContent.split(je),m=d.length-1;if(m>0){o.textContent=Dt?Dt.emptyScript:"";for(let p=0;p<m;p++)o.append(d[p],Mr()),dt.nextNode(),c.push({type:2,index:++i});o.append(d[m],Mr())}}}else if(o.nodeType===8)if(o.data===bc)c.push({type:2,index:i});else{let d=-1;for(;(d=o.data.indexOf(je,d+1))!==-1;)c.push({type:7,index:i}),d+=je.length-1}i++}}static createElement(e,r){let n=pt.createElement("template");return n.innerHTML=e,n}};function Bt(t,e,r=t,n){var o,i,a,s;if(e===mt)return e;let c=n!==void 0?(o=r._$Co)===null||o===void 0?void 0:o[n]:r._$Cl,l=Nr(e)?void 0:e._$litDirective$;return c?.constructor!==l&&((i=c?._$AO)===null||i===void 0||i.call(c,!1),l===void 0?c=void 0:(c=new l(t),c._$AT(t,r,n)),n!==void 0?((a=(s=r)._$Co)!==null&&a!==void 0?a:s._$Co=[])[n]=c:r._$Cl=c),c!==void 0&&(e=Bt(t,c._$AS(t,e.values),c,n)),e}var ki=class{constructor(e,r){this._$AV=[],this._$AN=void 0,this._$AD=e,this._$AM=r}get parentNode(){return this._$AM.parentNode}get _$AU(){return this._$AM._$AU}u(e){var r;let{el:{content:n},parts:o}=this._$AD,i=((r=e?.creationScope)!==null&&r!==void 0?r:pt).importNode(n,!0);dt.currentNode=i;let a=dt.nextNode(),s=0,c=0,l=o[0];for(;l!==void 0;){if(s===l.index){let h;l.type===2?h=new Ir(a,a.nextSibling,this,e):l.type===1?h=new l.ctor(a,l.name,l.strings,this,e):l.type===6&&(h=new Mi(a,this,e)),this._$AV.push(h),l=o[++c]}s!==l?.index&&(a=dt.nextNode(),s++)}return dt.currentNode=pt,i}v(e){let r=0;for(let n of this._$AV)n!==void 0&&(n.strings!==void 0?(n._$AI(e,n,r),r+=n.strings.length-2):n._$AI(e[r])),r++}},Ir=class t{constructor(e,r,n,o){var i;this.type=2,this._$AH=H,this._$AN=void 0,this._$AA=e,this._$AB=r,this._$AM=n,this.options=o,this._$Cp=(i=o?.isConnected)===null||i===void 0||i}get _$AU(){var e,r;return(r=(e=this._$AM)===null||e===void 0?void 0:e._$AU)!==null&&r!==void 0?r:this._$Cp}get parentNode(){let e=this._$AA.parentNode,r=this._$AM;return r!==void 0&&e?.nodeType===11&&(e=r.parentNode),e}get startNode(){return this._$AA}get endNode(){return this._$AB}_$AI(e,r=this){e=Bt(this,e,r),Nr(e)?e===H||e==null||e===""?(this._$AH!==H&&this._$AR(),this._$AH=H):e!==this._$AH&&e!==mt&&this._(e):e._$litType$!==void 0?this.g(e):e.nodeType!==void 0?this.$(e):Id(e)?this.T(e):this._(e)}k(e){return this._$AA.parentNode.insertBefore(e,this._$AB)}$(e){this._$AH!==e&&(this._$AR(),this._$AH=this.k(e))}_(e){this._$AH!==H&&Nr(this._$AH)?this._$AA.nextSibling.data=e:this.$(pt.createTextNode(e)),this._$AH=e}g(e){var r;let{values:n,_$litType$:o}=e,i=typeof o=="number"?this._$AC(e):(o.el===void 0&&(o.el=$r.createElement(Ac(o.h,o.h[0]),this.options)),o);if(((r=this._$AH)===null||r===void 0?void 0:r._$AD)===i)this._$AH.v(n);else{let a=new ki(i,this),s=a.u(this.options);a.v(n),this.$(s),this._$AH=a}}_$AC(e){let r=gc.get(e.strings);return r===void 0&&gc.set(e.strings,r=new $r(e)),r}T(e){vc(this._$AH)||(this._$AH=[],this._$AR());let r=this._$AH,n,o=0;for(let i of e)o===r.length?r.push(n=new t(this.k(Mr()),this.k(Mr()),this,this.options)):n=r[o],n._$AI(i),o++;o<r.length&&(this._$AR(n&&n._$AB.nextSibling,o),r.length=o)}_$AR(e=this._$AA.nextSibling,r){var n;for((n=this._$AP)===null||n===void 0||n.call(this,!1,!0,r);e&&e!==this._$AB;){let o=e.nextSibling;e.remove(),e=o}}setConnected(e){var r;this._$AM===void 0&&(this._$Cp=e,(r=this._$AP)===null||r===void 0||r.call(this,e))}},zt=class{constructor(e,r,n,o,i){this.type=1,this._$AH=H,this._$AN=void 0,this.element=e,this.name=r,this._$AM=o,this.options=i,n.length>2||n[0]!==""||n[1]!==""?(this._$AH=Array(n.length-1).fill(new String),this.strings=n):this._$AH=H}get tagName(){return this.element.tagName}get _$AU(){return this._$AM._$AU}_$AI(e,r=this,n,o){let i=this.strings,a=!1;if(i===void 0)e=Bt(this,e,r,0),a=!Nr(e)||e!==this._$AH&&e!==mt,a&&(this._$AH=e);else{let s=e,c,l;for(e=i[0],c=0;c<i.length-1;c++)l=Bt(this,s[n+c],r,c),l===mt&&(l=this._$AH[c]),a||(a=!Nr(l)||l!==this._$AH[c]),l===H?e=H:e!==H&&(e+=(l??"")+i[c+1]),this._$AH[c]=l}a&&!o&&this.j(e)}j(e){e===H?this.element.removeAttribute(this.name):this.element.setAttribute(this.name,e??"")}},Li=class extends zt{constructor(){super(...arguments),this.type=3}j(e){this.element[this.name]=e===H?void 0:e}},Ud=Dt?Dt.emptyScript:"",Ri=class extends zt{constructor(){super(...arguments),this.type=4}j(e){e&&e!==H?this.element.setAttribute(this.name,Ud):this.element.removeAttribute(this.name)}},Oi=class extends zt{constructor(e,r,n,o,i){super(e,r,n,o,i),this.type=5}_$AI(e,r=this){var n;if((e=(n=Bt(this,e,r,0))!==null&&n!==void 0?n:H)===mt)return;let o=this._$AH,i=e===H&&o!==H||e.capture!==o.capture||e.once!==o.once||e.passive!==o.passive,a=e!==H&&(o===H||i);i&&this.element.removeEventListener(this.name,this,o),a&&this.element.addEventListener(this.name,this,e),this._$AH=e}handleEvent(e){var r,n;typeof this._$AH=="function"?this._$AH.call((n=(r=this.options)===null||r===void 0?void 0:r.host)!==null&&n!==void 0?n:this.element,e):this._$AH.handleEvent(e)}},Mi=class{constructor(e,r,n){this.element=e,this.type=6,this._$AN=void 0,this._$AM=r,this.options=n}get _$AU(){return this._$AM._$AU}_$AI(e){Bt(this,e)}};var xc=Hn.litHtmlPolyfillSupport;xc?.($r,Ir),((Ti=Hn.litHtmlVersions)!==null&&Ti!==void 0?Ti:Hn.litHtmlVersions=[]).push("2.8.0");var wc=(t,e,r)=>{var n,o;let i=(n=r?.renderBefore)!==null&&n!==void 0?n:e,a=i._$litPart$;if(a===void 0){let s=(o=r?.renderBefore)!==null&&o!==void 0?o:null;i._$litPart$=a=new Ir(e.insertBefore(Mr(),s),s,void 0,r??{})}return a._$AI(t),a};var Ni,$i;var U=class extends Ne{constructor(){super(...arguments),this.renderOptions={host:this},this._$Do=void 0}createRenderRoot(){var e,r;let n=super.createRenderRoot();return(e=(r=this.renderOptions).renderBefore)!==null&&e!==void 0||(r.renderBefore=n.firstChild),n}update(e){let r=this.render();this.hasUpdated||(this.renderOptions.isConnected=this.isConnected),super.update(e),this._$Do=wc(r,this.renderRoot,this.renderOptions)}connectedCallback(){var e;super.connectedCallback(),(e=this._$Do)===null||e===void 0||e.setConnected(!0)}disconnectedCallback(){var e;super.disconnectedCallback(),(e=this._$Do)===null||e===void 0||e.setConnected(!1)}render(){return mt}};U.finalized=!0,U._$litElement$=!0,(Ni=globalThis.litElementHydrateSupport)===null||Ni===void 0||Ni.call(globalThis,{LitElement:U});var Sc=globalThis.litElementPolyfillSupport;Sc?.({LitElement:U});(($i=globalThis.litElementVersions)!==null&&$i!==void 0?$i:globalThis.litElementVersions=[]).push("3.3.3");var ue="(max-width: 767px)",Un="(max-width: 1199px)",Q="(min-width: 768px)",F="(min-width: 1200px)",Ae="(min-width: 1600px)";function Dn(){return window.matchMedia(ue)}function Bn(){return window.matchMedia(F)}function ut(){return Dn().matches}function _c(){return Bn().matches}var Tc=E`
+var __defProp = Object.defineProperty;
+var __typeError = (msg) => {
+  throw TypeError(msg);
+};
+var __defNormalProp = (obj, key, value) => key in obj ? __defProp(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
+var __export = (target, all) => {
+  for (var name in all)
+    __defProp(target, name, { get: all[name], enumerable: true });
+};
+var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "symbol" ? key + "" : key, value);
+var __accessCheck = (obj, member, msg) => member.has(obj) || __typeError("Cannot " + msg);
+var __privateGet = (obj, member, getter) => (__accessCheck(obj, member, "read from private field"), getter ? getter.call(obj) : member.get(obj));
+var __privateAdd = (obj, member, value) => member.has(obj) ? __typeError("Cannot add the same private member more than once") : member instanceof WeakSet ? member.add(obj) : member.set(obj, value);
+var __privateSet = (obj, member, value, setter) => (__accessCheck(obj, member, "write to private field"), setter ? setter.call(obj, value) : member.set(obj, value), value);
+var __privateMethod = (obj, member, method) => (__accessCheck(obj, member, "access private method"), method);
+var __privateWrapper = (obj, member, setter, getter) => ({
+  set _(value) {
+    __privateSet(obj, member, value, setter);
+  },
+  get _() {
+    return __privateGet(obj, member, getter);
+  }
+});
+
+// ../../utils/lana.js
+(function iife() {
+  const MSG_LIMIT = 2e3;
+  const defaultOptions = {
+    clientId: "",
+    endpoint: "https://www.adobe.com/lana/ll",
+    endpointStage: "https://www.stage.adobe.com/lana/ll",
+    errorType: "e",
+    sampleRate: 1,
+    tags: "",
+    implicitSampleRate: 1,
+    useProd: true,
+    isProdDomain: false
+  };
+  const VALID_SEVERITIES = /* @__PURE__ */ new Set(["d", "debug", "i", "info", "w", "warn", "e", "error", "c", "critical"]);
+  const w3 = window;
+  function isProd() {
+    const { host } = window.location;
+    if (host.endsWith(".adobe.com") && !host.endsWith(".corp.adobe.com") && !host.endsWith(".stage.adobe.com")) {
+      return true;
+    }
+    return ["sign.ing", "edit.ing"].includes(host);
+  }
+  function mergeOptions(op1, op2) {
+    if (!op1) {
+      op1 = {};
+    }
+    if (!op2) {
+      op2 = {};
+    }
+    function getOpt(key) {
+      if (op1[key] !== void 0) {
+        return op1[key];
+      }
+      if (op2[key] !== void 0) {
+        return op2[key];
+      }
+      return defaultOptions[key];
+    }
+    return Object.keys(defaultOptions).reduce((options, key) => {
+      options[key] = getOpt(key);
+      return options;
+    }, {});
+  }
+  function hasDebugParam() {
+    return w3.location.search.toLowerCase().indexOf("lanadebug") !== -1;
+  }
+  function isLocalhost() {
+    return w3.location.host.toLowerCase().indexOf("localhost") !== -1;
+  }
+  function log2(msg, options) {
+    msg = msg && msg.stack ? msg.stack : msg || "";
+    if (msg.length > MSG_LIMIT) {
+      msg = `${msg.slice(0, MSG_LIMIT)}<trunc>`;
+    }
+    const o8 = mergeOptions(options, w3.lana.options);
+    if (!o8.clientId) {
+      console.warn("LANA ClientID is not set in options.");
+      return;
+    }
+    let severity;
+    if (options && options.severity !== void 0) {
+      if (VALID_SEVERITIES.has(options.severity)) {
+        severity = options.severity;
+      } else {
+        const isDebugMode = hasDebugParam() || w3.lana.debug;
+        const defaultSeverity = isDebugMode ? "d" : "i";
+        console.warn(`LANA: Invalid severity '${options.severity}'. Defaulting to '${defaultSeverity}'.`);
+        severity = defaultSeverity;
+      }
+    } else if (w3.lana.debug) {
+      severity = "d";
+    }
+    const sampleRateParam = parseInt(new URL(window.location).searchParams.get("lana-sample"), 10);
+    const sampleRate = sampleRateParam || (o8.errorType === "i" ? o8.implicitSampleRate : o8.sampleRate);
+    if (!w3.lana.debug && !w3.lana.localhost && sampleRate <= Math.random() * 100) return;
+    const isProdDomain = isProd() || o8.isProdDomain;
+    const endpoint = !isProdDomain || !o8.useProd ? o8.endpointStage : o8.endpoint;
+    const queryParams = [
+      `m=${encodeURIComponent(msg)}`,
+      `c=${encodeURI(o8.clientId)}`,
+      `s=${sampleRate}`,
+      `t=${encodeURI(o8.errorType)}`
+    ];
+    if (severity) {
+      queryParams.push(`r=${encodeURI(severity)}`);
+    }
+    if (o8.tags) {
+      queryParams.push(`tags=${encodeURI(o8.tags)}`);
+    }
+    if (!isProdDomain || w3.lana.debug || w3.lana.localhost) console.log("LANA Msg: ", msg, "\nOpts:", o8);
+    if (!w3.lana.localhost || w3.lana.debug) {
+      const xhr = new XMLHttpRequest();
+      if (w3.lana.debug) {
+        queryParams.push("d");
+        xhr.addEventListener("load", () => {
+          console.log("LANA response:", xhr.responseText);
+        });
+      }
+      xhr.open("GET", `${endpoint}?${queryParams.join("&")}`);
+      xhr.send();
+      return xhr;
+    }
+  }
+  function sendUnhandledError(e7) {
+    log2(e7.reason || e7.error || e7.message, { errorType: "i" });
+  }
+  w3.lana = {
+    debug: false,
+    log: log2,
+    options: mergeOptions(w3.lana && w3.lana.options)
+  };
+  if (hasDebugParam()) w3.lana.debug = true;
+  if (isLocalhost()) w3.lana.localhost = true;
+  w3.addEventListener("error", sendUnhandledError);
+  w3.addEventListener("unhandledrejection", sendUnhandledError);
+})();
+
+// src/constants.js
+var constants_exports = {};
+__export(constants_exports, {
+  CLASS_NAME_FAILED: () => CLASS_NAME_FAILED,
+  CLASS_NAME_HIDDEN: () => CLASS_NAME_HIDDEN,
+  CLASS_NAME_PENDING: () => CLASS_NAME_PENDING,
+  CLASS_NAME_RESOLVED: () => CLASS_NAME_RESOLVED,
+  CheckoutWorkflow: () => CheckoutWorkflow,
+  CheckoutWorkflowStep: () => CheckoutWorkflowStep,
+  Commitment: () => Commitment,
+  ERROR_MESSAGE_BAD_REQUEST: () => ERROR_MESSAGE_BAD_REQUEST,
+  ERROR_MESSAGE_MISSING_LITERALS_URL: () => ERROR_MESSAGE_MISSING_LITERALS_URL,
+  ERROR_MESSAGE_OFFER_NOT_FOUND: () => ERROR_MESSAGE_OFFER_NOT_FOUND,
+  EVENT_AEM_ERROR: () => EVENT_AEM_ERROR,
+  EVENT_AEM_LOAD: () => EVENT_AEM_LOAD,
+  EVENT_MAS_ERROR: () => EVENT_MAS_ERROR,
+  EVENT_MAS_READY: () => EVENT_MAS_READY,
+  EVENT_MERCH_ADDON_AND_QUANTITY_UPDATE: () => EVENT_MERCH_ADDON_AND_QUANTITY_UPDATE,
+  EVENT_MERCH_CARD_ACTION_MENU_TOGGLE: () => EVENT_MERCH_CARD_ACTION_MENU_TOGGLE,
+  EVENT_MERCH_CARD_COLLECTION_SHOWMORE: () => EVENT_MERCH_CARD_COLLECTION_SHOWMORE,
+  EVENT_MERCH_CARD_COLLECTION_SORT: () => EVENT_MERCH_CARD_COLLECTION_SORT,
+  EVENT_MERCH_CARD_QUANTITY_CHANGE: () => EVENT_MERCH_CARD_QUANTITY_CHANGE,
+  EVENT_MERCH_OFFER_READY: () => EVENT_MERCH_OFFER_READY,
+  EVENT_MERCH_OFFER_SELECT_READY: () => EVENT_MERCH_OFFER_SELECT_READY,
+  EVENT_MERCH_QUANTITY_SELECTOR_CHANGE: () => EVENT_MERCH_QUANTITY_SELECTOR_CHANGE,
+  EVENT_MERCH_SEARCH_CHANGE: () => EVENT_MERCH_SEARCH_CHANGE,
+  EVENT_MERCH_SIDENAV_SELECT: () => EVENT_MERCH_SIDENAV_SELECT,
+  EVENT_MERCH_STOCK_CHANGE: () => EVENT_MERCH_STOCK_CHANGE,
+  EVENT_MERCH_STORAGE_CHANGE: () => EVENT_MERCH_STORAGE_CHANGE,
+  EVENT_OFFER_SELECTED: () => EVENT_OFFER_SELECTED,
+  EVENT_TYPE_FAILED: () => EVENT_TYPE_FAILED,
+  EVENT_TYPE_READY: () => EVENT_TYPE_READY,
+  EVENT_TYPE_RESOLVED: () => EVENT_TYPE_RESOLVED,
+  Env: () => Env,
+  FF_DEFAULTS: () => FF_DEFAULTS,
+  HEADER_X_REQUEST_ID: () => HEADER_X_REQUEST_ID,
+  LOG_NAMESPACE: () => LOG_NAMESPACE,
+  Landscape: () => Landscape,
+  MARK_DURATION_SUFFIX: () => MARK_DURATION_SUFFIX,
+  MARK_START_SUFFIX: () => MARK_START_SUFFIX,
+  MODAL_TYPE_3_IN_1: () => MODAL_TYPE_3_IN_1,
+  NAMESPACE: () => NAMESPACE,
+  PARAM_AOS_API_KEY: () => PARAM_AOS_API_KEY,
+  PARAM_ENV: () => PARAM_ENV,
+  PARAM_LANDSCAPE: () => PARAM_LANDSCAPE,
+  PARAM_MAS_PREVIEW: () => PARAM_MAS_PREVIEW,
+  PARAM_WCS_API_KEY: () => PARAM_WCS_API_KEY,
+  PROVIDER_ENVIRONMENT: () => PROVIDER_ENVIRONMENT,
+  SELECTOR_MAS_CHECKOUT_LINK: () => SELECTOR_MAS_CHECKOUT_LINK,
+  SELECTOR_MAS_ELEMENT: () => SELECTOR_MAS_ELEMENT,
+  SELECTOR_MAS_INLINE_PRICE: () => SELECTOR_MAS_INLINE_PRICE,
+  SELECTOR_MAS_SP_BUTTON: () => SELECTOR_MAS_SP_BUTTON,
+  SELECTOR_MAS_UPT_LINK: () => SELECTOR_MAS_UPT_LINK,
+  STATE_FAILED: () => STATE_FAILED,
+  STATE_PENDING: () => STATE_PENDING,
+  STATE_RESOLVED: () => STATE_RESOLVED,
+  TAG_NAME_SERVICE: () => TAG_NAME_SERVICE,
+  TEMPLATE_PRICE: () => TEMPLATE_PRICE,
+  TEMPLATE_PRICE_ANNUAL: () => TEMPLATE_PRICE_ANNUAL,
+  TEMPLATE_PRICE_LEGAL: () => TEMPLATE_PRICE_LEGAL,
+  TEMPLATE_PRICE_STRIKETHROUGH: () => TEMPLATE_PRICE_STRIKETHROUGH,
+  Term: () => Term,
+  WCS_PROD_URL: () => WCS_PROD_URL,
+  WCS_STAGE_URL: () => WCS_STAGE_URL
+});
+var Commitment = Object.freeze({
+  MONTH: "MONTH",
+  YEAR: "YEAR",
+  TWO_YEARS: "TWO_YEARS",
+  THREE_YEARS: "THREE_YEARS",
+  PERPETUAL: "PERPETUAL",
+  TERM_LICENSE: "TERM_LICENSE",
+  ACCESS_PASS: "ACCESS_PASS",
+  THREE_MONTHS: "THREE_MONTHS",
+  SIX_MONTHS: "SIX_MONTHS"
+});
+var Term = Object.freeze({
+  ANNUAL: "ANNUAL",
+  MONTHLY: "MONTHLY",
+  TWO_YEARS: "TWO_YEARS",
+  THREE_YEARS: "THREE_YEARS",
+  P1D: "P1D",
+  P1Y: "P1Y",
+  P3Y: "P3Y",
+  P10Y: "P10Y",
+  P15Y: "P15Y",
+  P3D: "P3D",
+  P7D: "P7D",
+  P30D: "P30D",
+  HALF_YEARLY: "HALF_YEARLY",
+  QUARTERLY: "QUARTERLY"
+});
+var NAMESPACE = "merch";
+var CLASS_NAME_HIDDEN = "hidden";
+var EVENT_TYPE_READY = "wcms:commerce:ready";
+var TAG_NAME_SERVICE = "mas-commerce-service";
+var SELECTOR_MAS_INLINE_PRICE = 'span[is="inline-price"][data-wcs-osi]';
+var SELECTOR_MAS_CHECKOUT_LINK = 'a[is="checkout-link"][data-wcs-osi],button[is="checkout-button"][data-wcs-osi]';
+var SELECTOR_MAS_SP_BUTTON = "sp-button[data-wcs-osi]";
+var SELECTOR_MAS_UPT_LINK = 'a[is="upt-link"]';
+var SELECTOR_MAS_ELEMENT = `${SELECTOR_MAS_INLINE_PRICE},${SELECTOR_MAS_CHECKOUT_LINK},${SELECTOR_MAS_UPT_LINK}`;
+var EVENT_MERCH_OFFER_READY = "merch-offer:ready";
+var EVENT_MERCH_OFFER_SELECT_READY = "merch-offer-select:ready";
+var EVENT_MERCH_CARD_ACTION_MENU_TOGGLE = "merch-card:action-menu-toggle";
+var EVENT_OFFER_SELECTED = "merch-offer:selected";
+var EVENT_MERCH_STOCK_CHANGE = "merch-stock:change";
+var EVENT_MERCH_STORAGE_CHANGE = "merch-storage:change";
+var EVENT_MERCH_QUANTITY_SELECTOR_CHANGE = "merch-quantity-selector:change";
+var EVENT_MERCH_CARD_QUANTITY_CHANGE = "merch-card-quantity:change";
+var EVENT_MERCH_ADDON_AND_QUANTITY_UPDATE = "merch-modal:addon-and-quantity-update";
+var EVENT_MERCH_SEARCH_CHANGE = "merch-search:change";
+var EVENT_MERCH_CARD_COLLECTION_SORT = "merch-card-collection:sort";
+var EVENT_MERCH_CARD_COLLECTION_SHOWMORE = "merch-card-collection:showmore";
+var EVENT_MERCH_SIDENAV_SELECT = "merch-sidenav:select";
+var EVENT_AEM_LOAD = "aem:load";
+var EVENT_AEM_ERROR = "aem:error";
+var EVENT_MAS_READY = "mas:ready";
+var EVENT_MAS_ERROR = "mas:error";
+var CLASS_NAME_FAILED = "placeholder-failed";
+var CLASS_NAME_PENDING = "placeholder-pending";
+var CLASS_NAME_RESOLVED = "placeholder-resolved";
+var ERROR_MESSAGE_BAD_REQUEST = "Bad WCS request";
+var ERROR_MESSAGE_OFFER_NOT_FOUND = "Commerce offer not found";
+var ERROR_MESSAGE_MISSING_LITERALS_URL = "Literals URL not provided";
+var EVENT_TYPE_FAILED = "mas:failed";
+var EVENT_TYPE_RESOLVED = "mas:resolved";
+var LOG_NAMESPACE = "mas/commerce";
+var PARAM_MAS_PREVIEW = "mas.preview";
+var PARAM_ENV = "commerce.env";
+var PARAM_LANDSCAPE = "commerce.landscape";
+var PARAM_AOS_API_KEY = "commerce.aosKey";
+var PARAM_WCS_API_KEY = "commerce.wcsKey";
+var WCS_PROD_URL = "https://www.adobe.com/web_commerce_artifact";
+var WCS_STAGE_URL = "https://www.stage.adobe.com/web_commerce_artifact_stage";
+var STATE_FAILED = "failed";
+var STATE_PENDING = "pending";
+var STATE_RESOLVED = "resolved";
+var Landscape = {
+  DRAFT: "DRAFT",
+  PUBLISHED: "PUBLISHED"
+};
+var HEADER_X_REQUEST_ID = "X-Request-Id";
+var CheckoutWorkflowStep = Object.freeze({
+  SEGMENTATION: "segmentation",
+  BUNDLE: "bundle",
+  COMMITMENT: "commitment",
+  RECOMMENDATION: "recommendation",
+  EMAIL: "email",
+  PAYMENT: "payment",
+  CHANGE_PLAN_TEAM_PLANS: "change-plan/team-upgrade/plans",
+  CHANGE_PLAN_TEAM_PAYMENT: "change-plan/team-upgrade/payment"
+});
+var CheckoutWorkflow = "UCv3";
+var Env = Object.freeze({
+  STAGE: "STAGE",
+  PRODUCTION: "PRODUCTION",
+  LOCAL: "LOCAL"
+});
+var PROVIDER_ENVIRONMENT = {
+  PRODUCTION: "PRODUCTION"
+};
+var MODAL_TYPE_3_IN_1 = {
+  TWP: "twp",
+  D2P: "d2p",
+  CRM: "crm"
+};
+var MARK_START_SUFFIX = ":start";
+var MARK_DURATION_SUFFIX = ":duration";
+var TEMPLATE_PRICE = "price";
+var TEMPLATE_PRICE_STRIKETHROUGH = "price-strikethrough";
+var TEMPLATE_PRICE_ANNUAL = "annual";
+var TEMPLATE_PRICE_LEGAL = "legal";
+var FF_DEFAULTS = "mas-ff-defaults";
+
+// node_modules/@dexter/tacocat-core/src/utilities.js
+var namespace = "tacocat.js";
+var equalsCaseInsensitive = (value1, value2) => String(value1 ?? "").toLowerCase() == String(value2 ?? "").toLowerCase();
+var escapeHtml = (html) => `${html ?? ""}`.replace(
+  /[&<>'"]/g,
+  (tag) => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    "'": "&#39;",
+    '"': "&quot;"
+  })[tag] ?? tag
+) ?? "";
+function getParameter(key, defaults = {}, { metadata = true, search = true, storage = true } = {}) {
+  let param;
+  if (search && param == null) {
+    const params = new URLSearchParams(window.location.search);
+    const searchKey = isString(search) ? search : key;
+    param = params.get(searchKey);
+  }
+  if (storage && param == null) {
+    const storageKey = isString(storage) ? storage : key;
+    param = window.sessionStorage.getItem(storageKey) ?? window.localStorage.getItem(storageKey);
+  }
+  if (metadata && param == null) {
+    const metadataKey = toKebabCase(isString(metadata) ? metadata : key);
+    const element = document.documentElement.querySelector(
+      `meta[name="${metadataKey}"]`
+    );
+    param = element?.content;
+  }
+  return param == null ? defaults[key] : param;
+}
+var isBoolean = (value) => typeof value === "boolean";
+var isFunction = (value) => typeof value === "function";
+var isNumber = (value) => typeof value === "number";
+var isObject = (value) => value != null && typeof value === "object";
+var isString = (value) => typeof value === "string";
+var isNotEmptyString = (value) => isString(value) && value;
+var isPositiveFiniteNumber = (value) => isNumber(value) && Number.isFinite(value) && value > 0;
+function omitProperties(target, test = (value) => value == null || value === "") {
+  if (target != null) {
+    Object.entries(target).forEach(([key, value]) => {
+      if (test(value)) delete target[key];
+    });
+  }
+  return target;
+}
+function toBoolean(value, defaultValue) {
+  if (isBoolean(value)) return value;
+  const string = String(value);
+  if (string === "1" || string === "true") return true;
+  if (string === "0" || string === "false") return false;
+  return defaultValue;
+}
+function toEnumeration(value, enumeration, defaultValue) {
+  const values = Object.values(enumeration);
+  return values.find((candidate) => equalsCaseInsensitive(candidate, value)) ?? defaultValue ?? values[0];
+}
+function toKebabCase(value = "") {
+  return String(value).replace(
+    /(\p{Lowercase_Letter})(\p{Uppercase_Letter})/gu,
+    (_3, p1, p22) => `${p1}-${p22}`
+  ).replace(/\W+/gu, "-").toLowerCase();
+}
+function toPositiveFiniteInteger(value, defaultValue = 1) {
+  if (!isNumber(value)) {
+    value = Number.parseInt(value, 10);
+  }
+  if (!Number.isNaN(value) && value > 0 && Number.isFinite(value)) {
+    return value;
+  }
+  return defaultValue;
+}
+
+// node_modules/@dexter/tacocat-core/src/log.js
+var epoch = Date.now();
+var suffix = () => `(+${Date.now() - epoch}ms)`;
+var loggers = /* @__PURE__ */ new Set();
+var isDebugEnabled = toBoolean(
+  getParameter("tacocat.debug", {}, { metadata: false }),
+  false
+);
+function createLog(source) {
+  const prefix = `[${namespace}/${source}]`;
+  const assert = (condition, message, ...args) => {
+    if (!condition) {
+      error(message, ...args);
+      return false;
+    }
+    return true;
+  };
+  const debug = isDebugEnabled ? (message, ...args) => {
+    console.debug(`${prefix} ${message}`, ...args, suffix());
+  } : () => {
+  };
+  const error = (message, ...args) => {
+    const prefixedMessage = `${prefix} ${message}`;
+    loggers.forEach(
+      ([errorLogger]) => errorLogger(prefixedMessage, ...args)
+    );
+  };
+  const warn = (message, ...args) => {
+    const prefixedMessage = `${prefix} ${message}`;
+    loggers.forEach(
+      ([, warnLogger]) => warnLogger(prefixedMessage, ...args)
+    );
+  };
+  return { assert, debug, error, warn };
+}
+function registerLogger(errorLogger, warnLogger) {
+  const logger = [errorLogger, warnLogger];
+  loggers.add(logger);
+  return () => {
+    loggers.delete(logger);
+  };
+}
+registerLogger(
+  (message, ...args) => {
+    console.error(message, ...args, suffix());
+  },
+  (message, ...args) => {
+    console.warn(message, ...args, suffix());
+  }
+);
+
+// node_modules/@dexter/tacocat-core/src/promotion.js
+var NO_PROMO_TEXT = "no promo";
+var CLASS = "promo-tag";
+var PROMO_VARIANT = "yellow";
+var NOPROMO_VARIANT = "neutral";
+var fullPromoText = (promo, old, isOverriden) => {
+  const promoText = (promo2) => promo2 || NO_PROMO_TEXT;
+  const suffix2 = isOverriden ? ` (was "${promoText(old)}")` : "";
+  return `${promoText(promo)}${suffix2}`;
+};
+var PROMO_CONTEXT_CANCEL_VALUE = "cancel-context";
+var computePromoStatus = (overriden, configured) => {
+  const localPromoUnset = overriden === PROMO_CONTEXT_CANCEL_VALUE;
+  const localPromoSet = !localPromoUnset && overriden?.length > 0;
+  const isOverriden = (localPromoSet || localPromoUnset) && //in case configured equals override, we consider no override
+  (configured && configured != overriden || //in case it does not have been configured, if overriden to cancel,
+  // we consider no override
+  !configured && !localPromoUnset);
+  const isPromo = isOverriden && localPromoSet || !isOverriden && !!configured;
+  const effectivePromoCode = isPromo ? overriden || configured : void 0;
+  return {
+    effectivePromoCode,
+    overridenPromoCode: overriden,
+    className: isPromo ? CLASS : `${CLASS} no-promo`,
+    text: fullPromoText(effectivePromoCode, configured, isOverriden),
+    variant: isPromo ? PROMO_VARIANT : NOPROMO_VARIANT,
+    isOverriden
+  };
+};
+
+// node_modules/@pandora/data-models-odm/esm/businessDimensions.js
+var OfferType;
+(function(OfferType2) {
+  OfferType2["BASE"] = "BASE";
+  OfferType2["TRIAL"] = "TRIAL";
+  OfferType2["PROMOTION"] = "PROMOTION";
+})(OfferType || (OfferType = {}));
+var Commitment2;
+(function(Commitment3) {
+  Commitment3["MONTH"] = "MONTH";
+  Commitment3["YEAR"] = "YEAR";
+  Commitment3["TWO_YEARS"] = "TWO_YEARS";
+  Commitment3["THREE_YEARS"] = "THREE_YEARS";
+  Commitment3["PERPETUAL"] = "PERPETUAL";
+  Commitment3["TERM_LICENSE"] = "TERM_LICENSE";
+  Commitment3["ACCESS_PASS"] = "ACCESS_PASS";
+  Commitment3["THREE_MONTHS"] = "THREE_MONTHS";
+  Commitment3["SIX_MONTHS"] = "SIX_MONTHS";
+})(Commitment2 || (Commitment2 = {}));
+var Term2;
+(function(Term3) {
+  Term3["ANNUAL"] = "ANNUAL";
+  Term3["MONTHLY"] = "MONTHLY";
+  Term3["TWO_YEARS"] = "TWO_YEARS";
+  Term3["THREE_YEARS"] = "THREE_YEARS";
+  Term3["P1D"] = "P1D";
+  Term3["P1Y"] = "P1Y";
+  Term3["P3Y"] = "P3Y";
+  Term3["P10Y"] = "P10Y";
+  Term3["P15Y"] = "P15Y";
+  Term3["P3D"] = "P3D";
+  Term3["P7D"] = "P7D";
+  Term3["P30D"] = "P30D";
+  Term3["HALF_YEARLY"] = "HALF_YEARLY";
+  Term3["QUARTERLY"] = "QUARTERLY";
+})(Term2 || (Term2 = {}));
+var CustomerSegment;
+(function(CustomerSegment2) {
+  CustomerSegment2["INDIVIDUAL"] = "INDIVIDUAL";
+  CustomerSegment2["TEAM"] = "TEAM";
+  CustomerSegment2["ENTERPRISE"] = "ENTERPRISE";
+})(CustomerSegment || (CustomerSegment = {}));
+var MarketSegment;
+(function(MarketSegment2) {
+  MarketSegment2["COM"] = "COM";
+  MarketSegment2["EDU"] = "EDU";
+  MarketSegment2["GOV"] = "GOV";
+})(MarketSegment || (MarketSegment = {}));
+var SalesChannel;
+(function(SalesChannel2) {
+  SalesChannel2["DIRECT"] = "DIRECT";
+  SalesChannel2["INDIRECT"] = "INDIRECT";
+})(SalesChannel || (SalesChannel = {}));
+var BuyingProgram;
+(function(BuyingProgram2) {
+  BuyingProgram2["ENTERPRISE_PRODUCT"] = "ENTERPRISE_PRODUCT";
+  BuyingProgram2["ETLA"] = "ETLA";
+  BuyingProgram2["RETAIL"] = "RETAIL";
+  BuyingProgram2["VIP"] = "VIP";
+  BuyingProgram2["VIPMP"] = "VIPMP";
+  BuyingProgram2["FREE"] = "FREE";
+})(BuyingProgram || (BuyingProgram = {}));
+
+// node_modules/@dexter/tacocat-core/src/wcsUtils.js
+var ABM = "ABM";
+var PUF = "PUF";
+var M2M = "M2M";
+var PERPETUAL = "PERPETUAL";
+var P3Y = "P3Y";
+var TAX_INCLUSIVE_DETAILS = "TAX_INCLUSIVE_DETAILS";
+var TAX_EXCLUSIVE = "TAX_EXCLUSIVE";
+var PlanType = {
+  ABM,
+  PUF,
+  M2M,
+  PERPETUAL,
+  P3Y
+};
+var planTypes = {
+  [ABM]: { commitment: Commitment2.YEAR, term: Term2.MONTHLY },
+  [PUF]: { commitment: Commitment2.YEAR, term: Term2.ANNUAL },
+  [M2M]: { commitment: Commitment2.MONTH, term: Term2.MONTHLY },
+  [PERPETUAL]: { commitment: Commitment2.PERPETUAL, term: void 0 },
+  [P3Y]: { commitment: Commitment2.THREE_MONTHS, term: Term2.P3Y }
+};
+var errorValueNotOffer = "Value is not an offer";
+var applyPlanType = (offer) => {
+  if (typeof offer !== "object") return errorValueNotOffer;
+  const { commitment, term } = offer;
+  const planType = getPlanType(commitment, term);
+  return { ...offer, planType };
+};
+var getPlanType = (commitment, term) => {
+  switch (commitment) {
+    case void 0:
+      return errorValueNotOffer;
+    case "":
+      return "";
+    case Commitment2.YEAR:
+      return term === Term2.MONTHLY ? ABM : term === Term2.ANNUAL ? PUF : "";
+    case Commitment2.MONTH:
+      return term === Term2.MONTHLY ? M2M : "";
+    case Commitment2.PERPETUAL:
+      return PERPETUAL;
+    case Commitment2.TERM_LICENSE:
+      return term === Term2.P3Y ? P3Y : "";
+    default:
+      return "";
+  }
+};
+function forceTaxExclusivePrice(offer) {
+  const { priceDetails } = offer;
+  const {
+    price: price2,
+    priceWithoutDiscount,
+    priceWithoutTax,
+    priceWithoutDiscountAndTax,
+    taxDisplay
+  } = priceDetails;
+  if (taxDisplay !== TAX_INCLUSIVE_DETAILS) return offer;
+  const amendedOffer = {
+    ...offer,
+    priceDetails: {
+      ...priceDetails,
+      price: priceWithoutTax ?? price2,
+      priceWithoutDiscount: priceWithoutDiscountAndTax ?? priceWithoutDiscount,
+      taxDisplay: TAX_EXCLUSIVE
+    }
+  };
+  if (amendedOffer.offerType === "TRIAL" && amendedOffer.priceDetails.price === 0) {
+    amendedOffer.priceDetails.price = amendedOffer.priceDetails.priceWithoutDiscount;
+  }
+  return amendedOffer;
+}
+
+// src/utilities.js
+var MAS_COMMERCE_SERVICE = "mas-commerce-service";
+var FETCH_INFO_HEADERS = {
+  requestId: HEADER_X_REQUEST_ID,
+  etag: "Etag",
+  lastModified: "Last-Modified",
+  serverTiming: "server-timing"
+};
+function selectOffers(offers, { country, forceTaxExclusive, perpetual }) {
+  let selected;
+  if (offers.length < 2) selected = offers;
+  else {
+    const language = country === "GB" ? "EN" : "MULT";
+    offers.sort((a5, b3) => a5.language === language ? -1 : b3.language === language ? 1 : 0);
+    offers.sort((a5, b3) => a5.term ? 1 : b3.term ? -1 : 0);
+    selected = [offers[0]];
+  }
+  if (forceTaxExclusive) {
+    selected = selected.map(forceTaxExclusivePrice);
+  }
+  return selected;
+}
+var setImmediate = (getConfig) => window.setTimeout(getConfig);
+function toQuantity(value, defaultValue = 1) {
+  if (value == null) return [defaultValue];
+  let quantity = (Array.isArray(value) ? value : String(value).split(",")).map(toPositiveFiniteInteger).filter(isPositiveFiniteNumber);
+  if (!quantity.length) quantity = [defaultValue];
+  return quantity;
+}
+function toOfferSelectorIds(value) {
+  if (value == null) return [];
+  const ids = Array.isArray(value) ? value : String(value).split(",");
+  return ids.filter(isNotEmptyString);
+}
+function getService() {
+  return document.getElementsByTagName(MAS_COMMERCE_SERVICE)?.[0];
+}
+function getLogHeaders(response) {
+  const logHeaders = {};
+  if (!response?.headers) return logHeaders;
+  const headers = response.headers;
+  for (const [key, value] of Object.entries(FETCH_INFO_HEADERS)) {
+    let headerValue = headers.get(value);
+    if (headerValue) {
+      headerValue = headerValue.replace(/[,;]/g, "|");
+      headerValue = headerValue.replace(/[| ]+/g, "|");
+      logHeaders[key] = headerValue;
+    }
+  }
+  return logHeaders;
+}
+
+// src/lana.js
+var config = {
+  clientId: "merch-at-scale",
+  delimiter: "\xB6",
+  ignoredProperties: ["analytics", "literals", "element"],
+  serializableTypes: ["Array", "Object"],
+  sampleRate: 1,
+  tags: "acom",
+  isProdDomain: false
+};
+var PAGE_LIMIT = 1e3;
+function isError(value) {
+  return value instanceof Error || typeof value?.originatingRequest === "string";
+}
+function serializeValue(value) {
+  if (value == null) return void 0;
+  const type = typeof value;
+  if (type === "function") {
+    return value.name ? `function ${value.name}` : "function";
+  }
+  if (type === "object") {
+    if (value instanceof Error) return value.message;
+    if (typeof value.originatingRequest === "string") {
+      const { message, originatingRequest, status } = value;
+      return [message, status, originatingRequest].filter(Boolean).join(" ");
+    }
+    const objectType = value[Symbol.toStringTag] ?? Object.getPrototypeOf(value).constructor.name;
+    if (!config.serializableTypes.includes(objectType)) return objectType;
+  }
+  return value;
+}
+function serializeParam(key, value) {
+  if (config.ignoredProperties.includes(key)) return void 0;
+  return serializeValue(value);
+}
+var lanaAppender = {
+  append(entry) {
+    if (entry.level !== "error") return;
+    const { message, params } = entry;
+    const errors = [];
+    const values = [];
+    let payload = message;
+    params.forEach((param) => {
+      if (param != null) {
+        (isError(param) ? errors : values).push(param);
+      }
+    });
+    if (errors.length) {
+      payload += " " + errors.map(serializeValue).join(" ");
+    }
+    const { pathname, search } = window.location;
+    let page = `${config.delimiter}page=${pathname}${search}`;
+    if (page.length > PAGE_LIMIT) {
+      page = `${page.slice(0, PAGE_LIMIT)}<trunc>`;
+    }
+    payload += page;
+    if (values.length) {
+      payload += `${config.delimiter}facts=`;
+      payload += JSON.stringify(values, serializeParam);
+    }
+    window.lana?.log(payload, config);
+  }
+};
+function updateConfig(newConfig) {
+  Object.assign(
+    config,
+    Object.fromEntries(
+      Object.entries(newConfig).filter(
+        ([key, value]) => key in config && value !== "" && value !== null && value !== void 0 && !Number.isNaN(value)
+        // Correctly exclude NaN
+      )
+    )
+  );
+}
+
+// src/log.js
+var HostEnv = {
+  LOCAL: "local",
+  PROD: "prod",
+  STAGE: "stage"
+};
+var LogLevels = {
+  DEBUG: "debug",
+  ERROR: "error",
+  INFO: "info",
+  WARN: "warn"
+};
+var appenders = /* @__PURE__ */ new Set();
+var filters = /* @__PURE__ */ new Set();
+var loggerIndexes = /* @__PURE__ */ new Map();
+var consoleAppender = {
+  append({ level, message, params, timestamp, source }) {
+    console[level](
+      `${timestamp}ms [${source}] %c${message}`,
+      "font-weight: bold;",
+      ...params
+    );
+  }
+};
+var debugFilter = { filter: ({ level }) => level !== LogLevels.DEBUG };
+var quietFilter = { filter: () => false };
+function createEntry(level, message, namespace2, params, source) {
+  return {
+    level,
+    message,
+    namespace: namespace2,
+    get params() {
+      if (params.length === 1 && isFunction(params[0])) {
+        params = params[0]();
+        if (!Array.isArray(params)) params = [params];
+      }
+      return params;
+    },
+    source,
+    timestamp: performance.now().toFixed(3)
+  };
+}
+function handleEntry(entry) {
+  if ([...filters].every((filter) => filter(entry))) {
+    appenders.forEach((appender) => appender(entry));
+  }
+}
+function createLog2(namespace2) {
+  const index = (loggerIndexes.get(namespace2) ?? 0) + 1;
+  loggerIndexes.set(namespace2, index);
+  const id = `${namespace2} #${index}`;
+  const log2 = {
+    id,
+    namespace: namespace2,
+    module: (name) => createLog2(`${log2.namespace}/${name}`),
+    updateConfig
+  };
+  Object.values(LogLevels).forEach((level) => {
+    log2[level] = (message, ...params) => handleEntry(createEntry(level, message, namespace2, params, id));
+  });
+  return Object.seal(log2);
+}
+function use(...plugins) {
+  plugins.forEach((plugin) => {
+    const { append, filter } = plugin;
+    if (isFunction(filter)) filters.add(filter);
+    if (isFunction(append)) appenders.add(append);
+  });
+}
+function init(env = {}) {
+  const { name } = env;
+  const debug = toBoolean(
+    getParameter("commerce.debug", { search: true, storage: true }),
+    name === HostEnv.LOCAL
+  );
+  if (debug) use(consoleAppender);
+  else use(debugFilter);
+  if (name === HostEnv.PROD) use(lanaAppender);
+  return Log;
+}
+function reset() {
+  appenders.clear();
+  filters.clear();
+}
+var Log = {
+  ...createLog2(LOG_NAMESPACE),
+  Level: LogLevels,
+  Plugins: { consoleAppender, debugFilter, quietFilter, lanaAppender },
+  init,
+  reset,
+  use
+};
+
+// src/mas-error.js
+var MasError = class _MasError extends Error {
+  /**
+   * Creates a new MasError instance
+   * @param {string} message - The error message
+   * @param {Object} context - Additional context information about the error
+   * @param {unknown} cause - The original error that caused this error
+   */
+  constructor(message, context, cause) {
+    super(message, { cause });
+    this.name = "MasError";
+    if (context.response) {
+      const requestId = context.response.headers?.get(HEADER_X_REQUEST_ID);
+      if (requestId) {
+        context.requestId = requestId;
+      }
+      if (context.response.status) {
+        context.status = context.response.status;
+        context.statusText = context.response.statusText;
+      }
+      if (context.response.url) {
+        context.url = context.response.url;
+      }
+    }
+    delete context.response;
+    this.context = context;
+    if (Error.captureStackTrace) {
+      Error.captureStackTrace(this, _MasError);
+    }
+  }
+  /**
+   * Returns a string representation of the error including context
+   * @returns {string} String representation of the error
+   */
+  toString() {
+    const contextStr = Object.entries(this.context || {}).map(([key, value]) => `${key}: ${JSON.stringify(value)}`).join(", ");
+    let errorString = `${this.name}: ${this.message}`;
+    if (contextStr) {
+      errorString += ` (${contextStr})`;
+    }
+    if (this.cause) {
+      errorString += `
+Caused by: ${this.cause}`;
+    }
+    return errorString;
+  }
+};
+
+// src/mas-element.js
+var StateClassName = {
+  [STATE_FAILED]: CLASS_NAME_FAILED,
+  [STATE_PENDING]: CLASS_NAME_PENDING,
+  [STATE_RESOLVED]: CLASS_NAME_RESOLVED
+};
+var StateEventType = {
+  [STATE_FAILED]: EVENT_TYPE_FAILED,
+  [STATE_RESOLVED]: EVENT_TYPE_RESOLVED
+};
+var _service;
+var MasElement = class {
+  constructor(wrapperElement) {
+    __privateAdd(this, _service);
+    __publicField(this, "changes", /* @__PURE__ */ new Map());
+    __publicField(this, "connected", false);
+    __publicField(this, "error");
+    __publicField(this, "log");
+    __publicField(this, "options");
+    __publicField(this, "promises", []);
+    __publicField(this, "state", STATE_PENDING);
+    __publicField(this, "timer", null);
+    __publicField(this, "value");
+    __publicField(this, "version", 0);
+    __publicField(this, "wrapperElement");
+    this.wrapperElement = wrapperElement;
+    this.log = Log.module("mas-element");
+  }
+  update() {
+    [STATE_FAILED, STATE_PENDING, STATE_RESOLVED].forEach((state) => {
+      this.wrapperElement.classList.toggle(
+        StateClassName[state],
+        state === this.state
+      );
+    });
+  }
+  notify() {
+    if (this.state === STATE_RESOLVED || this.state === STATE_FAILED) {
+      if (this.state === STATE_RESOLVED) {
+        this.promises.forEach(
+          ({ resolve }) => resolve(this.wrapperElement)
+        );
+      } else if (this.state === STATE_FAILED) {
+        this.promises.forEach(({ reject }) => reject(this.error));
+      }
+      this.promises = [];
+    }
+    let detail = this.error;
+    if (this.error instanceof MasError) {
+      detail = {
+        message: this.error.message,
+        ...this.error.context
+      };
+    }
+    this.wrapperElement.dispatchEvent(
+      new CustomEvent(StateEventType[this.state], {
+        bubbles: true,
+        detail
+      })
+    );
+  }
+  /**
+   * Adds name/value of the updated attribute to the `changes` map,
+   * requests placeholder update.
+   */
+  attributeChangedCallback(name, _3, value) {
+    this.changes.set(name, value);
+    this.requestUpdate();
+  }
+  /**
+   * Triggers when this component is connected to DOM.
+   * Subscribes to the `ready` event of the commerce service,
+   * requests placeholder update.
+   */
+  connectedCallback() {
+    __privateSet(this, _service, getService());
+    this.requestUpdate(true);
+  }
+  /**
+   * Triggers when this component is disconnected from DOM.
+   * Runs and then erases all disposers.
+   */
+  disconnectedCallback() {
+    if (this.connected) {
+      this.connected = false;
+      this.log?.debug("Disconnected:", { element: this.wrapperElement });
+    }
+  }
+  /**
+   * Returns a promise resolving to this placeholder
+   * when its value is resolved or rejected.
+   * If placeholder is not pending for completion of an async operation
+   * the returned promise is already resolved or rejected.
+   */
+  onceSettled() {
+    const { error, promises, state } = this;
+    if (STATE_RESOLVED === state)
+      return Promise.resolve(this.wrapperElement);
+    if (STATE_FAILED === state) return Promise.reject(error);
+    return new Promise((resolve, reject) => {
+      promises.push({ resolve, reject });
+    });
+  }
+  /**
+   * Sets component state to "RESOLVED".
+   * Updates its class list and stored value, notifies observers and fires "RESOLVED" event.
+   */
+  toggleResolved(version, value, options) {
+    if (version !== this.version) return false;
+    if (options !== void 0) this.options = options;
+    this.state = STATE_RESOLVED;
+    this.value = value;
+    this.update();
+    this.log?.debug("Resolved:", { element: this.wrapperElement, value });
+    setImmediate(() => this.notify());
+    return true;
+  }
+  /**
+   * Sets component state to "FAILED".
+   * Updates its class list and stored error, notifies observers and fires "FAILED" event.
+   */
+  toggleFailed(version, error, options) {
+    if (version !== this.version) return false;
+    if (options !== void 0) this.options = options;
+    this.error = error;
+    this.state = STATE_FAILED;
+    this.update();
+    const wcName = this.wrapperElement.getAttribute("is");
+    this.log?.error(`${wcName}: Failed to render: ${error.message}`, {
+      element: this.wrapperElement,
+      ...error.context,
+      ...__privateGet(this, _service)?.duration
+    });
+    setImmediate(() => this.notify());
+    return true;
+  }
+  /**
+   * Sets component state to "PENDING".
+   * Increments its version, updates CSS classes, notifies observers and fires "PENDING" event.
+   */
+  togglePending(options) {
+    this.version++;
+    if (options) this.options = options;
+    this.state = STATE_PENDING;
+    this.update();
+    this.log?.debug("Pending:", {
+      osi: this.wrapperElement?.options?.wcsOsi
+    });
+    return this.version;
+  }
+  /**
+   * Queues task to update this component.
+   * Skips rendering if update is not forced and no changes were accumulated since the previous update.
+   * Calls `render` method to perform the update.
+   * Restores previous state of the component if the `render` method returned `false`.
+   */
+  requestUpdate(force = false) {
+    if (!this.wrapperElement.isConnected || !getService()) return;
+    if (this.timer) return;
+    const { error, options, state, value, version } = this;
+    this.state = STATE_PENDING;
+    this.timer = setImmediate(async () => {
+      this.timer = null;
+      let changes = null;
+      if (this.changes.size) {
+        changes = Object.fromEntries(this.changes.entries());
+        this.changes.clear();
+      }
+      if (this.connected) {
+        this.log?.debug("Updated:", {
+          element: this.wrapperElement,
+          changes
+        });
+      } else {
+        this.connected = true;
+        this.log?.debug("Connected:", {
+          element: this.wrapperElement,
+          changes
+        });
+      }
+      if (changes || force) {
+        try {
+          const result = await this.wrapperElement.render?.();
+          if (result === false && this.state === STATE_PENDING && this.version === version) {
+            this.state = state;
+            this.error = error;
+            this.value = value;
+            this.update();
+            this.notify();
+          }
+        } catch (error2) {
+          this.toggleFailed(this.version, error2, options);
+        }
+      }
+    });
+  }
+};
+_service = new WeakMap();
+function cleanupDataset(dataset = {}) {
+  Object.entries(dataset).forEach(([key, value]) => {
+    const remove = value == null || value === "" || value?.length === 0;
+    if (remove) delete dataset[key];
+  });
+  return dataset;
+}
+function createMasElement(Class, dataset = {}) {
+  const { tag, is } = Class;
+  const element = document.createElement(tag, { is });
+  element.setAttribute("is", is);
+  Object.assign(element.dataset, cleanupDataset(dataset));
+  return element;
+}
+function updateMasElement(element, dataset = {}) {
+  if (element instanceof HTMLElement) {
+    Object.assign(element.dataset, cleanupDataset(dataset));
+    return element;
+  }
+  return null;
+}
+
+// src/checkout-mixin.js
+var CLASS_NAME_DOWNLOAD = "download";
+var CLASS_NAME_UPGRADE = "upgrade";
+var CHECKOUT_PARAM_VALUE_MAPPING = {
+  e: "EDU",
+  t: "TEAM"
+};
+function createCheckoutElement(Class, options = {}, innerHTML = "") {
+  const service = getService();
+  if (!service) return null;
+  const {
+    checkoutMarketSegment,
+    checkoutWorkflow,
+    checkoutWorkflowStep,
+    entitlement,
+    upgrade,
+    modal,
+    perpetual,
+    promotionCode,
+    quantity,
+    wcsOsi,
+    extraOptions,
+    analyticsId
+  } = service.collectCheckoutOptions(options);
+  const element = createMasElement(Class, {
+    checkoutMarketSegment,
+    checkoutWorkflow,
+    checkoutWorkflowStep,
+    entitlement,
+    upgrade,
+    modal,
+    perpetual,
+    promotionCode,
+    quantity,
+    wcsOsi,
+    extraOptions,
+    analyticsId
+  });
+  if (innerHTML)
+    element.innerHTML = `<span style="pointer-events: none;">${innerHTML}</span>`;
+  return element;
+}
+function CheckoutMixin(Base) {
+  return class CheckoutBase extends Base {
+    constructor() {
+      super(...arguments);
+      /* c8 ignore next 1 */
+      __publicField(this, "checkoutActionHandler");
+      __publicField(this, "masElement", new MasElement(this));
+    }
+    attributeChangedCallback(name, oldValue, value) {
+      this.masElement.attributeChangedCallback(name, oldValue, value);
+    }
+    connectedCallback() {
+      this.masElement.connectedCallback();
+      this.addEventListener("click", this.clickHandler);
+    }
+    disconnectedCallback() {
+      this.masElement.disconnectedCallback();
+      this.removeEventListener("click", this.clickHandler);
+    }
+    onceSettled() {
+      return this.masElement.onceSettled();
+    }
+    get value() {
+      return this.masElement.value;
+    }
+    get options() {
+      return this.masElement.options;
+    }
+    get marketSegment() {
+      const value = this.options?.ms ?? this.value?.[0].marketSegments?.[0];
+      return CHECKOUT_PARAM_VALUE_MAPPING[value] ?? value;
+    }
+    get customerSegment() {
+      const value = this.options?.cs ?? this.value?.[0]?.customerSegment;
+      return CHECKOUT_PARAM_VALUE_MAPPING[value] ?? value;
+    }
+    get is3in1Modal() {
+      return Object.values(MODAL_TYPE_3_IN_1).includes(this.getAttribute("data-modal"));
+    }
+    get isOpen3in1Modal() {
+      const masFF3in1 = document.querySelector("meta[name=mas-ff-3in1]");
+      return this.is3in1Modal && (!masFF3in1 || masFF3in1.content !== "off");
+    }
+    requestUpdate(force = false) {
+      return this.masElement.requestUpdate(force);
+    }
+    static get observedAttributes() {
+      return [
+        "data-checkout-workflow",
+        "data-checkout-workflow-step",
+        "data-extra-options",
+        "data-ims-country",
+        "data-perpetual",
+        "data-promotion-code",
+        "data-quantity",
+        "data-template",
+        "data-wcs-osi",
+        "data-entitlement",
+        "data-upgrade",
+        "data-modal"
+      ];
+    }
+    async render(overrides = {}) {
+      const service = getService();
+      if (!service) return false;
+      if (!this.dataset.imsCountry) {
+        service.imsCountryPromise.then((countryCode) => {
+          if (countryCode) this.dataset.imsCountry = countryCode;
+        });
+      }
+      overrides.imsCountry = null;
+      const options = service.collectCheckoutOptions(overrides, this);
+      if (!options.wcsOsi.length) return false;
+      let extraOptions;
+      try {
+        extraOptions = JSON.parse(options.extraOptions ?? "{}");
+      } catch (e7) {
+        this.masElement.log?.error(
+          "cannot parse exta checkout options",
+          e7
+        );
+      }
+      const version = this.masElement.togglePending(options);
+      this.setCheckoutUrl("");
+      const promises = service.resolveOfferSelectors(options);
+      let offers = await Promise.all(promises);
+      offers = offers.map((offer) => selectOffers(offer, options));
+      options.country = this.dataset.imsCountry || options.country;
+      const checkoutAction = await service.buildCheckoutAction?.(
+        offers.flat(),
+        { ...extraOptions, ...options },
+        this
+      );
+      return this.renderOffers(
+        offers.flat(),
+        options,
+        {},
+        checkoutAction,
+        version
+      );
+    }
+    /**
+     * Renders checkout link href for provided offers into this component.
+     * @param {Commerce.Wcs.Offer[]} offers
+     * @param {Commerce.Checkout.Options} options
+     * @param {Commerce.Checkout.AnyOptions} overrides
+     * @param {Commerce.Checkout.CheckoutAction} checkoutAction
+     * @param {number} version
+     */
+    renderOffers(offers, options, overrides = {}, checkoutAction = void 0, version = void 0) {
+      const service = getService();
+      if (!service) return false;
+      const extraOptions = JSON.parse(
+        this.dataset.extraOptions ?? "{}"
+      );
+      options = { ...extraOptions, ...options, ...overrides };
+      version ?? (version = this.masElement.togglePending(options));
+      if (this.checkoutActionHandler) {
+        this.checkoutActionHandler = void 0;
+      }
+      if (checkoutAction) {
+        this.classList.remove(CLASS_NAME_DOWNLOAD, CLASS_NAME_UPGRADE);
+        this.masElement.toggleResolved(version, offers, options);
+        const { url, text, className, handler } = checkoutAction;
+        if (url) {
+          this.setCheckoutUrl(url);
+        }
+        if (text) this.firstElementChild.innerHTML = text;
+        if (className) this.classList.add(...className.split(" "));
+        if (handler) {
+          this.setCheckoutUrl("#");
+          this.checkoutActionHandler = handler.bind(this);
+        }
+      }
+      if (offers.length) {
+        if (this.masElement.toggleResolved(version, offers, options)) {
+          if (!this.classList.contains(CLASS_NAME_DOWNLOAD) && !this.classList.contains(CLASS_NAME_UPGRADE)) {
+            const url = service.buildCheckoutURL(offers, options);
+            this.setCheckoutUrl(options.modal === "true" ? "#" : url);
+          }
+          return true;
+        }
+      } else {
+        const error = new Error(
+          `Not provided: ${options?.wcsOsi ?? "-"}`
+        );
+        if (this.masElement.toggleFailed(version, error, options)) {
+          this.setCheckoutUrl("#");
+          return true;
+        }
+      }
+    }
+    setCheckoutUrl() {
+    }
+    clickHandler(e7) {
+    }
+    updateOptions(options = {}) {
+      const service = getService();
+      if (!service) return false;
+      const {
+        checkoutMarketSegment,
+        checkoutWorkflow,
+        checkoutWorkflowStep,
+        entitlement,
+        upgrade,
+        modal,
+        perpetual,
+        promotionCode,
+        quantity,
+        wcsOsi
+      } = service.collectCheckoutOptions(options);
+      updateMasElement(this, {
+        checkoutMarketSegment,
+        checkoutWorkflow,
+        checkoutWorkflowStep,
+        entitlement,
+        upgrade,
+        modal,
+        perpetual,
+        promotionCode,
+        quantity,
+        wcsOsi
+      });
+      return true;
+    }
+  };
+}
+
+// src/checkout-link.js
+var _CheckoutLink = class _CheckoutLink extends CheckoutMixin(HTMLAnchorElement) {
+  static createCheckoutLink(options = {}, innerHTML = "") {
+    return createCheckoutElement(_CheckoutLink, options, innerHTML);
+  }
+  setCheckoutUrl(value) {
+    this.setAttribute("href", value);
+  }
+  get isCheckoutLink() {
+    return true;
+  }
+  clickHandler(e7) {
+    if (this.checkoutActionHandler) {
+      this.checkoutActionHandler?.(e7);
+      return;
+    }
+  }
+};
+__publicField(_CheckoutLink, "is", "checkout-link");
+__publicField(_CheckoutLink, "tag", "a");
+var CheckoutLink = _CheckoutLink;
+if (!window.customElements.get(CheckoutLink.is)) {
+  window.customElements.define(CheckoutLink.is, CheckoutLink, {
+    extends: CheckoutLink.tag
+  });
+}
+
+// src/buildCheckoutUrl.js
+var AF_DRAFT_LANDSCAPE = "p_draft_landscape";
+var UCV3_PREFIX = "/store/";
+var PARAMETERS = /* @__PURE__ */ new Map([
+  ["countrySpecific", "cs"],
+  ["customerSegment", "cs"],
+  ["quantity", "q"],
+  ["authCode", "code"],
+  ["checkoutPromoCode", "apc"],
+  ["rurl", "rUrl"],
+  ["curl", "cUrl"],
+  ["ctxrturl", "ctxRtUrl"],
+  ["country", "co"],
+  ["language", "lang"],
+  ["clientId", "cli"],
+  ["context", "ctx"],
+  ["productArrangementCode", "pa"],
+  ["addonProductArrangementCode", "ao"],
+  ["offerType", "ot"],
+  ["marketSegment", "ms"]
+]);
+var ALLOWED_KEYS = /* @__PURE__ */ new Set([
+  "af",
+  "ai",
+  "ao",
+  "apc",
+  "appctxid",
+  "cli",
+  "co",
+  "cs",
+  "csm",
+  "ctx",
+  "ctxRtUrl",
+  "DCWATC",
+  "dp",
+  // Enable digital payments for iframe context
+  "fr",
+  // represents the commerce app redirecting to UC
+  "gsp",
+  "ijt",
+  "lang",
+  "lo",
+  "mal",
+  "ms",
+  "mv",
+  "mv2",
+  "nglwfdata",
+  "ot",
+  "otac",
+  "pa",
+  "pcid",
+  // Unified Paywall configuration ID for analytics
+  "promoid",
+  "q",
+  "rf",
+  "sc",
+  "scl",
+  "sdid",
+  "sid",
+  // x-adobe-clientsession
+  "spint",
+  "svar",
+  "th",
+  "thm",
+  "trackingid",
+  "usid",
+  "workflowid",
+  "context.guid",
+  "so.ca",
+  "so.su",
+  "so.tr",
+  "so.va"
+]);
+var REQUIRED_KEYS = ["env", "workflowStep", "clientId", "country"];
+var mapParameterName = (field) => PARAMETERS.get(field) ?? field;
+function addParameters(inputParameters, resultParameters, allowedKeys) {
+  for (const [key, value] of Object.entries(inputParameters)) {
+    const mappedKey = mapParameterName(key);
+    if (value != null && allowedKeys.has(mappedKey)) {
+      resultParameters.set(mappedKey, value);
+    }
+  }
+}
+function getHostName(env) {
+  switch (env) {
+    case PROVIDER_ENVIRONMENT.PRODUCTION:
+      return "https://commerce.adobe.com";
+    default:
+      return "https://commerce-stg.adobe.com";
+  }
+}
+function setItemsParameter(items, parameters) {
+  for (const idx in items) {
+    const item = items[idx];
+    for (const [key, value] of Object.entries(item)) {
+      if (value == null) continue;
+      const parameterName = mapParameterName(key);
+      parameters.set(`items[${idx}][${parameterName}]`, value);
+    }
+  }
+}
+function add3in1Parameters({ url, modal, is3in1 }) {
+  if (!is3in1 || !url?.searchParams) return url;
+  url.searchParams.set("rtc", "t");
+  url.searchParams.set("lo", "sl");
+  const existingAf = url.searchParams.get("af");
+  url.searchParams.set("af", [existingAf, "uc_new_user_iframe", "uc_new_system_close"].filter(Boolean).join(","));
+  if (url.searchParams.get("cli") !== "doc_cloud") {
+    url.searchParams.set("cli", modal === MODAL_TYPE_3_IN_1.CRM ? "creative" : "mini_plans");
+  }
+  return url;
+}
+function buildCheckoutUrl(checkoutData) {
+  validateCheckoutData(checkoutData);
+  const { env, items, workflowStep, marketSegment, customerSegment, offerType, productArrangementCode, landscape, modal, is3in1, preselectPlan, ...rest } = checkoutData;
+  let url = new URL(getHostName(env));
+  url.pathname = `${UCV3_PREFIX}${workflowStep}`;
+  if (workflowStep !== CheckoutWorkflowStep.SEGMENTATION && workflowStep !== CheckoutWorkflowStep.CHANGE_PLAN_TEAM_PLANS) {
+    setItemsParameter(items, url.searchParams);
+  }
+  addParameters({ ...rest }, url.searchParams, ALLOWED_KEYS);
+  if (landscape === Landscape.DRAFT) {
+    addParameters({ af: AF_DRAFT_LANDSCAPE }, url.searchParams, ALLOWED_KEYS);
+  }
+  if (workflowStep === CheckoutWorkflowStep.SEGMENTATION) {
+    const segmentationParameters = {
+      marketSegment,
+      offerType,
+      customerSegment,
+      productArrangementCode,
+      quantity: items?.[0]?.quantity,
+      addonProductArrangementCode: productArrangementCode ? items?.find((item) => item.productArrangementCode !== productArrangementCode)?.productArrangementCode : items?.[1]?.productArrangementCode
+    };
+    if (preselectPlan?.toLowerCase() === "edu") {
+      url.searchParams.set("ms", "EDU");
+    } else if (preselectPlan?.toLowerCase() === "team") {
+      url.searchParams.set("cs", "TEAM");
+    }
+    addParameters(segmentationParameters, url.searchParams, ALLOWED_KEYS);
+    if (url.searchParams.get("ot") === "PROMOTION") url.searchParams.delete("ot");
+    url = add3in1Parameters({
+      url,
+      modal,
+      is3in1
+    });
+  }
+  return url.toString();
+}
+function validateCheckoutData(checkoutData) {
+  for (const key of REQUIRED_KEYS) {
+    if (!checkoutData[key]) {
+      throw new Error('Argument "checkoutData" is not valid, missing: ' + key);
+    }
+  }
+  if (checkoutData.workflowStep !== CheckoutWorkflowStep.SEGMENTATION && checkoutData.workflowStep !== CheckoutWorkflowStep.CHANGE_PLAN_TEAM_PLANS && !checkoutData.items) {
+    throw new Error('Argument "checkoutData" is not valid, missing: items');
+  }
+  return true;
+}
+
+// src/defaults.js
+var Defaults = Object.freeze({
+  checkoutClientId: "adobe_com",
+  checkoutWorkflowStep: CheckoutWorkflowStep.EMAIL,
+  country: "US",
+  displayOldPrice: false,
+  displayPerUnit: true,
+  displayRecurrence: true,
+  displayTax: false,
+  displayPlanType: false,
+  env: Env.PRODUCTION,
+  forceTaxExclusive: false,
+  language: "en",
+  entitlement: false,
+  extraOptions: {},
+  modal: false,
+  promotionCode: "",
+  quantity: 1,
+  alternativePrice: false,
+  wcsApiKey: "wcms-commerce-ims-ro-user-milo",
+  wcsURL: "https://www.adobe.com/web_commerce_artifact",
+  landscape: Landscape.PUBLISHED
+});
+
+// src/checkout.js
+function Checkout({ settings, providers }) {
+  function collectCheckoutOptions(overrides, placeholder) {
+    const {
+      checkoutClientId,
+      checkoutWorkflowStep: defaultWorkflowStep,
+      country: defaultCountry,
+      language: defaultLanguage,
+      promotionCode: defaultPromotionCode,
+      quantity: defaultQuantity,
+      preselectPlan,
+      env
+    } = settings;
+    let options = {
+      checkoutClientId,
+      checkoutWorkflowStep: defaultWorkflowStep,
+      country: defaultCountry,
+      language: defaultLanguage,
+      promotionCode: defaultPromotionCode,
+      quantity: defaultQuantity,
+      preselectPlan,
+      env
+    };
+    if (placeholder) {
+      for (const provider of providers.checkout) {
+        provider(placeholder, options);
+      }
+    }
+    const {
+      checkoutMarketSegment,
+      checkoutWorkflowStep = defaultWorkflowStep,
+      imsCountry: imsCountry2,
+      country = imsCountry2 ?? defaultCountry,
+      language = defaultLanguage,
+      quantity = defaultQuantity,
+      entitlement,
+      upgrade,
+      modal,
+      perpetual,
+      promotionCode = defaultPromotionCode,
+      wcsOsi,
+      extraOptions,
+      ...rest
+    } = Object.assign(options, placeholder?.dataset ?? {}, overrides ?? {});
+    let workflowStep = toEnumeration(checkoutWorkflowStep, CheckoutWorkflowStep, Defaults.checkoutWorkflowStep);
+    options = omitProperties({
+      ...rest,
+      extraOptions,
+      checkoutClientId,
+      checkoutMarketSegment,
+      country,
+      quantity: toQuantity(quantity, Defaults.quantity),
+      checkoutWorkflowStep: workflowStep,
+      language,
+      entitlement: toBoolean(entitlement),
+      upgrade: toBoolean(upgrade),
+      modal,
+      perpetual: toBoolean(perpetual),
+      promotionCode: computePromoStatus(promotionCode).effectivePromoCode,
+      wcsOsi: toOfferSelectorIds(wcsOsi),
+      preselectPlan
+    });
+    return options;
+  }
+  function buildCheckoutURL(offers, options) {
+    if (!Array.isArray(offers) || !offers.length || !options) {
+      return "";
+    }
+    const { env, landscape } = settings;
+    const {
+      checkoutClientId: clientId,
+      checkoutMarketSegment,
+      checkoutWorkflowStep: workflowStep,
+      country,
+      promotionCode: checkoutPromoCode,
+      quantity: optionsQuantity,
+      preselectPlan,
+      ms,
+      cs,
+      ...rest
+    } = collectCheckoutOptions(options);
+    const masFF3in1 = document.querySelector("meta[name=mas-ff-3in1]");
+    const is3in1 = Object.values(MODAL_TYPE_3_IN_1).includes(options.modal) && (!masFF3in1 || masFF3in1.content !== "off");
+    const context = window.frameElement || is3in1 ? "if" : "fp";
+    const [{
+      productArrangementCode,
+      marketSegments: [offerMarketSegment],
+      customerSegment: offerCustomerSegment,
+      offerType
+    }] = offers;
+    let marketSegment = ms ?? offerMarketSegment ?? checkoutMarketSegment;
+    let customerSegment = cs ?? offerCustomerSegment;
+    if (preselectPlan?.toLowerCase() === "edu") {
+      marketSegment = "EDU";
+    } else if (preselectPlan?.toLowerCase() === "team") {
+      customerSegment = "TEAM";
+    }
+    const data = {
+      is3in1,
+      checkoutPromoCode,
+      clientId,
+      context,
+      country,
+      env,
+      items: [],
+      marketSegment,
+      customerSegment,
+      offerType,
+      productArrangementCode,
+      workflowStep,
+      landscape,
+      ...rest
+    };
+    const quantity = optionsQuantity[0] > 1 ? optionsQuantity[0] : void 0;
+    if (offers.length === 1) {
+      const { offerId } = offers[0];
+      data.items.push({ id: offerId, quantity });
+    } else {
+      data.items.push(
+        ...offers.map(({ offerId, productArrangementCode: productArrangementCode2 }) => ({
+          id: offerId,
+          quantity,
+          ...is3in1 ? { productArrangementCode: productArrangementCode2 } : {}
+        }))
+      );
+    }
+    return buildCheckoutUrl(data);
+  }
+  const { createCheckoutLink } = CheckoutLink;
+  return {
+    CheckoutLink,
+    CheckoutWorkflowStep,
+    buildCheckoutURL,
+    collectCheckoutOptions,
+    createCheckoutLink
+  };
+}
+
+// src/ims.js
+function imsReady({ interval = 200, maxAttempts = 25 } = {}) {
+  const log2 = Log.module("ims");
+  return new Promise((resolve) => {
+    log2.debug("Waing for IMS to be ready");
+    let count = 0;
+    function poll() {
+      if (window.adobeIMS?.initialized) {
+        resolve();
+      } else if (++count > maxAttempts) {
+        log2.debug("Timeout");
+        resolve();
+      } else {
+        setTimeout(poll, interval);
+      }
+    }
+    poll();
+  });
+}
+function imsSignedIn(imsReadyPromise) {
+  return imsReadyPromise.then(
+    () => window.adobeIMS?.isSignedInUser() ?? false
+  );
+}
+function imsCountry(imsSignedInPromise) {
+  const log2 = Log.module("ims");
+  return imsSignedInPromise.then((signedIn) => {
+    if (!signedIn) return null;
+    return window.adobeIMS.getProfile().then(
+      ({ countryCode }) => {
+        log2.debug("Got user country:", countryCode);
+        return countryCode;
+      },
+      (error) => {
+        log2.error("Unable to get user country:", error);
+        return void 0;
+      }
+    );
+  });
+}
+function Ims({}) {
+  const imsReadyPromise = imsReady();
+  const imsSignedInPromise = imsSignedIn(imsReadyPromise);
+  const imsCountryPromise = imsCountry(imsSignedInPromise);
+  return { imsReadyPromise, imsSignedInPromise, imsCountryPromise };
+}
+
+// src/literals.js
+var priceLiterals = window.masPriceLiterals;
+function getPriceLiterals(settings) {
+  if (Array.isArray(priceLiterals)) {
+    const find = (language) => priceLiterals.find(
+      (candidate) => equalsCaseInsensitive(candidate.lang, language)
+    );
+    const literals = find(settings.language) ?? find(Defaults.language);
+    if (literals) return Object.freeze(literals);
+  }
+  return {};
+}
+
+// node_modules/tslib/tslib.es6.mjs
+var extendStatics = function(d5, b3) {
+  extendStatics = Object.setPrototypeOf || { __proto__: [] } instanceof Array && function(d6, b4) {
+    d6.__proto__ = b4;
+  } || function(d6, b4) {
+    for (var p3 in b4) if (Object.prototype.hasOwnProperty.call(b4, p3)) d6[p3] = b4[p3];
+  };
+  return extendStatics(d5, b3);
+};
+function __extends(d5, b3) {
+  if (typeof b3 !== "function" && b3 !== null)
+    throw new TypeError("Class extends value " + String(b3) + " is not a constructor or null");
+  extendStatics(d5, b3);
+  function __() {
+    this.constructor = d5;
+  }
+  d5.prototype = b3 === null ? Object.create(b3) : (__.prototype = b3.prototype, new __());
+}
+var __assign = function() {
+  __assign = Object.assign || function __assign2(t5) {
+    for (var s8, i5 = 1, n8 = arguments.length; i5 < n8; i5++) {
+      s8 = arguments[i5];
+      for (var p3 in s8) if (Object.prototype.hasOwnProperty.call(s8, p3)) t5[p3] = s8[p3];
+    }
+    return t5;
+  };
+  return __assign.apply(this, arguments);
+};
+function __spreadArray(to, from, pack) {
+  if (pack || arguments.length === 2) for (var i5 = 0, l6 = from.length, ar; i5 < l6; i5++) {
+    if (ar || !(i5 in from)) {
+      if (!ar) ar = Array.prototype.slice.call(from, 0, i5);
+      ar[i5] = from[i5];
+    }
+  }
+  return to.concat(ar || Array.prototype.slice.call(from));
+}
+
+// node_modules/@formatjs/icu-messageformat-parser/lib/error.js
+var ErrorKind;
+(function(ErrorKind2) {
+  ErrorKind2[ErrorKind2["EXPECT_ARGUMENT_CLOSING_BRACE"] = 1] = "EXPECT_ARGUMENT_CLOSING_BRACE";
+  ErrorKind2[ErrorKind2["EMPTY_ARGUMENT"] = 2] = "EMPTY_ARGUMENT";
+  ErrorKind2[ErrorKind2["MALFORMED_ARGUMENT"] = 3] = "MALFORMED_ARGUMENT";
+  ErrorKind2[ErrorKind2["EXPECT_ARGUMENT_TYPE"] = 4] = "EXPECT_ARGUMENT_TYPE";
+  ErrorKind2[ErrorKind2["INVALID_ARGUMENT_TYPE"] = 5] = "INVALID_ARGUMENT_TYPE";
+  ErrorKind2[ErrorKind2["EXPECT_ARGUMENT_STYLE"] = 6] = "EXPECT_ARGUMENT_STYLE";
+  ErrorKind2[ErrorKind2["INVALID_NUMBER_SKELETON"] = 7] = "INVALID_NUMBER_SKELETON";
+  ErrorKind2[ErrorKind2["INVALID_DATE_TIME_SKELETON"] = 8] = "INVALID_DATE_TIME_SKELETON";
+  ErrorKind2[ErrorKind2["EXPECT_NUMBER_SKELETON"] = 9] = "EXPECT_NUMBER_SKELETON";
+  ErrorKind2[ErrorKind2["EXPECT_DATE_TIME_SKELETON"] = 10] = "EXPECT_DATE_TIME_SKELETON";
+  ErrorKind2[ErrorKind2["UNCLOSED_QUOTE_IN_ARGUMENT_STYLE"] = 11] = "UNCLOSED_QUOTE_IN_ARGUMENT_STYLE";
+  ErrorKind2[ErrorKind2["EXPECT_SELECT_ARGUMENT_OPTIONS"] = 12] = "EXPECT_SELECT_ARGUMENT_OPTIONS";
+  ErrorKind2[ErrorKind2["EXPECT_PLURAL_ARGUMENT_OFFSET_VALUE"] = 13] = "EXPECT_PLURAL_ARGUMENT_OFFSET_VALUE";
+  ErrorKind2[ErrorKind2["INVALID_PLURAL_ARGUMENT_OFFSET_VALUE"] = 14] = "INVALID_PLURAL_ARGUMENT_OFFSET_VALUE";
+  ErrorKind2[ErrorKind2["EXPECT_SELECT_ARGUMENT_SELECTOR"] = 15] = "EXPECT_SELECT_ARGUMENT_SELECTOR";
+  ErrorKind2[ErrorKind2["EXPECT_PLURAL_ARGUMENT_SELECTOR"] = 16] = "EXPECT_PLURAL_ARGUMENT_SELECTOR";
+  ErrorKind2[ErrorKind2["EXPECT_SELECT_ARGUMENT_SELECTOR_FRAGMENT"] = 17] = "EXPECT_SELECT_ARGUMENT_SELECTOR_FRAGMENT";
+  ErrorKind2[ErrorKind2["EXPECT_PLURAL_ARGUMENT_SELECTOR_FRAGMENT"] = 18] = "EXPECT_PLURAL_ARGUMENT_SELECTOR_FRAGMENT";
+  ErrorKind2[ErrorKind2["INVALID_PLURAL_ARGUMENT_SELECTOR"] = 19] = "INVALID_PLURAL_ARGUMENT_SELECTOR";
+  ErrorKind2[ErrorKind2["DUPLICATE_PLURAL_ARGUMENT_SELECTOR"] = 20] = "DUPLICATE_PLURAL_ARGUMENT_SELECTOR";
+  ErrorKind2[ErrorKind2["DUPLICATE_SELECT_ARGUMENT_SELECTOR"] = 21] = "DUPLICATE_SELECT_ARGUMENT_SELECTOR";
+  ErrorKind2[ErrorKind2["MISSING_OTHER_CLAUSE"] = 22] = "MISSING_OTHER_CLAUSE";
+  ErrorKind2[ErrorKind2["INVALID_TAG"] = 23] = "INVALID_TAG";
+  ErrorKind2[ErrorKind2["INVALID_TAG_NAME"] = 25] = "INVALID_TAG_NAME";
+  ErrorKind2[ErrorKind2["UNMATCHED_CLOSING_TAG"] = 26] = "UNMATCHED_CLOSING_TAG";
+  ErrorKind2[ErrorKind2["UNCLOSED_TAG"] = 27] = "UNCLOSED_TAG";
+})(ErrorKind || (ErrorKind = {}));
+
+// node_modules/@formatjs/icu-messageformat-parser/lib/types.js
+var TYPE;
+(function(TYPE2) {
+  TYPE2[TYPE2["literal"] = 0] = "literal";
+  TYPE2[TYPE2["argument"] = 1] = "argument";
+  TYPE2[TYPE2["number"] = 2] = "number";
+  TYPE2[TYPE2["date"] = 3] = "date";
+  TYPE2[TYPE2["time"] = 4] = "time";
+  TYPE2[TYPE2["select"] = 5] = "select";
+  TYPE2[TYPE2["plural"] = 6] = "plural";
+  TYPE2[TYPE2["pound"] = 7] = "pound";
+  TYPE2[TYPE2["tag"] = 8] = "tag";
+})(TYPE || (TYPE = {}));
+var SKELETON_TYPE;
+(function(SKELETON_TYPE2) {
+  SKELETON_TYPE2[SKELETON_TYPE2["number"] = 0] = "number";
+  SKELETON_TYPE2[SKELETON_TYPE2["dateTime"] = 1] = "dateTime";
+})(SKELETON_TYPE || (SKELETON_TYPE = {}));
+function isLiteralElement(el) {
+  return el.type === TYPE.literal;
+}
+function isArgumentElement(el) {
+  return el.type === TYPE.argument;
+}
+function isNumberElement(el) {
+  return el.type === TYPE.number;
+}
+function isDateElement(el) {
+  return el.type === TYPE.date;
+}
+function isTimeElement(el) {
+  return el.type === TYPE.time;
+}
+function isSelectElement(el) {
+  return el.type === TYPE.select;
+}
+function isPluralElement(el) {
+  return el.type === TYPE.plural;
+}
+function isPoundElement(el) {
+  return el.type === TYPE.pound;
+}
+function isTagElement(el) {
+  return el.type === TYPE.tag;
+}
+function isNumberSkeleton(el) {
+  return !!(el && typeof el === "object" && el.type === SKELETON_TYPE.number);
+}
+function isDateTimeSkeleton(el) {
+  return !!(el && typeof el === "object" && el.type === SKELETON_TYPE.dateTime);
+}
+
+// node_modules/@formatjs/icu-messageformat-parser/lib/regex.generated.js
+var SPACE_SEPARATOR_REGEX = /[ \xA0\u1680\u2000-\u200A\u202F\u205F\u3000]/;
+
+// node_modules/@formatjs/icu-skeleton-parser/lib/date-time.js
+var DATE_TIME_REGEX = /(?:[Eec]{1,6}|G{1,5}|[Qq]{1,5}|(?:[yYur]+|U{1,5})|[ML]{1,5}|d{1,2}|D{1,3}|F{1}|[abB]{1,5}|[hkHK]{1,2}|w{1,2}|W{1}|m{1,2}|s{1,2}|[zZOvVxX]{1,4})(?=([^']*'[^']*')*[^']*$)/g;
+function parseDateTimeSkeleton(skeleton) {
+  var result = {};
+  skeleton.replace(DATE_TIME_REGEX, function(match) {
+    var len = match.length;
+    switch (match[0]) {
+      // Era
+      case "G":
+        result.era = len === 4 ? "long" : len === 5 ? "narrow" : "short";
+        break;
+      // Year
+      case "y":
+        result.year = len === 2 ? "2-digit" : "numeric";
+        break;
+      case "Y":
+      case "u":
+      case "U":
+      case "r":
+        throw new RangeError("`Y/u/U/r` (year) patterns are not supported, use `y` instead");
+      // Quarter
+      case "q":
+      case "Q":
+        throw new RangeError("`q/Q` (quarter) patterns are not supported");
+      // Month
+      case "M":
+      case "L":
+        result.month = ["numeric", "2-digit", "short", "long", "narrow"][len - 1];
+        break;
+      // Week
+      case "w":
+      case "W":
+        throw new RangeError("`w/W` (week) patterns are not supported");
+      case "d":
+        result.day = ["numeric", "2-digit"][len - 1];
+        break;
+      case "D":
+      case "F":
+      case "g":
+        throw new RangeError("`D/F/g` (day) patterns are not supported, use `d` instead");
+      // Weekday
+      case "E":
+        result.weekday = len === 4 ? "short" : len === 5 ? "narrow" : "short";
+        break;
+      case "e":
+        if (len < 4) {
+          throw new RangeError("`e..eee` (weekday) patterns are not supported");
+        }
+        result.weekday = ["short", "long", "narrow", "short"][len - 4];
+        break;
+      case "c":
+        if (len < 4) {
+          throw new RangeError("`c..ccc` (weekday) patterns are not supported");
+        }
+        result.weekday = ["short", "long", "narrow", "short"][len - 4];
+        break;
+      // Period
+      case "a":
+        result.hour12 = true;
+        break;
+      case "b":
+      // am, pm, noon, midnight
+      case "B":
+        throw new RangeError("`b/B` (period) patterns are not supported, use `a` instead");
+      // Hour
+      case "h":
+        result.hourCycle = "h12";
+        result.hour = ["numeric", "2-digit"][len - 1];
+        break;
+      case "H":
+        result.hourCycle = "h23";
+        result.hour = ["numeric", "2-digit"][len - 1];
+        break;
+      case "K":
+        result.hourCycle = "h11";
+        result.hour = ["numeric", "2-digit"][len - 1];
+        break;
+      case "k":
+        result.hourCycle = "h24";
+        result.hour = ["numeric", "2-digit"][len - 1];
+        break;
+      case "j":
+      case "J":
+      case "C":
+        throw new RangeError("`j/J/C` (hour) patterns are not supported, use `h/H/K/k` instead");
+      // Minute
+      case "m":
+        result.minute = ["numeric", "2-digit"][len - 1];
+        break;
+      // Second
+      case "s":
+        result.second = ["numeric", "2-digit"][len - 1];
+        break;
+      case "S":
+      case "A":
+        throw new RangeError("`S/A` (second) patterns are not supported, use `s` instead");
+      // Zone
+      case "z":
+        result.timeZoneName = len < 4 ? "short" : "long";
+        break;
+      case "Z":
+      // 1..3, 4, 5: The ISO8601 varios formats
+      case "O":
+      // 1, 4: miliseconds in day short, long
+      case "v":
+      // 1, 4: generic non-location format
+      case "V":
+      // 1, 2, 3, 4: time zone ID or city
+      case "X":
+      // 1, 2, 3, 4: The ISO8601 varios formats
+      case "x":
+        throw new RangeError("`Z/O/v/V/X/x` (timeZone) patterns are not supported, use `z` instead");
+    }
+    return "";
+  });
+  return result;
+}
+
+// node_modules/@formatjs/icu-skeleton-parser/lib/regex.generated.js
+var WHITE_SPACE_REGEX = /[\t-\r \x85\u200E\u200F\u2028\u2029]/i;
+
+// node_modules/@formatjs/icu-skeleton-parser/lib/number.js
+function parseNumberSkeletonFromString(skeleton) {
+  if (skeleton.length === 0) {
+    throw new Error("Number skeleton cannot be empty");
+  }
+  var stringTokens = skeleton.split(WHITE_SPACE_REGEX).filter(function(x3) {
+    return x3.length > 0;
+  });
+  var tokens = [];
+  for (var _i = 0, stringTokens_1 = stringTokens; _i < stringTokens_1.length; _i++) {
+    var stringToken = stringTokens_1[_i];
+    var stemAndOptions = stringToken.split("/");
+    if (stemAndOptions.length === 0) {
+      throw new Error("Invalid number skeleton");
+    }
+    var stem = stemAndOptions[0], options = stemAndOptions.slice(1);
+    for (var _a2 = 0, options_1 = options; _a2 < options_1.length; _a2++) {
+      var option = options_1[_a2];
+      if (option.length === 0) {
+        throw new Error("Invalid number skeleton");
+      }
+    }
+    tokens.push({ stem, options });
+  }
+  return tokens;
+}
+function icuUnitToEcma(unit) {
+  return unit.replace(/^(.*?)-/, "");
+}
+var FRACTION_PRECISION_REGEX = /^\.(?:(0+)(\*)?|(#+)|(0+)(#+))$/g;
+var SIGNIFICANT_PRECISION_REGEX = /^(@+)?(\+|#+)?[rs]?$/g;
+var INTEGER_WIDTH_REGEX = /(\*)(0+)|(#+)(0+)|(0+)/g;
+var CONCISE_INTEGER_WIDTH_REGEX = /^(0+)$/;
+function parseSignificantPrecision(str) {
+  var result = {};
+  if (str[str.length - 1] === "r") {
+    result.roundingPriority = "morePrecision";
+  } else if (str[str.length - 1] === "s") {
+    result.roundingPriority = "lessPrecision";
+  }
+  str.replace(SIGNIFICANT_PRECISION_REGEX, function(_3, g1, g22) {
+    if (typeof g22 !== "string") {
+      result.minimumSignificantDigits = g1.length;
+      result.maximumSignificantDigits = g1.length;
+    } else if (g22 === "+") {
+      result.minimumSignificantDigits = g1.length;
+    } else if (g1[0] === "#") {
+      result.maximumSignificantDigits = g1.length;
+    } else {
+      result.minimumSignificantDigits = g1.length;
+      result.maximumSignificantDigits = g1.length + (typeof g22 === "string" ? g22.length : 0);
+    }
+    return "";
+  });
+  return result;
+}
+function parseSign(str) {
+  switch (str) {
+    case "sign-auto":
+      return {
+        signDisplay: "auto"
+      };
+    case "sign-accounting":
+    case "()":
+      return {
+        currencySign: "accounting"
+      };
+    case "sign-always":
+    case "+!":
+      return {
+        signDisplay: "always"
+      };
+    case "sign-accounting-always":
+    case "()!":
+      return {
+        signDisplay: "always",
+        currencySign: "accounting"
+      };
+    case "sign-except-zero":
+    case "+?":
+      return {
+        signDisplay: "exceptZero"
+      };
+    case "sign-accounting-except-zero":
+    case "()?":
+      return {
+        signDisplay: "exceptZero",
+        currencySign: "accounting"
+      };
+    case "sign-never":
+    case "+_":
+      return {
+        signDisplay: "never"
+      };
+  }
+}
+function parseConciseScientificAndEngineeringStem(stem) {
+  var result;
+  if (stem[0] === "E" && stem[1] === "E") {
+    result = {
+      notation: "engineering"
+    };
+    stem = stem.slice(2);
+  } else if (stem[0] === "E") {
+    result = {
+      notation: "scientific"
+    };
+    stem = stem.slice(1);
+  }
+  if (result) {
+    var signDisplay = stem.slice(0, 2);
+    if (signDisplay === "+!") {
+      result.signDisplay = "always";
+      stem = stem.slice(2);
+    } else if (signDisplay === "+?") {
+      result.signDisplay = "exceptZero";
+      stem = stem.slice(2);
+    }
+    if (!CONCISE_INTEGER_WIDTH_REGEX.test(stem)) {
+      throw new Error("Malformed concise eng/scientific notation");
+    }
+    result.minimumIntegerDigits = stem.length;
+  }
+  return result;
+}
+function parseNotationOptions(opt) {
+  var result = {};
+  var signOpts = parseSign(opt);
+  if (signOpts) {
+    return signOpts;
+  }
+  return result;
+}
+function parseNumberSkeleton(tokens) {
+  var result = {};
+  for (var _i = 0, tokens_1 = tokens; _i < tokens_1.length; _i++) {
+    var token = tokens_1[_i];
+    switch (token.stem) {
+      case "percent":
+      case "%":
+        result.style = "percent";
+        continue;
+      case "%x100":
+        result.style = "percent";
+        result.scale = 100;
+        continue;
+      case "currency":
+        result.style = "currency";
+        result.currency = token.options[0];
+        continue;
+      case "group-off":
+      case ",_":
+        result.useGrouping = false;
+        continue;
+      case "precision-integer":
+      case ".":
+        result.maximumFractionDigits = 0;
+        continue;
+      case "measure-unit":
+      case "unit":
+        result.style = "unit";
+        result.unit = icuUnitToEcma(token.options[0]);
+        continue;
+      case "compact-short":
+      case "K":
+        result.notation = "compact";
+        result.compactDisplay = "short";
+        continue;
+      case "compact-long":
+      case "KK":
+        result.notation = "compact";
+        result.compactDisplay = "long";
+        continue;
+      case "scientific":
+        result = __assign(__assign(__assign({}, result), { notation: "scientific" }), token.options.reduce(function(all, opt2) {
+          return __assign(__assign({}, all), parseNotationOptions(opt2));
+        }, {}));
+        continue;
+      case "engineering":
+        result = __assign(__assign(__assign({}, result), { notation: "engineering" }), token.options.reduce(function(all, opt2) {
+          return __assign(__assign({}, all), parseNotationOptions(opt2));
+        }, {}));
+        continue;
+      case "notation-simple":
+        result.notation = "standard";
+        continue;
+      // https://github.com/unicode-org/icu/blob/master/icu4c/source/i18n/unicode/unumberformatter.h
+      case "unit-width-narrow":
+        result.currencyDisplay = "narrowSymbol";
+        result.unitDisplay = "narrow";
+        continue;
+      case "unit-width-short":
+        result.currencyDisplay = "code";
+        result.unitDisplay = "short";
+        continue;
+      case "unit-width-full-name":
+        result.currencyDisplay = "name";
+        result.unitDisplay = "long";
+        continue;
+      case "unit-width-iso-code":
+        result.currencyDisplay = "symbol";
+        continue;
+      case "scale":
+        result.scale = parseFloat(token.options[0]);
+        continue;
+      // https://unicode-org.github.io/icu/userguide/format_parse/numbers/skeletons.html#integer-width
+      case "integer-width":
+        if (token.options.length > 1) {
+          throw new RangeError("integer-width stems only accept a single optional option");
+        }
+        token.options[0].replace(INTEGER_WIDTH_REGEX, function(_3, g1, g22, g3, g4, g5) {
+          if (g1) {
+            result.minimumIntegerDigits = g22.length;
+          } else if (g3 && g4) {
+            throw new Error("We currently do not support maximum integer digits");
+          } else if (g5) {
+            throw new Error("We currently do not support exact integer digits");
+          }
+          return "";
+        });
+        continue;
+    }
+    if (CONCISE_INTEGER_WIDTH_REGEX.test(token.stem)) {
+      result.minimumIntegerDigits = token.stem.length;
+      continue;
+    }
+    if (FRACTION_PRECISION_REGEX.test(token.stem)) {
+      if (token.options.length > 1) {
+        throw new RangeError("Fraction-precision stems only accept a single optional option");
+      }
+      token.stem.replace(FRACTION_PRECISION_REGEX, function(_3, g1, g22, g3, g4, g5) {
+        if (g22 === "*") {
+          result.minimumFractionDigits = g1.length;
+        } else if (g3 && g3[0] === "#") {
+          result.maximumFractionDigits = g3.length;
+        } else if (g4 && g5) {
+          result.minimumFractionDigits = g4.length;
+          result.maximumFractionDigits = g4.length + g5.length;
+        } else {
+          result.minimumFractionDigits = g1.length;
+          result.maximumFractionDigits = g1.length;
+        }
+        return "";
+      });
+      var opt = token.options[0];
+      if (opt === "w") {
+        result = __assign(__assign({}, result), { trailingZeroDisplay: "stripIfInteger" });
+      } else if (opt) {
+        result = __assign(__assign({}, result), parseSignificantPrecision(opt));
+      }
+      continue;
+    }
+    if (SIGNIFICANT_PRECISION_REGEX.test(token.stem)) {
+      result = __assign(__assign({}, result), parseSignificantPrecision(token.stem));
+      continue;
+    }
+    var signOpts = parseSign(token.stem);
+    if (signOpts) {
+      result = __assign(__assign({}, result), signOpts);
+    }
+    var conciseScientificAndEngineeringOpts = parseConciseScientificAndEngineeringStem(token.stem);
+    if (conciseScientificAndEngineeringOpts) {
+      result = __assign(__assign({}, result), conciseScientificAndEngineeringOpts);
+    }
+  }
+  return result;
+}
+
+// node_modules/@formatjs/icu-messageformat-parser/lib/time-data.generated.js
+var timeData = {
+  "AX": [
+    "H"
+  ],
+  "BQ": [
+    "H"
+  ],
+  "CP": [
+    "H"
+  ],
+  "CZ": [
+    "H"
+  ],
+  "DK": [
+    "H"
+  ],
+  "FI": [
+    "H"
+  ],
+  "ID": [
+    "H"
+  ],
+  "IS": [
+    "H"
+  ],
+  "ML": [
+    "H"
+  ],
+  "NE": [
+    "H"
+  ],
+  "RU": [
+    "H"
+  ],
+  "SE": [
+    "H"
+  ],
+  "SJ": [
+    "H"
+  ],
+  "SK": [
+    "H"
+  ],
+  "AS": [
+    "h",
+    "H"
+  ],
+  "BT": [
+    "h",
+    "H"
+  ],
+  "DJ": [
+    "h",
+    "H"
+  ],
+  "ER": [
+    "h",
+    "H"
+  ],
+  "GH": [
+    "h",
+    "H"
+  ],
+  "IN": [
+    "h",
+    "H"
+  ],
+  "LS": [
+    "h",
+    "H"
+  ],
+  "PG": [
+    "h",
+    "H"
+  ],
+  "PW": [
+    "h",
+    "H"
+  ],
+  "SO": [
+    "h",
+    "H"
+  ],
+  "TO": [
+    "h",
+    "H"
+  ],
+  "VU": [
+    "h",
+    "H"
+  ],
+  "WS": [
+    "h",
+    "H"
+  ],
+  "001": [
+    "H",
+    "h"
+  ],
+  "AL": [
+    "h",
+    "H",
+    "hB"
+  ],
+  "TD": [
+    "h",
+    "H",
+    "hB"
+  ],
+  "ca-ES": [
+    "H",
+    "h",
+    "hB"
+  ],
+  "CF": [
+    "H",
+    "h",
+    "hB"
+  ],
+  "CM": [
+    "H",
+    "h",
+    "hB"
+  ],
+  "fr-CA": [
+    "H",
+    "h",
+    "hB"
+  ],
+  "gl-ES": [
+    "H",
+    "h",
+    "hB"
+  ],
+  "it-CH": [
+    "H",
+    "h",
+    "hB"
+  ],
+  "it-IT": [
+    "H",
+    "h",
+    "hB"
+  ],
+  "LU": [
+    "H",
+    "h",
+    "hB"
+  ],
+  "NP": [
+    "H",
+    "h",
+    "hB"
+  ],
+  "PF": [
+    "H",
+    "h",
+    "hB"
+  ],
+  "SC": [
+    "H",
+    "h",
+    "hB"
+  ],
+  "SM": [
+    "H",
+    "h",
+    "hB"
+  ],
+  "SN": [
+    "H",
+    "h",
+    "hB"
+  ],
+  "TF": [
+    "H",
+    "h",
+    "hB"
+  ],
+  "VA": [
+    "H",
+    "h",
+    "hB"
+  ],
+  "CY": [
+    "h",
+    "H",
+    "hb",
+    "hB"
+  ],
+  "GR": [
+    "h",
+    "H",
+    "hb",
+    "hB"
+  ],
+  "CO": [
+    "h",
+    "H",
+    "hB",
+    "hb"
+  ],
+  "DO": [
+    "h",
+    "H",
+    "hB",
+    "hb"
+  ],
+  "KP": [
+    "h",
+    "H",
+    "hB",
+    "hb"
+  ],
+  "KR": [
+    "h",
+    "H",
+    "hB",
+    "hb"
+  ],
+  "NA": [
+    "h",
+    "H",
+    "hB",
+    "hb"
+  ],
+  "PA": [
+    "h",
+    "H",
+    "hB",
+    "hb"
+  ],
+  "PR": [
+    "h",
+    "H",
+    "hB",
+    "hb"
+  ],
+  "VE": [
+    "h",
+    "H",
+    "hB",
+    "hb"
+  ],
+  "AC": [
+    "H",
+    "h",
+    "hb",
+    "hB"
+  ],
+  "AI": [
+    "H",
+    "h",
+    "hb",
+    "hB"
+  ],
+  "BW": [
+    "H",
+    "h",
+    "hb",
+    "hB"
+  ],
+  "BZ": [
+    "H",
+    "h",
+    "hb",
+    "hB"
+  ],
+  "CC": [
+    "H",
+    "h",
+    "hb",
+    "hB"
+  ],
+  "CK": [
+    "H",
+    "h",
+    "hb",
+    "hB"
+  ],
+  "CX": [
+    "H",
+    "h",
+    "hb",
+    "hB"
+  ],
+  "DG": [
+    "H",
+    "h",
+    "hb",
+    "hB"
+  ],
+  "FK": [
+    "H",
+    "h",
+    "hb",
+    "hB"
+  ],
+  "GB": [
+    "H",
+    "h",
+    "hb",
+    "hB"
+  ],
+  "GG": [
+    "H",
+    "h",
+    "hb",
+    "hB"
+  ],
+  "GI": [
+    "H",
+    "h",
+    "hb",
+    "hB"
+  ],
+  "IE": [
+    "H",
+    "h",
+    "hb",
+    "hB"
+  ],
+  "IM": [
+    "H",
+    "h",
+    "hb",
+    "hB"
+  ],
+  "IO": [
+    "H",
+    "h",
+    "hb",
+    "hB"
+  ],
+  "JE": [
+    "H",
+    "h",
+    "hb",
+    "hB"
+  ],
+  "LT": [
+    "H",
+    "h",
+    "hb",
+    "hB"
+  ],
+  "MK": [
+    "H",
+    "h",
+    "hb",
+    "hB"
+  ],
+  "MN": [
+    "H",
+    "h",
+    "hb",
+    "hB"
+  ],
+  "MS": [
+    "H",
+    "h",
+    "hb",
+    "hB"
+  ],
+  "NF": [
+    "H",
+    "h",
+    "hb",
+    "hB"
+  ],
+  "NG": [
+    "H",
+    "h",
+    "hb",
+    "hB"
+  ],
+  "NR": [
+    "H",
+    "h",
+    "hb",
+    "hB"
+  ],
+  "NU": [
+    "H",
+    "h",
+    "hb",
+    "hB"
+  ],
+  "PN": [
+    "H",
+    "h",
+    "hb",
+    "hB"
+  ],
+  "SH": [
+    "H",
+    "h",
+    "hb",
+    "hB"
+  ],
+  "SX": [
+    "H",
+    "h",
+    "hb",
+    "hB"
+  ],
+  "TA": [
+    "H",
+    "h",
+    "hb",
+    "hB"
+  ],
+  "ZA": [
+    "H",
+    "h",
+    "hb",
+    "hB"
+  ],
+  "af-ZA": [
+    "H",
+    "h",
+    "hB",
+    "hb"
+  ],
+  "AR": [
+    "H",
+    "h",
+    "hB",
+    "hb"
+  ],
+  "CL": [
+    "H",
+    "h",
+    "hB",
+    "hb"
+  ],
+  "CR": [
+    "H",
+    "h",
+    "hB",
+    "hb"
+  ],
+  "CU": [
+    "H",
+    "h",
+    "hB",
+    "hb"
+  ],
+  "EA": [
+    "H",
+    "h",
+    "hB",
+    "hb"
+  ],
+  "es-BO": [
+    "H",
+    "h",
+    "hB",
+    "hb"
+  ],
+  "es-BR": [
+    "H",
+    "h",
+    "hB",
+    "hb"
+  ],
+  "es-EC": [
+    "H",
+    "h",
+    "hB",
+    "hb"
+  ],
+  "es-ES": [
+    "H",
+    "h",
+    "hB",
+    "hb"
+  ],
+  "es-GQ": [
+    "H",
+    "h",
+    "hB",
+    "hb"
+  ],
+  "es-PE": [
+    "H",
+    "h",
+    "hB",
+    "hb"
+  ],
+  "GT": [
+    "H",
+    "h",
+    "hB",
+    "hb"
+  ],
+  "HN": [
+    "H",
+    "h",
+    "hB",
+    "hb"
+  ],
+  "IC": [
+    "H",
+    "h",
+    "hB",
+    "hb"
+  ],
+  "KG": [
+    "H",
+    "h",
+    "hB",
+    "hb"
+  ],
+  "KM": [
+    "H",
+    "h",
+    "hB",
+    "hb"
+  ],
+  "LK": [
+    "H",
+    "h",
+    "hB",
+    "hb"
+  ],
+  "MA": [
+    "H",
+    "h",
+    "hB",
+    "hb"
+  ],
+  "MX": [
+    "H",
+    "h",
+    "hB",
+    "hb"
+  ],
+  "NI": [
+    "H",
+    "h",
+    "hB",
+    "hb"
+  ],
+  "PY": [
+    "H",
+    "h",
+    "hB",
+    "hb"
+  ],
+  "SV": [
+    "H",
+    "h",
+    "hB",
+    "hb"
+  ],
+  "UY": [
+    "H",
+    "h",
+    "hB",
+    "hb"
+  ],
+  "JP": [
+    "H",
+    "h",
+    "K"
+  ],
+  "AD": [
+    "H",
+    "hB"
+  ],
+  "AM": [
+    "H",
+    "hB"
+  ],
+  "AO": [
+    "H",
+    "hB"
+  ],
+  "AT": [
+    "H",
+    "hB"
+  ],
+  "AW": [
+    "H",
+    "hB"
+  ],
+  "BE": [
+    "H",
+    "hB"
+  ],
+  "BF": [
+    "H",
+    "hB"
+  ],
+  "BJ": [
+    "H",
+    "hB"
+  ],
+  "BL": [
+    "H",
+    "hB"
+  ],
+  "BR": [
+    "H",
+    "hB"
+  ],
+  "CG": [
+    "H",
+    "hB"
+  ],
+  "CI": [
+    "H",
+    "hB"
+  ],
+  "CV": [
+    "H",
+    "hB"
+  ],
+  "DE": [
+    "H",
+    "hB"
+  ],
+  "EE": [
+    "H",
+    "hB"
+  ],
+  "FR": [
+    "H",
+    "hB"
+  ],
+  "GA": [
+    "H",
+    "hB"
+  ],
+  "GF": [
+    "H",
+    "hB"
+  ],
+  "GN": [
+    "H",
+    "hB"
+  ],
+  "GP": [
+    "H",
+    "hB"
+  ],
+  "GW": [
+    "H",
+    "hB"
+  ],
+  "HR": [
+    "H",
+    "hB"
+  ],
+  "IL": [
+    "H",
+    "hB"
+  ],
+  "IT": [
+    "H",
+    "hB"
+  ],
+  "KZ": [
+    "H",
+    "hB"
+  ],
+  "MC": [
+    "H",
+    "hB"
+  ],
+  "MD": [
+    "H",
+    "hB"
+  ],
+  "MF": [
+    "H",
+    "hB"
+  ],
+  "MQ": [
+    "H",
+    "hB"
+  ],
+  "MZ": [
+    "H",
+    "hB"
+  ],
+  "NC": [
+    "H",
+    "hB"
+  ],
+  "NL": [
+    "H",
+    "hB"
+  ],
+  "PM": [
+    "H",
+    "hB"
+  ],
+  "PT": [
+    "H",
+    "hB"
+  ],
+  "RE": [
+    "H",
+    "hB"
+  ],
+  "RO": [
+    "H",
+    "hB"
+  ],
+  "SI": [
+    "H",
+    "hB"
+  ],
+  "SR": [
+    "H",
+    "hB"
+  ],
+  "ST": [
+    "H",
+    "hB"
+  ],
+  "TG": [
+    "H",
+    "hB"
+  ],
+  "TR": [
+    "H",
+    "hB"
+  ],
+  "WF": [
+    "H",
+    "hB"
+  ],
+  "YT": [
+    "H",
+    "hB"
+  ],
+  "BD": [
+    "h",
+    "hB",
+    "H"
+  ],
+  "PK": [
+    "h",
+    "hB",
+    "H"
+  ],
+  "AZ": [
+    "H",
+    "hB",
+    "h"
+  ],
+  "BA": [
+    "H",
+    "hB",
+    "h"
+  ],
+  "BG": [
+    "H",
+    "hB",
+    "h"
+  ],
+  "CH": [
+    "H",
+    "hB",
+    "h"
+  ],
+  "GE": [
+    "H",
+    "hB",
+    "h"
+  ],
+  "LI": [
+    "H",
+    "hB",
+    "h"
+  ],
+  "ME": [
+    "H",
+    "hB",
+    "h"
+  ],
+  "RS": [
+    "H",
+    "hB",
+    "h"
+  ],
+  "UA": [
+    "H",
+    "hB",
+    "h"
+  ],
+  "UZ": [
+    "H",
+    "hB",
+    "h"
+  ],
+  "XK": [
+    "H",
+    "hB",
+    "h"
+  ],
+  "AG": [
+    "h",
+    "hb",
+    "H",
+    "hB"
+  ],
+  "AU": [
+    "h",
+    "hb",
+    "H",
+    "hB"
+  ],
+  "BB": [
+    "h",
+    "hb",
+    "H",
+    "hB"
+  ],
+  "BM": [
+    "h",
+    "hb",
+    "H",
+    "hB"
+  ],
+  "BS": [
+    "h",
+    "hb",
+    "H",
+    "hB"
+  ],
+  "CA": [
+    "h",
+    "hb",
+    "H",
+    "hB"
+  ],
+  "DM": [
+    "h",
+    "hb",
+    "H",
+    "hB"
+  ],
+  "en-001": [
+    "h",
+    "hb",
+    "H",
+    "hB"
+  ],
+  "FJ": [
+    "h",
+    "hb",
+    "H",
+    "hB"
+  ],
+  "FM": [
+    "h",
+    "hb",
+    "H",
+    "hB"
+  ],
+  "GD": [
+    "h",
+    "hb",
+    "H",
+    "hB"
+  ],
+  "GM": [
+    "h",
+    "hb",
+    "H",
+    "hB"
+  ],
+  "GU": [
+    "h",
+    "hb",
+    "H",
+    "hB"
+  ],
+  "GY": [
+    "h",
+    "hb",
+    "H",
+    "hB"
+  ],
+  "JM": [
+    "h",
+    "hb",
+    "H",
+    "hB"
+  ],
+  "KI": [
+    "h",
+    "hb",
+    "H",
+    "hB"
+  ],
+  "KN": [
+    "h",
+    "hb",
+    "H",
+    "hB"
+  ],
+  "KY": [
+    "h",
+    "hb",
+    "H",
+    "hB"
+  ],
+  "LC": [
+    "h",
+    "hb",
+    "H",
+    "hB"
+  ],
+  "LR": [
+    "h",
+    "hb",
+    "H",
+    "hB"
+  ],
+  "MH": [
+    "h",
+    "hb",
+    "H",
+    "hB"
+  ],
+  "MP": [
+    "h",
+    "hb",
+    "H",
+    "hB"
+  ],
+  "MW": [
+    "h",
+    "hb",
+    "H",
+    "hB"
+  ],
+  "NZ": [
+    "h",
+    "hb",
+    "H",
+    "hB"
+  ],
+  "SB": [
+    "h",
+    "hb",
+    "H",
+    "hB"
+  ],
+  "SG": [
+    "h",
+    "hb",
+    "H",
+    "hB"
+  ],
+  "SL": [
+    "h",
+    "hb",
+    "H",
+    "hB"
+  ],
+  "SS": [
+    "h",
+    "hb",
+    "H",
+    "hB"
+  ],
+  "SZ": [
+    "h",
+    "hb",
+    "H",
+    "hB"
+  ],
+  "TC": [
+    "h",
+    "hb",
+    "H",
+    "hB"
+  ],
+  "TT": [
+    "h",
+    "hb",
+    "H",
+    "hB"
+  ],
+  "UM": [
+    "h",
+    "hb",
+    "H",
+    "hB"
+  ],
+  "US": [
+    "h",
+    "hb",
+    "H",
+    "hB"
+  ],
+  "VC": [
+    "h",
+    "hb",
+    "H",
+    "hB"
+  ],
+  "VG": [
+    "h",
+    "hb",
+    "H",
+    "hB"
+  ],
+  "VI": [
+    "h",
+    "hb",
+    "H",
+    "hB"
+  ],
+  "ZM": [
+    "h",
+    "hb",
+    "H",
+    "hB"
+  ],
+  "BO": [
+    "H",
+    "hB",
+    "h",
+    "hb"
+  ],
+  "EC": [
+    "H",
+    "hB",
+    "h",
+    "hb"
+  ],
+  "ES": [
+    "H",
+    "hB",
+    "h",
+    "hb"
+  ],
+  "GQ": [
+    "H",
+    "hB",
+    "h",
+    "hb"
+  ],
+  "PE": [
+    "H",
+    "hB",
+    "h",
+    "hb"
+  ],
+  "AE": [
+    "h",
+    "hB",
+    "hb",
+    "H"
+  ],
+  "ar-001": [
+    "h",
+    "hB",
+    "hb",
+    "H"
+  ],
+  "BH": [
+    "h",
+    "hB",
+    "hb",
+    "H"
+  ],
+  "DZ": [
+    "h",
+    "hB",
+    "hb",
+    "H"
+  ],
+  "EG": [
+    "h",
+    "hB",
+    "hb",
+    "H"
+  ],
+  "EH": [
+    "h",
+    "hB",
+    "hb",
+    "H"
+  ],
+  "HK": [
+    "h",
+    "hB",
+    "hb",
+    "H"
+  ],
+  "IQ": [
+    "h",
+    "hB",
+    "hb",
+    "H"
+  ],
+  "JO": [
+    "h",
+    "hB",
+    "hb",
+    "H"
+  ],
+  "KW": [
+    "h",
+    "hB",
+    "hb",
+    "H"
+  ],
+  "LB": [
+    "h",
+    "hB",
+    "hb",
+    "H"
+  ],
+  "LY": [
+    "h",
+    "hB",
+    "hb",
+    "H"
+  ],
+  "MO": [
+    "h",
+    "hB",
+    "hb",
+    "H"
+  ],
+  "MR": [
+    "h",
+    "hB",
+    "hb",
+    "H"
+  ],
+  "OM": [
+    "h",
+    "hB",
+    "hb",
+    "H"
+  ],
+  "PH": [
+    "h",
+    "hB",
+    "hb",
+    "H"
+  ],
+  "PS": [
+    "h",
+    "hB",
+    "hb",
+    "H"
+  ],
+  "QA": [
+    "h",
+    "hB",
+    "hb",
+    "H"
+  ],
+  "SA": [
+    "h",
+    "hB",
+    "hb",
+    "H"
+  ],
+  "SD": [
+    "h",
+    "hB",
+    "hb",
+    "H"
+  ],
+  "SY": [
+    "h",
+    "hB",
+    "hb",
+    "H"
+  ],
+  "TN": [
+    "h",
+    "hB",
+    "hb",
+    "H"
+  ],
+  "YE": [
+    "h",
+    "hB",
+    "hb",
+    "H"
+  ],
+  "AF": [
+    "H",
+    "hb",
+    "hB",
+    "h"
+  ],
+  "LA": [
+    "H",
+    "hb",
+    "hB",
+    "h"
+  ],
+  "CN": [
+    "H",
+    "hB",
+    "hb",
+    "h"
+  ],
+  "LV": [
+    "H",
+    "hB",
+    "hb",
+    "h"
+  ],
+  "TL": [
+    "H",
+    "hB",
+    "hb",
+    "h"
+  ],
+  "zu-ZA": [
+    "H",
+    "hB",
+    "hb",
+    "h"
+  ],
+  "CD": [
+    "hB",
+    "H"
+  ],
+  "IR": [
+    "hB",
+    "H"
+  ],
+  "hi-IN": [
+    "hB",
+    "h",
+    "H"
+  ],
+  "kn-IN": [
+    "hB",
+    "h",
+    "H"
+  ],
+  "ml-IN": [
+    "hB",
+    "h",
+    "H"
+  ],
+  "te-IN": [
+    "hB",
+    "h",
+    "H"
+  ],
+  "KH": [
+    "hB",
+    "h",
+    "H",
+    "hb"
+  ],
+  "ta-IN": [
+    "hB",
+    "h",
+    "hb",
+    "H"
+  ],
+  "BN": [
+    "hb",
+    "hB",
+    "h",
+    "H"
+  ],
+  "MY": [
+    "hb",
+    "hB",
+    "h",
+    "H"
+  ],
+  "ET": [
+    "hB",
+    "hb",
+    "h",
+    "H"
+  ],
+  "gu-IN": [
+    "hB",
+    "hb",
+    "h",
+    "H"
+  ],
+  "mr-IN": [
+    "hB",
+    "hb",
+    "h",
+    "H"
+  ],
+  "pa-IN": [
+    "hB",
+    "hb",
+    "h",
+    "H"
+  ],
+  "TW": [
+    "hB",
+    "hb",
+    "h",
+    "H"
+  ],
+  "KE": [
+    "hB",
+    "hb",
+    "H",
+    "h"
+  ],
+  "MM": [
+    "hB",
+    "hb",
+    "H",
+    "h"
+  ],
+  "TZ": [
+    "hB",
+    "hb",
+    "H",
+    "h"
+  ],
+  "UG": [
+    "hB",
+    "hb",
+    "H",
+    "h"
+  ]
+};
+
+// node_modules/@formatjs/icu-messageformat-parser/lib/date-time-pattern-generator.js
+function getBestPattern(skeleton, locale) {
+  var skeletonCopy = "";
+  for (var patternPos = 0; patternPos < skeleton.length; patternPos++) {
+    var patternChar = skeleton.charAt(patternPos);
+    if (patternChar === "j") {
+      var extraLength = 0;
+      while (patternPos + 1 < skeleton.length && skeleton.charAt(patternPos + 1) === patternChar) {
+        extraLength++;
+        patternPos++;
+      }
+      var hourLen = 1 + (extraLength & 1);
+      var dayPeriodLen = extraLength < 2 ? 1 : 3 + (extraLength >> 1);
+      var dayPeriodChar = "a";
+      var hourChar = getDefaultHourSymbolFromLocale(locale);
+      if (hourChar == "H" || hourChar == "k") {
+        dayPeriodLen = 0;
+      }
+      while (dayPeriodLen-- > 0) {
+        skeletonCopy += dayPeriodChar;
+      }
+      while (hourLen-- > 0) {
+        skeletonCopy = hourChar + skeletonCopy;
+      }
+    } else if (patternChar === "J") {
+      skeletonCopy += "H";
+    } else {
+      skeletonCopy += patternChar;
+    }
+  }
+  return skeletonCopy;
+}
+function getDefaultHourSymbolFromLocale(locale) {
+  var hourCycle = locale.hourCycle;
+  if (hourCycle === void 0 && // @ts-ignore hourCycle(s) is not identified yet
+  locale.hourCycles && // @ts-ignore
+  locale.hourCycles.length) {
+    hourCycle = locale.hourCycles[0];
+  }
+  if (hourCycle) {
+    switch (hourCycle) {
+      case "h24":
+        return "k";
+      case "h23":
+        return "H";
+      case "h12":
+        return "h";
+      case "h11":
+        return "K";
+      default:
+        throw new Error("Invalid hourCycle");
+    }
+  }
+  var languageTag = locale.language;
+  var regionTag;
+  if (languageTag !== "root") {
+    regionTag = locale.maximize().region;
+  }
+  var hourCycles = timeData[regionTag || ""] || timeData[languageTag || ""] || timeData["".concat(languageTag, "-001")] || timeData["001"];
+  return hourCycles[0];
+}
+
+// node_modules/@formatjs/icu-messageformat-parser/lib/parser.js
+var _a;
+var SPACE_SEPARATOR_START_REGEX = new RegExp("^".concat(SPACE_SEPARATOR_REGEX.source, "*"));
+var SPACE_SEPARATOR_END_REGEX = new RegExp("".concat(SPACE_SEPARATOR_REGEX.source, "*$"));
+function createLocation(start, end) {
+  return { start, end };
+}
+var hasNativeStartsWith = !!String.prototype.startsWith;
+var hasNativeFromCodePoint = !!String.fromCodePoint;
+var hasNativeFromEntries = !!Object.fromEntries;
+var hasNativeCodePointAt = !!String.prototype.codePointAt;
+var hasTrimStart = !!String.prototype.trimStart;
+var hasTrimEnd = !!String.prototype.trimEnd;
+var hasNativeIsSafeInteger = !!Number.isSafeInteger;
+var isSafeInteger = hasNativeIsSafeInteger ? Number.isSafeInteger : function(n8) {
+  return typeof n8 === "number" && isFinite(n8) && Math.floor(n8) === n8 && Math.abs(n8) <= 9007199254740991;
+};
+var REGEX_SUPPORTS_U_AND_Y = true;
+try {
+  re = RE("([^\\p{White_Space}\\p{Pattern_Syntax}]*)", "yu");
+  REGEX_SUPPORTS_U_AND_Y = ((_a = re.exec("a")) === null || _a === void 0 ? void 0 : _a[0]) === "a";
+} catch (_3) {
+  REGEX_SUPPORTS_U_AND_Y = false;
+}
+var re;
+var startsWith = hasNativeStartsWith ? (
+  // Native
+  function startsWith2(s8, search, position) {
+    return s8.startsWith(search, position);
+  }
+) : (
+  // For IE11
+  function startsWith3(s8, search, position) {
+    return s8.slice(position, position + search.length) === search;
+  }
+);
+var fromCodePoint = hasNativeFromCodePoint ? String.fromCodePoint : (
+  // IE11
+  function fromCodePoint2() {
+    var codePoints = [];
+    for (var _i = 0; _i < arguments.length; _i++) {
+      codePoints[_i] = arguments[_i];
+    }
+    var elements = "";
+    var length = codePoints.length;
+    var i5 = 0;
+    var code;
+    while (length > i5) {
+      code = codePoints[i5++];
+      if (code > 1114111)
+        throw RangeError(code + " is not a valid code point");
+      elements += code < 65536 ? String.fromCharCode(code) : String.fromCharCode(((code -= 65536) >> 10) + 55296, code % 1024 + 56320);
+    }
+    return elements;
+  }
+);
+var fromEntries = (
+  // native
+  hasNativeFromEntries ? Object.fromEntries : (
+    // Ponyfill
+    function fromEntries2(entries) {
+      var obj = {};
+      for (var _i = 0, entries_1 = entries; _i < entries_1.length; _i++) {
+        var _a2 = entries_1[_i], k3 = _a2[0], v3 = _a2[1];
+        obj[k3] = v3;
+      }
+      return obj;
+    }
+  )
+);
+var codePointAt = hasNativeCodePointAt ? (
+  // Native
+  function codePointAt2(s8, index) {
+    return s8.codePointAt(index);
+  }
+) : (
+  // IE 11
+  function codePointAt3(s8, index) {
+    var size = s8.length;
+    if (index < 0 || index >= size) {
+      return void 0;
+    }
+    var first = s8.charCodeAt(index);
+    var second;
+    return first < 55296 || first > 56319 || index + 1 === size || (second = s8.charCodeAt(index + 1)) < 56320 || second > 57343 ? first : (first - 55296 << 10) + (second - 56320) + 65536;
+  }
+);
+var trimStart = hasTrimStart ? (
+  // Native
+  function trimStart2(s8) {
+    return s8.trimStart();
+  }
+) : (
+  // Ponyfill
+  function trimStart3(s8) {
+    return s8.replace(SPACE_SEPARATOR_START_REGEX, "");
+  }
+);
+var trimEnd = hasTrimEnd ? (
+  // Native
+  function trimEnd2(s8) {
+    return s8.trimEnd();
+  }
+) : (
+  // Ponyfill
+  function trimEnd3(s8) {
+    return s8.replace(SPACE_SEPARATOR_END_REGEX, "");
+  }
+);
+function RE(s8, flag) {
+  return new RegExp(s8, flag);
+}
+var matchIdentifierAtIndex;
+if (REGEX_SUPPORTS_U_AND_Y) {
+  IDENTIFIER_PREFIX_RE_1 = RE("([^\\p{White_Space}\\p{Pattern_Syntax}]*)", "yu");
+  matchIdentifierAtIndex = function matchIdentifierAtIndex2(s8, index) {
+    var _a2;
+    IDENTIFIER_PREFIX_RE_1.lastIndex = index;
+    var match = IDENTIFIER_PREFIX_RE_1.exec(s8);
+    return (_a2 = match[1]) !== null && _a2 !== void 0 ? _a2 : "";
+  };
+} else {
+  matchIdentifierAtIndex = function matchIdentifierAtIndex2(s8, index) {
+    var match = [];
+    while (true) {
+      var c5 = codePointAt(s8, index);
+      if (c5 === void 0 || _isWhiteSpace(c5) || _isPatternSyntax(c5)) {
+        break;
+      }
+      match.push(c5);
+      index += c5 >= 65536 ? 2 : 1;
+    }
+    return fromCodePoint.apply(void 0, match);
+  };
+}
+var IDENTIFIER_PREFIX_RE_1;
+var Parser = (
+  /** @class */
+  function() {
+    function Parser2(message, options) {
+      if (options === void 0) {
+        options = {};
+      }
+      this.message = message;
+      this.position = { offset: 0, line: 1, column: 1 };
+      this.ignoreTag = !!options.ignoreTag;
+      this.locale = options.locale;
+      this.requiresOtherClause = !!options.requiresOtherClause;
+      this.shouldParseSkeletons = !!options.shouldParseSkeletons;
+    }
+    Parser2.prototype.parse = function() {
+      if (this.offset() !== 0) {
+        throw Error("parser can only be used once");
+      }
+      return this.parseMessage(0, "", false);
+    };
+    Parser2.prototype.parseMessage = function(nestingLevel, parentArgType, expectingCloseTag) {
+      var elements = [];
+      while (!this.isEOF()) {
+        var char = this.char();
+        if (char === 123) {
+          var result = this.parseArgument(nestingLevel, expectingCloseTag);
+          if (result.err) {
+            return result;
+          }
+          elements.push(result.val);
+        } else if (char === 125 && nestingLevel > 0) {
+          break;
+        } else if (char === 35 && (parentArgType === "plural" || parentArgType === "selectordinal")) {
+          var position = this.clonePosition();
+          this.bump();
+          elements.push({
+            type: TYPE.pound,
+            location: createLocation(position, this.clonePosition())
+          });
+        } else if (char === 60 && !this.ignoreTag && this.peek() === 47) {
+          if (expectingCloseTag) {
+            break;
+          } else {
+            return this.error(ErrorKind.UNMATCHED_CLOSING_TAG, createLocation(this.clonePosition(), this.clonePosition()));
+          }
+        } else if (char === 60 && !this.ignoreTag && _isAlpha(this.peek() || 0)) {
+          var result = this.parseTag(nestingLevel, parentArgType);
+          if (result.err) {
+            return result;
+          }
+          elements.push(result.val);
+        } else {
+          var result = this.parseLiteral(nestingLevel, parentArgType);
+          if (result.err) {
+            return result;
+          }
+          elements.push(result.val);
+        }
+      }
+      return { val: elements, err: null };
+    };
+    Parser2.prototype.parseTag = function(nestingLevel, parentArgType) {
+      var startPosition = this.clonePosition();
+      this.bump();
+      var tagName = this.parseTagName();
+      this.bumpSpace();
+      if (this.bumpIf("/>")) {
+        return {
+          val: {
+            type: TYPE.literal,
+            value: "<".concat(tagName, "/>"),
+            location: createLocation(startPosition, this.clonePosition())
+          },
+          err: null
+        };
+      } else if (this.bumpIf(">")) {
+        var childrenResult = this.parseMessage(nestingLevel + 1, parentArgType, true);
+        if (childrenResult.err) {
+          return childrenResult;
+        }
+        var children = childrenResult.val;
+        var endTagStartPosition = this.clonePosition();
+        if (this.bumpIf("</")) {
+          if (this.isEOF() || !_isAlpha(this.char())) {
+            return this.error(ErrorKind.INVALID_TAG, createLocation(endTagStartPosition, this.clonePosition()));
+          }
+          var closingTagNameStartPosition = this.clonePosition();
+          var closingTagName = this.parseTagName();
+          if (tagName !== closingTagName) {
+            return this.error(ErrorKind.UNMATCHED_CLOSING_TAG, createLocation(closingTagNameStartPosition, this.clonePosition()));
+          }
+          this.bumpSpace();
+          if (!this.bumpIf(">")) {
+            return this.error(ErrorKind.INVALID_TAG, createLocation(endTagStartPosition, this.clonePosition()));
+          }
+          return {
+            val: {
+              type: TYPE.tag,
+              value: tagName,
+              children,
+              location: createLocation(startPosition, this.clonePosition())
+            },
+            err: null
+          };
+        } else {
+          return this.error(ErrorKind.UNCLOSED_TAG, createLocation(startPosition, this.clonePosition()));
+        }
+      } else {
+        return this.error(ErrorKind.INVALID_TAG, createLocation(startPosition, this.clonePosition()));
+      }
+    };
+    Parser2.prototype.parseTagName = function() {
+      var startOffset = this.offset();
+      this.bump();
+      while (!this.isEOF() && _isPotentialElementNameChar(this.char())) {
+        this.bump();
+      }
+      return this.message.slice(startOffset, this.offset());
+    };
+    Parser2.prototype.parseLiteral = function(nestingLevel, parentArgType) {
+      var start = this.clonePosition();
+      var value = "";
+      while (true) {
+        var parseQuoteResult = this.tryParseQuote(parentArgType);
+        if (parseQuoteResult) {
+          value += parseQuoteResult;
+          continue;
+        }
+        var parseUnquotedResult = this.tryParseUnquoted(nestingLevel, parentArgType);
+        if (parseUnquotedResult) {
+          value += parseUnquotedResult;
+          continue;
+        }
+        var parseLeftAngleResult = this.tryParseLeftAngleBracket();
+        if (parseLeftAngleResult) {
+          value += parseLeftAngleResult;
+          continue;
+        }
+        break;
+      }
+      var location = createLocation(start, this.clonePosition());
+      return {
+        val: { type: TYPE.literal, value, location },
+        err: null
+      };
+    };
+    Parser2.prototype.tryParseLeftAngleBracket = function() {
+      if (!this.isEOF() && this.char() === 60 && (this.ignoreTag || // If at the opening tag or closing tag position, bail.
+      !_isAlphaOrSlash(this.peek() || 0))) {
+        this.bump();
+        return "<";
+      }
+      return null;
+    };
+    Parser2.prototype.tryParseQuote = function(parentArgType) {
+      if (this.isEOF() || this.char() !== 39) {
+        return null;
+      }
+      switch (this.peek()) {
+        case 39:
+          this.bump();
+          this.bump();
+          return "'";
+        // '{', '<', '>', '}'
+        case 123:
+        case 60:
+        case 62:
+        case 125:
+          break;
+        case 35:
+          if (parentArgType === "plural" || parentArgType === "selectordinal") {
+            break;
+          }
+          return null;
+        default:
+          return null;
+      }
+      this.bump();
+      var codePoints = [this.char()];
+      this.bump();
+      while (!this.isEOF()) {
+        var ch = this.char();
+        if (ch === 39) {
+          if (this.peek() === 39) {
+            codePoints.push(39);
+            this.bump();
+          } else {
+            this.bump();
+            break;
+          }
+        } else {
+          codePoints.push(ch);
+        }
+        this.bump();
+      }
+      return fromCodePoint.apply(void 0, codePoints);
+    };
+    Parser2.prototype.tryParseUnquoted = function(nestingLevel, parentArgType) {
+      if (this.isEOF()) {
+        return null;
+      }
+      var ch = this.char();
+      if (ch === 60 || ch === 123 || ch === 35 && (parentArgType === "plural" || parentArgType === "selectordinal") || ch === 125 && nestingLevel > 0) {
+        return null;
+      } else {
+        this.bump();
+        return fromCodePoint(ch);
+      }
+    };
+    Parser2.prototype.parseArgument = function(nestingLevel, expectingCloseTag) {
+      var openingBracePosition = this.clonePosition();
+      this.bump();
+      this.bumpSpace();
+      if (this.isEOF()) {
+        return this.error(ErrorKind.EXPECT_ARGUMENT_CLOSING_BRACE, createLocation(openingBracePosition, this.clonePosition()));
+      }
+      if (this.char() === 125) {
+        this.bump();
+        return this.error(ErrorKind.EMPTY_ARGUMENT, createLocation(openingBracePosition, this.clonePosition()));
+      }
+      var value = this.parseIdentifierIfPossible().value;
+      if (!value) {
+        return this.error(ErrorKind.MALFORMED_ARGUMENT, createLocation(openingBracePosition, this.clonePosition()));
+      }
+      this.bumpSpace();
+      if (this.isEOF()) {
+        return this.error(ErrorKind.EXPECT_ARGUMENT_CLOSING_BRACE, createLocation(openingBracePosition, this.clonePosition()));
+      }
+      switch (this.char()) {
+        // Simple argument: `{name}`
+        case 125: {
+          this.bump();
+          return {
+            val: {
+              type: TYPE.argument,
+              // value does not include the opening and closing braces.
+              value,
+              location: createLocation(openingBracePosition, this.clonePosition())
+            },
+            err: null
+          };
+        }
+        // Argument with options: `{name, format, ...}`
+        case 44: {
+          this.bump();
+          this.bumpSpace();
+          if (this.isEOF()) {
+            return this.error(ErrorKind.EXPECT_ARGUMENT_CLOSING_BRACE, createLocation(openingBracePosition, this.clonePosition()));
+          }
+          return this.parseArgumentOptions(nestingLevel, expectingCloseTag, value, openingBracePosition);
+        }
+        default:
+          return this.error(ErrorKind.MALFORMED_ARGUMENT, createLocation(openingBracePosition, this.clonePosition()));
+      }
+    };
+    Parser2.prototype.parseIdentifierIfPossible = function() {
+      var startingPosition = this.clonePosition();
+      var startOffset = this.offset();
+      var value = matchIdentifierAtIndex(this.message, startOffset);
+      var endOffset = startOffset + value.length;
+      this.bumpTo(endOffset);
+      var endPosition = this.clonePosition();
+      var location = createLocation(startingPosition, endPosition);
+      return { value, location };
+    };
+    Parser2.prototype.parseArgumentOptions = function(nestingLevel, expectingCloseTag, value, openingBracePosition) {
+      var _a2;
+      var typeStartPosition = this.clonePosition();
+      var argType = this.parseIdentifierIfPossible().value;
+      var typeEndPosition = this.clonePosition();
+      switch (argType) {
+        case "":
+          return this.error(ErrorKind.EXPECT_ARGUMENT_TYPE, createLocation(typeStartPosition, typeEndPosition));
+        case "number":
+        case "date":
+        case "time": {
+          this.bumpSpace();
+          var styleAndLocation = null;
+          if (this.bumpIf(",")) {
+            this.bumpSpace();
+            var styleStartPosition = this.clonePosition();
+            var result = this.parseSimpleArgStyleIfPossible();
+            if (result.err) {
+              return result;
+            }
+            var style = trimEnd(result.val);
+            if (style.length === 0) {
+              return this.error(ErrorKind.EXPECT_ARGUMENT_STYLE, createLocation(this.clonePosition(), this.clonePosition()));
+            }
+            var styleLocation = createLocation(styleStartPosition, this.clonePosition());
+            styleAndLocation = { style, styleLocation };
+          }
+          var argCloseResult = this.tryParseArgumentClose(openingBracePosition);
+          if (argCloseResult.err) {
+            return argCloseResult;
+          }
+          var location_1 = createLocation(openingBracePosition, this.clonePosition());
+          if (styleAndLocation && startsWith(styleAndLocation === null || styleAndLocation === void 0 ? void 0 : styleAndLocation.style, "::", 0)) {
+            var skeleton = trimStart(styleAndLocation.style.slice(2));
+            if (argType === "number") {
+              var result = this.parseNumberSkeletonFromString(skeleton, styleAndLocation.styleLocation);
+              if (result.err) {
+                return result;
+              }
+              return {
+                val: { type: TYPE.number, value, location: location_1, style: result.val },
+                err: null
+              };
+            } else {
+              if (skeleton.length === 0) {
+                return this.error(ErrorKind.EXPECT_DATE_TIME_SKELETON, location_1);
+              }
+              var dateTimePattern = skeleton;
+              if (this.locale) {
+                dateTimePattern = getBestPattern(skeleton, this.locale);
+              }
+              var style = {
+                type: SKELETON_TYPE.dateTime,
+                pattern: dateTimePattern,
+                location: styleAndLocation.styleLocation,
+                parsedOptions: this.shouldParseSkeletons ? parseDateTimeSkeleton(dateTimePattern) : {}
+              };
+              var type = argType === "date" ? TYPE.date : TYPE.time;
+              return {
+                val: { type, value, location: location_1, style },
+                err: null
+              };
+            }
+          }
+          return {
+            val: {
+              type: argType === "number" ? TYPE.number : argType === "date" ? TYPE.date : TYPE.time,
+              value,
+              location: location_1,
+              style: (_a2 = styleAndLocation === null || styleAndLocation === void 0 ? void 0 : styleAndLocation.style) !== null && _a2 !== void 0 ? _a2 : null
+            },
+            err: null
+          };
+        }
+        case "plural":
+        case "selectordinal":
+        case "select": {
+          var typeEndPosition_1 = this.clonePosition();
+          this.bumpSpace();
+          if (!this.bumpIf(",")) {
+            return this.error(ErrorKind.EXPECT_SELECT_ARGUMENT_OPTIONS, createLocation(typeEndPosition_1, __assign({}, typeEndPosition_1)));
+          }
+          this.bumpSpace();
+          var identifierAndLocation = this.parseIdentifierIfPossible();
+          var pluralOffset = 0;
+          if (argType !== "select" && identifierAndLocation.value === "offset") {
+            if (!this.bumpIf(":")) {
+              return this.error(ErrorKind.EXPECT_PLURAL_ARGUMENT_OFFSET_VALUE, createLocation(this.clonePosition(), this.clonePosition()));
+            }
+            this.bumpSpace();
+            var result = this.tryParseDecimalInteger(ErrorKind.EXPECT_PLURAL_ARGUMENT_OFFSET_VALUE, ErrorKind.INVALID_PLURAL_ARGUMENT_OFFSET_VALUE);
+            if (result.err) {
+              return result;
+            }
+            this.bumpSpace();
+            identifierAndLocation = this.parseIdentifierIfPossible();
+            pluralOffset = result.val;
+          }
+          var optionsResult = this.tryParsePluralOrSelectOptions(nestingLevel, argType, expectingCloseTag, identifierAndLocation);
+          if (optionsResult.err) {
+            return optionsResult;
+          }
+          var argCloseResult = this.tryParseArgumentClose(openingBracePosition);
+          if (argCloseResult.err) {
+            return argCloseResult;
+          }
+          var location_2 = createLocation(openingBracePosition, this.clonePosition());
+          if (argType === "select") {
+            return {
+              val: {
+                type: TYPE.select,
+                value,
+                options: fromEntries(optionsResult.val),
+                location: location_2
+              },
+              err: null
+            };
+          } else {
+            return {
+              val: {
+                type: TYPE.plural,
+                value,
+                options: fromEntries(optionsResult.val),
+                offset: pluralOffset,
+                pluralType: argType === "plural" ? "cardinal" : "ordinal",
+                location: location_2
+              },
+              err: null
+            };
+          }
+        }
+        default:
+          return this.error(ErrorKind.INVALID_ARGUMENT_TYPE, createLocation(typeStartPosition, typeEndPosition));
+      }
+    };
+    Parser2.prototype.tryParseArgumentClose = function(openingBracePosition) {
+      if (this.isEOF() || this.char() !== 125) {
+        return this.error(ErrorKind.EXPECT_ARGUMENT_CLOSING_BRACE, createLocation(openingBracePosition, this.clonePosition()));
+      }
+      this.bump();
+      return { val: true, err: null };
+    };
+    Parser2.prototype.parseSimpleArgStyleIfPossible = function() {
+      var nestedBraces = 0;
+      var startPosition = this.clonePosition();
+      while (!this.isEOF()) {
+        var ch = this.char();
+        switch (ch) {
+          case 39: {
+            this.bump();
+            var apostrophePosition = this.clonePosition();
+            if (!this.bumpUntil("'")) {
+              return this.error(ErrorKind.UNCLOSED_QUOTE_IN_ARGUMENT_STYLE, createLocation(apostrophePosition, this.clonePosition()));
+            }
+            this.bump();
+            break;
+          }
+          case 123: {
+            nestedBraces += 1;
+            this.bump();
+            break;
+          }
+          case 125: {
+            if (nestedBraces > 0) {
+              nestedBraces -= 1;
+            } else {
+              return {
+                val: this.message.slice(startPosition.offset, this.offset()),
+                err: null
+              };
+            }
+            break;
+          }
+          default:
+            this.bump();
+            break;
+        }
+      }
+      return {
+        val: this.message.slice(startPosition.offset, this.offset()),
+        err: null
+      };
+    };
+    Parser2.prototype.parseNumberSkeletonFromString = function(skeleton, location) {
+      var tokens = [];
+      try {
+        tokens = parseNumberSkeletonFromString(skeleton);
+      } catch (e7) {
+        return this.error(ErrorKind.INVALID_NUMBER_SKELETON, location);
+      }
+      return {
+        val: {
+          type: SKELETON_TYPE.number,
+          tokens,
+          location,
+          parsedOptions: this.shouldParseSkeletons ? parseNumberSkeleton(tokens) : {}
+        },
+        err: null
+      };
+    };
+    Parser2.prototype.tryParsePluralOrSelectOptions = function(nestingLevel, parentArgType, expectCloseTag, parsedFirstIdentifier) {
+      var _a2;
+      var hasOtherClause = false;
+      var options = [];
+      var parsedSelectors = /* @__PURE__ */ new Set();
+      var selector = parsedFirstIdentifier.value, selectorLocation = parsedFirstIdentifier.location;
+      while (true) {
+        if (selector.length === 0) {
+          var startPosition = this.clonePosition();
+          if (parentArgType !== "select" && this.bumpIf("=")) {
+            var result = this.tryParseDecimalInteger(ErrorKind.EXPECT_PLURAL_ARGUMENT_SELECTOR, ErrorKind.INVALID_PLURAL_ARGUMENT_SELECTOR);
+            if (result.err) {
+              return result;
+            }
+            selectorLocation = createLocation(startPosition, this.clonePosition());
+            selector = this.message.slice(startPosition.offset, this.offset());
+          } else {
+            break;
+          }
+        }
+        if (parsedSelectors.has(selector)) {
+          return this.error(parentArgType === "select" ? ErrorKind.DUPLICATE_SELECT_ARGUMENT_SELECTOR : ErrorKind.DUPLICATE_PLURAL_ARGUMENT_SELECTOR, selectorLocation);
+        }
+        if (selector === "other") {
+          hasOtherClause = true;
+        }
+        this.bumpSpace();
+        var openingBracePosition = this.clonePosition();
+        if (!this.bumpIf("{")) {
+          return this.error(parentArgType === "select" ? ErrorKind.EXPECT_SELECT_ARGUMENT_SELECTOR_FRAGMENT : ErrorKind.EXPECT_PLURAL_ARGUMENT_SELECTOR_FRAGMENT, createLocation(this.clonePosition(), this.clonePosition()));
+        }
+        var fragmentResult = this.parseMessage(nestingLevel + 1, parentArgType, expectCloseTag);
+        if (fragmentResult.err) {
+          return fragmentResult;
+        }
+        var argCloseResult = this.tryParseArgumentClose(openingBracePosition);
+        if (argCloseResult.err) {
+          return argCloseResult;
+        }
+        options.push([
+          selector,
+          {
+            value: fragmentResult.val,
+            location: createLocation(openingBracePosition, this.clonePosition())
+          }
+        ]);
+        parsedSelectors.add(selector);
+        this.bumpSpace();
+        _a2 = this.parseIdentifierIfPossible(), selector = _a2.value, selectorLocation = _a2.location;
+      }
+      if (options.length === 0) {
+        return this.error(parentArgType === "select" ? ErrorKind.EXPECT_SELECT_ARGUMENT_SELECTOR : ErrorKind.EXPECT_PLURAL_ARGUMENT_SELECTOR, createLocation(this.clonePosition(), this.clonePosition()));
+      }
+      if (this.requiresOtherClause && !hasOtherClause) {
+        return this.error(ErrorKind.MISSING_OTHER_CLAUSE, createLocation(this.clonePosition(), this.clonePosition()));
+      }
+      return { val: options, err: null };
+    };
+    Parser2.prototype.tryParseDecimalInteger = function(expectNumberError, invalidNumberError) {
+      var sign = 1;
+      var startingPosition = this.clonePosition();
+      if (this.bumpIf("+")) {
+      } else if (this.bumpIf("-")) {
+        sign = -1;
+      }
+      var hasDigits = false;
+      var decimal = 0;
+      while (!this.isEOF()) {
+        var ch = this.char();
+        if (ch >= 48 && ch <= 57) {
+          hasDigits = true;
+          decimal = decimal * 10 + (ch - 48);
+          this.bump();
+        } else {
+          break;
+        }
+      }
+      var location = createLocation(startingPosition, this.clonePosition());
+      if (!hasDigits) {
+        return this.error(expectNumberError, location);
+      }
+      decimal *= sign;
+      if (!isSafeInteger(decimal)) {
+        return this.error(invalidNumberError, location);
+      }
+      return { val: decimal, err: null };
+    };
+    Parser2.prototype.offset = function() {
+      return this.position.offset;
+    };
+    Parser2.prototype.isEOF = function() {
+      return this.offset() === this.message.length;
+    };
+    Parser2.prototype.clonePosition = function() {
+      return {
+        offset: this.position.offset,
+        line: this.position.line,
+        column: this.position.column
+      };
+    };
+    Parser2.prototype.char = function() {
+      var offset = this.position.offset;
+      if (offset >= this.message.length) {
+        throw Error("out of bound");
+      }
+      var code = codePointAt(this.message, offset);
+      if (code === void 0) {
+        throw Error("Offset ".concat(offset, " is at invalid UTF-16 code unit boundary"));
+      }
+      return code;
+    };
+    Parser2.prototype.error = function(kind, location) {
+      return {
+        val: null,
+        err: {
+          kind,
+          message: this.message,
+          location
+        }
+      };
+    };
+    Parser2.prototype.bump = function() {
+      if (this.isEOF()) {
+        return;
+      }
+      var code = this.char();
+      if (code === 10) {
+        this.position.line += 1;
+        this.position.column = 1;
+        this.position.offset += 1;
+      } else {
+        this.position.column += 1;
+        this.position.offset += code < 65536 ? 1 : 2;
+      }
+    };
+    Parser2.prototype.bumpIf = function(prefix) {
+      if (startsWith(this.message, prefix, this.offset())) {
+        for (var i5 = 0; i5 < prefix.length; i5++) {
+          this.bump();
+        }
+        return true;
+      }
+      return false;
+    };
+    Parser2.prototype.bumpUntil = function(pattern) {
+      var currentOffset = this.offset();
+      var index = this.message.indexOf(pattern, currentOffset);
+      if (index >= 0) {
+        this.bumpTo(index);
+        return true;
+      } else {
+        this.bumpTo(this.message.length);
+        return false;
+      }
+    };
+    Parser2.prototype.bumpTo = function(targetOffset) {
+      if (this.offset() > targetOffset) {
+        throw Error("targetOffset ".concat(targetOffset, " must be greater than or equal to the current offset ").concat(this.offset()));
+      }
+      targetOffset = Math.min(targetOffset, this.message.length);
+      while (true) {
+        var offset = this.offset();
+        if (offset === targetOffset) {
+          break;
+        }
+        if (offset > targetOffset) {
+          throw Error("targetOffset ".concat(targetOffset, " is at invalid UTF-16 code unit boundary"));
+        }
+        this.bump();
+        if (this.isEOF()) {
+          break;
+        }
+      }
+    };
+    Parser2.prototype.bumpSpace = function() {
+      while (!this.isEOF() && _isWhiteSpace(this.char())) {
+        this.bump();
+      }
+    };
+    Parser2.prototype.peek = function() {
+      if (this.isEOF()) {
+        return null;
+      }
+      var code = this.char();
+      var offset = this.offset();
+      var nextCode = this.message.charCodeAt(offset + (code >= 65536 ? 2 : 1));
+      return nextCode !== null && nextCode !== void 0 ? nextCode : null;
+    };
+    return Parser2;
+  }()
+);
+function _isAlpha(codepoint) {
+  return codepoint >= 97 && codepoint <= 122 || codepoint >= 65 && codepoint <= 90;
+}
+function _isAlphaOrSlash(codepoint) {
+  return _isAlpha(codepoint) || codepoint === 47;
+}
+function _isPotentialElementNameChar(c5) {
+  return c5 === 45 || c5 === 46 || c5 >= 48 && c5 <= 57 || c5 === 95 || c5 >= 97 && c5 <= 122 || c5 >= 65 && c5 <= 90 || c5 == 183 || c5 >= 192 && c5 <= 214 || c5 >= 216 && c5 <= 246 || c5 >= 248 && c5 <= 893 || c5 >= 895 && c5 <= 8191 || c5 >= 8204 && c5 <= 8205 || c5 >= 8255 && c5 <= 8256 || c5 >= 8304 && c5 <= 8591 || c5 >= 11264 && c5 <= 12271 || c5 >= 12289 && c5 <= 55295 || c5 >= 63744 && c5 <= 64975 || c5 >= 65008 && c5 <= 65533 || c5 >= 65536 && c5 <= 983039;
+}
+function _isWhiteSpace(c5) {
+  return c5 >= 9 && c5 <= 13 || c5 === 32 || c5 === 133 || c5 >= 8206 && c5 <= 8207 || c5 === 8232 || c5 === 8233;
+}
+function _isPatternSyntax(c5) {
+  return c5 >= 33 && c5 <= 35 || c5 === 36 || c5 >= 37 && c5 <= 39 || c5 === 40 || c5 === 41 || c5 === 42 || c5 === 43 || c5 === 44 || c5 === 45 || c5 >= 46 && c5 <= 47 || c5 >= 58 && c5 <= 59 || c5 >= 60 && c5 <= 62 || c5 >= 63 && c5 <= 64 || c5 === 91 || c5 === 92 || c5 === 93 || c5 === 94 || c5 === 96 || c5 === 123 || c5 === 124 || c5 === 125 || c5 === 126 || c5 === 161 || c5 >= 162 && c5 <= 165 || c5 === 166 || c5 === 167 || c5 === 169 || c5 === 171 || c5 === 172 || c5 === 174 || c5 === 176 || c5 === 177 || c5 === 182 || c5 === 187 || c5 === 191 || c5 === 215 || c5 === 247 || c5 >= 8208 && c5 <= 8213 || c5 >= 8214 && c5 <= 8215 || c5 === 8216 || c5 === 8217 || c5 === 8218 || c5 >= 8219 && c5 <= 8220 || c5 === 8221 || c5 === 8222 || c5 === 8223 || c5 >= 8224 && c5 <= 8231 || c5 >= 8240 && c5 <= 8248 || c5 === 8249 || c5 === 8250 || c5 >= 8251 && c5 <= 8254 || c5 >= 8257 && c5 <= 8259 || c5 === 8260 || c5 === 8261 || c5 === 8262 || c5 >= 8263 && c5 <= 8273 || c5 === 8274 || c5 === 8275 || c5 >= 8277 && c5 <= 8286 || c5 >= 8592 && c5 <= 8596 || c5 >= 8597 && c5 <= 8601 || c5 >= 8602 && c5 <= 8603 || c5 >= 8604 && c5 <= 8607 || c5 === 8608 || c5 >= 8609 && c5 <= 8610 || c5 === 8611 || c5 >= 8612 && c5 <= 8613 || c5 === 8614 || c5 >= 8615 && c5 <= 8621 || c5 === 8622 || c5 >= 8623 && c5 <= 8653 || c5 >= 8654 && c5 <= 8655 || c5 >= 8656 && c5 <= 8657 || c5 === 8658 || c5 === 8659 || c5 === 8660 || c5 >= 8661 && c5 <= 8691 || c5 >= 8692 && c5 <= 8959 || c5 >= 8960 && c5 <= 8967 || c5 === 8968 || c5 === 8969 || c5 === 8970 || c5 === 8971 || c5 >= 8972 && c5 <= 8991 || c5 >= 8992 && c5 <= 8993 || c5 >= 8994 && c5 <= 9e3 || c5 === 9001 || c5 === 9002 || c5 >= 9003 && c5 <= 9083 || c5 === 9084 || c5 >= 9085 && c5 <= 9114 || c5 >= 9115 && c5 <= 9139 || c5 >= 9140 && c5 <= 9179 || c5 >= 9180 && c5 <= 9185 || c5 >= 9186 && c5 <= 9254 || c5 >= 9255 && c5 <= 9279 || c5 >= 9280 && c5 <= 9290 || c5 >= 9291 && c5 <= 9311 || c5 >= 9472 && c5 <= 9654 || c5 === 9655 || c5 >= 9656 && c5 <= 9664 || c5 === 9665 || c5 >= 9666 && c5 <= 9719 || c5 >= 9720 && c5 <= 9727 || c5 >= 9728 && c5 <= 9838 || c5 === 9839 || c5 >= 9840 && c5 <= 10087 || c5 === 10088 || c5 === 10089 || c5 === 10090 || c5 === 10091 || c5 === 10092 || c5 === 10093 || c5 === 10094 || c5 === 10095 || c5 === 10096 || c5 === 10097 || c5 === 10098 || c5 === 10099 || c5 === 10100 || c5 === 10101 || c5 >= 10132 && c5 <= 10175 || c5 >= 10176 && c5 <= 10180 || c5 === 10181 || c5 === 10182 || c5 >= 10183 && c5 <= 10213 || c5 === 10214 || c5 === 10215 || c5 === 10216 || c5 === 10217 || c5 === 10218 || c5 === 10219 || c5 === 10220 || c5 === 10221 || c5 === 10222 || c5 === 10223 || c5 >= 10224 && c5 <= 10239 || c5 >= 10240 && c5 <= 10495 || c5 >= 10496 && c5 <= 10626 || c5 === 10627 || c5 === 10628 || c5 === 10629 || c5 === 10630 || c5 === 10631 || c5 === 10632 || c5 === 10633 || c5 === 10634 || c5 === 10635 || c5 === 10636 || c5 === 10637 || c5 === 10638 || c5 === 10639 || c5 === 10640 || c5 === 10641 || c5 === 10642 || c5 === 10643 || c5 === 10644 || c5 === 10645 || c5 === 10646 || c5 === 10647 || c5 === 10648 || c5 >= 10649 && c5 <= 10711 || c5 === 10712 || c5 === 10713 || c5 === 10714 || c5 === 10715 || c5 >= 10716 && c5 <= 10747 || c5 === 10748 || c5 === 10749 || c5 >= 10750 && c5 <= 11007 || c5 >= 11008 && c5 <= 11055 || c5 >= 11056 && c5 <= 11076 || c5 >= 11077 && c5 <= 11078 || c5 >= 11079 && c5 <= 11084 || c5 >= 11085 && c5 <= 11123 || c5 >= 11124 && c5 <= 11125 || c5 >= 11126 && c5 <= 11157 || c5 === 11158 || c5 >= 11159 && c5 <= 11263 || c5 >= 11776 && c5 <= 11777 || c5 === 11778 || c5 === 11779 || c5 === 11780 || c5 === 11781 || c5 >= 11782 && c5 <= 11784 || c5 === 11785 || c5 === 11786 || c5 === 11787 || c5 === 11788 || c5 === 11789 || c5 >= 11790 && c5 <= 11798 || c5 === 11799 || c5 >= 11800 && c5 <= 11801 || c5 === 11802 || c5 === 11803 || c5 === 11804 || c5 === 11805 || c5 >= 11806 && c5 <= 11807 || c5 === 11808 || c5 === 11809 || c5 === 11810 || c5 === 11811 || c5 === 11812 || c5 === 11813 || c5 === 11814 || c5 === 11815 || c5 === 11816 || c5 === 11817 || c5 >= 11818 && c5 <= 11822 || c5 === 11823 || c5 >= 11824 && c5 <= 11833 || c5 >= 11834 && c5 <= 11835 || c5 >= 11836 && c5 <= 11839 || c5 === 11840 || c5 === 11841 || c5 === 11842 || c5 >= 11843 && c5 <= 11855 || c5 >= 11856 && c5 <= 11857 || c5 === 11858 || c5 >= 11859 && c5 <= 11903 || c5 >= 12289 && c5 <= 12291 || c5 === 12296 || c5 === 12297 || c5 === 12298 || c5 === 12299 || c5 === 12300 || c5 === 12301 || c5 === 12302 || c5 === 12303 || c5 === 12304 || c5 === 12305 || c5 >= 12306 && c5 <= 12307 || c5 === 12308 || c5 === 12309 || c5 === 12310 || c5 === 12311 || c5 === 12312 || c5 === 12313 || c5 === 12314 || c5 === 12315 || c5 === 12316 || c5 === 12317 || c5 >= 12318 && c5 <= 12319 || c5 === 12320 || c5 === 12336 || c5 === 64830 || c5 === 64831 || c5 >= 65093 && c5 <= 65094;
+}
+
+// node_modules/@formatjs/icu-messageformat-parser/lib/index.js
+function pruneLocation(els) {
+  els.forEach(function(el) {
+    delete el.location;
+    if (isSelectElement(el) || isPluralElement(el)) {
+      for (var k3 in el.options) {
+        delete el.options[k3].location;
+        pruneLocation(el.options[k3].value);
+      }
+    } else if (isNumberElement(el) && isNumberSkeleton(el.style)) {
+      delete el.style.location;
+    } else if ((isDateElement(el) || isTimeElement(el)) && isDateTimeSkeleton(el.style)) {
+      delete el.style.location;
+    } else if (isTagElement(el)) {
+      pruneLocation(el.children);
+    }
+  });
+}
+function parse(message, opts) {
+  if (opts === void 0) {
+    opts = {};
+  }
+  opts = __assign({ shouldParseSkeletons: true, requiresOtherClause: true }, opts);
+  var result = new Parser(message, opts).parse();
+  if (result.err) {
+    var error = SyntaxError(ErrorKind[result.err.kind]);
+    error.location = result.err.location;
+    error.originalMessage = result.err.message;
+    throw error;
+  }
+  if (!(opts === null || opts === void 0 ? void 0 : opts.captureLocation)) {
+    pruneLocation(result.val);
+  }
+  return result.val;
+}
+
+// node_modules/@formatjs/fast-memoize/lib/index.js
+function memoize(fn, options) {
+  var cache2 = options && options.cache ? options.cache : cacheDefault;
+  var serializer = options && options.serializer ? options.serializer : serializerDefault;
+  var strategy = options && options.strategy ? options.strategy : strategyDefault;
+  return strategy(fn, {
+    cache: cache2,
+    serializer
+  });
+}
+function isPrimitive(value) {
+  return value == null || typeof value === "number" || typeof value === "boolean";
+}
+function monadic(fn, cache2, serializer, arg) {
+  var cacheKey = isPrimitive(arg) ? arg : serializer(arg);
+  var computedValue = cache2.get(cacheKey);
+  if (typeof computedValue === "undefined") {
+    computedValue = fn.call(this, arg);
+    cache2.set(cacheKey, computedValue);
+  }
+  return computedValue;
+}
+function variadic(fn, cache2, serializer) {
+  var args = Array.prototype.slice.call(arguments, 3);
+  var cacheKey = serializer(args);
+  var computedValue = cache2.get(cacheKey);
+  if (typeof computedValue === "undefined") {
+    computedValue = fn.apply(this, args);
+    cache2.set(cacheKey, computedValue);
+  }
+  return computedValue;
+}
+function assemble(fn, context, strategy, cache2, serialize) {
+  return strategy.bind(context, fn, cache2, serialize);
+}
+function strategyDefault(fn, options) {
+  var strategy = fn.length === 1 ? monadic : variadic;
+  return assemble(fn, this, strategy, options.cache.create(), options.serializer);
+}
+function strategyVariadic(fn, options) {
+  return assemble(fn, this, variadic, options.cache.create(), options.serializer);
+}
+function strategyMonadic(fn, options) {
+  return assemble(fn, this, monadic, options.cache.create(), options.serializer);
+}
+var serializerDefault = function() {
+  return JSON.stringify(arguments);
+};
+function ObjectWithoutPrototypeCache() {
+  this.cache = /* @__PURE__ */ Object.create(null);
+}
+ObjectWithoutPrototypeCache.prototype.get = function(key) {
+  return this.cache[key];
+};
+ObjectWithoutPrototypeCache.prototype.set = function(key, value) {
+  this.cache[key] = value;
+};
+var cacheDefault = {
+  create: function create() {
+    return new ObjectWithoutPrototypeCache();
+  }
+};
+var strategies = {
+  variadic: strategyVariadic,
+  monadic: strategyMonadic
+};
+
+// node_modules/intl-messageformat/lib/src/error.js
+var ErrorCode;
+(function(ErrorCode2) {
+  ErrorCode2["MISSING_VALUE"] = "MISSING_VALUE";
+  ErrorCode2["INVALID_VALUE"] = "INVALID_VALUE";
+  ErrorCode2["MISSING_INTL_API"] = "MISSING_INTL_API";
+})(ErrorCode || (ErrorCode = {}));
+var FormatError = (
+  /** @class */
+  function(_super) {
+    __extends(FormatError2, _super);
+    function FormatError2(msg, code, originalMessage) {
+      var _this = _super.call(this, msg) || this;
+      _this.code = code;
+      _this.originalMessage = originalMessage;
+      return _this;
+    }
+    FormatError2.prototype.toString = function() {
+      return "[formatjs Error: ".concat(this.code, "] ").concat(this.message);
+    };
+    return FormatError2;
+  }(Error)
+);
+var InvalidValueError = (
+  /** @class */
+  function(_super) {
+    __extends(InvalidValueError2, _super);
+    function InvalidValueError2(variableId, value, options, originalMessage) {
+      return _super.call(this, 'Invalid values for "'.concat(variableId, '": "').concat(value, '". Options are "').concat(Object.keys(options).join('", "'), '"'), ErrorCode.INVALID_VALUE, originalMessage) || this;
+    }
+    return InvalidValueError2;
+  }(FormatError)
+);
+var InvalidValueTypeError = (
+  /** @class */
+  function(_super) {
+    __extends(InvalidValueTypeError2, _super);
+    function InvalidValueTypeError2(value, type, originalMessage) {
+      return _super.call(this, 'Value for "'.concat(value, '" must be of type ').concat(type), ErrorCode.INVALID_VALUE, originalMessage) || this;
+    }
+    return InvalidValueTypeError2;
+  }(FormatError)
+);
+var MissingValueError = (
+  /** @class */
+  function(_super) {
+    __extends(MissingValueError2, _super);
+    function MissingValueError2(variableId, originalMessage) {
+      return _super.call(this, 'The intl string context variable "'.concat(variableId, '" was not provided to the string "').concat(originalMessage, '"'), ErrorCode.MISSING_VALUE, originalMessage) || this;
+    }
+    return MissingValueError2;
+  }(FormatError)
+);
+
+// node_modules/intl-messageformat/lib/src/formatters.js
+var PART_TYPE;
+(function(PART_TYPE2) {
+  PART_TYPE2[PART_TYPE2["literal"] = 0] = "literal";
+  PART_TYPE2[PART_TYPE2["object"] = 1] = "object";
+})(PART_TYPE || (PART_TYPE = {}));
+function mergeLiteral(parts) {
+  if (parts.length < 2) {
+    return parts;
+  }
+  return parts.reduce(function(all, part) {
+    var lastPart = all[all.length - 1];
+    if (!lastPart || lastPart.type !== PART_TYPE.literal || part.type !== PART_TYPE.literal) {
+      all.push(part);
+    } else {
+      lastPart.value += part.value;
+    }
+    return all;
+  }, []);
+}
+function isFormatXMLElementFn(el) {
+  return typeof el === "function";
+}
+function formatToParts(els, locales, formatters, formats, values, currentPluralValue, originalMessage) {
+  if (els.length === 1 && isLiteralElement(els[0])) {
+    return [
+      {
+        type: PART_TYPE.literal,
+        value: els[0].value
+      }
+    ];
+  }
+  var result = [];
+  for (var _i = 0, els_1 = els; _i < els_1.length; _i++) {
+    var el = els_1[_i];
+    if (isLiteralElement(el)) {
+      result.push({
+        type: PART_TYPE.literal,
+        value: el.value
+      });
+      continue;
+    }
+    if (isPoundElement(el)) {
+      if (typeof currentPluralValue === "number") {
+        result.push({
+          type: PART_TYPE.literal,
+          value: formatters.getNumberFormat(locales).format(currentPluralValue)
+        });
+      }
+      continue;
+    }
+    var varName = el.value;
+    if (!(values && varName in values)) {
+      throw new MissingValueError(varName, originalMessage);
+    }
+    var value = values[varName];
+    if (isArgumentElement(el)) {
+      if (!value || typeof value === "string" || typeof value === "number") {
+        value = typeof value === "string" || typeof value === "number" ? String(value) : "";
+      }
+      result.push({
+        type: typeof value === "string" ? PART_TYPE.literal : PART_TYPE.object,
+        value
+      });
+      continue;
+    }
+    if (isDateElement(el)) {
+      var style = typeof el.style === "string" ? formats.date[el.style] : isDateTimeSkeleton(el.style) ? el.style.parsedOptions : void 0;
+      result.push({
+        type: PART_TYPE.literal,
+        value: formatters.getDateTimeFormat(locales, style).format(value)
+      });
+      continue;
+    }
+    if (isTimeElement(el)) {
+      var style = typeof el.style === "string" ? formats.time[el.style] : isDateTimeSkeleton(el.style) ? el.style.parsedOptions : formats.time.medium;
+      result.push({
+        type: PART_TYPE.literal,
+        value: formatters.getDateTimeFormat(locales, style).format(value)
+      });
+      continue;
+    }
+    if (isNumberElement(el)) {
+      var style = typeof el.style === "string" ? formats.number[el.style] : isNumberSkeleton(el.style) ? el.style.parsedOptions : void 0;
+      if (style && style.scale) {
+        value = value * (style.scale || 1);
+      }
+      result.push({
+        type: PART_TYPE.literal,
+        value: formatters.getNumberFormat(locales, style).format(value)
+      });
+      continue;
+    }
+    if (isTagElement(el)) {
+      var children = el.children, value_1 = el.value;
+      var formatFn = values[value_1];
+      if (!isFormatXMLElementFn(formatFn)) {
+        throw new InvalidValueTypeError(value_1, "function", originalMessage);
+      }
+      var parts = formatToParts(children, locales, formatters, formats, values, currentPluralValue);
+      var chunks = formatFn(parts.map(function(p3) {
+        return p3.value;
+      }));
+      if (!Array.isArray(chunks)) {
+        chunks = [chunks];
+      }
+      result.push.apply(result, chunks.map(function(c5) {
+        return {
+          type: typeof c5 === "string" ? PART_TYPE.literal : PART_TYPE.object,
+          value: c5
+        };
+      }));
+    }
+    if (isSelectElement(el)) {
+      var opt = el.options[value] || el.options.other;
+      if (!opt) {
+        throw new InvalidValueError(el.value, value, Object.keys(el.options), originalMessage);
+      }
+      result.push.apply(result, formatToParts(opt.value, locales, formatters, formats, values));
+      continue;
+    }
+    if (isPluralElement(el)) {
+      var opt = el.options["=".concat(value)];
+      if (!opt) {
+        if (!Intl.PluralRules) {
+          throw new FormatError('Intl.PluralRules is not available in this environment.\nTry polyfilling it using "@formatjs/intl-pluralrules"\n', ErrorCode.MISSING_INTL_API, originalMessage);
+        }
+        var rule = formatters.getPluralRules(locales, { type: el.pluralType }).select(value - (el.offset || 0));
+        opt = el.options[rule] || el.options.other;
+      }
+      if (!opt) {
+        throw new InvalidValueError(el.value, value, Object.keys(el.options), originalMessage);
+      }
+      result.push.apply(result, formatToParts(opt.value, locales, formatters, formats, values, value - (el.offset || 0)));
+      continue;
+    }
+  }
+  return mergeLiteral(result);
+}
+
+// node_modules/intl-messageformat/lib/src/core.js
+function mergeConfig(c1, c22) {
+  if (!c22) {
+    return c1;
+  }
+  return __assign(__assign(__assign({}, c1 || {}), c22 || {}), Object.keys(c1).reduce(function(all, k3) {
+    all[k3] = __assign(__assign({}, c1[k3]), c22[k3] || {});
+    return all;
+  }, {}));
+}
+function mergeConfigs(defaultConfig, configs) {
+  if (!configs) {
+    return defaultConfig;
+  }
+  return Object.keys(defaultConfig).reduce(function(all, k3) {
+    all[k3] = mergeConfig(defaultConfig[k3], configs[k3]);
+    return all;
+  }, __assign({}, defaultConfig));
+}
+function createFastMemoizeCache(store) {
+  return {
+    create: function() {
+      return {
+        get: function(key) {
+          return store[key];
+        },
+        set: function(key, value) {
+          store[key] = value;
+        }
+      };
+    }
+  };
+}
+function createDefaultFormatters(cache2) {
+  if (cache2 === void 0) {
+    cache2 = {
+      number: {},
+      dateTime: {},
+      pluralRules: {}
+    };
+  }
+  return {
+    getNumberFormat: memoize(function() {
+      var _a2;
+      var args = [];
+      for (var _i = 0; _i < arguments.length; _i++) {
+        args[_i] = arguments[_i];
+      }
+      return new ((_a2 = Intl.NumberFormat).bind.apply(_a2, __spreadArray([void 0], args, false)))();
+    }, {
+      cache: createFastMemoizeCache(cache2.number),
+      strategy: strategies.variadic
+    }),
+    getDateTimeFormat: memoize(function() {
+      var _a2;
+      var args = [];
+      for (var _i = 0; _i < arguments.length; _i++) {
+        args[_i] = arguments[_i];
+      }
+      return new ((_a2 = Intl.DateTimeFormat).bind.apply(_a2, __spreadArray([void 0], args, false)))();
+    }, {
+      cache: createFastMemoizeCache(cache2.dateTime),
+      strategy: strategies.variadic
+    }),
+    getPluralRules: memoize(function() {
+      var _a2;
+      var args = [];
+      for (var _i = 0; _i < arguments.length; _i++) {
+        args[_i] = arguments[_i];
+      }
+      return new ((_a2 = Intl.PluralRules).bind.apply(_a2, __spreadArray([void 0], args, false)))();
+    }, {
+      cache: createFastMemoizeCache(cache2.pluralRules),
+      strategy: strategies.variadic
+    })
+  };
+}
+var IntlMessageFormat = (
+  /** @class */
+  function() {
+    function IntlMessageFormat2(message, locales, overrideFormats, opts) {
+      var _this = this;
+      if (locales === void 0) {
+        locales = IntlMessageFormat2.defaultLocale;
+      }
+      this.formatterCache = {
+        number: {},
+        dateTime: {},
+        pluralRules: {}
+      };
+      this.format = function(values) {
+        var parts = _this.formatToParts(values);
+        if (parts.length === 1) {
+          return parts[0].value;
+        }
+        var result = parts.reduce(function(all, part) {
+          if (!all.length || part.type !== PART_TYPE.literal || typeof all[all.length - 1] !== "string") {
+            all.push(part.value);
+          } else {
+            all[all.length - 1] += part.value;
+          }
+          return all;
+        }, []);
+        if (result.length <= 1) {
+          return result[0] || "";
+        }
+        return result;
+      };
+      this.formatToParts = function(values) {
+        return formatToParts(_this.ast, _this.locales, _this.formatters, _this.formats, values, void 0, _this.message);
+      };
+      this.resolvedOptions = function() {
+        return {
+          locale: _this.resolvedLocale.toString()
+        };
+      };
+      this.getAst = function() {
+        return _this.ast;
+      };
+      this.locales = locales;
+      this.resolvedLocale = IntlMessageFormat2.resolveLocale(locales);
+      if (typeof message === "string") {
+        this.message = message;
+        if (!IntlMessageFormat2.__parse) {
+          throw new TypeError("IntlMessageFormat.__parse must be set to process `message` of type `string`");
+        }
+        this.ast = IntlMessageFormat2.__parse(message, {
+          ignoreTag: opts === null || opts === void 0 ? void 0 : opts.ignoreTag,
+          locale: this.resolvedLocale
+        });
+      } else {
+        this.ast = message;
+      }
+      if (!Array.isArray(this.ast)) {
+        throw new TypeError("A message must be provided as a String or AST.");
+      }
+      this.formats = mergeConfigs(IntlMessageFormat2.formats, overrideFormats);
+      this.formatters = opts && opts.formatters || createDefaultFormatters(this.formatterCache);
+    }
+    Object.defineProperty(IntlMessageFormat2, "defaultLocale", {
+      get: function() {
+        if (!IntlMessageFormat2.memoizedDefaultLocale) {
+          IntlMessageFormat2.memoizedDefaultLocale = new Intl.NumberFormat().resolvedOptions().locale;
+        }
+        return IntlMessageFormat2.memoizedDefaultLocale;
+      },
+      enumerable: false,
+      configurable: true
+    });
+    IntlMessageFormat2.memoizedDefaultLocale = null;
+    IntlMessageFormat2.resolveLocale = function(locales) {
+      var supportedLocales = Intl.NumberFormat.supportedLocalesOf(locales);
+      if (supportedLocales.length > 0) {
+        return new Intl.Locale(supportedLocales[0]);
+      }
+      return new Intl.Locale(typeof locales === "string" ? locales : locales[0]);
+    };
+    IntlMessageFormat2.__parse = parse;
+    IntlMessageFormat2.formats = {
+      number: {
+        integer: {
+          maximumFractionDigits: 0
+        },
+        currency: {
+          style: "currency"
+        },
+        percent: {
+          style: "percent"
+        }
+      },
+      date: {
+        short: {
+          month: "numeric",
+          day: "numeric",
+          year: "2-digit"
+        },
+        medium: {
+          month: "short",
+          day: "numeric",
+          year: "numeric"
+        },
+        long: {
+          month: "long",
+          day: "numeric",
+          year: "numeric"
+        },
+        full: {
+          weekday: "long",
+          month: "long",
+          day: "numeric",
+          year: "numeric"
+        }
+      },
+      time: {
+        short: {
+          hour: "numeric",
+          minute: "numeric"
+        },
+        medium: {
+          hour: "numeric",
+          minute: "numeric",
+          second: "numeric"
+        },
+        long: {
+          hour: "numeric",
+          minute: "numeric",
+          second: "numeric",
+          timeZoneName: "short"
+        },
+        full: {
+          hour: "numeric",
+          minute: "numeric",
+          second: "numeric",
+          timeZoneName: "short"
+        }
+      }
+    };
+    return IntlMessageFormat2;
+  }()
+);
+
+// node_modules/intl-messageformat/lib/index.js
+var lib_default = IntlMessageFormat;
+
+// src/price/numberFormat.js
+var maskRegex = /[0-9\-+#]/;
+var notMaskRegex = /[^\d\-+#]/g;
+function getIndex(mask) {
+  return mask.search(maskRegex);
+}
+function processMask(mask = "#.##") {
+  const maskObj = {};
+  const len = mask.length;
+  const start = getIndex(mask);
+  maskObj.prefix = start > 0 ? mask.substring(0, start) : "";
+  const end = getIndex(mask.split("").reverse().join(""));
+  const offset = len - end;
+  const substr = mask.substring(offset, offset + 1);
+  const indx = offset + (substr === "." || substr === "," ? 1 : 0);
+  maskObj.suffix = end > 0 ? mask.substring(indx, len) : "";
+  maskObj.mask = mask.substring(start, indx);
+  maskObj.maskHasNegativeSign = maskObj.mask.charAt(0) === "-";
+  maskObj.maskHasPositiveSign = maskObj.mask.charAt(0) === "+";
+  let result = maskObj.mask.match(notMaskRegex);
+  maskObj.decimal = result && result[result.length - 1] || ".";
+  maskObj.separator = result && result[1] && result[0] || ",";
+  result = maskObj.mask.split(maskObj.decimal);
+  maskObj.integer = result[0];
+  maskObj.fraction = result[1];
+  return maskObj;
+}
+function processValue(value, maskObj, options) {
+  let isNegative = false;
+  const valObj = {
+    value
+  };
+  if (value < 0) {
+    isNegative = true;
+    valObj.value = -valObj.value;
+  }
+  valObj.sign = isNegative ? "-" : "";
+  valObj.value = Number(valObj.value).toFixed(
+    maskObj.fraction && maskObj.fraction.length
+  );
+  valObj.value = Number(valObj.value).toString();
+  const posTrailZero = maskObj.fraction && maskObj.fraction.lastIndexOf("0");
+  let [valInteger = "0", valFraction = ""] = valObj.value.split(".");
+  if (!valFraction || valFraction && valFraction.length <= posTrailZero) {
+    valFraction = posTrailZero < 0 ? "" : Number("0." + valFraction).toFixed(posTrailZero + 1).replace("0.", "");
+  }
+  valObj.integer = valInteger;
+  valObj.fraction = valFraction;
+  addSeparators(valObj, maskObj);
+  if (valObj.result === "0" || valObj.result === "") {
+    isNegative = false;
+    valObj.sign = "";
+  }
+  if (!isNegative && maskObj.maskHasPositiveSign) {
+    valObj.sign = "+";
+  } else if (isNegative && maskObj.maskHasPositiveSign) {
+    valObj.sign = "-";
+  } else if (isNegative) {
+    valObj.sign = options && options.enforceMaskSign && !maskObj.maskHasNegativeSign ? "" : "-";
+  }
+  return valObj;
+}
+function addSeparators(valObj, maskObj) {
+  valObj.result = "";
+  const szSep = maskObj.integer.split(maskObj.separator);
+  const maskInteger = szSep.join("");
+  const posLeadZero = maskInteger && maskInteger.indexOf("0");
+  if (posLeadZero > -1) {
+    while (valObj.integer.length < maskInteger.length - posLeadZero) {
+      valObj.integer = "0" + valObj.integer;
+    }
+  } else if (Number(valObj.integer) === 0) {
+    valObj.integer = "";
+  }
+  const posSeparator = szSep[1] && szSep[szSep.length - 1].length;
+  if (posSeparator) {
+    const len = valObj.integer.length;
+    const offset = len % posSeparator;
+    for (let indx = 0; indx < len; indx++) {
+      valObj.result += valObj.integer.charAt(indx);
+      if (!((indx - offset + 1) % posSeparator) && indx < len - posSeparator) {
+        valObj.result += maskObj.separator;
+      }
+    }
+  } else {
+    valObj.result = valObj.integer;
+  }
+  valObj.result += maskObj.fraction && valObj.fraction ? maskObj.decimal + valObj.fraction : "";
+  return valObj;
+}
+function formatNumber(mask, value, options = {}) {
+  if (!mask || isNaN(Number(value))) {
+    return value;
+  }
+  const maskObj = processMask(mask);
+  const valObj = processValue(value, maskObj, options);
+  return maskObj.prefix + valObj.sign + valObj.result + maskObj.suffix;
+}
+var numberFormat_default = formatNumber;
+
+// src/price/utilities.js
+var DECIMAL_POINT = ".";
+var DECIMAL_COMMA = ",";
+var SPACE_START_PATTERN = /^\s+/;
+var SPACE_END_PATTERN = /\s+$/;
+var NBSP = "&nbsp;";
+var getAnnualPrice = (price2) => price2 * 12;
+var isPromotionActive = (promotion, instant) => {
+  const {
+    start,
+    end,
+    displaySummary: {
+      amount,
+      duration,
+      minProductQuantity,
+      outcomeType
+    } = {}
+  } = promotion;
+  if (!(amount && duration && outcomeType && minProductQuantity)) {
+    return false;
+  }
+  const now = instant ? new Date(instant) : /* @__PURE__ */ new Date();
+  if (!start || !end) {
+    return false;
+  }
+  const startDate = new Date(start);
+  const endDate = new Date(end);
+  return now >= startDate && now <= endDate;
+};
+var RecurrenceTerm = {
+  MONTH: "MONTH",
+  YEAR: "YEAR"
+};
+var opticalPriceDivisors = {
+  [Term.ANNUAL]: 12,
+  [Term.MONTHLY]: 1,
+  [Term.THREE_YEARS]: 36,
+  [Term.TWO_YEARS]: 24
+};
+var opticalPriceRoundingRule = (accept, round) => ({ accept, round });
+var opticalPriceRoundingRules = [
+  opticalPriceRoundingRule(
+    // optical price for the term is a multiple of the initial price
+    ({ divisor, price: price2 }) => price2 % divisor == 0,
+    ({ divisor, price: price2 }) => price2 / divisor
+  ),
+  opticalPriceRoundingRule(
+    // round optical price up to 2 decimals
+    ({ usePrecision }) => usePrecision,
+    ({ divisor, price: price2 }) => Math.round(price2 / divisor * 100) / 100
+  ),
+  opticalPriceRoundingRule(
+    // round optical price up to integer
+    () => true,
+    ({ divisor, price: price2 }) => Math.ceil(Math.floor(price2 * 100 / divisor) / 100)
+  )
+];
+var recurrenceTerms = {
+  [Commitment.YEAR]: {
+    [Term.MONTHLY]: RecurrenceTerm.MONTH,
+    [Term.ANNUAL]: RecurrenceTerm.YEAR
+  },
+  [Commitment.MONTH]: {
+    [Term.MONTHLY]: RecurrenceTerm.MONTH
+  }
+};
+var currencyIsFirstChar = (formatString, currencySymbol) => formatString.indexOf(`'${currencySymbol}'`) === 0;
+var extractNumberMask = (formatString, usePrecision = true) => {
+  let numberMask = formatString.replace(/'.*?'/, "").trim();
+  const decimalsDelimiter = findDecimalsDelimiter(numberMask);
+  const hasDecimalDelimiter = !!decimalsDelimiter;
+  if (!hasDecimalDelimiter) {
+    numberMask = numberMask.replace(
+      /\s?(#.*0)(?!\s)?/,
+      "$&" + getPossibleDecimalsDelimiter(formatString)
+    );
+  } else if (!usePrecision) {
+    numberMask = numberMask.replace(/[,\.]0+/, decimalsDelimiter);
+  }
+  return numberMask;
+};
+var getCurrencySymbolDetails = (formatString) => {
+  const currencySymbol = findCurrencySymbol(formatString);
+  const isCurrencyFirst = currencyIsFirstChar(formatString, currencySymbol);
+  const formatStringWithoutSymbol = formatString.replace(/'.*?'/, "");
+  const hasCurrencySpace = SPACE_START_PATTERN.test(formatStringWithoutSymbol) || SPACE_END_PATTERN.test(formatStringWithoutSymbol);
+  return { currencySymbol, isCurrencyFirst, hasCurrencySpace };
+};
+var makeSpacesAroundNonBreaking = (text) => {
+  return text.replace(SPACE_START_PATTERN, NBSP).replace(SPACE_END_PATTERN, NBSP);
+};
+var getPossibleDecimalsDelimiter = (formatString) => formatString.match(/#(.?)#/)?.[1] === DECIMAL_POINT ? DECIMAL_COMMA : DECIMAL_POINT;
+var findCurrencySymbol = (formatString) => formatString.match(/'(.*?)'/)?.[1] ?? "";
+var findDecimalsDelimiter = (formatString) => formatString.match(/0(.?)0/)?.[1] ?? "";
+function formatPrice({ formatString, price: price2, usePrecision, isIndianPrice = false }, recurrenceTerm, transformPrice = (formattedPrice) => formattedPrice) {
+  const { currencySymbol, isCurrencyFirst, hasCurrencySpace } = getCurrencySymbolDetails(formatString);
+  const decimalsDelimiter = usePrecision ? findDecimalsDelimiter(formatString) : "";
+  const numberMask = extractNumberMask(formatString, usePrecision);
+  const fractionDigits = usePrecision ? 2 : 0;
+  const transformedPrice = transformPrice(price2, { currencySymbol });
+  const formattedPrice = isIndianPrice ? transformedPrice.toLocaleString("hi-IN", {
+    minimumFractionDigits: fractionDigits,
+    maximumFractionDigits: fractionDigits
+  }) : numberFormat_default(numberMask, transformedPrice);
+  const decimalIndex = usePrecision ? formattedPrice.lastIndexOf(decimalsDelimiter) : formattedPrice.length;
+  const integer = formattedPrice.substring(0, decimalIndex);
+  const decimals = formattedPrice.substring(decimalIndex + 1);
+  const accessiblePrice = formatString.replace(/'.*?'/, "SYMBOL").replace(/#.*0/, formattedPrice).replace(/SYMBOL/, currencySymbol);
+  return {
+    accessiblePrice,
+    currencySymbol,
+    decimals,
+    decimalsDelimiter,
+    hasCurrencySpace,
+    integer,
+    isCurrencyFirst,
+    recurrenceTerm
+  };
+}
+var formatOpticalPrice = (data) => {
+  const { commitment, term, usePrecision } = data;
+  const divisor = opticalPriceDivisors[term] ?? 1;
+  return formatPrice(
+    data,
+    divisor > 1 ? RecurrenceTerm.MONTH : recurrenceTerms[commitment]?.[term],
+    (price2) => {
+      const priceData = {
+        divisor,
+        price: price2,
+        usePrecision
+      };
+      const { round } = opticalPriceRoundingRules.find(
+        ({ accept }) => accept(priceData)
+      );
+      if (!round)
+        throw new Error(
+          `Missing rounding rule for: ${JSON.stringify(priceData)}`
+        );
+      return round(priceData);
+    }
+  );
+};
+var formatRegularPrice = ({ commitment, term, ...data }) => formatPrice(data, recurrenceTerms[commitment]?.[term]);
+var formatAnnualPrice = (data) => {
+  const {
+    commitment,
+    instant,
+    price: price2,
+    originalPrice,
+    priceWithoutDiscount,
+    promotion,
+    quantity = 1,
+    term
+  } = data;
+  if (commitment === Commitment.YEAR && term === Term.MONTHLY) {
+    if (!promotion) {
+      return formatPrice(data, RecurrenceTerm.YEAR, getAnnualPrice);
+    }
+    const {
+      displaySummary: { outcomeType, duration, minProductQuantity = 1 } = {}
+    } = promotion;
+    switch (outcomeType) {
+      case "PERCENTAGE_DISCOUNT": {
+        if (quantity >= minProductQuantity && isPromotionActive(promotion, instant)) {
+          const durationInMonths = parseInt(
+            duration.replace("P", "").replace("M", "")
+          );
+          if (isNaN(durationInMonths)) return getAnnualPrice(price2);
+          const discountPrice = quantity * originalPrice * durationInMonths;
+          const regularPrice = quantity * priceWithoutDiscount * (12 - durationInMonths);
+          const totalPrice = Math.round((discountPrice + regularPrice) * 100) / 100;
+          return formatPrice(
+            { ...data, price: totalPrice },
+            RecurrenceTerm.YEAR
+          );
+        }
+      }
+      default:
+        return formatPrice(
+          data,
+          RecurrenceTerm.YEAR,
+          () => getAnnualPrice(priceWithoutDiscount ?? price2)
+        );
+    }
+  }
+  return formatPrice(data, recurrenceTerms[commitment]?.[term]);
+};
+
+// src/price/template.js
+var defaultLiterals = {
+  recurrenceLabel: "{recurrenceTerm, select, MONTH {/mo} YEAR {/yr} other {}}",
+  recurrenceAriaLabel: "{recurrenceTerm, select, MONTH {per month} YEAR {per year} other {}}",
+  perUnitLabel: "{perUnit, select, LICENSE {per license} other {}}",
+  perUnitAriaLabel: "{perUnit, select, LICENSE {per license} other {}}",
+  freeLabel: "Free",
+  freeAriaLabel: "Free",
+  taxExclusiveLabel: "{taxTerm, select, GST {excl. GST} VAT {excl. VAT} TAX {excl. tax} IVA {excl. IVA} SST {excl. SST} KDV {excl. KDV} other {}}",
+  taxInclusiveLabel: "{taxTerm, select, GST {incl. GST} VAT {incl. VAT} TAX {incl. tax} IVA {incl. IVA} SST {incl. SST} KDV {incl. KDV} other {}}",
+  alternativePriceAriaLabel: "Alternatively at",
+  strikethroughAriaLabel: "Regularly at",
+  planTypeLabel: "{planType, select, ABM {Annual, paid monthly.} other {}}"
+};
+var log = createLog("ConsonantTemplates/price");
+var htmlPattern = /<\/?[^>]+(>|$)/g;
+var cssClassNames = {
+  container: "price",
+  containerOptical: "price-optical",
+  containerStrikethrough: "price-strikethrough",
+  containerAlternative: "price-alternative",
+  containerAnnual: "price-annual",
+  containerAnnualPrefix: "price-annual-prefix",
+  containerAnnualSuffix: "price-annual-suffix",
+  disabled: "disabled",
+  currencySpace: "price-currency-space",
+  currencySymbol: "price-currency-symbol",
+  decimals: "price-decimals",
+  decimalsDelimiter: "price-decimals-delimiter",
+  integer: "price-integer",
+  recurrence: "price-recurrence",
+  taxInclusivity: "price-tax-inclusivity",
+  unitType: "price-unit-type"
+};
+var literalKeys = {
+  perUnitLabel: "perUnitLabel",
+  perUnitAriaLabel: "perUnitAriaLabel",
+  recurrenceLabel: "recurrenceLabel",
+  recurrenceAriaLabel: "recurrenceAriaLabel",
+  taxExclusiveLabel: "taxExclusiveLabel",
+  taxInclusiveLabel: "taxInclusiveLabel",
+  strikethroughAriaLabel: "strikethroughAriaLabel",
+  alternativePriceAriaLabel: "alternativePriceAriaLabel"
+};
+var WCS_TAX_DISPLAY_EXCLUSIVE = "TAX_EXCLUSIVE";
+var renderAttributes = (attributes) => isObject(attributes) ? Object.entries(attributes).filter(
+  ([, value]) => isString(value) || isNumber(value) || value === true
+).reduce(
+  (html, [key, value]) => html + ` ${key}${value === true ? "" : '="' + escapeHtml(value) + '"'}`,
+  ""
+) : "";
+var renderSpan = (cssClass, content, attributes, convertSpaces = false) => {
+  return `<span class="${cssClass}${content ? "" : " " + cssClassNames.disabled}"${renderAttributes(attributes)}>${convertSpaces ? makeSpacesAroundNonBreaking(content) : content ?? ""}</span>`;
+};
+function formatLiteral(literals, locale, key, parameters) {
+  const literal = literals[key];
+  if (literal == void 0) {
+    return "";
+  }
+  try {
+    return new lib_default(
+      literal.replace(htmlPattern, ""),
+      locale
+    ).format(parameters);
+  } catch {
+    log.error("Failed to format literal:", literal);
+    return "";
+  }
+}
+function renderContainer(cssClass, {
+  accessibleLabel,
+  altAccessibleLabel,
+  currencySymbol,
+  decimals,
+  decimalsDelimiter,
+  hasCurrencySpace,
+  integer,
+  isCurrencyFirst,
+  recurrenceLabel,
+  perUnitLabel,
+  taxInclusivityLabel
+}, attributes = {}) {
+  const currencyMarkup = renderSpan(
+    cssClassNames.currencySymbol,
+    currencySymbol
+  );
+  const currencySpaceMarkup = renderSpan(
+    cssClassNames.currencySpace,
+    hasCurrencySpace ? "&nbsp;" : ""
+  );
+  let markup = "";
+  if (accessibleLabel)
+    markup = `<sr-only class="strikethrough-aria-label">${accessibleLabel}</sr-only>`;
+  else if (altAccessibleLabel)
+    markup = `<sr-only class="alt-aria-label">${altAccessibleLabel}</sr-only>`;
+  if (isCurrencyFirst) markup += currencyMarkup + currencySpaceMarkup;
+  markup += renderSpan(cssClassNames.integer, integer);
+  markup += renderSpan(cssClassNames.decimalsDelimiter, decimalsDelimiter);
+  markup += renderSpan(cssClassNames.decimals, decimals);
+  if (!isCurrencyFirst) markup += currencySpaceMarkup + currencyMarkup;
+  markup += renderSpan(cssClassNames.recurrence, recurrenceLabel, null, true);
+  markup += renderSpan(cssClassNames.unitType, perUnitLabel, null, true);
+  markup += renderSpan(
+    cssClassNames.taxInclusivity,
+    taxInclusivityLabel,
+    true
+  );
+  return renderSpan(cssClass, markup, {
+    ...attributes
+  });
+}
+var createPriceTemplate = ({
+  isAlternativePrice = false,
+  displayOptical = false,
+  displayStrikethrough = false,
+  displayAnnual = false,
+  instant = void 0
+} = {}) => ({
+  country,
+  displayFormatted = true,
+  displayRecurrence = true,
+  displayPerUnit = false,
+  displayTax = false,
+  language,
+  literals: priceLiterals2 = {},
+  quantity = 1,
+  space = false
+  // add a space between price literals
+} = {}, {
+  commitment,
+  offerSelectorIds,
+  formatString,
+  price: price2,
+  priceWithoutDiscount,
+  taxDisplay,
+  taxTerm,
+  term,
+  usePrecision,
+  promotion
+} = {}, attributes = {}) => {
+  Object.entries({
+    country,
+    formatString,
+    language,
+    price: price2
+  }).forEach(([key, value]) => {
+    if (value == null) {
+      throw new Error(
+        `Argument "${key}" is missing for osi ${offerSelectorIds?.toString()}, country ${country}, language ${language}`
+      );
+    }
+  });
+  const literals = {
+    ...defaultLiterals,
+    ...priceLiterals2
+  };
+  const locale = `${language.toLowerCase()}-${country.toUpperCase()}`;
+  const displayPrice = displayStrikethrough && priceWithoutDiscount ? priceWithoutDiscount : price2;
+  let method = displayOptical ? formatOpticalPrice : formatRegularPrice;
+  if (displayAnnual) {
+    method = formatAnnualPrice;
+  }
+  const { accessiblePrice, recurrenceTerm, ...formattedPrice } = method({
+    commitment,
+    formatString,
+    instant,
+    isIndianPrice: country === "IN",
+    originalPrice: price2,
+    priceWithoutDiscount,
+    price: displayOptical ? price2 : displayPrice,
+    promotion,
+    quantity,
+    term,
+    usePrecision
+  });
+  let accessibleLabel = "", altAccessibleLabel = "";
+  let recurrenceLabel = "";
+  if (toBoolean(displayRecurrence) && recurrenceTerm) {
+    recurrenceLabel = formatLiteral(
+      literals,
+      locale,
+      literalKeys.recurrenceLabel,
+      {
+        recurrenceTerm
+      }
+    );
+  }
+  let perUnitLabel = "";
+  if (toBoolean(displayPerUnit)) {
+    if (space) {
+      perUnitLabel += " ";
+    }
+    perUnitLabel += formatLiteral(
+      literals,
+      locale,
+      literalKeys.perUnitLabel,
+      {
+        perUnit: "LICENSE"
+      }
+    );
+  }
+  let taxInclusivityLabel = "";
+  if (toBoolean(displayTax) && taxTerm) {
+    if (space) {
+      taxInclusivityLabel += " ";
+    }
+    taxInclusivityLabel += formatLiteral(
+      literals,
+      locale,
+      taxDisplay === WCS_TAX_DISPLAY_EXCLUSIVE ? literalKeys.taxExclusiveLabel : literalKeys.taxInclusiveLabel,
+      { taxTerm }
+    );
+  }
+  if (displayStrikethrough) {
+    accessibleLabel = formatLiteral(
+      literals,
+      locale,
+      literalKeys.strikethroughAriaLabel,
+      {
+        strikethroughPrice: accessibleLabel
+      }
+    );
+  }
+  if (isAlternativePrice) {
+    altAccessibleLabel = formatLiteral(
+      literals,
+      locale,
+      literalKeys.alternativePriceAriaLabel,
+      {
+        alternativePrice: altAccessibleLabel
+      }
+    );
+  }
+  let cssClass = cssClassNames.container;
+  if (displayOptical) {
+    cssClass += " " + cssClassNames.containerOptical;
+  }
+  if (displayStrikethrough) {
+    cssClass += " " + cssClassNames.containerStrikethrough;
+  }
+  if (isAlternativePrice) {
+    cssClass += " " + cssClassNames.containerAlternative;
+  }
+  if (displayAnnual) {
+    cssClass += " " + cssClassNames.containerAnnual;
+  }
+  if (toBoolean(displayFormatted)) {
+    return renderContainer(
+      cssClass,
+      {
+        ...formattedPrice,
+        accessibleLabel,
+        altAccessibleLabel,
+        recurrenceLabel,
+        perUnitLabel,
+        taxInclusivityLabel
+      },
+      attributes
+    );
+  }
+  const {
+    currencySymbol,
+    decimals,
+    decimalsDelimiter,
+    hasCurrencySpace,
+    integer,
+    isCurrencyFirst
+  } = formattedPrice;
+  const unformattedPrice = [integer, decimalsDelimiter, decimals];
+  if (isCurrencyFirst) {
+    unformattedPrice.unshift(hasCurrencySpace ? "\xA0" : "");
+    unformattedPrice.unshift(currencySymbol);
+  } else {
+    unformattedPrice.push(hasCurrencySpace ? "\xA0" : "");
+    unformattedPrice.push(currencySymbol);
+  }
+  unformattedPrice.push(
+    recurrenceLabel,
+    perUnitLabel,
+    taxInclusivityLabel
+  );
+  const content = unformattedPrice.join("");
+  return renderSpan(cssClass, content, attributes);
+};
+var createPromoPriceTemplate = () => (context, value, attributes) => {
+  const displayOldPrice = context.displayOldPrice === void 0 || toBoolean(context.displayOldPrice);
+  const shouldDisplayOldPrice = displayOldPrice && value.priceWithoutDiscount && value.priceWithoutDiscount != value.price;
+  return `${shouldDisplayOldPrice ? createPriceTemplate({
+    displayStrikethrough: true
+  })(context, value, attributes) + "&nbsp;" : ""}${createPriceTemplate({ isAlternativePrice: shouldDisplayOldPrice })(context, value, attributes)}`;
+};
+var createPromoPriceWithAnnualTemplate = () => (context, value, attributes) => {
+  let { instant } = context;
+  try {
+    if (!instant) {
+      instant = new URLSearchParams(document.location.search).get(
+        "instant"
+      );
+    }
+    if (instant) {
+      instant = new Date(instant);
+    }
+  } catch (e7) {
+    instant = void 0;
+  }
+  const ctxStAnnual = {
+    ...context,
+    displayTax: false,
+    displayPerUnit: false
+  };
+  const displayOldPrice = context.displayOldPrice === void 0 || toBoolean(context.displayOldPrice);
+  const shouldDisplayOldPrice = displayOldPrice && value.priceWithoutDiscount && value.priceWithoutDiscount != value.price;
+  return `${shouldDisplayOldPrice ? createPriceTemplate({
+    displayStrikethrough: true
+  })(ctxStAnnual, value, attributes) + "&nbsp;" : ""}${createPriceTemplate({ isAlternativePrice: shouldDisplayOldPrice })(context, value, attributes)}${renderSpan(cssClassNames.containerAnnualPrefix, "&nbsp;(")}${createPriceTemplate(
+    {
+      displayAnnual: true,
+      instant
+    }
+  )(
+    ctxStAnnual,
+    value,
+    attributes
+  )}${renderSpan(cssClassNames.containerAnnualSuffix, ")")}`;
+};
+var createPriceWithAnnualTemplate = () => (context, value, attributes) => {
+  const ctxAnnual = {
+    ...context,
+    displayTax: false,
+    displayPerUnit: false
+  };
+  return `${createPriceTemplate({ isAlternativePrice: context.displayOldPrice })(context, value, attributes)}${renderSpan(cssClassNames.containerAnnualPrefix, "&nbsp;(")}${createPriceTemplate(
+    {
+      displayAnnual: true
+    }
+  )(
+    ctxAnnual,
+    value,
+    attributes
+  )}${renderSpan(cssClassNames.containerAnnualSuffix, ")")}`;
+};
+
+// src/price/legal.js
+var cssClassNames2 = {
+  ...cssClassNames,
+  containerLegal: "price-legal",
+  planType: "price-plan-type"
+};
+var literalKeys2 = {
+  ...literalKeys,
+  planTypeLabel: "planTypeLabel"
+};
+function renderContainer2(cssClass, { perUnitLabel, taxInclusivityLabel, planTypeLabel }, attributes = {}) {
+  let markup = "";
+  markup += renderSpan(cssClassNames2.unitType, perUnitLabel, null, true);
+  if (perUnitLabel && (taxInclusivityLabel || planTypeLabel)) {
+    markup += " (";
+  }
+  if (taxInclusivityLabel && planTypeLabel) {
+    taxInclusivityLabel += ". ";
+  }
+  markup += renderSpan(
+    cssClassNames2.taxInclusivity,
+    taxInclusivityLabel,
+    true
+  );
+  markup += renderSpan(cssClassNames2.planType, planTypeLabel, null);
+  if (perUnitLabel && (taxInclusivityLabel || planTypeLabel)) {
+    markup += ")";
+  }
+  return renderSpan(cssClass, markup, {
+    ...attributes
+  });
+}
+var legalTemplate = ({
+  country,
+  displayPerUnit = false,
+  displayTax = false,
+  displayPlanType = false,
+  language,
+  literals: priceLiterals2 = {}
+} = {}, { taxDisplay, taxTerm, planType } = {}, attributes = {}) => {
+  const literals = {
+    ...defaultLiterals,
+    ...priceLiterals2
+  };
+  const locale = `${language.toLowerCase()}-${country.toUpperCase()}`;
+  let perUnitLabel = "";
+  if (toBoolean(displayPerUnit)) {
+    perUnitLabel = formatLiteral(
+      literals,
+      locale,
+      literalKeys2.perUnitLabel,
+      {
+        perUnit: "LICENSE"
+      }
+    );
+  }
+  let taxInclusivityLabel = "";
+  if (country === "US" && language === "en") {
+    displayTax = false;
+  }
+  if (toBoolean(displayTax) && taxTerm) {
+    taxInclusivityLabel = formatLiteral(
+      literals,
+      locale,
+      taxDisplay === WCS_TAX_DISPLAY_EXCLUSIVE ? literalKeys2.taxExclusiveLabel : literalKeys2.taxInclusiveLabel,
+      { taxTerm }
+    );
+  }
+  let planTypeLabel = "";
+  if (toBoolean(displayPlanType) && planType) {
+    planTypeLabel = formatLiteral(
+      literals,
+      locale,
+      literalKeys2.planTypeLabel,
+      {
+        planType
+      }
+    );
+  }
+  let cssClass = cssClassNames2.container;
+  cssClass += " " + cssClassNames2.containerLegal;
+  return renderContainer2(
+    cssClass,
+    {
+      perUnitLabel,
+      taxInclusivityLabel,
+      planTypeLabel
+    },
+    attributes
+  );
+};
+
+// src/price/index.js
+var price = createPriceTemplate();
+var pricePromo = createPromoPriceTemplate();
+var priceOptical = createPriceTemplate({
+  displayOptical: true
+});
+var priceStrikethrough = createPriceTemplate({
+  displayStrikethrough: true
+});
+var priceAnnual = createPriceTemplate({
+  displayAnnual: true
+});
+var priceOpticalAlternative = createPriceTemplate({
+  displayOptical: true,
+  isAlternativePrice: true
+});
+var priceAlternative = createPriceTemplate({
+  isAlternativePrice: true
+});
+var priceWithAnnual = createPriceWithAnnualTemplate();
+var pricePromoWithAnnual = createPromoPriceWithAnnualTemplate();
+var legal = legalTemplate;
+
+// src/discount/template.js
+var getDiscount = (price2, priceWithoutDiscount) => {
+  if (!isPositiveFiniteNumber(price2) || !isPositiveFiniteNumber(priceWithoutDiscount))
+    return;
+  return Math.floor(
+    (priceWithoutDiscount - price2) / priceWithoutDiscount * 100
+  );
+};
+var createDiscountTemplate = () => (context, value) => {
+  const { price: price2, priceWithoutDiscount } = value;
+  const discount2 = getDiscount(price2, priceWithoutDiscount);
+  return discount2 === void 0 ? `<span class="no-discount"></span>` : `<span class="discount">${discount2}%</span>`;
+};
+
+// src/discount/index.js
+var discount = createDiscountTemplate();
+
+// src/inline-price.js
+var INDIVIDUAL = "INDIVIDUAL_COM";
+var BUSINESS = "TEAM_COM";
+var STUDENT = "INDIVIDUAL_EDU";
+var UNIVERSITY = "TEAM_EDU";
+var DISPLAY_ALL_TAX_COUNTRIES = [
+  "GB_en",
+  "AU_en",
+  "FR_fr",
+  "AT_de",
+  "BE_en",
+  "BE_fr",
+  "BE_nl",
+  "BG_bg",
+  "CH_de",
+  "CH_fr",
+  "CH_it",
+  "CZ_cs",
+  "DE_de",
+  "DK_da",
+  "EE_et",
+  "EG_ar",
+  "EG_en",
+  "ES_es",
+  "FI_fi",
+  "GR_el",
+  "GR_en",
+  "HU_hu",
+  "IE_en",
+  "IT_it",
+  "LU_de",
+  "LU_en",
+  "LU_fr",
+  "NL_nl",
+  "NO_nb",
+  "PL_pl",
+  "PT_pt",
+  "RO_ro",
+  "SE_sv",
+  "SI_sl",
+  "SK_sk",
+  "TR_tr",
+  "UA_uk",
+  "ID_en",
+  "ID_in",
+  "IN_en",
+  "IN_hi",
+  "JP_ja",
+  "MY_en",
+  "MY_ms",
+  "NZ_en",
+  "TH_en",
+  "TH_th"
+];
+var DISPLAY_TAX_MAP = {
+  [INDIVIDUAL]: [
+    "MU_en",
+    "LT_lt",
+    "LV_lv",
+    "NG_en",
+    "SA_ar",
+    "SA_en",
+    "SG_en",
+    "KR_ko"
+  ],
+  [BUSINESS]: ["MU_en", "LT_lt", "LV_lv", "NG_en", "CO_es", "KR_ko"],
+  [STUDENT]: ["LT_lt", "LV_lv", "SA_en", "SG_en"],
+  [UNIVERSITY]: ["SG_en", "KR_ko"]
+};
+var TAX_EXCLUDED_MAP = {
+  ["MU_en"]: [false, false, false, false],
+  ["NG_en"]: [false, false, false, false],
+  ["AU_en"]: [false, false, false, false],
+  ["JP_ja"]: [false, false, false, false],
+  ["NZ_en"]: [false, false, false, false],
+  ["TH_en"]: [false, false, false, false],
+  ["TH_th"]: [false, false, false, false],
+  ["CO_es"]: [false, true, false, false],
+  ["AT_de"]: [false, false, false, true],
+  ["SG_en"]: [false, false, false, true]
+};
+var TAX_EXCLUDED_MAP_INDEX = [INDIVIDUAL, BUSINESS, STUDENT, UNIVERSITY];
+var defaultTaxExcluded = (segment) => [BUSINESS, UNIVERSITY].includes(segment);
+var resolveTaxExclusive = (country, language, customerSegment, marketSegment) => {
+  const locale = `${country}_${language}`;
+  const segment = `${customerSegment}_${marketSegment}`;
+  const val = TAX_EXCLUDED_MAP[locale];
+  if (val) {
+    const index = TAX_EXCLUDED_MAP_INDEX.indexOf(segment);
+    return val[index];
+  }
+  return defaultTaxExcluded(segment);
+};
+var resolveDisplayTaxForGeoAndSegment = (country, language, customerSegment, marketSegment) => {
+  const locale = `${country}_${language}`;
+  if (DISPLAY_ALL_TAX_COUNTRIES.includes(country) || DISPLAY_ALL_TAX_COUNTRIES.includes(locale)) {
+    return true;
+  }
+  const segmentConfig = DISPLAY_TAX_MAP[`${customerSegment}_${marketSegment}`];
+  if (!segmentConfig) {
+    return Defaults.displayTax;
+  }
+  if (segmentConfig.includes(country) || segmentConfig.includes(locale)) {
+    return true;
+  }
+  return Defaults.displayTax;
+};
+var resolvePriceTaxFlags = async (country, language, customerSegment, marketSegment) => {
+  const displayTax = resolveDisplayTaxForGeoAndSegment(country, language, customerSegment, marketSegment);
+  return {
+    displayTax,
+    forceTaxExclusive: displayTax ? resolveTaxExclusive(country, language, customerSegment, marketSegment) : Defaults.forceTaxExclusive
+  };
+};
+var _InlinePrice = class _InlinePrice extends HTMLSpanElement {
+  constructor() {
+    super();
+    __publicField(this, "masElement", new MasElement(this));
+    this.handleClick = this.handleClick.bind(this);
+  }
+  static get observedAttributes() {
+    return [
+      "data-display-old-price",
+      "data-display-per-unit",
+      "data-display-recurrence",
+      "data-display-tax",
+      "data-display-plan-type",
+      "data-display-annual",
+      "data-perpetual",
+      "data-promotion-code",
+      "data-force-tax-exclusive",
+      "data-template",
+      "data-wcs-osi"
+    ];
+  }
+  static createInlinePrice(options) {
+    const service = getService();
+    if (!service) return null;
+    const {
+      displayOldPrice,
+      displayPerUnit,
+      displayRecurrence,
+      displayTax,
+      displayPlanType,
+      displayAnnual,
+      forceTaxExclusive,
+      perpetual,
+      promotionCode,
+      quantity,
+      alternativePrice,
+      template,
+      wcsOsi
+    } = service.collectPriceOptions(options);
+    const element = createMasElement(_InlinePrice, {
+      displayOldPrice,
+      displayPerUnit,
+      displayRecurrence,
+      displayTax,
+      displayPlanType,
+      displayAnnual,
+      forceTaxExclusive,
+      perpetual,
+      promotionCode,
+      quantity,
+      alternativePrice,
+      template,
+      wcsOsi
+    });
+    return element;
+  }
+  get isInlinePrice() {
+    return true;
+  }
+  attributeChangedCallback(name, _3, value) {
+    this.masElement.attributeChangedCallback(name, _3, value);
+  }
+  connectedCallback() {
+    this.masElement.connectedCallback();
+    this.addEventListener("click", this.handleClick);
+  }
+  disconnectedCallback() {
+    this.masElement.disconnectedCallback();
+    this.removeEventListener("click", this.handleClick);
+  }
+  handleClick(event) {
+    if (event.target === this) return;
+    event.stopImmediatePropagation();
+    this.dispatchEvent(
+      new MouseEvent("click", {
+        bubbles: true,
+        cancelable: true,
+        view: window
+      })
+    );
+  }
+  onceSettled() {
+    return this.masElement.onceSettled();
+  }
+  get value() {
+    return this.masElement.value;
+  }
+  get options() {
+    return this.masElement.options;
+  }
+  get isFailed() {
+    return this.masElement.state === STATE_FAILED;
+  }
+  requestUpdate(force = false) {
+    return this.masElement.requestUpdate(force);
+  }
+  /**
+   * Resolves associated osi via Wcs and renders price offer.
+   * @param {Record<string, any>} overrides
+   */
+  async render(overrides = {}) {
+    if (!this.isConnected) return false;
+    const service = getService();
+    if (!service) return false;
+    const priceOptions = service.collectPriceOptions(overrides, this);
+    const options = {
+      ...service.settings,
+      ...priceOptions
+    };
+    if (!options.wcsOsi.length) return false;
+    if (service.featureFlags[FF_DEFAULTS] && (priceOptions.displayTax === void 0 || priceOptions.forceTaxExclusive === void 0)) {
+      const [offerSelectors] = await service.resolveOfferSelectors(options);
+      const offers = selectOffers(await offerSelectors, options);
+      if (offers?.length) {
+        const { country, language } = options;
+        const offer = offers[0];
+        const [marketSegment = ""] = offer.marketSegments;
+        const flags = await resolvePriceTaxFlags(country, language, offer.customerSegment, marketSegment);
+        if (priceOptions.displayTax === void 0) {
+          options.displayTax = flags?.displayTax || options.displayTax;
+        }
+        if (priceOptions.forceTaxExclusive === void 0) {
+          options.forceTaxExclusive = flags?.forceTaxExclusive || options.forceTaxExclusive;
+        }
+      }
+    }
+    const version = this.masElement.togglePending(options);
+    this.innerHTML = "";
+    const [promise] = service.resolveOfferSelectors(options);
+    try {
+      const offers = await promise;
+      return this.renderOffers(
+        selectOffers(offers, options),
+        version
+      );
+    } catch (error) {
+      this.innerHTML = "";
+      throw error;
+    }
+  }
+  // TODO: can be extended to accept array of offers and compute subtotal price
+  /**
+   * Renders price offer as HTML of this component
+   * using consonant price template functions
+   * @param {Offer[]} offers
+   * @param {number} version
+   */
+  renderOffers(offers, version = void 0) {
+    if (!this.isConnected) return;
+    const service = getService();
+    if (!service) return false;
+    version ?? (version = this.masElement.togglePending());
+    if (offers.length) {
+      if (this.masElement.toggleResolved(version, offers)) {
+        this.innerHTML = service.buildPriceHTML(offers, this.options);
+        const parentEl = this.closest("p, h3, div");
+        if (!parentEl || !parentEl.querySelector('span[data-template="strikethrough"]') || parentEl.querySelector(".alt-aria-label")) return true;
+        const inlinePrices = parentEl?.querySelectorAll('span[is="inline-price"]');
+        if (inlinePrices.length > 1 && inlinePrices.length === parentEl.querySelectorAll('span[data-template="strikethrough"]').length * 2) {
+          inlinePrices.forEach((price2) => {
+            if (price2.dataset.template !== "strikethrough" && price2.options && !price2.options.alternativePrice && !price2.isFailed) {
+              price2.options.alternativePrice = true;
+              price2.innerHTML = service.buildPriceHTML(offers, price2.options);
+            }
+          });
+        }
+        return true;
+      }
+    } else {
+      const error = new Error(`Not provided: ${this.options?.wcsOsi ?? "-"}`);
+      if (this.masElement.toggleFailed(version, error, this.options)) {
+        this.innerHTML = "";
+        return true;
+      }
+    }
+    return false;
+  }
+  updateOptions(options) {
+    const service = getService();
+    if (!service) return false;
+    const {
+      alternativePrice,
+      displayOldPrice,
+      displayPerUnit,
+      displayRecurrence,
+      displayTax,
+      forceTaxExclusive,
+      perpetual,
+      promotionCode,
+      quantity,
+      template,
+      wcsOsi
+    } = service.collectPriceOptions(options);
+    updateMasElement(this, {
+      alternativePrice,
+      displayOldPrice,
+      displayPerUnit,
+      displayRecurrence,
+      displayTax,
+      forceTaxExclusive,
+      perpetual,
+      promotionCode,
+      quantity,
+      template,
+      wcsOsi
+    });
+    return true;
+  }
+};
+__publicField(_InlinePrice, "is", "inline-price");
+__publicField(_InlinePrice, "tag", "span");
+var InlinePrice = _InlinePrice;
+if (!window.customElements.get(InlinePrice.is)) {
+  window.customElements.define(InlinePrice.is, InlinePrice, {
+    extends: InlinePrice.tag
+  });
+}
+
+// src/price.js
+function Price({ literals, providers, settings }) {
+  function collectPriceOptions(overrides, placeholder = null) {
+    let options = {
+      country: settings.country,
+      language: settings.language,
+      locale: settings.locale,
+      literals: structuredClone(literals.price)
+    };
+    if (placeholder && providers?.price) {
+      for (const provider of providers.price) {
+        provider(placeholder, options);
+      }
+    }
+    const {
+      displayOldPrice,
+      displayPerUnit,
+      displayRecurrence,
+      displayTax,
+      displayPlanType,
+      forceTaxExclusive,
+      perpetual,
+      displayAnnual,
+      promotionCode,
+      quantity,
+      alternativePrice,
+      wcsOsi,
+      ...rest
+    } = Object.assign(options, placeholder?.dataset ?? {}, overrides ?? {});
+    options = omitProperties(
+      Object.assign({
+        ...options,
+        ...rest,
+        displayOldPrice: toBoolean(displayOldPrice),
+        displayPerUnit: toBoolean(displayPerUnit),
+        displayRecurrence: toBoolean(displayRecurrence),
+        displayTax: toBoolean(displayTax),
+        displayPlanType: toBoolean(displayPlanType),
+        forceTaxExclusive: toBoolean(forceTaxExclusive),
+        perpetual: toBoolean(perpetual),
+        displayAnnual: toBoolean(displayAnnual),
+        promotionCode: computePromoStatus(promotionCode).effectivePromoCode,
+        quantity: toQuantity(quantity, Defaults.quantity),
+        alternativePrice: toBoolean(alternativePrice),
+        wcsOsi: toOfferSelectorIds(wcsOsi)
+      })
+    );
+    return options;
+  }
+  function buildPriceHTML(offers, options) {
+    if (!Array.isArray(offers) || !offers.length || !options) {
+      return "";
+    }
+    const { template } = options;
+    let method;
+    switch (template) {
+      // TODO: use price template name constants, export them from `consonant-templates`
+      case "discount":
+        method = discount;
+        break;
+      case "strikethrough":
+        method = priceStrikethrough;
+        break;
+      case "annual":
+        method = priceAnnual;
+        break;
+      case "legal":
+        method = legal;
+        break;
+      default:
+        if (options.template === "optical" && options.alternativePrice) {
+          method = priceOpticalAlternative;
+        } else if (options.template === "optical") {
+          method = priceOptical;
+        } else if (options.displayAnnual && offers[0].planType === "ABM") {
+          method = options.promotionCode ? pricePromoWithAnnual : priceWithAnnual;
+        } else if (options.alternativePrice) {
+          method = priceAlternative;
+        } else {
+          method = options.promotionCode ? pricePromo : price;
+        }
+    }
+    let [offer] = offers;
+    offer = { ...offer, ...offer.priceDetails };
+    return method({ ...settings, ...options }, offer);
+  }
+  const createInlinePrice = InlinePrice.createInlinePrice;
+  return {
+    InlinePrice,
+    buildPriceHTML,
+    collectPriceOptions,
+    createInlinePrice
+  };
+}
+
+// src/settings.js
+function getLocaleSettings({
+  locale = void 0,
+  country = void 0,
+  language = void 0
+} = {}) {
+  language ?? (language = locale?.split("_")?.[0] || Defaults.language);
+  country ?? (country = locale?.split("_")?.[1] || Defaults.country);
+  locale ?? (locale = `${language}_${country}`);
+  return { locale, country, language };
+}
+function getSettings(config2 = {}, service) {
+  const ffDefaults = service.featureFlags[FF_DEFAULTS];
+  const { commerce = {} } = config2;
+  let env = Env.PRODUCTION;
+  let wcsURL = WCS_PROD_URL;
+  const checkoutClientId = getParameter("checkoutClientId", commerce) ?? Defaults.checkoutClientId;
+  const checkoutWorkflowStep = toEnumeration(
+    getParameter("checkoutWorkflowStep", commerce),
+    CheckoutWorkflowStep,
+    Defaults.checkoutWorkflowStep
+  );
+  const displayOldPrice = toBoolean(
+    getParameter("displayOldPrice", commerce),
+    ffDefaults ? Defaults.displayOldPrice : !Defaults.displayOldPrice
+  );
+  const displayPerUnit = toBoolean(
+    getParameter("displayPerUnit", commerce),
+    ffDefaults ? Defaults.displayPerUnit : !Defaults.displayPerUnit
+  );
+  const displayRecurrence = toBoolean(
+    getParameter("displayRecurrence", commerce),
+    Defaults.displayRecurrence
+  );
+  const displayTax = toBoolean(
+    getParameter("displayTax", commerce),
+    Defaults.displayTax
+  );
+  const displayPlanType = toBoolean(
+    getParameter("displayPlanType", commerce),
+    Defaults.displayPlanType
+  );
+  const entitlement = toBoolean(
+    getParameter("entitlement", commerce),
+    Defaults.entitlement
+  );
+  const modal = toBoolean(getParameter("modal", commerce), Defaults.modal);
+  const forceTaxExclusive = toBoolean(
+    getParameter("forceTaxExclusive", commerce),
+    Defaults.forceTaxExclusive
+  );
+  const promotionCode = getParameter("promotionCode", commerce) ?? Defaults.promotionCode;
+  const quantity = toQuantity(getParameter("quantity", commerce));
+  const wcsApiKey = getParameter("wcsApiKey", commerce) ?? Defaults.wcsApiKey;
+  let isStage = commerce?.env === "stage";
+  let landscape = Landscape.PUBLISHED;
+  const allowOverride = ["true", ""].includes(commerce.allowOverride);
+  if (allowOverride) {
+    isStage = (getParameter(PARAM_ENV, commerce, {
+      metadata: false
+    })?.toLowerCase() ?? commerce?.env) === "stage";
+    landscape = toEnumeration(
+      getParameter(PARAM_LANDSCAPE, commerce),
+      Landscape,
+      landscape
+    );
+  }
+  if (isStage) {
+    env = Env.STAGE;
+    wcsURL = WCS_STAGE_URL;
+  }
+  const previewParam = getParameter(PARAM_MAS_PREVIEW) ?? config2.preview;
+  const preview = typeof previewParam != "undefined" && previewParam !== "off" && previewParam !== "false";
+  let previewSettings = {};
+  if (preview) previewSettings = { preview };
+  const masIOUrl = getParameter("mas-io-url") ?? config2.masIOUrl ?? `https://www${env === Env.STAGE ? ".stage" : ""}.adobe.com/mas/io`;
+  const preselectPlan = getParameter("preselect-plan") ?? void 0;
+  return {
+    ...getLocaleSettings(config2),
+    ...previewSettings,
+    displayOldPrice,
+    checkoutClientId,
+    checkoutWorkflowStep,
+    displayPerUnit,
+    displayRecurrence,
+    displayTax,
+    displayPlanType,
+    entitlement,
+    extraOptions: Defaults.extraOptions,
+    modal,
+    env,
+    forceTaxExclusive,
+    promotionCode,
+    quantity,
+    alternativePrice: Defaults.alternativePrice,
+    wcsApiKey,
+    wcsURL,
+    landscape,
+    masIOUrl,
+    ...preselectPlan && { preselectPlan }
+    // only add if defined
+  };
+}
+
+// src/utils/mas-fetch.js
+async function masFetch(resource, options = {}, retries = 2, baseDelay = 100) {
+  let lastError;
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    try {
+      const response = await fetch(resource, options);
+      response.retryCount = attempt;
+      return response;
+    } catch (error) {
+      lastError = error;
+      lastError.retryCount = attempt;
+      if (attempt > retries) break;
+      await new Promise(
+        (resolve) => setTimeout(resolve, baseDelay * (attempt + 1))
+      );
+    }
+  }
+  throw lastError;
+}
+
+// src/utils.js
+var MAS_COMMERCE_SERVICE2 = "mas-commerce-service";
+function debounce(func, delay) {
+  let debounceTimer;
+  return function() {
+    const context = this;
+    const args = arguments;
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(() => func.apply(context, args), delay);
+  };
+}
+function createTag(tag, attributes = {}, content = null, is = null) {
+  const element = is ? document.createElement(tag, { is }) : document.createElement(tag);
+  if (content instanceof HTMLElement) {
+    element.appendChild(content);
+  } else {
+    element.innerHTML = content;
+  }
+  for (const [key, value] of Object.entries(attributes)) {
+    element.setAttribute(key, value);
+  }
+  return element;
+}
+function printMeasure(measure) {
+  return `startTime:${measure.startTime.toFixed(2)}|duration:${measure.duration.toFixed(2)}`;
+}
+function isMobileOrTablet() {
+  return window.matchMedia("(max-width: 1024px)").matches;
+}
+function getService2() {
+  return document.getElementsByTagName(MAS_COMMERCE_SERVICE2)?.[0];
+}
+
+// src/wcs.js
+var NAMESPACE2 = "wcs";
+function Wcs({ settings }) {
+  const log2 = Log.module(NAMESPACE2);
+  const { env, wcsApiKey: apiKey } = settings;
+  const cache2 = /* @__PURE__ */ new Map();
+  const queue = /* @__PURE__ */ new Map();
+  let timer;
+  let staleCache = /* @__PURE__ */ new Map();
+  async function resolveWcsOffers(options, promises, reject = true) {
+    const service = getService();
+    let message = ERROR_MESSAGE_OFFER_NOT_FOUND;
+    log2.debug("Fetching:", options);
+    let url = "";
+    let response;
+    if (options.offerSelectorIds.length > 1)
+      throw new Error("Multiple OSIs are not supported anymore");
+    const unresolvedPromises = new Map(promises);
+    const [osi] = options.offerSelectorIds;
+    const uniqueId = Date.now() + Math.random().toString(36).substring(2, 7);
+    const startMark = `${NAMESPACE2}:${osi}:${uniqueId}${MARK_START_SUFFIX}`;
+    const measureName = `${NAMESPACE2}:${osi}:${uniqueId}${MARK_DURATION_SUFFIX}`;
+    let measure;
+    try {
+      performance.mark(startMark);
+      url = new URL(settings.wcsURL);
+      url.searchParams.set("offer_selector_ids", osi);
+      url.searchParams.set("country", options.country);
+      url.searchParams.set("locale", options.locale);
+      url.searchParams.set(
+        "landscape",
+        env === Env.STAGE ? "ALL" : settings.landscape
+      );
+      url.searchParams.set("api_key", apiKey);
+      if (options.language) {
+        url.searchParams.set("language", options.language);
+      }
+      if (options.promotionCode) {
+        url.searchParams.set("promotion_code", options.promotionCode);
+      }
+      if (options.currency) {
+        url.searchParams.set("currency", options.currency);
+      }
+      response = await masFetch(url.toString(), {
+        credentials: "omit"
+      });
+      if (response.ok) {
+        let offers = [];
+        try {
+          const data = await response.json();
+          log2.debug("Fetched:", options, data);
+          offers = data.resolvedOffers ?? [];
+        } catch (e7) {
+          log2.error(`Error parsing JSON: ${e7.message}`, {
+            ...e7.context,
+            ...service?.duration
+          });
+        }
+        offers = offers.map(applyPlanType);
+        promises.forEach(({ resolve }, offerSelectorId) => {
+          const resolved = offers.filter(
+            ({ offerSelectorIds }) => offerSelectorIds.includes(offerSelectorId)
+          ).flat();
+          if (resolved.length) {
+            unresolvedPromises.delete(offerSelectorId);
+            promises.delete(offerSelectorId);
+            resolve(resolved);
+          }
+        });
+      } else {
+        message = ERROR_MESSAGE_BAD_REQUEST;
+      }
+    } catch (e7) {
+      message = `Network error: ${e7.message}`;
+    } finally {
+      measure = performance.measure(
+        measureName,
+        startMark
+      );
+      performance.clearMarks(startMark);
+      performance.clearMeasures(measureName);
+    }
+    if (reject && promises.size) {
+      log2.debug("Missing:", { offerSelectorIds: [...promises.keys()] });
+      const headers = getLogHeaders(response);
+      promises.forEach((promise) => {
+        promise.reject(
+          new MasError(message, {
+            ...options,
+            ...headers,
+            response,
+            measure: printMeasure(measure),
+            ...service?.duration
+          })
+        );
+      });
+    }
+  }
+  function flushQueue() {
+    clearTimeout(timer);
+    const pending = [...queue.values()];
+    queue.clear();
+    pending.forEach(
+      ({ options, promises }) => resolveWcsOffers(options, promises)
+    );
+  }
+  function prefillWcsCache(preloadedCache) {
+    if (!preloadedCache || typeof preloadedCache !== "object") {
+      throw new TypeError("Cache must be a Map or similar object");
+    }
+    const envKey = env === Env.STAGE ? "stage" : "prod";
+    const envCache = preloadedCache[envKey];
+    if (!envCache || typeof envCache !== "object") {
+      log2.warn(`No cache found for environment: ${env}`);
+      return;
+    }
+    for (const [key, value] of Object.entries(envCache)) {
+      cache2.set(key, Promise.resolve(value.map(applyPlanType)));
+    }
+    log2.debug(`Prefilled WCS cache with ${envCache.size} entries`);
+  }
+  function flushWcsCacheInternal() {
+    const size = cache2.size;
+    staleCache = new Map(cache2);
+    cache2.clear();
+    log2.debug(`Moved ${size} cache entries to stale cache`);
+  }
+  function resolveOfferSelectors({
+    country,
+    language,
+    perpetual = false,
+    promotionCode = "",
+    wcsOsi = []
+  }) {
+    const locale = `${language}_${country}`;
+    if (country !== "GB" && !perpetual) language = "MULT";
+    const groupKey = [country, language, promotionCode].filter((val) => val).join("-").toLowerCase();
+    return wcsOsi.map((osi) => {
+      const cacheKey = `${osi}-${groupKey}`;
+      if (cache2.has(cacheKey)) {
+        return cache2.get(cacheKey);
+      }
+      const promiseWithFallback = new Promise((resolve, reject) => {
+        let group = queue.get(groupKey);
+        if (!group) {
+          const options = {
+            country,
+            locale,
+            offerSelectorIds: []
+          };
+          if (country !== "GB" && !perpetual) options.language = language;
+          const promises = /* @__PURE__ */ new Map();
+          group = { options, promises };
+          queue.set(groupKey, group);
+        }
+        if (promotionCode) {
+          group.options.promotionCode = promotionCode;
+        }
+        group.options.offerSelectorIds.push(osi);
+        group.promises.set(osi, {
+          resolve,
+          reject
+        });
+        flushQueue();
+      }).catch((error) => {
+        if (staleCache.has(cacheKey)) {
+          return staleCache.get(cacheKey);
+        }
+        throw error;
+      });
+      cache2.set(cacheKey, promiseWithFallback);
+      return promiseWithFallback;
+    });
+  }
+  return {
+    Commitment,
+    PlanType,
+    Term,
+    applyPlanType,
+    resolveOfferSelectors,
+    flushWcsCacheInternal,
+    prefillWcsCache
+  };
+}
+
+// src/mas-commerce-service.js
+var TAG_NAME_SERVICE2 = "mas-commerce-service";
+var MARK_START = "mas-commerce-service:start";
+var MEASURE_READY = "mas-commerce-service:ready";
+var _measure, _featureFlags, _MasCommerceService_instances, config_get, getFeatureFlag_fn;
+var MasCommerceService = class extends HTMLElement {
+  constructor() {
+    super(...arguments);
+    __privateAdd(this, _MasCommerceService_instances);
+    __privateAdd(this, _measure);
+    __privateAdd(this, _featureFlags);
+    __publicField(this, "lastLoggingTime", 0);
+  }
+  async registerCheckoutAction(action) {
+    if (typeof action != "function") return;
+    this.buildCheckoutAction = async (offers, options, el) => {
+      const checkoutAction = await action?.(
+        offers,
+        options,
+        this.imsSignedInPromise,
+        el
+      );
+      if (checkoutAction) {
+        return checkoutAction;
+      }
+      return null;
+    };
+  }
+  get featureFlags() {
+    if (!__privateGet(this, _featureFlags)) {
+      __privateSet(this, _featureFlags, {
+        [FF_DEFAULTS]: __privateMethod(this, _MasCommerceService_instances, getFeatureFlag_fn).call(this, FF_DEFAULTS)
+      });
+    }
+    return __privateGet(this, _featureFlags);
+  }
+  activate() {
+    const config2 = __privateGet(this, _MasCommerceService_instances, config_get);
+    const settings = getSettings(config2, this);
+    updateConfig(config2.lana);
+    const log2 = Log.init(config2.hostEnv).module("service");
+    log2.debug("Activating:", config2);
+    const price2 = getPriceLiterals(settings);
+    const literals = { price: price2 };
+    const providers = {
+      checkout: /* @__PURE__ */ new Set(),
+      price: /* @__PURE__ */ new Set()
+    };
+    const startup = { literals, providers, settings };
+    Object.defineProperties(
+      this,
+      Object.getOwnPropertyDescriptors({
+        // Activate modules and expose their API as combined flat object
+        ...Checkout(startup),
+        ...Ims(startup),
+        ...Price(startup),
+        ...Wcs(startup),
+        ...constants_exports,
+        // Defined serviceweb  component API
+        Log,
+        get defaults() {
+          return Defaults;
+        },
+        get log() {
+          return Log;
+        },
+        /* c8 ignore next 11 */
+        get providers() {
+          return {
+            checkout(provider) {
+              providers.checkout.add(provider);
+              return () => providers.checkout.delete(provider);
+            },
+            price(provider) {
+              providers.price.add(provider);
+              return () => providers.price.delete(provider);
+            },
+            has: (providerFunction) => providers.price.has(providerFunction) || providers.checkout.has(providerFunction)
+          };
+        },
+        get settings() {
+          return settings;
+        }
+      })
+    );
+    log2.debug("Activated:", { literals, settings });
+    const event = new CustomEvent(EVENT_TYPE_READY, {
+      bubbles: true,
+      cancelable: false,
+      detail: this
+    });
+    performance.mark(MEASURE_READY);
+    __privateSet(this, _measure, performance.measure(MEASURE_READY, MARK_START));
+    this.dispatchEvent(event);
+    setTimeout(() => {
+      this.logFailedRequests();
+    }, 1e4);
+  }
+  connectedCallback() {
+    performance.mark(MARK_START);
+    this.activate();
+  }
+  flushWcsCache() {
+    this.flushWcsCacheInternal();
+    this.log.debug("Flushed WCS cache");
+  }
+  refreshOffers() {
+    this.flushWcsCacheInternal();
+    document.querySelectorAll(SELECTOR_MAS_ELEMENT).forEach((el) => el.requestUpdate(true));
+    this.log.debug("Refreshed WCS offers");
+    this.logFailedRequests();
+  }
+  refreshFragments() {
+    this.flushWcsCacheInternal();
+    customElements.get("aem-fragment")?.cache.clear();
+    document.querySelectorAll("aem-fragment").forEach((el) => el.refresh(false));
+    this.log.debug("Refreshed AEM fragments");
+    this.logFailedRequests();
+  }
+  get duration() {
+    return {
+      "mas-commerce-service:measure": printMeasure(__privateGet(this, _measure))
+    };
+  }
+  /**
+   * Logs failed network requests related to AEM fragments and WCS commerce artifacts.
+   * Identifies failed resources by checking for zero transfer size, zero duration,
+   * response status less than 200, or response status greater than or equal to 400.
+   * Only logs errors if any of the failed resources are fragment or commerce artifact requests.
+   */
+  /* c8 ignore next 21 */
+  logFailedRequests() {
+    const failedResources = [...performance.getEntriesByType("resource")].filter(({ startTime }) => startTime > this.lastLoggingTime).filter(
+      ({ transferSize, duration, responseStatus }) => transferSize === 0 && duration === 0 && responseStatus < 200 || responseStatus >= 400
+    );
+    const uniqueFailedResources = Array.from(
+      new Map(
+        failedResources.map((resource) => [resource.name, resource])
+      ).values()
+    );
+    if (uniqueFailedResources.some(
+      ({ name }) => /(\/fragment\?|web_commerce_artifact)/.test(name)
+    )) {
+      const failedUrls = uniqueFailedResources.map(({ name }) => name);
+      this.log.error("Failed requests:", {
+        failedUrls,
+        ...this.duration
+      });
+    }
+    this.lastLoggingTime = performance.now().toFixed(3);
+  }
+};
+_measure = new WeakMap();
+_featureFlags = new WeakMap();
+_MasCommerceService_instances = new WeakSet();
+config_get = function() {
+  const env = this.getAttribute("env") ?? "prod";
+  const config2 = {
+    commerce: { env },
+    hostEnv: { name: env },
+    lana: {
+      tags: this.getAttribute("lana-tags"),
+      sampleRate: parseInt(
+        this.getAttribute("lana-sample-rate") ?? 1,
+        10
+      ),
+      isProdDomain: env === "prod"
+    },
+    masIOUrl: this.getAttribute("mas-io-url")
+  };
+  ["locale", "country", "language", "preview"].forEach((attribute) => {
+    const value = this.getAttribute(attribute);
+    if (value) {
+      config2[attribute] = value;
+    }
+  });
+  [
+    "checkout-workflow-step",
+    "force-tax-exclusive",
+    "checkout-client-id",
+    "allow-override",
+    "wcs-api-key"
+  ].forEach((attribute) => {
+    const value = this.getAttribute(attribute);
+    if (value != null) {
+      const camelCaseAttribute = attribute.replace(
+        /-([a-z])/g,
+        (g3) => g3[1].toUpperCase()
+      );
+      config2.commerce[camelCaseAttribute] = value;
+    }
+  });
+  return config2;
+};
+getFeatureFlag_fn = function(ff) {
+  return ["", null, void 0, "on"].includes(this.getAttribute(`data-${ff}`) || getParameter(ff));
+};
+if (!window.customElements.get(TAG_NAME_SERVICE2)) {
+  window.customElements.define(TAG_NAME_SERVICE2, MasCommerceService);
+}
+
+// src/checkout-button.js
+var _CheckoutButton = class _CheckoutButton extends CheckoutMixin(HTMLButtonElement) {
+  static createCheckoutButton(options = {}, innerHTML = "") {
+    return createCheckoutElement(_CheckoutButton, options, innerHTML);
+  }
+  setCheckoutUrl(value) {
+    this.setAttribute("data-href", value);
+  }
+  get href() {
+    return this.getAttribute("data-href");
+  }
+  get isCheckoutButton() {
+    return true;
+  }
+  clickHandler(e7) {
+    if (this.checkoutActionHandler) {
+      this.checkoutActionHandler?.(e7);
+      return;
+    }
+    if (this.href) {
+      window.location.href = this.href;
+    }
+  }
+};
+__publicField(_CheckoutButton, "is", "checkout-button");
+__publicField(_CheckoutButton, "tag", "button");
+var CheckoutButton = _CheckoutButton;
+if (!window.customElements.get(CheckoutButton.is)) {
+  window.customElements.define(CheckoutButton.is, CheckoutButton, {
+    extends: CheckoutButton.tag
+  });
+}
+
+// src/upt-link.js
+function getPromoTermsUrl(env) {
+  const host = env === "PRODUCTION" ? "www.adobe.com" : "www.stage.adobe.com";
+  return `https://${host}/offers/promo-terms.html`;
+}
+var _service2;
+var _UptLink = class _UptLink extends HTMLAnchorElement {
+  constructor() {
+    super();
+    __publicField(this, "masElement", new MasElement(this));
+    __privateAdd(this, _service2);
+    this.setAttribute("is", _UptLink.is);
+  }
+  get isUptLink() {
+    return true;
+  }
+  /**
+   * @param {string} osi 
+   * @param {string} promotionCode 
+   */
+  initializeWcsData(osi, promotionCode) {
+    this.setAttribute("data-wcs-osi", osi);
+    if (promotionCode)
+      this.setAttribute("data-promotion-code", promotionCode);
+  }
+  attributeChangedCallback(name, oldValue, value) {
+    this.masElement.attributeChangedCallback(name, oldValue, value);
+  }
+  connectedCallback() {
+    this.masElement.connectedCallback();
+    __privateSet(this, _service2, getService2());
+    if (__privateGet(this, _service2)) {
+      this.log = __privateGet(this, _service2).log.module("upt-link");
+    }
+  }
+  disconnectedCallback() {
+    this.masElement.disconnectedCallback();
+    __privateSet(this, _service2, void 0);
+  }
+  requestUpdate(force = false) {
+    this.masElement.requestUpdate(force);
+  }
+  onceSettled() {
+    return this.masElement.onceSettled();
+  }
+  async render() {
+    const service = getService2();
+    if (!service) return false;
+    if (!this.dataset.imsCountry) {
+      service.imsCountryPromise.then((countryCode) => {
+        if (countryCode) this.dataset.imsCountry = countryCode;
+      });
+    }
+    const options = service.collectCheckoutOptions({}, this);
+    if (!options.wcsOsi) {
+      this.log.error(`Missing 'data-wcs-osi' attribute on upt-link.`);
+      return false;
+    }
+    const version = this.masElement.togglePending(options);
+    const promises = service.resolveOfferSelectors(options);
+    try {
+      const [[offer]] = await Promise.all(promises);
+      const { country, language, env } = options;
+      let params = `locale=${language}_${country}&country=${country}&offer_id=${offer.offerId}`;
+      const promotionCode = this.getAttribute("data-promotion-code");
+      if (promotionCode) params += `&promotion_code=${encodeURIComponent(promotionCode)}`;
+      this.href = `${getPromoTermsUrl(env)}?${params}`;
+      this.masElement.toggleResolved(version, offer, options);
+    } catch (error) {
+      const masError = new Error(`Could not resolve offer selectors for id: ${options.wcsOsi}.`, error.message);
+      this.masElement.toggleFailed(version, masError, options);
+      return false;
+    }
+  }
+  /**
+   * @param {HTMLElement} element 
+   */
+  static createFrom(element) {
+    const uptLink = new _UptLink();
+    for (const attribute of element.attributes) {
+      if (attribute.name === "is") continue;
+      if (attribute.name === "class" && attribute.value.includes("upt-link"))
+        uptLink.setAttribute("class", attribute.value.replace("upt-link", "").trim());
+      else
+        uptLink.setAttribute(attribute.name, attribute.value);
+    }
+    uptLink.innerHTML = element.innerHTML;
+    uptLink.setAttribute("tabindex", 0);
+    return uptLink;
+  }
+};
+_service2 = new WeakMap();
+__publicField(_UptLink, "is", "upt-link");
+__publicField(_UptLink, "tag", "a");
+__publicField(_UptLink, "observedAttributes", ["data-wcs-osi", "data-promotion-code", "data-ims-country"]);
+var UptLink = _UptLink;
+if (!window.customElements.get(UptLink.is)) {
+  window.customElements.define(UptLink.is, UptLink, {
+    extends: UptLink.tag
+  });
+}
+
+// node_modules/lit/node_modules/@lit/reactive-element/css-tag.js
+var t = window;
+var e = t.ShadowRoot && (void 0 === t.ShadyCSS || t.ShadyCSS.nativeShadow) && "adoptedStyleSheets" in Document.prototype && "replace" in CSSStyleSheet.prototype;
+var s = Symbol();
+var n = /* @__PURE__ */ new WeakMap();
+var o = class {
+  constructor(t5, e7, n8) {
+    if (this._$cssResult$ = true, n8 !== s) throw Error("CSSResult is not constructable. Use `unsafeCSS` or `css` instead.");
+    this.cssText = t5, this.t = e7;
+  }
+  get styleSheet() {
+    let t5 = this.o;
+    const s8 = this.t;
+    if (e && void 0 === t5) {
+      const e7 = void 0 !== s8 && 1 === s8.length;
+      e7 && (t5 = n.get(s8)), void 0 === t5 && ((this.o = t5 = new CSSStyleSheet()).replaceSync(this.cssText), e7 && n.set(s8, t5));
+    }
+    return t5;
+  }
+  toString() {
+    return this.cssText;
+  }
+};
+var r = (t5) => new o("string" == typeof t5 ? t5 : t5 + "", void 0, s);
+var S = (s8, n8) => {
+  e ? s8.adoptedStyleSheets = n8.map((t5) => t5 instanceof CSSStyleSheet ? t5 : t5.styleSheet) : n8.forEach((e7) => {
+    const n9 = document.createElement("style"), o8 = t.litNonce;
+    void 0 !== o8 && n9.setAttribute("nonce", o8), n9.textContent = e7.cssText, s8.appendChild(n9);
+  });
+};
+var c = e ? (t5) => t5 : (t5) => t5 instanceof CSSStyleSheet ? ((t6) => {
+  let e7 = "";
+  for (const s8 of t6.cssRules) e7 += s8.cssText;
+  return r(e7);
+})(t5) : t5;
+
+// node_modules/lit/node_modules/@lit/reactive-element/reactive-element.js
+var s2;
+var e2 = window;
+var r2 = e2.trustedTypes;
+var h = r2 ? r2.emptyScript : "";
+var o2 = e2.reactiveElementPolyfillSupport;
+var n2 = { toAttribute(t5, i5) {
+  switch (i5) {
+    case Boolean:
+      t5 = t5 ? h : null;
+      break;
+    case Object:
+    case Array:
+      t5 = null == t5 ? t5 : JSON.stringify(t5);
+  }
+  return t5;
+}, fromAttribute(t5, i5) {
+  let s8 = t5;
+  switch (i5) {
+    case Boolean:
+      s8 = null !== t5;
+      break;
+    case Number:
+      s8 = null === t5 ? null : Number(t5);
+      break;
+    case Object:
+    case Array:
+      try {
+        s8 = JSON.parse(t5);
+      } catch (t6) {
+        s8 = null;
+      }
+  }
+  return s8;
+} };
+var a = (t5, i5) => i5 !== t5 && (i5 == i5 || t5 == t5);
+var l = { attribute: true, type: String, converter: n2, reflect: false, hasChanged: a };
+var d = "finalized";
+var u = class extends HTMLElement {
+  constructor() {
+    super(), this._$Ei = /* @__PURE__ */ new Map(), this.isUpdatePending = false, this.hasUpdated = false, this._$El = null, this._$Eu();
+  }
+  static addInitializer(t5) {
+    var i5;
+    this.finalize(), (null !== (i5 = this.h) && void 0 !== i5 ? i5 : this.h = []).push(t5);
+  }
+  static get observedAttributes() {
+    this.finalize();
+    const t5 = [];
+    return this.elementProperties.forEach((i5, s8) => {
+      const e7 = this._$Ep(s8, i5);
+      void 0 !== e7 && (this._$Ev.set(e7, s8), t5.push(e7));
+    }), t5;
+  }
+  static createProperty(t5, i5 = l) {
+    if (i5.state && (i5.attribute = false), this.finalize(), this.elementProperties.set(t5, i5), !i5.noAccessor && !this.prototype.hasOwnProperty(t5)) {
+      const s8 = "symbol" == typeof t5 ? Symbol() : "__" + t5, e7 = this.getPropertyDescriptor(t5, s8, i5);
+      void 0 !== e7 && Object.defineProperty(this.prototype, t5, e7);
+    }
+  }
+  static getPropertyDescriptor(t5, i5, s8) {
+    return { get() {
+      return this[i5];
+    }, set(e7) {
+      const r7 = this[t5];
+      this[i5] = e7, this.requestUpdate(t5, r7, s8);
+    }, configurable: true, enumerable: true };
+  }
+  static getPropertyOptions(t5) {
+    return this.elementProperties.get(t5) || l;
+  }
+  static finalize() {
+    if (this.hasOwnProperty(d)) return false;
+    this[d] = true;
+    const t5 = Object.getPrototypeOf(this);
+    if (t5.finalize(), void 0 !== t5.h && (this.h = [...t5.h]), this.elementProperties = new Map(t5.elementProperties), this._$Ev = /* @__PURE__ */ new Map(), this.hasOwnProperty("properties")) {
+      const t6 = this.properties, i5 = [...Object.getOwnPropertyNames(t6), ...Object.getOwnPropertySymbols(t6)];
+      for (const s8 of i5) this.createProperty(s8, t6[s8]);
+    }
+    return this.elementStyles = this.finalizeStyles(this.styles), true;
+  }
+  static finalizeStyles(i5) {
+    const s8 = [];
+    if (Array.isArray(i5)) {
+      const e7 = new Set(i5.flat(1 / 0).reverse());
+      for (const i6 of e7) s8.unshift(c(i6));
+    } else void 0 !== i5 && s8.push(c(i5));
+    return s8;
+  }
+  static _$Ep(t5, i5) {
+    const s8 = i5.attribute;
+    return false === s8 ? void 0 : "string" == typeof s8 ? s8 : "string" == typeof t5 ? t5.toLowerCase() : void 0;
+  }
+  _$Eu() {
+    var t5;
+    this._$E_ = new Promise((t6) => this.enableUpdating = t6), this._$AL = /* @__PURE__ */ new Map(), this._$Eg(), this.requestUpdate(), null === (t5 = this.constructor.h) || void 0 === t5 || t5.forEach((t6) => t6(this));
+  }
+  addController(t5) {
+    var i5, s8;
+    (null !== (i5 = this._$ES) && void 0 !== i5 ? i5 : this._$ES = []).push(t5), void 0 !== this.renderRoot && this.isConnected && (null === (s8 = t5.hostConnected) || void 0 === s8 || s8.call(t5));
+  }
+  removeController(t5) {
+    var i5;
+    null === (i5 = this._$ES) || void 0 === i5 || i5.splice(this._$ES.indexOf(t5) >>> 0, 1);
+  }
+  _$Eg() {
+    this.constructor.elementProperties.forEach((t5, i5) => {
+      this.hasOwnProperty(i5) && (this._$Ei.set(i5, this[i5]), delete this[i5]);
+    });
+  }
+  createRenderRoot() {
+    var t5;
+    const s8 = null !== (t5 = this.shadowRoot) && void 0 !== t5 ? t5 : this.attachShadow(this.constructor.shadowRootOptions);
+    return S(s8, this.constructor.elementStyles), s8;
+  }
+  connectedCallback() {
+    var t5;
+    void 0 === this.renderRoot && (this.renderRoot = this.createRenderRoot()), this.enableUpdating(true), null === (t5 = this._$ES) || void 0 === t5 || t5.forEach((t6) => {
+      var i5;
+      return null === (i5 = t6.hostConnected) || void 0 === i5 ? void 0 : i5.call(t6);
+    });
+  }
+  enableUpdating(t5) {
+  }
+  disconnectedCallback() {
+    var t5;
+    null === (t5 = this._$ES) || void 0 === t5 || t5.forEach((t6) => {
+      var i5;
+      return null === (i5 = t6.hostDisconnected) || void 0 === i5 ? void 0 : i5.call(t6);
+    });
+  }
+  attributeChangedCallback(t5, i5, s8) {
+    this._$AK(t5, s8);
+  }
+  _$EO(t5, i5, s8 = l) {
+    var e7;
+    const r7 = this.constructor._$Ep(t5, s8);
+    if (void 0 !== r7 && true === s8.reflect) {
+      const h5 = (void 0 !== (null === (e7 = s8.converter) || void 0 === e7 ? void 0 : e7.toAttribute) ? s8.converter : n2).toAttribute(i5, s8.type);
+      this._$El = t5, null == h5 ? this.removeAttribute(r7) : this.setAttribute(r7, h5), this._$El = null;
+    }
+  }
+  _$AK(t5, i5) {
+    var s8;
+    const e7 = this.constructor, r7 = e7._$Ev.get(t5);
+    if (void 0 !== r7 && this._$El !== r7) {
+      const t6 = e7.getPropertyOptions(r7), h5 = "function" == typeof t6.converter ? { fromAttribute: t6.converter } : void 0 !== (null === (s8 = t6.converter) || void 0 === s8 ? void 0 : s8.fromAttribute) ? t6.converter : n2;
+      this._$El = r7, this[r7] = h5.fromAttribute(i5, t6.type), this._$El = null;
+    }
+  }
+  requestUpdate(t5, i5, s8) {
+    let e7 = true;
+    void 0 !== t5 && (((s8 = s8 || this.constructor.getPropertyOptions(t5)).hasChanged || a)(this[t5], i5) ? (this._$AL.has(t5) || this._$AL.set(t5, i5), true === s8.reflect && this._$El !== t5 && (void 0 === this._$EC && (this._$EC = /* @__PURE__ */ new Map()), this._$EC.set(t5, s8))) : e7 = false), !this.isUpdatePending && e7 && (this._$E_ = this._$Ej());
+  }
+  async _$Ej() {
+    this.isUpdatePending = true;
+    try {
+      await this._$E_;
+    } catch (t6) {
+      Promise.reject(t6);
+    }
+    const t5 = this.scheduleUpdate();
+    return null != t5 && await t5, !this.isUpdatePending;
+  }
+  scheduleUpdate() {
+    return this.performUpdate();
+  }
+  performUpdate() {
+    var t5;
+    if (!this.isUpdatePending) return;
+    this.hasUpdated, this._$Ei && (this._$Ei.forEach((t6, i6) => this[i6] = t6), this._$Ei = void 0);
+    let i5 = false;
+    const s8 = this._$AL;
+    try {
+      i5 = this.shouldUpdate(s8), i5 ? (this.willUpdate(s8), null === (t5 = this._$ES) || void 0 === t5 || t5.forEach((t6) => {
+        var i6;
+        return null === (i6 = t6.hostUpdate) || void 0 === i6 ? void 0 : i6.call(t6);
+      }), this.update(s8)) : this._$Ek();
+    } catch (t6) {
+      throw i5 = false, this._$Ek(), t6;
+    }
+    i5 && this._$AE(s8);
+  }
+  willUpdate(t5) {
+  }
+  _$AE(t5) {
+    var i5;
+    null === (i5 = this._$ES) || void 0 === i5 || i5.forEach((t6) => {
+      var i6;
+      return null === (i6 = t6.hostUpdated) || void 0 === i6 ? void 0 : i6.call(t6);
+    }), this.hasUpdated || (this.hasUpdated = true, this.firstUpdated(t5)), this.updated(t5);
+  }
+  _$Ek() {
+    this._$AL = /* @__PURE__ */ new Map(), this.isUpdatePending = false;
+  }
+  get updateComplete() {
+    return this.getUpdateComplete();
+  }
+  getUpdateComplete() {
+    return this._$E_;
+  }
+  shouldUpdate(t5) {
+    return true;
+  }
+  update(t5) {
+    void 0 !== this._$EC && (this._$EC.forEach((t6, i5) => this._$EO(i5, this[i5], t6)), this._$EC = void 0), this._$Ek();
+  }
+  updated(t5) {
+  }
+  firstUpdated(t5) {
+  }
+};
+u[d] = true, u.elementProperties = /* @__PURE__ */ new Map(), u.elementStyles = [], u.shadowRootOptions = { mode: "open" }, null == o2 || o2({ ReactiveElement: u }), (null !== (s2 = e2.reactiveElementVersions) && void 0 !== s2 ? s2 : e2.reactiveElementVersions = []).push("1.6.3");
+
+// node_modules/lit/node_modules/lit-html/lit-html.js
+var t2;
+var i2 = window;
+var s3 = i2.trustedTypes;
+var e3 = s3 ? s3.createPolicy("lit-html", { createHTML: (t5) => t5 }) : void 0;
+var o3 = "$lit$";
+var n3 = `lit$${(Math.random() + "").slice(9)}$`;
+var l2 = "?" + n3;
+var h2 = `<${l2}>`;
+var r3 = document;
+var u2 = () => r3.createComment("");
+var d2 = (t5) => null === t5 || "object" != typeof t5 && "function" != typeof t5;
+var c2 = Array.isArray;
+var v = (t5) => c2(t5) || "function" == typeof (null == t5 ? void 0 : t5[Symbol.iterator]);
+var a2 = "[ 	\n\f\r]";
+var f = /<(?:(!--|\/[^a-zA-Z])|(\/?[a-zA-Z][^>\s]*)|(\/?$))/g;
+var _ = /-->/g;
+var m = />/g;
+var p = RegExp(`>|${a2}(?:([^\\s"'>=/]+)(${a2}*=${a2}*(?:[^ 	
+\f\r"'\`<>=]|("|')|))|$)`, "g");
+var g = /'/g;
+var $ = /"/g;
+var y = /^(?:script|style|textarea|title)$/i;
+var w = (t5) => (i5, ...s8) => ({ _$litType$: t5, strings: i5, values: s8 });
+var x = w(1);
+var b = w(2);
+var T = Symbol.for("lit-noChange");
+var A = Symbol.for("lit-nothing");
+var E = /* @__PURE__ */ new WeakMap();
+var C = r3.createTreeWalker(r3, 129, null, false);
+function P(t5, i5) {
+  if (!Array.isArray(t5) || !t5.hasOwnProperty("raw")) throw Error("invalid template strings array");
+  return void 0 !== e3 ? e3.createHTML(i5) : i5;
+}
+var V = (t5, i5) => {
+  const s8 = t5.length - 1, e7 = [];
+  let l6, r7 = 2 === i5 ? "<svg>" : "", u5 = f;
+  for (let i6 = 0; i6 < s8; i6++) {
+    const s9 = t5[i6];
+    let d5, c5, v3 = -1, a5 = 0;
+    for (; a5 < s9.length && (u5.lastIndex = a5, c5 = u5.exec(s9), null !== c5); ) a5 = u5.lastIndex, u5 === f ? "!--" === c5[1] ? u5 = _ : void 0 !== c5[1] ? u5 = m : void 0 !== c5[2] ? (y.test(c5[2]) && (l6 = RegExp("</" + c5[2], "g")), u5 = p) : void 0 !== c5[3] && (u5 = p) : u5 === p ? ">" === c5[0] ? (u5 = null != l6 ? l6 : f, v3 = -1) : void 0 === c5[1] ? v3 = -2 : (v3 = u5.lastIndex - c5[2].length, d5 = c5[1], u5 = void 0 === c5[3] ? p : '"' === c5[3] ? $ : g) : u5 === $ || u5 === g ? u5 = p : u5 === _ || u5 === m ? u5 = f : (u5 = p, l6 = void 0);
+    const w3 = u5 === p && t5[i6 + 1].startsWith("/>") ? " " : "";
+    r7 += u5 === f ? s9 + h2 : v3 >= 0 ? (e7.push(d5), s9.slice(0, v3) + o3 + s9.slice(v3) + n3 + w3) : s9 + n3 + (-2 === v3 ? (e7.push(void 0), i6) : w3);
+  }
+  return [P(t5, r7 + (t5[s8] || "<?>") + (2 === i5 ? "</svg>" : "")), e7];
+};
+var N = class _N {
+  constructor({ strings: t5, _$litType$: i5 }, e7) {
+    let h5;
+    this.parts = [];
+    let r7 = 0, d5 = 0;
+    const c5 = t5.length - 1, v3 = this.parts, [a5, f3] = V(t5, i5);
+    if (this.el = _N.createElement(a5, e7), C.currentNode = this.el.content, 2 === i5) {
+      const t6 = this.el.content, i6 = t6.firstChild;
+      i6.remove(), t6.append(...i6.childNodes);
+    }
+    for (; null !== (h5 = C.nextNode()) && v3.length < c5; ) {
+      if (1 === h5.nodeType) {
+        if (h5.hasAttributes()) {
+          const t6 = [];
+          for (const i6 of h5.getAttributeNames()) if (i6.endsWith(o3) || i6.startsWith(n3)) {
+            const s8 = f3[d5++];
+            if (t6.push(i6), void 0 !== s8) {
+              const t7 = h5.getAttribute(s8.toLowerCase() + o3).split(n3), i7 = /([.?@])?(.*)/.exec(s8);
+              v3.push({ type: 1, index: r7, name: i7[2], strings: t7, ctor: "." === i7[1] ? H : "?" === i7[1] ? L : "@" === i7[1] ? z : k });
+            } else v3.push({ type: 6, index: r7 });
+          }
+          for (const i6 of t6) h5.removeAttribute(i6);
+        }
+        if (y.test(h5.tagName)) {
+          const t6 = h5.textContent.split(n3), i6 = t6.length - 1;
+          if (i6 > 0) {
+            h5.textContent = s3 ? s3.emptyScript : "";
+            for (let s8 = 0; s8 < i6; s8++) h5.append(t6[s8], u2()), C.nextNode(), v3.push({ type: 2, index: ++r7 });
+            h5.append(t6[i6], u2());
+          }
+        }
+      } else if (8 === h5.nodeType) if (h5.data === l2) v3.push({ type: 2, index: r7 });
+      else {
+        let t6 = -1;
+        for (; -1 !== (t6 = h5.data.indexOf(n3, t6 + 1)); ) v3.push({ type: 7, index: r7 }), t6 += n3.length - 1;
+      }
+      r7++;
+    }
+  }
+  static createElement(t5, i5) {
+    const s8 = r3.createElement("template");
+    return s8.innerHTML = t5, s8;
+  }
+};
+function S2(t5, i5, s8 = t5, e7) {
+  var o8, n8, l6, h5;
+  if (i5 === T) return i5;
+  let r7 = void 0 !== e7 ? null === (o8 = s8._$Co) || void 0 === o8 ? void 0 : o8[e7] : s8._$Cl;
+  const u5 = d2(i5) ? void 0 : i5._$litDirective$;
+  return (null == r7 ? void 0 : r7.constructor) !== u5 && (null === (n8 = null == r7 ? void 0 : r7._$AO) || void 0 === n8 || n8.call(r7, false), void 0 === u5 ? r7 = void 0 : (r7 = new u5(t5), r7._$AT(t5, s8, e7)), void 0 !== e7 ? (null !== (l6 = (h5 = s8)._$Co) && void 0 !== l6 ? l6 : h5._$Co = [])[e7] = r7 : s8._$Cl = r7), void 0 !== r7 && (i5 = S2(t5, r7._$AS(t5, i5.values), r7, e7)), i5;
+}
+var M = class {
+  constructor(t5, i5) {
+    this._$AV = [], this._$AN = void 0, this._$AD = t5, this._$AM = i5;
+  }
+  get parentNode() {
+    return this._$AM.parentNode;
+  }
+  get _$AU() {
+    return this._$AM._$AU;
+  }
+  u(t5) {
+    var i5;
+    const { el: { content: s8 }, parts: e7 } = this._$AD, o8 = (null !== (i5 = null == t5 ? void 0 : t5.creationScope) && void 0 !== i5 ? i5 : r3).importNode(s8, true);
+    C.currentNode = o8;
+    let n8 = C.nextNode(), l6 = 0, h5 = 0, u5 = e7[0];
+    for (; void 0 !== u5; ) {
+      if (l6 === u5.index) {
+        let i6;
+        2 === u5.type ? i6 = new R(n8, n8.nextSibling, this, t5) : 1 === u5.type ? i6 = new u5.ctor(n8, u5.name, u5.strings, this, t5) : 6 === u5.type && (i6 = new Z(n8, this, t5)), this._$AV.push(i6), u5 = e7[++h5];
+      }
+      l6 !== (null == u5 ? void 0 : u5.index) && (n8 = C.nextNode(), l6++);
+    }
+    return C.currentNode = r3, o8;
+  }
+  v(t5) {
+    let i5 = 0;
+    for (const s8 of this._$AV) void 0 !== s8 && (void 0 !== s8.strings ? (s8._$AI(t5, s8, i5), i5 += s8.strings.length - 2) : s8._$AI(t5[i5])), i5++;
+  }
+};
+var R = class _R {
+  constructor(t5, i5, s8, e7) {
+    var o8;
+    this.type = 2, this._$AH = A, this._$AN = void 0, this._$AA = t5, this._$AB = i5, this._$AM = s8, this.options = e7, this._$Cp = null === (o8 = null == e7 ? void 0 : e7.isConnected) || void 0 === o8 || o8;
+  }
+  get _$AU() {
+    var t5, i5;
+    return null !== (i5 = null === (t5 = this._$AM) || void 0 === t5 ? void 0 : t5._$AU) && void 0 !== i5 ? i5 : this._$Cp;
+  }
+  get parentNode() {
+    let t5 = this._$AA.parentNode;
+    const i5 = this._$AM;
+    return void 0 !== i5 && 11 === (null == t5 ? void 0 : t5.nodeType) && (t5 = i5.parentNode), t5;
+  }
+  get startNode() {
+    return this._$AA;
+  }
+  get endNode() {
+    return this._$AB;
+  }
+  _$AI(t5, i5 = this) {
+    t5 = S2(this, t5, i5), d2(t5) ? t5 === A || null == t5 || "" === t5 ? (this._$AH !== A && this._$AR(), this._$AH = A) : t5 !== this._$AH && t5 !== T && this._(t5) : void 0 !== t5._$litType$ ? this.g(t5) : void 0 !== t5.nodeType ? this.$(t5) : v(t5) ? this.T(t5) : this._(t5);
+  }
+  k(t5) {
+    return this._$AA.parentNode.insertBefore(t5, this._$AB);
+  }
+  $(t5) {
+    this._$AH !== t5 && (this._$AR(), this._$AH = this.k(t5));
+  }
+  _(t5) {
+    this._$AH !== A && d2(this._$AH) ? this._$AA.nextSibling.data = t5 : this.$(r3.createTextNode(t5)), this._$AH = t5;
+  }
+  g(t5) {
+    var i5;
+    const { values: s8, _$litType$: e7 } = t5, o8 = "number" == typeof e7 ? this._$AC(t5) : (void 0 === e7.el && (e7.el = N.createElement(P(e7.h, e7.h[0]), this.options)), e7);
+    if ((null === (i5 = this._$AH) || void 0 === i5 ? void 0 : i5._$AD) === o8) this._$AH.v(s8);
+    else {
+      const t6 = new M(o8, this), i6 = t6.u(this.options);
+      t6.v(s8), this.$(i6), this._$AH = t6;
+    }
+  }
+  _$AC(t5) {
+    let i5 = E.get(t5.strings);
+    return void 0 === i5 && E.set(t5.strings, i5 = new N(t5)), i5;
+  }
+  T(t5) {
+    c2(this._$AH) || (this._$AH = [], this._$AR());
+    const i5 = this._$AH;
+    let s8, e7 = 0;
+    for (const o8 of t5) e7 === i5.length ? i5.push(s8 = new _R(this.k(u2()), this.k(u2()), this, this.options)) : s8 = i5[e7], s8._$AI(o8), e7++;
+    e7 < i5.length && (this._$AR(s8 && s8._$AB.nextSibling, e7), i5.length = e7);
+  }
+  _$AR(t5 = this._$AA.nextSibling, i5) {
+    var s8;
+    for (null === (s8 = this._$AP) || void 0 === s8 || s8.call(this, false, true, i5); t5 && t5 !== this._$AB; ) {
+      const i6 = t5.nextSibling;
+      t5.remove(), t5 = i6;
+    }
+  }
+  setConnected(t5) {
+    var i5;
+    void 0 === this._$AM && (this._$Cp = t5, null === (i5 = this._$AP) || void 0 === i5 || i5.call(this, t5));
+  }
+};
+var k = class {
+  constructor(t5, i5, s8, e7, o8) {
+    this.type = 1, this._$AH = A, this._$AN = void 0, this.element = t5, this.name = i5, this._$AM = e7, this.options = o8, s8.length > 2 || "" !== s8[0] || "" !== s8[1] ? (this._$AH = Array(s8.length - 1).fill(new String()), this.strings = s8) : this._$AH = A;
+  }
+  get tagName() {
+    return this.element.tagName;
+  }
+  get _$AU() {
+    return this._$AM._$AU;
+  }
+  _$AI(t5, i5 = this, s8, e7) {
+    const o8 = this.strings;
+    let n8 = false;
+    if (void 0 === o8) t5 = S2(this, t5, i5, 0), n8 = !d2(t5) || t5 !== this._$AH && t5 !== T, n8 && (this._$AH = t5);
+    else {
+      const e8 = t5;
+      let l6, h5;
+      for (t5 = o8[0], l6 = 0; l6 < o8.length - 1; l6++) h5 = S2(this, e8[s8 + l6], i5, l6), h5 === T && (h5 = this._$AH[l6]), n8 || (n8 = !d2(h5) || h5 !== this._$AH[l6]), h5 === A ? t5 = A : t5 !== A && (t5 += (null != h5 ? h5 : "") + o8[l6 + 1]), this._$AH[l6] = h5;
+    }
+    n8 && !e7 && this.j(t5);
+  }
+  j(t5) {
+    t5 === A ? this.element.removeAttribute(this.name) : this.element.setAttribute(this.name, null != t5 ? t5 : "");
+  }
+};
+var H = class extends k {
+  constructor() {
+    super(...arguments), this.type = 3;
+  }
+  j(t5) {
+    this.element[this.name] = t5 === A ? void 0 : t5;
+  }
+};
+var I = s3 ? s3.emptyScript : "";
+var L = class extends k {
+  constructor() {
+    super(...arguments), this.type = 4;
+  }
+  j(t5) {
+    t5 && t5 !== A ? this.element.setAttribute(this.name, I) : this.element.removeAttribute(this.name);
+  }
+};
+var z = class extends k {
+  constructor(t5, i5, s8, e7, o8) {
+    super(t5, i5, s8, e7, o8), this.type = 5;
+  }
+  _$AI(t5, i5 = this) {
+    var s8;
+    if ((t5 = null !== (s8 = S2(this, t5, i5, 0)) && void 0 !== s8 ? s8 : A) === T) return;
+    const e7 = this._$AH, o8 = t5 === A && e7 !== A || t5.capture !== e7.capture || t5.once !== e7.once || t5.passive !== e7.passive, n8 = t5 !== A && (e7 === A || o8);
+    o8 && this.element.removeEventListener(this.name, this, e7), n8 && this.element.addEventListener(this.name, this, t5), this._$AH = t5;
+  }
+  handleEvent(t5) {
+    var i5, s8;
+    "function" == typeof this._$AH ? this._$AH.call(null !== (s8 = null === (i5 = this.options) || void 0 === i5 ? void 0 : i5.host) && void 0 !== s8 ? s8 : this.element, t5) : this._$AH.handleEvent(t5);
+  }
+};
+var Z = class {
+  constructor(t5, i5, s8) {
+    this.element = t5, this.type = 6, this._$AN = void 0, this._$AM = i5, this.options = s8;
+  }
+  get _$AU() {
+    return this._$AM._$AU;
+  }
+  _$AI(t5) {
+    S2(this, t5);
+  }
+};
+var B = i2.litHtmlPolyfillSupport;
+null == B || B(N, R), (null !== (t2 = i2.litHtmlVersions) && void 0 !== t2 ? t2 : i2.litHtmlVersions = []).push("2.8.0");
+
+// node_modules/lit-element/node_modules/@lit/reactive-element/css-tag.js
+var t3 = window;
+var e4 = t3.ShadowRoot && (void 0 === t3.ShadyCSS || t3.ShadyCSS.nativeShadow) && "adoptedStyleSheets" in Document.prototype && "replace" in CSSStyleSheet.prototype;
+var s4 = Symbol();
+var n4 = /* @__PURE__ */ new WeakMap();
+var o4 = class {
+  constructor(t5, e7, n8) {
+    if (this._$cssResult$ = true, n8 !== s4) throw Error("CSSResult is not constructable. Use `unsafeCSS` or `css` instead.");
+    this.cssText = t5, this.t = e7;
+  }
+  get styleSheet() {
+    let t5 = this.o;
+    const s8 = this.t;
+    if (e4 && void 0 === t5) {
+      const e7 = void 0 !== s8 && 1 === s8.length;
+      e7 && (t5 = n4.get(s8)), void 0 === t5 && ((this.o = t5 = new CSSStyleSheet()).replaceSync(this.cssText), e7 && n4.set(s8, t5));
+    }
+    return t5;
+  }
+  toString() {
+    return this.cssText;
+  }
+};
+var r4 = (t5) => new o4("string" == typeof t5 ? t5 : t5 + "", void 0, s4);
+var i3 = (t5, ...e7) => {
+  const n8 = 1 === t5.length ? t5[0] : e7.reduce((e8, s8, n9) => e8 + ((t6) => {
+    if (true === t6._$cssResult$) return t6.cssText;
+    if ("number" == typeof t6) return t6;
+    throw Error("Value passed to 'css' function must be a 'css' function result: " + t6 + ". Use 'unsafeCSS' to pass non-literal values, but take care to ensure page security.");
+  })(s8) + t5[n9 + 1], t5[0]);
+  return new o4(n8, t5, s4);
+};
+var S3 = (s8, n8) => {
+  e4 ? s8.adoptedStyleSheets = n8.map((t5) => t5 instanceof CSSStyleSheet ? t5 : t5.styleSheet) : n8.forEach((e7) => {
+    const n9 = document.createElement("style"), o8 = t3.litNonce;
+    void 0 !== o8 && n9.setAttribute("nonce", o8), n9.textContent = e7.cssText, s8.appendChild(n9);
+  });
+};
+var c3 = e4 ? (t5) => t5 : (t5) => t5 instanceof CSSStyleSheet ? ((t6) => {
+  let e7 = "";
+  for (const s8 of t6.cssRules) e7 += s8.cssText;
+  return r4(e7);
+})(t5) : t5;
+
+// node_modules/lit-element/node_modules/@lit/reactive-element/reactive-element.js
+var s5;
+var e5 = window;
+var r5 = e5.trustedTypes;
+var h3 = r5 ? r5.emptyScript : "";
+var o5 = e5.reactiveElementPolyfillSupport;
+var n5 = { toAttribute(t5, i5) {
+  switch (i5) {
+    case Boolean:
+      t5 = t5 ? h3 : null;
+      break;
+    case Object:
+    case Array:
+      t5 = null == t5 ? t5 : JSON.stringify(t5);
+  }
+  return t5;
+}, fromAttribute(t5, i5) {
+  let s8 = t5;
+  switch (i5) {
+    case Boolean:
+      s8 = null !== t5;
+      break;
+    case Number:
+      s8 = null === t5 ? null : Number(t5);
+      break;
+    case Object:
+    case Array:
+      try {
+        s8 = JSON.parse(t5);
+      } catch (t6) {
+        s8 = null;
+      }
+  }
+  return s8;
+} };
+var a3 = (t5, i5) => i5 !== t5 && (i5 == i5 || t5 == t5);
+var l3 = { attribute: true, type: String, converter: n5, reflect: false, hasChanged: a3 };
+var d3 = "finalized";
+var u3 = class extends HTMLElement {
+  constructor() {
+    super(), this._$Ei = /* @__PURE__ */ new Map(), this.isUpdatePending = false, this.hasUpdated = false, this._$El = null, this._$Eu();
+  }
+  static addInitializer(t5) {
+    var i5;
+    this.finalize(), (null !== (i5 = this.h) && void 0 !== i5 ? i5 : this.h = []).push(t5);
+  }
+  static get observedAttributes() {
+    this.finalize();
+    const t5 = [];
+    return this.elementProperties.forEach((i5, s8) => {
+      const e7 = this._$Ep(s8, i5);
+      void 0 !== e7 && (this._$Ev.set(e7, s8), t5.push(e7));
+    }), t5;
+  }
+  static createProperty(t5, i5 = l3) {
+    if (i5.state && (i5.attribute = false), this.finalize(), this.elementProperties.set(t5, i5), !i5.noAccessor && !this.prototype.hasOwnProperty(t5)) {
+      const s8 = "symbol" == typeof t5 ? Symbol() : "__" + t5, e7 = this.getPropertyDescriptor(t5, s8, i5);
+      void 0 !== e7 && Object.defineProperty(this.prototype, t5, e7);
+    }
+  }
+  static getPropertyDescriptor(t5, i5, s8) {
+    return { get() {
+      return this[i5];
+    }, set(e7) {
+      const r7 = this[t5];
+      this[i5] = e7, this.requestUpdate(t5, r7, s8);
+    }, configurable: true, enumerable: true };
+  }
+  static getPropertyOptions(t5) {
+    return this.elementProperties.get(t5) || l3;
+  }
+  static finalize() {
+    if (this.hasOwnProperty(d3)) return false;
+    this[d3] = true;
+    const t5 = Object.getPrototypeOf(this);
+    if (t5.finalize(), void 0 !== t5.h && (this.h = [...t5.h]), this.elementProperties = new Map(t5.elementProperties), this._$Ev = /* @__PURE__ */ new Map(), this.hasOwnProperty("properties")) {
+      const t6 = this.properties, i5 = [...Object.getOwnPropertyNames(t6), ...Object.getOwnPropertySymbols(t6)];
+      for (const s8 of i5) this.createProperty(s8, t6[s8]);
+    }
+    return this.elementStyles = this.finalizeStyles(this.styles), true;
+  }
+  static finalizeStyles(i5) {
+    const s8 = [];
+    if (Array.isArray(i5)) {
+      const e7 = new Set(i5.flat(1 / 0).reverse());
+      for (const i6 of e7) s8.unshift(c3(i6));
+    } else void 0 !== i5 && s8.push(c3(i5));
+    return s8;
+  }
+  static _$Ep(t5, i5) {
+    const s8 = i5.attribute;
+    return false === s8 ? void 0 : "string" == typeof s8 ? s8 : "string" == typeof t5 ? t5.toLowerCase() : void 0;
+  }
+  _$Eu() {
+    var t5;
+    this._$E_ = new Promise((t6) => this.enableUpdating = t6), this._$AL = /* @__PURE__ */ new Map(), this._$Eg(), this.requestUpdate(), null === (t5 = this.constructor.h) || void 0 === t5 || t5.forEach((t6) => t6(this));
+  }
+  addController(t5) {
+    var i5, s8;
+    (null !== (i5 = this._$ES) && void 0 !== i5 ? i5 : this._$ES = []).push(t5), void 0 !== this.renderRoot && this.isConnected && (null === (s8 = t5.hostConnected) || void 0 === s8 || s8.call(t5));
+  }
+  removeController(t5) {
+    var i5;
+    null === (i5 = this._$ES) || void 0 === i5 || i5.splice(this._$ES.indexOf(t5) >>> 0, 1);
+  }
+  _$Eg() {
+    this.constructor.elementProperties.forEach((t5, i5) => {
+      this.hasOwnProperty(i5) && (this._$Ei.set(i5, this[i5]), delete this[i5]);
+    });
+  }
+  createRenderRoot() {
+    var t5;
+    const s8 = null !== (t5 = this.shadowRoot) && void 0 !== t5 ? t5 : this.attachShadow(this.constructor.shadowRootOptions);
+    return S3(s8, this.constructor.elementStyles), s8;
+  }
+  connectedCallback() {
+    var t5;
+    void 0 === this.renderRoot && (this.renderRoot = this.createRenderRoot()), this.enableUpdating(true), null === (t5 = this._$ES) || void 0 === t5 || t5.forEach((t6) => {
+      var i5;
+      return null === (i5 = t6.hostConnected) || void 0 === i5 ? void 0 : i5.call(t6);
+    });
+  }
+  enableUpdating(t5) {
+  }
+  disconnectedCallback() {
+    var t5;
+    null === (t5 = this._$ES) || void 0 === t5 || t5.forEach((t6) => {
+      var i5;
+      return null === (i5 = t6.hostDisconnected) || void 0 === i5 ? void 0 : i5.call(t6);
+    });
+  }
+  attributeChangedCallback(t5, i5, s8) {
+    this._$AK(t5, s8);
+  }
+  _$EO(t5, i5, s8 = l3) {
+    var e7;
+    const r7 = this.constructor._$Ep(t5, s8);
+    if (void 0 !== r7 && true === s8.reflect) {
+      const h5 = (void 0 !== (null === (e7 = s8.converter) || void 0 === e7 ? void 0 : e7.toAttribute) ? s8.converter : n5).toAttribute(i5, s8.type);
+      this._$El = t5, null == h5 ? this.removeAttribute(r7) : this.setAttribute(r7, h5), this._$El = null;
+    }
+  }
+  _$AK(t5, i5) {
+    var s8;
+    const e7 = this.constructor, r7 = e7._$Ev.get(t5);
+    if (void 0 !== r7 && this._$El !== r7) {
+      const t6 = e7.getPropertyOptions(r7), h5 = "function" == typeof t6.converter ? { fromAttribute: t6.converter } : void 0 !== (null === (s8 = t6.converter) || void 0 === s8 ? void 0 : s8.fromAttribute) ? t6.converter : n5;
+      this._$El = r7, this[r7] = h5.fromAttribute(i5, t6.type), this._$El = null;
+    }
+  }
+  requestUpdate(t5, i5, s8) {
+    let e7 = true;
+    void 0 !== t5 && (((s8 = s8 || this.constructor.getPropertyOptions(t5)).hasChanged || a3)(this[t5], i5) ? (this._$AL.has(t5) || this._$AL.set(t5, i5), true === s8.reflect && this._$El !== t5 && (void 0 === this._$EC && (this._$EC = /* @__PURE__ */ new Map()), this._$EC.set(t5, s8))) : e7 = false), !this.isUpdatePending && e7 && (this._$E_ = this._$Ej());
+  }
+  async _$Ej() {
+    this.isUpdatePending = true;
+    try {
+      await this._$E_;
+    } catch (t6) {
+      Promise.reject(t6);
+    }
+    const t5 = this.scheduleUpdate();
+    return null != t5 && await t5, !this.isUpdatePending;
+  }
+  scheduleUpdate() {
+    return this.performUpdate();
+  }
+  performUpdate() {
+    var t5;
+    if (!this.isUpdatePending) return;
+    this.hasUpdated, this._$Ei && (this._$Ei.forEach((t6, i6) => this[i6] = t6), this._$Ei = void 0);
+    let i5 = false;
+    const s8 = this._$AL;
+    try {
+      i5 = this.shouldUpdate(s8), i5 ? (this.willUpdate(s8), null === (t5 = this._$ES) || void 0 === t5 || t5.forEach((t6) => {
+        var i6;
+        return null === (i6 = t6.hostUpdate) || void 0 === i6 ? void 0 : i6.call(t6);
+      }), this.update(s8)) : this._$Ek();
+    } catch (t6) {
+      throw i5 = false, this._$Ek(), t6;
+    }
+    i5 && this._$AE(s8);
+  }
+  willUpdate(t5) {
+  }
+  _$AE(t5) {
+    var i5;
+    null === (i5 = this._$ES) || void 0 === i5 || i5.forEach((t6) => {
+      var i6;
+      return null === (i6 = t6.hostUpdated) || void 0 === i6 ? void 0 : i6.call(t6);
+    }), this.hasUpdated || (this.hasUpdated = true, this.firstUpdated(t5)), this.updated(t5);
+  }
+  _$Ek() {
+    this._$AL = /* @__PURE__ */ new Map(), this.isUpdatePending = false;
+  }
+  get updateComplete() {
+    return this.getUpdateComplete();
+  }
+  getUpdateComplete() {
+    return this._$E_;
+  }
+  shouldUpdate(t5) {
+    return true;
+  }
+  update(t5) {
+    void 0 !== this._$EC && (this._$EC.forEach((t6, i5) => this._$EO(i5, this[i5], t6)), this._$EC = void 0), this._$Ek();
+  }
+  updated(t5) {
+  }
+  firstUpdated(t5) {
+  }
+};
+u3[d3] = true, u3.elementProperties = /* @__PURE__ */ new Map(), u3.elementStyles = [], u3.shadowRootOptions = { mode: "open" }, null == o5 || o5({ ReactiveElement: u3 }), (null !== (s5 = e5.reactiveElementVersions) && void 0 !== s5 ? s5 : e5.reactiveElementVersions = []).push("1.6.3");
+
+// node_modules/lit-element/node_modules/lit-html/lit-html.js
+var t4;
+var i4 = window;
+var s6 = i4.trustedTypes;
+var e6 = s6 ? s6.createPolicy("lit-html", { createHTML: (t5) => t5 }) : void 0;
+var o6 = "$lit$";
+var n6 = `lit$${(Math.random() + "").slice(9)}$`;
+var l4 = "?" + n6;
+var h4 = `<${l4}>`;
+var r6 = document;
+var u4 = () => r6.createComment("");
+var d4 = (t5) => null === t5 || "object" != typeof t5 && "function" != typeof t5;
+var c4 = Array.isArray;
+var v2 = (t5) => c4(t5) || "function" == typeof (null == t5 ? void 0 : t5[Symbol.iterator]);
+var a4 = "[ 	\n\f\r]";
+var f2 = /<(?:(!--|\/[^a-zA-Z])|(\/?[a-zA-Z][^>\s]*)|(\/?$))/g;
+var _2 = /-->/g;
+var m2 = />/g;
+var p2 = RegExp(`>|${a4}(?:([^\\s"'>=/]+)(${a4}*=${a4}*(?:[^ 	
+\f\r"'\`<>=]|("|')|))|$)`, "g");
+var g2 = /'/g;
+var $2 = /"/g;
+var y2 = /^(?:script|style|textarea|title)$/i;
+var w2 = (t5) => (i5, ...s8) => ({ _$litType$: t5, strings: i5, values: s8 });
+var x2 = w2(1);
+var b2 = w2(2);
+var T2 = Symbol.for("lit-noChange");
+var A2 = Symbol.for("lit-nothing");
+var E2 = /* @__PURE__ */ new WeakMap();
+var C2 = r6.createTreeWalker(r6, 129, null, false);
+function P2(t5, i5) {
+  if (!Array.isArray(t5) || !t5.hasOwnProperty("raw")) throw Error("invalid template strings array");
+  return void 0 !== e6 ? e6.createHTML(i5) : i5;
+}
+var V2 = (t5, i5) => {
+  const s8 = t5.length - 1, e7 = [];
+  let l6, r7 = 2 === i5 ? "<svg>" : "", u5 = f2;
+  for (let i6 = 0; i6 < s8; i6++) {
+    const s9 = t5[i6];
+    let d5, c5, v3 = -1, a5 = 0;
+    for (; a5 < s9.length && (u5.lastIndex = a5, c5 = u5.exec(s9), null !== c5); ) a5 = u5.lastIndex, u5 === f2 ? "!--" === c5[1] ? u5 = _2 : void 0 !== c5[1] ? u5 = m2 : void 0 !== c5[2] ? (y2.test(c5[2]) && (l6 = RegExp("</" + c5[2], "g")), u5 = p2) : void 0 !== c5[3] && (u5 = p2) : u5 === p2 ? ">" === c5[0] ? (u5 = null != l6 ? l6 : f2, v3 = -1) : void 0 === c5[1] ? v3 = -2 : (v3 = u5.lastIndex - c5[2].length, d5 = c5[1], u5 = void 0 === c5[3] ? p2 : '"' === c5[3] ? $2 : g2) : u5 === $2 || u5 === g2 ? u5 = p2 : u5 === _2 || u5 === m2 ? u5 = f2 : (u5 = p2, l6 = void 0);
+    const w3 = u5 === p2 && t5[i6 + 1].startsWith("/>") ? " " : "";
+    r7 += u5 === f2 ? s9 + h4 : v3 >= 0 ? (e7.push(d5), s9.slice(0, v3) + o6 + s9.slice(v3) + n6 + w3) : s9 + n6 + (-2 === v3 ? (e7.push(void 0), i6) : w3);
+  }
+  return [P2(t5, r7 + (t5[s8] || "<?>") + (2 === i5 ? "</svg>" : "")), e7];
+};
+var N2 = class _N {
+  constructor({ strings: t5, _$litType$: i5 }, e7) {
+    let h5;
+    this.parts = [];
+    let r7 = 0, d5 = 0;
+    const c5 = t5.length - 1, v3 = this.parts, [a5, f3] = V2(t5, i5);
+    if (this.el = _N.createElement(a5, e7), C2.currentNode = this.el.content, 2 === i5) {
+      const t6 = this.el.content, i6 = t6.firstChild;
+      i6.remove(), t6.append(...i6.childNodes);
+    }
+    for (; null !== (h5 = C2.nextNode()) && v3.length < c5; ) {
+      if (1 === h5.nodeType) {
+        if (h5.hasAttributes()) {
+          const t6 = [];
+          for (const i6 of h5.getAttributeNames()) if (i6.endsWith(o6) || i6.startsWith(n6)) {
+            const s8 = f3[d5++];
+            if (t6.push(i6), void 0 !== s8) {
+              const t7 = h5.getAttribute(s8.toLowerCase() + o6).split(n6), i7 = /([.?@])?(.*)/.exec(s8);
+              v3.push({ type: 1, index: r7, name: i7[2], strings: t7, ctor: "." === i7[1] ? H2 : "?" === i7[1] ? L2 : "@" === i7[1] ? z2 : k2 });
+            } else v3.push({ type: 6, index: r7 });
+          }
+          for (const i6 of t6) h5.removeAttribute(i6);
+        }
+        if (y2.test(h5.tagName)) {
+          const t6 = h5.textContent.split(n6), i6 = t6.length - 1;
+          if (i6 > 0) {
+            h5.textContent = s6 ? s6.emptyScript : "";
+            for (let s8 = 0; s8 < i6; s8++) h5.append(t6[s8], u4()), C2.nextNode(), v3.push({ type: 2, index: ++r7 });
+            h5.append(t6[i6], u4());
+          }
+        }
+      } else if (8 === h5.nodeType) if (h5.data === l4) v3.push({ type: 2, index: r7 });
+      else {
+        let t6 = -1;
+        for (; -1 !== (t6 = h5.data.indexOf(n6, t6 + 1)); ) v3.push({ type: 7, index: r7 }), t6 += n6.length - 1;
+      }
+      r7++;
+    }
+  }
+  static createElement(t5, i5) {
+    const s8 = r6.createElement("template");
+    return s8.innerHTML = t5, s8;
+  }
+};
+function S4(t5, i5, s8 = t5, e7) {
+  var o8, n8, l6, h5;
+  if (i5 === T2) return i5;
+  let r7 = void 0 !== e7 ? null === (o8 = s8._$Co) || void 0 === o8 ? void 0 : o8[e7] : s8._$Cl;
+  const u5 = d4(i5) ? void 0 : i5._$litDirective$;
+  return (null == r7 ? void 0 : r7.constructor) !== u5 && (null === (n8 = null == r7 ? void 0 : r7._$AO) || void 0 === n8 || n8.call(r7, false), void 0 === u5 ? r7 = void 0 : (r7 = new u5(t5), r7._$AT(t5, s8, e7)), void 0 !== e7 ? (null !== (l6 = (h5 = s8)._$Co) && void 0 !== l6 ? l6 : h5._$Co = [])[e7] = r7 : s8._$Cl = r7), void 0 !== r7 && (i5 = S4(t5, r7._$AS(t5, i5.values), r7, e7)), i5;
+}
+var M2 = class {
+  constructor(t5, i5) {
+    this._$AV = [], this._$AN = void 0, this._$AD = t5, this._$AM = i5;
+  }
+  get parentNode() {
+    return this._$AM.parentNode;
+  }
+  get _$AU() {
+    return this._$AM._$AU;
+  }
+  u(t5) {
+    var i5;
+    const { el: { content: s8 }, parts: e7 } = this._$AD, o8 = (null !== (i5 = null == t5 ? void 0 : t5.creationScope) && void 0 !== i5 ? i5 : r6).importNode(s8, true);
+    C2.currentNode = o8;
+    let n8 = C2.nextNode(), l6 = 0, h5 = 0, u5 = e7[0];
+    for (; void 0 !== u5; ) {
+      if (l6 === u5.index) {
+        let i6;
+        2 === u5.type ? i6 = new R2(n8, n8.nextSibling, this, t5) : 1 === u5.type ? i6 = new u5.ctor(n8, u5.name, u5.strings, this, t5) : 6 === u5.type && (i6 = new Z2(n8, this, t5)), this._$AV.push(i6), u5 = e7[++h5];
+      }
+      l6 !== (null == u5 ? void 0 : u5.index) && (n8 = C2.nextNode(), l6++);
+    }
+    return C2.currentNode = r6, o8;
+  }
+  v(t5) {
+    let i5 = 0;
+    for (const s8 of this._$AV) void 0 !== s8 && (void 0 !== s8.strings ? (s8._$AI(t5, s8, i5), i5 += s8.strings.length - 2) : s8._$AI(t5[i5])), i5++;
+  }
+};
+var R2 = class _R {
+  constructor(t5, i5, s8, e7) {
+    var o8;
+    this.type = 2, this._$AH = A2, this._$AN = void 0, this._$AA = t5, this._$AB = i5, this._$AM = s8, this.options = e7, this._$Cp = null === (o8 = null == e7 ? void 0 : e7.isConnected) || void 0 === o8 || o8;
+  }
+  get _$AU() {
+    var t5, i5;
+    return null !== (i5 = null === (t5 = this._$AM) || void 0 === t5 ? void 0 : t5._$AU) && void 0 !== i5 ? i5 : this._$Cp;
+  }
+  get parentNode() {
+    let t5 = this._$AA.parentNode;
+    const i5 = this._$AM;
+    return void 0 !== i5 && 11 === (null == t5 ? void 0 : t5.nodeType) && (t5 = i5.parentNode), t5;
+  }
+  get startNode() {
+    return this._$AA;
+  }
+  get endNode() {
+    return this._$AB;
+  }
+  _$AI(t5, i5 = this) {
+    t5 = S4(this, t5, i5), d4(t5) ? t5 === A2 || null == t5 || "" === t5 ? (this._$AH !== A2 && this._$AR(), this._$AH = A2) : t5 !== this._$AH && t5 !== T2 && this._(t5) : void 0 !== t5._$litType$ ? this.g(t5) : void 0 !== t5.nodeType ? this.$(t5) : v2(t5) ? this.T(t5) : this._(t5);
+  }
+  k(t5) {
+    return this._$AA.parentNode.insertBefore(t5, this._$AB);
+  }
+  $(t5) {
+    this._$AH !== t5 && (this._$AR(), this._$AH = this.k(t5));
+  }
+  _(t5) {
+    this._$AH !== A2 && d4(this._$AH) ? this._$AA.nextSibling.data = t5 : this.$(r6.createTextNode(t5)), this._$AH = t5;
+  }
+  g(t5) {
+    var i5;
+    const { values: s8, _$litType$: e7 } = t5, o8 = "number" == typeof e7 ? this._$AC(t5) : (void 0 === e7.el && (e7.el = N2.createElement(P2(e7.h, e7.h[0]), this.options)), e7);
+    if ((null === (i5 = this._$AH) || void 0 === i5 ? void 0 : i5._$AD) === o8) this._$AH.v(s8);
+    else {
+      const t6 = new M2(o8, this), i6 = t6.u(this.options);
+      t6.v(s8), this.$(i6), this._$AH = t6;
+    }
+  }
+  _$AC(t5) {
+    let i5 = E2.get(t5.strings);
+    return void 0 === i5 && E2.set(t5.strings, i5 = new N2(t5)), i5;
+  }
+  T(t5) {
+    c4(this._$AH) || (this._$AH = [], this._$AR());
+    const i5 = this._$AH;
+    let s8, e7 = 0;
+    for (const o8 of t5) e7 === i5.length ? i5.push(s8 = new _R(this.k(u4()), this.k(u4()), this, this.options)) : s8 = i5[e7], s8._$AI(o8), e7++;
+    e7 < i5.length && (this._$AR(s8 && s8._$AB.nextSibling, e7), i5.length = e7);
+  }
+  _$AR(t5 = this._$AA.nextSibling, i5) {
+    var s8;
+    for (null === (s8 = this._$AP) || void 0 === s8 || s8.call(this, false, true, i5); t5 && t5 !== this._$AB; ) {
+      const i6 = t5.nextSibling;
+      t5.remove(), t5 = i6;
+    }
+  }
+  setConnected(t5) {
+    var i5;
+    void 0 === this._$AM && (this._$Cp = t5, null === (i5 = this._$AP) || void 0 === i5 || i5.call(this, t5));
+  }
+};
+var k2 = class {
+  constructor(t5, i5, s8, e7, o8) {
+    this.type = 1, this._$AH = A2, this._$AN = void 0, this.element = t5, this.name = i5, this._$AM = e7, this.options = o8, s8.length > 2 || "" !== s8[0] || "" !== s8[1] ? (this._$AH = Array(s8.length - 1).fill(new String()), this.strings = s8) : this._$AH = A2;
+  }
+  get tagName() {
+    return this.element.tagName;
+  }
+  get _$AU() {
+    return this._$AM._$AU;
+  }
+  _$AI(t5, i5 = this, s8, e7) {
+    const o8 = this.strings;
+    let n8 = false;
+    if (void 0 === o8) t5 = S4(this, t5, i5, 0), n8 = !d4(t5) || t5 !== this._$AH && t5 !== T2, n8 && (this._$AH = t5);
+    else {
+      const e8 = t5;
+      let l6, h5;
+      for (t5 = o8[0], l6 = 0; l6 < o8.length - 1; l6++) h5 = S4(this, e8[s8 + l6], i5, l6), h5 === T2 && (h5 = this._$AH[l6]), n8 || (n8 = !d4(h5) || h5 !== this._$AH[l6]), h5 === A2 ? t5 = A2 : t5 !== A2 && (t5 += (null != h5 ? h5 : "") + o8[l6 + 1]), this._$AH[l6] = h5;
+    }
+    n8 && !e7 && this.j(t5);
+  }
+  j(t5) {
+    t5 === A2 ? this.element.removeAttribute(this.name) : this.element.setAttribute(this.name, null != t5 ? t5 : "");
+  }
+};
+var H2 = class extends k2 {
+  constructor() {
+    super(...arguments), this.type = 3;
+  }
+  j(t5) {
+    this.element[this.name] = t5 === A2 ? void 0 : t5;
+  }
+};
+var I2 = s6 ? s6.emptyScript : "";
+var L2 = class extends k2 {
+  constructor() {
+    super(...arguments), this.type = 4;
+  }
+  j(t5) {
+    t5 && t5 !== A2 ? this.element.setAttribute(this.name, I2) : this.element.removeAttribute(this.name);
+  }
+};
+var z2 = class extends k2 {
+  constructor(t5, i5, s8, e7, o8) {
+    super(t5, i5, s8, e7, o8), this.type = 5;
+  }
+  _$AI(t5, i5 = this) {
+    var s8;
+    if ((t5 = null !== (s8 = S4(this, t5, i5, 0)) && void 0 !== s8 ? s8 : A2) === T2) return;
+    const e7 = this._$AH, o8 = t5 === A2 && e7 !== A2 || t5.capture !== e7.capture || t5.once !== e7.once || t5.passive !== e7.passive, n8 = t5 !== A2 && (e7 === A2 || o8);
+    o8 && this.element.removeEventListener(this.name, this, e7), n8 && this.element.addEventListener(this.name, this, t5), this._$AH = t5;
+  }
+  handleEvent(t5) {
+    var i5, s8;
+    "function" == typeof this._$AH ? this._$AH.call(null !== (s8 = null === (i5 = this.options) || void 0 === i5 ? void 0 : i5.host) && void 0 !== s8 ? s8 : this.element, t5) : this._$AH.handleEvent(t5);
+  }
+};
+var Z2 = class {
+  constructor(t5, i5, s8) {
+    this.element = t5, this.type = 6, this._$AN = void 0, this._$AM = i5, this.options = s8;
+  }
+  get _$AU() {
+    return this._$AM._$AU;
+  }
+  _$AI(t5) {
+    S4(this, t5);
+  }
+};
+var B2 = i4.litHtmlPolyfillSupport;
+null == B2 || B2(N2, R2), (null !== (t4 = i4.litHtmlVersions) && void 0 !== t4 ? t4 : i4.litHtmlVersions = []).push("2.8.0");
+var D = (t5, i5, s8) => {
+  var e7, o8;
+  const n8 = null !== (e7 = null == s8 ? void 0 : s8.renderBefore) && void 0 !== e7 ? e7 : i5;
+  let l6 = n8._$litPart$;
+  if (void 0 === l6) {
+    const t6 = null !== (o8 = null == s8 ? void 0 : s8.renderBefore) && void 0 !== o8 ? o8 : null;
+    n8._$litPart$ = l6 = new R2(i5.insertBefore(u4(), t6), t6, void 0, null != s8 ? s8 : {});
+  }
+  return l6._$AI(t5), l6;
+};
+
+// node_modules/lit-element/lit-element.js
+var l5;
+var o7;
+var s7 = class extends u3 {
+  constructor() {
+    super(...arguments), this.renderOptions = { host: this }, this._$Do = void 0;
+  }
+  createRenderRoot() {
+    var t5, e7;
+    const i5 = super.createRenderRoot();
+    return null !== (t5 = (e7 = this.renderOptions).renderBefore) && void 0 !== t5 || (e7.renderBefore = i5.firstChild), i5;
+  }
+  update(t5) {
+    const i5 = this.render();
+    this.hasUpdated || (this.renderOptions.isConnected = this.isConnected), super.update(t5), this._$Do = D(i5, this.renderRoot, this.renderOptions);
+  }
+  connectedCallback() {
+    var t5;
+    super.connectedCallback(), null === (t5 = this._$Do) || void 0 === t5 || t5.setConnected(true);
+  }
+  disconnectedCallback() {
+    var t5;
+    super.disconnectedCallback(), null === (t5 = this._$Do) || void 0 === t5 || t5.setConnected(false);
+  }
+  render() {
+    return T2;
+  }
+};
+s7.finalized = true, s7._$litElement$ = true, null === (l5 = globalThis.litElementHydrateSupport) || void 0 === l5 || l5.call(globalThis, { LitElement: s7 });
+var n7 = globalThis.litElementPolyfillSupport;
+null == n7 || n7({ LitElement: s7 });
+(null !== (o7 = globalThis.litElementVersions) && void 0 !== o7 ? o7 : globalThis.litElementVersions = []).push("3.3.3");
+
+// src/media.js
+var MOBILE_LANDSCAPE = "(max-width: 767px)";
+var TABLET_DOWN = "(max-width: 1199px)";
+var TABLET_UP = "(min-width: 768px)";
+var DESKTOP_UP = "(min-width: 1200px)";
+var LARGE_DESKTOP = "(min-width: 1600px)";
+function matchMobile() {
+  return window.matchMedia(MOBILE_LANDSCAPE);
+}
+function matchDesktop() {
+  return window.matchMedia(DESKTOP_UP);
+}
+function isMobile() {
+  return matchMobile().matches;
+}
+function isDesktop() {
+  return matchDesktop().matches;
+}
+
+// src/merch-card.css.js
+var styles = i3`
     :host {
         --consonant-merch-card-background-color: #fff;
         --consonant-merch-card-border: 1px solid var(--consonant-merch-card-border-color);
@@ -245,9 +8174,12 @@ Try polyfilling it using "@formatjs/intl-pluralrules"
     ::slotted([slot='price']) {
       color: var(--consonant-merch-card-price-color);
     }
-`,Cc=()=>[E`
+`;
+var sizeStyles = () => {
+  const styles5 = [
+    i3`
       /* Tablet */
-      @media screen and ${Me(Q)} {
+      @media screen and ${r4(TABLET_UP)} {
           :host([size='wide']),
           :host([size='super-wide']) {
               width: 100%;
@@ -256,14 +8188,39 @@ Try polyfilling it using "@formatjs/intl-pluralrules"
       }
 
       /* Laptop */
-      @media screen and ${Me(F)} {
+      @media screen and ${r4(DESKTOP_UP)} {
           :host([size='wide']) {
               grid-column: span 2;
           }
       }
-      `];var Ft=class extends U{constructor(){super(),this.size="m",this.alt="",this.loading="lazy"}render(){let{href:e}=this;return e?x`<a href="${e}">
+      `
+  ];
+  return styles5;
+};
+
+// src/merch-icon.js
+var MerchIcon = class extends s7 {
+  constructor() {
+    super();
+    this.size = "m";
+    this.alt = "";
+    this.loading = "lazy";
+  }
+  render() {
+    const { href } = this;
+    return href ? x2`<a href="${href}">
                   <img src="${this.src}" alt="${this.alt}" loading="${this.loading}" />
-              </a>`:x` <img src="${this.src}" alt="${this.alt}" loading="${this.loading}" />`}};f(Ft,"properties",{size:{type:String,attribute:!0},src:{type:String,attribute:!0},alt:{type:String,attribute:!0},href:{type:String,attribute:!0},loading:{type:String,attribute:!0}}),f(Ft,"styles",E`
+              </a>` : x2` <img src="${this.src}" alt="${this.alt}" loading="${this.loading}" />`;
+  }
+};
+__publicField(MerchIcon, "properties", {
+  size: { type: String, attribute: true },
+  src: { type: String, attribute: true },
+  alt: { type: String, attribute: true },
+  href: { type: String, attribute: true },
+  loading: { type: String, attribute: true }
+});
+__publicField(MerchIcon, "styles", i3`
         :host {
             --img-width: 32px;
             --img-height: 32px;
@@ -296,7 +8253,116 @@ Try polyfilling it using "@formatjs/intl-pluralrules"
             width: var(--mod-img-width, var(--img-width));
             height: var(--mod-img-height, var(--img-height));
         }
-    `);customElements.define("merch-icon",Ft);var Hr,ft,Ur,Dr,Gt,zn=class extends HTMLElement{constructor(){super();y(this,Hr,"");y(this,ft);y(this,Ur,[]);y(this,Dr,[]);y(this,Gt);v(this,Gt,Sr(()=>{this.isConnected&&(this.parentElement.style.background=this.value,u(this,ft)?this.parentElement.style.borderRadius=u(this,ft):u(this,ft)===""&&(this.parentElement.style.borderRadius=""))},1))}static get observedAttributes(){return["colors","positions","angle","border-radius"]}get value(){let r=u(this,Ur).map((n,o)=>{let i=u(this,Dr)[o]||"";return`${n} ${i}`}).join(", ");return`linear-gradient(${u(this,Hr)}, ${r})`}connectedCallback(){u(this,Gt).call(this)}attributeChangedCallback(r,n,o){r==="border-radius"&&v(this,ft,o?.trim()),r==="colors"&&o?v(this,Ur,o?.split(",").map(i=>i.trim())??[]):r==="positions"&&o?v(this,Dr,o?.split(",").map(i=>i.trim())??[]):r==="angle"&&v(this,Hr,o?.trim()??""),u(this,Gt).call(this)}};Hr=new WeakMap,ft=new WeakMap,Ur=new WeakMap,Dr=new WeakMap,Gt=new WeakMap;customElements.define("merch-gradient",zn);var Vt=class extends U{constructor(){super(),this.planType=void 0,this.checked=!1,this.updatePlanType=this.updatePlanType.bind(this),this.handleChange=this.handleChange.bind(this),this.handleCustomClick=this.handleCustomClick.bind(this)}getOsi(e,r){let i=({TRIAL:["TRIAL"],BASE:["BASE","PROMOTION","TRIAL"],PROMOTION:["PROMOTION","BASE","TRIAL"]}[r]||[r]).map(s=>`p[data-plan-type="${e}"] ${D}[data-offer-type="${s}"]`).join(", ");return this.querySelector(i)?.dataset?.wcsOsi}connectedCallback(){super.connectedCallback(),this.addEventListener(kt,this.updatePlanType)}disconnectedCallback(){super.disconnectedCallback(),this.removeEventListener(kt,this.updatePlanType)}updatePlanType(e){if(e.target.tagName!=="SPAN")return;let r=e.target,n=r?.value?.[0];n&&(r.setAttribute("data-offer-type",n.offerType),r.closest("p").setAttribute("data-plan-type",n.planType))}handleChange(e){this.checked=e.target.checked,this.dispatchEvent(new CustomEvent("change",{detail:{checked:this.checked},bubbles:!0,composed:!0}))}handleCustomClick(){this.shadowRoot.querySelector("input").click()}render(){return x`
+    `);
+customElements.define("merch-icon", MerchIcon);
+
+// src/merch-gradient.js
+var _angle, _borderRadius, _colors, _positions, _updateParentBackground;
+var MerchGradient = class extends HTMLElement {
+  constructor() {
+    super();
+    __privateAdd(this, _angle, "");
+    __privateAdd(this, _borderRadius);
+    __privateAdd(this, _colors, []);
+    __privateAdd(this, _positions, []);
+    __privateAdd(this, _updateParentBackground);
+    __privateSet(this, _updateParentBackground, debounce(() => {
+      if (!this.isConnected) return;
+      this.parentElement.style.background = this.value;
+      if (__privateGet(this, _borderRadius)) {
+        this.parentElement.style.borderRadius = __privateGet(this, _borderRadius);
+      } else if (__privateGet(this, _borderRadius) === "") {
+        this.parentElement.style.borderRadius = "";
+      }
+    }, 1));
+  }
+  static get observedAttributes() {
+    return ["colors", "positions", "angle", "border-radius"];
+  }
+  get value() {
+    const stops = __privateGet(this, _colors).map((color, index) => {
+      const position = __privateGet(this, _positions)[index] || "";
+      return `${color} ${position}`;
+    }).join(", ");
+    return `linear-gradient(${__privateGet(this, _angle)}, ${stops})`;
+  }
+  connectedCallback() {
+    __privateGet(this, _updateParentBackground).call(this);
+  }
+  attributeChangedCallback(name, oldValue, newValue) {
+    if (name === "border-radius") {
+      __privateSet(this, _borderRadius, newValue?.trim());
+    }
+    if (name === "colors" && newValue) {
+      __privateSet(this, _colors, newValue?.split(",").map((color) => color.trim()) ?? []);
+    } else if (name === "positions" && newValue) {
+      __privateSet(this, _positions, newValue?.split(",").map((position) => position.trim()) ?? []);
+    } else if (name === "angle") {
+      __privateSet(this, _angle, newValue?.trim() ?? "");
+    }
+    __privateGet(this, _updateParentBackground).call(this);
+  }
+};
+_angle = new WeakMap();
+_borderRadius = new WeakMap();
+_colors = new WeakMap();
+_positions = new WeakMap();
+_updateParentBackground = new WeakMap();
+customElements.define("merch-gradient", MerchGradient);
+
+// src/merch-addon.js
+var MerchAddon = class extends s7 {
+  constructor() {
+    super();
+    this.planType = void 0;
+    this.checked = false;
+    this.updatePlanType = this.updatePlanType.bind(this);
+    this.handleChange = this.handleChange.bind(this);
+    this.handleCustomClick = this.handleCustomClick.bind(this);
+  }
+  getOsi(planType, offerType) {
+    const offerTypeOptions = {
+      "TRIAL": ["TRIAL"],
+      "BASE": ["BASE", "PROMOTION", "TRIAL"],
+      "PROMOTION": ["PROMOTION", "BASE", "TRIAL"]
+    };
+    const priorityList = offerTypeOptions[offerType] || [offerType];
+    const selector = priorityList.map((type) => `p[data-plan-type="${planType}"] ${SELECTOR_MAS_INLINE_PRICE}[data-offer-type="${type}"]`).join(", ");
+    const el = this.querySelector(selector);
+    return el?.dataset?.wcsOsi;
+  }
+  connectedCallback() {
+    super.connectedCallback();
+    this.addEventListener(EVENT_TYPE_RESOLVED, this.updatePlanType);
+  }
+  disconnectedCallback() {
+    super.disconnectedCallback();
+    this.removeEventListener(EVENT_TYPE_RESOLVED, this.updatePlanType);
+  }
+  updatePlanType(e7) {
+    if (e7.target.tagName !== "SPAN") return;
+    const price2 = e7.target;
+    const offer = price2?.value?.[0];
+    if (!offer) return;
+    price2.setAttribute("data-offer-type", offer.offerType);
+    price2.closest("p").setAttribute("data-plan-type", offer.planType);
+  }
+  handleChange(e7) {
+    this.checked = e7.target.checked;
+    this.dispatchEvent(
+      new CustomEvent("change", {
+        detail: { checked: this.checked },
+        bubbles: true,
+        composed: true
+      })
+    );
+  }
+  handleCustomClick() {
+    const addonCheckbox = this.shadowRoot.querySelector("input");
+    addonCheckbox.click();
+  }
+  render() {
+    return x2`
             <input
                 type="checkbox"
                 id="addon-checkbox"
@@ -307,7 +8373,15 @@ Try polyfilling it using "@formatjs/intl-pluralrules"
             <span id="custom-checkbox" @click=${this.handleCustomClick}></span>
             <label for="addon-checkbox" part="label">
                 <slot></slot>
-            </label>`}};f(Vt,"properties",{planType:{type:String,attribute:"plan-type",reflect:!0},checked:{type:Boolean,reflect:!0},customCheckbox:{type:Boolean,attribute:"custom-checkbox",reflect:!0}}),f(Vt,"styles",E`
+            </label>`;
+  }
+};
+__publicField(MerchAddon, "properties", {
+  planType: { type: String, attribute: "plan-type", reflect: true },
+  checked: { type: Boolean, reflect: true },
+  customCheckbox: { type: Boolean, attribute: "custom-checkbox", reflect: true }
+});
+__publicField(MerchAddon, "styles", i3`
         :host {
             --merch-addon-gap: 9px;
             --merch-addon-align: start;
@@ -372,22 +8446,129 @@ Try polyfilling it using "@formatjs/intl-pluralrules"
         :host([plan-type='M2M']) ::slotted(p[data-plan-type='M2M']) {
             display: block;
         }
-    `);customElements.define("merch-addon",Vt);var jt,Br=class Br{constructor(e){f(this,"card");y(this,jt);this.card=e,this.insertVariantStyle()}getContainer(){return v(this,jt,u(this,jt)??this.card.closest('[class*="-merch-cards"]')??this.card.parentElement),u(this,jt)}insertVariantStyle(){if(!Br.styleMap[this.card.variant]){Br.styleMap[this.card.variant]=!0;let e=document.createElement("style");e.innerHTML=this.getGlobalCSS(),document.head.appendChild(e)}}updateCardElementMinHeight(e,r){if(!e)return;let n=`--consonant-merch-card-${this.card.variant}-${r}-height`,o=Math.max(0,parseInt(window.getComputedStyle(e).height)||0),i=parseInt(this.getContainer().style.getPropertyValue(n))||0;o>i&&this.getContainer().style.setProperty(n,`${o}px`)}get badge(){let e;if(!(!this.card.badgeBackgroundColor||!this.card.badgeColor||!this.card.badgeText))return this.evergreen&&(e=`border: 1px solid ${this.card.badgeBackgroundColor}; border-right: none;`),x`
+    `);
+customElements.define("merch-addon", MerchAddon);
+
+// src/variants/variant-layout.js
+var _container;
+var _VariantLayout = class _VariantLayout {
+  constructor(card) {
+    __publicField(this, "card");
+    __privateAdd(this, _container);
+    this.card = card;
+    this.insertVariantStyle();
+  }
+  getContainer() {
+    __privateSet(this, _container, __privateGet(this, _container) ?? this.card.closest('[class*="-merch-cards"]') ?? this.card.parentElement);
+    return __privateGet(this, _container);
+  }
+  insertVariantStyle() {
+    if (!_VariantLayout.styleMap[this.card.variant]) {
+      _VariantLayout.styleMap[this.card.variant] = true;
+      const styles5 = document.createElement("style");
+      styles5.innerHTML = this.getGlobalCSS();
+      document.head.appendChild(styles5);
+    }
+  }
+  updateCardElementMinHeight(el, name) {
+    if (!el) return;
+    const elMinHeightPropertyName = `--consonant-merch-card-${this.card.variant}-${name}-height`;
+    const height = Math.max(
+      0,
+      parseInt(window.getComputedStyle(el).height) || 0
+    );
+    const maxMinHeight = parseInt(
+      this.getContainer().style.getPropertyValue(
+        elMinHeightPropertyName
+      )
+    ) || 0;
+    if (height > maxMinHeight) {
+      this.getContainer().style.setProperty(
+        elMinHeightPropertyName,
+        `${height}px`
+      );
+    }
+  }
+  get badge() {
+    let additionalStyles;
+    if (!this.card.badgeBackgroundColor || !this.card.badgeColor || !this.card.badgeText) {
+      return;
+    }
+    if (this.evergreen) {
+      additionalStyles = `border: 1px solid ${this.card.badgeBackgroundColor}; border-right: none;`;
+    }
+    return x2`
             <div
                 id="badge"
                 class="${this.card.variant}-badge"
                 style="background-color: ${this.card.badgeBackgroundColor};
                 color: ${this.card.badgeColor};
-                ${e}"
+                ${additionalStyles}"
             >
                 ${this.card.badgeText}
             </div>
-        `}get cardImage(){return x` <div class="image">
+        `;
+  }
+  get cardImage() {
+    return x2` <div class="image">
             <slot name="bg-image"></slot>
             ${this.badge}
-        </div>`}getGlobalCSS(){return""}get theme(){return document.querySelector("sp-theme")}get evergreen(){return this.card.classList.contains("intro-pricing")}get promoBottom(){return this.card.classList.contains("promo-bottom")}get headingSelector(){return'[slot="heading-xs"]'}get secureLabel(){return this.card.secureLabel?x`<span class="secure-transaction-label"
+        </div>`;
+  }
+  /* c8 ignore next 3 */
+  getGlobalCSS() {
+    return "";
+  }
+  /* c8 ignore next 3 */
+  get theme() {
+    return document.querySelector("sp-theme");
+  }
+  get evergreen() {
+    return this.card.classList.contains("intro-pricing");
+  }
+  get promoBottom() {
+    return this.card.classList.contains("promo-bottom");
+  }
+  get headingSelector() {
+    return '[slot="heading-xs"]';
+  }
+  get secureLabel() {
+    return this.card.secureLabel ? x2`<span class="secure-transaction-label"
                 >${this.card.secureLabel}</span
-            >`:H}get secureLabelFooter(){return x`<footer>${this.secureLabel}<slot name="footer"></slot></footer>`}async adjustTitleWidth(){let e=this.card.getBoundingClientRect().width,r=this.card.badgeElement?.getBoundingClientRect().width||0;e===0||r===0||this.card.style.setProperty("--consonant-merch-card-heading-xs-max-width",`${Math.round(e-r-16)}px`)}async postCardUpdateHook(){}connectedCallbackHook(){}disconnectedCallbackHook(){}renderLayout(){}get aemFragmentMapping(){return Fn(this.card.variant)}};jt=new WeakMap,f(Br,"styleMap",{});var O=Br;var Pc=`
+            >` : A2;
+  }
+  get secureLabelFooter() {
+    return x2`<footer>${this.secureLabel}<slot name="footer"></slot></footer>`;
+  }
+  async adjustTitleWidth() {
+    const cardWidth = this.card.getBoundingClientRect().width;
+    const badgeWidth = this.card.badgeElement?.getBoundingClientRect().width || 0;
+    if (cardWidth === 0 || badgeWidth === 0) return;
+    this.card.style.setProperty(
+      "--consonant-merch-card-heading-xs-max-width",
+      `${Math.round(cardWidth - badgeWidth - 16)}px`
+      // consonant-merch-spacing-xs
+    );
+  }
+  async postCardUpdateHook() {
+  }
+  connectedCallbackHook() {
+  }
+  disconnectedCallbackHook() {
+  }
+  /* c8 ignore next 3 */
+  renderLayout() {
+  }
+  get aemFragmentMapping() {
+    return getFragmentMapping(this.card.variant);
+  }
+};
+_container = new WeakMap();
+__publicField(_VariantLayout, "styleMap", {});
+var VariantLayout = _VariantLayout;
+
+// src/variants/catalog.css.js
+var CSS = `
 :root {
   --consonant-merch-card-catalog-width: 276px;
   --consonant-merch-card-catalog-icon-size: 40px;
@@ -399,7 +8580,7 @@ Try polyfilling it using "@formatjs/intl-pluralrules"
     grid-template-columns: var(--consonant-merch-card-catalog-width);
 }
 
-@media screen and ${Q} {
+@media screen and ${TABLET_UP} {
     :root {
       --consonant-merch-card-catalog-width: 302px;
     }
@@ -411,7 +8592,7 @@ Try polyfilling it using "@formatjs/intl-pluralrules"
     }
 }
 
-@media screen and ${F} {
+@media screen and ${DESKTOP_UP} {
     :root {
       --consonant-merch-card-catalog-width: 276px;
     }
@@ -422,7 +8603,7 @@ Try polyfilling it using "@formatjs/intl-pluralrules"
     }
 }
 
-@media screen and ${Ae} {
+@media screen and ${LARGE_DESKTOP} {
     .four-merch-cards.catalog {
         grid-template-columns: repeat(4, var(--consonant-merch-card-catalog-width));
     }
@@ -473,13 +8654,69 @@ merch-card[variant="catalog"] .payment-details {
   font-style: italic;
   font-weight: 400;
   line-height: var(--consonant-merch-card-body-line-height);
-}`;var kc={badge:!0,ctas:{slot:"footer",size:"m"},description:{tag:"div",slot:"body-xs"},mnemonics:{size:"l"},prices:{tag:"h3",slot:"heading-xs"},size:["wide","super-wide"],title:{tag:"h3",slot:"heading-xs"}},qt=class extends O{constructor(r){super(r);f(this,"dispatchActionMenuToggle",()=>{this.card.dispatchEvent(new CustomEvent(eo,{bubbles:!0,composed:!0,detail:{card:this.card.name,type:"action-menu"}}))});f(this,"toggleActionMenu",r=>{if(!this.actionMenuContentSlot||!r||r.type!=="click"&&r.code!=="Space"&&r.code!=="Enter")return;r.preventDefault(),this.actionMenuContentSlot.classList.toggle("hidden");let n=this.actionMenuContentSlot.classList.contains("hidden");n||this.dispatchActionMenuToggle(),this.setAriaExpanded(this.actionMenu,(!n).toString())});f(this,"toggleActionMenuFromCard",r=>{let n=r?.type==="mouseleave"?!0:void 0;this.card.blur(),this.actionMenu?.classList.remove("always-visible"),this.actionMenuContentSlot&&(n||this.dispatchActionMenuToggle(),this.actionMenuContentSlot.classList.toggle("hidden",n),this.setAriaExpanded(this.actionMenu,"false"))});f(this,"hideActionMenu",r=>{this.actionMenuContentSlot?.classList.add("hidden"),this.setAriaExpanded(this.actionMenu,"false")})}get actionMenu(){return this.card.shadowRoot.querySelector(".action-menu")}get actionMenuContentSlot(){return this.card.shadowRoot.querySelector('slot[name="action-menu-content"]')}renderLayout(){return x` <div class="body">
+}`;
+
+// src/variants/catalog.js
+var CATALOG_AEM_FRAGMENT_MAPPING = {
+  badge: true,
+  ctas: { slot: "footer", size: "m" },
+  description: { tag: "div", slot: "body-xs" },
+  mnemonics: { size: "l" },
+  prices: { tag: "h3", slot: "heading-xs" },
+  size: ["wide", "super-wide"],
+  title: { tag: "h3", slot: "heading-xs" }
+};
+var Catalog = class extends VariantLayout {
+  constructor(card) {
+    super(card);
+    __publicField(this, "dispatchActionMenuToggle", () => {
+      this.card.dispatchEvent(
+        new CustomEvent(EVENT_MERCH_CARD_ACTION_MENU_TOGGLE, {
+          bubbles: true,
+          composed: true,
+          detail: {
+            card: this.card.name,
+            type: "action-menu"
+          }
+        })
+      );
+    });
+    __publicField(this, "toggleActionMenu", (e7) => {
+      if (!this.actionMenuContentSlot || !e7 || e7.type !== "click" && e7.code !== "Space" && e7.code !== "Enter") return;
+      e7.preventDefault();
+      this.actionMenuContentSlot.classList.toggle("hidden");
+      const isHidden = this.actionMenuContentSlot.classList.contains("hidden");
+      if (!isHidden) this.dispatchActionMenuToggle();
+      this.setAriaExpanded(this.actionMenu, (!isHidden).toString());
+    });
+    __publicField(this, "toggleActionMenuFromCard", (e7) => {
+      const retract = e7?.type === "mouseleave" ? true : void 0;
+      this.card.blur();
+      this.actionMenu?.classList.remove("always-visible");
+      if (!this.actionMenuContentSlot) return;
+      if (!retract) this.dispatchActionMenuToggle();
+      this.actionMenuContentSlot.classList.toggle("hidden", retract);
+      this.setAriaExpanded(this.actionMenu, "false");
+    });
+    __publicField(this, "hideActionMenu", (e7) => {
+      this.actionMenuContentSlot?.classList.add("hidden");
+      this.setAriaExpanded(this.actionMenu, "false");
+    });
+  }
+  get actionMenu() {
+    return this.card.shadowRoot.querySelector(".action-menu");
+  }
+  get actionMenuContentSlot() {
+    return this.card.shadowRoot.querySelector('slot[name="action-menu-content"]');
+  }
+  renderLayout() {
+    return x2` <div class="body">
                 <div class="top-section">
                     <slot name="icons"></slot> ${this.badge}
                     <div
                         class="action-menu
-                ${Is()&&this.card.actionMenu?"always-visible":""}
-                ${this.card.actionMenu?"invisible":"hidden"}"
+                ${isMobileOrTablet() && this.card.actionMenu ? "always-visible" : ""}
+                ${!this.card.actionMenu ? "hidden" : "invisible"}"
                         @click="${this.toggleActionMenu}"
                         @keypress="${this.toggleActionMenu}"
                         tabindex="0"
@@ -490,21 +8727,36 @@ merch-card[variant="catalog"] .payment-details {
                 <slot
                     name="action-menu-content"
                     class="action-menu-content
-            ${this.card.actionMenuContent?"":"hidden"}"
+            ${!this.card.actionMenuContent ? "hidden" : ""}"
                     @focusout="${this.hideActionMenu}"
                     >${this.card.actionMenuContent}
                 </slot>
                 <slot name="heading-xs"></slot>
                 <slot name="heading-m"></slot>
                 <slot name="body-xxs"></slot>
-                ${this.promoBottom?"":x`<slot name="promo-text"></slot
-                          ><slot name="callout-content"></slot>`}
+                ${!this.promoBottom ? x2`<slot name="promo-text"></slot
+                          ><slot name="callout-content"></slot>` : ""}
                 <slot name="body-xs"></slot>
-                ${this.promoBottom?x`<slot name="promo-text"></slot
-                          ><slot name="callout-content"></slot>`:""}
+                ${this.promoBottom ? x2`<slot name="promo-text"></slot
+                          ><slot name="callout-content"></slot>` : ""}
             </div>
             ${this.secureLabelFooter}
-            <slot></slot>`}getGlobalCSS(){return Pc}setAriaExpanded(r,n){r.setAttribute("aria-expanded",n)}connectedCallbackHook(){this.card.addEventListener("mouseleave",this.toggleActionMenuFromCard)}disconnectedCallbackHook(){this.card.removeEventListener("mouseleave",this.toggleActionMenuFromCard)}};f(qt,"variantStyle",E`
+            <slot></slot>`;
+  }
+  getGlobalCSS() {
+    return CSS;
+  }
+  setAriaExpanded(element, value) {
+    element.setAttribute("aria-expanded", value);
+  }
+  connectedCallbackHook() {
+    this.card.addEventListener("mouseleave", this.toggleActionMenuFromCard);
+  }
+  disconnectedCallbackHook() {
+    this.card.removeEventListener("mouseleave", this.toggleActionMenuFromCard);
+  }
+};
+__publicField(Catalog, "variantStyle", i3`
         :host([variant='catalog']) {
             min-height: 330px;
             width: var(--consonant-merch-card-catalog-width);
@@ -522,7 +8774,10 @@ merch-card[variant="catalog"] .payment-details {
             margin-left: var(--consonant-merch-spacing-xxs);
             box-sizing: border-box;
         }
-    `);var Lc=`
+    `);
+
+// src/variants/image.css.js
+var CSS2 = `
 :root {
   --consonant-merch-card-image-width: 300px;
 }
@@ -534,7 +8789,7 @@ merch-card[variant="catalog"] .payment-details {
   grid-template-columns: var(--consonant-merch-card-image-width);
 }
 
-@media screen and ${Q} {
+@media screen and ${TABLET_UP} {
   .two-merch-cards.image,
   .three-merch-cards.image,
   .four-merch-cards.image {
@@ -542,7 +8797,7 @@ merch-card[variant="catalog"] .payment-details {
   }
 }
 
-@media screen and ${F} {
+@media screen and ${DESKTOP_UP} {
   :root {
     --consonant-merch-card-image-width: 378px;
     --consonant-merch-card-image-width-4clm: 276px;
@@ -556,24 +8811,40 @@ merch-card[variant="catalog"] .payment-details {
       grid-template-columns: repeat(4, var(--consonant-merch-card-image-width-4clm));
   }
 }
-`;var Gn=class extends O{constructor(e){super(e)}getGlobalCSS(){return Lc}renderLayout(){return x`${this.cardImage}
+`;
+
+// src/variants/image.js
+var Image2 = class extends VariantLayout {
+  constructor(card) {
+    super(card);
+  }
+  getGlobalCSS() {
+    return CSS2;
+  }
+  renderLayout() {
+    return x2`${this.cardImage}
     <div class="body">
         <slot name="icons"></slot>
         <slot name="heading-xs"></slot>
         <slot name="body-xxs"></slot>
-        ${this.promoBottom?x`<slot name="body-xs"></slot><slot name="promo-text"></slot>`:x`<slot name="promo-text"></slot><slot name="body-xs"></slot>`}
+        ${this.promoBottom ? x2`<slot name="body-xs"></slot><slot name="promo-text"></slot>` : x2`<slot name="promo-text"></slot><slot name="body-xs"></slot>`}
     </div>
-    ${this.evergreen?x`
+    ${this.evergreen ? x2`
               <div
                   class="detail-bg-container"
-                  style="background: ${this.card.detailBg}"
+                  style="background: ${this.card["detailBg"]}"
               >
                   <slot name="detail-bg"></slot>
               </div>
-          `:x`
+          ` : x2`
               <hr />
               ${this.secureLabelFooter}
-          `}`}};var Rc=`
+          `}`;
+  }
+};
+
+// src/variants/inline-heading.css.js
+var CSS3 = `
 :root {
   --consonant-merch-card-inline-heading-width: 300px;
 }
@@ -585,7 +8856,7 @@ merch-card[variant="catalog"] .payment-details {
     grid-template-columns: var(--consonant-merch-card-inline-heading-width);
 }
 
-@media screen and ${Q} {
+@media screen and ${TABLET_UP} {
   .two-merch-cards.inline-heading,
   .three-merch-cards.inline-heading,
   .four-merch-cards.inline-heading {
@@ -593,7 +8864,7 @@ merch-card[variant="catalog"] .payment-details {
   }
 }
 
-@media screen and ${F} {
+@media screen and ${DESKTOP_UP} {
   :root {
     --consonant-merch-card-inline-heading-width: 378px;
   }
@@ -604,12 +8875,23 @@ merch-card[variant="catalog"] .payment-details {
   }
 }
 
-@media screen and ${Ae} {
+@media screen and ${LARGE_DESKTOP} {
   .four-merch-cards.inline-heading {
       grid-template-columns: repeat(4, var(--consonant-merch-card-inline-heading-width));
   }
 }
-`;var Vn=class extends O{constructor(e){super(e)}getGlobalCSS(){return Rc}renderLayout(){return x` ${this.badge}
+`;
+
+// src/variants/inline-heading.js
+var InlineHeading = class extends VariantLayout {
+  constructor(card) {
+    super(card);
+  }
+  getGlobalCSS() {
+    return CSS3;
+  }
+  renderLayout() {
+    return x2` ${this.badge}
     <div class="body">
         <div class="top-section">
             <slot name="icons"></slot>
@@ -617,7 +8899,12 @@ merch-card[variant="catalog"] .payment-details {
         </div>
         <slot name="body-xs"></slot>
     </div>
-    ${this.card.customHr?"":x`<hr />`} ${this.secureLabelFooter}`}};var Oc=`
+    ${!this.card.customHr ? x2`<hr />` : ""} ${this.secureLabelFooter}`;
+  }
+};
+
+// src/variants/mini-compare-chart.css.js
+var CSS4 = `
   :root {
     --consonant-merch-card-mini-compare-chart-icon-size: 32px;
     --consonant-merch-card-mini-compare-mobile-cta-font-size: 16px;
@@ -859,7 +9146,7 @@ merch-card[variant="catalog"] .payment-details {
 }
 
 /* mini compare mobile */ 
-@media screen and ${ue} {
+@media screen and ${MOBILE_LANDSCAPE} {
   :root {
     --consonant-merch-card-mini-compare-chart-width: 302px;
     --consonant-merch-card-mini-compare-chart-wide-width: 302px;
@@ -945,7 +9232,7 @@ merch-card[variant="catalog"] .payment-details {
   }
 }
 
-@media screen and ${Un} {
+@media screen and ${TABLET_DOWN} {
   merch-card[variant="mini-compare-chart"] [slot='heading-m'] {
     font-size: var(--consonant-merch-card-body-s-font-size);
     line-height: var(--consonant-merch-card-body-s-line-height);
@@ -976,7 +9263,7 @@ merch-card[variant="catalog"] .payment-details {
     line-height: var(--consonant-merch-card-body-s-line-height);
   }
 }
-@media screen and ${Q} {
+@media screen and ${TABLET_UP} {
   :root {
     --consonant-merch-card-mini-compare-chart-width: 302px;
     --consonant-merch-card-mini-compare-chart-wide-width: 302px;
@@ -994,7 +9281,7 @@ merch-card[variant="catalog"] .payment-details {
 }
 
 /* desktop */
-@media screen and ${F} {
+@media screen and ${DESKTOP_UP} {
   :root {
     --consonant-merch-card-mini-compare-chart-width: 378px;
     --consonant-merch-card-mini-compare-chart-wide-width: 484px;  
@@ -1015,7 +9302,7 @@ merch-card[variant="catalog"] .payment-details {
   }
 }
 
-@media screen and ${Ae} {
+@media screen and ${LARGE_DESKTOP} {
   .four-merch-cards.mini-compare-chart {
       grid-template-columns: repeat(4, var(--consonant-merch-card-mini-compare-chart-width));
   }
@@ -1052,17 +9339,163 @@ merch-card .footer-row-cell:nth-child(7) {
 merch-card .footer-row-cell:nth-child(8) {
   min-height: var(--consonant-merch-card-footer-row-8-min-height);
 }
-`;var Dd=32,Wt=class extends O{constructor(r){super(r);f(this,"getRowMinHeightPropertyName",r=>`--consonant-merch-card-footer-row-${r}-min-height`);f(this,"getMiniCompareFooter",()=>{let r=this.card.secureLabel?x`<slot name="secure-transaction-label">
+`;
+
+// src/variants/mini-compare-chart.js
+var FOOTER_ROW_MIN_HEIGHT = 32;
+var MiniCompareChart = class extends VariantLayout {
+  constructor(card) {
+    super(card);
+    __publicField(this, "getRowMinHeightPropertyName", (index) => `--consonant-merch-card-footer-row-${index}-min-height`);
+    // For addon tiitle is it ok if we hardocde it in card settings?
+    // For addon is it ok if we hardcode it as placeholder key?
+    // How to add the price?
+    __publicField(this, "getMiniCompareFooter", () => {
+      const secureLabel = this.card.secureLabel ? x2`<slot name="secure-transaction-label">
               <span class="secure-transaction-label"
                   >${this.card.secureLabel}</span
               ></slot
-          >`:x`<slot name="secure-transaction-label"></slot>`;return x`<footer>${r}<slot name="footer"></slot></footer>`})}getGlobalCSS(){return Oc}adjustMiniCompareBodySlots(){if(this.card.getBoundingClientRect().width<=2)return;this.updateCardElementMinHeight(this.card.shadowRoot.querySelector(".top-section"),"top-section");let r=["heading-m","body-m","heading-m-price","body-xxs","price-commitment","offers","promo-text","callout-content","addon"];this.card.classList.contains("bullet-list")&&r.push("footer-rows"),r.forEach(o=>this.updateCardElementMinHeight(this.card.shadowRoot.querySelector(`slot[name="${o}"]`),o)),this.updateCardElementMinHeight(this.card.shadowRoot.querySelector("footer"),"footer");let n=this.card.shadowRoot.querySelector(".mini-compare-chart-badge");n&&n.textContent!==""&&this.getContainer().style.setProperty("--consonant-merch-card-mini-compare-chart-top-section-mobile-height","32px")}adjustMiniCompareFooterRows(){if(this.card.getBoundingClientRect().width===0)return;let r=this.card.querySelector('[slot="footer-rows"] ul');!r||!r.children||[...r.children].forEach((n,o)=>{let i=Math.max(Dd,parseFloat(window.getComputedStyle(n).height)||0),a=parseFloat(this.getContainer().style.getPropertyValue(this.getRowMinHeightPropertyName(o+1)))||0;i>a&&this.getContainer().style.setProperty(this.getRowMinHeightPropertyName(o+1),`${i}px`)})}removeEmptyRows(){this.card.querySelectorAll(".footer-row-cell").forEach(n=>{let o=n.querySelector(".footer-row-cell-description");o&&!o.textContent.trim()&&n.remove()})}get mainPrice(){return this.card.querySelector(`[slot="heading-m-price"] ${D}[data-template="price"]`)}get headingMPriceSlot(){return this.card.shadowRoot.querySelector('slot[name="heading-m-price"]')?.assignedElements()[0]}toggleAddon(r){let n=this.mainPrice,o=this.headingMPriceSlot;if(!n&&o){let i=r?.getAttribute("plan-type"),a=null;if(r&&i&&(a=r.querySelector(`p[data-plan-type="${i}"]`)?.querySelector('span[is="inline-price"]')),this.card.querySelectorAll('p[slot="heading-m-price"]').forEach(s=>s.remove()),r.checked){if(a){let s=oe("p",{class:"addon-heading-m-price-addon",slot:"heading-m-price"},a.innerHTML);this.card.appendChild(s)}}else{let s=oe("p",{class:"card-heading",id:"free",slot:"heading-m-price"},"Free");this.card.appendChild(s)}}}async adjustAddon(){await this.card.updateComplete;let r=this.card.addon;if(!r)return;let n=this.mainPrice,o=this.card.planType;n&&(await n.onceSettled(),o=n.value?.[0]?.planType),o&&(r.planType=o)}renderLayout(){return x` <div class="top-section${this.badge?" badge":""}">
+          >` : x2`<slot name="secure-transaction-label"></slot>`;
+      return x2`<footer>${secureLabel}<slot name="footer"></slot></footer>`;
+    });
+  }
+  getGlobalCSS() {
+    return CSS4;
+  }
+  adjustMiniCompareBodySlots() {
+    if (this.card.getBoundingClientRect().width <= 2) return;
+    this.updateCardElementMinHeight(
+      this.card.shadowRoot.querySelector(".top-section"),
+      "top-section"
+    );
+    let slots = [
+      "heading-m",
+      "body-m",
+      "heading-m-price",
+      "body-xxs",
+      "price-commitment",
+      "offers",
+      "promo-text",
+      "callout-content",
+      "addon"
+    ];
+    if (this.card.classList.contains("bullet-list")) {
+      slots.push("footer-rows");
+    }
+    slots.forEach(
+      (slot) => this.updateCardElementMinHeight(
+        this.card.shadowRoot.querySelector(`slot[name="${slot}"]`),
+        slot
+      )
+    );
+    this.updateCardElementMinHeight(
+      this.card.shadowRoot.querySelector("footer"),
+      "footer"
+    );
+    const badge = this.card.shadowRoot.querySelector(
+      ".mini-compare-chart-badge"
+    );
+    if (badge && badge.textContent !== "") {
+      this.getContainer().style.setProperty(
+        "--consonant-merch-card-mini-compare-chart-top-section-mobile-height",
+        "32px"
+      );
+    }
+  }
+  adjustMiniCompareFooterRows() {
+    if (this.card.getBoundingClientRect().width === 0) return;
+    const footerRows = this.card.querySelector('[slot="footer-rows"] ul');
+    if (!footerRows || !footerRows.children) return;
+    [...footerRows.children].forEach((el, index) => {
+      const height = Math.max(
+        FOOTER_ROW_MIN_HEIGHT,
+        parseFloat(window.getComputedStyle(el).height) || 0
+      );
+      const maxMinHeight = parseFloat(
+        this.getContainer().style.getPropertyValue(
+          this.getRowMinHeightPropertyName(index + 1)
+        )
+      ) || 0;
+      if (height > maxMinHeight) {
+        this.getContainer().style.setProperty(
+          this.getRowMinHeightPropertyName(index + 1),
+          `${height}px`
+        );
+      }
+    });
+  }
+  removeEmptyRows() {
+    const footerRows = this.card.querySelectorAll(".footer-row-cell");
+    footerRows.forEach((row) => {
+      const rowDescription = row.querySelector(".footer-row-cell-description");
+      if (rowDescription) {
+        const isEmpty = !rowDescription.textContent.trim();
+        if (isEmpty) {
+          row.remove();
+        }
+      }
+    });
+  }
+  get mainPrice() {
+    const price2 = this.card.querySelector(
+      `[slot="heading-m-price"] ${SELECTOR_MAS_INLINE_PRICE}[data-template="price"]`
+    );
+    return price2;
+  }
+  get headingMPriceSlot() {
+    return this.card.shadowRoot.querySelector('slot[name="heading-m-price"]')?.assignedElements()[0];
+  }
+  toggleAddon(merchAddon) {
+    const mainPrice = this.mainPrice;
+    const headingMPriceSlot = this.headingMPriceSlot;
+    if (!mainPrice && headingMPriceSlot) {
+      const planType = merchAddon?.getAttribute("plan-type");
+      let visibleSpan = null;
+      if (merchAddon && planType) {
+        const matchingP = merchAddon.querySelector(`p[data-plan-type="${planType}"]`);
+        visibleSpan = matchingP?.querySelector('span[is="inline-price"]');
+      }
+      this.card.querySelectorAll('p[slot="heading-m-price"]').forEach((p3) => p3.remove());
+      if (merchAddon.checked) {
+        if (visibleSpan) {
+          const replacementP = createTag(
+            "p",
+            { class: "addon-heading-m-price-addon", slot: "heading-m-price" },
+            visibleSpan.innerHTML
+          );
+          this.card.appendChild(replacementP);
+        }
+      } else {
+        const freeP = createTag(
+          "p",
+          { class: "card-heading", id: "free", slot: "heading-m-price" },
+          "Free"
+        );
+        this.card.appendChild(freeP);
+      }
+    }
+  }
+  async adjustAddon() {
+    await this.card.updateComplete;
+    const addon = this.card.addon;
+    if (!addon) return;
+    const price2 = this.mainPrice;
+    let planType = this.card.planType;
+    if (price2) {
+      await price2.onceSettled();
+      planType = price2.value?.[0]?.planType;
+    }
+    if (!planType) return;
+    addon.planType = planType;
+  }
+  renderLayout() {
+    return x2` <div class="top-section${this.badge ? " badge" : ""}">
             <slot name="icons"></slot> ${this.badge}
         </div>
         <slot name="heading-m"></slot>
-        ${this.card.classList.contains("bullet-list")?x`<slot name="heading-m-price"></slot>
+        ${this.card.classList.contains("bullet-list") ? x2`<slot name="heading-m-price"></slot>
           <slot name="price-commitment"></slot>
-          <slot name="body-m"></slot>`:x`<slot name="body-m"></slot>
+          <slot name="body-m"></slot>` : x2`<slot name="body-m"></slot>
           <slot name="heading-m-price"></slot>`}
         <slot name="body-xxs"></slot>
         <slot name="price-commitment"></slot>
@@ -1071,7 +9504,20 @@ merch-card .footer-row-cell:nth-child(8) {
         <slot name="callout-content"></slot>
         <slot name="addon"></slot>
         ${this.getMiniCompareFooter()}
-        <slot name="footer-rows"><slot name="body-s"></slot></slot>`}async postCardUpdateHook(){await Promise.all(this.card.prices.map(r=>r.onceSettled())),await this.adjustAddon(),ut()?this.removeEmptyRows():(this.adjustMiniCompareBodySlots(),this.adjustMiniCompareFooterRows())}};f(Wt,"variantStyle",E`
+        <slot name="footer-rows"><slot name="body-s"></slot></slot>`;
+  }
+  async postCardUpdateHook() {
+    await Promise.all(this.card.prices.map((price2) => price2.onceSettled()));
+    await this.adjustAddon();
+    if (!isMobile()) {
+      this.adjustMiniCompareBodySlots();
+      this.adjustMiniCompareFooterRows();
+    } else {
+      this.removeEmptyRows();
+    }
+  }
+};
+__publicField(MiniCompareChart, "variantStyle", i3`
     :host([variant='mini-compare-chart']) > slot:not([name='icons']) {
         display: block;
     }
@@ -1104,7 +9550,7 @@ merch-card .footer-row-cell:nth-child(8) {
       color: var(--merch-color-grey-700);
     }
 
-    @media screen and ${Me(ue)} {
+    @media screen and ${r4(MOBILE_LANDSCAPE)} {
       :host([variant='mini-compare-chart'].bullet-list) .mini-compare-chart-badge {
         padding: 2px 10px;
         font-size: var(--consonant-merch-card-body-xs-font-size);
@@ -1116,7 +9562,7 @@ merch-card .footer-row-cell:nth-child(8) {
       }
     }
 
-    @media screen and ${Me(Un)} {
+    @media screen and ${r4(TABLET_DOWN)} {
         [class*'-merch-cards'] :host([variant='mini-compare-chart']) footer {
             flex-direction: column;
             align-items: stretch;
@@ -1124,7 +9570,7 @@ merch-card .footer-row-cell:nth-child(8) {
         }
     }
 
-    @media screen and ${Me(F)} {
+    @media screen and ${r4(DESKTOP_UP)} {
         :host([variant='mini-compare-chart']) footer {
             padding: var(--consonant-merch-spacing-xs)
                 var(--consonant-merch-spacing-s)
@@ -1180,7 +9626,10 @@ merch-card .footer-row-cell:nth-child(8) {
     :host([variant='mini-compare-chart']) slot[name='footer-rows'] {
         justify-content: flex-start;
     }
-  `);var Mc=`
+  `);
+
+// src/variants/plans.css.js
+var CSS5 = `
 :root {
     --consonant-merch-card-plans-width: 300px;
     --consonant-merch-card-plans-icon-size: 40px;
@@ -1365,7 +9814,7 @@ merch-card[variant^="plans"] merch-addon span[data-template="price"] {
 }
 
 /* Mobile */
-@media screen and ${ue} {
+@media screen and ${MOBILE_LANDSCAPE} {
     merch-whats-included merch-mnemonic-list,
     merch-whats-included [slot="heading"] {
         width: 100%;
@@ -1412,7 +9861,7 @@ merch-card[variant^="plans"]:not([size]) {
 }
 
 /* Tablet */
-@media screen and ${Q} {
+@media screen and ${TABLET_UP} {
   :root {
     --consonant-merch-card-plans-width: 302px;
   }
@@ -1430,7 +9879,7 @@ merch-card[variant^="plans"]:not([size]) {
 }
 
 /* desktop */
-@media screen and ${F} {
+@media screen and ${DESKTOP_UP} {
   :root {
     --consonant-merch-card-plans-width: 276px;
   }
@@ -1447,7 +9896,7 @@ merch-card[variant^="plans"]:not([size]) {
 }
 
 /* Large desktop */
-    @media screen and ${Ae} {
+    @media screen and ${LARGE_DESKTOP} {
     .four-merch-cards.plans {
         grid-template-columns: repeat(4, var(--consonant-merch-card-plans-width));
     }
@@ -1455,11 +9904,229 @@ merch-card[variant^="plans"]:not([size]) {
         grid-template-columns: repeat(2, var(--consonant-merch-card-plans-width));
     }
 }
-`;var jn={title:{tag:"h3",slot:"heading-xs"},prices:{tag:"p",slot:"heading-m"},promoText:{tag:"p",slot:"promo-text"},description:{tag:"div",slot:"body-xs"},mnemonics:{size:"l"},callout:{tag:"div",slot:"callout-content"},quantitySelect:{tag:"div",slot:"quantity-select"},addon:!0,secureLabel:!0,planType:!0,badge:{tag:"div",slot:"badge",default:"spectrum-yellow-300-plans"},allowedBadgeColors:["spectrum-yellow-300-plans","spectrum-gray-300-plans","spectrum-gray-700-plans","spectrum-green-900-plans"],allowedBorderColors:["spectrum-yellow-300-plans","spectrum-gray-300-plans","spectrum-green-900-plans"],borderColor:{attribute:"border-color"},size:["wide","super-wide"],whatsIncluded:{tag:"div",slot:"whats-included"},ctas:{slot:"footer",size:"m"},style:"consonant"},Nc={...function(){let{whatsIncluded:t,size:e,...r}=jn;return r}(),title:{tag:"h3",slot:"heading-s"},subtitle:{tag:"p",slot:"subtitle"},secureLabel:!1},$c={...function(){let{whatsIncluded:t,size:e,quantitySelect:r,...n}=jn;return n}()},we=class extends O{constructor(e){super(e),this.adaptForMedia=this.adaptForMedia.bind(this)}priceOptionsProvider(e,r){e.dataset.template===bo&&(r.displayPlanType=this.card?.settings?.displayPlanType??!1)}getGlobalCSS(){return Mc}adjustSlotPlacement(e,r,n){let o=this.card.shadowRoot,i=o.querySelector("footer"),a=this.card.getAttribute("size"),s=o.querySelector(`footer slot[name="${e}"]`),c=o.querySelector(`.body slot[name="${e}"]`),l=o.querySelector(".body");if((!a||!a.includes("wide"))&&(i?.classList.remove("wide-footer"),s&&s.remove()),!!r.includes(a)){if(i?.classList.toggle("wide-footer",!ut()),!n&&s){c?s.remove():l.appendChild(s);return}n&&c&&(s?c.remove():i.prepend(c))}}adaptForMedia(){if(!this.card.closest("merch-card-collection,overlay-trigger,.two-merch-cards,.three-merch-cards,.four-merch-cards, .columns")){this.card.removeAttribute("size");return}this.adjustSlotPlacement("addon",["wide","super-wide"],!ut()),this.adjustSlotPlacement("callout-content",["super-wide"],_c())}adjustCallout(){let e=this.card.querySelector('[slot="callout-content"] .icon-button');e&&e.title&&(e.dataset.tooltip=e.title,e.removeAttribute("title"),e.classList.add("hide-tooltip"),document.addEventListener("touchstart",r=>{r.preventDefault(),r.target!==e?e.classList.add("hide-tooltip"):r.target.classList.toggle("hide-tooltip")}),document.addEventListener("mouseover",r=>{r.preventDefault(),r.target!==e?e.classList.add("hide-tooltip"):r.target.classList.remove("hide-tooltip")}))}adjustPrices(){this.headingM&&(this.headingM.setAttribute("role","heading"),this.headingM.setAttribute("aria-level","2"))}postCardUpdateHook(){this.adaptForMedia(),this.adjustTitleWidth(),this.adjustLegal(),this.adjustAddon(),this.adjustCallout(),this.adjustPrices()}get headingM(){return this.card.querySelector('[slot="heading-m"]')}get mainPrice(){return this.headingM.querySelector(`${D}[data-template="price"]`)}get divider(){return this.card.variant==="plans-education"?x`<div class="divider"></div>`:H}async adjustLegal(){if(await this.card.updateComplete,this.legalAdjusted)return;this.legalAdjusted=!0;let e=[],r=this.card.querySelector(`[slot="heading-m"] ${D}[data-template="price"]`);r&&e.push(r);let n=e.map(async o=>{let i=o.cloneNode(!0);await o.onceSettled(),o?.options&&(o.options.displayPerUnit&&(o.dataset.displayPerUnit="false"),o.options.displayTax&&(o.dataset.displayTax="false"),o.options.displayPlanType&&(o.dataset.displayPlanType="false"),i.setAttribute("data-template","legal"),o.parentNode.insertBefore(i,o.nextSibling))});await Promise.all(n)}async adjustAddon(){await this.card.updateComplete;let e=this.card.addon;if(!e)return;e.setAttribute("custom-checkbox","");let r=this.mainPrice;if(!r)return;await r.onceSettled();let n=r.value?.[0]?.planType;n&&(e.planType=n)}get stockCheckbox(){return this.card.checkboxLabel?x`<label id="stock-checkbox">
+`;
+
+// src/variants/plans.js
+var PLANS_AEM_FRAGMENT_MAPPING = {
+  title: { tag: "h3", slot: "heading-xs" },
+  prices: { tag: "p", slot: "heading-m" },
+  promoText: { tag: "p", slot: "promo-text" },
+  description: { tag: "div", slot: "body-xs" },
+  mnemonics: { size: "l" },
+  callout: { tag: "div", slot: "callout-content" },
+  quantitySelect: { tag: "div", slot: "quantity-select" },
+  addon: true,
+  secureLabel: true,
+  planType: true,
+  badge: { tag: "div", slot: "badge", default: "spectrum-yellow-300-plans" },
+  allowedBadgeColors: [
+    "spectrum-yellow-300-plans",
+    "spectrum-gray-300-plans",
+    "spectrum-gray-700-plans",
+    "spectrum-green-900-plans"
+  ],
+  allowedBorderColors: [
+    "spectrum-yellow-300-plans",
+    "spectrum-gray-300-plans",
+    "spectrum-green-900-plans"
+  ],
+  borderColor: { attribute: "border-color" },
+  size: ["wide", "super-wide"],
+  whatsIncluded: { tag: "div", slot: "whats-included" },
+  ctas: { slot: "footer", size: "m" },
+  style: "consonant"
+};
+var PLANS_EDUCATION_AEM_FRAGMENT_MAPPING = {
+  ...function() {
+    const { whatsIncluded, size, ...rest } = PLANS_AEM_FRAGMENT_MAPPING;
+    return rest;
+  }(),
+  title: { tag: "h3", slot: "heading-s" },
+  subtitle: { tag: "p", slot: "subtitle" },
+  secureLabel: false
+};
+var PLANS_STUDENTS_AEM_FRAGMENT_MAPPING = {
+  ...function() {
+    const { whatsIncluded, size, quantitySelect, ...rest } = PLANS_AEM_FRAGMENT_MAPPING;
+    return rest;
+  }()
+};
+var Plans = class extends VariantLayout {
+  constructor(card) {
+    super(card);
+    this.adaptForMedia = this.adaptForMedia.bind(this);
+  }
+  priceOptionsProvider(element, options) {
+    if (element.dataset.template !== TEMPLATE_PRICE_LEGAL) return;
+    options.displayPlanType = this.card?.settings?.displayPlanType ?? false;
+  }
+  getGlobalCSS() {
+    return CSS5;
+  }
+  /**
+   * Moves a slot to its proper place (body or footer) depending on card size and screen size
+   * @param {string} name 
+   * @param {string[]} sizes 
+   * @param {boolean} shouldBeInFooter 
+   * @returns 
+   */
+  adjustSlotPlacement(name, sizes, shouldBeInFooter) {
+    const shadowRoot = this.card.shadowRoot;
+    const footer = shadowRoot.querySelector("footer");
+    const size = this.card.getAttribute("size");
+    const slotInFooter = shadowRoot.querySelector(
+      `footer slot[name="${name}"]`
+    );
+    const slotInBody = shadowRoot.querySelector(`.body slot[name="${name}"]`);
+    const body = shadowRoot.querySelector(".body");
+    if (!size || !size.includes("wide")) {
+      footer?.classList.remove("wide-footer");
+      if (slotInFooter) slotInFooter.remove();
+    }
+    if (!sizes.includes(size)) return;
+    footer?.classList.toggle("wide-footer", isDesktop());
+    if (!shouldBeInFooter && slotInFooter) {
+      if (slotInBody)
+        slotInFooter.remove();
+      else {
+        const bodyPlaceholder = body.querySelector(`[data-placeholder-for="${name}"]`);
+        if (bodyPlaceholder) bodyPlaceholder.replaceWith(slotInFooter);
+        else body.appendChild(slotInFooter);
+      }
+      return;
+    }
+    if (shouldBeInFooter && slotInBody) {
+      const bodyPlaceholder = document.createElement("div");
+      bodyPlaceholder.setAttribute("data-placeholder-for", name);
+      bodyPlaceholder.classList.add("slot-placeholder");
+      if (!slotInFooter) {
+        const slotInBodyClone = slotInBody.cloneNode(true);
+        footer.prepend(slotInBodyClone);
+      }
+      slotInBody.replaceWith(bodyPlaceholder);
+    }
+  }
+  adaptForMedia() {
+    if (!this.card.closest(
+      "merch-card-collection,overlay-trigger,.two-merch-cards,.three-merch-cards,.four-merch-cards, .columns"
+    )) {
+      this.card.removeAttribute("size");
+      return;
+    }
+    this.adjustSlotPlacement("addon", ["super-wide"], isDesktop());
+    this.adjustSlotPlacement("callout-content", ["super-wide"], isDesktop());
+  }
+  adjustCallout() {
+    const tooltipIcon = this.card.querySelector('[slot="callout-content"] .icon-button');
+    if (tooltipIcon && tooltipIcon.title) {
+      tooltipIcon.dataset.tooltip = tooltipIcon.title;
+      tooltipIcon.removeAttribute("title");
+      tooltipIcon.classList.add("hide-tooltip");
+      document.addEventListener("touchstart", (event) => {
+        event.preventDefault();
+        if (event.target !== tooltipIcon) {
+          tooltipIcon.classList.add("hide-tooltip");
+        } else {
+          event.target.classList.toggle("hide-tooltip");
+        }
+      });
+      document.addEventListener("mouseover", (event) => {
+        event.preventDefault();
+        if (event.target !== tooltipIcon) {
+          tooltipIcon.classList.add("hide-tooltip");
+        } else {
+          event.target.classList.remove("hide-tooltip");
+        }
+      });
+    }
+  }
+  adjustPrices() {
+    if (!this.headingM) return;
+    this.headingM.setAttribute("role", "heading");
+    this.headingM.setAttribute("aria-level", "2");
+  }
+  postCardUpdateHook() {
+    this.adaptForMedia();
+    this.adjustTitleWidth();
+    this.adjustLegal();
+    this.adjustAddon();
+    this.adjustCallout();
+    this.adjustPrices();
+  }
+  get headingM() {
+    return this.card.querySelector('[slot="heading-m"]');
+  }
+  get mainPrice() {
+    const price2 = this.headingM.querySelector(
+      `${SELECTOR_MAS_INLINE_PRICE}[data-template="price"]`
+    );
+    return price2;
+  }
+  get divider() {
+    return this.card.variant === "plans-education" ? x2`<div class="divider"></div>` : A2;
+  }
+  async adjustLegal() {
+    await this.card.updateComplete;
+    if (this.legalAdjusted) return;
+    this.legalAdjusted = true;
+    const prices = [];
+    const headingPrice = this.card.querySelector(`[slot="heading-m"] ${SELECTOR_MAS_INLINE_PRICE}[data-template="price"]`);
+    if (headingPrice) prices.push(headingPrice);
+    const legalPromises = prices.map(async (price2) => {
+      const legal2 = price2.cloneNode(true);
+      await price2.onceSettled();
+      if (!price2?.options) return;
+      if (price2.options.displayPerUnit)
+        price2.dataset.displayPerUnit = "false";
+      if (price2.options.displayTax) price2.dataset.displayTax = "false";
+      if (price2.options.displayPlanType)
+        price2.dataset.displayPlanType = "false";
+      legal2.setAttribute("data-template", "legal");
+      price2.parentNode.insertBefore(legal2, price2.nextSibling);
+    });
+    await Promise.all(legalPromises);
+  }
+  async adjustAddon() {
+    await this.card.updateComplete;
+    const addon = this.card.addon;
+    if (!addon) return;
+    addon.setAttribute("custom-checkbox", "");
+    const price2 = this.mainPrice;
+    if (!price2) return;
+    await price2.onceSettled();
+    const planType = price2.value?.[0]?.planType;
+    if (!planType) return;
+    addon.planType = planType;
+  }
+  get stockCheckbox() {
+    return this.card.checkboxLabel ? x2`<label id="stock-checkbox">
                 <input type="checkbox" @change=${this.card.toggleStockOffer}></input>
                 <span></span>
                 ${this.card.checkboxLabel}
-            </label>`:H}get icons(){return!this.card.querySelector('[slot="icons"]')&&!this.card.getAttribute("id")?H:x`<slot name="icons"></slot>`}connectedCallbackHook(){let e=Dn();e?.addEventListener&&e.addEventListener("change",this.adaptForMedia);let r=Bn();r?.addEventListener&&r.addEventListener("change",this.adaptForMedia)}disconnectedCallbackHook(){let e=Dn();e?.removeEventListener&&e.removeEventListener("change",this.adaptForMedia);let r=Bn();r?.removeEventListener&&r.removeEventListener("change",this.adaptForMedia)}renderLayout(){return x` ${this.badge}
+            </label>` : A2;
+  }
+  get icons() {
+    if (!this.card.querySelector('[slot="icons"]') && !this.card.getAttribute("id")) return A2;
+    return x2`<slot name="icons"></slot>`;
+  }
+  connectedCallbackHook() {
+    const mobileWatcher = matchMobile();
+    if (mobileWatcher?.addEventListener)
+      mobileWatcher.addEventListener("change", this.adaptForMedia);
+    const desktopWatcher = matchDesktop();
+    if (desktopWatcher?.addEventListener)
+      desktopWatcher.addEventListener("change", this.adaptForMedia);
+  }
+  disconnectedCallbackHook() {
+    const mobileWatcher = matchMobile();
+    if (mobileWatcher?.removeEventListener)
+      mobileWatcher.removeEventListener("change", this.adaptForMedia);
+    const desktopWatcher = matchDesktop();
+    if (desktopWatcher?.removeEventListener)
+      desktopWatcher.removeEventListener("change", this.adaptForMedia);
+  }
+  renderLayout() {
+    return x2` ${this.badge}
             <div class="body">
                 ${this.icons}
                 <slot name="heading-xs"></slot>
@@ -1479,7 +10146,10 @@ merch-card[variant^="plans"]:not([size]) {
                 <slot name="addon"></slot>
                 <slot name="badge"></slot>
             </div>
-            ${this.secureLabelFooter}`}};f(we,"variantStyle",E`
+            ${this.secureLabelFooter}`;
+  }
+};
+__publicField(Plans, "variantStyle", i3`
         :host([variant^='plans']) {
             min-height: 273px;
             border: 1px solid var(--merch-card-custom-border-color, #dadada);
@@ -1490,6 +10160,10 @@ merch-card[variant^="plans"]:not([size]) {
             --merch-color-green-promo: #05834E;
             --secure-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%23505050' viewBox='0 0 12 15'%3E%3Cpath d='M11.5 6H11V5A5 5 0 1 0 1 5v1H.5a.5.5 0 0 0-.5.5v8a.5.5 0 0 0 .5.5h11a.5.5 0 0 0 .5-.5v-8a.5.5 0 0 0-.5-.5ZM3 5a3 3 0 1 1 6 0v1H3Zm4 6.111V12.5a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1.389a1.5 1.5 0 1 1 2 0Z'/%3E%3C/svg%3E");
             font-weight: 400;
+        }
+
+        :host([variant^='plans']) .slot-placeholder {
+            display: none;
         }
 
         :host([variant='plans-education']) {
@@ -1571,7 +10245,10 @@ merch-card[variant^="plans"]:not([size]) {
             line-height: 21px;
             padding: 2px 10px 3px;
         }
-    `);var Ic=`
+    `);
+
+// src/variants/product.css.js
+var CSS6 = `
 :root {
   --consonant-merch-card-product-width: 300px;
 }
@@ -1614,7 +10291,7 @@ merch-card[variant^="plans"]:not([size]) {
 }
 
 /* Tablet */
-@media screen and ${Q} {
+@media screen and ${TABLET_UP} {
     .two-merch-cards.product,
     .three-merch-cards.product,
     .four-merch-cards.product {
@@ -1623,7 +10300,7 @@ merch-card[variant^="plans"]:not([size]) {
 }
 
 /* desktop */
-@media screen and ${F} {
+@media screen and ${DESKTOP_UP} {
   :root {
     --consonant-merch-card-product-width: 378px;
     --consonant-merch-card-product-width-4clm: 276px;
@@ -1637,19 +10314,118 @@ merch-card[variant^="plans"]:not([size]) {
       grid-template-columns: repeat(4, var(--consonant-merch-card-product-width-4clm));
   }
 }
-`;var Yt=class extends O{constructor(e){super(e),this.postCardUpdateHook=this.postCardUpdateHook.bind(this)}getGlobalCSS(){return Ic}adjustProductBodySlots(){if(this.card.getBoundingClientRect().width===0)return;["heading-xs","body-xxs","body-xs","promo-text","callout-content","addon","body-lower"].forEach(r=>this.updateCardElementMinHeight(this.card.shadowRoot.querySelector(`slot[name="${r}"]`),r))}renderLayout(){return x` ${this.badge}
+`;
+
+// src/variants/product.js
+var Product = class extends VariantLayout {
+  constructor(card) {
+    super(card);
+    this.postCardUpdateHook = this.postCardUpdateHook.bind(this);
+  }
+  getGlobalCSS() {
+    return CSS6;
+  }
+  adjustProductBodySlots() {
+    if (this.card.getBoundingClientRect().width === 0) return;
+    const slots = [
+      "heading-xs",
+      "body-xxs",
+      "body-xs",
+      "promo-text",
+      "callout-content",
+      "addon",
+      "body-lower"
+    ];
+    slots.forEach(
+      (slot) => this.updateCardElementMinHeight(
+        this.card.shadowRoot.querySelector(`slot[name="${slot}"]`),
+        slot
+      )
+    );
+  }
+  renderLayout() {
+    return x2` ${this.badge}
             <div class="body" aria-live="polite">
                 <slot name="icons"></slot>
                 <slot name="heading-xs"></slot>
                 <slot name="body-xxs"></slot>
-                ${this.promoBottom?"":x`<slot name="promo-text"></slot>`}
+                ${!this.promoBottom ? x2`<slot name="promo-text"></slot>` : ""}
                 <slot name="body-xs"></slot>
-                ${this.promoBottom?x`<slot name="promo-text"></slot>`:""}
+                ${this.promoBottom ? x2`<slot name="promo-text"></slot>` : ""}
                 <slot name="callout-content"></slot>
                 <slot name="addon"></slot>
                 <slot name="body-lower"></slot>
             </div>
-            ${this.secureLabelFooter}`}connectedCallbackHook(){window.addEventListener("resize",this.postCardUpdateHook)}disconnectedCallbackHook(){window.removeEventListener("resize",this.postCardUpdateHook)}postCardUpdateHook(){this.card.isConnected&&(this.adjustAddon(),ut()||this.adjustProductBodySlots(),this.adjustTitleWidth())}get headingXSSlot(){return this.card.shadowRoot.querySelector('slot[name="heading-xs"]').assignedElements()[0]}get mainPrice(){return this.card.querySelector(`[slot="heading-xs"] ${D}[data-template="price"]`)}toggleAddon(e){let r=this.mainPrice,n=this.headingXSSlot;if(!r&&n){let o=e?.getAttribute("plan-type"),i=null;if(e&&o&&(i=e.querySelector(`p[data-plan-type="${o}"]`)?.querySelector('span[is="inline-price"]')),this.card.querySelectorAll('p[slot="heading-xs"]').forEach(a=>a.remove()),e.checked){if(i){let a=oe("p",{class:"addon-heading-xs-price-addon",slot:"heading-xs"},i.innerHTML);this.card.appendChild(a)}}else{let a=oe("p",{class:"card-heading",id:"free",slot:"heading-xs"},"Free");this.card.appendChild(a)}}}async adjustAddon(){await this.card.updateComplete;let e=this.card.addon;if(!e)return;let r=this.mainPrice,n=this.card.planType;r&&(await r.onceSettled(),n=r.value?.[0]?.planType),n&&(e.planType=n)}};f(Yt,"variantStyle",E`
+            ${this.secureLabelFooter}`;
+  }
+  connectedCallbackHook() {
+    window.addEventListener("resize", this.postCardUpdateHook);
+  }
+  disconnectedCallbackHook() {
+    window.removeEventListener("resize", this.postCardUpdateHook);
+  }
+  postCardUpdateHook() {
+    if (!this.card.isConnected) return;
+    this.adjustAddon();
+    if (!isMobile()) {
+      this.adjustProductBodySlots();
+    }
+    this.adjustTitleWidth();
+  }
+  get headingXSSlot() {
+    return this.card.shadowRoot.querySelector('slot[name="heading-xs"]').assignedElements()[0];
+  }
+  get mainPrice() {
+    const price2 = this.card.querySelector(
+      `[slot="heading-xs"] ${SELECTOR_MAS_INLINE_PRICE}[data-template="price"]`
+    );
+    return price2;
+  }
+  toggleAddon(merchAddon) {
+    const mainPrice = this.mainPrice;
+    const headingXSSlot = this.headingXSSlot;
+    if (!mainPrice && headingXSSlot) {
+      const planType = merchAddon?.getAttribute("plan-type");
+      let visibleSpan = null;
+      if (merchAddon && planType) {
+        const matchingP = merchAddon.querySelector(`p[data-plan-type="${planType}"]`);
+        visibleSpan = matchingP?.querySelector('span[is="inline-price"]');
+      }
+      this.card.querySelectorAll('p[slot="heading-xs"]').forEach((p3) => p3.remove());
+      if (merchAddon.checked) {
+        if (visibleSpan) {
+          const replacementP = createTag(
+            "p",
+            { class: "addon-heading-xs-price-addon", slot: "heading-xs" },
+            visibleSpan.innerHTML
+          );
+          this.card.appendChild(replacementP);
+        }
+      } else {
+        const freeP = createTag(
+          "p",
+          { class: "card-heading", id: "free", slot: "heading-xs" },
+          "Free"
+        );
+        this.card.appendChild(freeP);
+      }
+    }
+  }
+  async adjustAddon() {
+    await this.card.updateComplete;
+    const addon = this.card.addon;
+    if (!addon) return;
+    const price2 = this.mainPrice;
+    let planType = this.card.planType;
+    if (price2) {
+      await price2.onceSettled();
+      planType = price2.value?.[0]?.planType;
+    }
+    if (!planType) return;
+    addon.planType = planType;
+  }
+};
+__publicField(Product, "variantStyle", i3`
         :host([variant='product']) > slot:not([name='icons']) {
             display: block;
         }
@@ -1684,7 +10460,10 @@ merch-card[variant^="plans"]:not([size]) {
         :host([variant='product']) ::slotted([slot='heading-xs']) {
             max-width: var(--consonant-merch-card-heading-xs-max-width, 100%);
         }
-    `);var Hc=`
+    `);
+
+// src/variants/segment.css.js
+var CSS7 = `
 :root {
   --consonant-merch-card-segment-width: 378px;
 }
@@ -1698,13 +10477,13 @@ merch-card[variant^="plans"]:not([size]) {
 }
 
 /* Mobile */
-@media screen and ${ue} {
+@media screen and ${MOBILE_LANDSCAPE} {
   :root {
     --consonant-merch-card-segment-width: 276px;
   }
 }
 
-@media screen and ${Q} {
+@media screen and ${TABLET_UP} {
   :root {
     --consonant-merch-card-segment-width: 276px;
   }
@@ -1717,7 +10496,7 @@ merch-card[variant^="plans"]:not([size]) {
 }
 
 /* desktop */
-@media screen and ${F} {
+@media screen and ${DESKTOP_UP} {
   :root {
     --consonant-merch-card-segment-width: 302px;
   }
@@ -1730,23 +10509,43 @@ merch-card[variant^="plans"]:not([size]) {
       grid-template-columns: repeat(4, minmax(276px, var(--consonant-merch-card-segment-width)));
   }
 }
-`;var Xt=class extends O{constructor(e){super(e)}getGlobalCSS(){return Hc}postCardUpdateHook(){this.adjustTitleWidth()}renderLayout(){return x` ${this.badge}
+`;
+
+// src/variants/segment.js
+var Segment = class extends VariantLayout {
+  constructor(card) {
+    super(card);
+  }
+  getGlobalCSS() {
+    return CSS7;
+  }
+  postCardUpdateHook() {
+    this.adjustTitleWidth();
+  }
+  renderLayout() {
+    return x2` ${this.badge}
     <div class="body">
         <slot name="heading-xs"></slot>
         <slot name="body-xxs"></slot>
-        ${this.promoBottom?"":x`<slot name="promo-text"></slot><slot name="callout-content"></slot>`}
+        ${!this.promoBottom ? x2`<slot name="promo-text"></slot><slot name="callout-content"></slot>` : ""}
         <slot name="body-xs"></slot>
-        ${this.promoBottom?x`<slot name="promo-text"></slot><slot name="callout-content"></slot>`:""}
+        ${this.promoBottom ? x2`<slot name="promo-text"></slot><slot name="callout-content"></slot>` : ""}
     </div>
     <hr />
-    ${this.secureLabelFooter}`}};f(Xt,"variantStyle",E`
+    ${this.secureLabelFooter}`;
+  }
+};
+__publicField(Segment, "variantStyle", i3`
     :host([variant='segment']) {
       min-height: 214px;
     }
     :host([variant='segment']) ::slotted([slot='heading-xs']) {
       max-width: var(--consonant-merch-card-heading-xs-max-width, 100%);
     }
-  `);var Uc=`
+  `);
+
+// src/variants/special-offer.css.js
+var CSS8 = `
 :root {
   --consonant-merch-card-special-offers-width: 378px;
 }
@@ -1763,13 +10562,13 @@ merch-card[variant="special-offers"] span[is="inline-price"][data-template="stri
   grid-template-columns: minmax(300px, var(--consonant-merch-card-special-offers-width));
 }
 
-@media screen and ${ue} {
+@media screen and ${MOBILE_LANDSCAPE} {
   :root {
     --consonant-merch-card-special-offers-width: 302px;
   }
 } 
   
-@media screen and ${Q} {
+@media screen and ${TABLET_UP} {
   :root {
     --consonant-merch-card-special-offers-width: 302px;
   }
@@ -1782,36 +10581,61 @@ merch-card[variant="special-offers"] span[is="inline-price"][data-template="stri
 }
 
 /* desktop */
-@media screen and ${F} {
+@media screen and ${DESKTOP_UP} {
   .three-merch-cards.special-offers,
   .four-merch-cards.special-offers {
     grid-template-columns: repeat(3, minmax(300px, var(--consonant-merch-card-special-offers-width)));
   }
 }
 
-@media screen and ${Ae} {
+@media screen and ${LARGE_DESKTOP} {
   .four-merch-cards.special-offers {
     grid-template-columns: repeat(4, minmax(300px, var(--consonant-merch-card-special-offers-width)));
   }
 }
-`;var Dc={name:{tag:"h4",slot:"detail-m"},title:{tag:"h4",slot:"detail-m"},backgroundImage:{tag:"div",slot:"bg-image"},prices:{tag:"h3",slot:"heading-xs"},description:{tag:"div",slot:"body-xs"},ctas:{slot:"footer",size:"l"}},Kt=class extends O{constructor(e){super(e)}getGlobalCSS(){return Uc}get headingSelector(){return'[slot="detail-m"]'}renderLayout(){return x`${this.cardImage}
+`;
+
+// src/variants/special-offer.js
+var SPECIAL_OFFERS_AEM_FRAGMENT_MAPPING = {
+  name: { tag: "h4", slot: "detail-m" },
+  title: { tag: "h4", slot: "detail-m" },
+  backgroundImage: { tag: "div", slot: "bg-image" },
+  prices: { tag: "h3", slot: "heading-xs" },
+  description: { tag: "div", slot: "body-xs" },
+  ctas: { slot: "footer", size: "l" }
+};
+var SpecialOffer = class extends VariantLayout {
+  constructor(card) {
+    super(card);
+  }
+  getGlobalCSS() {
+    return CSS8;
+  }
+  get headingSelector() {
+    return '[slot="detail-m"]';
+  }
+  renderLayout() {
+    return x2`${this.cardImage}
             <div class="body">
                 <slot name="detail-m"></slot>
                 <slot name="heading-xs"></slot>
                 <slot name="body-xs"></slot>
             </div>
-            ${this.evergreen?x`
+            ${this.evergreen ? x2`
                       <div
                           class="detail-bg-container"
-                          style="background: ${this.card.detailBg}"
+                          style="background: ${this.card["detailBg"]}"
                       >
                           <slot name="detail-bg"></slot>
                       </div>
-                  `:x`
+                  ` : x2`
                       <hr />
                       ${this.secureLabelFooter}
                   `}
-            <slot></slot>`}};f(Kt,"variantStyle",E`
+            <slot></slot>`;
+  }
+};
+__publicField(SpecialOffer, "variantStyle", i3`
         :host([variant='special-offers']) {
             min-height: 439px;
         }
@@ -1823,7 +10647,10 @@ merch-card[variant="special-offers"] span[is="inline-price"][data-template="stri
         :host([variant='special-offers'].center) {
             text-align: center;
         }
-    `);var Bc=`
+    `);
+
+// src/variants/mini.css.js
+var CSS9 = `
 merch-card[variant="mini"] {
   color: var(--spectrum-body-color);
   width: 400px;
@@ -1856,7 +10683,59 @@ merch-card[variant="mini"] span.promo-duration-text,
 merch-card[variant="mini"] span.renewal-text {
     display: block;
 }
-`;var zc={title:{tag:"p",slot:"title"},prices:{tag:"p",slot:"prices"},description:{tag:"p",slot:"description"},planType:!0,ctas:{slot:"ctas",size:"S"}},Qt=class extends O{constructor(){super(...arguments);f(this,"legal")}async postCardUpdateHook(){await this.card.updateComplete,this.adjustLegal()}getGlobalCSS(){return Bc}get headingSelector(){return'[slot="title"]'}priceOptionsProvider(r,n){n.literals={...n.literals,strikethroughAriaLabel:"",alternativePriceAriaLabel:""},n.space=!0,n.displayAnnual=this.card.settings?.displayAnnual??!1}adjustLegal(){if(this.legal!==void 0)return;let r=this.card.querySelector(`${D}[data-template="price"]`);if(!r)return;let n=r.cloneNode(!0);this.legal=n,r.dataset.displayTax="false",n.dataset.template="legal",n.dataset.displayPlanType=this.card?.settings?.displayPlanType??!0,n.setAttribute("slot","legal"),this.card.appendChild(n)}renderLayout(){return x`
+`;
+
+// src/variants/mini.js
+var MINI_AEM_FRAGMENT_MAPPING = {
+  title: { tag: "p", slot: "title" },
+  prices: { tag: "p", slot: "prices" },
+  description: {
+    tag: "p",
+    slot: "description"
+  },
+  planType: true,
+  ctas: { slot: "ctas", size: "S" }
+};
+var Mini = class extends VariantLayout {
+  constructor() {
+    super(...arguments);
+    __publicField(this, "legal");
+  }
+  async postCardUpdateHook() {
+    await this.card.updateComplete;
+    this.adjustLegal();
+  }
+  getGlobalCSS() {
+    return CSS9;
+  }
+  get headingSelector() {
+    return '[slot="title"]';
+  }
+  priceOptionsProvider(element, options) {
+    options.literals = {
+      ...options.literals,
+      strikethroughAriaLabel: "",
+      alternativePriceAriaLabel: ""
+    };
+    options.space = true;
+    options.displayAnnual = this.card.settings?.displayAnnual ?? false;
+  }
+  adjustLegal() {
+    if (this.legal !== void 0) return;
+    const price2 = this.card.querySelector(
+      `${SELECTOR_MAS_INLINE_PRICE}[data-template="price"]`
+    );
+    if (!price2) return;
+    const legal2 = price2.cloneNode(true);
+    this.legal = legal2;
+    price2.dataset.displayTax = "false";
+    legal2.dataset.template = "legal";
+    legal2.dataset.displayPlanType = this.card?.settings?.displayPlanType ?? true;
+    legal2.setAttribute("slot", "legal");
+    this.card.appendChild(legal2);
+  }
+  renderLayout() {
+    return x2`
             ${this.badge}
             <div class="body">
                 <slot name="title"></slot>
@@ -1865,14 +10744,94 @@ merch-card[variant="mini"] span.renewal-text {
                 <slot name="description"></slot>
                 <slot name="ctas"></slot>
             </div>
-        `}};f(Qt,"variantStyle",E`
+        `;
+  }
+};
+__publicField(Mini, "variantStyle", i3`
         :host([variant='mini']) {
             min-width: 209px;
             min-height: 103px;
             background-color: var(--spectrum-background-base-color);
             border: 1px solid var(--merch-card-custom-border-color, #dadada);
         }
-    `);var Ii=new Map,q=(t,e,r=null,n=null)=>{Ii.set(t,{class:e,fragmentMapping:r,style:n})};q("catalog",qt,kc,qt.variantStyle);q("image",Gn);q("inline-heading",Vn);q("mini-compare-chart",Wt,null,Wt.variantStyle);q("plans",we,jn,we.variantStyle);q("plans-students",we,$c,we.variantStyle);q("plans-education",we,Nc,we.variantStyle);q("product",Yt,null,Yt.variantStyle);q("segment",Xt,null,Xt.variantStyle);q("special-offers",Kt,Dc,Kt.variantStyle);q("mini",Qt,zc,Qt.variantStyle);var Hi=t=>{let e=Ii.get(t.variant);if(!e)return;let{class:r,style:n}=e;if(n)try{let o=new CSSStyleSheet;o.replaceSync(n.cssText),t.shadowRoot.adoptedStyleSheets.push(o)}catch{let i=document.createElement("style");i.textContent=n.cssText,t.shadowRoot.appendChild(i)}return new r(t)};function Fn(t){return Ii.get(t)?.fragmentMapping}var Fc=document.createElement("style");Fc.innerHTML=`
+    `);
+
+// src/variants/variants.js
+var variantRegistry = /* @__PURE__ */ new Map();
+var registerVariant = (name, variantClass, fragmentMapping = null, style = null) => {
+  variantRegistry.set(name, {
+    class: variantClass,
+    fragmentMapping,
+    style
+  });
+};
+registerVariant(
+  "catalog",
+  Catalog,
+  CATALOG_AEM_FRAGMENT_MAPPING,
+  Catalog.variantStyle
+);
+registerVariant("image", Image2);
+registerVariant("inline-heading", InlineHeading);
+registerVariant(
+  "mini-compare-chart",
+  MiniCompareChart,
+  null,
+  MiniCompareChart.variantStyle
+);
+registerVariant("plans", Plans, PLANS_AEM_FRAGMENT_MAPPING, Plans.variantStyle);
+registerVariant(
+  "plans-students",
+  Plans,
+  PLANS_STUDENTS_AEM_FRAGMENT_MAPPING,
+  Plans.variantStyle
+);
+registerVariant(
+  "plans-education",
+  Plans,
+  PLANS_EDUCATION_AEM_FRAGMENT_MAPPING,
+  Plans.variantStyle
+);
+registerVariant("product", Product, null, Product.variantStyle);
+registerVariant("segment", Segment, null, Segment.variantStyle);
+registerVariant(
+  "special-offers",
+  SpecialOffer,
+  SPECIAL_OFFERS_AEM_FRAGMENT_MAPPING,
+  SpecialOffer.variantStyle
+);
+registerVariant(
+  "mini",
+  Mini,
+  MINI_AEM_FRAGMENT_MAPPING,
+  Mini.variantStyle
+);
+var getVariantLayout = (card) => {
+  const variantInfo = variantRegistry.get(card.variant);
+  if (!variantInfo) {
+    return void 0;
+  }
+  const { class: VariantClass, style } = variantInfo;
+  if (style) {
+    try {
+      const sheet = new CSSStyleSheet();
+      sheet.replaceSync(style.cssText);
+      card.shadowRoot.adoptedStyleSheets.push(sheet);
+    } catch (e7) {
+      const styleElement = document.createElement("style");
+      styleElement.textContent = style.cssText;
+      card.shadowRoot.appendChild(styleElement);
+    }
+  }
+  return new VariantClass(card);
+};
+function getFragmentMapping(variant) {
+  return variantRegistry.get(variant)?.fragmentMapping;
+}
+
+// src/global.css.js
+var styles2 = document.createElement("style");
+styles2.innerHTML = `
 :root {
     --consonant-merch-card-detail-font-size: 12px;
     --consonant-merch-card-detail-font-weight: 500;
@@ -2463,9 +11422,469 @@ merch-card [slot='callout-content'] .icon-button::before {
     max-width: 180px;
   }
 }
-`;document.head.appendChild(Fc);var Gc="fragment",Vc="author",jc="preview",qc="loading",Wc="timeout",Ui="aem-fragment",Yc="eager",Xc="cache",Bd=[Yc,Xc],Se,gt,fe,Di=class{constructor(){y(this,Se,new Map);y(this,gt,new Map);y(this,fe,new Map)}clear(){u(this,Se).clear(),u(this,gt).clear(),u(this,fe).clear()}add(e){if(!this.has(e.id)&&!this.has(e.fields?.originalId)){if(u(this,Se).set(e.id,e),e.fields?.originalId&&u(this,Se).set(e.fields.originalId,e),u(this,fe).has(e.id)){let[,r]=u(this,fe).get(e.id);r()}if(u(this,fe).has(e.fields?.originalId)){let[,r]=u(this,fe).get(e.fields?.originalId);r()}if(e.references)for(let r in e.references){let{type:n,value:o}=e.references[r];n==="content-fragment"&&(o.settings={...e?.settings,...o.settings},o.placeholders={...e?.placeholders,...o.placeholders},o.dictionary={...e?.dictionary,...o.dictionary},o.priceLiterals={...e?.priceLiterals,...o.priceLiterals},this.add(o,e))}}}has(e){return u(this,Se).has(e)}entries(){return u(this,Se).entries()}get(e){return u(this,Se).get(e)}getAsPromise(e){let[r]=u(this,fe).get(e)??[];if(r)return r;let n;return r=new Promise(o=>{n=o,this.has(e)&&o()}),u(this,fe).set(e,[r,n]),r}getFetchInfo(e){let r=u(this,gt).get(e);return r||(r={url:null,retryCount:0,stale:!1,measure:null,status:null},u(this,gt).set(e,r)),r}remove(e){u(this,Se).delete(e),u(this,gt).delete(e),u(this,fe).delete(e)}};Se=new WeakMap,gt=new WeakMap,fe=new WeakMap;var qe=new Di,Zt,_e,$e,de,ie,W,zr,Fr,ge,Gr,Vr,Jt,xe,Kc,Qc,Bi,Zc,qn=class extends HTMLElement{constructor(){super(...arguments);y(this,xe);f(this,"cache",qe);y(this,Zt);y(this,_e,null);y(this,$e,null);y(this,de,null);y(this,ie);y(this,W);y(this,zr,Yc);y(this,Fr,5e3);y(this,ge);y(this,Gr,!1);y(this,Vr,0);y(this,Jt)}static get observedAttributes(){return[Gc,qc,Wc,Vc,jc]}attributeChangedCallback(r,n,o){r===Gc&&(v(this,ie,o),v(this,W,qe.getFetchInfo(o))),r===qc&&Bd.includes(o)&&v(this,zr,o),r===Wc&&v(this,Fr,parseInt(o,10)),r===Vc&&v(this,Gr,["","true"].includes(o)),r===jc&&v(this,Jt,o)}connectedCallback(){if(!u(this,ge)){if(u(this,de)??v(this,de,nt(this)),v(this,Jt,u(this,de).settings?.preview),u(this,Zt)??v(this,Zt,u(this,de).log.module(`${Ui}[${u(this,ie)}]`)),!u(this,ie)||u(this,ie)==="#"){u(this,W)??v(this,W,qe.getFetchInfo("missing-fragment-id")),X(this,xe,Bi).call(this,"Missing fragment id");return}this.refresh(!1)}}get fetchInfo(){return Object.fromEntries(Object.entries(u(this,W)).filter(([r,n])=>n!=null).map(([r,n])=>[`aem-fragment:${r}`,n]))}async refresh(r=!0){if(u(this,ge)&&!await Promise.race([u(this,ge),Promise.resolve(!1)]))return;r&&qe.remove(u(this,ie)),u(this,zr)===Xc&&await Promise.race([qe.getAsPromise(u(this,ie)),new Promise(s=>setTimeout(s,u(this,Fr)))]);try{v(this,ge,X(this,xe,Zc).call(this)),await u(this,ge)}catch(s){return X(this,xe,Bi).call(this,s.message),!1}let{references:n,referencesTree:o,placeholders:i,wcs:a}=u(this,_e)||{};return a&&!N("mas.disableWcsCache")&&u(this,de).prefillWcsCache(a),this.dispatchEvent(new CustomEvent(Ye,{detail:{...this.data,references:n,referencesTree:o,placeholders:i,...u(this,W)},bubbles:!0,composed:!0})),u(this,ge)}get updateComplete(){return u(this,ge)??Promise.reject(new Error("AEM fragment cannot be loaded"))}get data(){return u(this,$e)?u(this,$e):(u(this,Gr)?this.transformAuthorData():this.transformPublishData(),u(this,$e))}transformAuthorData(){let{fields:r,id:n,tags:o,settings:i={},priceLiterals:a={},dictionary:s={},placeholders:c={}}=u(this,_e);v(this,$e,r.reduce((l,{name:h,multiple:d,values:m})=>(l.fields[h]=d?m:m[0],l),{fields:{},id:n,tags:o,settings:i,priceLiterals:a,dictionary:s,placeholders:c}))}transformPublishData(){let{fields:r,id:n,tags:o,settings:i={},priceLiterals:a={},dictionary:s={},placeholders:c={}}=u(this,_e);v(this,$e,Object.entries(r).reduce((l,[h,d])=>(l.fields[h]=d?.mimeType?d.value:d??"",l),{fields:{},id:n,tags:o,settings:i,priceLiterals:a,dictionary:s,placeholders:c}))}getFragmentClientUrl(){let n=new URLSearchParams(window.location.search).get("maslibs");if(!n||n.trim()==="")return"https://mas.adobe.com/studio/libs/fragment-client.js";let o=n.trim().toLowerCase();if(o==="local")return"http://localhost:3030/studio/libs/fragment-client.js";let{hostname:i}=window.location,a=i.endsWith(".page")?"page":"live";return o.includes("--")?`https://${o}.aem.${a}/studio/libs/fragment-client.js`:`https://${o}--mas--adobecom.aem.${a}/studio/libs/fragment-client.js`}async generatePreview(){let r=this.getFragmentClientUrl(),{previewFragment:n}=await import(r);return await n(u(this,ie),{locale:u(this,de).settings.locale,apiKey:u(this,de).settings.wcsApiKey})}};Zt=new WeakMap,_e=new WeakMap,$e=new WeakMap,de=new WeakMap,ie=new WeakMap,W=new WeakMap,zr=new WeakMap,Fr=new WeakMap,ge=new WeakMap,Gr=new WeakMap,Vr=new WeakMap,Jt=new WeakMap,xe=new WeakSet,Kc=async function(r){Ji(this,Vr)._++;let n=`${Ui}:${u(this,ie)}:${u(this,Vr)}`,o=`${n}${Qe}`,i=`${n}${Ze}`;if(u(this,Jt))return await this.generatePreview();performance.mark(o);let a;try{if(u(this,W).stale=!1,u(this,W).url=r,a=await Sn(r,{cache:"default",credentials:"omit"}),X(this,xe,Qc).call(this,a),u(this,W).status=a?.status,u(this,W).measure=Ee(performance.measure(i,o)),u(this,W).retryCount=a.retryCount,!a?.ok)throw new ke("Unexpected fragment response",{response:a,...u(this,de).duration});return await a.json()}catch(s){if(u(this,W).measure=Ee(performance.measure(i,o)),u(this,W).retryCount=s.retryCount,u(this,_e))return u(this,W).stale=!0,u(this,Zt).error("Serving stale data",u(this,W)),u(this,_e);let c=s.message??"unknown";throw new ke(`Failed to fetch fragment: ${c}`,{})}},Qc=function(r){Object.assign(u(this,W),sn(r))},Bi=function(r){v(this,ge,null),u(this,W).message=r,this.classList.add("error");let n={...u(this,W),...u(this,de).duration};u(this,Zt).error(r,n),this.dispatchEvent(new CustomEvent(Xe,{detail:n,bubbles:!0,composed:!0}))},Zc=async function(){var s;this.classList.remove("error"),v(this,$e,null);let r=qe.get(u(this,ie));if(r)return v(this,_e,r),!0;let{masIOUrl:n,wcsApiKey:o,locale:i}=u(this,de).settings,a=`${n}/fragment?id=${u(this,ie)}&api_key=${o}&locale=${i}`;return r=await X(this,xe,Kc).call(this,a),(s=r.fields).originalId??(s.originalId=u(this,ie)),qe.add(r),v(this,_e,r),!0},f(qn,"cache",qe);customElements.define(Ui,qn);var er=class extends U{constructor(){super(),this.color="",this.variant="",this.backgroundColor="",this.borderColor="",this.text=this.textContent}connectedCallback(){this.borderColor&&this.borderColor!=="Transparent"?this.style.setProperty("--merch-badge-border",`1px solid var(--${this.borderColor})`):this.style.setProperty("--merch-badge-border",`1px solid var(--${this.backgroundColor})`),this.style.setProperty("--merch-badge-background-color",`var(--${this.backgroundColor})`),this.style.setProperty("--merch-badge-color",this.color),this.style.setProperty("--merch-badge-padding","2px 10px 3px 10px"),this.style.setProperty("--merch-badge-border-radius","4px 0 0 4px"),this.style.setProperty("--merch-badge-font-size","var(--consonant-merch-card-body-xs-font-size)"),this.textContent="",super.connectedCallback()}render(){return x`<div class="badge">
+`;
+document.head.appendChild(styles2);
+
+// src/aem-fragment.js
+var ATTRIBUTE_FRAGMENT = "fragment";
+var ATTRIBUTE_AUTHOR = "author";
+var ATTRIBUTE_PREVIEW = "preview";
+var ATTRIBUTE_LOADING = "loading";
+var ATTRIBUTE_TIMEOUT = "timeout";
+var AEM_FRAGMENT_TAG_NAME = "aem-fragment";
+var LOADING_EAGER = "eager";
+var LOADING_CACHE = "cache";
+var LOADING_VALUES = [LOADING_EAGER, LOADING_CACHE];
+var _fragmentCache, _fetchInfos, _promises;
+var FragmentCache = class {
+  constructor() {
+    __privateAdd(this, _fragmentCache, /* @__PURE__ */ new Map());
+    __privateAdd(this, _fetchInfos, /* @__PURE__ */ new Map());
+    __privateAdd(this, _promises, /* @__PURE__ */ new Map());
+  }
+  clear() {
+    __privateGet(this, _fragmentCache).clear();
+    __privateGet(this, _fetchInfos).clear();
+    __privateGet(this, _promises).clear();
+  }
+  /**
+   * Add fragment to cache
+   * @param {Object} fragment fragment object.
+   */
+  add(fragment) {
+    if (this.has(fragment.id)) return;
+    if (this.has(fragment.fields?.originalId)) return;
+    __privateGet(this, _fragmentCache).set(fragment.id, fragment);
+    if (fragment.fields?.originalId) {
+      __privateGet(this, _fragmentCache).set(fragment.fields.originalId, fragment);
+    }
+    if (__privateGet(this, _promises).has(fragment.id)) {
+      const [, resolve] = __privateGet(this, _promises).get(fragment.id);
+      resolve();
+    }
+    if (__privateGet(this, _promises).has(fragment.fields?.originalId)) {
+      const [, resolve] = __privateGet(this, _promises).get(fragment.fields?.originalId);
+      resolve();
+    }
+    if (!fragment.references) return;
+    for (const key in fragment.references) {
+      const { type, value } = fragment.references[key];
+      if (type === "content-fragment") {
+        value.settings = {
+          ...fragment?.settings,
+          ...value.settings
+        };
+        value.placeholders = {
+          ...fragment?.placeholders,
+          ...value.placeholders
+        };
+        value.dictionary = {
+          ...fragment?.dictionary,
+          ...value.dictionary
+        };
+        value.priceLiterals = {
+          ...fragment?.priceLiterals,
+          ...value.priceLiterals
+        };
+        this.add(value, fragment);
+      }
+    }
+  }
+  has(fragmentId) {
+    return __privateGet(this, _fragmentCache).has(fragmentId);
+  }
+  entries() {
+    return __privateGet(this, _fragmentCache).entries();
+  }
+  get(key) {
+    return __privateGet(this, _fragmentCache).get(key);
+  }
+  getAsPromise(key) {
+    let [promise] = __privateGet(this, _promises).get(key) ?? [];
+    if (promise) {
+      return promise;
+    }
+    let resolveFn;
+    promise = new Promise((resolve) => {
+      resolveFn = resolve;
+      if (this.has(key)) {
+        resolve();
+      }
+    });
+    __privateGet(this, _promises).set(key, [promise, resolveFn]);
+    return promise;
+  }
+  getFetchInfo(fragmentId) {
+    let fetchInfo = __privateGet(this, _fetchInfos).get(fragmentId);
+    if (!fetchInfo) {
+      fetchInfo = {
+        url: null,
+        retryCount: 0,
+        stale: false,
+        measure: null,
+        status: null
+      };
+      __privateGet(this, _fetchInfos).set(fragmentId, fetchInfo);
+    }
+    return fetchInfo;
+  }
+  remove(fragmentId) {
+    __privateGet(this, _fragmentCache).delete(fragmentId);
+    __privateGet(this, _fetchInfos).delete(fragmentId);
+    __privateGet(this, _promises).delete(fragmentId);
+  }
+};
+_fragmentCache = new WeakMap();
+_fetchInfos = new WeakMap();
+_promises = new WeakMap();
+var cache = new FragmentCache();
+var _log, _rawData, _data, _service3, _fragmentId, _fetchInfo, _loading, _timeout, _fetchPromise, _author, _fetchCount, _preview, _AemFragment_instances, getFragmentById_fn, applyHeaders_fn, fail_fn, fetchData_fn;
+var AemFragment = class extends HTMLElement {
+  constructor() {
+    super(...arguments);
+    __privateAdd(this, _AemFragment_instances);
+    __publicField(this, "cache", cache);
+    __privateAdd(this, _log);
+    __privateAdd(this, _rawData, null);
+    __privateAdd(this, _data, null);
+    __privateAdd(this, _service3, null);
+    /**
+     * @type {string} fragment id
+     */
+    __privateAdd(this, _fragmentId);
+    __privateAdd(this, _fetchInfo);
+    __privateAdd(this, _loading, LOADING_EAGER);
+    __privateAdd(this, _timeout, 5e3);
+    /**
+     * Internal promise to track if fetching is in progress.
+     */
+    __privateAdd(this, _fetchPromise);
+    __privateAdd(this, _author, false);
+    __privateAdd(this, _fetchCount, 0);
+    __privateAdd(this, _preview);
+  }
+  static get observedAttributes() {
+    return [
+      ATTRIBUTE_FRAGMENT,
+      ATTRIBUTE_LOADING,
+      ATTRIBUTE_TIMEOUT,
+      ATTRIBUTE_AUTHOR,
+      ATTRIBUTE_PREVIEW
+    ];
+  }
+  attributeChangedCallback(name, oldValue, newValue) {
+    if (name === ATTRIBUTE_FRAGMENT) {
+      __privateSet(this, _fragmentId, newValue);
+      __privateSet(this, _fetchInfo, cache.getFetchInfo(newValue));
+    }
+    if (name === ATTRIBUTE_LOADING && LOADING_VALUES.includes(newValue)) {
+      __privateSet(this, _loading, newValue);
+    }
+    if (name === ATTRIBUTE_TIMEOUT) {
+      __privateSet(this, _timeout, parseInt(newValue, 10));
+    }
+    if (name === ATTRIBUTE_AUTHOR) {
+      __privateSet(this, _author, ["", "true"].includes(newValue));
+    }
+    if (name === ATTRIBUTE_PREVIEW) {
+      __privateSet(this, _preview, newValue);
+    }
+  }
+  connectedCallback() {
+    if (__privateGet(this, _fetchPromise)) return;
+    __privateGet(this, _service3) ?? __privateSet(this, _service3, getService2(this));
+    __privateSet(this, _preview, __privateGet(this, _service3).settings?.preview);
+    __privateGet(this, _log) ?? __privateSet(this, _log, __privateGet(this, _service3).log.module(
+      `${AEM_FRAGMENT_TAG_NAME}[${__privateGet(this, _fragmentId)}]`
+    ));
+    if (!__privateGet(this, _fragmentId) || __privateGet(this, _fragmentId) === "#") {
+      __privateGet(this, _fetchInfo) ?? __privateSet(this, _fetchInfo, cache.getFetchInfo("missing-fragment-id"));
+      __privateMethod(this, _AemFragment_instances, fail_fn).call(this, "Missing fragment id");
+      return;
+    }
+    this.refresh(false);
+  }
+  get fetchInfo() {
+    return Object.fromEntries(
+      Object.entries(__privateGet(this, _fetchInfo)).filter(([key, value]) => value != void 0).map(([key, value]) => [`aem-fragment:${key}`, value])
+    );
+  }
+  async refresh(flushCache = true) {
+    if (__privateGet(this, _fetchPromise)) {
+      const ready = await Promise.race([
+        __privateGet(this, _fetchPromise),
+        Promise.resolve(false)
+      ]);
+      if (!ready) return;
+    }
+    if (flushCache) {
+      cache.remove(__privateGet(this, _fragmentId));
+    }
+    if (__privateGet(this, _loading) === LOADING_CACHE) {
+      await Promise.race([
+        cache.getAsPromise(__privateGet(this, _fragmentId)),
+        new Promise(
+          (resolve) => setTimeout(resolve, __privateGet(this, _timeout))
+        )
+      ]);
+    }
+    try {
+      __privateSet(this, _fetchPromise, __privateMethod(this, _AemFragment_instances, fetchData_fn).call(this));
+      await __privateGet(this, _fetchPromise);
+    } catch (e7) {
+      __privateMethod(this, _AemFragment_instances, fail_fn).call(this, e7.message);
+      return false;
+    }
+    const { references, referencesTree, placeholders, wcs } = __privateGet(this, _rawData) || {};
+    if (wcs && !getParameter("mas.disableWcsCache")) {
+      __privateGet(this, _service3).prefillWcsCache(wcs);
+    }
+    this.dispatchEvent(
+      new CustomEvent(EVENT_AEM_LOAD, {
+        detail: {
+          ...this.data,
+          references,
+          referencesTree,
+          placeholders,
+          ...__privateGet(this, _fetchInfo)
+          // Spread all fetch info
+        },
+        bubbles: true,
+        composed: true
+      })
+    );
+    return __privateGet(this, _fetchPromise);
+  }
+  get updateComplete() {
+    return __privateGet(this, _fetchPromise) ?? Promise.reject(new Error("AEM fragment cannot be loaded"));
+  }
+  get data() {
+    if (__privateGet(this, _data)) return __privateGet(this, _data);
+    if (__privateGet(this, _author)) {
+      this.transformAuthorData();
+    } else {
+      this.transformPublishData();
+    }
+    return __privateGet(this, _data);
+  }
+  transformAuthorData() {
+    const {
+      fields,
+      id,
+      tags,
+      settings = {},
+      priceLiterals: priceLiterals2 = {},
+      dictionary = {},
+      placeholders = {}
+    } = __privateGet(this, _rawData);
+    __privateSet(this, _data, fields.reduce(
+      (acc, { name, multiple, values }) => {
+        acc.fields[name] = multiple ? values : values[0];
+        return acc;
+      },
+      {
+        fields: {},
+        id,
+        tags,
+        settings,
+        priceLiterals: priceLiterals2,
+        dictionary,
+        placeholders
+      }
+    ));
+  }
+  transformPublishData() {
+    const {
+      fields,
+      id,
+      tags,
+      settings = {},
+      priceLiterals: priceLiterals2 = {},
+      dictionary = {},
+      placeholders = {}
+    } = __privateGet(this, _rawData);
+    __privateSet(this, _data, Object.entries(fields).reduce(
+      (acc, [key, value]) => {
+        acc.fields[key] = value?.mimeType ? value.value : value ?? "";
+        return acc;
+      },
+      {
+        fields: {},
+        id,
+        tags,
+        settings,
+        priceLiterals: priceLiterals2,
+        dictionary,
+        placeholders
+      }
+    ));
+  }
+  /**
+   * Gets the URL for loading fragment-client.js based on maslibs parameter
+   * @returns {string} URL for fragment-client.js
+   */
+  getFragmentClientUrl() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const masLibs = urlParams.get("maslibs");
+    if (!masLibs || masLibs.trim() === "") {
+      return "https://mas.adobe.com/studio/libs/fragment-client.js";
+    }
+    const sanitizedMasLibs = masLibs.trim().toLowerCase();
+    if (sanitizedMasLibs === "local") {
+      return "http://localhost:3030/studio/libs/fragment-client.js";
+    }
+    const { hostname } = window.location;
+    const extension = hostname.endsWith(".page") ? "page" : "live";
+    if (sanitizedMasLibs.includes("--")) {
+      return `https://${sanitizedMasLibs}.aem.${extension}/studio/libs/fragment-client.js`;
+    }
+    return `https://${sanitizedMasLibs}--mas--adobecom.aem.${extension}/studio/libs/fragment-client.js`;
+  }
+  async generatePreview() {
+    const fragmentClientUrl = this.getFragmentClientUrl();
+    const { previewFragment } = await import(fragmentClientUrl);
+    const data = await previewFragment(__privateGet(this, _fragmentId), {
+      locale: __privateGet(this, _service3).settings.locale,
+      apiKey: __privateGet(this, _service3).settings.wcsApiKey
+    });
+    return data;
+  }
+};
+_log = new WeakMap();
+_rawData = new WeakMap();
+_data = new WeakMap();
+_service3 = new WeakMap();
+_fragmentId = new WeakMap();
+_fetchInfo = new WeakMap();
+_loading = new WeakMap();
+_timeout = new WeakMap();
+_fetchPromise = new WeakMap();
+_author = new WeakMap();
+_fetchCount = new WeakMap();
+_preview = new WeakMap();
+_AemFragment_instances = new WeakSet();
+getFragmentById_fn = async function(endpoint) {
+  __privateWrapper(this, _fetchCount)._++;
+  const markPrefix = `${AEM_FRAGMENT_TAG_NAME}:${__privateGet(this, _fragmentId)}:${__privateGet(this, _fetchCount)}`;
+  const startMarkName = `${markPrefix}${MARK_START_SUFFIX}`;
+  const measureName = `${markPrefix}${MARK_DURATION_SUFFIX}`;
+  if (__privateGet(this, _preview)) {
+    return await this.generatePreview();
+  }
+  performance.mark(startMarkName);
+  let response;
+  try {
+    __privateGet(this, _fetchInfo).stale = false;
+    __privateGet(this, _fetchInfo).url = endpoint;
+    response = await masFetch(endpoint, {
+      cache: "default",
+      credentials: "omit"
+    });
+    __privateMethod(this, _AemFragment_instances, applyHeaders_fn).call(this, response);
+    __privateGet(this, _fetchInfo).status = response?.status;
+    __privateGet(this, _fetchInfo).measure = printMeasure(
+      performance.measure(measureName, startMarkName)
+    );
+    __privateGet(this, _fetchInfo).retryCount = response.retryCount;
+    if (!response?.ok) {
+      throw new MasError("Unexpected fragment response", {
+        response,
+        ...__privateGet(this, _service3).duration
+      });
+    }
+    return await response.json();
+  } catch (e7) {
+    __privateGet(this, _fetchInfo).measure = printMeasure(
+      performance.measure(measureName, startMarkName)
+    );
+    __privateGet(this, _fetchInfo).retryCount = e7.retryCount;
+    if (__privateGet(this, _rawData)) {
+      __privateGet(this, _fetchInfo).stale = true;
+      __privateGet(this, _log).error(`Serving stale data`, __privateGet(this, _fetchInfo));
+      return __privateGet(this, _rawData);
+    }
+    const reason = e7.message ?? "unknown";
+    throw new MasError(`Failed to fetch fragment: ${reason}`, {});
+  }
+};
+applyHeaders_fn = function(response) {
+  Object.assign(__privateGet(this, _fetchInfo), getLogHeaders(response));
+};
+fail_fn = function(message) {
+  __privateSet(this, _fetchPromise, null);
+  __privateGet(this, _fetchInfo).message = message;
+  this.classList.add("error");
+  const detail = {
+    ...__privateGet(this, _fetchInfo),
+    ...__privateGet(this, _service3).duration
+  };
+  __privateGet(this, _log).error(message, detail);
+  this.dispatchEvent(
+    new CustomEvent(EVENT_AEM_ERROR, {
+      detail,
+      bubbles: true,
+      composed: true
+    })
+  );
+};
+fetchData_fn = async function() {
+  var _a2;
+  this.classList.remove("error");
+  __privateSet(this, _data, null);
+  let fragment = cache.get(__privateGet(this, _fragmentId));
+  if (fragment) {
+    __privateSet(this, _rawData, fragment);
+    return true;
+  }
+  const { masIOUrl, wcsApiKey, locale } = __privateGet(this, _service3).settings;
+  const endpoint = `${masIOUrl}/fragment?id=${__privateGet(this, _fragmentId)}&api_key=${wcsApiKey}&locale=${locale}`;
+  fragment = await __privateMethod(this, _AemFragment_instances, getFragmentById_fn).call(this, endpoint);
+  (_a2 = fragment.fields).originalId ?? (_a2.originalId = __privateGet(this, _fragmentId));
+  cache.add(fragment);
+  __privateSet(this, _rawData, fragment);
+  return true;
+};
+// TO be deprecated
+__publicField(AemFragment, "cache", cache);
+customElements.define(AEM_FRAGMENT_TAG_NAME, AemFragment);
+
+// src/merch-badge.js
+var MerchBadge = class extends s7 {
+  constructor() {
+    super();
+    this.color = "";
+    this.variant = "";
+    this.backgroundColor = "";
+    this.borderColor = "";
+    this.text = this.textContent;
+  }
+  connectedCallback() {
+    if (this.borderColor && this.borderColor !== "Transparent") {
+      this.style.setProperty("--merch-badge-border", `1px solid var(--${this.borderColor})`);
+    } else {
+      this.style.setProperty("--merch-badge-border", `1px solid var(--${this.backgroundColor})`);
+    }
+    this.style.setProperty("--merch-badge-background-color", `var(--${this.backgroundColor})`);
+    this.style.setProperty("--merch-badge-color", this.color);
+    this.style.setProperty("--merch-badge-padding", "2px 10px 3px 10px");
+    this.style.setProperty("--merch-badge-border-radius", "4px 0 0 4px");
+    this.style.setProperty("--merch-badge-font-size", "var(--consonant-merch-card-body-xs-font-size)");
+    this.textContent = "";
+    super.connectedCallback();
+  }
+  render() {
+    return x2`<div class="badge">
             ${this.text}
-        </div>`}};f(er,"properties",{color:{type:String},variant:{type:String},backgroundColor:{type:String,attribute:"background-color"},borderColor:{type:String,attribute:"border-color"}}),f(er,"styles",E`
+        </div>`;
+  }
+};
+__publicField(MerchBadge, "properties", {
+  color: { type: String },
+  variant: { type: String },
+  backgroundColor: { type: String, attribute: "background-color" },
+  borderColor: { type: String, attribute: "border-color" }
+});
+__publicField(MerchBadge, "styles", i3`
         :host {
             display: block;
             background-color: var(--merch-badge-background-color);
@@ -2478,10 +11897,22 @@ merch-card [slot='callout-content'] .icon-button::before {
             position: relative;
             left: 1px;
         }
-    `);customElements.define("merch-badge",er);var jr=class extends U{constructor(){super()}render(){return x`
+    `);
+customElements.define("merch-badge", MerchBadge);
+
+// src/merch-mnemonic-list.js
+var MerchMnemonicList = class extends s7 {
+  constructor() {
+    super();
+  }
+  render() {
+    return x2`
             <slot name="icon"></slot>
             <slot name="description">${this.description}</slot>
-        `}};f(jr,"styles",E`
+        `;
+  }
+};
+__publicField(MerchMnemonicList, "styles", i3`
         :host {
             display: flex;
             flex-wrap: nowrap;
@@ -2506,11 +11937,56 @@ merch-card [slot='callout-content'] .icon-button::before {
         :host .hidden {
             display: none;
         }
-    `),f(jr,"properties",{description:{type:String,attribute:!0}});customElements.define("merch-mnemonic-list",jr);var qr=class extends U{updated(){this.hideSeeMoreEls()}hideSeeMoreEls(){this.isMobile&&this.rows.forEach((e,r)=>{r>=5&&(e.style.display=this.showAll?"flex":"none")})}constructor(){super(),this.showAll=!1,this.mobileRows=this.mobileRows===void 0?5:this.mobileRows}toggle(){this.showAll=!this.showAll,this.dispatchEvent(new CustomEvent("hide-see-more-elements",{bubbles:!0,composed:!0})),this.requestUpdate()}render(){return x`<slot name="heading"></slot>
+    `);
+__publicField(MerchMnemonicList, "properties", {
+  description: { type: String, attribute: true }
+});
+customElements.define("merch-mnemonic-list", MerchMnemonicList);
+
+// src/merch-whats-included.js
+var MerchWhatsIncluded = class extends s7 {
+  updated() {
+    this.hideSeeMoreEls();
+  }
+  hideSeeMoreEls() {
+    if (this.isMobile) {
+      this.rows.forEach((node, index) => {
+        if (index >= 5) {
+          node.style.display = this.showAll ? "flex" : "none";
+        }
+      });
+    }
+  }
+  constructor() {
+    super();
+    this.showAll = false;
+    this.mobileRows = this.mobileRows === void 0 ? 5 : this.mobileRows;
+  }
+  toggle() {
+    this.showAll = !this.showAll;
+    this.dispatchEvent(
+      new CustomEvent("hide-see-more-elements", {
+        bubbles: true,
+        composed: true
+      })
+    );
+    this.requestUpdate();
+  }
+  render() {
+    return x2`<slot name="heading"></slot>
             <slot name="content"></slot>
-            ${this.isMobile&&this.rows.length>this.mobileRows?x`<div @click=${this.toggle} class="see-more">
-                      ${this.showAll?"- See less":"+ See more"}
-                  </div>`:x``}`}get isMobile(){return window.matchMedia("(max-width: 767px)").matches}get rows(){return this.querySelectorAll("merch-mnemonic-list")}};f(qr,"styles",E`
+            ${this.isMobile && this.rows.length > this.mobileRows ? x2`<div @click=${this.toggle} class="see-more">
+                      ${this.showAll ? "- See less" : "+ See more"}
+                  </div>` : x2``}`;
+  }
+  get isMobile() {
+    return window.matchMedia("(max-width: 767px)").matches;
+  }
+  get rows() {
+    return this.querySelectorAll("merch-mnemonic-list");
+  }
+};
+__publicField(MerchWhatsIncluded, "styles", i3`
         :host {
             display: flex;
             flex-wrap: wrap;
@@ -2539,7 +12015,1380 @@ merch-card [slot='callout-content'] .icon-button::before {
             text-decoration: underline;
             color: var(--link-color-dark);
         }
-    `),f(qr,"properties",{heading:{type:String,attribute:!0},mobileRows:{type:Number,attribute:!0}});customElements.define("merch-whats-included",qr);var zd="#000000",zi="#F8D904",Fd="#EAEAEA",Gd="#31A547",Vd=/(accent|primary|secondary)(-(outline|link))?/,jd="mas:product_code/",qd="daa-ll",Wn="daa-lh",Wd=["XL","L","M","S"],Fi="...";function be(t,e,r,n){let o=n[t];if(e[t]&&o){let i={slot:o?.slot},a=e[t];if(o.maxCount&&typeof a=="string"){let[c,l]=lp(a,o.maxCount,o.withSuffix);c!==a&&(i.title=l,a=c)}let s=oe(o.tag,i,a);r.append(s)}}function Yd(t,e,r){let n=t.mnemonicIcon?.map((i,a)=>({icon:i,alt:t.mnemonicAlt[a]??"",link:t.mnemonicLink[a]??""}));n?.forEach(({icon:i,alt:a,link:s})=>{if(s&&!/^https?:/.test(s))try{s=new URL(`https://${s}`).href.toString()}catch{s="#"}let c={slot:"icons",src:i,loading:e.loading,size:r?.size??"l"};a&&(c.alt=a),s&&(c.href=s);let l=oe("merch-icon",c);e.append(l)});let o=e.shadowRoot.querySelector('slot[name="icons"]');!n?.length&&o&&o.remove()}function Xd(t,e,r){if(r.badge?.slot){if(t.badge?.length&&!t.badge?.startsWith("<merch-badge")){let n=zi,o=!1;r.allowedBadgeColors?.includes(r.badge?.default)&&(n=r.badge?.default,t.borderColor||(o=!0));let i=t.badgeBackgroundColor||n,a=t.borderColor||"";o&&(a=r.badge?.default,t.borderColor=r.badge?.default),t.badge=`<merch-badge variant="${t.variant}" background-color="${i}" border-color="${a}">${t.badge}</merch-badge>`}be("badge",t,e,r)}else t.badge?(e.setAttribute("badge-text",t.badge),e.setAttribute("badge-color",t.badgeColor||zd),e.setAttribute("badge-background-color",t.badgeBackgroundColor||zi),e.setAttribute("border-color",t.badgeBackgroundColor||zi)):e.setAttribute("border-color",t.borderColor||Fd)}function Kd(t,e,r){if(r.trialBadge&&t.trialBadge){if(!t.trialBadge.startsWith("<merch-badge")){let n=t.trialBadgeBorderColor||Gd;t.trialBadge=`<merch-badge variant="${t.variant}" border-color="${n}">${t.trialBadge}</merch-badge>`}be("trialBadge",t,e,r)}}function Qd(t,e,r){r?.includes(t.size)&&e.setAttribute("size",t.size)}function Zd(t,e,r){be("cardTitle",t,e,{cardTitle:r})}function Jd(t,e,r){be("subtitle",t,e,r)}function ep(t,e,r,n){if(!t.backgroundColor||t.backgroundColor.toLowerCase()==="default"){e.style.removeProperty("--merch-card-custom-background-color"),e.removeAttribute("background-color");return}r?.[t.backgroundColor]?(e.style.setProperty("--merch-card-custom-background-color",`var(${r[t.backgroundColor]})`),e.setAttribute("background-color",t.backgroundColor)):n?.attribute&&t.backgroundColor&&(e.setAttribute(n.attribute,t.backgroundColor),e.style.removeProperty("--merch-card-custom-background-color"))}function tp(t,e,r){let n=r?.borderColor,o="--merch-card-custom-border-color";t.borderColor?.toLowerCase()==="transparent"?(e.style.removeProperty(o),r?.allowedBorderColors?.includes(r?.badge?.default)&&e.style.setProperty(o,"transparent")):t.borderColor&&n&&(/-gradient/.test(t.borderColor)?(e.setAttribute("gradient-border","true"),e.style.removeProperty(o)):e.style.setProperty(o,`var(--${t.borderColor})`))}function rp(t,e,r){if(t.backgroundImage){let n={loading:e.loading??"lazy",src:t.backgroundImage};if(t.backgroundImageAltText?n.alt=t.backgroundImageAltText:n.role="none",!r)return;if(r?.attribute){e.setAttribute(r.attribute,t.backgroundImage);return}e.append(oe(r.tag,{slot:r.slot},oe("img",n)))}}function np(t,e,r){be("prices",t,e,r)}function el(t,e,r){let n=t.hasAttribute("data-wcs-osi")&&!!t.getAttribute("data-wcs-osi"),o=t.className||"",i=Vd.exec(o)?.[0]??"accent",a=i.includes("accent"),s=i.includes("primary"),c=i.includes("secondary"),l=i.includes("-outline"),h=i.includes("-link");t.classList.remove("accent","primary","secondary");let d;if(e.consonant)d=mp(t,a,n,h);else if(h)d=t;else{let m;a?m="accent":s?m="primary":c&&(m="secondary"),d=e.spectrum==="swc"?pp(t,r,l,m,n):dp(t,r,l,m,n)}return d}function op(t,e){let{slot:r}=e?.description,n=t.querySelectorAll(`[slot="${r}"] a[data-wcs-osi]`);n.length&&n.forEach(o=>{let i=el(o,t,e);o.replaceWith(i)})}function ip(t,e,r){be("promoText",t,e,r),be("description",t,e,r),op(e,r),be("callout",t,e,r),be("quantitySelect",t,e,r),be("whatsIncluded",t,e,r)}function ap(t,e,r){if(!r.addon)return;let n=t.addon?.replace(/[{}]/g,"");if(!n||/disabled/.test(n))return;let o=oe("merch-addon",{slot:"addon"},n);[...o.querySelectorAll(D)].forEach(i=>{let a=i.parentElement;a?.nodeName==="P"&&a.setAttribute("data-plan-type","")}),e.append(o)}function sp(t,e,r){t.addonConfirmation&&be("addonConfirmation",t,e,r)}function cp(t,e,r,n){n?.secureLabel&&r?.secureLabel&&e.setAttribute("secure-label",n.secureLabel)}function lp(t,e,r=!0){try{let n=typeof t!="string"?"":t,o=Jc(n);if(o.length<=e)return[n,o];let i=0,a=!1,s=r?e-Fi.length<1?1:e-Fi.length:e,c=[];for(let d of n){if(i++,d==="<")if(a=!0,n[i]==="/")c.pop();else{let m="";for(let p of n.substring(i)){if(p===" "||p===">")break;m+=p}c.push(m)}if(d==="/"&&n[i]===">"&&c.pop(),d===">"){a=!1;continue}if(!a&&(s--,s===0))break}let l=n.substring(0,i).trim();if(c.length>0){c[0]==="p"&&c.shift();for(let d of c.reverse())l+=`</${d}>`}return[`${l}${r?Fi:""}`,o]}catch{let o=typeof t=="string"?t:"",i=Jc(o);return[o,i]}}function Jc(t){if(!t)return"";let e="",r=!1;for(let n of t){if(n==="<"&&(r=!0),n===">"){r=!1;continue}r||(e+=n)}return e}function hp(t,e){e.querySelectorAll("a.upt-link").forEach(n=>{let o=Ge.createFrom(n);n.replaceWith(o),o.initializeWcsData(t.osi,t.promoCode)})}function dp(t,e,r,n,o){let i=t;o?i=customElements.get("checkout-button").createCheckoutButton({},t.innerHTML):i.innerHTML=`<span>${i.textContent}</span>`,i.setAttribute("tabindex",0);for(let h of t.attributes)["class","is"].includes(h.name)||i.setAttribute(h.name,h.value);i.firstElementChild?.classList.add("spectrum-Button-label");let a=e?.ctas?.size??"M",s=`spectrum-Button--${n}`,c=Wd.includes(a)?`spectrum-Button--size${a}`:"spectrum-Button--sizeM",l=["spectrum-Button",s,c];return r&&l.push("spectrum-Button--outline"),i.classList.add(...l),i}function pp(t,e,r,n,o){let i=t;o&&(i=customElements.get("checkout-button").createCheckoutButton(t.dataset),i.connectedCallback(),i.render());let a="fill";r&&(a="outline");let s=oe("sp-button",{treatment:a,variant:n,tabIndex:0,size:e?.ctas?.size??"m",...t.dataset.analyticsId&&{"data-analytics-id":t.dataset.analyticsId}},t.innerHTML);return s.source=i,(o?i.onceSettled():Promise.resolve(i)).then(c=>{s.setAttribute("data-navigation-url",c.href)}),s.addEventListener("click",c=>{c.defaultPrevented||i.click()}),s}function mp(t,e,r,n){let o=t;return r&&(o=customElements.get("checkout-link").createCheckoutLink(t.dataset,t.innerHTML)),n||(o.classList.add("con-button"),e&&o.classList.add("blue")),o}function up(t,e,r,n){if(t.ctas){let{slot:o}=r.ctas,i=oe("div",{slot:o},t.ctas),a=[...i.querySelectorAll("a")].map(s=>el(s,e,r));i.innerHTML="",i.append(...a),e.append(i)}}function fp(t,e){let{tags:r}=t,n=r?.find(i=>i.startsWith(jd))?.split("/").pop();if(!n)return;e.setAttribute(Wn,n),[...e.shadowRoot.querySelectorAll("a[data-analytics-id],button[data-analytics-id]"),...e.querySelectorAll("a[data-analytics-id],button[data-analytics-id]")].forEach((i,a)=>{i.setAttribute(qd,`${i.dataset.analyticsId}-${a+1}`)})}function gp(t){t.spectrum==="css"&&[["primary-link","primary"],["secondary-link","secondary"]].forEach(([e,r])=>{t.querySelectorAll(`a.${e}`).forEach(n=>{n.classList.remove(e),n.classList.add("spectrum-Link",`spectrum-Link--${r}`)})})}function xp(t){t.querySelectorAll("[slot]").forEach(n=>{n.remove()}),t.variant=void 0,["checkbox-label","stock-offer-osis","secure-label","background-image","background-color","border-color","badge-background-color","badge-color","badge-text","gradient-border","size",Wn].forEach(n=>t.removeAttribute(n));let r=["wide-strip","thin-strip"];t.classList.remove(...r)}async function tl(t,e){if(!t){let c=e?.id||"unknown";throw console.error(`hydrate: Fragment is undefined. Cannot hydrate card (merchCard id: ${c}).`),new Error(`hydrate: Fragment is undefined for card (merchCard id: ${c}).`)}if(!t.fields){let c=t.id||"unknown",l=e?.id||"unknown";throw console.error(`hydrate: Fragment for card ID '${c}' (merchCard id: ${l}) is missing 'fields'. Cannot hydrate.`),new Error(`hydrate: Fragment for card ID '${c}' (merchCard id: ${l}) is missing 'fields'.`)}let{id:r,fields:n,settings:o={},priceLiterals:i}=t,{variant:a}=n;if(!a)throw new Error(`hydrate: no variant found in payload ${r}`);xp(e),e.settings=o,i&&(e.priceLiterals=i),e.id??(e.id=t.id),e.variant=a,await e.updateComplete;let{aemFragmentMapping:s}=e.variantLayout;if(!s)throw new Error(`hydrate: variant mapping not found for ${r}`);s.style==="consonant"&&e.setAttribute("consonant",!0),Yd(n,e,s.mnemonics),Xd(n,e,s),Kd(n,e,s),Qd(n,e,s.size),Zd(n,e,s.title),Jd(n,e,s),np(n,e,s),rp(n,e,s.backgroundImage),ep(n,e,s.allowedColors,s.backgroundColor),tp(n,e,s),ip(n,e,s),ap(n,e,s),sp(n,e,s),cp(n,e,s,o),hp(n,e),up(n,e,s,a),fp(n,e),gp(e)}var Vi="merch-card",Gi=2e4,rl="merch-card:";function nl(t,e){let r=t.closest(Vi);if(!r)return e;r.priceLiterals&&(e.literals??(e.literals={}),Object.assign(e.literals,r.priceLiterals)),r.variantLayout?.priceOptionsProvider?.(t,e)}function bp(t){t.providers.has(nl)||t.providers.price(nl)}var vp=0,tr,rr,nr,Ie,vt,Te,yt,Y,bt,Yn,ol,Xn,xt=class extends U{constructor(){super();y(this,Y);y(this,tr);y(this,rr);y(this,nr);y(this,Ie);y(this,vt);y(this,Te);y(this,yt,new Promise(r=>{v(this,Te,r)}));f(this,"customerSegment");f(this,"marketSegment");f(this,"variantLayout");this.id=null,this.failed=!1,this.filters={},this.types="",this.selected=!1,this.spectrum="css",this.loading="lazy",this.handleAemFragmentEvents=this.handleAemFragmentEvents.bind(this),this.handleMerchOfferSelectReady=this.handleMerchOfferSelectReady.bind(this)}firstUpdated(){this.variantLayout=Hi(this),this.variantLayout?.connectedCallbackHook()}willUpdate(r){(r.has("variant")||!this.variantLayout)&&(this.variantLayout=Hi(this),this.variantLayout?.connectedCallbackHook())}updated(r){(r.has("badgeBackgroundColor")||r.has("borderColor"))&&this.style.setProperty("--consonant-merch-card-border",this.computedBorderStyle),r.has("backgroundColor")&&this.style.setProperty("--merch-card-custom-background-color",this.backgroundColor?`var(--${this.backgroundColor})`:"");try{this.variantLayoutPromise=this.variantLayout?.postCardUpdateHook(r)}catch(n){X(this,Y,bt).call(this,`Error in postCardUpdateHook: ${n.message}`,{},!1)}}get theme(){return this.closest("sp-theme")}get dir(){return this.closest("[dir]")?.getAttribute("dir")??"ltr"}render(){if(!(!this.isConnected||!this.variantLayout||this.style.display==="none"))return this.variantLayout.renderLayout()}get computedBorderStyle(){return["ccd-slice","ccd-suggested","ah-promoted-plans"].includes(this.variant)?"":`1px solid ${this.borderColor?this.borderColor:this.badgeBackgroundColor}`}get badgeElement(){return this.shadowRoot.getElementById("badge")}get headingmMSlot(){return this.shadowRoot.querySelector('slot[name="heading-m"]').assignedElements()[0]}get footerSlot(){return this.shadowRoot.querySelector('slot[name="footer"]')?.assignedElements()[0]}get descriptionSlot(){return this.shadowRoot.querySelector('slot[name="body-xs"')?.assignedElements()[0]}get descriptionSlotCompare(){return this.shadowRoot.querySelector('slot[name="body-m"')?.assignedElements()[0]}get price(){return this.headingmMSlot?.querySelector(D)}get checkoutLinks(){return[...this.footerSlot?.querySelectorAll(pe)??[]]}get checkoutLinksDescription(){return[...this.descriptionSlot?.querySelectorAll(pe)??[]]}get checkoutLinkDescriptionCompare(){return[...this.descriptionSlotCompare?.querySelectorAll(pe)??[]]}get activeDescriptionLinks(){return this.variant==="mini-compare-chart"?this.checkoutLinkDescriptionCompare:this.checkoutLinksDescription}async toggleStockOffer({target:r}){if(!this.stockOfferOsis)return;let n=this.checkoutLinks;if(n.length!==0)for(let o of n){await o.onceSettled();let i=o.value?.[0]?.planType;if(!i)return;let a=this.stockOfferOsis[i];if(!a)return;let s=o.dataset.wcsOsi.split(",").filter(c=>c!==a);r.checked&&s.push(a),o.dataset.wcsOsi=s.join(",")}}changeHandler(r){r.target.tagName==="MERCH-ADDON"&&this.toggleAddon(r.target)}toggleAddon(r){this.variantLayout?.toggleAddon?.(r);let n=[...this.checkoutLinks,...this.activeDescriptionLinks??[]];if(n.length===0)return;let o=i=>{let{offerType:a,planType:s}=i.value?.[0]??{};if(!a||!s)return;let c=r.getOsi(s,a),l=(i.dataset.wcsOsi||"").split(",").filter(h=>h&&h!==c);r.checked&&l.push(c),i.dataset.wcsOsi=l.join(",")};n.forEach(o)}handleQuantitySelection(r){let n=[...this.checkoutLinks,...this.activeDescriptionLinks??[]];if(n.length!==0)for(let o of n)o.dataset.quantity=r.detail.option}get titleElement(){return this.querySelector(this.variantLayout?.headingSelector||".card-heading")}get title(){return this.titleElement?.textContent?.trim()}get description(){return this.querySelector('[slot="body-xs"]')?.textContent?.trim()}updateFilters(r){let n={...this.filters};Object.keys(n).forEach(o=>{if(r){n[o].order=Math.min(n[o].order||2,2);return}let i=n[o].order;i===1||isNaN(i)||(n[o].order=Number(i)+1)}),this.filters=n}includes(r){return this.textContent.match(new RegExp(r,"i"))!==null}connectedCallback(){var n;super.connectedCallback(),u(this,rr)||v(this,rr,vp++),this.aemFragment||((n=u(this,Te))==null||n.call(this),v(this,Te,void 0)),this.id??(this.id=this.getAttribute("id")??this.aemFragment?.getAttribute("fragment"));let r=this.id??u(this,rr);v(this,vt,`${rl}${r}${Qe}`),v(this,tr,`${rl}${r}${Ze}`),performance.mark(u(this,vt)),v(this,Ie,nt()),bp(u(this,Ie)),v(this,nr,u(this,Ie).Log.module(Vi)),this.addEventListener(Ce,this.handleQuantitySelection),this.addEventListener(Zr,this.handleAddonAndQuantityUpdate),this.addEventListener(cr,this.handleMerchOfferSelectReady),this.addEventListener(Xe,this.handleAemFragmentEvents),this.addEventListener(Ye,this.handleAemFragmentEvents),this.addEventListener("change",this.changeHandler),this.aemFragment||setTimeout(()=>this.checkReady(),0)}disconnectedCallback(){super.disconnectedCallback(),this.variantLayout?.disconnectedCallbackHook(),this.removeEventListener(Ce,this.handleQuantitySelection),this.removeEventListener(Xe,this.handleAemFragmentEvents),this.removeEventListener(Ye,this.handleAemFragmentEvents),this.removeEventListener("change",this.changeHandler),this.removeEventListener(Zr,this.handleAddonAndQuantityUpdate)}async handleAemFragmentEvents(r){var n;if(this.isConnected&&(r.type===Xe&&X(this,Y,bt).call(this,"AEM fragment cannot be loaded"),r.type===Ye&&(this.failed=!1,r.target.nodeName==="AEM-FRAGMENT"))){let o=r.detail;try{u(this,Te)||v(this,yt,new Promise(i=>{v(this,Te,i)})),tl(o,this)}catch(i){X(this,Y,bt).call(this,`hydration has failed: ${i.message}`)}finally{(n=u(this,Te))==null||n.call(this),v(this,Te,void 0)}this.checkReady()}}async checkReady(){if(!this.isConnected)return;u(this,yt)&&(await u(this,yt),v(this,yt,void 0)),this.variantLayoutPromise&&(await this.variantLayoutPromise,this.variantLayoutPromise=void 0);let r=new Promise(a=>setTimeout(()=>a("timeout"),Gi));if(this.aemFragment){let a=await Promise.race([this.aemFragment.updateComplete,r]);if(a===!1||a==="timeout"){let s=a==="timeout"?`AEM fragment was not resolved within ${Gi} timeout`:"AEM fragment cannot be loaded";X(this,Y,bt).call(this,s,{},!1);return}}let n=[...this.querySelectorAll(sr)],o=Promise.all(n.map(a=>a.onceSettled().catch(()=>a))).then(a=>a.every(s=>s.classList.contains("placeholder-resolved"))),i=await Promise.race([o,r]);if(i===!0){this.measure=performance.measure(u(this,tr),u(this,vt));let a={...this.aemFragment?.fetchInfo,...u(this,Ie).duration,measure:Ee(this.measure)};return this.dispatchEvent(new CustomEvent(ro,{bubbles:!0,composed:!0,detail:a})),this}else{this.measure=performance.measure(u(this,tr),u(this,vt));let a={measure:Ee(this.measure),...u(this,Ie).duration};i==="timeout"?X(this,Y,bt).call(this,`Contains offers that were not resolved within ${Gi} timeout`,a):X(this,Y,bt).call(this,"Contains unresolved offers",a)}}get aemFragment(){return this.querySelector("aem-fragment")}get addon(){return this.querySelector("merch-addon")}get quantitySelect(){return this.querySelector("merch-quantity-select")}get addonCheckbox(){return this.querySelector("merch-addon")}displayFooterElementsInColumn(){if(!this.classList.contains("product"))return;let r=this.shadowRoot.querySelector(".secure-transaction-label");(this.footerSlot?.querySelectorAll(pe)).length===2&&r&&r.parentElement.classList.add("footer-column")}handleMerchOfferSelectReady(){this.offerSelect&&!this.offerSelect.planType||this.displayFooterElementsInColumn()}get dynamicPrice(){return this.querySelector('[slot="price"]')}handleAddonAndQuantityUpdate({detail:{id:r,items:n}}){if(!r||!n?.length)return;let o=this.checkoutLinks.find(l=>l.getAttribute("data-modal-id")===r);if(!o)return;let a=new URL(o.getAttribute("href")).searchParams.get("pa"),s=n.find(l=>l.productArrangementCode===a)?.quantity,c=!!n.find(l=>l.productArrangementCode!==a);if(s&&this.quantitySelect?.dispatchEvent(new CustomEvent(Pt,{detail:{quantity:s},bubbles:!0,composed:!0})),this.addonCheckbox&&this.addonCheckbox.checked!==c){this.toggleStockOffer({target:this.addonCheckbox});let l=new Event("change",{bubbles:!0,cancelable:!0});Object.defineProperty(l,"target",{writable:!1,value:{checked:c}}),this.addonCheckbox.handleChange(l)}}get prices(){return Array.from(this.querySelectorAll(D))}get promoPrice(){if(!this.querySelector("span.price-strikethrough"))return;let r=this.querySelector(".price.price-alternative");if(r||(r=this.querySelector(`${D}[data-template="price"] > span`)),!!r)return r=r.innerText,r}get regularPrice(){return u(this,Y,Yn)?.innerText}get promotionCode(){let r=[...this.querySelectorAll(`${D}[data-promotion-code],${pe}[data-promotion-code]`)].map(o=>o.dataset.promotionCode),n=[...new Set(r)];return n.length>1&&u(this,nr)?.warn(`Multiple different promotion codes found: ${n.join(", ")}`),r[0]}get annualPrice(){return this.querySelector(`${D}[data-template="price"] > .price.price-annual`)?.innerText}get promoText(){}get taxText(){return(u(this,Y,ol)??u(this,Y,Yn))?.querySelector("span.price-tax-inclusivity")?.innerText.trim()||void 0}get recurrenceText(){return u(this,Y,Yn)?.querySelector("span.price-recurrence")?.innerText}get planTypeText(){return this.querySelector('[is="inline-price"][data-template="legal"] span.price-plan-type')?.innerText}get seeTermsInfo(){let r=this.querySelector('a[is="upt-link"]');if(r)return X(this,Y,Xn).call(this,r)}get renewalText(){return this.querySelector("span.renewal-text")?.innerText}get promoDurationText(){return this.querySelector("span.promo-duration-text")?.innerText}get ctas(){return Array.from(this.querySelector('[slot="ctas"]')?.querySelectorAll(`${pe}, a`))}get primaryCta(){return X(this,Y,Xn).call(this,this.ctas.find(r=>r.variant==="accent"||r.matches(".spectrum-Button--accent,.con-button.blue")))}get secondaryCta(){return X(this,Y,Xn).call(this,this.ctas.find(r=>r.variant!=="accent"&&!r.matches(".spectrum-Button--accent,.con-button.blue")))}};tr=new WeakMap,rr=new WeakMap,nr=new WeakMap,Ie=new WeakMap,vt=new WeakMap,Te=new WeakMap,yt=new WeakMap,Y=new WeakSet,bt=function(r,n={},o=!0){if(!this.isConnected)return;let a=this.aemFragment?.getAttribute("fragment");a=`[${a}]`;let s={...this.aemFragment.fetchInfo,...u(this,Ie).duration,...n,message:r};u(this,nr).error(`merch-card${a}: ${r}`,s),this.failed=!0,o&&this.dispatchEvent(new CustomEvent(no,{bubbles:!0,composed:!0,detail:s}))},Yn=function(){return this.querySelector("span.price-strikethrough")??this.querySelector(`${D}[data-template="price"] > span`)},ol=function(){return this.querySelector(`${D}[data-template="legal"]`)},Xn=function(r){return{text:r.innerText.trim(),analyticsId:r.dataset.analyticsId,href:r.getAttribute("href")??r.dataset.href}},f(xt,"properties",{id:{type:String,attribute:"id",reflect:!0},name:{type:String,attribute:"name",reflect:!0},variant:{type:String,reflect:!0},size:{type:String,attribute:"size",reflect:!0},badgeColor:{type:String,attribute:"badge-color",reflect:!0},borderColor:{type:String,attribute:"border-color",reflect:!0},backgroundColor:{type:String,attribute:"background-color",reflect:!0},badgeBackgroundColor:{type:String,attribute:"badge-background-color",reflect:!0},backgroundImage:{type:String,attribute:"background-image",reflect:!0},badgeText:{type:String,attribute:"badge-text"},actionMenu:{type:Boolean,attribute:"action-menu"},actionMenuLabel:{type:String,attribute:"action-menu-label"},customHr:{type:Boolean,attribute:"custom-hr"},consonant:{type:Boolean,attribute:"consonant"},failed:{type:Boolean,attribute:"failed",reflect:!0},spectrum:{type:String,attribute:"spectrum"},detailBg:{type:String,attribute:"detail-bg"},secureLabel:{type:String,attribute:"secure-label"},checkboxLabel:{type:String,attribute:"checkbox-label"},addonTitle:{type:String,attribute:"addon-title"},addonOffers:{type:Object,attribute:"addon-offers"},selected:{type:Boolean,attribute:"aria-selected",reflect:!0},storageOption:{type:String,attribute:"storage",reflect:!0},planType:{type:String,attribute:"plan-type",reflect:!0},settings:{type:Object,attribute:!1},stockOfferOsis:{type:Object,attribute:"stock-offer-osis",converter:{fromAttribute:r=>{if(!r)return;let[n,o,i]=r.split(",");return{PUF:n,ABM:o,M2M:i}}}},filters:{type:String,reflect:!0,converter:{fromAttribute:r=>Object.fromEntries(r.split(",").map(n=>{let[o,i,a]=n.split(":"),s=Number(i);return[o,{order:isNaN(s)?void 0:s,size:a}]})),toAttribute:r=>Object.entries(r).map(([n,{order:o,size:i}])=>[n,o,i].filter(a=>a!=null).join(":")).join(",")}},types:{type:String,attribute:"types",reflect:!0},merchOffer:{type:Object},analyticsId:{type:String,attribute:Wn,reflect:!0},loading:{type:String},priceLiterals:{type:Object}}),f(xt,"styles",[Tc,...Cc()]),f(xt,"registerVariant",q),f(xt,"getFragmentMapping",Fn);customElements.define(Vi,xt);var or,Wr=class extends U{constructor(){super();y(this,or);this.defaults={},this.variant="plans"}saveContainerDefaultValues(){let r=this.closest(this.getAttribute("container")),n=r?.querySelector('[slot="description"]:not(merch-offer > *)')?.cloneNode(!0),o=r?.badgeText;return{description:n,badgeText:o}}getSlottedElement(r,n){return(n||this.closest(this.getAttribute("container"))).querySelector(`[slot="${r}"]:not(merch-offer > *)`)}updateSlot(r,n){let o=this.getSlottedElement(r,n);if(!o)return;let i=this.selectedOffer.getOptionValue(r)?this.selectedOffer.getOptionValue(r):this.defaults[r];i&&o.replaceWith(i.cloneNode(!0))}handleOfferSelection(r){let n=r.detail;this.selectOffer(n)}handleOfferSelectionByQuantity(r){let n=r.detail.option,o=Number.parseInt(n),i=this.findAppropriateOffer(o);this.selectOffer(i),this.getSlottedElement("cta").setAttribute("data-quantity",o)}selectOffer(r){if(!r)return;let n=this.selectedOffer;n&&(n.selected=!1),r.selected=!0,this.selectedOffer=r,this.planType=r.planType,this.updateContainer(),this.updateComplete.then(()=>{this.dispatchEvent(new CustomEvent(to,{detail:this,bubbles:!0}))})}findAppropriateOffer(r){let n=null;return this.offers.find(i=>{let a=Number.parseInt(i.getAttribute("value"));if(a===r)return!0;if(a>r)return!1;n=i})||n}updateBadgeText(r){this.selectedOffer.badgeText===""?r.badgeText=null:this.selectedOffer.badgeText?r.badgeText=this.selectedOffer.badgeText:r.badgeText=this.defaults.badgeText}updateContainer(){let r=this.closest(this.getAttribute("container"));!r||!this.selectedOffer||(this.updateSlot("cta",r),this.updateSlot("secondary-cta",r),this.updateSlot("price",r),!this.manageableMode&&(this.updateSlot("description",r),this.updateBadgeText(r)))}render(){return x`<fieldset><slot class="${this.variant}"></slot></fieldset>`}connectedCallback(){super.connectedCallback(),this.addEventListener("focusin",this.handleFocusin),this.addEventListener("click",this.handleFocusin),this.addEventListener(Ct,this.handleOfferSelectReady);let r=this.closest("merch-quantity-select");this.manageableMode=r,this.offers=[...this.querySelectorAll("merch-offer")],v(this,or,this.handleOfferSelectionByQuantity.bind(this)),this.manageableMode?r.addEventListener(Ce,u(this,or)):this.defaults=this.saveContainerDefaultValues(),this.selectedOffer=this.offers[0],this.planType&&this.updateContainer()}get miniCompareMobileCard(){return this.merchCard?.variant==="mini-compare-chart"&&this.isMobile}get merchCard(){return this.closest("merch-card")}get isMobile(){return window.matchMedia("(max-width: 767px)").matches}disconnectedCallback(){super.disconnectedCallback(),this.removeEventListener(Ce,u(this,or)),this.removeEventListener(Ct,this.handleOfferSelectReady),this.removeEventListener("focusin",this.handleFocusin),this.removeEventListener("click",this.handleFocusin)}get price(){return this.querySelector('merch-offer[aria-selected] [is="inline-price"]')}get customerSegment(){return this.selectedOffer?.customerSegment}get marketSegment(){return this.selectedOffer?.marketSegment}handleFocusin(r){r.target?.nodeName==="MERCH-OFFER"&&(r.preventDefault(),r.stopImmediatePropagation(),this.selectOffer(r.target))}async handleOfferSelectReady(){this.planType||this.querySelector("merch-offer:not([plan-type])")||(this.planType=this.selectedOffer.planType,await this.updateComplete,this.selectOffer(this.selectedOffer??this.querySelector("merch-offer[aria-selected]")??this.querySelector("merch-offer")),this.dispatchEvent(new CustomEvent(cr,{bubbles:!0})))}};or=new WeakMap,f(Wr,"styles",E`
+    `);
+__publicField(MerchWhatsIncluded, "properties", {
+  heading: { type: String, attribute: true },
+  mobileRows: { type: Number, attribute: true }
+});
+customElements.define("merch-whats-included", MerchWhatsIncluded);
+
+// src/hydrate.js
+var DEFAULT_BADGE_COLOR = "#000000";
+var DEFAULT_BADGE_BACKGROUND_COLOR = "#F8D904";
+var DEFAULT_BORDER_COLOR = "#EAEAEA";
+var DEFAULT_TRIAL_BADGE_BORDER_COLOR = "#31A547";
+var CHECKOUT_STYLE_PATTERN = /(accent|primary|secondary)(-(outline|link))?/;
+var ANALYTICS_TAG = "mas:product_code/";
+var ANALYTICS_LINK_ATTR = "daa-ll";
+var ANALYTICS_SECTION_ATTR = "daa-lh";
+var SPECTRUM_BUTTON_SIZES = ["XL", "L", "M", "S"];
+var TEXT_TRUNCATE_SUFFIX = "...";
+function appendSlot(fieldName, fields, el, mapping) {
+  const config2 = mapping[fieldName];
+  if (fields[fieldName] && config2) {
+    const attributes = { slot: config2?.slot };
+    let content = fields[fieldName];
+    if (config2.maxCount && typeof content === "string") {
+      const [truncatedContent, cleanContent] = getTruncatedTextData(
+        content,
+        config2.maxCount,
+        config2.withSuffix
+      );
+      if (truncatedContent !== content) {
+        attributes.title = cleanContent;
+        content = truncatedContent;
+      }
+    }
+    const tag = createTag(config2.tag, attributes, content);
+    el.append(tag);
+  }
+}
+function processMnemonics(fields, merchCard, mnemonicsConfig) {
+  const mnemonics = fields.mnemonicIcon?.map((icon, index) => ({
+    icon,
+    alt: fields.mnemonicAlt[index] ?? "",
+    link: fields.mnemonicLink[index] ?? ""
+  }));
+  mnemonics?.forEach(({ icon: src, alt, link: href }) => {
+    if (href && !/^https?:/.test(href)) {
+      try {
+        href = new URL(`https://${href}`).href.toString();
+      } catch (e7) {
+        href = "#";
+      }
+    }
+    const attrs = {
+      slot: "icons",
+      src,
+      loading: merchCard.loading,
+      size: mnemonicsConfig?.size ?? "l"
+    };
+    if (alt) attrs.alt = alt;
+    if (href) attrs.href = href;
+    const merchIcon = createTag("merch-icon", attrs);
+    merchCard.append(merchIcon);
+  });
+  const slotIcons = merchCard.shadowRoot.querySelector('slot[name="icons"]');
+  if (!mnemonics?.length && slotIcons) {
+    slotIcons.remove();
+  }
+}
+function processBadge(fields, merchCard, mapping) {
+  if (mapping.badge?.slot) {
+    if (fields.badge?.length && !fields.badge?.startsWith("<merch-badge")) {
+      let badgeDefaultBgColor = DEFAULT_BADGE_BACKGROUND_COLOR;
+      let setBorderColorForBadge = false;
+      if (mapping.allowedBadgeColors?.includes(mapping.badge?.default)) {
+        badgeDefaultBgColor = mapping.badge?.default;
+        if (!fields.borderColor) {
+          setBorderColorForBadge = true;
+        }
+      }
+      const bgColorToUse = fields.badgeBackgroundColor || badgeDefaultBgColor;
+      let borderColorToUse = fields.borderColor || "";
+      if (setBorderColorForBadge) {
+        borderColorToUse = mapping.badge?.default;
+        fields.borderColor = mapping.badge?.default;
+      }
+      fields.badge = `<merch-badge variant="${fields.variant}" background-color="${bgColorToUse}" border-color="${borderColorToUse}">${fields.badge}</merch-badge>`;
+    }
+    appendSlot("badge", fields, merchCard, mapping);
+  } else {
+    if (fields.badge) {
+      merchCard.setAttribute("badge-text", fields.badge);
+      merchCard.setAttribute(
+        "badge-color",
+        fields.badgeColor || DEFAULT_BADGE_COLOR
+      );
+      merchCard.setAttribute(
+        "badge-background-color",
+        fields.badgeBackgroundColor || DEFAULT_BADGE_BACKGROUND_COLOR
+      );
+      merchCard.setAttribute(
+        "border-color",
+        fields.badgeBackgroundColor || DEFAULT_BADGE_BACKGROUND_COLOR
+      );
+    } else {
+      merchCard.setAttribute(
+        "border-color",
+        fields.borderColor || DEFAULT_BORDER_COLOR
+      );
+    }
+  }
+}
+function processTrialBadge(fields, merchCard, mapping) {
+  if (mapping.trialBadge && fields.trialBadge) {
+    if (!fields.trialBadge.startsWith("<merch-badge")) {
+      const borderColorToUse = fields.trialBadgeBorderColor || DEFAULT_TRIAL_BADGE_BORDER_COLOR;
+      fields.trialBadge = `<merch-badge variant="${fields.variant}" border-color="${borderColorToUse}">${fields.trialBadge}</merch-badge>`;
+    }
+    appendSlot("trialBadge", fields, merchCard, mapping);
+  }
+}
+function processSize(fields, merchCard, sizeConfig) {
+  if (sizeConfig?.includes(fields.size)) {
+    merchCard.setAttribute("size", fields.size);
+  }
+}
+function processTitle(fields, merchCard, titleConfig) {
+  appendSlot("cardTitle", fields, merchCard, { cardTitle: titleConfig });
+}
+function processSubtitle(fields, merchCard, mapping) {
+  appendSlot("subtitle", fields, merchCard, mapping);
+}
+function processBackgroundColor(fields, merchCard, allowedColors, backgroundColorConfig) {
+  if (!fields.backgroundColor || fields.backgroundColor.toLowerCase() === "default") {
+    merchCard.style.removeProperty("--merch-card-custom-background-color");
+    merchCard.removeAttribute("background-color");
+    return;
+  }
+  if (allowedColors?.[fields.backgroundColor]) {
+    merchCard.style.setProperty(
+      "--merch-card-custom-background-color",
+      `var(${allowedColors[fields.backgroundColor]})`
+    );
+    merchCard.setAttribute("background-color", fields.backgroundColor);
+  } else if (backgroundColorConfig?.attribute && fields.backgroundColor) {
+    merchCard.setAttribute(backgroundColorConfig.attribute, fields.backgroundColor);
+    merchCard.style.removeProperty("--merch-card-custom-background-color");
+  }
+}
+function processBorderColor(fields, merchCard, variantMapping) {
+  const borderColorConfig = variantMapping?.borderColor;
+  const customBorderColor = "--merch-card-custom-border-color";
+  if (fields.borderColor?.toLowerCase() === "transparent") {
+    merchCard.style.removeProperty(customBorderColor);
+    if (variantMapping?.allowedBorderColors?.includes(variantMapping?.badge?.default)) {
+      merchCard.style.setProperty(customBorderColor, "transparent");
+    }
+  } else if (fields.borderColor && borderColorConfig) {
+    if (/-gradient/.test(fields.borderColor)) {
+      merchCard.setAttribute("gradient-border", "true");
+      merchCard.style.removeProperty(customBorderColor);
+    } else {
+      merchCard.style.setProperty(
+        customBorderColor,
+        `var(--${fields.borderColor})`
+      );
+    }
+  }
+}
+function processBackgroundImage(fields, merchCard, backgroundImageConfig) {
+  if (fields.backgroundImage) {
+    const imgAttributes = {
+      loading: merchCard.loading ?? "lazy",
+      src: fields.backgroundImage
+    };
+    if (fields.backgroundImageAltText) {
+      imgAttributes.alt = fields.backgroundImageAltText;
+    } else {
+      imgAttributes.role = "none";
+    }
+    if (!backgroundImageConfig) return;
+    if (backgroundImageConfig?.attribute) {
+      merchCard.setAttribute(
+        backgroundImageConfig.attribute,
+        fields.backgroundImage
+      );
+      return;
+    }
+    merchCard.append(
+      createTag(
+        backgroundImageConfig.tag,
+        { slot: backgroundImageConfig.slot },
+        createTag("img", imgAttributes)
+      )
+    );
+  }
+}
+function processPrices(fields, merchCard, mapping) {
+  appendSlot("prices", fields, merchCard, mapping);
+}
+function transformLinkToButton(linkElement, merchCard, aemFragmentMapping) {
+  const isCheckoutLink = linkElement.hasAttribute("data-wcs-osi") && Boolean(linkElement.getAttribute("data-wcs-osi"));
+  const originalClassName = linkElement.className || "";
+  const checkoutLinkStyle = CHECKOUT_STYLE_PATTERN.exec(originalClassName)?.[0] ?? "accent";
+  const isAccent = checkoutLinkStyle.includes("accent");
+  const isPrimary = checkoutLinkStyle.includes("primary");
+  const isSecondary = checkoutLinkStyle.includes("secondary");
+  const isOutline = checkoutLinkStyle.includes("-outline");
+  const isLinkStyle = checkoutLinkStyle.includes("-link");
+  linkElement.classList.remove("accent", "primary", "secondary");
+  let newButtonElement;
+  if (merchCard.consonant) {
+    newButtonElement = createConsonantButton(linkElement, isAccent, isCheckoutLink, isLinkStyle);
+  } else if (isLinkStyle) {
+    newButtonElement = linkElement;
+  } else {
+    let variant;
+    if (isAccent) {
+      variant = "accent";
+    } else if (isPrimary) {
+      variant = "primary";
+    } else if (isSecondary) {
+      variant = "secondary";
+    }
+    newButtonElement = merchCard.spectrum === "swc" ? createSpectrumSwcButton(
+      linkElement,
+      aemFragmentMapping,
+      isOutline,
+      variant,
+      isCheckoutLink
+    ) : createSpectrumCssButton(
+      linkElement,
+      aemFragmentMapping,
+      isOutline,
+      variant,
+      isCheckoutLink
+    );
+  }
+  return newButtonElement;
+}
+function processDescriptionLinks(merchCard, aemFragmentMapping) {
+  const { slot } = aemFragmentMapping?.description;
+  const links = merchCard.querySelectorAll(`[slot="${slot}"] a[data-wcs-osi]`);
+  if (!links.length) return;
+  links.forEach((link) => {
+    const checkoutLink = transformLinkToButton(link, merchCard, aemFragmentMapping);
+    link.replaceWith(checkoutLink);
+  });
+}
+function processDescription(fields, merchCard, mapping) {
+  appendSlot("promoText", fields, merchCard, mapping);
+  appendSlot("description", fields, merchCard, mapping);
+  processDescriptionLinks(merchCard, mapping);
+  appendSlot("callout", fields, merchCard, mapping);
+  appendSlot("quantitySelect", fields, merchCard, mapping);
+  appendSlot("whatsIncluded", fields, merchCard, mapping);
+}
+function processAddon(fields, merchCard, mapping) {
+  if (!mapping.addon) return;
+  let addonField = fields.addon?.replace(/[{}]/g, "");
+  if (!addonField) return;
+  if (/disabled/.test(addonField)) return;
+  const addon = createTag("merch-addon", { slot: "addon" }, addonField);
+  [...addon.querySelectorAll(SELECTOR_MAS_INLINE_PRICE)].forEach((span) => {
+    const parent = span.parentElement;
+    if (parent?.nodeName !== "P") return;
+    parent.setAttribute("data-plan-type", "");
+  });
+  merchCard.append(addon);
+}
+function processAddonConfirmation(fields, merchCard, mapping) {
+  if (fields.addonConfirmation) {
+    appendSlot("addonConfirmation", fields, merchCard, mapping);
+  }
+}
+function processStockOffersAndSecureLabel(fields, merchCard, aemFragmentMapping, settings) {
+  if (settings?.secureLabel && aemFragmentMapping?.secureLabel) {
+    merchCard.setAttribute("secure-label", settings.secureLabel);
+  }
+}
+function getTruncatedTextData(text, limit, withSuffix = true) {
+  try {
+    const _text = typeof text !== "string" ? "" : text;
+    const cleanText = clearTags(_text);
+    if (cleanText.length <= limit) return [_text, cleanText];
+    let index = 0;
+    let inTag = false;
+    let remaining = withSuffix ? limit - TEXT_TRUNCATE_SUFFIX.length < 1 ? 1 : limit - TEXT_TRUNCATE_SUFFIX.length : limit;
+    let openTags = [];
+    for (const char of _text) {
+      index++;
+      if (char === "<") {
+        inTag = true;
+        if (_text[index] === "/") {
+          openTags.pop();
+        } else {
+          let tagName = "";
+          for (const tagChar of _text.substring(index)) {
+            if (tagChar === " " || tagChar === ">") break;
+            tagName += tagChar;
+          }
+          openTags.push(tagName);
+        }
+      }
+      if (char === "/") {
+        if (_text[index] === ">") {
+          openTags.pop();
+        }
+      }
+      if (char === ">") {
+        inTag = false;
+        continue;
+      }
+      if (inTag) continue;
+      remaining--;
+      if (remaining === 0) break;
+    }
+    let trimmedText = _text.substring(0, index).trim();
+    if (openTags.length > 0) {
+      if (openTags[0] === "p") openTags.shift();
+      for (const tag of openTags.reverse()) {
+        trimmedText += `</${tag}>`;
+      }
+    }
+    let truncatedText = `${trimmedText}${withSuffix ? TEXT_TRUNCATE_SUFFIX : ""}`;
+    return [truncatedText, cleanText];
+  } catch (error) {
+    const fallbackText = typeof text === "string" ? text : "";
+    const cleanFallback = clearTags(fallbackText);
+    return [fallbackText, cleanFallback];
+  }
+}
+function clearTags(text) {
+  if (!text) return "";
+  let result = "";
+  let inTag = false;
+  for (const char of text) {
+    if (char === "<") inTag = true;
+    if (char === ">") {
+      inTag = false;
+      continue;
+    }
+    if (inTag) continue;
+    result += char;
+  }
+  return result;
+}
+function processUptLinks(fields, merchCard) {
+  const placeholders = merchCard.querySelectorAll("a.upt-link");
+  placeholders.forEach((placeholder) => {
+    const uptLink = UptLink.createFrom(placeholder);
+    placeholder.replaceWith(uptLink);
+    uptLink.initializeWcsData(fields.osi, fields.promoCode);
+  });
+}
+function createSpectrumCssButton(cta, aemFragmentMapping, isOutline, variant, isCheckout) {
+  let button = cta;
+  if (isCheckout) {
+    const CheckoutButton2 = customElements.get("checkout-button");
+    button = CheckoutButton2.createCheckoutButton({}, cta.innerHTML);
+  } else {
+    button.innerHTML = `<span>${button.textContent}</span>`;
+  }
+  button.setAttribute("tabindex", 0);
+  for (const attr of cta.attributes) {
+    if (["class", "is"].includes(attr.name)) continue;
+    button.setAttribute(attr.name, attr.value);
+  }
+  button.firstElementChild?.classList.add("spectrum-Button-label");
+  const size = aemFragmentMapping?.ctas?.size ?? "M";
+  const variantClass = `spectrum-Button--${variant}`;
+  const sizeClass = SPECTRUM_BUTTON_SIZES.includes(size) ? `spectrum-Button--size${size}` : "spectrum-Button--sizeM";
+  const spectrumClass = ["spectrum-Button", variantClass, sizeClass];
+  if (isOutline) {
+    spectrumClass.push("spectrum-Button--outline");
+  }
+  button.classList.add(...spectrumClass);
+  return button;
+}
+function createSpectrumSwcButton(cta, aemFragmentMapping, isOutline, variant, isCheckout) {
+  let button = cta;
+  if (isCheckout) {
+    const CheckoutButton2 = customElements.get("checkout-button");
+    button = CheckoutButton2.createCheckoutButton(cta.dataset);
+    button.connectedCallback();
+    button.render();
+  }
+  let treatment = "fill";
+  if (isOutline) {
+    treatment = "outline";
+  }
+  const spectrumCta = createTag(
+    "sp-button",
+    {
+      treatment,
+      variant,
+      tabIndex: 0,
+      size: aemFragmentMapping?.ctas?.size ?? "m",
+      ...cta.dataset.analyticsId && {
+        "data-analytics-id": cta.dataset.analyticsId
+      }
+    },
+    cta.innerHTML
+  );
+  spectrumCta.source = button;
+  (isCheckout ? button.onceSettled() : Promise.resolve(button)).then((target) => {
+    spectrumCta.setAttribute("data-navigation-url", target.href);
+  });
+  spectrumCta.addEventListener("click", (e7) => {
+    if (e7.defaultPrevented) return;
+    button.click();
+  });
+  return spectrumCta;
+}
+function createConsonantButton(cta, isAccent, isCheckout, isLinkStyle) {
+  let button = cta;
+  if (isCheckout) {
+    const CheckoutLink2 = customElements.get("checkout-link");
+    button = CheckoutLink2.createCheckoutLink(
+      cta.dataset,
+      cta.innerHTML
+    );
+  }
+  if (!isLinkStyle) {
+    button.classList.add("con-button");
+    if (isAccent) {
+      button.classList.add("blue");
+    }
+  }
+  return button;
+}
+function processCTAs(fields, merchCard, aemFragmentMapping, variant) {
+  if (fields.ctas) {
+    const { slot } = aemFragmentMapping.ctas;
+    const footer = createTag("div", { slot }, fields.ctas);
+    const ctas = [...footer.querySelectorAll("a")].map((cta) => {
+      const checkoutButton = transformLinkToButton(cta, merchCard, aemFragmentMapping);
+      return checkoutButton;
+    });
+    footer.innerHTML = "";
+    footer.append(...ctas);
+    merchCard.append(footer);
+  }
+}
+function processAnalytics(fields, merchCard) {
+  const { tags } = fields;
+  const cardAnalyticsId = tags?.find((tag) => tag.startsWith(ANALYTICS_TAG))?.split("/").pop();
+  if (!cardAnalyticsId) return;
+  merchCard.setAttribute(ANALYTICS_SECTION_ATTR, cardAnalyticsId);
+  const elements = [
+    ...merchCard.shadowRoot.querySelectorAll(
+      `a[data-analytics-id],button[data-analytics-id]`
+    ),
+    ...merchCard.querySelectorAll(
+      `a[data-analytics-id],button[data-analytics-id]`
+    )
+  ];
+  elements.forEach((el, index) => {
+    el.setAttribute(
+      ANALYTICS_LINK_ATTR,
+      `${el.dataset.analyticsId}-${index + 1}`
+    );
+  });
+}
+function updateLinksCSS(merchCard) {
+  if (merchCard.spectrum !== "css") return;
+  [
+    ["primary-link", "primary"],
+    ["secondary-link", "secondary"]
+  ].forEach(([className, variant]) => {
+    merchCard.querySelectorAll(`a.${className}`).forEach((link) => {
+      link.classList.remove(className);
+      link.classList.add("spectrum-Link", `spectrum-Link--${variant}`);
+    });
+  });
+}
+function cleanup(merchCard) {
+  merchCard.querySelectorAll("[slot]").forEach((el) => {
+    el.remove();
+  });
+  merchCard.variant = void 0;
+  const attributesToRemove = [
+    "checkbox-label",
+    "stock-offer-osis",
+    "secure-label",
+    "background-image",
+    "background-color",
+    "border-color",
+    "badge-background-color",
+    "badge-color",
+    "badge-text",
+    "gradient-border",
+    "size",
+    ANALYTICS_SECTION_ATTR
+  ];
+  attributesToRemove.forEach((attr) => merchCard.removeAttribute(attr));
+  const classesToRemove = ["wide-strip", "thin-strip"];
+  merchCard.classList.remove(...classesToRemove);
+}
+async function hydrate(fragment, merchCard) {
+  if (!fragment) {
+    const cardIdForError = merchCard?.id || "unknown";
+    console.error(`hydrate: Fragment is undefined. Cannot hydrate card (merchCard id: ${cardIdForError}).`);
+    throw new Error(`hydrate: Fragment is undefined for card (merchCard id: ${cardIdForError}).`);
+  }
+  if (!fragment.fields) {
+    const problemId = fragment.id || "unknown";
+    const cardIdForError = merchCard?.id || "unknown";
+    console.error(`hydrate: Fragment for card ID '${problemId}' (merchCard id: ${cardIdForError}) is missing 'fields'. Cannot hydrate.`);
+    throw new Error(`hydrate: Fragment for card ID '${problemId}' (merchCard id: ${cardIdForError}) is missing 'fields'.`);
+  }
+  const { id, fields, settings = {}, priceLiterals: priceLiterals2 } = fragment;
+  const { variant } = fields;
+  if (!variant) throw new Error(`hydrate: no variant found in payload ${id}`);
+  cleanup(merchCard);
+  merchCard.settings = settings;
+  if (priceLiterals2) merchCard.priceLiterals = priceLiterals2;
+  merchCard.id ?? (merchCard.id = fragment.id);
+  merchCard.variant = variant;
+  await merchCard.updateComplete;
+  const { aemFragmentMapping: mapping } = merchCard.variantLayout;
+  if (!mapping) throw new Error(`hydrate: variant mapping not found for ${id}`);
+  if (mapping.style === "consonant") {
+    merchCard.setAttribute("consonant", true);
+  }
+  processMnemonics(fields, merchCard, mapping.mnemonics);
+  processBadge(fields, merchCard, mapping);
+  processTrialBadge(fields, merchCard, mapping);
+  processSize(fields, merchCard, mapping.size);
+  processTitle(fields, merchCard, mapping.title);
+  processSubtitle(fields, merchCard, mapping);
+  processPrices(fields, merchCard, mapping);
+  processBackgroundImage(
+    fields,
+    merchCard,
+    mapping.backgroundImage
+  );
+  processBackgroundColor(fields, merchCard, mapping.allowedColors, mapping.backgroundColor);
+  processBorderColor(fields, merchCard, mapping);
+  processDescription(fields, merchCard, mapping);
+  processAddon(fields, merchCard, mapping);
+  processAddonConfirmation(fields, merchCard, mapping);
+  processStockOffersAndSecureLabel(
+    fields,
+    merchCard,
+    mapping,
+    settings
+  );
+  processUptLinks(fields, merchCard);
+  processCTAs(fields, merchCard, mapping, variant);
+  processAnalytics(fields, merchCard);
+  updateLinksCSS(merchCard);
+}
+
+// src/merch-card.js
+var MERCH_CARD = "merch-card";
+var MERCH_CARD_LOAD_TIMEOUT = 2e4;
+var MARK_MERCH_CARD_PREFIX = "merch-card:";
+function priceOptionsProvider(element, options) {
+  const card = element.closest(MERCH_CARD);
+  if (!card) return options;
+  if (card.priceLiterals) {
+    options.literals ?? (options.literals = {});
+    Object.assign(options.literals, card.priceLiterals);
+  }
+  card.variantLayout?.priceOptionsProvider?.(element, options);
+}
+function registerPriceOptionsProvider(masCommerceService) {
+  if (masCommerceService.providers.has(priceOptionsProvider)) return;
+  masCommerceService.providers.price(priceOptionsProvider);
+}
+var idCounter = 0;
+var _durationMarkName, _internalId, _log2, _service4, _startMarkName, _resolveHydration, _hydrationPromise, _MerchCard_instances, fail_fn2, regularPrice_get, legal_get, getCta_fn;
+var MerchCard = class extends s7 {
+  constructor() {
+    super();
+    __privateAdd(this, _MerchCard_instances);
+    __privateAdd(this, _durationMarkName);
+    __privateAdd(this, _internalId);
+    // internal unique card identifier
+    __privateAdd(this, _log2);
+    __privateAdd(this, _service4);
+    __privateAdd(this, _startMarkName);
+    __privateAdd(this, _resolveHydration);
+    __privateAdd(this, _hydrationPromise, new Promise((resolve) => {
+      __privateSet(this, _resolveHydration, resolve);
+    }));
+    __publicField(this, "customerSegment");
+    __publicField(this, "marketSegment");
+    /**
+     * @type {VariantLayout}
+     */
+    __publicField(this, "variantLayout");
+    this.id = null;
+    this.failed = false;
+    this.filters = {};
+    this.types = "";
+    this.selected = false;
+    this.spectrum = "css";
+    this.loading = "lazy";
+    this.handleAemFragmentEvents = this.handleAemFragmentEvents.bind(this);
+    this.handleMerchOfferSelectReady = this.handleMerchOfferSelectReady.bind(this);
+  }
+  firstUpdated() {
+    this.variantLayout = getVariantLayout(this);
+    this.variantLayout?.connectedCallbackHook();
+  }
+  willUpdate(changedProperties) {
+    if (changedProperties.has("variant") || !this.variantLayout) {
+      this.variantLayout = getVariantLayout(this);
+      this.variantLayout?.connectedCallbackHook();
+    }
+  }
+  updated(changedProperties) {
+    if (changedProperties.has("badgeBackgroundColor") || changedProperties.has("borderColor")) {
+      this.style.setProperty(
+        "--consonant-merch-card-border",
+        this.computedBorderStyle
+      );
+    }
+    if (changedProperties.has("backgroundColor")) {
+      this.style.setProperty(
+        "--merch-card-custom-background-color",
+        this.backgroundColor ? `var(--${this.backgroundColor})` : ""
+      );
+    }
+    try {
+      this.variantLayoutPromise = this.variantLayout?.postCardUpdateHook(changedProperties);
+    } catch (e7) {
+      __privateMethod(this, _MerchCard_instances, fail_fn2).call(this, `Error in postCardUpdateHook: ${e7.message}`, {}, false);
+    }
+  }
+  get theme() {
+    return this.closest("sp-theme");
+  }
+  get dir() {
+    return this.closest("[dir]")?.getAttribute("dir") ?? "ltr";
+  }
+  render() {
+    if (!this.isConnected || !this.variantLayout || this.style.display === "none")
+      return;
+    return this.variantLayout.renderLayout();
+  }
+  get computedBorderStyle() {
+    if (!["ccd-slice", "ccd-suggested", "ah-promoted-plans"].includes(
+      this.variant
+    )) {
+      return `1px solid ${this.borderColor ? this.borderColor : this.badgeBackgroundColor}`;
+    }
+    return "";
+  }
+  get badgeElement() {
+    return this.shadowRoot.getElementById("badge");
+  }
+  get headingmMSlot() {
+    return this.shadowRoot.querySelector('slot[name="heading-m"]').assignedElements()[0];
+  }
+  get footerSlot() {
+    return this.shadowRoot.querySelector('slot[name="footer"]')?.assignedElements()[0];
+  }
+  get descriptionSlot() {
+    return this.shadowRoot.querySelector('slot[name="body-xs"')?.assignedElements()[0];
+  }
+  get descriptionSlotCompare() {
+    return this.shadowRoot.querySelector('slot[name="body-m"')?.assignedElements()[0];
+  }
+  get price() {
+    return this.headingmMSlot?.querySelector(SELECTOR_MAS_INLINE_PRICE);
+  }
+  get checkoutLinks() {
+    return [
+      ...this.footerSlot?.querySelectorAll(SELECTOR_MAS_CHECKOUT_LINK) ?? []
+    ];
+  }
+  get checkoutLinksDescription() {
+    return [
+      ...this.descriptionSlot?.querySelectorAll(SELECTOR_MAS_CHECKOUT_LINK) ?? []
+    ];
+  }
+  get checkoutLinkDescriptionCompare() {
+    return [
+      ...this.descriptionSlotCompare?.querySelectorAll(SELECTOR_MAS_CHECKOUT_LINK) ?? []
+    ];
+  }
+  get activeDescriptionLinks() {
+    if (this.variant === "mini-compare-chart") {
+      return this.checkoutLinkDescriptionCompare;
+    }
+    return this.checkoutLinksDescription;
+  }
+  async toggleStockOffer({ target }) {
+    if (!this.stockOfferOsis) return;
+    const elements = this.checkoutLinks;
+    if (elements.length === 0) return;
+    for (const element of elements) {
+      await element.onceSettled();
+      const planType = element.value?.[0]?.planType;
+      if (!planType) return;
+      const stockOfferOsi = this.stockOfferOsis[planType];
+      if (!stockOfferOsi) return;
+      const osis = element.dataset.wcsOsi.split(",").filter((osi) => osi !== stockOfferOsi);
+      if (target.checked) {
+        osis.push(stockOfferOsi);
+      }
+      element.dataset.wcsOsi = osis.join(",");
+    }
+  }
+  changeHandler(event) {
+    if (event.target.tagName === "MERCH-ADDON") {
+      this.toggleAddon(event.target);
+    }
+  }
+  toggleAddon(merchAddon) {
+    this.variantLayout?.toggleAddon?.(merchAddon);
+    const allLinks = [
+      ...this.checkoutLinks,
+      ...this.activeDescriptionLinks ?? []
+    ];
+    if (allLinks.length === 0) return;
+    const updateOsi = (link) => {
+      const { offerType, planType } = link.value?.[0] ?? {};
+      if (!offerType || !planType) return;
+      const addonOsi = merchAddon.getOsi(planType, offerType);
+      const osis = (link.dataset.wcsOsi || "").split(",").filter((osi) => osi && osi !== addonOsi);
+      if (merchAddon.checked) {
+        osis.push(addonOsi);
+      }
+      link.dataset.wcsOsi = osis.join(",");
+    };
+    allLinks.forEach(updateOsi);
+  }
+  handleQuantitySelection(event) {
+    const allLinks = [
+      ...this.checkoutLinks,
+      ...this.activeDescriptionLinks ?? []
+    ];
+    if (allLinks.length === 0) return;
+    for (const link of allLinks) {
+      link.dataset.quantity = event.detail.option;
+    }
+  }
+  get titleElement() {
+    return this.querySelector(
+      this.variantLayout?.headingSelector || ".card-heading"
+    );
+  }
+  get title() {
+    return this.titleElement?.textContent?.trim();
+  }
+  /* c8 ignore next 3 */
+  get description() {
+    return this.querySelector('[slot="body-xs"]')?.textContent?.trim();
+  }
+  /**
+   * If the card is the single app, set the order for all filters to 2.
+   * If not, increment the order for all filters after the second card by 1.
+   * @param {*} singleApp
+   */
+  updateFilters(singleApp) {
+    const newFilters = { ...this.filters };
+    Object.keys(newFilters).forEach((key) => {
+      if (singleApp) {
+        newFilters[key].order = Math.min(newFilters[key].order || 2, 2);
+        return;
+      }
+      const value = newFilters[key].order;
+      if (value === 1 || isNaN(value)) return;
+      newFilters[key].order = Number(value) + 1;
+    });
+    this.filters = newFilters;
+  }
+  /* c8 ignore next 3 */
+  includes(text) {
+    return this.textContent.match(new RegExp(text, "i")) !== null;
+  }
+  connectedCallback() {
+    var _a2;
+    super.connectedCallback();
+    if (!__privateGet(this, _internalId)) {
+      __privateSet(this, _internalId, idCounter++);
+    }
+    if (!this.aemFragment) {
+      (_a2 = __privateGet(this, _resolveHydration)) == null ? void 0 : _a2.call(this);
+      __privateSet(this, _resolveHydration, void 0);
+    }
+    this.id ?? (this.id = this.getAttribute("id") ?? this.aemFragment?.getAttribute("fragment"));
+    const logId = this.id ?? __privateGet(this, _internalId);
+    __privateSet(this, _startMarkName, `${MARK_MERCH_CARD_PREFIX}${logId}${MARK_START_SUFFIX}`);
+    __privateSet(this, _durationMarkName, `${MARK_MERCH_CARD_PREFIX}${logId}${MARK_DURATION_SUFFIX}`);
+    performance.mark(__privateGet(this, _startMarkName));
+    __privateSet(this, _service4, getService2());
+    registerPriceOptionsProvider(__privateGet(this, _service4));
+    __privateSet(this, _log2, __privateGet(this, _service4).Log.module(MERCH_CARD));
+    this.addEventListener(
+      EVENT_MERCH_QUANTITY_SELECTOR_CHANGE,
+      this.handleQuantitySelection
+    );
+    this.addEventListener(
+      EVENT_MERCH_ADDON_AND_QUANTITY_UPDATE,
+      this.handleAddonAndQuantityUpdate
+    );
+    this.addEventListener(EVENT_MERCH_OFFER_SELECT_READY, this.handleMerchOfferSelectReady);
+    this.addEventListener(EVENT_AEM_ERROR, this.handleAemFragmentEvents);
+    this.addEventListener(EVENT_AEM_LOAD, this.handleAemFragmentEvents);
+    this.addEventListener("change", this.changeHandler);
+    if (!this.aemFragment) {
+      setTimeout(() => this.checkReady(), 0);
+    }
+  }
+  disconnectedCallback() {
+    super.disconnectedCallback();
+    this.variantLayout?.disconnectedCallbackHook();
+    this.removeEventListener(
+      EVENT_MERCH_QUANTITY_SELECTOR_CHANGE,
+      this.handleQuantitySelection
+    );
+    this.removeEventListener(EVENT_AEM_ERROR, this.handleAemFragmentEvents);
+    this.removeEventListener(EVENT_AEM_LOAD, this.handleAemFragmentEvents);
+    this.removeEventListener("change", this.changeHandler);
+    this.removeEventListener(
+      EVENT_MERCH_ADDON_AND_QUANTITY_UPDATE,
+      this.handleAddonAndQuantityUpdate
+    );
+  }
+  // custom methods
+  async handleAemFragmentEvents(e7) {
+    var _a2;
+    if (!this.isConnected) return;
+    if (e7.type === EVENT_AEM_ERROR) {
+      __privateMethod(this, _MerchCard_instances, fail_fn2).call(this, `AEM fragment cannot be loaded`);
+    }
+    if (e7.type === EVENT_AEM_LOAD) {
+      this.failed = false;
+      if (e7.target.nodeName === "AEM-FRAGMENT") {
+        const fragment = e7.detail;
+        try {
+          if (!__privateGet(this, _resolveHydration)) {
+            __privateSet(this, _hydrationPromise, new Promise((resolve) => {
+              __privateSet(this, _resolveHydration, resolve);
+            }));
+          }
+          hydrate(fragment, this);
+        } catch (e8) {
+          __privateMethod(this, _MerchCard_instances, fail_fn2).call(this, `hydration has failed: ${e8.message}`);
+        } finally {
+          (_a2 = __privateGet(this, _resolveHydration)) == null ? void 0 : _a2.call(this);
+          __privateSet(this, _resolveHydration, void 0);
+        }
+        this.checkReady();
+      }
+    }
+  }
+  async checkReady() {
+    if (!this.isConnected) return;
+    if (__privateGet(this, _hydrationPromise)) {
+      await __privateGet(this, _hydrationPromise);
+      __privateSet(this, _hydrationPromise, void 0);
+    }
+    if (this.variantLayoutPromise) {
+      await this.variantLayoutPromise;
+      this.variantLayoutPromise = void 0;
+    }
+    const timeoutPromise = new Promise(
+      (resolve) => setTimeout(() => resolve("timeout"), MERCH_CARD_LOAD_TIMEOUT)
+    );
+    if (this.aemFragment) {
+      const result2 = await Promise.race([
+        this.aemFragment.updateComplete,
+        timeoutPromise
+      ]);
+      if (result2 === false || result2 === "timeout") {
+        const errorMessage = result2 === "timeout" ? `AEM fragment was not resolved within ${MERCH_CARD_LOAD_TIMEOUT} timeout` : "AEM fragment cannot be loaded";
+        __privateMethod(this, _MerchCard_instances, fail_fn2).call(this, errorMessage, {}, false);
+        return;
+      }
+    }
+    const masElements = [...this.querySelectorAll(SELECTOR_MAS_ELEMENT)];
+    const successPromise = Promise.all(
+      masElements.map(
+        (element) => element.onceSettled().catch(() => element)
+      )
+    ).then(
+      (elements) => elements.every(
+        (el) => el.classList.contains("placeholder-resolved")
+      )
+    );
+    const result = await Promise.race([successPromise, timeoutPromise]);
+    if (result === true) {
+      this.measure = performance.measure(
+        __privateGet(this, _durationMarkName),
+        __privateGet(this, _startMarkName)
+      );
+      const detail = {
+        ...this.aemFragment?.fetchInfo,
+        ...__privateGet(this, _service4).duration,
+        measure: printMeasure(this.measure)
+      };
+      this.dispatchEvent(
+        new CustomEvent(EVENT_MAS_READY, {
+          bubbles: true,
+          composed: true,
+          detail
+        })
+      );
+      return this;
+    } else {
+      this.measure = performance.measure(
+        __privateGet(this, _durationMarkName),
+        __privateGet(this, _startMarkName)
+      );
+      const details = {
+        measure: printMeasure(this.measure),
+        ...__privateGet(this, _service4).duration
+      };
+      if (result === "timeout") {
+        __privateMethod(this, _MerchCard_instances, fail_fn2).call(this, `Contains offers that were not resolved within ${MERCH_CARD_LOAD_TIMEOUT} timeout`, details);
+      } else {
+        __privateMethod(this, _MerchCard_instances, fail_fn2).call(this, `Contains unresolved offers`, details);
+      }
+    }
+  }
+  get aemFragment() {
+    return this.querySelector("aem-fragment");
+  }
+  get addon() {
+    return this.querySelector("merch-addon");
+  }
+  /* c8 ignore next 3 */
+  get quantitySelect() {
+    return this.querySelector("merch-quantity-select");
+  }
+  get addonCheckbox() {
+    return this.querySelector("merch-addon");
+  }
+  displayFooterElementsInColumn() {
+    if (!this.classList.contains("product")) return;
+    const secureTransactionLabel = this.shadowRoot.querySelector(
+      ".secure-transaction-label"
+    );
+    const checkoutLinkCtas = this.footerSlot?.querySelectorAll(
+      SELECTOR_MAS_CHECKOUT_LINK
+    );
+    if (checkoutLinkCtas.length === 2 && secureTransactionLabel) {
+      secureTransactionLabel.parentElement.classList.add("footer-column");
+    }
+  }
+  handleMerchOfferSelectReady() {
+    if (this.offerSelect && !this.offerSelect.planType) return;
+    this.displayFooterElementsInColumn();
+  }
+  /* c8 ignore next 3 */
+  get dynamicPrice() {
+    return this.querySelector('[slot="price"]');
+  }
+  handleAddonAndQuantityUpdate({ detail: { id, items } }) {
+    if (!id || !items?.length) return;
+    const cta = this.checkoutLinks.find((link) => link.getAttribute("data-modal-id") === id);
+    if (!cta) return;
+    const url = new URL(cta.getAttribute("href"));
+    const pa = url.searchParams.get("pa");
+    const mainProductQuantity = items.find((item) => item.productArrangementCode === pa)?.quantity;
+    const isAddonIncluded = !!items.find((item) => item.productArrangementCode !== pa);
+    if (mainProductQuantity) {
+      this.quantitySelect?.dispatchEvent(new CustomEvent(EVENT_MERCH_CARD_QUANTITY_CHANGE, {
+        detail: { quantity: mainProductQuantity },
+        bubbles: true,
+        composed: true
+      }));
+    }
+    if (this.addonCheckbox && this.addonCheckbox.checked !== isAddonIncluded) {
+      this.toggleStockOffer({ target: this.addonCheckbox });
+      const checkboxEvent = new Event("change", {
+        bubbles: true,
+        cancelable: true
+      });
+      Object.defineProperty(checkboxEvent, "target", {
+        writable: false,
+        value: { checked: isAddonIncluded }
+      });
+      this.addonCheckbox.handleChange(checkboxEvent);
+    }
+  }
+  get prices() {
+    return Array.from(
+      this.querySelectorAll(SELECTOR_MAS_INLINE_PRICE)
+    );
+  }
+  get promoPrice() {
+    if (!this.querySelector(`span.price-strikethrough`)) return;
+    let price2 = this.querySelector(`.price.price-alternative`);
+    if (!price2) {
+      price2 = this.querySelector(`${SELECTOR_MAS_INLINE_PRICE}[data-template="price"] > span`);
+    }
+    if (!price2) return;
+    price2 = price2.innerText;
+    return price2;
+  }
+  get regularPrice() {
+    return __privateGet(this, _MerchCard_instances, regularPrice_get)?.innerText;
+  }
+  get promotionCode() {
+    const promotionCodes = [...this.querySelectorAll(`${SELECTOR_MAS_INLINE_PRICE}[data-promotion-code],${SELECTOR_MAS_CHECKOUT_LINK}[data-promotion-code]`)].map((el) => el.dataset.promotionCode);
+    const uniqueCodes = [...new Set(promotionCodes)];
+    if (uniqueCodes.length > 1) {
+      __privateGet(this, _log2)?.warn(`Multiple different promotion codes found: ${uniqueCodes.join(", ")}`);
+    }
+    return promotionCodes[0];
+  }
+  get annualPrice() {
+    const price2 = this.querySelector(`${SELECTOR_MAS_INLINE_PRICE}[data-template="price"] > .price.price-annual`);
+    return price2?.innerText;
+  }
+  get promoText() {
+    return void 0;
+  }
+  get taxText() {
+    return (__privateGet(this, _MerchCard_instances, legal_get) ?? __privateGet(this, _MerchCard_instances, regularPrice_get))?.querySelector("span.price-tax-inclusivity")?.innerText.trim() || void 0;
+  }
+  get recurrenceText() {
+    return __privateGet(this, _MerchCard_instances, regularPrice_get)?.querySelector("span.price-recurrence")?.innerText;
+  }
+  get planTypeText() {
+    return this.querySelector('[is="inline-price"][data-template="legal"] span.price-plan-type')?.innerText;
+  }
+  get seeTermsInfo() {
+    const seeTerms = this.querySelector('a[is="upt-link"]');
+    if (!seeTerms) return void 0;
+    return __privateMethod(this, _MerchCard_instances, getCta_fn).call(this, seeTerms);
+  }
+  get renewalText() {
+    return this.querySelector("span.renewal-text")?.innerText;
+  }
+  get promoDurationText() {
+    return this.querySelector("span.promo-duration-text")?.innerText;
+  }
+  get ctas() {
+    return Array.from(
+      this.querySelector('[slot="ctas"]')?.querySelectorAll(
+        `${SELECTOR_MAS_CHECKOUT_LINK}, a`
+      )
+    );
+  }
+  get primaryCta() {
+    return __privateMethod(this, _MerchCard_instances, getCta_fn).call(this, this.ctas.find((cta) => cta.variant === "accent" || cta.matches(".spectrum-Button--accent,.con-button.blue")));
+  }
+  get secondaryCta() {
+    return __privateMethod(this, _MerchCard_instances, getCta_fn).call(this, this.ctas.find((cta) => cta.variant !== "accent" && !cta.matches(".spectrum-Button--accent,.con-button.blue")));
+  }
+};
+_durationMarkName = new WeakMap();
+_internalId = new WeakMap();
+_log2 = new WeakMap();
+_service4 = new WeakMap();
+_startMarkName = new WeakMap();
+_resolveHydration = new WeakMap();
+_hydrationPromise = new WeakMap();
+_MerchCard_instances = new WeakSet();
+fail_fn2 = function(error, details = {}, dispatch = true) {
+  if (!this.isConnected) return;
+  const aemFragment = this.aemFragment;
+  let fragmentId = aemFragment?.getAttribute("fragment");
+  fragmentId = `[${fragmentId}]`;
+  const detail = {
+    ...this.aemFragment.fetchInfo,
+    ...__privateGet(this, _service4).duration,
+    ...details,
+    message: error
+  };
+  __privateGet(this, _log2).error(`merch-card${fragmentId}: ${error}`, detail);
+  this.failed = true;
+  if (!dispatch) return;
+  this.dispatchEvent(
+    new CustomEvent(EVENT_MAS_ERROR, {
+      bubbles: true,
+      composed: true,
+      detail
+    })
+  );
+};
+regularPrice_get = function() {
+  return this.querySelector(`span.price-strikethrough`) ?? this.querySelector(`${SELECTOR_MAS_INLINE_PRICE}[data-template="price"] > span`);
+};
+legal_get = function() {
+  return this.querySelector(`${SELECTOR_MAS_INLINE_PRICE}[data-template="legal"]`);
+};
+getCta_fn = function(element) {
+  return {
+    text: element.innerText.trim(),
+    analyticsId: element.dataset.analyticsId,
+    href: element.getAttribute("href") ?? element.dataset.href
+  };
+};
+__publicField(MerchCard, "properties", {
+  id: { type: String, attribute: "id", reflect: true },
+  name: { type: String, attribute: "name", reflect: true },
+  variant: { type: String, reflect: true },
+  size: { type: String, attribute: "size", reflect: true },
+  badgeColor: { type: String, attribute: "badge-color", reflect: true },
+  borderColor: { type: String, attribute: "border-color", reflect: true },
+  backgroundColor: { type: String, attribute: "background-color", reflect: true },
+  badgeBackgroundColor: {
+    type: String,
+    attribute: "badge-background-color",
+    reflect: true
+  },
+  backgroundImage: {
+    type: String,
+    attribute: "background-image",
+    reflect: true
+  },
+  badgeText: { type: String, attribute: "badge-text" },
+  actionMenu: { type: Boolean, attribute: "action-menu" },
+  actionMenuLabel: { type: String, attribute: "action-menu-label" },
+  customHr: { type: Boolean, attribute: "custom-hr" },
+  consonant: { type: Boolean, attribute: "consonant" },
+  failed: { type: Boolean, attribute: "failed", reflect: true },
+  spectrum: { type: String, attribute: "spectrum" },
+  detailBg: { type: String, attribute: "detail-bg" },
+  secureLabel: { type: String, attribute: "secure-label" },
+  checkboxLabel: { type: String, attribute: "checkbox-label" },
+  addonTitle: { type: String, attribute: "addon-title" },
+  addonOffers: { type: Object, attribute: "addon-offers" },
+  selected: { type: Boolean, attribute: "aria-selected", reflect: true },
+  storageOption: { type: String, attribute: "storage", reflect: true },
+  planType: { type: String, attribute: "plan-type", reflect: true },
+  settings: {
+    type: Object,
+    attribute: false
+  },
+  stockOfferOsis: {
+    type: Object,
+    attribute: "stock-offer-osis",
+    converter: {
+      fromAttribute: (value) => {
+        if (!value) return;
+        const [PUF2, ABM2, M2M2] = value.split(",");
+        return { PUF: PUF2, ABM: ABM2, M2M: M2M2 };
+      }
+    }
+  },
+  filters: {
+    type: String,
+    reflect: true,
+    converter: {
+      fromAttribute: (value) => {
+        return Object.fromEntries(
+          value.split(",").map((filter) => {
+            const [key, order, size] = filter.split(":");
+            const value2 = Number(order);
+            return [
+              key,
+              {
+                order: isNaN(value2) ? void 0 : value2,
+                size
+              }
+            ];
+          })
+        );
+      },
+      toAttribute: (value) => {
+        return Object.entries(value).map(
+          ([key, { order, size }]) => [key, order, size].filter((v3) => v3 != void 0).join(":")
+        ).join(",");
+      }
+    }
+  },
+  types: {
+    type: String,
+    attribute: "types",
+    reflect: true
+  },
+  merchOffer: { type: Object },
+  analyticsId: {
+    type: String,
+    attribute: ANALYTICS_SECTION_ATTR,
+    reflect: true
+  },
+  loading: { type: String },
+  priceLiterals: { type: Object }
+});
+__publicField(MerchCard, "styles", [styles, ...sizeStyles()]);
+__publicField(MerchCard, "registerVariant", registerVariant);
+__publicField(MerchCard, "getFragmentMapping", getFragmentMapping);
+customElements.define(MERCH_CARD, MerchCard);
+
+// src/merch-offer-select.js
+var _handleOfferSelectionByQuantityFn;
+var MerchOfferSelect = class extends s7 {
+  constructor() {
+    super();
+    __privateAdd(this, _handleOfferSelectionByQuantityFn);
+    this.defaults = {};
+    this.variant = "plans";
+  }
+  /** Returns the default values for the price, cta, and description slots.
+   * These are the values coming from the container itself, not from the merch-offer elements.
+   * E.g. initial merch-card description text. There is no default price or cta in the container.
+   */
+  saveContainerDefaultValues() {
+    const container = this.closest(this.getAttribute("container"));
+    const description = container?.querySelector('[slot="description"]:not(merch-offer > *)')?.cloneNode(true);
+    const badgeText = container?.badgeText;
+    return {
+      description,
+      badgeText
+    };
+  }
+  getSlottedElement(slotName, container) {
+    const containerEl = container || this.closest(this.getAttribute("container"));
+    return containerEl.querySelector(
+      `[slot="${slotName}"]:not(merch-offer > *)`
+    );
+  }
+  updateSlot(slotName, container) {
+    const slot = this.getSlottedElement(slotName, container);
+    if (!slot) return;
+    const node = this.selectedOffer.getOptionValue(slotName) ? this.selectedOffer.getOptionValue(slotName) : this.defaults[slotName];
+    if (node) {
+      slot.replaceWith(node.cloneNode(true));
+    }
+  }
+  handleOfferSelection(e7) {
+    const newOffer = e7.detail;
+    this.selectOffer(newOffer);
+  }
+  handleOfferSelectionByQuantity(event) {
+    const selected = event.detail.option;
+    const selectedValue = Number.parseInt(selected);
+    const newOffer = this.findAppropriateOffer(selectedValue);
+    this.selectOffer(newOffer);
+    const cta = this.getSlottedElement("cta");
+    cta.setAttribute("data-quantity", selectedValue);
+  }
+  selectOffer(newOffer) {
+    if (!newOffer) {
+      return;
+    }
+    const previousOffer = this.selectedOffer;
+    if (previousOffer) {
+      previousOffer.selected = false;
+    }
+    newOffer.selected = true;
+    this.selectedOffer = newOffer;
+    this.planType = newOffer.planType;
+    this.updateContainer();
+    this.updateComplete.then(() => {
+      this.dispatchEvent(
+        new CustomEvent(EVENT_OFFER_SELECTED, {
+          detail: this,
+          bubbles: true
+        })
+      );
+    });
+  }
+  findAppropriateOffer(selectedValue) {
+    let previousOfferWithValue = null;
+    const foundOffer = this.offers.find((offer) => {
+      const offerAttribute = Number.parseInt(offer.getAttribute("value"));
+      if (offerAttribute === selectedValue) {
+        return true;
+      } else if (offerAttribute > selectedValue) {
+        return false;
+      } else {
+        previousOfferWithValue = offer;
+      }
+    });
+    return foundOffer || previousOfferWithValue;
+  }
+  /**
+   * If badge text is empty string - delete the badge.
+   * If badge text is present - set the badge.
+   * If badge text is null or undefined - set default badge. */
+  updateBadgeText(container) {
+    if (this.selectedOffer.badgeText === "") {
+      container.badgeText = null;
+    } else if (this.selectedOffer.badgeText) {
+      container.badgeText = this.selectedOffer.badgeText;
+    } else {
+      container.badgeText = this.defaults.badgeText;
+    }
+  }
+  /** Will update price, cta, and other slots/properties in parent container (e.g. merch-card) */
+  updateContainer() {
+    const container = this.closest(this.getAttribute("container"));
+    if (!container || !this.selectedOffer) return;
+    this.updateSlot("cta", container);
+    this.updateSlot("secondary-cta", container);
+    this.updateSlot("price", container);
+    if (this.manageableMode) return;
+    this.updateSlot("description", container);
+    this.updateBadgeText(container);
+  }
+  render() {
+    return x2`<fieldset><slot class="${this.variant}"></slot></fieldset>`;
+  }
+  connectedCallback() {
+    super.connectedCallback();
+    this.addEventListener("focusin", this.handleFocusin);
+    this.addEventListener("click", this.handleFocusin);
+    this.addEventListener(
+      EVENT_MERCH_OFFER_READY,
+      this.handleOfferSelectReady
+    );
+    const quantitySelect = this.closest("merch-quantity-select");
+    this.manageableMode = quantitySelect;
+    this.offers = [...this.querySelectorAll("merch-offer")];
+    __privateSet(this, _handleOfferSelectionByQuantityFn, this.handleOfferSelectionByQuantity.bind(this));
+    if (this.manageableMode) {
+      quantitySelect.addEventListener(
+        EVENT_MERCH_QUANTITY_SELECTOR_CHANGE,
+        __privateGet(this, _handleOfferSelectionByQuantityFn)
+      );
+    } else {
+      this.defaults = this.saveContainerDefaultValues();
+    }
+    this.selectedOffer = this.offers[0];
+    if (this.planType) {
+      this.updateContainer();
+    }
+  }
+  get miniCompareMobileCard() {
+    return this.merchCard?.variant === "mini-compare-chart" && this.isMobile;
+  }
+  get merchCard() {
+    return this.closest("merch-card");
+  }
+  get isMobile() {
+    return window.matchMedia("(max-width: 767px)").matches;
+  }
+  disconnectedCallback() {
+    super.disconnectedCallback();
+    this.removeEventListener(
+      EVENT_MERCH_QUANTITY_SELECTOR_CHANGE,
+      __privateGet(this, _handleOfferSelectionByQuantityFn)
+    );
+    this.removeEventListener(
+      EVENT_MERCH_OFFER_READY,
+      this.handleOfferSelectReady
+    );
+    this.removeEventListener("focusin", this.handleFocusin);
+    this.removeEventListener("click", this.handleFocusin);
+  }
+  get price() {
+    return this.querySelector(
+      'merch-offer[aria-selected] [is="inline-price"]'
+    );
+  }
+  get customerSegment() {
+    return this.selectedOffer?.customerSegment;
+  }
+  get marketSegment() {
+    return this.selectedOffer?.marketSegment;
+  }
+  handleFocusin(event) {
+    if (event.target?.nodeName === "MERCH-OFFER") {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      this.selectOffer(event.target);
+    }
+  }
+  async handleOfferSelectReady() {
+    if (this.planType) return;
+    if (this.querySelector("merch-offer:not([plan-type])")) return;
+    this.planType = this.selectedOffer.planType;
+    await this.updateComplete;
+    this.selectOffer(
+      this.selectedOffer ?? this.querySelector("merch-offer[aria-selected]") ?? this.querySelector("merch-offer")
+    );
+    this.dispatchEvent(
+      new CustomEvent(EVENT_MERCH_OFFER_SELECT_READY, { bubbles: true })
+    );
+  }
+};
+_handleOfferSelectionByQuantityFn = new WeakMap();
+__publicField(MerchOfferSelect, "styles", i3`
         :host {
             display: inline-block;
         }
@@ -2558,7 +13407,19 @@ merch-card [slot='callout-content'] .icon-button::before {
             flex-direction: column;
             gap: var(--consonant-merch-spacing-xs);
         }
-    `),f(Wr,"properties",{offers:{type:Array},selectedOffer:{type:Object},defaults:{type:Object},variant:{type:String,attribute:"variant",reflect:!0},planType:{type:String,attribute:"plan-type",reflect:!0},stock:{type:Boolean,reflect:!0}});customElements.define("merch-offer-select",Wr);var il=E`
+    `);
+__publicField(MerchOfferSelect, "properties", {
+  offers: { type: Array },
+  selectedOffer: { type: Object },
+  defaults: { type: Object },
+  variant: { type: String, attribute: "variant", reflect: true },
+  planType: { type: String, attribute: "plan-type", reflect: true },
+  stock: { type: Boolean, reflect: true }
+});
+customElements.define("merch-offer-select", MerchOfferSelect);
+
+// src/merch-offer.css.js
+var styles3 = i3`
     :host {
         --merch-radio: rgba(82, 88, 228);
         --merch-radio-hover: rgba(64, 70, 202);
@@ -2769,11 +13630,41 @@ merch-card [slot='callout-content'] .icon-button::before {
         position: relative;
         height: 40px;
     }
-`;var yp="merch-offer",Yr=class extends U{constructor(){super();f(this,"tr");this.type="radio",this.selected=!1}getOptionValue(r){return this.querySelector(`[slot="${r}"]`)}connectedCallback(){super.connectedCallback(),this.initOffer(),this.configuration=this.closest("quantity-selector"),!this.hasAttribute("tabindex")&&!this.configuration&&(this.tabIndex=0),!this.hasAttribute("role")&&!this.configuration&&(this.role="radio")}get asRadioOption(){return x` <div class="merch-Radio">
+`;
+
+// src/merch-offer.js
+var TAG_NAME = "merch-offer";
+var MerchOffer = class extends s7 {
+  constructor() {
+    super();
+    __publicField(this, "tr");
+    this.type = "radio";
+    this.selected = false;
+  }
+  getOptionValue(slotName) {
+    return this.querySelector(`[slot="${slotName}"]`);
+  }
+  // setting attributes can't be done in constructor, so using connectedCallback
+  connectedCallback() {
+    super.connectedCallback();
+    this.initOffer();
+    this.configuration = this.closest("quantity-selector");
+    if (!this.hasAttribute("tabindex") && !this.configuration) {
+      this.tabIndex = 0;
+    }
+    if (!this.hasAttribute("role") && !this.configuration) {
+      this.role = "radio";
+    }
+  }
+  get asRadioOption() {
+    return x2` <div class="merch-Radio">
             <input tabindex="-1" type="radio" class="merch-Radio-input" />
             <span class="merch-Radio-button"></span>
             <span class="merch-Radio-label">${this.text}</span>
-        </div>`}get asSubscriptionOption(){return x`<slot name="commitment"></slot>
+        </div>`;
+  }
+  get asSubscriptionOption() {
+    return x2`<slot name="commitment"></slot>
             <slot name="price"></slot>
             <slot name="teaser"></slot>
             <div id="condition">
@@ -2786,7 +13677,60 @@ merch-card [slot='callout-content'] .icon-button::before {
                         ><slot name="condition-tooltip"></slot
                     ></sp-tooltip>
                 </sp-overlay>
-            </div>`}render(){return this.configuration||!this.price?"":this.type==="subscription-option"?this.asSubscriptionOption:this.asRadioOption}get price(){return this.querySelector('span[is="inline-price"]:not([data-template="strikethrough"])')}get cta(){return this.querySelector(pe)}get prices(){return this.querySelectorAll('span[is="inline-price"]')}get customerSegment(){return this.price?.value?.[0].customerSegment}get marketSegment(){return this.price?.value?.[0].marketSegments[0]}async initOffer(){if(!this.price)return;this.prices.forEach(n=>n.setAttribute("slot","price")),await this.updateComplete,await Promise.all([...this.prices].map(n=>n.onceSettled()));let{value:[r]}=this.price;this.planType=r.planType,await this.updateComplete,this.dispatchEvent(new CustomEvent(Ct,{bubbles:!0}))}};f(Yr,"properties",{text:{type:String},selected:{type:Boolean,attribute:"aria-selected",reflect:!0},badgeText:{type:String,attribute:"badge-text"},type:{type:String,attribute:"type",reflect:!0},planType:{type:String,attribute:"plan-type",reflect:!0}}),f(Yr,"styles",[il]);customElements.define(yp,Yr);var al=E`
+            </div>`;
+  }
+  render() {
+    if (this.configuration) return "";
+    if (!this.price) return "";
+    if (this.type === "subscription-option")
+      return this.asSubscriptionOption;
+    return this.asRadioOption;
+  }
+  get price() {
+    return this.querySelector(
+      'span[is="inline-price"]:not([data-template="strikethrough"])'
+    );
+  }
+  get cta() {
+    return this.querySelector(SELECTOR_MAS_CHECKOUT_LINK);
+  }
+  get prices() {
+    return this.querySelectorAll('span[is="inline-price"]');
+  }
+  get customerSegment() {
+    return this.price?.value?.[0].customerSegment;
+  }
+  get marketSegment() {
+    return this.price?.value?.[0].marketSegments[0];
+  }
+  async initOffer() {
+    if (!this.price) return;
+    this.prices.forEach((el) => el.setAttribute("slot", "price"));
+    await this.updateComplete;
+    await Promise.all([...this.prices].map((price2) => price2.onceSettled()));
+    const {
+      value: [offer]
+    } = this.price;
+    this.planType = offer.planType;
+    await this.updateComplete;
+    this.dispatchEvent(
+      new CustomEvent(EVENT_MERCH_OFFER_READY, { bubbles: true })
+    );
+  }
+};
+__publicField(MerchOffer, "properties", {
+  text: { type: String },
+  selected: { type: Boolean, attribute: "aria-selected", reflect: true },
+  badgeText: { type: String, attribute: "badge-text" },
+  type: { type: String, attribute: "type", reflect: true },
+  // values: radio, subscription-option
+  planType: { type: String, attribute: "plan-type", reflect: true }
+});
+__publicField(MerchOffer, "styles", [styles3]);
+customElements.define(TAG_NAME, MerchOffer);
+
+// src/merch-quantity-select.css.js
+var styles4 = i3`
     :host {
         box-sizing: border-box;
         --background-color: var(--qs-background-color, #f6f6f6);
@@ -2925,17 +13869,223 @@ merch-card [slot='callout-content'] .icon-button::before {
     .item.highlighted {
         background-color: var(--background-color);
     }
-`;var[Jb,ev,sl,cl,ll,tv]=["ArrowLeft","ArrowRight","ArrowUp","ArrowDown","Enter","Tab"];var ji=class extends U{static get properties(){return{closed:{type:Boolean,reflect:!0},selected:{type:Number},min:{type:Number},max:{type:Number},step:{type:Number},maxInput:{type:Number,attribute:"max-input"},options:{type:Array},highlightedIndex:{type:Number},defaultValue:{type:Number,attribute:"default-value",reflect:!0},title:{type:String}}}static get styles(){return al}constructor(){super(),this.options=[],this.title="",this.closed=!0,this.min=0,this.max=0,this.step=0,this.maxInput=void 0,this.defaultValue=void 0,this.selectedValue=0,this.highlightedIndex=0,this.toggleMenu=this.toggleMenu.bind(this),this.handleClickOutside=this.handleClickOutside.bind(this),this.boundKeydownListener=this.handleKeydown.bind(this),this.handleKeyupDebounced=Sr(this.handleKeyup.bind(this),500),this.debouncedQuantityUpdate=Sr(this.handleQuantityUpdate.bind(this),500)}connectedCallback(){super.connectedCallback(),this.addEventListener("keydown",this.boundKeydownListener),window.addEventListener("mousedown",this.handleClickOutside),this.addEventListener(Pt,this.debouncedQuantityUpdate)}handleKeyup(){this.handleInput(),this.sendEvent()}handleKeydown(e){switch(e.key){case cl:this.closed||(e.preventDefault(),this.highlightedIndex=(this.highlightedIndex+1)%this.options.length);break;case sl:this.closed||(e.preventDefault(),this.highlightedIndex=(this.highlightedIndex-1+this.options.length)%this.options.length);break;case ll:if(this.closed)this.closePopover(),this.blur();else{let r=this.options[this.highlightedIndex];if(!r)break;this.selectedValue=r,this.handleMenuOption(this.selectedValue),this.toggleMenu()}break}e.composedPath().includes(this)&&e.stopPropagation()}adjustInput(e,r){this.selectedValue=r,e.value=r,this.highlightedIndex=this.options.indexOf(r)}handleInput(){let e=this.shadowRoot.querySelector(".text-field-input"),r=parseInt(e.value);if(!isNaN(r))if(r>0&&r!==this.selectedValue){let n=r;this.maxInput&&r>this.maxInput&&(n=this.maxInput),this.min&&n<this.min&&(n=this.min),this.adjustInput(e,n)}else this.adjustInput(e,this.selectedValue||this.min||1)}disconnectedCallback(){super.disconnectedCallback(),window.removeEventListener("mousedown",this.handleClickOutside),this.removeEventListener("keydown",this.boundKeydownListener),this.removeEventListener(Pt,this.debouncedQuantityUpdate)}generateOptionsArray(){let e=[];if(this.step>0)for(let r=this.min;r<=this.max;r+=this.step)e.push(r);return e}update(e){(e.has("min")||e.has("max")||e.has("step")||e.has("defaultValue"))&&(this.options=this.generateOptionsArray(),this.highlightedIndex=this.defaultValue?this.options.indexOf(this.defaultValue):0,this.handleMenuOption(this.defaultValue?this.defaultValue:this.options[0])),super.update(e)}handleClickOutside(e){e.composedPath().includes(this)||this.closePopover()}toggleMenu(){this.closed=!this.closed,this.adjustPopoverPlacement(),this.closed&&(this.highlightedIndex=this.options.indexOf(this.selectedValue))}adjustPopoverPlacement(){let e=this.shadowRoot.querySelector(".popover");this.closed||e.getBoundingClientRect().bottom<=window.innerHeight?e.setAttribute("placement","bottom"):e.setAttribute("placement","top")}handleMouseEnter(e){this.highlightedIndex=e}handleMenuOption(e){e===this.max&&this.shadowRoot.querySelector(".text-field-input")?.focus(),this.selectedValue=e,this.sendEvent(),this.closePopover()}sendEvent(){let e=new CustomEvent(Ce,{detail:{option:this.selectedValue},bubbles:!0});this.dispatchEvent(e)}closePopover(){this.closed||this.toggleMenu()}get offerSelect(){return this.querySelector("merch-offer-select")}get popover(){return x` <div class="popover ${this.closed?"closed":"open"}" placement="bottom">
-            ${this.options.map((e,r)=>x`
+`;
+
+// src/focus.js
+var [ARROW_LEFT, ARROW_RIGHT, ARROW_UP, ARROW_DOWN, ENTER, TAB] = [
+  "ArrowLeft",
+  "ArrowRight",
+  "ArrowUp",
+  "ArrowDown",
+  "Enter",
+  "Tab"
+];
+
+// src/merch-quantity-select.js
+var MerchQuantitySelect = class extends s7 {
+  static get properties() {
+    return {
+      closed: { type: Boolean, reflect: true },
+      selected: { type: Number },
+      min: { type: Number },
+      max: { type: Number },
+      step: { type: Number },
+      maxInput: { type: Number, attribute: "max-input" },
+      options: { type: Array },
+      highlightedIndex: { type: Number },
+      defaultValue: {
+        type: Number,
+        attribute: "default-value",
+        reflect: true
+      },
+      title: { type: String }
+    };
+  }
+  static get styles() {
+    return styles4;
+  }
+  constructor() {
+    super();
+    this.options = [];
+    this.title = "";
+    this.closed = true;
+    this.min = 0;
+    this.max = 0;
+    this.step = 0;
+    this.maxInput = void 0;
+    this.defaultValue = void 0;
+    this.selectedValue = 0;
+    this.highlightedIndex = 0;
+    this.toggleMenu = this.toggleMenu.bind(this);
+    this.handleClickOutside = this.handleClickOutside.bind(this);
+    this.boundKeydownListener = this.handleKeydown.bind(this);
+    this.handleKeyupDebounced = debounce(this.handleKeyup.bind(this), 500);
+    this.debouncedQuantityUpdate = debounce(
+      this.handleQuantityUpdate.bind(this),
+      500
+    );
+  }
+  connectedCallback() {
+    super.connectedCallback();
+    this.addEventListener("keydown", this.boundKeydownListener);
+    window.addEventListener("mousedown", this.handleClickOutside);
+    this.addEventListener(
+      EVENT_MERCH_CARD_QUANTITY_CHANGE,
+      this.debouncedQuantityUpdate
+    );
+  }
+  handleKeyup() {
+    this.handleInput();
+    this.sendEvent();
+  }
+  handleKeydown(e7) {
+    switch (e7.key) {
+      case ARROW_DOWN:
+        if (!this.closed) {
+          e7.preventDefault();
+          this.highlightedIndex = (this.highlightedIndex + 1) % this.options.length;
+        }
+        break;
+      case ARROW_UP:
+        if (!this.closed) {
+          e7.preventDefault();
+          this.highlightedIndex = (this.highlightedIndex - 1 + this.options.length) % this.options.length;
+        }
+        break;
+      case ENTER:
+        if (!this.closed) {
+          const option = this.options[this.highlightedIndex];
+          if (!option) break;
+          this.selectedValue = option;
+          this.handleMenuOption(this.selectedValue);
+          this.toggleMenu();
+        } else {
+          this.closePopover();
+          this.blur();
+        }
+        break;
+    }
+    if (e7.composedPath().includes(this)) e7.stopPropagation();
+  }
+  adjustInput(inputField, value) {
+    this.selectedValue = value;
+    inputField.value = value;
+    this.highlightedIndex = this.options.indexOf(value);
+  }
+  handleInput() {
+    const inputField = this.shadowRoot.querySelector(".text-field-input");
+    const inputValue = parseInt(inputField.value);
+    if (isNaN(inputValue)) return;
+    if (inputValue > 0 && inputValue !== this.selectedValue) {
+      let adjustedInputValue = inputValue;
+      if (this.maxInput && inputValue > this.maxInput)
+        adjustedInputValue = this.maxInput;
+      if (this.min && adjustedInputValue < this.min)
+        adjustedInputValue = this.min;
+      this.adjustInput(inputField, adjustedInputValue);
+    } else this.adjustInput(inputField, this.selectedValue || this.min || 1);
+  }
+  disconnectedCallback() {
+    super.disconnectedCallback();
+    window.removeEventListener("mousedown", this.handleClickOutside);
+    this.removeEventListener("keydown", this.boundKeydownListener);
+    this.removeEventListener(
+      EVENT_MERCH_CARD_QUANTITY_CHANGE,
+      this.debouncedQuantityUpdate
+    );
+  }
+  generateOptionsArray() {
+    const options = [];
+    if (this.step > 0) {
+      for (let value = this.min; value <= this.max; value += this.step) {
+        options.push(value);
+      }
+    }
+    return options;
+  }
+  update(changedProperties) {
+    if (changedProperties.has("min") || changedProperties.has("max") || changedProperties.has("step") || changedProperties.has("defaultValue")) {
+      this.options = this.generateOptionsArray();
+      this.highlightedIndex = this.defaultValue ? this.options.indexOf(this.defaultValue) : 0;
+      this.handleMenuOption(
+        this.defaultValue ? this.defaultValue : this.options[0]
+      );
+    }
+    super.update(changedProperties);
+  }
+  handleClickOutside(event) {
+    const path = event.composedPath();
+    if (!path.includes(this)) {
+      this.closePopover();
+    }
+  }
+  toggleMenu() {
+    this.closed = !this.closed;
+    this.adjustPopoverPlacement();
+    if (this.closed) this.highlightedIndex = this.options.indexOf(this.selectedValue);
+  }
+  adjustPopoverPlacement() {
+    const popover = this.shadowRoot.querySelector(".popover");
+    if (this.closed || popover.getBoundingClientRect().bottom <= window.innerHeight)
+      popover.setAttribute("placement", "bottom");
+    else
+      popover.setAttribute("placement", "top");
+  }
+  handleMouseEnter(index) {
+    this.highlightedIndex = index;
+  }
+  handleMenuOption(option) {
+    if (option === this.max)
+      this.shadowRoot.querySelector(".text-field-input")?.focus();
+    this.selectedValue = option;
+    this.sendEvent();
+    this.closePopover();
+  }
+  sendEvent() {
+    const customEvent = new CustomEvent(
+      EVENT_MERCH_QUANTITY_SELECTOR_CHANGE,
+      {
+        detail: { option: this.selectedValue },
+        bubbles: true
+      }
+    );
+    this.dispatchEvent(customEvent);
+  }
+  closePopover() {
+    if (!this.closed) {
+      this.toggleMenu();
+    }
+  }
+  get offerSelect() {
+    return this.querySelector("merch-offer-select");
+  }
+  get popover() {
+    return x2` <div class="popover ${this.closed ? "closed" : "open"}" placement="bottom">
+            ${this.options.map(
+      (option, index) => x2`
                     <div
-                        class="item ${r===this.highlightedIndex?"highlighted":""}"
-                        @click="${()=>this.handleMenuOption(e)}"
-                        @mouseenter="${()=>this.handleMouseEnter(r)}"
+                        class="item ${index === this.highlightedIndex ? "highlighted" : ""}"
+                        @click="${() => this.handleMenuOption(option)}"
+                        @mouseenter="${() => this.handleMouseEnter(index)}"
                     >
-                        ${e===this.max?`${e}+`:e}
+                        ${option === this.max ? `${option}+` : option}
                     </div>
-                `)}
-        </div>`}handleQuantityUpdate({detail:{quantity:e}}){if(e&&e!==this.selectedValue){this.selectedValue=e;let r=this.shadowRoot.querySelector(".text-field-input");r&&(r.value=e),this.sendEvent()}}render(){return x`
+                `
+    )}
+        </div>`;
+  }
+  handleQuantityUpdate({ detail: { quantity } }) {
+    if (quantity && quantity !== this.selectedValue) {
+      this.selectedValue = quantity;
+      const inputField = this.shadowRoot.querySelector(".text-field-input");
+      if (inputField) {
+        inputField.value = quantity;
+      }
+      this.sendEvent();
+    }
+  }
+  render() {
+    return x2`
             <div class="label" id="qsLabel">${this.title}</div>
             <div class="text-field">
                 <input
@@ -2950,12 +14100,18 @@ merch-card [slot='callout-content'] .icon-button::before {
                 />
                 <button class="picker-button" aria-labelledby="qsLabel" @click="${this.toggleMenu}">
                     <div
-                        class="picker-button-fill ${this.closed?"open":"closed"}"
+                        class="picker-button-fill ${this.closed ? "open" : "closed"}"
                     ></div>
                 </button>
                 ${this.popover}
             </div>
-        `}};customElements.define("merch-quantity-select",ji);var hl=`
+        `;
+  }
+};
+customElements.define("merch-quantity-select", MerchQuantitySelect);
+
+// src/variants/ccd-suggested.css.js
+var CSS10 = `
 
   merch-card[variant="ccd-suggested"] [slot="heading-xs"] {
     font-size: var(--consonant-merch-card-heading-xxs-font-size);
@@ -2985,12 +14141,35 @@ merch-card [slot='callout-content'] .icon-button::before {
 .spectrum--darkest  merch-card[variant="ccd-suggested"]:hover {
   --consonant-merch-card-border-color:rgb(73, 73, 73);
 }
-`;var dl={backgroundImage:{attribute:"background-image"},badge:!0,ctas:{slot:"cta",size:"M"},description:{tag:"div",slot:"body-xs"},mnemonics:{size:"l"},prices:{tag:"p",slot:"price"},size:[],subtitle:{tag:"h4",slot:"detail-s"},title:{tag:"h3",slot:"heading-xs"}},ir=class extends O{getGlobalCSS(){return hl}get stripStyle(){return this.card.backgroundImage?`
+`;
+
+// src/variants/ccd-suggested.js
+var CCD_SUGGESTED_AEM_FRAGMENT_MAPPING = {
+  backgroundImage: { attribute: "background-image" },
+  badge: true,
+  ctas: { slot: "cta", size: "M" },
+  description: { tag: "div", slot: "body-xs" },
+  mnemonics: { size: "l" },
+  prices: { tag: "p", slot: "price" },
+  size: [],
+  subtitle: { tag: "h4", slot: "detail-s" },
+  title: { tag: "h3", slot: "heading-xs" }
+};
+var CCDSuggested = class extends VariantLayout {
+  getGlobalCSS() {
+    return CSS10;
+  }
+  get stripStyle() {
+    if (!this.card.backgroundImage) return "";
+    return `
             background: url("${this.card.backgroundImage}");
         background-size: auto 100%;
         background-repeat: no-repeat;
-        background-position: ${this.card.dir==="ltr"?"left":"right"};
-        `:""}renderLayout(){return x` <div style="${this.stripStyle}" class="body">
+        background-position: ${this.card.dir === "ltr" ? "left" : "right"};
+        `;
+  }
+  renderLayout() {
+    return x2` <div style="${this.stripStyle}" class="body">
                 <div class="header">
                     <div class="top-section">
                         <slot name="icons"></slot>
@@ -3007,7 +14186,30 @@ merch-card [slot='callout-content'] .icon-button::before {
                     <slot name="cta"></slot>
                 </div>
             </div>
-            <slot></slot>`}postCardUpdateHook(e){e.has("backgroundImage")&&this.styleBackgroundImage()}styleBackgroundImage(){if(this.card.classList.remove("thin-strip"),this.card.classList.remove("wide-strip"),!this.card.backgroundImage)return;let e=new Image;e.src=this.card.backgroundImage,e.onload=()=>{e.width>8?this.card.classList.add("wide-strip"):e.width===8&&this.card.classList.add("thin-strip")}}};f(ir,"variantStyle",E`
+            <slot></slot>`;
+  }
+  postCardUpdateHook(changedProperties) {
+    if (changedProperties.has("backgroundImage"))
+      this.styleBackgroundImage();
+  }
+  styleBackgroundImage() {
+    this.card.classList.remove("thin-strip");
+    this.card.classList.remove("wide-strip");
+    if (!this.card.backgroundImage) {
+      return;
+    }
+    const img = new Image();
+    img.src = this.card.backgroundImage;
+    img.onload = () => {
+      if (img.width > 8) {
+        this.card.classList.add("wide-strip");
+      } else if (img.width === 8) {
+        this.card.classList.add("thin-strip");
+      }
+    };
+  }
+};
+__publicField(CCDSuggested, "variantStyle", i3`
         :host([variant='ccd-suggested']) {
             --consonant-merch-card-background-color: rgb(245, 245, 245);
             --consonant-merch-card-body-xs-color: rgb(75, 75, 75);
@@ -3115,7 +14317,10 @@ merch-card [slot='callout-content'] .icon-button::before {
         :host([variant='ccd-suggested']) .top-section {
             align-items: center;
         }
-    `);var pl=`
+    `);
+
+// src/variants/ccd-slice.css.js
+var CSS11 = `
 
 merch-card[variant="ccd-slice"] [slot='image'] img {
   overflow: hidden;
@@ -3135,7 +14340,23 @@ merch-card[variant="ccd-slice"] [slot='body-s'] a.spectrum-Link {
   --consonant-merch-card-border-color:rgb(48, 48, 48);
   --consonant-merch-card-detail-s-color:rgb(235, 235, 235);
 }
-`;var ml={backgroundImage:{tag:"div",slot:"image"},badge:!0,ctas:{slot:"footer",size:"S"},description:{tag:"div",slot:"body-s"},mnemonics:{size:"m"},size:["wide"]},ar=class extends O{getGlobalCSS(){return pl}renderLayout(){return x` <div class="content">
+`;
+
+// src/variants/ccd-slice.js
+var CCD_SLICE_AEM_FRAGMENT_MAPPING = {
+  backgroundImage: { tag: "div", slot: "image" },
+  badge: true,
+  ctas: { slot: "footer", size: "S" },
+  description: { tag: "div", slot: "body-s" },
+  mnemonics: { size: "m" },
+  size: ["wide"]
+};
+var CCDSlice = class extends VariantLayout {
+  getGlobalCSS() {
+    return CSS11;
+  }
+  renderLayout() {
+    return x2` <div class="content">
                 <div class="top-section">
                     <slot name="icons"></slot>
                     ${this.badge}
@@ -3144,7 +14365,10 @@ merch-card[variant="ccd-slice"] [slot='body-s'] a.spectrum-Link {
                 <slot name="footer"></slot>
             </div>
             <slot name="image"></slot>
-            <slot></slot>`}};f(ar,"variantStyle",E`
+            <slot></slot>`;
+  }
+};
+__publicField(CCDSlice, "variantStyle", i3`
         :host([variant='ccd-slice']) {
             --consonant-merch-card-background-color: rgb(248, 248, 248);
             --consonant-merch-card-border-color: rgb(230, 230, 230);
@@ -3246,7 +14470,10 @@ merch-card[variant="ccd-slice"] [slot='body-s'] a.spectrum-Link {
             align-items: center;
             gap: 8px;
         }
-    `);var ul=`
+    `);
+
+// src/variants/ah-try-buy-widget.css.js
+var CSS12 = `
     merch-card[variant="ah-try-buy-widget"] [slot="body-xxs"] {
         letter-spacing: normal;
         margin-bottom: 16px;
@@ -3371,7 +14598,38 @@ merch-card[variant="ccd-slice"] [slot='body-s'] a.spectrum-Link {
     .spectrum--darkest merch-card[variant="ah-try-buy-widget"]:hover {
       --consonant-merch-card-border-color:rgb(73, 73, 73);
     }
-`;var qi={mnemonics:{size:"s"},title:{tag:"h3",slot:"heading-xxxs",maxCount:40,withSuffix:!0},description:{tag:"div",slot:"body-xxs",maxCount:200,withSuffix:!1},prices:{tag:"p",slot:"price"},ctas:{slot:"cta",size:"S"},backgroundImage:{tag:"div",slot:"image"},backgroundColor:{attribute:"background-color"},borderColor:{attribute:"border-color",specialValues:{}},allowedColors:{gray:"--spectrum-gray-100"},size:["single","double","triple"]},Et=class extends O{getGlobalCSS(){return ul}get aemFragmentMapping(){return qi}renderLayout(){return x`
+`;
+
+// src/variants/ah-try-buy-widget.js
+var AH_TRY_BUY_WIDGET_AEM_FRAGMENT_MAPPING = {
+  mnemonics: { size: "s" },
+  title: { tag: "h3", slot: "heading-xxxs", maxCount: 40, withSuffix: true },
+  description: {
+    tag: "div",
+    slot: "body-xxs",
+    maxCount: 200,
+    withSuffix: false
+  },
+  prices: { tag: "p", slot: "price" },
+  ctas: { slot: "cta", size: "S" },
+  backgroundImage: { tag: "div", slot: "image" },
+  backgroundColor: { attribute: "background-color" },
+  borderColor: { attribute: "border-color", specialValues: {} },
+  allowedColors: {
+    gray: "--spectrum-gray-100"
+  },
+  size: ["single", "double", "triple"]
+};
+var AHTryBuyWidget = class extends VariantLayout {
+  getGlobalCSS() {
+    return CSS12;
+  }
+  /* c8 ignore next 3 */
+  get aemFragmentMapping() {
+    return AH_TRY_BUY_WIDGET_AEM_FRAGMENT_MAPPING;
+  }
+  renderLayout() {
+    return x2`
             <div class="content">
                 <div class="header">
                     <slot name="icons"></slot>
@@ -3387,7 +14645,10 @@ merch-card[variant="ccd-slice"] [slot='body-s'] a.spectrum-Link {
             </div>
             <slot name="image"></slot>
             <slot></slot>
-        `}};f(Et,"variantStyle",E`
+        `;
+  }
+};
+__publicField(AHTryBuyWidget, "variantStyle", i3`
         :host([variant='ah-try-buy-widget']) {
             --merch-card-ah-try-buy-widget-min-width: 156px;
             --merch-card-ah-try-buy-widget-content-min-width: 132px;
@@ -3466,7 +14727,11 @@ merch-card[variant="ccd-slice"] [slot='body-s'] a.spectrum-Link {
             gap: 8px;
             flex-direction: row;
         }
-    `);customElements.define("ah-try-buy-widget",Et);var fl=`
+    `);
+customElements.define("ah-try-buy-widget", AHTryBuyWidget);
+
+// src/variants/ah-promoted-plans.css.js
+var CSS13 = `
     merch-card[variant="ah-promoted-plans"] [slot="body-xxs"] {
         letter-spacing: normal;
         box-sizing: border-box;
@@ -3553,7 +14818,38 @@ merch-card[variant="ccd-slice"] [slot='body-s'] a.spectrum-Link {
       --consonant-merch-card-body-xxs-color:rgb(219, 219, 219);
       --merch-card-ah-promoted-plans-strikethrough-color:rgb(138, 138, 138);
     }
-`;var Wi={mnemonics:{size:"s"},title:{tag:"h3",slot:"heading-xxxs",maxCount:40,withSuffix:!0},description:{tag:"div",slot:"body-xxs",maxCount:200,withSuffix:!1},prices:{tag:"p",slot:"price"},ctas:{slot:"cta",size:"S"},backgroundImage:{tag:"div",slot:"image"},backgroundColor:{attribute:"background-color"},borderColor:{attribute:"border-color",specialValues:{gradient:"linear-gradient(135deg, #ff4885 0%, #b272eb 50%, #5d89ff 100%)"}}},At=class extends O{getGlobalCSS(){return fl}get aemFragmentMapping(){return Wi}renderLayout(){return x`
+`;
+
+// src/variants/ah-promoted-plans.js
+var AH_PROMOTED_PLANS_AEM_FRAGMENT_MAPPING = {
+  mnemonics: { size: "s" },
+  title: { tag: "h3", slot: "heading-xxxs", maxCount: 40, withSuffix: true },
+  description: {
+    tag: "div",
+    slot: "body-xxs",
+    maxCount: 200,
+    withSuffix: false
+  },
+  prices: { tag: "p", slot: "price" },
+  ctas: { slot: "cta", size: "S" },
+  backgroundImage: { tag: "div", slot: "image" },
+  backgroundColor: { attribute: "background-color" },
+  borderColor: {
+    attribute: "border-color",
+    specialValues: {
+      gradient: "linear-gradient(135deg, #ff4885 0%, #b272eb 50%, #5d89ff 100%)"
+    }
+  }
+};
+var AHPromotedPlans = class extends VariantLayout {
+  getGlobalCSS() {
+    return CSS13;
+  }
+  get aemFragmentMapping() {
+    return AH_PROMOTED_PLANS_AEM_FRAGMENT_MAPPING;
+  }
+  renderLayout() {
+    return x2`
             <div class="content">
                 <div class="header">
                     <slot name="icons"></slot>
@@ -3568,7 +14864,10 @@ merch-card[variant="ccd-slice"] [slot='body-s'] a.spectrum-Link {
                 </div>
             </div>
             <slot></slot>
-        `}};f(At,"variantStyle",E`
+        `;
+  }
+};
+__publicField(AHPromotedPlans, "variantStyle", i3`
         /* Default styles for the component */
         :host([variant='ah-promoted-plans']) {
             --merch-card-ah-promoted-plans-min-width: 211px;
@@ -3656,7 +14955,11 @@ merch-card[variant="ccd-slice"] [slot='body-s'] a.spectrum-Link {
             justify-content: space-between;
             align-items: center;
         }
-    `);customElements.define("ah-promoted-plans",At);var gl=`
+    `);
+customElements.define("ah-promoted-plans", AHPromotedPlans);
+
+// src/variants/fries.css.js
+var CSS14 = `
     merch-card[variant='fries'] {
         background-color: var(
             --merch-card-custom-background-color,
@@ -3801,7 +15104,36 @@ merch-card[variant="ccd-slice"] [slot='body-s'] a.spectrum-Link {
     .spectrum--darkest merch-card[variant="fries"] [slot="body-s"] {
         color: rgb(142, 142, 147);
     }
-`;var Yi={mnemonics:{size:"s"},title:{tag:"h3",slot:"heading-xxs",maxCount:250,withSuffix:!0},description:{tag:"div",slot:"body-s",maxCount:2e3,withSuffix:!1},badge:{tag:"div",slot:"badge",default:"spectrum-yellow-300"},trialBadge:{tag:"div",slot:"trial-badge",default:"spectrum-green-800"},prices:{tag:"p",slot:"price"},ctas:{slot:"cta",size:"M"},addonConfirmation:{tag:"div",slot:"addon-confirmation"},borderColor:{attribute:"border-color",specialValues:{gray:"--spectrum-gray-300"}}},wt=class extends O{getGlobalCSS(){return gl}get aemFragmentMapping(){return Yi}renderLayout(){return x`            
+`;
+
+// src/variants/fries.js
+var FRIES_AEM_FRAGMENT_MAPPING = {
+  mnemonics: { size: "s" },
+  title: { tag: "h3", slot: "heading-xxs", maxCount: 250, withSuffix: true },
+  description: {
+    tag: "div",
+    slot: "body-s",
+    maxCount: 2e3,
+    withSuffix: false
+  },
+  badge: { tag: "div", slot: "badge", default: "spectrum-yellow-300" },
+  trialBadge: { tag: "div", slot: "trial-badge", default: "spectrum-green-800" },
+  prices: { tag: "p", slot: "price" },
+  ctas: { slot: "cta", size: "M" },
+  addonConfirmation: { tag: "div", slot: "addon-confirmation" },
+  borderColor: { attribute: "border-color", specialValues: {
+    gray: "--spectrum-gray-300"
+  } }
+};
+var FriesCard = class extends VariantLayout {
+  getGlobalCSS() {
+    return CSS14;
+  }
+  get aemFragmentMapping() {
+    return FRIES_AEM_FRAGMENT_MAPPING;
+  }
+  renderLayout() {
+    return x2`            
             <div class="content">
                 <div class="header">
                     <slot name="icons"></slot>
@@ -3819,7 +15151,10 @@ merch-card[variant="ccd-slice"] [slot='body-s'] a.spectrum-Link {
                 </div>
             </div>
             <slot></slot>
-        `}};f(wt,"variantStyle",E`
+        `;
+  }
+};
+__publicField(FriesCard, "variantStyle", i3`
         :host([variant='fries']) {
             --merch-card-fries-max-width: 620px;
             --merch-card-fries-padding: 24px;
@@ -3883,7 +15218,40 @@ merch-card[variant="ccd-slice"] [slot='body-s'] a.spectrum-Link {
             gap: 8px;
             margin-top: 15px;
         }
-    `);customElements.define("fries-card",wt);q("ccd-suggested",ir,dl,ir.variantStyle);q("ccd-slice",ar,ml,ar.variantStyle);q("ah-try-buy-widget",Et,qi,Et.variantStyle);q("ah-promoted-plans",At,Wi,At.variantStyle);q("fries",wt,Yi,wt.variantStyle);
+    `);
+customElements.define("fries-card", FriesCard);
+
+// src/mas.js
+registerVariant(
+  "ccd-suggested",
+  CCDSuggested,
+  CCD_SUGGESTED_AEM_FRAGMENT_MAPPING,
+  CCDSuggested.variantStyle
+);
+registerVariant(
+  "ccd-slice",
+  CCDSlice,
+  CCD_SLICE_AEM_FRAGMENT_MAPPING,
+  CCDSlice.variantStyle
+);
+registerVariant(
+  "ah-try-buy-widget",
+  AHTryBuyWidget,
+  AH_TRY_BUY_WIDGET_AEM_FRAGMENT_MAPPING,
+  AHTryBuyWidget.variantStyle
+);
+registerVariant(
+  "ah-promoted-plans",
+  AHPromotedPlans,
+  AH_PROMOTED_PLANS_AEM_FRAGMENT_MAPPING,
+  AHPromotedPlans.variantStyle
+);
+registerVariant(
+  "fries",
+  FriesCard,
+  FRIES_AEM_FRAGMENT_MAPPING,
+  FriesCard.variantStyle
+);
 /*! Bundled license information:
 
 @lit/reactive-element/css-tag.js:
@@ -3942,3 +15310,4 @@ lit-html/is-server.js:
    * SPDX-License-Identifier: BSD-3-Clause
    *)
 */
+//# sourceMappingURL=mas.js.map

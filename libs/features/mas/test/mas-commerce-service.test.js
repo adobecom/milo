@@ -167,6 +167,19 @@ describe('commerce service', () => {
                     ),
                 ).to.true;
             });
+
+            it.only('considers feature flags', async () => {
+                let el = await initMasCommerceService();
+                expect(el.featureFlags['mas-ff-defaults'], 'undefined feature flag should be unset').to.be.false;
+                el = await initMasCommerceService({
+                    'data-mas-ff-defaults': 'on',
+                });
+                expect(el.featureFlags['mas-ff-defaults'], 'defined feature flag with on should be set').to.be.true;
+                el = await initMasCommerceService({
+                    'data-mas-ff-defaults': 'off',
+                });
+                expect(el.featureFlags['mas-ff-defaults'], 'defined feature flag with off should be unset').to.be.false;
+            });
         });
 
         describe('logFailedRequests', () => {

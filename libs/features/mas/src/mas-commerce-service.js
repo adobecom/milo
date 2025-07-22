@@ -83,7 +83,7 @@ export class MasCommerceService extends HTMLElement {
     }
 
     #getFeatureFlag(ff) {
-        return ['', null, undefined, 'on'].includes(this.getAttribute(`data-${ff}`) || getParameter(ff));
+        return ['', 'on','true',true].includes(this.getAttribute(`data-${ff}`) || getParameter(ff));
     }
 
     get featureFlags() {
