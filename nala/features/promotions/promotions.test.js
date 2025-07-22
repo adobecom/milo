@@ -544,7 +544,7 @@ test.describe('Promotions feature test suite', () => {
       await page.waitForLoadState('domcontentloaded');
     });
 
-    await test.step('Verify default test page content', async () => {
+    await test.step('Validate promo replace card in collection', async () => {
       const collection = await PROMO.getMerchCardCollection(data.collectionId);
       await expect(collection).toBeVisible();
       expect(await collection.getAttribute('overrides')).toBe(data.overrideAttributes);
@@ -570,12 +570,12 @@ test.describe('Promotions feature test suite', () => {
       await page.waitForLoadState('domcontentloaded');
     });
 
-    await test.step('Verify default test page content', async () => {
+    await test.step('Validate promo replace collection with collection', async () => {
       const baseCollection = await PROMO.getMerchCardCollection(data.baseCollectionId);
-      await expect(baseCollection).not.toBeAttached;
+      expect(baseCollection).not.toBeAttached;
 
       const promoCollection = await PROMO.getMerchCardCollection(data.promoCollectionId);
-      await expect(promoCollection).toBeVisible();
+      await expect(promoCollection).toBeAttached();
     });
   });
 
@@ -590,7 +590,7 @@ test.describe('Promotions feature test suite', () => {
       await page.waitForLoadState('domcontentloaded');
     });
 
-    await test.step('Verify default test page content', async () => {
+    await test.step('Validate promo replace collection with fragment', async () => {
       const collection = await PROMO.getMerchCardCollection(data.collectionId);
       await expect(collection).not.toBeAttached();
 
