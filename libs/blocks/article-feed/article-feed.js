@@ -405,7 +405,7 @@ async function buildFilter(type, tax, block, config) {
   button.id = `${type}-filter-button`;
   button.setAttribute('aria-haspopup', 'true');
   button.setAttribute('aria-expanded', 'false');
-  button.setAttribute('type', 'button');
+  button.setAttribute('role', 'button');
   button.textContent = tax.getCategoryTitle(type);
   button.addEventListener('click', toggleMenu);
   
