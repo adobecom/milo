@@ -251,7 +251,7 @@ function addFocusTrap(button) {
   if (!dropdown) return;
 
   const focusableElements = dropdown.querySelectorAll(
-    'input, button, [tabindex]:not([tabindex="-1"]), [role="button"]'
+    'input, button, [tabindex]:not([tabindex="-1"]), [role="button"]',
   );
 
   if (focusableElements.length === 0) return;
@@ -378,15 +378,6 @@ function buildFilterOption(itemName, type) {
   checkbox.setAttribute('name', name);
   checkbox.setAttribute('type', 'checkbox');
   checkbox.setAttribute('tabindex', '0');
-  
-  // Add keyboard support for checkboxes
-  checkbox.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault();
-      checkbox.checked = !checkbox.checked;
-      checkbox.dispatchEvent(new Event('change', { bubbles: true }));
-    }
-  });
 
   const label = document.createElement('label');
   label.setAttribute('for', name);
@@ -410,7 +401,7 @@ async function buildFilter(type, tax, block, config) {
   button.setAttribute('role', 'button');
   button.textContent = tax.getCategoryTitle(type);
   button.addEventListener('click', toggleMenu);
-  
+
   // Add keyboard support for filter button
   button.addEventListener('keydown', (e) => {
     if (e.key === 'Enter' || e.key === ' ') {
@@ -423,13 +414,13 @@ async function buildFilter(type, tax, block, config) {
       const allButtons = document.querySelectorAll('.filter-button');
       const currentIndex = Array.from(allButtons).indexOf(button);
       let nextIndex;
-      
+
       if (e.key === 'ArrowRight') {
         nextIndex = (currentIndex + 1) % allButtons.length;
       } else {
         nextIndex = currentIndex === 0 ? allButtons.length - 1 : currentIndex - 1;
       }
-      
+
       allButtons[nextIndex].focus();
     }
   });
@@ -456,7 +447,7 @@ async function buildFilter(type, tax, block, config) {
   options.setAttribute('data-type', type);
   options.setAttribute('role', 'group');
   options.setAttribute('aria-label', `${tax.getCategoryTitle(type)} filters`);
-  
+
   const category = tax.getCategory(tax[`${type.toUpperCase()}`]);
 
   category.forEach((topic) => {
