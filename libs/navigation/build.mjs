@@ -3,6 +3,10 @@ import fs from 'node:fs';
 
 fs.rmSync('./dist/', { recursive: true, force: true });
 
+// Copy lit-all.min.js to dist directory
+fs.mkdirSync('./dist/', { recursive: true });
+fs.copyFileSync('../deps/lit-all.min.js', './dist/lit-all.min.js');
+
 // Plugin to resolve absolute imports for MAS components
 const absoluteImportResolver = {
   name: 'absolute-import-resolver',
@@ -10,7 +14,7 @@ const absoluteImportResolver = {
     // Resolve absolute imports starting with /libs/deps/
     build.onResolve({ filter: /^\/libs\/deps\// }, (args) => {
       // Convert absolute path to relative path from current directory
-      const relativePath = args.path.replace(/^\/libs\/deps\//, '../');
+      const relativePath = args.path.replace(/^\/libs\/deps\//, './');
       return { path: relativePath, external: true };
     });
   },
@@ -20,6 +24,7 @@ await esbuild.build({
   entryPoints: ['navigation.css', 'footer.css', 'dark-nav.css', 'base.css'],
   bundle: true,
   minify: true,
+  treeShaking: true,
   outdir: './dist/',
   plugins: [{
     name: 'dont-bundle-svg',
@@ -71,6 +76,8 @@ await esbuild.build({
   splitting: true,
   format: 'esm',
   sourcemap: true,
+  minify: true,
+  treeShaking: true,
   outdir: './dist/',
   plugins: [StyleLoader, absoluteImportResolver],
 });
