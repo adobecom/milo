@@ -1,4 +1,4 @@
-import { createTag } from '../../utils/utils.js';
+import { createTag, getConfig } from '../../utils/utils.js';
 import {
   initService,
   getOptions,
@@ -41,6 +41,10 @@ export async function checkReady(masElement) {
   if (success === 'timeout') {
     log.error(`${masElement.tagName} did not initialize withing give timeout`);
   } else if (!success) {
+    const { env } = getConfig();
+    if (env.name !== 'prod') {
+      masElement.prepend(createTag('div', { }, 'Failed to load. Please check your VPN connection.'));
+    }
     log.error(`${masElement.tagName} failed to initialize`);
   }
 }

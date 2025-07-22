@@ -170,6 +170,10 @@ export async function checkReady(masElement) {
   const success = await Promise.race([readyPromise, getTimeoutPromise()]);
 
   if (!success) {
+    const { env } = getConfig();
+    if (env.name !== 'prod') {
+      masElement.prepend(createTag('div', { }, 'Failed to load. Please check your VPN connection.'));
+    }
     log.error(`${masElement.tagName} did not initialize withing give timeout`);
   }
 }
@@ -225,6 +229,10 @@ export default async function init(el) {
   let options = { ...DEFAULT_OPTIONS, ...getOptions(el) };
   if (!options.fragment) return;
   options = overrideOptions(options.fragment, options);
+  // if (options.fragment.startsWith('https://')) {
+  //   el.replaceWith(createTag('a', { href: options.fragment }));
+  //   return;
+  // }
   await loadDependencies(options);
   await createCollection(el, options);
 }
