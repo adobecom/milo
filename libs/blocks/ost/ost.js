@@ -162,7 +162,7 @@ export async function loadOstEnv() {
   window.history.replaceState({}, null, newURL);
 
   const environment = searchParameters.get('env') ?? WCS_ENV;
-  const landscape = searchParameters.get('wcsLandscape') ?? WCS_LANDSCAPE;
+  const landscape = searchParameters.get('commerce.landscape') ?? WCS_LANDSCAPE;
   const owner = searchParameters.get('owner');
   const referrer = searchParameters.get('referrer');
   const repo = searchParameters.get('repo');
