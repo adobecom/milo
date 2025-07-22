@@ -231,10 +231,6 @@ export default async function init(el) {
   let options = { ...DEFAULT_OPTIONS, ...getOptions(el) };
   if (!options.fragment) return;
   options = overrideOptions(options.fragment, options);
-  // if (options.fragment.startsWith('https://')) {
-  //   el.replaceWith(createTag('a', { href: options.fragment }));
-  //   return;
-  // }
   await loadDependencies(options);
   await createCollection(el, options);
 }
