@@ -1,6 +1,6 @@
 import getUuid from '../../libs/utils/getUuid.js';
 import { getMetadata } from '../../libs/utils/utils.js';
-import { LANGS, LOCALES, getGrayboxExperienceId } from '../../libs/blocks/caas/utils.js';
+import { LANGS, LOCALES, getPageLocale, getGrayboxExperienceId } from '../../libs/blocks/caas/utils.js';
 
 const CAAS_TAG_URL = 'https://www.adobe.com/chimera-api/tags';
 const HLX_ADMIN_STATUS = 'https://admin.hlx.page/status';
@@ -368,6 +368,29 @@ function checkCtaUrl(s, options, i) {
   return checkUrl(url, `Invalid Cta${i}Url: ${url}`);
 }
 
+/**
+ * Optionally injects the page locale into a CTA URL if configured via the metadata field.
+ * @param {string|object} val - The result from checkCtaUrl (either URL string or error object).
+ * @returns {string|object} - Possibly modified URL string or original value.
+ */
+function localizeCtaUrl(val) {
+  if (typeof val !== 'string' || val.trim() === '') return val;
+  try {
+    const injectFlag = (getMetadata('caaslocaleinject') || '').toLowerCase() === 'true';
+    const pageLocale = getPageLocale(window.location.pathname);
+    if (!injectFlag || !pageLocale) return val;
+    const urlObj = new URL(val, window.location.origin);
+    if (!getPageLocale(urlObj.pathname)) {
+      // prepend locale segment to the URL path (pathname always starts with '/')
+      urlObj.pathname = `/${pageLocale}${urlObj.pathname}`;
+      return urlObj.toString();
+    }
+  } catch {
+    // ignore and return original value
+  }
+  return val;
+}
+
 /** card metadata props - either a func that computes the value or
  * 0 to use the string as is
  * funcs that return an object with { error: string } will report the error
@@ -417,12 +440,12 @@ const props = {
   cta1style: 0,
   cta1target: 0,
   cta1text: 0,
-  cta1url: (s, options) => checkCtaUrl(s, options, 1),
+  cta1url: (s, options) => localizeCtaUrl(checkCtaUrl(s, options, 1)),
   cta2icon: (s) => checkUrl(s, `Invalid Cta2Icon url: ${s}`),
   cta2style: 0,
   cta2target: 0,
   cta2text: 0,
-  cta2url: (s) => checkCtaUrl(s, {}, 2),
+  cta2url: (s) => localizeCtaUrl(checkCtaUrl(s, {}, 2)),
   description: (s) => s || getMetaContent('name', 'description') || '',
   details: 0,
   entityid: (_, options) => {

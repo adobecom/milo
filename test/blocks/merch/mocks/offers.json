@@ -73,7 +73,8 @@
     "analytics": "{\"offerId\":\"BB6F26A4FBD69FFD455EFD7FF3D0CBB0\",\"label\":\"phsp_direct_individual\",\"price\":\"15.99\",\"amountWithoutTax\":\"15.99\",\"commitmentType\":\"YEAR\",\"billingFrequency\":\"MONTHLY\",\"currencyCode\":\"USD\"}",
     "productArrangementCode": "phsp_direct_individual",
     "productArrangement": {
-      "productFamily": "PHOTOSHOP"
+      "productFamily": "PHOTOSHOP",
+      "productCode": "PHSP"
     },
     "buyingProgram": "RETAIL",
     "commitment": "YEAR",
