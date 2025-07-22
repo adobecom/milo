@@ -124,12 +124,7 @@ export default async function stylePublish(sk) {
   if (stylePublishCalled) return;
   stylePublishCalled = true;
 
-  const config = getConfig();
-  config.onFooterReady = async () => {
-    await window.milo.deferredPromise;
-    checkPreflightAndShowNotification();
-  };
-  updateConfig(config);
+  checkPreflightAndShowNotification();
 
   if (sk.nodeName === 'HELIX-SIDEKICK') {
     styleHelixPublish(sk);
