@@ -7,8 +7,14 @@ export const CSS = `
 }
 
 .collection-container.catalog {
-    --merch-card-collection-card-width: var(--consonant-merch-card-catalog-width);
     --merch-card-collection-card-min-height: 330px;
+}
+
+.one-merch-card,
+.two-merch-cards,
+.three-merch-cards,
+.four-merch-cards {
+    --merch-card-collection-card-width: var(--consonant-merch-card-catalog-width);
 }
 
 .collection-container.catalog merch-sidenav {

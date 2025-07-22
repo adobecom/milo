@@ -146,7 +146,6 @@ styles.innerHTML = `
     grid-template-rows: min-content 1fr;
     align-items: start;
     grid-template-areas: "sidenav header" "sidenav content";
-    --merch-card-collection-card-width: 300px;
     --merch-card-collection-card-min-height: auto;
     --merch-sidenav-collection-gap: 0;
 }
@@ -195,6 +194,7 @@ merch-card-collection-header > div[slot] p {
 .two-merch-cards,
 .three-merch-cards,
 .four-merch-cards {
+    --merch-card-collection-card-width: 300px;
     display: grid;
     justify-content: center;
     justify-items: stretch;
