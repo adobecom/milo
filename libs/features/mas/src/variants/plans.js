@@ -107,6 +107,7 @@ export class Plans extends VariantLayout {
         if (shouldBeInFooter && slotInBody) {
             const bodyPlaceholder = document.createElement('div');
             bodyPlaceholder.setAttribute('data-placeholder-for', name);
+            bodyPlaceholder.classList.add('slot-placeholder');
             if (!slotInFooter) {
                 const slotInBodyClone = slotInBody.cloneNode(true);
                 footer.prepend(slotInBodyClone);
@@ -289,6 +290,10 @@ export class Plans extends VariantLayout {
             --merch-color-green-promo: #05834E;
             --secure-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%23505050' viewBox='0 0 12 15'%3E%3Cpath d='M11.5 6H11V5A5 5 0 1 0 1 5v1H.5a.5.5 0 0 0-.5.5v8a.5.5 0 0 0 .5.5h11a.5.5 0 0 0 .5-.5v-8a.5.5 0 0 0-.5-.5ZM3 5a3 3 0 1 1 6 0v1H3Zm4 6.111V12.5a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1.389a1.5 1.5 0 1 1 2 0Z'/%3E%3C/svg%3E");
             font-weight: 400;
+        }
+
+        :host([variant^='plans']) .slot-placeholder {
+            display: none;
         }
 
         :host([variant='plans-education']) {
