@@ -238,6 +238,7 @@ function handleDropdownKeydown(e, firstElement, lastElement, triggerButton) {
 
   // Enter/Space on checkboxes
   if ((key === 'Enter' || key === ' ') && document.activeElement.type === 'checkbox') {
+    console.log('document.activeElement', document.activeElement);
     e.preventDefault();
     document.activeElement.checked = !document.activeElement.checked;
     // Trigger change event for any listeners
