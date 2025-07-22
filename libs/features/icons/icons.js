@@ -7,24 +7,7 @@ const rogueBlocks = ['unity', 'cc-forms', 'interactive-metadata'];
 const iconCache = new Map();
 let miloIconsPromise;
 
-let tooltipListenersAdded = false;
-function addTooltipListeners() {
-  tooltipListenersAdded = true;
-
-  ['keydown', 'mouseenter', 'focus', 'mouseleave', 'blur'].forEach((eventType) => {
-    document.addEventListener(eventType, (event) => {
-      const isTooltip = event.target?.matches?.('.milo-tooltip');
-      if (!isTooltip) return;
-
-      if (['mouseenter', 'focus'].includes(eventType)) {
-        event.target.classList.remove('hide-tooltip');
-      } else if (['mouseleave', 'blur'].includes(eventType)
-        || (eventType === 'keydown' && event.key === 'Escape')) {
-        event.target.classList.add('hide-tooltip');
-      }
-    }, true);
-  });
-}
+let tooltipListenersPromise = false;
 
 function decorateToolTip(icon, iconName) {
   const hasTooltip = icon.closest('em')?.textContent.includes('|') && [...icon.classList].some((cls) => cls.includes('tooltip'));
@@ -45,7 +28,12 @@ function decorateToolTip(icon, iconName) {
   });
 
   wrapper.parentElement.replaceChild(icon, wrapper);
-  if (!tooltipListenersAdded) addTooltipListeners();
+
+  if (!tooltipListenersPromise) {
+    tooltipListenersPromise = import('../../scripts/tooltip.js').then(({ default: addTooltipListeners }) => {
+      addTooltipListeners();
+    });
+  }
 }
 
 async function getSVGsfromFile(path) {

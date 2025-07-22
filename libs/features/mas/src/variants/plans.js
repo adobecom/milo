@@ -154,12 +154,19 @@ export class Plans extends VariantLayout {
         }
     }
 
+    adjustPrices() {
+        if (!this.headingM) return;
+        this.headingM.setAttribute('role', 'heading');
+        this.headingM.setAttribute('aria-level', '2');
+    }
+
     postCardUpdateHook() {
         this.adaptForMedia();
         this.adjustTitleWidth();
         this.adjustLegal();
         this.adjustAddon();
         this.adjustCallout();
+        this.adjustPrices();
     }
 
     get headingM() {
@@ -364,17 +371,4 @@ export class Plans extends VariantLayout {
             padding: 2px 10px 3px;
         }
     `;
-
-    static collectionOptions = {
-        customHeaderArea: (collection) => {
-            if (!collection.sidenav) return nothing;
-            return html`<slot name="resultsText"></slot>`
-        },
-        headerVisibility: {
-            search: false,
-            sort: false,
-            result: ['mobile', 'tablet'],
-            custom: ['desktop']
-        }
-    }
 }

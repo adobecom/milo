@@ -156,25 +156,22 @@ describe('Merch Cards', async () => {
     expect(express.name).to.be.equal('express');
   });
 
-  it('should parse literals for header', async () => {
+  it('should parse literals', async () => {
     const merchCards = await init(document.getElementById('literals'));
     await delay(500);
-    const header = merchCards.previousElementSibling;
-    expect(header.outerHTML).to.equal(merchCards.nextElementSibling.outerHTML);
+    expect(merchCards.outerHTML).to.equal(merchCards.nextElementSibling.outerHTML);
   });
 
-  it('should parse fragmented literals for header', async () => {
+  it('should parse fragmented literals', async () => {
     const merchCards = await init(document.getElementById('fragmented-literals'));
     await delay(500);
-    const header = merchCards.previousElementSibling;
-    expect(header.outerHTML).to.equal(merchCards.nextElementSibling.outerHTML);
+    expect(merchCards.outerHTML).to.equal(merchCards.nextElementSibling.outerHTML);
   });
 
-  it('should parse literals 4 translation too for header', async () => {
+  it('should parse literals 4 translation too', async () => {
     const merchCards = await init(document.getElementById('literals-4-translation'));
     await delay(500);
-    const header = merchCards.previousElementSibling;
-    expect(header.outerHTML).to.equal(merchCards.nextElementSibling.outerHTML);
+    expect(merchCards.outerHTML).to.equal(merchCards.nextElementSibling.outerHTML);
   });
 
   it('MEP: should override cards when asked to', async () => {
