@@ -1,5 +1,6 @@
 import { STATUS, ASSETS_TITLES } from './constants.js';
 import { createTag } from '../../../utils/utils.js';
+import { addAssetMetadata } from '../visual-metadata.js';
 
 const maxFullWidth = 1920;
 const assetsCache = new Map();
@@ -145,60 +146,11 @@ function getAssetData(asset) {
   };
 }
 
-function populateAssetMeta(asset, assetData) {
-  // Check for or define an asset meta element to display analysis results
-  let assetMetaParent;
-  switch (assetData.type) {
-    case 'video':
-      if (asset.closest('.video-holder')) {
-        assetMetaParent = '.video-holder';
-      } else {
-        const videoParent = asset.parentElement;
-        videoParent.style.position = 'relative';
-        assetMetaParent = videoParent.tagName;
-      }
-      break;
-    case 'mpc':
-      assetMetaParent = '.milo-video';
-      break;
-    default:
-      assetMetaParent = 'picture';
-      break;
-  }
-  let assetMetaElem = asset.closest(assetMetaParent).querySelector('.asset-meta');
-
-  if (!assetMetaElem) {
-    assetMetaElem = createTag('div', { class: 'asset-meta' });
-    asset.closest(assetMetaParent).insertBefore(assetMetaElem, asset.nextSibling);
-  }
-
-  const sizeMsg = createTag(
-    'div',
-    { class: `asset-meta-entry preflight-decoration ${assetData.hasMismatch ? 'is-invalid' : 'is-valid'}` },
-    assetData.hasMismatch
-      ? `Size: too small, use > ${assetData.recommendedDimensions}`
-      : 'Size: correct',
-  );
-  assetMetaElem.append(sizeMsg);
-
-  if (assetData.type === 'mpc') {
-    const { title } = asset;
-    const titleMsg = createTag(
-      'div',
-      { class: `asset-meta-entry preflight-decoration ${!title.length ? 'is-invalid' : 'is-valid'}` },
-      title.length
-        ? `Title: ${title}`
-        : 'Title: no title',
-    );
-    assetMetaElem.append(titleMsg);
-  }
-}
-
 export function isViewportTooSmall() {
   return !window.matchMedia('(min-width: 1200px)').matches;
 }
 
-export async function checkImageDimensions(url, area) {
+export async function checkImageDimensions(url, area, injectVisualMetadata = false) {
   if (isViewportTooSmall()) {
     return {
       title: ASSETS_TITLES.AssetDimensions,
@@ -207,8 +159,9 @@ export async function checkImageDimensions(url, area) {
     };
   }
 
-  if (assetsCache.has(url)) {
-    const cachedResult = assetsCache.get(url);
+  const cacheKey = `${url}_${injectVisualMetadata}`;
+  if (assetsCache.has(cacheKey)) {
+    const cachedResult = assetsCache.get(cacheKey);
     return JSON.parse(JSON.stringify(cachedResult));
   }
 
@@ -239,12 +192,11 @@ export async function checkImageDimensions(url, area) {
   const assetsWithMismatch = [];
   const assetsWithMatch = [];
 
-  area.body.classList.add('preflight-assets-analysis');
+  if (injectVisualMetadata) area.body.classList.add('preflight-assets-analysis');
 
   for (const asset of assets) {
     const assetData = getAssetData(asset);
-    populateAssetMeta(asset, assetData);
-
+    if (injectVisualMetadata) addAssetMetadata(asset, assetData);
     if (assetData.hasMismatch) {
       assetsWithMismatch.push(assetData);
     } else {
@@ -252,7 +204,7 @@ export async function checkImageDimensions(url, area) {
     }
   }
 
-  area.body.classList.remove('preflight-assets-analysis');
+  if (injectVisualMetadata) area.body.classList.remove('preflight-assets-analysis');
 
   const result = {
     title: ASSETS_TITLES.AssetDimensions,
@@ -268,12 +220,12 @@ export async function checkImageDimensions(url, area) {
   };
 
   if (result.status === STATUS.PASS || result.status === STATUS.FAIL) {
-    assetsCache.set(url, JSON.parse(JSON.stringify(result)));
+    assetsCache.set(cacheKey, JSON.parse(JSON.stringify(result)));
   }
 
   return result;
 }
 
-export function runChecks(url, area) {
-  return [checkImageDimensions(url, area)];
+export function runChecks(url, area, injectVisualMetadata = false) {
+  return [checkImageDimensions(url, area, injectVisualMetadata)];
 }

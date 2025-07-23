@@ -1,8 +1,7 @@
 import { html, signal, useEffect } from '../../../deps/htm-preact.js';
-import preflightApi from '../checks/preflightApi.js';
 import { STATUS } from '../checks/constants.js';
-
-const { isViewportTooSmall, runChecks } = preflightApi.assets;
+import { getPreflightResults } from '../checks/preflightApi.js';
+import { isViewportTooSmall } from '../checks/assets.js';
 
 // Define signals for check results and viewport status
 const assetDimensionsResult = signal({
@@ -17,7 +16,8 @@ const viewportTooSmall = signal(isViewportTooSmall());
  * Runs asset checks and updates signals with the results.
  */
 async function getResults() {
-  const checks = runChecks(window.location.pathname, document);
+  const results = await getPreflightResults(window.location.pathname, document, true, false);
+  const checks = results.runChecks.assets || [];
 
   const result = await Promise.resolve(checks[0]).catch((error) => ({
     title: 'Assets - Image Dimensions',

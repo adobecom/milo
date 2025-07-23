@@ -1,10 +1,27 @@
 import { STATUS, SEO_TITLES } from './constants.js';
 import getServiceConfig from '../../../utils/service-config.js';
+import { getConfig, updateConfig } from '../../../utils/utils.js';
 
 const KNOWN_BAD_URLS = ['news.adobe.com'];
 const SPIDY_URL_FALLBACK = 'https://spidy.corp.adobe.com';
 
 const linksCache = new Map();
+
+// Wait for footer using onFooterReady callback
+function waitForFooter() {
+  return new Promise((resolve) => {
+    const config = getConfig();
+    const originalCallback = config.onFooterReady;
+
+    config.onFooterReady = async () => {
+      if (originalCallback) await originalCallback();
+      await window.milo?.deferredPromise;
+      resolve();
+    };
+
+    updateConfig(config);
+  });
+}
 
 export function checkH1s(area) {
   const h1s = area.querySelectorAll('h1');
@@ -317,6 +334,9 @@ export function runChecks({ url, area = document, envName }) {
     checkDescription(area),
     checkBody(area),
     checkLorem(area),
-    checkLinks({ area, url, envName }),
+    (async () => {
+      await waitForFooter();
+      return checkLinks({ area, url, envName });
+    })(),
   ];
 }
