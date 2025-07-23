@@ -603,8 +603,8 @@ class Gnav {
       const isExpanded = localNavTitle.getAttribute('aria-expanded') === 'true';
       itemWrapper.toggleAttribute('aria-hidden', !isExpanded);
       [...itemWrapper.childNodes].forEach((node) => {
-        node.querySelector('a, button').toggleAttribute('aria-hidden', !isExpanded);
-        node.querySelector('a, button').setAttribute('tabindex', isExpanded ? '0' : '-1');
+        node.querySelector('a, button')?.toggleAttribute('aria-hidden', !isExpanded);
+        node.querySelector('a, button')?.setAttribute('tabindex', isExpanded ? '0' : '-1');
       });
     });
     observer.observe(localNavTitle, { attributes: true, attributeFilter: ['aria-expanded'] });
