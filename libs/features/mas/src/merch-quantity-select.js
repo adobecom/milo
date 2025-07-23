@@ -116,7 +116,7 @@ export class MerchQuantitySelect extends LitElement {
             if (this.min && adjustedInputValue < this.min)
                 adjustedInputValue = this.min;
             this.adjustInput(inputField, adjustedInputValue);
-        } else this.adjustInput(inputField, this.min || 1);
+        } else this.adjustInput(inputField, this.selectedValue || this.min || 1);
     }
 
     disconnectedCallback() {
@@ -242,10 +242,11 @@ export class MerchQuantitySelect extends LitElement {
 
     render() {
         return html`
-            <div class="label">${this.title}</div>
+            <div class="label" id="qsLabel">${this.title}</div>
             <div class="text-field">
                 <input
                     class="text-field-input"
+                    aria-labelledby="qsLabel"
                     name="quantity"
                     @focus="${this.closePopover}"
                     .value="${this.selectedValue}"
@@ -253,7 +254,7 @@ export class MerchQuantitySelect extends LitElement {
                     @keydown="${this.handleKeydown}"
                     @keyup="${this.handleKeyupDebounced}"
                 />
-                <button class="picker-button" @click="${this.toggleMenu}">
+                <button class="picker-button" aria-labelledby="qsLabel" @click="${this.toggleMenu}">
                     <div
                         class="picker-button-fill ${this.closed
                             ? 'open'

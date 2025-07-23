@@ -1096,6 +1096,20 @@ export async function getPriceContext(el, params) {
   };
 }
 
+export async function addAriaLabelToCta(cta) {
+  const productCode = cta.value[0]?.productArrangement?.productCode;
+  const { marketSegment, customerSegment } = cta;
+  const segment = marketSegment === 'EDU' ? marketSegment : customerSegment;
+  let ariaLabel = cta.textContent;
+  ariaLabel = productCode
+    ? `${ariaLabel} - ${await replaceKey(productCode, getConfig())}`
+    : ariaLabel;
+  ariaLabel = segment
+    ? `${ariaLabel} - ${await replaceKey(segment, getConfig())}`
+    : ariaLabel;
+  cta.setAttribute('aria-label', ariaLabel);
+}
+
 export async function buildCta(el, params) {
   const large = !!el.closest('.marquee');
   const strong = el.firstElementChild?.tagName === 'STRONG'
@@ -1129,17 +1143,7 @@ export async function buildCta(el, params) {
     cta.setAttribute('aria-label', el.ariaLabel);
   } else if (!cta.ariaLabel) {
     cta.onceSettled().then(async () => {
-      const productCode = cta.value[0]?.productArrangement?.productCode;
-      const { marketSegment, customerSegment } = cta;
-      const segment = marketSegment === 'EDU' ? marketSegment : customerSegment;
-      let ariaLabel = cta.textContent;
-      ariaLabel = productCode
-        ? `${ariaLabel} - ${await replaceKey(productCode, getConfig())}`
-        : ariaLabel;
-      ariaLabel = segment
-        ? `${ariaLabel} - ${await replaceKey(segment, getConfig())}`
-        : ariaLabel;
-      cta.setAttribute('aria-label', ariaLabel);
+      await addAriaLabelToCta(cta);
     });
   }
 

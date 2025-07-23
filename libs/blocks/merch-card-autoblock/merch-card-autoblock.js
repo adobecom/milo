@@ -1,4 +1,7 @@
 import { createTag } from '../../utils/utils.js';
+import '../../deps/mas/merch-card.js';
+import '../../deps/mas/merch-quantity-select.js';
+import { postProcessAutoblock } from '../merch/autoblock.js';
 import {
   initService,
   getOptions,
@@ -7,7 +10,6 @@ import {
   MAS_MERCH_CARD,
   MAS_MERCH_QUANTITY_SELECT,
 } from '../merch/merch.js';
-import { postProcessAutoblock } from '../merch/autoblock.js';
 
 const CARD_AUTOBLOCK_TIMEOUT = 5000;
 let log;
@@ -50,7 +52,7 @@ export async function createCard(el, options) {
   const merchCard = createTag('merch-card', { consonant: '' }, aemFragment);
   el.replaceWith(merchCard);
   await checkReady(merchCard);
-  postProcessAutoblock(merchCard);
+  postProcessAutoblock(merchCard, true);
 }
 
 export default async function init(el) {
