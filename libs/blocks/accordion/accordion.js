@@ -115,21 +115,7 @@ function defaultOpen(accordion) {
   handleClick(accordion.querySelector('.accordion-trigger'), accordion.querySelector('.descr-details'), 1);
 }
 
-function createMobileMedia(ogMedia) {
-  const video = ogMedia.querySelector('video');
-  const videoSrc = video?.getAttribute('data-video-source');
-  const mobileMedia = ogMedia.cloneNode(true);
-
-  if (!video || !videoSrc) return mobileMedia;
-
-  const mobileVideo = mobileMedia.querySelector('video');
-  const source = createTag('source', { src: videoSrc, type: 'video/mp4' });
-  mobileVideo.appendChild(source);
-
-  return mobileMedia;
-}
-
-function createItem(accordion, id, heading, num, edit) {
+function createItem(accordion, id, heading, num) {
   const triggerId = `accordion-${id}-trigger-${num}`;
   const panelId = `accordion-${id}-content-${num}`;
   const icon = createTag('span', { class: 'accordion-icon' });
@@ -153,7 +139,6 @@ function createItem(accordion, id, heading, num, edit) {
   const dtHtml = hTag ? createTag(hTag.tagName, { class: 'accordion-heading' }, button) : button;
   const dt = createTag('div', dtAttrs, dtHtml);
   const dd = createTag('div', { 'aria-labelledby': triggerId, id: panelId, hidden: true, class: 'descr-details' }, panel);
-  if (edit) dd.prepend(createTag('div', { class: 'media-p' }, createMobileMedia(mediaCollection[id][num - 1])));
 
   button.addEventListener('click', (e) => { handleClick(e.target, dd, num, id); });
   accordion.append(dt, dd);
@@ -214,6 +199,38 @@ async function createExpandAllContainer(accordionItems, isEditorial, mediaEl) {
   return container;
 }
 
+function handleResponsiveMedia(accordionMedia, id, el) {
+  const mediaBreakpoint = 1200;
+  let wasSmallScreen = window.innerWidth < mediaBreakpoint;
+
+  const moveMedia = (isInitialCall) => {
+    const screenWidth = window.innerWidth;
+    const isSmallScreen = screenWidth < mediaBreakpoint;
+
+    if (!isInitialCall && (!mediaCollection[id] || ((isSmallScreen === wasSmallScreen)))) return;
+    wasSmallScreen = isSmallScreen;
+
+    if (isSmallScreen) {
+      [...mediaCollection[id]].forEach((mediaItem, idx) => {
+        const panel = document.querySelector(`#accordion-${id}-content-${idx + 1}`);
+        if (panel && !panel.contains(mediaItem)) panel.prepend(mediaItem);
+      });
+      return;
+    }
+
+    [...mediaCollection[id]].forEach((mediaItem) => {
+      if (accordionMedia && !accordionMedia.contains(mediaItem)) accordionMedia.append(mediaItem);
+    });
+    const activeEl = el.querySelector('.accordion-trigger[aria-expanded="true"]');
+    const activeElIndex = activeEl?.getAttribute('aria-controls')?.match(/\d+$/)?.[0];
+    openMediaPanel(accordionMedia, activeEl, el.querySelectorAll('.descr-details')[activeElIndex], activeElIndex);
+  };
+
+  if (wasSmallScreen) moveMedia(wasSmallScreen);
+
+  window.addEventListener('resize', () => moveMedia(false));
+}
+
 export default async function init(el) {
   const id = getUniqueId(el);
   const accordion = createTag('div', { class: 'descr-list accordion', id: `accordion-${id}`, role: 'presentation' });
@@ -237,8 +254,6 @@ export default async function init(el) {
       id,
       heading,
       idx + 1,
-      isEditorial,
-      accordionMedia,
     ),
   );
 
@@ -253,6 +268,7 @@ export default async function init(el) {
   if (isEditorial) {
     el.append(accordionMedia);
     defaultOpen(el);
+    handleResponsiveMedia(accordionMedia, id, el);
   }
   if (hasExpandAll) {
     const expandAllContainer = await createExpandAllContainer(items, isEditorial, accordionMedia);

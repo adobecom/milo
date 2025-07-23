@@ -241,12 +241,12 @@ html[dir="rtl"] .accordion .descr-term button::before {
   width: auto;
 }
 
-div.media-p {
+div.video-container {
   width: 268px;
   padding: 0;
 }
 
-div.editorial .media-p, div.editorial .media-p img {
+div.editorial .video-container, div.editorial .expanded img, div.editorial .video-container video {
   width: 100%;
 }
 
@@ -272,10 +272,6 @@ div.editorial .media-p, div.editorial .media-p img {
     width: 50%;
     display: inline-block;
     margin: 0;
-  }
-
-  .media-p {
-    display: none;
   }
 
   .accordion-media {
