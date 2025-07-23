@@ -172,6 +172,10 @@ export async function checkReady(masElement) {
   const success = await Promise.race([readyPromise, getTimeoutPromise()]);
 
   if (!success) {
+    const { env } = getConfig();
+    if (env.name !== 'prod') {
+      masElement.prepend(createTag('div', { }, 'Failed to load. Please check your VPN connection.'));
+    }
     log.error(`${masElement.tagName} did not initialize withing give timeout`);
   }
 }
