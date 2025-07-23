@@ -7,10 +7,13 @@
   "scripts": {
     "build": "node ./build.mjs"
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@babel/parser": "^7.28.0",
     "esbuild": "0.24.0"
   }
 }
