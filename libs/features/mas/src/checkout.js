@@ -31,13 +31,20 @@ export function Checkout({ settings }) {
             entitlement,
             upgrade,
             modal,
+            fallbackStep,
             perpetual,
             promotionCode = defaultPromotionCode,
             wcsOsi,
             extraOptions,
             ...rest
-        } = Object.assign({}, placeholder?.dataset ?? {}, overrides ?? {});  
+        } = Object.assign({}, placeholder?.dataset ?? {}, overrides ?? {}); 
+
+        const masFF3in1 = document.querySelector('meta[name=mas-ff-3in1]');
+        const is3in1 = Object.values(MODAL_TYPE_3_IN_1).includes(modal) && (!masFF3in1 || masFF3in1.content !== 'off');
         let workflowStep = toEnumeration(checkoutWorkflowStep, CheckoutWorkflowStep, Defaults.checkoutWorkflowStep);
+        if (!is3in1 && fallbackStep) {
+          workflowStep = fallbackStep;
+        }
         const options = omitProperties({
             ...rest,
             extraOptions,

@@ -864,7 +864,7 @@ const isProdModal = (url) => {
 };
 
 export async function getModalAction(offers, options, el) {
-  if (!options.modal) return undefined;
+  if ((el?.is3in1Modal && !el?.isOpen3in1Modal) || options.modal !== 'true') return undefined;
 
   const preload = new URLSearchParams(window.location.search).get('commerce.preload') !== 'off';
   if (el?.isOpen3in1Modal && preload) {
@@ -1048,6 +1048,7 @@ export async function getCheckoutContext(el, params) {
   const entitlement = params?.get('entitlement');
   const upgrade = params?.get('upgrade');
   const modal = params?.get('modal');
+  const fallbackStep = params?.get('fallbackStep');
 
   const extraOptions = {};
   params.forEach((value, key) => {
@@ -1064,6 +1065,7 @@ export async function getCheckoutContext(el, params) {
     entitlement,
     upgrade,
     modal,
+    fallbackStep,
     extraOptions: JSON.stringify(extraOptions),
   };
 }
