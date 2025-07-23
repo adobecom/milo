@@ -1021,7 +1021,7 @@ class Gnav {
     }).catch(() => { });
   };
 
-  isToggleExpanded = () => this.elements.mobileToggle?.getAttribute('aria-expanded') === 'true';
+  isToggleExpanded = () => this.elements.mobileToggle?.getAttribute?.('aria-expanded') === 'true';
 
   isEmptyGnav = () => this
     .elements
@@ -1356,9 +1356,9 @@ class Gnav {
       const elements = [...document.querySelectorAll('.feds-localnav .feds-navItem')].find(
         (el) => {
           const link = el.querySelector('a, button');
-          link.setAttribute('tabindex', '-1');
-          link.setAttribute('aria-hidden', true);
-          return link.dataset.title?.trim() === navItem.textContent;
+          link?.setAttribute('tabindex', '-1');
+          link?.setAttribute('aria-hidden', true);
+          return link?.dataset?.title?.trim() === navItem.textContent;
         },
       );
       if (elements) {
