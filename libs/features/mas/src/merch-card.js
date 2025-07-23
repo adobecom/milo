@@ -723,15 +723,15 @@ export class MerchCard extends LitElement {
     }
 
     get taxText() {
-        return (this.#legal ?? this.#regularPrice)?.querySelector('span.price-tax-inclusivity')?.innerText.trim() || undefined;
+        return (this.#legal ?? this.#regularPrice)?.querySelector('span.price-tax-inclusivity')?.textContent?.trim() || undefined;
     }
 
     get recurrenceText() {
-        return this.#regularPrice?.querySelector('span.price-recurrence')?.innerText;
+        return this.#regularPrice?.querySelector('span.price-recurrence')?.textContent?.trim();
     }
 
     get planTypeText() {
-        return this.querySelector('[is="inline-price"][data-template="legal"] span.price-plan-type')?.innerText;
+        return this.querySelector('[is="inline-price"][data-template="legal"] span.price-plan-type')?.textContent?.trim();
     }
 
     get seeTermsInfo() {
@@ -741,16 +741,16 @@ export class MerchCard extends LitElement {
     }
 
     get renewalText() {
-      return this.querySelector('span.renewal-text')?.innerText;
+      return this.querySelector('span.renewal-text')?.textContent?.trim();
     }
 
     get promoDurationText() {
-      return this.querySelector('span.promo-duration-text')?.innerText;
+      return this.querySelector('span.promo-duration-text')?.textContent?.trim();
     }
 
     get ctas() {
         return Array.from(
-            this.querySelector('[slot="ctas"]')?.querySelectorAll(
+            this.querySelector('[slot="ctas"], [slot="footer"]')?.querySelectorAll(
                 `${SELECTOR_MAS_CHECKOUT_LINK}, a`,
             ),
         );
