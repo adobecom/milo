@@ -329,7 +329,7 @@
     max-height: 100%;
   }
 
-  .dialog-modal {
+  .dialog-modal:not(.tall-video) {
     max-height: var(--modal-max-height-mobile);
   }
 
