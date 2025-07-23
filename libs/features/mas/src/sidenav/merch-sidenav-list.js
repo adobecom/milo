@@ -3,6 +3,7 @@ import { deeplink, pushStateFromComponent } from '../deeplink.js';
 import { headingStyles } from './merch-sidenav-heading.css.js';
 import { debounce } from '../utils.js';
 import { EVENT_MERCH_SIDENAV_SELECT } from '../constants.js';
+
 export class MerchSidenavList extends LitElement {
     static properties = {
         sidenavListTitle: { type: String },
@@ -25,8 +26,8 @@ export class MerchSidenavList extends LitElement {
             :host {
                 display: block;
                 contain: content;
-                padding-top: 16px;
             }
+
             .right {
                 position: absolute;
                 right: 0;
