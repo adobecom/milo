@@ -21,6 +21,7 @@ var Ct=Object.defineProperty;var ct=o=>{throw TypeError(o)};var Mt=(o,e,t)=>e in
 
 .collection-container.catalog {
     --merch-card-collection-card-min-height: 330px;
+    --merch-card-collection-card-width: var(--consonant-merch-card-catalog-width);
 }
 
 .one-merch-card.catalog,
@@ -999,6 +1000,7 @@ merch-card[variant^="plans"]:not([size]) {
 
 .collection-container.plans {
     --merch-card-collection-card-min-height: 273px;
+    --merch-card-collection-card-width: var(--consonant-merch-card-plans-width);
 }
 
 merch-card-collection-header.plans {

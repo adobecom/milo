@@ -8,6 +8,7 @@ export const CSS = `
 
 .collection-container.catalog {
     --merch-card-collection-card-min-height: 330px;
+    --merch-card-collection-card-width: var(--consonant-merch-card-catalog-width);
 }
 
 .one-merch-card.catalog,
