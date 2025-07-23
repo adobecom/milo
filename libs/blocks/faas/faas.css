@@ -65,7 +65,7 @@ a[href*='/tools/faas#'], a[href*='/tools/faas?'] {
   height: 32px;
   color: var(--color-white);
   display: inline-block;
-  font-family: var(--body-font-family);
+  font-family: inherit;
   font-size: 15px;
   font-style: normal;
   font-weight: 700;
