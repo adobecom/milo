@@ -1026,6 +1026,38 @@ export async function getCommerceContext(el, params) {
   return { promotionCode, perpetual, wcsOsi };
 }
 
+// TODO: remove this function once fallbackStep is fully authored
+function getFallbackStep(params, modal, checkoutClientId) {
+  if (checkoutClientId !== 'doc_cloud') return undefined;
+  const MODAL_TYPE_3_IN_1 = {
+    TWP: 'twp',
+    D2P: 'd2p',
+    CRM: 'crm',
+  };
+  const is3in1Modal = Object.values(MODAL_TYPE_3_IN_1).includes(modal);
+  if (!is3in1Modal) return undefined;
+  const masFF3in1 = document.querySelector('meta[name=mas-ff-3in1]');
+  const is3in1Enabled = !masFF3in1 || masFF3in1.content !== 'off';
+  if (is3in1Enabled) return undefined;
+  const osiToStepMap = {
+    'vQmS1H18A6_kPd0tYBgKnp-TQIF0GbT6p8SH8rWcLMs': 'commitment',
+    'ZZQMV2cU-SWQoDxuznonUFMRdxSyTr4J3fB77YBNakY': 'commitment',
+    'vV01ci-KLH6hYdRfUKMBFx009hdpxZcIRG1-BY_PutE': 'email',
+    'nTbB50pS4lLGv_x1l_UKggd-lxxo2zAJ7WYDa2mW19s': 'email',
+    'QgYu51CVY2wKyFEqMuvec4N1tc1OaCypeKJjT5n2-Fc': 'commitment',
+    'AW-jV275GNYtPao6Q7XWENqyv_Stkc1BbzF7ak2u1dk': 'email',
+    'nIy-IPGnALw3KNncaqMjOJsMUrqElWi8sdGnBFBAgTw': 'commitment',
+    WRe4gUHuyqJgCCr3ZywwU9CDP0ezBaCKoMk4xryVQhs: 'commitment',
+    Hnk2P6L5wYhnpZLFYTW5upuk2Y3AJXlso8VGWQ0l2TI: 'commitment',
+    '-lYm-YaTSZoUgv1gzqCgybgFotLqRsLwf8CgYdvdnsQ': 'commitment',
+    WJLr3TF4T4qyJIGZTsDf9KPbTfxA7qAgStpaF2IgYao: 'commitment',
+    '8Lr09qx_PHqAJUwvUNiof4FFFEKjsR1TTbvBUncV2b0': 'email',
+    lI5NvdLBWJUJEHkP9CAx787kt0uCc3WnoCFVVIjECiA: 'email',
+    'OQ1oCm1tZG35Gj7LCrkGeOOdUMfVlC7xx-7ml-CTWIE': 'commitment',
+  };
+  return osiToStepMap[params?.get('osi')];
+}
+
 /**
  * Checkout parameter can be set on the merch link,
  * code config (scripts.js) or be a default from tacocat.
@@ -1048,7 +1080,7 @@ export async function getCheckoutContext(el, params) {
   const entitlement = params?.get('entitlement');
   const upgrade = params?.get('upgrade');
   const modal = params?.get('modal');
-  const fallbackStep = params?.get('fallbackStep');
+  const fallbackStep = params?.get('fallbackStep') || getFallbackStep(params, modal, checkoutClientId);
 
   const extraOptions = {};
   params.forEach((value, key) => {
