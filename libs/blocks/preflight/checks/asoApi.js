@@ -11,7 +11,9 @@ async function getASOToken() {
       autoValidateToken: true,
       useLocalStorage: false,
     }, 'asoIMS');
-    window.asoIMS.initialize(); // TODO - why does this force IMS sign in?
+    // TODO: We should only initialize (or re-initialize) AFTER
+    // we get a 'logged-in' sidekick event
+    window.asoIMS.initialize();
     if (!window.asoIMS.getAccessToken()?.token) return null;
 
     const res = await fetch(`${CHECK_API}/auth/login`, {
