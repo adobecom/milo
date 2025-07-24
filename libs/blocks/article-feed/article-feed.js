@@ -165,73 +165,54 @@ function openMenu(el) {
   const expandedMenu = document.querySelector('.filter-button[aria-expanded=true]');
   if (expandedMenu) { closeMenu(expandedMenu); }
   el.setAttribute('aria-expanded', true);
-  // Add focus trap when opening
   addFocusTrap(el);
 }
 
 function navigateFilterButtons(currentButton, forward) {
   const allFilterButtons = document.querySelectorAll('.filter-button');
   const currentIndex = Array.from(allFilterButtons).indexOf(currentButton);
-
   if (currentIndex === -1) return;
-
   let nextIndex;
   if (forward) {
     nextIndex = (currentIndex + 1) % allFilterButtons.length;
   } else {
     nextIndex = currentIndex === 0 ? allFilterButtons.length - 1 : currentIndex - 1;
   }
-
   const nextButton = allFilterButtons[nextIndex];
-
-  // Close current dropdown and open new one
   closeMenu(currentButton);
   disableSearch(currentButton.id);
-
   openMenu(nextButton);
   enableSearch(nextButton.id);
 }
 
-// New accessibility functions - moved up to avoid hoisting issues
 function handleDropdownKeydown(e, firstElement, lastElement, triggerButton) {
   const { key, shiftKey } = e;
-
-  // ESC key - close dropdown
   if (key === 'Escape') {
     e.preventDefault();
     closeMenu(triggerButton);
     disableSearch(triggerButton.id);
     closeCurtain();
-    triggerButton.focus(); // Return focus to trigger button
+    triggerButton.focus();
     return;
   }
-
-  // Tab key - trap focus within dropdown
   if (key === 'Tab') {
     if (shiftKey) {
-      // Shift+Tab - if on first element, go to last
       if (document.activeElement === firstElement) {
         e.preventDefault();
         lastElement.focus();
       }
     } else if (document.activeElement === lastElement) {
-      // Tab - if on last element, go to first
       e.preventDefault();
       firstElement.focus();
     }
   }
-
-  // Arrow keys for filter button navigation - works from any element in dropdown
   if (key === 'ArrowLeft' || key === 'ArrowRight') {
     e.preventDefault();
     navigateFilterButtons(triggerButton, key === 'ArrowRight');
   }
-
-  // Enter/Space on checkboxes
   if ((key === 'Enter' || key === ' ') && document.activeElement.type === 'checkbox') {
     e.preventDefault();
     document.activeElement.checked = !document.activeElement.checked;
-    // Trigger change event for any listeners
     document.activeElement.dispatchEvent(new Event('change', { bubbles: true }));
   }
 }
@@ -239,25 +220,16 @@ function handleDropdownKeydown(e, firstElement, lastElement, triggerButton) {
 function addFocusTrap(button) {
   const dropdown = document.querySelector(`[aria-labelledby='${button.id}']`);
   if (!dropdown) return;
-
-  // Remove any existing listeners first to prevent duplicates
   if (dropdown.keydownHandler) {
     dropdown.removeEventListener('keydown', dropdown.keydownHandler);
   }
-
   const focusableElements = dropdown.querySelectorAll(
     'input, button, a.button',
   );
-
   if (focusableElements.length === 0) return;
-
   const firstElement = focusableElements[0];
   const lastElement = focusableElements[focusableElements.length - 1];
-
-  // Focus first element
   firstElement.focus();
-
-  // Create and store the event handler for proper cleanup
   dropdown.keydownHandler = (e) => handleDropdownKeydown(e, firstElement, lastElement, button);
   dropdown.addEventListener('keydown', dropdown.keydownHandler);
 }
@@ -367,7 +339,7 @@ function buildFilterOption(itemName, type) {
 
   const option = document.createElement('li');
   option.classList.add('filter-option', `filter-option-${type}`);
-  option.setAttribute('role', 'none'); // Remove semantic role from li for better screen reader support
+  option.setAttribute('role', 'none');
 
   const checkbox = document.createElement('input');
   checkbox.id = name;
@@ -385,8 +357,6 @@ function buildFilterOption(itemName, type) {
 
 async function buildFilter(type, tax, block, config) {
   const container = createTag('div', { class: 'filter' });
-
-  // Use proper button element instead of anchor
   const button = document.createElement('a');
   button.classList.add('filter-button');
   button.id = `${type}-filter-button`;
@@ -396,26 +366,21 @@ async function buildFilter(type, tax, block, config) {
   button.setAttribute('role', 'button');
   button.textContent = tax.getCategoryTitle(type);
   button.addEventListener('click', toggleMenu);
-
-  // Add keyboard support for filter button
   button.addEventListener('keydown', (e) => {
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
       toggleMenu(e);
     }
-    // Arrow key navigation between filter tabs
     if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
       e.preventDefault();
       const allButtons = document.querySelectorAll('.filter-button');
       const currentIndex = Array.from(allButtons).indexOf(button);
       let nextIndex;
-
       if (e.key === 'ArrowRight') {
         nextIndex = (currentIndex + 1) % allButtons.length;
       } else {
         nextIndex = currentIndex === 0 ? allButtons.length - 1 : currentIndex - 1;
       }
-
       allButtons[nextIndex].focus();
     }
   });
@@ -459,7 +424,6 @@ async function buildFilter(type, tax, block, config) {
 
   const footer = createTag('div', { class: 'filter-dropdown-footer' });
 
-  // Use proper button elements for Reset and Apply
   const resetBtn = document.createElement('a');
   resetBtn.classList.add('button', 'small', 'reset');
   resetBtn.setAttribute('tabindex', '0');
