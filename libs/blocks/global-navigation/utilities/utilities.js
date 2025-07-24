@@ -259,7 +259,7 @@ export const isDesktopForContext = (context = 'viewport') => {
   }
 
   // Default to viewport width for all other contexts
-  return isDesktop.matches;
+  return isDesktop;
 };
 export const isTangentToViewport = window.matchMedia('(min-width: 900px) and (max-width: 1440px)');
 
