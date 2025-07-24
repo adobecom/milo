@@ -62,33 +62,34 @@ const createMasCommerceService = (params, commerceEnv) => {
   if (commerceEnv) {
     masCommerceService.setAttribute('env', commerceEnv);
   }
-  ['locale','country','language','env','lana-tags'].forEach((attribute) => {
-    const value = params.get(attribute);
+  ['locale','country','language','env','lana-tags','data-mas-ff-defaults'].forEach((attribute) => {
+    const value = params[attribute];
     if (value) masCommerceService.setAttribute(attribute, value);
   });
   document.head.appendChild(masCommerceService);
 }
 
-const init = async () => {
+const init = async (params = {}) => {
   await polyfills();
-  const params = new URLSearchParams(document.location.search);
+  const urlParams = new URLSearchParams(document.location.search);
+
   const commerceEnv = document.querySelector('meta[name="commerce.env"]')?.content;
 
   // theme
-  toggleTheme(params.get('theme') ?? 'light');
+  toggleTheme(urlParams.get('theme') ?? 'light');
 
   // mas-commerce-service
-  createMasCommerceService(params, commerceEnv);
+  createMasCommerceService({...params, ...Object.fromEntries(urlParams.entries())}, commerceEnv);
   await import('../dist/mas.js');
 
   document.querySelectorAll('a.theme-toggle').forEach((link) => 
     link.addEventListener('click', (event) =>
-      toggleTheme(event.target.getAttribute('value'), event, params)
+      toggleTheme(event.target.getAttribute('value'), event, urlParams)
     )
   );
 
   document.querySelectorAll('a.locale-toggle').forEach((link) => 
-    link.addEventListener('click', (event) => toggleLocale(event, params)
+    link.addEventListener('click', (event) => toggleLocale(event, urlParams)
     )
   );
 }

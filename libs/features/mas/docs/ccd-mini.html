@@ -14,8 +14,8 @@
   <!-- Include your custom element script as an ES6 module -->
   <script type="module">
     import { init } from './common.js';
-    init();
     const urlParams = new URLSearchParams(window.location.search);
+    init({ 'data-mas-ff-defaults': 'on'});
     const country = urlParams.get('country');
     const language = urlParams.get('language');
     let activeLocale = document.querySelector(`a[value="${country},${language}"]`);
