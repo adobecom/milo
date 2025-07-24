@@ -378,7 +378,6 @@ function buildFilterOption(itemName, type) {
   const label = document.createElement('label');
   label.setAttribute('for', name);
   label.textContent = name;
-  label.style.cursor = 'pointer';
 
   option.append(checkbox, label);
   return option;
@@ -423,7 +422,7 @@ async function buildFilter(type, tax, block, config) {
 
   const dropdown = createTag('div', { class: 'filter-dropdown' });
   dropdown.setAttribute('aria-labelledby', `${type}-filter-button`);
-  dropdown.setAttribute('role', 'dialog');
+  dropdown.setAttribute('role', 'menu');
   dropdown.setAttribute('aria-modal', 'true');
 
   const SEARCH_ICON = `<svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" focusable="false">
@@ -461,16 +460,14 @@ async function buildFilter(type, tax, block, config) {
   const footer = createTag('div', { class: 'filter-dropdown-footer' });
 
   // Use proper button elements for Reset and Apply
-  const resetBtn = document.createElement('button');
+  const resetBtn = document.createElement('a');
   resetBtn.classList.add('button', 'small', 'reset');
-  resetBtn.setAttribute('type', 'button');
   resetBtn.setAttribute('tabindex', '0');
   resetBtn.textContent = await replacePlaceholder('reset');
   resetBtn.addEventListener('click', clearFilters);
 
-  const applyBtn = document.createElement('button');
+  const applyBtn = document.createElement('a');
   applyBtn.classList.add('button', 'small', 'apply');
-  applyBtn.setAttribute('type', 'button');
   applyBtn.setAttribute('tabindex', '0');
   applyBtn.textContent = await replacePlaceholder('apply');
   applyBtn.addEventListener('click', () => {
