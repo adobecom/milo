@@ -61,7 +61,7 @@ const decorateHeadline = (elem, index, context = 'viewport') => {
   };
 
   const setHeadlineAttributes = () => {
-    if (isDesktopForContext().matches) {
+    if (isDesktopForContext(context).matches) {
       headline.setAttribute('role', 'heading');
       headline.removeAttribute('tabindex');
       headline.setAttribute('aria-level', 2);
