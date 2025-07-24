@@ -1365,6 +1365,11 @@ merch-card[variant^="plans"]:not([size]) {
 .collection-container.plans {
     --merch-card-collection-card-min-height: 273px;
     --merch-card-collection-card-width: var(--consonant-merch-card-plans-width);
+    margin-top: -18px;
+}
+
+merch-sidenav.plans {
+    --merch-sidenav-padding: 16px 20px 16px 16px;
 }
 
 merch-card-collection-header.plans {
@@ -1415,28 +1420,46 @@ merch-card-collection-header.plans {
 
 /* desktop */
 @media screen and ${g} {
-  :root {
-        --consonant-merch-card-plans-width: 276px;
-  }
+    :root {
+            --consonant-merch-card-plans-width: 276px;
+    }
 
-  .columns .four-merch-cards.plans {
-      grid-template-columns: repeat(2, var(--consonant-merch-card-plans-width));
-  }
+    merch-sidenav.plans {
+            --merch-sidenav-collection-gap: 30px;
+    }
 
-  merch-card[variant="plans-students"] {
-      width: var(--consonant-merch-card-plans-students-width);
-  }
+    .columns .four-merch-cards.plans {
+        grid-template-columns: repeat(2, var(--consonant-merch-card-plans-width));
+    }
 
-  merch-card-collection-header.plans {
-      --merch-card-collection-header-columns: fit-content(100%);
-      --merch-card-collection-header-areas: "custom";
-  }
+    merch-card[variant="plans-students"] {
+        width: var(--consonant-merch-card-plans-students-width);
+    }
+
+    merch-card-collection-header.plans {
+        --merch-card-collection-header-columns: fit-content(100%);
+        --merch-card-collection-header-areas: "custom";
+    }
+
+    .collection-container.plans:has(merch-sidenav) {
+        width: 100vw;
+        position: relative;
+        left: 50%;
+        transform: translateX(-50vw);
+        justify-content: start;
+        padding-inline: 30px;
+        padding-top: 24px;
+    }
 }
 
 /* Large desktop */
 @media screen and ${P} {
     .columns .four-merch-cards.plans {
         grid-template-columns: repeat(2, var(--consonant-merch-card-plans-width));
+    }
+
+    merch-sidenav.plans {
+        --merch-sidenav-collection-gap: 54px;
     }
 }
 `;var It={title:{tag:"h3",slot:"heading-xs"},prices:{tag:"p",slot:"heading-m"},promoText:{tag:"p",slot:"promo-text"},description:{tag:"div",slot:"body-xs"},mnemonics:{size:"l"},callout:{tag:"div",slot:"callout-content"},quantitySelect:{tag:"div",slot:"quantity-select"},addon:!0,secureLabel:!0,planType:!0,badge:{tag:"div",slot:"badge",default:"spectrum-yellow-300-plans"},allowedBadgeColors:["spectrum-yellow-300-plans","spectrum-gray-300-plans","spectrum-gray-700-plans","spectrum-green-900-plans"],allowedBorderColors:["spectrum-yellow-300-plans","spectrum-gray-300-plans","spectrum-green-900-plans"],borderColor:{attribute:"border-color"},size:["wide","super-wide"],whatsIncluded:{tag:"div",slot:"whats-included"},ctas:{slot:"footer",size:"m"},style:"consonant"},Me={...function(){let{whatsIncluded:o,size:e,...t}=It;return t}(),title:{tag:"h3",slot:"heading-s"},subtitle:{tag:"p",slot:"subtitle"},secureLabel:!1},Pe={...function(){let{whatsIncluded:o,size:e,quantitySelect:t,...r}=It;return r}()},w=class extends b{constructor(e){super(e),this.adaptForMedia=this.adaptForMedia.bind(this)}priceOptionsProvider(e,t){e.dataset.template===Ee&&(t.displayPlanType=this.card?.settings?.displayPlanType??!1)}getGlobalCSS(){return Re}adjustSlotPlacement(e,t,r){let a=this.card.shadowRoot,n=a.querySelector("footer"),c=this.card.getAttribute("size"),s=a.querySelector(`footer slot[name="${e}"]`),l=a.querySelector(`.body slot[name="${e}"]`),h=a.querySelector(".body");if((!c||!c.includes("wide"))&&(n?.classList.remove("wide-footer"),s&&s.remove()),!!t.includes(c)){if(n?.classList.toggle("wide-footer",Ct()),!r&&s){if(l)s.remove();else{let u=h.querySelector(`[data-placeholder-for="${e}"]`);u?u.replaceWith(s):h.appendChild(s)}return}if(r&&l){let u=document.createElement("div");if(u.setAttribute("data-placeholder-for",e),u.classList.add("slot-placeholder"),!s){let x=l.cloneNode(!0);n.prepend(x)}l.replaceWith(u)}}}adaptForMedia(){if(!this.card.closest("merch-card-collection,overlay-trigger,.two-merch-cards,.three-merch-cards,.four-merch-cards, .columns")){this.card.removeAttribute("size");return}this.adjustSlotPlacement("addon",["super-wide"],Ct()),this.adjustSlotPlacement("callout-content",["super-wide"],Ct())}adjustCallout(){let e=this.card.querySelector('[slot="callout-content"] .icon-button');e&&e.title&&(e.dataset.tooltip=e.title,e.removeAttribute("title"),e.classList.add("hide-tooltip"),document.addEventListener("touchstart",t=>{t.preventDefault(),t.target!==e?e.classList.add("hide-tooltip"):t.target.classList.toggle("hide-tooltip")}),document.addEventListener("mouseover",t=>{t.preventDefault(),t.target!==e?e.classList.add("hide-tooltip"):t.target.classList.remove("hide-tooltip")}))}adjustPrices(){this.headingM&&(this.headingM.setAttribute("role","heading"),this.headingM.setAttribute("aria-level","2"))}postCardUpdateHook(){this.adaptForMedia(),this.adjustTitleWidth(),this.adjustLegal(),this.adjustAddon(),this.adjustCallout(),this.adjustPrices()}get headingM(){return this.card.querySelector('[slot="heading-m"]')}get mainPrice(){return this.headingM.querySelector(`${y}[data-template="price"]`)}get divider(){return this.card.variant==="plans-education"?ut`<div class="divider"></div>`:$t}async adjustLegal(){if(await this.card.updateComplete,this.legalAdjusted)return;this.legalAdjusted=!0;let e=[],t=this.card.querySelector(`[slot="heading-m"] ${y}[data-template="price"]`);t&&e.push(t);let r=e.map(async a=>{let n=a.cloneNode(!0);await a.onceSettled(),a?.options&&(a.options.displayPerUnit&&(a.dataset.displayPerUnit="false"),a.options.displayTax&&(a.dataset.displayTax="false"),a.options.displayPlanType&&(a.dataset.displayPlanType="false"),n.setAttribute("data-template","legal"),a.parentNode.insertBefore(n,a.nextSibling))});await Promise.all(r)}async adjustAddon(){await this.card.updateComplete;let e=this.card.addon;if(!e)return;e.setAttribute("custom-checkbox","");let t=this.mainPrice;if(!t)return;await t.onceSettled();let r=t.value?.[0]?.planType;r&&(e.planType=r)}get stockCheckbox(){return this.card.checkboxLabel?ut`<label id="stock-checkbox">
@@ -1891,6 +1914,7 @@ merch-card[variant="special-offers"] span[is="inline-price"][data-template="stri
     --merch-color-grey-200: #E8E8E8;
     --merch-color-grey-600: #686868;
     --merch-color-grey-700: #464646;
+    --merch-color-grey-800: #222222;
     --merch-color-green-promo: #05834E;
     --merch-color-red-promo: #D31510;
     --merch-color-grey-80: #2c2c2c;
@@ -1962,7 +1986,6 @@ merch-card[variant="special-offers"] span[is="inline-price"][data-template="stri
 
 .collection-container merch-sidenav {
     grid-area: sidenav;
-    margin-right: var(--merch-sidenav-collection-gap);
 }
 
 .collection-container merch-card-collection-header {
@@ -2469,10 +2492,6 @@ merch-card [slot='callout-content'] .icon-button::before {
     .three-merch-cards,
     merch-sidenav ~ .four-merch-cards {
         grid-template-columns: repeat(3, var(--merch-card-collection-card-width));
-    }
-
-    .collection-container {
-        --merch-sidenav-collection-gap: var(--spacing-m);
     }
 }
 

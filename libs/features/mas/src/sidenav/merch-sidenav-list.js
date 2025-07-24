@@ -19,6 +19,10 @@ export class MerchSidenavList extends LitElement {
             reflect: true,
             attribute: 'selected-value',
         },
+        toggleIconColor: {
+            type: Boolean,
+            attribute: 'toggle-icon-color'
+        }
     };
 
     static styles = [
@@ -32,24 +36,20 @@ export class MerchSidenavList extends LitElement {
                 position: absolute;
                 right: 0;
             }
-
-            ::slotted(sp-sidenav.resources) {
-                --mod-sidenav-item-background-default-selected: transparent;
-                --mod-sidenav-content-color-default-selected: var(
-                    --highcontrast-sidenav-content-color-default,
-                    var(
-                        --mod-sidenav-content-color-default,
-                        var(--spectrum-sidenav-content-color-default)
-                    )
-                );
-            }
         `,
         headingStyles,
     ];
 
     constructor() {
         super();
+        this.toggleIconColor = false;
         this.handleClickDebounced = debounce(this.handleClick.bind(this));
+    }
+
+    updated() {
+        const lastItem = this.querySelector('sp-sidenav-item:last-of-type');
+        lastItem.style.setProperty('--mod-sidenav-gap', 0);
+        lastItem.style.setProperty('line-height', 'var(--mod-sidenav-top-level-line-height)');
     }
 
     selectElement(element, selected = true) {
@@ -60,7 +60,7 @@ export class MerchSidenavList extends LitElement {
         const selectionElement = element.querySelector('.selection');
         selectionElement?.setAttribute('selected', selected);
         const selection = selectionElement?.dataset;
-        const iconSrc = selected ? selection?.light : selection?.dark;
+        const iconSrc = (selected && this.toggleIconColor) ? selection?.light : selection?.dark;
         if (iconSrc) {
           element.querySelector('img')?.setAttribute('src', iconSrc);
         }
@@ -84,8 +84,6 @@ export class MerchSidenavList extends LitElement {
             );
         }
     }
-
-    
 
     /**
      * click handler to manage first level items state of sidenav

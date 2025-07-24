@@ -197,6 +197,11 @@ merch-card[variant^="plans"]:not([size]) {
 .collection-container.plans {
     --merch-card-collection-card-min-height: 273px;
     --merch-card-collection-card-width: var(--consonant-merch-card-plans-width);
+    margin-top: -18px;
+}
+
+merch-sidenav.plans {
+    --merch-sidenav-padding: 16px 20px 16px 16px;
 }
 
 merch-card-collection-header.plans {
@@ -247,28 +252,46 @@ merch-card-collection-header.plans {
 
 /* desktop */
 @media screen and ${DESKTOP_UP} {
-  :root {
-        --consonant-merch-card-plans-width: 276px;
-  }
+    :root {
+            --consonant-merch-card-plans-width: 276px;
+    }
 
-  .columns .four-merch-cards.plans {
-      grid-template-columns: repeat(2, var(--consonant-merch-card-plans-width));
-  }
+    merch-sidenav.plans {
+            --merch-sidenav-collection-gap: 30px;
+    }
 
-  merch-card[variant="plans-students"] {
-      width: var(--consonant-merch-card-plans-students-width);
-  }
+    .columns .four-merch-cards.plans {
+        grid-template-columns: repeat(2, var(--consonant-merch-card-plans-width));
+    }
 
-  merch-card-collection-header.plans {
-      --merch-card-collection-header-columns: fit-content(100%);
-      --merch-card-collection-header-areas: "custom";
-  }
+    merch-card[variant="plans-students"] {
+        width: var(--consonant-merch-card-plans-students-width);
+    }
+
+    merch-card-collection-header.plans {
+        --merch-card-collection-header-columns: fit-content(100%);
+        --merch-card-collection-header-areas: "custom";
+    }
+
+    .collection-container.plans:has(merch-sidenav) {
+        width: 100vw;
+        position: relative;
+        left: 50%;
+        transform: translateX(-50vw);
+        justify-content: start;
+        padding-inline: 30px;
+        padding-top: 24px;
+    }
 }
 
 /* Large desktop */
 @media screen and ${LARGE_DESKTOP} {
     .columns .four-merch-cards.plans {
         grid-template-columns: repeat(2, var(--consonant-merch-card-plans-width));
+    }
+
+    merch-sidenav.plans {
+        --merch-sidenav-collection-gap: 54px;
     }
 }
 `;

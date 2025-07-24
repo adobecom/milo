@@ -35,10 +35,15 @@ export class MerchSideNav extends LitElement {
     }
 
     updated() {
-        if (this.mobileAndTablet.matches) 
+        if (this.mobileAndTablet.matches) {
             this.modal = true;
+            this.style.padding = 0;
+            this.style.margin = 0;
+        }
         else {
             this.modal = false;
+            this.style.removeProperty('padding');
+            this.style.removeProperty('margin');
             if (this.open) this.closeModal();
         }
     }
@@ -115,25 +120,57 @@ export class MerchSideNav extends LitElement {
     static styles = [
         css`
             :host {
+                --merch-sidenav-gap: 8px;
+                --merch-sidenav-padding: 16px;
+                --merch-sidenav-collection-gap: 30px;
+                --merch-sidenav-title-font-size: 12px;
+                --merch-sidenav-title-line-height: 30px;
+                --merch-sidenav-title-color: var(--spectrum-gray-700, #464646);
+                --merch-sidenav-title-padding: 0 12px;
+                --merch-sidenav-item-inline-padding: 12px;
+                --merch-sidenav-item-font-weight: 400;
+                --merch-sidenav-item-font-size: 14px;
+                --merch-sidenav-item-line-height: 18px;
+                --merch-sidenav-item-label-top-margin: 6px;
+                --merch-sidenav-item-label-bottom-margin: 8px;
+                --merch-sidenav-item-icon-top-margin: 7px;
+                --merch-sidenav-item-icon-gap: 8px;
+                --merch-sidenav-item-selected-color: var(--spectrum-gray-800, #222222);
+                --merch-sidenav-item-selected-background: var(--spectrum-gray-200, #E6E6E6);
+                --merch-sidenav-list-gap: 4px;
+                --merch-sidenav-modal-border-radius: 8px;
+                --merch-sidenav-modal-padding: var(--merch-sidenav-padding);
                 display: block;
                 z-index: 2;
-                --merch-sidenav-gap: 8px;
+                padding: var(--merch-sidenav-padding);
+                margin-right: var(--merch-sidenav-collection-gap);
+            }
+
+            ::slotted(merch-sidenav-list) {
+                --mod-sidenav-inline-padding: var(--merch-sidenav-item-inline-padding);
+                --mod-sidenav-top-level-font-weight: var(--merch-sidenav-item-font-weight);
+                --mod-sidenav-top-level-font-size: var(--merch-sidenav-item-font-size);
+                --mod-sidenav-top-level-line-height: var(--merch-sidenav-item-line-height);
+                --mod-sidenav-top-to-label: var(--merch-sidenav-item-label-top-margin);
+                --mod-sidenav-bottom-to-label: var(--merch-sidenav-item-label-bottom-margin);
+                --mod-sidenav-top-to-icon: var(--merch-sidenav-item-icon-top-margin);
+                --mod-sidenav-icon-spacing: var(--merch-sidenav-item-icon-gap);
+                --mod-sidenav-content-color-default-selected: var(--merch-sidenav-item-selected-color);
+                --mod-sidenav-item-background-default-selected: var(--merch-sidenav-item-selected-background);
+                --mod-sidenav-gap: var(--merch-sidenav-list-gap);
             }
 
             :host h2 {
-                color: var(--spectrum-global-color-gray-900);
-                font-size: 12px;
+                color: var(--merch-sidenav-title-color);
+                font-size: var(--merch-sidenav-title-font-size);
                 margin: 0 0 var(--merch-sidenav-gap);
-            }
-
-            :host(:not([modal])) {
-                --mod-sidenav-item-background-default-selected: #222;
-                --mod-sidenav-content-color-default-selected: #fff;
+                padding: var(--merch-sidenav-title-padding);
+                line-height: var(--merch-sidenav-title-line-height);
+                height: auto;
             }
 
             #content {
                 width: 100%;
-                min-width: 300px;
                 height: 100%;
                 display: flex;
                 justify-content: center;
@@ -157,14 +194,17 @@ export class MerchSideNav extends LitElement {
                 place-items: center;
                 position: relative;
                 width: 100%;
-                padding-bottom: 16px;
+                border-radius: var(--merch-sidenav-modal-border-radius);
+                padding: var(--merch-sidenav-modal-padding);
+            }
+
+            sp-dialog-base {
+                --mod-modal-confirm-border-radius: var(--merch-sidenav-modal-border-radius);
             }
 
             sp-dialog-base #sidenav {
-                padding-top: 16px;
                 max-width: 300px;
                 max-height: 80dvh;
-                min-height: min(500px, 80dvh);
                 background: #ffffff 0% 0% no-repeat padding-box;
                 box-shadow: 0px 1px 4px #00000026;
             }

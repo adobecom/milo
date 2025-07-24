@@ -273,6 +273,7 @@ export class MerchCardCollection extends LitElement {
         if (!sidenav) return;
         if (append) this.parentElement.prepend(sidenav);
         this.sidenav = sidenav;
+        this.sidenav.classList.add(this.variant);
         if (SIDENAV_AUTOCLOSE[this.variant]) 
             this.sidenav.setAttribute('autoclose', '');
         this.dispatchEvent(new CustomEvent(EVENT_MERCH_CARD_COLLECTION_SIDENAV_ATTACHED));

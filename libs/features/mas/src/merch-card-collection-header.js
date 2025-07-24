@@ -245,6 +245,9 @@ export default class MerchCardCollectionHeader extends LitElement {
                                                   "filter sort"
                                                   "result result";
             --merch-card-collection-header-result-font-size: 14px;
+            --merch-card-collection-header-filter-height: 40px;
+            --merch-card-collection-header-filter-font-size: 16px;
+            --merch-card-collection-header-filter-padding: 9px 15px 11px;
         }
 
         sp-theme {
@@ -277,7 +280,12 @@ export default class MerchCardCollectionHeader extends LitElement {
 
         #filter {
             grid-area: filter;
-            width: 92px;
+            padding: var(--merch-card-collection-header-filter-padding);
+            height: var(--merch-card-collection-header-filter-height);
+        }
+
+        slot[name="filtersText"] {
+            font-size: var(--merch-card-collection-header-filter-font-size);
         }
 
         #sort {
