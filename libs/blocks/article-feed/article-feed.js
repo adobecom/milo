@@ -178,7 +178,7 @@ function openMenu(el) {
   if (expandedMenu) { closeMenu(expandedMenu); }
   el.setAttribute('aria-expanded', true);
   // Add focus trap when opening
-  // addFocusTrap(el);
+  addFocusTrap(el);
 }
 
 function navigateFilterButtons(currentButton, forward) {
