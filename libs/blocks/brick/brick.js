@@ -47,7 +47,7 @@ function decorateSupplementalText(el) {
 }
 
 function decorateForeground(el, foreground) {
-  const fgtext = foreground.querySelector('h1, h2, h3, h4, h5, h6, p')?.closest('div');
+  const fgtext = foreground.querySelector('h1, h2, h3, h4, h5, h6, p')?.closest('div') || foreground;
   fgtext.closest('div').classList.add('brick-text');
   if (foreground.querySelectorAll(':scope > div').length > 1) {
     if (!el.classList.contains('stack')) {
