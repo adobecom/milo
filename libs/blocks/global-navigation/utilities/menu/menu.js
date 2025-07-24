@@ -1,5 +1,6 @@
 import { processTrackingLabels } from '../../../../martech/attributes.js';
 import { getConfig, shouldBlockFreeTrialLinks } from '../../../../utils/utils.js';
+import { debounce } from '../../../../utils/action.js';
 import {
   fetchAndProcessPlainHtml,
   getActiveLink,
@@ -81,7 +82,20 @@ const decorateHeadline = (elem, index, context = 'viewport') => {
   };
 
   setHeadlineAttributes();
-  isDesktop.addEventListener('change', setHeadlineAttributes);
+
+  if (context === 'footer') {
+    let previousState = isDesktopForContext(context);
+    const handleResize = () => {
+      const currentState = isDesktopForContext(context);
+      if (currentState !== previousState) {
+        setHeadlineAttributes();
+        previousState = currentState;
+      }
+    };
+    window.addEventListener('resize', debounce(handleResize, 150));
+  } else {
+    isDesktop.addEventListener('change', setHeadlineAttributes);
+  }
 
   // Since heading is turned into a div, it can be safely removed
   elem.remove();
