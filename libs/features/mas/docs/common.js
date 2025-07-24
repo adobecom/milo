@@ -59,7 +59,6 @@ const createMasCommerceService = (params, commerceEnv) => {
   const masCommerceService = document.createElement('mas-commerce-service');
   masCommerceService.setAttribute('lana-tags', 'nala');
   masCommerceService.setAttribute('lana-sample-rate', '100');
-  masCommerceService.setAttribute('data-mas-ff-defaults', 'on');
   if (commerceEnv) {
     masCommerceService.setAttribute('env', commerceEnv);
   }
