@@ -64,14 +64,14 @@ const MerchInterceptor = {
       // Only intercept if the importer is global-navigation.js
       if (args.importer && args.importer.includes('global-navigation.js')) {
         console.log('Merch interceptor activated! Intercepting import from:', args.importer);
-        return { path: args.path, namespace: 'merch-dummy' };
+        return { path: args.path, namespace: 'merch' };
       }
       // For other files, let esbuild handle the import normally
       return undefined;
     });
 
     // Provide parsed implementation when merch.js is imported
-    onLoad({ filter: /.*/, namespace: 'merch-dummy' }, () => {
+    onLoad({ filter: /.*/, namespace: 'merch' }, () => {
       console.log('Providing parsed merch.js implementation');
 
       // Parse the getMiloLocaleSettings function from the actual merch.js file
