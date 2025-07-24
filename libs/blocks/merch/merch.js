@@ -864,7 +864,7 @@ const isProdModal = (url) => {
 };
 
 export async function getModalAction(offers, options, el) {
-  if ((el?.is3in1Modal && !el?.isOpen3in1Modal) || options.modal !== 'true') return undefined;
+  if (!options.modal) return undefined;
 
   const preload = new URLSearchParams(window.location.search).get('commerce.preload') !== 'off';
   if (el?.isOpen3in1Modal && preload) {
@@ -1096,7 +1096,7 @@ export async function getCheckoutContext(el, params) {
     checkoutMarketSegment,
     entitlement,
     upgrade,
-    modal,
+    modal: fallbackStep ? undefined : modal,
     fallbackStep,
     extraOptions: JSON.stringify(extraOptions),
   };
