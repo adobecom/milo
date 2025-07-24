@@ -170,7 +170,7 @@ function removeFocusTrap() {
 function closeMenu(el) {
   el.setAttribute('aria-expanded', false);
   // Remove focus trap when closing
-  // removeFocusTrap();
+  removeFocusTrap();
 }
 
 function openMenu(el) {
