@@ -204,20 +204,6 @@ function navigateFilterButtons(currentButton, forward) {
   enableSearch(nextButton.id);
 }
 
-function toggleMenu(e) {
-  const button = e.target.closest('[role=button]');
-  const expanded = button.getAttribute('aria-expanded');
-  if (expanded === 'true') {
-    closeMenu(button);
-    disableSearch(button.id);
-    closeCurtain();
-  } else {
-    openMenu(button);
-    enableSearch(button.id);
-    openCurtain();
-  }
-}
-
 // New accessibility functions - moved up to avoid hoisting issues
 function handleDropdownKeydown(e, firstElement, lastElement, triggerButton) {
   const { key, shiftKey } = e;
@@ -247,8 +233,8 @@ function handleDropdownKeydown(e, firstElement, lastElement, triggerButton) {
     }
   }
 
-  // Arrow keys for filter button navigation
-  if ((key === 'ArrowLeft' || key === 'ArrowRight') && document.activeElement === firstElement) {
+  // Arrow keys for filter button navigation - works from any element in dropdown
+  if (key === 'ArrowLeft' || key === 'ArrowRight') {
     e.preventDefault();
     navigateFilterButtons(triggerButton, key === 'ArrowRight');
   }
@@ -286,6 +272,20 @@ function addFocusTrap(button) {
   // Create and store the event handler for proper cleanup
   dropdown.keydownHandler = (e) => handleDropdownKeydown(e, firstElement, lastElement, button);
   dropdown.addEventListener('keydown', dropdown.keydownHandler);
+}
+
+function toggleMenu(e) {
+  const button = e.target.closest('[role=button]');
+  const expanded = button.getAttribute('aria-expanded');
+  if (expanded === 'true') {
+    closeMenu(button);
+    disableSearch(button.id);
+    closeCurtain();
+  } else {
+    openMenu(button);
+    enableSearch(button.id);
+    openCurtain();
+  }
 }
 
 function buildSelectedFilter(name) {
