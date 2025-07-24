@@ -258,7 +258,7 @@ function addFocusTrap(button) {
   }
 
   const focusableElements = dropdown.querySelectorAll(
-    'input, button, [tabindex]:not([tabindex="-1"]), [role="button"]',
+    'input, button',
   );
 
   if (focusableElements.length === 0) return;
