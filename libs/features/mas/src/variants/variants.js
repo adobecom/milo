@@ -19,11 +19,13 @@ export const registerVariant = (
     variantClass,
     fragmentMapping = null,
     style = null,
+    collectionOptions
 ) => {
     variantRegistry.set(name, {
         class: variantClass,
         fragmentMapping,
         style,
+        collectionOptions
     });
 };
 
@@ -42,9 +44,9 @@ registerVariant(
     null,
     MiniCompareChart.variantStyle,
 );
-registerVariant('plans', Plans, PLANS_AEM_FRAGMENT_MAPPING, Plans.variantStyle);
-registerVariant('plans-students', Plans, PLANS_STUDENTS_AEM_FRAGMENT_MAPPING, Plans.variantStyle);
-registerVariant('plans-education', Plans, PLANS_EDUCATION_AEM_FRAGMENT_MAPPING, Plans.variantStyle);
+registerVariant('plans', Plans, PLANS_AEM_FRAGMENT_MAPPING, Plans.variantStyle, Plans.collectionOptions);
+registerVariant('plans-students', Plans, PLANS_STUDENTS_AEM_FRAGMENT_MAPPING, Plans.variantStyle, Plans.collectionOptions);
+registerVariant('plans-education', Plans, PLANS_EDUCATION_AEM_FRAGMENT_MAPPING, Plans.variantStyle, Plans.collectionOptions);
 registerVariant('product', Product, null, Product.variantStyle);
 registerVariant('segment', Segment, null, Segment.variantStyle);
 registerVariant(
@@ -77,6 +79,10 @@ const getVariantLayout = (card, mustMatch = false) => {
 
 export function getFragmentMapping(variant) {
     return variantRegistry.get(variant)?.fragmentMapping;
+}
+
+export function getCollectionOptions(variant) {
+    return variantRegistry.get(variant)?.collectionOptions;
 }
 
 export { getVariantLayout };

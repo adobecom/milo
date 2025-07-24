@@ -204,6 +204,12 @@
   color: #909090;
 }
 
+.footer-logo-image svg {
+  width: 67px;
+  height: 20px;
+  display: block;
+}
+
 /* Privacy */
 .feds-footer-legalWrapper {
   display: flex;
@@ -241,18 +247,6 @@ span.feds-footer-privacyLink-divider {
   height: 12px;
 }
 
-.footer-logo {
-  padding: 0 var(--feds-gutter-footer);
-  line-height: 0;
-}
-
-.footer-logo-image img,
-.footer-logo-image svg,
-.footer-logo-image picture { 
-  width: 45px;
-}
-
-
 @media (min-width: 600px) {
   dialog.feds-dialog {
     max-width: 80vw;
@@ -264,6 +258,34 @@ span.feds-footer-privacyLink-divider {
   dialog.feds-dialog {
     width: 1200px;
     max-width: calc((100% - 6px) - 2em);
+  }
+}
+
+@media (max-width: 599px) {
+  .feds-footer-miscLinks {
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    row-gap: 12px;
+  }
+
+  .feds-regionPicker-wrapper {
+    width: 100%;
+    order: 1;
+  }
+
+  .feds-social {
+    order: 2;
+  }
+
+  .feds-footer-miscLinks .footer-logo {
+    order: 3;
+    margin-left: auto;
+  }
+
+  [dir="rtl"] .feds-footer-miscLinks .footer-logo {
+    margin-left: 0;
+    margin-right: auto;
   }
 }
 
@@ -356,11 +378,6 @@ span.feds-footer-privacyLink-divider {
   span.feds-footer-privacyLink-divider, .feds-footer-privacyLink {
     margin-left: 5px;
     margin-right: 0;
-  }
-
-  .footer-logo {
-    display: flex;
-    justify-content: center;
   }
 }
 

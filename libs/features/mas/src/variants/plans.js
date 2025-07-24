@@ -93,15 +93,26 @@ export class Plans extends VariantLayout {
         if (!sizes.includes(size)) return;
         
 
-        footer?.classList.toggle('wide-footer', !isMobile());
+        footer?.classList.toggle('wide-footer', isDesktop());
         if (!shouldBeInFooter && slotInFooter) {
-            slotInBody
-                ? slotInFooter.remove()
-                : body.appendChild(slotInFooter);
+            if (slotInBody) 
+                slotInFooter.remove();
+            else {
+                const bodyPlaceholder = body.querySelector(`[data-placeholder-for="${name}"]`);
+                if (bodyPlaceholder) bodyPlaceholder.replaceWith(slotInFooter);
+                else body.appendChild(slotInFooter);
+            }
             return;
         }
         if (shouldBeInFooter && slotInBody) {
-            slotInFooter ? slotInBody.remove() : footer.prepend(slotInBody);
+            const bodyPlaceholder = document.createElement('div');
+            bodyPlaceholder.setAttribute('data-placeholder-for', name);
+            bodyPlaceholder.classList.add('slot-placeholder');
+            if (!slotInFooter) {
+                const slotInBodyClone = slotInBody.cloneNode(true);
+                footer.prepend(slotInBodyClone);
+            }
+            slotInBody.replaceWith(bodyPlaceholder)
         }
     }
 
@@ -115,7 +126,7 @@ export class Plans extends VariantLayout {
             return;
         }
         
-        this.adjustSlotPlacement('addon', ['wide', 'super-wide'], !isMobile());
+        this.adjustSlotPlacement('addon', ['super-wide'], isDesktop());
         this.adjustSlotPlacement('callout-content', ['super-wide'], isDesktop());
     }
 
@@ -281,6 +292,10 @@ export class Plans extends VariantLayout {
             font-weight: 400;
         }
 
+        :host([variant^='plans']) .slot-placeholder {
+            display: none;
+        }
+
         :host([variant='plans-education']) {
             min-height: unset;
         }
@@ -361,4 +376,17 @@ export class Plans extends VariantLayout {
             padding: 2px 10px 3px;
         }
     `;
+
+    static collectionOptions = {
+        customHeaderArea: (collection) => {
+            if (!collection.sidenav) return nothing;
+            return html`<slot name="resultsText"></slot>`
+        },
+        headerVisibility: {
+            search: false,
+            sort: false,
+            result: ['mobile', 'tablet'],
+            custom: ['desktop']
+        }
+    }
 }

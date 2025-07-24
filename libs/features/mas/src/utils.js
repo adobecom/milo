@@ -13,7 +13,7 @@ export function debounce(func, delay) {
 }
 
 export const getSlotText = (element, name) =>
-    element.querySelector(`[slot="${name}"]`)?.textContent?.trim();
+    element?.querySelector(`[slot="${name}"]`)?.textContent?.trim();
 
 /**
  * Helper function to create an element with attributes
