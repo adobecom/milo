@@ -34,6 +34,12 @@
       "value": "Adobe Apps",
       "color": "",
       "url": ""
+    },
+    {
+      "key": "bold-italic-adobe-apps",
+      "value": "<strong><em>Adobe Apps</em></strong>",
+      "color": "",
+      "url": ""
     }
   ],
   ":type": "sheet"
