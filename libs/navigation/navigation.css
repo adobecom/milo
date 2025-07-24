@@ -1,5 +1,6 @@
 @import '../blocks/global-navigation/global-navigation.css';
 @import '../blocks/global-navigation/features/profile/dropdown.css';
+@import '../blocks/global-navigation/utilities/menu/menu.css';
 @import '../blocks/global-navigation/features/search/gnav-search.css';
 
  /* Extracting the essential styles required for rendering the component independently */

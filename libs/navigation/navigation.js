@@ -172,11 +172,7 @@ export default async function loadBlock(configs, customLib) {
       }
       if (block.key === 'footer') {
         try {
-          if (configBlock.isContainerResponsive) {
-            import('./footer-responsive.css').catch(() => loadStyle(`${miloLibs}/libs/navigation/footer-responsive.css`));
-          } else {
-            import('./footer.css').catch(() => loadStyle(`${miloLibs}/libs/navigation/footer.css`));
-          }
+          import('./footer.css').catch(() => loadStyle(`${miloLibs}/libs/navigation/footer.css`));
           const { default: init } = await import('../blocks/global-footer/global-footer.js');
           await bootstrapBlock(init, {
             ...block,
