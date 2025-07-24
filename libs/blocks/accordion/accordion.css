@@ -246,7 +246,7 @@ div.video-container {
   padding: 0;
 }
 
-div.editorial .video-container, div.editorial .expanded img,
+div.editorial .video-container, div.editorial .descr-details img,
 div.editorial video, div.editorial .video-container video {
   width: 100%;
 }
