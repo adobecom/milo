@@ -175,6 +175,13 @@ export default function InputUrls() {
     nextStep();
   }
 
+  function handleKeyDown(e, pType, handleTypeChange) {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      handleTypeChange(pType);
+    }
+  }
+
   useEffect(() => {
     if (project.value) {
       setType(project.value?.type);
@@ -235,12 +242,7 @@ export default function InputUrls() {
                   tabindex="0"
                   role="radio"
                   aria-checked=${type === pType}
-                  onKeyDown=${(e) => {
-                    if (e.key === 'Enter' || e.key === ' ') {
-                      e.preventDefault();
-                      handleTypeChange(pType);
-                    }
-                  }}
+                  onKeyDown=${(e) => handleKeyDown(e, pType, handleTypeChange)}
                 >
                   ${PROJECT_TYPE_LABELS[pType]}
                 </div>
