@@ -49,9 +49,10 @@ const extractDependencies = (node, tree) => {
 
   // Don't filter out identifiers that might be user-defined constants/variables
   // Only filter out known built-ins
-  const trueExternalDependencies = externalDependencies.filter(
-    (identifier) => !builtInMethods.has(identifier) && !builtInProperties.has(identifier),
-  );
+  const trueExternalDependencies = externalDependencies
+    .filter(
+      (identifier) => !builtInMethods.has(identifier) && !builtInProperties.has(identifier),
+    );
 
   // Find scope usage (identifiers that are declared in scope and used in the node)
   const scopeUsage = Array.from(usedIdentifiers)
@@ -66,7 +67,7 @@ const extractDependencies = (node, tree) => {
     scopeUsage,
     usedIdentifiers: Array.from(usedIdentifiers),
     declaredIdentifiers: Array.from(declaredIdentifiers),
-    scopeDeclarations: Array.from(scopeDeclarations.keys()),
+    scopeDeclarations: Array.from(scopeDeclarations.keys()).filter((name) => name !== node.id.name),
     // Additional information for debugging
     rawExternalDependencies: externalDependencies,
     builtInMethodsUsed: externalDependencies.filter((id) => builtInMethods.has(id)),
@@ -74,7 +75,4 @@ const extractDependencies = (node, tree) => {
   };
 };
 
-export {
-  getNodeScope,
-  extractDependencies,
-};
+export { extractDependencies };
