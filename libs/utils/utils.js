@@ -95,6 +95,7 @@ const MILO_BLOCKS = [
   'share',
   'susi-light-login',
   'reading-time',
+  'email-collection',
 ];
 const AUTO_BLOCKS = [
   { adobetv: 'tv.adobe.com' },
@@ -1300,6 +1301,7 @@ export async function loadIms() {
       return;
     }
     const [unavMeta, ahomeMeta] = [getMetadata('universal-nav')?.trim(), getMetadata('adobe-home-redirect')];
+    const enableGuestToken = getMetadata('ims-guest-token') === 'on';
     const defaultScope = `AdobeID,openid,gnav${unavMeta && unavMeta !== 'off' ? ',pps.read,firefly_api,additional_info.roles,read_organizations,account_cluster.read' : ''}`;
     const timeout = setTimeout(() => reject(new Error('IMS timeout')), imsTimeout || 5000);
     window.adobeid = {
@@ -1316,6 +1318,12 @@ export async function loadIms() {
         clearTimeout(timeout);
       },
       onError: reject,
+      ...(enableGuestToken && {
+        // CHECK THIS
+        api_parameters: { check_token: { guest_allowed: true } },
+        enableGuestAccounts: true,
+        enableGuestTokenForceRefresh: true,
+      }),
       ...adobeid,
     };
     const path = PAGE_URL.searchParams.get('useAlternateImsDomain')

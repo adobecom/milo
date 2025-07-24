@@ -4,6 +4,7 @@
   gap: 40px;
   padding: 40px 24px;
   min-height: 444px;
+  box-sizing: border-box;
 }
 
 .email-collection .foreground .text {
@@ -29,19 +30,19 @@
   height: 100%;
 }
 
-.email-collection .foreground.success-message {
+.email-collection .foreground.message {
   padding: 40px 14px;
 }
 
-.email-collection .foreground.success-message .text {
+.email-collection .foreground.message .text {
   padding: 0 10px;
 }
 
-.email-collection .foreground.success-message .image {
+.email-collection .foreground.message .image {
   display: block;
 }
 
-.email-collection .foreground.success-message .image img {
+.email-collection .foreground.message .image img {
   max-height: 200px;
 }
 
@@ -49,11 +50,15 @@
   margin: 12px 0 24px 0;
 }
 
-.email-collection .foreground.success-message .action-area {
+.email-collection .foreground .text .consent-string.empty {
+  margin-bottom: 0;
+}
+
+.email-collection .foreground.message .action-area {
   margin: 24px 0 0 0;
 }
 
-.email-collection .foreground .text .consent-string > a {
+.email-collection .foreground .text .consent-string a {
   color: inherit;
 }
 
@@ -61,7 +66,10 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  margin: 10px 0;
+}
+
+.email-collection .foreground .text .consent-string .checkbox-container:first-child:has(input:required) {
+  margin-bottom: 10px;
 }
 
 .email-collection .foreground .text .consent-string .checkbox-container > input {
@@ -69,7 +77,12 @@
 }
 
 .email-collection .foreground .text .consent-string p {
-  margin: 0;
+  margin: 10px 0;
+}
+
+.email-collection .foreground .text .consent-string > div p:first-child {
+  margin-top: 0;
+  margin-bottom: 10px;
 }
 
 .email-collection .foreground .text .consent-string .checkbox-container > label {
@@ -89,7 +102,7 @@
 }
 
 .email-collection.mailing-list .foreground .text .icon-area,
-.email-collection .foreground.success-message .text .icon-area {
+.email-collection .foreground.message .text .icon-area {
   margin-bottom: 24px;
 }
 
@@ -120,6 +133,12 @@
   align-items: center;
 }
 
+.email-collection .foreground .text form .checkbox-container label {
+  display: unset;
+  align-items: unset;
+  min-height: unset;
+}
+
 .email-collection .foreground .text form label.required::after {
   content: '';
   background: url('/img/ui/asterisk.svg') no-repeat center;
@@ -130,7 +149,6 @@
 }
 
 .email-collection .foreground .text form :is(input, textarea, select) {
-  box-sizing: border-box;
   margin-bottom: 12px;
   border: 2px #DADADA solid;
   border-radius: 8px;
@@ -143,10 +161,6 @@
   padding-bottom: 8px;
   height: 56px;
   resize: none;
-}
-
-.email-collection .foreground .text form > *:last-child {
-  margin-bottom: 0;
 }
 
 .email-collection .foreground form .split-row,
@@ -187,14 +201,24 @@
   pointer-events: none;
 }
 
-.email-collection .foreground .text .submit-button {
+.email-collection .foreground .text form .button-container {
   margin-bottom: 0;
   display: flex;
   justify-content: flex-end;
 }
 
-.email-collection .foreground .text .submit-button button {
+.email-collection .foreground.message .text .button-container {
+  margin-top: 24px;
+}
+
+.email-collection .foreground .text .button-container button {
   font-family: inherit;
+}
+
+@media (min-width: 600px) {
+  .email-collection {
+    width: 80vw;
+  }
 }
 
 @media (min-width: 1200px) {
@@ -202,12 +226,27 @@
     width: 900px;
   }
 
+  .email-collection.waitlist:has(.foreground:not(.message)) {
+    height: 700px;
+  }
+
+  .email-collection.waitlist .foreground:not(.message) {
+    padding-right: 0;
+  }
+
+  .email-collection.waitlist .foreground:not(.message) .text {
+    overflow-y: auto;
+    justify-content: unset;
+    padding-right: 56px;
+  }
+
   .email-collection .foreground,
-  .email-collection .foreground.success-message {
+  .email-collection .foreground.message {
     padding: 56px;
     display: flex;
     flex-direction: row;
     gap: 40px;
+    height: inherit;
   }
 
   .email-collection .foreground .image {
@@ -227,7 +266,7 @@
     flex: 1;
   }
 
-  .email-collection .foreground.success-message .text {
+  .email-collection .foreground.message .text {
     padding: unset;
   }
 
@@ -245,7 +284,7 @@
     position: relative;
   }
 
-  .email-collection .foreground.success-message .image img {
+  .email-collection .foreground.message .image img {
     max-height: unset;
   }
 
@@ -256,4 +295,15 @@
     height: 100%;
     width: calc(50% - 20px);
   }
+}
+
+.progress-circle-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+}
+
+.email-collection > .progress-circle-container {
+  height: 444px;
 }
