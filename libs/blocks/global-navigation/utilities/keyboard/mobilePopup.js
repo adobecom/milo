@@ -289,7 +289,7 @@ class Popup {
 
         const element = e.target.closest(selectors.menuContent)
           || e.target.closest(selectors.featuredProducts);
-        if (!element || isDesktopForContext('footer').matches) return;
+        if (!element || isDesktopForContext('footer')) return;
 
         const firstNavLink = element.querySelector(selectors.popupItems);
         const firstHeadline = element.querySelector(selectors.headline);
