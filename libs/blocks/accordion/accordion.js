@@ -115,7 +115,7 @@ function defaultOpen(accordion) {
   handleClick(accordion.querySelector('.accordion-trigger'), accordion.querySelector('.descr-details'), 1);
 }
 
-function createItem(accordion, id, heading, num) {
+function createItem(accordion, id, heading, num, isEditorial) {
   const triggerId = `accordion-${id}-trigger-${num}`;
   const panelId = `accordion-${id}-content-${num}`;
   const icon = createTag('span', { class: 'accordion-icon' });
@@ -139,7 +139,7 @@ function createItem(accordion, id, heading, num) {
   const dtHtml = hTag ? createTag(hTag.tagName, { class: 'accordion-heading' }, button) : button;
   const dt = createTag('div', dtAttrs, dtHtml);
   const dd = createTag('div', { 'aria-labelledby': triggerId, id: panelId, hidden: true, class: 'descr-details' }, panel);
-  dd.prepend(mediaCollection?.[id]?.[num - 1]);
+  if (isEditorial) dd.prepend(mediaCollection[id][num - 1]);
 
   button.addEventListener('click', (e) => { handleClick(e.target, dd, num, id); });
   accordion.append(dt, dd);
@@ -258,6 +258,7 @@ export default async function init(el) {
       id,
       heading,
       idx + 1,
+      isEditorial,
     ),
   );
 
