@@ -175,7 +175,7 @@ export default function InputUrls() {
     nextStep();
   }
 
-  function handleKeyDown(e, pType, handleTypeChange) {
+  function handleKeyDown(e, pType) {
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
       handleTypeChange(pType);
@@ -242,7 +242,7 @@ export default function InputUrls() {
                   tabindex="0"
                   role="radio"
                   aria-checked=${type === pType}
-                  onKeyDown=${(e) => handleKeyDown(e, pType, handleTypeChange)}
+                  onKeyDown=${(e) => handleKeyDown(e, pType)}
                 >
                   ${PROJECT_TYPE_LABELS[pType]}
                 </div>
