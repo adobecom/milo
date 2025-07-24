@@ -18,6 +18,7 @@ let videoLabels = {
   playIcon: 'Play icon',
   hasFetched: false,
 };
+const isReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 let videoCounter = 0;
 
 export function decorateButtons(el, size) {
@@ -334,9 +335,13 @@ export function applyAccessibilityEvents(videoEl) {
     pausePlayWrapper.addEventListener('keydown', handlePause);
   }
   if (videoEl.hasAttribute('autoplay')) {
-    videoEl.addEventListener('canplay', () => videoEl.play());
     videoEl.addEventListener('playing', (event) => syncPausePlayIcon(videoEl, event));
     videoEl.addEventListener('ended', () => syncPausePlayIcon(videoEl));
+    if (isReducedMotion) {
+      videoEl.pause();
+      return;
+    }
+    videoEl.addEventListener('canplay', () => videoEl.play());
   }
 }
 
