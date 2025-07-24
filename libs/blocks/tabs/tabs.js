@@ -164,6 +164,7 @@ function initTabs(elm, config, rootElem) {
     });
   });
   tabs.forEach((tab) => {
+    tab.removeEventListener('click', changeTabs);
     tab.addEventListener('click', changeTabs);
   });
   if (config) configTabs(config, rootElem);
