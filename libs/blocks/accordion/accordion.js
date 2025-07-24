@@ -139,7 +139,7 @@ function createItem(accordion, id, heading, num) {
   const dtHtml = hTag ? createTag(hTag.tagName, { class: 'accordion-heading' }, button) : button;
   const dt = createTag('div', dtAttrs, dtHtml);
   const dd = createTag('div', { 'aria-labelledby': triggerId, id: panelId, hidden: true, class: 'descr-details' }, panel);
-  dd.prepend(mediaCollection[id][num - 1]);
+  dd.prepend(mediaCollection?.[id]?.[num - 1]);
 
   button.addEventListener('click', (e) => { handleClick(e.target, dd, num, id); });
   accordion.append(dt, dd);
