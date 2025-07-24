@@ -53,7 +53,7 @@ function closePanel(btn, panel) {
   panel.setAttribute('hidden', '');
 }
 
-function closeMediaPanel(displayArea, el, dd, clickedId) {
+function closeMediaPanel({ displayArea, el, dd, clickedId }) {
   closePanel(el, dd);
   const clickedMedia = displayArea.childNodes[clickedId - 1];
   const video = clickedMedia?.querySelector('video');
@@ -65,7 +65,7 @@ function closeMediaPanel(displayArea, el, dd, clickedId) {
   displayArea.childNodes[newExpandedId].classList.add('expanded');
 }
 
-function openMediaPanel(displayArea, el, dd, clickedId, shouldClose = true) {
+function openMediaPanel({ displayArea, el, dd, clickedId, shouldClose = true }) {
   const accordionId = el.getAttribute('aria-controls').split('-')[1];
   [...mediaCollection[accordionId]].forEach((mediaCollectionItem, idx) => {
     const video = mediaCollectionItem.querySelector('video');
@@ -95,12 +95,12 @@ function handleClick(el, dd, num) {
 
   const closestEditorial = el.closest('.editorial');
   const expanded = el.getAttribute('aria-expanded') === 'true';
-  if (closestEditorial && window.innerWidth > 1199) {
+  if (closestEditorial && window.matchMedia('(min-width: 1200px)').matches) {
     if (expanded) {
-      closeMediaPanel(closestEditorial.querySelector('.accordion-media'), el, dd, num);
+      closeMediaPanel({ displayArea: closestEditorial.querySelector('.accordion-media'), el, dd, clickedId: num });
       return;
     }
-    openMediaPanel(closestEditorial.querySelector('.accordion-media'), el, dd, num);
+    openMediaPanel({ displayArea: closestEditorial.querySelector('.accordion-media'), el, dd, clickedId: num });
     return;
   }
 
@@ -201,16 +201,10 @@ async function createExpandAllContainer(accordionItems, isEditorial, mediaEl) {
 }
 
 function handleResponsiveMedia(accordionMedia, id, el, hasExpandAll) {
-  const mediaBreakpoint = 1199;
-  let wasDesktop = window.innerWidth > mediaBreakpoint;
+  const moveMedia = (e) => {
+    if (!mediaCollection[id]) return;
 
-  const moveMedia = (isInitialCall) => {
-    const screenWidth = window.innerWidth;
-    const isDesktop = screenWidth > mediaBreakpoint;
-    if (!isInitialCall && (!mediaCollection[id] || ((isDesktop === wasDesktop)))) return;
-
-    wasDesktop = isDesktop;
-    if (isDesktop) {
+    if (e?.matches) {
       [...mediaCollection[id]].forEach((mediaItem) => {
         if (accordionMedia && !accordionMedia.contains(mediaItem)) accordionMedia.append(mediaItem);
       });
@@ -220,7 +214,13 @@ function handleResponsiveMedia(accordionMedia, id, el, hasExpandAll) {
 
       if ((hasExpandAll && el.querySelectorAll('.accordion-trigger[aria-expanded="true"]')?.length === 1)
           || !el.querySelector('.accordion-media .expanded')?.length) {
-        openMediaPanel(accordionMedia, activeEl, el.querySelectorAll('.descr-details')[activeElIndex - 1], activeElIndex, false);
+        openMediaPanel({
+          displayArea: accordionMedia,
+          el: activeEl,
+          dd: el.querySelectorAll('.descr-details')[activeElIndex - 1],
+          clickedId: activeElIndex,
+          shouldClose: false,
+        });
       }
       return;
     }
@@ -231,8 +231,9 @@ function handleResponsiveMedia(accordionMedia, id, el, hasExpandAll) {
     });
   };
 
-  moveMedia(wasDesktop);
-  window.addEventListener('resize', () => moveMedia(false));
+  const isDesktop = window.matchMedia('(min-width: 1200px)');
+  moveMedia(isDesktop);
+  isDesktop.addEventListener('change', moveMedia);
 }
 
 export default async function init(el) {

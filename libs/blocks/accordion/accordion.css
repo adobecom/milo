@@ -247,7 +247,7 @@ div.video-container {
 }
 
 div.editorial .video-container, div.editorial .descr-details img,
-div.editorial video, div.editorial .video-container video {
+div.editorial video {
   width: 100%;
 }
 
