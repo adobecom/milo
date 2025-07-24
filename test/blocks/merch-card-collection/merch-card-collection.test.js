@@ -317,4 +317,432 @@ describe('Merch Cards', async () => {
       expect(photoshop.title.indexOf('PROMOTION') > 0).to.be.false;
     });
   });
+
+  describe('simplified-pricing-express variant', async () => {
+    let matchMediaStub;
+
+    beforeEach(() => {
+      // Restore matchMedia if it was stubbed before
+      if (matchMediaStub) {
+        matchMediaStub.restore();
+      }
+    });
+
+    afterEach(() => {
+      // Clean up matchMedia stub
+      if (matchMediaStub) {
+        matchMediaStub.restore();
+      }
+    });
+
+    it('should set default card attribute from data-default-card', async () => {
+      const el = document.getElementById('multipleFilters');
+      // The merch-card-collection processes cards from a JSON response
+      // We need to simulate the proper structure
+      cards = [
+        {
+          cardContent: `<div class="merch-card catalog">
+            <div>
+              <h3>Individual</h3>
+            </div>
+            <div>
+              <h3>individual</h3>
+              <p>variant:simplified-pricing-express</p>
+              <p>catalog:categories/creativity-design/photo</p>
+            </div>
+          </div>`,
+        },
+        {
+          cardContent: `<div class="merch-card catalog">
+            <div>
+              <h3>Teams</h3>
+            </div>
+            <div>
+              <h3>teams</h3>
+              <p>variant:simplified-pricing-express</p>
+              <p>catalog:categories/creativity-design/photo</p>
+              <p>data-default-card:true</p>
+            </div>
+          </div>`,
+        },
+        {
+          cardContent: `<div class="merch-card catalog">
+            <div>
+              <h3>Enterprise</h3>
+            </div>
+            <div>
+              <h3>enterprise</h3>
+              <p>variant:simplified-pricing-express</p>
+              <p>catalog:categories/creativity-design/photo</p>
+            </div>
+          </div>`,
+        },
+      ];
+
+      const merchCards = await init(el);
+      expect(merchCards.tagName).to.equal('MERCH-CARD-COLLECTION');
+      await delay(500);
+
+      // The merch-card-collection processes the simplified-pricing-express cards
+      const merchCardElements = merchCards.querySelectorAll('merch-card[variant="simplified-pricing-express"]');
+      expect(merchCardElements.length).to.equal(3);
+
+      // Verify the data-default-card attribute is set
+      const hasDefaultCard = Array.from(merchCardElements).some((card) => card.hasAttribute('data-default-card'));
+      expect(hasDefaultCard).to.be.true;
+
+      // Find which card has the default attribute
+      let defaultCardIndex = -1;
+      merchCardElements.forEach((card, index) => {
+        if (card.hasAttribute('data-default-card')) {
+          defaultCardIndex = index;
+        }
+      });
+      expect(defaultCardIndex).to.equal(1); // Second card should be default
+    });
+
+    it('should expand default card on mobile/tablet', async () => {
+      // Mock mobile viewport
+      matchMediaStub = sinon.stub(window, 'matchMedia');
+      matchMediaStub.returns({
+        matches: true, // True for mobile/tablet
+        media: '(max-width: 1199px)',
+        onchange: null,
+        addListener: sinon.stub(),
+        removeListener: sinon.stub(),
+        addEventListener: sinon.stub(),
+        removeEventListener: sinon.stub(),
+        dispatchEvent: sinon.stub(),
+      });
+
+      const el = document.getElementById('multipleFilters');
+      cards = [
+        {
+          cardContent: `<div class="merch-card catalog">
+            <div>
+              <h3>Individual</h3>
+            </div>
+            <div>
+              <h3>individual</h3>
+              <p>variant:simplified-pricing-express</p>
+              <p>catalog:categories/creativity-design/photo</p>
+            </div>
+          </div>`,
+        },
+        {
+          cardContent: `<div class="merch-card catalog">
+            <div>
+              <h3>Teams</h3>
+            </div>
+            <div>
+              <h3>teams</h3>
+              <p>variant:simplified-pricing-express</p>
+              <p>catalog:categories/creativity-design/photo</p>
+              <p>data-default-card:true</p>
+            </div>
+          </div>`,
+        },
+        {
+          cardContent: `<div class="merch-card catalog">
+            <div>
+              <h3>Enterprise</h3>
+            </div>
+            <div>
+              <h3>enterprise</h3>
+              <p>variant:simplified-pricing-express</p>
+              <p>catalog:categories/creativity-design/photo</p>
+            </div>
+          </div>`,
+        },
+      ];
+
+      const merchCards = await init(el);
+      await delay(500);
+
+      const merchCardElements = merchCards.querySelectorAll('merch-card[variant="simplified-pricing-express"]');
+      expect(merchCardElements.length).to.equal(3);
+
+      // In mobile/tablet mode, the card with data-default-card should have data-expanded="true"
+      // Wait a bit for the component to initialize and set attributes
+      await delay(100);
+
+      const defaultCard = merchCards.querySelector('merch-card[data-default-card="true"]');
+      if (defaultCard) {
+        // The variant should have set data-expanded on mobile
+        const isExpanded = defaultCard.getAttribute('data-expanded');
+        expect(isExpanded).to.equal('true');
+      }
+    });
+
+    it('should use first card as default when no default specified', async () => {
+      // Mock tablet viewport
+      matchMediaStub = sinon.stub(window, 'matchMedia');
+      matchMediaStub.returns({
+        matches: true, // True for mobile/tablet
+        media: '(max-width: 1199px)',
+        onchange: null,
+        addListener: sinon.stub(),
+        removeListener: sinon.stub(),
+        addEventListener: sinon.stub(),
+        removeEventListener: sinon.stub(),
+        dispatchEvent: sinon.stub(),
+      });
+
+      const el = document.getElementById('multipleFilters');
+      cards = [
+        {
+          cardContent: `<div class="merch-card catalog">
+            <div>
+              <h3>Basic</h3>
+            </div>
+            <div>
+              <h3>basic</h3>
+              <p>variant:simplified-pricing-express</p>
+              <p>catalog:categories/creativity-design/photo</p>
+            </div>
+          </div>`,
+        },
+        {
+          cardContent: `<div class="merch-card catalog">
+            <div>
+              <h3>Pro</h3>
+            </div>
+            <div>
+              <h3>pro</h3>
+              <p>variant:simplified-pricing-express</p>
+              <p>catalog:categories/creativity-design/photo</p>
+            </div>
+          </div>`,
+        },
+        {
+          cardContent: `<div class="merch-card catalog">
+            <div>
+              <h3>Premium</h3>
+            </div>
+            <div>
+              <h3>premium</h3>
+              <p>variant:simplified-pricing-express</p>
+              <p>catalog:categories/creativity-design/photo</p>
+            </div>
+          </div>`,
+        },
+      ];
+
+      const merchCards = await init(el);
+      await delay(500);
+
+      const merchCardElements = merchCards.querySelectorAll('merch-card[variant="simplified-pricing-express"]');
+      expect(merchCardElements.length).to.equal(3);
+
+      // No cards should have data-default-card attribute
+      merchCardElements.forEach((card) => {
+        expect(card.hasAttribute('data-default-card')).to.be.false;
+      });
+
+      // Wait for components to initialize
+      await delay(100);
+
+      // First card should be expanded on tablet when no default is specified
+      const firstCardExpanded = merchCardElements[0].getAttribute('data-expanded');
+      expect(firstCardExpanded).to.equal('true');
+    });
+
+    it('should not set expanded attributes on desktop', async () => {
+      // Mock desktop viewport
+      matchMediaStub = sinon.stub(window, 'matchMedia');
+      matchMediaStub.returns({
+        matches: false, // False for desktop
+        media: '(max-width: 1199px)',
+        onchange: null,
+        addListener: sinon.stub(),
+        removeListener: sinon.stub(),
+        addEventListener: sinon.stub(),
+        removeEventListener: sinon.stub(),
+        dispatchEvent: sinon.stub(),
+      });
+
+      const el = document.getElementById('multipleFilters');
+      cards = [
+        {
+          cardContent: `<div class="merch-card catalog">
+            <div>
+              <h3>Individual</h3>
+            </div>
+            <div>
+              <h3>individual</h3>
+              <p>variant:simplified-pricing-express</p>
+              <p>catalog:categories/creativity-design/photo</p>
+            </div>
+          </div>`,
+        },
+        {
+          cardContent: `<div class="merch-card catalog">
+            <div>
+              <h3>Teams</h3>
+            </div>
+            <div>
+              <h3>teams</h3>
+              <p>variant:simplified-pricing-express</p>
+              <p>catalog:categories/creativity-design/photo</p>
+              <p>data-default-card:true</p>
+            </div>
+          </div>`,
+        },
+        {
+          cardContent: `<div class="merch-card catalog">
+            <div>
+              <h3>Enterprise</h3>
+            </div>
+            <div>
+              <h3>enterprise</h3>
+              <p>variant:simplified-pricing-express</p>
+              <p>catalog:categories/creativity-design/photo</p>
+            </div>
+          </div>`,
+        },
+      ];
+
+      const merchCards = await init(el);
+      await delay(500);
+
+      const merchCardElements = merchCards.querySelectorAll('merch-card[variant="simplified-pricing-express"]');
+      expect(merchCardElements.length).to.equal(3);
+
+      // Wait for components to initialize
+      await delay(100);
+
+      // No cards should have data-expanded attribute on desktop
+      merchCardElements.forEach((card) => {
+        expect(card.hasAttribute('data-expanded')).to.be.false;
+      });
+    });
+
+    it('should handle mixed variants with simplified-pricing-express', async () => {
+      const el = document.getElementById('multipleFilters');
+      // Mixed variant cards
+      cards = [
+        {
+          cardContent: `<div class="merch-card catalog">
+            <div>
+              <h3>Plans Card</h3>
+            </div>
+            <div>
+              <h3>plans</h3>
+              <p>variant:plans</p>
+              <p>catalog:categories/creativity-design/photo</p>
+            </div>
+          </div>`,
+        },
+        {
+          cardContent: `<div class="merch-card catalog">
+            <div>
+              <h3>Express Card</h3>
+            </div>
+            <div>
+              <h3>express-card</h3>
+              <p>variant:simplified-pricing-express</p>
+              <p>catalog:categories/creativity-design/photo</p>
+              <p>data-default-card:true</p>
+            </div>
+          </div>`,
+        },
+        {
+          cardContent: `<div class="merch-card catalog">
+            <div>
+              <h3>Catalog Card</h3>
+            </div>
+            <div>
+              <h3>catalog</h3>
+              <p>variant:catalog</p>
+              <p>catalog:categories/creativity-design/photo</p>
+            </div>
+          </div>`,
+        },
+      ];
+
+      const merchCards = await init(el);
+      await delay(500);
+
+      const simplifiedCards = merchCards.querySelectorAll('merch-card[variant="simplified-pricing-express"]');
+      const otherCards = merchCards.querySelectorAll('merch-card:not([variant="simplified-pricing-express"])');
+
+      expect(simplifiedCards.length).to.equal(1);
+      expect(otherCards.length).to.equal(2);
+
+      // Only simplified-pricing-express card should have data-default-card
+      expect(simplifiedCards[0].hasAttribute('data-default-card')).to.be.true;
+    });
+
+    it('should handle last card as default', async () => {
+      // Mock mobile viewport
+      matchMediaStub = sinon.stub(window, 'matchMedia');
+      matchMediaStub.returns({
+        matches: true, // True for mobile
+        media: '(max-width: 1199px)',
+        onchange: null,
+        addListener: sinon.stub(),
+        removeListener: sinon.stub(),
+        addEventListener: sinon.stub(),
+        removeEventListener: sinon.stub(),
+        dispatchEvent: sinon.stub(),
+      });
+
+      const el = document.getElementById('multipleFilters');
+      cards = [
+        {
+          cardContent: `<div class="merch-card catalog">
+            <div>
+              <h3>Starter</h3>
+            </div>
+            <div>
+              <h3>starter</h3>
+              <p>variant:simplified-pricing-express</p>
+              <p>catalog:categories/creativity-design/photo</p>
+            </div>
+          </div>`,
+        },
+        {
+          cardContent: `<div class="merch-card catalog">
+            <div>
+              <h3>Standard</h3>
+            </div>
+            <div>
+              <h3>standard</h3>
+              <p>variant:simplified-pricing-express</p>
+              <p>catalog:categories/creativity-design/photo</p>
+            </div>
+          </div>`,
+        },
+        {
+          cardContent: `<div class="merch-card catalog">
+            <div>
+              <h3>Ultimate</h3>
+            </div>
+            <div>
+              <h3>ultimate</h3>
+              <p>variant:simplified-pricing-express</p>
+              <p>catalog:categories/creativity-design/photo</p>
+              <p>data-default-card:true</p>
+            </div>
+          </div>`,
+        },
+      ];
+
+      const merchCards = await init(el);
+      await delay(500);
+
+      const merchCardElements = merchCards.querySelectorAll('merch-card[variant="simplified-pricing-express"]');
+      expect(merchCardElements.length).to.equal(3);
+
+      // Last card should have data-default-card
+      expect(merchCardElements[2].hasAttribute('data-default-card')).to.be.true;
+
+      // Wait for components to initialize
+      await delay(100);
+
+      // Last card should be expanded on mobile
+      const lastCardExpanded = merchCardElements[2].getAttribute('data-expanded');
+      expect(lastCardExpanded).to.equal('true');
+    });
+  });
 });

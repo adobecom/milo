@@ -16,9 +16,13 @@ export const SIMPLIFIED_PRICING_EXPRESS_AEM_FRAGMENT_MAPPING = {
         tag: 'div',
         slot: 'badge',
     },
+    trialBadge: {
+        tag: 'div',
+        slot: 'trial-badge',
+    },
     description: {
         tag: 'div',
-        slot: 'body-s',
+        slot: 'body-xs',
         maxCount: 2000,
         withSuffix: false,
     },
@@ -33,12 +37,14 @@ export const SIMPLIFIED_PRICING_EXPRESS_AEM_FRAGMENT_MAPPING = {
     borderColor: {
         attribute: 'border-color',
         specialValues: {
-            gray: '--spectrum-gray-300',
-            blue: '--spectrum-blue-400',
+            gray: 'var(--spectrum-gray-300)',
+            blue: 'var(--spectrum-blue-400)',
             gradient:
                 'linear-gradient(98deg, #FF477B 3.22%, #5C5CE0 52.98%, #318FFF 101.72%)',
         },
     },
+    disabledAttributes: ['badgeColor', 'trialBadgeColor', 'trialBadgeBorderColor'],
+    supportsDefaultChild: true,
 };
 
 export class SimplifiedPricingExpress extends VariantLayout {
@@ -50,88 +56,123 @@ export class SimplifiedPricingExpress extends VariantLayout {
         return SIMPLIFIED_PRICING_EXPRESS_AEM_FRAGMENT_MAPPING;
     }
 
-    connectedCallback() {
-        super.connectedCallbackHook();
+    get headingSelector() {
+        return '[slot="heading-l"]';
+    }
+
+    postCardUpdateHook(changedProperties) {
+        if (changedProperties.has('borderColor') && this.card.borderColor) {
+            this.card.style.setProperty(
+                '--merch-card-custom-border-color',
+                this.card.borderColor,
+            );
+        }
+    }
+
+    connectedCallbackHook() {
+        if (!this.card || this.card.failed) {
+            return;
+        }
+        
         this.setupMobileAccordion();
+        this.watchForDefaultCardAttribute();
+        
+        setTimeout(() => {
+            if (this.card?.hasAttribute('data-default-card') && window.matchMedia('(max-width: 1199px)').matches) {
+                this.card.setAttribute('data-expanded', 'true');
+            }
+        }, 100);
+    }
+
+    watchForDefaultCardAttribute() {
+        if (!this.card) return;
+        
+        this.attributeObserver = new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+                if (mutation.type === 'attributes') {
+                    if (mutation.attributeName === 'data-default-card' && this.card.hasAttribute('data-default-card')) {
+                        if (window.matchMedia('(max-width: 1199px)').matches) {
+                            this.card.setAttribute('data-expanded', 'true');
+                        }
+                    }
+                }
+            });
+        });
+        
+        this.attributeObserver.observe(this.card, { 
+            attributes: true,
+            attributeOldValue: true
+        });
     }
 
     setupMobileAccordion() {
-        const merchCard = this.closest('merch-card');
-        if (!merchCard) return;
-
-        // Set initial state based on viewport - now includes tablet (up to 1199px)
-        if (window.matchMedia('(max-width: 1199px)').matches) {
-            // Check if this is the first simplified-pricing-express card
-            const isFirstCard = this.isFirstCard(merchCard);
-            merchCard.setAttribute('data-expanded', isFirstCard ? 'true' : 'false');
+        const merchCard = this.card;
+        if (!merchCard) {
+            return;
         }
 
-        // Listen for viewport changes
-        const mediaQuery = window.matchMedia('(max-width: 1199px)');
-        this.mediaQueryListener = (e) => {
-            if (e.matches) {
-                const isFirstCard = this.isFirstCard(merchCard);
-                merchCard.setAttribute('data-expanded', isFirstCard ? 'true' : 'false');
+        const updateExpandedState = () => {
+            if (window.matchMedia('(max-width: 1199px)').matches) {
+                const isDefaultCard = merchCard.hasAttribute('data-default-card');
+                merchCard.setAttribute('data-expanded', isDefaultCard ? 'true' : 'false');
             } else {
                 merchCard.removeAttribute('data-expanded');
             }
         };
+
+        updateExpandedState();
+
+        const mediaQuery = window.matchMedia('(max-width: 1199px)');
+        this.mediaQueryListener = (e) => {
+            updateExpandedState();
+        };
         mediaQuery.addEventListener('change', this.mediaQueryListener);
     }
 
-    disconnectedCallback() {
-        super.disconnectedCallback();
+    disconnectedCallbackHook() {
         if (this.mediaQueryListener) {
             const mediaQuery = window.matchMedia('(max-width: 1199px)');
             mediaQuery.removeEventListener('change', this.mediaQueryListener);
         }
-    }
-
-    isFirstCard(merchCard) {
-        let container = merchCard.parentElement; // This should be <p>
-        while (container && !container.classList.contains('content')) {
-            container = container.parentElement;
+        if (this.attributeObserver) {
+            this.attributeObserver.disconnect();
         }
-        
-        if (!container) {
-            container = merchCard.closest('.section');
-        }
-        
-        if (!container) {
-            container = merchCard.parentElement?.parentElement;
-        }
-        
-        if (container) {
-            const allCards = container.querySelectorAll('merch-card[variant="simplified-pricing-express"]');
-            return allCards.length > 0 && allCards[0] === merchCard;
-        }
-        
-        return false;
     }
 
     handleChevronClick(e) {
         e.preventDefault();
         e.stopPropagation();
-        const merchCard = this.closest('merch-card');
-        if (!merchCard || !window.matchMedia('(max-width: 1199px)').matches) return;
         
-        const isExpanded = merchCard.getAttribute('data-expanded') === 'true';
-        merchCard.setAttribute('data-expanded', !isExpanded ? 'true' : 'false');
+        const merchCard = this.card;
+        if (!merchCard) {
+            return;
+        }
+        
+        if (!window.matchMedia('(max-width: 1199px)').matches) {
+            return;
+        }
+        
+        const currentExpanded = merchCard.getAttribute('data-expanded');
+        const isExpanded = currentExpanded === 'true';
+        const newExpanded = !isExpanded ? 'true' : 'false';
+        
+        merchCard.setAttribute('data-expanded', newExpanded);
     }
 
     renderLayout() {
         return html`
-            <div class="header" @click=${this.handleChevronClick}>
+            <div class="header" @click=${(e) => this.handleChevronClick(e)}>
                 <slot name="heading-l"></slot>
+                <slot name="trial-badge"></slot>
                 <slot name="badge"></slot>
-                <button class="chevron-button" aria-label="Expand card" @click=${this.handleChevronClick}>
+                <button class="chevron-button" aria-label="Expand card" @click=${(e) => this.handleChevronClick(e)}>
                     <svg class="chevron-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path d="M12 15.5L5 8.5L6.4 7.1L12 12.7L17.6 7.1L19 8.5L12 15.5Z" fill="currentColor"/>
                     </svg>
                 </button>
             </div>
             <div class="description">
-                <slot name="body-s"></slot>
+                <slot name="body-xs"></slot>
             </div>
             <div class="price">
                 <slot name="price"></slot>
@@ -145,7 +186,7 @@ export class SimplifiedPricingExpress extends VariantLayout {
     static variantStyle = css`
         :host([variant='simplified-pricing-express']) {
             --merch-card-simplified-pricing-express-width: 294px;
-            --merch-card-simplified-pricing-express-padding: 24px;
+            --merch-card-simplified-pricing-express-padding: 16px;
             --merch-card-simplified-pricing-express-min-height: 341px;
             --merch-card-simplified-pricing-express-price-font-size: 28px;
             --merch-card-simplified-pricing-express-price-font-weight: 900;
@@ -156,8 +197,8 @@ export class SimplifiedPricingExpress extends VariantLayout {
             --merch-card-simplified-pricing-express-price-currency-symbol-font-size: 22px;
             --merch-card-simplified-pricing-express-price-currency-symbol-font-weight: 700;
             --merch-card-simplified-pricing-express-price-currency-symbol-line-height: 28.6px;
-            --merch-card-simplified-pricing-express-body-s-font-size: 16px;
-            --merch-card-simplified-pricing-express-body-s-line-height: 20.8px;
+            --merch-card-simplified-pricing-express-body-xs-font-size: 16px;
+            --merch-card-simplified-pricing-express-body-xs-line-height: 20.8px;
             --merch-card-simplified-pricing-express-price-p-font-size: 12px;
             --merch-card-simplified-pricing-express-price-p-font-weight: 400;
             --merch-card-simplified-pricing-express-price-p-line-height: 15.6px;
@@ -175,7 +216,7 @@ export class SimplifiedPricingExpress extends VariantLayout {
             flex-direction: column;
             overflow: visible;
             padding: var(--merch-card-simplified-pricing-express-padding);
-            gap: 16px;
+            gap: var(--consonant-merch-spacing-s);
             box-sizing: border-box;
             position: relative;
         }
@@ -196,7 +237,7 @@ export class SimplifiedPricingExpress extends VariantLayout {
         :host([variant='simplified-pricing-express']) .header {
             display: flex;
             flex-direction: row;
-            align-items: flex-end;
+            align-items: flex-start;
             justify-content: space-between;
             gap: 8px;
         }
@@ -215,11 +256,42 @@ export class SimplifiedPricingExpress extends VariantLayout {
             z-index: 1;
         }
 
-        :host([variant='simplified-pricing-express']) .pricing-section {
+        :host([variant='simplified-pricing-express']) .price {
             display: flex;
             flex-direction: column;
-            gap: 8px;
+            justify-content: flex-start;
         }
+
+        /* Desktop only - Fixed heights for alignment */
+        @media (min-width: 1200px) {
+            :host([variant='simplified-pricing-express']) {
+                display: flex;
+                flex-direction: column;
+                min-height: 360px; /* Increased to accommodate all content */
+                height: auto;
+            }
+
+            :host([variant='simplified-pricing-express']) .description {
+                height: 80px;
+                overflow: hidden;
+                display: -webkit-box;
+                -webkit-line-clamp: 4;
+                -webkit-box-orient: vertical;
+            }
+
+            :host([variant='simplified-pricing-express']) .price {
+                height: 100px;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+            }
+
+            :host([variant='simplified-pricing-express']) .cta {
+                margin-top: auto;
+                flex-shrink: 0;
+            }
+        }
+
 
         :host([variant='simplified-pricing-express']) .price-container {
             display: flex;
@@ -237,15 +309,13 @@ export class SimplifiedPricingExpress extends VariantLayout {
 
         :host([variant='simplified-pricing-express']) .cta {
             width: 100%;
-            display: flex;
-            flex-direction: row;
-            gap: 8px;
+            display: block;
             margin-top: auto;
         }
 
         :host([variant='simplified-pricing-express']) .cta ::slotted(*) {
-            flex: 1;
             width: 100%;
+            display: block;
         }
 
         :host([variant='simplified-pricing-express']) .footer-text {
@@ -271,21 +341,29 @@ export class SimplifiedPricingExpress extends VariantLayout {
             transition: transform 0.3s ease;
         }
 
+        /* Chevron rotation based on parent card's data-expanded attribute */
+        :host-context(merch-card[data-expanded='false']) .chevron-icon {
+            transform: rotate(0deg);
+        }
+
+        :host-context(merch-card[data-expanded='true']) .chevron-icon {
+            transform: rotate(180deg);
+        }
+
         /* Mobile and Tablet - Show chevron */
         @media (max-width: 1199px) {
             :host([variant='simplified-pricing-express']) .header {
                 position: relative;
                 padding-right: 32px;
                 justify-content: flex-start;
-                gap: 0;
-                flex-wrap: wrap;
+                gap: 8px;
             }
 
             :host([variant='simplified-pricing-express']) .chevron-button {
                 display: block;
                 position: absolute;
                 right: 0;
-                top: 50%;
+                top: 65%;
                 transform: translateY(-50%);
             }
         }
@@ -298,47 +376,6 @@ export class SimplifiedPricingExpress extends VariantLayout {
                 min-height: auto;
                 cursor: pointer;
                 transition: all 0.3s ease;
-            }
-
-            /* Collapsed state */
-            merch-card[variant='simplified-pricing-express'][data-expanded='false'] :host([variant='simplified-pricing-express']) {
-                gap: 0;
-                padding: 16px;
-                height: auto;
-                min-height: auto;
-            }
-
-            merch-card[variant='simplified-pricing-express'][data-expanded='false'] :host([variant='simplified-pricing-express']) .description,
-            merch-card[variant='simplified-pricing-express'][data-expanded='false'] :host([variant='simplified-pricing-express']) .price,
-            merch-card[variant='simplified-pricing-express'][data-expanded='false'] :host([variant='simplified-pricing-express']) .cta {
-                display: none;
-                height: 0;
-                overflow: hidden;
-                margin: 0;
-                padding: 0;
-            }
-
-            merch-card[variant='simplified-pricing-express'][data-expanded='false'] :host([variant='simplified-pricing-express']) .chevron-icon {
-                transform: rotate(0deg);
-            }
-
-            /* Expanded state */
-            merch-card[variant='simplified-pricing-express'][data-expanded='true'] :host([variant='simplified-pricing-express']) .chevron-icon {
-                transform: rotate(180deg);
-            }
-
-            /* Smooth transitions for collapsing content */
-            :host([variant='simplified-pricing-express']) .description,
-            :host([variant='simplified-pricing-express']) .price,
-            :host([variant='simplified-pricing-express']) .cta {
-                transition: opacity 0.3s ease, transform 0.3s ease;
-            }
-
-            merch-card[variant='simplified-pricing-express'][data-expanded='true'] :host([variant='simplified-pricing-express']) .description,
-            merch-card[variant='simplified-pricing-express'][data-expanded='true'] :host([variant='simplified-pricing-express']) .price,
-            merch-card[variant='simplified-pricing-express'][data-expanded='true'] :host([variant='simplified-pricing-express']) .cta {
-                opacity: 1;
-                transform: translateY(0);
             }
         }
 

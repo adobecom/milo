@@ -98,14 +98,23 @@ function processBadge(fields, merchCard, mapping) {
     } else {
         if (fields.badge) {
             merchCard.setAttribute('badge-text', fields.badge);
-            merchCard.setAttribute(
-                'badge-color',
-                fields.badgeColor || DEFAULT_BADGE_COLOR,
-            );
-            merchCard.setAttribute(
-                'badge-background-color',
-                fields.badgeBackgroundColor || DEFAULT_BADGE_BACKGROUND_COLOR,
-            );
+            
+            // Only set badge-color if not disabled
+            if (!mapping.disabledAttributes?.includes('badgeColor')) {
+                merchCard.setAttribute(
+                    'badge-color',
+                    fields.badgeColor || DEFAULT_BADGE_COLOR,
+                );
+            }
+            
+            // Only set badge-background-color if not disabled
+            if (!mapping.disabledAttributes?.includes('badgeBackgroundColor')) {
+                merchCard.setAttribute(
+                    'badge-background-color',
+                    fields.badgeBackgroundColor || DEFAULT_BADGE_BACKGROUND_COLOR,
+                );
+            }
+            
             merchCard.setAttribute(
                 'border-color',
                 fields.badgeBackgroundColor || DEFAULT_BADGE_BACKGROUND_COLOR,
@@ -122,7 +131,9 @@ function processBadge(fields, merchCard, mapping) {
 export function processTrialBadge(fields, merchCard, mapping) {
     if (mapping.trialBadge && fields.trialBadge) {
         if (!fields.trialBadge.startsWith('<merch-badge')) {
-            const borderColorToUse = fields.trialBadgeBorderColor || DEFAULT_TRIAL_BADGE_BORDER_COLOR;
+            // Only use trialBadgeBorderColor if not disabled
+            const borderColorToUse = (!mapping.disabledAttributes?.includes('trialBadgeBorderColor') && fields.trialBadgeBorderColor) 
+                || DEFAULT_TRIAL_BADGE_BORDER_COLOR;
             fields.trialBadge = `<merch-badge variant="${fields.variant}" border-color="${borderColorToUse}">${fields.trialBadge}</merch-badge>`;
         }
         appendSlot('trialBadge', fields, merchCard, mapping);

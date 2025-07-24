@@ -34,13 +34,17 @@ runTests(async () => {
             const shadowRoot = card.shadowRoot;
             expect(shadowRoot).to.exist;
             
-            // Check for variant-specific structure
-            const container = shadowRoot.querySelector('.body');
-            expect(container).to.exist;
+            const header = shadowRoot.querySelector('.header');
+            expect(header).to.exist;
             
-            // Check for badge
-            const badge = shadowRoot.querySelector('.badge');
-            expect(badge).to.exist;
+            const description = shadowRoot.querySelector('.description');
+            expect(description).to.exist;
+            
+            const price = shadowRoot.querySelector('.price');
+            expect(price).to.exist;
+            
+            const cta = shadowRoot.querySelector('.cta');
+            expect(cta).to.exist;
         });
 
         it('should display heading in correct slot', async () => {
@@ -77,9 +81,9 @@ runTests(async () => {
             expect(cardWithBorder.getAttribute('border-color')).to.equal('#E91E63');
             
             await delay(100);
-            const shadowRoot = cardWithBorder.shadowRoot;
-            const style = shadowRoot.querySelector('style');
-            expect(style.textContent).to.include('--merch-card-border-color: #E91E63');
+            const computedStyle = window.getComputedStyle(cardWithBorder);
+            const borderColorVar = computedStyle.getPropertyValue('--merch-card-custom-border-color');
+            expect(borderColorVar).to.equal('#E91E63');
         });
 
         it('should support multiple CTAs', async () => {
@@ -115,10 +119,12 @@ runTests(async () => {
             await delay(100);
             
             const shadowRoot = card.shadowRoot;
-            const container = shadowRoot.querySelector('.body');
+            const header = shadowRoot.querySelector('.header');
             
-            // Check for semantic structure
-            expect(container).to.exist;
+            expect(header).to.exist;
+            const chevronButton = shadowRoot.querySelector('.chevron-button');
+            expect(chevronButton).to.exist;
+            expect(chevronButton.getAttribute('aria-label')).to.equal('Expand card');
             
             // Verify focusable elements
             const links = card.querySelectorAll('a[slot="cta"]');

@@ -12,6 +12,7 @@ import {
 import { TABLET_DOWN } from './media.js';
 import { styles } from './merch-card-collection.css.js';
 import { getService, getSlotText } from './utils.js';
+import { getFragmentMapping } from './variants/variants.js';
 import './mas-commerce-service';
 
 const MERCH_CARD_COLLECTION = 'merch-card-collection';
@@ -308,6 +309,9 @@ export class MerchCardCollection extends LitElement {
                         cards: fields.cards.map(cardId => overrideMap[cardId] || cardId),
                         collections: []
                     };
+                    if (fields.defaultchild) {
+                        collection.defaultchild = overrideMap[fields.defaultchild] || fields.defaultchild;
+                    }
                     root.push(collection);
                     traverseReferencesTree(collection.collections, reference.referencesTree);
                 }
@@ -330,12 +334,37 @@ export class MerchCardCollection extends LitElement {
         aemFragment.addEventListener(EVENT_AEM_LOAD, async (event) => {
             this.data = normalizePayload(event.detail, this.#overrideMap);
             const { cards, hierarchy } = this.data;
+            
+            const rootDefaultChild = hierarchy.length === 0 && event.detail.fields?.defaultchild 
+                ? (this.#overrideMap[event.detail.fields.defaultchild] || event.detail.fields.defaultchild)
+                : null;
+            
             aemFragment.cache.add(...cards);
+            const checkDefaultChild = (collections, fragmentId) => {
+                for (const collection of collections) {
+                    if (collection.defaultchild === fragmentId) return true;
+                    if (collection.collections && checkDefaultChild(collection.collections, fragmentId)) return true;
+                }
+                return false;
+            };
+
             for (const fragment of cards) {
                 const merchCard = document.createElement('merch-card');
                 const fragmentId = this.#overrideMap[fragment.id] || fragment.id;
                 merchCard.setAttribute('consonant', '');
                 merchCard.setAttribute('style', '');
+
+                // Check if this variant supports default child through mapping
+                const variantMapping = getFragmentMapping(fragment.fields.variant);
+                if (variantMapping?.supportsDefaultChild) {
+                    const isDefault = rootDefaultChild 
+                        ? fragmentId === rootDefaultChild
+                        : checkDefaultChild(hierarchy, fragmentId);
+                    
+                    if (isDefault) {
+                        merchCard.setAttribute('data-default-card', 'true');
+                    }
+                }
 
                 function populateFilters(level) {
                     for (const node of level) {
@@ -360,15 +389,18 @@ export class MerchCardCollection extends LitElement {
                         },
                     };
                 }
+                // Append card after all attributes are set (including data-default-card)
                 this.append(merchCard);
             }
 
             let nmbOfColumns = '';
-            let variant = cards[0]?.fields.variant;
-            if (variant.startsWith('plans')) variant = 'plans';
+            let variant = cards[0]?.fields?.variant;
+            if (variant?.startsWith('plans')) variant = 'plans';
             this.variant = variant;
-            if (variant === 'plans' && cards.length === 3 && !cards.some((card) => card.fields.size?.includes('wide'))) nmbOfColumns = 'ThreeColumns';
-            this.classList.add('merch-card-collection', variant, ...(VARIANT_CLASSES[`${variant}${nmbOfColumns}`] || []));
+            if (variant === 'plans' && cards.length === 3 && !cards.some((card) => card.fields?.size?.includes('wide'))) nmbOfColumns = 'ThreeColumns';
+            if (variant) {
+                this.classList.add('merch-card-collection', variant, ...(VARIANT_CLASSES[`${variant}${nmbOfColumns}`] || []));
+            }
             this.displayResult = true;
             this.hydrating = false;
             aemFragment.remove();

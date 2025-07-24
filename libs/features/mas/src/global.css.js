@@ -85,7 +85,7 @@ styles.innerHTML = `
     --merch-color-green-promo: #05834E;
     --merch-color-red-promo: #D31510;
     --merch-color-grey-80: #2c2c2c;
-    --consonant-merch-card-body-xs-color: var(--spectrum-gray-100, var(--merch-color-grey-80));
+    --consonant-merch-card-body-xs-color: var(--spectrum-gray-800, var(--merch-color-grey-80));
     --merch-color-inline-price-strikethrough: initial;
     --consonant-merch-card-detail-s-color: var(--spectrum-gray-600, var(--merch-color-grey-600));
     --consonant-merch-card-heading-color: var(--spectrum-gray-800, var(--merch-color-grey-80));
