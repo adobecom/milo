@@ -213,7 +213,6 @@ function handleDropdownKeydown(e, firstElement, lastElement, triggerButton) {
   if ((key === 'Enter' || key === ' ') && document.activeElement.type === 'checkbox') {
     e.preventDefault();
     document.activeElement.checked = !document.activeElement.checked;
-    // document.activeElement.dispatchEvent(new Event('change', { bubbles: true }));
   }
 
   if ((key === 'Enter' || key === ' ') && document.activeElement.matches('a.button')) {
