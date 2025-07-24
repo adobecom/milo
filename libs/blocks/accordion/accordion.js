@@ -60,9 +60,9 @@ function closeMediaPanel({ displayArea, el, dd, clickedId }) {
   if (video) pauseVideo(video);
   const otherExpandedPanels = el.closest('.accordion').querySelectorAll('.accordion-trigger[aria-expanded="true"]');
   if (!otherExpandedPanels.length) return;
-  clickedMedia.classList.remove('expanded');
+  clickedMedia?.classList?.remove('expanded');
   const newExpandedId = otherExpandedPanels[0].id.split('trigger-')[1] - 1;
-  displayArea.childNodes[newExpandedId].classList.add('expanded');
+  displayArea.childNodes[newExpandedId]?.classList?.add('expanded');
 }
 
 function openMediaPanel({ displayArea, el, dd, clickedId, shouldClose = true }) {
@@ -95,7 +95,7 @@ function handleClick(el, dd, num) {
 
   const closestEditorial = el.closest('.editorial');
   const expanded = el.getAttribute('aria-expanded') === 'true';
-  if (closestEditorial && window.matchMedia('(min-width: 1200px)').matches) {
+  if (closestEditorial) {
     if (expanded) {
       closeMediaPanel({ displayArea: closestEditorial.querySelector('.accordion-media'), el, dd, clickedId: num });
       return;
