@@ -1027,7 +1027,7 @@ export async function getCommerceContext(el, params) {
 }
 
 // TODO: remove this function once fallbackStep is fully authored
-function getFallbackStep(params, modal, checkoutClientId) {
+function getFallbackStep(wcsOsi, modal, checkoutClientId) {
   if (checkoutClientId !== 'doc_cloud') return undefined;
   const MODAL_TYPE_3_IN_1 = {
     TWP: 'twp',
@@ -1055,7 +1055,7 @@ function getFallbackStep(params, modal, checkoutClientId) {
     lI5NvdLBWJUJEHkP9CAx787kt0uCc3WnoCFVVIjECiA: 'email',
     'OQ1oCm1tZG35Gj7LCrkGeOOdUMfVlC7xx-7ml-CTWIE': 'commitment',
   };
-  return osiToStepMap[params?.get('osi')];
+  return osiToStepMap[wcsOsi];
 }
 
 /**
@@ -1080,7 +1080,7 @@ export async function getCheckoutContext(el, params) {
   const entitlement = params?.get('entitlement');
   const upgrade = params?.get('upgrade');
   const modal = params?.get('modal');
-  const fallbackStep = params?.get('fallbackStep') || getFallbackStep(params, modal, checkoutClientId);
+  const fallbackStep = params?.get('fallbackStep') || getFallbackStep(context.wcsOsi, modal, checkoutClientId);
 
   const extraOptions = {};
   params.forEach((value, key) => {
