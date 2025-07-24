@@ -175,6 +175,13 @@ export default function InputUrls() {
     nextStep();
   }
 
+  function handleKeyDown(e, pType) {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      handleTypeChange(pType);
+    }
+  }
+
   useEffect(() => {
     if (project.value) {
       setType(project.value?.type);
@@ -235,12 +242,7 @@ export default function InputUrls() {
                   tabindex="0"
                   role="radio"
                   aria-checked=${type === pType}
-                  onKeyDown=${(e) => {
-                    if (e.key === 'Enter' || e.key === ' ') {
-                      e.preventDefault();
-                      handleTypeChange(pType);
-                    }
-                  }}
+                  onKeyDown=${(e) => handleKeyDown(e, pType)}
                 >
                   ${PROJECT_TYPE_LABELS[pType]}
                 </div>
@@ -301,7 +303,6 @@ export default function InputUrls() {
                   <option value="skip">Skip</option>
                   <option value="merge">Merge</option>
                   <option value="overwrite">Overwrite</option>
-                  <option value="custom-merge">Custom Merge (.xlsx)</option>
                 </select>
                 ${errors.editBehavior
                 && html`<div class="form-field-error">
