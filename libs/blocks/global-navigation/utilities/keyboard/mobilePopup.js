@@ -13,7 +13,7 @@ import {
   logErrorFor,
   setActiveDropdown,
   takeWhile,
-  isDesktopForContext
+  isDesktopForContext,
 } from '../utilities.js';
 
 const closeHeadlines = () => {

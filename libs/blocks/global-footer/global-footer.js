@@ -131,61 +131,33 @@ class Footer {
       observer.disconnect();
       this.decorateContent();
     }, CONFIG.delays.decoration);
-    this.block.classList.contains('responsive-container') && this.initContainerResponsiveness();
+    if (this.block.classList.contains('responsive-container')) {
+      this.initContainerResponsiveness();
+    }
   }, 'Error in global footer init', 'global-footer', 'e');
 
   initContainerResponsiveness = () => {
-    this.removeContainerClasses();
-    this.resizeObserver = new ResizeObserver((entries) => {
-      clearTimeout(this.resizeTimeout);
+    this.destroy();
+    const parent = this.block?.parentElement;
+    if (!parent || !this.block.classList.contains('responsive-container')) return;
 
-      this.resizeTimeout = setTimeout(() => {
-        try {
-          for (const entry of entries) {
-            const containerWidth = Math.round(entry.contentRect.width);
-
-            if (containerWidth !== this.lastContainerWidth) {
-              this.lastContainerWidth = containerWidth;
-              this.updateContainerClass(containerWidth);
-            }
-          }
-        } catch (error) {
-          console.warn('ResizeObserver error:', error);
-        }
-      }, 16);
-    });
-
-    const parentElement = this.block.parentElement;
-    if (parentElement && this.block.classList.contains('responsive-container')) {
-      this.resizeObserver.observe(parentElement);
-      const initialWidth = Math.round(parentElement.offsetWidth);
-      this.lastContainerWidth = initialWidth;
-      this.updateContainerClass(initialWidth);
-    }
-  };
-
-  updateContainerClass = (containerWidth) => {
-    this.removeContainerClasses();
-    if (containerWidth < CONFIG.containerBreakpoint) {
-      this.block.classList.add('mobile');
-    }
-  };
-
-  removeContainerClasses = () => {
-    this.block.classList.remove('mobile');
+    const update = (w) => {
+      const isMobile = w < CONFIG.containerBreakpoint;
+      if (isMobile === this.isMobile) return;
+      this.isMobile = isMobile;
+      this.block.classList.toggle('mobile', isMobile);
+    };
+    this.resizeObserver = new ResizeObserver(([entry]) => requestAnimationFrame(
+      () => update(Math.round(entry.contentRect.width)),
+    ));
+    this.resizeObserver.observe(parent);
+    update(Math.round(parent.offsetWidth));
   };
 
   destroy = () => {
     this.resizeObserver?.disconnect();
     this.resizeObserver = null;
-    clearTimeout(this.resizeTimeout);
-    this.resizeTimeout = null;
-
-    if (this.elements.headlines) {
-      this.elements.headlines.forEach(headline => {
-        this.cleanupHeadlineObservers?.(headline);
-      });
-    }
+    this.isMobile = null;
   };
 
   decorateContent = () => logErrorFor(async () => {
@@ -258,7 +230,6 @@ class Footer {
       this.decorateMenu = menuLogic.decorateMenu;
       this.decorateLinkGroup = menuLogic.decorateLinkGroup;
       this.decorateHeadline = menuLogic.decorateHeadline;
-      this.cleanupHeadlineObservers = menuLogic.cleanupHeadlineObservers;
       resolve();
     });
 
