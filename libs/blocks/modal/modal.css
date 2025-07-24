@@ -329,7 +329,7 @@
     max-height: 100%;
   }
 
-  .dialog-modal:not(.tall-video) {
+  .dialog-modal:not(.tall-video, .three-in-one) {
     max-height: var(--modal-max-height-mobile);
   }
 
