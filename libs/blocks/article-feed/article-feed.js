@@ -170,7 +170,7 @@ function removeFocusTrap() {
 function closeMenu(el) {
   el.setAttribute('aria-expanded', false);
   // Remove focus trap when closing
-  removeFocusTrap();
+  // removeFocusTrap();
 }
 
 function openMenu(el) {
@@ -178,7 +178,7 @@ function openMenu(el) {
   if (expandedMenu) { closeMenu(expandedMenu); }
   el.setAttribute('aria-expanded', true);
   // Add focus trap when opening
-  addFocusTrap(el);
+  // addFocusTrap(el);
 }
 
 function navigateFilterButtons(currentButton, forward) {
