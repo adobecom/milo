@@ -157,20 +157,8 @@ function openCurtain() {
   window.addEventListener('click', closeOnDocClick);
 }
 
-function removeFocusTrap() {
-  const dropdowns = document.querySelectorAll('.filter-dropdown');
-  dropdowns.forEach((dropdown) => {
-    if (dropdown.keydownHandler) {
-      dropdown.removeEventListener('keydown', dropdown.keydownHandler);
-      dropdown.keydownHandler = null;
-    }
-  });
-}
-
 function closeMenu(el) {
   el.setAttribute('aria-expanded', false);
-  // Remove focus trap when closing
-  // removeFocusTrap();
 }
 
 function openMenu(el) {
