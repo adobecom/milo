@@ -93,15 +93,26 @@ export class Plans extends VariantLayout {
         if (!sizes.includes(size)) return;
         
 
-        footer?.classList.toggle('wide-footer', !isMobile());
+        footer?.classList.toggle('wide-footer', isDesktop());
         if (!shouldBeInFooter && slotInFooter) {
-            slotInBody
-                ? slotInFooter.remove()
-                : body.appendChild(slotInFooter);
+            if (slotInBody) 
+                slotInFooter.remove();
+            else {
+                const bodyPlaceholder = body.querySelector(`[data-placeholder-for="${name}"]`);
+                if (bodyPlaceholder) bodyPlaceholder.replaceWith(slotInFooter);
+                else body.appendChild(slotInFooter);
+            }
             return;
         }
         if (shouldBeInFooter && slotInBody) {
-            slotInFooter ? slotInBody.remove() : footer.prepend(slotInBody);
+            const bodyPlaceholder = document.createElement('div');
+            bodyPlaceholder.setAttribute('data-placeholder-for', name);
+            bodyPlaceholder.classList.add('slot-placeholder');
+            if (!slotInFooter) {
+                const slotInBodyClone = slotInBody.cloneNode(true);
+                footer.prepend(slotInBodyClone);
+            }
+            slotInBody.replaceWith(bodyPlaceholder)
         }
     }
 
@@ -115,7 +126,7 @@ export class Plans extends VariantLayout {
             return;
         }
         
-        this.adjustSlotPlacement('addon', ['wide', 'super-wide'], !isMobile());
+        this.adjustSlotPlacement('addon', ['super-wide'], isDesktop());
         this.adjustSlotPlacement('callout-content', ['super-wide'], isDesktop());
     }
 
@@ -144,12 +155,19 @@ export class Plans extends VariantLayout {
         }
     }
 
+    adjustPrices() {
+        if (!this.headingM) return;
+        this.headingM.setAttribute('role', 'heading');
+        this.headingM.setAttribute('aria-level', '2');
+    }
+
     postCardUpdateHook() {
         this.adaptForMedia();
         this.adjustTitleWidth();
         this.adjustLegal();
         this.adjustAddon();
         this.adjustCallout();
+        this.adjustPrices();
     }
 
     get headingM() {
@@ -176,8 +194,6 @@ export class Plans extends VariantLayout {
         const prices = [];
         const headingPrice = this.card.querySelector(`[slot="heading-m"] ${SELECTOR_MAS_INLINE_PRICE}[data-template="price"]`);
         if (headingPrice) prices.push(headingPrice);
-        const bodyPrices = this.card.querySelectorAll(`[slot="body-xs"] ${SELECTOR_MAS_INLINE_PRICE}[data-template="price"]`);
-        bodyPrices.forEach(bodyPrice => prices.push(bodyPrice));
         const legalPromises = prices.map(async (price) => {
           const legal = price.cloneNode(true);
           await price.onceSettled();
@@ -276,6 +292,10 @@ export class Plans extends VariantLayout {
             font-weight: 400;
         }
 
+        :host([variant^='plans']) .slot-placeholder {
+            display: none;
+        }
+
         :host([variant='plans-education']) {
             min-height: unset;
         }
@@ -356,4 +376,17 @@ export class Plans extends VariantLayout {
             padding: 2px 10px 3px;
         }
     `;
+
+    static collectionOptions = {
+        customHeaderArea: (collection) => {
+            if (!collection.sidenav) return nothing;
+            return html`<slot name="resultsText"></slot>`
+        },
+        headerVisibility: {
+            search: false,
+            sort: false,
+            result: ['mobile', 'tablet'],
+            custom: ['desktop']
+        }
+    }
 }
