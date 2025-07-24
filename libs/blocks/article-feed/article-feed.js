@@ -462,12 +462,14 @@ async function buildFilter(type, tax, block, config) {
   // Use proper button elements for Reset and Apply
   const resetBtn = document.createElement('a');
   resetBtn.classList.add('button', 'small', 'reset');
+  resetBtn.setAttribute('role', 'button');
   resetBtn.setAttribute('tabindex', '0');
   resetBtn.textContent = await replacePlaceholder('reset');
   resetBtn.addEventListener('click', clearFilters);
 
   const applyBtn = document.createElement('a');
   applyBtn.classList.add('button', 'small', 'apply');
+  applyBtn.setAttribute('role', 'button');
   applyBtn.setAttribute('tabindex', '0');
   applyBtn.textContent = await replacePlaceholder('apply');
   applyBtn.addEventListener('click', () => {
