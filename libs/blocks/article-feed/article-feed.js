@@ -246,7 +246,7 @@ function addFocusTrap(button) {
   }
 
   const focusableElements = dropdown.querySelectorAll(
-    'input, button',
+    'input, button, a.button',
   );
 
   if (focusableElements.length === 0) return;
