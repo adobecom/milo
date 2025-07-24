@@ -55,13 +55,13 @@ const decorateHeadline = (elem, index, context = 'viewport') => {
     </div>`;
 
   const headlineClickHandler = (e) => {
-    if (isDesktopForContext(context).matches) return;
+    if (isDesktopForContext(context)) return;
     trigger({ element: headline, event: e, type: 'headline' });
     setActiveDropdown(headline);
   };
 
   const setHeadlineAttributes = () => {
-    if (isDesktopForContext(context).matches) {
+    if (isDesktopForContext(context)) {
       headline.setAttribute('role', 'heading');
       headline.removeAttribute('tabindex');
       headline.setAttribute('aria-level', 2);
