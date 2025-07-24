@@ -7,6 +7,7 @@ import {
   getOptions,
   MEP_SELECTOR,
   overrideOptions,
+  updateModalState,
   loadMasComponent,
   MAS_MERCH_CARD,
   MAS_MERCH_QUANTITY_SELECT,
@@ -164,6 +165,14 @@ function enableAnalytics(el) {
   });
 }
 
+export const enableModalOpeningOnPageLoad = () => {
+  window.addEventListener('mas:ready', ({ target }) => {
+    target.querySelectorAll('[is="checkout-link"][data-modal-id]').forEach((cta) => {
+      updateModalState({ cta });
+    });
+  });
+};
+
 export async function createCollection(el, options) {
   const aemFragment = createTag('aem-fragment', { fragment: options.fragment });
   // Get MEP overrides if available
@@ -200,6 +209,7 @@ export async function createCollection(el, options) {
 export default async function init(el) {
   let options = { ...DEFAULT_OPTIONS, ...getOptions(el) };
   if (!options.fragment) return;
+  enableModalOpeningOnPageLoad();
   options = overrideOptions(options.fragment, options);
   await loadDependencies(options);
   await createCollection(el, options);

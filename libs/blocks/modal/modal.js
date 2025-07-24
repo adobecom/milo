@@ -74,13 +74,9 @@ export function closeModal(modal) {
 
   const hashId = window.location.hash.replace('#', '');
   if (hashId === modal.id || modal.id === 'checkout-link-modal') {
-    window.history.pushState(window.history.state, document.title, `${window.location.pathname}${window.location.search}`);
+    window.history.pushState(window.history.state, document.title, `${window.location.pathname}${window.location.search}${prevHash ? `${prevHash}` : ''}`);
   }
-  if (prevHash) {
-    window.location.hash = '';
-    window.location.hash = prevHash;
-    prevHash = '';
-  }
+  if (prevHash) prevHash = '';
 
   if (isDeepLink) {
     document.querySelector('#onetrust-banner-sdk')?.focus();
@@ -321,7 +317,10 @@ window.addEventListener('hashchange', (e) => {
     const details = findDetails(window.location.hash, null);
     if (details) getModal(details);
     if (e.oldURL?.includes('#')) {
-      prevHash = new URL(e.oldURL).hash;
+      const { hash } = new URL(e.oldURL);
+      if (hash.includes('=') || !document.querySelector(`${hash}:not(.dialog-modal)`)) {
+        prevHash = hash;
+      }
     }
   }
 });
