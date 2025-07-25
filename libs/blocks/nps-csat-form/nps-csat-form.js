@@ -18,7 +18,7 @@ const buildForm = ({
     <button type="button" class="nps-close" aria-label="Close">&times;</button>
     <h2>${title}</h2>
     <fieldset class="nps-radio-group">
-      <legend>${radioGroupLabel}</legend>
+      <legend>${radioGroupLabel} *</legend>
       <div class="radio-options">
         ${radioGroup.map(radio).join('')}
       </div>
