@@ -133,10 +133,11 @@ export default class MerchCardCollectionHeader extends LitElement {
         const searchPlaceholder = getSlotText(this, 'searchText');
         if (!searchPlaceholder) return nothing;
         return html`
-            <merch-search deeplink="search" id="search" .size=${SEARCH_SIZE[this.variant]}>
+            <merch-search deeplink="search" id="search">
                 <sp-search
                     id="search-bar"
                     placeholder="${searchPlaceholder}"
+                    .size=${SEARCH_SIZE[this.variant]}
                 ></sp-search>
             </merch-search>
         `;
@@ -252,13 +253,14 @@ export default class MerchCardCollectionHeader extends LitElement {
             --merch-card-collection-header-areas: "search search" 
                                                   "filter sort"
                                                   "result result";
-            --merch-card-collection-header-result-font-size: 14px;
+            --merch-card-collection-header-search-max-width: unset;
             --merch-card-collection-header-filter-height: 40px;
             --merch-card-collection-header-filter-font-size: 16px;
             --merch-card-collection-header-filter-padding: 15px;
             --merch-card-collection-header-sort-height: var(--merch-card-collection-header-filter-height);
             --merch-card-collection-header-sort-font-size: var(--merch-card-collection-header-filter-font-size);
             --merch-card-collection-header-sort-padding: var(--merch-card-collection-header-filter-padding);
+            --merch-card-collection-header-result-font-size: 14px;
         }
 
         sp-theme {
@@ -285,7 +287,7 @@ export default class MerchCardCollectionHeader extends LitElement {
         }
 
         #search sp-search {
-            max-width: 302px;
+            max-width: var(--merch-card-collection-header-search-max-width);
             width: 100%;
         }
 

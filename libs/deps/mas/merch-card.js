@@ -428,6 +428,7 @@ merch-sidenav.catalog merch-sidenav-list:not(:first-of-type) {
 
 merch-card-collection-header.catalog {
     --merch-card-collection-header-row-gap: var(--consonant-merch-spacing-xs);
+    --merch-card-collection-header-search-max-width: 244px;
 }
 
 @media screen and ${f} {
