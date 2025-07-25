@@ -11,6 +11,22 @@ export const CSS = `
     --merch-card-collection-card-width: var(--consonant-merch-card-catalog-width);
 }
 
+merch-sidenav.catalog {
+
+}
+
+merch-sidenav.catalog merch-sidenav-list {
+
+}
+
+merch-sidenav.catalog merch-sidenav-checkbox-group {
+    border: none;
+}
+
+merch-sidenav.catalog merch-sidenav-list:not(:first-of-type) {
+    --merch-sidenav-list-gap: 32px;
+}
+
 .one-merch-card.catalog,
 .two-merch-cards.catalog,
 .three-merch-cards.catalog,

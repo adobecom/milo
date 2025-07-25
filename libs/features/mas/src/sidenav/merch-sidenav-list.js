@@ -1,6 +1,5 @@
-import { html, LitElement, css } from 'lit';
+import { html, LitElement, css, nothing } from 'lit';
 import { deeplink, pushStateFromComponent } from '../deeplink.js';
-import { headingStyles } from './merch-sidenav-heading.css.js';
 import { debounce } from '../utils.js';
 import { EVENT_MERCH_SIDENAV_SELECT } from '../constants.js';
 
@@ -25,20 +24,34 @@ export class MerchSidenavList extends LitElement {
         }
     };
 
-    static styles = [
-        css`
-            :host {
-                display: block;
-                contain: content;
-            }
+    static styles = css`
+        :host {
+            --merch-sidenav-list-gap: 0;
+            --merch-sidenav-list-title-gap: 8px;
+            --merch-sidenav-list-title-color: var(--spectrum-gray-700, #464646);
+            --merch-sidenav-list-title-font-size: 14px;
+            --merch-sidenav-list-title-font-weight: 400;
+            --merch-sidenav-list-title-padding: 12px;
+            --merch-sidenav-list-title-line-height: 1.3;
+            display: block;
+            contain: content;
+            margin-top: var(--merch-sidenav-list-gap);
+        }
 
-            .right {
-                position: absolute;
-                right: 0;
-            }
-        `,
-        headingStyles,
-    ];
+        :host h2 {
+            color: var(--merch-sidenav-list-title-color);
+            font-size: var(--merch-sidenav-list-title-font-size);
+            font-weight: var(--merch-sidenav-list-title-font-weight);
+            margin: 0 0 var(--merch-sidenav-list-title-gap);
+            padding: var(--merch-sidenav-list-title-padding);
+            line-height: var(--merch-sidenav-list-title-line-height);
+        }
+
+        .right {
+            position: absolute;
+            right: 0;
+        }
+    `;
 
     constructor() {
         super();
@@ -181,7 +194,7 @@ export class MerchSidenavList extends LitElement {
             aria-label="${this.label}"
             @change="${(e) => this.selectionChanged(e)}"
         >
-            ${this.sidenavListTitle ? html`<h2>${this.sidenavListTitle}</h2>` : ''}
+            ${this.sidenavListTitle ? html`<h2>${this.sidenavListTitle}</h2>` : nothing}
             <slot></slot>
         </div>`;
     }
