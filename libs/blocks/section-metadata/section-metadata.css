@@ -177,7 +177,11 @@
 
 .section.sticky-bottom.promo-sticky-section {
   background: none;
-  z-index: 4; 
+  z-index: 4;
+}
+
+.section.sticky-bottom.promo-sticky-section:has(.notification.split.focus) {
+  z-index: 10;
 }
 
 .section.sticky-bottom.popup,
