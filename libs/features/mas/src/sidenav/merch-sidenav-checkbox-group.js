@@ -13,8 +13,6 @@ export class MerchSidenavCheckboxGroup extends LitElement {
 
     static styles = css`
         :host {
-            --merch-sidenav-checkbox-group-gap: 32px;
-            --merch-sidenav-checkbox-group-padding: 0 12px;
             display: block;
             contain: content;
             border-top: 1px solid var(--color-gray-200);

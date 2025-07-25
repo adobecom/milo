@@ -26,12 +26,6 @@ export class MerchSidenavList extends LitElement {
 
     static styles = css`
         :host {
-            --merch-sidenav-list-gap: 0;
-            --merch-sidenav-list-title-color: var(--spectrum-gray-700, #464646);
-            --merch-sidenav-list-title-font-size: 14px;
-            --merch-sidenav-list-title-font-weight: 400;
-            --merch-sidenav-list-title-padding: 6px 12px 8px;
-            --merch-sidenav-list-title-line-height: 18px;
             display: block;
             contain: content;
             margin-top: var(--merch-sidenav-list-gap);

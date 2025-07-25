@@ -39,7 +39,7 @@ export class MerchSideNav extends LitElement {
     }
 
     firstUpdated() {
-        const search = this.querySelector('merch-search');
+        const search = this.querySelector('merch-search sp-search');
         const searchSize = SEARCH_SIZE[this.variant];
         if (searchSize) search.setAttribute('size', searchSize);
     }
@@ -139,7 +139,15 @@ export class MerchSideNav extends LitElement {
             --merch-sidenav-title-padding: 6px 12px 16px;
             /* Search */
             --merch-sidenav-search-gap: 10px;
-            /* List */ 
+            /* List */
+            --merch-sidenav-list-gap: 0;
+
+            --merch-sidenav-list-title-color: var(--spectrum-gray-700, #464646);
+            --merch-sidenav-list-title-font-size: 14px;
+            --merch-sidenav-list-title-font-weight: 400;
+            --merch-sidenav-list-title-padding: 6px 12px 8px;
+            --merch-sidenav-list-title-line-height: 18px;
+
             --merch-sidenav-item-inline-padding: 12px;
             --merch-sidenav-item-font-weight: 400;
             --merch-sidenav-item-font-size: 14px;
@@ -151,6 +159,12 @@ export class MerchSideNav extends LitElement {
             --merch-sidenav-item-selected-color: var(--spectrum-gray-800, #222222);
             --merch-sidenav-item-selected-background: var(--spectrum-gray-200, #E6E6E6);
             --merch-sidenav-list-item-gap: 4px;
+            /* Checkbox group */
+            --merch-sidenav-checkbox-group-gap: 32px;
+            --merch-sidenav-checkbox-group-padding: 0 12px;
+            --merch-sidenav-checkbox-group-label-font-size: 17px;
+            --merch-sidenav-checkbox-group-checkbox-spacing: 22px;
+            --merch-sidenav-checkbox-group-label-gap: 13px;
             /* Modal */
             --merch-sidenav-modal-border-radius: 8px;
             --merch-sidenav-modal-padding: var(--merch-sidenav-padding);
@@ -172,6 +186,12 @@ export class MerchSideNav extends LitElement {
             --mod-sidenav-content-color-default-selected: var(--merch-sidenav-item-selected-color);
             --mod-sidenav-item-background-default-selected: var(--merch-sidenav-item-selected-background);
             --mod-sidenav-gap: var(--merch-sidenav-list-item-gap);
+        }
+
+        ::slotted(merch-sidenav-checkbox-group) {
+            --mod-checkbox-font-size: var(--merch-sidenav-checkbox-group-label-font-size);
+            --mod-checkbox-spacing: var(--merch-sidenav-checkbox-group-checkbox-spacing);
+            --mod-checkbox-text-to-control: var(--merch-sidenav-checkbox-group-label-gap);
         }
 
         :host h2 {
