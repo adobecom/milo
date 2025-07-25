@@ -1,6 +1,7 @@
 import * as esbuild from 'esbuild'; // eslint-disable-line
 import fs from 'node:fs';
-import extractFunction from './parse/parse.js';
+import { parse } from '@babel/parser';
+import { extractFunctionCode } from './extractFunction/extractFunction.mjs';
 
 fs.rmSync('./dist/', { recursive: true, force: true });
 
@@ -63,7 +64,7 @@ const MerchInterceptor = {
     onResolve({ filter: /merch\.js$/ }, (args) => {
       // Only intercept if the importer is global-navigation.js
       if (args.importer && args.importer.includes('global-navigation.js')) {
-        console.log('Merch interceptor activated! Intercepting import from:', args.importer);
+        console.log('Intercepting import from:', args.importer);
         return { path: args.path, namespace: 'merch' };
       }
       // For other files, let esbuild handle the import normally
@@ -76,13 +77,11 @@ const MerchInterceptor = {
 
       // Parse the getMiloLocaleSettings function from the actual merch.js file
       const merchFilePath = '../blocks/merch/merch.js';
-      const parsedCode = extractFunction('getMiloLocaleSettings', merchFilePath);
+      const code = fs.readFileSync(merchFilePath, 'utf-8');
+      const ast = parse(code, { sourceType: 'module' });
+      const parsedCode = extractFunctionCode(ast, 'getMiloLocaleSettings');
       return {
-        contents: `
-          ${parsedCode}
-
-          export { getMiloLocaleSettings };
-        `,
+        contents: parsedCode,
         loader: 'js',
       };
     });
