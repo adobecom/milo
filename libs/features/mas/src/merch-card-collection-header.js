@@ -238,8 +238,8 @@ export default class MerchCardCollectionHeader extends LitElement {
         :host {
             --merch-card-collection-header-max-width: var(--merch-card-collection-card-width);
             --merch-card-collection-header-margin-bottom: 32px;
-            --merch-card-collection-header-gap: var(--consonant-merch-spacing-xxs);
-            --merch-card-collection-header-row-gap: var(--consonant-merch-spacing-xxs);
+            --merch-card-collection-header-column-gap: 8px;
+            --merch-card-collection-header-row-gap: 16px;
             --merch-card-collection-header-columns: auto auto;
             --merch-card-collection-header-areas: "search search" 
                                                   "filter sort"
@@ -248,6 +248,9 @@ export default class MerchCardCollectionHeader extends LitElement {
             --merch-card-collection-header-filter-height: 40px;
             --merch-card-collection-header-filter-font-size: 16px;
             --merch-card-collection-header-filter-padding: 9px 15px 11px;
+            --merch-card-collection-header-sort-height: var(--merch-card-collection-header-filter-height)
+            --merch-card-collection-header-sort-font-size: var(--merch-card-collection-header-filter-font-size);
+            --merch-card-collection-header-sort-padding: var(--merch-card-collection-header-filter-padding);
         }
 
         sp-theme {
@@ -256,7 +259,7 @@ export default class MerchCardCollectionHeader extends LitElement {
 
         #header {
             display: grid;
-            gap: var(--merch-card-collection-header-gap);
+            column-gap: var(--merch-card-collection-header-gap);
             row-gap: var(--merch-card-collection-header-row-gap);
             align-items: center;
             grid-template-columns: var(--merch-card-collection-header-columns);
@@ -284,13 +287,19 @@ export default class MerchCardCollectionHeader extends LitElement {
             height: var(--merch-card-collection-header-filter-height);
         }
 
-        slot[name="filtersText"] {
+        #filter slot[name="filtersText"] {
             font-size: var(--merch-card-collection-header-filter-font-size);
         }
 
         #sort {
             grid-area: sort;
             justify-self: end;
+            padding: var(--merch-card-collection-header-filter-padding);
+            height: var(--merch-card-collection-header-filter-height);
+        }
+
+        #sort slot[name="label-only"] {
+            font-size: var(--merch-card-collection-header-filter-font-size);
         }
 
         #result {

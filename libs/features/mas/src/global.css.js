@@ -565,6 +565,7 @@ merch-sidenav-checkbox-group h3 {
     line-height: var(--merch-sidenav-checkbox-group-title-line-height);
     color: var(--merch-sidenav-checkbox-group-title-color);
     padding: var(--merch-sidenav-checkbox-group-title-padding);
+    margin: 0;
 }
 
 sr-only {
