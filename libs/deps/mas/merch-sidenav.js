@@ -45,7 +45,7 @@ var R=Object.defineProperty;var b=(i,e,t)=>e in i?R(i,e,{enumerable:!0,configura
             contain: content;
             border-top: 1px solid var(--color-gray-200);
             padding: var(--merch-sidenav-checkbox-group-padding);
-            margin-top: var(--merch-sideanv-checkbox-group-gap);
+            margin-top: var(--merch-sidenav-checkbox-group-gap);
         }
 
         .checkbox-group {
