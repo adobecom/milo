@@ -603,8 +603,8 @@ class Gnav {
       const isExpanded = localNavTitle.getAttribute('aria-expanded') === 'true';
       itemWrapper.toggleAttribute('aria-hidden', !isExpanded);
       [...itemWrapper.childNodes].forEach((node) => {
-        node.querySelector('a, button').toggleAttribute('aria-hidden', !isExpanded);
-        node.querySelector('a, button').setAttribute('tabindex', isExpanded ? '0' : '-1');
+        node.querySelector('a, button')?.toggleAttribute('aria-hidden', !isExpanded);
+        node.querySelector('a, button')?.setAttribute('tabindex', isExpanded ? '0' : '-1');
       });
     });
     observer.observe(localNavTitle, { attributes: true, attributeFilter: ['aria-expanded'] });
@@ -1021,7 +1021,7 @@ class Gnav {
     }).catch(() => { });
   };
 
-  isToggleExpanded = () => this.elements.mobileToggle?.getAttribute('aria-expanded') === 'true';
+  isToggleExpanded = () => this.elements.mobileToggle?.getAttribute?.('aria-expanded') === 'true';
 
   isEmptyGnav = () => this
     .elements
@@ -1356,9 +1356,9 @@ class Gnav {
       const elements = [...document.querySelectorAll('.feds-localnav .feds-navItem')].find(
         (el) => {
           const link = el.querySelector('a, button');
-          link.setAttribute('tabindex', '-1');
-          link.setAttribute('aria-hidden', true);
-          return link.dataset.title?.trim() === navItem.textContent;
+          link?.setAttribute('tabindex', '-1');
+          link?.setAttribute('aria-hidden', true);
+          return link?.dataset?.title?.trim() === navItem.textContent;
         },
       );
       if (elements) {
