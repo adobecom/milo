@@ -13,49 +13,121 @@ import { masFetch } from './utils/mas-fetch.js';
 const ATTRIBUTE_FRAGMENT = 'fragment';
 const ATTRIBUTE_AUTHOR = 'author';
 const ATTRIBUTE_PREVIEW = 'preview';
+const ATTRIBUTE_LOADING = 'loading';
+const ATTRIBUTE_TIMEOUT = 'timeout';
 const AEM_FRAGMENT_TAG_NAME = 'aem-fragment';
+const LOADING_EAGER = 'eager';
+const LOADING_CACHE = 'cache';
+const LOADING_VALUES = [LOADING_EAGER, LOADING_CACHE];
 
 class FragmentCache {
     #fragmentCache = new Map();
+    #fetchInfos = new Map();
+    #promises = new Map();
 
     clear() {
         this.#fragmentCache.clear();
+        this.#fetchInfos.clear();
+        this.#promises.clear();
     }
 
     /**
      * Add fragment to cache
-     * @param {string} fragmentId requested id.
-     * requested id can differe from returned fragment.id because of translation
+     * @param {Object} fragment fragment object.
      */
-    addByRequestedId(fragmentId, fragment) {
-        this.#fragmentCache.set(fragmentId, fragment);
-    }
+    add(fragment) {
+        if (this.has(fragment.id)) return;
+        if (this.has(fragment.fields?.originalId)) return;
 
-    put(fragmentId, fragment) {
-        this.#fragmentCache.set(fragmentId, fragment);
-    }
+        this.#fragmentCache.set(fragment.id, fragment);
+        if (fragment.fields?.originalId) {
+            this.#fragmentCache.set(fragment.fields.originalId, fragment);
+        }
+        if (this.#promises.has(fragment.id)) {
+            const [, resolve] = this.#promises.get(fragment.id);
+            resolve();
+        }
+        if (this.#promises.has(fragment.fields?.originalId)) {
+            const [, resolve] = this.#promises.get(fragment.fields?.originalId);
+            resolve();
+        }
 
-    add(...fragments) {
-        fragments.forEach((fragment) => {
-            const { id: fragmentId } = fragment;
-            if (fragmentId) {
-                this.#fragmentCache.set(fragmentId, fragment);
+        if (!fragment.references) return;
+
+        for (const key in fragment.references) {
+            const { type, value } = fragment.references[key];
+            if (type === 'content-fragment') {
+                value.settings = {
+                    ...fragment?.settings,
+                    ...value.settings,
+                };
+                value.placeholders = {
+                    ...fragment?.placeholders,
+                    ...value.placeholders,
+                };
+                value.dictionary = {
+                    ...fragment?.dictionary,
+                    ...value.dictionary,
+                };
+                value.priceLiterals = {
+                    ...fragment?.priceLiterals,
+                    ...value.priceLiterals,
+                };
+                this.add(value, fragment);
             }
-        });
+        }
     }
 
     has(fragmentId) {
         return this.#fragmentCache.has(fragmentId);
     }
 
+    entries() {
+        return this.#fragmentCache.entries();
+    }
+
     get(key) {
         return this.#fragmentCache.get(key);
     }
 
+    getAsPromise(key) {
+        let [promise] = this.#promises.get(key) ?? [];
+        if (promise) {
+            return promise;
+        }
+        let resolveFn;
+        promise = new Promise((resolve) => {
+            resolveFn = resolve;
+            if (this.has(key)) {
+                resolve();
+            }
+        });
+        this.#promises.set(key, [promise, resolveFn]);
+        return promise;
+    }
+
+    getFetchInfo(fragmentId) {
+        let fetchInfo = this.#fetchInfos.get(fragmentId);
+        if (!fetchInfo) {
+            fetchInfo = {
+                url: null,
+                retryCount: 0,
+                stale: false,
+                measure: null,
+                status: null,
+            };
+            this.#fetchInfos.set(fragmentId, fetchInfo);
+        }
+        return fetchInfo;
+    }
+
     remove(fragmentId) {
         this.#fragmentCache.delete(fragmentId);
+        this.#fetchInfos.delete(fragmentId);
+        this.#promises.delete(fragmentId);
     }
 }
+
 const cache = new FragmentCache();
 
 /**
@@ -65,24 +137,21 @@ const cache = new FragmentCache();
  * @attr {string} fragment - fragment id.
  */
 export class AemFragment extends HTMLElement {
-    cache = cache;
+    cache = cache; // TO be deprecated
+    static cache = cache;
     #log;
 
     #rawData = null;
     #data = null;
-    #fetchInfo = {
-        url: null,
-        retryCount: 0,
-        stale: false,
-        measure: null,
-        status: null,
-    };
     #service = null;
 
     /**
      * @type {string} fragment id
      */
     #fragmentId;
+    #fetchInfo;
+    #loading = LOADING_EAGER;
+    #timeout = 5000;
 
     /**
      * Internal promise to track if fetching is in progress.
@@ -95,18 +164,31 @@ export class AemFragment extends HTMLElement {
     #preview = undefined;
 
     static get observedAttributes() {
-        return [ATTRIBUTE_FRAGMENT, ATTRIBUTE_AUTHOR, ATTRIBUTE_PREVIEW];
+        return [
+            ATTRIBUTE_FRAGMENT,
+            ATTRIBUTE_LOADING,
+            ATTRIBUTE_TIMEOUT,
+            ATTRIBUTE_AUTHOR,
+            ATTRIBUTE_PREVIEW,
+        ];
     }
 
     attributeChangedCallback(name, oldValue, newValue) {
         if (name === ATTRIBUTE_FRAGMENT) {
-          this.#fragmentId = newValue;
+            this.#fragmentId = newValue;
+            this.#fetchInfo = cache.getFetchInfo(newValue);
+        }
+        if (name === ATTRIBUTE_LOADING && LOADING_VALUES.includes(newValue)) {
+            this.#loading = newValue;
+        }
+        if (name === ATTRIBUTE_TIMEOUT) {
+          this.#timeout = parseInt(newValue, 10);
         }
         if (name === ATTRIBUTE_AUTHOR) {
-          this.#author = ['', 'true'].includes(newValue);
+            this.#author = ['', 'true'].includes(newValue);
         }
         if (name === ATTRIBUTE_PREVIEW) {
-          this.#preview = newValue;
+            this.#preview = newValue;
         }
     }
 
@@ -119,6 +201,7 @@ export class AemFragment extends HTMLElement {
         );
         // TODO get rid of the special case for #
         if (!this.#fragmentId || this.#fragmentId === '#') {
+            this.#fetchInfo ??= cache.getFetchInfo('missing-fragment-id');
             this.#fail('Missing fragment id');
             return;
         }
@@ -146,7 +229,7 @@ export class AemFragment extends HTMLElement {
         const startMarkName = `${markPrefix}${MARK_START_SUFFIX}`;
         const measureName = `${markPrefix}${MARK_DURATION_SUFFIX}`;
         if (this.#preview) {
-          return await this.generatePreview();
+            return await this.generatePreview();
         }
         performance.mark(startMarkName);
         let response;
@@ -159,10 +242,9 @@ export class AemFragment extends HTMLElement {
             });
             this.#applyHeaders(response);
             this.#fetchInfo.status = response?.status;
-            this.#fetchInfo.measure = printMeasure(performance.measure(
-                measureName,
-                startMarkName,
-            ));
+            this.#fetchInfo.measure = printMeasure(
+                performance.measure(measureName, startMarkName),
+            );
             this.#fetchInfo.retryCount = response.retryCount;
             if (!response?.ok) {
                 throw new MasError('Unexpected fragment response', {
@@ -172,10 +254,9 @@ export class AemFragment extends HTMLElement {
             }
             return await response.json();
         } catch (e) {
-            this.#fetchInfo.measure = printMeasure(performance.measure(
-                measureName,
-                startMarkName,
-            ));
+            this.#fetchInfo.measure = printMeasure(
+                performance.measure(measureName, startMarkName),
+            );
             this.#fetchInfo.retryCount = e.retryCount;
             if (this.#rawData) {
                 this.#fetchInfo.stale = true;
@@ -201,6 +282,14 @@ export class AemFragment extends HTMLElement {
         }
         if (flushCache) {
             cache.remove(this.#fragmentId);
+        }
+        if (this.#loading === LOADING_CACHE) {
+            await Promise.race([
+                cache.getAsPromise(this.#fragmentId),
+                new Promise((resolve) =>
+                    setTimeout(resolve, this.#timeout),
+                ),
+            ]);
         }
         try {
             this.#fetchPromise = this.#fetchData();
@@ -262,8 +351,8 @@ export class AemFragment extends HTMLElement {
         const endpoint = `${masIOUrl}/fragment?id=${this.#fragmentId}&api_key=${wcsApiKey}&locale=${locale}`;
 
         fragment = await this.#getFragmentById(endpoint);
-        // TODO add all references to cache
-        cache.addByRequestedId(this.#fragmentId, fragment);
+        fragment.fields.originalId ??= this.#fragmentId;
+        cache.add(fragment);
         this.#rawData = fragment;
         return true;
     }
@@ -286,24 +375,56 @@ export class AemFragment extends HTMLElement {
     }
 
     transformAuthorData() {
-        const { fields, id, tags, settings = {} } = this.#rawData;
+        const {
+            fields,
+            id,
+            tags,
+            settings = {},
+            priceLiterals = {},
+            dictionary = {},
+            placeholders = {},
+        } = this.#rawData;
         this.#data = fields.reduce(
             (acc, { name, multiple, values }) => {
                 acc.fields[name] = multiple ? values : values[0];
                 return acc;
             },
-            { fields: {}, id, tags, settings },
+            {
+                fields: {},
+                id,
+                tags,
+                settings,
+                priceLiterals,
+                dictionary,
+                placeholders,
+            },
         );
     }
 
     transformPublishData() {
-        const { fields, id, tags, settings = {} } = this.#rawData;
+        const {
+            fields,
+            id,
+            tags,
+            settings = {},
+            priceLiterals = {},
+            dictionary = {},
+            placeholders = {},
+        } = this.#rawData;
         this.#data = Object.entries(fields).reduce(
             (acc, [key, value]) => {
                 acc.fields[key] = value?.mimeType ? value.value : (value ?? '');
                 return acc;
             },
-            { fields: {}, id, tags, settings },
+            {
+                fields: {},
+                id,
+                tags,
+                settings,
+                priceLiterals,
+                dictionary,
+                placeholders,
+            },
         );
     }
 
@@ -317,24 +438,16 @@ export class AemFragment extends HTMLElement {
         
         if (!masLibs || masLibs.trim() === '') {
             return 'https://mas.adobe.com/studio/libs/fragment-client.js';
-        }
-        
+        }      
         const sanitizedMasLibs = masLibs.trim().toLowerCase();
         
         if (sanitizedMasLibs === 'local') {
             return 'http://localhost:3030/studio/libs/fragment-client.js';
         }
-        if (sanitizedMasLibs === 'main') {
-            return 'https://mas.adobe.com/studio/libs/fragment-client.js';
-        }
         
         // Detect current domain extension (.page or .live)
         const { hostname } = window.location;
         const extension = hostname.endsWith('.page') ? 'page' : 'live';
-        
-        if (sanitizedMasLibs.includes('--mas--')) {
-            return `https://${sanitizedMasLibs}.aem.${extension}/studio/libs/fragment-client.js`;
-        }
         if (sanitizedMasLibs.includes('--')) {
             return `https://${sanitizedMasLibs}.aem.${extension}/studio/libs/fragment-client.js`;
         }
@@ -345,8 +458,8 @@ export class AemFragment extends HTMLElement {
         const fragmentClientUrl = this.getFragmentClientUrl();
         const { previewFragment } = await import(fragmentClientUrl);
         const data = await previewFragment(this.#fragmentId, {
-          locale: this.#service.settings.locale,
-          apiKey: this.#service.settings.wcsApiKey,
+            locale: this.#service.settings.locale,
+            apiKey: this.#service.settings.wcsApiKey,
         });
         return data;
     }

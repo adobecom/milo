@@ -186,7 +186,7 @@ export function CheckoutMixin(Base) {
             const service = getService();
             if (!service) return false;
             const extraOptions = JSON.parse(
-                this.dataset.extraOptions ?? 'null',
+                this.dataset.extraOptions ?? '{}',
             );
             options = { ...extraOptions, ...options, ...overrides };
             version ??= this.masElement.togglePending(options);

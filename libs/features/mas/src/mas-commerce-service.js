@@ -1,6 +1,6 @@
 import { Checkout } from './checkout.js';
 import * as Constants from './constants.js';
-import { EVENT_TYPE_READY, SELECTOR_MAS_ELEMENT } from './constants.js';
+import { EVENT_TYPE_READY, FF_DEFAULTS, SELECTOR_MAS_ELEMENT } from './constants.js';
 import { Defaults } from './defaults.js';
 import { Ims } from './ims.js';
 import { getPriceLiterals } from './literals.js';
@@ -10,6 +10,7 @@ import { getSettings } from './settings.js';
 import { Wcs } from './wcs.js';
 import { updateConfig as updateLanaConfig } from './lana.js';
 import { printMeasure } from './utils.js';
+import { getParameter } from '@dexter/tacocat-core';
 
 export const TAG_NAME_SERVICE = 'mas-commerce-service';
 
@@ -21,6 +22,7 @@ const MEASURE_READY = 'mas-commerce-service:ready';
  */
 export class MasCommerceService extends HTMLElement {
     #measure;
+    #featureFlags;
 
     lastLoggingTime = 0;
     get #config() {
@@ -80,10 +82,23 @@ export class MasCommerceService extends HTMLElement {
         };
     }
 
+    #getFeatureFlag(ff) {
+        return ['on','true',true].includes(this.getAttribute(`data-${ff}`) || getParameter(ff));
+    }
+
+    get featureFlags() {
+        if (!this.#featureFlags) {
+            this.#featureFlags = {
+                [FF_DEFAULTS]: this.#getFeatureFlag(FF_DEFAULTS),
+            };
+        }
+        return this.#featureFlags;
+    }
+
     activate() {
         const config = this.#config;
         // Load settings and literals
-        const settings = getSettings(config);
+        const settings = getSettings(config, this);
         updateLanaConfig(config.lana);
         const log = Log.init(config.hostEnv).module('service');
         log.debug('Activating:', config);
@@ -172,7 +187,8 @@ export class MasCommerceService extends HTMLElement {
 
     refreshFragments() {
         this.flushWcsCacheInternal();
-        document.querySelectorAll('aem-fragment').forEach((el) => el.refresh());
+        customElements.get('aem-fragment')?.cache.clear();
+        document.querySelectorAll('aem-fragment').forEach((el) => el.refresh(false));
         this.log.debug('Refreshed AEM fragments');
         this.logFailedRequests();
     }
@@ -210,7 +226,7 @@ export class MasCommerceService extends HTMLElement {
 
         if (
             uniqueFailedResources.some(({ name }) =>
-                /(\/fragments\/|web_commerce_artifact)/.test(name),
+                /(\/fragment\?|web_commerce_artifact)/.test(name),
             )
         ) {
             const failedUrls = uniqueFailedResources.map(({ name }) => name);

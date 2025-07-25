@@ -44,6 +44,10 @@ const MARK_MERCH_CARD_PREFIX = 'merch-card:';
 function priceOptionsProvider(element, options) {
     const card = element.closest(MERCH_CARD);
     if (!card) return options;
+    if (card.priceLiterals) {
+      options.literals ??= {};
+      Object.assign(options.literals, card.priceLiterals);
+    }
     card.variantLayout?.priceOptionsProvider?.(element, options);
 }
 
@@ -145,6 +149,7 @@ export class MerchCard extends LitElement {
             reflect: true,
         },
         loading: { type: String },
+        priceLiterals: { type: Object },
     };
 
     static styles = [styles, ...sizeStyles()];
@@ -156,6 +161,10 @@ export class MerchCard extends LitElement {
     #log;
     #service;
     #startMarkName;
+    #resolveHydration;
+    #hydrationPromise = new Promise((resolve) => {
+      this.#resolveHydration = resolve;
+    });
 
     customerSegment;
     marketSegment;
@@ -180,14 +189,14 @@ export class MerchCard extends LitElement {
     static getFragmentMapping = getFragmentMapping;
 
     firstUpdated() {
-        this.variantLayout = getVariantLayout(this, false);
+        this.variantLayout = getVariantLayout(this);
         this.variantLayout?.connectedCallbackHook();
     }
 
     willUpdate(changedProperties) {
         if (changedProperties.has('variant') || !this.variantLayout) {
             this.variantLayout = getVariantLayout(this);
-            this.variantLayout.connectedCallbackHook();
+            this.variantLayout?.connectedCallbackHook();
         }
     }
 
@@ -208,7 +217,7 @@ export class MerchCard extends LitElement {
             );
         }
         try {
-            this.variantLayout?.postCardUpdateHook(changedProperties);
+            this.variantLayoutPromise = this.variantLayout?.postCardUpdateHook(changedProperties);
         } catch (e) {
             this.#fail(`Error in postCardUpdateHook: ${e.message}`, {}, false);
         }
@@ -220,12 +229,6 @@ export class MerchCard extends LitElement {
 
     get dir() {
         return this.closest('[dir]')?.getAttribute('dir') ?? 'ltr';
-    }
-
-    get prices() {
-        return Array.from(
-            this.querySelectorAll('span[is="inline-price"][data-wcs-osi]'),
-        );
     }
 
     render() {
@@ -420,6 +423,10 @@ export class MerchCard extends LitElement {
         if (!this.#internalId) {
             this.#internalId = idCounter++;
         }
+        if (!this.aemFragment) {
+          this.#resolveHydration?.();
+          this.#resolveHydration = undefined;
+        }
         this.id ??=
             this.getAttribute('id') ??
             this.aemFragment?.getAttribute('fragment');
@@ -479,9 +486,17 @@ export class MerchCard extends LitElement {
             if (e.target.nodeName === 'AEM-FRAGMENT') {
                 const fragment = e.detail;
                 try {
-                    await hydrate(fragment, this);
+                    if (!this.#resolveHydration) {
+                      this.#hydrationPromise = new Promise((resolve) => {
+                        this.#resolveHydration = resolve;
+                      });
+                    }
+                    hydrate(fragment, this);
                 } catch (e) {
                     this.#fail(`hydration has failed: ${e.message}`);
+                } finally {
+                    this.#resolveHydration?.();
+                    this.#resolveHydration = undefined;
                 }
                 this.checkReady();
             }
@@ -512,7 +527,15 @@ export class MerchCard extends LitElement {
     }
 
     async checkReady() {
-        if (!this.isConnected) return;
+      if (!this.isConnected) return;
+        if (this.#hydrationPromise) {
+          await this.#hydrationPromise;
+          this.#hydrationPromise = undefined;
+        }
+        if (this.variantLayoutPromise) {
+          await this.variantLayoutPromise;
+          this.variantLayoutPromise = undefined;
+        }
         const timeoutPromise = new Promise((resolve) =>
             setTimeout(() => resolve('timeout'), MERCH_CARD_LOAD_TIMEOUT),
         );
@@ -649,6 +672,106 @@ export class MerchCard extends LitElement {
             });
             this.addonCheckbox.handleChange(checkboxEvent);
         }
+    }
+
+    get prices() {
+        return Array.from(
+            this.querySelectorAll(SELECTOR_MAS_INLINE_PRICE),
+        );
+    }
+
+    get promoPrice() {
+        if (!this.querySelector(`span.price-strikethrough`)) return;
+        let price = this.querySelector(`.price.price-alternative`);
+        if (!price) {
+          price = this.querySelector(`${SELECTOR_MAS_INLINE_PRICE}[data-template="price"] > span`);
+        }
+        if (!price) return;
+        price = price.innerText;
+        return price;
+    }
+
+    get #regularPrice() { 
+        return this.querySelector(`span.price-strikethrough`) ?? this.querySelector(`${SELECTOR_MAS_INLINE_PRICE}[data-template="price"] > span`);
+    }
+
+    get #legal() {
+        return this.querySelector(`${SELECTOR_MAS_INLINE_PRICE}[data-template="legal"]`);
+    }
+
+    get regularPrice() {
+        return this.#regularPrice?.innerText;
+    }
+
+    get promotionCode() {
+        const promotionCodes = [...this.querySelectorAll(`${SELECTOR_MAS_INLINE_PRICE}[data-promotion-code],${SELECTOR_MAS_CHECKOUT_LINK}[data-promotion-code]`)].map(el => el.dataset.promotionCode);
+        // Check if all promotion codes are the same
+        const uniqueCodes = [...new Set(promotionCodes)];
+        if (uniqueCodes.length > 1) {
+            this.#log?.warn(`Multiple different promotion codes found: ${uniqueCodes.join(', ')}`);
+        }
+        return promotionCodes[0];
+    }
+
+    get annualPrice() {
+        const price = this.querySelector(`${SELECTOR_MAS_INLINE_PRICE}[data-template="price"] > .price.price-annual`);
+        return price?.innerText;
+    }
+
+    get promoText() {
+        return undefined;
+    }
+
+    get taxText() {
+        return (this.#legal ?? this.#regularPrice)?.querySelector('span.price-tax-inclusivity')?.textContent?.trim() || undefined;
+    }
+
+    get recurrenceText() {
+        return this.#regularPrice?.querySelector('span.price-recurrence')?.textContent?.trim();
+    }
+
+    get planTypeText() {
+        return this.querySelector('[is="inline-price"][data-template="legal"] span.price-plan-type')?.textContent?.trim();
+    }
+
+    get seeTermsInfo() {
+        const seeTerms = this.querySelector('a[is="upt-link"]');
+        if (!seeTerms) return undefined;
+        return this.#getCta(seeTerms);
+    }
+
+    get renewalText() {
+      return this.querySelector('span.renewal-text')?.textContent?.trim();
+    }
+
+    get promoDurationText() {
+      return this.querySelector('span.promo-duration-text')?.textContent?.trim();
+    }
+
+    get ctas() {
+        return Array.from(
+            this.querySelector('[slot="ctas"], [slot="footer"]')?.querySelectorAll(
+                `${SELECTOR_MAS_CHECKOUT_LINK}, a`,
+            ),
+        );
+    }
+
+    #getCta(element) {
+      if (!element) return undefined;
+      return {
+        text: element.innerText.trim(),
+        analyticsId: element.dataset.analyticsId,
+        href: element.getAttribute('href') ?? element.dataset.href,
+      };
+    }
+
+
+    get primaryCta() {
+      return this.#getCta(this.ctas.find(cta => cta.variant === 'accent' || cta.matches('.spectrum-Button--accent,.con-button.blue')));
+    }
+
+    get secondaryCta() {
+      return this.#getCta(this.ctas.find(cta => cta.variant !== 'accent' && !cta.matches('.spectrum-Button--accent,.con-button.blue')));
     }
 }
 

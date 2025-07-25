@@ -2,13 +2,19 @@ import { Catalog, CATALOG_AEM_FRAGMENT_MAPPING } from './catalog.js';
 import { Image } from './image.js';
 import { InlineHeading } from './inline-heading.js';
 import { MiniCompareChart } from './mini-compare-chart.js';
-import { Plans, PLANS_AEM_FRAGMENT_MAPPING, PLANS_EDUCATION_AEM_FRAGMENT_MAPPING, PLANS_STUDENTS_AEM_FRAGMENT_MAPPING } from './plans.js';
+import {
+    Plans,
+    PLANS_AEM_FRAGMENT_MAPPING,
+    PLANS_EDUCATION_AEM_FRAGMENT_MAPPING,
+    PLANS_STUDENTS_AEM_FRAGMENT_MAPPING,
+} from './plans.js';
 import { Product } from './product.js';
 import { Segment } from './segment.js';
 import {
     SPECIAL_OFFERS_AEM_FRAGMENT_MAPPING,
     SpecialOffer,
 } from './special-offer.js';
+import { Mini, MINI_AEM_FRAGMENT_MAPPING } from './mini.js';
 
 // Registry for dynamic variants
 const variantRegistry = new Map();
@@ -55,11 +61,17 @@ registerVariant(
     SPECIAL_OFFERS_AEM_FRAGMENT_MAPPING,
     SpecialOffer.variantStyle,
 );
+registerVariant(
+    'mini',
+    Mini,
+    MINI_AEM_FRAGMENT_MAPPING,
+    Mini.variantStyle,
+);
 
-const getVariantLayout = (card, mustMatch = false) => {
+const getVariantLayout = (card) => {
     const variantInfo = variantRegistry.get(card.variant);
     if (!variantInfo) {
-        return mustMatch ? undefined : new Product(card);
+        return undefined;
     }
     const { class: VariantClass, style } = variantInfo;
     if (style) {
