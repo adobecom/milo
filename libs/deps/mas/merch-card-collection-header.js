@@ -834,6 +834,10 @@ merch-card[variant="plans-education"] [slot="body-xs"] span.price:not(.price-leg
   font-weight: 700;
 }
 
+merch-card[variant^="plans"] span.price-unit-type {
+    display: block;
+}
+
 merch-card[variant^="plans"] [slot="heading-xs"] span.price.price-strikethrough,
 merch-card[variant^="plans"] [slot="heading-m"] span.price.price-strikethrough,
 merch-card[variant="plans-education"] [slot="body-xs"] span.price.price-strikethrough {
