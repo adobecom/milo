@@ -82,7 +82,7 @@
 
 .radio-options label {
   font-size: 12px;
-  color: #666;
+  color: black;
   cursor: pointer;
   text-align: center;
   line-height: 1.2;
@@ -98,7 +98,7 @@
 .radio-options input[type="radio"] {
   width: 16px;
   height: 16px;
-  border: 2px solid #ccc;
+  border: 2px solid black;
   border-radius: 50%;
   appearance: none;
   cursor: pointer;
@@ -114,7 +114,7 @@
   transform: translate(-50%, -50%);
   width: 8px;
   height: 8px;
-  background: #0066cc;
+  background: black;
   border-radius: 50%;
   opacity: 0;
   transition: opacity 0.2s ease;
@@ -125,7 +125,7 @@
 }
 
 .radio-options input[type="radio"]:checked {
-  border-color: #0066cc;
+  border-color: black;
 }
 
 .radio-options input[type="radio"]:checked::after {
@@ -197,7 +197,7 @@
 .nps-checkbox-area input[type="checkbox"] {
   width: 16px;
   height: 16px;
-  border: 1px solid #ccc;
+  border: 1px solid black;
   border-radius: 2px;
   appearance: none;
   cursor: pointer;
@@ -218,7 +218,6 @@
 }
 
 .nps-checkbox-area input[type="checkbox"]:hover {
-  border-color: black;
   background: rgba(0, 0, 0, 0.1);
 }
 
