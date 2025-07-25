@@ -80,6 +80,16 @@ module.exports = {
           iframeSrc: 'https://www.adobe.com/mini-plans/buy/photoshop.html?web=1&promoid=K42KVSWP&mv=other',
         },
       ],
+      nonModalUseCases: [
+        {
+          sectionId: 'fallback-step',
+          attributes: {
+            href: 'https://commerce.adobe.com/store/commitment?items%5B0%5D%5Bid%5D=7C30A05FE0EC0BA92566737E720C4692&cli=adobe_com&ctx=fp&co=US&lang=en',
+            'aria-label': 'Buy now - Acrobat Pro - Individuals',
+            'data-checkout-workflow-step': 'commitment',
+          },
+        },
+      ],
     },
     {
       name: '@ThreeInOneCatalog',
