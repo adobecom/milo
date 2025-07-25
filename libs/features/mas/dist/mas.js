@@ -2325,6 +2325,10 @@ merch-card div[slot='bg-image'] img {
     border-top-right-radius: 16px;
 }
 
+.price-unit-type {
+    display:block;
+}
+
 .price-unit-type:not(.disabled)::before,
 .price-tax-inclusivity:not(.disabled)::before {
   content: "\\00a0";
