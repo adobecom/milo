@@ -60,7 +60,7 @@ export function extractFunctionCode(ast, functionName) {
       const newQueue = [...rest, ...getNext(current)];
       return go(visited, newQueue);
     };
-    return go(new Set(), [start], new Set());
+    return go(new Set(), [start]);
   };
 
   const requiredNames = bfs(
