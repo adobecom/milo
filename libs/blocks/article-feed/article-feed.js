@@ -104,14 +104,15 @@ function isCardOnPage(article) {
   return !!document.querySelector(`.featured-article a.featured-article-card[href="${path}"], .recommended-articles a.article-card[href="${path}"]`);
 }
 
-function closeMenu(el) {
-  el.setAttribute('aria-expanded', false);
-}
-
-function openMenu(el) {
-  const expandedMenu = document.querySelector('.filter-button[aria-expanded=true]');
-  if (expandedMenu) { closeMenu(expandedMenu); }
-  el.setAttribute('aria-expanded', true);
+function closeOnDocClick(e) {
+  const { target } = e;
+  const curtain = document.querySelector('.filter-curtain');
+  if (target === curtain) {
+    const open = document.querySelector('.filter-button[aria-expanded=true]');
+    closeMenu(open);
+    disableSearch(open.id);
+    curtain.classList.add('hide');
+  }
 }
 
 function filterSearch(e) {
@@ -144,17 +145,6 @@ function disableSearch(id) {
   input.removeEventListener('keyup', filterSearch);
 }
 
-function closeOnDocClick(e) {
-  const { target } = e;
-  const curtain = document.querySelector('.filter-curtain');
-  if (target === curtain) {
-    const open = document.querySelector('.filter-button[aria-expanded=true]');
-    closeMenu(open);
-    disableSearch(open.id);
-    curtain.classList.add('hide');
-  }
-}
-
 function closeCurtain() {
   const curtain = document.querySelector('.filter-curtain');
   curtain.classList.add('hide');
@@ -165,6 +155,87 @@ function openCurtain() {
   const curtain = document.querySelector('.filter-curtain');
   curtain.classList.remove('hide');
   window.addEventListener('click', closeOnDocClick);
+}
+
+function closeMenu(el) {
+  el.setAttribute('aria-expanded', false);
+}
+
+function openMenu(el) {
+  const expandedMenu = document.querySelector('.filter-button[aria-expanded=true]');
+  if (expandedMenu) { closeMenu(expandedMenu); }
+  el.setAttribute('aria-expanded', true);
+  addFocusTrap(el);
+}
+
+function navigateFilterButtons(currentButton, forward) {
+  const allFilterButtons = document.querySelectorAll('.filter-button');
+  const currentIndex = Array.from(allFilterButtons).indexOf(currentButton);
+  if (currentIndex === -1) return;
+  let nextIndex;
+  if (forward) {
+    nextIndex = (currentIndex + 1) % allFilterButtons.length;
+  } else {
+    nextIndex = currentIndex === 0 ? allFilterButtons.length - 1 : currentIndex - 1;
+  }
+  const nextButton = allFilterButtons[nextIndex];
+  closeMenu(currentButton);
+  disableSearch(currentButton.id);
+  openMenu(nextButton);
+  enableSearch(nextButton.id);
+}
+
+function handleDropdownKeydown(e, firstElement, lastElement, triggerButton) {
+  const { key, shiftKey } = e;
+  if (key === 'Escape') {
+    e.preventDefault();
+    closeMenu(triggerButton);
+    disableSearch(triggerButton.id);
+    closeCurtain();
+    triggerButton.focus();
+    return;
+  }
+  if (key === 'Tab') {
+    if (shiftKey) {
+      if (document.activeElement === firstElement) {
+        e.preventDefault();
+        lastElement.focus();
+      }
+    } else if (document.activeElement === lastElement) {
+      e.preventDefault();
+      firstElement.focus();
+    }
+  }
+  if (key === 'ArrowLeft' || key === 'ArrowRight') {
+    e.preventDefault();
+    navigateFilterButtons(triggerButton, key === 'ArrowRight');
+  }
+  if ((key === 'Enter' || key === ' ') && document.activeElement.type === 'checkbox') {
+    e.preventDefault();
+    document.activeElement.checked = !document.activeElement.checked;
+  }
+
+  if ((key === 'Enter' || key === ' ') && document.activeElement.matches('a.button')) {
+    e.preventDefault();
+    document.activeElement.click();
+  }
+}
+
+function addFocusTrap(button) {
+  const dropdown = document.querySelector(`[aria-labelledby='${button.id}']`);
+  if (!dropdown) return;
+  if (dropdown.keydownHandler) {
+    dropdown.removeEventListener('keydown', dropdown.keydownHandler);
+  }
+  const focusableElements = dropdown.querySelectorAll(
+    'input, button, a.button',
+  );
+  if (focusableElements.length === 0) return;
+  const firstElement = focusableElements[0];
+  const lastElement = focusableElements[focusableElements.length - 1];
+  firstElement.focus();
+  dropdown.keydownHandler = (e) => handleDropdownKeydown(e, firstElement, lastElement, button);
+  dropdown.addEventListener('keydown', dropdown.keydownHandler);
 }
 
 function toggleMenu(e) {
@@ -271,13 +342,14 @@ function buildFilterOption(itemName, type) {
   const name = itemName.replace(/\*/gm, '');
 
   const option = document.createElement('li');
-  option.classList
-    .add('filter-option', `filter-option-${type}`);
+  option.classList.add('filter-option', `filter-option-${type}`);
+  option.setAttribute('role', 'none');
 
   const checkbox = document.createElement('input');
   checkbox.id = name;
   checkbox.setAttribute('name', name);
   checkbox.setAttribute('type', 'checkbox');
+  checkbox.setAttribute('tabindex', '0');
 
   const label = document.createElement('label');
   label.setAttribute('for', name);
@@ -289,19 +361,38 @@ function buildFilterOption(itemName, type) {
 
 async function buildFilter(type, tax, block, config) {
   const container = createTag('div', { class: 'filter' });
-
   const button = document.createElement('a');
   button.classList.add('filter-button');
   button.id = `${type}-filter-button`;
-  button.setAttribute('aria-haspopup', true);
-  button.setAttribute('aria-expanded', false);
+  button.setAttribute('tabindex', '0');
+  button.setAttribute('aria-haspopup', 'true');
+  button.setAttribute('aria-expanded', 'false');
   button.setAttribute('role', 'button');
   button.textContent = tax.getCategoryTitle(type);
   button.addEventListener('click', toggleMenu);
+  button.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      toggleMenu(e);
+    }
+    if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+      e.preventDefault();
+      const allButtons = document.querySelectorAll('.filter-button');
+      const currentIndex = Array.from(allButtons).indexOf(button);
+      let nextIndex;
+      if (e.key === 'ArrowRight') {
+        nextIndex = (currentIndex + 1) % allButtons.length;
+      } else {
+        nextIndex = currentIndex === 0 ? allButtons.length - 1 : currentIndex - 1;
+      }
+      allButtons[nextIndex].focus();
+    }
+  });
 
   const dropdown = createTag('div', { class: 'filter-dropdown' });
   dropdown.setAttribute('aria-labelledby', `${type}-filter-button`);
   dropdown.setAttribute('role', 'menu');
+  dropdown.setAttribute('aria-modal', 'true');
 
   const SEARCH_ICON = `<svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" focusable="false">
     <path d="M14 2A8 8 0 0 0 7.4 14.5L2.4 19.4a1.5 1.5 0 0 0 2.1 2.1L9.5 16.6A8 8 0 1 0 14 2Zm0 14.1A6.1 6.1 0 1 1 20.1 10 6.1 6.1 0 0 1 14 16.1Z"></path>
@@ -312,11 +403,15 @@ async function buildFilter(type, tax, block, config) {
   searchField.setAttribute('id', `${type}-filter-search`);
   searchField.setAttribute('aria-label', await replacePlaceholder('search'));
   searchField.setAttribute('placeholder', await replacePlaceholder('search'));
+  searchField.setAttribute('tabindex', '0');
   searchBar.append(searchField);
 
   const options = document.createElement('ul');
   options.classList.add('filter-options');
   options.setAttribute('data-type', type);
+  options.setAttribute('role', 'group');
+  options.setAttribute('aria-label', `${tax.getCategoryTitle(type)} filters`);
+
   const category = tax.getCategory(tax[`${type.toUpperCase()}`]);
 
   category.forEach((topic) => {
@@ -335,11 +430,13 @@ async function buildFilter(type, tax, block, config) {
 
   const resetBtn = document.createElement('a');
   resetBtn.classList.add('button', 'small', 'reset');
+  resetBtn.setAttribute('tabindex', '0');
   resetBtn.textContent = await replacePlaceholder('reset');
   resetBtn.addEventListener('click', clearFilters);
 
   const applyBtn = document.createElement('a');
   applyBtn.classList.add('button', 'small', 'apply');
+  applyBtn.setAttribute('tabindex', '0');
   applyBtn.textContent = await replacePlaceholder('apply');
   applyBtn.addEventListener('click', () => {
     delete config.selectedProducts;
