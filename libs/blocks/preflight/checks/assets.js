@@ -1,4 +1,4 @@
-import { STATUS, ASSETS_TITLES } from './constants.js';
+import { STATUS, ASSETS_TITLES, CHECK_IDS, getCheckSeverity, SEVERITY } from './constants.js';
 import { createTag } from '../../../utils/utils.js';
 import { addAssetMetadata } from '../visual-metadata.js';
 
@@ -146,6 +146,23 @@ function getAssetData(asset) {
   };
 }
 
+// Determine if an asset is above-the-fold and should be considered critical
+function isAboveFold(asset) {
+  const main = asset.closest('main');
+  if (!main) return false;
+
+  const sections = main.querySelectorAll(':scope > div.section');
+  if (sections.length === 0) return true; // If no sections, assume critical
+
+  const firstSection = sections[0];
+  const secondSection = sections[1];
+  const isInFirstSection = firstSection && firstSection.contains(asset);
+  const isInSecondSection = secondSection && secondSection.contains(asset);
+  const isInHeroBlock = asset.closest('.hero, .marquee, .hero-marquee');
+
+  return isInFirstSection || isInSecondSection || !!isInHeroBlock;
+}
+
 export function isViewportTooSmall() {
   return !window.matchMedia('(min-width: 1200px)').matches;
 }
@@ -153,6 +170,8 @@ export function isViewportTooSmall() {
 export async function checkImageDimensions(url, area, injectVisualMetadata = false) {
   if (isViewportTooSmall()) {
     return {
+      checkId: CHECK_IDS.IMAGE_DIMENSIONS,
+      severity: getCheckSeverity(CHECK_IDS.IMAGE_DIMENSIONS),
       title: ASSETS_TITLES.AssetDimensions,
       status: STATUS.EMPTY,
       description: 'Viewport is too small to run asset checks (minimum width: 1200px).',
@@ -173,6 +192,8 @@ export async function checkImageDimensions(url, area, injectVisualMetadata = fal
 
   if (!allAssets.length) {
     return {
+      checkId: CHECK_IDS.IMAGE_DIMENSIONS,
+      severity: getCheckSeverity(CHECK_IDS.IMAGE_DIMENSIONS),
       title: ASSETS_TITLES.AssetDimensions,
       status: STATUS.EMPTY,
       description: 'No assets found in the main content.',
@@ -183,6 +204,8 @@ export async function checkImageDimensions(url, area, injectVisualMetadata = fal
 
   if (!assets.length) {
     return {
+      checkId: CHECK_IDS.IMAGE_DIMENSIONS,
+      severity: getCheckSeverity(CHECK_IDS.IMAGE_DIMENSIONS),
       title: ASSETS_TITLES.AssetDimensions,
       status: STATUS.EMPTY,
       description: 'No eligible assets found (visible, non-icon, non-SVG).',
@@ -191,14 +214,23 @@ export async function checkImageDimensions(url, area, injectVisualMetadata = fal
 
   const assetsWithMismatch = [];
   const assetsWithMatch = [];
+  const criticalAssetFailures = [];
+  const warningAssetFailures = [];
 
   if (injectVisualMetadata) area.body.classList.add('preflight-assets-analysis');
 
   for (const asset of assets) {
     const assetData = getAssetData(asset);
     if (injectVisualMetadata) addAssetMetadata(asset, assetData);
+
     if (assetData.hasMismatch) {
       assetsWithMismatch.push(assetData);
+
+      if (isAboveFold(asset)) {
+        criticalAssetFailures.push(assetData);
+      } else {
+        warningAssetFailures.push(assetData);
+      }
     } else {
       assetsWithMatch.push(assetData);
     }
@@ -206,16 +238,35 @@ export async function checkImageDimensions(url, area, injectVisualMetadata = fal
 
   if (injectVisualMetadata) area.body.classList.remove('preflight-assets-analysis');
 
+  let dynamicSeverity;
+  let description;
+
+  if (assetsWithMismatch.length === 0) {
+    dynamicSeverity = getCheckSeverity(CHECK_IDS.IMAGE_DIMENSIONS);
+    description = 'All assets have matching dimensions.';
+  } else if (criticalAssetFailures.length > 0) {
+    dynamicSeverity = SEVERITY.CRITICAL;
+    const criticalMsg = `${criticalAssetFailures.length} above-the-fold asset(s) have dimension mismatches (critical).`;
+    const warningMsg = warningAssetFailures.length > 0
+      ? ` ${warningAssetFailures.length} below-the-fold asset(s) also have issues.`
+      : '';
+    description = criticalMsg + warningMsg;
+  } else {
+    dynamicSeverity = SEVERITY.WARNING;
+    description = `${warningAssetFailures.length} below-the-fold asset(s) have dimension mismatches.`;
+  }
+
   const result = {
+    checkId: CHECK_IDS.IMAGE_DIMENSIONS,
+    severity: dynamicSeverity,
     title: ASSETS_TITLES.AssetDimensions,
     status: assetsWithMismatch.length > 0 ? STATUS.FAIL : STATUS.PASS,
-    description:
-      assetsWithMismatch.length > 0
-        ? `${assetsWithMismatch.length} asset(s) have dimension mismatches.`
-        : 'All assets have matching dimensions.',
+    description,
     details: {
       assetsWithMismatch,
       assetsWithMatch,
+      criticalAssetFailures,
+      warningAssetFailures,
     },
   };
 

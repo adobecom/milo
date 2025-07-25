@@ -1,4 +1,4 @@
-import { STATUS, SEO_TITLES } from './constants.js';
+import { STATUS, SEO_TITLES, CHECK_IDS, getCheckSeverity } from './constants.js';
 import getServiceConfig from '../../../utils/service-config.js';
 import { getConfig, updateConfig } from '../../../utils/utils.js';
 
@@ -40,6 +40,8 @@ export function checkH1s(area) {
   }
 
   return {
+    checkId: CHECK_IDS.H1_COUNT,
+    severity: getCheckSeverity(CHECK_IDS.H1_COUNT),
     title: SEO_TITLES.H1Count,
     status,
     description,
@@ -63,6 +65,8 @@ export function checkTitle(area) {
   }
 
   return {
+    checkId: CHECK_IDS.TITLE_SIZE,
+    severity: getCheckSeverity(CHECK_IDS.TITLE_SIZE),
     title: SEO_TITLES.TitleSize,
     status,
     description,
@@ -98,6 +102,8 @@ export async function checkCanon(area) {
   }
 
   return {
+    checkId: CHECK_IDS.CANONICAL,
+    severity: getCheckSeverity(CHECK_IDS.CANONICAL),
     title: SEO_TITLES.Canonical,
     status,
     description,
@@ -127,6 +133,8 @@ export async function checkDescription(area) {
   }
 
   return {
+    checkId: CHECK_IDS.META_DESCRIPTION,
+    severity: getCheckSeverity(CHECK_IDS.META_DESCRIPTION),
     title: SEO_TITLES.MetaDescription,
     status,
     description,
@@ -150,6 +158,8 @@ export async function checkBody(area) {
   }
 
   return {
+    checkId: CHECK_IDS.BODY_SIZE,
+    severity: getCheckSeverity(CHECK_IDS.BODY_SIZE),
     title: SEO_TITLES.BodySize,
     status,
     description,
@@ -171,6 +181,8 @@ export async function checkLorem(area) {
   }
 
   return {
+    checkId: CHECK_IDS.LOREM_IPSUM,
+    severity: getCheckSeverity(CHECK_IDS.LOREM_IPSUM),
     title: SEO_TITLES.Lorem,
     status,
     description,
@@ -185,6 +197,8 @@ function makeGroups(arr, n = 20) {
 
 export function connectionError() {
   return {
+    checkId: CHECK_IDS.BROKEN_LINKS,
+    severity: getCheckSeverity(CHECK_IDS.BROKEN_LINKS),
     title: SEO_TITLES.Links,
     status: STATUS.LIMBO,
     description: 'A VPN connection is required to use the link check service. Please turn on VPN and refresh the page.',
@@ -313,6 +327,8 @@ export async function checkLinks({ area, urlHash, envName }) {
     : 'Links are valid.';
 
   const result = {
+    checkId: CHECK_IDS.BROKEN_LINKS,
+    severity: getCheckSeverity(CHECK_IDS.BROKEN_LINKS),
     title: SEO_TITLES.Links,
     status,
     description,

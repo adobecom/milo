@@ -35,12 +35,17 @@ async function getResults() {
     const signalResult = signals[index];
     return Promise.resolve(resultOrPromise)
       .then((result) => {
-        const statusToIconMap = {
-          [STATUS.PASS]: 'green',
-          [STATUS.FAIL]: 'red',
-          [STATUS.EMPTY]: 'empty',
-        };
-        const icon = statusToIconMap[result.status] ?? 'orange';
+        let icon;
+        if (result.status === STATUS.PASS) {
+          icon = 'green';
+        } else if (result.status === STATUS.EMPTY) {
+          icon = 'empty';
+        } else if (result.status === STATUS.FAIL) {
+          icon = result.severity === 'critical' ? 'red' : 'orange';
+        } else {
+          icon = 'orange';
+        }
+
         signalResult.value = {
           icon,
           title: result.title.replace('Performance - ', ''),
