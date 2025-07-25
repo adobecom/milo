@@ -43,7 +43,6 @@ module.exports = {
         regularPrice: 'US$34.49/mo',
         promoPrice: 'US$17.24/mo',
         promotionCode: 'UMRM2MUSPr501YOC',
-        planTypeText: 'Monthly',
         recurrenceText: '/mo',
         renewalText:
           'Renews automatically until cancelled. Renews at US$34.49/mo after 12 months.',

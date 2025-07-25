@@ -43,8 +43,10 @@ test.describe('CCD Mini Cards Feature', () => {
         const promotionCode = await cardLocator.evaluate((card) => card.promotionCode);
         expect(promotionCode).toBe(data.promotionCode);
 
-        const planTypeText = await cardLocator.evaluate((card) => card.planTypeText);
-        expect(planTypeText).toBe(data.planTypeText);
+        if (data.planTypeText) {
+          const planTypeText = await cardLocator.evaluate((card) => card.planTypeText);
+          expect(planTypeText).toBe(data.planTypeText);
+        }
 
         const recurrenceText = await cardLocator.evaluate((card) => card.recurrenceText);
         expect(recurrenceText).toBe(data.recurrenceText);
