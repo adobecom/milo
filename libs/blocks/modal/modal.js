@@ -147,7 +147,7 @@ const isSameOrigin = (iframe) => new URL(iframe.src).origin === window.location.
 function addIframeKeydownListener(iframe, dialog) {
   try {
     const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
-    const iframeKeydownListener = (event) => { if (event.key === 'Escape') closeModal(dialog); };
+    const iframeKeydownListener = (event) => (event.key === 'Escape') && closeModal(dialog);
     iframeDoc.addEventListener('keydown', iframeKeydownListener);
     iframe._iframeKeydownListener = iframeKeydownListener;
   } catch (e) {
@@ -219,7 +219,7 @@ export async function getModal(details, custom) {
     e.preventDefault();
   });
 
-  const documentKeydownListener = (event) => { if (event.key === 'Escape') closeModal(dialog); };
+  const documentKeydownListener = (event) => (event.key === 'Escape') && closeModal(dialog);
   document.addEventListener('keydown', documentKeydownListener);
   dialog._documentKeydownListener = documentKeydownListener;
 
