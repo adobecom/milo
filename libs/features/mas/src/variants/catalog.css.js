@@ -12,7 +12,21 @@ export const CSS = `
 }
 
 merch-sidenav.catalog {
-
+    --merch-sidenav-title-font-size: 15px;
+    --merch-sidenav-title-font-weight: 500;
+    --merch-sidenav-title-line-height: 19px;
+    --merch-sidenav-title-color: rgba(70, 70, 70, 0.87);
+    --merch-sidenav-title-padding: 8px 15px 21px;
+    --merch-sidenav-item-inline-padding: 15px;
+    --merch-sidenav-item-font-weight: 700;
+    --merch-sidenav-item-font-size: 17px;
+    --merch-sidenav-item-line-height: normal;
+    --merch-sidenav-item-label-top-margin: 8px;
+    --merch-sidenav-item-label-bottom-margin: 11px;
+    --merch-sidenav-item-icon-top-margin: 11px;
+    --merch-sidenav-item-icon-gap: 13px;
+    --merch-sidenav-item-selected-background: var(--spectrum-gray-300, #D5D5D5);
+    --merch-sidenav-list-item-gap: 5px;
 }
 
 merch-sidenav.catalog merch-sidenav-list {

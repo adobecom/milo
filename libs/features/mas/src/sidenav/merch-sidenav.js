@@ -6,6 +6,10 @@ import './merch-sidenav-checkbox-group.js';
 import { SPECTRUM_MOBILE_LANDSCAPE, TABLET_DOWN } from '../media.js';
 import { EVENT_MERCH_SIDENAV_SELECT } from '../constants.js';
 
+const SEARCH_SIZE = {
+    catalog: 'l'
+};
+
 export class MerchSideNav extends LitElement {
     static properties = {
         sidenavTitle: { type: String },
@@ -19,6 +23,7 @@ export class MerchSideNav extends LitElement {
         super();
         this.open = false;
         this.autoclose = false;
+        this.variant = null;
         this.closeModal = this.closeModal.bind(this);
         this.handleSelection = this.handleSelection.bind(this);
     }
@@ -31,6 +36,12 @@ export class MerchSideNav extends LitElement {
     disconnectedCallback() {
         super.disconnectedCallback();
         this.removeEventListener(EVENT_MERCH_SIDENAV_SELECT, this.handleSelection);
+    }
+
+    firstUpdated() {
+        const search = this.querySelector('merch-search');
+        const searchSize = SEARCH_SIZE[this.variant];
+        if (searchSize) search.setAttribute('size', searchSize);
     }
 
     updated() {
@@ -120,11 +131,15 @@ export class MerchSideNav extends LitElement {
         :host {
             --merch-sidenav-padding: 16px;
             --merch-sidenav-collection-gap: 30px;
+            /* Title */
             --merch-sidenav-title-font-size: 12px;
             --merch-sidenav-title-font-weight: 400;
             --merch-sidenav-title-line-height: 16px;
             --merch-sidenav-title-color: var(--spectrum-gray-700, #464646);
             --merch-sidenav-title-padding: 6px 12px 16px;
+            /* Search */
+            --merch-sidenav-search-gap: 10px;
+            /* List */ 
             --merch-sidenav-item-inline-padding: 12px;
             --merch-sidenav-item-font-weight: 400;
             --merch-sidenav-item-font-size: 14px;
@@ -136,6 +151,7 @@ export class MerchSideNav extends LitElement {
             --merch-sidenav-item-selected-color: var(--spectrum-gray-800, #222222);
             --merch-sidenav-item-selected-background: var(--spectrum-gray-200, #E6E6E6);
             --merch-sidenav-list-item-gap: 4px;
+            /* Modal */
             --merch-sidenav-modal-border-radius: 8px;
             --merch-sidenav-modal-padding: var(--merch-sidenav-padding);
             display: block;
@@ -177,7 +193,7 @@ export class MerchSideNav extends LitElement {
         
         :host ::slotted(merch-search) {
             display: block;
-            margin-bottom: var(--merch-sidenav-gap);
+            margin-bottom: var(--merch-sidenav-search-gap);
         }
 
         :host([modal]) ::slotted(merch-search) {
