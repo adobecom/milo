@@ -34,6 +34,10 @@ const defaultVisibility = {
   custom: false,
 }
 
+const SEARCH_SIZE = {
+    catalog: 'l'
+};
+
 export default class MerchCardCollectionHeader extends LitElement {
     constructor() {
         super();
@@ -99,6 +103,10 @@ export default class MerchCardCollectionHeader extends LitElement {
         return this.collection?.resultCount;
     }
 
+    get variant() {
+        return this.collection?.variant;
+    }
+
     tablet = new MatchMediaController(this, TABLET_UP);
     desktop = new MatchMediaController(this, DESKTOP_UP);
 
@@ -125,7 +133,7 @@ export default class MerchCardCollectionHeader extends LitElement {
         const searchPlaceholder = getSlotText(this, 'searchText');
         if (!searchPlaceholder) return nothing;
         return html`
-            <merch-search deeplink="search" id="search">
+            <merch-search deeplink="search" id="search" .size=${SEARCH_SIZE[this.variant]}>
                 <sp-search
                     id="search-bar"
                     placeholder="${searchPlaceholder}"
@@ -248,7 +256,7 @@ export default class MerchCardCollectionHeader extends LitElement {
             --merch-card-collection-header-filter-height: 40px;
             --merch-card-collection-header-filter-font-size: 16px;
             --merch-card-collection-header-filter-padding: 15px;
-            --merch-card-collection-header-sort-height: var(--merch-card-collection-header-filter-height)
+            --merch-card-collection-header-sort-height: var(--merch-card-collection-header-filter-height);
             --merch-card-collection-header-sort-font-size: var(--merch-card-collection-header-filter-font-size);
             --merch-card-collection-header-sort-padding: var(--merch-card-collection-header-filter-padding);
         }
@@ -299,7 +307,7 @@ export default class MerchCardCollectionHeader extends LitElement {
         }
 
         #sort [slot="label-only"] {
-            font-size: var(--merch-card-collection-header-filter-font-size);
+            font-size: var(--merch-card-collection-header-sort-font-size);
         }
 
         #result {

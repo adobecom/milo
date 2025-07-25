@@ -53,13 +53,18 @@ merch-card-collection-header.catalog {
     --merch-card-collection-header-row-gap: var(--consonant-merch-spacing-xs);
 }
 
+@media screen and ${TABLET_UP} {
+    merch-card-collection-header.catalog {
+        --merch-card-collection-header-column-gap: 16px;
+    }
+}
+
 @media screen and ${DESKTOP_UP} {
     :root {
         --consonant-merch-card-catalog-width: 276px;
     }
 
     merch-card-collection-header.catalog {
-        --merch-card-collection-header-column-gap: 16px;
         --merch-card-collection-header-result-font-size: 17px;
     }
 }
