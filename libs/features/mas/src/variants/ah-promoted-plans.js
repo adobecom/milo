@@ -78,7 +78,7 @@ export class AHPromotedPlans extends VariantLayout {
             );
             color: var(--consonant-merch-card-heading-xxxs-color);
             border-radius: 10px;
-            border: 1px solid var(--merch-card-custom-border-color, transparent);
+            border: 2px solid var(--merch-card-custom-border-color, transparent);
             display: flex;
             flex-direction: column;
             overflow: hidden;
@@ -143,4 +143,3 @@ export class AHPromotedPlans extends VariantLayout {
     `;
 }
 
-customElements.define('ah-promoted-plans', AHPromotedPlans);

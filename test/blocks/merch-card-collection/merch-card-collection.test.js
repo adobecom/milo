@@ -320,4 +320,5 @@ describe('Merch Cards', async () => {
       expect(photoshop.title.indexOf('PROMOTION') > 0).to.be.false;
     });
   });
+
 });
