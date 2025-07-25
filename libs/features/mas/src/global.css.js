@@ -507,7 +507,7 @@ merch-card div[slot='bg-image'] img {
 }
 
 .price-unit-type {
-    display:block;
+    display: block;
 }
 
 .price-unit-type:not(.disabled)::before,
