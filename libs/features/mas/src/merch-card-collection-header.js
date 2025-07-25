@@ -303,7 +303,6 @@ export default class MerchCardCollectionHeader extends LitElement {
 
         #sort {
             grid-area: sort;
-            justify-self: end;
             --mod-actionbutton-edge-to-text: var(--merch-card-collection-header-sort-padding);
             --mod-actionbutton-height: var(--merch-card-collection-header-sort-height);
         }
