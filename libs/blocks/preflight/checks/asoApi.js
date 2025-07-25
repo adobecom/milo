@@ -1,17 +1,32 @@
 const CHECK_API = 'https://spacecat.experiencecloud.live/api/v1';
-const CHECK_KEY = (() => {
-  const storedKey = sessionStorage.getItem('preflight-key');
-  if (storedKey) return storedKey;
 
-  const params = new URLSearchParams(window.location.search);
-  const queryKey = params.get('preflight-key');
-  if (queryKey) {
-    sessionStorage.setItem('preflight-key', queryKey);
-    return queryKey;
-  }
+let asoTokenPromise = null;
 
-  return null;
-})();
+async function getASOToken() {
+  asoTokenPromise = asoTokenPromise || (async () => {
+    window.adobeImsFactory.createIMSLib({
+      client_id: 'milo-tools',
+      scope: 'AdobeID,openid,gnav,read_organizations,additional_info.projectedProductContext,additional_info.roles',
+      environment: 'prod',
+      autoValidateToken: true,
+      useLocalStorage: false,
+    }, 'asoIMS');
+    // TODO: We should only initialize (or re-initialize) AFTER
+    // we get a 'logged-in' sidekick event
+    window.asoIMS.initialize();
+    if (!window.asoIMS.getAccessToken()?.token) return null;
+
+    const res = await fetch(`${CHECK_API}/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ accessToken: window.asoIMS.getAccessToken().token }),
+    });
+    const data = await res.json();
+    return data.sessionToken;
+  })();
+
+  return asoTokenPromise;
+}
 
 export const preflightCache = {
   identify: null,
@@ -22,11 +37,13 @@ export const preflightCache = {
 
 async function getJobId(step) {
   try {
-    if (!CHECK_KEY) throw new Error('No preflight key found');
+    const sessionToken = await getASOToken();
+    if (!sessionToken) return null;
+
     const res = await fetch(`${CHECK_API}/preflight/jobs`, {
       method: 'POST',
       headers: {
-        'x-api-key': CHECK_KEY,
+        Authorization: `Bearer ${sessionToken}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(
@@ -51,8 +68,10 @@ async function getJobResults(jobId, step) {
 
   while (retries < MAX_RETRIES) {
     try {
-      if (!CHECK_KEY) throw new Error('No preflight key found');
-      const res = await fetch(`${CHECK_API}/preflight/jobs/${jobId}`, { headers: { 'x-api-key': CHECK_KEY } });
+      const sessionToken = await getASOToken();
+      if (!sessionToken) return null;
+
+      const res = await fetch(`${CHECK_API}/preflight/jobs/${jobId}`, { headers: { Authorization: `Bearer ${sessionToken}` } });
       const data = await res.json();
 
       if (step === 'IDENTIFY' && data.result) {
