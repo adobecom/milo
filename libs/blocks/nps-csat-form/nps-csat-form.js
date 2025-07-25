@@ -14,7 +14,7 @@ const buildForm = ({
   feedbackLabel,
   contactMeString,
 }) => `
-  <form id="nps" method="post" action="/an/endpoint" novalidate>
+  <form id="nps" method="get" action="/an/endpoint" novalidate>
     <button type="button" class="nps-close" aria-label="Close">&times;</button>
     <h2>${title}</h2>
     <fieldset class="nps-radio-group">
