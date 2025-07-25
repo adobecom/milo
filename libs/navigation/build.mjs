@@ -95,5 +95,6 @@ await esbuild.build({
   format: 'esm',
   sourcemap: true,
   outdir: './dist/',
+  minify: true,
   plugins: [StyleLoader, MerchInterceptor],
 });
