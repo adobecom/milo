@@ -239,18 +239,18 @@
 
 .nps-cancel,
 .nps-submit {
-  padding: 12px 24px;
-  border: none;
+  padding: 8px 16px;
   border-radius: 20px;
   font-size: 14px;
-  font-weight: 500;
+  font-weight: 700;
   cursor: pointer;
   transition: background-color 0.2s ease;
 }
 
 .nps-cancel {
-  background: #f5f5f5;
-  color: #666;
+  background: transparent;
+  border: 2px solid #DADADA;
+  color: black;
 }
 
 .nps-cancel:hover {
