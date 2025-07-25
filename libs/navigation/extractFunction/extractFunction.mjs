@@ -50,8 +50,7 @@ export function extractFunctionCode(ast, functionName) {
   }
 
   // Step 2: Recursively find all dependencies.
-  // We use a queue to process each required function/variable and find its dependencies.
-
+  // We use a breadth first search that returns all the visited nodes
   const bfs = (start, getNext) => {
     const go = (visited, queue) => {
       if (queue.length === 0) return visited;
