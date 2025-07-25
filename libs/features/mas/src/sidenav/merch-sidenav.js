@@ -10,6 +10,10 @@ const SEARCH_SIZE = {
     catalog: 'l'
 };
 
+const CHECKBOX_SIZE = {
+    catalog: 'xl'
+};
+
 export class MerchSideNav extends LitElement {
     static properties = {
         sidenavTitle: { type: String },
@@ -39,9 +43,21 @@ export class MerchSideNav extends LitElement {
     }
 
     firstUpdated() {
-        const search = this.querySelector('merch-search sp-search');
+        /* Adjust search size */
         const searchSize = SEARCH_SIZE[this.variant];
-        if (searchSize) search.setAttribute('size', searchSize);
+        if (searchSize) {
+            const search = this.querySelector('merch-search sp-search');
+            search.setAttribute('size', searchSize);
+        }
+
+        /* Adjust checkboxes size */
+        const checkboxSize = CHECKBOX_SIZE[this.variant];
+        if (checkboxSize) {
+            const checkboxes = this.querySelectorAll('merch-sidenav-checkbox-group sp-checkbox');
+            checkboxes.forEach(checkbox => {
+                checkbox.setAttribute('size', checkboxSize);
+            });
+        }
     }
 
     updated() {
@@ -141,13 +157,11 @@ export class MerchSideNav extends LitElement {
             --merch-sidenav-search-gap: 10px;
             /* List */
             --merch-sidenav-list-gap: 0;
-
             --merch-sidenav-list-title-color: var(--spectrum-gray-700, #464646);
             --merch-sidenav-list-title-font-size: 14px;
             --merch-sidenav-list-title-font-weight: 400;
             --merch-sidenav-list-title-padding: 6px 12px 8px;
             --merch-sidenav-list-title-line-height: 18px;
-
             --merch-sidenav-item-inline-padding: 12px;
             --merch-sidenav-item-font-weight: 400;
             --merch-sidenav-item-font-size: 14px;
@@ -160,11 +174,18 @@ export class MerchSideNav extends LitElement {
             --merch-sidenav-item-selected-background: var(--spectrum-gray-200, #E6E6E6);
             --merch-sidenav-list-item-gap: 4px;
             /* Checkbox group */
+            --merch-sidenav-checkbox-group-title-font-size: 14px;
+            --merch-sidenav-checkbox-group-title-font-weight: 400;
+            --merch-sidenav-checkbox-group-title-line-height: 18px;
+            --merch-sidenav-checkbox-group-title-color: var(--spectrum-gray-700, #464646);
+            --merch-sidenav-checkbox-group-title-padding: 6px 0 8px;
             --merch-sidenav-checkbox-group-gap: 32px;
             --merch-sidenav-checkbox-group-padding: 0 12px;
             --merch-sidenav-checkbox-group-label-font-size: 17px;
             --merch-sidenav-checkbox-group-checkbox-spacing: 22px;
             --merch-sidenav-checkbox-group-label-gap: 13px;
+            --merch-sidenav-checkbox-group-label-top-margin: 8px;
+            --merch-sidenav-checkbox-group-height: 40px;
             /* Modal */
             --merch-sidenav-modal-border-radius: 8px;
             --merch-sidenav-modal-padding: var(--merch-sidenav-padding);
@@ -192,6 +213,8 @@ export class MerchSideNav extends LitElement {
             --mod-checkbox-font-size: var(--merch-sidenav-checkbox-group-label-font-size);
             --mod-checkbox-spacing: var(--merch-sidenav-checkbox-group-checkbox-spacing);
             --mod-checkbox-text-to-control: var(--merch-sidenav-checkbox-group-label-gap);
+            --mod-checkbox-top-to-text: var(--merch-sidenav-checkbox-group-label-top-margin);
+            --mod-checkbox-height: var(--merch-sidenav-checkbox-group-height);
         }
 
         :host h2 {

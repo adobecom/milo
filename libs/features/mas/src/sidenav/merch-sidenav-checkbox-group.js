@@ -20,6 +20,14 @@ export class MerchSidenavCheckboxGroup extends LitElement {
             margin-top: var(--merch-sidenav-checkbox-group-gap);
         }
 
+        ::slotted(h3) {
+            font-size: var(--merch-sidenav-checkbox-group-title-font-size);
+            font-weight: var(--merch-sidenav-checkbox-group-title-font-weight);
+            line-height: var(--merch-sidenav-checkbox-group-title-line-height);
+            color: var(--merch-sidenav-checkbox-group-title-color);
+            padding: var(--merch-sidenav-checkbox-group-title-padding);
+        }
+
         .checkbox-group {
             display: flex;
             flex-direction: column;

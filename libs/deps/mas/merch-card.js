@@ -2418,15 +2418,6 @@ merch-sidenav-list img[slot="icon"] {
     pointer-events: none;
 }
 
-merch-sidenav-checkbox-group h3 {
-    font-size: 14px;
-    height: 32px;
-    letter-spacing: 0px;
-    line-height: 18.2px;
-    color: var(--color-gray-600);
-    margin: 0px;
-}
-
 sr-only {
   position: absolute;
   width: 1px;
