@@ -247,7 +247,7 @@ export default class MerchCardCollectionHeader extends LitElement {
             --merch-card-collection-header-result-font-size: 14px;
             --merch-card-collection-header-filter-height: 40px;
             --merch-card-collection-header-filter-font-size: 16px;
-            --merch-card-collection-header-filter-padding: 9px 15px 11px;
+            --merch-card-collection-header-filter-padding: 15px;
             --merch-card-collection-header-sort-height: var(--merch-card-collection-header-filter-height)
             --merch-card-collection-header-sort-font-size: var(--merch-card-collection-header-filter-font-size);
             --merch-card-collection-header-sort-padding: var(--merch-card-collection-header-filter-padding);
@@ -259,7 +259,7 @@ export default class MerchCardCollectionHeader extends LitElement {
 
         #header {
             display: grid;
-            column-gap: var(--merch-card-collection-header-gap);
+            column-gap: var(--merch-card-collection-header-column-gap);
             row-gap: var(--merch-card-collection-header-row-gap);
             align-items: center;
             grid-template-columns: var(--merch-card-collection-header-columns);
@@ -283,8 +283,8 @@ export default class MerchCardCollectionHeader extends LitElement {
 
         #filter {
             grid-area: filter;
-            padding: var(--merch-card-collection-header-filter-padding);
-            height: var(--merch-card-collection-header-filter-height);
+            --mod-actionbutton-edge-to-text: var(--merch-card-collection-header-filter-padding);
+            --mod-actionbutton-height: var(--merch-card-collection-header-filter-height);
         }
 
         #filter slot[name="filtersText"] {
@@ -294,11 +294,11 @@ export default class MerchCardCollectionHeader extends LitElement {
         #sort {
             grid-area: sort;
             justify-self: end;
-            padding: var(--merch-card-collection-header-filter-padding);
-            height: var(--merch-card-collection-header-filter-height);
+            --mod-actionbutton-edge-to-text: var(--merch-card-collection-header-sort-padding);
+            --mod-actionbutton-height: var(--merch-card-collection-header-sort-height);
         }
 
-        #sort slot[name="label-only"] {
+        #sort [slot="label-only"] {
             font-size: var(--merch-card-collection-header-filter-font-size);
         }
 
