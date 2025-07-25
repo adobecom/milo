@@ -280,7 +280,7 @@ export function getHashParams(hashStr) {
 
 export function delayedModal(el) {
   const { hash, delay } = getHashParams(el?.dataset.modalHash);
-  if (delay === undefined || !hash) return false;
+  if (delay === undefined || !hash || !window.matchMedia('(min-width: 1200px)').matches) return false;
   isDelayedModal = true;
   const modalOpenEvent = new Event(`${hash}:modalOpen`);
   const pagesModalWasShownOn = window.sessionStorage.getItem(`shown:${hash}`);
