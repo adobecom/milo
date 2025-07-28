@@ -203,7 +203,6 @@ describe('merch-card-autoblock autoblock', () => {
       // Wait for the card to be fully hydrated
       await new Promise((resolve) => { setTimeout(resolve, 500); });
 
-
       expect(card.getAttribute('variant')).to.equal('simplified-pricing-express');
       expect(card.querySelector('[slot="heading-l"]')?.textContent).to.include('Express - Create standout content');
       expect(card.querySelector('[slot="body-xs"]')?.textContent).to.include('Make amazing social content');
