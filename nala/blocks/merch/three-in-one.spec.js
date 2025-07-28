@@ -80,16 +80,6 @@ module.exports = {
           iframeSrc: 'https://www.adobe.com/mini-plans/buy/photoshop.html?web=1&promoid=K42KVSWP&mv=other',
         },
       ],
-      nonModalUseCases: [
-        {
-          sectionId: 'fallback-step',
-          attributes: {
-            href: 'https://commerce.adobe.com/store/commitment?items%5B0%5D%5Bid%5D=7C30A05FE0EC0BA92566737E720C4692&cli=adobe_com&ctx=fp&co=US&lang=en',
-            'aria-label': 'Buy now - Acrobat Pro - Individuals',
-            'data-checkout-workflow-step': 'commitment',
-          },
-        },
-      ],
     },
     {
       name: '@ThreeInOneCatalog',
@@ -106,6 +96,18 @@ module.exports = {
       sectionId: 'modal-fallback-catalog-edu',
       iframeSrc: 'https://www.adobe.com/mini-plans/photoshop.html?mid=ft&web=1&plan=edu',
       attributes: { 'aria-label': 'Free trial - Photoshop - Individuals' },
+      browserParams: '?georouting=off&martech=off',
+      tags: '@three-in-one @smoke @regression @milo',
+    },
+    {
+      name: '@ThreeInOneFallbackStep',
+      path: '/drafts/nala/blocks/merch/three-in-one-fallback',
+      sectionId: 'fallback-step',
+      attributes: {
+        href: 'https://commerce.adobe.com/store/commitment?items%5B0%5D%5Bid%5D=7C30A05FE0EC0BA92566737E720C4692&cli=adobe_com&ctx=fp&co=US&lang=en',
+        'aria-label': 'Buy now - Acrobat Pro - Individuals',
+        'data-checkout-workflow-step': 'commitment',
+      },
       browserParams: '?georouting=off&martech=off',
       tags: '@three-in-one @smoke @regression @milo',
     },
