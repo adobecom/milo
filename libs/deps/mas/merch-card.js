@@ -1403,7 +1403,6 @@ merch-card[variant^="plans"]:not([size]) {
 .collection-container.plans {
     --merch-card-collection-card-min-height: 273px;
     --merch-card-collection-card-width: var(--consonant-merch-card-plans-width);
-    margin-top: -18px;
 }
 
 merch-sidenav.plans {
