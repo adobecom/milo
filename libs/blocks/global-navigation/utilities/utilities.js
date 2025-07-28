@@ -247,7 +247,8 @@ export function setCurtainState(state) {
 
 export const isDesktop = window.matchMedia('(min-width: 900px)');
 export const isDesktopForContext = (context = 'viewport') => {
-  if (context === 'footer') {
+  const isContainerResponsiveFooter = document.querySelector('.global-footer')?.classList.contains('responsive-container');
+  if (context === 'footer' && isContainerResponsiveFooter) {
     const footerElement = document.querySelector('footer.global-footer');
     return footerElement && !footerElement.classList.contains('mobile');
   }
