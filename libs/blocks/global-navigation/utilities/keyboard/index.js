@@ -127,7 +127,7 @@ class KeyboardNavigation {
               } else {
                 const isFooterContext = e.target.closest(selectors.globalFooter);
                 const context = isFooterContext ? 'footer' : 'viewport';
-                cycleOnOpenSearch({ e, isDestop: isDesktopForContext(context) });
+                cycleOnOpenSearch({ e, isDesktop: isDesktopForContext(context) });
                 const { items } = getProfileItems({ e });
                 const profileBtn = e.target.closest(`${selectors.signIn}, ${selectors.profileButton}`);
                 if (e.shiftKey && e.target === profileBtn) closeProfile();
