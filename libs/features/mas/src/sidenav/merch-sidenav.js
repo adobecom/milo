@@ -162,6 +162,7 @@ export class MerchSideNav extends LitElement {
             --merch-sidenav-list-title-font-weight: 400;
             --merch-sidenav-list-title-padding: 6px 12px 8px;
             --merch-sidenav-list-title-line-height: 18px;
+            --merch-sidenav-item-height: unset;
             --merch-sidenav-item-inline-padding: 12px;
             --merch-sidenav-item-font-weight: 400;
             --merch-sidenav-item-font-size: 14px;
@@ -196,6 +197,7 @@ export class MerchSideNav extends LitElement {
         }
 
         ::slotted(merch-sidenav-list) {
+            --mod-sidenav-min-height: var(--merch-sidenav-item-height);
             --mod-sidenav-inline-padding: var(--merch-sidenav-item-inline-padding);
             --mod-sidenav-top-level-font-weight: var(--merch-sidenav-item-font-weight);
             --mod-sidenav-top-level-font-size: var(--merch-sidenav-item-font-size);

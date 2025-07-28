@@ -404,6 +404,7 @@ merch-sidenav.catalog {
     --merch-sidenav-title-line-height: 19px;
     --merch-sidenav-title-color: rgba(70, 70, 70, 0.87);
     --merch-sidenav-title-padding: 8px 15px 21px;
+    --merch-sidenav-item-height: 40px;
     --merch-sidenav-item-inline-padding: 15px;
     --merch-sidenav-item-font-weight: 700;
     --merch-sidenav-item-font-size: 17px;
