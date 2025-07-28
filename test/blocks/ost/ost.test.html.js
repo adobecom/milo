@@ -200,7 +200,7 @@ describe('OST: init', () => {
     const {
       options: { country, language, workflow },
       params: { token },
-    } = mockOstDeps({ mockToken: true, overrideParams: { wcsLandscape: 'DRAFT', env: 'stage' } });
+    } = mockOstDeps({ mockToken: true, overrideParams: { 'commerce.landscape': 'DRAFT', env: 'stage' } });
 
     const {
       AOS_API_KEY,
