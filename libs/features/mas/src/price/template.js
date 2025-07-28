@@ -193,6 +193,7 @@ const createPriceTemplate =
             language,
             literals: priceLiterals = {},
             quantity = 1,
+            space = false, // add a space between price literals
         } = {},
         {
             commitment,
@@ -269,7 +270,10 @@ const createPriceTemplate =
 
         let perUnitLabel = '';
         if (toBoolean(displayPerUnit)) {
-            perUnitLabel = formatLiteral(
+            if (space) {
+                perUnitLabel += ' ';
+            }
+            perUnitLabel += formatLiteral(
                 literals,
                 locale,
                 literalKeys.perUnitLabel,
@@ -281,7 +285,10 @@ const createPriceTemplate =
 
         let taxInclusivityLabel = '';
         if (toBoolean(displayTax) && taxTerm) {
-            taxInclusivityLabel = formatLiteral(
+            if (space) {
+                taxInclusivityLabel += ' ';
+            }
+            taxInclusivityLabel += formatLiteral(
                 literals,
                 locale,
                 taxDisplay === WCS_TAX_DISPLAY_EXCLUSIVE

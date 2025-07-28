@@ -105,7 +105,7 @@ async function loadList(type, content, list) {
       break;
     case 'icons':
       addSearch({ content, list, type });
-      loadIcons({ content, list });
+      loadIcons({ content, list, query: '' });
       break;
     case 'assets':
       loadAssets(content, list);

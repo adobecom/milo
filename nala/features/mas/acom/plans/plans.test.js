@@ -209,4 +209,15 @@ test.describe('MAS Plans Page test suite', () => {
       await expect(controlledContent).toBeVisible();
     });
   });
+
+  test(`${features[2].name},${features[2].tags}`, async ({ page, baseURL }) => {
+    const testPage = `${baseURL}${features[2].path}${miloLibs}`;
+    console.info('[Test Page]: ', testPage);
+
+    await test.step('step-1: Go to Plans page', async () => {
+      await page.goto(`${testPage}${features[2].browserParams}`);
+      await page.waitForLoadState('domcontentloaded');
+      await expect(page.locator('.dialog-modal#miniplans-buy-all-apps')).toBeVisible();
+    });
+  });
 });

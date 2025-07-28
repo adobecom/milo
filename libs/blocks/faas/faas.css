@@ -10,6 +10,11 @@ a[href*='/tools/faas#'], a[href*='/tools/faas?'] {
 }
 
 .faas {
+  --faas-form-border: #6E6E6E;
+  --faas-form-error: #D7373F;
+  --faas-form-focus: #147AF3;
+  --faas-form-text: #535353;
+
   box-sizing: border-box;
   max-width: 800px;
   margin: 0 auto;
@@ -17,6 +22,14 @@ a[href*='/tools/faas#'], a[href*='/tools/faas?'] {
   box-shadow: 0 3px 10px 0 rgb(0 0 0 / 10%);
   background-color: #FBFBFB;
   color: #2C2C2C;
+}
+
+.faas-aria-live-region {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
 }
 
 .faas .note {
@@ -46,24 +59,28 @@ a[href*='/tools/faas#'], a[href*='/tools/faas?'] {
 }
 
 .faas-form .submit input {
-  -webkit-appearance: none;
-  appearance: none;
-  background-color: #2680eb;
-  border: 0;
-  border-radius: 24px;
-  color: #fff;
-  font-weight: 700;
-  padding: 7.5px 13.1px;
+  background: var(--color-accent);
+  border-radius: 16px;
+  border: 2px solid var(--color-accent);
+  height: 32px;
+  color: var(--color-white);
+  display: inline-block;
+  font-family: inherit;
   font-size: 15px;
-  width: initial;
-  box-shadow: none;
-  transition: background-color 125ms ease-out;
+  font-style: normal;
+  font-weight: 700;
+  line-height: 16px;
+  padding: 0 14px;
   margin: 0 auto;
+  text-decoration: none;
   cursor: pointer;
 }
 
-.faas-form .submit input:hover {
-  background-color: #1473e6;
+.faas-form .submit input:is(:hover, :active, :focus) {
+  background: var(--color-accent-hover);
+  border-color: var(--color-accent-hover);
+  color: var(--color-white);
+  text-decoration: none;
 }
 
 .faas-form label,
@@ -97,24 +114,34 @@ input[type="checkbox"] + label {
   padding: 0.5rem 1rem;
   font-size: 18px;
   line-height: 38px;
-  border: none;
-  box-shadow: inset 1px 1px 0 0 #8e8e8e, inset -1px -1px 0 0 #8e8e8e;
+  border: 1px solid var(--faas-form-border);
+  border-radius: 4px;
+  color: var(--text-color);
+  background-color: var(--color-white);
+  box-shadow: none;
+}
+
+.faas-form input:not([type=checkbox]):not([type=radio]):not([type=submit])::placeholder,
+.faas-form select::placeholder,
+.faas-form textarea::placeholder {
+  font-weight: normal;
+  color: var(--faas-form-text);
+  opacity: 1;
 }
 
 .faas-form select {
-  -webkit-appearance: none;
   appearance: none;
   background: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9Ii01OCAyOSAzMiAzNCIgc3R5bGU9ImVuYWJsZS1iYWNrZ3JvdW5kOm5ldyAtNTggMjkgMzIgMzQiIHhtbDpzcGFjZT0icHJlc2VydmUiPjxwYXRoIGQ9Im0tNTYgNDMgNi0xMiA2IDEyaC0xMnpNLTQ0IDQ5bC02IDEyLTYtMTJoMTJ6IiBmaWxsPSIjNTM1MzUzIi8+PC9zdmc+') no-repeat 128% 54%;
   background-color: inherit;
   background-position: 100% 50%;
   background-size: 1em 1em;
   height: 58px;
-  color: #000;
+  color: var(--text-color);
 }
 
 .faas-form .error input:not([type=checkbox]):not([type=radio]):not([type=submit]),
 .faas-form .error select {
-  box-shadow: inset 1px 1px 0 0 #d9534f, inset -1px -1px 0 0 #d9534f;
+  border: 1px solid var(--faas-form-error);
 }
 
 .faas-form .error input:not([type=checkbox]):not([type=radio]):not([type=submit]) {
@@ -133,20 +160,15 @@ input[type="checkbox"] + label {
   padding-right: 2.5rem;
 }
 
-.faas-form input:not([type=checkbox]):not([type=radio]):not([type=submit]):hover,
-.faas-form select:hover,
-.faas-form textarea:hover {
-  box-shadow: inset 1px 1px 0 0 #4b4b4b, inset -1px -1px 0 0 #4b4b4b;
-}
-
 .faas-form input:not([type=checkbox]):not([type=radio]):not([type=submit]):active,.faas-form input:not([type=checkbox]):not([type=radio]):not([type=submit]):focus,.faas-form input:not([type=checkbox]):not([type=radio]):not([type=submit]):focus-visible,
 .faas-form select:active,.faas-form select:focus,.faas-form select:focus-visible,
 .faas-form textarea:active, .faas-form textarea:focus,.faas-form textarea:focus-visible {
-  box-shadow: inset 1px 1px 0 0 rgb(0 157 245 / 60%), inset -1px -1px 0 0 rgb(0 157 245 / 60%), inset 1px 1px 0 0 rgb(0 157 245 / 60%), inset -1px -1px 0 0 rgb(0 157 245 / 60%), 0 0 0.125rem rgb(82 168 236 / 60%);
+  outline: 2px solid var(--faas-form-focus);
+  outline-offset: 2px;
 }
 
 .faas-form .row.error {
-  color: #d9534f;
+  color: var(--faas-form-error);
 }
 
 .faas.column2 .faas-form select + div,
@@ -177,14 +199,14 @@ input[type="checkbox"] + label {
 
 /* dark theme */
 .faas.dark {
-  color: #fff;
+  color: var(--color-white);
   background-color: #262626;
 }
 
 .faas.dark select,
 .faas.dark textarea,
 .faas.dark input:not([type=submit]) {
-  background-color: #d9d9d9;
+  background-color: var(--color-white);
 }
 
 /* column2 theme */
@@ -233,7 +255,7 @@ input[type="checkbox"] + label {
 
 .faas.column2 .errorMessage {
   font-size: 16px;
-  background: #fff;
+  background: var(--color-white);
   border: 1px solid #e0e0e0;
   border-radius: 2px;
   box-shadow: 0 0 12px rgb(0 0 0 / 25%);
@@ -264,7 +286,7 @@ input[type="checkbox"] + label {
 }
 
 .faas.column2 .errorMessage::after {
-  border-bottom-color: #fff;
+  border-bottom-color: var(--color-white);
   top: -5px;
 }
 
@@ -298,6 +320,8 @@ input[type="checkbox"] + label {
 
 .faas.next .faas-form .row.submit input {
   margin: 20px 0 0 20px;
+  border: 0;
+  border-radius: 0;
   padding-right: 30px;
   background: none;
   position: relative;
@@ -308,7 +332,7 @@ input[type="checkbox"] + label {
 
 .faas.next .faas-form .row.submit input + div {
   position: relative;
-  top: 20px;
+  top: 18px;
   left: -20px;
 }
 
@@ -332,14 +356,10 @@ input[type="checkbox"] + label {
   min-width: 100%;
 }
 
-.faas.next .faas-form .row.submit input:hover,
-.faas.next .faas-form .row.submit input:hover + div::after {
-  color: #1373e5;
-  border-color: #1373e5;
-}
-
-.faas.next .faas-form .row.submit input:focus-visible {
-  outline: 0;
+.faas.next .faas-form .row.submit input:is(:hover, :focus),
+.faas.next .faas-form .row.submit input:is(:hover, :focus) + div::after {
+  color: var(--link-color);
+  border-color: var(--link-color);
 }
 
 .faas.next .faas-form input[type=email] {
@@ -411,7 +431,6 @@ input[type="checkbox"] + label {
   height: 44px;
   animation: pulse 2s ease;
 }
-
 
 /* for mobile */
 @media (max-width:799.99px) {

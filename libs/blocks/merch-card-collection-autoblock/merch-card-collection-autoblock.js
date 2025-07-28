@@ -7,6 +7,7 @@ import {
   getOptions,
   MEP_SELECTOR,
   overrideOptions,
+  updateModalState,
   loadMasComponent,
   MAS_MERCH_CARD,
   MAS_MERCH_QUANTITY_SELECT,
@@ -14,25 +15,22 @@ import {
   MAS_MERCH_SIDENAV,
 } from '../merch/merch.js';
 
-const COLLECTION_AUTOBLOCK_TIMEOUT = 5000;
+const DEPS_TIMEOUT = 10000;
 const DEFAULT_OPTIONS = { sidenav: true };
-let log;
 
-function getTimeoutPromise() {
+function getTimeoutPromise(timeout) {
   return new Promise((resolve) => {
-    setTimeout(() => resolve(false), COLLECTION_AUTOBLOCK_TIMEOUT);
+    setTimeout(() => resolve(false), timeout);
   });
 }
 
 async function loadDependencies(options) {
   /** Load service first */
   const servicePromise = initService();
-  const success = await Promise.race([servicePromise, getTimeoutPromise()]);
+  const success = await Promise.race([servicePromise, getTimeoutPromise(DEPS_TIMEOUT)]);
   if (!success) {
     throw new Error('Failed to initialize mas commerce service');
   }
-  const service = await servicePromise;
-  log = service.Log.module('merch');
 
   const { base } = getConfig();
   const dependencyPromises = [
@@ -90,7 +88,7 @@ function getSidenav(collection) {
       const value = node.label.toLowerCase();
       const item = createTag('sp-sidenav-item', { label: node.label, value });
       if (node.icon) {
-        createTag('img', { src: node.icon, slot: 'icon', style: 'height: fit-content;' }, null, { parent: item });
+        createTag('img', { src: node.icon, slot: 'icon' }, null, { parent: item });
       }
       if (node.iconLight || node.navigationLabel) {
         const attributes = { class: 'selection' };
@@ -167,14 +165,13 @@ function enableAnalytics(el) {
   });
 }
 
-export async function checkReady(masElement) {
-  const readyPromise = masElement.checkReady();
-  const success = await Promise.race([readyPromise, getTimeoutPromise()]);
-
-  if (!success) {
-    log.error(`${masElement.tagName} did not initialize withing give timeout`);
-  }
-}
+export const enableModalOpeningOnPageLoad = () => {
+  window.addEventListener('mas:ready', ({ target }) => {
+    target.querySelectorAll('[is="checkout-link"][data-modal-id]').forEach((cta) => {
+      updateModalState({ cta });
+    });
+  });
+};
 
 export async function createCollection(el, options) {
   const aemFragment = createTag('aem-fragment', { fragment: options.fragment });
@@ -190,32 +187,18 @@ export async function createCollection(el, options) {
     attributes = { overrides };
   }
   const collection = createTag('merch-card-collection', attributes, aemFragment);
-  let container = collection;
-  if (options.sidenav) {
-    container = createTag('div', null, collection);
-  }
+  const container = createTag('div', null, collection);
   el.replaceWith(container);
-  await checkReady(collection);
 
-  container.classList.add(`${collection.variant}-container`);
+  await collection.checkReady();
 
-  /* Placeholders */
-  const placeholders = collection.data?.placeholders || {};
-  for (const key of Object.keys(placeholders)) {
-    const value = placeholders[key];
-    const tag = value.includes('<p>') ? 'div' : 'p';
-    const placeholder = createTag(tag, { slot: key }, value);
-    collection.append(placeholder);
-  }
+  container.classList.add('collection-container', collection.variant);
 
   /* Sidenav */
   if (options.sidenav) {
     const sidenav = getSidenav(collection);
-    if (sidenav) {
-      container.insertBefore(sidenav, collection);
-      collection.sidenav = sidenav;
-      sidenav.setAttribute('daa-lh', 'b3|filters');
-    }
+    sidenav.setAttribute('daa-lh', 'b3|filters');
+    collection.attachSidenav(sidenav);
   }
 
   postProcessAutoblock(collection, false);
@@ -226,6 +209,7 @@ export async function createCollection(el, options) {
 export default async function init(el) {
   let options = { ...DEFAULT_OPTIONS, ...getOptions(el) };
   if (!options.fragment) return;
+  enableModalOpeningOnPageLoad();
   options = overrideOptions(options.fragment, options);
   await loadDependencies(options);
   await createCollection(el, options);
