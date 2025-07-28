@@ -9,6 +9,7 @@ import {
 
 export const PLANS_AEM_FRAGMENT_MAPPING = {
     title: { tag: 'h3', slot: 'heading-xs' },
+    subtitle: { tag: 'p', slot: 'subtitle' },
     prices: { tag: 'p', slot: 'heading-m' },
     promoText: { tag: 'p', slot: 'promo-text' },
     description: { tag: 'div', slot: 'body-xs' },
@@ -43,13 +44,12 @@ export const PLANS_EDUCATION_AEM_FRAGMENT_MAPPING = {
     return rest;
   }()),
   title: { tag: 'h3', slot: 'heading-s' },
-  subtitle: { tag: 'p', slot: 'subtitle' },
   secureLabel: false
 }
 
 export const PLANS_STUDENTS_AEM_FRAGMENT_MAPPING = {
   ...(function(){
-    const { whatsIncluded, size, quantitySelect, ...rest } = PLANS_AEM_FRAGMENT_MAPPING;
+    const { subtitle, whatsIncluded, size, quantitySelect, ...rest } = PLANS_AEM_FRAGMENT_MAPPING;
     return rest;
   }())
 }
