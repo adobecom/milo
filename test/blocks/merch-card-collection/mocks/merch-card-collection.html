@@ -169,6 +169,8 @@
           <p>0 results</p>
           <p>1 result in <strong><u>filter</u></strong></p>
           <p><u>10</u> results in <strong><u>filter</u></strong></p>
+          <p>1 result in <strong><u>filter</u></strong></p>
+          <p><u>10</u> results in <strong><u>filter</u></strong></p>
           <p>1 result for <strong><u>search</u></strong></p>
           <p><u>10</u> results for <strong><u>search</u></strong></p>
           <p>1 result for: <strong><u>search</u></strong></p>
@@ -188,10 +190,10 @@
     </div>
 
     <!--this the expected merch-cards element -->
-    <merch-card-collection filter="all" class="merch-card-collection catalog" limit="18"><p slot="searchText">Search all products</p><p slot="filtersText">Filters</p><p slot="sortText">Sort</p><p slot="popularityText">Popularity</p><p slot="alphabeticallyText">Alphabetical</p><p slot="noResultText">0 results</p><p slot="resultText">1 result in <strong><span data-placeholder="filter"></span></strong></p><p slot="resultsText"><span data-placeholder="resultCount"></span> results in <strong><span data-placeholder="filter"></span></strong></p><p slot="searchResultText">1 result for <strong><span data-placeholder="searchTerm"></span></strong></p><p slot="searchResultsText"><span data-placeholder="resultCount"></span> results for <strong><span data-placeholder="searchTerm"></span></strong></p><p slot="searchResultMobileText">1 result for: <strong><span data-placeholder="searchTerm"></span></strong></p><p slot="searchResultsMobileText"><span data-placeholder="resultCount"></span> results for: <strong><span data-placeholder="searchTerm"></span></strong></p><p slot="noSearchResultsText">Your search for <strong><span data-placeholder="searchTerm"></span></strong> did not yield any results</p><div slot="noSearchResultsMobileText"><p>Your search for <strong><span data-placeholder="searchTerm"></span></strong> did not yield any results. Try a different search term.</p><p>Suggestions:</p><ul>
+    <merch-card-collection-header class="catalog"><p slot="searchText" placeholder>Search all products</p><p slot="filtersText" placeholder>Filters</p><p slot="sortText" placeholder>Sort</p><p slot="popularityText" placeholder>Popularity</p><p slot="alphabeticallyText" placeholder>Alphabetical</p><p slot="noResultText" placeholder>0 results</p><p slot="resultText" placeholder>1 result in <strong><span data-placeholder="filter"></span></strong></p><p slot="resultsText" placeholder><span data-placeholder="resultCount"></span> results in <strong><span data-placeholder="filter"></span></strong></p><p slot="resultMobileText" placeholder="">1 result in <strong><span data-placeholder="filter"></span></strong></p><p slot="resultsMobileText" placeholder=""><span data-placeholder="resultCount"></span> results in <strong><span data-placeholder="filter"></span></strong></p><p slot="searchResultText" placeholder>1 result for <strong><span data-placeholder="searchTerm"></span></strong></p><p slot="searchResultsText" placeholder><span data-placeholder="resultCount"></span> results for <strong><span data-placeholder="searchTerm"></span></strong></p><p slot="searchResultMobileText" placeholder>1 result for: <strong><span data-placeholder="searchTerm"></span></strong></p><p slot="searchResultsMobileText" placeholder><span data-placeholder="resultCount"></span> results for: <strong><span data-placeholder="searchTerm"></span></strong></p><p slot="noSearchResultsText" placeholder>Your search for <strong><span data-placeholder="searchTerm"></span></strong> did not yield any results</p><div slot="noSearchResultsMobileText" placeholder><p>Your search for <strong><span data-placeholder="searchTerm"></span></strong> did not yield any results. Try a different search term.</p><p>Suggestions:</p><ul>
             <li>Make sure all words are spelled correctly</li>
             <li>Use quotes to search for an entire phrase, such as "crop an image"</li>
-          </ul></div><p slot="showMoreText">Show more</p></merch-card-collection>
+          </ul></div></merch-card-collection-header>
 
     <div id="fragmented-literals" class="merch-card-collection catalog">
       <div>
@@ -205,6 +207,8 @@
           <p>Popularity</p>
           <p>Alphabetical</p>
           <p>0 results</p>
+          <p>1 result in <strong><u>filter</u></strong></p>
+          <p><u>10</u> results in <strong><u>filter</u></strong></p>
           <p>1 result in <strong><u>filter</u></strong></p>
           <p><u>10</u> results in <strong><u>filter</u></strong></p>
           <p>1 result for <strong><u>search</u></strong></p>
@@ -224,10 +228,10 @@
       </div>
     </div>
     <!--this the expected merch-cards element -->
-    <merch-card-collection filter="all" class="merch-card-collection catalog" limit="18" types="" search="" page="1"><p data-path="foo/bar" slot="searchText">Search all products</p><p data-path="foo/bar" slot="filtersText">Filters</p><p slot="sortText">Sort</p><p slot="popularityText">Popularity</p><p slot="alphabeticallyText">Alphabetical</p><p slot="noResultText">0 results</p><p slot="resultText">1 result in <strong><span data-placeholder="filter"></span></strong></p><p slot="resultsText"><span data-placeholder="resultCount"></span> results in <strong><span data-placeholder="filter"></span></strong></p><p slot="searchResultText">1 result for <strong><span data-placeholder="searchTerm"></span></strong></p><p slot="searchResultsText"><span data-placeholder="resultCount"></span> results for <strong><span data-placeholder="searchTerm"></span></strong></p><p slot="searchResultMobileText">1 result for: <strong><span data-placeholder="searchTerm"></span></strong></p><p slot="searchResultsMobileText"><span data-placeholder="resultCount"></span> results for: <strong><span data-placeholder="searchTerm"></span></strong></p><p slot="noSearchResultsText">Your search for <strong><span data-placeholder="searchTerm"></span></strong> did not yield any results</p><div slot="noSearchResultsMobileText"><p>Your search for <strong><span data-placeholder="searchTerm"></span></strong> did not yield any results. Try a different search term.</p><p>Suggestions:</p><ul>
+    <merch-card-collection-header class="catalog"><p data-path="foo/bar" slot="searchText" placeholder>Search all products</p><p data-path="foo/bar" slot="filtersText" placeholder>Filters</p><p slot="sortText" placeholder>Sort</p><p slot="popularityText" placeholder>Popularity</p><p slot="alphabeticallyText" placeholder>Alphabetical</p><p slot="noResultText" placeholder>0 results</p><p slot="resultText" placeholder>1 result in <strong><span data-placeholder="filter"></span></strong></p><p slot="resultsText" placeholder><span data-placeholder="resultCount"></span> results in <strong><span data-placeholder="filter"></span></strong></p><p slot="resultMobileText" placeholder="">1 result in <strong><span data-placeholder="filter"></span></strong></p><p slot="resultsMobileText" placeholder=""><span data-placeholder="resultCount"></span> results in <strong><span data-placeholder="filter"></span></strong></p><p slot="searchResultText" placeholder>1 result for <strong><span data-placeholder="searchTerm"></span></strong></p><p slot="searchResultsText" placeholder><span data-placeholder="resultCount"></span> results for <strong><span data-placeholder="searchTerm"></span></strong></p><p slot="searchResultMobileText" placeholder>1 result for: <strong><span data-placeholder="searchTerm"></span></strong></p><p slot="searchResultsMobileText" placeholder><span data-placeholder="resultCount"></span> results for: <strong><span data-placeholder="searchTerm"></span></strong></p><p slot="noSearchResultsText" placeholder>Your search for <strong><span data-placeholder="searchTerm"></span></strong> did not yield any results</p><div slot="noSearchResultsMobileText" placeholder><p>Your search for <strong><span data-placeholder="searchTerm"></span></strong> did not yield any results. Try a different search term.</p><p>Suggestions:</p><ul>
             <li>Make sure all words are spelled correctly</li>
             <li>Use quotes to search for an entire phrase, such as "crop an image"</li>
-          </ul></div><p slot="showMoreText">Show more</p></merch-card-collection>
+          </ul></div></merch-card-collection-header>
     
     <div id="literals-4-translation" class="merch-card-collection catalog">
       <div>
@@ -244,6 +248,8 @@
           <p>0 results</p>
           <p>1 result in <strong><u>/filter/</u></strong></p>
           <p><u>/10/</u> results in <strong><u>/filter/</u></strong></p>
+          <p>1 result in <strong><u>filter</u></strong></p>
+          <p><u>10</u> results in <strong><u>filter</u></strong></p>
           <p>1 result for <strong><u>/search/</u></strong></p>
           <p><u>/10/</u> results for <strong><u>/search/</u></strong></p>
           <p>1 result for: <strong><u>/search/</u></strong></p>
@@ -262,10 +268,10 @@
       </div>
     </div>        
     <!--this the expected merch-cards element -->
-    <merch-card-collection filter="all" class="merch-card-collection catalog" limit="18"><p slot="searchText">Search all products</p><p slot="filtersText">Filters</p><p slot="sortText">Sort</p><p slot="popularityText">Popularity</p><p slot="alphabeticallyText">Alphabetical</p><p slot="noResultText">0 results</p><p slot="resultText">1 result in <strong><span data-placeholder="filter"></span></strong></p><p slot="resultsText"><span data-placeholder="resultCount"></span> results in <strong><span data-placeholder="filter"></span></strong></p><p slot="searchResultText">1 result for <strong><span data-placeholder="searchTerm"></span></strong></p><p slot="searchResultsText"><span data-placeholder="resultCount"></span> results for <strong><span data-placeholder="searchTerm"></span></strong></p><p slot="searchResultMobileText">1 result for: <strong><span data-placeholder="searchTerm"></span></strong></p><p slot="searchResultsMobileText"><span data-placeholder="resultCount"></span> results for: <strong><span data-placeholder="searchTerm"></span></strong></p><p slot="noSearchResultsText">Your search for <strong><span data-placeholder="searchTerm"></span></strong> did not yield any results</p><div slot="noSearchResultsMobileText"><p>Your search for <strong><span data-placeholder="searchTerm"></span></strong> did not yield any results. Try a different search term.</p><p>Suggestions:</p><ul>
+    <merch-card-collection-header class="catalog"><p slot="searchText" placeholder>Search all products</p><p slot="filtersText" placeholder>Filters</p><p slot="sortText" placeholder>Sort</p><p slot="popularityText" placeholder>Popularity</p><p slot="alphabeticallyText" placeholder>Alphabetical</p><p slot="noResultText" placeholder>0 results</p><p slot="resultText" placeholder>1 result in <strong><span data-placeholder="filter"></span></strong></p><p slot="resultsText" placeholder><span data-placeholder="resultCount"></span> results in <strong><span data-placeholder="filter"></span></strong></p><p slot="resultMobileText" placeholder="">1 result in <strong><span data-placeholder="filter"></span></strong></p><p slot="resultsMobileText" placeholder=""><span data-placeholder="resultCount"></span> results in <strong><span data-placeholder="filter"></span></strong></p><p slot="searchResultText" placeholder>1 result for <strong><span data-placeholder="searchTerm"></span></strong></p><p slot="searchResultsText" placeholder><span data-placeholder="resultCount"></span> results for <strong><span data-placeholder="searchTerm"></span></strong></p><p slot="searchResultMobileText" placeholder>1 result for: <strong><span data-placeholder="searchTerm"></span></strong></p><p slot="searchResultsMobileText" placeholder><span data-placeholder="resultCount"></span> results for: <strong><span data-placeholder="searchTerm"></span></strong></p><p slot="noSearchResultsText" placeholder>Your search for <strong><span data-placeholder="searchTerm"></span></strong> did not yield any results</p><div slot="noSearchResultsMobileText" placeholder><p>Your search for <strong><span data-placeholder="searchTerm"></span></strong> did not yield any results. Try a different search term.</p><p>Suggestions:</p><ul>
             <li>Make sure all words are spelled correctly</li>
             <li>Use quotes to search for an entire phrase, such as "crop an image"</li>
-          </ul></div><p slot="showMoreText">Show more</p></merch-card-collection>
+          </ul></div></merch-card-collection-header>
 
   </div>
   <div id="cards">

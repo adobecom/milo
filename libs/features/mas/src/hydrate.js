@@ -589,11 +589,12 @@ export async function hydrate(fragment, merchCard) {
         throw new Error(`hydrate: Fragment for card ID '${problemId}' (merchCard id: ${cardIdForError}) is missing 'fields'.`);
     }
 
-    const { id, fields, settings = {} } = fragment;
+    const { id, fields, settings = {}, priceLiterals } = fragment;
     const { variant } = fields;
     if (!variant) throw new Error(`hydrate: no variant found in payload ${id}`);
     cleanup(merchCard);
     merchCard.settings = settings;
+    if (priceLiterals) merchCard.priceLiterals = priceLiterals;
     merchCard.id ??= fragment.id;
     merchCard.variant = variant;
     await merchCard.updateComplete;
