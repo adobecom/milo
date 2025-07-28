@@ -1149,8 +1149,8 @@ function getPlaceholderPaths(config) {
 }
 
 let placeholderRequest;
-export async function decoratePlaceholders(area, config, processPlaceholders = true) {
-  if (!area || !processPlaceholders) return;
+export async function decoratePlaceholders(area, config) {
+  if (!area) return;
   const nodes = findReplaceableNodes(area);
   if (!nodes.length) return;
   area.dataset.hasPlaceholders = 'true';
@@ -1687,13 +1687,13 @@ async function resolveInlineFrags(section) {
   section.preloadLinks = newlyDecoratedSection.preloadLinks;
 }
 
-export async function processSection(section, config, isDoc, lcpSectionId, processPlaceholders) {
+async function processSection(section, config, isDoc, lcpSectionId) {
   await resolveInlineFrags(section);
   const isLcpSection = lcpSectionId === section.idx;
   const stylePromises = isLcpSection ? preloadBlockResources(section.blocks) : [];
   preloadBlockResources(section.preloadLinks);
   await Promise.all([
-    decoratePlaceholders(section.el, config, processPlaceholders),
+    decoratePlaceholders(section.el, config),
     decorateIcons(section.el, config),
   ]);
   const loadBlocks = [...stylePromises];
@@ -1714,7 +1714,7 @@ export async function processSection(section, config, isDoc, lcpSectionId, proce
   return section.blocks;
 }
 
-export async function loadArea(area = document, processPlaceholders = true) {
+export async function loadArea(area = document) {
   const isDoc = area === document;
   if (isDoc) {
     if (document.getElementById('page-load-ok-milo')) return;
@@ -1741,13 +1741,7 @@ export async function loadArea(area = document, processPlaceholders = true) {
     if (lcpSectionId === null && (section.blocks.length !== 0 || isLastSection)) {
       lcpSectionId = section.idx;
     }
-    const sectionBlocks = await processSection(
-      section,
-      config,
-      isDoc,
-      lcpSectionId,
-      processPlaceholders,
-    );
+    const sectionBlocks = await processSection(section, config, isDoc, lcpSectionId);
     areaBlocks.push(...sectionBlocks);
 
     areaBlocks.forEach((block) => {
