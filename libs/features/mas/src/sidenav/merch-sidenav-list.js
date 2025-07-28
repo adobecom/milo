@@ -52,12 +52,6 @@ export class MerchSidenavList extends LitElement {
         this.handleClickDebounced = debounce(this.handleClick.bind(this));
     }
 
-    updated() {
-        const lastItem = this.querySelector('sp-sidenav > sp-sidenav-item:last-of-type');
-        lastItem.style.setProperty('--mod-sidenav-gap', 0);
-        lastItem.style.setProperty('line-height', 'var(--mod-sidenav-top-level-line-height)');
-    }
-
     selectElement(element, selected = true) {
         element.selected = selected;
         if (element.parentNode.tagName === 'SP-SIDENAV-ITEM') {

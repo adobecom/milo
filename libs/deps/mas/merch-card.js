@@ -2425,6 +2425,11 @@ merch-sidenav-list img[slot="icon"] {
     pointer-events: none;
 }
 
+merch-sidenav-list sp-sidenav > sp-sidenav-item:last-of-type {
+    --mod-sidenav-gap: 0;
+    line-height: var(--mod-sidenav-top-level-line-height)
+}
+
 merch-sidenav-checkbox-group h3 {
     font-size: var(--merch-sidenav-checkbox-group-title-font-size);
     font-weight: var(--merch-sidenav-checkbox-group-title-font-weight);
