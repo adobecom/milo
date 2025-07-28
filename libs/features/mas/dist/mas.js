@@ -1453,10 +1453,6 @@ merch-card-collection-header.plans {
 
 /* Tablet */
 @media screen and ${G} {
-  :root {
-      --consonant-merch-card-plans-width: 302px;
-  }
-
   .four-merch-cards.plans .foreground {
       max-width: unset;
   }

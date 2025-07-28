@@ -53,7 +53,7 @@ export class MerchSidenavList extends LitElement {
     }
 
     updated() {
-        const lastItem = this.querySelector('sp-sidenav-item:last-of-type');
+        const lastItem = this.querySelector('sp-sidenav > sp-sidenav-item:last-of-type');
         lastItem.style.setProperty('--mod-sidenav-gap', 0);
         lastItem.style.setProperty('line-height', 'var(--mod-sidenav-top-level-line-height)');
     }
