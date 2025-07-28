@@ -49,7 +49,7 @@ describe('function "createLegalTemplate"', () => {
                     displayPlanType: true,
                     literals: {
                         taxInclusiveLabel: 'Exclusive of VAT',
-                        planTypeLabel: 'Annual, paid monthly.',
+                        planTypeLabel: 'Annual, billed monthly.',
                     },
                 },
                 {
