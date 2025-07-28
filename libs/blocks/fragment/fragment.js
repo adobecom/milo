@@ -52,7 +52,7 @@ const insertInlineFrag = async (sections, a, relHref) => {
   const promises = [];
   fragChildren.forEach((child) => {
     child.setAttribute('data-path', relHref);
-    promises.push(loadArea(child));
+    if (child.querySelector('a[href*="/fragments/"]')) promises.push(loadArea(child));
   });
   await Promise.all(promises);
 };
