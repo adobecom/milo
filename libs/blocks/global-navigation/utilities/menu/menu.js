@@ -82,8 +82,8 @@ const decorateHeadline = (elem, index, context = 'viewport') => {
   };
 
   setHeadlineAttributes();
-
-  if (context === 'footer') {
+  const isContainerResponsiveFooter = document.querySelector('.global-footer')?.classList.contains('responsive-container');
+  if (context === 'footer' && isContainerResponsiveFooter) {
     let previousState = isDesktopForContext(context);
     const handleResize = () => {
       const currentState = isDesktopForContext(context);
