@@ -139,5 +139,12 @@ module.exports = {
       browserParams: '?plans=edu',
       tags: '@mas-acom @mas-plans-card @commerce @smoke @regression @milo @plans-tabs-deeplink',
     },
+    {
+      tcid: '2',
+      name: '@MAS-Plans-Modal-Reopening',
+      path: '/drafts/nala/features/commerce/plans',
+      browserParams: '#miniplans-buy-all-apps',
+      tags: '@mas-acom @mas-plans-card @commerce @smoke @regression @milo @plans-modal-reopening',
+    },
   ],
 };
