@@ -10,7 +10,7 @@ import { MODAL_TYPE_3_IN_1 } from './constants.js';
 /**
  * generate Checkout configuration
  */
-export function Checkout({ settings }) {
+export function Checkout({ settings, providers }) {
     function collectCheckoutOptions(overrides, placeholder) {
         const {
             checkoutClientId,
@@ -20,7 +20,25 @@ export function Checkout({ settings }) {
             promotionCode: defaultPromotionCode,
             quantity: defaultQuantity,
             preselectPlan,
+            env,
         } = settings;
+
+        let options = {
+          checkoutClientId,
+          checkoutWorkflowStep: defaultWorkflowStep,
+          country: defaultCountry,
+          language: defaultLanguage,
+          promotionCode: defaultPromotionCode,
+          quantity: defaultQuantity,
+          preselectPlan,
+          env,
+        };
+
+        if (placeholder) {
+          for (const provider of providers.checkout) {
+              provider(placeholder, options);
+          }
+      }
         const {
             checkoutMarketSegment,
             checkoutWorkflowStep = defaultWorkflowStep,
@@ -37,7 +55,7 @@ export function Checkout({ settings }) {
             wcsOsi,
             extraOptions,
             ...rest
-        } = Object.assign({}, placeholder?.dataset ?? {}, overrides ?? {}); 
+        } = Object.assign(options, placeholder?.dataset ?? {}, overrides ?? {});  
 
         const masFF3in1 = document.querySelector('meta[name=mas-ff-3in1]');
         const is3in1 = Object.values(MODAL_TYPE_3_IN_1).includes(modal) && (!masFF3in1 || masFF3in1.content !== 'off');
@@ -45,7 +63,7 @@ export function Checkout({ settings }) {
         if (!is3in1 && fallbackStep) {
           workflowStep = fallbackStep;
         }
-        const options = omitProperties({
+        options = omitProperties({
             ...rest,
             extraOptions,
             checkoutClientId,
