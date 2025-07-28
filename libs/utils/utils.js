@@ -1433,7 +1433,6 @@ async function checkForPageMods() {
   const target = martech === 'off' ? false : getMepEnablement('target');
   const xlg = martech === 'off' ? false : getMepEnablement('xlg');
   const ajo = martech === 'off' ? false : getMepEnablement('ajo');
-  const mepgeolocation = getMepEnablement('mepgeolocation');
 
   // if (!(pzn || pznroc || target || promo || mepParam
   if (!(pznroc || target || promo || mepParam
