@@ -138,6 +138,10 @@ header.new-nav .feds-nav > section.feds-navItem > .feds-popup .has-subheader .fe
   display: block;
 }
 
+.feds-navLink-image {
+  display: none;
+}
+
 .feds-navLink-title {
   display: flex;
   align-items: center;
@@ -241,6 +245,34 @@ header.global-navigation.ready {
     margin-left: 0;
     /* Margin different than LTR due to transform origin effect */
     margin-right: 5px;
+  }
+
+  .global-navigation .feds-navLink-image {
+    display: flex;
+  }
+
+  .global-navigation .feds-navLink-image picture,
+  .global-navigation .feds-navLink-image img {
+    display: block;
+  }
+
+  .global-navigation .feds-navLink-image picture {
+    width: max-content;
+    max-width: 25px;
+  }
+
+  .global-footer:not(.mobile) .feds-navLink-image {
+    display: flex;
+  }
+
+  .global-footer:not(.mobile) .feds-navLink-image picture,
+  .global-footer:not(.mobile) .feds-navLink-image img {
+    display: block;
+  }
+
+  .global-footer:not(.mobile) .feds-navLink-image picture {
+    width: max-content;
+    max-width: 25px;
   }
 
   .feds-navLink:hover .feds-navLink-description,

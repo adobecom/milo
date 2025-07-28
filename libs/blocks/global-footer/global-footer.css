@@ -289,10 +289,6 @@ span.feds-footer-privacyLink-divider {
   }
 }
 
-.feds-navLink-image {
-  display: none;
-}
-
 @media (min-width: 900px) {
   .global-footer:not(.mobile) .feds-footer-wrapper {
     row-gap: 30px;
@@ -382,20 +378,6 @@ span.feds-footer-privacyLink-divider {
   .global-footer:not(.mobile) span.feds-footer-privacyLink-divider, .feds-footer-privacyLink {
     margin-left: 5px;
     margin-right: 0;
-  }
-
-  .global-footer:not(.mobile) .feds-navLink-image {
-    display: flex;
-  }
-
-  .global-footer:not(.mobile) .feds-navLink-image picture,
-  .global-footer:not(.mobile) .feds-navLink-image img {
-    display: block;
-  }
-
-  .global-footer:not(.mobile) .feds-navLink-image picture {
-    width: max-content;
-    max-width: 25px;
   }
 }
 
