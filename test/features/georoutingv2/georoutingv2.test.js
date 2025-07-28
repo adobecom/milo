@@ -646,7 +646,7 @@ describe('GeoRouting', () => {
       expect(getCookie('international')).to.be.undefined;
       links = modal.querySelectorAll('a');
       links[0].focus();
-      await sendKeys({ press: 'Enter' });
+      await sendKeys({ press: 'Space' });
     });
 
     const assertPickerExists = () => {

@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>Merch Card Mini variant test page</title>
+
+        <link rel="stylesheet" href="../../../docs/spectrum.css" />
+
+        <style>
+            body {
+                background-color: var(--spectrum-background-base-color);
+            }
+
+            main {
+                padding: 80px;
+            }
+
+            main > p {
+                font-size: xx-large;
+            }
+
+            .cards {
+                display: grid;
+                grid-template-columns: repeat(2, 480px);
+                gap: 20px;
+            }
+        </style>
+        <mas-commerce-service env="stage" data-mas-ff-defaults="on"></mas-commerce-service>
+    </head>
+
+    <body class="spectrum spectrum--medium spectrum--dark">
+        <main>
+            <p>🇺🇸</p>
+            <div id="us" class="cards"></div>
+            <p>🇨🇦</p>
+            <div id="ca" class="cards"></div>
+            <p>🇦🇺</p>
+            <div id="au" class="cards"></div>
+            <p>🇫🇷</p>
+            <div id="fr" class="cards"></div>
+        </main>
+        <template id="template-mini-photo">
+            <merch-card>
+                <aem-fragment fragment="mini-photo"></aem-fragment>
+            </merch-card>
+        </template>
+        <template id="template-mini-photo-promo">
+            <merch-card>
+                <aem-fragment fragment="mini-photo-promo"></aem-fragment>
+            </merch-card>
+        </template>
+        <template id="template-mini-photo-link">
+            <merch-card>
+                <aem-fragment fragment="mini-photo-link"></aem-fragment>
+            </merch-card>
+        </template>
+
+        <template id="template-mini-photo-ca">
+            <merch-card data-test-country="CA">
+                <aem-fragment fragment="mini-photo-ca"></aem-fragment>
+            </merch-card>
+        </template>
+        <template id="template-mini-photo-promo-ca">
+            <merch-card data-test-country="CA">
+                <aem-fragment fragment="mini-photo-promo-ca"></aem-fragment>
+            </merch-card>
+        </template>
+
+        <template id="template-mini-photo-au">
+            <merch-card data-test-country="AU">
+                <aem-fragment fragment="mini-photo-au"></aem-fragment>
+            </merch-card>
+        </template>
+
+        <template id="template-mini-photo-promo-au">
+            <merch-card data-test-country="AU">
+                <aem-fragment fragment="mini-photo-promo-au"></aem-fragment>
+            </merch-card>
+        </template>
+
+        <template id="template-mini-photo-fr">
+            <merch-card data-test-country="FR" data-test-language="fr">
+                <aem-fragment fragment="mini-photo-fr"></aem-fragment>
+            </merch-card>
+        </template>
+        <template id="template-mini-photo-promo-fr">
+            <merch-card data-test-country="FR" data-test-language="fr">
+                <aem-fragment fragment="mini-photo-promo-fr"></aem-fragment>
+            </merch-card>
+        </template>
+        <template id="template-multiple-promo-codes">
+            <merch-card variant="mini">
+                <p slot="prices">
+                    <span
+                        is="inline-price"
+                        data-promotion-code="PROMO_ABC"
+                        data-template="price"
+                        data-wcs-osi="abm"></span>
+                </p>
+                <div slot="ctas">
+                    <button
+                        is="checkout-button"
+                        data-checkout-workflow-step="segmentation"
+                        data-promotion-code="PROMO_XYZ"
+                        data-wcs-osi="abm"
+                        data-template="checkoutUrl"
+                        class="spectrum-Button spectrum-Button--accent spectrum-Button--sizeS"
+                        data-href=""
+                    >
+                        <span
+                            style="pointer-events: none"
+                            class="spectrum-Button-label"
+                            >Buy now</span
+                        >
+                    </button>
+                </div>
+            </merch-card>
+        </template>
+
+        <script type="module" src="merch-card.mini.test.html.js"></script>
+    </body>
+</html>
