@@ -1394,6 +1394,7 @@ export function enablePersonalizationV2() {
 
 async function checkForPageMods() {
   const config = getConfig();
+  console.log(config);
   const {
     mep: mepParam,
     mepHighlight,
@@ -1410,7 +1411,7 @@ async function checkForPageMods() {
   mepAddons.forEach((addon) => {
     const enablement = getMepEnablement(addon);
     if (enablement === false) return;
-    promises[addon] = new Promise((resolve) => {
+    const currentPromiseCheck = new Promise((resolve) => {
       (async () => {
         try {
           const { default: init } = await import(`../features/mep/addons/${addon}.js`);
@@ -1423,6 +1424,7 @@ async function checkForPageMods() {
       })();
     });
     // mepPromises.push(promise);
+    promises[addon] = currentPromiseCheck;
   });
 
   if (mepParam === 'off') return;
