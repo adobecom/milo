@@ -291,7 +291,7 @@ class Footer {
 
     if (placeholder && placeholder.length) {
       const headline = toFragment`<div class="feds-menu-headline">${placeholder}</div>`;
-      featureProductsSection.append(this.decorateHeadline(headline, 0));
+      featureProductsSection.append(this.decorateHeadline(headline, 0, 'footer'));
     }
 
     const featuredProductsList = toFragment`<ul></ul>`;
