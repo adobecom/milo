@@ -259,7 +259,7 @@ runTests(async () => {
 
       it('should hydrate from child aem-fragment, with overriden ids', async () => {
         render();
-        const aemFragment = collectionElement.querySelector('aem-fragment');
+        const aemFragment = customElements.get('aem-fragment');
         await collectionElement.checkReady();
         const fragment1 = collectionElement.querySelector('aem-fragment[fragment="cafe-bebebe"]');
         expect(fragment1).to.exist;
