@@ -82,6 +82,11 @@ async function decorateLockupRow(el, classes) {
     el.classList.remove(usedLockupClass);
   }
   el.classList.add(`${usedLockupClass?.split('-')[0] || 'l'}-lockup`);
+  [...child.children].forEach((node) => {
+    if (node.childElementCount || !node.textContent.trim()) return;
+    const newSpan = createTag('span', { class: 'lockup-label' }, node.textContent.trim());
+    node.parentElement.replaceChild(newSpan, node);
+  });
 }
 
 function decorateBg(el) {
@@ -164,6 +169,66 @@ async function loadContentType(el, key, classes) {
 
 function loadBreakpointThemes() {
   loadStyle(`${base}/styles/breakpoint-theme.css`);
+}
+
+export function getViewportOrder(viewport, content) {
+  const els = [...content.children];
+  const viewportObject = { 0: [] };
+  els.forEach((el) => {
+    const orderClass = {
+      tablet: null,
+      desktop: null,
+    };
+    el.classList.forEach((className) => {
+      if (!className.startsWith('order-')
+        || (!className.endsWith('desktop') && !className.endsWith('tablet'))) return;
+      orderClass.tablet = orderClass.tablet || (className.endsWith('tablet') ? className : null);
+      orderClass.desktop = orderClass.desktop || (className.endsWith('desktop') ? className : null);
+    });
+    const viewportClass = orderClass[viewport] || orderClass.tablet;
+    const order = parseInt(viewportClass?.split('-')[1], 10);
+    if (Number.isInteger(order)) {
+      if (!viewportObject[order]) viewportObject[order] = [];
+      viewportObject[order].push(el);
+    } else {
+      viewportObject[0].push(el);
+    }
+  });
+
+  const viewportOrder = [];
+  Object.keys(viewportObject).sort((a, b) => a - b).forEach((key) => {
+    viewportOrder.push(...viewportObject[key]);
+  });
+  return viewportOrder;
+}
+
+function handleViewportOrder(content) {
+  const hasOrder = content.querySelector(':scope > div[class*="order-"]');
+  if (!hasOrder) return;
+
+  const viewports = {
+    mobile: {
+      media: '(max-width: 599px)',
+      elements: [...content.children],
+    },
+    tablet: {
+      media: '(min-width: 600px) and (max-width: 1199px)',
+      elements: getViewportOrder('tablet', content),
+    },
+    desktop: {
+      media: '(min-width: 1200px)',
+      elements: getViewportOrder('desktop', content),
+    },
+  };
+
+  Object.entries(viewports).forEach(([viewport, { media, elements }]) => {
+    const mediaQuery = window.matchMedia(media);
+    if (mediaQuery.matches && viewport !== 'mobile') content.replaceChildren(...elements);
+    mediaQuery.addEventListener('change', (e) => {
+      if (!e.matches) return;
+      content.replaceChildren(...elements);
+    });
+  });
 }
 
 export default async function init(el) {
@@ -268,6 +333,7 @@ export default async function init(el) {
     }
   });
   decorateTextOverrides(el, ['-heading', '-body', '-detail'], mainCopy);
+  handleViewportOrder(copy);
 
   if (el.classList.contains('countdown-timer')) {
     promiseArr.push(loadCDT(copy, el.classList));

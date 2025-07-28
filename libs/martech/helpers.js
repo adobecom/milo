@@ -14,8 +14,11 @@ const DATA_STREAM_IDS_STAGE = { default: 'e065836d-be57-47ef-b8d1-999e1657e8fd',
 let dataStreamId = '';
 
 function getDomainWithoutWWW() {
-  const domain = window?.location?.hostname;
-  return domain.replace(/^www\./, '');
+  const parts = window.location.hostname.toLowerCase().split('.');
+  if (parts.length >= 2) {
+    return parts.slice(-2).join('.');
+  }
+  return window.location.hostname.toLowerCase();
 }
 
 const hitTypeEventTypeMap = {
@@ -406,6 +409,19 @@ function createRequestPayload({ updatedContext, pageName, processedPageName, loc
         otherConsents: { configuration: { advertising: (!!consentCookie?.includes('C0004:1')).toString() } },
         user: { firstVisit: isFirstVisit() },
         cmp: { state: consentState },
+        web: {
+          location: {
+            href: window.location.href,
+            origin: window.location.origin,
+            protocol: window.location.protocol,
+            host: window.location.host,
+            hostname: window.location.hostname,
+            port: window.location.port,
+            pathname: window.location.pathname,
+            search: window.location.search,
+            hash: window.location.hash,
+          },
+        },
       },
       marketingtech: {
         adobe: {
@@ -482,7 +498,7 @@ function createRequestPayload({ updatedContext, pageName, processedPageName, loc
       gpc: getGlobalPrivacyControl(),
     };
     xdm.implementationDetails = {
-      name: 'https://ns.adobe.com/experience/alloy/reactor',
+      name: 'https://ns.adobe.com/experience/alloy',
       version: '2.0',
       environment: 'browser',
     };

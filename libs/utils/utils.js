@@ -32,6 +32,7 @@ const MILO_BLOCKS = [
   'form',
   'fragment',
   'featured-article',
+  'gist',
   'global-footer',
   'global-navigation',
   'graybox',
@@ -42,6 +43,7 @@ const MILO_BLOCKS = [
   'icon-block',
   'iframe',
   'instagram',
+  'language-selector',
   'locui',
   'locui-create',
   'm7',
@@ -422,10 +424,37 @@ export const getFedsPlaceholderConfig = ({ useCache = true } = {}) => {
   return fedsPlaceholderConfig;
 };
 
+/**
+ * TODO: This method will be deprecated and removed in a future version.
+ * @see https://jira.corp.adobe.com/browse/MWPW-173470
+ * @see https://jira.corp.adobe.com/browse/MWPW-174411
+*/
+export const shouldAllowKrTrial = (button, localePrefix) => {
+  const allowKrTrialHash = '#_allow-kr-trial';
+  const hasAllowKrTrial = button.href?.includes(allowKrTrialHash);
+  if (hasAllowKrTrial) {
+    button.href = button.href.replace(allowKrTrialHash, '');
+    const modalHash = button.getAttribute('data-modal-hash');
+    if (modalHash) button.setAttribute('data-modal-hash', modalHash.replace(allowKrTrialHash, ''));
+  }
+  return localePrefix === '/kr' && hasAllowKrTrial;
+};
+
+/**
+ * TODO: This method will be deprecated and removed in a future version.
+ * @see https://jira.corp.adobe.com/browse/MWPW-173470
+ * @see https://jira.corp.adobe.com/browse/MWPW-174411
+*/
 export const shouldBlockFreeTrialLinks = ({ button, localePrefix, parent }) => {
-  if (localePrefix !== '/kr' || (!button.dataset?.modalPath?.includes('/kr/cc-shared/fragments/trial-modals')
-    && !['free-trial', 'free trial', '무료 체험판', '무료 체험하기', '{{try-for-free}}']
-      .some((pattern) => button.textContent?.toLowerCase()?.includes(pattern.toLowerCase())))) {
+  if (shouldAllowKrTrial(button, localePrefix) || localePrefix !== '/kr'
+      || (!button.dataset?.modalPath?.includes('/kr/cc-shared/fragments/trial-modals')
+       && !['free-trial', 'free trial', '무료 체험판', '무료 체험하기', '{{try-for-free}}']
+         .some((pattern) => button.textContent?.toLowerCase()?.includes(pattern.toLowerCase())))) {
+    return false;
+  }
+
+  if (button.dataset.wcsOsi) {
+    button.classList.add('hidden-osi-trial-link');
     return false;
   }
 
@@ -622,12 +651,13 @@ export function appendHtmlToLink(link) {
   }
 }
 
-export const loadScript = (url, type, { mode } = {}) => new Promise((resolve, reject) => {
+export const loadScript = (url, type, { mode, id } = {}) => new Promise((resolve, reject) => {
   let script = document.querySelector(`head > script[src="${url}"]`);
   if (!script) {
     const { head } = document;
     script = document.createElement('script');
     script.setAttribute('src', url);
+    if (id) script.setAttribute('id', id);
     if (type) {
       script.setAttribute('type', type);
     }
@@ -756,13 +786,18 @@ export function decorateSVG(a) {
   }
 }
 
+export const isValidHtmlUrl = (url) => {
+  const regex = /^https:\/\/[^\s]+$/;
+  return regex.test(url);
+};
+
 export function decorateImageLinks(el) {
   const images = el.querySelectorAll('img[alt*="|"]');
   if (!images.length) return;
   [...images].forEach((img) => {
     const [source, alt, icon] = img.alt.split('|');
     try {
-      if (!URL.canParse(source.trim())) return;
+      if (!isValidHtmlUrl(source.trim())) return;
       const url = new URL(source.trim());
       const href = (url.hostname.includes('.aem.') || url.hostname.includes('.hlx.')) ? `${url.pathname}${url.search}${url.hash}` : url.href;
       img.alt = alt?.trim() || '';
@@ -843,7 +878,7 @@ export function decorateAutoBlock(a) {
       }
 
       // Modals
-      if (url.hash !== '' && !isInlineFrag) {
+      if (url.hash !== '' && !isInlineFrag && !url.hash.includes('#_replacecell')) {
         a.dataset.modalPath = url.pathname;
         a.dataset.modalHash = url.hash;
         a.href = url.hash;
@@ -920,6 +955,11 @@ export function decorateLinks(el) {
       a.setAttribute('target', '_blank');
       a.href = a.href.replace('#_blank', '');
     }
+    if (a.href.includes('#_alloy')) {
+      import('../martech/alloy-links.js').then(({ default: processAlloyLink }) => {
+        processAlloyLink(a);
+      });
+    }
     if (a.href.includes('#_nofollow')) {
       a.setAttribute('rel', 'nofollow');
       a.href = a.href.replace('#_nofollow', '');
@@ -958,9 +998,9 @@ export function decorateLinks(el) {
     const pipeRegex = /\s?\|([^|]*)$/;
     if (pipeRegex.test(a.textContent) && !/\.[a-z]+/i.test(a.textContent)) {
       const node = [...a.childNodes].reverse()[0];
-      const ariaLabel = node.textContent.match(pipeRegex)[1];
+      const ariaLabel = node.textContent.match(pipeRegex)?.[1];
       node.textContent = node.textContent.replace(pipeRegex, '');
-      a.setAttribute('aria-label', ariaLabel.trim());
+      a.setAttribute('aria-label', (ariaLabel || '').trim());
     }
 
     return rdx;
@@ -1060,7 +1100,6 @@ async function decorateIcons(area, config) {
   if (icons.length === 0) return;
   const { base } = config;
   loadStyle(`${base}/features/icons/icons.css`);
-  loadLink(`${base}/img/icons/icons.svg`, { rel: 'preload', as: 'fetch', crossorigin: 'anonymous' });
   const { default: loadIcons } = await import('../features/icons/icons.js');
   await loadIcons(icons, config);
 }
@@ -1167,7 +1206,9 @@ function decorateSection(section, idx) {
     const blockName = block.classList[0];
     links.filter((link) => block.contains(link))
       .forEach((link) => {
-        if (link.classList.contains('fragment')
+        if (link.classList.contains('fragment') && link.href.includes('#_replacecell')) {
+          link.href = link.href.replace('#_replacecell', '');
+        } else if (link.classList.contains('fragment')
           && MILO_BLOCKS.includes(blockName) // do not inline consumer blocks (for now)
           && !doNotInline.includes(blockName)) {
           if (!link.href.includes('#_inline')) {
@@ -1392,6 +1433,7 @@ async function checkForPageMods() {
   const target = martech === 'off' ? false : getMepEnablement('target');
   const xlg = martech === 'off' ? false : getMepEnablement('xlg');
   const ajo = martech === 'off' ? false : getMepEnablement('ajo');
+  const mepgeolocation = getMepEnablement('mepgeolocation');
 
   // if (!(pzn || pznroc || target || promo || mepParam
   if (!(pznroc || target || promo || mepParam
@@ -1579,7 +1621,7 @@ function initSidekick() {
 
 function decorateMeta() {
   const { origin } = window.location;
-  const contents = document.head.querySelectorAll('[content*=".hlx."], [content*=".aem."]');
+  const contents = document.head.querySelectorAll('[content*=".hlx."], [content*=".aem."], [content*="/federal/"]');
   contents.forEach((meta) => {
     if (meta.getAttribute('property') === 'hlx:proxyUrl' || meta.getAttribute('name')?.endsWith('schedule')) return;
     try {

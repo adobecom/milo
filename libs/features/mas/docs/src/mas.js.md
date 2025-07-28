@@ -16,11 +16,11 @@ In case of network issues, the requests will be retried up to 3 times with 500ms
 It will also fallback to last successfully loaded offers for the same OSI if available.
 
 ## Enablement `mas-commerce-service`
+
 ⚠️ Safari does not support customized built-in elements. Therefore, you need to load the following polyfill before `mas.js` for browser compatibility (not required for in-app usage).
+
 ```html
-<script
-    src="https://www.adobe.comlibs/deps/custom-elements.js"
-></script>
+<script src="https://www.adobe.comlibs/deps/custom-elements.js"></script>
 ```
 
 To add `mas.js` to your page or application, include it as shown below:
@@ -32,8 +32,6 @@ To add `mas.js` to your page or application, include it as shown below:
 ></script>
 ```
 
-
-
 ### Attributes
 
 For production, the minimun attributes to set are: `wcs-api-key` and `lana-tags`. Rest can be left default.
@@ -44,13 +42,14 @@ For production, the minimun attributes to set are: `wcs-api-key` and `lana-tags`
 | `checkout-client-id`     | checkout client id                                                                                  |  `false`                         |  `false` |
 | `checkout-workflow-step` | default checkout workflow step                                                                      | `CheckoutWorkflowStep.EMAIL`     | `false`  |
 | `country`                | country of the offers to retrieve from WCS, determines the currency, price format, etc.             | US or locale country if set      | `false`  |
-|  `env`                   | commerce environment you want this page to use, either `stage` or `prod`                            |  `prod`                          |  `false` |
-|  `force-tax-exclusive`   | force all price display to be tax exclusive                                                         |  `false`                         |  `false` |
+| `env`                    | commerce environment you want this page to use, either `stage` or `prod`                            |  `prod`                          |  `false` |
+| `force-tax-exclusive`    | force all price display to be tax exclusive                                                         |  `false`                         |  `false` |
 | `locale`                 | currency & price locale you need, must belong to one of the [supported locales](#supported-locales) | `en_US`                          | `false`  |
-| `language`               | language of the price literal, e.g: per license                                                     | en or locale langauge if set     | `false`  |
-| `wcs-api-key`            | api key used for making WCS calls                                                                   | `wcms-commerce-ims-ro-user-milo` | `false`  |
 | `lana-tags`              | Enables logging via lana[^1][^2] with the given tags. e.g:`ccd`.                                    |                                  | `false`  |
 | `lana-sample-rate`       | Sets the sampling rate, see [^1] for details.                                                       | 1                                | `false`  |
+| `language`               | language of the price literal, e.g: per license                                                     | en or locale language if set     | `false`  |
+| `preview`                | enable preview (will only work on corp network), can be overriden with parameter `mas.preview=off`  | false / off                      | `false`  |
+| `wcs-api-key`            | api key used for making WCS calls                                                                   | `wcms-commerce-ims-ro-user-milo` | `false`  |
 
 [^1]: https://wiki.corp.adobe.com/pages/viewpage.action?spaceKey=WCMSOps&title=LANA+-+Log+Always+Never+Assume
 
@@ -64,6 +63,18 @@ For production, the minimun attributes to set are: `wcs-api-key` and `lana-tags`
 |  `flushWcsCache()`                 |  flush the payload cache for WCS calls                                                                 |
 |  `refreshOffers()`                 | `flushWcsCache` + refresh prices + checkout links                                                      |
 |  `refreshFragments()`              |  `flushWcsCache` + refresh fragment content from Odin. This results in card content update with offers |
+
+
+### Feature flags
+
+Feature flags can be set via a meta tag.
+
+e.g `<meta name="mas-ff-defaults" content="on">`
+
+| Name               | Description                                                                                                                                     | Default Value |
+| ------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------- | ------------- |
+|  `mas-ff-defaults` |  Enables good defaults for each locales and segments so that authors don't have to set them manually.<br> Set to `off` to keep legacy behavior. | `on`          |
+
 
 ### Examples
 

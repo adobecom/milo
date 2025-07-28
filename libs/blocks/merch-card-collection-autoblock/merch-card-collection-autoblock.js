@@ -1,31 +1,42 @@
 import { createTag, getConfig } from '../../utils/utils.js';
-import { initService, getOptions, MEP_SELECTOR, overrideOptions } from '../merch/merch.js';
-import '../../deps/mas/merch-card-collection.js';
+import { postProcessAutoblock } from '../merch/autoblock.js';
 import '../../deps/mas/merch-card.js';
 import '../../deps/mas/merch-quantity-select.js';
+import {
+  initService,
+  getOptions,
+  MEP_SELECTOR,
+  overrideOptions,
+  updateModalState,
+  loadMasComponent,
+  MAS_MERCH_CARD,
+  MAS_MERCH_QUANTITY_SELECT,
+  MAS_MERCH_CARD_COLLECTION,
+  MAS_MERCH_SIDENAV,
+} from '../merch/merch.js';
 
-const COLLECTION_AUTOBLOCK_TIMEOUT = 5000;
+const DEPS_TIMEOUT = 10000;
 const DEFAULT_OPTIONS = { sidenav: true };
-let log;
 
-function getTimeoutPromise() {
+function getTimeoutPromise(timeout) {
   return new Promise((resolve) => {
-    setTimeout(() => resolve(false), COLLECTION_AUTOBLOCK_TIMEOUT);
+    setTimeout(() => resolve(false), timeout);
   });
 }
 
 async function loadDependencies(options) {
   /** Load service first */
   const servicePromise = initService();
-  const success = await Promise.race([servicePromise, getTimeoutPromise()]);
+  const success = await Promise.race([servicePromise, getTimeoutPromise(DEPS_TIMEOUT)]);
   if (!success) {
     throw new Error('Failed to initialize mas commerce service');
   }
-  const service = await servicePromise;
-  log = service.Log.module('merch');
 
   const { base } = getConfig();
   const dependencyPromises = [
+    loadMasComponent(MAS_MERCH_CARD),
+    loadMasComponent(MAS_MERCH_QUANTITY_SELECT),
+    loadMasComponent(MAS_MERCH_CARD_COLLECTION),
     import(`${base}/features/spectrum-web-components/dist/theme.js`),
     import(`${base}/features/spectrum-web-components/dist/button.js`),
     import(`${base}/features/spectrum-web-components/dist/action-button.js`),
@@ -37,7 +48,7 @@ async function loadDependencies(options) {
   ];
   if (options.sidenav) {
     dependencyPromises.push(...[
-      import('../../deps/mas/merch-sidenav.js'),
+      loadMasComponent(MAS_MERCH_SIDENAV),
       import(`${base}/features/spectrum-web-components/dist/base.js`),
       import(`${base}/features/spectrum-web-components/dist/shared.js`),
       import(`${base}/features/spectrum-web-components/dist/sidenav.js`),
@@ -77,8 +88,16 @@ function getSidenav(collection) {
       const value = node.label.toLowerCase();
       const item = createTag('sp-sidenav-item', { label: node.label, value });
       if (node.icon) {
-        const icon = createTag('img', { src: node.icon, slot: 'icon', style: 'height: fit-content;' });
-        item.append(icon);
+        createTag('img', { src: node.icon, slot: 'icon' }, null, { parent: item });
+      }
+      if (node.iconLight || node.navigationLabel) {
+        const attributes = { class: 'selection' };
+        if (node.navigationLabel) attributes['data-selected-text'] = node.navigationLabel;
+        if (node.iconLight) {
+          attributes['data-light'] = node.iconLight;
+          attributes['data-dark'] = node.icon;
+        }
+        createTag('var', attributes, null, { parent: item });
       }
       parent.append(item);
       if (node.collections) {
@@ -96,14 +115,63 @@ function getSidenav(collection) {
   return sidenav;
 }
 
-export async function checkReady(masElement) {
-  const readyPromise = masElement.checkReady();
-  const success = await Promise.race([readyPromise, getTimeoutPromise()]);
-
-  if (!success) {
-    log.error(`${masElement.tagName} did not initialize withing give timeout`);
+function handleCustomAnalyticsEvent(eventName, element) {
+  let daaLhValue = '';
+  let daaLhElement = element.closest('[daa-lh]');
+  while (daaLhElement) {
+    if (daaLhValue) {
+      daaLhValue = `|${daaLhValue}`;
+    }
+    const daaLhAttrValue = daaLhElement.getAttribute('daa-lh');
+    daaLhValue = `${daaLhAttrValue}${daaLhValue}`;
+    daaLhElement = daaLhElement.parentElement.closest('[daa-lh]');
+  }
+  if (daaLhValue) {
+    // eslint-disable-next-line no-underscore-dangle
+    window._satellite?.track('event', {
+      xdm: {},
+      data: { web: { webInteraction: { name: `${eventName}|${daaLhValue}` } } },
+    });
   }
 }
+
+function enableAnalytics(el) {
+  const tabs = el.closest('.tabs');
+  if (!tabs || tabs.analyticsInitiated) return;
+  tabs.analyticsInitiated = true;
+
+  window.addEventListener('merch-sidenav:select', ({ target }) => {
+    if (!target || target.oldValue === target.selectedValue) return;
+    handleCustomAnalyticsEvent(`${target.selectedValue}--cat`, target);
+    target.oldValue = target.selectedValue;
+  });
+
+  window.addEventListener('mas:ready', ({ target }) => {
+    target.querySelectorAll('merch-addon').forEach((ao) => {
+      ao.addEventListener('change', (aoe) => {
+        handleCustomAnalyticsEvent(`addon-${aoe.detail.checked ? 'checked' : 'unchecked'}`, aoe.target);
+      });
+    });
+    target.querySelectorAll('merch-quantity-select').forEach((qs) => {
+      qs.addEventListener('merch-quantity-selector:change', (qse) => {
+        handleCustomAnalyticsEvent(`quantity-${qse.detail.option}`, qse.target);
+      });
+    });
+  });
+
+  window.addEventListener('milo:tab:changed', () => {
+    const tab = tabs.querySelector('button[role="tab"][aria-selected="true"]');
+    if (tab) handleCustomAnalyticsEvent(`tab-change--${tab.getAttribute('daa-ll')}`, tab);
+  });
+}
+
+export const enableModalOpeningOnPageLoad = () => {
+  window.addEventListener('mas:ready', ({ target }) => {
+    target.querySelectorAll('[is="checkout-link"][data-modal-id]').forEach((cta) => {
+      updateModalState({ cta });
+    });
+  });
+};
 
 export async function createCollection(el, options) {
   const aemFragment = createTag('aem-fragment', { fragment: options.fragment });
@@ -119,39 +187,29 @@ export async function createCollection(el, options) {
     attributes = { overrides };
   }
   const collection = createTag('merch-card-collection', attributes, aemFragment);
-  let container = collection;
-  if (options.sidenav) {
-    container = createTag('div', null, collection);
-  }
+  const container = createTag('div', null, collection);
   el.replaceWith(container);
-  await checkReady(collection);
 
-  container.classList.add(`${collection.variant}-container`);
+  await collection.checkReady();
 
-  /* Placeholders */
-  const placeholders = collection.data?.placeholders || {};
-  for (const key of Object.keys(placeholders)) {
-    const value = placeholders[key];
-    const tag = value.includes('<p>') ? 'div' : 'p';
-    const placeholder = createTag(tag, { slot: key }, value);
-    collection.append(placeholder);
-  }
+  container.classList.add('collection-container', collection.variant);
 
   /* Sidenav */
   if (options.sidenav) {
     const sidenav = getSidenav(collection);
-    if (sidenav) {
-      container.insertBefore(sidenav, collection);
-      collection.sidenav = sidenav;
-    }
+    sidenav.setAttribute('daa-lh', 'b3|filters');
+    collection.attachSidenav(sidenav);
   }
 
+  postProcessAutoblock(collection, false);
   collection.requestUpdate();
+  enableAnalytics(collection);
 }
 
 export default async function init(el) {
   let options = { ...DEFAULT_OPTIONS, ...getOptions(el) };
   if (!options.fragment) return;
+  enableModalOpeningOnPageLoad();
   options = overrideOptions(options.fragment, options);
   await loadDependencies(options);
   await createCollection(el, options);

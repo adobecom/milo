@@ -20,6 +20,11 @@ export function getMetadata(name, doc = document) {
   return meta && meta.content;
 }
 
+export const isValidHtmlUrl = (url) => {
+  const regex = /^https:\/\/[^\s]+$/;
+  return regex.test(url);
+};
+
 export function createIntersectionObserver({ el, callback /* , once = true, options = {} */ }) {
   // fire immediately
   callback(el, { target: el });

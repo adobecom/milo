@@ -1,135 +1,62 @@
 import { html, signal, useEffect } from '../../../deps/htm-preact.js';
-import { createTag } from '../../../utils/utils.js';
+import preflightApi from '../checks/preflightApi.js';
+import { STATUS } from '../checks/constants.js';
 
-function isViewportTooSmall() {
-  return !window.matchMedia('(min-width: 1200px)').matches;
-}
+const { isViewportTooSmall, runChecks } = preflightApi.assets;
 
-const maxFullWidth = 1920;
-const imagesWithMismatch = signal([]);
-const imagesWithMatch = signal([]);
-const checksPerformed = signal(false);
+// Define signals for check results and viewport status
+const assetDimensionsResult = signal({
+  title: 'Asset Dimensions',
+  description: 'Checking...',
+});
+const assetsWithMismatch = signal([]);
+const assetsWithMatch = signal([]);
 const viewportTooSmall = signal(isViewportTooSmall());
 
-const groups = [
-  { title: 'Images with dimension mismatch', imgArray: imagesWithMismatch },
-  { title: 'Images with matching dimensions', imgArray: imagesWithMatch },
-];
+/**
+ * Runs asset checks and updates signals with the results.
+ */
+async function getResults() {
+  const checks = runChecks(window.location.pathname, document);
 
-async function checkImageDimensions() {
-  if (checksPerformed.value || viewportTooSmall.value) return;
-  checksPerformed.value = true;
+  const result = await Promise.resolve(checks[0]).catch((error) => ({
+    title: 'Assets - Image Dimensions',
+    status: STATUS.FAIL,
+    description: `Error: ${error.message}`,
+  }));
 
-  const allImages = [...document.querySelectorAll('main picture img')];
-  if (!allImages.length) return;
+  assetDimensionsResult.value = {
+    title: result.title.replace('Assets - ', ''),
+    description: result.description,
+  };
 
-  // Force load all images
-  await Promise.all(
-    allImages.map((img) => {
-      if (!img.complete) {
-        img.setAttribute('loading', 'eager');
-        return new Promise((resolve) => {
-          img.addEventListener('load', resolve);
-          img.addEventListener('error', resolve);
-        });
-      }
-      return Promise.resolve();
-    }),
-  );
-
-  // Filter the loaded images to ensure they are visible, not an icon, and not an SVG
-  const images = allImages.filter((img) => img.checkVisibility()
-    && !img.closest('.icon-area')
-    && !img.src.includes('.svg'));
-
-  if (!images.length) return;
-
-  const viewportWidth = document.documentElement.clientWidth;
-
-  // Apply overflow class to body to prevent scrolling issues during image analysis
-  document.body.classList.add('preflight-assets-analysis');
-
-  for (const img of images) {
-    // Get the original dimensions of the uploaded image; fallback to the natural dimensions
-    const naturalWidth = img.getAttribute('width') ? parseInt(img.getAttribute('width'), 10) : img.naturalWidth;
-    const naturalHeight = img.getAttribute('height') ? parseInt(img.getAttribute('height'), 10) : img.naturalHeight;
-    // Get the display dimensions of the image
-    const displayWidth = img.offsetWidth;
-    const displayHeight = img.offsetHeight;
-    // Check if the image is full width
-    const isFullWidthImage = displayWidth >= viewportWidth;
-    // Define the ideal factor depending on the image's display width
-    const idealFactor = isFullWidthImage ? 1.5 : 2;
-    // Get the multiplication factor depending on image display width; allow 5% tolerance
-    const factorDivisor = isFullWidthImage ? maxFullWidth : displayWidth;
-    const actualFactor = Math.round((naturalWidth / factorDivisor) * 100) / 100;
-    const roundedFactor = Math.ceil(actualFactor * 20) / 20;
-    // Check if the image meets the ideal factor
-    const hasMismatch = roundedFactor < idealFactor;
-    // Define the recommended dimensions
-    const recommendedDimensions = isFullWidthImage
-      ? `${maxFullWidth * idealFactor}x${Math.ceil((maxFullWidth * idealFactor * naturalHeight) / naturalWidth)}`
-      : `${Math.ceil(displayWidth * idealFactor)}x${Math.ceil(displayHeight * idealFactor)}`;
-    // Save the image data relevant to the final template
-    const imageData = {
-      src: img.getAttribute('src'),
-      naturalDimensions: `${naturalWidth}x${naturalHeight}`,
-      displayDimensions: `${displayWidth}x${displayHeight}`,
-      recommendedDimensions,
-      roundedFactor,
-      hasMismatch,
-    };
-    // Check for or define a picture meta element to display image analysis results
-    let pictureMetaElem = img.closest('picture').querySelector('.picture-meta');
-    if (!pictureMetaElem) {
-      pictureMetaElem = createTag('div', { class: 'picture-meta' });
-      img.closest('picture').insertBefore(pictureMetaElem, img.nextSibling);
-    }
-    // Separate images depending on mismatch and define the message to display
-    let assetMessage;
-
-    if (hasMismatch) {
-      imagesWithMismatch.value = [...imagesWithMismatch.value, imageData];
-
-      assetMessage = createTag(
-        'div',
-        { class: 'picture-meta-asset has-mismatch' },
-        `Size: too small, use > ${imageData.recommendedDimensions}`,
-      );
-    } else {
-      imagesWithMatch.value = [...imagesWithMatch.value, imageData];
-
-      assetMessage = createTag(
-        'div',
-        { class: 'picture-meta-asset no-mismatch' },
-        'Size: correct',
-      );
-    }
-
-    pictureMetaElem.append(assetMessage);
+  if (result.details) {
+    assetsWithMismatch.value = result.details.assetsWithMismatch || [];
+    assetsWithMatch.value = result.details.assetsWithMatch || [];
   }
-
-  // Remove overflow class from body after analysis is complete
-  document.body.classList.remove('preflight-assets-analysis');
 }
 
+/**
+ * Component to display a single asset check result.
+ */
 function AssetsItem({ title, description }) {
   return html`
-    <div class='assets-item'>
-      <div class='assets-item-text'>
-        <p class='assets-item-title'>${title}</p>
-        <p class='assets-item-description'>${description}</p>
+    <div class="assets-item">
+      <div class="assets-item-text">
+        <p class="assets-item-title">${title}</p>
+        <p class="assets-item-description">${description}</p>
       </div>
     </div>`;
 }
 
-function ImageGroup({ group }) {
-  const { imgArray } = group;
+/**
+ * Component to display a group of assets.
+ */
+function AssetGroup({ group }) {
+  const { title, assetArray } = group;
   return html`
-    <div class='grid-heading'>
-      <div class='grid-toggle'>
-        ${group.title}
-      </div>
+    <div class="grid-heading">
+      <div class="grid-toggle">${title}</div>
     </div>
 
     ${viewportTooSmall.value && html`
@@ -138,28 +65,35 @@ function ImageGroup({ group }) {
       </div>
     `}
 
-    ${!viewportTooSmall.value && imgArray.value.length > 0 && html`
+    ${!viewportTooSmall.value && assetArray.value.length > 0 && html`
     <div class='assets-image-grid'>
-      ${imgArray.value.map((img) => html`
+      ${assetArray.value.map((asset) => html`
       <div class='assets-image-grid-item'>
-        <img src='${img.src}' />
+        ${asset.type === 'image' && html`<img src='${asset.src}' />`}
+        ${asset.type === 'video' && html`<video controls src='${asset.src}' />`}
+        ${asset.type === 'mpc' && html`<iframe src='${asset.src}' />`}
         <div class='assets-image-grid-item-text'>
-          <span>Factor: ${img.roundedFactor}</span>
-          <span>Upload size: ${img.naturalDimensions}</span>
-          <span>Display size: ${img.displayDimensions}</span>
-          ${img.hasMismatch && html`<span>Recommended size: ${img.recommendedDimensions}</span>`}
+          <span>Factor: ${asset.roundedFactor}</span>
+          <span>Upload size: ${asset.naturalDimensions}</span>
+          <span>Display size: ${asset.displayDimensions}</span>
+          ${asset.hasMismatch && html`<span>Recommended size: ${asset.recommendedDimensions}</span>`}
+          <span>Type: ${asset.typeLabel}</span>
+          ${asset.notes && html`<span><strong>Notes:</strong> ${asset.notes}</span>`}
         </div>
       </div>`)}
     </div>`}
 
-    ${!viewportTooSmall.value && !imgArray.value.length && html`
+    ${!viewportTooSmall.value && !assetArray.value.length && html`
       <div class='assets-image-grid'>
-        <div class='assets-image-grid-item full-width'>No images found</div>
+        <div class='assets-image-grid-item full-width'>No assets found</div>
       </div>
     `}
   `;
 }
 
+/**
+ * Main Panel Component
+ */
 export default function Assets() {
   useEffect(() => {
     let resizeTimeout;
@@ -170,13 +104,13 @@ export default function Assets() {
         const isSmall = isViewportTooSmall();
         if (viewportTooSmall.value !== isSmall) {
           viewportTooSmall.value = isSmall;
-          if (!isSmall) checkImageDimensions();
+          if (!isSmall) getResults();
         }
       }, 250);
     };
 
     window.addEventListener('resize', handleResize);
-    checkImageDimensions();
+    if (!viewportTooSmall.value) getResults();
 
     return () => {
       window.removeEventListener('resize', handleResize);
@@ -184,12 +118,15 @@ export default function Assets() {
     };
   }, []);
 
+  const groups = [
+    { title: 'Assets with dimension mismatch', assetArray: assetsWithMismatch },
+    { title: 'Assets with matching dimensions', assetArray: assetsWithMatch },
+  ];
+
   return html`
-  <div class='assets-columns'>
-    <${AssetsItem}
-      title="Image Dimensions"
-      description="Please verify that image dimensions match their display size to avoid blurriness."
-    />
-    ${groups.map((group) => html`<${ImageGroup} group=${group} />`)}
-  </div>`;
+    <div class="assets-columns">
+      <${AssetsItem} ...${assetDimensionsResult.value} />
+      ${groups.map((group) => html`<${AssetGroup} group=${group} />`)}
+    </div>
+  `;
 }

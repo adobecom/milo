@@ -189,10 +189,6 @@ export function getPageLocale(currentPath, locales = pageLocales) {
   return '';
 }
 
-export const isValidHtmlUrl = (url) => {
-  const regex = /^https:\/\/[^\s]+$/;
-  return regex.test(url);
-};
 export const isValidUuid = (id) => /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(id);
 
 export const loadStrings = async (
@@ -204,6 +200,12 @@ export const loadStrings = async (
   try {
     const locale = getPageLocale(pathname, locales);
     const localizedURL = new URL(url);
+    if (localizedURL.hostname.includes('.hlx.')) {
+      localizedURL.hostname = localizedURL.hostname.replace('.hlx.', '.aem.');
+    }
+    if (localizedURL.hostname.endsWith('.page')) {
+      localizedURL.hostname = localizedURL.hostname.replace(/.page$/, '.live');
+    }
     if (locale) {
       localizedURL.pathname = `${locale}${localizedURL.pathname}`;
     }
@@ -641,6 +643,45 @@ export const stageMapToCaasTransforms = (config) => {
   };
 };
 
+/**
+ * Extracts the graybox experience ID from the current URL
+ * Supports formats:
+ * - https://[exn].[pn]-graybox.adobe.com/[path].html
+ * - https://stage--[pn]-graybox–adobecom.aem.page/[exn]/[path]
+ * @param {string} [hostname] - Optional hostname, defaults to window.location.hostname
+ * @param {string} [pathname] - Optional pathname, defaults to window.location.pathname
+ * @returns {string|null} The experience ID or null if not found
+ */
+export const getGrayboxExperienceId = (
+  hostname = window.location?.hostname || '',
+  pathname = window.location?.pathname || '',
+) => {
+  // Only allow trusted Adobe graybox domains
+  const isAdobeGraybox = /^[^.]+\.([a-z]+-)?graybox\.adobe\.com$/.test(hostname);
+  const isStageGraybox = (
+    (hostname.endsWith('.aem.page') || hostname.endsWith('.aem.live'))
+    && hostname.includes('graybox')
+  );
+
+  // Check for graybox.adobe.com format: https://[exn].[pn]-graybox.adobe.com/[path].html
+  if (isAdobeGraybox) {
+    const parts = hostname.split('.');
+    if (parts.length >= 3 && parts[1].includes('-graybox')) {
+      return parts[0]; // Return the experience ID (first part)
+    }
+  }
+
+  // Check for stage format: https://stage--[pn]-graybox–adobecom.aem.page/[exn]/[path]
+  if (isStageGraybox) {
+    const pathParts = pathname.split('/').filter(Boolean);
+    if (pathParts.length > 0) {
+      return pathParts[0]; // Return the experience ID (first path segment)
+    }
+  }
+
+  return null;
+};
+
 export const getConfig = async (originalState, strs = {}) => {
   const state = addMissingStateProps(originalState);
   const originSelection = Array.isArray(state.source) ? state.source.join(',') : state.source;
@@ -662,6 +703,9 @@ export const getConfig = async (originalState, strs = {}) => {
   const complexQuery = buildComplexQuery(state.andLogicTags, state.orLogicTags, state.notLogicTags);
 
   const caasRequestHeaders = addFloodgateHeader(state);
+
+  const grayboxExperienceId = getGrayboxExperienceId();
+  const grayboxExperienceParam = grayboxExperienceId ? `&gbExperienceID=${grayboxExperienceId}` : '';
 
   const config = {
     collection: {
@@ -690,7 +734,8 @@ export const getConfig = async (originalState, strs = {}) => {
       }&size=${state.collectionSize || state.totalCardsToShow
       }${localesQueryParam
       }${debug
-      }${flatFile}`,
+      }${flatFile
+      }${grayboxExperienceParam}`,
       fallbackEndpoint: state.fallbackEndpoint,
       totalCardsToShow: state.totalCardsToShow,
       showCardBadges: state.showCardBadges,
@@ -707,6 +752,9 @@ export const getConfig = async (originalState, strs = {}) => {
         onErrorDescription: strs.onErrorDesc
           || 'Please try reloading the page or try coming back to the page another time.',
         lastModified: strs.lastModified || 'Last modified {date}',
+        playVideo: strs.playVideo || 'Play, {cardTitle}',
+        nextCards: strs.nextCards || 'Next Cards',
+        prevCards: strs.prevCards || 'Previous Cards',
       },
       detailsTextOption: state.detailsTextOption,
       hideDateInterval: state.hideDateInterval,
