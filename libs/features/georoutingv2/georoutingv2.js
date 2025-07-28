@@ -313,10 +313,14 @@ function buildContent(currentPage, locale, geoData, locales) {
       height: 15,
     });
     span.appendChild(downArrow);
-    mainAction.addEventListener('click', (e) => {
+    const openPickerHandler = (e) => {
       e.preventDefault();
       openPicker(mainAction, locales, locale.button, e, dir, currentPage);
+    };
+    mainAction.addEventListener('keydown', (e) => {
+      if (e.code === 'Space') openPickerHandler(e);
     });
+    mainAction.addEventListener('click', openPickerHandler);
   } else {
     mainAction.href = locale.url;
     decorateForOnLinkClick(mainAction, locale.prefix, currentPage.prefix);
