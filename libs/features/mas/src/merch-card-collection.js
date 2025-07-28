@@ -344,7 +344,6 @@ export class MerchCardCollection extends LitElement {
         aemFragment.addEventListener(EVENT_AEM_LOAD, async (event) => {
             this.data = normalizePayload(event.detail, this.#overrideMap);
             const { cards, hierarchy } = this.data;
-            aemFragment.cache.add(...cards);
             for (const fragment of cards) {
                 const merchCard = document.createElement('merch-card');
                 const fragmentId = this.#overrideMap[fragment.id] || fragment.id;

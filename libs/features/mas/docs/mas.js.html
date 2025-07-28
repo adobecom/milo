@@ -38,9 +38,7 @@ In case of network issues, the requests will be retried up to 3 times with 500ms
 It will also fallback to last successfully loaded offers for the same OSI if available.</p>
 <h2 id="enablement-mas-commerce-service" tabindex="-1">Enablement <code>mas-commerce-service</code> <a class="header-anchor" href="#enablement-mas-commerce-service" href="#enablement-mas-commerce-service" title="Permalink to this heading">#</a></h2>
 <p>⚠️ Safari does not support customized built-in elements. Therefore, you need to load the following polyfill before <code>mas.js</code> for browser compatibility (not required for in-app usage).</p>
-<pre><code class="hljs language-html"><span class="hljs-tag">&lt;<span class="hljs-name">script</span>
-    <span class="hljs-attr">src</span>=<span class="hljs-string">&quot;https://www.adobe.comlibs/deps/custom-elements.js&quot;</span>
-&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span>
+<pre><code class="hljs language-html"><span class="hljs-tag">&lt;<span class="hljs-name">script</span> <span class="hljs-attr">src</span>=<span class="hljs-string">&quot;https://www.adobe.comlibs/deps/custom-elements.js&quot;</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">script</span>&gt;</span>
 </code></pre>
 <p>To add <code>mas.js</code> to your page or application, include it as shown below:</p>
 <pre><code class="hljs language-html"><span class="hljs-tag">&lt;<span class="hljs-name">script</span>
@@ -158,6 +156,25 @@ It will also fallback to last successfully loaded offers for the same OSI if ava
 <tr>
 <td><code>refreshFragments()</code></td>
 <td><code>flushWcsCache</code> + refresh fragment content from Odin. This results in card content update with offers</td>
+</tr>
+</tbody>
+</table>
+<h3 id="feature-flags" tabindex="-1">Feature flags <a class="header-anchor" href="#feature-flags" href="#feature-flags" title="Permalink to this heading">#</a></h3>
+<p>Feature flags can be set via a meta tag.</p>
+<p>e.g <code>&lt;meta name=&quot;mas-ff-defaults&quot; content=&quot;on&quot;&gt;</code></p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Description</th>
+<th>Default Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>mas-ff-defaults</code></td>
+<td>Enables good defaults for each locales and segments so that authors don’t have to set them manually.<br> Set to <code>off</code> to keep legacy behavior.</td>
+<td><code>on</code></td>
 </tr>
 </tbody>
 </table>

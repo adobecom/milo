@@ -9,6 +9,7 @@ import {
   loadScript,
   localizeLink,
   getFederatedUrl,
+  isSignedOut,
 } from '../../utils/utils.js';
 
 /* c8 ignore start */
@@ -32,8 +33,8 @@ export const PERSONALIZATION_TAGS = {
   phone: () => PERSONALIZATION_TAGS['mobile-device']() && PHONE_SIZE,
   tablet: () => PERSONALIZATION_TAGS['mobile-device']() && !PHONE_SIZE,
   desktop: () => !PERSONALIZATION_TAGS['mobile-device'](),
-  loggedout: () => !window.adobeIMS?.isSignedInUser(),
-  loggedin: () => !!window.adobeIMS?.isSignedInUser(),
+  loggedout: () => isSignedOut(),
+  loggedin: () => !isSignedOut(),
 };
 const PERSONALIZATION_KEYS = Object.keys(PERSONALIZATION_TAGS);
 /* c8 ignore stop */
