@@ -3,7 +3,11 @@ import { decorateDefaultLinkAnalytics } from '../../martech/attributes.js';
 import { closeModal } from '../modal/modal.js';
 
 // Maybe move this to object and remap names
-const FORM_CONFIG = ['campaign-id', 'mps-sname', 'subscription-name'];
+const FORM_CONFIG = {
+  'campaign-id': 'campaignId',
+  'mps-sname': 'mpsSname',
+  'subscription-name': 'subscriptionName',
+};
 const FORM_ID = 'email-collection-form';
 const ALL_COUNTRIES_CONSENT_ID = 'cs4;ve1;';
 const FEDERAL_ROOT = '/federal/email-collection';
@@ -25,7 +29,7 @@ const FORM_FIELDS = {
     attributes: {
       type: 'email',
       required: true,
-      autocomplete: true,
+      autocomplete: 'on',
     },
   },
   'first-name': {
@@ -33,7 +37,7 @@ const FORM_FIELDS = {
     attributes: {
       type: 'text',
       required: true,
-      autocomplete: true,
+      autocomplete: 'on',
     },
   },
   'last-name': {
@@ -41,7 +45,7 @@ const FORM_FIELDS = {
     attributes: {
       type: 'text',
       required: true,
-      autocomplete: true,
+      autocomplete: 'on',
     },
   },
   organization: {
@@ -49,7 +53,7 @@ const FORM_FIELDS = {
     attributes: {
       type: 'text',
       required: true,
-      autocomplete: true,
+      autocomplete: 'on',
     },
   },
   occupation: {
@@ -57,7 +61,7 @@ const FORM_FIELDS = {
     attributes: {
       type: 'text',
       required: true,
-      autocomplete: true,
+      autocomplete: 'on',
     },
   },
   state: {
@@ -65,7 +69,7 @@ const FORM_FIELDS = {
     url: getFederatedUrl(`${FEDERAL_ROOT}/states.json?limit=1900`),
     attributes: {
       required: true,
-      autocomplete: true,
+      autocomplete: 'on',
     },
   },
   country: {
@@ -73,7 +77,7 @@ const FORM_FIELDS = {
     url: localizeFederatedUrl(`${FEDERAL_ROOT}/countries.json`),
     attributes: {
       required: true,
-      autocomplete: true,
+      autocomplete: 'on',
     },
   },
   custom: { tag: 'textarea', attributes: {} },
@@ -83,20 +87,31 @@ const [showMessage, setMessageEls] = (() => {
   let elsObject = {};
   return [
     (type, errorMsg) => {
-      const { foreground, success, error, text } = elsObject;
-      let replaceText = success;
-      if (type === 'error') replaceText = error;
+      const { foreground, success, error, text, ariaLive } = elsObject;
+      text.classList.add('hidden');
+      let replace = success;
+      if (type === 'error') replace = error;
       foreground.classList.add('message');
-      text.replaceWith(replaceText);
+      replace.classList.remove('hidden');
       if (errorMsg) window.lana.log(errorMsg);
+
+      let ariaTextContent = '';
+      replace.querySelectorAll('.text > *:not(.icon-area, .button-container)')
+        .forEach((child) => { ariaTextContent += ` ${child.textContent}`; });
+      ariaLive.textContent = ariaTextContent;
     },
     (el) => {
+      const foreground = el.children[0];
+      const allText = foreground.querySelectorAll('.text');
       elsObject = {
-        foreground: el.children[0],
-        success: el.children[1]?.querySelector('.text'),
-        error: el.children[2]?.querySelector('.text'),
-        text: el.children[0].querySelector('.text'),
+        foreground,
+        success: allText[1],
+        error: allText[2],
+        text: allText[0],
+        ariaLive: el.children[1],
       };
+
+      return Object.values(elsObject).every((value) => value);
     },
   ];
 })();
@@ -158,20 +173,22 @@ const [getMetadata, setMetadata] = (() => {
       const { fields, config } = emailCollectionMetada;
       const metadataEl = el.nextElementSibling;
       if (!metadataEl?.classList.contains('section-metadata')) {
-        throw new Error('Email collection metadata is missing');
+        return 'Section metadata is missing';
       }
 
       [...metadataEl.children].forEach((child) => {
         const key = formatMetadataKey(child.firstElementChild?.textContent);
-        if (!FORM_FIELDS[key] && !FORM_CONFIG.includes(key)) return;
+        if (!FORM_FIELDS[key] && !FORM_CONFIG[key]) return;
         const value = child.lastElementChild.textContent;
-        const metadataObject = FORM_CONFIG.includes(key) ? config : fields;
-        metadataObject[key] = value;
+        const metadataObject = FORM_CONFIG[key] ? config : fields;
+        const newKey = FORM_CONFIG[key] ?? key;
+        metadataObject[newKey] = value;
       });
 
-      if (!fields.email || !config['campaign-id'] || (!el.classList.contains('waitlist') && !config['mps-sname'] && !config['subscription-name'])) {
-        throw new Error('Email collection form is missing email/campaing-id/mps-sname/subscription-name field');
+      if (!fields.email || !config.campaignId || (!el.classList.contains('waitlist') && !config.mpsSname && !config.subscriptionName)) {
+        return 'Section metadata is missing email/campaing-id/mps-sname/subscription-name field';
       }
+      return null;
     },
   ];
 })();
@@ -208,7 +225,10 @@ const getSelectData = (() => {
     try {
       const { url } = FORM_FIELDS[id];
       const selectReq = await fetch(url);
-      if (!selectReq.ok) throw new Error(`Select data not found: ${url}`);
+      if (!selectReq.ok) {
+        showMessage('error', `Select data not found: ${url}`);
+        return null;
+      }
       const { data } = await selectReq.json();
       dataCache[id] = selectMapping[id].format(data);
       return dataCache[id];
@@ -232,7 +252,10 @@ const getConsentString = (() => {
       }
       if (consentCache[consentUrl]) return consentCache[consentUrl].cloneNode(true);
       const stringReq = await fetch(consentUrl);
-      if (!stringReq.ok) throw new Error(`Consent string document not found: ${consentUrl}`);
+      if (!stringReq.ok) {
+        showMessage('error', `Consent string document not found: ${consentUrl}`);
+        return null;
+      }
       const string = await stringReq.text();
       const doc = new DOMParser().parseFromString(string, 'text/html');
       const consentDiv = doc.querySelector('body > div');
@@ -281,9 +304,10 @@ async function decorateConsentString(consentContainer, consentParams) {
     });
   }
   const { config } = getMetadata();
-  if (config['subscription-name']) {
-    const regex = /{{(.*?)}}|%7B%7B(.*?)%7D%7D/g;
-    consentStringEl.innerHTML = consentStringEl.innerHTML.replaceAll(regex, config['subscription-name']);
+  if (config.subscriptionName) {
+    const { subscriptionName } = config;
+    const regex = /{{subscription-name}}/g;
+    consentStringEl.innerHTML = consentStringEl.innerHTML.replaceAll(regex, subscriptionName);
   }
   consentContainer.appendChild(consentStringEl);
   consentContainer.classList.remove('empty');
@@ -356,7 +380,6 @@ async function decorateInput(key, value) {
     const tempInput = input.querySelector(':scope > select') ?? input;
     tempInput?.setAttribute(confKey, confValue);
   });
-  // CHECK RTL
   label.classList.toggle('required', !!attributes.required);
 
   return [label, input];
@@ -387,7 +410,7 @@ async function attachCountryListener(form) {
 
 function formatMPSData(data) {
   const date = new Date();
-  const required = ['email', 'consentId', 'appClientId'];
+  const required = ['email', 'consentId', 'appClientId', 'mpsSname'];
   let result = {
     eventDts: date.toISOString(),
     timezoneOffset: -date.getTimezoneOffset(),
@@ -409,25 +432,41 @@ function disableForm(form) {
 
 function appendLangToConsnetId(consentId) {
   const { locale } = miloConfig;
-  const language = locale.ietf.split('-')[0];
+  const languageOverride = {
+    'zh-CN': 'chi',
+    'zh-HK': 'zho',
+    'zh-TW': 'zho',
+  };
+  const language = languageOverride[locale.ietf] ?? locale.ietf.split('-')[0];
   return consentId + language;
 }
 
 async function getMartech() {
   // eslint-disable-next-line
   const satellite = await window.__satelliteLoadedPromise;
-  const alloyAll = window.alloy_all;
 
-  return { satellite, alloyAll };
+  return { satellite, alloyAll: window.alloy_all };
 }
 
 async function getAEPBody(email) {
+  const martechParam = new URLSearchParams(window.location.search).get('martech');
+  if (martechParam === 'off') {
+    showMessage('error', 'Martech disabled');
+    return null;
+  }
   const { satellite, alloyAll } = await getMartech();
   const { config } = getMetadata();
-  const ecid = satellite.cookie.get(ECID_COOKIE).split('|')[1];
+  // const ecid = satellite?.cookie.get(ECID_COOKIE)?.split('|')[1];
+  const ecid = decodeURIComponent(satellite?.cookie.get(ECID_COOKIE)).split('|')[1];
   const ims = await getIMS();
   const isSignedInUser = ims.isSignedInUser();
-  const guid = alloyAll.xdm.identityMap?.adobeGUID[0].id ?? 'random value';
+  const guid = isSignedInUser ? alloyAll?.xdm.identityMap?.adobeGUID[0].id : 'random value';
+  console.log(guid, ecid);
+  if (!ecid || !guid) {
+    showMessage('error', 'Missing ecid or guid');
+    return null;
+  }
+
   const body = {
     events: [
       {
@@ -441,8 +480,8 @@ async function getAEPBody(email) {
           web: {
             webInteraction: { linkClicks: { value: 1 }, name: 'Form Submission' },
             timestamp: new Date().toISOString(),
-            marketing: { trackingCode: config['campaign-id'] },
           },
+          marketing: { trackingCode: config.campaignId },
         },
       },
     ],
@@ -454,7 +493,6 @@ async function sendFormData(form) {
   let messageType = 'success';
   let errorMsg;
   try {
-    // Move config
     const { config } = getMetadata();
     const formData = Object.fromEntries(new FormData(form));
     disableForm(form);
@@ -465,13 +503,21 @@ async function sendFormData(form) {
       consentId = id;
     }
     const { imsClientId } = miloConfig;
-    const mpsBody = formatMPSData({ ...formData, consentId: appendLangToConsnetId(consentId), 'mps-sname': config['mps-sname'], appClientId: imsClientId });
+    const { mpsSname } = config;
+    const mpsBody = formatMPSData({
+      ...formData,
+      consentId: appendLangToConsnetId(consentId),
+      mpsSname,
+      appClientId: imsClientId,
+    });
     const aepBody = await getAEPBody(formData.email);
+    if (!aepBody) return;
     const ims = await getIMS();
     const { token } = ims.getAccessToken() ?? {};
     const { env } = miloConfig;
     const endPoint = SUBMIT_FORM_ENDPOINTS[env.name] ?? SUBMIT_FORM_ENDPOINTS.stage;
     console.log('AEP BODY', aepBody);
+    // await new Promise((resolve) => setTimeout(() => resolve(), 2000));
     const submitFormReq = await fetch(endPoint, {
       method: 'POST',
       headers: {
@@ -484,13 +530,24 @@ async function sendFormData(form) {
     const submitFormRes = await submitFormReq.json();
     console.log(submitFormRes);
     if (!submitFormReq.ok) {
-      throw new Error(`MPS request failed: ${JSON.stringify(submitFormRes)}`);
+      messageType = 'error';
+      errorMsg = `MPS request failed: ${JSON.stringify(submitFormRes)}`;
     }
   } catch (e) {
     messageType = 'error';
     errorMsg = e;
   }
   showMessage(messageType, errorMsg);
+}
+
+function validateEmail(email) {
+  const regex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+  if (regex.test(email.value)) return true;
+  // This can be authorable ?
+  email.setCustomValidity('Please enter a valid email address.');
+  email.reportValidity();
+  email.addEventListener('change', () => email.setCustomValidity(''), { once: true });
+  return false;
 }
 
 async function decorateForm(el, foreground) {
@@ -536,6 +593,9 @@ async function decorateForm(el, foreground) {
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
     if (consentStringContainer.classList.contains('empty')) return;
+    const email = form.querySelector('#email');
+    if (!validateEmail(email)) return;
+
     await insertProgress(submitButton.querySelector('button'), 's');
     await sendFormData(form);
   });
@@ -563,9 +623,9 @@ function decorateButton(el, isFormButton) {
   el.replaceWith(buttonContainer);
 }
 
-async function decorateText(el) {
+async function decorateText(el, foreground) {
   for (const child of [...el.children]) {
-    const isForeground = child.classList.contains('foreground');
+    const isForeground = child === foreground;
     const text = isForeground ? child.lastElementChild : child.firstElementChild;
     text.classList.add('text');
     [...text.children].forEach((textEl) => {
@@ -581,19 +641,28 @@ async function decorateText(el) {
         textEl.classList.add('body-m');
       }
     });
+    if (!isForeground) {
+      text.classList.add('hidden');
+      text.parentElement.remove();
+      foreground.appendChild(text);
+    }
   }
+  const ariaLive = createTag('div', {
+    class: 'aria-live-container',
+    'aria-live': 'polite',
+    role: 'status',
+  });
+  el.appendChild(ariaLive);
 }
 
 export default async function init(el) {
   const blockChildren = [...el.children];
   await insertProgress(el, 'l');
-  setMetadata(el);
   const ims = await getIMS();
-  // Maybe change to beta-waitlist
-  if (el.classList.contains('waitlist') && !ims.isSignedInUser()) {
-    ims.signIn();
-    return;
-  }
+  // if (el.classList.contains('waitlist') && !ims.isSignedInUser()) {
+  //   ims.signIn();
+  //   return;
+  // }
   el.replaceChildren(...blockChildren);
 
   const foreground = el.children[0];
@@ -602,14 +671,23 @@ export default async function init(el) {
   const errorMessage = el.children[2];
   successMessage.classList.add('hidden');
   errorMessage.classList.add('hidden');
-  // ACCESSIBILITY
-  // Check design
-  decorateText(el);
+  // Tests
+  decorateText(el, foreground);
+
+  const metadataError = setMetadata(el);
+  if (metadataError) {
+    showMessage('error', metadataError);
+    return;
+  }
+
   const media = foreground.querySelector(':scope > div:not([class])');
   media?.classList.add('image');
-  setMessageEls(el);
+  const correctMessageEls = setMessageEls(el);
+  if (!correctMessageEls) {
+    showMessage('error', 'Missing success/error message');
+    return;
+  }
   try {
-    // await sendAEPData('ratko@test.com', '11111');
     await decorateForm(el, foreground);
   } catch (e) {
     showMessage('error', e);
