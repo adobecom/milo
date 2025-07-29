@@ -1,1 +1,1 @@
-.brand-concierge { background: #f80; }
+.brand-concierge { background: var(--brand-concierge-bg); }
