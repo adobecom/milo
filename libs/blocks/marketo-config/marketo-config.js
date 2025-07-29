@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import { html, render, useContext, useState, useEffect } from '../../deps/htm-preact.js';
 import { utf8ToB64, loadBlock, createTag } from '../../utils/utils.js';
 import { ConfiguratorContext, ConfiguratorProvider, saveStateToLocalStorage, loadStateFromLocalStorage } from './context.js';
@@ -112,8 +113,11 @@ const validateState = (state, panelsData) => {
     });
   });
 
-  if ('form.fldStepPref' in state && state['form.fldStepPref']?.[2]?.length > 0) {
-    validatedState['form.fldStepPref'] = state['form.fldStepPref'];
+  const stepPreferences = state['form.fldStepPref'] || {};
+  const count = Object.values(stepPreferences).findLastIndex((fields) => fields?.length) + 1 || 1;
+
+  if (count > 1) {
+    validatedState['form.fldStepPref'] = stepPreferences;
   }
 
   return validatedState;
@@ -199,7 +203,7 @@ const getPanels = (panelsData, lsKey) => {
 };
 
 const getDataUrl = (state) => {
-  const url = window.location.href.split('#')[0];
+  const url = window.location.href.split(/#|\?/)[0];
   return `${url}#${utf8ToB64(JSON.stringify(state))}`;
 };
 
@@ -247,7 +251,9 @@ const Configurator = ({ title, panelsData, lsKey }) => {
   useEffect(() => {
     const contentEl = document.querySelector('.content-panel');
     const validatedState = validateState(state, panelsData);
-    const iframe = createTag('iframe', { src: window.location.href.split(/#|\?/)[0] });
+    const url = window.location.href.split(/#|\?/)[0];
+    const isPreview = window.location.href.includes('preview=1');
+    const iframe = createTag('iframe', { src: url + (isPreview ? '?preview=1' : '') });
 
     saveStateToLocalStorage(validatedState, lsKey);
     contentEl.replaceChildren(iframe);
@@ -286,7 +292,7 @@ const Configurator = ({ title, panelsData, lsKey }) => {
     if (!selectedRules || Object.keys(selectedRules).length === 0) return;
 
     applyRulesToState(selectedRules);
-  }, [state['form.template']]);
+  }, [state['form.template'], state.reset]);
 
   return html`
     <div class="tool-header">

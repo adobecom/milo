@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import { html, useContext, useState, useEffect } from '../../deps/htm-preact.js';
 import { ConfiguratorContext } from './context.js';
 import { Select } from '../../ui/controls/formControls.js';
@@ -5,19 +6,19 @@ import TagSelect from '../../ui/controls/TagSelector.js';
 
 const STEP_OPTIONS = { 1: 'one', 2: 'multi-2', 3: 'multi-3' };
 const FORM_FIELDS = [
-  { name: 'name', label: 'First and Last Name', step: 1 },
   { name: 'email', label: 'Email', step: 1 },
-  { name: 'phone', label: 'Phone', step: 1 },
-  { name: 'company', label: 'Company', step: 1 },
   { name: 'country', label: 'Country', step: 1 },
-  { name: 'state', label: 'State', step: 1 },
-  { name: 'postalCode', label: 'Postal Code', step: 1 },
+  { name: 'name', label: 'First and Last Name', step: 2 },
+  { name: 'phone', label: 'Phone', step: 2 },
   { name: 'mktoFormsJobTitle', label: 'Job Title', step: 2 },
-  { name: 'mktoFormsCompanyType', label: 'Company Type', step: 2 },
   { name: 'mktoFormsFunctionalArea', label: 'Functional Area', step: 2 },
   { name: 'mktoFormsRevenue', label: 'Annual Revenue', step: 2 },
   { name: 'mktoFormsEmployeeRange', label: 'Employee Range', step: 2 },
+  { name: 'company', label: 'Company', step: 3 },
+  { name: 'state', label: 'State', step: 3 },
+  { name: 'postcode', label: 'Postal Code', step: 3 },
   { name: 'mktoFormsPrimaryProductInterest', label: 'Primary Product Interest', step: 3 },
+  { name: 'mktoFormsCompanyType', label: 'Company Type', step: 3 },
   { name: 'mktoFormsComments', label: 'Comments', step: 3 },
   { name: 'mktoRequestProductDemo', label: 'Request Product Demo', step: 3 },
 ];
@@ -58,12 +59,11 @@ const StepPanel = () => {
 
   useEffect(() => {
     const stepPreferences = state['form.fldStepPref'] || {};
-    const filteredSteps = Object.keys(STEP_OPTIONS)
-      .filter((key) => stepPreferences?.[key]?.length > 0);
+    const count = Object.values(stepPreferences).findLastIndex((fields) => fields?.length) + 1 || 1;
 
-    setStepCount(Math.max(1, ...filteredSteps.map(Number)));
+    setStepCount(Math.max(1, count));
     setUnselected(getUnselectedOptions(allOptions, stepPreferences));
-  }, []);
+  }, [state.reset]);
 
   const setFieldStepPreferences = (fieldStepPreferences) => {
     dispatch({

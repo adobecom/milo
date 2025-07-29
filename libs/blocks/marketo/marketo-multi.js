@@ -86,7 +86,7 @@ function setValidationSteps(formEl, totalSteps, currentStep) {
   const validationMap = formData.form?.fldStepPref || VALIDATION_STEP;
   formEl.querySelectorAll('.mktoFormRowTop').forEach((row) => {
     const rowAttr = row.getAttribute('data-mktofield') || row.getAttribute('data-mkto_vis_src');
-    const mapStep = Object.keys(validationMap).find((stepNum) => validationMap[stepNum].some((field) => field.toLowerCase() === rowAttr?.toLowerCase())) || '1';
+    const mapStep = Object.keys(validationMap).find((stepNum) => validationMap[stepNum].some((field) => field?.toLowerCase() === rowAttr?.toLowerCase())) || '1';
     const step = Math.min(parseInt(mapStep, 10), totalSteps);
     row.dataset.validate = rowAttr?.startsWith('adobe-privacy') ? totalSteps : step;
     const fields = row.querySelectorAll('input, select, textarea');
