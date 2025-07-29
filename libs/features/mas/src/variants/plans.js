@@ -190,6 +190,7 @@ export class Plans extends VariantLayout {
 
     async adjustLegal() {
         await this.card.updateComplete;
+        await customElements.whenDefined('inline-price');
         if (this.legalAdjusted) return;
         this.legalAdjusted = true;
         const prices = [];
