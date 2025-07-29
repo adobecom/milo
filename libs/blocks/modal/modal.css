@@ -333,7 +333,7 @@
     border-radius: 0;
   }
 
-  .dialog-modal:not(.tall-video, .three-in-one, .commerce-frame) {
+  .dialog-modal:not(.tall-video, .three-in-one, .commerce-frame, .upgrade-flow-modal) {
     max-height: var(--modal-max-height-mobile);
   }
 
