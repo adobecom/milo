@@ -1538,7 +1538,6 @@ merch-card-collection:has([slot="subtitle"]) merch-card {
             min-height: 273px;
             border: 1px solid var(--merch-card-custom-border-color, #dadada);
             --merch-card-plans-min-width: 244px;
-            --merch-card-plans-max-width: 244px;
             --merch-card-plans-padding: 15px;
             --merch-card-plans-subtitle-display: contents;
             --merch-card-plans-heading-min-height: 23px;
@@ -1580,9 +1579,8 @@ merch-card-collection:has([slot="subtitle"]) merch-card {
             min-height: var(--merch-card-plans-heading-min-height);
         }
 
-        :host([variant='plans']) .body {
+        :host([variant^='plans']) .body {
             min-width: var(--merch-card-plans-min-width);
-            max-width: var(--merch-card-plans-max-width);
             padding: var(--merch-card-plans-padding);
         }
 
@@ -1619,7 +1617,7 @@ merch-card-collection:has([slot="subtitle"]) merch-card {
             height: 12px;
         }
 
-        :host([variant='plans']) footer {
+        :host([variant^='plans']) footer {
             padding: var(--merch-card-plans-padding);
             padding-top: 1px;
         }
