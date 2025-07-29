@@ -441,8 +441,8 @@ async function getAEPBody(email) {
           web: {
             webInteraction: { linkClicks: { value: 1 }, name: 'Form Submission' },
             timestamp: new Date().toISOString(),
-            marketing: { trackingCode: config['campaign-id'] },
           },
+          marketing: { trackingCode: config['campaign-id'] },
         },
       },
     ],
