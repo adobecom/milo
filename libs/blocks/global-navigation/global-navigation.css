@@ -220,11 +220,11 @@ header.global-navigation {
 }
 
 /* Item with active dropdown */
-.feds-dropdown--active {
+.global-navigation .feds-dropdown--active {
   position: relative;
 }
 
-.feds-dropdown--active::before {
+.global-navigation .feds-dropdown--active::before {
   position: absolute;
   top: 0;
   bottom: 0;
@@ -235,7 +235,8 @@ header.global-navigation {
   z-index: 1;
 }
 
-[dir = "rtl"] .feds-dropdown--active::before {
+
+.global-navigation [dir = "rtl"] .feds-dropdown--active::before {
   right: 0;
   left: initial;
 }
