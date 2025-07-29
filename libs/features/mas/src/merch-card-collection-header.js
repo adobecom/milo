@@ -344,24 +344,26 @@ export default class MerchCardCollectionHeader extends LitElement {
         }
     `;
 
-    static placeholderKeys = [
-      'searchText',
-      'filtersText',
-      'sortText',
-      'popularityText',
-      'alphabeticallyText',
-      'noResultText',
-      'resultText',
-      'resultsText',
-      'resultMobileText',
-      'resultsMobileText',
-      'noSearchResultsText',
-      'searchResultText',
-      'searchResultsText',
-      'noSearchResultsMobileText',
-      'searchResultMobileText',
-      'searchResultsMobileText',
-    ]
+    get placeholderKeys() {
+        return [
+            'searchText',
+            'filtersText',
+            'sortText',
+            'popularityText',
+            'alphabeticallyText',
+            'noResultText',
+            'resultText',
+            'resultsText',
+            'resultMobileText',
+            'resultsMobileText',
+            'noSearchResultsText',
+            'searchResultText',
+            'searchResultsText',
+            'noSearchResultsMobileText',
+            'searchResultMobileText',
+            'searchResultsMobileText',
+        ];
+    }
 }
 
 customElements.define('merch-card-collection-header', MerchCardCollectionHeader);

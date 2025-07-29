@@ -11,7 +11,6 @@ import {
 import { styles } from './merch-card-collection.css.js';
 import { getService } from './utils.js';
 import './mas-commerce-service';
-import MerchCardCollectionHeader from './merch-card-collection-header.js';
 
 const MERCH_CARD_COLLECTION = 'merch-card-collection';
 const MERCH_CARD_COLLECTION_LOAD_TIMEOUT = 20000;
@@ -227,7 +226,6 @@ export class MerchCardCollection extends LitElement {
             } else {
             this.startDeeplink();
         }
-        this.initializeHeader();
         this.initializePlaceholders();
     }
 
@@ -236,41 +234,40 @@ export class MerchCardCollection extends LitElement {
         this.stopDeeplink?.();
     }
 
-    initializeHeader() {
+    async initializeHeader() {
+        await import('./merch-card-collection-header.js');
+        await customElements.whenDefined('merch-card-collection-header');
         const header = document.createElement('merch-card-collection-header');
         header.collection = this;
         header.classList.add(this.variant);
         this.parentElement.insertBefore(header, this);
         this.header = header;
+        // Transfer header-related placeholders
+        const existingPlaceholders = this.querySelectorAll('[placeholder]');
+        existingPlaceholders.forEach(placeholder => {
+            const key = placeholder.getAttribute('slot');
+            if (this.header.placeholderKeys.includes(key)) {
+                this.header.append(placeholder);
+            }
+        });
     }
 
     initializePlaceholders() {
-        const existingPlaceholders = this.querySelectorAll('[placeholder]');
-        if (existingPlaceholders.length > 0) {
-            existingPlaceholders.forEach(placeholder => {
-                const key = placeholder.getAttribute('slot');
-                if (MerchCardCollectionHeader.placeholderKeys.includes(key)) {
-                    this.header?.append(placeholder);
-                }
-            });
-        }
-        else {
-            const placeholders = this.data?.placeholders || {};
-            for (const key of Object.keys(placeholders)) {
-                const value = placeholders[key];
-                const tag = value.includes('<p>') ? 'div' : 'p';
-                const placeholder = document.createElement(tag);
-                placeholder.setAttribute('slot', key);
-                placeholder.setAttribute('placeholder', '');
-                placeholder.innerHTML = value;
-                if (MerchCardCollectionHeader.placeholderKeys.includes(key)) this.header?.append(placeholder);
-                else this.append(placeholder);
-            }
+        const placeholders = this.data?.placeholders || {};
+        for (const key of Object.keys(placeholders)) {
+            const value = placeholders[key];
+            const tag = value.includes('<p>') ? 'div' : 'p';
+            const placeholder = document.createElement(tag);
+            placeholder.setAttribute('slot', key);
+            placeholder.setAttribute('placeholder', '');
+            placeholder.innerHTML = value;
+            this.append(placeholder);
         }
     }
 
-    attachSidenav(sidenav, append = true) {
+    async attachSidenav(sidenav, append = true) {
         if (!sidenav) return;
+        await this.initializeHeader();
         if (append) this.parentElement.prepend(sidenav);
         this.sidenav = sidenav;
         this.sidenav.variant = this.variant;
