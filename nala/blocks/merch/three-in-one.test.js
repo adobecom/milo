@@ -119,7 +119,7 @@ test.describe('ThreeInOne Block test suite', () => {
         await expect(cta).toHaveAttribute(key, value);
       }
       await cta.click();
-      await page.waitForLoadState('domcontentloaded');
+      await page.waitForTimeout(3000);
       await page.waitForSelector('.dialog-modal');
       const modal = threeInOne.getModal();
       expect(modal).toBeVisible();
@@ -131,15 +131,16 @@ test.describe('ThreeInOne Block test suite', () => {
     await test.step('Validate ThreeInOne modal with DC AddOn', async () => {
       await page.waitForLoadState('domcontentloaded');
       const { iframeSrcWithAddOn, attributes } = features[4];
-      const addon1st = await page.locator('#addon-checkbox').nth(1);
+      const addon1st = await page.locator('input#addon-checkbox').nth(1);
       expect(addon1st).toBeVisible();
-      addon1st.click();
-      const cta = await page.locator('[data-wcs-osi="-lYm-YaTSZoUgv1gzqCgybgFotLqRsLwf8CgYdvdnsQ"][data-checkout-workflow-step="segmentation"]');
+      addon1st.check();
+      await page.waitForTimeout(500);
+      const cta = await page.locator('[data-wcs-osi="-lYm-YaTSZoUgv1gzqCgybgFotLqRsLwf8CgYdvdnsQ,bKwlW94xSVU_ykn4WHDjS1eiZrXopDo8VD7UhGAKYBI"][data-checkout-workflow-step="segmentation"]');
       for (const [key, value] of Object.entries(attributes)) {
         await expect(cta).toHaveAttribute(key, value);
       }
       await cta.click();
-      await page.waitForLoadState('domcontentloaded');
+      await page.waitForTimeout(3000);
       await page.waitForSelector('.dialog-modal');
       const modal = threeInOne.getModal();
       expect(modal).toBeVisible();
