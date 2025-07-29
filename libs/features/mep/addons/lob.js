@@ -5,6 +5,33 @@ function getCookie(key) {
   return cookie ? cookie[1] : null;
 }
 
+const getConsentStatus = (level) => {
+  const cookieGrp = window.adobePrivacy?.activeCookieGroups();
+  return cookieGrp?.includes(`C000${level}`);
+};
+
+function waitForConsent(level = 2) {
+  return new Promise((resolve) => {
+    const fallbackTimeout = setTimeout(() => resolve(false), 30000);
+    if (window.adobePrivacy) {
+      clearTimeout(fallbackTimeout);
+      resolve(getConsentStatus(level));
+    }
+    window.addEventListener('adobePrivacy:PrivacyConsent', () => {
+      clearTimeout(fallbackTimeout);
+      resolve(true);
+    });
+    window.addEventListener('adobePrivacy:PrivacyReject', () => {
+      clearTimeout(fallbackTimeout);
+      resolve(false);
+    });
+    window.addEventListener('adobePrivacy:PrivacyCustom', () => {
+      clearTimeout(fallbackTimeout);
+      resolve(getConsentStatus(level));
+    });
+  });
+}
+
 export async function getSpectraLOB(lastVisitedPage) {
   const getECID = getCookie('AMCV_9E1005A551ED61CA0A490D45@AdobeOrg');
   if (!getECID) return false;
@@ -22,6 +49,7 @@ export async function getSpectraLOB(lastVisitedPage) {
       body: null,
     });
     const content = await rawResponse.json();
+    console.log('Spectra LOB:', content);
     return content.modelLineOfBusiness?.toLowerCase();
   } catch (e) {
     if (e.name === 'TimeoutError') window.lana?.log('Spectra Timeout'); // Abort signal
@@ -30,6 +58,13 @@ export async function getSpectraLOB(lastVisitedPage) {
   }
 }
 
-export default async function init(addon, enablement, config) {
-  config.mep[addon] = enablement !== true ? enablement : await getSpectraLOB(document.referrer);
+export default async function init(addon, enablement) {
+  if (enablement !== true) return enablement;
+  // const cookieGrp = window.adobePrivacy?.activeCookieGroups();
+  // console.log(cookieGrp);
+  // const performanceCookieConsent = cookieGrp.includes('C0002');
+  const hasConsent = await waitForConsent(5);
+  // if (!hasConsent) return 'test';
+  const lobValue = await getSpectraLOB(document.referrer);
+  return lobValue;
 }

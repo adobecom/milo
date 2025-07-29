@@ -1393,8 +1393,6 @@ export function enablePersonalizationV2() {
 }
 
 async function checkForPageMods() {
-  const config = getConfig();
-  console.log(config);
   const {
     mep: mepParam,
     mepHighlight,
@@ -1407,24 +1405,22 @@ async function checkForPageMods() {
   const promises = {};
 
   const mepAddons = ['lob'];
-  // const mepPromises = [];
   mepAddons.forEach((addon) => {
     const enablement = getMepEnablement(addon);
     if (enablement === false) return;
-    const currentPromiseCheck = new Promise((resolve) => {
-      (async () => {
-        try {
-          const { default: init } = await import(`../features/mep/addons/${addon}.js`);
-          await init(addon, enablement, config);
-          /* c8 ignore next 3 */
-        } catch (err) {
-          console.log(`Failed loading MEP ${addon} addon`, err);
-        }
-        resolve();
-      })();
-    });
-    // mepPromises.push(promise);
-    promises[addon] = currentPromiseCheck;
+    promises[addon] = (async () => {
+      let returnValue;
+      // (async () => {
+      try {
+        const { default: init } = await import(`../features/mep/addons/${addon}.js`);
+        returnValue = await init(addon, enablement);
+        /* c8 ignore next 3 */
+      } catch (err) {
+        console.log(`Failed loading MEP ${addon} addon`, err);
+      }
+      return returnValue;
+    })();
+    // })();
   });
 
   if (mepParam === 'off') return;

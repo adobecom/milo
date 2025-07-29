@@ -1450,7 +1450,7 @@ export async function init(enablements = {}) {
   const {
     mepParam, mepHighlight, mepButton, pzn, pznroc, promo, enablePersV2,
     target, ajo, countryIPPromise, mepgeolocation, targetInteractionPromise, calculatedTimeout,
-    postLCP,
+    postLCP, promises,
   } = enablements;
   const config = getConfig();
   if (postLCP) {
@@ -1470,8 +1470,13 @@ export async function init(enablements = {}) {
       countryIPPromise,
       geoLocation: mepgeolocation,
       targetInteractionPromise,
+      resolvedPromises: {},
     };
-
+    // this will fail out if a single promise fails
+    // if (Object.keys(promises).length) await Promise.all(Object.values(promises));
+    for (const [key, promise] of Object.entries(promises)) {
+      config.mep.resolvedPromises[key] = await promise;
+    }
     manifests = manifests.concat(await combineMepSources(pzn, pznroc, promo, mepParam));
     manifests?.forEach((manifest) => {
       if (manifest.disabled) return;
