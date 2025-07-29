@@ -974,6 +974,12 @@ merch-card[variant="plans-education"] [slot="body-xs"] span.price:not(.price-leg
   font-weight: 700;
 }
 
+merch-card[variant^="plans"] [slot="subtitle"] {
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 18px;
+}
+
 merch-card[variant^="plans"] [slot="heading-xs"] span.price.price-strikethrough,
 merch-card[variant^="plans"] [slot="heading-m"] span.price.price-strikethrough,
 merch-card[variant="plans-education"] [slot="body-xs"] span.price.price-strikethrough {
@@ -1159,6 +1165,12 @@ merch-card-collection-header.plans {
     --merch-card-collection-card-width: var(--consonant-merch-card-plans-width);
 }
 
+merch-card-collection:has([slot="subtitle"]) merch-card {
+    --merch-card-plans-subtitle-display: block;
+    --merch-card-plans-subtitle-min-height: 18px;
+    --merch-card-plans-subtitle-margin-bottom: -8px;
+}
+
 .columns .text .foreground {
     margin: 0;
 }
@@ -1264,6 +1276,9 @@ merch-card-collection-header.plans {
             --merch-card-plans-min-width: 244px;
             --merch-card-plans-max-width: 244px;
             --merch-card-plans-padding: 15px;
+            --merch-card-plans-subtitle-display: contents;
+            --merch-card-plans-subtitle-min-height: unset;
+            --merch-card-plans-subtitle-margin-bottom: 0;
             --merch-card-plans-heading-min-height: 23px;
             --merch-color-green-promo: #05834E;
             --secure-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%23505050' viewBox='0 0 12 15'%3E%3Cpath d='M11.5 6H11V5A5 5 0 1 0 1 5v1H.5a.5.5 0 0 0-.5.5v8a.5.5 0 0 0 .5.5h11a.5.5 0 0 0 .5-.5v-8a.5.5 0 0 0-.5-.5ZM3 5a3 3 0 1 1 6 0v1H3Zm4 6.111V12.5a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1.389a1.5 1.5 0 1 1 2 0Z'/%3E%3C/svg%3E");
@@ -1288,6 +1303,12 @@ merch-card-collection-header.plans {
             border: 0;
             border-top: 1px solid #E8E8E8;
             margin-top: 8px;
+        }
+
+        :host([variant^='plans']) slot[name="subtitle"] {
+            display: var(--merch-card-plans-subtitle-display);
+            min-height: var(--merch-card-plans-subtitle-min-height);
+            margin-bottom: var(--merch-card-plans-subtitle-margin-bottom);
         }
 
         :host([variant='plans']) ::slotted([slot='heading-xs']) {

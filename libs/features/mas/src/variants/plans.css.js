@@ -30,6 +30,12 @@ merch-card[variant="plans-education"] [slot="body-xs"] span.price:not(.price-leg
   font-weight: 700;
 }
 
+merch-card[variant^="plans"] [slot="subtitle"] {
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 18px;
+}
+
 merch-card[variant^="plans"] [slot="heading-xs"] span.price.price-strikethrough,
 merch-card[variant^="plans"] [slot="heading-m"] span.price.price-strikethrough,
 merch-card[variant="plans-education"] [slot="body-xs"] span.price.price-strikethrough {
@@ -213,6 +219,12 @@ merch-card-collection-header.plans {
 .three-merch-cards.plans,
 .four-merch-cards.plans {
     --merch-card-collection-card-width: var(--consonant-merch-card-plans-width);
+}
+
+merch-card-collection:has([slot="subtitle"]) merch-card {
+    --merch-card-plans-subtitle-display: block;
+    --merch-card-plans-subtitle-min-height: 18px;
+    --merch-card-plans-subtitle-margin-bottom: -8px;
 }
 
 .columns .text .foreground {
