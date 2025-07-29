@@ -35,6 +35,7 @@ export const PLANS_AEM_FRAGMENT_MAPPING = {
     whatsIncluded: { tag: 'div', slot: 'whats-included' },
     ctas: { slot: 'footer', size: 'm' },
     style: 'consonant',
+    perUnitLabel: { tag: 'span', slot: 'per-unit-label' },
 };
 
 export const PLANS_EDUCATION_AEM_FRAGMENT_MAPPING = {
