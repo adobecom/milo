@@ -130,6 +130,7 @@ test.describe('ThreeInOne Block test suite', () => {
     await test.step('Validate ThreeInOne modal with DC AddOn', async () => {
       const { iframeSrcWithAddOn, attributes } = features[4];
       const addon1st = await page.locator('#addon-checkbox').nth(1);
+      expect(addon1st).toBeVisible();
       addon1st.click();
       const cta = await page.locator('[data-wcs-osi="-lYm-YaTSZoUgv1gzqCgybgFotLqRsLwf8CgYdvdnsQ"][data-checkout-workflow-step="segmentation"]');
       for (const [key, value] of Object.entries(attributes)) {
