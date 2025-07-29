@@ -119,8 +119,7 @@ test.describe('ThreeInOne Block test suite', () => {
         await expect(cta).toHaveAttribute(key, value);
       }
       await cta.click();
-      await page.waitForTimeout(3000);
-      await page.waitForSelector('.dialog-modal');
+      await page.waitForSelector('.dialog-modal', { timeout: 60000 });
       const modal = threeInOne.getModal();
       expect(modal).toBeVisible();
       const iframe = await modal.locator('iframe');
@@ -140,8 +139,7 @@ test.describe('ThreeInOne Block test suite', () => {
         await expect(cta).toHaveAttribute(key, value);
       }
       await cta.click();
-      await page.waitForTimeout(3000);
-      await page.waitForSelector('.dialog-modal');
+      await page.waitForSelector('.dialog-modal', { timeout: 60000 });
       const modal = threeInOne.getModal();
       expect(modal).toBeVisible();
       const iframe = await modal.locator('iframe');
