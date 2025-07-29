@@ -52,7 +52,7 @@ const createReducer = (defaultState) => (state, action) => {
     case 'SET_VALUE':
       return { ...state, [action.prop]: action.value };
     case 'RESET_STATE':
-      return deepCopy(defaultState);
+      return { ...deepCopy(defaultState), reset: Date.now() };
     /* c8 ignore next 2 */
     default:
       return state;

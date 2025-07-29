@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import { html, useContext, useState, useEffect } from '../../deps/htm-preact.js';
 import { ConfiguratorContext } from './context.js';
 import { Select } from '../../ui/controls/formControls.js';
@@ -11,7 +12,7 @@ const FORM_FIELDS = [
   { name: 'company', label: 'Company', step: 1 },
   { name: 'country', label: 'Country', step: 1 },
   { name: 'state', label: 'State', step: 1 },
-  { name: 'postalCode', label: 'Postal Code', step: 1 },
+  { name: 'postcode', label: 'Postal Code', step: 1 },
   { name: 'mktoFormsJobTitle', label: 'Job Title', step: 2 },
   { name: 'mktoFormsCompanyType', label: 'Company Type', step: 2 },
   { name: 'mktoFormsFunctionalArea', label: 'Functional Area', step: 2 },
@@ -58,12 +59,11 @@ const StepPanel = () => {
 
   useEffect(() => {
     const stepPreferences = state['form.fldStepPref'] || {};
-    const filteredSteps = Object.keys(STEP_OPTIONS)
-      .filter((key) => stepPreferences?.[key]?.length > 0);
+    const count = Object.values(stepPreferences).findLastIndex((fields) => fields?.length) + 1 || 1;
 
-    setStepCount(Math.max(1, ...filteredSteps.map(Number)));
+    setStepCount(Math.max(1, count));
     setUnselected(getUnselectedOptions(allOptions, stepPreferences));
-  }, []);
+  }, [state.reset]);
 
   const setFieldStepPreferences = (fieldStepPreferences) => {
     dispatch({
