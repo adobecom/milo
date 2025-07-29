@@ -1,5 +1,5 @@
 import { createTag, getConfig } from '../../utils/utils.js';
-import { postProcessAutoblock, handleCustomAnalyticsEvent } from '../merch/autoblock.js';
+import { postProcessAutoblock, handleCustomAnalyticsEvent, getTabNestedLh } from '../merch/autoblock.js';
 import '../../deps/mas/merch-card.js';
 import '../../deps/mas/merch-quantity-select.js';
 import {
@@ -115,11 +115,18 @@ function getSidenav(collection) {
 }
 
 function enableSidenavAnalytics(el) {
+  const tabDaaLh = getTabNestedLh(el);
+  if (el.sidenav && tabDaaLh) {
+    el.sidenav.setAttribute('data-block', '');
+    el.sidenav.setAttribute('daa-lh', tabDaaLh);
+  }
+
   el.sidenav?.addEventListener('merch-sidenav:select', ({ target }) => {
     if (!target || target.oldValue === target.selectedValue) return;
-    const daaLhParent = target.closest('[daa-lh]');
-    if (daaLhParent) {
-      daaLhParent.parentElement.setAttribute('daa-lh', `${target.selectedValue}--cat`);
+    const container = target.closest('.collection-container');
+    const updated = container.getAttribute('daa-lh')?.includes('--cat');
+    container?.setAttribute('daa-lh', `${target.selectedValue}--cat`);
+    if (updated) {
       handleCustomAnalyticsEvent('cat-changed', target);
     }
     target.oldValue = target.selectedValue;

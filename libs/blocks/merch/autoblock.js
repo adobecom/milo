@@ -56,16 +56,24 @@ export function handleCustomAnalyticsEvent(eventName, element) {
   }
 }
 
+export function getTabNestedLh(el) {
+  const tabPanel = el.closest('.tabpanel');
+  const tabDaaLh = tabPanel?.getAttribute('data-nested-lh');
+  return tabDaaLh ? `${tabDaaLh}--tab` : '';
+}
+
 function enableCardAnalytics(el, self) {
+  const tabPanel = el.closest('.tabpanel');
+  const tabDaaLh = tabPanel?.getAttribute('data-nested-lh') ? `${tabPanel.getAttribute('data-nested-lh')}--tab` : '';
+
   const cards = self ? [el] : el.querySelectorAll('merch-card');
   cards.forEach(async (card) => {
     await card.checkReady();
     card.setAttribute('name', card.getAttribute('daa-lh'));
-    card.removeAttribute('daa-lh');
-    card.querySelectorAll('a[daa-ll]').forEach((anchor) => {
-      const ll = anchor.getAttribute('daa-ll');
-      anchor.setAttribute('daa-ll', `${ll.slice(0, ll.indexOf('|'))}|${card.name}--card`);
-    });
+    if (tabDaaLh) {
+      card.setAttribute('data-block', '');
+      card.setAttribute('daa-lh', tabDaaLh);
+    }
     card.querySelectorAll('merch-addon').forEach((ao) => {
       ao.addEventListener('change', (aoe) => {
         handleCustomAnalyticsEvent(`addon-${aoe.detail.checked ? 'checked' : 'unchecked'}|${card.name}--card`, aoe.target);
