@@ -378,6 +378,7 @@ merch-card[variant="simplified-pricing-express"] [slot="cta"] sp-button[variant=
 merch-card[variant="simplified-pricing-express"] [slot="cta"] button.spectrum-Button--accent,
 merch-card[variant="simplified-pricing-express"] [slot="cta"] a.spectrum-Button.spectrum-Button--accent {
     background-color: var(--spectrum-indigo-900);
+    width: 100%;
 }
 
 merch-card[variant="simplified-pricing-express"] [slot="footer"] sp-button[variant="accent"] {

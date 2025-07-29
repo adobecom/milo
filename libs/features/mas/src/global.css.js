@@ -194,10 +194,6 @@ merch-card-collection {
     display: contents;
 }
 
-merch-card-collection > merch-card:not([style]) {
-    display: none;
-}
-
 merch-card-collection > p[slot],
 merch-card-collection > div[slot] p,
 merch-card-collection-header > p[slot],

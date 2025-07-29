@@ -11,6 +11,27 @@
             href="https://p.typekit.net/p.css?s=1&k=hah7vzn&ht=tk&f=7180.7181.7182.7183.22474.22749.22750.22751.22753&a=8634977&app=typekit&e=css"
         />
         <link rel="stylesheet" href="https://use.typekit.net/hah7vzn.css" />
+        <style>
+            /* Fix for Express cards height in docs page */
+            .express-container merch-card[variant="simplified-pricing-express"] {
+                min-height: 450px;
+            }
+            
+            /* Fix for tooltip sizing */
+            mas-tooltip .css-tooltip[data-tooltip]::before {
+                width: auto !important;
+                max-width: 250px !important;
+                white-space: normal !important;
+                font-size: 12px !important;
+                padding: 6px 10px !important;
+            }
+            
+            /* Ensure tooltips don't interfere with layout */
+            mas-tooltip {
+                display: inline-flex;
+                vertical-align: middle;
+            }
+        </style>
         <script src="/libs/deps/lit-all.min.js" type="module"></script>
 
         <script>
@@ -35,6 +56,10 @@
         <script
             type="module"
             src="../../../features/spectrum-web-components/dist/button.js"
+        ></script>
+        <script
+            type="module"
+            src="../../../features/spectrum-web-components/dist/tooltip.js"
         ></script>
     </head>
 
@@ -108,13 +133,12 @@
                         </h2>
 
                         <div>
-                            <div class="one-merch-card">
-                                <merch-card spectrum="swc"
-                                    ><aem-fragment
-                                        fragment="049b6897-fedf-4bb8-a41f-f42f68667591"
-                                    ></aem-fragment
-                                ></merch-card>
-                            </div>
+                          <merch-card-collection filter="all" class="merch-card-collection simplified-pricing-express" filtered="all" page="1">
+                            <merch-card data-default-card="true"><aem-fragment fragment="67c78f03-7d88-44c9-9a06-05443ec9265d"></aem-fragment></merch-card>
+                            <merch-card><aem-fragment fragment="b28957b9-2341-40f9-9004-24446f68e5e5"></aem-fragment></merch-card>
+                            <merch-card><aem-fragment fragment="aaa728dc-2b44-495c-b9f0-bb82044db18a"></aem-fragment></merch-card>
+                            <merch-card><aem-fragment fragment="c847d523-9228-4793-bdab-f65fe2e80a56"></aem-fragment></merch-card>
+                          </merch-card-collection>
                         </div>
                     </div>
                 </div>
