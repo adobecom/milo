@@ -101,4 +101,41 @@ test.describe('ThreeInOne Block test suite', () => {
       await expect(iframe).toHaveAttribute('src', iframeSrc);
     });
   });
+
+  test(`${features[4].name}, ${features[4].tags}`, async ({ page, baseURL }) => {
+    const threeInOne = new ThreeInOne(page);
+    console.info(`[Test Page]: ${baseURL}${features[4].path}${miloLibs}`);
+
+    await test.step('Navigate to page with ThreeInOne CTAs', async () => {
+      await page.goto(`${baseURL}${features[4].path}${features[4].browserParams}&${miloLibs}`);
+      await page.waitForLoadState('domcontentloaded');
+      await expect(page).toHaveURL(`${baseURL}${features[4].path}${features[4].browserParams}&${miloLibs}`);
+    });
+
+    await test.step('Validate ThreeInOne modal without DC AddOn', async () => {
+      const { iframeSrcNoAddOn } = features[4];
+      const cta = await page.locator('[data-wcs-osi="-lYm-YaTSZoUgv1gzqCgybgFotLqRsLwf8CgYdvdnsQ"][data-checkout-workflow-step="segmentation"]');
+      await cta.click();
+      await page.waitForSelector('.dialog-modal');
+      const modal = threeInOne.getModal();
+      expect(modal).toBeVisible();
+      const iframe = await modal.locator('iframe');
+      await expect(iframe).toHaveAttribute('src', iframeSrcNoAddOn);
+      await threeInOne.closeModal();
+    });
+
+    await test.step('Validate ThreeInOne modal with DC AddOn', async () => {
+      const { iframeSrcWithAddOn } = features[4];
+      const addon1st = await page.locator('#addon-checkbox').nth(1);
+      addon1st.click()
+      const cta = await page.locator('[data-wcs-osi="-lYm-YaTSZoUgv1gzqCgybgFotLqRsLwf8CgYdvdnsQ"][data-checkout-workflow-step="segmentation"]');
+      await cta.click();
+      await page.waitForSelector('.dialog-modal');
+      const modal = threeInOne.getModal();
+      expect(modal).toBeVisible();
+      const iframe = await modal.locator('iframe');
+      await expect(iframe).toHaveAttribute('src', iframeSrcWithAddOn);
+      await threeInOne.closeModal();
+    });
+  });
 });
