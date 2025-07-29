@@ -1,7 +1,6 @@
 :root {
   --modal-focus-color: #109cde;
   --modal-max-height: calc((100vh - 6px) - 2em);
-  --modal-max-height-mobile: calc((100% - 6px) - 2em);
   --modal-z-index: 102;
   --modal-z-index-curtain: 101;
   --modal-close-accent-color: #707070;
@@ -327,10 +326,6 @@
     width: 100%;
     max-width: 100%;
     max-height: 100%;
-  }
-
-  .dialog-modal:not(.tall-video, .three-in-one) {
-    max-height: var(--modal-max-height-mobile);
   }
 
   .dialog-modal.upgrade-flow-modal {
