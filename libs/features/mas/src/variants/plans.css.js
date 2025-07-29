@@ -25,12 +25,12 @@ merch-card[variant^="plans"] [slot="icons"] {
 }
 
 merch-card[variant="plans-education"] [slot="body-xs"] span.price:not(.price-legal) {
-  display: inline-block;
-  font-size: var(--consonant-merch-card-heading-xs-font-size);
-  font-weight: 700;
+    display: inline-block;
+    font-size: var(--consonant-merch-card-heading-xs-font-size);
+    font-weight: 700;
 }
 
-merch-card[variant^="plans"] [slot="subtitle"] {
+merch-card[variant="plans"] [slot="subtitle"] {
     font-size: 14px;
     font-weight: 700;
     line-height: 18px;
@@ -39,32 +39,31 @@ merch-card[variant^="plans"] [slot="subtitle"] {
 merch-card[variant^="plans"] [slot="heading-xs"] span.price.price-strikethrough,
 merch-card[variant^="plans"] [slot="heading-m"] span.price.price-strikethrough,
 merch-card[variant="plans-education"] [slot="body-xs"] span.price.price-strikethrough {
-  font-size: var(--consonant-merch-card-heading-xxxs-font-size);
-  line-height: var(--consonant-merch-card-body-xs-line-height);
-  font-weight: 700;
+    font-size: var(--consonant-merch-card-heading-xxxs-font-size);
+    line-height: var(--consonant-merch-card-body-xs-line-height);
+    font-weight: 700;
 }
 
 merch-card[variant^="plans"] [slot='heading-xs'],
 merch-card[variant="plans-education"] span.heading-xs,
 merch-card[variant="plans-education"] [slot="body-xs"] span.price:not(.price-strikethrough) {
-  min-height: var(--merch-card-plans-heading-xs-min-height);
+    min-height: var(--merch-card-plans-heading-xs-min-height);
 }
 
-merch-card[variant="plans-education"] span.heading-xs {
-  margin-top: 16px;
-  margin-bottom: 8px;
+merch-card[variant="plans-education"] [slot="body-xs"] p:has(.heading-xs) {
+    margin-bottom: 8px;
 }
 
-merch-card[variant="plans-education"] [slot="body-xs"] p:first-of-type span.heading-xs {
-  margin-top: 8px;
+merch-card[variant="plans-education"] [slot="body-xs"] p:has(span[is="inline-price"]) {
+    margin-bottom: 16px;
 }
 
 merch-card[variant="plans-education"] span.promo-text {
-  margin-bottom: 8px;
+    margin-bottom: 8px;
 }
 
 merch-card[variant="plans-education"] p:has(a[href^='tel:']):has(+ p) {
-  margin-bottom: 16px;
+    margin-bottom: 16px;
 }
 
 merch-card[variant^="plans"] [slot="promo-text"],
@@ -73,8 +72,8 @@ merch-card[variant="plans-education"] span.promo-text {
 }
 
 merch-card-collection.plans merch-card {
-  width: auto;
-  height: 100%;
+    width: auto;
+    height: 100%;
 }
 
 merch-card-collection.plans merch-card[variant="plans"] aem-fragment + [slot^="heading-"] {
@@ -223,8 +222,6 @@ merch-card-collection-header.plans {
 
 merch-card-collection:has([slot="subtitle"]) merch-card {
     --merch-card-plans-subtitle-display: block;
-    --merch-card-plans-subtitle-min-height: 18px;
-    --merch-card-plans-subtitle-margin-bottom: -8px;
 }
 
 .columns .text .foreground {
