@@ -119,6 +119,7 @@ test.describe('ThreeInOne Block test suite', () => {
         await expect(cta).toHaveAttribute(key, value);
       }
       await cta.click();
+      await page.waitForLoadState('domcontentloaded');
       await page.waitForSelector('.dialog-modal');
       const modal = threeInOne.getModal();
       expect(modal).toBeVisible();
@@ -128,6 +129,7 @@ test.describe('ThreeInOne Block test suite', () => {
     });
 
     await test.step('Validate ThreeInOne modal with DC AddOn', async () => {
+      await page.waitForLoadState('domcontentloaded');
       const { iframeSrcWithAddOn, attributes } = features[4];
       const addon1st = await page.locator('#addon-checkbox').nth(1);
       expect(addon1st).toBeVisible();
@@ -137,6 +139,7 @@ test.describe('ThreeInOne Block test suite', () => {
         await expect(cta).toHaveAttribute(key, value);
       }
       await cta.click();
+      await page.waitForLoadState('domcontentloaded');
       await page.waitForSelector('.dialog-modal');
       const modal = threeInOne.getModal();
       expect(modal).toBeVisible();
