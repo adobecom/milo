@@ -28,10 +28,6 @@ function renderContainer(
     let markup = '';
     markup += renderSpan(cssClassNames.unitType, perUnitLabel, null, true);
 
-    if (perUnitLabel && (taxInclusivityLabel || planTypeLabel)) {
-        markup += ' (';
-    }
-
     if (taxInclusivityLabel && planTypeLabel) {
         taxInclusivityLabel += '. ';
     }
@@ -41,10 +37,6 @@ function renderContainer(
         true,
     );
     markup += renderSpan(cssClassNames.planType, planTypeLabel, null);
-
-    if (perUnitLabel && (taxInclusivityLabel || planTypeLabel)) {
-        markup += ')';
-    }
 
     return renderSpan(cssClass, markup, {
         ...attributes,
