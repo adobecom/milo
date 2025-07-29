@@ -118,9 +118,10 @@ test.describe('ThreeInOne Block test suite', () => {
       for (const [key, value] of Object.entries(attributes)) {
         await expect(cta).toHaveAttribute(key, value);
       }
+      await cta.waitFor({ state: 'visible' });
       await cta.click();
-      await page.waitForSelector('.dialog-modal', { timeout: 60000 });
       const modal = threeInOne.getModal();
+      await page.waitForSelector('.dialog-modal');
       expect(modal).toBeVisible();
       const iframe = await modal.locator('iframe');
       await expect(iframe).toHaveAttribute('src', iframeSrcNoAddOn);
@@ -138,9 +139,10 @@ test.describe('ThreeInOne Block test suite', () => {
       for (const [key, value] of Object.entries(attributes)) {
         await expect(cta).toHaveAttribute(key, value);
       }
+      await cta.waitFor({ state: 'visible' });
       await cta.click();
-      await page.waitForSelector('.dialog-modal', { timeout: 60000 });
       const modal = threeInOne.getModal();
+      await page.waitForSelector('.dialog-modal');
       expect(modal).toBeVisible();
       const iframe = await modal.locator('iframe');
       await expect(iframe).toHaveAttribute('src', iframeSrcWithAddOn);
