@@ -169,8 +169,8 @@ function openMenu(el) {
 }
 
 function navigateFilterButtons(currentButton, forward) {
-  const allFilterButtons = document.querySelectorAll('.filter-button');
-  const currentIndex = Array.from(allFilterButtons).indexOf(currentButton);
+  const allFilterButtons = [...document.querySelectorAll('.filter-button')];
+  const currentIndex = allFilterButtons.indexOf(currentButton);
   if (currentIndex === -1) return;
   let nextIndex;
   if (forward) {
@@ -181,6 +181,7 @@ function navigateFilterButtons(currentButton, forward) {
   const nextButton = allFilterButtons[nextIndex];
   closeMenu(currentButton);
   disableSearch(currentButton.id);
+  nextButton.focus();
   openMenu(nextButton);
   enableSearch(nextButton.id);
 }
@@ -199,7 +200,7 @@ function handleDropdownKeydown(e, firstElement, lastElement, triggerButton) {
     if (shiftKey) {
       if (document.activeElement === firstElement) {
         e.preventDefault();
-        lastElement.focus();
+        triggerButton.focus();
       }
     } else if (document.activeElement === lastElement) {
       e.preventDefault();
@@ -214,11 +215,6 @@ function handleDropdownKeydown(e, firstElement, lastElement, triggerButton) {
     e.preventDefault();
     document.activeElement.checked = !document.activeElement.checked;
   }
-
-  if ((key === 'Enter' || key === ' ') && document.activeElement.matches('a.button')) {
-    e.preventDefault();
-    document.activeElement.click();
-  }
 }
 
 function addFocusTrap(button) {
@@ -228,20 +224,20 @@ function addFocusTrap(button) {
     dropdown.removeEventListener('keydown', dropdown.keydownHandler);
   }
   const focusableElements = dropdown.querySelectorAll(
-    'input, button, a.button',
+    'input, button',
   );
   if (focusableElements.length === 0) return;
   const firstElement = focusableElements[0];
   const lastElement = focusableElements[focusableElements.length - 1];
-  firstElement.focus();
+
   dropdown.keydownHandler = (e) => handleDropdownKeydown(e, firstElement, lastElement, button);
   dropdown.addEventListener('keydown', dropdown.keydownHandler);
 }
 
 function toggleMenu(e) {
-  const button = e.target.closest('[role=button]');
-  const expanded = button.getAttribute('aria-expanded');
-  if (expanded === 'true') {
+  const button = e.currentTarget;
+  const expanded = button.getAttribute('aria-expanded') === 'true';
+  if (expanded) {
     closeMenu(button);
     disableSearch(button.id);
     closeCurtain();
@@ -343,13 +339,11 @@ function buildFilterOption(itemName, type) {
 
   const option = document.createElement('li');
   option.classList.add('filter-option', `filter-option-${type}`);
-  option.setAttribute('role', 'none');
 
   const checkbox = document.createElement('input');
   checkbox.id = name;
   checkbox.setAttribute('name', name);
   checkbox.setAttribute('type', 'checkbox');
-  checkbox.setAttribute('tabindex', '0');
 
   const label = document.createElement('label');
   label.setAttribute('for', name);
@@ -361,13 +355,13 @@ function buildFilterOption(itemName, type) {
 
 async function buildFilter(type, tax, block, config) {
   const container = createTag('div', { class: 'filter' });
-  const button = document.createElement('a');
+  const button = document.createElement('button');
   button.classList.add('filter-button');
   button.id = `${type}-filter-button`;
   button.setAttribute('tabindex', '0');
   button.setAttribute('aria-haspopup', 'true');
   button.setAttribute('aria-expanded', 'false');
-  button.setAttribute('role', 'button');
+  button.setAttribute('aria-controls', `${type}-filter-panel`);
   button.textContent = tax.getCategoryTitle(type);
   button.addEventListener('click', toggleMenu);
   button.addEventListener('keydown', (e) => {
@@ -377,21 +371,25 @@ async function buildFilter(type, tax, block, config) {
     }
     if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
       e.preventDefault();
-      const allButtons = document.querySelectorAll('.filter-button');
-      const currentIndex = Array.from(allButtons).indexOf(button);
-      let nextIndex;
-      if (e.key === 'ArrowRight') {
-        nextIndex = (currentIndex + 1) % allButtons.length;
+      if (button.getAttribute('aria-expanded') === 'true') {
+        navigateFilterButtons(button, e.key === 'ArrowRight');
       } else {
-        nextIndex = currentIndex === 0 ? allButtons.length - 1 : currentIndex - 1;
+        const allButtons = [...document.querySelectorAll('.filter-button')];
+        const currentIndex = allButtons.indexOf(button);
+        let nextIndex;
+        if (e.key === 'ArrowRight') {
+          nextIndex = (currentIndex + 1) % allButtons.length;
+        } else {
+          nextIndex = currentIndex === 0 ? allButtons.length - 1 : currentIndex - 1;
+        }
+        allButtons[nextIndex].focus();
       }
-      allButtons[nextIndex].focus();
     }
   });
 
   const dropdown = createTag('div', { class: 'filter-dropdown' });
+  dropdown.id = `${type}-filter-panel`;
   dropdown.setAttribute('aria-labelledby', `${type}-filter-button`);
-  dropdown.setAttribute('role', 'menu');
   dropdown.setAttribute('aria-modal', 'true');
 
   const SEARCH_ICON = `<svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" focusable="false">
@@ -403,13 +401,11 @@ async function buildFilter(type, tax, block, config) {
   searchField.setAttribute('id', `${type}-filter-search`);
   searchField.setAttribute('aria-label', await replacePlaceholder('search'));
   searchField.setAttribute('placeholder', await replacePlaceholder('search'));
-  searchField.setAttribute('tabindex', '0');
   searchBar.append(searchField);
 
   const options = document.createElement('ul');
   options.classList.add('filter-options');
   options.setAttribute('data-type', type);
-  options.setAttribute('role', 'group');
   options.setAttribute('aria-label', `${tax.getCategoryTitle(type)} filters`);
 
   const category = tax.getCategory(tax[`${type.toUpperCase()}`]);
@@ -428,13 +424,13 @@ async function buildFilter(type, tax, block, config) {
 
   const footer = createTag('div', { class: 'filter-dropdown-footer' });
 
-  const resetBtn = document.createElement('a');
+  const resetBtn = document.createElement('button');
   resetBtn.classList.add('button', 'small', 'reset');
   resetBtn.setAttribute('tabindex', '0');
   resetBtn.textContent = await replacePlaceholder('reset');
   resetBtn.addEventListener('click', clearFilters);
 
-  const applyBtn = document.createElement('a');
+  const applyBtn = document.createElement('button');
   applyBtn.classList.add('button', 'small', 'apply');
   applyBtn.setAttribute('tabindex', '0');
   applyBtn.textContent = await replacePlaceholder('apply');
