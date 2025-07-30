@@ -73,11 +73,6 @@
     "--font-family": "'Adobe Clean', adobe-clean, 'Trebuchet MS', sans-serif",
     "--disclaimer-color": "#717171",
     "--disclaimer-font-size": "12px",
-    "--disclaimer-font-weight": "400",
-    "--message-user-background": "#EBEEFF",
-    "--message-user-text": "#292929",
-    "--message-border-radius": "10px",
-    "--message-concierge-background": "#FFFFFF",
-    "--message-concierge-text": "#292929"
+    "--disclaimer-font-weight": "400"
   }
 }
