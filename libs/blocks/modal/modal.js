@@ -258,8 +258,6 @@ export async function getModal(details, custom) {
     } else {
       iframe.onload = () => {
         try {
-          if (isSameOrigin(iframe)) addIframeKeydownListener(iframe, dialog);
-
           if (!isSameOrigin(iframe) && iframe.title) {
             dialog.setAttribute('aria-label', iframe.title);
             return;
@@ -276,12 +274,8 @@ export async function getModal(details, custom) {
     }
 
     iframe.addEventListener('load', () => {
-      try {
-        if (!isSameOrigin(iframe)) return;
-        addIframeKeydownListener(iframe, dialog);
-      } catch (error) {
-        // Cross-origin iframe, can't access content
-      }
+      if (!isSameOrigin(iframe)) return;
+      addIframeKeydownListener(iframe, dialog);
     });
 
     if (dialog.classList.contains('commerce-frame') || dialog.classList.contains('dynamic-height')) {

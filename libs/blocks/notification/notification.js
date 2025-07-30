@@ -103,6 +103,7 @@ const closeBanner = (el) => {
   let isSticky = false;
   let rect;
   const sectionElement = el.closest('.section');
+  const isFocusable = el.classList.contains('focus');
 
   if (sectionElement?.className.includes('sticky')) {
     isSticky = true;
@@ -110,7 +111,7 @@ const closeBanner = (el) => {
   }
   el.focusTrapCleanup?.();
 
-  if (el.classList.contains('focus')) {
+  if (isFocusable) {
     document.body.classList.remove('mobile-disable-scroll');
     sectionElement?.querySelector('.notification-curtain')?.remove();
   }
@@ -119,7 +120,6 @@ const closeBanner = (el) => {
   el.removeAttribute('role');
   el.style.display = 'none';
   sectionElement?.classList.add('close-sticky-section');
-  const isFocusable = el.classList.contains('focus');
 
   if (isFocusable) {
     setTimeout(() => {
