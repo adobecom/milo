@@ -58,10 +58,9 @@ export function handleCustomAnalyticsEvent(eventName, element) {
 function enableAnalytics(el, self) {
   const tabs = el.closest('.tabs');
   if (tabs) {
-    const blocks = tabs.querySelectorAll('[data-block]');
-    blocks.forEach((block) => {
-      block.removeAttribute('data-block');
-    });
+    const blocksWithMerch = Array.from(document.querySelectorAll('[data-block]'))
+      .filter((block) => block.querySelector('merch-card, merch-card-collection'));
+    blocksWithMerch.forEach((block) => block.removeAttribute('data-block'));
   }
 
   const tabPanel = el.closest('.tabpanel');
