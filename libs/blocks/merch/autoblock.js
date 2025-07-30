@@ -77,7 +77,7 @@ function enableAnalytics(el, self) {
     card.removeAttribute('daa-lh');
     card.querySelectorAll('a[daa-ll]').forEach((anchor) => {
       const ll = anchor.getAttribute('daa-ll');
-      anchor.setAttribute('daa-ll', `${ll}|${card.name}--card`);
+      anchor.setAttribute('daa-ll', `${ll}--${card.name}--card`);
     });
     card.querySelectorAll('merch-addon').forEach((ao) => {
       ao.addEventListener('change', (aoe) => {
@@ -86,7 +86,7 @@ function enableAnalytics(el, self) {
     });
     card.querySelectorAll('merch-quantity-select').forEach((qs) => {
       qs.addEventListener('merch-quantity-selector:change', (qse) => {
-        handleCustomAnalyticsEvent(`quantity-${qse.detail.option}|${card.name}--card`, qse.target);
+        handleCustomAnalyticsEvent(`quantity-${qse.detail.option}--${card.name}--card`, qse.target);
       });
     });
   });
