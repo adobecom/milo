@@ -646,7 +646,7 @@ export class MerchCard extends LitElement {
 
     handleAddonAndQuantityUpdate({ detail: { id, items } }) {
         if (!id || !items?.length) return;
-        const parentTab = this.closest('[hidden="true"]');
+        const parentTab = this.closest('[role="tabpanel"][hidden="true"]');
         if (parentTab) return;
         
       const cta = this.checkoutLinks.find(link => link.getAttribute('data-modal-id') === id);
