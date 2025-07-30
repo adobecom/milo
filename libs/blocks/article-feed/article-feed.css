@@ -90,7 +90,7 @@ element {
 }
 
 .filter-button[aria-expanded=true]+.filter-dropdown {
-  display: block;
+  display: flex;
 }
 
 .filter-button[aria-expanded=false]+.filter-dropdown {
