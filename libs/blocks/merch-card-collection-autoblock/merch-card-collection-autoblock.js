@@ -1,5 +1,5 @@
 import { createTag, getConfig } from '../../utils/utils.js';
-import { postProcessAutoblock, handleCustomAnalyticsEvent, getTabNestedLh } from '../merch/autoblock.js';
+import { postProcessAutoblock, handleCustomAnalyticsEvent } from '../merch/autoblock.js';
 import '../../deps/mas/merch-card.js';
 import '../../deps/mas/merch-quantity-select.js';
 import {
@@ -116,12 +116,6 @@ function getSidenav(collection) {
 }
 
 function enableSidenavAnalytics(el) {
-  const tabDaaLh = getTabNestedLh(el);
-  if (el.sidenav && tabDaaLh) {
-    el.sidenav.setAttribute('data-block', '');
-    el.sidenav.setAttribute('daa-lh', tabDaaLh);
-  }
-
   el.sidenav?.addEventListener('merch-sidenav:select', ({ target }) => {
     if (!target || target.oldValue === target.selectedValue) return;
     const container = target.closest('.collection-container');
