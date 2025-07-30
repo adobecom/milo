@@ -289,6 +289,7 @@ merch-card[variant="simplified-pricing-express"] mas-tooltip merch-icon {
   merch-card[variant="simplified-pricing-express"][data-expanded="true"] {
     height: auto;
     min-height: auto;
+    padding: var(--merch-card-simplified-pricing-express-padding-mobile);
   }
 }
 

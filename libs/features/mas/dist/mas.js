@@ -2255,6 +2255,7 @@ merch-card[variant="simplified-pricing-express"] mas-tooltip merch-icon {
   merch-card[variant="simplified-pricing-express"][data-expanded="true"] {
     height: auto;
     min-height: auto;
+    padding: var(--merch-card-simplified-pricing-express-padding-mobile);
   }
 }
 
@@ -2374,7 +2375,8 @@ merch-card[variant="simplified-pricing-express"] [slot="footer"] sp-button[varia
         `}};f(Qt,"variantStyle",y`
         :host([variant='simplified-pricing-express']) {
             --merch-card-simplified-pricing-express-width: 294px;
-            --merch-card-simplified-pricing-express-padding: 16px;
+            --merch-card-simplified-pricing-express-padding: 24px;
+            --merch-card-simplified-pricing-express-padding-mobile: 16px;
             --merch-card-simplified-pricing-express-min-height: 341px;
             --merch-card-simplified-pricing-express-price-font-size: 28px;
             --merch-card-simplified-pricing-express-price-font-weight: 900;
