@@ -241,14 +241,9 @@ html[dir="rtl"] .accordion .descr-term button::before {
   width: auto;
 }
 
-div.video-container {
+div.media-p {
   width: 268px;
   padding: 0;
-}
-
-div.editorial .video-container, div.editorial .descr-details img,
-div.editorial video {
-  width: 100%;
 }
 
 @media screen and (min-width: 600px) {
@@ -273,6 +268,10 @@ div.editorial video {
     width: 50%;
     display: inline-block;
     margin: 0;
+  }
+
+  .media-p {
+    display: none;
   }
 
   .accordion-media {
