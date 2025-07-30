@@ -247,16 +247,30 @@ header.global-navigation.ready {
     margin-right: 5px;
   }
 
-  .feds-navLink-image {
+  .global-navigation .feds-navLink-image {
     display: flex;
   }
 
-  .feds-navLink-image picture,
-  .feds-navLink-image img {
+  .global-navigation .feds-navLink-image picture,
+  .global-navigation .feds-navLink-image img {
     display: block;
   }
 
-  .feds-navLink-image picture {
+  .global-navigation .feds-navLink-image picture {
+    width: max-content;
+    max-width: 25px;
+  }
+
+  .global-footer:not(.mobile) .feds-navLink-image {
+    display: flex;
+  }
+
+  .global-footer:not(.mobile) .feds-navLink-image picture,
+  .global-footer:not(.mobile) .feds-navLink-image img {
+    display: block;
+  }
+
+  .global-footer:not(.mobile) .feds-navLink-image picture {
     width: max-content;
     max-width: 25px;
   }

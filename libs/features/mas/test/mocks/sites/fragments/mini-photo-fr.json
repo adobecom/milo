@@ -1,0 +1,38 @@
+{
+    "path": "/content/dam/mas/sandbox/fr_FR/mini-card",
+    "name": "",
+    "title": "Mini Card",
+    "id": "01e4afa2-f287-4ef7-875c-41b7bbcc8aa6",
+    "description": "",
+    "model": { "id": "L2NvbmYvbWFzL3NldHRpbmdzL2RhbS9jZm0vbW9kZWxzL2NhcmQ" },
+    "fields": {
+        "variant": "mini",
+        "osi": "mini-photo",
+        "mnemonicIcon": [],
+        "mnemonicAlt": [],
+        "mnemonicLink": [],
+        "cardTitle": "CCD Apps: Photography",
+        "badge": { "mimeType": "text/html" },
+        "trialBadge": { "mimeType": "text/html" },
+        "prices": {
+            "value": "<span is=\"inline-price\" data-display-per-unit=\"false\" data-template=\"price\" data-wcs-osi=\"mini-photo-fr\"></span>",
+            "mimeType": "text/html"
+        },
+        "shortDescription": { "mimeType": "text/html" },
+        "description": {
+            "value": "<p><a class=\"upt-link\" href=\"#\" data-analytics-id=\"see-terms\">voir les conditions</a></p>",
+            "mimeType": "text/html"
+        },
+        "callout": { "mimeType": "text/html" },
+        "ctas": {
+            "value": "<a class=\"accent\" data-checkout-workflow-step=\"segmentation\" data-wcs-osi=\"mini-photo-fr\" data-template=\"checkoutUrl\" data-analytics-id=\"buy-now\">Buy now</a><a class=\"primary-outline\" data-checkout-workflow-step=\"segmentation\" data-wcs-osi=\"mini-photo-fr\" data-template=\"checkoutUrl\" target=\"_self\" data-analytics-id=\"free-trial\">Free trial</a>",
+            "mimeType": "text/html"
+        },
+        "tags": []
+    },
+    "settings": {
+        "displayPlanType": "true"
+    },
+    "references": {},
+    "referencesTree": []
+}

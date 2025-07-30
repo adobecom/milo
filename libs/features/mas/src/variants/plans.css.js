@@ -30,6 +30,10 @@ merch-card[variant="plans-education"] [slot="body-xs"] span.price:not(.price-leg
   font-weight: 700;
 }
 
+merch-card[variant^="plans"] span.price-unit-type:not([slot="callout-content"] *):not([slot="addon"] *) {
+    display: block;
+}
+
 merch-card[variant^="plans"] [slot="heading-xs"] span.price.price-strikethrough,
 merch-card[variant^="plans"] [slot="heading-m"] span.price.price-strikethrough,
 merch-card[variant="plans-education"] [slot="body-xs"] span.price.price-strikethrough {
@@ -195,13 +199,20 @@ merch-card[variant^="plans"]:not([size]) {
 }
 
 .collection-container.plans {
-    --merch-card-collection-card-width: var(--consonant-merch-card-plans-width);
     --merch-card-collection-card-min-height: 273px;
+    --merch-card-collection-card-width: var(--consonant-merch-card-plans-width);
 }
 
 merch-card-collection-header.plans {
     --merch-card-collection-header-columns: 1fr fit-content(100%);
     --merch-card-collection-header-areas: "result filter";
+}
+
+.one-merch-card.plans,
+.two-merch-cards.plans,
+.three-merch-cards.plans,
+.four-merch-cards.plans {
+    --merch-card-collection-card-width: var(--consonant-merch-card-plans-width);
 }
 
 .columns .text .foreground {

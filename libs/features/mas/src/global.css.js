@@ -146,9 +146,9 @@ styles.innerHTML = `
     grid-template-rows: min-content 1fr;
     align-items: start;
     grid-template-areas: "sidenav header" "sidenav content";
-    --merch-card-collection-card-width: 300px;
     --merch-card-collection-card-min-height: auto;
     --merch-sidenav-collection-gap: 0;
+    --merch-card-collection-card-width: unset;
 }
 
 .collection-container merch-sidenav {
@@ -195,6 +195,7 @@ merch-card-collection-header > div[slot] p {
 .two-merch-cards,
 .three-merch-cards,
 .four-merch-cards {
+    --merch-card-collection-card-width: unset;
     display: grid;
     justify-content: center;
     justify-items: stretch;
@@ -202,6 +203,10 @@ merch-card-collection-header > div[slot] p {
     gap: var(--consonant-merch-spacing-m);
     padding: var(--spacing-m);
     grid-template-columns: var(--merch-card-collection-card-width);
+}
+
+.tabpanel > .four-merch-cards {
+    z-index: 3;
 }
 
 merch-card[variant="ccd-suggested"] *,

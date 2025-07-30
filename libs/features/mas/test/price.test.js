@@ -131,10 +131,11 @@ describe('class "InlinePrice"', () => {
         expect(inlinePrice.outerHTML).to.be.html(snapshots.annual);
     });
 
-    it('renders price with promo with strikethrough', async () => {
+    it('renders promo price', async () => {
         await initMasCommerceService();
         const inlinePrice = mockInlinePrice('promoStikethrough', 'abm-promo');
         inlinePrice.dataset.promotionCode = 'nicopromo';
+        inlinePrice.dataset.displayOldPrice = 'true';
         await inlinePrice.onceSettled();
         expect(inlinePrice.outerHTML).to.be.html(snapshots.promoStikethrough);
     });
@@ -143,7 +144,6 @@ describe('class "InlinePrice"', () => {
         await initMasCommerceService();
         const inlinePrice = mockInlinePrice('promo','abm-promo');
         inlinePrice.dataset.promotionCode = 'nicopromo';
-        inlinePrice.dataset.displayOldPrice = 'false';
         await inlinePrice.onceSettled();
         expect(inlinePrice.outerHTML).to.be.html(snapshots.promo);
     });
@@ -222,8 +222,11 @@ describe('class "InlinePrice"', () => {
     });
 
     it('renders tax exclusive price', async () => {
-        await initMasCommerceService({ 'force-tax-exclusive': true });
-        const inlinePrice = mockInlinePrice('taxExclusive', 'tax-exclusive');
+        await initMasCommerceService({ country: 'CA' , language: 'en'});
+        const inlinePrice = mockInlinePrice('taxExclusive');
+        inlinePrice.dataset.wcsOsi = 'abm-promo';
+        inlinePrice.dataset.displayTax = 'true';
+        inlinePrice.dataset.forceTaxExclusive = 'true';
         inlinePrice.dataset.promotionCode = 'nicopromo';
         await inlinePrice.onceSettled();
         expect(inlinePrice.outerHTML).to.be.html(snapshots.taxExclusive);
@@ -274,7 +277,6 @@ describe('class "InlinePrice"', () => {
             const inlinePrice = mockInlinePrice('abm2','abm');
             inlinePrice.renderOffers(
                 [],
-                {},
                 inlinePrice.masElement.togglePending(),
             );
             expect(inlinePrice.state).to.equal(InlinePrice.STATE_FAILED);
@@ -775,14 +777,7 @@ describe('commerce service', () => {
             const service = await initMasCommerceService();
             const { collectPriceOptions, buildPriceHTML } = new Price({
                 literals: { price: {} },
-                providers: {
-                    price: [
-                        (p, o) => {
-                            /*nop*/
-                        },
-                    ],
-                },
-                settings: getSettings(service.config),
+                settings: getSettings(service.config, service),
             });
             const inlinePrice1 = mockInlinePrice('abm');
             const options = collectPriceOptions({}, inlinePrice1);
