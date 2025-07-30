@@ -133,7 +133,7 @@ export class MerchSidenavList extends LitElement {
      * @param {*} event
      */
     selectionChanged(event) {
-      const { target: { value, parentNode } } = event;
+        const { target: { value, parentNode } } = event;
         this.selectElement(
             this.querySelector(`sp-sidenav-item[value="${value}"]`),
         );

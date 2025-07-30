@@ -87,7 +87,8 @@ describe('merch-card-collection autoblock', () => {
       const addon = card.querySelector('merch-addon');
 
       window._satellite.track.called = false;
-      sidenav.dispatchEvent(new Event('merch-sidenav:select'));
+      const lastFilter = sidenav.querySelector('sp-sidenav-item:last-of-type');
+      sidenav.filters.selectElement(lastFilter);
       await delay(100);
       expect(window._satellite.track.called).to.be.true;
 
@@ -116,8 +117,9 @@ describe('merch-card-collection autoblock', () => {
       expect(window._satellite.track.called).to.be.true;
 
       expect(window._satellite.track.args[0][1].data.web.webInteraction.name).to.equal('all--cat|topdaalh|test-analytics|b3|filters');
-      expect(window._satellite.track.args[1][1].data.web.webInteraction.name).to.equal('quantity-3|topdaalh|test-analytics');
-      expect(window._satellite.track.args[2][1].data.web.webInteraction.name).to.equal('addon-checked|topdaalh|test-analytics');
+      expect(window._satellite.track.args[1][1].data.web.webInteraction.name).to.equal('cloud--cat|topdaalh|test-analytics|b3|filters');
+      expect(window._satellite.track.args[2][1].data.web.webInteraction.name).to.equal('quantity-3|topdaalh|test-analytics');
+      expect(window._satellite.track.args[3][1].data.web.webInteraction.name).to.equal('addon-checked|topdaalh|test-analytics');
     });
 
     it('creates does not create sidenav if specified in the query params', async () => {
