@@ -15,21 +15,22 @@ function openChatModal(initialMessage) {
   });
 
   // Temporary way to load chat from stage
-  window.addEventListener('adobe-brand-concierge-prompt-loaded', () => {
-    const instanceEvent = new CustomEvent('alloy-brand-concierge-instance', {
-      detail: {
-        instanceName: 'mockAlloyInstance',
-        contentUrl: '/libs/blocks/brand-concierge/chat-ui-config.json',
-      },
-    });
-    window.dispatchEvent(instanceEvent);
-  });
   const mainScriptSrc = 'https://cdn.experience-stage.adobe.net/solutions/experience-platform-brand-concierge-web-agent/static-assets/main.js';
-  document.querySelector(`script[src="${mainScriptSrc}"]`)?.remove();
-  const mainScript = document.createElement('script');
-  mainScript.src = mainScriptSrc;
-  mainScript.async = true;
-  document.head.appendChild(mainScript);
+  const instanceEvent = new CustomEvent('alloy-brand-concierge-instance', {
+    detail: {
+      instanceName: 'mockAlloyInstance',
+      contentUrl: '/libs/blocks/brand-concierge/chat-ui-config.json',
+    },
+  });
+  if (!document.querySelector(`script[src="${mainScriptSrc}"]`)) {
+    window.addEventListener('adobe-brand-concierge-prompt-loaded', () => {
+      window.dispatchEvent(instanceEvent);
+    });
+    const mainScript = document.createElement('script');
+    mainScript.src = mainScriptSrc;
+    mainScript.async = true;
+    document.head.appendChild(mainScript);
+  }
 }
 
 function decorateBackground(el, background) {
