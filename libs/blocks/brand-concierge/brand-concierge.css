@@ -2,8 +2,11 @@
   --bc-card-radius: 12px;
   --bc-inpu-radius: 12px;
   --bc-input-height: 54px;
-  --bc-button-dimensions: 48px;
-  --bc-button-radius: 50%;
+  --bc-button-dimensions: 32px;
+  --bc-button-radius: 8px;
+  --bc-button-color: #292929;
+  --bc-button-hover-color: #555;
+  --bc-keyboard-focus-color: #5574F7;
 
   background: var(--brand-concierge-bg);
   box-sizing: border-box;
@@ -50,6 +53,11 @@
 
 .prompt-card-button:hover {
   background: #fff;
+}
+
+.prompt-card-button:focus-visible {
+  outline: 2px solid var(--bc-keyboard-focus-color);
+  outline-offset: 2px;
 }
 
 .prompt-card-image {
@@ -114,6 +122,11 @@
   z-index: 1;
 }
 
+.bc-input-field-container:has(:focus-visible) {
+  outline: 2px solid var(--bc-keyboard-focus-color);
+  outline-offset: 4px;
+}
+
 .bc-input-field-container input {
   background: transparent;
   border: none;
@@ -125,22 +138,32 @@
 }
 
 .input-field-button {
-  background: #ddd;
+  background: var(--bc-button-color);
   border: none;
   border-radius: var(--bc-button-radius);
+  color: #fff;
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   height: var(--bc-button-dimensions);
   transition: background 0.3s ease;
   width: var(--bc-button-dimensions);
 }
 
 .input-field-button:hover {
-  background: #ccc;
+  background: var(--bc-button-hover-color);
+}
+
+.input-field-button:focus-visible {
+  outline: 2px solid var(--bc-keyboard-focus-color);
+  outline-offset: 2px;
 }
 
 .input-field-button:disabled {
   background: #fff;
   color: #0004;
+  pointer-events: none;
 }
 
 .bc-legal {
