@@ -1,5 +1,5 @@
 import { html, LitElement, css } from 'lit';
-import { deeplink, pushStateFromComponent } from '../deeplink.js';
+import { deeplink, pushStateFromComponent, updateHash } from '../deeplink.js';
 import { headingStyles } from './merch-sidenav-heading.css.js';
 import { debounce } from '../utils.js';
 import { EVENT_MERCH_SIDENAV_SELECT } from '../constants.js';
@@ -146,10 +146,16 @@ export class MerchSidenavList extends LitElement {
       this.stopDeeplink = deeplink(
           (params) => {
               const value = params[this.deeplink] ?? 'all';
-              const element = this.querySelector(
+              let element = this.querySelector(
                   `sp-sidenav-item[value="${value}"]`,
-              );
-              if (!element) return;
+              )
+
+              if (!element) {
+                element = this.querySelector('sp-sidenav-item[value="all"]');
+                if (!element) return;
+                updateHash(this.deeplink, 'all');
+              }
+
               this.updateComplete.then(() => {
                   if (element.firstElementChild?.tagName === 'SP-SIDENAV-ITEM') {
                     element.expanded = true;

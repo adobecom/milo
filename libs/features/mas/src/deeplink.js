@@ -48,6 +48,18 @@ export function pushState(state) {
     window.scrollTo(0, lastScrollTop);
 }
 
+function historyPushState(queryParams) {
+    if (!queryParams || !window.history.pushState) return;
+    const newURL = new URL(window.location.href);
+    newURL.search = `?${queryParams}`;
+    window.history.pushState({ path: newURL.href }, '', newURL.href);    
+}
+
+export function updateHash(key, value) {
+    const hash = new URLSearchParams(window.location.hash.slice(1));
+    hash.set(key, value);
+    window.location.hash = hash.toString();
+}
 /**
  *Deep link helper
  * @param {*} callback function that expects an object with properties that have changed compared to previous state
@@ -55,6 +67,17 @@ export function pushState(state) {
  */
 export function deeplink(callback) {
     const handler = () => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const filterParam = urlParams.get('filter');
+        if (filterParam && !window.location.hash.includes('filter=')) { // transfer filter param to hash
+            window.location.hash = window.location.hash ? `${window.location.hash}&filter=${filterParam}` : `filter=${filterParam}`;
+            urlParams.delete('filter');
+            historyPushState(urlParams.toString());
+        } else if (filterParam) { // in case of other hash kv exists.
+            updateHash('filter', filterParam);
+            urlParams.delete('filter');
+            historyPushState(urlParams.toString());
+        }
         if (window.location.hash && !window.location.hash.includes('=')) return;
         const state = parseState(window.location.hash);
         callback(state);
