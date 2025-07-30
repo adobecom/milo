@@ -1,3 +1,5 @@
+import { getConfig } from '../../../utils/utils.js';
+
 function getCookie(key) {
   const cookie = document.cookie.split(';')
     .map((x) => decodeURIComponent(x.trim()).split(/=(.*)/s))
@@ -9,7 +11,8 @@ export async function getSpectraLOB(lastVisitedPage) {
   const getECID = getCookie('AMCV_9E1005A551ED61CA0A490D45@AdobeOrg');
   if (!getECID) return false;
   const [, ECID] = getECID.split('|');
-  let url = `https://cchome-stage.adobe.io/int/v1/aep/events/webpage?ecid=${ECID}`;
+  const domainSuffix = getConfig()?.env?.name === 'prod' ? '' : '-stage';
+  let url = `https://cchome${domainSuffix}.adobe.io/int/v1/aep/events/webpage?ecid=${ECID}`;
   if (lastVisitedPage) url = `${url}&lastVisitedPage=${lastVisitedPage}`;
 
   try {
