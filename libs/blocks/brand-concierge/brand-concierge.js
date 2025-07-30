@@ -1,32 +1,31 @@
-import { createTag, getConfig } from '../../utils/utils.js';
 import { getModal } from '../modal/modal.js';
+import { createTag } from '../../utils/utils.js';
 
-function initModal(el, button) {
-  button.addEventListener('click', () => {
-    const mountEl = document.createElement('div');
-    mountEl.id = 'brand-concierge-mount';
-    getModal(null, {
-      id: 'brand-concierge-modal',
-      content: mountEl,
-      closeEvent: 'closeModal', // Megan TODO: Fix this
-    });
-
-    // Temporary way to load chat from stage
-    const devScript = document.createElement('script');
-    devScript.src = 'https://cdn.experience-stage.adobe.net/solutions/experience-platform-brand-concierge-web-agent/static-assets/dev.js';
-    devScript.async = true;
-    document.head.appendChild(devScript);
-
-    // const devCss = document.createElement('link');
-    // devCss.rel = 'stylesheet';
-    // devCss.href = 'https://cdn.experience-stage.adobe.net/solutions/experience-platform-brand-concierge-web-agent/static-assets/dev.css';
-    // document.head.appendChild(devCss);
-
-    const mainScript = document.createElement('script');
-    mainScript.src = 'https://cdn.experience-stage.adobe.net/solutions/experience-platform-brand-concierge-web-agent/static-assets/main.js';
-    mainScript.async = true;
-    document.head.appendChild(mainScript);
+function openChatModal(initialMessage) {
+  const mountEl = createTag('div', { id: 'brand-concierge-mount' });
+  if (initialMessage) mountEl.dataset.initialMessage = initialMessage;
+  getModal(null, {
+    id: 'brand-concierge-modal',
+    content: mountEl,
+    closeEvent: 'closeModal',
   });
+
+  // Temporary way to load chat from stage
+  window.addEventListener('adobe-brand-concierge-prompt-loaded', () => {
+    const instanceEvent = new CustomEvent('alloy-brand-concierge-instance', {
+      detail: {
+        instanceName: 'mockAlloyInstance',
+        contentUrl: '/libs/blocks/brand-concierge/chat-ui-config.json',
+      },
+    });
+    window.dispatchEvent(instanceEvent);
+  });
+  const mainScriptSrc = 'https://cdn.experience-stage.adobe.net/solutions/experience-platform-brand-concierge-web-agent/static-assets/main.js';
+  document.querySelector(`script[src="${mainScriptSrc}"]`)?.remove();
+  const mainScript = document.createElement('script');
+  mainScript.src = mainScriptSrc;
+  mainScript.async = true;
+  document.head.appendChild(mainScript);
 }
 
 function decorateBackground(el, background) {
@@ -57,11 +56,7 @@ function decorateCards(el, cards) {
     if (cardText) cardButton.append(cardText);
     cardSection.append(cardButton);
 
-    cardButton.addEventListener('click', () => {
-      const input = el.querySelector('input.input-field-input');
-      input.value = cardText.textContent.trim();
-      el.querySelector('button.input-field-button').click();
-    });
+    cardButton.addEventListener('click', () => openChatModal(cardText.textContent.trim()));
   });
 
   el.append(cardSection);
@@ -75,6 +70,10 @@ function decorateInput(el, input) {
   fieldSection.append(fieldInput, fieldButton);
   el.append(fieldSection);
   el.removeChild(input);
+  fieldButton.addEventListener('click', () => {
+    if (!fieldInput.value) return;
+    openChatModal(fieldInput.value);
+  });
 }
 
 function decorateLegal(el, legal) {
@@ -115,5 +114,4 @@ export default async function init(el) {
     }
     decorateLegal(el, legal);
   }
-  initModal(el, el.querySelector('button.input-field-button'));
 }
