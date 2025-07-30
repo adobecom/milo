@@ -203,3 +203,9 @@
     max-width: calc(768px - 4px);
   }
 }
+
+#brand-concierge-modal {
+  .dialog-close {
+    z-index: 2;
+  }
+}
