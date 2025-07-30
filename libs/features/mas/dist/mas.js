@@ -1617,7 +1617,8 @@ merch-card-collection-header.plans {
                 <slot name="addon"></slot>
                 <slot name="badge"></slot>
             </div>
-            ${this.secureLabelFooter}`}};f(ae,"variantStyle",y`
+            ${this.secureLabelFooter}
+            <slot></slot>`}};f(ae,"variantStyle",y`
         :host([variant^='plans']) {
             min-height: 273px;
             border: 1px solid var(--merch-card-custom-border-color, #dadada);
@@ -2369,6 +2370,7 @@ merch-card[variant="simplified-pricing-express"] [slot="footer"] sp-button[varia
             <div class="cta">
                 <slot name="cta"></slot>
             </div>
+            <slot></slot>
         `}};f(Qt,"variantStyle",y`
         :host([variant='simplified-pricing-express']) {
             --merch-card-simplified-pricing-express-width: 294px;

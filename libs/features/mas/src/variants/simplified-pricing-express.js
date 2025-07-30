@@ -180,6 +180,7 @@ export class SimplifiedPricingExpress extends VariantLayout {
             <div class="cta">
                 <slot name="cta"></slot>
             </div>
+            <slot></slot>
         `;
     }
 
