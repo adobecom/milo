@@ -130,7 +130,7 @@ export default async function decorate(block) {
     }
   };
 
-  const container = createTag('p', { class: 'icon-container' });
+  const container = createTag('ul', { class: 'icon-container' });
   svgs.forEach(async (svg) => {
     if (svg.name === 'clipboard') return;
 
@@ -146,7 +146,9 @@ export default async function decorate(block) {
       },
       svg.svg,
     );
-    container.append(shareLink);
+    const li = createTag('li');
+    li.appendChild(shareLink);
+    container.append(li);
     shareLink.addEventListener('click', (e) => {
       /* c8 ignore next 2 */
       e.preventDefault();
@@ -170,7 +172,9 @@ export default async function decorate(block) {
       },
       clipboardSvg.svg,
     );
-    container.append(copyButton);
+    const li = createTag('li');
+    li.append(copyButton);
+    container.append(li);
     copyButton.addEventListener('click', (e) => {
       /* c8 ignore next 6 */
       e.preventDefault();
