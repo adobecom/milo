@@ -113,13 +113,7 @@ test.describe('MAS Express Cards test suite', () => {
       await page.waitForLoadState('domcontentloaded');
       await expect(page).toHaveURL(`${baseURL}${features[2].path}${miloLibs}`);
 
-      // Wait for merch-card elements to be present
       await page.waitForSelector('merch-card', { timeout: 10000 });
-
-      // Wait for aem-fragment elements to be present
-      await page.waitForSelector('aem-fragment', { timeout: 10000 });
-
-      // Wait a bit more for fragments to fully load
       await page.waitForTimeout(2000);
     });
 
@@ -157,13 +151,7 @@ test.describe('MAS Express Cards test suite', () => {
       await page.waitForLoadState('domcontentloaded');
       await expect(page).toHaveURL(`${baseURL}${features[3].path}${miloLibs}`);
 
-      // Wait for merch-card elements to be present
       await page.waitForSelector('merch-card', { timeout: 10000 });
-
-      // Wait for aem-fragment elements to be present
-      await page.waitForSelector('aem-fragment', { timeout: 10000 });
-
-      // Wait a bit more for fragments to fully load
       await page.waitForTimeout(2000);
     });
 
