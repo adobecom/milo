@@ -1481,7 +1481,7 @@ function setLocation() {
 }
 
 async function setLocationPrerequisites() {
-  const country = (new URLSearchParams(window.location.search).get('akamaiLocale')) || sessionStorage.getItem('akamai');
+  const country = (new URLSearchParams(window.location.search).get('akamaiLocale')?.toLowerCase()) || sessionStorage.getItem('akamai');
   if (country !== 'gb' || window.adobePrivacy) return;
   const { loadPrivacy } = await import('../scripts/delayed.js');
   loadPrivacy(getConfig, loadScript);
