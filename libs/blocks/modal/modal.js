@@ -54,6 +54,22 @@ export function closeModal(modal) {
   const closeEvent = new Event('milo:modal:closed');
   window.dispatchEvent(closeEvent);
 
+  const iframe = modal.querySelector('iframe');
+  if (iframe?._iframeKeydownListener) {
+    try {
+      const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+      iframeDoc.removeEventListener('keydown', iframe._iframeKeydownListener);
+    } catch (e) {
+      // Cross-origin iframe, can't access content
+    }
+    delete iframe._iframeKeydownListener;
+  }
+
+  if (modal._documentKeydownListener) {
+    document.removeEventListener('keydown', modal._documentKeydownListener);
+    delete modal._documentKeydownListener;
+  }
+
   document.querySelectorAll(`#${id}`).forEach((mod) => {
     if (mod.classList.contains('dialog-modal')) {
       const modalCurtain = document.querySelector(`#${id}~.modal-curtain`);
@@ -74,18 +90,22 @@ export function closeModal(modal) {
 
   const hashId = window.location.hash.replace('#', '');
   if (hashId === modal.id || modal.id === 'checkout-link-modal') {
-    window.history.pushState(window.history.state, document.title, `${window.location.pathname}${window.location.search}`);
+    window.history.pushState(window.history.state, document.title, `${window.location.pathname}${window.location.search}${prevHash ? `${prevHash}` : ''}`);
   }
-  if (prevHash) {
-    window.location.hash = '';
-    window.location.hash = prevHash;
-    prevHash = '';
-  }
+  if (prevHash) prevHash = '';
 
   if (isDeepLink) {
     document.querySelector('#onetrust-banner-sdk')?.focus();
     isDeepLink = false;
+    return;
   }
+
+  if (document.querySelector('.notification-curtain')) {
+    window.dispatchEvent(new Event('milo:modal:closed:notification'));
+    return;
+  }
+
+  document.querySelector(`a[data-modal-id="${id}"].con-button`)?.focus();
 }
 
 function isElementInView(element) {
@@ -104,11 +124,7 @@ function getCustomModal(custom, dialog) {
   if (custom.id) dialog.id = custom.id;
   if (custom.title) dialog.setAttribute('aria-label', custom.title);
   if (custom.class) dialog.classList.add(custom.class);
-  if (custom.closeEvent) {
-    dialog.addEventListener(custom.closeEvent, () => {
-      closeModal(dialog);
-    });
-  }
+  if (custom.closeEvent) dialog.addEventListener(custom.closeEvent, () => closeModal(dialog));
   dialog.append(custom.content);
 }
 
@@ -124,6 +140,19 @@ async function getPathModal(path, dialog) {
   // eslint-disable-next-line import/no-cycle
   const { default: getFragment } = await import('../fragment/fragment.js');
   await getFragment(block);
+}
+
+const isSameOrigin = (iframe) => new URL(iframe.src).origin === window.location.origin;
+
+function addIframeKeydownListener(iframe, dialog) {
+  try {
+    const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+    const iframeKeydownListener = (event) => (event.key === 'Escape') && closeModal(dialog);
+    iframeDoc.addEventListener('keydown', iframeKeydownListener);
+    iframe._iframeKeydownListener = iframeKeydownListener;
+  } catch (e) {
+    // Cross-origin iframe, can't access content
+  }
 }
 
 export async function getModal(details, custom) {
@@ -190,17 +219,16 @@ export async function getModal(details, custom) {
     e.preventDefault();
   });
 
-  dialog.addEventListener('keydown', (event) => {
-    if (event.key === 'Escape') {
-      closeModal(dialog);
-    }
-  });
+  const documentKeydownListener = (event) => (event.key === 'Escape') && closeModal(dialog);
+  document.addEventListener('keydown', documentKeydownListener);
+  dialog._documentKeydownListener = documentKeydownListener;
+
   decorateSectionAnalytics(dialog, `${id}-modal`, getConfig());
   dialog.prepend(close);
   dialog.append(focusPlaceholder);
   document.body.append(dialog);
   dialogLoadingSet.delete(id);
-  firstFocusable.focus({ preventScroll: true, ...focusVisible });
+  setTimeout(() => firstFocusable.focus({ preventScroll: true, ...focusVisible }), 100);
   window.dispatchEvent(loadedEvent);
 
   if (!dialog.classList.contains('curtain-off')) {
@@ -230,7 +258,7 @@ export async function getModal(details, custom) {
     } else {
       iframe.onload = () => {
         try {
-          if ((new URL(iframe.src).origin !== window.location.origin) && iframe.title) {
+          if (!isSameOrigin(iframe) && iframe.title) {
             dialog.setAttribute('aria-label', iframe.title);
             return;
           }
@@ -244,6 +272,11 @@ export async function getModal(details, custom) {
         }
       };
     }
+
+    iframe.addEventListener('load', () => {
+      if (!isSameOrigin(iframe)) return;
+      addIframeKeydownListener(iframe, dialog);
+    });
 
     if (dialog.classList.contains('commerce-frame') || dialog.classList.contains('dynamic-height')) {
       const { default: enableCommerceFrameFeatures } = await import('./modal.merch.js');
@@ -321,7 +354,10 @@ window.addEventListener('hashchange', (e) => {
     const details = findDetails(window.location.hash, null);
     if (details) getModal(details);
     if (e.oldURL?.includes('#')) {
-      prevHash = new URL(e.oldURL).hash;
+      const { hash } = new URL(e.oldURL);
+      if (hash.includes('=') || !document.querySelector(`${hash}:not(.dialog-modal)`)) {
+        prevHash = hash;
+      }
     }
   }
 });
