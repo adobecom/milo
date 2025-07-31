@@ -35,6 +35,7 @@ export const PLANS_AEM_FRAGMENT_MAPPING = {
     whatsIncluded: { tag: 'div', slot: 'whats-included' },
     ctas: { slot: 'footer', size: 'm' },
     style: 'consonant',
+    perUnitLabel: { tag: 'span', slot: 'per-unit-label' },
 };
 
 export const PLANS_EDUCATION_AEM_FRAGMENT_MAPPING = {
@@ -189,6 +190,7 @@ export class Plans extends VariantLayout {
 
     async adjustLegal() {
         await this.card.updateComplete;
+        await customElements.whenDefined('inline-price');
         if (this.legalAdjusted) return;
         this.legalAdjusted = true;
         const prices = [];
@@ -376,4 +378,17 @@ export class Plans extends VariantLayout {
             padding: 2px 10px 3px;
         }
     `;
+
+    static collectionOptions = {
+        customHeaderArea: (collection) => {
+            if (!collection.sidenav) return nothing;
+            return html`<slot name="resultsText"></slot>`
+        },
+        headerVisibility: {
+            search: false,
+            sort: false,
+            result: ['mobile', 'tablet'],
+            custom: ['desktop']
+        }
+    }
 }

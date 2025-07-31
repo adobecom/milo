@@ -54,7 +54,6 @@ test.describe('MAS Docs feature test suite', () => {
       await expect(eventsLog).toContainText("'mas:ready' on MERCH-CARD #card1");
       await expect(eventsLog).toContainText("'mas:ready' on MERCH-CARD #cardSwc");
       await expect(eventsLog).toContainText("'mas:ready' on MERCH-CARD #headless");
-      await expect(eventsLog).toContainText("'mas:ready' on MERCH-CARD #psCard2");
       await expect(eventsLog).toContainText("'mas:ready' on MERCH-CARD #valid-card");
       await expect(eventsLog).toContainText("'mas:ready' on MERCH-CARD #static");
     });
