@@ -37,13 +37,14 @@ export async function getSVGsfromFile(path, selectors) {
 
 function getPlatforms(el) {
   const manualShares = el.querySelectorAll('a');
-  if (manualShares.length === 0) return ['facebook', 'twitter', 'linkedin', 'pinterest', 'reddit'];
+  if (manualShares.length === 0) return ['facebook', 'x', 'linkedin', 'pinterest', 'reddit'];
   const platforms = [];
   [...manualShares].forEach((share) => {
     const { href } = share;
     const url = new URL(href);
     const parts = url.host.split('.');
-    platforms.push(parts[parts.length - 2]);
+    const platform = parts[parts.length - 2] !== 'twitter' ? parts[parts.length - 2] : 'x';
+    platforms.push(platform);
     const parentP = share.closest('p');
     parentP?.remove();
   });
@@ -103,10 +104,10 @@ export default async function decorate(block) {
           title: 'Facebook',
           href: `https://www.facebook.com/sharer/sharer.php?u=${url}`,
         };
-      case 'twitter':
+      case 'x':
         return {
-          title: 'Twitter',
-          href: `https://twitter.com/share?&url=${url}`,
+          title: 'X',
+          href: `https://x.com/share?&url=${url}`,
         };
       case 'linkedin':
         return {
