@@ -1472,10 +1472,10 @@ async function checkForPageMods() {
   });
 }
 
-function setLocationPrerequisites() {
+async function setLocationPrerequisites() {
   const country = sessionStorage.getItem('akamai');
   if (country !== 'gb') return;
-  const { loadPrivacy } = import('../scripts/delayed.js');
+  const { loadPrivacy } = await import('../scripts/delayed.js');
   loadPrivacy(getConfig, loadScript);
 }
 
