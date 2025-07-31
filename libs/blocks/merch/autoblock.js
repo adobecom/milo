@@ -44,7 +44,7 @@ export function handleCustomAnalyticsEvent(eventName, element) {
     }
     const daaLhAttrValue = daaLhElement.getAttribute('daa-lh');
     daaLhValue = `${daaLhAttrValue}${daaLhValue}`;
-    daaLhElement = daaLhElement.parentElement.closest('[daa-lh]');
+    daaLhElement = daaLhElement.parentElement?.closest('[daa-lh]');
   }
   if (daaLhValue) {
     // eslint-disable-next-line no-underscore-dangle
@@ -55,7 +55,7 @@ export function handleCustomAnalyticsEvent(eventName, element) {
   }
 }
 
-function enableAnalytics(el, self) {
+export async function enableAnalytics(el, self) {
   const tabs = el.closest('.tabs');
   if (tabs) {
     const blocksWithMerch = Array.from(document.querySelectorAll('[data-block]'))
@@ -70,25 +70,28 @@ function enableAnalytics(el, self) {
   }
 
   const cards = self ? [el] : el.querySelectorAll('merch-card');
-  cards.forEach(async (card) => {
+  const promises = Array.from(cards).map(async (card) => {
     await card.checkReady();
-    card.setAttribute('name', card.getAttribute('daa-lh'));
+    const getCardLL = (ll) => `${ll}--${card.getAttribute('data-analytics-id')}--card`;
+    card.setAttribute('data-analytics-id', card.getAttribute('daa-lh'));
     card.removeAttribute('daa-lh');
     card.querySelectorAll('a[daa-ll]').forEach((anchor) => {
       const ll = anchor.getAttribute('daa-ll');
-      anchor.setAttribute('daa-ll', `${ll}--${card.name}--card`);
+      anchor.setAttribute('daa-ll', getCardLL(ll));
     });
     card.querySelectorAll('merch-addon').forEach((ao) => {
       ao.addEventListener('change', (aoe) => {
-        handleCustomAnalyticsEvent(`addon-${aoe.detail.checked ? 'checked' : 'unchecked'}--${card.name}--card`, aoe.target);
+        handleCustomAnalyticsEvent(getCardLL(`addon-${aoe.detail.checked ? 'checked' : 'unchecked'}`), aoe.target);
       });
     });
     card.querySelectorAll('merch-quantity-select').forEach((qs) => {
       qs.addEventListener('merch-quantity-selector:change', (qse) => {
-        handleCustomAnalyticsEvent(`quantity-${qse.detail.option}--${card.name}--card`, qse.target);
+        handleCustomAnalyticsEvent(getCardLL(`quantity-${qse.detail.option}`), qse.target);
       });
     });
   });
+
+  await Promise.all(promises);
 }
 
 export function postProcessAutoblock(autoblockEl, self = false) {
