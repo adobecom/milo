@@ -410,6 +410,25 @@ const failedExternalLoads = new Set();
 
 const loadingPromises = new Map();
 
+let litPromise;
+
+/**
+ * Loads lit dependency dynamically when needed
+ * @returns {Promise} Promise that resolves when lit is loaded
+ */
+async function loadLitDependency() {
+  if (litPromise) return litPromise;
+
+  if (window.customElements?.get('lit-element')) {
+    return Promise.resolve();
+  }
+
+  const { base } = getConfig();
+  litPromise = loadScript(`${base}/deps/lit-all.min.js`, 'module');
+
+  return litPromise;
+}
+
 /**
  * Loads a MAS component either from external URL (if masLibs present) or local deps
  * @param {string} componentName - Name of the component to load (e.g., 'commerce', 'merch-card')
@@ -425,6 +444,8 @@ export async function loadMasComponent(componentName) {
   }
 
   const loadPromise = (async () => {
+    await loadLitDependency();
+
     const masLibsBase = getMasLibs();
 
     if (masLibsBase) {
