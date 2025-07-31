@@ -190,6 +190,9 @@
   text-align: center;
 }
 
+@media screen and (min-width: 600px) {
+}
+
 /* Tablet up */
 @media screen and (min-width: 768px) {
   .brand-concierge {
@@ -244,8 +247,14 @@
   }
 }
 
-#brand-concierge-modal {
-  .dialog-close {
-    z-index: 2;
-  }
+
+#brand-concierge-modal.dialog-modal {
+  height: calc(100vh - 40px);
+  width: calc(100vw - 40px);
+  max-width: unset;
+  margin: 20px;
+}
+
+#brand-concierge-modal  .dialog-close {
+  z-index: 2;
 }
