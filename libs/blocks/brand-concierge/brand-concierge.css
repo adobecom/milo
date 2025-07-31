@@ -2,6 +2,7 @@
   --bc-card-radius: 12px;
   --bc-inpu-radius: 12px;
   --bc-input-height: 54px;
+  --bc-input-border: linear-gradient(98.11deg, #9A3CF9 -4.21%, #E743C8 35.46%, #ED457E 68.67%, #FF7918 104.7%);
   --bc-button-dimensions: 32px;
   --bc-button-radius: 8px;
   --bc-button-color: #292929;
@@ -109,11 +110,27 @@
 }
 
 .bc-input-field::before {
-  background: linear-gradient(98.11deg, #9A3CF9 -4.21%, #E743C8 35.46%, #ED457E 68.67%, #FF7918 104.7%);
+  background: var(--bc-input-border);
   border-radius: var(--bc-inpu-radius);
   content: '';
   height: 100%;
   left: 50%;
+  padding: 2px;
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 100%;
+  z-index: 5;
+}
+
+.bc-input-field::after {
+  background: var(--bc-input-border);
+  border-radius: var(--bc-inpu-radius);
+  content: '';
+  filter: blur(20px);
+  height: 100%;
+  left: 50%;
+  opacity: 0.5;
   padding: 2px;
   position: absolute;
   top: 50%;
