@@ -127,11 +127,10 @@
   background: var(--bc-input-border);
   border-radius: var(--bc-inpu-radius);
   content: '';
-  filter: blur(20px);
+  filter: blur(30px);
   height: 100%;
   left: 50%;
   opacity: 0.5;
-  padding: 2px;
   position: absolute;
   top: 50%;
   transform: translate(-50%, -50%);
