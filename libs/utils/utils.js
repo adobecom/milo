@@ -1472,11 +1472,19 @@ async function checkForPageMods() {
   });
 }
 
+function setLocationPrerequisites() {
+  const country = sessionStorage.getItem('akamai');
+  if (country !== 'gb') return;
+  const { loadPrivacy } = import('../scripts/delayed.js');
+  loadPrivacy(getConfig, loadScript);
+}
+
 async function loadPostLCP(config) {
   import('./favicon.js').then(({ default: loadFavIcon }) => loadFavIcon(createTag, getConfig(), getMetadata));
   await decoratePlaceholders(document.body.querySelector('header'), config);
   const sk = document.querySelector('aem-sidekick, helix-sidekick');
   if (sk) import('./sidekick-decorate.js').then((mod) => { mod.default(sk); });
+  setLocationPrerequisites();
   if (config.mep?.targetEnabled === 'postlcp') {
     /* c8 ignore next 2 */
     const { init } = await import('../features/personalization/personalization.js');
@@ -1714,10 +1722,20 @@ async function processSection(section, config, isDoc, lcpSectionId) {
   return section.blocks;
 }
 
+function setLocation() {
+  const country = window.performance?.getEntriesByType('navigation')?.[0]?.serverTiming?.find(timing => timing?.name === 'geo')?.description?.toLowerCase();
+  if (!country) return;
+  !sessionStorage.getItem('akamai') && sessionStorage.setItem('akamai', country);
+  // Privacy
+  !sessionStorage.getItem('feds_location') && sessionStorage.setItem('feds_location', JSON.stringify({ country: country.toUpperCase()}));
+}
+
+
 export async function loadArea(area = document) {
   const isDoc = area === document;
   if (isDoc) {
     if (document.getElementById('page-load-ok-milo')) return;
+    setLocation();
     await checkForPageMods();
     appendHtmlToCanonicalUrl();
     appendSuffixToTitles();
