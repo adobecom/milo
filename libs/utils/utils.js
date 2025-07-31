@@ -1473,15 +1473,16 @@ async function checkForPageMods() {
 }
 
 function setLocation() {
-  const country = window.performance?.getEntriesByType('navigation')?.[0]?.serverTiming?.find(timing => timing?.name === 'geo')?.description?.toLowerCase();
+  const country = window.performance?.getEntriesByType('navigation')?.[0]?.serverTiming
+    ?.find(timing => timing?.name === 'geo')?.description?.toLowerCase();
   if (!country) return;
   !sessionStorage.getItem('akamai') && sessionStorage.setItem('akamai', country);
-  // Privacy
   !sessionStorage.getItem('feds_location') && sessionStorage.setItem('feds_location', JSON.stringify({ country: country.toUpperCase()}));
 }
 
 async function setLocationPrerequisites() {
-  const country = (new URLSearchParams(window.location.search).get('akamaiLocale')?.toLowerCase()) || sessionStorage.getItem('akamai');
+  const country = (new URLSearchParams(window.location.search).get('akamaiLocale')?.toLowerCase())
+    || sessionStorage.getItem('akamai');
   if (country !== 'gb' || window.adobePrivacy) return;
   const { loadPrivacy } = await import('../scripts/delayed.js');
   loadPrivacy(getConfig, loadScript);
