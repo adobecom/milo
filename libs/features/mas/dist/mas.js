@@ -300,12 +300,11 @@ Try polyfilling it using "@formatjs/intl-pluralrules"
             <input
                 type="checkbox"
                 id="addon-checkbox"
-                part="checkbox"
                 .checked=${this.checked}
                 @change=${this.handleChange}
             />
-            <span id="custom-checkbox" @click=${this.handleCustomClick}></span>
-            <label for="addon-checkbox" part="label">
+            <span role="checkbox" tabindex="0" aria-labelledby="custom-checkbox-label" id="custom-checkbox" @click=${this.handleCustomClick}></span>
+            <label id="custom-checkbox-label" for="addon-checkbox">
                 <slot></slot>
             </label>`}};f(Gt,"properties",{planType:{type:String,attribute:"plan-type",reflect:!0},checked:{type:Boolean,reflect:!0},customCheckbox:{type:Boolean,attribute:"custom-checkbox",reflect:!0}}),f(Gt,"styles",E`
         :host {
