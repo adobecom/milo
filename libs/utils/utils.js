@@ -1474,7 +1474,7 @@ async function checkForPageMods() {
 
 async function setLocationPrerequisites() {
   const country = sessionStorage.getItem('akamai');
-  if (country !== 'gb') return;
+  if (country !== 'gb' || window.adobePrivacy) return;
   const { loadPrivacy } = await import('../scripts/delayed.js');
   loadPrivacy(getConfig, loadScript);
 }
@@ -1519,7 +1519,7 @@ async function loadPostLCP(config) {
   }
   // load privacy here if quick-link is present in first section
   const quickLink = document.querySelector('div.section')?.querySelector('.quick-link');
-  if (!quickLink) return;
+  if (!quickLink || window.adobePrivacy) return;
   import('../scripts/delayed.js').then(({ loadPrivacy }) => {
     loadPrivacy(getConfig, loadScript);
   });
