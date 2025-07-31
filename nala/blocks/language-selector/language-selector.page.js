@@ -28,9 +28,7 @@ export default class LanguageSelector {
         state: 'visible',
       });
 
-      if (acceptButton) {
-        await acceptButton.click();
-      }
+      if (acceptButton) await acceptButton.click();
     } catch (error) {
       'Button not visible';
     }
