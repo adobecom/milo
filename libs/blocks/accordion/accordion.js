@@ -201,19 +201,20 @@ async function createExpandAllContainer(accordionItems, isEditorial, mediaEl) {
 }
 
 function handleResponsiveMedia(accordionMedia, id, el, hasExpandAll) {
-  const moveMedia = (e) => {
+  const moveMedia = (mediaQuery) => {
     if (!mediaCollection[id]) return;
 
-    if (e?.matches) {
+    if (mediaQuery?.matches) {
       [...mediaCollection[id]].forEach((mediaItem) => {
         if (accordionMedia && !accordionMedia.contains(mediaItem)) accordionMedia.append(mediaItem);
       });
 
       const activeEl = el.querySelector('.accordion-trigger[aria-expanded="true"]');
       const activeElIndex = activeEl?.id?.match(/\d+$/)?.[0];
+      const triggerIsExpanded = el.querySelectorAll('.accordion-trigger[aria-expanded="true"]')?.length === 1;
+      const mediaNotExpanded = !el.querySelector('.accordion-media .expanded')?.length;
 
-      if ((hasExpandAll && el.querySelectorAll('.accordion-trigger[aria-expanded="true"]')?.length === 1)
-          || !el.querySelector('.accordion-media .expanded')?.length) {
+      if ((hasExpandAll && triggerIsExpanded) || mediaNotExpanded) {
         openMediaPanel({
           displayArea: accordionMedia,
           el: activeEl,
