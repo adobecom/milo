@@ -85,6 +85,13 @@ describe('Fragments', () => {
     expect(window.lana.log.args[2][0]).to.equal('ERROR: Fragment Circular Reference loading http://localhost:2000/test/blocks/fragment/mocks/fragments/frag-a');
   });
 
+  it('Doesnt infinitely load circular reference to itself', async () => {
+    const a = document.querySelector('a.self-ref');
+    await getFragment(a);
+    expect(document.querySelector('h5')).to.exist;
+    expect(window.lana.log.args[3][0]).to.equal('ERROR: Fragment Circular Reference loading http://localhost:2000/test/blocks/fragment/mocks/fragments/self-ref');
+  });
+
   it('Inlines fragments inside a block', async () => {
     const marquee = document.querySelector('.marquee-section');
     await loadArea(marquee);

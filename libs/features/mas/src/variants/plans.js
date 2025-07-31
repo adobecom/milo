@@ -1,7 +1,7 @@
 import { VariantLayout } from './variant-layout';
 import { html, css, nothing } from 'lit';
 import { CSS } from './plans.css.js';
-import { isMobile, matchMobile } from '../utils.js';
+import { isMobile, matchMobile, isDesktop, matchDesktop } from '../media.js';
 import {
     SELECTOR_MAS_INLINE_PRICE,
     TEMPLATE_PRICE_LEGAL,
@@ -35,11 +35,12 @@ export const PLANS_AEM_FRAGMENT_MAPPING = {
     whatsIncluded: { tag: 'div', slot: 'whats-included' },
     ctas: { slot: 'footer', size: 'm' },
     style: 'consonant',
+    perUnitLabel: { tag: 'span', slot: 'per-unit-label' },
 };
 
 export const PLANS_EDUCATION_AEM_FRAGMENT_MAPPING = {
   ...(function(){
-    const { whatsIncluded, ...rest } = PLANS_AEM_FRAGMENT_MAPPING;
+    const { whatsIncluded, size, ...rest } = PLANS_AEM_FRAGMENT_MAPPING;
     return rest;
   }()),
   title: { tag: 'h3', slot: 'heading-s' },
@@ -57,7 +58,7 @@ export const PLANS_STUDENTS_AEM_FRAGMENT_MAPPING = {
 export class Plans extends VariantLayout {
     constructor(card) {
         super(card);
-        this.adaptForMobile = this.adaptForMobile.bind(this);
+        this.adaptForMedia = this.adaptForMedia.bind(this);
     }
 
     priceOptionsProvider(element, options) {
@@ -69,7 +70,54 @@ export class Plans extends VariantLayout {
         return CSS;
     }
 
-    adaptForMobile() {
+    /**
+     * Moves a slot to its proper place (body or footer) depending on card size and screen size
+     * @param {string} name 
+     * @param {string[]} sizes 
+     * @param {boolean} shouldBeInFooter 
+     * @returns 
+     */
+    adjustSlotPlacement(name, sizes, shouldBeInFooter) {
+        const shadowRoot = this.card.shadowRoot;
+        const footer = shadowRoot.querySelector('footer');
+        const size = this.card.getAttribute('size');
+        const slotInFooter = shadowRoot.querySelector(
+            `footer slot[name="${name}"]`,
+        );
+        const slotInBody = shadowRoot.querySelector(`.body slot[name="${name}"]`);
+        const body = shadowRoot.querySelector('.body');
+
+        if (!size || !size.includes('wide')) {
+            footer?.classList.remove('wide-footer');
+            if (slotInFooter) slotInFooter.remove();
+        }
+        if (!sizes.includes(size)) return;
+        
+
+        footer?.classList.toggle('wide-footer', isDesktop());
+        if (!shouldBeInFooter && slotInFooter) {
+            if (slotInBody) 
+                slotInFooter.remove();
+            else {
+                const bodyPlaceholder = body.querySelector(`[data-placeholder-for="${name}"]`);
+                if (bodyPlaceholder) bodyPlaceholder.replaceWith(slotInFooter);
+                else body.appendChild(slotInFooter);
+            }
+            return;
+        }
+        if (shouldBeInFooter && slotInBody) {
+            const bodyPlaceholder = document.createElement('div');
+            bodyPlaceholder.setAttribute('data-placeholder-for', name);
+            bodyPlaceholder.classList.add('slot-placeholder');
+            if (!slotInFooter) {
+                const slotInBodyClone = slotInBody.cloneNode(true);
+                footer.prepend(slotInBodyClone);
+            }
+            slotInBody.replaceWith(bodyPlaceholder)
+        }
+    }
+
+    adaptForMedia() {
         if (
             !this.card.closest(
                 'merch-card-collection,overlay-trigger,.two-merch-cards,.three-merch-cards,.four-merch-cards, .columns',
@@ -78,33 +126,9 @@ export class Plans extends VariantLayout {
             this.card.removeAttribute('size');
             return;
         }
-
-        const shadowRoot = this.card.shadowRoot;
-        const footer = shadowRoot.querySelector('footer');
-        const size = this.card.getAttribute('size');
-        const stockInFooter = shadowRoot.querySelector(
-            'footer #stock-checkbox',
-        );
-        const stockInBody = shadowRoot.querySelector('.body #stock-checkbox');
-        const body = shadowRoot.querySelector('.body');
-
-        if (!size) {
-            footer?.classList.remove('wide-footer');
-            if (stockInFooter) stockInFooter.remove();
-            return;
-        }
-
-        const mobile = isMobile();
-        footer?.classList.toggle('wide-footer', !mobile);
-        if (mobile && stockInFooter) {
-            stockInBody
-                ? stockInFooter.remove()
-                : body.appendChild(stockInFooter);
-            return;
-        }
-        if (!mobile && stockInBody) {
-            stockInFooter ? stockInBody.remove() : footer.prepend(stockInBody);
-        }
+        
+        this.adjustSlotPlacement('addon', ['super-wide'], isDesktop());
+        this.adjustSlotPlacement('callout-content', ['super-wide'], isDesktop());
     }
 
     adjustCallout() {
@@ -132,12 +156,19 @@ export class Plans extends VariantLayout {
         }
     }
 
+    adjustPrices() {
+        if (!this.headingM) return;
+        this.headingM.setAttribute('role', 'heading');
+        this.headingM.setAttribute('aria-level', '2');
+    }
+
     postCardUpdateHook() {
-        this.adaptForMobile();
+        this.adaptForMedia();
         this.adjustTitleWidth();
         this.adjustLegal();
         this.adjustAddon();
         this.adjustCallout();
+        this.adjustPrices();
     }
 
     get headingM() {
@@ -152,20 +183,19 @@ export class Plans extends VariantLayout {
     }
 
     get divider() {
-      return this.card.variant === 'plans-education'
-        ? html`<div class="divider"></div>` 
-        : nothing
+        return this.card.variant === 'plans-education'
+            ? html`<div class="divider"></div>` 
+            : nothing
     }
 
     async adjustLegal() {
         await this.card.updateComplete;
+        await customElements.whenDefined('inline-price');
         if (this.legalAdjusted) return;
         this.legalAdjusted = true;
         const prices = [];
         const headingPrice = this.card.querySelector(`[slot="heading-m"] ${SELECTOR_MAS_INLINE_PRICE}[data-template="price"]`);
         if (headingPrice) prices.push(headingPrice);
-        const bodyPrices = this.card.querySelectorAll(`[slot="body-xs"] ${SELECTOR_MAS_INLINE_PRICE}[data-template="price"]`);
-        bodyPrices.forEach(bodyPrice => prices.push(bodyPrice));
         const legalPromises = prices.map(async (price) => {
           const legal = price.cloneNode(true);
           await price.onceSettled();
@@ -182,16 +212,17 @@ export class Plans extends VariantLayout {
     }
 
     async adjustAddon() {
-      await this.card.updateComplete;
-      const addon = this.card.addon;
-      if (!addon) return;
-      const price = this.mainPrice;
-      if (!price) return;
-      await price.onceSettled();
-      const planType = price.value?.[0]?.planType;
-      if (!planType) return;
-      addon.planType = planType;
-  }
+        await this.card.updateComplete;
+        const addon = this.card.addon;
+        if (!addon) return;
+        addon.setAttribute('custom-checkbox', '');
+        const price = this.mainPrice;
+        if (!price) return;
+        await price.onceSettled();
+        const planType = price.value?.[0]?.planType;
+        if (!planType) return;
+        addon.planType = planType;
+    }
 
     get stockCheckbox() {
         return this.card.checkboxLabel
@@ -208,27 +239,22 @@ export class Plans extends VariantLayout {
         return html`<slot name="icons"></slot>`;
     }
 
-    get addon() {
-        if (this.card.size === 'super-wide') return nothing;
-        return html`<slot name="addon"></slot>`
-    }
-
-    get plansSecureLabelFooter() {
-        if (this.card.size === 'super-wide') 
-            return html`<footer><slot name="addon"></slot>${this.secureLabel}<slot name="footer"></slot></footer>`;
-        return this.secureLabelFooter;
-    }
-
     connectedCallbackHook() {
-        const match = matchMobile();
-        if (match?.addEventListener)
-            match.addEventListener('change', this.adaptForMobile);
+        const mobileWatcher = matchMobile();
+        if (mobileWatcher?.addEventListener)
+            mobileWatcher.addEventListener('change', this.adaptForMedia);
+        const desktopWatcher = matchDesktop();
+        if (desktopWatcher?.addEventListener)
+            desktopWatcher.addEventListener('change', this.adaptForMedia);
     }
 
     disconnectedCallbackHook() {
-        const match = matchMobile();
-        if (match?.removeEventListener)
-            match.removeEventListener('change', this.adaptForMobile);
+        const mobileWatcher = matchMobile();
+        if (mobileWatcher?.removeEventListener)
+            mobileWatcher.removeEventListener('change', this.adaptForMedia);
+        const desktopWatcher = matchDesktop();
+        if (desktopWatcher?.removeEventListener)
+            desktopWatcher.removeEventListener('change', this.adaptForMedia);
     }
 
     renderLayout() {
@@ -247,12 +273,12 @@ export class Plans extends VariantLayout {
                 <slot name="body-xs"></slot>
                 <slot name="whats-included"></slot>
                 <slot name="callout-content"></slot>
-                ${this.stockCheckbox}
-                ${this.addon}
-                <slot name="badge"></slot>
                 <slot name="quantity-select"></slot>
+                ${this.stockCheckbox}
+                <slot name="addon"></slot>
+                <slot name="badge"></slot>
             </div>
-            ${this.plansSecureLabelFooter}`;
+            ${this.secureLabelFooter}`;
     }
 
     static variantStyle = css`
@@ -266,6 +292,10 @@ export class Plans extends VariantLayout {
             --merch-color-green-promo: #05834E;
             --secure-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='%23505050' viewBox='0 0 12 15'%3E%3Cpath d='M11.5 6H11V5A5 5 0 1 0 1 5v1H.5a.5.5 0 0 0-.5.5v8a.5.5 0 0 0 .5.5h11a.5.5 0 0 0 .5-.5v-8a.5.5 0 0 0-.5-.5ZM3 5a3 3 0 1 1 6 0v1H3Zm4 6.111V12.5a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1.389a1.5 1.5 0 1 1 2 0Z'/%3E%3C/svg%3E");
             font-weight: 400;
+        }
+
+        :host([variant^='plans']) .slot-placeholder {
+            display: none;
         }
 
         :host([variant='plans-education']) {
@@ -296,6 +326,16 @@ export class Plans extends VariantLayout {
 
         :host([variant='plans'][size]) .body {
             max-width: none;
+        }
+
+        :host([variant^='plans']) ::slotted([slot='addon']) {
+            margin-top: auto;
+            padding-top: 8px;
+        }
+
+        :host([variant^='plans']) footer ::slotted([slot='addon']) {
+            margin: 0;
+            padding: 0;
         }
 
         :host([variant='plans']) .wide-footer #stock-checkbox {
@@ -338,4 +378,17 @@ export class Plans extends VariantLayout {
             padding: 2px 10px 3px;
         }
     `;
+
+    static collectionOptions = {
+        customHeaderArea: (collection) => {
+            if (!collection.sidenav) return nothing;
+            return html`<slot name="resultsText"></slot>`
+        },
+        headerVisibility: {
+            search: false,
+            sort: false,
+            result: ['mobile', 'tablet'],
+            custom: ['desktop']
+        }
+    }
 }

@@ -424,7 +424,10 @@ const setMenuState = () => {
 };
 
 export const closeGnavOptions = () => {
-  const isExpanded = document.querySelector('.feds-toggle')?.getAttribute('aria-expanded') === 'true';
+  let isExpanded = document.querySelector('.feds-toggle')?.getAttribute('aria-expanded') === 'true';
+  if (isDesktop.matches) {
+    isExpanded = !!document.querySelector('.feds-dropdown--active');
+  }
   if (!isExpanded) return;
   enableMobileScroll();
   setMenuState();
@@ -536,6 +539,8 @@ class Gnav {
   };
 
   decorateTopNav = () => {
+    const { searchEnabled, selfIntegrateUnav, desktopAppsCta = false } = getConfig();
+    const isMiniGnav = this.isMiniGnav();
     this.elements.mobileToggle = this.decorateToggle();
     this.elements.topnav = toFragment`
       <nav class="feds-topnav" aria-label="Main">
@@ -543,11 +548,13 @@ class Gnav {
           ${this.elements.mobileToggle}
           ${this.decorateBrand()}
         </div>
+        ${searchEnabled === 'on' && isMiniGnav ? toFragment`<div class="feds-client-search"></div>` : ''}
         ${this.elements.navWrapper}
         ${getMetadata('product-entry-cta')?.toLowerCase() === 'on' ? this.decorateProductEntryCTA() : ''}
-        ${getConfig().searchEnabled === 'on' ? toFragment`<div class="feds-client-search"></div>` : ''}
+        ${searchEnabled === 'on' && !isMiniGnav ? toFragment`<div class="feds-client-search"></div>` : ''}
+        ${isMiniGnav && desktopAppsCta ? toFragment`<div class="feds-client-desktop-apps"></div>` : ''}
         ${this.useUniversalNav ? this.blocks.universalNav : ''}
-        ${getConfig().selfIntegrateUnav ? toFragment`<div class="feds-client-unav"></div>` : ''}
+        ${selfIntegrateUnav ? toFragment`<div class="feds-client-unav"></div>` : ''}
         ${(!this.useUniversalNav && this.blocks.profile.rawElem) ? this.blocks.profile.decoratedElem : ''}
         ${this.decorateLogo()}
       </nav>
@@ -581,6 +588,9 @@ class Gnav {
       this.block.after(localNav);
     }
     localNav.setAttribute('daa-lh', `${title}_localNav`);
+    if (document.querySelector('.feds-promo-aside-wrapper')) {
+      this.updateGnavTop();
+    }
     const localNavBtn = toFragment`<button class="feds-navLink--hoverCaret feds-localnav-title" aria-haspopup="true" aria-expanded="false" daa-ll="${title}_localNav|open"></button>`;
     const localNavCurtain = toFragment` <div class="feds-localnav-curtain"></div>`;
     // Skip keyboard navigation on localnav items if it is closed
@@ -593,8 +603,8 @@ class Gnav {
       const isExpanded = localNavTitle.getAttribute('aria-expanded') === 'true';
       itemWrapper.toggleAttribute('aria-hidden', !isExpanded);
       [...itemWrapper.childNodes].forEach((node) => {
-        node.querySelector('a, button').toggleAttribute('aria-hidden', !isExpanded);
-        node.querySelector('a, button').setAttribute('tabindex', isExpanded ? '0' : '-1');
+        node.querySelector('a, button')?.toggleAttribute('aria-hidden', !isExpanded);
+        node.querySelector('a, button')?.setAttribute('tabindex', isExpanded ? '0' : '-1');
       });
     });
     observer.observe(localNavTitle, { attributes: true, attributeFilter: ['aria-expanded'] });
@@ -1011,7 +1021,7 @@ class Gnav {
     }).catch(() => { });
   };
 
-  isToggleExpanded = () => this.elements.mobileToggle?.getAttribute('aria-expanded') === 'true';
+  isToggleExpanded = () => this.elements.mobileToggle?.getAttribute?.('aria-expanded') === 'true';
 
   isEmptyGnav = () => this
     .elements
@@ -1019,11 +1029,13 @@ class Gnav {
     ?.querySelector('.feds-nav')
     ?.childElementCount === 0;
 
+  isMiniGnav = () => this.block.classList.contains('mini-gnav');
+
   isLocalNav = () => this.newMobileNav && !this.isEmptyGnav() && this
     .elements
     .navWrapper
     ?.querySelectorAll('.feds-nav > section.feds-navItem')
-    ?.length <= 1;
+    ?.length <= 1 && !this.isMiniGnav();
 
   hasMegaMenu = () => this
     .elements
@@ -1161,6 +1173,20 @@ class Gnav {
     return decoratedElem;
   };
 
+  updateGnavTop = () => {
+    const promoHeight = `${this.elements.aside.clientHeight}px`;
+    const header = document.querySelector('header');
+    const localNav = document.querySelector('.feds-localnav');
+
+    document.querySelector('.feds-promo-aside-wrapper').style.height = promoHeight;
+    header.style.top = promoHeight;
+    if (!isDesktop.matches && localNav) {
+      header.style.top = 0;
+      localNav.style.top = promoHeight;
+    }
+    if (!isDesktop.matches) this.updatePopupPosition();
+  };
+
   decorateAside = async () => {
     performance.mark('Gnav-Aside-Start');
     this.elements.aside = '';
@@ -1176,30 +1202,16 @@ class Gnav {
     const { default: decorate } = await asideJsPromise;
     if (!decorate) return this.elements.aside;
     this.elements.aside = await decorate({ headerElem: this.block, fedsPromoWrapper, promoPath });
+    if (!(this.elements.aside instanceof HTMLElement)) return this.elements.aside;
     fedsPromoWrapper.append(this.elements.aside);
-
-    const updateLayout = () => {
-      const promoHeight = `${this.elements.aside.clientHeight}px`;
-      const header = document.querySelector('header');
-      const localNav = document.querySelector('.feds-localnav');
-
-      fedsPromoWrapper.style.height = promoHeight;
-      header.style.top = promoHeight;
-
-      if (!isDesktop.matches && localNav) {
-        header.style.top = 0;
-        localNav.style.top = promoHeight;
-      }
-    };
 
     if (this.elements.aside.clientHeight > fedsPromoWrapper.clientHeight) {
       lanaLog({ message: 'Promo height is more than expected, potential CLS', tags: 'gnav-promo', errorType: 'i' });
-      updateLayout();
-
-      this.promoResizeObserver?.disconnect();
-      this.promoResizeObserver = new ResizeObserver(updateLayout);
-      this.promoResizeObserver.observe(this.elements.aside);
     }
+    this.updateGnavTop();
+    this.promoResizeObserver?.disconnect();
+    this.promoResizeObserver = new ResizeObserver(this.updateGnavTop);
+    this.promoResizeObserver.observe(this.elements.aside);
     performance.mark('Gnav-Aside-End');
     logPerformance('Gnav-Aside-Time', 'Gnav-Aside-Start', 'Gnav-Aside-End');
     return this.elements.aside;
@@ -1344,9 +1356,9 @@ class Gnav {
       const elements = [...document.querySelectorAll('.feds-localnav .feds-navItem')].find(
         (el) => {
           const link = el.querySelector('a, button');
-          link.setAttribute('tabindex', '-1');
-          link.setAttribute('aria-hidden', true);
-          return link.dataset.title?.trim() === navItem.textContent;
+          link?.setAttribute('tabindex', '-1');
+          link?.setAttribute('aria-hidden', true);
+          return link?.dataset?.title?.trim() === navItem.textContent;
         },
       );
       if (elements) {
@@ -1390,34 +1402,37 @@ class Gnav {
         clearTimeout(decorationTimeout);
 
         const loadingDesktopMegaMenuHTML = template.querySelector('.feds-popup.loading')?.innerHTML;
-        const menuLogic = await loadDecorateMenu();
+        (async () => {
+          try {
+            const menuLogic = await loadDecorateMenu();
 
-        menuLogic.decorateMenu({
-          item,
-          template,
-          type: itemType,
-        }).then(async () => {
-          // There are two calls to transformTemplateToMobile
-          // One without awaiting decorateMenu, and one after
-          // decorateMenu is complete
-          const popup = template.querySelector('.feds-popup');
-          desktopMegaMenuHTML = popup.innerHTML;
-          if (!this.newMobileNav) return;
-          if (isDesktop.matches || !popup) return;
-          mobileNavCleanup();
-          mobileNavCleanup = await transformTemplateToMobile({
-            popup,
-            item,
-            localnav: this.isLocalNav(),
-            toggleMenu: this.toggleMenuMobile,
-          });
-          if (popup.closest('section.feds-dropdown--active')) makeTabActive(popup);
-        }).finally(() => {
-          if (this.isLocalNav()) {
-            decorateLocalNavItems(item, template);
+            await menuLogic.decorateMenu({
+              item,
+              template,
+              type: itemType,
+            });
+            // There are two calls to transformTemplateToMobile
+            // One without awaiting decorateMenu, and one after
+            // decorateMenu is complete
+            const popup = template.querySelector('.feds-popup');
+            desktopMegaMenuHTML = popup.innerHTML;
+            if (!this.newMobileNav) return;
+            if (isDesktop.matches || !popup) return;
+            mobileNavCleanup();
+            mobileNavCleanup = await transformTemplateToMobile({
+              popup,
+              item,
+              localnav: this.isLocalNav(),
+              toggleMenu: this.toggleMenuMobile,
+              updatePopupPosition: this.updatePopupPosition,
+            });
+            if (popup.closest('section.feds-dropdown--active')) makeTabActive(popup);
+          } finally {
+            if (this.isLocalNav()) {
+              decorateLocalNavItems(item, template);
+            }
           }
-        });
-
+        })();
         if (this.newMobileNav) {
           const popup = template.querySelector('.feds-popup');
           if (!isDesktop.matches && popup) {
@@ -1542,7 +1557,7 @@ class Gnav {
               return !this.customLinks.includes(linkHash);
             };
             [...customLinksSection.classList].splice(1).forEach((className) => {
-              customLinkModifier = ` feds-navItem--${className}`;
+              customLinkModifier += ` feds-navItem--${className}`;
             });
             removeCustomLink = removeLink();
           } else if (itemHasActiveLink) {
@@ -1620,7 +1635,7 @@ class Gnav {
 }
 
 export default async function init(block) {
-  const { mep } = getConfig();
+  const { mep, miniGnav = false } = getConfig();
   const sourceUrl = await getGnavSource();
   let newMobileNav = new URLSearchParams(window.location.search).get('newNav');
   newMobileNav = newMobileNav ? newMobileNav !== 'false' : getMetadata('mobile-gnav-v2') !== 'off';
@@ -1644,12 +1659,13 @@ export default async function init(block) {
     newMobileNav,
   });
   if (newMobileNav && !isDesktop.matches) block.classList.add('new-nav');
+  if (miniGnav) block.classList.add('mini-gnav');
+  if (isDarkMode()) block.classList.add('feds--dark');
   await gnav.init();
   if (gnav.isLocalNav()) block.classList.add('local-nav');
   block.setAttribute('daa-im', 'true');
   const mepMartech = mep?.martech || '';
   block.setAttribute('daa-lh', `gnav|${getExperienceName()}${mepMartech}`);
-  if (isDarkMode()) block.classList.add('feds--dark');
   performance.mark('Gnav-Init-End');
   logPerformance('Gnav-Init-Function-Time', 'Gnav-Start', 'Gnav-Init-End');
   return gnav;

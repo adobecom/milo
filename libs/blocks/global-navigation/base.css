@@ -46,6 +46,12 @@
 
   /* App banner */
   --app-banner-height: 76px;
+
+  /* Skeleton loading state */
+  --feds-skeleton-color-1: #D3D3D3;
+  --feds-skeleton-color-2: #EAEAEA;
+  --feds-skeleton-color-3: #D3D3D3;
+  --feds-skeleton-opacity: 0.7;
 }
 
 /* Nav Link styles */
@@ -241,16 +247,30 @@ header.global-navigation.ready {
     margin-right: 5px;
   }
 
-  .feds-navLink-image {
+  .global-navigation .feds-navLink-image {
     display: flex;
   }
 
-  .feds-navLink-image picture,
-  .feds-navLink-image img {
+  .global-navigation .feds-navLink-image picture,
+  .global-navigation .feds-navLink-image img {
     display: block;
   }
 
-  .feds-navLink-image picture {
+  .global-navigation .feds-navLink-image picture {
+    width: max-content;
+    max-width: 25px;
+  }
+
+  .global-footer:not(.mobile) .feds-navLink-image {
+    display: flex;
+  }
+
+  .global-footer:not(.mobile) .feds-navLink-image picture,
+  .global-footer:not(.mobile) .feds-navLink-image img {
+    display: block;
+  }
+
+  .global-footer:not(.mobile) .feds-navLink-image picture {
     width: max-content;
     max-width: 25px;
   }

@@ -33,8 +33,12 @@ toRepoName=${repoParts[1]}
 prRepo=${prRepo:-$toRepoName}
 prOrg=${prOrg:-$toRepoOrg}
 
-# TODO ADD HLX5 SUPPORT
-PR_BRANCH_LIVE_URL_GH="https://$FEATURE_BRANCH--$prRepo--$prOrg.aem.live"
+# Handle PR Branch Live URL
+if [[ "$FEATURE_BRANCH" == "main" ]]; then
+  PR_BRANCH_LIVE_URL_GH="https://milo.adobe.com"
+else
+  PR_BRANCH_LIVE_URL_GH="https://${FEATURE_BRANCH}--${prRepo}--${prOrg}.aem.live"
+fi
 
 # set pr branch url as env
 export PR_BRANCH_LIVE_URL_GH

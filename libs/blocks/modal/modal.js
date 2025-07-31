@@ -73,12 +73,10 @@ export function closeModal(modal) {
     .forEach((element) => element.removeAttribute('aria-disabled'));
 
   const hashId = window.location.hash.replace('#', '');
-  if (hashId === modal.id) window.history.pushState('', document.title, `${window.location.pathname}${window.location.search}`);
-  isDelayedModal = false;
-  if (prevHash) {
-    window.location.hash = prevHash;
-    prevHash = '';
+  if (hashId === modal.id || modal.id === 'checkout-link-modal') {
+    window.history.pushState(window.history.state, document.title, `${window.location.pathname}${window.location.search}${prevHash ? `${prevHash}` : ''}`);
   }
+  if (prevHash) prevHash = '';
 
   if (isDeepLink) {
     document.querySelector('#onetrust-banner-sdk')?.focus();
@@ -100,6 +98,7 @@ function getCustomModal(custom, dialog) {
   const { miloLibs, codeRoot } = getConfig();
   loadStyle(`${miloLibs || codeRoot}/blocks/modal/modal.css`);
   if (custom.id) dialog.id = custom.id;
+  if (custom.title) dialog.setAttribute('aria-label', custom.title);
   if (custom.class) dialog.classList.add(custom.class);
   if (custom.closeEvent) {
     dialog.addEventListener(custom.closeEvent, () => {
@@ -132,6 +131,7 @@ export async function getModal(details, custom) {
   const dialog = createTag('div', { class: 'dialog-modal', id, role: 'dialog', 'aria-modal': true });
   const loadedEvent = new Event('milo:modal:loaded');
 
+  if (custom && !custom?.title) custom.title = findDetails(window.location.hash, null)?.title;
   if (custom) getCustomModal(custom, dialog);
   if (details) await getPathModal(details.path, dialog);
   if (isDelayedModal) {
@@ -215,7 +215,11 @@ export async function getModal(details, custom) {
 
   const iframe = dialog.querySelector('iframe');
   if (iframe) {
-    if (details?.title) iframe.setAttribute('title', details.title);
+    const title = custom?.title || details?.title;
+    if (title) {
+      iframe.setAttribute('title', title);
+      dialog.setAttribute('aria-label', title);
+    }
 
     if (iframe.title) {
       dialog.setAttribute('aria-label', iframe.title);
@@ -240,12 +244,6 @@ export async function getModal(details, custom) {
     if (dialog.classList.contains('commerce-frame') || dialog.classList.contains('dynamic-height')) {
       const { default: enableCommerceFrameFeatures } = await import('./modal.merch.js');
       await enableCommerceFrameFeatures({ dialog, iframe });
-
-      if (!details?.title) {
-        const commerceDetails = findDetails(window.location.hash, null);
-        const commerceFrameTitle = commerceDetails?.title || null;
-        if (commerceFrameTitle) iframe.setAttribute('title', commerceFrameTitle);
-      }
     } else {
       /* Initially iframe height is set to 0% in CSS for the height auto adjustment feature.
       The height auto adjustment feature is applicable only to dialogs
@@ -319,7 +317,10 @@ window.addEventListener('hashchange', (e) => {
     const details = findDetails(window.location.hash, null);
     if (details) getModal(details);
     if (e.oldURL?.includes('#')) {
-      prevHash = new URL(e.oldURL).hash;
+      const { hash } = new URL(e.oldURL);
+      if (hash.includes('=') || !document.querySelector(`${hash}:not(.dialog-modal)`)) {
+        prevHash = hash;
+      }
     }
   }
 });

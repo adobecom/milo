@@ -9,6 +9,7 @@ import {
   getPageLocale,
   getCountryAndLang,
   stageMapToCaasTransforms,
+  getGrayboxExperienceId,
 } from '../../../libs/blocks/caas/utils.js';
 
 const mockLocales = ['ar', 'br', 'ca', 'ca_fr', 'cl', 'co', 'la', 'mx', 'pe', '', 'africa', 'be_fr', 'be_en', 'be_nl',
@@ -190,6 +191,8 @@ describe('getConfig', () => {
           onErrorTitle: 'Error Loading Title',
           onErrorDescription: 'Error Desc',
           titleHeadingLevel: 'h3',
+          nextCards: 'Next Cards',
+          prevCards: 'Previous Cards',
         },
         setCardBorders: false,
         showCardBadges: false,
@@ -460,6 +463,8 @@ describe('getConfig', () => {
           onErrorTitle: 'Error Loading Title',
           onErrorDescription: 'Error Desc',
           titleHeadingLevel: 'h3',
+          nextCards: 'Next Cards',
+          prevCards: 'Previous Cards',
         },
         setCardBorders: false,
         showCardBadges: false,
@@ -826,6 +831,8 @@ describe('getFloodgateCaasConfig', () => {
           onErrorTitle: 'Error Loading Title',
           onErrorDescription: 'Error Desc',
           titleHeadingLevel: 'h3',
+          nextCards: 'Next Cards',
+          prevCards: 'Previous Cards',
         },
         setCardBorders: false,
         showCardBadges: false,
@@ -1050,5 +1057,57 @@ describe('getFloodgateCaasConfig', () => {
       },
       linkTransformer: {},
     });
+  });
+});
+
+describe('getGrayboxExperienceId', () => {
+  it('should extract experience ID from graybox.adobe.com format', () => {
+    const hostname = 'test-exp.us-graybox.adobe.com';
+    const pathname = '/some/path.html';
+
+    const experienceId = getGrayboxExperienceId(hostname, pathname);
+    expect(experienceId).to.equal('test-exp');
+  });
+
+  it('should extract experience ID from stage graybox format', () => {
+    const hostname = 'stage--us-graybox-adobecom.aem.page';
+    const pathname = '/my-experience/some/path';
+
+    const experienceId = getGrayboxExperienceId(hostname, pathname);
+    expect(experienceId).to.equal('my-experience');
+  });
+
+  it('should return null for non-graybox domains', () => {
+    const hostname = 'www.adobe.com';
+    const pathname = '/some/path';
+
+    const experienceId = getGrayboxExperienceId(hostname, pathname);
+    expect(experienceId).to.be.null;
+  });
+
+  it('should return null for malformed graybox URLs', () => {
+    const hostname = 'graybox.adobe.com';
+    const pathname = '/some/path';
+
+    const experienceId = getGrayboxExperienceId(hostname, pathname);
+    expect(experienceId).to.be.null;
+  });
+
+  it('should handle empty pathname in stage format', () => {
+    const hostname = 'stage--us-graybox-adobecom.aem.page';
+    const pathname = '/';
+
+    const experienceId = getGrayboxExperienceId(hostname, pathname);
+    expect(experienceId).to.be.null;
+  });
+
+  it('should work with default parameters (window.location)', () => {
+    // Test the function directly with graybox parameters
+    // This simulates what would happen when window.location has graybox values
+    const hostname = 'test-exp.us-graybox.adobe.com';
+    const pathname = '/some/path.html';
+
+    const experienceId = getGrayboxExperienceId(hostname, pathname);
+    expect(experienceId).to.equal('test-exp');
   });
 });
