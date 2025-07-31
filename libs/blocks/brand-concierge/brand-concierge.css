@@ -140,7 +140,6 @@
 
 .bc-input-field-container:has(:focus-visible) {
   outline: 2px solid var(--bc-keyboard-focus-color);
-  outline-offset: 4px;
 }
 
 .bc-input-field-container input {
