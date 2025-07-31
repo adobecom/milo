@@ -1,7 +1,7 @@
 /* eslint-disable no-underscore-dangle */
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
-import { enableAnalytics } from '../../../libs/blocks/merch/autoblock.js';
+import { handleCustomAnalyticsEvent, enableAnalytics } from '../../../libs/blocks/merch/autoblock.js';
 
 describe('autoblock', () => {
   let satellite;
@@ -15,26 +15,27 @@ describe('autoblock', () => {
     sinon.restore();
   });
 
-  // describe('handleCustomAnalyticsEvent', () => {
-  //   it('should track analytics event with daa-lh hierarchy', () => {
-  //     const element = document.createElement('div');
-  //     element.setAttribute('daa-lh', 'level1');
+  describe('handleCustomAnalyticsEvent', () => {
+    it('should track analytics event with daa-lh hierarchy', () => {
+      const element = document.createElement('div');
+      element.setAttribute('daa-lh', 'level1');
 
-  //     const parent = document.createElement('div');
-  //     parent.setAttribute('daa-lh', 'level2');
-  //     parent.appendChild(element);
+      const parent = document.createElement('div');
+      parent.setAttribute('daa-lh', 'level2');
+      parent.appendChild(element);
 
-  //     handleCustomAnalyticsEvent('test-event', element);
-  //     expect(satellite.track.called).to.be.true;
-  //     expect(satellite.track.args[0][1].data.web.webInteraction.name).to.equal('test-event|level2|level1');
-  //   });
+      handleCustomAnalyticsEvent('test-event', element);
+      expect(satellite.track.called).to.be.true;
+      const { name } = satellite.track.args[0][1].data.web.webInteraction;
+      expect(name).to.equal('test-event|level2|level1');
+    });
 
-  //   it('should handle element without daa-lh', () => {
-  //     const element = document.createElement('div');
-  //     handleCustomAnalyticsEvent('test-event', element);
-  //     expect(satellite.track.called).to.be.false;
-  //   });
-  // });
+    it('should handle element without daa-lh', () => {
+      const element = document.createElement('div');
+      handleCustomAnalyticsEvent('test-event', element);
+      expect(satellite.track.called).to.be.false;
+    });
+  });
 
   describe('enableAnalytics', () => {
     it('should enable analytics for merch cards', async () => {
