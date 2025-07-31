@@ -1,7 +1,7 @@
 /* eslint-disable no-underscore-dangle */
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
-import { handleCustomAnalyticsEvent, enableAnalytics } from '../../../libs/blocks/merch/autoblock.js';
+import { enableAnalytics } from '../../../libs/blocks/merch/autoblock.js';
 
 describe('autoblock', () => {
   let satellite;
