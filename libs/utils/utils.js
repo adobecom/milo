@@ -1474,10 +1474,10 @@ async function checkForPageMods() {
 
 function setCountry() {
   const country = window.performance?.getEntriesByType('navigation')?.[0]?.serverTiming
-    ?.find(timing => timing?.name === 'geo')?.description?.toLowerCase();
+    ?.find((timing) => timing?.name === 'geo')?.description?.toLowerCase();
   if (!country) return;
   sessionStorage.setItem('akamai', country);
-  sessionStorage.setItem('feds_location', JSON.stringify({ country: country.toUpperCase()}));
+  sessionStorage.setItem('feds_location', JSON.stringify({ country: country.toUpperCase() }));
 }
 
 async function setCountryPrerequisites() {
