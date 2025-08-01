@@ -1096,8 +1096,18 @@ async function decorateHeader() {
 }
 
 async function decorateIcons(area, config) {
+  const rogueBlocks = ['unity', 'cc-forms', 'interactive-metadata'];
   const icons = area.querySelectorAll('span.icon');
   if (icons.length === 0) return;
+
+  // Check if any icons are in rogue blocks
+  const hasRogueIcons = [...icons].some((icon) => rogueBlocks.some((block) => icon.closest(`div.${block}`)));
+
+  // If all icons are in rogue blocks, don't load icons.css and icons.js
+  if (hasRogueIcons && icons.length === [...icons].filter((icon) => rogueBlocks.some((block) => icon.closest(`div.${block}`))).length) {
+    return;
+  }
+
   const { base } = config;
   loadStyle(`${base}/features/icons/icons.css`);
   const { default: loadIcons } = await import('../features/icons/icons.js');
