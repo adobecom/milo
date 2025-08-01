@@ -4,12 +4,9 @@ import { features } from './commerce.spec.js';
 import CommercePage from './commerce.page.js';
 import FedsLogin from '../feds/login/login.page.js';
 import FedsHeader from '../feds/header/header.page.js';
+import { PRICE_PATTERN } from '../../libs/commerce.js';
 
 const miloLibs = process.env.MILO_LIBS || '';
-const PRICE_PATTERN = {
-  US_yr: /US\$\d+\.\d\d\/yr/,
-  US_mo: /US\$\d+\.\d\d\/mo/,
-};
 
 let COMM;
 test.beforeEach(async ({ page, baseURL, browserName }) => {

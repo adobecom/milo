@@ -1,6 +1,6 @@
 /* eslint-disable max-len */
 
-const PRICE_PATTERN = { US_mo: /US\$\d+\.\d\d\/mo/ };
+const { PRICE_PATTERN } = require('../../../../libs/commerce.js');
 
 module.exports = {
   FeatureName: 'Merch Acom Cards Feature',

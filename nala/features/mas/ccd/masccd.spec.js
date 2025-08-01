@@ -1,9 +1,6 @@
 /* eslint-disable max-len */
 
-const PRICE_PATTERN = {
-  US_mo: /US\$\d+\.\d\d\/mo/,
-  FR_mo: /\d+,\d\d\s€\/mois/,
-};
+const { PRICE_PATTERN } = require('../../../libs/commerce.js');
 
 module.exports = {
   FeatureName: 'Merch CCD Card Feature',
