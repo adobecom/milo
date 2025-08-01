@@ -108,7 +108,6 @@ function resultsFormatter(results) {
   processAudit({ type: 'standard', seoId: 'body-size', seoTitle: SEO_TITLES.bodySize, passDescription: 'Body content has a good length.' });
   processAudit({ type: 'standard', seoId: 'lorem-ipsum', seoTitle: SEO_TITLES.loremIpsum, passDescription: 'No Lorem ipsum is used on the page.' });
 
-  // Special handling for links audit
   const [links] = results.filter((audit) => audit.name === 'links');
   if (links) {
     const [badLinksOpportunity] = links.opportunities.filter((o) => o.check === 'bad-links');
