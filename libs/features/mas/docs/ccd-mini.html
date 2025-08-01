@@ -1,0 +1,98 @@
+
+    <!DOCTYPE html>
+    <html>
+    <head>
+    <meta charset="UTF-8">
+    <title>M@S Web Components</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!-- <meta name="commerce.env" content="stage" /> -->
+    <link rel="stylesheet" href="spectrum.css">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://p.typekit.net/p.css?s=1&amp;k=hah7vzn&amp;ht=tk&amp;f=7180.7181.7182.7183.22474.22749.22750.22751.22753&amp;a=8634977&amp;app=typekit&amp;e=css">
+    <link rel="stylesheet" href="https://use.typekit.net/hah7vzn.css">
+  
+  <!-- Include your custom element script as an ES6 module -->
+  <script type="module">
+    import { init } from './common.js';
+    const urlParams = new URLSearchParams(window.location.search);
+    init({ 'data-mas-ff-defaults': 'on'});
+    const country = urlParams.get('country');
+    const language = urlParams.get('language');
+    let activeLocale = document.querySelector(`a[value="${country},${language}"]`);
+    activeLocale ??= document.querySelector('a.locale-toggle');
+    activeLocale.classList.add('active');
+  </script>
+  <script type="module" src="./mas-sidenav.js"></script>
+  <style>
+    .cards {
+      display: flex;
+      gap: 16px;
+      align-items: baseline;
+    }
+
+    .locales {
+      display: flex;
+      gap: 16px;
+      align-items: center;
+    }
+
+    .locale-toggle {
+      font-size: 2.5em;
+      text-decoration: none;
+      padding: 0.5em;
+      border-radius: 0.5em;
+    }
+
+    .locale-toggle:hover,
+    .locale-toggle.active {
+        background-color: var(--spectrum-gray-300);
+    }
+
+    .locale-toggle span {
+      font-size: 0.5em;
+      font-weight: 400;
+      vertical-align: super;
+    }
+
+  </style>
+</head>
+<body class="spectrum spectrum--medium spectrum--light">
+  <aside is="mas-sidenav"></aside>
+  <main>
+  <aem-fragment fragment="3413c156-219f-43e6-89f6-3a65cae9fca3" title="Mini Cards collection to prewarm the cache"></aem-fragment>
+  <div class="gallery-content">
+    <h1 id="ccd-gallery" tabindex="-1">CCD Mini cards <a class="header-anchor" href="#ccd-gallery" href="#ccd-gallery" title="Permalink to this heading">#</a></h1>
+    Switch Theme: <a class="theme-toggle spectrum-Link spectrum-Link--secondary" value="darkest" href="#">Darkest</a> OR <a class="theme-toggle spectrum-Link spectrum-Link--secondary" value="light" href="#">Light</a>
+  <p class="locales">Select country/language: 
+    <a class="locale-toggle spectrum-Link spectrum-Link--secondary" value="US,en" href="?country=US&language=en" title="en_US">🇺🇸</a>
+    <a class="locale-toggle spectrum-Link spectrum-Link--secondary" value="AU,en" href="?country=AU&language=en" title="en_AU">🇦🇺</a>
+    <a class="locale-toggle spectrum-Link spectrum-Link--secondary" value="CA,en" href="?country=CA&language=en" title="en_CA">🇨🇦</a>
+    <a class="locale-toggle spectrum-Link spectrum-Link--secondary" value="CA,fr" href="?country=CA&language=fr" title="fr_CA">🇨🇦<span>fr</span></a>
+    <a class="locale-toggle spectrum-Link spectrum-Link--secondary" value="FR,fr" href="?country=FR&language=fr" title="fr_FR">🇫🇷</a>
+  </p>
+    <h2 id="ccd-mini-card" tabindex="-1">CCD Mini Cards <a class="header-anchor" href="#ccd-mini-card" title="Permalink to this heading">#</a></h2>
+    <div class="cards">
+      <merch-card><aem-fragment fragment="03a36f0f-3e5d-4881-ae6b-273c517c9d38" loading="cache"></aem-fragment></merch-card>  
+      <merch-card><aem-fragment fragment="df357350-95b2-47f2-844f-df2e491eecef" loading="cache"></aem-fragment></merch-card>
+  </div>
+
+  </main>
+<script type="module">
+  document.querySelectorAll('code.demo').forEach(el => {
+      const targetContainer = document.createElement('div');
+      targetContainer.classList.toggle('light', el.classList.contains('light'));
+      targetContainer.innerHTML = `<h4>Demo: </h4><div class="demo-container">${el.textContent}</div>`;
+      el.parentElement.after(targetContainer);
+      // Extract and evaluate <script> tags
+      const scriptTags = targetContainer.getElementsByTagName('script');
+      for (let i = 0; i < scriptTags.length; i++) {
+          const script = document.createElement('script');
+          script.type = 'module';
+          script.text = scriptTags[i].text;
+          document.body.appendChild(script); // Appends to the document to execute
+          scriptTags[i].remove(); // Remove the script tag
+      }
+  });
+</script>
+</body>
+</html>

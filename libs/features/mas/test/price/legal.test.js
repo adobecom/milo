@@ -14,31 +14,6 @@ function renderAndComparePrice(id, html) {
 }
 
 describe('function "createLegalTemplate"', () => {
-    it('displays tax & legal texts in parentheses when unit label is present', () => {
-        renderAndComparePrice(
-            'createLegalTemplate1',
-            legalTemplate(
-                {
-                    country: 'FR',
-                    language: 'fr',
-                    displayPerUnit: true,
-                    displayTax: true,
-                    displayPlanType: true,
-                    literals: {
-                        taxInclusiveLabel: 'incl. VAT',
-                        planTypeLabel: 'Annuel, facturé mensuellement',
-                    },
-                },
-                {
-                    taxDisplay: 'TAX_INCLUSIVE_DETAILS',
-                    taxTerm: 'VAT',
-                    planType: 'ABM',
-                },
-                {},
-            ),
-        );
-    });
-
     it('displays legal template with tax and plan type texts', () => {
         renderAndComparePrice(
             'createLegalTemplate2',
@@ -74,7 +49,7 @@ describe('function "createLegalTemplate"', () => {
                     displayPlanType: true,
                     literals: {
                         taxInclusiveLabel: 'Exclusive of VAT',
-                        planTypeLabel: 'Annual, paid monthly.',
+                        planTypeLabel: 'Annual, billed monthly',
                     },
                 },
                 {

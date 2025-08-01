@@ -123,6 +123,8 @@
   visibility: visible;
   opacity: 1;
   transition-delay: 0ms;
+  pointer-events: auto;
+  cursor: default;
 }
 
 .share .copy-to-clipboard:hover::before,
@@ -168,4 +170,11 @@ main > .section.center .share.inline p.icon-container {
   .share .copy-to-clipboard::before {
     left: 50%;
   }
+}
+
+.share .aria-live-container {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
 }

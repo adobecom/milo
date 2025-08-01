@@ -29,7 +29,7 @@ export const defaultLiterals = {
         '{taxTerm, select, GST {incl. GST} VAT {incl. VAT} TAX {incl. tax} IVA {incl. IVA} SST {incl. SST} KDV {incl. KDV} other {}}',
     alternativePriceAriaLabel: 'Alternatively at',
     strikethroughAriaLabel: 'Regularly at',
-    planTypeLabel: '{planType, select, ABM {Annual, paid monthly.} other {}}',
+    planTypeLabel: '{planType, select, ABM {Annual, billed monthly} other {}}',
 };
 
 const log = createLog('ConsonantTemplates/price');
@@ -193,6 +193,7 @@ const createPriceTemplate =
             language,
             literals: priceLiterals = {},
             quantity = 1,
+            space = false, // add a space between price literals
         } = {},
         {
             commitment,
@@ -269,7 +270,10 @@ const createPriceTemplate =
 
         let perUnitLabel = '';
         if (toBoolean(displayPerUnit)) {
-            perUnitLabel = formatLiteral(
+            if (space) {
+                perUnitLabel += ' ';
+            }
+            perUnitLabel += formatLiteral(
                 literals,
                 locale,
                 literalKeys.perUnitLabel,
@@ -281,7 +285,10 @@ const createPriceTemplate =
 
         let taxInclusivityLabel = '';
         if (toBoolean(displayTax) && taxTerm) {
-            taxInclusivityLabel = formatLiteral(
+            if (space) {
+                taxInclusivityLabel += ' ';
+            }
+            taxInclusivityLabel += formatLiteral(
                 literals,
                 locale,
                 taxDisplay === WCS_TAX_DISPLAY_EXCLUSIVE

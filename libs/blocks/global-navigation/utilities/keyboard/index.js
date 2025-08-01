@@ -1,7 +1,7 @@
 /* eslint-disable class-methods-use-this */
 import { getNextVisibleItemPosition, getPreviousVisibleItemPosition, selectors } from './utils.js';
 import MainNav from './mainNav.js';
-import { closeAllDropdowns, lanaLog, logErrorFor } from '../utilities.js';
+import { closeAllDropdowns, lanaLog, logErrorFor, isDesktopForContext } from '../utilities.js';
 import MobileGnav from './mobileGnav.js';
 
 const cycleOnOpenSearch = ({ e, isDesktop }) => {
@@ -125,7 +125,9 @@ class KeyboardNavigation {
                   }
                 }
               } else {
-                cycleOnOpenSearch({ e, isDesktop: this.desktop.matches });
+                const isFooterContext = e.target.closest(selectors.globalFooter);
+                const context = isFooterContext ? 'footer' : 'viewport';
+                cycleOnOpenSearch({ e, isDesktop: isDesktopForContext(context) });
                 const { items } = getProfileItems({ e });
                 const profileBtn = e.target.closest(`${selectors.signIn}, ${selectors.profileButton}`);
                 if (e.shiftKey && e.target === profileBtn) closeProfile();

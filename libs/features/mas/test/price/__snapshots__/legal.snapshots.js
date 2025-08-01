@@ -1,3 +1,2 @@
-export const createLegalTemplate1 = `<span class="price price-legal"><span class="price-unit-type">per license</span> (<span class="price-tax-inclusivity">incl. VAT. </span><span class="price-plan-type">Annuel, facturé mensuellement</span>) </span>`;
 export const createLegalTemplate2 = `<span class="price price-legal"><span class="price-unit-type disabled"></span><span class="price-tax-inclusivity">incl. VAT. </span><span class="price-plan-type">Annuel, facturé mensuellement</span></span>`;
-export const createLegalTemplate3 = `<span class="price price-legal"><span class="price-unit-type disabled"></span><span class="price-tax-inclusivity disabled"></span><span class="price-plan-type">Annual, paid monthly.</span></span>`;
+export const createLegalTemplate3 = `<span class="price price-legal"><span class="price-unit-type disabled"></span><span class="price-tax-inclusivity disabled"></span><span class="price-plan-type">Annual, billed monthly</span></span>`;

@@ -169,12 +169,24 @@ export default async function decorate(block) {
       },
       clipboardSvg.svg,
     );
-    container.append(copyButton);
+    const copyAriaLive = createTag(
+      'div',
+      {
+        'aria-live': 'polite',
+        role: 'status',
+        class: 'aria-live-container',
+      },
+    );
+    container.append(copyButton, copyAriaLive);
+    let changeText = false;
     copyButton.addEventListener('click', (e) => {
       /* c8 ignore next 6 */
       e.preventDefault();
+      copyAriaLive.textContent = '';
       navigator.clipboard.writeText(window.location.href).then(() => {
         copyButton.classList.add('copy-to-clipboard-copied');
+        copyAriaLive.textContent = copiedTooltip + (changeText ? '\u200b' : '');
+        changeText = !changeText;
         setTimeout(() => document.activeElement.blur(), 500);
         setTimeout(
           () => copyButton.classList.remove('copy-to-clipboard-copied'),

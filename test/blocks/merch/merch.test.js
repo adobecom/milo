@@ -316,7 +316,7 @@ describe('Merch Block', () => {
   describe('Prices: legal template', () => {
     it('renders merch link with legal template', async () => {
       const el = await validatePriceSpan('.merch.price.legal', { template: PRICE_TEMPLATE_LEGAL });
-      expect(el.textContent).to.equal('per license (Annual, paid monthly.)');
+      expect(el.textContent).to.equal('per licenseAnnual, billed monthly');
     });
   });
 

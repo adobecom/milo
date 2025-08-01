@@ -14,8 +14,11 @@ const DATA_STREAM_IDS_STAGE = { default: 'e065836d-be57-47ef-b8d1-999e1657e8fd',
 let dataStreamId = '';
 
 function getDomainWithoutWWW() {
-  const domain = window?.location?.hostname;
-  return domain.replace(/^www\./, '');
+  const parts = window.location.hostname.toLowerCase().split('.');
+  if (parts.length >= 2) {
+    return parts.slice(-2).join('.');
+  }
+  return window.location.hostname.toLowerCase();
 }
 
 const hitTypeEventTypeMap = {

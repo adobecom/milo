@@ -751,7 +751,7 @@ const closeModalWithoutEvent = (modalId) => {
     .forEach((element) => element.removeAttribute('aria-disabled'));
 };
 
-// Modal state handling: see merch.md
+// Modal state handling: see merch-modal.md
 export const modalState = { isOpen: false };
 
 export async function updateModalState({ cta, closedByUser } = {}) {
@@ -986,6 +986,11 @@ export async function initService(force = false, attributes = {}) {
         });
         if (miloEnv?.name !== 'prod') {
           service.setAttribute('allow-override', '');
+        }
+        const ffDefaults = getMetadata('mas-ff-defaults');
+        if (!ffDefaults) {
+          // On milo, if ff is not enabled explicitly, disable it by default
+          service.dataset.masFfDefaults = 'off';
         }
         // Register checkout action if method exists (for backward compatibility)
         if (typeof service.registerCheckoutAction === 'function') {
