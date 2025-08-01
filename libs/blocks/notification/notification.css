@@ -187,7 +187,6 @@
   inline-size: 100%;
 }
 
-/* mweb-test: notification sticky CTA */
 .notification.button-full-width {
   min-block-size: 90px;
   block-size: 90px;
@@ -601,6 +600,10 @@
     inline-size: auto;
     margin-inline-end: var(--spacing-xs);
     margin-block-end: 0;
+  }
+
+  .notification.button-full-width {
+    display: none;
   }
 
   .notification.ribbon .close {
