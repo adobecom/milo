@@ -102,6 +102,25 @@ runTests(async () => {
                 cache.clear();
                 expect(cache.has('id123en_US')).to.false;
             });
+
+            it('ignores references if not an object', async () => {
+              cache.clear();
+              expect(cache).to.exist;
+              cache.add({ id: 'id123', test: 1, references: [{type: 'content-fragment', value: {id: 'ref123'}}] });
+              expect(cache.has('id123')).to.true;
+              expect(cache.has('ref123')).to.false;
+              cache.clear();
+            });
+
+            it('ignores references if asked explicitly', async () => {
+              cache.clear();
+              expect(cache).to.exist;
+              cache.add({ id: 'id123', test: 1, references: { 'ref123': {type: 'content-fragment', value: {id: 'ref123'}} } });
+              expect(cache.has('ref123')).to.true;
+              cache.add({ id: 'id456', test: 1, references: { 'ref456': {type: 'content-fragment', value: {id: 'ref456'}} } }, false);
+              expect(cache.has('ref456')).to.false;
+              cache.clear();
+            });
         });
 
         describe('aem-fragment with merch-card', () => {

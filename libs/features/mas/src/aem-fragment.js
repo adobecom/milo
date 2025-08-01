@@ -35,7 +35,7 @@ class FragmentCache {
      * Add fragment to cache
      * @param {Object} fragment fragment object.
      */
-    add(fragment) {
+    add(fragment, references = true) {
         if (this.has(fragment.id)) return;
         if (this.has(fragment.fields?.originalId)) return;
 
@@ -52,7 +52,7 @@ class FragmentCache {
             resolve();
         }
 
-        if (!fragment.references) return;
+        if (!references || typeof fragment.references !== 'object' || Array.isArray(fragment.references)) return;
 
         for (const key in fragment.references) {
             const { type, value } = fragment.references[key];
