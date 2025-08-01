@@ -7,8 +7,8 @@ import FedsHeader from '../feds/header/header.page.js';
 
 const miloLibs = process.env.MILO_LIBS || '';
 const PRICE_PATTERN = {
-  US_yr: new RegExp('US\\$\\d+\\.\\d\\d/yr'),
-  US_mo: new RegExp('US\\$\\d+\\.\\d\\d/mo'),
+  US_yr: /US\$\d+\.\d\d\/yr/,
+  US_mo: /US\$\d+\.\d\d\/mo/,
 };
 
 let COMM;

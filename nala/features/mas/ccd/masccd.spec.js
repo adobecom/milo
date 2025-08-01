@@ -1,8 +1,8 @@
 /* eslint-disable max-len */
 
 const PRICE_PATTERN = {
-  US_mo: new RegExp('US\\$\\d+\\.\\d\\d/mo'),
-  FR_mo: new RegExp('\\d+,\\d\\d\\s€/mois'),
+  US_mo: /US\$\d+\.\d\d\/mo/,
+  FR_mo: /\d+,\d\d\s€\/mois/
 };
 
 module.exports = {
