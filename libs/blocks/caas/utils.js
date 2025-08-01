@@ -740,6 +740,11 @@ export const getConfig = async (originalState, strs = {}) => {
       ctaAction: state.ctaAction,
       cardHoverEffect: state.cardHoverEffect || 'default',
       additionalRequestParams: arrayToObj(state.additionalRequestParams),
+      bladeCard: {
+        reverse: !!state.bladeCardReverse,
+        lightText: !!state.bladeCardLightText,
+        transparent: !!state.bladeCardTransparent,
+      },
     },
     hideCtaIds: hideCtaIds.split(URL_ENCODED_COMMA),
     hideCtaTags,

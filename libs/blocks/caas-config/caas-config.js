@@ -78,7 +78,7 @@ const defaultOptions = {
     'icon-card': 'Icon Card',
     'news-card': 'News Card',
     'custom-card': 'Custom Card',
-    'slide-card': 'Slide Card',
+    'blade-card': 'Blade Card',
   },
   collectionBtnStyle: {
     primary: 'Primary',
@@ -148,6 +148,7 @@ const defaultOptions = {
     OR: 'OR',
   },
   layoutType: {
+    // '1up': '1up',
     '2up': '2up',
     '3up': '3up',
     '4up': '4up',
@@ -367,45 +368,57 @@ const BasicsPanel = ({ tagsData }) => {
   `;
 };
 
-const UiPanel = () => html`
-  <${Input} label="Show Card Borders" prop="setCardBorders" type="checkbox" />
-  <${Input} label="Show Footer Dividers" prop="showFooterDivider" type="checkbox" />
-  <${Input} label="Disable Card Banners" prop="disableBanners" type="checkbox" />
-  <${Input} label="Use Light Text" prop="useLightText" type="checkbox" />
-  <${Input} label="Use Overlay Links" prop="useOverlayLinks" type="checkbox" />
-  <${Input} label="Show total card count at top" prop="showTotalResults" type="checkbox" />
-  <${Input} label="Hide date for on-demand content" prop="hideDateInterval" type="checkbox" />
-  <${Input} label="Enable showing card badges (by default hidden)" prop="showCardBadges" type="checkbox" />
-  <${Input} label="Show a different CTA for live events" prop="dynamicCTAForLiveEvents" type="checkbox" />
-  <${Select} label="Card Style" prop="cardStyle" options=${defaultOptions.cardStyle} />
-  <${Select} options=${defaultOptions.cardTitleAccessibilityLevel} prop="cardTitleAccessibilityLevel" label="Card Accessibility Title Level" />
-  <${Select} label="Layout" prop="container" options=${defaultOptions.container} />
-  <${Select} label="Layout Type" prop="layoutType" options=${defaultOptions.layoutType} />
-  <${Select} label="Grid Gap (Gutter)" prop="gutter" options=${defaultOptions.gutter} />
-  <${Select} label="Theme" prop="theme" options=${defaultOptions.theme} />
-  <${Select} label="Details Text" prop="detailsTextOption" options=${defaultOptions.detailsTextOption} />
-  <${Select}
-    label="Card Hover Effect"
-    prop="cardHoverEffect"
-    options=${defaultOptions.cardHoverEffect}
-  />
-  <${Select}
-    label="Collection Button Style"
-    prop="collectionBtnStyle"
-    options=${defaultOptions.collectionBtnStyle}
-  />
-  <${Select}
-    label="Load More Button Style"
-    prop="loadMoreBtnStyle"
-    options=${defaultOptions.loadMoreBtnStyle}
-  />
-  <${Input} label="Custom Card HTML" prop="customCard" type="text" />
-  <${Select}
-    label="CTA Link Behavior"
-    prop="ctaAction"
-    options=${defaultOptions.ctaActions}
-  />
-`;
+const UiPanel = () => {
+  const { state } = useContext(ConfiguratorContext);
+  
+  const bladeCardOptions = html`
+    <div class="blade-card-options">
+      <${Input} label="Reverse direction" prop="bladeCardReverse" class="blade-card-option" type="checkbox" />
+      <${Input} label="Light text" prop="bladeCardLightText" class="blade-card-option" type="checkbox" />
+      <${Input} label="Transparent background" prop="bladeCardTransparent" class="blade-card-option" type="checkbox" />
+    </div>
+  `;
+
+  return html`
+    <${Input} label="Show Card Borders" prop="setCardBorders" type="checkbox" />
+    <${Input} label="Show Footer Dividers" prop="showFooterDivider" type="checkbox" />
+    <${Input} label="Disable Card Banners" prop="disableBanners" type="checkbox" />
+    <${Input} label="Use Light Text" prop="useLightText" type="checkbox" />
+    <${Input} label="Use Overlay Links" prop="useOverlayLinks" type="checkbox" />
+    <${Input} label="Show total card count at top" prop="showTotalResults" type="checkbox" />
+    <${Input} label="Hide date for on-demand content" prop="hideDateInterval" type="checkbox" />
+    <${Input} label="Enable showing card badges (by default hidden)" prop="showCardBadges" type="checkbox" />
+    <${Input} label="Different CTA for live events" prop="dynamicCTAForLiveEvents" type="checkbox" />
+    <${Select} label="Card Style" prop="cardStyle" options=${defaultOptions.cardStyle} />
+      ${state.cardStyle === 'blade-card' && bladeCardOptions}
+    <${Select} options=${defaultOptions.cardTitleAccessibilityLevel} prop="cardTitleAccessibilityLevel" label="Card Accessibility Title Level" />
+    <${Select} label="Layout" prop="container" options=${defaultOptions.container} />
+    <${Select} label="Layout Type" prop="layoutType" options=${defaultOptions.layoutType} />
+    <${Select} label="Grid Gap (Gutter)" prop="gutter" options=${defaultOptions.gutter} />
+    <${Select} label="Theme" prop="theme" options=${defaultOptions.theme} />
+    <${Select} label="Details Text" prop="detailsTextOption" options=${defaultOptions.detailsTextOption} />
+    <${Select}
+      label="Card Hover Effect"
+      prop="cardHoverEffect"
+      options=${defaultOptions.cardHoverEffect}
+    />
+    <${Select}
+      label="Collection Button Style"
+      prop="collectionBtnStyle"
+      options=${defaultOptions.collectionBtnStyle}
+    />
+    <${Select}
+      label="Load More Button Style"
+      prop="loadMoreBtnStyle"
+      options=${defaultOptions.loadMoreBtnStyle}
+    />
+    <${Input} label="Custom Card HTML" prop="customCard" type="text" />
+    <${Select}
+      label="CTA Link Behavior"
+      prop="ctaAction"
+      options=${defaultOptions.ctaActions}
+  />`;
+};
 
 const TagsPanel = ({ tagsData }) => {
   const context = useContext(ConfiguratorContext);
