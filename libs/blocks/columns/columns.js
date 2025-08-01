@@ -33,8 +33,7 @@ export default function init(el) {
           const rowColMeaningfulChildren = Array.from(rowCol.childNodes).filter(
             (node) => node.nodeType !== Node.TEXT_NODE || node.textContent.trim() !== '',
           );
-          return rowColMeaningfulChildren.some((child) => child.tagName?.match(/^(H[1-6]|STRONG)$/))
-            || (rowCol.childNodes.length === 1 && rowCol.childNodes[0].tagName === 'STRONG');
+          return rowColMeaningfulChildren.some((child) => child.tagName?.match(/^(H[1-6]|STRONG)$/));
         });
 
         const firstRow = rows[0];
