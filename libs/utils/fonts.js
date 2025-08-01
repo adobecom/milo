@@ -18,7 +18,13 @@ export default function loadFonts(locale, loadStyle) {
   const tkSplit = locale.tk.split('.');
   if (tkSplit[1] === 'css') {
     return new Promise((resolve) => {
-      loadStyle(`https://use.typekit.net/${locale.tk}`, resolve);
+      const isSafari = navigator.userAgent.includes('Safari') && !navigator.userAgent.includes('Chrome');
+      const PHONE_SIZE = window.screen.width < 550 || window.screen.height < 550;
+      if (isSafari && locale.tk === 'hah7vzn.css' && PHONE_SIZE) {
+        loadStyle('https://use.typekit.net/vti0xwb.css', resolve);
+      } else {
+        loadStyle(`https://use.typekit.net/${locale.tk}`, resolve);
+      }
     });
   }
   return dynamicTypekit(locale.tk);
