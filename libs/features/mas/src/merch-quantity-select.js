@@ -44,11 +44,21 @@ export class MerchQuantitySelect extends LitElement {
         this.toggleMenu = this.toggleMenu.bind(this);
         this.handleClickOutside = this.handleClickOutside.bind(this);
         this.boundKeydownListener = this.handleKeydown.bind(this);
+        this.handleKeyupDebounced = debounce(this.handleKeyup.bind(this), 500);
+        this.debouncedQuantityUpdate = debounce(
+            this.handleQuantityUpdate.bind(this),
+            500,
+        );
+    }
+
+    connectedCallback() {
+        super.connectedCallback();
         this.addEventListener('keydown', this.boundKeydownListener);
         window.addEventListener('mousedown', this.handleClickOutside);
-        this.handleKeyupDebounced = debounce(this.handleKeyup.bind(this), 500);
-        this.handleQuantityUpdate = this.handleQuantityUpdate.bind(this);
-        this.addEventListener(EVENT_MERCH_CARD_QUANTITY_CHANGE, this.handleQuantityUpdate);
+        this.addEventListener(
+            EVENT_MERCH_CARD_QUANTITY_CHANGE,
+            this.debouncedQuantityUpdate,
+        );
     }
 
     handleKeyup() {
@@ -106,14 +116,17 @@ export class MerchQuantitySelect extends LitElement {
             if (this.min && adjustedInputValue < this.min)
                 adjustedInputValue = this.min;
             this.adjustInput(inputField, adjustedInputValue);
-        } else this.adjustInput(inputField, this.min || 1);
+        } else this.adjustInput(inputField, this.selectedValue || this.min || 1);
     }
 
     disconnectedCallback() {
         super.disconnectedCallback();
         window.removeEventListener('mousedown', this.handleClickOutside);
         this.removeEventListener('keydown', this.boundKeydownListener);
-        this.removeEventListener(EVENT_MERCH_CARD_QUANTITY_CHANGE, this.handleQuantityUpdate);
+        this.removeEventListener(
+            EVENT_MERCH_CARD_QUANTITY_CHANGE,
+            this.debouncedQuantityUpdate,
+        );
     }
 
     generateOptionsArray() {
@@ -153,6 +166,16 @@ export class MerchQuantitySelect extends LitElement {
 
     toggleMenu() {
         this.closed = !this.closed;
+        this.adjustPopoverPlacement();
+        if (this.closed) this.highlightedIndex = this.options.indexOf(this.selectedValue);
+    }
+
+    adjustPopoverPlacement() {
+        const popover = this.shadowRoot.querySelector('.popover');
+        if (this.closed || popover.getBoundingClientRect().bottom <= window.innerHeight)
+            popover.setAttribute('placement', 'bottom');
+        else
+            popover.setAttribute('placement', 'top');
     }
 
     handleMouseEnter(index) {
@@ -189,7 +212,7 @@ export class MerchQuantitySelect extends LitElement {
     }
 
     get popover() {
-        return html` <div class="popover ${this.closed ? 'closed' : 'open'}">
+        return html` <div class="popover ${this.closed ? "closed" : "open"}" placement="bottom">
             ${this.options.map(
                 (option, index) => html`
                     <div
@@ -219,17 +242,19 @@ export class MerchQuantitySelect extends LitElement {
 
     render() {
         return html`
-            <div class="label">${this.title}</div>
+            <div class="label" id="qsLabel">${this.title}</div>
             <div class="text-field">
                 <input
                     class="text-field-input"
+                    aria-labelledby="qsLabel"
+                    name="quantity"
                     @focus="${this.closePopover}"
                     .value="${this.selectedValue}"
                     type="number"
                     @keydown="${this.handleKeydown}"
                     @keyup="${this.handleKeyupDebounced}"
                 />
-                <button class="picker-button" @click="${this.toggleMenu}">
+                <button class="picker-button" aria-labelledby="qsLabel" @click="${this.toggleMenu}">
                     <div
                         class="picker-button-fill ${this.closed
                             ? 'open'

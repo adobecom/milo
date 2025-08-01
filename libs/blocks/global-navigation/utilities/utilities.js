@@ -11,16 +11,17 @@ import {
   getFederatedUrl,
   getFedsPlaceholderConfig,
 } from '../../../utils/utils.js';
-import { processTrackingLabels } from '../../../martech/attributes.js';
-import { replaceText } from '../../../features/placeholders.js';
+import { replaceKey, replaceText } from '../../../features/placeholders.js';
 import { PERSONALIZATION_TAGS } from '../../../features/personalization/personalization.js';
 
 loadLana();
 
 const FEDERAL_PATH_KEY = 'federal';
 // Set a default height for LocalNav,
-// as sticky blocks position themselves before LocalNav loads into the DOM.
+// as sticky blocks position themselves before LocalNav loads into the document object model(DOM).
 const DEFAULT_LOCALNAV_HEIGHT = 40;
+const LANA_CLIENT_ID = 'feds-milo';
+const FEDS_PROMO_HEIGHT = 72;
 
 const selectorMap = {
   headline: '.feds-menu-headline[aria-expanded="true"]',
@@ -28,6 +29,7 @@ const selectorMap = {
 };
 
 export const selectors = {
+  globalNavTag: 'header',
   globalNav: '.global-navigation',
   curtain: '.feds-curtain',
   navLink: '.feds-navLink',
@@ -38,7 +40,9 @@ export const selectors = {
   activeDropdown: '.feds-dropdown--active',
   menuSection: '.feds-menu-section',
   menuColumn: '.feds-menu-column',
+  gnavPromoWrapper: '.feds-promo-wrapper',
   gnavPromo: '.gnav-promo',
+  crossCloudMenuLinks: '.feds-crossCloudMenu a',
   columnBreak: '.column-break',
   brandImageOnly: '.brand-image-only',
   localNav: '.feds-localnav',
@@ -59,13 +63,47 @@ export const darkIcons = {
 };
 
 export const lanaLog = ({ message, e = '', tags = 'default', errorType }) => {
-  const url = getMetadata('gnav-source');
+  const { locale = {} } = getConfig();
+  const url = getMetadata('gnav-source') || `${locale.contentRoot}/gnav`;
   window.lana.log(`${message} | gnav-source: ${url} | href: ${window.location.href} | ${e.reason || e.error || e.message || e}`, {
-    clientId: 'feds-milo',
+    clientId: LANA_CLIENT_ID,
     sampleRate: 1,
     tags,
     errorType,
   });
+};
+
+const usedMeasurementNames = new Set();
+export const logPerformance = (
+  measurementName,
+  startMark,
+  endMark,
+) => {
+  try {
+    if (usedMeasurementNames.has(measurementName)) throw new Error(`${measurementName} has already been used`);
+    const {
+      name,
+      startTime,
+      duration,
+    } = performance.measure(measurementName, startMark, endMark);
+    usedMeasurementNames.add(measurementName);
+    const measure = {
+      name,
+      startTime,
+      duration,
+      url: window.location.toString(),
+      errorType: 'i',
+    };
+    const measureStr = Object.entries(measure)
+      .map(([key, value]) => `${key}=${value}`)
+      .join(',');
+    window.lana.log(measureStr, {
+      clientId: LANA_CLIENT_ID,
+      sampleRate: 0.01,
+    });
+  } catch (e) {
+    // eslint-disable-next-line no-empty
+  }
 };
 
 export const logErrorFor = async (fn, message, tags, errorType) => {
@@ -127,15 +165,6 @@ export const federatePictureSources = ({ section, forceFederate } = {}) => {
       }
     });
 };
-
-export function getAnalyticsValue(str, index) {
-  if (typeof str !== 'string' || !str.length) return str;
-
-  let analyticsValue = processTrackingLabels(str, getConfig(), 30);
-  analyticsValue = typeof index === 'number' ? `${analyticsValue}-${index}` : analyticsValue;
-
-  return analyticsValue;
-}
 
 export function getExperienceName() {
   const experiencePath = getMetadata('gnav-source');
@@ -208,19 +237,6 @@ export async function loadDecorateMenu() {
   return cachedDecorateMenu;
 }
 
-export function decorateCta({ elem, type = 'primaryCta', index } = {}) {
-  const modifier = type === 'secondaryCta' ? 'secondary' : 'primary';
-
-  const clone = elem.cloneNode(true);
-  clone.className = `feds-cta feds-cta--${modifier}`;
-  clone.setAttribute('daa-ll', getAnalyticsValue(clone.textContent, index));
-
-  return toFragment`
-    <div class="feds-cta-wrapper">
-      ${clone}
-    </div>`;
-}
-
 let curtainElem;
 export function setCurtainState(state) {
   if (typeof state !== 'boolean') return;
@@ -230,6 +246,16 @@ export function setCurtainState(state) {
 }
 
 export const isDesktop = window.matchMedia('(min-width: 900px)');
+export const isDesktopForContext = (context = 'viewport') => {
+  const isContainerResponsiveFooter = document.querySelector('.global-footer')?.classList.contains('responsive-container');
+  if (context === 'footer' && isContainerResponsiveFooter) {
+    const footerElement = document.querySelector('footer.global-footer');
+    return footerElement && !footerElement.classList.contains('mobile');
+  }
+
+  // Default to viewport width for all other contexts
+  return isDesktop.matches;
+};
 export const isTangentToViewport = window.matchMedia('(min-width: 900px) and (max-width: 1440px)');
 
 export function setActiveDropdown(elem, type) {
@@ -319,6 +345,49 @@ export const [hasActiveLink, setActiveLink, isActiveLink, getActiveLink] = (() =
   ];
 })();
 
+export const setAriaAtributes = (dropdownTrigger) => {
+  const popup = dropdownTrigger.nextElementSibling;
+  if (isDesktop.matches) {
+    dropdownTrigger.setAttribute('aria-haspopup', 'true');
+    dropdownTrigger.removeAttribute('aria-controls');
+    popup.removeAttribute('role');
+    popup.removeAttribute('aria-modal');
+    popup.removeAttribute('aria-labelledby');
+  } else {
+    dropdownTrigger.setAttribute('aria-haspopup', 'dialog');
+    dropdownTrigger.setAttribute('aria-controls', popup.id);
+    popup.setAttribute('role', 'dialog');
+    popup.setAttribute('aria-modal', true);
+    popup.setAttribute('aria-labelledby', `${popup.id}-title`);
+  }
+};
+
+export const [addA11YMobileDropdowns, removeA11YMobileDropdowns] = (() => {
+  const elementsToHidden = ['.feds-brand-container', '.feds-utilities', '.feds-nav-wrapper .feds-nav > *'];
+  let topNav = null;
+  return [
+    (container, triggerElement) => {
+      topNav = container;
+      elementsToHidden.forEach((selector) => {
+        const elements = topNav.querySelectorAll(selector);
+        elements.forEach((el) => {
+          el?.setAttribute('aria-hidden', 'true');
+        });
+      });
+      triggerElement.closest('section')?.setAttribute('aria-hidden', 'false');
+    },
+    () => {
+      if (!topNav) return;
+      elementsToHidden.forEach((selector) => {
+        const elements = topNav.querySelectorAll(selector);
+        elements.forEach((el) => {
+          el?.removeAttribute('aria-hidden');
+        });
+      });
+    },
+  ];
+})();
+
 export function closeAllDropdowns({
   type,
   animatedElement = undefined,
@@ -330,14 +399,14 @@ export function closeAllDropdowns({
     const openElements = document.querySelectorAll(selector);
     if (!openElements) return;
     [...openElements].forEach((el) => {
-      if ('fedsPreventautoclose' in el.dataset || (type === 'localNavItem' && el.classList.contains('feds-localnav-title'))) return;
+      const isUnavAppSwitcher = el.id === 'unav-app-switcher';
+      if ('fedsPreventautoclose' in el.dataset || isUnavAppSwitcher || (type === 'localNavItem' && el.classList.contains('feds-localnav-title'))) return;
       el.setAttribute('aria-expanded', 'false');
     });
   };
 
   if (animatedElement && animationType) {
     animatedElement.addEventListener(`${animationType}end`, closeAllOpenElements, { once: true });
-    animatedElement.setAttribute('aria-expanded', 'false');
   } else {
     closeAllOpenElements();
   }
@@ -390,8 +459,10 @@ export async function fetchAndProcessPlainHtml({
   shouldDecorateLinks = true,
 } = {}) {
   let path = getFederatedUrl(url);
-  const mepGnav = getConfig()?.mep?.inBlock?.['global-navigation'];
-  const mepFragment = mepGnav?.fragments?.[path];
+  const config = getConfig();
+  const mepGnav = config?.mep?.inBlock?.['global-navigation'];
+  const mepFragments = { ...mepGnav?.fragments, ...config?.mep?.fragments };
+  const mepFragment = mepFragments[path];
   if (mepFragment && mepFragment.action === 'replace') {
     path = mepFragment.content;
   }
@@ -480,22 +551,60 @@ export const closeAllTabs = (tabs, tabpanels) => {
   tabs.forEach((t) => t.setAttribute('aria-selected', 'false'));
 };
 
-export const transformTemplateToMobile = async (popup, item, localnav = false) => {
-  const notMegaMenu = popup.parentElement.tagName === 'DIV';
-  const originalContent = popup.innerHTML;
-  if (notMegaMenu) return originalContent;
+let processTrackingLabels;
+const getAnalyticsValue = async (str, index) => {
+  processTrackingLabels = processTrackingLabels ?? (await import('../../../martech/attributes.js')).processTrackingLabels;
 
-  const tabs = [...popup.querySelectorAll('.feds-menu-section')]
-    .filter((section) => !section.querySelector('.feds-promo') && section.textContent)
-    .map((section) => {
-      const headline = section.querySelector('.feds-menu-headline');
-      const name = headline?.textContent ?? 'Shop For';
-      const daallTab = headline?.getAttribute('daa-ll');
-      const daalhTabContent = section.querySelector('.feds-menu-items')?.getAttribute('daa-lh');
-      const content = section.querySelector('.feds-menu-items') ?? section;
-      const links = [...content.querySelectorAll('a.feds-navLink, .feds-cta--secondary')].map((x) => x.outerHTML).join('');
-      return { name, links, daallTab, daalhTabContent };
-    });
+  if (typeof str !== 'string' || !str.length) return str;
+
+  return `${processTrackingLabels(str, getConfig(), 30)}-${index}`;
+};
+
+const parseTabsFromMenuSection = async (section, index) => {
+  const headline = section.querySelector('.feds-menu-headline');
+  const name = headline?.textContent ?? 'Shop For';
+  let daallTab = headline?.getAttribute('daa-ll');
+  /* Below condition is only required if the user is loading the page in desktop mode
+    and then moving to mobile mode. */
+  if (!daallTab) {
+    daallTab = await getAnalyticsValue(name, index + 1);
+  }
+  const daalhTabContent = section.querySelector('.feds-menu-items')?.getAttribute('daa-lh');
+  const content = section.querySelector('.feds-menu-items') ?? section;
+  const links = [...content.querySelectorAll('a.feds-navLink, .feds-navLink.feds-navLink--header, .feds-cta--secondary')].map((x) => x.outerHTML).join('');
+  return { name, links, daallTab, daalhTabContent };
+};
+
+const promoCrossCloudTab = async (popup) => {
+  const additionalLinks = [...popup.querySelectorAll(`${selectors.gnavPromoWrapper}, ${selectors.crossCloudMenuLinks}`)];
+  if (!additionalLinks.length) return [];
+  const tabName = await replaceKey('more', getFedsPlaceholderConfig());
+  return [{
+    name: tabName,
+    links: additionalLinks.map((x) => x.outerHTML).join(''),
+    daallTab: tabName,
+    daalhTabContent: tabName,
+  }];
+};
+
+// returns a cleanup function
+export const transformTemplateToMobile = async ({
+  popup,
+  item,
+  localnav = false,
+  toggleMenu,
+  updatePopupPosition,
+}) => {
+  const notMegaMenu = popup.parentElement.tagName === 'DIV';
+  if (notMegaMenu) return () => {};
+
+  const isLoading = popup.classList.contains('loading');
+  const tabs = (await Promise.all(
+    [...popup.querySelectorAll('.feds-menu-section')]
+      .filter((section) => !section.querySelector('.feds-promo') && section.textContent)
+      .map(parseTabsFromMenuSection),
+  )).concat(isLoading ? [] : await promoCrossCloudTab(popup));
+
   const CTA = popup.querySelector('.feds-cta--primary')?.outerHTML ?? '';
   const mainMenu = `
       <button class="main-menu" daa-ll="Main menu_Gnav" aria-label='Main menu'>
@@ -506,19 +615,16 @@ export const transformTemplateToMobile = async (popup, item, localnav = false) =
   // Get the outerHTML of the .feds-brand element or use a default empty <span> if it doesn't exist
   const brand = document.querySelector('.feds-brand')?.outerHTML || '<span></span>';
   const breadCrumbs = document.querySelector('.feds-breadcrumbs')?.outerHTML;
+  if (document.querySelector('.feds-promo-aside-wrapper')?.clientHeight > FEDS_PROMO_HEIGHT && updatePopupPosition) {
+    updatePopupPosition();
+  }
   popup.innerHTML = `
     <div class="top-bar">
       ${localnav ? brand : await replaceText(mainMenu, getFedsPlaceholderConfig())}
-      <button class="close-icon" daa-ll="Close button_SubNav" aria-label='Close'>
-        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 14 14" fill="none">
-          <path d="M1.5 1L13 12.5" stroke=${isDarkMode() ? '#f2f2f2' : 'black'} stroke-width="1.7037" stroke-linecap="round"/>
-          <path d="M13 1L1.5 12.5" stroke=${isDarkMode() ? '#f2f2f2' : 'black'} stroke-width="1.7037" stroke-linecap="round"/>
-        </svg>
-      </button>
     </div>
     <div class="title">
       ${breadCrumbs || '<div class="breadcrumbs"></div>'}
-      <h7>${item.textContent.trim()}</h7>
+      <h2 id="${popup.id}-title">${item.textContent.trim()}</h2>
     </div>
     <div class="tabs" role="tablist">
       ${tabs.map(({ name, daallTab }, i) => `
@@ -528,7 +634,7 @@ export const transformTemplateToMobile = async (popup, item, localnav = false) =
           aria-selected="false"
           aria-controls="${i}"
           ${daallTab ? `daa-ll="${daallTab}|click"` : ''}
-        >${name}</button>
+        >${name.trim() === '' ? '<div></div>' : name}</button>
       `).join('')}
     </div>
     <div class="tab-content">
@@ -547,32 +653,132 @@ export const transformTemplateToMobile = async (popup, item, localnav = false) =
     <div class="sticky-cta">
       ${CTA}
     </div>
+    <button class="close-icon" daa-ll="Close button_SubNav" aria-label='Close'>
+      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 14 14" fill="none">
+        <path d="M1.5 1L13 12.5" stroke=${isDarkMode() ? '#f2f2f2' : 'black'} stroke-width="1.7037" stroke-linecap="round"/>
+        <path d="M13 1L1.5 12.5" stroke=${isDarkMode() ? '#f2f2f2' : 'black'} stroke-width="1.7037" stroke-linecap="round"/>
+      </svg>
+    </button>
     `;
-  popup.querySelector('.close-icon')?.addEventListener('click', () => {
+
+  const closeIcon = popup.querySelector('.close-icon');
+  const main = popup.querySelector('.main-menu');
+  const closeIconClickCallback = () => {
+    removeA11YMobileDropdowns();
     document.querySelector(selectors.mainNavToggle).focus();
     closeAllDropdowns();
+    toggleMenu();
     enableMobileScroll();
-  });
-  popup.querySelector('.main-menu')?.addEventListener('click', (e) => {
+  };
+  const mainMenuClickCallback = (e) => {
+    removeA11YMobileDropdowns();
     e.target.closest(selectors.activeDropdown).querySelector('button').focus();
     enableMobileScroll();
     closeAllDropdowns();
-  });
+  };
+
+  closeIcon?.addEventListener('click', closeIconClickCallback);
+  main?.addEventListener('click', mainMenuClickCallback);
+
   const tabbuttons = popup.querySelectorAll('.tabs button');
   const tabpanels = popup.querySelectorAll('.tab-content [role="tabpanel"]');
+  const tabbuttonClickCallbacks = [...tabbuttons].map((tab, i) => () => {
+    closeAllTabs(tabbuttons, tabpanels);
+    tabpanels?.[i]?.removeAttribute('hidden');
+    tab.setAttribute('aria-selected', 'true');
+  });
 
   tabpanels.forEach((panel) => {
-    animateInSequence(panel.querySelectorAll('a'), 0.02);
+    animateInSequence([...panel.children], 0.02);
   });
 
   tabbuttons.forEach((tab, i) => {
-    tab.addEventListener('click', () => {
-      closeAllTabs(tabbuttons, tabpanels);
-      tabpanels?.[i]?.removeAttribute('hidden');
-      tab.setAttribute('aria-selected', 'true');
-    });
+    // pinterdown prevents the default action of the button, which is to scroll the window.
+    // This is needed to prevent the page from jumping when the tab is clicked.
+    tab.addEventListener('pointerdown', (event) => event.preventDefault());
+    tab.addEventListener('click', tabbuttonClickCallbacks[i]);
   });
-  return originalContent;
+
+  const cleanup = () => {
+    closeIcon?.removeEventListener('click', closeIconClickCallback);
+    main?.removeEventListener('click', mainMenuClickCallback);
+    tabbuttons.forEach((tab, i) => tab.removeEventListener('click', tabbuttonClickCallbacks[i]));
+  };
+
+  return cleanup;
+};
+
+export const loaderMegaMenu = () => {
+  // create an intermediate loading state.
+  // const loadingMegaMenu = toFragment`<div class="feds-popup loading"></div>`;
+  // WARNING: if you change things in menu.js you may want to check here
+  // and see if you need to make changes here too. In an ideal world we'd
+  // be able to re-use menu.js logic. But doing so would require a rather
+  // large refactor of menu.js.
+  const column = (content) => `
+  <div class="feds-menu-column">
+    <div class="feds-menu-section">
+      ${content}
+    </div>
+  </div>
+  `;
+  const columnItems = (n, desc = true) => new Array(n).fill(0).map(() => `<a href="" class="feds-navLink">
+          <div class="feds-navLink-content">
+            <div class="feds-navLink-title"></div>
+            ${desc ? '<div class="feds-navLink-description"></div>' : ''}
+          </div>
+        </a>`).join('');
+  const columnContent = [
+    `<div class="feds-menu-headline">
+      <div class="first-headline-one"></div>
+      <div class="first-headline-two"></div>
+    </div>
+    <div class="feds-menu-items">
+      ${columnItems(4)}
+      <div class="feds-cta-wrapper"></div>
+    </div>
+    `,
+    `<div class="feds-menu-headline"></div>
+     <div class="feds-menu-items">
+       ${columnItems(6)}
+     </div>
+    `,
+    `<div class="feds-menu-headline"></div>
+     <div class="feds-menu-items">
+       ${columnItems(2)}
+     </div>
+     <div style="padding-top: 29px;"></div>
+     <div class="feds-menu-headline"></div>
+     <div class="feds-menu-headline small"></div>
+     <div class="feds-menu-items">
+       ${columnItems(4, false)}
+     </div>`,
+    `<div class="feds-promo-wrapper">
+       <div class="feds-promo">
+       </div>
+     </div>`,
+  ];
+  return toFragment`
+  <div class="feds-popup loading" aria-hidden="true">
+    <div class="feds-menu-container">
+      <div class="feds-menu-content">
+        ${columnContent.map(column).join('')}
+      </div>
+    </div>
+    <div class="feds-crossCloudMenu-wrapper">
+      <div class="feds-crossCloudMenu">
+        <div>
+          <ul>
+            ${new Array(4).fill(0).map(() => `
+              <li class="feds-crossCloudMenu-item">
+                <a class="feds-navLink"></a>
+              </li>`).join('')}
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+  `;
 };
 
 export const takeWhile = (xs, f) => {
@@ -605,6 +811,23 @@ export function getGnavHeight() {
   return topHeight;
 }
 
+const SIGNED_OUT_ICONS = ['appswitcher', 'help'];
+export function getUnavWidthCSS(unavComponents, signedOut = false) {
+  const iconWidth = 32; // px
+  const flexGap = 0.25; // rem
+  const sectionDivider = getConfig()?.unav?.showSectionDivider;
+  const sectionDividerMargin = 4; // px (left and right margins)
+  const cartEnabled = /uc_carts=/.test(document.cookie);
+  const components = (!cartEnabled ? unavComponents?.filter((x) => x !== 'cart') : unavComponents) ?? [];
+  const n = components.length ?? 3;
+  if (signedOut) {
+    const l = components.filter((c) => SIGNED_OUT_ICONS.includes(c)).length;
+    const signInButton = 92; // px
+    return `calc(${signInButton}px + ${l * iconWidth}px + ${l * flexGap}rem${sectionDivider ? ` + 2px + ${2 * sectionDividerMargin}px + ${flexGap}rem` : ''})`;
+  }
+  return `calc(${n * iconWidth}px + ${(n - 1) * flexGap}rem${sectionDivider ? ` + 2px + ${2 * sectionDividerMargin}px + ${flexGap}rem` : ''})`;
+}
+
 /**
  * Initializes a MutationObserver to monitor the body
   for the addition or removal of a branch banner iframe.
@@ -627,23 +850,28 @@ export const [branchBannerLoadCheck, getBranchBannerInfo] = (() => {
           if (mutation.type === 'childList') {
             mutation.addedNodes.forEach((node) => {
               // Check if the added node has the ID 'branch-banner-iframe'
-              if (node.id === 'branch-banner-iframe') {
-                branchBannerInfo.isPresent = true;
-                // The element is added, now check its height and sticky status
-                // Check if the element has a sticky position
-                branchBannerInfo.isSticky = window.getComputedStyle(node).position === 'fixed';
-                branchBannerInfo.height = node.offsetHeight; // Get the height of the element
-                if (branchBannerInfo.isSticky) {
-                  // Adjust the top position of the lnav to account for the branch banner height
-                  const navElem = document.querySelector(isLocalNav() ? '.feds-localnav' : 'header');
-                  navElem.style.top = `${branchBannerInfo.height}px`;
-                } else {
-                  // Add a class to the body to indicate the presence of a non-sticky branch banner
-                  document.body.classList.add('branch-banner-inline');
+              setTimeout(() => {
+                if (node.id === 'branch-banner-iframe') {
+                  branchBannerInfo.isPresent = true;
+                  // The element is added, now check its height and sticky status
+                  // Check if the element has a sticky position
+                  branchBannerInfo.isSticky = window.getComputedStyle(node).position === 'fixed';
+                  branchBannerInfo.height = node.offsetHeight; // Get the height of the element
+                  if (branchBannerInfo.isSticky) {
+                    // Adjust the top position of the lnav to account for the branch banner height
+                    const navElem = document.querySelector(isLocalNav() ? '.feds-localnav' : 'header');
+                    navElem.style.top = `${branchBannerInfo.height}px`;
+                  } else {
+                    /* Add a class to the body to indicate the presence of a non-sticky
+                    branch banner */
+                    document.body.classList.add('branch-banner-inline');
+                  }
+                  // Update the popup position when the branch banner is added
+                  updatePopupPosition();
                 }
-                // Update the popup position when the branch banner is added
-                updatePopupPosition();
-              }
+              }, 50);
+              /* 50ms delay to ensure the node is fully rendered with styles before
+              checking its properties */
             });
 
             mutation.removedNodes.forEach((node) => {

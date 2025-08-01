@@ -14,13 +14,13 @@ import {
   getConfig,
   parseEncodedConfig,
   loadStyle,
+  isValidHtmlUrl,
 } from '../../utils/utils.js';
 import Accordion from '../../ui/controls/Accordion.js';
 import {
   decodeCompressedString,
   defaultState,
   initCaas,
-  isValidHtmlUrl,
   isValidUuid,
   loadCaasFiles,
   loadCaasTags,
@@ -370,7 +370,6 @@ const BasicsPanel = ({ tagsData }) => {
 
 const UiPanel = () => {
   const { state } = useContext(ConfiguratorContext);
-  
   const bladeCardOptions = html`
     <div class="blade-card-options">
       <${Input} label="Reverse direction" prop="bladeCardReverse" class="blade-card-option" type="checkbox" />
@@ -380,15 +379,15 @@ const UiPanel = () => {
   `;
 
   return html`
+    <${Input} label="Show Total Count" prop="showTotalResults" type="checkbox" />
     <${Input} label="Show Card Borders" prop="setCardBorders" type="checkbox" />
     <${Input} label="Show Footer Dividers" prop="showFooterDivider" type="checkbox" />
-    <${Input} label="Disable Card Banners" prop="disableBanners" type="checkbox" />
-    <${Input} label="Use Light Text" prop="useLightText" type="checkbox" />
+    <${Input} label="Show Card Badges / BadgeImage" prop="showCardBadges" type="checkbox" />
+    <${Input} label="Show Different CTA for Live Events" prop="dynamicCTAForLiveEvents" type="checkbox" />
+    <${Input} label="Hide Date for On-Demand Content" prop="hideDateInterval" type="checkbox" />
+    <${Input} label="Hide Card Banners" prop="disableBanners" type="checkbox" />
     <${Input} label="Use Overlay Links" prop="useOverlayLinks" type="checkbox" />
-    <${Input} label="Show total card count at top" prop="showTotalResults" type="checkbox" />
-    <${Input} label="Hide date for on-demand content" prop="hideDateInterval" type="checkbox" />
-    <${Input} label="Enable showing card badges (by default hidden)" prop="showCardBadges" type="checkbox" />
-    <${Input} label="Different CTA for live events" prop="dynamicCTAForLiveEvents" type="checkbox" />
+    <${Input} label="Use Light Text" prop="useLightText" type="checkbox" />
     <${Select} label="Card Style" prop="cardStyle" options=${defaultOptions.cardStyle} />
       ${state.cardStyle === 'blade-card' && bladeCardOptions}
     <${Select} options=${defaultOptions.cardTitleAccessibilityLevel} prop="cardTitleAccessibilityLevel" label="Card Accessibility Title Level" />
@@ -417,7 +416,8 @@ const UiPanel = () => {
       label="CTA Link Behavior"
       prop="ctaAction"
       options=${defaultOptions.ctaActions}
-  />`;
+    />
+  `;
 };
 
 const TagsPanel = ({ tagsData }) => {

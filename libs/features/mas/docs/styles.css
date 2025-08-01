@@ -38,7 +38,6 @@ main {
     background: var(--spectrum-gray-50);
     flex: 1;
     justify-content: center;
-    margin: 0 16px;
     padding: 20px;
 }
 
@@ -155,7 +154,8 @@ button {
 
 .gallery-content {
     display: block;
-    padding: 30px;
+    padding: 16px;
+    width: 100%;
 }
 
 .plans-gallery-content {
@@ -172,6 +172,7 @@ button {
 
     & .plans-link {
         font-size: 14px;
+        padding-left: 6px;
     }
 }
 
@@ -232,6 +233,41 @@ merch-card[variant='ccd-slice'][size='wide'] {
 
     .benchmarks.three-merch-cards.ah-try-buy-widget {
         grid-template-columns: repeat(3, minmax(156px, min-content));
+    }
+}
+
+.four-merch-cards.plans merch-card:not([variant='plans-students']) {
+    width: auto;
+}
+
+@media screen and (min-width: 768px) {
+    .plans-item:has(merch-card[size='wide']),
+    .plans-item:has(merch-card[size='super-wide']) {
+        width: 100%;
+        grid-column: 1 / -1;
+    }
+}
+
+/* Laptop */
+@media screen and (min-width: 1200px) {
+    .plans-item:has(merch-card[size='wide']) {
+        grid-column: span 2;
+    }
+
+    .four-merch-cards.plans {
+        grid-template-columns: repeat(
+            3,
+            var(--merch-card-collection-card-width)
+        );
+    }
+}
+
+@media screen and (min-width: 1600px) {
+    .four-merch-cards.plans {
+        grid-template-columns: repeat(
+            4,
+            var(--merch-card-collection-card-width)
+        );
     }
 }
 
@@ -305,4 +341,83 @@ h5 {
 
 .benchmark-mask-under-limit {
     background: rgba(133, 215, 133, 0.7);
+}
+
+.gallery-content .placeholder-failed {
+    border: none;
+}
+
+.fries-gallery-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 16px;
+    line-height: 16px;
+    width: 100%;
+    max-width: 100%;
+
+    & h1,
+    h2 {
+        margin-block: 10px;
+        text-align: center;
+    }
+
+    & .fries-link {
+        font-size: 14px;
+        margin-bottom: 16px;
+    }
+}
+
+@media screen and (min-width: 644px) {
+    .fries-gallery-content {
+        padding: 24px;
+    }
+}
+
+@media screen and (min-width: 966px) {
+    .fries-gallery-content {
+        padding: 32px;
+    }
+}
+
+@media screen and (min-width: 1200px) {
+    .fries-gallery-content {
+        padding: 40px;
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+}
+
+.fries-merch-cards {
+    display: grid;
+    gap: 16px;
+    padding: 20px 0;
+    width: 100%;
+    grid-template-columns: 1fr;
+}
+
+@media screen and (min-width: 644px) {
+    .fries-merch-cards {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media screen and (min-width: 966px) {
+    .fries-merch-cards {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 24px;
+    }
+}
+
+@media screen and (min-width: 1200px) {
+    .gallery-content {
+        padding: 40px;
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    .fries-merch-cards {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        max-width: 1200px;
+    }
 }

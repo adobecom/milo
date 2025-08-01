@@ -30,6 +30,12 @@
   background: var(--color-white);
 }
 
+.temp-focus {
+  position: absolute;
+  left: -9999px;
+  top: -9999px;
+}
+
 .notification.ribbon {
   min-block-size: var(--min-block-size-ribbon);
 }
@@ -42,11 +48,13 @@
 .notification p {
   margin: 0;
   inline-size: 100%;
+  margin-block-end: var(--spacing-xs);
 }
 
 .notification [class*="heading-"] {
   margin-block-end: var(--spacing-xxs);
 }
+
 
 .notification [class*="heading-"] strong {
   font-weight: unset;
@@ -83,6 +91,7 @@
 .notification.center .foreground > * {
   text-align: center;
   justify-content: center;
+  align-items: center;
 }
 
 .notification.pill .foreground {
@@ -90,6 +99,30 @@
   padding-block: var(--spacing-xs) var(--spacing-xxs);
   margin: 0;
   inline-size: 100%;
+}
+
+.notification.pill {
+  overflow: unset;
+}
+
+.notification.pill .background {
+  border-radius: inherit;
+}
+
+.notification.pill .foreground .text.notification-pill-mobile .milo-tooltip {
+  position: absolute;
+  left: calc(var(--spacing-xs) - 4px);
+  bottom: var(--spacing-xs);
+  margin-inline-start: 0;
+}
+
+[dir="rtl"] .notification.pill .foreground .text.notification-pill-mobile .milo-tooltip {
+  left: unset;
+  right: calc(var(--spacing-xs) - 4px);
+}
+
+.notification.pill .foreground .text span[data-tooltip] .icon-milo {
+  height: 16px;
 }
 
 .notification.ribbon.xxs-padding .foreground {
@@ -140,6 +173,7 @@
   align-items: center;
 }
 
+
 .notification .background img {
   min-block-size: unset;
 }
@@ -159,9 +193,6 @@
   inline-size: 100%;
 }
 
-.notification.ribbon [class*="heading-"]:only-child {
-  margin-block-end: var(--spacing-s);
-}
 
 .notification.ribbon.space-between [class*="heading-"]:only-child {
   margin-block-end: 0;
@@ -276,6 +307,7 @@
   margin-block-end: 0;
 }
 
+
 .notification .foreground .text a:not(.con-button) {
   inline-size: auto;
   font-weight: normal;
@@ -340,6 +372,18 @@
   display: none;
 }
 
+.notification-visibility-hidden {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  z-index: -1;
+}
+
 .notification.pill .foreground .text > :not(.action-area) {
   padding-inline-end: var(--spacing-xxs);
   inline-size: calc(100% - var(--spacing-xxs));
@@ -400,7 +444,7 @@
   display: flex;
   width: auto;
   height: var(--icon-size-xs);
-  min-width: unset;
+  min-width: var(--icon-size-xs);
   max-width: unset;
 }
 
@@ -408,7 +452,7 @@
   width: 100%;
   border-bottom-left-radius: 0;
   border-bottom-right-radius: 0;
-  z-index: var(--modal-z-index);
+  z-index: 102;
 }
 
 .notification-curtain {
@@ -418,12 +462,66 @@
   bottom: 0;
   left: 0;
   background: rgb(50 50 50 / 80%);
-  z-index: var(--modal-z-index-curtain);
+  z-index: 101;
 }
 
 @media screen and (max-width: 600px) {
+  .notification.ribbon.inline p {
+    margin: initial;
+    inline-size: initial;
+    margin-block-end: initial;
+  }
+
+  .notification.ribbon.inline [class*="heading-"] {
+    margin-block-end: initial;
+  }
+
+  .notification.ribbon.inline [class*="heading-"] strong {
+    font-size: var(--type-heading-s-size);
+    line-height: var(--type-heading-s-lh);
+  }
+
+  .notification.ribbon.inline .action-area {
+    gap: var(--spacing-xs);
+    order: 2;
+    margin-left: auto;
+  }
+
+  .notification.ribbon:not(.inline) [class*="heading-"]:only-child {
+    margin-block-end: var(--spacing-s);
+  }
+
+  .notification.ribbon.inline .foreground .text {
+    flex-wrap: nowrap;
+    inline-size: 100%;
+    gap: var(--spacing-xxs);
+  }
+
+  .notification.ribbon.inline .foreground .copy-wrap {
+    order: 1;
+    max-width: 152px;
+    margin: auto 0;
+  }
+
+  .notification.ribbon.inline .icon-area img {
+    max-block-size: var(--icon-size-m);
+  }
+
+  .notification.ribbon.inline .foreground .icon-area {
+    margin: auto 0;
+    width: var(--icon-size-m);
+    order: 0;
+    height: var(--icon-size-m);
+  }
+
   .mobile-disable-scroll {
     overflow: hidden;
+  }
+}
+
+@media screen and (max-width: 359px) {
+  .notification.ribbon.inline .action-area {
+    flex-wrap: wrap;
   }
 }
 
@@ -522,6 +620,10 @@
   }
 
   .notification.ribbon .copy-wrap :last-child {
+    margin-block-end: 0;
+  }
+
+  .notification.ribbon:not(.inline) [class*="heading-"]:only-child {
     margin-block-end: 0;
   }
 

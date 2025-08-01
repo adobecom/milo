@@ -61,11 +61,8 @@ export const createLinkMarkup = (
     if (offer.commitment === 'PERPETUAL') params.set('perp', true);
 
     if (isCta) {
-      const { workflow, workflowStep } = options;
+      const { workflowStep } = options;
       params.set('text', options.ctaText ?? DEFAULT_CTA_TEXT);
-      if (workflow && workflow !== defaults.checkoutWorkflow) {
-        params.set('workflow', workflow);
-      }
       if (workflowStep && workflowStep !== defaults.checkoutWorkflowStep) {
         params.set('workflowStep', workflowStep);
       }
@@ -96,8 +93,22 @@ export const createLinkMarkup = (
 
 export async function loadOstEnv() {
   /* c8 ignore next */
-  const { Log, Defaults } = await import('../../deps/mas/commerce.js');
-  const { getMiloLocaleSettings } = await import('../merch/merch.js');
+  const { loadMasComponent, getMasLibs, getMiloLocaleSettings, MAS_COMMERCE_SERVICE } = await import('../merch/merch.js');
+
+  // Load commerce.js based on masLibs parameter
+  await loadMasComponent(MAS_COMMERCE_SERVICE);
+
+  // Get the exports - they might be in different places depending on how it was loaded
+  let Log;
+  let Defaults;
+  let resolvePriceTaxFlags;
+  if (getMasLibs() && window.mas?.commerce) {
+    // Loaded from external URL - check global scope
+    ({ Log, Defaults, resolvePriceTaxFlags } = window.mas.commerce);
+  } else {
+    // Loaded as module
+    ({ Log, Defaults, resolvePriceTaxFlags } = await import('../../deps/mas/commerce.js'));
+  }
 
   const searchParameters = new URLSearchParams(window.location.search);
   const ostSearchParameters = new URLSearchParams();
@@ -233,6 +244,7 @@ export async function loadOstEnv() {
     defaultPlaceholderOptions,
     wcsApiKey: WCS_API_KEY,
     ctaTextOption,
+    resolvePriceTaxFlags,
   };
 }
 

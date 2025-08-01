@@ -5,7 +5,7 @@ import {
   getOpenPopup,
   selectors,
 } from './utils.js';
-import { closeAllDropdowns, logErrorFor } from '../utilities.js';
+import { closeAllDropdowns, logErrorFor, isDesktopForContext } from '../utilities.js';
 
 const getState = ({ e, element } = {}) => {
   if (!element) return {};
@@ -144,16 +144,18 @@ class Popup {
   };
 
   addEventListeners = () => {
-    document.querySelector(selectors.globalNav)
+    document.querySelector(selectors.globalNavTag)
       ?.addEventListener('keydown', (e) => logErrorFor(() => {
+        if (!e.target.closest(selectors.globalNav)) return;
         const element = getOpenPopup();
         if (!e.target.closest(selectors.popup) || !element || !this.desktop.matches) return;
         this.handleKeyDown({ e, element, isFooter: false });
       }, `popup key failed ${e.code}`, 'gnav-keyboard', 'e'));
 
-    document.querySelector(selectors.globalFooter)
+    document.querySelector(selectors.globalFooterTag)
       ?.addEventListener('keydown', (e) => logErrorFor(() => {
-        if (!this.desktop.matches) return;
+        if (!e.target.closest(selectors.globalFooter)) return;
+        if (!isDesktopForContext('footer') || e.target.closest(selectors.languagePicker)) return;
         const element = e.target.closest(selectors.globalFooter);
         this.handleKeyDown({ e, element, isFooter: true });
       }, `footer key failed ${e.code}`, 'gnav-keyboard', 'e'));

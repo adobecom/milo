@@ -1,6 +1,6 @@
 import { CheckoutLink } from './checkout-link.js';
 import { omitProperties, toBoolean, toEnumeration, computePromoStatus } from '@dexter/tacocat-core';
-import { CheckoutWorkflow, CheckoutWorkflowStep } from './constants.js';
+import { CheckoutWorkflowStep } from './constants.js';
 
 import { buildCheckoutUrl } from './buildCheckoutUrl.js';
 import { Defaults } from './defaults.js';
@@ -10,20 +10,37 @@ import { MODAL_TYPE_3_IN_1 } from './constants.js';
 /**
  * generate Checkout configuration
  */
-export function Checkout({ providers, settings }) {
+export function Checkout({ settings, providers }) {
     function collectCheckoutOptions(overrides, placeholder) {
         const {
             checkoutClientId,
-            checkoutWorkflow: defaultWorkflow,
             checkoutWorkflowStep: defaultWorkflowStep,
             country: defaultCountry,
             language: defaultLanguage,
             promotionCode: defaultPromotionCode,
             quantity: defaultQuantity,
+            preselectPlan,
+            env,
         } = settings;
+
+        let options = {
+          checkoutClientId,
+          checkoutWorkflowStep: defaultWorkflowStep,
+          country: defaultCountry,
+          language: defaultLanguage,
+          promotionCode: defaultPromotionCode,
+          quantity: defaultQuantity,
+          preselectPlan,
+          env,
+        };
+
+        if (placeholder) {
+          for (const provider of providers.checkout) {
+              provider(placeholder, options);
+          }
+      }
         const {
             checkoutMarketSegment,
-            checkoutWorkflow = defaultWorkflow,
             checkoutWorkflowStep = defaultWorkflowStep,
             imsCountry,
             country = imsCountry ?? defaultCountry,
@@ -37,28 +54,15 @@ export function Checkout({ providers, settings }) {
             wcsOsi,
             extraOptions,
             ...rest
-        } = Object.assign({}, placeholder?.dataset ?? {}, overrides ?? {});
-        const workflow = toEnumeration(
-            checkoutWorkflow,
-            CheckoutWorkflow,
-            Defaults.checkoutWorkflow,
-        );
-        let workflowStep = CheckoutWorkflowStep.CHECKOUT;
-        if (workflow === CheckoutWorkflow.V3) {
-            workflowStep = toEnumeration(
-                checkoutWorkflowStep,
-                CheckoutWorkflowStep,
-                Defaults.checkoutWorkflowStep,
-            );
-        }
-        const options = omitProperties({
+        } = Object.assign(options, placeholder?.dataset ?? {}, overrides ?? {});  
+        let workflowStep = toEnumeration(checkoutWorkflowStep, CheckoutWorkflowStep, Defaults.checkoutWorkflowStep);
+        options = omitProperties({
             ...rest,
             extraOptions,
             checkoutClientId,
             checkoutMarketSegment,
             country,
             quantity: toQuantity(quantity, Defaults.quantity),
-            checkoutWorkflow: workflow,
             checkoutWorkflowStep: workflowStep,
             language,
             entitlement: toBoolean(entitlement),
@@ -67,12 +71,8 @@ export function Checkout({ providers, settings }) {
             perpetual: toBoolean(perpetual),
             promotionCode: computePromoStatus(promotionCode).effectivePromoCode,
             wcsOsi: toOfferSelectorIds(wcsOsi),
+            preselectPlan,
         });
-        if (placeholder) {
-            for (const provider of providers.checkout) {
-                provider(placeholder, options);
-            }
-        }
         return options;
     }
 
@@ -89,18 +89,36 @@ export function Checkout({ providers, settings }) {
         const { env, landscape } = settings;
         const {
             checkoutClientId: clientId,
-            checkoutMarketSegment: marketSegment,
-            checkoutWorkflow: workflow,
+            checkoutMarketSegment,
             checkoutWorkflowStep: workflowStep,
             country,
             promotionCode: checkoutPromoCode,
-            quantity,
+            quantity: optionsQuantity,
+            preselectPlan,
+            ms, 
+            cs,
             ...rest
         } = collectCheckoutOptions(options);
         const masFF3in1 = document.querySelector('meta[name=mas-ff-3in1]');
         const is3in1 = Object.values(MODAL_TYPE_3_IN_1).includes(options.modal) && (!masFF3in1 || masFF3in1.content !== 'off');
         const context = window.frameElement || is3in1 ? 'if' : 'fp';
+        // even if CTA has multiple offers, they should have same ms, cs, ot values
+        const [{ 
+          productArrangementCode, 
+          marketSegments: [offerMarketSegment], 
+          customerSegment: offerCustomerSegment, 
+          offerType }] = offers;
+        // cleanup checkoutMarketSegment  - not needed
+        let marketSegment = ms ?? offerMarketSegment ?? checkoutMarketSegment;
+        let customerSegment = cs ?? offerCustomerSegment;
+        //used on catalog page by MEP to preselect plan
+        if (preselectPlan?.toLowerCase() === 'edu') {
+          marketSegment = 'EDU';
+        } else if (preselectPlan?.toLowerCase() === 'team') {
+          customerSegment = 'TEAM';
+        }
         const data = {
+            is3in1,
             checkoutPromoCode,
             clientId,
             context,
@@ -108,34 +126,25 @@ export function Checkout({ providers, settings }) {
             env,
             items: [],
             marketSegment,
+            customerSegment,
+            offerType,
+            productArrangementCode,
             workflowStep,
             landscape,
             ...rest,
         };
+        // even if there are multiple offers, only first main offer is used for quantity
+        const quantity = optionsQuantity[0] > 1 ? optionsQuantity[0] : undefined;
         if (offers.length === 1) {
-            const [{ offerId, offerType, productArrangementCode }] = offers;
-            const {
-                marketSegments: [marketSegment],
-                customerSegment,
-            } = offers[0];
-            Object.assign(data, {
-                marketSegment,
-                customerSegment,
-                offerType,
-                productArrangementCode,
-            });
-            data.items.push(
-                quantity[0] === 1
-                    ? { id: offerId }
-                    : { id: offerId, quantity: quantity[0] },
-            );
+            const { offerId } = offers[0];
+            data.items.push({ id: offerId, quantity });
         } else {
             /* c8 ignore next 7 */
             data.items.push(
-                ...offers.map(({ offerId, productArrangementCode, marketSegments, customerSegment }, index) => ({
+                ...offers.map(({ offerId, productArrangementCode }) => ({
                     id: offerId,
-                    quantity: quantity[index] ?? Defaults.quantity,
-                    ...(is3in1 ? { productArrangementCode, marketSegment: marketSegments[0], customerSegment } : {}),
+                    quantity,
+                    ...(is3in1 ? { productArrangementCode } : {}),
                 })),
             );
         }
@@ -145,7 +154,6 @@ export function Checkout({ providers, settings }) {
     const { createCheckoutLink } = CheckoutLink;
     return {
       CheckoutLink,
-      CheckoutWorkflow,
       CheckoutWorkflowStep,
       buildCheckoutURL,
       collectCheckoutOptions,

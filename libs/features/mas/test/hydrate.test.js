@@ -22,6 +22,7 @@ import {
     processBorderColor,
     appendSlot,
     processAddon,
+    processTrialBadge,
 } from '../src/hydrate.js';
 import { CCD_SLICE_AEM_FRAGMENT_MAPPING } from '../src/variants/ccd-slice.js';
 
@@ -113,7 +114,7 @@ describe('processPrices', async () => {
 
     it('should preserve white spaces', async () => {
         const fields = {
-            prices: 'Starting at  <span is="inline-price" data-template="price" data-wcs-osi="nTbB50pS4lLGv_x1l_UKggd-lxxo2zAJ7WYDa2mW19s"></span>',
+            prices: 'Starting at  <span is="inline-price" data-display-per-unit="false" data-template="price" data-wcs-osi="nTbB50pS4lLGv_x1l_UKggd-lxxo2zAJ7WYDa2mW19s"></span>',
         };
         const merchCard = mockMerchCard();
         const mapping = {
@@ -268,6 +269,18 @@ describe('processCTAs', async () => {
         const link = footer.firstChild;
         expect(link.tagName.toLowerCase()).to.equal('a');
         expect(link.classList.contains('primary-link')).to.be.true;
+    });
+
+    it('should handle regular footer links', async () => {
+        const fields = {
+            ctas: `<a href="#">Regular link</a>`,
+        };
+        processCTAs(fields, merchCard, aemFragmentMapping);
+        const footer = getFooterElement(merchCard);
+        expect(footer).to.exist;
+        const link = footer.firstChild;
+        expect(link.tagName.toLowerCase()).to.equal('a');
+        expect(link.getAttribute('is')).to.be.null;
     });
 });
 
@@ -478,8 +491,6 @@ describe('hydrate', () => {
     it('should hydrate a ccd-slice merch card', async () => {
         const fragment = {
             settings: {
-                stockCheckboxLabel: '{{stock-checkbox-label}}',
-                stockOfferOsis: '',
                 secureLabel: '{{secure-label}}',
             },
             fields: {
@@ -524,15 +535,64 @@ describe('processDescription', async () => {
         sinon.restore();
     });
 
-    it('should process merch links', async () => {
+    it('should process regular links', async () => {
         const fields = {
-            description: `Buy <a is="checkout-link" data-wcs-osi="abm" class="primary-link">Link Style</a><a is="checkout-link" data-wcs-osi="abm" class="secondary-link">Link Style</a>`,
+            description: `Buy <a href="#" class="primary-link">Link Style</a>`,
         };
 
         processDescription(fields, merchCard, aemFragmentMapping);
         updateLinksCSS(merchCard);
         expect(merchCard.innerHTML).to.equal(
-            '<div slot="body-xs">Buy <a is="checkout-link" data-wcs-osi="abm" class="spectrum-Link spectrum-Link--primary">Link Style</a><a is="checkout-link" data-wcs-osi="abm" class="spectrum-Link spectrum-Link--secondary">Link Style</a></div>',
+            '<div slot="body-xs">Buy <a href="#" class="spectrum-Link spectrum-Link--primary">Link Style</a></div>',
+        );
+    });
+
+    it('should process merch links', async () => {
+        const fields = {
+            description: `Buy <a data-wcs-osi="abm" class="primary-link">Link Style</a><a data-wcs-osi="abm" class="secondary-link">Link Style</a>`,
+        };
+        processDescription(fields, merchCard, aemFragmentMapping);
+        updateLinksCSS(merchCard);
+        expect(merchCard.innerHTML).to.equal(
+            '<div slot="body-xs">Buy <a data-wcs-osi="abm" class="spectrum-Link spectrum-Link--primary">Link Style</a><a data-wcs-osi="abm" class="spectrum-Link spectrum-Link--secondary">Link Style</a></div>',
+        );
+    });
+
+    it('should process merch links when merchCard.consonant is true', async () => {
+        const fields = {
+            description: `Buy <a data-wcs-osi="abm" class="primary-link">Link Style</a><a data-wcs-osi="abm" class="secondary-link">Link Style</a>`,
+        };
+        merchCard.consonant = true;
+        processDescription(fields, merchCard, aemFragmentMapping);
+        updateLinksCSS(merchCard);
+        expect(merchCard.innerHTML).to.equal(
+            '<div slot="body-xs">Buy <a is="checkout-link" data-checkout-workflow-step="email" data-quantity="1" data-wcs-osi="abm"><span style="pointer-events: none;">Link Style</span></a><a is="checkout-link" data-checkout-workflow-step="email" data-quantity="1" data-wcs-osi="abm"><span style="pointer-events: none;">Link Style</span></a></div>',
+        );
+    });
+    
+    it('should create spectrum css buttons by default (merchCard.spectrum=css)', async () => {
+        const fields = {
+            description: '<a data-wcs-osi="abm" class="accent">Click me</a>',
+        };
+
+        processDescription(fields, merchCard, aemFragmentMapping);
+        updateLinksCSS(merchCard);
+
+        expect(merchCard.innerHTML).to.equal(
+            '<div slot="body-xs"><button is="checkout-button" data-checkout-workflow-step="email" data-quantity="1" tabindex="0" data-wcs-osi="abm" class="spectrum-Button spectrum-Button--accent spectrum-Button--sizeM"><span style="pointer-events: none;" class="spectrum-Button-label">Click me</span></button></div>',
+        );
+    });
+
+    it('should create spectrum swc buttons when merchCard.spectrum="swc"', async () => {
+        const fields = {
+            description: '<a data-wcs-osi="abm" class="accent">Click me</a>',
+        };
+        merchCard.spectrum = 'swc';
+        processDescription(fields, merchCard, aemFragmentMapping);
+        updateLinksCSS(merchCard);
+
+        expect(merchCard.innerHTML).to.equal(
+            '<div slot="body-xs"><sp-button treatment="fill" variant="accent" tabindex="0" size="m" dir="ltr">Click me</sp-button></div>',
         );
     });
 
@@ -699,7 +759,7 @@ describe('processBorderColor', () => {
         const fields = { borderColor: 'spectrum-gray-800' };
         const borderColorConfig = { attribute: 'border-color' };
 
-        processBorderColor(fields, merchCard, borderColorConfig);
+        processBorderColor(fields, merchCard, { borderColor: borderColorConfig });
 
         expect(
             merchCard.style.getPropertyValue(
@@ -731,6 +791,43 @@ describe('processBorderColor', () => {
                 '--merch-card-custom-border-color',
             ),
         ).to.be.empty;
+    });
+});
+
+describe('processTrialBadge', () => {
+    let merchCard;
+
+    beforeEach(() => {
+        merchCard = mockMerchCard();
+    });
+
+    afterEach(() => {
+        sinon.restore();
+    });
+
+    it('should not append trial badge if mapping.trialBadge is undefined', () => {
+        const fields = { trialBadge: 'Test Badge', variant: 'fries' };
+        const mapping = {};
+        processTrialBadge(fields, merchCard, mapping);
+        expect(merchCard.querySelector('merch-badge')).to.be.null;
+    });
+
+    it('should not append trial badge if fields.trialBadge is undefined', () => {
+        const fields = { variant: 'fries' };
+        const mapping = { trialBadge: { tag: 'div', slot: 'trial-badge' } };
+        processTrialBadge(fields, merchCard, mapping);
+        expect(merchCard.querySelector('merch-badge')).to.be.null;
+    });
+
+
+    it('should use fields.variant for the merch-badge variant attribute', async () => {
+        const fields = { trialBadge: 'Another Badge', variant: 'another-variant' };
+        const mapping = { trialBadge: { tag: 'div', slot: 'trial-badge' } };
+        processTrialBadge(fields, merchCard, mapping);
+        const badge = merchCard.querySelector('div[slot="trial-badge"] merch-badge');
+        expect(badge).to.exist;
+        await delay(50);
+        expect(badge.getAttribute('variant')).to.equal('another-variant');
     });
 });
 
@@ -833,7 +930,6 @@ describe('appendSlot', () => {
 
         const appended = el.querySelector('[slot="test-slot"]');
         expect(appended).to.exist;
-        // The exact truncated text might vary depending on how getTruncatedTextData handles HTML
         expect(appended.textContent.length).to.be.lessThan(htmlText.length);
         expect(appended.getAttribute('title')).to.not.be.null;
     });
@@ -850,7 +946,6 @@ describe('appendSlot', () => {
 
         const appended = el.querySelector('[slot="test-slot"]');
         expect(appended).to.exist;
-        // The object will be converted to string by the browser
         expect(appended.textContent).to.equal(objectContent.toString());
     });
 
@@ -866,163 +961,6 @@ describe('appendSlot', () => {
 
         const appended = el.querySelector('[slot="test-slot"]');
         expect(appended).to.exist;
-        // Should break at a space, not in the middle of "sentence"
         expect(appended.textContent).to.equal('This is a...');
-    });
-});
-
-describe('getTruncatedTextData', () => {
-    it('closes any open tags in truncated text', () => {
-        // The function truncates in the middle of <b>World, then appends closing tags
-        // The actual output might be: "<p>Hello <b>W</b>..."
-        // (the ellipsis appears outside the <b> tag, then no closing </p> if "p" was the first leftover)
-        const text = '<p>Hello <b>World</b> more text</p>';
-        const limit = 10; // small to ensure truncation inside <b>World
-        const [truncated] = getTruncatedTextData(text, limit);
-
-        // You can simply check that it starts with `<p>Hello <b>` and ends with `</b>...`
-        expect(truncated).to.equal('<p>Hello <b>W</b>...');
-    });
-
-    it('handles leftover <p> specifically by ignoring if first in openTags', () => {
-        // If <p> is the first leftover tag, it gets removed, so the function
-        // might produce something like "<p><span>He</span>..."
-        const text = '<p><span>Hello world';
-        const limit = 5;
-        const [truncated] = getTruncatedTextData(text, limit);
-
-        // Actual output might be "<p><span>He</span>..."
-        expect(truncated).to.equal('<p><span>He</span>...');
-    });
-
-    it('handles slash near tag ends properly', () => {
-        // If we truncate before capturing <img>, the function may skip it entirely
-        // leading to something like "<div>Hello</div>..."
-        const text = '<div>Hello <img src="test.jpg" /> world</div>';
-        const limit = 8;
-        const [truncated] = getTruncatedTextData(text, limit);
-
-        // The actual output might be "<div>Hello</div>..."
-        // because we never traverse far enough to keep the <img> or " world"
-        expect(truncated).to.equal('<div>Hello</div>...');
-    });
-
-    it('handles null text values', () => {
-        const text = null;
-        const limit = 5;
-        const [truncated] = getTruncatedTextData(text, limit);
-
-        expect(truncated).to.equal('');
-    });
-});
-
-describe('processBackgroundColor', () => {
-    let merchCard;
-
-    beforeEach(() => {
-        merchCard = mockMerchCard();
-    });
-
-    it('should set background color when valid', () => {
-        const fields = { backgroundColor: 'gray' };
-        const allowedColors = { gray: '--spectrum-gray-50' };
-
-        processBackgroundColor(fields, merchCard, allowedColors);
-
-        expect(
-            merchCard.style.getPropertyValue(
-                '--merch-card-custom-background-color',
-            ),
-        ).to.equal('var(--spectrum-gray-50)');
-        expect(merchCard.getAttribute('background-color')).to.equal('gray');
-    });
-
-    it('should not set color when invalid', () => {
-        const fields = { backgroundColor: 'red' };
-        const allowedColors = { gray: 'var(--spectrum-gray-50)' };
-
-        processBackgroundColor(fields, merchCard, allowedColors);
-
-        expect(
-            merchCard.style.getPropertyValue(
-                '--merch-card-custom-background-color',
-            ),
-        ).to.be.empty;
-        expect(merchCard.hasAttribute('background-color')).to.be.false;
-    });
-
-    it('should handle allowedColors=null', () => {
-        const fields = { backgroundColor: 'gray' };
-
-        processBackgroundColor(fields, merchCard, null);
-
-        expect(
-            merchCard.style.getPropertyValue(
-                '--merch-card-custom-background-color',
-            ),
-        ).to.be.empty;
-    });
-
-    it('should remove color when set to default', () => {
-        merchCard.style.setProperty(
-            '--merch-card-custom-background-color',
-            'blue',
-        );
-        merchCard.setAttribute('background-color', 'gray');
-
-        processBackgroundColor({ backgroundColor: 'default' }, merchCard, {});
-
-        expect(
-            merchCard.style.getPropertyValue(
-                '--merch-card-custom-background-color',
-            ),
-        ).to.be.empty;
-        expect(merchCard.hasAttribute('background-color')).to.be.false;
-    });
-});
-
-describe('processBorderColor', () => {
-    let merchCard;
-
-    beforeEach(() => {
-        merchCard = mockMerchCard();
-    });
-
-    it('should set border color when configured', () => {
-        const fields = { borderColor: 'spectrum-gray-800' };
-        const borderColorConfig = { attribute: 'border-color' };
-
-        processBorderColor(fields, merchCard, borderColorConfig);
-
-        expect(
-            merchCard.style.getPropertyValue(
-                '--merch-card-custom-border-color',
-            ),
-        ).to.equal('var(--spectrum-gray-800)');
-    });
-
-    it('should not set border color without config', () => {
-        const fields = { borderColor: 'spectrum-gray-800' };
-
-        processBorderColor(fields, merchCard, null);
-
-        expect(
-            merchCard.style.getPropertyValue(
-                '--merch-card-custom-border-color',
-            ),
-        ).to.be.empty;
-    });
-
-    it('should ignore transparent border color', () => {
-        const fields = { borderColor: 'transparent' };
-        const borderColorConfig = { attribute: 'border-color' };
-
-        processBorderColor(fields, merchCard, borderColorConfig);
-
-        expect(
-            merchCard.style.getPropertyValue(
-                '--merch-card-custom-border-color',
-            ),
-        ).to.be.empty;
     });
 });

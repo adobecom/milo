@@ -1,3 +1,4 @@
+/* eslint-disable no-underscore-dangle */
 import { readFile, setViewport } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
@@ -428,7 +429,28 @@ describe('Utils', () => {
       newTabLink.href = newTabLink.href.replace('#_blank', '');
       expect(newTabLink.href).to.equal('https://www.adobe.com/test');
     });
-
+    it('Should send analytics alloy event', async () => {
+      window._satellite = { track: sinon.spy() };
+      const alloyMarquee = await readFile({ path: './mocks/body-marquee-alloy-cta.html' });
+      document.body.innerHTML = alloyMarquee;
+      await waitForElement('.marquee');
+      const marquee = document.querySelector('.marquee');
+      const alloyLink = marquee.querySelector('a');
+      const alloyString = alloyLink.href.split('#_')?.find((s) => s.startsWith('alloy:'));
+      expect(alloyLink.href).to.contain('#_alloy:');
+      utils.decorateLinks(marquee);
+      waitFor(() => {
+        expect(alloyLink.href).to.not.contain('#_alloy:');
+        alloyLink.click();
+        const [, profile, business, value] = alloyString.split(/:|\./g);
+        expect(window._satellite.track.calledOnce).to.be.true;
+        const eventName = window._satellite.track.args[0][0];
+        const eventPayload = window._satellite.track.args[0][1];
+        expect(eventName).to.equal('event');
+        // eslint-disable-next-line no-underscore-dangle
+        expect(eventPayload.data.__adobe.target).to.deep.equal({ [`${profile}.${business}`]: value });
+      }, 10);
+    });
     it('Add rel=nofollow to a link', () => {
       const noFollowContainer = document.querySelector('main div');
       utils.decorateLinks(noFollowContainer);
@@ -775,19 +797,19 @@ describe('Utils', () => {
   // MARK: seotech
   describe('seotech', async () => {
     beforeEach(async () => {
-      window.lana = { log: (msg) => console.error(msg) };
+      window.lana = { log: sinon.stub() };
       document.head.innerHTML = await readFile({ path: './mocks/head-seotech-video.html' });
       document.body.innerHTML = body;
     });
     afterEach(() => {
-      window.lana.release?.();
+      window.lana?.log?.restore?.();
+      delete window.lana;
     });
     it('should import feature when metadata is defined and error if invalid', async () => {
-      const expectedError = 'SEOTECH: Invalid video url: FAKE';
+      const expectedError = 'SEOTECH: Video object operation failed ¶ videoUrl:FAKE';
       await utils.loadArea();
-      const lanaStub = sinon.stub(window.lana, 'log');
-      await waitFor(() => lanaStub.calledOnceWith(expectedError), 2000);
-      expect(lanaStub.calledOnceWith(expectedError)).to.be.true;
+      await waitFor(() => window.lana.log.calledWith(expectedError), 2000);
+      expect(window.lana.log.calledWith(expectedError)).to.be.true;
     });
   });
 

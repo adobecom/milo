@@ -7,6 +7,7 @@ let cachedSearchCriteria = '';
 export const DEBOUNCE_TIME = 800;
 export const MMM_LOCAL_STORAGE_KEY = 'mmm_filter_settings';
 export const MMM_REPORT_LOCAL_STORAGE_KEY = 'mmm_report_filter_settings';
+export const MMM_METADATA_LOCAL_STORAGE_KEY = 'mmm_metadata_report_filter_settings';
 const SEARCH_CONTAINER = '.mmm-search-container';
 const LAST_SEEN_OPTIONS = {
   day: { value: 'Day', key: 'day' },
@@ -32,8 +33,8 @@ const MANIFESTSRC_OPTIONS = {
   personalization: { label: 'PZN', value: 'pzn' },
   promo: { label: 'Promo', value: 'promo' },
   target: { label: 'Target', value: 'target' },
-  ajo: { label: 'AJO', value: 'ajo' },
-  placeholder: { label: 'Placeholders', value: 'placeholders' },
+  // ajo: { label: 'AJO', value: 'ajo' },
+  // placeholder: { label: 'Placeholders', value: 'placeholders' },
 };
 
 const GRID_FORMAT = {
@@ -43,35 +44,79 @@ const GRID_FORMAT = {
     row2: ['mmm-checkbox-filter-targetSetting', 'mmm-checkbox-filter-manifestSrc'],
     row3: ['mmm-search-filter-container'],
   },
-  report: {
-    row1: ['mmm-dropdown-lastSeen'],
+  targetCleanUp: {
+    row1: ['mmm-dropdown-lastSeen', 'mmm-container-dropdown-geos'],
     row2: ['mmm-search-filter-container'],
   },
 };
 
+const METADATA_URLS_CATEGORIES = {
+  notFound: { display: 'Not in spreadsheet', key: 'notFound' },
+  off: { display: 'Off', key: 'off' },
+  on: { display: 'On', key: 'on' },
+  postLCP: { display: 'PostLCP', key: 'postLCP' },
+};
+
+const TARGET_METADATA_OPTIONS = {
+  cc: {
+    name: 'CC',
+    metadata: 'https://main--cc--adobecom.aem.live/metadata-optimization.json',
+    source: 'https://adobe.sharepoint.com/:x:/r/sites/adobecom/_layouts/15/Doc.aspx?sourcedoc=%7B818b8ad2-72db-4726-85a6-5238d6715069%7D&action=edit&activeCell=%27helix-default%27!A16&wdinitialsession=11b36a4d-a08b-0def-1294-1fcf497cfc1a&wdrldsc=4&wdrldc=1&wdrldr=AccessTokenExpiredWarningUnauthenticated%2CRefreshin',
+  },
+  dc: {
+    name: 'DC',
+    metadata: 'https://main--dc--adobecom.aem.live/metadata-optimization.json',
+    source: 'https://adobe.sharepoint.com/:x:/r/sites/adobecom/_layouts/15/Doc.aspx?sourcedoc=%7B8F5A8CD0-7979-41CE-894A-CC465B293C1A%7D&file=metadata-optimization.xlsx&action=default&mobileredirect=true&wdsle=0',
+  },
+  express: {
+    name: 'Express',
+    metadata: 'https://main--express-milo--adobecom.aem.live/metadata-optimization.json',
+    source: 'https://adobe.sharepoint.com/:x:/r/sites/adobecom/_layouts/15/Doc.aspx?sourcedoc=%7BEC96D2B9-9F25-48AF-B88A-A6926A340D3A%7D&file=metadata-optimization.xlsx&action=default&mobileredirect=true',
+  },
+  bacom: {
+    name: 'BACOM',
+    metadata: 'https://main--bacom--adobecom.aem.live/metadata-optimization.json',
+    source: 'https://adobe.sharepoint.com/:x:/r/sites/adobecom/_layouts/15/Doc.aspx?sourcedoc=%7BEE70634D-C16E-45E7-B16E-718C5022413E%7D&file=metadata-optimization.xlsx&action=default&mobileredirect=true&wdsle=0',
+  },
+};
 let isReport = false;
 let mmmPageVer = GRID_FORMAT.base;
+let isMetadataLookup = false;
+let metadataLookupData = null;
+
+const VARIANTS = {
+  targetCleanup: 'target-cleanup',
+  metadataLookup: 'target-metadata-lookup',
+};
+
+function getStorageKey() {
+  if (isReport) {
+    return MMM_REPORT_LOCAL_STORAGE_KEY;
+  }
+  if (isMetadataLookup) {
+    return MMM_METADATA_LOCAL_STORAGE_KEY;
+  }
+  return MMM_LOCAL_STORAGE_KEY;
+}
 
 export const getLocalStorageFilter = () => {
-  const cookie = localStorage.getItem(isReport
-    ? MMM_REPORT_LOCAL_STORAGE_KEY
-    : MMM_LOCAL_STORAGE_KEY);
+  const cookie = localStorage.getItem(getStorageKey());
   return cookie ? JSON.parse(cookie) : null;
 };
 
 const setLocalStorageFilter = (obj) => {
-  localStorage.setItem(isReport
-    ? MMM_REPORT_LOCAL_STORAGE_KEY
-    : MMM_LOCAL_STORAGE_KEY, JSON.stringify(obj));
+  localStorage.setItem(getStorageKey(), JSON.stringify(obj));
 };
 
-const SEARCH_INITIAL_VALUES = () => getLocalStorageFilter() ?? {
+const SEARCH = () => getLocalStorageFilter() ?? {
   lastSeenManifest: isReport ? LAST_SEEN_OPTIONS.week.key : LAST_SEEN_OPTIONS.threeMonths.key,
   pageNum: 1,
   subdomain: SUBDOMAIN_OPTIONS.www.key,
   perPage: 25,
   targetSetting: 'on, off, postLCP',
   manifestSrc: 'pzn, promo, target, ajo, placeholders',
+  selectedRepo: 'cc',
+  metadataFilter: '',
 };
 
 async function toggleDrawer(target, dd, pageId) {
@@ -91,7 +136,7 @@ async function toggleDrawer(target, dd, pageId) {
     dd.removeAttribute('hidden');
     const loading = dd.querySelector('.loading');
     if (dd.classList.contains('placeholder-resolved') || !loading) return;
-    const pageData = await fetchData(`${API_URLS.pageDetails}${pageId}`, DATA_TYPE.JSON);
+    const pageData = await fetchData(`${API_URLS.pageDetails}?id=${pageId}&lastSeen=${SEARCH().lastSeenManifest}&manifestSrc=${SEARCH().manifestSrc}`, DATA_TYPE.JSON);
     loading.replaceWith(getMepPopup(pageData, true));
     dd.classList.add('placeholder-resolved');
   }
@@ -173,8 +218,8 @@ function filterPageList(pageNum, perPage, filterEvent, sortingEvent) {
     });
   }
   // add pageNum and perPage to args for api call
-  searchValues.pageNum = pageNum || getLocalStorageFilter()?.pageNum || 1;
-  searchValues.perPage = perPage || getLocalStorageFilter()?.perPage || 25;
+  searchValues.pageNum = pageNum || 1;
+  searchValues.perPage = perPage || SEARCH()?.perPage;
 
   // add orderBy and order to args for api call
   if (isReport) {
@@ -187,7 +232,7 @@ function filterPageList(pageNum, perPage, filterEvent, sortingEvent) {
   Object.keys(searchValues).forEach((key) => {
     let value = searchValues[key];
     if (key === 'filter' && value.replace) { // allow optional commas inside filter textbox
-      value = value.replace(',', '');
+      value = value.replace(/,/g, '');
       value = value.replace(/\n/g, ',\n');
     }
     detail[key] = value;
@@ -250,7 +295,7 @@ function createDropdowns(data) {
     Object.keys(options).forEach((option) => {
       const optionEl = createTag('option', { value: option }, options[option]);
       select.append(optionEl);
-      const startingVal = SEARCH_INITIAL_VALUES()[key];
+      const startingVal = SEARCH()[key];
       if (startingVal === option) optionEl.setAttribute('selected', 'selected');
     });
     select.addEventListener('change', () => filterPageList());
@@ -276,14 +321,16 @@ function createSearchField() {
     </div>`,
   );
   const searchField = searchForm.querySelector('textarea');
-  searchField.value = SEARCH_INITIAL_VALUES().filter || '';
+  searchField.innerHTML = SEARCH().filter || '';
 
   searchField.addEventListener('keyup', debounce((event) => filterPageList(null, null, event)));
   searchField.addEventListener('change', debounce((event) => filterPageList(null, null, event)));
-  searchField.addEventListener('input', function adjustHeight() {
-    this.style.height = 'auto'; /* Reset height to auto to recalculate */
-    this.style.height = `${this.scrollHeight - 32}px`;
+  searchField.addEventListener('input', (event) => {
+    const target = event.target || event.detail;
+    target.style.height = 'auto'; /* Reset height to auto to recalculate */
+    target.style.height = `${target.scrollHeight}px`;
   });
+  setTimeout(() => searchField.dispatchEvent(new Event('input'), 10));
   findAndSetInGrid(searchForm);
 }
 
@@ -292,7 +339,7 @@ function createLastSeenManifestAndDomainDD() {
     'div',
     { id: 'mmm-dropdown-lastSeen', class: 'mmm-form-container' },
     `<div>
-      <label for="mmm-lastSeenManifest">Target manifests ${isReport ? 'not ' : ''}seen in the last:</label>
+      <label for="mmm-lastSeenManifest">${isReport ? 'Target manifests not' : 'Manifests'} seen in the last:</label>
       <select id="mmm-lastSeenManifest" type="text" name="mmm-lastSeenManifest" class="text-field-input">
       
       </select>
@@ -305,7 +352,7 @@ function createLastSeenManifestAndDomainDD() {
     const lastSeenSelect = dropdownLastSeen.querySelector('select');
     const newEl = createTag(
       'option',
-      { value: LAST_SEEN_OPTIONS[key].key, ...(SEARCH_INITIAL_VALUES().lastSeenManifest === LAST_SEEN_OPTIONS[key].key ? { selected: 'selected' } : {}) },
+      { value: LAST_SEEN_OPTIONS[key].key, ...(SEARCH().lastSeenManifest === LAST_SEEN_OPTIONS[key].key ? { selected: 'selected' } : {}) },
       LAST_SEEN_OPTIONS[key].value,
     );
     lastSeenSelect.append(newEl);
@@ -319,7 +366,7 @@ function createLastSeenManifestAndDomainDD() {
         <label for="mmm-subdomain">Subdomain:</label>
         <select id="mmm-subdomain" type="text" name="mmm-subdomain" class="text-field-input">
           ${Object.keys(SUBDOMAIN_OPTIONS).map((key) => `
-            <option value="${SUBDOMAIN_OPTIONS[key].key}" ${SEARCH_INITIAL_VALUES().subdomain === SUBDOMAIN_OPTIONS[key].key ? 'selected' : ''}>${SUBDOMAIN_OPTIONS[key].value}</option>
+            <option value="${SUBDOMAIN_OPTIONS[key].key}" ${SEARCH().subdomain === SUBDOMAIN_OPTIONS[key].key ? 'selected' : ''}>${SUBDOMAIN_OPTIONS[key].value}</option>
           `)}
         </select>
       </div>`,
@@ -334,7 +381,7 @@ function createCheckBoxFilterGroup(checkBoxId, legendLabel, optionsObj) {
   const checkBoxFieldset = createTag('fieldset', { id: `mmm-${checkBoxId}-fieldset` }, checkBoxLegend);
   // helper function only ran during filter build. consider moving to outter lex scope
   function createCheckBox(groupName, checkboxLabel, checkboxValue) {
-    const initValueCheck = SEARCH_INITIAL_VALUES()?.[groupName]?.split(', ').includes(checkboxValue);
+    const initValueCheck = !SEARCH()?.[groupName] || SEARCH()?.[groupName]?.split(', ').includes(checkboxValue);
     const checkDiv = createTag('div', { class: 'mmm-checkbox-option' });
     const checkLabel = createTag('label', { for: `mmm-${groupName}-${checkboxValue}` }, checkboxLabel);
     const checkBox = createTag('input', {
@@ -390,7 +437,7 @@ function createTargetAndManifestSrcFilter() {
   });
 }
 
-async function createForm(el) {
+async function createFiltersForm(el) {
   const data = parseData(el);
   createDropdowns(data);
   createLastSeenManifestAndDomainDD();
@@ -517,7 +564,8 @@ function createReportButton() {
     'a',
     {
       class: 'con-button outline button-l button-justified-mobile mmm-report-slack',
-      href: 'https://adobe.enterprise.slack.com/archives/C08LXEQ735W',
+      href: 'https://adobe.enterprise.slack.com/archives/C08SA7JUW3F',
+      target: '_blank',
     },
     'Open Slack',
   );
@@ -595,42 +643,218 @@ function createReport(el, data) {
   });
 }
 
-async function createPageList(el, search) {
-  const paginationEl = document.querySelector('.mmm-pagination');
-  paginationEl?.classList.add('mmm-hide');
+function buildUrlPod(list, title) {
+  if (!list.length) return;
+  const container = document.querySelector('.mmm-metadata-lookup__results');
+  const html = `
+    <div class="mmm-metadata-url-pod">
+      <h3>${title}</h3>
+      ${list.map((item) => `
+      <div class="mmm-metadata-url-pod__item">
+        <span>${item.URL || item.split(/\.com|\.html/g)[1]}</span>
+      </div>
+      `).join('')}
+    </div>
+    <button class="mmm-metadata-lookup__button" data-result=${JSON.stringify(list)}>Copy</button>
+    `;
+  container.append(createTag('div', { class: 'mmm-metadata-url-pod-container' }, html));
+}
+
+function updatePageTargetStatus(url, target) {
+  return fetch(API_URLS.save, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ page: { url, target }, updateOnly: true }),
+  });
+}
+
+function handleMetadataFilterInput(event) {
+  setLocalStorageFilter({
+    selectedRepo: document.querySelector('#mmm-metadata-lookup-repo-cc').value,
+    metadataFilter: document.querySelector('#mmm-metadata-lookup__filter').value,
+  });
+  const { target, detail } = event;
+  const el = target ?? detail;
+  el.style.height = 'auto'; /* Reset height to auto to recalculate */
+  el.style.height = `${el.scrollHeight}px`;
+  const categories = {
+    [METADATA_URLS_CATEGORIES.notFound.key]: [],
+    [METADATA_URLS_CATEGORIES.off.key]: [],
+    [METADATA_URLS_CATEGORIES.on.key]: [],
+    [METADATA_URLS_CATEGORIES.postLCP.key]: [],
+  };
+  const urls = el.value?.split(/,|\n/)?.filter((item) => item.trim().length > 0) || [];
+  urls.forEach((url) => {
+    const path = url.split(/\.com|\.html/g)[1];
+    const match = metadataLookupData.find((item) => item.URL === path);
+    if (match) match.url = url;
+    if (!match && url) {
+      categories.notFound.push(url);
+    } else if (match.target) {
+      categories[match.target].push(match);
+    } else {
+      categories[METADATA_URLS_CATEGORIES.off.key].push(match);
+    }
+  });
+  document.querySelector('.mmm-metadata-lookup__results').innerHTML = '';
+
+  Object.keys(categories).forEach((key) => {
+    buildUrlPod(categories[key], METADATA_URLS_CATEGORIES[key].display);
+    if (key !== 'notFound') {
+      categories[key].forEach((item) => {
+        item.target = key;
+        updatePageTargetStatus(item.url, key);
+      });
+    }
+  });
+
+  // handle 'copy to clipboard' pod buttons
+  const container = document.querySelector('.mmm-metadata-lookup__results');
+  container.querySelectorAll('.mmm-metadata-lookup__button').forEach((item) => {
+    item.addEventListener('click', (e) => {
+      const tgt = e.target;
+      const result = JSON.parse(tgt.dataset.result);
+      const text = `${result.map((url) => url.URL || url.split(/\.com|\.html/g)[1]).join('\n')}`;
+      tgt.classList.add('success');
+      navigator.clipboard.writeText(text).then(() => {
+        setTimeout(() => tgt.classList.remove('success'), 2000);
+      });
+    });
+  });
+
+  const filterResult = document.querySelector('.mmm-metadata-lookup__results');
+  filterResult.dataset.result = JSON.stringify(categories);
+
+  if (filterResult.childNodes.length) {
+    document.querySelector('#mmm-copy-metadata-report').classList.remove('mmm-hide');
+  } else {
+    document.querySelector('#mmm-copy-metadata-report').classList.add('mmm-hide');
+  }
+}
+
+function createMetadataLookup(el) {
+  const openMetadataSheetBtn = document.querySelector('.text.instructions .cta-container a');
+  const dropdown = {
+    id: 'mmm-metadata-lookup-repo-cc',
+    label: 'Choose Repo',
+    selected: SEARCH().selectedRepo,
+  };
+
+  const search = createTag('div', { class: 'mmm-metadata-lookup' }, `
+    <div class="mmm-form-container">
+      <div>
+        <label for="${dropdown.id}">${dropdown.label}:</label>
+        <select id="${dropdown.id}" class="text-field-input">
+          ${Object.keys(TARGET_METADATA_OPTIONS).map((key) => `
+            <option value="${key}" ${dropdown.selected === key ? 'selected' : ''}>${TARGET_METADATA_OPTIONS[key].name}</option>
+          `).join('')}
+        </select>
+      </div>
+      <div>
+        <label for="mmm-metadata-lookup__filter">URL list (full URLs):</label>
+        <textarea id="mmm-metadata-lookup__filter"></textarea>
+      </div>
+    </div>
+    <div class="mmm-metadata-lookup__results"></div>
+    <button id="mmm-copy-metadata-report" class="mmm-metadata-lookup__button primary mmm-hide" style="align-self: center">Copy Report</button>
+  `);
+  el.append(search);
+  // Edit REP button label and URL
+  const { name, source } = TARGET_METADATA_OPTIONS[dropdown.selected];
+  openMetadataSheetBtn.innerHTML = `Open ${name} Spreadsheet`;
+  openMetadataSheetBtn.href = source;
+
+  // Handle REPO change
+  // eslint-disable-next-line no-use-before-define
+  el.querySelector('#mmm-metadata-lookup-repo-cc').addEventListener('change', handleRepoChange);
+  // Handle copy report button
+  el.querySelector('#mmm-copy-metadata-report').addEventListener('click', () => {
+    const filterResult = document.querySelector('.mmm-metadata-lookup__results')?.dataset?.result;
+    const filterResultObj = JSON.parse(filterResult);
+    filterResultObj.off = filterResultObj.off.concat(filterResultObj.notFound);
+    filterResultObj.notFound = [];
+    const reportText = `Date: ${getDate()}\nRepo: ${SEARCH().selectedRepo.toUpperCase()}\nRequested pages are grouped below by their Target setting.
+      ${Object.keys(filterResultObj).map((key) => {
+    const urls = filterResultObj[key].map((item) => item.url || item);
+    return urls.length ? `\n\n${METADATA_URLS_CATEGORIES[key].display}:\n${urls.join('\n')}\n` : null;
+  }).join('')}`;
+    // copy to clipboard
+    navigator.clipboard.writeText(reportText).then(() => {
+      const btn = document.querySelector('#mmm-copy-metadata-report');
+      btn.classList.add('success');
+      setTimeout(() => btn.classList.remove('success'), 2000);
+    });
+  });
+  // Handle Filter input
+  const textarea = search.querySelector('textarea');
+  textarea.addEventListener('input', debounce((event) => handleMetadataFilterInput(event)));
+  textarea.innerHTML = SEARCH().metadataFilter;
+  textarea.dispatchEvent(new CustomEvent('input', { detail: textarea }));
+}
+
+function creastePageList(el, data) {
+  data?.result.map((page) => createButtonDetailsPair(el, page));
+}
+
+function addVariantClass() {
+  switch (true) {
+    case isMetadataLookup: return VARIANTS.metadataLookup;
+    case isReport: return VARIANTS.targetCleanup;
+    default: return '';
+  }
+}
+
+async function createView(el, search) {
   const mmmElContainer = createTag('div', { class: 'mmm-container max-width-12-desktop' });
   const mmmEl = createTag('dl', {
-    class: 'mmm foreground',
+    class: `mmm foreground ${addVariantClass()}`,
     id: 'mmm',
     role: 'presentation',
   });
   mmmElContainer.append(mmmEl);
 
-  const url = isReport ? API_URLS.report : API_URLS.pageList;
-  const response = await fetchData(
-    url,
-    DATA_TYPE.JSON,
-    {
-      method: 'POST',
-      body: JSON.stringify(search ?? SEARCH_INITIAL_VALUES()),
-    },
-  );
+  let url = '';
+  let method = 'POST';
+  let body = JSON.stringify(search ?? SEARCH());
+  switch (true) {
+    case isReport: url = API_URLS.report; break;
+    case isMetadataLookup: {
+      const rngString = Math.random().toString(36).substring(2, 10);
+      url = `${TARGET_METADATA_OPTIONS[SEARCH().selectedRepo].metadata}?limit=10000&r=${rngString}`;
+      method = 'GET';
+      body = null;
+      break;
+    }
+    default: url = API_URLS.pageList;
+  }
+
+  const response = await fetch(url, {
+    method,
+    body,
+  }).then((res) => res.json())
+    .catch((error) => {
+      // eslint-disable-next-line no-console
+      console.error('Error fetching data:', error);
+      return { result: [] };
+    });
+
   if (isReport) {
     createReport(mmmEl, response);
+  } else if (isMetadataLookup) {
+    metadataLookupData = response?.data;
+    createMetadataLookup(mmmEl);
   } else {
-    response.result?.map((page) => createButtonDetailsPair(mmmEl, page));
+    creastePageList(mmmEl, response);
   }
-  const section = createTag('div', { id: 'mep-section', class: 'section' });
-  const main = document.querySelector('main');
   el.replaceWith(mmmElContainer);
-  main.append(section);
-  createPaginationEl({
-    data: response,
-    el: mmmElContainer,
-  });
-  paginationEl?.classList.remove('mmm-hide');
-  handlePaginationClicks();
-  handlePaginationDropdownChange();
+  if (!isMetadataLookup) {
+    createPaginationEl({
+      data: response,
+      el: mmmElContainer,
+    });
+    handlePaginationClicks();
+    handlePaginationDropdownChange();
+  }
   if (isReport) createReportButton();
 }
 
@@ -657,18 +881,29 @@ function subscribeToSearchCriteriaChanges() {
 
     const searchCriteria = JSON.stringify(el?.detail || {});
     if (cachedSearchCriteria !== searchCriteria) {
-      createPageList(document.querySelector('.mmm').parentNode, el.detail);
+      createView(document.querySelector('.mmm').parentNode, el.detail);
       cachedSearchCriteria = searchCriteria;
     }
   });
 }
 
+function handleRepoChange() {
+  setLocalStorageFilter({
+    selectedRepo: document.querySelector('#mmm-metadata-lookup-repo-cc').value,
+    metadataFilter: '',
+  });
+  createView(document.querySelector('.mmm').parentNode);
+}
+
 export default async function init(el) {
-  isReport = el.classList.contains('target-cleanup');
-  mmmPageVer = isReport ? GRID_FORMAT.report : GRID_FORMAT.base;
-  await createPageList(el);
-  createSearchRows();
-  createForm(el);
+  isReport = el.classList.contains(VARIANTS.targetCleanup);
+  mmmPageVer = isReport ? GRID_FORMAT.targetCleanUp : GRID_FORMAT.base;
+  isMetadataLookup = el.classList.contains(VARIANTS.metadataLookup);
+  await createView(el);
+  if (!isMetadataLookup) {
+    createSearchRows();
+    createFiltersForm(el);
+  }
   subscribeToSearchCriteriaChanges();
   loadStyle('/libs/features/personalization/preview.css');
 }

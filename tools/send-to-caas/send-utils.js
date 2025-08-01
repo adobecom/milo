@@ -1,6 +1,6 @@
 import getUuid from '../../libs/utils/getUuid.js';
 import { getMetadata } from '../../libs/utils/utils.js';
-import { LANGS, LOCALES } from '../../libs/blocks/caas/utils.js';
+import { LANGS, LOCALES, getPageLocale, getGrayboxExperienceId } from '../../libs/blocks/caas/utils.js';
 
 const CAAS_TAG_URL = 'https://www.adobe.com/chimera-api/tags';
 const HLX_ADMIN_STATUS = 'https://admin.hlx.page/status';
@@ -293,8 +293,25 @@ const isPagePublished = async () => {
   return false;
 };
 
+const getLanguageFirstCountryAndLang = async (path) => {
+  const localeArr = path.split('/');
+  const langStr = LANGS[localeArr[1]] ?? LANGS[''] ?? 'en';
+  let countryStr = LOCALES[localeArr[2]] ?? 'xx';
+  if (typeof countryStr === 'object') {
+    countryStr = countryStr.ietf?.split('-')[1] ?? 'xx';
+  }
+  return {
+    country: countryStr,
+    lang: langStr,
+  };
+};
+
 const getBulkPublishLangAttr = async (options) => {
   let { getLocale } = getConfig();
+  if (options.languageFirst) {
+    const { country, lang } = await getLanguageFirstCountryAndLang(options.prodUrl);
+    return `${lang}-${country}`;
+  }
   if (!getLocale) {
     // This is only imported from the bulk publisher so there is no dependency cycle
     // eslint-disable-next-line import/no-cycle
@@ -308,19 +325,7 @@ const getBulkPublishLangAttr = async (options) => {
 const getCountryAndLang = async (options) => {
   const langFirst = getMetadata('langfirst');
   if (langFirst) {
-    const localeArr = window.location.pathname.split('/');
-    const langStr = (localeArr.length > 1) ? LANGS[localeArr[1]] || LANGS[''] : 'en';
-    let countryStr = (localeArr.length > 2) ? LOCALES[localeArr[2]] || 'xx' : 'xx';
-    if (typeof countryStr === 'object') {
-      const { ietf } = countryStr;
-      const localeAttributes = ietf?.split('-');
-      const [, c = 'xx'] = localeAttributes;
-      countryStr = c;
-    }
-    return {
-      country: countryStr,
-      lang: langStr,
-    };
+    return getLanguageFirstCountryAndLang(window.location.pathname);
   }
   /* c8 ignore next */
   const langStr = window.location.pathname.includes('/tools/send-to-caas/bulkpublisher')
@@ -359,7 +364,31 @@ const parseCardMetadata = () => {
 function checkCtaUrl(s, options, i) {
   if (s?.trim() === '') return '';
   const url = s || options.prodUrl || window.location.origin + window.location.pathname;
+  if (url.includes('/tools/send-to-caas/bulkpublisher.html')) return '';
   return checkUrl(url, `Invalid Cta${i}Url: ${url}`);
+}
+
+/**
+ * Optionally injects the page locale into a CTA URL if configured via the metadata field.
+ * @param {string|object} val - The result from checkCtaUrl (either URL string or error object).
+ * @returns {string|object} - Possibly modified URL string or original value.
+ */
+function localizeCtaUrl(val) {
+  if (typeof val !== 'string' || val.trim() === '') return val;
+  try {
+    const injectFlag = (getMetadata('caaslocaleinject') || '').toLowerCase() === 'true';
+    const pageLocale = getPageLocale(window.location.pathname);
+    if (!injectFlag || !pageLocale) return val;
+    const urlObj = new URL(val, window.location.origin);
+    if (!getPageLocale(urlObj.pathname)) {
+      // prepend locale segment to the URL path (pathname always starts with '/')
+      urlObj.pathname = `/${pageLocale}${urlObj.pathname}`;
+      return urlObj.toString();
+    }
+  } catch {
+    // ignore and return original value
+  }
+  return val;
 }
 
 /** card metadata props - either a func that computes the value or
@@ -411,12 +440,12 @@ const props = {
   cta1style: 0,
   cta1target: 0,
   cta1text: 0,
-  cta1url: (s, options) => checkCtaUrl(s, options, 1),
+  cta1url: (s, options) => localizeCtaUrl(checkCtaUrl(s, options, 1)),
   cta2icon: (s) => checkUrl(s, `Invalid Cta2Icon url: ${s}`),
   cta2style: 0,
   cta2target: 0,
   cta2text: 0,
-  cta2url: (s) => checkCtaUrl(s, {}, 2),
+  cta2url: (s) => localizeCtaUrl(checkCtaUrl(s, {}, 2)),
   description: (s) => s || getMetaContent('name', 'description') || '',
   details: 0,
   entityid: (_, options) => {
@@ -462,7 +491,24 @@ const props = {
 };
 
 // Map the flat props into the structure needed by CaaS
-const getCaasProps = (p) => {
+const getCaasProps = (p, pageUrl = null) => {
+  // Get graybox experience ID if on graybox domain
+  let grayboxExperienceId = null;
+
+  if (pageUrl) {
+    // Extract hostname and pathname from the provided URL
+    try {
+      const url = new URL(pageUrl);
+      grayboxExperienceId = getGrayboxExperienceId(url.hostname, url.pathname);
+    } catch (e) {
+      // If URL parsing fails, fall back to window.location
+      grayboxExperienceId = getGrayboxExperienceId();
+    }
+  } else {
+    // Fall back to window.location if no URL provided
+    grayboxExperienceId = getGrayboxExperienceId();
+  }
+
   const caasProps = {
     entityId: p.entityid,
     contentId: p.contentid,
@@ -530,6 +576,7 @@ const getCaasProps = (p) => {
     },
     origin: p.origin,
     ...(p.arbitrary?.length && { arbitrary: p.arbitrary }),
+    ...(grayboxExperienceId && { gbExperienceID: grayboxExperienceId }),
   };
   return caasProps;
 };

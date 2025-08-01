@@ -2,6 +2,7 @@ let chatInitialized = false;
 let loadScript;
 let loadStyle;
 let getMetadata;
+let jarvisSecMeta = null;
 
 const isSilentEvent = (data) => (data['event.workflow'] === 'init' && data['event.type'] === 'request')
   || (data['event.workflow'] === 'Chat' && data['event.type'] === 'load' && data['event.subtype'] === 'window');
@@ -219,8 +220,8 @@ const startInitialization = async (config, event, onDemand) => {
   }
 
   window.AdobeMessagingExperienceClient.initialize({
-    appid: getMetadata('jarvis-surface-id') || config.jarvis.id,
-    appver: getMetadata('jarvis-surface-version') || config.jarvis.version,
+    appid: getMetadata('jarvis-surface-id') || config.jarvis.id || jarvisSecMeta?.['jarvis-surface-id'],
+    appver: getMetadata('jarvis-surface-version') || config.jarvis.version || jarvisSecMeta?.['jarvis-surface-version'],
     env: config.env.name !== 'prod' ? 'stage' : 'prod',
     clientId: window.adobeid?.client_id,
     accessToken: window.adobeIMS?.isSignedInUser()
@@ -245,7 +246,18 @@ const startInitialization = async (config, event, onDemand) => {
       },
       initErrorCallback: () => {},
       chatStateCallback: () => {},
-      getContextCallback: () => {},
+      getContextCallback: () => {
+        let appId; let appVer;
+        if (jarvisSecMeta) {
+          appId = jarvisSecMeta['jarvis-surface-id'];
+          appVer = jarvisSecMeta['jarvis-surface-version'];
+          jarvisSecMeta = null;
+        }
+        return {
+          appid: appId || getMetadata('jarvis-surface-id') || config.jarvis.id,
+          appver: appVer || getMetadata('jarvis-surface-version') || config.jarvis.version,
+        };
+      },
       signInProvider: () => window.adobeIMS?.signIn(config.signInContext),
       analyticsCallback: (eventData) => {
         if (!window.alloy_all || !window.digitalData) return;
@@ -280,6 +292,20 @@ const startInitialization = async (config, event, onDemand) => {
   });
 };
 
+let eventListenerAdded = false;
+const addEventListeners = () => {
+  if (eventListenerAdded) return;
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') {
+      const tooltipMessage = document.querySelector('.adbmsg-tooltip');
+      if (tooltipMessage && tooltipMessage.style.display !== 'none') {
+        tooltipMessage.style.display = 'none';
+      }
+    }
+  });
+  eventListenerAdded = true;
+};
+
 const initJarvisChat = async (
   config,
   loadScriptFunction,
@@ -296,16 +322,27 @@ const initJarvisChat = async (
   const onDemand = onDemandMeta ? onDemandMeta === 'on' : config.jarvis.onDemand;
 
   document.addEventListener('click', async (event) => {
-    if (!event.target.closest('[href*="#open-jarvis-chat"]')) return;
+    const jarvisLink = event.target.closest('[href*="#open-jarvis-chat"]');
+    if (!jarvisLink) return;
+    if (event.target.closest('.global-footer')) {
+      try {
+        const jarvisAttr = jarvisLink.getAttribute('data-jarvis-config');
+        jarvisSecMeta = jarvisAttr ? JSON.parse(jarvisAttr) : null;
+      } catch (e) {
+        // do nothing & use default config
+      }
+    }
     event.preventDefault();
     if (onDemand && !chatInitialized) {
       await startInitialization(config, event, onDemand);
+      addEventListeners();
     } else {
       openChat(event);
     }
   });
   if (!onDemand) {
     await startInitialization(config);
+    addEventListeners();
   }
 };
 

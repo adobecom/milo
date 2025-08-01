@@ -53,8 +53,9 @@ const closeSvg = `<svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" wid
     </clipPath>
   </defs>
 </svg>`;
-
+const selectedSelector = '[aria-selected="true"], [aria-checked="true"]';
 let iconographyLoaded = false;
+const focusableNotificationElements = 'button, a[href], [tabindex]:not([tabindex="-1"])';
 
 function getOpts(el) {
   const optRows = [...el.querySelectorAll(':scope > div:nth-of-type(n+3)')];
@@ -74,6 +75,18 @@ function getBlockData(el) {
   return { fontSizes, options: { ...getOpts(el) } };
 }
 
+export function findFocusableInSection(section, selSelector, focSelector) {
+  if (!section) return null;
+
+  const selectedElement = section.querySelector(selSelector);
+  if (selectedElement) return selectedElement;
+
+  const focusableElements = [...section.querySelectorAll(focSelector)];
+  return focusableElements.length > 0
+    ? focusableElements[focusableElements.length - 1]
+    : null;
+}
+
 function wrapCopy(foreground) {
   const texts = foreground.querySelectorAll('.text');
   if (!texts) return;
@@ -86,21 +99,83 @@ function wrapCopy(foreground) {
   });
 }
 
+const closeBanner = (el) => {
+  let isSticky = false;
+  let rect;
+  const sectionElement = el.closest('.section');
+  const isFocusable = el.classList.contains('focus');
+
+  if (sectionElement?.className.includes('sticky')) {
+    isSticky = true;
+    rect = sectionElement.getBoundingClientRect();
+  }
+  el.focusTrapCleanup?.();
+
+  if (isFocusable) {
+    document.body.classList.remove('mobile-disable-scroll');
+    sectionElement?.querySelector('.notification-curtain')?.remove();
+  }
+
+  el.removeAttribute('aria-modal');
+  el.removeAttribute('role');
+  el.style.display = 'none';
+  sectionElement?.classList.add('close-sticky-section');
+
+  if (isFocusable) {
+    setTimeout(() => {
+      const tempFocus = createTag('div', { class: 'temp-focus' });
+      tempFocus.tabIndex = 0;
+      document.body.insertBefore(tempFocus, document.body.firstChild);
+      tempFocus.focus();
+      document.body.removeChild(tempFocus);
+    });
+  }
+
+  if (isSticky && !isFocusable) {
+    setTimeout(() => {
+      let focusTarget;
+      const allFocusableElements = 'button, a[href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
+      const elementAtPosition = document.elementFromPoint(rect.left, rect.top);
+      const stickySection = elementAtPosition.closest('.section');
+      focusTarget = findFocusableInSection(stickySection, selectedSelector, allFocusableElements);
+
+      let currentSection = sectionElement?.previousElementSibling;
+      while (currentSection && !focusTarget) {
+        focusTarget = findFocusableInSection(
+          currentSection,
+          selectedSelector,
+          allFocusableElements,
+        );
+        if (!focusTarget) currentSection = currentSection.previousElementSibling;
+      }
+
+      const header = document.querySelector('header');
+      if (!focusTarget && header) {
+        const headerFocusable = [...header.querySelectorAll(allFocusableElements)];
+        focusTarget = headerFocusable[headerFocusable.length - 1];
+      }
+
+      if (focusTarget && document.activeElement.tagName === 'BODY') focusTarget.focus({ preventScroll: true });
+    }, 2000);
+  }
+
+  setTimeout(() => {
+    const liveRegion = document.querySelector(`.notification-visibility-hidden[data-notification-id="${el.dataset.notificationId}"]`);
+    if (liveRegion) liveRegion.textContent = 'Banner closed';
+  }, 100);
+
+  document.dispatchEvent(new CustomEvent('milo:sticky:closed'));
+};
+
 function addCloseAction(el, btn) {
   btn.addEventListener('click', (e) => {
     if (btn.nodeName === 'A') e.preventDefault();
-    el.style.display = 'none';
-    el.closest('.section')?.classList.add('close-sticky-section');
-    if (el.classList.contains('focus')) {
-      document.body.classList.remove('mobile-disable-scroll');
-      el.closest('.section').querySelector('.notification-curtain').remove();
-    }
-    document.dispatchEvent(new CustomEvent('milo:sticky:closed'));
+    closeBanner(el);
   });
 }
 
 function decorateClose(el) {
-  const btn = createTag('button', { 'aria-label': 'close', class: 'close' }, closeSvg);
+  const btn = createTag('button', { 'aria-label': 'Close Promo Banner', class: 'close' }, closeSvg);
   addCloseAction(el, btn);
   el.appendChild(btn);
 }
@@ -144,6 +219,51 @@ function curtainCallback(el) {
   const curtain = createTag('div', { class: 'notification-curtain' });
   document.body.classList.add('mobile-disable-scroll');
   el.insertAdjacentElement('afterend', curtain);
+  el.setAttribute('role', 'dialog');
+  el.setAttribute('aria-modal', 'true');
+
+  const focusableElements = [...el.querySelectorAll(focusableNotificationElements)];
+  const firstFocusable = focusableElements[0];
+  const lastFocusable = focusableElements[focusableElements.length - 1];
+
+  if (!document.querySelector('.dialog-modal') && firstFocusable) firstFocusable.focus();
+
+  const handleKeyDown = (e) => {
+    if (e.key !== 'Tab') {
+      if (e.key === 'Escape') closeBanner(el);
+      return;
+    }
+
+    if (e.shiftKey && document.activeElement === firstFocusable) {
+      e.preventDefault();
+      lastFocusable.focus();
+      return;
+    }
+
+    if (!e.shiftKey && document.activeElement === lastFocusable) {
+      e.preventDefault();
+      firstFocusable.focus();
+    }
+  };
+
+  const handleFocusOut = (e) => {
+    if (!el.contains(e.relatedTarget) && firstFocusable) firstFocusable.focus();
+  };
+
+  const handleCurtainClick = (e) => { if (e.target === curtain) closeBanner(el); };
+
+  el.addEventListener('keydown', handleKeyDown);
+  el.addEventListener('focusout', handleFocusOut);
+  curtain.addEventListener('click', handleCurtainClick);
+  window.addEventListener('milo:modal:closed:notification', () => {
+    el.querySelector(focusableNotificationElements)?.focus();
+  });
+
+  el.focusTrapCleanup = () => {
+    el.removeEventListener('keydown', handleKeyDown);
+    el.removeEventListener('focusout', handleFocusOut);
+    curtain.removeEventListener('click', handleCurtainClick);
+  };
 }
 
 function decorateSplitList(el, listContent) {
@@ -199,6 +319,43 @@ async function decorateForegroundText(el, container) {
   if (iconArea?.textContent.trim()) await decorateLockup(iconArea, el);
 }
 
+function toolTipPosition(el, allViewPorts) {
+  const elIndex = [...allViewPorts].indexOf(el);
+  const isRtl = document.documentElement.getAttribute('dir') === 'rtl';
+  const isTablet = allViewPorts.length === 3 && elIndex === 1;
+  const isMobile = allViewPorts.length > 1 && elIndex === 0;
+  if (isMobile) el.classList.add('notification-pill-mobile');
+  if ((isRtl && isTablet) || (isMobile && !isRtl)) return 'right';
+
+  return 'left';
+}
+
+async function addTooltip(el) {
+  const allViewPorts = el.querySelectorAll('.foreground > div');
+  const desktopView = [...allViewPorts].pop();
+  const desktopContentText = desktopView.querySelector('.copy-wrap')?.textContent.trim();
+  const toolTipIcons = [];
+  allViewPorts.forEach((viewPortEl) => {
+    if (viewPortEl === desktopView || !desktopContentText) return;
+    const textContainer = viewPortEl.querySelector('.copy-wrap');
+    const viewPortTextContent = textContainer?.textContent.trim();
+    if (viewPortTextContent === desktopContentText) return;
+    const appendTarget = textContainer?.lastElementChild ?? viewPortEl.firstElementChild;
+    const tooltipSpan = createTag('span', { class: 'icon icon-tooltip' });
+    const iconWrapper = createTag('em', {}, `${toolTipPosition(viewPortEl, allViewPorts)}|${desktopContentText}`);
+    iconWrapper.appendChild(tooltipSpan);
+    toolTipIcons.push(tooltipSpan);
+    appendTarget?.appendChild(iconWrapper);
+  });
+
+  if (!toolTipIcons.length) return;
+
+  const config = getConfig();
+  const { default: loadIcons } = await import('../../features/icons/icons.js');
+  loadStyle(`${base}/features/icons/icons.css`);
+  loadIcons(toolTipIcons, config);
+}
+
 async function decorateLayout(el) {
   const [background, ...rest] = el.querySelectorAll(':scope > div');
   const foreground = rest.pop();
@@ -221,6 +378,8 @@ async function decorateLayout(el) {
 
 export default async function init(el) {
   el.classList.add('con-block');
+  el.setAttribute('aria-label', 'Promo Banner');
+  el.setAttribute('role', 'region');
   const { fontSizes, options } = getBlockData(el);
   const blockText = await decorateLayout(el);
   decorateBlockText(blockText, fontSizes);
@@ -231,6 +390,17 @@ export default async function init(el) {
   el.querySelectorAll('a:not([class])').forEach((staticLink) => staticLink.classList.add('static'));
   if (el.matches(`:is(.${ribbon}, .${pill})`)) {
     wrapCopy(blockText);
+    if (el.matches(`.${pill}`)) addTooltip(el);
     decorateMultiViewport(el);
   }
+
+  const notificationId = `notification-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`;
+  el.dataset.notificationId = notificationId;
+  document.body.appendChild(createTag('div', {
+    class: 'notification-visibility-hidden',
+    'aria-live': 'polite',
+    role: 'status',
+    tabindex: '-1',
+    'data-notification-id': notificationId,
+  }, ''));
 }
