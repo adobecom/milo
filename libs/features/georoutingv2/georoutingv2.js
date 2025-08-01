@@ -260,7 +260,7 @@ function openPicker(button, locales, country, event, dir, currentPage) {
   const list = createTag('ul', { class: 'picker', dir });
   locales.forEach((l) => {
     const lang = config.locales[l.prefix]?.ietf ?? '';
-    const a = createTag('a', { lang, href: l.url }, `${country} - ${l.language}`);
+    const a = createTag('a', { lang, href: l.url || '/' }, `${country} - ${l.language}`);
     decorateForOnLinkClick(a, l.prefix, currentPage.prefix);
     const li = createTag('li', {}, a);
     list.appendChild(li);
@@ -322,7 +322,7 @@ function buildContent(currentPage, locale, geoData, locales) {
     });
     mainAction.addEventListener('click', openPickerHandler);
   } else {
-    mainAction.href = locale.url;
+    mainAction.href = locale.url || '/';
     decorateForOnLinkClick(mainAction, locale.prefix, currentPage.prefix);
   }
 
