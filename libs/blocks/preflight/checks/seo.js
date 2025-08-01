@@ -1,10 +1,33 @@
-import { STATUS, SEO_TITLES } from './constants.js';
+import { STATUS, SEO_TITLES, SEO_IDS } from './constants.js';
 import getServiceConfig from '../../../utils/service-config.js';
+import { getConfig, updateConfig } from '../../../utils/utils.js';
 
 const KNOWN_BAD_URLS = ['news.adobe.com'];
 const SPIDY_URL_FALLBACK = 'https://spidy.corp.adobe.com';
 
 const linksCache = new Map();
+
+// Wait for footer using onFooterReady callback
+function waitForFooter() {
+  return new Promise((resolve) => {
+    const config = getConfig();
+    if (config.footerReady) {
+      resolve();
+      return;
+    }
+
+    const originalCallback = config.onFooterReady;
+
+    config.onFooterReady = async () => {
+      if (originalCallback) await originalCallback();
+      await window.milo?.deferredPromise;
+      config.footerReady = true;
+      resolve();
+    };
+
+    updateConfig(config);
+  });
+}
 
 export function checkH1s(area) {
   const h1s = area.querySelectorAll('h1');
@@ -23,7 +46,8 @@ export function checkH1s(area) {
   }
 
   return {
-    title: SEO_TITLES.H1Count,
+    id: SEO_IDS.h1Count,
+    title: SEO_TITLES.h1Count,
     status,
     description,
   };
@@ -46,7 +70,8 @@ export function checkTitle(area) {
   }
 
   return {
-    title: SEO_TITLES.TitleSize,
+    id: SEO_IDS.title,
+    title: SEO_TITLES.title,
     status,
     description,
   };
@@ -81,7 +106,8 @@ export async function checkCanon(area) {
   }
 
   return {
-    title: SEO_TITLES.Canonical,
+    id: SEO_IDS.canonical,
+    title: SEO_TITLES.canonical,
     status,
     description,
   };
@@ -110,7 +136,8 @@ export async function checkDescription(area) {
   }
 
   return {
-    title: SEO_TITLES.MetaDescription,
+    id: SEO_IDS.description,
+    title: SEO_TITLES.description,
     status,
     description,
   };
@@ -130,7 +157,8 @@ export async function checkBody(area) {
   }
 
   return {
-    title: SEO_TITLES.BodySize,
+    id: SEO_IDS.bodySize,
+    title: SEO_TITLES.bodySize,
     status,
     description,
   };
@@ -151,7 +179,8 @@ export async function checkLorem(area) {
   }
 
   return {
-    title: SEO_TITLES.Lorem,
+    id: SEO_IDS.loremIpsum,
+    title: SEO_TITLES.loremIpsum,
     status,
     description,
   };
@@ -165,7 +194,7 @@ function makeGroups(arr, n = 20) {
 
 export function connectionError() {
   return {
-    title: SEO_TITLES.Links,
+    title: SEO_TITLES.links,
     status: STATUS.LIMBO,
     description: 'A VPN connection is required to use the link check service. Please turn on VPN and refresh the page.',
     details: { badLinks: [] },
@@ -287,7 +316,8 @@ export async function checkLinks({ area, urlHash, envName }) {
     : 'Links are valid.';
 
   const result = {
-    title: SEO_TITLES.Links,
+    id: SEO_IDS.links,
+    title: SEO_TITLES.links,
     status,
     description,
     details: { badLinks },
@@ -308,6 +338,9 @@ export function runChecks({ url, area = document, envName }) {
     checkDescription(area),
     checkBody(area),
     checkLorem(area),
-    checkLinks({ area, url, envName }),
+    (async () => {
+      await waitForFooter();
+      return checkLinks({ area, url, envName });
+    })(),
   ];
 }
