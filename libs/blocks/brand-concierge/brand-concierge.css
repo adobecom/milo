@@ -48,6 +48,7 @@
   border: none;
   border-radius: 12px;
   cursor: pointer;
+  font-family: inherit;
   padding: 0;
   width: 100%;
 }
@@ -146,6 +147,7 @@
   background: transparent;
   border: none;
   flex: 1;
+  font-family: inherit;
   font-size: var(--type-body-m-size);
   line-height: var(--bc-input-height);
   outline: none;
@@ -182,6 +184,7 @@
 }
 
 .bc-legal {
+  color: #4B4B4B;
   font-size: var(--type-body-xxs-size);
   line-height: var(--type-body-xxs-lh);
   margin: 0;

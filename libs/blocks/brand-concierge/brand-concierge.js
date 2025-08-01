@@ -94,6 +94,13 @@ function decorateInput(el, input) {
     }
   });
 
+  fieldInput.addEventListener('keyup', (e) => {
+    if (e.key === 'Enter') {
+      if (!fieldInput.value) return;
+      openChatModal(fieldInput.value);
+    }
+  });
+
   fieldButton.addEventListener('click', () => {
     if (!fieldInput.value) return;
     openChatModal(fieldInput.value);
