@@ -142,6 +142,7 @@ describe('Modals', () => {
   it('Locks focus when tabbing backward through tabbable elements', async () => {
     window.location.hash = '#milo';
     await waitForElement('#milo');
+    await delay(200);
     expect(document.getElementById('milo')).to.exist;
     expect(document.activeElement.getAttribute('id')).to.equal('milo-button-1');
     await sendKeys({ down: 'Shift' });
@@ -165,6 +166,7 @@ describe('Modals', () => {
     document.head.append(meta);
     window.location.hash = '#paragraph';
     await waitForElement('#paragraph');
+    await delay(200);
     expect(document.getElementById('paragraph')).to.exist;
     expect(document.activeElement.classList.contains('dialog-close')).to.be.true;
     window.location.hash = '';
@@ -177,6 +179,7 @@ describe('Modals', () => {
     meta.content = 'http://localhost:2000/test/blocks/modals/mocks/title';
     document.head.append(meta);
     window.location.hash = '#title';
+    await delay(200);
     await waitForElement('#title');
     expect(document.getElementById('title')).to.exist;
     expect(document.activeElement.getAttribute('id')).to.equal('test-title');

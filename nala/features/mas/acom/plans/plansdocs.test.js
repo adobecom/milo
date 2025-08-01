@@ -47,7 +47,7 @@ test.describe('ACOM MAS cards feature test suite', () => {
       await expect(await acomPage.getSeeAllPlansLink(data.id)).toHaveText(data.seeAllPlansText);
       // await expect(await acomPage.getStockCheckbox(data.id)).toContainText(data.stockCheckboxLabel);
       await expect(await acomPage.getCardPrice(data.id)).toBeVisible();
-      await expect(await acomPage.getCardPrice(data.id)).toContainText(data.price);
+      await expect(await acomPage.getCardPrice(data.id)).toContainText(new RegExp(data.price));
       await expect(await acomPage.getCardPromoText(data.id)).toBeVisible();
       await expect(await acomPage.getCardPromoText(data.id)).toContainText(data.promoText);
       await expect(await acomPage.getCardCTA(data.id)).toBeVisible();

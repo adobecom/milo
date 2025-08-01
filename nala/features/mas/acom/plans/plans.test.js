@@ -38,8 +38,8 @@ test.describe('MAS Plans Page test suite', () => {
       await expect(await masPlans.getCardTitle(data.cards[0].id)).toHaveText(data.cards[0].title);
       await expect(await masPlans.getCardTitle(data.cards[1].id)).toHaveText(data.cards[1].title);
 
-      await expect(await masPlans.getCardPrice(data.cards[0].id)).toContainText(data.cards[0].price);
-      await expect(await masPlans.getCardPrice(data.cards[1].id)).toContainText(data.cards[1].price);
+      await expect(await masPlans.getCardPrice(data.cards[0].id)).toContainText(new RegExp(data.cards[0].price));
+      await expect(await masPlans.getCardPrice(data.cards[1].id)).toContainText(new RegExp(data.cards[1].price));
 
       await expect(await masPlans.getCardPrice(data.cards[0].id)).toContainText(data.cards[0].abmLabel);
       await expect(await masPlans.getCardPrice(data.cards[1].id)).toContainText(data.cards[1].abmLabel);

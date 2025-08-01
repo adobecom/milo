@@ -47,7 +47,7 @@ test.describe('CCD Merchcard feature test suite', () => {
       await expect(await CCD.getCardDescription(data.id, 'suggested')).toContainText(data.description);
       await expect(await CCD.getCardLegalLink(data.id, 'suggested')).not.toBeVisible();
       await expect(await CCD.getCardPrice(data.id, 'suggested')).toBeVisible();
-      await expect(await CCD.getCardPrice(data.id, 'suggested')).toContainText(data.price);
+      await expect(await CCD.getCardPrice(data.id, 'suggested')).toContainText(new RegExp(data.price));
       await expect(await CCD.getCardCTA(data.id, 'suggested')).toBeVisible();
       await expect(await CCD.getCardCTA(data.id, 'suggested')).toHaveAttribute('class', /primary/);
       await expect(await CCD.getCardCTA(data.id, 'suggested')).toHaveAttribute('data-wcs-osi', data.osi);
@@ -113,8 +113,8 @@ test.describe('CCD Merchcard feature test suite', () => {
       await expect(await CCD.getCardLegalLink(data.id, 'suggested')).toHaveAttribute('data-analytics-id', data.linkAnalyticsId);
       await expect(await CCD.getCardLegalLink(data.id, 'suggested')).toHaveAttribute('daa-ll', data.linkDaaLL);
       await expect(await CCD.getCardPrice(data.id, 'suggested')).toBeVisible();
-      await expect(await CCD.getCardPrice(data.id, 'suggested')).toContainText(data.price);
-      await expect(await CCD.getCardPrice(data.id, 'suggested')).toContainText(data.strikethroughPrice);
+      await expect(await CCD.getCardPrice(data.id, 'suggested')).toContainText(new RegExp(data.price));
+      await expect(await (await CCD.getCardPrice(data.id, 'suggested')).locator(CCD.priceStrikethrough)).toContainText(new RegExp(data.strikethroughPrice));
       await expect(await CCD.getCardPrice(data.id, 'suggested')).toContainText(data.abmLabel);
       await expect(await CCD.getCardCTA(data.id, 'suggested')).toBeVisible();
       await expect(await CCD.getCardCTA(data.id, 'suggested')).toHaveAttribute('class', /primary/);
@@ -182,7 +182,7 @@ test.describe('CCD Merchcard feature test suite', () => {
       await expect(await CCD.getCardDescription(data.id, 'suggested')).toContainText(data.description);
       await expect(await CCD.getCardLegalLink(data.id, 'suggested')).not.toBeVisible();
       await expect(await CCD.getCardPrice(data.id, 'suggested')).toBeVisible();
-      await expect(await CCD.getCardPrice(data.id, 'suggested')).toContainText(data.price);
+      await expect(await CCD.getCardPrice(data.id, 'suggested')).toContainText(new RegExp(data.price));
       expect(await (await CCD.getCardPrice(data.id, 'suggested')).locator('.price-unit-type').innerText()).not.toBe('');
       await expect(await CCD.getCardCTA(data.id, 'suggested')).toBeVisible();
       await expect(await CCD.getCardCTA(data.id, 'suggested')).toHaveAttribute('class', /primary/);
@@ -244,7 +244,7 @@ test.describe('CCD Merchcard feature test suite', () => {
       await expect(await CCD.getCardDescription(data.id, 'suggested')).toContainText(data.description);
       await expect(await CCD.getCardLegalLink(data.id, 'suggested')).not.toBeVisible();
       await expect(await CCD.getCardPrice(data.id, 'suggested')).toBeVisible();
-      await expect(await CCD.getCardPrice(data.id, 'suggested')).toContainText(data.price);
+      await expect(await CCD.getCardPrice(data.id, 'suggested')).toContainText(new RegExp(data.price));
       await expect(await CCD.getCardCTA(data.id, 'suggested')).toBeVisible();
       await expect(await CCD.getCardCTA(data.id, 'suggested')).toHaveAttribute('class', /primary/);
       await expect(await CCD.getCardCTA(data.id, 'suggested')).toContainText(data.cta);
@@ -309,7 +309,7 @@ test.describe('CCD Merchcard feature test suite', () => {
       await expect(await CCD.getCardLegalLink(data.id, 'suggested')).toContainText(data.linkText);
       await expect(await CCD.getCardLegalLink(data.id, 'suggested')).toHaveAttribute('data-analytics-id', /.*/);
       await expect(await CCD.getCardPrice(data.id, 'suggested')).toBeVisible();
-      await expect(await CCD.getCardPrice(data.id, 'suggested')).toContainText(data.price);
+      await expect(await CCD.getCardPrice(data.id, 'suggested')).toContainText(new RegExp(data.price));
       await expect(await CCD.getCardPrice(data.id, 'suggested')).toContainText('Starting at');
       await expect(await CCD.getCardCTA(data.id, 'suggested')).toBeVisible();
       await expect(await CCD.getCardCTA(data.id, 'suggested')).toHaveAttribute('class', /primary/);
@@ -374,7 +374,7 @@ test.describe('CCD Merchcard feature test suite', () => {
       await expect(await CCD.getCardDescription(data.id, 'suggested')).toContainText(data.description);
       await expect(await CCD.getCardLegalLink(data.id, 'suggested')).not.toBeVisible();
       await expect(await CCD.getCardPrice(data.id, 'suggested')).toBeVisible();
-      await expect(await CCD.getCardPrice(data.id, 'suggested')).toContainText(data.price);
+      await expect(await CCD.getCardPrice(data.id, 'suggested')).toContainText(new RegExp(data.price));
       expect(await (await CCD.getCardPrice(data.id, 'suggested')).locator('.price-unit-type').innerText()).not.toBe('');
       await expect(await CCD.getCardCTA(data.id, 'suggested')).toBeVisible();
       await expect(await CCD.getCardCTA(data.id, 'suggested')).toHaveAttribute('class', /primary/);
@@ -438,7 +438,7 @@ test.describe('CCD Merchcard feature test suite', () => {
       await expect(await CCD.getCardLegalLink(data.id, 'suggested')).toContainText(data.linkText);
       await expect(await CCD.getCardLegalLink(data.id, 'suggested')).toHaveAttribute('data-analytics-id', /.*/);
       await expect(await CCD.getCardPrice(data.id, 'suggested')).toBeVisible();
-      await expect(await CCD.getCardPrice(data.id, 'suggested')).toContainText(data.price);
+      await expect(await CCD.getCardPrice(data.id, 'suggested')).toContainText(new RegExp(data.price));
       await expect(await CCD.getCardCTA(data.id, 'suggested')).toBeVisible();
       await expect(await CCD.getCardCTA(data.id, 'suggested')).toHaveAttribute('class', /primary/);
       await expect(await CCD.getCardCTA(data.id, 'suggested')).toContainText(data.cta);
@@ -503,7 +503,7 @@ test.describe('CCD Merchcard feature test suite', () => {
       await expect(await CCD.getCardDescription(data.id, 'suggested')).toContainText(data.description);
       await expect(await CCD.getCardLegalLink(data.id, 'suggested')).not.toBeVisible();
       await expect(await CCD.getCardPrice(data.id, 'suggested')).toBeVisible();
-      await expect(await CCD.getCardPrice(data.id, 'suggested')).toContainText(data.price);
+      await expect(await CCD.getCardPrice(data.id, 'suggested')).toContainText(new RegExp(data.price));
       expect(await (await CCD.getCardPrice(data.id, 'suggested')).locator('.price-unit-type').innerText()).not.toBe('');
       await expect(await CCD.getCardCTA(data.id, 'suggested')).toBeVisible();
       await expect(await CCD.getCardCTA(data.id, 'suggested')).toHaveAttribute('class', /primary/);
@@ -630,7 +630,7 @@ test.describe('CCD Merchcard feature test suite', () => {
       await expect(await CCD.getCardDescription(data.id, 'slice')).toContainText(data.description);
       await expect(await CCD.getCardLegalLink(data.id, 'slice')).not.toBeVisible();
       await expect(await CCD.getCardPrice(data.id, 'slice')).toBeVisible();
-      await expect(await CCD.getCardPrice(data.id, 'slice')).toContainText(data.price);
+      await expect(await CCD.getCardPrice(data.id, 'slice')).toContainText(new RegExp(data.price));
       await expect(await CCD.getCardCTA(data.id, 'slice')).toBeVisible();
       await expect(await CCD.getCardCTA(data.id, 'slice')).toHaveAttribute('class', /accent/);
       await expect(await CCD.getCardCTA(data.id, 'slice')).toContainText(data.cta);
@@ -695,7 +695,7 @@ test.describe('CCD Merchcard feature test suite', () => {
       await expect(await CCD.getCardLegalLink(data.id, 'slice')).toContainText(data.linkText);
       await expect(await CCD.getCardLegalLink(data.id, 'slice')).toHaveAttribute('data-analytics-id', /.*/);
       await expect(await CCD.getCardPrice(data.id, 'slice')).toBeVisible();
-      await expect(await CCD.getCardPrice(data.id, 'slice')).toContainText(data.price);
+      await expect(await CCD.getCardPrice(data.id, 'slice')).toContainText(new RegExp(data.price));
       await expect(await CCD.getCardCTA(data.id, 'slice')).toBeVisible();
       await expect(await CCD.getCardCTA(data.id, 'slice')).toHaveAttribute('class', /accent/);
       await expect(await CCD.getCardCTA(data.id, 'slice')).toContainText(data.cta);
@@ -875,7 +875,7 @@ test.describe('CCD Merchcard feature test suite', () => {
       await expect(await CCD.getCardDescription(data.id, 'slice')).toContainText(data.description);
       await expect(await CCD.getCardLegalLink(data.id, 'slice')).not.toBeVisible();
       await expect(await CCD.getCardPrice(data.id, 'slice')).toBeVisible();
-      await expect(await CCD.getCardPrice(data.id, 'slice')).toContainText(data.price);
+      await expect(await CCD.getCardPrice(data.id, 'slice')).toContainText(new RegExp(data.price));
       await expect(await CCD.getCardCTA(data.id, 'slice')).toBeVisible();
       await expect(await CCD.getCardCTA(data.id, 'slice')).toHaveAttribute('class', /accent/);
       await expect(await CCD.getCardCTA(data.id, 'slice')).toContainText(data.cta);
@@ -1066,7 +1066,7 @@ test.describe('CCD Merchcard feature test suite', () => {
       await expect(await CCD.getCardLegalLink(data.id, 'slice-wide')).toContainText(data.linkText);
       await expect(await CCD.getCardLegalLink(data.id, 'slice-wide')).toHaveAttribute('data-analytics-id', /.*/);
       await expect(await CCD.getCardPrice(data.id, 'slice-wide')).toBeVisible();
-      await expect(await CCD.getCardPrice(data.id, 'slice-wide')).toContainText(data.price);
+      await expect(await CCD.getCardPrice(data.id, 'slice-wide')).toContainText(new RegExp(data.price));
       await expect(await CCD.getCardCTA(data.id, 'slice-wide')).toBeVisible();
       await expect(await CCD.getCardCTA(data.id, 'slice-wide')).toHaveAttribute('class', /accent/);
       await expect(await CCD.getCardCTA(data.id, 'slice-wide')).toContainText(data.cta);
@@ -1129,9 +1129,9 @@ test.describe('CCD Merchcard feature test suite', () => {
       await expect(await CCD.getCardLegalLink(data.id, 'slice-wide')).toContainText(data.linkText);
       await expect(await CCD.getCardLegalLink(data.id, 'slice-wide')).toHaveAttribute('data-analytics-id', /.*/);
       await expect(await CCD.getCardPrice(data.id, 'slice-wide')).toBeVisible();
-      await expect(await CCD.getCardPrice(data.id, 'slice-wide')).toContainText(data.price);
+      await expect(await CCD.getCardPrice(data.id, 'slice-wide')).toContainText(new RegExp(data.price));
       await expect(await CCD.getCardPriceStrikethrough(data.id, 'slice-wide')).toBeVisible();
-      await expect(await CCD.getCardPriceStrikethrough(data.id, 'slice-wide')).toContainText(data.strikethroughPrice);
+      await expect(await CCD.getCardPriceStrikethrough(data.id, 'slice-wide')).toContainText(new RegExp(data.strikethroughPrice));
       await expect(await CCD.getCardCTA(data.id, 'slice-wide')).toBeVisible();
       await expect(await CCD.getCardCTA(data.id, 'slice-wide')).toHaveAttribute('class', /accent/);
       await expect(await CCD.getCardCTA(data.id, 'slice-wide')).toContainText(data.cta);
@@ -1195,7 +1195,7 @@ test.describe('CCD Merchcard feature test suite', () => {
       await expect(await CCD.getCardLegalLink(data.id, 'slice-wide')).toContainText(data.linkText);
       await expect(await CCD.getCardLegalLink(data.id, 'slice-wide')).toHaveAttribute('data-analytics-id', /.*/);
       await expect(await CCD.getCardPrice(data.id, 'slice-wide')).toBeVisible();
-      await expect(await CCD.getCardPrice(data.id, 'slice-wide')).toContainText(data.price);
+      await expect(await CCD.getCardPrice(data.id, 'slice-wide')).toContainText(new RegExp(data.price));
       await expect(await CCD.getCardCTA(data.id, 'slice-wide')).toBeVisible();
       await expect(await CCD.getCardCTA(data.id, 'slice-wide')).toHaveAttribute('class', /accent/);
       await expect(await CCD.getCardCTA(data.id, 'slice-wide')).toContainText(data.cta);
@@ -1275,7 +1275,7 @@ test.describe('CCD Merchcard feature test suite', () => {
       await expect(await CCD.getCardDescription(data.id, 'suggested')).toContainText(data.description);
       await expect(await CCD.getCardLegalLink(data.id, 'suggested')).not.toBeVisible();
       await expect(await CCD.getCardPrice(data.id, 'suggested')).toBeVisible();
-      await expect(await CCD.getCardPrice(data.id, 'suggested')).toContainText(data.price);
+      await expect(await CCD.getCardPrice(data.id, 'suggested')).toContainText(new RegExp(data.price));
       await expect(await CCD.getCardCTA(data.id, 'suggested')).toBeVisible();
       await expect(await CCD.getCardCTA(data.id, 'suggested')).toHaveAttribute('class', /primary/);
       await expect(await CCD.getCardCTA(data.id, 'suggested')).toHaveAttribute('data-wcs-osi', data.osi);
@@ -1333,7 +1333,7 @@ test.describe('CCD Merchcard feature test suite', () => {
       await expect(await CCD.getCardDescription(data.id, 'slice')).toContainText(data.description);
       await expect(await CCD.getCardLegalLink(data.id, 'slice')).not.toBeVisible();
       await expect(await CCD.getCardPrice(data.id, 'slice')).toBeVisible();
-      await expect(await CCD.getCardPrice(data.id, 'slice')).toContainText(data.price);
+      await expect(await CCD.getCardPrice(data.id, 'slice')).toContainText(new RegExp(data.price));
       await expect(await CCD.getCardCTA(data.id, 'slice')).toBeVisible();
       await expect(await CCD.getCardCTA(data.id, 'slice')).toHaveAttribute('class', /accent/);
       await expect(await CCD.getCardCTA(data.id, 'slice')).toContainText(data.cta);
@@ -1398,7 +1398,7 @@ test.describe('CCD Merchcard feature test suite', () => {
       await expect(await CCD.getCardLegalLink(data.id, 'slice-wide')).toContainText(data.linkText);
       await expect(await CCD.getCardLegalLink(data.id, 'slice-wide')).toHaveAttribute('data-analytics-id', /.*/);
       await expect(await CCD.getCardPrice(data.id, 'slice-wide')).toBeVisible();
-      await expect(await CCD.getCardPrice(data.id, 'slice-wide')).toContainText(data.price);
+      await expect(await CCD.getCardPrice(data.id, 'slice-wide')).toContainText(new RegExp(data.price));
       await expect(await CCD.getCardCTA(data.id, 'slice-wide')).toBeVisible();
       await expect(await CCD.getCardCTA(data.id, 'slice-wide')).toHaveAttribute('class', /accent/);
       await expect(await CCD.getCardCTA(data.id, 'slice-wide')).toContainText(data.cta);
@@ -1459,7 +1459,7 @@ test.describe('CCD Merchcard feature test suite', () => {
       await expect(await CCD.getCardDescription(data.id, 'suggested')).toContainText(data.description);
       await expect(await CCD.getCardLegalLink(data.id, 'suggested')).not.toBeVisible();
       await expect(await CCD.getCardPrice(data.id, 'suggested')).toBeVisible();
-      await expect(await CCD.getCardPrice(data.id, 'suggested')).toContainText(data.price);
+      await expect(await CCD.getCardPrice(data.id, 'suggested')).toContainText(new RegExp(data.price));
       expect(await (await CCD.getCardPrice(data.id, 'suggested')).locator('.price-unit-type').innerText()).toContain(data.priceUnit);
       await expect(await CCD.getCardCTA(data.id, 'suggested')).toBeVisible();
       await expect(await CCD.getCardCTA(data.id, 'suggested')).toHaveAttribute('class', /primary/);
