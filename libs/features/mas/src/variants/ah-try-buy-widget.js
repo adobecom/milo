@@ -133,5 +133,3 @@ export class AHTryBuyWidget extends VariantLayout {
         }
     `;
 }
-
-customElements.define('ah-try-buy-widget', AHTryBuyWidget);

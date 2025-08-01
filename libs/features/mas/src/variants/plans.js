@@ -278,7 +278,9 @@ export class Plans extends VariantLayout {
                 <slot name="addon"></slot>
                 <slot name="badge"></slot>
             </div>
-            ${this.secureLabelFooter}`;
+            ${this.secureLabelFooter}
+            <slot></slot>`;
+            
     }
 
     static variantStyle = css`
