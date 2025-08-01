@@ -87,7 +87,7 @@ function decorateInput(el, input) {
   el.removeChild(input);
 
   fieldInput.addEventListener('input', () => {
-    if (fieldInput.value) {
+    if (fieldInput.value && fieldInput.value.trim() !== '') {
       fieldButton.disabled = false;
     } else {
       fieldButton.disabled = true;
@@ -96,13 +96,13 @@ function decorateInput(el, input) {
 
   fieldInput.addEventListener('keyup', (e) => {
     if (e.key === 'Enter') {
-      if (!fieldInput.value) return;
+      if (!fieldInput.value || fieldInput.value.trim() === '') return;
       openChatModal(fieldInput.value);
     }
   });
 
   fieldButton.addEventListener('click', () => {
-    if (!fieldInput.value) return;
+    if (!fieldInput.value || fieldInput.value.trim() === '') return;
     openChatModal(fieldInput.value);
   });
 }
