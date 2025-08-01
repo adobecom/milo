@@ -99,5 +99,14 @@ module.exports = {
       browserParams: '?georouting=off&martech=off',
       tags: '@three-in-one @smoke @regression @milo',
     },
+    {
+      name: '@ThreeInOneDCAddon',
+      path: '/drafts/nala/blocks/merch/3in1-acrobat-addon',
+      iframeSrcNoAddOn: 'https://commerce.adobe.com/store/segmentation?cli=creative&ctx=if&co=US&lang=en&ms=COM&ot=TRIAL&cs=INDIVIDUAL&pa=apcc_direct_individual&rtc=t&lo=sl&af=uc_new_user_iframe%2Cuc_new_system_close',
+      iframeSrcWithAddOn: 'https://commerce.adobe.com/store/segmentation?cli=creative&ctx=if&co=US&lang=en&ms=COM&ot=TRIAL&cs=INDIVIDUAL&pa=apcc_direct_individual&ao=PA-1042&rtc=t&lo=sl&af=uc_new_user_iframe%2Cuc_new_system_close',
+      attributes: { 'aria-label': 'Free trial Acrobat Pro' },
+      browserParams: '?georouting=off&martech=off',
+      tags: '@three-in-one @smoke @regression @milo',
+    },
   ],
 };
