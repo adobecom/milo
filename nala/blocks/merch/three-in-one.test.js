@@ -119,10 +119,10 @@ test.describe('ThreeInOne Block test suite', () => {
         await expect(cta).toHaveAttribute(key, value);
       }
       await cta.waitFor({ state: 'visible' });
-      
+
       // Wait for entitlements to load
       await expect(cta).not.toHaveClass(/loading-entitlements|placeholder-pending/);
-      
+
       await cta.click();
       const modal = threeInOne.getModal();
       await page.waitForSelector('.dialog-modal');
@@ -147,7 +147,7 @@ test.describe('ThreeInOne Block test suite', () => {
 
       // Wait for entitlements to load
       await expect(cta).not.toHaveClass(/loading-entitlements|placeholder-pending/);
-      
+
       await cta.click();
       const modal = threeInOne.getModal();
       await page.waitForSelector('.dialog-modal');
