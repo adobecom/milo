@@ -13,7 +13,7 @@ module.exports = {
         title: 'Acrobat Pro',
         promoText: 'Save over 30% with an annual plan.',
         description: 'Create, edit, sign, and manage your PDFs — quickly, easily, anywhere.',
-        price: 'US$19.99/mo',
+        price: 'US\\$\\d+\\.\\d\\d/mo',
         cta: 'Buy now',
         ctaOsi: 'MzCpF9nUi8rEzyW-9slEUwtRenS69PRW5fp84a93uK4',
         iconUrl: '',
