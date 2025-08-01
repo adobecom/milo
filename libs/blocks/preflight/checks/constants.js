@@ -6,13 +6,23 @@ export const STATUS = {
 };
 
 export const SEO_TITLES = {
-  H1Count: 'H1 count',
-  TitleSize: 'Title size',
-  Canonical: 'Canonical',
-  MetaDescription: 'Meta description',
-  BodySize: 'Body size',
-  Lorem: 'Lorem Ipsum',
-  Links: 'Links',
+  h1Count: 'H1 count',
+  title: 'Title size',
+  canonical: 'Canonical',
+  description: 'Meta description',
+  bodySize: 'Body size',
+  loremIpsum: 'Lorem Ipsum',
+  links: 'Links',
+};
+
+export const SEO_IDS = {
+  title: 'title',
+  description: 'description',
+  h1Count: 'h1-count',
+  canonical: 'canonical',
+  bodySize: 'body-size',
+  loremIpsum: 'lorem-ipsum',
+  links: 'links',
 };
 
 export const PERFORMANCE_TITLES = {

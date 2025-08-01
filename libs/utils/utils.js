@@ -1,3 +1,5 @@
+import { getPreflightResults } from '../blocks/preflight/checks/preflightApi.js';
+
 /* eslint-disable no-console */
 const MILO_TEMPLATES = [
   '404',
@@ -1579,6 +1581,7 @@ function initSidekick() {
   const initPlugins = async () => {
     const { default: init } = await import('./sidekick.js');
     init({ createTag, loadBlock, loadScript, loadStyle });
+    getPreflightResults(window.location.href, document);
   };
 
   if (document.querySelector('aem-sidekick, helix-sidekick')) {
