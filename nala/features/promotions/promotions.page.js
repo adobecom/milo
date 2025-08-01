@@ -19,5 +19,8 @@ export default class CommercePage {
     this.mepManifestList = page.locator('.mep-manifest-list');
     this.mepSelectInsert = page.locator('select').nth(0);
     this.mepSelectReplace = page.locator('select').nth(1);
+    this.getMerchCardCollection = (id) => page.locator(`merch-card-collection[id="${id}"]`);
+    this.getMerchCard = (id) => page.locator(`merch-card[id="${id}"]`);
+    this.getFragment = (path) => page.locator(`div.fragment[data-path="${path}"]`);
   }
 }

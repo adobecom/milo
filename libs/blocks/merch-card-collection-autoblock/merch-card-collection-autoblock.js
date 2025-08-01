@@ -134,7 +134,29 @@ export const enableModalOpeningOnPageLoad = () => {
       updateModalState({ cta });
     });
   });
+<<<<<<< HEAD
+
+  window.addEventListener('milo:tab:changed', () => {
+    const tab = tabs.querySelector('button[role="tab"][aria-selected="true"]');
+    if (tab) handleCustomAnalyticsEvent(`tab-change--${tab.getAttribute('daa-ll')}`, tab);
+  });
+}
+
+export async function checkReady(masElement) {
+  const readyPromise = masElement.checkReady();
+  const success = await Promise.race([readyPromise, getTimeoutPromise()]);
+
+  if (!success) {
+    const { env } = getConfig();
+    if (env.name !== 'prod') {
+      masElement.prepend(createTag('div', { }, 'Failed to load. Please check your VPN connection.'));
+    }
+    log.error(`${masElement.tagName} did not initialize withing give timeout`);
+  }
+}
+=======
 };
+>>>>>>> 4b26b8db012aa0dc5f415493876a1ad388575b95
 
 export async function createCollection(el, options) {
   const aemFragment = createTag('aem-fragment', { fragment: options.fragment });
