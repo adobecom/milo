@@ -1472,15 +1472,15 @@ async function checkForPageMods() {
   });
 }
 
-function setLocation() {
+function setCountry() {
   const country = window.performance?.getEntriesByType('navigation')?.[0]?.serverTiming
     ?.find(timing => timing?.name === 'geo')?.description?.toLowerCase();
   if (!country) return;
-  !sessionStorage.getItem('akamai') && sessionStorage.setItem('akamai', country);
-  !sessionStorage.getItem('feds_location') && sessionStorage.setItem('feds_location', JSON.stringify({ country: country.toUpperCase()}));
+  sessionStorage.setItem('akamai', country);
+  sessionStorage.setItem('feds_location', JSON.stringify({ country: country.toUpperCase()}));
 }
 
-async function setLocationPrerequisites() {
+async function setCountryPrerequisites() {
   const country = (new URLSearchParams(window.location.search).get('akamaiLocale')?.toLowerCase())
     || sessionStorage.getItem('akamai');
   if (country !== 'gb' || window.adobePrivacy) return;
@@ -1493,7 +1493,7 @@ async function loadPostLCP(config) {
   await decoratePlaceholders(document.body.querySelector('header'), config);
   const sk = document.querySelector('aem-sidekick, helix-sidekick');
   if (sk) import('./sidekick-decorate.js').then((mod) => { mod.default(sk); });
-  setLocationPrerequisites();
+  setCountryPrerequisites();
   if (config.mep?.targetEnabled === 'postlcp') {
     /* c8 ignore next 2 */
     const { init } = await import('../features/personalization/personalization.js');
@@ -1735,7 +1735,7 @@ export async function loadArea(area = document) {
   const isDoc = area === document;
   if (isDoc) {
     if (document.getElementById('page-load-ok-milo')) return;
-    setLocation();
+    setCountry();
     await checkForPageMods();
     appendHtmlToCanonicalUrl();
     appendSuffixToTitles();
