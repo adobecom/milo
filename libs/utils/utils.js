@@ -12,6 +12,7 @@ const MILO_BLOCKS = [
   'article-header',
   'aside',
   'author-header',
+  'brand-concierge',
   'brick',
   'bulk-publish',
   'bulk-publish-v2',
