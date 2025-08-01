@@ -72,6 +72,14 @@
   color: inherit;
 }
 
+.hero-marquee .lockup-area > p:has(picture) {
+  margin-block: 0;
+}
+
+.hero-marquee .lockup-label {
+  line-height: initial;
+}
+
 .hero-marquee .action-area a:not(.con-button) {
   font-weight: 700;
 }
@@ -393,6 +401,10 @@ html[dir="rtl"] .hero-marquee li.icon-item span.icon {
   .hero-marquee {
     display: flex;
     flex-direction: row;
+  }
+
+  .hero-marquee.no-min-height-desktop {
+    min-height: unset;
   }
 
   .hero-marquee.media-cover {
