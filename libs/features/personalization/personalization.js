@@ -9,6 +9,7 @@ import {
   loadScript,
   localizeLink,
   getFederatedUrl,
+  isSignedOut,
 } from '../../utils/utils.js';
 
 /* c8 ignore start */
@@ -32,8 +33,8 @@ export const PERSONALIZATION_TAGS = {
   phone: () => PERSONALIZATION_TAGS['mobile-device']() && PHONE_SIZE,
   tablet: () => PERSONALIZATION_TAGS['mobile-device']() && !PHONE_SIZE,
   desktop: () => !PERSONALIZATION_TAGS['mobile-device'](),
-  loggedout: () => !window.adobeIMS?.isSignedInUser(),
-  loggedin: () => !!window.adobeIMS?.isSignedInUser(),
+  loggedout: () => isSignedOut(),
+  loggedin: () => !isSignedOut(),
 };
 const PERSONALIZATION_KEYS = Object.keys(PERSONALIZATION_TAGS);
 /* c8 ignore stop */
@@ -94,7 +95,8 @@ export const normalizePath = (p, localize = true) => {
     if (path.startsWith(config.codeRoot)
       || path.includes('.hlx.')
       || path.includes('.aem.')
-      || path.includes('.adobe.')) {
+      || path.includes('.adobe.')
+      || path.includes('localhost:')) {
       if (!localize
         || config.locale.ietf === 'en-US'
         || hash.includes(mepHash)
@@ -181,7 +183,9 @@ const createFrag = (el, action, content, manifestId, targetManifestId) => {
   }
   const a = createTag('a', { href }, content);
   addIds(a, manifestId, targetManifestId);
-  const frag = createTag('p', undefined, a);
+  const noParagraphWrap = !!el?.parentElement?.closest('p')
+    || (el.nodeName === 'P' && action.includes('pend'));
+  const frag = noParagraphWrap ? a : createTag('p', undefined, a);
   const isDelayedModalAnchor = /#.*delay=/.test(href);
   if (isDelayedModalAnchor) frag.classList.add('hide-block');
   if (isInLcpSection(el)) {
@@ -237,18 +241,21 @@ const COMMANDS = {
     cmd.content = replacePlaceholders(cmd.content);
 
     let value;
-
     if (attribute === 'href' && parameter) {
       const href = el.getAttribute('href');
-      try {
-        const url = new URL(href);
-        const parameters = new URLSearchParams(url.search);
-        parameters.set(parameter, cmd.content);
-        url.search = parameters.toString();
-        value = url.toString();
-      } catch (error) {
-        /* c8 ignore next 2 */
-        console.log(`Invalid updateAttribute URL: ${href}`, error.message || error);
+      switch (parameter) {
+        case '#': el.href += el.href.includes(cmd.content) ? '' : cmd.content; break;
+        default:
+          try {
+            const url = new URL(href);
+            const parameters = new URLSearchParams(url.search);
+            parameters.set(parameter, cmd.content);
+            url.search = parameters.toString();
+            value = url.toString();
+          } catch (error) {
+            /* c8 ignore next 2 */
+            console.log(`Invalid updateAttribute URL: ${href}`, error.message || error);
+          }
       }
     } else {
       value = cmd.content;
@@ -363,10 +370,10 @@ const setMetadata = (metadata) => {
 
 function toLowerAlpha(str) {
   const modifiedStr = str.toLowerCase();
-  if (!modifiedStr.includes('countryip') && !modifiedStr.includes('countrychoice')) {
+  if (!modifiedStr.includes('countryip') && !modifiedStr.includes('countrychoice') && !modifiedStr.includes('previouspage')) {
     return modifiedStr.replace(RE_KEY_REPLACE, '');
   }
-  return modifiedStr.replace(RE_KEY_REPLACE, (char) => (['(', ')'].includes(char) ? char : ''));
+  return modifiedStr.replace(RE_KEY_REPLACE, (char) => (['(', ')', '/', '*'].includes(char) ? char : ''));
 }
 
 function normalizeKeys(obj) {
@@ -544,7 +551,7 @@ function getSelectedElements(sel, rootEl, forceRootEl, action) {
   } catch (e) {
     /* eslint-disable-next-line no-console */
     log('Invalid selector: ', selector);
-    return null;
+    return {};
   }
   if (modifiers.includes(FLAGS.all) || !els.length) return { els, modifiers, attribute };
   els = [els[0]];
@@ -630,7 +637,7 @@ export function handleCommands(
       const insertAnchor = getSelectorType(selector) === 'fragment' ? el.parentElement : el;
       insertAnchor?.insertAdjacentElement(
         CREATE_CMDS[action],
-        createContent(el, cmd),
+        createContent(insertAnchor, cmd),
       );
     });
     if ((els.length && !cmd.modifiers.includes(FLAGS.all))
@@ -827,6 +834,12 @@ const checkForParamMatch = (paramStr) => {
   return false;
 };
 
+export const checkForPreviousPageMatch = (previousPageStr, lastVisitedPage = document.referrer) => {
+  if (!lastVisitedPage) return false;
+  const previousPageString = previousPageStr.toLowerCase().split('previouspage-')[1];
+  return matchGlob(previousPageString, new URL(lastVisitedPage).pathname);
+};
+
 function trimNames(arr) {
   return arr.map((v) => v.trim()).filter(Boolean);
 }
@@ -932,6 +945,7 @@ async function getPersonalizationVariant(
     if (!name) return true;
     if (name === variantLabel?.toLowerCase()) return true;
     if (name.startsWith('param-')) return checkForParamMatch(name);
+    if (name.toLowerCase().startsWith('previouspage-')) return checkForPreviousPageMatch(name);
     if (hasCountryMatch(name, config)) return true;
     if (userEntitlements?.includes(name)) return true;
     return PERSONALIZATION_KEYS.includes(name) && PERSONALIZATION_TAGS[name]();
@@ -1119,8 +1133,7 @@ function compareExecutionOrder(a, b) {
   return a.executionOrder > b.executionOrder ? 1 : -1;
 }
 
-export function cleanAndSortManifestList(manifests, conf) {
-  const config = conf ?? getConfig();
+export function cleanAndSortManifestList(manifests, config = getConfig()) {
   const manifestObj = {};
   let allManifests = manifests;
   let targetManifestWinsOverServerManifest = false;
@@ -1142,9 +1155,10 @@ export function cleanAndSortManifestList(manifests, conf) {
         freshManifest.selectedVariantName = fullManifest.selectedVariantName;
         targetManifestWinsOverServerManifest = config?.env?.name === 'prod' && fullManifest.selectedVariantName.startsWith('target-');
 
-        freshManifest.variants = targetManifestWinsOverServerManifest
-          ? fullManifest.variants
-          : freshManifest.variants;
+        if (targetManifestWinsOverServerManifest) {
+          freshManifest.variants = fullManifest.variants;
+          freshManifest.placeholderData = fullManifest.placeholderData;
+        }
 
         freshManifest.selectedVariant = freshManifest.variants[freshManifest.selectedVariantName];
         manifestObj[manifest.manifestPath] = freshManifest;
@@ -1247,14 +1261,29 @@ export async function applyPers({ manifests }) {
   config.mep.martech = `|${pznVariants.join('--')}|${pznManifests.join('--')}`;
 }
 
-export const combineMepSources = async (persEnabled, promoEnabled, mepParam) => {
+function parseManifestUrlAndAddSource(manifestString, source) {
+  if (!manifestString) return [];
+  return manifestString.toLowerCase()
+    .split(/,|(\s+)|(\\n)/g)
+    .filter((path) => path?.trim())
+    .map((manifestPath) => ({ manifestPath, source: [source] }));
+}
+
+export const combineMepSources = async (
+  persEnabled,
+  rocPersEnabled,
+  promoEnabled,
+  mepParam,
+) => {
   let persManifests = [];
 
   if (persEnabled) {
-    persManifests = persEnabled.toLowerCase()
-      .split(/,|(\s+)|(\\n)/g)
-      .filter((path) => path?.trim())
-      .map((manifestPath) => ({ manifestPath, source: ['pzn'] }));
+    persManifests = parseManifestUrlAndAddSource(persEnabled, 'pzn');
+  }
+
+  if (rocPersEnabled) {
+    const rocPersManifest = parseManifestUrlAndAddSource(rocPersEnabled, 'pzn-roc');
+    persManifests = persManifests.concat(rocPersManifest);
   }
 
   if (promoEnabled) {
@@ -1419,7 +1448,7 @@ const awaitMartech = () => new Promise((resolve) => {
 export async function init(enablements = {}) {
   let manifests = [];
   const {
-    mepParam, mepHighlight, mepButton, pzn, promo, enablePersV2,
+    mepParam, mepHighlight, mepButton, pzn, pznroc, promo, enablePersV2,
     target, ajo, countryIPPromise, mepgeolocation, targetInteractionPromise, calculatedTimeout,
     postLCP,
   } = enablements;
@@ -1443,13 +1472,13 @@ export async function init(enablements = {}) {
       targetInteractionPromise,
     };
 
-    manifests = manifests.concat(await combineMepSources(pzn, promo, mepParam));
+    manifests = manifests.concat(await combineMepSources(pzn, pznroc, promo, mepParam));
     manifests?.forEach((manifest) => {
       if (manifest.disabled) return;
       const normalizedURL = normalizePath(manifest.manifestPath);
       loadLink(normalizedURL, { as: 'fetch', crossorigin: 'anonymous', rel: 'preload' });
     });
-    if (pzn) loadLink(getXLGListURL(config), { as: 'fetch', crossorigin: 'anonymous', rel: 'preload' });
+    if (pzn || pznroc) loadLink(getXLGListURL(config), { as: 'fetch', crossorigin: 'anonymous', rel: 'preload' });
   }
 
   if (enablePersV2 && target === true) {

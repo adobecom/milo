@@ -1,8 +1,8 @@
 import { html, css, unsafeCSS } from 'lit';
-import { isMobile, createTag } from '../utils.js';
+import { createTag } from '../utils.js';
 import { VariantLayout } from './variant-layout.js';
 import { CSS } from './mini-compare-chart.css.js';
-import { DESKTOP_UP, TABLET_DOWN } from '../media.js';
+import { DESKTOP_UP, TABLET_DOWN, MOBILE_LANDSCAPE, isMobile } from '../media.js';
 import { SELECTOR_MAS_INLINE_PRICE } from '../constants.js';
 const FOOTER_ROW_MIN_HEIGHT = 32; // as per the XD.
 
@@ -55,7 +55,7 @@ export class MiniCompareChart extends VariantLayout {
     if (this.card.classList.contains('bullet-list')) {
         slots.push('footer-rows');
     }
-  
+
     slots.forEach((slot) =>
         this.updateCardElementMinHeight(
             this.card.shadowRoot.querySelector(`slot[name="${slot}"]`),
@@ -182,6 +182,7 @@ async adjustAddon() {
         ${this.card.classList.contains('bullet-list') 
         ?
           html`<slot name="heading-m-price"></slot>
+          <slot name="price-commitment"></slot>
           <slot name="body-m"></slot>`
         :
           html`<slot name="body-m"></slot>
@@ -196,10 +197,10 @@ async adjustAddon() {
         <slot name="footer-rows"><slot name="body-s"></slot></slot>`;
   }
   async postCardUpdateHook() {
-    if (!isMobile()) {
-      await Promise.all(this.card.prices.map((price) => price.onceSettled()));
+    await Promise.all(this.card.prices.map((price) => price.onceSettled()));
+    await this.adjustAddon();
+    if (!isMobile()) {   
       this.adjustMiniCompareBodySlots();
-      this.adjustAddon();
       this.adjustMiniCompareFooterRows();
     } else {
       this.removeEmptyRows();
@@ -236,6 +237,18 @@ async adjustAddon() {
       align-self: flex-start;
       flex: none;
       color: var(--merch-color-grey-700);
+    }
+
+    @media screen and ${unsafeCSS(MOBILE_LANDSCAPE)} {
+      :host([variant='mini-compare-chart'].bullet-list) .mini-compare-chart-badge {
+        padding: 2px 10px;
+        font-size: var(--consonant-merch-card-body-xs-font-size);
+        line-height: var(--consonant-merch-card-body-xs-line-height);
+      }
+
+      :host([variant='mini-compare-chart'].bullet-list) .secure-transaction-label {
+        font-size: var(--consonant-merch-card-body-xs-font-size);
+      }
     }
 
     @media screen and ${unsafeCSS(TABLET_DOWN)} {
@@ -292,6 +305,11 @@ async adjustAddon() {
     :host([variant='mini-compare-chart']) slot[name='callout-content'] {
         min-height: var(
             --consonant-merch-card-mini-compare-chart-callout-content-height
+        );
+    }
+    :host([variant='mini-compare-chart']) slot[name='addon'] {
+        min-height: var(
+            --consonant-merch-card-mini-compare-chart-addon-height
         );
     }
     :host([variant='mini-compare-chart']) slot[name='footer-rows'] {

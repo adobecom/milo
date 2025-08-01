@@ -1,6 +1,7 @@
 :root {
   --modal-focus-color: #109cde;
   --modal-max-height: calc((100vh - 6px) - 2em);
+  --modal-max-height-mobile: calc((100% - 6px) - 2em);
   --modal-z-index: 102;
   --modal-z-index-curtain: 101;
   --modal-close-accent-color: #707070;
@@ -332,6 +333,10 @@
     border-radius: 0;
   }
 
+  .dialog-modal:not(.tall-video, .three-in-one, .commerce-frame, .upgrade-flow-modal) {
+    max-height: var(--modal-max-height-mobile);
+  }
+
   .dialog-modal.commerce-frame > .fragment,
   .dialog-modal.commerce-frame > .section,
   .dialog-modal.commerce-frame > .fragment > .section {
@@ -464,6 +469,6 @@
   overflow: hidden;
 }
 
-body:has(.dialog-modal) #adbMsgClientWrapper #adbmsgContainer #adbmsgCta {
+body:has(.dialog-modal) #adbMsgClientWrapper #adbmsgContainer > * {
   z-index: var(--jarvis-z-index-override);
 }

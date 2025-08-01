@@ -22,6 +22,10 @@ a[is='checkout-link'].con-button > span {
   min-width: 66px;
 }
 
+.hidden-osi-trial-link {
+  display: none;
+}
+
 .price-unit-type:not(.disabled)::before,
 .price-tax-inclusivity:not(.disabled)::before {
   content: "\00a0";
@@ -38,17 +42,6 @@ a[is='checkout-link'].con-button > span {
 
 .three-in-one .loading iframe {
   visibility: hidden;
-}
-
-.three-in-one sp-theme {
-  height: 100%;
-  width: 100%;
-  align-content: center;
-}
-
-.three-in-one sp-theme sp-progress-circle {
-  inset-inline-start: 50%;
-  transform: translate(-50%);
 }
 
 .error-wrapper {

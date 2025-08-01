@@ -17,9 +17,9 @@ async function loadPlaceholders(content, list) {
   placeholders(content, list);
 }
 
-async function loadIcons(content, list) {
+async function loadIcons({ content, list, query }) {
   const { default: icons } = await import('./lists/icons.js');
-  icons(content, list);
+  icons(content, list, query);
 }
 
 async function loadAssets(content, list) {
@@ -56,6 +56,9 @@ function addSearch({ content, list, type }) {
         case 'templates':
           loadTemplates({ content, list, query, type });
           break;
+        case 'icons':
+          loadIcons({ content, list, query });
+          break;
         default:
       }
     });
@@ -70,6 +73,9 @@ function addSearch({ content, list, type }) {
           break;
         case 'templates':
           loadTemplates({ content, list, query, type });
+          break;
+        case 'icons':
+          loadIcons({ content, list, query });
           break;
         default:
       }
@@ -98,7 +104,8 @@ async function loadList(type, content, list) {
       loadPlaceholders(content, list);
       break;
     case 'icons':
-      loadIcons(content, list);
+      addSearch({ content, list, type });
+      loadIcons({ content, list, query: '' });
       break;
     case 'assets':
       loadAssets(content, list);

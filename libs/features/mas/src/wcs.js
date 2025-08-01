@@ -12,7 +12,8 @@ import { PlanType, applyPlanType } from '@dexter/tacocat-core';
 import { Log } from './log.js';
 import { MasError } from './mas-error.js';
 import { masFetch } from './utils/mas-fetch.js';
-import { getService } from './utilities.js';
+import { getLogHeaders, getService } from './utilities.js';
+import { printMeasure } from './utils.js';
 
 const NAMESPACE = 'wcs';
 
@@ -123,8 +124,7 @@ export function Wcs({ settings }) {
             Date.now() + Math.random().toString(36).substring(2, 7);
         const startMark = `${NAMESPACE}:${osi}:${uniqueId}${MARK_START_SUFFIX}`;
         const measureName = `${NAMESPACE}:${osi}:${uniqueId}${MARK_DURATION_SUFFIX}`;
-        let startTime;
-        let duration;
+        let measure;
         try {
             performance.mark(startMark);
             url = new URL(settings.wcsURL);
@@ -185,7 +185,7 @@ export function Wcs({ settings }) {
             /* c8 ignore next 2 */
             message = `Network error: ${e.message}`;
         } finally {
-            ({ startTime, duration } = performance.measure(
+            (measure = performance.measure(
                 measureName,
                 startMark,
             ));
@@ -197,13 +197,16 @@ export function Wcs({ settings }) {
         if (reject && promises.size) {
             // reject pending promises, their offers weren't provided by WCS
             log.debug('Missing:', { offerSelectorIds: [...promises.keys()] });
+
+            const headers = getLogHeaders(response);
+
             promises.forEach((promise) => {
                 promise.reject(
                     new MasError(message, {
                         ...options,
+                        ...headers,
                         response,
-                        startTime,
-                        duration,
+                        measure: printMeasure(measure),
                         ...service?.duration,
                     }),
                 );
@@ -223,6 +226,23 @@ export function Wcs({ settings }) {
         pending.forEach(({ options, promises }) =>
             resolveWcsOffers(options, promises),
         );
+    }
+
+    function prefillWcsCache(preloadedCache) {        
+        if (!preloadedCache || typeof preloadedCache !== 'object') {
+            throw new TypeError('Cache must be a Map or similar object');
+        }
+        const envKey = env === Env.STAGE ? 'stage' : 'prod';
+        const envCache = preloadedCache[envKey];
+        if (!envCache || typeof envCache !== 'object') {
+            log.warn(`No cache found for environment: ${env}`);
+            return;
+        }
+        // Fill cache with provided entries
+        for (const [key, value] of Object.entries(envCache)) {
+            cache.set(key, Promise.resolve(value.map(applyPlanType)));
+        }
+        log.debug(`Prefilled WCS cache with ${envCache.size} entries`);
     }
 
     /**
@@ -261,7 +281,7 @@ export function Wcs({ settings }) {
         wcsOsi = [],
     }) {
         const locale = `${language}_${country}`;
-        if (country !== 'GB') language = perpetual ? 'EN' : 'MULT';
+        if (country !== 'GB' && !perpetual) language = 'MULT';
         const groupKey = [country, language, promotionCode]
             .filter((val) => val)
             .join('-')
@@ -280,7 +300,7 @@ export function Wcs({ settings }) {
                         locale,
                         offerSelectorIds: [],
                     };
-                    if (country !== 'GB') options.language = language;
+                    if (country !== 'GB' && !perpetual) options.language = language;
                     const promises = new Map();
                     group = { options, promises };
                     queue.set(groupKey, group);
@@ -300,7 +320,6 @@ export function Wcs({ settings }) {
                 }
                 throw error;
             });
-
             cache.set(cacheKey, promiseWithFallback);
             return promiseWithFallback;
         });
@@ -313,6 +332,7 @@ export function Wcs({ settings }) {
         applyPlanType,
         resolveOfferSelectors,
         flushWcsCacheInternal,
+        prefillWcsCache,
     };
 }
 

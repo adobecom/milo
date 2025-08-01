@@ -1,7 +1,8 @@
 /* eslint-disable class-methods-use-this */
 import { getNextVisibleItemPosition, getPreviousVisibleItemPosition, selectors } from './utils.js';
 import MainNav from './mainNav.js';
-import { closeAllDropdowns, lanaLog, logErrorFor } from '../utilities.js';
+import { closeAllDropdowns, lanaLog, logErrorFor, isDesktopForContext } from '../utilities.js';
+import MobileGnav from './mobileGnav.js';
 
 const cycleOnOpenSearch = ({ e, isDesktop }) => {
   const withoutBreadcrumbs = [
@@ -77,6 +78,7 @@ class KeyboardNavigation {
     try {
       this.addEventListeners();
       this.mainNav = new MainNav();
+      this.mobileGnav = MobileGnav.init();
       if (newNavWithLnav) {
         this.loadLnavNavigation();
       }
@@ -102,9 +104,10 @@ class KeyboardNavigation {
   };
 
   addEventListeners = () => {
-    [...document.querySelectorAll(`${selectors.globalNav}, ${selectors.globalFooter}`)]
+    [...document.querySelectorAll(`${selectors.globalNavTag}, ${selectors.globalFooterTag}`)]
       .forEach((el) => {
         el.addEventListener('keydown', (e) => logErrorFor(() => {
+          if (!e.target.closest(`${selectors.globalNav}, ${selectors.globalFooter}`)) return;
           switch (e.code) {
             case 'Tab': {
               const isNewNav = !!document.querySelector('header.new-nav');
@@ -114,10 +117,17 @@ class KeyboardNavigation {
               if (isNewNav && isOpen) {
                 if (e.target.classList.contains(selectors.mainNavToggle.slice(1))) {
                   e.preventDefault();
-                  document.querySelector(`${selectors.mainMenuItems}, ${selectors.mainMenuLinks}`).focus();
+                  if (e.shiftKey) {
+                    const menuItems = [...document.querySelectorAll(`${selectors.mainMenuItems}, ${selectors.mainMenuLinks}`)];
+                    menuItems.at(-1)?.focus();
+                  } else {
+                    document.querySelector(`${selectors.mainMenuItems}, ${selectors.mainMenuLinks}`)?.focus();
+                  }
                 }
               } else {
-                cycleOnOpenSearch({ e, isDesktop: this.desktop.matches });
+                const isFooterContext = e.target.closest(selectors.globalFooter);
+                const context = isFooterContext ? 'footer' : 'viewport';
+                cycleOnOpenSearch({ e, isDesktop: isDesktopForContext(context) });
                 const { items } = getProfileItems({ e });
                 const profileBtn = e.target.closest(`${selectors.signIn}, ${selectors.profileButton}`);
                 if (e.shiftKey && e.target === profileBtn) closeProfile();
@@ -126,6 +136,14 @@ class KeyboardNavigation {
                   e.stopPropagation();
                   closeProfile();
                 }
+              }
+              break;
+            }
+            case 'Escape': {
+              const toggle = document.querySelector('header.new-nav .feds-toggle');
+              if (toggle && toggle === e.target && toggle.getAttribute('aria-expanded') === 'true') {
+                toggle.click();
+                toggle.focus();
               }
               break;
             }

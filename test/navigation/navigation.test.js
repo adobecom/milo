@@ -14,6 +14,7 @@ describe('Navigation component', async () => {
     stub(window, 'fetch').callsFake(async (url) => {
       if (url.includes('/footer.plain.html')) return mockRes({ payload: await readFile({ path: '../blocks/region-nav/mocks/regions.html' }) });
       if (url.includes('/federal/dev/gnav.plain.html')) return mockRes({ payload: await readFile({ path: './mocks/gnav.html' }) });
+      if (url.includes('/federal/localnav/gnav.plain.html')) return mockRes({ payload: await readFile({ path: './mocks/localnav.html' }) });
       if (url.includes('/federal/error/gnav.plain.html')) return mockRes({ payload: {}, status: 404 });
 
       return null;
@@ -31,6 +32,12 @@ describe('Navigation component', async () => {
     expect(el).to.exist;
   });
 
+  it('Renders the localnav if isLocalNav key is passed', async () => {
+    await loadBlock({ authoringPath: '/federal/localnav', header: { imsClientId: 'fedsmilo', mobileGnavV2: 'on', isLocalNav: true, jarvis: { id: '1.2' } }, env: 'stage', theme: 'dark' }, 'http://localhost:2000');
+    const el = document.querySelector('.feds-localnav');
+    expect(el).to.exist;
+  });
+
   it('Renders the header block', async () => {
     const onReady = stub();
     await loadBlock({ authoringPath: '/federal/dev', header: { imsClientId: 'fedsmilo', onReady, layout: 'fullWidth', noBorder: 'true' }, env: 'prod', theme: 'dark' }, 'http://localhost:2000');
@@ -39,11 +46,69 @@ describe('Navigation component', async () => {
     expect(onReady.called).to.be.true;
   });
 
-  it('Renders the localnav if isLocalNav key is passed', async () => {
+  it('Renders the mini GNAV', async () => {
     const onReady = stub();
-    await loadBlock({ authoringPath: '/federal/dev', header: { imsClientId: 'fedsmilo', onReady, isLocalNav: true, jarvis: { id: '1.1' } }, env: 'prod', theme: 'dark' }, 'http://localhost:2000');
-    const el = document.querySelector('.feds-localnav');
-    expect(el).to.exist;
+    await loadBlock({
+      authoringPath: '/federal/dev',
+      header: {
+        imsClientId: 'fedsmilo',
+        onReady,
+        layout: 'fullWidth',
+        noBorder: 'true',
+        mobileGnavV2: 'on',
+        miniGnav: true,
+      },
+      env: 'prod',
+      theme: 'dark',
+    }, 'http://localhost:2000');
+    const isMiniGnav = !!document.querySelector('.mini-gnav');
+    console.log(isMiniGnav);
+    expect(isMiniGnav).to.be.true;
+    expect(onReady.called).to.be.true;
+  });
+
+  it('Renders the mini GNAV and desktop apps cta placeholder', async () => {
+    const onReady = stub();
+    await loadBlock({
+      authoringPath: '/federal/dev',
+      header: {
+        imsClientId: 'fedsmilo',
+        onReady,
+        desktopAppsCta: true,
+        mobileGnavV2: 'on',
+        miniGnav: true,
+      },
+      env: 'prod',
+      theme: 'dark',
+    }, 'http://localhost:2000');
+    const isMiniGnav = document.querySelector('.mini-gnav');
+    const isDesktopAppsCta = document.querySelector('.feds-client-desktop-apps');
+    expect(isMiniGnav).to.exist;
+    expect(isDesktopAppsCta).to.exist;
+    expect(onReady.called).to.be.true;
+  });
+
+  it('Renders mini GNAV and search placeholder before (.feds-nav-wrapper)', async () => {
+    const onReady = stub();
+    await loadBlock({
+      authoringPath: '/federal/dev',
+      header: {
+        imsClientId: 'fedsmilo',
+        onReady,
+        desktopAppsCta: true,
+        searchEnabled: 'on',
+        mobileGnavV2: 'on',
+        miniGnav: true,
+      },
+      env: 'prod',
+      theme: 'dark',
+    }, 'http://localhost:2000');
+    const isMiniGnav = document.querySelector('.mini-gnav');
+    const searchPlaceholder = document.querySelector('.feds-client-search');
+    expect(isMiniGnav).to.exist;
+    expect(searchPlaceholder).to.exist;
+    expect(searchPlaceholder.nextElementSibling.classList.contains('feds-nav-wrapper')).to.be.true;
+    expect(onReady.called).to.be.true;
   });
 
   it('Should not render the footer block when config is not passed', async () => {

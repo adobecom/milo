@@ -82,6 +82,10 @@
   margin-right: 8px;
 }
 
+.table .col picture {
+  display: flex;
+}
+
 .section.table-section,
 .section.table-merch-section {
   background: var(--color-white);
@@ -131,30 +135,18 @@
   visibility: hidden;
 }
 
+.table .highlight-text {
+  overflow: hidden;
+  width: 0;
+  height: 0;
+}
+
 /* heading */
 .table .col-heading.hidden {
   border-top: none !important;
   border-left: none !important;
   border-right: none !important;
   border-radius: 0 !important;
-}
-
-.table .col-heading:first-child {
-  border-top-left-radius: var(--border-radius);
-}
-
-[dir="rtl"] .table .col-heading:first-child {
-  border-top-left-radius: 0;
-  border-top-right-radius: var(--border-radius);
-}
-
-.table .col-heading:last-child {
-  border-top-right-radius: var(--border-radius);
-}
-
-[dir="rtl"] .table .col-heading:last-child {
-  border-top-right-radius: 0;
-  border-top-left-radius: var(--border-radius);
 }
 
 .table .row-heading .col-heading.col.no-rounded,
@@ -205,7 +197,7 @@
   padding: var(--spacing-s);
 }
 
-.table:not(.merch) .row-heading .col.col-heading .action-area {
+.table .row-heading .col.col-heading .action-area {
   display: flex;
   gap: var(--spacing-xs);
   flex-wrap: wrap;
@@ -386,7 +378,7 @@
 /* rtl */
 [dir="rtl"] .table .col {
   border-right: 1px var(--border-color) solid;
-  border-left: 1px solid transparent;
+  border-left: 1px var(--border-color) solid;
 }
 
 [dir="rtl"] .table.merch .col {
@@ -423,6 +415,16 @@
     border-top: 1px solid var(--hover-border-color);
     border-left: 1px solid var(--hover-border-color);
     border-right: 1px solid var(--hover-border-color);
+  }
+
+  [dir="rtl"] .table .col-heading:first-child {
+    border-top-left-radius: 0;
+    border-top-right-radius: var(--border-radius);
+  }
+
+  [dir="rtl"] .table .col-heading:last-child {
+    border-top-right-radius: 0;
+    border-top-left-radius: var(--border-radius);
   }
 
   .table .row-heading .col-heading.hover {
@@ -523,7 +525,7 @@
   padding-bottom: 0;
 }
 
-.table.has-addon .table-title-text blockquote,
+.table.has-addon .table-title-text .blockquote,
 .table.has-addon .table-title-text code {
   font-family: var(--body-font-family);
   background-color: var(--color-gray-300);
@@ -537,14 +539,13 @@
   color: black;
 }
 
-.table.has-addon .col.section-row-title blockquote p {
+.table.has-addon .col.section-row-title .blockquote p {
   font-size: var(--type-body-xs-size);
   line-height: var(--type-body-xs-lh);
 }
 
-.table.has-addon .addon-promo,
-.table.has-addon .addon-promo a {
-  color: #2D9D78;
+.table.has-addon .addon-promo {
+  color: #05834E;
   font-size: var(--type-body-xs-size);
   line-height: var(--type-body-xs-lh);
   margin-bottom: var(--spacing-xxs);
@@ -562,10 +563,19 @@
   transition: box-shadow 200ms cubic-bezier(0.33, 1, 0.68, 1);
 }
 
+.table.cancel-sticky .row-heading,
+.table.cancel-sticky .row-highlight {
+  position: static;
+}
+
 .table:not(.merch) .row-heading.active,
 .table.merch .row-heading.active .col-heading {
   transition-duration: 400ms;
   box-shadow: 0 6px 3px -3px rgb(0 0 0 / 15%);
+}
+
+.table[class*="sticky"] .row-heading.active {
+  z-index: 9;
 }
 
 .top-border-transparent {
@@ -573,6 +583,14 @@
 }
 
 @media (min-width: 769px) {
+  .table .col-heading:first-child {
+    border-top-left-radius: var(--border-radius);
+  }
+
+  .table .col-heading:last-child {
+    border-top-right-radius: var(--border-radius);
+  }
+
   .table-section .filters {
     display: none;
   }
@@ -643,11 +661,26 @@
   margin-right: 16px;
 }
 
+.table .col-heading:only-child {
+  border-top-right-radius: var(--border-radius);
+  border-top-left-radius: var(--border-radius);
+}
+
 /* Start tablet styles */
 @media (max-width: 899px) {
   .table,
   .table.merch {
     margin: 0 30px;
+  }
+  
+  .table .right-round, [dir="rtl"] .table .left-round {
+    border-top-right-radius: var(--border-radius);
+    border-top-left-radius: 0;
+  }
+  
+  .table .left-round, [dir="rtl"] .table .right-round {
+    border-top-left-radius: var(--border-radius);
+    border-top-right-radius: 0;
   }
 
   .section[class *= "grid-width-"] .table {
@@ -785,9 +818,5 @@
 
   .table :is(.heading-button,.action-area) {
     max-width: 100%;
-  }
-
-  .table .action-area .con-button.button-l {
-    overflow: hidden;
   }
 }
