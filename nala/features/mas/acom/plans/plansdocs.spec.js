@@ -1,5 +1,9 @@
 /* eslint-disable max-len */
 
+const PRICE_PATTERN = {
+  US_mo: new RegExp('US\\$\\d+\\.\\d\\d/mo'),
+};
+
 module.exports = {
   FeatureName: 'Merch Acom Cards Feature',
   features: [
@@ -13,7 +17,7 @@ module.exports = {
         title: 'Acrobat Pro',
         promoText: 'Save over 30% with an annual plan.',
         description: 'Create, edit, sign, and manage your PDFs — quickly, easily, anywhere.',
-        price: 'US\\$\\d+\\.\\d\\d/mo',
+        price: PRICE_PATTERN.US_mo,
         cta: 'Buy now',
         ctaOsi: 'MzCpF9nUi8rEzyW-9slEUwtRenS69PRW5fp84a93uK4',
         iconUrl: '',

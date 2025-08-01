@@ -1,5 +1,9 @@
 /* eslint-disable max-len */
 
+const PRICE_PATTERN = {
+  US_mo: new RegExp('US\\$\\d+\\.\\d\\d/mo'),
+};
+
 module.exports = {
   FeatureName: 'Merch Plans Cards Feature',
   features: [
@@ -101,7 +105,7 @@ module.exports = {
             id: '5c781778-24bd-4d3e-b0eb-810525ea3442',
             title: 'Creative Cloud All Apps',
             description: 'Get 20+ Creative Cloud apps including Photoshop, Illustrator, Adobe Express, Premiere Pro, and Acrobat Pro. (Substance 3D apps are not included.)',
-            price: 'US\\$\\d+\\.\\d\\d/mo',
+            price: PRICE_PATTERN.US_mo,
             abmLabel: 'Annual, billed monthly',
             cta: 'Select',
             osi: 'r_JXAnlFI7xD6FxWKl2ODvZriLYBoSL701Kd1hRyhe8',
@@ -115,7 +119,7 @@ module.exports = {
             id: '7819acb2-fb23-46c5-ab7f-f59b2e29ee1e',
             title: 'Photography',
             description: 'Lightroom, Lightroom Classic, Photoshop on desktop, web, iPhone, and iPad, and 1TB of cloud storage.',
-            price: 'US\\$\\d+\\.\\d\\d/mo',
+            price: PRICE_PATTERN.US_mo,
             abmLabel: 'Annual, billed monthly',
             cta: 'Select',
             osi: 'MzCpF9nUi8rEzyW-9slEUwtRenS69PRW5fp84a93uK4',
