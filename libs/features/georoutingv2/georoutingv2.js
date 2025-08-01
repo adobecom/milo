@@ -366,14 +366,12 @@ async function showModal(details) {
   const promises = [
     tabs ? loadBlock(tabs) : null,
     tabs ? new Promise((resolve) => { loadStyle(sectionMetaPath, resolve); }) : null,
-    new Promise((resolve) => {
-      loadStyle(georoutingPath, resolve);
-      loadStyle(modalPath, resolve);
-    }),
+    new Promise((resolve) => { loadStyle(georoutingPath, resolve); }),
+    new Promise((resolve) => { loadStyle(modalPath, resolve); }),
     import('../../blocks/modal/modal.js'),
   ];
   const result = await Promise.all(promises);
-  const { getModal, sendAnalytics } = result[3];
+  const { getModal, sendAnalytics } = result[4];
   sendAnalyticsFunc = sendAnalytics;
   return getModal(null, { class: 'locale-modal-v2', id: 'locale-modal-v2', content: details, closeEvent: 'closeModal' });
 }
