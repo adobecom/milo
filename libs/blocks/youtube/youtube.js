@@ -1,5 +1,17 @@
 // part of the code is an optimized version of lite-youtube-embed -> https://github.com/paulirish/lite-youtube-embed
 import { createIntersectionObserver, createTag, isInTextNode, loadLink } from '../../utils/utils.js';
+import { setDialogAndElementAttributes } from '../../scripts/accessibility.js';
+
+async function fetchVideoTitle(videoId) {
+  try {
+    const response = await fetch(`https://www.youtube.com/oembed?url=http://www.youtube.com/watch?v=${videoId}&format=json`);
+    const { title } = await response.json();
+    return title;
+  } catch (error) {
+    window.lana.log('Error fetching YouTube video title', { error });
+    return null;
+  }
+}
 
 class LiteYTEmbed extends HTMLElement {
   connectedCallback() {
@@ -7,28 +19,24 @@ class LiteYTEmbed extends HTMLElement {
     this.videoId = this.getAttribute('videoid');
     const playBtnEl = createTag('button', { type: 'button', class: 'lty-playbtn' });
     this.append(playBtnEl);
-    this.playLabel = this.getAttribute('playlabel') || 'Play';
+    this.videoTitle = this.getAttribute('videotitle') || 'Youtube video';
     this.style.backgroundImage = `url("https://i.ytimg.com/vi/${this.videoId}/hqdefault.jpg")`;
     this.style.backgroundSize = 'cover';
     this.style.backgroundPosition = 'center';
     const playBtnLabelEl = createTag('span', { class: 'lyt-visually-hidden' });
-    playBtnLabelEl.textContent = this.playLabel;
+    playBtnLabelEl.textContent = `Play ${this.videoTitle}`;
     playBtnEl.append(playBtnLabelEl);
+    this.focusBtnInDialog(playBtnEl);
     this.addEventListener('pointerover', LiteYTEmbed.warmConnections, { once: true });
     this.addEventListener('click', this.addIframe);
     this.needsYTApiForAutoplay = navigator.vendor.includes('Apple') || this.isMobile;
   }
 
-  async fetchVideoTitle() {
-    try {
-      const response = await fetch(`https://www.youtube.com/oembed?url=http://www.youtube.com/watch?v=${this.videoId}&format=json`);
-      const data = await response.json();
-
-      const { setDialogAndElementAttributes } = await import('../../scripts/accessibility.js');
-      setDialogAndElementAttributes({ element: this.iframeEl, title: data.title });
-    } catch (error) {
-      window.lana.log('Error fetching YouTube video title', { error });
-    }
+  focusBtnInDialog(btn) {
+    const isDialog = this.closest('.dialog-modal');
+    if (!isDialog) return;
+    btn.focus();
+    setDialogAndElementAttributes({ element: isDialog, title: this.videoTitle });
   }
 
   static warmConnections() {
@@ -76,25 +84,24 @@ class LiteYTEmbed extends HTMLElement {
         src: `https://www.youtube-nocookie.com/embed/${encodeURIComponent(this.videoId)}?${params.toString()}`,
         allowFullscreen: true,
         allow: 'accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture',
-        title: this.playLabel,
+        title: this.videoTitle,
       });
       this.insertAdjacentElement('afterend', this.iframeEl);
       this.iframeEl.focus();
       this.remove();
-      this.fetchVideoTitle();
     }
   }
 }
 
 export default async function init(a) {
+  if (isInTextNode(a) || !a.origin?.includes('youtu')) return;
   if (!customElements.get('lite-youtube')) customElements.define('lite-youtube', LiteYTEmbed);
-
+  const searchParams = new URLSearchParams(a.search);
+  const id = searchParams.get('v') || a.pathname.split('/').pop();
+  searchParams.delete('v');
+  const videoTitle = await fetchVideoTitle(id);
   const embedVideo = () => {
-    if (isInTextNode(a) || !a.origin?.includes('youtu')) return;
-    const searchParams = new URLSearchParams(a.search);
-    const id = searchParams.get('v') || a.pathname.split('/').pop();
-    searchParams.delete('v');
-    const liteYTElement = createTag('lite-youtube', { videoid: id, playLabel: 'Youtube video' });
+    const liteYTElement = createTag('lite-youtube', { videoid: id, videotitle: videoTitle });
 
     if (searchParams.toString()) liteYTElement.setAttribute('params', searchParams.toString());
 
