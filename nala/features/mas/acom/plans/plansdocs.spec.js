@@ -1,8 +1,6 @@
 /* eslint-disable max-len */
 
-const PRICE_PATTERN = {
-  US_mo: /US\$\d+\.\d\d\/mo/,
-};
+const PRICE_PATTERN = { US_mo: /US\$\d+\.\d\d\/mo/ };
 
 module.exports = {
   FeatureName: 'Merch Acom Cards Feature',
