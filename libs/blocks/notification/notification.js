@@ -75,6 +75,8 @@ function getBlockData(el) {
   return { fontSizes, options: { ...getOpts(el) } };
 }
 
+function getHeadingText(el) { return el.querySelector('h1, h2, h3, h4, h5, h6, strong')?.textContent.trim(); }
+
 export function findFocusableInSection(section, selSelector, focSelector) {
   if (!section) return null;
 
@@ -175,7 +177,7 @@ function addCloseAction(el, btn) {
 }
 
 function decorateClose(el) {
-  const btn = createTag('button', { 'aria-label': 'Close Promo Banner', class: 'close' }, closeSvg);
+  const btn = createTag('button', { 'aria-label': 'Close Promotional Banner', class: 'close' }, closeSvg);
   addCloseAction(el, btn);
   el.appendChild(btn);
 }
@@ -220,6 +222,7 @@ function curtainCallback(el) {
   document.body.classList.add('mobile-disable-scroll');
   el.insertAdjacentElement('afterend', curtain);
   el.setAttribute('role', 'dialog');
+  el.setAttribute('aria-label', `${getHeadingText(el)} Dialog` || 'Promotional Banner Dialog');
   el.setAttribute('aria-modal', 'true');
 
   const focusableElements = [...el.querySelectorAll(focusableNotificationElements)];
@@ -376,10 +379,20 @@ async function decorateLayout(el) {
   return foreground;
 }
 
+function setStickyAccessabilityAttributes(el) {
+  setTimeout(() => {
+    const stickyClass = [...el.closest('.section').classList]
+      .find((item) => item === 'sticky-top' || item === 'sticky-bottom');
+    if (!stickyClass) return;
+
+    el.setAttribute('aria-label', getHeadingText(el)
+       || (stickyClass === 'sticky-bottom' ? 'Promotional Banner Bottom' : 'Promotional Banner Top'));
+    el.setAttribute('role', 'region');
+  }, 300);
+}
+
 export default async function init(el) {
   el.classList.add('con-block');
-  el.setAttribute('aria-label', 'Promo Banner');
-  el.setAttribute('role', 'region');
   const { fontSizes, options } = getBlockData(el);
   const blockText = await decorateLayout(el);
   decorateBlockText(blockText, fontSizes);
@@ -403,4 +416,6 @@ export default async function init(el) {
     tabindex: '-1',
     'data-notification-id': notificationId,
   }, ''));
+
+  setStickyAccessabilityAttributes(el);
 }
