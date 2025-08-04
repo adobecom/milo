@@ -48,6 +48,11 @@
   cursor: pointer;
 }
 
+.global-footer:not(.mobile) .feds-menu-headline {
+  white-space: normal;
+  display: block;
+}
+
 [dir = "rtl"] .feds-menu-headline {
   padding-right: 32px;
   padding-left: 44px;
@@ -178,10 +183,11 @@ content auhtored manually and AEM-imported content */
   }
 
   .global-footer:not(.mobile) .feds-menu-content {
-    display: flex;
-    justify-content: space-between;
+    display: grid;
     width: 100%;
     max-width: var(--feds-maxWidth-nav);
+    grid-template-columns: repeat(auto-fit, minmax(min(230px, 100%), 1fr));
+    gap: 16px;
   }
 
   .feds-navItem--section .feds-menu-content {
