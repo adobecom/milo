@@ -60,24 +60,34 @@ export function updateHash(key, value) {
     hash.set(key, value);
     window.location.hash = hash.toString();
 }
+
 /**
- *Deep link helper
+ * Convert the query params to hash
+ * @param {string[]} keys - The keys to convert to hash
+ */
+function paramsToHash(keys = []) {
+    keys.forEach(key => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const value = urlParams.get(key);
+        if (!value) return;
+        if (window.location.hash.includes(`${key}=`)) { // in case the key already exists in the hash, update the hash
+            updateHash(key, value);
+        } else { // otherwise, add the key to the hash
+            window.location.hash = window.location.hash ? `${window.location.hash}&filter=${value}` : `filter=${value}`;
+        }
+        urlParams.delete(key);
+        historyPushState(urlParams.toString());
+    });
+}
+
+/**
+ * Deep link helper
  * @param {*} callback function that expects an object with properties that have changed compared to previous state
  * @returns a disposer function that stops listening to hash changes
  */
 export function deeplink(callback) {
+    paramsToHash(['filter', 'single_app']);
     const handler = () => {
-        const urlParams = new URLSearchParams(window.location.search);
-        const filterParam = urlParams.get('filter');
-        if (filterParam && !window.location.hash.includes('filter=')) { // transfer filter param to hash
-            window.location.hash = window.location.hash ? `${window.location.hash}&filter=${filterParam}` : `filter=${filterParam}`;
-            urlParams.delete('filter');
-            historyPushState(urlParams.toString());
-        } else if (filterParam) { // in case of other hash kv exists.
-            updateHash('filter', filterParam);
-            urlParams.delete('filter');
-            historyPushState(urlParams.toString());
-        }
         if (window.location.hash && !window.location.hash.includes('=')) return;
         const state = parseState(window.location.hash);
         callback(state);
