@@ -49,7 +49,6 @@ function getSettings(config = {}, service) {
     // TODO: add alias names for meta, search and storage
     // See https://git.corp.adobe.com/wcms/tacocat.js/pull/348#discussion_r6557570
     const { commerce = {} } = config;
-    if (window.location.pathname.includes('/tools/ost')) commerce.allowOverride = 'true';
 
     let env = Env.PRODUCTION;
     let wcsURL = WCS_PROD_URL;
