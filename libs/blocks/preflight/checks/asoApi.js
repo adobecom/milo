@@ -12,7 +12,6 @@ export const asoCache = {
 
 const lanaLog = (message) => {
   window.lana.log(message, {
-    clientId: 'feds-milo',
     sampleRate: 1,
     tags: 'preflight',
     errorType: 'e',
