@@ -1,15 +1,16 @@
 // part of the code is an optimized version of lite-youtube-embed -> https://github.com/paulirish/lite-youtube-embed
 import { createIntersectionObserver, createTag, isInTextNode, loadLink } from '../../utils/utils.js';
-import { setDialogAndElementAttributes } from '../../scripts/accessibility.js';
 
 async function fetchVideoTitle(videoId) {
+  const errorTitle = 'Youtube video';
   try {
     const response = await fetch(`https://www.youtube.com/oembed?url=http://www.youtube.com/watch?v=${videoId}&format=json`);
+    if (!response.ok) return errorTitle;
     const { title } = await response.json();
     return title;
   } catch (error) {
     window.lana.log('Error fetching YouTube video title', { error });
-    return null;
+    return errorTitle;
   }
 }
 
@@ -19,7 +20,7 @@ class LiteYTEmbed extends HTMLElement {
     this.videoId = this.getAttribute('videoid');
     const playBtnEl = createTag('button', { type: 'button', class: 'lty-playbtn' });
     this.append(playBtnEl);
-    this.videoTitle = this.getAttribute('videotitle') || 'Youtube video';
+    this.videoTitle = this.getAttribute('videotitle');
     this.style.backgroundImage = `url("https://i.ytimg.com/vi/${this.videoId}/hqdefault.jpg")`;
     this.style.backgroundSize = 'cover';
     this.style.backgroundPosition = 'center';
@@ -33,10 +34,12 @@ class LiteYTEmbed extends HTMLElement {
   }
 
   focusBtnInDialog(btn) {
-    const isDialog = this.closest('.dialog-modal');
-    if (!isDialog) return;
-    btn.focus();
-    setDialogAndElementAttributes({ element: isDialog, title: this.videoTitle });
+    const dialog = this.closest('.dialog-modal');
+    if (!dialog) return;
+    import('../../scripts/accessibility.js').then(({ setDialogAndElementAttributes }) => {
+      btn.focus();
+      setDialogAndElementAttributes({ element: dialog, title: this.videoTitle });
+    });
   }
 
   static warmConnections() {
