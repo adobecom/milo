@@ -62,7 +62,11 @@ function decorateCards(el, cards) {
   cardRows.forEach((card) => {
     const cardImage = card.querySelector('picture');
     const cardText = createTag('div', { class: 'prompt-card-text' }, `${cardIcon} <p>${card.textContent.trim()}</p>`);
-    const cardButton = createTag('button', { class: 'prompt-card-button no-track', 'daa-ll': getAnalyticsLabel('1') });
+    const cardButton = createTag('button', {
+      class: 'prompt-card-button no-track',
+      'daa-ll': getAnalyticsLabel('1'),
+      'aria-label': `Select: ${cardText.textContent.trim()}`,
+    });
     if (cardImage) cardButton.append(cardImage); cardImage.classList.add('prompt-card-image');
     if (card.textContent !== '') cardButton.append(cardText);
     cardSection.append(cardButton);
@@ -83,8 +87,17 @@ function decorateCards(el, cards) {
 
 function decorateInput(el, input) {
   const fieldSection = createTag('section', { class: 'bc-input-field' });
-  const fieldInput = createTag('input', { type: 'text', placeholder: input.textContent.trim() });
-  const fieldButton = createTag('button', { class: 'input-field-button no-track', disabled: true, 'daa-ll': getAnalyticsLabel('1') }, submitIcon);
+  const fieldInput = createTag('input', {
+    type: 'text',
+    placeholder: input.textContent.trim(),
+    'aria-label': 'Message input',
+  });
+  const fieldButton = createTag('button', {
+    class: 'input-field-button no-track',
+    disabled: true,
+    'aria-label': 'Send Message',
+    'daa-ll': getAnalyticsLabel('1'),
+  }, submitIcon);
   const fieldContainer = createTag('div', { class: 'bc-input-field-container' }, [fieldInput, fieldButton]);
   fieldSection.append(fieldContainer);
   el.append(fieldSection);
@@ -101,7 +114,7 @@ function decorateInput(el, input) {
   fieldInput.addEventListener('keyup', (e) => {
     if (e.key === 'Enter') {
       if (!fieldInput.value || fieldInput.value.trim() === '') return;
-      openChatModal(fieldInput.value);
+      fieldButton.click();
     }
   });
 
