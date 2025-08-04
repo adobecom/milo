@@ -222,7 +222,8 @@ function curtainCallback(el) {
   document.body.classList.add('mobile-disable-scroll');
   el.insertAdjacentElement('afterend', curtain);
   el.setAttribute('role', 'dialog');
-  el.setAttribute('aria-label', `${getHeadingText(el)} Dialog` || 'Promotional Banner Dialog');
+  const ariaLabel = getHeadingText(el);
+  el.setAttribute('aria-label', ariaLabel ? `${ariaLabel} Dialog` : 'Promotional Banner Dialog');
   el.setAttribute('aria-modal', 'true');
 
   const focusableElements = [...el.querySelectorAll(focusableNotificationElements)];
