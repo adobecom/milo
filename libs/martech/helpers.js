@@ -123,52 +123,135 @@ function getOrGenerateUserId() {
   };
 }
 
-function getUpdatedVisitAttempt() {
-  const { hostname } = window.location;
-  const secondVisitAttempt = Number(localStorage.getItem('secondHit')) || 0;
+function matchConditions({ domains = [], paths = [], params = [], rules = {} }, host, path, href) {
+  const {
+    main = 'or',
+    domains: domainRule = 'or',
+    paths: pathRule = 'or',
+    params: paramRule = 'or',
+  } = rules;
 
-  const isAdobeDomain = hostname === 'www.adobe.com' || hostname === 'www.stage.adobe.com';
-  const consentCookieValue = getCookie(OPT_ON_AND_CONSENT_COOKIE);
+  const matchArray = (items, rule, value, testFn) => {
+    if (!items.length) return rule === 'and';
+    const matches = items.map((item) => testFn(item, value));
+    return rule === 'and' ? matches.every(Boolean) : matches.some(Boolean);
+  };
 
-  if (!consentCookieValue?.includes('C0002:0') && isAdobeDomain && secondVisitAttempt <= 2) {
-    const updatedVisitAttempt = secondVisitAttempt === 0 ? 1 : secondVisitAttempt + 1;
-    localStorage.setItem('secondHit', updatedVisitAttempt);
-    return updatedVisitAttempt;
-  }
+  const domainMatches = matchArray(domains, domainRule, host, (d, h) => d === h);
+  const pathMatches = matchArray(paths, pathRule, path, (p, v) => p.test(v));
+  const paramMatches = matchArray(params, paramRule, href, (r, v) => r.test(v));
 
-  return secondVisitAttempt;
+  return main === 'and' ? (domainMatches && pathMatches && paramMatches) : (domainMatches || pathMatches || paramMatches);
 }
 
-function getUpdatedAcrobatVisitAttempt() {
-  const { hostname, pathname } = window.location;
-  const secondVisitAttempt = Number(localStorage.getItem('acrobatSecondHit')) || 0;
-
-  const isAdobeDomain = (hostname === 'www.adobe.com' || hostname === 'www.stage.adobe.com') && /\/acrobat/.test(pathname);
-  const consentCookieValue = getCookie(OPT_ON_AND_CONSENT_COOKIE);
-
-  if (!consentCookieValue?.includes('C0002:0') && isAdobeDomain && secondVisitAttempt <= 2) {
-    const updatedVisitAttempt = secondVisitAttempt === 0 ? 1 : secondVisitAttempt + 1;
-    localStorage.setItem('acrobatSecondHit', updatedVisitAttempt);
-    return updatedVisitAttempt;
-  }
-
-  return secondVisitAttempt;
+function getVisitCount(key) {
+  return Number(localStorage.getItem(key)) || 0;
 }
 
-function getUpdatedDxVisitAttempt() {
-  const { hostname } = window.location;
-  const secondVisitAttempt = Number(localStorage.getItem('dxHit')) || 0;
+function setVisitCount(key, count) {
+  localStorage.setItem(key, count.toString());
+}
 
-  const isAdobeDomain = (hostname === 'business.adobe.com' || hostname === 'business.stage.adobe.com' || hostname === 'www.marketo.com' || hostname === 'engage.marketo.com');
+function getEngagedSecondVisits() {
+  const { hostname: host, pathname: path, href } = window.location;
+
+  const configs = [
+    {
+      domains: ['www.adobe.com', 'www.stage.adobe.com'],
+      paths: [/\/acrobat/],
+      rules: { main: 'and' },
+      privacy: false,
+      id: 'ev_118',
+    },
+    {
+      domains: ['www.stage.adobe.com', 'www.adobe.com', 'firefly.adobe.com', 'photoshop.adobe.com'],
+      privacy: true,
+      id: 'ev_95',
+    },
+    {
+      domains: ['business.adobe.com', 'business.stage.adobe.com', 'www.marketo.com', 'engage.marketo.com'],
+      privacy: true,
+      id: 'ev_31',
+    },
+    {
+      domains: ['www.adobe.com', 'acrobat.adobe.com'],
+      paths: [/\/acrobat\/campaign\/acrobats-got-it.html/, /\/acrobat/],
+      params: [/ttid=(all-in-one|reliable|versatile|combine-organize-e-sign|webforms-edit-e-sign)/],
+      privacy: false,
+      id: 'ev_141_142',
+      firstVisit: true,
+      rules: {
+        main: 'and',
+        domains: 'or',
+        paths: 'or',
+        params: 'or',
+      },
+    },
+  ];
+
   const consentCookieValue = getCookie(OPT_ON_AND_CONSENT_COOKIE);
+  const secondVisits = [];
 
-  if (!consentCookieValue?.includes('C0002:0') && isAdobeDomain && secondVisitAttempt <= 2) {
-    const updatedVisitAttempt = secondVisitAttempt === 0 ? 1 : secondVisitAttempt + 1;
-    localStorage.setItem('dxHit', updatedVisitAttempt);
-    return updatedVisitAttempt;
+  if (consentCookieValue?.includes('C0002:0')) {
+    return null;
   }
 
-  return secondVisitAttempt;
+  configs.forEach((config) => {
+    const {
+      domains = [],
+      paths = [],
+      params = [],
+      privacy,
+      firstVisit = false,
+      secondVisit = true,
+      update = true,
+      rules = {},
+      id,
+    } = config;
+
+    const visitKey = id;
+
+    const matched = matchConditions(
+      { domains, paths, params, rules },
+      host,
+      path,
+      href,
+    );
+
+    if (!matched) {
+      return;
+    }
+
+    const attempt = getVisitCount(visitKey);
+    let nextVisit = attempt;
+
+    if (firstVisit && attempt < 1) {
+      nextVisit = 1;
+      setVisitCount(visitKey, nextVisit);
+
+      secondVisits.push({
+        domain: host,
+        event: visitKey,
+        privacy,
+        visit: nextVisit,
+      });
+    }
+
+    if (secondVisit) {
+      if (update && attempt < 2) {
+        nextVisit = attempt + 1;
+        setVisitCount(visitKey, nextVisit);
+        secondVisits.push({
+          domain: host,
+          event: visitKey,
+          privacy,
+          visit: nextVisit,
+        });
+      }
+    }
+  });
+
+  return secondVisits;
 }
 
 export function getPageNameForAnalytics() {
@@ -238,49 +321,6 @@ export function getProcessedPageNameForAnalytics() {
   }
 
   return pageName;
-}
-
-function resolveAgiCampaignAndFlag() {
-  const { hostname, pathname, href } = window.location;
-  const consentValue = getCookie('OptanonConsent');
-  const EXPIRY_TIME_IN_DAYS = 90;
-  const CAMPAIGN_PAGE_VALUE = '1';
-  const ACROBAT_DOMAIN_VALUE = '2';
-
-  if (!consentValue?.includes('C0002:1')) {
-    return { agiCampaign: false, setAgICampVal: false };
-  }
-
-  const agiCookie = getCookie('agiCamp');
-  const setAgiCookie = (value) => {
-    setCookie('agiCamp', value, {
-      expires: EXPIRY_TIME_IN_DAYS,
-      domain: getDomainWithoutWWW(),
-    });
-  };
-
-  const campaignRegex = /ttid=(all-in-one|reliable|versatile|combine-organize-e-sign|webforms-edit-e-sign)/;
-  const isGotItPage = pathname.includes('/acrobat/campaign/acrobats-got-it.html') && campaignRegex.test(href);
-  const isAcrobatDomain = hostname === 'acrobat.adobe.com' || (hostname === 'www.adobe.com' && pathname.includes('/acrobat'));
-
-  let agiCampaign = false;
-
-  if (isGotItPage && (!agiCookie || agiCookie !== ACROBAT_DOMAIN_VALUE)) {
-    setAgiCookie(CAMPAIGN_PAGE_VALUE);
-    agiCampaign = CAMPAIGN_PAGE_VALUE;
-  } else if (isAcrobatDomain && (!agiCookie || agiCookie !== CAMPAIGN_PAGE_VALUE)) {
-    if (agiCookie === ACROBAT_DOMAIN_VALUE) return { agiCampaign: false, setAgICampVal: false };
-    setAgiCookie(ACROBAT_DOMAIN_VALUE);
-    agiCampaign = ACROBAT_DOMAIN_VALUE;
-  }
-
-  const setAgICampVal = agiCampaign === CAMPAIGN_PAGE_VALUE || agiCampaign === ACROBAT_DOMAIN_VALUE;
-  return { agiCampaign, setAgICampVal };
-}
-
-function getGlobalPrivacyControl() {
-  if (!navigator || !navigator.globalPrivacyControl) return '';
-  return navigator.globalPrivacyControl.toString();
 }
 
 function getEntityId() {
@@ -440,8 +480,8 @@ function createRequestPayload({ updatedContext, pageName, processedPageName, loc
     } = window.location;
     const { data, xdm } = eventObj;
     const { digitalData } = data._adobe_corpnew;
+    const { _adobe_corpnew: adobeCoprnew } = data;
     const { pageInfo } = digitalData.page;
-    const { agiCampaign, setAgICampVal } = resolveAgiCampaignAndFlag();
     pageInfo.pageName = pageName;
     pageInfo.processedPageName = processedPageName;
     pageInfo.location = {
@@ -460,43 +500,26 @@ function createRequestPayload({ updatedContext, pageName, processedPageName, loc
     };
     data.eventType = hitTypeEventTypeMap[hitType];
 
-    if (getUpdatedVisitAttempt() === 2) {
-      digitalData.adobe = {
-        ...digitalData.adobe,
-        libraryVersions: 'alloy-api',
-        experienceCloud: {
-          ...digitalData.adobe?.experienceCloud,
-          secondVisits: 'setEvent',
-        },
-      };
+    const engagedSecondVisits = getEngagedSecondVisits();
+
+    if (Array.isArray(engagedSecondVisits)) {
+      if (!adobeCoprnew.user.visits) adobeCoprnew.user.visits = {};
+
+      for (const visitData of engagedSecondVisits) {
+        const { event, visit } = visitData;
+        if (visit === 2) {
+          adobeCoprnew.user.visits[event] = visitData;
+
+          if (event === 'ev_95' || event === 'ev_31') {
+            digitalData.adobe = {
+              ...digitalData.adobe,
+              libraryVersions: 'alloy-api',
+            };
+          }
+        }
+      }
     }
-    if (getUpdatedAcrobatVisitAttempt() === 2) {
-      digitalData.adobe = {
-        ...digitalData.adobe,
-        experienceCloud: {
-          ...digitalData.adobe?.experienceCloud,
-          acrobatSecondVisits: 'setEvent',
-        },
-      };
-    }
-    if (getUpdatedDxVisitAttempt() === 2) {
-      digitalData.adobe = {
-        ...digitalData.adobe,
-        libraryVersions: 'alloy-api',
-        experienceCloud: {
-          ...digitalData.adobe?.experienceCloud,
-          dxVisits: 'setEvent',
-        },
-      };
-    }
-    digitalData.adobe = {
-      ...digitalData.adobe,
-      experienceCloud: {
-        ...digitalData.adobe?.experienceCloud,
-        agiCampaign: setAgICampVal ? agiCampaign : '',
-      },
-      gpc: getGlobalPrivacyControl(),
-    };
+
     xdm.implementationDetails = {
       name: 'https://ns.adobe.com/experience/alloy',
       version: '2.0',
