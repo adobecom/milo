@@ -50,7 +50,6 @@ export default function init(el) {
     }
 
     if (isColumnHeader(rdx, containsHTag, meaningfulChildren)) {
-      col.classList.add('column-title');
       col.setAttribute('role', 'columnheader');
       return;
     }
