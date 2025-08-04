@@ -61,6 +61,7 @@
 
   /* Headings (Consonant) */
   --type-heading-all-weight: 700;
+  --type-heading-all-weight-mweb: 800;
   --type-heading-xxxl-size: calc(var(--font-size-multiplier, 1) * 44px);
   --type-heading-xxxl-lh: 55px;
   --type-heading-xxl-size: calc(var(--font-size-multiplier, 1) * 36px);
@@ -936,6 +937,10 @@ a.static:active  {
     hyphenate-limit-chars: 15 5 5;
     -webkit-hyphenate-limit-before: 7;
     -webkit-hyphenate-limit-after: 7;
+  }
+
+  :root:has(head > meta[name="mweb"][content="on"]) body [class^="heading-"] {
+    font-weight: var(--type-heading-all-weight-mweb);
   }
 
   .con-button.button-justified-mobile {
