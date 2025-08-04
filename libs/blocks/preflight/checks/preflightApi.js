@@ -72,7 +72,7 @@ export const getChecksSuite = () => {
       })
       .catch(() => {
         checksSuite = 'OG';
-        resolve('OG');
+        resolve(checksSuite);
       });
   });
 };

@@ -856,7 +856,7 @@ img:hover ~ .asset-meta,
   visibility: visible;
 }
 
-.ai-suggestion{
+.ai-suggestion {
   display: flex;
   margin: 0;
   font-style: italic;
