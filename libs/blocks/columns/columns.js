@@ -8,12 +8,13 @@ export default function init(el) {
     el.setAttribute('role', 'table');
   }
 
+  const hasMeaningfulChildren = (col) => Array.from(col.childNodes).filter(
+    (node) => node.nodeType !== Node.TEXT_NODE || node.textContent.trim() !== '',
+  );
+
   const isRowHeader = (cols, col, cdx) => {
     const columnsWithStrongOrH = Array.from(cols).filter((rowCol) => {
-      const rowColMeaningfulChildren = Array.from(rowCol.childNodes).filter(
-        (node) => node.nodeType !== Node.TEXT_NODE || node.textContent.trim() !== '',
-      );
-
+      const rowColMeaningfulChildren = hasMeaningfulChildren(rowCol);
       return rowColMeaningfulChildren.some((child) => child.tagName?.match(/^(H[1-6]|STRONG)$/));
     });
 
@@ -34,10 +35,6 @@ export default function init(el) {
 
   const isRow = (cols) => isTable && Array.from(cols).some((col) => col.hasChildNodes());
 
-  const hasMeaningfulChildren = (col) => Array.from(col.childNodes).filter(
-    (node) => node.nodeType !== Node.TEXT_NODE || node.textContent.trim() !== '',
-  );
-
   const applyAccessibilityAttributes = (col, rdx, cols, cdx) => {
     const meaningfulChildren = hasMeaningfulChildren(col);
     const containsHTag = meaningfulChildren[0]?.tagName?.match(/^H[1-6]$/);
@@ -54,7 +51,7 @@ export default function init(el) {
       return;
     }
 
-    if (col.innerText.trim()) col.setAttribute('role', 'cell');
+    if (col.innerText) col.setAttribute('role', 'cell');
   };
 
   rows.forEach((row, rdx) => {
@@ -66,7 +63,7 @@ export default function init(el) {
     cols.forEach((col, cdx) => {
       col.classList.add('col', `col-${cdx + 1}`);
       if (!isTable) return;
-      if (!rdx && !cdx && !col.innerText.trim()) {
+      if (!rdx && !cdx && !col.innerText) {
         col.classList.add('empty-table-heading');
         return;
       }
