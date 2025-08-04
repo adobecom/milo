@@ -63,10 +63,9 @@ function getSettings(config = {}, service) {
         getParameter('displayOldPrice', commerce),
         ffDefaults ? Defaults.displayOldPrice : !Defaults.displayOldPrice,
     );
-    const displayPerUnit = toBoolean(
-        getParameter('displayPerUnit', commerce),
-        ffDefaults ? Defaults.displayPerUnit : !Defaults.displayPerUnit,
-    );
+
+    const displayPerUnit = Defaults.displayPerUnit;
+
     const displayRecurrence = toBoolean(
         getParameter('displayRecurrence', commerce),
         Defaults.displayRecurrence,

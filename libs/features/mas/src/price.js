@@ -21,8 +21,9 @@ import {
 } from '@dexter/tacocat-core';
 import { InlinePrice } from './inline-price.js';
 import { toOfferSelectorIds, toQuantity } from './utilities.js';
+import { FF_DEFAULTS } from './constants.js';
 
-export function Price({ literals, providers, settings }) {
+export function Price({ literals, providers, settings, featureFlags = {} }) {
     function collectPriceOptions(overrides, placeholder = null) {
         let options = {
             country: settings.country,
@@ -119,8 +120,12 @@ export function Price({ literals, providers, settings }) {
         }
 
         let [offer] = offers;
+        let displayPerUnit = settings.displayPerUnit;
+        if (featureFlags[FF_DEFAULTS]) {
+            displayPerUnit = offer.customerSegment !== 'INDIVIDUAL';
+        }
         offer = { ...offer, ...offer.priceDetails };
-        return method({...settings, ...options}, offer);
+        return method({...settings, displayPerUnit, ...options}, offer);
     }
 
     const createInlinePrice = InlinePrice.createInlinePrice;

@@ -6,7 +6,6 @@ import {
 } from './mas-element.js';
 import { selectOffers, getService } from './utilities.js';
 import { Defaults } from './defaults.js';
-import { getParameter } from '@dexter/tacocat-core';
 
 const INDIVIDUAL = 'INDIVIDUAL_COM';
 const BUSINESS = 'TEAM_COM';
