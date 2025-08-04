@@ -55,7 +55,7 @@ export default function init(el) {
       return;
     }
 
-    if (col.innerText) col.setAttribute('role', 'cell');
+    if (col.innerText.trim()) col.setAttribute('role', 'cell');
   };
 
   rows.forEach((row, rdx) => {
@@ -67,7 +67,7 @@ export default function init(el) {
     cols.forEach((col, cdx) => {
       col.classList.add('col', `col-${cdx + 1}`);
       if (!isTable) return;
-      if (!rdx && !cdx && !col.innerText) {
+      if (!rdx && !cdx && !col.innerText.trim()) {
         col.classList.add('empty-table-heading');
         return;
       }
