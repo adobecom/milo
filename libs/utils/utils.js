@@ -1430,13 +1430,13 @@ async function getCountry() {
   if (fedsLocation) {
     try {
       fedsLocation = JSON.parse(fedsLocation);
-      country = fedsLocation.country?.toUpperCase();
+      country = fedsLocation.country;
     } catch (e) {
       // do nothing
     }
   }
-  if (country) return country.toUpperCase();
-  return getAkamaiCode()?.toUpperCase();
+  if (country) return country;
+  return getAkamaiCode();
 }
 async function getMartechConsent() {
   const measurementCategory = 'C0002';
@@ -1472,7 +1472,7 @@ async function getMartechConsent() {
   if (explicitConsentCountries.includes(serverTimingCountry)) return false;
   if (serverTimingCountry) return { martechConsent: true };
 
-  const country = await getCountry();
+  const country = await getCountry()?.toUpperCase();
   if (explicitConsentCountries.includes(country)) return { country, martechConsent: false };
   return { country, martechConsent: true };
 }
