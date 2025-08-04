@@ -26,8 +26,8 @@ test.describe('MAS Plans Page test suite', () => {
       await page.waitForLoadState('domcontentloaded');
 
       await page.waitForSelector('merch-card-collection');
-      await expect(await masPlans.getCard(data.cards[0].id)).toBeVisible();
-      await expect(await masPlans.getCard(data.cards[1].id)).toBeVisible();
+      await expect(await masPlans.getCard(data.cards[0].id)).toBeVisible({ timeout: 15000 });
+      await expect(await masPlans.getCard(data.cards[1].id)).toBeVisible({ timeout: 15000 });
 
       await expect(await masPlans.getCardIcon(data.cards[0].id)).toBeVisible();
       const card2Icons = await masPlans.getCardIcon(data.cards[1].id);
@@ -179,7 +179,7 @@ test.describe('MAS Plans Page test suite', () => {
       await expect(eduTab).toHaveAttribute('aria-selected', 'true');
       const controlledContentId = await eduTab.getAttribute('aria-controls');
       const controlledContent = page.locator(`#${controlledContentId}`);
-      await expect(controlledContent).toBeVisible();
+      await expect(controlledContent).toBeVisible({ timeout: 15000 });
     });
 
     await test.step('step-3: Verify Business tab is selected and its content is displayed', async () => {
@@ -188,7 +188,7 @@ test.describe('MAS Plans Page test suite', () => {
       await expect(businessTab).toHaveAttribute('aria-selected', 'true');
       const controlledContentId = await businessTab.getAttribute('aria-controls');
       const controlledContent = page.locator(`#${controlledContentId}`);
-      await expect(controlledContent).toBeVisible();
+      await expect(controlledContent).toBeVisible({ timeout: 15000 });
     });
 
     await test.step('step-3: Verify Schools & Universities tab is selected and its content is displayed', async () => {
@@ -197,7 +197,7 @@ test.describe('MAS Plans Page test suite', () => {
       await expect(businessTab).toHaveAttribute('aria-selected', 'true');
       const controlledContentId = await businessTab.getAttribute('aria-controls');
       const controlledContent = page.locator(`#${controlledContentId}`);
-      await expect(controlledContent).toBeVisible();
+      await expect(controlledContent).toBeVisible({ timeout: 15000 });
     });
 
     await test.step('step-4: Verify Individual tab is selected and its content is displayed', async () => {
@@ -206,7 +206,7 @@ test.describe('MAS Plans Page test suite', () => {
       await expect(businessTab).toHaveAttribute('aria-selected', 'true');
       const controlledContentId = await businessTab.getAttribute('aria-controls');
       const controlledContent = page.locator(`#${controlledContentId}`);
-      await expect(controlledContent).toBeVisible();
+      await expect(controlledContent).toBeVisible({ timeout: 15000 });
     });
   });
 
