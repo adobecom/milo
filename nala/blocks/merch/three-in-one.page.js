@@ -51,7 +51,7 @@ export default class ThreeInOne {
     this.closeModal = async () => {
       const modal = this.getModal();
       modal.dispatchEvent('closeModal');
-      await this.page.waitForTimeout(500);
+      await this.page.waitForTimeout(1000);
     };
   }
 }

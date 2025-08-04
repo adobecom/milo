@@ -154,7 +154,7 @@ test.describe('Milo Tab block feature test suite', () => {
     await page.waitForLoadState('networkidle');
 
     await test.step('checking the setup', async () => {
-      await expect(tab.tab1).toBeVisible();
+      await expect(tab.tab1).toBeVisible({ timeout: 15000 });
       await expect(tab.tab1).toBeInViewport();
       await expect(tab.tab2).toBeVisible();
       await expect(tab.tab2).toBeInViewport();

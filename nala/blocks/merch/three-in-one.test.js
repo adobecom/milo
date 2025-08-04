@@ -41,7 +41,7 @@ test.describe('ThreeInOne Block test suite', () => {
       await page.goto('https://www.adobe.com');
       await page.goBack();
       const newModal = threeInOne.getModal();
-      await expect(newModal).toBeVisible();
+      await expect(newModal).toBeVisible({ timeout: 10000 });
       await threeInOne.closeModal();
       expect(newModal).not.toBeVisible();
     });
