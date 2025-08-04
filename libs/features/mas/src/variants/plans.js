@@ -8,6 +8,7 @@ import {
 } from '../constants.js';
 
 export const PLANS_AEM_FRAGMENT_MAPPING = {
+    cardName: { attribute: 'card-name' },
     title: { tag: 'h3', slot: 'heading-xs' },
     prices: { tag: 'p', slot: 'heading-m' },
     promoText: { tag: 'p', slot: 'promo-text' },
