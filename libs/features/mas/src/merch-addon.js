@@ -69,6 +69,13 @@ export default class MerchAddon extends LitElement {
         addonCheckbox.click();
     }
 
+    handleKeyDown(e) {
+        if (e.key === ' ') {
+            e.preventDefault();
+            this.handleCustomClick();
+        }
+    }
+
     render() {
         return html`
             <input
@@ -83,7 +90,8 @@ export default class MerchAddon extends LitElement {
                 tabindex="0" 
                 aria-labelledby="custom-checkbox-label" 
                 id="custom-checkbox" 
-                @click=${this.handleCustomClick}>
+                @click=${this.handleCustomClick}
+                @keydown=${this.handleKeyDown}>
             </span>
             <label id="custom-checkbox-label" for="addon-checkbox">
                 <slot></slot>
