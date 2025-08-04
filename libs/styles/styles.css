@@ -939,7 +939,14 @@ a.static:active  {
     -webkit-hyphenate-limit-after: 7;
   }
 
-  :root:has(head > meta[name="mweb"][content="on"]) body [class^="heading-"] {
+  :root:has(head > meta[name="mweb"][content="on"]) body [class^="heading-"],
+  :root:has(head > meta[name="mweb"][content="on"]) body h1, 
+  :root:has(head > meta[name="mweb"][content="on"]) body h2, 
+  :root:has(head > meta[name="mweb"][content="on"]) body h3, 
+  :root:has(head > meta[name="mweb"][content="on"]) body h4,
+  :root:has(head > meta[name="mweb"][content="on"]) body h5, 
+  :root:has(head > meta[name="mweb"][content="on"]) body h6
+  {
     font-weight: var(--type-heading-all-weight-mweb);
   }
 
