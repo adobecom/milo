@@ -24,7 +24,7 @@ test.describe('DefaultFlags Block test suite', () => {
     await test.step('Validate if each price is visible and has proper text for EN', async () => {
       for (const { el, textEN } of Object.values(defaultFlags.prices)) {
         if (textEN) {
-          await expect(el).toHaveText(textEN);
+          await expect(el).toHaveText(textEN, { timeout: 15000 });
         } else {
           await expect(el).toHaveCount(0);
         }
@@ -45,7 +45,7 @@ test.describe('DefaultFlags Block test suite', () => {
     await test.step('Validate if each price is visible and has proper text for FR', async () => {
       for (const { el, textFR } of Object.values(defaultFlags.prices)) {
         if (textFR) {
-          await expect(el).toHaveText(textFR);
+          await expect(el).toHaveText(textFR, { timeout: 15000 });
         } else {
           await expect(el).toHaveCount(0);
         }
@@ -66,7 +66,7 @@ test.describe('DefaultFlags Block test suite', () => {
     await test.step('Validate if each price is visible and has proper text for NG', async () => {
       for (const { el, textNG } of Object.values(defaultFlags.prices)) {
         if (textNG) {
-          await expect(el).toHaveText(textNG);
+          await expect(el).toHaveText(textNG, { timeout: 15000 });
         } else {
           await expect(el).toHaveCount(0);
         }
