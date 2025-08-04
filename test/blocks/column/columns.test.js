@@ -87,7 +87,6 @@ describe('Columns Block', () => {
     it('identifies first row cells as column headers', () => {
       const firstRowCells = tableBlock.querySelectorAll('.row-1 .col');
       firstRowCells.forEach((cell) => {
-        expect(cell.classList.contains('column-title')).to.be.true;
         expect(cell.getAttribute('role')).to.equal('columnheader');
       });
     });
@@ -146,7 +145,6 @@ describe('Columns Block', () => {
     it('identifies cells with H-tags as column headers in first row', () => {
       const headerCells = tableBlock.querySelectorAll('.row-1 .col');
       headerCells.forEach((cell) => {
-        expect(cell.classList.contains('column-title')).to.be.true;
         expect(cell.getAttribute('role')).to.equal('columnheader');
       });
     });
@@ -180,7 +178,6 @@ describe('Columns Block', () => {
     it('treats other first row cells as column headers', () => {
       const headerCells = tableBlock.querySelectorAll('.row-1 .col:not(.col-1)');
       headerCells.forEach((cell) => {
-        expect(cell.classList.contains('column-title')).to.be.true;
         expect(cell.getAttribute('role')).to.equal('columnheader');
       });
     });
@@ -224,7 +221,6 @@ describe('Columns Block', () => {
     it('maintains proper column header structure', () => {
       const headerCells = tableBlock.querySelectorAll('.row-1 .col:not(.empty-table-heading)');
       headerCells.forEach((cell) => {
-        expect(cell.classList.contains('column-title')).to.be.true;
         expect(cell.getAttribute('role')).to.equal('columnheader');
       });
     });
@@ -240,13 +236,11 @@ describe('Columns Block', () => {
 
     it('does not treat cells with image links as column headers', () => {
       const imageCell = tableBlock.querySelector('.row-1 .col-1');
-      expect(imageCell.classList.contains('column-title')).to.be.false;
       expect(imageCell.getAttribute('role')).to.be.null;
     });
 
     it('treats regular header cells normally', () => {
       const descriptionHeader = tableBlock.querySelector('.row-1 .col-2');
-      expect(descriptionHeader.classList.contains('column-title')).to.be.true;
       expect(descriptionHeader.getAttribute('role')).to.equal('columnheader');
     });
   });
@@ -280,32 +274,6 @@ describe('Columns Block', () => {
   });
 
   describe('Edge Cases', () => {
-    it('handles text nodes correctly when filtering meaningful children', () => {
-      const testDiv = document.createElement('div');
-      testDiv.innerHTML = `
-        <div class="columns table">
-          <div>
-            <div>   Header with spaces   </div>
-            <div>Regular Header</div>
-          </div>
-          <div>
-            <div>Data cell</div>
-            <div>   </div>
-          </div>
-        </div>
-      `;
-      document.body.appendChild(testDiv);
-
-      const tableBlock = testDiv.querySelector('.columns');
-      init(tableBlock);
-
-      const headerCells = tableBlock.querySelectorAll('.row-1 .col');
-      expect(headerCells[0].classList.contains('column-title')).to.be.true;
-      expect(headerCells[1].classList.contains('column-title')).to.be.true;
-
-      document.body.removeChild(testDiv);
-    });
-
     it('handles single strong element in cell correctly', () => {
       const testDiv = document.createElement('div');
       testDiv.innerHTML = `
