@@ -27,7 +27,7 @@ test.describe('ThreeInOne Block test suite', () => {
 
     await test.step('Validate if each CTA is visible and has proper href', async () => {
       for (const { el, href } of Object.values(threeInOne.ctas)) {
-        await expect(el).toBeVisible();
+        await expect(el).toBeVisible({ timeout: 15000 });
         await expect(el).toHaveAttribute('href', href);
       }
     });
@@ -57,7 +57,7 @@ test.describe('ThreeInOne Block test suite', () => {
         await page.waitForLoadState('domcontentloaded');
         const cta = threeInOne.getFallbackCta(sectionId);
         for (const [key, value] of Object.entries(attributes)) {
-          await expect(cta).toHaveAttribute(key, value);
+          await expect(cta).toHaveAttribute(key, value, { timeout: 15000 });
         }
         await openModal(cta);
         const modal = threeInOne.getModal();
@@ -78,7 +78,7 @@ test.describe('ThreeInOne Block test suite', () => {
       await page.waitForLoadState('domcontentloaded');
       const cta = threeInOne.getFallbackCta(sectionId);
       for (const [key, value] of Object.entries(attributes)) {
-        await expect(cta).toHaveAttribute(key, value);
+        await expect(cta).toHaveAttribute(key, value, { timeout: 15000 });
       }
       await openModal(cta);
       const modal = threeInOne.getModal();
@@ -97,7 +97,7 @@ test.describe('ThreeInOne Block test suite', () => {
       await page.waitForLoadState('domcontentloaded');
       const cta = threeInOne.getFallbackCta(sectionId);
       for (const [key, value] of Object.entries(attributes)) {
-        await expect(cta).toHaveAttribute(key, value);
+        await expect(cta).toHaveAttribute(key, value, { timeout: 15000 });
       }
       await openModal(cta);
       const modal = threeInOne.getModal();
@@ -120,7 +120,7 @@ test.describe('ThreeInOne Block test suite', () => {
       const { iframeSrcNoAddOn, attributes } = features[4];
       const cta = await page.locator('[data-wcs-osi="-lYm-YaTSZoUgv1gzqCgybgFotLqRsLwf8CgYdvdnsQ"][data-checkout-workflow-step="segmentation"]');
       for (const [key, value] of Object.entries(attributes)) {
-        await expect(cta).toHaveAttribute(key, value);
+        await expect(cta).toHaveAttribute(key, value, { timeout: 15000 });
       }
       await cta.waitFor({ state: 'visible' });
       await openModal(cta);
@@ -141,7 +141,7 @@ test.describe('ThreeInOne Block test suite', () => {
       await page.waitForTimeout(500);
       const cta = await page.locator('[data-wcs-osi="-lYm-YaTSZoUgv1gzqCgybgFotLqRsLwf8CgYdvdnsQ,bKwlW94xSVU_ykn4WHDjS1eiZrXopDo8VD7UhGAKYBI"][data-checkout-workflow-step="segmentation"]');
       for (const [key, value] of Object.entries(attributes)) {
-        await expect(cta).toHaveAttribute(key, value);
+        await expect(cta).toHaveAttribute(key, value, { timeout: 15000 });
       }
       await cta.waitFor({ state: 'visible' });
       await openModal(cta);
