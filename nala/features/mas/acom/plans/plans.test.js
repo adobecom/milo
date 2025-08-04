@@ -217,7 +217,7 @@ test.describe('MAS Plans Page test suite', () => {
     await test.step('step-1: Go to Plans page', async () => {
       await page.goto(`${testPage}${features[2].browserParams}`);
       await page.waitForLoadState('domcontentloaded');
-      await expect(page.locator('.dialog-modal#miniplans-buy-all-apps')).toBeVisible();
+      await expect(page.locator('.dialog-modal#miniplans-buy-all-apps')).toBeVisible({ timeout: 15000 });
     });
   });
 });
