@@ -70,6 +70,7 @@ function scrollTabFocusedElIntoView() {
 
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Tab') {
+      if (e.target.closest('.notification')?.parentElement?.querySelector('.notification-curtain')) return;
       isTab = true;
       isFocused = false;
       setTimeout(() => {
