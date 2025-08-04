@@ -1493,9 +1493,9 @@ async function checkForPageMods() {
   const pzn = getMepEnablement('personalization');
   const pznroc = getMepEnablement('personalization-roc');
   const promo = getMepEnablement('manifestnames', PROMO_PARAM);
-  const target = consent ? false : getMepEnablement('target');
-  const xlg = consent ? false : getMepEnablement('xlg');
-  const ajo = consent ? false : getMepEnablement('ajo');
+  const target = martechConsent ? false : getMepEnablement('target');
+  const xlg = martechConsent ? false : getMepEnablement('xlg');
+  const ajo = martechConsent ? false : getMepEnablement('ajo');
   const mepgeolocation = getMepEnablement('mepgeolocation');
 
   if (!(pzn || pznroc || target || promo || mepParam

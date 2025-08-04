@@ -117,8 +117,6 @@ export const getTargetAjoPersonalization = async (
 };
 
 const setupEntitlementCallback = () => {
-  const config = getConfig();
-  if (!config.mep?.martechConsent) return;
   const setEntitlements = async (destinations) => {
     const { getEntitlements } = await import('../features/personalization/personalization.js');
     return getEntitlements(destinations);
@@ -155,7 +153,8 @@ const loadMartechFiles = async (config) => {
   if (filesLoadedPromise) return filesLoadedPromise;
 
   filesLoadedPromise = async () => {
-    if (getMepEnablement('xlg') === 'loggedout' || !isSignedOut()) {
+    const { mep } = config;
+    if (mep?.martechConsent && (getMepEnablement('xlg') === 'loggedout' || !isSignedOut())) {
       setupEntitlementCallback();
     }
 
