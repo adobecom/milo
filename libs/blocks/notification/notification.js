@@ -381,8 +381,11 @@ async function decorateLayout(el) {
 }
 
 function setStickyAccessabilityAttributes(el) {
+  const section = el?.closest('.section');
+  if (!section) return;
+
   setTimeout(() => {
-    const stickyClass = [...el.closest('.section').classList]
+    const stickyClass = [...section.classList]
       .find((item) => item === 'sticky-top' || item === 'sticky-bottom');
     if (!stickyClass) return;
 

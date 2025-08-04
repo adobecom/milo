@@ -154,4 +154,51 @@ describe('notification', async () => {
       expect(result).to.be.null;
     });
   });
+
+  describe('sticky notifications accessibility attributes', () => {
+    let stickyTopNotification;
+    let stickyBottomNotification;
+    let stickyNoHeadingNotification;
+
+    beforeEach(() => {
+      const stickyTopSection = document.querySelector('.section.sticky-top');
+      const stickyBottomSection = document.querySelector('.section.sticky-bottom');
+      const stickyNoHeadingSections = document.querySelectorAll('.section.sticky-top');
+
+      stickyTopNotification = stickyTopSection?.querySelector('.notification');
+      stickyBottomNotification = stickyBottomSection?.querySelector('.notification');
+      stickyNoHeadingNotification = stickyNoHeadingSections[1]?.querySelector('.notification');
+    });
+
+    it('adds role="region" and proper aria-label to sticky-top notifications with heading', async () => {
+      await delay(350);
+      expect(stickyTopNotification.getAttribute('role')).to.equal('region');
+      expect(stickyTopNotification.getAttribute('aria-label')).to.equal('Test Sticky Top Notification');
+    });
+
+    it('adds role="region" and proper aria-label to sticky-bottom notifications with heading', async () => {
+      await delay(350);
+      expect(stickyBottomNotification.getAttribute('role')).to.equal('region');
+      expect(stickyBottomNotification.getAttribute('aria-label')).to.equal('Test Sticky Bottom Notification');
+    });
+
+    it('adds role="region" and default aria-label to sticky notifications without heading', async () => {
+      await delay(350);
+      expect(stickyNoHeadingNotification.getAttribute('role')).to.equal('region');
+      expect(stickyNoHeadingNotification.getAttribute('aria-label')).to.equal('Promotional Banner Top');
+    });
+
+    it('does not add accessibility attributes to non-sticky notifications', async () => {
+      const regularNotification = notifs[0];
+      expect(regularNotification.getAttribute('role')).to.be.null;
+      expect(regularNotification.getAttribute('aria-label')).to.be.null;
+    });
+
+    it('adds dialog accessibility attributes to focus notifications', async () => {
+      const focusNotification = document.querySelector('.notification.focus');
+      expect(focusNotification.getAttribute('role')).to.equal('dialog');
+      expect(focusNotification.getAttribute('aria-modal')).to.equal('true');
+      expect(focusNotification.getAttribute('aria-label')).to.equal('Get the full experience in app Dialog');
+    });
+  });
 });
