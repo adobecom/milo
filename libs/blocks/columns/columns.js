@@ -8,11 +8,61 @@ export default function init(el) {
     el.setAttribute('role', 'table');
   }
 
+  const isRowHeader = (cols, col, cdx) => {
+    const columnsWithStrongOrH = Array.from(cols).filter((rowCol) => {
+      const rowColMeaningfulChildren = Array.from(rowCol.childNodes).filter(
+        (node) => node.nodeType !== Node.TEXT_NODE || node.textContent.trim() !== '',
+      );
+
+      return rowColMeaningfulChildren.some((child) => child.tagName?.match(/^(H[1-6]|STRONG)$/));
+    });
+
+    const firstRow = rows[0];
+    const firstRowCols = firstRow.querySelectorAll(':scope > div');
+    const correspondingFirstRowCol = firstRowCols[cdx];
+    const hasColumnHeaderInFirstRow = correspondingFirstRowCol?.getAttribute('role') === 'columnheader';
+
+    return columnsWithStrongOrH.length === 1
+    && columnsWithStrongOrH[0] === col
+    && !hasColumnHeaderInFirstRow;
+  };
+
+  const isColumnHeader = (rdx, containsHTag, meaningfulChildren) => (
+    (!rdx && meaningfulChildren.length === 1
+      && !meaningfulChildren.some((child) => child.classList?.contains('image-link'))) || containsHTag
+  );
+
+  const isRow = (cols) => isTable && Array.from(cols).some((col) => col.hasChildNodes());
+
+  const hasMeaningfulChildren = (col) => Array.from(col.childNodes).filter(
+    (node) => node.nodeType !== Node.TEXT_NODE || node.textContent.trim() !== '',
+  );
+
+  const applyAccessibilityAttributes = (col, rdx, cols, cdx) => {
+    const meaningfulChildren = hasMeaningfulChildren(col);
+    const containsHTag = meaningfulChildren[0]?.tagName?.match(/^H[1-6]$/);
+    if (containsHTag) meaningfulChildren[0].setAttribute('role', 'paragraph');
+
+    if (rdx > 0 && !cdx && isRowHeader(cols, col, cdx)) {
+      col.classList.add('row-title');
+      col.setAttribute('role', 'rowheader');
+      return;
+    }
+
+    if (isColumnHeader(rdx, containsHTag, meaningfulChildren)) {
+      col.classList.add('column-title');
+      col.setAttribute('role', 'columnheader');
+      return;
+    }
+
+    if (col.innerText) col.setAttribute('role', 'cell');
+  };
+
   rows.forEach((row, rdx) => {
     row.classList.add('row', `row-${rdx + 1}`);
     const cols = row.querySelectorAll(':scope > div');
 
-    if (isTable && Array.from(cols).some((col) => col.hasChildNodes())) row.setAttribute('role', 'row');
+    if (isRow(cols)) row.setAttribute('role', 'row');
 
     cols.forEach((col, cdx) => {
       col.classList.add('col', `col-${cdx + 1}`);
@@ -22,42 +72,7 @@ export default function init(el) {
         return;
       }
 
-      const meaningfulChildren = Array.from(col.childNodes).filter(
-        (node) => node.nodeType !== Node.TEXT_NODE || node.textContent.trim() !== '',
-      );
-      const containsHTag = meaningfulChildren[0]?.tagName?.match(/^H[1-6]$/);
-      if (containsHTag) meaningfulChildren[0].setAttribute('role', 'paragraph');
-
-      if (rdx > 0) {
-        const columnsWithStrongOrH = Array.from(cols).filter((rowCol) => {
-          const rowColMeaningfulChildren = Array.from(rowCol.childNodes).filter(
-            (node) => node.nodeType !== Node.TEXT_NODE || node.textContent.trim() !== '',
-          );
-          return rowColMeaningfulChildren.some((child) => child.tagName?.match(/^(H[1-6]|STRONG)$/));
-        });
-
-        const firstRow = rows[0];
-        const firstRowCols = firstRow.querySelectorAll(':scope > div');
-        const correspondingFirstRowCol = firstRowCols[cdx];
-        const hasColumnHeaderInFirstRow = correspondingFirstRowCol?.getAttribute('role') === 'columnheader';
-
-        if (columnsWithStrongOrH.length === 1
-            && columnsWithStrongOrH[0] === col
-            && !hasColumnHeaderInFirstRow) {
-          col.classList.add('row-title');
-          col.setAttribute('role', 'rowheader');
-          return;
-        }
-      }
-
-      if ((!rdx && meaningfulChildren.length === 1
-        && !meaningfulChildren.some((child) => child.classList?.contains('image-link'))) || containsHTag) {
-        col.classList.add('column-title');
-        col.setAttribute('role', 'columnheader');
-        return;
-      }
-
-      if (col.innerText) col.setAttribute('role', 'cell');
+      applyAccessibilityAttributes(col, rdx, cols, cdx);
     });
   });
 }
