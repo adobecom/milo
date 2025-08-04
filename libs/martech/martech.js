@@ -117,6 +117,8 @@ export const getTargetAjoPersonalization = async (
 };
 
 const setupEntitlementCallback = () => {
+  const config = getConfig();
+  if (!config.mep?.martechConsent) return;
   const setEntitlements = async (destinations) => {
     const { getEntitlements } = await import('../features/personalization/personalization.js');
     return getEntitlements(destinations);

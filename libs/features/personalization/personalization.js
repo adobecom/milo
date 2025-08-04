@@ -875,6 +875,8 @@ export const getEntitlementMap = async () => {
 };
 
 export const getEntitlements = async (data) => {
+  const config = getConfig();
+  if (!config.mep?.martechConsent) return [];
   const entitlementMap = await getEntitlementMap();
 
   return data.flatMap((destination) => {
@@ -1428,6 +1430,7 @@ async function handleMartechTargetInteraction(
 }
 
 async function callMartech(config) {
+  if (!config.mep.martechConsent) return { targetAjoManifests: [], targetAjoPropositions: [] };
   const { getTargetAjoPersonalization } = await import('../../martech/martech.js');
   const {
     targetAjoManifests,
@@ -1450,7 +1453,7 @@ export async function init(enablements = {}) {
   const {
     mepParam, mepHighlight, mepButton, pzn, pznroc, promo, enablePersV2,
     target, ajo, countryIPPromise, mepgeolocation, targetInteractionPromise, calculatedTimeout,
-    postLCP,
+    postLCP, martechConsent,
   } = enablements;
   const config = getConfig();
   if (postLCP) {
@@ -1470,6 +1473,7 @@ export async function init(enablements = {}) {
       countryIPPromise,
       geoLocation: mepgeolocation,
       targetInteractionPromise,
+      martechConsent,
     };
 
     manifests = manifests.concat(await combineMepSources(pzn, pznroc, promo, mepParam));
@@ -1478,7 +1482,9 @@ export async function init(enablements = {}) {
       const normalizedURL = normalizePath(manifest.manifestPath);
       loadLink(normalizedURL, { as: 'fetch', crossorigin: 'anonymous', rel: 'preload' });
     });
-    if (pzn || pznroc) loadLink(getXLGListURL(config), { as: 'fetch', crossorigin: 'anonymous', rel: 'preload' });
+    if ((pzn || pznroc) && martechConsent) {
+      loadLink(getXLGListURL(config), { as: 'fetch', crossorigin: 'anonymous', rel: 'preload' });
+    }
   }
 
   if (enablePersV2 && target === true) {
