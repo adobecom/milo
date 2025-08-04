@@ -1391,7 +1391,350 @@ export function enablePersonalizationV2() {
   const enablePersV2 = getMepEnablement('personalization-v2');
   return !!enablePersV2 && isSignedOut();
 }
+function isMartechEnabled() {
+  var
+  w = window,
+  d = document,
+  _satellite = w._satellite,
+  cookie = _satellite.cookie,
+  alloy = w.alloy,
+  config,
+  edgeConfigId,
+  marketingtech = window.marketingtech,
+  marketingtechAdobeAlloy = (
+    marketingtech && 
+    marketingtech.adobe && 
+    marketingtech.adobe.alloy
+  ),
+  onBeforeLinkClickSend = function (e) {
+    var
+      e1, e2, e3, e4;
+    if (
+      (e1 = e.xdm) &&
+      (e2 = e1.web) &&
+      (e3 = e2.webInteraction) &&
+      (e4 = e3.type) &&
+      (
+        e4 != 'exit' &&
+        e4 != 'download'
+      )
+    ) {
+      return false;
+    }
+  };
 
+_satellite.alloyConfigurePromise = Promise.resolve()
+
+// 1) setTimeout
+.then(function () {
+  return new Promise(function (r) {
+    setTimeout(r, 0);
+  });
+})
+
+// 2) config objects
+.then(function () {
+  _satellite.getVar('alloy_configure');
+  edgeConfigId = w.alloy_all.get('data._adobe_corpnew.configuration.edgeConfigId');
+})
+
+// 3) setTimeout 
+// NOTE: the alloy_configure data element takes some processing...
+// alloy('configure') also takes a long time...it's the worst of all...
+// so we are isolating that to help with TBT
+.then(function () {
+  return new Promise(function (r) {
+    setTimeout(r, 0);
+  });
+})
+
+// 4) determine defaultConsent
+// SEE: https://experienceleague.adobe.com/en/docs/experience-platform/web-sdk/commands/configure/defaultconsent
+.then(function () {
+  let serverTiming = _satellite.getVar('serverTiming');
+  // NOTE: Standardizing on uppercase...
+  let serverTimingCountry = serverTiming?.geo?.toUpperCase();
+  let measurementCategory = 'C0002';
+  let S_adobePrivacyPrivacy = 'adobePrivacy:Privacy';
+  let temp;
+  // NOTE: Standardizing on uppercase...
+  let explicitConsentCountries = [
+    'GB',
+    // TODO: add other GDPR countries here as necessary
+  ];
+
+  // parse the consent cookie
+  let consent = cookie.get('kndctr_9E1005A551ED61CA0A490D45_AdobeOrg_consent');
+  // convert to object
+  consent = (
+    consent
+    ? (
+      consent
+      .split(';')
+      .reduce(function (consentByPurpose, categoryPair) {
+        categoryPair = categoryPair.split('=');
+        consentByPurpose[categoryPair[0]] = categoryPair[1];
+        return consentByPurpose;
+      }, {})
+    )
+    : {}
+  );
+
+  // set the consent status in the memory pointer and send the event
+  let setConsent = (C0002) => {
+    let updatedConsent = C0002 ? 'in' : 'out';
+
+    // if the consent has changed, update the memory pointer and send the event
+    if (consent.general !== updatedConsent) {
+      // update the memory pointer
+      consent.general = updatedConsent;
+      // update consent
+      w.alloy('setConsent', {
+        consent: [
+          {
+            standard: 'Adobe',
+            version: '2.0',
+            value: {
+              collect: {
+                val: (C0002 ? 'y' : 'n'),
+              },
+              metadata: {
+                time: (new Date()).toISOString(),
+              },
+            },
+          },
+          // TODO: set the IAB TCF 2.0 in the future when OneTrust gives us the
+          // API to do so (https://tcf.onetrust.com/)
+          // {
+          //   standard: 'IAB TCF',
+          //   version: '2.0',
+          //   value: '',
+          //   gdprApplies: true,
+          // },
+        ]
+      });
+    }
+  };
+
+  // regardless of country, we will listen for consent changes
+  // NOTE: it used to be that you couldn't opt back in after opting out.  But 
+  // this is no longer the case.  This is why we always listen for consent changes
+  // regardless of whether you are opted in or out.
+  let onConsentChange = () => {
+    if (!w.adobePrivacy) {
+      return;
+    }
+
+    // NOTE: We know that adobePrivacy is available at this point because 
+    // adobePrivacy is what fires the event listeners.
+    let activeGroups = w.adobePrivacy.activeCookieGroups();
+    let C0002 = activeGroups.includes(measurementCategory);
+
+    // flag for whether we can track things for measurement category C0002
+    _satellite._C0002 = C0002;
+
+    // update the memory pointer and send the event
+    setConsent(C0002);
+  };
+  
+  w.addEventListener(S_adobePrivacyPrivacy + 'Consent', onConsentChange);
+  w.addEventListener(S_adobePrivacyPrivacy + 'Reject', onConsentChange);
+  w.addEventListener(S_adobePrivacyPrivacy + 'Custom', onConsentChange);
+
+
+  // first check if the AEP consent cookie has already been set and given.  
+  // This is the ultimate cookie that will determine the consent status of AEP 
+  // products and services.
+  //----------------------------------------------------------------------------
+  if (consent?.general === 'in') {
+    return consent.general;
+
+  // check if adobePrivacy is initialized and the visitor has made a choice
+  // (either implicitly or explicitly)
+  //----------------------------------------------------------------------------
+  } else if (
+    // adobePrivacy is loaded
+    (temp = w.adobePrivacy) && 
+    // the visitor has made a choice
+    (
+      temp.hasUserProvidedConsent() ||
+      temp.hasUserProvidedCustomConsent()
+    ) &&
+    // the visitor has opted in to C0002
+    (temp = temp.activeCookieGroups()) && 
+    (temp.includes(measurementCategory))
+  ) {
+    // update the memory pointer and return the consent status
+    return (consent.general = 'in');
+
+  // check if the OptanonAlertBoxClosed cookie has been set indicating that the
+  // visitor has made a choice
+  //----------------------------------------------------------------------------
+  } else if (
+    // the visitor has made a choice
+    (temp = cookie.get('OptanonAlertBoxClosed')) &&
+    (typeof Date.parse(temp) === 'number') &&
+    // the visitor has opted in to C0002
+    (temp = cookie.get('OptanonConsent')) && 
+    temp.includes(measurementCategory + ':1')
+  ) {
+    // update the memory pointer and return the consent status
+    return (consent.general = 'in');
+
+  // "Server-Timing: geo; desc=${country}" header is set
+  //----------------------------------------------------------------------------
+  } else if (serverTimingCountry) {
+
+    // if the visitor is in the GB, we know we need to wait for consent
+    if (explicitConsentCountries.includes(serverTimingCountry)) {
+      return 'pending';
+    } else {
+      return 'in';
+    }
+
+  // if it's on a site that doesn't include the Server-Timing header, 
+  // we need to explicitly load geo2.adobe.com/json to check the country of the
+  // visitor
+  //----------------------------------------------------------------------------
+  } else {
+    
+    // get the country from the feds_location session storage item
+    let fedsCountry = sessionStorage.getItem('feds_location');
+    if (fedsCountry) {
+      try {
+        fedsCountry = JSON.parse(fedsCountry);
+        fedsCountry = fedsCountry.country?.toUpperCase();
+      } catch (e) {
+        fedsCountry = undefined;
+      }
+    }
+    if (fedsCountry) {
+      if (explicitConsentCountries.includes(fedsCountry)) {
+        return 'pending';
+      } else {
+        return 'in';
+      }
+    }
+
+    // load geo2.adobe.com/json to check the country of the visitor
+    return new Promise((resolve) => {
+      let script = d.createElement('script');
+      let callbackName = `marketingtech_${Date.now()}${Math.round(100000 * Math.random())}`;
+      script.src = `https://geo2.adobe.com/json/?callback=${callbackName}`;
+      w[callbackName] = (data) => {
+        delete w[callbackName];
+        let country = data.country?.toUpperCase();
+        if (explicitConsentCountries.includes(country)) {
+          resolve('pending');
+        } else {
+          resolve('in');
+        }
+      };
+      d.head.appendChild(script);
+    });
+
+  }
+})
+
+// 5) configure alloy
+.then(function (defaultConsent) {
+
+  // flag for whether we can track things for measurement category C0002
+  _satellite._C0002 = defaultConsent === 'in';
+
+  // configure
+  return alloy('configure', {
+
+    // General options
+    //--------------------------------------------------------
+    edgeConfigId: edgeConfigId,
+    orgId: '9E1005A551ED61CA0A490D45@AdobeOrg',
+    edgeDomain: (marketingtechAdobeAlloy?.edgeDomain || 'sstats.adobe.com'),
+    edgeBasePath: (marketingtechAdobeAlloy?.edgeBasePath || 'ee'),
+    streamingMedia : { 
+      channel: "Video Channel",
+      playerName: w.location.hostname.indexOf('video.tv.adobe.com') !== -1 
+        ? "html5-player" 
+        : d.querySelector('[src*="youtube.com"]') 
+          ? "YouTube" 
+          : d.querySelector('.mobileRider_container')
+            ? "mobileRider" 
+            : "noPlayer",
+      appVersion: "Media Analytics with Web SDK 2.24.0",
+    },
+    // debugEnabled: true,
+
+    // Personalization options
+    //--------------------------------------------------------
+    autoCollectPropositionInteractions: {
+      AJO: 'always',
+      TGT: 'never',
+    },
+    // NOTE: We actually don't want to allow this to be set here...
+    // prehidingStyle: (
+    //   config.prehidingStyle ||
+    //   '.personalization-container{opacity:0.01 !important}'
+    // ),
+
+    // Audiences options
+    //--------------------------------------------------------
+    // cookieDestinationsEnabled: false,
+    // urlDestinationsEnabled: false,
+
+    // Identity options
+    //--------------------------------------------------------
+    idMigrationEnabled: true,
+    thirdPartyCookiesEnabled: false,
+    context: [
+      'web',
+      'device',
+      'environment',
+      'placeContext',
+      'highEntropyUserAgentHints',
+    ],
+
+    // Privacy options
+    //--------------------------------------------------------
+    defaultConsent: defaultConsent,
+
+    //overrides
+
+    // Data collection
+    //--------------------------------------------------------
+    clickCollectionEnabled: (marketingtechAdobeAlloy?.clickCollectionEnabled ?? true),
+    clickCollection: {
+      internalLinkEnabled: (marketingtechAdobeAlloy?.clickCollection?.internalLinkEnabled ?? true),
+      downloadLinkEnabled: (marketingtechAdobeAlloy?.clickCollection?.downloadLinkEnabled ?? true),
+      externalLinkEnabled: (marketingtechAdobeAlloy?.clickCollection?.externalLinkEnabled ?? true),
+      // eventGroupingEnabled: false,
+      // sessionStorageEnabled: false,
+      // filterClickDetails: function (content) {
+      //   content.clickedElement: The DOM element that was clicked.
+      //   content.pageName: The page name when the click happened.
+      //   content.linkName: The name of the clicked link.
+      //   content.linkRegion: The region of the clicked link.
+      //   content.linkType: The type of link (exit, download, or other).
+      //   content.linkURL: The destination URL of the clicked link.
+      //   return true: Immediately exit the callback with the current variable values.
+      //   return false: Immediately exit the callback and abort collecting data.
+      // },
+    },
+    // downloadLinkQualifier: '\.(exe|zip|wav|mp3|mov|mpg|avi|wmv|pdf|doc|docx|xls|xlsx|ppt|pptx)$',
+
+    onBeforeEventSend: _satellite.getVar('_onBeforeEventSend'),
+
+    onBeforeLinkClickSend: onBeforeLinkClickSend,
+
+    // Personalization options
+    targetMigrationEnabled: true,
+  });
+
+}).catch(function(){
+  //nothing here
+});
+
+return true;
+}
 async function checkForPageMods() {
   const {
     mep: mepParam,
