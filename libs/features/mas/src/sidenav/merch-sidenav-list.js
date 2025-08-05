@@ -141,11 +141,10 @@ export class MerchSidenavList extends LitElement {
               let element = this.querySelector(
                   `sp-sidenav-item[value="${value}"]`,
               )
-
+              // fallback for invalid filter
               if (!element) {
-                element = this.querySelector('sp-sidenav-item[value="all"]');
-                if (!element) return;
-                updateHash(this.deeplink, 'all');
+                element = this.querySelector('sp-sidenav-item:first-child');
+                updateHash(this.deeplink, element.value);
               }
 
               this.updateComplete.then(() => {
