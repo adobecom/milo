@@ -1397,8 +1397,8 @@ export function getCookie(key) {
     .find(([k]) => k === key);
   return cookie ? cookie[1] : null;
 }
-export async function determineCountry(searchParams = PAGE_URL.searchParams) {
-  const { akamaiLocale } = Object.fromEntries(searchParams);
+export async function determineCountry(searchParams = Object.fromEntries(PAGE_URL.searchParams)) {
+  const { akamaiLocale } = searchParams;
   if (akamaiLocale) return akamaiLocale;
 
   const { _satellite } = window;
@@ -1428,7 +1428,7 @@ async function getCountry() {
   const country = await determineCountry();
   return country?.toLowerCase();
 }
-async function getMartechConsent() {
+export async function getMartechConsent() {
   const measurementCategory = 'C0002';
   const explicitConsentCountries = ['gb'];
 
@@ -1441,23 +1441,19 @@ async function getMartechConsent() {
         return consentByPurpose;
       }, {});
     if (consent?.general === 'in') return { martechConsent: true };
+    if (consent?.general) return { martechConsent: false };
   }
   const { adobePrivacy } = window;
-  if ((adobePrivacy?.hasUserProvidedConsent() || adobePrivacy?.hasUserProvidedCustomConsent())
-        && (adobePrivacy?.activeCookieGroups()?.includes(measurementCategory))) {
-    return { martechConsent: true };
+  if ((adobePrivacy?.hasUserProvidedConsent() || adobePrivacy?.hasUserProvidedCustomConsent())) {
+    return { martechConsent: adobePrivacy?.activeCookieGroups()?.includes(measurementCategory) };
   }
-  const optanonAlertBoxClosed = getCookie('OptanonAlertBoxClosed');
-  const optanonConsent = getCookie('OptanonConsent');
-  if (optanonAlertBoxClosed && optanonConsent?.includes(`${measurementCategory}:1`)) {
-    return { martechConsent: true };
+
+  if (getCookie('OptanonAlertBoxClosed')) {
+    return { martechConsent: getCookie('OptanonConsent')?.includes(`${measurementCategory}:1`) };
   }
 
   const country = await getCountry();
-  if (explicitConsentCountries.includes(country.toLowerCase())) {
-    return { country, martechConsent: false };
-  }
-  return { country, martechConsent: true };
+  return { country, martechConsent: !explicitConsentCountries.includes(country) };
 }
 async function checkForPageMods() {
   const {
