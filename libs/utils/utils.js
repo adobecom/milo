@@ -1398,7 +1398,10 @@ export function getCookie(key) {
   return cookie ? cookie[1] : null;
 }
 export function normCountry(country) {
-  return (country.toLowerCase() === 'uk' ? 'gb' : country.toLowerCase()).split('_')[0];
+  if (!country) return null;
+  let c = country?.toLowerCase();
+  if (c === 'uk') c = 'gb';
+  return c.split('_')[0];
 }
 export async function getC0002(akamaiLocale) {
   const category = 'C0002';
@@ -1423,12 +1426,13 @@ export async function getC0002(akamaiLocale) {
   if (getCookie('OptanonAlertBoxClosed')) {
     return { country, hasC0002: getCookie('OptanonConsent')?.includes(`${category}:1`) };
   }
-
-  import('../features/georoutingv2/georoutingv2.js').then(({ getAkamaiCode }) => {
-    getAkamaiCode().then((code) => {
-      country = code;
+  if (!country) {
+    import('../features/georoutingv2/georoutingv2.js').then(({ getAkamaiCode }) => {
+      getAkamaiCode().then((code) => {
+        country = code;
+      });
     });
-  });
+  }
   const explicitConsentCountries = ['gb'];
   return { country: normCountry(country), hasC0002: !explicitConsentCountries.includes(country) };
 }
@@ -1479,7 +1483,7 @@ async function checkForPageMods() {
       return { targetInteractionData: data, respTime, respStartTime: now };
     })();
   } else if ((target || xlg || ajo) && !isMartechLoaded) loadMartech();
-  else if ((pzn || pznroc) && martech !== 'off') {
+  else if ((pzn || pznroc) && hasC0002) {
     loadIms()
       .then(() => {
         /* c8 ignore next */
