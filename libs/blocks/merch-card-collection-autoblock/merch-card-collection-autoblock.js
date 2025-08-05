@@ -160,14 +160,9 @@ export async function createCollection(el, options) {
   /* Sidenav */
   if (options.sidenav) {
     const sidenav = getSidenav(collection);
-<<<<<<< HEAD
-    sidenav?.setAttribute('daa-lh', 'b3|filters');
-    collection.attachSidenav(sidenav);
-=======
     if (sidenav) {
       collection.attachSidenav(sidenav);
     }
->>>>>>> stage
   }
 
   postProcessAutoblock(collection, false);
