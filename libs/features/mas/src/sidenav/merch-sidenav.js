@@ -265,6 +265,7 @@ export class MerchSideNav extends LitElement {
         }
 
         sp-dialog-base #sidenav {
+            box-sizing: border-box;
             max-width: 300px;
             max-height: min(90dvh, var(--merch-sidenav-modal-max-height));
             background: #ffffff 0% 0% no-repeat padding-box;
