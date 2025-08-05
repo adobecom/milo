@@ -1096,14 +1096,15 @@ async function decorateHeader() {
 }
 
 async function decorateIcons(area, config) {
-  const rogueBlocks = ['unity', 'cc-forms', 'interactive-metadata'];
+  const { excludeIconsBlock } = getConfig();
   const icons = area.querySelectorAll('span.icon');
   if (icons.length === 0) return;
-  const hasRogueIcons = [...icons].some((icon) => rogueBlocks.some((block) => icon.closest(`div.${block}`)));
-  if (hasRogueIcons && icons.length === [...icons].filter((icon) => rogueBlocks.some((block) => icon.closest(`div.${block}`))).length) {
-    return;
+  if (excludeIconsBlock) {
+    const hasRogueIcons = [...icons].some((icon) => excludeIconsBlock.some((block) => icon.closest(`div.${block}`)));
+    if (hasRogueIcons && icons.length === [...icons].filter((icon) => excludeIconsBlock.some((block) => icon.closest(`div.${block}`))).length) {
+      return;
+    }
   }
-
   const { base } = config;
   loadStyle(`${base}/features/icons/icons.css`);
   const { default: loadIcons } = await import('../features/icons/icons.js');
