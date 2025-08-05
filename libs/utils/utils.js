@@ -1391,36 +1391,12 @@ export function enablePersonalizationV2() {
   const enablePersV2 = getMepEnablement('personalization-v2');
   return !!enablePersV2 && isSignedOut();
 }
-function getCookie(key) {
+export function getCookie(key) {
   const cookie = document.cookie.split(';')
     .map((x) => decodeURIComponent(x.trim()).split(/=(.*)/s))
     .find(([k]) => k === key);
   return cookie ? cookie[1] : null;
 }
-export const getAkamaiCode = () => new Promise((resolve, reject) => {
-  let akamaiLocale = null;
-  const urlParams = new URLSearchParams(window.location.search);
-  akamaiLocale = urlParams.get('akamaiLocale') || sessionStorage.getItem('akamai');
-
-  if (akamaiLocale !== null) {
-    resolve(akamaiLocale.toLowerCase());
-  } else {
-    /* c8 ignore next 5 */
-    fetch('https://geo2.adobe.com/json/', { cache: 'no-cache' }).then((resp) => {
-      if (resp.ok) {
-        resp.json().then((data) => {
-          const code = data.country.toLowerCase();
-          sessionStorage.setItem('akamai', code);
-          resolve(code);
-        });
-      } else {
-        reject(new Error(`Something went wrong getting the akamai Code. Response status text: ${resp.statusText}`));
-      }
-    }).catch((error) => {
-      reject(new Error(`Something went wrong getting the akamai Code. ${error.message}`));
-    });
-  }
-});
 async function determineCountry() {
   const urlParams = new URLSearchParams(window.location.search);
   const override = urlParams.get('akamaiLocale');
@@ -1437,6 +1413,8 @@ async function determineCountry() {
       // do nothing
     }
   }
+  if (sessionStorage.getItem('akamai')) return sessionStorage.getItem('akamai');
+  
   return getAkamaiCode();
 }
 async function getCountry() {
