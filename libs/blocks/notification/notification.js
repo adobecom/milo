@@ -223,7 +223,7 @@ function curtainCallback(el) {
   el.insertAdjacentElement('afterend', curtain);
   el.setAttribute('role', 'dialog');
   const ariaLabel = getHeadingText(el);
-  el.setAttribute('aria-label', ariaLabel ? `${ariaLabel} Dialog` : 'Promotional Banner Dialog');
+  el.setAttribute('aria-label', `${ariaLabel ?? 'Promotional Banner'} Dialog`);
   el.setAttribute('aria-modal', 'true');
 
   const focusableElements = [...el.querySelectorAll(focusableNotificationElements)];
@@ -385,8 +385,7 @@ function setStickyAccessabilityAttributes(el) {
   if (!section) return;
 
   setTimeout(() => {
-    const stickyClass = [...section.classList]
-      .find((item) => item === 'sticky-top' || item === 'sticky-bottom');
+    const stickyClass = section.classList.contains('sticky-top') || section.classList.contains('sticky-bottom');
     if (!stickyClass) return;
 
     el.setAttribute('aria-label', getHeadingText(el)
