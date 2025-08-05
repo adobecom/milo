@@ -1421,26 +1421,31 @@ export const getAkamaiCode = () => new Promise((resolve, reject) => {
     });
   }
 });
-async function getCountry() {
+async function determineCountry() {
   const urlParams = new URLSearchParams(window.location.search);
   const override = urlParams.get('akamaiLocale');
-  if (override) return override.toUpperCase();
-  let country = null;
+  if (override) return override;
+  const { _satellite } = window;
+  const serverTimingCountry = _satellite?.getVar('serverTiming')?.geo;
+  if (serverTimingCountry) return serverTimingCountry.toLowerCase();
   let fedsLocation = sessionStorage.getItem('feds_location');
   if (fedsLocation) {
     try {
       fedsLocation = JSON.parse(fedsLocation);
-      country = fedsLocation.country;
+      if (fedsLocation.country) return fedsLocation.country;
     } catch (e) {
       // do nothing
     }
   }
-  if (country) return country;
   return getAkamaiCode();
+}
+async function getCountry() {
+  const country = await determineCountry();
+  return country?.toLowerCase();
 }
 async function getMartechConsent() {
   const measurementCategory = 'C0002';
-  const explicitConsentCountries = ['GB'];
+  const explicitConsentCountries = ['gb'];
 
   const kndctrCookie = getCookie('kndctr_9E1005A551ED61CA0A490D45_AdobeOrg_consent');
   if (kndctrCookie) {
@@ -1452,14 +1457,9 @@ async function getMartechConsent() {
       }, {});
     if (consent?.general === 'in') return { martechConsent: true };
   }
-  const { adobePrivacy, _satellite } = window;
-  const {
-    hasUserProvidedConsent,
-    hasUserProvidedCustomConsent,
-    activeCookieGroups,
-  } = adobePrivacy;
-  if ((hasUserProvidedConsent() || hasUserProvidedCustomConsent())
-        && (activeCookieGroups()?.includes(measurementCategory))) {
+  const { adobePrivacy } = window;
+  if ((adobePrivacy?.hasUserProvidedConsent() || adobePrivacy?.hasUserProvidedCustomConsent())
+        && (adobePrivacy?.activeCookieGroups()?.includes(measurementCategory))) {
     return { martechConsent: true };
   }
   const optanonAlertBoxClosed = getCookie('OptanonAlertBoxClosed');
@@ -1467,13 +1467,11 @@ async function getMartechConsent() {
   if (optanonAlertBoxClosed && optanonConsent?.includes(`${measurementCategory}:1`)) {
     return { martechConsent: true };
   }
-  const serverTiming = _satellite.getVar('serverTiming');
-  const serverTimingCountry = serverTiming?.geo?.toUpperCase();
-  if (explicitConsentCountries.includes(serverTimingCountry)) return false;
-  if (serverTimingCountry) return { martechConsent: true };
 
-  const country = await getCountry()?.toUpperCase();
-  if (explicitConsentCountries.includes(country)) return { country, martechConsent: false };
+  const country = await getCountry();
+  if (explicitConsentCountries.includes(country.toLowerCase())) {
+    return { country, martechConsent: false };
+  }
   return { country, martechConsent: true };
 }
 async function checkForPageMods() {
@@ -1493,9 +1491,9 @@ async function checkForPageMods() {
   const pzn = getMepEnablement('personalization');
   const pznroc = getMepEnablement('personalization-roc');
   const promo = getMepEnablement('manifestnames', PROMO_PARAM);
-  const target = martechConsent ? false : getMepEnablement('target');
-  const xlg = martechConsent ? false : getMepEnablement('xlg');
-  const ajo = martechConsent ? false : getMepEnablement('ajo');
+  const target = !martechConsent ? false : getMepEnablement('target');
+  const xlg = !martechConsent ? false : getMepEnablement('xlg');
+  const ajo = !martechConsent ? false : getMepEnablement('ajo');
   const mepgeolocation = getMepEnablement('mepgeolocation');
 
   if (!(pzn || pznroc || target || promo || mepParam
