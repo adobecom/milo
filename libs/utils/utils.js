@@ -1397,8 +1397,8 @@ export function getCookie(key) {
     .find(([k]) => k === key);
   return cookie ? cookie[1] : null;
 }
-async function determineCountry() {
-  const { akamaiLocale } = Object.fromEntries(PAGE_URL.searchParams);
+export async function determineCountry(searchParams = PAGE_URL.searchParams) {
+  const { akamaiLocale } = Object.fromEntries(searchParams);
   if (akamaiLocale) return akamaiLocale;
 
   const { _satellite } = window;
