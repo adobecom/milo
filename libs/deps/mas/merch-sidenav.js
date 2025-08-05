@@ -116,7 +116,6 @@ var C=Object.defineProperty;var R=(i,e,t)=>e in i?C(i,e,{enumerable:!0,configura
             /* Modal */
             --merch-sidenav-modal-border-radius: 8px;
             --merch-sidenav-modal-padding: var(--merch-sidenav-padding);
-            --merch-sidenav-modal-max-height: unset;
 
             display: block;
             z-index: 2;
@@ -193,7 +192,7 @@ var C=Object.defineProperty;var R=(i,e,t)=>e in i?C(i,e,{enumerable:!0,configura
         sp-dialog-base #sidenav {
             box-sizing: border-box;
             max-width: 300px;
-            max-height: min(90dvh, var(--merch-sidenav-modal-max-height));
+            max-height: 90dvh
             background: #ffffff 0% 0% no-repeat padding-box;
             box-shadow: 0px 1px 4px #00000026;
         }
