@@ -297,7 +297,7 @@ describe('GeoRouting', () => {
     const cookieName = 'test123';
     const testcookie = getCookie(cookieName);
     // assert
-    expect(testcookie).to.be.undefined;
+    expect(testcookie).to.be.null;
   });
 
   it('Will read cookie value correctly if set', async () => {
@@ -575,7 +575,7 @@ describe('GeoRouting', () => {
     const cookie = getCookie('international');
     // assert
     expect(modal).to.not.be.null;
-    expect(cookie).to.be.undefined;
+    expect(cookie).to.be.null;
     const links = modal.querySelectorAll('a');
     links[0].click();
     const picker = document.querySelector('.locale-modal-v2 .picker');
@@ -607,7 +607,7 @@ describe('GeoRouting', () => {
     const cookie = getCookie('international');
     // assert
     expect(modal).to.not.be.null;
-    expect(cookie).to.be.undefined;
+    expect(cookie).to.be.null;
     const links = modal.querySelectorAll('a');
     expect(links).to.not.be.null;
     expect(links[0].text).to.be.equal(mockGeoroutingJson.georouting.data.find((d) => d.prefix === 'ch_de').button);
@@ -650,7 +650,7 @@ describe('GeoRouting', () => {
       await init(mockConfig, createTag, getMetadata, loadBlock, loadStyle, v2JSONPromise());
       const modal = document.querySelector('.dialog-modal');
       expect(modal).to.not.be.null;
-      expect(getCookie('international')).to.be.undefined;
+      expect(getCookie('international')).to.be.null;
       links = modal.querySelectorAll('a');
       links[0].focus();
       await sendKeys({ press: 'Space' });

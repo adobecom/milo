@@ -82,7 +82,7 @@ export const getAkamaiCode = () => new Promise((resolve, reject) => {
     fetch('https://geo2.adobe.com/json/', { cache: 'no-cache' }).then((resp) => {
       if (resp.ok) {
         resp.json().then((data) => {
-          const code = data.country.toLowerCase();
+          const code = data.country?.toLowerCase();
           sessionStorage.setItem('akamai', code);
           resolve(code);
         });
