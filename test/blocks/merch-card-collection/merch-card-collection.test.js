@@ -129,7 +129,7 @@ describe('Merch Cards', async () => {
     expect(merchCards.filtered).to.equal('photo');
 
     const [photoshop, express, cc] = getVisibleCards(merchCards);
-    expect( photoshop.getAttribute('name')).to.be.equal('photoshop');
+    expect(photoshop.getAttribute('name')).to.be.equal('photoshop');
     expect(express.getAttribute('name')).to.be.equal('express');
     expect(cc.getAttribute('name')).to.be.equal('all-apps');
   });
