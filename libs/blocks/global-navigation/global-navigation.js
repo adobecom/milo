@@ -562,8 +562,9 @@ class Gnav {
   };
 
   decorateLocalNav = async () => {
+    const localNavWrapper = document.querySelector('.feds-localnav');
+
     if (!this.isLocalNav()) {
-      const localNavWrapper = document.querySelector('.feds-localnav');
       if (localNavWrapper) {
         lanaLog({ message: 'Gnav Localnav was removed, potential CLS', tags: 'gnav-localnav,warn' });
         localNavWrapper.remove();
@@ -574,6 +575,7 @@ class Gnav {
     const firstElem = localNavItems?.[0]?.querySelector('a, button') || localNavItems?.[0];
     if (!firstElem) {
       lanaLog({ message: 'GNAV: Incorrect authoring of localnav found.', tags: 'gnav', errorType: 'i' });
+      localNavWrapper.remove();
       return;
     }
     const [title, navTitle = ''] = this.getOriginalTitle(firstElem);
