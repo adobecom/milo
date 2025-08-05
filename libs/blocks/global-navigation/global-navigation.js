@@ -632,7 +632,7 @@ class Gnav {
       localNav.querySelector('.feds-localnav-title').setAttribute('aria-expanded', isActive);
       localNav.querySelector('.feds-localnav-title').setAttribute('daa-ll', `${title}_localNav|${isActive ? 'close' : 'open'}`);
     });
-    
+
     localNav.querySelector('.feds-navItem--active')?.addEventListener('click', () => {
       closeAllDropdowns();
     });
