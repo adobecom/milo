@@ -68,6 +68,7 @@
 
 .prompt-card-text {
   align-items: center;
+  color: var(--bc-button-color);
   display: flex;
   font-size: var(--type-body-s-size);
   gap: 8px;
@@ -83,6 +84,7 @@
 }
 
 .prompt-card-text p {
+  color: var(--bc-button-color);
   margin: 0;
 }
 
