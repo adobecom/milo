@@ -236,7 +236,7 @@ export class MerchSideNav extends LitElement {
             align-items: baseline;
         }
         
-        :host ::slotted(merch-search) {
+        ::slotted(merch-search) {
             display: block;
             margin-bottom: var(--merch-sidenav-search-gap);
         }
@@ -259,6 +259,7 @@ export class MerchSideNav extends LitElement {
 
         sp-dialog-base {
             --mod-modal-confirm-border-radius: var(--merch-sidenav-modal-border-radius);
+            --mod-modal-max-height: 100dvh;
         }
 
         sp-dialog-base #sidenav {
