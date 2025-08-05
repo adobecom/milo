@@ -1397,41 +1397,9 @@ export function getCookie(key) {
     .find(([k]) => k === key);
   return cookie ? cookie[1] : null;
 }
-export async function determineCountry(searchParams = Object.fromEntries(PAGE_URL.searchParams)) {
-  const { akamaiLocale } = searchParams;
-  if (akamaiLocale) return akamaiLocale;
-
-  const { _satellite } = window;
-  const serverTiming = _satellite?.getVar('serverTiming');
-  const serverTimingCountry = serverTiming?.geo;
-  if (serverTimingCountry) return serverTimingCountry;
-
-  let fedsLocation = sessionStorage.getItem('feds_location');
-  if (fedsLocation) {
-    try {
-      fedsLocation = JSON.parse(fedsLocation);
-      if (fedsLocation.country) return fedsLocation.country;
-    } catch (e) {
-      // do nothing
-    }
-  }
-
-  if (sessionStorage.getItem('akamai')) return sessionStorage.getItem('akamai');
-  let country = null;
-  import('../features/georoutingv2/georoutingv2.js').then(({ getAkamaiCode }) => {
-    getAkamaiCode().then((code) => {
-      country = code;
-    });
-  });
-  return country;
-}
-async function getCountry() {
-  const country = await determineCountry();
-  return country?.toLowerCase();
-}
-export async function getMartechConsent() {
-  const measurementCategory = 'C0002';
-  const explicitConsentCountries = ['gb'];
+export async function getC0002(akamaiLocale) {
+  const category = 'C0002';
+  let country = akamaiLocale || sessionStorage.getItem('akamai');
 
   const kndctrCookie = getCookie('kndctr_9E1005A551ED61CA0A490D45_AdobeOrg_consent');
   if (kndctrCookie) {
@@ -1441,20 +1409,25 @@ export async function getMartechConsent() {
         consentByPurpose[key] = value;
         return consentByPurpose;
       }, {});
-    if (consent?.general === 'in') return { martechConsent: true };
-    if (consent?.general) return { martechConsent: false };
+    if (consent?.general === 'in') return { country, hasC002: true };
+    if (consent?.general) return { country, hasC002: false };
   }
   const { adobePrivacy } = window;
   if ((adobePrivacy?.hasUserProvidedConsent() || adobePrivacy?.hasUserProvidedCustomConsent())) {
-    return { martechConsent: adobePrivacy?.activeCookieGroups()?.includes(measurementCategory) };
+    return { country, hasC002: adobePrivacy?.activeCookieGroups()?.includes(category) };
   }
 
   if (getCookie('OptanonAlertBoxClosed')) {
-    return { martechConsent: getCookie('OptanonConsent')?.includes(`${measurementCategory}:1`) };
+    return { country, hasC002: getCookie('OptanonConsent')?.includes(`${category}:1`) };
   }
 
-  const country = await getCountry();
-  return { country, martechConsent: !explicitConsentCountries.includes(country) };
+  import('../features/georoutingv2/georoutingv2.js').then(({ getAkamaiCode }) => {
+    getAkamaiCode().then((code) => {
+      country = code;
+    });
+  });
+  const explicitConsentCountries = ['gb'];
+  return { country, hasC002: !explicitConsentCountries.includes(country) };
 }
 async function checkForPageMods() {
   const {
@@ -1462,29 +1435,25 @@ async function checkForPageMods() {
     mepHighlight,
     mepButton,
     martech,
+    akamaiLocale,
   } = Object.fromEntries(PAGE_URL.searchParams);
   let targetInteractionPromise = null;
-  let countryIPPromise = null;
-  const martechConsentObject = martech === 'off' ? { consent: false } : await getMartechConsent();
-  const { country, martechConsent } = martechConsentObject;
+  const hasC002Object = martech === 'off' ? { consent: false } : await getC0002(akamaiLocale);
+  const { country, hasC002 } = hasC002Object;
 
   let calculatedTimeout = null;
   if (mepParam === 'off') return;
   const pzn = getMepEnablement('personalization');
   const pznroc = getMepEnablement('personalization-roc');
   const promo = getMepEnablement('manifestnames', PROMO_PARAM);
-  const target = !martechConsent ? false : getMepEnablement('target');
-  const xlg = !martechConsent ? false : getMepEnablement('xlg');
-  const ajo = !martechConsent ? false : getMepEnablement('ajo');
+  const target = !hasC002 ? false : getMepEnablement('target');
+  const xlg = !hasC002 ? false : getMepEnablement('xlg');
+  const ajo = !hasC002 ? false : getMepEnablement('ajo');
   const mepgeolocation = getMepEnablement('mepgeolocation');
 
   if (!(pzn || pznroc || target || promo || mepParam
     || mepHighlight || mepButton || mepParam === '' || xlg || ajo)) return;
 
-  if (mepgeolocation) {
-    const akamaiCode = country;
-    if (!akamaiCode) countryIPPromise = getCountry();
-  }
   const enablePersV2 = enablePersonalizationV2();
   if ((target || xlg) && enablePersV2) {
     const params = new URL(window.location.href).searchParams;
@@ -1518,7 +1487,8 @@ async function checkForPageMods() {
 
   const { init } = await import('../features/personalization/personalization.js');
   await init({
-    martechConsent,
+    hasC002,
+    country,
     mepParam,
     mepHighlight,
     mepButton,
@@ -1527,7 +1497,6 @@ async function checkForPageMods() {
     promo,
     target,
     ajo,
-    countryIPPromise,
     mepgeolocation,
     targetInteractionPromise,
     calculatedTimeout,

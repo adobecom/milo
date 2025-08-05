@@ -1,6 +1,6 @@
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
-import { getMepEnablement, getMartechConsent, determineCountry } from '../../libs/utils/utils.js';
+import { getMepEnablement, getC0002 } from '../../libs/utils/utils.js';
 import { combineMepSources } from '../../libs/features/personalization/personalization.js';
 
 function setCookie(key, value) {
@@ -14,31 +14,32 @@ function clearSlate() {
     document.cookie = `${name.trim()}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;`;
   });
   sessionStorage.clear();
+  sessionStorage.setItem('akamai', 'us');
   window.adobePrivacy = undefined;
   // eslint-disable-next-line no-underscore-dangle
   window._satellite = undefined;
 }
 
 describe('MEP Utils', () => {
-  describe('getMartechConsent', async () => {
+  describe('getC0002', async () => {
     it('returns false when consent is off', async () => {
       clearSlate();
       setCookie('OptanonAlertBoxClosed', 'true');
       setCookie('OptanonConsent', 'C0002=0;');
-      const martechConsent = await getMartechConsent();
-      expect(martechConsent).to.deep.equal({ martechConsent: false });
+      const hasC0002 = await getC0002();
+      expect(hasC0002).to.deep.equal({ country: 'us', hasC0002: false });
     });
     it('returns false when country is GB and consent not chosen', async () => {
       clearSlate();
       sessionStorage.setItem('akamai', 'gb');
-      const martechConsent = await getMartechConsent();
-      expect(martechConsent).to.deep.equal({ country: 'gb', martechConsent: false });
+      const hasC0002 = await getC0002();
+      expect(hasC0002).to.deep.equal({ country: 'gb', hasC0002: false });
     });
     it('returns true when kndctr shows consent chosen', async () => {
       clearSlate();
       setCookie('kndctr_9E1005A551ED61CA0A490D45_AdobeOrg_consent', 'general=in;');
-      const martechConsent = await getMartechConsent();
-      expect(martechConsent).to.deep.equal({ martechConsent: true });
+      const hasC0002 = await getC0002();
+      expect(hasC0002).to.deep.equal({ country: 'us', hasC0002: true });
     });
     it('returns true when adobe privacy shows consent chosen', async () => {
       clearSlate();
@@ -48,49 +49,22 @@ describe('MEP Utils', () => {
         activeCookieGroups: () => ['C0002'],
       };
       window.adobePrivacy = adobePrivacy;
-      const martechConsent = await getMartechConsent();
-      expect(martechConsent).to.deep.equal({ martechConsent: true });
+      const hasC0002 = await getC0002();
+      expect(hasC0002).to.deep.equal({ country: 'us', hasC0002: true });
     });
     it('returns true when optanon shows consent chosen', async () => {
       clearSlate();
       setCookie('OptanonAlertBoxClosed', 'true');
       setCookie('OptanonConsent', 'C0002:1');
-      const martechConsent = await getMartechConsent();
-      expect(martechConsent).to.deep.equal({ martechConsent: true });
+      const hasC0002 = await getC0002();
+      expect(hasC0002).to.deep.equal({ country: 'us', hasC0002: true });
     });
     it('returns true when country is US and consent not chosen', async () => {
       clearSlate();
       sessionStorage.setItem('akamai', 'us');
-      const martechConsent = await getMartechConsent();
-      expect(martechConsent).to.deep.equal({ country: 'us', martechConsent: true });
+      const hasC0002 = await getC0002();
+      expect(hasC0002).to.deep.equal({ country: 'us', hasC0002: true });
     });
-  });
-  describe('determineCountry', async () => {
-    it('returns the country from the search params', async () => {
-      clearSlate();
-      const country = await determineCountry({ akamaiLocale: 'fr' });
-      expect(country).to.equal('fr');
-    });
-    it('returns the country from the server timing', async () => {
-      clearSlate();
-      // eslint-disable-next-line no-underscore-dangle
-      window._satellite = { getVar: () => ({ geo: 'de' }) };
-      const country = await determineCountry();
-      expect(country).to.equal('de');
-    });
-    it('returns the country from the feds location', async () => {
-      clearSlate();
-      sessionStorage.setItem('feds_location', JSON.stringify({ country: 'de' }));
-      const country = await determineCountry();
-      expect(country).to.equal('de');
-    });
-    it('returns the country from the session storage', async () => {
-      clearSlate();
-      sessionStorage.setItem('akamai', 'au');
-      const country = await determineCountry();
-      expect(country).to.equal('au');
-    });
-    // getAkamaiCode tested in georoutingv2.test.js
   });
   describe('combineMepSources', async () => {
     it('yields an empty list when everything is undefined', async () => {

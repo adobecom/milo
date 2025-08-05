@@ -10,7 +10,7 @@ const mepSettings = {
   pzn: '',
   promo: false,
   target: true,
-  martechConsent: true,
+  hasC002: true,
 };
 const titleSelector = 'h2';
 const activeTabSelector = '.tabs > div:nth-child(2) > div:nth-child(2)';

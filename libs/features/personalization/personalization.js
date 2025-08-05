@@ -876,7 +876,7 @@ export const getEntitlementMap = async () => {
 
 export const getEntitlements = async (data) => {
   const config = getConfig();
-  if (!config.mep?.martechConsent) return [];
+  if (!config.mep?.hasC002) return [];
   const entitlementMap = await getEntitlementMap();
 
   return data.flatMap((destination) => {
@@ -893,30 +893,11 @@ function normCountry(country) {
   return (country.toLowerCase() === 'uk' ? 'gb' : country.toLowerCase()).split('_')[0];
 }
 async function setMepCountry(config) {
-  const urlParams = new URLSearchParams(window.location.search);
-  const country = urlParams.get('country') || (document.cookie.split('; ').find((row) => row.startsWith('international='))?.split('=')[1]);
-  const akamaiCode = urlParams.get('akamaiLocale')?.toLowerCase() || sessionStorage.getItem('akamai');
-  config.mep = config.mep || {};
-  if (country) {
-    config.mep.countryChoice = normCountry(country);
-  }
-  if (akamaiCode) {
-    config.mep.countryIP = normCountry(akamaiCode);
-  }
-  if (!config.mep.countryChoice && config.mep.countryIP) {
-    config.mep.countryChoice = config.mep.countryIP;
-  } else if (!config.mep.countryIP && config.mep.countryIPPromise) {
-    try {
-      let countryIP = await config.mep.countryIPPromise;
-      if (countryIP) {
-        countryIP = countryIP === 'uk' ? 'gb' : countryIP.split('_')[0];
-        config.mep.countryIP = countryIP;
-        if (!config.mep.countryChoice) config.mep.countryChoice = countryIP;
-      }
-    } catch (e) {
-      log('MEP Error: Unable to get user country');
-    }
-  }
+  config.mep ??= {};
+  let country = config.mep.country || 'us';
+  if (country === 'uk') country = 'gb';
+  config.mep.countryChoice = normCountry(country);
+  config.mep.countryIP = normCountry(country);
 }
 
 async function getPersonalizationVariant(
@@ -1430,7 +1411,7 @@ async function handleMartechTargetInteraction(
 }
 
 async function callMartech(config) {
-  if (!config.mep.martechConsent) return { targetAjoManifests: [], targetAjoPropositions: [] };
+  if (!config.mep.hasC002) return { targetAjoManifests: [], targetAjoPropositions: [] };
   const { getTargetAjoPersonalization } = await import('../../martech/martech.js');
   const {
     targetAjoManifests,
@@ -1452,8 +1433,8 @@ export async function init(enablements = {}) {
   let manifests = [];
   const {
     mepParam, mepHighlight, mepButton, pzn, pznroc, promo, enablePersV2,
-    target, ajo, countryIPPromise, mepgeolocation, targetInteractionPromise, calculatedTimeout,
-    postLCP, martechConsent,
+    target, ajo, mepgeolocation, targetInteractionPromise, calculatedTimeout,
+    postLCP, hasC002, country,
   } = enablements;
   const config = getConfig();
   if (postLCP) {
@@ -1470,10 +1451,10 @@ export async function init(enablements = {}) {
       experiments: [],
       prefix: config.locale?.prefix.split('/')[1]?.toLowerCase() || US_GEO,
       enablePersV2,
-      countryIPPromise,
       geoLocation: mepgeolocation,
       targetInteractionPromise,
-      martechConsent,
+      hasC002,
+      country,
     };
 
     manifests = manifests.concat(await combineMepSources(pzn, pznroc, promo, mepParam));
@@ -1482,7 +1463,7 @@ export async function init(enablements = {}) {
       const normalizedURL = normalizePath(manifest.manifestPath);
       loadLink(normalizedURL, { as: 'fetch', crossorigin: 'anonymous', rel: 'preload' });
     });
-    if ((pzn || pznroc) && martechConsent) {
+    if ((pzn || pznroc) && hasC002) {
       loadLink(getXLGListURL(config), { as: 'fetch', crossorigin: 'anonymous', rel: 'preload' });
     }
   }
