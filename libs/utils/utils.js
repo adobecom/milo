@@ -1398,12 +1398,13 @@ export function getCookie(key) {
   return cookie ? cookie[1] : null;
 }
 async function determineCountry() {
-  const urlParams = new URLSearchParams(window.location.search);
-  const override = urlParams.get('akamaiLocale');
-  if (override) return override;
+  const { akamaiLocale } = Object.fromEntries(PAGE_URL.searchParams);
+  if (akamaiLocale) return akamaiLocale;
+
   const { _satellite } = window;
   const serverTimingCountry = _satellite?.getVar('serverTiming')?.geo;
   if (serverTimingCountry) return serverTimingCountry.toLowerCase();
+
   let fedsLocation = sessionStorage.getItem('feds_location');
   if (fedsLocation) {
     try {
@@ -1413,6 +1414,7 @@ async function determineCountry() {
       // do nothing
     }
   }
+
   if (sessionStorage.getItem('akamai')) return sessionStorage.getItem('akamai');
   let country = null;
   import('../features/georoutingv2/georoutingv2.js').then(({ getAkamaiCode }) => {
