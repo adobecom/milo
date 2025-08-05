@@ -20,11 +20,8 @@ export default function loadFonts(locale, loadStyle) {
     return new Promise((resolve) => {
       const isSafari = navigator.userAgent.includes('Safari') && !navigator.userAgent.includes('Chrome');
       const PHONE_SIZE = window.screen.width < 550 || window.screen.height < 550;
-      if (isSafari && locale.tk === 'hah7vzn.css' && PHONE_SIZE) {
-        loadStyle('https://use.typekit.net/vti0xwb.css', resolve);
-      } else {
-        loadStyle(`https://use.typekit.net/${locale.tk}`, resolve);
-      }
+      const kitId = isSafari && locale.tk === 'hah7vzn.css' && PHONE_SIZE ? 'vti0xwb.css' : locale.tk;
+      loadStyle(`https://use.typekit.net/${kitId}`, resolve);
     });
   }
   return dynamicTypekit(locale.tk);
