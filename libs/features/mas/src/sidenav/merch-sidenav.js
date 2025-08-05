@@ -275,6 +275,10 @@ export class MerchSideNav extends LitElement {
             position: absolute;
             top: 16px;
             right: 16px;
+            padding: var(--merch-sidenav-title-padding);
+            padding-inline: 0;
+            padding-bottom: 0;
+            line-height: var(--merch-sidenav-title-line-height);
         }
     `;
 }
