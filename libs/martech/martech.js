@@ -154,7 +154,7 @@ const loadMartechFiles = async (config) => {
 
   filesLoadedPromise = async () => {
     const { mep } = config;
-    if (mep?.hasC002 && (getMepEnablement('xlg') === 'loggedout' || !isSignedOut())) {
+    if (mep?.hasC0002 && (getMepEnablement('xlg') === 'loggedout' || !isSignedOut())) {
       setupEntitlementCallback();
     }
 

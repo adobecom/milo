@@ -1409,16 +1409,16 @@ export async function getC0002(akamaiLocale) {
         consentByPurpose[key] = value;
         return consentByPurpose;
       }, {});
-    if (consent?.general === 'in') return { country, hasC002: true };
-    if (consent?.general) return { country, hasC002: false };
+    if (consent?.general === 'in') return { country, hasC0002: true };
+    if (consent?.general) return { country, hasC0002: false };
   }
   const { adobePrivacy } = window;
   if ((adobePrivacy?.hasUserProvidedConsent() || adobePrivacy?.hasUserProvidedCustomConsent())) {
-    return { country, hasC002: adobePrivacy?.activeCookieGroups()?.includes(category) };
+    return { country, hasC0002: adobePrivacy?.activeCookieGroups()?.includes(category) };
   }
 
   if (getCookie('OptanonAlertBoxClosed')) {
-    return { country, hasC002: getCookie('OptanonConsent')?.includes(`${category}:1`) };
+    return { country, hasC0002: getCookie('OptanonConsent')?.includes(`${category}:1`) };
   }
 
   import('../features/georoutingv2/georoutingv2.js').then(({ getAkamaiCode }) => {
@@ -1427,7 +1427,7 @@ export async function getC0002(akamaiLocale) {
     });
   });
   const explicitConsentCountries = ['gb'];
-  return { country, hasC002: !explicitConsentCountries.includes(country) };
+  return { country, hasC0002: !explicitConsentCountries.includes(country) };
 }
 async function checkForPageMods() {
   const {
@@ -1438,17 +1438,17 @@ async function checkForPageMods() {
     akamaiLocale,
   } = Object.fromEntries(PAGE_URL.searchParams);
   let targetInteractionPromise = null;
-  const hasC002Object = martech === 'off' ? { consent: false } : await getC0002(akamaiLocale);
-  const { country, hasC002 } = hasC002Object;
+  const hasC0002Object = martech === 'off' ? { consent: false } : await getC0002(akamaiLocale);
+  const { country, hasC0002 } = hasC0002Object;
 
   let calculatedTimeout = null;
   if (mepParam === 'off') return;
   const pzn = getMepEnablement('personalization');
   const pznroc = getMepEnablement('personalization-roc');
   const promo = getMepEnablement('manifestnames', PROMO_PARAM);
-  const target = !hasC002 ? false : getMepEnablement('target');
-  const xlg = !hasC002 ? false : getMepEnablement('xlg');
-  const ajo = !hasC002 ? false : getMepEnablement('ajo');
+  const target = !hasC0002 ? false : getMepEnablement('target');
+  const xlg = !hasC0002 ? false : getMepEnablement('xlg');
+  const ajo = !hasC0002 ? false : getMepEnablement('ajo');
   const mepgeolocation = getMepEnablement('mepgeolocation');
 
   if (!(pzn || pznroc || target || promo || mepParam
@@ -1487,7 +1487,7 @@ async function checkForPageMods() {
 
   const { init } = await import('../features/personalization/personalization.js');
   await init({
-    hasC002,
+    hasC0002,
     country,
     mepParam,
     mepHighlight,

@@ -876,7 +876,7 @@ export const getEntitlementMap = async () => {
 
 export const getEntitlements = async (data) => {
   const config = getConfig();
-  if (!config.mep?.hasC002) return [];
+  if (!config.mep?.hasC0002) return [];
   const entitlementMap = await getEntitlementMap();
 
   return data.flatMap((destination) => {
@@ -1411,7 +1411,7 @@ async function handleMartechTargetInteraction(
 }
 
 async function callMartech(config) {
-  if (!config.mep.hasC002) return { targetAjoManifests: [], targetAjoPropositions: [] };
+  if (!config.mep.hasC0002) return { targetAjoManifests: [], targetAjoPropositions: [] };
   const { getTargetAjoPersonalization } = await import('../../martech/martech.js');
   const {
     targetAjoManifests,
@@ -1434,7 +1434,7 @@ export async function init(enablements = {}) {
   const {
     mepParam, mepHighlight, mepButton, pzn, pznroc, promo, enablePersV2,
     target, ajo, mepgeolocation, targetInteractionPromise, calculatedTimeout,
-    postLCP, hasC002, country,
+    postLCP, hasC0002, country,
   } = enablements;
   const config = getConfig();
   if (postLCP) {
@@ -1453,7 +1453,7 @@ export async function init(enablements = {}) {
       enablePersV2,
       geoLocation: mepgeolocation,
       targetInteractionPromise,
-      hasC002,
+      hasC0002,
       country,
     };
 
@@ -1463,7 +1463,7 @@ export async function init(enablements = {}) {
       const normalizedURL = normalizePath(manifest.manifestPath);
       loadLink(normalizedURL, { as: 'fetch', crossorigin: 'anonymous', rel: 'preload' });
     });
-    if ((pzn || pznroc) && hasC002) {
+    if ((pzn || pznroc) && hasC0002) {
       loadLink(getXLGListURL(config), { as: 'fetch', crossorigin: 'anonymous', rel: 'preload' });
     }
   }
