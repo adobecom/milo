@@ -9,8 +9,12 @@
 }
 
 .card [class^="consonant-"]:is([class$="-title"], [class$="-text"]),
-.card [class^="consonant-CardsGrid--"][class$="up"] .consonant-ThreeFourthCard>a>.consonant-ThreeFourthCard-title {
+.card [class^="consonant-CardsGrid--"][class$="up"] .consonant-ThreeFourthCard > a > .consonant-ThreeFourthCard-title {
   max-height: unset;
+}
+
+.card .consonant-CardFooter-row {
+  height: auto;
 }
 
 .card hr {
