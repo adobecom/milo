@@ -1412,7 +1412,6 @@ async function handleMartechTargetInteraction(
 }
 
 async function callMartech(config) {
-  if (!config.mep.hasC0002) return { targetAjoManifests: [], targetAjoPropositions: [] };
   const { getTargetAjoPersonalization } = await import('../../martech/martech.js');
   const {
     targetAjoManifests,
