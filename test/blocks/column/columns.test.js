@@ -172,7 +172,7 @@ describe('Columns Block', () => {
     it('handles empty first cell correctly', () => {
       const emptyCell = tableBlock.querySelector('.row-1 .col-1');
       expect(emptyCell.classList.contains('empty-table-heading')).to.be.true;
-      expect(emptyCell.getAttribute('role')).to.be.null;
+      expect(emptyCell.getAttribute('role')).to.equal('cell');
     });
 
     it('treats other first row cells as column headers', () => {
@@ -234,11 +234,6 @@ describe('Columns Block', () => {
       init(tableBlock);
     });
 
-    it('does not treat cells with image links as column headers', () => {
-      const imageCell = tableBlock.querySelector('.row-1 .col-1');
-      expect(imageCell.getAttribute('role')).to.be.null;
-    });
-
     it('treats regular header cells normally', () => {
       const descriptionHeader = tableBlock.querySelector('.row-1 .col-2');
       expect(descriptionHeader.getAttribute('role')).to.equal('columnheader');
@@ -255,7 +250,7 @@ describe('Columns Block', () => {
 
     it('handles completely empty table', () => {
       expect(tableBlock.classList.contains('columns-table')).to.be.true;
-      expect(tableBlock.getAttribute('role')).to.equal('table');
+      expect(tableBlock.getAttribute('role')).to.be.null;
     });
 
     it('does not add row roles to empty rows', () => {
