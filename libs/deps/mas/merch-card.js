@@ -414,6 +414,7 @@ merch-sidenav.catalog {
     --merch-sidenav-list-item-gap: 5px;
     --merch-sidenav-checkbox-group-padding: 0 15px;
     --merch-sidenav-modal-border-radius: 0;
+    --merch-sidenav-modal-max-height: 588px;
 }
 
 merch-sidenav.catalog merch-sidenav-checkbox-group {

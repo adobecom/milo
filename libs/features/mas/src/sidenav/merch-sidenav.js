@@ -190,6 +190,8 @@ export class MerchSideNav extends LitElement {
             /* Modal */
             --merch-sidenav-modal-border-radius: 8px;
             --merch-sidenav-modal-padding: var(--merch-sidenav-padding);
+            --merch-sidenav-modal-max-height: unset;
+
             display: block;
             z-index: 2;
             padding: var(--merch-sidenav-padding);
@@ -264,7 +266,7 @@ export class MerchSideNav extends LitElement {
 
         sp-dialog-base #sidenav {
             max-width: 300px;
-            max-height: 90dvh;
+            max-height: min(90dvh, var(--merch-sidenav-modal-max-height));
             background: #ffffff 0% 0% no-repeat padding-box;
             box-shadow: 0px 1px 4px #00000026;
         }
