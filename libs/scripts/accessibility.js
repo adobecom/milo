@@ -69,21 +69,20 @@ function scrollTabFocusedElIntoView() {
   }
 
   document.addEventListener('keydown', (e) => {
-    if (e.key === 'Tab') {
-      if (e.target.closest('.notification')?.parentElement?.querySelector('.notification-curtain')) return;
-      isTab = true;
-      isFocused = false;
-      setTimeout(() => {
-        if (isFocused) return;
-        if (e.target.shadowRoot) {
-          scrollElement(e.target);
-          return;
-        }
-        setScrollPadding();
-        isPadding = true;
-        isTab = false;
-      });
-    }
+    if (e.key !== 'Tab'
+    || e.target.closest('.notification')?.parentElement?.querySelector('.notification-curtain')) return;
+    isTab = true;
+    isFocused = false;
+    setTimeout(() => {
+      if (isFocused) return;
+      if (e.target.shadowRoot) {
+        scrollElement(e.target);
+        return;
+      }
+      setScrollPadding();
+      isPadding = true;
+      isTab = false;
+    });
   });
 
   document.addEventListener('focusin', (e) => {
