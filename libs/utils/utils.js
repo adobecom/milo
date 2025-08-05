@@ -1096,6 +1096,7 @@ async function decorateHeader() {
 }
 
 async function decorateIcons(area, config) {
+  const { excludeIconsBlock } = getConfig();
   const rogueBlocks = ['unity', 'cc-forms', 'interactive-metadata'];
   const icons = area.querySelectorAll('span.icon');
   if (icons.length === 0) return;
