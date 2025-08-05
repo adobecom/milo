@@ -15,7 +15,7 @@ async function setupMasConsoleListener(consoleErrors) {
 
       const codeMatch = errorText.match(/(?:\[ERR[_-])?\d+\]?|(?:Error:?\s*)\d+|(?:status(?:\scode)?:?\s*)\d+/i);
       if (codeMatch) {
-        errorCode = codeMatch[0];
+        [errorCode] = codeMatch;
         formattedError = `[${errorCode}] ${errorText}`;
       } else {
         formattedError = errorText;
