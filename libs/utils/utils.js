@@ -1403,9 +1403,18 @@ export function normCountry(country) {
   if (c === 'uk') c = 'gb';
   return c.split('_')[0];
 }
-export async function getC0002(akamaiLocale) {
+export async function getC0002(optin, akamaiLocale) {
   const category = 'C0002';
   let country = normCountry(akamaiLocale || sessionStorage.getItem('akamai'));
+  const explicitConsentCountries = ['gb'];
+  if (optin) {
+    const allowed = {
+      on: true,
+      off: false,
+      unset: country ? !explicitConsentCountries.includes(country) : true,
+    };
+    return { country: normCountry(country), hasC0002: allowed[optin] };
+  }
 
   const kndctrCookie = getCookie('kndctr_9E1005A551ED61CA0A490D45_AdobeOrg_consent');
   if (kndctrCookie) {
@@ -1427,13 +1436,9 @@ export async function getC0002(akamaiLocale) {
     return { country, hasC0002: getCookie('OptanonConsent')?.includes(`${category}:1`) };
   }
   if (!country) {
-    import('../features/georoutingv2/georoutingv2.js').then(({ getAkamaiCode }) => {
-      getAkamaiCode().then((code) => {
-        country = code;
-      });
-    });
+    const { getAkamaiCode } = await import('../features/georoutingv2/georoutingv2.js');
+    country = await getAkamaiCode();
   }
-  const explicitConsentCountries = ['gb'];
   return { country: normCountry(country), hasC0002: !explicitConsentCountries.includes(country) };
 }
 async function checkForPageMods() {
@@ -1443,9 +1448,10 @@ async function checkForPageMods() {
     mepButton,
     martech,
     akamaiLocale,
+    optin,
   } = Object.fromEntries(PAGE_URL.searchParams);
   let targetInteractionPromise = null;
-  const hasC0002Object = martech === 'off' ? { consent: false } : await getC0002(akamaiLocale);
+  const hasC0002Object = martech === 'off' ? { consent: false } : await getC0002(optin, akamaiLocale);
   const { country, hasC0002 } = hasC0002Object;
 
   let calculatedTimeout = null;
