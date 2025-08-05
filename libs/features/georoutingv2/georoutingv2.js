@@ -71,9 +71,8 @@ const [handleOverflow, removeOverflow] = (() => {
 })();
 
 export const getAkamaiCode = () => new Promise((resolve, reject) => {
-  let akamaiLocale = null;
   const urlParams = new URLSearchParams(window.location.search);
-  akamaiLocale = urlParams.get('akamaiLocale') || sessionStorage.getItem('akamai');
+  const akamaiLocale = urlParams.get('akamaiLocale') || sessionStorage.getItem('akamai');
 
   if (akamaiLocale !== null) {
     resolve(akamaiLocale.toLowerCase());
