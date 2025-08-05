@@ -1402,7 +1402,8 @@ export async function determineCountry(searchParams = Object.fromEntries(PAGE_UR
   if (akamaiLocale) return akamaiLocale;
 
   const { _satellite } = window;
-  const serverTimingCountry = _satellite?.getVar('serverTiming')?.geo;
+  const serverTiming = _satellite?.getVar('serverTiming');
+  const serverTimingCountry = serverTiming?.geo;
   if (serverTimingCountry) return serverTimingCountry;
 
   let fedsLocation = sessionStorage.getItem('feds_location');

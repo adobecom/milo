@@ -430,7 +430,7 @@ describe('Utils', () => {
       expect(newTabLink.href).to.equal('https://www.adobe.com/test');
     });
     it('Should send analytics alloy event', async () => {
-      window._satellite = { track: sinon.spy() };
+      window._satellite = { track: sinon.spy(), getVar: () => ({ geo: 'us' }) };
       const alloyMarquee = await readFile({ path: './mocks/body-marquee-alloy-cta.html' });
       document.body.innerHTML = alloyMarquee;
       await waitForElement('.marquee');
