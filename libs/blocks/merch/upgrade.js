@@ -68,7 +68,7 @@ export const handleIFrameEvents = ({ data: msgData }) => {
       break;
     case MANAGE_PLAN_MSG_SUBTYPE.SWITCH:
       if (!data?.externalUrl || !data.target) return;
-      lanaLog('Opening external URL (SWITCH)', subType);
+      // lanaLog('Opening external URL (SWITCH)', subType);
       window.open(data.externalUrl, data.target);
       break;
     case MANAGE_PLAN_MSG_SUBTYPE.RETURN_BACK:
