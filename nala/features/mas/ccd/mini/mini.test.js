@@ -15,7 +15,7 @@ test.describe('CCD Mini Cards Feature', () => {
     consoleErrors = [];
     const consoleListener = await setupMasConsoleListener(consoleErrors);
     page.on('console', consoleListener);
-    
+
     if (browserName === 'chromium') {
       await page.setExtraHTTPHeaders({ 'sec-ch-ua': '"Chromium";v="123", "Not:A-Brand";v="8"' });
     }
@@ -23,14 +23,14 @@ test.describe('CCD Mini Cards Feature', () => {
 
   test.afterEach(async ({ page }, testInfo) => {
     const consoleErrorText = attachMasConsoleErrorsToFailure(testInfo, consoleErrors);
-    
+
     if (testInfo.status === 'failed' && consoleErrors.length > 0) {
       console.log('\n=== MAS CONSOLE ERRORS DURING TEST FAILURE ===');
       consoleErrors.forEach((error, index) => {
         console.log(`${index + 1}. ${error}`);
       });
       console.log('==========================================\n');
-      
+
       // Include console errors in the stack trace
       const originalError = testInfo.error;
       if (originalError) {
@@ -38,10 +38,9 @@ test.describe('CCD Mini Cards Feature', () => {
         originalError.message = enhancedMessage;
       }
     }
-    
+
     page.removeAllListeners('console');
   });
-
 
   features.forEach((feature) => {
     test(`${feature.name},${feature.tags}`, async ({ page, baseURL }) => {
