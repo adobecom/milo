@@ -166,47 +166,73 @@ async function getJobId(step) {
   }
 }
 
+async function fetchJobStatus(jobId, sessionToken) {
+  try {
+    const res = await fetch(`${CHECK_API}/preflight/jobs/${jobId}`, { headers: { Authorization: `Bearer ${sessionToken}` } });
+    if (!res.ok) {
+      lanaLog(`ASO: Error fetching job status | status: ${res.status} | url: ${CHECK_API}/preflight/jobs/${jobId}`);
+      return null;
+    }
+    return res;
+  } catch (err) {
+    lanaLog(`ASO: Error fetching job status | error: ${err.reason || err.error || err.message || err} | url: ${CHECK_API}/preflight/jobs/${jobId}`);
+    return null;
+  }
+}
+
+function processCompletedJob(data, step) {
+  if (data.status !== 'COMPLETED') return null;
+
+  if (step === 'IDENTIFY') {
+    asoCache.identify = resultsFormatter(data.result[0].audits);
+    return data;
+  }
+
+  if (step === 'SUGGEST') {
+    asoCache.suggest = resultsFormatter(data.result[0].audits);
+    return data;
+  }
+
+  return null;
+}
+
+async function attemptJobPoll(jobId, step) {
+  try {
+    const sessionToken = await getASOToken();
+    if (!sessionToken) return null;
+
+    const response = await fetchJobStatus(jobId, sessionToken);
+    if (!response.ok) {
+      lanaLog(`ASO: Error fetching job results | step:${step} | status: ${response.status} | url: ${CHECK_API}/preflight/jobs/${jobId}`);
+      return null;
+    }
+
+    const data = await response.json();
+    return processCompletedJob(data, step);
+  } catch (err) {
+    lanaLog(`ASO: Error fetching job results | step:${step} | error: ${err.reason || err.error || err.message || err} | url: ${CHECK_API}/preflight/jobs/${jobId}`);
+    return null;
+  }
+}
+
+function sleep(ms) {
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
+}
+
 async function getJobResults(jobId, step) {
   const MAX_RETRIES = 50;
-  const POLL_INTERVAL = 2500;
   let retries = 0;
 
   while (retries < MAX_RETRIES) {
-    try {
-      const sessionToken = await getASOToken();
-      if (!sessionToken) return null;
+    const result = await attemptJobPoll(jobId, step);
+    if (result) return result;
 
-      const res = await fetch(`${CHECK_API}/preflight/jobs/${jobId}`, { headers: { Authorization: `Bearer ${sessionToken}` } });
-
-      if (!res.ok) {
-        lanaLog(`ASO: Error fetching job results | step:${step} | status: ${res.status} | url: ${CHECK_API}/preflight/jobs/${jobId}`);
-      } else {
-        const data = await res.json();
-
-        if (step === 'IDENTIFY' && data.status === 'COMPLETED') {
-          asoCache.identify = resultsFormatter(data.result[0].audits);
-          return data;
-        } if (step === 'SUGGEST' && data.status === 'COMPLETED') {
-          asoCache.suggest = resultsFormatter(data.result[0].audits);
-          return data;
-        }
-      }
-
-      await new Promise((resolve) => {
-        setTimeout(resolve, POLL_INTERVAL);
-      });
-      retries += 1;
-    } catch (err) {
-      lanaLog(`ASO: Error fetching job results | step:${step} | error: ${err.reason || err.error || err.message || err} | url: ${CHECK_API}/preflight/jobs/${jobId}`);
-      // Continue retrying on network errors
-      await new Promise((resolve) => {
-        setTimeout(resolve, POLL_INTERVAL);
-      });
-      retries += 1;
-    }
+    await sleep(2500);
+    retries += 1;
   }
 
-  // Max retries exceeded
   lanaLog(`ASO: Max retries exceeded for job results | error: Failed to fetch job results after ${MAX_RETRIES} retries for step: ${step}, jobId: ${jobId} | url: ${CHECK_API}/preflight/jobs/${jobId}`);
   return null;
 }
