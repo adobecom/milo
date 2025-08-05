@@ -74,7 +74,7 @@ function AssetGroup({ group }) {
     ${!viewportTooSmall.value && assetArray.value.length > 0 && html`
     <div class='assets-image-grid'>
       ${assetArray.value.map((asset) => {
-    const isAboveFoldWithMismatch = isCriticalGroup; // Critical group = above fold with mismatch
+    const isAboveFoldWithMismatch = isCriticalGroup;
     const itemClass = isAboveFoldWithMismatch ? 'assets-image-grid-item above-fold-critical' : 'assets-image-grid-item';
 
     return html`

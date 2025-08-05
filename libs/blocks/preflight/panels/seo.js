@@ -21,7 +21,7 @@ function toUIFormat(result, signalResult) {
   if (result.status === STATUS.PASS) {
     icon = pass;
   } else if (result.status === STATUS.LIMBO) {
-    icon = limbo; // Orange warning (for network errors, etc.)
+    icon = limbo;
   } else if (result.status === STATUS.FAIL || result.status === STATUS.EMPTY) {
     icon = result.severity === 'critical' ? fail : limbo;
   } else {

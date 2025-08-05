@@ -146,7 +146,6 @@ function getAssetData(asset) {
   };
 }
 
-// Determine if an asset is above-the-fold and should be considered critical
 function isAboveFold(asset) {
   const main = asset.closest('main');
   if (!main) return false;
@@ -256,7 +255,7 @@ export async function checkImageDimensions(url, area, injectVisualMetadata = fal
       ? ` ${warningAssetFailures.length} below-the-fold asset(s) also have issues.`
       : '';
     description = criticalMsg + warningMsg;
-    status = STATUS.FAIL; // Triggers preflight notification
+    status = STATUS.FAIL;
   } else {
     dynamicSeverity = SEVERITY.WARNING;
     description = `${warningAssetFailures.length} below-the-fold asset(s) have dimension mismatches.`;

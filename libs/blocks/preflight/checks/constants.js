@@ -5,9 +5,8 @@ export const STATUS = {
   EMPTY: 'empty',
 };
 
-// Check IDs - stable identifiers for mapping
 export const CHECK_IDS = {
-  // SEO Check IDs
+
   H1_COUNT: 'h1-count',
   TITLE_SIZE: 'title-size',
   CANONICAL: 'canonical',
@@ -16,7 +15,6 @@ export const CHECK_IDS = {
   LOREM_IPSUM: 'lorem-ipsum',
   BROKEN_LINKS: 'broken-links',
 
-  // Performance Check IDs
   LCP_ELEMENT: 'lcp-element',
   SINGLE_BLOCK: 'single-block',
   PERSONALIZATION: 'personalization',
@@ -26,19 +24,16 @@ export const CHECK_IDS = {
   PLACEHOLDERS: 'placeholders',
   ICONS: 'icons',
 
-  // Asset Check IDs
   IMAGE_DIMENSIONS: 'image-dimensions',
 };
 
-// Severity levels for check categorization
 export const SEVERITY = {
   CRITICAL: 'critical',
   WARNING: 'warning',
 };
 
-// Configurable severity mapping - easily modify based on client priorities
 export const CHECK_SEVERITY_MAP = {
-  // SEO Checks - easily configurable
+
   [CHECK_IDS.H1_COUNT]: SEVERITY.WARNING,
   [CHECK_IDS.TITLE_SIZE]: SEVERITY.WARNING,
   [CHECK_IDS.CANONICAL]: SEVERITY.WARNING,
@@ -47,7 +42,7 @@ export const CHECK_SEVERITY_MAP = {
   [CHECK_IDS.LOREM_IPSUM]: SEVERITY.CRITICAL,
   [CHECK_IDS.BROKEN_LINKS]: SEVERITY.CRITICAL,
 
-  // Performance Checks - easily configurable
+
   [CHECK_IDS.LCP_ELEMENT]: SEVERITY.CRITICAL,
   [CHECK_IDS.SINGLE_BLOCK]: SEVERITY.CRITICAL,
   [CHECK_IDS.PERSONALIZATION]: SEVERITY.WARNING,
