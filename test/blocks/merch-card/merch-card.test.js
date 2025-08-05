@@ -242,7 +242,7 @@ describe('Catalog Card', () => {
   it('Parses the filters and types', async () => {
     document.body.innerHTML = await readMockText('/test/blocks/merch-card/mocks/catalog.html');
     const merchCard = await init(document.querySelector('.merch-card.catalog.tags'));
-    expect(merchCard.name).equal('photoshop');
+    expect(merchCard.getAttribute('name')).equal('photoshop');
     expect(merchCard.filters).to.be.deep.equal({
       all: { order: undefined, size: undefined },
       'creativity-design': { order: undefined, size: undefined },
