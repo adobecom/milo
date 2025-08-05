@@ -413,6 +413,7 @@ merch-sidenav.catalog {
     --merch-sidenav-item-selected-background: var(--spectrum-gray-300, #D5D5D5);
     --merch-sidenav-list-item-gap: 5px;
     --merch-sidenav-checkbox-group-padding: 0 15px;
+    --merch-sidenav-modal-border-radius: 0;
 }
 
 merch-sidenav.catalog merch-sidenav-checkbox-group {
