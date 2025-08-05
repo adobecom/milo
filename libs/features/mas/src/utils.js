@@ -82,7 +82,7 @@ export function getService() {
   return document.getElementsByTagName(MAS_COMMERCE_SERVICE)?.[0];
 }
 
-function historyPushState(queryParams) {
+export function historyPushState(queryParams) {
     if (!queryParams || !window.history.pushState) return;
     const newURL = new URL(window.location.href);
     newURL.search = `?${queryParams}`;
