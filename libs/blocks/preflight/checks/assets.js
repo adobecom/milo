@@ -221,12 +221,15 @@ export async function checkImageDimensions(url, area, injectVisualMetadata = fal
 
   for (const asset of assets) {
     const assetData = getAssetData(asset);
+    const isAssetAboveFold = isAboveFold(asset);
+    assetData.isAboveFold = isAssetAboveFold;
+
     if (injectVisualMetadata) addAssetMetadata(asset, assetData);
 
     if (assetData.hasMismatch) {
       assetsWithMismatch.push(assetData);
 
-      if (isAboveFold(asset)) {
+      if (isAssetAboveFold) {
         criticalAssetFailures.push(assetData);
       } else {
         warningAssetFailures.push(assetData);
@@ -240,10 +243,12 @@ export async function checkImageDimensions(url, area, injectVisualMetadata = fal
 
   let dynamicSeverity;
   let description;
+  let status;
 
   if (assetsWithMismatch.length === 0) {
     dynamicSeverity = getCheckSeverity(CHECK_IDS.IMAGE_DIMENSIONS);
     description = 'All assets have matching dimensions.';
+    status = STATUS.PASS;
   } else if (criticalAssetFailures.length > 0) {
     dynamicSeverity = SEVERITY.CRITICAL;
     const criticalMsg = `${criticalAssetFailures.length} above-the-fold asset(s) have dimension mismatches (critical).`;
@@ -251,16 +256,18 @@ export async function checkImageDimensions(url, area, injectVisualMetadata = fal
       ? ` ${warningAssetFailures.length} below-the-fold asset(s) also have issues.`
       : '';
     description = criticalMsg + warningMsg;
+    status = STATUS.FAIL; // Triggers preflight notification
   } else {
     dynamicSeverity = SEVERITY.WARNING;
     description = `${warningAssetFailures.length} below-the-fold asset(s) have dimension mismatches.`;
+    status = STATUS.LIMBO;
   }
 
   const result = {
     checkId: CHECK_IDS.IMAGE_DIMENSIONS,
     severity: dynamicSeverity,
     title: ASSETS_TITLES.AssetDimensions,
-    status: assetsWithMismatch.length > 0 ? STATUS.FAIL : STATUS.PASS,
+    status,
     description,
     details: {
       assetsWithMismatch,
@@ -270,7 +277,8 @@ export async function checkImageDimensions(url, area, injectVisualMetadata = fal
     },
   };
 
-  if (result.status === STATUS.PASS || result.status === STATUS.FAIL) {
+  const validStatuses = [STATUS.PASS, STATUS.FAIL, STATUS.LIMBO];
+  if (validStatuses.includes(result.status)) {
     assetsCache.set(cacheKey, JSON.parse(JSON.stringify(result)));
   }
 

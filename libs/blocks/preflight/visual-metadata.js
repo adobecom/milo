@@ -17,11 +17,18 @@ export function addAssetMetadata(asset, assetData) {
   }
 
   const sizeStatus = assetData.hasMismatch ? 'is-invalid' : 'is-valid';
-  const sizeMessage = assetData.hasMismatch
-    ? `Size: too small, use > ${assetData.recommendedDimensions}`
-    : 'Size: correct';
+  const isAboveFoldCritical = assetData.isAboveFold && assetData.hasMismatch;
 
-  const sizeEl = createTag('div', { class: `asset-meta-entry preflight-decoration ${sizeStatus}` }, sizeMessage);
+  let sizeMessage;
+  if (isAboveFoldCritical) {
+    sizeMessage = `CRITICAL: size issue! Use > ${assetData.recommendedDimensions}`;
+  } else if (assetData.hasMismatch) {
+    sizeMessage = `Size: too small, use > ${assetData.recommendedDimensions}`;
+  } else {
+    sizeMessage = 'Size: correct';
+  }
+
+  const sizeEl = createTag('div', { class: `asset-meta-entry preflight-decoration ${sizeStatus} ${isAboveFoldCritical ? 'above-fold-critical' : ''}` }, sizeMessage);
   container.appendChild(sizeEl);
 
   if (assetData.type === 'mpc') {
