@@ -1,7 +1,7 @@
 import { html, LitElement, css } from 'lit';
-import { deeplink, pushStateFromComponent, updateHash } from '../deeplink.js';
+import { deeplink, pushStateFromComponent } from '../deeplink.js';
 import { headingStyles } from './merch-sidenav-heading.css.js';
-import { debounce } from '../utils.js';
+import { debounce, updateHash, paramsToHash } from '../utils.js';
 import { EVENT_MERCH_SIDENAV_SELECT } from '../constants.js';
 
 export class MerchSidenavList extends LitElement {
@@ -174,6 +174,7 @@ export class MerchSidenavList extends LitElement {
         this.addEventListener('click', this.handleClickDebounced);
         this.updateComplete.then(() => {
             if (!this.deeplink) return;
+            paramsToHash(['filter', 'single_app']);
             this.startDeeplink();
         });
     }
