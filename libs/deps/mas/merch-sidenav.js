@@ -192,7 +192,7 @@ var C=Object.defineProperty;var R=(i,e,t)=>e in i?C(i,e,{enumerable:!0,configura
         sp-dialog-base #sidenav {
             box-sizing: border-box;
             max-width: 300px;
-            max-height: 90dvh
+            max-height: 90dvh;
             background: #ffffff 0% 0% no-repeat padding-box;
             box-shadow: 0px 1px 4px #00000026;
         }
