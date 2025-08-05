@@ -86,7 +86,7 @@ function getSidenav(collection) {
   function generateLevelItems(level, parent) {
     for (const node of level) {
       const value = node.label.toLowerCase();
-      const item = createTag('sp-sidenav-item', { label: node.label, value });
+      const item = createTag('sp-sidenav-item', { label: node.label, value: node.queryLabel || value });
       if (node.icon) {
         createTag('img', { src: node.icon, slot: 'icon' }, null, { parent: item });
       }
@@ -197,7 +197,7 @@ export async function createCollection(el, options) {
   /* Sidenav */
   if (options.sidenav) {
     const sidenav = getSidenav(collection);
-    sidenav.setAttribute('daa-lh', 'b3|filters');
+    sidenav?.setAttribute('daa-lh', 'b3|filters');
     collection.attachSidenav(sidenav);
   }
 

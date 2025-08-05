@@ -9,16 +9,8 @@ export class MerchSidenavList extends LitElement {
         sidenavListTitle: { type: String },
         label: { type: String },
         deeplink: { type: String, attribute: 'deeplink' },
-        selectedText: {
-            type: String,
-            reflect: true,
-            attribute: 'selected-text',
-        },
-        selectedValue: {
-            type: String,
-            reflect: true,
-            attribute: 'selected-value',
-        },
+        selectedText: { type: String, attribute: 'selected-text', reflect: true },
+        selectedValue: { type: String, attribute: 'selected-value', reflect: true },
     };
 
     static styles = [

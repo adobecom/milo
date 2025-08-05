@@ -15,7 +15,7 @@ var b=Object.defineProperty;var w=(s,e,t)=>e in s?b(s,e,{enumerable:!0,configura
         >
             ${this.sidenavListTitle?v`<h2>${this.sidenavListTitle}</h2>`:""}
             <slot></slot>
-        </div>`}};r(p,"properties",{sidenavListTitle:{type:String},label:{type:String},deeplink:{type:String,attribute:"deeplink"},selectedText:{type:String,reflect:!0,attribute:"selected-text"},selectedValue:{type:String,reflect:!0,attribute:"selected-value"}}),r(p,"styles",[U`
+        </div>`}};r(p,"properties",{sidenavListTitle:{type:String},label:{type:String},deeplink:{type:String,attribute:"deeplink"},selectedText:{type:String,attribute:"selected-text",reflect:!0},selectedValue:{type:String,attribute:"selected-value",reflect:!0}}),r(p,"styles",[U`
             :host {
                 display: block;
                 contain: content;
