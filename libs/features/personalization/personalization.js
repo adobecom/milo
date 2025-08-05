@@ -10,6 +10,7 @@ import {
   localizeLink,
   getFederatedUrl,
   isSignedOut,
+  normCountry,
 } from '../../utils/utils.js';
 
 /* c8 ignore start */
@@ -889,15 +890,15 @@ export const getEntitlements = async (data) => {
   });
 };
 
-function normCountry(country) {
-  return (country.toLowerCase() === 'uk' ? 'gb' : country.toLowerCase()).split('_')[0];
-}
 async function setMepCountry(config) {
   config.mep ??= {};
-  let country = config.mep.country || 'us';
-  if (country === 'uk') country = 'gb';
-  config.mep.countryChoice = normCountry(country);
-  config.mep.countryIP = normCountry(country);
+  const urlParams = new URLSearchParams(window.location.search);
+  const countryChoice = urlParams.get('country') || (document.cookie.split('; ').find((row) => row.startsWith('international='))?.split('=')[1]);
+  if (countryChoice) {
+    config.mep.countryChoice = normCountry(countryChoice);
+  } else {
+    config.mep.countryChoice = config.mep.countryIP;
+  }
 }
 
 async function getPersonalizationVariant(
@@ -1434,7 +1435,7 @@ export async function init(enablements = {}) {
   const {
     mepParam, mepHighlight, mepButton, pzn, pznroc, promo, enablePersV2,
     target, ajo, mepgeolocation, targetInteractionPromise, calculatedTimeout,
-    postLCP, hasC0002, country,
+    postLCP, hasC0002, countryIP,
   } = enablements;
   const config = getConfig();
   if (postLCP) {
@@ -1454,7 +1455,7 @@ export async function init(enablements = {}) {
       geoLocation: mepgeolocation,
       targetInteractionPromise,
       hasC0002,
-      country,
+      countryIP,
     };
 
     manifests = manifests.concat(await combineMepSources(pzn, pznroc, promo, mepParam));

@@ -1397,9 +1397,12 @@ export function getCookie(key) {
     .find(([k]) => k === key);
   return cookie ? cookie[1] : null;
 }
+export function normCountry(country) {
+  return (country.toLowerCase() === 'uk' ? 'gb' : country.toLowerCase()).split('_')[0];
+}
 export async function getC0002(akamaiLocale) {
   const category = 'C0002';
-  let country = akamaiLocale || sessionStorage.getItem('akamai');
+  let country = normCountry(akamaiLocale || sessionStorage.getItem('akamai'));
 
   const kndctrCookie = getCookie('kndctr_9E1005A551ED61CA0A490D45_AdobeOrg_consent');
   if (kndctrCookie) {
@@ -1427,7 +1430,7 @@ export async function getC0002(akamaiLocale) {
     });
   });
   const explicitConsentCountries = ['gb'];
-  return { country, hasC0002: !explicitConsentCountries.includes(country) };
+  return { country: normCountry(country), hasC0002: !explicitConsentCountries.includes(country) };
 }
 async function checkForPageMods() {
   const {
@@ -1488,7 +1491,7 @@ async function checkForPageMods() {
   const { init } = await import('../features/personalization/personalization.js');
   await init({
     hasC0002,
-    country,
+    countryIP: country,
     mepParam,
     mepHighlight,
     mepButton,
