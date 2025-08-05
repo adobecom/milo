@@ -1403,7 +1403,7 @@ async function determineCountry() {
 
   const { _satellite } = window;
   const serverTimingCountry = _satellite?.getVar('serverTiming')?.geo;
-  if (serverTimingCountry) return serverTimingCountry.toLowerCase();
+  if (serverTimingCountry) return serverTimingCountry;
 
   let fedsLocation = sessionStorage.getItem('feds_location');
   if (fedsLocation) {
