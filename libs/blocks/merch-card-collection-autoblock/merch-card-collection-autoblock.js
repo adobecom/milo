@@ -203,7 +203,7 @@ export async function createCollection(el, options) {
     const sidenav = getSidenav(collection);
     if (sidenav) {
       sidenav.setAttribute('daa-lh', 'b3|filters');
-      await collection.attachSidenav(sidenav);
+      collection.attachSidenav(sidenav);
     }
   }
 
