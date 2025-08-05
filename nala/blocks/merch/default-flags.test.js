@@ -1,6 +1,7 @@
 import { expect, test } from '@playwright/test';
 import { features } from './default-flags.spec.js';
 import DefaultFlags from './default-flags.page.js';
+import { enableMasErrorLogging } from '../../libs/commerce.js';
 
 const miloLibs = process.env.MILO_LIBS || '';
 
@@ -8,6 +9,7 @@ test.describe('DefaultFlags Block test suite', () => {
   test.beforeEach(async ({ page, browserName }) => {
     if (browserName === 'chromium') {
       await page.setExtraHTTPHeaders({ 'sec-ch-ua': '"Chromium";v="123", "Not:A-Brand";v="8"' });
+      await enableMasErrorLogging(page);
     }
   });
 
