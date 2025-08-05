@@ -1096,7 +1096,7 @@ async function decorateHeader() {
 }
 
 async function decorateIcons(area, config) {
-  const { excludeIconsBlock } = getConfig();
+  const { base, excludeIconsBlock } = config;
   const icons = area.querySelectorAll('span.icon');
   if (icons.length === 0) return;
   if (excludeIconsBlock) {
@@ -1105,7 +1105,6 @@ async function decorateIcons(area, config) {
       return;
     }
   }
-  const { base } = config;
   loadStyle(`${base}/features/icons/icons.css`);
   const { default: loadIcons } = await import('../features/icons/icons.js');
   await loadIcons(icons, config);
