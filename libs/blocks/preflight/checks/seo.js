@@ -1,4 +1,4 @@
-import { STATUS, SEO_TITLES, SEO_IDS } from './constants.js';
+import { STATUS, SEO_TITLES, SEO_IDS, SEO_DESCRIPTIONS } from './constants.js';
 import getServiceConfig from '../../../utils/service-config.js';
 import { getConfig, updateConfig } from '../../../utils/utils.js';
 
@@ -42,7 +42,7 @@ export function checkH1s(area) {
     description = `Found ${h1s.length} H1 headings. Each page should have exactly one H1 heading.`;
   } else {
     status = STATUS.PASS;
-    description = 'Found exactly one H1 heading.';
+    description = SEO_DESCRIPTIONS.h1Count;
   }
 
   return {
@@ -66,7 +66,7 @@ export function checkTitle(area) {
     description = 'Title size is too long. A title should not exceed 70 characters.';
   } else {
     status = STATUS.PASS;
-    description = 'Title size is appropriate.';
+    description = SEO_DESCRIPTIONS.title;
   }
 
   return {
@@ -97,7 +97,7 @@ export async function checkCanon(area) {
         description = 'Reason: Canonical reference redirects';
       } else {
         status = STATUS.PASS;
-        description = 'Canonical reference is valid.';
+        description = SEO_DESCRIPTIONS.canonical;
       }
     } catch (e) {
       status = STATUS.LIMBO;
@@ -150,7 +150,7 @@ export async function checkBody(area) {
 
   if (length > 100) {
     status = STATUS.PASS;
-    description = 'Body content has a good length.';
+    description = SEO_DESCRIPTIONS.bodySize;
   } else {
     status = STATUS.FAIL;
     description = 'Reason: Not enough content.';
@@ -175,7 +175,7 @@ export async function checkLorem(area) {
     description = 'Reason: Lorem ipsum is used on the page.';
   } else {
     status = STATUS.PASS;
-    description = 'No Lorem ipsum is used on the page.';
+    description = SEO_DESCRIPTIONS.loremIpsum;
   }
 
   return {
@@ -313,7 +313,7 @@ export async function checkLinks({ area, urlHash, envName }) {
   const status = count > 0 ? STATUS.FAIL : STATUS.PASS;
   const description = status === STATUS.FAIL
     ? `Reason: ${count} problem ${linkText}. Use the list below to fix them.`
-    : 'Links are valid.';
+    : SEO_DESCRIPTIONS.links;
 
   const result = {
     id: SEO_IDS.links,

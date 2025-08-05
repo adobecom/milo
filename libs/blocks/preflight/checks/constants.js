@@ -25,6 +25,16 @@ export const SEO_IDS = {
   links: 'links',
 };
 
+export const SEO_DESCRIPTIONS = {
+  title: 'Title size is appropriate.',
+  description: 'Meta description is present and within the recommended character limit.',
+  h1Count: 'Found exactly one H1 heading.',
+  canonical: 'Canonical reference is valid.',
+  bodySize: 'Body content has a good length.',
+  loremIpsum: 'No Lorem ipsum is used on the page.',
+  links: 'Links are valid.',
+};
+
 export const PERFORMANCE_TITLES = {
   Performance: 'Performance',
   LcpEl: 'LCP',

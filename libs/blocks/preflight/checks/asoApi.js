@@ -1,4 +1,4 @@
-import { SEO_TITLES, STATUS, SEO_IDS } from './constants.js';
+import { SEO_TITLES, STATUS, SEO_IDS, SEO_DESCRIPTIONS } from './constants.js';
 
 const CHECK_API = 'https://spacecat.experiencecloud.live/api/v1';
 
@@ -57,14 +57,14 @@ async function getASOToken() {
 
 function resultsFormatter(results) {
   const formattedResults = [];
-  const [metatags] = results.filter((result) => result.name === 'metatags');
 
   const processAudit = ({ type, seoId, seoTitle, passDescription }) => {
-    let opportunity = null;
     let issue = null;
 
     if (type === 'metatag') {
-      [opportunity] = metatags.opportunities.filter((opp) => opp.tagName === seoId);
+      const opportunity = results
+        .find((result) => result.name === 'metatags')
+        ?.opportunities.find((opp) => opp.tagName === seoId);
       if (opportunity) {
         formattedResults.push({
           id: seoId,
@@ -100,12 +100,12 @@ function resultsFormatter(results) {
     });
   };
 
-  processAudit({ type: 'metatag', seoId: SEO_IDS.title, seoTitle: SEO_TITLES.title, passDescription: 'Title size is appropriate.' });
-  processAudit({ type: 'metatag', seoId: SEO_IDS.description, seoTitle: SEO_TITLES.description, passDescription: 'Meta description is present and within the recommended character limit.' });
-  processAudit({ type: 'standard', seoId: 'h1-count', seoTitle: SEO_TITLES.h1Count, passDescription: 'Found exactly one H1 heading.' });
-  processAudit({ type: 'standard', seoId: 'canonical', seoTitle: SEO_TITLES.canonical, passDescription: 'Canonical reference is valid.' });
-  processAudit({ type: 'standard', seoId: 'body-size', seoTitle: SEO_TITLES.bodySize, passDescription: 'Body content has a good length.' });
-  processAudit({ type: 'standard', seoId: 'lorem-ipsum', seoTitle: SEO_TITLES.loremIpsum, passDescription: 'No Lorem ipsum is used on the page.' });
+  processAudit({ type: 'metatag', seoId: SEO_IDS.title, seoTitle: SEO_TITLES.title, passDescription: SEO_DESCRIPTIONS.title });
+  processAudit({ type: 'metatag', seoId: SEO_IDS.description, seoTitle: SEO_TITLES.description, passDescription: SEO_DESCRIPTIONS.description });
+  processAudit({ type: 'standard', seoId: 'h1-count', seoTitle: SEO_TITLES.h1Count, passDescription: SEO_DESCRIPTIONS.h1Count });
+  processAudit({ type: 'standard', seoId: 'canonical', seoTitle: SEO_TITLES.canonical, passDescription: SEO_DESCRIPTIONS.canonical });
+  processAudit({ type: 'standard', seoId: 'body-size', seoTitle: SEO_TITLES.bodySize, passDescription: SEO_DESCRIPTIONS.bodySize });
+  processAudit({ type: 'standard', seoId: 'lorem-ipsum', seoTitle: SEO_TITLES.loremIpsum, passDescription: SEO_DESCRIPTIONS.loremIpsum });
 
   const [links] = results.filter((audit) => audit.name === 'links');
   if (links) {
@@ -120,7 +120,7 @@ function resultsFormatter(results) {
       id: SEO_IDS.links,
       title: SEO_TITLES.links,
       status: hasIssues ? STATUS.FAIL : STATUS.PASS,
-      description: hasIssues ? `Reason: ${issueLinks.length} problem ${issueLinks.length > 1 ? 'links' : 'link'}. Use the list below to fix them.` : 'Links are valid.',
+      description: hasIssues ? `Reason: ${issueLinks.length} problem ${issueLinks.length > 1 ? 'links' : 'link'}. Use the list below to fix them.` : SEO_DESCRIPTIONS.links,
       details: {
         badLinks: hasIssues ? issueLinks.map((link) => ({
           liveHref: link.url,
@@ -154,14 +154,14 @@ async function getJobId(step) {
     });
 
     if (!res.ok) {
-      lanaLog(`ASO: Error creating preflight job | step:${step} | status: ${res.status} | url: ${CHECK_API}/preflight/jobs`);
+      lanaLog(`ASO: Error creating preflight job | step: ${step} | status: ${res.status} | url: ${CHECK_API}/preflight/jobs`);
       return null;
     }
 
     const data = await res.json();
     return data.jobId;
   } catch (err) {
-    lanaLog(`ASO: Error creating preflight job | step:${step} | error: ${err.reason || err.error || err.message || err} | url: ${CHECK_API}/preflight/jobs`);
+    lanaLog(`ASO: Error creating preflight job | step: ${step} | error: ${err.reason || err.error || err.message || err} | url: ${CHECK_API}/preflight/jobs`);
     return null;
   }
 }
