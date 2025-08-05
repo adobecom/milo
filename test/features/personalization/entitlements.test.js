@@ -5,7 +5,7 @@ import { getEntitlements } from '../../../libs/features/personalization/personal
 
 const config = getConfig();
 config.env = { name: 'prod' };
-config.mep = {};
+config.mep = { martechConsent: true };
 
 const getFetchPromise = (data, type = 'json') => new Promise((resolve) => {
   resolve({

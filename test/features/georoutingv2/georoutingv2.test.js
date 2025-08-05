@@ -2,9 +2,16 @@ import { stub } from 'sinon';
 import { expect } from '@esm-bundle/chai';
 import { sendKeys, setViewport } from '@web/test-runner-commands';
 
-const { default: init, getCookie } = await import('../../../libs/features/georoutingv2/georoutingv2.js');
+const { default: init } = await import('../../../libs/features/georoutingv2/georoutingv2.js');
 let { getMetadata } = await import('../../../libs/utils/utils.js');
-const { createTag, loadStyle, loadBlock, setConfig, getFederatedContentRoot } = await import('../../../libs/utils/utils.js');
+const {
+  createTag,
+  loadStyle,
+  loadBlock,
+  setConfig,
+  getFederatedContentRoot,
+  getCookie,
+} = await import('../../../libs/utils/utils.js');
 
 const mockConfig = {
   locales: {
