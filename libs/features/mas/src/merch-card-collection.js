@@ -141,7 +141,7 @@ export class MerchCardCollection extends LitElement {
 
         if (changedProperties.has('singleApp') && this.singleApp) {
             children.forEach((card) => {
-                card.updateFilters(card.cardName === this.singleApp);
+                card.updateFilters(card.name === this.singleApp);
             });
         }
 

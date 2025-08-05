@@ -61,7 +61,7 @@ let idCounter = 0;
 export class MerchCard extends LitElement {
     static properties = {
         id: { type: String, attribute: 'id', reflect: true },
-        cardName: { type: String, attribute: 'card-name', reflect: true },
+        name: { type: String, attribute: 'name', reflect: true },
         variant: { type: String, reflect: true },
         size: { type: String, attribute: 'size', reflect: true },
         badgeColor: { type: String, attribute: 'badge-color', reflect: true },

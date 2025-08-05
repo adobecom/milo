@@ -203,7 +203,7 @@ runTests(async () => {
             document.location.hash = 'single_app=illustrator';
             render();
             await delay(100);
-            expect(visibleCards(1).cardName).to.equal('illustrator');
+            expect(visibleCards(1).name).to.equal('illustrator');
         });
 
         it('should display a Show More button', async () => {

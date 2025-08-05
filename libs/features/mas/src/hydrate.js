@@ -137,7 +137,7 @@ export function processSize(fields, merchCard, sizeConfig) {
 
 export function processCardName(fields, merchCard) {
     if (fields.cardName) {
-        merchCard.setAttribute('card-name', fields.cardName);
+        merchCard.setAttribute('name', fields.cardName);
     }
 }
 
