@@ -111,7 +111,7 @@ export class MasCommerceService extends HTMLElement {
             checkout: new Set(),
             price: new Set(),
         };
-        const startup = { literals, providers, settings, featureFlags: this.featureFlags };
+        const startup = { literals, providers, settings };
         // Extend web component object with service API
         Object.defineProperties(
             this,
