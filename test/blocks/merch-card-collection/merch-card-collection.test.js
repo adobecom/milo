@@ -128,10 +128,10 @@ describe('Merch Cards', async () => {
     expect(merchCards.filter).to.equal('photo');
     expect(merchCards.filtered).to.equal('photo');
 
-    const [photoshop, express, cc] = getVisibleCards(merchCards);
-    expect(photoshop.getAttribute('name')).to.be.equal('photoshop');
-    expect(express.getAttribute('name')).to.be.equal('express');
-    expect(cc.getAttribute('name')).to.be.equal('all-apps');
+    const [photoshop, cc, express] = getVisibleCards(merchCards);
+    expect(photoshop.name).to.be.equal('photoshop');
+    expect(cc.name).to.be.equal('all-apps');
+    expect(express.name).to.be.equal('express');
   });
 
   it('should parse multiple filters', async () => {
@@ -144,16 +144,16 @@ describe('Merch Cards', async () => {
     await delay(500);
     let [cc, photoshop, express] = getVisibleCards(merchCards);
     expect(cc.size).to.be.equal('super-wide');
-    expect(photoshop.getAttribute('name')).to.be.equal('photoshop');
-    expect(cc.getAttribute('name')).to.be.equal('all-apps');
-    expect(express.getAttribute('name')).to.be.equal('express');
+    expect(photoshop.name).to.be.equal('photoshop');
+    expect(cc.name).to.be.equal('all-apps');
+    expect(express.name).to.be.equal('express');
     document.location.hash = '#filter=photo';
     await delay(500);
     ([photoshop, cc, express] = getVisibleCards(merchCards));
-    expect(photoshop.getAttribute('name')).to.be.equal('photoshop');
-    expect(cc.getAttribute('name')).to.be.equal('all-apps');
+    expect(photoshop.name).to.be.equal('photoshop');
+    expect(cc.name).to.be.equal('all-apps');
     expect(cc.size).to.undefined;
-    expect(express.getAttribute('name')).to.be.equal('express');
+    expect(express.name).to.be.equal('express');
   });
 
   it('should parse literals for header', async () => {
