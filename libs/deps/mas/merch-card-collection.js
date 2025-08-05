@@ -900,7 +900,7 @@ merch-card[variant="plans-education"] [slot="body-xs"] span.price:not(.price-str
 }
 
 merch-card[variant="plans-education"] [slot="body-xs"] p:has(.heading-xs) {
-    margin-bottom: 8px;
+    margin-bottom: 16x;
 }
 
 merch-card[variant="plans-education"] [slot="body-xs"] p:has(span[is="inline-price"]) {
