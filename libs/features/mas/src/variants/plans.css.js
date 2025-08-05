@@ -1,7 +1,7 @@
 import { MOBILE_LANDSCAPE, TABLET_UP, DESKTOP_UP, LARGE_DESKTOP } from '../media.js';
 export const CSS = `
 :root {
-    --consonant-merch-card-plans-width: 300px;
+    --consonant-merch-card-plans-width: 302px;
     --consonant-merch-card-plans-icon-size: 40px;
     --consonant-merch-card-plans-students-width: 568px;
 }

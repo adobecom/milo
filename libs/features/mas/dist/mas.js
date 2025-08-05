@@ -1227,7 +1227,7 @@ merch-card .footer-row-cell:nth-child(8) {
     }
   `);var Nc=`
 :root {
-    --consonant-merch-card-plans-width: 300px;
+    --consonant-merch-card-plans-width: 302px;
     --consonant-merch-card-plans-icon-size: 40px;
     --consonant-merch-card-plans-students-width: 568px;
 }
