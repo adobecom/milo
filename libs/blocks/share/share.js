@@ -37,13 +37,14 @@ export async function getSVGsfromFile(path, selectors) {
 
 function getPlatforms(el) {
   const manualShares = el.querySelectorAll('a');
-  if (manualShares.length === 0) return ['facebook', 'twitter', 'linkedin', 'pinterest', 'reddit'];
+  if (manualShares.length === 0) return ['facebook', 'x', 'linkedin', 'pinterest', 'reddit'];
   const platforms = [];
   [...manualShares].forEach((share) => {
     const { href } = share;
     const url = new URL(href);
     const parts = url.host.split('.');
-    platforms.push(parts[parts.length - 2]);
+    const platform = parts[parts.length - 2] !== 'twitter' ? parts[parts.length - 2] : 'x';
+    platforms.push(platform);
     const parentP = share.closest('p');
     parentP?.remove();
   });
@@ -103,10 +104,10 @@ export default async function decorate(block) {
           title: 'Facebook',
           href: `https://www.facebook.com/sharer/sharer.php?u=${url}`,
         };
-      case 'twitter':
+      case 'x':
         return {
-          title: 'Twitter',
-          href: `https://twitter.com/share?&url=${url}`,
+          title: 'X',
+          href: `https://x.com/share?&url=${url}`,
         };
       case 'linkedin':
         return {
@@ -129,7 +130,7 @@ export default async function decorate(block) {
     }
   };
 
-  const container = createTag('p', { class: 'icon-container' });
+  const container = createTag('ul', { class: 'icon-container' });
   svgs.forEach(async (svg) => {
     if (svg.name === 'clipboard') return;
 
@@ -145,7 +146,9 @@ export default async function decorate(block) {
       },
       svg.svg,
     );
-    container.append(shareLink);
+    const li = createTag('li');
+    li.appendChild(shareLink);
+    container.append(li);
     shareLink.addEventListener('click', (e) => {
       /* c8 ignore next 2 */
       e.preventDefault();
@@ -169,12 +172,26 @@ export default async function decorate(block) {
       },
       clipboardSvg.svg,
     );
-    container.append(copyButton);
+    const li = createTag('li');
+    li.append(copyButton);
+    const copyAriaLive = createTag(
+      'div',
+      {
+        'aria-live': 'polite',
+        role: 'status',
+        class: 'aria-live-container',
+      },
+    );
+    container.append(li, copyAriaLive);
+    let changeText = false;
     copyButton.addEventListener('click', (e) => {
       /* c8 ignore next 6 */
       e.preventDefault();
+      copyAriaLive.textContent = '';
       navigator.clipboard.writeText(window.location.href).then(() => {
         copyButton.classList.add('copy-to-clipboard-copied');
+        copyAriaLive.textContent = copiedTooltip + (changeText ? '\u200b' : '');
+        changeText = !changeText;
         setTimeout(() => document.activeElement.blur(), 500);
         setTimeout(
           () => copyButton.classList.remove('copy-to-clipboard-copied'),
