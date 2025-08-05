@@ -1,18 +1,47 @@
 import { expect, test } from '@playwright/test';
 import { features } from './mini.spec.js';
 import MiniCard from './mini.page.js';
+import { setupMasConsoleListener, attachMasConsoleErrorsToFailure } from '../../../../libs/commerce.js';
 
 const miloLibs = process.env.MILO_LIBS || '';
+let consoleErrors;
 
 test.describe('CCD Mini Cards Feature', () => {
   let miniCard;
 
   test.beforeEach(async ({ page, browserName }) => {
     miniCard = new MiniCard(page);
+
+    consoleErrors = [];
+    const consoleListener = await setupMasConsoleListener(consoleErrors);
+    page.on('console', consoleListener);
+    
     if (browserName === 'chromium') {
       await page.setExtraHTTPHeaders({ 'sec-ch-ua': '"Chromium";v="123", "Not:A-Brand";v="8"' });
     }
   });
+
+  test.afterEach(async ({ page }, testInfo) => {
+    const consoleErrorText = attachMasConsoleErrorsToFailure(testInfo, consoleErrors);
+    
+    if (testInfo.status === 'failed' && consoleErrors.length > 0) {
+      console.log('\n=== MAS CONSOLE ERRORS DURING TEST FAILURE ===');
+      consoleErrors.forEach((error, index) => {
+        console.log(`${index + 1}. ${error}`);
+      });
+      console.log('==========================================\n');
+      
+      // Include console errors in the stack trace
+      const originalError = testInfo.error;
+      if (originalError) {
+        const enhancedMessage = `${originalError.message}${consoleErrorText}`;
+        originalError.message = enhancedMessage;
+      }
+    }
+    
+    page.removeAllListeners('console');
+  });
+
 
   features.forEach((feature) => {
     test(`${feature.name},${feature.tags}`, async ({ page, baseURL }) => {

@@ -2,10 +2,12 @@ import { expect, test } from '@playwright/test';
 import { features } from './masccd.spec.js';
 import MerchCCD from './masccd.page.js';
 import WebUtil from '../../../libs/webutil.js';
+import { setupMasConsoleListener, attachMasConsoleErrorsToFailure } from '../../../libs/commerce.js';
 
 const COMMERCE_LINK_REGEX = (country = 'US', language = 'en') => new RegExp(`https://commerce.adobe.com/store/email\\?items%5B0%5D%5Bid%5D=([A-F0-9]{32}&cli=adobe_com&ctx=fp&co=${country}&lang=${language})`, 'i');
 let CCD;
 let webUtil;
+let consoleErrors;
 
 const miloLibs = process.env.MILO_LIBS || '';
 
@@ -15,9 +17,35 @@ test.describe('CCD Merchcard feature test suite', () => {
 
     CCD = new MerchCCD(page);
     webUtil = new WebUtil(page);
+    
+    consoleErrors = [];
+    const consoleListener = await setupMasConsoleListener(consoleErrors);
+    page.on('console', consoleListener);
+    
     if (browserName === 'chromium') {
       await page.setExtraHTTPHeaders({ 'sec-ch-ua': '"Chromium";v="123", "Not:A-Brand";v="8"' });
     }
+  });
+
+  test.afterEach(async ({ page }, testInfo) => {
+    const consoleErrorText = attachMasConsoleErrorsToFailure(testInfo, consoleErrors);
+    
+    if (testInfo.status === 'failed' && consoleErrors.length > 0) {
+      console.log('\n=== MAS CONSOLE ERRORS DURING TEST FAILURE ===');
+      consoleErrors.forEach((error, index) => {
+        console.log(`${index + 1}. ${error}`);
+      });
+      console.log('==========================================\n');
+      
+      // Include console errors in the stack trace
+      const originalError = testInfo.error;
+      if (originalError) {
+        const enhancedMessage = `${originalError.message}${consoleErrorText}`;
+        originalError.message = enhancedMessage;
+      }
+    }
+    
+    page.removeAllListeners('console');
   });
 
   // *** SUGGESTED CARDS: ***
