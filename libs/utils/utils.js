@@ -1414,8 +1414,13 @@ async function determineCountry() {
     }
   }
   if (sessionStorage.getItem('akamai')) return sessionStorage.getItem('akamai');
-  
-  return getAkamaiCode();
+  let country = null;
+  import('../features/georoutingv2/georoutingv2.js').then(({ getAkamaiCode }) => {
+    getAkamaiCode().then((code) => {
+      country = code;
+    });
+  });
+  return country;
 }
 async function getCountry() {
   const country = await determineCountry();
