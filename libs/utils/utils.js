@@ -1098,10 +1098,10 @@ async function decorateHeader() {
 async function decorateIcons(area, config) {
   const icons = area.querySelectorAll('span.icon');
   if (icons.length === 0) return;
-  const { base, excludeIconsBlock } = config;
-  if (excludeIconsBlock) {
-    const hasRogueIcons = [...icons].some((icon) => excludeIconsBlock.some((block) => icon.closest(`div.${block}`)));
-    if (hasRogueIcons && icons.length === [...icons].filter((icon) => excludeIconsBlock.some((block) => icon.closest(`div.${block}`))).length) {
+  const { base, iconsExcludeBlock } = config;
+  if (iconsExcludeBlock) {
+    const hasRogueIcons = [...icons].some((icon) => iconsExcludeBlock.some((block) => icon.closest(`div.${block}`)));
+    if (hasRogueIcons && icons.length === [...icons].filter((icon) => iconsExcludeBlock.some((block) => icon.closest(`div.${block}`))).length) {
       return;
     }
   }
