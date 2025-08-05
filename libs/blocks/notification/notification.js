@@ -384,14 +384,25 @@ function setStickyAccessabilityAttributes(el) {
   const section = el?.closest('.section');
   if (!section) return;
 
-  setTimeout(() => {
-    const stickyClass = section.classList.contains('sticky-top') || section.classList.contains('sticky-bottom');
-    if (!stickyClass) return;
+  const checkAndSetAttributes = () => {
+    const sticky = section.classList.contains('sticky-top') || section.classList.contains('sticky-bottom');
+    if (!sticky) return false;
 
     el.setAttribute('aria-label', getHeadingText(el)
-       || (stickyClass === 'sticky-bottom' ? 'Promotional Banner Bottom' : 'Promotional Banner Top'));
+       || (sticky.classList.contains('sticky-bottom') ? 'Promotional Banner Bottom' : 'Promotional Banner Top'));
     el.setAttribute('role', 'region');
-  }, 300);
+    return true;
+  };
+
+  const observer = new MutationObserver(() => {
+    if (!checkAndSetAttributes()) return;
+    observer.disconnect();
+  });
+
+  observer.observe(section, {
+    attributes: true,
+    attributeFilter: ['class'],
+  });
 }
 
 export default async function init(el) {
