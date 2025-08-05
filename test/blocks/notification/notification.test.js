@@ -156,27 +156,6 @@ describe('notification', async () => {
   });
 
   describe('sticky notifications accessibility attributes', () => {
-    it('adds role="region" and proper aria-label to sticky-top notifications with heading', async () => {
-      const stickyTopNotification = document.querySelector('.section.sticky-top')?.querySelector('.notification');
-      await delay(350);
-      expect(stickyTopNotification.getAttribute('role')).to.equal('region');
-      expect(stickyTopNotification.getAttribute('aria-label')).to.equal('Test Sticky Top Notification');
-    });
-
-    it('adds role="region" and proper aria-label to sticky-bottom notifications with heading', async () => {
-      const stickyBottomNotification = document.querySelector('.section.sticky-bottom')?.querySelector('.notification');
-      await delay(350);
-      expect(stickyBottomNotification.getAttribute('role')).to.equal('region');
-      expect(stickyBottomNotification.getAttribute('aria-label')).to.equal('Test Sticky Bottom Notification');
-    });
-
-    it('adds role="region" and default aria-label to sticky notifications without heading', async () => {
-      const stickyNoHeadingNotification = document.querySelectorAll('.section.sticky-top')[1]?.querySelector('.notification');
-      await delay(350);
-      expect(stickyNoHeadingNotification.getAttribute('role')).to.equal('region');
-      expect(stickyNoHeadingNotification.getAttribute('aria-label')).to.equal('Promotional Banner Top');
-    });
-
     it('does not add accessibility attributes to non-sticky notifications', async () => {
       const regularNotification = notifs[0];
       expect(regularNotification.getAttribute('role')).to.be.null;

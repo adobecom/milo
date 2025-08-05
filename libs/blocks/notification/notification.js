@@ -104,7 +104,7 @@ function wrapCopy(foreground) {
 const closeBanner = (el) => {
   let isSticky = false;
   let rect;
-  const sectionElement = el.closest('.section');
+  const sectionElement = el?.closest('.section');
   const isFocusable = el.classList.contains('focus');
 
   if (sectionElement?.className.includes('sticky')) {
@@ -138,7 +138,7 @@ const closeBanner = (el) => {
       let focusTarget;
       const allFocusableElements = 'button, a[href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
       const elementAtPosition = document.elementFromPoint(rect.left, rect.top);
-      const stickySection = elementAtPosition.closest('.section');
+      const stickySection = elementAtPosition?.closest('.section');
       focusTarget = findFocusableInSection(stickySection, selectedSelector, allFocusableElements);
 
       let currentSection = sectionElement?.previousElementSibling;
@@ -389,7 +389,7 @@ function setStickyAccessabilityAttributes(el) {
     if (!sticky) return false;
 
     el.setAttribute('aria-label', getHeadingText(el)
-       || (sticky.classList.contains('sticky-bottom') ? 'Promotional Banner Bottom' : 'Promotional Banner Top'));
+       || (section.classList.contains('sticky-bottom') ? 'Promotional Banner Bottom' : 'Promotional Banner Top'));
     el.setAttribute('role', 'region');
     return true;
   };
