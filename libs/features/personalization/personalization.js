@@ -13,27 +13,28 @@ import {
 } from '../../utils/utils.js';
 
 /* c8 ignore start */
+const ua = navigator.userAgent;
 const PHONE_SIZE = window.screen.width < 550 || window.screen.height < 550;
-const safariIpad = navigator.userAgent.includes('Macintosh') && navigator.maxTouchPoints > 1;
-const isGalaxyTab = navigator.userAgent.includes('Linux') && navigator.maxTouchPoints > 1;
-const isChromeIOS = navigator.userAgent.includes('CriOS');
-const isEdgeIOS = navigator.userAgent.includes('EdgiOS');
-const isFirefoxIOS = navigator.userAgent.includes('FxiOS');
+const safariIpad = ua.includes('Macintosh') && navigator.maxTouchPoints > 1;
+const isGalaxyTab = ua.includes('Linux') && navigator.maxTouchPoints > 1;
+const isChromeIOS = ua.includes('CriOS');
+const isEdgeIOS = ua.includes('EdgiOS');
+const isFirefoxIOS = ua.includes('FxiOS');
 
 export const US_GEO = 'en-us';
 export const PERSONALIZATION_TAGS = {
   all: () => true,
-  chrome: () => (navigator.userAgent.includes('Chrome') && !navigator.userAgent.includes('Edg')) || isChromeIOS,
-  firefox: () => navigator.userAgent.includes('Firefox') || isFirefoxIOS,
-  safari: () => navigator.userAgent.includes('Safari') && !navigator.userAgent.includes('Chrome') && !isChromeIOS && !isEdgeIOS && !isFirefoxIOS,
-  edge: () => navigator.userAgent.includes('Edg'),
-  android: () => navigator.userAgent.includes('Android') || isGalaxyTab,
-  ios: () => /iPad|iPhone|iPod/.test(navigator.userAgent) || safariIpad,
-  windows: () => navigator.userAgent.includes('Windows'),
-  mac: () => navigator.userAgent.includes('Macintosh') && !safariIpad,
+  chrome: () => (ua.includes('Chrome') && !ua.includes('Edg')) || isChromeIOS,
+  firefox: () => ua.includes('Firefox') || isFirefoxIOS,
+  safari: () => ua.includes('Safari') && !ua.includes('Chrome') && !isChromeIOS && !isEdgeIOS && !isFirefoxIOS,
+  edge: () => ua.includes('Edg'),
+  android: () => ua.includes('Android') || isGalaxyTab,
+  ios: () => /iPad|iPhone|iPod/.test(ua) || safariIpad,
+  windows: () => ua.includes('Windows'),
+  mac: () => ua.includes('Macintosh') && !safariIpad,
   'mobile-device': () => safariIpad
     || /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Touch/i
-      .test(navigator.userAgent) || isGalaxyTab,
+      .test(ua) || isGalaxyTab,
   phone: () => PERSONALIZATION_TAGS['mobile-device']() && PHONE_SIZE,
   tablet: () => PERSONALIZATION_TAGS['mobile-device']() && !PHONE_SIZE,
   desktop: () => !PERSONALIZATION_TAGS['mobile-device'](),
