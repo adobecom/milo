@@ -37,7 +37,7 @@ export async function getSpectraLOB(lastVisitedPage) {
 export default async function init(enablement) {
   if (enablement !== true) return enablement;
   const consentCookieValue = getCookie('OptanonConsent');
-  if (!consentCookieValue?.includes('C0002:1')) return 'cc';
+  if (consentCookieValue?.includes('C0002:0')) return 'cc';
   const lobValue = await getSpectraLOB(document.referrer);
   return lobValue;
 }
