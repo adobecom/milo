@@ -423,7 +423,7 @@ async function buildFilter(type, tax, block, config) {
   const options = document.createElement('ul');
   options.classList.add('filter-options');
   options.setAttribute('data-type', type);
-  options.setAttribute('aria-label', `${tax.getCategoryTitle(type)} filters`);
+  options.setAttribute('aria-label', `${tax.getCategoryTitle(type)} ${await replacePlaceholder('filters')}`);
 
   const category = tax.getCategory(tax[`${type.toUpperCase()}`]);
 
