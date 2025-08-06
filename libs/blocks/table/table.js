@@ -231,10 +231,10 @@ function handleExpand(e) {
   e.setAttribute('aria-expanded', expanded.toString());
   while (nextElement && !nextElement.classList.contains('divider')) {
     if (expanded) {
-      sectionHead.classList.remove('section-head-collaped');
+      sectionHead.classList.remove('section-head-collapsed');
       nextElement.classList.remove('hidden');
     } else {
-      sectionHead.classList.add('section-head-collaped');
+      sectionHead.classList.add('section-head-collapsed');
       nextElement.classList.add('hidden');
     }
     nextElement = nextElement.nextElementSibling;
@@ -245,7 +245,7 @@ function setExpandEvents(el) {
   el.querySelectorAll('.icon.expand').forEach((icon) => {
     icon.parentElement.classList.add('point-cursor');
     icon.parentElement.addEventListener('click', () => handleExpand(icon));
-    icon.parentElement.setAttribute('tabindex', 0);
+    icon.setAttribute('tabindex', 0);
     icon.parentElement.addEventListener('keydown', (e) => {
       if (e.key === ' ') e.preventDefault();
 
@@ -324,7 +324,7 @@ function handleSection(sectionParams) {
         expandSection = false;
       } else {
         iconTag.setAttribute('aria-expanded', 'false');
-        nextRow.classList.add('section-head-collaped');
+        nextRow.classList.add('section-head-collapsed');
         let nextElement = row.nextElementSibling;
         while (nextElement && !nextElement.classList.contains('divider')) {
           nextElement.classList.add('hidden');

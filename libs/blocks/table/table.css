@@ -111,7 +111,7 @@
   border-color: transparent;
 }
 
-.table.collapse .section-head-collaped .col {
+.table.collapse .section-head-collapsed .col {
   border-bottom: 1px var(--border-color) solid;
 }
 
