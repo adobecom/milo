@@ -30,33 +30,33 @@ export default function InputLocales() {
   const RenderRegion = () => {
     if (WORKFLOW[userWorkflowType.value]?.languages) {
       return (html`
-    <h5 class="section-header">Quick Select for Language/Locale</h5>
-    <div class="additional-cta">
-        <button class="reset-button" onClick=${selectAll}>
-          Select All
-        </button>
-        <button class="reset-button" onClick=${resetSelection}>
-            Reset All
-          </button>
-      </div>
-    <div class="region-grid">
-      <div class="region-buttons">
-        ${localeRegionList.map(
-          (region) => html`
-            <button
-              key=${region.key}
-              class="region-button ${selectedRegion[region.key]
-          ? 'active'
-          : ''}"
-              onClick=${() => toggleRegion(region)}
-            >
-              ${region.key}
+        <h5 class="section-header">Quick Select for Language/Locale</h5>
+        <div class="additional-cta">
+            <button class="reset-button" onClick=${selectAll}>
+              Select All
             </button>
-          `,
-        )}
-      </div>
-    </div>
-  `);
+            <button class="reset-button" onClick=${resetSelection}>
+                Reset All
+              </button>
+          </div>
+        <div class="region-grid">
+          <div class="region-buttons">
+            ${localeRegionList.map(
+        (region) => html`
+                <button
+                  key=${region.key}
+                  class="region-button ${selectedRegion[region.key]
+            ? 'active'
+            : ''}"
+                  onClick=${() => toggleRegion(region)}
+                >
+                  ${region.key}
+                </button>
+              `,
+      )}
+          </div>
+        </div>
+      `);
     } return null;
   };
 
@@ -67,21 +67,21 @@ export default function InputLocales() {
       <h5 class="section-header">Select the Language(s)</h5>
       <div class="language-buttons">
         ${languagesList.map(
-          (language) => language.livecopies.length > 0
-            && html`
+        (language) => language.livecopies.length > 0
+          && html`
               <button
                 key=${language.languagecode}
                 class="language-button ${language.livecopies
-          .split(',')
-          .some((locale) => selectedLocale.includes(`${language.languagecode}|${locale}`))
-          ? 'active'
-          : ''}"
+              .split(',')
+              .some((locale) => selectedLocale.includes(`${language.languagecode}|${locale}`))
+              ? 'active'
+              : ''}"
                 onClick=${() => selectLanguage(language)}
               >
                 ${language.language}
               </button>
             `,
-        )}
+      )}
       </div>
     </div>
   `);
@@ -90,6 +90,16 @@ export default function InputLocales() {
   };
 
   const RenderLocales = () => {
+    const isPromoteRollout = window.location.href.includes('promoteRollout') || userWorkflowType.value === 'promoteRollout';
+    let initialAcc = {};
+    if (isPromoteRollout) {
+      const englishLocale = languagesList.find(lang => lang.languagecode === 'en');
+      if (englishLocale) {
+        initialAcc[englishLocale.language] = englishLocale.livecopies.split(',')
+          .map(locale => `${englishLocale.languagecode}|${locale}`);
+      }
+    }
+
     const groupedLocales = selectedLocale.reduce((acc, localeKey) => {
       const [langCode, locale] = parseLocaleKey(localeKey);
       const language = languagesList.find((lang) => (langCode
@@ -102,7 +112,7 @@ export default function InputLocales() {
         acc[language.language].push(localeKey);
       }
       return acc;
-    }, {});
+    }, initialAcc);
 
     return Object.keys(groupedLocales).map((languageName) => {
       const localesInLanguage = groupedLocales[languageName];
@@ -112,7 +122,7 @@ export default function InputLocales() {
           <p class="language-name"><strong>${languageName}</strong></p>
           <div class="locale-button-container">
             ${localesInLanguage.map(
-    (localeKey) => html`
+        (localeKey) => html`
                 <button
                   class="locale-button ${activeLocales[localeKey] ? 'active' : ''}"
                   onClick=${() => toggleLocale(localeKey)}
@@ -120,7 +130,7 @@ export default function InputLocales() {
                   ${getLocaleFromKey(localeKey).toUpperCase()}
                 </button>
               `,
-  )}
+      )}
           </div>
         </div>
       `;
@@ -139,7 +149,7 @@ export default function InputLocales() {
         <div class="language-locale-container">
           <${RenderLanguage} />
           ${project.value.type !== PROJECT_TYPES.translation && selectedLocale.length > 0
-          && html`
+    && html`
             <div class="locale-grid">
               <h5 class="section-header">Selected Locales</h5>
               <div class="locale-container">${RenderLocales()}</div>
@@ -149,7 +159,7 @@ export default function InputLocales() {
       </div>
     </div>
     ${apiError
-      && html`<${Toast}
+    && html`<${Toast}
         message=${apiError}
         type="error"
         onClose=${() => setApiError('')}
