@@ -246,12 +246,6 @@ function setExpandEvents(el) {
     icon.parentElement.classList.add('point-cursor');
     icon.parentElement.addEventListener('click', () => handleExpand(icon));
     icon.setAttribute('tabindex', 0);
-    icon.addEventListener('focus', () => {
-      icon.removeAttribute('aria-hidden');
-    });
-    icon.addEventListener('blur', () => {
-      icon.setAttribute('aria-hidden', 'true');
-    });
     icon.parentElement.addEventListener('keydown', (e) => {
       if (e.key === ' ') e.preventDefault();
 
@@ -320,11 +314,7 @@ function handleSection(sectionParams) {
     }
 
     if (isCollapseTable) {
-      const iconTag = createTag('span', {
-        class: 'icon expand',
-        role: 'button',
-        'aria-hidden': 'true',
-      });
+      const iconTag = createTag('span', { class: 'icon expand', role: 'button' });
       if (!sectionHeadTitle.querySelector('.icon.expand')) {
         sectionHeadTitle.prepend(iconTag);
       }
@@ -651,9 +641,6 @@ export default function init(el) {
     el.parentElement.classList.add(`table-${el.classList.contains('merch') ? 'merch-' : ''}section`);
   }
 
-  // Add table summary for screen readers - will be updated after table is built
-  const tempSummary = 'Loading table...';
-  el.setAttribute('aria-label', tempSummary);
   const rows = Array.from(el.children);
   const isMerch = el.classList.contains('merch');
   const isCollapseTable = el.classList.contains('collapse') && !isMerch;
