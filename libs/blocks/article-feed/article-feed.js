@@ -104,17 +104,6 @@ function isCardOnPage(article) {
   return !!document.querySelector(`.featured-article a.featured-article-card[href="${path}"], .recommended-articles a.article-card[href="${path}"]`);
 }
 
-function closeOnDocClick(e) {
-  const { target } = e;
-  const curtain = document.querySelector('.filter-curtain');
-  if (target === curtain) {
-    const open = document.querySelector('.filter-button[aria-expanded=true]');
-    closeMenu(open);
-    disableSearch(open.id);
-    curtain.classList.add('hide');
-  }
-}
-
 function filterSearch(e) {
   const { target } = e;
   const { value } = target;
@@ -128,10 +117,8 @@ function filterSearch(e) {
   });
 }
 
-function enableSearch(id) {
-  const menu = document.querySelector(`[aria-labelledby='${id}']`);
-  const input = menu.querySelector('input');
-  input.addEventListener('keyup', filterSearch);
+function closeMenu(el) {
+  el.setAttribute('aria-expanded', false);
 }
 
 function disableSearch(id) {
@@ -145,6 +132,23 @@ function disableSearch(id) {
   input.removeEventListener('keyup', filterSearch);
 }
 
+function enableSearch(id) {
+  const menu = document.querySelector(`[aria-labelledby='${id}']`);
+  const input = menu.querySelector('input');
+  input.addEventListener('keyup', filterSearch);
+}
+
+function closeOnDocClick(e) {
+  const { target } = e;
+  const curtain = document.querySelector('.filter-curtain');
+  if (target === curtain) {
+    const open = document.querySelector('.filter-button[aria-expanded=true]');
+    closeMenu(open);
+    disableSearch(open.id);
+    curtain.classList.add('hide');
+  }
+}
+
 function closeCurtain() {
   const curtain = document.querySelector('.filter-curtain');
   curtain.classList.add('hide');
@@ -155,10 +159,6 @@ function openCurtain() {
   const curtain = document.querySelector('.filter-curtain');
   curtain.classList.remove('hide');
   window.addEventListener('click', closeOnDocClick);
-}
-
-function closeMenu(el) {
-  el.setAttribute('aria-expanded', false);
 }
 
 function openMenu(el) {
