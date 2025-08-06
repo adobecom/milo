@@ -8,6 +8,10 @@
   overflow: hidden;
 }
 
+.share.inline {
+  overflow: unset;
+}
+
 .share.dark {
   background-color: #1E1E1E;
 }
@@ -25,12 +29,20 @@
   filter: brightness(0.7);
 }
 
-.share p.icon-container,
-.share p.icon-container a {
+
+.share ul.icon-container,
+.share ul.icon-container li,
+.share ul.icon-container li a {
   display: flex;
   align-items: center;
   padding-bottom: 0;
   justify-content: center;
+}
+
+.share ul.icon-container {
+  list-style: none;
+  padding-left: 0;
+  gap: 18px;
 }
 
 .share p {
@@ -41,16 +53,12 @@
   color: #fff;
 }
 
-.share p.icon-container svg {
+.share ul.icon-container svg {
   color: var(--color-gray-600);
 }
 
-.share.dark p.icon-container svg {
+.share.dark ul.icon-container svg {
   color: #fff;
-}
-
-.share p.icon-container > a:not(:first-child) {
-  margin-inline-start: 18px;
 }
 
 .share .copy-to-clipboard {
@@ -64,7 +72,7 @@
   border-radius: 4px;
   border: 2px solid transparent;
   outline: none;
-  margin-inline-start: 16px;
+  margin-left: -2px;
 }
 
 .share .copy-to-clipboard:focus-visible {
@@ -95,6 +103,15 @@
   white-space: nowrap;
 }
 
+[dir="rtl"] .share ul.icon-container {
+  padding-right: 0;
+}
+
+[dir="rtl"] .share .copy-to-clipboard {
+  margin-left: 0;
+  margin-right: -2px;
+}
+
 [dir="rtl"] .share .copy-to-clipboard::before {
   left: 150%;
 }
@@ -116,6 +133,10 @@
   clip-path: polygon(0 -5%, 50% 100%, 100% -5%);
 }
 
+.share.inline .copy-to-clipboard::after {
+  z-index: 8;
+}
+
 .share .copy-to-clipboard:hover::before,
 .share .copy-to-clipboard:focus::before,
 .share .copy-to-clipboard:hover::after,
@@ -123,6 +144,8 @@
   visibility: visible;
   opacity: 1;
   transition-delay: 0ms;
+  pointer-events: auto;
+  cursor: default;
 }
 
 .share .copy-to-clipboard:hover::before,
@@ -145,7 +168,7 @@
   padding: 8px 0 16px;
 }
 
-.share.inline p.icon-container {
+.share.inline ul.icon-container {
   justify-content: flex-start;
   margin: 0;
 }
@@ -159,7 +182,7 @@ main > .section > .inline-wrapper > .share.inline {
   margin-bottom: 0;
 }
 
-main > .section.center .share.inline p.icon-container {
+main > .section.center .share.inline ul.icon-container {
   margin: 0 auto;
   justify-content: center;
 }
@@ -168,4 +191,11 @@ main > .section.center .share.inline p.icon-container {
   .share .copy-to-clipboard::before {
     left: 50%;
   }
+}
+
+.share .aria-live-container {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
 }
