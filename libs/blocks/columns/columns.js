@@ -12,8 +12,8 @@ const isRowHeader = (cols, col, cdx, rows) => {
   const hasColumnHeaderInFirstRow = correspondingFirstRowCol?.getAttribute('role') === 'columnheader';
 
   return columnsWithStrongOrH.length === 1
-  && columnsWithStrongOrH[0] === col
-  && !hasColumnHeaderInFirstRow;
+    && columnsWithStrongOrH[0] === col
+    && !hasColumnHeaderInFirstRow;
 };
 
 const isColumnHeader = (rdx, containsHTag, meaningfulChildren) => (
