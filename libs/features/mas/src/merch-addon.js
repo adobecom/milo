@@ -69,17 +69,31 @@ export default class MerchAddon extends LitElement {
         addonCheckbox.click();
     }
 
+    handleKeyDown(e) {
+        if (e.key === ' ') {
+            e.preventDefault();
+            this.handleCustomClick();
+        }
+    }
+
     render() {
         return html`
             <input
                 type="checkbox"
                 id="addon-checkbox"
-                part="checkbox"
                 .checked=${this.checked}
                 @change=${this.handleChange}
             />
-            <span id="custom-checkbox" @click=${this.handleCustomClick}></span>
-            <label for="addon-checkbox" part="label">
+            <span 
+                role="checkbox" 
+                aria-checked=${this.checked} 
+                tabindex="0" 
+                aria-labelledby="custom-checkbox-label" 
+                id="custom-checkbox" 
+                @click=${this.handleCustomClick}
+                @keydown=${this.handleKeyDown}>
+            </span>
+            <label id="custom-checkbox-label" for="addon-checkbox">
                 <slot></slot>
             </label>`;
     }
