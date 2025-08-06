@@ -75,6 +75,8 @@ function getBlockData(el) {
   return { fontSizes, options: { ...getOpts(el) } };
 }
 
+function getHeadingText(el) { return el.querySelector('h1, h2, h3, h4, h5, h6, strong')?.textContent.trim(); }
+
 export function findFocusableInSection(section, selSelector, focSelector) {
   if (!section) return null;
 
@@ -102,7 +104,7 @@ function wrapCopy(foreground) {
 const closeBanner = (el) => {
   let isSticky = false;
   let rect;
-  const sectionElement = el.closest('.section');
+  const sectionElement = el?.closest('.section');
   const isFocusable = el.classList.contains('focus');
 
   if (sectionElement?.className.includes('sticky')) {
@@ -136,7 +138,7 @@ const closeBanner = (el) => {
       let focusTarget;
       const allFocusableElements = 'button, a[href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
       const elementAtPosition = document.elementFromPoint(rect.left, rect.top);
-      const stickySection = elementAtPosition.closest('.section');
+      const stickySection = elementAtPosition?.closest('.section');
       focusTarget = findFocusableInSection(stickySection, selectedSelector, allFocusableElements);
 
       let currentSection = sectionElement?.previousElementSibling;
@@ -175,7 +177,7 @@ function addCloseAction(el, btn) {
 }
 
 function decorateClose(el) {
-  const btn = createTag('button', { 'aria-label': 'Close Promo Banner', class: 'close' }, closeSvg);
+  const btn = createTag('button', { 'aria-label': 'Close Promotional Banner', class: 'close' }, closeSvg);
   addCloseAction(el, btn);
   el.appendChild(btn);
 }
@@ -220,6 +222,8 @@ function curtainCallback(el) {
   document.body.classList.add('mobile-disable-scroll');
   el.insertAdjacentElement('afterend', curtain);
   el.setAttribute('role', 'dialog');
+  const ariaLabel = getHeadingText(el);
+  el.setAttribute('aria-label', `${ariaLabel ?? 'Promotional Banner'} Dialog`);
   el.setAttribute('aria-modal', 'true');
 
   const focusableElements = [...el.querySelectorAll(focusableNotificationElements)];
@@ -376,10 +380,33 @@ async function decorateLayout(el) {
   return foreground;
 }
 
+function setStickyAccessibilityAttributes(el) {
+  const section = el?.closest('.section');
+  if (!section) return;
+
+  const checkAndSetAttributes = () => {
+    const sticky = section.classList.contains('sticky-top') || section.classList.contains('sticky-bottom');
+    if (!sticky) return false;
+
+    el.setAttribute('aria-label', getHeadingText(el)
+       || (section.classList.contains('sticky-bottom') ? 'Promotional Banner Bottom' : 'Promotional Banner Top'));
+    el.setAttribute('role', 'region');
+    return true;
+  };
+
+  const observer = new MutationObserver(() => {
+    if (!checkAndSetAttributes()) return;
+    observer.disconnect();
+  });
+
+  observer.observe(section, {
+    attributes: true,
+    attributeFilter: ['class'],
+  });
+}
+
 export default async function init(el) {
   el.classList.add('con-block');
-  el.setAttribute('aria-label', 'Promo Banner');
-  el.setAttribute('role', 'region');
   const { fontSizes, options } = getBlockData(el);
   const blockText = await decorateLayout(el);
   decorateBlockText(blockText, fontSizes);
@@ -403,4 +430,6 @@ export default async function init(el) {
     tabindex: '-1',
     'data-notification-id': notificationId,
   }, ''));
+
+  setStickyAccessibilityAttributes(el);
 }
