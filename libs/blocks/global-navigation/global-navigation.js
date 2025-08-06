@@ -560,8 +560,8 @@ class Gnav {
         ${this.decorateLogo()}
       </nav>
     `;
-    const mepIncludeGnav = mep.commands?.find(
-      (command) => command.modifiers?.find((modifier) => modifier === FLAGS.includeGnav),
+    const mepIncludeGnav = mep?.commands?.find(
+      (command) => command?.modifiers?.find((modifier) => modifier === FLAGS?.includeGnav),
     );
     if (mepIncludeGnav) {
       const { handleCommands } = await import('../../features/personalization/personalization.js');
