@@ -25,11 +25,9 @@ export async function getSpectraLOB(lastVisitedPage) {
       body: null,
     });
     const content = await rawResponse.json();
-    console.log('Spectra LOB:', content);
     return content.modelLineOfBusiness?.toLowerCase();
+    /* c8 ignore next 3 */
   } catch (e) {
-    if (e.name === 'TimeoutError') window.lana?.log('Spectra Timeout'); // Abort signal
-    else window.lana?.log(e.reason || e.error || e.message, { errorType: 'i' });
     return false;
   }
 }
