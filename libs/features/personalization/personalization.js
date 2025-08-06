@@ -17,13 +17,15 @@ const PHONE_SIZE = window.screen.width < 550 || window.screen.height < 550;
 const safariIpad = navigator.userAgent.includes('Macintosh') && navigator.maxTouchPoints > 1;
 const isGalaxyTab = navigator.userAgent.includes('Linux') && navigator.maxTouchPoints > 1;
 const isChromeIOS = navigator.userAgent.includes('CriOS');
+const isEdgeIOS = navigator.userAgent.includes('EdgiOS');
+const isFirefoxIOS = navigator.userAgent.includes('FxiOS');
 
 export const US_GEO = 'en-us';
 export const PERSONALIZATION_TAGS = {
   all: () => true,
   chrome: () => (navigator.userAgent.includes('Chrome') && !navigator.userAgent.includes('Edg')) || isChromeIOS,
   firefox: () => navigator.userAgent.includes('Firefox'),
-  safari: () => navigator.userAgent.includes('Safari') && !navigator.userAgent.includes('Chrome') && !isChromeIOS,
+  safari: () => navigator.userAgent.includes('Safari') && !navigator.userAgent.includes('Chrome') && !isChromeIOS && !isEdgeIOS && !isFirefoxIOS,
   edge: () => navigator.userAgent.includes('Edg'),
   android: () => navigator.userAgent.includes('Android') || isGalaxyTab,
   ios: () => /iPad|iPhone|iPod/.test(navigator.userAgent) || safariIpad,
