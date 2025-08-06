@@ -1007,6 +1007,10 @@ merch-card[variant^="plans"]:not([size]) {
     --merch-card-collection-card-width: var(--consonant-merch-card-plans-width);
 }
 
+.collection-container.plans merch-sidenav {
+    --merch-sidenav-padding: 16px 20px 16px 16px;
+}
+
 merch-card-collection-header.plans {
     --merch-card-collection-header-columns: 1fr fit-content(100%);
     --merch-card-collection-header-areas: "result filter";
@@ -1059,6 +1063,10 @@ merch-card-collection-header.plans {
         --consonant-merch-card-plans-width: 276px;
   }
 
+  .collection-container.plans {
+        --merch-sidenav-collection-gap: 30px;
+  }
+
   .columns .four-merch-cards.plans {
       grid-template-columns: repeat(2, var(--consonant-merch-card-plans-width));
   }
@@ -1077,6 +1085,10 @@ merch-card-collection-header.plans {
 @media screen and ${b} {
     .columns .four-merch-cards.plans {
         grid-template-columns: repeat(2, var(--consonant-merch-card-plans-width));
+    }
+
+    .collection-container.plans {
+        --merch-sidenav-collection-gap: 54px;
     }
 }
 `;var X={title:{tag:"h3",slot:"heading-xs"},prices:{tag:"p",slot:"heading-m"},promoText:{tag:"p",slot:"promo-text"},description:{tag:"div",slot:"body-xs"},mnemonics:{size:"l"},callout:{tag:"div",slot:"callout-content"},quantitySelect:{tag:"div",slot:"quantity-select"},addon:!0,secureLabel:!0,planType:!0,badge:{tag:"div",slot:"badge",default:"spectrum-yellow-300-plans"},allowedBadgeColors:["spectrum-yellow-300-plans","spectrum-gray-300-plans","spectrum-gray-700-plans","spectrum-green-900-plans"],allowedBorderColors:["spectrum-yellow-300-plans","spectrum-gray-300-plans","spectrum-green-900-plans"],borderColor:{attribute:"border-color"},size:["wide","super-wide"],whatsIncluded:{tag:"div",slot:"whats-included"},ctas:{slot:"footer",size:"m"},style:"consonant",perUnitLabel:{tag:"span",slot:"per-unit-label"}},Ee={...function(){let{whatsIncluded:i,size:t,...e}=X;return e}(),title:{tag:"h3",slot:"heading-s"},subtitle:{tag:"p",slot:"subtitle"},secureLabel:!1},Se={...function(){let{whatsIncluded:i,size:t,quantitySelect:e,...r}=X;return r}()},p=class extends s{constructor(t){super(t),this.adaptForMedia=this.adaptForMedia.bind(this)}priceOptionsProvider(t,e){t.dataset.template===pe&&(e.displayPlanType=this.card?.settings?.displayPlanType??!1)}getGlobalCSS(){return we}adjustSlotPlacement(t,e,r){let a=this.card.shadowRoot,o=a.querySelector("footer"),l=this.card.getAttribute("size"),h=a.querySelector(`footer slot[name="${t}"]`),H=a.querySelector(`.body slot[name="${t}"]`),se=a.querySelector(".body");if((!l||!l.includes("wide"))&&(o?.classList.remove("wide-footer"),h&&h.remove()),!!e.includes(l)){if(o?.classList.toggle("wide-footer",q()),!r&&h){if(H)h.remove();else{let y=se.querySelector(`[data-placeholder-for="${t}"]`);y?y.replaceWith(h):se.appendChild(h)}return}if(r&&H){let y=document.createElement("div");if(y.setAttribute("data-placeholder-for",t),y.classList.add("slot-placeholder"),!h){let ke=H.cloneNode(!0);o.prepend(ke)}H.replaceWith(y)}}}adaptForMedia(){if(!this.card.closest("merch-card-collection,overlay-trigger,.two-merch-cards,.three-merch-cards,.four-merch-cards, .columns")){this.card.removeAttribute("size");return}this.adjustSlotPlacement("addon",["super-wide"],q()),this.adjustSlotPlacement("callout-content",["super-wide"],q())}adjustCallout(){let t=this.card.querySelector('[slot="callout-content"] .icon-button');t&&t.title&&(t.dataset.tooltip=t.title,t.removeAttribute("title"),t.classList.add("hide-tooltip"),document.addEventListener("touchstart",e=>{e.preventDefault(),e.target!==t?t.classList.add("hide-tooltip"):e.target.classList.toggle("hide-tooltip")}),document.addEventListener("mouseover",e=>{e.preventDefault(),e.target!==t?t.classList.add("hide-tooltip"):e.target.classList.remove("hide-tooltip")}))}adjustPrices(){this.headingM&&(this.headingM.setAttribute("role","heading"),this.headingM.setAttribute("aria-level","2"))}postCardUpdateHook(){this.adaptForMedia(),this.adjustTitleWidth(),this.adjustLegal(),this.adjustAddon(),this.adjustCallout(),this.adjustPrices()}get headingM(){return this.card.querySelector('[slot="heading-m"]')}get mainPrice(){return this.headingM.querySelector(`${v}[data-template="price"]`)}get divider(){return this.card.variant==="plans-education"?F`<div class="divider"></div>`:Q}async adjustLegal(){if(await this.card.updateComplete,await customElements.whenDefined("inline-price"),this.legalAdjusted)return;this.legalAdjusted=!0;let t=[],e=this.card.querySelector(`[slot="heading-m"] ${v}[data-template="price"]`);e&&t.push(e);let r=t.map(async a=>{let o=a.cloneNode(!0);await a.onceSettled(),a?.options&&(a.options.displayPerUnit&&(a.dataset.displayPerUnit="false"),a.options.displayTax&&(a.dataset.displayTax="false"),a.options.displayPlanType&&(a.dataset.displayPlanType="false"),o.setAttribute("data-template","legal"),a.parentNode.insertBefore(o,a.nextSibling))});await Promise.all(r)}async adjustAddon(){await this.card.updateComplete;let t=this.card.addon;if(!t)return;t.setAttribute("custom-checkbox","");let e=this.mainPrice;if(!e)return;await e.onceSettled();let r=e.value?.[0]?.planType;r&&(t.planType=r)}get stockCheckbox(){return this.card.checkboxLabel?F`<label id="stock-checkbox">

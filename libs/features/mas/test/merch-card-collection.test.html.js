@@ -15,7 +15,6 @@ import {
 
 import '../src/sidenav/merch-sidenav.js';
 import '../src/merch-card-collection.js';
-import '../src/merch-card-collection-header.js';
 
 import { withWcs } from './mocks/wcs.js';
 import { withAem } from './mocks/aem.js';
