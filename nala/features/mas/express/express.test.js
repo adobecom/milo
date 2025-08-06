@@ -15,6 +15,9 @@ test.describe('MAS Express Cards test suite', () => {
       await page.goto(`${baseURL}${features[0].path}${miloLibs}`);
       await page.waitForLoadState('domcontentloaded');
       await expect(page).toHaveURL(`${baseURL}${features[0].path}${miloLibs}`);
+
+      await page.waitForSelector('merch-card', { timeout: 10000 });
+      await page.waitForTimeout(2000);
     });
 
     await test.step('step-2: Verify Free card content', async () => {
@@ -46,6 +49,9 @@ test.describe('MAS Express Cards test suite', () => {
       await page.goto(`${baseURL}${features[1].path}${miloLibs}`);
       await page.waitForLoadState('domcontentloaded');
       await expect(page).toHaveURL(`${baseURL}${features[1].path}${miloLibs}`);
+
+      await page.waitForSelector('merch-card', { timeout: 10000 });
+      await page.waitForTimeout(2000);
     });
 
     await test.step('step-2: Verify Premium card content', async () => {
