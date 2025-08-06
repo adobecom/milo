@@ -50,8 +50,9 @@ jobs:
           echo "Using $OPTIMAL_SHARDS shards for $TEST_COUNT test files"
           echo "count=$OPTIMAL_SHARDS" >> $GITHUB_OUTPUT
           
-          # Create matrix JSON dynamically
-          MATRIX=$(seq 1 $OPTIMAL_SHARDS | jq -R . | jq -s '{"shard": .}')
+          # Create matrix JSON dynamically with proper escaping
+          SHARDS_ARRAY=$(seq 1 $OPTIMAL_SHARDS | jq -R . | jq -s .)
+          MATRIX="{\"shard\": $SHARDS_ARRAY}"
           echo "matrix=$MATRIX" >> $GITHUB_OUTPUT
           
           # Output summary to workflow
@@ -112,7 +113,7 @@ jobs:
 
       - name: Upload test results
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: test-results-shard-${{ matrix.shard }}
           path: |
@@ -138,9 +139,11 @@ jobs:
           node-version: '20.x'
 
       - name: Download all test results
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           path: all-shards
+          pattern: test-results-shard-*
+          merge-multiple: true
 
       - name: Install merge tools
         run: npm install -g playwright-merge-html-reports
@@ -190,7 +193,7 @@ jobs:
           echo "- **Parallelization factor:** ${SHARD_COUNT}x" >> $GITHUB_STEP_SUMMARY
 
       - name: Upload merged results
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: merged-playwright-report
           path: |
