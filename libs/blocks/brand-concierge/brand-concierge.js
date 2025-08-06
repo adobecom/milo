@@ -9,11 +9,16 @@ function getAnalyticsLabel(step) {
 }
 
 async function openChatModal(initialMessage, el) {
+  const innerModal = new DocumentFragment();
+  const header = createTag('div', { class: 'bc-modal-header' });
+  const title = createTag('span', { class: 'bc-modal-title' }, 'AI Assistant');
+  header.append(title);
   const mountEl = createTag('div', { id: 'brand-concierge-mount' });
   if (initialMessage) mountEl.dataset.initialMessage = initialMessage;
+  innerModal.append(header, mountEl);
   const modal = await getModal(null, {
     id: 'brand-concierge-modal',
-    content: mountEl,
+    content: innerModal,
   });
   modal.querySelector('.dialog-close').setAttribute('daa-ll', getAnalyticsLabel('modal-close'));
   document.querySelector('.modal-curtain').setAttribute('daa-ll', getAnalyticsLabel('modal-close'));

@@ -193,6 +193,59 @@
   text-align: center;
 }
 
+#brand-concierge-modal {
+  --modal-header-height: 56px;
+}
+
+#brand-concierge-modal.dialog-modal {
+  height: calc(100vh - 22px);
+  width: 100vw;
+  max-width: unset;
+  max-height: unset;
+  margin-top: 22px;
+  border-radius: 24px 24px 0 0;
+}
+
+#brand-concierge-modal  .dialog-close {
+  z-index: 2;
+  background-image: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHZpZXdCb3g9IjAgMCAyMCAyMCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTExLjA2MDYgMTBMMTYuMjY3MSA0Ljc5Mzk1QzE2LjU2MDEgNC41MDA5OCAxNi41NjAxIDQuMDI2MzcgMTYuMjY3MSAzLjczMzRDMTUuOTc0MSAzLjQ0MDQzIDE1LjQ5OTUgMy40NDA0MyAxNS4yMDY1IDMuNzMzNEwxMCA4LjkzOTQ1TDQuNzkzNDYgMy43MzM0QzQuNTAwNDkgMy40NDA0MyA0LjAyNTg4IDMuNDQwNDMgMy43MzI5MSAzLjczMzRDMy40Mzk5NCA0LjAyNjM3IDMuNDM5OTQgNC41MDA5OCAzLjczMjkxIDQuNzkzOTVMOC45MzkzOSAxMEwzLjczMjkxIDE1LjIwNkMzLjQzOTk0IDE1LjQ5OSAzLjQzOTk0IDE1Ljk3MzYgMy43MzI5MSAxNi4yNjY2QzMuODc5MzkgMTYuNDEzMSA0LjA3MTI5IDE2LjQ4NjMgNC4yNjMxOCAxNi40ODYzQzQuNDU1MDcgMTYuNDg2MyA0LjY0Njk3IDE2LjQxMzEgNC43OTM0NSAxNi4yNjY2TDkuOTk5OTkgMTEuMDYwNUwxNS4yMDY1IDE2LjI2NjZDMTUuMzUzIDE2LjQxMzEgMTUuNTQ0OSAxNi40ODYzIDE1LjczNjggMTYuNDg2M0MxNS45Mjg3IDE2LjQ4NjMgMTYuMTIwNiAxNi40MTMxIDE2LjI2NzEgMTYuMjY2NkMxNi41NiAxNS45NzM2IDE2LjU2IDE1LjQ5OSAxNi4yNjcxIDE1LjIwNkwxMS4wNjA2IDEwWiIgZmlsbD0iIzI5MjkyOSIvPgo8L3N2Zz4K');
+  background-repeat: no-repeat;
+  background-position: center;
+  height: 32px;
+  width: 32px;
+  border: none;
+  top: 12px;
+  right: 16px;
+}
+
+#brand-concierge-modal  .dialog-close:focus-visible {
+  outline: 2px solid #5574F7;
+  outline-offset: 2px;
+  border-radius: 8px;
+}
+
+#brand-concierge-modal  .dialog-close svg {
+  display: none;
+}
+
+.bc-modal-header {
+  height: 56px;
+  padding: 12px 16px;
+  box-sizing: border-box;
+}
+
+.bc-modal-title {
+  font-size: 16px;
+  line-height: 32px;
+  font-weight: 700;
+  color: #000;
+}
+
+#brand-concierge-modal #brand-concierge-mount {
+  height: calc(100% - var(--modal-header-height));
+}
+
+
 /* Tablet up */
 @media screen and (min-width: 768px) {
   .brand-concierge {
@@ -234,6 +287,11 @@
     margin: 0 auto 80px;
     max-width: calc(670px - 4px);
   }
+
+  #brand-concierge-modal.dialog-modal {
+    height: calc(100vh - 32px);
+    margin-top: 32px;
+  }
 }
 
 /* desktop up */
@@ -245,16 +303,4 @@
   .bc-input-field {
     max-width: calc(768px - 4px);
   }
-}
-
-
-#brand-concierge-modal.dialog-modal {
-  height: calc(100vh - 40px);
-  width: calc(100vw - 40px);
-  max-width: unset;
-  margin: 20px;
-}
-
-#brand-concierge-modal  .dialog-close {
-  z-index: 2;
 }
