@@ -13,7 +13,9 @@ const ALL_COUNTRIES_CONSENT_ID = 'cs4;ve1;';
 const FEDERAL_ROOT = '/federal/email-collection';
 const ECID_COOKIE = 'AMCV_9E1005A551ED61CA0A490D45@AdobeOrg';
 const SUBMIT_FORM_ENDPOINTS = {
-  stage: 'https://14257-miloemailcollection-stage.adobeioruntime.net/api/v1/web/email-collection/form-submit',
+  stage: 'https://www.stage.adobe.com/milo-email-collection-api/form-submit',
+  // stage: 'https://www.adobe.com/milo-email-collection-api/test',
+  // stage: 'https://14257-miloemailcollection-stage.adobeioruntime.net/api/v1/web/email-collection/form-submit',
   prod: 'https://14257-miloemailcollection.adobeioruntime.net/api/v1/web/email-collection/form-submit',
 };
 const miloConfig = getConfig();
