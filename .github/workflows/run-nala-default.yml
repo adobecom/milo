@@ -50,10 +50,18 @@ jobs:
           echo "Using $OPTIMAL_SHARDS shards for $TEST_COUNT test files"
           echo "count=$OPTIMAL_SHARDS" >> $GITHUB_OUTPUT
           
-          # Create matrix JSON dynamically with proper escaping
-          SHARDS_ARRAY=$(seq 1 $OPTIMAL_SHARDS | jq -R . | jq -s .)
-          MATRIX="{\"shard\": $SHARDS_ARRAY}"
-          echo "matrix=$MATRIX" >> $GITHUB_OUTPUT
+          # Create matrix JSON using printf for better control
+          SHARDS_JSON=""
+          for i in $(seq 1 $OPTIMAL_SHARDS); do
+            if [ $i -eq 1 ]; then
+              SHARDS_JSON="$i"
+            else
+              SHARDS_JSON="$SHARDS_JSON,$i"
+            fi
+          done
+          MATRIX="{\"shard\":[$SHARDS_JSON]}"
+          echo "Debug: Generated matrix: $MATRIX"
+          printf "matrix=%s\n" "$MATRIX" >> $GITHUB_OUTPUT
           
           # Output summary to workflow
           echo "## Test Sharding Configuration" >> $GITHUB_STEP_SUMMARY
