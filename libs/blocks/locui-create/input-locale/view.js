@@ -40,18 +40,18 @@ export default function InputLocales() {
         <div class="region-grid">
           <div class="region-buttons">
             ${localeRegionList.map(
-              (region) => html`
+    (region) => html`
                 <button
                   key=${region.key}
                   class="region-button ${selectedRegion[region.key]
-                    ? 'active'
-                    : ''}"
+    ? 'active'
+    : ''}"
                   onClick=${() => toggleRegion(region)}
                 >
                   ${region.key}
                 </button>
-              `
-            )}
+              `,
+  )}
           </div>
         </div>
       `;
@@ -66,26 +66,23 @@ export default function InputLocales() {
           <h5 class="section-header">Select the Language(s)</h5>
           <div class="language-buttons">
             ${languagesList.map(
-              (language) =>
-                language.livecopies.length > 0 &&
-                html`
+    (language) => language.livecopies.length > 0
+                && html`
                   <button
                     key=${language.languagecode}
                     class="language-button ${language.livecopies
-                      .split(',')
-                      .some((locale) =>
-                        selectedLocale.includes(
-                          `${language.languagecode}|${locale}`
-                        )
-                      )
-                      ? 'active'
-                      : ''}"
+    .split(',')
+    .some((locale) => selectedLocale.includes(
+      `${language.languagecode}|${locale}`,
+    ))
+    ? 'active'
+    : ''}"
                     onClick=${() => selectLanguage(language)}
                   >
                     ${language.language}
                   </button>
-                `
-            )}
+                `,
+  )}
           </div>
         </div>
       `;
@@ -95,10 +92,10 @@ export default function InputLocales() {
 
   const RenderLocales = () => {
     const isPromoteRollout = userWorkflowType.value === 'promoteRollout';
-    let initialAcc = {};
+    const initialAcc = {};
     if (isPromoteRollout) {
       const englishLocale = languagesList.find(
-        (lang) => lang.languagecode === 'en'
+        (lang) => lang.languagecode === 'en',
       );
       if (englishLocale) {
         initialAcc[englishLocale.language] = englishLocale.livecopies
@@ -109,11 +106,9 @@ export default function InputLocales() {
 
     const groupedLocales = selectedLocale.reduce((acc, localeKey) => {
       const [langCode, locale] = parseLocaleKey(localeKey);
-      const language = languagesList.find((lang) =>
-        langCode
-          ? lang.languagecode === langCode
-          : lang.livecopies.split(',').includes(locale)
-      );
+      const language = languagesList.find((lang) => (langCode
+        ? lang.languagecode === langCode
+        : lang.livecopies.split(',').includes(locale)));
       if (language) {
         if (!acc[language.language]) {
           acc[language.language] = [];
@@ -131,17 +126,17 @@ export default function InputLocales() {
           <p class="language-name"><strong>${languageName}</strong></p>
           <div class="locale-button-container">
             ${localesInLanguage.map(
-              (localeKey) => html`
+    (localeKey) => html`
                 <button
                   class="locale-button ${activeLocales[localeKey]
-                    ? 'active'
-                    : ''}"
+    ? 'active'
+    : ''}"
                   onClick=${() => toggleLocale(localeKey)}
                 >
                   ${getLocaleFromKey(localeKey).toUpperCase()}
                 </button>
-              `
-            )}
+              `,
+  )}
           </div>
         </div>
       `;
@@ -155,8 +150,8 @@ export default function InputLocales() {
           <div>
             <h2 class="locui-project-type">
               ${project.value.type === PROJECT_TYPES.translation
-                ? 'Translate'
-                : 'Rollout'}
+    ? 'Translate'
+    : 'Rollout'}
             </h2>
             <p class="locui-project-name">
               Project Name: <strong>${project.value.name || 'n/a'}</strong>
@@ -165,9 +160,9 @@ export default function InputLocales() {
           <${RenderRegion} />
           <div class="language-locale-container">
             <${RenderLanguage} />
-            ${project.value.type !== PROJECT_TYPES.translation &&
-            selectedLocale.length > 0 &&
-            html`
+            ${project.value.type !== PROJECT_TYPES.translation
+            && selectedLocale.length > 0
+            && html`
               <div class="locale-grid">
                 <h5 class="section-header">Selected Locales</h5>
                 <div class="locale-container">${RenderLocales()}</div>
@@ -176,8 +171,8 @@ export default function InputLocales() {
           </div>
         </div>
       </div>
-      ${apiError &&
-      html`<${Toast}
+      ${apiError
+      && html`<${Toast}
         message=${apiError}
         type="error"
         onClose=${() => setApiError('')}
