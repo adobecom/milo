@@ -1098,9 +1098,9 @@ async function decorateHeader() {
 async function decorateIcons(area, config) {
   const icons = area.querySelectorAll('span.icon');
   if (icons.length === 0) return;
-  const { base, excludeIconsBlock } = config;
-  if (excludeIconsBlock) {
-    const excludedIconsCount = [...icons].filter((icon) => excludeIconsBlock.some((block) => icon.closest(`div.${block}`))).length;
+  const { base, iconsExcludeBlocks } = config;
+  if (iconsExcludeBlocks) {
+    const excludedIconsCount = [...icons].filter((icon) => iconsExcludeBlocks.some((block) => icon.closest(`div.${block}`))).length;
     if (excludedIconsCount === icons.length) {
       return;
     }
@@ -1811,5 +1811,6 @@ export function loadLana(options = {}) {
   window.addEventListener('error', lanaError);
   window.addEventListener('unhandledrejection', lanaError);
 }
+
 
 export const reloadPage = () => window.location.reload();
