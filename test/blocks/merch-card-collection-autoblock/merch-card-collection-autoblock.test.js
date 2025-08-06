@@ -85,10 +85,11 @@ describe('merch-card-collection autoblock', () => {
       const sidenav = document.querySelector('merch-sidenav');
 
       window._satellite.track.called = false;
-      sidenav.dispatchEvent(new Event('merch-sidenav:select'));
+      const lastFilter = sidenav.querySelector('sp-sidenav-item:last-of-type');
+      sidenav.filters.selectElement(lastFilter);
       await delay(100);
       expect(window._satellite.track.called).to.be.true;
-      expect(window._satellite.track.args[0][1].data.web.webInteraction.name).to.equal('cat-changed|topdaalh|test-analytics|all--cat');
+      expect(window._satellite.track.args[0][1].data.web.webInteraction.name).to.equal('cat-changed|topdaalh|test-analytics|cloud--cat');
     });
 
     it('creates does not create sidenav if specified in the query params', async () => {
