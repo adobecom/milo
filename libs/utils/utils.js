@@ -1100,8 +1100,8 @@ async function decorateIcons(area, config) {
   if (icons.length === 0) return;
   const { base, iconsExcludeBlocks } = config;
   if (iconsExcludeBlocks) {
-    const hasRogueIcons = [...icons].some((icon) => iconsExcludeBlocks.some((block) => icon.closest(`div.${block}`)));
-    if (hasRogueIcons && icons.length === [...icons].filter((icon) => iconsExcludeBlocks.some((block) => icon.closest(`div.${block}`))).length) {
+    const excludedIconsCount = [...icons].filter((icon) => iconsExcludeBlocks.some((block) => icon.closest(`div.${block}`))).length;
+    if (excludedIconsCount === icons.length) {
       return;
     }
   }
