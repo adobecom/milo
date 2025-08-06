@@ -93,12 +93,16 @@ const base = miloLibs || codeRoot;
 const CONFIG = {
   socialPlatforms: ['facebook', 'instagram', 'twitter', 'linkedin', 'pinterest', 'discord', 'behance', 'youtube', 'weibo', 'social-media'],
   delays: { decoration: 3000 },
+  containerBreakpoint: 900,
 };
 
 class Footer {
   constructor({ block } = {}) {
     this.block = block;
     this.elements = {};
+    this.resizeObserver = null;
+    this.resizeTimeout = null;
+    this.lastContainerWidth = null;
     this.init();
   }
 
@@ -127,7 +131,34 @@ class Footer {
       observer.disconnect();
       this.decorateContent();
     }, CONFIG.delays.decoration);
+    if (this.block.classList.contains('responsive-container')) {
+      this.initContainerResponsiveness();
+    }
   }, 'Error in global footer init', 'global-footer', 'e');
+
+  initContainerResponsiveness = () => {
+    this.destroy();
+    const parent = this.block?.parentElement;
+    if (!parent || !this.block.classList.contains('responsive-container')) return;
+
+    const update = (w) => {
+      const isMobile = w < CONFIG.containerBreakpoint;
+      if (isMobile === this.isMobile) return;
+      this.isMobile = isMobile;
+      this.block.classList.toggle('mobile', isMobile);
+    };
+    this.resizeObserver = new ResizeObserver(([entry]) => requestAnimationFrame(
+      () => update(Math.round(entry.contentRect.width)),
+    ));
+    this.resizeObserver.observe(parent);
+    update(Math.round(parent.offsetWidth));
+  };
+
+  destroy = () => {
+    this.resizeObserver?.disconnect();
+    this.resizeObserver = null;
+    this.isMobile = null;
+  };
 
   decorateContent = () => logErrorFor(async () => {
     // Fetch footer content
@@ -260,7 +291,7 @@ class Footer {
 
     if (placeholder && placeholder.length) {
       const headline = toFragment`<div class="feds-menu-headline">${placeholder}</div>`;
-      featureProductsSection.append(this.decorateHeadline(headline, 0));
+      featureProductsSection.append(this.decorateHeadline(headline, 0, 'footer'));
     }
 
     const featuredProductsList = toFragment`<ul></ul>`;
