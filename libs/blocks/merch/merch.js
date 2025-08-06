@@ -1134,6 +1134,16 @@ export async function buildCta(el, params) {
     cta.classList.toggle('button-l', large);
     cta.classList.toggle('blue', strong);
   }
+
+  /*
+   * MWPW-170462: Extract button styling classes from URL hash parameters
+   * This handles #_button-fill and similar decorators to customize CTA appearance
+   */
+  const customClasses = el.href.matchAll(/#_button-([a-zA-Z-]+)/g);
+  for (const match of customClasses) {
+    cta.classList.add(match[1]);
+  }
+
   if (context.entitlement !== 'false') {
     cta.classList.add(LOADING_ENTITLEMENTS);
     cta.onceSettled().finally(() => {
