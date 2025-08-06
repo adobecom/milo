@@ -1,4 +1,4 @@
-name: Track Publishes Express
+name: Track Publishes DC
 on:
   schedule:
     - cron: '35 */23 * * *'
@@ -168,10 +168,10 @@ jobs:
 
       - name: Run poll-logs.js
         env:
-          AEM_LIVE_ADMIN_TOKEN: ${{ secrets.AEM_LIVE_ADMIN_TOKEN_EXPRESS }}
+          AEM_LIVE_ADMIN_TOKEN: ${{ secrets.AEM_LIVE_ADMIN_TOKEN_DC }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           ROLLING_IMPORT_ORG: "adobecom"
-          ROLLING_IMPORT_REPO: "da-express-milo"
+          ROLLING_IMPORT_REPO: "da-dc"
           ROLLING_IMPORT_SLACK: ${{ secrets.ROLLING_IMPORT_SLACK }}
           LAST_RUN_ISO: ${{ needs.check-last-run.outputs.last-run-iso }}
           ROLLING_IMPORT_IMS_URL: ${{ secrets.ROLLING_IMPORT_IMS_URL }}
@@ -180,7 +180,7 @@ jobs:
           ROLLING_IMPORT_CODE: ${{ secrets.ROLLING_IMPORT_CODE }}
           ROLLING_IMPORT_GRANT_TYPE: ${{ secrets.ROLLING_IMPORT_GRANT_TYPE }}
           ENABLE_DEBUG_LOGS: ${{ secrets.ENABLE_DEBUG_LOGS }}
-          ROLLING_IMPORT_IMPORT_FROM: ${{ secrets.ROLLING_IMPORT_IMPORT_FROM_EXPRESS }}
-          ROLLING_IMPORT_LIVE_DOMAIN: ${{ secrets.ROLLING_IMPORT_LIVE_DOMAIN_EXPRESS }}
-          ROLLING_IMPORT_POLL_LOGS_FROM_REPO: ${{ secrets.ROLLING_IMPORT_POLL_LOGS_FROM_REPO_EXPRESS }}
+          ROLLING_IMPORT_IMPORT_FROM: "https://main--dc--adobecom.aem.live"
+          ROLLING_IMPORT_LIVE_DOMAIN: "https://www.adobe.com"
+          ROLLING_IMPORT_POLL_LOGS_FROM_REPO: "dc"
         run: node ./.github/workflows/import/poll-logs.js
