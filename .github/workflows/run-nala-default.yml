@@ -12,29 +12,87 @@ on:
     types: [opened, synchronize, reopened]
   
   workflow_dispatch:
+    inputs:
+      max_shards:
+        description: 'Maximum number of parallel shards (2-10)'
+        required: false
+        default: '6'
+        type: string
 
 jobs:
+  # Calculate optimal shard count based on test files
+  calculate-shards:
+    name: Calculate Test Shards
+    runs-on: ubuntu-latest
+    outputs:
+      shard-count: ${{ steps.calculate.outputs.count }}
+      matrix: ${{ steps.calculate.outputs.matrix }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+
+      - name: Calculate optimal shard count
+        id: calculate
+        run: |
+          # Count test files
+          TEST_COUNT=$(find nala -name "*.test.js" | wc -l)
+          echo "Found $TEST_COUNT test files"
+          
+          # Get max shards from input (default to 6 for auto runs)
+          MAX_SHARDS=${{ inputs.max_shards }}
+          MAX_SHARDS=${MAX_SHARDS:-6}
+          
+          # Calculate optimal shard count (5-8 test files per shard)
+          OPTIMAL_SHARDS=$((TEST_COUNT / 6))
+          OPTIMAL_SHARDS=$((OPTIMAL_SHARDS < 2 ? 2 : OPTIMAL_SHARDS))
+          OPTIMAL_SHARDS=$((OPTIMAL_SHARDS > MAX_SHARDS ? MAX_SHARDS : OPTIMAL_SHARDS))
+          
+          echo "Using $OPTIMAL_SHARDS shards for $TEST_COUNT test files"
+          echo "count=$OPTIMAL_SHARDS" >> $GITHUB_OUTPUT
+          
+          # Create matrix JSON dynamically
+          MATRIX=$(seq 1 $OPTIMAL_SHARDS | jq -R . | jq -s '{"shard": .}')
+          echo "matrix=$MATRIX" >> $GITHUB_OUTPUT
+          
+          # Output summary to workflow
+          echo "## Test Sharding Configuration" >> $GITHUB_STEP_SUMMARY
+          echo "- **Test files found:** $TEST_COUNT" >> $GITHUB_STEP_SUMMARY
+          echo "- **Shards to use:** $OPTIMAL_SHARDS" >> $GITHUB_STEP_SUMMARY
+          echo "- **Tests per shard:** ~$((TEST_COUNT / OPTIMAL_SHARDS))" >> $GITHUB_STEP_SUMMARY
+
+  # Parallel test execution across multiple runners
   run-nala-tests:
-    name: Running Nala E2E UI Tests
+    name: E2E Tests (Shard ${{ matrix.shard }}/${{ needs.calculate-shards.outputs.shard-count }})
+    needs: calculate-shards
     runs-on: ubuntu-latest
     strategy:
-      matrix:
-        node-version: [20.x]
+      fail-fast: false  # Continue running other shards even if one fails
+      matrix: ${{ fromJson(needs.calculate-shards.outputs.matrix) }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
           fetch-depth: 2
 
-      - name: Set up Node.js ${{ matrix.node-version }}
+      - name: Set up Node.js
         uses: actions/setup-node@cdca7365b2dadb8aad0a33bc7601856ffabcc48e
         with:
-          node-version: ${{ matrix.node-version }}
+          node-version: '20.x'
 
-      - name: Set execute permission for nalarun.sh
+      - name: Cache dependencies
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.npm
+            ~/.cache/ms-playwright
+          key: ${{ runner.os }}-node-playwright-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-playwright-
+
+      - name: Set execute permission for pr.run.sh
         run: chmod +x ./nala/utils/pr.run.sh
 
-      - name: Run Nala Tests via pr.run.sh
+      - name: Run Nala Tests (Shard ${{ matrix.shard }}/${{ needs.calculate-shards.outputs.shard-count }})
         run: ./nala/utils/pr.run.sh
         env:
           labels: ${{ join(github.event.pull_request.labels.*.name, ' ') }}
@@ -48,3 +106,120 @@ jobs:
           GITHUB_ACTION_PATH: ${{ github.workspace }}
           IMS_EMAIL: ${{ secrets.IMS_EMAIL }}
           IMS_PASS: ${{ secrets.IMS_PASS }}
+          # Sharding configuration
+          SHARD_INDEX: ${{ matrix.shard }}
+          SHARD_TOTAL: ${{ needs.calculate-shards.outputs.shard-count }}
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-results-shard-${{ matrix.shard }}
+          path: |
+            test-results/
+            playwright-report/
+            test-html-results/
+            nala-results.json
+          retention-days: 7
+
+  # Merge and report combined results
+  merge-test-results:
+    name: Merge Test Results
+    needs: [calculate-shards, run-nala-tests]
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+
+      - name: Set up Node.js
+        uses: actions/setup-node@cdca7365b2dadb8aad0a33bc7601856ffabcc48e
+        with:
+          node-version: '20.x'
+
+      - name: Download all test results
+        uses: actions/download-artifact@v3
+        with:
+          path: all-shards
+
+      - name: Install merge tools
+        run: npm install -g playwright-merge-html-reports
+
+      - name: Merge HTML reports
+        run: |
+          echo "Merging HTML reports from ${{ needs.calculate-shards.outputs.shard-count }} shards..."
+          
+          # Find all HTML reports
+          REPORT_DIRS=$(find all-shards -name "playwright-report" -type d | tr '\n' ' ')
+          
+          if [ ! -z "$REPORT_DIRS" ]; then
+            npx playwright merge-reports ${REPORT_DIRS} --reporter=html || true
+          fi
+
+      - name: Create summary report
+        run: |
+          echo "## Test Execution Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **Total shards:** ${{ needs.calculate-shards.outputs.shard-count }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Workflow trigger:** ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Branch:** ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          # Count results from each shard
+          echo "### Shard Results" >> $GITHUB_STEP_SUMMARY
+          for dir in all-shards/test-results-shard-*/; do
+            if [ -d "$dir" ]; then
+              SHARD_NUM=$(basename "$dir" | sed 's/test-results-shard-//')
+              echo "- **Shard $SHARD_NUM:** " >> $GITHUB_STEP_SUMMARY
+              
+              # Try to extract test counts if available
+              if [ -f "$dir/nala-results.json" ]; then
+                echo "  ✅ Results collected" >> $GITHUB_STEP_SUMMARY
+              else
+                echo "  ⚠️ No results file found" >> $GITHUB_STEP_SUMMARY
+              fi
+            fi
+          done
+          
+          # Performance metrics
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Performance" >> $GITHUB_STEP_SUMMARY
+          SHARD_COUNT=${{ needs.calculate-shards.outputs.shard-count }}
+          TIME_SAVED=$((($SHARD_COUNT - 1) * 100 / $SHARD_COUNT))
+          echo "- **Estimated time reduction:** ~${TIME_SAVED}%" >> $GITHUB_STEP_SUMMARY
+          echo "- **Parallelization factor:** ${SHARD_COUNT}x" >> $GITHUB_STEP_SUMMARY
+
+      - name: Upload merged results
+        uses: actions/upload-artifact@v3
+        with:
+          name: merged-playwright-report
+          path: |
+            playwright-report/
+            all-shards/
+          retention-days: 30
+
+      - name: Comment PR with results
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v6
+        continue-on-error: true
+        with:
+          script: |
+            const shardCount = ${{ needs.calculate-shards.outputs.shard-count }};
+            const comment = `## 🎭 E2E Test Results
+            
+            Tests completed across **${shardCount} parallel runners**
+            
+            | Status | Details |
+            |--------|---------|
+            | ✅ Parallelization | ${shardCount} shards |
+            | 📊 Reports | [View Artifacts](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}) |
+            | ⏱️ Time Saved | ~${Math.round((shardCount - 1) * 100 / shardCount)}% faster |
+            
+            [View Full Summary](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})`;
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });

@@ -82,6 +82,12 @@ REPORTER=$reporter
 
 echo "Running Nala on branch: $FEATURE_BRANCH "
 echo "Tags : ${TAGS:-"No @tags or annotations on this PR"}"
+
+# Display sharding info if available
+if [[ ! -z "$SHARD_INDEX" ]] && [[ ! -z "$SHARD_TOTAL" ]]; then
+  echo "Shard Configuration: Running shard ${SHARD_INDEX} of ${SHARD_TOTAL}"
+fi
+
 echo "Run Command : npx playwright test ${TAGS} ${EXCLUDE_TAGS} ${REPORTER}"
 echo -e "\n"
 echo "*******************************"
@@ -92,9 +98,17 @@ npm ci
 npx playwright install --with-deps
 
 # Run Playwright tests on the specific projects using root-level playwright.config.js
-# This will be changed later
+# Support sharding if SHARD_INDEX and SHARD_TOTAL are provided
 echo "*** Running tests on specific projects ***"
-npx playwright test --config=./playwright.config.js ${TAGS} ${EXCLUDE_TAGS} --project=milo-live-chromium --project=milo-live-firefox --project=milo-live-webkit ${REPORTER} || EXIT_STATUS=$?
+
+# Build sharding parameters if provided
+SHARD_PARAMS=""
+if [[ ! -z "$SHARD_INDEX" ]] && [[ ! -z "$SHARD_TOTAL" ]]; then
+  SHARD_PARAMS="--shard=${SHARD_INDEX}/${SHARD_TOTAL}"
+  echo "Running shard ${SHARD_INDEX} of ${SHARD_TOTAL}"
+fi
+
+npx playwright test --config=./playwright.config.js ${TAGS} ${EXCLUDE_TAGS} --project=milo-live-chromium --project=milo-live-firefox --project=milo-live-webkit ${SHARD_PARAMS} ${REPORTER} || EXIT_STATUS=$?
 
 # Check if tests passed or failed
 if [ $EXIT_STATUS -ne 0 ]; then
