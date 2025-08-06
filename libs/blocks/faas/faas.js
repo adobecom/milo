@@ -29,8 +29,8 @@ const [createLiveRegion, updateLiveRegion] = (() => {
 })();
 
 const createValidationObserver = () => new MutationObserver((mutations) => {
-  mutations.forEach((mutation) => {
-    if (mutation.type !== 'attributes' || mutation.attributeName !== 'class') return;
+  mutations.some((mutation) => {
+    if (mutation.type !== 'attributes' || mutation.attributeName !== 'class') return false;
 
     const rowElement = mutation.target;
 
@@ -40,7 +40,7 @@ const createValidationObserver = () => new MutationObserver((mutations) => {
       });
     }
 
-    if (!rowElement.classList.contains('error')) return;
+    if (!rowElement.classList.contains('error')) return false;
 
     [...rowElement.querySelectorAll('[id][name]')].forEach((field) => {
       const { id } = field;
@@ -50,8 +50,9 @@ const createValidationObserver = () => new MutationObserver((mutations) => {
     const errorMessage = rowElement.querySelector('.errorMessage')?.textContent;
 
     if (document.activeElement.parentElement.querySelector('.errorMessage')?.textContent
-        !== errorMessage) return;
+        !== errorMessage) return false;
     updateLiveRegion(errorMessage);
+    return true;
   });
 });
 
