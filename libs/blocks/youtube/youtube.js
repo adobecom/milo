@@ -31,26 +31,23 @@ class LiteYTEmbed extends HTMLElement {
   }
 
   async updatePlayBtnAttr() {
-    const dialog = this.closest('.dialog-modal');
     const promises = [
       this.fetchVideoTitle(),
       import('../../martech/attributes.js'),
-      ...(dialog ? [import('../../scripts/accessibility.js')] : []),
     ];
 
     const [
-      title,
+      videoTitle,
       { decorateDefaultLinkAnalytics },
-      accessibility,
     ] = await Promise.all(promises);
-    this.playBtnEl.setAttribute('aria-label', `Play ${title}`);
+    this.playBtnEl.setAttribute('aria-label', `Play ${videoTitle}`);
     this.playBtnEl.removeAttribute('daa-ll');
     const videoContainer = this.playBtnEl.closest('.milo-video');
     decorateDefaultLinkAnalytics(videoContainer, getConfig());
+    const dialog = this.closest('.dialog-modal');
     if (dialog) {
+      dialog.setAttribute('aria-label', videoTitle);
       this.playBtnEl.focus();
-      const { setDialogAndElementAttributes } = accessibility;
-      setDialogAndElementAttributes({ element: dialog, title: this.videoTitle });
     }
   }
 
