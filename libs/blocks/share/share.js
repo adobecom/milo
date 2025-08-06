@@ -182,7 +182,8 @@ export default async function decorate(block) {
         class: 'aria-live-container',
       },
     );
-    container.append(li, copyAriaLive);
+    container.append(li);
+    block.append(copyAriaLive);
     let changeText = false;
     copyButton.addEventListener('click', (e) => {
       /* c8 ignore next 6 */
