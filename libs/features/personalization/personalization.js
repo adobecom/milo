@@ -535,7 +535,7 @@ export function modifyNonFragmentSelector(selector, action) {
   }
 
   if (action === COMMANDS_KEYS.remove && getSelectorType(selector) === SELECTOR_TYPES.twpButtons) {
-    modifiedSelector = 'a';
+    modifiedSelector = 'a:not([data-remove="false"])';
   }
 
   return {
