@@ -1392,19 +1392,9 @@ export function enablePersonalizationV2() {
   return !!enablePersV2 && isSignedOut();
 }
 
-async function checkForPageMods() {
-  const {
-    mep: mepParam,
-    mepHighlight,
-    mepButton,
-    martech,
-  } = Object.fromEntries(PAGE_URL.searchParams);
-  let targetInteractionPromise = null;
-  let countryIPPromise = null;
-  let calculatedTimeout = null;
-  const promises = {};
-
+export function loadMepAddons() {
   const mepAddons = ['lob'];
+  const promises = {};
   mepAddons.forEach((addon) => {
     const enablement = getMepEnablement(addon);
     if (enablement === false) return;
@@ -1420,6 +1410,20 @@ async function checkForPageMods() {
       return returnValue;
     })();
   });
+  return promises;
+}
+
+async function checkForPageMods() {
+  const {
+    mep: mepParam,
+    mepHighlight,
+    mepButton,
+    martech,
+  } = Object.fromEntries(PAGE_URL.searchParams);
+  let targetInteractionPromise = null;
+  let countryIPPromise = null;
+  let calculatedTimeout = null;
+  const promises = loadMepAddons();
 
   if (mepParam === 'off') return;
   const pzn = getMepEnablement('personalization');
