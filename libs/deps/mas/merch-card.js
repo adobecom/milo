@@ -2015,7 +2015,7 @@ merch-card[variant="simplified-pricing-express"] [slot="trial-badge"] merch-badg
 }
 
 /* Grid layout for simplified-pricing-express cards */
-merch-card-collection.simplified-pricing-express:has(merch-card[variant="simplified-pricing-express"]) {
+main .section .content .simplified-pricing-express:has(merch-card[variant="simplified-pricing-express"]) {
     display: grid;
     justify-content: center;
     justify-items: center;
@@ -2026,7 +2026,7 @@ merch-card-collection.simplified-pricing-express:has(merch-card[variant="simplif
 
 /* Mobile/Tablet - Single column */
 @media screen and ${ae} {
-    merch-card-collection.simplified-pricing-express:has(merch-card[variant="simplified-pricing-express"]) {
+    main .section .content .simplified-pricing-express:has(merch-card[variant="simplified-pricing-express"]) {
         grid-template-columns: 1fr;
     }
     
@@ -2038,7 +2038,7 @@ merch-card-collection.simplified-pricing-express:has(merch-card[variant="simplif
 
 /* Desktop - 4 columns */
 @media screen and ${u} {
-    merch-card-collection.simplified-pricing-express:has(merch-card[variant="simplified-pricing-express"]) {
+    main .section .content .simplified-pricing-express:has(merch-card[variant="simplified-pricing-express"]) {
         grid-template-columns: repeat(4, var(--consonant-merch-card-simplified-pricing-express-width));
         max-width: calc(4 * var(--consonant-merch-card-simplified-pricing-express-width) + 3 * var(--consonant-merch-spacing-m));
         margin: 0 auto;
@@ -2214,7 +2214,7 @@ merch-card[variant="simplified-pricing-express"] mas-tooltip merch-icon {
   }
 
   /* Fix spacing between cards on mobile */
-  main merch-card-collection.simplified-pricing-express p:has(merch-card[variant="simplified-pricing-express"]),
+  main main .section .content .simplified-pricing-express p:has(merch-card[variant="simplified-pricing-express"]),
   main .section p:has(merch-card[variant="simplified-pricing-express"]) {
     margin: 0;
   }
