@@ -380,7 +380,7 @@ async function decorateLayout(el) {
   return foreground;
 }
 
-function setStickyAccessabilityAttributes(el) {
+function setStickyAccessibilityAttributes(el) {
   const section = el?.closest('.section');
   if (!section) return;
 
@@ -431,5 +431,5 @@ export default async function init(el) {
     'data-notification-id': notificationId,
   }, ''));
 
-  setStickyAccessabilityAttributes(el);
+  setStickyAccessibilityAttributes(el);
 }
