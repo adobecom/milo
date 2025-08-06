@@ -56,7 +56,7 @@ describe('adobetv autoblock', () => {
     const wrapper = document.body.querySelector('.adobe-tv-captions');
     const a = wrapper.querySelector(':scope > a');
     const config = getConfig();
-    updateConfig({ ...config, captionsKey: 'test', locale: { prefix: 'de' } });
+    updateConfig({ ...config, atvCaptionsKey: 'test', locale: { prefix: 'de' } });
     await init(a);
     const iframe = await waitForElement('.adobe-tv-captions iframe');
     expect(wrapper.querySelector(':scope > a')).to.be.null;
