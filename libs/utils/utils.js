@@ -452,9 +452,9 @@ export const shouldAllowKrTrial = (button, localePrefix) => {
 */
 export const shouldBlockFreeTrialLinks = ({ button, localePrefix, parent }) => {
   if (shouldAllowKrTrial(button, localePrefix) || localePrefix !== '/kr'
-      || (!button.dataset?.modalPath?.includes('/kr/cc-shared/fragments/trial-modals')
-       && !['free-trial', 'free trial', '무료 체험판', '무료 체험하기', '{{try-for-free}}']
-         .some((pattern) => button.textContent?.toLowerCase()?.includes(pattern.toLowerCase())))) {
+    || (!button.dataset?.modalPath?.includes('/kr/cc-shared/fragments/trial-modals')
+      && !['free-trial', 'free trial', '무료 체험판', '무료 체험하기', '{{try-for-free}}']
+        .some((pattern) => button.textContent?.toLowerCase()?.includes(pattern.toLowerCase())))) {
     return false;
   }
 

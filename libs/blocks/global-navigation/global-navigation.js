@@ -1,5 +1,6 @@
 /* eslint import/no-relative-packages: 0 */
 /* eslint-disable no-async-promise-executor */
+import { FLAGS } from '../../features/personalization/personalization.js';
 import {
   getConfig,
   getMetadata,
@@ -199,9 +200,9 @@ export const CONFIG = {
               enableProfileSwitcher: true,
               miniAppContext: {
                 logger: {
-                  trace: () => {},
-                  debug: () => {},
-                  info: () => {},
+                  trace: () => { },
+                  debug: () => { },
+                  info: () => { },
                   warn: (e) => lanaLog({ message: 'Profile Menu warning', e, tags: 'universalnav,warn' }),
                   error: (e) => lanaLog({ message: 'Profile Menu error', e, tags: 'universalnav', errorType: 'e' }),
                 },
@@ -538,8 +539,8 @@ class Gnav {
     return cta;
   };
 
-  decorateTopNav = () => {
-    const { searchEnabled, selfIntegrateUnav, desktopAppsCta = false } = getConfig();
+  decorateTopNav = async () => {
+    const { searchEnabled, mep, selfIntegrateUnav, desktopAppsCta = false } = getConfig();
     const isMiniGnav = this.isMiniGnav();
     this.elements.mobileToggle = this.decorateToggle();
     this.elements.topnav = toFragment`
@@ -559,6 +560,13 @@ class Gnav {
         ${this.decorateLogo()}
       </nav>
     `;
+    const mepIncludeGnav = mep.commands?.find(
+      (command) => command.modifiers?.find((modifier) => modifier === FLAGS.includeGnav),
+    );
+    if (mepIncludeGnav) {
+      const { handleCommands } = await import('../../features/personalization/personalization.js');
+      handleCommands(mep?.commands, this.elements.topnav, true, true);
+    }
   };
 
   decorateLocalNav = async () => {
@@ -1414,7 +1422,7 @@ class Gnav {
     const delayDropdownDecoration = ({ template } = {}) => {
       let decorationTimeout;
       let desktopMegaMenuHTML = null;
-      let mobileNavCleanup = () => {};
+      let mobileNavCleanup = () => { };
 
       const decorateDropdown = () => logErrorFor(async () => {
         template.removeEventListener('click', decorateDropdown);
