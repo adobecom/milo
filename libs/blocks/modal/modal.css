@@ -329,12 +329,12 @@
     max-height: 100%;
   }
 
-  .dialog-modal:not(.tall-video, .three-in-one) {
-    max-height: var(--modal-max-height-mobile);
-  }
-
   .dialog-modal.upgrade-flow-modal {
     border-radius: 0;
+  }
+
+  .dialog-modal:not(.tall-video, .three-in-one, .commerce-frame, .upgrade-flow-modal) {
+    max-height: var(--modal-max-height-mobile);
   }
 
   .dialog-modal.commerce-frame > .fragment,

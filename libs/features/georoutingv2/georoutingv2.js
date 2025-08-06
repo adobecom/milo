@@ -260,7 +260,7 @@ function openPicker(button, locales, country, event, dir, currentPage) {
   const list = createTag('ul', { class: 'picker', dir });
   locales.forEach((l) => {
     const lang = config.locales[l.prefix]?.ietf ?? '';
-    const a = createTag('a', { lang, href: l.url }, `${country} - ${l.language}`);
+    const a = createTag('a', { lang, href: l.url || '/' }, `${country} - ${l.language}`);
     decorateForOnLinkClick(a, l.prefix, currentPage.prefix);
     const li = createTag('li', {}, a);
     list.appendChild(li);
@@ -322,7 +322,7 @@ function buildContent(currentPage, locale, geoData, locales) {
     });
     mainAction.addEventListener('click', openPickerHandler);
   } else {
-    mainAction.href = locale.url;
+    mainAction.href = locale.url || '/';
     decorateForOnLinkClick(mainAction, locale.prefix, currentPage.prefix);
   }
 
@@ -362,14 +362,16 @@ async function showModal(details) {
   const tabs = details.querySelector('.tabs');
   const sectionMetaPath = `${miloLibs || codeRoot}/blocks/section-metadata/section-metadata.css`;
   const georoutingPath = `${miloLibs || codeRoot}/features/georoutingv2/georoutingv2.css`;
+  const modalPath = `${miloLibs || codeRoot}/blocks/modal/modal.css`;
   const promises = [
     tabs ? loadBlock(tabs) : null,
     tabs ? new Promise((resolve) => { loadStyle(sectionMetaPath, resolve); }) : null,
     new Promise((resolve) => { loadStyle(georoutingPath, resolve); }),
+    new Promise((resolve) => { loadStyle(modalPath, resolve); }),
     import('../../blocks/modal/modal.js'),
   ];
   const result = await Promise.all(promises);
-  const { getModal, sendAnalytics } = result[3];
+  const { getModal, sendAnalytics } = result[4];
   sendAnalyticsFunc = sendAnalytics;
   return getModal(null, { class: 'locale-modal-v2', id: 'locale-modal-v2', content: details, closeEvent: 'closeModal' });
 }
