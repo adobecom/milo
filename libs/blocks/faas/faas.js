@@ -47,8 +47,11 @@ const createValidationObserver = () => new MutationObserver((mutations) => {
       field.setAttribute('aria-describedby', `${id}_em_`);
     });
 
-    const errorMessage = rowElement.querySelector('.errorMessage');
-    updateLiveRegion(errorMessage?.textContent);
+    const errorMessage = rowElement.querySelector('.errorMessage')?.textContent;
+
+    if (document.activeElement.parentElement.querySelector('.errorMessage')?.textContent
+        !== errorMessage) return;
+    updateLiveRegion(errorMessage);
   });
 });
 
