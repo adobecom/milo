@@ -1,4 +1,4 @@
-import { STATUS, SEO_TITLES, CHECK_IDS, getCheckSeverity } from './constants.js';
+import { STATUS, CHECKS } from './constants.js';
 import getServiceConfig from '../../../utils/service-config.js';
 import { getConfig, updateConfig } from '../../../utils/utils.js';
 
@@ -40,9 +40,9 @@ export function checkH1s(area) {
   }
 
   return {
-    checkId: CHECK_IDS.H1_COUNT,
-    severity: getCheckSeverity(CHECK_IDS.H1_COUNT),
-    title: SEO_TITLES.H1Count,
+    checkId: CHECKS.H1_COUNT.id,
+    severity: CHECKS.H1_COUNT.severity,
+    title: CHECKS.H1_COUNT.title,
     status,
     description,
   };
@@ -65,9 +65,9 @@ export function checkTitle(area) {
   }
 
   return {
-    checkId: CHECK_IDS.TITLE_SIZE,
-    severity: getCheckSeverity(CHECK_IDS.TITLE_SIZE),
-    title: SEO_TITLES.TitleSize,
+    checkId: CHECKS.TITLE_SIZE.id,
+    severity: CHECKS.TITLE_SIZE.severity,
+    title: CHECKS.TITLE_SIZE.title,
     status,
     description,
   };
@@ -102,9 +102,9 @@ export async function checkCanon(area) {
   }
 
   return {
-    checkId: CHECK_IDS.CANONICAL,
-    severity: getCheckSeverity(CHECK_IDS.CANONICAL),
-    title: SEO_TITLES.Canonical,
+    checkId: CHECKS.CANONICAL.id,
+    severity: CHECKS.CANONICAL.severity,
+    title: CHECKS.CANONICAL.title,
     status,
     description,
   };
@@ -133,9 +133,9 @@ export async function checkDescription(area) {
   }
 
   return {
-    checkId: CHECK_IDS.META_DESCRIPTION,
-    severity: getCheckSeverity(CHECK_IDS.META_DESCRIPTION),
-    title: SEO_TITLES.MetaDescription,
+    checkId: CHECKS.META_DESCRIPTION.id,
+    severity: CHECKS.META_DESCRIPTION.severity,
+    title: CHECKS.META_DESCRIPTION.title,
     status,
     description,
   };
@@ -158,9 +158,9 @@ export async function checkBody(area) {
   }
 
   return {
-    checkId: CHECK_IDS.BODY_SIZE,
-    severity: getCheckSeverity(CHECK_IDS.BODY_SIZE),
-    title: SEO_TITLES.BodySize,
+    checkId: CHECKS.BODY_SIZE.id,
+    severity: CHECKS.BODY_SIZE.severity,
+    title: CHECKS.BODY_SIZE.title,
     status,
     description,
   };
@@ -181,9 +181,9 @@ export async function checkLorem(area) {
   }
 
   return {
-    checkId: CHECK_IDS.LOREM_IPSUM,
-    severity: getCheckSeverity(CHECK_IDS.LOREM_IPSUM),
-    title: SEO_TITLES.Lorem,
+    checkId: CHECKS.LOREM_IPSUM.id,
+    severity: CHECKS.LOREM_IPSUM.severity,
+    title: CHECKS.LOREM_IPSUM.title,
     status,
     description,
   };
@@ -197,9 +197,9 @@ function makeGroups(arr, n = 20) {
 
 export function connectionError() {
   return {
-    checkId: CHECK_IDS.BROKEN_LINKS,
-    severity: getCheckSeverity(CHECK_IDS.BROKEN_LINKS),
-    title: SEO_TITLES.Links,
+    checkId: CHECKS.BROKEN_LINKS.id,
+    severity: CHECKS.BROKEN_LINKS.severity,
+    title: CHECKS.BROKEN_LINKS.title,
     status: STATUS.LIMBO,
     description: 'A VPN connection is required to use the link check service. Please turn on VPN and refresh the page.',
     details: { badLinks: [] },
@@ -327,9 +327,9 @@ export async function checkLinks({ area, urlHash, envName }) {
     : 'Links are valid.';
 
   const result = {
-    checkId: CHECK_IDS.BROKEN_LINKS,
-    severity: getCheckSeverity(CHECK_IDS.BROKEN_LINKS),
-    title: SEO_TITLES.Links,
+    checkId: CHECKS.BROKEN_LINKS.id,
+    severity: CHECKS.BROKEN_LINKS.severity,
+    title: CHECKS.BROKEN_LINKS.title,
     status,
     description,
     details: { badLinks },

@@ -19,14 +19,9 @@ export function addAssetMetadata(asset, assetData) {
   const sizeStatus = assetData.hasMismatch ? 'is-invalid' : 'is-valid';
   const isAboveFoldCritical = assetData.isAboveFold && assetData.hasMismatch;
 
-  let sizeMessage;
-  if (isAboveFoldCritical) {
-    sizeMessage = `CRITICAL: size issue! Use > ${assetData.recommendedDimensions}`;
-  } else if (assetData.hasMismatch) {
-    sizeMessage = `Size: too small, use > ${assetData.recommendedDimensions}`;
-  } else {
-    sizeMessage = 'Size: correct';
-  }
+  const sizeMessage = (isAboveFoldCritical && `CRITICAL: size issue! Use > ${assetData.recommendedDimensions}`)
+    || (assetData.hasMismatch && `Size: too small, use > ${assetData.recommendedDimensions}`)
+    || 'Size: correct';
 
   const sizeEl = createTag('div', { class: `asset-meta-entry preflight-decoration ${sizeStatus} ${isAboveFoldCritical ? 'above-fold-critical' : ''}` }, sizeMessage);
   container.appendChild(sizeEl);

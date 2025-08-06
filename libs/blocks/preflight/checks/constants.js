@@ -5,79 +5,90 @@ export const STATUS = {
   EMPTY: 'empty',
 };
 
-export const CHECK_IDS = {
-
-  H1_COUNT: 'h1-count',
-  TITLE_SIZE: 'title-size',
-  CANONICAL: 'canonical',
-  META_DESCRIPTION: 'meta-description',
-  BODY_SIZE: 'body-size',
-  LOREM_IPSUM: 'lorem-ipsum',
-  BROKEN_LINKS: 'broken-links',
-
-  LCP_ELEMENT: 'lcp-element',
-  SINGLE_BLOCK: 'single-block',
-  PERSONALIZATION: 'personalization',
-  IMAGE_SIZE: 'image-size',
-  VIDEO_POSTER: 'video-poster',
-  FRAGMENTS: 'fragments',
-  PLACEHOLDERS: 'placeholders',
-  ICONS: 'icons',
-
-  IMAGE_DIMENSIONS: 'image-dimensions',
-};
-
 export const SEVERITY = {
   CRITICAL: 'critical',
   WARNING: 'warning',
 };
 
-export const CHECK_SEVERITY_MAP = {
-
-  [CHECK_IDS.H1_COUNT]: SEVERITY.WARNING,
-  [CHECK_IDS.TITLE_SIZE]: SEVERITY.WARNING,
-  [CHECK_IDS.CANONICAL]: SEVERITY.WARNING,
-  [CHECK_IDS.META_DESCRIPTION]: SEVERITY.WARNING,
-  [CHECK_IDS.BODY_SIZE]: SEVERITY.WARNING,
-  [CHECK_IDS.LOREM_IPSUM]: SEVERITY.CRITICAL,
-  [CHECK_IDS.BROKEN_LINKS]: SEVERITY.CRITICAL,
-
-  [CHECK_IDS.LCP_ELEMENT]: SEVERITY.CRITICAL,
-  [CHECK_IDS.SINGLE_BLOCK]: SEVERITY.CRITICAL,
-  [CHECK_IDS.PERSONALIZATION]: SEVERITY.WARNING,
-  [CHECK_IDS.IMAGE_SIZE]: SEVERITY.WARNING,
-  [CHECK_IDS.VIDEO_POSTER]: SEVERITY.WARNING,
-  [CHECK_IDS.FRAGMENTS]: SEVERITY.WARNING,
-  [CHECK_IDS.PLACEHOLDERS]: SEVERITY.WARNING,
-  [CHECK_IDS.ICONS]: SEVERITY.WARNING,
-
-  [CHECK_IDS.IMAGE_DIMENSIONS]: SEVERITY.CRITICAL,
+export const CHECKS = {
+  H1_COUNT: {
+    id: 'h1-count',
+    severity: SEVERITY.WARNING,
+    title: 'H1 count',
+  },
+  TITLE_SIZE: {
+    id: 'title-size',
+    severity: SEVERITY.WARNING,
+    title: 'Title size',
+  },
+  CANONICAL: {
+    id: 'canonical',
+    severity: SEVERITY.WARNING,
+    title: 'Canonical',
+  },
+  META_DESCRIPTION: {
+    id: 'meta-description',
+    severity: SEVERITY.WARNING,
+    title: 'Meta description',
+  },
+  BODY_SIZE: {
+    id: 'body-size',
+    severity: SEVERITY.WARNING,
+    title: 'Body size',
+  },
+  LOREM_IPSUM: {
+    id: 'lorem-ipsum',
+    severity: SEVERITY.CRITICAL,
+    title: 'Lorem Ipsum',
+  },
+  BROKEN_LINKS: {
+    id: 'broken-links',
+    severity: SEVERITY.CRITICAL,
+    title: 'Links',
+  },
+  LCP_ELEMENT: {
+    id: 'lcp-element',
+    severity: SEVERITY.CRITICAL,
+    title: 'LCP',
+  },
+  SINGLE_BLOCK: {
+    id: 'single-block',
+    severity: SEVERITY.CRITICAL,
+    title: 'Single Block',
+  },
+  PERSONALIZATION: {
+    id: 'personalization',
+    severity: SEVERITY.WARNING,
+    title: 'Personalization',
+  },
+  IMAGE_SIZE: {
+    id: 'image-size',
+    severity: SEVERITY.WARNING,
+    title: 'Images Size',
+  },
+  VIDEO_POSTER: {
+    id: 'video-poster',
+    severity: SEVERITY.WARNING,
+    title: 'Videos',
+  },
+  FRAGMENTS: {
+    id: 'fragments',
+    severity: SEVERITY.WARNING,
+    title: 'Fragments',
+  },
+  PLACEHOLDERS: {
+    id: 'placeholders',
+    severity: SEVERITY.WARNING,
+    title: 'Placeholders',
+  },
+  ICONS: {
+    id: 'icons',
+    severity: SEVERITY.WARNING,
+    title: 'Icons',
+  },
+  IMAGE_DIMENSIONS: {
+    id: 'image-dimensions',
+    severity: SEVERITY.CRITICAL,
+    title: 'Asset Dimensions',
+  },
 };
-
-export function getCheckSeverity(checkId) {
-  return CHECK_SEVERITY_MAP[checkId] || SEVERITY.WARNING;
-}
-
-export const SEO_TITLES = {
-  H1Count: 'H1 count',
-  TitleSize: 'Title size',
-  Canonical: 'Canonical',
-  MetaDescription: 'Meta description',
-  BodySize: 'Body size',
-  Lorem: 'Lorem Ipsum',
-  Links: 'Links',
-};
-
-export const PERFORMANCE_TITLES = {
-  Performance: 'Performance',
-  LcpEl: 'LCP',
-  SingleBlock: 'Single Block',
-  ImageSize: 'Images Size',
-  VideoPoster: 'Videos',
-  Fragments: 'Fragments',
-  Personalization: 'Personalization',
-  Placeholders: 'Placeholders',
-  Icons: 'Icons',
-};
-
-export const ASSETS_TITLES = { AssetDimensions: 'Asset Dimensions' };
