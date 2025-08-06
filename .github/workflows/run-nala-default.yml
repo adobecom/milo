@@ -31,6 +31,15 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
 
+      - name: Set up Node.js (for cache warming)
+        uses: actions/setup-node@cdca7365b2dadb8aad0a33bc7601856ffabcc48e
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+
+      - name: Warm up npm cache
+        run: npm ci --prefer-offline --no-audit
+
       - name: Calculate optimal shard count
         id: calculate
         run: |
@@ -87,16 +96,28 @@ jobs:
         uses: actions/setup-node@cdca7365b2dadb8aad0a33bc7601856ffabcc48e
         with:
           node-version: '20.x'
+          cache: 'npm'
 
-      - name: Cache dependencies
+      - name: Cache Playwright browsers
         uses: actions/cache@v3
+        id: playwright-cache
         with:
           path: |
-            ~/.npm
             ~/.cache/ms-playwright
-          key: ${{ runner.os }}-node-playwright-${{ hashFiles('**/package-lock.json') }}
+          key: ${{ runner.os }}-playwright-browsers-${{ hashFiles('**/package-lock.json') }}
           restore-keys: |
-            ${{ runner.os }}-node-playwright-
+            ${{ runner.os }}-playwright-browsers-
+
+      - name: Install dependencies
+        run: npm ci --prefer-offline --no-audit
+
+      - name: Install Playwright browsers
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
+        run: npx playwright install --with-deps chromium firefox webkit
+
+      - name: Install Playwright browsers (cache hit)
+        if: steps.playwright-cache.outputs.cache-hit == 'true'
+        run: npx playwright install-deps
 
       - name: Set execute permission for pr.run.sh
         run: chmod +x ./nala/utils/pr.run.sh

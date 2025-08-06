@@ -92,10 +92,17 @@ echo "Run Command : npx playwright test ${TAGS} ${EXCLUDE_TAGS} ${REPORTER}"
 echo -e "\n"
 echo "*******************************"
 
-# Navigate to the GitHub Action path and install dependencies
+# Navigate to the GitHub Action path (dependencies already installed in workflow)
 cd "$GITHUB_ACTION_PATH" || exit
-npm ci
-npx playwright install --with-deps
+
+# Skip dependency installation if running in GitHub Actions (handled by workflow)
+if [[ -z "$GITHUB_ACTIONS" ]]; then
+  echo "Installing dependencies locally..."
+  npm ci
+  npx playwright install --with-deps
+else
+  echo "Dependencies already installed by workflow"
+fi
 
 # Run Playwright tests on the specific projects using root-level playwright.config.js
 # Support sharding if SHARD_INDEX and SHARD_TOTAL are provided
