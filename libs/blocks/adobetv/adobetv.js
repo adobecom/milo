@@ -98,7 +98,7 @@ export default function init(a) {
     const geo = (locale?.prefix || '').replace('/', '');
     const federalCR = atvCaptionsKey && getFederatedContentRoot();
 
-    if (federalCR && url.searchParams.has('captions')) {
+    if (geo && federalCR && url.searchParams.has('captions')) {
       if (!captionsLangMapPromise) {
         const captionsUrl = `${federalCR}/federal/assets/data/adobetv-captions.json?sheet=${atvCaptionsKey}`;
         captionsLangMapPromise = fetch(captionsUrl).then((res) => {
