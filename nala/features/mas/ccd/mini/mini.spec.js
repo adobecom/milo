@@ -11,7 +11,7 @@ module.exports = {
         regularPrice: 'US$59.99/mo',
         promoPrice: undefined,
         promotionCode: undefined,
-        planTypeText: 'Annual, paid monthly',
+        planTypeText: 'Annual, billed monthly',
         recurrenceText: '/mo',
         renewalText: undefined,
         promoDurationText: undefined,

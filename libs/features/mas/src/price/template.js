@@ -29,7 +29,7 @@ export const defaultLiterals = {
         '{taxTerm, select, GST {incl. GST} VAT {incl. VAT} TAX {incl. tax} IVA {incl. IVA} SST {incl. SST} KDV {incl. KDV} other {}}',
     alternativePriceAriaLabel: 'Alternatively at',
     strikethroughAriaLabel: 'Regularly at',
-    planTypeLabel: '{planType, select, ABM {Annual, paid monthly.} other {}}',
+    planTypeLabel: '{planType, select, ABM {Annual, billed monthly} other {}}',
 };
 
 const log = createLog('ConsonantTemplates/price');
