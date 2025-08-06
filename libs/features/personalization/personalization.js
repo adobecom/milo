@@ -238,13 +238,6 @@ export const createContent = (el, { content, manifestId, targetManifestId, actio
 const COMMANDS = {
   [COMMANDS_KEYS.remove]: (el, { content }) => {
     if (content !== 'false') el.classList.add(CLASS_EL_DELETE);
-    // if (getSelectorType(selector) === SELECTOR_TYPES.twpButtons) {
-    //   const neighbooringEl = el.parentElement.querySelector('a');
-    //   if (neighbooringEl) {
-    //     const outerHTML = neighbooringEl.parentElement.outerHTML.replace(/em/g, 'strong');
-    //     neighbooringEl.parentElement.outerHTML = outerHTML;
-    //   }
-    // }
   },
   [COMMANDS_KEYS.replace]: (el, cmd) => {
     if (!el || el.classList.contains(CLASS_EL_REPLACE)) return;
