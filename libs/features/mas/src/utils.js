@@ -83,7 +83,7 @@ export function getService() {
 }
 
 export function historyPushState(queryParams) {
-    if (!queryParams || !window.history.pushState) return;
+    if (!window.history.pushState) return;
     const newURL = new URL(window.location.href);
     newURL.search = `?${queryParams}`;
     window.history.pushState({ path: newURL.href }, '', newURL.href);    
