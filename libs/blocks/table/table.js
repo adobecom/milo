@@ -323,13 +323,13 @@ function handleSection(sectionParams) {
         iconTag.setAttribute('aria-expanded', 'true');
         expandSection = false;
       } else {
-        iconTag.setAttribute('aria-expanded', 'false');
+        iconTag.setAttribute('aria-expanded', 'true');
         nextRow.classList.add('section-head-collapsed');
-        let nextElement = row.nextElementSibling;
-        while (nextElement && !nextElement.classList.contains('divider')) {
-          nextElement.classList.add('hidden');
-          nextElement = nextElement.nextElementSibling;
-        }
+        // let nextElement = row.nextElementSibling;
+        // while (nextElement && !nextElement.classList.contains('divider')) {
+        //   nextElement.classList.add('hidden');
+        //   nextElement = nextElement.nextElementSibling;
+        // }
       }
     }
   } else if (previousRow?.querySelector('hr') && nextRow) {
@@ -664,7 +664,7 @@ export default function init(el) {
     cols.forEach((col, cdx) => {
       col.dataset.colIndex = cdx + 1;
       col.classList.add('col', `col-${cdx + 1}`);
-      col.setAttribute('role', 'cell');
+      col.setAttribute('role', col.matches('.section-head-title') ? 'columnheader' : 'cell');
     });
 
     expandSection = handleSection(sectionParams);
