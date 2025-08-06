@@ -95,7 +95,7 @@ export default function init(a) {
   } else {
     const url = new URL(a.href);
     const { atvCaptionsKey, locale } = getConfig();
-    const geo = (locale?.prefix || '').replace('/', '');
+    const geo = (locale?.prefix || '').replace('/langstore', '').replace('/', '');
     const federalCR = atvCaptionsKey && getFederatedContentRoot();
 
     if (geo && federalCR && url.searchParams.has('captions')) {
