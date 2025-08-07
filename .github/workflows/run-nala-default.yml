@@ -171,6 +171,10 @@ jobs:
   build-test-image:
     name: Build Test Image
     runs-on: ubuntu-latest
+    outputs:
+      image-tag: ${{ steps.meta.outputs.tags }}
+      image-digest: ${{ steps.build.outputs.digest }}
+      deps-tag: ${{ steps.deps-tag.outputs.tag }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
@@ -178,37 +182,68 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Cache Docker layers
-        uses: actions/cache@v3
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
         with:
-          path: /tmp/.buildx-cache
-          key: ${{ runner.os }}-buildx-${{ hashFiles('package-lock.json', 'package.json') }}
-          restore-keys: |
-            ${{ runner.os }}-buildx-
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build and cache Docker image
+      - name: Generate image metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository }}/nala-tests
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=sha,prefix={{branch}}-
+            type=raw,value=latest,enable={{is_default_branch}}
+            type=raw,value=deps-${{ hashFiles('package-lock.json', 'package.json', 'Dockerfile.nala') }}
+
+      - name: Check if image exists
+        id: check
+        run: |
+          # Get the deps tag to check if we need to rebuild
+          DEPS_TAG="ghcr.io/${{ github.repository }}/nala-tests:deps-${{ hashFiles('package-lock.json', 'package.json', 'Dockerfile.nala') }}"
+          echo "Checking for existing image: $DEPS_TAG"
+          
+          if docker manifest inspect $DEPS_TAG > /dev/null 2>&1; then
+            echo "Image exists with current dependencies, skipping build"
+            echo "exists=true" >> $GITHUB_OUTPUT
+            echo "existing_tag=$DEPS_TAG" >> $GITHUB_OUTPUT
+          else
+            echo "Image not found or dependencies changed, building new image"
+            echo "exists=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Build and push Docker image
+        if: steps.check.outputs.exists != 'true'
+        id: build
         uses: docker/build-push-action@v5
         with:
           context: .
           file: ./Dockerfile.nala
-          tags: milo-nala-tests:latest
-          outputs: type=docker,dest=/tmp/milo-nala-tests.tar
-          cache-from: type=local,src=/tmp/.buildx-cache
-          cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
           build-args: |
             PLAYWRIGHT_VERSION=1.54.2
 
-      - name: Move cache
+      - name: Export image reference
+        id: deps-tag
         run: |
-          rm -rf /tmp/.buildx-cache
-          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
-
-      - name: Upload Docker image
-        uses: actions/upload-artifact@v4
-        with:
-          name: docker-image
-          path: /tmp/milo-nala-tests.tar
-          retention-days: 1
+          DEPS_TAG="deps-${{ hashFiles('package-lock.json', 'package.json', 'Dockerfile.nala') }}"
+          echo "tag=$DEPS_TAG" >> $GITHUB_OUTPUT
+          
+          if [[ "${{ steps.check.outputs.exists }}" == "true" ]]; then
+            echo "IMAGE_REF=${{ steps.check.outputs.existing_tag }}" >> $GITHUB_ENV
+          else
+            echo "IMAGE_REF=ghcr.io/${{ github.repository }}/nala-tests@${{ steps.build.outputs.digest }}" >> $GITHUB_ENV
+          fi
+          echo "Using image: $IMAGE_REF"
 
   # Parallel test execution using the cached image
   run-nala-tests:
@@ -225,15 +260,22 @@ jobs:
         with:
           fetch-depth: 2
 
-      - name: Download Docker image
-        uses: actions/download-artifact@v4
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
         with:
-          name: docker-image
-          path: /tmp
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Load Docker image
+      - name: Pull Docker image
         run: |
-          docker load --input /tmp/milo-nala-tests.tar
+          # Use the deps-specific tag for better caching
+          IMAGE_TAG="ghcr.io/${{ github.repository }}/nala-tests:${{ needs.build-test-image.outputs.deps-tag }}"
+          echo "Pulling image: $IMAGE_TAG"
+          docker pull $IMAGE_TAG
+          
+          # Tag it as milo-nala-tests:latest for compatibility
+          docker tag $IMAGE_TAG milo-nala-tests:latest
           docker image ls
 
       - name: Download shard assignments
