@@ -212,8 +212,10 @@ export class Plans extends VariantLayout {
         this.adjustTitleWidth();
         this.adjustAddon();
         this.adjustCallout();
-        await this.adjustLegal();
-        await this.adjustEduLists();
+        if (!this.legalAdjusted) {
+            await this.adjustLegal();
+            await this.adjustEduLists();
+        }
     }
 
     get headingM() {
@@ -234,10 +236,10 @@ export class Plans extends VariantLayout {
     }
 
     async adjustLegal() {
-        await this.card.updateComplete;
-        await customElements.whenDefined('inline-price');
         if (this.legalAdjusted) return;
         this.legalAdjusted = true;
+        await this.card.updateComplete;
+        await customElements.whenDefined('inline-price');
         const prices = [];
         const headingPrice = this.card.querySelector(`[slot="heading-m"] ${SELECTOR_MAS_INLINE_PRICE}[data-template="price"]`);
         if (headingPrice) prices.push(headingPrice);
