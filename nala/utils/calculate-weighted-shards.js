@@ -7,7 +7,7 @@ const { execSync } = require('child_process');
  * Calculates optimal shard distribution based on test execution times
  */
 class WeightedShardCalculator {
-  constructor(maxShards = 6) {
+  constructor(maxShards = 10) {
     this.maxShards = maxShards;
     this.timingData = null;
     this.defaultTimings = null;
@@ -255,7 +255,7 @@ Usage: node calculate-weighted-shards.js [options]
 
 Options:
   --timing-data <file>   Timing data file from previous runs
-  --max-shards <n>       Maximum number of shards (default: 6)
+  --max-shards <n>       Maximum number of shards (default: 10)
   --output <file>        Output file for shard assignments
   --test-files <files>   Specific test files (default: find all)
   --help                 Show this help message
@@ -272,7 +272,7 @@ Examples:
   
   // Parse arguments
   const maxShardsIndex = args.indexOf('--max-shards');
-  const maxShards = maxShardsIndex > -1 ? parseInt(args[maxShardsIndex + 1]) : 6;
+  const maxShards = maxShardsIndex > -1 ? parseInt(args[maxShardsIndex + 1]) : 10;
   
   const calculator = new WeightedShardCalculator(maxShards);
   

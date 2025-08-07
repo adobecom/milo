@@ -14,9 +14,9 @@ on:
   workflow_dispatch:
     inputs:
       max_shards:
-        description: 'Maximum number of parallel shards (2-10)'
+        description: 'Maximum number of parallel shards (2-20)'
         required: false
-        default: '6'
+        default: '10'
         type: string
 
 jobs:
@@ -60,9 +60,9 @@ jobs:
           TEST_COUNT=$(find nala -name "*.test.js" | wc -l)
           echo "Found $TEST_COUNT test files"
           
-          # Get max shards from input (default to 6 for auto runs)
+          # Get max shards from input (default to 10 for auto runs)
           MAX_SHARDS=${{ inputs.max_shards }}
-          MAX_SHARDS=${MAX_SHARDS:-6}
+          MAX_SHARDS=${MAX_SHARDS:-10}
           
           # Check if we have timing data for weighted distribution
           if [ -f test-timings.json ]; then
