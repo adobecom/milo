@@ -14,7 +14,7 @@ test.beforeEach(async ({ page, baseURL, browserName }) => {
 
   COMM = new CommercePage(page);
   if (browserName === 'chromium') {
-    await page.setExtraHTTPHeaders({ 'sec-ch-ua': '"Chromium";v="125", "Not.A/Brand";v="24"' });
+    await page.setExtraHTTPHeaders({ 'sec-ch-ua': '"Chromium";v="123", "Not:A-Brand";v="8"' });
   }
 
   const skipOn = ['bacom', 'business'];
@@ -36,7 +36,7 @@ test.describe('Commerce feature test suite', () => {
     });
 
     await test.step('Validate regular price display', async () => {
-      await COMM.price.waitFor({ state: 'visible', timeout: 15000 });
+      await COMM.price.waitFor({ state: 'visible', timeout: 10000 });
       expect(await COMM.price.innerText()).toMatch(PRICE_PATTERN.US_yr);
       expect(await COMM.price.locator('.price-recurrence').innerText()).not.toBe('');
       expect(await COMM.price.locator('.price-unit-type').innerText()).toBe('');
@@ -75,7 +75,7 @@ test.describe('Commerce feature test suite', () => {
     });
 
     await test.step('Validate regular price display', async () => {
-      await COMM.price.waitFor({ state: 'visible', timeout: 15000 });
+      await COMM.price.waitFor({ state: 'visible', timeout: 10000 });
       expect(await COMM.price.innerText()).toContain('US$');
       expect(await COMM.price.locator('.price-recurrence').innerText()).not.toBe('');
       expect(await COMM.price.locator('.price-unit-type').innerText()).not.toBe('');
@@ -114,7 +114,7 @@ test.describe('Commerce feature test suite', () => {
     });
 
     await test.step('Validate regular price display', async () => {
-      await COMM.price.waitFor({ state: 'visible', timeout: 15000 });
+      await COMM.price.waitFor({ state: 'visible', timeout: 10000 });
       expect(await COMM.price.innerText()).toContain('€');
       expect(await COMM.price.locator('.price-recurrence').innerText()).not.toBe('');
       expect(await COMM.price.locator('.price-unit-type').innerText()).not.toBe('');
@@ -155,7 +155,7 @@ test.describe('Commerce feature test suite', () => {
     });
 
     await test.step('Validate regular price has promo', async () => {
-      await COMM.price.waitFor({ state: 'visible', timeout: 15000 });
+      await COMM.price.waitFor({ state: 'visible', timeout: 10000 });
       await expect(COMM.price).toHaveAttribute('data-promotion-code', data.promo);
       await expect(COMM.price).toHaveAttribute('data-display-old-price', 'true');
       await COMM.price.locator('.price').first().waitFor({ state: 'visible', timeout: 10000 });
@@ -215,7 +215,7 @@ test.describe('Commerce feature test suite', () => {
     // Validate Upgrade eligibility check w.r.t Buy CTA
     await test.step('Verify cc all apps card cta title', async () => {
       await page.waitForLoadState('domcontentloaded');
-      await COMM.ccAllAppsCTA.waitFor({ state: 'visible', timeout: 15000 });
+      await COMM.ccAllAppsCTA.waitFor({ state: 'visible', timeout: 10000 });
       await expect(COMM.ccAllAppsCTA).toHaveText(data.UpgradeCTATitle);
     });
 
@@ -255,7 +255,7 @@ test.describe('Commerce feature test suite', () => {
     // Validate Download eligibility check w.r.t Buy CTA
     await test.step('Verify photoshop card cta title', async () => {
       await page.waitForLoadState('domcontentloaded');
-      await COMM.photoshopBuyCTA.waitFor({ state: 'visible', timeout: 15000 });
+      await COMM.photoshopBuyCTA.waitFor({ state: 'visible', timeout: 10000 });
       await expect(COMM.photoshopBuyCTA).toHaveText(data.DownloadCTATitle);
       await expect(COMM.photoshopFreeCTA).toHaveText(data.TrialCTATitle);
     });
@@ -327,7 +327,7 @@ test.describe('Commerce feature test suite', () => {
     });
 
     await test.step('Validate Buy now CTA', async () => {
-      await COMM.buyNowCta.waitFor({ state: 'visible', timeout: 15000 });
+      await COMM.buyNowCta.waitFor({ state: 'visible', timeout: 10000 });
       await expect(COMM.buyNowCta).toHaveAttribute('data-promotion-code', data.promo);
       await expect(COMM.buyNowCta).toHaveAttribute('href', new RegExp(`${data.promo}`));
       await expect(COMM.buyNowCta).toHaveAttribute('href', new RegExp(`${data.CO}`));
@@ -388,7 +388,7 @@ test.describe('Commerce feature test suite', () => {
     });
 
     await test.step('Validate promo price does not show old price', async () => {
-      await COMM.price.waitFor({ state: 'visible', timeout: 15000 });
+      await COMM.price.waitFor({ state: 'visible', timeout: 10000 });
       await expect(COMM.price).toHaveAttribute('data-promotion-code', data.promo);
       await expect(COMM.price).not.toHaveAttribute('data-display-old-price', 'true');
       // expect(await COMM.price.innerText()).toContain('US$17.24');
@@ -421,7 +421,7 @@ test.describe('Commerce feature test suite', () => {
     });
 
     await test.step('Validate Buy now CTA', async () => {
-      await COMM.buyNowCta.waitFor({ state: 'visible', timeout: 15000 });
+      await COMM.buyNowCta.waitFor({ state: 'visible', timeout: 10000 });
       await expect(COMM.buyNowCta).toHaveAttribute('data-promotion-code', data.promo);
       await expect(COMM.buyNowCta).toHaveAttribute('href', new RegExp(`${data.promo}`));
       await expect(COMM.buyNowCta).toHaveAttribute('href', new RegExp(`${data.CO}`));

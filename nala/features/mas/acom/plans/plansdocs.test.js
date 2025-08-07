@@ -16,7 +16,7 @@ test.describe('ACOM MAS cards feature test suite', () => {
     webUtil = new WebUtil(page);
     acomPage = new MasPlans(page);
     if (browserName === 'chromium') {
-      await page.setExtraHTTPHeaders({ 'sec-ch-ua': '"Chromium";v="125", "Not.A/Brand";v="24"' });
+      await page.setExtraHTTPHeaders({ 'sec-ch-ua': '"Chromium";v="123", "Not:A-Brand";v="8"' });
     }
   });
 
@@ -35,7 +35,7 @@ test.describe('ACOM MAS cards feature test suite', () => {
     });
 
     await test.step('step-2: Verify Plans Merch Card content', async () => {
-      await expect(acomPage.getCard(data.id)).toBeVisible({ timeout: 15000 });
+      await expect(acomPage.getCard(data.id)).toBeVisible();
       await expect(acomPage.getCardIcon(data.id)).toBeVisible();
       await expect(acomPage.getCardIcon(data.id)).toHaveAttribute('src', /content\/dam/);
       await expect(await acomPage.getCardTitle(data.id)).toBeVisible();
@@ -72,7 +72,7 @@ test.describe('ACOM MAS cards feature test suite', () => {
     });
 
     await test.step('step-2: Verify Plans Merch Card CSS', async () => {
-      await expect(acomPage.getCard(data.id)).toBeVisible({ timeout: 15000 });
+      await expect(acomPage.getCard(data.id)).toBeVisible();
       expect(await webUtil.verifyCSS(await acomPage.getCard(data.id), acomPage.cssProp.card)).toBeTruthy();
       expect(await webUtil.verifyCSS(await acomPage.getCardIcon(data.id), acomPage.cssProp.icon)).toBeTruthy();
       expect(await webUtil.verifyCSS(await acomPage.getCardBadge(data.id), acomPage.cssProp.badge)).toBeTruthy();
@@ -103,7 +103,7 @@ test.describe('ACOM MAS cards feature test suite', () => {
     });
 
     await test.step('step-2: Verify Plans Students Merch Card CSS', async () => {
-      await expect(acomPage.getCard(data.id)).toBeVisible({ timeout: 15000 });
+      await expect(acomPage.getCard(data.id)).toBeVisible();
       await expect(acomPage.getCard(data.id)).toHaveAttribute('variant', 'plans-students');
       expect(await webUtil.verifyCSS(await acomPage.getCard(data.id), acomPage.studentsCssProp.card)).toBeTruthy();
     });

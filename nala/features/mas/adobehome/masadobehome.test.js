@@ -21,7 +21,7 @@ test.describe('Merch AH Try Buy Widget test suite', () => {
     webUtil = new WebUtil(page);
 
     if (browserName === 'chromium') {
-      await page.setExtraHTTPHeaders({ 'sec-ch-ua': '"Chromium";v="125", "Not.A/Brand";v="24"' });
+      await page.setExtraHTTPHeaders({ 'sec-ch-ua': '"Chromium";v="123", "Not:A-Brand";v="8"' });
     }
   });
 

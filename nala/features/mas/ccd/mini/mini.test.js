@@ -19,7 +19,7 @@ test.describe('CCD Mini Cards Feature', () => {
     page.on('console', consoleListener);
 
     if (browserName === 'chromium') {
-      await page.setExtraHTTPHeaders({ 'sec-ch-ua': '"Chromium";v="125", "Not.A/Brand";v="24"' });
+      await page.setExtraHTTPHeaders({ 'sec-ch-ua': '"Chromium";v="123", "Not:A-Brand";v="8"' });
     }
   });
 
@@ -58,7 +58,7 @@ test.describe('CCD Mini Cards Feature', () => {
 
       await test.step('2. Verify CCD Mini Card content', async () => {
         const cardLocator = await miniCard.getCard(data.fragment);
-        await expect(cardLocator).toBeVisible({ timeout: 15000 });
+        await expect(cardLocator).toBeVisible();
         await cardLocator.evaluate((card) => card.checkReady());
 
         const title = await cardLocator.evaluate((card) => card.title);
