@@ -492,36 +492,28 @@
   pointer-events: auto;
 }
 
- .notification.pill.tempvariant .foreground .text > label.verb-cta {
-    border-radius:25px;
-    padding-inline: 24px;
-    align-self: stretch;
-    inline-size: unset;
-  }
+.notification.pill.tempvariant {
+  min-block-size: var(--min-block-size-pill);
+}
+
+.notification.pill.tempvariant .foreground .text>label.verb-cta {
+  border-radius: 25px;
+  padding-inline: 24px;
+  align-self: stretch;
+  inline-size: unset;
+}
+
+
 @media screen and (max-width: 600px) {
   .mobile-disable-scroll {
     overflow: hidden;
   }
 
-  .notification.pill.tempvariant {
-    min-block-size: 0;
-    border-radius: 25px;
+  .notification.pill.tempvariant h3  {
+    position: absolute;
+    left: -9999px;
   }
 
-   /* dc1059 update, built on ace1052: temp solution for verb-cta */
-  .notification.pill.tempvariant .verb-cta {
-    margin-bottom: 0;
-  }
-
-  .notification.pill.tempvariant .copy-wrap, 
-  .notification.pill.tempvariant .close {
-    display: none;
-  }
-
-  .notification.pill.tempvariant .foreground {
-    padding-block: unset;
-    padding-inline: unset;
-  }
 }
 
 @media screen and (max-width: 359px) {
@@ -683,6 +675,10 @@
     inline-size: unset;
   }
 
+  .notification.pill.tempvariant .foreground .text > :not(.action-area) {
+    padding-inline-end: var(--spacing-xs);
+  }
+
   .notification.pill.max-width-6-tablet { max-width: 600px; }
   .notification.pill.max-width-8-tablet { max-width: 800px; }
   .notification.pill.max-width-10-tablet { max-width: 1000px; }
@@ -834,6 +830,10 @@
     justify-content: center;
   }
 
+  .notification.pill.tempvariant .foreground .text {
+    justify-content: space-between;
+  }
+
   .notification.pill.flexible .flexible-inner {
     border-radius: var(--pill-radius);
   }
@@ -844,10 +844,6 @@
     align-items: baseline;
     text-align: start;
     gap: var(--spacing-xxs);
-  }
-
-  .notification.pill.tempvariant .copy-wrap { 
-    grid-gap: var(--spacing-xs);
   }
 
   .notification.pill .copy-wrap > * {
