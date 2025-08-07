@@ -38,20 +38,33 @@ jobs:
 
       - name: Download previous test timing data
         run: |
-          # Try to download timing data from previous workflow runs
-          gh run download --repo ${{ github.repository }} --name test-timings --dir ./ || true
+          echo "Attempting to download test timing data..."
           
-          # Also try to get from a recent successful run on main branch
-          if [ ! -f test-timings.json ]; then
-            echo "Attempting to download timing data from recent main branch run..."
-            RECENT_RUN=$(gh run list --repo ${{ github.repository }} --branch main --workflow "Run Nala Tests" --status success --limit 1 --json databaseId --jq '.[0].databaseId' || true)
-            if [ ! -z "$RECENT_RUN" ]; then
-              gh run download $RECENT_RUN --repo ${{ github.repository }} --name test-timings --dir ./ || true
+          # Try to download from the most recent completed workflow run
+          RECENT_RUNS=$(gh run list --repo ${{ github.repository }} --workflow "Run Nala Tests" --status completed --limit 10 --json databaseId,conclusion)
+          
+          for run in $(echo "$RECENT_RUNS" | jq -r '.[] | .databaseId'); do
+            echo "Trying run $run..."
+            if gh run download $run --repo ${{ github.repository }} --name test-timings --dir ./ 2>/dev/null; then
+              echo "✓ Successfully downloaded timing data from run $run"
+              break
             fi
-          fi
+          done
           
+          # Validate the downloaded file
           if [ -f test-timings.json ]; then
-            echo "Successfully loaded previous timing data"
+            FILE_SIZE=$(stat -f%z test-timings.json 2>/dev/null || stat -c%s test-timings.json)
+            echo "Downloaded test-timings.json (size: $FILE_SIZE bytes)"
+            
+            # Check if it's not just the empty bootstrap file
+            if [ "$FILE_SIZE" -lt 300 ]; then
+              echo "Warning: Timing file seems to be empty bootstrap file"
+              # Show content for debugging
+              echo "Content:"
+              cat test-timings.json
+            else
+              echo "✓ Successfully loaded previous timing data"
+            fi
           else
             echo "No previous timing data found, will use count-based distribution"
           fi
@@ -338,7 +351,7 @@ jobs:
 
       - name: Run Nala Tests (Shard ${{ matrix.shard }}/${{ needs.calculate-shards.outputs.shard-count }})
         run: |
-          docker run --rm \
+          docker run --name nala-test-container-${{ matrix.shard }} \
             --ipc=host \
             -v ${{ github.workspace }}/nala:/workspace/nala:ro \
             -v ${{ github.workspace }}/test-results:/workspace/test-results \
@@ -361,7 +374,32 @@ jobs:
             -e SHARD_INDEX="${{ matrix.shard }}" \
             -e SHARD_TOTAL="${{ needs.calculate-shards.outputs.shard-count }}" \
             -e TEST_FILES="${{ env.TEST_FILES }}" \
-            milo-nala-tests:latest
+            milo-nala-tests:latest || EXIT_CODE=$?
+          
+          # Copy test-results.json from container regardless of test outcome
+          echo "Copying test results from container..."
+          
+          # Debug: List files in workspace
+          echo "Files in container /workspace:"
+          docker exec nala-test-container-${{ matrix.shard }} ls -la /workspace/ | head -20 || true
+          
+          # Copy the JSON file
+          docker cp nala-test-container-${{ matrix.shard }}:/workspace/test-results.json ./test-results.json 2>/dev/null || echo "No test-results.json found in container"
+          
+          # Clean up container
+          docker rm nala-test-container-${{ matrix.shard }} || true
+          
+          # Check if we got the JSON file
+          if [ -f test-results.json ]; then
+            echo "✓ Successfully extracted test-results.json ($(stat -f%z test-results.json 2>/dev/null || stat -c%s test-results.json) bytes)"
+          else
+            echo "✗ test-results.json not found - tests may have failed before generating results"
+          fi
+          
+          # Exit with original exit code if tests failed
+          if [ ! -z "$EXIT_CODE" ] && [ "$EXIT_CODE" -ne 0 ]; then
+            exit $EXIT_CODE
+          fi
 
       - name: Upload test results
         if: always()
