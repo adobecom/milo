@@ -12,6 +12,7 @@ import {
   getFederatedUrl,
   getFedsPlaceholderConfig,
   shouldBlockFreeTrialLinks,
+  isSignedOut,
 } from '../../utils/utils.js';
 
 (async () => {
@@ -531,7 +532,8 @@ class Gnav {
     }));
 
   decorateProductEntryCTA = () => {
-    const button = this.content.querySelector('.product-entry-cta a');
+    const buttons = this.content.querySelectorAll('.product-entry-cta a');
+    const button = buttons[isSignedOut && buttons.length > 1 ? 1 : 0];
     if (!button) return null;
     const cta = decorateCta({ elem: button, type: this.getMainNavItemType(button) });
     cta.closest('.feds-cta-wrapper').classList.add('feds-product-entry-cta');
