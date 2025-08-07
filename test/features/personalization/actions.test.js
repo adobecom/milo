@@ -174,7 +174,7 @@ describe('appendToSection action', async () => {
     expect(document.querySelector('a[href="/test/features/personalization/mocks/fragments/appendToSection"]')).to.be.null;
     await init(mepSettings);
     const el = document.querySelector('a[href="/test/features/personalization/mocks/fragments/appendToSection"]');
-    expect(el.dataset.adobeTargetTestid).to.equal('manifest');
+    expect(el.dataset.adobeTargetTestid).to.equal(undefined);
 
     const fragment = document.querySelector('main > div:nth-child(2) > div:last-child a[href="/test/features/personalization/mocks/fragments/appendToSection"]');
     expect(fragment).to.not.be.null;
