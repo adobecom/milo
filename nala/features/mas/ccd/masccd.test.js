@@ -2,12 +2,13 @@ import { expect, test } from '@playwright/test';
 import { features } from './masccd.spec.js';
 import MerchCCD from './masccd.page.js';
 import WebUtil from '../../../libs/webutil.js';
-import { setupMasConsoleListener, attachMasConsoleErrorsToFailure } from '../../../libs/commerce.js';
+import { setupMasConsoleListener, attachMasConsoleErrorsToFailure, setupMasRequestLogger, attachMasRequestErrorsToFailure } from '../../../libs/commerce.js';
 
 const COMMERCE_LINK_REGEX = (country = 'US', language = 'en') => new RegExp(`https://commerce.adobe.com/store/email\\?items%5B0%5D%5Bid%5D=([A-F0-9]{32}&cli=adobe_com&ctx=fp&co=${country}&lang=${language})`, 'i');
 let CCD;
 let webUtil;
 let consoleErrors;
+let masRequestErrors;
 
 const miloLibs = process.env.MILO_LIBS || '';
 
@@ -17,6 +18,12 @@ test.describe('CCD Merchcard feature test suite', () => {
 
     CCD = new MerchCCD(page);
     webUtil = new WebUtil(page);
+
+    // Set up MAS I/O request logging
+    masRequestErrors = [];
+    const masRequestLogger = await setupMasRequestLogger(masRequestErrors);
+    page.on('response', masRequestLogger.responseListener);
+    page.on('requestfailed', masRequestLogger.requestFailedListener);
 
     consoleErrors = [];
     const consoleListener = await setupMasConsoleListener(consoleErrors);
@@ -28,24 +35,43 @@ test.describe('CCD Merchcard feature test suite', () => {
   });
 
   test.afterEach(async ({ page }, testInfo) => {
+    // Attach console errors to test failure
     const consoleErrorText = attachMasConsoleErrorsToFailure(testInfo, consoleErrors);
+    
+    // Attach MAS request errors to test failure
+    const requestErrorText = attachMasRequestErrorsToFailure(testInfo, masRequestErrors);
 
-    if (testInfo.status === 'failed' && consoleErrors.length > 0) {
-      console.log('\n=== MAS CONSOLE ERRORS DURING TEST FAILURE ===');
-      consoleErrors.forEach((error, index) => {
-        console.log(`${index + 1}. ${error}`);
-      });
-      console.log('==========================================\n');
+    if (testInfo.status === 'failed') {
+      let enhancedMessage = '';
+      
+      if (consoleErrors.length > 0) {
+        console.log('\n=== MAS CONSOLE ERRORS DURING TEST FAILURE ===');
+        consoleErrors.forEach((error, index) => {
+          console.log(`${index + 1}. ${error}`);
+        });
+        console.log('==========================================\n');
+        enhancedMessage += consoleErrorText;
+      }
+      
+      if (masRequestErrors.length > 0) {
+        console.log('\n=== MAS REQUEST ERRORS DURING TEST FAILURE ===');
+        masRequestErrors.forEach((error, index) => {
+          console.log(`${index + 1}. ${error}`);
+        });
+        console.log('==========================================\n');
+        enhancedMessage += requestErrorText;
+      }
 
-      // Include console errors in the stack trace
-      const originalError = testInfo.error;
-      if (originalError) {
-        const enhancedMessage = `${originalError.message}${consoleErrorText}`;
-        originalError.message = enhancedMessage;
+      // Include both console and request errors in the stack trace
+      if (enhancedMessage && testInfo.error) {
+        testInfo.error.message = `${testInfo.error.message}${enhancedMessage}`;
       }
     }
 
+    // Clean up listeners
     page.removeAllListeners('console');
+    page.removeAllListeners('response');
+    page.removeAllListeners('requestfailed');
   });
 
   // *** SUGGESTED CARDS: ***

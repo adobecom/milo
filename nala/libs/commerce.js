@@ -21,7 +21,6 @@ async function setupMasConsoleListener(consoleErrors) {
         formattedError = errorText;
       }
 
-      // Create a unique key based on error pattern, not specific IDs/codes
       let uniqueKey;
 
       if (errorText.includes('blocked by CORS policy')) {
@@ -42,7 +41,6 @@ async function setupMasConsoleListener(consoleErrors) {
         uniqueKey = errorCode || errorText.split('\n')[0].substring(0, 100);
       }
 
-      // Only add if we haven't seen this type of error before
       if (!seenErrors.has(uniqueKey)) {
         seenErrors.add(uniqueKey);
         consoleErrors.push(formattedError);
@@ -54,7 +52,7 @@ async function setupMasConsoleListener(consoleErrors) {
 function attachMasConsoleErrorsToFailure(testInfo, consoleErrors) {
   if (testInfo.status === 'failed' && consoleErrors.length > 0) {
     const errorSummary = consoleErrors.map((error, index) => `${index + 1}. ${error}`).join('\n');
-    const consoleErrorAttachment = `\n\n=== MAS CONSOLE ERRORS DURING TEST FAILURE ===\n${errorSummary}\n==========================================`;
+    const consoleErrorAttachment = `\n=== MAS CONSOLE ERRORS DURING TEST FAILURE ===\n${errorSummary}\n==========================================\n`;
 
     // Attach as additional context to the test failure
     testInfo.attach('Console Errors', {
@@ -67,4 +65,93 @@ function attachMasConsoleErrorsToFailure(testInfo, consoleErrors) {
   return '';
 }
 
-module.exports = { setupMasConsoleListener, attachMasConsoleErrorsToFailure, PRICE_PATTERN };
+function attachMasRequestErrorsToFailure(testInfo, masRequestErrors) {
+  if (testInfo.status === 'failed' && masRequestErrors.length > 0) {
+    const errorSummary = masRequestErrors.map((error, index) => `${index + 1}. ${error}`).join('\n');
+    const requestErrorAttachment = `\n=== MAS REQUEST ERRORS DURING TEST FAILURE ===\n${errorSummary}\n==========================================\n`;
+
+    // Attach as additional context to the test failure
+    testInfo.attach('MAS Request Errors', {
+      body: requestErrorAttachment,
+      contentType: 'text/plain',
+    });
+
+    return requestErrorAttachment;
+  }
+  return '';
+}
+
+
+async function setupMasRequestLogger(masRequestErrors) {
+  const seenRequests = new Set();
+  
+  return {
+    responseListener: async (response) => {
+      const url = response.url();
+      const status = response.status();
+      
+      if (url.includes('/mas/io/') && status >= 400) {
+        let uniqueKey;
+        if (status === 403) {
+          uniqueKey = 'MAS_IO_403_FORBIDDEN';
+        } else if (status === 404) {
+          uniqueKey = 'MAS_IO_404_NOT_FOUND';
+        } else if (status === 429) {
+          uniqueKey = 'MAS_IO_429_TOO_MANY_REQUESTS';
+        } else if (status >= 500) {
+          uniqueKey = 'MAS_IO_5XX_SERVER_ERROR';
+        } else {
+          uniqueKey = `MAS_IO_${status}_ERROR`;
+        }
+        
+        if (!seenRequests.has(uniqueKey)) {
+          seenRequests.add(uniqueKey);
+          
+          const headers = response.headers();
+          const corsHeaders = {
+            'access-control-allow-origin': headers['access-control-allow-origin'] || 'MISSING',
+            'access-control-allow-methods': headers['access-control-allow-methods'] || 'MISSING',
+            'access-control-allow-headers': headers['access-control-allow-headers'] || 'MISSING',
+            'access-control-allow-credentials': headers['access-control-allow-credentials'] || 'MISSING'
+          };
+          const akamaiGrn = headers['akamai-grn-www.adobe.com'] || 'MISSING';
+          
+          const errorDetails = `[${status}] Failed MAS I/O Request: ${url} | CORS: ${JSON.stringify(corsHeaders)} | Akamai GRN: ${akamaiGrn}`;
+          masRequestErrors.push(errorDetails);
+          
+          console.log(`\n🚫 Failed MAS I/O Request:`);
+          console.log(`URL: ${url}`);
+          console.log(`Status: ${status}`);
+          console.log(`CORS Headers:`, JSON.stringify(corsHeaders, null, 2));
+          console.log(`Akamai GRN: ${akamaiGrn}`);
+          console.log(`─────────────────────────────────────\n`);
+        }
+      }
+    },
+    
+    requestFailedListener: async (request) => {
+      const url = request.url();
+      
+      if (url.includes('/mas/io/')) {
+        const failure = request.failure();
+        const uniqueKey = `MAS_IO_REQUEST_FAILED_${failure ? failure.errorText : 'UNKNOWN'}`;
+        
+        if (!seenRequests.has(uniqueKey)) {
+          seenRequests.add(uniqueKey);
+          
+          const errorDetails = `[FAILED] MAS I/O Request Failed: ${url} | Method: ${request.method()} | Failure: ${failure ? failure.errorText : 'Unknown error'}`;
+          masRequestErrors.push(errorDetails);
+          
+          console.log(`\n❌ MAS I/O Request Failed:`);
+          console.log(`URL: ${url}`);
+          console.log(`Method: ${request.method()}`);
+          console.log(`Failure: ${failure ? failure.errorText : 'Unknown error'}`);
+          console.log(`❌ NO RESPONSE RECEIVED (CORS blocked by browser)`);
+          console.log(`─────────────────────────────────────\n`);
+        }
+      }
+    }
+  };
+}
+
+module.exports = { setupMasConsoleListener, attachMasConsoleErrorsToFailure, setupMasRequestLogger, attachMasRequestErrorsToFailure, PRICE_PATTERN };
