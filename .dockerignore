@@ -1,0 +1,26 @@
+# Ignore test results
+test-results/
+test-html-results/
+playwright-report/
+nala-results.json
+
+# Ignore git files
+.git/
+.github/
+
+# Ignore other build artifacts
+.cache/
+coverage/
+dist/
+build/
+
+# Ignore documentation
+*.md
+!README.md
+
+# Ignore temporary files
+*.log
+*.tmp
+.DS_Store
+.env.local
+.env.*.local

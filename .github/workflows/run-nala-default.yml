@@ -31,15 +31,6 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
 
-      - name: Set up Node.js (for cache warming)
-        uses: actions/setup-node@cdca7365b2dadb8aad0a33bc7601856ffabcc48e
-        with:
-          node-version: '20.x'
-          cache: 'npm'
-
-      - name: Warm up npm cache
-        run: npm ci --prefer-offline --no-audit
-
       - name: Calculate optimal shard count
         id: calculate
         run: |
@@ -78,14 +69,54 @@ jobs:
           echo "- **Shards to use:** $OPTIMAL_SHARDS" >> $GITHUB_STEP_SUMMARY
           echo "- **Tests per shard:** ~$((TEST_COUNT / OPTIMAL_SHARDS))" >> $GITHUB_STEP_SUMMARY
 
-  # Parallel test execution across multiple runners
+  # Build Docker image with dependency caching
+  build-test-image:
+    name: Build Test Image
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Cache Docker layers
+        uses: actions/cache@v3
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ hashFiles('package-lock.json', 'package.json') }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-
+
+      - name: Build and cache Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile.nala
+          tags: milo-nala-tests:latest
+          outputs: type=docker,dest=/tmp/milo-nala-tests.tar
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
+          build-args: |
+            PLAYWRIGHT_VERSION=1.54.0
+
+      - name: Move cache
+        run: |
+          rm -rf /tmp/.buildx-cache
+          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
+
+      - name: Upload Docker image
+        uses: actions/upload-artifact@v4
+        with:
+          name: docker-image
+          path: /tmp/milo-nala-tests.tar
+          retention-days: 1
+
+  # Parallel test execution using the cached image
   run-nala-tests:
     name: E2E Tests (Shard ${{ matrix.shard }}/${{ needs.calculate-shards.outputs.shard-count }})
-    needs: calculate-shards
+    needs: [calculate-shards, build-test-image]
     runs-on: ubuntu-latest
-    container:
-      image: mcr.microsoft.com/playwright:v1.54.0-noble
-      options: --ipc=host
     strategy:
       fail-fast: false  # Continue running other shards even if one fails
       matrix: ${{ fromJson(needs.calculate-shards.outputs.matrix) }}
@@ -95,29 +126,41 @@ jobs:
         with:
           fetch-depth: 2
 
-      - name: Install dependencies
-        run: npm ci
+      - name: Download Docker image
+        uses: actions/download-artifact@v4
+        with:
+          name: docker-image
+          path: /tmp
 
-      - name: Set execute permission for pr.run.sh
-        run: chmod +x ./nala/utils/pr.run.sh
+      - name: Load Docker image
+        run: |
+          docker load --input /tmp/milo-nala-tests.tar
+          docker image ls
 
       - name: Run Nala Tests (Shard ${{ matrix.shard }}/${{ needs.calculate-shards.outputs.shard-count }})
-        run: ./nala/utils/pr.run.sh
-        env:
-          labels: ${{ join(github.event.pull_request.labels.*.name, ' ') }}
-          branch: ${{ github.event.pull_request.head.ref }}
-          repoName: ${{ github.repository }}
-          prUrl: ${{ github.event.pull_request.head.repo.html_url }}
-          prOrg: ${{ github.event.pull_request.head.repo.owner.login }}
-          prRepo: ${{ github.event.pull_request.head.repo.name }}
-          prBranch: ${{ github.event.pull_request.head.ref }}
-          prBaseBranch: ${{ github.event.pull_request.base.ref }}
-          GITHUB_ACTION_PATH: ${{ github.workspace }}
-          IMS_EMAIL: ${{ secrets.IMS_EMAIL }}
-          IMS_PASS: ${{ secrets.IMS_PASS }}
-          # Sharding configuration
-          SHARD_INDEX: ${{ matrix.shard }}
-          SHARD_TOTAL: ${{ needs.calculate-shards.outputs.shard-count }}
+        run: |
+          docker run --rm \
+            --ipc=host \
+            -v ${{ github.workspace }}/nala:/workspace/nala:ro \
+            -v ${{ github.workspace }}/test-results:/workspace/test-results \
+            -v ${{ github.workspace }}/test-html-results:/workspace/test-html-results \
+            -v ${{ github.workspace }}/playwright-report:/workspace/playwright-report \
+            -e GITHUB_ACTION_PATH=/workspace \
+            -e GITHUB_REF=${{ github.ref }} \
+            -e GITHUB_HEAD_REF=${{ github.event.pull_request.head.ref }} \
+            -e labels="${{ join(github.event.pull_request.labels.*.name, ' ') }}" \
+            -e branch="${{ github.event.pull_request.head.ref }}" \
+            -e repoName="${{ github.repository }}" \
+            -e prUrl="${{ github.event.pull_request.head.repo.html_url }}" \
+            -e prOrg="${{ github.event.pull_request.head.repo.owner.login }}" \
+            -e prRepo="${{ github.event.pull_request.head.repo.name }}" \
+            -e prBranch="${{ github.event.pull_request.head.ref }}" \
+            -e prBaseBranch="${{ github.event.pull_request.base.ref }}" \
+            -e IMS_EMAIL="${{ secrets.IMS_EMAIL }}" \
+            -e IMS_PASS="${{ secrets.IMS_PASS }}" \
+            -e SHARD_INDEX="${{ matrix.shard }}" \
+            -e SHARD_TOTAL="${{ needs.calculate-shards.outputs.shard-count }}" \
+            milo-nala-tests:latest
 
       - name: Upload test results
         if: always()
