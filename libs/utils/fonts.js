@@ -19,7 +19,7 @@ export default function loadFonts(locale, loadStyle) {
   if (tkSplit[1] === 'css') {
     return new Promise((resolve) => {
       const isSafari = navigator.userAgent.includes('Safari') && !navigator.userAgent.includes('Chrome');
-      const PHONE_SIZE = window.screen.width < 550 || window.screen.height < 550;
+      const PHONE_SIZE = window.screen.width < 600 || window.screen.height < 600;
       const kitId = isSafari && locale.tk === 'hah7vzn.css' && PHONE_SIZE ? 'vti0xwb.css' : locale.tk;
       loadStyle(`https://use.typekit.net/${kitId}`, resolve);
     });
