@@ -92,16 +92,16 @@ echo "Run Command : npx playwright test ${TAGS} ${EXCLUDE_TAGS} ${REPORTER}"
 echo -e "\n"
 echo "*******************************"
 
-# Navigate to the GitHub Action path (dependencies already installed in workflow)
+# Navigate to the GitHub Action path (dependencies already installed)
 cd "$GITHUB_ACTION_PATH" || exit
 
-# Skip dependency installation if running in GitHub Actions (handled by workflow)
-if [[ -z "$GITHUB_ACTIONS" ]]; then
+# Skip dependency installation if running in GitHub Actions or Docker container
+if [[ -z "$GITHUB_ACTIONS" ]] && [[ -z "$CONTAINER" ]]; then
   echo "Installing dependencies locally..."
   npm ci
   npx playwright install --with-deps
 else
-  echo "Dependencies already installed by workflow"
+  echo "Dependencies already installed (GitHub Actions or Docker container)"
 fi
 
 # Run Playwright tests on the specific projects using root-level playwright.config.js
