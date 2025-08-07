@@ -38,33 +38,20 @@ jobs:
 
       - name: Download previous test timing data
         run: |
-          echo "Attempting to download test timing data..."
+          # Try to download timing data from previous workflow runs
+          gh run download --repo ${{ github.repository }} --name test-timings --dir ./ || true
           
-          # Try to download from the most recent completed workflow run
-          RECENT_RUNS=$(gh run list --repo ${{ github.repository }} --workflow "Run Nala Tests" --status completed --limit 10 --json databaseId,conclusion)
-          
-          for run in $(echo "$RECENT_RUNS" | jq -r '.[] | .databaseId'); do
-            echo "Trying run $run..."
-            if gh run download $run --repo ${{ github.repository }} --name test-timings --dir ./ 2>/dev/null; then
-              echo "✓ Successfully downloaded timing data from run $run"
-              break
+          # Also try to get from a recent successful run on main branch
+          if [ ! -f test-timings.json ]; then
+            echo "Attempting to download timing data from recent main branch run..."
+            RECENT_RUN=$(gh run list --repo ${{ github.repository }} --branch main --workflow "Run Nala Tests" --status success --limit 1 --json databaseId --jq '.[0].databaseId' || true)
+            if [ ! -z "$RECENT_RUN" ]; then
+              gh run download $RECENT_RUN --repo ${{ github.repository }} --name test-timings --dir ./ || true
             fi
-          done
+          fi
           
-          # Validate the downloaded file
           if [ -f test-timings.json ]; then
-            FILE_SIZE=$(stat -f%z test-timings.json 2>/dev/null || stat -c%s test-timings.json)
-            echo "Downloaded test-timings.json (size: $FILE_SIZE bytes)"
-            
-            # Check if it's not just the empty bootstrap file
-            if [ "$FILE_SIZE" -lt 300 ]; then
-              echo "Warning: Timing file seems to be empty bootstrap file"
-              # Show content for debugging
-              echo "Content:"
-              cat test-timings.json
-            else
-              echo "✓ Successfully loaded previous timing data"
-            fi
+            echo "Successfully loaded previous timing data"
           else
             echo "No previous timing data found, will use count-based distribution"
           fi
