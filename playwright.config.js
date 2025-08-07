@@ -6,6 +6,13 @@ const USER_AGENT_DESKTOP = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKi
 const USER_AGENT_MOBILE_CHROME = 'Mozilla/5.0 (Linux; Android 11; Pixel 5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.114 Mobile Safari/537.36 NALA-Acom';
 const USER_AGENT_MOBILE_SAFARI = 'Mozilla/5.0 (iPhone; CPU iPhone OS 14_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1.1 Mobile/15E148 Safari/604.1 NALA-Acom';
 
+// Debug: Check if SHARD_INDEX is available
+if (process.env.SHARD_INDEX) {
+  console.log(`[Playwright Config] SHARD_INDEX detected: ${process.env.SHARD_INDEX}`);
+} else {
+  console.log('[Playwright Config] No SHARD_INDEX environment variable found');
+}
+
 /**
  * @see https://playwright.dev/docs/test-configuration
  * @type {import('@playwright/test').PlaywrightTestConfig}
@@ -34,12 +41,18 @@ const config = {
   workers: process.env.CI ? 7 : 3,
   /* Reporter to use. */
   reporter: process.env.CI
-    ? [
-      ['github'], 
-      ['list'], 
-      ['json', { outputFile: process.env.SHARD_INDEX ? `./test-results/test-results-shard-${process.env.SHARD_INDEX}.json` : './test-results/test-results.json' }],
-      ['./nala/utils/base-reporter.js'],
-    ]
+    ? (() => {
+        const jsonOutputFile = process.env.SHARD_INDEX 
+          ? `./test-results/test-results-shard-${process.env.SHARD_INDEX}.json` 
+          : './test-results/test-results.json';
+        console.log(`[Playwright Config] JSON reporter output file: ${jsonOutputFile}`);
+        return [
+          ['github'], 
+          ['list'], 
+          ['json', { outputFile: jsonOutputFile }],
+          ['./nala/utils/base-reporter.js'],
+        ];
+      })()
     : [
       ['html', { outputFolder: 'test-html-results' }],
       ['list'],
