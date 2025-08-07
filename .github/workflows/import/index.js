@@ -166,9 +166,9 @@ function safeguardMetadataImages(dom) {
 const map = {}
 async function importUrl(aemPath, importedMedia) {
   const url = new URL(importFrom + aemPath.replace('.md', ''));
-    // AVOID Re-fetching the same resource (e.g. nested circular fragments)
-    if(map[importFrom + aemPath.replace('.md', '')]) return
-    map[importFrom + aemPath.replace('.md', '')] = true
+  // AVOID Re-fetching the same resource (e.g. nested circular fragments)
+  if(map[importFrom + aemPath.replace('.md', '')]) return
+  map[importFrom + aemPath.replace('.md', '')] = true
   // Exclude auto publishing files from Sharepoint
   if (excludedFiles.some((excludedFile) => url.pathname === excludedFile)) {
     if (ROLLING_IMPORT_ENABLE_DEBUG_LOGS) console.log(`Stopped processing ${url.pathname}`);
@@ -242,26 +242,26 @@ async function importUrl(aemPath, importedMedia) {
       url.status = 'error';
       if (ROLLING_IMPORT_ENABLE_DEBUG_LOGS)
         console.log(
-      `Failed Status ${resp.status} /${toOrg}/${toRepo}/main${path}. Error: ${resp.status} ${resp.statusText}`
-    );
-    throw new Error(
-      `Failed Status ${resp.status} /${toOrg}/${toRepo}/main${path}. Error: ${resp.status} ${resp.statusText}`
-    );
-  }
-  let content = isExt ? await resp.blob() : await resp.text();
-  if (!isExt) {
-    const dom = mdToDocDom(content);
-    // safeguardMetadataImages(dom);
-    const aemHtml = docDomToAemHtml(dom);
-    // importMedia is more of a backup, media should always have their own entries anyway
-    await importMedia(url, aemHtml, importedMedia);
-    let html = replaceHtml(aemHtml, url.fromOrg, url.fromRepo);
-    content = new Blob([html], { type: 'text/html' });
-  }
-  url.status = await saveAllToDa(url, content);
-  if (ROLLING_IMPORT_ENABLE_DEBUG_LOGS) console.log('imported resource to DA ' + url.daHref);
-  await previewOrPublish({ path: pathname, action: 'preview' });
-  await previewOrPublish({ path: pathname, action: 'live' });
+          `Failed Status ${resp.status} /${toOrg}/${toRepo}/main${path}. Error: ${resp.status} ${resp.statusText}`
+        );
+      throw new Error(
+        `Failed Status ${resp.status} /${toOrg}/${toRepo}/main${path}. Error: ${resp.status} ${resp.statusText}`
+      );
+    }
+    let content = isExt ? await resp.blob() : await resp.text();
+    if (!isExt) {
+      const dom = mdToDocDom(content);
+      // safeguardMetadataImages(dom);
+      const aemHtml = docDomToAemHtml(dom);
+      // importMedia is more of a backup, media should always have their own entries anyway
+      await importMedia(url, aemHtml, importedMedia);
+      let html = replaceHtml(aemHtml, url.fromOrg, url.fromRepo);
+      content = new Blob([html], { type: 'text/html' });
+    }
+    url.status = await saveAllToDa(url, content);
+    if (ROLLING_IMPORT_ENABLE_DEBUG_LOGS) console.log('imported resource to DA ' + url.daHref);
+    await previewOrPublish({ path: pathname, action: 'preview' });
+    await previewOrPublish({ path: pathname, action: 'live' });
   } catch (e) {
     if (ROLLING_IMPORT_ENABLE_DEBUG_LOGS) console.log(`Failed to import resource to DA ${toOrg}/${toRepo} | destination: ${url.pathname} | error: ${e.message}`);
     throw e;
