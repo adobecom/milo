@@ -20,10 +20,11 @@ let masRequestErrors;
 
 const miloLibs = process.env.MILO_LIBS || '';
 
+test.skip(({ browserName }) => browserName !== 'chromium', 'Not supported to run on multiple browsers.');
+
 test.describe('CCD Merchcard feature test suite', () => {
   // Worker-scoped setup - load page once per worker
-  test.beforeAll(async ({ browser, baseURL, browserName }) => {
-    test.skip(browserName !== 'chromium', 'Not supported to run on multiple browsers.');
+  test.beforeAll(async ({ browser, baseURL }) => {
     const lightPageUrl = `${baseURL}${CCD_BASE_PATH}${miloLibs}`;
     const darkPageUrl = `${baseURL}${CCD_BASE_PATH}?theme=darkest${miloLibs}`;
     const frLightPageUrl = `${baseURL}${CCD_BASE_PATH}?locale=fr_FR${miloLibs}`;
