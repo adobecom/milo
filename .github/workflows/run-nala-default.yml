@@ -122,14 +122,23 @@ jobs:
           MATRIX="{\"shard\":[$SHARDS_JSON]}"
           echo "Debug: Generated matrix: $MATRIX"
           printf "matrix=%s\n" "$MATRIX" >> $GITHUB_OUTPUT
+          
+          # Debug: Check if shard-assignments.json exists
+          if [ -f shard-assignments.json ]; then
+            echo "✓ shard-assignments.json created successfully"
+            echo "File size: $(stat -f%z shard-assignments.json 2>/dev/null || stat -c%s shard-assignments.json) bytes"
+          else
+            echo "✗ shard-assignments.json not found"
+          fi
 
       - name: Upload shard assignments
-        if: hashFiles('shard-assignments.json') != ''
+        if: success() && hashFiles('shard-assignments.json') != ''
         uses: actions/upload-artifact@v4
         with:
           name: shard-assignments
           path: shard-assignments.json
           retention-days: 1
+          if-no-files-found: warn
 
   # Purge branch before running tests
   purge-branch:
@@ -294,21 +303,37 @@ jobs:
           docker image ls
 
       - name: Download shard assignments
-        uses: actions/download-artifact@v4
-        with:
-          name: shard-assignments
-          path: ./
-        continue-on-error: true
+        id: download-shards
+        run: |
+          # Try to download shard assignments artifact
+          echo "Attempting to download shard-assignments artifact..."
+          
+          # Use gh CLI to download artifact (more reliable than the action)
+          if gh run download ${{ github.run_id }} --repo ${{ github.repository }} --name shard-assignments --dir ./ 2>/dev/null; then
+            echo "✓ Successfully downloaded shard-assignments"
+            echo "outcome=success" >> $GITHUB_OUTPUT
+          else
+            echo "✗ No shard-assignments artifact found (using standard sharding)"
+            echo "outcome=failure" >> $GITHUB_OUTPUT
+          fi
+        env:
+          GH_TOKEN: ${{ github.token }}
 
       - name: Set test files for shard
         run: |
-          if [ -f shard-assignments.json ]; then
+          # Check if we successfully downloaded shard assignments
+          if [ "${{ steps.download-shards.outcome }}" == "success" ] && [ -f shard-assignments.json ]; then
             # Get test files for this shard
-            TEST_FILES=$(jq -r '.shards."${{ matrix.shard }}"[]' shard-assignments.json | tr '\n' ' ')
-            echo "TEST_FILES=$TEST_FILES" >> $GITHUB_ENV
-            echo "Running specific test files for shard ${{ matrix.shard }}: $TEST_FILES"
+            TEST_FILES=$(jq -r '.shards."${{ matrix.shard }}"[]' shard-assignments.json 2>/dev/null | tr '\n' ' ')
+            if [ ! -z "$TEST_FILES" ] && [ "$TEST_FILES" != "null" ]; then
+              echo "TEST_FILES=$TEST_FILES" >> $GITHUB_ENV
+              echo "Running specific test files for shard ${{ matrix.shard }}: $TEST_FILES"
+            else
+              echo "No test files found for shard ${{ matrix.shard }}, will use standard sharding"
+            fi
           else
-            echo "No shard assignments found, will use standard sharding"
+            echo "No shard assignments available, will use standard sharding"
+            echo "Download outcome: ${{ steps.download-shards.outcome }}"
           fi
 
       - name: Run Nala Tests (Shard ${{ matrix.shard }}/${{ needs.calculate-shards.outputs.shard-count }})
@@ -366,15 +391,18 @@ jobs:
         with:
           node-version: '20.x'
 
+      - name: Verify merge scripts exist
+        run: |
+          echo "Current directory: $(pwd)"
+          echo "Checking for merge scripts:"
+          ls -la nala/utils/*.js | grep -E "(merge-json|analyze-test|calculate-weighted)" || echo "Scripts not found!"
+
       - name: Download all test results
         uses: actions/download-artifact@v4
         with:
           path: all-shards
           pattern: test-results-shard-*
           merge-multiple: true
-
-      - name: Install merge tools
-        run: npm install -g playwright-merge-html-reports
 
       - name: Merge HTML reports
         run: |
@@ -429,9 +457,24 @@ jobs:
           # Find all JSON test result files
           JSON_FILES=$(find all-shards -name "test-results.json" -type f 2>/dev/null | tr '\n' ' ')
           
+          # Debug: Check what files we found
+          echo "Found $(echo $JSON_FILES | wc -w) JSON test result files"
+          
           if [ ! -z "$JSON_FILES" ]; then
+            # List files for debugging
+            echo "JSON files found:"
+            for f in $JSON_FILES; do
+              echo "  - $f (size: $(stat -f%z "$f" 2>/dev/null || stat -c%s "$f" 2>/dev/null || echo "unknown") bytes)"
+            done
+            
             # Merge JSON reports
-            node nala/utils/merge-json-reports.js $JSON_FILES > merged-results.json
+            echo "Merging JSON reports..."
+            if node nala/utils/merge-json-reports.js $JSON_FILES > merged-results.json; then
+              echo "✓ Successfully merged reports"
+              echo "Merged report size: $(stat -f%z merged-results.json 2>/dev/null || stat -c%s merged-results.json) bytes"
+            else
+              echo "✗ Failed to merge reports"
+            fi
             
             # Try to get previous timing data from recent workflow runs
             echo "Attempting to download previous timing data..."
@@ -448,29 +491,72 @@ jobs:
               mv test-timings.json previous-timings.json
             fi
             
-            # Analyze timings
-            if [ -f previous-timings.json ]; then
-              echo "Merging with previous timing data..."
-              node nala/utils/analyze-test-timings.js \
-                --input merged-results.json \
-                --previous previous-timings.json \
-                --output test-timings.json
+            # Analyze timings - always try to create something
+            if [ -f merged-results.json ]; then
+              # Debug: Show merged results structure
+              echo "Merged results preview:"
+              head -c 500 merged-results.json || true
+              echo ""
+              
+              if [ -f previous-timings.json ]; then
+                echo "Merging with previous timing data..."
+                if ! node nala/utils/analyze-test-timings.js \
+                  --input merged-results.json \
+                  --previous previous-timings.json \
+                  --output test-timings.json; then
+                  echo "ERROR: Failed to analyze with previous data"
+                  # Try without previous data as fallback
+                  echo "Retrying without previous data..."
+                  node nala/utils/analyze-test-timings.js \
+                    --input merged-results.json \
+                    --output test-timings.json || echo "ERROR: Failed again"
+                fi
+              else
+                echo "Creating new timing data..."
+                if ! node nala/utils/analyze-test-timings.js \
+                  --input merged-results.json \
+                  --output test-timings.json; then
+                  echo "ERROR: Failed to create new timing data"
+                  # Show error details
+                  echo "Node.js version: $(node --version)"
+                  echo "Current directory: $(pwd)"
+                  echo "Files in directory: $(ls -la | head -10)"
+                fi
+              fi
             else
-              echo "Creating new timing data..."
-              node nala/utils/analyze-test-timings.js \
-                --input merged-results.json \
-                --output test-timings.json
+              echo "ERROR: merged-results.json not found!"
             fi
             
             # Add timing summary to workflow summary if file was created
             if [ -f test-timings.json ]; then
-              node nala/utils/analyze-test-timings.js --summary test-timings.json >> $GITHUB_STEP_SUMMARY
+              echo "✓ Timing data generated successfully"
+              node nala/utils/analyze-test-timings.js --summary test-timings.json >> $GITHUB_STEP_SUMMARY || true
             else
               echo "⚠️ No timing data generated" >> $GITHUB_STEP_SUMMARY
+              
+              # Create a minimal timing file to bootstrap the process
+              echo "Creating minimal timing data to bootstrap..."
+              echo '{
+                "timings": {},
+                "lastUpdated": "'$(date -u +"%Y-%m-%dT%H:%M:%SZ")'",
+                "totalFiles": 0,
+                "totalDuration": 0,
+                "newFiles": []
+              }' > test-timings.json
             fi
           else
             echo "No JSON test results found for timing analysis" >> $GITHUB_STEP_SUMMARY
             echo "This is expected if all test shards failed" >> $GITHUB_STEP_SUMMARY
+            
+            # Create empty timing file to ensure we have something for next run
+            echo "Creating empty timing data file..."
+            echo '{
+              "timings": {},
+              "lastUpdated": "'$(date -u +"%Y-%m-%dT%H:%M:%S.%3NZ")'",
+              "totalFiles": 0,
+              "totalDuration": 0,
+              "newFiles": []
+            }' > test-timings.json
           fi
         env:
           GH_TOKEN: ${{ github.token }}
