@@ -22,7 +22,8 @@ const miloLibs = process.env.MILO_LIBS || '';
 
 test.describe('CCD Merchcard feature test suite', () => {
   // Worker-scoped setup - load page once per worker
-  test.beforeAll(async ({ browser, baseURL }) => {
+  test.beforeAll(async ({ browser, baseURL, browserName }) => {
+    test.skip(browserName !== 'chromium', 'Not supported to run on multiple browsers.');
     const lightPageUrl = `${baseURL}${CCD_BASE_PATH}${miloLibs}`;
     const darkPageUrl = `${baseURL}${CCD_BASE_PATH}?theme=darkest${miloLibs}`;
     const frLightPageUrl = `${baseURL}${CCD_BASE_PATH}?locale=fr_FR${miloLibs}`;
@@ -119,10 +120,6 @@ test.describe('CCD Merchcard feature test suite', () => {
       await workerContext.close();
       console.info('[Worker Cleanup]: Worker context closed');
     }
-  });
-
-  test.beforeEach(async ({ browserName }) => {
-    test.skip(browserName !== 'chromium', 'Not supported to run on multiple browsers.');
   });
 
   test.afterEach(async ({}, testInfo) => { // eslint-disable-line no-empty-pattern
