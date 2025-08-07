@@ -93,6 +93,13 @@ fi
 # Support sharding if SHARD_INDEX and SHARD_TOTAL are provided
 echo "*** Running tests on specific projects ***"
 
+# Debug environment variables
+echo "SHARD_INDEX environment variable: ${SHARD_INDEX}"
+echo "SHARD_TOTAL environment variable: ${SHARD_TOTAL}"
+
+# Ensure output directories exist
+mkdir -p test-results test-html-results
+
 # Build sharding parameters if provided
 SHARD_PARAMS=""
 if [[ ! -z "$SHARD_INDEX" ]] && [[ ! -z "$SHARD_TOTAL" ]]; then
@@ -103,10 +110,35 @@ fi
 # Check if specific test files are provided
 if [[ ! -z "$TEST_FILES" ]]; then
   echo "Running specific test files: $TEST_FILES"
-  PLAYWRIGHT_HTML_OPEN=never npx playwright test $TEST_FILES --config=./playwright.config.js ${TAGS} ${EXCLUDE_TAGS} --project=milo-live-chromium --project=milo-live-firefox --project=milo-live-webkit ${REPORTER} || EXIT_STATUS=$?
+  echo "Current directory: $(pwd)"
+  echo "Checking if test file exists: $TEST_FILES"
+  ls -la $TEST_FILES || echo "Test file not found"
+  
+  # Remove 'nala/' prefix if present since testDir is already './nala'
+  TEST_FILE_PATH="${TEST_FILES#nala/}"
+  echo "Test file path for Playwright: $TEST_FILE_PATH"
+  
+  FORCE_COLOR=0 PLAYWRIGHT_HTML_OPEN=never npx playwright test $TEST_FILE_PATH --config=./playwright.config.js ${TAGS} ${EXCLUDE_TAGS} --project=milo-live-chromium --project=milo-live-firefox --project=milo-live-webkit ${REPORTER} || EXIT_STATUS=$?
 else
   # Use standard sharding
-  PLAYWRIGHT_HTML_OPEN=never npx playwright test --config=./playwright.config.js ${TAGS} ${EXCLUDE_TAGS} --project=milo-live-chromium --project=milo-live-firefox --project=milo-live-webkit ${SHARD_PARAMS} ${REPORTER} || EXIT_STATUS=$?
+  FORCE_COLOR=0 PLAYWRIGHT_HTML_OPEN=never npx playwright test --config=./playwright.config.js ${TAGS} ${EXCLUDE_TAGS} --project=milo-live-chromium --project=milo-live-firefox --project=milo-live-webkit ${SHARD_PARAMS} ${REPORTER} || EXIT_STATUS=$?
+fi
+
+# Wait a moment for reporters to finish writing
+sleep 3
+
+# Debug: Check what files were created
+echo "Contents of test-results directory after test run:"
+ls -la test-results/ || echo "test-results directory not found"
+
+# Check if JSON report was created
+if [[ ! -z "$SHARD_INDEX" ]]; then
+  JSON_FILE="test-results/test-results-shard-${SHARD_INDEX}.json"
+  if [ ! -f "$JSON_FILE" ]; then
+    echo "WARNING: Expected JSON file $JSON_FILE was not created by Playwright"
+  else
+    echo "✓ JSON report successfully created: $JSON_FILE"
+  fi
 fi
 
 # Check if tests passed or failed

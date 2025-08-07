@@ -13,6 +13,7 @@ TAGS=""
 REPORTER=""
 SHARD_INDEX=""
 SHARD_TOTAL=""
+TEST_FILE=""
 FEATURE_BRANCH="${FEATURE_BRANCH:-main}"
 PR_BRANCH_LIVE_URL_GH="${PR_BRANCH_LIVE_URL_GH:-https://milo.adobe.com}"
 REBUILD=false
@@ -48,6 +49,11 @@ while [[ $# -gt 0 ]]; do
       shift
       shift
       ;;
+    --file|-f)
+      TEST_FILE="$2"
+      shift
+      shift
+      ;;
     --rebuild)
       REBUILD=true
       shift
@@ -57,6 +63,7 @@ while [[ $# -gt 0 ]]; do
       echo ""
       echo "Options:"
       echo "  --tags, -t <tags>        Test tags to run (e.g., '@smoke' or '@regression')"
+      echo "  --file, -f <path>        Specific test file to run (e.g., 'fail.test.js')"
       echo "  --reporter, -r <name>    Reporter to use (default: html,list)"
       echo "  --shard <index/total>    Run specific shard (e.g., '1/4')"
       echo "  --branch, -b <name>      Feature branch name (default: main)"
@@ -70,6 +77,9 @@ while [[ $# -gt 0 ]]; do
       echo ""
       echo "  # Run tests with specific tag"
       echo "  ./run-nala-docker.sh --tags '@smoke'"
+      echo ""
+      echo "  # Run specific test file"
+      echo "  ./run-nala-docker.sh --file fail.test.js"
       echo ""
       echo "  # Force rebuild (when dependencies change)"
       echo "  ./run-nala-docker.sh --rebuild"
@@ -118,6 +128,12 @@ ENV_VARS="$ENV_VARS -e PR_BRANCH_LIVE_URL_GH=${PR_BRANCH_LIVE_URL_GH}"
 ENV_VARS="$ENV_VARS -e labels=${TAGS}"
 ENV_VARS="$ENV_VARS -e reporter=${REPORTER}"
 
+# Add test file if specified
+if [[ ! -z "$TEST_FILE" ]]; then
+  # Pass just the filename without nala/ prefix since playwright.config.js already sets testDir to ./nala
+  ENV_VARS="$ENV_VARS -e TEST_FILES=${TEST_FILE}"
+fi
+
 # Add shard configuration if provided
 if [[ ! -z "$SHARD_INDEX" ]] && [[ ! -z "$SHARD_TOTAL" ]]; then
   ENV_VARS="$ENV_VARS -e SHARD_INDEX=${SHARD_INDEX}"
@@ -143,6 +159,10 @@ fi
 
 if [[ ! -z "$SHARD_INDEX" ]]; then
   echo "   Shard: ${SHARD_INDEX}/${SHARD_TOTAL}"
+fi
+
+if [[ ! -z "$TEST_FILE" ]]; then
+  echo "   Test file: ${TEST_FILE}"
 fi
 
 echo ""

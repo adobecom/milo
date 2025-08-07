@@ -140,7 +140,7 @@ class WeightedShardCalculator {
    */
   calculateOptimalShardCount(testFiles) {
     const totalDuration = testFiles.reduce((sum, f) => sum + f.duration, 0);
-    const targetShardDuration = 120000; // Target 2 minutes per shard
+    const targetShardDuration = 180000; // Target 3 minutes per shard
     
     let optimalShards = Math.ceil(totalDuration / targetShardDuration);
     optimalShards = Math.max(2, Math.min(optimalShards, this.maxShards));

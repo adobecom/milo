@@ -376,23 +376,6 @@ jobs:
             # List what's actually in test-results directory
             echo "Contents of test-results directory:"
             ls -la test-results/ || echo "test-results directory not found"
-            
-            # Create a minimal JSON file for failed tests
-            if [ ! -z "$EXIT_CODE" ] && [ "$EXIT_CODE" -ne 0 ]; then
-              echo "Creating minimal JSON report for failed shard..."
-              echo '{
-                "config": {},
-                "suites": [],
-                "errors": [],
-                "stats": {
-                  "startTime": "'$(date -u +"%Y-%m-%dT%H:%M:%SZ")'",
-                  "duration": 0,
-                  "expected": 0,
-                  "unexpected": 1,
-                  "skipped": 0
-                }
-              }' > "$SHARD_JSON"
-            fi
           fi
           
           # Clean up container
