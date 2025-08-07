@@ -533,7 +533,8 @@ class Gnav {
 
   decorateProductEntryCTA = () => {
     const buttons = this.content.querySelectorAll('.product-entry-cta a');
-    const button = buttons[isSignedOut && buttons.length > 1 ? 1 : 0];
+    const button = buttons[isSignedOut || buttons.length <= 1 ? 0 : 1];
+
     if (!button) return null;
     const cta = decorateCta({ elem: button, type: this.getMainNavItemType(button) });
     cta.closest('.feds-cta-wrapper').classList.add('feds-product-entry-cta');
