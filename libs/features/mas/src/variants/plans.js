@@ -1,11 +1,12 @@
 import { VariantLayout } from './variant-layout';
 import { html, css, nothing } from 'lit';
 import { CSS } from './plans.css.js';
-import { isMobile, matchMobile, isDesktop, matchDesktop } from '../media.js';
+import { matchMobile, isDesktop, matchDesktop } from '../media.js';
 import {
     SELECTOR_MAS_INLINE_PRICE,
     TEMPLATE_PRICE_LEGAL,
 } from '../constants.js';
+import { getOuterHeight } from '../utils.js';
 
 export const PLANS_AEM_FRAGMENT_MAPPING = {
     title: { tag: 'h3', slot: 'heading-xs' },
@@ -156,12 +157,63 @@ export class Plans extends VariantLayout {
         }
     }
 
-    postCardUpdateHook() {
+    async adjustEduLists() {
+        if (this.card.variant !== 'plans-education') return;
+        const existingSpacer = this.card.querySelector('.spacer');
+        if (existingSpacer) return;
+
+        const body = this.card.querySelector('[slot="body-xs"]');
+        if (!body) return;
+        const list = body.querySelector('ul');
+        if (!list) return;
+
+        /* Add spacer */
+        const listHeader = list.previousElementSibling;
+        const spacer = document.createElement('div');
+        spacer.classList.add('spacer');
+        body.insertBefore(spacer, listHeader);
+
+        /* Wait for legal prices to be ready */
+        const legals = this.card.querySelectorAll('[is="inline-price"][data-template="legal"]');
+        const legalSettledPromises = [];
+        for (const legal of legals) {
+            legalSettledPromises.push(legal.onceSettled());
+        }
+        await Promise.all(legalSettledPromises);
+        
+        const intersectionObs = new IntersectionObserver(([entry]) => {
+            if (entry.boundingClientRect.height === 0) return;
+            let offset = 0;
+            const heading = this.card.querySelector('[slot="heading-s"]');
+            if (heading) offset += getOuterHeight(heading);
+            const subtitle = this.card.querySelector('[slot="subtitle"]');
+            if (subtitle) offset += getOuterHeight(subtitle);
+            const price = this.card.querySelector('[slot="heading-m"]');
+            /* If price is slotted, also add 8 pixels for the gap */
+            if (price) offset += 8 + getOuterHeight(price);
+            for (const child of body.childNodes) {
+                if (child.classList.contains('spacer')) break;
+                offset += getOuterHeight(child);
+            }
+
+            const maxOffset = this.card.parentElement.style.getPropertyValue('--merch-card-plans-edu-list-max-offset');
+            if (offset > (parseFloat(maxOffset) || 0)) {
+                this.card.parentElement.style.setProperty('--merch-card-plans-edu-list-max-offset', `${offset}px`);
+            }
+            this.card.style.setProperty('--merch-card-plans-edu-list-offset', `${offset}px`);
+            intersectionObs.disconnect();
+        });
+        
+        intersectionObs.observe(this.card);
+    }
+
+    async postCardUpdateHook() {
         this.adaptForMedia();
         this.adjustTitleWidth();
-        this.adjustLegal();
         this.adjustAddon();
         this.adjustCallout();
+        await this.adjustLegal();
+        await this.adjustEduLists();
     }
 
     get headingM() {
@@ -200,6 +252,7 @@ export class Plans extends VariantLayout {
               price.dataset.displayPlanType = 'false';
           legal.setAttribute('data-template', 'legal');
           price.parentNode.insertBefore(legal, price.nextSibling);
+          await legal.onceSettled();
         });
         await Promise.all(legalPromises);
     }
