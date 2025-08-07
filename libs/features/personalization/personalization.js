@@ -236,8 +236,15 @@ export const createContent = (el, { content, manifestId, targetManifestId, actio
 };
 
 const COMMANDS = {
-  [COMMANDS_KEYS.remove]: (el, { content }) => {
+  [COMMANDS_KEYS.remove]: (el, { content, selector }) => {
     if (content !== 'false') el.classList.add(CLASS_EL_DELETE);
+    if (getSelectorType(selector) === SELECTOR_TYPES.twpButtons) {
+      const secondaryButton = el.parentElement.querySelector('a').parentElement;
+      if (secondaryButton && secondaryButton?.tagName === 'EM') {
+        const html = secondaryButton.parentElement.innerHTML;
+        secondaryButton.parentElement.innerHTML = html.replace(/em/g, 'strong');
+      }
+    }
   },
   [COMMANDS_KEYS.replace]: (el, cmd) => {
     if (!el || el.classList.contains(CLASS_EL_REPLACE)) return;
@@ -571,7 +578,9 @@ function getSelectedElements(sel, rootEl, forceRootEl, action) {
   try {
     els = root.querySelectorAll(modifiedSelector);
     if (getSelectorType(selector) === SELECTOR_TYPES.twpButtons) {
-      els = [...els].filter((el) => el.innerHTML.toLowerCase().match(/free.trial/));
+      els = [...els]
+        .filter((el) => el.innerHTML.toLowerCase().match(/free.trial/))
+        .map((el) => el.parentElement);
     }
   } catch (e) {
     /* eslint-disable-next-line no-console */
