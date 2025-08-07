@@ -40,7 +40,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: test-timings.json
-          key: test-timings-v1-${{ github.run_id }}
+          key: test-timings-v1-${{ github.sha }}
           restore-keys: |
             test-timings-v1-
       
@@ -424,7 +424,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: previous-timings.json
-          key: test-timings-v1-${{ github.run_id }}
+          key: test-timings-v1-${{ github.sha }}
           restore-keys: |
             test-timings-v1-
 
@@ -594,7 +594,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: test-timings.json
-          key: test-timings-v1-${{ github.run_id }}
+          key: test-timings-v1-${{ github.sha }}
 
       - name: Upload merged results
         uses: actions/upload-artifact@v4
