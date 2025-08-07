@@ -161,13 +161,6 @@ function openCurtain() {
   window.addEventListener('click', closeOnDocClick);
 }
 
-function openMenu(el) {
-  const expandedMenu = document.querySelector('.filter-button[aria-expanded=true]');
-  if (expandedMenu) { closeMenu(expandedMenu); }
-  el.setAttribute('aria-expanded', true);
-  addFocusTrap(el);
-}
-
 function navigateFilterButtons(currentButton, forward) {
   const allFilterButtons = [...document.querySelectorAll('.filter-button')];
   const currentIndex = allFilterButtons.indexOf(currentButton);
@@ -182,6 +175,7 @@ function navigateFilterButtons(currentButton, forward) {
   closeMenu(currentButton);
   disableSearch(currentButton.id);
   nextButton.focus();
+  // eslint-disable-next-line no-use-before-define
   openMenu(nextButton);
   enableSearch(nextButton.id);
 }
@@ -232,6 +226,13 @@ function addFocusTrap(button) {
 
   dropdown.keydownHandler = (e) => handleDropdownKeydown(e, firstElement, lastElement, button);
   dropdown.addEventListener('keydown', dropdown.keydownHandler);
+}
+
+function openMenu(el) {
+  const expandedMenu = document.querySelector('.filter-button[aria-expanded=true]');
+  if (expandedMenu) { closeMenu(expandedMenu); }
+  el.setAttribute('aria-expanded', true);
+  addFocusTrap(el);
 }
 
 function toggleMenu(e) {
