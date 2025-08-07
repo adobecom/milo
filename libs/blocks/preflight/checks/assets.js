@@ -212,7 +212,6 @@ export async function checkImageDimensions(url, area, injectVisualMetadata = fal
     const isAssetAboveFold = isAboveFold(asset);
     assetData.isAboveFold = isAssetAboveFold;
 
-    // Add failure classification
     if (assetData.hasMismatch) {
       assetData.failure = isAssetAboveFold ? 'critical' : 'warning';
     } else {
