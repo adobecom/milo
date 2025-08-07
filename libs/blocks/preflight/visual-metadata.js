@@ -41,16 +41,23 @@ export function addAccessibilityMetadata(element, message, status = '') {
   let container;
 
   if (picture) {
-    container = picture.querySelector('.picture-meta');
+    container = picture.querySelector('.asset-meta');
     if (!container) {
-      container = createTag('div', { class: 'picture-meta preflight-decoration' });
+      container = createTag('div', { class: 'asset-meta' });
       picture.insertBefore(container, element.nextSibling);
     }
   } else {
-    container = createTag('div', { class: 'picture-meta preflight-decoration no-picture-tag' });
+    container = createTag('div', { class: 'asset-meta no-picture-tag' });
     element.parentNode.insertBefore(container, element.nextSibling);
   }
 
-  const metadataEl = createTag('div', { class: `picture-meta-a11y preflight-decoration ${status}` }, message);
+  const statusMap = {
+    'has-alt': 'is-valid',
+    'is-decorative': 'needs-attention',
+    'is-invalid': 'is-invalid',
+  };
+
+  const statusClass = statusMap[status] || '';
+  const metadataEl = createTag('div', { class: `asset-meta-entry ${statusClass}` }, message);
   container.appendChild(metadataEl);
 }
