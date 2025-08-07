@@ -50,6 +50,7 @@
         </script>
         <script type="module" src="./mas-sidenav.js"></script>
         <script type="module">
+            await import('../../../deps/mas/merch-card-collection.js');
             import { init } from './common.js';
             init();
         </script>
@@ -133,10 +134,10 @@
                         </h2>
 
                           <merch-card-collection filter="all" class="merch-card-collection simplified-pricing-express" filtered="all" page="1">
-                            <merch-card data-default-card="true"><aem-fragment fragment="67c78f03-7d88-44c9-9a06-05443ec9265d"></aem-fragment></merch-card>
-                            <merch-card><aem-fragment fragment="b28957b9-2341-40f9-9004-24446f68e5e5"></aem-fragment></merch-card>
-                            <merch-card><aem-fragment fragment="aaa728dc-2b44-495c-b9f0-bb82044db18a"></aem-fragment></merch-card>
-                            <merch-card><aem-fragment fragment="c847d523-9228-4793-bdab-f65fe2e80a56"></aem-fragment></merch-card>
+                            <merch-card variant="simplified-pricing-express" data-default-card="true"><aem-fragment fragment="67c78f03-7d88-44c9-9a06-05443ec9265d"></aem-fragment></merch-card>
+                            <merch-card variant="simplified-pricing-express"><aem-fragment fragment="b28957b9-2341-40f9-9004-24446f68e5e5"></aem-fragment></merch-card>
+                            <merch-card variant="simplified-pricing-express"><aem-fragment fragment="aaa728dc-2b44-495c-b9f0-bb82044db18a"></aem-fragment></merch-card>
+                            <merch-card variant="simplified-pricing-express"><aem-fragment fragment="c847d523-9228-4793-bdab-f65fe2e80a56"></aem-fragment></merch-card>
                           </merch-card-collection>
                     </div>
                 </div>
