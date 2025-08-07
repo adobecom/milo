@@ -145,6 +145,15 @@
   user-select: none;
 }
 
+.bc-input-field-label p {
+  overflow: hidden;
+  position: absolute;
+  left: -10000px;
+  visibility: hidden;
+  width: 1px;
+  height: 1px;
+}
+
 [dir="rtl"] .bc-input-field-label {
   margin-left: 8px;
   margin-right: 0;
