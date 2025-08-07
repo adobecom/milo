@@ -366,11 +366,19 @@ jobs:
           docker exec nala-test-container-${{ matrix.shard }} ls -la /workspace/ | head -20 || true
           
           # Also check if test-results.json exists in container
-          echo "Checking for test-results.json in container..."
-          docker exec nala-test-container-${{ matrix.shard }} ls -la /workspace/test-results.json 2>&1 || echo "File not found"
+          echo "Checking for test-results-shard-${{ matrix.shard }}.json in container..."
+          docker exec nala-test-container-${{ matrix.shard }} ls -la /workspace/test-results/test-results-shard-${{ matrix.shard }}.json 2>&1 || echo "File not found in test-results directory"
           
-          # Copy the JSON file
-          docker cp nala-test-container-${{ matrix.shard }}:/workspace/test-results.json ./test-results.json 2>/dev/null || echo "No test-results.json found in container"
+          # The JSON file should now be in the mounted test-results directory with shard-specific name
+          SHARD_JSON="test-results/test-results-shard-${{ matrix.shard }}.json"
+          if [ -f "$SHARD_JSON" ]; then
+            echo "✓ Found $SHARD_JSON in mounted directory"
+            cp "$SHARD_JSON" ./test-results.json
+          else
+            echo "✗ $SHARD_JSON not found in mounted directory"
+            # Try to copy from container as fallback
+            docker cp nala-test-container-${{ matrix.shard }}:/workspace/$SHARD_JSON ./test-results.json 2>/dev/null || echo "No test-results.json found in container"
+          fi
           
           # Debug: Check current directory after copy
           echo "Files in current directory after copy:"
@@ -486,106 +494,43 @@ jobs:
           echo "- **Estimated time reduction:** ~${TIME_SAVED}%" >> $GITHUB_STEP_SUMMARY
           echo "- **Parallelization factor:** ${SHARD_COUNT}x" >> $GITHUB_STEP_SUMMARY
 
-      - name: Analyze test timings
+      - name: Update test timings
         if: always()
         run: |
-          echo "### Analyzing test timings from JSON reports" >> $GITHUB_STEP_SUMMARY
+          echo "### Updating test timings (key-value approach)" >> $GITHUB_STEP_SUMMARY
           
-          # Find all JSON test result files
-          JSON_FILES=$(find all-shards -name "test-results.json" -type f 2>/dev/null | tr '\n' ' ')
+          # Restore previous timings from cache rename
+          if [ -f previous-timings.json ]; then
+            cp previous-timings.json test-timings.json
+            echo "Starting with cached timing data"
+          else
+            echo "Starting with fresh timing data"
+          fi
           
-          # Debug: Check what files we found
-          echo "Found $(echo $JSON_FILES | wc -w) JSON test result files"
+          # Find all shard-specific JSON files
+          SHARD_FILES=$(find all-shards -name "test-results-shard-*.json" -type f 2>/dev/null)
           
-          if [ ! -z "$JSON_FILES" ]; then
-            # List files for debugging
-            echo "JSON files found:"
-            for f in $JSON_FILES; do
-              echo "  - $f (size: $(stat -f%z "$f" 2>/dev/null || stat -c%s "$f" 2>/dev/null || echo "unknown") bytes)"
+          if [ ! -z "$SHARD_FILES" ]; then
+            # Update timings from each shard
+            for shard_file in $SHARD_FILES; do
+              echo "Processing: $shard_file"
+              node nala/utils/update-test-timings.js "$shard_file" test-timings.json || echo "Warning: Failed to process $shard_file"
             done
             
-            # Merge JSON reports
-            echo "Merging JSON reports..."
-            if node nala/utils/merge-json-reports.js $JSON_FILES > merged-results.json; then
-              echo "✓ Successfully merged reports"
-              echo "Merged report size: $(stat -f%z merged-results.json 2>/dev/null || stat -c%s merged-results.json) bytes"
-            else
-              echo "✗ Failed to merge reports"
-            fi
-            
-            # Check if we have previous timing data from cache
-            if [ -f previous-timings.json ]; then
-              echo "Using cached previous timing data"
-              echo "Previous timing data size: $(stat -f%z previous-timings.json 2>/dev/null || stat -c%s previous-timings.json) bytes"
-            else
-              echo "No previous timing data found in cache"
-            fi
-            
-            # Analyze timings - always try to create something
-            if [ -f merged-results.json ]; then
-              # Debug: Show merged results structure
-              echo "Merged results preview:"
-              head -c 500 merged-results.json || true
-              echo ""
-              
-              if [ -f previous-timings.json ]; then
-                echo "Merging with previous timing data..."
-                if ! node nala/utils/analyze-test-timings.js \
-                  --input merged-results.json \
-                  --previous previous-timings.json \
-                  --output test-timings.json; then
-                  echo "ERROR: Failed to analyze with previous data"
-                  # Try without previous data as fallback
-                  echo "Retrying without previous data..."
-                  node nala/utils/analyze-test-timings.js \
-                    --input merged-results.json \
-                    --output test-timings.json || echo "ERROR: Failed again"
-                fi
-              else
-                echo "Creating new timing data..."
-                if ! node nala/utils/analyze-test-timings.js \
-                  --input merged-results.json \
-                  --output test-timings.json; then
-                  echo "ERROR: Failed to create new timing data"
-                  # Show error details
-                  echo "Node.js version: $(node --version)"
-                  echo "Current directory: $(pwd)"
-                  echo "Files in directory: $(ls -la | head -10)"
-                fi
-              fi
-            else
-              echo "ERROR: merged-results.json not found!"
-            fi
-            
-            # Add timing summary to workflow summary if file was created
+            # Show summary
             if [ -f test-timings.json ]; then
-              echo "✓ Timing data generated successfully"
-              node nala/utils/analyze-test-timings.js --summary test-timings.json >> $GITHUB_STEP_SUMMARY || true
-            else
-              echo "⚠️ No timing data generated" >> $GITHUB_STEP_SUMMARY
-              
-              # Create a minimal timing file to bootstrap the process
-              echo "Creating minimal timing data to bootstrap..."
-              echo '{
-                "timings": {},
-                "lastUpdated": "'$(date -u +"%Y-%m-%dT%H:%M:%SZ")'",
-                "totalFiles": 0,
-                "totalDuration": 0,
-                "newFiles": []
-              }' > test-timings.json
+              echo "✓ Timing data updated successfully"
+              TOTAL_FILES=$(jq -r '.totalFiles // 0' test-timings.json)
+              echo "Tracked test files: $TOTAL_FILES" >> $GITHUB_STEP_SUMMARY
             fi
           else
-            echo "No JSON test results found for timing analysis" >> $GITHUB_STEP_SUMMARY
-            echo "This is expected if all test shards failed" >> $GITHUB_STEP_SUMMARY
+            echo "No test results found for timing update" >> $GITHUB_STEP_SUMMARY
             
-            # Create empty timing file to ensure we have something for next run
-            echo "Creating empty timing data file..."
+            # Create minimal timing file
             echo '{
               "timings": {},
               "lastUpdated": "'$(date -u +"%Y-%m-%dT%H:%M:%SZ")'",
-              "totalFiles": 0,
-              "totalDuration": 0,
-              "newFiles": []
+              "totalFiles": 0
             }' > test-timings.json
           fi
 

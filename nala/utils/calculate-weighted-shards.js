@@ -10,7 +10,25 @@ class WeightedShardCalculator {
   constructor(maxShards = 6) {
     this.maxShards = maxShards;
     this.timingData = null;
+    this.defaultTimings = null;
     this.averageDuration = 15000; // Default 15s per test file
+    this.loadDefaultTimings();
+  }
+
+  /**
+   * Load default timing data
+   */
+  loadDefaultTimings() {
+    try {
+      const defaultPath = path.join(__dirname, 'default-test-timings.json');
+      if (fs.existsSync(defaultPath)) {
+        const data = JSON.parse(fs.readFileSync(defaultPath, 'utf8'));
+        this.defaultTimings = data.timings || {};
+        console.log(`Loaded ${Object.keys(this.defaultTimings).length} default timing entries`);
+      }
+    } catch (error) {
+      console.log('Could not load default timings:', error.message);
+    }
   }
 
   /**
@@ -25,7 +43,7 @@ class WeightedShardCalculator {
         
         // Calculate average duration for files without timing data
         const durations = Object.values(this.timingData)
-          .map(t => t.averageDuration || t.lastDuration)
+          .map(t => typeof t === 'number' ? t : (t.averageDuration || t.lastDuration))
           .filter(d => d > 0);
         
         if (durations.length > 0) {
@@ -51,11 +69,25 @@ class WeightedShardCalculator {
       ? file.substring(file.indexOf('nala/'))
       : file;
     
+    // First check actual timing data
     if (this.timingData && this.timingData[normalizedFile]) {
       const timing = this.timingData[normalizedFile];
+      // Support both direct numbers and objects with duration properties
+      if (typeof timing === 'number') {
+        return timing;
+      }
       return timing.averageDuration || timing.lastDuration || this.averageDuration;
     }
     
+    // Then check default timings
+    if (this.defaultTimings && this.defaultTimings[normalizedFile]) {
+      const defaultTiming = this.defaultTimings[normalizedFile];
+      if (typeof defaultTiming === 'number') {
+        return defaultTiming;
+      }
+    }
+    
+    // Finally use average duration
     return this.averageDuration;
   }
 
