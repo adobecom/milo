@@ -12,7 +12,6 @@ import {
   getFederatedUrl,
   getFedsPlaceholderConfig,
   shouldBlockFreeTrialLinks,
-  isSignedOut,
 } from '../../utils/utils.js';
 
 (async () => {
@@ -533,7 +532,7 @@ class Gnav {
 
   decorateProductEntryCTA = () => {
     const buttons = this.content.querySelectorAll('.product-entry-cta a');
-    const button = buttons[isSignedOut || buttons.length <= 1 ? 0 : 1];
+    const button = buttons[window.adobeIMS.isSignedInUser() && buttons.length > 1 ? 1 : 0];
 
     if (!button) return null;
     const cta = decorateCta({ elem: button, type: this.getMainNavItemType(button) });
