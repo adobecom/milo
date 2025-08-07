@@ -321,7 +321,7 @@ export class MerchCardCollection extends LitElement {
                         label: fields.label,
                         icon: fields.icon,
                         iconLight: fields.iconLight,
-                        navigationLabel: fields.navigationLabel,
+                        queryLabel: fields.queryLabel,
                         cards: fields.cards.map(cardId => overrideMap[cardId] || cardId),
                         collections: []
                     };
@@ -357,7 +357,7 @@ export class MerchCardCollection extends LitElement {
                     for (const node of level) {
                         const index = node.cards.indexOf(fragmentId);
                         if (index === -1) continue;
-                        const name = node.label.toLowerCase();
+                        const name = node.queryLabel || node.label.toLowerCase();
                         merchCard.filters[name] = { order: index + 1, size: fragment.fields.size };
                         populateFilters(node.collections);
                     }
