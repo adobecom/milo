@@ -50,9 +50,10 @@
         </script>
         <script type="module" src="./mas-sidenav.js"></script>
         <script type="module">
-            await import('../../../deps/mas/merch-card-collection.js');
             import { init } from './common.js';
-            init();
+            import('../../../deps/mas/merch-card-collection.js').then(() => {
+                init();
+            });
         </script>
         <script
             type="module"
