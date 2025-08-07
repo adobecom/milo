@@ -369,14 +369,8 @@ jobs:
           REPORT_DIRS=$(find all-shards -name "playwright-report" -type d | tr '\n' ' ')
           
           if [ ! -z "$REPORT_DIRS" ]; then
-            # Create config to prevent server startup
-            cat > merge.config.js << EOF
-          module.exports = {
-            reporter: [['html', { open: 'never' }]],
-          };
-          EOF
-            
-            npx playwright merge-reports ${REPORT_DIRS} --config merge.config.js || true
+            # Merge reports and output to a specific directory without opening
+            PLAYWRIGHT_HTML_OPEN=never npx playwright merge-reports ${REPORT_DIRS} --reporter=html || true
           fi
 
       - name: Create summary report
