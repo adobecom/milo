@@ -361,7 +361,7 @@ function buildFilterOption(itemName, type) {
 }
 
 async function buildFilter(type, tax, block, config) {
-  const container = createTag('div', { class: 'filter' });
+  const container = createTag('div', { class: 'filter' }, tax.getCategoryTitle(type));
   const button = document.createElement('button');
   button.classList.add('filter-button');
   button.id = `${type}-filter-button`;
@@ -369,7 +369,6 @@ async function buildFilter(type, tax, block, config) {
   button.setAttribute('aria-haspopup', 'true');
   button.setAttribute('aria-expanded', 'false');
   button.setAttribute('aria-controls', `${type}-filter-panel`);
-  button.textContent = tax.getCategoryTitle(type);
   button.addEventListener('click', toggleMenu);
   button.addEventListener('keydown', (e) => {
     if (e.key === 'Enter' || e.key === ' ') {
