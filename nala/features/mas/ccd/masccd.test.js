@@ -37,13 +37,13 @@ test.describe('CCD Merchcard feature test suite', () => {
   test.afterEach(async ({ page }, testInfo) => {
     // Attach console errors to test failure
     const consoleErrorText = attachMasConsoleErrorsToFailure(testInfo, consoleErrors);
-    
+
     // Attach MAS request errors to test failure
     const requestErrorText = attachMasRequestErrorsToFailure(testInfo, masRequestErrors);
 
     if (testInfo.status === 'failed') {
       let enhancedMessage = '';
-      
+
       if (consoleErrors.length > 0) {
         console.log('\n=== MAS CONSOLE ERRORS DURING TEST FAILURE ===');
         consoleErrors.forEach((error, index) => {
@@ -52,7 +52,7 @@ test.describe('CCD Merchcard feature test suite', () => {
         console.log('==========================================\n');
         enhancedMessage += consoleErrorText;
       }
-      
+
       if (masRequestErrors.length > 0) {
         console.log('\n=== MAS REQUEST ERRORS DURING TEST FAILURE ===');
         masRequestErrors.forEach((error, index) => {

@@ -81,15 +81,14 @@ function attachMasRequestErrorsToFailure(testInfo, masRequestErrors) {
   return '';
 }
 
-
 async function setupMasRequestLogger(masRequestErrors) {
   const seenRequests = new Set();
-  
+
   return {
     responseListener: async (response) => {
       const url = response.url();
       const status = response.status();
-      
+
       if (url.includes('/mas/io/') && status >= 400) {
         let uniqueKey;
         if (status === 403) {
@@ -103,54 +102,54 @@ async function setupMasRequestLogger(masRequestErrors) {
         } else {
           uniqueKey = `MAS_IO_${status}_ERROR`;
         }
-        
+
         if (!seenRequests.has(uniqueKey)) {
           seenRequests.add(uniqueKey);
-          
+
           const headers = response.headers();
           const corsHeaders = {
             'access-control-allow-origin': headers['access-control-allow-origin'] || 'MISSING',
             'access-control-allow-methods': headers['access-control-allow-methods'] || 'MISSING',
             'access-control-allow-headers': headers['access-control-allow-headers'] || 'MISSING',
-            'access-control-allow-credentials': headers['access-control-allow-credentials'] || 'MISSING'
+            'access-control-allow-credentials': headers['access-control-allow-credentials'] || 'MISSING',
           };
           const akamaiGrn = headers['akamai-grn-www.adobe.com'] || 'MISSING';
-          
+
           const errorDetails = `[${status}] Failed MAS I/O Request: ${url} | CORS: ${JSON.stringify(corsHeaders)} | Akamai GRN: ${akamaiGrn}`;
           masRequestErrors.push(errorDetails);
-          
-          console.log(`\n🚫 Failed MAS I/O Request:`);
+
+          console.log('\n🚫 Failed MAS I/O Request:');
           console.log(`URL: ${url}`);
           console.log(`Status: ${status}`);
-          console.log(`CORS Headers:`, JSON.stringify(corsHeaders, null, 2));
+          console.log('CORS Headers:', JSON.stringify(corsHeaders, null, 2));
           console.log(`Akamai GRN: ${akamaiGrn}`);
-          console.log(`─────────────────────────────────────\n`);
+          console.log('─────────────────────────────────────\n');
         }
       }
     },
-    
+
     requestFailedListener: async (request) => {
       const url = request.url();
-      
+
       if (url.includes('/mas/io/')) {
         const failure = request.failure();
         const uniqueKey = `MAS_IO_REQUEST_FAILED_${failure ? failure.errorText : 'UNKNOWN'}`;
-        
+
         if (!seenRequests.has(uniqueKey)) {
           seenRequests.add(uniqueKey);
-          
+
           const errorDetails = `[FAILED] MAS I/O Request Failed: ${url} | Method: ${request.method()} | Failure: ${failure ? failure.errorText : 'Unknown error'}`;
           masRequestErrors.push(errorDetails);
-          
-          console.log(`\n❌ MAS I/O Request Failed:`);
+
+          console.log('\n❌ MAS I/O Request Failed:');
           console.log(`URL: ${url}`);
           console.log(`Method: ${request.method()}`);
           console.log(`Failure: ${failure ? failure.errorText : 'Unknown error'}`);
-          console.log(`❌ NO RESPONSE RECEIVED (CORS blocked by browser)`);
-          console.log(`─────────────────────────────────────\n`);
+          console.log('❌ NO RESPONSE RECEIVED (CORS blocked by browser)');
+          console.log('─────────────────────────────────────\n');
         }
       }
-    }
+    },
   };
 }
 
