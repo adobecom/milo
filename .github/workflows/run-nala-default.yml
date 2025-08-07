@@ -370,8 +370,16 @@ jobs:
           echo "Files in container /workspace:"
           docker exec nala-test-container-${{ matrix.shard }} ls -la /workspace/ | head -20 || true
           
+          # Also check if test-results.json exists in container
+          echo "Checking for test-results.json in container..."
+          docker exec nala-test-container-${{ matrix.shard }} ls -la /workspace/test-results.json 2>&1 || echo "File not found"
+          
           # Copy the JSON file
           docker cp nala-test-container-${{ matrix.shard }}:/workspace/test-results.json ./test-results.json 2>/dev/null || echo "No test-results.json found in container"
+          
+          # Debug: Check current directory after copy
+          echo "Files in current directory after copy:"
+          ls -la test-results.json 2>&1 || echo "test-results.json not in current directory"
           
           # Clean up container
           docker rm nala-test-container-${{ matrix.shard }} || true
@@ -400,6 +408,7 @@ jobs:
             nala-results.json
             test-results.json
           retention-days: 7
+          if-no-files-found: warn
 
   # Merge and report combined results
   merge-test-results:
