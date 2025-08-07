@@ -37,11 +37,26 @@ jobs:
           node-version: '20.x'
 
       - name: Download previous test timing data
-        uses: actions/download-artifact@v4
-        with:
-          name: test-timings
-          path: ./
-        continue-on-error: true
+        run: |
+          # Try to download timing data from previous workflow runs
+          gh run download --repo ${{ github.repository }} --name test-timings --dir ./ || true
+          
+          # Also try to get from a recent successful run on main branch
+          if [ ! -f test-timings.json ]; then
+            echo "Attempting to download timing data from recent main branch run..."
+            RECENT_RUN=$(gh run list --repo ${{ github.repository }} --branch main --workflow "Run Nala Tests" --status success --limit 1 --json databaseId --jq '.[0].databaseId' || true)
+            if [ ! -z "$RECENT_RUN" ]; then
+              gh run download $RECENT_RUN --repo ${{ github.repository }} --name test-timings --dir ./ || true
+            fi
+          fi
+          
+          if [ -f test-timings.json ]; then
+            echo "Successfully loaded previous timing data"
+          else
+            echo "No previous timing data found, will use count-based distribution"
+          fi
+        env:
+          GH_TOKEN: ${{ github.token }}
 
       - name: Calculate optimal shard count
         id: calculate
@@ -407,40 +422,61 @@ jobs:
           echo "- **Parallelization factor:** ${SHARD_COUNT}x" >> $GITHUB_STEP_SUMMARY
 
       - name: Analyze test timings
+        if: always()
         run: |
           echo "### Analyzing test timings from JSON reports" >> $GITHUB_STEP_SUMMARY
           
           # Find all JSON test result files
-          JSON_FILES=$(find all-shards -name "test-results.json" -type f | tr '\n' ' ')
+          JSON_FILES=$(find all-shards -name "test-results.json" -type f 2>/dev/null | tr '\n' ' ')
           
           if [ ! -z "$JSON_FILES" ]; then
             # Merge JSON reports
             node nala/utils/merge-json-reports.js $JSON_FILES > merged-results.json
             
-            # Download previous timing data if exists
-            curl -s -o previous-timings.json \
-              https://github.com/${{ github.repository }}/releases/download/test-timings/test-timings.json || true
+            # Try to get previous timing data from recent workflow runs
+            echo "Attempting to download previous timing data..."
+            gh run download --repo ${{ github.repository }} --name test-timings --dir ./ || true
+            
+            # If not found, try from a recent successful run on main
+            if [ ! -f test-timings.json ]; then
+              RECENT_RUN=$(gh run list --repo ${{ github.repository }} --branch main --workflow "Run Nala Tests" --status success --limit 1 --json databaseId --jq '.[0].databaseId' || true)
+              if [ ! -z "$RECENT_RUN" ]; then
+                gh run download $RECENT_RUN --repo ${{ github.repository }} --name test-timings --dir ./ || true
+                mv test-timings.json previous-timings.json 2>/dev/null || true
+              fi
+            else
+              mv test-timings.json previous-timings.json
+            fi
             
             # Analyze timings
             if [ -f previous-timings.json ]; then
+              echo "Merging with previous timing data..."
               node nala/utils/analyze-test-timings.js \
                 --input merged-results.json \
                 --previous previous-timings.json \
                 --output test-timings.json
             else
+              echo "Creating new timing data..."
               node nala/utils/analyze-test-timings.js \
                 --input merged-results.json \
                 --output test-timings.json
             fi
             
-            # Add timing summary to workflow summary
-            node nala/utils/analyze-test-timings.js --summary test-timings.json >> $GITHUB_STEP_SUMMARY
+            # Add timing summary to workflow summary if file was created
+            if [ -f test-timings.json ]; then
+              node nala/utils/analyze-test-timings.js --summary test-timings.json >> $GITHUB_STEP_SUMMARY
+            else
+              echo "⚠️ No timing data generated" >> $GITHUB_STEP_SUMMARY
+            fi
           else
             echo "No JSON test results found for timing analysis" >> $GITHUB_STEP_SUMMARY
+            echo "This is expected if all test shards failed" >> $GITHUB_STEP_SUMMARY
           fi
+        env:
+          GH_TOKEN: ${{ github.token }}
 
       - name: Upload test timing data
-        if: always()
+        if: always() && hashFiles('test-timings.json') != ''
         uses: actions/upload-artifact@v4
         with:
           name: test-timings
