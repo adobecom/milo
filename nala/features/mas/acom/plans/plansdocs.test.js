@@ -16,7 +16,7 @@ test.describe('ACOM MAS cards feature test suite', () => {
     webUtil = new WebUtil(page);
     acomPage = new MasPlans(page);
     if (browserName === 'chromium') {
-      await page.setExtraHTTPHeaders({ 'sec-ch-ua': '"Chromium";v="123", "Not:A-Brand";v="8"' });
+      await page.setExtraHTTPHeaders({ 'sec-ch-ua': '"Chromium";v="125", "Not.A/Brand";v="24"' });
     }
   });
 

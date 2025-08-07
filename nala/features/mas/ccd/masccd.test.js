@@ -30,7 +30,7 @@ test.describe('CCD Merchcard feature test suite', () => {
     page.on('console', consoleListener);
 
     if (browserName === 'chromium') {
-      await page.setExtraHTTPHeaders({ 'sec-ch-ua': '"Chromium";v="123", "Not:A-Brand";v="8"' });
+      await page.setExtraHTTPHeaders({ 'sec-ch-ua': '"Chromium";v="125", "Not.A/Brand";v="24"' });
     }
   });
 

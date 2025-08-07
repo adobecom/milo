@@ -6,8 +6,10 @@ const miloLibs = process.env.MILO_LIBS || '';
 
 test.describe('DefaultFlags Block test suite', () => {
   test.beforeEach(async ({ page, browserName }) => {
+    test.skip(browserName !== 'chromium', 'Not supported to run on multiple browsers.');
+
     if (browserName === 'chromium') {
-      await page.setExtraHTTPHeaders({ 'sec-ch-ua': '"Chromium";v="123", "Not:A-Brand";v="8"' });
+      await page.setExtraHTTPHeaders({ 'sec-ch-ua': '"Chromium";v="125", "Not.A/Brand";v="24"' });
     }
   });
 
