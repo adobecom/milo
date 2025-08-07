@@ -36,27 +36,22 @@ jobs:
         with:
           node-version: '20.x'
 
-      - name: Download previous test timing data
+      - name: Restore test timing data
+        uses: actions/cache@v3
+        with:
+          path: test-timings.json
+          key: test-timings-v1-${{ github.run_id }}
+          restore-keys: |
+            test-timings-v1-
+      
+      - name: Check timing data
         run: |
-          # Try to download timing data from previous workflow runs
-          gh run download --repo ${{ github.repository }} --name test-timings --dir ./ || true
-          
-          # Also try to get from a recent successful run on main branch
-          if [ ! -f test-timings.json ]; then
-            echo "Attempting to download timing data from recent main branch run..."
-            RECENT_RUN=$(gh run list --repo ${{ github.repository }} --branch main --workflow "Run Nala Tests" --status success --limit 1 --json databaseId --jq '.[0].databaseId' || true)
-            if [ ! -z "$RECENT_RUN" ]; then
-              gh run download $RECENT_RUN --repo ${{ github.repository }} --name test-timings --dir ./ || true
-            fi
-          fi
-          
           if [ -f test-timings.json ]; then
             echo "Successfully loaded previous timing data"
+            echo "File size: $(stat -f%z test-timings.json 2>/dev/null || stat -c%s test-timings.json) bytes"
           else
             echo "No previous timing data found, will use count-based distribution"
           fi
-        env:
-          GH_TOKEN: ${{ github.token }}
 
       - name: Calculate optimal shard count
         id: calculate
@@ -425,6 +420,14 @@ jobs:
         with:
           node-version: '20.x'
 
+      - name: Restore previous timing data
+        uses: actions/cache@v3
+        with:
+          path: previous-timings.json
+          key: test-timings-v1-${{ github.run_id }}
+          restore-keys: |
+            test-timings-v1-
+
       - name: Verify merge scripts exist
         run: |
           echo "Current directory: $(pwd)"
@@ -510,19 +513,12 @@ jobs:
               echo "✗ Failed to merge reports"
             fi
             
-            # Try to get previous timing data from recent workflow runs
-            echo "Attempting to download previous timing data..."
-            gh run download --repo ${{ github.repository }} --name test-timings --dir ./ || true
-            
-            # If not found, try from a recent successful run on main
-            if [ ! -f test-timings.json ]; then
-              RECENT_RUN=$(gh run list --repo ${{ github.repository }} --branch main --workflow "Run Nala Tests" --status success --limit 1 --json databaseId --jq '.[0].databaseId' || true)
-              if [ ! -z "$RECENT_RUN" ]; then
-                gh run download $RECENT_RUN --repo ${{ github.repository }} --name test-timings --dir ./ || true
-                mv test-timings.json previous-timings.json 2>/dev/null || true
-              fi
+            # Check if we have previous timing data from cache
+            if [ -f previous-timings.json ]; then
+              echo "Using cached previous timing data"
+              echo "Previous timing data size: $(stat -f%z previous-timings.json 2>/dev/null || stat -c%s previous-timings.json) bytes"
             else
-              mv test-timings.json previous-timings.json
+              echo "No previous timing data found in cache"
             fi
             
             # Analyze timings - always try to create something
@@ -586,22 +582,19 @@ jobs:
             echo "Creating empty timing data file..."
             echo '{
               "timings": {},
-              "lastUpdated": "'$(date -u +"%Y-%m-%dT%H:%M:%S.%3NZ")'",
+              "lastUpdated": "'$(date -u +"%Y-%m-%dT%H:%M:%SZ")'",
               "totalFiles": 0,
               "totalDuration": 0,
               "newFiles": []
             }' > test-timings.json
           fi
-        env:
-          GH_TOKEN: ${{ github.token }}
 
-      - name: Upload test timing data
+      - name: Save test timing data to cache
         if: always() && hashFiles('test-timings.json') != ''
-        uses: actions/upload-artifact@v4
+        uses: actions/cache@v3
         with:
-          name: test-timings
           path: test-timings.json
-          retention-days: 90
+          key: test-timings-v1-${{ github.run_id }}
 
       - name: Upload merged results
         uses: actions/upload-artifact@v4
