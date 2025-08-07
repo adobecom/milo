@@ -90,7 +90,7 @@ After running tests, results will be available in:
 
 ## Docker Details
 
-The optimized script builds a custom Docker image based on the official Playwright image (`mcr.microsoft.com/playwright:v1.54.0-noble`) which includes:
+The optimized script builds a custom Docker image based on the official Playwright image (`mcr.microsoft.com/playwright:v1.54.2-noble`) which includes:
 - All required browsers (Chromium, Firefox, WebKit)
 - System dependencies for browser automation
 - Node.js runtime

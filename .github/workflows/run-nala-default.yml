@@ -98,7 +98,7 @@ jobs:
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
           build-args: |
-            PLAYWRIGHT_VERSION=1.54.0
+            PLAYWRIGHT_VERSION=1.54.2
 
       - name: Move cache
         run: |

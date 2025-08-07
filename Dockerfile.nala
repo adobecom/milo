@@ -1,5 +1,5 @@
 # Dockerfile for Nala tests with optimized caching
-FROM mcr.microsoft.com/playwright:v1.54.0-noble
+FROM mcr.microsoft.com/playwright:v1.54.2-noble
 
 # Set working directory
 WORKDIR /workspace
