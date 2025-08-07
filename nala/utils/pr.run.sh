@@ -74,6 +74,8 @@ if [[ ! -z "$SHARD_INDEX" ]] && [[ ! -z "$SHARD_TOTAL" ]]; then
 fi
 
 echo "Run Command : npx playwright test ${TAGS} ${EXCLUDE_TAGS} ${REPORTER}"
+echo "Environment CI: $CI"
+echo "SHARD_INDEX for JSON reporter: $SHARD_INDEX"
 echo -e "\n"
 echo "*******************************"
 
@@ -111,12 +113,30 @@ fi
 if [[ ! -z "$TEST_FILES" ]]; then
   echo "Running specific test files: $TEST_FILES"
   echo "Current directory: $(pwd)"
-  echo "Checking if test file exists: $TEST_FILES"
-  ls -la $TEST_FILES || echo "Test file not found"
   
-  # Remove 'nala/' prefix if present since testDir is already './nala'
-  TEST_FILE_PATH="${TEST_FILES#nala/}"
-  echo "Test file path for Playwright: $TEST_FILE_PATH"
+  # Handle different path formats
+  if [[ "$TEST_FILES" == /* ]]; then
+    # Full path - use as is
+    TEST_FILE_PATH="$TEST_FILES"
+    echo "Using full path: $TEST_FILE_PATH"
+  elif [[ "$TEST_FILES" == nala/* ]]; then
+    # Path includes nala/ - remove it since testDir is './nala'
+    TEST_FILE_PATH="${TEST_FILES#nala/}"
+    echo "Test file path for Playwright: $TEST_FILE_PATH"
+  else
+    # Just filename
+    TEST_FILE_PATH="$TEST_FILES"
+    echo "Test file path for Playwright: $TEST_FILE_PATH"
+  fi
+  
+  # Check if the file exists
+  if [[ "$TEST_FILES" == /* ]] && [ -f "$TEST_FILES" ]; then
+    echo "✓ Test file found: $TEST_FILES"
+  elif [ -f "nala/$TEST_FILE_PATH" ]; then
+    echo "✓ Test file found: nala/$TEST_FILE_PATH"
+  else
+    echo "✗ Test file not found"
+  fi
   
   FORCE_COLOR=0 PLAYWRIGHT_HTML_OPEN=never npx playwright test $TEST_FILE_PATH --config=./playwright.config.js ${TAGS} ${EXCLUDE_TAGS} --project=milo-live-chromium --project=milo-live-firefox --project=milo-live-webkit ${REPORTER} || EXIT_STATUS=$?
 else
@@ -130,6 +150,14 @@ sleep 3
 # Debug: Check what files were created
 echo "Contents of test-results directory after test run:"
 ls -la test-results/ || echo "test-results directory not found"
+
+# Check for any JSON files
+echo "JSON files in test-results:"
+find test-results -name "*.json" -type f 2>/dev/null || echo "No JSON files found"
+
+# Check for JSON files at root
+echo "JSON files at root level:"
+ls -la *.json 2>/dev/null || echo "No JSON files at root"
 
 # Check if JSON report was created
 if [[ ! -z "$SHARD_INDEX" ]]; then

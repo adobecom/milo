@@ -37,13 +37,13 @@ const config = {
     ? [
       ['github'], 
       ['list'], 
-      ['json', { outputFile: process.env.SHARD_INDEX ? `test-results/test-results-shard-${process.env.SHARD_INDEX}.json` : 'test-results/test-results.json' }],
+      ['json', { outputFile: process.env.SHARD_INDEX ? `./test-results/test-results-shard-${process.env.SHARD_INDEX}.json` : './test-results/test-results.json' }],
       ['./nala/utils/base-reporter.js'],
     ]
     : [
       ['html', { outputFolder: 'test-html-results' }],
       ['list'],
-      ['json', { outputFile: process.env.SHARD_INDEX ? `test-results/test-results-shard-${process.env.SHARD_INDEX}.json` : 'test-results/test-results.json' }],
+      ['json', { outputFile: process.env.SHARD_INDEX ? `./test-results/test-results-shard-${process.env.SHARD_INDEX}.json` : './test-results/test-results.json' }],
       ['./nala/utils/base-reporter.js'],
     ],
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */

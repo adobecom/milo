@@ -127,11 +127,21 @@ ENV_VARS="$ENV_VARS -e GITHUB_REPOSITORY=adobecom/milo"
 ENV_VARS="$ENV_VARS -e PR_BRANCH_LIVE_URL_GH=${PR_BRANCH_LIVE_URL_GH}"
 ENV_VARS="$ENV_VARS -e labels=${TAGS}"
 ENV_VARS="$ENV_VARS -e reporter=${REPORTER}"
+ENV_VARS="$ENV_VARS -e CI=true"
 
 # Add test file if specified
 if [[ ! -z "$TEST_FILE" ]]; then
-  # Pass just the filename without nala/ prefix since playwright.config.js already sets testDir to ./nala
-  ENV_VARS="$ENV_VARS -e TEST_FILES=${TEST_FILE}"
+  # Support both relative and full paths
+  if [[ "$TEST_FILE" == /* ]]; then
+    # Full path provided
+    ENV_VARS="$ENV_VARS -e TEST_FILES=${TEST_FILE}"
+  elif [[ "$TEST_FILE" == nala/* ]]; then
+    # Path already includes nala/
+    ENV_VARS="$ENV_VARS -e TEST_FILES=${TEST_FILE}"
+  else
+    # Just filename, add nala/ prefix
+    ENV_VARS="$ENV_VARS -e TEST_FILES=nala/${TEST_FILE}"
+  fi
 fi
 
 # Add shard configuration if provided
