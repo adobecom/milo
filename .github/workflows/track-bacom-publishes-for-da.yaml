@@ -1,4 +1,4 @@
-name: Track Publishes
+name: Track Publishes Bacom
 on:
   schedule:
     - cron: '35 */4 * * *'
