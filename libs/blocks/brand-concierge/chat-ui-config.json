@@ -16,10 +16,17 @@
     "disclaimer.text": "AI responses may be inaccurate. Check answers and sources. Terms"
   },
   "theme": {
+    "--font-family": "'Adobe Clean', adobe-clean, 'Trebuchet MS', sans-serif",
     "--color-primary": "#007bff",
     "--color-text": "#131313",
+    "--line-height-body": "1.75",
+    "--main-container-background": "#FFFFFF",
+    "--main-container-bottom-background": "#FFFFFF",
+    "--message-blocker-background": "#FFFFFF",
     "--input-height": "52px",
+    "--input-height-mobile": "52px",
     "--input-border-radius": "12px",
+    "--input-border-radius-mobile": "12px",
     "--input-background": "#FFFFFF",
     "--input-outline-color": "#9A3CF9",
     "--input-outline-width": "2px",
@@ -34,9 +41,22 @@
     "--color-button-submit-hover": "#292929",
     "--input-button-border-radius": "8px",
     "--button-disabled-background": "#FFFFFF",
-    "--font-family": "'Adobe Clean', adobe-clean, 'Trebuchet MS', sans-serif",
     "--disclaimer-color": "#4B4B4B",
     "--disclaimer-font-size": "12px",
-    "--disclaimer-font-weight": "400"
+    "--disclaimer-font-weight": "400",
+    "--message-user-background": "#EBEEFF",
+    "--message-user-text": "#292929",
+    "--message-border-radius": "10px",
+    "--message-concierge-background": "#FFFFFF",
+    "--message-concierge-text": "#292929",
+    "--chat-interface-max-width": "768px",
+    "--chat-history-padding": "16px",
+    "--chat-history-padding-top-expanded": "0",
+    "--citations-text-font-weight": "700",
+    "--citations-desktop-button-font-size": "14px",
+    "--feedback-icon-btn-background": "#FFFFFF",
+    "--feedback-icon-btn-hover-background": "#FFFFFF",
+    "--feedback-icon-btn-size-desktop": "32px",
+    "--feedback-container-gap": "4px"
   }
 }
