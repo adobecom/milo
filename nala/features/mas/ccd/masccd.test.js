@@ -99,8 +99,13 @@ test.describe('CCD Merchcard feature test suite', () => {
   });
 
   test.afterAll(async () => {
+    // Only run cleanup if beforeAll was executed (i.e., not skipped)
+    if (!consoleErrors && !masRequestErrors) {
+      return; // Test was skipped, no cleanup needed
+    }
+
     // Report any errors that occurred during worker lifetime
-    if (consoleErrors.length > 0) {
+    if (consoleErrors && consoleErrors.length > 0) {
       console.log('\n=== MAS CONSOLE ERRORS DURING PAGE LOADING ===');
       consoleErrors.forEach((error, index) => {
         console.log(`${index + 1}. ${error}`);
@@ -108,7 +113,7 @@ test.describe('CCD Merchcard feature test suite', () => {
       console.log('==========================================\n');
     }
 
-    if (masRequestErrors.length > 0) {
+    if (masRequestErrors && masRequestErrors.length > 0) {
       console.log('\n=== MAS REQUEST ERRORS DURING WORKER LIFETIME ===');
       masRequestErrors.forEach((error, index) => {
         console.log(`${index + 1}. ${error}`);
