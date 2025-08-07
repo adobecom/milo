@@ -93,8 +93,10 @@ export const createLinkMarkup = (
 
 export async function loadOstEnv() {
   /* c8 ignore next */
-  const { loadMasComponent, getMasLibs, getMiloLocaleSettings, MAS_COMMERCE_SERVICE } = await import('../merch/merch.js');
+  const { initService, loadMasComponent, getMasLibs, getMiloLocaleSettings, MAS_COMMERCE_SERVICE } = await import('../merch/merch.js');
 
+  // Load initService
+  await initService(MAS_COMMERCE_SERVICE);
   // Load commerce.js based on masLibs parameter
   await loadMasComponent(MAS_COMMERCE_SERVICE);
 
@@ -162,7 +164,7 @@ export async function loadOstEnv() {
   window.history.replaceState({}, null, newURL);
 
   const environment = searchParameters.get('env') ?? WCS_ENV;
-  const landscape = searchParameters.get('wcsLandscape') ?? WCS_LANDSCAPE;
+  const landscape = searchParameters.get('commerce.landscape') ?? WCS_LANDSCAPE;
   const owner = searchParameters.get('owner');
   const referrer = searchParameters.get('referrer');
   const repo = searchParameters.get('repo');
