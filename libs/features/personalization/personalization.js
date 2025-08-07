@@ -579,7 +579,7 @@ function getSelectedElements(sel, rootEl, forceRootEl, action) {
     els = root.querySelectorAll(modifiedSelector);
     if (getSelectorType(selector) === SELECTOR_TYPES.twpButtons) {
       els = [...els]
-        .filter((el) => el.innerHTML.toLowerCase().match(/free.trial|essai gratuit|kostenlos testen|testversion|無料で始める 無料体験の詳細/))
+        .filter((el) => el.innerHTML.toLowerCase().match(/free.trial|essai gratuit|kostenlos testen|testversion|無料で始める 無料体験の詳細|détails de la version d’essai gratuite|details zur kostenlosen testversion/))
         .map((el) => el.parentElement);
     }
   } catch (e) {
