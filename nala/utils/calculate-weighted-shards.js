@@ -41,6 +41,12 @@ class WeightedShardCalculator {
         const data = JSON.parse(fs.readFileSync(timingFile, 'utf8'));
         this.timingData = data.timings || {};
         
+        // If timing data is empty, use defaults as timing data
+        if (Object.keys(this.timingData).length === 0 && this.defaultTimings) {
+          console.log('Timing data is empty, using defaults as baseline');
+          this.timingData = { ...this.defaultTimings };
+        }
+        
         // Calculate average duration for files without timing data
         const durations = Object.values(this.timingData)
           .map(t => typeof t === 'number' ? t : (t.averageDuration || t.lastDuration))

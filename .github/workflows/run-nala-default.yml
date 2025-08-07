@@ -40,9 +40,9 @@ jobs:
         uses: actions/cache@v3
         with:
           path: test-timings.json
-          key: test-timings-v1-${{ github.sha }}
+          key: test-timings
           restore-keys: |
-            test-timings-v1-
+            test-timings
       
       - name: Check timing data
         run: |
@@ -333,6 +333,10 @@ jobs:
 
       - name: Run Nala Tests (Shard ${{ matrix.shard }}/${{ needs.calculate-shards.outputs.shard-count }})
         run: |
+          # Create directories for results
+          mkdir -p test-results test-html-results playwright-report
+          
+          # Run tests and capture exit code
           docker run --name nala-test-container-${{ matrix.shard }} \
             --ipc=host \
             -v ${{ github.workspace }}/nala:/workspace/nala:ro \
@@ -358,44 +362,28 @@ jobs:
             -e TEST_FILES="${{ env.TEST_FILES }}" \
             milo-nala-tests:latest || EXIT_CODE=$?
           
-          # Copy test-results.json from container regardless of test outcome
-          echo "Copying test results from container..."
+          # Copy test results regardless of test outcome
+          echo "Extracting test results..."
           
-          # Debug: List files in workspace
-          echo "Files in container /workspace:"
-          docker exec nala-test-container-${{ matrix.shard }} ls -la /workspace/ | head -20 || true
-          
-          # Also check if test-results.json exists in container
-          echo "Checking for test-results-shard-${{ matrix.shard }}.json in container..."
-          docker exec nala-test-container-${{ matrix.shard }} ls -la /workspace/test-results/test-results-shard-${{ matrix.shard }}.json 2>&1 || echo "File not found in test-results directory"
-          
-          # The JSON file should now be in the mounted test-results directory with shard-specific name
+          # Check mounted volume first (most reliable)
           SHARD_JSON="test-results/test-results-shard-${{ matrix.shard }}.json"
           if [ -f "$SHARD_JSON" ]; then
-            echo "✓ Found $SHARD_JSON in mounted directory"
-            cp "$SHARD_JSON" ./test-results.json
+            echo "✓ Found $SHARD_JSON in mounted volume"
+            ls -la "$SHARD_JSON"
           else
-            echo "✗ $SHARD_JSON not found in mounted directory"
-            # Try to copy from container as fallback
-            docker cp nala-test-container-${{ matrix.shard }}:/workspace/$SHARD_JSON ./test-results.json 2>/dev/null || echo "No test-results.json found in container"
+            echo "✗ $SHARD_JSON not found in mounted volume"
+            
+            # List what's actually in test-results directory
+            echo "Contents of test-results directory:"
+            ls -la test-results/ || echo "test-results directory not found"
           fi
-          
-          # Debug: Check current directory after copy
-          echo "Files in current directory after copy:"
-          ls -la test-results.json 2>&1 || echo "test-results.json not in current directory"
           
           # Clean up container
-          docker rm nala-test-container-${{ matrix.shard }} || true
-          
-          # Check if we got the JSON file
-          if [ -f test-results.json ]; then
-            echo "✓ Successfully extracted test-results.json ($(stat -f%z test-results.json 2>/dev/null || stat -c%s test-results.json) bytes)"
-          else
-            echo "✗ test-results.json not found - tests may have failed before generating results"
-          fi
+          docker rm -f nala-test-container-${{ matrix.shard }} || true
           
           # Exit with original exit code if tests failed
           if [ ! -z "$EXIT_CODE" ] && [ "$EXIT_CODE" -ne 0 ]; then
+            echo "Tests failed with exit code $EXIT_CODE"
             exit $EXIT_CODE
           fi
 
@@ -405,11 +393,10 @@ jobs:
         with:
           name: test-results-shard-${{ matrix.shard }}
           path: |
-            test-results/
+            test-results/test-results-shard-${{ matrix.shard }}.json
             playwright-report/
             test-html-results/
             nala-results.json
-            test-results.json
           retention-days: 7
           if-no-files-found: warn
 
@@ -432,9 +419,9 @@ jobs:
         uses: actions/cache@v3
         with:
           path: previous-timings.json
-          key: test-timings-v1-${{ github.sha }}
+          key: test-timings
           restore-keys: |
-            test-timings-v1-
+            test-timings
 
       - name: Verify merge scripts exist
         run: |
@@ -443,6 +430,7 @@ jobs:
           ls -la nala/utils/*.js | grep -E "(merge-json|analyze-test|calculate-weighted)" || echo "Scripts not found!"
 
       - name: Download all test results
+        continue-on-error: true
         uses: actions/download-artifact@v4
         with:
           path: all-shards
@@ -512,10 +500,21 @@ jobs:
           
           if [ ! -z "$SHARD_FILES" ]; then
             # Update timings from each shard
+            PROCESSED=0
             for shard_file in $SHARD_FILES; do
               echo "Processing: $shard_file"
-              node nala/utils/update-test-timings.js "$shard_file" test-timings.json || echo "Warning: Failed to process $shard_file"
+              if [ -s "$shard_file" ]; then
+                if node nala/utils/update-test-timings.js "$shard_file" test-timings.json; then
+                  PROCESSED=$((PROCESSED + 1))
+                else
+                  echo "Warning: Failed to process $shard_file"
+                fi
+              else
+                echo "Warning: $shard_file is empty"
+              fi
             done
+            
+            echo "Processed $PROCESSED shard files successfully"
             
             # Show summary
             if [ -f test-timings.json ]; then
@@ -526,12 +525,15 @@ jobs:
           else
             echo "No test results found for timing update" >> $GITHUB_STEP_SUMMARY
             
-            # Create minimal timing file
-            echo '{
-              "timings": {},
-              "lastUpdated": "'$(date -u +"%Y-%m-%dT%H:%M:%SZ")'",
-              "totalFiles": 0
-            }' > test-timings.json
+            # Use default timings if available
+            if [ ! -f test-timings.json ]; then
+              echo "Creating timing file from defaults..."
+              cp nala/utils/default-test-timings.json test-timings.json || echo '{
+                "timings": {},
+                "lastUpdated": "'$(date -u +"%Y-%m-%dT%H:%M:%SZ")'",
+                "totalFiles": 0
+              }' > test-timings.json
+            fi
           fi
 
       - name: Save test timing data to cache
@@ -539,7 +541,7 @@ jobs:
         uses: actions/cache@v3
         with:
           path: test-timings.json
-          key: test-timings-v1-${{ github.sha }}
+          key: test-timings
 
       - name: Upload merged results
         uses: actions/upload-artifact@v4

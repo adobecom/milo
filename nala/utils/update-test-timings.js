@@ -30,7 +30,18 @@ function updateTestTimings(jsonReportPath, timingsPath) {
 
   // Read test results
   try {
-    const report = JSON.parse(fs.readFileSync(jsonReportPath, 'utf8'));
+    if (!fs.existsSync(jsonReportPath)) {
+      console.log(`Test results file not found: ${jsonReportPath}`);
+      return;
+    }
+    
+    const fileContent = fs.readFileSync(jsonReportPath, 'utf8');
+    if (!fileContent.trim()) {
+      console.log(`Test results file is empty: ${jsonReportPath}`);
+      return;
+    }
+    
+    const report = JSON.parse(fileContent);
     
     // Extract timings from all tests
     if (report.suites) {

@@ -112,6 +112,8 @@ fi
 # Check if tests passed or failed
 if [ $EXIT_STATUS -ne 0 ]; then
   echo "Some tests failed. Exiting with error."
+  # Give Playwright time to finish writing reports
+  sleep 2
   exit $EXIT_STATUS
 else
   echo "All tests passed successfully."
