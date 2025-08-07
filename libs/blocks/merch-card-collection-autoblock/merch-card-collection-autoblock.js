@@ -151,7 +151,11 @@ export async function createCollection(el, options) {
   }
   const collection = createTag('merch-card-collection', attributes, aemFragment);
   const container = createTag('div', null, collection);
-  el.replaceWith(container);
+  let toReplace = el;
+  const contentParent = el.closest('.content');
+  const paragraph = contentParent?.querySelector(':scope > p');
+  if (paragraph) toReplace = paragraph;
+  toReplace.replaceWith(container);
 
   await collection.checkReady();
 
