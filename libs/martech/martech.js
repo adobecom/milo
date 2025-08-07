@@ -1,5 +1,5 @@
 import {
-  getConfig, loadIms, loadLink, loadScript, getMepEnablement, getMetadata,
+  getConfig, loadLink, loadScript, getMepEnablement, getMetadata, isSignedOut,
 } from '../utils/utils.js';
 
 const ALLOY_PROPOSITION_FETCH = 'alloy_propositionFetch';
@@ -153,14 +153,8 @@ const loadMartechFiles = async (config) => {
   if (filesLoadedPromise) return filesLoadedPromise;
 
   filesLoadedPromise = async () => {
-    if (getMepEnablement('xlg') === 'loggedout') {
+    if (getMepEnablement('xlg') === 'loggedout' || !isSignedOut()) {
       setupEntitlementCallback();
-    } else {
-      loadIms()
-        .then(() => {
-          if (window.adobeIMS.isSignedInUser()) setupEntitlementCallback();
-        })
-        .catch(() => { });
     }
 
     setDeep(

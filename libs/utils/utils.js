@@ -32,6 +32,7 @@ const MILO_BLOCKS = [
   'form',
   'fragment',
   'featured-article',
+  'gist',
   'global-footer',
   'global-navigation',
   'graybox',
@@ -786,13 +787,18 @@ export function decorateSVG(a) {
   }
 }
 
+export const isValidHtmlUrl = (url) => {
+  const regex = /^https:\/\/[^\s]+$/;
+  return regex.test(url);
+};
+
 export function decorateImageLinks(el) {
   const images = el.querySelectorAll('img[alt*="|"]');
   if (!images.length) return;
   [...images].forEach((img) => {
     const [source, alt, icon] = img.alt.split('|');
     try {
-      if (!URL.canParse(source.trim())) return;
+      if (!isValidHtmlUrl(source.trim())) return;
       const url = new URL(source.trim());
       const href = (url.hostname.includes('.aem.') || url.hostname.includes('.hlx.')) ? `${url.pathname}${url.search}${url.hash}` : url.href;
       img.alt = alt?.trim() || '';
@@ -1095,7 +1101,6 @@ async function decorateIcons(area, config) {
   if (icons.length === 0) return;
   const { base } = config;
   loadStyle(`${base}/features/icons/icons.css`);
-  loadLink(`${base}/img/icons/icons.svg`, { rel: 'preload', as: 'fetch', crossorigin: 'anonymous' });
   const { default: loadIcons } = await import('../features/icons/icons.js');
   await loadIcons(icons, config);
 }
@@ -1475,11 +1480,28 @@ async function checkForPageMods() {
   });
 }
 
+function setCountry() {
+  const country = window.performance?.getEntriesByType('navigation')?.[0]?.serverTiming
+    ?.find((timing) => timing?.name === 'geo')?.description?.toLowerCase();
+  if (!country) return;
+  sessionStorage.setItem('akamai', country);
+  sessionStorage.setItem('feds_location', JSON.stringify({ country: country.toUpperCase() }));
+}
+
+async function setCountryPrerequisites() {
+  const country = (new URLSearchParams(window.location.search).get('akamaiLocale')?.toLowerCase())
+    || sessionStorage.getItem('akamai');
+  if (country !== 'gb' || window.adobePrivacy) return;
+  const { loadPrivacy } = await import('../scripts/delayed.js');
+  loadPrivacy(getConfig, loadScript);
+}
+
 async function loadPostLCP(config) {
   import('./favicon.js').then(({ default: loadFavIcon }) => loadFavIcon(createTag, getConfig(), getMetadata));
   await decoratePlaceholders(document.body.querySelector('header'), config);
   const sk = document.querySelector('aem-sidekick, helix-sidekick');
   if (sk) import('./sidekick-decorate.js').then((mod) => { mod.default(sk); });
+  setCountryPrerequisites();
   if (config.mep?.targetEnabled === 'postlcp') {
     /* c8 ignore next 2 */
     const { init } = await import('../features/personalization/personalization.js');
@@ -1514,7 +1536,7 @@ async function loadPostLCP(config) {
   }
   // load privacy here if quick-link is present in first section
   const quickLink = document.querySelector('div.section')?.querySelector('.quick-link');
-  if (!quickLink) return;
+  if (!quickLink || window.adobePrivacy) return;
   import('../scripts/delayed.js').then(({ loadPrivacy }) => {
     loadPrivacy(getConfig, loadScript);
   });
@@ -1595,7 +1617,7 @@ function initSidekick() {
 
 function decorateMeta() {
   const { origin } = window.location;
-  const contents = document.head.querySelectorAll('[content*=".hlx."], [content*=".aem."]');
+  const contents = document.head.querySelectorAll('[content*=".hlx."], [content*=".aem."], [content*="/federal/"]');
   contents.forEach((meta) => {
     if (meta.getAttribute('property') === 'hlx:proxyUrl' || meta.getAttribute('name')?.endsWith('schedule')) return;
     try {
@@ -1721,6 +1743,7 @@ export async function loadArea(area = document) {
   const isDoc = area === document;
   if (isDoc) {
     if (document.getElementById('page-load-ok-milo')) return;
+    setCountry();
     await checkForPageMods();
     appendHtmlToCanonicalUrl();
     appendSuffixToTitles();

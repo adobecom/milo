@@ -1,6 +1,6 @@
 import { stub } from 'sinon';
 import { expect } from '@esm-bundle/chai';
-import { setViewport } from '@web/test-runner-commands';
+import { sendKeys, setViewport } from '@web/test-runner-commands';
 
 const { default: init, getCookie } = await import('../../../libs/features/georoutingv2/georoutingv2.js');
 let { getMetadata } = await import('../../../libs/utils/utils.js');
@@ -634,5 +634,67 @@ describe('GeoRouting', () => {
     await init(mockConfig, createTag, getMetadata, loadBlock, loadStyle, v2JSONPromise());
     const modal = document.querySelector('.dialog-modal');
     expect(modal).to.not.be.null;
+  });
+
+  describe('ArrowKey navigation for georouting modal', () => {
+    let links = null;
+
+    beforeEach(async () => {
+      await init(mockConfig, createTag, getMetadata, loadBlock, loadStyle, v2JSONPromise());
+      const modal = document.querySelector('.dialog-modal');
+      expect(modal).to.not.be.null;
+      expect(getCookie('international')).to.be.undefined;
+      links = modal.querySelectorAll('a');
+      links[0].focus();
+      await sendKeys({ press: 'Space' });
+    });
+
+    const assertPickerExists = () => {
+      const picker = document.querySelector('.locale-modal-v2 .picker');
+      expect(picker).to.not.be.null;
+      return picker.querySelectorAll('a');
+    };
+
+    it('Focuses on first picker option when picker button is clicked', async () => {
+      const pickersOptions = assertPickerExists();
+      expect(pickersOptions[0].textContent).to.be.equal('Schweiz - Deutsch');
+      expect(document.activeElement).to.be.equal(pickersOptions[0]);
+    });
+
+    it('Navigates picker options using arrow keys', async () => {
+      const pickersOptions = assertPickerExists();
+      expect(document.activeElement).to.be.equal(pickersOptions[0]);
+      await sendKeys({ press: 'ArrowDown' });
+      expect(document.activeElement).to.be.equal(pickersOptions[1]);
+      await sendKeys({ press: 'ArrowDown' });
+      expect(document.activeElement).to.be.equal(pickersOptions[2]);
+      await sendKeys({ press: 'ArrowUp' });
+      expect(document.activeElement).to.be.equal(pickersOptions[1]);
+    });
+
+    it('Navigates picker options using Tab and Shift+Tab', async () => {
+      const pickersOptions = assertPickerExists();
+      expect(document.activeElement).to.be.equal(pickersOptions[0]);
+      await sendKeys({ press: 'Tab' });
+      expect(document.activeElement).to.be.equal(pickersOptions[1]);
+      await sendKeys({ down: 'Shift' });
+      await sendKeys({ press: 'Tab' });
+      await sendKeys({ up: 'Shift' });
+      expect(document.activeElement).to.be.equal(pickersOptions[0]);
+      await sendKeys({ down: 'Shift' });
+      await sendKeys({ press: 'Tab' });
+      await sendKeys({ up: 'Shift' });
+      expect(document.activeElement).to.be.equal(pickersOptions[2]);
+      await sendKeys({ press: 'Tab' });
+      expect(document.activeElement).to.be.equal(pickersOptions[0]);
+    });
+
+    it('Closes picker on Escape and focuses on picker button', async () => {
+      const pickersOptions = assertPickerExists();
+      expect(document.activeElement).to.be.equal(pickersOptions[0]);
+      await sendKeys({ press: 'Escape' });
+      expect(document.activeElement).to.be.equal(links[0]);
+      expect(document.querySelector('.locale-modal-v2 .picker')).to.be.null;
+    });
   });
 });

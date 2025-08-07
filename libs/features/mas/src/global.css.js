@@ -1,3 +1,5 @@
+import { DESKTOP_UP, LARGE_DESKTOP, TABLET_UP } from "./media.js";
+
 const styles = document.createElement('style');
 
 styles.innerHTML = `
@@ -80,6 +82,7 @@ styles.innerHTML = `
     --merch-color-grey-200: #E8E8E8;
     --merch-color-grey-600: #686868;
     --merch-color-grey-700: #464646;
+    --merch-color-grey-800: #222222;
     --merch-color-green-promo: #05834E;
     --merch-color-red-promo: #D31510;
     --merch-color-grey-80: #2c2c2c;
@@ -137,6 +140,42 @@ styles.innerHTML = `
     --merch-card-ul-padding: 8px;
 }
 
+.collection-container {
+    display: grid;
+    justify-content: center;
+    grid-template-columns: min-content min-content;
+    grid-template-rows: min-content 1fr;
+    align-items: start;
+    grid-template-areas: "sidenav header" "sidenav content";
+    --merch-card-collection-card-min-height: auto;
+    --merch-sidenav-collection-gap: 0;
+    --merch-card-collection-card-width: unset;
+}
+
+.collection-container merch-sidenav {
+    grid-area: sidenav;
+}
+
+.collection-container merch-card-collection-header {
+    --merch-card-collection-header-margin-bottom: var(--spacing-m);
+    grid-area: header;
+}
+
+.collection-container merch-card-collection {
+    grid-area: content;
+}
+
+.collection-container merch-card {
+    min-height: var(--merch-card-collection-card-min-height);
+}
+
+.collection-container .one-merch-card,
+.collection-container .two-merch-cards,
+.collection-container .three-merch-cards,
+.collection-container .four-merch-cards {
+    padding: 0;
+}
+
 merch-card-collection {
     display: contents;
 }
@@ -146,7 +185,9 @@ merch-card-collection > merch-card:not([style]) {
 }
 
 merch-card-collection > p[slot],
-merch-card-collection > div[slot] p {
+merch-card-collection > div[slot] p,
+merch-card-collection-header > p[slot],
+merch-card-collection-header > div[slot] p {
     margin: 0;
 }
 
@@ -154,12 +195,18 @@ merch-card-collection > div[slot] p {
 .two-merch-cards,
 .three-merch-cards,
 .four-merch-cards {
+    --merch-card-collection-card-width: unset;
     display: grid;
     justify-content: center;
     justify-items: stretch;
     align-items: normal;
     gap: var(--consonant-merch-spacing-m);
     padding: var(--spacing-m);
+    grid-template-columns: var(--merch-card-collection-card-width);
+}
+
+.tabpanel > .four-merch-cards {
+    z-index: 3;
 }
 
 merch-card[variant="ccd-suggested"] *,
@@ -507,13 +554,23 @@ body.merch-modal {
     height: 100vh;
 }
 
+merch-sidenav-list img[slot="icon"] {
+    height: fit-content;
+    pointer-events: none;
+}
+
+merch-sidenav-list sp-sidenav > sp-sidenav-item:last-of-type {
+    --mod-sidenav-gap: 0;
+    line-height: var(--mod-sidenav-top-level-line-height)
+}
+
 merch-sidenav-checkbox-group h3 {
-    font-size: 14px;
-    height: 32px;
-    letter-spacing: 0px;
-    line-height: 18.2px;
-    color: var(--color-gray-600);
-    margin: 0px;
+    font-size: var(--merch-sidenav-checkbox-group-title-font-size);
+    font-weight: var(--merch-sidenav-checkbox-group-title-font-weight);
+    line-height: var(--merch-sidenav-checkbox-group-title-line-height);
+    color: var(--merch-sidenav-checkbox-group-title-color);
+    padding: var(--merch-sidenav-checkbox-group-title-padding);
+    margin: 0;
 }
 
 sr-only {
@@ -591,5 +648,32 @@ merch-card [slot='callout-content'] .icon-button::before {
     max-width: 180px;
   }
 }
+
+@media screen and ${TABLET_UP} {
+    .two-merch-cards,
+    .three-merch-cards,
+    .four-merch-cards {
+        grid-template-columns: repeat(2, var(--merch-card-collection-card-width));
+    }
+}
+
+@media screen and ${DESKTOP_UP} {
+    .four-merch-cards {
+        grid-template-columns: repeat(4, var(--merch-card-collection-card-width));
+    }
+
+    .three-merch-cards,
+    merch-sidenav ~ .four-merch-cards {
+        grid-template-columns: repeat(3, var(--merch-card-collection-card-width));
+    }
+}
+
+@media screen and ${LARGE_DESKTOP} {
+    .four-merch-cards,
+    merch-sidenav ~ .four-merch-cards {
+        grid-template-columns: repeat(4, var(--merch-card-collection-card-width));
+    }
+}
+
 `;
 document.head.appendChild(styles);

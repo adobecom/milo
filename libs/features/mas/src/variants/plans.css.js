@@ -1,7 +1,7 @@
 import { MOBILE_LANDSCAPE, TABLET_UP, DESKTOP_UP, LARGE_DESKTOP } from '../media.js';
 export const CSS = `
 :root {
-    --consonant-merch-card-plans-width: 300px;
+    --consonant-merch-card-plans-width: 302px;
     --consonant-merch-card-plans-icon-size: 40px;
     --consonant-merch-card-plans-students-width: 568px;
 }
@@ -25,40 +25,49 @@ merch-card[variant^="plans"] [slot="icons"] {
 }
 
 merch-card[variant="plans-education"] [slot="body-xs"] span.price:not(.price-legal) {
-  display: inline-block;
-  font-size: var(--consonant-merch-card-heading-xs-font-size);
-  font-weight: 700;
+    display: inline-block;
+    font-size: var(--consonant-merch-card-heading-xs-font-size);
+    font-weight: 700;
+}
+
+merch-card[variant="plans"] [slot="subtitle"] {
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 18px;
+}
+
+merch-card[variant^="plans"] span.price-unit-type:not([slot="callout-content"] *):not([slot="addon"] *) {
+    display: block;
 }
 
 merch-card[variant^="plans"] [slot="heading-xs"] span.price.price-strikethrough,
 merch-card[variant^="plans"] [slot="heading-m"] span.price.price-strikethrough,
 merch-card[variant="plans-education"] [slot="body-xs"] span.price.price-strikethrough {
-  font-size: var(--consonant-merch-card-heading-xxxs-font-size);
-  line-height: var(--consonant-merch-card-body-xs-line-height);
-  font-weight: 700;
+    font-size: var(--consonant-merch-card-heading-xxxs-font-size);
+    line-height: var(--consonant-merch-card-body-xs-line-height);
+    font-weight: 700;
 }
 
 merch-card[variant^="plans"] [slot='heading-xs'],
 merch-card[variant="plans-education"] span.heading-xs,
 merch-card[variant="plans-education"] [slot="body-xs"] span.price:not(.price-strikethrough) {
-  min-height: var(--merch-card-plans-heading-xs-min-height);
+    min-height: var(--merch-card-plans-heading-xs-min-height);
 }
 
-merch-card[variant="plans-education"] span.heading-xs {
-  margin-top: 16px;
-  margin-bottom: 8px;
+merch-card[variant="plans-education"] [slot="body-xs"] p:has(.heading-xs) {
+    margin-bottom: 16x;
 }
 
-merch-card[variant="plans-education"] [slot="body-xs"] p:first-of-type span.heading-xs {
-  margin-top: 8px;
+merch-card[variant="plans-education"] [slot="body-xs"] p:has(span[is="inline-price"]) {
+    margin-bottom: 16px;
 }
 
 merch-card[variant="plans-education"] span.promo-text {
-  margin-bottom: 8px;
+    margin-bottom: 8px;
 }
 
 merch-card[variant="plans-education"] p:has(a[href^='tel:']):has(+ p) {
-  margin-bottom: 16px;
+    margin-bottom: 16px;
 }
 
 merch-card[variant^="plans"] [slot="promo-text"],
@@ -67,11 +76,11 @@ merch-card[variant="plans-education"] span.promo-text {
 }
 
 merch-card-collection.plans merch-card {
-  width: auto;
-  height: 100%;
+    width: auto;
+    height: 100%;
 }
 
-merch-card-collection.plans merch-card aem-fragment + [slot^="heading-"] {
+merch-card-collection.plans merch-card[variant="plans"] aem-fragment + [slot^="heading-"] {
     margin-top: calc(40px + var(--consonant-merch-spacing-xxs));
 }
 
@@ -109,6 +118,10 @@ merch-card[variant^="plans"] [slot="callout-content"] {
     margin: 8px 0 0;
 }
 
+merch-card[variant^="plans"][size="super-wide"] [slot="callout-content"] {
+    margin: 0;
+}
+
 merch-card[variant^="plans"] [slot='callout-content'] > div > div,
 merch-card[variant^="plans"] [slot="callout-content"] > p {
     position: relative;
@@ -135,13 +148,25 @@ merch-card[variant^="plans"] [slot="whats-included"] [slot="description"] {
 }
 
 merch-card[variant^="plans"] [slot="quantity-select"] {
-    display: flex;
-    justify-content: flex-start;
-    box-sizing: border-box;
-    width: 100%;
-    padding-top: 16px;
-    flex-grow: 1;
-    align-items: end;
+    margin-top: auto;
+    padding-top: 8px;
+}
+
+merch-card[variant^="plans"]:has([slot="quantity-select"]) merch-addon {
+    margin: 0;
+}
+
+merch-card[variant^="plans"] merch-addon {
+    --merch-addon-gap: 10px;
+    --merch-addon-align: center;
+    --merch-addon-checkbox-size: 12px;
+    --merch-addon-checkbox-border: 2px solid rgb(109, 109, 109);
+    --merch-addon-checkbox-radius: 2px;
+    --merch-addon-checkbox-checked-bg: var(--checkmark-icon);
+    --merch-addon-checkbox-checked-color: var(--color-accent);
+    --merch-addon-label-size: 12px;
+    --merch-addon-label-color: rgb(34, 34, 34);
+    --merch-addon-label-line-height: normal;
 }
 
 merch-card[variant^="plans"] [slot="footer"] a {
@@ -151,27 +176,6 @@ merch-card[variant^="plans"] [slot="footer"] a {
 
 merch-card[variant^="plans"] [slot="footer"] .con-button > span {
     min-width: unset;
-}
-
-.plans-container {
-    display: flex;
-    justify-content: center;
-    gap: 36px;
-}
-
-.plans-container merch-card-collection {
-    padding: 0;
-}
-
-merch-card[variant^="plans"] merch-addon {
-    margin-top: 16px;
-    margin-bottom: 16px;
-    font-family: "Adobe Clean";
-    font-size: 12px;
-    font-style: normal;
-    font-weight: 400;
-    line-height: normal;
-    align-items: center;
 }
 
 merch-card[variant^="plans"] merch-addon span[data-template="price"] {
@@ -197,13 +201,31 @@ merch-card[variant^="plans"]:not([size]) {
     merch-whats-included [slot="heading"] {
         width: 100%;
     }
-} 
+}
+
+.collection-container.plans {
+    --merch-card-collection-card-min-height: 273px;
+    --merch-card-collection-card-width: var(--consonant-merch-card-plans-width);
+}
+
+merch-sidenav.plans {
+    --merch-sidenav-padding: 16px 20px 16px 16px;
+}
+
+merch-card-collection-header.plans {
+    --merch-card-collection-header-columns: 1fr fit-content(100%);
+    --merch-card-collection-header-areas: "result filter";
+}
 
 .one-merch-card.plans,
 .two-merch-cards.plans,
 .three-merch-cards.plans,
 .four-merch-cards.plans {
-    grid-template-columns: var(--consonant-merch-card-plans-width);
+    --merch-card-collection-card-width: var(--consonant-merch-card-plans-width);
+}
+
+merch-card-collection:has([slot="subtitle"]) merch-card {
+    --merch-card-plans-subtitle-display: block;
 }
 
 .columns .text .foreground {
@@ -227,46 +249,57 @@ merch-card[variant^="plans"]:not([size]) {
 
 /* Tablet */
 @media screen and ${TABLET_UP} {
-  :root {
-    --consonant-merch-card-plans-width: 302px;
-  }
-  .two-merch-cards.plans,
-  .three-merch-cards.plans,
-  .four-merch-cards.plans {
-      grid-template-columns: repeat(2, var(--consonant-merch-card-plans-width));
-  }
   .four-merch-cards.plans .foreground {
       max-width: unset;
   }
+  
   .columns.merch-card > .row {
-      grid-template-columns: repeat(auto-fit, calc(var(--consonant-merch-card-plans-width)*2 + var(--consonant-merch-spacing-m)));
+      grid-template-columns: repeat(auto-fit, calc(var(--consonant-merch-card-plans-width) * 2 + var(--consonant-merch-spacing-m)));
   }
 }
 
 /* desktop */
 @media screen and ${DESKTOP_UP} {
-  :root {
-    --consonant-merch-card-plans-width: 276px;
-  }
-  .three-merch-cards.plans,
-  .four-merch-cards.plans {
-      grid-template-columns: repeat(3, var(--consonant-merch-card-plans-width));
-  }
-  .columns .four-merch-cards.plans {
-      grid-template-columns: repeat(2, var(--consonant-merch-card-plans-width));
-  }
-  merch-card[variant="plans-students"] {
-      width: var(--consonant-merch-card-plans-students-width);
-  }
+    :root {
+            --consonant-merch-card-plans-width: 276px;
+    }
+
+    merch-sidenav.plans {
+            --merch-sidenav-collection-gap: 30px;
+    }
+
+    .columns .four-merch-cards.plans {
+        grid-template-columns: repeat(2, var(--consonant-merch-card-plans-width));
+    }
+
+    merch-card[variant="plans-students"] {
+        width: var(--consonant-merch-card-plans-students-width);
+    }
+
+    merch-card-collection-header.plans {
+        --merch-card-collection-header-columns: fit-content(100%);
+        --merch-card-collection-header-areas: "custom";
+    }
+
+    .collection-container.plans:has(merch-sidenav) {
+        width: 100vw;
+        position: relative;
+        left: 50%;
+        transform: translateX(-50vw);
+        justify-content: start;
+        padding-inline: 30px;
+        padding-top: 24px;
+    }
 }
 
 /* Large desktop */
-    @media screen and ${LARGE_DESKTOP} {
-    .four-merch-cards.plans {
-        grid-template-columns: repeat(4, var(--consonant-merch-card-plans-width));
-    }
+@media screen and ${LARGE_DESKTOP} {
     .columns .four-merch-cards.plans {
         grid-template-columns: repeat(2, var(--consonant-merch-card-plans-width));
+    }
+
+    merch-sidenav.plans {
+        --merch-sidenav-collection-gap: 54px;
     }
 }
 `;

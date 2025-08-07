@@ -18,7 +18,7 @@ const selectors = {
   logo: '.feds-logo',
   profileMenu: '.feds-profile-menu',
   profile: '.feds-profile',
-  breadCrumbItems: '.feds-breadcrumbs li > a',
+  breadCrumbItems: '.feds-breadcrumbs li:not(:nth-last-child(n+3):not(:first-child)) > a',
   expandedPopupTrigger: '.feds-navLink[aria-expanded = "true"]',
   promoLink: '.feds-promo-link',
   imagePromo: 'a.feds-promo-image',
@@ -37,7 +37,7 @@ const selectors = {
   menuContent: '.feds-menu-content',
   /* mobile redesign popup selectors */
   mainMenuItems: 'header.new-nav section.feds-navItem > button',
-  mainMenuLinks: 'header.new-nav .feds-navItem > a[href]',
+  mainMenuLinks: 'header.new-nav .feds-navItem > a[href], header.new-nav .feds-navItem > .feds-cta-wrapper > .feds-cta',
   activePopup: 'header.new-nav section.feds-dropdown--active > .feds-popup',
   tab: 'button[role="tab"]',
   activeTabpanel: '.tab-content [role="tabpanel"]',

@@ -18,6 +18,7 @@ let videoLabels = {
   playIcon: 'Play icon',
   hasFetched: false,
 };
+const isReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 let videoCounter = 0;
 
 export function decorateButtons(el, size) {
@@ -292,6 +293,10 @@ export function addAccessibilityControl(videoString, videoAttrs, indexOfVideo, t
   `;
 }
 
+function isVideoReady(video) {
+  return video.readyState > 1;
+}
+
 export function handlePause(event) {
   event.stopPropagation();
   if (event.code !== 'Enter' && event.code !== 'Space' && !['focus', 'click', 'blur'].includes(event.type)) {
@@ -302,7 +307,7 @@ export function handlePause(event) {
   if (event.type === 'blur') {
     video.pause();
   } else if (video.paused || video.ended || event.type === 'focus') {
-    video.play();
+    if (isVideoReady(video)) { video.play(); }
   } else {
     video.pause();
   }
@@ -315,8 +320,8 @@ export function applyHoverPlay(video) {
     video.parentElement.addEventListener('focus', handlePause);
     video.parentElement.addEventListener('blur', handlePause);
     if (!video.hasAttribute('data-mouseevent')) {
-      video.addEventListener('mouseenter', () => { video.play(); });
-      video.addEventListener('mouseleave', () => { video.pause(); });
+      video.addEventListener('mouseenter', () => { if (isVideoReady(video)) { video.play(); } });
+      video.addEventListener('mouseleave', () => { if (isVideoReady(video)) { video.pause(); } });
       video.addEventListener('ended', () => { syncPausePlayIcon(video); });
       video.setAttribute('data-mouseevent', true);
     }
@@ -330,9 +335,13 @@ export function applyAccessibilityEvents(videoEl) {
     pausePlayWrapper.addEventListener('keydown', handlePause);
   }
   if (videoEl.hasAttribute('autoplay')) {
-    videoEl.addEventListener('canplay', () => videoEl.play());
     videoEl.addEventListener('playing', (event) => syncPausePlayIcon(videoEl, event));
     videoEl.addEventListener('ended', () => syncPausePlayIcon(videoEl));
+    if (isReducedMotion) {
+      videoEl.pause();
+      return;
+    }
+    videoEl.addEventListener('canplay', () => videoEl.play());
   }
 }
 
@@ -490,13 +499,16 @@ export function decorateAnchorVideo({ src = '', anchorTag }) {
   if (indexOfVideo === 1) {
     firstVideo = videoEl;
   }
+
   createIntersectionObserver({
     el: videoEl,
     options: { rootMargin: '1000px' },
     callback: () => {
-      videoEl?.appendChild(createTag('source', { src, type: 'video/mp4' }));
+      if (videoEl.querySelector('source')) return;
+      videoEl.appendChild(createTag('source', { src, type: 'video/mp4' }));
     },
   });
+
   if (videoEl.controls) {
     const io = new IntersectionObserver((entries) => {
       entries.forEach(({ isIntersecting, target }) => {

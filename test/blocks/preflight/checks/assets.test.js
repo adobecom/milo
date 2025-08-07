@@ -78,8 +78,8 @@ describe('Preflight Asset Checks', () => {
     });
 
     it('tests basic checks for pass states', async () => {
-      mockImage.getAttribute.withArgs('width').returns('2000');
-      mockImage.getAttribute.withArgs('height').returns('1000');
+      mockImage.getAttribute.withArgs('width').returns('3000');
+      mockImage.getAttribute.withArgs('height').returns('1200');
       mockImage.getAttribute.withArgs('src').returns('test.jpg');
       window.createTag = () => ({ append: sinon.stub() });
 

@@ -34,6 +34,42 @@ const createTab = (content, tabName) => {
   return topDiv;
 };
 
+const [handleOverflow, removeOverflow] = (() => {
+  let geoModal = null;
+  let resizeObserver = null;
+
+  const calcOverflow = () => {
+    if (!geoModal) return;
+    const isOverflowing = geoModal.scrollHeight > geoModal.clientHeight;
+    geoModal.style.overflow = isOverflowing ? 'auto' : 'visible';
+  };
+
+  return [
+    (container) => {
+      if (!container) return;
+      geoModal = container;
+
+      requestAnimationFrame(() => {
+        calcOverflow();
+      });
+
+      resizeObserver = new ResizeObserver(() => {
+        calcOverflow();
+      });
+      resizeObserver.observe(geoModal);
+
+      window.addEventListener('milo:modal:closed', removeOverflow);
+    },
+    () => {
+      if (!geoModal) return;
+      geoModal.removeAttribute('style');
+      if (resizeObserver) resizeObserver.disconnect();
+      geoModal = null;
+      window.removeEventListener('milo:modal:closed', removeOverflow);
+    },
+  ];
+})();
+
 export const getCookie = (name) => document.cookie
   .split('; ')
   .find((row) => row.startsWith(`${name}=`))
@@ -120,6 +156,7 @@ function decorateForOnLinkClick(link, urlPrefix, localePrefix, eventType = 'Swit
       || window.location.host.endsWith('.adobe.com') ? 'domain=adobe.com' : '';
     document.cookie = `international=${modPrefix};path=/;${domain}`;
     link.closest('.dialog-modal').dispatchEvent(new Event('closeModal'));
+    removeOverflow();
   });
 }
 
@@ -135,12 +172,17 @@ function getMatches(data, suppliedCode) {
   }, []);
 }
 
-function removeOnClickOutsideElement(element, event, button) {
-  const func = (evt) => {
-    if (event === evt) return; // ignore initial click event
+const [pickerKeydownHandler, removePicker, removeOnClickOutsideElement] = (() => {
+  let pickerList = null;
+  let pickerButton = null;
+  let pickerLinks = null;
+  let pickerEvent = null;
+
+  const handleOutsideClick = (evt) => {
+    if (pickerEvent === evt) return; // ignore initial click event
     let targetEl = evt.target;
     while (targetEl) {
-      if (targetEl === element) {
+      if (targetEl === pickerList) {
         // click inside
         return;
       }
@@ -148,12 +190,68 @@ function removeOnClickOutsideElement(element, event, button) {
       targetEl = targetEl.parentNode;
     }
     // This is a click outside.
-    element.remove();
-    button.setAttribute('aria-expanded', false);
-    document.removeEventListener('click', func);
+    removePicker();
+    document.removeEventListener('click', handleOutsideClick);
   };
-  document.addEventListener('click', func);
-}
+  const keydownHandler = (e) => {
+    const index = Array.from(pickerLinks).indexOf(e.target);
+    // If the current target is not a link in the picker, do nothing
+    if (index === -1) return;
+    switch (e.code) {
+      case 'ArrowDown': {
+        const next = pickerLinks[index + 1];
+        next?.focus();
+        break;
+      }
+      case 'ArrowUp': {
+        const prev = pickerLinks[index - 1];
+        prev?.focus();
+        break;
+      }
+      case 'Tab': {
+        e.preventDefault();
+        if (e.shiftKey) {
+          const lastElement = pickerLinks[pickerLinks.length - 1];
+          const prev = pickerLinks[index - 1] || lastElement;
+          prev.focus();
+        } else {
+          const next = pickerLinks[index + 1] || pickerLinks[0];
+          next.focus();
+        }
+        break;
+      }
+      case 'Escape': {
+        e.stopPropagation();
+        document.removeEventListener('click', handleOutsideClick);
+        removePicker();
+        break;
+      }
+      default:
+        break;
+    }
+  };
+  return [
+    (list, button) => {
+      pickerList = list;
+      pickerButton = button;
+      pickerLinks = list.querySelectorAll('a');
+      if (pickerLinks.length > 0) {
+        pickerLinks[0].focus();
+        pickerList.addEventListener('keydown', keydownHandler);
+      }
+    },
+    () => {
+      pickerList?.removeEventListener('keydown', keydownHandler);
+      pickerList?.remove();
+      pickerButton?.focus();
+      pickerButton?.setAttribute('aria-expanded', false);
+    },
+    (event) => {
+      pickerEvent = event;
+      document.addEventListener('click', handleOutsideClick);
+    },
+  ];
+})();
 
 function openPicker(button, locales, country, event, dir, currentPage) {
   if (document.querySelector('.locale-modal-v2 .picker')) {
@@ -162,7 +260,7 @@ function openPicker(button, locales, country, event, dir, currentPage) {
   const list = createTag('ul', { class: 'picker', dir });
   locales.forEach((l) => {
     const lang = config.locales[l.prefix]?.ietf ?? '';
-    const a = createTag('a', { lang, href: l.url }, `${country} - ${l.language}`);
+    const a = createTag('a', { lang, href: l.url || '/' }, `${country} - ${l.language}`);
     decorateForOnLinkClick(a, l.prefix, currentPage.prefix);
     const li = createTag('li', {}, a);
     list.appendChild(li);
@@ -174,8 +272,10 @@ function openPicker(button, locales, country, event, dir, currentPage) {
     list.classList.add('top');
   }
 
+  pickerKeydownHandler(list, button);
+
   button.setAttribute('aria-expanded', true);
-  removeOnClickOutsideElement(list, event, button);
+  removeOnClickOutsideElement(event);
 }
 
 function buildContent(currentPage, locale, geoData, locales) {
@@ -213,12 +313,16 @@ function buildContent(currentPage, locale, geoData, locales) {
       height: 15,
     });
     span.appendChild(downArrow);
-    mainAction.addEventListener('click', (e) => {
+    const openPickerHandler = (e) => {
       e.preventDefault();
       openPicker(mainAction, locales, locale.button, e, dir, currentPage);
+    };
+    mainAction.addEventListener('keydown', (e) => {
+      if (e.code === 'Space') openPickerHandler(e);
     });
+    mainAction.addEventListener('click', openPickerHandler);
   } else {
-    mainAction.href = locale.url;
+    mainAction.href = locale.url || '/';
     decorateForOnLinkClick(mainAction, locale.prefix, currentPage.prefix);
   }
 
@@ -258,14 +362,16 @@ async function showModal(details) {
   const tabs = details.querySelector('.tabs');
   const sectionMetaPath = `${miloLibs || codeRoot}/blocks/section-metadata/section-metadata.css`;
   const georoutingPath = `${miloLibs || codeRoot}/features/georoutingv2/georoutingv2.css`;
+  const modalPath = `${miloLibs || codeRoot}/blocks/modal/modal.css`;
   const promises = [
     tabs ? loadBlock(tabs) : null,
     tabs ? new Promise((resolve) => { loadStyle(sectionMetaPath, resolve); }) : null,
     new Promise((resolve) => { loadStyle(georoutingPath, resolve); }),
+    new Promise((resolve) => { loadStyle(modalPath, resolve); }),
     import('../../blocks/modal/modal.js'),
   ];
   const result = await Promise.all(promises);
-  const { getModal, sendAnalytics } = result[3];
+  const { getModal, sendAnalytics } = result[4];
   sendAnalyticsFunc = sendAnalytics;
   return getModal(null, { class: 'locale-modal-v2', id: 'locale-modal-v2', content: details, closeEvent: 'closeModal' });
 }
@@ -323,7 +429,7 @@ export default async function loadGeoRouting(
       );
       const details = await getDetails(urlGeoData, localeMatches, json.geos.data);
       if (details) {
-        await showModal(details);
+        handleOverflow(await showModal(details));
         sendAnalyticsFunc(
           new Event(`Load:${storedLocaleGeo || 'us'}-${urlLocaleGeo || 'us'}|Geo_Routing_Modal`),
         );
@@ -339,7 +445,7 @@ export default async function loadGeoRouting(
       const localeMatches = getMatches(json.georouting.data, akamaiCode);
       const details = await getDetails(urlGeoData, localeMatches, json.geos.data);
       if (details) {
-        await showModal(details);
+        handleOverflow(await showModal(details));
         if (akamaiCode === 'gb') akamaiCode = 'uk';
         sendAnalyticsFunc(
           new Event(`Load:${urlLocale || 'us'}-${akamaiCode || 'us'}|Geo_Routing_Modal`),

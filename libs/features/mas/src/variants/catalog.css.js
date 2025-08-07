@@ -1,43 +1,80 @@
-import { TABLET_UP, DESKTOP_UP, LARGE_DESKTOP,} from '../media.js';
+import { MOBILE_LANDSCAPE, TABLET_UP, DESKTOP_UP } from '../media.js';
 
 export const CSS = `
 :root {
-  --consonant-merch-card-catalog-width: 276px;
-  --consonant-merch-card-catalog-icon-size: 40px;
+    --consonant-merch-card-catalog-width: 302px;
+    --consonant-merch-card-catalog-icon-size: 40px;
 }
+
+.collection-container.catalog {
+    --merch-card-collection-card-min-height: 330px;
+    --merch-card-collection-card-width: var(--consonant-merch-card-catalog-width);
+}
+
+merch-sidenav.catalog {
+    --merch-sidenav-title-font-size: 15px;
+    --merch-sidenav-title-font-weight: 500;
+    --merch-sidenav-title-line-height: 19px;
+    --merch-sidenav-title-color: rgba(70, 70, 70, 0.87);
+    --merch-sidenav-title-padding: 8px 15px 21px;
+    --merch-sidenav-item-height: 40px;
+    --merch-sidenav-item-inline-padding: 15px;
+    --merch-sidenav-item-font-weight: 700;
+    --merch-sidenav-item-font-size: 17px;
+    --merch-sidenav-item-line-height: normal;
+    --merch-sidenav-item-label-top-margin: 8px;
+    --merch-sidenav-item-label-bottom-margin: 11px;
+    --merch-sidenav-item-icon-top-margin: 11px;
+    --merch-sidenav-item-icon-gap: 13px;
+    --merch-sidenav-item-selected-background: var(--spectrum-gray-300, #D5D5D5);
+    --merch-sidenav-list-item-gap: 5px;
+    --merch-sidenav-checkbox-group-padding: 0 15px;
+    --merch-sidenav-modal-border-radius: 0;
+}
+
+merch-sidenav.catalog merch-sidenav-checkbox-group {
+    border: none;
+}
+
+merch-sidenav.catalog merch-sidenav-list:not(:first-of-type) {
+    --merch-sidenav-list-gap: 32px;
+}
+
 .one-merch-card.catalog,
 .two-merch-cards.catalog,
 .three-merch-cards.catalog,
 .four-merch-cards.catalog {
-    grid-template-columns: var(--consonant-merch-card-catalog-width);
+    --merch-card-collection-card-width: var(--consonant-merch-card-catalog-width);
+}
+
+.collection-container.catalog merch-sidenav {
+    --merch-sidenav-gap: 10px;
+}
+
+merch-card-collection-header.catalog {
+    --merch-card-collection-header-row-gap: var(--consonant-merch-spacing-xs);
+    --merch-card-collection-header-search-max-width: 244px;
+}
+
+@media screen and ${MOBILE_LANDSCAPE} {
+    merch-card-collection-header.catalog {
+        --merch-card-collection-header-columns: min-content auto;
+    }
 }
 
 @media screen and ${TABLET_UP} {
-    :root {
-      --consonant-merch-card-catalog-width: 302px;
-    }
-
-    .two-merch-cards.catalog,
-    .three-merch-cards.catalog,
-    .four-merch-cards.catalog {
-        grid-template-columns: repeat(2, var(--consonant-merch-card-catalog-width));
+    merch-card-collection-header.catalog {
+        --merch-card-collection-header-column-gap: 16px;
     }
 }
 
 @media screen and ${DESKTOP_UP} {
     :root {
-      --consonant-merch-card-catalog-width: 276px;
+        --consonant-merch-card-catalog-width: 276px;
     }
 
-    .three-merch-cards.catalog,
-    .four-merch-cards.catalog {
-        grid-template-columns: repeat(3, var(--consonant-merch-card-catalog-width));
-    }
-}
-
-@media screen and ${LARGE_DESKTOP} {
-    .four-merch-cards.catalog {
-        grid-template-columns: repeat(4, var(--consonant-merch-card-catalog-width));
+    merch-card-collection-header.catalog {
+        --merch-card-collection-header-result-font-size: 17px;
     }
 }
 
