@@ -86,12 +86,13 @@ describe('merch-card-collection autoblock', () => {
       document.body.append(root);
       await init(a);
       document.querySelector('.collection-container')?.setAttribute('daa-lh', 'all--cat');
-      const sidenavItem = document.querySelector('sp-sidenav-item[value="photo"]');
       window._satellite.track.called = false;
-      sidenavItem.click();
+      const sidenav = document.querySelector('merch-sidenav');
+      const lastFilter = sidenav.querySelector('sp-sidenav-item:last-of-type');
+      sidenav.filters.selectElement(lastFilter);
       await delay(100);
       expect(window._satellite.track.called).to.be.true;
-      expect(window._satellite.track.args[0][1].data.web.webInteraction.name).to.equal('cat-changed|topdaalh|test-analytics|photo--cat');
+      expect(window._satellite.track.args[0][1].data.web.webInteraction.name).to.equal('cat-changed|topdaalh|test-analytics|cloud--cat');
     });
 
     it('creates does not create sidenav if specified in the query params', async () => {
