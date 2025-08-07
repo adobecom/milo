@@ -31,6 +31,18 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
 
+      - name: Setup Node.js
+        uses: actions/setup-node@cdca7365b2dadb8aad0a33bc7601856ffabcc48e
+        with:
+          node-version: '20.x'
+
+      - name: Download previous test timing data
+        uses: actions/download-artifact@v4
+        with:
+          name: test-timings
+          path: ./
+        continue-on-error: true
+
       - name: Calculate optimal shard count
         id: calculate
         run: |
@@ -42,15 +54,48 @@ jobs:
           MAX_SHARDS=${{ inputs.max_shards }}
           MAX_SHARDS=${MAX_SHARDS:-6}
           
-          # Calculate optimal shard count (5-8 test files per shard)
-          OPTIMAL_SHARDS=$((TEST_COUNT / 6))
-          OPTIMAL_SHARDS=$((OPTIMAL_SHARDS < 2 ? 2 : OPTIMAL_SHARDS))
-          OPTIMAL_SHARDS=$((OPTIMAL_SHARDS > MAX_SHARDS ? MAX_SHARDS : OPTIMAL_SHARDS))
+          # Check if we have timing data for weighted distribution
+          if [ -f test-timings.json ]; then
+            echo "Using weighted distribution based on test execution times"
+            
+            # Calculate weighted shards
+            node nala/utils/calculate-weighted-shards.js \
+              --timing-data test-timings.json \
+              --max-shards $MAX_SHARDS \
+              --output shard-assignments.json
+            
+            # Extract shard count from output
+            OPTIMAL_SHARDS=$(jq -r '.shardCount' shard-assignments.json)
+            
+            # Generate distribution summary
+            echo "## Test Sharding Configuration (Weighted)" >> $GITHUB_STEP_SUMMARY
+            echo "- **Test files found:** $TEST_COUNT" >> $GITHUB_STEP_SUMMARY
+            echo "- **Shards to use:** $OPTIMAL_SHARDS" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "### Distribution by Shard:" >> $GITHUB_STEP_SUMMARY
+            echo "| Shard | Tests | Duration |" >> $GITHUB_STEP_SUMMARY
+            echo "|-------|-------|----------|" >> $GITHUB_STEP_SUMMARY
+            
+            # Add distribution details
+            jq -r '.distribution[] | "| \(.shard) | \(.testCount) | \(.duration)s |"' shard-assignments.json >> $GITHUB_STEP_SUMMARY
+          else
+            echo "No timing data found, using count-based distribution"
+            
+            # Calculate optimal shard count (5-8 test files per shard)
+            OPTIMAL_SHARDS=$((TEST_COUNT / 6))
+            OPTIMAL_SHARDS=$((OPTIMAL_SHARDS < 2 ? 2 : OPTIMAL_SHARDS))
+            OPTIMAL_SHARDS=$((OPTIMAL_SHARDS > MAX_SHARDS ? MAX_SHARDS : OPTIMAL_SHARDS))
+            
+            echo "## Test Sharding Configuration" >> $GITHUB_STEP_SUMMARY
+            echo "- **Test files found:** $TEST_COUNT" >> $GITHUB_STEP_SUMMARY
+            echo "- **Shards to use:** $OPTIMAL_SHARDS" >> $GITHUB_STEP_SUMMARY
+            echo "- **Tests per shard:** ~$((TEST_COUNT / OPTIMAL_SHARDS))" >> $GITHUB_STEP_SUMMARY
+          fi
           
           echo "Using $OPTIMAL_SHARDS shards for $TEST_COUNT test files"
           echo "count=$OPTIMAL_SHARDS" >> $GITHUB_OUTPUT
           
-          # Create matrix JSON using printf for better control
+          # Create matrix JSON
           SHARDS_JSON=""
           for i in $(seq 1 $OPTIMAL_SHARDS); do
             if [ $i -eq 1 ]; then
@@ -62,12 +107,14 @@ jobs:
           MATRIX="{\"shard\":[$SHARDS_JSON]}"
           echo "Debug: Generated matrix: $MATRIX"
           printf "matrix=%s\n" "$MATRIX" >> $GITHUB_OUTPUT
-          
-          # Output summary to workflow
-          echo "## Test Sharding Configuration" >> $GITHUB_STEP_SUMMARY
-          echo "- **Test files found:** $TEST_COUNT" >> $GITHUB_STEP_SUMMARY
-          echo "- **Shards to use:** $OPTIMAL_SHARDS" >> $GITHUB_STEP_SUMMARY
-          echo "- **Tests per shard:** ~$((TEST_COUNT / OPTIMAL_SHARDS))" >> $GITHUB_STEP_SUMMARY
+
+      - name: Upload shard assignments
+        if: hashFiles('shard-assignments.json') != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: shard-assignments
+          path: shard-assignments.json
+          retention-days: 1
 
   # Purge branch before running tests
   purge-branch:
@@ -189,6 +236,24 @@ jobs:
           docker load --input /tmp/milo-nala-tests.tar
           docker image ls
 
+      - name: Download shard assignments
+        uses: actions/download-artifact@v4
+        with:
+          name: shard-assignments
+          path: ./
+        continue-on-error: true
+
+      - name: Set test files for shard
+        run: |
+          if [ -f shard-assignments.json ]; then
+            # Get test files for this shard
+            TEST_FILES=$(jq -r '.shards."${{ matrix.shard }}"[]' shard-assignments.json | tr '\n' ' ')
+            echo "TEST_FILES=$TEST_FILES" >> $GITHUB_ENV
+            echo "Running specific test files for shard ${{ matrix.shard }}: $TEST_FILES"
+          else
+            echo "No shard assignments found, will use standard sharding"
+          fi
+
       - name: Run Nala Tests (Shard ${{ matrix.shard }}/${{ needs.calculate-shards.outputs.shard-count }})
         run: |
           docker run --rm \
@@ -213,6 +278,7 @@ jobs:
             -e IMS_PASS="${{ secrets.IMS_PASS }}" \
             -e SHARD_INDEX="${{ matrix.shard }}" \
             -e SHARD_TOTAL="${{ needs.calculate-shards.outputs.shard-count }}" \
+            -e TEST_FILES="${{ env.TEST_FILES }}" \
             milo-nala-tests:latest
 
       - name: Upload test results
@@ -225,6 +291,7 @@ jobs:
             playwright-report/
             test-html-results/
             nala-results.json
+            test-results.json
           retention-days: 7
 
   # Merge and report combined results
@@ -260,7 +327,14 @@ jobs:
           REPORT_DIRS=$(find all-shards -name "playwright-report" -type d | tr '\n' ' ')
           
           if [ ! -z "$REPORT_DIRS" ]; then
-            npx playwright merge-reports ${REPORT_DIRS} --reporter=html || true
+            # Create config to prevent server startup
+            cat > merge.config.js << EOF
+          module.exports = {
+            reporter: [['html', { open: 'never' }]],
+          };
+          EOF
+            
+            npx playwright merge-reports ${REPORT_DIRS} --config merge.config.js || true
           fi
 
       - name: Create summary report
@@ -295,6 +369,47 @@ jobs:
           TIME_SAVED=$((($SHARD_COUNT - 1) * 100 / $SHARD_COUNT))
           echo "- **Estimated time reduction:** ~${TIME_SAVED}%" >> $GITHUB_STEP_SUMMARY
           echo "- **Parallelization factor:** ${SHARD_COUNT}x" >> $GITHUB_STEP_SUMMARY
+
+      - name: Analyze test timings
+        run: |
+          echo "### Analyzing test timings from JSON reports" >> $GITHUB_STEP_SUMMARY
+          
+          # Find all JSON test result files
+          JSON_FILES=$(find all-shards -name "test-results.json" -type f | tr '\n' ' ')
+          
+          if [ ! -z "$JSON_FILES" ]; then
+            # Merge JSON reports
+            node nala/utils/merge-json-reports.js $JSON_FILES > merged-results.json
+            
+            # Download previous timing data if exists
+            curl -s -o previous-timings.json \
+              https://github.com/${{ github.repository }}/releases/download/test-timings/test-timings.json || true
+            
+            # Analyze timings
+            if [ -f previous-timings.json ]; then
+              node nala/utils/analyze-test-timings.js \
+                --input merged-results.json \
+                --previous previous-timings.json \
+                --output test-timings.json
+            else
+              node nala/utils/analyze-test-timings.js \
+                --input merged-results.json \
+                --output test-timings.json
+            fi
+            
+            # Add timing summary to workflow summary
+            node nala/utils/analyze-test-timings.js --summary test-timings.json >> $GITHUB_STEP_SUMMARY
+          else
+            echo "No JSON test results found for timing analysis" >> $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: Upload test timing data
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-timings
+          path: test-timings.json
+          retention-days: 90
 
       - name: Upload merged results
         uses: actions/upload-artifact@v4

@@ -34,11 +34,17 @@ const config = {
   workers: process.env.CI ? 7 : 3,
   /* Reporter to use. */
   reporter: process.env.CI
-    ? [['github'], ['list'], ['./nala/utils/base-reporter.js']]
+    ? [
+      ['github'], 
+      ['list'], 
+      ['./nala/utils/base-reporter.js'],
+      ['json', { outputFile: 'test-results.json' }],
+    ]
     : [
       ['html', { outputFolder: 'test-html-results' }],
       ['list'],
       ['./nala/utils/base-reporter.js'],
+      ['json', { outputFile: 'test-results.json' }],
     ],
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {

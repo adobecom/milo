@@ -11,6 +11,12 @@ logs/*
 test-html-results/
 test-results/
 test-a11y-results/
+test-results.json
+test-timings.json
+shard-assignments.json
+merged-results.json
+playwright-report/
+nala-results.json
 tmp
 libs/navigation/dist/
 *.mdc

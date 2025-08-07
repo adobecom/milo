@@ -100,7 +100,14 @@ if [[ ! -z "$SHARD_INDEX" ]] && [[ ! -z "$SHARD_TOTAL" ]]; then
   echo "Running shard ${SHARD_INDEX} of ${SHARD_TOTAL}"
 fi
 
-npx playwright test --config=./playwright.config.js ${TAGS} ${EXCLUDE_TAGS} --project=milo-live-chromium --project=milo-live-firefox --project=milo-live-webkit ${SHARD_PARAMS} ${REPORTER} || EXIT_STATUS=$?
+# Check if specific test files are provided
+if [[ ! -z "$TEST_FILES" ]]; then
+  echo "Running specific test files: $TEST_FILES"
+  npx playwright test $TEST_FILES --config=./playwright.config.js ${TAGS} ${EXCLUDE_TAGS} --project=milo-live-chromium --project=milo-live-firefox --project=milo-live-webkit ${REPORTER} || EXIT_STATUS=$?
+else
+  # Use standard sharding
+  npx playwright test --config=./playwright.config.js ${TAGS} ${EXCLUDE_TAGS} --project=milo-live-chromium --project=milo-live-firefox --project=milo-live-webkit ${SHARD_PARAMS} ${REPORTER} || EXIT_STATUS=$?
+fi
 
 # Check if tests passed or failed
 if [ $EXIT_STATUS -ne 0 ]; then
