@@ -19,7 +19,7 @@ on:
         default: '10'
         type: string
       target_duration:
-        description: 'Target duration per shard in seconds (default: 120)'
+        description: 'Target duration per shard in seconds (30-600, default: 120)'
         required: false
         default: '120'
         type: string
@@ -91,7 +91,7 @@ jobs:
           
           if [ -f test-timings.json ]; then
             echo "Successfully loaded timing data"
-            echo "File size: $(stat -f%z test-timings.json 2>/dev/null || stat -c%s test-timings.json) bytes"
+            echo "File size: $(stat -c%s test-timings.json 2>/dev/null || stat --format=%s test-timings.json 2>/dev/null || echo 'unknown') bytes"
             
             # Clean up stale entries for files that no longer exist
             echo "Cleaning up stale timing entries..."
@@ -141,6 +141,15 @@ jobs:
           MAX_SHARDS=${{ inputs.max_shards }}
           MAX_SHARDS=${MAX_SHARDS:-10}
           
+          # Validate max_shards is within reasonable bounds
+          if [ "$MAX_SHARDS" -lt 2 ]; then
+            echo "Warning: max_shards too low ($MAX_SHARDS), using minimum of 2"
+            MAX_SHARDS=2
+          elif [ "$MAX_SHARDS" -gt 20 ]; then
+            echo "Warning: max_shards too high ($MAX_SHARDS), using maximum of 20"
+            MAX_SHARDS=20
+          fi
+          
           # Check if we have timing data for weighted distribution
           if [ -f test-timings.json ]; then
             echo "Using weighted distribution based on test execution times"
@@ -148,7 +157,18 @@ jobs:
             # Set target duration per shard (in seconds)
             # Use workflow input if provided, otherwise default to 120 seconds (2 minutes)
             TARGET_DURATION=${{ inputs.target_duration }}
-            export SHARD_TARGET_DURATION="${TARGET_DURATION:-120}"
+            TARGET_DURATION=${TARGET_DURATION:-120}
+            
+            # Validate target_duration is within reasonable bounds
+            if [ "$TARGET_DURATION" -lt 30 ]; then
+              echo "Warning: target_duration too low ($TARGET_DURATION), using minimum of 30"
+              TARGET_DURATION=30
+            elif [ "$TARGET_DURATION" -gt 600 ]; then
+              echo "Warning: target_duration too high ($TARGET_DURATION), using maximum of 600"
+              TARGET_DURATION=600
+            fi
+            
+            export SHARD_TARGET_DURATION="$TARGET_DURATION"
             echo "Target duration per shard: ${SHARD_TARGET_DURATION}s"
             
             # Calculate weighted shards
@@ -234,7 +254,7 @@ jobs:
           # Debug: Check if shard-assignments.json exists
           if [ -f shard-assignments.json ]; then
             echo "✓ shard-assignments.json created successfully"
-            echo "File size: $(stat -f%z shard-assignments.json 2>/dev/null || stat -c%s shard-assignments.json) bytes"
+            echo "File size: $(stat -c%s shard-assignments.json 2>/dev/null || stat --format=%s shard-assignments.json 2>/dev/null || echo 'unknown') bytes"
           else
             echo "✗ shard-assignments.json not found"
           fi
@@ -376,8 +396,6 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
-          build-args: |
-            PLAYWRIGHT_VERSION=1.54.2
 
       - name: Export image reference
         id: deps-tag
@@ -433,7 +451,7 @@ jobs:
           echo "Attempting to download shard-assignments artifact..."
           
           # Use gh CLI to download artifact (more reliable than the action)
-          if gh run download ${{ github.run_id }} --repo ${{ github.repository }} --name shard-assignments --dir ./ 2>/dev/null; then
+          if gh run download ${{ github.run_id }} --repo ${{ github.repository }} --name shard-assignments --dir ./; then
             echo "✓ Successfully downloaded shard-assignments"
             echo "outcome=success" >> $GITHUB_OUTPUT
           else
@@ -647,7 +665,7 @@ jobs:
           # Check if we have cached timing data
           if [ -f test-timings.json ]; then
             echo "Starting with cached timing data"
-            echo "Cached data size: $(stat -f%z test-timings.json 2>/dev/null || stat -c%s test-timings.json) bytes"
+            echo "Cached data size: $(stat -c%s test-timings.json 2>/dev/null || stat --format=%s test-timings.json 2>/dev/null || echo 'unknown') bytes"
           else
             echo "Starting with fresh timing data"
           fi
@@ -655,7 +673,7 @@ jobs:
           # Note: update-test-timings.js automatically removes entries for deleted test files
           
           # Find all shard-specific JSON files
-          SHARD_FILES=$(find all-shards -name "test-results-shard-*.json" -type f 2>/dev/null)
+          SHARD_FILES=$(find all-shards -name "test-results-shard-*.json" -type f)
           
           if [ ! -z "$SHARD_FILES" ]; then
             # Update timings from each shard

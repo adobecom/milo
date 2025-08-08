@@ -132,8 +132,6 @@ else
   FORCE_COLOR=0 PLAYWRIGHT_HTML_OPEN=never npx playwright test --config=./playwright.config.js ${TAGS} ${EXCLUDE_TAGS} --project=milo-live-chromium --project=milo-live-firefox --project=milo-live-webkit ${SHARD_PARAMS} ${REPORTER} || EXIT_STATUS=$?
 fi
 
-# Wait a moment for reporters to finish writing
-sleep 3
 
 # Debug: Check what files were created
 echo "Contents of test-results directory after test run:"
@@ -160,8 +158,6 @@ fi
 # Check if tests passed or failed
 if [ $EXIT_STATUS -ne 0 ]; then
   echo "Some tests failed. Exiting with error."
-  # Give Playwright time to finish writing reports
-  sleep 2
   exit $EXIT_STATUS
 else
   echo "All tests passed successfully."
