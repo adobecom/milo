@@ -22,8 +22,10 @@ function toUIFormat(result, signalResult) {
     icon = pass;
   } else if (result.status === STATUS.LIMBO) {
     icon = limbo;
+  } else if (result.status === STATUS.FAIL || result.status === STATUS.EMPTY) {
+    icon = result.severity === 'critical' ? fail : limbo;
   } else {
-    icon = fail; // Covers STATUS.FAIL and STATUS.EMPTY
+    icon = fail;
   }
 
   signalResult.value = {

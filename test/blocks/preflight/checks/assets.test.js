@@ -15,7 +15,7 @@ describe('Preflight Asset Checks', () => {
     mockMatchMedia = sinon.stub(window, 'matchMedia').returns({ matches: true });
 
     mockPicture = {
-      querySelector: sinon.stub().returns(null),
+      querySelectorAll: sinon.stub().returns([]),
       insertBefore: sinon.stub(),
     };
 

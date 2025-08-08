@@ -22,6 +22,7 @@ import {
   checkLinks,
   runChecks as runChecksSeo,
 } from './seo.js';
+import { SEVERITY } from './constants.js';
 
 let checks = null;
 
@@ -81,7 +82,7 @@ export async function getPreflightResults(
     return {
       isViewportTooSmall: isViewportTooSmall(),
       runChecks: cachedChecks,
-      hasFailures: allResults.some((result) => result.status === 'fail'),
+      hasFailures: allResults.some((result) => result.status === 'fail' && result.severity === SEVERITY.CRITICAL),
     };
   }
 
@@ -95,6 +96,6 @@ export async function getPreflightResults(
   return {
     isViewportTooSmall: isViewportTooSmall(),
     runChecks: res,
-    hasFailures: allResults.some((result) => result.status === 'fail'),
+    hasFailures: allResults.some((result) => result.status === 'fail' && result.severity === SEVERITY.CRITICAL),
   };
 }
