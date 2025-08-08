@@ -45,7 +45,7 @@ jobs:
         uses: actions/cache/restore@v3
         with:
           path: test-timings.json
-          key: test-timings-
+          key: test-timings-${{ github.run_number }}
           restore-keys: |
             test-timings-
       
@@ -54,8 +54,12 @@ jobs:
           if [ -f test-timings.json ]; then
             echo "Successfully loaded previous timing data"
             echo "File size: $(stat -f%z test-timings.json 2>/dev/null || stat -c%s test-timings.json) bytes"
+            # Show sample of timing data to verify it's not just defaults
+            echo "Sample timing entries (first 5):"
+            jq -r '.timings | to_entries[:5] | .[] | "  \(.key): \(.value)ms"' test-timings.json 2>/dev/null || true
+            echo "Last updated: $(jq -r '.lastUpdated' test-timings.json 2>/dev/null || echo 'unknown')"
           else
-            echo "No previous timing data found, will use count-based distribution"
+            echo "No previous timing data found, will use default baseline timings"
           fi
 
       - name: Calculate optimal shard count
