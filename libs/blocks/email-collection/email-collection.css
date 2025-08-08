@@ -317,3 +317,22 @@
   height: 0;
   overflow: hidden;
 }
+
+.email-collection #req-err.hide {
+  display: none;
+}
+
+.email-collection #req-err {
+  color: red;
+}
+
+input[aria-invalid="true"] {
+  border-color: red !important;
+}
+
+label[aria-invalid="true"] {
+  color: red !important;
+}
+label[aria-invalid="true"]::after {
+  color: red !important;
+}

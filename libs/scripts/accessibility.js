@@ -65,6 +65,19 @@ export const setDialogAndElementAttributes = ({ element, title }) => {
   element.closest('.dialog-modal')?.setAttribute('aria-label', title);
 };
 
+function sectionUpToList() {
+  const childrenSelector = '.action-item, .icon-block';
+  const upSections = document.querySelectorAll(`.section[class*="-up"]:has(${childrenSelector})`);
+  upSections.forEach((section) => {
+    section.setAttribute('role', 'list');
+    [...section.children].forEach((child) => {
+      if (child.classList.contains('section-metadata')) return;
+      child.setAttribute('role', 'listitem');
+    });
+  });
+}
+
 export default function init() {
+  sectionUpToList();
   scrollTabFocusedElIntoView();
 }

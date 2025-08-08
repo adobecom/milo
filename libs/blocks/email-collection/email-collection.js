@@ -13,10 +13,9 @@ const ALL_COUNTRIES_CONSENT_ID = 'cs4;ve1;';
 const FEDERAL_ROOT = '/federal/email-collection';
 const ECID_COOKIE = 'AMCV_9E1005A551ED61CA0A490D45@AdobeOrg';
 const SUBMIT_FORM_ENDPOINTS = {
+  // stage: 'https://14257-miloemailcollection-dev.adobeioruntime.net/api/v1/web/email-collection/form-submit',
   stage: 'https://www.stage.adobe.com/milo-email-collection-api/form-submit',
-  // stage: 'https://www.adobe.com/milo-email-collection-api/test',
-  // stage: 'https://14257-miloemailcollection-stage.adobeioruntime.net/api/v1/web/email-collection/form-submit',
-  prod: 'https://14257-miloemailcollection.adobeioruntime.net/api/v1/web/email-collection/form-submit',
+  prod: 'https://www.adobe.com/milo-email-collection-api/form-submit',
 };
 const miloConfig = getConfig();
 
@@ -31,7 +30,7 @@ const FORM_FIELDS = {
     attributes: {
       type: 'email',
       required: true,
-      autocomplete: 'on',
+      autocomplete: 'email',
     },
   },
   'first-name': {
@@ -39,7 +38,7 @@ const FORM_FIELDS = {
     attributes: {
       type: 'text',
       required: true,
-      autocomplete: 'on',
+      autocomplete: 'given-name',
     },
   },
   'last-name': {
@@ -47,7 +46,7 @@ const FORM_FIELDS = {
     attributes: {
       type: 'text',
       required: true,
-      autocomplete: 'on',
+      autocomplete: 'family-name',
     },
   },
   organization: {
@@ -96,6 +95,7 @@ const [showMessage, setMessageEls] = (() => {
       foreground.classList.add('message');
       replace.classList.remove('hidden');
       if (errorMsg) window.lana.log(errorMsg);
+      console.log(errorMsg);
 
       let ariaTextContent = '';
       replace.querySelectorAll('.text > *:not(.icon-area, .button-container)')
@@ -241,71 +241,31 @@ const getSelectData = (() => {
   };
 })();
 
-const getConsentString = (() => {
-  const consentCache = {};
-  return async (url, countryCode) => {
-    try {
-      if (!url && !countryCode) return null;
-      let consentUrl = url;
-      if (!consentUrl) {
-        const countries = await getSelectData('country');
-        const { consentPath } = countries.find((c) => c.countryCode === countryCode);
-        consentUrl = localizeFederatedUrl(`${consentPath}.plain.html`);
-      }
-      if (consentCache[consentUrl]) return consentCache[consentUrl].cloneNode(true);
-      const stringReq = await fetch(consentUrl);
-      if (!stringReq.ok) {
-        showMessage('error', `Consent string document not found: ${consentUrl}`);
-        return null;
-      }
-      const string = await stringReq.text();
-      const doc = new DOMParser().parseFromString(string, 'text/html');
-      const consentDiv = doc.querySelector('body > div');
-      consentCache[consentUrl] = consentDiv;
-      return consentDiv.cloneNode(true);
-    } catch (e) {
-      showMessage('error', e);
+async function getConsentString(url) {
+  try {
+    if (!url) return null;
+    const stringReq = await fetch(url);
+    if (!stringReq.ok) {
+      showMessage('error', `Consent string document not found: ${url}`);
       return null;
     }
-  };
-})();
+    const string = await stringReq.text();
+    const doc = new DOMParser().parseFromString(string, 'text/html');
+    const consentDiv = doc.querySelector('body > div');
+    return consentDiv.cloneNode(true);
+  } catch (e) {
+    showMessage('error', e);
+    return null;
+  }
+}
 
-async function decorateConsentString(consentContainer, consentParams) {
-  const channelPrefix = 'mpschannel-';
-  consentContainer.innerHTML = '';
+async function decorateConsentString(consentContainer, url) {
   consentContainer.classList.add('empty');
-  const { url, countryCode } = consentParams;
-  const consentStringEl = await getConsentString(url, countryCode);
+  const consentStringEl = await getConsentString(url, url);
   if (!consentStringEl) return;
 
-  const ol = consentStringEl.querySelectorAll('ol');
-  if (ol.length) {
-    ol.forEach((list) => {
-      const container = createTag('div');
-      [...list.children].forEach((li) => {
-        const checkboxContainer = createTag('div', { class: 'checkbox-container' });
-        const [, id] = li.textContent.split('::');
-        const regex = new RegExp(`\\s*::${id}\\b`, 'g');
-        const text = li.innerHTML.replace(regex, '');
-        const required = id.trim().startsWith('required');
-        const prefix = required ? '' : channelPrefix;
-        const label = createTag('label', { for: prefix + id.trim() }, text.trim());
-        const checkbox = createTag(
-          'input',
-          {
-            type: 'checkbox',
-            id: prefix + id.trim(),
-            name: prefix + id.trim(),
-            ...(required && { required: true }),
-          },
-        );
-        checkboxContainer.append(checkbox, label);
-        container.appendChild(checkboxContainer);
-      });
-      list.replaceWith(container);
-    });
-  }
   const { config } = getMetadata();
+  // Check if this is the same as sname
   if (config.subscriptionName) {
     const { subscriptionName } = config;
     const regex = /{{subscription-name}}/g;
@@ -393,10 +353,8 @@ async function attachCountryListener(form) {
   const stateSelect = stateWrapper?.querySelector(':scope > select');
   const label = form.querySelector(':scope > label[for="state"]');
   const stateData = await getSelectData('state');
-  const consentStringContainer = form.querySelector(':scope > .consent-string');
   country?.addEventListener('change', (e) => {
     const { value: countryCode } = e.target;
-    decorateConsentString(consentStringContainer, { countryCode });
     if (!stateWrapper || !label || !stateData) return;
     stateSelect.innerHTML = '';
     hideSelect({
@@ -462,8 +420,7 @@ async function getAEPBody(email) {
   const ecid = decodeURIComponent(satellite?.cookie.get(ECID_COOKIE)).split('|')[1];
   const ims = await getIMS();
   const isSignedInUser = ims.isSignedInUser();
-  const guid = isSignedInUser ? alloyAll?.xdm.identityMap?.adobeGUID[0].id : 'random value';
-  console.log(guid, ecid);
+  const guid = isSignedInUser ? alloyAll?.xdm.identityMap?.adobeGUID[0].id : 'not-signed-in';
   if (!ecid || !guid) {
     showMessage('error', 'Missing ecid or guid');
     return null;
@@ -498,27 +455,27 @@ async function sendFormData(form) {
     const { config } = getMetadata();
     const formData = Object.fromEntries(new FormData(form));
     disableForm(form);
-    let consentId = ALL_COUNTRIES_CONSENT_ID;
-    if (formData.country) {
-      const countries = await getSelectData('country');
-      const { consentId: id } = countries.find((c) => c.countryCode === formData.country);
-      consentId = id;
-    }
+    const consentId = ALL_COUNTRIES_CONSENT_ID;
     const { imsClientId } = miloConfig;
     const { mpsSname } = config;
-    const mpsBody = formatMPSData({
-      ...formData,
+    const { email } = formData;
+
+    const date = new Date();
+    const mpsBody = {
       consentId: appendLangToConsnetId(consentId),
       mpsSname,
       appClientId: imsClientId,
-    });
-    const aepBody = await getAEPBody(formData.email);
+      eventDts: date.toISOString(),
+      timezoneOffset: -date.getTimezoneOffset(),
+      email,
+    };
+    const aepBody = await getAEPBody(email);
     if (!aepBody) return;
     const ims = await getIMS();
     const { token } = ims.getAccessToken() ?? {};
     const { env } = miloConfig;
     const endPoint = SUBMIT_FORM_ENDPOINTS[env.name] ?? SUBMIT_FORM_ENDPOINTS.stage;
-    console.log('AEP BODY', aepBody);
+    // console.log(mpsBody, aepBody);
     // await new Promise((resolve) => setTimeout(() => resolve(), 2000));
     const submitFormReq = await fetch(endPoint, {
       method: 'POST',
@@ -530,7 +487,6 @@ async function sendFormData(form) {
       body: JSON.stringify({ ...mpsBody, aepBody }),
     });
     const submitFormRes = await submitFormReq.json();
-    console.log(submitFormRes);
     if (!submitFormReq.ok) {
       messageType = 'error';
       errorMsg = `MPS request failed: ${JSON.stringify(submitFormRes)}`;
@@ -542,15 +498,32 @@ async function sendFormData(form) {
   showMessage(messageType, errorMsg);
 }
 
+// Refactor
 function validateEmail(email) {
   const regex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
   if (regex.test(email.value)) return true;
   // This can be authorable ?
   email.setCustomValidity('Please enter a valid email address.');
   email.reportValidity();
-  email.addEventListener('change', () => email.setCustomValidity(''), { once: true });
+  email.addEventListener('input', () => email.setCustomValidity(''));
   return false;
 }
+
+// function validateForm(form, error) {
+//   console.log(form);
+//   const inputs = form.querySelectorAll('input');
+//   inputs.forEach((input) => {
+//     console.log(input.getAttribute('required'));
+//     if (input.getAttribute('required')) {
+//       error.classList.remove('hide');
+//       input.previousElementSibling.setAttribute('aria-invalid', true);
+//       input.setAttribute('aria-describedby', 'req-err');
+//       input.setAttribute('aria-invalid', true);
+//       // input.blur();
+//       input.focus();
+//     }
+//   });
+// }
 
 async function decorateForm(el, foreground) {
   const { fields } = getMetadata();
@@ -559,7 +532,9 @@ async function decorateForm(el, foreground) {
   if (!el.classList.contains('waitlist')) el.classList.add('mailing-list');
 
   const shouldSplitFirstRow = !el.classList.contains('mailing-list') && !el.classList.contains('large-image');
-  const form = createTag('form', { id: FORM_ID });
+  const form = createTag('form', { id: FORM_ID, novalidate: true });
+  // const error = createTag('p', { id: 'req-err', class: 'hide' }, 'Required Field *');
+  // form.append(error);
   const inputs = [];
   for (const [key, value] of Object.entries(fields)) {
     // eslint-disable-next-line no-continue
@@ -590,13 +565,30 @@ async function decorateForm(el, foreground) {
   text.append(form);
 
   if (fields.country) attachCountryListener(form);
-  else await decorateConsentString(consentStringContainer, { url: ALL_COUNTRIES_CONSENT_URL });
+  await decorateConsentString(consentStringContainer, ALL_COUNTRIES_CONSENT_URL);
 
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
     if (consentStringContainer.classList.contains('empty')) return;
     const email = form.querySelector('#email');
-    if (!validateEmail(email)) return;
+    // const first = form.querySelector('#first-name');
+    // email.setAttribute('autocomplete', 'off');
+    // console.log(email.checkValidity());
+    // email.setCustomValidity('Test');
+    // console.log(email.checkValidity(), 'email');
+    // email.reportValidity();
+    // email.setAttribute('type', 'text');
+    // email.removeAttribute('required');
+    // email.setAttribute('readonly', true);
+    // email.addEventListener('input', () => {
+    //   email.setCustomValidity('');
+    //   email.setAttribute('autocomplete', 'email');
+      // email.setAttribute('required', true);
+      // email.setAttribute('autocomplete', 'email');
+      // console.log(email.checkValidity(), 'email');
+    // }, { once: true });
+    // if (!validateEmail(email)) return;
+    // validateForm(form, error);
 
     await insertProgress(submitButton.querySelector('button'), 's');
     await sendFormData(form);
