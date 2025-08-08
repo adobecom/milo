@@ -23,5 +23,6 @@ ENV GITHUB_ACTIONS=true
 ENV CONTAINER=true
 ENV PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
 
-# Default command - the actual script will be mounted at runtime
-CMD ["./nala/utils/pr.run.sh"]
+# Default command - the script will be mounted at runtime
+# Using sh -c allows us to run a script that doesn't exist at build time
+CMD ["sh", "-c", "./nala/utils/pr.run.sh"]
