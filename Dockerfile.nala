@@ -11,9 +11,7 @@ WORKDIR /workspace
 COPY package*.json ./
 
 # Install dependencies (this layer will be cached if package files don't change)
-# Use BuildKit cache mount for npm cache to speed up rebuilds
-RUN --mount=type=cache,target=/root/.npm \
-    npm ci --prefer-offline --no-audit --fund=false --loglevel=error && \
+RUN npm ci --prefer-offline --no-audit --fund=false --loglevel=error && \
     npx playwright install-deps && \
     rm -rf /var/lib/apt/lists/*
 
