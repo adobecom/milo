@@ -465,7 +465,7 @@ async function sendFormData(form) {
       consentId = id;
     }
     const { imsClientId } = miloConfig;
-    const mpsBody = formatMPSData({ ...formData, consentId: appendLangToConsnetId(consentId), 'mps-sname': config['mps-sname'], appClientId: imsClientId });
+    const mpsBody = formatMPSData({ ...formData, consentId: appendLangToConsnetId(consentId), mpsSname: config['mps-sname'], appClientId: imsClientId });
     const aepBody = await getAEPBody(formData.email);
     const ims = await getIMS();
     const { token } = ims.getAccessToken() ?? {};
