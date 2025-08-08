@@ -1,29 +1,69 @@
-# Dockerfile for Nala tests - Runtime environment only
-# This image provides the runtime dependencies (Node.js, Playwright, npm packages)
-# Test files are mounted from the host at runtime
-FROM mcr.microsoft.com/playwright:v1.54.2-noble
+# Optimized Dockerfile for Nala tests - Playwright with Chrome only
+# Multi-stage build for minimal size
 
-# Set working directory
+# Stage 1: Dependencies
+FROM node:22-alpine AS deps
+WORKDIR /deps
+COPY package*.json ./
+# Install all dependencies (including @playwright/test from devDependencies)
+RUN npm ci --no-audit --fund=false && \
+    npm cache clean --force
+
+# Stage 2: Final image
+FROM ubuntu:22.04
+
+# Install minimal dependencies for Chrome
+RUN apt-get update && apt-get install -y \
+    ca-certificates \
+    fonts-liberation \
+    libasound2 \
+    libatk-bridge2.0-0 \
+    libatk1.0-0 \
+    libatspi2.0-0 \
+    libcups2 \
+    libdbus-1-3 \
+    libdrm2 \
+    libgbm1 \
+    libgtk-3-0 \
+    libnspr4 \
+    libnss3 \
+    libx11-6 \
+    libxcb1 \
+    libxcomposite1 \
+    libxdamage1 \
+    libxext6 \
+    libxfixes3 \
+    libxkbcommon0 \
+    libxrandr2 \
+    xdg-utils \
+    curl \
+    --no-install-recommends && \
+    rm -rf /var/lib/apt/lists/* /var/cache/apt/*
+
+# Install Node.js
+RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - && \
+    apt-get install -y nodejs --no-install-recommends && \
+    rm -rf /var/lib/apt/lists/* /var/cache/apt/*
+
 WORKDIR /workspace
 
-# Copy package files for dependency installation
-# These define what npm packages we need
-COPY package.json package-lock.json ./
+# Copy production dependencies from deps stage
+COPY --from=deps /deps/node_modules ./node_modules
+COPY package*.json ./
 
-# Install dependencies (this layer will be cached if package files don't change)
-# Split commands for better error visibility
-RUN npm ci --prefer-offline --no-audit --fund=false && \
-    npx playwright install-deps && \
-    rm -rf /var/lib/apt/lists/*
-
-# Create directory structure for mounted volumes
-RUN mkdir -p nala test-results test-html-results playwright-report
-
-# Set environment variables that indicate we're in a container
-ENV GITHUB_ACTIONS=true
-ENV CONTAINER=true
+# Install Chromium with Playwright
 ENV PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
+RUN npx playwright install chromium && \
+    npx playwright install-deps chromium && \
+    rm -rf /root/.npm /tmp/*
 
-# Default command - the script will be mounted at runtime
-# Using sh -c allows us to run a script that doesn't exist at build time
+# Create directories
+RUN mkdir -p nala test-results playwright-report
+
+# Set environment
+ENV CI=true \
+    GITHUB_ACTIONS=true \
+    NODE_ENV=production \
+    PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
+
 CMD ["sh", "-c", "./nala/utils/pr.run.sh"]

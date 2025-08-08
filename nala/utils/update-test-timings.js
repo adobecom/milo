@@ -51,35 +51,6 @@ function updateTestTimings(jsonReportPath, timingsPath) {
       }
     }
     
-    // Clean up timing entries for files that no longer exist
-    const existingFiles = new Set();
-    try {
-      // Get list of current test files
-      const files = execSync('find nala -name "*.test.js" -type f', { encoding: 'utf8' })
-        .trim()
-        .split('\n')
-        .filter(f => f)
-        .map(f => f.includes('nala/') ? f.substring(f.indexOf('nala/')) : f);
-      
-      files.forEach(f => existingFiles.add(f));
-      
-      // Remove stale entries
-      const staleEntries = [];
-      for (const testFile in timings) {
-        if (!existingFiles.has(testFile)) {
-          staleEntries.push(testFile);
-          delete timings[testFile];
-        }
-      }
-      
-      if (staleEntries.length > 0) {
-        console.log(`Removed ${staleEntries.length} stale timing entries:`);
-        staleEntries.forEach(f => console.log(`  - ${f}`));
-      }
-    } catch (e) {
-      console.log('Could not clean stale entries:', e.message);
-    }
-    
     // Save updated timings
     const output = {
       timings,

@@ -54,3 +54,13 @@ docker-compose*
 # Test directories (we only need nala)
 test/
 tools/
+
+# Node modules - install fresh in container
+node_modules/
+**/node_modules/
+libs/**/node_modules/
+
+# Large unnecessary directories
+fstab/
+helix-query.yaml
+helix-sitemap.yaml

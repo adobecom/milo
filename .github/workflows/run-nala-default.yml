@@ -49,11 +49,40 @@ jobs:
           restore-keys: |
             test-timings-
       
-      - name: Check timing data
+      - name: Check and clean timing data
         run: |
           if [ -f test-timings.json ]; then
             echo "Successfully loaded previous timing data"
             echo "File size: $(stat -f%z test-timings.json 2>/dev/null || stat -c%s test-timings.json) bytes"
+            
+            # Clean up stale entries for files that no longer exist
+            echo "Cleaning up stale timing entries..."
+            
+            # Get list of current test files
+            CURRENT_TESTS=$(find nala -name "*.test.js" -type f | sed 's|^\./||' | sort)
+            
+            # Create a cleaned version of the timing file
+            jq --arg tests "$CURRENT_TESTS" '
+              .timings as $timings |
+              ($tests | split("\n") | map(select(. != "")) | map({(.): true}) | add) as $current |
+              .timings = ($timings | with_entries(select(.key as $k | $current | has($k)))) |
+              .lastUpdated = (now | todate) |
+              .totalFiles = (.timings | keys | length)
+            ' test-timings.json > test-timings-cleaned.json
+            
+            # Check if any entries were removed
+            ORIGINAL_COUNT=$(jq -r '.timings | keys | length' test-timings.json)
+            NEW_COUNT=$(jq -r '.timings | keys | length' test-timings-cleaned.json)
+            REMOVED=$((ORIGINAL_COUNT - NEW_COUNT))
+            
+            if [ $REMOVED -gt 0 ]; then
+              echo "Removed $REMOVED stale timing entries"
+              mv test-timings-cleaned.json test-timings.json
+            else
+              echo "No stale entries found"
+              rm -f test-timings-cleaned.json
+            fi
+            
             # Show sample of timing data to verify it's not just defaults
             echo "Sample timing entries (first 5):"
             jq -r '.timings | to_entries[:5] | .[] | "  \(.key): \(.value)ms"' test-timings.json 2>/dev/null || true
