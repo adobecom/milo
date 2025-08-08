@@ -41,7 +41,12 @@ async function setupMasConsoleListener(consoleErrors) {
       let uniqueKey;
 
       if (errorText.includes('blocked by CORS policy')) {
-        uniqueKey = 'CORS_POLICY_BLOCKED';
+        // Only log CORS errors for MAS-related URLs
+        if (errorText.includes('/mas/io/') || errorText.includes('commerce.adobe.com')) {
+          uniqueKey = 'MAS_CORS_POLICY_BLOCKED';
+        } else {
+          return; // Skip non-MAS CORS errors
+        }
       } else if (errorText.includes('MAS Error:')) {
         uniqueKey = 'MAS_ERROR';
       } else if (errorText.includes('AEM Error:')) {

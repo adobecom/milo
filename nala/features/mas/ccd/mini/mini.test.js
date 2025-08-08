@@ -36,8 +36,6 @@ test.describe('CCD Mini Cards Feature', () => {
       const pageName = isUSPath ? 'US' : 'FR';
       const page = workerSetup.getPage(pageName);
 
-      console.info('[Test]: Using worker-scoped pre-loaded page for', pageName);
-
       await test.step('1. Verify CCD Mini Card page is loaded', async () => {
         miniCard = new MiniCard(page);
         await workerSetup.verifyPageURL(pageName, feature.path, expect);
