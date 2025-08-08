@@ -473,31 +473,27 @@ jobs:
           SHARD_INDEX: ${{ matrix.shard }}
           SHARD_TOTAL: ${{ needs.calculate-shards.outputs.shard-count }}
           CONTAINER: true
+        shell: bash
         run: |
           # Determine the test URL based on event type
-          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
             # PR event - use PR branch
             BRANCH="${{ github.event.pull_request.head.ref }}"
             ORG="${{ github.event.pull_request.head.repo.owner.login }}"
             REPO="${{ github.event.pull_request.head.repo.name }}"
             BRANCH_CLEAN=$(echo "$BRANCH" | sed 's/\//-/g')
             export PR_BRANCH_LIVE_URL_GH="https://${BRANCH_CLEAN}--${REPO}--${ORG}.aem.live"
-          elif [[ "${{ github.ref_name }}" == "main" ]]; then
+          elif [ "${{ github.ref_name }}" = "main" ]; then
             # Push to main - use production URL
             export PR_BRANCH_LIVE_URL_GH="https://main--milo--adobecom.aem.live"
-          elif [[ "${{ github.ref_name }}" == "stage" ]]; then
+          elif [ "${{ github.ref_name }}" = "stage" ]; then
             # Push to stage - use stage URL
             export PR_BRANCH_LIVE_URL_GH="https://stage--milo--adobecom.aem.live"
-          elif [[ "${{ github.event_name }}" == "push" ]]; then
-            # Push to any other branch
+          else
+            # Push to any branch or workflow_dispatch
             BRANCH="${{ github.ref_name }}"
             BRANCH_CLEAN=$(echo "$BRANCH" | sed 's/\//-/g')
             export PR_BRANCH_LIVE_URL_GH="https://${BRANCH_CLEAN}--milo--adobecom.aem.live"
-          else
-            # Unknown event - fail explicitly
-            echo "ERROR: Unable to determine test URL for event '${{ github.event_name }}' on branch '${{ github.ref_name }}'"
-            echo "This workflow only supports: pull_request events, or push events"
-            exit 1
           fi
           
           echo "Event: ${{ github.event_name }}"
