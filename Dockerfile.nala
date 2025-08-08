@@ -8,10 +8,11 @@ WORKDIR /workspace
 
 # Copy package files for dependency installation
 # These define what npm packages we need
-COPY package*.json ./
+COPY package.json package-lock.json ./
 
 # Install dependencies (this layer will be cached if package files don't change)
-RUN npm ci --prefer-offline --no-audit --fund=false --loglevel=error && \
+# Split commands for better error visibility
+RUN npm ci --prefer-offline --no-audit --fund=false && \
     npx playwright install-deps && \
     rm -rf /var/lib/apt/lists/*
 

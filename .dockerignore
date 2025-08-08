@@ -3,8 +3,6 @@ test-results/
 test-html-results/
 playwright-report/
 all-shards/
-nala-results.json
-*.json
 
 # Git
 .git/
