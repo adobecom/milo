@@ -188,7 +188,8 @@ main > .section.center .share.inline ul.icon-container {
 }
 
 @media screen and (min-width: 600px) {
-  .share .copy-to-clipboard::before {
+  .share .copy-to-clipboard::before,
+  [dir="rtl"] .share .copy-to-clipboard::before {
     left: 50%;
   }
 }

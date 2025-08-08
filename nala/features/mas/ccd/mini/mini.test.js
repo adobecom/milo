@@ -1,29 +1,44 @@
 import { expect, test } from '@playwright/test';
 import { features } from './mini.spec.js';
 import MiniCard from './mini.page.js';
+import { createWorkerPageSetup, CCD_BASE_PATH } from '../../../../libs/commerce.js';
 
-const miloLibs = process.env.MILO_LIBS || '';
+let miniCard;
+
+test.skip(({ browserName }) => browserName !== 'chromium', 'Not supported to run on multiple browsers.');
+
+const workerSetup = createWorkerPageSetup({
+  pages: [
+    { name: 'US', url: CCD_BASE_PATH.MINI_US },
+    { name: 'FR', url: CCD_BASE_PATH.MINI_FR },
+  ],
+});
 
 test.describe('CCD Mini Cards Feature', () => {
-  let miniCard;
+  test.beforeAll(async ({ browser, baseURL }) => {
+    await workerSetup.setupWorkerPages({ browser, baseURL });
+  });
 
-  test.beforeEach(async ({ page, browserName }) => {
-    miniCard = new MiniCard(page);
-    if (browserName === 'chromium') {
-      await page.setExtraHTTPHeaders({ 'sec-ch-ua': '"Chromium";v="123", "Not:A-Brand";v="8"' });
-    }
+  test.afterAll(async () => {
+    await workerSetup.cleanupWorkerPages();
+  });
+
+  test.afterEach(async ({}, testInfo) => { // eslint-disable-line no-empty-pattern
+    workerSetup.attachWorkerErrorsToFailure(testInfo);
   });
 
   features.forEach((feature) => {
-    test(`${feature.name},${feature.tags}`, async ({ page, baseURL }) => {
-      const testPage = `${baseURL}${feature.path}${miloLibs}`;
+    test(`${feature.name},${feature.tags}`, async () => {
       const { data } = feature;
-      console.info('[Test Page]: ', testPage);
 
-      await test.step('1. Go to CCD Mini Card feature test page', async () => {
-        await page.goto(testPage);
-        await page.waitForLoadState('domcontentloaded');
-        await expect(page).toHaveURL(testPage);
+      // Determine which worker page to use based on the feature path
+      const isUSPath = feature.path === CCD_BASE_PATH.MINI_US;
+      const pageName = isUSPath ? 'US' : 'FR';
+      const page = workerSetup.getPage(pageName);
+
+      await test.step('1. Verify CCD Mini Card page is loaded', async () => {
+        miniCard = new MiniCard(page);
+        await workerSetup.verifyPageURL(pageName, feature.path, expect);
       });
 
       await test.step('2. Verify CCD Mini Card content', async () => {

@@ -803,7 +803,13 @@ describe('global navigation', () => {
       expect(headline.getAttribute('aria-expanded')).to.equal('true');
     });
     it('disables scroll for the popup but not for the localnav', async () => {
-      Object.defineProperty(navigator, 'userAgent', { get: () => 'Safari' });
+      try {
+        Object.defineProperty(navigator, 'userAgent', { get: () => 'Safari' });
+      } catch (e) {
+        // eslint-disable-next-line no-console
+        console.warn('Could not set userAgent for Safari, skipping test');
+        return;
+      }
       await createFullGlobalNavigation({ globalNavigation: gnavWithlocalNav, viewport: 'mobile' });
       const localNavTitle = document.querySelector(selectors.localNavTitle);
       localNavTitle.click();

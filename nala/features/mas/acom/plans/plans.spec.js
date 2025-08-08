@@ -1,6 +1,6 @@
 /* eslint-disable max-len */
 
-const { PRICE_PATTERN } = require('../../../../libs/commerce.js');
+const { PRICE_PATTERN, PLANS_BASE_PATH } = require('../../../../libs/commerce.js');
 
 module.exports = {
   FeatureName: 'Merch Plans Cards Feature',
@@ -9,7 +9,7 @@ module.exports = {
     {
       tcid: '0',
       name: '@MAS-Plans-Category',
-      path: '/drafts/nala/features/commerce/plans',
+      path: PLANS_BASE_PATH.US,
       data: {
         categories: {
           all: {
@@ -137,14 +137,14 @@ module.exports = {
     {
       tcid: '1',
       name: '@MAS-Plans-Tabs-Deeplink',
-      path: '/drafts/nala/features/commerce/plans',
+      path: PLANS_BASE_PATH.US,
       browserParams: '?plans=edu',
       tags: '@mas-acom @mas-plans-card @commerce @smoke @regression @milo @plans-tabs-deeplink',
     },
     {
       tcid: '2',
       name: '@MAS-Plans-Modal-Reopening',
-      path: '/drafts/nala/features/commerce/plans',
+      path: PLANS_BASE_PATH.US,
       browserParams: '#miniplans-buy-all-apps',
       tags: '@mas-acom @mas-plans-card @commerce @smoke @regression @milo @plans-modal-reopening',
     },

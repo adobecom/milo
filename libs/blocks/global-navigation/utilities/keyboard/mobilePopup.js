@@ -244,7 +244,7 @@ class Popup {
         break;
       }
       case 'ArrowUp': {
-        if (newNav) break;
+        if (newNav && !isFooter) break;
         this.mobileArrowUp({ prev, curr, element, isFooter });
         break;
       }
@@ -265,7 +265,7 @@ class Popup {
         break;
       }
       case 'ArrowDown': {
-        if (newNav) break;
+        if (newNav && !isFooter) break;
         this.mobileArrowDown({ next, element, isFooter });
         break;
       }

@@ -173,7 +173,6 @@ export default async function decorate(block) {
       clipboardSvg.svg,
     );
     const li = createTag('li');
-    li.append(copyButton);
     const copyAriaLive = createTag(
       'div',
       {
@@ -182,7 +181,8 @@ export default async function decorate(block) {
         class: 'aria-live-container',
       },
     );
-    container.append(li, copyAriaLive);
+    li.append(copyButton, copyAriaLive);
+    container.append(li);
     let changeText = false;
     copyButton.addEventListener('click', (e) => {
       /* c8 ignore next 6 */

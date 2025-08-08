@@ -23,7 +23,13 @@ const loadScript = () => Promise.resolve();
 
 const loadStyle = () => Promise.resolve();
 
-const createTag = () => Promise.resolve();
+const createTag = (tag, attributes = {}) => {
+  const element = document.createElement(tag);
+  Object.entries(attributes).forEach(([key, value]) => {
+    element.setAttribute(key, value);
+  });
+  return element;
+};
 
 const loadArea = () => Promise.resolve();
 

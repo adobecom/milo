@@ -1,6 +1,6 @@
 /* eslint-disable max-len */
 
-const { PRICE_PATTERN } = require('../../../../libs/commerce.js');
+const { PRICE_PATTERN, DOCS_BASE_PATH } = require('../../../../libs/commerce.js');
 
 module.exports = {
   FeatureName: 'Merch Acom Cards Feature',
@@ -9,7 +9,7 @@ module.exports = {
     {
       tcid: '0',
       name: '@MAS-Plans',
-      path: '/libs/features/mas/docs/plans.html',
+      path: DOCS_BASE_PATH.plans,
       data: {
         id: 'a15b77f7-fb32-4608-8b5c-a1b98675ad85',
         title: 'Acrobat Pro',
@@ -28,7 +28,7 @@ module.exports = {
     {
       tcid: '1',
       name: '@MAS-Plans-CSS',
-      path: '/libs/features/mas/docs/plans.html',
+      path: DOCS_BASE_PATH.plans,
       data: { id: '8373b5c2-69e6-4e9c-befc-b424dd33469b' },
       browserParams: '?theme=darkest',
       tags: '@mas-acom @mas-plans-card @commerce @smoke @regression @milo',
@@ -36,7 +36,7 @@ module.exports = {
     {
       tcid: '2',
       name: '@MAS-Plans-Students-CSS',
-      path: '/libs/features/mas/docs/plans.html',
+      path: DOCS_BASE_PATH.plans,
       data: { id: 'dfc2eede-7e88-4ed3-b96c-f5214472dfcf' },
       browserParams: '?theme=darkest',
       tags: '@mas-acom @mas-plans-card @commerce @smoke @regression @milo',

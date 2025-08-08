@@ -1,12 +1,14 @@
 /* eslint-disable max-len */
 
+const { ADOBE_HOME_BASE_PATH } = require('../../../libs/commerce.js');
+
 module.exports = {
   FeatureName: 'Mas Adobe Home Try Buy Widget',
   features: [
     {
       tcid: '0',
       name: '@MAS-AH-Try-Buy-Widget-triple',
-      path: '/libs/features/mas/docs/adobe-home.html',
+      path: ADOBE_HOME_BASE_PATH.US,
       data: {
         id: '44520fdc-f6e1-4c21-8978-9cd25a1be158',
         title: 'Creative Cloud All Apps',
@@ -21,7 +23,7 @@ module.exports = {
     {
       tcid: '1',
       name: '@MAS-AH-Try-Buy-Widget-double',
-      path: '/libs/features/mas/docs/adobe-home.html',
+      path: ADOBE_HOME_BASE_PATH.US,
       data: {
         id: '02ee0d3c-a472-44a1-b15a-f65c24eefc4b',
         title: 'Photoshop',
@@ -36,7 +38,7 @@ module.exports = {
     {
       tcid: '2',
       name: '@MAS-AH-Try-Buy-Widget-single',
-      path: '/libs/features/mas/docs/adobe-home.html',
+      path: ADOBE_HOME_BASE_PATH.US,
       data: {
         id: 'a07239e9-7216-403c-b1ee-3b1d0982a64b',
         title: 'Creative Cloud All Apps',
@@ -51,7 +53,7 @@ module.exports = {
     {
       tcid: '3',
       name: '@MAS-AH-Try-Buy-Widget-single-api',
-      path: '/libs/features/mas/docs/adobe-home.html',
+      path: ADOBE_HOME_BASE_PATH.US,
       data: {
         id: 'e8518688-2374-467b-93ed-2cf9fdc58e08',
         title: 'Adobe Acrobat',

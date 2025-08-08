@@ -1,15 +1,16 @@
 /* eslint-disable max-len */
 
-const { PRICE_PATTERN } = require('../../../libs/commerce.js');
+const { PRICE_PATTERN, CCD_BASE_PATH } = require('../../../libs/commerce.js');
 
 module.exports = {
   FeatureName: 'Merch CCD Card Feature',
+  CCD_BASE_PATH,
   features: [
     // SUGGESTED CARDS
     {
       tcid: '0',
       name: '@MAS-CCD-suggested-eyebrow',
-      path: '/libs/features/mas/docs/ccd.html',
+      path: CCD_BASE_PATH.US,
       data: {
         id: '0a2ac7c9-1965-488e-beca-856849305313',
         title: 'Get the Photoshop plan',
@@ -26,7 +27,7 @@ module.exports = {
     {
       tcid: '1',
       name: '@MAS-CCD-suggested-strikethrough',
-      path: '/libs/features/mas/docs/ccd.html',
+      path: CCD_BASE_PATH.US,
       data: {
         id: '549f6981-f5c8-4512-b41c-313d60f375b2',
         title: 'Creative Cloud All Apps Plan',
@@ -52,7 +53,7 @@ module.exports = {
     {
       tcid: '2',
       name: '@MAS-CCD-suggested-noeyebrow-priceunit',
-      path: '/libs/features/mas/docs/ccd.html',
+      path: CCD_BASE_PATH.US,
       data: {
         id: '8b198434-f32d-4a77-8be0-cd6b9f7155b1',
         title: 'Save 40% on Photoshop for teams and businesses',
@@ -67,7 +68,7 @@ module.exports = {
     {
       tcid: '3',
       name: '@MAS-CCD-suggested-thin',
-      path: '/libs/features/mas/docs/ccd.html',
+      path: CCD_BASE_PATH.US,
       data: {
         id: 'cdfae8c5-4129-43bc-a283-9ce46d07e21f',
         title: 'Creative Cloud All Apps Plan',
@@ -84,7 +85,7 @@ module.exports = {
     {
       tcid: '4',
       name: '@MAS-CCD-suggested-thin-seeterms',
-      path: '/libs/features/mas/docs/ccd.html',
+      path: CCD_BASE_PATH.US,
       data: {
         id: '33c8f437-3c39-48cc-8afd-938a13af5732',
         title: 'Save over 65% on your plan',
@@ -103,7 +104,7 @@ module.exports = {
     {
       tcid: '5',
       name: '@MAS-CCD-suggested-thin-noeyebrow-priceunit',
-      path: '/libs/features/mas/docs/ccd.html',
+      path: CCD_BASE_PATH.US,
       data: {
         id: '45783ec8-ed85-4595-a445-3f018ac4ad9d',
         title: 'Creative Cloud All Apps for teams',
@@ -119,7 +120,7 @@ module.exports = {
     {
       tcid: '6',
       name: '@MAS-CCD-suggested-wide-seeterms',
-      path: '/libs/features/mas/docs/ccd.html',
+      path: CCD_BASE_PATH.US,
       data: {
         id: '6217fb6d-e793-4235-af70-6f82401fc5de',
         title: 'Save over 65% on your plan',
@@ -138,7 +139,7 @@ module.exports = {
     {
       tcid: '7',
       name: '@MAS-CCD-suggested-wide-noeyebrow-priceunit',
-      path: '/libs/features/mas/docs/ccd.html',
+      path: CCD_BASE_PATH.US,
       data: {
         id: 'd23182d8-fc92-483d-bcfe-d1fe3d3ce737',
         title: 'Creative Cloud All Apps for teams',
@@ -155,7 +156,7 @@ module.exports = {
     {
       tcid: '8',
       name: '@MAS-CCD-slice-percentage',
-      path: '/libs/features/mas/docs/ccd.html',
+      path: CCD_BASE_PATH.US,
       data: {
         id: '0ef2a804-e788-4959-abb8-b4d96a18b0ef',
         description: 'Save over 40% when you upgrade to Creative Cloud All apps',
@@ -174,7 +175,7 @@ module.exports = {
     {
       tcid: '9',
       name: '@MAS-CCD-slice-mnemonics',
-      path: '/libs/features/mas/docs/ccd.html',
+      path: CCD_BASE_PATH.US,
       data: {
         id: '58c7906f-70a6-4e2b-bc29-257ff2ade513',
         description: 'Creative Cloud Photography plan. Starting at',
@@ -190,7 +191,7 @@ module.exports = {
     {
       tcid: '10',
       name: '@MAS-CCD-slice-seeterms',
-      path: '/libs/features/mas/docs/ccd.html',
+      path: CCD_BASE_PATH.US,
       data: {
         id: '51c23f28-504f-450d-9764-0e60f1e279b2',
         description: 'Save 25% on Photoshop. Starting at',
@@ -207,7 +208,7 @@ module.exports = {
     {
       tcid: '11',
       name: '@MAS-CCD-slice-percentage-seeterms',
-      path: '/libs/features/mas/docs/ccd.html',
+      path: CCD_BASE_PATH.US,
       data: {
         id: 'c13897c7-de77-4e45-b23b-eec9fd66cad1',
         description: 'Save 40% when you upgrade your plan',
@@ -224,7 +225,7 @@ module.exports = {
     {
       tcid: '12',
       name: '@MAS-CCD-slice-without-mnemonic',
-      path: '/libs/features/mas/docs/ccd.html',
+      path: CCD_BASE_PATH.US,
       data: {
         id: '2a293069-1f9a-45ae-9840-2fa0303fe685',
         description: 'Save on Creative Cloud with Mastercard',
@@ -240,7 +241,7 @@ module.exports = {
     {
       tcid: '13',
       name: '@MAS-CCD-slice-badge',
-      path: '/libs/features/mas/docs/ccd.html',
+      path: CCD_BASE_PATH.US,
       data: {
         id: '3d26df5b-0784-4967-8149-8a9e59131084',
         badge: 'Save 65%',
@@ -257,7 +258,7 @@ module.exports = {
     {
       tcid: '14',
       name: '@MAS-CCD-slice-wide-seeterms',
-      path: '/libs/features/mas/docs/ccd.html',
+      path: CCD_BASE_PATH.US,
       data: {
         id: 'bdf40d06-5914-4f1f-aa10-77c5676fe671',
         description: 'Save over 30% on Creative Cloud All Apps. Register for MAX by August 31 and save US$200 on a full conference pass',
@@ -278,7 +279,7 @@ module.exports = {
     {
       tcid: '15',
       name: '@MAS-CCD-slice-wide-badge',
-      path: '/libs/features/mas/docs/ccd.html',
+      path: CCD_BASE_PATH.US,
       data: {
         id: '31205553-b453-4c9e-a2ef-7b6aa7bfdc72',
         badge: 'Huge savings*',
@@ -296,7 +297,7 @@ module.exports = {
     {
       tcid: '16',
       name: '@MAS-CCD-slice-wide-price',
-      path: '/libs/features/mas/docs/ccd.html',
+      path: CCD_BASE_PATH.US,
       data: {
         id: 'f3e5f2e7-df41-4300-87b9-465b3ad11abc',
         description: 'Save 25% on Photoshop for the first six months',
@@ -313,7 +314,7 @@ module.exports = {
     {
       tcid: '17',
       name: '@MAS-CCD-slice-wide-strikethrough',
-      path: '/libs/features/mas/docs/ccd.html',
+      path: CCD_BASE_PATH.US,
       data: {
         id: 'c25b20cc-e8a3-4854-b94f-51eec7d0ec25',
         description: 'Creative cloud Photography plan.',
@@ -331,7 +332,7 @@ module.exports = {
     {
       tcid: '18',
       name: '@MAS-CCD-slice-wide-without-mnemonic',
-      path: '/libs/features/mas/docs/ccd.html',
+      path: CCD_BASE_PATH.US,
       data: {
         id: '6b3c6c4e-e19f-4d08-914f-fcfd9f77ca14',
         description: 'Get industry-leading creative apps designed just for business. Creative Cloud All Apps for Teams. Starting at',
@@ -348,7 +349,7 @@ module.exports = {
     {
       tcid: '19',
       name: '@MAS-CCD-slice-upt-link',
-      path: '/libs/features/mas/docs/ccd.html',
+      path: CCD_BASE_PATH.US,
       data: {
         id: '018bf7f7-1e82-4b16-9dd1-039ee013e490',
         linkText: 'See terms',
@@ -379,7 +380,7 @@ module.exports = {
     {
       tcid: '21',
       name: '@MAS-CCD-regular-footer-link',
-      path: '/libs/features/mas/docs/ccd.html',
+      path: CCD_BASE_PATH.US,
       data: { id: 'bdf40d06-5914-4f1f-aa10-77c5676fe671' },
       browserParams: '?theme=darkest',
       tags: '@mas-ccd @slice-card @commerce @smoke @regression @milo',
@@ -387,7 +388,7 @@ module.exports = {
     {
       tcid: '22',
       name: '@MAS-CCD-slice-FR',
-      path: '/libs/features/mas/docs/ccd.html?locale=fr_FR',
+      path: CCD_BASE_PATH.FR,
       data: {
         id: '58c7906f-70a6-4e2b-bc29-257ff2ade513',
         description: 'Formule Creative Cloud Photographie. À partir de',
@@ -403,7 +404,7 @@ module.exports = {
     {
       tcid: '23',
       name: '@MAS-CCD-slice-wide-FR',
-      path: '/libs/features/mas/docs/ccd.html?locale=fr_FR',
+      path: CCD_BASE_PATH.FR,
       data: {
         id: 'f3e5f2e7-df41-4300-87b9-465b3ad11abc',
         description: 'Économisez 25 % sur Photoshop pendant les six premiers mois.',
@@ -420,7 +421,7 @@ module.exports = {
     {
       tcid: '24',
       name: '@MAS-CCD-suggested-FR',
-      path: '/libs/features/mas/docs/ccd.html?locale=fr_FR',
+      path: CCD_BASE_PATH.FR,
       data: {
         id: '45783ec8-ed85-4595-a445-3f018ac4ad9d',
         title: 'Creative Cloud Toutes les applications',
