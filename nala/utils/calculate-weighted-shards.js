@@ -140,12 +140,16 @@ class WeightedShardCalculator {
    */
   calculateOptimalShardCount(testFiles) {
     const totalDuration = testFiles.reduce((sum, f) => sum + f.duration, 0);
-    const targetShardDuration = 180000; // Target 3 minutes per shard
+    
+    // Allow override via environment variable (in seconds), default to 2 minutes
+    const targetSeconds = process.env.SHARD_TARGET_DURATION || '120';
+    const targetShardDuration = parseInt(targetSeconds) * 1000; // Convert to milliseconds
     
     let optimalShards = Math.ceil(totalDuration / targetShardDuration);
     optimalShards = Math.max(2, Math.min(optimalShards, this.maxShards));
     
     console.log(`Total duration: ${Math.round(totalDuration / 1000)}s`);
+    console.log(`Target per shard: ${targetSeconds}s`);
     console.log(`Optimal shards: ${optimalShards}`);
     
     return optimalShards;
@@ -199,7 +203,8 @@ class WeightedShardCalculator {
       totalTests: files.length,
       shards: {},
       expectedDurations: {},
-      distribution: []
+      distribution: [],
+      testDetails: {}  // Add detailed test information
     };
     
     shards.forEach((shard, index) => {
@@ -207,11 +212,21 @@ class WeightedShardCalculator {
       result.shards[shardNum] = shard.tests;
       result.expectedDurations[shardNum] = Math.round(shard.totalDuration);
       
+      // Create detailed test list for this shard
+      const testList = shard.tests.map(testFile => ({
+        file: testFile,
+        name: testFile.split('/').pop(),
+        duration: this.getFileDuration(testFile)
+      }));
+      
+      result.testDetails[shardNum] = testList;
+      
       result.distribution.push({
         shard: shardNum,
         testCount: shard.tests.length,
         duration: Math.round(shard.totalDuration / 1000),
-        percentage: Math.round((shard.tests.length / files.length) * 100)
+        percentage: Math.round((shard.tests.length / files.length) * 100),
+        tests: testList  // Include test details in distribution
       });
     });
     
@@ -231,6 +246,16 @@ class WeightedShardCalculator {
     summary += 'Distribution by shard:\n';
     distribution.distribution.forEach(shard => {
       summary += `  Shard ${shard.shard}: ${shard.testCount} tests (${shard.percentage}%) - ${shard.duration}s\n`;
+      
+      // Add top 3 longest tests for this shard
+      if (shard.tests && shard.tests.length > 0) {
+        const sortedTests = [...shard.tests].sort((a, b) => b.duration - a.duration);
+        const topTests = sortedTests.slice(0, Math.min(3, sortedTests.length));
+        topTests.forEach(test => {
+          const durationSec = (test.duration / 1000).toFixed(1);
+          summary += `    - ${test.name} (~${durationSec}s)\n`;
+        });
+      }
     });
     
     // Calculate balance metric
@@ -240,6 +265,7 @@ class WeightedShardCalculator {
     const balance = ((minDuration / maxDuration) * 100).toFixed(1);
     
     summary += `\nBalance: ${balance}% (higher is better)\n`;
+    summary += `Max duration: ${maxDuration}s, Min duration: ${minDuration}s\n`;
     
     return summary;
   }

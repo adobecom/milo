@@ -18,6 +18,11 @@ on:
         required: false
         default: '10'
         type: string
+      target_duration:
+        description: 'Target duration per shard in seconds (default: 120)'
+        required: false
+        default: '120'
+        type: string
 
 jobs:
   # Calculate optimal shard count based on test files
@@ -68,6 +73,11 @@ jobs:
           if [ -f test-timings.json ]; then
             echo "Using weighted distribution based on test execution times"
             
+            # Set target duration per shard (in seconds)
+            # Default is 120 seconds (2 minutes) - can be overridden
+            export SHARD_TARGET_DURATION="${SHARD_TARGET_DURATION:-120}"
+            echo "Target duration per shard: ${SHARD_TARGET_DURATION}s"
+            
             # Calculate weighted shards
             node nala/utils/calculate-weighted-shards.js \
               --timing-data test-timings.json \
@@ -83,11 +93,40 @@ jobs:
             echo "- **Shards to use:** $OPTIMAL_SHARDS" >> $GITHUB_STEP_SUMMARY
             echo "" >> $GITHUB_STEP_SUMMARY
             echo "### Distribution by Shard:" >> $GITHUB_STEP_SUMMARY
-            echo "| Shard | Tests | Duration |" >> $GITHUB_STEP_SUMMARY
-            echo "|-------|-------|----------|" >> $GITHUB_STEP_SUMMARY
+            echo "| Shard | Tests | Est. Duration | Balance |" >> $GITHUB_STEP_SUMMARY
+            echo "|-------|-------|---------------|---------|" >> $GITHUB_STEP_SUMMARY
             
-            # Add distribution details
-            jq -r '.distribution[] | "| \(.shard) | \(.testCount) | \(.duration)s |"' shard-assignments.json >> $GITHUB_STEP_SUMMARY
+            # Add distribution overview
+            jq -r '.distribution[] | "| Shard \(.shard) | \(.testCount) | ~\(.duration)s | \(.percentage)% |"' shard-assignments.json >> $GITHUB_STEP_SUMMARY
+            
+            # Add detailed breakdown for each shard
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "<details>" >> $GITHUB_STEP_SUMMARY
+            echo "<summary>📋 Detailed Test Distribution (click to expand)</summary>" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            
+            # Loop through each shard and show its test files
+            for shard in $(seq 1 $OPTIMAL_SHARDS); do
+              echo "#### Shard $shard" >> $GITHUB_STEP_SUMMARY
+              
+              # Get test files and their durations for this shard
+              echo '```' >> $GITHUB_STEP_SUMMARY
+              jq -r --arg s "$shard" '.shards[$s][]' shard-assignments.json | while read -r file; do
+                # Get duration for this file from expectedDurations or timing data
+                DURATION_MS=$(jq -r --arg f "$file" '.timings[$f] // 15000' test-timings.json 2>/dev/null || echo "15000")
+                DURATION_S=$(echo "scale=1; $DURATION_MS / 1000" | bc 2>/dev/null || echo "15.0")
+                echo "  ${file##*/} (~${DURATION_S}s)" >> $GITHUB_STEP_SUMMARY
+              done
+              echo '```' >> $GITHUB_STEP_SUMMARY
+              
+              # Show total expected duration for this shard
+              SHARD_DURATION=$(jq -r --arg s "$shard" '.expectedDurations[$s] // 0' shard-assignments.json)
+              SHARD_DURATION_S=$(echo "scale=1; $SHARD_DURATION / 1000" | bc 2>/dev/null || echo "0")
+              echo "_Total estimated duration: ~${SHARD_DURATION_S}s_" >> $GITHUB_STEP_SUMMARY
+              echo "" >> $GITHUB_STEP_SUMMARY
+            done
+            
+            echo "</details>" >> $GITHUB_STEP_SUMMARY
           else
             echo "No timing data found, using count-based distribution"
             
@@ -195,18 +234,29 @@ jobs:
       image-digest: ${{ steps.build.outputs.digest }}
       deps-tag: ${{ steps.deps-tag.outputs.tag }}
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
       - name: Log in to GitHub Container Registry
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Calculate deps hash
+        id: deps-hash
+        run: |
+          # Quick hash calculation without full checkout
+          echo "Calculating dependencies hash..."
+          
+      - name: Checkout repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          sparse-checkout: |
+            package.json
+            package-lock.json
+            Dockerfile.nala
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
 
       - name: Generate image metadata
         id: meta
@@ -227,12 +277,16 @@ jobs:
           DEPS_TAG="ghcr.io/${{ github.repository }}/nala-tests:deps-${{ hashFiles('package-lock.json', 'package.json', 'Dockerfile.nala') }}"
           echo "Checking for existing image: $DEPS_TAG"
           
-          if docker manifest inspect $DEPS_TAG > /dev/null 2>&1; then
-            echo "Image exists with current dependencies, skipping build"
+          # Try to pull the image - faster than manifest inspect
+          if docker pull $DEPS_TAG 2>/dev/null; then
+            echo "✓ Image exists with current dependencies, skipping build"
             echo "exists=true" >> $GITHUB_OUTPUT
             echo "existing_tag=$DEPS_TAG" >> $GITHUB_OUTPUT
+            
+            # Tag it for easier reference
+            docker tag $DEPS_TAG ghcr.io/${{ github.repository }}/nala-tests:latest
           else
-            echo "Image not found or dependencies changed, building new image"
+            echo "⚠ Image not found or dependencies changed, building new image"
             echo "exists=false" >> $GITHUB_OUTPUT
           fi
 
@@ -259,8 +313,14 @@ jobs:
           
           if [[ "${{ steps.check.outputs.exists }}" == "true" ]]; then
             echo "IMAGE_REF=${{ steps.check.outputs.existing_tag }}" >> $GITHUB_ENV
+            echo "## ✅ Using Cached Image" >> $GITHUB_STEP_SUMMARY
+            echo "Image: \`${{ steps.check.outputs.existing_tag }}\`" >> $GITHUB_STEP_SUMMARY
+            echo "No rebuild needed - dependencies unchanged" >> $GITHUB_STEP_SUMMARY
           else
             echo "IMAGE_REF=ghcr.io/${{ github.repository }}/nala-tests@${{ steps.build.outputs.digest }}" >> $GITHUB_ENV
+            echo "## 🔨 Built New Image" >> $GITHUB_STEP_SUMMARY
+            echo "Image: \`ghcr.io/${{ github.repository }}/nala-tests@${{ steps.build.outputs.digest }}\`" >> $GITHUB_STEP_SUMMARY
+            echo "Dependencies or Dockerfile changed" >> $GITHUB_STEP_SUMMARY
           fi
           echo "Using image: $IMAGE_REF"
 
@@ -498,6 +558,8 @@ jobs:
             echo "Starting with fresh timing data"
           fi
           
+          # Note: update-test-timings.js automatically removes entries for deleted test files
+          
           # Find all shard-specific JSON files
           SHARD_FILES=$(find all-shards -name "test-results-shard-*.json" -type f 2>/dev/null)
           
@@ -524,6 +586,12 @@ jobs:
               echo "✓ Timing data updated successfully"
               TOTAL_FILES=$(jq -r '.totalFiles // 0' test-timings.json)
               echo "Tracked test files: $TOTAL_FILES" >> $GITHUB_STEP_SUMMARY
+              
+              # Count actual test files for comparison
+              ACTUAL_FILES=$(find nala -name "*.test.js" | wc -l)
+              if [ "$TOTAL_FILES" -ne "$ACTUAL_FILES" ]; then
+                echo "Note: Cleaned stale entries (actual files: $ACTUAL_FILES)" >> $GITHUB_STEP_SUMMARY
+              fi
             fi
           else
             echo "No test results found for timing update" >> $GITHUB_STEP_SUMMARY
