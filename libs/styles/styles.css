@@ -61,6 +61,7 @@
 
   /* Headings (Consonant) */
   --type-heading-all-weight: 700;
+  --type-heading-all-weight-mweb: 800;
   --type-heading-xxxl-size: calc(var(--font-size-multiplier, 1) * 44px);
   --type-heading-xxxl-lh: 55px;
   --type-heading-xxl-size: calc(var(--font-size-multiplier, 1) * 36px);
@@ -782,6 +783,12 @@ header.global-navigation.has-promo {
 
 header.global-navigation.new-nav.local-nav {
   top: 0;
+}
+
+body.mweb-enabled {
+  [class^="heading-"], h1, h2, h3, h4, h5, h6 {
+    font-weight: var(--type-heading-all-weight-mweb);
+  }
 }
 
 @media (min-width: 900px) {
