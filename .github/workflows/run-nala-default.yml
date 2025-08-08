@@ -484,8 +484,8 @@ jobs:
       - name: Restore previous timing data
         uses: actions/cache/restore@v3
         with:
-          path: previous-timings.json
-          key: test-timings-
+          path: test-timings.json
+          key: test-timings-restore-${{ github.run_number }}
           restore-keys: |
             test-timings-
 
@@ -553,10 +553,10 @@ jobs:
         run: |
           echo "### Updating test timings (key-value approach)" >> $GITHUB_STEP_SUMMARY
           
-          # Restore previous timings from cache rename
-          if [ -f previous-timings.json ]; then
-            cp previous-timings.json test-timings.json
+          # Check if we have cached timing data
+          if [ -f test-timings.json ]; then
             echo "Starting with cached timing data"
+            echo "Cached data size: $(stat -f%z test-timings.json 2>/dev/null || stat -c%s test-timings.json) bytes"
           else
             echo "Starting with fresh timing data"
           fi
