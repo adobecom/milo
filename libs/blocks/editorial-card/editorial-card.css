@@ -204,10 +204,6 @@
   flex-direction: row;
 }
 
-.editorial-card .action-area .con-button { 
-  white-space: nowrap;
-}
-
 .editorial-card.center .action-area {
   justify-content: center;
 }
@@ -296,6 +292,11 @@
   }
 
   .editorial-card .vp-media .tablet-only { display: block; }
+
+  .editorial-card .action-area .con-button {
+    white-space: nowrap;
+  }
+
 }
 
 /* desktop up */
