@@ -239,10 +239,11 @@ const COMMANDS = {
   [COMMANDS_KEYS.remove]: (el, { content, selector }) => {
     if (content !== 'false') el.classList.add(CLASS_EL_DELETE);
     if (getSelectorType(selector) === SELECTOR_TYPES.twpButtons) {
-      const secondaryButton = el.parentElement.querySelector('a').parentElement;
-      if (secondaryButton && secondaryButton?.tagName === 'EM') {
-        const html = secondaryButton.parentElement.innerHTML;
-        secondaryButton.parentElement.innerHTML = html.replace(/em/g, 'strong');
+      const secondaryButton = el.closest('p')?.querySelector('em') || el.closest('div')?.querySelector('em');
+      if (secondaryButton) {
+        const wrapper = secondaryButton.parentElement;
+        const html = wrapper.innerHTML;
+        wrapper.innerHTML = html.replace(/em/g, 'strong');
       }
     }
   },
@@ -578,9 +579,12 @@ function getSelectedElements(sel, rootEl, forceRootEl, action) {
   try {
     els = root.querySelectorAll(modifiedSelector);
     if (getSelectorType(selector) === SELECTOR_TYPES.twpButtons) {
+      const regex = /free.trial|essai gratuit|kostenlos testen|testversion|無料で始める 無料体験の詳細|détails de la version d’essai gratuite|details zur kostenlosen testversion/g;
       els = [...els]
-        .filter((el) => el.innerHTML.toLowerCase().match(/free.trial|essai gratuit|kostenlos testen|testversion|無料で始める 無料体験の詳細|détails de la version d’essai gratuite|details zur kostenlosen testversion/))
-        .map((el) => el.parentElement);
+        .filter((el) => el.innerHTML.toLowerCase().match(regex))
+        .map((el) => (['strong', 'em'].includes(el.parentElement.tagName.toLowerCase())
+          ? el.parentElement
+          : el));
     }
   } catch (e) {
     /* eslint-disable-next-line no-console */
