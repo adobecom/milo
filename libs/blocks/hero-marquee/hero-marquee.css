@@ -520,17 +520,6 @@ html[dir="rtl"] .hero-marquee li.icon-item span.icon {
 
 /* Mweb specific */
 @media screen and (max-width: 1199px) {
-  /* General */
-
-  body.mweb-enabled {
-    [class^="detail-"] {
-      text-transform: unset;
-    }
-
-    [class^="detail-"] strong {
-      font-weight: 500;
-    }
-  }
 
    /* Override center alignment when mobile-left-align is present */
   .hero-marquee.mobile-left-align.center {
