@@ -374,8 +374,8 @@ jobs:
           DEPS_TAG="ghcr.io/${{ github.repository }}/nala-tests:deps-${{ hashFiles('package-lock.json', 'package.json', 'Dockerfile.nala') }}"
           echo "Checking for existing image: $DEPS_TAG"
           
-          # Use docker manifest inspect to check if image exists (HEAD request, no download)
-          if docker manifest inspect $DEPS_TAG > /dev/null 2>&1; then
+          # Use docker buildx to check if image exists (works better with registries)
+          if docker buildx imagetools inspect $DEPS_TAG > /dev/null 2>&1; then
             echo "✓ Image exists with current dependencies, skipping build"
             echo "exists=true" >> $GITHUB_OUTPUT
             echo "existing_tag=$DEPS_TAG" >> $GITHUB_OUTPUT
