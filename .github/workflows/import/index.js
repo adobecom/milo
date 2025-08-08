@@ -163,8 +163,12 @@ function safeguardMetadataImages(dom) {
   }
 }
 
+const map = {}
 async function importUrl(aemPath, importedMedia) {
   const url = new URL(importFrom + aemPath.replace('.md', ''));
+  // AVOID Re-fetching the same resource (e.g. nested circular fragments)
+  if(map[importFrom + aemPath.replace('.md', '')]) return
+  map[importFrom + aemPath.replace('.md', '')] = true
   // Exclude auto publishing files from Sharepoint
   if (excludedFiles.some((excludedFile) => url.pathname === excludedFile)) {
     if (ROLLING_IMPORT_ENABLE_DEBUG_LOGS) console.log(`Stopped processing ${url.pathname}`);
