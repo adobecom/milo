@@ -12,6 +12,7 @@ describe('Preflight Asset Checks', () => {
   let mockPicture;
 
   beforeEach(() => {
+    const mockMain = { querySelectorAll: sinon.stub().returns([]) };
     mockMatchMedia = sinon.stub(window, 'matchMedia').returns({ matches: true });
 
     mockPicture = {
@@ -29,7 +30,11 @@ describe('Preflight Asset Checks', () => {
       setAttribute: sinon.stub(),
       addEventListener: sinon.stub(),
       checkVisibility: sinon.stub().returns(true),
-      closest: (selector) => (selector === '.icon-area' ? null : mockPicture),
+      closest: (selector) => {
+        if (selector === '.icon-area') return null;
+        if (selector === 'main') return mockMain;
+        return mockPicture;
+      },
       src: 'test.jpg',
       nextSibling: null,
     };
