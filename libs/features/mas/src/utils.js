@@ -81,3 +81,8 @@ export function discoverService(getConfig, { once = false } = {}) {
 export function getService() {
   return document.getElementsByTagName(MAS_COMMERCE_SERVICE)?.[0];
 }
+
+export function getOuterHeight(element) {
+    const style = window.getComputedStyle(element);
+    return element.offsetHeight + parseFloat(style.marginTop) + parseFloat(style.marginBottom);
+}
