@@ -443,20 +443,10 @@ jobs:
             echo "Download outcome: ${{ steps.download-shards.outcome }}"
           fi
 
-      - name: Setup test environment
-        run: |
-          # Create symlink from /workspace to actual checkout location
-          # This ensures compatibility with scripts expecting /workspace
-          ln -s ${{ github.workspace }} /workspace || true
-          
-          # Verify the symlink
-          echo "Workspace contents:"
-          ls -la /workspace/
-          
       - name: Run Nala Tests (Shard ${{ matrix.shard }}/${{ needs.calculate-shards.outputs.shard-count }})
         env:
           CI: true
-          GITHUB_ACTION_PATH: /workspace
+          GITHUB_ACTION_PATH: ${{ github.workspace }}
           GITHUB_REF: ${{ github.ref }}
           GITHUB_HEAD_REF: ${{ github.event.pull_request.head.ref }}
           GITHUB_REPOSITORY: ${{ github.repository }}
@@ -473,7 +463,6 @@ jobs:
           SHARD_INDEX: ${{ matrix.shard }}
           SHARD_TOTAL: ${{ needs.calculate-shards.outputs.shard-count }}
           CONTAINER: true
-        working-directory: /workspace
         run: |
           # Create directories for results
           mkdir -p test-results test-html-results playwright-report
