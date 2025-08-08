@@ -42,6 +42,7 @@ jobs:
           node-version: '20.x'
 
       - name: Restore test timing data
+        id: cache-restore
         uses: actions/cache/restore@v3
         with:
           path: test-timings.json
@@ -55,6 +56,11 @@ jobs:
       
       - name: Check and clean timing data
         run: |
+          # Show which cache key was actually used
+          echo "Cache restore result: ${{ steps.cache-restore.outputs.cache-hit }}"
+          echo "Cache key used: ${{ steps.cache-restore.outputs.cache-matched-key || 'No exact match' }}"
+          echo "Primary key attempted: test-timings-${{ github.event_name == 'pull_request' && github.event.pull_request.base.ref || github.ref_name }}-${{ github.run_number }}"
+          
           if [ -f test-timings.json ]; then
             echo "Successfully loaded previous timing data"
             echo "File size: $(stat -f%z test-timings.json 2>/dev/null || stat -c%s test-timings.json) bytes"
@@ -644,7 +650,8 @@ jobs:
           fi
 
       - name: Save test timing data to cache
-        if: always() && hashFiles('test-timings.json') != ''
+        # Only save if workflow succeeded or failed (not cancelled) and timing file exists
+        if: (success() || failure()) && hashFiles('test-timings.json') != ''
         uses: actions/cache/save@v3
         with:
           path: test-timings.json
