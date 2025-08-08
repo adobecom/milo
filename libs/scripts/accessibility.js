@@ -97,6 +97,19 @@ export const setDialogAndElementAttributes = ({ element, title }) => {
   element.closest('.dialog-modal')?.setAttribute('aria-label', title);
 };
 
+export function setListRoles() {
+  const sectionUpChildren = '.action-item, .icon-block';
+  const selector = `:is(.section[class*="-up"]:has(${sectionUpChildren}), .scroller):not(:has(h1, h2, h3, h4, h5, h6))`;
+  document.querySelectorAll(selector).forEach((parent) => {
+    parent.setAttribute('role', 'list');
+    [...parent.children].forEach((child) => {
+      if (child.classList.contains('section-metadata')) return;
+      child.setAttribute('role', 'listitem');
+    });
+  });
+}
+
 export default function init() {
+  setListRoles();
   scrollTabFocusedElIntoView();
 }
