@@ -53,8 +53,9 @@ const closeSvg = `<svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" wid
     </clipPath>
   </defs>
 </svg>`;
-
+const selectedSelector = '[aria-selected="true"], [aria-checked="true"]';
 let iconographyLoaded = false;
+const focusableNotificationElements = 'button, a[href], [tabindex]:not([tabindex="-1"])';
 
 function getOpts(el) {
   const optRows = [...el.querySelectorAll(':scope > div:nth-of-type(n+3)')];
@@ -74,20 +75,7 @@ function getBlockData(el) {
   return { fontSizes, options: { ...getOpts(el) } };
 }
 
-function wrapCopy(foreground) {
-  const texts = foreground.querySelectorAll('.text');
-  if (!texts) return;
-  texts.forEach((text) => {
-    const heading = text?.querySelector('h1, h2, h3, h4, h5, h6, p:not(.icon-area, .action-area)');
-    const icon = heading?.previousElementSibling;
-    const body = heading?.nextElementSibling?.classList.contains('action-area') ? '' : heading?.nextElementSibling;
-    const copy = createTag('div', { class: 'copy-wrap' }, [heading, body].filter(Boolean));
-    text?.insertBefore(copy, icon?.nextSibling || text.children[0]);
-  });
-}
-
-const focusableSelector = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
-const selectedSelector = '[aria-selected="true"], [aria-checked="true"]';
+function getHeadingText(el) { return el.querySelector('h1, h2, h3, h4, h5, h6, strong')?.textContent.trim(); }
 
 export function findFocusableInSection(section, selSelector, focSelector) {
   if (!section) return null;
@@ -101,65 +89,95 @@ export function findFocusableInSection(section, selSelector, focSelector) {
     : null;
 }
 
-function addCloseAction(el, btn) {
-  btn.addEventListener('click', (e) => {
-    if (btn.nodeName === 'A') e.preventDefault();
+function wrapCopy(foreground) {
+  const texts = foreground.querySelectorAll('.text');
+  if (!texts) return;
+  texts.forEach((text) => {
+    const heading = text?.querySelector('h1, h2, h3, h4, h5, h6, p:not(.icon-area, .action-area)');
+    const icon = heading?.previousElementSibling;
+    const body = heading?.nextElementSibling?.classList.contains('action-area') ? '' : heading?.nextElementSibling;
+    const copy = createTag('div', { class: 'copy-wrap' }, [heading, body].filter(Boolean));
+    text?.insertBefore(copy, icon?.nextSibling || text.children[0]);
+  });
+}
 
-    const liveRegion = createTag('div', {
-      class: 'notification-visibility-hidden',
-      'aria-live': 'assertive',
-      'aria-atomic': 'true',
-      role: 'status',
-      tabindex: '-1',
-    }, 'Banner closed');
-    document.body.appendChild(liveRegion);
-    liveRegion.focus();
-    let isSticky = false;
-    let rect;
-    const sectionElement = el.closest('.section');
+const closeBanner = (el) => {
+  let isSticky = false;
+  let rect;
+  const sectionElement = el?.closest('.section');
+  const isFocusable = el.classList.contains('focus');
 
-    if (sectionElement?.className.includes('sticky')) {
-      isSticky = true;
-      rect = sectionElement.getBoundingClientRect();
-    }
+  if (sectionElement?.className.includes('sticky')) {
+    isSticky = true;
+    rect = sectionElement.getBoundingClientRect();
+  }
+  el.focusTrapCleanup?.();
 
-    el.style.display = 'none';
-    el.closest('.section')?.classList.add('close-sticky-section');
-    if (el.classList.contains('focus')) {
-      document.body.classList.remove('mobile-disable-scroll');
-      el.closest('.section').querySelector('.notification-curtain').remove();
-    }
-    document.dispatchEvent(new CustomEvent('milo:sticky:closed'));
+  if (isFocusable) {
+    document.body.classList.remove('mobile-disable-scroll');
+    sectionElement?.querySelector('.notification-curtain')?.remove();
+  }
 
+  el.removeAttribute('aria-modal');
+  el.removeAttribute('role');
+  el.style.display = 'none';
+  sectionElement?.classList.add('close-sticky-section');
+
+  if (isFocusable) {
+    setTimeout(() => {
+      const tempFocus = createTag('div', { class: 'temp-focus' });
+      tempFocus.tabIndex = 0;
+      document.body.insertBefore(tempFocus, document.body.firstChild);
+      tempFocus.focus();
+      document.body.removeChild(tempFocus);
+    });
+  }
+
+  if (isSticky && !isFocusable) {
     setTimeout(() => {
       let focusTarget;
+      const allFocusableElements = 'button, a[href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
+      const elementAtPosition = document.elementFromPoint(rect.left, rect.top);
+      const stickySection = elementAtPosition?.closest('.section');
+      focusTarget = findFocusableInSection(stickySection, selectedSelector, allFocusableElements);
 
-      if (isSticky) {
-        const elementAtPosition = document.elementFromPoint(rect.left, rect.top);
-        const stickySection = elementAtPosition.closest('.section');
-        focusTarget = findFocusableInSection(stickySection, selectedSelector, focusableSelector);
-      }
-
-      let currentSection = el.closest('.section')?.previousElementSibling;
+      let currentSection = sectionElement?.previousElementSibling;
       while (currentSection && !focusTarget) {
-        focusTarget = findFocusableInSection(currentSection, selectedSelector, focusableSelector);
+        focusTarget = findFocusableInSection(
+          currentSection,
+          selectedSelector,
+          allFocusableElements,
+        );
         if (!focusTarget) currentSection = currentSection.previousElementSibling;
       }
 
       const header = document.querySelector('header');
       if (!focusTarget && header) {
-        const headerFocusable = [...header.querySelectorAll(focusableSelector)];
+        const headerFocusable = [...header.querySelectorAll(allFocusableElements)];
         focusTarget = headerFocusable[headerFocusable.length - 1];
       }
 
-      liveRegion?.remove();
-      if (focusTarget) focusTarget.focus({ preventScroll: true });
+      if (focusTarget && document.activeElement.tagName === 'BODY') focusTarget.focus({ preventScroll: true });
     }, 2000);
+  }
+
+  setTimeout(() => {
+    const liveRegion = document.querySelector(`.notification-visibility-hidden[data-notification-id="${el.dataset.notificationId}"]`);
+    if (liveRegion) liveRegion.textContent = 'Banner closed';
+  }, 100);
+
+  document.dispatchEvent(new CustomEvent('milo:sticky:closed'));
+};
+
+function addCloseAction(el, btn) {
+  btn.addEventListener('click', (e) => {
+    if (btn.nodeName === 'A') e.preventDefault();
+    closeBanner(el);
   });
 }
 
 function decorateClose(el) {
-  const btn = createTag('button', { 'aria-label': 'Close Promo Banner', class: 'close' }, closeSvg);
+  const btn = createTag('button', { 'aria-label': 'Close Promotional Banner', class: 'close' }, closeSvg);
   addCloseAction(el, btn);
   el.appendChild(btn);
 }
@@ -203,6 +221,53 @@ function curtainCallback(el) {
   const curtain = createTag('div', { class: 'notification-curtain' });
   document.body.classList.add('mobile-disable-scroll');
   el.insertAdjacentElement('afterend', curtain);
+  el.setAttribute('role', 'dialog');
+  const ariaLabel = getHeadingText(el);
+  el.setAttribute('aria-label', `${ariaLabel ?? 'Promotional Banner'} Dialog`);
+  el.setAttribute('aria-modal', 'true');
+
+  const focusableElements = [...el.querySelectorAll(focusableNotificationElements)];
+  const firstFocusable = focusableElements[0];
+  const lastFocusable = focusableElements[focusableElements.length - 1];
+
+  if (!document.querySelector('.dialog-modal') && firstFocusable) firstFocusable.focus();
+
+  const handleKeyDown = (e) => {
+    if (e.key !== 'Tab') {
+      if (e.key === 'Escape') closeBanner(el);
+      return;
+    }
+
+    if (e.shiftKey && document.activeElement === firstFocusable) {
+      e.preventDefault();
+      lastFocusable.focus();
+      return;
+    }
+
+    if (!e.shiftKey && document.activeElement === lastFocusable) {
+      e.preventDefault();
+      firstFocusable.focus();
+    }
+  };
+
+  const handleFocusOut = (e) => {
+    if (!el.contains(e.relatedTarget) && firstFocusable) firstFocusable.focus();
+  };
+
+  const handleCurtainClick = (e) => { if (e.target === curtain) closeBanner(el); };
+
+  el.addEventListener('keydown', handleKeyDown);
+  el.addEventListener('focusout', handleFocusOut);
+  curtain.addEventListener('click', handleCurtainClick);
+  window.addEventListener('milo:modal:closed:notification', () => {
+    el.querySelector(focusableNotificationElements)?.focus();
+  });
+
+  el.focusTrapCleanup = () => {
+    el.removeEventListener('keydown', handleKeyDown);
+    el.removeEventListener('focusout', handleFocusOut);
+    curtain.removeEventListener('click', handleCurtainClick);
+  };
 }
 
 function decorateSplitList(el, listContent) {
@@ -315,10 +380,33 @@ async function decorateLayout(el) {
   return foreground;
 }
 
+function setStickyAccessibilityAttributes(el) {
+  const section = el?.closest('.section');
+  if (!section) return;
+
+  const checkAndSetAttributes = () => {
+    const sticky = section.classList.contains('sticky-top') || section.classList.contains('sticky-bottom');
+    if (!sticky) return false;
+
+    el.setAttribute('aria-label', getHeadingText(el)
+       || (section.classList.contains('sticky-bottom') ? 'Promotional Banner Bottom' : 'Promotional Banner Top'));
+    el.setAttribute('role', 'region');
+    return true;
+  };
+
+  const observer = new MutationObserver(() => {
+    if (!checkAndSetAttributes()) return;
+    observer.disconnect();
+  });
+
+  observer.observe(section, {
+    attributes: true,
+    attributeFilter: ['class'],
+  });
+}
+
 export default async function init(el) {
   el.classList.add('con-block');
-  el.setAttribute('aria-label', 'Promo Banner');
-  el.setAttribute('role', 'region');
   const { fontSizes, options } = getBlockData(el);
   const blockText = await decorateLayout(el);
   decorateBlockText(blockText, fontSizes);
@@ -332,4 +420,16 @@ export default async function init(el) {
     if (el.matches(`.${pill}`)) addTooltip(el);
     decorateMultiViewport(el);
   }
+
+  const notificationId = `notification-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`;
+  el.dataset.notificationId = notificationId;
+  document.body.appendChild(createTag('div', {
+    class: 'notification-visibility-hidden',
+    'aria-live': 'polite',
+    role: 'status',
+    tabindex: '-1',
+    'data-notification-id': notificationId,
+  }, ''));
+
+  setStickyAccessibilityAttributes(el);
 }
