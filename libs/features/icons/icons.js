@@ -2,8 +2,6 @@ import { lanaLog } from '../../blocks/global-navigation/utilities/utilities.js';
 import { getFederatedContentRoot } from '../../utils/federated.js';
 import { getConfig } from '../../utils/utils.js';
 
-// These are blocks that misuse icons for other purposes
-const rogueBlocks = ['unity', 'cc-forms', 'interactive-metadata'];
 const iconCache = new Map();
 let miloIconsPromise;
 
@@ -113,14 +111,10 @@ async function fetchMiloIcon(iconName) {
   return null;
 }
 
-async function getIcon(iconName, isRogueIcon) {
+async function getIcon(iconName) {
   if (iconCache.has(iconName)) return iconCache.get(iconName);
-
-  if (!isRogueIcon) {
-    const federalIcon = await fetchFederalIcon(iconName);
-    if (federalIcon) return federalIcon;
-  }
-
+  const federalIcon = await fetchFederalIcon(iconName);
+  if (federalIcon) return federalIcon;
   return fetchMiloIcon(iconName);
 }
 
@@ -132,8 +126,7 @@ export default async function loadIcons(icons) {
     decorateToolTip(icon, iconName);
     if (icon.dataset.svgInjected || !iconName) return;
 
-    const isRogueIcon = rogueBlocks.some((b) => icon.closest(`div.${b}`));
-    const svgElement = await getIcon(iconName, isRogueIcon);
+    const svgElement = await getIcon(iconName);
     if (svgElement && !icon.dataset.svgInjected) {
       const svgClone = svgElement.cloneNode(true);
       icon.appendChild(svgClone);
