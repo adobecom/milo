@@ -31,14 +31,15 @@ const config = {
   /* Retry on CI only */
   retries: process.env.CI ? 1 : 0,
   /* Opt out of parallel tests on CI. */
-  workers: process.env.PLAYWRIGHT_WORKERS 
+  // eslint-disable-next-line no-nested-ternary
+  workers: process.env.PLAYWRIGHT_WORKERS
     ? parseInt(process.env.PLAYWRIGHT_WORKERS, 10)
     : process.env.CI ? 7 : 3,
   /* Reporter to use. */
   reporter: process.env.CI
     ? [
-      ['github'], 
-      ['list'], 
+      ['github'],
+      ['list'],
       ['json', { outputFile: './test-results/test-results.json' }],
       ['./nala/utils/base-reporter.js'],
     ]

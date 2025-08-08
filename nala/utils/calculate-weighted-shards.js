@@ -160,7 +160,7 @@ class WeightedShardCalculator {
 
     // Allow override via environment variable (in seconds), default to 2 minutes
     const targetSeconds = process.env.SHARD_TARGET_DURATION || '120';
-    const targetShardDuration = parseInt(targetSeconds) * 1000; // Convert to milliseconds
+    const targetShardDuration = parseInt(targetSeconds, 10) * 1000; // Convert to milliseconds
 
     let optimalShards = Math.ceil(totalDuration / targetShardDuration);
     optimalShards = Math.max(2, Math.min(optimalShards, this.maxShards));
@@ -202,12 +202,10 @@ class WeightedShardCalculator {
     tests.forEach((test) => {
       // Find shard with minimum total duration
       let minShard = shards[0];
-      let minIndex = 0;
 
-      shards.forEach((shard, index) => {
+      shards.forEach((shard) => {
         if (shard.totalDuration < minShard.totalDuration) {
           minShard = shard;
-          minIndex = index;
         }
       });
 
@@ -257,6 +255,7 @@ class WeightedShardCalculator {
    * @param {Object} distribution - Shard distribution object
    * @returns {string} Summary text
    */
+  // eslint-disable-next-line class-methods-use-this
   generateSummary(distribution) {
     let summary = '\nShard Distribution Summary:\n';
     summary += `Total tests: ${distribution.totalTests}\n`;
@@ -319,7 +318,7 @@ Examples:
 
   // Parse arguments
   const maxShardsIndex = args.indexOf('--max-shards');
-  const maxShards = maxShardsIndex > -1 ? parseInt(args[maxShardsIndex + 1]) : 10;
+  const maxShards = maxShardsIndex > -1 ? parseInt(args[maxShardsIndex + 1], 10) : 10;
 
   const calculator = new WeightedShardCalculator(maxShards);
 
