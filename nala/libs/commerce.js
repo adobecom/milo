@@ -42,7 +42,7 @@ async function setupMasConsoleListener(consoleErrors) {
 
       if (errorText.includes('blocked by CORS policy')) {
         // Only log CORS errors for MAS-related URLs
-        if (errorText.includes('/mas/io/') || errorText.includes('commerce.adobe.com')) {
+        if (errorText.includes('/mas/io/') || /commerce[^.]*\.adobe\.com/.test(errorText)) {
           uniqueKey = 'MAS_CORS_POLICY_BLOCKED';
         } else {
           return; // Skip non-MAS CORS errors
