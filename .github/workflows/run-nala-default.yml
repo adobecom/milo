@@ -484,14 +484,19 @@ jobs:
             export PR_BRANCH_LIVE_URL_GH="https://${BRANCH_CLEAN}--${REPO}--${ORG}.aem.live"
           elif [[ "${{ github.ref_name }}" == "main" ]]; then
             # Push to main - use production URL
-            export PR_BRANCH_LIVE_URL_GH="https://milo.adobe.com"
+            export PR_BRANCH_LIVE_URL_GH="https://main--milo--adobecom.aem.live"
           elif [[ "${{ github.ref_name }}" == "stage" ]]; then
             # Push to stage - use stage URL
             export PR_BRANCH_LIVE_URL_GH="https://stage--milo--adobecom.aem.live"
+          elif [[ "${{ github.event_name }}" == "push" ]]; then
+            # Push to any other branch
+            BRANCH="${{ github.ref_name }}"
+            BRANCH_CLEAN=$(echo "$BRANCH" | sed 's/\//-/g')
+            export PR_BRANCH_LIVE_URL_GH="https://${BRANCH_CLEAN}--milo--adobecom.aem.live"
           else
-            # Unknown event/branch - fail explicitly
+            # Unknown event - fail explicitly
             echo "ERROR: Unable to determine test URL for event '${{ github.event_name }}' on branch '${{ github.ref_name }}'"
-            echo "This workflow only supports: pull_request events, or pushes to main/stage"
+            echo "This workflow only supports: pull_request events, or push events"
             exit 1
           fi
           
