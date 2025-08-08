@@ -481,6 +481,7 @@ jobs:
       - name: Run Nala Tests (Shard ${{ matrix.shard }}/${{ needs.calculate-shards.outputs.shard-count }})
         env:
           CI: true
+          HOME: /root
           GITHUB_ACTION_PATH: ${{ github.workspace }}
           GITHUB_REF: ${{ github.ref }}
           GITHUB_HEAD_REF: ${{ github.event.pull_request.head.ref }}
@@ -529,7 +530,12 @@ jobs:
           mkdir -p test-results test-html-results playwright-report
           
           # Link node_modules from where the container has them
-          ln -s /workspace/node_modules ./node_modules
+          # The container installed them in /workspace during the Docker build
+          if [ -d /workspace/node_modules ]; then
+            ln -s /workspace/node_modules ./node_modules
+          else
+            echo "Warning: /workspace/node_modules not found, npm install may be needed"
+          fi
           
           # Verify playwright is now available
           echo "Current directory: $(pwd)"
