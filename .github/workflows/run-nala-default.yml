@@ -465,7 +465,10 @@ jobs:
         shell: bash
         run: |
           # Check if we successfully downloaded shard assignments
-          if [[ "${{ steps.download-shards.outcome }}" == "success" ]] && [[ -f shard-assignments.json ]]; then
+          DOWNLOAD_OUTCOME="${{ steps.download-shards.outcome }}"
+          echo "Download outcome: $DOWNLOAD_OUTCOME"
+          
+          if [[ "$DOWNLOAD_OUTCOME" == "success" ]] && [[ -f shard-assignments.json ]]; then
             # Get test files for this shard
             TEST_FILES=$(jq -r '.shards."${{ matrix.shard }}"[]' shard-assignments.json 2>/dev/null | tr '\n' ' ')
             if [ ! -z "$TEST_FILES" ] && [ "$TEST_FILES" != "null" ]; then
