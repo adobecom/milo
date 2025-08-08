@@ -46,23 +46,44 @@ jobs:
         uses: actions/cache/restore@v3
         with:
           path: test-timings.json
-          # For PRs, try to restore from base branch first, then any timing data
-          key: test-timings-${{ github.event_name == 'pull_request' && github.event.pull_request.base.ref || github.ref_name }}-${{ github.run_number }}
+          # Look for timing data from the current branch only
+          key: test-timings-${{ github.ref_name }}-${{ github.run_number }}
           restore-keys: |
-            test-timings-${{ github.event_name == 'pull_request' && github.event.pull_request.base.ref || github.ref_name }}-
-            test-timings-stage-
-            test-timings-main-
-            test-timings-
+            test-timings-${{ github.ref_name }}-
       
       - name: Check and clean timing data
         run: |
           # Show which cache key was actually used
           echo "Cache restore result: ${{ steps.cache-restore.outputs.cache-hit }}"
           echo "Cache key used: ${{ steps.cache-restore.outputs.cache-matched-key || 'No exact match' }}"
-          echo "Primary key attempted: test-timings-${{ github.event_name == 'pull_request' && github.event.pull_request.base.ref || github.ref_name }}-${{ github.run_number }}"
+          echo "Primary key attempted: test-timings-${{ github.ref_name }}-${{ github.run_number }}"
+          
+          # Check if default timings are newer than cached timings
+          if [ -f test-timings.json ] && [ -f nala/utils/default-test-timings.json ]; then
+            CACHED_DATE=$(jq -r '.lastUpdated // "1970-01-01T00:00:00Z"' test-timings.json)
+            DEFAULT_DATE=$(jq -r '.lastUpdated // "1970-01-01T00:00:00Z"' nala/utils/default-test-timings.json)
+            
+            echo "Cached timing date: $CACHED_DATE"
+            echo "Default timing date: $DEFAULT_DATE"
+            
+            # Convert ISO 8601 dates to epoch for comparison
+            # GNU date (Linux/GitHub Actions) handles ISO 8601 with milliseconds
+            CACHED_EPOCH=$(date -d "$CACHED_DATE" +%s 2>/dev/null || echo "0")
+            DEFAULT_EPOCH=$(date -d "$DEFAULT_DATE" +%s 2>/dev/null || echo "0")
+            
+            if [ "$DEFAULT_EPOCH" -gt "$CACHED_EPOCH" ]; then
+              echo "Default timings are newer than cached timings, using defaults"
+              cp nala/utils/default-test-timings.json test-timings.json
+            else
+              echo "Cached timings are up to date"
+            fi
+          elif [ ! -f test-timings.json ] && [ -f nala/utils/default-test-timings.json ]; then
+            echo "No cached timing data found, using defaults"
+            cp nala/utils/default-test-timings.json test-timings.json
+          fi
           
           if [ -f test-timings.json ]; then
-            echo "Successfully loaded previous timing data"
+            echo "Successfully loaded timing data"
             echo "File size: $(stat -f%z test-timings.json 2>/dev/null || stat -c%s test-timings.json) bytes"
             
             # Clean up stale entries for files that no longer exist
@@ -655,7 +676,17 @@ jobs:
         uses: actions/cache/save@v3
         with:
           path: test-timings.json
-          key: test-timings-${{ github.event_name == 'pull_request' && github.event.pull_request.base.ref || github.ref_name }}-${{ github.run_number }}
+          # Save with actual branch/PR ref - each branch maintains its own timing data
+          key: test-timings-${{ github.ref_name }}-${{ github.run_number }}
+      
+      - name: Upload timing data as artifact
+        # Also save as artifact for better persistence
+        if: (success() || failure()) && hashFiles('test-timings.json') != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-timings-${{ github.run_number }}
+          path: test-timings.json
+          retention-days: 30
 
       - name: Upload merged results
         uses: actions/upload-artifact@v4
