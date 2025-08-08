@@ -339,6 +339,7 @@ jobs:
           # Run tests and capture exit code
           docker run --name nala-test-container-${{ matrix.shard }} \
             --ipc=host \
+            -v ${{ github.workspace }}/playwright.config.js:/workspace/playwright.config.js:ro \
             -v ${{ github.workspace }}/nala:/workspace/nala:ro \
             -v ${{ github.workspace }}/test-results:/workspace/test-results \
             -v ${{ github.workspace }}/test-html-results:/workspace/test-html-results \
@@ -365,13 +366,14 @@ jobs:
           # Copy test results regardless of test outcome
           echo "Extracting test results..."
           
-          # Check mounted volume first (most reliable)
-          SHARD_JSON="test-results/test-results-shard-${{ matrix.shard }}.json"
-          if [ -f "$SHARD_JSON" ]; then
-            echo "✓ Found $SHARD_JSON in mounted volume"
+          # Rename the JSON file to shard-specific name
+          if [ -f "test-results/test-results.json" ]; then
+            SHARD_JSON="test-results/test-results-shard-${{ matrix.shard }}.json"
+            mv "test-results/test-results.json" "$SHARD_JSON"
+            echo "✓ Renamed test-results.json to $SHARD_JSON"
             ls -la "$SHARD_JSON"
           else
-            echo "✗ $SHARD_JSON not found in mounted volume"
+            echo "✗ test-results/test-results.json not found"
             
             # List what's actually in test-results directory
             echo "Contents of test-results directory:"

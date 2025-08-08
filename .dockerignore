@@ -1,26 +1,58 @@
-# Ignore test results
+# Test results and reports
 test-results/
 test-html-results/
 playwright-report/
+all-shards/
 nala-results.json
+*.json
 
-# Ignore git files
+# Git
 .git/
 .github/
+.gitignore
 
-# Ignore other build artifacts
-.cache/
-coverage/
+# Documentation
+*.md
+docs/
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Build artifacts
 dist/
 build/
+coverage/
 
-# Ignore documentation
-*.md
-!README.md
+# Cache directories
+.cache/
+.npm/
+.playwright/
 
-# Ignore temporary files
+# Environment files
+.env
+.env.*
+
+# Logs
 *.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Temporary files
 *.tmp
-.DS_Store
-.env.local
-.env.*.local
+temp/
+tmp/
+
+# Docker files themselves
+Dockerfile*
+docker-compose*
+.dockerignore
+
+# Test directories (we only need nala)
+test/
+tools/

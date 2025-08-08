@@ -1,26 +1,29 @@
-# Dockerfile for Nala tests with optimized caching
+# Dockerfile for Nala tests - Runtime environment only
+# This image provides the runtime dependencies (Node.js, Playwright, npm packages)
+# Test files are mounted from the host at runtime
 FROM mcr.microsoft.com/playwright:v1.54.2-noble
 
 # Set working directory
 WORKDIR /workspace
 
-# Copy package files first (for better caching)
-# If these files don't change, Docker will use cached layers
+# Copy package files for dependency installation
+# These define what npm packages we need
 COPY package*.json ./
 
 # Install dependencies (this layer will be cached if package files don't change)
-RUN npm ci --prefer-offline --no-audit
+# Use BuildKit cache mount for npm cache to speed up rebuilds
+RUN --mount=type=cache,target=/root/.npm \
+    npm ci --prefer-offline --no-audit --fund=false --loglevel=error && \
+    npx playwright install-deps && \
+    rm -rf /var/lib/apt/lists/*
 
-# Copy the rest of the application
-# This is done after npm install so that code changes don't invalidate the npm cache
-COPY . .
-
-# Make the test script executable
-RUN chmod +x ./nala/utils/pr.run.sh
+# Create directory structure for mounted volumes
+RUN mkdir -p nala test-results test-html-results playwright-report
 
 # Set environment variables that indicate we're in a container
 ENV GITHUB_ACTIONS=true
 ENV CONTAINER=true
+ENV PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
 
-# Default command
+# Default command - the actual script will be mounted at runtime
 CMD ["./nala/utils/pr.run.sh"]

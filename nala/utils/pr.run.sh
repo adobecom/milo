@@ -99,6 +99,19 @@ echo "*** Running tests on specific projects ***"
 echo "SHARD_INDEX environment variable: ${SHARD_INDEX}"
 echo "SHARD_TOTAL environment variable: ${SHARD_TOTAL}"
 
+# Calculate optimal worker count for sharded tests
+# When running sharded tests, adjust workers based on shard size
+# This ensures we don't overwhelm resources with too many workers per shard
+if [[ ! -z "$SHARD_INDEX" ]] && [[ ! -z "$SHARD_TOTAL" ]]; then
+  # Formula: Use fewer workers when we have more shards (since tests are distributed)
+  # Min 2 workers, max 7 workers, optimal is ~30 tests total / number of shards
+  OPTIMAL_WORKERS=$((30 / SHARD_TOTAL))
+  OPTIMAL_WORKERS=$((OPTIMAL_WORKERS < 2 ? 2 : OPTIMAL_WORKERS))
+  OPTIMAL_WORKERS=$((OPTIMAL_WORKERS > 7 ? 7 : OPTIMAL_WORKERS))
+  export PLAYWRIGHT_WORKERS=$OPTIMAL_WORKERS
+  echo "Setting PLAYWRIGHT_WORKERS=$PLAYWRIGHT_WORKERS for shard $SHARD_INDEX/$SHARD_TOTAL"
+fi
+
 # Ensure output directories exist
 mkdir -p test-results test-html-results
 
@@ -114,31 +127,14 @@ if [[ ! -z "$TEST_FILES" ]]; then
   echo "Running specific test files: $TEST_FILES"
   echo "Current directory: $(pwd)"
   
-  # Handle different path formats
-  if [[ "$TEST_FILES" == /* ]]; then
-    # Full path - use as is
-    TEST_FILE_PATH="$TEST_FILES"
-    echo "Using full path: $TEST_FILE_PATH"
-  elif [[ "$TEST_FILES" == nala/* ]]; then
-    # Path includes nala/ - remove it since testDir is './nala'
-    TEST_FILE_PATH="${TEST_FILES#nala/}"
-    echo "Test file path for Playwright: $TEST_FILE_PATH"
-  else
-    # Just filename
-    TEST_FILE_PATH="$TEST_FILES"
-    echo "Test file path for Playwright: $TEST_FILE_PATH"
-  fi
-  
   # Check if the file exists
-  if [[ "$TEST_FILES" == /* ]] && [ -f "$TEST_FILES" ]; then
+  if [ -f "$TEST_FILES" ]; then
     echo "✓ Test file found: $TEST_FILES"
-  elif [ -f "nala/$TEST_FILE_PATH" ]; then
-    echo "✓ Test file found: nala/$TEST_FILE_PATH"
   else
-    echo "✗ Test file not found"
+    echo "✗ Test file not found: $TEST_FILES"
   fi
   
-  FORCE_COLOR=0 PLAYWRIGHT_HTML_OPEN=never npx playwright test $TEST_FILE_PATH --config=./playwright.config.js ${TAGS} ${EXCLUDE_TAGS} --project=milo-live-chromium --project=milo-live-firefox --project=milo-live-webkit ${REPORTER} || EXIT_STATUS=$?
+  FORCE_COLOR=0 PLAYWRIGHT_HTML_OPEN=never npx playwright test $TEST_FILES --config=./playwright.config.js ${TAGS} ${EXCLUDE_TAGS} --project=milo-live-chromium --project=milo-live-firefox --project=milo-live-webkit ${REPORTER} || EXIT_STATUS=$?
 else
   # Use standard sharding
   FORCE_COLOR=0 PLAYWRIGHT_HTML_OPEN=never npx playwright test --config=./playwright.config.js ${TAGS} ${EXCLUDE_TAGS} --project=milo-live-chromium --project=milo-live-firefox --project=milo-live-webkit ${SHARD_PARAMS} ${REPORTER} || EXIT_STATUS=$?
@@ -160,13 +156,13 @@ echo "JSON files at root level:"
 ls -la *.json 2>/dev/null || echo "No JSON files at root"
 
 # Check if JSON report was created
-if [[ ! -z "$SHARD_INDEX" ]]; then
-  JSON_FILE="test-results/test-results-shard-${SHARD_INDEX}.json"
-  if [ ! -f "$JSON_FILE" ]; then
-    echo "WARNING: Expected JSON file $JSON_FILE was not created by Playwright"
-  else
-    echo "✓ JSON report successfully created: $JSON_FILE"
+if [ -f "test-results/test-results.json" ]; then
+  echo "✓ JSON report created: test-results/test-results.json"
+  if [[ ! -z "$SHARD_INDEX" ]]; then
+    echo "  (Will be renamed to test-results-shard-${SHARD_INDEX}.json when collected)"
   fi
+else
+  echo "WARNING: No JSON report found at test-results/test-results.json"
 fi
 
 # Check if tests passed or failed

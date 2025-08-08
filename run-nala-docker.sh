@@ -178,10 +178,11 @@ fi
 echo ""
 
 # Run Docker container
-# Mount current directory to get latest code changes
-# But dependencies are already installed in the image
+# Mount all necessary files from current directory
+# The image only contains runtime dependencies (Node, Playwright, npm packages)
 docker run --rm -it \
   --ipc=host \
+  -v "$(pwd)/playwright.config.js":/workspace/playwright.config.js:ro \
   -v "$(pwd)/nala":/workspace/nala:ro \
   -v "$(pwd)/test-results":/workspace/test-results \
   -v "$(pwd)/test-html-results":/workspace/test-html-results \
@@ -191,6 +192,19 @@ docker run --rm -it \
 
 # Check exit status
 EXIT_STATUS=$?
+
+# Verify container actually ran
+if [ $EXIT_STATUS -eq 125 ]; then
+  echo ""
+  echo "❌ Docker failed to run the container"
+  echo "   This usually means:"
+  echo "   - Docker daemon is not running"
+  echo "   - Image failed to pull"
+  echo "   - Permission issues"
+  echo ""
+  echo "Try running: docker pull $FULL_IMAGE_NAME"
+  exit 125
+fi
 if [ $EXIT_STATUS -eq 0 ]; then
   echo ""
   echo "✅ Tests completed successfully!"
