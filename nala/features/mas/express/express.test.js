@@ -6,6 +6,14 @@ import { runAccessibilityTest } from '../../../libs/accessibility.js';
 const miloLibs = process.env.MILO_LIBS || '';
 
 test.describe('MAS Express Cards test suite', () => {
+  test.beforeEach(async ({ page, browserName }) => {
+    test.skip(browserName !== 'chromium', 'Not supported to run on multiple browsers.');
+
+    if (browserName === 'chromium') {
+      await page.setExtraHTTPHeaders({ 'sec-ch-ua': '"Chromium";v="123", "Not:A-Brand";v="8"' });
+    }
+  });
+
   test(`[Test Id - ${features[0].tcid}] ${features[0].name}, ${features[0].tags}`, async ({ page, baseURL }) => {
     const { data } = features[0];
     console.info(`[Test Page]: ${baseURL}${features[0].path}${miloLibs}`);
