@@ -1,28 +1,38 @@
 import { expect, test } from '@playwright/test';
 import { features } from './plans.spec.js';
 import MasPlans from './plans.page.js';
+import { createWorkerPageSetup, PLANS_BASE_PATH } from '../../../../libs/commerce.js';
 
 let masPlans;
 
-const miloLibs = process.env.MILO_LIBS || '';
+test.skip(({ browserName }) => browserName !== 'chromium', 'Not supported to run on multiple browsers.');
+
+const workerSetup = createWorkerPageSetup({
+  pages: [
+    { name: 'US', url: PLANS_BASE_PATH.US },
+  ],
+});
 
 test.describe('MAS Plans Page test suite', () => {
-  test.beforeEach(async ({ page, browserName }) => {
-    test.skip(browserName !== 'chromium', 'Not supported to run on multiple browsers.');
-    masPlans = new MasPlans(page);
-    if (browserName === 'chromium') {
-      await page.setExtraHTTPHeaders({ 'sec-ch-ua': '"Chromium";v="123", "Not:A-Brand";v="8"' });
-    }
+  test.beforeAll(async ({ browser, baseURL }) => {
+    await workerSetup.setupWorkerPages({ browser, baseURL });
   });
 
-  test(`${features[0].name},${features[0].tags}`, async ({ page, baseURL }) => {
-    const testPage = `${baseURL}${features[0].path}${miloLibs}`;
+  test.afterAll(async () => {
+    await workerSetup.cleanupWorkerPages();
+  });
+
+  test.afterEach(async ({}, testInfo) => { // eslint-disable-line no-empty-pattern
+    workerSetup.attachWorkerErrorsToFailure(testInfo);
+  });
+
+  test(`${features[0].name},${features[0].tags}`, async ({ baseURL }) => {
     const { data } = features[0];
-    console.info('[Test Page]: ', testPage);
+    const page = workerSetup.getPage('US');
+    masPlans = new MasPlans(page);
 
     await test.step('step-1: Go to Plans page and verify initial state and two cards', async () => {
-      await page.goto(testPage);
-      await expect(page).toHaveURL(`${baseURL}${features[0].path}`);
+      await workerSetup.verifyPageURL('US', PLANS_BASE_PATH.US, expect);
       await page.waitForLoadState('domcontentloaded');
 
       await page.waitForSelector('merch-card-collection');
@@ -164,14 +174,14 @@ test.describe('MAS Plans Page test suite', () => {
     });
   });
 
-  test(`${features[1].name},${features[1].tags}`, async ({ page, baseURL }) => {
-    const testPage = `${baseURL}${features[1].path}${miloLibs}`;
-    console.info('[Test Page]: ', testPage);
+  test(`${features[1].name},${features[1].tags}`, async () => {
+    const page = workerSetup.getPage('US');
+    masPlans = new MasPlans(page);
 
     await test.step('step-1: Go to Plans page with edu deeplink', async () => {
-      await page.goto(`${testPage}${features[1].browserParams}`);
+      await page.goto(`${PLANS_BASE_PATH.US}${features[1].browserParams}`);
       await page.waitForLoadState('domcontentloaded');
-      await expect(page).toHaveURL(`${baseURL}${features[1].path}${features[1].browserParams}`);
+      await workerSetup.verifyPageURL('US', PLANS_BASE_PATH.US + features[1].browserParams, expect);
     });
 
     await test.step('step-2: Verify edu tab is selected and its content is displayed', async () => {
@@ -183,7 +193,7 @@ test.describe('MAS Plans Page test suite', () => {
     });
 
     await test.step('step-3: Verify Business tab is selected and its content is displayed', async () => {
-      await page.goto(`${testPage}?plans=team`);
+      await page.goto(`${PLANS_BASE_PATH.US}?plans=team`);
       const businessTab = masPlans.getTabs('team');
       await expect(businessTab).toHaveAttribute('aria-selected', 'true');
       const controlledContentId = await businessTab.getAttribute('aria-controls');
@@ -192,7 +202,7 @@ test.describe('MAS Plans Page test suite', () => {
     });
 
     await test.step('step-3: Verify Schools & Universities tab is selected and its content is displayed', async () => {
-      await page.goto(`${testPage}?plans=edu-inst`);
+      await page.goto(`${PLANS_BASE_PATH.US}?plans=edu-inst`);
       const businessTab = masPlans.getTabs('edu-inst');
       await expect(businessTab).toHaveAttribute('aria-selected', 'true');
       const controlledContentId = await businessTab.getAttribute('aria-controls');
@@ -201,7 +211,7 @@ test.describe('MAS Plans Page test suite', () => {
     });
 
     await test.step('step-4: Verify Individual tab is selected and its content is displayed', async () => {
-      await page.goto(`${testPage}?plans=individual`);
+      await page.goto(`${PLANS_BASE_PATH.US}?plans=individual`);
       const businessTab = masPlans.getTabs('individual');
       await expect(businessTab).toHaveAttribute('aria-selected', 'true');
       const controlledContentId = await businessTab.getAttribute('aria-controls');
@@ -210,12 +220,12 @@ test.describe('MAS Plans Page test suite', () => {
     });
   });
 
-  test(`${features[2].name},${features[2].tags}`, async ({ page, baseURL }) => {
-    const testPage = `${baseURL}${features[2].path}${miloLibs}`;
-    console.info('[Test Page]: ', testPage);
+  test(`${features[2].name},${features[2].tags}`, async () => {
+    const page = workerSetup.getPage('US');
+    masPlans = new MasPlans(page);
 
     await test.step('step-1: Go to Plans page', async () => {
-      await page.goto(`${testPage}${features[2].browserParams}`);
+      await page.goto(`${PLANS_BASE_PATH.US}${features[2].browserParams}`);
       await page.waitForLoadState('domcontentloaded');
       await expect(page.locator('.dialog-modal#miniplans-buy-all-apps')).toBeVisible();
     });
