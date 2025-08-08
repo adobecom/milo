@@ -28,9 +28,24 @@ const [createLiveRegion, updateLiveRegion] = (() => {
   ];
 })();
 
+let previousActiveElement = null;
+let currentActiveElement = null;
+
+const trackPreviousElement = () => {
+  const newActiveElement = document.activeElement;
+  if (currentActiveElement === newActiveElement) return;
+
+  previousActiveElement = currentActiveElement;
+  currentActiveElement = newActiveElement;
+};
+
+const getErrorMessage = (element) => element?.parentElement.querySelector('.errorMessage')?.textContent;
+
+const isErrorMessageDifferent = (message, element) => message !== getErrorMessage(element);
+
 const createValidationObserver = () => new MutationObserver((mutations) => {
-  mutations.some((mutation) => {
-    if (mutation.type !== 'attributes' || mutation.attributeName !== 'class') return false;
+  mutations.forEach((mutation) => {
+    if (mutation.type !== 'attributes' || mutation.attributeName !== 'class') return;
 
     const rowElement = mutation.target;
 
@@ -40,7 +55,7 @@ const createValidationObserver = () => new MutationObserver((mutations) => {
       });
     }
 
-    if (!rowElement.classList.contains('error')) return false;
+    if (!rowElement.classList.contains('error')) return;
 
     [...rowElement.querySelectorAll('[id][name]')].forEach((field) => {
       const { id } = field;
@@ -49,10 +64,11 @@ const createValidationObserver = () => new MutationObserver((mutations) => {
 
     const errorMessage = rowElement.querySelector('.errorMessage')?.textContent;
 
-    if (document.activeElement.parentElement.querySelector('.errorMessage')?.textContent
-        !== errorMessage) return false;
+    if (isErrorMessageDifferent(errorMessage, previousActiveElement)
+        && isErrorMessageDifferent(errorMessage, currentActiveElement)
+    ) return;
+
     updateLiveRegion(errorMessage);
-    return true;
   });
 });
 
@@ -70,6 +86,8 @@ const loadFaas = async (a) => {
   const formObserver = new MutationObserver(() => {
     const faasForm = faas.querySelector('.faas-form');
     if (!faasForm) return;
+
+    faasForm.addEventListener('focusin', trackPreviousElement);
 
     createLiveRegion(faasForm);
     const validationObserver = createValidationObserver();
