@@ -15,7 +15,6 @@ import {
 
 import '../src/sidenav/merch-sidenav.js';
 import '../src/merch-card-collection.js';
-import '../src/merch-card-collection-header.js';
 
 import { withWcs } from './mocks/wcs.js';
 import { withAem } from './mocks/aem.js';
@@ -259,7 +258,7 @@ runTests(async () => {
 
       it('should hydrate from child aem-fragment, with overriden ids', async () => {
         render();
-        const aemFragment = collectionElement.querySelector('aem-fragment');
+        const aemFragment = customElements.get('aem-fragment');
         await collectionElement.checkReady();
         const fragment1 = collectionElement.querySelector('aem-fragment[fragment="cafe-bebebe"]');
         expect(fragment1).to.exist;
