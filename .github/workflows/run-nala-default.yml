@@ -67,9 +67,15 @@ jobs:
             echo "Default timing date: $DEFAULT_DATE"
             
             # Convert ISO 8601 dates to epoch for comparison
-            # GNU date (Linux/GitHub Actions) handles ISO 8601 with milliseconds
-            CACHED_EPOCH=$(date -d "$CACHED_DATE" +%s 2>/dev/null || echo "0")
-            DEFAULT_EPOCH=$(date -d "$DEFAULT_DATE" +%s 2>/dev/null || echo "0")
+            # Remove milliseconds and Z for better compatibility
+            CACHED_DATE_CLEAN=$(echo "$CACHED_DATE" | sed 's/\.[0-9]*Z$//')
+            DEFAULT_DATE_CLEAN=$(echo "$DEFAULT_DATE" | sed 's/\.[0-9]*Z$//')
+            
+            # GNU date (Linux/GitHub Actions)
+            CACHED_EPOCH=$(date -d "$CACHED_DATE_CLEAN" +%s 2>/dev/null || echo "0")
+            DEFAULT_EPOCH=$(date -d "$DEFAULT_DATE_CLEAN" +%s 2>/dev/null || echo "0")
+            
+            echo "Cached epoch: $CACHED_EPOCH, Default epoch: $DEFAULT_EPOCH"
             
             if [ "$DEFAULT_EPOCH" -gt "$CACHED_EPOCH" ]; then
               echo "Default timings are newer than cached timings, using defaults"
@@ -403,11 +409,15 @@ jobs:
       fail-fast: false  # Continue running other shards even if one fails
       matrix: ${{ fromJson(needs.calculate-shards.outputs.matrix) }}
     steps:
+      # Note: Tests are included in the Docker image, but we still need
+      # to checkout to get the latest test code for PRs
       - name: Checkout repository
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
-          fetch-depth: 2
-
+          fetch-depth: 1
+          sparse-checkout: |
+            nala/
+            playwright.config.js
 
       - name: Download shard assignments
         id: download-shards
@@ -464,8 +474,38 @@ jobs:
           SHARD_TOTAL: ${{ needs.calculate-shards.outputs.shard-count }}
           CONTAINER: true
         run: |
+          # Determine the test URL based on event type
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            # PR event - use PR branch
+            BRANCH="${{ github.event.pull_request.head.ref }}"
+            ORG="${{ github.event.pull_request.head.repo.owner.login }}"
+            REPO="${{ github.event.pull_request.head.repo.name }}"
+            BRANCH_CLEAN=$(echo "$BRANCH" | sed 's/\//-/g')
+            export PR_BRANCH_LIVE_URL_GH="https://${BRANCH_CLEAN}--${REPO}--${ORG}.aem.live"
+          elif [[ "${{ github.ref_name }}" == "main" ]]; then
+            # Push to main - use production URL
+            export PR_BRANCH_LIVE_URL_GH="https://milo.adobe.com"
+          elif [[ "${{ github.ref_name }}" == "stage" ]]; then
+            # Push to stage - use stage URL
+            export PR_BRANCH_LIVE_URL_GH="https://stage--milo--adobecom.aem.live"
+          else
+            # Unknown event/branch - fail explicitly
+            echo "ERROR: Unable to determine test URL for event '${{ github.event_name }}' on branch '${{ github.ref_name }}'"
+            echo "This workflow only supports: pull_request events, or pushes to main/stage"
+            exit 1
+          fi
+          
+          echo "Event: ${{ github.event_name }}"
+          echo "Branch: ${{ github.ref_name }}"
+          echo "Test URL: $PR_BRANCH_LIVE_URL_GH"
+          
           # Create directories for results
           mkdir -p test-results test-html-results playwright-report
+          
+          # Verify we're in the right directory with dependencies
+          echo "Current directory: $(pwd)"
+          echo "Node modules exists: $(test -d node_modules && echo 'yes' || echo 'no')"
+          echo "Playwright test exists: $(test -d node_modules/@playwright/test && echo 'yes' || echo 'no')"
           
           # Make the test script executable
           chmod +x ./nala/utils/pr.run.sh

@@ -45,7 +45,8 @@ RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - && \
     apt-get install -y nodejs --no-install-recommends && \
     rm -rf /var/lib/apt/lists/* /var/cache/apt/*
 
-WORKDIR /workspace
+# Use GitHub Actions default path
+WORKDIR /__w/milo/milo
 
 # Copy production dependencies from deps stage
 COPY --from=deps /deps/node_modules ./node_modules
@@ -65,5 +66,8 @@ ENV CI=true \
     GITHUB_ACTIONS=true \
     NODE_ENV=production \
     PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
+
+# Default working directory for GitHub Actions
+WORKDIR /__w/milo/milo
 
 CMD ["sh", "-c", "./nala/utils/pr.run.sh"]
