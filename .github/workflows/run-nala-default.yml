@@ -503,9 +503,12 @@ jobs:
           # Create directories for results
           mkdir -p test-results test-html-results playwright-report
           
-          # Verify we're in the right directory with dependencies
+          # Link node_modules from where the container has them
+          ln -s /workspace/node_modules ./node_modules
+          
+          # Verify playwright is now available
           echo "Current directory: $(pwd)"
-          echo "Node modules exists: $(test -d node_modules && echo 'yes' || echo 'no')"
+          echo "Node modules linked: $(test -L node_modules && echo 'yes (symlink)' || echo 'no')"
           echo "Playwright test exists: $(test -d node_modules/@playwright/test && echo 'yes' || echo 'no')"
           
           # Make the test script executable
