@@ -176,7 +176,7 @@ async function setupMasRequestLogger(masRequestErrors) {
 }
 
 /**
- * Creates a worker-scoped page setup utility for efficient test execution
+ * Creates a worker-scoped page setup utility
  * @param {Object} config - Configuration object
  * @param {Array} config.pages - Array of page configurations [{ name: 'US', url: '/path' }, ...]
  * @param {Object} config.extraHTTPHeaders - HTTP headers to set on the context
@@ -190,7 +190,6 @@ function createWorkerPageSetup(config = {}) {
     loadTimeout = 5000,
   } = config;
 
-  // Worker-scoped variables
   let workerContext;
   const workerPages = {};
   let consoleErrors = [];
@@ -207,14 +206,11 @@ function createWorkerPageSetup(config = {}) {
   async function setupWorkerPages({ browser, baseURL }) {
     console.info('[Worker Setup]: Initializing worker-scoped pages...');
 
-    // Create worker context
     workerContext = await browser.newContext({ extraHTTPHeaders });
 
-    // Initialize error arrays
     consoleErrors = [];
     masRequestErrors = [];
 
-    // Create pages and set up listeners
     const pagePromises = pages.map(async (pageConfig) => {
       const { name, url } = pageConfig;
       const fullUrl = `${baseURL}${url}${miloLibs}`;
@@ -341,11 +337,11 @@ function createWorkerPageSetup(config = {}) {
     getPage,
     verifyPageURL,
 
-    // Direct access to error arrays (for advanced usage)
+    // Direct access to error arrays
     get consoleErrors() { return consoleErrors; },
     get masRequestErrors() { return masRequestErrors; },
 
-    // Direct access to all pages (for advanced usage)
+    // Direct access to all pages
     get pages() { return workerPages; },
   };
 }
