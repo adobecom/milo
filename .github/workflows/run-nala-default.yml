@@ -398,7 +398,7 @@ jobs:
       credentials:
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
-      options: --ipc=host --workdir /github/workspace
+      options: --ipc=host
     strategy:
       fail-fast: false  # Continue running other shards even if one fails
       matrix: ${{ fromJson(needs.calculate-shards.outputs.matrix) }}
@@ -443,10 +443,20 @@ jobs:
             echo "Download outcome: ${{ steps.download-shards.outcome }}"
           fi
 
+      - name: Setup test environment
+        run: |
+          # Create symlink from /workspace to actual checkout location
+          # This ensures compatibility with scripts expecting /workspace
+          ln -s ${{ github.workspace }} /workspace || true
+          
+          # Verify the symlink
+          echo "Workspace contents:"
+          ls -la /workspace/
+          
       - name: Run Nala Tests (Shard ${{ matrix.shard }}/${{ needs.calculate-shards.outputs.shard-count }})
         env:
           CI: true
-          GITHUB_ACTION_PATH: /github/workspace
+          GITHUB_ACTION_PATH: /workspace
           GITHUB_REF: ${{ github.ref }}
           GITHUB_HEAD_REF: ${{ github.event.pull_request.head.ref }}
           GITHUB_REPOSITORY: ${{ github.repository }}
@@ -462,22 +472,22 @@ jobs:
           IMS_PASS: ${{ secrets.IMS_PASS }}
           SHARD_INDEX: ${{ matrix.shard }}
           SHARD_TOTAL: ${{ needs.calculate-shards.outputs.shard-count }}
+          CONTAINER: true
+        working-directory: /workspace
         run: |
-          # We're already inside the container with the code checked out
-          # GitHub Actions mounts the workspace at /github/workspace when using containers
-          
           # Create directories for results
           mkdir -p test-results test-html-results playwright-report
           
           # Make the test script executable
           chmod +x ./nala/utils/pr.run.sh
           
-          # Run the test script
+          # Run the test script with proper sharding
           if [ ! -z "${{ env.TEST_FILES }}" ]; then
+            # Specific test files from weighted distribution
             ./nala/utils/pr.run.sh || EXIT_CODE=$?
           else
-            # Use standard sharding
-            npx playwright test --shard=${{ matrix.shard }}/${{ needs.calculate-shards.outputs.shard-count }} || EXIT_CODE=$?
+            # Standard sharding
+            ./nala/utils/pr.run.sh || EXIT_CODE=$?
           fi
           
           # Rename the JSON file to shard-specific name
