@@ -464,22 +464,18 @@ jobs:
       - name: Set test files for shard
         shell: bash
         run: |
-          # Check if we successfully downloaded shard assignments
-          DOWNLOAD_OUTCOME="${{ steps.download-shards.outcome }}"
-          echo "Download outcome: $DOWNLOAD_OUTCOME"
-          
-          if [[ "$DOWNLOAD_OUTCOME" == "success" ]] && [[ -f shard-assignments.json ]]; then
-            # Get test files for this shard
-            TEST_FILES=$(jq -r '.shards."${{ matrix.shard }}"[]' shard-assignments.json 2>/dev/null | tr '\n' ' ')
-            if [ ! -z "$TEST_FILES" ] && [ "$TEST_FILES" != "null" ]; then
+          # Try to get test files from shard assignments if available
+          if [ -f shard-assignments.json ]; then
+            TEST_FILES=$(node -e "const d=require('./shard-assignments.json'); const s=d.shards['${{ matrix.shard }}']; if(s) console.log(s.join(' '))" 2>/dev/null || echo "")
+            if [ ! -z "$TEST_FILES" ]; then
               echo "TEST_FILES=$TEST_FILES" >> $GITHUB_ENV
-              echo "Running specific test files for shard ${{ matrix.shard }}: $TEST_FILES"
+              echo "Using weighted distribution for shard ${{ matrix.shard }}"
+              echo "Test files: $TEST_FILES"
             else
-              echo "No test files found for shard ${{ matrix.shard }}, will use standard sharding"
+              echo "No specific files for shard ${{ matrix.shard }}, using standard sharding"
             fi
           else
-            echo "No shard assignments available, will use standard sharding"
-            echo "Download outcome: ${{ steps.download-shards.outcome }}"
+            echo "No shard assignments file, using standard sharding"
           fi
 
       - name: Run Nala Tests (Shard ${{ matrix.shard }}/${{ needs.calculate-shards.outputs.shard-count }})
