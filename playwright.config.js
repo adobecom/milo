@@ -31,10 +31,18 @@ const config = {
   /* Retry on CI only */
   retries: process.env.CI ? 1 : 0,
   /* Opt out of parallel tests on CI. */
-  workers: process.env.CI ? 7 : 3,
+  // eslint-disable-next-line no-nested-ternary
+  workers: process.env.PLAYWRIGHT_WORKERS
+    ? parseInt(process.env.PLAYWRIGHT_WORKERS, 10)
+    : process.env.CI ? 7 : 3,
   /* Reporter to use. */
   reporter: process.env.CI
-    ? [['github'], ['list'], ['./nala/utils/base-reporter.js']]
+    ? [
+      ['github'],
+      ['list'],
+      ['json', { outputFile: './test-results/test-results.json' }],
+      ['./nala/utils/base-reporter.js'],
+    ]
     : [
       ['html', { outputFolder: 'test-html-results' }],
       ['list'],
@@ -47,7 +55,8 @@ const config = {
 
     trace: 'on-first-retry',
     baseURL:
-      process.env.PR_BRANCH_LIVE_URL
+      process.env.PR_BRANCH_LIVE_URL_GH
+      || process.env.PR_BRANCH_LIVE_URL
       || process.env.LOCAL_TEST_LIVE_URL
       || 'https://main--milo--adobecom.aem.live',
   },
