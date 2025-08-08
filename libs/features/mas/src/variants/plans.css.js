@@ -87,7 +87,6 @@ merch-card-collection.plans merch-card[variant="plans"] aem-fragment + [slot^="h
 merch-card[variant^='plans'] span[data-template="legal"] {
     display: block;
     color: var(----merch-color-grey-80);
-    font-family: var(--Font-adobe-clean, "Adobe Clean");
     font-size: 14px;
     font-style: italic;
     font-weight: 400;
