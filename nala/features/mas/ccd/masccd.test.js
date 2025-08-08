@@ -2,148 +2,35 @@ import { expect, test } from '@playwright/test';
 import { features } from './masccd.spec.js';
 import MerchCCD from './masccd.page.js';
 import WebUtil from '../../../libs/webutil.js';
-import { setupMasConsoleListener, attachMasConsoleErrorsToFailure, setupMasRequestLogger, attachMasRequestErrorsToFailure, CCD_BASE_PATH } from '../../../libs/commerce.js';
+import { createWorkerPageSetup, CCD_BASE_PATH } from '../../../libs/commerce.js';
 
 const COMMERCE_LINK_REGEX = (country = 'US', language = 'en') => new RegExp(`https://commerce.adobe.com/store/email\\?items%5B0%5D%5Bid%5D=([A-F0-9]{32}&cli=adobe_com&ctx=fp&co=${country}&lang=${language})`, 'i');
 
-// Worker-scoped page setup - each worker gets its own loaded page
-let workerContext;
-let workerLightPage;
-let workerDarkPage;
-let workerFRLightPage;
-let workerFRDarkPage;
-
 let CCD;
 let webUtil;
-let consoleErrors;
-let masRequestErrors;
-
-const miloLibs = process.env.MILO_LIBS || '';
 
 test.skip(({ browserName }) => browserName !== 'chromium', 'Not supported to run on multiple browsers.');
 
+const workerSetup = createWorkerPageSetup({
+  pages: [
+    { name: 'US_LIGHT', url: CCD_BASE_PATH.US },
+    { name: 'US_DARK', url: `${CCD_BASE_PATH.US}?theme=darkest` },
+    { name: 'FR_LIGHT', url: CCD_BASE_PATH.FR },
+    { name: 'FR_DARK', url: `${CCD_BASE_PATH.FR}&theme=darkest` },
+  ],
+});
+
 test.describe('CCD Merchcard feature test suite', () => {
-  // Worker-scoped setup - load page once per worker
   test.beforeAll(async ({ browser, baseURL }) => {
-    const lightPageUrl = `${baseURL}${CCD_BASE_PATH.US}${miloLibs}`;
-    const darkPageUrl = `${baseURL}${CCD_BASE_PATH.US}?theme=darkest${miloLibs}`;
-    const frLightPageUrl = `${baseURL}${CCD_BASE_PATH.FR}${miloLibs}`;
-    const frDarkPageUrl = `${baseURL}${CCD_BASE_PATH.FR}&theme=darkest${miloLibs}`;
-
-    workerContext = await browser.newContext({ extraHTTPHeaders: { 'sec-ch-ua': '"Chromium";v="123", "Not:A-Brand";v="8"' } });
-
-    workerLightPage = await workerContext.newPage();
-    workerDarkPage = await workerContext.newPage();
-
-    workerFRLightPage = await workerContext.newPage();
-    workerFRDarkPage = await workerContext.newPage();
-
-    consoleErrors = [];
-    masRequestErrors = [];
-
-    // Set up listeners for light mode page
-    const lightMasRequestLogger = await setupMasRequestLogger(masRequestErrors);
-    workerLightPage.on('response', lightMasRequestLogger.responseListener);
-    workerLightPage.on('requestfailed', lightMasRequestLogger.requestFailedListener);
-
-    const lightConsoleListener = await setupMasConsoleListener(consoleErrors);
-    workerLightPage.on('console', lightConsoleListener);
-
-    // Set up listeners for dark mode page
-    const darkMasRequestLogger = await setupMasRequestLogger(masRequestErrors);
-    workerDarkPage.on('response', darkMasRequestLogger.responseListener);
-    workerDarkPage.on('requestfailed', darkMasRequestLogger.requestFailedListener);
-
-    const darkConsoleListener = await setupMasConsoleListener(consoleErrors);
-    workerDarkPage.on('console', darkConsoleListener);
-
-    // Set up listeners for FR light mode page
-    const frLightMasRequestLogger = await setupMasRequestLogger(masRequestErrors);
-    workerFRLightPage.on('response', frLightMasRequestLogger.responseListener);
-    workerFRLightPage.on('requestfailed', frLightMasRequestLogger.requestFailedListener);
-
-    const frLightConsoleListener = await setupMasConsoleListener(consoleErrors);
-    workerFRLightPage.on('console', frLightConsoleListener);
-
-    // Set up listeners for FR dark mode page
-    const frDarkMasRequestLogger = await setupMasRequestLogger(masRequestErrors);
-    workerFRDarkPage.on('response', frDarkMasRequestLogger.responseListener);
-    workerFRDarkPage.on('requestfailed', frDarkMasRequestLogger.requestFailedListener);
-
-    const frDarkConsoleListener = await setupMasConsoleListener(consoleErrors);
-    workerFRDarkPage.on('console', frDarkConsoleListener);
-
-    // Load all pages and wait for all content to load
-    await Promise.all([
-      workerLightPage.goto(lightPageUrl).then(async () => {
-        await workerLightPage.waitForLoadState('networkidle');
-        await workerLightPage.waitForTimeout(5000);
-        console.info('[Worker Setup]: Light mode page fully loaded:', await workerLightPage.url());
-      }),
-      workerDarkPage.goto(darkPageUrl).then(async () => {
-        await workerDarkPage.waitForLoadState('networkidle');
-        await workerDarkPage.waitForTimeout(5000);
-        console.info('[Worker Setup]: Dark mode page fully loaded:', await workerDarkPage.url());
-      }),
-      workerFRLightPage.goto(frLightPageUrl).then(async () => {
-        await workerFRLightPage.waitForLoadState('networkidle');
-        await workerFRLightPage.waitForTimeout(5000);
-        console.info('[Worker Setup]: FR Light mode page fully loaded:', await workerFRLightPage.url());
-      }),
-      workerFRDarkPage.goto(frDarkPageUrl).then(async () => {
-        await workerFRDarkPage.waitForLoadState('networkidle');
-        await workerFRDarkPage.waitForTimeout(5000);
-        console.info('[Worker Setup]: FR Dark mode page fully loaded:', await workerFRDarkPage.url());
-      }),
-    ]);
+    await workerSetup.setupWorkerPages({ browser, baseURL });
   });
 
   test.afterAll(async () => {
-    if (!consoleErrors && !masRequestErrors) {
-      return; // Test was skipped, no cleanup needed
-    }
-
-    if (consoleErrors && consoleErrors.length > 0) {
-      console.log('\n=== MAS CONSOLE ERRORS DURING PAGE LOADING ===');
-      consoleErrors.forEach((error, index) => {
-        console.log(`${index + 1}. ${error}`);
-      });
-      console.log('==========================================\n');
-    }
-
-    if (masRequestErrors && masRequestErrors.length > 0) {
-      console.log('\n=== MAS REQUEST ERRORS DURING WORKER LIFETIME ===');
-      masRequestErrors.forEach((error, index) => {
-        console.log(`${index + 1}. ${error}`);
-      });
-      console.log('==========================================\n');
-    }
-
-    if (workerContext) {
-      await workerContext.close();
-      console.info('[Worker Cleanup]: Worker context closed');
-    }
+    await workerSetup.cleanupWorkerPages();
   });
 
-  test.afterEach(async ({}, testInfo) => {
-    if (testInfo.status === 'failed') {
-      const consoleErrorText = attachMasConsoleErrorsToFailure(testInfo, consoleErrors);
-      const requestErrorText = attachMasRequestErrorsToFailure(testInfo, masRequestErrors);
-
-      let enhancedMessage = '';
-
-      if (consoleErrors.length > 0) {
-        enhancedMessage += consoleErrorText;
-      }
-
-      if (masRequestErrors.length > 0) {
-        enhancedMessage += requestErrorText;
-      }
-
-      if (enhancedMessage && testInfo.error) {
-        testInfo.error.message = `${testInfo.error.message}${enhancedMessage}`;
-      }
-    }
+  test.afterEach(async ({}, testInfo) => { // eslint-disable-line no-empty-pattern
+    workerSetup.attachWorkerErrorsToFailure(testInfo);
   });
 
   // *** SUGGESTED CARDS: ***
@@ -154,9 +41,10 @@ test.describe('CCD Merchcard feature test suite', () => {
     console.info('[Test]: Using worker-scoped pre-loaded page');
 
     await test.step('step-1: Go to CCD Merch Card feature test page', async () => {
-      CCD = new MerchCCD(workerLightPage);
-      webUtil = new WebUtil(workerLightPage);
-      await expect(workerLightPage).toHaveURL(new RegExp(CCD_BASE_PATH.US));
+      const page = workerSetup.getPage('US_LIGHT');
+      CCD = new MerchCCD(page);
+      webUtil = new WebUtil(page);
+      await workerSetup.verifyPageURL('US_LIGHT', CCD_BASE_PATH.US, expect);
     });
 
     await test.step('step-2: Verify CCD Merch Card content', async () => {
@@ -192,9 +80,10 @@ test.describe('CCD Merchcard feature test suite', () => {
     });
 
     await test.step('step-4: Go to CCD Merch Card feature test page in dark mode', async () => {
-      CCD = new MerchCCD(workerDarkPage);
-      webUtil = new WebUtil(workerDarkPage);
-      await expect(workerDarkPage).toHaveURL(new RegExp(`${CCD_BASE_PATH.US}\\?theme=darkest`));
+      const page = workerSetup.getPage('US_DARK');
+      CCD = new MerchCCD(page);
+      webUtil = new WebUtil(page);
+      await workerSetup.verifyPageURL('US_DARK', `${CCD_BASE_PATH.US}?theme=darkest`, expect);
     });
 
     await test.step('step-5: Verify CCD Merch Card spec in dark mode', async () => {
@@ -213,9 +102,10 @@ test.describe('CCD Merchcard feature test suite', () => {
     const { data } = features[1];
 
     await test.step('step-1: Go to CCD Merch Card feature test page', async () => {
-      CCD = new MerchCCD(workerLightPage);
-      webUtil = new WebUtil(workerLightPage);
-      await expect(workerLightPage).toHaveURL(new RegExp(CCD_BASE_PATH.US));
+      const page = workerSetup.getPage('US_LIGHT');
+      CCD = new MerchCCD(page);
+      webUtil = new WebUtil(page);
+      await workerSetup.verifyPageURL('US_LIGHT', CCD_BASE_PATH.US, expect);
     });
 
     await test.step('step-2: Verify CCD Merch Card content', async () => {
@@ -259,9 +149,10 @@ test.describe('CCD Merchcard feature test suite', () => {
     });
 
     await test.step('step-4: Go to CCD Merch Card feature test page in dark mode', async () => {
-      CCD = new MerchCCD(workerDarkPage);
-      webUtil = new WebUtil(workerDarkPage);
-      await expect(workerDarkPage).toHaveURL(new RegExp(`${CCD_BASE_PATH.US}\\?theme=darkest`));
+      const page = workerSetup.getPage('US_DARK');
+      CCD = new MerchCCD(page);
+      webUtil = new WebUtil(page);
+      await workerSetup.verifyPageURL('US_DARK', `${CCD_BASE_PATH.US}?theme=darkest`, expect);
     });
 
     await test.step('step-5: Verify CCD Merch Card spec', async () => {
@@ -283,11 +174,11 @@ test.describe('CCD Merchcard feature test suite', () => {
     const { data } = features[2];
 
     await test.step('step-1: Go to CCD Merch Card feature test page', async () => {
-      CCD = new MerchCCD(workerLightPage);
-      webUtil = new WebUtil(workerLightPage);
-      await expect(workerLightPage).toHaveURL(new RegExp(CCD_BASE_PATH.US));
+      const page = workerSetup.getPage('US_LIGHT');
+      CCD = new MerchCCD(page);
+      webUtil = new WebUtil(page);
+      await workerSetup.verifyPageURL('US_LIGHT', CCD_BASE_PATH.US, expect);
     });
-
     await test.step('step-2: Verify CCD Merch Card content', async () => {
       await expect(await CCD.getCard(data.id, 'suggested')).toBeVisible();
       await expect(await CCD.getCard(data.id, 'suggested')).toHaveAttribute('daa-lh', /.*/);
@@ -320,9 +211,10 @@ test.describe('CCD Merchcard feature test suite', () => {
     });
 
     await test.step('step-4: Go to CCD Merch Card feature test page in dark mode', async () => {
-      CCD = new MerchCCD(workerDarkPage);
-      webUtil = new WebUtil(workerDarkPage);
-      await expect(workerDarkPage).toHaveURL(new RegExp(`${CCD_BASE_PATH.US}\\?theme=darkest`));
+      const page = workerSetup.getPage('US_DARK');
+      CCD = new MerchCCD(page);
+      webUtil = new WebUtil(page);
+      await workerSetup.verifyPageURL('US_DARK', `${CCD_BASE_PATH.US}?theme=darkest`, expect);
     });
 
     await test.step('step-5: Verify CCD Merch Card spec', async () => {
@@ -341,11 +233,11 @@ test.describe('CCD Merchcard feature test suite', () => {
     const { data } = features[3];
 
     await test.step('step-1: Go to CCD Merch Card feature test page', async () => {
-      CCD = new MerchCCD(workerLightPage);
-      webUtil = new WebUtil(workerLightPage);
-      await expect(workerLightPage).toHaveURL(new RegExp(CCD_BASE_PATH.US));
+      const page = workerSetup.getPage('US_LIGHT');
+      CCD = new MerchCCD(page);
+      webUtil = new WebUtil(page);
+      await workerSetup.verifyPageURL('US_LIGHT', CCD_BASE_PATH.US, expect);
     });
-
     await test.step('step-2: Verify CCD Merch Card content/specs', async () => {
       await expect(await CCD.getCard(data.id, 'suggested')).toBeVisible();
       await expect(await CCD.getCard(data.id, 'suggested')).toHaveAttribute('daa-lh', /.*/);
@@ -379,9 +271,10 @@ test.describe('CCD Merchcard feature test suite', () => {
     });
 
     await test.step('step-4: Go to CCD Merch Card feature test page in dark mode', async () => {
-      CCD = new MerchCCD(workerDarkPage);
-      webUtil = new WebUtil(workerDarkPage);
-      await expect(workerDarkPage).toHaveURL(new RegExp(`${CCD_BASE_PATH.US}\\?theme=darkest`));
+      const page = workerSetup.getPage('US_DARK');
+      CCD = new MerchCCD(page);
+      webUtil = new WebUtil(page);
+      await workerSetup.verifyPageURL('US_DARK', `${CCD_BASE_PATH.US}?theme=darkest`, expect);
     });
 
     await test.step('step-5: Verify CCD Merch Card spec', async () => {
@@ -401,11 +294,11 @@ test.describe('CCD Merchcard feature test suite', () => {
     const { data } = features[4];
 
     await test.step('step-1: Go to CCD Merch Card feature test page', async () => {
-      CCD = new MerchCCD(workerLightPage);
-      webUtil = new WebUtil(workerLightPage);
-      await expect(workerLightPage).toHaveURL(new RegExp(CCD_BASE_PATH.US));
+      const page = workerSetup.getPage('US_LIGHT');
+      CCD = new MerchCCD(page);
+      webUtil = new WebUtil(page);
+      await workerSetup.verifyPageURL('US_LIGHT', CCD_BASE_PATH.US, expect);
     });
-
     await test.step('step-2: Verify CCD Merch Card content/specs', async () => {
       await expect(await CCD.getCard(data.id, 'suggested')).toBeVisible();
       await expect(await CCD.getCard(data.id, 'suggested')).toHaveAttribute('daa-lh', /.*/);
@@ -443,9 +336,10 @@ test.describe('CCD Merchcard feature test suite', () => {
     });
 
     await test.step('step-4: Go to CCD Merch Card feature test page in dark mode', async () => {
-      CCD = new MerchCCD(workerDarkPage);
-      webUtil = new WebUtil(workerDarkPage);
-      await expect(workerDarkPage).toHaveURL(new RegExp(`${CCD_BASE_PATH.US}\\?theme=darkest`));
+      const page = workerSetup.getPage('US_DARK');
+      CCD = new MerchCCD(page);
+      webUtil = new WebUtil(page);
+      await workerSetup.verifyPageURL('US_DARK', `${CCD_BASE_PATH.US}?theme=darkest`, expect);
     });
 
     await test.step('step-5: Verify CCD Merch Card spec', async () => {
@@ -466,11 +360,11 @@ test.describe('CCD Merchcard feature test suite', () => {
     const { data } = features[5];
 
     await test.step('step-1: Go to CCD Merch Card feature test page', async () => {
-      CCD = new MerchCCD(workerLightPage);
-      webUtil = new WebUtil(workerLightPage);
-      await expect(workerLightPage).toHaveURL(new RegExp(CCD_BASE_PATH.US));
+      const page = workerSetup.getPage('US_LIGHT');
+      CCD = new MerchCCD(page);
+      webUtil = new WebUtil(page);
+      await workerSetup.verifyPageURL('US_LIGHT', CCD_BASE_PATH.US, expect);
     });
-
     await test.step('step-2: Verify CCD Merch Card content/specs', async () => {
       await expect(await CCD.getCard(data.id, 'suggested')).toBeVisible();
       await expect(await CCD.getCard(data.id, 'suggested')).toHaveAttribute('daa-lh', /.*/);
@@ -503,9 +397,10 @@ test.describe('CCD Merchcard feature test suite', () => {
     });
 
     await test.step('step-4: Go to CCD Merch Card feature test page in dark mode', async () => {
-      CCD = new MerchCCD(workerDarkPage);
-      webUtil = new WebUtil(workerDarkPage);
-      await expect(workerDarkPage).toHaveURL(new RegExp(`${CCD_BASE_PATH.US}\\?theme=darkest`));
+      const page = workerSetup.getPage('US_DARK');
+      CCD = new MerchCCD(page);
+      webUtil = new WebUtil(page);
+      await workerSetup.verifyPageURL('US_DARK', `${CCD_BASE_PATH.US}?theme=darkest`, expect);
     });
 
     await test.step('step-5: Verify CCD Merch Card spec', async () => {
@@ -524,11 +419,11 @@ test.describe('CCD Merchcard feature test suite', () => {
     const { data } = features[6];
 
     await test.step('step-1: Go to CCD Merch Card feature test page', async () => {
-      CCD = new MerchCCD(workerLightPage);
-      webUtil = new WebUtil(workerLightPage);
-      await expect(workerLightPage).toHaveURL(new RegExp(CCD_BASE_PATH.US));
+      const page = workerSetup.getPage('US_LIGHT');
+      CCD = new MerchCCD(page);
+      webUtil = new WebUtil(page);
+      await workerSetup.verifyPageURL('US_LIGHT', CCD_BASE_PATH.US, expect);
     });
-
     await test.step('step-2: Verify CCD Merch Card content/specs', async () => {
       await expect(await CCD.getCard(data.id, 'suggested')).toBeVisible();
       await expect(await CCD.getCard(data.id, 'suggested')).toHaveAttribute('daa-lh', /.*/);
@@ -565,9 +460,10 @@ test.describe('CCD Merchcard feature test suite', () => {
     });
 
     await test.step('step-4: Go to CCD Merch Card feature test page in dark mode', async () => {
-      CCD = new MerchCCD(workerDarkPage);
-      webUtil = new WebUtil(workerDarkPage);
-      await expect(workerDarkPage).toHaveURL(new RegExp(`${CCD_BASE_PATH.US}\\?theme=darkest`));
+      const page = workerSetup.getPage('US_DARK');
+      CCD = new MerchCCD(page);
+      webUtil = new WebUtil(page);
+      await workerSetup.verifyPageURL('US_DARK', `${CCD_BASE_PATH.US}?theme=darkest`, expect);
     });
 
     await test.step('step-5: Verify CCD Merch Card spec', async () => {
@@ -589,11 +485,11 @@ test.describe('CCD Merchcard feature test suite', () => {
     const { data } = features[7];
 
     await test.step('step-1: Go to CCD Merch Card feature test page', async () => {
-      CCD = new MerchCCD(workerLightPage);
-      webUtil = new WebUtil(workerLightPage);
-      await expect(workerLightPage).toHaveURL(new RegExp(CCD_BASE_PATH.US));
+      const page = workerSetup.getPage('US_LIGHT');
+      CCD = new MerchCCD(page);
+      webUtil = new WebUtil(page);
+      await workerSetup.verifyPageURL('US_LIGHT', CCD_BASE_PATH.US, expect);
     });
-
     await test.step('step-2: Verify CCD Merch Card content/specs', async () => {
       await expect(await CCD.getCard(data.id, 'suggested')).toBeVisible();
       await expect(await CCD.getCard(data.id, 'suggested')).toHaveAttribute('daa-lh', /.*/);
@@ -626,9 +522,10 @@ test.describe('CCD Merchcard feature test suite', () => {
     });
 
     await test.step('step-4: Go to CCD Merch Card feature test page in dark mode', async () => {
-      CCD = new MerchCCD(workerDarkPage);
-      webUtil = new WebUtil(workerDarkPage);
-      await expect(workerDarkPage).toHaveURL(new RegExp(`${CCD_BASE_PATH.US}\\?theme=darkest`));
+      const page = workerSetup.getPage('US_DARK');
+      CCD = new MerchCCD(page);
+      webUtil = new WebUtil(page);
+      await workerSetup.verifyPageURL('US_DARK', `${CCD_BASE_PATH.US}?theme=darkest`, expect);
     });
 
     await test.step('step-5: Verify CCD Merch Card spec', async () => {
@@ -649,11 +546,11 @@ test.describe('CCD Merchcard feature test suite', () => {
     const { data } = features[8];
 
     await test.step('step-1: Go to CCD Merch Card feature test page', async () => {
-      CCD = new MerchCCD(workerLightPage);
-      webUtil = new WebUtil(workerLightPage);
-      await expect(workerLightPage).toHaveURL(new RegExp(CCD_BASE_PATH.US));
+      const page = workerSetup.getPage('US_LIGHT');
+      CCD = new MerchCCD(page);
+      webUtil = new WebUtil(page);
+      await workerSetup.verifyPageURL('US_LIGHT', CCD_BASE_PATH.US, expect);
     });
-
     await test.step('step-2: Verify CCD Merch Card content', async () => {
       await expect(await CCD.getCard(data.id, 'slice')).toBeVisible();
       await expect(await CCD.getCard(data.id, 'slice')).toHaveAttribute('daa-lh', data.cardDaaLH);
@@ -686,9 +583,10 @@ test.describe('CCD Merchcard feature test suite', () => {
     });
 
     await test.step('step-4: Go to CCD Merch Card feature test page in dark mode', async () => {
-      CCD = new MerchCCD(workerDarkPage);
-      webUtil = new WebUtil(workerDarkPage);
-      await expect(workerDarkPage).toHaveURL(new RegExp(`${CCD_BASE_PATH.US}\\?theme=darkest`));
+      const page = workerSetup.getPage('US_DARK');
+      CCD = new MerchCCD(page);
+      webUtil = new WebUtil(page);
+      await workerSetup.verifyPageURL('US_DARK', `${CCD_BASE_PATH.US}?theme=darkest`, expect);
     });
 
     await test.step('step-5: Verify CCD Merch Card spec', async () => {
@@ -706,11 +604,11 @@ test.describe('CCD Merchcard feature test suite', () => {
     const { data } = features[9];
 
     await test.step('step-1: Go to CCD Merch Card feature test page', async () => {
-      CCD = new MerchCCD(workerLightPage);
-      webUtil = new WebUtil(workerLightPage);
-      await expect(workerLightPage).toHaveURL(new RegExp(CCD_BASE_PATH.US));
+      const page = workerSetup.getPage('US_LIGHT');
+      CCD = new MerchCCD(page);
+      webUtil = new WebUtil(page);
+      await workerSetup.verifyPageURL('US_LIGHT', CCD_BASE_PATH.US, expect);
     });
-
     await test.step('step-2: Verify CCD Merch Card content', async () => {
       await expect(await CCD.getCard(data.id, 'slice')).toBeVisible();
       await expect(await CCD.getCard(data.id, 'slice')).toHaveAttribute('daa-lh', /.*/);
@@ -747,9 +645,10 @@ test.describe('CCD Merchcard feature test suite', () => {
     });
 
     await test.step('step-4: Go to CCD Merch Card feature test page in dark mode', async () => {
-      CCD = new MerchCCD(workerDarkPage);
-      webUtil = new WebUtil(workerDarkPage);
-      await expect(workerDarkPage).toHaveURL(new RegExp(`${CCD_BASE_PATH.US}\\?theme=darkest`));
+      const page = workerSetup.getPage('US_DARK');
+      CCD = new MerchCCD(page);
+      webUtil = new WebUtil(page);
+      await workerSetup.verifyPageURL('US_DARK', `${CCD_BASE_PATH.US}?theme=darkest`, expect);
     });
 
     await test.step('step-5: Verify CCD Merch Card spec', async () => {
@@ -770,11 +669,11 @@ test.describe('CCD Merchcard feature test suite', () => {
     const { data } = features[10];
 
     await test.step('step-1: Go to CCD Merch Card feature test page', async () => {
-      CCD = new MerchCCD(workerLightPage);
-      webUtil = new WebUtil(workerLightPage);
-      await expect(workerLightPage).toHaveURL(new RegExp(CCD_BASE_PATH.US));
+      const page = workerSetup.getPage('US_LIGHT');
+      CCD = new MerchCCD(page);
+      webUtil = new WebUtil(page);
+      await workerSetup.verifyPageURL('US_LIGHT', CCD_BASE_PATH.US, expect);
     });
-
     await test.step('step-2: Verify CCD Merch Card content', async () => {
       await expect(await CCD.getCard(data.id, 'slice')).toBeVisible();
       await expect(await CCD.getCard(data.id, 'slice')).toHaveAttribute('daa-lh', /.*/);
@@ -808,9 +707,10 @@ test.describe('CCD Merchcard feature test suite', () => {
     });
 
     await test.step('step-4: Go to CCD Merch Card feature test page in dark mode', async () => {
-      CCD = new MerchCCD(workerDarkPage);
-      webUtil = new WebUtil(workerDarkPage);
-      await expect(workerDarkPage).toHaveURL(new RegExp(`${CCD_BASE_PATH.US}\\?theme=darkest`));
+      const page = workerSetup.getPage('US_DARK');
+      CCD = new MerchCCD(page);
+      webUtil = new WebUtil(page);
+      await workerSetup.verifyPageURL('US_DARK', `${CCD_BASE_PATH.US}?theme=darkest`, expect);
     });
 
     await test.step('step-5: Verify CCD Merch Card spec', async () => {
@@ -830,11 +730,11 @@ test.describe('CCD Merchcard feature test suite', () => {
     const { data } = features[11];
 
     await test.step('step-1: Go to CCD Merch Card feature test page', async () => {
-      CCD = new MerchCCD(workerLightPage);
-      webUtil = new WebUtil(workerLightPage);
-      await expect(workerLightPage).toHaveURL(new RegExp(CCD_BASE_PATH.US));
+      const page = workerSetup.getPage('US_LIGHT');
+      CCD = new MerchCCD(page);
+      webUtil = new WebUtil(page);
+      await workerSetup.verifyPageURL('US_LIGHT', CCD_BASE_PATH.US, expect);
     });
-
     await test.step('step-2: Verify CCD Merch Card content', async () => {
       await expect(await CCD.getCard(data.id, 'slice')).toBeVisible();
       await expect(await CCD.getCard(data.id, 'slice')).toHaveAttribute('daa-lh', /.*/);
@@ -867,9 +767,10 @@ test.describe('CCD Merchcard feature test suite', () => {
     });
 
     await test.step('step-4: Go to CCD Merch Card feature test page in dark mode', async () => {
-      CCD = new MerchCCD(workerDarkPage);
-      webUtil = new WebUtil(workerDarkPage);
-      await expect(workerDarkPage).toHaveURL(new RegExp(`${CCD_BASE_PATH.US}\\?theme=darkest`));
+      const page = workerSetup.getPage('US_DARK');
+      CCD = new MerchCCD(page);
+      webUtil = new WebUtil(page);
+      await workerSetup.verifyPageURL('US_DARK', `${CCD_BASE_PATH.US}?theme=darkest`, expect);
     });
 
     await test.step('step-5: Verify CCD Merch Card spec', async () => {
@@ -888,11 +789,11 @@ test.describe('CCD Merchcard feature test suite', () => {
     const { data } = features[12];
 
     await test.step('step-1: Go to CCD Merch Card feature test page', async () => {
-      CCD = new MerchCCD(workerLightPage);
-      webUtil = new WebUtil(workerLightPage);
-      await expect(workerLightPage).toHaveURL(new RegExp(CCD_BASE_PATH.US));
+      const page = workerSetup.getPage('US_LIGHT');
+      CCD = new MerchCCD(page);
+      webUtil = new WebUtil(page);
+      await workerSetup.verifyPageURL('US_LIGHT', CCD_BASE_PATH.US, expect);
     });
-
     await test.step('step-2: Verify CCD Merch Card content', async () => {
       await expect(await CCD.getCard(data.id, 'slice')).toBeVisible();
       await expect(await CCD.getCard(data.id, 'slice')).toHaveAttribute('daa-lh', /.*/);
@@ -922,9 +823,10 @@ test.describe('CCD Merchcard feature test suite', () => {
     });
 
     await test.step('step-4: Go to CCD Merch Card feature test page in dark mode', async () => {
-      CCD = new MerchCCD(workerDarkPage);
-      webUtil = new WebUtil(workerDarkPage);
-      await expect(workerDarkPage).toHaveURL(new RegExp(`${CCD_BASE_PATH.US}\\?theme=darkest`));
+      const page = workerSetup.getPage('US_DARK');
+      CCD = new MerchCCD(page);
+      webUtil = new WebUtil(page);
+      await workerSetup.verifyPageURL('US_DARK', `${CCD_BASE_PATH.US}?theme=darkest`, expect);
     });
 
     await test.step('step-5: Verify CCD Merch Card spec', async () => {
@@ -942,11 +844,11 @@ test.describe('CCD Merchcard feature test suite', () => {
     const { data } = features[13];
 
     await test.step('step-1: Go to CCD Merch Card feature test page', async () => {
-      CCD = new MerchCCD(workerLightPage);
-      webUtil = new WebUtil(workerLightPage);
-      await expect(workerLightPage).toHaveURL(new RegExp(CCD_BASE_PATH.US));
+      const page = workerSetup.getPage('US_LIGHT');
+      CCD = new MerchCCD(page);
+      webUtil = new WebUtil(page);
+      await workerSetup.verifyPageURL('US_LIGHT', CCD_BASE_PATH.US, expect);
     });
-
     await test.step('step-2: Verify CCD Merch Card content', async () => {
       await expect(await CCD.getCard(data.id, 'slice')).toBeVisible();
       await expect(await CCD.getCard(data.id, 'slice')).toHaveAttribute('daa-lh', /.*/);
@@ -979,9 +881,10 @@ test.describe('CCD Merchcard feature test suite', () => {
     });
 
     await test.step('step-4: Go to CCD Merch Card feature test page in dark mode', async () => {
-      CCD = new MerchCCD(workerDarkPage);
-      webUtil = new WebUtil(workerDarkPage);
-      await expect(workerDarkPage).toHaveURL(new RegExp(`${CCD_BASE_PATH.US}\\?theme=darkest`));
+      const page = workerSetup.getPage('US_DARK');
+      CCD = new MerchCCD(page);
+      webUtil = new WebUtil(page);
+      await workerSetup.verifyPageURL('US_DARK', `${CCD_BASE_PATH.US}?theme=darkest`, expect);
     });
 
     await test.step('step-5: Verify CCD Merch Card spec', async () => {
@@ -1003,11 +906,11 @@ test.describe('CCD Merchcard feature test suite', () => {
     const { data } = features[14];
 
     await test.step('step-1: Go to CCD Merch Card feature test page', async () => {
-      CCD = new MerchCCD(workerLightPage);
-      webUtil = new WebUtil(workerLightPage);
-      await expect(workerLightPage).toHaveURL(new RegExp(CCD_BASE_PATH.US));
+      const page = workerSetup.getPage('US_LIGHT');
+      CCD = new MerchCCD(page);
+      webUtil = new WebUtil(page);
+      await workerSetup.verifyPageURL('US_LIGHT', CCD_BASE_PATH.US, expect);
     });
-
     await test.step('step-2: Verify CCD Merch Card content', async () => {
       await expect(await CCD.getCard(data.id, 'slice-wide')).toBeVisible();
       await expect(await CCD.getCard(data.id, 'slice-wide')).toHaveAttribute('daa-lh', data.cardDaaLH);
@@ -1041,9 +944,10 @@ test.describe('CCD Merchcard feature test suite', () => {
     });
 
     await test.step('step-4: Go to CCD Merch Card feature test page in dark mode', async () => {
-      CCD = new MerchCCD(workerDarkPage);
-      webUtil = new WebUtil(workerDarkPage);
-      await expect(workerDarkPage).toHaveURL(new RegExp(`${CCD_BASE_PATH.US}\\?theme=darkest`));
+      const page = workerSetup.getPage('US_DARK');
+      CCD = new MerchCCD(page);
+      webUtil = new WebUtil(page);
+      await workerSetup.verifyPageURL('US_DARK', `${CCD_BASE_PATH.US}?theme=darkest`, expect);
     });
 
     await test.step('step-5: Verify CCD Merch Card spec', async () => {
@@ -1062,11 +966,11 @@ test.describe('CCD Merchcard feature test suite', () => {
     const { data } = features[15];
 
     await test.step('step-1: Go to CCD Merch Card feature test page', async () => {
-      CCD = new MerchCCD(workerLightPage);
-      webUtil = new WebUtil(workerLightPage);
-      await expect(workerLightPage).toHaveURL(new RegExp(CCD_BASE_PATH.US));
+      const page = workerSetup.getPage('US_LIGHT');
+      CCD = new MerchCCD(page);
+      webUtil = new WebUtil(page);
+      await workerSetup.verifyPageURL('US_LIGHT', CCD_BASE_PATH.US, expect);
     });
-
     await test.step('step-2: Verify CCD Merch Card content', async () => {
       await expect(await CCD.getCard(data.id, 'slice-wide')).toBeVisible();
       await expect(await CCD.getCard(data.id, 'slice-wide')).toHaveAttribute('daa-lh', /.*/);
@@ -1101,9 +1005,10 @@ test.describe('CCD Merchcard feature test suite', () => {
     });
 
     await test.step('step-4: Go to CCD Merch Card feature test page in dark mode', async () => {
-      CCD = new MerchCCD(workerDarkPage);
-      webUtil = new WebUtil(workerDarkPage);
-      await expect(workerDarkPage).toHaveURL(new RegExp(`${CCD_BASE_PATH.US}\\?theme=darkest`));
+      const page = workerSetup.getPage('US_DARK');
+      CCD = new MerchCCD(page);
+      webUtil = new WebUtil(page);
+      await workerSetup.verifyPageURL('US_DARK', `${CCD_BASE_PATH.US}?theme=darkest`, expect);
     });
 
     await test.step('step-5: Verify CCD Merch Card spec', async () => {
@@ -1123,11 +1028,11 @@ test.describe('CCD Merchcard feature test suite', () => {
     const { data } = features[16];
 
     await test.step('step-1: Go to CCD Merch Card feature test page', async () => {
-      CCD = new MerchCCD(workerLightPage);
-      webUtil = new WebUtil(workerLightPage);
-      await expect(workerLightPage).toHaveURL(new RegExp(CCD_BASE_PATH.US));
+      const page = workerSetup.getPage('US_LIGHT');
+      CCD = new MerchCCD(page);
+      webUtil = new WebUtil(page);
+      await workerSetup.verifyPageURL('US_LIGHT', CCD_BASE_PATH.US, expect);
     });
-
     await test.step('step-2: Verify CCD Merch Card content', async () => {
       await expect(await CCD.getCard(data.id, 'slice-wide')).toBeVisible();
       await expect(await CCD.getCard(data.id, 'slice-wide')).toHaveAttribute('daa-lh', /.*/);
@@ -1161,9 +1066,10 @@ test.describe('CCD Merchcard feature test suite', () => {
     });
 
     await test.step('step-4: Go to CCD Merch Card feature test page in dark mode', async () => {
-      CCD = new MerchCCD(workerDarkPage);
-      webUtil = new WebUtil(workerDarkPage);
-      await expect(workerDarkPage).toHaveURL(new RegExp(`${CCD_BASE_PATH.US}\\?theme=darkest`));
+      const page = workerSetup.getPage('US_DARK');
+      CCD = new MerchCCD(page);
+      webUtil = new WebUtil(page);
+      await workerSetup.verifyPageURL('US_DARK', `${CCD_BASE_PATH.US}?theme=darkest`, expect);
     });
 
     await test.step('step-5: Verify CCD Merch Card spec', async () => {
@@ -1183,11 +1089,11 @@ test.describe('CCD Merchcard feature test suite', () => {
     const { data } = features[17];
 
     await test.step('step-1: Go to CCD Merch Card feature test page', async () => {
-      CCD = new MerchCCD(workerLightPage);
-      webUtil = new WebUtil(workerLightPage);
-      await expect(workerLightPage).toHaveURL(new RegExp(CCD_BASE_PATH.US));
+      const page = workerSetup.getPage('US_LIGHT');
+      CCD = new MerchCCD(page);
+      webUtil = new WebUtil(page);
+      await workerSetup.verifyPageURL('US_LIGHT', CCD_BASE_PATH.US, expect);
     });
-
     await test.step('step-2: Verify CCD Merch Card content', async () => {
       await expect(await CCD.getCard(data.id, 'slice-wide')).toBeVisible();
       await expect(await CCD.getCard(data.id, 'slice-wide')).toHaveAttribute('daa-lh', /.*/);
@@ -1224,9 +1130,10 @@ test.describe('CCD Merchcard feature test suite', () => {
     });
 
     await test.step('step-4: Go to CCD Merch Card feature test page in dark mode', async () => {
-      CCD = new MerchCCD(workerDarkPage);
-      webUtil = new WebUtil(workerDarkPage);
-      await expect(workerDarkPage).toHaveURL(new RegExp(`${CCD_BASE_PATH.US}\\?theme=darkest`));
+      const page = workerSetup.getPage('US_DARK');
+      CCD = new MerchCCD(page);
+      webUtil = new WebUtil(page);
+      await workerSetup.verifyPageURL('US_DARK', `${CCD_BASE_PATH.US}?theme=darkest`, expect);
     });
 
     await test.step('step-5: Verify CCD Merch Card spec', async () => {
@@ -1247,11 +1154,11 @@ test.describe('CCD Merchcard feature test suite', () => {
     const { data } = features[18];
 
     await test.step('step-1: Go to CCD Merch Card feature test page', async () => {
-      CCD = new MerchCCD(workerLightPage);
-      webUtil = new WebUtil(workerLightPage);
-      await expect(workerLightPage).toHaveURL(new RegExp(CCD_BASE_PATH.US));
+      const page = workerSetup.getPage('US_LIGHT');
+      CCD = new MerchCCD(page);
+      webUtil = new WebUtil(page);
+      await workerSetup.verifyPageURL('US_LIGHT', CCD_BASE_PATH.US, expect);
     });
-
     await test.step('step-2: Verify CCD Merch Card content', async () => {
       await expect(await CCD.getCard(data.id, 'slice-wide')).toBeVisible();
       await expect(await CCD.getCard(data.id, 'slice-wide')).toHaveAttribute('daa-lh', /.*/);
@@ -1283,9 +1190,10 @@ test.describe('CCD Merchcard feature test suite', () => {
     });
 
     await test.step('step-4: Go to CCD Merch Card feature test page in dark mode', async () => {
-      CCD = new MerchCCD(workerDarkPage);
-      webUtil = new WebUtil(workerDarkPage);
-      await expect(workerDarkPage).toHaveURL(new RegExp(`${CCD_BASE_PATH.US}\\?theme=darkest`));
+      const page = workerSetup.getPage('US_DARK');
+      CCD = new MerchCCD(page);
+      webUtil = new WebUtil(page);
+      await workerSetup.verifyPageURL('US_DARK', `${CCD_BASE_PATH.US}?theme=darkest`, expect);
     });
 
     await test.step('step-5: Verify CCD Merch Card spec', async () => {
@@ -1304,9 +1212,10 @@ test.describe('CCD Merchcard feature test suite', () => {
     const { data } = features[19];
 
     await test.step('step-1: Go to CCD Merch Card feature test page', async () => {
-      CCD = new MerchCCD(workerLightPage);
-      webUtil = new WebUtil(workerLightPage);
-      await expect(workerLightPage).toHaveURL(new RegExp(CCD_BASE_PATH.US));
+      const page = workerSetup.getPage('US_LIGHT');
+      CCD = new MerchCCD(page);
+      webUtil = new WebUtil(page);
+      await workerSetup.verifyPageURL('US_LIGHT', CCD_BASE_PATH.US, expect);
     });
 
     await test.step('step-2: Verify CCD Merch Card content', async () => {
@@ -1323,9 +1232,10 @@ test.describe('CCD Merchcard feature test suite', () => {
     console.info('[Test]: Using worker-scoped pre-loaded FR page');
 
     await test.step('step-1: Go to CCD Merch Card feature test page', async () => {
-      CCD = new MerchCCD(workerFRLightPage);
-      webUtil = new WebUtil(workerFRLightPage);
-      await expect(workerFRLightPage).toHaveURL(new RegExp(CCD_BASE_PATH.FR.replace('?', '\\?')));
+      const page = workerSetup.getPage('FR_LIGHT');
+      CCD = new MerchCCD(page);
+      webUtil = new WebUtil(page);
+      await workerSetup.verifyPageURL('FR_LIGHT', CCD_BASE_PATH.FR, expect);
     });
 
     await test.step('step-2: Verify CCD Merch Card content', async () => {
@@ -1356,11 +1266,11 @@ test.describe('CCD Merchcard feature test suite', () => {
     const { data } = features[21];
 
     await test.step('step-1: Go to CCD Merch Card feature test page', async () => {
-      CCD = new MerchCCD(workerLightPage);
-      webUtil = new WebUtil(workerLightPage);
-      await expect(workerLightPage).toHaveURL(new RegExp(CCD_BASE_PATH.US));
+      const page = workerSetup.getPage('US_LIGHT');
+      CCD = new MerchCCD(page);
+      webUtil = new WebUtil(page);
+      await workerSetup.verifyPageURL('US_LIGHT', CCD_BASE_PATH.US, expect);
     });
-
     await test.step('step-2: Verify CCD Merch Card content', async () => {
       await expect(await CCD.getCard(data.id, 'slice')).toBeVisible();
       await expect(await CCD.getCard(data.id, 'slice')).toHaveAttribute('daa-lh', /.*/);
@@ -1375,9 +1285,10 @@ test.describe('CCD Merchcard feature test suite', () => {
     console.info('[Test]: Using worker-scoped pre-loaded FR page');
 
     await test.step('step-1: Go to CCD Merch Card feature test page', async () => {
-      CCD = new MerchCCD(workerFRLightPage);
-      webUtil = new WebUtil(workerFRLightPage);
-      await expect(workerFRLightPage).toHaveURL(new RegExp(CCD_BASE_PATH.FR.replace('?', '\\?')));
+      const page = workerSetup.getPage('FR_LIGHT');
+      CCD = new MerchCCD(page);
+      webUtil = new WebUtil(page);
+      await workerSetup.verifyPageURL('FR_LIGHT', CCD_BASE_PATH.FR, expect);
     });
 
     await test.step('step-2: Verify CCD Merch Card content', async () => {
@@ -1416,9 +1327,10 @@ test.describe('CCD Merchcard feature test suite', () => {
     });
 
     await test.step('step-4: Go to CCD Merch Card feature test page in dark mode', async () => {
-      CCD = new MerchCCD(workerFRDarkPage);
-      webUtil = new WebUtil(workerFRDarkPage);
-      await expect(workerFRDarkPage).toHaveURL(new RegExp(`${CCD_BASE_PATH.FR.replace('?', '\\?')}&theme=darkest`));
+      const page = workerSetup.getPage('FR_DARK');
+      CCD = new MerchCCD(page);
+      webUtil = new WebUtil(page);
+      await workerSetup.verifyPageURL('FR_DARK', `${CCD_BASE_PATH.FR}&theme=darkest`, expect);
     });
 
     await test.step('step-5: Verify CCD Merch Card spec', async () => {
@@ -1440,9 +1352,10 @@ test.describe('CCD Merchcard feature test suite', () => {
     console.info('[Test]: Using worker-scoped pre-loaded FR page');
 
     await test.step('step-1: Go to CCD Merch Card feature test page', async () => {
-      CCD = new MerchCCD(workerFRLightPage);
-      webUtil = new WebUtil(workerFRLightPage);
-      await expect(workerFRLightPage).toHaveURL(new RegExp(CCD_BASE_PATH.FR.replace('?', '\\?')));
+      const page = workerSetup.getPage('FR_LIGHT');
+      CCD = new MerchCCD(page);
+      webUtil = new WebUtil(page);
+      await workerSetup.verifyPageURL('FR_LIGHT', CCD_BASE_PATH.FR, expect);
     });
 
     await test.step('step-2: Verify CCD Merch Card content', async () => {
@@ -1478,9 +1391,10 @@ test.describe('CCD Merchcard feature test suite', () => {
     });
 
     await test.step('step-4: Go to CCD Merch Card feature test page in dark mode', async () => {
-      CCD = new MerchCCD(workerFRDarkPage);
-      webUtil = new WebUtil(workerFRDarkPage);
-      await expect(workerFRDarkPage).toHaveURL(new RegExp(`${CCD_BASE_PATH.FR.replace('?', '\\?')}&theme=darkest`));
+      const page = workerSetup.getPage('FR_DARK');
+      CCD = new MerchCCD(page);
+      webUtil = new WebUtil(page);
+      await workerSetup.verifyPageURL('FR_DARK', `${CCD_BASE_PATH.FR}&theme=darkest`, expect);
     });
 
     await test.step('step-5: Verify CCD Merch Card spec', async () => {
@@ -1501,9 +1415,10 @@ test.describe('CCD Merchcard feature test suite', () => {
     console.info('[Test]: Using worker-scoped pre-loaded FR page');
 
     await test.step('step-1: Go to CCD Merch Card feature test page', async () => {
-      CCD = new MerchCCD(workerFRLightPage);
-      webUtil = new WebUtil(workerFRLightPage);
-      await expect(workerFRLightPage).toHaveURL(new RegExp(CCD_BASE_PATH.FR.replace('?', '\\?')));
+      const page = workerSetup.getPage('FR_LIGHT');
+      CCD = new MerchCCD(page);
+      webUtil = new WebUtil(page);
+      await workerSetup.verifyPageURL('FR_LIGHT', CCD_BASE_PATH.FR, expect);
     });
 
     await test.step('step-2: Verify CCD Merch Card content/specs', async () => {
@@ -1538,9 +1453,10 @@ test.describe('CCD Merchcard feature test suite', () => {
     });
 
     await test.step('step-4: Go to CCD Merch Card feature test page in dark mode', async () => {
-      CCD = new MerchCCD(workerFRDarkPage);
-      webUtil = new WebUtil(workerFRDarkPage);
-      await expect(workerFRDarkPage).toHaveURL(new RegExp(`${CCD_BASE_PATH.FR.replace('?', '\\?')}&theme=darkest`));
+      const page = workerSetup.getPage('FR_DARK');
+      CCD = new MerchCCD(page);
+      webUtil = new WebUtil(page);
+      await workerSetup.verifyPageURL('FR_DARK', `${CCD_BASE_PATH.FR}&theme=darkest`, expect);
     });
 
     await test.step('step-5: Verify CCD Merch Card spec', async () => {

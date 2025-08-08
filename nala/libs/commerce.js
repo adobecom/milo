@@ -170,11 +170,187 @@ async function setupMasRequestLogger(masRequestErrors) {
   };
 }
 
+/**
+ * Creates a worker-scoped page setup utility for efficient test execution
+ * @param {Object} config - Configuration object
+ * @param {Array} config.pages - Array of page configurations [{ name: 'US', url: '/path' }, ...]
+ * @param {Object} config.extraHTTPHeaders - HTTP headers to set on the context
+ * @param {number} config.loadTimeout - Timeout after networkidle (default: 5000ms)
+ * @returns {Object} - Setup object with pages, setup/cleanup methods, and error arrays
+ */
+function createWorkerPageSetup(config = {}) {
+  const {
+    pages = [],
+    extraHTTPHeaders = { 'sec-ch-ua': '"Chromium";v="123", "Not:A-Brand";v="8"' },
+    loadTimeout = 5000,
+  } = config;
+
+  // Worker-scoped variables
+  let workerContext;
+  const workerPages = {};
+  let consoleErrors = [];
+  let masRequestErrors = [];
+
+  const miloLibs = process.env.MILO_LIBS || '';
+
+  /**
+   * Sets up worker-scoped pages and listeners
+   * @param {Object} params - Playwright test parameters
+   * @param {Object} params.browser - Playwright browser object
+   * @param {string} params.baseURL - Base URL for the test environment
+   */
+  async function setupWorkerPages({ browser, baseURL }) {
+    console.info('[Worker Setup]: Initializing worker-scoped pages...');
+
+    // Create worker context
+    workerContext = await browser.newContext({ extraHTTPHeaders });
+
+    // Initialize error arrays
+    consoleErrors = [];
+    masRequestErrors = [];
+
+    // Create pages and set up listeners
+    const pagePromises = pages.map(async (pageConfig) => {
+      const { name, url } = pageConfig;
+      const fullUrl = `${baseURL}${url}${miloLibs}`;
+
+      console.info(`[Worker Setup]: Creating page for ${name}:`, fullUrl);
+
+      const page = await workerContext.newPage();
+      workerPages[name] = page;
+
+      // Set up MAS request logger
+      const masRequestLogger = await setupMasRequestLogger(masRequestErrors);
+      page.on('response', masRequestLogger.responseListener);
+      page.on('requestfailed', masRequestLogger.requestFailedListener);
+
+      // Set up console listener
+      const consoleListener = await setupMasConsoleListener(consoleErrors);
+      page.on('console', consoleListener);
+
+      // Load the page
+      await page.goto(fullUrl);
+      await page.waitForLoadState('networkidle');
+      await page.waitForTimeout(loadTimeout);
+
+      console.info(`[Worker Setup]: ${name} page fully loaded:`, await page.url());
+
+      return { name, page, url: fullUrl };
+    });
+
+    await Promise.all(pagePromises);
+    console.info('[Worker Setup]: All worker-scoped pages ready');
+  }
+
+  /**
+   * Cleans up worker-scoped resources and reports errors
+   */
+  async function cleanupWorkerPages() {
+    // Only run cleanup if setup was executed
+    if (!consoleErrors && !masRequestErrors) {
+      return; // Test was skipped, no cleanup needed
+    }
+
+    // Report console errors
+    if (consoleErrors && consoleErrors.length > 0) {
+      console.log('\n=== MAS CONSOLE ERRORS DURING PAGE LOADING ===');
+      consoleErrors.forEach((error, index) => {
+        console.log(`${index + 1}. ${error}`);
+      });
+      console.log('==========================================\n');
+    }
+
+    // Report MAS request errors
+    if (masRequestErrors && masRequestErrors.length > 0) {
+      console.log('\n=== MAS REQUEST ERRORS DURING WORKER LIFETIME ===');
+      masRequestErrors.forEach((error, index) => {
+        console.log(`${index + 1}. ${error}`);
+      });
+      console.log('==========================================\n');
+    }
+
+    // Clean up worker context
+    if (workerContext) {
+      await workerContext.close();
+      console.info('[Worker Cleanup]: Worker context closed');
+    }
+  }
+
+  /**
+   * Attaches worker-scoped errors to failed test stack traces
+   * @param {Object} testInfo - Playwright test info object
+   */
+  function attachWorkerErrorsToFailure(testInfo) {
+    if (testInfo.status === 'failed') {
+      const consoleErrorText = attachMasConsoleErrorsToFailure(testInfo, consoleErrors);
+      const requestErrorText = attachMasRequestErrorsToFailure(testInfo, masRequestErrors);
+
+      let enhancedMessage = '';
+
+      if (consoleErrors.length > 0) {
+        enhancedMessage += consoleErrorText;
+      }
+
+      if (masRequestErrors.length > 0) {
+        enhancedMessage += requestErrorText;
+      }
+
+      if (enhancedMessage && testInfo.error) {
+        testInfo.error.message = `${testInfo.error.message}${enhancedMessage}`;
+      }
+    }
+  }
+
+  /**
+   * Gets a worker page by name
+   * @param {string} pageName - Name of the page to retrieve
+   * @returns {Object} - Playwright page object
+   */
+  function getPage(pageName) {
+    const page = workerPages[pageName];
+    if (!page) {
+      throw new Error(`Worker page '${pageName}' not found. Available pages: ${Object.keys(workerPages).join(', ')}`);
+    }
+    return page;
+  }
+
+  /**
+   * Verifies a page URL matches the expected pattern (requires Playwright expect)
+   * @param {string} pageName - Name of the page to verify
+   * @param {string} expectedPath - Expected URL path (will be converted to regex with ? escaping)
+   * @param {Function} expect - Playwright expect function
+   */
+  async function verifyPageURL(pageName, expectedPath, expect) {
+    const page = getPage(pageName);
+    const regex = new RegExp(expectedPath.replace('?', '\\?'));
+    await expect(page).toHaveURL(regex);
+  }
+
+  return {
+    // Setup methods
+    setupWorkerPages,
+    cleanupWorkerPages,
+    attachWorkerErrorsToFailure,
+
+    // Page access methods
+    getPage,
+    verifyPageURL,
+
+    // Direct access to error arrays (for advanced usage)
+    get consoleErrors() { return consoleErrors; },
+    get masRequestErrors() { return masRequestErrors; },
+
+    // Direct access to all pages (for advanced usage)
+    get pages() { return workerPages; },
+  };
+}
+
 module.exports = {
   setupMasConsoleListener,
   attachMasConsoleErrorsToFailure,
   setupMasRequestLogger,
   attachMasRequestErrorsToFailure,
+  createWorkerPageSetup,
   PRICE_PATTERN,
   CCD_BASE_PATH,
   ADOBE_HOME_BASE_PATH,
