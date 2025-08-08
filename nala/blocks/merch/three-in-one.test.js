@@ -5,7 +5,7 @@ import ThreeInOne from './three-in-one.page.js';
 const miloLibs = process.env.MILO_LIBS || '';
 
 async function openModal(cta) {
-  await expect(cta).not.toHaveClass(/loading-entitlements|placeholder-pending/);
+  await expect(cta).not.toHaveClass(/loading-entitlements|placeholder-pending|placeholder-failed/);
   await cta.click();
 }
 test.describe('ThreeInOne Block test suite', () => {

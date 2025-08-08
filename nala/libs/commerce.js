@@ -4,6 +4,23 @@ const PRICE_PATTERN = {
   FR_mo: /\d+,\d\d\s€\/mois/,
 };
 
+const CCD_BASE_PATH = {
+  US: '/libs/features/mas/docs/ccd.html',
+  FR: '/libs/features/mas/docs/ccd.html?locale=fr_FR',
+  MINI_US: '/libs/features/mas/docs/ccd-mini.html',
+  MINI_FR: '/libs/features/mas/docs/ccd-mini.html?country=FR&language=fr',
+};
+
+const ADOBE_HOME_BASE_PATH = { US: '/libs/features/mas/docs/adobe-home.html' };
+
+const PLANS_BASE_PATH = { US: '/drafts/nala/features/commerce/plans' };
+
+const DOCS_BASE_PATH = {
+  merch_card: '/libs/features/mas/docs/merch-card.html',
+  checkout_link: '/libs/features/mas/docs/checkout-link.html',
+  plans: '/libs/features/mas/docs/plans.html',
+};
+
 async function setupMasConsoleListener(consoleErrors) {
   const seenErrors = new Set();
 
@@ -153,4 +170,14 @@ async function setupMasRequestLogger(masRequestErrors) {
   };
 }
 
-module.exports = { setupMasConsoleListener, attachMasConsoleErrorsToFailure, setupMasRequestLogger, attachMasRequestErrorsToFailure, PRICE_PATTERN };
+module.exports = {
+  setupMasConsoleListener,
+  attachMasConsoleErrorsToFailure,
+  setupMasRequestLogger,
+  attachMasRequestErrorsToFailure,
+  PRICE_PATTERN,
+  CCD_BASE_PATH,
+  ADOBE_HOME_BASE_PATH,
+  PLANS_BASE_PATH,
+  DOCS_BASE_PATH,
+};
