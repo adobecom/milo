@@ -344,6 +344,7 @@ jobs:
             -v ${{ github.workspace }}/test-results:/workspace/test-results \
             -v ${{ github.workspace }}/test-html-results:/workspace/test-html-results \
             -v ${{ github.workspace }}/playwright-report:/workspace/playwright-report \
+            -e CI=true \
             -e GITHUB_ACTION_PATH=/workspace \
             -e GITHUB_REF=${{ github.ref }} \
             -e GITHUB_HEAD_REF=${{ github.event.pull_request.head.ref }} \
