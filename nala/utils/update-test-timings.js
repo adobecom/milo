@@ -67,8 +67,23 @@ function updateTestTimings(jsonReportPath, timingsPath) {
 }
 
 function processTests(suite, timings) {
-  // Get test file path
-  const testFile = suite.file?.replace(/^.*\/nala\//, 'nala/');
+  // Get test file path - ensure it starts with 'nala/'
+  let testFile = suite.file;
+  if (testFile) {
+    // Remove any leading path before 'nala/' or 'blocks/'/'features/'
+    if (testFile.includes('/nala/')) {
+      testFile = testFile.substring(testFile.indexOf('/nala/') + 1);
+    } else if (testFile.startsWith('blocks/') || testFile.startsWith('features/')) {
+      // Add 'nala/' prefix if not present
+      testFile = 'nala/' + testFile;
+    } else if (testFile.includes('/blocks/') || testFile.includes('/features/')) {
+      // Extract from full path and add nala/ prefix
+      const match = testFile.match(/(blocks\/.*|features\/.*)$/);
+      if (match) {
+        testFile = 'nala/' + match[1];
+      }
+    }
+  }
   
   if (testFile && suite.specs) {
     let totalDuration = 0;
@@ -103,17 +118,125 @@ function processTests(suite, timings) {
   }
 }
 
+// Function to analyze and show how durations are calculated
+function analyzeTestResults(jsonReportPath) {
+  try {
+    if (!fs.existsSync(jsonReportPath)) {
+      console.log(`Test results file not found: ${jsonReportPath}`);
+      return;
+    }
+    
+    const report = JSON.parse(fs.readFileSync(jsonReportPath, 'utf8'));
+    const fileDurations = {};
+    
+    // Process all suites to collect durations
+    if (report.suites) {
+      for (const suite of report.suites) {
+        collectDurations(suite, fileDurations);
+      }
+    }
+    
+    // Sort by duration (longest first)
+    const sorted = Object.entries(fileDurations)
+      .map(([file, duration]) => ({ file, duration }))
+      .sort((a, b) => b.duration - a.duration);
+    
+    // Display results
+    console.log('\nFile durations:');
+    console.log('──────────────');
+    sorted.forEach(item => {
+      const seconds = (item.duration / 1000).toFixed(2);
+      console.log(`${item.file}: ${seconds}s`);
+    });
+    
+    // Show total
+    const total = sorted.reduce((sum, item) => sum + item.duration, 0);
+    console.log(`\nTotal: ${(total / 1000).toFixed(2)}s`);
+    console.log(`Files: ${sorted.length}`);
+    
+  } catch (error) {
+    console.error('Error analyzing test results:', error.message);
+  }
+}
+
+function collectDurations(suite, fileDurations) {
+  // Get test file path - ensure it starts with 'nala/'
+  let testFile = suite.file;
+  if (testFile) {
+    // Remove any leading path before 'nala/' or 'blocks/'/'features/'
+    if (testFile.includes('/nala/')) {
+      testFile = testFile.substring(testFile.indexOf('/nala/') + 1);
+    } else if (testFile.startsWith('blocks/') || testFile.startsWith('features/')) {
+      // Add 'nala/' prefix if not present
+      testFile = 'nala/' + testFile;
+    } else if (testFile.includes('/blocks/') || testFile.includes('/features/')) {
+      // Extract from full path and add nala/ prefix
+      const match = testFile.match(/(blocks\/.*|features\/.*)$/);
+      if (match) {
+        testFile = 'nala/' + match[1];
+      }
+    }
+  }
+  
+  if (testFile && suite.specs) {
+    let totalDuration = 0;
+    
+    for (const spec of suite.specs) {
+      if (spec.tests) {
+        for (const test of spec.tests) {
+          if (test.results) {
+            for (const result of test.results) {
+              if (result.duration) {
+                totalDuration += result.duration;
+              }
+            }
+          }
+        }
+      }
+    }
+    
+    if (totalDuration > 0) {
+      fileDurations[testFile] = (fileDurations[testFile] || 0) + totalDuration;
+    }
+  }
+  
+  // Process nested suites
+  if (suite.suites) {
+    for (const childSuite of suite.suites) {
+      collectDurations(childSuite, fileDurations);
+    }
+  }
+}
+
+
 // Command line usage
 if (require.main === module) {
   const args = process.argv.slice(2);
   
-  if (args.length < 2) {
+  if (args.includes('--help') || args.length === 0) {
     console.log('Usage: node update-test-timings.js <json-report> <timings-file>');
-    console.log('Example: node update-test-timings.js test-results.json test-timings.json');
-    process.exit(1);
+    console.log('       node update-test-timings.js --analyze <json-report>');
+    console.log('');
+    console.log('Options:');
+    console.log('  --analyze    Analyze test results and show how durations are calculated');
+    console.log('');
+    console.log('Examples:');
+    console.log('  # Update timing file');
+    console.log('  node update-test-timings.js test-results.json test-timings.json');
+    console.log('');
+    console.log('  # Analyze test results to understand duration calculation');
+    console.log('  node update-test-timings.js --analyze test-results-shard-10.json');
+    process.exit(0);
   }
   
-  updateTestTimings(args[0], args[1]);
+  if (args[0] === '--analyze' && args[1]) {
+    analyzeTestResults(args[1]);
+  } else if (args.length >= 2) {
+    updateTestTimings(args[0], args[1]);
+  } else {
+    console.log('Invalid arguments. Use --help for usage information.');
+    process.exit(1);
+  }
 }
 
 module.exports = { updateTestTimings };
