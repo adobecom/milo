@@ -74,8 +74,9 @@ jobs:
             echo "Using weighted distribution based on test execution times"
             
             # Set target duration per shard (in seconds)
-            # Default is 120 seconds (2 minutes) - can be overridden
-            export SHARD_TARGET_DURATION="${SHARD_TARGET_DURATION:-120}"
+            # Use workflow input if provided, otherwise default to 120 seconds (2 minutes)
+            TARGET_DURATION=${{ inputs.target_duration }}
+            export SHARD_TARGET_DURATION="${TARGET_DURATION:-120}"
             echo "Target duration per shard: ${SHARD_TARGET_DURATION}s"
             
             # Calculate weighted shards
@@ -91,6 +92,7 @@ jobs:
             echo "## Test Sharding Configuration (Weighted)" >> $GITHUB_STEP_SUMMARY
             echo "- **Test files found:** $TEST_COUNT" >> $GITHUB_STEP_SUMMARY
             echo "- **Shards to use:** $OPTIMAL_SHARDS" >> $GITHUB_STEP_SUMMARY
+            echo "- **Target duration per shard:** ${SHARD_TARGET_DURATION}s" >> $GITHUB_STEP_SUMMARY
             echo "" >> $GITHUB_STEP_SUMMARY
             echo "### Distribution by Shard:" >> $GITHUB_STEP_SUMMARY
             echo "| Shard | Tests | Est. Duration | Balance |" >> $GITHUB_STEP_SUMMARY
