@@ -193,10 +193,6 @@
   bottom: 5px;
 }
 
-.section.sticky-bottom:has(.notification.split.focus) {
-  bottom: 0;
-}
-
 .section[class*='grid-width-'] {
   padding-left: var(--grid-margins-width);
   padding-right: var(--grid-margins-width);
@@ -241,18 +237,8 @@ main > .section[class*='-up'] > .content {
   }
 
   .section[class*='grid-width-'] {
-    display: flex;
-    flex-direction: column;
+    display: block;
   }
-}
-
-@media (min-width: 600px) {
-  .fill-sticky-section > div.notification.pill {
-    width: 100%;
-    border-radius: 0;
-    max-width: unset;
-  }
- 
 }
 
 @media screen and (min-width: 600px) and (max-width: 1200px) {
