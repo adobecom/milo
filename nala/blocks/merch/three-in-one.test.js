@@ -38,14 +38,14 @@ test.describe('ThreeInOne Block test suite', () => {
       const cta = await page.locator('[data-wcs-osi="ByqyQ6QmyXhzAOnjIcfHcoF1l6nfkeLgbzWz-aeM8GQ"][data-checkout-workflow-step="segmentation"]');
       await openModal(cta);
       await page.waitForSelector('.dialog-modal');
-      const modal = threeInOne.getModal();
-      expect(modal).toBeVisible();
+      const modal = await threeInOne.getModal();
+      await expect(modal).toBeVisible();
       await page.goto('https://www.adobe.com');
       await page.goBack();
-      const newModal = threeInOne.getModal();
+      const newModal = await threeInOne.getModal();
       await expect(newModal).toBeVisible();
       await threeInOne.closeModal();
-      expect(newModal).not.toBeVisible();
+      await expect(newModal).not.toBeVisible({ timeout: 5000 });
     });
   });
 

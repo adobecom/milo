@@ -49,8 +49,8 @@ export default class ThreeInOne {
     this.getFallbackCta = (sectionId) => this.page.locator(`#${sectionId} [is="checkout-link"]`);
     this.getModal = () => this.page.locator('.dialog-modal');
     this.closeModal = async () => {
-      const modal = this.getModal();
-      modal.dispatchEvent('closeModal');
+      const modal = await this.getModal();
+      await modal.dispatchEvent('closeModal');
       await this.page.waitForTimeout(1000);
     };
   }
