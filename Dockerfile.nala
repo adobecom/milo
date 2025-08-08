@@ -51,10 +51,10 @@ WORKDIR /workspace
 COPY --from=deps /deps/node_modules ./node_modules
 COPY package*.json ./
 
-# Install Chromium with Playwright
+# Install Playwright browsers (all of them for test compatibility)
 ENV PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
-RUN npx playwright install chromium && \
-    npx playwright install-deps chromium && \
+RUN npx playwright install && \
+    npx playwright install-deps && \
     rm -rf /root/.npm /tmp/*
 
 # Create directories
