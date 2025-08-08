@@ -58,7 +58,7 @@
     "nala/features/personalization/update-attribute-prepend.test.js": 8649,
     "nala/features/promotions/promotions.test.js": 63512
   },
-  "lastUpdated": "2025-08-08T17:00:00.000Z",
+  "lastUpdated": "2025-08-08T15:50:19.449Z",
   "totalFiles": 57,
   "note": "Default baseline timings in milliseconds. Updated from actual test runs."
 }
