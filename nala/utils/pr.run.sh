@@ -125,14 +125,6 @@ fi
 # Check if specific test files are provided
 if [[ ! -z "$TEST_FILES" ]]; then
   echo "Running specific test files: $TEST_FILES"
-  echo "Current directory: $(pwd)"
-  
-  # Check if the file exists
-  if [ -f "$TEST_FILES" ]; then
-    echo "✓ Test file found: $TEST_FILES"
-  else
-    echo "✗ Test file not found: $TEST_FILES"
-  fi
   
   FORCE_COLOR=0 PLAYWRIGHT_HTML_OPEN=never npx playwright test $TEST_FILES --config=./playwright.config.js ${TAGS} ${EXCLUDE_TAGS} --project=milo-live-chromium --project=milo-live-firefox --project=milo-live-webkit ${REPORTER} || EXIT_STATUS=$?
 else
