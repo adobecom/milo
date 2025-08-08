@@ -18,13 +18,25 @@ export default function init({ createTag, loadBlock, loadScript, loadStyle }) {
     const resultsUrl = 'https://search.google.com/test/rich-results?url=';
     window.open(`${resultsUrl}${encodeURIComponent(window.location.href)}`, 'check-schema');
   };
+  
+  let isAEMSitesOptimizerPreflightAppLoaded = false;
+  
+  function loadAEMSitesOptimizerPreflightApp() {
+    const scriptUrl = 'https://experience.adobe.com/solutions/OneAdobe-aem-sites-optimizer-preflight-mfe/static-assets/resources/sidekick/client.js?source=plugin';
+    
+    loadScript(scriptUrl)
+      .then(() => {
+        isAEMSitesOptimizerPreflightAppLoaded = true;
+      })
+      .catch((error) => {
+        console.error('Error loading AEMSitesOptimizerPreflightApp:', error);
+      });
+  }
 
   const preflightListener = async () => {
-    const preflight = createTag('div', { class: 'preflight' });
-    const content = await loadBlock(preflight);
-
-    const { getModal } = await import('../blocks/modal/modal.js');
-    getModal(null, { id: 'preflight', content, closeEvent: 'closeModal' });
+    if (!isAEMSitesOptimizerPreflightAppLoaded) {
+      loadAEMSitesOptimizerPreflightApp();
+    }
   };
 
   const sk = document.querySelector('aem-sidekick, helix-sidekick');
