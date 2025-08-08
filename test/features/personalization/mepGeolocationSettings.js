@@ -6,6 +6,7 @@ const mepSettings = {
   promo: false,
   target: false,
   mepgeolocation: true,
+  promises: {},
 };
 
 export default mepSettings;

@@ -106,6 +106,7 @@ describe('Functional Test', () => {
       highlight: false,
       targetEnabled: false,
       experiments: [],
+      promises: {},
     };
     const promoMepSettings = [
       {
@@ -135,6 +136,7 @@ describe('Functional Test', () => {
       highlight: false,
       targetEnabled: false,
       experiments: [],
+      promises: {},
     };
     const promoMepSettings = [
       {
@@ -183,6 +185,7 @@ describe('Functional Test', () => {
       pzn: '/path/to/manifest.json',
       promo: false,
       target: false,
+      promises: {},
     };
     await init(tempMepSettings);
     const config = getConfig();
@@ -199,6 +202,7 @@ describe('Functional Test', () => {
       pzn: '/path/to/manifest.json',
       promo: false,
       target: false,
+      promises: {},
     };
     await init(tempMepSettings);
     const config = getConfig();
@@ -214,6 +218,7 @@ describe('Functional Test', () => {
       pzn: '/path/to/manifest.json',
       promo: false,
       target: false,
+      promises: {},
     };
     await init(tempMepSettings);
     const config = getConfig();

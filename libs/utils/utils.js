@@ -1392,6 +1392,27 @@ export function enablePersonalizationV2() {
   return !!enablePersV2 && isSignedOut();
 }
 
+export function loadMepAddons() {
+  const mepAddons = ['lob'];
+  const promises = {};
+  mepAddons.forEach((addon) => {
+    const enablement = getMepEnablement(addon);
+    if (enablement === false) return;
+    promises[addon] = (async () => {
+      let returnValue;
+      try {
+        const { default: init } = await import(`../features/mep/addons/${addon}.js`);
+        returnValue = await init(enablement);
+        /* c8 ignore next 3 */
+      } catch (err) {
+        console.log(`Failed loading MEP ${addon} addon`, err);
+      }
+      return returnValue;
+    })();
+  });
+  return promises;
+}
+
 async function checkForPageMods() {
   const {
     mep: mepParam,
@@ -1401,8 +1422,9 @@ async function checkForPageMods() {
   } = Object.fromEntries(PAGE_URL.searchParams);
   let targetInteractionPromise = null;
   let countryIPPromise = null;
-
   let calculatedTimeout = null;
+  const promises = loadMepAddons();
+
   if (mepParam === 'off') return;
   const pzn = getMepEnablement('personalization');
   const pznroc = getMepEnablement('personalization-roc');
@@ -1469,6 +1491,7 @@ async function checkForPageMods() {
     targetInteractionPromise,
     calculatedTimeout,
     enablePersV2,
+    promises,
   });
 }
 

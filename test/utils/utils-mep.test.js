@@ -1,6 +1,6 @@
 import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
-import { getMepEnablement } from '../../libs/utils/utils.js';
+import { getMepEnablement, loadMepAddons } from '../../libs/utils/utils.js';
 import { combineMepSources } from '../../libs/features/personalization/personalization.js';
 
 describe('MEP Utils', () => {
@@ -107,6 +107,21 @@ describe('MEP Utils', () => {
       document.head.innerHTML = await readFile({ path: './mocks/mep/head-xlg.html' });
       const xlgEnabled = getMepEnablement('xlg');
       expect(xlgEnabled).to.equal('loggedout');
+    });
+  });
+  describe('loadMepAddons', async () => {
+    it('does not load lob when lob is not in the metadata', async () => {
+      const promises = loadMepAddons();
+      expect(promises.lob).to.be.undefined;
+    });
+    it('loads lob', async () => {
+      document.head.innerHTML = '<meta name="lob" content="imspoofed">';
+      const promises = loadMepAddons();
+      console.log(promises);
+      expect(promises.lob).to.be.a('promise');
+    });
+    afterEach(() => {
+      document.head.innerHTML = '';
     });
   });
 });
