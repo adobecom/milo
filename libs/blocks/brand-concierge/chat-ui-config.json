@@ -47,6 +47,7 @@
     "--message-user-background": "#EBEEFF",
     "--message-user-text": "#292929",
     "--message-border-radius": "10px",
+    "--message-padding": "18px 16px",
     "--message-concierge-background": "#FFFFFF",
     "--message-concierge-text": "#292929",
     "--chat-interface-max-width": "768px",

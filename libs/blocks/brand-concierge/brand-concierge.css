@@ -343,6 +343,7 @@
   #brand-concierge-modal.dialog-modal {
     height: calc(100vh - 32px);
     margin-top: 32px;
+    border-radius: 12px 12px 0 0;
   }
 }
 
