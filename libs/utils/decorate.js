@@ -18,6 +18,7 @@ let videoLabels = {
   playIcon: 'Play icon',
   hasFetched: false,
 };
+const isReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 let videoCounter = 0;
 
 export function decorateButtons(el, size) {
@@ -297,11 +298,11 @@ function isVideoReady(video) {
 }
 
 export function handlePause(event) {
-  event.stopPropagation();
   if (event.code !== 'Enter' && event.code !== 'Space' && !['focus', 'click', 'blur'].includes(event.type)) {
     return;
   }
   event.preventDefault();
+  event.stopPropagation();
   const video = event.target.closest('.video-holder').parentElement.querySelector('video');
   if (event.type === 'blur') {
     video.pause();
@@ -337,6 +338,11 @@ export function applyAccessibilityEvents(videoEl) {
     videoEl.addEventListener('canplay', () => isVideoReady(videoEl) && videoEl.play());
     videoEl.addEventListener('playing', (event) => syncPausePlayIcon(videoEl, event));
     videoEl.addEventListener('ended', () => syncPausePlayIcon(videoEl));
+    if (isReducedMotion) {
+      videoEl.pause();
+      return;
+    }
+    videoEl.addEventListener('canplay', () => videoEl.play());
   }
 }
 

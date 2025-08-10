@@ -1,10 +1,12 @@
 import { processTrackingLabels } from '../../../../martech/attributes.js';
 import { getConfig, shouldBlockFreeTrialLinks } from '../../../../utils/utils.js';
+import { debounce } from '../../../../utils/action.js';
 import {
   fetchAndProcessPlainHtml,
   getActiveLink,
   icons,
   isDesktop,
+  isDesktopForContext,
   logErrorFor,
   selectors,
   setActiveDropdown,
@@ -46,7 +48,7 @@ function decorateCta({ elem, type = 'primaryCta', index } = {}) {
     </div>`;
 }
 
-const decorateHeadline = (elem, index) => {
+const decorateHeadline = (elem, index, context = 'viewport') => {
   if (!(elem instanceof HTMLElement)) return null;
 
   const headline = toFragment`<div class="feds-menu-headline">
@@ -54,13 +56,13 @@ const decorateHeadline = (elem, index) => {
     </div>`;
 
   const headlineClickHandler = (e) => {
-    if (isDesktop.matches) return;
+    if (isDesktopForContext(context)) return;
     trigger({ element: headline, event: e, type: 'headline' });
     setActiveDropdown(headline);
   };
 
   const setHeadlineAttributes = () => {
-    if (isDesktop.matches) {
+    if (isDesktopForContext(context)) {
       headline.setAttribute('role', 'heading');
       headline.removeAttribute('tabindex');
       headline.setAttribute('aria-level', 2);
@@ -80,7 +82,20 @@ const decorateHeadline = (elem, index) => {
   };
 
   setHeadlineAttributes();
-  isDesktop.addEventListener('change', setHeadlineAttributes);
+  const isContainerResponsiveFooter = document.querySelector('.global-footer')?.classList.contains('responsive-container');
+  if (context === 'footer' && isContainerResponsiveFooter) {
+    let previousState = isDesktopForContext(context);
+    const handleResize = () => {
+      const currentState = isDesktopForContext(context);
+      if (currentState !== previousState) {
+        setHeadlineAttributes();
+        previousState = currentState;
+      }
+    };
+    window.addEventListener('resize', debounce(handleResize, 150));
+  } else {
+    isDesktop.addEventListener('change', setHeadlineAttributes);
+  }
 
   // Since heading is turned into a div, it can be safely removed
   elem.remove();
@@ -243,7 +258,7 @@ const decoratePromo = (elem, index) => {
     </div>`;
 };
 
-const decorateColumns = async ({ content, separatorTagName = 'H5' } = {}) => {
+const decorateColumns = async ({ content, separatorTagName = 'H5', context } = {}) => {
   const hasMultipleColumns = content.children.length > 1;
   // Headline index is defined in the context of a whole menu
   let headlineIndex = 0;
@@ -290,7 +305,7 @@ const decorateColumns = async ({ content, separatorTagName = 'H5' } = {}) => {
 
         // Analysts requested no headings in the dropdowns,
         // turning it into a simple div
-        const sectionHeadline = decorateHeadline(columnElem, headlineIndex);
+        const sectionHeadline = decorateHeadline(columnElem, headlineIndex, context);
         menuItems = toFragment`<div class="feds-menu-items" daa-lh="${getAnalyticsValue(sectionHeadline.textContent.trim())}"></div>`;
 
         itemDestination.append(sectionHeadline, menuItems);
@@ -302,7 +317,7 @@ const decorateColumns = async ({ content, separatorTagName = 'H5' } = {}) => {
           const wideColumn = document.createElement('div');
           wideColumn.append(...column.childNodes);
           menuItems.append(wideColumn);
-          await decorateColumns({ content: menuItems });
+          await decorateColumns({ content: menuItems, context });
         }
       } else if (columnElem.matches(selectors.gnavPromo)) {
         // When encountering a promo, add the previous section to the column
@@ -440,7 +455,7 @@ const decorateMenu = (config) => logErrorFor(async () => {
   }
 
   if (config.type === 'footerMenu') {
-    await decorateColumns({ content: config.item, separatorTagName: 'H2' });
+    await decorateColumns({ content: config.item, separatorTagName: 'H2', context: 'footer' });
   }
 
   // Remove the loading state created in delayDropdownDecoration

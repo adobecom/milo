@@ -539,6 +539,8 @@ class Gnav {
   };
 
   decorateTopNav = () => {
+    const { searchEnabled, selfIntegrateUnav, desktopAppsCta = false } = getConfig();
+    const isMiniGnav = this.isMiniGnav();
     this.elements.mobileToggle = this.decorateToggle();
     this.elements.topnav = toFragment`
       <nav class="feds-topnav" aria-label="Main">
@@ -546,11 +548,13 @@ class Gnav {
           ${this.elements.mobileToggle}
           ${this.decorateBrand()}
         </div>
+        ${searchEnabled === 'on' && isMiniGnav ? toFragment`<div class="feds-client-search"></div>` : ''}
         ${this.elements.navWrapper}
         ${getMetadata('product-entry-cta')?.toLowerCase() === 'on' ? this.decorateProductEntryCTA() : ''}
-        ${getConfig().searchEnabled === 'on' ? toFragment`<div class="feds-client-search"></div>` : ''}
+        ${searchEnabled === 'on' && !isMiniGnav ? toFragment`<div class="feds-client-search"></div>` : ''}
+        ${isMiniGnav && desktopAppsCta ? toFragment`<div class="feds-client-desktop-apps"></div>` : ''}
         ${this.useUniversalNav ? this.blocks.universalNav : ''}
-        ${getConfig().selfIntegrateUnav ? toFragment`<div class="feds-client-unav"></div>` : ''}
+        ${selfIntegrateUnav ? toFragment`<div class="feds-client-unav"></div>` : ''}
         ${(!this.useUniversalNav && this.blocks.profile.rawElem) ? this.blocks.profile.decoratedElem : ''}
         ${this.decorateLogo()}
       </nav>
@@ -599,8 +603,8 @@ class Gnav {
       const isExpanded = localNavTitle.getAttribute('aria-expanded') === 'true';
       itemWrapper.toggleAttribute('aria-hidden', !isExpanded);
       [...itemWrapper.childNodes].forEach((node) => {
-        node.querySelector('a, button').toggleAttribute('aria-hidden', !isExpanded);
-        node.querySelector('a, button').setAttribute('tabindex', isExpanded ? '0' : '-1');
+        node.querySelector('a, button')?.toggleAttribute('aria-hidden', !isExpanded);
+        node.querySelector('a, button')?.setAttribute('tabindex', isExpanded ? '0' : '-1');
       });
     });
     observer.observe(localNavTitle, { attributes: true, attributeFilter: ['aria-expanded'] });
@@ -628,6 +632,8 @@ class Gnav {
       localNav.querySelector('.feds-localnav-title').setAttribute('aria-expanded', isActive);
       localNav.querySelector('.feds-localnav-title').setAttribute('daa-ll', `${title}_localNav|${isActive ? 'close' : 'open'}`);
     });
+
+    localNav.querySelector('.feds-navItem--active')?.addEventListener('click', closeAllDropdowns);
 
     const curtain = localNav.querySelector('.feds-localnav-curtain');
     curtain.addEventListener('click', (e) => {
@@ -1017,7 +1023,7 @@ class Gnav {
     }).catch(() => { });
   };
 
-  isToggleExpanded = () => this.elements.mobileToggle?.getAttribute('aria-expanded') === 'true';
+  isToggleExpanded = () => this.elements.mobileToggle?.getAttribute?.('aria-expanded') === 'true';
 
   isEmptyGnav = () => this
     .elements
@@ -1025,11 +1031,13 @@ class Gnav {
     ?.querySelector('.feds-nav')
     ?.childElementCount === 0;
 
+  isMiniGnav = () => this.block.classList.contains('mini-gnav');
+
   isLocalNav = () => this.newMobileNav && !this.isEmptyGnav() && this
     .elements
     .navWrapper
     ?.querySelectorAll('.feds-nav > section.feds-navItem')
-    ?.length <= 1;
+    ?.length <= 1 && !this.isMiniGnav();
 
   hasMegaMenu = () => this
     .elements
@@ -1350,9 +1358,9 @@ class Gnav {
       const elements = [...document.querySelectorAll('.feds-localnav .feds-navItem')].find(
         (el) => {
           const link = el.querySelector('a, button');
-          link.setAttribute('tabindex', '-1');
-          link.setAttribute('aria-hidden', true);
-          return link.dataset.title?.trim() === navItem.textContent;
+          link?.setAttribute('tabindex', '-1');
+          link?.setAttribute('aria-hidden', true);
+          return link?.dataset?.title?.trim() === navItem.textContent;
         },
       );
       if (elements) {
@@ -1629,7 +1637,7 @@ class Gnav {
 }
 
 export default async function init(block) {
-  const { mep } = getConfig();
+  const { mep, miniGnav = false } = getConfig();
   const sourceUrl = await getGnavSource();
   let newMobileNav = new URLSearchParams(window.location.search).get('newNav');
   newMobileNav = newMobileNav ? newMobileNav !== 'false' : getMetadata('mobile-gnav-v2') !== 'off';
@@ -1653,6 +1661,7 @@ export default async function init(block) {
     newMobileNav,
   });
   if (newMobileNav && !isDesktop.matches) block.classList.add('new-nav');
+  if (miniGnav) block.classList.add('mini-gnav');
   if (isDarkMode()) block.classList.add('feds--dark');
   await gnav.init();
   if (gnav.isLocalNav()) block.classList.add('local-nav');

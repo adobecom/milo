@@ -751,7 +751,7 @@ const closeModalWithoutEvent = (modalId) => {
     .forEach((element) => element.removeAttribute('aria-disabled'));
 };
 
-// Modal state handling: see merch.md
+// Modal state handling: see merch-modal.md
 export const modalState = { isOpen: false };
 
 export async function updateModalState({ cta, closedByUser } = {}) {
@@ -987,6 +987,11 @@ export async function initService(force = false, attributes = {}) {
         if (miloEnv?.name !== 'prod') {
           service.setAttribute('allow-override', '');
         }
+        const ffDefaults = getMetadata('mas-ff-defaults');
+        if (!ffDefaults) {
+          // On milo, if ff is not enabled explicitly, disable it by default
+          service.dataset.masFfDefaults = 'off';
+        }
         // Register checkout action if method exists (for backward compatibility)
         if (typeof service.registerCheckoutAction === 'function') {
           service.registerCheckoutAction(getCheckoutAction);
@@ -1096,6 +1101,20 @@ export async function getPriceContext(el, params) {
   };
 }
 
+export async function addAriaLabelToCta(cta) {
+  const productCode = cta.value[0]?.productArrangement?.productCode;
+  const { marketSegment, customerSegment } = cta;
+  const segment = marketSegment === 'EDU' ? marketSegment : customerSegment;
+  let ariaLabel = cta.textContent;
+  ariaLabel = productCode
+    ? `${ariaLabel} - ${await replaceKey(productCode, getConfig())}`
+    : ariaLabel;
+  ariaLabel = segment
+    ? `${ariaLabel} - ${await replaceKey(segment, getConfig())}`
+    : ariaLabel;
+  cta.setAttribute('aria-label', ariaLabel);
+}
+
 export async function buildCta(el, params) {
   const large = !!el.closest('.marquee');
   const strong = el.firstElementChild?.tagName === 'STRONG'
@@ -1129,17 +1148,7 @@ export async function buildCta(el, params) {
     cta.setAttribute('aria-label', el.ariaLabel);
   } else if (!cta.ariaLabel) {
     cta.onceSettled().then(async () => {
-      const productCode = cta.value[0]?.productArrangement?.productCode;
-      const { marketSegment, customerSegment } = cta;
-      const segment = marketSegment === 'EDU' ? marketSegment : customerSegment;
-      let ariaLabel = cta.textContent;
-      ariaLabel = productCode
-        ? `${ariaLabel} - ${await replaceKey(productCode, getConfig())}`
-        : ariaLabel;
-      ariaLabel = segment
-        ? `${ariaLabel} - ${await replaceKey(segment, getConfig())}`
-        : ariaLabel;
-      cta.setAttribute('aria-label', ariaLabel);
+      await addAriaLabelToCta(cta);
     });
   }
 

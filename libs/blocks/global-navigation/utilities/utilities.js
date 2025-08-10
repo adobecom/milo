@@ -11,7 +11,7 @@ import {
   getFederatedUrl,
   getFedsPlaceholderConfig,
 } from '../../../utils/utils.js';
-import { replaceKey, replaceText } from '../../../features/placeholders.js';
+import { replaceKey, replaceText, fetchPlaceholders } from '../../../features/placeholders.js';
 import { PERSONALIZATION_TAGS } from '../../../features/personalization/personalization.js';
 
 loadLana();
@@ -246,6 +246,16 @@ export function setCurtainState(state) {
 }
 
 export const isDesktop = window.matchMedia('(min-width: 900px)');
+export const isDesktopForContext = (context = 'viewport') => {
+  const isContainerResponsiveFooter = document.querySelector('.global-footer')?.classList.contains('responsive-container');
+  if (context === 'footer' && isContainerResponsiveFooter) {
+    const footerElement = document.querySelector('footer.global-footer');
+    return footerElement && !footerElement.classList.contains('mobile');
+  }
+
+  // Default to viewport width for all other contexts
+  return isDesktop.matches;
+};
 export const isTangentToViewport = window.matchMedia('(min-width: 900px) and (max-width: 1440px)');
 
 export function setActiveDropdown(elem, type) {
@@ -541,10 +551,24 @@ export const closeAllTabs = (tabs, tabpanels) => {
   tabs.forEach((t) => t.setAttribute('aria-selected', 'false'));
 };
 
-const parseTabsFromMenuSection = (section) => {
+let processTrackingLabels;
+const getAnalyticsValue = async (str, index) => {
+  processTrackingLabels = processTrackingLabels ?? (await import('../../../martech/attributes.js')).processTrackingLabels;
+
+  if (typeof str !== 'string' || !str.length) return str;
+
+  return `${processTrackingLabels(str, getConfig(), 30)}-${index}`;
+};
+
+const parseTabsFromMenuSection = async (section, index) => {
   const headline = section.querySelector('.feds-menu-headline');
   const name = headline?.textContent ?? 'Shop For';
-  const daallTab = headline?.getAttribute('daa-ll');
+  let daallTab = headline?.getAttribute('daa-ll');
+  /* Below condition is only required if the user is loading the page in desktop mode
+    and then moving to mobile mode. */
+  if (!daallTab) {
+    daallTab = await getAnalyticsValue(name, index + 1);
+  }
   const daalhTabContent = section.querySelector('.feds-menu-items')?.getAttribute('daa-lh');
   const content = section.querySelector('.feds-menu-items') ?? section;
   const links = [...content.querySelectorAll('a.feds-navLink, .feds-navLink.feds-navLink--header, .feds-cta--secondary')].map((x) => x.outerHTML).join('');
@@ -563,6 +587,21 @@ const promoCrossCloudTab = async (popup) => {
   }];
 };
 
+export async function getMainMenuPlaceholder() {
+  const config = getConfig();
+  const cloudPlaceholders = await fetchPlaceholders({ config });
+  let mainMenuLabel = cloudPlaceholders['main-menu'];
+  if (!mainMenuLabel) {
+    mainMenuLabel = (await fetchPlaceholders({ config: getFedsPlaceholderConfig() }))['main-menu'] || 'Main menu';
+  }
+  return `
+    <button class="main-menu" daa-ll="Main menu_Gnav" aria-label='Main menu'>
+      <svg xmlns="http://www.w3.org/2000/svg" width="7" height="12" viewBox="0 0 7 12" fill="none"><path d="M5.55579 1L1.09618 5.45961C1.05728 5.4985 1.0571 5.56151 1.09577 5.60062L5.51027 10.0661" stroke=${isDarkMode() ? '#f2f2f2' : 'black'} stroke-width="2" stroke-linecap="round"/></svg>
+      ${mainMenuLabel}
+    </button>
+  `;
+}
+
 // returns a cleanup function
 export const transformTemplateToMobile = async ({
   popup,
@@ -575,18 +614,13 @@ export const transformTemplateToMobile = async ({
   if (notMegaMenu) return () => {};
 
   const isLoading = popup.classList.contains('loading');
-  const tabs = [...popup.querySelectorAll('.feds-menu-section')]
-    .filter((section) => !section.querySelector('.feds-promo') && section.textContent)
-    .map(parseTabsFromMenuSection)
-    .concat(isLoading ? [] : await promoCrossCloudTab(popup));
+  const tabs = (await Promise.all(
+    [...popup.querySelectorAll('.feds-menu-section')]
+      .filter((section) => !section.querySelector('.feds-promo') && section.textContent)
+      .map(parseTabsFromMenuSection),
+  )).concat(isLoading ? [] : await promoCrossCloudTab(popup));
 
   const CTA = popup.querySelector('.feds-cta--primary')?.outerHTML ?? '';
-  const mainMenu = `
-      <button class="main-menu" daa-ll="Main menu_Gnav" aria-label='Main menu'>
-        <svg xmlns="http://www.w3.org/2000/svg" width="7" height="12" viewBox="0 0 7 12" fill="none"><path d="M5.55579 1L1.09618 5.45961C1.05728 5.4985 1.0571 5.56151 1.09577 5.60062L5.51027 10.0661" stroke=${isDarkMode() ? '#f2f2f2' : 'black'} stroke-width="2" stroke-linecap="round"/></svg>
-        {{main-menu}}
-      </button>
-  `;
   // Get the outerHTML of the .feds-brand element or use a default empty <span> if it doesn't exist
   const brand = document.querySelector('.feds-brand')?.outerHTML || '<span></span>';
   const breadCrumbs = document.querySelector('.feds-breadcrumbs')?.outerHTML;
@@ -595,7 +629,7 @@ export const transformTemplateToMobile = async ({
   }
   popup.innerHTML = `
     <div class="top-bar">
-      ${localnav ? brand : await replaceText(mainMenu, getFedsPlaceholderConfig())}
+      ${localnav ? brand : await getMainMenuPlaceholder()}
     </div>
     <div class="title">
       ${breadCrumbs || '<div class="breadcrumbs"></div>'}
@@ -791,15 +825,16 @@ export function getUnavWidthCSS(unavComponents, signedOut = false) {
   const iconWidth = 32; // px
   const flexGap = 0.25; // rem
   const sectionDivider = getConfig()?.unav?.showSectionDivider;
+  const sectionDividerMargin = 4; // px (left and right margins)
   const cartEnabled = /uc_carts=/.test(document.cookie);
   const components = (!cartEnabled ? unavComponents?.filter((x) => x !== 'cart') : unavComponents) ?? [];
   const n = components.length ?? 3;
   if (signedOut) {
     const l = components.filter((c) => SIGNED_OUT_ICONS.includes(c)).length;
     const signInButton = 92; // px
-    return `calc(${signInButton}px + ${l * iconWidth}px + ${l * flexGap}rem${sectionDivider ? ` + 2px + ${flexGap}rem` : ''})`;
+    return `calc(${signInButton}px + ${l * iconWidth}px + ${l * flexGap}rem${sectionDivider ? ` + 2px + ${2 * sectionDividerMargin}px + ${flexGap}rem` : ''})`;
   }
-  return `calc(${n * iconWidth}px + ${(n - 1) * flexGap}rem${sectionDivider ? ` + 2px + ${flexGap}rem` : ''})`;
+  return `calc(${n * iconWidth}px + ${(n - 1) * flexGap}rem${sectionDivider ? ` + 2px + ${2 * sectionDividerMargin}px + ${flexGap}rem` : ''})`;
 }
 
 /**

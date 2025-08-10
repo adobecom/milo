@@ -13,6 +13,7 @@ import {
   logErrorFor,
   setActiveDropdown,
   takeWhile,
+  isDesktopForContext,
 } from '../utilities.js';
 
 const closeHeadlines = () => {
@@ -243,7 +244,7 @@ class Popup {
         break;
       }
       case 'ArrowUp': {
-        if (newNav) break;
+        if (newNav && !isFooter) break;
         this.mobileArrowUp({ prev, curr, element, isFooter });
         break;
       }
@@ -264,7 +265,7 @@ class Popup {
         break;
       }
       case 'ArrowDown': {
-        if (newNav) break;
+        if (newNav && !isFooter) break;
         this.mobileArrowDown({ next, element, isFooter });
         break;
       }
@@ -288,7 +289,7 @@ class Popup {
 
         const element = e.target.closest(selectors.menuContent)
           || e.target.closest(selectors.featuredProducts);
-        if (!element || this.desktop.matches) return;
+        if (!element || isDesktopForContext('footer')) return;
 
         const firstNavLink = element.querySelector(selectors.popupItems);
         const firstHeadline = element.querySelector(selectors.headline);

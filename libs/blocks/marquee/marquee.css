@@ -87,6 +87,7 @@
   display: flex;
   flex-direction: column;
   gap: var(--spacing-m);
+  z-index: 1;
 }
 
 .marquee .action-area {
@@ -98,7 +99,6 @@
 }
 
 .marquee .asset {
-  order: 1;
   width: 100%;
   margin: 0 auto;
 }
@@ -172,22 +172,10 @@
   margin-bottom: var(--spacing-xs);
 }
 
-.marquee .text,
-.marquee.large .text {
-  order: 2;
-}
-
 .marquee.small .foreground {
   padding: var(--spacing-xl) 0;
 }
 
-.marquee.small .text {
-  order: 1;
-}
-
-.marquee.small .asset {
-  order: 2;
-}
 
 .marquee.large {
   display: block;
@@ -256,7 +244,6 @@
 }
 
 .marquee.split .asset {
-  order: 0;
   width: 100%;
   margin: 0;
 }
@@ -272,14 +259,6 @@
 .marquee.split .foreground,
 .marquee.small.split .foreground {
   padding: var(--spacing-m) 0;
-}
-
-.marquee.split.small .foreground {
-  order: 1;
-}
-
-.marquee.split.small .asset {
-  order: 2;
 }
 
 .marquee.split.large .heading-xxl {
@@ -320,12 +299,7 @@
 }
 
 .marquee.large .text .action-area {
-  order: 2;
   margin-bottom: var(--spacing-s);
-}
-
-.marquee.large .text .body-xl {
-  order: 3;
 }
 
 .marquee.large.split .text .body-xl {
@@ -333,7 +307,6 @@
 }
 
 .marquee.large .text .supplemental-text {
-  order: 2;
   margin-bottom: var(--spacing-s);
   font-weight: 700;
 }
@@ -626,18 +599,6 @@
 
   html[dir="rtl"] .marquee .foreground {
     flex-direction: row-reverse;
-  }
-
-  .marquee .text,
-  .marquee.small .text,
-  .marquee.large .text {
-    order: unset;
-  }
-
-  .marquee .asset,
-  .marquee.small .asset,
-  .marquee.large .asset {
-    order: unset;
   }
 
   .marquee .foreground .text {
