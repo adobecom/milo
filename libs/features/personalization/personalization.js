@@ -1475,7 +1475,7 @@ export async function init(enablements = {}) {
       promises: {},
     };
     for (const [key, promise] of Object.entries(promises)) {
-      config.mep.promises[key] = promise;
+      config.mep.promises[key] = await promise;
     }
     manifests = manifests.concat(await combineMepSources(pzn, pznroc, promo, mepParam));
     manifests?.forEach((manifest) => {
