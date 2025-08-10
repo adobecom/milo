@@ -1399,15 +1399,8 @@ export function loadMepAddons() {
     const enablement = getMepEnablement(addon);
     if (enablement === false) return;
     promises[addon] = (async () => {
-      let returnValue;
-      try {
-        const { default: init } = await import(`../features/mep/addons/${addon}.js`);
-        returnValue = init(enablement);
-        /* c8 ignore next 3 */
-      } catch (err) {
-        console.log(`Failed loading MEP ${addon} addon`, err);
-      }
-      return returnValue;
+      const { default: init } = await import(`../features/mep/addons/${addon}.js`);
+      return init(enablement);
     })();
   });
   return promises;
