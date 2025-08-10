@@ -1458,6 +1458,7 @@ export async function init(enablements = {}) {
   if (postLCP) {
     isPostLCP = true;
   } else {
+    await Promise.all(Object.values(promises));
     config.mep = {
       updateFragDataProps,
       preview: (mepButton !== 'off'
@@ -1472,11 +1473,8 @@ export async function init(enablements = {}) {
       countryIPPromise,
       geoLocation: mepgeolocation,
       targetInteractionPromise,
-      promises: {},
+      promises,
     };
-    for (const [key, promise] of Object.entries(promises)) {
-      config.mep.promises[key] = await promise;
-    }
     manifests = manifests.concat(await combineMepSources(pzn, pznroc, promo, mepParam));
     manifests?.forEach((manifest) => {
       if (manifest.disabled) return;
