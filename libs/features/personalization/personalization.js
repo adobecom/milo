@@ -1472,8 +1472,11 @@ export async function init(enablements = {}) {
       countryIPPromise,
       geoLocation: mepgeolocation,
       targetInteractionPromise,
-      promises,
+      promises: {},
     };
+    for (const [key, promise] of Object.entries(promises)) {
+      config.mep.promises[key] = promise;
+    }
     manifests = manifests.concat(await combineMepSources(pzn, pznroc, promo, mepParam));
     manifests?.forEach((manifest) => {
       if (manifest.disabled) return;
