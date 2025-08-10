@@ -1458,7 +1458,7 @@ export async function init(enablements = {}) {
   if (postLCP) {
     isPostLCP = true;
   } else {
-    await Promise.all(Object.values(promises));
+    for (const [key, promise] of Object.entries(promises)) promises[key] = await promise;
     config.mep = {
       updateFragDataProps,
       preview: (mepButton !== 'off'
@@ -1475,6 +1475,7 @@ export async function init(enablements = {}) {
       targetInteractionPromise,
       promises,
     };
+
     manifests = manifests.concat(await combineMepSources(pzn, pznroc, promo, mepParam));
     manifests?.forEach((manifest) => {
       if (manifest.disabled) return;
