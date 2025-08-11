@@ -160,7 +160,8 @@ test.describe('Milo Action-Item block test suite', () => {
     });
     await test.step('step-3: Click the float button', async () => {
       await actionItem.floatButton.click();
-      await expect(page).not.toHaveURL(testPage, { timeout: 2000 });
+      await page.waitForLoadState('networkidle');
+      expect(page.url()).not.toBe(testPage);
     });
   });
 
