@@ -972,7 +972,7 @@ class Gnav {
     const fedsPromo = document.querySelector('.feds-promo-aside-wrapper');
     const updatePromoZIndex = () => {
       const isOpen = document.body.classList.contains('unav-no-scroll');
-      fedsPromo.style.zIndex = isOpen ? 0 : 11;
+      fedsPromo.style.zIndex = isOpen ? 10 : 11;
     };
     // Ensure promo appears behind unav if unav is active
     if (fedsPromo && !isDesktop.matches) {
