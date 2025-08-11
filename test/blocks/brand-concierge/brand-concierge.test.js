@@ -118,4 +118,3 @@ describe('Brand Concierge', () => {
   });
 });
 
-
