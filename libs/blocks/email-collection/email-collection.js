@@ -94,8 +94,7 @@ const [showMessage, setMessageEls] = (() => {
       if (type === 'error') replace = error;
       foreground.classList.add('message');
       replace.classList.remove('hidden');
-      if (errorMsg) window.lana.log(errorMsg);
-      console.log(errorMsg);
+      if (errorMsg) window.lana?.log(errorMsg);
 
       let ariaTextContent = '';
       replace.querySelectorAll('.text > *:not(.icon-area, .button-container)')
@@ -166,7 +165,7 @@ function formatMetadataKey(key) {
   return key?.toLowerCase().trim().replaceAll(/\s+/g, '-');
 }
 
-const [getMetadata, setMetadata] = (() => {
+export const [getMetadata, setMetadata] = (() => {
   let emailCollectionMetada;
   return [
     () => (emailCollectionMetada),
@@ -174,7 +173,7 @@ const [getMetadata, setMetadata] = (() => {
       emailCollectionMetada = { fields: {}, config: {} };
       const { fields, config } = emailCollectionMetada;
       const metadataEl = el.nextElementSibling;
-      if (!metadataEl?.classList.contains('section-metadata')) {
+      if (!metadataEl || !metadataEl.classList.contains('section-metadata')) {
         return 'Section metadata is missing';
       }
 
@@ -187,7 +186,7 @@ const [getMetadata, setMetadata] = (() => {
         metadataObject[newKey] = value;
       });
 
-      if (!fields.email || !config.campaignId || (!el.classList.contains('waitlist') && !config.mpsSname && !config.subscriptionName)) {
+      if (!fields.email || !config.campaignId || !config.mpsSname || !config.subscriptionName) {
         return 'Section metadata is missing email/campaing-id/mps-sname/subscription-name field';
       }
       return null;
