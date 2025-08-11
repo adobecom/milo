@@ -199,8 +199,8 @@
   block-size: 90px;
 }
 
-.notification.button-full-width .foreground .action-area,
-.notification.button-full-width .foreground .con-button {
+.notification.button-full-width .action-area,
+.notification.button-full-width .con-button {
   width: 100%;
   max-width: 328px;
   align-self: center;

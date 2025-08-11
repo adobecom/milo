@@ -2,12 +2,15 @@ import { createTag } from '../../utils/utils.js';
 import { getMetadata, getDelayTime } from './section-metadata.js';
 import { getGnavHeight } from '../global-navigation/utilities/utilities.js';
 
+const FOOTER = document.querySelector('footer');
+
 function handleTopHeight(section) {
   const topHeight = getGnavHeight();
   section.style.top = `${topHeight}px`;
 }
 
 function promoIntersectObserve(el, stickySectionEl, options = {}) {
+  const stickyRect = stickySectionEl?.getBoundingClientRect();
   return new IntersectionObserver((entries, observer) => {
     entries.forEach((entry) => {
       if (el.classList.contains('close-sticky-section')) {
@@ -18,16 +21,16 @@ function promoIntersectObserve(el, stickySectionEl, options = {}) {
 
       const { target, isIntersecting } = entry;
 
-      if (target === document.querySelector('footer')) {
+      if (target === FOOTER) {
         el.classList.toggle('fill-sticky-section', isIntersecting);
       } else if (target === stickySectionEl) {
-        const abovePromoStart = isIntersecting || stickySectionEl?.getBoundingClientRect().y > 0;
+        const abovePromoStart = isIntersecting || stickyRect.y > 0;
         el.classList.toggle('hide-sticky-section', abovePromoStart);
       } else if (target === document.querySelector('.hide-at-intersection')) {
-        const aboveViewport = isIntersecting
+        const shouldHideSticky = isIntersecting
         || entry.boundingClientRect.top < 0
-        || stickySectionEl?.getBoundingClientRect().y > 0;
-        el.classList.toggle('hide-sticky-section', aboveViewport);
+        || stickyRect.y > 0;
+        el.classList.toggle('hide-sticky-section', shouldHideSticky);
       }
     });
   }, options);
@@ -60,11 +63,11 @@ function handleStickyPromobar(section, delay) {
   const io = promoIntersectObserve(section, stickySectionEl);
   if (stickySectionEl) io.observe(stickySectionEl);
   if (section.querySelector(':is(.promobar, .notification)')) {
-    io.observe(document.querySelector('footer'));
+    io.observe(FOOTER);
   }
 
-  const selector = metadata?.['custom-hide']?.text;
-  const targetElement = document.querySelector(selector);
+  const selector = metadata?.['custom-hide']?.text?.trim();
+  const targetElement = selector ? document.querySelector(selector) : null;
   if (targetElement) {
     stickySectionEl = createTag('div', { class: 'hide-at-intersection' });
     targetElement.parentElement.insertBefore(stickySectionEl, targetElement);
