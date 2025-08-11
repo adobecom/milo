@@ -1,7 +1,7 @@
 import { MOBILE_LANDSCAPE, TABLET_UP, DESKTOP_UP, LARGE_DESKTOP } from '../media.js';
 export const CSS = `
 :root {
-    --consonant-merch-card-plans-width: 300px;
+    --consonant-merch-card-plans-width: 302px;
     --consonant-merch-card-plans-icon-size: 40px;
     --consonant-merch-card-plans-students-width: 568px;
 }
@@ -25,9 +25,15 @@ merch-card[variant^="plans"] [slot="icons"] {
 }
 
 merch-card[variant="plans-education"] [slot="body-xs"] span.price:not(.price-legal) {
-  display: inline-block;
-  font-size: var(--consonant-merch-card-heading-xs-font-size);
-  font-weight: 700;
+    display: inline-block;
+    font-size: var(--consonant-merch-card-heading-xs-font-size);
+    font-weight: 700;
+}
+
+merch-card[variant="plans"] [slot="subtitle"] {
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 18px;
 }
 
 merch-card[variant^="plans"] span.price-unit-type:not([slot="callout-content"] *):not([slot="addon"] *) {
@@ -37,32 +43,31 @@ merch-card[variant^="plans"] span.price-unit-type:not([slot="callout-content"] *
 merch-card[variant^="plans"] [slot="heading-xs"] span.price.price-strikethrough,
 merch-card[variant^="plans"] [slot="heading-m"] span.price.price-strikethrough,
 merch-card[variant="plans-education"] [slot="body-xs"] span.price.price-strikethrough {
-  font-size: var(--consonant-merch-card-heading-xxxs-font-size);
-  line-height: var(--consonant-merch-card-body-xs-line-height);
-  font-weight: 700;
+    font-size: var(--consonant-merch-card-heading-xxxs-font-size);
+    line-height: var(--consonant-merch-card-body-xs-line-height);
+    font-weight: 700;
 }
 
 merch-card[variant^="plans"] [slot='heading-xs'],
 merch-card[variant="plans-education"] span.heading-xs,
 merch-card[variant="plans-education"] [slot="body-xs"] span.price:not(.price-strikethrough) {
-  min-height: var(--merch-card-plans-heading-xs-min-height);
+    min-height: var(--merch-card-plans-heading-xs-min-height);
 }
 
-merch-card[variant="plans-education"] span.heading-xs {
-  margin-top: 16px;
-  margin-bottom: 8px;
+merch-card[variant="plans-education"] [slot="body-xs"] p:has(.heading-xs) {
+    margin-bottom: 16x;
 }
 
-merch-card[variant="plans-education"] [slot="body-xs"] p:first-of-type span.heading-xs {
-  margin-top: 8px;
+merch-card[variant="plans-education"] [slot="body-xs"] p:has(span[is="inline-price"]) {
+    margin-bottom: 16px;
 }
 
 merch-card[variant="plans-education"] span.promo-text {
-  margin-bottom: 8px;
+    margin-bottom: 8px;
 }
 
 merch-card[variant="plans-education"] p:has(a[href^='tel:']):has(+ p) {
-  margin-bottom: 16px;
+    margin-bottom: 16px;
 }
 
 merch-card[variant^="plans"] [slot="promo-text"],
@@ -71,8 +76,8 @@ merch-card[variant="plans-education"] span.promo-text {
 }
 
 merch-card-collection.plans merch-card {
-  width: auto;
-  height: 100%;
+    width: auto;
+    height: 100%;
 }
 
 merch-card-collection.plans merch-card[variant="plans"] aem-fragment + [slot^="heading-"] {
@@ -203,6 +208,10 @@ merch-card[variant^="plans"]:not([size]) {
     --merch-card-collection-card-width: var(--consonant-merch-card-plans-width);
 }
 
+merch-sidenav.plans {
+    --merch-sidenav-padding: 16px 20px 16px 16px;
+}
+
 merch-card-collection-header.plans {
     --merch-card-collection-header-columns: 1fr fit-content(100%);
     --merch-card-collection-header-areas: "result filter";
@@ -213,6 +222,10 @@ merch-card-collection-header.plans {
 .three-merch-cards.plans,
 .four-merch-cards.plans {
     --merch-card-collection-card-width: var(--consonant-merch-card-plans-width);
+}
+
+merch-card-collection:has([slot="subtitle"]) merch-card {
+    --merch-card-plans-subtitle-display: block;
 }
 
 .columns .text .foreground {
@@ -236,10 +249,6 @@ merch-card-collection-header.plans {
 
 /* Tablet */
 @media screen and ${TABLET_UP} {
-  :root {
-      --consonant-merch-card-plans-width: 302px;
-  }
-
   .four-merch-cards.plans .foreground {
       max-width: unset;
   }
@@ -251,28 +260,46 @@ merch-card-collection-header.plans {
 
 /* desktop */
 @media screen and ${DESKTOP_UP} {
-  :root {
-        --consonant-merch-card-plans-width: 276px;
-  }
+    :root {
+            --consonant-merch-card-plans-width: 276px;
+    }
 
-  .columns .four-merch-cards.plans {
-      grid-template-columns: repeat(2, var(--consonant-merch-card-plans-width));
-  }
+    merch-sidenav.plans {
+            --merch-sidenav-collection-gap: 30px;
+    }
 
-  merch-card[variant="plans-students"] {
-      width: var(--consonant-merch-card-plans-students-width);
-  }
+    .columns .four-merch-cards.plans {
+        grid-template-columns: repeat(2, var(--consonant-merch-card-plans-width));
+    }
 
-  merch-card-collection-header.plans {
-      --merch-card-collection-header-columns: fit-content(100%);
-      --merch-card-collection-header-areas: "custom";
-  }
+    merch-card[variant="plans-students"] {
+        width: var(--consonant-merch-card-plans-students-width);
+    }
+
+    merch-card-collection-header.plans {
+        --merch-card-collection-header-columns: fit-content(100%);
+        --merch-card-collection-header-areas: "custom";
+    }
+
+    .collection-container.plans:has(merch-sidenav) {
+        width: 100vw;
+        position: relative;
+        left: 50%;
+        transform: translateX(-50vw);
+        justify-content: start;
+        padding-inline: 30px;
+        padding-top: 24px;
+    }
 }
 
 /* Large desktop */
 @media screen and ${LARGE_DESKTOP} {
     .columns .four-merch-cards.plans {
         grid-template-columns: repeat(2, var(--consonant-merch-card-plans-width));
+    }
+
+    merch-sidenav.plans {
+        --merch-sidenav-collection-gap: 54px;
     }
 }
 `;
