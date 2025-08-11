@@ -26,25 +26,6 @@ async function openChatModal(initialMessage, el) {
   modal.querySelector('.dialog-close').setAttribute('daa-ll', getAnalyticsLabel('modal-close'));
   document.querySelector('.modal-curtain').setAttribute('daa-ll', getAnalyticsLabel('modal-close'));
   el.querySelector('.bc-input-field input').value = '';
-
-  // START: Load chat from stage - This needs to be removed before PR
-  const mainScriptSrc = 'https://cdn.experience-stage.adobe.net/solutions/experience-platform-brand-concierge-web-agent/static-assets/main.js';
-  const instanceEvent = new CustomEvent('alloy-brand-concierge-instance', {
-    detail: {
-      instanceName: 'mockAlloyInstance',
-      contentUrl: '/libs/blocks/brand-concierge/chat-ui-config.json',
-    },
-  });
-  if (!document.querySelector(`script[src="${mainScriptSrc}"]`)) {
-    window.addEventListener('adobe-brand-concierge-prompt-loaded', () => {
-      window.dispatchEvent(instanceEvent);
-    });
-    const mainScript = document.createElement('script');
-    mainScript.src = mainScriptSrc;
-    mainScript.async = true;
-    document.head.appendChild(mainScript);
-  }
-  // END: Load chat from stage
 }
 
 function decorateBackground(el, background) {

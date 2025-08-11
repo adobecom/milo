@@ -11,4 +11,3 @@ codecov.yaml
 libs/features/mas/*
 !libs/features/mas/docs
 !libs/features/mas/dist
-!libs/blocks/brand-concierge/chat-ui-config.json
