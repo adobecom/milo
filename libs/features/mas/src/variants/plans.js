@@ -172,14 +172,6 @@ export class Plans extends VariantLayout {
         const spacer = document.createElement('div');
         spacer.classList.add('spacer');
         body.insertBefore(spacer, listHeader);
-
-        /* Wait for legal prices to be ready */
-        const legals = this.card.querySelectorAll('[is="inline-price"][data-template="legal"]');
-        const legalSettledPromises = [];
-        for (const legal of legals) {
-            legalSettledPromises.push(legal.onceSettled());
-        }
-        await Promise.all(legalSettledPromises);
         
         const intersectionObs = new IntersectionObserver(([entry]) => {
             if (entry.boundingClientRect.height === 0) return;
