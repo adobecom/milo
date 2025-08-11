@@ -1,7 +1,6 @@
 import { STATE_FAILED, FF_DEFAULTS } from './constants.js';
 import {
     createMasElement,
-    updateMasElement,
     MasElement,
 } from './mas-element.js';
 import { selectOffers, getService } from './utilities.js';
@@ -297,8 +296,8 @@ export class InlinePrice extends HTMLSpanElement {
             this.innerHTML = '';
             const [offerSelectors] =
                 await service.resolveOfferSelectors(options);
-            const offers = selectOffers(await offerSelectors, options);
-            const [offer] = offers;
+            let offers = selectOffers(await offerSelectors, options);
+            let [offer] = offers;
 
             if (service.featureFlags[FF_DEFAULTS]) {
                 if (priceOptions.displayPerUnit === undefined) {
@@ -327,6 +326,9 @@ export class InlinePrice extends HTMLSpanElement {
                         options.forceTaxExclusive =
                             flags?.forceTaxExclusive ||
                             options.forceTaxExclusive;
+                    }
+                    if (options.forceTaxExclusive) {
+                        offers = selectOffers(offers, options);
                     }
                 }
             } else {

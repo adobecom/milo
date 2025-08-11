@@ -317,7 +317,6 @@ describe('class "InlinePrice"', () => {
           return {};
         }
 
-        const SEGMENTS = ['individual', 'business', 'student', 'university'];
         const TESTS = [
           {
             locale: 'AE_ar',
@@ -663,11 +662,14 @@ describe('class "InlinePrice"', () => {
             locale: 'US_en',
             expected: [[false, false], [false, false], [false, false], [false, false]]
           },
-        ];
+        ]
+        //.filter((test) => test.locale === 'BE_en');  uncomment to run only one test
+
+        const SEGMENTS = ['individual', 'business', 'student', 'university']
 
         TESTS.forEach((test) => {
             SEGMENTS.forEach((segment, index) => {
-                it(`renders price with tax info for "${test.locale}" and "${segment}"`, async () => {
+                it.only(`renders price with tax info for "${test.locale}" and "${segment}"`, async () => {
                     const localeArray = test.locale.split('_');
                     const country = localeArray[0];
                     const language = localeArray[1];
@@ -683,7 +685,6 @@ describe('class "InlinePrice"', () => {
                     const priceTaxElement = inlinePrice.querySelector(
                         '.price-tax-inclusivity',
                     );
-                    const priceDecimals = inlinePrice.querySelector('.price-decimals').textContent;
                     if (test.expected[index][0]) {
                         expect(priceTaxElement.classList.contains('disabled')).to.be.false;
                         let taxInclExclLabel
