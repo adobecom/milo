@@ -1,4 +1,4 @@
-name: Track Publishes
+name: Track Publishes Express
 on:
   schedule:
     - cron: '35 */23 * * *'

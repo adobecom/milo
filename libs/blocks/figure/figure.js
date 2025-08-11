@@ -15,7 +15,7 @@ function decorateVideo(videoEl, figEl) {
 }
 
 export function buildFigure(blockEl) {
-  const figEl = createTag('figure', { class: 'figure' });
+  const figEl = createTag('figure');
   Array.from(blockEl.children).forEach((child) => {
     // picture, video, or embed link is NOT wrapped in P tag
     const tags = ['PICTURE', 'VIDEO', 'A'];
@@ -68,5 +68,9 @@ export default function init(blockEl) {
 
   if (blockCount > 1) {
     blockEl.classList.add('figure-list', `figure-list-${blockCount}`);
+  }
+
+  if (blockEl.nextElementSibling?.classList.contains('figure')) {
+    blockEl.classList.add('no-padding-bottom');
   }
 }

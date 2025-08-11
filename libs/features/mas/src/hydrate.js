@@ -135,6 +135,12 @@ export function processSize(fields, merchCard, sizeConfig) {
     }
 }
 
+export function processCardName(fields, merchCard) {
+    if (fields.cardName) {
+        merchCard.setAttribute('name', fields.cardName);
+    }
+}
+
 export function processTitle(fields, merchCard, titleConfig) {
     appendSlot('cardTitle', fields, merchCard, { cardTitle: titleConfig });
 }
@@ -589,11 +595,12 @@ export async function hydrate(fragment, merchCard) {
         throw new Error(`hydrate: Fragment for card ID '${problemId}' (merchCard id: ${cardIdForError}) is missing 'fields'.`);
     }
 
-    const { id, fields, settings = {} } = fragment;
+    const { id, fields, settings = {}, priceLiterals } = fragment;
     const { variant } = fields;
     if (!variant) throw new Error(`hydrate: no variant found in payload ${id}`);
     cleanup(merchCard);
     merchCard.settings = settings;
+    if (priceLiterals) merchCard.priceLiterals = priceLiterals;
     merchCard.id ??= fragment.id;
     merchCard.variant = variant;
     await merchCard.updateComplete;
@@ -608,6 +615,7 @@ export async function hydrate(fragment, merchCard) {
     processBadge(fields, merchCard, mapping);
     processTrialBadge(fields, merchCard, mapping);
     processSize(fields, merchCard, mapping.size);
+    processCardName(fields, merchCard);
     processTitle(fields, merchCard, mapping.title);
     processSubtitle(fields, merchCard, mapping);
     processPrices(fields, merchCard, mapping);

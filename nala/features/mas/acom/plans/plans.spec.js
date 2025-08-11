@@ -1,5 +1,7 @@
 /* eslint-disable max-len */
 
+const { PRICE_PATTERN, PLANS_BASE_PATH } = require('../../../../libs/commerce.js');
+
 module.exports = {
   FeatureName: 'Merch Plans Cards Feature',
   features: [
@@ -7,7 +9,7 @@ module.exports = {
     {
       tcid: '0',
       name: '@MAS-Plans-Category',
-      path: '/drafts/nala/features/commerce/plans',
+      path: PLANS_BASE_PATH.US,
       data: {
         categories: {
           all: {
@@ -101,8 +103,8 @@ module.exports = {
             id: '5c781778-24bd-4d3e-b0eb-810525ea3442',
             title: 'Creative Cloud All Apps',
             description: 'Get 20+ Creative Cloud apps including Photoshop, Illustrator, Adobe Express, Premiere Pro, and Acrobat Pro. (Substance 3D apps are not included.)',
-            price: 'US$69.99/mo',
-            abmLabel: 'Annual, paid monthly.',
+            price: PRICE_PATTERN.US_mo,
+            abmLabel: 'Annual, billed monthly',
             cta: 'Select',
             osi: 'r_JXAnlFI7xD6FxWKl2ODvZriLYBoSL701Kd1hRyhe8',
             linkText: 'See all plans & pricing details',
@@ -115,8 +117,8 @@ module.exports = {
             id: '7819acb2-fb23-46c5-ab7f-f59b2e29ee1e',
             title: 'Photography',
             description: 'Lightroom, Lightroom Classic, Photoshop on desktop, web, iPhone, and iPad, and 1TB of cloud storage.',
-            price: 'US$19.99/mo',
-            abmLabel: 'Annual, paid monthly.',
+            price: PRICE_PATTERN.US_mo,
+            abmLabel: 'Annual, billed monthly',
             cta: 'Select',
             osi: 'MzCpF9nUi8rEzyW-9slEUwtRenS69PRW5fp84a93uK4',
             linkText: 'See all plans & pricing details',
@@ -135,9 +137,16 @@ module.exports = {
     {
       tcid: '1',
       name: '@MAS-Plans-Tabs-Deeplink',
-      path: '/drafts/nala/features/commerce/plans',
+      path: PLANS_BASE_PATH.US,
       browserParams: '?plans=edu',
       tags: '@mas-acom @mas-plans-card @commerce @smoke @regression @milo @plans-tabs-deeplink',
+    },
+    {
+      tcid: '2',
+      name: '@MAS-Plans-Modal-Reopening',
+      path: PLANS_BASE_PATH.US,
+      browserParams: '#miniplans-buy-all-apps',
+      tags: '@mas-acom @mas-plans-card @commerce @smoke @regression @milo @plans-modal-reopening',
     },
   ],
 };

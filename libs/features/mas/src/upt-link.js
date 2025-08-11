@@ -1,4 +1,5 @@
 import { getService } from './utils.js';
+import { MasElement } from './mas-element.js';
 
 function getPromoTermsUrl(env) {
     const host = env === 'PRODUCTION' ? 'www.adobe.com' : 'www.stage.adobe.com';
@@ -11,9 +12,10 @@ function getPromoTermsUrl(env) {
 export class UptLink extends HTMLAnchorElement {
     static is = 'upt-link';
     static tag = 'a';
-    static observedAttributes = ['data-wcs-osi', 'data-promotion-code'];
+    static observedAttributes = ['data-wcs-osi', 'data-promotion-code', 'data-ims-country'];
+    masElement = new MasElement(this);
 
-    #initialized = false;
+    #service;
 
     get isUptLink() {
         return true;
@@ -32,39 +34,67 @@ export class UptLink extends HTMLAnchorElement {
         this.setAttribute('data-wcs-osi', osi);
         if (promotionCode)
             this.setAttribute('data-promotion-code', promotionCode);
-        this.#initialized = true;
-        this.composePromoTermsUrl();
+    }
+    
+    attributeChangedCallback(name, oldValue, value) {
+        this.masElement.attributeChangedCallback(name, oldValue, value);
     }
 
-    attributeChangedCallback(_name, _oldValue, _newValue) {
-        if (!this.#initialized) return;
-        this.composePromoTermsUrl();
+    connectedCallback() {
+        this.masElement.connectedCallback();
+        this.#service = getService();
+        if (this.#service) {
+          this.log = this.#service.log.module('upt-link');
+        }
     }
 
-    composePromoTermsUrl() {
-        const osi = this.getAttribute('data-wcs-osi');
-        if (!osi) {
-            const fragmentId = this.closest('merch-card').querySelector('aem-fragment').getAttribute('fragment');
-            console.error(`Missing 'data-wcs-osi' attribute on upt-link. Fragment: ${fragmentId}`);
-            return;
+    disconnectedCallback() {
+        this.masElement.disconnectedCallback();
+        this.#service = undefined;
+    }
+
+    requestUpdate(force = false) {
+        this.masElement.requestUpdate(force);
+    }
+
+    onceSettled() {
+        return this.masElement.onceSettled();
+    }
+
+    async render() {
+        const service = getService();
+        if (!service) return false;
+
+        if (!this.dataset.imsCountry) {
+            service.imsCountryPromise.then((countryCode) => {
+                if (countryCode) this.dataset.imsCountry = countryCode;
+            });
         }
 
-        const service = getService();
+        const options = service.collectCheckoutOptions({}, this);
+        if (!options.wcsOsi) {
+            this.log.error(`Missing 'data-wcs-osi' attribute on upt-link.`);
+            return false;
+        }
 
-        const wcsOsi = [osi];
-        const promotionCode = this.getAttribute('data-promotion-code');
-        const { country, language, env } = service.settings;
-        const options = { country, language, wcsOsi, promotionCode };
-
+        const version = this.masElement.togglePending(options);
         const promises = service.resolveOfferSelectors(options);
-        Promise.all(promises).then(([[offer]]) => {
-          let params = `locale=${language}_${country}&country=${country}&offer_id=${offer.offerId}`;
-          if (promotionCode) params += `&promotion_code=${encodeURIComponent(promotionCode)}`;
-          this.href = `${getPromoTermsUrl(env)}?${params}`
-        }).catch(error => {
-            console.error(`Could not resolve offer selectors for id: ${osi}.`, error.message);
-        });
+
+        try {
+            const [[offer]] = await Promise.all(promises);
+            const { country, language, env } = options;
+            let params = `locale=${language}_${country}&country=${country}&offer_id=${offer.offerId}`;
+            const promotionCode = this.getAttribute('data-promotion-code');
+            if (promotionCode) params += `&promotion_code=${encodeURIComponent(promotionCode)}`;
+            this.href = `${getPromoTermsUrl(env)}?${params}`;
+            this.masElement.toggleResolved(version, offer, options);
+        } catch (error) {
+            const masError = new Error(`Could not resolve offer selectors for id: ${options.wcsOsi}.`, error.message);
+            this.masElement.toggleFailed(version, masError, options);
+            return false;
+        }
     }
+
 
     /**
      * @param {HTMLElement} element 

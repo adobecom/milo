@@ -30,6 +30,12 @@
   background: var(--color-white);
 }
 
+.temp-focus {
+  position: absolute;
+  left: -9999px;
+  top: -9999px;
+}
+
 .notification.ribbon {
   min-block-size: var(--min-block-size-ribbon);
 }
@@ -99,7 +105,8 @@
   overflow: unset;
 }
 
-.notification.pill .background {
+.notification.pill .background,
+.notification.pill > :first-child {
   border-radius: inherit;
 }
 
