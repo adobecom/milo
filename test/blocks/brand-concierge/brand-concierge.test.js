@@ -117,4 +117,3 @@ describe('Brand Concierge', () => {
     expect(mount.dataset.initialMessage).to.contain('Prompt two');
   });
 });
-
