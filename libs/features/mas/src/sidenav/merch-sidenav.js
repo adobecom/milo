@@ -90,17 +90,19 @@ export class MerchSideNav extends LitElement {
     }
 
     get asDialog() {
+        if (!this.open) return nothing;
         const closeButton = !this.autoclose ? 
             html`<sp-link @click="${this.closeModal}"
                 >${this.closeText || 'Close'}</sp-link
             >` : nothing;
         return html`
-            <sp-theme  color="light" scale="medium">
-                <sp-overlay type="modal" ?open=${this.open} @close=${this.closeModal}>
+            <sp-theme color="light" scale="medium">
+                <sp-overlay type="modal" open @sp-closed=${this.closeModal}>
                     <sp-dialog-base
                         dismissable
                         underlay
                         no-divider
+                        @close=${this.closeModal}
                     >
                         <div id="content">
                             <div id="sidenav">
