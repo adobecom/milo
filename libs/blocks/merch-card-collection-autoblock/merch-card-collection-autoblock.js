@@ -85,7 +85,7 @@ function getSidenav(collection) {
   let multilevel = false;
   function generateLevelItems(level, parent) {
     for (const node of level) {
-      const value = node.label.toLowerCase();
+      const value = node.queryLabel || node.label.toLowerCase();
       const item = createTag('sp-sidenav-item', { label: node.label, value });
       if (node.icon) {
         createTag('img', { src: node.icon, slot: 'icon' }, null, { parent: item });

@@ -49,7 +49,7 @@ export function pushState(state) {
 }
 
 /**
- *Deep link helper
+ * Deep link helper
  * @param {*} callback function that expects an object with properties that have changed compared to previous state
  * @returns a disposer function that stops listening to hash changes
  */
