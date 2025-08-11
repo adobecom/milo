@@ -108,7 +108,7 @@ function decorateInput(el, input) {
   const fieldInput = createTag('input', {
     id: 'bc-input-field',
     type: 'text',
-    placeholder: input.textContent.trim()
+    placeholder: input.textContent.trim(),
   });
   const fieldButton = createTag('button', {
     class: 'input-field-button no-track',
@@ -153,7 +153,6 @@ function decorateLegal(el, legal) {
 export default async function init(el) {
   const rows = el.querySelectorAll(':scope > div');
   let isDefault = false;
-  let isSticky = false;
   let fieldFirst = false;
 
   // set variant
@@ -162,7 +161,6 @@ export default async function init(el) {
     isDefault = true;
   } else if (el.classList.contains('sticky')) {
     el.classList.add('sticky');
-    isSticky = true;
   }
   if (el.classList.contains('field-first')) {
     fieldFirst = true;
