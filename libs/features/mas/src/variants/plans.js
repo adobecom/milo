@@ -9,6 +9,7 @@ import {
 import { getOuterHeight } from '../utils.js';
 
 export const PLANS_AEM_FRAGMENT_MAPPING = {
+    cardName: { attribute: 'name' },
     title: { tag: 'h3', slot: 'heading-xs' },
     subtitle: { tag: 'p', slot: 'subtitle' },
     prices: { tag: 'p', slot: 'heading-m' },
