@@ -277,6 +277,9 @@ export default async function init(el) {
   if (assetUnknown) assetUnknown.classList.add('asset-unknown');
 
   decorateBlockText(copy, textDefault, 'hasDetailHeading');
+  const text = copy.querySelector('.action-area').childNodes[0];
+  const span = createTag('span', null, text.innerText);
+  text.replaceWith(span);
   await decorateLockupFromContent(copy);
   extendButtonsClass(copy);
 
