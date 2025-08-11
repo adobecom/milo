@@ -144,18 +144,17 @@ async function getResults() {
 export default function SEO() {
   useEffect(() => {
     getResults();
-    let intervalIdSuggest;
-    if (isAso) {
-      intervalIdSuggest = setInterval(() => {
-        if (asoCache.suggest) {
-          aiSuggestions.value = asoCache.suggest;
-          clearInterval(intervalIdSuggest);
-        }
-      }, 1000);
+    if (!isAso) return;
 
-      return () => clearInterval(intervalIdSuggest);
-    }
-    return null;
+    const intervalIdSuggest = setInterval(() => {
+      if (asoCache.suggest) {
+        aiSuggestions.value = asoCache.suggest;
+        clearInterval(intervalIdSuggest);
+      }
+    }, 1000);
+
+    // eslint-disable-next-line
+    return () => clearInterval(intervalIdSuggest);
   }, []);
 
   return html`

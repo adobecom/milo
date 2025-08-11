@@ -5,7 +5,6 @@ const CHECK_API = 'https://spacecat.experiencecloud.live/api/v1';
 export const asoCache = {
   identify: null,
   suggest: null,
-  identifyPromise: null,
   suggestPromise: null,
   tokenPromise: null,
 };
@@ -182,15 +181,15 @@ async function fetchJobStatus(jobId, sessionToken) {
 
 function processCompletedJob(data, step) {
   if (data.status !== 'COMPLETED') return null;
-
+  const formattedResults = resultsFormatter(data.result[0].audits);
   if (step === 'IDENTIFY') {
-    asoCache.identify = resultsFormatter(data.result[0].audits);
-    return data;
+    asoCache.identify = formattedResults;
+    return formattedResults;
   }
 
   if (step === 'SUGGEST') {
-    asoCache.suggest = resultsFormatter(data.result[0].audits);
-    return data;
+    asoCache.suggest = formattedResults;
+    return formattedResults;
   }
 
   return null;
@@ -246,16 +245,20 @@ export default async function getChecks(step) {
 }
 
 export async function fetchPreflightChecks() {
-  if (!asoCache.identifyPromise) asoCache.identifyPromise = getChecks('IDENTIFY');
+  if (!asoCache.identify) asoCache.identify = getChecks('IDENTIFY');
   if (!asoCache.suggestPromise) asoCache.suggestPromise = getChecks('SUGGEST');
 
-  // Poll every 1 second until identify is available
-  return new Promise((resolve) => {
-    const checkInterval = setInterval(() => {
-      if (asoCache.identify) {
-        clearInterval(checkInterval);
-        resolve(asoCache.identify);
-      }
-    }, 1000);
-  });
+  const raceResult = await Promise.race([
+    asoCache.identify,
+    new Promise((_, reject) => {
+      setTimeout(() => {
+        lanaLog('ASO: identify results not available within 20 seconds');
+        reject(new Error('ASO preflight checks timeout: identify and suggest results not available within 20 seconds'));
+      }, 20000);
+    }),
+  ]);
+
+  if (raceResult) return raceResult;
+
+  return null;
 }

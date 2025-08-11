@@ -1,5 +1,3 @@
-import { getPreflightResults } from '../blocks/preflight/checks/preflightApi.js';
-
 /* eslint-disable no-console */
 const MILO_TEMPLATES = [
   '404',
@@ -1580,6 +1578,7 @@ export async function loadDeferred(area, blocks, config) {
 function initSidekick() {
   const initPlugins = async () => {
     const { default: init } = await import('./sidekick.js');
+    const { getPreflightResults } = await import('../blocks/preflight/preflight.js');
     init({ createTag, loadBlock, loadScript, loadStyle });
     getPreflightResults(window.location.href, document);
   };
