@@ -112,7 +112,8 @@ merch-card[variant="simplified-pricing-express"] [slot="cta"] a.button {
 }
 
 merch-card[variant="simplified-pricing-express"] [slot="price"] {
-  /* Layout styles moved to Shadow DOM */
+  display: flex;
+  flex-direction: column;
 }
 
 merch-card[variant="simplified-pricing-express"] [slot="price"] > p:first-child {

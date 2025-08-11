@@ -1639,7 +1639,8 @@ merch-card[variant="simplified-pricing-express"] [slot="cta"] a.button {
 }
 
 merch-card[variant="simplified-pricing-express"] [slot="price"] {
-  /* Layout styles moved to Shadow DOM */
+  display: flex;
+  flex-direction: column;
 }
 
 merch-card[variant="simplified-pricing-express"] [slot="price"] > p:first-child {
@@ -2020,14 +2021,6 @@ merch-card[variant="simplified-pricing-express"] [slot="footer"] sp-button[varia
                 flex-direction: column;
                 min-height: 360px; /* Increased to accommodate all content */
                 height: auto;
-            }
-
-            :host([variant='simplified-pricing-express']) .description {
-                height: 80px;
-                overflow: hidden;
-                display: -webkit-box;
-                -webkit-line-clamp: 4;
-                -webkit-box-orient: vertical;
             }
 
             :host([variant='simplified-pricing-express']) .price {

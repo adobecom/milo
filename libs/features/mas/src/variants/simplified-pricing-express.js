@@ -273,14 +273,6 @@ export class SimplifiedPricingExpress extends VariantLayout {
                 height: auto;
             }
 
-            :host([variant='simplified-pricing-express']) .description {
-                height: 80px;
-                overflow: hidden;
-                display: -webkit-box;
-                -webkit-line-clamp: 4;
-                -webkit-box-orient: vertical;
-            }
-
             :host([variant='simplified-pricing-express']) .price {
                 height: 100px;
                 display: flex;
