@@ -169,7 +169,7 @@ export async function createCollection(el, options) {
     }
   }
 
-  postProcessAutoblock(collection, false);
+  await postProcessAutoblock(collection, false);
   collection.requestUpdate();
   // card analytics is enabled in postProcessAutoblock
   enableSidenavAnalytics(collection);

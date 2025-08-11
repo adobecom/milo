@@ -1,7 +1,7 @@
 /* eslint-disable no-underscore-dangle */
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
-import { handleCustomAnalyticsEvent, enableAnalytics } from '../../../libs/blocks/merch/autoblock.js';
+import { handleCustomAnalyticsEvent, cleanupTabsAnalytics, enableAnalytics, postProcessAutoblock } from '../../../libs/blocks/merch/autoblock.js';
 
 describe('autoblock', () => {
   let satellite;
@@ -48,7 +48,8 @@ describe('autoblock', () => {
       // Mock checkReady method
       card.checkReady = sinon.stub().resolves();
 
-      await enableAnalytics(card, true);
+      cleanupTabsAnalytics(card);
+      enableAnalytics(card);
 
       expect(card.getAttribute('data-analytics-id')).to.equal('test-card');
       expect(card.hasAttribute('daa-lh')).to.be.false;
@@ -68,7 +69,8 @@ describe('autoblock', () => {
       // Mock checkReady method
       card.checkReady = sinon.stub().resolves();
 
-      await enableAnalytics(card, true);
+      cleanupTabsAnalytics(card);
+      enableAnalytics(card);
 
       expect(block.hasAttribute('data-block')).to.be.false;
 
@@ -77,7 +79,10 @@ describe('autoblock', () => {
     });
 
     it('should handle tabpanel context', async () => {
+      const tab = document.createElement('div');
+      tab.className = 'tabs';
       const tabpanel = document.createElement('div');
+      tab.appendChild(tabpanel);
       tabpanel.className = 'tabpanel';
       tabpanel.setAttribute('data-nested-lh', 'T1Ind');
       const card = document.createElement('merch-card');
@@ -86,7 +91,8 @@ describe('autoblock', () => {
       // Mock checkReady method
       card.checkReady = sinon.stub().resolves();
 
-      await enableAnalytics(card, true);
+      cleanupTabsAnalytics(card);
+      enableAnalytics(card);
 
       expect(tabpanel.getAttribute('daa-lh')).to.equal('T1Ind--tab');
     });
@@ -103,7 +109,7 @@ describe('autoblock', () => {
       container.appendChild(card1);
       container.appendChild(card2);
 
-      await enableAnalytics(container, false);
+      postProcessAutoblock(container, false);
 
       expect(card1.checkReady.called).to.be.true;
       expect(card2.checkReady.called).to.be.true;
