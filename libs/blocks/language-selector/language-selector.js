@@ -19,15 +19,10 @@ document.addEventListener('mousedown', () => {
   miloLangIsKeyboard = false;
 });
 
-const langMapToEnglishPromise = ((async () => {
-  try {
-    const { langMapToEnglish } = await loadLanguageConfig();
-    return langMapToEnglish || [];
-  } catch (e) {
-    window.lana?.log('Failed to load languages-config.json:', e);
-    return [];
-  }
-}))();
+const langMapToEnglishPromise = (async () => {
+  const { nativeToEnglishMapping } = await loadLanguageConfig();
+  return nativeToEnglishMapping || [];
+})();
 
 let langMapToEnglish = [];
 
