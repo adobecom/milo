@@ -2,8 +2,8 @@ import { MOBILE_LANDSCAPE, TABLET_UP, DESKTOP_UP, LARGE_DESKTOP } from '../media
 export const CSS = `
 :root {
     --consonant-merch-card-plans-width: 302px;
+    --consonant-merch-card-plans-students-width: 302px;
     --consonant-merch-card-plans-icon-size: 40px;
-    --consonant-merch-card-plans-students-width: 568px;
 }
 
 merch-card[variant^="plans"] {
@@ -232,10 +232,23 @@ merch-card-collection:has([slot="subtitle"]) merch-card {
     margin: 0;
 }
 
-.columns.merch-card > .row {
-    grid-template-columns: repeat(auto-fit, var(--consonant-merch-card-plans-width));
+.plans-edu .columns .row {
+    grid-template-columns: repeat(auto-fit, var(--consonant-merch-card-plans-students-width));
     justify-content: center;
     align-items: center;
+}
+
+.plans-edu .columns .row-1 {
+    grid-template-columns: var(--consonant-merch-card-plans-students-width);
+    margin-block: var(--spacing-xs);
+}
+
+.plans-edu .columns .row-2 {
+    margin-bottom: 40px;
+}
+
+.plans-edu #whats-included {
+    margin: 0 0 16px;
 }
 
 .columns.checkmark-list ul {
@@ -247,15 +260,29 @@ merch-card-collection:has([slot="subtitle"]) merch-card {
     padding-left: 8px;
 }
 
+/* Tabs containers */
+
+.plans-team {
+    display: grid;
+    grid-template-columns: min-content;
+    justify-content: center;
+}
+
+.plans-team .text .foreground,
+.plans-edu .text .foreground {
+    max-width: unset;
+    margin: 0;
+}
+
 /* Tablet */
 @media screen and ${TABLET_UP} {
-  .four-merch-cards.plans .foreground {
-      max-width: unset;
-  }
-  
-  .columns.merch-card > .row {
-      grid-template-columns: repeat(auto-fit, calc(var(--consonant-merch-card-plans-width) * 2 + var(--consonant-merch-spacing-m)));
-  }
+    :root {
+        --consonant-merch-card-plans-students-width: 484px;
+    }
+
+    .four-merch-cards.plans .foreground {
+        max-width: unset;
+    }
 }
 
 /* desktop */
@@ -272,10 +299,6 @@ merch-card-collection:has([slot="subtitle"]) merch-card {
         grid-template-columns: repeat(2, var(--consonant-merch-card-plans-width));
     }
 
-    merch-card[variant="plans-students"] {
-        width: var(--consonant-merch-card-plans-students-width);
-    }
-
     merch-card-collection-header.plans {
         --merch-card-collection-header-columns: fit-content(100%);
         --merch-card-collection-header-areas: "custom";
@@ -288,7 +311,14 @@ merch-card-collection:has([slot="subtitle"]) merch-card {
         transform: translateX(-50vw);
         justify-content: start;
         padding-inline: 30px;
+    }
+
+    .plans-individual .content {
         padding-top: 24px;
+    }
+
+    .plans-edu .columns .row-1 {
+        grid-template-columns: calc(var(--consonant-merch-card-plans-students-width) * 2 + var(--spacing-m));
     }
 }
 
