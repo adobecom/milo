@@ -1472,11 +1472,28 @@ async function checkForPageMods() {
   });
 }
 
+function setCountry() {
+  const country = window.performance?.getEntriesByType('navigation')?.[0]?.serverTiming
+    ?.find((timing) => timing?.name === 'geo')?.description?.toLowerCase();
+  if (!country) return;
+  sessionStorage.setItem('akamai', country);
+  sessionStorage.setItem('feds_location', JSON.stringify({ country: country.toUpperCase() }));
+}
+
+async function setCountryPrerequisites() {
+  const country = (new URLSearchParams(window.location.search).get('akamaiLocale')?.toLowerCase())
+    || sessionStorage.getItem('akamai');
+  if (country !== 'gb' || window.adobePrivacy) return;
+  const { loadPrivacy } = await import('../scripts/delayed.js');
+  loadPrivacy(getConfig, loadScript);
+}
+
 async function loadPostLCP(config) {
   import('./favicon.js').then(({ default: loadFavIcon }) => loadFavIcon(createTag, getConfig(), getMetadata));
   await decoratePlaceholders(document.body.querySelector('header'), config);
   const sk = document.querySelector('aem-sidekick, helix-sidekick');
   if (sk) import('./sidekick-decorate.js').then((mod) => { mod.default(sk); });
+  setCountryPrerequisites();
   if (config.mep?.targetEnabled === 'postlcp') {
     /* c8 ignore next 2 */
     const { init } = await import('../features/personalization/personalization.js');
@@ -1511,7 +1528,7 @@ async function loadPostLCP(config) {
   }
   // load privacy here if quick-link is present in first section
   const quickLink = document.querySelector('div.section')?.querySelector('.quick-link');
-  if (!quickLink) return;
+  if (!quickLink || window.adobePrivacy) return;
   import('../scripts/delayed.js').then(({ loadPrivacy }) => {
     loadPrivacy(getConfig, loadScript);
   });
@@ -1718,6 +1735,7 @@ export async function loadArea(area = document) {
   const isDoc = area === document;
   if (isDoc) {
     if (document.getElementById('page-load-ok-milo')) return;
+    setCountry();
     await checkForPageMods();
     appendHtmlToCanonicalUrl();
     appendSuffixToTitles();
