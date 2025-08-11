@@ -169,6 +169,7 @@ let isMartechLoaded = false;
 
 let localeToLanguageMap;
 let siteLanguages;
+let langMapToEnglish;
 
 export function getEnv(conf) {
   const { host } = window.location;
@@ -383,7 +384,9 @@ export function hasLanguageLinks(area, paths = LANGUAGE_BASED_PATHS) {
 }
 
 export async function loadLanguageConfig() {
-  if (localeToLanguageMap && siteLanguages) return { siteLanguages, localeToLanguageMap };
+  if (localeToLanguageMap && siteLanguages && langMapToEnglish) {
+    return { siteLanguages, localeToLanguageMap, langMapToEnglish };
+  }
 
   const parseList = (str) => str.split(/[\n,]+/).map((t) => t.trim()).filter(Boolean);
   try {
@@ -397,12 +400,9 @@ export async function loadLanguageConfig() {
       pathMatches: parseList(site.pathMatches),
       languages: parseList(site.languages),
     }));
+    langMapToEnglish = configJson['langmap-native-to-en']?.data || [];
 
-    return {
-      siteLanguages,
-      localeToLanguageMap,
-      langMapToEnglish: configJson['langmap-native-to-en']?.data || [],
-    };
+    return { siteLanguages, localeToLanguageMap, langMapToEnglish };
   } catch (e) {
     window.lana?.log('Failed to load language-config.json:', e);
   }
