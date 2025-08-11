@@ -1251,7 +1251,7 @@ merch-card[variant="plans"] [slot="subtitle"] {
     line-height: 18px;
 }
 
-merch-card[variant^="plans"] span.price-unit-type:not([slot="callout-content"] *):not([slot="addon"] *) {
+merch-card[variant^="plans"] span.price-unit-type {
     display: block;
 }
 merch-card[variant^="plans"] [slot="callout-content"] span.price-unit-type,
@@ -1953,7 +1953,7 @@ merch-card[variant="mini"] span.renewal-text {
             background-color: var(--spectrum-background-base-color);
             border: 1px solid var(--merch-card-custom-border-color, #dadada);
         }
-    `);var fe=new Map,k=(o,e,t=null,r=null,n)=>{fe.set(o,{class:e,fragmentMapping:t,style:r,collectionOptions:n})};k("catalog",dt,er,dt.variantStyle);k("image",Kt);k("inline-heading",Wt);k("mini-compare-chart",mt,null,mt.variantStyle);k("plans",A,Xt,A.variantStyle,A.collectionOptions);k("plans-students",A,sr,A.variantStyle,A.collectionOptions);k("plans-education",A,cr,A.variantStyle,A.collectionOptions);k("product",pt,null,pt.variantStyle);k("segment",gt,null,gt.variantStyle);k("special-offers",ut,mr,ut.variantStyle);k("mini",ft,gr,ft.variantStyle);var xe=o=>{let e=fe.get(o.variant);if(!e)return;let{class:t,style:r}=e;if(r)try{let n=new CSSStyleSheet;n.replaceSync(r.cssText),o.shadowRoot.adoptedStyleSheets.push(n)}catch{let a=document.createElement("style");a.textContent=r.cssText,o.shadowRoot.appendChild(a)}return new t(o)};function Yt(o){return fe.get(o)?.fragmentMapping}var ur=document.createElement("style");ur.innerHTML=`
+    `);var fe=new Map,C=(o,e,t=null,r=null,n)=>{fe.set(o,{class:e,fragmentMapping:t,style:r,collectionOptions:n})};C("catalog",dt,er,dt.variantStyle);C("image",Kt);C("inline-heading",Wt);C("mini-compare-chart",mt,null,mt.variantStyle);C("plans",A,Xt,A.variantStyle,A.collectionOptions);C("plans-students",A,sr,A.variantStyle,A.collectionOptions);C("plans-education",A,cr,A.variantStyle,A.collectionOptions);C("product",pt,null,pt.variantStyle);C("segment",gt,null,gt.variantStyle);C("special-offers",ut,mr,ut.variantStyle);C("mini",ft,gr,ft.variantStyle);var xe=o=>{let e=fe.get(o.variant);if(!e)return;let{class:t,style:r}=e;if(r)try{let n=new CSSStyleSheet;n.replaceSync(r.cssText),o.shadowRoot.adoptedStyleSheets.push(n)}catch{let a=document.createElement("style");a.textContent=r.cssText,o.shadowRoot.appendChild(a)}return new t(o)};function Yt(o){return fe.get(o)?.fragmentMapping}var ur=document.createElement("style");ur.innerHTML=`
 :root {
     --consonant-merch-card-detail-font-size: 12px;
     --consonant-merch-card-detail-font-weight: 500;
