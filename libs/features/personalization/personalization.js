@@ -243,7 +243,7 @@ const COMMANDS = {
       if (secondaryButton) {
         const wrapper = secondaryButton.parentElement;
         const html = wrapper.innerHTML;
-        const result = html.replace(/em>/g, 'strong>');
+        const result = html.replace(/em/g, 'strong');
         wrapper.innerHTML = result;
       }
     }
