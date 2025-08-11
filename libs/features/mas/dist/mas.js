@@ -1208,10 +1208,17 @@ merch-card[variant="plans-education"] [slot="body-xs"] span.price:not(.price-leg
   font-weight: 700;
 }
 
-merch-card[variant^="plans"] span.price-unit-type:not([slot="callout-content"] *):not([slot="addon"] *):not(.price.price-strikethrough *):not(.disabled):not([data-promotion-code] *) {
+merch-card[variant^="plans"] span.price-unit-type {
     display: block;
 }
-
+merch-card[variant^="plans"] [slot="callout-content"] span.price-unit-type,
+merch-card[variant^="plans"] [slot="addon"] span.price-unit-type,
+merch-card[variant^="plans"] .price.price-strikethrough span.price-unit-type,
+merch-card[variant^="plans"] span.price-unit-type.disabled,
+merch-card[variant^="plans"] [data-promotion-code] span.price-unit-type {
+  display: inline; 
+}
+  
 merch-card[variant^="plans"] [slot="heading-xs"] span.price.price-strikethrough,
 merch-card[variant^="plans"] [slot="heading-m"] span.price.price-strikethrough,
 merch-card[variant="plans-education"] [slot="body-xs"] span.price.price-strikethrough {
