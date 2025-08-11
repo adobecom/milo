@@ -1416,7 +1416,6 @@ async function checkForPageMods() {
   let targetInteractionPromise = null;
   let countryIPPromise = null;
   let calculatedTimeout = null;
-  const promises = loadMepAddons();
 
   if (mepParam === 'off') return;
   const pzn = getMepEnablement('personalization');
@@ -1430,6 +1429,7 @@ async function checkForPageMods() {
   if (!(pzn || pznroc || target || promo || mepParam
     || mepHighlight || mepButton || mepParam === '' || xlg || ajo)) return;
 
+  const promises = loadMepAddons();
   if (mepgeolocation) {
     const urlParams = new URLSearchParams(window.location.search);
     const akamaiCode = urlParams.get('akamaiLocale')?.toLowerCase() || sessionStorage.getItem('akamai');
