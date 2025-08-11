@@ -398,7 +398,11 @@ export async function loadLanguageConfig() {
       languages: parseList(site.languages),
     }));
 
-    return { siteLanguages, localeToLanguageMap };
+    return {
+      siteLanguages,
+      localeToLanguageMap,
+      langMapToEnglish: configJson['langmap-native-to-en']?.data || [],
+    };
   } catch (e) {
     window.lana?.log('Failed to load language-config.json:', e);
   }
