@@ -105,7 +105,8 @@
   overflow: unset;
 }
 
-.notification.pill .background {
+.notification.pill .background,
+.notification.pill > :first-child {
   border-radius: inherit;
 }
 

@@ -313,7 +313,8 @@ export function getHashParams(hashStr) {
 
 export function delayedModal(el) {
   const { hash, delay } = getHashParams(el?.dataset.modalHash);
-  if (delay === undefined || !hash) return false;
+  const isDesktop = window.matchMedia('(min-width: 1200px)').matches;
+  if (delay === undefined || !hash || !isDesktop) return false;
   isDelayedModal = true;
   const modalOpenEvent = new Event(`${hash}:modalOpen`);
   const pagesModalWasShownOn = window.sessionStorage.getItem(`shown:${hash}`);
