@@ -154,4 +154,19 @@ describe('notification', async () => {
       expect(result).to.be.null;
     });
   });
+
+  describe('sticky notifications accessibility attributes', () => {
+    it('does not add accessibility attributes to non-sticky notifications', async () => {
+      const regularNotification = notifs[0];
+      expect(regularNotification.getAttribute('role')).to.be.null;
+      expect(regularNotification.getAttribute('aria-label')).to.be.null;
+    });
+
+    it('adds dialog accessibility attributes to focus notifications', async () => {
+      const focusNotification = document.querySelector('.notification.focus');
+      expect(focusNotification.getAttribute('role')).to.equal('dialog');
+      expect(focusNotification.getAttribute('aria-modal')).to.equal('true');
+      expect(focusNotification.getAttribute('aria-label')).to.equal('Get the full experience in app Dialog');
+    });
+  });
 });
