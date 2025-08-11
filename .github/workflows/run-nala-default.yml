@@ -750,29 +750,3 @@ jobs:
             playwright-report/
             all-shards/
           retention-days: 30
-
-      - name: Comment PR with results
-        if: github.event_name == 'pull_request'
-        uses: actions/github-script@v6
-        continue-on-error: true
-        with:
-          script: |
-            const shardCount = ${{ needs.calculate-shards.outputs.shard-count }};
-            const comment = `## 🎭 E2E Test Results
-            
-            Tests completed across **${shardCount} parallel runners**
-            
-            | Status | Details |
-            |--------|---------|
-            | ✅ Parallelization | ${shardCount} shards |
-            | 📊 Reports | [View Artifacts](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}) |
-            | ⏱️ Time Saved | ~${Math.round((shardCount - 1) * 100 / shardCount)}% faster |
-            
-            [View Full Summary](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})`;
-            
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: comment
-            });
