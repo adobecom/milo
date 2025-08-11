@@ -1267,8 +1267,7 @@ merch-card[variant^="plans"] span.price-unit-type {
 merch-card[variant^="plans"] [slot="callout-content"] span.price-unit-type,
 merch-card[variant^="plans"] [slot="addon"] span.price-unit-type,
 merch-card[variant^="plans"] .price.price-strikethrough span.price-unit-type,
-merch-card[variant^="plans"] span.price-unit-type.disabled,
-merch-card[variant^="plans"] [data-promotion-code] span.price-unit-type {
+merch-card[variant^="plans"] span.price-unit-type.disabled {
   display: inline; 
 }
   
