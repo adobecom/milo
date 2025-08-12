@@ -7,9 +7,17 @@ const KNDCTR_COOKIE_KEYS = [
 
 const KNDCTR_CONSENT_COOKIE = 'kndctr_9E1005A551ED61CA0A490D45_AdobeOrg_consent';
 const OPT_ON_AND_CONSENT_COOKIE = 'OptanonConsent';
+const GPV_COOKIE = 'gpv';
 
 const DATA_STREAM_IDS_PROD = { default: '913eac4d-900b-45e8-9ee7-306216765cd2', business: '0fd7a243-507d-4035-9c75-e42e42f866a0' };
 const DATA_STREAM_IDS_STAGE = { default: 'e065836d-be57-47ef-b8d1-999e1657e8fd', business: '2eedf777-b932-4f2a-a0c5-b559788929bf' };
+
+const _explicitConsentCountries = [
+  'ca', 'de', 'no', 'fi', 'be', 'pt', 'bg', 'dk', 'lt', 'lu',
+  'lv', 'hr', 'fr', 'hu', 'se', 'si', 'mc', 'sk', 'mf', 'sm',
+  'gb', 'yt', 'ie', 'gf', 'ee', 'mq', 'mt', 'gp', 'is', 'gr',
+  'it', 'es', 'at', 're', 'cy', 'cz', 'ax', 'pl', 'ro', 'li', 'nl',
+];
 
 let dataStreamId = '';
 
@@ -242,7 +250,7 @@ export function getProcessedPageNameForAnalytics() {
 
 function resolveAgiCampaignAndFlag() {
   const { hostname, pathname, href } = window.location;
-  const consentValue = getCookie('OptanonConsent');
+  const consentValue = getCookie(OPT_ON_AND_CONSENT_COOKIE);
   const EXPIRY_TIME_IN_DAYS = 90;
   const CAMPAIGN_PAGE_VALUE = '1';
   const ACROBAT_DOMAIN_VALUE = '2';
@@ -339,13 +347,29 @@ function isFirstVisit() {
   return false;
 }
 
-const getMartechCookies = () => document.cookie.split(';')
+const getMartechCookies = (cookies = KNDCTR_COOKIE_KEYS) => document.cookie.split(';')
   .map((x) => x.trim().split('='))
-  .filter(([key]) => KNDCTR_COOKIE_KEYS.includes(key))
+  .filter(([key]) => cookies.includes(key))
   .map(([key, value]) => ({ key, value }));
 
+function getConsentConfiguration(consentString) {
+  const consent = consentString
+    ? Object.fromEntries(consentString.split(';').map((cat) => cat.split(':'))) : {};
+
+  return {
+    configuration: {
+      performance: (consent.C0002 === '1').toString(),
+      functional: (consent.C0003 === '1').toString(),
+      advertising: (consent.C0004 === '1').toString(),
+    },
+  };
+}
+
 function createRequestPayload({ updatedContext, pageName, processedPageName, locale, hitType }) {
-  const prevPageName = getCookie('gpv');
+  const cookies = getMartechCookies([
+    GPV_COOKIE, OPT_ON_AND_CONSENT_COOKIE, KNDCTR_CONSENT_COOKIE,
+  ]);
+  const prevPageName = cookies.find(({ key }) => key === GPV_COOKIE)?.value || '';
   const isCollectCall = hitType === 'propositionDisplay';
   const isPageViewCall = hitType === 'pageView';
   const webPageDetails = {
@@ -357,12 +381,28 @@ function createRequestPayload({ updatedContext, pageName, processedPageName, loc
     name: pageName,
     pageViews: { value: Number(isPageViewCall) },
   };
-  const consentCookie = getCookie(OPT_ON_AND_CONSENT_COOKIE) || '';
+  const optOnConsentCookie = cookies.find(({ key }) => key === OPT_ON_AND_CONSENT_COOKIE)?.value || '';
+  const kndctrConsentCookie = cookies.find(({ key }) => key === KNDCTR_CONSENT_COOKIE)?.value || '';
+
+  const serverTiming = window.performance?.getEntriesByType('navigation')?.[0]?.serverTiming?.reduce(
+    (acc, { name, description }) => ({ ...acc, [name]: description }),
+    {},
+  );
+  const serverTimingCountry = serverTiming?.geo;
 
   const consentState = (() => {
-    const hasOptOnCookie = getCookie(OPT_ON_AND_CONSENT_COOKIE);
-    if (!hasOptOnCookie) return 'unknown';
-    return getCookie(KNDCTR_CONSENT_COOKIE) ? 'post' : 'pre';
+    const isExplicitConsentCountry = serverTimingCountry
+    && _explicitConsentCountries.includes(serverTimingCountry);
+
+    if (kndctrConsentCookie || (serverTimingCountry && !isExplicitConsentCountry)) {
+      return 'post';
+    }
+
+    if (optOnConsentCookie || isExplicitConsentCountry) {
+      return 'pre';
+    }
+
+    return 'unknown';
   })();
 
   const eventMergeId = generateUUIDv4();
@@ -406,7 +446,7 @@ function createRequestPayload({ updatedContext, pageName, processedPageName, loc
           previousPage: { pageInfo: { pageName: prevPageName } },
           primaryUser: { primaryProfile: { profileInfo: { authState: 'loggedOut', returningStatus: getVisitorStatus({}) } } },
         },
-        otherConsents: { configuration: { advertising: (!!consentCookie?.includes('C0004:1')).toString() } },
+        otherConsents: getConsentConfiguration(optOnConsentCookie),
         user: { firstVisit: isFirstVisit() },
         cmp: { state: consentState },
         web: {
