@@ -10,7 +10,6 @@ function handleTopHeight(section) {
 }
 
 function promoIntersectObserve(el, stickySectionEl, options = {}) {
-  const stickyRect = stickySectionEl?.getBoundingClientRect();
   return new IntersectionObserver((entries, observer) => {
     entries.forEach((entry) => {
       if (el.classList.contains('close-sticky-section')) {
@@ -24,12 +23,12 @@ function promoIntersectObserve(el, stickySectionEl, options = {}) {
       if (target === FOOTER) {
         el.classList.toggle('fill-sticky-section', isIntersecting);
       } else if (target === stickySectionEl) {
-        const abovePromoStart = isIntersecting || stickyRect.y > 0;
+        const abovePromoStart = isIntersecting || stickySectionEl?.getBoundingClientRect().y > 0;
         el.classList.toggle('hide-sticky-section', abovePromoStart);
       } else if (target === document.querySelector('.hide-at-intersection')) {
         const shouldHideSticky = isIntersecting
         || entry.boundingClientRect.top < 0
-        || stickyRect.y > 0;
+        || stickySectionEl?.getBoundingClientRect().y > 0;
         el.classList.toggle('hide-sticky-section', shouldHideSticky);
       }
     });
