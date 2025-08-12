@@ -31,6 +31,7 @@ function toUIFormat(result, signalResult) {
   }
 
   signalResult.value = {
+    id: result.id,
     icon,
     status: result.status,
     title: result.title,
