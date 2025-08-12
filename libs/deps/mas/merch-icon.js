@@ -1,4 +1,4 @@
-var m=Object.defineProperty;var b=(i,t,e)=>t in i?m(i,t,{enumerable:!0,configurable:!0,writable:!0,value:e}):i[t]=e;var g=(i,t)=>()=>(i&&(t=i(i=0)),t);var y=(i,t)=>{for(var e in t)m(i,e,{get:t[e],enumerable:!0})};var s=(i,t,e)=>b(i,typeof t!="symbol"?t+"":t,e);var d={};y(d,{default:()=>r});import{LitElement as v,html as l,css as S}from"../lit-all.min.js";function w(){return customElements.get("sp-tooltip")!==void 0||document.querySelector("sp-theme")!==null}var r,f=g(()=>{u();r=class extends v{constructor(){super(),this.content="",this.placement="top",this.variant="info",this.size="xs"}get effectiveContent(){return this.tooltipText||this.content||""}get effectivePlacement(){return this.tooltipPlacement||this.placement||"top"}renderIcon(){return this.src?l`<merch-icon 
+var m=Object.defineProperty;var x=(o,t,e)=>t in o?m(o,t,{enumerable:!0,configurable:!0,writable:!0,value:e}):o[t]=e;var g=(o,t)=>()=>(o&&(t=o(o=0)),t);var y=(o,t)=>{for(var e in t)m(o,e,{get:t[e],enumerable:!0})};var s=(o,t,e)=>x(o,typeof t!="symbol"?t+"":t,e);var d={};y(d,{default:()=>r});import{LitElement as v,html as l,css as S}from"../lit-all.min.js";function w(){return customElements.get("sp-tooltip")!==void 0||document.querySelector("sp-theme")!==null}var r,f=g(()=>{u();r=class extends v{constructor(){super(),this.content="",this.placement="top",this.variant="info",this.size="xs"}get effectiveContent(){return this.tooltipText||this.content||""}get effectivePlacement(){return this.tooltipPlacement||this.placement||"top"}renderIcon(){return this.src?l`<merch-icon 
             src="${this.src}" 
             size="${this.size}"
         ></merch-icon>`:l`<slot></slot>`}render(){let t=this.effectiveContent,e=this.effectivePlacement;return t?w()?l`
@@ -45,8 +45,7 @@ var m=Object.defineProperty;var b=(i,t,e)=>t in i?m(i,t,{enumerable:!0,configura
             padding: 8px 12px;
             border-radius: 4px;
             white-space: normal;
-            width: 200px;
-            max-width: 200px;
+            width: max-content;
             opacity: 0;
             pointer-events: none;
             transition: opacity 0.3s;
@@ -79,7 +78,7 @@ var m=Object.defineProperty;var b=(i,t,e)=>t in i?m(i,t,{enumerable:!0,configura
             bottom: 100%;
             left: 50%;
             transform: translateX(-50%);
-            margin-bottom: 10px;
+            margin-bottom: 19px;
         }
         
         .css-tooltip.top[data-tooltip]::after {
@@ -133,9 +132,9 @@ var m=Object.defineProperty;var b=(i,t,e)=>t in i?m(i,t,{enumerable:!0,configura
             margin-left: 5px;
             border-right-color: var(--spectrum-gray-800, #323232);
         }
-    `);customElements.define("mas-tooltip",r)});import{LitElement as $,html as x,css as z}from"../lit-all.min.js";function E(){return customElements.get("sp-tooltip")!==void 0||document.querySelector("sp-theme")!==null}var a,u=g(()=>{a=class extends ${constructor(){super(),this.size="m",this.alt="",this.loading="lazy"}connectedCallback(){super.connectedCallback(),setTimeout(()=>this.handleTooltips(),0)}handleTooltips(){if(E())return;this.querySelectorAll("sp-tooltip, overlay-trigger").forEach(e=>{let n="",p="top";if(e.tagName==="SP-TOOLTIP")n=e.textContent,p=e.getAttribute("placement")||"top";else if(e.tagName==="OVERLAY-TRIGGER"){let o=e.querySelector("sp-tooltip");o&&(n=o.textContent,p=o.getAttribute("placement")||e.getAttribute("placement")||"top")}if(n){let o=document.createElement("mas-tooltip");o.setAttribute("content",n),o.setAttribute("placement",p);let c=this.querySelector("img"),h=this.querySelector("a");h&&h.contains(c)?o.appendChild(h):c&&o.appendChild(c),this.innerHTML="",this.appendChild(o),Promise.resolve().then(()=>f())}e.remove()})}render(){let{href:t}=this;return t?x`<a href="${t}">
+    `);customElements.define("mas-tooltip",r)});import{LitElement as $,html as b,css as z}from"../lit-all.min.js";function E(){return customElements.get("sp-tooltip")!==void 0||document.querySelector("sp-theme")!==null}var a,u=g(()=>{a=class extends ${constructor(){super(),this.size="m",this.alt="",this.loading="lazy"}connectedCallback(){super.connectedCallback(),setTimeout(()=>this.handleTooltips(),0)}handleTooltips(){if(E())return;this.querySelectorAll("sp-tooltip, overlay-trigger").forEach(e=>{let n="",p="top";if(e.tagName==="SP-TOOLTIP")n=e.textContent,p=e.getAttribute("placement")||"top";else if(e.tagName==="OVERLAY-TRIGGER"){let i=e.querySelector("sp-tooltip");i&&(n=i.textContent,p=i.getAttribute("placement")||e.getAttribute("placement")||"top")}if(n){let i=document.createElement("mas-tooltip");i.setAttribute("content",n),i.setAttribute("placement",p);let c=this.querySelector("img"),h=this.querySelector("a");h&&h.contains(c)?i.appendChild(h):c&&i.appendChild(c),this.innerHTML="",this.appendChild(i),Promise.resolve().then(()=>f())}e.remove()})}render(){let{href:t}=this;return t?b`<a href="${t}">
                   <img src="${this.src}" alt="${this.alt}" loading="${this.loading}" />
-              </a>`:x` <img src="${this.src}" alt="${this.alt}" loading="${this.loading}" />`}};s(a,"properties",{size:{type:String,attribute:!0},src:{type:String,attribute:!0},alt:{type:String,attribute:!0},href:{type:String,attribute:!0},loading:{type:String,attribute:!0}}),s(a,"styles",z`
+              </a>`:b` <img src="${this.src}" alt="${this.alt}" loading="${this.loading}" />`}};s(a,"properties",{size:{type:String,attribute:!0},src:{type:String,attribute:!0},alt:{type:String,attribute:!0},href:{type:String,attribute:!0},loading:{type:String,attribute:!0}}),s(a,"styles",z`
         :host {
             --img-width: 32px;
             --img-height: 32px;

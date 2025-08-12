@@ -49,8 +49,7 @@ export default class MasTooltip extends LitElement {
             padding: 8px 12px;
             border-radius: 4px;
             white-space: normal;
-            width: 200px;
-            max-width: 200px;
+            width: max-content;
             opacity: 0;
             pointer-events: none;
             transition: opacity 0.3s;
@@ -83,7 +82,7 @@ export default class MasTooltip extends LitElement {
             bottom: 100%;
             left: 50%;
             transform: translateX(-50%);
-            margin-bottom: 10px;
+            margin-bottom: 19px;
         }
         
         .css-tooltip.top[data-tooltip]::after {

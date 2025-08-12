@@ -1,4 +1,4 @@
-import { DESKTOP_UP } from '../media.js';
+import { MOBILE_LANDSCAPE, TABLET_UP, TABLET_DOWN, DESKTOP_UP } from '../media.js';
 
 export const CSS = `
 :root {
@@ -166,15 +166,12 @@ merch-card[variant="simplified-pricing-express"] mas-tooltip {
     overflow: visible;
     padding-bottom: 32px;
     padding-top: 16px;
-    width: 24px;
-    height: 24px;
 }
 
 /* Tooltip containers - overflow handled by Shadow DOM */
 
-/* Mobile and Tablet styles */
-@media (max-width: 1024px) {
-  /* Remove gap between cards on mobile/tablet */
+/* Mobile styles */
+@media screen and ${MOBILE_LANDSCAPE} {
   merch-card-collection.simplified-pricing-express {
     gap: 8px;
   }
@@ -246,6 +243,28 @@ merch-card[variant="simplified-pricing-express"] mas-tooltip {
   }
 }
 
+/* Tablet styles - extending mobile styles with specific adjustments */
+@media screen and ${TABLET_UP} and ${TABLET_DOWN} {
+  merch-card-collection.simplified-pricing-express {
+    /* 32px side padding */
+    padding: var(--spacing-m) 32px;
+    
+    /* 1 column layout */
+    grid-template-columns: 1fr;
+    
+    /* 24px gap between cards */
+    gap: 24px;
+    
+    /* Center the grid */
+    max-width: 600px;
+    margin: 0 auto;
+  }
+  
+  merch-card[variant="simplified-pricing-express"] {
+    width: 100%;
+    max-width: 500px;
+  }
+}
 
 merch-card[variant="simplified-pricing-express"] [slot="cta"] sp-button[variant="accent"],
 merch-card[variant="simplified-pricing-express"] [slot="cta"] button.spectrum-Button--accent,

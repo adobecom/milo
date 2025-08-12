@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Tablet Styles - Simplified Pricing Express</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+        }
+        .viewport-info {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: #333;
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            z-index: 1000;
+        }
+        .test-container {
+            background: #f5f5f5;
+            min-height: 100vh;
+        }
+    </style>
+</head>
+<body>
+    <div class="viewport-info">
+        Width: <span id="width"></span>px<br>
+        Height: <span id="height"></span>px<br>
+        Breakpoint: <span id="breakpoint"></span>
+    </div>
+    
+    <div class="test-container">
+        <h1>Simplified Pricing Express - Tablet Styles Test</h1>
+        <p>Resize browser to test different breakpoints:</p>
+        <ul>
+            <li>Mobile: ≤767px (gap: 8px)</li>
+            <li>Tablet: 768px-1199px (padding: 32px, gap: 24px, max-width: 600px)</li>
+            <li>Desktop: ≥1200px (3 columns)</li>
+        </ul>
+        
+        <merch-card-collection class="simplified-pricing-express">
+            <merch-card variant="simplified-pricing-express" gradient-border="true" border-color="gradient-purple-blue">
+                <div slot="badge">Badge Content</div>
+                <h3 slot="heading-xs">Card 1</h3>
+                <div slot="body-xs">Description for card 1</div>
+                <div slot="price">$9.99/mo</div>
+                <div slot="cta"><button>Buy Now</button></div>
+            </merch-card>
+            
+            <merch-card variant="simplified-pricing-express">
+                <h3 slot="heading-xs">Card 2</h3>
+                <div slot="body-xs">Description for card 2</div>
+                <div slot="price">$19.99/mo</div>
+                <div slot="cta"><button>Buy Now</button></div>
+            </merch-card>
+            
+            <merch-card variant="simplified-pricing-express">
+                <h3 slot="heading-xs">Card 3</h3>
+                <div slot="body-xs">Description for card 3</div>
+                <div slot="price">$29.99/mo</div>
+                <div slot="cta"><button>Buy Now</button></div>
+            </merch-card>
+        </merch-card-collection>
+    </div>
+    
+    <script type="module">
+        import '../dist/mas.js';
+        
+        function updateViewport() {
+            const width = window.innerWidth;
+            const height = window.innerHeight;
+            
+            document.getElementById('width').textContent = width;
+            document.getElementById('height').textContent = height;
+            
+            let breakpoint = 'Mobile';
+            if (width >= 1200) {
+                breakpoint = 'Desktop';
+            } else if (width >= 768) {
+                breakpoint = 'Tablet';
+            }
+            
+            document.getElementById('breakpoint').textContent = breakpoint;
+        }
+        
+        updateViewport();
+        window.addEventListener('resize', updateViewport);
+    </script>
+</body>
+</html>

@@ -169,7 +169,7 @@ export class SimplifiedPricingExpress extends VariantLayout {
     static variantStyle = css`
         :host([variant='simplified-pricing-express']) {
             /* CSS Variables */
-            --merch-card-simplified-pricing-express-width: 359px;
+            --merch-card-simplified-pricing-express-width: 365px;
             --merch-card-simplified-pricing-express-padding: 24px;
             --merch-card-simplified-pricing-express-padding-mobile: 16px;
             --merch-card-simplified-pricing-express-min-height: 341px;
