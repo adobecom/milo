@@ -40,7 +40,7 @@ const fetchPlaceholder = (path, placeholderRequest) => new Promise(
   },
 );
 
-const fetchPlaceholders = async ({
+export const fetchPlaceholders = async ({
   config,
   sheet,
   placeholderRequest,

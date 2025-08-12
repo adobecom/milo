@@ -80,6 +80,8 @@ element {
   border: 1px solid var(--color-gray-200);
   border-radius: 4px;
   cursor: pointer;
+  text-decoration: underline;
+  font-size: var(--type-body-s-size);
 }
 
 .filter-button[aria-expanded=true] {
@@ -88,11 +90,11 @@ element {
 }
 
 .filter-button[aria-expanded=true]+.filter-dropdown {
-  visibility: visible;
+  display: flex;
 }
 
 .filter-button[aria-expanded=false]+.filter-dropdown {
-  visibility: hidden;
+  display: none;
 }
 
 .filter-button:hover,
@@ -175,7 +177,7 @@ element {
 @media (min-width: 600px) {
   .filter-dropdown {
     position: absolute;
-    top: 2rem;
+    top: 2.3rem;
     left: 0;
     min-width: 320px;
   }
@@ -290,10 +292,13 @@ element {
   font-weight: 600;
   font-size: var(--body-font-size-xs);
   cursor: pointer;
+  text-decoration: underline;
+  font-size: var(--type-body-s-size);
 }
 
 .filter-container .button.reset {
   color: var(--color-gray-600);
+  background: none;
 }
 
 .filter-container .button.reset:hover,
@@ -524,5 +529,3 @@ main a.article-card:any-link {
     min-height: 2.6rem;
   }
 }
-
-/** END **/
