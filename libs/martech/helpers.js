@@ -358,9 +358,9 @@ function getConsentConfiguration(consentString) {
 
   return {
     configuration: {
-      performance: (consent.C0002 === '1').toString(),
-      functional: (consent.C0003 === '1').toString(),
-      advertising: (consent.C0004 === '1').toString(),
+      performance: consent.C0002 === '1',
+      functional: consent.C0003 === '1',
+      advertising: consent.C0004 === '1',
     },
   };
 }
@@ -392,7 +392,7 @@ function createRequestPayload({ updatedContext, pageName, processedPageName, loc
 
   const consentState = (() => {
     const isExplicitConsentCountry = serverTimingCountry
-    && _explicitConsentCountries.includes(serverTimingCountry);
+    && _explicitConsentCountries.includes(serverTimingCountry.toLowerCase());
 
     if (kndctrConsentCookie || (serverTimingCountry && !isExplicitConsentCountry)) {
       return 'post';
