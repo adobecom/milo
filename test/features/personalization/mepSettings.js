@@ -5,6 +5,7 @@ const mepSettings = {
   pzn: '/path/to/manifest.json',
   promo: false,
   target: false,
+  promises: {},
 };
 
 export default mepSettings;

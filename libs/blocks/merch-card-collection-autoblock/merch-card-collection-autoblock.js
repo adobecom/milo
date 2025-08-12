@@ -1,5 +1,5 @@
 import { createTag, getConfig } from '../../utils/utils.js';
-import { postProcessAutoblock } from '../merch/autoblock.js';
+import { postProcessAutoblock, handleCustomAnalyticsEvent } from '../merch/autoblock.js';
 import '../../deps/mas/merch-card.js';
 import '../../deps/mas/merch-quantity-select.js';
 import {
@@ -85,7 +85,7 @@ function getSidenav(collection) {
   let multilevel = false;
   function generateLevelItems(level, parent) {
     for (const node of level) {
-      const value = node.label.toLowerCase();
+      const value = node.queryLabel || node.label.toLowerCase();
       const item = createTag('sp-sidenav-item', { label: node.label, value });
       if (node.icon) {
         createTag('img', { src: node.icon, slot: 'icon' }, null, { parent: item });
@@ -115,53 +115,16 @@ function getSidenav(collection) {
   return sidenav;
 }
 
-function handleCustomAnalyticsEvent(eventName, element) {
-  let daaLhValue = '';
-  let daaLhElement = element.closest('[daa-lh]');
-  while (daaLhElement) {
-    if (daaLhValue) {
-      daaLhValue = `|${daaLhValue}`;
-    }
-    const daaLhAttrValue = daaLhElement.getAttribute('daa-lh');
-    daaLhValue = `${daaLhAttrValue}${daaLhValue}`;
-    daaLhElement = daaLhElement.parentElement.closest('[daa-lh]');
-  }
-  if (daaLhValue) {
-    // eslint-disable-next-line no-underscore-dangle
-    window._satellite?.track('event', {
-      xdm: {},
-      data: { web: { webInteraction: { name: `${eventName}|${daaLhValue}` } } },
-    });
-  }
-}
-
-function enableAnalytics(el) {
-  const tabs = el.closest('.tabs');
-  if (!tabs || tabs.analyticsInitiated) return;
-  tabs.analyticsInitiated = true;
-
-  window.addEventListener('merch-sidenav:select', ({ target }) => {
+function enableSidenavAnalytics(el) {
+  el.sidenav?.addEventListener('merch-sidenav:select', ({ target }) => {
     if (!target || target.oldValue === target.selectedValue) return;
-    handleCustomAnalyticsEvent(`${target.selectedValue}--cat`, target);
+    const container = target.closest('.collection-container');
+    const updated = container.getAttribute('daa-lh')?.includes('--cat');
+    container?.setAttribute('daa-lh', `${target.selectedValue}--cat`);
+    if (updated) {
+      handleCustomAnalyticsEvent('cat-changed', target);
+    }
     target.oldValue = target.selectedValue;
-  });
-
-  window.addEventListener('mas:ready', ({ target }) => {
-    target.querySelectorAll('merch-addon').forEach((ao) => {
-      ao.addEventListener('change', (aoe) => {
-        handleCustomAnalyticsEvent(`addon-${aoe.detail.checked ? 'checked' : 'unchecked'}`, aoe.target);
-      });
-    });
-    target.querySelectorAll('merch-quantity-select').forEach((qs) => {
-      qs.addEventListener('merch-quantity-selector:change', (qse) => {
-        handleCustomAnalyticsEvent(`quantity-${qse.detail.option}`, qse.target);
-      });
-    });
-  });
-
-  window.addEventListener('milo:tab:changed', () => {
-    const tab = tabs.querySelector('button[role="tab"][aria-selected="true"]');
-    if (tab) handleCustomAnalyticsEvent(`tab-change--${tab.getAttribute('daa-ll')}`, tab);
   });
 }
 
@@ -188,7 +151,11 @@ export async function createCollection(el, options) {
   }
   const collection = createTag('merch-card-collection', attributes, aemFragment);
   const container = createTag('div', null, collection);
-  el.replaceWith(container);
+  let toReplace = el;
+  const contentParent = el.closest('.content');
+  const paragraph = contentParent?.querySelector(':scope > p');
+  if (paragraph) toReplace = paragraph;
+  toReplace.replaceWith(container);
 
   await collection.checkReady();
 
@@ -197,13 +164,15 @@ export async function createCollection(el, options) {
   /* Sidenav */
   if (options.sidenav) {
     const sidenav = getSidenav(collection);
-    sidenav.setAttribute('daa-lh', 'b3|filters');
-    collection.attachSidenav(sidenav);
+    if (sidenav) {
+      collection.attachSidenav(sidenav);
+    }
   }
 
-  postProcessAutoblock(collection, false);
+  await postProcessAutoblock(collection, false);
   collection.requestUpdate();
-  enableAnalytics(collection);
+  // card analytics is enabled in postProcessAutoblock
+  enableSidenavAnalytics(collection);
 }
 
 export default async function init(el) {

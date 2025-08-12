@@ -12,6 +12,7 @@ const MILO_BLOCKS = [
   'article-header',
   'aside',
   'author-header',
+  'brand-concierge',
   'brick',
   'bulk-publish',
   'bulk-publish-v2',
@@ -1392,6 +1393,20 @@ export function enablePersonalizationV2() {
   return !!enablePersV2 && isSignedOut();
 }
 
+export function loadMepAddons() {
+  const mepAddons = ['lob'];
+  const promises = {};
+  mepAddons.forEach((addon) => {
+    const enablement = getMepEnablement(addon);
+    if (enablement === false) return;
+    promises[addon] = (async () => {
+      const { default: init } = await import(`../features/mep/addons/${addon}.js`);
+      return init(enablement);
+    })();
+  });
+  return promises;
+}
+
 async function checkForPageMods() {
   const {
     mep: mepParam,
@@ -1401,8 +1416,8 @@ async function checkForPageMods() {
   } = Object.fromEntries(PAGE_URL.searchParams);
   let targetInteractionPromise = null;
   let countryIPPromise = null;
-
   let calculatedTimeout = null;
+
   if (mepParam === 'off') return;
   const pzn = getMepEnablement('personalization');
   const pznroc = getMepEnablement('personalization-roc');
@@ -1415,6 +1430,7 @@ async function checkForPageMods() {
   if (!(pzn || pznroc || target || promo || mepParam
     || mepHighlight || mepButton || mepParam === '' || xlg || ajo)) return;
 
+  const promises = loadMepAddons();
   if (mepgeolocation) {
     const urlParams = new URLSearchParams(window.location.search);
     const akamaiCode = urlParams.get('akamaiLocale')?.toLowerCase() || sessionStorage.getItem('akamai');
@@ -1469,7 +1485,16 @@ async function checkForPageMods() {
     targetInteractionPromise,
     calculatedTimeout,
     enablePersV2,
+    promises,
   });
+}
+
+function setCountry() {
+  const country = window.performance?.getEntriesByType('navigation')?.[0]?.serverTiming
+    ?.find((timing) => timing?.name === 'geo')?.description?.toLowerCase();
+  if (!country) return;
+  sessionStorage.setItem('akamai', country);
+  sessionStorage.setItem('feds_location', JSON.stringify({ country: country.toUpperCase() }));
 }
 
 async function loadPostLCP(config) {
@@ -1511,7 +1536,7 @@ async function loadPostLCP(config) {
   }
   // load privacy here if quick-link is present in first section
   const quickLink = document.querySelector('div.section')?.querySelector('.quick-link');
-  if (!quickLink) return;
+  if (!quickLink || window.adobePrivacy) return;
   import('../scripts/delayed.js').then(({ loadPrivacy }) => {
     loadPrivacy(getConfig, loadScript);
   });
@@ -1718,6 +1743,7 @@ export async function loadArea(area = document) {
   const isDoc = area === document;
   if (isDoc) {
     if (document.getElementById('page-load-ok-milo')) return;
+    setCountry();
     await checkForPageMods();
     appendHtmlToCanonicalUrl();
     appendSuffixToTitles();

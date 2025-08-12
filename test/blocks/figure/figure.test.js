@@ -42,7 +42,7 @@ describe('init', () => {
     const blockEl = sections[3].querySelector('.figure');
     init(blockEl);
 
-    const figures = blockEl.querySelectorAll('.figure');
+    const figures = blockEl.querySelectorAll('figure');
     expect(figures[0].querySelector('a > picture')).to.exist;
   });
 

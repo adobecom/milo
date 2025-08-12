@@ -13,23 +13,28 @@ import {
 } from '../../utils/utils.js';
 
 /* c8 ignore start */
+const getUA = () => navigator.userAgent;
 const PHONE_SIZE = window.screen.width < 550 || window.screen.height < 550;
-const safariIpad = navigator.userAgent.includes('Macintosh') && navigator.maxTouchPoints > 1;
-const isGalaxyTab = navigator.userAgent.includes('Linux') && navigator.maxTouchPoints > 1;
+const safariIpad = getUA().includes('Macintosh') && navigator.maxTouchPoints > 1;
+const isGalaxyTab = getUA().includes('Linux') && navigator.maxTouchPoints > 1;
+const isChromeIOS = getUA().includes('CriOS');
+const isEdgeIOS = getUA().includes('EdgiOS');
+const isFirefoxIOS = getUA().includes('FxiOS');
+
 export const US_GEO = 'en-us';
 export const PERSONALIZATION_TAGS = {
   all: () => true,
-  chrome: () => navigator.userAgent.includes('Chrome') && !navigator.userAgent.includes('Edg'),
-  firefox: () => navigator.userAgent.includes('Firefox'),
-  safari: () => navigator.userAgent.includes('Safari') && !navigator.userAgent.includes('Chrome'),
-  edge: () => navigator.userAgent.includes('Edg'),
-  android: () => navigator.userAgent.includes('Android') || isGalaxyTab,
-  ios: () => /iPad|iPhone|iPod/.test(navigator.userAgent) || safariIpad,
-  windows: () => navigator.userAgent.includes('Windows'),
-  mac: () => navigator.userAgent.includes('Macintosh') && !safariIpad,
+  chrome: () => (getUA().includes('Chrome') && !getUA().includes('Edg')) || isChromeIOS,
+  firefox: () => getUA().includes('Firefox') || isFirefoxIOS,
+  safari: () => getUA().includes('Safari') && !getUA().includes('Chrome') && !isChromeIOS && !isEdgeIOS && !isFirefoxIOS,
+  edge: () => getUA().includes('Edg'),
+  android: () => getUA().includes('Android') || isGalaxyTab,
+  ios: () => /iPad|iPhone|iPod/.test(getUA()) || safariIpad,
+  windows: () => getUA().includes('Windows'),
+  mac: () => getUA().includes('Macintosh') && !safariIpad,
   'mobile-device': () => safariIpad
     || /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Touch/i
-      .test(navigator.userAgent) || isGalaxyTab,
+      .test(getUA()) || isGalaxyTab,
   phone: () => PERSONALIZATION_TAGS['mobile-device']() && PHONE_SIZE,
   tablet: () => PERSONALIZATION_TAGS['mobile-device']() && !PHONE_SIZE,
   desktop: () => !PERSONALIZATION_TAGS['mobile-device'](),
@@ -948,6 +953,8 @@ async function getPersonalizationVariant(
     if (name.toLowerCase().startsWith('previouspage-')) return checkForPreviousPageMatch(name);
     if (hasCountryMatch(name, config)) return true;
     if (userEntitlements?.includes(name)) return true;
+    const { lob } = config.mep.promises;
+    if (lob && lob === name.split('lob-')[1]?.toLowerCase()) return true;
     return PERSONALIZATION_KEYS.includes(name) && PERSONALIZATION_TAGS[name]();
   };
 
@@ -1450,12 +1457,13 @@ export async function init(enablements = {}) {
   const {
     mepParam, mepHighlight, mepButton, pzn, pznroc, promo, enablePersV2,
     target, ajo, countryIPPromise, mepgeolocation, targetInteractionPromise, calculatedTimeout,
-    postLCP,
+    postLCP, promises,
   } = enablements;
   const config = getConfig();
   if (postLCP) {
     isPostLCP = true;
   } else {
+    for (const [key, promise] of Object.entries(promises)) promises[key] = await promise;
     config.mep = {
       updateFragDataProps,
       preview: (mepButton !== 'off'
@@ -1470,6 +1478,7 @@ export async function init(enablements = {}) {
       countryIPPromise,
       geoLocation: mepgeolocation,
       targetInteractionPromise,
+      promises,
     };
 
     manifests = manifests.concat(await combineMepSources(pzn, pznroc, promo, mepParam));
