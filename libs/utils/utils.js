@@ -407,7 +407,7 @@ export async function loadLanguageConfig() {
     window.lana?.log('Failed to load language-config.json:', e);
   }
 
-  return {};
+  return undefined;
 }
 
 let fedsPlaceholderConfig;
@@ -504,6 +504,7 @@ function getPrefixBySite(locale, url, relative) {
   const site = langConfig?.siteLanguages?.find((s) => s.pathMatches.some((d) => isPathMatch(d, url.href)));
   const localeSiteWithLanguageTarget = !locale.language && site && langConfig?.localeToLanguageMap;
   const languageSiteWithLocaleTarget = locale.language && !relative && !site?.languages.some((l) => (l === DEFAULT_LANG ? '' : `/${l}`) === prefix);
+
   if (localeSiteWithLanguageTarget) {
     const mappedLanguageFromPrefix = langConfig?.localeToLanguageMap?.find((m) => `${m.locale === '' ? '' : '/'}${m.locale}` === prefix);
     const languageInUseBySite = site.languages.find((l) => `${l}` === mappedLanguageFromPrefix.languagePath);
