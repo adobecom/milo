@@ -120,3 +120,8 @@ susi-sentry-light {
     border-radius: 16px 16px 0 0;
   }
 }
+
+.dialog-modal .susi-light-login {
+  height: auto;
+  min-height: auto;
+}

@@ -64,7 +64,7 @@ export class SusiLight {
     sentry.authParams = this.createAuthParams();
     const dctxId = getMetadata('susi-light-dctx-id');
     if (dctxId) sentry.authParams.dctx_id = dctxId;
-    sentry.config = { consentProfile: 'free' };
+    sentry.config = { consentProfile: 'free', layout: 'emailAndSocial' };
     sentry.addEventListener('redirect', onRedirect);
     sentry.addEventListener('on-error', onError);
     return sentry;
