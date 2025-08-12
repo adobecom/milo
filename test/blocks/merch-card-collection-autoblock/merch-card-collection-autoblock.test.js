@@ -13,6 +13,10 @@ const satellite = { track: sinon.spy() };
 const originalFetch = window.fetch;
 describe('merch-card-collection autoblock', () => {
   describe('init method', () => {
+    // Create mock mas-commerce-service element
+    const mockService = document.createElement('mas-commerce-service');
+    mockService.readyPromise = Promise.resolve();
+    document.head.appendChild(mockService);
     before(async () => {
       sinon.stub(window, 'fetch').callsFake(async (url) => {
         const result = await originalFetch('/test/blocks/merch-card-collection-autoblock/mocks/fragment.json').then(async (res) => {
@@ -82,9 +86,8 @@ describe('merch-card-collection autoblock', () => {
       document.body.append(root);
       await init(a);
       document.querySelector('.collection-container')?.setAttribute('daa-lh', 'all--cat');
-      const sidenav = document.querySelector('merch-sidenav');
-
       window._satellite.track.called = false;
+      const sidenav = document.querySelector('merch-sidenav');
       const lastFilter = sidenav.querySelector('sp-sidenav-item:last-of-type');
       sidenav.filters.selectElement(lastFilter);
       await delay(100);

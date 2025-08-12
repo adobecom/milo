@@ -8,6 +8,7 @@ import {
 } from '../constants.js';
 
 export const PLANS_AEM_FRAGMENT_MAPPING = {
+    cardName: { attribute: 'name' },
     title: { tag: 'h3', slot: 'heading-xs' },
     subtitle: { tag: 'p', slot: 'subtitle' },
     prices: { tag: 'p', slot: 'heading-m' },
@@ -156,19 +157,12 @@ export class Plans extends VariantLayout {
         }
     }
 
-    adjustPrices() {
-        if (!this.headingM) return;
-        this.headingM.setAttribute('role', 'heading');
-        this.headingM.setAttribute('aria-level', '2');
-    }
-
     postCardUpdateHook() {
         this.adaptForMedia();
         this.adjustTitleWidth();
         this.adjustLegal();
         this.adjustAddon();
         this.adjustCallout();
-        this.adjustPrices();
     }
 
     get headingM() {
