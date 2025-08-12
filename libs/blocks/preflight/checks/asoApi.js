@@ -57,79 +57,90 @@ async function getASOToken() {
 function resultsFormatter(results) {
   const formattedResults = [];
 
-  const processAudit = ({ type, seoId, seoTitle, passDescription }) => {
-    let issue = null;
-
-    if (type === 'metatag') {
-      const opportunity = results
-        .find((result) => result.name === 'metatags')
-        ?.opportunities.find((opp) => opp.tagName === seoId);
-      if (opportunity) {
-        formattedResults.push({
-          id: seoId,
-          title: seoTitle,
-          status: STATUS.FAIL,
-          description: `${opportunity.issue} ${opportunity.issueDetails}`,
-          aiSuggestion: opportunity.aiSuggestion,
-        });
-        return;
-      }
-    } else {
-      const [audit] = results.filter((result) => result.name === seoId);
-      if (!audit) return;
-
-      if (audit.opportunities.length > 0) {
-        [issue] = audit.opportunities;
-        formattedResults.push({
-          id: seoId,
-          title: seoTitle,
-          status: STATUS.FAIL,
-          description: issue.issue,
-          aiSuggestion: issue.aiSuggestion || issue.seoRecommendation,
-        });
-        return;
-      }
-    }
+  const processMetaAudit = ({ seoId, seoTitle, passDescription }) => {
+    const opportunity = results
+      .find((result) => result.name === 'metatags')
+      ?.opportunities.find((opp) => opp.tagName === seoId);
 
     formattedResults.push({
       id: seoId,
       title: seoTitle,
-      status: STATUS.PASS,
-      description: passDescription,
+      status: opportunity ? STATUS.FAIL : STATUS.PASS,
+      description: opportunity ? `${opportunity.issue} ${opportunity.issueDetails}` : passDescription,
+      aiSuggestion: opportunity?.aiSuggestion,
     });
   };
 
-  processAudit({ type: 'metatag', seoId: SEO_IDS.title, seoTitle: SEO_TITLES.title, passDescription: SEO_DESCRIPTIONS.title });
-  processAudit({ type: 'metatag', seoId: SEO_IDS.description, seoTitle: SEO_TITLES.description, passDescription: SEO_DESCRIPTIONS.description });
-  processAudit({ type: 'standard', seoId: 'h1-count', seoTitle: SEO_TITLES.h1Count, passDescription: SEO_DESCRIPTIONS.h1Count });
-  processAudit({ type: 'standard', seoId: 'canonical', seoTitle: SEO_TITLES.canonical, passDescription: SEO_DESCRIPTIONS.canonical });
-  processAudit({ type: 'standard', seoId: 'body-size', seoTitle: SEO_TITLES.bodySize, passDescription: SEO_DESCRIPTIONS.bodySize });
-  processAudit({ type: 'standard', seoId: 'lorem-ipsum', seoTitle: SEO_TITLES.loremIpsum, passDescription: SEO_DESCRIPTIONS.loremIpsum });
-
-  const [links] = results.filter((audit) => audit.name === 'links');
-  if (links) {
-    const [badLinksOpportunity] = links.opportunities.filter((o) => o.check === 'bad-links');
-    const [brokenLinksOpportunity] = links.opportunities.filter((o) => o.check === 'broken-links');
-    const badLinks = badLinksOpportunity?.issue || [];
-    const brokenLinks = brokenLinksOpportunity?.issue || [];
-    const issueLinks = [...badLinks, ...brokenLinks];
-    const hasIssues = issueLinks.length > 0;
-
+  const processStandardAudit = ({ seoId, seoTitle, passDescription }) => {
+    const audit = results.find((result) => result.name === seoId);
+    if (!audit) return;
+    const [issue] = audit.opportunities;
     formattedResults.push({
-      id: SEO_IDS.links,
-      title: SEO_TITLES.links,
-      status: hasIssues ? STATUS.FAIL : STATUS.PASS,
-      description: hasIssues ? `Reason: ${issueLinks.length} problem ${issueLinks.length > 1 ? 'links' : 'link'}. Use the list below to fix them.` : SEO_DESCRIPTIONS.links,
-      details: {
-        badLinks: hasIssues ? issueLinks.map((link) => ({
-          liveHref: link.url,
-          status: link.issue,
-          parent: 'main',
-        })) : [],
-      },
+      id: seoId,
+      title: seoTitle,
+      status: issue ? STATUS.FAIL : STATUS.PASS,
+      description: issue ? `${issue.issue} ${issue.issueDetails}` : passDescription,
+      aiSuggestion: issue?.aiSuggestion,
     });
-  }
+  };
 
+  const processLinksAudit = () => {
+    const [links] = results.filter((audit) => audit.name === SEO_IDS.links);
+    if (links) {
+      const [badLinksOpportunity] = links.opportunities.filter((o) => o.check === 'bad-links');
+      const [brokenLinksOpportunity] = links.opportunities.filter((o) => o.check === 'broken-links');
+      const badLinks = badLinksOpportunity?.issue || [];
+      const brokenLinks = brokenLinksOpportunity?.issue || [];
+      const issueLinks = [...badLinks, ...brokenLinks];
+      const hasIssues = issueLinks.length > 0;
+
+      formattedResults.push({
+        id: SEO_IDS.links,
+        title: SEO_TITLES.links,
+        status: hasIssues ? STATUS.FAIL : STATUS.PASS,
+        description: hasIssues ? `Reason: ${issueLinks.length} problem ${issueLinks.length > 1 ? 'links' : 'link'}. Use the list below to fix them.` : SEO_DESCRIPTIONS.links,
+        details: {
+          badLinks: hasIssues ? issueLinks.map((link) => ({
+            liveHref: link.url,
+            status: link.issue,
+            parent: 'main',
+          })) : [],
+        },
+      });
+    }
+  };
+
+  processMetaAudit({
+    seoId: SEO_IDS.title,
+    seoTitle: SEO_TITLES.title,
+    passDescription: SEO_DESCRIPTIONS.title,
+  });
+  processMetaAudit({
+    seoId: SEO_IDS.description,
+    seoTitle: SEO_TITLES.description,
+    passDescription: SEO_DESCRIPTIONS.description,
+  });
+  processStandardAudit({
+    seoId: SEO_IDS.h1Count,
+    seoTitle: SEO_TITLES.h1Count,
+    passDescription: SEO_DESCRIPTIONS.h1Count,
+  });
+  processStandardAudit({
+    seoId: SEO_IDS.canonical,
+    seoTitle: SEO_TITLES.canonical,
+    passDescription: SEO_DESCRIPTIONS.canonical,
+  });
+  processStandardAudit({
+    seoId: SEO_IDS.bodySize,
+    seoTitle: SEO_TITLES.bodySize,
+    passDescription: SEO_DESCRIPTIONS.bodySize,
+  });
+  processStandardAudit({
+    seoId: SEO_IDS.loremIpsum,
+    seoTitle: SEO_TITLES.loremIpsum,
+    passDescription: SEO_DESCRIPTIONS.loremIpsum,
+  });
+  processLinksAudit();
   return formattedResults;
 }
 

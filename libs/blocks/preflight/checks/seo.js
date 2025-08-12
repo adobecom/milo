@@ -144,7 +144,7 @@ export async function checkDescription(area) {
 }
 
 export async function checkBody(area) {
-  const { length } = area.documentElement.innerText;
+  const { length } = area.documentElement.innerText.trim();
   let status;
   let description;
 

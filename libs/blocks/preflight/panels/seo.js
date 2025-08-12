@@ -153,22 +153,29 @@ export default function SEO() {
       }
     }, 1000);
 
+    const timeoutId = setTimeout(() => {
+      clearInterval(intervalIdSuggest);
+    }, 40000);
+
     // eslint-disable-next-line
-    return () => clearInterval(intervalIdSuggest);
+    return () => {
+      clearInterval(intervalIdSuggest);
+      clearTimeout(timeoutId);
+    };
   }, []);
 
   return html`
     <div class=preflight-columns>
       <div class=preflight-column>
-        <${SeoItem} id=${SEO_IDS.title} supportsAi=${true} icon=${titleResult.value.icon} title=${titleResult.value.title} description=${titleResult.value.description} />
+        <${SeoItem} id=${SEO_IDS.title} supportsAi icon=${titleResult.value.icon} title=${titleResult.value.title} description=${titleResult.value.description} />
         <${SeoItem} id=${SEO_IDS.h1Count} icon=${h1Result.value.icon} title=${h1Result.value.title} description=${h1Result.value.description} />
         <${SeoItem} id=${SEO_IDS.canonical} icon=${canonResult.value.icon} title=${canonResult.value.title} description=${canonResult.value.description} />
         <${SeoItem} id=${SEO_IDS.links} icon=${linksResult.value.icon} title=${linksResult.value.title} description=${linksResult.value.description} />
       </div>
       <div class=preflight-column>
         <${SeoItem} id=${SEO_IDS.bodySize} icon=${bodyResult.value.icon} title=${bodyResult.value.title} description=${bodyResult.value.description} />
-        <${SeoItem} id=${SEO_IDS.loremIpsum} supportsAi=${true} icon=${loremResult.value.icon} title=${loremResult.value.title} description=${loremResult.value.description} />
-        <${SeoItem} id=${SEO_IDS.description} supportsAi=${true} icon=${descResult.value.icon} title=${descResult.value.title} description=${descResult.value.description} />
+        <${SeoItem} id=${SEO_IDS.loremIpsum} supportsAi icon=${loremResult.value.icon} title=${loremResult.value.title} description=${loremResult.value.description} />
+        <${SeoItem} id=${SEO_IDS.description} supportsAi icon=${descResult.value.icon} title=${descResult.value.title} description=${descResult.value.description} />
       </div>
     </div>
     <div class='problem-links'>
