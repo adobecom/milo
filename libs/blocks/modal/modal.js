@@ -227,6 +227,18 @@ export async function getModal(details, custom) {
   dialog.prepend(close);
   dialog.append(focusPlaceholder);
   document.body.append(dialog);
+
+  // Safari fix: Force reflow to ensure modal is rendered
+  const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+  if (isSafari) {
+    // Force layout recalculation in Safari
+    // eslint-disable-next-line chai-friendly/no-unused-expressions
+    dialog.offsetHeight; // Read property to force reflow
+    // Ensure dialog is visible
+    dialog.style.display = 'block';
+    dialog.style.visibility = 'visible';
+  }
+
   dialogLoadingSet.delete(id);
   firstFocusable?.focus({ preventScroll: true, ...focusVisible });
   window.dispatchEvent(loadedEvent);
@@ -241,6 +253,14 @@ export async function getModal(details, custom) {
       if (e.target === curtain) closeModal(dialog);
     });
     dialog.insertAdjacentElement('afterend', curtain);
+
+    // Safari fix: Ensure curtain is rendered
+    if (isSafari) {
+      curtain.style.display = 'block';
+      // eslint-disable-next-line chai-friendly/no-unused-expressions
+      curtain.offsetHeight; // Force reflow
+    }
+
     [...document.querySelectorAll('header, main, footer')]
       .forEach((element) => element.setAttribute('aria-disabled', 'true'));
   }
@@ -365,22 +385,23 @@ window.addEventListener('hashchange', (e) => {
 
 // Safari compatibility: Check for hash on initial page load
 // Safari may not trigger hashchange when page loads with a hash
-if (window.location.hash && document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', () => {
-    // Small delay for Safari to ensure all elements are ready
-    setTimeout(() => {
-      const details = findDetails(window.location.hash, null);
-      if (details && !document.querySelector(`.dialog-modal${window.location.hash}`)) {
-        getModal(details);
-      }
-    }, 100);
-  });
-} else if (window.location.hash && document.readyState !== 'loading') {
-  // Page already loaded, check immediately
-  setTimeout(() => {
+const checkInitialHash = () => {
+  if (window.location.hash) {
     const details = findDetails(window.location.hash, null);
     if (details && !document.querySelector(`.dialog-modal${window.location.hash}`)) {
-      getModal(details);
+      // Add a small delay for Safari to ensure DOM is ready
+      const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+      const delay = isSafari ? 200 : 100;
+      setTimeout(() => {
+        getModal(details);
+      }, delay);
     }
-  }, 100);
+  }
+};
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', checkInitialHash);
+} else {
+  // Page already loaded, check immediately with a small delay
+  setTimeout(checkInitialHash, 100);
 }
