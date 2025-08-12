@@ -88,10 +88,12 @@ function resultsFormatter(results) {
     const [links] = results.filter((audit) => audit.name === SEO_IDS.links);
     if (links) {
       const [badLinksOpportunity] = links.opportunities.filter((o) => o.check === 'bad-links');
-      const [brokenLinksOpportunity] = links.opportunities.filter((o) => o.check === 'broken-links');
+      const [brokenLinksOpportunity] = links.opportunities.filter((o) => o.check === 'broken-internal-links');
+      const [brokenExternalLinksOpportunity] = links.opportunities.filter((o) => o.check === 'broken-external-links');
       const badLinks = badLinksOpportunity?.issue || [];
       const brokenLinks = brokenLinksOpportunity?.issue || [];
-      const issueLinks = [...badLinks, ...brokenLinks];
+      const brokenExternalLinks = brokenExternalLinksOpportunity?.issue || [];
+      const issueLinks = [...badLinks, ...brokenLinks, ...brokenExternalLinks];
       const hasIssues = issueLinks.length > 0;
 
       formattedResults.push({
