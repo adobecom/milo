@@ -1457,6 +1457,15 @@ merch-card-collection:has([slot="subtitle"]) merch-card {
     margin: 0;
 }
 
+#tabs-plan .tab-list-container button[role="tab"][aria-selected="false"] {
+    border-top-color: #EAEAEA;
+    border-right-color: #EAEAEA;
+}
+
+#tabs-plan .tab-list-container button[role="tab"][aria-selected="false"]:first-of-type {
+    border-left-color: #EAEAEA;
+}
+
 .plans-edu .columns .row {
     grid-template-columns: repeat(auto-fit, var(--consonant-merch-card-plans-students-width));
     justify-content: center;
