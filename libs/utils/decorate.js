@@ -294,7 +294,7 @@ export function addAccessibilityControl(videoString, videoAttrs, indexOfVideo, t
 }
 
 function isVideoReady(video) {
-  return video.readyState > 1;
+  return video.readyState > 1 && document.visibilityState === 'visible';
 }
 
 export function handlePause(event) {
@@ -335,6 +335,7 @@ export function applyAccessibilityEvents(videoEl) {
     pausePlayWrapper.addEventListener('keydown', handlePause);
   }
   if (videoEl.hasAttribute('autoplay')) {
+    videoEl.addEventListener('canplay', () => isVideoReady(videoEl) && videoEl.play());
     videoEl.addEventListener('playing', (event) => syncPausePlayIcon(videoEl, event));
     videoEl.addEventListener('ended', () => syncPausePlayIcon(videoEl));
     if (isReducedMotion) {
