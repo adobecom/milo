@@ -75,7 +75,9 @@ function transformToList(section) {
   const isSectionUp = [...section.classList].some((c) => c.endsWith('-up'));
   const hasHeaders = section.querySelector('h1, h2, h3, h4, h5, h6');
   const hasAllowedChildren = [...section.children]
-    .every((child) => child.classList.contains('action-item') || child.classList.contains('icon-block'));
+    .every((child) => child.classList.contains('action-item')
+    || child.classList.contains('icon-block')
+    || child.classList.contains('section-metadata'));
   if (!isSectionUp || hasHeaders || !hasAllowedChildren) return;
   section.setAttribute('role', 'list');
   [...section.children].forEach((child) => {
