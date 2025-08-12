@@ -79,8 +79,8 @@ function resultsFormatter(results) {
       id: seoId,
       title: seoTitle,
       status: issue ? STATUS.FAIL : STATUS.PASS,
-      description: issue ? `${issue.issue} ${issue.issueDetails}` : passDescription,
-      aiSuggestion: issue?.aiSuggestion,
+      description: issue ? issue.issue : passDescription,
+      aiSuggestion: issue?.aiSuggestion || issue?.seoRecommendation,
     });
   };
 
@@ -264,8 +264,8 @@ export async function fetchPreflightChecks() {
     new Promise((_, reject) => {
       setTimeout(() => {
         lanaLog('ASO: identify results not available within 20 seconds');
-        reject(new Error('ASO preflight checks timeout: identify and suggest results not available within 20 seconds'));
-      }, 20000);
+        reject(new Error('ASO preflight checks timeout: identify and suggest results not available within 30 seconds'));
+      }, 30000);
     }),
   ]);
 

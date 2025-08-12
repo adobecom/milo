@@ -155,7 +155,7 @@ export default function SEO() {
 
     const timeoutId = setTimeout(() => {
       clearInterval(intervalIdSuggest);
-    }, 40000);
+    }, 50000);
 
     // eslint-disable-next-line
     return () => {
