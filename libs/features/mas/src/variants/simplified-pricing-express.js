@@ -1,6 +1,7 @@
 import { html, css } from 'lit';
 import { VariantLayout } from './variant-layout.js';
 import { CSS } from './simplified-pricing-express.css.js';
+import { isMobileOrTablet } from '../utils.js';
 
 export const SIMPLIFIED_PRICING_EXPRESS_AEM_FRAGMENT_MAPPING = {
     title: {
@@ -12,10 +13,6 @@ export const SIMPLIFIED_PRICING_EXPRESS_AEM_FRAGMENT_MAPPING = {
     badge: {
         tag: 'div',
         slot: 'badge',
-    },
-    trialBadge: {
-        tag: 'div',
-        slot: 'trial-badge',
     },
     description: {
         tag: 'div',
@@ -36,10 +33,8 @@ export const SIMPLIFIED_PRICING_EXPRESS_AEM_FRAGMENT_MAPPING = {
         specialValues: {
             gray: 'var(--spectrum-gray-300)',
             blue: 'var(--spectrum-blue-400)',
-            'gradient-purple-blue':
-                'linear-gradient(98deg, #FF477B 3.22%, #5C5CE0 52.98%, #318FFF 101.72%)',
-            'gradient-firefly-spectrum':
-                'linear-gradient(90deg, #E54065 0%, #7C4DFF 33%, #2D9CDB 66%, #18D8A9 100%)',
+            'gradient-purple-blue': 'linear-gradient(96deg, #B539C8 0%, #7155FA 66%, #3B63FB 100%)',
+            'gradient-firefly-spectrum': 'linear-gradient(96deg, #D73220 0%, #D92361 33%, #7155FA 100%)',
         },
     },
     disabledAttributes: ['badgeColor', 'trialBadgeColor', 'trialBadgeBorderColor'],
@@ -59,38 +54,53 @@ export class SimplifiedPricingExpress extends VariantLayout {
         return '[slot="heading-xs"]';
     }
 
-    postCardUpdateHook() {
-        // Gradient handling now done universally in hydrate.js
-    }
-
     connectedCallbackHook() {
         if (!this.card || this.card.failed) {
             return;
         }
         
-        // Gradient handling now done universally in hydrate.js
+        this.setupAccordion();
         
-        this.setupMobileAccordion();
-        this.watchForDefaultCardAttribute();
-        
-        setTimeout(() => {
-            if (this.card?.hasAttribute('data-default-card') && window.matchMedia('(max-width: 1199px)').matches) {
+        requestAnimationFrame(() => {
+            if (this.card?.hasAttribute('data-default-card') && isMobileOrTablet()) {
                 this.card.setAttribute('data-expanded', 'true');
             }
-        }, 100);
+        });
     }
 
-    watchForDefaultCardAttribute() {
-        if (!this.card) return;
-        
+    setupAccordion() {
+        const merchCard = this.card;
+        if (!merchCard) {
+            return;
+        }
+
+        const updateExpandedState = () => {
+            if (isMobileOrTablet()) {
+                const isDefaultCard = merchCard.hasAttribute('data-default-card');
+                merchCard.setAttribute('data-expanded', isDefaultCard ? 'true' : 'false');
+            } else {
+                merchCard.removeAttribute('data-expanded');
+            }
+        };
+
+        // Set initial state
+        updateExpandedState();
+
+        // Watch for viewport changes
+        const mediaQuery = window.matchMedia('(max-width: 1024px)');
+        this.mediaQueryListener = () => {
+            updateExpandedState();
+        };
+        mediaQuery.addEventListener('change', this.mediaQueryListener);
+
+        // Watch for default card attribute changes
         this.attributeObserver = new MutationObserver((mutations) => {
             mutations.forEach((mutation) => {
-                if (mutation.type === 'attributes') {
-                    if (mutation.attributeName === 'data-default-card' && this.card.hasAttribute('data-default-card')) {
-                        if (window.matchMedia('(max-width: 1199px)').matches) {
-                            this.card.setAttribute('data-expanded', 'true');
-                        }
-                    }
+                if (mutation.type === 'attributes' && 
+                    mutation.attributeName === 'data-default-card' && 
+                    this.card.hasAttribute('data-default-card') && 
+                    isMobileOrTablet()) {
+                    this.card.setAttribute('data-expanded', 'true');
                 }
             });
         });
@@ -101,33 +111,9 @@ export class SimplifiedPricingExpress extends VariantLayout {
         });
     }
 
-    setupMobileAccordion() {
-        const merchCard = this.card;
-        if (!merchCard) {
-            return;
-        }
-
-        const updateExpandedState = () => {
-            if (window.matchMedia('(max-width: 1199px)').matches) {
-                const isDefaultCard = merchCard.hasAttribute('data-default-card');
-                merchCard.setAttribute('data-expanded', isDefaultCard ? 'true' : 'false');
-            } else {
-                merchCard.removeAttribute('data-expanded');
-            }
-        };
-
-        updateExpandedState();
-
-        const mediaQuery = window.matchMedia('(max-width: 1199px)');
-        this.mediaQueryListener = () => {
-            updateExpandedState();
-        };
-        mediaQuery.addEventListener('change', this.mediaQueryListener);
-    }
-
     disconnectedCallbackHook() {
         if (this.mediaQueryListener) {
-            const mediaQuery = window.matchMedia('(max-width: 1199px)');
+            const mediaQuery = window.matchMedia('(max-width: 1024px)');
             mediaQuery.removeEventListener('change', this.mediaQueryListener);
         }
         if (this.attributeObserver) {
@@ -140,11 +126,7 @@ export class SimplifiedPricingExpress extends VariantLayout {
         e.stopPropagation();
         
         const merchCard = this.card;
-        if (!merchCard) {
-            return;
-        }
-        
-        if (!window.matchMedia('(max-width: 1199px)').matches) {
+        if (!merchCard || !isMobileOrTablet()) {
             return;
         }
         
@@ -161,7 +143,7 @@ export class SimplifiedPricingExpress extends VariantLayout {
                 <slot name="badge"></slot>
             </div>
             <div class="card-content">
-                <div class="header" @click=${(e) => this.handleChevronClick(e)}>
+                <div class="header">
                     <slot name="heading-xs"></slot>
                     <slot name="trial-badge"></slot>
                     <button class="chevron-button" aria-label="Expand card" @click=${(e) => this.handleChevronClick(e)}>
@@ -200,6 +182,9 @@ export class SimplifiedPricingExpress extends VariantLayout {
             --merch-card-simplified-pricing-express-price-currency-symbol-font-size: 22px;
             --merch-card-simplified-pricing-express-price-currency-symbol-font-weight: 700;
             --merch-card-simplified-pricing-express-price-currency-symbol-line-height: 28.6px;
+            --merch-card-simplified-pricing-express-price-recurrence-font-size: 12px;
+            --merch-card-simplified-pricing-express-price-recurrence-font-weight: 700;
+            --merch-card-simplified-pricing-express-price-recurrence-line-height: 15.6px;
             --merch-card-simplified-pricing-express-body-xs-font-size: 14px;
             --merch-card-simplified-pricing-express-body-xs-line-height: 18.2px;
             --merch-card-simplified-pricing-express-price-p-font-size: 12px;
@@ -210,8 +195,8 @@ export class SimplifiedPricingExpress extends VariantLayout {
             --merch-card-simplified-pricing-express-cta-line-height: 23.4px;
             
             /* Gradient definitions */
-            --gradient-purple-blue: linear-gradient(98deg, #FF477B 3.22%, #5C5CE0 52.98%, #318FFF 101.72%);
-            --gradient-firefly-spectrum: linear-gradient(90deg, #E54065 0%, #7C4DFF 33%, #2D9CDB 66%, #18D8A9 100%);
+            --gradient-purple-blue: linear-gradient(96deg, #B539C8 0%, #7155FA 66%, #3B63FB 100%);
+            --gradient-firefly-spectrum: linear-gradient(96deg, #D73220 0%, #D92361 33%, #7155FA 100%);
             width: var(--merch-card-simplified-pricing-express-width);
             max-width: var(--merch-card-simplified-pricing-express-width);
             background: transparent;
@@ -276,7 +261,6 @@ export class SimplifiedPricingExpress extends VariantLayout {
         /* Collapsed state for non-gradient cards */
         :host([variant='simplified-pricing-express']:not([gradient-border='true'])[data-expanded='false']) .card-content {
             overflow: hidden;
-            height: 35px;
         }
         
         /* When badge exists, adjust card content border radius */
@@ -387,42 +371,15 @@ export class SimplifiedPricingExpress extends VariantLayout {
                 height: auto;
             }
 
-            :host([variant='simplified-pricing-express']) .price {
-                display: flex;
-                flex-direction: column;
-                justify-content: flex-end;
-                margin-top: auto;
-            }
-
             :host([variant='simplified-pricing-express']) .cta {
                 flex-shrink: 0;
             }
-        }
-
-        :host([variant='simplified-pricing-express']) .price-container {
-            display: flex;
-            flex-direction: row;
-            align-items: baseline;
-            gap: 4px;
-        }
-
-        :host([variant='simplified-pricing-express']) .cta-section {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            margin-top: auto;
         }
 
         :host([variant='simplified-pricing-express']) .cta,
         :host([variant='simplified-pricing-express']) .cta ::slotted(*) {
             width: 100%;
             display: block;
-        }
-
-        :host([variant='simplified-pricing-express']) .footer-text {
-            font-size: 12px;
-            line-height: 1.4;
-            color: var(--spectrum-gray-700);
         }
 
         /* Mobile accordion styles */
@@ -450,8 +407,16 @@ export class SimplifiedPricingExpress extends VariantLayout {
             transform: rotate(180deg);
         }
 
-        /* Mobile and Tablet - Show chevron */
-        @media (max-width: 1199px) {
+        /* Mobile and Tablet styles */
+        @media (max-width: 1024px) {
+            :host([variant='simplified-pricing-express']) {
+                width: 311px;
+                max-width: 311px;
+                min-height: auto;
+                cursor: pointer;
+                transition: all 0.3s ease;
+            }
+
             :host([variant='simplified-pricing-express']) .header {
                 position: relative;
                 padding-right: 32px;
@@ -466,20 +431,10 @@ export class SimplifiedPricingExpress extends VariantLayout {
                 top: 65%;
                 transform: translateY(-50%);
             }
-        }
-
-        /* Mobile and Tablet styles */
-        @media (max-width: 1199px) {
-            :host([variant='simplified-pricing-express']) {
-                width: 311px;
-                max-width: 311px;
-                min-height: auto;
-                cursor: pointer;
-                transition: all 0.3s ease;
-            }
             
-            :host([variant='simplified-pricing-express']) .card-content {
-                padding: var(--merch-card-simplified-pricing-express-padding-mobile);
+            :host([variant='simplified-pricing-express'][gradient-border='true']) .card-content,
+            :host([variant='simplified-pricing-express']:not([gradient-border='true'])) .card-content {
+                padding: calc(var(--merch-card-simplified-pricing-express-padding-mobile) + 2px);
             }
             
             /* Hide badge-wrapper on mobile/tablet except for gradient borders */
@@ -489,9 +444,8 @@ export class SimplifiedPricingExpress extends VariantLayout {
             
             /* Gradient border collapsed state - limit badge-wrapper height */
             :host([variant='simplified-pricing-express'][gradient-border='true'][data-expanded='false']) .card-content {
-                max-height: 10px;
                 overflow: hidden;
-                padding: 16px 16px 35px 16px
+                padding: 16px 16px 35px 16px;
             }
         }
     `;

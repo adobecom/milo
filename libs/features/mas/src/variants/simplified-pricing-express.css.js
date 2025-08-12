@@ -3,10 +3,6 @@ import { DESKTOP_UP } from '../media.js';
 export const CSS = `
 :root {
     --merch-card-simplified-pricing-express-width: 311px;
-    --merch-card-simplified-pricing-express-cta-color: var(
-        var(--spectrum-gray-50),
-        rgba(255, 255, 255, 1)
-    );
 }
 
 merch-card[variant="simplified-pricing-express"] merch-badge {
@@ -119,14 +115,19 @@ merch-card[variant="simplified-pricing-express"] [slot="price"] .price-currency-
   width: 100%;
 }
 
-/* Remove default strikethrough for simplified-pricing-express */
+merch-card[variant="simplified-pricing-express"] [slot="price"] span[is="inline-price"] .price-recurrence {
+  font-size: var(--merch-card-simplified-pricing-express-price-recurrence-font-size);
+  font-weight: var(--merch-card-simplified-pricing-express-price-recurrence-font-weight);
+  line-height: var(--merch-card-simplified-pricing-express-price-recurrence-line-height);
+}
+
+/* Strikethrough price styling */
 merch-card[variant="simplified-pricing-express"] span[is="inline-price"][data-template='strikethrough'] .price,
-merch-card[variant="simplified-pricing-express"] span[is="inline-price"][data-template='strikethrough'] .price-strikethrough, 
+merch-card[variant="simplified-pricing-express"] span[is="inline-price"][data-template='strikethrough'] .price-strikethrough,
 merch-card[variant="simplified-pricing-express"] span.placeholder-resolved[data-template='strikethrough'] {
   text-decoration: none;
 }
 
-/* Apply strikethrough only to price numbers */
 merch-card[variant="simplified-pricing-express"] span[is="inline-price"][data-template='strikethrough'] .price-integer,
 merch-card[variant="simplified-pricing-express"] span[is="inline-price"][data-template='strikethrough'] .price-decimals-delimiter,
 merch-card[variant="simplified-pricing-express"] span[is="inline-price"][data-template='strikethrough'] .price-decimals {
@@ -172,7 +173,7 @@ merch-card[variant="simplified-pricing-express"] mas-tooltip {
 /* Tooltip containers - overflow handled by Shadow DOM */
 
 /* Mobile and Tablet styles */
-@media (max-width: 1199px) {
+@media (max-width: 1024px) {
   /* Remove gap between cards on mobile/tablet */
   merch-card-collection.simplified-pricing-express {
     gap: 8px;
@@ -201,21 +202,13 @@ merch-card[variant="simplified-pricing-express"] mas-tooltip {
     line-height: 20.8px;
   }
 
-  /* By default, hide content sections on mobile until JavaScript sets data-expanded */
+  /* Collapsed state - hide content sections */
   merch-card[variant="simplified-pricing-express"]:not([data-expanded="true"]) [slot="body-xs"],
   merch-card[variant="simplified-pricing-express"]:not([data-expanded="true"]) [slot="price"],
-  merch-card[variant="simplified-pricing-express"]:not([data-expanded="true"]) [slot="cta"] {
-    display: none;
-    visibility: hidden;
-    height: 0;
-    margin: 0;
-    padding: 0;
-  }
-
-  /* Also apply to cards without data-expanded attribute */
-  merch-card[variant="simplified-pricing-express"]:not([data-expanded]) [slot="body-xs"],
-  merch-card[variant="simplified-pricing-express"]:not([data-expanded]) [slot="price"],
-  merch-card[variant="simplified-pricing-express"]:not([data-expanded]) [slot="cta"] {
+  merch-card[variant="simplified-pricing-express"]:not([data-expanded="true"]) [slot="cta"],
+  merch-card[variant="simplified-pricing-express"][data-expanded="false"] [slot="body-xs"],
+  merch-card[variant="simplified-pricing-express"][data-expanded="false"] [slot="price"],
+  merch-card[variant="simplified-pricing-express"][data-expanded="false"] [slot="cta"] {
     display: none;
     visibility: hidden;
     height: 0;
@@ -227,17 +220,6 @@ merch-card[variant="simplified-pricing-express"] mas-tooltip {
   main merch-card-collection.simplified-pricing-express p:has(merch-card[variant="simplified-pricing-express"]),
   main .section p:has(merch-card[variant="simplified-pricing-express"]) {
     margin: 0;
-  }
-
-  /* Collapsed state - target slotted content */
-  merch-card[variant="simplified-pricing-express"][data-expanded="false"] [slot="body-xs"],
-  merch-card[variant="simplified-pricing-express"][data-expanded="false"] [slot="price"],
-  merch-card[variant="simplified-pricing-express"][data-expanded="false"] [slot="cta"] {
-    display: none;
-    visibility: hidden;
-    height: 0;
-    margin: 0;
-    padding: 0;
   }
 
   /* Expanded state - explicitly show content */
@@ -260,7 +242,7 @@ merch-card[variant="simplified-pricing-express"] mas-tooltip {
 
   merch-card[variant="simplified-pricing-express"][gradient-border="true"][data-expanded="false"],
   merch-card[variant="simplified-pricing-express"][gradient-border="true"]:not([data-expanded="true"]) {
-    max-height: 90px;
+    max-height: 85px;
   }
 }
 
@@ -270,9 +252,5 @@ merch-card[variant="simplified-pricing-express"] [slot="cta"] button.spectrum-Bu
 merch-card[variant="simplified-pricing-express"] [slot="cta"] a.spectrum-Button.spectrum-Button--accent {
     background-color: var(--spectrum-indigo-900);
     width: 100%;
-}
-
-merch-card[variant="simplified-pricing-express"] [slot="footer"] sp-button[variant="accent"] {
-    background-color: var(--spectrum-indigo-900);
 }
 `;
