@@ -348,7 +348,6 @@ var qr=Object.defineProperty;var Ne=o=>{throw TypeError(o)};var jr=(o,e,t)=>e in
             color: var(--merch-addon-label-color);
             font-size: var(--merch-addon-label-size);
             line-height: var(--merch-addon-label-line-height);
-            font-family: "Adobe Clean";
             font-style: normal;
             font-weight: 400;
             cursor: pointer;
@@ -1302,7 +1301,6 @@ merch-card-collection.plans merch-card[variant="plans"] aem-fragment + [slot^="h
 merch-card[variant^='plans'] span[data-template="legal"] {
     display: block;
     color: var(----merch-color-grey-80);
-    font-family: var(--Font-adobe-clean, "Adobe Clean");
     font-size: 14px;
     font-style: italic;
     font-weight: 400;
