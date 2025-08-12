@@ -51,6 +51,15 @@ function getPlatforms(el) {
   return platforms;
 }
 
+function getPrevHeadingLevel(block) {
+  const prevHeading = [...document.querySelectorAll('h2, h3, h4, h5, h6')]
+    .reverse()
+    /* eslint-disable-next-line no-bitwise */
+    .find((heading) => heading.compareDocumentPosition(block) & Node.DOCUMENT_POSITION_FOLLOWING);
+  const prevHeadingTag = prevHeading?.tagName.toLowerCase() ?? 'h2';
+  return prevHeadingTag.replace('h', '');
+}
+
 export default async function decorate(block) {
   const config = getConfig();
   const base = config.miloLibs || config.codeRoot;
@@ -71,7 +80,7 @@ export default async function decorate(block) {
     // add share placeholder if empty row
     if (!rows.length || emptyRow) {
       const heading = toSentenceCase(await replaceKey('share-this-page', config));
-      block.append(createTag('p', null, heading));
+      block.append(createTag('p', { role: 'heading', 'aria-level': getPrevHeadingLevel(block) }, heading));
     }
   }
 
@@ -81,7 +90,7 @@ export default async function decorate(block) {
     if (innerPs.length === 0) {
       const text = childDiv.innerText;
       childDiv.innerText = '';
-      childDiv.append(createTag('p', null, text));
+      childDiv.append(createTag('p', { role: 'heading', 'aria-level': getPrevHeadingLevel(block) }, text));
     }
   }
 
