@@ -167,6 +167,10 @@ export const SLD = PAGE_URL.hostname.includes('.aem.') ? 'aem' : 'hlx';
 const PROMO_PARAM = 'promo';
 let isMartechLoaded = false;
 
+let localeToLanguageMap;
+let siteLanguages;
+let nativeToEnglishMapping;
+
 export function getEnv(conf) {
   const { host } = window.location;
   const query = PAGE_URL.searchParams.get('env');
@@ -379,10 +383,6 @@ export function hasLanguageLinks(area, paths = LANGUAGE_BASED_PATHS) {
   });
 }
 
-let localeToLanguageMap;
-let siteLanguages;
-let nativeToEnglishMapping;
-
 export async function loadLanguageConfig() {
   if (localeToLanguageMap && siteLanguages && nativeToEnglishMapping) {
     return { localeToLanguageMap, siteLanguages, nativeToEnglishMapping };
@@ -500,8 +500,8 @@ function getExtension(path) {
 
 function getPrefixBySite(locale, url, relative) {
   let { prefix } = locale;
-  // eslint-disable-next-line max-len
   const site = siteLanguages?.find((s) => s.pathMatches.some((d) => isPathMatch(d, url.href)));
+
   const localeSiteWithLanguageTarget = !locale.language && site && localeToLanguageMap;
   const languageSiteWithLocaleTarget = locale.language && !relative && !site?.languages.some((l) => (l === DEFAULT_LANG ? '' : `/${l}`) === prefix);
   if (localeSiteWithLanguageTarget) {
