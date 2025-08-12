@@ -100,17 +100,14 @@ export const setDialogAndElementAttributes = ({ element, title }) => {
 export function setListRoles() {
   const selector = ':is(.section[class*="-up"]:has(> :is(.action-item, .icon-block)), .scroller):not(:has(h1, h2, h3, h4, h5, h6))';
   document.querySelectorAll(selector).forEach((parent) => {
-    parent.style.display = 'none';
     parent.setAttribute('role', 'list');
     [...parent.children].forEach((child) => {
       if (child.classList.contains('section-metadata')) return;
       child.setAttribute('role', 'listitem');
     });
-    parent.style.display = 'grid';
   });
 }
 
 export default function init() {
-  setListRoles();
   scrollTabFocusedElIntoView();
 }
