@@ -67,16 +67,15 @@ export default async function blockNotifications(base) {
 
   const blockQueries = blocksKeyToLowercase.data.reduce((acc, row) => {
     const notConsonant = row.consonant === 'false';
-    const decision = row.decision !== '' ? row.decision?.toLowerCase() === 'obsolete' || 'delist' || 'delisted' : undefined;
+    const decision = row.decision !== '' ? row.decision?.toLowerCase() : undefined;
     if (row.block && (notConsonant || decision)) {
       const variation = row.variant && row.variant.replaceAll(',', '.').replaceAll(' ', '-').toLowerCase();
       const blockName = row.block.toLowerCase();
-      const documentation = row.documentation !== '' ? row.documentation : undefined;
       const name = variation ? `${blockName} ${variation}` : `${blockName}`;
       const queryProps = { selector: variation ? `.${blockName}.${variation}` : `.${blockName}` };
-      if (decision) queryProps.decision = row.decision?.toLowerCase();
+      if (decision) queryProps.decision = decision;
       if (notConsonant) queryProps.notConsonant = 'Not Consonant';
-      if (documentation) queryProps.documentation = row.documentation;
+      if (row.documentation) queryProps.documentation = row.documentation;
       if (name) queryProps.name = name;
       acc.push(queryProps);
     }
@@ -112,6 +111,7 @@ export default async function blockNotifications(base) {
         foundBlock.dataset.blockNotification = 'true';
         notificationLabel.classList.add('notification-label');
         notificationLabel.textContent = query.decision;
+        notificationLabel.title = `${query.name} has been marked ${query.decision}`;
         if (query.documentation) {
           const notificationLink = document.createElement('a');
 
