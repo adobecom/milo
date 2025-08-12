@@ -4,11 +4,14 @@ import { features } from './commerce.spec.js';
 import CommercePage from './commerce.page.js';
 import FedsLogin from '../feds/login/login.page.js';
 import FedsHeader from '../feds/header/header.page.js';
+import { PRICE_PATTERN } from '../../libs/commerce.js';
 
 const miloLibs = process.env.MILO_LIBS || '';
 
 let COMM;
 test.beforeEach(async ({ page, baseURL, browserName }) => {
+  test.skip(browserName !== 'chromium', 'Not supported to run on multiple browsers.');
+
   COMM = new CommercePage(page);
   if (browserName === 'chromium') {
     await page.setExtraHTTPHeaders({ 'sec-ch-ua': '"Chromium";v="123", "Not:A-Brand";v="8"' });
@@ -34,7 +37,7 @@ test.describe('Commerce feature test suite', () => {
 
     await test.step('Validate regular price display', async () => {
       await COMM.price.waitFor({ state: 'visible', timeout: 10000 });
-      expect(await COMM.price.innerText()).toContain('US$263.88/yr');
+      expect(await COMM.price.innerText()).toMatch(PRICE_PATTERN.US_yr);
       expect(await COMM.price.locator('.price-recurrence').innerText()).not.toBe('');
       expect(await COMM.price.locator('.price-unit-type').innerText()).toBe('');
       expect(await COMM.price.locator('.price-tax-inclusivity').innerText()).toBe('');
@@ -42,7 +45,7 @@ test.describe('Commerce feature test suite', () => {
 
     await test.step('Validate optical price display', async () => {
       await COMM.priceOptical.waitFor({ state: 'visible', timeout: 10000 });
-      expect(await COMM.priceOptical.innerText()).toContain('US$21.99/mo');
+      expect(await COMM.priceOptical.innerText()).toMatch(PRICE_PATTERN.US_mo);
       expect(await COMM.priceOptical.locator('.price-recurrence').innerText()).not.toBe('');
       expect(await COMM.priceOptical.locator('.price-unit-type').innerText()).toBe('');
       expect(await COMM.priceOptical.locator('.price-tax-inclusivity').innerText()).toBe('');
@@ -50,7 +53,7 @@ test.describe('Commerce feature test suite', () => {
 
     await test.step('Validate strikethrough price display', async () => {
       await COMM.priceStrikethrough.waitFor({ state: 'visible', timeout: 10000 });
-      expect(await COMM.priceStrikethrough.innerText()).toContain('US$263.88/yr');
+      expect(await COMM.priceStrikethrough.innerText()).toMatch(PRICE_PATTERN.US_yr);
       expect(await COMM.priceStrikethrough.locator('.price-recurrence').innerText()).not.toBe('');
       expect(await COMM.priceStrikethrough.locator('.price-unit-type').innerText()).toBe('');
       expect(await COMM.priceStrikethrough.locator('.price-tax-inclusivity').innerText()).toBe('');

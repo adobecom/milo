@@ -85,7 +85,7 @@ function getSidenav(collection) {
   let multilevel = false;
   function generateLevelItems(level, parent) {
     for (const node of level) {
-      const value = node.label.toLowerCase();
+      const value = node.queryLabel || node.label.toLowerCase();
       const item = createTag('sp-sidenav-item', { label: node.label, value });
       if (node.icon) {
         createTag('img', { src: node.icon, slot: 'icon' }, null, { parent: item });
@@ -151,7 +151,11 @@ export async function createCollection(el, options) {
   }
   const collection = createTag('merch-card-collection', attributes, aemFragment);
   const container = createTag('div', null, collection);
-  el.replaceWith(container);
+  let toReplace = el;
+  const contentParent = el.closest('.content');
+  const paragraph = contentParent?.querySelector(':scope > p');
+  if (paragraph) toReplace = paragraph;
+  toReplace.replaceWith(container);
 
   await collection.checkReady();
 
@@ -165,7 +169,7 @@ export async function createCollection(el, options) {
     }
   }
 
-  postProcessAutoblock(collection, false);
+  await postProcessAutoblock(collection, false);
   collection.requestUpdate();
   // card analytics is enabled in postProcessAutoblock
   enableSidenavAnalytics(collection);

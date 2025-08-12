@@ -135,6 +135,12 @@ export function processSize(fields, merchCard, sizeConfig) {
     }
 }
 
+export function processCardName(fields, merchCard) {
+    if (fields.cardName) {
+        merchCard.setAttribute('name', fields.cardName);
+    }
+}
+
 export function processTitle(fields, merchCard, titleConfig) {
     appendSlot('cardTitle', fields, merchCard, { cardTitle: titleConfig });
 }
@@ -609,6 +615,7 @@ export async function hydrate(fragment, merchCard) {
     processBadge(fields, merchCard, mapping);
     processTrialBadge(fields, merchCard, mapping);
     processSize(fields, merchCard, mapping.size);
+    processCardName(fields, merchCard);
     processTitle(fields, merchCard, mapping.title);
     processSubtitle(fields, merchCard, mapping);
     processPrices(fields, merchCard, mapping);
