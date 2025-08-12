@@ -1,83 +1,44 @@
-import { TABLET_DOWN, DESKTOP_UP } from '../media.js';
+import { DESKTOP_UP } from '../media.js';
 
 export const CSS = `
 :root {
-    --consonant-merch-card-simplified-pricing-express-width: 294px;
+    --merch-card-simplified-pricing-express-width: 311px;
     --merch-card-simplified-pricing-express-cta-color: var(
         var(--spectrum-gray-50),
         rgba(255, 255, 255, 1)
     );
 }
 
-merch-card[variant="simplified-pricing-express"] {
-    min-width: var(--consonant-merch-card-simplified-pricing-express-width);
-    background-color: var(--spectrum-gray-50);
-    border-radius: 16px;
-    height: 100%;
-    display: flex;
-}
-
 merch-card[variant="simplified-pricing-express"] merch-badge {
     white-space: nowrap;
-}
-
-merch-card[variant="simplified-pricing-express"] [slot="trial-badge"] {
-    display: inline-block;
-    align-self: flex-start;
-}
-
-merch-card[variant="simplified-pricing-express"] [slot="trial-badge"] merch-badge {
-    background: linear-gradient(98deg, #FF477B 3.22%, #5C5CE0 52.98%, #318FFF 101.72%);
-    color: white;
-    padding: 6px 16px;
-    border-radius: 20px;
-    font-size: 16px;
-    font-weight: 600 ;
-    line-height: 20.8px ;
-    white-space: normal ;
-    display: inline-block ;
-    margin: 0;
-    border: none ;
-    word-wrap: break-word;
-    word-break: normal ;
-    text-align: center;
-    overflow-wrap: break-word;
-    max-width: 100%;
-    left: auto;
-    position: relative;
-}
-
-merch-card[variant="simplified-pricing-express"] [slot="trial-badge"] merch-badge {
-    color: #fff;
+    color: var(--spectrum-white);
+    font-size: var(--consonant-merch-card-detail-m-font-size);
+    line-height: var(--consonant-merch-card-detail-m-line-height);
 }
 
 /* Grid layout for simplified-pricing-express cards */
-merch-card-collection.simplified-pricing-express:has(merch-card[variant="simplified-pricing-express"]) {
+merch-card-collection.simplified-pricing-express {
     display: grid;
     justify-content: center;
     justify-items: center;
     align-items: stretch;
-    gap: var(--consonant-merch-spacing-xs);
+    gap: 16px;
     padding: var(--spacing-m);
+    /* Default to 1 column on mobile */
+    grid-template-columns: 1fr;
 }
 
-/* Mobile/Tablet - Single column */
-@media screen and ${TABLET_DOWN} {
-    merch-card-collection.simplified-pricing-express:has(merch-card[variant="simplified-pricing-express"]) {
-        grid-template-columns: 1fr;
-    }
-    
-    merch-card[variant="simplified-pricing-express"] {
-        width: 100%;
-        max-width: var(--consonant-merch-card-simplified-pricing-express-width);
-    }
+/* Also support direct merch-card children and wrapped in p tags */
+merch-card-collection.simplified-pricing-express p {
+    margin: 0;
+    font-size: inherit;
 }
 
-/* Desktop - 4 columns */
+/* Desktop - 3 columns */
 @media screen and ${DESKTOP_UP} {
-    merch-card-collection.simplified-pricing-express:has(merch-card[variant="simplified-pricing-express"]) {
-        grid-template-columns: repeat(4, var(--consonant-merch-card-simplified-pricing-express-width));
-        max-width: calc(4 * var(--consonant-merch-card-simplified-pricing-express-width) + 3 * var(--consonant-merch-spacing-m));
+    merch-card-collection.simplified-pricing-express {
+        grid-template-columns: repeat(3, 1fr);
+        max-width: calc(3 * var(--merch-card-simplified-pricing-express-width) + 32px);
         margin: 0 auto;
     }
 }
@@ -86,9 +47,16 @@ merch-card[variant="simplified-pricing-express"] p {
     margin: 0 !important; /* needed to override express-milo default margin to all <p> */
 }
 
+merch-card[variant="simplified-pricing-express"] [slot="heading-xs"] {
+    font-size: 18px;
+    font-weight: 700;
+    line-height: 23.4px;
+    color: var(--spectrum-gray-800);
+}
+
 merch-card[variant="simplified-pricing-express"] [slot="body-xs"] {
-    font-size: var(--merch-card-simplified-pricing-express-body-xs-font-size);
-    line-height: var(--merch-card-simplified-pricing-express-body-xs-line-height);
+    font-size: var(--consonant-merch-card-body-xs-font-size, 14px);
+    line-height: var(--consonant-merch-card-body-xs-line-height, 21px);
     color: var(--spectrum-gray-700);
 }
 
@@ -114,6 +82,7 @@ merch-card[variant="simplified-pricing-express"] [slot="cta"] a.button {
 merch-card[variant="simplified-pricing-express"] [slot="price"] {
   display: flex;
   flex-direction: column;
+  padding-bottom: 24px;
 }
 
 merch-card[variant="simplified-pricing-express"] [slot="price"] > p:first-child {
@@ -189,25 +158,29 @@ merch-card[variant="simplified-pricing-express"] sr-only {
 
 /* mas-tooltip inline styles for simplified-pricing-express */
 merch-card[variant="simplified-pricing-express"] mas-tooltip {
-  display: inline-flex;
-  align-items: center;
-  vertical-align: middle;
-  margin-left: 4px;
-  overflow: visible;
-}
-
-merch-card[variant="simplified-pricing-express"] mas-tooltip merch-icon {
-  display: inline-block;
-  vertical-align: middle;
+    display: inline-block;
+    align-items: center;
+    vertical-align: baseline;
+    margin-right: 8px;
+    overflow: visible;
+    padding-bottom: 32px;
+    padding-top: 16px;
+    width: 24px;
+    height: 24px;
 }
 
 /* Tooltip containers - overflow handled by Shadow DOM */
 
-/* Mobile accordion styles */
-@media (max-width: 599px) {
+/* Mobile and Tablet styles */
+@media (max-width: 1199px) {
+  /* Remove gap between cards on mobile/tablet */
+  merch-card-collection.simplified-pricing-express {
+    gap: 8px;
+  }
+  
   merch-card[variant="simplified-pricing-express"] {
-    width: 332px;
-    max-width: 332px;
+    width: 311px;
+    max-width: 311px;
   }
 
   /* Badge alignment on mobile */
@@ -215,7 +188,6 @@ merch-card[variant="simplified-pricing-express"] mas-tooltip merch-icon {
     font-size: 16px;
     font-weight: 400;
     color: var(--spectrum-gray-700);
-    margin-top: 10px;
   }
 
   /* Trial badge alignment on mobile */
@@ -280,101 +252,18 @@ merch-card[variant="simplified-pricing-express"] mas-tooltip merch-icon {
   /* Collapsed card should have fixed height and padding */
   merch-card[variant="simplified-pricing-express"][data-expanded="false"],
   merch-card[variant="simplified-pricing-express"]:not([data-expanded="true"]) {
-    height: 72px;
-    min-height: auto;
-    padding: 16px;
+    max-height: 57px;
+    padding: 0;
     overflow: hidden;
+    border-radius: 8px;
   }
 
-  /* Expanded card should have auto height */
-  merch-card[variant="simplified-pricing-express"][data-expanded="true"] {
-    height: auto;
-    min-height: auto;
-    padding: var(--merch-card-simplified-pricing-express-padding-mobile);
+  merch-card[variant="simplified-pricing-express"][gradient-border="true"][data-expanded="false"],
+  merch-card[variant="simplified-pricing-express"][gradient-border="true"]:not([data-expanded="true"]) {
+    max-height: 90px;
   }
 }
 
-/* Tablet styles */
-@media (min-width: 600px) and (max-width: 1199px) {
-  merch-card[variant="simplified-pricing-express"] {
-    width: 548px;
-    max-width: 548px;
-  }
-
-  /* Badge alignment on tablet */
-  merch-card[variant="simplified-pricing-express"] [slot="badge"] {
-    font-size: 16px;
-    font-weight: 400;
-    display: flex;
-    align-self: flex-end;
-  }
-
-  /* Trial badge alignment on tablet */
-  merch-card[variant="simplified-pricing-express"] [slot="trial-badge"] {
-    margin-left: 0 ;
-    align-self: flex-start;
-  }
-  
-  merch-card[variant="simplified-pricing-express"] [slot="trial-badge"] merch-badge {
-    font-size: 16px;
-    line-height: 20.8px;
-  }
-
-  /* Apply same collapsed state logic as mobile */
-  merch-card[variant="simplified-pricing-express"]:not([data-expanded="true"]) [slot="body-xs"],
-  merch-card[variant="simplified-pricing-express"]:not([data-expanded="true"]) [slot="price"],
-  merch-card[variant="simplified-pricing-express"]:not([data-expanded="true"]) [slot="cta"] {
-    display: none;
-    visibility: hidden;
-    height: 0;
-    margin: 0;
-    padding: 0;
-  }
-
-  merch-card[variant="simplified-pricing-express"]:not([data-expanded]) [slot="body-xs"],
-  merch-card[variant="simplified-pricing-express"]:not([data-expanded]) [slot="price"],
-  merch-card[variant="simplified-pricing-express"]:not([data-expanded]) [slot="cta"] {
-    display: none;
-    visibility: hidden;
-    height: 0;
-    margin: 0;
-    padding: 0;
-  }
-
-  merch-card[variant="simplified-pricing-express"][data-expanded="false"] [slot="body-xs"],
-  merch-card[variant="simplified-pricing-express"][data-expanded="false"] [slot="price"],
-  merch-card[variant="simplified-pricing-express"][data-expanded="false"] [slot="cta"] {
-    display: none;
-    visibility: hidden;
-    height: 0;
-    margin: 0;
-    padding: 0;
-  }
-
-  /* Expanded state - explicitly show content on tablet */
-  merch-card[variant="simplified-pricing-express"][data-expanded="true"] [slot="body-xs"],
-  merch-card[variant="simplified-pricing-express"][data-expanded="true"] [slot="price"],
-  merch-card[variant="simplified-pricing-express"][data-expanded="true"] [slot="cta"] {
-    display: block;
-    visibility: visible;
-    height: auto;
-  }
-
-  /* Collapsed card height on tablet */
-  merch-card[variant="simplified-pricing-express"][data-expanded="false"],
-  merch-card[variant="simplified-pricing-express"]:not([data-expanded="true"]) {
-    height: 72px;
-    min-height: auto;
-    padding: 16px;
-    overflow: hidden;
-  }
-
-  /* Expanded card should have auto height on tablet */
-  merch-card[variant="simplified-pricing-express"][data-expanded="true"] {
-    height: auto;
-    min-height: auto;
-  }
-}
 
 merch-card[variant="simplified-pricing-express"] [slot="cta"] sp-button[variant="accent"],
 merch-card[variant="simplified-pricing-express"] [slot="cta"] button.spectrum-Button--accent,

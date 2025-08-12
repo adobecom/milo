@@ -1,7 +1,7 @@
-var Ht=Object.defineProperty;var Ut=i=>{throw TypeError(i)};var ei=(i,t,e)=>t in i?Ht(i,t,{enumerable:!0,configurable:!0,writable:!0,value:e}):i[t]=e;var qt=(i,t)=>()=>(i&&(t=i(i=0)),t);var ti=(i,t)=>{for(var e in t)Ht(i,e,{get:t[e],enumerable:!0})};var d=(i,t,e)=>ei(i,typeof t!="symbol"?t+"":t,e),pt=(i,t,e)=>t.has(i)||Ut("Cannot "+e);var s=(i,t,e)=>(pt(i,t,"read from private field"),e?e.call(i):t.get(i)),p=(i,t,e)=>t.has(i)?Ut("Cannot add the same private member more than once"):t instanceof WeakSet?t.add(i):t.set(i,e),h=(i,t,e,r)=>(pt(i,t,"write to private field"),r?r.call(i,e):t.set(i,e),e),w=(i,t,e)=>(pt(i,t,"access private method"),e);var jt=(i,t,e,r)=>({set _(a){h(i,t,a,e)},get _(){return s(i,t,r)}});var mt={};ti(mt,{default:()=>G});import{LitElement as ri,html as je,css as ii}from"../lit-all.min.js";function ai(){return customElements.get("sp-tooltip")!==void 0||document.querySelector("sp-theme")!==null}var G,gt=qt(()=>{ut();G=class extends ri{constructor(){super(),this.content="",this.placement="top",this.variant="info",this.size="xs"}get effectiveContent(){return this.tooltipText||this.content||""}get effectivePlacement(){return this.tooltipPlacement||this.placement||"top"}renderIcon(){return this.src?je`<merch-icon 
+var Ht=Object.defineProperty;var Ut=a=>{throw TypeError(a)};var ea=(a,t,e)=>t in a?Ht(a,t,{enumerable:!0,configurable:!0,writable:!0,value:e}):a[t]=e;var qt=(a,t)=>()=>(a&&(t=a(a=0)),t);var ta=(a,t)=>{for(var e in t)Ht(a,e,{get:t[e],enumerable:!0})};var d=(a,t,e)=>ea(a,typeof t!="symbol"?t+"":t,e),pt=(a,t,e)=>t.has(a)||Ut("Cannot "+e);var c=(a,t,e)=>(pt(a,t,"read from private field"),e?e.call(a):t.get(a)),m=(a,t,e)=>t.has(a)?Ut("Cannot add the same private member more than once"):t instanceof WeakSet?t.add(a):t.set(a,e),h=(a,t,e,r)=>(pt(a,t,"write to private field"),r?r.call(a,e):t.set(a,e),e),w=(a,t,e)=>(pt(a,t,"access private method"),e);var jt=(a,t,e,r)=>({set _(i){h(a,t,i,e)},get _(){return c(a,t,r)}});var mt={};ta(mt,{default:()=>G});import{LitElement as ra,html as je,css as aa}from"../lit-all.min.js";function ia(){return customElements.get("sp-tooltip")!==void 0||document.querySelector("sp-theme")!==null}var G,gt=qt(()=>{ut();G=class extends ra{constructor(){super(),this.content="",this.placement="top",this.variant="info",this.size="xs"}get effectiveContent(){return this.tooltipText||this.content||""}get effectivePlacement(){return this.tooltipPlacement||this.placement||"top"}renderIcon(){return this.src?je`<merch-icon 
             src="${this.src}" 
             size="${this.size}"
-        ></merch-icon>`:je`<slot></slot>`}render(){let t=this.effectiveContent,e=this.effectivePlacement;return t?ai()?je`
+        ></merch-icon>`:je`<slot></slot>`}render(){let t=this.effectiveContent,e=this.effectivePlacement;return t?ia()?je`
                 <overlay-trigger placement="${e}">
                     <span slot="trigger">${this.renderIcon()}</span>
                     <sp-tooltip 
@@ -19,7 +19,7 @@ var Ht=Object.defineProperty;var Ut=i=>{throw TypeError(i)};var ei=(i,t,e)=>t in
                     aria-label="${t}">
                     ${this.renderIcon()}
                 </span>
-            `:this.renderIcon()}};d(G,"properties",{content:{type:String},placement:{type:String},variant:{type:String},src:{type:String},size:{type:String},tooltipText:{type:String,attribute:"tooltip-text"},tooltipPlacement:{type:String,attribute:"tooltip-placement"}}),d(G,"styles",ii`
+            `:this.renderIcon()}};d(G,"properties",{content:{type:String},placement:{type:String},variant:{type:String},src:{type:String},size:{type:String},tooltipText:{type:String,attribute:"tooltip-text"},tooltipPlacement:{type:String,attribute:"tooltip-placement"}}),d(G,"styles",aa`
         :host {
             display: contents;
         }
@@ -133,9 +133,9 @@ var Ht=Object.defineProperty;var Ut=i=>{throw TypeError(i)};var ei=(i,t,e)=>t in
             margin-left: 5px;
             border-right-color: var(--spectrum-gray-800, #323232);
         }
-    `);customElements.define("mas-tooltip",G)});import{LitElement as ni,html as Wt,css as oi}from"../lit-all.min.js";function si(){return customElements.get("sp-tooltip")!==void 0||document.querySelector("sp-theme")!==null}var ne,ut=qt(()=>{ne=class extends ni{constructor(){super(),this.size="m",this.alt="",this.loading="lazy"}connectedCallback(){super.connectedCallback(),setTimeout(()=>this.handleTooltips(),0)}handleTooltips(){if(si())return;this.querySelectorAll("sp-tooltip, overlay-trigger").forEach(e=>{let r="",a="top";if(e.tagName==="SP-TOOLTIP")r=e.textContent,a=e.getAttribute("placement")||"top";else if(e.tagName==="OVERLAY-TRIGGER"){let n=e.querySelector("sp-tooltip");n&&(r=n.textContent,a=n.getAttribute("placement")||e.getAttribute("placement")||"top")}if(r){let n=document.createElement("mas-tooltip");n.setAttribute("content",r),n.setAttribute("placement",a);let o=this.querySelector("img"),c=this.querySelector("a");c&&c.contains(o)?n.appendChild(c):o&&n.appendChild(o),this.innerHTML="",this.appendChild(n),Promise.resolve().then(()=>gt())}e.remove()})}render(){let{href:t}=this;return t?Wt`<a href="${t}">
+    `);customElements.define("mas-tooltip",G)});import{LitElement as oa,html as Wt,css as na}from"../lit-all.min.js";function sa(){return customElements.get("sp-tooltip")!==void 0||document.querySelector("sp-theme")!==null}var ie,ut=qt(()=>{ie=class extends oa{constructor(){super(),this.size="m",this.alt="",this.loading="lazy"}connectedCallback(){super.connectedCallback(),setTimeout(()=>this.handleTooltips(),0)}handleTooltips(){if(sa())return;this.querySelectorAll("sp-tooltip, overlay-trigger").forEach(e=>{let r="",i="top";if(e.tagName==="SP-TOOLTIP")r=e.textContent,i=e.getAttribute("placement")||"top";else if(e.tagName==="OVERLAY-TRIGGER"){let o=e.querySelector("sp-tooltip");o&&(r=o.textContent,i=o.getAttribute("placement")||e.getAttribute("placement")||"top")}if(r){let o=document.createElement("mas-tooltip");o.setAttribute("content",r),o.setAttribute("placement",i);let n=this.querySelector("img"),s=this.querySelector("a");s&&s.contains(n)?o.appendChild(s):n&&o.appendChild(n),this.innerHTML="",this.appendChild(o),Promise.resolve().then(()=>gt())}e.remove()})}render(){let{href:t}=this;return t?Wt`<a href="${t}">
                   <img src="${this.src}" alt="${this.alt}" loading="${this.loading}" />
-              </a>`:Wt` <img src="${this.src}" alt="${this.alt}" loading="${this.loading}" />`}};d(ne,"properties",{size:{type:String,attribute:!0},src:{type:String,attribute:!0},alt:{type:String,attribute:!0},href:{type:String,attribute:!0},loading:{type:String,attribute:!0}}),d(ne,"styles",oi`
+              </a>`:Wt` <img src="${this.src}" alt="${this.alt}" loading="${this.loading}" />`}};d(ie,"properties",{size:{type:String,attribute:!0},src:{type:String,attribute:!0},alt:{type:String,attribute:!0},href:{type:String,attribute:!0},loading:{type:String,attribute:!0}}),d(ie,"styles",na`
         :host {
             --img-width: 32px;
             --img-height: 32px;
@@ -173,14 +173,14 @@ var Ht=Object.defineProperty;var Ut=i=>{throw TypeError(i)};var ei=(i,t,e)=>t in
             width: var(--mod-img-width, var(--img-width));
             height: var(--mod-img-height, var(--img-height));
         }
-    `);customElements.define("merch-icon",ne)});import{LitElement as ka}from"../lit-all.min.js";import{css as Vt,unsafeCSS as Gt}from"../lit-all.min.js";var T="(max-width: 767px)",ae="(max-width: 1199px)",v="(min-width: 768px)",u="(min-width: 1200px)",O="(min-width: 1600px)";function Be(){return window.matchMedia(T)}function He(){return window.matchMedia(u)}function Ue(){return Be().matches}function qe(){return He().matches}var Yt=Vt`
+    `);customElements.define("merch-icon",ie)});import{LitElement as ki}from"../lit-all.min.js";import{css as Vt,unsafeCSS as Gt}from"../lit-all.min.js";var T="(max-width: 767px)",Fe="(max-width: 1199px)",v="(min-width: 768px)",u="(min-width: 1200px)",O="(min-width: 1600px)";function Be(){return window.matchMedia(T)}function He(){return window.matchMedia(u)}function Ue(){return Be().matches}function qe(){return He().matches}var Yt=Vt`
     :host {
         --consonant-merch-card-background-color: #fff;
-        --consonant-merch-card-border: 1px solid var(--consonant-merch-card-border-color);
+        --merch-card-custom-border: 1px solid var(--consonant-merch-card-border-color);
         -webkit-font-smoothing: antialiased;
         background-color: var(--consonant-merch-card-background-color);
         border-radius: var(--consonant-merch-spacing-xs);
-        border: var(--consonant-merch-card-border);
+        border: var(--merch-card-custom-border);
         box-sizing: border-box;
         display: flex;
         flex-direction: column;
@@ -426,7 +426,7 @@ var Ht=Object.defineProperty;var Ut=i=>{throw TypeError(i)};var ei=(i,t,e)=>t in
               grid-column: span 2;
           }
       }
-      `];ut();var Fa=Object.freeze({MONTH:"MONTH",YEAR:"YEAR",TWO_YEARS:"TWO_YEARS",THREE_YEARS:"THREE_YEARS",PERPETUAL:"PERPETUAL",TERM_LICENSE:"TERM_LICENSE",ACCESS_PASS:"ACCESS_PASS",THREE_MONTHS:"THREE_MONTHS",SIX_MONTHS:"SIX_MONTHS"}),Ba=Object.freeze({ANNUAL:"ANNUAL",MONTHLY:"MONTHLY",TWO_YEARS:"TWO_YEARS",THREE_YEARS:"THREE_YEARS",P1D:"P1D",P1Y:"P1Y",P3Y:"P3Y",P10Y:"P10Y",P15Y:"P15Y",P3D:"P3D",P7D:"P7D",P30D:"P30D",HALF_YEARLY:"HALF_YEARLY",QUARTERLY:"QUARTERLY"});var f='span[is="inline-price"][data-wcs-osi]',B='a[is="checkout-link"][data-wcs-osi],button[is="checkout-button"][data-wcs-osi]';var ci='a[is="upt-link"]',Xt=`${f},${B},${ci}`;var Qt="merch-offer-select:ready",Zt="merch-card:action-menu-toggle";var ft="merch-quantity-selector:change",Jt="merch-card-quantity:change",xt="merch-modal:addon-and-quantity-update";var oe="aem:load",se="aem:error",er="mas:ready",tr="mas:error",rr="placeholder-failed",ir="placeholder-pending",ar="placeholder-resolved";var nr="mas:failed",Ce="mas:resolved",or="mas/commerce";var H="failed",V="pending",U="resolved";var Ge="X-Request-Id",Ha=Object.freeze({SEGMENTATION:"segmentation",BUNDLE:"bundle",COMMITMENT:"commitment",RECOMMENDATION:"recommendation",EMAIL:"email",PAYMENT:"payment",CHANGE_PLAN_TEAM_PLANS:"change-plan/team-upgrade/plans",CHANGE_PLAN_TEAM_PAYMENT:"change-plan/team-upgrade/payment"});var Ua=Object.freeze({STAGE:"STAGE",PRODUCTION:"PRODUCTION",LOCAL:"LOCAL"});var Ve=":start",Ye=":duration";var sr="legal";var di="mas-commerce-service";function cr(i,t){let e;return function(){let r=this,a=arguments;clearTimeout(e),e=setTimeout(()=>i.apply(r,a),t)}}function S(i,t={},e=null,r=null){let a=r?document.createElement(i,{is:r}):document.createElement(i);e instanceof HTMLElement?a.appendChild(e):a.innerHTML=e;for(let[n,o]of Object.entries(t))a.setAttribute(n,o);return a}function ce(i){return`startTime:${i.startTime.toFixed(2)}|duration:${i.duration.toFixed(2)}`}function dr(){return window.matchMedia("(max-width: 1024px)").matches}function Y(){return document.getElementsByTagName(di)?.[0]}var Te,K,Le,_e,de,Ke=class extends HTMLElement{constructor(){super();p(this,Te,"");p(this,K);p(this,Le,[]);p(this,_e,[]);p(this,de);h(this,de,cr(()=>{this.isConnected&&(this.parentElement.style.background=this.value,s(this,K)?this.parentElement.style.borderRadius=s(this,K):s(this,K)===""&&(this.parentElement.style.borderRadius=""))},1))}static get observedAttributes(){return["colors","positions","angle","border-radius"]}get value(){let e=s(this,Le).map((r,a)=>{let n=s(this,_e)[a]||"";return`${r} ${n}`}).join(", ");return`linear-gradient(${s(this,Te)}, ${e})`}connectedCallback(){s(this,de).call(this)}attributeChangedCallback(e,r,a){e==="border-radius"&&h(this,K,a?.trim()),e==="colors"&&a?h(this,Le,a?.split(",").map(n=>n.trim())??[]):e==="positions"&&a?h(this,_e,a?.split(",").map(n=>n.trim())??[]):e==="angle"&&h(this,Te,a?.trim()??""),s(this,de).call(this)}};Te=new WeakMap,K=new WeakMap,Le=new WeakMap,_e=new WeakMap,de=new WeakMap;customElements.define("merch-gradient",Ke);import{LitElement as li,html as hi,css as pi}from"../lit-all.min.js";var le=class extends li{constructor(){super(),this.planType=void 0,this.checked=!1,this.updatePlanType=this.updatePlanType.bind(this),this.handleChange=this.handleChange.bind(this),this.handleCustomClick=this.handleCustomClick.bind(this)}getOsi(t,e){let n=({TRIAL:["TRIAL"],BASE:["BASE","PROMOTION","TRIAL"],PROMOTION:["PROMOTION","BASE","TRIAL"]}[e]||[e]).map(c=>`p[data-plan-type="${t}"] ${f}[data-offer-type="${c}"]`).join(", ");return this.querySelector(n)?.dataset?.wcsOsi}connectedCallback(){super.connectedCallback(),this.addEventListener(Ce,this.updatePlanType)}disconnectedCallback(){super.disconnectedCallback(),this.removeEventListener(Ce,this.updatePlanType)}updatePlanType(t){if(t.target.tagName!=="SPAN")return;let e=t.target,r=e?.value?.[0];r&&(e.setAttribute("data-offer-type",r.offerType),e.closest("p").setAttribute("data-plan-type",r.planType))}handleChange(t){this.checked=t.target.checked,this.dispatchEvent(new CustomEvent("change",{detail:{checked:this.checked},bubbles:!0,composed:!0}))}handleCustomClick(){this.shadowRoot.querySelector("input").click()}handleKeyDown(t){t.key===" "&&(t.preventDefault(),this.handleCustomClick())}render(){return hi`
+      `];ut();var Fi=Object.freeze({MONTH:"MONTH",YEAR:"YEAR",TWO_YEARS:"TWO_YEARS",THREE_YEARS:"THREE_YEARS",PERPETUAL:"PERPETUAL",TERM_LICENSE:"TERM_LICENSE",ACCESS_PASS:"ACCESS_PASS",THREE_MONTHS:"THREE_MONTHS",SIX_MONTHS:"SIX_MONTHS"}),Bi=Object.freeze({ANNUAL:"ANNUAL",MONTHLY:"MONTHLY",TWO_YEARS:"TWO_YEARS",THREE_YEARS:"THREE_YEARS",P1D:"P1D",P1Y:"P1Y",P3Y:"P3Y",P10Y:"P10Y",P15Y:"P15Y",P3D:"P3D",P7D:"P7D",P30D:"P30D",HALF_YEARLY:"HALF_YEARLY",QUARTERLY:"QUARTERLY"});var f='span[is="inline-price"][data-wcs-osi]',B='a[is="checkout-link"][data-wcs-osi],button[is="checkout-button"][data-wcs-osi]';var ca='a[is="upt-link"]',Qt=`${f},${B},${ca}`;var Xt="merch-offer-select:ready",Zt="merch-card:action-menu-toggle";var ft="merch-quantity-selector:change",Jt="merch-card-quantity:change",xt="merch-modal:addon-and-quantity-update";var oe="aem:load",ne="aem:error",er="mas:ready",tr="mas:error",rr="placeholder-failed",ar="placeholder-pending",ir="placeholder-resolved";var or="mas:failed",ke="mas:resolved",nr="mas/commerce";var H="failed",V="pending",U="resolved";var Ge="X-Request-Id",Hi=Object.freeze({SEGMENTATION:"segmentation",BUNDLE:"bundle",COMMITMENT:"commitment",RECOMMENDATION:"recommendation",EMAIL:"email",PAYMENT:"payment",CHANGE_PLAN_TEAM_PLANS:"change-plan/team-upgrade/plans",CHANGE_PLAN_TEAM_PAYMENT:"change-plan/team-upgrade/payment"});var Ui=Object.freeze({STAGE:"STAGE",PRODUCTION:"PRODUCTION",LOCAL:"LOCAL"});var Ve=":start",Ye=":duration";var sr="legal";var da="mas-commerce-service";function cr(a,t){let e;return function(){let r=this,i=arguments;clearTimeout(e),e=setTimeout(()=>a.apply(r,i),t)}}function S(a,t={},e=null,r=null){let i=r?document.createElement(a,{is:r}):document.createElement(a);e instanceof HTMLElement?i.appendChild(e):i.innerHTML=e;for(let[o,n]of Object.entries(t))i.setAttribute(o,n);return i}function se(a){return`startTime:${a.startTime.toFixed(2)}|duration:${a.duration.toFixed(2)}`}function dr(){return window.matchMedia("(max-width: 1024px)").matches}function Y(){return document.getElementsByTagName(da)?.[0]}var Ce,K,Te,Le,ce,Ke=class extends HTMLElement{constructor(){super();m(this,Ce,"");m(this,K);m(this,Te,[]);m(this,Le,[]);m(this,ce);h(this,ce,cr(()=>{this.isConnected&&(this.parentElement.style.background=this.value,c(this,K)?this.parentElement.style.borderRadius=c(this,K):c(this,K)===""&&(this.parentElement.style.borderRadius=""))},1))}static get observedAttributes(){return["colors","positions","angle","border-radius"]}get value(){let e=c(this,Te).map((r,i)=>{let o=c(this,Le)[i]||"";return`${r} ${o}`}).join(", ");return`linear-gradient(${c(this,Ce)}, ${e})`}connectedCallback(){c(this,ce).call(this)}attributeChangedCallback(e,r,i){e==="border-radius"&&h(this,K,i?.trim()),e==="colors"&&i?h(this,Te,i?.split(",").map(o=>o.trim())??[]):e==="positions"&&i?h(this,Le,i?.split(",").map(o=>o.trim())??[]):e==="angle"&&h(this,Ce,i?.trim()??""),c(this,ce).call(this)}};Ce=new WeakMap,K=new WeakMap,Te=new WeakMap,Le=new WeakMap,ce=new WeakMap;customElements.define("merch-gradient",Ke);import{LitElement as la,html as ha,css as pa}from"../lit-all.min.js";var de=class extends la{constructor(){super(),this.planType=void 0,this.checked=!1,this.updatePlanType=this.updatePlanType.bind(this),this.handleChange=this.handleChange.bind(this),this.handleCustomClick=this.handleCustomClick.bind(this)}getOsi(t,e){let o=({TRIAL:["TRIAL"],BASE:["BASE","PROMOTION","TRIAL"],PROMOTION:["PROMOTION","BASE","TRIAL"]}[e]||[e]).map(s=>`p[data-plan-type="${t}"] ${f}[data-offer-type="${s}"]`).join(", ");return this.querySelector(o)?.dataset?.wcsOsi}connectedCallback(){super.connectedCallback(),this.addEventListener(ke,this.updatePlanType)}disconnectedCallback(){super.disconnectedCallback(),this.removeEventListener(ke,this.updatePlanType)}updatePlanType(t){if(t.target.tagName!=="SPAN")return;let e=t.target,r=e?.value?.[0];r&&(e.setAttribute("data-offer-type",r.offerType),e.closest("p").setAttribute("data-plan-type",r.planType))}handleChange(t){this.checked=t.target.checked,this.dispatchEvent(new CustomEvent("change",{detail:{checked:this.checked},bubbles:!0,composed:!0}))}handleCustomClick(){this.shadowRoot.querySelector("input").click()}handleKeyDown(t){t.key===" "&&(t.preventDefault(),this.handleCustomClick())}render(){return ha`
             <input
                 type="checkbox"
                 id="addon-checkbox"
@@ -444,7 +444,7 @@ var Ht=Object.defineProperty;var Ut=i=>{throw TypeError(i)};var ei=(i,t,e)=>t in
             </span>
             <label id="custom-checkbox-label" for="addon-checkbox">
                 <slot></slot>
-            </label>`}};d(le,"properties",{planType:{type:String,attribute:"plan-type",reflect:!0},checked:{type:Boolean,reflect:!0},customCheckbox:{type:Boolean,attribute:"custom-checkbox",reflect:!0}}),d(le,"styles",pi`
+            </label>`}};d(de,"properties",{planType:{type:String,attribute:"plan-type",reflect:!0},checked:{type:Boolean,reflect:!0},customCheckbox:{type:Boolean,attribute:"custom-checkbox",reflect:!0}}),d(de,"styles",pa`
         :host {
             --merch-addon-gap: 9px;
             --merch-addon-align: start;
@@ -509,7 +509,7 @@ var Ht=Object.defineProperty;var Ut=i=>{throw TypeError(i)};var ei=(i,t,e)=>t in
         :host([plan-type='M2M']) ::slotted(p[data-plan-type='M2M']) {
             display: block;
         }
-    `);customElements.define("merch-addon",le);import{html as We,nothing as mi}from"../lit-all.min.js";var he,Pe=class Pe{constructor(t){d(this,"card");p(this,he);this.card=t,this.insertVariantStyle()}getContainer(){return h(this,he,s(this,he)??this.card.closest('[class*="-merch-cards"]')??this.card.parentElement),s(this,he)}insertVariantStyle(){if(!Pe.styleMap[this.card.variant]){Pe.styleMap[this.card.variant]=!0;let t=document.createElement("style");t.innerHTML=this.getGlobalCSS(),document.head.appendChild(t)}}updateCardElementMinHeight(t,e){if(!t)return;let r=`--consonant-merch-card-${this.card.variant}-${e}-height`,a=Math.max(0,parseInt(window.getComputedStyle(t).height)||0),n=parseInt(this.getContainer().style.getPropertyValue(r))||0;a>n&&this.getContainer().style.setProperty(r,`${a}px`)}get badge(){let t;if(!(!this.card.badgeBackgroundColor||!this.card.badgeColor||!this.card.badgeText))return this.evergreen&&(t=`border: 1px solid ${this.card.badgeBackgroundColor}; border-right: none;`),We`
+    `);customElements.define("merch-addon",de);import{html as We,nothing as ma}from"../lit-all.min.js";var le,_e=class _e{constructor(t){d(this,"card");m(this,le);this.card=t,this.insertVariantStyle()}getContainer(){return h(this,le,c(this,le)??this.card.closest('[class*="-merch-cards"]')??this.card.parentElement),c(this,le)}insertVariantStyle(){if(!_e.styleMap[this.card.variant]){_e.styleMap[this.card.variant]=!0;let t=document.createElement("style");t.innerHTML=this.getGlobalCSS(),document.head.appendChild(t)}}updateCardElementMinHeight(t,e){if(!t)return;let r=`--consonant-merch-card-${this.card.variant}-${e}-height`,i=Math.max(0,parseInt(window.getComputedStyle(t).height)||0),o=parseInt(this.getContainer().style.getPropertyValue(r))||0;i>o&&this.getContainer().style.setProperty(r,`${i}px`)}get badge(){let t;if(!(!this.card.badgeBackgroundColor||!this.card.badgeColor||!this.card.badgeText))return this.evergreen&&(t=`border: 1px solid ${this.card.badgeBackgroundColor}; border-right: none;`),We`
             <div
                 id="badge"
                 class="${this.card.variant}-badge"
@@ -524,7 +524,7 @@ var Ht=Object.defineProperty;var Ut=i=>{throw TypeError(i)};var ei=(i,t,e)=>t in
             ${this.badge}
         </div>`}getGlobalCSS(){return""}get theme(){return document.querySelector("sp-theme")}get evergreen(){return this.card.classList.contains("intro-pricing")}get promoBottom(){return this.card.classList.contains("promo-bottom")}get headingSelector(){return'[slot="heading-xs"]'}get secureLabel(){return this.card.secureLabel?We`<span class="secure-transaction-label"
                 >${this.card.secureLabel}</span
-            >`:mi}get secureLabelFooter(){return We`<footer>${this.secureLabel}<slot name="footer"></slot></footer>`}async adjustTitleWidth(){let t=this.card.getBoundingClientRect().width,e=this.card.badgeElement?.getBoundingClientRect().width||0;t===0||e===0||this.card.style.setProperty("--consonant-merch-card-heading-xs-max-width",`${Math.round(t-e-16)}px`)}async postCardUpdateHook(){}connectedCallbackHook(){}disconnectedCallbackHook(){}renderLayout(){}get aemFragmentMapping(){return Xe(this.card.variant)}};he=new WeakMap,d(Pe,"styleMap",{});var x=Pe;import{html as bt,css as gi}from"../lit-all.min.js";var lr=`
+            >`:ma}get secureLabelFooter(){return We`<footer>${this.secureLabel}<slot name="footer"></slot></footer>`}async adjustTitleWidth(){let t=this.card.getBoundingClientRect().width,e=this.card.badgeElement?.getBoundingClientRect().width||0;t===0||e===0||this.card.style.setProperty("--consonant-merch-card-heading-xs-max-width",`${Math.round(t-e-16)}px`)}async postCardUpdateHook(){}connectedCallbackHook(){}disconnectedCallbackHook(){}renderLayout(){}get aemFragmentMapping(){return Qe(this.card.variant)}};le=new WeakMap,d(_e,"styleMap",{});var x=_e;import{html as bt,css as ga}from"../lit-all.min.js";var lr=`
 :root {
     --consonant-merch-card-catalog-width: 302px;
     --consonant-merch-card-catalog-icon-size: 40px;
@@ -647,7 +647,7 @@ merch-card[variant="catalog"] .payment-details {
   font-style: italic;
   font-weight: 400;
   line-height: var(--consonant-merch-card-body-line-height);
-}`;var hr={badge:!0,ctas:{slot:"footer",size:"m"},description:{tag:"div",slot:"body-xs"},mnemonics:{size:"l"},prices:{tag:"h3",slot:"heading-xs"},size:["wide","super-wide"],title:{tag:"h3",slot:"heading-xs"}},pe=class extends x{constructor(e){super(e);d(this,"dispatchActionMenuToggle",()=>{this.card.dispatchEvent(new CustomEvent(Zt,{bubbles:!0,composed:!0,detail:{card:this.card.name,type:"action-menu"}}))});d(this,"toggleActionMenu",e=>{if(!this.actionMenuContentSlot||!e||e.type!=="click"&&e.code!=="Space"&&e.code!=="Enter")return;e.preventDefault(),this.actionMenuContentSlot.classList.toggle("hidden");let r=this.actionMenuContentSlot.classList.contains("hidden");r||this.dispatchActionMenuToggle(),this.setAriaExpanded(this.actionMenu,(!r).toString())});d(this,"toggleActionMenuFromCard",e=>{let r=e?.type==="mouseleave"?!0:void 0;this.card.blur(),this.actionMenu?.classList.remove("always-visible"),this.actionMenuContentSlot&&(r||this.dispatchActionMenuToggle(),this.actionMenuContentSlot.classList.toggle("hidden",r),this.setAriaExpanded(this.actionMenu,"false"))});d(this,"hideActionMenu",e=>{this.actionMenuContentSlot?.classList.add("hidden"),this.setAriaExpanded(this.actionMenu,"false")})}get actionMenu(){return this.card.shadowRoot.querySelector(".action-menu")}get actionMenuContentSlot(){return this.card.shadowRoot.querySelector('slot[name="action-menu-content"]')}renderLayout(){return bt` <div class="body">
+}`;var hr={badge:!0,ctas:{slot:"footer",size:"m"},description:{tag:"div",slot:"body-xs"},mnemonics:{size:"l"},prices:{tag:"h3",slot:"heading-xs"},size:["wide","super-wide"],title:{tag:"h3",slot:"heading-xs"}},he=class extends x{constructor(e){super(e);d(this,"dispatchActionMenuToggle",()=>{this.card.dispatchEvent(new CustomEvent(Zt,{bubbles:!0,composed:!0,detail:{card:this.card.name,type:"action-menu"}}))});d(this,"toggleActionMenu",e=>{if(!this.actionMenuContentSlot||!e||e.type!=="click"&&e.code!=="Space"&&e.code!=="Enter")return;e.preventDefault(),this.actionMenuContentSlot.classList.toggle("hidden");let r=this.actionMenuContentSlot.classList.contains("hidden");r||this.dispatchActionMenuToggle(),this.setAriaExpanded(this.actionMenu,(!r).toString())});d(this,"toggleActionMenuFromCard",e=>{let r=e?.type==="mouseleave"?!0:void 0;this.card.blur(),this.actionMenu?.classList.remove("always-visible"),this.actionMenuContentSlot&&(r||this.dispatchActionMenuToggle(),this.actionMenuContentSlot.classList.toggle("hidden",r),this.setAriaExpanded(this.actionMenu,"false"))});d(this,"hideActionMenu",e=>{this.actionMenuContentSlot?.classList.add("hidden"),this.setAriaExpanded(this.actionMenu,"false")})}get actionMenu(){return this.card.shadowRoot.querySelector(".action-menu")}get actionMenuContentSlot(){return this.card.shadowRoot.querySelector('slot[name="action-menu-content"]')}renderLayout(){return bt` <div class="body">
                 <div class="top-section">
                     <slot name="icons"></slot> ${this.badge}
                     <div
@@ -678,7 +678,7 @@ merch-card[variant="catalog"] .payment-details {
                           ><slot name="callout-content"></slot>`:""}
             </div>
             ${this.secureLabelFooter}
-            <slot></slot>`}getGlobalCSS(){return lr}setAriaExpanded(e,r){e.setAttribute("aria-expanded",r)}connectedCallbackHook(){this.card.addEventListener("mouseleave",this.toggleActionMenuFromCard)}disconnectedCallbackHook(){this.card.removeEventListener("mouseleave",this.toggleActionMenuFromCard)}};d(pe,"variantStyle",gi`
+            <slot></slot>`}getGlobalCSS(){return lr}setAriaExpanded(e,r){e.setAttribute("aria-expanded",r)}connectedCallbackHook(){this.card.addEventListener("mouseleave",this.toggleActionMenuFromCard)}disconnectedCallbackHook(){this.card.removeEventListener("mouseleave",this.toggleActionMenuFromCard)}};d(he,"variantStyle",ga`
         :host([variant='catalog']) {
             min-height: 330px;
             width: var(--consonant-merch-card-catalog-width);
@@ -696,7 +696,7 @@ merch-card[variant="catalog"] .payment-details {
             margin-left: var(--consonant-merch-spacing-xxs);
             box-sizing: border-box;
         }
-    `);import{html as Re}from"../lit-all.min.js";var pr=`
+    `);import{html as Pe}from"../lit-all.min.js";var pr=`
 :root {
   --consonant-merch-card-image-width: 300px;
 }
@@ -730,21 +730,21 @@ merch-card[variant="catalog"] .payment-details {
       grid-template-columns: repeat(4, var(--consonant-merch-card-image-width-4clm));
   }
 }
-`;var Qe=class extends x{constructor(t){super(t)}getGlobalCSS(){return pr}renderLayout(){return Re`${this.cardImage}
+`;var Xe=class extends x{constructor(t){super(t)}getGlobalCSS(){return pr}renderLayout(){return Pe`${this.cardImage}
     <div class="body">
         <slot name="icons"></slot>
         <slot name="heading-xs"></slot>
         <slot name="body-xxs"></slot>
-        ${this.promoBottom?Re`<slot name="body-xs"></slot><slot name="promo-text"></slot>`:Re`<slot name="promo-text"></slot><slot name="body-xs"></slot>`}
+        ${this.promoBottom?Pe`<slot name="body-xs"></slot><slot name="promo-text"></slot>`:Pe`<slot name="promo-text"></slot><slot name="body-xs"></slot>`}
     </div>
-    ${this.evergreen?Re`
+    ${this.evergreen?Pe`
               <div
                   class="detail-bg-container"
                   style="background: ${this.card.detailBg}"
               >
                   <slot name="detail-bg"></slot>
               </div>
-          `:Re`
+          `:Pe`
               <hr />
               ${this.secureLabelFooter}
           `}`}};import{html as gr}from"../lit-all.min.js";var mr=`
@@ -791,7 +791,7 @@ merch-card[variant="catalog"] .payment-details {
         </div>
         <slot name="body-xs"></slot>
     </div>
-    ${this.card.customHr?"":gr`<hr />`} ${this.secureLabelFooter}`}};import{html as me,css as ui,unsafeCSS as vt}from"../lit-all.min.js";var ur=`
+    ${this.card.customHr?"":gr`<hr />`} ${this.secureLabelFooter}`}};import{html as pe,css as ua,unsafeCSS as vt}from"../lit-all.min.js";var ur=`
   :root {
     --consonant-merch-card-mini-compare-chart-icon-size: 32px;
     --consonant-merch-card-mini-compare-mobile-cta-font-size: 16px;
@@ -1119,7 +1119,7 @@ merch-card[variant="catalog"] .payment-details {
   }
 }
 
-@media screen and ${ae} {
+@media screen and ${Fe} {
   merch-card[variant="mini-compare-chart"] [slot='heading-m'] {
     font-size: var(--consonant-merch-card-body-s-font-size);
     line-height: var(--consonant-merch-card-body-s-line-height);
@@ -1226,17 +1226,17 @@ merch-card .footer-row-cell:nth-child(7) {
 merch-card .footer-row-cell:nth-child(8) {
   min-height: var(--consonant-merch-card-footer-row-8-min-height);
 }
-`;var fi=32,ge=class extends x{constructor(e){super(e);d(this,"getRowMinHeightPropertyName",e=>`--consonant-merch-card-footer-row-${e}-min-height`);d(this,"getMiniCompareFooter",()=>{let e=this.card.secureLabel?me`<slot name="secure-transaction-label">
+`;var fa=32,me=class extends x{constructor(e){super(e);d(this,"getRowMinHeightPropertyName",e=>`--consonant-merch-card-footer-row-${e}-min-height`);d(this,"getMiniCompareFooter",()=>{let e=this.card.secureLabel?pe`<slot name="secure-transaction-label">
               <span class="secure-transaction-label"
                   >${this.card.secureLabel}</span
               ></slot
-          >`:me`<slot name="secure-transaction-label"></slot>`;return me`<footer>${e}<slot name="footer"></slot></footer>`})}getGlobalCSS(){return ur}adjustMiniCompareBodySlots(){if(this.card.getBoundingClientRect().width<=2)return;this.updateCardElementMinHeight(this.card.shadowRoot.querySelector(".top-section"),"top-section");let e=["heading-m","body-m","heading-m-price","body-xxs","price-commitment","offers","promo-text","callout-content","addon"];this.card.classList.contains("bullet-list")&&e.push("footer-rows"),e.forEach(a=>this.updateCardElementMinHeight(this.card.shadowRoot.querySelector(`slot[name="${a}"]`),a)),this.updateCardElementMinHeight(this.card.shadowRoot.querySelector("footer"),"footer");let r=this.card.shadowRoot.querySelector(".mini-compare-chart-badge");r&&r.textContent!==""&&this.getContainer().style.setProperty("--consonant-merch-card-mini-compare-chart-top-section-mobile-height","32px")}adjustMiniCompareFooterRows(){if(this.card.getBoundingClientRect().width===0)return;let e=this.card.querySelector('[slot="footer-rows"] ul');!e||!e.children||[...e.children].forEach((r,a)=>{let n=Math.max(fi,parseFloat(window.getComputedStyle(r).height)||0),o=parseFloat(this.getContainer().style.getPropertyValue(this.getRowMinHeightPropertyName(a+1)))||0;n>o&&this.getContainer().style.setProperty(this.getRowMinHeightPropertyName(a+1),`${n}px`)})}removeEmptyRows(){this.card.querySelectorAll(".footer-row-cell").forEach(r=>{let a=r.querySelector(".footer-row-cell-description");a&&!a.textContent.trim()&&r.remove()})}get mainPrice(){return this.card.querySelector(`[slot="heading-m-price"] ${f}[data-template="price"]`)}get headingMPriceSlot(){return this.card.shadowRoot.querySelector('slot[name="heading-m-price"]')?.assignedElements()[0]}toggleAddon(e){let r=this.mainPrice,a=this.headingMPriceSlot;if(!r&&a){let n=e?.getAttribute("plan-type"),o=null;if(e&&n&&(o=e.querySelector(`p[data-plan-type="${n}"]`)?.querySelector('span[is="inline-price"]')),this.card.querySelectorAll('p[slot="heading-m-price"]').forEach(c=>c.remove()),e.checked){if(o){let c=S("p",{class:"addon-heading-m-price-addon",slot:"heading-m-price"},o.innerHTML);this.card.appendChild(c)}}else{let c=S("p",{class:"card-heading",id:"free",slot:"heading-m-price"},"Free");this.card.appendChild(c)}}}async adjustAddon(){await this.card.updateComplete;let e=this.card.addon;if(!e)return;let r=this.mainPrice,a=this.card.planType;r&&(await r.onceSettled(),a=r.value?.[0]?.planType),a&&(e.planType=a)}renderLayout(){return me` <div class="top-section${this.badge?" badge":""}">
+          >`:pe`<slot name="secure-transaction-label"></slot>`;return pe`<footer>${e}<slot name="footer"></slot></footer>`})}getGlobalCSS(){return ur}adjustMiniCompareBodySlots(){if(this.card.getBoundingClientRect().width<=2)return;this.updateCardElementMinHeight(this.card.shadowRoot.querySelector(".top-section"),"top-section");let e=["heading-m","body-m","heading-m-price","body-xxs","price-commitment","offers","promo-text","callout-content","addon"];this.card.classList.contains("bullet-list")&&e.push("footer-rows"),e.forEach(i=>this.updateCardElementMinHeight(this.card.shadowRoot.querySelector(`slot[name="${i}"]`),i)),this.updateCardElementMinHeight(this.card.shadowRoot.querySelector("footer"),"footer");let r=this.card.shadowRoot.querySelector(".mini-compare-chart-badge");r&&r.textContent!==""&&this.getContainer().style.setProperty("--consonant-merch-card-mini-compare-chart-top-section-mobile-height","32px")}adjustMiniCompareFooterRows(){if(this.card.getBoundingClientRect().width===0)return;let e=this.card.querySelector('[slot="footer-rows"] ul');!e||!e.children||[...e.children].forEach((r,i)=>{let o=Math.max(fa,parseFloat(window.getComputedStyle(r).height)||0),n=parseFloat(this.getContainer().style.getPropertyValue(this.getRowMinHeightPropertyName(i+1)))||0;o>n&&this.getContainer().style.setProperty(this.getRowMinHeightPropertyName(i+1),`${o}px`)})}removeEmptyRows(){this.card.querySelectorAll(".footer-row-cell").forEach(r=>{let i=r.querySelector(".footer-row-cell-description");i&&!i.textContent.trim()&&r.remove()})}get mainPrice(){return this.card.querySelector(`[slot="heading-m-price"] ${f}[data-template="price"]`)}get headingMPriceSlot(){return this.card.shadowRoot.querySelector('slot[name="heading-m-price"]')?.assignedElements()[0]}toggleAddon(e){let r=this.mainPrice,i=this.headingMPriceSlot;if(!r&&i){let o=e?.getAttribute("plan-type"),n=null;if(e&&o&&(n=e.querySelector(`p[data-plan-type="${o}"]`)?.querySelector('span[is="inline-price"]')),this.card.querySelectorAll('p[slot="heading-m-price"]').forEach(s=>s.remove()),e.checked){if(n){let s=S("p",{class:"addon-heading-m-price-addon",slot:"heading-m-price"},n.innerHTML);this.card.appendChild(s)}}else{let s=S("p",{class:"card-heading",id:"free",slot:"heading-m-price"},"Free");this.card.appendChild(s)}}}async adjustAddon(){await this.card.updateComplete;let e=this.card.addon;if(!e)return;let r=this.mainPrice,i=this.card.planType;r&&(await r.onceSettled(),i=r.value?.[0]?.planType),i&&(e.planType=i)}renderLayout(){return pe` <div class="top-section${this.badge?" badge":""}">
             <slot name="icons"></slot> ${this.badge}
         </div>
         <slot name="heading-m"></slot>
-        ${this.card.classList.contains("bullet-list")?me`<slot name="heading-m-price"></slot>
+        ${this.card.classList.contains("bullet-list")?pe`<slot name="heading-m-price"></slot>
           <slot name="price-commitment"></slot>
-          <slot name="body-m"></slot>`:me`<slot name="body-m"></slot>
+          <slot name="body-m"></slot>`:pe`<slot name="body-m"></slot>
           <slot name="heading-m-price"></slot>`}
         <slot name="body-xxs"></slot>
         <slot name="price-commitment"></slot>
@@ -1245,7 +1245,7 @@ merch-card .footer-row-cell:nth-child(8) {
         <slot name="callout-content"></slot>
         <slot name="addon"></slot>
         ${this.getMiniCompareFooter()}
-        <slot name="footer-rows"><slot name="body-s"></slot></slot>`}async postCardUpdateHook(){await Promise.all(this.card.prices.map(e=>e.onceSettled())),await this.adjustAddon(),Ue()?this.removeEmptyRows():(this.adjustMiniCompareBodySlots(),this.adjustMiniCompareFooterRows())}};d(ge,"variantStyle",ui`
+        <slot name="footer-rows"><slot name="body-s"></slot></slot>`}async postCardUpdateHook(){await Promise.all(this.card.prices.map(e=>e.onceSettled())),await this.adjustAddon(),Ue()?this.removeEmptyRows():(this.adjustMiniCompareBodySlots(),this.adjustMiniCompareFooterRows())}};d(me,"variantStyle",ua`
     :host([variant='mini-compare-chart']) > slot:not([name='icons']) {
         display: block;
     }
@@ -1290,7 +1290,7 @@ merch-card .footer-row-cell:nth-child(8) {
       }
     }
 
-    @media screen and ${vt(ae)} {
+    @media screen and ${vt(Fe)} {
         [class*'-merch-cards'] :host([variant='mini-compare-chart']) footer {
             flex-direction: column;
             align-items: stretch;
@@ -1354,7 +1354,7 @@ merch-card .footer-row-cell:nth-child(8) {
     :host([variant='mini-compare-chart']) slot[name='footer-rows'] {
         justify-content: flex-start;
     }
-  `);import{html as Me,css as xi,nothing as Je}from"../lit-all.min.js";var fr=`
+  `);import{html as Re,css as xa,nothing as Je}from"../lit-all.min.js";var fr=`
 :root {
     --consonant-merch-card-plans-width: 302px;
     --consonant-merch-card-plans-icon-size: 40px;
@@ -1657,11 +1657,11 @@ merch-card-collection:has([slot="subtitle"]) merch-card {
         --merch-sidenav-collection-gap: 54px;
     }
 }
-`;var et={title:{tag:"h3",slot:"heading-xs"},subtitle:{tag:"p",slot:"subtitle"},prices:{tag:"p",slot:"heading-m"},promoText:{tag:"p",slot:"promo-text"},description:{tag:"div",slot:"body-xs"},mnemonics:{size:"l"},callout:{tag:"div",slot:"callout-content"},quantitySelect:{tag:"div",slot:"quantity-select"},addon:!0,secureLabel:!0,planType:!0,badge:{tag:"div",slot:"badge",default:"spectrum-yellow-300-plans"},allowedBadgeColors:["spectrum-yellow-300-plans","spectrum-gray-300-plans","spectrum-gray-700-plans","spectrum-green-900-plans"],allowedBorderColors:["spectrum-yellow-300-plans","spectrum-gray-300-plans","spectrum-green-900-plans"],borderColor:{attribute:"border-color"},size:["wide","super-wide"],whatsIncluded:{tag:"div",slot:"whats-included"},ctas:{slot:"footer",size:"m"},style:"consonant",perUnitLabel:{tag:"span",slot:"per-unit-label"}},xr={...function(){let{whatsIncluded:i,size:t,...e}=et;return e}(),title:{tag:"h3",slot:"heading-s"},secureLabel:!1},br={...function(){let{subtitle:i,whatsIncluded:t,size:e,quantitySelect:r,...a}=et;return a}()},A=class extends x{constructor(t){super(t),this.adaptForMedia=this.adaptForMedia.bind(this)}priceOptionsProvider(t,e){t.dataset.template===sr&&(e.displayPlanType=this.card?.settings?.displayPlanType??!1)}getGlobalCSS(){return fr}adjustSlotPlacement(t,e,r){let a=this.card.shadowRoot,n=a.querySelector("footer"),o=this.card.getAttribute("size"),c=a.querySelector(`footer slot[name="${t}"]`),l=a.querySelector(`.body slot[name="${t}"]`),m=a.querySelector(".body");if((!o||!o.includes("wide"))&&(n?.classList.remove("wide-footer"),c&&c.remove()),!!e.includes(o)){if(n?.classList.toggle("wide-footer",qe()),!r&&c){if(l)c.remove();else{let g=m.querySelector(`[data-placeholder-for="${t}"]`);g?g.replaceWith(c):m.appendChild(c)}return}if(r&&l){let g=document.createElement("div");if(g.setAttribute("data-placeholder-for",t),g.classList.add("slot-placeholder"),!c){let b=l.cloneNode(!0);n.prepend(b)}l.replaceWith(g)}}}adaptForMedia(){if(!this.card.closest("merch-card-collection,overlay-trigger,.two-merch-cards,.three-merch-cards,.four-merch-cards, .columns")){this.card.removeAttribute("size");return}this.adjustSlotPlacement("addon",["super-wide"],qe()),this.adjustSlotPlacement("callout-content",["super-wide"],qe())}adjustCallout(){let t=this.card.querySelector('[slot="callout-content"] .icon-button');t&&t.title&&(t.dataset.tooltip=t.title,t.removeAttribute("title"),t.classList.add("hide-tooltip"),document.addEventListener("touchstart",e=>{e.preventDefault(),e.target!==t?t.classList.add("hide-tooltip"):e.target.classList.toggle("hide-tooltip")}),document.addEventListener("mouseover",e=>{e.preventDefault(),e.target!==t?t.classList.add("hide-tooltip"):e.target.classList.remove("hide-tooltip")}))}postCardUpdateHook(){this.adaptForMedia(),this.adjustTitleWidth(),this.adjustLegal(),this.adjustAddon(),this.adjustCallout()}get headingM(){return this.card.querySelector('[slot="heading-m"]')}get mainPrice(){return this.headingM.querySelector(`${f}[data-template="price"]`)}get divider(){return this.card.variant==="plans-education"?Me`<div class="divider"></div>`:Je}async adjustLegal(){if(await this.card.updateComplete,await customElements.whenDefined("inline-price"),this.legalAdjusted)return;this.legalAdjusted=!0;let t=[],e=this.card.querySelector(`[slot="heading-m"] ${f}[data-template="price"]`);e&&t.push(e);let r=t.map(async a=>{let n=a.cloneNode(!0);await a.onceSettled(),a?.options&&(a.options.displayPerUnit&&(a.dataset.displayPerUnit="false"),a.options.displayTax&&(a.dataset.displayTax="false"),a.options.displayPlanType&&(a.dataset.displayPlanType="false"),n.setAttribute("data-template","legal"),a.parentNode.insertBefore(n,a.nextSibling))});await Promise.all(r)}async adjustAddon(){await this.card.updateComplete;let t=this.card.addon;if(!t)return;t.setAttribute("custom-checkbox","");let e=this.mainPrice;if(!e)return;await e.onceSettled();let r=e.value?.[0]?.planType;r&&(t.planType=r)}get stockCheckbox(){return this.card.checkboxLabel?Me`<label id="stock-checkbox">
+`;var et={title:{tag:"h3",slot:"heading-xs"},subtitle:{tag:"p",slot:"subtitle"},prices:{tag:"p",slot:"heading-m"},promoText:{tag:"p",slot:"promo-text"},description:{tag:"div",slot:"body-xs"},mnemonics:{size:"l"},callout:{tag:"div",slot:"callout-content"},quantitySelect:{tag:"div",slot:"quantity-select"},addon:!0,secureLabel:!0,planType:!0,badge:{tag:"div",slot:"badge",default:"spectrum-yellow-300-plans"},allowedBadgeColors:["spectrum-yellow-300-plans","spectrum-gray-300-plans","spectrum-gray-700-plans","spectrum-green-900-plans"],allowedBorderColors:["spectrum-yellow-300-plans","spectrum-gray-300-plans","spectrum-green-900-plans"],borderColor:{attribute:"border-color"},size:["wide","super-wide"],whatsIncluded:{tag:"div",slot:"whats-included"},ctas:{slot:"footer",size:"m"},style:"consonant",perUnitLabel:{tag:"span",slot:"per-unit-label"}},xr={...function(){let{whatsIncluded:a,size:t,...e}=et;return e}(),title:{tag:"h3",slot:"heading-s"},secureLabel:!1},br={...function(){let{subtitle:a,whatsIncluded:t,size:e,quantitySelect:r,...i}=et;return i}()},A=class extends x{constructor(t){super(t),this.adaptForMedia=this.adaptForMedia.bind(this)}priceOptionsProvider(t,e){t.dataset.template===sr&&(e.displayPlanType=this.card?.settings?.displayPlanType??!1)}getGlobalCSS(){return fr}adjustSlotPlacement(t,e,r){let i=this.card.shadowRoot,o=i.querySelector("footer"),n=this.card.getAttribute("size"),s=i.querySelector(`footer slot[name="${t}"]`),l=i.querySelector(`.body slot[name="${t}"]`),p=i.querySelector(".body");if((!n||!n.includes("wide"))&&(o?.classList.remove("wide-footer"),s&&s.remove()),!!e.includes(n)){if(o?.classList.toggle("wide-footer",qe()),!r&&s){if(l)s.remove();else{let g=p.querySelector(`[data-placeholder-for="${t}"]`);g?g.replaceWith(s):p.appendChild(s)}return}if(r&&l){let g=document.createElement("div");if(g.setAttribute("data-placeholder-for",t),g.classList.add("slot-placeholder"),!s){let b=l.cloneNode(!0);o.prepend(b)}l.replaceWith(g)}}}adaptForMedia(){if(!this.card.closest("merch-card-collection,overlay-trigger,.two-merch-cards,.three-merch-cards,.four-merch-cards, .columns")){this.card.removeAttribute("size");return}this.adjustSlotPlacement("addon",["super-wide"],qe()),this.adjustSlotPlacement("callout-content",["super-wide"],qe())}adjustCallout(){let t=this.card.querySelector('[slot="callout-content"] .icon-button');t&&t.title&&(t.dataset.tooltip=t.title,t.removeAttribute("title"),t.classList.add("hide-tooltip"),document.addEventListener("touchstart",e=>{e.preventDefault(),e.target!==t?t.classList.add("hide-tooltip"):e.target.classList.toggle("hide-tooltip")}),document.addEventListener("mouseover",e=>{e.preventDefault(),e.target!==t?t.classList.add("hide-tooltip"):e.target.classList.remove("hide-tooltip")}))}postCardUpdateHook(){this.adaptForMedia(),this.adjustTitleWidth(),this.adjustLegal(),this.adjustAddon(),this.adjustCallout()}get headingM(){return this.card.querySelector('[slot="heading-m"]')}get mainPrice(){return this.headingM.querySelector(`${f}[data-template="price"]`)}get divider(){return this.card.variant==="plans-education"?Re`<div class="divider"></div>`:Je}async adjustLegal(){if(await this.card.updateComplete,await customElements.whenDefined("inline-price"),this.legalAdjusted)return;this.legalAdjusted=!0;let t=[],e=this.card.querySelector(`[slot="heading-m"] ${f}[data-template="price"]`);e&&t.push(e);let r=t.map(async i=>{let o=i.cloneNode(!0);await i.onceSettled(),i?.options&&(i.options.displayPerUnit&&(i.dataset.displayPerUnit="false"),i.options.displayTax&&(i.dataset.displayTax="false"),i.options.displayPlanType&&(i.dataset.displayPlanType="false"),o.setAttribute("data-template","legal"),i.parentNode.insertBefore(o,i.nextSibling))});await Promise.all(r)}async adjustAddon(){await this.card.updateComplete;let t=this.card.addon;if(!t)return;t.setAttribute("custom-checkbox","");let e=this.mainPrice;if(!e)return;await e.onceSettled();let r=e.value?.[0]?.planType;r&&(t.planType=r)}get stockCheckbox(){return this.card.checkboxLabel?Re`<label id="stock-checkbox">
                 <input type="checkbox" @change=${this.card.toggleStockOffer}></input>
                 <span></span>
                 ${this.card.checkboxLabel}
-            </label>`:Je}get icons(){return!this.card.querySelector('[slot="icons"]')&&!this.card.getAttribute("id")?Je:Me`<slot name="icons"></slot>`}connectedCallbackHook(){let t=Be();t?.addEventListener&&t.addEventListener("change",this.adaptForMedia);let e=He();e?.addEventListener&&e.addEventListener("change",this.adaptForMedia)}disconnectedCallbackHook(){let t=Be();t?.removeEventListener&&t.removeEventListener("change",this.adaptForMedia);let e=He();e?.removeEventListener&&e.removeEventListener("change",this.adaptForMedia)}renderLayout(){return Me` ${this.badge}
+            </label>`:Je}get icons(){return!this.card.querySelector('[slot="icons"]')&&!this.card.getAttribute("id")?Je:Re`<slot name="icons"></slot>`}connectedCallbackHook(){let t=Be();t?.addEventListener&&t.addEventListener("change",this.adaptForMedia);let e=He();e?.addEventListener&&e.addEventListener("change",this.adaptForMedia)}disconnectedCallbackHook(){let t=Be();t?.removeEventListener&&t.removeEventListener("change",this.adaptForMedia);let e=He();e?.removeEventListener&&e.removeEventListener("change",this.adaptForMedia)}renderLayout(){return Re` ${this.badge}
             <div class="body">
                 ${this.icons}
                 <slot name="heading-xs"></slot>
@@ -1682,7 +1682,7 @@ merch-card-collection:has([slot="subtitle"]) merch-card {
                 <slot name="badge"></slot>
             </div>
             ${this.secureLabelFooter}
-            <slot></slot>`}};d(A,"variantStyle",xi`
+            <slot></slot>`}};d(A,"variantStyle",xa`
         :host([variant^='plans']) {
             min-height: 273px;
             border: 1px solid var(--merch-card-custom-border-color, #dadada);
@@ -1786,7 +1786,7 @@ merch-card-collection:has([slot="subtitle"]) merch-card {
             line-height: 21px;
             padding: 2px 10px 3px;
         }
-    `),d(A,"collectionOptions",{customHeaderArea:t=>t.sidenav?Me`<slot name="resultsText"></slot>`:Je,headerVisibility:{search:!1,sort:!1,result:["mobile","tablet"],custom:["desktop"]}});import{html as yt,css as bi}from"../lit-all.min.js";var vr=`
+    `),d(A,"collectionOptions",{customHeaderArea:t=>t.sidenav?Re`<slot name="resultsText"></slot>`:Je,headerVisibility:{search:!1,sort:!1,result:["mobile","tablet"],custom:["desktop"]}});import{html as yt,css as ba}from"../lit-all.min.js";var vr=`
 :root {
   --consonant-merch-card-product-width: 300px;
 }
@@ -1852,7 +1852,7 @@ merch-card-collection:has([slot="subtitle"]) merch-card {
       grid-template-columns: repeat(4, var(--consonant-merch-card-product-width-4clm));
   }
 }
-`;var ue=class extends x{constructor(t){super(t),this.postCardUpdateHook=this.postCardUpdateHook.bind(this)}getGlobalCSS(){return vr}adjustProductBodySlots(){if(this.card.getBoundingClientRect().width===0)return;["heading-xs","body-xxs","body-xs","promo-text","callout-content","addon","body-lower"].forEach(e=>this.updateCardElementMinHeight(this.card.shadowRoot.querySelector(`slot[name="${e}"]`),e))}renderLayout(){return yt` ${this.badge}
+`;var ge=class extends x{constructor(t){super(t),this.postCardUpdateHook=this.postCardUpdateHook.bind(this)}getGlobalCSS(){return vr}adjustProductBodySlots(){if(this.card.getBoundingClientRect().width===0)return;["heading-xs","body-xxs","body-xs","promo-text","callout-content","addon","body-lower"].forEach(e=>this.updateCardElementMinHeight(this.card.shadowRoot.querySelector(`slot[name="${e}"]`),e))}renderLayout(){return yt` ${this.badge}
             <div class="body" aria-live="polite">
                 <slot name="icons"></slot>
                 <slot name="heading-xs"></slot>
@@ -1864,7 +1864,7 @@ merch-card-collection:has([slot="subtitle"]) merch-card {
                 <slot name="addon"></slot>
                 <slot name="body-lower"></slot>
             </div>
-            ${this.secureLabelFooter}`}connectedCallbackHook(){window.addEventListener("resize",this.postCardUpdateHook)}disconnectedCallbackHook(){window.removeEventListener("resize",this.postCardUpdateHook)}postCardUpdateHook(){this.card.isConnected&&(this.adjustAddon(),Ue()||this.adjustProductBodySlots(),this.adjustTitleWidth())}get headingXSSlot(){return this.card.shadowRoot.querySelector('slot[name="heading-xs"]').assignedElements()[0]}get mainPrice(){return this.card.querySelector(`[slot="heading-xs"] ${f}[data-template="price"]`)}toggleAddon(t){let e=this.mainPrice,r=this.headingXSSlot;if(!e&&r){let a=t?.getAttribute("plan-type"),n=null;if(t&&a&&(n=t.querySelector(`p[data-plan-type="${a}"]`)?.querySelector('span[is="inline-price"]')),this.card.querySelectorAll('p[slot="heading-xs"]').forEach(o=>o.remove()),t.checked){if(n){let o=S("p",{class:"addon-heading-xs-price-addon",slot:"heading-xs"},n.innerHTML);this.card.appendChild(o)}}else{let o=S("p",{class:"card-heading",id:"free",slot:"heading-xs"},"Free");this.card.appendChild(o)}}}async adjustAddon(){await this.card.updateComplete;let t=this.card.addon;if(!t)return;let e=this.mainPrice,r=this.card.planType;e&&(await e.onceSettled(),r=e.value?.[0]?.planType),r&&(t.planType=r)}};d(ue,"variantStyle",bi`
+            ${this.secureLabelFooter}`}connectedCallbackHook(){window.addEventListener("resize",this.postCardUpdateHook)}disconnectedCallbackHook(){window.removeEventListener("resize",this.postCardUpdateHook)}postCardUpdateHook(){this.card.isConnected&&(this.adjustAddon(),Ue()||this.adjustProductBodySlots(),this.adjustTitleWidth())}get headingXSSlot(){return this.card.shadowRoot.querySelector('slot[name="heading-xs"]').assignedElements()[0]}get mainPrice(){return this.card.querySelector(`[slot="heading-xs"] ${f}[data-template="price"]`)}toggleAddon(t){let e=this.mainPrice,r=this.headingXSSlot;if(!e&&r){let i=t?.getAttribute("plan-type"),o=null;if(t&&i&&(o=t.querySelector(`p[data-plan-type="${i}"]`)?.querySelector('span[is="inline-price"]')),this.card.querySelectorAll('p[slot="heading-xs"]').forEach(n=>n.remove()),t.checked){if(o){let n=S("p",{class:"addon-heading-xs-price-addon",slot:"heading-xs"},o.innerHTML);this.card.appendChild(n)}}else{let n=S("p",{class:"card-heading",id:"free",slot:"heading-xs"},"Free");this.card.appendChild(n)}}}async adjustAddon(){await this.card.updateComplete;let t=this.card.addon;if(!t)return;let e=this.mainPrice,r=this.card.planType;e&&(await e.onceSettled(),r=e.value?.[0]?.planType),r&&(t.planType=r)}};d(ge,"variantStyle",ba`
         :host([variant='product']) > slot:not([name='icons']) {
             display: block;
         }
@@ -1899,7 +1899,7 @@ merch-card-collection:has([slot="subtitle"]) merch-card {
         :host([variant='product']) ::slotted([slot='heading-xs']) {
             max-width: var(--consonant-merch-card-heading-xs-max-width, 100%);
         }
-    `);import{html as Et,css as vi}from"../lit-all.min.js";var yr=`
+    `);import{html as Et,css as va}from"../lit-all.min.js";var yr=`
 :root {
   --consonant-merch-card-segment-width: 378px;
 }
@@ -1945,7 +1945,7 @@ merch-card-collection:has([slot="subtitle"]) merch-card {
       grid-template-columns: repeat(4, minmax(276px, var(--consonant-merch-card-segment-width)));
   }
 }
-`;var fe=class extends x{constructor(t){super(t)}getGlobalCSS(){return yr}postCardUpdateHook(){this.adjustTitleWidth()}renderLayout(){return Et` ${this.badge}
+`;var ue=class extends x{constructor(t){super(t)}getGlobalCSS(){return yr}postCardUpdateHook(){this.adjustTitleWidth()}renderLayout(){return Et` ${this.badge}
     <div class="body">
         <slot name="heading-xs"></slot>
         <slot name="body-xxs"></slot>
@@ -1954,14 +1954,14 @@ merch-card-collection:has([slot="subtitle"]) merch-card {
         ${this.promoBottom?Et`<slot name="promo-text"></slot><slot name="callout-content"></slot>`:""}
     </div>
     <hr />
-    ${this.secureLabelFooter}`}};d(fe,"variantStyle",vi`
+    ${this.secureLabelFooter}`}};d(ue,"variantStyle",va`
     :host([variant='segment']) {
       min-height: 214px;
     }
     :host([variant='segment']) ::slotted([slot='heading-xs']) {
       max-width: var(--consonant-merch-card-heading-xs-max-width, 100%);
     }
-  `);import{html as wt,css as yi}from"../lit-all.min.js";var Er=`
+  `);import{html as wt,css as ya}from"../lit-all.min.js";var Er=`
 :root {
   --consonant-merch-card-special-offers-width: 378px;
 }
@@ -2009,7 +2009,7 @@ merch-card[variant="special-offers"] span[is="inline-price"][data-template="stri
     grid-template-columns: repeat(4, minmax(300px, var(--consonant-merch-card-special-offers-width)));
   }
 }
-`;var wr={name:{tag:"h4",slot:"detail-m"},title:{tag:"h4",slot:"detail-m"},backgroundImage:{tag:"div",slot:"bg-image"},prices:{tag:"h3",slot:"heading-xs"},description:{tag:"div",slot:"body-xs"},ctas:{slot:"footer",size:"l"}},xe=class extends x{constructor(t){super(t)}getGlobalCSS(){return Er}get headingSelector(){return'[slot="detail-m"]'}renderLayout(){return wt`${this.cardImage}
+`;var wr={name:{tag:"h4",slot:"detail-m"},title:{tag:"h4",slot:"detail-m"},backgroundImage:{tag:"div",slot:"bg-image"},prices:{tag:"h3",slot:"heading-xs"},description:{tag:"div",slot:"body-xs"},ctas:{slot:"footer",size:"l"}},fe=class extends x{constructor(t){super(t)}getGlobalCSS(){return Er}get headingSelector(){return'[slot="detail-m"]'}renderLayout(){return wt`${this.cardImage}
             <div class="body">
                 <slot name="detail-m"></slot>
                 <slot name="heading-xs"></slot>
@@ -2026,7 +2026,7 @@ merch-card[variant="special-offers"] span[is="inline-price"][data-template="stri
                       <hr />
                       ${this.secureLabelFooter}
                   `}
-            <slot></slot>`}};d(xe,"variantStyle",yi`
+            <slot></slot>`}};d(fe,"variantStyle",ya`
         :host([variant='special-offers']) {
             min-height: 439px;
         }
@@ -2038,84 +2038,45 @@ merch-card[variant="special-offers"] span[is="inline-price"][data-template="stri
         :host([variant='special-offers'].center) {
             text-align: center;
         }
-    `);import{html as Ei,css as wi}from"../lit-all.min.js";var Sr=`
+    `);import{html as Ea,css as wa}from"../lit-all.min.js";var Sr=`
 :root {
-    --consonant-merch-card-simplified-pricing-express-width: 294px;
+    --merch-card-simplified-pricing-express-width: 311px;
     --merch-card-simplified-pricing-express-cta-color: var(
         var(--spectrum-gray-50),
         rgba(255, 255, 255, 1)
     );
 }
 
-merch-card[variant="simplified-pricing-express"] {
-    min-width: var(--consonant-merch-card-simplified-pricing-express-width);
-    background-color: var(--spectrum-gray-50);
-    border-radius: 16px;
-    height: 100%;
-    display: flex;
-}
-
 merch-card[variant="simplified-pricing-express"] merch-badge {
     white-space: nowrap;
-}
-
-merch-card[variant="simplified-pricing-express"] [slot="trial-badge"] {
-    display: inline-block;
-    align-self: flex-start;
-}
-
-merch-card[variant="simplified-pricing-express"] [slot="trial-badge"] merch-badge {
-    background: linear-gradient(98deg, #FF477B 3.22%, #5C5CE0 52.98%, #318FFF 101.72%);
-    color: white;
-    padding: 6px 16px;
-    border-radius: 20px;
-    font-size: 16px;
-    font-weight: 600 ;
-    line-height: 20.8px ;
-    white-space: normal ;
-    display: inline-block ;
-    margin: 0;
-    border: none ;
-    word-wrap: break-word;
-    word-break: normal ;
-    text-align: center;
-    overflow-wrap: break-word;
-    max-width: 100%;
-    left: auto;
-    position: relative;
-}
-
-merch-card[variant="simplified-pricing-express"] [slot="trial-badge"] merch-badge {
-    color: #fff;
+    color: var(--spectrum-white);
+    font-size: var(--consonant-merch-card-detail-m-font-size);
+    line-height: var(--consonant-merch-card-detail-m-line-height);
 }
 
 /* Grid layout for simplified-pricing-express cards */
-merch-card-collection.simplified-pricing-express:has(merch-card[variant="simplified-pricing-express"]) {
+merch-card-collection.simplified-pricing-express {
     display: grid;
     justify-content: center;
     justify-items: center;
     align-items: stretch;
-    gap: var(--consonant-merch-spacing-xs);
+    gap: 16px;
     padding: var(--spacing-m);
+    /* Default to 1 column on mobile */
+    grid-template-columns: 1fr;
 }
 
-/* Mobile/Tablet - Single column */
-@media screen and ${ae} {
-    merch-card-collection.simplified-pricing-express:has(merch-card[variant="simplified-pricing-express"]) {
-        grid-template-columns: 1fr;
-    }
-    
-    merch-card[variant="simplified-pricing-express"] {
-        width: 100%;
-        max-width: var(--consonant-merch-card-simplified-pricing-express-width);
-    }
+/* Also support direct merch-card children and wrapped in p tags */
+merch-card-collection.simplified-pricing-express p {
+    margin: 0;
+    font-size: inherit;
 }
 
-/* Desktop - 4 columns */
+/* Desktop - 3 columns */
 @media screen and ${u} {
-    merch-card-collection.simplified-pricing-express:has(merch-card[variant="simplified-pricing-express"]) {
-        grid-template-columns: repeat(4, var(--consonant-merch-card-simplified-pricing-express-width));
-        max-width: calc(4 * var(--consonant-merch-card-simplified-pricing-express-width) + 3 * var(--consonant-merch-spacing-m));
+    merch-card-collection.simplified-pricing-express {
+        grid-template-columns: repeat(3, 1fr);
+        max-width: calc(3 * var(--merch-card-simplified-pricing-express-width) + 32px);
         margin: 0 auto;
     }
 }
@@ -2124,9 +2085,16 @@ merch-card[variant="simplified-pricing-express"] p {
     margin: 0 !important; /* needed to override express-milo default margin to all <p> */
 }
 
+merch-card[variant="simplified-pricing-express"] [slot="heading-xs"] {
+    font-size: 18px;
+    font-weight: 700;
+    line-height: 23.4px;
+    color: var(--spectrum-gray-800);
+}
+
 merch-card[variant="simplified-pricing-express"] [slot="body-xs"] {
-    font-size: var(--merch-card-simplified-pricing-express-body-xs-font-size);
-    line-height: var(--merch-card-simplified-pricing-express-body-xs-line-height);
+    font-size: var(--consonant-merch-card-body-xs-font-size, 14px);
+    line-height: var(--consonant-merch-card-body-xs-line-height, 21px);
     color: var(--spectrum-gray-700);
 }
 
@@ -2152,6 +2120,7 @@ merch-card[variant="simplified-pricing-express"] [slot="cta"] a.button {
 merch-card[variant="simplified-pricing-express"] [slot="price"] {
   display: flex;
   flex-direction: column;
+  padding-bottom: 24px;
 }
 
 merch-card[variant="simplified-pricing-express"] [slot="price"] > p:first-child {
@@ -2227,25 +2196,29 @@ merch-card[variant="simplified-pricing-express"] sr-only {
 
 /* mas-tooltip inline styles for simplified-pricing-express */
 merch-card[variant="simplified-pricing-express"] mas-tooltip {
-  display: inline-flex;
-  align-items: center;
-  vertical-align: middle;
-  margin-left: 4px;
-  overflow: visible;
-}
-
-merch-card[variant="simplified-pricing-express"] mas-tooltip merch-icon {
-  display: inline-block;
-  vertical-align: middle;
+    display: inline-block;
+    align-items: center;
+    vertical-align: baseline;
+    margin-right: 8px;
+    overflow: visible;
+    padding-bottom: 32px;
+    padding-top: 16px;
+    width: 24px;
+    height: 24px;
 }
 
 /* Tooltip containers - overflow handled by Shadow DOM */
 
-/* Mobile accordion styles */
-@media (max-width: 599px) {
+/* Mobile and Tablet styles */
+@media (max-width: 1199px) {
+  /* Remove gap between cards on mobile/tablet */
+  merch-card-collection.simplified-pricing-express {
+    gap: 8px;
+  }
+  
   merch-card[variant="simplified-pricing-express"] {
-    width: 332px;
-    max-width: 332px;
+    width: 311px;
+    max-width: 311px;
   }
 
   /* Badge alignment on mobile */
@@ -2253,7 +2226,6 @@ merch-card[variant="simplified-pricing-express"] mas-tooltip merch-icon {
     font-size: 16px;
     font-weight: 400;
     color: var(--spectrum-gray-700);
-    margin-top: 10px;
   }
 
   /* Trial badge alignment on mobile */
@@ -2318,101 +2290,18 @@ merch-card[variant="simplified-pricing-express"] mas-tooltip merch-icon {
   /* Collapsed card should have fixed height and padding */
   merch-card[variant="simplified-pricing-express"][data-expanded="false"],
   merch-card[variant="simplified-pricing-express"]:not([data-expanded="true"]) {
-    height: 72px;
-    min-height: auto;
-    padding: 16px;
+    max-height: 57px;
+    padding: 0;
     overflow: hidden;
+    border-radius: 8px;
   }
 
-  /* Expanded card should have auto height */
-  merch-card[variant="simplified-pricing-express"][data-expanded="true"] {
-    height: auto;
-    min-height: auto;
-    padding: var(--merch-card-simplified-pricing-express-padding-mobile);
+  merch-card[variant="simplified-pricing-express"][gradient-border="true"][data-expanded="false"],
+  merch-card[variant="simplified-pricing-express"][gradient-border="true"]:not([data-expanded="true"]) {
+    max-height: 90px;
   }
 }
 
-/* Tablet styles */
-@media (min-width: 600px) and (max-width: 1199px) {
-  merch-card[variant="simplified-pricing-express"] {
-    width: 548px;
-    max-width: 548px;
-  }
-
-  /* Badge alignment on tablet */
-  merch-card[variant="simplified-pricing-express"] [slot="badge"] {
-    font-size: 16px;
-    font-weight: 400;
-    display: flex;
-    align-self: flex-end;
-  }
-
-  /* Trial badge alignment on tablet */
-  merch-card[variant="simplified-pricing-express"] [slot="trial-badge"] {
-    margin-left: 0 ;
-    align-self: flex-start;
-  }
-  
-  merch-card[variant="simplified-pricing-express"] [slot="trial-badge"] merch-badge {
-    font-size: 16px;
-    line-height: 20.8px;
-  }
-
-  /* Apply same collapsed state logic as mobile */
-  merch-card[variant="simplified-pricing-express"]:not([data-expanded="true"]) [slot="body-xs"],
-  merch-card[variant="simplified-pricing-express"]:not([data-expanded="true"]) [slot="price"],
-  merch-card[variant="simplified-pricing-express"]:not([data-expanded="true"]) [slot="cta"] {
-    display: none;
-    visibility: hidden;
-    height: 0;
-    margin: 0;
-    padding: 0;
-  }
-
-  merch-card[variant="simplified-pricing-express"]:not([data-expanded]) [slot="body-xs"],
-  merch-card[variant="simplified-pricing-express"]:not([data-expanded]) [slot="price"],
-  merch-card[variant="simplified-pricing-express"]:not([data-expanded]) [slot="cta"] {
-    display: none;
-    visibility: hidden;
-    height: 0;
-    margin: 0;
-    padding: 0;
-  }
-
-  merch-card[variant="simplified-pricing-express"][data-expanded="false"] [slot="body-xs"],
-  merch-card[variant="simplified-pricing-express"][data-expanded="false"] [slot="price"],
-  merch-card[variant="simplified-pricing-express"][data-expanded="false"] [slot="cta"] {
-    display: none;
-    visibility: hidden;
-    height: 0;
-    margin: 0;
-    padding: 0;
-  }
-
-  /* Expanded state - explicitly show content on tablet */
-  merch-card[variant="simplified-pricing-express"][data-expanded="true"] [slot="body-xs"],
-  merch-card[variant="simplified-pricing-express"][data-expanded="true"] [slot="price"],
-  merch-card[variant="simplified-pricing-express"][data-expanded="true"] [slot="cta"] {
-    display: block;
-    visibility: visible;
-    height: auto;
-  }
-
-  /* Collapsed card height on tablet */
-  merch-card[variant="simplified-pricing-express"][data-expanded="false"],
-  merch-card[variant="simplified-pricing-express"]:not([data-expanded="true"]) {
-    height: 72px;
-    min-height: auto;
-    padding: 16px;
-    overflow: hidden;
-  }
-
-  /* Expanded card should have auto height on tablet */
-  merch-card[variant="simplified-pricing-express"][data-expanded="true"] {
-    height: auto;
-    min-height: auto;
-  }
-}
 
 merch-card[variant="simplified-pricing-express"] [slot="cta"] sp-button[variant="accent"],
 merch-card[variant="simplified-pricing-express"] [slot="cta"] button.spectrum-Button--accent,
@@ -2424,30 +2313,35 @@ merch-card[variant="simplified-pricing-express"] [slot="cta"] a.spectrum-Button.
 merch-card[variant="simplified-pricing-express"] [slot="footer"] sp-button[variant="accent"] {
     background-color: var(--spectrum-indigo-900);
 }
-`;var St={mnemonics:{size:"s"},title:{tag:"h3",slot:"heading-l",maxCount:250,withSuffix:!0},badge:{tag:"div",slot:"badge"},trialBadge:{tag:"div",slot:"trial-badge"},description:{tag:"div",slot:"body-xs",maxCount:2e3,withSuffix:!1},prices:{tag:"div",slot:"price"},ctas:{slot:"cta",size:"XL"},borderColor:{attribute:"border-color",specialValues:{gray:"var(--spectrum-gray-300)",blue:"var(--spectrum-blue-400)",gradient:"linear-gradient(98deg, #FF477B 3.22%, #5C5CE0 52.98%, #318FFF 101.72%)"}},disabledAttributes:["badgeColor","trialBadgeColor","trialBadgeBorderColor"],supportsDefaultChild:!0},be=class extends x{getGlobalCSS(){return Sr}get aemFragmentMapping(){return St}get headingSelector(){return'[slot="heading-l"]'}postCardUpdateHook(t){t.has("borderColor")&&this.card.borderColor&&this.card.style.setProperty("--merch-card-custom-border-color",this.card.borderColor)}connectedCallbackHook(){!this.card||this.card.failed||(this.setupMobileAccordion(),this.watchForDefaultCardAttribute(),setTimeout(()=>{this.card?.hasAttribute("data-default-card")&&window.matchMedia("(max-width: 1199px)").matches&&this.card.setAttribute("data-expanded","true")},100))}watchForDefaultCardAttribute(){this.card&&(this.attributeObserver=new MutationObserver(t=>{t.forEach(e=>{e.type==="attributes"&&e.attributeName==="data-default-card"&&this.card.hasAttribute("data-default-card")&&window.matchMedia("(max-width: 1199px)").matches&&this.card.setAttribute("data-expanded","true")})}),this.attributeObserver.observe(this.card,{attributes:!0,attributeOldValue:!0}))}setupMobileAccordion(){let t=this.card;if(!t)return;let e=()=>{if(window.matchMedia("(max-width: 1199px)").matches){let a=t.hasAttribute("data-default-card");t.setAttribute("data-expanded",a?"true":"false")}else t.removeAttribute("data-expanded")};e();let r=window.matchMedia("(max-width: 1199px)");this.mediaQueryListener=a=>{e()},r.addEventListener("change",this.mediaQueryListener)}disconnectedCallbackHook(){this.mediaQueryListener&&window.matchMedia("(max-width: 1199px)").removeEventListener("change",this.mediaQueryListener),this.attributeObserver&&this.attributeObserver.disconnect()}handleChevronClick(t){t.preventDefault(),t.stopPropagation();let e=this.card;if(!e||!window.matchMedia("(max-width: 1199px)").matches)return;let n=e.getAttribute("data-expanded")==="true"?"false":"true";e.setAttribute("data-expanded",n)}renderLayout(){return Ei`
-            <div class="header" @click=${t=>this.handleChevronClick(t)}>
-                <slot name="heading-l"></slot>
-                <slot name="trial-badge"></slot>
+`;var St={title:{tag:"h3",slot:"heading-xs",maxCount:250,withSuffix:!0},badge:{tag:"div",slot:"badge"},trialBadge:{tag:"div",slot:"trial-badge"},description:{tag:"div",slot:"body-xs",maxCount:2e3,withSuffix:!1},prices:{tag:"div",slot:"price"},ctas:{slot:"cta",size:"XL"},borderColor:{attribute:"border-color",specialValues:{gray:"var(--spectrum-gray-300)",blue:"var(--spectrum-blue-400)","gradient-purple-blue":"linear-gradient(98deg, #FF477B 3.22%, #5C5CE0 52.98%, #318FFF 101.72%)","gradient-firefly-spectrum":"linear-gradient(90deg, #E54065 0%, #7C4DFF 33%, #2D9CDB 66%, #18D8A9 100%)"}},disabledAttributes:["badgeColor","trialBadgeColor","trialBadgeBorderColor"],supportsDefaultChild:!0},xe=class extends x{getGlobalCSS(){return Sr}get aemFragmentMapping(){return St}get headingSelector(){return'[slot="heading-xs"]'}postCardUpdateHook(){}connectedCallbackHook(){!this.card||this.card.failed||(this.setupMobileAccordion(),this.watchForDefaultCardAttribute(),setTimeout(()=>{this.card?.hasAttribute("data-default-card")&&window.matchMedia("(max-width: 1199px)").matches&&this.card.setAttribute("data-expanded","true")},100))}watchForDefaultCardAttribute(){this.card&&(this.attributeObserver=new MutationObserver(t=>{t.forEach(e=>{e.type==="attributes"&&e.attributeName==="data-default-card"&&this.card.hasAttribute("data-default-card")&&window.matchMedia("(max-width: 1199px)").matches&&this.card.setAttribute("data-expanded","true")})}),this.attributeObserver.observe(this.card,{attributes:!0,attributeOldValue:!0}))}setupMobileAccordion(){let t=this.card;if(!t)return;let e=()=>{if(window.matchMedia("(max-width: 1199px)").matches){let i=t.hasAttribute("data-default-card");t.setAttribute("data-expanded",i?"true":"false")}else t.removeAttribute("data-expanded")};e();let r=window.matchMedia("(max-width: 1199px)");this.mediaQueryListener=()=>{e()},r.addEventListener("change",this.mediaQueryListener)}disconnectedCallbackHook(){this.mediaQueryListener&&window.matchMedia("(max-width: 1199px)").removeEventListener("change",this.mediaQueryListener),this.attributeObserver&&this.attributeObserver.disconnect()}handleChevronClick(t){t.preventDefault(),t.stopPropagation();let e=this.card;if(!e||!window.matchMedia("(max-width: 1199px)").matches)return;let o=e.getAttribute("data-expanded")==="true"?"false":"true";e.setAttribute("data-expanded",o)}renderLayout(){return Ea`
+            <div class="badge-wrapper">
                 <slot name="badge"></slot>
-                <button class="chevron-button" aria-label="Expand card" @click=${t=>this.handleChevronClick(t)}>
-                    <svg class="chevron-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M12 15.5L5 8.5L6.4 7.1L12 12.7L17.6 7.1L19 8.5L12 15.5Z" fill="currentColor"/>
-                    </svg>
-                </button>
             </div>
-            <div class="description">
-                <slot name="body-xs"></slot>
-            </div>
-            <div class="price">
-                <slot name="price"></slot>
-            </div>
-            <div class="cta">
-                <slot name="cta"></slot>
+            <div class="card-content">
+                <div class="header" @click=${t=>this.handleChevronClick(t)}>
+                    <slot name="heading-xs"></slot>
+                    <slot name="trial-badge"></slot>
+                    <button class="chevron-button" aria-label="Expand card" @click=${t=>this.handleChevronClick(t)}>
+                        <svg class="chevron-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M12 15.5L5 8.5L6.4 7.1L12 12.7L17.6 7.1L19 8.5L12 15.5Z" fill="currentColor"/>
+                        </svg>
+                    </button>
+                </div>
+                <div class="description">
+                    <slot name="body-xs"></slot>
+                </div>
+                <div class="price">
+                    <slot name="price"></slot>
+                </div>
+                <div class="cta">
+                    <slot name="cta"></slot>
+                </div>
             </div>
             <slot></slot>
-        `}};d(be,"variantStyle",wi`
+        `}};d(xe,"variantStyle",wa`
         :host([variant='simplified-pricing-express']) {
-            --merch-card-simplified-pricing-express-width: 294px;
+            /* CSS Variables */
+            --merch-card-simplified-pricing-express-width: 359px;
             --merch-card-simplified-pricing-express-padding: 24px;
             --merch-card-simplified-pricing-express-padding-mobile: 16px;
             --merch-card-simplified-pricing-express-min-height: 341px;
@@ -2460,43 +2354,155 @@ merch-card[variant="simplified-pricing-express"] [slot="footer"] sp-button[varia
             --merch-card-simplified-pricing-express-price-currency-symbol-font-size: 22px;
             --merch-card-simplified-pricing-express-price-currency-symbol-font-weight: 700;
             --merch-card-simplified-pricing-express-price-currency-symbol-line-height: 28.6px;
-            --merch-card-simplified-pricing-express-body-xs-font-size: 16px;
-            --merch-card-simplified-pricing-express-body-xs-line-height: 20.8px;
+            --merch-card-simplified-pricing-express-body-xs-font-size: 14px;
+            --merch-card-simplified-pricing-express-body-xs-line-height: 18.2px;
             --merch-card-simplified-pricing-express-price-p-font-size: 12px;
             --merch-card-simplified-pricing-express-price-p-font-weight: 400;
             --merch-card-simplified-pricing-express-price-p-line-height: 15.6px;
             --merch-card-simplified-pricing-express-cta-font-size: 18px;
             --merch-card-simplified-pricing-express-cta-font-weight: 700;
             --merch-card-simplified-pricing-express-cta-line-height: 23.4px;
+            
+            /* Gradient definitions */
+            --gradient-purple-blue: linear-gradient(98deg, #FF477B 3.22%, #5C5CE0 52.98%, #318FFF 101.72%);
+            --gradient-firefly-spectrum: linear-gradient(90deg, #E54065 0%, #7C4DFF 33%, #2D9CDB 66%, #18D8A9 100%);
             width: var(--merch-card-simplified-pricing-express-width);
             max-width: var(--merch-card-simplified-pricing-express-width);
-            min-height: var(--merch-card-simplified-pricing-express-min-height);
-            height: 100%;
-            background: var(--spectrum-gray-50);
-            border: 2px solid var(--merch-card-custom-border-color, transparent);
-            border-radius: 16px;
+            background: transparent;
+            border: none;
             display: flex;
             flex-direction: column;
             overflow: visible;
-            padding: var(--merch-card-simplified-pricing-express-padding);
-            gap: var(--consonant-merch-spacing-s);
             box-sizing: border-box;
             position: relative;
         }
 
-        :host([variant='simplified-pricing-express'][gradient-border='true']) {
-            border: none;
-            background-origin: padding-box, border-box;
-            background-clip: padding-box, border-box;
-            background-image: linear-gradient(
-                    to bottom,
-                    #f8f8f8,
-                    #f8f8f8
-                ),
-                linear-gradient(98deg, #FF477B 3.22%, #5C5CE0 52.98%, #318FFF 101.72%);
-            border: 2px solid transparent;
+        /* Badge wrapper styling */
+        :host([variant='simplified-pricing-express']) .badge-wrapper {
+            padding: 4px 12px;
+            border-radius: 8px 8px 0 0;
+            text-align: center;
+            font-size: 12px;
+            font-weight: 500;
+            line-height: 15.6px;
+            color: var(--spectrum-gray-800);
+            position: relative;
+            z-index: 0;
+            min-height: 23px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        /* Hide badge wrapper when empty */
+        :host([variant='simplified-pricing-express']) .badge-wrapper:empty {
+            display: none;
+        }
+        
+        /* Also hide when badge slot is empty */
+        :host([variant='simplified-pricing-express']:not(:has([slot="badge"]:not(:empty)))) .badge-wrapper {
+            display: none;
         }
 
+        /* Card content styling */
+        :host([variant='simplified-pricing-express']) .card-content {
+            border-radius: 8px;
+            padding: var(--merch-card-simplified-pricing-express-padding);
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: var(--consonant-merch-spacing-xxs);
+            position: relative;
+            z-index: 1;
+        }
+        
+        /* Ensure content appears above pseudo-element background */
+        :host([variant='simplified-pricing-express']) .card-content > * {
+            position: relative;
+            z-index: 1;
+        }
+        
+        :host([variant='simplified-pricing-express']:not([gradient-border='true'])) .card-content {
+            background: var(--spectrum-gray-50);
+            border: 1px solid var(--merch-card-custom-border-color, var(--spectrum-gray-100));
+        }
+        
+        /* Collapsed state for non-gradient cards */
+        :host([variant='simplified-pricing-express']:not([gradient-border='true'])[data-expanded='false']) .card-content {
+            overflow: hidden;
+            height: 35px;
+        }
+        
+        /* When badge exists, adjust card content border radius */
+        :host([variant='simplified-pricing-express']:has([slot="badge"]:not(:empty))) .card-content {
+            border-top-left-radius: 0;
+            border-top-right-radius: 0;
+        }
+        
+        /* When badge exists with regular border, ensure top border */
+        :host([variant='simplified-pricing-express']:not([gradient-border='true']):has([slot="badge"]:not(:empty))) .card-content {
+            border-top: 1px solid var(--merch-card-custom-border-color, var(--spectrum-gray-100));
+        }
+        
+        /* When badge has content, ensure seamless connection */
+        :host([variant='simplified-pricing-express']:has([slot="badge"]:not(:empty))) .badge-wrapper {
+            margin-bottom: -2px;
+        }
+
+        /* Common gradient border styles */
+        :host([variant='simplified-pricing-express'][gradient-border='true']) .badge-wrapper {
+            border: none;
+            margin-bottom: -6px;
+            padding-bottom: 6px;
+            z-index: 0;
+        }
+        
+        :host([variant='simplified-pricing-express'][gradient-border='true']) .badge-wrapper ::slotted(*) {
+            color: white !important;
+        }
+
+        :host([variant='simplified-pricing-express'][gradient-border='true']) .card-content {
+            position: relative;
+            border: none;
+            padding: calc(var(--merch-card-simplified-pricing-express-padding) + 2px);
+            border-radius: 8px;
+            z-index: 1;
+        }
+        
+        :host([variant='simplified-pricing-express'][gradient-border='true']) .card-content::before {
+            content: '';
+            position: absolute;
+            top: 1px;
+            left: 1px;
+            right: 1px;
+            bottom: 1px;
+            background: var(--spectrum-gray-50);
+            border-radius: 7px;
+            z-index: 0;
+        }
+        
+        /* Gradient-specific backgrounds */
+        :host([variant='simplified-pricing-express'][border-color='gradient-purple-blue']) .badge-wrapper,
+        :host([variant='simplified-pricing-express'][border-color='gradient-purple-blue']) .card-content {
+            background: var(--gradient-purple-blue);
+        }
+        
+        :host([variant='simplified-pricing-express'][border-color='gradient-firefly-spectrum']) .badge-wrapper,
+        :host([variant='simplified-pricing-express'][border-color='gradient-firefly-spectrum']) .card-content {
+            background: var(--gradient-firefly-spectrum);
+        }
+        
+        /* When gradient and badge exist, keep rounded corners for smooth transition */
+        :host([variant='simplified-pricing-express'][gradient-border='true']:has([slot="badge"]:not(:empty))) .card-content {
+            border-top-left-radius: 8px;
+            border-top-right-radius: 8px;
+        }
+        
+        :host([variant='simplified-pricing-express'][gradient-border='true']:has([slot="badge"]:not(:empty))) .card-content::before {
+            border-top-left-radius: 6px;
+            border-top-right-radius: 6px;
+        }
+        
         :host([variant='simplified-pricing-express']) .header {
             display: flex;
             flex-direction: row;
@@ -2505,24 +2511,26 @@ merch-card[variant="simplified-pricing-express"] [slot="footer"] sp-button[varia
             gap: 8px;
         }
 
-        :host([variant='simplified-pricing-express']) .badge {
-            position: absolute;
-            top: -10px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: var(--spectrum-blue-400);
-            color: white;
-            padding: 4px 12px;
-            border-radius: 6px;
-            font-size: 16px;
+        /* Font specifications for heading and body */
+        :host([variant='simplified-pricing-express']) [slot="heading-xs"] {
+            font-size: 18px;
             font-weight: 700;
-            z-index: 1;
+            line-height: 23.4px;
+            color: var(--spectrum-gray-800);
+        }
+
+        :host([variant='simplified-pricing-express']) .description {
+            padding-bottom: 32px;
+            gap: 16px;
+            display: flex;
+            flex-direction: column;
         }
 
         :host([variant='simplified-pricing-express']) .price {
             display: flex;
             flex-direction: column;
-            justify-content: flex-start;
+            justify-content: flex-end;
+            margin-top: auto;
         }
 
         /* Desktop only - Fixed heights for alignment */
@@ -2530,23 +2538,20 @@ merch-card[variant="simplified-pricing-express"] [slot="footer"] sp-button[varia
             :host([variant='simplified-pricing-express']) {
                 display: flex;
                 flex-direction: column;
-                min-height: 360px; /* Increased to accommodate all content */
                 height: auto;
             }
 
             :host([variant='simplified-pricing-express']) .price {
-                height: 100px;
                 display: flex;
                 flex-direction: column;
-                justify-content: center;
+                justify-content: flex-end;
+                margin-top: auto;
             }
 
             :host([variant='simplified-pricing-express']) .cta {
-                margin-top: auto;
                 flex-shrink: 0;
             }
         }
-
 
         :host([variant='simplified-pricing-express']) .price-container {
             display: flex;
@@ -2562,12 +2567,7 @@ merch-card[variant="simplified-pricing-express"] [slot="footer"] sp-button[varia
             margin-top: auto;
         }
 
-        :host([variant='simplified-pricing-express']) .cta {
-            width: 100%;
-            display: block;
-            margin-top: auto;
-        }
-
+        :host([variant='simplified-pricing-express']) .cta,
         :host([variant='simplified-pricing-express']) .cta ::slotted(*) {
             width: 100%;
             display: block;
@@ -2600,7 +2600,6 @@ merch-card[variant="simplified-pricing-express"] [slot="footer"] sp-button[varia
         :host-context(merch-card[data-expanded='false']) .chevron-icon {
             transform: rotate(0deg);
         }
-
         :host-context(merch-card[data-expanded='true']) .chevron-icon {
             transform: rotate(180deg);
         }
@@ -2623,25 +2622,33 @@ merch-card[variant="simplified-pricing-express"] [slot="footer"] sp-button[varia
             }
         }
 
-        /* Mobile styles - 270px width */
-        @media (max-width: 599px) {
+        /* Mobile and Tablet styles */
+        @media (max-width: 1199px) {
             :host([variant='simplified-pricing-express']) {
-                width: 270px;
-                max-width: 270px;
+                width: 311px;
+                max-width: 311px;
                 min-height: auto;
                 cursor: pointer;
                 transition: all 0.3s ease;
             }
-        }
-
-        /* Tablet styles - 548px width */
-        @media (min-width: 600px) and (max-width: 1199px) {
-            :host([variant='simplified-pricing-express']) {
-                width: 548px;
-                max-width: 548px;
+            
+            :host([variant='simplified-pricing-express']) .card-content {
+                padding: var(--merch-card-simplified-pricing-express-padding-mobile);
+            }
+            
+            /* Hide badge-wrapper on mobile/tablet except for gradient borders */
+            :host([variant='simplified-pricing-express']:not([gradient-border='true'])) .badge-wrapper {
+                display: none;
+            }
+            
+            /* Gradient border collapsed state - limit badge-wrapper height */
+            :host([variant='simplified-pricing-express'][gradient-border='true'][data-expanded='false']) .card-content {
+                max-height: 10px;
+                overflow: hidden;
+                padding: 16px 16px 35px 16px
             }
         }
-    `);import{css as Si,html as Ai}from"../lit-all.min.js";var Ar=`
+    `);import{css as Sa,html as Aa}from"../lit-all.min.js";var Ar=`
 merch-card[variant="mini"] {
   color: var(--spectrum-body-color);
   width: 400px;
@@ -2674,7 +2681,7 @@ merch-card[variant="mini"] span.promo-duration-text,
 merch-card[variant="mini"] span.renewal-text {
     display: block;
 }
-`;var kr={title:{tag:"p",slot:"title"},prices:{tag:"p",slot:"prices"},description:{tag:"p",slot:"description"},planType:!0,ctas:{slot:"ctas",size:"S"}},ve=class extends x{constructor(){super(...arguments);d(this,"legal")}async postCardUpdateHook(){await this.card.updateComplete,this.adjustLegal()}getGlobalCSS(){return Ar}get headingSelector(){return'[slot="title"]'}priceOptionsProvider(e,r){r.literals={...r.literals,strikethroughAriaLabel:"",alternativePriceAriaLabel:""},r.space=!0,r.displayAnnual=this.card.settings?.displayAnnual??!1}adjustLegal(){if(this.legal!==void 0)return;let e=this.card.querySelector(`${f}[data-template="price"]`);if(!e)return;let r=e.cloneNode(!0);this.legal=r,e.dataset.displayTax="false",r.dataset.template="legal",r.dataset.displayPlanType=this.card?.settings?.displayPlanType??!0,r.setAttribute("slot","legal"),this.card.appendChild(r)}renderLayout(){return Ai`
+`;var kr={title:{tag:"p",slot:"title"},prices:{tag:"p",slot:"prices"},description:{tag:"p",slot:"description"},planType:!0,ctas:{slot:"ctas",size:"S"}},be=class extends x{constructor(){super(...arguments);d(this,"legal")}async postCardUpdateHook(){await this.card.updateComplete,this.adjustLegal()}getGlobalCSS(){return Ar}get headingSelector(){return'[slot="title"]'}priceOptionsProvider(e,r){r.literals={...r.literals,strikethroughAriaLabel:"",alternativePriceAriaLabel:""},r.space=!0,r.displayAnnual=this.card.settings?.displayAnnual??!1}adjustLegal(){if(this.legal!==void 0)return;let e=this.card.querySelector(`${f}[data-template="price"]`);if(!e)return;let r=e.cloneNode(!0);this.legal=r,e.dataset.displayTax="false",r.dataset.template="legal",r.dataset.displayPlanType=this.card?.settings?.displayPlanType??!0,r.setAttribute("slot","legal"),this.card.appendChild(r)}renderLayout(){return Aa`
             ${this.badge}
             <div class="body">
                 <slot name="title"></slot>
@@ -2683,14 +2690,14 @@ merch-card[variant="mini"] span.renewal-text {
                 <slot name="description"></slot>
                 <slot name="ctas"></slot>
             </div>
-        `}};d(ve,"variantStyle",Si`
+        `}};d(be,"variantStyle",Sa`
         :host([variant='mini']) {
             min-width: 209px;
             min-height: 103px;
             background-color: var(--spectrum-background-base-color);
             border: 1px solid var(--merch-card-custom-border-color, #dadada);
         }
-    `);var At=new Map,k=(i,t,e=null,r=null,a)=>{At.set(i,{class:t,fragmentMapping:e,style:r,collectionOptions:a})};k("catalog",pe,hr,pe.variantStyle);k("image",Qe);k("inline-heading",Ze);k("mini-compare-chart",ge,null,ge.variantStyle);k("plans",A,et,A.variantStyle,A.collectionOptions);k("plans-students",A,br,A.variantStyle,A.collectionOptions);k("plans-education",A,xr,A.variantStyle,A.collectionOptions);k("product",ue,null,ue.variantStyle);k("segment",fe,null,fe.variantStyle);k("special-offers",xe,wr,xe.variantStyle);k("simplified-pricing-express",be,St,be.variantStyle);k("mini",ve,kr,ve.variantStyle);var kt=i=>{let t=At.get(i.variant);if(!t)return;let{class:e,style:r}=t;if(r)try{let a=new CSSStyleSheet;a.replaceSync(r.cssText),i.shadowRoot.adoptedStyleSheets.push(a)}catch{let n=document.createElement("style");n.textContent=r.cssText,i.shadowRoot.appendChild(n)}return new e(i)};function Xe(i){return At.get(i)?.fragmentMapping}var Cr=document.createElement("style");Cr.innerHTML=`
+    `);var At=new Map,k=(a,t,e=null,r=null,i)=>{At.set(a,{class:t,fragmentMapping:e,style:r,collectionOptions:i})};k("catalog",he,hr,he.variantStyle);k("image",Xe);k("inline-heading",Ze);k("mini-compare-chart",me,null,me.variantStyle);k("plans",A,et,A.variantStyle,A.collectionOptions);k("plans-students",A,br,A.variantStyle,A.collectionOptions);k("plans-education",A,xr,A.variantStyle,A.collectionOptions);k("product",ge,null,ge.variantStyle);k("segment",ue,null,ue.variantStyle);k("special-offers",fe,wr,fe.variantStyle);k("simplified-pricing-express",xe,St,xe.variantStyle);k("mini",be,kr,be.variantStyle);var kt=a=>{let t=At.get(a.variant);if(!t)return;let{class:e,style:r}=t;if(r)try{let i=new CSSStyleSheet;i.replaceSync(r.cssText),a.shadowRoot.adoptedStyleSheets.push(i)}catch{let o=document.createElement("style");o.textContent=r.cssText,a.shadowRoot.appendChild(o)}return new e(a)};function Qe(a){return At.get(a)?.fragmentMapping}var Cr=document.createElement("style");Cr.innerHTML=`
 :root {
     --consonant-merch-card-detail-font-size: 12px;
     --consonant-merch-card-detail-font-weight: 500;
@@ -2801,6 +2808,7 @@ merch-card[variant="mini"] span.renewal-text {
     --spectrum-gray-700-plans: #505050;
 
     /* simplified-pricing-express colors */
+    --spectrum-gray-50: #FFFFFF;
     --spectrum-gray-100: #F8F8F8;
     --spectrum-gray-200: #E6E6E6;
     --spectrum-gray-300: #D5D5D5;
@@ -3381,10 +3389,10 @@ merch-card [slot='callout-content'] .icon-button::before {
     }
 }
 
-`;document.head.appendChild(Cr);function tt(i,t={},{metadata:e=!0,search:r=!0,storage:a=!0}={}){let n;if(r&&n==null){let o=new URLSearchParams(window.location.search),c=Ct(r)?r:i;n=o.get(c)}if(a&&n==null){let o=Ct(a)?a:i;n=window.sessionStorage.getItem(o)??window.localStorage.getItem(o)}if(e&&n==null){let o=Ci(Ct(e)?e:i);n=document.documentElement.querySelector(`meta[name="${o}"]`)?.content}return n??t[i]}var ki=i=>typeof i=="boolean",rt=i=>typeof i=="function";var Ct=i=>typeof i=="string";function Tr(i,t){if(ki(i))return i;let e=String(i);return e==="1"||e==="true"?!0:e==="0"||e==="false"?!1:t}function Ci(i=""){return String(i).replace(/(\p{Lowercase_Letter})(\p{Uppercase_Letter})/gu,(t,e,r)=>`${e}-${r}`).replace(/\W+/gu,"-").toLowerCase()}var W=class i extends Error{constructor(t,e,r){if(super(t,{cause:r}),this.name="MasError",e.response){let a=e.response.headers?.get(Ge);a&&(e.requestId=a),e.response.status&&(e.status=e.response.status,e.statusText=e.response.statusText),e.response.url&&(e.url=e.response.url)}delete e.response,this.context=e,Error.captureStackTrace&&Error.captureStackTrace(this,i)}toString(){let t=Object.entries(this.context||{}).map(([r,a])=>`${r}: ${JSON.stringify(a)}`).join(", "),e=`${this.name}: ${this.message}`;return t&&(e+=` (${t})`),this.cause&&(e+=`
-Caused by: ${this.cause}`),e}};var Ti="mas-commerce-service",Li={requestId:Ge,etag:"Etag",lastModified:"Last-Modified",serverTiming:"server-timing"};var it=i=>window.setTimeout(i);function Tt(){return document.getElementsByTagName(Ti)?.[0]}function Lr(i){let t={};if(!i?.headers)return t;let e=i.headers;for(let[r,a]of Object.entries(Li)){let n=e.get(a);n&&(n=n.replace(/[,;]/g,"|"),n=n.replace(/[| ]+/g,"|"),t[r]=n)}return t}async function _r(i,t={},e=2,r=100){let a;for(let n=0;n<=e;n++)try{let o=await fetch(i,t);return o.retryCount=n,o}catch(o){if(a=o,a.retryCount=n,n>e)break;await new Promise(c=>setTimeout(c,r*(n+1)))}throw a}var Pr="fragment",Rr="author",Mr="preview",zr="loading",Or="timeout",Lt="aem-fragment",Nr="eager",$r="cache",_i=[Nr,$r],N,X,P,_t=class{constructor(){p(this,N,new Map);p(this,X,new Map);p(this,P,new Map)}clear(){s(this,N).clear(),s(this,X).clear(),s(this,P).clear()}add(t){if(!this.has(t.id)&&!this.has(t.fields?.originalId)){if(s(this,N).set(t.id,t),t.fields?.originalId&&s(this,N).set(t.fields.originalId,t),s(this,P).has(t.id)){let[,e]=s(this,P).get(t.id);e()}if(s(this,P).has(t.fields?.originalId)){let[,e]=s(this,P).get(t.fields?.originalId);e()}if(t.references)for(let e in t.references){let{type:r,value:a}=t.references[e];r==="content-fragment"&&(a.settings={...t?.settings,...a.settings},a.placeholders={...t?.placeholders,...a.placeholders},a.dictionary={...t?.dictionary,...a.dictionary},a.priceLiterals={...t?.priceLiterals,...a.priceLiterals},this.add(a,t))}}}has(t){return s(this,N).has(t)}entries(){return s(this,N).entries()}get(t){return s(this,N).get(t)}getAsPromise(t){let[e]=s(this,P).get(t)??[];if(e)return e;let r;return e=new Promise(a=>{r=a,this.has(t)&&a()}),s(this,P).set(t,[e,r]),e}getFetchInfo(t){let e=s(this,X).get(t);return e||(e={url:null,retryCount:0,stale:!1,measure:null,status:null},s(this,X).set(t,e)),e}remove(t){s(this,N).delete(t),s(this,X).delete(t),s(this,P).delete(t)}};N=new WeakMap,X=new WeakMap,P=new WeakMap;var q=new _t,ye,$,D,L,C,y,ze,Oe,R,Ne,$e,Ee,M,Ir,Dr,Pt,Fr,at=class extends HTMLElement{constructor(){super(...arguments);p(this,M);d(this,"cache",q);p(this,ye);p(this,$,null);p(this,D,null);p(this,L,null);p(this,C);p(this,y);p(this,ze,Nr);p(this,Oe,5e3);p(this,R);p(this,Ne,!1);p(this,$e,0);p(this,Ee)}static get observedAttributes(){return[Pr,zr,Or,Rr,Mr]}attributeChangedCallback(e,r,a){e===Pr&&(h(this,C,a),h(this,y,q.getFetchInfo(a))),e===zr&&_i.includes(a)&&h(this,ze,a),e===Or&&h(this,Oe,parseInt(a,10)),e===Rr&&h(this,Ne,["","true"].includes(a)),e===Mr&&h(this,Ee,a)}connectedCallback(){if(!s(this,R)){if(s(this,L)??h(this,L,Y(this)),h(this,Ee,s(this,L).settings?.preview),s(this,ye)??h(this,ye,s(this,L).log.module(`${Lt}[${s(this,C)}]`)),!s(this,C)||s(this,C)==="#"){s(this,y)??h(this,y,q.getFetchInfo("missing-fragment-id")),w(this,M,Pt).call(this,"Missing fragment id");return}this.refresh(!1)}}get fetchInfo(){return Object.fromEntries(Object.entries(s(this,y)).filter(([e,r])=>r!=null).map(([e,r])=>[`aem-fragment:${e}`,r]))}async refresh(e=!0){if(s(this,R)&&!await Promise.race([s(this,R),Promise.resolve(!1)]))return;e&&q.remove(s(this,C)),s(this,ze)===$r&&await Promise.race([q.getAsPromise(s(this,C)),new Promise(c=>setTimeout(c,s(this,Oe)))]);try{h(this,R,w(this,M,Fr).call(this)),await s(this,R)}catch(c){return w(this,M,Pt).call(this,c.message),!1}let{references:r,referencesTree:a,placeholders:n,wcs:o}=s(this,$)||{};return o&&!tt("mas.disableWcsCache")&&s(this,L).prefillWcsCache(o),this.dispatchEvent(new CustomEvent(oe,{detail:{...this.data,references:r,referencesTree:a,placeholders:n,...s(this,y)},bubbles:!0,composed:!0})),s(this,R)}get updateComplete(){return s(this,R)??Promise.reject(new Error("AEM fragment cannot be loaded"))}get data(){return s(this,D)?s(this,D):(s(this,Ne)?this.transformAuthorData():this.transformPublishData(),s(this,D))}transformAuthorData(){let{fields:e,id:r,tags:a,settings:n={},priceLiterals:o={},dictionary:c={},placeholders:l={}}=s(this,$);h(this,D,e.reduce((m,{name:g,multiple:b,values:_})=>(m.fields[g]=b?_:_[0],m),{fields:{},id:r,tags:a,settings:n,priceLiterals:o,dictionary:c,placeholders:l}))}transformPublishData(){let{fields:e,id:r,tags:a,settings:n={},priceLiterals:o={},dictionary:c={},placeholders:l={}}=s(this,$);h(this,D,Object.entries(e).reduce((m,[g,b])=>(m.fields[g]=b?.mimeType?b.value:b??"",m),{fields:{},id:r,tags:a,settings:n,priceLiterals:o,dictionary:c,placeholders:l}))}getFragmentClientUrl(){let r=new URLSearchParams(window.location.search).get("maslibs");if(!r||r.trim()==="")return"https://mas.adobe.com/studio/libs/fragment-client.js";let a=r.trim().toLowerCase();if(a==="local")return"http://localhost:3030/studio/libs/fragment-client.js";let{hostname:n}=window.location,o=n.endsWith(".page")?"page":"live";return a.includes("--")?`https://${a}.aem.${o}/studio/libs/fragment-client.js`:`https://${a}--mas--adobecom.aem.${o}/studio/libs/fragment-client.js`}async generatePreview(){let e=this.getFragmentClientUrl(),{previewFragment:r}=await import(e);return await r(s(this,C),{locale:s(this,L).settings.locale,apiKey:s(this,L).settings.wcsApiKey})}};ye=new WeakMap,$=new WeakMap,D=new WeakMap,L=new WeakMap,C=new WeakMap,y=new WeakMap,ze=new WeakMap,Oe=new WeakMap,R=new WeakMap,Ne=new WeakMap,$e=new WeakMap,Ee=new WeakMap,M=new WeakSet,Ir=async function(e){jt(this,$e)._++;let r=`${Lt}:${s(this,C)}:${s(this,$e)}`,a=`${r}${Ve}`,n=`${r}${Ye}`;if(s(this,Ee))return await this.generatePreview();performance.mark(a);let o;try{if(s(this,y).stale=!1,s(this,y).url=e,o=await _r(e,{cache:"default",credentials:"omit"}),w(this,M,Dr).call(this,o),s(this,y).status=o?.status,s(this,y).measure=ce(performance.measure(n,a)),s(this,y).retryCount=o.retryCount,!o?.ok)throw new W("Unexpected fragment response",{response:o,...s(this,L).duration});return await o.json()}catch(c){if(s(this,y).measure=ce(performance.measure(n,a)),s(this,y).retryCount=c.retryCount,s(this,$))return s(this,y).stale=!0,s(this,ye).error("Serving stale data",s(this,y)),s(this,$);let l=c.message??"unknown";throw new W(`Failed to fetch fragment: ${l}`,{})}},Dr=function(e){Object.assign(s(this,y),Lr(e))},Pt=function(e){h(this,R,null),s(this,y).message=e,this.classList.add("error");let r={...s(this,y),...s(this,L).duration};s(this,ye).error(e,r),this.dispatchEvent(new CustomEvent(se,{detail:r,bubbles:!0,composed:!0}))},Fr=async function(){var c;this.classList.remove("error"),h(this,D,null);let e=q.get(s(this,C));if(e)return h(this,$,e),!0;let{masIOUrl:r,wcsApiKey:a,locale:n}=s(this,L).settings,o=`${r}/fragment?id=${s(this,C)}&api_key=${a}&locale=${n}`;return e=await w(this,M,Ir).call(this,o),(c=e.fields).originalId??(c.originalId=s(this,C)),q.add(e),h(this,$,e),!0},d(at,"cache",q);customElements.define(Lt,at);import{LitElement as Pi,html as Ri,css as Mi}from"../lit-all.min.js";var we=class extends Pi{constructor(){super(),this.color="",this.variant="",this.backgroundColor="",this.borderColor="",this.text=this.textContent}connectedCallback(){this.borderColor&&this.borderColor!=="Transparent"?this.style.setProperty("--merch-badge-border",`1px solid var(--${this.borderColor})`):this.style.setProperty("--merch-badge-border",`1px solid var(--${this.backgroundColor})`),this.style.setProperty("--merch-badge-background-color",`var(--${this.backgroundColor})`),this.style.setProperty("--merch-badge-color",this.color),this.style.setProperty("--merch-badge-padding","2px 10px 3px 10px"),this.style.setProperty("--merch-badge-border-radius","4px 0 0 4px"),this.style.setProperty("--merch-badge-font-size","var(--consonant-merch-card-body-xs-font-size)"),this.textContent="",super.connectedCallback()}render(){return Ri`<div class="badge">
+`;document.head.appendChild(Cr);function tt(a,t={},{metadata:e=!0,search:r=!0,storage:i=!0}={}){let o;if(r&&o==null){let n=new URLSearchParams(window.location.search),s=Ct(r)?r:a;o=n.get(s)}if(i&&o==null){let n=Ct(i)?i:a;o=window.sessionStorage.getItem(n)??window.localStorage.getItem(n)}if(e&&o==null){let n=Ca(Ct(e)?e:a);o=document.documentElement.querySelector(`meta[name="${n}"]`)?.content}return o??t[a]}var ka=a=>typeof a=="boolean",rt=a=>typeof a=="function";var Ct=a=>typeof a=="string";function Tr(a,t){if(ka(a))return a;let e=String(a);return e==="1"||e==="true"?!0:e==="0"||e==="false"?!1:t}function Ca(a=""){return String(a).replace(/(\p{Lowercase_Letter})(\p{Uppercase_Letter})/gu,(t,e,r)=>`${e}-${r}`).replace(/\W+/gu,"-").toLowerCase()}var W=class a extends Error{constructor(t,e,r){if(super(t,{cause:r}),this.name="MasError",e.response){let i=e.response.headers?.get(Ge);i&&(e.requestId=i),e.response.status&&(e.status=e.response.status,e.statusText=e.response.statusText),e.response.url&&(e.url=e.response.url)}delete e.response,this.context=e,Error.captureStackTrace&&Error.captureStackTrace(this,a)}toString(){let t=Object.entries(this.context||{}).map(([r,i])=>`${r}: ${JSON.stringify(i)}`).join(", "),e=`${this.name}: ${this.message}`;return t&&(e+=` (${t})`),this.cause&&(e+=`
+Caused by: ${this.cause}`),e}};var Ta="mas-commerce-service",La={requestId:Ge,etag:"Etag",lastModified:"Last-Modified",serverTiming:"server-timing"};var at=a=>window.setTimeout(a);function Tt(){return document.getElementsByTagName(Ta)?.[0]}function Lr(a){let t={};if(!a?.headers)return t;let e=a.headers;for(let[r,i]of Object.entries(La)){let o=e.get(i);o&&(o=o.replace(/[,;]/g,"|"),o=o.replace(/[| ]+/g,"|"),t[r]=o)}return t}async function _r(a,t={},e=2,r=100){let i;for(let o=0;o<=e;o++)try{let n=await fetch(a,t);return n.retryCount=o,n}catch(n){if(i=n,i.retryCount=o,o>e)break;await new Promise(s=>setTimeout(s,r*(o+1)))}throw i}var Pr="fragment",Rr="author",Mr="preview",zr="loading",Or="timeout",Lt="aem-fragment",Nr="eager",$r="cache",_a=[Nr,$r],N,Q,P,_t=class{constructor(){m(this,N,new Map);m(this,Q,new Map);m(this,P,new Map)}clear(){c(this,N).clear(),c(this,Q).clear(),c(this,P).clear()}add(t){if(!this.has(t.id)&&!this.has(t.fields?.originalId)){if(c(this,N).set(t.id,t),t.fields?.originalId&&c(this,N).set(t.fields.originalId,t),c(this,P).has(t.id)){let[,e]=c(this,P).get(t.id);e()}if(c(this,P).has(t.fields?.originalId)){let[,e]=c(this,P).get(t.fields?.originalId);e()}if(t.references)for(let e in t.references){let{type:r,value:i}=t.references[e];r==="content-fragment"&&(i.settings={...t?.settings,...i.settings},i.placeholders={...t?.placeholders,...i.placeholders},i.dictionary={...t?.dictionary,...i.dictionary},i.priceLiterals={...t?.priceLiterals,...i.priceLiterals},this.add(i,t))}}}has(t){return c(this,N).has(t)}entries(){return c(this,N).entries()}get(t){return c(this,N).get(t)}getAsPromise(t){let[e]=c(this,P).get(t)??[];if(e)return e;let r;return e=new Promise(i=>{r=i,this.has(t)&&i()}),c(this,P).set(t,[e,r]),e}getFetchInfo(t){let e=c(this,Q).get(t);return e||(e={url:null,retryCount:0,stale:!1,measure:null,status:null},c(this,Q).set(t,e)),e}remove(t){c(this,N).delete(t),c(this,Q).delete(t),c(this,P).delete(t)}};N=new WeakMap,Q=new WeakMap,P=new WeakMap;var q=new _t,ve,$,D,L,C,y,Me,ze,R,Oe,Ne,ye,M,Ir,Dr,Pt,Fr,it=class extends HTMLElement{constructor(){super(...arguments);m(this,M);d(this,"cache",q);m(this,ve);m(this,$,null);m(this,D,null);m(this,L,null);m(this,C);m(this,y);m(this,Me,Nr);m(this,ze,5e3);m(this,R);m(this,Oe,!1);m(this,Ne,0);m(this,ye)}static get observedAttributes(){return[Pr,zr,Or,Rr,Mr]}attributeChangedCallback(e,r,i){e===Pr&&(h(this,C,i),h(this,y,q.getFetchInfo(i))),e===zr&&_a.includes(i)&&h(this,Me,i),e===Or&&h(this,ze,parseInt(i,10)),e===Rr&&h(this,Oe,["","true"].includes(i)),e===Mr&&h(this,ye,i)}connectedCallback(){if(!c(this,R)){if(c(this,L)??h(this,L,Y(this)),h(this,ye,c(this,L).settings?.preview),c(this,ve)??h(this,ve,c(this,L).log.module(`${Lt}[${c(this,C)}]`)),!c(this,C)||c(this,C)==="#"){c(this,y)??h(this,y,q.getFetchInfo("missing-fragment-id")),w(this,M,Pt).call(this,"Missing fragment id");return}this.refresh(!1)}}get fetchInfo(){return Object.fromEntries(Object.entries(c(this,y)).filter(([e,r])=>r!=null).map(([e,r])=>[`aem-fragment:${e}`,r]))}async refresh(e=!0){if(c(this,R)&&!await Promise.race([c(this,R),Promise.resolve(!1)]))return;e&&q.remove(c(this,C)),c(this,Me)===$r&&await Promise.race([q.getAsPromise(c(this,C)),new Promise(s=>setTimeout(s,c(this,ze)))]);try{h(this,R,w(this,M,Fr).call(this)),await c(this,R)}catch(s){return w(this,M,Pt).call(this,s.message),!1}let{references:r,referencesTree:i,placeholders:o,wcs:n}=c(this,$)||{};return n&&!tt("mas.disableWcsCache")&&c(this,L).prefillWcsCache(n),this.dispatchEvent(new CustomEvent(oe,{detail:{...this.data,references:r,referencesTree:i,placeholders:o,...c(this,y)},bubbles:!0,composed:!0})),c(this,R)}get updateComplete(){return c(this,R)??Promise.reject(new Error("AEM fragment cannot be loaded"))}get data(){return c(this,D)?c(this,D):(c(this,Oe)?this.transformAuthorData():this.transformPublishData(),c(this,D))}transformAuthorData(){let{fields:e,id:r,tags:i,settings:o={},priceLiterals:n={},dictionary:s={},placeholders:l={}}=c(this,$);h(this,D,e.reduce((p,{name:g,multiple:b,values:_})=>(p.fields[g]=b?_:_[0],p),{fields:{},id:r,tags:i,settings:o,priceLiterals:n,dictionary:s,placeholders:l}))}transformPublishData(){let{fields:e,id:r,tags:i,settings:o={},priceLiterals:n={},dictionary:s={},placeholders:l={}}=c(this,$);h(this,D,Object.entries(e).reduce((p,[g,b])=>(p.fields[g]=b?.mimeType?b.value:b??"",p),{fields:{},id:r,tags:i,settings:o,priceLiterals:n,dictionary:s,placeholders:l}))}getFragmentClientUrl(){let r=new URLSearchParams(window.location.search).get("maslibs");if(!r||r.trim()==="")return"https://mas.adobe.com/studio/libs/fragment-client.js";let i=r.trim().toLowerCase();if(i==="local")return"http://localhost:3030/studio/libs/fragment-client.js";let{hostname:o}=window.location,n=o.endsWith(".page")?"page":"live";return i.includes("--")?`https://${i}.aem.${n}/studio/libs/fragment-client.js`:`https://${i}--mas--adobecom.aem.${n}/studio/libs/fragment-client.js`}async generatePreview(){let e=this.getFragmentClientUrl(),{previewFragment:r}=await import(e);return await r(c(this,C),{locale:c(this,L).settings.locale,apiKey:c(this,L).settings.wcsApiKey})}};ve=new WeakMap,$=new WeakMap,D=new WeakMap,L=new WeakMap,C=new WeakMap,y=new WeakMap,Me=new WeakMap,ze=new WeakMap,R=new WeakMap,Oe=new WeakMap,Ne=new WeakMap,ye=new WeakMap,M=new WeakSet,Ir=async function(e){jt(this,Ne)._++;let r=`${Lt}:${c(this,C)}:${c(this,Ne)}`,i=`${r}${Ve}`,o=`${r}${Ye}`;if(c(this,ye))return await this.generatePreview();performance.mark(i);let n;try{if(c(this,y).stale=!1,c(this,y).url=e,n=await _r(e,{cache:"default",credentials:"omit"}),w(this,M,Dr).call(this,n),c(this,y).status=n?.status,c(this,y).measure=se(performance.measure(o,i)),c(this,y).retryCount=n.retryCount,!n?.ok)throw new W("Unexpected fragment response",{response:n,...c(this,L).duration});return await n.json()}catch(s){if(c(this,y).measure=se(performance.measure(o,i)),c(this,y).retryCount=s.retryCount,c(this,$))return c(this,y).stale=!0,c(this,ve).error("Serving stale data",c(this,y)),c(this,$);let l=s.message??"unknown";throw new W(`Failed to fetch fragment: ${l}`,{})}},Dr=function(e){Object.assign(c(this,y),Lr(e))},Pt=function(e){h(this,R,null),c(this,y).message=e,this.classList.add("error");let r={...c(this,y),...c(this,L).duration};c(this,ve).error(e,r),this.dispatchEvent(new CustomEvent(ne,{detail:r,bubbles:!0,composed:!0}))},Fr=async function(){var s;this.classList.remove("error"),h(this,D,null);let e=q.get(c(this,C));if(e)return h(this,$,e),!0;let{masIOUrl:r,wcsApiKey:i,locale:o}=c(this,L).settings,n=`${r}/fragment?id=${c(this,C)}&api_key=${i}&locale=${o}`;return e=await w(this,M,Ir).call(this,n),(s=e.fields).originalId??(s.originalId=c(this,C)),q.add(e),h(this,$,e),!0},d(it,"cache",q);customElements.define(Lt,it);import{LitElement as Pa,html as Ra,css as Ma}from"../lit-all.min.js";var Ee=class extends Pa{constructor(){super(),this.color="",this.variant="",this.backgroundColor="",this.borderColor="",this.text=this.textContent}connectedCallback(){this.borderColor&&this.borderColor!=="Transparent"?this.style.setProperty("--merch-badge-border",`1px solid var(--${this.borderColor})`):this.style.setProperty("--merch-badge-border",`1px solid var(--${this.backgroundColor})`),this.style.setProperty("--merch-badge-background-color",`var(--${this.backgroundColor})`),this.style.setProperty("--merch-badge-color",this.color),this.style.setProperty("--merch-badge-padding","2px 10px 3px 10px"),this.style.setProperty("--merch-badge-border-radius","4px 0 0 4px"),this.style.setProperty("--merch-badge-font-size","var(--consonant-merch-card-body-xs-font-size)"),this.textContent="",super.connectedCallback()}render(){return Ra`<div class="badge">
             ${this.text}
-        </div>`}};d(we,"properties",{color:{type:String},variant:{type:String},backgroundColor:{type:String,attribute:"background-color"},borderColor:{type:String,attribute:"border-color"}}),d(we,"styles",Mi`
+        </div>`}};d(Ee,"properties",{color:{type:String},variant:{type:String},backgroundColor:{type:String,attribute:"background-color"},borderColor:{type:String,attribute:"border-color"}}),d(Ee,"styles",Ma`
         :host {
             display: block;
             background-color: var(--merch-badge-background-color);
@@ -3397,10 +3405,10 @@ Caused by: ${this.cause}`),e}};var Ti="mas-commerce-service",Li={requestId:Ge,et
             position: relative;
             left: 1px;
         }
-    `);customElements.define("merch-badge",we);import{html as zi,css as Oi,LitElement as Ni}from"../lit-all.min.js";var Ie=class extends Ni{constructor(){super()}render(){return zi`
+    `);customElements.define("merch-badge",Ee);import{html as za,css as Oa,LitElement as Na}from"../lit-all.min.js";var $e=class extends Na{constructor(){super()}render(){return za`
             <slot name="icon"></slot>
             <slot name="description">${this.description}</slot>
-        `}};d(Ie,"styles",Oi`
+        `}};d($e,"styles",Oa`
         :host {
             display: flex;
             flex-wrap: nowrap;
@@ -3425,11 +3433,11 @@ Caused by: ${this.cause}`),e}};var Ti="mas-commerce-service",Li={requestId:Ge,et
         :host .hidden {
             display: none;
         }
-    `),d(Ie,"properties",{description:{type:String,attribute:!0}});customElements.define("merch-mnemonic-list",Ie);import{html as Rt,css as $i,LitElement as Ii}from"../lit-all.min.js";var De=class extends Ii{updated(){this.hideSeeMoreEls()}hideSeeMoreEls(){this.isMobile&&this.rows.forEach((t,e)=>{e>=5&&(t.style.display=this.showAll?"flex":"none")})}constructor(){super(),this.showAll=!1,this.mobileRows=this.mobileRows===void 0?5:this.mobileRows}toggle(){this.showAll=!this.showAll,this.dispatchEvent(new CustomEvent("hide-see-more-elements",{bubbles:!0,composed:!0})),this.requestUpdate()}render(){return Rt`<slot name="heading"></slot>
+    `),d($e,"properties",{description:{type:String,attribute:!0}});customElements.define("merch-mnemonic-list",$e);import{html as Rt,css as $a,LitElement as Ia}from"../lit-all.min.js";var Ie=class extends Ia{updated(){this.hideSeeMoreEls()}hideSeeMoreEls(){this.isMobile&&this.rows.forEach((t,e)=>{e>=5&&(t.style.display=this.showAll?"flex":"none")})}constructor(){super(),this.showAll=!1,this.mobileRows=this.mobileRows===void 0?5:this.mobileRows}toggle(){this.showAll=!this.showAll,this.dispatchEvent(new CustomEvent("hide-see-more-elements",{bubbles:!0,composed:!0})),this.requestUpdate()}render(){return Rt`<slot name="heading"></slot>
             <slot name="content"></slot>
             ${this.isMobile&&this.rows.length>this.mobileRows?Rt`<div @click=${this.toggle} class="see-more">
                       ${this.showAll?"- See less":"+ See more"}
-                  </div>`:Rt``}`}get isMobile(){return window.matchMedia("(max-width: 767px)").matches}get rows(){return this.querySelectorAll("merch-mnemonic-list")}};d(De,"styles",$i`
+                  </div>`:Rt``}`}get isMobile(){return window.matchMedia("(max-width: 767px)").matches}get rows(){return this.querySelectorAll("merch-mnemonic-list")}};d(Ie,"styles",$a`
         :host {
             display: flex;
             flex-wrap: wrap;
@@ -3458,4 +3466,4 @@ Caused by: ${this.cause}`),e}};var Ti="mas-commerce-service",Li={requestId:Ge,et
             text-decoration: underline;
             color: var(--link-color-dark);
         }
-    `),d(De,"properties",{heading:{type:String,attribute:!0},mobileRows:{type:Number,attribute:!0}});customElements.define("merch-whats-included",De);var Q={clientId:"merch-at-scale",delimiter:"\xB6",ignoredProperties:["analytics","literals","element"],serializableTypes:["Array","Object"],sampleRate:1,tags:"acom",isProdDomain:!1},Br=1e3;function Di(i){return i instanceof Error||typeof i?.originatingRequest=="string"}function Hr(i){if(i==null)return;let t=typeof i;if(t==="function")return i.name?`function ${i.name}`:"function";if(t==="object"){if(i instanceof Error)return i.message;if(typeof i.originatingRequest=="string"){let{message:r,originatingRequest:a,status:n}=i;return[r,n,a].filter(Boolean).join(" ")}let e=i[Symbol.toStringTag]??Object.getPrototypeOf(i).constructor.name;if(!Q.serializableTypes.includes(e))return e}return i}function Fi(i,t){if(!Q.ignoredProperties.includes(i))return Hr(t)}var Mt={append(i){if(i.level!=="error")return;let{message:t,params:e}=i,r=[],a=[],n=t;e.forEach(m=>{m!=null&&(Di(m)?r:a).push(m)}),r.length&&(n+=" "+r.map(Hr).join(" "));let{pathname:o,search:c}=window.location,l=`${Q.delimiter}page=${o}${c}`;l.length>Br&&(l=`${l.slice(0,Br)}<trunc>`),n+=l,a.length&&(n+=`${Q.delimiter}facts=`,n+=JSON.stringify(a,Fi)),window.lana?.log(n,Q)}};function Ur(i){Object.assign(Q,Object.fromEntries(Object.entries(i).filter(([t,e])=>t in Q&&e!==""&&e!==null&&e!==void 0&&!Number.isNaN(e))))}var qr={LOCAL:"local",PROD:"prod",STAGE:"stage"},zt={DEBUG:"debug",ERROR:"error",INFO:"info",WARN:"warn"},Ot=new Set,Nt=new Set,jr=new Map,Gr={append({level:i,message:t,params:e,timestamp:r,source:a}){console[i](`${r}ms [${a}] %c${t}`,"font-weight: bold;",...e)}},Vr={filter:({level:i})=>i!==zt.DEBUG},Bi={filter:()=>!1};function Hi(i,t,e,r,a){return{level:i,message:t,namespace:e,get params(){return r.length===1&&rt(r[0])&&(r=r[0](),Array.isArray(r)||(r=[r])),r},source:a,timestamp:performance.now().toFixed(3)}}function Ui(i){[...Nt].every(t=>t(i))&&Ot.forEach(t=>t(i))}function Yr(i){let t=(jr.get(i)??0)+1;jr.set(i,t);let e=`${i} #${t}`,r={id:e,namespace:i,module:a=>Yr(`${r.namespace}/${a}`),updateConfig:Ur};return Object.values(zt).forEach(a=>{r[a]=(n,...o)=>Ui(Hi(a,n,i,o,e))}),Object.seal(r)}function nt(...i){i.forEach(t=>{let{append:e,filter:r}=t;rt(r)&&Nt.add(r),rt(e)&&Ot.add(e)})}function qi(i={}){let{name:t}=i,e=Tr(tt("commerce.debug",{search:!0,storage:!0}),t===qr.LOCAL);return nt(e?Gr:Vr),t===qr.PROD&&nt(Mt),$t}function ji(){Ot.clear(),Nt.clear()}var $t={...Yr(or),Level:zt,Plugins:{consoleAppender:Gr,debugFilter:Vr,quietFilter:Bi,lanaAppender:Mt},init:qi,reset:ji,use:nt};var Gi={[H]:rr,[V]:ir,[U]:ar},Vi={[H]:nr,[U]:Ce},Fe,ot=class{constructor(t){p(this,Fe);d(this,"changes",new Map);d(this,"connected",!1);d(this,"error");d(this,"log");d(this,"options");d(this,"promises",[]);d(this,"state",V);d(this,"timer",null);d(this,"value");d(this,"version",0);d(this,"wrapperElement");this.wrapperElement=t,this.log=$t.module("mas-element")}update(){[H,V,U].forEach(t=>{this.wrapperElement.classList.toggle(Gi[t],t===this.state)})}notify(){(this.state===U||this.state===H)&&(this.state===U?this.promises.forEach(({resolve:e})=>e(this.wrapperElement)):this.state===H&&this.promises.forEach(({reject:e})=>e(this.error)),this.promises=[]);let t=this.error;this.error instanceof W&&(t={message:this.error.message,...this.error.context}),this.wrapperElement.dispatchEvent(new CustomEvent(Vi[this.state],{bubbles:!0,detail:t}))}attributeChangedCallback(t,e,r){this.changes.set(t,r),this.requestUpdate()}connectedCallback(){h(this,Fe,Tt()),this.requestUpdate(!0)}disconnectedCallback(){this.connected&&(this.connected=!1,this.log?.debug("Disconnected:",{element:this.wrapperElement}))}onceSettled(){let{error:t,promises:e,state:r}=this;return U===r?Promise.resolve(this.wrapperElement):H===r?Promise.reject(t):new Promise((a,n)=>{e.push({resolve:a,reject:n})})}toggleResolved(t,e,r){return t!==this.version?!1:(r!==void 0&&(this.options=r),this.state=U,this.value=e,this.update(),this.log?.debug("Resolved:",{element:this.wrapperElement,value:e}),it(()=>this.notify()),!0)}toggleFailed(t,e,r){if(t!==this.version)return!1;r!==void 0&&(this.options=r),this.error=e,this.state=H,this.update();let a=this.wrapperElement.getAttribute("is");return this.log?.error(`${a}: Failed to render: ${e.message}`,{element:this.wrapperElement,...e.context,...s(this,Fe)?.duration}),it(()=>this.notify()),!0}togglePending(t){return this.version++,t&&(this.options=t),this.state=V,this.update(),this.log?.debug("Pending:",{osi:this.wrapperElement?.options?.wcsOsi}),this.version}requestUpdate(t=!1){if(!this.wrapperElement.isConnected||!Tt()||this.timer)return;let{error:e,options:r,state:a,value:n,version:o}=this;this.state=V,this.timer=it(async()=>{this.timer=null;let c=null;if(this.changes.size&&(c=Object.fromEntries(this.changes.entries()),this.changes.clear()),this.connected?this.log?.debug("Updated:",{element:this.wrapperElement,changes:c}):(this.connected=!0,this.log?.debug("Connected:",{element:this.wrapperElement,changes:c})),c||t)try{await this.wrapperElement.render?.()===!1&&this.state===V&&this.version===o&&(this.state=a,this.error=e,this.value=n,this.update(),this.notify())}catch(l){this.toggleFailed(this.version,l,r)}})}};Fe=new WeakMap;function Yi(i){return`https://${i==="PRODUCTION"?"www.adobe.com":"www.stage.adobe.com"}/offers/promo-terms.html`}var J,Z=class Z extends HTMLAnchorElement{constructor(){super();d(this,"masElement",new ot(this));p(this,J);this.setAttribute("is",Z.is)}get isUptLink(){return!0}initializeWcsData(e,r){this.setAttribute("data-wcs-osi",e),r&&this.setAttribute("data-promotion-code",r)}attributeChangedCallback(e,r,a){this.masElement.attributeChangedCallback(e,r,a)}connectedCallback(){this.masElement.connectedCallback(),h(this,J,Y()),s(this,J)&&(this.log=s(this,J).log.module("upt-link"))}disconnectedCallback(){this.masElement.disconnectedCallback(),h(this,J,void 0)}requestUpdate(e=!1){this.masElement.requestUpdate(e)}onceSettled(){return this.masElement.onceSettled()}async render(){let e=Y();if(!e)return!1;this.dataset.imsCountry||e.imsCountryPromise.then(o=>{o&&(this.dataset.imsCountry=o)});let r=e.collectCheckoutOptions({},this);if(!r.wcsOsi)return this.log.error("Missing 'data-wcs-osi' attribute on upt-link."),!1;let a=this.masElement.togglePending(r),n=e.resolveOfferSelectors(r);try{let[[o]]=await Promise.all(n),{country:c,language:l,env:m}=r,g=`locale=${l}_${c}&country=${c}&offer_id=${o.offerId}`,b=this.getAttribute("data-promotion-code");b&&(g+=`&promotion_code=${encodeURIComponent(b)}`),this.href=`${Yi(m)}?${g}`,this.masElement.toggleResolved(a,o,r)}catch(o){let c=new Error(`Could not resolve offer selectors for id: ${r.wcsOsi}.`,o.message);return this.masElement.toggleFailed(a,c,r),!1}}static createFrom(e){let r=new Z;for(let a of e.attributes)a.name!=="is"&&(a.name==="class"&&a.value.includes("upt-link")?r.setAttribute("class",a.value.replace("upt-link","").trim()):r.setAttribute(a.name,a.value));return r.innerHTML=e.innerHTML,r.setAttribute("tabindex",0),r}};J=new WeakMap,d(Z,"is","upt-link"),d(Z,"tag","a"),d(Z,"observedAttributes",["data-wcs-osi","data-promotion-code","data-ims-country"]);var j=Z;window.customElements.get(j.is)||window.customElements.define(j.is,j,{extends:j.tag});var Ki="#000000",It="#F8D904",Wi="#EAEAEA",Xi="#31A547",Qi=/(accent|primary|secondary)(-(outline|link))?/,Zi="mas:product_code/",Ji="daa-ll",ct="daa-lh",ea=["XL","L","M","S"],Dt="...";function z(i,t,e,r){let a=r[i];if(t[i]&&a){let n={slot:a?.slot},o=t[i];if(a.maxCount&&typeof o=="string"){let[l,m]=fa(o,a.maxCount,a.withSuffix);l!==o&&(n.title=m,o=l)}let c=S(a.tag,n,o);e.append(c)}}function ta(i,t,e){let r=i.mnemonicIcon?.map((n,o)=>({icon:n,alt:i.mnemonicAlt[o]??"",link:i.mnemonicLink[o]??""}));r?.forEach(({icon:n,alt:o,link:c})=>{if(c&&!/^https?:/.test(c))try{c=new URL(`https://${c}`).href.toString()}catch{c="#"}let l={slot:"icons",src:n,loading:t.loading,size:e?.size??"l"};o&&(l.alt=o),c&&(l.href=c);let m=S("merch-icon",l);t.append(m)});let a=t.shadowRoot.querySelector('slot[name="icons"]');!r?.length&&a&&a.remove()}function ra(i,t,e){if(e.badge?.slot){if(i.badge?.length&&!i.badge?.startsWith("<merch-badge")){let r=It,a=!1;e.allowedBadgeColors?.includes(e.badge?.default)&&(r=e.badge?.default,i.borderColor||(a=!0));let n=i.badgeBackgroundColor||r,o=i.borderColor||"";a&&(o=e.badge?.default,i.borderColor=e.badge?.default),i.badge=`<merch-badge variant="${i.variant}" background-color="${n}" border-color="${o}">${i.badge}</merch-badge>`}z("badge",i,t,e)}else i.badge?(t.setAttribute("badge-text",i.badge),e.disabledAttributes?.includes("badgeColor")||t.setAttribute("badge-color",i.badgeColor||Ki),e.disabledAttributes?.includes("badgeBackgroundColor")||t.setAttribute("badge-background-color",i.badgeBackgroundColor||It),t.setAttribute("border-color",i.badgeBackgroundColor||It)):t.setAttribute("border-color",i.borderColor||Wi)}function ia(i,t,e){if(e.trialBadge&&i.trialBadge){if(!i.trialBadge.startsWith("<merch-badge")){let r=!e.disabledAttributes?.includes("trialBadgeBorderColor")&&i.trialBadgeBorderColor||Xi;i.trialBadge=`<merch-badge variant="${i.variant}" border-color="${r}">${i.trialBadge}</merch-badge>`}z("trialBadge",i,t,e)}}function aa(i,t,e){e?.includes(i.size)&&t.setAttribute("size",i.size)}function na(i,t,e){z("cardTitle",i,t,{cardTitle:e})}function oa(i,t,e){z("subtitle",i,t,e)}function sa(i,t,e,r){if(!i.backgroundColor||i.backgroundColor.toLowerCase()==="default"){t.style.removeProperty("--merch-card-custom-background-color"),t.removeAttribute("background-color");return}e?.[i.backgroundColor]?(t.style.setProperty("--merch-card-custom-background-color",`var(${e[i.backgroundColor]})`),t.setAttribute("background-color",i.backgroundColor)):r?.attribute&&i.backgroundColor&&(t.setAttribute(r.attribute,i.backgroundColor),t.style.removeProperty("--merch-card-custom-background-color"))}function ca(i,t,e){let r=e?.borderColor,a="--merch-card-custom-border-color";i.borderColor?.toLowerCase()==="transparent"?(t.style.removeProperty(a),e?.allowedBorderColors?.includes(e?.badge?.default)&&t.style.setProperty(a,"transparent")):i.borderColor&&r&&(/-gradient/.test(i.borderColor)?(t.setAttribute("gradient-border","true"),t.style.removeProperty(a)):t.style.setProperty(a,`var(--${i.borderColor})`))}function da(i,t,e){if(i.backgroundImage){let r={loading:t.loading??"lazy",src:i.backgroundImage};if(i.backgroundImageAltText?r.alt=i.backgroundImageAltText:r.role="none",!e)return;if(e?.attribute){t.setAttribute(e.attribute,i.backgroundImage);return}t.append(S(e.tag,{slot:e.slot},S("img",r)))}}function st(i,t){return!i||typeof i!="string"||i.includes("<mas-tooltip")&&(Promise.resolve().then(()=>(gt(),mt)).catch(console.error),t==="simplified-pricing-express"&&(i=i.replace(/<mas-tooltip([^>]*)\ssize="[^"]*"/g,'<mas-tooltip$1 size="xxs"'),i=i.replace(/<mas-tooltip(?![^>]*\ssize=)([^>]*)/g,'<mas-tooltip size="xxs"$1'))),i}function la(i,t,e){i.prices&&(i.prices=st(i.prices,i.variant)),z("prices",i,t,e)}function Wr(i,t,e){let r=i.hasAttribute("data-wcs-osi")&&!!i.getAttribute("data-wcs-osi"),a=i.className||"",n=Qi.exec(a)?.[0]??"accent",o=n.includes("accent"),c=n.includes("primary"),l=n.includes("secondary"),m=n.includes("-outline"),g=n.includes("-link");i.classList.remove("accent","primary","secondary");let b;if(t.consonant)b=ya(i,o,r,g,c);else if(g)b=i;else{let _;o?_="accent":c?_="primary":l&&(_="secondary"),b=t.spectrum==="swc"?va(i,e,m,_,r):ba(i,e,m,_,r)}return b}function ha(i,t){let{slot:e}=t?.description,r=i.querySelectorAll(`[slot="${e}"] a[data-wcs-osi]`);r.length&&r.forEach(a=>{let n=Wr(a,i,t);a.replaceWith(n)})}function pa(i,t,e){i.description&&(i.description=st(i.description,i.variant)),i.promoText&&(i.promoText=st(i.promoText,i.variant)),z("promoText",i,t,e),z("description",i,t,e),ha(t,e),z("callout",i,t,e),z("quantitySelect",i,t,e),z("whatsIncluded",i,t,e)}function ma(i,t,e){if(!e.addon)return;let r=i.addon?.replace(/[{}]/g,"");if(!r||/disabled/.test(r))return;let a=S("merch-addon",{slot:"addon"},r);[...a.querySelectorAll(f)].forEach(n=>{let o=n.parentElement;o?.nodeName==="P"&&o.setAttribute("data-plan-type","")}),t.append(a)}function ga(i,t,e){i.addonConfirmation&&z("addonConfirmation",i,t,e)}function ua(i,t,e,r){r?.secureLabel&&e?.secureLabel&&t.setAttribute("secure-label",r.secureLabel)}function fa(i,t,e=!0){try{let r=typeof i!="string"?"":i,a=Kr(r);if(a.length<=t)return[r,a];let n=0,o=!1,c=e?t-Dt.length<1?1:t-Dt.length:t,l=[];for(let b of r){if(n++,b==="<")if(o=!0,r[n]==="/")l.pop();else{let _="";for(let ht of r.substring(n)){if(ht===" "||ht===">")break;_+=ht}l.push(_)}if(b==="/"&&r[n]===">"&&l.pop(),b===">"){o=!1;continue}if(!o&&(c--,c===0))break}let m=r.substring(0,n).trim();if(l.length>0){l[0]==="p"&&l.shift();for(let b of l.reverse())m+=`</${b}>`}return[`${m}${e?Dt:""}`,a]}catch{let a=typeof i=="string"?i:"",n=Kr(a);return[a,n]}}function Kr(i){if(!i)return"";let t="",e=!1;for(let r of i){if(r==="<"&&(e=!0),r===">"){e=!1;continue}e||(t+=r)}return t}function xa(i,t){t.querySelectorAll("a.upt-link").forEach(r=>{let a=j.createFrom(r);r.replaceWith(a),a.initializeWcsData(i.osi,i.promoCode)})}function ba(i,t,e,r,a){let n=i;a?n=customElements.get("checkout-button").createCheckoutButton({},i.innerHTML):n.innerHTML=`<span>${n.textContent}</span>`,n.setAttribute("tabindex",0);for(let g of i.attributes)["class","is"].includes(g.name)||n.setAttribute(g.name,g.value);n.firstElementChild?.classList.add("spectrum-Button-label");let o=t?.ctas?.size??"M",c=`spectrum-Button--${r}`,l=ea.includes(o)?`spectrum-Button--size${o}`:"spectrum-Button--sizeM",m=["spectrum-Button",c,l];return e&&m.push("spectrum-Button--outline"),n.classList.add(...m),n}function va(i,t,e,r,a){let n=i;a&&(n=customElements.get("checkout-button").createCheckoutButton(i.dataset),n.connectedCallback(),n.render());let o="fill";e&&(o="outline");let c=S("sp-button",{treatment:o,variant:r,tabIndex:0,size:t?.ctas?.size??"m",...i.dataset.analyticsId&&{"data-analytics-id":i.dataset.analyticsId}},i.innerHTML);return c.source=n,(a?n.onceSettled():Promise.resolve(n)).then(l=>{c.setAttribute("data-navigation-url",l.href)}),c.addEventListener("click",l=>{l.defaultPrevented||n.click()}),c}function ya(i,t,e,r,a){let n=i;return e&&(n=customElements.get("checkout-link").createCheckoutLink(i.dataset,i.innerHTML)),r||(n.classList.add("button","con-button"),t&&n.classList.add("blue"),a&&n.classList.add("primary")),n}function Ea(i,t,e,r){if(i.ctas){i.ctas=st(i.ctas,r);let{slot:a}=e.ctas,n=S("div",{slot:a},i.ctas),o=[...n.querySelectorAll("a")].map(c=>Wr(c,t,e));n.innerHTML="",n.append(...o),t.append(n)}}function wa(i,t){let{tags:e}=i,r=e?.find(n=>n.startsWith(Zi))?.split("/").pop();if(!r)return;t.setAttribute(ct,r),[...t.shadowRoot.querySelectorAll("a[data-analytics-id],button[data-analytics-id]"),...t.querySelectorAll("a[data-analytics-id],button[data-analytics-id]")].forEach((n,o)=>{n.setAttribute(Ji,`${n.dataset.analyticsId}-${o+1}`)})}function Sa(i){i.spectrum==="css"&&[["primary-link","primary"],["secondary-link","secondary"]].forEach(([t,e])=>{i.querySelectorAll(`a.${t}`).forEach(r=>{r.classList.remove(t),r.classList.add("spectrum-Link",`spectrum-Link--${e}`)})})}function Aa(i){i.querySelectorAll("[slot]").forEach(r=>{r.remove()}),i.variant=void 0,["checkbox-label","stock-offer-osis","secure-label","background-image","background-color","border-color","badge-background-color","badge-color","badge-text","gradient-border","size",ct].forEach(r=>i.removeAttribute(r));let e=["wide-strip","thin-strip"];i.classList.remove(...e)}async function Xr(i,t){if(!i){let l=t?.id||"unknown";throw console.error(`hydrate: Fragment is undefined. Cannot hydrate card (merchCard id: ${l}).`),new Error(`hydrate: Fragment is undefined for card (merchCard id: ${l}).`)}if(!i.fields){let l=i.id||"unknown",m=t?.id||"unknown";throw console.error(`hydrate: Fragment for card ID '${l}' (merchCard id: ${m}) is missing 'fields'. Cannot hydrate.`),new Error(`hydrate: Fragment for card ID '${l}' (merchCard id: ${m}) is missing 'fields'.`)}let{id:e,fields:r,settings:a={},priceLiterals:n}=i,{variant:o}=r;if(!o)throw new Error(`hydrate: no variant found in payload ${e}`);Aa(t),t.settings=a,n&&(t.priceLiterals=n),t.id??(t.id=i.id),t.variant=o,await t.updateComplete;let{aemFragmentMapping:c}=t.variantLayout;if(!c)throw new Error(`hydrate: variant mapping not found for ${e}`);c.style==="consonant"&&t.setAttribute("consonant",!0),ta(r,t,c.mnemonics),ra(r,t,c),ia(r,t,c),aa(r,t,c.size),na(r,t,c.title),oa(r,t,c),la(r,t,c),da(r,t,c.backgroundImage),sa(r,t,c.allowedColors,c.backgroundColor),ca(r,t,c),pa(r,t,c),ma(r,t,c),ga(r,t,c),ua(r,t,c,a),xa(r,t),Ea(r,t,c,o),wa(r,t),Sa(t)}var Bt="merch-card",Ft=2e4,Qr="merch-card:";function Zr(i,t){let e=i.closest(Bt);if(!e)return t;e.priceLiterals&&(t.literals??(t.literals={}),Object.assign(t.literals,e.priceLiterals)),e.variantLayout?.priceOptionsProvider?.(i,t)}function Ca(i){i.providers.has(Zr)||i.providers.price(Zr)}var Ta=0,Se,Ae,ke,F,re,I,ie,E,te,dt,Jr,lt,ee=class extends ka{constructor(){super();p(this,E);p(this,Se);p(this,Ae);p(this,ke);p(this,F);p(this,re);p(this,I);p(this,ie,new Promise(e=>{h(this,I,e)}));d(this,"customerSegment");d(this,"marketSegment");d(this,"variantLayout");this.id=null,this.failed=!1,this.filters={},this.types="",this.selected=!1,this.spectrum="css",this.loading="lazy",this.handleAemFragmentEvents=this.handleAemFragmentEvents.bind(this),this.handleMerchOfferSelectReady=this.handleMerchOfferSelectReady.bind(this)}firstUpdated(){this.variantLayout=kt(this),this.variantLayout?.connectedCallbackHook()}willUpdate(e){(e.has("variant")||!this.variantLayout)&&(this.variantLayout=kt(this),this.variantLayout?.connectedCallbackHook())}updated(e){(e.has("badgeBackgroundColor")||e.has("borderColor"))&&this.style.setProperty("--consonant-merch-card-border",this.computedBorderStyle),e.has("backgroundColor")&&this.style.setProperty("--merch-card-custom-background-color",this.backgroundColor?`var(--${this.backgroundColor})`:"");try{this.variantLayoutPromise=this.variantLayout?.postCardUpdateHook(e)}catch(r){w(this,E,te).call(this,`Error in postCardUpdateHook: ${r.message}`,{},!1)}}get theme(){return this.closest("sp-theme")}get dir(){return this.closest("[dir]")?.getAttribute("dir")??"ltr"}render(){if(!(!this.isConnected||!this.variantLayout||this.style.display==="none"))return this.variantLayout.renderLayout()}get computedBorderStyle(){return["ccd-slice","ccd-suggested","ah-promoted-plans"].includes(this.variant)?"":`1px solid ${this.borderColor?this.borderColor:this.badgeBackgroundColor}`}get badgeElement(){return this.shadowRoot.getElementById("badge")}get headingmMSlot(){return this.shadowRoot.querySelector('slot[name="heading-m"]').assignedElements()[0]}get footerSlot(){return this.shadowRoot.querySelector('slot[name="footer"]')?.assignedElements()[0]}get descriptionSlot(){return this.shadowRoot.querySelector('slot[name="body-xs"')?.assignedElements()[0]}get descriptionSlotCompare(){return this.shadowRoot.querySelector('slot[name="body-m"')?.assignedElements()[0]}get price(){return this.headingmMSlot?.querySelector(f)}get checkoutLinks(){return[...this.footerSlot?.querySelectorAll(B)??[]]}get checkoutLinksDescription(){return[...this.descriptionSlot?.querySelectorAll(B)??[]]}get checkoutLinkDescriptionCompare(){return[...this.descriptionSlotCompare?.querySelectorAll(B)??[]]}get activeDescriptionLinks(){return this.variant==="mini-compare-chart"?this.checkoutLinkDescriptionCompare:this.checkoutLinksDescription}async toggleStockOffer({target:e}){if(!this.stockOfferOsis)return;let r=this.checkoutLinks;if(r.length!==0)for(let a of r){await a.onceSettled();let n=a.value?.[0]?.planType;if(!n)return;let o=this.stockOfferOsis[n];if(!o)return;let c=a.dataset.wcsOsi.split(",").filter(l=>l!==o);e.checked&&c.push(o),a.dataset.wcsOsi=c.join(",")}}changeHandler(e){e.target.tagName==="MERCH-ADDON"&&this.toggleAddon(e.target)}toggleAddon(e){this.variantLayout?.toggleAddon?.(e);let r=[...this.checkoutLinks,...this.activeDescriptionLinks??[]];if(r.length===0)return;let a=n=>{let{offerType:o,planType:c}=n.value?.[0]??{};if(!o||!c)return;let l=e.getOsi(c,o),m=(n.dataset.wcsOsi||"").split(",").filter(g=>g&&g!==l);e.checked&&m.push(l),n.dataset.wcsOsi=m.join(",")};r.forEach(a)}handleQuantitySelection(e){let r=[...this.checkoutLinks,...this.activeDescriptionLinks??[]];if(r.length!==0)for(let a of r)a.dataset.quantity=e.detail.option}get titleElement(){return this.querySelector(this.variantLayout?.headingSelector||".card-heading")}get title(){return this.titleElement?.textContent?.trim()}get description(){return this.querySelector('[slot="body-xs"]')?.textContent?.trim()}updateFilters(e){let r={...this.filters};Object.keys(r).forEach(a=>{if(e){r[a].order=Math.min(r[a].order||2,2);return}let n=r[a].order;n===1||isNaN(n)||(r[a].order=Number(n)+1)}),this.filters=r}includes(e){return this.textContent.match(new RegExp(e,"i"))!==null}connectedCallback(){var r;super.connectedCallback(),s(this,Ae)||h(this,Ae,Ta++),this.aemFragment||((r=s(this,I))==null||r.call(this),h(this,I,void 0)),this.id??(this.id=this.getAttribute("id")??this.aemFragment?.getAttribute("fragment"));let e=this.id??s(this,Ae);h(this,re,`${Qr}${e}${Ve}`),h(this,Se,`${Qr}${e}${Ye}`),performance.mark(s(this,re)),h(this,F,Y()),Ca(s(this,F)),h(this,ke,s(this,F).Log.module(Bt)),this.addEventListener(ft,this.handleQuantitySelection),this.addEventListener(xt,this.handleAddonAndQuantityUpdate),this.addEventListener(Qt,this.handleMerchOfferSelectReady),this.addEventListener(se,this.handleAemFragmentEvents),this.addEventListener(oe,this.handleAemFragmentEvents),this.addEventListener("change",this.changeHandler),this.aemFragment||setTimeout(()=>this.checkReady(),0)}disconnectedCallback(){super.disconnectedCallback(),this.variantLayout?.disconnectedCallbackHook(),this.removeEventListener(ft,this.handleQuantitySelection),this.removeEventListener(se,this.handleAemFragmentEvents),this.removeEventListener(oe,this.handleAemFragmentEvents),this.removeEventListener("change",this.changeHandler),this.removeEventListener(xt,this.handleAddonAndQuantityUpdate)}async handleAemFragmentEvents(e){var r;if(this.isConnected&&(e.type===se&&w(this,E,te).call(this,"AEM fragment cannot be loaded"),e.type===oe&&(this.failed=!1,e.target.nodeName==="AEM-FRAGMENT"))){let a=e.detail;try{s(this,I)||h(this,ie,new Promise(n=>{h(this,I,n)})),Xr(a,this)}catch(n){w(this,E,te).call(this,`hydration has failed: ${n.message}`)}finally{(r=s(this,I))==null||r.call(this),h(this,I,void 0)}this.checkReady()}}async checkReady(){if(!this.isConnected)return;s(this,ie)&&(await s(this,ie),h(this,ie,void 0)),this.variantLayoutPromise&&(await this.variantLayoutPromise,this.variantLayoutPromise=void 0);let e=new Promise(o=>setTimeout(()=>o("timeout"),Ft));if(this.aemFragment){let o=await Promise.race([this.aemFragment.updateComplete,e]);if(o===!1||o==="timeout"){let c=o==="timeout"?`AEM fragment was not resolved within ${Ft} timeout`:"AEM fragment cannot be loaded";w(this,E,te).call(this,c,{},!1);return}}let r=[...this.querySelectorAll(Xt)],a=Promise.all(r.map(o=>o.onceSettled().catch(()=>o))).then(o=>o.every(c=>c.classList.contains("placeholder-resolved"))),n=await Promise.race([a,e]);if(n===!0){this.measure=performance.measure(s(this,Se),s(this,re));let o={...this.aemFragment?.fetchInfo,...s(this,F).duration,measure:ce(this.measure)};return this.dispatchEvent(new CustomEvent(er,{bubbles:!0,composed:!0,detail:o})),this}else{this.measure=performance.measure(s(this,Se),s(this,re));let o={measure:ce(this.measure),...s(this,F).duration};n==="timeout"?w(this,E,te).call(this,`Contains offers that were not resolved within ${Ft} timeout`,o):w(this,E,te).call(this,"Contains unresolved offers",o)}}get aemFragment(){return this.querySelector("aem-fragment")}get addon(){return this.querySelector("merch-addon")}get quantitySelect(){return this.querySelector("merch-quantity-select")}get addonCheckbox(){return this.querySelector("merch-addon")}displayFooterElementsInColumn(){if(!this.classList.contains("product"))return;let e=this.shadowRoot.querySelector(".secure-transaction-label");(this.footerSlot?.querySelectorAll(B)).length===2&&e&&e.parentElement.classList.add("footer-column")}handleMerchOfferSelectReady(){this.offerSelect&&!this.offerSelect.planType||this.displayFooterElementsInColumn()}get dynamicPrice(){return this.querySelector('[slot="price"]')}handleAddonAndQuantityUpdate({detail:{id:e,items:r}}){if(!e||!r?.length||this.closest('[role="tabpanel"][hidden="true"]'))return;let n=this.checkoutLinks.find(g=>g.getAttribute("data-modal-id")===e);if(!n)return;let c=new URL(n.getAttribute("href")).searchParams.get("pa"),l=r.find(g=>g.productArrangementCode===c)?.quantity,m=!!r.find(g=>g.productArrangementCode!==c);if(l&&this.quantitySelect?.dispatchEvent(new CustomEvent(Jt,{detail:{quantity:l},bubbles:!0,composed:!0})),this.addonCheckbox&&this.addonCheckbox.checked!==m){this.toggleStockOffer({target:this.addonCheckbox});let g=new Event("change",{bubbles:!0,cancelable:!0});Object.defineProperty(g,"target",{writable:!1,value:{checked:m}}),this.addonCheckbox.handleChange(g)}}get prices(){return Array.from(this.querySelectorAll(f))}get promoPrice(){if(!this.querySelector("span.price-strikethrough"))return;let e=this.querySelector(".price.price-alternative");if(e||(e=this.querySelector(`${f}[data-template="price"] > span`)),!!e)return e=e.innerText,e}get regularPrice(){return s(this,E,dt)?.innerText}get promotionCode(){let e=[...this.querySelectorAll(`${f}[data-promotion-code],${B}[data-promotion-code]`)].map(a=>a.dataset.promotionCode),r=[...new Set(e)];return r.length>1&&s(this,ke)?.warn(`Multiple different promotion codes found: ${r.join(", ")}`),e[0]}get annualPrice(){return this.querySelector(`${f}[data-template="price"] > .price.price-annual`)?.innerText}get promoText(){}get taxText(){return(s(this,E,Jr)??s(this,E,dt))?.querySelector("span.price-tax-inclusivity")?.textContent?.trim()||void 0}get recurrenceText(){return s(this,E,dt)?.querySelector("span.price-recurrence")?.textContent?.trim()}get planTypeText(){return this.querySelector('[is="inline-price"][data-template="legal"] span.price-plan-type')?.textContent?.trim()}get seeTermsInfo(){let e=this.querySelector('a[is="upt-link"]');if(e)return w(this,E,lt).call(this,e)}get renewalText(){return this.querySelector("span.renewal-text")?.textContent?.trim()}get promoDurationText(){return this.querySelector("span.promo-duration-text")?.textContent?.trim()}get ctas(){return Array.from(this.querySelector('[slot="ctas"], [slot="footer"]')?.querySelectorAll(`${B}, a`))}get primaryCta(){return w(this,E,lt).call(this,this.ctas.find(e=>e.variant==="accent"||e.matches(".spectrum-Button--accent,.con-button.blue")))}get secondaryCta(){return w(this,E,lt).call(this,this.ctas.find(e=>e.variant!=="accent"&&!e.matches(".spectrum-Button--accent,.con-button.blue")))}};Se=new WeakMap,Ae=new WeakMap,ke=new WeakMap,F=new WeakMap,re=new WeakMap,I=new WeakMap,ie=new WeakMap,E=new WeakSet,te=function(e,r={},a=!0){if(!this.isConnected)return;let o=this.aemFragment?.getAttribute("fragment");o=`[${o}]`;let c={...this.aemFragment.fetchInfo,...s(this,F).duration,...r,message:e};s(this,ke).error(`merch-card${o}: ${e}`,c),this.failed=!0,a&&this.dispatchEvent(new CustomEvent(tr,{bubbles:!0,composed:!0,detail:c}))},dt=function(){return this.querySelector("span.price-strikethrough")??this.querySelector(`${f}[data-template="price"] > span`)},Jr=function(){return this.querySelector(`${f}[data-template="legal"]`)},lt=function(e){if(e)return{text:e.innerText.trim(),analyticsId:e.dataset.analyticsId,href:e.getAttribute("href")??e.dataset.href}},d(ee,"properties",{id:{type:String,attribute:"id",reflect:!0},name:{type:String,attribute:"name",reflect:!0},variant:{type:String,reflect:!0},size:{type:String,attribute:"size",reflect:!0},badgeColor:{type:String,attribute:"badge-color",reflect:!0},borderColor:{type:String,attribute:"border-color",reflect:!0},backgroundColor:{type:String,attribute:"background-color",reflect:!0},badgeBackgroundColor:{type:String,attribute:"badge-background-color",reflect:!0},backgroundImage:{type:String,attribute:"background-image",reflect:!0},badgeText:{type:String,attribute:"badge-text"},actionMenu:{type:Boolean,attribute:"action-menu"},actionMenuLabel:{type:String,attribute:"action-menu-label"},customHr:{type:Boolean,attribute:"custom-hr"},consonant:{type:Boolean,attribute:"consonant"},failed:{type:Boolean,attribute:"failed",reflect:!0},spectrum:{type:String,attribute:"spectrum"},detailBg:{type:String,attribute:"detail-bg"},secureLabel:{type:String,attribute:"secure-label"},checkboxLabel:{type:String,attribute:"checkbox-label"},addonTitle:{type:String,attribute:"addon-title"},addonOffers:{type:Object,attribute:"addon-offers"},selected:{type:Boolean,attribute:"aria-selected",reflect:!0},storageOption:{type:String,attribute:"storage",reflect:!0},planType:{type:String,attribute:"plan-type",reflect:!0},settings:{type:Object,attribute:!1},stockOfferOsis:{type:Object,attribute:"stock-offer-osis",converter:{fromAttribute:e=>{if(!e)return;let[r,a,n]=e.split(",");return{PUF:r,ABM:a,M2M:n}}}},filters:{type:String,reflect:!0,converter:{fromAttribute:e=>Object.fromEntries(e.split(",").map(r=>{let[a,n,o]=r.split(":"),c=Number(n);return[a,{order:isNaN(c)?void 0:c,size:o}]})),toAttribute:e=>Object.entries(e).map(([r,{order:a,size:n}])=>[r,a,n].filter(o=>o!=null).join(":")).join(",")}},types:{type:String,attribute:"types",reflect:!0},merchOffer:{type:Object},analyticsId:{type:String,attribute:ct,reflect:!0},loading:{type:String},priceLiterals:{type:Object}}),d(ee,"styles",[Yt,...Kt()]),d(ee,"registerVariant",k),d(ee,"getFragmentMapping",Xe);customElements.define(Bt,ee);export{ee as MerchCard};
+    `),d(Ie,"properties",{heading:{type:String,attribute:!0},mobileRows:{type:Number,attribute:!0}});customElements.define("merch-whats-included",Ie);var X={clientId:"merch-at-scale",delimiter:"\xB6",ignoredProperties:["analytics","literals","element"],serializableTypes:["Array","Object"],sampleRate:1,tags:"acom",isProdDomain:!1},Br=1e3;function Da(a){return a instanceof Error||typeof a?.originatingRequest=="string"}function Hr(a){if(a==null)return;let t=typeof a;if(t==="function")return a.name?`function ${a.name}`:"function";if(t==="object"){if(a instanceof Error)return a.message;if(typeof a.originatingRequest=="string"){let{message:r,originatingRequest:i,status:o}=a;return[r,o,i].filter(Boolean).join(" ")}let e=a[Symbol.toStringTag]??Object.getPrototypeOf(a).constructor.name;if(!X.serializableTypes.includes(e))return e}return a}function Fa(a,t){if(!X.ignoredProperties.includes(a))return Hr(t)}var Mt={append(a){if(a.level!=="error")return;let{message:t,params:e}=a,r=[],i=[],o=t;e.forEach(p=>{p!=null&&(Da(p)?r:i).push(p)}),r.length&&(o+=" "+r.map(Hr).join(" "));let{pathname:n,search:s}=window.location,l=`${X.delimiter}page=${n}${s}`;l.length>Br&&(l=`${l.slice(0,Br)}<trunc>`),o+=l,i.length&&(o+=`${X.delimiter}facts=`,o+=JSON.stringify(i,Fa)),window.lana?.log(o,X)}};function Ur(a){Object.assign(X,Object.fromEntries(Object.entries(a).filter(([t,e])=>t in X&&e!==""&&e!==null&&e!==void 0&&!Number.isNaN(e))))}var qr={LOCAL:"local",PROD:"prod",STAGE:"stage"},zt={DEBUG:"debug",ERROR:"error",INFO:"info",WARN:"warn"},Ot=new Set,Nt=new Set,jr=new Map,Gr={append({level:a,message:t,params:e,timestamp:r,source:i}){console[a](`${r}ms [${i}] %c${t}`,"font-weight: bold;",...e)}},Vr={filter:({level:a})=>a!==zt.DEBUG},Ba={filter:()=>!1};function Ha(a,t,e,r,i){return{level:a,message:t,namespace:e,get params(){return r.length===1&&rt(r[0])&&(r=r[0](),Array.isArray(r)||(r=[r])),r},source:i,timestamp:performance.now().toFixed(3)}}function Ua(a){[...Nt].every(t=>t(a))&&Ot.forEach(t=>t(a))}function Yr(a){let t=(jr.get(a)??0)+1;jr.set(a,t);let e=`${a} #${t}`,r={id:e,namespace:a,module:i=>Yr(`${r.namespace}/${i}`),updateConfig:Ur};return Object.values(zt).forEach(i=>{r[i]=(o,...n)=>Ua(Ha(i,o,a,n,e))}),Object.seal(r)}function ot(...a){a.forEach(t=>{let{append:e,filter:r}=t;rt(r)&&Nt.add(r),rt(e)&&Ot.add(e)})}function qa(a={}){let{name:t}=a,e=Tr(tt("commerce.debug",{search:!0,storage:!0}),t===qr.LOCAL);return ot(e?Gr:Vr),t===qr.PROD&&ot(Mt),$t}function ja(){Ot.clear(),Nt.clear()}var $t={...Yr(nr),Level:zt,Plugins:{consoleAppender:Gr,debugFilter:Vr,quietFilter:Ba,lanaAppender:Mt},init:qa,reset:ja,use:ot};var Ga={[H]:rr,[V]:ar,[U]:ir},Va={[H]:or,[U]:ke},De,nt=class{constructor(t){m(this,De);d(this,"changes",new Map);d(this,"connected",!1);d(this,"error");d(this,"log");d(this,"options");d(this,"promises",[]);d(this,"state",V);d(this,"timer",null);d(this,"value");d(this,"version",0);d(this,"wrapperElement");this.wrapperElement=t,this.log=$t.module("mas-element")}update(){[H,V,U].forEach(t=>{this.wrapperElement.classList.toggle(Ga[t],t===this.state)})}notify(){(this.state===U||this.state===H)&&(this.state===U?this.promises.forEach(({resolve:e})=>e(this.wrapperElement)):this.state===H&&this.promises.forEach(({reject:e})=>e(this.error)),this.promises=[]);let t=this.error;this.error instanceof W&&(t={message:this.error.message,...this.error.context}),this.wrapperElement.dispatchEvent(new CustomEvent(Va[this.state],{bubbles:!0,detail:t}))}attributeChangedCallback(t,e,r){this.changes.set(t,r),this.requestUpdate()}connectedCallback(){h(this,De,Tt()),this.requestUpdate(!0)}disconnectedCallback(){this.connected&&(this.connected=!1,this.log?.debug("Disconnected:",{element:this.wrapperElement}))}onceSettled(){let{error:t,promises:e,state:r}=this;return U===r?Promise.resolve(this.wrapperElement):H===r?Promise.reject(t):new Promise((i,o)=>{e.push({resolve:i,reject:o})})}toggleResolved(t,e,r){return t!==this.version?!1:(r!==void 0&&(this.options=r),this.state=U,this.value=e,this.update(),this.log?.debug("Resolved:",{element:this.wrapperElement,value:e}),at(()=>this.notify()),!0)}toggleFailed(t,e,r){if(t!==this.version)return!1;r!==void 0&&(this.options=r),this.error=e,this.state=H,this.update();let i=this.wrapperElement.getAttribute("is");return this.log?.error(`${i}: Failed to render: ${e.message}`,{element:this.wrapperElement,...e.context,...c(this,De)?.duration}),at(()=>this.notify()),!0}togglePending(t){return this.version++,t&&(this.options=t),this.state=V,this.update(),this.log?.debug("Pending:",{osi:this.wrapperElement?.options?.wcsOsi}),this.version}requestUpdate(t=!1){if(!this.wrapperElement.isConnected||!Tt()||this.timer)return;let{error:e,options:r,state:i,value:o,version:n}=this;this.state=V,this.timer=at(async()=>{this.timer=null;let s=null;if(this.changes.size&&(s=Object.fromEntries(this.changes.entries()),this.changes.clear()),this.connected?this.log?.debug("Updated:",{element:this.wrapperElement,changes:s}):(this.connected=!0,this.log?.debug("Connected:",{element:this.wrapperElement,changes:s})),s||t)try{await this.wrapperElement.render?.()===!1&&this.state===V&&this.version===n&&(this.state=i,this.error=e,this.value=o,this.update(),this.notify())}catch(l){this.toggleFailed(this.version,l,r)}})}};De=new WeakMap;function Ya(a){return`https://${a==="PRODUCTION"?"www.adobe.com":"www.stage.adobe.com"}/offers/promo-terms.html`}var J,Z=class Z extends HTMLAnchorElement{constructor(){super();d(this,"masElement",new nt(this));m(this,J);this.setAttribute("is",Z.is)}get isUptLink(){return!0}initializeWcsData(e,r){this.setAttribute("data-wcs-osi",e),r&&this.setAttribute("data-promotion-code",r)}attributeChangedCallback(e,r,i){this.masElement.attributeChangedCallback(e,r,i)}connectedCallback(){this.masElement.connectedCallback(),h(this,J,Y()),c(this,J)&&(this.log=c(this,J).log.module("upt-link"))}disconnectedCallback(){this.masElement.disconnectedCallback(),h(this,J,void 0)}requestUpdate(e=!1){this.masElement.requestUpdate(e)}onceSettled(){return this.masElement.onceSettled()}async render(){let e=Y();if(!e)return!1;this.dataset.imsCountry||e.imsCountryPromise.then(n=>{n&&(this.dataset.imsCountry=n)});let r=e.collectCheckoutOptions({},this);if(!r.wcsOsi)return this.log.error("Missing 'data-wcs-osi' attribute on upt-link."),!1;let i=this.masElement.togglePending(r),o=e.resolveOfferSelectors(r);try{let[[n]]=await Promise.all(o),{country:s,language:l,env:p}=r,g=`locale=${l}_${s}&country=${s}&offer_id=${n.offerId}`,b=this.getAttribute("data-promotion-code");b&&(g+=`&promotion_code=${encodeURIComponent(b)}`),this.href=`${Ya(p)}?${g}`,this.masElement.toggleResolved(i,n,r)}catch(n){let s=new Error(`Could not resolve offer selectors for id: ${r.wcsOsi}.`,n.message);return this.masElement.toggleFailed(i,s,r),!1}}static createFrom(e){let r=new Z;for(let i of e.attributes)i.name!=="is"&&(i.name==="class"&&i.value.includes("upt-link")?r.setAttribute("class",i.value.replace("upt-link","").trim()):r.setAttribute(i.name,i.value));return r.innerHTML=e.innerHTML,r.setAttribute("tabindex",0),r}};J=new WeakMap,d(Z,"is","upt-link"),d(Z,"tag","a"),d(Z,"observedAttributes",["data-wcs-osi","data-promotion-code","data-ims-country"]);var j=Z;window.customElements.get(j.is)||window.customElements.define(j.is,j,{extends:j.tag});var Ka="#000000",It="#F8D904",Wa="#EAEAEA",Qa="#31A547",Xa=/(accent|primary|secondary)(-(outline|link))?/,Za="mas:product_code/",Ja="daa-ll",ct="daa-lh",ei=["XL","L","M","S"],Dt="...";function z(a,t,e,r){let i=r[a];if(t[a]&&i){let o={slot:i?.slot},n=t[a];if(i.maxCount&&typeof n=="string"){let[l,p]=fi(n,i.maxCount,i.withSuffix);l!==n&&(o.title=p,n=l)}let s=S(i.tag,o,n);e.append(s)}}function ti(a,t,e){let r=a.mnemonicIcon?.map((o,n)=>({icon:o,alt:a.mnemonicAlt[n]??"",link:a.mnemonicLink[n]??""}));r?.forEach(({icon:o,alt:n,link:s})=>{if(s&&!/^https?:/.test(s))try{s=new URL(`https://${s}`).href.toString()}catch{s="#"}let l={slot:"icons",src:o,loading:t.loading,size:e?.size??"l"};n&&(l.alt=n),s&&(l.href=s);let p=S("merch-icon",l);t.append(p)});let i=t.shadowRoot.querySelector('slot[name="icons"]');!r?.length&&i&&i.remove()}function ri(a,t,e){if(e.badge?.slot){if(a.badge?.length&&!a.badge?.startsWith("<merch-badge")){let r=It,i=!1;e.allowedBadgeColors?.includes(e.badge?.default)&&(r=e.badge?.default,a.borderColor||(i=!0));let o=a.badgeBackgroundColor||r,n=a.borderColor||"";i&&(n=e.badge?.default,a.borderColor=e.badge?.default),a.badge=`<merch-badge variant="${a.variant}" background-color="${o}" border-color="${n}">${a.badge}</merch-badge>`}z("badge",a,t,e)}else a.badge?(t.setAttribute("badge-text",a.badge),e.disabledAttributes?.includes("badgeColor")||t.setAttribute("badge-color",a.badgeColor||Ka),e.disabledAttributes?.includes("badgeBackgroundColor")||t.setAttribute("badge-background-color",a.badgeBackgroundColor||It),t.setAttribute("border-color",a.badgeBackgroundColor||It)):t.setAttribute("border-color",a.borderColor||Wa)}function ai(a,t,e){if(e.trialBadge&&a.trialBadge){if(!a.trialBadge.startsWith("<merch-badge")){let r=!e.disabledAttributes?.includes("trialBadgeBorderColor")&&a.trialBadgeBorderColor||Qa;a.trialBadge=`<merch-badge variant="${a.variant}" border-color="${r}">${a.trialBadge}</merch-badge>`}z("trialBadge",a,t,e)}}function ii(a,t,e){e?.includes(a.size)&&t.setAttribute("size",a.size)}function oi(a,t,e){z("cardTitle",a,t,{cardTitle:e})}function ni(a,t,e){z("subtitle",a,t,e)}function si(a,t,e,r){if(!a.backgroundColor||a.backgroundColor.toLowerCase()==="default"){t.style.removeProperty("--merch-card-custom-background-color"),t.removeAttribute("background-color");return}e?.[a.backgroundColor]?(t.style.setProperty("--merch-card-custom-background-color",`var(${e[a.backgroundColor]})`),t.setAttribute("background-color",a.backgroundColor)):r?.attribute&&a.backgroundColor&&(t.setAttribute(r.attribute,a.backgroundColor),t.style.removeProperty("--merch-card-custom-background-color"))}function ci(a,t,e){let r=e?.borderColor,i="--merch-card-custom-border-color";if(a.borderColor?.toLowerCase()==="transparent")t.style.removeProperty(i),e?.allowedBorderColors?.includes(e?.badge?.default)&&t.style.setProperty(i,"transparent");else if(a.borderColor&&r)if(r?.specialValues?.[a.borderColor]?.includes("gradient")||/-gradient/.test(a.borderColor)){t.setAttribute("gradient-border","true");let s=a.borderColor;if(r?.specialValues){for(let[l,p]of Object.entries(r.specialValues))if(p===a.borderColor){s=l;break}}t.setAttribute("border-color",s),t.style.removeProperty(i)}else t.style.setProperty(i,`var(--${a.borderColor})`)}function di(a,t,e){if(a.backgroundImage){let r={loading:t.loading??"lazy",src:a.backgroundImage};if(a.backgroundImageAltText?r.alt=a.backgroundImageAltText:r.role="none",!e)return;if(e?.attribute){t.setAttribute(e.attribute,a.backgroundImage);return}t.append(S(e.tag,{slot:e.slot},S("img",r)))}}function st(a){return!a||typeof a!="string"||a.includes("<mas-tooltip")&&Promise.resolve().then(()=>(gt(),mt)).catch(console.error),a}function li(a,t,e){a.prices&&(a.prices=st(a.prices)),z("prices",a,t,e)}function Wr(a,t,e){let r=a.hasAttribute("data-wcs-osi")&&!!a.getAttribute("data-wcs-osi"),i=a.className||"",o=Xa.exec(i)?.[0]??"accent",n=o.includes("accent"),s=o.includes("primary"),l=o.includes("secondary"),p=o.includes("-outline"),g=o.includes("-link");a.classList.remove("accent","primary","secondary");let b;if(t.consonant)b=yi(a,n,r,g,s);else if(g)b=a;else{let _;n?_="accent":s?_="primary":l&&(_="secondary"),b=t.spectrum==="swc"?vi(a,e,p,_,r):bi(a,e,p,_,r)}return b}function hi(a,t){let{slot:e}=t?.description,r=a.querySelectorAll(`[slot="${e}"] a[data-wcs-osi]`);r.length&&r.forEach(i=>{let o=Wr(i,a,t);i.replaceWith(o)})}function pi(a,t,e){a.description&&(a.description=st(a.description)),a.promoText&&(a.promoText=st(a.promoText)),z("promoText",a,t,e),z("description",a,t,e),hi(t,e),z("callout",a,t,e),z("quantitySelect",a,t,e),z("whatsIncluded",a,t,e)}function mi(a,t,e){if(!e.addon)return;let r=a.addon?.replace(/[{}]/g,"");if(!r||/disabled/.test(r))return;let i=S("merch-addon",{slot:"addon"},r);[...i.querySelectorAll(f)].forEach(o=>{let n=o.parentElement;n?.nodeName==="P"&&n.setAttribute("data-plan-type","")}),t.append(i)}function gi(a,t,e){a.addonConfirmation&&z("addonConfirmation",a,t,e)}function ui(a,t,e,r){r?.secureLabel&&e?.secureLabel&&t.setAttribute("secure-label",r.secureLabel)}function fi(a,t,e=!0){try{let r=typeof a!="string"?"":a,i=Kr(r);if(i.length<=t)return[r,i];let o=0,n=!1,s=e?t-Dt.length<1?1:t-Dt.length:t,l=[];for(let b of r){if(o++,b==="<")if(n=!0,r[o]==="/")l.pop();else{let _="";for(let ht of r.substring(o)){if(ht===" "||ht===">")break;_+=ht}l.push(_)}if(b==="/"&&r[o]===">"&&l.pop(),b===">"){n=!1;continue}if(!n&&(s--,s===0))break}let p=r.substring(0,o).trim();if(l.length>0){l[0]==="p"&&l.shift();for(let b of l.reverse())p+=`</${b}>`}return[`${p}${e?Dt:""}`,i]}catch{let i=typeof a=="string"?a:"",o=Kr(i);return[i,o]}}function Kr(a){if(!a)return"";let t="",e=!1;for(let r of a){if(r==="<"&&(e=!0),r===">"){e=!1;continue}e||(t+=r)}return t}function xi(a,t){t.querySelectorAll("a.upt-link").forEach(r=>{let i=j.createFrom(r);r.replaceWith(i),i.initializeWcsData(a.osi,a.promoCode)})}function bi(a,t,e,r,i){let o=a;i?o=customElements.get("checkout-button").createCheckoutButton({},a.innerHTML):o.innerHTML=`<span>${o.textContent}</span>`,o.setAttribute("tabindex",0);for(let g of a.attributes)["class","is"].includes(g.name)||o.setAttribute(g.name,g.value);o.firstElementChild?.classList.add("spectrum-Button-label");let n=t?.ctas?.size??"M",s=`spectrum-Button--${r}`,l=ei.includes(n)?`spectrum-Button--size${n}`:"spectrum-Button--sizeM",p=["spectrum-Button",s,l];return e&&p.push("spectrum-Button--outline"),o.classList.add(...p),o}function vi(a,t,e,r,i){let o=a;i&&(o=customElements.get("checkout-button").createCheckoutButton(a.dataset),o.connectedCallback(),o.render());let n="fill";e&&(n="outline");let s=S("sp-button",{treatment:n,variant:r,tabIndex:0,size:t?.ctas?.size??"m",...a.dataset.analyticsId&&{"data-analytics-id":a.dataset.analyticsId}},a.innerHTML);return s.source=o,(i?o.onceSettled():Promise.resolve(o)).then(l=>{s.setAttribute("data-navigation-url",l.href)}),s.addEventListener("click",l=>{l.defaultPrevented||o.click()}),s}function yi(a,t,e,r,i){let o=a;return e&&(o=customElements.get("checkout-link").createCheckoutLink(a.dataset,a.innerHTML)),r||(o.classList.add("button","con-button"),t&&o.classList.add("blue"),i&&o.classList.add("primary")),o}function Ei(a,t,e,r){if(a.ctas){a.ctas=st(a.ctas);let{slot:i}=e.ctas,o=S("div",{slot:i},a.ctas),n=[...o.querySelectorAll("a")].map(s=>Wr(s,t,e));o.innerHTML="",o.append(...n),t.append(o)}}function wi(a,t){let{tags:e}=a,r=e?.find(o=>o.startsWith(Za))?.split("/").pop();if(!r)return;t.setAttribute(ct,r),[...t.shadowRoot.querySelectorAll("a[data-analytics-id],button[data-analytics-id]"),...t.querySelectorAll("a[data-analytics-id],button[data-analytics-id]")].forEach((o,n)=>{o.setAttribute(Ja,`${o.dataset.analyticsId}-${n+1}`)})}function Si(a){a.spectrum==="css"&&[["primary-link","primary"],["secondary-link","secondary"]].forEach(([t,e])=>{a.querySelectorAll(`a.${t}`).forEach(r=>{r.classList.remove(t),r.classList.add("spectrum-Link",`spectrum-Link--${e}`)})})}function Ai(a){a.querySelectorAll("[slot]").forEach(r=>{r.remove()}),a.variant=void 0,["checkbox-label","stock-offer-osis","secure-label","background-image","background-color","border-color","badge-background-color","badge-color","badge-text","gradient-border","size",ct].forEach(r=>a.removeAttribute(r));let e=["wide-strip","thin-strip"];a.classList.remove(...e)}async function Qr(a,t){if(!a){let l=t?.id||"unknown";throw console.error(`hydrate: Fragment is undefined. Cannot hydrate card (merchCard id: ${l}).`),new Error(`hydrate: Fragment is undefined for card (merchCard id: ${l}).`)}if(!a.fields){let l=a.id||"unknown",p=t?.id||"unknown";throw console.error(`hydrate: Fragment for card ID '${l}' (merchCard id: ${p}) is missing 'fields'. Cannot hydrate.`),new Error(`hydrate: Fragment for card ID '${l}' (merchCard id: ${p}) is missing 'fields'.`)}let{id:e,fields:r,settings:i={},priceLiterals:o}=a,{variant:n}=r;if(!n)throw new Error(`hydrate: no variant found in payload ${e}`);Ai(t),t.settings=i,o&&(t.priceLiterals=o),t.id??(t.id=a.id),t.variant=n,await t.updateComplete;let{aemFragmentMapping:s}=t.variantLayout;if(!s)throw new Error(`hydrate: variant mapping not found for ${e}`);s.style==="consonant"&&t.setAttribute("consonant",!0),ti(r,t,s.mnemonics),ri(r,t,s),ai(r,t,s),ii(r,t,s.size),oi(r,t,s.title),ni(r,t,s),li(r,t,s),di(r,t,s.backgroundImage),si(r,t,s.allowedColors,s.backgroundColor),ci(r,t,s),pi(r,t,s),mi(r,t,s),gi(r,t,s),ui(r,t,s,i),xi(r,t),Ei(r,t,s,n),wi(r,t),Si(t)}var Bt="merch-card",Ft=2e4,Xr="merch-card:";function Zr(a,t){let e=a.closest(Bt);if(!e)return t;e.priceLiterals&&(t.literals??(t.literals={}),Object.assign(t.literals,e.priceLiterals)),e.variantLayout?.priceOptionsProvider?.(a,t)}function Ci(a){a.providers.has(Zr)||a.providers.price(Zr)}var Ti=0,we,Se,Ae,F,re,I,ae,E,te,dt,Jr,lt,ee=class extends ki{constructor(){super();m(this,E);m(this,we);m(this,Se);m(this,Ae);m(this,F);m(this,re);m(this,I);m(this,ae,new Promise(e=>{h(this,I,e)}));d(this,"customerSegment");d(this,"marketSegment");d(this,"variantLayout");this.id=null,this.failed=!1,this.filters={},this.types="",this.selected=!1,this.spectrum="css",this.loading="lazy",this.handleAemFragmentEvents=this.handleAemFragmentEvents.bind(this),this.handleMerchOfferSelectReady=this.handleMerchOfferSelectReady.bind(this)}firstUpdated(){this.variantLayout=kt(this),this.variantLayout?.connectedCallbackHook()}willUpdate(e){(e.has("variant")||!this.variantLayout)&&(this.variantLayout=kt(this),this.variantLayout?.connectedCallbackHook())}updated(e){(e.has("badgeBackgroundColor")||e.has("borderColor"))&&this.style.setProperty("--merch-card-custom-border",this.computedBorderStyle),e.has("backgroundColor")&&this.style.setProperty("--merch-card-custom-background-color",this.backgroundColor?`var(--${this.backgroundColor})`:"");try{this.variantLayoutPromise=this.variantLayout?.postCardUpdateHook(e)}catch(r){w(this,E,te).call(this,`Error in postCardUpdateHook: ${r.message}`,{},!1)}}get theme(){return this.closest("sp-theme")}get dir(){return this.closest("[dir]")?.getAttribute("dir")??"ltr"}render(){if(!(!this.isConnected||!this.variantLayout||this.style.display==="none"))return this.variantLayout.renderLayout()}get computedBorderStyle(){return["ccd-slice","ccd-suggested","ah-promoted-plans","simplified-pricing-express"].includes(this.variant)?"":`1px solid ${this.borderColor?this.borderColor:this.badgeBackgroundColor}`}get badgeElement(){return this.shadowRoot.getElementById("badge")}get headingmMSlot(){return this.shadowRoot.querySelector('slot[name="heading-m"]').assignedElements()[0]}get footerSlot(){return this.shadowRoot.querySelector('slot[name="footer"]')?.assignedElements()[0]}get descriptionSlot(){return this.shadowRoot.querySelector('slot[name="body-xs"')?.assignedElements()[0]}get descriptionSlotCompare(){return this.shadowRoot.querySelector('slot[name="body-m"')?.assignedElements()[0]}get price(){return this.headingmMSlot?.querySelector(f)}get checkoutLinks(){return[...this.footerSlot?.querySelectorAll(B)??[]]}get checkoutLinksDescription(){return[...this.descriptionSlot?.querySelectorAll(B)??[]]}get checkoutLinkDescriptionCompare(){return[...this.descriptionSlotCompare?.querySelectorAll(B)??[]]}get activeDescriptionLinks(){return this.variant==="mini-compare-chart"?this.checkoutLinkDescriptionCompare:this.checkoutLinksDescription}async toggleStockOffer({target:e}){if(!this.stockOfferOsis)return;let r=this.checkoutLinks;if(r.length!==0)for(let i of r){await i.onceSettled();let o=i.value?.[0]?.planType;if(!o)return;let n=this.stockOfferOsis[o];if(!n)return;let s=i.dataset.wcsOsi.split(",").filter(l=>l!==n);e.checked&&s.push(n),i.dataset.wcsOsi=s.join(",")}}changeHandler(e){e.target.tagName==="MERCH-ADDON"&&this.toggleAddon(e.target)}toggleAddon(e){this.variantLayout?.toggleAddon?.(e);let r=[...this.checkoutLinks,...this.activeDescriptionLinks??[]];if(r.length===0)return;let i=o=>{let{offerType:n,planType:s}=o.value?.[0]??{};if(!n||!s)return;let l=e.getOsi(s,n),p=(o.dataset.wcsOsi||"").split(",").filter(g=>g&&g!==l);e.checked&&p.push(l),o.dataset.wcsOsi=p.join(",")};r.forEach(i)}handleQuantitySelection(e){let r=[...this.checkoutLinks,...this.activeDescriptionLinks??[]];if(r.length!==0)for(let i of r)i.dataset.quantity=e.detail.option}get titleElement(){return this.querySelector(this.variantLayout?.headingSelector||".card-heading")}get title(){return this.titleElement?.textContent?.trim()}get description(){return this.querySelector('[slot="body-xs"]')?.textContent?.trim()}updateFilters(e){let r={...this.filters};Object.keys(r).forEach(i=>{if(e){r[i].order=Math.min(r[i].order||2,2);return}let o=r[i].order;o===1||isNaN(o)||(r[i].order=Number(o)+1)}),this.filters=r}includes(e){return this.textContent.match(new RegExp(e,"i"))!==null}connectedCallback(){var r;super.connectedCallback(),c(this,Se)||h(this,Se,Ti++),this.aemFragment||((r=c(this,I))==null||r.call(this),h(this,I,void 0)),this.id??(this.id=this.getAttribute("id")??this.aemFragment?.getAttribute("fragment"));let e=this.id??c(this,Se);h(this,re,`${Xr}${e}${Ve}`),h(this,we,`${Xr}${e}${Ye}`),performance.mark(c(this,re)),h(this,F,Y()),Ci(c(this,F)),h(this,Ae,c(this,F).Log.module(Bt)),this.addEventListener(ft,this.handleQuantitySelection),this.addEventListener(xt,this.handleAddonAndQuantityUpdate),this.addEventListener(Xt,this.handleMerchOfferSelectReady),this.addEventListener(ne,this.handleAemFragmentEvents),this.addEventListener(oe,this.handleAemFragmentEvents),this.addEventListener("change",this.changeHandler),this.aemFragment||setTimeout(()=>this.checkReady(),0)}disconnectedCallback(){super.disconnectedCallback(),this.variantLayout?.disconnectedCallbackHook(),this.removeEventListener(ft,this.handleQuantitySelection),this.removeEventListener(ne,this.handleAemFragmentEvents),this.removeEventListener(oe,this.handleAemFragmentEvents),this.removeEventListener("change",this.changeHandler),this.removeEventListener(xt,this.handleAddonAndQuantityUpdate)}async handleAemFragmentEvents(e){var r;if(this.isConnected&&(e.type===ne&&w(this,E,te).call(this,"AEM fragment cannot be loaded"),e.type===oe&&(this.failed=!1,e.target.nodeName==="AEM-FRAGMENT"))){let i=e.detail;try{c(this,I)||h(this,ae,new Promise(o=>{h(this,I,o)})),Qr(i,this)}catch(o){w(this,E,te).call(this,`hydration has failed: ${o.message}`)}finally{(r=c(this,I))==null||r.call(this),h(this,I,void 0)}this.checkReady()}}async checkReady(){if(!this.isConnected)return;c(this,ae)&&(await c(this,ae),h(this,ae,void 0)),this.variantLayoutPromise&&(await this.variantLayoutPromise,this.variantLayoutPromise=void 0);let e=new Promise(n=>setTimeout(()=>n("timeout"),Ft));if(this.aemFragment){let n=await Promise.race([this.aemFragment.updateComplete,e]);if(n===!1||n==="timeout"){let s=n==="timeout"?`AEM fragment was not resolved within ${Ft} timeout`:"AEM fragment cannot be loaded";w(this,E,te).call(this,s,{},!1);return}}let r=[...this.querySelectorAll(Qt)],i=Promise.all(r.map(n=>n.onceSettled().catch(()=>n))).then(n=>n.every(s=>s.classList.contains("placeholder-resolved"))),o=await Promise.race([i,e]);if(o===!0){this.measure=performance.measure(c(this,we),c(this,re));let n={...this.aemFragment?.fetchInfo,...c(this,F).duration,measure:se(this.measure)};return this.dispatchEvent(new CustomEvent(er,{bubbles:!0,composed:!0,detail:n})),this}else{this.measure=performance.measure(c(this,we),c(this,re));let n={measure:se(this.measure),...c(this,F).duration};o==="timeout"?w(this,E,te).call(this,`Contains offers that were not resolved within ${Ft} timeout`,n):w(this,E,te).call(this,"Contains unresolved offers",n)}}get aemFragment(){return this.querySelector("aem-fragment")}get addon(){return this.querySelector("merch-addon")}get quantitySelect(){return this.querySelector("merch-quantity-select")}get addonCheckbox(){return this.querySelector("merch-addon")}displayFooterElementsInColumn(){if(!this.classList.contains("product"))return;let e=this.shadowRoot.querySelector(".secure-transaction-label");(this.footerSlot?.querySelectorAll(B)).length===2&&e&&e.parentElement.classList.add("footer-column")}handleMerchOfferSelectReady(){this.offerSelect&&!this.offerSelect.planType||this.displayFooterElementsInColumn()}get dynamicPrice(){return this.querySelector('[slot="price"]')}handleAddonAndQuantityUpdate({detail:{id:e,items:r}}){if(!e||!r?.length||this.closest('[role="tabpanel"][hidden="true"]'))return;let o=this.checkoutLinks.find(g=>g.getAttribute("data-modal-id")===e);if(!o)return;let s=new URL(o.getAttribute("href")).searchParams.get("pa"),l=r.find(g=>g.productArrangementCode===s)?.quantity,p=!!r.find(g=>g.productArrangementCode!==s);if(l&&this.quantitySelect?.dispatchEvent(new CustomEvent(Jt,{detail:{quantity:l},bubbles:!0,composed:!0})),this.addonCheckbox&&this.addonCheckbox.checked!==p){this.toggleStockOffer({target:this.addonCheckbox});let g=new Event("change",{bubbles:!0,cancelable:!0});Object.defineProperty(g,"target",{writable:!1,value:{checked:p}}),this.addonCheckbox.handleChange(g)}}get prices(){return Array.from(this.querySelectorAll(f))}get promoPrice(){if(!this.querySelector("span.price-strikethrough"))return;let e=this.querySelector(".price.price-alternative");if(e||(e=this.querySelector(`${f}[data-template="price"] > span`)),!!e)return e=e.innerText,e}get regularPrice(){return c(this,E,dt)?.innerText}get promotionCode(){let e=[...this.querySelectorAll(`${f}[data-promotion-code],${B}[data-promotion-code]`)].map(i=>i.dataset.promotionCode),r=[...new Set(e)];return r.length>1&&c(this,Ae)?.warn(`Multiple different promotion codes found: ${r.join(", ")}`),e[0]}get annualPrice(){return this.querySelector(`${f}[data-template="price"] > .price.price-annual`)?.innerText}get promoText(){}get taxText(){return(c(this,E,Jr)??c(this,E,dt))?.querySelector("span.price-tax-inclusivity")?.textContent?.trim()||void 0}get recurrenceText(){return c(this,E,dt)?.querySelector("span.price-recurrence")?.textContent?.trim()}get planTypeText(){return this.querySelector('[is="inline-price"][data-template="legal"] span.price-plan-type')?.textContent?.trim()}get seeTermsInfo(){let e=this.querySelector('a[is="upt-link"]');if(e)return w(this,E,lt).call(this,e)}get renewalText(){return this.querySelector("span.renewal-text")?.textContent?.trim()}get promoDurationText(){return this.querySelector("span.promo-duration-text")?.textContent?.trim()}get ctas(){return Array.from(this.querySelector('[slot="ctas"], [slot="footer"]')?.querySelectorAll(`${B}, a`))}get primaryCta(){return w(this,E,lt).call(this,this.ctas.find(e=>e.variant==="accent"||e.matches(".spectrum-Button--accent,.con-button.blue")))}get secondaryCta(){return w(this,E,lt).call(this,this.ctas.find(e=>e.variant!=="accent"&&!e.matches(".spectrum-Button--accent,.con-button.blue")))}};we=new WeakMap,Se=new WeakMap,Ae=new WeakMap,F=new WeakMap,re=new WeakMap,I=new WeakMap,ae=new WeakMap,E=new WeakSet,te=function(e,r={},i=!0){if(!this.isConnected)return;let n=this.aemFragment?.getAttribute("fragment");n=`[${n}]`;let s={...this.aemFragment.fetchInfo,...c(this,F).duration,...r,message:e};c(this,Ae).error(`merch-card${n}: ${e}`,s),this.failed=!0,i&&this.dispatchEvent(new CustomEvent(tr,{bubbles:!0,composed:!0,detail:s}))},dt=function(){return this.querySelector("span.price-strikethrough")??this.querySelector(`${f}[data-template="price"] > span`)},Jr=function(){return this.querySelector(`${f}[data-template="legal"]`)},lt=function(e){if(e)return{text:e.innerText.trim(),analyticsId:e.dataset.analyticsId,href:e.getAttribute("href")??e.dataset.href}},d(ee,"properties",{id:{type:String,attribute:"id",reflect:!0},name:{type:String,attribute:"name",reflect:!0},variant:{type:String,reflect:!0},size:{type:String,attribute:"size",reflect:!0},badgeColor:{type:String,attribute:"badge-color",reflect:!0},borderColor:{type:String,attribute:"border-color",reflect:!0},backgroundColor:{type:String,attribute:"background-color",reflect:!0},badgeBackgroundColor:{type:String,attribute:"badge-background-color",reflect:!0},backgroundImage:{type:String,attribute:"background-image",reflect:!0},badgeText:{type:String,attribute:"badge-text"},actionMenu:{type:Boolean,attribute:"action-menu"},actionMenuLabel:{type:String,attribute:"action-menu-label"},customHr:{type:Boolean,attribute:"custom-hr"},consonant:{type:Boolean,attribute:"consonant"},failed:{type:Boolean,attribute:"failed",reflect:!0},spectrum:{type:String,attribute:"spectrum"},detailBg:{type:String,attribute:"detail-bg"},secureLabel:{type:String,attribute:"secure-label"},checkboxLabel:{type:String,attribute:"checkbox-label"},addonTitle:{type:String,attribute:"addon-title"},addonOffers:{type:Object,attribute:"addon-offers"},selected:{type:Boolean,attribute:"aria-selected",reflect:!0},storageOption:{type:String,attribute:"storage",reflect:!0},planType:{type:String,attribute:"plan-type",reflect:!0},settings:{type:Object,attribute:!1},stockOfferOsis:{type:Object,attribute:"stock-offer-osis",converter:{fromAttribute:e=>{if(!e)return;let[r,i,o]=e.split(",");return{PUF:r,ABM:i,M2M:o}}}},filters:{type:String,reflect:!0,converter:{fromAttribute:e=>Object.fromEntries(e.split(",").map(r=>{let[i,o,n]=r.split(":"),s=Number(o);return[i,{order:isNaN(s)?void 0:s,size:n}]})),toAttribute:e=>Object.entries(e).map(([r,{order:i,size:o}])=>[r,i,o].filter(n=>n!=null).join(":")).join(",")}},types:{type:String,attribute:"types",reflect:!0},merchOffer:{type:Object},analyticsId:{type:String,attribute:ct,reflect:!0},loading:{type:String},priceLiterals:{type:Object}}),d(ee,"styles",[Yt,...Kt()]),d(ee,"registerVariant",k),d(ee,"getFragmentMapping",Qe);customElements.define(Bt,ee);export{ee as MerchCard};

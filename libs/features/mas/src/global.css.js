@@ -113,6 +113,7 @@ styles.innerHTML = `
     --spectrum-gray-700-plans: #505050;
 
     /* simplified-pricing-express colors */
+    --spectrum-gray-50: #FFFFFF;
     --spectrum-gray-100: #F8F8F8;
     --spectrum-gray-200: #E6E6E6;
     --spectrum-gray-300: #D5D5D5;

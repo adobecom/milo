@@ -3,12 +3,9 @@ import { VariantLayout } from './variant-layout.js';
 import { CSS } from './simplified-pricing-express.css.js';
 
 export const SIMPLIFIED_PRICING_EXPRESS_AEM_FRAGMENT_MAPPING = {
-    mnemonics: {
-        size: 's',
-    },
     title: {
         tag: 'h3',
-        slot: 'heading-l',
+        slot: 'heading-xs',
         maxCount: 250,
         withSuffix: true,
     },
@@ -39,8 +36,10 @@ export const SIMPLIFIED_PRICING_EXPRESS_AEM_FRAGMENT_MAPPING = {
         specialValues: {
             gray: 'var(--spectrum-gray-300)',
             blue: 'var(--spectrum-blue-400)',
-            gradient:
+            'gradient-purple-blue':
                 'linear-gradient(98deg, #FF477B 3.22%, #5C5CE0 52.98%, #318FFF 101.72%)',
+            'gradient-firefly-spectrum':
+                'linear-gradient(90deg, #E54065 0%, #7C4DFF 33%, #2D9CDB 66%, #18D8A9 100%)',
         },
     },
     disabledAttributes: ['badgeColor', 'trialBadgeColor', 'trialBadgeBorderColor'],
@@ -57,22 +56,19 @@ export class SimplifiedPricingExpress extends VariantLayout {
     }
 
     get headingSelector() {
-        return '[slot="heading-l"]';
+        return '[slot="heading-xs"]';
     }
 
-    postCardUpdateHook(changedProperties) {
-        if (changedProperties.has('borderColor') && this.card.borderColor) {
-            this.card.style.setProperty(
-                '--merch-card-custom-border-color',
-                this.card.borderColor,
-            );
-        }
+    postCardUpdateHook() {
+        // Gradient handling now done universally in hydrate.js
     }
 
     connectedCallbackHook() {
         if (!this.card || this.card.failed) {
             return;
         }
+        
+        // Gradient handling now done universally in hydrate.js
         
         this.setupMobileAccordion();
         this.watchForDefaultCardAttribute();
@@ -123,7 +119,7 @@ export class SimplifiedPricingExpress extends VariantLayout {
         updateExpandedState();
 
         const mediaQuery = window.matchMedia('(max-width: 1199px)');
-        this.mediaQueryListener = (e) => {
+        this.mediaQueryListener = () => {
             updateExpandedState();
         };
         mediaQuery.addEventListener('change', this.mediaQueryListener);
@@ -161,24 +157,28 @@ export class SimplifiedPricingExpress extends VariantLayout {
 
     renderLayout() {
         return html`
-            <div class="header" @click=${(e) => this.handleChevronClick(e)}>
-                <slot name="heading-l"></slot>
-                <slot name="trial-badge"></slot>
+            <div class="badge-wrapper">
                 <slot name="badge"></slot>
-                <button class="chevron-button" aria-label="Expand card" @click=${(e) => this.handleChevronClick(e)}>
-                    <svg class="chevron-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M12 15.5L5 8.5L6.4 7.1L12 12.7L17.6 7.1L19 8.5L12 15.5Z" fill="currentColor"/>
-                    </svg>
-                </button>
             </div>
-            <div class="description">
-                <slot name="body-xs"></slot>
-            </div>
-            <div class="price">
-                <slot name="price"></slot>
-            </div>
-            <div class="cta">
-                <slot name="cta"></slot>
+            <div class="card-content">
+                <div class="header" @click=${(e) => this.handleChevronClick(e)}>
+                    <slot name="heading-xs"></slot>
+                    <slot name="trial-badge"></slot>
+                    <button class="chevron-button" aria-label="Expand card" @click=${(e) => this.handleChevronClick(e)}>
+                        <svg class="chevron-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M12 15.5L5 8.5L6.4 7.1L12 12.7L17.6 7.1L19 8.5L12 15.5Z" fill="currentColor"/>
+                        </svg>
+                    </button>
+                </div>
+                <div class="description">
+                    <slot name="body-xs"></slot>
+                </div>
+                <div class="price">
+                    <slot name="price"></slot>
+                </div>
+                <div class="cta">
+                    <slot name="cta"></slot>
+                </div>
             </div>
             <slot></slot>
         `;
@@ -186,7 +186,8 @@ export class SimplifiedPricingExpress extends VariantLayout {
 
     static variantStyle = css`
         :host([variant='simplified-pricing-express']) {
-            --merch-card-simplified-pricing-express-width: 294px;
+            /* CSS Variables */
+            --merch-card-simplified-pricing-express-width: 359px;
             --merch-card-simplified-pricing-express-padding: 24px;
             --merch-card-simplified-pricing-express-padding-mobile: 16px;
             --merch-card-simplified-pricing-express-min-height: 341px;
@@ -199,43 +200,155 @@ export class SimplifiedPricingExpress extends VariantLayout {
             --merch-card-simplified-pricing-express-price-currency-symbol-font-size: 22px;
             --merch-card-simplified-pricing-express-price-currency-symbol-font-weight: 700;
             --merch-card-simplified-pricing-express-price-currency-symbol-line-height: 28.6px;
-            --merch-card-simplified-pricing-express-body-xs-font-size: 16px;
-            --merch-card-simplified-pricing-express-body-xs-line-height: 20.8px;
+            --merch-card-simplified-pricing-express-body-xs-font-size: 14px;
+            --merch-card-simplified-pricing-express-body-xs-line-height: 18.2px;
             --merch-card-simplified-pricing-express-price-p-font-size: 12px;
             --merch-card-simplified-pricing-express-price-p-font-weight: 400;
             --merch-card-simplified-pricing-express-price-p-line-height: 15.6px;
             --merch-card-simplified-pricing-express-cta-font-size: 18px;
             --merch-card-simplified-pricing-express-cta-font-weight: 700;
             --merch-card-simplified-pricing-express-cta-line-height: 23.4px;
+            
+            /* Gradient definitions */
+            --gradient-purple-blue: linear-gradient(98deg, #FF477B 3.22%, #5C5CE0 52.98%, #318FFF 101.72%);
+            --gradient-firefly-spectrum: linear-gradient(90deg, #E54065 0%, #7C4DFF 33%, #2D9CDB 66%, #18D8A9 100%);
             width: var(--merch-card-simplified-pricing-express-width);
             max-width: var(--merch-card-simplified-pricing-express-width);
-            min-height: var(--merch-card-simplified-pricing-express-min-height);
-            height: 100%;
-            background: var(--spectrum-gray-50);
-            border: 2px solid var(--merch-card-custom-border-color, transparent);
-            border-radius: 16px;
+            background: transparent;
+            border: none;
             display: flex;
             flex-direction: column;
             overflow: visible;
-            padding: var(--merch-card-simplified-pricing-express-padding);
-            gap: var(--consonant-merch-spacing-s);
             box-sizing: border-box;
             position: relative;
         }
 
-        :host([variant='simplified-pricing-express'][gradient-border='true']) {
-            border: none;
-            background-origin: padding-box, border-box;
-            background-clip: padding-box, border-box;
-            background-image: linear-gradient(
-                    to bottom,
-                    #f8f8f8,
-                    #f8f8f8
-                ),
-                linear-gradient(98deg, #FF477B 3.22%, #5C5CE0 52.98%, #318FFF 101.72%);
-            border: 2px solid transparent;
+        /* Badge wrapper styling */
+        :host([variant='simplified-pricing-express']) .badge-wrapper {
+            padding: 4px 12px;
+            border-radius: 8px 8px 0 0;
+            text-align: center;
+            font-size: 12px;
+            font-weight: 500;
+            line-height: 15.6px;
+            color: var(--spectrum-gray-800);
+            position: relative;
+            z-index: 0;
+            min-height: 23px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        /* Hide badge wrapper when empty */
+        :host([variant='simplified-pricing-express']) .badge-wrapper:empty {
+            display: none;
+        }
+        
+        /* Also hide when badge slot is empty */
+        :host([variant='simplified-pricing-express']:not(:has([slot="badge"]:not(:empty)))) .badge-wrapper {
+            display: none;
         }
 
+        /* Card content styling */
+        :host([variant='simplified-pricing-express']) .card-content {
+            border-radius: 8px;
+            padding: var(--merch-card-simplified-pricing-express-padding);
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: var(--consonant-merch-spacing-xxs);
+            position: relative;
+            z-index: 1;
+        }
+        
+        /* Ensure content appears above pseudo-element background */
+        :host([variant='simplified-pricing-express']) .card-content > * {
+            position: relative;
+            z-index: 1;
+        }
+        
+        :host([variant='simplified-pricing-express']:not([gradient-border='true'])) .card-content {
+            background: var(--spectrum-gray-50);
+            border: 1px solid var(--merch-card-custom-border-color, var(--spectrum-gray-100));
+        }
+        
+        /* Collapsed state for non-gradient cards */
+        :host([variant='simplified-pricing-express']:not([gradient-border='true'])[data-expanded='false']) .card-content {
+            overflow: hidden;
+            height: 35px;
+        }
+        
+        /* When badge exists, adjust card content border radius */
+        :host([variant='simplified-pricing-express']:has([slot="badge"]:not(:empty))) .card-content {
+            border-top-left-radius: 0;
+            border-top-right-radius: 0;
+        }
+        
+        /* When badge exists with regular border, ensure top border */
+        :host([variant='simplified-pricing-express']:not([gradient-border='true']):has([slot="badge"]:not(:empty))) .card-content {
+            border-top: 1px solid var(--merch-card-custom-border-color, var(--spectrum-gray-100));
+        }
+        
+        /* When badge has content, ensure seamless connection */
+        :host([variant='simplified-pricing-express']:has([slot="badge"]:not(:empty))) .badge-wrapper {
+            margin-bottom: -2px;
+        }
+
+        /* Common gradient border styles */
+        :host([variant='simplified-pricing-express'][gradient-border='true']) .badge-wrapper {
+            border: none;
+            margin-bottom: -6px;
+            padding-bottom: 6px;
+            z-index: 0;
+        }
+        
+        :host([variant='simplified-pricing-express'][gradient-border='true']) .badge-wrapper ::slotted(*) {
+            color: white !important;
+        }
+
+        :host([variant='simplified-pricing-express'][gradient-border='true']) .card-content {
+            position: relative;
+            border: none;
+            padding: calc(var(--merch-card-simplified-pricing-express-padding) + 2px);
+            border-radius: 8px;
+            z-index: 1;
+        }
+        
+        :host([variant='simplified-pricing-express'][gradient-border='true']) .card-content::before {
+            content: '';
+            position: absolute;
+            top: 1px;
+            left: 1px;
+            right: 1px;
+            bottom: 1px;
+            background: var(--spectrum-gray-50);
+            border-radius: 7px;
+            z-index: 0;
+        }
+        
+        /* Gradient-specific backgrounds */
+        :host([variant='simplified-pricing-express'][border-color='gradient-purple-blue']) .badge-wrapper,
+        :host([variant='simplified-pricing-express'][border-color='gradient-purple-blue']) .card-content {
+            background: var(--gradient-purple-blue);
+        }
+        
+        :host([variant='simplified-pricing-express'][border-color='gradient-firefly-spectrum']) .badge-wrapper,
+        :host([variant='simplified-pricing-express'][border-color='gradient-firefly-spectrum']) .card-content {
+            background: var(--gradient-firefly-spectrum);
+        }
+        
+        /* When gradient and badge exist, keep rounded corners for smooth transition */
+        :host([variant='simplified-pricing-express'][gradient-border='true']:has([slot="badge"]:not(:empty))) .card-content {
+            border-top-left-radius: 8px;
+            border-top-right-radius: 8px;
+        }
+        
+        :host([variant='simplified-pricing-express'][gradient-border='true']:has([slot="badge"]:not(:empty))) .card-content::before {
+            border-top-left-radius: 6px;
+            border-top-right-radius: 6px;
+        }
+        
         :host([variant='simplified-pricing-express']) .header {
             display: flex;
             flex-direction: row;
@@ -244,24 +357,26 @@ export class SimplifiedPricingExpress extends VariantLayout {
             gap: 8px;
         }
 
-        :host([variant='simplified-pricing-express']) .badge {
-            position: absolute;
-            top: -10px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: var(--spectrum-blue-400);
-            color: white;
-            padding: 4px 12px;
-            border-radius: 6px;
-            font-size: 16px;
+        /* Font specifications for heading and body */
+        :host([variant='simplified-pricing-express']) [slot="heading-xs"] {
+            font-size: 18px;
             font-weight: 700;
-            z-index: 1;
+            line-height: 23.4px;
+            color: var(--spectrum-gray-800);
+        }
+
+        :host([variant='simplified-pricing-express']) .description {
+            padding-bottom: 32px;
+            gap: 16px;
+            display: flex;
+            flex-direction: column;
         }
 
         :host([variant='simplified-pricing-express']) .price {
             display: flex;
             flex-direction: column;
-            justify-content: flex-start;
+            justify-content: flex-end;
+            margin-top: auto;
         }
 
         /* Desktop only - Fixed heights for alignment */
@@ -269,23 +384,20 @@ export class SimplifiedPricingExpress extends VariantLayout {
             :host([variant='simplified-pricing-express']) {
                 display: flex;
                 flex-direction: column;
-                min-height: 360px; /* Increased to accommodate all content */
                 height: auto;
             }
 
             :host([variant='simplified-pricing-express']) .price {
-                height: 100px;
                 display: flex;
                 flex-direction: column;
-                justify-content: center;
+                justify-content: flex-end;
+                margin-top: auto;
             }
 
             :host([variant='simplified-pricing-express']) .cta {
-                margin-top: auto;
                 flex-shrink: 0;
             }
         }
-
 
         :host([variant='simplified-pricing-express']) .price-container {
             display: flex;
@@ -301,12 +413,7 @@ export class SimplifiedPricingExpress extends VariantLayout {
             margin-top: auto;
         }
 
-        :host([variant='simplified-pricing-express']) .cta {
-            width: 100%;
-            display: block;
-            margin-top: auto;
-        }
-
+        :host([variant='simplified-pricing-express']) .cta,
         :host([variant='simplified-pricing-express']) .cta ::slotted(*) {
             width: 100%;
             display: block;
@@ -339,7 +446,6 @@ export class SimplifiedPricingExpress extends VariantLayout {
         :host-context(merch-card[data-expanded='false']) .chevron-icon {
             transform: rotate(0deg);
         }
-
         :host-context(merch-card[data-expanded='true']) .chevron-icon {
             transform: rotate(180deg);
         }
@@ -362,22 +468,30 @@ export class SimplifiedPricingExpress extends VariantLayout {
             }
         }
 
-        /* Mobile styles - 270px width */
-        @media (max-width: 599px) {
+        /* Mobile and Tablet styles */
+        @media (max-width: 1199px) {
             :host([variant='simplified-pricing-express']) {
-                width: 270px;
-                max-width: 270px;
+                width: 311px;
+                max-width: 311px;
                 min-height: auto;
                 cursor: pointer;
                 transition: all 0.3s ease;
             }
-        }
-
-        /* Tablet styles - 548px width */
-        @media (min-width: 600px) and (max-width: 1199px) {
-            :host([variant='simplified-pricing-express']) {
-                width: 548px;
-                max-width: 548px;
+            
+            :host([variant='simplified-pricing-express']) .card-content {
+                padding: var(--merch-card-simplified-pricing-express-padding-mobile);
+            }
+            
+            /* Hide badge-wrapper on mobile/tablet except for gradient borders */
+            :host([variant='simplified-pricing-express']:not([gradient-border='true'])) .badge-wrapper {
+                display: none;
+            }
+            
+            /* Gradient border collapsed state - limit badge-wrapper height */
+            :host([variant='simplified-pricing-express'][gradient-border='true'][data-expanded='false']) .card-content {
+                max-height: 10px;
+                overflow: hidden;
+                padding: 16px 16px 35px 16px
             }
         }
     `;

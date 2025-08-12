@@ -206,7 +206,7 @@ export class MerchCard extends LitElement {
             changedProperties.has('borderColor')
         ) {
             this.style.setProperty(
-                '--consonant-merch-card-border',
+                '--merch-card-custom-border',
                 this.computedBorderStyle,
             );
         }
@@ -243,7 +243,7 @@ export class MerchCard extends LitElement {
 
     get computedBorderStyle() {
         if (
-            !['ccd-slice', 'ccd-suggested', 'ah-promoted-plans'].includes(
+            !['ccd-slice', 'ccd-suggested', 'ah-promoted-plans', 'simplified-pricing-express'].includes(
                 this.variant,
             )
         ) {
