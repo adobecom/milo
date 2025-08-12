@@ -394,7 +394,7 @@ export async function loadLanguageConfig() {
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     const configJson = await response.json();
 
-    localeToLanguageMap = configJson['locale-to-language-map']?.data || [];
+    localeToLanguageMap = configJson['locale-to-language-map']?.data;
     siteLanguages = configJson['site-languages']?.data?.map((site) => ({
       ...site,
       pathMatches: parseList(site.pathMatches),
