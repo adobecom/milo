@@ -362,3 +362,25 @@ window.addEventListener('hashchange', (e) => {
     }
   }
 });
+
+// Safari compatibility: Check for hash on initial page load
+// Safari may not trigger hashchange when page loads with a hash
+if (window.location.hash && document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', () => {
+    // Small delay for Safari to ensure all elements are ready
+    setTimeout(() => {
+      const details = findDetails(window.location.hash, null);
+      if (details && !document.querySelector(`.dialog-modal${window.location.hash}`)) {
+        getModal(details);
+      }
+    }, 100);
+  });
+} else if (window.location.hash && document.readyState !== 'loading') {
+  // Page already loaded, check immediately
+  setTimeout(() => {
+    const details = findDetails(window.location.hash, null);
+    if (details && !document.querySelector(`.dialog-modal${window.location.hash}`)) {
+      getModal(details);
+    }
+  }, 100);
+}

@@ -192,7 +192,13 @@ export class Plans extends VariantLayout {
         if (headingPrice) prices.push(headingPrice);
         const legalPromises = prices.map(async (price) => {
           const legal = price.cloneNode(true);
-          await price.onceSettled();
+          // Safari compatibility: check if onceSettled exists before calling
+          if (typeof price.onceSettled === 'function') {
+              await price.onceSettled();
+          } else {
+              // Fallback: wait for the element to be ready
+              await new Promise(resolve => setTimeout(resolve, 100));
+          }
           if (!price?.options) return;
           if (price.options.displayPerUnit)
               price.dataset.displayPerUnit = 'false';
@@ -212,7 +218,13 @@ export class Plans extends VariantLayout {
         addon.setAttribute('custom-checkbox', '');
         const price = this.mainPrice;
         if (!price) return;
-        await price.onceSettled();
+        // Safari compatibility: check if onceSettled exists before calling
+        if (typeof price.onceSettled === 'function') {
+            await price.onceSettled();
+        } else {
+            // Fallback: wait for the element to be ready
+            await new Promise(resolve => setTimeout(resolve, 100));
+        }
         const planType = price.value?.[0]?.planType;
         if (!planType) return;
         addon.planType = planType;
