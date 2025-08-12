@@ -2,8 +2,6 @@ import { createTag } from '../../utils/utils.js';
 import { getMetadata, getDelayTime } from './section-metadata.js';
 import { getGnavHeight } from '../global-navigation/utilities/utilities.js';
 
-const FOOTER = document.querySelector('footer');
-
 function handleTopHeight(section) {
   const topHeight = getGnavHeight();
   section.style.top = `${topHeight}px`;
@@ -20,7 +18,7 @@ function promoIntersectObserve(el, stickySectionEl, options = {}) {
 
       const { target, isIntersecting } = entry;
 
-      if (target === FOOTER) {
+      if (target === document.querySelector('footer')) {
         el.classList.toggle('fill-sticky-section', isIntersecting);
       } else if (target === stickySectionEl) {
         const abovePromoStart = isIntersecting || stickySectionEl?.getBoundingClientRect().y > 0;
@@ -62,7 +60,7 @@ function handleStickyPromobar(section, delay) {
   const io = promoIntersectObserve(section, stickySectionEl);
   if (stickySectionEl) io.observe(stickySectionEl);
   if (section.querySelector(':is(.promobar, .notification)')) {
-    io.observe(FOOTER);
+    io.observe(document.querySelector('footer'));
   }
 
   const selector = metadata?.['custom-hide']?.text?.trim();
