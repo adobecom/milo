@@ -385,7 +385,7 @@ export function hasLanguageLinks(area, paths = LANGUAGE_BASED_PATHS) {
 
 export async function loadLanguageConfig() {
   if (localeToLanguageMap && siteLanguages && nativeToEnglishMapping) {
-    return { localeToLanguageMap, siteLanguages, nativeToEnglishMapping };
+    return { siteLanguages, localeToLanguageMap, nativeToEnglishMapping };
   }
 
   const parseList = (str) => str.split(/[\n,]+/).map((t) => t.trim()).filter(Boolean);
@@ -402,7 +402,7 @@ export async function loadLanguageConfig() {
     }));
     nativeToEnglishMapping = configJson['langmap-native-to-en']?.data || [];
 
-    return { localeToLanguageMap, siteLanguages, nativeToEnglishMapping };
+    return { siteLanguages, localeToLanguageMap, nativeToEnglishMapping };
   } catch (e) {
     window.lana?.log('Failed to load language-config.json:', e);
   }
