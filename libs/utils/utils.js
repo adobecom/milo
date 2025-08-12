@@ -1101,9 +1101,7 @@ async function decorateIcons(area, config) {
   const { base, iconsExcludeBlocks } = config;
   if (iconsExcludeBlocks) {
     const excludedIconsCount = [...icons].filter((icon) => iconsExcludeBlocks.some((block) => icon.closest(`div.${block}`))).length;
-    if (excludedIconsCount === icons.length) {
-      return;
-    }
+    if (excludedIconsCount === icons.length) return;
   }
   loadStyle(`${base}/features/icons/icons.css`);
   const { default: loadIcons } = await import('../features/icons/icons.js');
