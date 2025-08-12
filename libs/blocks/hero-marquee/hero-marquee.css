@@ -439,7 +439,7 @@ html[dir="rtl"] .hero-marquee li.icon-item span.icon {
   }
 }
 
-/* mweb mobile defaults (mobile-first) */
+/* mweb mobile defaults */
 .hero-marquee.mobile-left-align.center {
   text-align: left;
   align-items: flex-start;
