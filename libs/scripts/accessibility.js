@@ -98,7 +98,8 @@ export const setDialogAndElementAttributes = ({ element, title }) => {
 };
 
 export function setListRoles() {
-  const selector = ':is(.section[class*="-up"]:has(.action-item, .icon-block), .scroller):not(:has(h1, h2, h3, h4, h5, h6))';
+  const selector = ':is(.section[class*="-up"]:has(> :is(.action-item, .icon-block)), .scroller):not(:has(h1, h2, h3, h4, h5, h6))';
+  console.log(document.querySelectorAll(selector));
   document.querySelectorAll(selector).forEach((parent) => {
     parent.setAttribute('role', 'list');
     [...parent.children].forEach((child) => {
