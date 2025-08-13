@@ -75,14 +75,11 @@ const createValidationObserver = () => new MutationObserver((mutations) => {
 const createAutocompleteObserver = () => (
   new MutationObserver((mutations) => {
     mutations.forEach((mutation) => {
-      if (mutation.type !== 'attributes') return;
-
       const inputElement = mutation.target;
-
-      if (inputElement.getAttribute('autocomplete') !== 'off') return;
+      if (mutation.type !== 'attributes' || inputElement.getAttribute('autocomplete') !== 'off') return;
 
       const originalValue = inputElement.dataset.originalAutocomplete;
-      if (originalValue === undefined) return;
+      if (originalValue === '') return;
       inputElement.setAttribute('autocomplete', originalValue);
     });
   })
