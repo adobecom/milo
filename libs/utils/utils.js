@@ -502,7 +502,6 @@ function getPrefixBySite(locale, url, relative) {
   const site = langConfig?.siteLanguages?.find((s) => s.pathMatches.some((d) => isPathMatch(d, url.href)));
   const localeSiteWithLanguageTarget = !locale.language && site && langConfig?.localeToLanguageMap;
   const languageSiteWithLocaleTarget = locale.language && !relative && !site?.languages.some((l) => (l === DEFAULT_LANG ? '' : `/${l}`) === prefix);
-
   if (localeSiteWithLanguageTarget) {
     const mappedLanguageFromPrefix = langConfig?.localeToLanguageMap?.find((m) => `${m.locale === '' ? '' : '/'}${m.locale}` === prefix);
     const languageInUseBySite = site.languages.find((l) => `${l}` === mappedLanguageFromPrefix.languagePath);
@@ -522,7 +521,7 @@ function isLocalizedPath(path, locales) {
   const langstorePath = path.startsWith(`/${LANGSTORE}`);
   const isMerchLink = path === '/tools/ost';
   const previewPath = path.startsWith(`/${PREVIEW}`);
-  const anyTypeOfLocaleOrLanguagePath = langConfig
+  const anyTypeOfLocaleOrLanguagePath = langConfig?.localeToLanguageMap
     && (langConfig.localeToLanguageMap.some((l) => l.locale !== '' && (path.startsWith(`/${l.locale}/`) || path === `/${l.locale}`))
       || (langConfig.localeToLanguageMap.some((l) => path.startsWith(`/${l.languagePath}/`) || path === `/${l.languagePath}`)));
   const legacyLocalePath = locales && Object.keys(locales).some((loc) => loc !== '' && (path.startsWith(`/${loc}/`)
