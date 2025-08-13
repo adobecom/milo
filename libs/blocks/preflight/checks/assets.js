@@ -84,7 +84,7 @@ function getAssetData(asset) {
   // Get the asset type
   const type = (asset.tagName === 'VIDEO' && 'video') || (asset.tagName === 'IFRAME' && 'mpc') || 'image';
 
-  // Calculate asset dimensions
+  // Calculate asset dimensions 
   const { naturalWidth, naturalHeight } = getAssetDimensions(asset, type);
 
   // Get the display dimensions of the asset
@@ -233,11 +233,11 @@ export async function checkImageDimensions(url, area, injectVisualMetadata = fal
       (check) => check.failure === 'warning',
     ).length;
 
-    if (criticalCount === 0 && warningCount === 0) {
+    if (criticalCount === 0 && warningCount > 0) {
       return {
         checkId: CHECKS.IMAGE_DIMENSIONS.id,
-        severity: CHECKS.IMAGE_DIMENSIONS.severity,
-        description: 'All assets have matching dimensions.',
+        severity: SEVERITY.WARNING,
+        description: `${warningCount} below-the-fold asset(s) have dimension mismatches.`,
         status: STATUS.PASS,
       };
     }
@@ -252,12 +252,11 @@ export async function checkImageDimensions(url, area, injectVisualMetadata = fal
         status: STATUS.FAIL,
       };
     }
-
     return {
       checkId: CHECKS.IMAGE_DIMENSIONS.id,
-      severity: SEVERITY.WARNING,
-      description: `${warningCount} below-the-fold asset(s) have dimension mismatches.`,
-      status: STATUS.LIMBO,
+      severity: CHECKS.IMAGE_DIMENSIONS.severity,
+      description: 'All assets have matching dimensions.',
+      status: STATUS.PASS,
     };
   };
 

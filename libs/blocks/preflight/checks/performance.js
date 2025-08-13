@@ -150,8 +150,7 @@ export async function checkFragments(url, area, observeLcp) {
       description: 'No LCP element found.',
     };
   }
-  const fragmentClasses = ['.fragment'];
-  const fragmentElements = fragmentClasses.flatMap((c) => Array.from(area.querySelectorAll(c)));
+  const fragmentElements = Array.from(area.querySelectorAll('.fragment'));
   if (fragmentElements.length === 0) {
     return {
       checkId: CHECKS.FRAGMENTS.id,
@@ -194,7 +193,9 @@ export async function checkPlaceholders(url, area, observeLcp) {
       description: 'No placeholders on the page.',
     };
   }
-  const lcpInPlaceholder = placeholderElements.some((p) => p.contains(lcp.element));
+  const lcpInPlaceholder = placeholderElements.some(
+    (placeholder) => placeholder.contains(lcp.element),
+  );
   return {
     checkId: CHECKS.PLACEHOLDERS.id,
     severity: CHECKS.PLACEHOLDERS.severity,
