@@ -45,6 +45,14 @@
   width: 100%;
 }
 
+html[lang="ja-jp"] .hero-marquee .action-area {
+  display: block;
+}
+
+html[lang="ja-jp"] .hero-marquee .action-area a:first-of-type {
+  margin-top: var(--spacing-s);
+}
+
 .hero-marquee .background-split picture img {
   object-fit: cover;
   height: 100%;
