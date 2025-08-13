@@ -1031,19 +1031,9 @@ export async function getCommerceContext(el, params) {
   return { promotionCode, perpetual, wcsOsi };
 }
 
-// TODO: remove this function once fallbackStep is fully authored
-function getFallbackStep(wcsOsi, modal, checkoutClientId) {
+// TODO: remove this function once fallbackStep for DC is fully authored
+function getHardcodedFallbackStep(wcsOsi, checkoutClientId) {
   if (checkoutClientId !== 'doc_cloud') return undefined;
-  const MODAL_TYPE_3_IN_1 = {
-    TWP: 'twp',
-    D2P: 'd2p',
-    CRM: 'crm',
-  };
-  const is3in1Modal = Object.values(MODAL_TYPE_3_IN_1).includes(modal);
-  if (!is3in1Modal) return undefined;
-  const masFF3in1 = document.querySelector('meta[name=mas-ff-3in1]');
-  const is3in1Enabled = !masFF3in1 || masFF3in1.content !== 'off';
-  if (is3in1Enabled) return undefined;
   const osiToStepMap = {
     'vQmS1H18A6_kPd0tYBgKnp-TQIF0GbT6p8SH8rWcLMs': 'commitment',
     'ZZQMV2cU-SWQoDxuznonUFMRdxSyTr4J3fB77YBNakY': 'commitment',
@@ -1061,6 +1051,32 @@ function getFallbackStep(wcsOsi, modal, checkoutClientId) {
     'OQ1oCm1tZG35Gj7LCrkGeOOdUMfVlC7xx-7ml-CTWIE': 'commitment',
   };
   return osiToStepMap[wcsOsi];
+}
+
+export function isFallbackStepUsed({ modal, fallbackStep, wcsOsi, checkoutClientId }) {
+  const is3in1Modal = ['twp', 'd2p', 'crm'].includes(modal);
+  const masFF3in1 = document.querySelector('meta[name=mas-ff-3in1]');
+  const is3in1Enabled = !masFF3in1 || masFF3in1.content !== 'off';
+  return is3in1Modal && !is3in1Enabled && !!(fallbackStep
+  ?? getHardcodedFallbackStep(wcsOsi, checkoutClientId));
+}
+
+export function getWorkflowStep({
+  wcsOsi,
+  modal,
+  fallbackStep,
+  checkoutWorkflowStep,
+  checkoutClientId,
+}) {
+  if (!isFallbackStepUsed({
+    modal,
+    fallbackStep,
+    wcsOsi,
+    checkoutClientId,
+  })) return checkoutWorkflowStep;
+  return fallbackStep
+    ?? getHardcodedFallbackStep(wcsOsi, checkoutClientId)
+    ?? checkoutWorkflowStep;
 }
 
 /**
@@ -1085,7 +1101,7 @@ export async function getCheckoutContext(el, params) {
   const entitlement = params?.get('entitlement');
   const upgrade = params?.get('upgrade');
   const modal = params?.get('modal');
-  const fallbackStep = params?.get('fallbackStep') || getFallbackStep(context.wcsOsi, modal, checkoutClientId);
+  const fallbackStep = params?.get('fallbackStep');
 
   const extraOptions = {};
   params.forEach((value, key) => {
@@ -1097,11 +1113,22 @@ export async function getCheckoutContext(el, params) {
   return {
     ...context,
     checkoutClientId,
-    checkoutWorkflowStep,
+    checkoutWorkflowStep: getWorkflowStep({
+      wcsOsi: context.wcsOsi,
+      modal,
+      fallbackStep,
+      checkoutWorkflowStep,
+      checkoutClientId,
+    }),
     checkoutMarketSegment,
     entitlement,
     upgrade,
-    modal: fallbackStep ? undefined : modal,
+    modal: isFallbackStepUsed({
+      modal,
+      fallbackStep,
+      wcsOsi: context.wcsOsi,
+      checkoutClientId,
+    }) ? undefined : modal,
     fallbackStep,
     extraOptions: JSON.stringify(extraOptions),
   };

@@ -49,7 +49,6 @@ export function Checkout({ settings, providers }) {
             entitlement,
             upgrade,
             modal,
-            fallbackStep,
             perpetual,
             promotionCode = defaultPromotionCode,
             wcsOsi,
@@ -57,12 +56,6 @@ export function Checkout({ settings, providers }) {
             ...rest
         } = Object.assign(options, placeholder?.dataset ?? {}, overrides ?? {});  
 
-        const masFF3in1 = document.querySelector('meta[name=mas-ff-3in1]');
-        const is3in1 = Object.values(MODAL_TYPE_3_IN_1).includes(modal) && (!masFF3in1 || masFF3in1.content !== 'off');
-        let workflowStep = toEnumeration(checkoutWorkflowStep, CheckoutWorkflowStep, Defaults.checkoutWorkflowStep);
-        if (!is3in1 && fallbackStep) {
-          workflowStep = fallbackStep;
-        }
         options = omitProperties({
             ...rest,
             extraOptions,
@@ -70,7 +63,7 @@ export function Checkout({ settings, providers }) {
             checkoutMarketSegment,
             country,
             quantity: toQuantity(quantity, Defaults.quantity),
-            checkoutWorkflowStep: workflowStep,
+            checkoutWorkflowStep: toEnumeration(checkoutWorkflowStep, CheckoutWorkflowStep, Defaults.checkoutWorkflowStep),
             language,
             entitlement: toBoolean(entitlement),
             upgrade: toBoolean(upgrade),
