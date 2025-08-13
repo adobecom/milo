@@ -347,10 +347,23 @@ function isFirstVisit() {
   return false;
 }
 
-const getMartechCookies = (cookies = KNDCTR_COOKIE_KEYS) => document.cookie.split(';')
+const getMartechCookies = () => document.cookie.split(';')
   .map((x) => x.trim().split('='))
-  .filter(([key]) => cookies.includes(key))
+  .filter(([key]) => KNDCTR_COOKIE_KEYS.includes(key))
   .map(([key, value]) => ({ key, value }));
+
+function getCookiesByKeys(cookieKeys) {
+  if (!document.cookie || !cookieKeys?.length) return [];
+
+  return document.cookie
+    .split(';')
+    .map((cookie) => {
+      const [key, ...valueParts] = cookie.trim().split('=');
+      const value = valueParts.join('=');
+      return { key, value: decodeURIComponent(value) || '' };
+    })
+    .filter((cookie) => cookieKeys.includes(cookie.key));
+}
 
 function getConsentConfiguration({ consentState, optOnConsentCookie }) {
   if (consentState === 'post' && !optOnConsentCookie) {
@@ -363,8 +376,23 @@ function getConsentConfiguration({ consentState, optOnConsentCookie }) {
     };
   }
 
-  const consent = optOnConsentCookie
-    ? Object.fromEntries(optOnConsentCookie.split(';').map((cat) => cat.split(':'))) : {};
+  let consent = {};
+
+  if (optOnConsentCookie) {
+    if (optOnConsentCookie.includes('&') && optOnConsentCookie.includes('groups=')) {
+      const groupsMatch = optOnConsentCookie.match(/groups=([^&]*)/);
+      if (groupsMatch) {
+        const groupsString = decodeURIComponent(groupsMatch[1]);
+        consent = Object.fromEntries(
+          groupsString.split(',').map((group) => group.split(':')),
+        );
+      }
+    } else {
+      consent = Object.fromEntries(
+        optOnConsentCookie.split(';').map((cat) => cat.split(':')),
+      );
+    }
+  }
 
   return {
     configuration: {
@@ -376,7 +404,7 @@ function getConsentConfiguration({ consentState, optOnConsentCookie }) {
 }
 
 function createRequestPayload({ updatedContext, pageName, processedPageName, locale, hitType }) {
-  const cookies = getMartechCookies([
+  const cookies = getCookiesByKeys([
     GPV_COOKIE, OPT_ON_AND_CONSENT_COOKIE, KNDCTR_CONSENT_COOKIE,
   ]);
   const prevPageName = cookies.find(({ key }) => key === GPV_COOKIE)?.value || '';
