@@ -422,11 +422,7 @@ function createRequestPayload({ updatedContext, pageName, processedPageName, loc
   const optOnConsentCookie = cookies.find(({ key }) => key === OPT_ON_AND_CONSENT_COOKIE)?.value || '';
   const kndctrConsentCookie = cookies.find(({ key }) => key === KNDCTR_CONSENT_COOKIE)?.value || '';
 
-  const serverTiming = window.performance?.getEntriesByType('navigation')?.[0]?.serverTiming?.reduce(
-    (acc, { name, description }) => ({ ...acc, [name]: description }),
-    {},
-  );
-  const serverTimingCountry = serverTiming?.geo;
+  const serverTimingCountry = JSON.parse(sessionStorage.getItem('feds_location'))?.country;
 
   const getConsentState = () => {
     const isExplicitConsentCountry = serverTimingCountry
