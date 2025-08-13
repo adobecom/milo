@@ -231,6 +231,18 @@ function handleViewportOrder(content) {
   });
 }
 
+function furthest(el, selector) {
+  let candidate = null;
+  let current = el;
+  while (current) {
+    if (current.matches && current.matches(selector)) {
+      candidate = current;
+    }
+    current = current.parentElement;
+  }
+  return candidate;
+}
+
 export default async function init(el) {
   el.classList.add('con-block');
   let rows = el.querySelectorAll(':scope > div');
@@ -252,17 +264,23 @@ export default async function init(el) {
   foreground.classList.add('foreground', `cols-${fRows.length}`);
   let copy = fRows[0];
   const anyTag = foreground.querySelector('p, h1, h2, h3, h4, h5, h6');
-  const asset = foreground.querySelector('div > picture, :is(.video-container, .pause-play-wrapper), div > video, div > a[href*=".mp4"], div > a.image-link');
+  let asset = foreground.querySelector('div > picture, :is(.video-container, .pause-play-wrapper), div > video, div > a[href*=".mp4"], div > a.image-link');
   const allRows = foreground.querySelectorAll('div > div');
   copy = anyTag.closest('div');
   copy.classList.add('copy');
 
+  if (document.querySelectorAll('.hero-marquee').length === 1) {
+    asset.remove();
+    asset = null;
+  }
+
   if (asset) {
-    asset.parentElement.classList.add('asset');
+    asset.parentElement?.classList.add('asset');
     if (el.classList.contains('media-cover')) {
       el.appendChild(createTag('div', { class: 'foreground-media' }, asset));
     }
   } else {
+    furthest(el, '.section').classList.add('text-only');
     [...fRows].forEach((row) => {
       if (row.childElementCount === 0) {
         row.classList.add('empty-asset');
