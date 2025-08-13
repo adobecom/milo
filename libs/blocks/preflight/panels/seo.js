@@ -1,6 +1,6 @@
 import { html, signal, useEffect } from '../../../deps/htm-preact.js';
 import { asoCache } from '../checks/asoApi.js';
-import { SEO_IDS, STATUS } from '../checks/constants.js';
+import { SEO_IDS, SEO_TITLES, STATUS } from '../checks/constants.js';
 import { getChecksSuite, getPreflightResults } from '../checks/preflightApi.js';
 
 const DEF_ICON = 'purple';
@@ -9,13 +9,49 @@ const pass = 'green';
 const fail = 'red';
 const limbo = 'orange';
 
-const h1Result = signal({ id: SEO_IDS.h1Count, icon: DEF_ICON, title: 'H1 count', description: DEF_DESC });
-const titleResult = signal({ id: SEO_IDS.title, icon: DEF_ICON, title: 'Title size', description: DEF_DESC });
-const canonResult = signal({ id: SEO_IDS.canonical, icon: DEF_ICON, title: 'Canonical', description: DEF_DESC });
-const descResult = signal({ id: SEO_IDS.description, icon: DEF_ICON, title: 'Meta description', description: DEF_DESC });
-const bodyResult = signal({ id: SEO_IDS.bodySize, icon: DEF_ICON, title: 'Body size', description: DEF_DESC });
-const loremResult = signal({ id: SEO_IDS.loremIpsum, icon: DEF_ICON, title: 'Lorem Ipsum', description: DEF_DESC });
-const linksResult = signal({ id: SEO_IDS.links, icon: DEF_ICON, title: 'Links', description: DEF_DESC, details: { badLinks: [] } });
+const h1Result = signal({
+  id: SEO_IDS.h1Count,
+  icon: DEF_ICON,
+  title: SEO_TITLES.h1Count,
+  description: DEF_DESC,
+});
+const titleResult = signal({
+  id: SEO_IDS.title,
+  icon: DEF_ICON,
+  title: SEO_TITLES.title,
+  description: DEF_DESC,
+});
+const canonResult = signal({
+  id: SEO_IDS.canonical,
+  icon: DEF_ICON,
+  title: SEO_TITLES.canonical,
+  description: DEF_DESC,
+});
+const descResult = signal({
+  id: SEO_IDS.description,
+  icon: DEF_ICON,
+  title: SEO_TITLES.description,
+  description: DEF_DESC,
+});
+const bodyResult = signal({
+  id: SEO_IDS.bodySize,
+  icon: DEF_ICON,
+  title: SEO_TITLES.bodySize,
+  description: DEF_DESC,
+});
+const loremResult = signal({
+  id: SEO_IDS.loremIpsum,
+  icon: DEF_ICON,
+  title: SEO_TITLES.loremIpsum,
+  description: DEF_DESC,
+});
+const linksResult = signal({
+  id: SEO_IDS.links,
+  icon: DEF_ICON,
+  title: SEO_TITLES.links,
+  description: DEF_DESC,
+  details: { badLinks: [] },
+});
 const aiSuggestions = signal([]);
 
 const isAso = getChecksSuite() === 'ASO';
