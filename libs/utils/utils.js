@@ -168,8 +168,7 @@ export const SLD = PAGE_URL.hostname.includes('.aem.') ? 'aem' : 'hlx';
 const PROMO_PARAM = 'promo';
 let isMartechLoaded = false;
 
-let localeToLanguageMap;
-let siteLanguages;
+let langConfig;
 
 export function getEnv(conf) {
   const { host } = window.location;
@@ -384,7 +383,7 @@ export function hasLanguageLinks(area, paths = LANGUAGE_BASED_PATHS) {
 }
 
 export async function loadLanguageConfig() {
-  if (localeToLanguageMap && siteLanguages) return { siteLanguages, localeToLanguageMap };
+  if (langConfig) return langConfig;
 
   const parseList = (str) => str.split(/[\n,]+/).map((t) => t.trim()).filter(Boolean);
   try {
@@ -392,14 +391,17 @@ export async function loadLanguageConfig() {
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     const configJson = await response.json();
 
-    localeToLanguageMap = configJson['locale-to-language-map']?.data;
-    siteLanguages = configJson['site-languages']?.data?.map((site) => ({
-      ...site,
-      pathMatches: parseList(site.pathMatches),
-      languages: parseList(site.languages),
-    }));
+    langConfig = {
+      localeToLanguageMap: configJson['locale-to-language-map']?.data,
+      siteLanguages: configJson['site-languages']?.data?.map((site) => ({
+        ...site,
+        pathMatches: parseList(site.pathMatches),
+        languages: parseList(site.languages),
+      })),
+      nativeToEnglishMapping: configJson['langmap-native-to-en']?.data || [],
+    };
 
-    return { siteLanguages, localeToLanguageMap };
+    return langConfig;
   } catch (e) {
     window.lana?.log('Failed to load language-config.json:', e);
   }
@@ -497,19 +499,19 @@ function getExtension(path) {
 
 function getPrefixBySite(locale, url, relative) {
   let { prefix } = locale;
-  const site = siteLanguages?.find((s) => s.pathMatches.some((d) => isPathMatch(d, url.href)));
-
-  const localeSiteWithLanguageTarget = !locale.language && site && localeToLanguageMap;
+  // eslint-disable-next-line max-len
+  const site = langConfig?.siteLanguages?.find((s) => s.pathMatches.some((d) => isPathMatch(d, url.href)));
+  const localeSiteWithLanguageTarget = !locale.language && site && langConfig?.localeToLanguageMap;
   const languageSiteWithLocaleTarget = locale.language && !relative && !site?.languages.some((l) => (l === DEFAULT_LANG ? '' : `/${l}`) === prefix);
   if (localeSiteWithLanguageTarget) {
-    const mappedLanguageFromPrefix = localeToLanguageMap?.find((m) => `${m.locale === '' ? '' : '/'}${m.locale}` === prefix);
+    const mappedLanguageFromPrefix = langConfig?.localeToLanguageMap?.find((m) => `${m.locale === '' ? '' : '/'}${m.locale}` === prefix);
     const languageInUseBySite = site.languages.find((l) => `${l}` === mappedLanguageFromPrefix.languagePath);
     if (languageInUseBySite) {
       prefix = languageInUseBySite === DEFAULT_LANG ? '' : `/${languageInUseBySite}`;
     }
   }
   if (languageSiteWithLocaleTarget) {
-    const mappedLocaleFromLanguage = localeToLanguageMap?.find((m) => `/${m.languagePath}` === prefix);
+    const mappedLocaleFromLanguage = langConfig?.localeToLanguageMap?.find((m) => `/${m.languagePath}` === prefix);
     prefix = mappedLocaleFromLanguage ? `${mappedLocaleFromLanguage.locale === '' ? '' : '/'}${mappedLocaleFromLanguage.locale}` : prefix;
   }
 
@@ -520,9 +522,9 @@ function isLocalizedPath(path, locales) {
   const langstorePath = path.startsWith(`/${LANGSTORE}`);
   const isMerchLink = path === '/tools/ost';
   const previewPath = path.startsWith(`/${PREVIEW}`);
-  const anyTypeOfLocaleOrLanguagePath = localeToLanguageMap
-    && (localeToLanguageMap.some((l) => l.locale !== '' && (path.startsWith(`/${l.locale}/`) || path === `/${l.locale}`))
-      || (localeToLanguageMap.some((l) => path.startsWith(`/${l.languagePath}/`) || path === `/${l.languagePath}`)));
+  const anyTypeOfLocaleOrLanguagePath = langConfig?.localeToLanguageMap
+    && (langConfig.localeToLanguageMap.some((l) => l.locale !== '' && (path.startsWith(`/${l.locale}/`) || path === `/${l.locale}`))
+      || (langConfig.localeToLanguageMap.some((l) => path.startsWith(`/${l.languagePath}/`) || path === `/${l.languagePath}`)));
   const legacyLocalePath = locales && Object.keys(locales).some((loc) => loc !== '' && (path.startsWith(`/${loc}/`)
     || path.endsWith(`/${loc}`)));
   return langstorePath
@@ -1749,7 +1751,7 @@ export async function loadArea(area = document) {
     appendSuffixToTitles();
   }
   const config = getConfig();
-  if (!localeToLanguageMap && !siteLanguages && (config.languages || hasLanguageLinks(area))) {
+  if (!langConfig && (config.languages || hasLanguageLinks(area))) {
     await loadLanguageConfig();
   }
 
