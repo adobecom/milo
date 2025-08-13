@@ -379,10 +379,10 @@ function getConsentConfiguration({ consentState, optOnConsentCookie }) {
   let consent = {};
 
   if (optOnConsentCookie) {
-    if (optOnConsentCookie.includes('&') && optOnConsentCookie.includes('groups=')) {
+    if (optOnConsentCookie.includes('groups=')) {
       const groupsMatch = optOnConsentCookie.match(/groups=([^&]*)/);
       if (groupsMatch) {
-        const groupsString = decodeURIComponent(groupsMatch[1]);
+        const groupsString = groupsMatch[1];
         consent = Object.fromEntries(
           groupsString.split(',').map((group) => group.split(':')),
         );
