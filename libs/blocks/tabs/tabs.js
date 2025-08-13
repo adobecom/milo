@@ -57,6 +57,19 @@ export function getRedirectionUrl(linkedTabsList, targetId) {
   return currentUrl;
 }
 
+const loadActiveTabFromStorage = () => {
+  const activeTab = localStorage.getItem('active-tab');
+  if (activeTab) {
+    try {
+      return JSON.parse(activeTab);
+    } catch (e) {
+      return {};
+    }
+  }
+
+  return {};
+};
+
 function changeTabs(e) {
   const { target } = e;
   const targetId = target.getAttribute('id');
@@ -99,6 +112,13 @@ function changeTabs(e) {
   targetContent?.removeAttribute('hidden');
   if (tabsBlock.classList.contains('stacked-mobile')) scrollStackedMobile(targetContent);
   window.dispatchEvent(tabChangeEvent);
+
+  const delimiterIndex = targetId.lastIndexOf('-');
+  const tabId = targetId.substring(4, delimiterIndex);
+  const activeTabIndex = targetId.substring(delimiterIndex + 1);
+  const activeTab = loadActiveTabFromStorage();
+  activeTab[tabId] = activeTabIndex;
+  localStorage.setItem('active-tab', JSON.stringify(activeTab));
 }
 
 function getStringKeyName(str) {
@@ -290,6 +310,10 @@ const init = (block) => {
   });
   const tabId = config.id || getUniqueId(block, rootElem);
   config['tab-id'] = tabId;
+
+  const activeTabIndex = loadActiveTabFromStorage()[config.id];
+  if (activeTabIndex) config['active-tab'] = activeTabIndex;
+
   block.id = `tabs-${tabId}`;
   parentSection?.classList.add(`tablist-${tabId}-section`);
 

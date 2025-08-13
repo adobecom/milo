@@ -12,6 +12,7 @@ const { default: init, getRedirectionUrl, assignLinkedTabs } = await import('../
 loadStyle('../../../libs/blocks/tabs/tabs.css');
 
 describe('tabs', () => {
+  localStorage.setItem('active-tab', '{"demo3": "2", "otherTabList": "4"}');
   const allTabs = document.querySelectorAll('.tabs');
   allTabs.forEach((tabs) => {
     init(tabs);
@@ -30,6 +31,20 @@ describe('tabs', () => {
     expect(unselectedButton[0].ariaSelected).to.equal('true');
     expect(selectedButton.ariaSelected).to.equal('false');
     expect(unselectedButton[1].ariaSelected).to.equal('false');
+  });
+
+  it('Focus on previously active tab with index saved in localStorage', async () => {
+    let lsActiveTab = JSON.parse(localStorage.getItem('active-tab'));
+    expect(lsActiveTab.demo3).to.equal('2');
+    expect(lsActiveTab.otherTabList).to.equal('4');
+    expect(allTabs[6].querySelector('#tab-demo3-1').ariaSelected).to.equal('false');
+    expect(allTabs[6].querySelector('#tab-demo3-2').ariaSelected).to.equal('true');
+    allTabs[6].querySelector('#tab-demo3-1').click();
+    expect(allTabs[6].querySelector('#tab-demo3-1').ariaSelected).to.equal('true');
+    expect(allTabs[6].querySelector('#tab-demo3-2').ariaSelected).to.equal('false');
+    lsActiveTab = JSON.parse(localStorage.getItem('active-tab'));
+    expect(lsActiveTab.demo3).to.equal('1');
+    expect(lsActiveTab.otherTabList).to.equal('4');
   });
 
   it('focus on tabList button, ArrowRight key to next tab and Enter key to select aria', async () => {
