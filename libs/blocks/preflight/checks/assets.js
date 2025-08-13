@@ -84,7 +84,7 @@ function getAssetData(asset) {
   // Get the asset type
   const type = (asset.tagName === 'VIDEO' && 'video') || (asset.tagName === 'IFRAME' && 'mpc') || 'image';
 
-  // Calculate asset dimensions 
+  // Calculate asset dimensions
   const { naturalWidth, naturalHeight } = getAssetDimensions(asset, type);
 
   // Get the display dimensions of the asset
