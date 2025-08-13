@@ -1011,7 +1011,6 @@ describe('Utils', () => {
       document.head.innerHTML = await readFile({ path: './mocks/head-localNav.html' });
       document.body.appendChild(document.createElement('header'));
       await utils.loadArea();
-      console.log(document.querySelector('.feds-localnav'));
       expect(document.querySelector('.feds-localnav')).to.exist;
     });
   });
@@ -1117,6 +1116,11 @@ describe('Utils', () => {
       contentRoot: '/root',
     };
 
+    beforeEach(() => {
+      // Reset langConfig to prevent test pollution
+      utils.resetLangConfig();
+    });
+
     // --- Tests for localizeLink ---
     describe('localizeLink', () => {
       it('uses locale prefix when no language-based logic applies', () => {
@@ -1198,16 +1202,25 @@ describe('Utils', () => {
           'site-languages': {
             data: [
               {
-                domainMatches: 'news.adobe.com\n--news--adobecom.',
+                pathMatches: 'news.adobe.com\n--news--adobecom.',
                 languages: 'en\nfr',
               },
             ],
           },
         };
-        window.fetch = async () => ({
-          ok: true,
-          json: () => Promise.resolve(mockConfig),
-        });
+
+        // Mock fetch to return the config
+        const originalFetch = window.fetch;
+        window.fetch = async (url) => {
+          if (url.includes('languages-config.json')) {
+            return {
+              ok: true,
+              json: () => Promise.resolve(mockConfig),
+            };
+          }
+          return originalFetch(url);
+        };
+
         utils.setConfig({
           ...baseConfig,
           pathname: '/de/ch/',
@@ -1223,12 +1236,19 @@ describe('Utils', () => {
             ch_de: { ietf: 'de-CH', tk: 'hah7vzn.css' },
           },
         });
+
+        // Reset langConfig and load it
+        utils.resetLangConfig();
         await utils.loadLanguageConfig();
+
         const href = 'https://news.adobe.com/path';
         const result = utils.localizeLink(href);
         expect(utils.getConfig().locale.prefix).to.equal('/de/ch');
         expect(utils.getConfig().locale.language).to.equal('de');
         expect(result).to.equal('https://news.adobe.com/ch_de/path');
+
+        // Restore original fetch
+        window.fetch = originalFetch;
       });
 
       it('uses locale prefix for non-language-based when site matches but no language', async () => {
@@ -1237,7 +1257,7 @@ describe('Utils', () => {
           'site-languages': {
             data: [
               {
-                domainMatches: 'news.adobe.com\n--news--adobecom.',
+                pathMatches: 'news.adobe.com\n--news--adobecom.',
                 languages: 'en\nfr',
               },
             ],
