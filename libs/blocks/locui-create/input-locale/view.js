@@ -1,7 +1,7 @@
 import { html } from '../../../deps/htm-preact.js';
 import useInputLocale from './index.js';
 import StepControls from '../components/stepControls.js';
-import { PROJECT_TYPES, WORKFLOW } from '../utils/constant.js';
+import { PROJECT_TYPES, WORKFLOW, USER_WORKFLOW_TYPE, ENG_LANG_CODE } from '../utils/constant.js';
 import Toast from '../components/toast.js';
 import { userWorkflowType } from '../store.js';
 
@@ -90,6 +90,22 @@ export default function InputLocales() {
   };
 
   const RenderLocales = () => {
+    const isPromoteRollout = userWorkflowType.value === USER_WORKFLOW_TYPE.promote_rollout;
+    const initialAcc = {};
+    if (isPromoteRollout) {
+      const englishLocale = languagesList.find(
+        (lang) => lang.languagecode === ENG_LANG_CODE,
+      );
+      if (englishLocale) {
+        initialAcc[englishLocale.language] = englishLocale.livecopies
+          .split(',')
+          .filter(Boolean)
+          .map((locale) => `${englishLocale.languagecode}|${locale}`);
+      } else {
+        console.warn('English locale not found for promoteRollout workflow');
+      }
+    }
+
     const groupedLocales = selectedLocale.reduce((acc, localeKey) => {
       const [langCode, locale] = parseLocaleKey(localeKey);
       const language = languagesList.find((lang) => (langCode
@@ -102,7 +118,7 @@ export default function InputLocales() {
         acc[language.language].push(localeKey);
       }
       return acc;
-    }, {});
+    }, initialAcc);
 
     return Object.keys(groupedLocales).map((languageName) => {
       const localesInLanguage = groupedLocales[languageName];
