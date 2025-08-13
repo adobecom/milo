@@ -422,7 +422,7 @@ function createRequestPayload({ updatedContext, pageName, processedPageName, loc
   const optOnConsentCookie = cookies.find(({ key }) => key === OPT_ON_AND_CONSENT_COOKIE)?.value || '';
   const kndctrConsentCookie = cookies.find(({ key }) => key === KNDCTR_CONSENT_COOKIE)?.value || '';
 
-  const serverTimingCountry = JSON.parse(sessionStorage.getItem('feds_location'))?.country;
+  const serverTimingCountry = sessionStorage.getItem('akamai');
 
   const getConsentState = () => {
     const isExplicitConsentCountry = serverTimingCountry
