@@ -1011,6 +1011,7 @@ describe('Utils', () => {
       document.head.innerHTML = await readFile({ path: './mocks/head-localNav.html' });
       document.body.appendChild(document.createElement('header'));
       await utils.loadArea();
+      console.log(document.querySelector('.feds-localnav'));
       expect(document.querySelector('.feds-localnav')).to.exist;
     });
   });
