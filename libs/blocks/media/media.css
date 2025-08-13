@@ -66,8 +66,7 @@
     width: 100%;
 }
 
-.media .text .action-area a:not(.con-button),
-.media .text > :nth-last-child(-n+1 of p[class^="body-"]) a:not(.con-button) {
+.media .text [class*="action-area"] a:not(.con-button) {
   font-weight: 700;
 }
 
