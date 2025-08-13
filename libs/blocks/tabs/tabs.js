@@ -58,7 +58,7 @@ export function getRedirectionUrl(linkedTabsList, targetId) {
 }
 
 const loadActiveTabFromStorage = () => {
-  const activeTab = localStorage.getItem('active-tab');
+  const activeTab = sessionStorage.getItem('active-tab');
   if (activeTab) {
     try {
       return JSON.parse(activeTab);
@@ -118,7 +118,7 @@ function changeTabs(e) {
   const activeTabIndex = targetId.substring(delimiterIndex + 1);
   const activeTab = loadActiveTabFromStorage();
   activeTab[tabId] = activeTabIndex;
-  localStorage.setItem('active-tab', JSON.stringify(activeTab));
+  sessionStorage.setItem('active-tab', JSON.stringify(activeTab));
 }
 
 function getStringKeyName(str) {
