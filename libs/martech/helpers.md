@@ -529,9 +529,9 @@ This function retrieves specific marketing technology cookies from the document.
 - Returns an array of cookie objects with key-value pairs.
 
 ```javascript
-const getMartechCookies = (cookies = KNDCTR_COOKIE_KEYS) => document.cookie.split(';')
+const getMartechCookies = () => document.cookie.split(';')
   .map((x) => x.trim().split('='))
-  .filter(([key]) => cookies.includes(key))
+  .filter(([key]) => KNDCTR_COOKIE_KEYS.includes(key))
   .map(([key, value]) => ({ key, value }));
 ```
 
@@ -540,26 +540,84 @@ const getMartechCookies = (cookies = KNDCTR_COOKIE_KEYS) => document.cookie.spli
 
 ---
 
-## **18. `getConsentConfiguration()`**
+## **18. `getCookiesByKeys()`**
 
 **Description:**
-This function converts a consent string into a structured configuration object.
+This function efficiently retrieves multiple cookies by their keys in a single operation.
 
 **Logic:**
-- Parses the consent string by splitting on semicolons and colons.
-- Maps consent categories to configuration properties.
-- Returns a configuration object with performance, functional, and advertising consent flags.
+- Splits document cookies by semicolon.
+- Handles cookies with multiple `=` signs correctly by splitting only on the first `=` sign.
+- Decodes URI components for proper cookie value handling.
+- Filters cookies based on the provided key array.
 
 ```javascript
-function getConsentConfiguration(consentString) {
-  const consent = consentString
-    ? Object.fromEntries(consentString.split(';').map((cat) => cat.split(':'))) : {};
+function getCookiesByKeys(cookieKeys) {
+  if (!document.cookie || !cookieKeys?.length) return [];
+
+  return document.cookie
+    .split(';')
+    .map((cookie) => {
+      const [key, ...valueParts] = cookie.trim().split('=');
+      const value = valueParts.join('=');
+      return { key, value: decodeURIComponent(value) || '' };
+    })
+    .filter((cookie) => cookieKeys.includes(cookie.key));
+}
+```
+
+**Returns:**
+- `Array`: Array of cookie objects with key and value properties for the specified keys.
+
+---
+
+## **19. `getConsentConfiguration()`**
+
+**Description:**
+This function converts a consent string into a structured configuration object, supporting both old and new Optanon formats.
+
+**Logic:**
+- Checks if consent state is 'post' and no Optanon cookie exists (implicit consent).
+- Detects Optanon format by checking for `&` and `groups=` parameters.
+- Parses new Optanon format by extracting the groups parameter and decoding it.
+- Falls back to old semicolon-separated format parsing.
+- Returns configuration object with performance, functional, and advertising consent flags.
+
+```javascript
+function getConsentConfiguration({ consentState, optOnConsentCookie }) {
+  if (consentState === 'post' && !optOnConsentCookie) {
+    return {
+      configuration: {
+        performance: true,
+        functional: true,
+        advertising: true,
+      },
+    };
+  }
+
+  let consent = {};
+
+  if (optOnConsentCookie) {
+    if (optOnConsentCookie.includes('&') && optOnConsentCookie.includes('groups=')) {
+      const groupsMatch = optOnConsentCookie.match(/groups=([^&]*)/);
+      if (groupsMatch) {
+        const groupsString = decodeURIComponent(groupsMatch[1]);
+        consent = Object.fromEntries(
+          groupsString.split(',').map((group) => group.split(':')),
+        );
+      }
+    } else {
+      consent = Object.fromEntries(
+        optOnConsentCookie.split(';').map((cat) => cat.split(':')),
+      );
+    }
+  }
 
   return {
     configuration: {
-      performance: (consent.C0002 === '1').toString(),
-      functional: (consent.C0003 === '1').toString(),
-      advertising: (consent.C0004 === '1').toString(),
+      performance: consent.C0002 === '1',
+      functional: consent.C0003 === '1',
+      advertising: consent.C0004 === '1',
     },
   };
 }
@@ -570,14 +628,14 @@ function getConsentConfiguration(consentString) {
 
 ---
 
-## **19. `createRequestPayload()`**
+## **20. `createRequestPayload()`**
 
 **Description:**
-This function creates the request payload for Adobe Experience Cloud API calls.
+This function creates the request payload for Adobe Experience Cloud API calls with enhanced consent management.
 
 **Logic:**
-- Retrieves cookies and consent information.
-- Determines consent state based on country and cookie values.
+- Retrieves multiple cookies efficiently using `getCookiesByKeys()`.
+- Determines consent state based on server timing country and explicit consent countries.
 - Constructs a comprehensive event object with user context, page details, and consent information.
 - Handles different hit types (page view, proposition display, etc.).
 
@@ -585,17 +643,25 @@ This function creates the request payload for Adobe Experience Cloud API calls.
 - **Consent State Detection**: Uses server timing country and explicit consent countries to determine CMP state.
 - **Cookie Management**: Efficiently retrieves multiple cookies in one operation.
 - **Context Building**: Creates comprehensive user and page context for analytics.
+- **Country-Aware Logic**: Handles explicit vs implicit consent countries differently.
 
 ```javascript
 function createRequestPayload({ updatedContext, pageName, processedPageName, locale, hitType }) {
-  const cookies = getMartechCookies([
+  const cookies = getCookiesByKeys([
     GPV_COOKIE, OPT_ON_AND_CONSENT_COOKIE, KNDCTR_CONSENT_COOKIE,
   ]);
   
+  // Server timing country detection
+  const serverTiming = window.performance?.getEntriesByType('navigation')?.[0]?.serverTiming?.reduce(
+    (acc, { name, description }) => ({ ...acc, [name]: description }),
+    {},
+  );
+  const serverTimingCountry = serverTiming?.geo;
+
   // Consent state determination
-  const consentState = (() => {
+  const getConsentState = () => {
     const isExplicitConsentCountry = serverTimingCountry
-    && _explicitConsentCountries.includes(serverTimingCountry);
+    && _explicitConsentCountries.includes(serverTimingCountry.toLowerCase());
 
     if (kndctrConsentCookie || (serverTimingCountry && !isExplicitConsentCountry)) {
       return 'post';
@@ -606,8 +672,10 @@ function createRequestPayload({ updatedContext, pageName, processedPageName, loc
     }
 
     return 'unknown';
-  })();
+  };
 
+  const consentState = getConsentState();
+  
   // Event object construction
   const eventObj = {
     xdm: { /* Experience Data Model */ },
@@ -623,15 +691,15 @@ function createRequestPayload({ updatedContext, pageName, processedPageName, loc
 
 ---
 
-## **20. `loadAnalyticsAndInteractionData()`**
+## **21. `loadAnalyticsAndInteractionData()`**
 
 **Description:**
-The main function that orchestrates the entire analytics and interaction data loading process.
+The main function that orchestrates the entire analytics and interaction data loading process with enhanced consent management.
 
 **Logic:**
-1. **Consent Validation**: Checks user consent for tracking.
+1. **Consent Validation**: Checks user consent for tracking using KNDCTR consent cookie.
 2. **Context Setup**: Gathers device, time, and location information.
-3. **Request Construction**: Creates API request payload and URL.
+3. **Request Construction**: Creates API request payload and URL with country-aware consent logic.
 4. **API Interaction**: Makes requests to Adobe Experience Cloud.
 5. **Response Processing**: Handles personalization data and propositions.
 6. **Cookie Updates**: Updates tracking and consent cookies.
@@ -642,6 +710,7 @@ The main function that orchestrates the entire analytics and interaction data lo
 - **Performance Optimization**: Uses efficient cookie parsing and country detection.
 - **Error Handling**: Graceful fallbacks and comprehensive error logging.
 - **Integration**: Works with Adobe Alloy, Target, and other Experience Cloud services.
+- **Country Detection**: Uses server timing for geographic-based consent logic.
 
 ```javascript
 export const loadAnalyticsAndInteractionData = async (
@@ -706,4 +775,12 @@ export const loadAnalyticsAndInteractionData = async (
 - **Cookie Management**: Consent and tracking cookie handling.
 - **Performance Monitoring**: Server timing and country detection.
 
-This module serves as the core integration point between Milo and Adobe's Experience Cloud services, providing comprehensive analytics, personalization, and consent management capabilities.
+### **Consent Management Features:**
+
+- **Dual Format Support**: Handles both old semicolon-separated and new Optanon formats.
+- **Country-Aware Logic**: Different consent handling for GDPR vs non-GDPR countries.
+- **Server Timing Integration**: Uses geographic information for consent state determination.
+- **Performance Optimization**: Efficient cookie parsing and batch retrieval.
+- **Fallback Mechanisms**: Graceful handling of missing or malformed consent data.
+
+This module serves as the core integration point between Milo and Adobe's Experience Cloud services, providing comprehensive analytics, personalization, and consent management capabilities with enhanced geographic awareness and format flexibility.
