@@ -352,9 +352,19 @@ const getMartechCookies = (cookies = KNDCTR_COOKIE_KEYS) => document.cookie.spli
   .filter(([key]) => cookies.includes(key))
   .map(([key, value]) => ({ key, value }));
 
-function getConsentConfiguration(consentString) {
-  const consent = consentString
-    ? Object.fromEntries(consentString.split(';').map((cat) => cat.split(':'))) : {};
+function getConsentConfiguration({ consentState, optOnConsentCookie }) {
+  if (consentState === 'post' && !optOnConsentCookie) {
+    return {
+      configuration: {
+        performance: true,
+        functional: true,
+        advertising: true,
+      },
+    };
+  }
+
+  const consent = optOnConsentCookie
+    ? Object.fromEntries(optOnConsentCookie.split(';').map((cat) => cat.split(':'))) : {};
 
   return {
     configuration: {
@@ -390,7 +400,7 @@ function createRequestPayload({ updatedContext, pageName, processedPageName, loc
   );
   const serverTimingCountry = serverTiming?.geo;
 
-  const consentState = (() => {
+  const getConsentState = () => {
     const isExplicitConsentCountry = serverTimingCountry
     && _explicitConsentCountries.includes(serverTimingCountry.toLowerCase());
 
@@ -403,9 +413,10 @@ function createRequestPayload({ updatedContext, pageName, processedPageName, loc
     }
 
     return 'unknown';
-  })();
+  };
 
   const eventMergeId = generateUUIDv4();
+  const consentState = getConsentState();
 
   const eventObj = {
     xdm: {
@@ -446,7 +457,7 @@ function createRequestPayload({ updatedContext, pageName, processedPageName, loc
           previousPage: { pageInfo: { pageName: prevPageName } },
           primaryUser: { primaryProfile: { profileInfo: { authState: 'loggedOut', returningStatus: getVisitorStatus({}) } } },
         },
-        otherConsents: getConsentConfiguration(optOnConsentCookie),
+        otherConsents: getConsentConfiguration({ optOnConsentCookie, consentState }),
         user: { firstVisit: isFirstVisit() },
         cmp: { state: consentState },
         web: {
