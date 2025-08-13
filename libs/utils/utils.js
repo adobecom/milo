@@ -169,11 +169,6 @@ let isMartechLoaded = false;
 
 let langConfig;
 
-// Function to reset langConfig for testing purposes
-export function resetLangConfig() {
-  langConfig = undefined;
-}
-
 export function getEnv(conf) {
   const { host } = window.location;
   const query = PAGE_URL.searchParams.get('env');
