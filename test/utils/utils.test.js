@@ -1116,11 +1116,6 @@ describe('Utils', () => {
       contentRoot: '/root',
     };
 
-    beforeEach(() => {
-      // Reset langConfig to prevent test pollution
-      utils.resetLangConfig();
-    });
-
     // --- Tests for localizeLink ---
     describe('localizeLink', () => {
       it('uses locale prefix when no language-based logic applies', () => {
@@ -1207,6 +1202,7 @@ describe('Utils', () => {
               },
             ],
           },
+          'langmap-native-to-en': { data: [] },
         };
 
         // Mock fetch to return the config
@@ -1237,8 +1233,6 @@ describe('Utils', () => {
           },
         });
 
-        // Reset langConfig and load it
-        utils.resetLangConfig();
         await utils.loadLanguageConfig();
 
         const href = 'https://news.adobe.com/path';
@@ -1262,6 +1256,7 @@ describe('Utils', () => {
               },
             ],
           },
+          'langmap-native-to-en': { data: [] },
         };
         window.fetch = async () => ({
           ok: true,
