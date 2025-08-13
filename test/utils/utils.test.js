@@ -1394,4 +1394,103 @@ describe('Utils', () => {
       });
     });
   });
+
+  describe('decorateIcons exclusion logic', () => {
+    beforeEach(() => {
+      document.body.innerHTML = '';
+      document.head.innerHTML = '';
+    });
+
+    afterEach(() => {
+      document.body.innerHTML = '';
+      document.head.innerHTML = '';
+    });
+
+    it('should return early when all icons are in excluded blocks', async () => {
+      document.head.innerHTML = head;
+      document.body.innerHTML = `
+        <main>
+          <div class="section">
+            <div class="block1">
+              <span class="icon">Icon 1</span>
+            </div>
+            <div class="block2">
+              <span class="icon">Icon 2</span>
+            </div>
+          </div>
+        </main>
+      `;
+
+      const testConfig = {
+        codeRoot: '/libs',
+        locales: { '': { ietf: 'en-US', tk: 'hah7vzn.css' } },
+        base: '/test-base',
+        iconsExcludeBlocks: ['block1', 'block2'],
+      };
+      utils.setConfig(testConfig);
+
+      await utils.loadArea();
+
+      // Should not load CSS when all icons are excluded
+      const cssLink = document.head.querySelector('link[href*="icons.css"]');
+      expect(cssLink).to.be.null;
+    });
+
+    it('should continue when some icons are not in excluded blocks', async () => {
+      document.head.innerHTML = head;
+      document.body.innerHTML = `
+        <main>
+          <div class="section">
+            <div class="block1">
+              <span class="icon">Icon 1</span>
+            </div>
+            <div class="other-block">
+              <span class="icon">Icon 2</span>
+            </div>
+          </div>
+        </main>
+      `;
+
+      const testConfig = {
+        codeRoot: '/libs',
+        locales: { '': { ietf: 'en-US', tk: 'hah7vzn.css' } },
+        base: '/test-base',
+        iconsExcludeBlocks: ['block1'],
+      };
+      utils.setConfig(testConfig);
+
+      await utils.loadArea();
+
+      // Should load CSS when some icons are not excluded
+      const cssLink = document.head.querySelector('link[href*="icons.css"]');
+      expect(cssLink).to.not.be.null;
+      expect(cssLink.getAttribute('rel')).to.equal('stylesheet');
+    });
+
+    it('should continue when no iconsExcludeBlocks config is provided', async () => {
+      document.head.innerHTML = head;
+      document.body.innerHTML = `
+        <main>
+          <div class="section">
+            <span class="icon">Icon 1</span>
+            <span class="icon">Icon 2</span>
+          </div>
+        </main>
+      `;
+
+      const testConfig = {
+        codeRoot: '/libs',
+        locales: { '': { ietf: 'en-US', tk: 'hah7vzn.css' } },
+        base: '/test-base',
+      };
+      utils.setConfig(testConfig);
+
+      await utils.loadArea();
+
+      // Should load CSS when no exclusion config
+      const cssLink = document.head.querySelector('link[href*="icons.css"]');
+      expect(cssLink).to.not.be.null;
+      expect(cssLink.getAttribute('rel')).to.equal('stylesheet');
+    });
+  });
 });
