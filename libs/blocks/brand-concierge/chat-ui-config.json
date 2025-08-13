@@ -12,8 +12,16 @@
     "input.mic.aria": "Voice input",
     "scroll.bottom.aria": "Scroll to bottom",
     "error.network": "I'm sorry, I'm having trouble connecting to our services right now.",
-    "loading.message": "Generating response from our knowledge base",
-    "disclaimer.text": "AI responses may be inaccurate. Check answers and sources. Terms"
+    "loading.message": "Generating response from our knowledge base"
+  },
+  "disclaimer": {
+    "text": "AI responses may be inaccurate. Check answers and sources. {Terms}",
+    "links": [
+      {
+        "text": "Terms",
+        "url": "https://www.adobe.com/legal/terms.html"
+      }
+    ]
   },
   "theme": {
     "--font-family": "'Adobe Clean', adobe-clean, 'Trebuchet MS', sans-serif",
@@ -47,7 +55,7 @@
     "--message-user-background": "#EBEEFF",
     "--message-user-text": "#292929",
     "--message-border-radius": "10px",
-    "--message-padding": "18px 16px",
+    "--message-padding": "8px 16px",
     "--message-concierge-background": "#FFFFFF",
     "--message-concierge-text": "#292929",
     "--chat-interface-max-width": "768px",
