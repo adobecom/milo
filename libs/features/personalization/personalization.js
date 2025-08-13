@@ -953,6 +953,8 @@ async function getPersonalizationVariant(
     if (name.toLowerCase().startsWith('previouspage-')) return checkForPreviousPageMatch(name);
     if (hasCountryMatch(name, config)) return true;
     if (userEntitlements?.includes(name)) return true;
+    const { lob } = config.mep.promises;
+    if (lob && lob === name.split('lob-')[1]?.toLowerCase()) return true;
     return PERSONALIZATION_KEYS.includes(name) && PERSONALIZATION_TAGS[name]();
   };
 
@@ -1455,12 +1457,13 @@ export async function init(enablements = {}) {
   const {
     mepParam, mepHighlight, mepButton, pzn, pznroc, promo, enablePersV2,
     target, ajo, countryIPPromise, mepgeolocation, targetInteractionPromise, calculatedTimeout,
-    postLCP,
+    postLCP, promises,
   } = enablements;
   const config = getConfig();
   if (postLCP) {
     isPostLCP = true;
   } else {
+    for (const [key, promise] of Object.entries(promises)) promises[key] = await promise;
     config.mep = {
       updateFragDataProps,
       preview: (mepButton !== 'off'
@@ -1475,6 +1478,7 @@ export async function init(enablements = {}) {
       countryIPPromise,
       geoLocation: mepgeolocation,
       targetInteractionPromise,
+      promises,
     };
 
     manifests = manifests.concat(await combineMepSources(pzn, pznroc, promo, mepParam));

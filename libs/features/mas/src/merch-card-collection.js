@@ -1,7 +1,6 @@
 import { html, LitElement, css, unsafeCSS, nothing } from 'lit';
 import { DESKTOP_UP, TABLET_UP } from './media.js';
 import { MatchMediaController } from '@spectrum-web-components/reactive-controllers/src/MatchMedia.js';
-import { getCollectionOptions } from './variants/variants.js';
 import { deeplink, pushState } from './deeplink.js';
 import {
     EVENT_MAS_ERROR,
@@ -16,7 +15,6 @@ import {
 } from './constants.js';
 import { styles } from './merch-card-collection.css.js';
 import { getService, getSlotText } from './utils.js';
-import './mas-commerce-service';
 
 const MERCH_CARD_COLLECTION = 'merch-card-collection';
 const MERCH_CARD_COLLECTION_LOAD_TIMEOUT = 20000;
@@ -530,11 +528,13 @@ const RESULT_TEXT_SLOT_NAMES = {
       }
   
       #visibility;
+      #merchCardElement;
   
       connectedCallback() {
           super.connectedCallback();
           this.collection?.addEventListener(EVENT_MERCH_CARD_COLLECTION_LITERALS_CHANGED, this.updateLiterals);
           this.collection?.addEventListener(EVENT_MERCH_CARD_COLLECTION_SIDENAV_ATTACHED, this.handleSidenavAttached);
+          this.#merchCardElement = customElements.get('merch-card');
       }
   
       disconnectedCallback() {
@@ -561,7 +561,7 @@ const RESULT_TEXT_SLOT_NAMES = {
       }
   
       getVisibility(type) {
-          const visibility = getCollectionOptions(this.collection?.variant)?.headerVisibility;
+          const visibility = this.#merchCardElement.getCollectionOptions(this.collection?.variant)?.headerVisibility;
           const typeVisibility = this.parseVisibilityOptions(visibility, type);
           if (typeVisibility !== null) return typeVisibility;
           return this.parseVisibilityOptions(defaultVisibility, type);
@@ -685,7 +685,7 @@ const RESULT_TEXT_SLOT_NAMES = {
   
       get customArea() {
           if (!this.#visibility.custom) return nothing;
-          const customHeaderAreaGetter = getCollectionOptions(this.collection?.variant)?.customHeaderArea;
+          const customHeaderAreaGetter = this.#merchCardElement.getCollectionOptions(this.collection?.variant)?.customHeaderArea;
           if (!customHeaderAreaGetter) return nothing;
           const customHeaderArea = customHeaderAreaGetter(this.collection);
           if (!customHeaderArea || customHeaderArea === nothing) return nothing;
@@ -708,8 +708,6 @@ const RESULT_TEXT_SLOT_NAMES = {
       handleSidenavAttached() {
           this.requestUpdate();
       }
-  
-      // #endregion
   
       render() {
           return html`
@@ -843,5 +841,3 @@ const RESULT_TEXT_SLOT_NAMES = {
   }
   
   customElements.define('merch-card-collection-header', MerchCardCollectionHeader);  
-
-// #endregion
