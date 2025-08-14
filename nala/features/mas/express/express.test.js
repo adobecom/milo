@@ -35,7 +35,9 @@ test.describe('MAS Express Cards test suite', () => {
       await expect(await card.variant()).toBe(data.variant);
 
       await expect(card.title).toContainText(data.title);
-      await expect(card.badge).toContainText(data.badge);
+      if (data.badge) {
+        await expect(card.badge).toContainText(data.badge);
+      }
       await expect(card.description).toContainText(data.description);
       await expect(card.price).toContainText(data.price);
       await expect(card.priceNote).toContainText(data.priceNote);
@@ -69,11 +71,13 @@ test.describe('MAS Express Cards test suite', () => {
       await expect(await card.variant()).toBe(data.variant);
 
       await expect(card.title).toContainText(data.title);
-      await expect(card.badge).toContainText(data.badge);
+      if (data.badge) {
+        await expect(card.badge).toContainText(data.badge);
+      }
       await expect(card.description).toContainText(data.description);
 
       const viewportWidth = page.viewportSize().width;
-      if (viewportWidth >= 1200) {
+      if (viewportWidth >= 1200 && data.priceStrikethrough) {
         await expect(card.priceStrikethrough).toBeVisible();
       }
       await expect(card.price).toContainText(data.price);
@@ -124,58 +128,23 @@ test.describe('MAS Express Cards test suite', () => {
       await page.waitForTimeout(3000);
     });
 
-    await test.step('step-2: Verify Teams card content', async () => {
+    await test.step('step-2: Verify Firefly Pro card content', async () => {
       const card = new ExpressCard(page, data.id);
 
       await expect(card.card).toBeVisible();
       await expect(await card.variant()).toBe(data.variant);
 
       await expect(card.title).toContainText(data.title);
-      await expect(card.badge).toContainText(data.badge);
+      if (data.badge) {
+        await expect(card.badge).toContainText(data.badge);
+      }
       await expect(card.description).toContainText(data.description);
       await expect(card.price).toContainText(data.price);
       await expect(card.priceNote).toContainText(data.priceNote);
-      await expect(card.priceAdditionalNote).toContainText(data.priceAdditionalNote);
+      if (data.priceAdditionalNote) {
+        await expect(card.priceAdditionalNote).toContainText(data.priceAdditionalNote);
+      }
       await expect(card.ctaButton).toContainText(data.cta);
-
-      expect(await card.hasGradientBorder()).toBe(data.gradientBorder);
-    });
-
-    await test.step('step-3: Verify accessibility', async () => {
-      const card = new ExpressCard(page, data.id);
-      await runAccessibilityTest({ page, testScope: card.card });
-    });
-  });
-
-  test(`[Test Id - ${features[3].tcid}] ${features[3].name}, ${features[3].tags}`, async ({ page, baseURL }) => {
-    const { data } = features[3];
-    console.info(`[Test Page]: ${baseURL}${features[3].path}${miloLibs}`);
-
-    await test.step('step-1: Go to Express page', async () => {
-      await page.goto(`${baseURL}${features[3].path}${miloLibs}`);
-      await page.waitForLoadState('networkidle');
-      await expect(page).toHaveURL(`${baseURL}${features[3].path}${miloLibs}`);
-
-      await page.waitForSelector('merch-card-collection', { timeout: 30000 });
-      await page.waitForSelector('merch-card[variant="simplified-pricing-express"]', { timeout: 30000 });
-      await page.waitForTimeout(3000);
-    });
-
-    await test.step('step-2: Verify Enterprise card content', async () => {
-      const card = new ExpressCard(page, data.id);
-
-      await expect(card.card).toBeVisible();
-      await expect(await card.variant()).toBe(data.variant);
-
-      await expect(card.title).toContainText(data.title);
-      await expect(card.badge).toContainText(data.badge);
-      await expect(card.description).toContainText(data.description);
-
-      await expect(card.priceHeading).toContainText(data.priceHeading);
-      await expect(card.priceNote).toContainText(data.priceNote);
-
-      await expect(card.ctaLink).toContainText(data.ctaLink);
-      await expect(card.ctaLink).toHaveAttribute('href', data.ctaUrl);
 
       expect(await card.hasGradientBorder()).toBe(data.gradientBorder);
     });

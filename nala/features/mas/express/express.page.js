@@ -11,7 +11,7 @@ export default class ExpressCard {
     this.badge = this.card.locator('merch-badge');
 
     // Title
-    this.title = this.card.locator('[slot="heading-l"]');
+    this.title = this.card.locator('[slot="heading-xs"]');
 
     // Description
     this.description = this.card.locator('[slot="body-xs"] p').first();
