@@ -22,6 +22,7 @@ import {
   checkLinks,
   runChecks as runChecksSeo,
 } from './seo.js';
+import { SEVERITY } from './constants.js';
 
 let checks = null;
 
@@ -63,12 +64,13 @@ const runChecks = async (url, area, injectVisualMetadata = false) => {
   return { assets, performance, seo };
 };
 
-export async function getPreflightResults(
-  url,
-  area,
-  useCache = true,
-  injectVisualMetadata = false,
-) {
+export async function getPreflightResults(options) {
+  const {
+    url,
+    area,
+    useCache = true,
+    injectVisualMetadata = false,
+  } = options || {};
   if (useCache && !injectVisualMetadata) {
     // Cache calls for without visual metadata
     if (!checks) checks = runChecks(url, area, injectVisualMetadata);
@@ -81,7 +83,7 @@ export async function getPreflightResults(
     return {
       isViewportTooSmall: isViewportTooSmall(),
       runChecks: cachedChecks,
-      hasFailures: allResults.some((result) => result.status === 'fail'),
+      hasFailures: allResults.some((result) => result.status === 'fail' && result.severity === SEVERITY.CRITICAL),
     };
   }
 
@@ -95,6 +97,6 @@ export async function getPreflightResults(
   return {
     isViewportTooSmall: isViewportTooSmall(),
     runChecks: res,
-    hasFailures: allResults.some((result) => result.status === 'fail'),
+    hasFailures: allResults.some((result) => result.status === 'fail' && result.severity === SEVERITY.CRITICAL),
   };
 }

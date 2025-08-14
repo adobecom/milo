@@ -13,6 +13,16 @@ const personalizationResult = signal({ icon: 'purple', title: 'Personalization',
 const placeholdersResult = signal({ icon: 'purple', title: 'Placeholders', description: 'Checking...' });
 const iconsResult = signal({ icon: 'purple', title: 'Icons', description: 'Checking...' });
 
+function getIconForStatus(status, severity) {
+  switch (status) {
+    case STATUS.PASS: return 'green';
+    case STATUS.EMPTY: return 'empty';
+    case STATUS.LIMBO: return 'orange';
+    case STATUS.FAIL: return severity === 'critical' ? 'red' : 'orange';
+    default: return 'orange';
+  }
+}
+
 /**
  * Runs performance checks and updates signals with the results.
  */
@@ -28,19 +38,15 @@ async function getResults() {
     iconsResult,
   ];
 
-  const results = await getPreflightResults(window.location.pathname, document);
+  const results = await getPreflightResults({ url: window.location.pathname, area: document });
   const checks = results.runChecks.performance || [];
 
   const checkPromises = checks.map((resultOrPromise, index) => {
     const signalResult = signals[index];
     return Promise.resolve(resultOrPromise)
       .then((result) => {
-        const statusToIconMap = {
-          [STATUS.PASS]: 'green',
-          [STATUS.FAIL]: 'red',
-          [STATUS.EMPTY]: 'empty',
-        };
-        const icon = statusToIconMap[result.status] ?? 'orange';
+        const icon = getIconForStatus(result.status, result.severity);
+
         signalResult.value = {
           icon,
           title: result.title.replace('Performance - ', ''),

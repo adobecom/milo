@@ -56,12 +56,14 @@ function createObserver() {
       notification.remove();
       return;
     }
-
     if (!sidekick) return;
 
     if (sidekick.getAttribute('open') !== 'open' || wasDismissed) return;
 
-    const { hasFailures } = await getPreflightResults(window.location.href, document);
+    const { hasFailures } = await getPreflightResults({
+      url: window.location.href,
+      area: document,
+    });
     if (hasFailures && !wasDismissed) {
       await createPreflightNotification();
     }
@@ -77,7 +79,10 @@ function createObserver() {
 
 export default async function show() {
   createObserver();
-  const { hasFailures } = await getPreflightResults(window.location.href, document);
+  const { hasFailures } = await getPreflightResults({
+    url: window.location.href,
+    area: document,
+  });
   const existingNotification = document.querySelector('.milo-preflight-overlay');
   if (existingNotification) return;
 
