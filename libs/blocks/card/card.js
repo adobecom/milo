@@ -7,6 +7,12 @@ const HALF_HEIGHT = 'HalfHeightCard';
 const PRODUCT = 'ProductCard';
 const DOUBLE_WIDE = 'DoubleWideCard';
 
+const adaptForTextExtension = (el) => {
+  const { letterSpacing, wordSpacing } = getComputedStyle(el);
+  const isExtensionActive = letterSpacing !== 'normal' || wordSpacing !== '0px';
+  el.classList.toggle('higher-clamp', isExtensionActive);
+};
+
 const getCardType = (styles) => {
   const cardTypes = {
     'half-card': HALF,
@@ -22,6 +28,9 @@ const addInner = (el, cardType, card) => {
   const title = el.querySelector('h1, h2, h3, h4, h5, h6');
   const text = Array.from(el.querySelectorAll('p'))?.find((p) => !p.querySelector('picture, a'));
   let inner = el.querySelector(':scope > div:not([class])');
+
+  adaptForTextExtension(el);
+  new ResizeObserver(() => { adaptForTextExtension(el); }).observe(el);
 
   if (cardType === DOUBLE_WIDE) {
     inner = document.createElement('a');
