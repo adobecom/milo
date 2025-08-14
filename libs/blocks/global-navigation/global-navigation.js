@@ -633,7 +633,9 @@ class Gnav {
       localNav.querySelector('.feds-localnav-title').setAttribute('daa-ll', `${title}_localNav|${isActive ? 'close' : 'open'}`);
     });
 
-    localNav.querySelector('.feds-navItem--active')?.addEventListener('click', closeAllDropdowns);
+    localNav.querySelector('.feds-navItem--active')?.addEventListener('click', (elem) => {
+      if (!elem.currentTarget.querySelector('.feds-popup')) closeAllDropdowns();
+    });
 
     const curtain = localNav.querySelector('.feds-localnav-curtain');
     curtain.addEventListener('click', (e) => {
@@ -971,6 +973,21 @@ class Gnav {
     // Exposing UNAV config for consumers
     CONFIG.universalNav.universalNavConfig = getConfiguration();
     await window.UniversalNav(CONFIG.universalNav.universalNavConfig);
+    const fedsPromo = document.querySelector('.feds-promo-aside-wrapper');
+    const updatePromoZIndex = () => {
+      const isOpen = document.body.classList.contains('unav-no-scroll');
+      fedsPromo.style.zIndex = isOpen ? 10 : 11;
+    };
+    // Ensure promo appears behind unav if unav is active
+    if (fedsPromo && !isDesktop.matches) {
+      new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+          if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
+            updatePromoZIndex();
+          }
+        });
+      }).observe(document.body, { attributes: true, attributeFilter: ['class'] });
+    }
     // In case we get it wrong
     if (!signedOut) this.blocks.universalNav?.style.removeProperty('min-width');
     performance.mark('Unav-End');

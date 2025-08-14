@@ -18,6 +18,18 @@ import {
 const DEPS_TIMEOUT = 10000;
 const DEFAULT_OPTIONS = { sidenav: true };
 
+// Map of single_app values to their corresponding filter values
+const SINGLE_APP_FILTER_MAP = {
+  illustrator: 'illustration',
+  indesign: 'design',
+  animate: 'video-audio',
+  premiere: 'video-audio',
+  aftereffects: 'video-audio',
+  audition: 'video-audio',
+  incopy: 'design',
+  lightroom_1tb: 'photography',
+};
+
 function getTimeoutPromise(timeout) {
   return new Promise((resolve) => {
     setTimeout(() => resolve(false), timeout);
@@ -163,6 +175,14 @@ export async function createCollection(el, options) {
 
   /* Sidenav */
   if (options.sidenav) {
+    // Set filter based on single_app parameter if filter doesn't exist
+    const urlParams = new URLSearchParams(window.location.search);
+    const singleApp = urlParams.get('single_app');
+    if (singleApp && !urlParams.get('filter') && SINGLE_APP_FILTER_MAP[singleApp]) {
+      urlParams.set('filter', SINGLE_APP_FILTER_MAP[singleApp]);
+      const newUrl = `${window.location.pathname}?${urlParams.toString()}${window.location.hash}`;
+      window.history.pushState({}, '', newUrl);
+    }
     const sidenav = getSidenav(collection);
     if (sidenav) {
       collection.attachSidenav(sidenav);
