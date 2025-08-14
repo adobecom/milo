@@ -49,8 +49,12 @@ html[lang="ja-jp"] .hero-marquee .action-area {
   display: block;
 }
 
-html[lang="ja-jp"] .hero-marquee .action-area a:first-of-type {
+html[lang="ja-jp"] .hero-marquee .action-area a {
   margin-top: var(--spacing-s);
+}
+
+html[lang="ja-jp"] .hero-marquee .action-area wbr:last-of-type{
+  display: none;
 }
 
 .hero-marquee .background-split picture img {
@@ -395,6 +399,10 @@ html[dir="rtl"] .hero-marquee li.icon-item span.icon {
   /* min height */
   .hero-marquee.s-min-height-tablet { min-height: var(--s-min-height);}
   .hero-marquee.l-min-height-tablet { min-height: var(--l-min-height);}
+
+  html[lang="ja-jp"] .hero-marquee .action-area a:last-of-type {
+    margin-left: var(--spacing-s);
+  }  
 }
 
 @media screen and (min-width: 920px) {
