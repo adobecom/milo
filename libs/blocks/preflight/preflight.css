@@ -663,12 +663,6 @@ body.preflight-assets-analysis {
   border-radius: 6px;
 }
 
-.assets-image-grid-item.above-fold-critical {
-  background: rgb(220 38 38 / 30%);
-  border: 2px solid rgb(220 38 38 / 60%);
-  box-shadow: 0 0 8px rgb(220 38 38 / 40%);
-}
-
 .above-fold-notice {
   color: #dc2626;
   font-weight: bold;

@@ -148,12 +148,15 @@ function getAssetData(asset) {
 
 function isAboveFold(asset) {
   const main = asset.closest('main');
-  if (!main) return false;
 
-  const sections = main.querySelectorAll(':scope > div.section');
-  const hasSection = sections.length > 0;
+  const firstSection = main?.querySelector(':scope > div.section:first-of-type');
+  const secondSection = main?.querySelector(':scope > div.section:nth-of-type(2)');
+  const hasSection = !!firstSection;
 
-  return !hasSection || sections[0]?.contains(asset) || sections[1]?.contains(asset) || !!asset.closest('.hero, .marquee, .hero-marquee');
+  return !hasSection
+    || firstSection?.contains(asset)
+    || secondSection?.contains(asset)
+    || !!asset.closest('.hero, .marquee, .hero-marquee');
 }
 
 export function isViewportTooSmall() {
