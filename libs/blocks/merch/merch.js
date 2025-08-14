@@ -222,10 +222,14 @@ export function getMiloLocaleSettings(miloLocale) {
 
 export async function getGeoLocaleSettings(miloLocale) {
   const settings = getMiloLocaleSettings(miloLocale);
-  const { getAkamaiCode } = await import('../../features/georoutingv2/georoutingv2.js');
-  let country = await getAkamaiCode();
-  country = country?.toUpperCase();
+  let country = (new URLSearchParams(window.location.search)).get('akamaiLocale')?.toLowerCase()
+    || sessionStorage.getItem('akamai');
+  if (!country) {
+    const { getAkamaiCode } = await import('../../features/georoutingv2/georoutingv2.js');
+    country = await getAkamaiCode(true);
+  }
   if (country) {
+    country = country.toUpperCase();
     settings.country = country;
     settings.locale = `${settings.language}_${country}`;
   }
@@ -234,7 +238,9 @@ export async function getGeoLocaleSettings(miloLocale) {
 
 export async function getLocaleSettings(miloLocale) {
   const geoDetection = getMetadata('mas-geo-detection');
-  if (!geoDetection) return Promise.resolve(getMiloLocaleSettings(miloLocale));
+  if (!geoDetection || !['on', 'true'].includes(geoDetection)) {
+    return Promise.resolve(getMiloLocaleSettings(miloLocale));
+  }
   return getGeoLocaleSettings(miloLocale);
 }
 

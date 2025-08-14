@@ -21,6 +21,7 @@ import merch, {
   getMasBase,
   getOptions,
   appendDexterParameters,
+  getLocaleSettings,
   getMiloLocaleSettings,
   setCtaHash,
   openModal,
@@ -217,6 +218,37 @@ describe('Merch Block', () => {
         const computedLocale = getMiloLocaleSettings({ prefix })?.locale;
         expect(computedLocale).to.equal(expectedLocale);
       });
+    });
+
+    it.only('should use geo locale for lang-first sites', async () => {
+      sessionStorage.setItem('akamai', 'ES');
+      const geoDetectionMeta = document.createElement('meta');
+      geoDetectionMeta.setAttribute('name', 'mas-geo-detection');
+      geoDetectionMeta.setAttribute('content', 'on');
+      document.head.append(geoDetectionMeta);
+      const data = [
+        { prefix: '/ar', expectedLocale: 'es_ES' },
+        { prefix: '/africa', expectedLocale: 'en_ES' },
+        { prefix: '', expectedLocale: 'en_ES' },
+        { prefix: '/ae_ar', expectedLocale: 'ar_ES' },
+        { prefix: '/langstore/en', expectedLocale: 'en_ES' },
+        { prefix: '/langstore/es', expectedLocale: 'es_ES' },
+        { prefix: '/langstore/de', expectedLocale: 'de_ES' },
+        { prefix: '/langstore/id', expectedLocale: 'id_ES' },
+        { prefix: '/langstore/hi', expectedLocale: 'hi_ES' },
+        { prefix: '/langstore/ar', expectedLocale: 'ar_ES' },
+        { prefix: '/langstore/nb', expectedLocale: 'nb_ES' },
+        { prefix: '/langstore/zh-hant', expectedLocale: 'zh-hant_ES' },
+        { prefix: '/langstore/el', expectedLocale: 'el_ES' },
+        { prefix: '/langstore/uk', expectedLocale: 'uk_ES' },
+        { prefix: '/langstore/es-419', expectedLocale: 'es-419_ES' },
+      ];
+      for (const { prefix, expectedLocale } of data) {
+        const computedLocale = (await getLocaleSettings({ prefix }))?.locale;
+        expect(computedLocale).to.equal(expectedLocale);
+      }
+      sessionStorage.removeItem('akamai');
+      geoDetectionMeta.remove();
     });
   });
 
