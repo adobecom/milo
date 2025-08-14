@@ -235,19 +235,23 @@ export const createContent = (el, { content, manifestId, targetManifestId, actio
   return createTag('div', undefined, frag);
 };
 
+export const handleTwpButtons = (el, selector) => {
+  if (getSelectorType(selector) === SELECTOR_TYPES.twpButtons) {
+    const secondaryButton = el.closest('p')?.querySelector('em') || el.closest('div')?.querySelector('em');
+    if (secondaryButton) {
+      const wrapper = secondaryButton.parentElement;
+      const html = wrapper.innerHTML;
+      let result = html.replace(/<em/g, '<strong');
+      result = result.replace(/<\/em/g, '</strong');
+      wrapper.innerHTML = result;
+    }
+  }
+};
+
 const COMMANDS = {
   [COMMANDS_KEYS.remove]: (el, { content, selector }) => {
     if (content !== 'false') el.classList.add(CLASS_EL_DELETE);
-    if (getSelectorType(selector) === SELECTOR_TYPES.twpButtons) {
-      const secondaryButton = el.closest('p')?.querySelector('em') || el.closest('div')?.querySelector('em');
-      if (secondaryButton) {
-        const wrapper = secondaryButton.parentElement;
-        const html = wrapper.innerHTML;
-        let result = html.replace(/<em/g, '<strong');
-        result = result.replace(/<\/em/g, '</strong');
-        wrapper.innerHTML = result;
-      }
-    }
+    handleTwpButtons(el, selector);
   },
   [COMMANDS_KEYS.replace]: (el, cmd) => {
     if (!el || el.classList.contains(CLASS_EL_REPLACE)) return;
@@ -1528,7 +1532,6 @@ export async function init(enablements = {}) {
     });
     if (pzn || pznroc) loadLink(getXLGListURL(config), { as: 'fetch', crossorigin: 'anonymous', rel: 'preload' });
   }
-
   if (enablePersV2 && target === true) {
     manifests = manifests.concat(await handleMartechTargetInteraction(
       { config, targetInteractionPromise, calculatedTimeout },
