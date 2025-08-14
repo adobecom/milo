@@ -2,8 +2,18 @@ import { expect, test } from '@playwright/test';
 import { features } from './masadobehome.spec.js';
 import WebUtil from '../../../libs/webutil.js';
 import AdobeHomePage from './masadobehome.page.js';
+import { createWorkerPageSetup, ADOBE_HOME_BASE_PATH } from '../../../libs/commerce.js';
 
-const miloLibs = process.env.MILO_LIBS || '';
+let ah;
+let webUtil;
+
+test.skip(({ browserName }) => browserName !== 'chromium', 'Not supported to run on multiple browsers.');
+
+const workerSetup = createWorkerPageSetup({
+  pages: [
+    { name: 'US', url: ADOBE_HOME_BASE_PATH.US },
+  ],
+});
 
 test.describe.configure({
   retries: 2,
@@ -11,16 +21,16 @@ test.describe.configure({
 });
 
 test.describe('Merch AH Try Buy Widget test suite', () => {
-  let ah;
-  let webUtil;
+  test.beforeAll(async ({ browser, baseURL }) => {
+    await workerSetup.setupWorkerPages({ browser, baseURL });
+  });
 
-  test.beforeEach(async ({ page, browserName }) => {
-    ah = new AdobeHomePage(page);
-    webUtil = new WebUtil(page);
+  test.afterAll(async () => {
+    await workerSetup.cleanupWorkerPages();
+  });
 
-    if (browserName === 'chromium') {
-      await page.setExtraHTTPHeaders({ 'sec-ch-ua': '"Chromium";v="123", "Not:A-Brand";v="8"' });
-    }
+  test.afterEach(async ({}, testInfo) => { // eslint-disable-line no-empty-pattern
+    workerSetup.attachWorkerErrorsToFailure(testInfo);
   });
 
   const verifyWidgetCSS = async (widget, testData) => {
@@ -40,16 +50,15 @@ test.describe('Merch AH Try Buy Widget test suite', () => {
     }
   };
 
-  test(`Test: ${features[0].name},${features[0].tags}`, async ({ page, baseURL }) => {
+  test(`Test: ${features[0].name},${features[0].tags}`, async () => {
     const testData = features[0];
     console.log(`Running test for ${testData.name} with ID ${testData.data.id}`);
 
-    const testUrl = `${baseURL}${testData.path}${miloLibs}`;
-    console.log(`Navigating to: ${testUrl}`);
+    const page = workerSetup.getPage('US');
+    ah = new AdobeHomePage(page);
+    webUtil = new WebUtil(page);
 
-    await page.goto(testUrl, { waitUntil: 'domcontentloaded' });
-    await page.waitForLoadState('networkidle', { timeout: 15000 })
-      .catch((e) => console.log(`Warning: Network did not reach idle state: ${e.message}`));
+    await workerSetup.verifyPageURL('US', ADOBE_HOME_BASE_PATH.US, expect);
 
     await test.step('Debug DOM structure', async () => {
       const domInfo = await page.evaluate(({ id }) => {
@@ -176,16 +185,15 @@ test.describe('Merch AH Try Buy Widget test suite', () => {
     });
   });
 
-  test(`Test: ${features[1].name},${features[1].tags}`, async ({ page, baseURL }) => {
+  test(`Test: ${features[1].name},${features[1].tags}`, async () => {
     const testData = features[1];
     console.log(`Running test for ${testData.name} with ID ${testData.data.id}`);
 
-    const testUrl = `${baseURL}${testData.path}${miloLibs}`;
-    console.log(`Navigating to: ${testUrl}`);
+    const page = workerSetup.getPage('US');
+    ah = new AdobeHomePage(page);
+    webUtil = new WebUtil(page);
 
-    await page.goto(testUrl, { waitUntil: 'domcontentloaded' });
-    await page.waitForLoadState('networkidle', { timeout: 15000 })
-      .catch((e) => console.log(`Warning: Network did not reach idle state: ${e.message}`));
+    await workerSetup.verifyPageURL('US', ADOBE_HOME_BASE_PATH.US, expect);
 
     await test.step('Verify dark theme styles', async () => {
       const widget = await ah.getWidget(testData.data.id, testData.data.size);
@@ -234,16 +242,15 @@ test.describe('Merch AH Try Buy Widget test suite', () => {
     });
   });
 
-  test(`Test: ${features[2].name},${features[2].tags}`, async ({ page, baseURL }) => {
+  test(`Test: ${features[2].name},${features[2].tags}`, async () => {
     const testData = features[2];
     console.log(`Running test for ${testData.name} with ID ${testData.data.id}`);
 
-    const testUrl = `${baseURL}${testData.path}${miloLibs}`;
-    console.log(`Navigating to: ${testUrl}`);
+    const page = workerSetup.getPage('US');
+    ah = new AdobeHomePage(page);
+    webUtil = new WebUtil(page);
 
-    await page.goto(testUrl, { waitUntil: 'domcontentloaded' });
-    await page.waitForLoadState('networkidle', { timeout: 15000 })
-      .catch((e) => console.log(`Warning: Network did not reach idle state: ${e.message}`));
+    await workerSetup.verifyPageURL('US', ADOBE_HOME_BASE_PATH.US, expect);
 
     await test.step('Verify single size layout', async () => {
       const widget = await ah.getWidget(testData.data.id, testData.data.size);
@@ -251,16 +258,15 @@ test.describe('Merch AH Try Buy Widget test suite', () => {
     });
   });
 
-  test(`Test: ${features[3].name},${features[3].tags}`, async ({ page, baseURL }) => {
+  test(`Test: ${features[3].name},${features[3].tags}`, async () => {
     const testData = features[3];
     console.log(`Running API validation test with ID ${testData.data.id}`);
 
-    const testUrl = `${baseURL}${testData.path}${miloLibs}`;
-    console.log(`Navigating to: ${testUrl}`);
+    const page = workerSetup.getPage('US');
+    ah = new AdobeHomePage(page);
+    webUtil = new WebUtil(page);
 
-    await page.goto(testUrl, { waitUntil: 'domcontentloaded' });
-    await page.waitForLoadState('networkidle', { timeout: 15000 })
-      .catch((e) => console.log(`Warning: Network did not reach idle state: ${e.message}`));
+    await workerSetup.verifyPageURL('US', ADOBE_HOME_BASE_PATH.US, expect);
 
     try {
       const clicked = await page.evaluate(({ id, size }) => {

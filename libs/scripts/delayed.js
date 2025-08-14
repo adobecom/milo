@@ -45,7 +45,10 @@ export const loadPrivacy = async (getConfig, loadScript) => {
   // Load the privacy script
   let privacyEnv = '';
   if (env?.name !== 'prod') {
-    privacyEnv = new URLSearchParams(window.location.search).get('privacyEnv') || '';
+    const param = new URLSearchParams(window.location.search).get('privacyEnv') || '';
+    if (['dev01', 'dev02', 'qa01', 'stage'].includes(param)) {
+      privacyEnv = param;
+    }
   }
   loadScript(`https://www.${privacyEnv && `${privacyEnv}.`}adobe.com/etc.clientlibs/globalnav/clientlibs/base/privacy-standalone.js`);
 
