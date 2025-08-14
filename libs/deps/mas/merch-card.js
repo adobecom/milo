@@ -1460,6 +1460,11 @@ merch-card-collection:has([slot="subtitle"]) merch-card {
 
 /* Tabs containers */
 
+#tabs-plan {
+    --tabs-active-text-color: #131313;
+    --tabs-border-color: #444444;
+}
+
 #tabs-plan .tab-list-container button[role="tab"][aria-selected="false"] {
     border-top-color: #EAEAEA;
     border-right-color: #EAEAEA;
