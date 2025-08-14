@@ -1,28 +1,25 @@
-import { LitElement, html, css } from 'lit';
-
-// Self-contained tooltip detection
-function hasSpectrumTooltip() {
-    return customElements.get('sp-tooltip') !== undefined || 
-           document.querySelector('sp-theme') !== null;
-}
-
-/**
- * MasTooltip - A web component that handles tooltips within MAS
- * Automatically detects if Spectrum Web Components are available and renders appropriately
- */
-export default class MasTooltip extends LitElement {
-    static properties = {
-        content: { type: String },
-        placement: { type: String },
-        variant: { type: String },
-        // Icon-based tooltip properties
-        src: { type: String },
-        size: { type: String },
-        tooltipText: { type: String, attribute: 'tooltip-text' },
-        tooltipPlacement: { type: String, attribute: 'tooltip-placement' },
-    };
-
-    static styles = css`
+var s=Object.defineProperty;var n=(e,t,o)=>t in e?s(e,t,{enumerable:!0,configurable:!0,writable:!0,value:o}):e[t]=o;var a=(e,t,o)=>n(e,typeof t!="symbol"?t+"":t,o);import{LitElement as l,html as i,css as p}from"../lit-all.min.js";function c(){return customElements.get("sp-tooltip")!==void 0||document.querySelector("sp-theme")!==null}var r=class extends l{constructor(){super(),this.content="",this.placement="top",this.variant="info",this.size="xs"}get effectiveContent(){return this.tooltipText||this.content||""}get effectivePlacement(){return this.tooltipPlacement||this.placement||"top"}renderIcon(){return this.src?i`<merch-icon 
+            src="${this.src}" 
+            size="${this.size}"
+        ></merch-icon>`:i`<slot></slot>`}render(){let t=this.effectiveContent,o=this.effectivePlacement;return t?c()?i`
+                <overlay-trigger placement="${o}">
+                    <span slot="trigger">${this.renderIcon()}</span>
+                    <sp-tooltip 
+                        placement="${o}"
+                        variant="${this.variant}">
+                        ${t}
+                    </sp-tooltip>
+                </overlay-trigger>
+            `:i`
+                <span 
+                    class="css-tooltip ${o}"
+                    data-tooltip="${t}"
+                    tabindex="0"
+                    role="img"
+                    aria-label="${t}">
+                    ${this.renderIcon()}
+                </span>
+            `:this.renderIcon()}};a(r,"properties",{content:{type:String},placement:{type:String},variant:{type:String},src:{type:String},size:{type:String},tooltipText:{type:String,attribute:"tooltip-text"},tooltipPlacement:{type:String,attribute:"tooltip-placement"}}),a(r,"styles",p`
         :host {
             display: contents;
         }
@@ -135,66 +132,4 @@ export default class MasTooltip extends LitElement {
             margin-left: 5px;
             border-right-color: var(--spectrum-gray-800, #323232);
         }
-    `;
-
-    constructor() {
-        super();
-        this.content = '';
-        this.placement = 'top';
-        this.variant = 'info';
-        this.size = 'xs';
-    }
-
-    get effectiveContent() {
-        return this.tooltipText || this.content || '';
-    }
-
-    get effectivePlacement() {
-        return this.tooltipPlacement || this.placement || 'top';
-    }
-
-    renderIcon() {
-        if (!this.src) return html`<slot></slot>`;
-        return html`<merch-icon 
-            src="${this.src}" 
-            size="${this.size}"
-        ></merch-icon>`;
-    }
-
-    render() {
-        const content = this.effectiveContent;
-        const placement = this.effectivePlacement;
-        
-        if (!content) {
-            return this.renderIcon();
-        }
-
-        if (hasSpectrumTooltip()) {
-            // Use Spectrum tooltip if available
-            return html`
-                <overlay-trigger placement="${placement}">
-                    <span slot="trigger">${this.renderIcon()}</span>
-                    <sp-tooltip 
-                        placement="${placement}"
-                        variant="${this.variant}">
-                        ${content}
-                    </sp-tooltip>
-                </overlay-trigger>
-            `;
-        } else {
-            // Use CSS tooltip
-            return html`
-                <span 
-                    class="css-tooltip ${placement}"
-                    data-tooltip="${content}"
-                    tabindex="0"
-                    role="img"
-                    aria-label="${content}">
-                    ${this.renderIcon()}
-                </span>
-            `;
-        }
-    }
-}
-
-customElements.define('mas-tooltip', MasTooltip);
+    `);customElements.define("mas-tooltip",r);export{r as default};

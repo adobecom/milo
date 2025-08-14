@@ -1,7 +1,7 @@
-var m=Object.defineProperty;var x=(o,t,e)=>t in o?m(o,t,{enumerable:!0,configurable:!0,writable:!0,value:e}):o[t]=e;var g=(o,t)=>()=>(o&&(t=o(o=0)),t);var y=(o,t)=>{for(var e in t)m(o,e,{get:t[e],enumerable:!0})};var s=(o,t,e)=>x(o,typeof t!="symbol"?t+"":t,e);var d={};y(d,{default:()=>r});import{LitElement as v,html as l,css as S}from"../lit-all.min.js";function w(){return customElements.get("sp-tooltip")!==void 0||document.querySelector("sp-theme")!==null}var r,f=g(()=>{u();r=class extends v{constructor(){super(),this.content="",this.placement="top",this.variant="info",this.size="xs"}get effectiveContent(){return this.tooltipText||this.content||""}get effectivePlacement(){return this.tooltipPlacement||this.placement||"top"}renderIcon(){return this.src?l`<merch-icon 
+var m=Object.defineProperty;var u=(o,t,e)=>t in o?m(o,t,{enumerable:!0,configurable:!0,writable:!0,value:e}):o[t]=e;var b=(o,t)=>()=>(o&&(t=o(o=0)),t);var x=(o,t)=>{for(var e in t)m(o,e,{get:t[e],enumerable:!0})};var s=(o,t,e)=>u(o,typeof t!="symbol"?t+"":t,e);var g={};x(g,{default:()=>r});import{LitElement as y,html as l,css as v}from"../lit-all.min.js";function S(){return customElements.get("sp-tooltip")!==void 0||document.querySelector("sp-theme")!==null}var r,d=b(()=>{r=class extends y{constructor(){super(),this.content="",this.placement="top",this.variant="info",this.size="xs"}get effectiveContent(){return this.tooltipText||this.content||""}get effectivePlacement(){return this.tooltipPlacement||this.placement||"top"}renderIcon(){return this.src?l`<merch-icon 
             src="${this.src}" 
             size="${this.size}"
-        ></merch-icon>`:l`<slot></slot>`}render(){let t=this.effectiveContent,e=this.effectivePlacement;return t?w()?l`
+        ></merch-icon>`:l`<slot></slot>`}render(){let t=this.effectiveContent,e=this.effectivePlacement;return t?S()?l`
                 <overlay-trigger placement="${e}">
                     <span slot="trigger">${this.renderIcon()}</span>
                     <sp-tooltip 
@@ -19,7 +19,7 @@ var m=Object.defineProperty;var x=(o,t,e)=>t in o?m(o,t,{enumerable:!0,configura
                     aria-label="${t}">
                     ${this.renderIcon()}
                 </span>
-            `:this.renderIcon()}};s(r,"properties",{content:{type:String},placement:{type:String},variant:{type:String},src:{type:String},size:{type:String},tooltipText:{type:String,attribute:"tooltip-text"},tooltipPlacement:{type:String,attribute:"tooltip-placement"}}),s(r,"styles",S`
+            `:this.renderIcon()}};s(r,"properties",{content:{type:String},placement:{type:String},variant:{type:String},src:{type:String},size:{type:String},tooltipText:{type:String,attribute:"tooltip-text"},tooltipPlacement:{type:String,attribute:"tooltip-placement"}}),s(r,"styles",v`
         :host {
             display: contents;
         }
@@ -132,9 +132,9 @@ var m=Object.defineProperty;var x=(o,t,e)=>t in o?m(o,t,{enumerable:!0,configura
             margin-left: 5px;
             border-right-color: var(--spectrum-gray-800, #323232);
         }
-    `);customElements.define("mas-tooltip",r)});import{LitElement as $,html as b,css as z}from"../lit-all.min.js";function E(){return customElements.get("sp-tooltip")!==void 0||document.querySelector("sp-theme")!==null}var a,u=g(()=>{a=class extends ${constructor(){super(),this.size="m",this.alt="",this.loading="lazy"}connectedCallback(){super.connectedCallback(),setTimeout(()=>this.handleTooltips(),0)}handleTooltips(){if(E())return;this.querySelectorAll("sp-tooltip, overlay-trigger").forEach(e=>{let n="",p="top";if(e.tagName==="SP-TOOLTIP")n=e.textContent,p=e.getAttribute("placement")||"top";else if(e.tagName==="OVERLAY-TRIGGER"){let i=e.querySelector("sp-tooltip");i&&(n=i.textContent,p=i.getAttribute("placement")||e.getAttribute("placement")||"top")}if(n){let i=document.createElement("mas-tooltip");i.setAttribute("content",n),i.setAttribute("placement",p);let c=this.querySelector("img"),h=this.querySelector("a");h&&h.contains(c)?i.appendChild(h):c&&i.appendChild(c),this.innerHTML="",this.appendChild(i),Promise.resolve().then(()=>f())}e.remove()})}render(){let{href:t}=this;return t?b`<a href="${t}">
+    `);customElements.define("mas-tooltip",r)});import{LitElement as w,html as f,css as $}from"../lit-all.min.js";function z(){return customElements.get("sp-tooltip")!==void 0||document.querySelector("sp-theme")!==null}var a=class extends w{constructor(){super(),this.size="m",this.alt="",this.loading="lazy"}connectedCallback(){super.connectedCallback(),setTimeout(()=>this.handleTooltips(),0)}handleTooltips(){if(z())return;this.querySelectorAll("sp-tooltip, overlay-trigger").forEach(e=>{let n="",p="top";if(e.tagName==="SP-TOOLTIP")n=e.textContent,p=e.getAttribute("placement")||"top";else if(e.tagName==="OVERLAY-TRIGGER"){let i=e.querySelector("sp-tooltip");i&&(n=i.textContent,p=i.getAttribute("placement")||e.getAttribute("placement")||"top")}if(n){let i=document.createElement("mas-tooltip");i.setAttribute("content",n),i.setAttribute("placement",p);let c=this.querySelector("img"),h=this.querySelector("a");h&&h.contains(c)?i.appendChild(h):c&&i.appendChild(c),this.innerHTML="",this.appendChild(i),Promise.resolve().then(()=>d())}e.remove()})}render(){let{href:t}=this;return t?f`<a href="${t}">
                   <img src="${this.src}" alt="${this.alt}" loading="${this.loading}" />
-              </a>`:b` <img src="${this.src}" alt="${this.alt}" loading="${this.loading}" />`}};s(a,"properties",{size:{type:String,attribute:!0},src:{type:String,attribute:!0},alt:{type:String,attribute:!0},href:{type:String,attribute:!0},loading:{type:String,attribute:!0}}),s(a,"styles",z`
+              </a>`:f` <img src="${this.src}" alt="${this.alt}" loading="${this.loading}" />`}};s(a,"properties",{size:{type:String,attribute:!0},src:{type:String,attribute:!0},alt:{type:String,attribute:!0},href:{type:String,attribute:!0},loading:{type:String,attribute:!0}}),s(a,"styles",$`
         :host {
             --img-width: 32px;
             --img-height: 32px;
@@ -172,4 +172,4 @@ var m=Object.defineProperty;var x=(o,t,e)=>t in o?m(o,t,{enumerable:!0,configura
             width: var(--mod-img-width, var(--img-width));
             height: var(--mod-img-height, var(--img-height));
         }
-    `);customElements.define("merch-icon",a)});u();export{a as default};
+    `);customElements.define("merch-icon",a);export{a as default};

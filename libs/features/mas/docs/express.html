@@ -46,13 +46,17 @@
         <script type="module" src="./mas-sidenav.js"></script>
         <script type="module">
             import { init } from './common.js';
-            import('../../../deps/mas/merch-card-collection.js').then(() => {
-                init();
-            });
+            // Initialize commerce service and mas.js (which includes merch-card-collection)
+            // mas-tooltip will be loaded dynamically when needed
+            init();
         </script>
         <script
             type="module"
             src="../../../features/spectrum-web-components/dist/button.js"
+        ></script>
+        <script
+            type="module"
+            src="../../../features/spectrum-web-components/dist/overlay.js"
         ></script>
         <script
             type="module"
@@ -133,6 +137,17 @@
                             <merch-card variant="simplified-pricing-express" data-default-card="true"><aem-fragment fragment="67c78f03-7d88-44c9-9a06-05443ec9265d"></aem-fragment></merch-card>
                             <merch-card variant="simplified-pricing-express"><aem-fragment fragment="b28957b9-2341-40f9-9004-24446f68e5e5"></aem-fragment></merch-card>
                             <merch-card variant="simplified-pricing-express"><aem-fragment fragment="aaa728dc-2b44-495c-b9f0-bb82044db18a"></aem-fragment></merch-card>
+                            
+                            <!-- Test card with tooltips (without inline-price to avoid WCS errors) -->
+                            <merch-card variant="simplified-pricing-express" name="test-tooltip-card">
+                                <h3 slot="heading-m">Test Card with Tooltips <mas-tooltip content="This is a test tooltip" placement="top">ⓘ</mas-tooltip></h3>
+                                <div slot="body-xs">
+                                    Test description with tooltip <mas-tooltip content="Another tooltip here" placement="right">?</mas-tooltip>
+                                </div>
+                                <div slot="prices">
+                                    <span>US$9.99/mo <mas-tooltip content="Price tooltip" placement="bottom">*</mas-tooltip></span>
+                                </div>
+                            </merch-card>
                           </merch-card-collection>
                     </div>
                 </div>
