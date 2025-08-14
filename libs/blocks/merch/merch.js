@@ -481,7 +481,7 @@ export async function fetchEntitlements() {
   fetchEntitlements.promise = fetchEntitlements.promise
     ?? import('../global-navigation/utilities/getUserEntitlements.js').then(
       ({ default: getUserEntitlements }) => getUserEntitlements({
-        params: [{ name: 'include', value: 'OFFER.PRODUCT_ARRANGEMENT' }],
+        params: [{ name: 'include', value: 'OFFER.PRODUCT_ARRANGEMENT_V2' }],
         format: 'raw',
       }),
     );
@@ -585,7 +585,7 @@ export async function getDownloadAction(
   );
   if (!checkoutLinkConfig?.DOWNLOAD_URL) return undefined;
   const offer = entitlements.find(
-    ({ offer: { product_arrangement: { family: subscriptionFamily } } }) => {
+    ({ offer: { product_arrangement_v2: { family: subscriptionFamily } } }) => {
       if (CC_ALL_APPS.includes(subscriptionFamily)) return true; // has all apps
       if (CC_ALL_APPS.includes(offerFamily)) return false; // hasn't all apps and cta is all apps
       const singleAppFamily = CC_SINGLE_APPS.find(
