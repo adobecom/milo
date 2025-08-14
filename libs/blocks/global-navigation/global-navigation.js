@@ -633,7 +633,9 @@ class Gnav {
       localNav.querySelector('.feds-localnav-title').setAttribute('daa-ll', `${title}_localNav|${isActive ? 'close' : 'open'}`);
     });
 
-    localNav.querySelector('.feds-navItem--active')?.addEventListener('click', closeAllDropdowns);
+    localNav.querySelector('.feds-navItem--active')?.addEventListener('click', (elem) => {
+      if (!elem.currentTarget.querySelector('.feds-popup')) closeAllDropdowns();
+    });
 
     const curtain = localNav.querySelector('.feds-localnav-curtain');
     curtain.addEventListener('click', (e) => {
