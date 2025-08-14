@@ -4,7 +4,7 @@ import { mockFetch } from './mocks/fetch.js';
 import { mockIms } from './mocks/ims.js';
 import { withWcs } from './mocks/wcs.js';
 import { withAem } from './mocks/aem.js';
-import { getTemplateContent, oneEvent } from './utils.js';
+import { getTemplateContent } from './utils.js';
 import '../src/mas.js';
 import { getPriceLiterals } from '../src/literals.js';
 import Sinon from 'sinon';
@@ -21,11 +21,11 @@ const frLiterals = {
 };
 
 function localeProvider(element, options) {
-    const testCountry =
-        element.closest('[data-test-country]')?.dataset.testCountry || 'US';
+    const testCountry = element.closest('[data-test-country]')?.dataset
+        .testCountry || 'US';
     options.country = testCountry;
-    const testLanguage =
-        element.closest('[data-test-language]')?.dataset.testLanguage || 'en';
+    const testLanguage = element.closest('[data-test-language]')?.dataset
+        .testLanguage || 'en';
     options.lang = testLanguage;
     options.language = testLanguage;
     options.locale = `${testLanguage}_${testCountry}`;
@@ -282,7 +282,7 @@ runTests(async () => {
                     primaryCta: {
                         text: 'Buy now',
                         analyticsId: 'buy-now',
-                        href: 'https://commerce-stg.adobe.com/store/segmentation?apc=L_PROMO_10F&cli=adobe_com&ctx=fp&co=CA&lang=en&ms=COM&ot=BASE&cs=INDIVIDUAL&pa=PA-130',
+                          href: 'https://commerce-stg.adobe.com/store/segmentation?apc=L_PROMO_10F&cli=adobe_com&ctx=fp&co=CA&lang=en&ms=COM&ot=BASE&cs=INDIVIDUAL&pa=PA-130',
                     },
                     secondaryCta: {
                         text: 'Free trial',
