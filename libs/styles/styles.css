@@ -784,6 +784,13 @@ header.global-navigation.new-nav.local-nav {
   top: 0;
 }
 
+body.mweb-enabled {
+  --type-heading-all-weight: 800;
+  [class^="heading-"], h1, h2, h3, h4, h5, h6 {
+    font-weight: var(--type-heading-all-weight);
+  }
+}
+
 @media (min-width: 900px) {
   header.global-navigation.has-breadcrumbs {
     padding-bottom: var(--global-height-breadcrumbs);
