@@ -196,8 +196,8 @@ function getDefaultLangstoreCountry(language) {
   return country || 'US';
 }
 
-export function getMiloLocaleSettings(locale) {
-  const localePrefix = locale?.prefix || 'US_en';
+export function getMiloLocaleSettings(miloLocale) {
+  const localePrefix = miloLocale?.prefix || 'US_en';
   const geo = localePrefix.replace('/', '') ?? '';
   let [country = 'US', language = 'en'] = (GeoMap[geo] ?? geo).split('_', 2);
 
@@ -218,6 +218,24 @@ export function getMiloLocaleSettings(locale) {
     country,
     locale: `${language}_${country}`,
   };
+}
+
+export async function getGeoLocaleSettings(miloLocale) {
+  const settings = getMiloLocaleSettings(miloLocale);
+  const { getAkamaiCode } = await import('../../features/georoutingv2/georoutingv2.js');
+  let country = await getAkamaiCode();
+  country = country?.toUpperCase();
+  if (country) {
+    settings.country = country;
+    settings.locale = `${settings.language}_${country}`;
+  }
+  return settings;
+}
+
+export async function getLocaleSettings(miloLocale) {
+  const geoDetection = getMetadata('mas-geo-detection');
+  if (!geoDetection) return Promise.resolve(getMiloLocaleSettings(miloLocale));
+  return getGeoLocaleSettings(miloLocale);
 }
 
 /* Optional checkout link params that are appended to checkout urls as is */
@@ -974,7 +992,7 @@ export async function initService(force = false, attributes = {}) {
         }
       }
 
-      const { language, locale, country } = getMiloLocaleSettings(miloLocale);
+      const { language, locale, country } = await getLocaleSettings(miloLocale);
       let service = document.head.querySelector('mas-commerce-service');
       if (!service) {
         setPreview(attributes);
