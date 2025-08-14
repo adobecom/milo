@@ -1,4 +1,12 @@
-import { SEO_TITLES, STATUS, SEO_IDS, SEO_DESCRIPTIONS } from './constants.js';
+import {
+  SEO_TITLES,
+  STATUS,
+  SEO_IDS,
+  SEO_DESCRIPTIONS,
+  ASO_POLL_INTERVAL_MS,
+  ASO_MAX_RETRIES,
+  ASO_IDENTIFY_TIMEOUT_MS,
+} from './constants.js';
 
 const CHECK_API = 'https://spacecat.experiencecloud.live/api/v1';
 
@@ -18,7 +26,7 @@ const lanaLog = (message) => {
 };
 
 async function getASOToken() {
-  asoCache.tokenPromise = asoCache.tokenPromise || (async () => {
+  asoCache.tokenPromise ??= (async () => {
     window.adobeImsFactory.createIMSLib({
       client_id: 'milo-tools',
       scope: 'AdobeID,openid,gnav,read_organizations,additional_info.projectedProductContext,additional_info.roles',
@@ -234,18 +242,17 @@ function sleep(ms) {
 }
 
 async function getJobResults(jobId, step) {
-  const MAX_RETRIES = 50;
   let retries = 0;
 
-  while (retries < MAX_RETRIES) {
+  while (retries < ASO_MAX_RETRIES) {
     const result = await attemptJobPoll(jobId, step);
     if (result) return result;
 
-    await sleep(2500);
+    await sleep(ASO_POLL_INTERVAL_MS);
     retries += 1;
   }
 
-  lanaLog(`ASO: Max retries exceeded for job results | error: Failed to fetch job results after ${MAX_RETRIES} retries for step: ${step}, jobId: ${jobId} | url: ${CHECK_API}/preflight/jobs/${jobId}`);
+  lanaLog(`ASO: Max retries exceeded for job results | error: Failed to fetch job results after ${ASO_MAX_RETRIES} retries for step: ${step}, jobId: ${jobId} | url: ${CHECK_API}/preflight/jobs/${jobId}`);
   return null;
 }
 
@@ -265,9 +272,10 @@ export async function fetchPreflightChecks() {
     asoCache.identify,
     new Promise((_, reject) => {
       setTimeout(() => {
-        lanaLog('ASO: identify results not available within 20 seconds');
-        reject(new Error('ASO preflight checks timeout: identify and suggest results not available within 30 seconds'));
-      }, 30000);
+        const identifyTimeoutSeconds = ASO_IDENTIFY_TIMEOUT_MS / 1000;
+        lanaLog(`ASO: identify results not available within ${identifyTimeoutSeconds} seconds`);
+        reject(new Error(`ASO: identify results not available within ${identifyTimeoutSeconds} seconds`));
+      }, ASO_IDENTIFY_TIMEOUT_MS);
     }),
   ]);
 

@@ -1,6 +1,6 @@
 import { html, signal, useEffect } from '../../../deps/htm-preact.js';
 import { asoCache } from '../checks/asoApi.js';
-import { SEO_IDS, SEO_TITLES, STATUS } from '../checks/constants.js';
+import { SEO_IDS, SEO_TITLES, STATUS, ASO_SUGGEST_POLL_MS } from '../checks/constants.js';
 import { getChecksSuite, getPreflightResults } from '../checks/preflightApi.js';
 
 const DEF_ICON = 'purple';
@@ -192,7 +192,7 @@ export default function SEO() {
 
     const timeoutId = setTimeout(() => {
       clearInterval(intervalIdSuggest);
-    }, 50000);
+    }, ASO_SUGGEST_POLL_MS);
 
     // eslint-disable-next-line
     return () => {

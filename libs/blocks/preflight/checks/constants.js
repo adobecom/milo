@@ -48,3 +48,8 @@ export const PERFORMANCE_TITLES = {
 };
 
 export const ASSETS_TITLES = { AssetDimensions: 'Asset Dimensions' };
+
+export const ASO_IDENTIFY_TIMEOUT_MS = 40_000;
+export const ASO_SUGGEST_POLL_MS = 50_000;
+export const ASO_POLL_INTERVAL_MS = 2_500;
+export const ASO_MAX_RETRIES = Math.ceil(ASO_SUGGEST_POLL_MS / ASO_POLL_INTERVAL_MS);
