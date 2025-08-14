@@ -12,7 +12,7 @@ const { default: init, getRedirectionUrl, assignLinkedTabs } = await import('../
 loadStyle('../../../libs/blocks/tabs/tabs.css');
 
 describe('tabs', () => {
-  sessionStorage.setItem('active-tab', '{"demo3": "2", "otherTabList": "4"}');
+  sessionStorage.setItem('active-tab', '[{"pathname": "/", "demo3": "2", "otherTabList": "4"}]');
   const allTabs = document.querySelectorAll('.tabs');
   allTabs.forEach((tabs) => {
     init(tabs);
@@ -35,16 +35,16 @@ describe('tabs', () => {
 
   it('Focus on previously active tab with index saved in sessionStorage', async () => {
     let lsActiveTab = JSON.parse(sessionStorage.getItem('active-tab'));
-    expect(lsActiveTab.demo3).to.equal('2');
-    expect(lsActiveTab.otherTabList).to.equal('4');
+    expect(lsActiveTab[0].demo3).to.equal('2');
+    expect(lsActiveTab[0].otherTabList).to.equal('4');
     expect(allTabs[6].querySelector('#tab-demo3-1').ariaSelected).to.equal('false');
     expect(allTabs[6].querySelector('#tab-demo3-2').ariaSelected).to.equal('true');
     allTabs[6].querySelector('#tab-demo3-1').click();
     expect(allTabs[6].querySelector('#tab-demo3-1').ariaSelected).to.equal('true');
     expect(allTabs[6].querySelector('#tab-demo3-2').ariaSelected).to.equal('false');
     lsActiveTab = JSON.parse(sessionStorage.getItem('active-tab'));
-    expect(lsActiveTab.demo3).to.equal('1');
-    expect(lsActiveTab.otherTabList).to.equal('4');
+    expect(lsActiveTab[0].demo3).to.equal('1');
+    expect(lsActiveTab[0].otherTabList).to.equal('4');
   });
 
   it('focus on tabList button, ArrowRight key to next tab and Enter key to select aria', async () => {

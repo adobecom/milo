@@ -63,14 +63,47 @@ const loadActiveTabFromStorage = () => {
     try {
       return JSON.parse(activeTab);
     } catch (e) {
-      return {};
+      return [];
     }
   }
 
-  return {};
+  return [];
 };
 
-function changeTabs(e) {
+const loadActiveTab = () => {
+  const { pathname } = window.location;
+  let activeTab = {};
+  loadActiveTabFromStorage().forEach((at) => {
+    if (at.pathname === pathname) {
+      activeTab = at;
+    }
+  });
+  return activeTab;
+};
+
+const saveActiveTabInStorage = (targetId) => {
+  const delimiterIndex = targetId.lastIndexOf('-');
+  const tabId = targetId.substring(4, delimiterIndex);
+  const activeTabIndex = targetId.substring(delimiterIndex + 1);
+
+  const { pathname } = window.location;
+  const tabState = loadActiveTabFromStorage();
+  if (tabState.length) {
+    tabState.forEach((at) => {
+      if (at.pathname === pathname) {
+        at[tabId] = activeTabIndex;
+      }
+    });
+  } else {
+    tabState.push({
+      pathname,
+      [tabId]: activeTabIndex,
+    });
+  }
+  sessionStorage.setItem('active-tab', JSON.stringify(tabState));
+};
+
+function changeTabs(e, config) {
   const { target } = e;
   const targetId = target.getAttribute('id');
   const redirectionUrl = getRedirectionUrl(linkedTabs, targetId);
@@ -112,13 +145,7 @@ function changeTabs(e) {
   targetContent?.removeAttribute('hidden');
   if (tabsBlock.classList.contains('stacked-mobile')) scrollStackedMobile(targetContent);
   window.dispatchEvent(tabChangeEvent);
-
-  const delimiterIndex = targetId.lastIndexOf('-');
-  const tabId = targetId.substring(4, delimiterIndex);
-  const activeTabIndex = targetId.substring(delimiterIndex + 1);
-  const activeTab = loadActiveTabFromStorage();
-  activeTab[tabId] = activeTabIndex;
-  sessionStorage.setItem('active-tab', JSON.stringify(activeTab));
+  if (config['remember-selected-tab']) saveActiveTabInStorage(targetId);
 }
 
 function getStringKeyName(str) {
@@ -184,7 +211,7 @@ function initTabs(elm, config, rootElem) {
     });
   });
   tabs.forEach((tab) => {
-    tab.addEventListener('click', changeTabs);
+    tab.addEventListener('click', (e) => changeTabs(e, config));
   });
   if (config) configTabs(config, rootElem);
 }
@@ -311,7 +338,7 @@ const init = (block) => {
   const tabId = config.id || getUniqueId(block, rootElem);
   config['tab-id'] = tabId;
 
-  const activeTabIndex = loadActiveTabFromStorage()[config.id];
+  const activeTabIndex = config['remember-selected-tab'] ? loadActiveTab()[config.id] : 0;
   if (activeTabIndex) config['active-tab'] = activeTabIndex;
 
   block.id = `tabs-${tabId}`;
