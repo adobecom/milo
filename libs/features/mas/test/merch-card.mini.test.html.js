@@ -21,11 +21,11 @@ const frLiterals = {
 };
 
 function localeProvider(element, options) {
-    const testCountry = element.closest('[data-test-country]')?.dataset
-        .testCountry || 'US';
+    const testCountry =
+        element.closest('[data-test-country]')?.dataset.testCountry || 'US';
     options.country = testCountry;
-    const testLanguage = element.closest('[data-test-language]')?.dataset
-        .testLanguage || 'en';
+    const testLanguage =
+        element.closest('[data-test-language]')?.dataset.testLanguage || 'en';
     options.lang = testLanguage;
     options.language = testLanguage;
     options.locale = `${testLanguage}_${testCountry}`;
@@ -185,15 +185,39 @@ runTests(async () => {
                 });
             });
             it('should log a warning if multiple promotion codes are found', async () => {
-                const [card] = getTemplateContent('template-multiple-promo-codes');
+                const [card] = getTemplateContent(
+                    'template-multiple-promo-codes',
+                );
                 const logSpy = Sinon.spy(console, 'warn');
                 container.append(card);
                 await card.checkReady();
                 const promoCode = card.promotionCode;
                 expect(promoCode).to.equal('PROMO_ABC');
                 expect(logSpy.calledOnce).to.be.true;
-                expect(logSpy.args[0][0]).to.include('Multiple different promotion codes found: PROMO_ABC, PROMO_XYZ');
+                expect(logSpy.args[0][0]).to.include(
+                    'Multiple different promotion codes found: PROMO_ABC, PROMO_XYZ',
+                );
                 logSpy.restore();
+            });
+            it('should render US standard with no CTA', async () => {
+                const [card] = getTemplateContent('template-mini-photo-no-cta');
+                container.append(card);
+                await card.checkReady();
+                compareGetters(card, {
+                    title: 'CCD Apps: Photography no CTA',
+                    regularPrice: 'US$59.99/mo',
+                    promoPrice: undefined,
+                    annualPrice: undefined,
+                    taxText: undefined,
+                    seeTermsInfo: undefined,
+                    renewalText: undefined,
+                    promoDurationText: undefined,
+                    ctas: 0,
+                    planTypeText: 'Annual, paid monthly.',
+                    recurrenceText: '/mo',
+                    primaryCta: undefined,
+                    secondaryCta: undefined,
+                });
             });
         });
 
@@ -258,7 +282,7 @@ runTests(async () => {
                     primaryCta: {
                         text: 'Buy now',
                         analyticsId: 'buy-now',
-                          href: 'https://commerce-stg.adobe.com/store/segmentation?apc=L_PROMO_10F&cli=adobe_com&ctx=fp&co=CA&lang=en&ms=COM&ot=BASE&cs=INDIVIDUAL&pa=PA-130',
+                        href: 'https://commerce-stg.adobe.com/store/segmentation?apc=L_PROMO_10F&cli=adobe_com&ctx=fp&co=CA&lang=en&ms=COM&ot=BASE&cs=INDIVIDUAL&pa=PA-130',
                     },
                     secondaryCta: {
                         text: 'Free trial',
