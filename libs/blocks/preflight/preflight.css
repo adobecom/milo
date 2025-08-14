@@ -856,6 +856,18 @@ img:hover ~ .asset-meta,
   visibility: visible;
 }
 
+.ai-suggestion {
+  display: flex;
+  margin: 0;
+  font-style: italic;
+}
+
+.ai-suggestion .result-icon {
+  width: 30px;
+  height: 30px;
+  background-size: contain;
+}
+
 /* Accessibility Tab */
 .accessibility-columns {
   display: grid;
