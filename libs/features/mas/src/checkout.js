@@ -54,7 +54,8 @@ export function Checkout({ settings, providers }) {
             wcsOsi,
             extraOptions,
             ...rest
-        } = Object.assign(options, placeholder?.dataset ?? {}, overrides ?? {});  
+        } = Object.assign(options, placeholder?.dataset ?? {}, overrides ?? {});
+        const workflowStep = toEnumeration(checkoutWorkflowStep, CheckoutWorkflowStep, Defaults.checkoutWorkflowStep);
 
         options = omitProperties({
             ...rest,
@@ -63,7 +64,7 @@ export function Checkout({ settings, providers }) {
             checkoutMarketSegment,
             country,
             quantity: toQuantity(quantity, Defaults.quantity),
-            checkoutWorkflowStep: toEnumeration(checkoutWorkflowStep, CheckoutWorkflowStep, Defaults.checkoutWorkflowStep),
+            checkoutWorkflowStep: workflowStep,
             language,
             entitlement: toBoolean(entitlement),
             upgrade: toBoolean(upgrade),
