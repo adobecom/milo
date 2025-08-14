@@ -1092,6 +1092,6 @@ a.static:active  {
 
 @media (max-width: 768px) {
   main > .section.text-only:first-of-type {
-    min-height: calc(100svh - (var(--global-height-nav) + var(--feds-localnav-height)));
+    min-height: calc(100svh - 200px);
   }
 }

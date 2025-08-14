@@ -1771,7 +1771,7 @@ export async function loadArea(area = document) {
   for (const section of sections) {
     const isLastSection = section.idx === sections.length - 1;
     if (lcpSectionId === null && (section.blocks.length !== 0 || isLastSection)) {
-      lcpSectionId = section.idx;
+      lcpSectionId = section.el.querySelector('.hero-marquee .foreground-media') ? section.idx : section.idx + 1;
     }
     const sectionBlocks = await processSection(section, config, isDoc, lcpSectionId);
     areaBlocks.push(...sectionBlocks);
