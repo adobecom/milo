@@ -6,7 +6,8 @@
     {
       "action": "remove",
       "selector": "twp buttons",
-      "page filter (optional)": ""
+      "page filter (optional)": "",
+      "all": "true"
     }
   ],
   ":type": "sheet"
