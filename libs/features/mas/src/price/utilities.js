@@ -26,9 +26,11 @@ const getAnnualPrice = (price) => price * 12;
  * @param {number} promotion.displaySummary.minProductQuantity - The minimum product quantity for the promotion.
  * @param {string} promotion.displaySummary.outcomeType - The outcome type of the promotion.
  * @param {string} [instant] - An optional date string to use as the current date. If not provided, the current date is used.
+ * @param {number} quantity - The quantity of the product.
  * @returns {boolean} - Returns true if the promotion is active, false otherwise.
  */
-const isPromotionActive = (promotion, instant) => {
+const isPromotionActive = (promotion, instant, quantity) => {
+  if (!promotion) return false;
     const {
         start,
         end,
@@ -40,6 +42,9 @@ const isPromotionActive = (promotion, instant) => {
         } = {},
     } = promotion;
     if (!(amount && duration && outcomeType && minProductQuantity)) {
+        return false;
+    }
+    if (quantity < minProductQuantity) {
         return false;
     }
     const now = instant ? new Date(instant) : new Date();
@@ -331,24 +336,17 @@ const formatAnnualPrice = (data) => {
             return formatPrice(data, RecurrenceTerm.YEAR, getAnnualPrice);
         }
         const {
-            displaySummary: { outcomeType, duration, minProductQuantity = 1 } = {},
+            displaySummary: { outcomeType, duration } = {},
         } = promotion;
         switch (outcomeType) {
             case 'PERCENTAGE_DISCOUNT': {
-                if (
-                    quantity >= minProductQuantity &&
-                    isPromotionActive(promotion, instant)
-                ) {
+                if (isPromotionActive(promotion, instant, quantity)) {
                     const durationInMonths = parseInt(
                         duration.replace('P', '').replace('M', ''),
                     );
                     if (isNaN(durationInMonths)) return getAnnualPrice(price);
-                    const discountPrice =
-                        quantity * originalPrice * durationInMonths;
-                    const regularPrice =
-                        quantity *
-                        priceWithoutDiscount *
-                        (12 - durationInMonths);
+                    const discountPrice = originalPrice * durationInMonths;
+                    const regularPrice = priceWithoutDiscount * (12 - durationInMonths);
                     const totalPrice =
                         Math.round((discountPrice + regularPrice) * 100) / 100;
                     return formatPrice(
