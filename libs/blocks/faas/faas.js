@@ -92,6 +92,10 @@ const loadFaas = async (a) => {
     createLiveRegion(faasForm);
     const validationObserver = createValidationObserver();
 
+    faasForm.addEventListener('submit', () => {
+      if (faasForm.querySelector('.faas-form-overlay')) updateLiveRegion('Form loading');
+    });
+
     [...faasForm.querySelectorAll('.row')].forEach((row) => {
       validationObserver.observe(row, { attributes: true, attributeFilter: ['class'] });
     });
