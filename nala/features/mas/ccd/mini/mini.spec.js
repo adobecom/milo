@@ -41,7 +41,7 @@ module.exports = {
       path: CCD_BASE_PATH.MINI_US,
       data: {
         fragment: 'df357350-95b2-47f2-844f-df2e491eecef',
-        title: 'CCD Apps: Photography Promo',
+        title: 'CCD Apps: Premiere Pro plan',
         regularPrice: 'US$34.49/mo',
         promoPrice: 'US$17.24/mo',
         promotionCode: 'UMRM2MUSPr501YOC',

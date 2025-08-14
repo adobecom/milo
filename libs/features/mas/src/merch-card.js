@@ -7,6 +7,7 @@ import {
     getVariantLayout,
     registerVariant,
     getFragmentMapping,
+    getCollectionOptions,
 } from './variants/variants.js';
 
 import './global.css.js';
@@ -155,6 +156,8 @@ export class MerchCard extends LitElement {
     static styles = [styles, ...sizeStyles()];
 
     static registerVariant = registerVariant;
+
+    static getCollectionOptions = getCollectionOptions;
 
     #durationMarkName;
     #internalId; // internal unique card identifier

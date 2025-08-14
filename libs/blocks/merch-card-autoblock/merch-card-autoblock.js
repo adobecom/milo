@@ -58,7 +58,7 @@ export async function createCard(el, options) {
     el.replaceWith(merchCard);
   }
   await checkReady(merchCard);
-  postProcessAutoblock(merchCard, true);
+  await postProcessAutoblock(merchCard, true);
 }
 
 export default async function init(el) {
