@@ -38,7 +38,7 @@ async function getResults() {
     iconsResult,
   ];
 
-  const results = await getPreflightResults(window.location.pathname, document);
+  const results = await getPreflightResults({ url: window.location.pathname, area: document });
   const checks = results.runChecks.performance || [];
 
   const checkPromises = checks.map((resultOrPromise, index) => {

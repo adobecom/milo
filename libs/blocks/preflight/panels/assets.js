@@ -18,7 +18,12 @@ const viewportTooSmall = signal(isViewportTooSmall());
  * Runs asset checks and updates signals with the results.
  */
 async function getResults() {
-  const results = await getPreflightResults(window.location.pathname, document, false, false);
+  const results = await getPreflightResults({
+    url: window.location.pathname,
+    area: document,
+    useCache: false,
+    injectVisualMetadata: false,
+  });
   const checks = results.runChecks.assets || [];
 
   const result = await Promise.resolve(checks[0]).catch((error) => ({

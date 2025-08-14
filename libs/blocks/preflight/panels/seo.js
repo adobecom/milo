@@ -90,7 +90,7 @@ async function getResults() {
     linksResult,
   ];
 
-  const results = await getPreflightResults(window.location.pathname, document);
+  const results = await getPreflightResults({ url: window.location.pathname, area: document });
   const runChecks = results.runChecks.seo || [];
 
   // Update UI as each check resolves

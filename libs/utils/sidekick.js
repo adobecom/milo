@@ -21,7 +21,12 @@ export default function init({ createTag, loadBlock, loadScript, loadStyle }) {
   };
 
   const preflightListener = async () => {
-    await getPreflightResults(window.location.href, document, true, true);
+    await getPreflightResults({
+      url: window.location.href,
+      area: document,
+      useCache: true,
+      injectVisualMetadata: true,
+    });
     const preflight = createTag('div', { class: 'preflight' });
     const content = await loadBlock(preflight);
 
