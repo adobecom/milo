@@ -7,7 +7,7 @@
   text-decoration: none;
 }
 
-.global-navigation button {
+.global-navigation button:not(.feds-client-desktop-apps button) {
   background: none;
   cursor: pointer;
 }
