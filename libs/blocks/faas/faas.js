@@ -72,6 +72,30 @@ const createValidationObserver = () => new MutationObserver((mutations) => {
   });
 });
 
+const createAutocompleteObserver = () => (
+  new MutationObserver((mutations) => {
+    mutations.forEach((mutation) => {
+      const inputElement = mutation.target;
+      if (mutation.type !== 'attributes' || inputElement.getAttribute('autocomplete') !== 'off') return;
+
+      const originalValue = inputElement.dataset.originalAutocomplete;
+      if (originalValue === '') return;
+      inputElement.setAttribute('autocomplete', originalValue);
+    });
+  })
+);
+
+const preserveAutocomplete = (faasForm) => {
+  const inputs = [...faasForm.querySelectorAll('input:not([type="hidden"]), textarea')];
+
+  inputs.forEach((input) => {
+    input.dataset.originalAutocomplete = input.getAttribute('autocomplete') || '';
+  });
+
+  const autocompleteObserver = createAutocompleteObserver();
+  inputs.forEach((input) => autocompleteObserver.observe(input, { attributes: true }));
+};
+
 const loadFaas = async (a) => {
   await loadFaasFiles();
   const encodedConfig = a.href.split('#')[1];
@@ -96,6 +120,7 @@ const loadFaas = async (a) => {
       validationObserver.observe(row, { attributes: true, attributeFilter: ['class'] });
     });
 
+    preserveAutocomplete(faasForm);
     formObserver.disconnect();
   });
 
