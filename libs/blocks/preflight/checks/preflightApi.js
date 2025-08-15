@@ -73,7 +73,6 @@ export async function getPreflightResults(url, area, useCache = true) {
       ...(cachedChecks.performance || []),
       ...(cachedChecks.seo || []),
     ];
-    console.log({ allResults });
     captureMetrics(allResults);
     return {
       isViewportTooSmall: isViewportTooSmall(),
