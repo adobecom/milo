@@ -94,6 +94,12 @@ function getSidenav(collection) {
   spSidenav.setAttribute('manageTabIndex', true);
   const sidenavList = createTag('merch-sidenav-list', { deeplink: 'filter' }, spSidenav);
 
+  sidenavList.updateComplete.then(() => {
+    sidenavList.querySelectorAll('sp-sidenav-item').forEach((item) => {
+      item?.shadowRoot?.querySelector('a')?.setAttribute('role', 'tab');
+    });
+  });
+
   let multilevel = false;
   function generateLevelItems(level, parent) {
     for (const node of level) {
