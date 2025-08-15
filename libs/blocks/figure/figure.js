@@ -69,8 +69,4 @@ export default function init(blockEl) {
   if (blockCount > 1) {
     blockEl.classList.add('figure-list', `figure-list-${blockCount}`);
   }
-
-  if (blockEl.nextElementSibling?.classList.contains('figure')) {
-    blockEl.classList.add('no-padding-bottom');
-  }
 }
