@@ -1,5 +1,7 @@
 import * as esbuild from 'esbuild'; // eslint-disable-line
 import fs from 'node:fs';
+import { parse } from '@babel/parser';
+import { extractFunctionCode } from './extractFunction/extractFunction.mjs';
 
 fs.rmSync('./dist/', { recursive: true, force: true });
 
@@ -52,6 +54,40 @@ const StyleLoader = {
   },
 };
 
+// Custom plugin that intercepts merch.js imports and extracts only the needed function
+// We do this because regular build tools can't verify the import is sideEffect free,
+// but we know that the import is pure. So this custom tool extracts the function
+// we need along with its dependencies.
+const MerchInterceptor = {
+  name: 'merch-interceptor',
+  setup({ onResolve, onLoad }) {
+    onResolve({ filter: /merch\.js$/ }, (args) => {
+      // Only intercept if the importer is global-navigation.js
+      if (args.importer && args.importer.includes('global-navigation.js')) {
+        console.log('Intercepting import from:', args.importer);
+        return { path: args.path, namespace: 'merch' };
+      }
+      // For other files, let esbuild handle the import normally
+      return undefined;
+    });
+
+    // Provide parsed implementation when merch.js is imported
+    onLoad({ filter: /.*/, namespace: 'merch' }, () => {
+      console.log('Providing parsed merch.js implementation');
+
+      // Parse the getMiloLocaleSettings function from the actual merch.js file
+      const merchFilePath = '../blocks/merch/merch.js';
+      const code = fs.readFileSync(merchFilePath, 'utf-8');
+      const ast = parse(code, { sourceType: 'module' });
+      const parsedCode = extractFunctionCode(ast, 'getMiloLocaleSettings');
+      return {
+        contents: parsedCode,
+        loader: 'js',
+      };
+    });
+  },
+};
+
 await esbuild.build({
   entryPoints: ['navigation.js'],
   bundle: true,
@@ -59,5 +95,6 @@ await esbuild.build({
   format: 'esm',
   sourcemap: true,
   outdir: './dist/',
-  plugins: [StyleLoader],
+  minify: true,
+  plugins: [StyleLoader, MerchInterceptor],
 });
