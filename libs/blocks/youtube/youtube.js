@@ -1,19 +1,17 @@
 // part of the code is an optimized version of lite-youtube-embed -> https://github.com/paulirish/lite-youtube-embed
-import { createIntersectionObserver, createTag, isInTextNode, loadLink } from '../../utils/utils.js';
+import { createIntersectionObserver, createTag, isInTextNode, loadLink, getConfig } from '../../utils/utils.js';
 
 class LiteYTEmbed extends HTMLElement {
   connectedCallback() {
     this.isMobile = navigator.userAgent.includes('Mobi');
     this.videoId = this.getAttribute('videoid');
-    const playBtnEl = createTag('button', { type: 'button', class: 'lty-playbtn' });
-    this.append(playBtnEl);
-    this.playLabel = this.getAttribute('playlabel') || 'Play';
+    this.playBtnEl = createTag('button', { type: 'button', class: 'lty-playbtn' });
+    this.append(this.playBtnEl);
+    this.videoTitle = 'Youtube video';
     this.style.backgroundImage = `url("https://i.ytimg.com/vi/${this.videoId}/hqdefault.jpg")`;
     this.style.backgroundSize = 'cover';
     this.style.backgroundPosition = 'center';
-    const playBtnLabelEl = createTag('span', { class: 'lyt-visually-hidden' });
-    playBtnLabelEl.textContent = this.playLabel;
-    playBtnEl.append(playBtnLabelEl);
+    this.updatePlayBtnAttr();
     this.addEventListener('pointerover', LiteYTEmbed.warmConnections, { once: true });
     this.addEventListener('click', this.addIframe);
     this.needsYTApiForAutoplay = navigator.vendor.includes('Apple') || this.isMobile;
@@ -22,12 +20,34 @@ class LiteYTEmbed extends HTMLElement {
   async fetchVideoTitle() {
     try {
       const response = await fetch(`https://www.youtube.com/oembed?url=http://www.youtube.com/watch?v=${this.videoId}&format=json`);
-      const data = await response.json();
-
-      const { setDialogAndElementAttributes } = await import('../../scripts/accessibility.js');
-      setDialogAndElementAttributes({ element: this.iframeEl, title: data.title });
+      if (!response.ok) return this.videoTitle;
+      const { title } = await response.json();
+      this.videoTitle = title;
+      return this.videoTitle;
     } catch (error) {
       window.lana.log('Error fetching YouTube video title', { error });
+      return this.videoTitle;
+    }
+  }
+
+  async updatePlayBtnAttr() {
+    const promises = [
+      this.fetchVideoTitle(),
+      import('../../martech/attributes.js'),
+    ];
+
+    const [
+      videoTitle,
+      { decorateDefaultLinkAnalytics },
+    ] = await Promise.all(promises);
+    this.playBtnEl.setAttribute('aria-label', `Play ${videoTitle}`);
+    this.playBtnEl.removeAttribute('daa-ll');
+    const videoContainer = this.playBtnEl.closest('.milo-video');
+    decorateDefaultLinkAnalytics(videoContainer, getConfig());
+    const dialog = this.closest('.dialog-modal');
+    if (dialog) {
+      dialog.setAttribute('aria-label', videoTitle);
+      this.playBtnEl.focus();
     }
   }
 
@@ -76,25 +96,23 @@ class LiteYTEmbed extends HTMLElement {
         src: `https://www.youtube-nocookie.com/embed/${encodeURIComponent(this.videoId)}?${params.toString()}`,
         allowFullscreen: true,
         allow: 'accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture',
-        title: this.playLabel,
+        title: this.videoTitle,
       });
       this.insertAdjacentElement('afterend', this.iframeEl);
       this.iframeEl.focus();
       this.remove();
-      this.fetchVideoTitle();
     }
   }
 }
 
 export default async function init(a) {
   if (!customElements.get('lite-youtube')) customElements.define('lite-youtube', LiteYTEmbed);
-
   const embedVideo = () => {
     if (isInTextNode(a) || !a.origin?.includes('youtu')) return;
     const searchParams = new URLSearchParams(a.search);
     const id = searchParams.get('v') || a.pathname.split('/').pop();
     searchParams.delete('v');
-    const liteYTElement = createTag('lite-youtube', { videoid: id, playLabel: 'Youtube video' });
+    const liteYTElement = createTag('lite-youtube', { videoid: id });
 
     if (searchParams.toString()) liteYTElement.setAttribute('params', searchParams.toString());
 

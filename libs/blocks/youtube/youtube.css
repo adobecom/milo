@@ -41,16 +41,6 @@ lite-youtube.lyt-activated > .lty-playbtn {
   pointer-events: none;
 }
 
-.lyt-visually-hidden {
-  clip: rect(0 0 0 0);
-  clip-path: inset(50%);
-  height: 1px;
-  overflow: hidden;
-  position: absolute;
-  white-space: nowrap;
-  width: 1px;
-}
-
 .dark-background {
   background-color: #000;
 }
