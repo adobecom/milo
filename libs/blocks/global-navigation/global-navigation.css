@@ -1104,6 +1104,10 @@ header.new-nav .feds-nav > section.feds-navItem > .feds-popup .tab-content .feds
   padding: 5px 18px 6px;
 }
 
+header.new-nav .feds-nav > section.feds-navItem > .feds-popup .tab-content .tab-panel > .feds-cta--secondary {
+  display: block;
+}
+
 [dir = "rtl"] header.new-nav .feds-nav > section.feds-navItem > .feds-popup .tab-content {
   border-left: none;
   border-right: 1px solid var(--feds-borderColor-link-v2);
