@@ -43,8 +43,8 @@ describe('Accordion', () => {
     window.matchMedia = (() => {
       const mql = {
         matches: true,
-        addEventListener: (type, listenerFun) => {
-          if (type === 'change') mql.listener = listenerFun;
+        addEventListener: (type, listenerFunction) => {
+          if (type === 'change') mql.listener = listenerFunction;
         },
         trigger: (matches) => {
           mql.matches = matches;
