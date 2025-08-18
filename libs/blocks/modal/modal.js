@@ -17,6 +17,14 @@ let prevHash = '';
 let isDeepLink = false;
 const dialogLoadingSet = new Set();
 
+// Store the last button that triggered a modal
+let lastModalTriggerElement = null;
+
+// Listen for custom modal button click event
+window.addEventListener('modal:button-click', (e) => {
+  lastModalTriggerElement = e.detail.triggerElement;
+});
+
 export function findDetails(hash, el) {
   const id = hash.replace('#', '');
   const a = el || document.querySelector(`a[data-modal-hash="${hash}"]`);
@@ -53,6 +61,11 @@ export function closeModal(modal) {
   const { id } = modal;
   const closeEvent = new Event('milo:modal:closed');
   window.dispatchEvent(closeEvent);
+
+  // Clear the last trigger element reference
+  // if (modal._triggerElement === lastModalTriggerElement) {
+  //   lastModalTriggerElement = null;
+  // }
 
   const iframe = modal.querySelector('iframe');
   if (iframe?._iframeKeydownListener) {
@@ -105,7 +118,14 @@ export function closeModal(modal) {
     return;
   }
 
-  document.querySelector(`a[data-modal-id="${id}"].con-button`)?.focus();
+  // Focus on the correct trigger element
+  if (lastModalTriggerElement) {
+    lastModalTriggerElement.focus();
+  } else {
+    // Fallback to the old behavior for backward compatibility
+    document.querySelector(`a[data-modal-id="${id}"].con-button`)?.focus();
+  }
+  lastModalTriggerElement = null;
 }
 
 function isElementInView(element) {
@@ -157,11 +177,23 @@ function addIframeKeydownListener(iframe, dialog) {
 
 export async function getModal(details, custom) {
   if (!((details?.path && details?.id) || custom)) return null;
-  const { id, deepLink } = details || custom;
+  const { id, deepLink, triggerElement } = details || custom;
   isDeepLink = deepLink;
 
   dialogLoadingSet.add(id);
   const dialog = createTag('div', { class: 'dialog-modal', id, role: 'dialog', 'aria-modal': true });
+
+  // Store the trigger element for focus restoration when closing
+  // Use provided triggerElement, fallback to last captured, or find by hash
+  const buttonElement = triggerElement
+    || lastModalTriggerElement
+    || document.querySelector(`[data-modal-hash="${window.location.hash}"]`)
+    || document.querySelector(`[href="${window.location.hash}"]`);
+
+  if (buttonElement) {
+    lastModalTriggerElement = buttonElement;
+  }
+
   const loadedEvent = new Event('milo:modal:loaded');
 
   if (custom && !custom?.title) custom.title = findDetails(window.location.hash, null)?.title;
