@@ -126,4 +126,38 @@ describe('Section Metdata', () => {
     expect(sec.id).to.be.eql('anchor-test');
     expect(sec.classList.contains('section-anchor')).to.be.true;
   });
+
+  it('turns section-up to a list if it contains icon-block or action-item', async () => {
+    const sec = document.querySelector('.section.to-list');
+    const sm = sec.querySelector('.section-metadata');
+    await init(sm);
+    expect(sec.getAttribute('role')).to.be.equal('list');
+    [...sec.children].forEach((child) => {
+      if (child.classList.contains('section-metadata')) {
+        expect(child.getAttribute('role')).to.be.null;
+      } else {
+        expect(child.getAttribute('role')).to.be.equal('listitem');
+      }
+    });
+  });
+
+  it('doesn\'n turns section-up to a list if it contains non icon-block and action-item blocks', async () => {
+    const sec = document.querySelector('.section.no-list');
+    const sm = sec.querySelector('.section-metadata');
+    await init(sm);
+    expect(sec.getAttribute('role')).to.be.null;
+    [...sec.children].forEach((child) => {
+      expect(child.getAttribute('role')).to.be.null;
+    });
+  });
+
+  it('doesn\'n turns section-up to a list if it contains header', async () => {
+    const sec = document.querySelector('.section.no-list-header');
+    const sm = sec.querySelector('.section-metadata');
+    await init(sm);
+    expect(sec.getAttribute('role')).to.be.null;
+    [...sec.children].forEach((child) => {
+      expect(child.getAttribute('role')).to.be.null;
+    });
+  });
 });
