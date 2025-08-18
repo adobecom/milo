@@ -199,9 +199,9 @@ export const CONFIG = {
               enableProfileSwitcher: true,
               miniAppContext: {
                 logger: {
-                  trace: () => { },
-                  debug: () => { },
-                  info: () => { },
+                  trace: () => {},
+                  debug: () => {},
+                  info: () => {},
                   warn: (e) => lanaLog({ message: 'Profile Menu warning', e, tags: 'universalnav,warn' }),
                   error: (e) => lanaLog({ message: 'Profile Menu error', e, tags: 'universalnav', errorType: 'e' }),
                 },
@@ -1414,7 +1414,7 @@ class Gnav {
     const delayDropdownDecoration = ({ template } = {}) => {
       let decorationTimeout;
       let desktopMegaMenuHTML = null;
-      let mobileNavCleanup = () => { };
+      let mobileNavCleanup = () => {};
 
       const decorateDropdown = () => logErrorFor(async () => {
         template.removeEventListener('click', decorateDropdown);
