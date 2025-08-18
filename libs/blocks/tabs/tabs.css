@@ -628,3 +628,14 @@
     border: none;
   }
 }
+
+
+.tabs .tabList button h3.green-highlight {
+    background-color: #05834E;
+    color: #ffffff;
+    font-size: 12px;
+    width: 100px;
+    margin: 8px auto 0px auto;
+    padding: 4px 9px;
+    border-radius: 4px;
+}

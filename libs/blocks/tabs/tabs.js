@@ -327,7 +327,14 @@ const init = (block) => {
         ...(isRadio ? { 'data-control-id': controlId } : { 'aria-controls': controlId }),
       };
       const tabBtn = createTag('button', tabBtnAttributes);
-      tabBtn.innerText = item.textContent;
+      const strongTag = item.querySelector('strong');
+      const strongText = strongTag?.innerText;
+      const outerText = item.textContent.replace(strongText, '');
+      if (strongTag && outerText !== item.textContent) {
+        tabBtn.innerHTML = `${outerText} <h3 class="green-highlight">${strongText}</h3>`;
+      } else {
+        tabBtn.innerText = item.textContent;
+      }
       tabListContainer.append(tabBtn);
 
       const tabContentAttributes = {
