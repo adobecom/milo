@@ -24,15 +24,12 @@ export default class MerchIcon extends LitElement {
 
     connectedCallback() {
         super.connectedCallback();
-        // Convert any child sp-tooltip elements after the component is connected
         setTimeout(() => this.handleTooltips(), 0);
     }
 
     handleTooltips() {
-        // Only convert if Spectrum is not available
         if (hasSpectrumTooltip()) return;
         
-        // Look for sp-tooltip or overlay-trigger children
         const tooltipElements = this.querySelectorAll('sp-tooltip, overlay-trigger');
         
         tooltipElements.forEach(element => {
@@ -51,12 +48,10 @@ export default class MerchIcon extends LitElement {
             }
             
             if (content) {
-                // Create a mas-tooltip wrapper
                 const masTooltip = document.createElement('mas-tooltip');
                 masTooltip.setAttribute('content', content);
                 masTooltip.setAttribute('placement', placement);
                 
-                // Move the image (or link with image) into the tooltip
                 const img = this.querySelector('img');
                 const link = this.querySelector('a');
                 
@@ -66,11 +61,9 @@ export default class MerchIcon extends LitElement {
                     masTooltip.appendChild(img);
                 }
                 
-                // Replace content with wrapped tooltip
                 this.innerHTML = '';
                 this.appendChild(masTooltip);
                 
-                // Load the mas-tooltip component if not already loaded
                 import('./mas-tooltip.js');
             }
             
