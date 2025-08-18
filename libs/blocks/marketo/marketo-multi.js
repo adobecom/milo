@@ -84,6 +84,11 @@ export const formValidate = async (formEl) => {
 function setValidationSteps(formEl, totalSteps, currentStep) {
   const formData = window.mcz_marketoForm_pref || {};
   const validationMap = formData.form?.fldStepPref || VALIDATION_STEP;
+  Object.keys(validationMap).forEach((step) => {
+    validationMap[step] = validationMap[step].join(',').split(',');
+  });
+  formData.form.fldStepPref = validationMap;
+
   formEl.querySelectorAll('.mktoFormRowTop').forEach((row) => {
     const rowAttr = row.getAttribute('data-mktofield') || row.getAttribute('data-mkto_vis_src');
     const mapStep = Object.keys(validationMap).find((stepNum) => validationMap[stepNum].some((field) => field?.toLowerCase() === rowAttr?.toLowerCase())) || '1';

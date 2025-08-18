@@ -23,6 +23,8 @@ const FORM_FIELDS = [
   { name: 'mktoRequestProductDemo', label: 'Request Product Demo', step: 3 },
 ];
 
+const SYNCED_FIELDS = ['mktoFormsPrimaryProductInterest', 'mktoFormsCompanyType'];
+
 const createFieldMaps = (fields) => ({
   allOptions: fields.reduce((acc, field) => ({ ...acc, [field.name]: field.label }), {}),
   defaultFields: fields.reduce((acc, field) => {
@@ -102,18 +104,44 @@ const StepPanel = () => {
       return acc;
     }, getUnselectedOptions(allOptions, stepPreferences));
 
+    const handleSyncedFields = (prevFields, newFields, newFldStepPref, stepIndex) => {
+      const syncedFieldsChanged = prevFields.length !== newFields.length;
+
+      if (syncedFieldsChanged && newFields.length > 0 && newFields.length < SYNCED_FIELDS.length) {
+        const wasFieldRemoved = newFields.length < prevFields.length;
+
+        if (wasFieldRemoved) {
+          newFldStepPref[stepIndex] = newFldStepPref[stepIndex]
+            .filter((field) => !SYNCED_FIELDS.includes(field));
+        } else {
+          const allFieldsInStep = new Set([...newFldStepPref[stepIndex], ...SYNCED_FIELDS]);
+          newFldStepPref[stepIndex] = [...allFieldsInStep];
+        }
+      }
+
+      return newFldStepPref;
+    };
+
     const onChange = (newValue) => {
-      const newFldStepPref = { ...stepPreferences, [currentStep]: newValue };
-      // Step 1 should always have all unselected options
+      const previousValue = stepPreferences?.[currentStep] || [];
+      let newFldStepPref = { ...stepPreferences, [currentStep]: newValue };
+
+      const prevFields = previousValue.filter((field) => SYNCED_FIELDS.includes(field));
+      const newFields = newValue.filter((field) => SYNCED_FIELDS.includes(field));
+
+      newFldStepPref = handleSyncedFields(prevFields, newFields, newFldStepPref, currentStep);
+
+      // Step 1 should always contain all unselected options
       const newUnselected = getUnselectedOptions(allOptions, newFldStepPref);
       newFldStepPref[1] = Object.keys(newUnselected);
+
       setFieldStepPreferences(newFldStepPref);
       setUnselected(newUnselected);
     };
 
     return html`
       <div class="step-field" key=${`step-${currentStep}-${stepValues.length}-${currentStepOptions.length}`}>
-        <${TagSelect} options=${currentStepOptions} label="Fields for step ${currentStep}" value=${stepValues} onChange=${onChange} />
+        <${TagSelect} options=${currentStepOptions} label="Fields for step ${currentStep}" value=${[...stepValues]} onChange=${onChange} />
       </div>
     `;
   };
