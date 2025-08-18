@@ -617,7 +617,7 @@ export const transformTemplateToMobile = async ({
   updatePopupPosition,
 }) => {
   const notMegaMenu = popup.parentElement.tagName === 'DIV';
-  if (notMegaMenu) return () => { };
+  if (notMegaMenu) return () => {};
 
   const isLoading = popup.classList.contains('loading');
   const tabs = (await Promise.all(
