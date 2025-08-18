@@ -1,6 +1,5 @@
 /* eslint import/no-relative-packages: 0 */
 /* eslint-disable no-async-promise-executor */
-import { FLAGS } from '../../features/personalization/personalization.js';
 import {
   getConfig,
   getMetadata,
@@ -539,8 +538,8 @@ class Gnav {
     return cta;
   };
 
-  decorateTopNav = async () => {
-    const { searchEnabled, mep, selfIntegrateUnav, desktopAppsCta = false } = getConfig();
+  decorateTopNav = () => {
+    const { searchEnabled, selfIntegrateUnav, desktopAppsCta = false } = getConfig();
     const isMiniGnav = this.isMiniGnav();
     this.elements.mobileToggle = this.decorateToggle();
     this.elements.topnav = toFragment`
@@ -560,13 +559,6 @@ class Gnav {
         ${this.decorateLogo()}
       </nav>
     `;
-    const mepIncludeGnav = mep?.commands?.find(
-      (command) => command?.modifiers?.find((modifier) => modifier === FLAGS?.includeGnav),
-    );
-    if (mepIncludeGnav) {
-      const { handleCommands } = await import('../../features/personalization/personalization.js');
-      handleCommands(mep?.commands, this.elements.topnav, true, true);
-    }
   };
 
   decorateLocalNav = async () => {
