@@ -1,5 +1,9 @@
+:root {
+  --figure-padding: 40px;
+}
+
 .figure {
-  padding: 40px 0;
+  padding: var(--figure-padding) 0;
 }
 
 .figure + .figure {
@@ -78,7 +82,7 @@
   }
 
   .figure.figure-list + .figure:not(.figure-list) {
-    padding-top: 40px;
+    padding-top: var(--figure-padding);
   }
 
   .figure-list {
