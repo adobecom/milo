@@ -125,7 +125,13 @@ function createSkeletonLayout(container) {
   return { masonryGrid, skeletonItems };
 }
 
-function loadImageIntoSkeleton(skeletonItem, imageUrl, altText) {
+function loadImageIntoSkeleton(
+  skeletonItem,
+  imageUrl,
+  altText,
+  promptText,
+  userInfo = {}
+) {
   return new Promise((resolve) => {
     console.log('Loading image:', imageUrl);
 
@@ -139,6 +145,56 @@ function loadImageIntoSkeleton(skeletonItem, imageUrl, altText) {
       class: 'firefly-gallery-image',
     });
     imageContainer.appendChild(img);
+
+    // Add prompt overlay
+    if (promptText) {
+      const overlay = createTag('div', {
+        class: 'firefly-gallery-overlay',
+      });
+
+      // Add user info container at the top left
+      if (userInfo.name || userInfo.avatarUrl) {
+        const userInfoContainer = createTag('div', {
+          class: 'firefly-gallery-user-info',
+        });
+
+        // Add user avatar if available
+        if (userInfo.avatarUrl) {
+          const avatar = createTag('img', {
+            src: userInfo.avatarUrl,
+            alt: `${userInfo.name || 'Artist'}'s avatar`,
+            class: 'firefly-gallery-user-avatar',
+          });
+          userInfoContainer.appendChild(avatar);
+        }
+
+        // Add username if available
+        if (userInfo.name) {
+          const username = createTag(
+            'span',
+            {
+              class: 'firefly-gallery-username',
+            },
+            userInfo.name
+          );
+          userInfoContainer.appendChild(username);
+        }
+
+        overlay.appendChild(userInfoContainer);
+      }
+
+      const promptElement = createTag(
+        'div',
+        {
+          class: 'firefly-gallery-prompt',
+        },
+        promptText
+      );
+
+      overlay.appendChild(promptElement);
+      imageContainer.appendChild(overlay);
+    }
+
     // Handle image load event
     console.log('Image loaded successfully:', imageUrl);
 
@@ -173,6 +229,9 @@ async function loadFireflyImages(skeletonItems) {
       `Loading ${assets.length} Firefly images into ${skeletonItems.length} placeholders`
     );
 
+    // Get current locale or fallback to default
+    const locale = getConfig().locale?.ietf || 'en-US';
+
     // Load images into skeleton items
     const loadPromises = skeletonItems.map((item, index) => {
       if (index >= assets.length) return Promise.resolve();
@@ -181,8 +240,56 @@ async function loadFireflyImages(skeletonItems) {
       const imageUrl = getImageRendition(asset);
       const altText = asset.title || 'Firefly generated image';
 
+      // Get localized prompt text
+      let promptText = '';
+      if (asset?.custom?.input?.['firefly#prompts']) {
+        // Try to get prompt for current locale
+        promptText =
+          asset.custom.input['firefly#prompts'][locale] ||
+          // Fallback to English
+          asset.custom.input['firefly#prompts']['en-US'] ||
+          // Fallback to any available locale
+          Object.values(asset.custom.input['firefly#prompts'])[0] ||
+          // Final fallback
+          asset.title ||
+          'Firefly generated image';
+      } else {
+        // Use title as fallback
+        promptText = asset.title || 'Firefly generated image';
+      }
+
+      // Get user info
+      const userInfo = {};
+      if (asset?._embedded?.owner) {
+        const owner = asset._embedded.owner;
+        userInfo.name =
+          owner.display_name ||
+          `${owner.first_name} ${owner.last_name}`.trim() ||
+          owner.user_name ||
+          'Unknown Artist';
+
+        // Get the user avatar image - find the one closest to 24px
+        if (owner._links?.images && owner._links.images.length > 0) {
+          // We want an image that's at least 24px but not too much larger
+          // First sort by size to find closest match to our target 24px size
+          const sortedImages = [...owner._links.images].sort((a, b) => {
+            const aDiff = Math.abs(a.width - 24);
+            const bDiff = Math.abs(b.width - 24);
+            return aDiff - bDiff; // Sort by closest to 24px
+          });
+
+          userInfo.avatarUrl = sortedImages[0].href; // Use the closest to 24px
+        }
+      }
+
       console.log(`Loading image ${index + 1}/${assets.length}: ${imageUrl}`);
-      return loadImageIntoSkeleton(item, imageUrl, altText);
+      return loadImageIntoSkeleton(
+        item,
+        imageUrl,
+        altText,
+        promptText,
+        userInfo
+      );
     });
 
     await Promise.all(loadPromises);
