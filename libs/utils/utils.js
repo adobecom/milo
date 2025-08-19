@@ -1770,10 +1770,13 @@ export async function loadArea(area = document) {
   let isMarqueeAndHasMedia = null;
 
   for (const section of sections) {
-    if (!section.idx) {
+    if (!section.idx && window.matchMedia('(max-width: 768px)').matches) {
       isMarqueeAndHasMedia = section.el
-        .querySelector(`.hero-marquee .foreground-media img, .hero-marquee .foreground-media video,
-     .marquee .asset img, .marquee .asset video, .quiz-marquee video`);
+        .querySelector(
+          `.hero-marquee .foreground img, .hero-marquee .background img, .hero-marquee .foreground-media video,
+          .marquee .asset img, .marquee .background img, .marquee .asset video,
+          .quiz-marquee .background img, .quiz-marquee .background video`,
+        );
     }
 
     if (!isMarqueeAndHasMedia && section.idx === 1) {
