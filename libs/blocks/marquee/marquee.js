@@ -204,6 +204,28 @@ export default async function init(el) {
   if (media) {
     media.classList.add('asset');
     if (!media.querySelector('video, a[href*=".mp4"]')) decorateImage(media);
+  } else {
+    setTimeout(() => {
+      const allElements = el.querySelectorAll('*');
+      let biggestElement = null;
+      let maxHeight = 0;
+
+      allElements.forEach((element) => {
+        const hasChildElements = element.children.length > 0;
+        if (hasChildElements) return;
+
+        const { height } = element.getBoundingClientRect();
+        if (height > maxHeight) {
+          maxHeight = height;
+          biggestElement = element;
+        }
+      });
+
+      if (biggestElement) {
+        const biggestHeight = biggestElement.getBoundingClientRect().height + 35;
+        el.closest('.section').style.minHeight = (`calc(100svh - ${biggestHeight}px)`);
+      }
+    }, 100);
   }
 
   const firstDivInForeground = foreground.querySelector(':scope > div');
