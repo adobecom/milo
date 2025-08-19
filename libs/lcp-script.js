@@ -20,7 +20,7 @@ export default function init(el, media = null, size = null) {
       });
 
       if (biggestElement) {
-        const biggestHeight = biggestElement.getBoundingClientRect().height + 60;
+        const biggestHeight = biggestElement.getBoundingClientRect().height + 35;
         el.closest('.section').style.minHeight = (`calc(100svh - ${biggestHeight}px)`);
         isInitialized = true;
       }
