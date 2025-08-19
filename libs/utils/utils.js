@@ -1767,20 +1767,14 @@ export async function loadArea(area = document) {
 
   const areaBlocks = [];
   let lcpSectionId = null;
-  let isMarqueeAndHasMedia = null;
+  let isMarqueeAndNoMedia = null;
 
   for (const section of sections) {
     if (!section.idx && window.matchMedia('(max-width: 768px)').matches) {
-      isMarqueeAndHasMedia = section.el
-        .querySelector(
-          `.hero-marquee .foreground img, .hero-marquee .background img, .hero-marquee .foreground-media video,
-          .marquee .asset img, .marquee .background img, .marquee .asset video,
-          .quiz-marquee .background img, .quiz-marquee .background video`,
-        );
+      isMarqueeAndNoMedia = section.el.querySelector('.hero-marquee.no-media, .marquee.no-media, .quiz-marquee.no-media');
     }
-    console.log('isMarqueeAndHasMedia', isMarqueeAndHasMedia);
 
-    if (!isMarqueeAndHasMedia && section.idx === 1) {
+    if (isMarqueeAndNoMedia && section.idx === 1) {
       const imgs = section.el.querySelectorAll('img');
       imgs.forEach((img) => {
         img.setAttribute('loading', 'eager');
@@ -1790,8 +1784,9 @@ export async function loadArea(area = document) {
 
     const isLastSection = section.idx === sections.length - 1;
     if (lcpSectionId === null && (section.blocks.length !== 0 || isLastSection)) {
-      lcpSectionId = isMarqueeAndHasMedia ? section.idx : section.idx + 1;
+      lcpSectionId = !isMarqueeAndNoMedia ? section.idx : section.idx + 1;
     }
+
     const sectionBlocks = await processSection(section, config, isDoc, lcpSectionId);
     areaBlocks.push(...sectionBlocks);
 
