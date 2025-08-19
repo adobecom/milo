@@ -258,7 +258,7 @@ export default async function init(el) {
   copy.classList.add('copy');
 
   if (asset) {
-    asset.parentElement?.classList.add('asset');
+    asset.parentElement.classList.add('asset');
     if (el.classList.contains('media-cover')) {
       el.appendChild(createTag('div', { class: 'foreground-media' }, asset));
     }
