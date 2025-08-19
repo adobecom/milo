@@ -335,14 +335,13 @@ export function applyAccessibilityEvents(videoEl) {
     pausePlayWrapper.addEventListener('keydown', handlePause);
   }
   if (videoEl.hasAttribute('autoplay')) {
-    videoEl.addEventListener('canplay', () => isVideoReady(videoEl) && videoEl.play());
     videoEl.addEventListener('playing', (event) => syncPausePlayIcon(videoEl, event));
     videoEl.addEventListener('ended', () => syncPausePlayIcon(videoEl));
     if (isReducedMotion) {
       videoEl.pause();
       return;
     }
-    videoEl.addEventListener('canplay', () => videoEl.play());
+    videoEl.addEventListener('canplay', () => isVideoReady(videoEl) && videoEl.play());
   }
 }
 
