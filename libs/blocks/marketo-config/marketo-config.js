@@ -7,6 +7,8 @@ import CopyBtn from '../../ui/controls/CopyBtn.js';
 import { Input, Select } from '../../ui/controls/formControls.js';
 import StepPanel from './step-panel.js';
 
+const CONFIG_URL = 'https://milo.adobe.com/tools/marketo';
+
 const TEMPLATE_RULE_MAPPING = {
   formVersion: 'form.id',
   formSuccessType: 'form.success.type',
@@ -202,10 +204,7 @@ const getPanels = (panelsData, lsKey) => {
   return panels;
 };
 
-const getDataUrl = (state) => {
-  const url = window.location.href.split(/#|\?/)[0];
-  return `${url}#${utf8ToB64(JSON.stringify(state))}`;
-};
+const getDataUrl = (state) => `${CONFIG_URL}#${utf8ToB64(JSON.stringify(state))}`;
 
 const Configurator = ({ title, panelsData, lsKey }) => {
   const { dispatch, state } = useContext(ConfiguratorContext);

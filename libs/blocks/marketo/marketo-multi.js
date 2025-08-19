@@ -87,6 +87,7 @@ function setValidationSteps(formEl, totalSteps, currentStep) {
   Object.keys(validationMap).forEach((step) => {
     validationMap[step] = validationMap[step].join(',').split(',');
   });
+  formData.form ??= {};
   formData.form.fldStepPref = validationMap;
 
   formEl.querySelectorAll('.mktoFormRowTop').forEach((row) => {
