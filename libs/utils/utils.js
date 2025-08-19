@@ -1769,9 +1769,13 @@ export async function loadArea(area = document) {
   let lcpSectionId = null;
 
   for (const section of sections) {
+    const img = section.el.querySelector('.upload img');
+    img?.setAttribute('loading', 'eager');
+    img?.setAttribute('fetchpriority', 'high');
+
     const isLastSection = section.idx === sections.length - 1;
     if (lcpSectionId === null && (section.blocks.length !== 0 || isLastSection)) {
-      lcpSectionId = section.idx;
+      lcpSectionId = section.idx + 1;
     }
     const sectionBlocks = await processSection(section, config, isDoc, lcpSectionId);
     areaBlocks.push(...sectionBlocks);

@@ -263,7 +263,6 @@ export default async function init(el) {
       el.appendChild(createTag('div', { class: 'foreground-media' }, asset));
     }
   } else {
-    import('../../lcp-script.js').then((mod) => { mod.default(el); });
     [...fRows].forEach((row) => {
       if (row.childElementCount === 0) {
         row.classList.add('empty-asset');

@@ -206,8 +206,6 @@ export default async function init(el) {
     if (!media.querySelector('video, a[href*=".mp4"]')) decorateImage(media);
   }
 
-  import('../../lcp-script.js').then((mod) => { mod.default(el, media, 'regular'); });
-
   const firstDivInForeground = foreground.querySelector(':scope > div');
   if (firstDivInForeground?.classList.contains('asset')) el.classList.add('row-reversed');
 
