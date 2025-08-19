@@ -88,7 +88,7 @@ module.exports = {
     {
       tcid: '10',
       name: '@Commerce-Volume-Discount',
-      browserParams: '?georouting=off&martech=off',
+      browserParams: '?georouting=off&martech=off&commerce.env=stage',
       path: '/drafts/nala/features/commerce/prices-volume-discount',
       data: { promotionCode: 'ACOM_NALA_TEAMS' },
       tags: '@commerce @smoke @regression',
@@ -96,7 +96,7 @@ module.exports = {
     {
       tcid: '11',
       name: '@Commerce-Volume-Discount-Annual',
-      browserParams: '?georouting=off&martech=off',
+      browserParams: '?georouting=off&martech=off&commerce.env=stage',
       path: '/drafts/nala/features/commerce/prices-volume-discount-annual',
       data: { promotionCode: 'ACOM_NALA_TEAMS' },
       tags: '@commerce @smoke @regression',
