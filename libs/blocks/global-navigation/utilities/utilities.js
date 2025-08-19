@@ -22,6 +22,7 @@ const FEDERAL_PATH_KEY = 'federal';
 const DEFAULT_LOCALNAV_HEIGHT = 40;
 const LANA_CLIENT_ID = 'feds-milo';
 const FEDS_PROMO_HEIGHT = 72;
+export const KEYBOARD_DELAY = 8000;
 
 const selectorMap = {
   headline: '.feds-menu-headline[aria-expanded="true"]',
@@ -71,6 +72,15 @@ export const lanaLog = ({ message, e = '', tags = 'default', errorType }) => {
     tags,
     errorType,
   });
+};
+
+let keyboardNav;
+export const setupKeyboardNav = async (newMobileWithLnav, isFooter) => {
+  keyboardNav = keyboardNav || new Promise((resolve) => {
+    import('./keyboard/index.js')
+      .then(({ default: Navigation }) => resolve(new Navigation(newMobileWithLnav, isFooter)));
+  });
+  return keyboardNav;
 };
 
 const usedMeasurementNames = new Set();
