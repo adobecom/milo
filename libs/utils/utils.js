@@ -1778,11 +1778,14 @@ export async function loadArea(area = document) {
           .quiz-marquee .background img, .quiz-marquee .background video`,
         );
     }
+    console.log('isMarqueeAndHasMedia', isMarqueeAndHasMedia);
 
     if (!isMarqueeAndHasMedia && section.idx === 1) {
-      const img = section.el.querySelector('img');
-      img?.setAttribute('loading', 'eager');
-      img?.setAttribute('fetchpriority', 'high');
+      const imgs = section.el.querySelectorAll('img');
+      imgs.forEach((img) => {
+        img.setAttribute('loading', 'eager');
+        img.setAttribute('fetchpriority', 'high');
+      });
     }
 
     const isLastSection = section.idx === sections.length - 1;
