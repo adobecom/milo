@@ -73,6 +73,15 @@ export const lanaLog = ({ message, e = '', tags = 'default', errorType }) => {
   });
 };
 
+let keyboardNav;
+export const setupKeyboardNav = async (newMobileWithLnav) => {
+  keyboardNav = keyboardNav || new Promise((resolve) => {
+    import('./keyboard/index.js')
+      .then(({ default: Navigation }) => resolve(new Navigation(newMobileWithLnav)));
+  });
+  return keyboardNav;
+};
+
 const usedMeasurementNames = new Set();
 export const logPerformance = (
   measurementName,

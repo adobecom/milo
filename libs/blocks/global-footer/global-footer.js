@@ -23,6 +23,7 @@ import {
   toFragment,
   federatePictureSources,
   isDarkMode,
+  setupKeyboardNav,
 } from '../global-navigation/utilities/utilities.js';
 
 import { replaceKey } from '../../features/placeholders.js';
@@ -95,7 +96,6 @@ const CONFIG = {
   delays: { decoration: 3000 },
   containerBreakpoint: 900,
 };
-
 class Footer {
   constructor({ block } = {}) {
     this.block = block;
@@ -216,6 +216,10 @@ class Footer {
       await yieldToMain();
       await task();
     }
+    const fetchKeyboardNav = () => {
+      setupKeyboardNav(false);
+    };
+    !document.querySelector('.global-navigation') && setTimeout(fetchKeyboardNav, 8000);
 
     const mepMartech = mep?.martech || '';
     this.block.setAttribute('daa-lh', `gnav|${getExperienceName()}|footer${mepMartech}`);
