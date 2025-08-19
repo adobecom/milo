@@ -275,6 +275,14 @@ export default async function init(el) {
       el.appendChild(createTag('div', { class: 'foreground-media' }, asset));
     }
   } else {
+    setTimeout(() => {
+      const h1 = el.querySelector('h1');
+      if (h1) {
+        const h1Height = h1.getBoundingClientRect().height + 45;
+        document.querySelector('.text-only').style.minHeight = (`calc(100svh - ${h1Height}px)`);
+      }
+    }, 100);
+
     furthest(el, '.section').classList.add('text-only');
     [...fRows].forEach((row) => {
       if (row.childElementCount === 0) {

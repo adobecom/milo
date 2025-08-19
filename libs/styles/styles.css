@@ -1089,9 +1089,3 @@ a.static:active  {
 @media screen and (min-width: 1440px) {
   .con-block.max-width-12-desktop-large .foreground { max-width: 1200px; }
 }
-
-@media (max-width: 768px) {
-  main > .section.text-only:first-of-type {
-    min-height: calc(100svh - 200px);
-  }
-}
