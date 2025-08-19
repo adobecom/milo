@@ -204,7 +204,7 @@ describe('merch-card-autoblock autoblock', () => {
       await new Promise((resolve) => { setTimeout(resolve, 500); });
 
       expect(card.getAttribute('variant')).to.equal('simplified-pricing-express');
-      expect(card.querySelector('[slot="heading-l"]')?.textContent).to.include('Express - Create standout content');
+      expect(card.querySelector('[slot="heading-xs"]')?.textContent).to.include('Express - Create standout content');
       expect(card.querySelector('[slot="body-xs"]')?.textContent).to.include('Make amazing social content');
       // Badge is rendered as a merch-badge element in slot, not as attributes
       const badgeSlot = card.querySelector('[slot="badge"]');
