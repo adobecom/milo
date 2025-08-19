@@ -53,6 +53,7 @@ const linksResult = signal({
   details: { badLinks: [] },
 });
 const aiSuggestions = signal([]);
+const authErrorMessage = signal('');
 
 const isAso = getChecksSuite() === 'ASO';
 
@@ -181,7 +182,10 @@ async function getResults() {
 export default function SEO() {
   useEffect(() => {
     getResults();
-    if (!isAso) return;
+    if (!isAso || !asoCache.sessionToken) {
+      authErrorMessage.value = 'Please make sure you are authenticated with IMS and via the correct organisation';
+      return;
+    }
 
     const intervalIdSuggest = setInterval(() => {
       if (asoCache.suggest) {
@@ -201,7 +205,7 @@ export default function SEO() {
     };
   }, []);
 
-  return html`
+  return authErrorMessage.value ? html`<p class="warning">${authErrorMessage.value}</p>` : html`
     <div class=preflight-columns>
       <div class=preflight-column>
         <${SeoItem} id=${SEO_IDS.title} supportsAi icon=${titleResult.value.icon} title=${titleResult.value.title} description=${titleResult.value.description} />

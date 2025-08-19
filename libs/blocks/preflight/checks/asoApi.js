@@ -15,6 +15,7 @@ export const asoCache = {
   suggest: null,
   suggestPromise: null,
   tokenPromise: null,
+  sessionToken: null,
 };
 
 const lanaLog = (message) => {
@@ -52,7 +53,8 @@ async function getASOToken() {
       }
 
       const data = await res.json();
-      return data.sessionToken;
+      asoCache.sessionToken = data.sessionToken;
+      return asoCache.sessionToken;
     } catch (err) {
       lanaLog(`ASO: Error fetching token | error: ${err.reason || err.error || err.message || err} | url: ${CHECK_API}/auth/login`);
       return null;
@@ -156,13 +158,10 @@ function resultsFormatter(results) {
 
 async function getJobId(step) {
   try {
-    const sessionToken = await getASOToken();
-    if (!sessionToken) return null;
-
     const res = await fetch(`${CHECK_API}/preflight/jobs`, {
       method: 'POST',
       headers: {
-        Authorization: `Bearer ${sessionToken}`,
+        Authorization: `Bearer ${asoCache.sessionToken}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(
@@ -186,9 +185,9 @@ async function getJobId(step) {
   }
 }
 
-async function fetchJobStatus(jobId, sessionToken) {
+async function fetchJobStatus(jobId) {
   try {
-    const res = await fetch(`${CHECK_API}/preflight/jobs/${jobId}`, { headers: { Authorization: `Bearer ${sessionToken}` } });
+    const res = await fetch(`${CHECK_API}/preflight/jobs/${jobId}`, { headers: { Authorization: `Bearer ${asoCache.sessionToken}` } });
     if (!res.ok) {
       lanaLog(`ASO: Error fetching job status | status: ${res.status} | url: ${CHECK_API}/preflight/jobs/${jobId}`);
       return null;
@@ -218,10 +217,7 @@ function processCompletedJob(data, step) {
 
 async function attemptJobPoll(jobId, step) {
   try {
-    const sessionToken = await getASOToken();
-    if (!sessionToken) return null;
-
-    const response = await fetchJobStatus(jobId, sessionToken);
+    const response = await fetchJobStatus(jobId);
     if (!response.ok) {
       lanaLog(`ASO: Error fetching job results | step:${step} | status: ${response.status} | url: ${CHECK_API}/preflight/jobs/${jobId}`);
       return null;
@@ -265,6 +261,9 @@ export default async function getChecks(step) {
 }
 
 export async function fetchPreflightChecks() {
+  await getASOToken();
+  if (!asoCache.sessionToken) return null;
+
   if (!asoCache.identify) asoCache.identify = getChecks('IDENTIFY');
   if (!asoCache.suggestPromise) asoCache.suggestPromise = getChecks('SUGGEST');
 
