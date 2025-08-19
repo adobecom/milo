@@ -1870,16 +1870,9 @@ merch-card[variant="simplified-pricing-express"] mas-tooltip {
 /* Tablet styles - extending mobile styles with specific adjustments */
 @media screen and ${I} and ${Ne} {
   merch-card-collection.simplified-pricing-express {
-    /* 32px side padding */
     padding: var(--spacing-m) 32px;
-    
-    /* 1 column layout */
     grid-template-columns: 1fr;
-    
-    /* 24px gap between cards */
     gap: 24px;
-    
-    /* Center the grid */
     width: var(--merch-card-simplified-pricing-express-tablet-width);
     margin: 0 auto;
   }
