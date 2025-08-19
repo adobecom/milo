@@ -231,18 +231,6 @@ function handleViewportOrder(content) {
   });
 }
 
-function furthest(el, selector) {
-  let candidate = null;
-  let current = el;
-  while (current) {
-    if (current.matches && current.matches(selector)) {
-      candidate = current;
-    }
-    current = current.parentElement;
-  }
-  return candidate;
-}
-
 export default async function init(el) {
   el.classList.add('con-block');
   let rows = el.querySelectorAll(':scope > div');
@@ -282,22 +270,21 @@ export default async function init(el) {
 
       allElements.forEach((element) => {
         const hasChildElements = element.children.length > 0;
-        if (!hasChildElements) {
-          const { height } = element.getBoundingClientRect();
-          if (height > maxHeight) {
-            maxHeight = height;
-            biggestElement = element;
-          }
+        if (hasChildElements) return;
+
+        const { height } = element.getBoundingClientRect();
+        if (height > maxHeight) {
+          maxHeight = height;
+          biggestElement = element;
         }
       });
 
       if (biggestElement) {
         const biggestHeight = biggestElement.getBoundingClientRect().height + 35;
-        document.querySelector('.text-only').style.minHeight = (`calc(100svh - ${biggestHeight}px)`);
+        el.closest('.section').style.minHeight = (`calc(100svh - ${biggestHeight}px)`);
       }
     }, 100);
 
-    furthest(el, '.section').classList.add('text-only');
     [...fRows].forEach((row) => {
       if (row.childElementCount === 0) {
         row.classList.add('empty-asset');
