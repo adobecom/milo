@@ -1767,15 +1767,24 @@ export async function loadArea(area = document) {
 
   const areaBlocks = [];
   let lcpSectionId = null;
+  let isMarqueeAndHasMedia = null;
 
   for (const section of sections) {
-    const img = section.el.querySelector('.upload img');
-    img?.setAttribute('loading', 'eager');
-    img?.setAttribute('fetchpriority', 'high');
+    if (!section.idx) {
+      isMarqueeAndHasMedia = section.el
+        .querySelector(`.hero-marquee .foreground-media img, .hero-marquee .foreground-media video,
+     .marquee .asset img, .marquee .asset video, .quiz-marquee video`);
+    }
+
+    if (!isMarqueeAndHasMedia && section.idx === 1) {
+      const img = section.el.querySelector('img');
+      img?.setAttribute('loading', 'eager');
+      img?.setAttribute('fetchpriority', 'high');
+    }
 
     const isLastSection = section.idx === sections.length - 1;
     if (lcpSectionId === null && (section.blocks.length !== 0 || isLastSection)) {
-      lcpSectionId = section.idx + 1;
+      lcpSectionId = isMarqueeAndHasMedia ? section.idx : section.idx + 1;
     }
     const sectionBlocks = await processSection(section, config, isDoc, lcpSectionId);
     areaBlocks.push(...sectionBlocks);
