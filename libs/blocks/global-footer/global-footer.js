@@ -217,7 +217,7 @@ class Footer {
       await task();
     }
     const fetchKeyboardNav = () => {
-      setupKeyboardNav(false);
+      setupKeyboardNav(false, true);
     };
     !document.querySelector('.global-navigation') && setTimeout(fetchKeyboardNav, 8000);
 

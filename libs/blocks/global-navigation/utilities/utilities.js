@@ -74,10 +74,10 @@ export const lanaLog = ({ message, e = '', tags = 'default', errorType }) => {
 };
 
 let keyboardNav;
-export const setupKeyboardNav = async (newMobileWithLnav) => {
+export const setupKeyboardNav = async (newMobileWithLnav, isFooter) => {
   keyboardNav = keyboardNav || new Promise((resolve) => {
     import('./keyboard/index.js')
-      .then(({ default: Navigation }) => resolve(new Navigation(newMobileWithLnav)));
+      .then(({ default: Navigation }) => resolve(new Navigation(newMobileWithLnav, isFooter)));
   });
   return keyboardNav;
 };
