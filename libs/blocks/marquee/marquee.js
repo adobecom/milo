@@ -206,28 +206,7 @@ export default async function init(el) {
     if (!media.querySelector('video, a[href*=".mp4"]')) decorateImage(media);
   }
 
-  setTimeout(() => {
-    if (media.querySelector('img, video')) return;
-    const allElements = el.querySelectorAll('*');
-    let biggestElement = null;
-    let maxHeight = 0;
-
-    allElements.forEach((element) => {
-      const hasChildElements = element.children.length > 0;
-      if (hasChildElements) return;
-
-      const { height } = element.getBoundingClientRect();
-      if (height > maxHeight) {
-        maxHeight = height;
-        biggestElement = element;
-      }
-    });
-
-    if (biggestElement) {
-      const biggestHeight = biggestElement.getBoundingClientRect().height + 35;
-      el.closest('.section').style.minHeight = (`calc(100svh - ${biggestHeight}px)`);
-    }
-  }, 100);
+  import('../../lcp-script.js').then((mod) => { mod.default(el, media, 'regular'); });
 
   const firstDivInForeground = foreground.querySelector(':scope > div');
   if (firstDivInForeground?.classList.contains('asset')) el.classList.add('row-reversed');

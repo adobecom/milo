@@ -263,28 +263,7 @@ export default async function init(el) {
       el.appendChild(createTag('div', { class: 'foreground-media' }, asset));
     }
   } else {
-    setTimeout(() => {
-      const allElements = el.querySelectorAll('*');
-      let biggestElement = null;
-      let maxHeight = 0;
-
-      allElements.forEach((element) => {
-        const hasChildElements = element.children.length > 0;
-        if (hasChildElements) return;
-
-        const { height } = element.getBoundingClientRect();
-        if (height > maxHeight) {
-          maxHeight = height;
-          biggestElement = element;
-        }
-      });
-
-      if (biggestElement) {
-        const biggestHeight = biggestElement.getBoundingClientRect().height + 35;
-        el.closest('.section').style.minHeight = (`calc(100svh - ${biggestHeight}px)`);
-      }
-    }, 100);
-
+    import('../../lcp-script.js').then((mod) => { mod.default(el); });
     [...fRows].forEach((row) => {
       if (row.childElementCount === 0) {
         row.classList.add('empty-asset');
