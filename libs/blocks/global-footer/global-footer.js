@@ -219,7 +219,7 @@ class Footer {
     const fetchKeyboardNav = () => {
       setupKeyboardNav(false, true);
     };
-    !document.querySelector('.global-navigation') && setTimeout(fetchKeyboardNav, 8000);
+    if (document.querySelector('.global-navigation')?.children.length < 1) setTimeout(fetchKeyboardNav, 8000);
 
     const mepMartech = mep?.martech || '';
     this.block.setAttribute('daa-lh', `gnav|${getExperienceName()}|footer${mepMartech}`);
