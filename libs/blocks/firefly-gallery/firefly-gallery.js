@@ -1,5 +1,4 @@
 import { createTag, getConfig } from '../../utils/utils.js';
-import { decorateBlockBg } from '../../utils/decorate.js';
 
 const FIREFLY_API_URL =
   'https://community-hubs.adobe.io/api/v2/ff_community/assets';
@@ -198,13 +197,6 @@ async function loadFireflyImages(skeletonItems) {
 
 export default async function init(el) {
   el.classList.add('firefly-gallery-block', 'con-block');
-
-  // Check if block has background div
-  const rows = el.querySelectorAll(':scope > div');
-  if (rows.length > 1) {
-    if (rows[0].textContent !== '') el.classList.add('has-bg');
-    decorateBlockBg(el, rows[0]);
-  }
 
   // Clear existing content
   el.textContent = '';
