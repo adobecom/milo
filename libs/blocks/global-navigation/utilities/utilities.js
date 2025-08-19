@@ -22,6 +22,7 @@ const FEDERAL_PATH_KEY = 'federal';
 const DEFAULT_LOCALNAV_HEIGHT = 40;
 const LANA_CLIENT_ID = 'feds-milo';
 const FEDS_PROMO_HEIGHT = 72;
+export const KEYBOARD_DELAY = 8000;
 
 const selectorMap = {
   headline: '.feds-menu-headline[aria-expanded="true"]',

@@ -106,6 +106,7 @@ const {
   removeA11YMobileDropdowns,
   getUnavWidthCSS,
   setupKeyboardNav,
+  KEYBOARD_DELAY,
 } = utilities;
 
 const SIGNIN_CONTEXT = getConfig()?.signInContext;
@@ -177,7 +178,7 @@ export const CONFIG = {
   delays: {
     mainNavDropdowns: 800,
     loadDelayed: 3000,
-    keyboardNav: 8000,
+    keyboardNav: KEYBOARD_DELAY,
   },
   features: [
     'gnav-brand',

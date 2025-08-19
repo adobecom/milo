@@ -24,6 +24,7 @@ import {
   federatePictureSources,
   isDarkMode,
   setupKeyboardNav,
+  KEYBOARD_DELAY,
 } from '../global-navigation/utilities/utilities.js';
 
 import { replaceKey } from '../../features/placeholders.js';
@@ -221,7 +222,7 @@ class Footer {
     };
     const nav = document.querySelector('.global-navigation');
     if (!nav || nav.children.length < 1) {
-      setTimeout(fetchKeyboardNav, 8000);
+      setTimeout(fetchKeyboardNav, KEYBOARD_DELAY);
     }
     const mepMartech = mep?.martech || '';
     this.block.setAttribute('daa-lh', `gnav|${getExperienceName()}|footer${mepMartech}`);
