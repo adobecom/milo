@@ -74,10 +74,10 @@ const focusPrevProfileItem = ({ e }) => {
 };
 
 class KeyboardNavigation {
-  constructor(newNavWithLnav, isFooter) {
+  constructor(newNavWithLnav) {
     try {
       this.addEventListeners();
-      if (!isFooter) this.mainNav = new MainNav();
+      this.mainNav = new MainNav();
       this.mobileGnav = MobileGnav.init();
       if (newNavWithLnav) {
         this.loadLnavNavigation();

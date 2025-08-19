@@ -217,10 +217,12 @@ class Footer {
       await task();
     }
     const fetchKeyboardNav = () => {
-      setupKeyboardNav(false, true);
+      setupKeyboardNav(false);
     };
-    if (document.querySelector('.global-navigation')?.children.length < 1) setTimeout(fetchKeyboardNav, 8000);
-
+    const nav = document.querySelector('.global-navigation');
+    if (!nav || nav.children.length < 1) {
+      setTimeout(fetchKeyboardNav, 8000);
+    }
     const mepMartech = mep?.martech || '';
     this.block.setAttribute('daa-lh', `gnav|${getExperienceName()}|footer${mepMartech}`);
     this.block.append(this.elements.footer);
