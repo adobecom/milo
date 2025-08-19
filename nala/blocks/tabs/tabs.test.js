@@ -149,7 +149,7 @@ test.describe('Milo Tab block feature test suite', () => {
   });
 
   test(`[Test Id - ${features[3].tcid}] ${features[3].tags}`, async ({ page, baseURL, browserName }) => {
-    test.skip(browserName === 'webkit', 'Skipping float-button test on WebKit');
+    test.skip(browserName === 'webkit', 'Skipping test on WebKit');
 
     console.log(`[Test Page]: ${baseURL}${features[3].path}${miloLibs}`);
     await page.goto(`${baseURL}${features[3].path}${miloLibs}`);
