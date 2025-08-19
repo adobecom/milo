@@ -256,13 +256,12 @@ merch-card[variant="simplified-pricing-express"] mas-tooltip {
     gap: 24px;
     
     /* Center the grid */
-    max-width: 600px;
+    width: var(--merch-card-simplified-pricing-express-tablet-width);
     margin: 0 auto;
   }
   
   merch-card[variant="simplified-pricing-express"] {
-    width: 100%;
-    max-width: 500px;
+      min-width: var(--merch-card-simplified-pricing-express-tablet-width);
   }
 }
 

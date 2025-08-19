@@ -1,31 +1,27 @@
-var s=Object.defineProperty;var n=(e,t,o)=>t in e?s(e,t,{enumerable:!0,configurable:!0,writable:!0,value:o}):e[t]=o;var a=(e,t,o)=>n(e,typeof t!="symbol"?t+"":t,o);import{LitElement as l,html as i,css as p}from"../lit-all.min.js";function c(){return customElements.get("sp-tooltip")!==void 0||document.querySelector("sp-theme")!==null}var r=class extends l{constructor(){super(),this.content="",this.placement="top",this.variant="info",this.size="xs"}get effectiveContent(){return this.tooltipText||this.content||""}get effectivePlacement(){return this.tooltipPlacement||this.placement||"top"}renderIcon(){return this.src?i`<merch-icon 
+var a=Object.defineProperty;var n=(o,t,e)=>t in o?a(o,t,{enumerable:!0,configurable:!0,writable:!0,value:e}):o[t]=e;var s=(o,t,e)=>n(o,typeof t!="symbol"?t+"":t,e);import{LitElement as p,html as i,css as l}from"../lit-all.min.js";function c(){return customElements.get("sp-tooltip")!==void 0&&customElements.get("overlay-trigger")!==void 0&&document.querySelector("sp-theme")!==null}var r=class extends p{constructor(){super(),this.content="",this.placement="top",this.variant="info",this.size="xs"}get effectiveContent(){return this.tooltipText||this.content||""}get effectivePlacement(){return this.tooltipPlacement||this.placement||"top"}renderIcon(){return this.src?i`<merch-icon 
             src="${this.src}" 
             size="${this.size}"
-        ></merch-icon>`:i`<slot></slot>`}render(){let t=this.effectiveContent,o=this.effectivePlacement;return t?c()?i`
-                <overlay-trigger placement="${o}">
+        ></merch-icon>`:i`<slot></slot>`}render(){let t=this.effectiveContent,e=this.effectivePlacement;return t?c()?i`
+                <overlay-trigger placement="${e}">
                     <span slot="trigger">${this.renderIcon()}</span>
                     <sp-tooltip 
-                        placement="${o}"
+                        placement="${e}"
                         variant="${this.variant}">
                         ${t}
                     </sp-tooltip>
                 </overlay-trigger>
             `:i`
                 <span 
-                    class="css-tooltip ${o}"
+                    class="css-tooltip ${e}"
                     data-tooltip="${t}"
                     tabindex="0"
                     role="img"
                     aria-label="${t}">
                     ${this.renderIcon()}
                 </span>
-            `:this.renderIcon()}};a(r,"properties",{content:{type:String},placement:{type:String},variant:{type:String},src:{type:String},size:{type:String},tooltipText:{type:String,attribute:"tooltip-text"},tooltipPlacement:{type:String,attribute:"tooltip-placement"}}),a(r,"styles",p`
+            `:this.renderIcon()}};s(r,"properties",{content:{type:String},placement:{type:String},variant:{type:String},src:{type:String},size:{type:String},tooltipText:{type:String,attribute:"tooltip-text"},tooltipPlacement:{type:String,attribute:"tooltip-placement"}}),s(r,"styles",l`
         :host {
             display: contents;
-        }
-        
-        /* Ensure tooltip container can show overflow */
-        mas-tooltip {
             overflow: visible;
         }
         

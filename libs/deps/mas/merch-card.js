@@ -1,4 +1,4 @@
-var Ut=Object.defineProperty;var Ht=i=>{throw TypeError(i)};var Jr=(i,t,e)=>t in i?Ut(i,t,{enumerable:!0,configurable:!0,writable:!0,value:e}):i[t]=e;var ei=(i,t)=>()=>(i&&(t=i(i=0)),t);var ti=(i,t)=>{for(var e in t)Ut(i,e,{get:t[e],enumerable:!0})};var d=(i,t,e)=>Jr(i,typeof t!="symbol"?t+"":t,e),gt=(i,t,e)=>t.has(i)||Ht("Cannot "+e);var c=(i,t,e)=>(gt(i,t,"read from private field"),e?e.call(i):t.get(i)),m=(i,t,e)=>t.has(i)?Ht("Cannot add the same private member more than once"):t instanceof WeakSet?t.add(i):t.set(i,e),h=(i,t,e,r)=>(gt(i,t,"write to private field"),r?r.call(i,e):t.set(i,e),e),w=(i,t,e)=>(gt(i,t,"access private method"),e);var qt=(i,t,e,r)=>({set _(a){h(i,t,a,e)},get _(){return c(i,t,r)}});var ut={};ti(ut,{default:()=>V});import{LitElement as ri,html as Ge,css as ii}from"../lit-all.min.js";function ai(){return customElements.get("sp-tooltip")!==void 0||document.querySelector("sp-theme")!==null}var V,ft=ei(()=>{V=class extends ri{constructor(){super(),this.content="",this.placement="top",this.variant="info",this.size="xs"}get effectiveContent(){return this.tooltipText||this.content||""}get effectivePlacement(){return this.tooltipPlacement||this.placement||"top"}renderIcon(){return this.src?Ge`<merch-icon 
+var Ut=Object.defineProperty;var Ht=i=>{throw TypeError(i)};var Jr=(i,t,e)=>t in i?Ut(i,t,{enumerable:!0,configurable:!0,writable:!0,value:e}):i[t]=e;var ei=(i,t)=>()=>(i&&(t=i(i=0)),t);var ti=(i,t)=>{for(var e in t)Ut(i,e,{get:t[e],enumerable:!0})};var d=(i,t,e)=>Jr(i,typeof t!="symbol"?t+"":t,e),gt=(i,t,e)=>t.has(i)||Ht("Cannot "+e);var c=(i,t,e)=>(gt(i,t,"read from private field"),e?e.call(i):t.get(i)),m=(i,t,e)=>t.has(i)?Ht("Cannot add the same private member more than once"):t instanceof WeakSet?t.add(i):t.set(i,e),h=(i,t,e,r)=>(gt(i,t,"write to private field"),r?r.call(i,e):t.set(i,e),e),w=(i,t,e)=>(gt(i,t,"access private method"),e);var qt=(i,t,e,r)=>({set _(a){h(i,t,a,e)},get _(){return c(i,t,r)}});var ut={};ti(ut,{default:()=>V});import{LitElement as ri,html as Ge,css as ii}from"../lit-all.min.js";function ai(){return customElements.get("sp-tooltip")!==void 0&&customElements.get("overlay-trigger")!==void 0&&document.querySelector("sp-theme")!==null}var V,ft=ei(()=>{V=class extends ri{constructor(){super(),this.content="",this.placement="top",this.variant="info",this.size="xs"}get effectiveContent(){return this.tooltipText||this.content||""}get effectivePlacement(){return this.tooltipPlacement||this.placement||"top"}renderIcon(){return this.src?Ge`<merch-icon 
             src="${this.src}" 
             size="${this.size}"
         ></merch-icon>`:Ge`<slot></slot>`}render(){let t=this.effectiveContent,e=this.effectivePlacement;return t?ai()?Ge`
@@ -22,10 +22,6 @@ var Ut=Object.defineProperty;var Ht=i=>{throw TypeError(i)};var Jr=(i,t,e)=>t in
             `:this.renderIcon()}};d(V,"properties",{content:{type:String},placement:{type:String},variant:{type:String},src:{type:String},size:{type:String},tooltipText:{type:String,attribute:"tooltip-text"},tooltipPlacement:{type:String,attribute:"tooltip-placement"}}),d(V,"styles",ii`
         :host {
             display: contents;
-        }
-        
-        /* Ensure tooltip container can show overflow */
-        mas-tooltip {
             overflow: visible;
         }
         
@@ -2291,13 +2287,12 @@ merch-card[variant="simplified-pricing-express"] mas-tooltip {
     gap: 24px;
     
     /* Center the grid */
-    max-width: 600px;
+    width: var(--merch-card-simplified-pricing-express-tablet-width);
     margin: 0 auto;
   }
   
   merch-card[variant="simplified-pricing-express"] {
-    width: 100%;
-    max-width: 500px;
+      min-width: var(--merch-card-simplified-pricing-express-tablet-width);
   }
 }
 
@@ -2336,6 +2331,7 @@ merch-card[variant="simplified-pricing-express"] [slot="cta"] a.spectrum-Button.
         :host([variant='simplified-pricing-express']) {
             /* CSS Variables */
             --merch-card-simplified-pricing-express-width: 365px;
+            --merch-card-simplified-pricing-express-tablet-width: 532px;
             --merch-card-simplified-pricing-express-padding: 24px;
             --merch-card-simplified-pricing-express-padding-mobile: 16px;
             --merch-card-simplified-pricing-express-min-height: 341px;

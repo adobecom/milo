@@ -1,8 +1,9 @@
 import { LitElement, html, css } from 'lit';
 
-// Self-contained tooltip detection
 function hasSpectrumTooltip() {
-    return customElements.get('sp-tooltip') !== undefined || 
+    // Only use Spectrum if ALL required components are available
+    return customElements.get('sp-tooltip') !== undefined && 
+           customElements.get('overlay-trigger') !== undefined &&
            document.querySelector('sp-theme') !== null;
 }
 
@@ -25,10 +26,6 @@ export default class MasTooltip extends LitElement {
     static styles = css`
         :host {
             display: contents;
-        }
-        
-        /* Ensure tooltip container can show overflow */
-        mas-tooltip {
             overflow: visible;
         }
         
@@ -169,7 +166,10 @@ export default class MasTooltip extends LitElement {
             return this.renderIcon();
         }
 
-        if (hasSpectrumTooltip()) {
+        // Check for Spectrum components at render time for better timing
+        const useSpectrum = hasSpectrumTooltip();
+
+        if (useSpectrum) {
             // Use Spectrum tooltip if available
             return html`
                 <overlay-trigger placement="${placement}">

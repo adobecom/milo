@@ -11,22 +11,6 @@
             href="https://p.typekit.net/p.css?s=1&k=hah7vzn&ht=tk&f=7180.7181.7182.7183.22474.22749.22750.22751.22753&a=8634977&app=typekit&e=css"
         />
         <link rel="stylesheet" href="https://use.typekit.net/hah7vzn.css" />
-        <style>
-            /* Fix for tooltip sizing */
-            mas-tooltip .css-tooltip[data-tooltip]::before {
-                width: auto !important;
-                max-width: 250px !important;
-                white-space: normal !important;
-                font-size: 12px !important;
-                padding: 6px 10px !important;
-            }
-            
-            /* Ensure tooltips don't interfere with layout */
-            mas-tooltip {
-                display: inline-flex;
-                vertical-align: middle;
-            }
-        </style>
         <script src="/libs/deps/lit-all.min.js" type="module"></script>
 
         <script>
@@ -61,6 +45,10 @@
         <script
             type="module"
             src="../../../features/spectrum-web-components/dist/tooltip.js"
+        ></script>
+        <script
+            type="module"
+            src="../../../features/spectrum-web-components/dist/theme.js"
         ></script>
     </head>
 
@@ -137,17 +125,6 @@
                             <merch-card variant="simplified-pricing-express" data-default-card="true"><aem-fragment fragment="67c78f03-7d88-44c9-9a06-05443ec9265d"></aem-fragment></merch-card>
                             <merch-card variant="simplified-pricing-express"><aem-fragment fragment="b28957b9-2341-40f9-9004-24446f68e5e5"></aem-fragment></merch-card>
                             <merch-card variant="simplified-pricing-express"><aem-fragment fragment="aaa728dc-2b44-495c-b9f0-bb82044db18a"></aem-fragment></merch-card>
-                            
-                            <!-- Test card with tooltips (without inline-price to avoid WCS errors) -->
-                            <merch-card variant="simplified-pricing-express" name="test-tooltip-card">
-                                <h3 slot="heading-m">Test Card with Tooltips <mas-tooltip content="This is a test tooltip" placement="top">ⓘ</mas-tooltip></h3>
-                                <div slot="body-xs">
-                                    Test description with tooltip <mas-tooltip content="Another tooltip here" placement="right">?</mas-tooltip>
-                                </div>
-                                <div slot="prices">
-                                    <span>US$9.99/mo <mas-tooltip content="Price tooltip" placement="bottom">*</mas-tooltip></span>
-                                </div>
-                            </merch-card>
                           </merch-card-collection>
                     </div>
                 </div>

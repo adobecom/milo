@@ -1880,13 +1880,12 @@ merch-card[variant="simplified-pricing-express"] mas-tooltip {
     gap: 24px;
     
     /* Center the grid */
-    max-width: 600px;
+    width: var(--merch-card-simplified-pricing-express-tablet-width);
     margin: 0 auto;
   }
   
   merch-card[variant="simplified-pricing-express"] {
-    width: 100%;
-    max-width: 500px;
+      min-width: var(--merch-card-simplified-pricing-express-tablet-width);
   }
 }
 
@@ -1925,6 +1924,7 @@ merch-card[variant="simplified-pricing-express"] [slot="cta"] a.spectrum-Button.
         :host([variant='simplified-pricing-express']) {
             /* CSS Variables */
             --merch-card-simplified-pricing-express-width: 365px;
+            --merch-card-simplified-pricing-express-tablet-width: 532px;
             --merch-card-simplified-pricing-express-padding: 24px;
             --merch-card-simplified-pricing-express-padding-mobile: 16px;
             --merch-card-simplified-pricing-express-min-height: 341px;
