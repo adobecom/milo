@@ -146,7 +146,7 @@ export class SimplifiedPricingExpress extends VariantLayout {
                 <div class="header">
                     <slot name="heading-xs"></slot>
                     <slot name="trial-badge"></slot>
-                    <button class="chevron-button" aria-label="Expand card" @click=${(e) => this.handleChevronClick(e)}>
+                    <button class="chevron-button" @click=${(e) => this.handleChevronClick(e)}>
                         <svg class="chevron-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <path d="M12 15.5L5 8.5L6.4 7.1L12 12.7L17.6 7.1L19 8.5L12 15.5Z" fill="currentColor"/>
                         </svg>
