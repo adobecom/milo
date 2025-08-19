@@ -276,10 +276,24 @@ export default async function init(el) {
     }
   } else {
     setTimeout(() => {
-      const h1 = el.querySelector('h1');
-      if (h1) {
-        const h1Height = h1.getBoundingClientRect().height + 45;
-        document.querySelector('.text-only').style.minHeight = (`calc(100svh - ${h1Height}px)`);
+      const allElements = el.querySelectorAll('*');
+      let biggestElement = null;
+      let maxHeight = 0;
+
+      allElements.forEach((element) => {
+        const hasChildElements = element.children.length > 0;
+        if (!hasChildElements) {
+          const { height } = element.getBoundingClientRect();
+          if (height > maxHeight) {
+            maxHeight = height;
+            biggestElement = element;
+          }
+        }
+      });
+
+      if (biggestElement) {
+        const biggestHeight = biggestElement.getBoundingClientRect().height + 35;
+        document.querySelector('.text-only').style.minHeight = (`calc(100svh - ${biggestHeight}px)`);
       }
     }, 100);
 
