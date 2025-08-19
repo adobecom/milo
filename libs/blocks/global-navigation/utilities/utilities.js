@@ -12,7 +12,7 @@ import {
   getFedsPlaceholderConfig,
 } from '../../../utils/utils.js';
 import { replaceKey, replaceText, fetchPlaceholders } from '../../../features/placeholders.js';
-import { PERSONALIZATION_TAGS } from '../../../features/personalization/personalization.js';
+import { PERSONALIZATION_TAGS, FLAGS, handleCommands } from '../../../features/personalization/personalization.js';
 
 loadLana();
 
@@ -480,10 +480,16 @@ export async function fetchAndProcessPlainHtml({
   const { body } = new DOMParser().parseFromString(text, 'text/html');
   if (mepFragment?.manifestId) body.dataset.manifestId = mepFragment.manifestId;
   if (mepFragment?.targetManifestId) body.dataset.adobeTargetTestid = mepFragment.targetManifestId;
-  const commands = mepGnav?.commands;
+  let commands = mepGnav?.commands || [];
+
+  const gnavMepCommands = config?.mep?.commands?.filter(
+    (command) => command?.modifiers?.find((modifier) => modifier === FLAGS?.includeGnav),
+  ) || [];
+
+  commands = commands.concat(gnavMepCommands);
+
   if (commands?.length) {
     /* c8 ignore next 3 */
-    const { handleCommands } = await import('../../../features/personalization/personalization.js');
     handleCommands(commands, body, true, true);
   }
   const inlineFrags = [...body.querySelectorAll('a[href*="#_inline"]')];
