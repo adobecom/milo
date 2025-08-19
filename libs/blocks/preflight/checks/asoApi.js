@@ -5,16 +5,16 @@ import {
   SEO_DESCRIPTIONS,
   ASO_POLL_INTERVAL_MS,
   ASO_MAX_RETRIES,
-  ASO_IDENTIFY_TIMEOUT_MS,
+  ASO_TIMEOUT_MS,
 } from './constants.js';
 
 const CHECK_API = 'https://spacecat.experiencecloud.live/api/v1';
 
 export const asoCache = {
   identify: null,
+  identifyFinished: false,
   suggest: null,
-  suggestPromise: null,
-  tokenPromise: null,
+  suggestFinished: false,
   sessionToken: null,
 };
 
@@ -27,50 +27,46 @@ const lanaLog = (message) => {
 };
 
 async function getASOToken() {
-  asoCache.tokenPromise ??= (async () => {
-    window.adobeImsFactory.createIMSLib({
-      client_id: 'milo-tools',
-      scope: 'AdobeID,openid,gnav,read_organizations,additional_info.projectedProductContext,additional_info.roles',
-      environment: 'prod',
-      autoValidateToken: true,
-      useLocalStorage: false,
-    }, 'asoIMS');
-    // TODO: We should only initialize (or re-initialize) AFTER
-    // we get a 'logged-in' sidekick event
-    window.asoIMS.initialize();
-    if (!window.asoIMS.getAccessToken()?.token) return null;
+  window.adobeImsFactory.createIMSLib({
+    client_id: 'milo-tools',
+    scope: 'AdobeID,openid,gnav,read_organizations,additional_info.projectedProductContext,additional_info.roles',
+    environment: 'prod',
+    autoValidateToken: true,
+    useLocalStorage: false,
+  }, 'asoIMS');
+  // TODO: We should only initialize (or re-initialize) AFTER
+  // we get a 'logged-in' sidekick event
+  window.asoIMS.initialize();
+  if (!window.asoIMS.getAccessToken()?.token) return null;
 
-    try {
-      const res = await fetch(`${CHECK_API}/auth/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ accessToken: window.asoIMS.getAccessToken().token }),
-      });
+  try {
+    const res = await fetch(`${CHECK_API}/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ accessToken: window.asoIMS.getAccessToken().token }),
+    });
 
-      if (!res.ok) {
-        lanaLog(`ASO: Error fetching token | status: ${res.status} | url: ${CHECK_API}/auth/login`);
-        return null;
-      }
-
-      const data = await res.json();
-      asoCache.sessionToken = data.sessionToken;
-      return asoCache.sessionToken;
-    } catch (err) {
-      lanaLog(`ASO: Error fetching token | error: ${err.reason || err.error || err.message || err} | url: ${CHECK_API}/auth/login`);
+    if (!res.ok) {
+      lanaLog(`ASO: Error fetching token | status: ${res.status} | url: ${CHECK_API}/auth/login`);
       return null;
     }
-  })();
 
-  return asoCache.tokenPromise;
+    const data = await res.json();
+    asoCache.sessionToken = data.sessionToken;
+    return asoCache.sessionToken;
+  } catch (err) {
+    lanaLog(`ASO: Error fetching token | error: ${err.reason || err.error || err.message || err} | url: ${CHECK_API}/auth/login`);
+    return null;
+  }
 }
 
 function resultsFormatter(results) {
   const formattedResults = [];
 
   const processMetaAudit = ({ seoId, seoTitle, passDescription }) => {
-    const opportunity = results
-      .find((result) => result.name === 'metatags')
-      ?.opportunities.find((opp) => opp.tagName === seoId);
+    const audit = results.find((result) => result.name === 'metatags');
+    if (!audit) return;
+    const opportunity = audit?.opportunities.find((opp) => opp.tagName === seoId);
 
     formattedResults.push({
       id: seoId,
@@ -199,32 +195,24 @@ async function fetchJobStatus(jobId) {
   }
 }
 
-function processCompletedJob(data, step) {
-  if (data.status !== 'COMPLETED') return null;
+function processJobUpdate(data, step) {
+  if (!data?.result?.[0]?.audits) return null;
   const formattedResults = resultsFormatter(data.result[0].audits);
-  if (step === 'IDENTIFY') {
-    asoCache.identify = formattedResults;
-    return formattedResults;
-  }
-
-  if (step === 'SUGGEST') {
-    asoCache.suggest = formattedResults;
-    return formattedResults;
-  }
-
-  return null;
+  if (step === 'IDENTIFY') asoCache.identify = formattedResults;
+  if (step === 'SUGGEST') asoCache.suggest = formattedResults;
+  return { results: formattedResults, status: data.status };
 }
 
 async function attemptJobPoll(jobId, step) {
   try {
     const response = await fetchJobStatus(jobId);
-    if (!response.ok) {
-      lanaLog(`ASO: Error fetching job results | step:${step} | status: ${response.status} | url: ${CHECK_API}/preflight/jobs/${jobId}`);
+    if (!response || !response.ok) {
+      lanaLog(`ASO: Error fetching job results | step:${step} | status: ${response?.status} | url: ${CHECK_API}/preflight/jobs/${jobId}`);
       return null;
     }
 
     const data = await response.json();
-    return processCompletedJob(data, step);
+    return processJobUpdate(data, step);
   } catch (err) {
     lanaLog(`ASO: Error fetching job results | step:${step} | error: ${err.reason || err.error || err.message || err} | url: ${CHECK_API}/preflight/jobs/${jobId}`);
     return null;
@@ -241,8 +229,11 @@ async function getJobResults(jobId, step) {
   let retries = 0;
 
   while (retries < ASO_MAX_RETRIES) {
-    const result = await attemptJobPoll(jobId, step);
-    if (result) return result;
+    const update = await attemptJobPoll(jobId, step);
+    if (update?.status === 'COMPLETED') {
+      asoCache[step === 'IDENTIFY' ? 'identifyFinished' : 'suggestFinished'] = true;
+      return update.results;
+    }
 
     await sleep(ASO_POLL_INTERVAL_MS);
     retries += 1;
@@ -265,16 +256,16 @@ export async function fetchPreflightChecks() {
   if (!asoCache.sessionToken) return null;
 
   if (!asoCache.identify) asoCache.identify = getChecks('IDENTIFY');
-  if (!asoCache.suggestPromise) asoCache.suggestPromise = getChecks('SUGGEST');
+  if (!asoCache.suggest) asoCache.suggest = getChecks('SUGGEST');
 
   const raceResult = await Promise.race([
     asoCache.identify,
     new Promise((_, reject) => {
       setTimeout(() => {
-        const identifyTimeoutSeconds = ASO_IDENTIFY_TIMEOUT_MS / 1000;
+        const identifyTimeoutSeconds = ASO_TIMEOUT_MS / 1000;
         lanaLog(`ASO: identify results not available within ${identifyTimeoutSeconds} seconds`);
         reject(new Error(`ASO: identify results not available within ${identifyTimeoutSeconds} seconds`));
-      }, ASO_IDENTIFY_TIMEOUT_MS);
+      }, ASO_TIMEOUT_MS);
     }),
   ]);
 

@@ -1,6 +1,6 @@
 import { html, signal, useEffect } from '../../../deps/htm-preact.js';
 import { asoCache } from '../checks/asoApi.js';
-import { SEO_IDS, SEO_TITLES, STATUS, ASO_SUGGEST_POLL_MS } from '../checks/constants.js';
+import { SEO_IDS, SEO_TITLES, STATUS, ASO_TIMEOUT_MS } from '../checks/constants.js';
 import { getChecksSuite, getPreflightResults } from '../checks/preflightApi.js';
 
 const DEF_ICON = 'purple';
@@ -57,6 +57,16 @@ const authErrorMessage = signal('');
 
 const isAso = getChecksSuite() === 'ASO';
 
+const signals = [
+  h1Result,
+  titleResult,
+  canonResult,
+  descResult,
+  bodyResult,
+  loremResult,
+  linksResult,
+];
+
 function toUIFormat(result, signalResult) {
   let icon;
   if (result.status === STATUS.PASS) {
@@ -111,6 +121,7 @@ export async function sendResults() {
 function SeoItem({ id, icon, title, description, supportsAi }) {
   const aiSuggestion = aiSuggestions.value.find((suggestion) => suggestion.id === id)?.aiSuggestion;
   const showLoadingAi = isAso && supportsAi && icon === 'red' && !aiSuggestion;
+  const showAiSuggestion = supportsAi && aiSuggestion && icon === 'red';
   return html`
     <div class=preflight-item>
       <div class="result-icon ${icon}"></div>
@@ -118,22 +129,12 @@ function SeoItem({ id, icon, title, description, supportsAi }) {
         <p class=preflight-item-title>${title}</p>
         <p class=preflight-item-description>${description}</p>
          ${showLoadingAi && html`<p class="ai-suggestion">AI suggestion: <div class="result-icon purple"></div></p>`}
-        ${supportsAi && aiSuggestion && html`<p class="ai-suggestion">AI suggestion: ${aiSuggestion}</p>`}
+        ${showAiSuggestion && html`<p class="ai-suggestion">AI suggestion: ${aiSuggestion}</p>`}
       </div>
     </div>`;
 }
 
 async function getResults() {
-  const signals = [
-    h1Result,
-    titleResult,
-    canonResult,
-    descResult,
-    bodyResult,
-    loremResult,
-    linksResult,
-  ];
-
   const results = (await getPreflightResults(window.location.href, document)).runChecks.seo || [];
 
   // Update UI as each check resolves
@@ -182,24 +183,36 @@ async function getResults() {
 export default function SEO() {
   useEffect(() => {
     getResults();
-    if (!isAso || !asoCache.sessionToken) {
+    if (!isAso) return;
+
+    if (!asoCache.sessionToken) {
       authErrorMessage.value = 'Please make sure you are authenticated with IMS and via the correct organisation';
       return;
     }
 
-    const intervalIdSuggest = setInterval(() => {
-      if (asoCache.suggest) {
-        aiSuggestions.value = asoCache.suggest;
-        clearInterval(intervalIdSuggest);
+    const intervalIdIdentify = setInterval(() => {
+      if (asoCache.identify?.length > 0) {
+        asoCache.identify.forEach((partial) => {
+          const targetSignal = signals.find((s) => s.value.id === partial.id);
+          if (targetSignal) toUIFormat(partial, targetSignal);
+        });
       }
+      if (asoCache.identifyFinished) clearInterval(intervalIdIdentify);
+    }, 1000);
+
+    const intervalIdSuggest = setInterval(() => {
+      if (asoCache.suggest?.length > 0) aiSuggestions.value = asoCache.suggest;
+      if (asoCache.suggestFinished) clearInterval(intervalIdSuggest);
     }, 1000);
 
     const timeoutId = setTimeout(() => {
+      clearInterval(intervalIdIdentify);
       clearInterval(intervalIdSuggest);
-    }, ASO_SUGGEST_POLL_MS);
+    }, ASO_TIMEOUT_MS);
 
     // eslint-disable-next-line
     return () => {
+      clearInterval(intervalIdIdentify);
       clearInterval(intervalIdSuggest);
       clearTimeout(timeoutId);
     };
