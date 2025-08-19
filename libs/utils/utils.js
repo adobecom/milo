@@ -253,6 +253,8 @@ export function getMetadata(name, doc = document) {
   return meta && meta.content;
 }
 
+(() => { if (getMetadata('mweb') === 'on') document.body.classList.add('mweb-enabled'); })();
+
 const handleEntitlements = (() => {
   const { martech } = Object.fromEntries(PAGE_URL.searchParams);
   if (martech === 'off') return () => { };
