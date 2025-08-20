@@ -95,8 +95,10 @@ function getSidenav(collection) {
   const sidenavList = createTag('merch-sidenav-list', { deeplink: 'filter' }, spSidenav);
 
   sidenavList.updateComplete.then(() => {
+    sidenavList.querySelector('sp-sidenav')?.setAttribute('role', 'tablist');
     sidenavList.querySelectorAll('sp-sidenav-item').forEach((item) => {
-      item?.shadowRoot?.querySelector('a')?.setAttribute('role', 'tab');
+      item.removeAttribute('role');
+      item.shadowRoot?.querySelector('a')?.setAttribute('role', 'tab');
     });
   });
 
