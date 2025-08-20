@@ -19,6 +19,7 @@ export const styles = css`
             --chevron-down-icon,
             url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" xml:space="preserve" width="10" height="6" aria-hidden="true" viewBox="0 0 10 6"><path fill="%23787878" d="M9.99 1.01A1 1 0 0 0 8.283.3L5 3.586 1.717.3A1 1 0 1 0 .3 1.717L4.293 5.7a1 1 0 0 0 1.414 0L9.7 1.717a1 1 0 0 0 .29-.707z"/></svg>')
         );
+        --checkmark-icon: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10"><path d="M8.648 1.613a.922.922 0 0 0-1.294.156L3.794 6.3 2.632 4.906a.922.922 0 0 0-1.416 1.18l1.89 2.269c.02.023.048.032.07.052a.862.862 0 0 0 .07.083.883.883 0 0 0 .128.07.892.892 0 0 0 .095.051.917.917 0 0 0 .345.076h.001a.915.915 0 0 0 .357-.08.897.897 0 0 0 .099-.057.88.88 0 0 0 .134-.077.862.862 0 0 0 .069-.086c.02-.021.047-.03.066-.053l4.264-5.427a.921.921 0 0 0-.156-1.294z"/></svg>');
         --qs-transition: var(--transition);
 
         display: block;
@@ -87,6 +88,10 @@ export const styles = css`
         background-position: center;
         background-repeat: no-repeat;
     }
+    
+    .picker-value {
+        opacity: 0;
+    }
 
     .popover {
         position: absolute;
@@ -97,7 +102,7 @@ export const styles = css`
         overflow: hidden;
         z-index: 100;
         transition: var(--qs-transition);
-        opacity: 0;
+        display: none;
         box-sizing: border-box;
     }
 
@@ -112,13 +117,13 @@ export const styles = css`
     }
 
     .popover.open {
-        opacity: 1;
+        display: block;
         background: #ffffff;
         border: var(--border-width) solid var(--border-color);
     }
 
     .popover.closed {
-        opacity: 0;
+        display: none;
         pointer-events: none;
         transition: none;
     }
@@ -138,5 +143,11 @@ export const styles = css`
 
     .item.highlighted {
         background-color: var(--background-color);
+    }
+    
+    .item.selected {
+        background-image: var(--checkmark-icon);
+        background-position: right 7px center;
+        background-repeat: no-repeat;
     }
 `;
