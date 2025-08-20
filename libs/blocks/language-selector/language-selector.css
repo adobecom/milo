@@ -132,7 +132,7 @@
 }
 
 .no-search-result-text {
-  font-size: var(--type-body-xs-size);
+  font-size: var(--type-body-xxs-size);
   font-family: var(--body-font-family);
   color: var(--color-gray-500);
 }
