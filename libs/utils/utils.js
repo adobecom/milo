@@ -888,6 +888,9 @@ export function decorateAutoBlock(a) {
         a.dataset.modalHash = url.hash;
         a.href = url.hash;
         a.className = `modal link-block ${[...a.classList].join(' ')}`;
+        a.addEventListener('click', () => {
+          a.dataset.isModalTrigger = 'true';
+        });
         return true;
       }
     }

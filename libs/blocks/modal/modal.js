@@ -78,7 +78,11 @@ export function closeModal(modal) {
       }
       mod.remove();
     }
-    document.querySelector(`[data-modal-hash="#${mod.id}"]`)?.focus();
+    const triggerElement = document.querySelector(`[data-modal-hash="#${mod.id}"][data-is-modal-trigger="true"]`);
+    if (triggerElement) {
+      triggerElement.focus();
+      triggerElement.removeAttribute('data-is-modal-trigger');
+    }
   });
 
   if (!document.querySelectorAll('.modal-curtain').length) {
@@ -105,7 +109,11 @@ export function closeModal(modal) {
     return;
   }
 
-  document.querySelector(`a[data-modal-id="${id}"].con-button`)?.focus();
+  const triggerElement = document.querySelector(`[data-modal-id="${id}"][data-is-modal-trigger="true"]`);
+  if (triggerElement) {
+    triggerElement.focus();
+    triggerElement.removeAttribute('data-is-modal-trigger');
+  }
 }
 
 function isElementInView(element) {
