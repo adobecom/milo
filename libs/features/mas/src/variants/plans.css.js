@@ -12,12 +12,12 @@ merch-card[variant^="plans"] {
     width: var(--consonant-merch-card-plans-width);
 }
 
-merch-card[variant^="plans"][size="wide"], merch-card[variant^="plans"][size="super-wide"] {
-    width: auto;
+merch-card[variant="plans-students"] {
+    width: var(--consonant-merch-card-plans-students-width);
 }
 
-merch-card[variant="plans-students"] {
-    width: 100%;
+merch-card[variant^="plans"][size="wide"], merch-card[variant^="plans"][size="super-wide"] {
+    width: auto;
 }
 
 merch-card[variant^="plans"] [slot="icons"] {
@@ -185,12 +185,6 @@ merch-card[variant^="plans"] merch-addon span[data-template="price"] {
 @media screen and ${MOBILE_LANDSCAPE} {
     merch-whats-included merch-mnemonic-list,
     merch-whats-included [slot="heading"] {
-        width: 100%;
-    }
-
-    merch-card[variant="plans-students"] {
-        min-width: var(--consonant-merch-card-plans-width);
-        max-width: var(--consonant-merch-card-plans-students-width);
         width: 100%;
     }
 }
