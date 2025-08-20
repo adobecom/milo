@@ -105,6 +105,8 @@ const {
   addA11YMobileDropdowns,
   removeA11YMobileDropdowns,
   getUnavWidthCSS,
+  setupKeyboardNav,
+  KEYBOARD_DELAY,
 } = utilities;
 
 const SIGNIN_CONTEXT = getConfig()?.signInContext;
@@ -176,7 +178,7 @@ export const CONFIG = {
   delays: {
     mainNavDropdowns: 800,
     loadDelayed: 3000,
-    keyboardNav: 8000,
+    keyboardNav: KEYBOARD_DELAY,
   },
   features: [
     'gnav-brand',
@@ -340,15 +342,6 @@ const decorateProfileTrigger = async ({ avatar }) => {
   `;
 
   return buttonElem;
-};
-
-let keyboardNav;
-const setupKeyboardNav = async (newMobileWithLnav) => {
-  keyboardNav = keyboardNav || new Promise(async (resolve) => {
-    const { default: KeyboardNavigation } = await import('./utilities/keyboard/index.js');
-    const instance = new KeyboardNavigation(newMobileWithLnav);
-    resolve(instance);
-  });
 };
 
 const getBrandImage = (image, brandImageOnly) => {

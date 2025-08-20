@@ -3,37 +3,11 @@ const res = [
     offer: {
       product_code: 'DMA_DATA_LAUNCH',
       product_arrangement_code: 'dm_data_launch_ml',
-      product_arrangement: {
+      product_arrangement_v2: {
         code: 'dm_data_launch_ml',
-        label: 'DM_DATA_LAUNCH_ML',
         family: 'DATA_LAUNCH',
         cloud: 'EXPERIENCE',
-        fulfillable_items: [
-          {
-            code: 'dma_reactor',
-            label: 'Launch, by Adobe',
-          },
-          {
-            code: 'user_group_assignment',
-            label: 'Assign User Groups',
-          },
-          {
-            code: 'user_sync',
-            label: 'User Sync',
-          },
-          {
-            code: 'domain_claiming',
-            label: 'Domain Claiming',
-          },
-          {
-            code: 'user_permission_management',
-            label: 'User Permission Mgmt',
-          },
-          {
-            code: 'overdelegation_allowed',
-            label: 'Overdelegation  Allowed',
-          },
-        ],
+        type: 'BASE',
       },
       payment_structure: 'PAID_IN_ADVANCE',
     },
@@ -43,11 +17,11 @@ const res = [
     offer: {
       product_code: 'DMA_ANALYTICS',
       product_arrangement_code: 'dm_analytics_enterprise_ml',
-      product_arrangement: {
+      product_arrangement_v2: {
         code: 'dm_analytics_enterprise_ml',
-        label: 'DM_ANALYTICS_ENTERPRISE_ML',
         family: 'ANALYTICS',
         cloud: 'EXPERIENCE',
+        type: 'BASE',
       },
       payment_structure: 'PAID_IN_ADVANCE',
       offer_id: 'testOffer',
@@ -58,11 +32,11 @@ const res = [
     offer: {
       product_code: 'DMA_AUDIENCEMANAGER',
       product_arrangement_code: 'dm_audience_manager_enterprise_ml',
-      product_arrangement: {
+      product_arrangement_v2: {
         code: 'dm_audience_manager_enterprise_ml',
-        label: 'DM_AUDIENCE_MANAGER_ENTERPRISE_ML',
         family: 'AUDIENCE',
         cloud: 'EXPERIENCE',
+        type: 'BASE',
       },
       payment_structure: 'PAID_IN_ADVANCE',
     },
@@ -78,10 +52,11 @@ const res = [
     offer: {
       product_code: 'CCSV',
       product_arrangement_code: 'ccsv_enterprise_ml',
-      product_arrangement: {
+      product_arrangement_v2: {
         code: 'ccsv_enterprise_ml',
         family: 'CC_ALL_APPS',
         cloud: 'CREATIVE',
+        type: 'BASE',
       },
       payment_structure: 'PAID_IN_ADVANCE',
     },
@@ -138,11 +113,11 @@ const res = [
     offer: {
       product_code: 'APAP',
       product_arrangement_code: 'apap_dc_pro_services_enterprise_ml',
-      product_arrangement: {
+      product_arrangement_v2: {
         code: 'apap_dc_pro_services_enterprise_ml',
-        label: 'APAP_DC_PRO_SERVICES_ENTERPRISE_ML',
         family: 'ACROBAT',
         cloud: 'DOCUMENT',
+        type: 'BASE',
       },
       payment_structure: 'PAID_IN_ADVANCE',
     },
@@ -233,11 +208,11 @@ const formatted = {
     testOffer: {
       product_code: 'DMA_ANALYTICS',
       product_arrangement_code: 'dm_analytics_enterprise_ml',
-      product_arrangement: {
+      product_arrangement_v2: {
         code: 'dm_analytics_enterprise_ml',
-        label: 'DM_ANALYTICS_ENTERPRISE_ML',
         family: 'ANALYTICS',
         cloud: 'EXPERIENCE',
+        type: 'BASE',
       },
       payment_structure: 'PAID_IN_ADVANCE',
     },

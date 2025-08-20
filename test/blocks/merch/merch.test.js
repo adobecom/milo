@@ -126,7 +126,7 @@ const validatePriceSpan = async (selector, expectedAttributes) => {
 const SUBSCRIPTION_DATA_ALL_APPS_RAW_ELIGIBLE = [
   {
     change_plan_available: true,
-    offer: { product_arrangement: { family: 'CC_ALL_APPS' } },
+    offer: { product_arrangement_v2: { family: 'CC_ALL_APPS' } },
   },
 ];
 
@@ -135,7 +135,7 @@ const SUBSCRIPTION_DATA_PHSP_RAW_ELIGIBLE = [
     change_plan_available: true,
     offer: {
       offer_id: '5F2E4A8FD58D70C8860F51A4DE042E0C',
-      product_arrangement: { family: 'PHOTOSHOP' },
+      product_arrangement_v2: { family: 'PHOTOSHOP' },
     },
   },
 ];

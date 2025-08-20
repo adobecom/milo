@@ -1,4 +1,4 @@
-import { readFile, setViewport } from '@web/test-runner-commands';
+import { readFile } from '@web/test-runner-commands';
 import { expect } from '@esm-bundle/chai';
 import sinon from 'sinon';
 import { setConfig } from '../../../libs/utils/utils.js';
@@ -25,6 +25,8 @@ const placeholders = {
 
 setConfig({});
 document.body.innerHTML = await readFile({ path: './mocks/editorial-body.html' });
+let originalMatchMedia;
+
 describe('Accordion', () => {
   before(async () => {
     const module = await import('../../../libs/blocks/accordion/accordion.js');
@@ -37,6 +39,22 @@ describe('Accordion', () => {
       return null;
     });
 
+    originalMatchMedia = window.matchMedia;
+    window.matchMedia = (() => {
+      const mql = {
+        matches: true,
+        addEventListener: (type, listenerFunction) => {
+          if (type === 'change') mql.listener = listenerFunction;
+        },
+        trigger: (matches) => {
+          mql.matches = matches;
+          if (!mql.listener) return;
+          mql.listener({ matches });
+        },
+      };
+      return () => mql;
+    })();
+
     const accordions = document.body.querySelectorAll('.accordion');
     accordions.forEach((accordion) => {
       module.default(accordion);
@@ -45,6 +63,7 @@ describe('Accordion', () => {
 
   after(() => {
     sinon.restore();
+    window.matchMedia = originalMatchMedia;
   });
 
   it('Load editorial body', async () => {
@@ -67,8 +86,6 @@ describe('Accordion', () => {
 
   describe('with Expand All Button', async () => {
     const el = document.querySelector('#accordion-expand-all');
-    await setViewport({ width: 1200 });
-
     it('shows first image when rich media is all expanded', () => {
       const btn = el.querySelector('.expand-btn');
       btn.click();
@@ -90,6 +107,17 @@ describe('Accordion', () => {
       expect(panel2Image.classList.contains('expanded')).to.be.true;
       collapseBtn.click();
       expect(panel2Image.classList.contains('expanded')).to.be.true;
+    });
+
+    it('shows all images on non desktop if all expanded', () => {
+      window.matchMedia().trigger(false);
+
+      const btn = el.querySelector('.expand-btn');
+      btn.click();
+      const details = [...el.querySelectorAll('.descr-details')];
+      expect(details.every((detail) => detail.getAttribute('hidden') === null)).to.be.true;
+      const images = el.querySelectorAll('.descr-details img');
+      expect(images.length).to.be.equal(3);
     });
   });
 });

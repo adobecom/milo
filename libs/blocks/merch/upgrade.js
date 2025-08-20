@@ -11,7 +11,7 @@ const MANAGE_PLAN_MSG_SUBTYPE = {
   Close: 'Close',
 };
 const isProductFamily = (offer, pfs) => {
-  const productFamily = offer?.offer?.product_arrangement?.family;
+  const productFamily = offer?.offer?.product_arrangement_v2?.family;
   return productFamily && pfs.includes(productFamily);
 };
 export const LANA_OPTIONS = {

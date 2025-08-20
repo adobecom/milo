@@ -10,7 +10,7 @@ const ENTITLEMENTS = [
   {
     offer: {
       offer_id: '5F2E4A8FD58D70C8860F51A4DE042E0C',
-      product_arrangement: { family: 'ILLUSTRATOR' },
+      product_arrangement_v2: { family: 'ILLUSTRATOR' },
     },
     change_plan_available: true,
   },
@@ -120,7 +120,7 @@ describe('Switch Modal (Upgrade Flow)', () => {
         {
           offer: {
             offer_id: '212E4A8FD58D70C8860F51A4DE042E0C',
-            product_arrangement: { family: 'CC_ALL_APPS_STOCK_BUNDLE' },
+            product_arrangement_v2: { family: 'CC_ALL_APPS_STOCK_BUNDLE' },
           },
           change_plan_available: true,
         },
@@ -141,7 +141,7 @@ describe('Switch Modal (Upgrade Flow)', () => {
         {
           offer: {
             offer_id: '5F2E4A8FD58D70C8860F51A4DE042E0C',
-            product_arrangement: { family: 'ILLUSTRATOR' },
+            product_arrangement_v2: { family: 'ILLUSTRATOR' },
           },
           change_plan_available: false,
         },
@@ -161,7 +161,7 @@ describe('Switch Modal (Upgrade Flow)', () => {
         {
           offer: {
             offer_id: '5F2E4A8FD58D70C8860F51A4DE042E0C',
-            product_arrangement: { family: 'INVALID_PRODUCT' },
+            product_arrangement_v2: { family: 'INVALID_PRODUCT' },
           },
           change_plan_available: true,
         },
@@ -181,7 +181,7 @@ describe('Switch Modal (Upgrade Flow)', () => {
         {
           offer: {
             offer_id: null,
-            product_arrangement: { family: 'ILLUSTRATOR' },
+            product_arrangement_v2: { family: 'ILLUSTRATOR' },
           },
           change_plan_available: true,
         },
