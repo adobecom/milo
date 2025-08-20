@@ -94,9 +94,7 @@ export const createLinkMarkup = (
 export async function loadOstEnv() {
   /* c8 ignore next */
   const { initService, loadMasComponent, getMasLibs, getMiloLocaleSettings, MAS_COMMERCE_SERVICE } = await import('../merch/merch.js');
-
-  // Load initService
-  await initService(MAS_COMMERCE_SERVICE);
+  await initService(true, { 'allow-override': 'true' });
   // Load commerce.js based on masLibs parameter
   await loadMasComponent(MAS_COMMERCE_SERVICE);
 
