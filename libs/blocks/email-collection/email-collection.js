@@ -2,7 +2,6 @@ import { createTag, getConfig, getFederatedUrl, localizeLink } from '../../utils
 import { decorateDefaultLinkAnalytics } from '../../martech/attributes.js';
 import { closeModal } from '../modal/modal.js';
 
-// Maybe move this to object and remap names
 const FORM_CONFIG = {
   'campaign-id': 'campaignId',
   'mps-sname': 'mpsSname',
@@ -23,6 +22,7 @@ function localizeFederatedUrl(url) {
   return localizeLink(getFederatedUrl(url), '', true);
 }
 const ALL_COUNTRIES_CONSENT_URL = localizeFederatedUrl(`${FEDERAL_ROOT}/consents/cs4.plain.html`);
+const PLACEHOLDERS_URL = localizeFederatedUrl(`${FEDERAL_ROOT}/form-config.json?sheet=placeholder`);
 
 const FORM_FIELDS = {
   email: {
@@ -53,8 +53,7 @@ const FORM_FIELDS = {
     tag: 'input',
     attributes: {
       type: 'text',
-      required: true,
-      autocomplete: 'on',
+      autocomplete: 'organization',
     },
   },
   occupation: {
@@ -62,7 +61,7 @@ const FORM_FIELDS = {
     attributes: {
       type: 'text',
       required: true,
-      autocomplete: 'on',
+      autocomplete: 'organization-title',
     },
   },
   state: {
@@ -75,7 +74,7 @@ const FORM_FIELDS = {
   },
   country: {
     tag: 'select',
-    url: localizeFederatedUrl(`${FEDERAL_ROOT}/countries.json`),
+    url: localizeFederatedUrl(`${FEDERAL_ROOT}/form-config.json?sheet=country-select`),
     attributes: {
       required: true,
       autocomplete: 'on',
@@ -276,6 +275,7 @@ async function decorateConsentString(consentContainer, url) {
 }
 
 function hideSelect({ selectWrapper, select, label, shouldHide = true }) {
+  // Maybe use hidden
   selectWrapper.classList.toggle('hide-select', shouldHide);
   label.classList.toggle('hide-select', shouldHide);
   select.toggleAttribute('required', !shouldHide);
@@ -342,8 +342,9 @@ async function decorateInput(key, value) {
     tempInput?.setAttribute(confKey, confValue);
   });
   label.classList.toggle('required', !!attributes.required);
+  const error = createTag('div', { id: `error-${key}`, class: 'body-xs hidden' });
 
-  return [label, input];
+  return [label, input, error];
 }
 
 async function attachCountryListener(form) {
@@ -367,21 +368,21 @@ async function attachCountryListener(form) {
   });
 }
 
-function formatMPSData(data) {
-  const date = new Date();
-  const required = ['email', 'consentId', 'appClientId', 'mpsSname'];
-  let result = {
-    eventDts: date.toISOString(),
-    timezoneOffset: -date.getTimezoneOffset(),
-  };
-  Object.entries(data).forEach(([key, value]) => {
-    if (required.includes(key) || key.startsWith('mps')) {
-      result = { ...result, [key]: value };
-    }
-  });
+// function formatMPSData(data) {
+//   const date = new Date();
+//   const required = ['email', 'consentId', 'appClientId', 'mpsSname'];
+//   let result = {
+//     eventDts: date.toISOString(),
+//     timezoneOffset: -date.getTimezoneOffset(),
+//   };
+//   Object.entries(data).forEach(([key, value]) => {
+//     if (required.includes(key) || key.startsWith('mps')) {
+//       result = { ...result, [key]: value };
+//     }
+//   });
 
-  return result;
-}
+//   return result;
+// }
 
 function disableForm(form) {
   form.querySelectorAll('input, select, textarea, button').forEach((el) => {
@@ -407,7 +408,8 @@ async function getMartech() {
   return { satellite, alloyAll: window.alloy_all };
 }
 
-async function getAEPBody(email) {
+async function getAEPBody(formData) {
+  const { email, occupation, organization } = formData;
   const martechParam = new URLSearchParams(window.location.search).get('martech');
   if (martechParam === 'off') {
     showMessage('error', 'Martech disabled');
@@ -415,7 +417,6 @@ async function getAEPBody(email) {
   }
   const { satellite, alloyAll } = await getMartech();
   const { config } = getMetadata();
-  // const ecid = satellite?.cookie.get(ECID_COOKIE)?.split('|')[1];
   const ecid = decodeURIComponent(satellite?.cookie.get(ECID_COOKIE)).split('|')[1];
   const ims = await getIMS();
   const isSignedInUser = ims.isSignedInUser();
@@ -440,6 +441,14 @@ async function getAEPBody(email) {
             timestamp: new Date().toISOString(),
           },
           marketing: { trackingCode: config.campaignId },
+        },
+        data: {
+          _adobe_corpnew: {
+            user: {
+              role: occupation,
+              orgName: organization,
+            },
+          },
         },
       },
     ],
@@ -468,8 +477,9 @@ async function sendFormData(form) {
       timezoneOffset: -date.getTimezoneOffset(),
       email,
     };
-    const aepBody = await getAEPBody(email);
+    const aepBody = await getAEPBody(formData);
     if (!aepBody) return;
+    console.log(aepBody);
     const ims = await getIMS();
     const { token } = ims.getAccessToken() ?? {};
     const { env } = miloConfig;
@@ -486,6 +496,7 @@ async function sendFormData(form) {
       body: JSON.stringify({ ...mpsBody, aepBody }),
     });
     const submitFormRes = await submitFormReq.json();
+    console.log(submitFormRes);
     if (!submitFormReq.ok) {
       messageType = 'error';
       errorMsg = `MPS request failed: ${JSON.stringify(submitFormRes)}`;
@@ -497,32 +508,95 @@ async function sendFormData(form) {
   showMessage(messageType, errorMsg);
 }
 
-// Refactor
-function validateEmail(email) {
-  const regex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-  if (regex.test(email.value)) return true;
-  // This can be authorable ?
-  email.setCustomValidity('Please enter a valid email address.');
-  email.reportValidity();
-  email.addEventListener('input', () => email.setCustomValidity(''));
-  return false;
+function validateInput(input) {
+  const { value, type } = input;
+  const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+  if ((type !== 'email' && !input.checkValidity())
+  || (type === 'email' && !value)) return 'required';
+  if (type === 'email' && !emailRegex.test(value)) return 'email';
+  return '';
 }
 
-// function validateForm(form, error) {
-//   console.log(form);
-//   const inputs = form.querySelectorAll('input');
-//   inputs.forEach((input) => {
-//     console.log(input.getAttribute('required'));
-//     if (input.getAttribute('required')) {
-//       error.classList.remove('hide');
-//       input.previousElementSibling.setAttribute('aria-invalid', true);
-//       input.setAttribute('aria-describedby', 'req-err');
-//       input.setAttribute('aria-invalid', true);
-//       // input.blur();
-//       input.focus();
-//     }
-//   });
-// }
+// Add accessibility
+// Autocomplete
+const getFormPlaceholders = (() => {
+  let placeholders;
+  const defaultPlaceholders = {
+    required: 'This field is required.',
+    email: 'Enter a valid emaili.',
+  };
+
+  return async () => {
+    if (placeholders) return placeholders;
+    const placeholdersReq = await fetch(PLACEHOLDERS_URL);
+    if (!placeholdersReq.ok) return defaultPlaceholders;
+    const { data } = await placeholdersReq.json();
+    if (!data.length) return defaultPlaceholders;
+    if (!placeholdersReq.ok || !data.length) {
+      placeholders = defaultPlaceholders;
+    } else {
+      placeholders = {};
+      data.forEach(({ key, value }) => {
+        placeholders[key] = value;
+      });
+    }
+
+    return placeholders;
+  };
+})();
+
+function showInputError(form, input, placeholders) {
+  const { id } = input;
+  if (input.tagName === 'SELECT' && input.parentElement.matches('.hide-select')) return false;
+  const label = form.querySelector(`label[for=${id}]`);
+  const error = form.querySelector(`div[id$=${id}]`);
+  const errorType = validateInput(input);
+  // Check in safari and posiblly windows if label is needed, because after focus it will announce label in addition to message
+  // error.textContent = errorType === 'email' ? placeholders[errorType] : `${placeholders[errorType]} ${label.textContent}.`;
+  error.textContent = placeholders[errorType];
+  input.classList.toggle('invalid', errorType);
+  if (errorType) {
+    input.setAttribute('aria-describedby', error.id);
+  } else {
+    input.removeAttribute('aria-describedby');
+  }
+  label.classList.toggle('invalid', errorType);
+  error.classList.toggle('hidden', !errorType);
+
+  return !!errorType;
+}
+
+async function validateForm(form) {
+  const inputs = form.querySelectorAll('input, select');
+  // Think about this
+  let isInvalidForm = false;
+  let focusInvalid;
+  const placeholders = await getFormPlaceholders();
+  inputs.forEach((input) => {
+    const isError = showInputError(form, input, placeholders);
+    if (!isError) return;
+    isInvalidForm = isError;
+
+    /* eslint-disable */ 
+    if (!input._hasChangeListener) {
+      input.addEventListener('change', () => showInputError(form, input, placeholders));
+      input._hasChangeListener = true;
+    }
+    /* eslint-enable */
+    const autocompleteValue = input.getAttribute('autocomplete');
+    input.setAttribute('autocomplete', 'off');
+    input.addEventListener('input', () => {
+      input.setAttribute('autocomplete', autocompleteValue);
+    }, { once: true });
+
+    if (!focusInvalid) focusInvalid = input;
+  });
+
+  focusInvalid?.blur();
+  setTimeout(() => focusInvalid?.focus(), 50);
+
+  return !isInvalidForm;
+}
 
 async function decorateForm(el, foreground) {
   const { fields } = getMetadata();
@@ -532,8 +606,6 @@ async function decorateForm(el, foreground) {
 
   const shouldSplitFirstRow = !el.classList.contains('mailing-list') && !el.classList.contains('large-image');
   const form = createTag('form', { id: FORM_ID, novalidate: true });
-  // const error = createTag('p', { id: 'req-err', class: 'hide' }, 'Required Field *');
-  // form.append(error);
   const inputs = [];
   for (const [key, value] of Object.entries(fields)) {
     // eslint-disable-next-line no-continue
@@ -544,8 +616,8 @@ async function decorateForm(el, foreground) {
 
   if (shouldSplitFirstRow) {
     const firstRow = createTag('div', { class: 'split-row' });
-    const [l1, i1, l2, i2] = inputs.splice(0, 4);
-    [[l1, i1], [l2, i2]].forEach((li) => {
+    const [l1, i1, e1, l2, i2, e2] = inputs.splice(0, 6);
+    [[l1, i1, e1], [l2, i2, e2]].forEach((li) => {
       const inputContainer = createTag('div');
       inputContainer.append(...li);
       firstRow.append(inputContainer);
@@ -569,25 +641,8 @@ async function decorateForm(el, foreground) {
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
     if (consentStringContainer.classList.contains('empty')) return;
-    const email = form.querySelector('#email');
-    // const first = form.querySelector('#first-name');
-    // email.setAttribute('autocomplete', 'off');
-    // console.log(email.checkValidity());
-    // email.setCustomValidity('Test');
-    // console.log(email.checkValidity(), 'email');
-    // email.reportValidity();
-    // email.setAttribute('type', 'text');
-    // email.removeAttribute('required');
-    // email.setAttribute('readonly', true);
-    // email.addEventListener('input', () => {
-    //   email.setCustomValidity('');
-    //   email.setAttribute('autocomplete', 'email');
-      // email.setAttribute('required', true);
-      // email.setAttribute('autocomplete', 'email');
-      // console.log(email.checkValidity(), 'email');
-    // }, { once: true });
-    // if (!validateEmail(email)) return;
-    // validateForm(form, error);
+    const isFormValid = await validateForm(form);
+    if (!isFormValid) return;
 
     await insertProgress(submitButton.querySelector('button'), 's');
     await sendFormData(form);
@@ -648,14 +703,17 @@ async function decorateText(el, foreground) {
   el.appendChild(ariaLive);
 }
 
+// Pogledaj height
+// Move asterix svg to var
 export default async function init(el) {
+  getFormPlaceholders();
   const blockChildren = [...el.children];
   await insertProgress(el, 'l');
   const ims = await getIMS();
-  // if (el.classList.contains('waitlist') && !ims.isSignedInUser()) {
-  //   ims.signIn();
-  //   return;
-  // }
+  if (el.classList.contains('waitlist') && !ims.isSignedInUser()) {
+    ims.signIn();
+    return;
+  }
   el.replaceChildren(...blockChildren);
 
   const foreground = el.children[0];
@@ -664,8 +722,17 @@ export default async function init(el) {
   const errorMessage = el.children[2];
   successMessage.classList.add('hidden');
   errorMessage.classList.add('hidden');
+  const media = foreground.querySelector(':scope > div:not([class])');
+  media?.classList.add('image');
   // Tests
   decorateText(el, foreground);
+
+  // Check dialog aria-label if there is an error
+  const correctMessageEls = setMessageEls(el);
+  if (!correctMessageEls) {
+    showMessage('error', 'Missing success/error message');
+    return;
+  }
 
   const metadataError = setMetadata(el);
   if (metadataError) {
@@ -673,13 +740,6 @@ export default async function init(el) {
     return;
   }
 
-  const media = foreground.querySelector(':scope > div:not([class])');
-  media?.classList.add('image');
-  const correctMessageEls = setMessageEls(el);
-  if (!correctMessageEls) {
-    showMessage('error', 'Missing success/error message');
-    return;
-  }
   try {
     await decorateForm(el, foreground);
   } catch (e) {
