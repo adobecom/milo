@@ -501,7 +501,7 @@ test.describe('Commerce feature test suite', () => {
     await test.step('Validate the strikethrough price is the same as the regular price', async () => {
       await COMM.volumeDiscountWithQuantity.waitFor({ state: 'visible', timeout: 10000 });
       await expect(COMM.volumeDiscountWithQuantity).toHaveAttribute('data-promotion-code', data.promo);
-      await expect(COMM.volumeDiscountWithQuantity).toHaveAttribute('data-quantity', '2');
+      await expect(COMM.volumeDiscountWithQuantity).toHaveAttribute('data-quantity', '3');
       const priceStrikedThrough = `${await COMM.volumeDiscountWithQuantityStrikeThroughInteger.innerText()}.${await COMM.volumeDiscountWithQuantityStrikeThroughDecimals.innerText()}`;
       expect(priceStrikedThrough).toBe(regularPrice);
     });
@@ -509,7 +509,7 @@ test.describe('Commerce feature test suite', () => {
     await test.step('Validate the volume discount price is displayed if quantity is greater than the minimum promotion quantity', async () => {
       await COMM.volumeDiscountWithQuantity.waitFor({ state: 'visible', timeout: 10000 });
       await expect(COMM.volumeDiscountWithQuantity).toHaveAttribute('data-promotion-code', data.promo);
-      await expect(COMM.volumeDiscountWithQuantity).toHaveAttribute('data-quantity', '2');
+      await expect(COMM.volumeDiscountWithQuantity).toHaveAttribute('data-quantity', '3');
       const volumeDiscountPrice = `${await COMM.volumeDiscountWithQuantityAlternativeInteger.innerText()}.${await COMM.volumeDiscountWithQuantityAlternativeDecimals.innerText()}`;
       expect(regularPrice > volumeDiscountPrice).toBe(true);
     });
@@ -544,7 +544,7 @@ test.describe('Commerce feature test suite', () => {
     await test.step('Validate the strikethrough price is the same as the regular price', async () => {
       await COMM.volumeDiscountWithQuantity.waitFor({ state: 'visible', timeout: 10000 });
       await expect(COMM.volumeDiscountWithQuantity).toHaveAttribute('data-promotion-code', data.promo);
-      await expect(COMM.volumeDiscountWithQuantity).toHaveAttribute('data-quantity', '2');
+      await expect(COMM.volumeDiscountWithQuantity).toHaveAttribute('data-quantity', '3');
       const priceStrikedThrough = `${await COMM.volumeDiscountWithQuantityStrikeThroughInteger.innerText()}.${await COMM.volumeDiscountWithQuantityStrikeThroughDecimals.innerText()}`;
       expect(priceStrikedThrough).toBe(regularPrice);
     });
@@ -552,7 +552,7 @@ test.describe('Commerce feature test suite', () => {
     await test.step('Validate the volume discount price is displayed if quantity is greater than the minimum promotion quantity, and annual price is based on the promo price', async () => {
       await COMM.volumeDiscountWithQuantity.waitFor({ state: 'visible', timeout: 10000 });
       await expect(COMM.volumeDiscountWithQuantity).toHaveAttribute('data-promotion-code', data.promo);
-      await expect(COMM.volumeDiscountWithQuantity).toHaveAttribute('data-quantity', '2');
+      await expect(COMM.volumeDiscountWithQuantity).toHaveAttribute('data-quantity', '3');
       const volumeDiscountPrice = `${await COMM.volumeDiscountWithQuantityAlternativeInteger.innerText()}.${await COMM.volumeDiscountWithQuantityAlternativeDecimals.innerText()}`;
       expect(regularPrice > volumeDiscountPrice).toBe(true);
       const volumeDiscountAnnualPrice = `${await COMM.volumeDiscountWithQuantityAnnualInteger.innerText()}.${await COMM.volumeDiscountWithQuantityAnnualDecimals.innerText()}`;
