@@ -71,6 +71,21 @@ export const getMetadata = (el) => [...el.childNodes].reduce((rdx, row) => {
   return rdx;
 }, {});
 
+function addListAttrToSection(section) {
+  if (!section) return;
+  const isSectionUp = [...section.classList].some((c) => c.endsWith('-up'));
+  const hasHeader = section.querySelector('h1, h2, h3, h4, h5, h6');
+  const allowedBlocks = ['icon-block', 'action-item', 'section-metadata'];
+  const hasAllowedChildren = [...section.children]
+    .every((child) => allowedBlocks.some((block) => child.classList.contains(block)));
+  if (!isSectionUp || hasHeader || !hasAllowedChildren) return;
+  section.setAttribute('role', 'list');
+  [...section.children].forEach((child) => {
+    if (child.classList.contains('section-metadata')) return;
+    child.setAttribute('role', 'listitem');
+  });
+}
+
 export default async function init(el) {
   const section = el.closest('.section');
   const metadata = getMetadata(el);
@@ -80,4 +95,5 @@ export default async function init(el) {
   if (metadata.masonry) handleMasonry(metadata.masonry.text, section);
   if (metadata.delay) handleDelay(metadata.delay.text, section);
   if (metadata.anchor) handleAnchor(metadata.anchor.text, section);
+  addListAttrToSection(section);
 }

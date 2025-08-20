@@ -294,7 +294,7 @@ export function addAccessibilityControl(videoString, videoAttrs, indexOfVideo, t
 }
 
 function isVideoReady(video) {
-  return video.readyState > 1;
+  return video.readyState > 1 && document.visibilityState === 'visible';
 }
 
 export function handlePause(event) {
@@ -341,7 +341,7 @@ export function applyAccessibilityEvents(videoEl) {
       videoEl.pause();
       return;
     }
-    videoEl.addEventListener('canplay', () => videoEl.play());
+    videoEl.addEventListener('canplay', () => isVideoReady(videoEl) && videoEl.play());
   }
 }
 

@@ -128,4 +128,6 @@ export default function init(el) {
       window.addEventListener('resize', debounce(handleResize, 50));
     });
   }
+  items.setAttribute('role', 'list');
+  actions.forEach((action) => action.setAttribute('role', 'listitem'));
 }
