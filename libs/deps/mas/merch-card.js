@@ -1510,7 +1510,7 @@ merch-card-collection:has([slot="subtitle"]) merch-card {
 /* Tablet */
 @media screen and ${b} {
     :root {
-        --consonant-merch-card-plans-students-width: 484px;
+        --consonant-merch-card-plans-students-width: 486px;
     }
 
     .four-merch-cards.plans .foreground {
