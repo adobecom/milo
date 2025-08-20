@@ -58,6 +58,7 @@
     "--message-padding": "8px 16px",
     "--message-concierge-background": "#FFFFFF",
     "--message-concierge-text": "#292929",
+    "--message-max-width": "100%",
     "--chat-interface-max-width": "768px",
     "--chat-history-padding": "16px",
     "--chat-history-padding-top-expanded": "0",
@@ -66,6 +67,14 @@
     "--feedback-icon-btn-background": "#FFFFFF",
     "--feedback-icon-btn-hover-background": "#FFFFFF",
     "--feedback-icon-btn-size-desktop": "32px",
-    "--feedback-container-gap": "4px"
+    "--feedback-container-gap": "4px",
+    "--multimodal-card-box-shadow": "none",
+    "--border-radius-card": "16px",
+    "--button-height-s": "30px",
+    "--button-primary-background": "#3B63FB",
+    "--button-primary-text": "#FFFFFF",
+    "--button-primary-hover": "#274dea",
+    "--button-secondary-border": "#2C2C2C",
+    "--button-secondary-text": "#2C2C2C"
   }
 }
