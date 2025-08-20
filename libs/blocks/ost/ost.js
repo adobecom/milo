@@ -113,6 +113,20 @@ export async function loadOstEnv() {
   const searchParameters = new URLSearchParams(window.location.search);
   const ostSearchParameters = new URLSearchParams();
 
+  // deprecate unsupported parameters
+  if (searchParameters.get('wcsLandscape') || searchParameters.get('commerce.env')) {
+    const wcsLandscape = searchParameters.get('wcsLandscape');
+    if (wcsLandscape) {
+      searchParameters.set('commerce.landscape', wcsLandscape);
+      searchParameters.delete('wcsLandscape');
+    }
+    if (searchParameters.get('commerce.env')?.toLowerCase() === 'stage') {
+      searchParameters.set('commerce.landscape', 'DRAFT');
+      searchParameters.delete('commerce.env');
+    }
+    window.history.replaceState({}, null, `${window.location.origin}${window.location.pathname}?${searchParameters.toString()}`);
+  }
+
   const defaultPlaceholderOptions = Object.fromEntries([
     ['term', 'displayRecurrence', 'true'],
     ['seat', 'displayPerUnit', 'true'],

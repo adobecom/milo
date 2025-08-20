@@ -31,4 +31,5 @@ perform the following:
 | default (no parameter)       | Prod             | PUBLISHED              | https://milo.adobe.com/tools/ost                       |
 | ?commerce.landscape                | Prod             | DRAFT                  | https://milo.adobe.com/tools/ost?commerce.landscape=DRAFT    |
 
-?wcsLandscape paramete is deprecated and will redirect to ?commerce.landscape
+?wcsLandscape=[DRAFT|PUBLISHED] parameter is deprecated and will redirect to ?commerce.landscape=[DRAFT|PUBLISHED]
+?commerce.env=stage parameter is not supported and will redirect to ?commerce.landscape=DRAFT
