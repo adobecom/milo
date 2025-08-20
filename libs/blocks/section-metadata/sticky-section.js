@@ -8,7 +8,7 @@ function handleTopHeight(section) {
 }
 
 function promoIntersectObserve(el, stickySectionEl, options = {}) {
-  const io = new IntersectionObserver((entries, observer) => {
+  return new IntersectionObserver((entries, observer) => {
     entries.forEach((entry) => {
       if (el.classList.contains('close-sticky-section')) {
         window.removeEventListener('resize', handleTopHeight);
@@ -16,15 +16,21 @@ function promoIntersectObserve(el, stickySectionEl, options = {}) {
         return;
       }
 
-      const abovePromoStart = (entry.target === stickySectionEl && entry.isIntersecting)
-        || stickySectionEl?.getBoundingClientRect().y > 0;
+      const { target, isIntersecting } = entry;
 
-      if (entry.target === document.querySelector('footer')) {
-        el.classList.toggle('fill-sticky-section', entry.isIntersecting);
-      } else el.classList.toggle('hide-sticky-section', abovePromoStart);
+      if (target === document.querySelector('footer')) {
+        el.classList.toggle('fill-sticky-section', isIntersecting);
+      } else if (target === stickySectionEl) {
+        const abovePromoStart = isIntersecting || stickySectionEl?.getBoundingClientRect().y > 0;
+        el.classList.toggle('hide-sticky-section', abovePromoStart);
+      } else if (target === document.querySelector('.hide-at-intersection')) {
+        const shouldHideSticky = isIntersecting
+        || entry.boundingClientRect.top < 0
+        || stickySectionEl?.getBoundingClientRect().y > 0;
+        el.classList.toggle('hide-sticky-section', shouldHideSticky);
+      }
     });
   }, options);
-  return io;
 }
 
 function handleStickyPromobar(section, delay) {
@@ -38,14 +44,31 @@ function handleStickyPromobar(section, delay) {
     hasScrollControl = true;
     section.classList.remove('hide-sticky-section');
   }
+  const metadata = getMetadata(section.querySelector('.section-metadata'));
+
   if (!hasScrollControl && main.children[0] !== section) {
-    stickySectionEl = createTag('div', { class: 'section show-sticky-section' });
-    section.parentElement.insertBefore(stickySectionEl, section);
+    const isStickyAfterCTA = metadata?.style?.text.includes('sticky-after-cta');
+
+    if (isStickyAfterCTA) {
+      stickySectionEl = main.children[0].querySelector('.action-area');
+      stickySectionEl?.classList.add('show-sticky-section');
+    } else {
+      stickySectionEl = createTag('div', { class: 'section show-sticky-section' });
+      section.parentElement.insertBefore(stickySectionEl, section);
+    }
   }
   const io = promoIntersectObserve(section, stickySectionEl);
   if (stickySectionEl) io.observe(stickySectionEl);
   if (section.querySelector(':is(.promobar, .notification)')) {
     io.observe(document.querySelector('footer'));
+  }
+
+  const selector = metadata?.['custom-hide']?.text?.trim();
+  const targetElement = selector ? document.querySelector(selector) : null;
+  if (targetElement) {
+    stickySectionEl = createTag('div', { class: 'hide-at-intersection' });
+    targetElement.parentElement.insertBefore(stickySectionEl, targetElement);
+    io.observe(stickySectionEl);
   }
 }
 
