@@ -13,105 +13,104 @@ class MainNavItem {
   }
 
   addEventListeners() {
-    document.querySelector(selectors.globalNavTag)
-      .addEventListener('keydown', (e) => logErrorFor(() => {
-        if (!e.target.closest(selectors.globalNav)) return;
+    document.querySelector(selectors.globalNavTag)?.addEventListener('keydown', (e) => logErrorFor(() => {
+      if (!e.target.closest(selectors.globalNav)) return;
 
-        if (!e.target.closest(selectors.fedsNav) || e.target.closest(selectors.popup)) {
-          return;
-        }
+      if (!e.target.closest(selectors.fedsNav) || e.target.closest(selectors.popup)) {
+        return;
+      }
 
-        const newNav = !!document.querySelector('header.new-nav');
+      const newNav = !!document.querySelector('header.new-nav');
 
-        switch (e.code) {
-          case 'Tab': {
-            if (newNav) {
-              const activePopup = document.querySelector(selectors.activePopup);
-              if (!activePopup) e.preventDefault();
-              const items = [...document.querySelectorAll(`${selectors.mainMenuItems}, ${selectors.mainMenuLinks}, ${selectors.mainNavToggle}`)];
-              const current = items.findIndex((x) => x === e.target);
-              if (current > -1) {
-                const next = current < items.length - 1 ? current + 1 : 0;
-                const prev = current > 0 ? current - 1 : items.length - 1;
-                if (e.shiftKey) items[prev].focus();
-                else items[next].focus();
-              } else items?.[0]?.focus();
-              break;
-            }
+      switch (e.code) {
+        case 'Tab': {
+          if (newNav) {
+            const activePopup = document.querySelector(selectors.activePopup);
+            if (!activePopup) e.preventDefault();
+            const items = [...document.querySelectorAll(`${selectors.mainMenuItems}, ${selectors.mainMenuLinks}, ${selectors.mainNavToggle}`)];
+            const current = items.findIndex((x) => x === e.target);
+            if (current > -1) {
+              const next = current < items.length - 1 ? current + 1 : 0;
+              const prev = current > 0 ? current - 1 : items.length - 1;
+              if (e.shiftKey) items[prev].focus();
+              else items[next].focus();
+            } else items?.[0]?.focus();
+            break;
+          }
 
-            if (e.shiftKey) {
-              const { prev, openTrigger } = this.getState();
-              if (openTrigger) {
-                if (prev === -1) {
-                  closeAllDropdowns();
-                } else {
-                  e.preventDefault();
-                  this.focusPrev({ focus: 'last' });
-                }
+          if (e.shiftKey) {
+            const { prev, openTrigger } = this.getState();
+            if (openTrigger) {
+              if (prev === -1) {
+                closeAllDropdowns();
+              } else {
+                e.preventDefault();
+                this.focusPrev({ focus: 'last' });
               }
             }
-            break;
           }
-          case 'Escape': {
-            closeAllDropdowns();
-            const activePopup = document.querySelector(selectors.activePopup);
-            if (newNav && !activePopup) {
-              const toggle = document.querySelector('header.new-nav .feds-toggle');
-              toggle?.click();
-              toggle?.focus();
-            }
-            break;
-          }
-          case 'ArrowLeft': {
-            if (newNav) break;
-            const { next, prev } = this.getState();
-            if (document.dir !== 'rtl') {
-              if (prev === -1) break;
-              this.focusPrev({ focus: null });
-            } else {
-              if (next === -1) break;
-              this.focusNext({ focus: null });
-            }
-            break;
-          }
-          case 'ArrowUp': {
-            if (newNav) break;
-            e.preventDefault();
-            e.stopPropagation();
-            this.focusPrev({ focus: 'last' });
-            break;
-          }
-          case 'ArrowRight': {
-            if (newNav) break;
-            const { next, prev, openTrigger } = this.getState();
-            if (document.dir !== 'rtl') {
-              if (next === -1) break;
-              this.focusNext();
-            } else {
-              if (prev === -1) break;
-              this.focusPrev({ focus: null });
-            }
-            if (openTrigger) {
-              this.open();
-            }
-            break;
-          }
-          case 'ArrowDown': {
-            if (newNav) break;
-            e.stopPropagation();
-            e.preventDefault();
-            const { items, curr } = this.getState();
-            if (items[curr] && items[curr].hasAttribute('aria-haspopup')) {
-              this.open({ focus: 'first' });
-              return;
-            }
-            this.focusNext();
-            break;
-          }
-          default:
-            break;
+          break;
         }
-      }, `mainNav key failed ${e.code}`, 'gnav-keyboard', 'e'));
+        case 'Escape': {
+          closeAllDropdowns();
+          const activePopup = document.querySelector(selectors.activePopup);
+          if (newNav && !activePopup) {
+            const toggle = document.querySelector('header.new-nav .feds-toggle');
+            toggle?.click();
+            toggle?.focus();
+          }
+          break;
+        }
+        case 'ArrowLeft': {
+          if (newNav) break;
+          const { next, prev } = this.getState();
+          if (document.dir !== 'rtl') {
+            if (prev === -1) break;
+            this.focusPrev({ focus: null });
+          } else {
+            if (next === -1) break;
+            this.focusNext({ focus: null });
+          }
+          break;
+        }
+        case 'ArrowUp': {
+          if (newNav) break;
+          e.preventDefault();
+          e.stopPropagation();
+          this.focusPrev({ focus: 'last' });
+          break;
+        }
+        case 'ArrowRight': {
+          if (newNav) break;
+          const { next, prev, openTrigger } = this.getState();
+          if (document.dir !== 'rtl') {
+            if (next === -1) break;
+            this.focusNext();
+          } else {
+            if (prev === -1) break;
+            this.focusPrev({ focus: null });
+          }
+          if (openTrigger) {
+            this.open();
+          }
+          break;
+        }
+        case 'ArrowDown': {
+          if (newNav) break;
+          e.stopPropagation();
+          e.preventDefault();
+          const { items, curr } = this.getState();
+          if (items[curr] && items[curr].hasAttribute('aria-haspopup')) {
+            this.open({ focus: 'first' });
+            return;
+          }
+          this.focusNext();
+          break;
+        }
+        default:
+          break;
+      }
+    }, `mainNav key failed ${e.code}`, 'gnav-keyboard', 'e'));
   }
 
   getState = () => {
