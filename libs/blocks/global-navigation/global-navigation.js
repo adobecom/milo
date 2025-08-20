@@ -17,12 +17,19 @@ import {
 const cssPromise = (async () => {
   const { miloLibs, codeRoot, theme } = getConfig();
   const url = `${miloLibs || codeRoot}/blocks/global-navigation/`;
-  const loadStylePromise = (u) => new Promise((resolve, reject) => {
-    loadStyle(u, (e) => {
-      if (e === 'error') return reject(u);
-      return resolve();
-    });
-  });
+  // const loadStylePromise = (u) => new Promise((resolve, reject) => {
+  //   loadStyle(u, (e) => {
+  //     if (e === 'error') return reject(u);
+  //     return resolve();
+  //   });
+  // });
+  const loadStylePromise = async (u) => {
+    const response = await fetch(u);
+    const css = await response.text();
+    const sheet = new CSSStyleSheet();
+    sheet.replaceSync(`${css}`);
+    document.adoptedStyleSheets = [...document.adoptedStyleSheets, sheet];
+  };
   try {
     await loadStylePromise(`${url}base.css`);
     if (theme === 'dark') await loadStylePromise(`${url}dark-nav.css`);
