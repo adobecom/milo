@@ -30,6 +30,7 @@ const MILO_BLOCKS = [
   'faas',
   'featured-article',
   'figure',
+  'firefly-gallery',
   'form',
   'fragment',
   'featured-article',
