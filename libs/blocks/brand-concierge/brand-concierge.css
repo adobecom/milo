@@ -478,6 +478,20 @@
   outline: 2px solid var(--bc-keyboard-focus-color);
 }
 
+:root {
+  --bc-animation-up-time: 300ms;
+}
+
+@keyframes slide-up {
+  from {
+    top: 100vh;
+  }
+
+  to {
+    top: 0;
+  }
+}
+
 #brand-concierge-modal {
   --modal-header-height: 57px;
 }
@@ -491,6 +505,7 @@
   border-radius: 24px 24px 0 0;
   font-size: 16px;
   top: unset;
+  animation: var(--bc-animation-up-time) ease-out slide-up;
 }
 
 /* Fallback for browsers that don't support dvh */

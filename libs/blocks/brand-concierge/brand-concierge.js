@@ -1,4 +1,4 @@
-import { getModal } from '../modal/modal.js';
+import { getModal, closeModal } from '../modal/modal.js';
 import { createTag, getConfig } from '../../utils/utils.js';
 import chatUIConfig from './chat-ui-config.js';
 
@@ -37,6 +37,16 @@ function updateModalHeight() {
   modal.style.height = `${modalHeight}px`;
 }
 
+function animateModalClosed(modal) {
+  modal.style.transition = 'top 200ms ease-out';
+  modal.style.top = '100vh';
+  const modalCurtain = modal.nextElementSibling;
+  if (modalCurtain?.classList.contains('modal-curtain')) {
+    modalCurtain.style.transition = 'opacity 200ms ease-out';
+    modalCurtain.style.opacity = '0';
+  }
+}
+
 async function openChatModal(initialMessage, el) {
   const innerModal = new DocumentFragment();
   const title = createTag('h1', { class: 'bc-modal-title' }, chatLabelText);
@@ -47,6 +57,12 @@ async function openChatModal(initialMessage, el) {
   const modal = await getModal(null, {
     id: 'brand-concierge-modal',
     content: innerModal,
+    closeCallback: async (dialog) => {
+      animateModalClosed(dialog);
+      await new Promise((resolve) => {
+        setTimeout(() => resolve(), 200);
+      });
+    },
   });
   modal.querySelector('.dialog-close').setAttribute('daa-ll', getAnalyticsLabel('modal-close'));
   document.querySelector('.modal-curtain').setAttribute('daa-ll', getAnalyticsLabel('modal-close'));
@@ -75,6 +91,105 @@ async function openChatModal(initialMessage, el) {
     window.removeEventListener('milo:modal:closed', handleBCModalClose);
   };
   window.addEventListener('milo:modal:closed', handleBCModalClose);
+
+  // Add touch event handling for modal drag and swipe
+  let startY = 0;
+  let startTop = 0;
+  let currentTop = 0;
+  let isDragging = false;
+  let startTime = 0;
+  let velocity = 0;
+  const modalCurtain = document.querySelector('.modal-curtain');
+
+  const handleTouchStart = (e) => {
+    // Don't handle touch events if the target is the close button
+    if (e.target.closest('.dialog-close')) {
+      return;
+    }
+
+    startY = e.touches[0].clientY;
+    startTop = parseInt(modal.style.top, 10) || 0;
+    startTime = Date.now();
+    isDragging = true;
+    velocity = 0;
+
+    // Prevent default to avoid scrolling
+    e.preventDefault();
+  };
+
+  const handleTouchMove = (e) => {
+    if (!isDragging) return;
+
+    const currentY = e.touches[0].clientY;
+    const deltaY = currentY - startY;
+    currentTop = startTop + deltaY;
+
+    // Only allow downward movement
+    if (currentTop >= 0) {
+      modal.style.top = `${currentTop}px`;
+      modal.style.transition = 'none';
+
+      // Update modal curtain opacity based on swipe distance
+      const windowHeight = window.innerHeight;
+      // Max swipe distance for full opacity change
+      const maxSwipeDistance = windowHeight * 0.5;
+      const swipeProgress = Math.min(deltaY / maxSwipeDistance, 1);
+      // Reduce opacity as user swipes down, minimum 0.1
+      const opacity = Math.max(1 - swipeProgress, 0.1);
+
+      if (modalCurtain) modalCurtain.style.opacity = opacity;
+    }
+
+    // Prevent default to avoid scrolling
+    e.preventDefault();
+  };
+
+  const handleTouchEnd = () => {
+    if (!isDragging) return;
+
+    isDragging = false;
+    const endTime = Date.now();
+    const duration = endTime - startTime;
+    const distance = currentTop - startTop;
+
+    // Calculate velocity (pixels per millisecond)
+    velocity = distance / duration;
+
+    // Reset transition
+    modal.style.transition = '';
+
+    // Check if it's a fast swipe down (velocity > 0.5 px/ms)
+    if (velocity > 0.5 && distance > 50) {
+      animateModalClosed(modal);
+      closeModal(modal);
+      return;
+    }
+
+    // Check if user let go in bottom 25% of the page
+    const windowHeight = window.innerHeight;
+    const bottomThreshold = windowHeight * 0.75; // 75% from top = bottom 25%
+
+    if (currentTop > bottomThreshold) {
+      // User let go in bottom 25% - close modal
+      animateModalClosed(modal);
+      closeModal(modal);
+    } else {
+      // User let go above bottom 25% - keep modal open, animate back to top
+      modal.style.transition = 'top 200ms ease-out';
+      modal.style.top = '0px';
+
+      // Reset modal curtain opacity when modal returns to top
+      if (modalCurtain) {
+        modalCurtain.style.transition = 'opacity 200ms ease-out';
+        modalCurtain.style.opacity = '1';
+      }
+    }
+  };
+
+  // Add touch event listeners to the modal
+  modal.addEventListener('touchstart', handleTouchStart, { passive: false });
+  modal.addEventListener('touchmove', handleTouchMove, { passive: false });
+  modal.addEventListener('touchend', handleTouchEnd, { passive: false });
 }
 
 function decorateBackground(el, background) {
