@@ -825,20 +825,6 @@ export async function openModal(e, url, offerType, hash, extraOptions, el) {
   const offerTypeClass = offerType === OFFER_TYPE_TRIAL ? 'twp' : 'crm';
   let modal;
 
-  // Dispatch custom event with button reference before setting hash
-  if (hash && el) {
-    const modalOpenEvent = new CustomEvent('modal:button-click', {
-      detail: {
-        hash,
-        triggerElement: el,
-        url,
-        offerType,
-        extraOptions,
-      },
-    });
-    window.dispatchEvent(modalOpenEvent);
-  }
-
   if (hash) window.location.hash = hash;
 
   if (el?.isOpen3in1Modal) {

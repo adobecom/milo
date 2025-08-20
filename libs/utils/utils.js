@@ -1644,13 +1644,7 @@ function decorateMeta() {
     const { findDetails, getModal } = await import('../blocks/modal/modal.js');
     loadStyle(`${miloLibs}/blocks/modal/modal.css`);
     const details = findDetails(e.detail.hash);
-    if (details) {
-      // Add trigger element from event detail if provided
-      if (e.detail.triggerElement) {
-        details.triggerElement = e.detail.triggerElement;
-      }
-      getModal(details);
-    }
+    if (details) getModal(details);
   });
 }
 
