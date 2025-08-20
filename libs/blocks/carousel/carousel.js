@@ -411,15 +411,29 @@ function convertMpcMp4(slides) {
 
 function readySlides(slides, slideContainer) {
   slideContainer.classList.add('is-ready');
-  slides.forEach((slide, idx) => {
-    // Set last slide to be first in order and make reference.
-    if (slides.length - 1 === idx) {
-      slide.style.order = 1;
-      slide.classList.add('reference-slide');
+
+  const isDesktop = window.matchMedia('(min-width: 900px)');
+
+  const setOrder = () => {
+    if (!isDesktop.matches) {
+      slides.forEach((slide, idx) => {
+        // Set last slide to be first in order and make reference.
+        if (slides.length - 1 === idx) {
+          slide.style.order = 1;
+          slide.classList.add('reference-slide');
+        } else {
+          slide.style.order = idx + 2;
+        }
+      });
     } else {
-      slide.style.order = idx + 2;
+      slides.forEach((slide) => {
+        slide.style.order = '';
+      });
     }
-  });
+  };
+
+  setOrder();
+  isDesktop.addEventListener('change', setOrder);
 }
 
 export default function init(el) {
