@@ -105,7 +105,7 @@ async function handleShowMoreButton(section) {
 
   showMoreBtn.innerHTML = `${await replacePlaceholder('see-more-features')}`;
   showMoreBtn.appendChild(iconSpan);
-  showMoreBtn.setAttribute('aria-label', 'See more');
+  showMoreBtn.setAttribute('aria-label', `${await replacePlaceholder('see-more-features')}`);
 
   showMoreBtn.addEventListener('click', () => {
     section.classList.add('show-all');
