@@ -194,6 +194,7 @@ function makeGroups(arr, n = 20) {
 
 export function connectionError() {
   return {
+    id: SEO_IDS.links,
     title: SEO_TITLES.links,
     status: STATUS.LIMBO,
     description: 'A VPN connection is required to use the link check service. Please turn on VPN and refresh the page.',
