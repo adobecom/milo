@@ -303,10 +303,6 @@ merch-card-collection:has([slot="subtitle"]) merch-card {
 }
 
 @media screen and ${TABLET_DOWN} {
-    .plans-team .text .heading-l a {
-        text-decoration: none;
-    }
-
     .plans-edu-inst {
         display: grid;
         grid-template-columns: min-content;
