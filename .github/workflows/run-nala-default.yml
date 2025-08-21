@@ -1,25 +1,33 @@
-name: Run Nala Tests
+name: Nala Tests
 
 on:
   push:
-    branches:
-      - stage
-      - main
+    branches: [stage, main]
   pull_request:
-    branches:
-      - stage
-      - main
+    branches: [stage, main]
     types: [opened, synchronize, reopened]
-  
   workflow_dispatch:
+
+# Optional: cancel previous runs for the same PR/head
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }} 
+  cancel-in-progress: true
+
+permissions:
+  contents: read
 
 jobs:
   run-nala-tests:
-    name: Running Nala E2E UI Tests
+    name: Running Nala E2E UI Tests • ${{ matrix.project }} • shard ${{ matrix.shard }}
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     strategy:
+      fail-fast: false
       matrix:
         node-version: [20.x]
+        project: [milo-live-chromium, milo-live-firefox, milo-live-webkit]
+        shard: [1/2, 2/2]
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
@@ -30,8 +38,18 @@ jobs:
         uses: actions/setup-node@cdca7365b2dadb8aad0a33bc7601856ffabcc48e
         with:
           node-version: ${{ matrix.node-version }}
+          cache: npm
 
-      - name: Set execute permission for nalarun.sh
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          # include lockfile hash so cache refreshes when PW version changes
+          key: ms-playwright-${{ runner.os }}-${{ matrix.node-version }}-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ms-playwright-${{ runner.os }}-${{ matrix.node-version }}-
+
+      - name: Set execute permission for pr.run.sh
         run: chmod +x ./nala/utils/pr.run.sh
 
       - name: Run Nala Tests via pr.run.sh
@@ -48,3 +66,49 @@ jobs:
           GITHUB_ACTION_PATH: ${{ github.workspace }}
           IMS_EMAIL: ${{ secrets.IMS_EMAIL }}
           IMS_PASS: ${{ secrets.IMS_PASS }}
+          PROJECT: ${{ matrix.project }}
+          SHARD: ${{ matrix.shard }}
+          reporter: list,blob
+
+      - name: Upload blob report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: blob-report-${{ matrix.project }}-${{ matrix.shard }}
+          path: blob-report
+          if-no-files-found: ignore
+
+  merge-report:
+    name: Merge Reports
+    runs-on: ubuntu-latest
+    needs: [run-nala-tests]
+    if: always()
+    steps:
+      - name: Checkout (tooling only)
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+
+      - name: Setup Node.js
+        uses: actions/setup-node@cdca7365b2dadb8aad0a33bc7601856ffabcc48e
+        with:
+          node-version: 20.x
+
+      - name: Download all blob reports
+        uses: actions/download-artifact@v4
+        with:
+          pattern: blob-report-*
+          path: all-blob-reports
+          merge-multiple: true
+
+      - name: Merge to unified HTML
+        run: |
+          npm i -D @playwright/test
+          npx playwright install --with-deps
+          npx playwright merge-reports --reporter html ./all-blob-reports
+          echo "Unified HTML at ./playwright-report/index.html"
+
+      - name: Upload unified HTML report
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report
+          if-no-files-found: ignore

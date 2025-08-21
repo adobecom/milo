@@ -34,7 +34,7 @@ const config = {
   workers: process.env.CI ? 7 : 3,
   /* Reporter to use. */
   reporter: process.env.CI
-    ? [['github'], ['list'], ['./nala/utils/base-reporter.js']]
+    ? [['github'], ['list'], ['blob'], ['./nala/utils/base-reporter.js']]
     : [
       ['html', { outputFolder: 'test-html-results' }],
       ['list'],
