@@ -188,7 +188,6 @@ export default async (block) => {
   });
 
   window.addEventListener('message', (event) => {
-    if (event.origin === window.location.origin) return;
     const message = (() => {
       try {
         return JSON.parse(event.data);
