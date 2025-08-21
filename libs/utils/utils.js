@@ -1427,6 +1427,8 @@ async function checkForPageMods() {
   let calculatedTimeout = null;
 
   if (mepParam === 'off') return;
+  const akamaiLocale = getMepEnablement('akamaiLocale') || sessionStorage.getItem('akamai');
+  if (akamaiLocale === 'uk' && !mepParam) return;
   const pzn = getMepEnablement('personalization');
   const pznroc = getMepEnablement('personalization-roc');
   const promo = getMepEnablement('manifestnames', PROMO_PARAM);
