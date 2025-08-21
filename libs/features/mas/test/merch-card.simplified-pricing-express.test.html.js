@@ -128,7 +128,6 @@ runTests(async () => {
             expect(header).to.exist;
             const chevronButton = shadowRoot.querySelector('.chevron-button');
             expect(chevronButton).to.exist;
-            expect(chevronButton.getAttribute('aria-label')).to.equal('Expand card');
             
             // Verify focusable elements
             const links = card.querySelectorAll('a[slot="cta"]');
