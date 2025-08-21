@@ -1,6 +1,6 @@
 import { expect } from '@esm-bundle/chai';
 import { waitForElement, delay } from '../../helpers/waitfor.js';
-import { ACK, CANCEL, ERROR, expectMessage, READY, recieveMessage, SUBMIT } from '../../../libs/blocks/nps-csat-form/nps-csat-form.js';
+import { ACK, CANCEL, ERROR, READY, recieveMessage, SUBMIT } from '../../../libs/blocks/nps-csat-form/nps-csat-form.js';
 
 // Message constants for testing
 const Ready = 'Ready';
@@ -83,7 +83,7 @@ describe('NPS CSAT Form - Message Handling', () => {
     it('should send Ready message on initialization and wait for Ack', async () => {
       // Initialize the form in iframe
       await iframeWindow.npsCsatForm(block);
-      const readyMessage = await expectMessage(READY);
+      const readyMessage = await recieveMessage();
       expect(readyMessage.type).to.equal(Ready);
       sendMessageToIframe(iframe, ACK);
 
@@ -95,7 +95,7 @@ describe('NPS CSAT Form - Message Handling', () => {
     it('should timeout and send Error message if no Ack received within timeout', async () => {
       // Initialize the form but don't send Ack
       await iframeWindow.npsCsatForm(block);
-      const readyMessage = await recieveMessage(READY);
+      const readyMessage = await recieveMessage();
       expect(readyMessage.type).to.equal(Ready);
 
       // Don't send Ack - wait for timeout
@@ -110,7 +110,7 @@ describe('NPS CSAT Form - Message Handling', () => {
       // Initialize form with proper Ack
       await iframeWindow.npsCsatForm(block);
 
-      const readyMessage = await expectMessage(READY);
+      const readyMessage = await recieveMessage();
       expect(readyMessage.type).to.equal(Ready);
       sendMessageToIframe(iframe, ACK);
 
@@ -118,7 +118,7 @@ describe('NPS CSAT Form - Message Handling', () => {
       sendMessageToIframe(iframe, CANCEL);
 
       // Wait for Ack response
-      const ackMessage = await expectMessage(ACK);
+      const ackMessage = await recieveMessage();
       expect(ackMessage.type).to.equal(Acknowledged);
     });
   });
@@ -127,7 +127,7 @@ describe('NPS CSAT Form - Message Handling', () => {
     it('should send Submit message with form data when form is submitted', async () => {
       // Initialize form
       await iframeWindow.npsCsatForm(block);
-      const readyMessage = await expectMessage(READY);
+      const readyMessage = await recieveMessage();
       expect(readyMessage.type).to.equal(Ready);
       sendMessageToIframe(iframe, ACK);
 
@@ -146,7 +146,7 @@ describe('NPS CSAT Form - Message Handling', () => {
       form.dispatchEvent(submitEvent);
 
       // Wait for Submit message
-      const submitMessage = await expectMessage(SUBMIT({}));
+      const submitMessage = await recieveMessage();
       expect(submitMessage.type).to.equal(Submit);
       expect(submitMessage.data).to.deep.include({
         feedback: radioButton.value,
@@ -158,7 +158,7 @@ describe('NPS CSAT Form - Message Handling', () => {
     it('should not submit and show error if no radio button is selected', async () => {
       // Initialize form
       await iframeWindow.npsCsatForm(block);
-      const readyMessage = await expectMessage(READY);
+      const readyMessage = await recieveMessage();
       expect(readyMessage.type).to.equal(Ready);
       sendMessageToIframe(iframe, ACK);
 
@@ -179,7 +179,7 @@ describe('NPS CSAT Form - Message Handling', () => {
     it('should send Cancel message when cancel button is clicked', async () => {
       // Initialize form
       await iframeWindow.npsCsatForm(block);
-      const readyMessage = await expectMessage(READY);
+      const readyMessage = await recieveMessage();
       expect(readyMessage.type).to.equal(Ready);
       sendMessageToIframe(iframe, ACK);
 
@@ -189,7 +189,7 @@ describe('NPS CSAT Form - Message Handling', () => {
       cancelButton.click();
 
       // Wait for Cancel message
-      const cancelMessage = await expectMessage(CANCEL);
+      const cancelMessage = await recieveMessage();
       expect(cancelMessage.type).to.equal(Cancel);
     });
   });
@@ -198,7 +198,7 @@ describe('NPS CSAT Form - Message Handling', () => {
     it('should send Error message for invalid JSON in parent messages', async () => {
       // Initialize form
       await iframeWindow.npsCsatForm(block);
-      const readyMessage = await expectMessage(READY);
+      const readyMessage = await recieveMessage();
       expect(readyMessage.type).to.equal(Ready);
       sendMessageToIframe(iframe, ACK);
 
@@ -206,14 +206,14 @@ describe('NPS CSAT Form - Message Handling', () => {
       iframe.contentWindow.postMessage('invalid json{', '*');
 
       // Wait for Error message
-      const errorMessage = await expectMessage(ERROR(''));
+      const errorMessage = await recieveMessage();
       expect(errorMessage.type).to.equal(ErrorMsg);
     });
 
     it('should send Error message for unexpected message types', async () => {
       // Initialize form
       await iframeWindow.npsCsatForm(block);
-      const readyMessage = await expectMessage(READY);
+      const readyMessage = await recieveMessage();
       expect(readyMessage.type).to.equal(Ready);
       sendMessageToIframe(iframe, ACK);
 
@@ -221,7 +221,7 @@ describe('NPS CSAT Form - Message Handling', () => {
       sendMessageToIframe(iframe, { type: 'UnexpectedType' });
 
       // Wait for Error message
-      const errorMessage = await expectMessage(ERROR(''));
+      const errorMessage = await recieveMessage();
       expect(errorMessage.type).to.equal(ErrorMsg);
       expect(errorMessage.message).to.include('Unexpected Message');
     });
@@ -231,7 +231,7 @@ describe('NPS CSAT Form - Message Handling', () => {
     it('should remove error state when radio button is selected after submission attempt', async () => {
       // Initialize form
       await iframeWindow.npsCsatForm(block);
-      const readyMessage = await expectMessage(READY);
+      const readyMessage = await recieveMessage();
       expect(readyMessage.type).to.equal(Ready);
       sendMessageToIframe(iframe, ACK);
 
