@@ -43,6 +43,7 @@ export class MerchQuantitySelect extends LitElement {
         this.highlightedIndex = 0;
         this.toggleMenu = this.toggleMenu.bind(this);
         this.closeMenu = this.closeMenu.bind(this);
+        this.openMenu = this.openMenu.bind(this);
         this.handleClickOutside = this.handleClickOutside.bind(this);
         this.boundKeydownListener = this.handleKeydown.bind(this);
         this.handleKeyupDebounced = debounce(this.handleKeyup.bind(this), 500);
@@ -62,15 +63,10 @@ export class MerchQuantitySelect extends LitElement {
         );
     }
 
-    handleKeyup() {
+    handleKeyup(e) {
+        if (e.key === ARROW_DOWN || e.key === ARROW_UP) return
         this.handleInput();
         this.sendEvent();
-    }
-
-    onButtonFocusOut() {
-        setTimeout(() => {
-            this.closed = true;
-        }, 200);
     }
 
     selectValue() {
@@ -79,6 +75,7 @@ export class MerchQuantitySelect extends LitElement {
             if (!option) return;
             this.selectedValue = option;
             this.handleMenuOption(this.selectedValue);
+            this.closed = true;
         }
     }
 
@@ -95,18 +92,20 @@ export class MerchQuantitySelect extends LitElement {
                 break;
             case ARROW_DOWN:
                 if (!this.closed) {
-                    e.preventDefault();
                     this.highlightedIndex =
                         (this.highlightedIndex + 1) % this.options.length;
+                } else {
+                    this.openMenu();
                 }
+                e.preventDefault();
                 break;
             case ARROW_UP:
                 if (!this.closed) {
-                    e.preventDefault();
                     this.highlightedIndex =
                         (this.highlightedIndex - 1 + this.options.length) %
                         this.options.length;
                 }
+                e.preventDefault();
                 break;
             case ENTER:
                 this.selectValue();
@@ -191,6 +190,11 @@ export class MerchQuantitySelect extends LitElement {
         this.highlightedIndex = this.options.indexOf(this.selectedValue);
     }
 
+    openMenu() {
+        this.closed = false;
+        this.adjustPopoverPlacement();
+    }
+
     adjustPopoverPlacement() {
         const popover = this.shadowRoot.querySelector('.popover');
         if (this.closed || popover.getBoundingClientRect().bottom <= window.innerHeight)
@@ -266,20 +270,22 @@ export class MerchQuantitySelect extends LitElement {
                     class="text-field-input"
                     aria-labelledby="qsLabel"
                     name="quantity"
-                    @focus="${this.closeMenu}"
+                    role="combobox"
+                    aria-expanded=${!this.closed}
+                    aria-controls="qsPopover"
+                    aria-activedescendant="${!this.closed ? `qs-item-${this.highlightedIndex}` : ''}"
                     .value="${this.selectedValue}"
                     type="number"
                     @keydown="${this.handleKeydown}"
                     @keyup="${this.handleKeyupDebounced}"
+                    @click="${this.toggleMenu}"
                 />
-                <button class="picker-button" aria-activedescendant="${!this.closed ? `qs-item-${this.highlightedIndex}` : ''}" aria-controls="qsPopover" 
-                    aria-expanded=${!this.closed} aria-haspopup="listbox" role="combobox" aria-labelledby="qsLabel" 
-                    @click="${this.toggleMenu}" @focusout="${this.onButtonFocusOut}">
+                <button class="picker-button" aria-controls="qsPopover" aria-expanded=${!this.closed} aria-labelledby="qsLabel" tabindex="-1" @click="${this.toggleMenu}">
                     <div
                         class="picker-button-fill ${this.closed
                             ? 'open'
                             : 'closed'}"
-                    ><div class="picker-value">${this.selectedValue}</div></div>
+                    ></div>
                 </button>
                 ${this.popover}
             </div>
