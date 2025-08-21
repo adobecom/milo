@@ -36,44 +36,49 @@ class BaseReporter {
   }
 
   async onTestEnd(test, result) {
-    const { title, retries, _projectId } = test;
-    const {
-      name, tags, url, browser, env, branch, repo,
-    } = this.parseTestTitle(title, _projectId);
-    const {
-      status,
-      duration,
-      error: { message: errorMessage, value: errorValue, stack: errorStack } = {},
-      retry,
-    } = result;
+    try {
+      const { title, retries, _projectId } = test;
+      const {
+        name, tags, url, browser, env, branch, repo,
+      } = this.parseTestTitle(title, _projectId);
+      const {
+        status,
+        duration,
+        error: { message: errorMessage, value: errorValue, stack: errorStack } = {},
+        retry,
+      } = result;
 
-    if (retry < retries && status === 'failed') {
-      return;
-    }
-    this.results.push({
-      title,
-      name,
-      tags,
-      url,
-      env,
-      browser,
-      branch,
-      repo,
-      status: failedStatus.includes(status) ? 'failed' : status,
-      errorMessage: stripAnsi(errorMessage),
-      errorValue,
-      errorStack: stripAnsi(errorStack),
-      stdout: test.stdout,
-      stderr: test.stderr,
-      duration,
-      retry,
-    });
-    if (status === 'passed') {
-      this.passedTests += 1;
-    } else if (failedStatus.includes(status)) {
-      this.failedTests += 1;
-    } else if (status === 'skipped') {
-      this.skippedTests += 1;
+      if (retry < retries && status === 'failed') {
+        return;
+      }
+      this.results.push({
+        title,
+        name,
+        tags,
+        url,
+        env,
+        browser,
+        branch,
+        repo,
+        status: failedStatus.includes(status) ? 'failed' : status,
+        errorMessage: stripAnsi(errorMessage),
+        errorValue,
+        errorStack: stripAnsi(errorStack),
+        stdout: test.stdout,
+        stderr: test.stderr,
+        duration,
+        retry,
+      });
+      if (status === 'passed') {
+        this.passedTests += 1;
+      } else if (failedStatus.includes(status)) {
+        this.failedTests += 1;
+      } else if (status === 'skipped') {
+        this.skippedTests += 1;
+      }
+    } catch (error) {
+      console.error('Error in base reporter onTestEnd:', error.message);
+      // Continue without crashing the reporter
     }
   }
 
@@ -158,6 +163,20 @@ class BaseReporter {
     let url;
 
     const titleParts = title.split('@');
+
+    // Handle cases where title doesn't follow expected format
+    if (titleParts.length < 2) {
+      return {
+        name: title,
+        tags: [],
+        url: '',
+        browser: 'unknown',
+        env: 'unknown',
+        branch: 'unknown',
+        repo: 'unknown',
+      };
+    }
+
     const name = titleParts[1].trim();
     const tags = titleParts.slice(2).map((tag) => tag.trim());
 
