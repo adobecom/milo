@@ -142,7 +142,6 @@ export default class MerchAddon extends LitElement {
             color: var(--merch-addon-label-color);
             font-size: var(--merch-addon-label-size);
             line-height: var(--merch-addon-label-line-height);
-            font-family: "Adobe Clean";
             font-style: normal;
             font-weight: 400;
             cursor: pointer;

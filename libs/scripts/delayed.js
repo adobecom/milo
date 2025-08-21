@@ -24,6 +24,18 @@ export const loadJarvisChat = async (getConfig, getMetadata, loadScript, loadSty
   initJarvisChat(config, loadScript, loadStyle, getMetadata);
 };
 
+export const loadBlockNotifications = async (getConfig, loadStyle) => {
+  const { env, miloLibs, codeRoot } = getConfig();
+
+  if (env.name === 'local' || window.location.host.includes('.page')) {
+    const base = miloLibs || codeRoot;
+    loadStyle(`${base}/styles/block-notifications.css`);
+
+    const { default: blockNotifications } = await import('../utils/block-notifications.js');
+    blockNotifications(base);
+  }
+};
+
 export const loadPrivacy = async (getConfig, loadScript) => {
   const { privacyId, env } = getConfig();
   const acom = '7a5eb705-95ed-4cc4-a11d-0cc5760e93db';
@@ -45,7 +57,10 @@ export const loadPrivacy = async (getConfig, loadScript) => {
   // Load the privacy script
   let privacyEnv = '';
   if (env?.name !== 'prod') {
-    privacyEnv = new URLSearchParams(window.location.search).get('privacyEnv') || '';
+    const param = new URLSearchParams(window.location.search).get('privacyEnv') || '';
+    if (['dev01', 'dev02', 'qa01', 'stage'].includes(param)) {
+      privacyEnv = param;
+    }
   }
   loadScript(`https://www.${privacyEnv && `${privacyEnv}.`}adobe.com/etc.clientlibs/globalnav/clientlibs/base/privacy-standalone.js`);
 
@@ -105,6 +120,7 @@ const loadDelayed = ([
     loadAriaAutomation();
     loadJarvisChat(getConfig, getMetadata, loadScript, loadStyle);
     loadGoogleLogin(getMetadata, loadIms, loadScript, getConfig);
+    loadBlockNotifications(getConfig, loadStyle);
     if (getMetadata('interlinks') === 'on') {
       const { locale } = getConfig();
       const path = `${locale.contentRoot}/keywords.json`;
