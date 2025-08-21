@@ -14,7 +14,7 @@ import {
   shouldBlockFreeTrialLinks,
 } from '../../utils/utils.js';
 
-(async () => {
+const cssPromise = (async () => {
   const { miloLibs, codeRoot, theme } = getConfig();
   const url = `${miloLibs || codeRoot}/blocks/global-navigation/`;
   const loadStylePromise = (u) => new Promise((resolve, reject) => {
@@ -506,7 +506,8 @@ class Gnav {
     isDesktop.addEventListener('change', closeAllDropdowns);
   }, 'Error in global navigation init', 'gnav', 'e');
 
-  revealGnav = () => {
+  revealGnav = async () => {
+    await cssPromise;
     this.block.classList.remove('gnav-hide');
     this.block.classList.add('ready');
     performance.mark('Gnav-Visible');

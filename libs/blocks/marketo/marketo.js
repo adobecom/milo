@@ -306,7 +306,14 @@ export default function init(el) {
   fragment.append(formWrapper);
   el.replaceChildren(fragment);
   el.classList.add('loading');
-  /* c8 ignore next 3 */
+
+  const stepPreferences = formData['form.fldStepPref'] || {};
+  const count = Object.values(stepPreferences).findLastIndex((fields) => fields?.length) + 1 || 1;
+
+  /* c8 ignore next 6 */
+  if (count > 1) {
+    el.classList.add(`multi-${count}`);
+  }
   if (el.classList.contains('multi-2') || el.classList.contains('multi-3')) {
     el.classList.add('multi-step');
   }

@@ -585,9 +585,9 @@ function getSelectedElements(sel, rootEl, forceRootEl, action) {
   try {
     els = root.querySelectorAll(modifiedSelector);
     if (getSelectorType(selector) === SELECTOR_TYPES.twpButtons) {
-      const regex = /free.trial|essai gratuit|kostenlos testen|testversion|無料で始める 無料体験の詳細|détails de la version d’essai gratuite|details zur kostenlosen testversion/g;
+      const regex = /free.trial|essai gratuit|kostenlos testen|testversion|無料で始める|détails de la version d’essai gratuite|details zur kostenlosen testversion/g;
       els = [...els]
-        .filter((el) => el.innerHTML.toLowerCase().match(regex))
+        .filter((el) => el.outerHTML.toLowerCase().match(regex))
         .map((el) => (['strong', 'em'].includes(el.parentElement.tagName.toLowerCase())
           ? el.parentElement
           : el));
