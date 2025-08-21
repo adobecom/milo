@@ -3,7 +3,8 @@
     <script type="importmap">
       {
         "imports": {
-          "../../../libs/utils/utils.js": "../instagram/mocks/embed-utils.js"
+          "../../../libs/utils/utils.js": "../instagram/mocks/embed-utils.js",
+          "../../../libs/martech/attributes.js": "./mocks/embed-attributes.js"
         }
       }
     </script>
@@ -17,26 +18,34 @@
     import sinon from 'sinon';
     import { loadScript } from '../../../libs/utils/utils.js';
     import init from '../../../libs/blocks/youtube/youtube.js';
+    import { delay } from '../../helpers/waitfor.js';
 
+
+    let fetchStub;
     runTests(() => {
       beforeEach(() => {
         document.body.innerHTML = '<a href="https://www.youtube.com/embed/abc?abc=abc">Youtube Embed Link</a>';
+        fetchStub = sinon.stub(window, 'fetch').resolves({
+          ok: true,
+          json: () => Promise.resolve({ title: 'Youtube video' }),
+        });
       });
 
       afterEach(() => {
         document.body.innerHTML = '';
+        fetchStub.restore();
         sinon.restore();
       });
 
       describe('youtube', () => {
         it('Should load lite youtube instead of iframe', async () => {
-          init(document.querySelector('a'));
+          await init(document.querySelector('a'));
           expect(document.querySelector('iframe')).to.be.null;
           expect(document.querySelector('lite-youtube')).to.not.be.null;
         });
 
         it('Should load youtube resources on lite youtube hover', async () => {
-          init(document.querySelector('a'));
+          await init(document.querySelector('a'));
           document.querySelector('lite-youtube').dispatchEvent(new MouseEvent('pointerover'));
           expect(document.querySelector('link[rel="preconnect"][href="https://www.youtube-nocookie.com"]')).to.not.be.null;
           expect(document.querySelector('link[rel="preconnect"][href="https://www.google.com"]')).to.not.be.null;
@@ -45,17 +54,25 @@
         });
 
         it('Should add iframe when lite youtube is clicked', async () => {
-          init(document.querySelector('a'));
+          await init(document.querySelector('a'));
           document.querySelector('.lty-playbtn').click();
           expect(document.querySelector('iframe')).to.not.be.null;
           expect(document.querySelector('lite-youtube')).to.be.null;
+        });
+
+        it('Should add aria-label to play btn', async () => {
+          await init(document.querySelector('a'));
+          await delay();
+          const btn = document.querySelector('.lty-playbtn');
+          const ariaLabel = btn.getAttribute('aria-label');
+          expect(ariaLabel).to.be.equal('Play Youtube video');
         });
 
         it('Should load youtube iframe API on Mobile browsers', async () => {
           const userAgentStub = sinon
             .stub(navigator, 'userAgent')
             .value('Mobi');
-          init(document.querySelector('a'));
+          await init(document.querySelector('a'));
           document.querySelector('.lty-playbtn').click();
           expect(document.querySelector('script[src="https://www.youtube.com/iframe_api"]')).to.not.be.null;
         });
@@ -63,7 +80,7 @@
         it('Should stop execution for not valid youtube links', async () => {
           const youtube = document.querySelector('a');
           youtube.href = 'https://www.bubblegum.com/watch?v=abc';
-          init(youtube);
+          await init(youtube);
           expect(document.querySelector('lite-youtube')).to.be.null;
         });
       });

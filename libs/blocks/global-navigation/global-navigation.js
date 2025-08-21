@@ -14,7 +14,7 @@ import {
   shouldBlockFreeTrialLinks,
 } from '../../utils/utils.js';
 
-(async () => {
+const cssPromise = (async () => {
   const { miloLibs, codeRoot, theme } = getConfig();
   const url = `${miloLibs || codeRoot}/blocks/global-navigation/`;
   const loadStylePromise = (u) => new Promise((resolve, reject) => {
@@ -105,6 +105,8 @@ const {
   addA11YMobileDropdowns,
   removeA11YMobileDropdowns,
   getUnavWidthCSS,
+  setupKeyboardNav,
+  KEYBOARD_DELAY,
 } = utilities;
 
 const SIGNIN_CONTEXT = getConfig()?.signInContext;
@@ -176,7 +178,7 @@ export const CONFIG = {
   delays: {
     mainNavDropdowns: 800,
     loadDelayed: 3000,
-    keyboardNav: 8000,
+    keyboardNav: KEYBOARD_DELAY,
   },
   features: [
     'gnav-brand',
@@ -342,15 +344,6 @@ const decorateProfileTrigger = async ({ avatar }) => {
   return buttonElem;
 };
 
-let keyboardNav;
-const setupKeyboardNav = async (newMobileWithLnav) => {
-  keyboardNav = keyboardNav || new Promise(async (resolve) => {
-    const { default: KeyboardNavigation } = await import('./utilities/keyboard/index.js');
-    const instance = new KeyboardNavigation(newMobileWithLnav);
-    resolve(instance);
-  });
-};
-
 const getBrandImage = (image, brandImageOnly) => {
   // Return the default Adobe logo if an image is not available
   if (!image) return brandImageOnly ? CONFIG.icons.brand : CONFIG.icons.company;
@@ -513,7 +506,8 @@ class Gnav {
     isDesktop.addEventListener('change', closeAllDropdowns);
   }, 'Error in global navigation init', 'gnav', 'e');
 
-  revealGnav = () => {
+  revealGnav = async () => {
+    await cssPromise;
     this.block.classList.remove('gnav-hide');
     this.block.classList.add('ready');
     performance.mark('Gnav-Visible');
@@ -633,7 +627,9 @@ class Gnav {
       localNav.querySelector('.feds-localnav-title').setAttribute('daa-ll', `${title}_localNav|${isActive ? 'close' : 'open'}`);
     });
 
-    localNav.querySelector('.feds-navItem--active')?.addEventListener('click', closeAllDropdowns);
+    localNav.querySelector('.feds-navItem--active')?.addEventListener('click', (elem) => {
+      if (!elem.currentTarget.querySelector('.feds-popup')) closeAllDropdowns();
+    });
 
     const curtain = localNav.querySelector('.feds-localnav-curtain');
     curtain.addEventListener('click', (e) => {
@@ -971,6 +967,21 @@ class Gnav {
     // Exposing UNAV config for consumers
     CONFIG.universalNav.universalNavConfig = getConfiguration();
     await window.UniversalNav(CONFIG.universalNav.universalNavConfig);
+    const fedsPromo = document.querySelector('.feds-promo-aside-wrapper');
+    const updatePromoZIndex = () => {
+      const isOpen = document.body.classList.contains('unav-no-scroll');
+      fedsPromo.style.zIndex = isOpen ? 10 : 11;
+    };
+    // Ensure promo appears behind unav if unav is active
+    if (fedsPromo && !isDesktop.matches) {
+      new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+          if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
+            updatePromoZIndex();
+          }
+        });
+      }).observe(document.body, { attributes: true, attributeFilter: ['class'] });
+    }
     // In case we get it wrong
     if (!signedOut) this.blocks.universalNav?.style.removeProperty('min-width');
     performance.mark('Unav-End');
