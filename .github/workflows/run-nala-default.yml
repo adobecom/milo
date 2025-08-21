@@ -1,4 +1,4 @@
-name: Nala Tests
+name: Nala E2E UI Tests
 
 on:
   push:
@@ -18,7 +18,7 @@ permissions:
 
 jobs:
   run-nala-tests:
-    name: Running Nala E2E UI Tests • ${{ matrix.project }} • shard ${{ matrix.shard }}
+    name: Running on • ${{ matrix.project }} • shard ${{ matrix.shard }}
     runs-on: ubuntu-latest
     timeout-minutes: 30
     strategy:
@@ -77,6 +77,7 @@ jobs:
           name: blob-report-${{ matrix.project }}-shard-${{ env.SAFE_SHARD }}
           path: blob-report
           if-no-files-found: ignore
+          overwrite: true
 
   merge-report:
     name: Merge Reports
