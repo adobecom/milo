@@ -74,7 +74,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: blob-report-${{ matrix.project }}-${{ matrix.shard }}
+          name: blob-report-${{ matrix.project }}-shard-${{ replace(matrix.shard, '/', '-') }}
           path: blob-report
           if-no-files-found: ignore
 
