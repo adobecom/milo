@@ -1405,14 +1405,6 @@ merch-card[variant^="plans"] merch-addon span[data-template="price"] {
     display: none;
 }
 
-/* Mobile */
-@media screen and ${le} {
-    merch-whats-included merch-mnemonic-list,
-    merch-whats-included [slot="heading"] {
-        width: 100%;
-    }
-}
-
 merch-card[variant^="plans"]:not([size]) {
     merch-whats-included merch-mnemonic-list,
     merch-whats-included [slot="heading"] {
@@ -1511,6 +1503,18 @@ merch-card-collection:has([slot="subtitle"]) merch-card {
     padding-bottom: 48px;
 }
 
+/* Mobile */
+@media screen and ${le} {
+    merch-whats-included merch-mnemonic-list,
+    merch-whats-included [slot="heading"] {
+        width: 100%;
+    }
+
+    .plans-team .text .heading-l {
+        text-align: center;
+    }
+}
+
 /* Tablet */
 @media screen and ${V} {
     :root {
@@ -1523,6 +1527,10 @@ merch-card-collection:has([slot="subtitle"]) merch-card {
 }
 
 @media screen and ${zt} {
+    .plans-team .text .heading-l a {
+        text-decoration: none;
+    }
+
     .plans-edu-inst {
         display: grid;
         grid-template-columns: min-content;
