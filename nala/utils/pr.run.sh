@@ -50,7 +50,7 @@ export PR_NUMBER
 
 echo "PR Branch live URL: $PR_BRANCH_LIVE_URL_GH"
 
-# Purge the PR branch before running tests
+# Purge the PR branch before running tests.
 echo "Purging branch: $FEATURE_BRANCH"
 PURGE_URL="https://admin.hlx.page/code/$prOrg/$prRepo/$FEATURE_BRANCH/*"
 
