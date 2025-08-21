@@ -54,6 +54,7 @@ export class MerchSidenavList extends LitElement {
 
     selectElement(element, selected = true) {
         element.selected = selected;
+        element.shadowRoot?.querySelector('a')?.setAttribute('aria-selected', selected);
         if (element.parentNode.tagName === 'SP-SIDENAV-ITEM') {
             this.selectElement(element.parentNode, false);
         }
