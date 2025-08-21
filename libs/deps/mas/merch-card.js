@@ -1499,10 +1499,6 @@ merch-card-collection:has([slot="subtitle"]) merch-card {
     merch-whats-included [slot="heading"] {
         width: 100%;
     }
-
-    .plans-team .text .heading-l {
-        text-align: center;
-    }
 }
 
 /* Tablet */
