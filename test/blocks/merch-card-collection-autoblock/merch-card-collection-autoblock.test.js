@@ -177,5 +177,61 @@ describe('merch-card-collection autoblock', () => {
       expect(collection).to.exist;
       expect(collection.getAttribute('overrides')).to.equal('should-be-replaced:promo-1,should-also-be-replaced:promo-2');
     });
+
+    it('sets filter parameter for illustrator single_app', async () => {
+      const originalUrl = window.location.href;
+      const url = new URL(originalUrl);
+      url.searchParams.append('single_app', 'illustrator');
+      url.searchParams.append('existing_param', 'value');
+      window.history.pushState({}, '', `${url.toString()}`);
+      const originalPushState = window.history.pushState;
+      const pushStateSpy = sinon.spy();
+      window.history.pushState = pushStateSpy;
+
+      const content = document.createElement('div');
+      content.classList.add('content');
+      const a = document.createElement('a');
+      a.setAttribute('href', 'https://mas.adobe.com/studio.html#content-type=merch-card-collection&path=acom&query=e58f8f75-b882-409a-9ff8-8826b36a8368');
+      a.textContent = 'merch-card-collection: SANDBOX / Individual Plans';
+      content.append(a);
+      document.body.append(content);
+      await init(a);
+
+      expect(pushStateSpy.called).to.be.true;
+      const callArgs = pushStateSpy.firstCall.args;
+      expect(callArgs[2]).to.include('filter=illustration');
+      expect(callArgs[2]).to.include('single_app=illustrator');
+      expect(callArgs[2]).to.include('existing_param=value');
+
+      window.history.pushState = originalPushState;
+      window.history.pushState({}, '', `${originalUrl}`);
+    });
+
+    it('does not set filter parameter when filter already exists', async () => {
+      const originalUrl = window.location.href;
+      const url = new URL(originalUrl);
+      url.searchParams.append('single_app', 'illustrator');
+      url.searchParams.append('filter', 'photography');
+      window.history.pushState({}, '', `${url.toString()}`);
+      const originalPushState = window.history.pushState;
+      const pushStateSpy = sinon.spy();
+      window.history.pushState = pushStateSpy;
+
+      const content = document.createElement('div');
+      content.classList.add('content');
+      const a = document.createElement('a');
+      a.setAttribute('href', 'https://mas.adobe.com/studio.html#content-type=merch-card-collection&path=acom&query=e58f8f75-b882-409a-9ff8-8826b36a8368');
+      a.textContent = 'merch-card-collection: SANDBOX / Individual Plans';
+      content.append(a);
+      document.body.append(content);
+      await init(a);
+
+      const params = new URLSearchParams(window.location.search);
+      expect(params.get('filter')).to.equal('photography');
+      expect(params.get('single_app')).to.equal('illustrator');
+
+      window.history.pushState = originalPushState;
+      window.history.pushState({}, '', `${originalUrl}`);
+    });
   });
 });

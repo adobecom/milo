@@ -1,7 +1,7 @@
 # Analytics and Interaction Data Management - Detailed Explanation 
 
 ### Overview
-This module handles interactions with Adobe's Experience Cloud services, including data collection, analytics tracking, and personalization. It works with cookies, device info, and user behavior data to generate and send requests to Adobe’s marketing and personalization systems.
+This module handles interactions with Adobe's Experience Cloud services, including data collection, analytics tracking, and personalization. It works with cookies, device info, and user behavior data to generate and send requests to Adobe's marketing and personalization systems.
 
 ---
 
@@ -12,12 +12,16 @@ This function retrieves the domain of the current webpage, stripping out the `ww
 
 **Logic:**
 - The function accesses the `hostname` from `window.location`, which contains the domain of the current page.
-- It uses a regular expression (`/^www\./`) to remove the `www.` prefix, ensuring that the function returns only the domain name.
+- It splits the hostname by dots and takes the last two parts for domains with subdomains.
+- For simple domains, it returns the hostname as-is.
 
 ```javascript
 function getDomainWithoutWWW() {
-  const domain = window?.location?.hostname;
-  return domain.replace(/^www\./, '');
+  const parts = window.location.hostname.toLowerCase().split('.');
+  if (parts.length >= 2) {
+    return parts.slice(-2).join('.');
+  }
+  return window.location.hostname.toLowerCase();
 }
 ```
 
@@ -209,7 +213,7 @@ This function constructs the page name that will be used for analytics, taking i
 - Combines the `hostname` and the cleaned-up `pathname` to form a page name.
 
 ```javascript
-function getPageNameForAnalytics() {
+export function getPageNameForAnalytics() {
   const { hostname, pathname } = new URL(window.location.href);
   const urlRegions = Object.fromEntries(['ae_ar', 'ae_en', 'africa', 'apac', ...].map((r) => [r, 1]));
 
@@ -232,27 +236,32 @@ This function returns an updated context object containing device, environment, 
 - The function constructs a context object that includes:
   - **Device Information**: Screen size, orientation, and viewport size.
   - **Environment**: Details about the browser and viewport.
-  - **Place Context**: Local time and timezone
-
- info.
+  - **Place Context**: Local time and timezone information.
 
 ```javascript
-export const getUpdatedContext = () => ({
-  device: {
-    width: window.innerWidth,
-    height: window.innerHeight,
-    orientation: window.orientation || 'landscape',
-    viewport: window.visualViewport,
-  },
-  environment: {
-    userAgent: navigator.userAgent,
-    viewport: window.visualViewport,
-  },
-  placeContext: {
-    time: new Date().getHours(),
-    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-  },
-});
+function getUpdatedContext({
+  screenWidth, screenHeight, screenOrientation,
+  viewportWidth, viewportHeight, localTime, timezoneOffset,
+}) {
+  return {
+    device: {
+      screenHeight,
+      screenWidth,
+      screenOrientation,
+    },
+    environment: {
+      type: 'browser',
+      browserDetails: {
+        viewportWidth,
+        viewportHeight,
+      },
+    },
+    placeContext: {
+      localTime,
+      localTimezoneOffset: timezoneOffset,
+    },
+  };
+}
 ```
 
 **Returns:**
@@ -273,7 +282,7 @@ This function resolves the AGI campaign and flag based on the current page, cook
 ```javascript
 function resolveAgiCampaignAndFlag() {
   const { hostname, pathname, href } = window.location;
-  const consentValue = getCookie('OptanonConsent');
+  const consentValue = getCookie(OPT_ON_AND_CONSENT_COOKIE);
   const EXPIRY_TIME_IN_DAYS = 90;
   const CAMPAIGN_PAGE_VALUE = '1';
   const ACROBAT_DOMAIN_VALUE = '2';
@@ -336,6 +345,7 @@ function getGlobalPrivacyControl() {
 
 **Returns:**
 - String: 'true' if GPC is enabled, 'false' if disabled, or an empty string if not supported.
+
 ---
 
 ## **11. `getEntityId()`**
@@ -355,9 +365,11 @@ function getEntityId() {
   const metaTag = document.querySelector('meta[name="entity_id"]');
   return metaTag ? metaTag.getAttribute('content') : null;
 }
+```
 
 **Returns:**
 - String: The entity ID from the meta tag or a hardcoded value for specific URLs.
+
 ---
 
 ## **12. `getProcessedPageNameForAnalytics()`**
@@ -371,7 +383,7 @@ This function processes the page name further by applying specific filters for d
 - Returns the filtered page name.
 
 ```javascript
-function getProcessedPageNameForAnalytics() {
+export function getProcessedPageNameForAnalytics() {
   const pageName = getPageNameForAnalytics().toLowerCase();
   const pageArray = pageName.split(':');
 
@@ -429,9 +441,9 @@ This function determines the language code based on the provided locale object. 
 - Falls back to `'en-US'` if the region is not found.
 
 ```javascript
-function getLanguageCode(locale) {
-  const region = locale?.region || '';
-  return LOCALE_MAPPINGS[region] || LOCALE_MAPPINGS[''];
+export function getLanguageCode(locale) {
+  const prefix = locale?.prefix?.replace(/^\//, '') || '';
+  return LOCALE_MAPPINGS[prefix] || LOCALE_MAPPINGS[''];
 }
 ```
 
@@ -456,9 +468,9 @@ function getUpdatedAcrobatVisitAttempt() {
   const secondVisitAttempt = Number(localStorage.getItem('acrobatSecondHit')) || 0;
 
   const isAdobeDomain = (hostname === 'www.adobe.com' || hostname === 'www.stage.adobe.com') && /\/acrobat/.test(pathname);
-  const consentCookieValue = getCookie('OptanonConsent');
+  const consentCookieValue = getCookie(OPT_ON_AND_CONSENT_COOKIE);
 
-  if (consentCookieValue?.includes('C0002:1') && isAdobeDomain) {
+  if (!consentCookieValue?.includes('C0002:0') && isAdobeDomain && secondVisitAttempt <= 2) {
     const updatedVisitAttempt = secondVisitAttempt === 0 ? 1 : secondVisitAttempt + 1;
     localStorage.setItem('acrobatSecondHit', updatedVisitAttempt);
     return updatedVisitAttempt;
@@ -469,195 +481,306 @@ function getUpdatedAcrobatVisitAttempt() {
 ```
 
 **Returns:**
-- `Number:`: The updated visit count for Acrobat-related pages.
+- `Number`: The updated visit count for Acrobat-related pages.
+
 ---
-## **`loadAnalyticsAndInteractionData` Function**
+
+## **16. `getUpdatedDxVisitAttempt()`**
 
 **Description:**
-The `loadAnalyticsAndInteractionData` function is an asynchronous method designed to load analytics and interaction data, making necessary API calls and processing the response. It handles user consent checks, retrieves context data, constructs requests, and processes responses related to page views and propositions. Additionally, it interacts with personalization and activation systems based on the environment.
+This function tracks and updates the number of visits to Adobe Experience Cloud (DX) pages.
 
-### **Parameters:**
-- **`locale`** (`object`): Locale configuration object, typically containing language and region.
-- **`env`** (`string`): The environment setting, such as development, staging, or production.
-- **`calculatedTimeout`** (`number`): The timeout duration for the fetch request in milliseconds.
+**Logic:**
+- Checks if the user is on a DX-related domain.
+- If the user has consented to tracking, increments the visit count stored in `localStorage`.
+- Returns the updated visit count.
 
-### **Logic Overview:**
-1. **Consent Check:**
-   - It first checks for user consent regarding tracking by inspecting a cookie (`kndctr_9E1005A551ED61CA0A490D45_AdobeOrg_consent`).
-   - If the value of this cookie is `'general=out'`, the function immediately returns an empty object, indicating that tracking is disabled.
+```javascript
+function getUpdatedDxVisitAttempt() {
+  const { hostname } = window.location;
+  const secondVisitAttempt = Number(localStorage.getItem('dxHit')) || 0;
 
-2. **Contextual Setup:**
-   - The function then calculates the current date and time in ISO format and retrieves the user's timezone offset.
+  const isAdobeDomain = (hostname === 'business.adobe.com' || hostname === 'business.stage.adobe.com' || hostname === 'www.marketo.com' || hostname === 'engage.marketo.com');
+  const consentCookieValue = getCookie(OPT_ON_AND_CONSENT_COOKIE);
 
-3. **Analytics and Request Data:**
-   - The function generates a page name using `getPageNameForAnalytics`, passing the locale.
-   - It retrieves device information and adds the calculated time and timezone offset to create the `updatedContext`.
+  if (!consentCookieValue?.includes('C0002:0') && isAdobeDomain && secondVisitAttempt <= 2) {
+    const updatedVisitAttempt = secondVisitAttempt === 0 ? 1 : secondVisitAttempt + 1;
+    localStorage.setItem('dxHit', updatedVisitAttempt);
+    return updatedVisitAttempt;
+  }
 
-4. **Request Construction:**
-   - A request URL and payload are generated using the environment (`env`), hit type (`hitType`), page name, and other context data.
-   - The request body is then constructed using `createRequestPayload`.
+  return secondVisitAttempt;
+}
+```
 
-5. **API Call:**
-   - The function makes a `fetch` request with the request URL and body. It uses `Promise.race` to handle both the API request and a timeout.
-   - If the request is successful, it processes the response data, extracting relevant details such as the ECID and any personalization data.
-
-6. **Handling Responses:**
-   - The function extracts the ECID from the API response, which is used for tracking.
-   - It looks for specific payload keys (like `KNDCTR_COOKIE_KEYS[0]` and `KNDCTR_COOKIE_KEYS[1]`) and extracts personalization data if present.
-   - The function processes the personalization payloads, sending requests for propositions and activating personalization.
-
-7. **Final Updates and Cookies:**
-   - The ECID is updated in the AMC cookie, and other marketing-related cookies are updated with the extracted data.
-   - A "GPV" (General Page View) cookie is set with the page name to track the page view.
-   - The function returns an object with either the propositions (if successful) or an empty object (in case of errors or no propositions).
-
-8. **Error Handling:**
-   - If any error occurs during the request or processing, a default error message is logged, and the function returns an empty object.
+**Returns:**
+- `Number`: The updated visit count for DX-related pages.
 
 ---
 
-### **Code:**
+## **17. `getMartechCookies()`**
+
+**Description:**
+This function retrieves specific marketing technology cookies from the document.
+
+**Logic:**
+- Splits the document cookies by semicolon.
+- Filters cookies based on the provided keys.
+- Returns an array of cookie objects with key-value pairs.
+
+```javascript
+const getMartechCookies = () => document.cookie.split(';')
+  .map((x) => x.trim().split('='))
+  .filter(([key]) => KNDCTR_COOKIE_KEYS.includes(key))
+  .map(([key, value]) => ({ key, value }));
+```
+
+**Returns:**
+- `Array`: Array of cookie objects with key and value properties.
+
+---
+
+## **18. `getCookiesByKeys()`**
+
+**Description:**
+This function efficiently retrieves multiple cookies by their keys in a single operation.
+
+**Logic:**
+- Splits document cookies by semicolon.
+- Handles cookies with multiple `=` signs correctly by splitting only on the first `=` sign.
+- Decodes URI components for proper cookie value handling.
+- Filters cookies based on the provided key array.
+
+```javascript
+function getCookiesByKeys(cookieKeys) {
+  if (!document.cookie || !cookieKeys?.length) return [];
+
+  return document.cookie
+    .split(';')
+    .map((cookie) => {
+      const [key, ...valueParts] = cookie.trim().split('=');
+      const value = valueParts.join('=');
+      return { key, value: decodeURIComponent(value) || '' };
+    })
+    .filter((cookie) => cookieKeys.includes(cookie.key));
+}
+```
+
+**Returns:**
+- `Array`: Array of cookie objects with key and value properties for the specified keys.
+
+---
+
+## **19. `getConsentConfiguration()`**
+
+**Description:**
+This function converts a consent string into a structured configuration object, supporting both old and new Optanon formats.
+
+**Logic:**
+- Checks if consent state is 'post' and no Optanon cookie exists (implicit consent).
+- Detects Optanon format by checking for `&` and `groups=` parameters.
+- Parses new Optanon format by extracting the groups parameter and decoding it.
+- Falls back to old semicolon-separated format parsing.
+- Returns configuration object with performance, functional, and advertising consent flags.
+
+```javascript
+function getConsentConfiguration({ consentState, optOnConsentCookie }) {
+  if (consentState === 'post' && !optOnConsentCookie) {
+    return {
+      configuration: {
+        performance: true,
+        functional: true,
+        advertising: true,
+      },
+    };
+  }
+
+  let consent = {};
+
+  if (optOnConsentCookie) {
+    if (optOnConsentCookie.includes('&') && optOnConsentCookie.includes('groups=')) {
+      const groupsMatch = optOnConsentCookie.match(/groups=([^&]*)/);
+      if (groupsMatch) {
+        const groupsString = decodeURIComponent(groupsMatch[1]);
+        consent = Object.fromEntries(
+          groupsString.split(',').map((group) => group.split(':')),
+        );
+      }
+    } else {
+      consent = Object.fromEntries(
+        optOnConsentCookie.split(';').map((cat) => cat.split(':')),
+      );
+    }
+  }
+
+  return {
+    configuration: {
+      performance: consent.C0002 === '1',
+      functional: consent.C0003 === '1',
+      advertising: consent.C0004 === '1',
+    },
+  };
+}
+```
+
+**Returns:**
+- `Object`: Configuration object with consent flags for different categories.
+
+---
+
+## **20. `createRequestPayload()`**
+
+**Description:**
+This function creates the request payload for Adobe Experience Cloud API calls with enhanced consent management.
+
+**Logic:**
+- Retrieves multiple cookies efficiently using `getCookiesByKeys()`.
+- Determines consent state based on server timing country and explicit consent countries.
+- Constructs a comprehensive event object with user context, page details, and consent information.
+- Handles different hit types (page view, proposition display, etc.).
+
+**Key Features:**
+- **Consent State Detection**: Uses server timing country and explicit consent countries to determine CMP state.
+- **Cookie Management**: Efficiently retrieves multiple cookies in one operation.
+- **Context Building**: Creates comprehensive user and page context for analytics.
+- **Country-Aware Logic**: Handles explicit vs implicit consent countries differently.
+
+```javascript
+function createRequestPayload({ updatedContext, pageName, processedPageName, locale, hitType }) {
+  const cookies = getCookiesByKeys([
+    GPV_COOKIE, OPT_ON_AND_CONSENT_COOKIE, KNDCTR_CONSENT_COOKIE,
+  ]);
+  
+  // Server timing country detection
+  const serverTiming = window.performance?.getEntriesByType('navigation')?.[0]?.serverTiming?.reduce(
+    (acc, { name, description }) => ({ ...acc, [name]: description }),
+    {},
+  );
+  const serverTimingCountry = serverTiming?.geo;
+
+  // Consent state determination
+  const getConsentState = () => {
+    const isExplicitConsentCountry = serverTimingCountry
+    && _explicitConsentCountries.includes(serverTimingCountry.toLowerCase());
+
+    if (kndctrConsentCookie || (serverTimingCountry && !isExplicitConsentCountry)) {
+      return 'post';
+    }
+
+    if (optOnConsentCookie || isExplicitConsentCountry) {
+      return 'pre';
+    }
+
+    return 'unknown';
+  };
+
+  const consentState = getConsentState();
+  
+  // Event object construction
+  const eventObj = {
+    xdm: { /* Experience Data Model */ },
+    data: { /* Adobe-specific data */ }
+  };
+
+  return eventObj;
+}
+```
+
+**Returns:**
+- `Object`: Complete request payload for Adobe Experience Cloud API.
+
+---
+
+## **21. `loadAnalyticsAndInteractionData()`**
+
+**Description:**
+The main function that orchestrates the entire analytics and interaction data loading process with enhanced consent management.
+
+**Logic:**
+1. **Consent Validation**: Checks user consent for tracking using KNDCTR consent cookie.
+2. **Context Setup**: Gathers device, time, and location information.
+3. **Request Construction**: Creates API request payload and URL with country-aware consent logic.
+4. **API Interaction**: Makes requests to Adobe Experience Cloud.
+5. **Response Processing**: Handles personalization data and propositions.
+6. **Cookie Updates**: Updates tracking and consent cookies.
+7. **Event Dispatching**: Triggers events for other systems.
+
+**Key Components:**
+- **Consent Management**: Integrates with multiple consent systems (KNDCTR, Adobe Privacy, Optanon).
+- **Performance Optimization**: Uses efficient cookie parsing and country detection.
+- **Error Handling**: Graceful fallbacks and comprehensive error logging.
+- **Integration**: Works with Adobe Alloy, Target, and other Experience Cloud services.
+- **Country Detection**: Uses server timing for geographic-based consent logic.
 
 ```javascript
 export const loadAnalyticsAndInteractionData = async (
   { locale, env, calculatedTimeout },
 ) => {
-  // Consent check: If tracking is not allowed, return an empty object
-  const value = getCookie('kndctr_9E1005A551ED61CA0A490D45_AdobeOrg_consent');
+  // Consent check and early return
+  const value = getCookie(KNDCTR_CONSENT_COOKIE);
   if (value === 'general=out') {
-    return {}; // Consent denied, return empty object
+    return {};
   }
 
-  // Get the current date and time in ISO format
-  const CURRENT_DATE = new Date();
-  const localTime = CURRENT_DATE.toISOString();
-
-  // Get timezone offset for the user's location
-  const timezoneOffset = CURRENT_DATE.getTimezoneOffset();
-  
-  // Set hybridPers flag 
-    window.hybridPers = true;
-
-  // Define the hit type (either page view or proposition fetch)
-  const hitType = 'pageView';
-
-  // Get the page name for analytics based on the locale
-  const pageName = getPageNameForAnalytics({ locale });
-
-  // Get updated context data including device info, local time, and timezone offset
+  // Context and request setup
+  const localTime = getLocalISOString();
+  const timezoneOffset = new Date().getTimezoneOffset();
+  const pageName = getPageNameForAnalytics();
+  const processedPageName = getProcessedPageNameForAnalytics();
   const updatedContext = getUpdatedContext({ ...getDeviceInfo(), localTime, timezoneOffset });
 
-  // Create the request URL based on environment and hit type
-  const requestUrl = createRequestUrl({
-    env,
-    hitType,
-  });
-
-  // Construct the request payload for the API
-  const requestPayload = { updatedContext, pageName, locale, env, hitType };
-  const requestBody = createRequestPayload(requestPayload);
-
+  // API request and response handling
   try {
-    // Make a fetch request with timeout handling
     const targetResp = await Promise.race([
-      fetch(requestUrl, {
-        method: 'POST',
-        body: JSON.stringify(requestBody),
-      }),
-      new Promise((_, reject) => { setTimeout(() => reject(new Error('Request timed out')), calculatedTimeout); }),
+      fetch(requestUrl, { method: 'POST', body: JSON.stringify(requestBody) }),
+      new Promise((_, reject) => setTimeout(() => reject(new Error('Request timed out')), calculatedTimeout))
     ]);
 
-    if (!targetResp.ok) {
-      throw new Error('Failed to fetch interact call'); // Throw error if request fails
-    }
-
-    // Parse the JSON response
+    // Process response and update cookies
     const targetRespJson = await targetResp.json();
-
-    // Extract ECID (Experience Cloud ID) from the response
-    const ECID = targetRespJson.handle
-      .flatMap((item) => item.payload)
-      .find((p) => p.namespace?.code === 'ECID')?.id || null;
-
-    // Prepare an array to store extracted data for cookies
-    const extractedData = [];
-
-    // Loop through the response to extract personalization data
-    targetRespJson?.handle?.forEach((item) => {
-      if (item?.type === 'state:store') {
-        item?.payload?.forEach((payload) => {
-          if (payload?.key === KNDCTR_COOKIE_KEYS[0] || payload?.key === KNDCTR_COOKIE_KEYS[1]) {
-            extractedData.push({ ...payload });
-          }
-        });
-      }
-    });
-
-    // Extract personalization decisions
-    const resultPayload = getPayloadsByType(targetRespJson, 'personalization:decisions');
-
-    // Filter and send propositions if personalization-v2 is enabled
-    const filteredPayload = filterPropositionInJson(resultPayload);
-    if (filteredPayload.length) {
-      sendPropositionDisplayRequest(filteredPayload, env, requestPayload);
-    }
-
-    // Prepare Alloy data (for analytics and personalization activation)
-    const alloyData = {
-      destinations: getPayloadsByType(targetRespJson, 'activation:pull'),
-      propositions: resultPayload,
-      inferences: getPayloadsByType(targetRespJson, 'rtml:inferences'),
-      decisions: [],
-    };
-
-    // Dispatch Alloy event for integration with other systems
-    window.dispatchEvent(new CustomEvent('alloy_sendEvent', { detail: alloyData }));
-    setWindowAlloy(alloyData);
-    setTTMetaAndAlloyTarget(resultPayload);
-  
-
-    // Update cookies for tracking and personalization 
+    const ECID = extractECID(targetRespJson);
+    const propositions = extractPropositions(targetRespJson);
+    
+    // Update cookies and dispatch events
     updateAMCVCookie(ECID);
     updateMartechCookies(extractedData);
+    window.dispatchEvent(new CustomEvent('alloy_sendEvent', { detail: alloyData }));
 
-    // If no propositions are found, throw an error
-    if (resultPayload?.length === 0) throw new Error('No propositions found');
-
-    // Set the GPV cookie for page view tracking
-    setGpvCookie(pageName);
-
-    // Return the result with propositions
-    return {
-      type: hitType,
-      result: { propositions: resultPayload },
-    };
+    return { type: hitType, result: { propositions } };
   } catch (err) {
-    // If an error occurs, log it (unless it's 'No propositions found')
-    if (err.message !== 'No propositions found') {
-      console.log(err);
-    }
-
-    // Set GPV cookie even in case of an error
-    setGpvCookie(pageName);
-
-    // Return an empty object in case of error or no propositions
+    console.log(err);
     return {};
   }
 };
 ```
 
-### **Returns:**
-- **`Object`:** 
-  - If the operation succeeds, it returns an object containing:
-    - `type`: The type of request (`pageView`).
-    - `result`: An object containing the `propositions` found from the response.
-  - If the operation fails or no propositions are found, it returns an empty object.
+**Returns:**
+- **Success**: Object with hit type and propositions.
+- **Failure**: Empty object with error logging.
 
 ---
 
-### **Key Components:**
-- **Consent Check (`getCookie`)**: Verifies if user consent is given for tracking.
-- **Context Setup (`getUpdatedContext`, `getDeviceInfo`)**: Collects the user's contextual information, such as device details and time zone.
-- **Request Payload and URL Construction (`createRequestUrl`, `createRequestPayload`)**: Prepares the payload and URL for the API request.
-- **API Fetch (`fetch`)**: Sends the request to the server and handles the response asynchronously.
-- **Error Handling**: Handles errors such as timeouts, failed responses, and missing propositions.
+### **Key Constants and Configuration:**
+
+- **Cookie Keys**: KNDCTR, Optanon, and GPV cookie identifiers.
+- **Data Stream IDs**: Production and staging environment configurations.
+- **Explicit Consent Countries**: List of countries requiring explicit user consent.
+- **Event Type Mapping**: Mapping between internal hit types and Adobe event types.
+
+### **Integration Points:**
+
+- **Adobe Experience Cloud**: Primary analytics and personalization platform.
+- **Adobe Target**: A/B testing and personalization.
+- **Adobe Alloy**: Unified SDK for Experience Cloud.
+- **Cookie Management**: Consent and tracking cookie handling.
+- **Performance Monitoring**: Server timing and country detection.
+
+### **Consent Management Features:**
+
+- **Dual Format Support**: Handles both old semicolon-separated and new Optanon formats.
+- **Country-Aware Logic**: Different consent handling for GDPR vs non-GDPR countries.
+- **Server Timing Integration**: Uses geographic information for consent state determination.
+- **Performance Optimization**: Efficient cookie parsing and batch retrieval.
+- **Fallback Mechanisms**: Graceful handling of missing or malformed consent data.
+
+This module serves as the core integration point between Milo and Adobe's Experience Cloud services, providing comprehensive analytics, personalization, and consent management capabilities with enhanced geographic awareness and format flexibility.

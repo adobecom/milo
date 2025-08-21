@@ -126,7 +126,7 @@ const validatePriceSpan = async (selector, expectedAttributes) => {
 const SUBSCRIPTION_DATA_ALL_APPS_RAW_ELIGIBLE = [
   {
     change_plan_available: true,
-    offer: { product_arrangement: { family: 'CC_ALL_APPS' } },
+    offer: { product_arrangement_v2: { family: 'CC_ALL_APPS' } },
   },
 ];
 
@@ -135,7 +135,7 @@ const SUBSCRIPTION_DATA_PHSP_RAW_ELIGIBLE = [
     change_plan_available: true,
     offer: {
       offer_id: '5F2E4A8FD58D70C8860F51A4DE042E0C',
-      product_arrangement: { family: 'PHOTOSHOP' },
+      product_arrangement_v2: { family: 'PHOTOSHOP' },
     },
   },
 ];
@@ -481,6 +481,43 @@ describe('Merch Block', () => {
       const { classList } = await el.onceSettled();
       expect(classList.contains('button-l')).to.be.true;
     });
+
+    it('extracts and applies a custom button fill class from URL hash', async () => {
+      const el = await merch(document.querySelector(
+        '.merch.cta.fill',
+      ));
+      const { classList } = await el.onceSettled();
+      expect(classList.contains('fill')).to.be.true;
+      expect(classList.contains('con-button')).to.be.true;
+    });
+
+    it('handles hyphenated custom button classes correctly', async () => {
+      const el = await merch(document.querySelector(
+        '.merch.cta.custom-hyphenated',
+      ));
+      const { classList } = await el.onceSettled();
+      expect(classList.contains('my-custom-style')).to.be.true;
+      expect(classList.contains('con-button')).to.be.true;
+    });
+
+    it('ignores invalid custom button class format', async () => {
+      const el = await merch(document.querySelector(
+        '.merch.cta.custom-invalid',
+      ));
+      const { classList } = await el.onceSettled();
+      expect(classList.contains('123invalid')).to.be.false;
+      expect(classList.contains('con-button')).to.be.true;
+    });
+
+    it('does not apply unexpected custom classes when no custom hash parameter exist', async () => {
+      const el = await merch(document.querySelector(
+        '.merch.cta.primary',
+      ));
+      const { classList } = await el.onceSettled();
+      expect(classList.contains('fill')).to.be.false;
+
+      expect(classList.contains('con-button')).to.be.true;
+    });
   });
 
   describe('function "getCheckoutContext"', () => {
@@ -496,6 +533,34 @@ describe('Merch Block', () => {
       const el = document.createElement('a');
       const params = new URLSearchParams();
       expect(await buildCta(el, params)).to.be.null;
+    });
+
+    it('returns cta node with the correct custom class name', async () => {
+      const el = document.createElement('a');
+      el.setAttribute('href', '/tools/ost?osi=29&type=checkoutUrl#_button-fill');
+      const params = new URLSearchParams({ osi: '123' });
+      const result = await buildCta(el, params);
+      expect(result).to.not.be.null;
+      expect(result.classList.contains('fill')).to.be.true;
+    });
+
+    it('returns cta node ignoring invalid hash format', async () => {
+      const el = document.createElement('a');
+      el.setAttribute('href', '/tools/ost?osi=29&type=checkoutUrl#_button-123fill');
+      const params = new URLSearchParams({ osi: '123' });
+      const result = await buildCta(el, params);
+      expect(result).to.not.be.null;
+      expect(result.classList.contains('123fill')).not.to.be.true;
+    });
+
+    it('returns cta node without unexpected custom class', async () => {
+      const el = document.createElement('a');
+      el.setAttribute('href', '/tools/ost?osi=29&type=checkoutUrl');
+      const params = new URLSearchParams({ osi: '123' });
+      const result = await buildCta(el, params);
+      expect(result).to.not.be.null;
+      expect(result.classList.contains('fill')).not.to.be.true;
+      expect(result.classList.contains('con-button')).to.be.true;
     });
   });
 
